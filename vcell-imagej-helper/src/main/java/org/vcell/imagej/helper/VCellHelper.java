@@ -285,7 +285,59 @@ public class VCellHelper extends AbstractService implements ImageJService
 			}
 		}
 	}
+//	public static class IJDataSearchPart {
+//		public String varNameSearch;
+//		public int[] timeIndexes;
+//		public int jobIndex;
+//		public IJDataSearchPart(String varNameSearch, int[] timeIndexes, int jobIndex) {
+//			super();
+//			this.varNameSearch = varNameSearch;
+//			this.timeIndexes = timeIndexes;
+//			this.jobIndex = jobIndex;
+//		}
+//	}
 	public static enum ModelType {bm,mm,quick};
+	public ArrayList<String> getSearchedModelSimCacheKey(String userName,Boolean isOpen,ModelType modelType,String modelNameSearch,String contextNameSearch,String simNameSearch) throws Exception{
+		ArrayList<String> modelSimCacheKeys = new ArrayList<>();
+		URL url = new URL("http://localhost:"+findVCellApiServerPort()+"/"+"getinfo/"+"?"+(isOpen == null?"":"open="+isOpen+"&")+"type"+"="+modelType.name());
+		Pattern regexModelNameSearch = (modelNameSearch==null?null:Pattern.compile(("\\Q" + modelNameSearch + "\\E").replace("*", "\\E.*\\Q")));
+		Pattern regexContextNameSearch = (contextNameSearch==null?null:Pattern.compile(("\\Q" + contextNameSearch + "\\E").replace("*", "\\E.*\\Q")));
+		Pattern regexSimNameSearch = (simNameSearch==null?null:Pattern.compile(("\\Q" + simNameSearch + "\\E").replace("*", "\\E.*\\Q")));
+		Document doc = getDocument(url);
+		NodeList si = (NodeList)doc.getElementsByTagName("modelInfo");
+		for(int i=0;i<si.getLength();i++){
+			Node node = si.item(i);
+			String currentUser = node.getAttributes().getNamedItem("user").getNodeValue();
+			boolean bUserMatch = userName == null || userName.equals(currentUser);
+			String currentModel = node.getAttributes().getNamedItem("name").getNodeValue();
+			boolean bModelMatch = modelNameSearch == null || regexModelNameSearch.matcher(currentModel).matches();
+			if(bUserMatch && bModelMatch){//get modelInfos owned by user
+				NodeList modelChildren = node.getChildNodes();
+				for(int j=0;j<modelChildren.getLength();j++){
+					Node modelContext = modelChildren.item(j);
+					if(modelContext.getNodeName().equals("context")/* && modelChild.getAttributes().getNamedItem("name").getNodeValue().endsWith("NFSim")*/){//get applications (simulationContexts) with names ending in "NFSim"
+						String currentContext = modelContext.getAttributes().getNamedItem("name").getNodeValue();
+						boolean bContextMatch = contextNameSearch == null || regexContextNameSearch.matcher(currentContext).matches();
+						if(!bContextMatch) {continue;}
+//						System.out.println(currentContext);
+						NodeList simInfos = modelContext.getChildNodes();
+						for(int k=0;k<simInfos.getLength();k++){
+							Node simInfoNode = simInfos.item(k);
+							if(simInfoNode.getNodeName().equals("simInfo")){
+								String currentSimName = simInfoNode.getAttributes().getNamedItem("name").getNodeValue();
+								boolean bSimInfoMatch = simNameSearch == null || regexSimNameSearch.matcher(currentSimName).matches();
+								if(!bSimInfoMatch){continue;}
+								String cachekey = simInfoNode.getAttributes().getNamedItem("cacheKey").getNodeValue();
+								String info = currentUser+"::"+currentModel+"::"+currentContext+"::"+currentSimName+"::"+cachekey;
+								modelSimCacheKeys.add(info);
+							}
+						}
+					}
+				}
+			}
+		}
+		return modelSimCacheKeys;
+	}
 	public SearchedData getSearchedData(String userName,Boolean isOpen,ModelType modelType,String modelNameSearch,String contextNameSearch,String simNameSearch,String varNameSearch,int[] timeIndexes,int jobIndex) throws Exception{
 		SearchedData searchedData = new SearchedData();
 		URL url = new URL("http://localhost:"+findVCellApiServerPort()+"/"+"getinfo/"+"?"+(isOpen == null?"":"open="+isOpen+"&")+"type"+"="+modelType.name());
@@ -585,26 +637,52 @@ public class VCellHelper extends AbstractService implements ImageJService
 		}
 	}
 
-	public IJSolverStatus startFrap(Double rDiffusionOverride,Double kForwardBindingOverride,Double kReversBindingOverride,IJGeom ijGeom,String laserCoverageAnalyticExpression,Double newEndTime) throws Exception{
-		StringBuffer sb = new StringBuffer();
-		sb.append((sb.length()>0?"&":"")+(laserCoverageAnalyticExpression==null?"":"laserCoverage="+URLEncoder.encode(laserCoverageAnalyticExpression)));
-		sb.append((sb.length()>0?"&":"")+(newEndTime==null?"":                     "endTime="+newEndTime.doubleValue()));
-		sb.append((sb.length()>0?"&":"")+(rDiffusionOverride==null?"":             "r_diffusionRate="+rDiffusionOverride.doubleValue()+"&rf_diffusionRate="+rDiffusionOverride.doubleValue()));
-		sb.append((sb.length()>0?"&":"")+(kForwardBindingOverride==null?"":        "Kf_RAN_FITC_binding="+kForwardBindingOverride.doubleValue()+"&Kf_RAN_binding="+kForwardBindingOverride.doubleValue()));
-		sb.append((sb.length()>0?"&":"")+(kReversBindingOverride==null?"":         "Kr_RAN_FITC_binding="+kReversBindingOverride.doubleValue()+"&Kr_RAN_binding="+kReversBindingOverride.doubleValue()));
-		URL url = new URL("http://localhost:"+findVCellApiServerPort()+"/solver/frap/"+(sb.length()>0?"?"+sb.toString():""));
+	public IJSolverStatus startVCellSolver(long cachekey,IJGeom ijGeom,HashMap<String, String> simulationParameterOverrides,HashMap<String,String> speciesContextInitialConditionsOverrides,Double endTime) throws Exception{
+		StringBuffer overridesQueryParameters = new StringBuffer();
+		overridesQueryParameters.append("cachekey="+cachekey);
+		for(String simParameterdName:simulationParameterOverrides.keySet()) {
+			overridesQueryParameters.append((overridesQueryParameters.length()>0?"&":"")+simParameterdName+"="+URLEncoder.encode(simulationParameterOverrides.get(simParameterdName)));
+		}
+		for(String speciesContextName:speciesContextInitialConditionsOverrides.keySet()) {
+			overridesQueryParameters.append((overridesQueryParameters.length()>0?"&":"")+speciesContextName+"="+URLEncoder.encode(speciesContextInitialConditionsOverrides.get(speciesContextName)));
+		}
+		if(endTime != null) {
+			overridesQueryParameters.append((overridesQueryParameters.length()>0?"&":"")+"newSimEndTime"+"="+endTime);
+		}
+		URL url = new URL("http://localhost:"+findVCellApiServerPort()+"/solver/bycachekey/"+(overridesQueryParameters.length()>0?"?"+overridesQueryParameters.toString():""));
 		HttpURLConnection con = (HttpURLConnection) url.openConnection();
 		if(ijGeom != null) {
 			con.setDoOutput(true);    // indicates POST method
 			con.setDoInput(true);
 			con.setRequestMethod("POST");
 			con.setRequestProperty("Content-Type", "text/xml");
-//			jaxbContext.createMarshaller().marshal(ijFieldData, con.getOutputStream());
 			jaxbContext.createMarshaller().marshal(ijGeom, con.getOutputStream());
 			con.getOutputStream().close();
 		}
 		return (IJSolverStatus)unmarshallResponseFromConnection(con, jaxbContext);
+
 	}
+//	public IJSolverStatus startFrap(Double lasA,Double rDiffusionOverride,Double kForwardBindingOverride,Double kReversBindingOverride,IJGeom ijGeom,String laserCoverageAnalyticExpression,Double newEndTime) throws Exception{
+//		StringBuffer sb = new StringBuffer();
+//		sb.append((sb.length()>0?"&":"")+(laserCoverageAnalyticExpression==null?"":"laserCoverage="+URLEncoder.encode(laserCoverageAnalyticExpression)));
+//		sb.append((sb.length()>0?"&":"")+(newEndTime==null?"":                     "endTime="+newEndTime.doubleValue()));
+//		sb.append((sb.length()>0?"&":"")+(rDiffusionOverride==null?"":             "Dex_diffusionRate="+rDiffusionOverride.doubleValue()+"&rf_diffusionRate="+rDiffusionOverride.doubleValue()));
+//		sb.append((sb.length()>0?"&":"")+(lasA==null?"":							"lasA="+lasA.doubleValue()));
+//		sb.append((sb.length()>0?"&":"")+(kForwardBindingOverride==null?"":        "Kf_RAN_FITC_binding="+kForwardBindingOverride.doubleValue()+"&Kf_RAN_binding="+kForwardBindingOverride.doubleValue()));
+//		sb.append((sb.length()>0?"&":"")+(kReversBindingOverride==null?"":         "Kr_RAN_FITC_binding="+kReversBindingOverride.doubleValue()+"&Kr_RAN_binding="+kReversBindingOverride.doubleValue()));
+//		URL url = new URL("http://localhost:"+findVCellApiServerPort()+"/solver/frap/"+(sb.length()>0?"?"+sb.toString():""));
+//		HttpURLConnection con = (HttpURLConnection) url.openConnection();
+//		if(ijGeom != null) {
+//			con.setDoOutput(true);    // indicates POST method
+//			con.setDoInput(true);
+//			con.setRequestMethod("POST");
+//			con.setRequestProperty("Content-Type", "text/xml");
+////			jaxbContext.createMarshaller().marshal(ijFieldData, con.getOutputStream());
+//			jaxbContext.createMarshaller().marshal(ijGeom, con.getOutputStream());
+//			con.getOutputStream().close();
+//		}
+//		return (IJSolverStatus)unmarshallResponseFromConnection(con, jaxbContext);
+//	}
 	
 	private static Object unmarshallResponseFromConnection(HttpURLConnection con,JAXBContext jaxbContext) throws Exception{
 		int responseCode = con.getResponseCode();

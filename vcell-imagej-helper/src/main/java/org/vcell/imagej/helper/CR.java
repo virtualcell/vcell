@@ -5,6 +5,7 @@ import java.io.File;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -73,6 +74,17 @@ public class CR {
 			1.55,
 			1.6
 			};
+			
+//	    	double[] diffRates = new double[] {	    			
+//			0.00001,
+//			.5,
+//			1.0,
+//			2.0,
+//			4.0,
+//			6.0,
+//			8.0
+//			};
+
 			double[] mse = testSolver2(diffRates,new File(System.getProperty("user.dir", ".")),vh,ij);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
@@ -433,12 +445,20 @@ public class CR {
     	double laserYL = laserBounds.realMin(laserBounds.dimensionIndex(Axes.Y));
     	double laserXH = laserBounds.realMax(laserBounds.dimensionIndex(Axes.X));
     	double laserYH = laserBounds.realMax(laserBounds.dimensionIndex(Axes.Y));
-    	String laserArea = "((x >=  "+laserXL+") && (x <= "+laserXH+") && (y >=  "+laserYL+") && (y <= "+laserYH+"))";    	
+    	String laserArea = "((x >=  "+laserXL+") && (x <= "+laserXH+") && (y >=  "+laserYL+") && (y <= "+laserYH+"))";  	
 
+    	//Search for VCell Model chosen by user
+    	ArrayList<String> searchedCacheKeys = vh.getSearchedModelSimCacheKey("frm", true, VCellHelper.ModelType.bm, "Tutorial_FRAPbinding", "Spatial", "FRAP binding");
+    	String cacheKey = searchedCacheKeys.get(0).substring(searchedCacheKeys.get(0).lastIndexOf(":")+1);
+    	//Override Model/Simulation parameter values (user must have knowledge of chosen model to know what parameter names to override)
+    	HashMap<String,String> simulationParameterOverrides = new HashMap<>();
+    	simulationParameterOverrides.put("r_diffusionRate", ""+diffusionRate);
+    	HashMap<String, String> speciesContextInitialConditionsOverrides = new HashMap<>();
+    	speciesContextInitialConditionsOverrides.put("Laser", laserArea);
     	//Start Frap simulation
-    	IJSolverStatus ijSolverStatus = vh.startFrap(diffusionRate,forwardBinding,reverseBinding,ijGeom,laserArea,newEndTime);
+    	IJSolverStatus ijSolverStatus = vh.startVCellSolver(Long.parseLong(cacheKey), ijGeom, simulationParameterOverrides, speciesContextInitialConditionsOverrides,newEndTime);
     	
-    	//Wait for frap sim to end
+    	//Wait for solver to finish
     	System.out.println(ijSolverStatus.toString());
     	String simulationJobId = ijSolverStatus.simJobId;
     	while(true) {

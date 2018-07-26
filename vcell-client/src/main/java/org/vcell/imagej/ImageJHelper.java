@@ -1958,7 +1958,7 @@ public class ImageJHelper {
 				        									if(ijDocType != IJDocType.bm && ijDocType != IJDocType.mm) {
 				        							    		response.setContentType("text/html; charset=utf-8");
 				        							    		response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-				        							    		response.getWriter().println("<h1>\"Assumed IJ request for saved bio/math model, not expecting IJDocType='\"+ijDocType.name()+\"'\"</h1>");
+				        							    		response.getWriter().println("<h1>\"Assumed IJ request for saved bio/math model, not expecting IJDocType='"+ijDocType.name()+"'\"</h1>");
 				        							    		baseRequest.setHandled(true);
 				        							    		return;
 				        									}
@@ -2091,81 +2091,127 @@ public class ImageJHelper {
 	    					generalResponse(bResponseHolder,baseRequest,response, HttpServletResponse.SC_BAD_REQUEST,TYPE_TEXT_PLAIN_UTF8, "No solver cached for status request="+request.toString());
 	    				}
 	    			}
-	    		}else if(target.startsWith("/frap")) {
+	    		}else if(target.startsWith("/bycachekey")) {//vcDocument = (simContextName != null?vCellClient.getRequestManager().getDocumentManager().getBioModel(modelKey):vCellClient.getRequestManager().getDocumentManager().getMathModel(modelKey));
 	    			if(VCellClientTest.getVCellClient() == null) {
-	    				generalResponse(bResponseHolder,baseRequest,response, HttpServletResponse.SC_BAD_REQUEST,TYPE_TEXT_PLAIN_UTF8, "Must be logged in to start frap solver");
+	    				generalResponse(bResponseHolder,baseRequest,response, HttpServletResponse.SC_BAD_REQUEST,TYPE_TEXT_PLAIN_UTF8, "Must be logged in to start solver");
 	    			}else {
-		    			BioModelInfo[] bioModelInfos = VCellClientTest.getVCellClient().getRequestManager().getDocumentManager().getBioModelInfos();
-		    			getout: //label this loop to jump out
-		    			for (BioModelInfo bioModelInfo : bioModelInfos) {
-							if(bioModelInfo.getVersion().getOwner().getName().equals("tutorial") && bioModelInfo.getVersion().getName().equals("Tutorial_FRAPbinding")) {
-								BioModel frapBioModel = VCellClientTest.getVCellClient().getRequestManager().getDocumentManager().getBioModel(bioModelInfo);
-								Simulation[] simulations = frapBioModel.getSimulations();
-								for (Simulation simulation : simulations) {
-									if(simulation.getName().equals("FRAP binding")) {
-										newsim = simulation;
-										Simulation clonedSimulation = (Simulation)BeanUtils.cloneSerializable(newsim);
-										clonedSimulation.refreshDependencies();
-										MathOverrides clonedMathOverrides = clonedSimulation.getMathOverrides();
-										String[] allConstantNames = clonedMathOverrides.getAllConstantNames();
-										Map<String, String[]> parameterMap = request.getParameterMap();
-										boolean bChanges = false;
-										for(String param:parameterMap.keySet()) {
-											for(String constantName:allConstantNames) {
-												if(constantName.equals(param)) {
-													Constant oldConstant = clonedMathOverrides.getConstant(constantName);
-													Constant newConstant = new Constant(oldConstant.getName(), new Expression(parameterMap.get(param)[0]));
-													clonedMathOverrides.putConstant(newConstant);
-													bChanges = true;
-												}
-											}
-										}
-										if(bChanges) {
-											clonedSimulation.refreshDependencies();
-											newsim.setMathOverrides(new MathOverrides(newsim, clonedSimulation.getMathOverrides()));
-										}
-										if("POST".equals(request.getMethod())){//Geometry being sent
-											IJGeom ijGeom = (IJGeom)jaxbContext.createUnmarshaller().unmarshal(request.getInputStream());
-											changeGeometry(newsim,ijGeom);											
-										}
+		    			String[] cachekeys = request.getParameterValues("cachekey");
+		    			if(cachekeys == null || cachekeys.length != 1) {
+		    				generalResponse(bResponseHolder,baseRequest,response, HttpServletResponse.SC_BAD_REQUEST,TYPE_TEXT_PLAIN_UTF8, "Expecting 1 'cachekey' to identify sim to run");
+		    				return;
+		    			}
+		    			Long cachekey = null;
+		    			try {
+							cachekey = Long.parseLong(cachekeys[0]);
+						} catch (Exception e) {
+							generalResponse(bResponseHolder,baseRequest,response, HttpServletResponse.SC_BAD_REQUEST,TYPE_TEXT_PLAIN_UTF8, "Start simulation, trouble parsing 'cachekey': "+e.getMessage());
+							return;
+						}
+
+    			    	if(ijModelInfoCache != null) {
+    			    		modelInfoCacheLoop:
+    			    		for(IJModelInfo ijModelInfo:ijModelInfoCache) {
+    			    			if(ijModelInfo.contexts != null) {
+    			    				for(IJContextInfo ijContextInfo:ijModelInfo.contexts) {
+    			    					if(ijContextInfo.ijSimId != null) {
+    			    						for(IJSimInfo ijSimInfo:ijContextInfo.ijSimId) {
+    			    							if(ijSimInfo.cacheKey == cachekey) {
+			    									if(ijContextInfo.name == null) {//mathmodel
+			    										MathModel mathModel = VCellClientTest.getVCellClient().getRequestManager().getDocumentManager().getMathModel(new KeyValue(ijModelInfo.modelkey));
+														newsim = mathModel.getSimulation(ijSimInfo.name);
+			    									}else {
+			    										BioModel bioModel = VCellClientTest.getVCellClient().getRequestManager().getDocumentManager().getBioModel(new KeyValue(ijModelInfo.modelkey));
+														newsim = bioModel.getSimulationContext(ijContextInfo.name).getSimulation(ijSimInfo.name);
+			    									}
+    			    								break modelInfoCacheLoop;
+    			    							}
+    			    						}
+    			    					}
+    			    				}
+    			    			}
+    			    		}
+    			    	}
+	    				if(newsim == null) {
+	    					generalResponse(bResponseHolder,baseRequest,response, HttpServletResponse.SC_BAD_REQUEST,TYPE_TEXT_PLAIN_UTF8, "Start simulation, couldn't find simulation for 'cachekey'= "+cachekey);
+	    					return;
+	    				}
+	    				
+//		    			BioModelInfo[] bioModelInfos = VCellClientTest.getVCellClient().getRequestManager().getDocumentManager().getBioModelInfos();
+//		    			getout: //label this loop to jump out
+//		    			for (BioModelInfo bioModelInfo : bioModelInfos) {
+//							if(bioModelInfo.getVersion().getOwner().getName().equals("frm") && bioModelInfo.getVersion().getName().equals("Tutorial_FRAP")) {
+//								BioModel frapBioModel = VCellClientTest.getVCellClient().getRequestManager().getDocumentManager().getBioModel(bioModelInfo);
+//								Simulation[] simulations = frapBioModel.getSimulations();
+//								for (Simulation simulation : simulations) {
+//									if(simulation.getName().equals("FRAP")) {
+//										newsim = simulation;
+		    			
+						Simulation clonedSimulation = (Simulation)BeanUtils.cloneSerializable(newsim);
+						clonedSimulation.refreshDependencies();
+						//Set any simulation parameter overrides
+						MathOverrides clonedMathOverrides = clonedSimulation.getMathOverrides();
+						String[] allConstantNames = clonedMathOverrides.getAllConstantNames();
+						Map<String, String[]> parameterMap = request.getParameterMap();
+						boolean bChanges = false;
+						for(String param:parameterMap.keySet()) {
+							for(String constantName:allConstantNames) {
+								if(constantName.equals(param)) {
+									Constant oldConstant = clonedMathOverrides.getConstant(constantName);
+									Constant newConstant = new Constant(oldConstant.getName(), new Expression(parameterMap.get(param)[0]));
+									clonedMathOverrides.putConstant(newConstant);
+									bChanges = true;
+								}
+							}
+						}
+						if(bChanges) {
+							clonedSimulation.refreshDependencies();
+							newsim.setMathOverrides(new MathOverrides(newsim, clonedSimulation.getMathOverrides()));
+						}
+						
+						//Set a new geometry if requested
+						if("POST".equals(request.getMethod())){//Geometry being sent
+							IJGeom ijGeom = (IJGeom)jaxbContext.createUnmarshaller().unmarshal(request.getInputStream());
+							changeGeometry(newsim,ijGeom);											
+						}
 										
-										//Change laser
-										SimulationContext simulationContext = (SimulationContext)newsim.getSimulationOwner();
-										String[] laserCoverageExp = request.getParameterMap().get("laserCoverage");
-										if(laserCoverageExp != null) {
+						//Set new initial conditions
+						SimulationContext simulationContext = (SimulationContext)newsim.getSimulationOwner();
+//										String[] laserCoverageExp = request.getParameterMap().get("laserCoverage");
+//										if(laserCoverageExp != null) {
 											SpeciesContextSpec[] speciesContextSpecs = simulationContext.getReactionContext().getSpeciesContextSpecs();
 											for (SpeciesContextSpec speciesContextSpec : speciesContextSpecs) {
 												System.out.println(speciesContextSpec);
-												if(speciesContextSpec.getSpeciesContext().getSpecies().getCommonName().equals("Laser") && speciesContextSpec.getSpeciesContext().getStructure().getName().equals("Nuc")) {
+												if(parameterMap.containsKey(speciesContextSpec.getSpeciesContext().getName())) {
+//												if(speciesContextSpec.getSpeciesContext().getSpecies().getCommonName().equals("Laser") && speciesContextSpec.getSpeciesContext().getStructure().getName().equals("Nuc")) {
 													System.out.println(speciesContextSpec.getInitialConcentrationParameter());
 													System.out.println(speciesContextSpec.getInitialConditionParameter());
 													System.out.println(speciesContextSpec.getInitialCountParameter());
-							    					Expression expr = new Expression(laserCoverageExp[0]/*"((x >=  - 7.4) && (x <= -3.96) && (y >=  - 4.4) && (y <= -3.96))"*/);
+							    					Expression expr = new Expression(parameterMap.get(speciesContextSpec.getSpeciesContext().getName())[0]);
 //							    					SimulationSymbolTable sst = new SimulationSymbolTable(newsim, 0);
 //							    					expr.bindExpression(sst);
 													speciesContextSpec.getInitialConcentrationParameter().setExpression(expr);
 													speciesContextSpec.getInitialConditionParameter().setExpression(expr);
-													break;
+//													break;
 //													speciesContextSpec.refreshDependencies();
 												}
 											}
 //											ClientTaskDispatcher.dispatchColl(null, new Hashtable<String, Object>(), ClientRequestManager.updateMath(null, simulationContext, true,NetworkGenerationRequirements.ComputeFullStandardTimeout), false);
 //											Thread.sleep(10000);
-										}
+//										}
 										
 										//Change simulation endtime
-										String[] endTime = request.getParameterMap().get("endTime");
-										if(endTime != null) {
-											ClientTaskManager.changeEndTime(null, newsim.getSolverTaskDescription(), Double.parseDouble(endTime[0]));
+										String[] newSimEndTime = request.getParameterMap().get("newSimEndTime");
+										if(newSimEndTime != null) {
+											ClientTaskManager.changeEndTime(null, newsim.getSolverTaskDescription(), Double.parseDouble(newSimEndTime[0]));
 										}
 										
 										//Update everything
-										mathUpdateTasks = (ArrayList<AsynchClientTask>)ClientRequestManager.updateMath(null, simulationContext, true,NetworkGenerationRequirements.ComputeFullStandardTimeout);
-										break getout;
-									}
-								}
-							}
-						}
+						mathUpdateTasks = (ArrayList<AsynchClientTask>)ClientRequestManager.updateMath(null, simulationContext, true,NetworkGenerationRequirements.ComputeFullStandardTimeout);
+//										break getout;
+//									}
+//								}
+//							}
+//						}
 						if(newsim == null) {
 							generalResponse(bResponseHolder,baseRequest,response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR,TYPE_TEXT_PLAIN_UTF8, "Couldn't find simulation for 'frap' solver");
 						}
