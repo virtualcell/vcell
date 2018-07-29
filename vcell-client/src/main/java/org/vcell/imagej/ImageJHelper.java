@@ -1271,7 +1271,7 @@ public class ImageJHelper {
 		@XmlAttribute()
 		private String mathType;
 		@XmlAttribute()
-		private Integer gomeDim;
+		private Integer geomDim;
 		@XmlAttribute()
 		private String geomName;
 		@XmlElement(name="simInfo")
@@ -1279,11 +1279,11 @@ public class ImageJHelper {
 		public IJContextInfo() {
 			
 		}
-		public IJContextInfo(String name, MathType mathType, Integer gomeDim, String geomName, ArrayList<IJSimInfo> ijSimId) {
+		public IJContextInfo(String name, MathType mathType, Integer geomDim, String geomName, ArrayList<IJSimInfo> ijSimId) {
 			super();
 			this.name = name;
 			this.mathType = (mathType != null?mathType.name():null);
-			this.gomeDim = gomeDim;
+			this.geomDim = geomDim;
 			this.geomName = geomName;
 			this.ijSimId = ijSimId;
 		}
@@ -1307,7 +1307,7 @@ public class ImageJHelper {
 		@XmlAttribute()
 		private String name;
 		@XmlAttribute()
-		private String date;
+		private Long date;
 		@XmlAttribute()
 		private String type;
 		@XmlAttribute()
@@ -1324,7 +1324,7 @@ public class ImageJHelper {
 		public IJModelInfo(String name, Date date, IJDocType type, Boolean open,String user,KeyValue modelkey,ArrayList<IJContextInfo> contexts) {
 			super();
 			this.name = name;
-			this.date = (date != null?date.toString():null);
+			this.date = (date != null?date.getTime():null);
 			this.type = (type != null?type.name():null);
 			this.open = open;
 			this.user = user;
@@ -1484,6 +1484,7 @@ public class ImageJHelper {
 								KeyValue parentModelKey = null;
 								IJDocType docType = IJDocType.quick;
 								boolean bOpenOnDesktop = false;
+								//Match a local file SimID with an open model if possible
 								if(VCellClientTest.getVCellClient() != null) {
 						    		Collection<TopLevelWindowManager> windowManagers = VCellClientTest.getVCellClient().getMdiManager().getWindowManagers();
 						    		for(TopLevelWindowManager topLevelWindowManager:windowManagers) {
@@ -1966,7 +1967,7 @@ public class ImageJHelper {
 				        								}
 			        								if(ijDataResponder != null) {
 		        										if(decodedVarNames!=null/* && timepoint != null*/){
-		        											ijDataResponder.respondData(response,decodedVarNames, timeIndexes,(ijContextInfo.gomeDim > 0));
+		        											ijDataResponder.respondData(response,decodedVarNames, timeIndexes,(ijContextInfo.geomDim > 0));
 		        										}else {
 		        											ijDataResponder.respondIdentifiers(response, ijSimInfo.name, cacheKey);
 		        										}
@@ -2299,6 +2300,11 @@ public class ImageJHelper {
 									files[i].delete();
 								}
 							}
+BioModel bioModel = ((SimulationContext)finalSim.getSimulationOwner()).getBioModel();
+bioModel.clearVersion();
+File outputFile = new File("C:/temp/laser.xml");
+outputFile.delete();
+FileUtils.writeByteArrayToFile(XmlHelper.bioModelToXML(bioModel).getBytes(), outputFile);
 					    	Thread.sleep(1000);
 					    	Solver solver = SolverFactory.createSolver(localSimDataDir, simTask, false);						
 							solver.startSolver();
@@ -2306,7 +2312,6 @@ public class ImageJHelper {
 					    	generalResponse(bResponseHolder,baseRequest,response,HttpServletResponse.SC_OK,TYPE_TEXT_XML_UTF8,createXML(new IJSolverStatus(solverStatus,solver.getSimulationJob())));
 					    	solverCache.clear();
 					    	solverCache.put(solver.getSimulationJob().getSimulationJobID(), solver);
-							FileUtils.writeByteArrayToFile(XmlHelper.bioModelToXML(((SimulationContext)finalSim.getSimulationOwner()).getBioModel()).getBytes(), new File("C:/temp/laser.xml"));
 						}
 						
 						if(!bResponseHolder[0]) {

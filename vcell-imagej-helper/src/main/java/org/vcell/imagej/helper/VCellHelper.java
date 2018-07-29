@@ -23,9 +23,9 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Base64;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.regex.Pattern;
 
@@ -62,7 +62,7 @@ public class VCellHelper extends AbstractService implements ImageJService
 	
 	public VCellHelper() {
 		try {
-			jaxbContext = JAXBContext.newInstance(new Class[] {IJSolverStatus.class,IJTimeSeriesJobResults.class,IJTimeSeriesJobSpec.class,IJFieldData.class,IJGeom.class});
+			jaxbContext = JAXBContext.newInstance(new Class[] {IJSolverStatus.class,IJTimeSeriesJobResults.class,IJTimeSeriesJobSpec.class,IJFieldData.class,IJGeom.class,IJVarInfo.class,IJVarInfos.class});
 		} catch (JAXBException e) {
 			e.printStackTrace();
 		}
@@ -218,73 +218,74 @@ public class VCellHelper extends AbstractService implements ImageJService
 		throw new Exception("stackInfo not found");
 	}
 	
-	public static class SearchedData {
-		private HashMap<String,HashMap<String,HashMap<String,HashMap<String,HashMap<Double,HashMap<Integer,double[]>>>>>> mapModelToContext = new HashMap<>();
-		private HashMap<double[],long[]> mapDataToDimension = new HashMap<>();
-		public String[] getModelNames() {
-			return mapModelToContext.keySet().toArray(new String[0]);
-		}
-		public String[] getContextNames(String modelName) {
-			return mapModelToContext.get(modelName).keySet().toArray(new String[0]);
-		}
-		public String[] getSimulationNames(String modelName,String contextName) {
-			return mapModelToContext.get(modelName).get(contextName).keySet().toArray(new String[0]);
-		}
-		public String[] getVariableNames(String modelName,String contextName,String simulationName) {
-			return mapModelToContext.get(modelName).get(contextName).get(simulationName).keySet().toArray(new String[0]);
-		}
-		public Double[] getTimePoints(String modelName,String contextName,String simulationName,String variableName) {
-			return mapModelToContext.get(modelName).get(contextName).get(simulationName).get(variableName).keySet().toArray(new Double[0]);
-		}
-		public Integer[] getJobIndexes(String modelName,String contextName,String simulationName,String variableName,double timePoint) {
-			return mapModelToContext.get(modelName).get(contextName).get(simulationName).get(variableName).get(timePoint).keySet().toArray(new Integer[0]);
-		}
-		public double[] getData(String modelName,String contextName,String simulationName,String variableName,double timePoint,int jobIndex) {
-			return mapModelToContext.get(modelName).get(contextName).get(simulationName).get(variableName).get(timePoint).get(jobIndex);
-		}
-		public long[] getXYZDimensions(double[] data) {
-			return mapDataToDimension.get(data);
-		}
-		public Set<double[]> getDatas(){
-			return mapDataToDimension.keySet();
-		}
-		public void put(String modelName,String contextName,String simName,String varName,double[] data,long[] xyzDim,double timePoint,int jobIndex) throws Exception{
-			while(true){
-				if(mapModelToContext.containsKey(modelName)) {
-					HashMap<String,HashMap<String,HashMap<String,HashMap<Double,HashMap<Integer,double[]>>>>> mapContextToSim = mapModelToContext.get(modelName);
-					if(mapContextToSim.containsKey(contextName)) {
-						HashMap<String,HashMap<String,HashMap<Double,HashMap<Integer,double[]>>>> mapSimToVar = mapContextToSim.get(contextName);
-						if(mapSimToVar.containsKey(simName)) {
-							HashMap<String,HashMap<Double,HashMap<Integer,double[]>>> mapVarToTime = mapSimToVar.get(simName);
-							if(mapVarToTime.containsKey(varName)) {
-								HashMap<Double,HashMap<Integer,double[]>> mapTimeToJob = mapVarToTime.get(varName);
-								if(mapTimeToJob.containsKey(timePoint)) {
-									HashMap<Integer, double[]> mapJobToData = mapTimeToJob.get(timePoint);
-									if(mapJobToData.containsKey(jobIndex)) {
-										throw new Exception("Data already exists for "+modelName+":"+contextName+":"+simName+":"+varName);
-									}else {
-										mapJobToData.put(jobIndex, data);
-										mapDataToDimension.put(data, xyzDim);
-										return;
-									}
-								}else {
-									mapTimeToJob.put(timePoint, new HashMap<Integer, double[]>());
-								}
-							}else {
-								mapVarToTime.put(varName, new HashMap<Double,HashMap<Integer,double[]>>());
-							}
-						}else {
-							mapSimToVar.put(simName, new HashMap<String,HashMap<Double,HashMap<Integer,double[]>>>());
-						}
-					}else {
-						mapContextToSim.put(contextName, new HashMap<String,HashMap<String,HashMap<Double,HashMap<Integer,double[]>>>>());
-					}
-				}else {
-					mapModelToContext.put(modelName, new HashMap<String,HashMap<String,HashMap<String,HashMap<Double,HashMap<Integer,double[]>>>>>());
-				}
-			}
-		}
-	}
+//	public static class SearchedData {
+//		private HashMap<String,HashMap<String,HashMap<String,HashMap<String,HashMap<Double,HashMap<Integer,double[]>>>>>> mapModelToContext = new HashMap<>();
+//		private HashMap<double[],long[]> mapDataToDimension = new HashMap<>();
+//		public String[] getModelNames() {
+//			return mapModelToContext.keySet().toArray(new String[0]);
+//		}
+//		public String[] getContextNames(String modelName) {
+//			return mapModelToContext.get(modelName).keySet().toArray(new String[0]);
+//		}
+//		public String[] getSimulationNames(String modelName,String contextName) {
+//			return mapModelToContext.get(modelName).get(contextName).keySet().toArray(new String[0]);
+//		}
+//		public String[] getVariableNames(String modelName,String contextName,String simulationName) {
+//			return mapModelToContext.get(modelName).get(contextName).get(simulationName).keySet().toArray(new String[0]);
+//		}
+//		public Double[] getTimePoints(String modelName,String contextName,String simulationName,String variableName) {
+//			return mapModelToContext.get(modelName).get(contextName).get(simulationName).get(variableName).keySet().toArray(new Double[0]);
+//		}
+//		public Integer[] getJobIndexes(String modelName,String contextName,String simulationName,String variableName,double timePoint) {
+//			return mapModelToContext.get(modelName).get(contextName).get(simulationName).get(variableName).get(timePoint).keySet().toArray(new Integer[0]);
+//		}
+//		public double[] getData(String modelName,String contextName,String simulationName,String variableName,double timePoint,int jobIndex) {
+//			return mapModelToContext.get(modelName).get(contextName).get(simulationName).get(variableName).get(timePoint).get(jobIndex);
+//		}
+//		public long[] getXYZDimensions(double[] data) {
+//			return mapDataToDimension.get(data);
+//		}
+//		public Set<double[]> getDatas(){
+//			return mapDataToDimension.keySet();
+//		}
+//		public void put(String modelName,String contextName,String simName,String varName,double[] data,long[] xyzDim,double timePoint,int jobIndex) throws Exception{
+//			while(true){
+//				if(mapModelToContext.containsKey(modelName)) {
+//					HashMap<String,HashMap<String,HashMap<String,HashMap<Double,HashMap<Integer,double[]>>>>> mapContextToSim = mapModelToContext.get(modelName);
+//					if(mapContextToSim.containsKey(contextName)) {
+//						HashMap<String,HashMap<String,HashMap<Double,HashMap<Integer,double[]>>>> mapSimToVar = mapContextToSim.get(contextName);
+//						if(mapSimToVar.containsKey(simName)) {
+//							HashMap<String,HashMap<Double,HashMap<Integer,double[]>>> mapVarToTime = mapSimToVar.get(simName);
+//							if(mapVarToTime.containsKey(varName)) {
+//								HashMap<Double,HashMap<Integer,double[]>> mapTimeToJob = mapVarToTime.get(varName);
+//								if(mapTimeToJob.containsKey(timePoint)) {
+//									HashMap<Integer, double[]> mapJobToData = mapTimeToJob.get(timePoint);
+//									if(mapJobToData.containsKey(jobIndex)) {
+//										throw new Exception("Data already exists for "+modelName+":"+contextName+":"+simName+":"+varName);
+//									}else {
+//										mapJobToData.put(jobIndex, data);
+//										mapDataToDimension.put(data, xyzDim);
+//										return;
+//									}
+//								}else {
+//									mapTimeToJob.put(timePoint, new HashMap<Integer, double[]>());
+//								}
+//							}else {
+//								mapVarToTime.put(varName, new HashMap<Double,HashMap<Integer,double[]>>());
+//							}
+//						}else {
+//							mapSimToVar.put(simName, new HashMap<String,HashMap<Double,HashMap<Integer,double[]>>>());
+//						}
+//					}else {
+//						mapContextToSim.put(contextName, new HashMap<String,HashMap<String,HashMap<Double,HashMap<Integer,double[]>>>>());
+//					}
+//				}else {
+//					mapModelToContext.put(modelName, new HashMap<String,HashMap<String,HashMap<String,HashMap<Double,HashMap<Integer,double[]>>>>>());
+//				}
+//			}
+//		}
+//	}
+	
 //	public static class IJDataSearchPart {
 //		public String varNameSearch;
 //		public int[] timeIndexes;
@@ -296,40 +297,123 @@ public class VCellHelper extends AbstractService implements ImageJService
 //			this.jobIndex = jobIndex;
 //		}
 //	}
+	public static class VCellModelVersionTimeRange{
+		private Date earliest;
+		private Date latest;
+		public VCellModelVersionTimeRange(Date earliest, Date latest) {
+			super();
+			this.earliest = earliest;
+			this.latest = latest;
+		}
+		public Date getEarliest() {
+			return earliest;
+		}
+		public Date getLatest() {
+			return latest;
+		}
+		
+	}
+	public static class VCellModelSearch {
+		private ModelType modelType;
+		private String userId;
+		private String modelName;
+		private String applicationName;
+		private String simulationName;
+		private Integer geometryDimension;
+		private String mathType;
+		public VCellModelSearch(ModelType modelType, String userId, String modelName, String applicationName,
+				String simulationName, Integer geometryDimension, String mathType) {
+			super();
+			this.modelType = modelType;
+			this.userId = userId;
+			this.modelName = modelName;
+			this.applicationName = applicationName;
+			this.simulationName = simulationName;
+			this.geometryDimension = geometryDimension;
+			this.mathType = mathType;
+		}
+		public ModelType getModelType() {
+			return modelType;
+		}
+		public String getUserId() {
+			return userId;
+		}
+		public String getModelName() {
+			return modelName;
+		}
+		public String getApplicationName() {
+			return applicationName;
+		}
+		public String getSimulationName() {
+			return simulationName;
+		}
+		public Integer getGeometryDimension() {
+			return geometryDimension;
+		}
+		public String getMathType() {
+			return mathType;
+		}
+		
+	}
+	public static class VCellModelSearchResults extends VCellModelSearch{
+		private Long date;
+		private String cacheKey;
+		public VCellModelSearchResults(int geometryDiimension,String mathType,ModelType modelType, String userId, String modelName, String applicationName,String simulationname, Long date, String cacheKey) {
+			super(modelType, userId, modelName, applicationName, simulationname,geometryDiimension,mathType);
+			this.date = date;
+			this.cacheKey = cacheKey;
+		}
+		public long getDate() {
+			return date;
+		}
+		public String getCacheKey() {
+			return cacheKey;
+		}
+	}
 	public static enum ModelType {bm,mm,quick};
-	public ArrayList<String> getSearchedModelSimCacheKey(String userName,Boolean isOpen,ModelType modelType,String modelNameSearch,String contextNameSearch,String simNameSearch) throws Exception{
-		ArrayList<String> modelSimCacheKeys = new ArrayList<>();
-		URL url = new URL("http://localhost:"+findVCellApiServerPort()+"/"+"getinfo/"+"?"+(isOpen == null?"":"open="+isOpen+"&")+"type"+"="+modelType.name());
-		Pattern regexModelNameSearch = (modelNameSearch==null?null:Pattern.compile(("\\Q" + modelNameSearch + "\\E").replace("*", "\\E.*\\Q")));
-		Pattern regexContextNameSearch = (contextNameSearch==null?null:Pattern.compile(("\\Q" + contextNameSearch + "\\E").replace("*", "\\E.*\\Q")));
-		Pattern regexSimNameSearch = (simNameSearch==null?null:Pattern.compile(("\\Q" + simNameSearch + "\\E").replace("*", "\\E.*\\Q")));
+	public ArrayList<VCellModelSearchResults> getSearchedModelSimCacheKey(Boolean isOpen,VCellModelSearch vcCellModelSearch,VCellModelVersionTimeRange vcellModelVersionTimeRange) throws Exception{
+		ArrayList<VCellModelSearchResults> modelSimCacheKeys = new ArrayList<>();
+		URL url = new URL("http://localhost:"+findVCellApiServerPort()+"/"+"getinfo/"+"?"+(isOpen == null?"":"open="+isOpen+"&")+"type"+"="+vcCellModelSearch.getModelType().name());
+		Pattern regexModelNameSearch = (vcCellModelSearch.getModelName()==null?null:Pattern.compile(("\\Q" + vcCellModelSearch.getModelName() + "\\E").replace("*", "\\E.*\\Q")));
+		Pattern regexContextNameSearch = (vcCellModelSearch.getApplicationName()==null?null:Pattern.compile(("\\Q" + vcCellModelSearch.getApplicationName() + "\\E").replace("*", "\\E.*\\Q")));
+		Pattern regexSimNameSearch = (vcCellModelSearch.getSimulationName()==null?null:Pattern.compile(("\\Q" + vcCellModelSearch.getSimulationName() + "\\E").replace("*", "\\E.*\\Q")));
 		Document doc = getDocument(url);
+//System.out.println(VCellHelper.documentToString(doc));
 		NodeList si = (NodeList)doc.getElementsByTagName("modelInfo");
 		for(int i=0;i<si.getLength();i++){
 			Node node = si.item(i);
 			String currentUser = node.getAttributes().getNamedItem("user").getNodeValue();
-			boolean bUserMatch = userName == null || userName.equals(currentUser);
+			boolean bUserMatch = vcCellModelSearch.getUserId() == null || vcCellModelSearch.getUserId().equals(currentUser);
 			String currentModel = node.getAttributes().getNamedItem("name").getNodeValue();
-			boolean bModelMatch = modelNameSearch == null || regexModelNameSearch.matcher(currentModel).matches();
-			if(bUserMatch && bModelMatch){//get modelInfos owned by user
+			Long longDate = (node.getAttributes().getNamedItem("date")==null?null:Long.parseLong(node.getAttributes().getNamedItem("date").getNodeValue()));
+			if(longDate != null && vcellModelVersionTimeRange != null && (longDate < vcellModelVersionTimeRange.getEarliest().getTime() || longDate > vcellModelVersionTimeRange.getLatest().getTime())) {
+				continue;
+			}
+			ModelType modelType = (node.getAttributes().getNamedItem("type")==null?null:ModelType.valueOf(node.getAttributes().getNamedItem("type").getNodeValue()));
+			boolean bModelMatch = vcCellModelSearch.getModelName() == null || regexModelNameSearch.matcher(currentModel).matches();
+			if(bUserMatch && bModelMatch){
 				NodeList modelChildren = node.getChildNodes();
 				for(int j=0;j<modelChildren.getLength();j++){
 					Node modelContext = modelChildren.item(j);
 					if(modelContext.getNodeName().equals("context")/* && modelChild.getAttributes().getNamedItem("name").getNodeValue().endsWith("NFSim")*/){//get applications (simulationContexts) with names ending in "NFSim"
 						String currentContext = modelContext.getAttributes().getNamedItem("name").getNodeValue();
-						boolean bContextMatch = contextNameSearch == null || regexContextNameSearch.matcher(currentContext).matches();
-						if(!bContextMatch) {continue;}
+						boolean bContextMatch = vcCellModelSearch.getApplicationName() == null || regexContextNameSearch.matcher(currentContext).matches();
+						boolean bgeomDim = (vcCellModelSearch.getGeometryDimension() == null?true:vcCellModelSearch.getGeometryDimension() == Integer.parseInt(modelContext.getAttributes().getNamedItem("geomDim").getNodeValue()));
+						boolean bMathType = (vcCellModelSearch.getMathType() == null?true:vcCellModelSearch.getMathType() == modelContext.getAttributes().getNamedItem("mathType").getNodeValue());
+						if(!bContextMatch || !bgeomDim || !bMathType) {continue;}
 //						System.out.println(currentContext);
 						NodeList simInfos = modelContext.getChildNodes();
 						for(int k=0;k<simInfos.getLength();k++){
 							Node simInfoNode = simInfos.item(k);
 							if(simInfoNode.getNodeName().equals("simInfo")){
 								String currentSimName = simInfoNode.getAttributes().getNamedItem("name").getNodeValue();
-								boolean bSimInfoMatch = simNameSearch == null || regexSimNameSearch.matcher(currentSimName).matches();
+								boolean bSimInfoMatch = vcCellModelSearch.getSimulationName() == null || regexSimNameSearch.matcher(currentSimName).matches();
 								if(!bSimInfoMatch){continue;}
-								String cachekey = simInfoNode.getAttributes().getNamedItem("cacheKey").getNodeValue();
-								String info = currentUser+"::"+currentModel+"::"+currentContext+"::"+currentSimName+"::"+cachekey;
-								modelSimCacheKeys.add(info);
+								int geometryDimension = Integer.parseInt(modelContext.getAttributes().getNamedItem("geomDim").getNodeValue());
+								String mathType = modelContext.getAttributes().getNamedItem("mathType").getNodeValue();
+								String cacheKey = simInfoNode.getAttributes().getNamedItem("cacheKey").getNodeValue();
+//								String info = currentUser+"::"+currentModel+"::"+currentContext+"::"+currentSimName+"::"+cachekey;
+								modelSimCacheKeys.add(new VCellModelSearchResults(geometryDimension,mathType,modelType, currentUser, currentModel, currentContext, currentSimName, longDate, cacheKey));
 							}
 						}
 					}
@@ -338,84 +422,86 @@ public class VCellHelper extends AbstractService implements ImageJService
 		}
 		return modelSimCacheKeys;
 	}
-	public SearchedData getSearchedData(String userName,Boolean isOpen,ModelType modelType,String modelNameSearch,String contextNameSearch,String simNameSearch,String varNameSearch,int[] timeIndexes,int jobIndex) throws Exception{
-		SearchedData searchedData = new SearchedData();
-		URL url = new URL("http://localhost:"+findVCellApiServerPort()+"/"+"getinfo/"+"?"+(isOpen == null?"":"open="+isOpen+"&")+"type"+"="+modelType.name());
-		Pattern regexModelNameSearch = (modelNameSearch==null?null:Pattern.compile(("\\Q" + modelNameSearch + "\\E").replace("*", "\\E.*\\Q")));
-		Pattern regexContextNameSearch = (contextNameSearch==null?null:Pattern.compile(("\\Q" + contextNameSearch + "\\E").replace("*", "\\E.*\\Q")));
-		Pattern regexSimNameSearch = (simNameSearch==null?null:Pattern.compile(("\\Q" + simNameSearch + "\\E").replace("*", "\\E.*\\Q")));
-		Pattern regexVarNameSearch = (varNameSearch==null?null:Pattern.compile(("\\Q" + varNameSearch + "\\E").replace("*", "\\E.*\\Q")));
-		Document doc = getDocument(url);
-		String docStr = documentToString(doc);//convert xml document to string
-		System.out.println(docStr);//print sml as string
-		NodeList si = (NodeList)doc.getElementsByTagName("modelInfo");
-		for(int i=0;i<si.getLength();i++){
-			Node node = si.item(i);
-			String currentUser = node.getAttributes().getNamedItem("user").getNodeValue();
-			boolean bUserMatch = userName == null || userName.equals(currentUser);
-			String currentModel = node.getAttributes().getNamedItem("name").getNodeValue();
-			boolean bModelMatch = modelNameSearch == null || regexModelNameSearch.matcher(currentModel).matches();
-			if(bUserMatch && bModelMatch){//get modelInfos owned by user
-				NodeList modelChildren = node.getChildNodes();
-				for(int j=0;j<modelChildren.getLength();j++){
-					Node modelContext = modelChildren.item(j);
-					if(modelContext.getNodeName().equals("context")/* && modelChild.getAttributes().getNamedItem("name").getNodeValue().endsWith("NFSim")*/){//get applications (simulationContexts) with names ending in "NFSim"
-						String currentContext = modelContext.getAttributes().getNamedItem("name").getNodeValue();
-						boolean bContextMatch = contextNameSearch == null || regexContextNameSearch.matcher(currentContext).matches();
-						if(!bContextMatch) {continue;}
-//						System.out.println(currentContext);
-						NodeList simInfos = modelContext.getChildNodes();
-						for(int k=0;k<simInfos.getLength();k++){
-							Node simInfoNode = simInfos.item(k);
-							if(simInfoNode.getNodeName().equals("simInfo")){
-								String currentSimName = simInfoNode.getAttributes().getNamedItem("name").getNodeValue();
-								boolean bSimInfoMatch = simNameSearch == null || regexSimNameSearch.matcher(currentSimName).matches();
-								if(!bSimInfoMatch){continue;}
-								String cacheKey = simInfoNode.getAttributes().getNamedItem("cacheKey").getNodeValue();
-								System.out.println("context="+j+" sim="+k+" cacheKey"+cacheKey);
-								Document varDoc = getDocument(new URL("http://localhost:"+findVCellApiServerPort()+"/"+"getdata/"+"?"+"cachekey"+"="+cacheKey));//get variable names
-								NodeList varInfoNodeList = (NodeList)varDoc.getElementsByTagName("ijVarInfo");
-								StringBuffer urlEncodedVarNames = new StringBuffer();
-								for(int l=0;l<varInfoNodeList.getLength();l++){
-									Node varInfoNode = varInfoNodeList.item(l);
-									String currentVarName = varInfoNode.getAttributes().getNamedItem("name").getNodeValue();
-									boolean bVarNameMatch = varNameSearch == null || regexVarNameSearch.matcher(currentVarName).matches();
-									if(bVarNameMatch){
-										urlEncodedVarNames.append("&varname="+URLEncoder.encode(currentVarName, Charset.forName("UTF-8").name()));
-									}
-								}
-								StringBuffer timeIndexURL = new StringBuffer();
-								for (int l = 0; timeIndexes != null && l < timeIndexes.length; l++) {
-									timeIndexURL.append("&timeindex="+timeIndexes[l]);
-								}
-//								StringBuffer jobIndexURL = new StringBuffer();
-//								for (int l = 0; timeIndexes != null && l < timeIndexes.length; l++) {
-//									jobIndexURL.append("&jobIndex="+jobIndexes[l]);
+//	public SearchedData getSearchedData(String userName,Boolean isOpen,ModelType modelType,String modelNameSearch,String contextNameSearch,String simNameSearch,String varNameSearch,int[] timeIndexes,int jobIndex) throws Exception{
+//		SearchedData searchedData = new SearchedData();
+//		URL url = new URL("http://localhost:"+findVCellApiServerPort()+"/"+"getinfo/"+"?"+(isOpen == null?"":"open="+isOpen+"&")+"type"+"="+modelType.name());
+//		Pattern regexModelNameSearch = (modelNameSearch==null?null:Pattern.compile(("\\Q" + modelNameSearch + "\\E").replace("*", "\\E.*\\Q")));
+//		Pattern regexContextNameSearch = (contextNameSearch==null?null:Pattern.compile(("\\Q" + contextNameSearch + "\\E").replace("*", "\\E.*\\Q")));
+//		Pattern regexSimNameSearch = (simNameSearch==null?null:Pattern.compile(("\\Q" + simNameSearch + "\\E").replace("*", "\\E.*\\Q")));
+//		Pattern regexVarNameSearch = (varNameSearch==null?null:Pattern.compile(("\\Q" + varNameSearch + "\\E").replace("*", "\\E.*\\Q")));
+//		Document doc = getDocument(url);
+//		String docStr = documentToString(doc);//convert xml document to string
+//		System.out.println(docStr);//print sml as string
+//		NodeList si = (NodeList)doc.getElementsByTagName("modelInfo");
+//		for(int i=0;i<si.getLength();i++){
+//			Node node = si.item(i);
+//			String currentUser = node.getAttributes().getNamedItem("user").getNodeValue();
+//			boolean bUserMatch = userName == null || userName.equals(currentUser);
+//			String currentModel = node.getAttributes().getNamedItem("name").getNodeValue();
+//			boolean bModelMatch = modelNameSearch == null || regexModelNameSearch.matcher(currentModel).matches();
+//			if(bUserMatch && bModelMatch){//get modelInfos owned by user
+//				NodeList modelChildren = node.getChildNodes();
+//				for(int j=0;j<modelChildren.getLength();j++){
+//					Node modelContext = modelChildren.item(j);
+//					if(modelContext.getNodeName().equals("context")/* && modelChild.getAttributes().getNamedItem("name").getNodeValue().endsWith("NFSim")*/){//get applications (simulationContexts) with names ending in "NFSim"
+//						String currentContext = modelContext.getAttributes().getNamedItem("name").getNodeValue();
+//						boolean bContextMatch = contextNameSearch == null || regexContextNameSearch.matcher(currentContext).matches();
+//						if(!bContextMatch) {continue;}
+////						System.out.println(currentContext);
+//						NodeList simInfos = modelContext.getChildNodes();
+//						for(int k=0;k<simInfos.getLength();k++){
+//							Node simInfoNode = simInfos.item(k);
+//							if(simInfoNode.getNodeName().equals("simInfo")){
+//								String currentSimName = simInfoNode.getAttributes().getNamedItem("name").getNodeValue();
+//								boolean bSimInfoMatch = simNameSearch == null || regexSimNameSearch.matcher(currentSimName).matches();
+//								if(!bSimInfoMatch){continue;}
+//								String cacheKey = simInfoNode.getAttributes().getNamedItem("cacheKey").getNodeValue();
+//								System.out.println("context="+j+" sim="+k+" cacheKey"+cacheKey);
+//								Document varDoc = getDocument(new URL("http://localhost:"+findVCellApiServerPort()+"/"+"getdata/"+"?"+"cachekey"+"="+cacheKey));//get variable names
+//								docStr = documentToString(varDoc);
+//								System.out.println(docStr);
+//								NodeList varInfoNodeList = (NodeList)varDoc.getElementsByTagName("ijVarInfo");
+//								StringBuffer urlEncodedVarNames = new StringBuffer();
+//								for(int l=0;l<varInfoNodeList.getLength();l++){
+//									Node varInfoNode = varInfoNodeList.item(l);
+//									String currentVarName = varInfoNode.getAttributes().getNamedItem("name").getNodeValue();
+//									boolean bVarNameMatch = varNameSearch == null || regexVarNameSearch.matcher(currentVarName).matches();
+//									if(bVarNameMatch){
+//										urlEncodedVarNames.append("&varname="+URLEncoder.encode(currentVarName, Charset.forName("UTF-8").name()));
+//									}
 //								}
-								URL dataUrl = new URL("http://localhost:"+findVCellApiServerPort()+"/getdata/?cachekey="+cacheKey+urlEncodedVarNames.toString()+(timeIndexURL.length()==0?"":timeIndexURL.toString()+"&jobindex="+jobIndex/*(jobIndexURL.length()==0?"":jobIndexURL.toString())*/));
-								Document dataDoc = getDocument(dataUrl);
-								docStr = documentToString(dataDoc);
-								System.out.println(docStr);
-//								if(true) {return null;}
-								NodeList ijDataNodes = (NodeList)dataDoc.getElementsByTagName("ijData");
-								for(int l=0;l<ijDataNodes.getLength();l++){
-									String currentVarName = ijDataNodes.item(l).getAttributes().getNamedItem("varname").getNodeValue();
-									String currentTimePoint = ijDataNodes.item(l).getAttributes().getNamedItem("timepoint").getNodeValue();
-									String currentJobId = ijDataNodes.item(l).getAttributes().getNamedItem("jobindex").getNodeValue();
-									double[] data = getData(ijDataNodes.item(l));
-									BasicStackDimensions stackDims = getDimensions(ijDataNodes.item(l));
-									long[] xyzDims = new long[] {stackDims.xsize,stackDims.ysize,stackDims.zsize};
-									searchedData.put(currentModel, currentContext, currentSimName, currentVarName, data,xyzDims,Double.parseDouble(currentTimePoint),Integer.parseInt(currentJobId));
-								}
-							}
-						}
-					}
-				}
-			}
-		}
-		return searchedData;
-	}
-	public static double[] getData(Node ijDataNode) throws Exception{
+//								StringBuffer timeIndexURL = new StringBuffer();
+//								for (int l = 0; timeIndexes != null && l < timeIndexes.length; l++) {
+//									timeIndexURL.append("&timeindex="+timeIndexes[l]);
+//								}
+////								StringBuffer jobIndexURL = new StringBuffer();
+////								for (int l = 0; timeIndexes != null && l < timeIndexes.length; l++) {
+////									jobIndexURL.append("&jobIndex="+jobIndexes[l]);
+////								}
+//								URL dataUrl = new URL("http://localhost:"+findVCellApiServerPort()+"/getdata/?cachekey="+cacheKey+urlEncodedVarNames.toString()+(timeIndexURL.length()==0?"":timeIndexURL.toString()+"&jobindex="+jobIndex/*(jobIndexURL.length()==0?"":jobIndexURL.toString())*/));
+//								Document dataDoc = getDocument(dataUrl);
+//								docStr = documentToString(dataDoc);
+//								System.out.println(docStr);
+////								if(true) {return null;}
+//								NodeList ijDataNodes = (NodeList)dataDoc.getElementsByTagName("ijData");
+//								for(int l=0;l<ijDataNodes.getLength();l++){
+//									String currentVarName = ijDataNodes.item(l).getAttributes().getNamedItem("varname").getNodeValue();
+//									String currentTimePoint = ijDataNodes.item(l).getAttributes().getNamedItem("timepoint").getNodeValue();
+//									String currentJobId = ijDataNodes.item(l).getAttributes().getNamedItem("jobindex").getNodeValue();
+//									double[] data = getData(ijDataNodes.item(l));
+//									BasicStackDimensions stackDims = getDimensions(ijDataNodes.item(l));
+//									long[] xyzDims = new long[] {stackDims.xsize,stackDims.ysize,stackDims.zsize};
+//									searchedData.put(currentModel, currentContext, currentSimName, currentVarName, data,xyzDims,Double.parseDouble(currentTimePoint),Integer.parseInt(currentJobId));
+//								}
+//							}
+//						}
+//					}
+//				}
+//			}
+//		}
+//		return searchedData;
+//	}
+	private static double[] getData(Node ijDataNode) throws Exception{
 		NodeList childNodes = ijDataNode.getChildNodes();
 		for (int i = 0; i < childNodes.getLength(); i++) {
 			if(childNodes.item(i).getNodeName().equals("data")) {
@@ -427,9 +513,158 @@ public class VCellHelper extends AbstractService implements ImageJService
 		}
 		throw new Exception("data not found");
 	}
-	public static double[] getTimesFromVarInfos(Document doc) throws Exception{
+	public static class TimePointData{
+		private double[] timePointData;
+		private BasicStackDimensions basicStackDimensions;
+		public TimePointData(double[] timePointData, BasicStackDimensions basicStackDimensions) {
+			super();
+			this.timePointData = timePointData;
+			this.basicStackDimensions = basicStackDimensions;
+		}
+		public double[] getTimePointData() {
+			return timePointData;
+		}
+		public BasicStackDimensions getBasicStackDimensions() {
+			return basicStackDimensions;
+		}
+		
+	}
+	public TimePointData getTimePointData(String simulationDataCacheKey,String variableName,int[] timePointIndexes,int simulationJobIndex) throws Exception{
+		StringBuffer timeIndexParams = new StringBuffer();
+		if(timePointIndexes != null) {
+			for (int i = 0; i < timePointIndexes.length; i++) {
+				timeIndexParams.append("&"+"timeindex"+"="+timePointIndexes[i]);
+			}
+		}
+		URL dataUrl = new URL("http://localhost:"+findVCellApiServerPort()+"/"+"getdata"+"?"+"cachekey"+"="+simulationDataCacheKey+"&"+"varname"+"="+variableName+timeIndexParams.toString()+"&"+"jobid="+simulationJobIndex);
+    	Document doc = VCellHelper.getDocument(dataUrl);
+//		System.out.println(VCellHelper.documentToString(doc));
+		NodeList nodes = doc.getElementsByTagName("ijData");
+		BasicStackDimensions basicStackDimensions = VCellHelper.getDimensions(nodes.item(0));
+		if(nodes.getLength() != 1) {
+			throw new Exception("Expecting only 1 timepoint but got "+nodes.getLength());
+		}
+//		if(basicStackDimensions.xsize != xsize || basicStackDimensions.ysize != ysize || basicStackDimensions.zsize != zsize) {
+//			throw new Exception("One or more sim data xyz dimensions="+basicStackDimensions.xsize+","+basicStackDimensions.ysize+","+basicStackDimensions.zsize+" does not match expected xyz sizes="+xsize+","+ysize+","+zsize);
+//		}
+		double[] timePointData = VCellHelper.getData(nodes.item(0));
+		return new TimePointData(timePointData, basicStackDimensions);
+	}
+	
+	public String getSimulationDataCacheKey(String simulationJobId) throws Exception{
+    	// Get the data cachekey that corresponds to the simulation job that just ran (ijSolverStatus.simJobId)
+    	URL url = new URL("http://localhost:"+findVCellApiServerPort()+"/"+"getinfo"+"?"+"type"+"="+"quick");
+    	Document doc = VCellHelper.getDocument(url);
+//    	System.out.println(VCellHelper.documentToString(doc));
+    	NodeList nodes = doc.getElementsByTagName("simInfo");
+    	String cachekey = null;
+    	for(int i=0;i<nodes.getLength();i++){
+    		Node simIdNode = nodes.item(i).getAttributes().getNamedItem("simId");
+    		if(simIdNode != null && simIdNode.getNodeValue() != null && simulationJobId.startsWith(simIdNode.getNodeValue())){
+    			cachekey = nodes.item(i).getAttributes().getNamedItem("cacheKey").getNodeValue();
+    			break;
+    		}
+    	}
+    	if(cachekey == null){
+    		throw new Exception("Couldn't find cacheKey for simulationJobId="+simulationJobId);
+    	}
+    	return cachekey;
+	}
+	
+	@XmlRootElement
+	public static class IJVarInfos {
+		@XmlAttribute
+		private String simname;
+		@XmlAttribute
+		private Long cachekey;
+		@XmlAttribute
+		private Integer scancount;
+		@XmlElement
+		private String times;
+		@XmlElement
+		private ArrayList<IJVarInfo> ijVarInfo;
+		public IJVarInfos() {
+			
+		}
+		public IJVarInfos(ArrayList<IJVarInfo> ijVarInfos,String simname,Long cachekey,double[] times,Integer scancount) {
+			super();
+			this.simname = simname;
+			this.cachekey = cachekey;
+			this.ijVarInfo = ijVarInfos;
+			if(times != null && times.length > 0) {
+				StringBuffer sb =new StringBuffer();
+				for(int i=0;i<times.length;i++) {
+					sb.append((i>0?",":"")+i+"='"+times[i]+"'");
+				}
+				this.times=sb.toString();
+			}
+			this.scancount = scancount;
+		}
+		public String getSimname() {
+			return simname;
+		}
+		public Long getCachekey() {
+			return cachekey;
+		}
+		public Integer getScancount() {
+			return scancount;
+		}
+		public double[] getTimes() {
+			//String timeList = doc.getElementsByTagName("times").item(0).getTextContent();
+			return getTimesFromVarInfos(times);
+		}
+		public ArrayList<IJVarInfo> getIjVarInfo() {
+			return ijVarInfo;
+		}
+	}
+	public static class IJVarInfo{
+		@XmlAttribute
+		private String name;
+		@XmlAttribute
+		private String displayName;
+		@XmlAttribute
+		private String variableType;
+		@XmlAttribute
+		private String domain;
+		@XmlAttribute
+		private Boolean bFunction;
+		public IJVarInfo() {
+			
+		}
+		public IJVarInfo(String name, String displayName, String variableType, String domain, Boolean bFunction) {
+			this.name = name;
+			this.displayName = displayName;
+			this.variableType = variableType;
+			this.domain = domain;
+			this.bFunction = bFunction;
+		}
+		public String getName() {
+			return name;
+		}
+		public String getDisplayName() {
+			return displayName;
+		}
+		public String getVariableType() {
+			return variableType;
+		}
+		public String getDomain() {
+			return domain;
+		}
+		public Boolean getbFunction() {
+			return bFunction;
+		}
+	}
+
+	public IJVarInfos getSimulationInfo(String cacheKey) throws Exception{
+		URL url = new URL("http://localhost:"+findVCellApiServerPort()+"/"+"getdata/"+"?"+"cachekey"+"="+cacheKey);
+		HttpURLConnection con = (HttpURLConnection) url.openConnection();
+		return (IJVarInfos)unmarshallResponseFromConnection(con, jaxbContext);
+
+//		Document varDoc = getDocument(new URL("http://localhost:"+findVCellApiServerPort()+"/"+"getdata/"+"?"+"cachekey"+"="+cacheKey));//get variable names
+//		return getTimesFromVarInfos(varDoc);
+	}
+	private static double[] getTimesFromVarInfos(String timeList) {
 		//reads times from human readable 'times' xml tag: <times>0='0.0',1='0.2',...</times>
-		String timeList = doc.getElementsByTagName("times").item(0).getTextContent();
 		StringTokenizer st = new StringTokenizer(timeList, ",");
 		double[] doubles = new double[st.countTokens()];
 		while(st.hasMoreTokens()) {
@@ -688,9 +923,9 @@ public class VCellHelper extends AbstractService implements ImageJService
 		int responseCode = con.getResponseCode();
 //		System.out.println("Response Code : " + responseCode);
 		if(responseCode == HttpURLConnection.HTTP_OK) {
-			IJSolverStatus ijSolverStatus = (IJSolverStatus)jaxbContext.createUnmarshaller().unmarshal(con.getInputStream());
+			Object obj = jaxbContext.createUnmarshaller().unmarshal(con.getInputStream());
 			con.getInputStream().close();
-			return ijSolverStatus;
+			return obj;
 		}
 		throw new Exception(streamToStringWithClose(con.getErrorStream()));
 	}
