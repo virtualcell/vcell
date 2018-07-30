@@ -3,6 +3,7 @@ package org.vcell.imagej.helper;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 
+import org.vcell.imagej.helper.VCellHelper.IJVarInfo;
 import org.vcell.imagej.helper.VCellHelper.VCellModelSearchResults;
 
 public class SimpleDemo {
@@ -34,11 +35,16 @@ public class SimpleDemo {
 			// Get more specific information about our simulation using the cacheKey (times, parameter scan count, variable names,...)
 			// (the cacheKey was stored in the running VCell client during the previous search and is used to quickly lookup information)
 			VCellHelper.IJVarInfos ijVarInfos = vh.getSimulationInfo(simulationInfoCacheKey);
-			// Get the actual data (our simulation is non-spatial ODE)
-			VCellHelper.TimePointData timePointData = vh.getTimePointData(simulationInfoCacheKey, "Dimers", null,0);
-			// Check the length of the data == length of timepoints (should be true for non-spatial data)
-			if(timePointData.getTimePointData().length != ijVarInfos.getTimes().length) {
-				throw new Exception("Expecting datalength for variable "+timePointData.getTimePointData().length+" to match number of timepoints "+ijVarInfos.getTimes().length);
+			for (IJVarInfo ijVarInfo : ijVarInfos.getIjVarInfo()) {
+				if(ijVarInfo.getName().startsWith("Dimer")) {
+					// Get the actual data (our simulation is non-spatial ODE)
+					VCellHelper.TimePointData timePointData = vh.getTimePointData(simulationInfoCacheKey, ijVarInfo.getName(), null,0);
+					// Check the length of the data == length of timepoints (should be true for non-spatial data)
+					if(timePointData.getTimePointData().length != ijVarInfos.getTimes().length) {
+						throw new Exception("Expecting datalength for variable "+timePointData.getTimePointData().length+" to match number of timepoints "+ijVarInfos.getTimes().length);
+					}
+					System.out.println("name='"+ijVarInfo.getName()+"' type="+ijVarInfo.getVariableType());
+				}
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
