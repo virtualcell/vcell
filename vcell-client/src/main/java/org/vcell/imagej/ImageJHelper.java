@@ -1354,7 +1354,7 @@ public class ImageJHelper {
 		}
 		ijContextInfos.add(new IJContextInfo(contextName,mathType,geomDim,geomName, ijSimInfos));	
 	}
-	private static void populateDesktopIJModelInfos(IJDocType docType,ArrayList<KeyValue> openKeys,ArrayList<IJModelInfo> modelInfos) {
+	private static void populateDesktopIJModelInfos(IJDocType docType,ArrayList<KeyValue> openVCDocumentVersionKeys,ArrayList<IJModelInfo> modelInfos) {
 		if(VCellClientTest.getVCellClient() == null) {
 			return;
 		}
@@ -1365,7 +1365,7 @@ public class ImageJHelper {
 	    		VCDocument.VCDocumentType currDocType = documentWindowManager.getVCDocument().getDocumentType();
 	    		if(currDocType == docType.getVCDocType()) {
 		    		if(documentWindowManager.getVCDocument().getVersion() != null && documentWindowManager.getVCDocument().getVersion().getVersionKey() != null) {
-		    			openKeys.add(documentWindowManager.getVCDocument().getVersion().getVersionKey());
+		    			openVCDocumentVersionKeys.add(documentWindowManager.getVCDocument().getVersion().getVersionKey());
 		    		}else {//open but never saved
 		    			ArrayList<IJContextInfo> ijContextInfos = new ArrayList<>();
 		    			if(documentWindowManager instanceof BioModelWindowManager) {
@@ -1414,19 +1414,19 @@ public class ImageJHelper {
 	    	System.out.println(target+"\n"+baseRequest.getQueryString());
 	    	List<NameValuePair> params = getParamsFromRequest(request);
 	    	IJDocType ijDocType = null;
-	    	Boolean bOpen = null;
+	    	Boolean bOpenOnly = null;
 //	    	Long cacheKey = null;
 	    	for(NameValuePair nameValuePair:params) {
 	    		if(nameValuePair.getName().equals(IJListParams.type.name())) {
 	    			ijDocType = IJDocType.valueOf(nameValuePair.getValue());
 	    		}else if(nameValuePair.getName().equals(IJListParams.open.name())) {
-	    			bOpen = Boolean.parseBoolean(nameValuePair.getValue());
+	    			bOpenOnly = Boolean.parseBoolean(nameValuePair.getValue());
 	    		}
 //	    		else if(nameValuePair.getName().equals(IJListParams.cachekey.name())) {
 //	    			cacheKey = Long.valueOf(nameValuePair.getValue());
 //	    		}
 	    	}
-	    	if(ijDocType == null && bOpen == null/* && cacheKey == null*/) {
+	    	if(ijDocType == null && bOpenOnly == null/* && cacheKey == null*/) {
 	    		response.setContentType("text/html; charset=utf-8");
 	    		response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
 	    		response.getWriter().println("<h1>Expecting '"+GETINFO_PARMS+"' in request</h1>");
@@ -1437,11 +1437,9 @@ public class ImageJHelper {
 		        // Declare response status code
 		        response.setStatus(HttpServletResponse.SC_OK);
 		        
-		        ArrayList<KeyValue> openKeys = new ArrayList<>();		     
+		        ArrayList<KeyValue> openVCDocumentVersionKeys = new ArrayList<>();		     
 		        ArrayList<IJModelInfo> modelInfos = new ArrayList<>();
-		        if(bOpen == null || bOpen) {
-		        	populateDesktopIJModelInfos(ijDocType,openKeys, modelInfos);
-		        }
+	        	populateDesktopIJModelInfos(ijDocType,openVCDocumentVersionKeys, modelInfos);
 		        
 		        if(ijDocType == null || ijDocType == IJDocType.quick) {
 			        ArrayList<File> dirs = new ArrayList<>();
@@ -1512,7 +1510,7 @@ public class ImageJHelper {
 						    			}
 						    		}
 								}
-					    		if(bOpen == null || bOpen.booleanValue() == bOpenOnDesktop){
+					    		if(bOpenOnly == null || bOpenOnly.booleanValue() == false || (bOpenOnly.booleanValue() == true && bOpenOnDesktop == true)){
 									ArrayList<IJContextInfo> contInfos = new ArrayList<>();
 									ArrayList<IJSimInfo> ijsimfos= new ArrayList<>();
 									ijsimfos.add(new IJSimInfo(bOpenOnDesktop, false,Simulation.createSimulationID(new KeyValue(quickrunKey)), parentSimName));
@@ -1530,7 +1528,7 @@ public class ImageJHelper {
 			        if(ijDocType == null || ijDocType == IJDocType.bm) {
 				        BioModelInfo[] bioModelInfos = requestManager.getDocumentManager().getBioModelInfos();
 				        for(BioModelInfo bioModelInfo:bioModelInfos) {
-				        	if(bOpen != null && bOpen && !openKeys.contains(bioModelInfo.getVersion().getVersionKey())) {
+				        	if((bOpenOnly != null && bOpenOnly.booleanValue()) && !openVCDocumentVersionKeys.contains(bioModelInfo.getVersion().getVersionKey())) {
 				        		continue;
 				        	}
 					        ArrayList<IJContextInfo> ijContextInfos = new ArrayList<>();
@@ -1549,14 +1547,14 @@ public class ImageJHelper {
 				        			}
 				        		}
 				        	}
-				        	modelInfos.add(new IJModelInfo(bioModelInfo.getVersion().getName(), bioModelInfo.getVersion().getDate(), IJDocType.bm, openKeys.contains(bioModelInfo.getVersion().getVersionKey()),bioModelInfo.getVersion().getOwner().getName(),bioModelInfo.getVersion().getVersionKey(), ijContextInfos));
+				        	modelInfos.add(new IJModelInfo(bioModelInfo.getVersion().getName(), bioModelInfo.getVersion().getDate(), IJDocType.bm, openVCDocumentVersionKeys.contains(bioModelInfo.getVersion().getVersionKey()),bioModelInfo.getVersion().getOwner().getName(),bioModelInfo.getVersion().getVersionKey(), ijContextInfos));
 				        }
 			        }
 			        
 			        if(ijDocType == null || ijDocType == IJDocType.mm) {
 				        MathModelInfo[] mathModelInfos = requestManager.getDocumentManager().getMathModelInfos();
 				        for(MathModelInfo mathModelInfo:mathModelInfos) {
-				        	if(bOpen != null && bOpen && !openKeys.contains(mathModelInfo.getVersion().getVersionKey())) {
+				        	if((bOpenOnly != null && bOpenOnly.booleanValue()) && !openVCDocumentVersionKeys.contains(mathModelInfo.getVersion().getVersionKey())) {
 				        		continue;
 				        	}
 		    				ArrayList<IJSimInfo> ijSimInfos = new ArrayList<>();
@@ -1568,7 +1566,7 @@ public class ImageJHelper {
 					        ArrayList<IJContextInfo> ijContextInfos = new ArrayList<>();
 							IJContextInfo ijContextInfo = new IJContextInfo(null,mathModelInfo.getMathModelChildSummary().getModelType(),mathModelInfo.getMathModelChildSummary().getGeometryDimension(),mathModelInfo.getMathModelChildSummary().getGeometryName(),ijSimInfos);
 							ijContextInfos.add(ijContextInfo);
-				        	modelInfos.add(new IJModelInfo(mathModelInfo.getVersion().getName(), mathModelInfo.getVersion().getDate(), IJDocType.mm, openKeys.contains(mathModelInfo.getVersion().getVersionKey()), mathModelInfo.getVersion().getOwner().getName(),mathModelInfo.getVersion().getVersionKey(),ijContextInfos));
+				        	modelInfos.add(new IJModelInfo(mathModelInfo.getVersion().getName(), mathModelInfo.getVersion().getDate(), IJDocType.mm, openVCDocumentVersionKeys.contains(mathModelInfo.getVersion().getVersionKey()), mathModelInfo.getVersion().getOwner().getName(),mathModelInfo.getVersion().getVersionKey(),ijContextInfos));
 				        }
 			        }
 		        }
