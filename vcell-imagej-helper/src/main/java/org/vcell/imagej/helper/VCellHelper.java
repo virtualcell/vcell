@@ -324,6 +324,9 @@ public class VCellHelper extends AbstractService implements ImageJService
 		public VCellModelSearch(ModelType modelType, String userId, String modelName, String applicationName,
 				String simulationName, Integer geometryDimension, String mathType) {
 			super();
+			if(modelType==ModelType.mm && applicationName != null) {
+				throw new IllegalArgumentException("MathModel types should have 'null' applicationName");
+			}
 			this.modelType = modelType;
 			this.userId = userId;
 			this.modelName = modelName;
@@ -371,9 +374,9 @@ public class VCellHelper extends AbstractService implements ImageJService
 		}
 	}
 	public static enum ModelType {bm,mm,quick};
-	public ArrayList<VCellModelSearchResults> getSearchedModelSimCacheKey(Boolean isOpen,VCellModelSearch vcCellModelSearch,VCellModelVersionTimeRange vcellModelVersionTimeRange) throws Exception{
+	public ArrayList<VCellModelSearchResults> getSearchedModelSimCacheKey(Boolean bOpenOnly,VCellModelSearch vcCellModelSearch,VCellModelVersionTimeRange vcellModelVersionTimeRange) throws Exception{
 		ArrayList<VCellModelSearchResults> modelSimCacheKeys = new ArrayList<>();
-		URL url = new URL("http://localhost:"+findVCellApiServerPort()+"/"+"getinfo/"+"?"+(isOpen == null?"":"open="+isOpen+"&")+"type"+"="+vcCellModelSearch.getModelType().name());
+		URL url = new URL("http://localhost:"+findVCellApiServerPort()+"/"+"getinfo/"+"?"+(bOpenOnly == null?"":"open="+bOpenOnly+"&")+"type"+"="+vcCellModelSearch.getModelType().name());
 		Pattern regexModelNameSearch = (vcCellModelSearch.getModelName()==null?null:Pattern.compile(("\\Q" + vcCellModelSearch.getModelName() + "\\E").replace("*", "\\E.*\\Q")));
 		Pattern regexContextNameSearch = (vcCellModelSearch.getApplicationName()==null?null:Pattern.compile(("\\Q" + vcCellModelSearch.getApplicationName() + "\\E").replace("*", "\\E.*\\Q")));
 		Pattern regexSimNameSearch = (vcCellModelSearch.getSimulationName()==null?null:Pattern.compile(("\\Q" + vcCellModelSearch.getSimulationName() + "\\E").replace("*", "\\E.*\\Q")));
@@ -396,8 +399,8 @@ public class VCellHelper extends AbstractService implements ImageJService
 				for(int j=0;j<modelChildren.getLength();j++){
 					Node modelContext = modelChildren.item(j);
 					if(modelContext.getNodeName().equals("context")/* && modelChild.getAttributes().getNamedItem("name").getNodeValue().endsWith("NFSim")*/){//get applications (simulationContexts) with names ending in "NFSim"
-						String currentContext = modelContext.getAttributes().getNamedItem("name").getNodeValue();
-						boolean bContextMatch = vcCellModelSearch.getApplicationName() == null || regexContextNameSearch.matcher(currentContext).matches();
+						String currentContext = (modelType == ModelType.bm?modelContext.getAttributes().getNamedItem("name").getNodeValue():null);
+						boolean bContextMatch = modelType == ModelType.mm || vcCellModelSearch.getApplicationName() == null || regexContextNameSearch.matcher(currentContext).matches();
 						boolean bgeomDim = (vcCellModelSearch.getGeometryDimension() == null?true:vcCellModelSearch.getGeometryDimension() == Integer.parseInt(modelContext.getAttributes().getNamedItem("geomDim").getNodeValue()));
 						boolean bMathType = (vcCellModelSearch.getMathType() == null?true:vcCellModelSearch.getMathType() == modelContext.getAttributes().getNamedItem("mathType").getNodeValue());
 						if(!bContextMatch || !bgeomDim || !bMathType) {continue;}
@@ -875,11 +878,15 @@ public class VCellHelper extends AbstractService implements ImageJService
 	public IJSolverStatus startVCellSolver(long cachekey,IJGeom ijGeom,HashMap<String, String> simulationParameterOverrides,HashMap<String,String> speciesContextInitialConditionsOverrides,Double endTime) throws Exception{
 		StringBuffer overridesQueryParameters = new StringBuffer();
 		overridesQueryParameters.append("cachekey="+cachekey);
-		for(String simParameterdName:simulationParameterOverrides.keySet()) {
-			overridesQueryParameters.append((overridesQueryParameters.length()>0?"&":"")+simParameterdName+"="+URLEncoder.encode(simulationParameterOverrides.get(simParameterdName)));
+		if(simulationParameterOverrides != null) {
+			for(String simParameterdName:simulationParameterOverrides.keySet()) {
+				overridesQueryParameters.append((overridesQueryParameters.length()>0?"&":"")+simParameterdName+"="+URLEncoder.encode(simulationParameterOverrides.get(simParameterdName)));
+			}
 		}
-		for(String speciesContextName:speciesContextInitialConditionsOverrides.keySet()) {
-			overridesQueryParameters.append((overridesQueryParameters.length()>0?"&":"")+speciesContextName+"="+URLEncoder.encode(speciesContextInitialConditionsOverrides.get(speciesContextName)));
+		if(speciesContextInitialConditionsOverrides != null) {
+			for(String speciesContextName:speciesContextInitialConditionsOverrides.keySet()) {
+				overridesQueryParameters.append((overridesQueryParameters.length()>0?"&":"")+speciesContextName+"="+URLEncoder.encode(speciesContextInitialConditionsOverrides.get(speciesContextName)));
+			}
 		}
 		if(endTime != null) {
 			overridesQueryParameters.append((overridesQueryParameters.length()>0?"&":"")+"newSimEndTime"+"="+endTime);
