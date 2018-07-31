@@ -1,4 +1,4 @@
-## start with standard UCH Centos 7.3 distribution and run update (to Centos 7.4)
+## Start with standard UCH Centos 7.3 distribution, login as administrative (frmadmin,jsadmin) and run update (to Centos 7.4)
 
 ```bash
 sudo yum -y update 
@@ -40,7 +40,7 @@ sudo pip install requests
 sudo pip install tabulate
 ```
 
-install jq
+install jq (utility for json processing)
 
 ```bash
 sudo yum install -y jq
@@ -48,7 +48,7 @@ sudo yum install -y jq
 
 ## install docker [on centos](https://docs.docker.com/install/linux/docker-ce/centos/#install-docker-ce-1)
 
-set up yum docker stable repository (first time only)
+set up yum by adding yum repo (docker stable repository) first time only
 
 ```bash
 sudo yum install -y yum-utils device-mapper-persistent-data lvm2
@@ -100,25 +100,42 @@ vcell   ALL=(ALL)       NOPASSWD:/usr/bin/docker
 vcell   ALL=(ALL)       NOPASSWD:/usr/local/bin/singularity
 ```
 
-copy vcell secrets to local protected directory (will be replaced with proper secret management later ... e.g. Vault)
+### All subsequent operations should be done as user 'vcell' which now has sudo privilege
+
+**Login** as as user vcell to one manager node choose (vcellapi,vcell-node{1,2,3,4}), create secrets archive
 
 ```bash
+ssh vcell@manager-node
 manager-node>  cd /usr/local/deploy
 manager-node>  tar czf /tmp/vcellsecrets.tgz .
+manager-node> exit
+```
 
-new-worker-node> 
-scp manager-node:/tmp/vcellsecrets.tgz /tmp
+**Login** to your new node,  
+**copy** vcell secrets from previous manager node to local protected directory (will be replaced with proper secret management later ... e.g. Vault),  
+
+```bash
+su - vcell
+scp {the node where you archived secrets}:/tmp/vcellsecrets.tgz /tmp
 sudo mkdir -p /usr/local/deploy
 sudo chown vcell /usr/local/deploy
 chmod 700 /usr/local/deploy
 cd /usr/local/deploy
 tar xzf /tmp/vcellsecrets.tgz .
 rm /tmp/vcellsecrets.tgz
-
-manager-node> rm /tmp/vcellsecrets.tgz
 ```
 
-install self-signed cert as trusted CA trusting self signed certificate on Macos (https://github.com/docker/distribution/issues/2295), and Linux/Windows (https://docs.docker.com/registry/insecure/#failing).  For example, to trust the self-signed certificate on UCHC server nodes using Centos 7.2:
+**Login** previous manager node, remove tmp secrets archive
+
+```bash
+ssh vcell@manager-node
+manager-node> rm /tmp/vcellsecrets.tgz
+manager-node> exit
+```
+
+install self-signed cert as trusted CA trusting self signed certificate on Macos (https://github.com/docker/distribution/issues/2295), and Linux/Windows (https://docs.docker.com/registry/insecure/#failing).  
+For our internal Docker Registry server so we can use https because singularity requires  
+For example, to trust the self-signed certificate on UCHC server nodes using Centos 7.2:
 
 ```bash
 sudo scp vcell@vcell-docker.cam.uchc.edu:/usr/local/deploy/registry_certs/domain.cert /etc/pki/ca-trust/source/anchors/vcell-docker.cam.uchc.edu.crt
@@ -127,44 +144,12 @@ sudo service docker stop
 sudo service docker start
 ```
 
-join the new node to the swarm as a worker (check that all docker swarm nodes are accessible from DMZ machines through the firewall)
-
-```bash
-manager-node>  sudo docker swarm join-token worker
-To add a worker to this swarm, run the following command:
-
-    docker swarm join --token SWMTKN-1-.... xxx.xxx.xxx.xxx:pppp
-
-new-worker-node>  sudo docker swarm join --token SWMTKN-1-.... xxx.xxx.xxx.xxx:pppp
-```
-
-set as an "internal node" to schedule "vcell-master it needs a non-root-squashed share".  
-
-```bash
-sudo docker node update --label-add zone=INTERNAL `sudo docker node ls -q`
-
-# 155.37.248.131:/vcellroot mounted as /opt/vcelldata 
-#sudo su -
-#mkdir /opt/vcelldata
-#echo "/opt/vcelldata -fstype=nfs,tcp,hard,intr,noatime,nfsvers=3 cfs05:/vcellroot" > /etc/auto.docker
-contents of /etc/auto.master from vcell-node1
-
-/-      auto.default    --ghost
-/-      auto.tgc        --ghost
-/share/apps auto.vcellapps --ghost
-/- auto.docker  --ghost
-
-#systemctl restart autofs
-```
-
 make sure ganglia is set properly (send_metadata_interval = 60)
 
 ```bash
 sudo vi /etc/ganglia/gmond.conf
 sudo systemctl restart gmond
 ```
-
-
 
 
 ​

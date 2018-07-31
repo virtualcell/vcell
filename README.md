@@ -51,6 +51,8 @@ VCell Server Installation General Requirements
 
 1) VCell Server Node configuration [detailed instructions](docker/swarm/README_DockerSwarmConfig.md):
 
+1a) Create new Docker swarm with node or Add node to existing Docker swarm [detailed instructions](docker/swarm/README_NodeAndSwarm.md):
+
 2) Building VCell Client/Server Software [detailed instructions](docker/build/README.md)
 
 3) Deploying VCell Client/Server software [detailed instructions](docker/swarm/README.md)
