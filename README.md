@@ -1,4 +1,7 @@
 # vcell - a modeling and simulation framework for computational cell biology
+<!--
+The vcell documentation in Mardown format (*.md) is edited in eclipse using the WikiText plugin
+-->
 
 [![Join the chat at https://gitter.im/virtualcell/vcell](https://badges.gitter.im/virtualcell/vcell.svg)](https://gitter.im/virtualcell/vcell?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
@@ -23,21 +26,22 @@ for cluster computing and shared database.
 This VCell github project includes all Java/Python source code required to build both the VCell client and the VCell Server.  
 The simulation solver source code is available as a separate project (http://github.com/jcschaff/vcell-solvers).
 
-### Building VCell Client as a standalone tool
+### Building and Running VCell Client as a standalone tool
 Requirements:  Git, Maven, and Java JDK 1.8 or later
 
 ```bash
+# to build vcell client
 git clone https://github.com/virtualcell/vcell
 cd vcell
 mvn clean install dependency:copy-dependencies
+# to run vcell client quickly
 ./vcell.sh
 ```
 
-#### scripts to run the standalone client will be available soon. ####
+## Building and Running VCell Client/Server 
 
-### Building VCell Client/Server
-Requirements:
-  * Linux or Macos
+VCell Server Installation General Requirements
+  * Linux
   * Git, Maven, and Java JDK 1.8 or later to build vcell-client and vcell-server
   * Docker (swarm mode)
   * Singularity (Linux) or Singularity in a Virtual Machine (Macos needs VirtualBox and Vagrant)
@@ -45,15 +49,15 @@ Requirements:
   * SLURM service for batch scheduling
   * Obtain an Install4J license if creating client installers
 
-```bash
-$ git clone https://github.com/jcschaff/vcell
-$ cd vcell/docker
-$ ./build.sh <args>
-$ ./serverconfig.sh <args>
-$ ./deploy.sh <args>
-# see README in vcell/docker
-```
-serverconfig.sh file must be customized for your configuration (see vcell/docker/serverconfig-uch.sh).  
+1) VCell Server Node configuration [detailed instructions](docker/swarm/README_DockerSwarmConfig.md):
+
+2) Building VCell Client/Server Software [detailed instructions](docker/build/README.md)
+
+3) Deploying VCell Client/Server software [detailed instructions](docker/swarm/README.md)
+
+4) Server Administration [detailed instructions](docker/swarm/README_admin.md) (.e.g restarting VCell services)
+
+serverconfig.sh file must be customized for your configuration (see vcell/docker/swarm/serverconfig-uch.sh).  
 
 ## License
 Virtual Cell software is licensed under the MIT open source license.
