@@ -31,13 +31,13 @@ public class MigrateDbManager {
 			String driverName_Oracle = "oracle.jdbc.driver.OracleDriver";
 			String connectionURL_Oracle = "jdbc:oracle:thin:@VCELL-DB.cam.uchc.edu:1521/vcelldborcl.cam.uchc.edu";
 			String userid_Oracle = "vcell";
-			String password_Oracle = "cbittech";
+			String password_Oracle = null;
 			conFactory_Oracle = DatabaseService.getInstance().createConnectionFactory(driverName_Oracle,connectionURL_Oracle,userid_Oracle,password_Oracle);
 			
 			String driverName_Postgres = "org.postgresql.Driver";
 			String connectionURL_Postgres = "jdbc:postgresql://localhost:5432/schaff";
 			String userid_Postgres = "schaff";
-			String password_Postgres = "cbittech";
+			String password_Postgres = null;
 			conFactory_Postgres = DatabaseService.getInstance().createConnectionFactory(driverName_Postgres,connectionURL_Postgres,userid_Postgres,password_Postgres);
 			
 			int retryCount = 0;

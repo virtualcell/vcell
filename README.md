@@ -59,6 +59,8 @@ VCell Server Installation General Requirements
 
 4) Server Administration [detailed instructions](docker/swarm/README_admin.md) (.e.g restarting VCell services)
 
+5) Debugging [detailed instructions](README_Debugging.md) (.e.g debug vcell client/server)
+
 serverconfig.sh file must be customized for your configuration (see vcell/docker/swarm/serverconfig-uch.sh).  
 
 ## License

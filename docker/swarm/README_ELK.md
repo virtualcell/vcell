@@ -1,6 +1,7 @@
 # install and configure the ELK stack on a single machine (without Docker).
 
-## install ElasticSearch on elk.cam.uchc.edu, based on https://www.elastic.co/guide/en/elasticsearch/reference/current/rpm.html.  to install using Docker, follow these instructions instead: https://www.elastic.co/guide/en/elasticsearch/reference/current/docker.html.
+## install ElasticSearch on elk.cam.uchc.edu, based on https://www.elastic.co/guide/en/elasticsearch/reference/current/rpm.html.  
+(optional: to install using Docker, follow these instructions instead: https://www.elastic.co/guide/en/elasticsearch/reference/current/docker.html.)  
 
 ### check os and java versions (elk.cam.uchc.edu already had Java 1.8.0_141 and CentOS centos-release-7-3.1611.el7.centos.x86_64)
 

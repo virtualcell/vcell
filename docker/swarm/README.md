@@ -1,12 +1,5 @@
 # deploy vcell using docker swarm mode.
 
-# Table of Contents
-1. [Cluster Configuration](#cluster_configuration)
-2. [Useful Docker Commands](#useful_docker_commands)
-3. [Deploy Configuration](#deploy_configuration)
-    1. [VCell Client JREs](#vcell_client_jres)
-
-
 ## cluster configuration (<vcellroot>/docker)
 
 1) shared folder for simulation results, singularity images, SLURM submit scripts and logs (TMPDIR=/state/partition1 currently hard-coded for SLURM nodes).
