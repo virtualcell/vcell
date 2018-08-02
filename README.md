@@ -49,17 +49,14 @@ VCell Server Installation General Requirements
   * SLURM service for batch scheduling
   * Obtain an Install4J license if creating client installers
 
-1) VCell Server Node configuration [detailed instructions](docker/swarm/README_DockerSwarmConfig.md):
-
-1a) Create new Docker swarm with node or Add node to existing Docker swarm [detailed instructions](docker/swarm/README_NodeAndSwarm.md):
-
-2) Building VCell Client/Server Software [detailed instructions](docker/build/README.md)
-
-3) Deploying VCell Client/Server software [detailed instructions](docker/swarm/README.md)
-
-4) Server Administration [detailed instructions](docker/swarm/README_admin.md) (.e.g restarting VCell services)
-
-5) Debugging [detailed instructions](README_Debugging.md) (.e.g debug vcell client/server)
+0) Understanding VCell services [detailed instructions](docker/README_serviceInfo.md)  
+1) NEW VCell Server Node configuration [detailed instructions](docker/swarm/README_DockerSwarmConfig.md)  
+-----1a) Create new Docker swarm with node or Add node to existing Docker swarm [detailed instructions](docker/swarm/README_NodeAndSwarm.md)  
+-----1b) Finish NEW VCell Server Node configuration [detailed instructions](docker/swarm/README_new_node_final_steps.md)  
+2) Building VCell Client/Server Software [detailed instructions](docker/build/README.md)  
+3) Deploying VCell Client/Server software [detailed instructions](docker/swarm/README.md)  
+4) Server Administration [detailed instructions](docker/swarm/README_admin.md) (.e.g restarting VCell services)  
+5) Debugging [detailed instructions](README_Debugging.md) (.e.g debug vcell client/server)  
 
 serverconfig.sh file must be customized for your configuration (see vcell/docker/swarm/serverconfig-uch.sh).  
 

@@ -2,16 +2,16 @@
 
 ## builds the Docker images (1-9 below) and pushes them into a Docker registry (e.g. namespace = "vcell-docker.cam.uchc.edu:5000") with the image tag derived from the Git commit hash at build time (e.g. tag = "392af4d").  The vcell-batch Singularity image (item 10 below) is built from the vcell-batch Docker image for use within a HPC environment.
 
-1) vcell-api         => docker image in registry    (api)
-2) vcell-db          => docker image in registry    (db)
-3) vcell-sched       => docker image in registry    (sched)
-4) vcell-submit      => docker image in registry    (submit)
-5) vcell-mongodb     => docker image in regsitry    (mongodb)
-6) vcell-activemqint => docker image in registry    (activemqint)
-7) vcell-activemqsim => docker image in registry    (activemqsim)
-8) vcell-clientgen   => docker image in registry    (generates Install4J installers during deployment)
-9) vcell-batch       => docker image in registry    (for batch processing, includes java code and Linux solver executables)
-10) vcell-batch.img  => singularity image in ./singularity-vm/   (built from vcell-batch docker image)
+1) vcell-api         => docker image in registry    (api)  
+2) vcell-db          => docker image in registry    (db)  
+3) vcell-sched       => docker image in registry    (sched)  
+4) vcell-submit      => docker image in registry    (submit)  
+5) vcell-mongodb     => docker image in regsitry    (mongodb)  
+6) vcell-activemqint => docker image in registry    (activemqint)  
+7) vcell-activemqsim => docker image in registry    (activemqsim)  
+8) vcell-clientgen   => docker image in registry    (generates Install4J installers during deployment)  
+9) vcell-batch       => docker image in registry    (for batch processing, includes java code and Linux solver executables)  
+10) vcell-batch.img  => singularity image in ./singularity-vm/   (built from vcell-batch docker image)  
 
 ## build Singularity image for Linux solvers
 

@@ -1,16 +1,6 @@
 # deploy vcell using docker swarm mode.
 
-## cluster configuration (<vcellroot>/docker)
 
-1) shared folder for simulation results, singularity images, SLURM submit scripts and logs (TMPDIR=/state/partition1 currently hard-coded for SLURM nodes).
-2) set up docker swarm mode
-
-```bash
-docker swarm init
-docker swarm 
-docker node update --label-add zone=INTERNAL `docker node ls -q`
-sudo sudo sysctl -w vm.max_map_count=262144 ### for elasticsearch (ELK stack)
-```
 
 3) deploy a vcell production stack (named "local") on a single machine Docker swarm mode
 

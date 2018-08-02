@@ -88,7 +88,7 @@ install squashfs-tools (if not already present)
 sudo yum install -y squashfs-tools-4.3-0.21.gitaae0aff4.el7.x86_64
 ```
 
-### final configuration
+### Make vcell sudoer
 give vcell user sudo permission to machine, and passwordless sudo for docker and singularity
 
 ```bash
@@ -100,57 +100,33 @@ vcell   ALL=(ALL)       NOPASSWD:/usr/bin/docker
 vcell   ALL=(ALL)       NOPASSWD:/usr/local/bin/singularity
 ```
 
-### All subsequent operations should be done as user 'vcell' which now has sudo privilege
 
-**Login** as as user vcell to one manager node choose (vcellapi,vcell-node{1,2,3,4}), create secrets archive
 
-```bash
-ssh vcell@manager-node
-manager-node>  cd /usr/local/deploy
-manager-node>  tar czf /tmp/vcellsecrets.tgz .
-manager-node> exit
-```
-
-**Login** to your new node,  
-**copy** vcell secrets from previous manager node to local protected directory (will be replaced with proper secret management later ... e.g. Vault),  
+## Must add non-root-squashed share (that ultimately points to same physical place as /share/apps/vcell3) to machines that are non-DMZ (behind firewall)
+**Do this for vcell-node{1,2,3,4}, NOT vcellapi or vcellapi-beta**  
+**(machines configured to be internal are labeled when joined to swarm by adding node label 'zone=INTERNAL')** [see node label instructions](README_NodeAndSwarm.md)  
 
 ```bash
-su - vcell
-scp {the node where you archived secrets}:/tmp/vcellsecrets.tgz /tmp
-sudo mkdir -p /usr/local/deploy
-sudo chown vcell /usr/local/deploy
-chmod 700 /usr/local/deploy
-cd /usr/local/deploy
-tar xzf /tmp/vcellsecrets.tgz .
-rm /tmp/vcellsecrets.tgz
+
+# 155.37.248.131:/vcellroot mounted as /opt/vcelldata 
+sudo su -
+mkdir /opt/vcelldata
+echo "/opt/vcelldata -fstype=nfs,tcp,hard,intr,noatime,nfsvers=3 cfs05:/vcellroot" > /etc/auto.docker
+#Make sure the following 2 lines are present in /etc/auto.master
+#/share/apps auto.vcellapps --ghost
+#/- auto.docker  --ghost
+sudo nano /etc/auto.master
+#make nfs automounter re-read configs
+systemctl restart autofs
 ```
 
-**Login** previous manager node, remove tmp secrets archive
+​**Contact Terry,Sophon,Ion to add the current node ip address to the list of allowed nfs clients (cfs05/vcellroot)**  
+**Do this for vcell-node{1,2,3,4}, NOT vcellapi or vcellapi-beta**  
 
-```bash
-ssh vcell@manager-node
-manager-node> rm /tmp/vcellsecrets.tgz
-manager-node> exit
-```
 
-install self-signed cert as trusted CA trusting self signed certificate on Macos (https://github.com/docker/distribution/issues/2295), and Linux/Windows (https://docs.docker.com/registry/insecure/#failing).  
-For our internal Docker Registry server so we can use https because singularity requires  
-For example, to trust the self-signed certificate on UCHC server nodes using Centos 7.2:
-
-```bash
-sudo scp vcell@vcell-docker.cam.uchc.edu:/usr/local/deploy/registry_certs/domain.cert /etc/pki/ca-trust/source/anchors/vcell-docker.cam.uchc.edu.crt
-sudo update-ca-trust
-sudo service docker stop
-sudo service docker start
-```
-
-make sure ganglia is set properly (send_metadata_interval = 60)
+##make sure ganglia is set properly (send\_metadata\_interval = 60)
 
 ```bash
 sudo vi /etc/ganglia/gmond.conf
 sudo systemctl restart gmond
 ```
-
-
-​
-

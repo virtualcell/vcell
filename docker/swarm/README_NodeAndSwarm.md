@@ -1,43 +1,39 @@
-##Pre-swarm -- Firewall information, General requirement for swarms
-TBD
 
-
-##A. JOIN the new node to the swarm as a worker (check that all docker swarm nodes are accessible from DMZ machines through the firewall)
+## 1) CREATE and JOIN a new swarm cluster --OR-- JOIN an existing swarm cluster
+**Do 1a or 1b, not both**  
+**1a. CREATE a new swarm using a new node that is not already part of a swarm (node automatically JOINS new swarm as a manager)**  
 
 ```bash
-ssh vcell@manager-node
-#Generate new node token to join existing swarm
-manager-node>  sudo docker swarm join-token worker
-# Produces a swarm command as output, example below
-To add a worker to this swarm, run the following command:
-    docker swarm join --token SWMTKN-1-.... xxx.xxx.xxx.xxx:pppp
+docker swarm init
+```
 
-exit
+**1b. JOIN a node to the swarm as a {worker or manager}**  
+**(check that all docker swarm nodes are accessible from DMZ machines through the firewall)**  
+
+```bash
+ssh vcell@{manager-node}
+#Generate new node token to join existing swarm
+sudo docker swarm join-token {worker,manager}
+# Produces a swarm command as output, example below
+--To add a worker to this swarm, run the following command:
+----docker swarm join --token SWMTKN-1-.... xxx.xxx.xxx.xxx:pppp
+
+ssh vcell@{the node that you're going to join to swarm}
 #Paste previous command output as command for new node to join existing cluster
-new-worker-node>  sudo docker swarm join --token SWMTKN-1-.... xxx.xxx.xxx.xxx:pppp
+e.g. sudo docker swarm join --token SWMTKN-1-.... xxx.xxx.xxx.xxx:pppp
 ```
 
 
-##B. CREATE a new swarm with a new node
-TBD
-
-
-##Post-swarm -- Firewall information, General requirement for swarms
-set as an "internal node" to schedule "vcell-master it needs a non-root-squashed share".  
-
+## 2) Important to set flag (zone=INTERNAL) on swarm node (manager node) that indicates which side of firewall a container is allowed to be started  
+**{vcellapi,vcellapi-beta} are not INTERNAL and MUST NOT HAVE this label**   
+**{vcell-node1,vcell-node2,vcell-node3,vcell-node4} MUST HAVE the following label set**  
+  
 ```bash
-sudo docker node update --label-add zone=INTERNAL `sudo docker node ls -q`
+sudo docker node ls
+--NODE_ID                       HOSTNAME                   STATUS              AVAILABILITY        MANAGER STATUS      ENGINE VERSION
+--0x290pfnvtq8gf9a8uzlih8jb *   vcell-node1.cam.uchc.edu   Ready               Active              Reachable           18.03.0-ce
+--pznhvvcqu89xzao84jud7ci9i     vcell-node2.cam.uchc.edu   Ready               Active              Leader              18.03.0-ce
+--y6bshmo0nrkm6skwk1d5k63a0     vcellapi.cam.uchc.edu      Ready               Active              Reachable           18.03.0-ce
 
-# 155.37.248.131:/vcellroot mounted as /opt/vcelldata 
-#sudo su -
-#mkdir /opt/vcelldata
-#echo "/opt/vcelldata -fstype=nfs,tcp,hard,intr,noatime,nfsvers=3 cfs05:/vcellroot" > /etc/auto.docker
-contents of /etc/auto.master from vcell-node1
-
-/-      auto.default    --ghost
-/-      auto.tgc        --ghost
-/share/apps auto.vcellapps --ghost
-/- auto.docker  --ghost
-
-#systemctl restart autofs
+sudo docker node update --label-add zone=INTERNAL {NODE_ID of created/joined node, * is current node}
 ```
