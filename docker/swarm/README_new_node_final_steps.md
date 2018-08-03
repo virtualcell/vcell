@@ -4,9 +4,9 @@
 
 ```bash
 ssh vcell@manager-node
-manager-node>  cd /usr/local/deploy
-manager-node>  tar czf /tmp/vcellsecrets.tgz .
-manager-node> exit
+cd /usr/local/deploy
+tar czf /tmp/vcellsecrets.tgz .
+exit
 ```
 
 **Login** to your new node,  

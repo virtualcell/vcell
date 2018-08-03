@@ -1,4 +1,4 @@
-## Start with standard UCH Centos 7.3 distribution, login as administrative (frmadmin,jsadmin) and run update (to Centos 7.4)
+## Start with standard UCH Centos 7.3 distribution, login (ssh to avoid copy/paste problems on minimal centos7) as administrative (frmadmin,jsadmin) and run update (to Centos 7.4)
 
 ```bash
 sudo yum -y update 
@@ -7,7 +7,7 @@ sudo reboot
 ## install java dev tools, python packages, and utilities
 
 ```bash
-sudo yum install java-1.8.0-openjdk-devel
+sudo yum -y install java-1.8.0-openjdk-devel
 echo "export JAVA_HOME=$(readlink -f /usr/bin/java | sed "s:bin/java::")" | sudo tee -a /etc/profile
 source /etc/profile
 ```
@@ -33,6 +33,7 @@ install paramiko, requests, and tabulate python packages (used by cli.py)
 sudo yum install -y python-devel
 sudo yum install -y libffi-devel
 sudo yum install -y openssl-devel
+echo "may need command 'yum -y install epel-release' for python-pip"
 sudo yum install -y python-pip
 sudo pip install --upgrade pip
 sudo pip install paramiko

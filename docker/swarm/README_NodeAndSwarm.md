@@ -21,6 +21,7 @@ sudo docker swarm join-token {worker,manager}
 ssh vcell@{the node that you're going to join to swarm}
 #Paste previous command output as command for new node to join existing cluster
 e.g. sudo docker swarm join --token SWMTKN-1-.... xxx.xxx.xxx.xxx:pppp
+#Note: may fail, check make sure firewall allows connectionsto-from the ports in join command
 ```
 
 
