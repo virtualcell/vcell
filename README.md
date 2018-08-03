@@ -1,6 +1,6 @@
 # vcell - a modeling and simulation framework for computational cell biology
 <!--
-The vcell documentation in Mardown format (*.md) is edited in eclipse using the WikiText plugin
+The vcell documentation in Markdown format (*.md) is edited in eclipse using the WikiText plugin
 -->
 
 [![Join the chat at https://gitter.im/virtualcell/vcell](https://badges.gitter.im/virtualcell/vcell.svg)](https://gitter.im/virtualcell/vcell?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
@@ -38,7 +38,9 @@ mvn clean install dependency:copy-dependencies
 ./vcell.sh
 ```
 
-## Building and Running VCell Client/Server 
+## Building and Running VCell Client/Server
+service has 1 image and configuration, manages 1 or more containers, container is a running image  
+All services defined in ./swarm/docker-compose.yml (collection of services,volumes, dependencies,...)  
 
 VCell Server Installation General Requirements
   * Linux
@@ -49,7 +51,7 @@ VCell Server Installation General Requirements
   * SLURM service for batch scheduling
   * Obtain an Install4J license if creating client installers
 
-0) Understanding VCell services [detailed instructions](docker/README_serviceInfo.md)  
+0b) Understanding VCell services [detailed instructions](docker/README_serviceInfo.md)  
 1) NEW VCell Server Node configuration [detailed instructions](docker/swarm/README_DockerSwarmConfig.md)  
 -----1a) Create new Docker swarm with node or Add node to existing Docker swarm [detailed instructions](docker/swarm/README_NodeAndSwarm.md)  
 -----1b) Finish NEW VCell Server Node configuration [detailed instructions](docker/swarm/README_new_node_final_steps.md)  

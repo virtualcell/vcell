@@ -38,9 +38,9 @@ sudo service docker stop
 sudo service docker start
 ```
 
-https://vcell-docker.cam.uchc.edu:5000/v2/_catalog
+[registry api, NOT USED](https://vcell-docker.cam.uchc.edu:5000/v2/_catalog) https://vcell-docker.cam.uchc.edu:5000/v2/_catalog  
 
-for a simple web-based UI to the private repository see http://vcell-docker.cam.uchc.edu:5001/home, this UI was recently ported to registry:2 and has limited functionality (as of Jan 25, 2018).
+for a simple web-based UI to the private repository see http://vcell-docker.cam.uchc.edu:5001/home [registry gui, web-based registry viewer](http://vcell-docker.cam.uchc.edu:5001/home), this UI was recently ported to registry:2 and has limited functionality (as of Jan 25, 2018).
 
 ```bash
 sudo docker run \

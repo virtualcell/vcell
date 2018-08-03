@@ -6,8 +6,6 @@ services:
       ROUTE_URIS: 'logstash://elk.cam.uchc.edu:5000'
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-    depends_on:
-      - logstash
     deploy:
       mode: global
       restart_policy:
