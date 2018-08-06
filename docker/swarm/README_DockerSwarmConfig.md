@@ -4,7 +4,7 @@
 sudo yum -y update 
 sudo reboot
 ```
-## install java dev tools, python packages, and utilities
+## Install java dev tools, python packages, and utilities
 
 ```bash
 sudo yum -y install java-1.8.0-openjdk-devel
@@ -47,7 +47,7 @@ install jq (utility for json processing)
 sudo yum install -y jq
 ```
 
-## install docker [on centos](https://docs.docker.com/install/linux/docker-ce/centos/#install-docker-ce-1)
+## Install Docker [more info centos](http://docs.docker.com/install/linux/docker-ce/centos)
 
 set up yum by adding yum repo (docker stable repository) first time only
 
@@ -66,7 +66,7 @@ sudo systemctl start docker
 ```
 
 
-### install singularity [instructions](https://singularity.lbl.gov/install-linux)
+## Install singularity [more info linux](https://singularity.lbl.gov/install-linux)
 install to /opt/build local directory to avoid root-squash on shared file systems.
 
 ```bash

@@ -38,7 +38,8 @@ For example, to trust the self-signed certificate on UCHC server nodes using Cen
 [registry install, make self-signed certificate](../build/README_Registry.md)  
 
 ```bash
-sudo scp vcell@vcell-docker.cam.uchc.edu:/usr/local/deploy/registry_certs/domain.cert /etc/pki/ca-trust/source/anchors/vcell-docker.cam.uchc.edu.crt
+theRegistryHost=vcell-docker.cam.uchc.edu
+sudo scp vcell@${theRegistryHost}:/usr/local/deploy/registry_certs/domain.cert /etc/pki/ca-trust/source/anchors/${theRegistryHost}.crt
 sudo update-ca-trust
 sudo service docker stop
 sudo service docker start

@@ -6,8 +6,11 @@
 ### check os and java versions (elk.cam.uchc.edu already had Java 1.8.0_141 and CentOS centos-release-7-3.1611.el7.centos.x86_64)
 
 ```bash
--bash-4.2$ rpm --query centos-release
--bash-4.2$ java -version
+rpm --query centos-release
+java -version
+#sudo yum -y install java-1.8.0-openjdk-devel
+#echo "export JAVA_HOME=$(readlink -f /usr/bin/java | sed "s:bin/java::")" | sudo tee -a /etc/profile
+#source /etc/profile
 ```
 
 ### install elastic rpm repository
@@ -32,6 +35,7 @@ type=rpm-md
 ### create and start service
 
 ```bash
+sudo yum install -y yum-utils
 sudo yum-complete-transaction
 sudo yum install elasticsearch
 sudo /bin/systemctl daemon-reload
@@ -105,6 +109,9 @@ sudo init 6
 
 ## installing logstash per https://www.elastic.co/guide/en/logstash/current/getting-started-with-logstash.html.  for a Docker install, see https://www.elastic.co/guide/en/logstash/current/docker.html
 
+```bash
+sudo yum install logstash
+```
 
 ### create /etc/yum.repos.d/logstash.repo with the following contents:
 
@@ -165,6 +172,16 @@ sudo systemctl start kibana.service
 ```
 
 configured Kibana to listen on public adapter (defaults to localhost).  /etc/kibana/kibana.yml and uncomment host and change from "localhost" to "elk.cam.uchc.edu".
+
+```
+#theElkHost=elk.cam.uchc.edu
+nano /etc/kibana/kibana.yml
+# uncomment line - server.port: 5601
+# uncomment line and change - server.host: "theElkHost"
+
+# test from another host with browser/curl -> http://theElkHost:5601
+
+```
 
 
 # to configure this with my Docker Swarm clusters:
