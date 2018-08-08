@@ -51,6 +51,38 @@ VCell Server Installation General Requirements
   * SLURM service for batch scheduling
   * Obtain an Install4J license if creating client installers
 
+
+
+If VCell client simulation list view says 'hasdata=no' but there is data  
+-----Find sim id (click 'i' button when sim is selected) -> theSimID  
+-----log into vcell-node1 (or any node not in DMZ, not vcellapi or vcellapi-beta)  
+-----Check data exists, give cmd " ls /share/apps/vcell3/users/boris/SimID_theSimID* "  
+-----open oracle db tool (toad,sql,squirrel), log into vcell@vcell-db.cam.uchc.edu and do query " select * from vc_simulationjob where simref=theSimID; "  
+-----If the query column 'hasdata' is blank then do update " update vc_simulationJob set hasdata='Y' where simref=theSimID; "  and " commit; "  
+-----log into vcellapi(Rel) or vcellapi-beta(Alpha)  
+-----Restart VCell docker scheduler service  with cmd " sudo docker service update --force --detach=false vcell{rel,alpha}_sched "  
+
+**Rel restart, login vcellapi**  
+sudo docker service update --force --detach=false vcellrel_activemqint  
+sudo docker service update --force --detach=false vcellrel_activemqsim  
+sudo docker service update --force --detach=false vcellrel_mongodb  
+sudo docker service update --force --detach=false vcellrel_db  
+sudo docker service update --force --detach=false vcellrel_data  
+sudo docker service update --force --detach=false vcellrel_sched  
+sudo docker service update --force --detach=false vcellrel_submit  
+sudo docker service update --force --detach=false vcellrel_api  
+​
+
+**Alpha restart, login vcellapi-beta**  
+sudo docker service update --force --detach=false vcellalpha_activemqint  
+sudo docker service update --force --detach=false vcellalpha_activemqsim  
+sudo docker service update --force --detach=false vcellalpha_mongodb  
+sudo docker service update --force --detach=false vcellalpha_db  
+sudo docker service update --force --detach=false vcellalpha_data  
+sudo docker service update --force --detach=false vcellalpha_sched  
+sudo docker service update --force --detach=false vcellalpha_submit  
+sudo docker service update --force --detach=false vcellalpha_api  ​
+
 0b) Understanding VCell services [detailed instructions](docker/README_serviceInfo.md)  
 1) NEW VCell Server Node configuration [detailed instructions](docker/swarm/README_DockerSwarmConfig.md)  
 -----1a) Create new Docker swarm with node or Add node to existing Docker swarm [detailed instructions](docker/swarm/README_NodeAndSwarm.md)  

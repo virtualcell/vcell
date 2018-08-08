@@ -64,3 +64,17 @@ client local run  alpha
 -Dvcell.bioformatsJarFileName=vcell-bioformats-0.0.4-jar-with-dependencies.jar  
 -Dvcell.bioformatsJarDownloadURL=http://vcell.org/webstart/vcell-bioformats-0.0.4-jar-with-dependencies.jar  
 
+
+**Debug network container activity (host 'netstat' command may not show Docker container activity)**  
+//Show network interfaces  
+sudo tcpdump -D  
+//Show docker networks  
+sudo docker network ls  
+//Show network activity on docker network  
+sudo tcpdump -A -i docker_gwbridge  
+//Show nodes in a docker network  
+sudo docker network inspect 8faccc2c5056  
+//Show info about container  
+sudo docker container inspect dd29d35fba3e94fa476020f4f2c3de860f745fc3be32f76107ca368f4fffbfd5  
+
+
