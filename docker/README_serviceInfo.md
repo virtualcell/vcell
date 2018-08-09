@@ -7,8 +7,19 @@
 **All swarm nodes**  
 /usr/local/deploy local secrets directory which holds clear text passwords and certificates and Java JRE images (.install4j subdir)  
 
-# Important local directory on Slurm nodes
-TMPDIR=/state/partition1** currently hard-coded for SLURM nodes) needed by solvers, contains **singularityImages** (singularity container images, pushed to each hpc node during deployment),**tmp** (solver temp dir)  
+# Slurm Nodes  
+singularity module must be installed on all VCell hpc nodes (script must have access to the following script command "module load singularity/2.4.2") michael wilson  
+need 2 local dirs on each:  
+-----/state/partition1/singularityImages  (has singularity images contains all the solvers, copy of vcell-batch docker container converted to singularity)  
+-----/scratch/vcell  (solver output dir, holds sim data that is then packaged into zip and moved to /share/apps/vcell3/users/{user})  
+needed remote dirs  
+-----/share/apps/vcell3/htclogs (needed by vcell hpc partition nodes)  
+----------vcell-submit service puts submision script /share/apps/vcell3/htclogs/V_{REL,ALPHA}_{VCSimKey}_{jobid}_{task}.slurm.sub, e.g. /share/apps/vcell3/htclogs/V_REL_137662584_2_0.slurm.sub)  
+----------slurm writes job log (stdout of the submission script, includes solver stdout) /share/apps/vcell3/htclogs/V_{REL,ALPHA}_{VCSimKey}_{jobid}_{task}.slurm.log, , e.g. /share/apps/vcell3/htclogs/V_REL_137662584_2_0.slurm.log  
+-----/share/apps/vcell3/users  (sim results written to during solver execution)
+-----/share/apps/vcell3/singularityImages (place where singularity solver container is stored during VCell deploy, copied if necessay to hpc via slurm submit script)
+
+ currently hard-coded for SLURM nodes) needed by solvers, contains **singularityImages** (singularity container images, pushed to each hpc node during deployment),**tmp** (solver temp dir)  
 
 #Shared Directories
 1a) shared folder (**/share/apps/vcell3**) has subdirectories - **users(simData), htclogs(submit,logs), singularity(container mages), apache_webroot(deployed clients), export(exported simData for download)**  

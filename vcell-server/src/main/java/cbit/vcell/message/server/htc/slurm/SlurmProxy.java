@@ -375,9 +375,13 @@ public class SlurmProxy extends HtcProxy {
 		String serverid=PropertyLoader.getRequiredProperty(PropertyLoader.vcellServerIDProperty);
 		String softwareVersion=PropertyLoader.getRequiredProperty(PropertyLoader.vcellSoftwareVersion);
 		String remote_singularity_image = PropertyLoader.getRequiredProperty(PropertyLoader.vcellbatch_singularity_image);
-		String docker_image = PropertyLoader.getRequiredProperty(PropertyLoader.vcellbatch_docker_name);
+		String slurm_singularity_local_image_filepath = remote_singularity_image;
+//		String docker_image = PropertyLoader.getRequiredProperty(PropertyLoader.vcellbatch_docker_name);
 		String slurm_tmpdir = PropertyLoader.getRequiredProperty(PropertyLoader.slurm_tmpdir);
-
+		String slurm_central_singularity_dir = PropertyLoader.getRequiredProperty(PropertyLoader.slurm_central_singularity_dir);
+		String slurm_local_singularity_dir = PropertyLoader.getRequiredProperty(PropertyLoader.slurm_local_singularity_dir);
+		File slurm_singularity_central_filepath = new File(slurm_central_singularity_dir,new File(slurm_singularity_local_image_filepath).getName());
+		
 		String[] environmentVars = new String[] {
 				"java_mem_Xmx="+memoryMB+"M",
 				"jmshost_sim_internal="+jmshost_sim_external,
@@ -422,10 +426,18 @@ public class SlurmProxy extends HtcProxy {
 		lsb.write("   #");
 		lsb.write("   # local copy of singularity image should already be present in ${TMPDIR}/singularityImages/ (pushed during deploy)");
 		lsb.write("   #");
-		lsb.write("   localSingularityImage="+remote_singularity_image);
+		lsb.write("   localSingularityImage="+slurm_singularity_local_image_filepath);
 		lsb.write("   if [ ! -e \"$localSingularityImage\" ]; then");
-		lsb.write("       echo \"local singularity image $localSingularityImage not found\"");
-		lsb.write("       exit 1");
+		lsb.write("       echo \"local singularity image $localSingularityImage not found, trying to download to hpc from central\"");
+		lsb.write("       mkdir -p "+slurm_local_singularity_dir);
+		lsb.write("       singularitytempfile=$(mktemp -up "+slurm_central_singularity_dir+")");
+		lsb.write("       cp "+slurm_singularity_central_filepath.getAbsolutePath()+" ${singularitytempfile}");
+		lsb.write("       mv -n ${singularitytempfile} "+slurm_singularity_local_image_filepath);
+		lsb.write("       rm -f ${singularitytempfile}");
+		lsb.write("       if [ ! -e \"$localSingularityImage\" ]; then");		
+		lsb.write("           echo \"Failed to copy $localSingularityImage to hpc from central\"");
+		lsb.write("           exit 1");
+		lsb.write("       fi");
 		lsb.write("   fi");
 		StringBuffer singularityEnvironmentVars = new StringBuffer();
 		for (String envVar : environmentVars) {
@@ -433,11 +445,13 @@ public class SlurmProxy extends HtcProxy {
 		}
 		lsb.write("   container_prefix=\"singularity run --bind "+primaryDataDirExternal+":/simdata --bind "+htclogdir_external+":/htclogs  --bind "+slurm_tmpdir+":/solvertmp $localSingularityImage "+singularityEnvironmentVars+" \"");
 		lsb.write("else");
-		StringBuffer dockerEnvironmentVars = new StringBuffer();
-		for (String envVar : environmentVars) {
-			dockerEnvironmentVars.append(" -e "+envVar);
-		}
-		lsb.write("   container_prefix=\"docker run --rm -v "+primaryDataDirExternal+":/simdata -v "+htclogdir_external+":/htclogs -v "+slurm_tmpdir+":/solvertmp "+dockerEnvironmentVars+" "+docker_image+" \"");
+		lsb.write("    echo \"Required singularity command not found (module load singularity/2.4.2) \"");
+		lsb.write("    exit 1");
+//		StringBuffer dockerEnvironmentVars = new StringBuffer();
+//		for (String envVar : environmentVars) {
+//			dockerEnvironmentVars.append(" -e "+envVar);
+//		}
+//		lsb.write("   container_prefix=\"docker run --rm -v "+primaryDataDirExternal+":/simdata -v "+htclogdir_external+":/htclogs -v "+slurm_tmpdir+":/solvertmp "+dockerEnvironmentVars+" "+docker_image+" \"");
 		lsb.write("fi");
 		lsb.write("echo \"container_prefix is '${container_prefix}'\"");
 		lsb.write("echo \"3 date=`date`\"");

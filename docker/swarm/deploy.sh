@@ -123,6 +123,7 @@ singularity_filename=`cat $local_config_file | grep VCELL_SINGULARITY_FILENAME |
 singularity_image_external=`cat $local_config_file | grep VCELL_SINGULARITY_IMAGE_EXTERNAL | cut -d"=" -f2`
 partitionName=`cat $local_config_file | grep VCELL_SLURM_PARTITION | cut -d"=" -f2`
 batchHost=`cat $local_config_file | grep VCELL_BATCH_HOST | cut -d"=" -f2`
+slurm_singularity_central_dir=`cat $local_config_file | grep VCELL_SLURM_CENTRAL_SINGULARITY_DIR | cut -d"=" -f2`
 
 
 echo ""
@@ -142,6 +143,7 @@ echo $cmd
 # install the singularity image on the cluster nodes
 #
 if [ "$install_singularity" == "true" ]; then
+
 	echo ""
 	cmd="pushd ../build/singularity-vm"
 	pushd ../build/singularity-vm
@@ -158,28 +160,10 @@ if [ "$install_singularity" == "true" ]; then
 		exit 1
 	fi
 
-	echo "nodeList=\$(ssh ${ssh_user}@${batchHost} \"sinfo -N -h -p $partitionName --Format='nodelist'\" | xargs)"
-	nodeList=$(ssh ${ssh_user}@${batchHost} "sinfo -N -h -p $partitionName --Format='nodelist'" | xargs)
-    if [[ $? -ne 0 ]]; then
-    	echo "failed to get compute node list from batch host as partition $partitionName"
-    	exit 1
-    fi
-	echo "compute node list is $nodeList"
-
-    for computenode in $nodeList; do
-    	echo "scp file vcell@${computenode}:${singularity_image_external}"
-		# copy singularity image from singularity-vm directory to remote destination
-		singularity_image_directory=$(dirname $singularity_image_external)
-		echo "mkdir -p $singularity_image_directory on $computenode"
-		cmd="ssh $ssh_key ${ssh_user}@${computenode} mkdir -p ${singularity_image_directory}"
-		echo $cmd
-		($cmd)
-		echo ""
-		echo "coping ./$singularity_filename to $singularity_image_external on $computenode as user $ssh_user"
-		cmd="scp $ssh_key ./$singularity_filename ${ssh_user}@${computenode}:${singularity_image_external}"
-		echo $cmd
-		($cmd) || (echo "failed to upload generated singularity image to compute node $computenode" && exit 1)
-    done
+	echo "mkdir -p ${slurm_singularity_central_dir}"
+	mkdir -p ${slurm_singularity_central_dir}
+	echo "cp ./${singularity_filename} ${slurm_singularity_central_dir}"
+	cp ./${singularity_filename} ${slurm_singularity_central_dir}
 
 	echo "popd"
 	popd

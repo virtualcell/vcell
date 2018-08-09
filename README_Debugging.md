@@ -78,3 +78,10 @@ sudo docker network inspect 8faccc2c5056
 sudo docker container inspect dd29d35fba3e94fa476020f4f2c3de860f745fc3be32f76107ca368f4fffbfd5  
 
 
+**Debug slurm jobs**
+**List slurm nodes, login vcell-service as vcell**  
+abc=$(sinfo -N -h -p vcell2 --Format='nodelist' | xargs)  
+
+**command line interface in python ... (similar to old vcell console)**  
+-----login build machine (vcell-node1), run /opt/build/vcell/docker/swarm/cli.py
+
