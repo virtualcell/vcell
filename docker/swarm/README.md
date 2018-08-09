@@ -1,136 +1,68 @@
-# deploy vcell using docker swarm mode.
+#### 1.  Build VCell containers (from {vcell\_project\_dir}/docker/build/ directory)
 
+**Login to vcell-node1.cam.uchc.edu as user vcell**  
 
-
-3) deploy a vcell production stack (named "local") on a single machine Docker swarm mode
-
-```bash
-./localconfig_mockslurm.sh test localhost:5000 dev 7.0.0 4 local_mockslurm.config
-env $(cat local_mockslurm.config | xargs) docker stack deploy -c docker-compose.yml -c docker-compose-swarm.yml local
-```
-
-## useful commands <a name="useful_docker_commands"/>
+**Get VCell project**, login to {theBuildHost} as user 'vcell'
 
 ```bash
-> docker stack services local
-ID                  NAME                MODE                REPLICAS            IMAGE                               PORTS
-5hrlf3u1kdgr        local_visualizer    replicated          1/1                 dockersamples/visualizer:stable     *:30013->8080/tcp
-cflee8p55yph        local_mongodb       replicated          1/1                 schaff/vcell-mongo:7.0.0-alpha.4    *:27020->27017/tcp
-evpnt4b10dbs        local_activemq      replicated          1/1                 webcenter/activemq:5.14.3           *:61619->61616/tcp
-tpo0wfjmgqeo        local_api           replicated          1/1                 schaff/vcell-api:7.0.0-alpha.4      *:30014->8000/tcp,*:8083->8080/tcp
-xkb1tp4znjha        local_master        replicated          1/1                 schaff/vcell-master:7.0.0-alpha.4   *:30012->8000/tcp
+theBuildHost=vcell-node1.cam.uchc.edu
+ssh vcell@${theBuildHost}
+cd /opt/build
+rm -rf vcell (if necessary)
+git clone https://github.com/virtualcell/vcell.git
+cd vcell/docker/build
 ```
+
+**Build ALL containers** (sets the Docker tags to first 7 characters of Git commit hash)
 
 ```bash
-> docker stack ps local
-ID               NAME                   IMAGE                               NODE                    DESIRED STATE   CURRENT STATE           ERROR  PORTS
-mlvxxlvxedvh     local_master.1         schaff/vcell-master:7.0.0-alpha.4   linuxkit-025000000001   Running         Running 4 minutes ago
-z164vsxiorox     local_api.1            schaff/vcell-api:7.0.0-alpha.4      linuxkit-025000000001   Running         Running 4 minutes ago
-y0v50e8r31ce      \_ local_api.1        schaff/vcell-api:7.0.0-alpha.4      linuxkit-025000000001   Shutdown        Shutdown 4 minutes ago
-9pjpi1lvi46r     local_visualizer.1     dockersamples/visualizer:stable     linuxkit-025000000001   Running         Running 25 minutes ago
-3gdwdlijfxdz     local_mongodb.1        schaff/vcell-mongo:7.0.0-alpha.4    linuxkit-025000000001   Running         Running 26 minutes ago
-k2hyfkcyqwpx     local_activemq.1       webcenter/activemq:5.14.3           linuxkit-025000000001   Running         Running 26 minutes ago
-w059r4hbdgq9     local_master.1         schaff/vcell-master:7.0.0-alpha.4   linuxkit-025000000001   Shutdown        Shutdown 4 minutes ago
+export VCELL_TAG=`git rev-parse HEAD | cut -c -7`
+theRegistryHost=vcell-docker.cam.uchc.edu
+export VCELL_REPO_NAMESPACE=${theRegistryHost}:5000/schaff
+./build.sh all $VCELL_REPO_NAMESPACE $VCELL_TAG
 ```
+
+Info: build the containers (e.g. vcell-docker.cam.uchc.edu:5000/schaff/vcell-api:f18b7aa) and upload to a private Docker registry (e.g. vcell-docker.cam.uchc.edu:5000).  
+A Singularity image for vcell-batch is also generated and stored locally (VCELL_ROOT/docker/build/singularity-vm) as no local Singularity repository is available yet.  Later in the deploy stage, the Singularity image is uploaded to the server file system and invoked for numerical simulation on the HPC cluster. 
+
+
+# 2.  Deploy vcell using docker swarm mode
+
+
+//Requirements during deployment
+while building the vcell-clientgen container  
+it is assumed that during deployment there is a directory (/usr/local/deploy/.install4j6/jres) which is mapped to the VOLUME /jre   
+defined in Dockerfile-clientgen-dev and used inside vcell-clientgen container, the vcset up "build secrets" directory  
+(e.g. /usr/local/deploy/.install4j6/jres/ on vcell-node1.cam.uchc.edu) Java jre bundles which are compatible with installed version of Install4J  
+-----/usr/local/deploy/.install4j6/jres/linux-amd64-1.8.0_66.tar.gz  
+-----/usr/local/deploy/.install4j6/jres/macosx-amd64-1.8.0_66.tar.gz  
+-----/usr/local/deploy/.install4j6/jres/windows-x86-1.8.0_66.tar.gz  
+-----/usr/local/deploy/.install4j6/jres/linux-x86-1.8.0_66.tar.gz  
+-----/usr/local/deploy/.install4j6/jres/windows-amd64-1.8.0_66.tar.gz  
+
+
+
+#### Build VCell and deploy to production servers (from ./docker/swarm/ directory)  
+NOTE: current partition of SLURM for vcell is found by this command run "sinfo -N -h -p vcell2 --Format='nodelist'" (must run on vcell-service, or other slurm node)  
+Assume step 1 has completed successfully  
+
+**login to vcell-node1 as user 'vcell'**
+
+
 
 ```bash
-> deploy schaff$ docker service ls
-ID                  NAME                MODE                REPLICAS            IMAGE                               PORTS
-evpnt4b10dbs        local_activemq      replicated          1/1                 webcenter/activemq:5.14.3           *:61619->61616/tcp
-tpo0wfjmgqeo        local_api           replicated          1/1                 schaff/vcell-api:7.0.0-alpha.4      *:30014->8000/tcp,*:8083->8080/tcp
-xkb1tp4znjha        local_master        replicated          1/1                 schaff/vcell-master:7.0.0-alpha.4   *:30012->8000/tcp
-cflee8p55yph        local_mongodb       replicated          1/1                 schaff/vcell-mongo:7.0.0-alpha.4    *:27020->27017/tcp
-5hrlf3u1kdgr        local_visualizer    replicated          1/1                 dockersamples/visualizer:stable     *:30013->8080/tcp
+cd /opt/build/vcell/docker/swarm
 ```
 
-```bash
-> docker service logs -f local_api
-```
-
-```bash
-> curl --verbose --insecure "https://vcellapi.cam.uchc.edu/admin/jobs?completed=false&stopped=false&serverId=REL" | jq '.'
-(see AdminJobsRestlet for details)
-```
-
-### VCell Client JREs <a name="vcell_client_jres"/>
-while building the clientgen container, it is assumed that during deployment there is a directory which is mapped to the /jre volume in the vcset up "build secrets" directory (e.g. /usr/local/deploy/.install4j6/jres/ on vcell-node1.cam.uchc.edu).
-
-
-Java jre bundles which are compatible with installed version of
-Install4J
-/usr/local/deploy/.install4j6/jres/linux-amd64-1.8.0_66.tar.gz
-/usr/local/deploy/.install4j6/jres/macosx-amd64-1.8.0_66.tar.gz
-/usr/local/deploy/.install4j6/jres/windows-x86-1.8.0_66.tar.gz
-/usr/local/deploy/.install4j6/jres/linux-x86-1.8.0_66.tar.gz  
-/usr/local/deploy/.install4j6/jres/windows-amd64-1.8.0_66.tar.gz
-
-
-# build VCell Client installers (this uses docker-compose rather than docker stack)
-required files:
-
-Java jre bundles which are compatible with installed version of
-Install4J
-linux-amd64-1.8.0_66.tar.gz
-macosx-amd64-1.8.0_66.tar.gz
-windows-x86-1.8.0_66.tar.gz
-linux-x86-1.8.0_66.tar.gz	
-windows-amd64-1.8.0_66.tar.gz
-
-## for dev
-edit ../deploy/localconfig.sh
-
-to build production clients (from <vcellroot>/docker)
-
-```bash
-./serverconfig_uch.sh test schaff 7.0.0-alpha.4 7.0.0 4 server.config
-env $(cat server.config | xargs) docker-compose -f docker-compose-clientgen.yml rm
-env $(cat server.config | xargs) docker-compose -f docker-compose-clientgen.yml up
-```
-
-to build dev clients (from <vcellroot>/docker)
-
-```bash
-./localconfig.sh test vcell-docker:5000 dev 7.0.0 4 local.config
-env $(cat local.config | xargs) docker-compose -f docker-compose-clientgen.yml rm
-env $(cat local.config | xargs) docker-compose -f docker-compose-clientgen.yml build
-env $(cat local.config | xargs) docker-compose -f docker-compose-clientgen.yml up
-env $(cat local.config | xargs) docker-compose -f docker-compose-clientgen.yml push
-env $(cat local.config | xargs) docker-compose -f docker-compose-clientgen.yml pull
-```
-
-to build dev vcell-batch containers (from <vcellroot>/docker)
-
-```bash
-docker build -f Dockerfile-batch-dev --tag localhost:5000/vcell-batch-dev ..
-```
-
-
-
-#### Build VCell and deploy to production servers (from ./docker/swarm/ directory)
-
-current partition of SLURM for vcell is shangrila[13-14], xanadu-[22-23]
-
-build the containers (e.g. vcell-docker.cam.uchc.edu:5000/schaff/vcell-api:f18b7aa) and upload to a private Docker registry (e.g. vcell-docker.cam.uchc.edu:5000).  A Singularity image for vcell-batch is also generated and stored locally (VCELL_ROOT/docker/singularity-vm) as no local Singularity repository is available yet.  Later in the deploy stage, the Singularity image is uploaded to the server file system and invoked for numerical simulation on the HPC cluster. 
-
-Get VCell project, login to vcell-node1 as user 'vcell'
-
-build vcell according to instructions in /vcell/docker/build/README.md
-
-```bash
-cd vcell/docker/swarm
-```
-
-Run the following bash commands in your terminal (sets the Docker tags to first 7 characters of Git commit hash)
+**Run** the following bash commands in your terminal (sets the Docker tags to first 7 characters of Git commit hash)
 
 ```bash
 export VCELL_TAG=`git rev-parse HEAD | cut -c -7`
 export VCELL_REPO_NAMESPACE=vcell-docker.cam.uchc.edu:5000/schaff
-
-## the build command is assumed to have already be run
-##  ./build.sh all $VCELL_REPO_NAMESPACE $VCELL_TAG
 ```
 
-//Helper for current install4j VCell software $VCELL_BUILD number, increment version if deploying client, otherwise if server only do not increment version #
+**Determine build number for deploying**  
+-----**a.** Get currently deployed client
 
 ```bash
 echo Alpha `curl --silent http://vcell.org/webstart/Alpha/updates.xml | xmllint --xpath '//updateDescriptor/entry/@newVersion' - | awk '{print $1;}'` && \
@@ -138,19 +70,30 @@ echo Beta `curl --silent http://vcell.org/webstart/Beta/updates.xml | xmllint --
 echo Rel `curl --silent http://vcell.org/webstart/Rel/updates.xml | xmllint --xpath '//updateDescriptor/entry/@newVersion' - | awk '{print $1;}'`
 ```
 
-//Choose 1 of the following blocks depending on site {Alpha,Beta,Rel}, and set VCELL_BUILD= if necessary (deploying client), execute all commands in bash
-	increment if pushing new client, otherwise no increment for VCELL_BUILD
+-----**b.** Create final build number  
+if deploy server only, theBuildNumber=(number from above)  
+----theBuildNumber=number from above (the 4th digit),  e.g. **Alpha newVersion="7.0.0.51" theBuildNumber=51**  
+If deploying client, theBuildNumber=(number from above) + 1  
+----theBuildNumber= 1 + number from above (the 4th digit),  e.g. **Alpha newVersion="7.0.0.51" theBuildNumber=52**  
+edit 'VCELL_BUILD='theBuildNumber in the appropriate site block below  
 
-create deploy configuration file (e.g. Test 7.0.0 build 8) file for server. Note that some server configuration is hard-coded in the **serverconfig-uch.sh** script.
+**To create deploy configuration file, Choose the site block being deployed**  
+Info: create deploy configuration file (e.g. Test 7.0.0 build 8) file for server. Note that some server configuration is hard-coded in the **serverconfig-uch.sh** script.  
+
+**MUST EDIT VCELL_BUILD=${theBuildNumber} to be correct**  
+
+**REL**  
 
 ```bash
-export VCELL_VERSION=7.0.0 VCELL_BUILD=9 VCELL_SITE=rel
+export VCELL_VERSION=7.0.0 VCELL_BUILD=${theBuildNumber} VCELL_SITE=rel
 export MANAGER_NODE=vcellapi.cam.uchc.edu
 export VCELL_INSTALLER_REMOTE_DIR="/share/apps/vcell3/apache_webroot/htdocs/webstart/Rel"
 export VCELL_CONFIG_FILE_NAME=server_${VCELL_SITE}_${VCELL_VERSION}_${VCELL_BUILD}_${VCELL_TAG}.config
 ./serverconfig-uch.sh $VCELL_SITE $VCELL_REPO_NAMESPACE \
   $VCELL_TAG $VCELL_VERSION $VCELL_BUILD $VCELL_CONFIG_FILE_NAME
 ```
+
+**BETA (not used)**  
 
 ```bash
 export VCELL_VERSION=7.0.0 VCELL_BUILD=10 VCELL_SITE=beta
@@ -161,14 +104,18 @@ export VCELL_CONFIG_FILE_NAME=server_${VCELL_SITE}_${VCELL_VERSION}_${VCELL_BUIL
   $VCELL_TAG $VCELL_VERSION $VCELL_BUILD $VCELL_CONFIG_FILE_NAME
 ```
 
+**ALPHA**  
+
 ```bash
-export VCELL_VERSION=7.0.0 VCELL_BUILD=52 VCELL_SITE=alpha
+export VCELL_VERSION=7.0.0 VCELL_BUILD=51 VCELL_SITE=alpha
 export MANAGER_NODE=vcellapi-beta.cam.uchc.edu
 export VCELL_INSTALLER_REMOTE_DIR="/share/apps/vcell3/apache_webroot/htdocs/webstart/Alpha"
 export VCELL_CONFIG_FILE_NAME=server_${VCELL_SITE}_${VCELL_VERSION}_${VCELL_BUILD}_${VCELL_TAG}.config
 ./serverconfig-uch.sh $VCELL_SITE $VCELL_REPO_NAMESPACE \
   $VCELL_TAG $VCELL_VERSION $VCELL_BUILD $VCELL_CONFIG_FILE_NAME
 ```
+
+**TEST**  
 
 ```bash
 export VCELL_VERSION=7.0.0 VCELL_BUILD=7 VCELL_SITE=test
@@ -194,29 +141,11 @@ Choose 1 of the following:
    vcell${VCELL_SITE}
 ```
 
-```bash
-./deploy.sh \
-   --ssh-user vcell --ssh-key ~/.ssh/id_rsa --build-installers --installer-deploy-dir $VCELL_INSTALLER_REMOTE_DIR --link-installers \
-   ${MANAGER_NODE} \
-   ./${VCELL_CONFIG_FILE_NAME} /usr/local/deploy/config/${VCELL_CONFIG_FILE_NAME} \
-   ./docker-compose.yml        /usr/local/deploy/config/docker-compose_${VCELL_TAG}.yml \
-   vcell${VCELL_SITE}
-```
-
 //SERVER only deploy commands (may request password at some point)
 
 ```bash
 ./deploy.sh \
    --ssh-user vcell --ssh-key ~/.ssh/id_rsa --install-singularity  \
-   ${MANAGER_NODE} \
-   ./${VCELL_CONFIG_FILE_NAME} /usr/local/deploy/config/${VCELL_CONFIG_FILE_NAME} \
-   ./docker-compose.yml        /usr/local/deploy/config/docker-compose_${VCELL_TAG}.yml \
-   vcell${VCELL_SITE}
-```
-
-```bash
-./deploy.sh \
-   --ssh-user vcell --ssh-key ~/.ssh/id_rsa  \
    ${MANAGER_NODE} \
    ./${VCELL_CONFIG_FILE_NAME} /usr/local/deploy/config/${VCELL_CONFIG_FILE_NAME} \
    ./docker-compose.yml        /usr/local/deploy/config/docker-compose_${VCELL_TAG}.yml \
@@ -346,3 +275,9 @@ Deploy VCell Docker containers on local machine in Swarm Mode with mocked SLURM 
   vcell${VCELL_SITE}
 ```
 
+**(optional)deploy a vcell production stack (named "local") on a single machine Docker swarm mode**
+
+```bash
+./localconfig_mockslurm.sh test localhost:5000 dev 7.0.0 4 local_mockslurm.config
+env $(cat local_mockslurm.config | xargs) docker stack deploy -c docker-compose.yml -c docker-compose-swarm.yml local
+```

@@ -70,33 +70,4 @@ sudo service docker stop
 sudo service docker start
 ```
 
-#### Build VCell containers (from {vcell\_project\_dir}/docker/build/ directory)
 
-build the containers (e.g. vcell-docker.cam.uchc.edu:5000/schaff/vcell-api:f18b7aa) and upload to a private Docker registry (e.g. vcell-docker.cam.uchc.edu:5000).  A Singularity image for vcell-batch is also generated and stored locally (VCELL_ROOT/docker/singularity-vm) as no local Singularity repository is available yet.  Later in the deploy stage, the Singularity image is uploaded to the server file system and invoked for numerical simulation on the HPC cluster. 
-
-**Get VCell project**, login to {theBuildHost} as user 'vcell'
-
-```bash
-theBuildHost=vcell-node1.cam.uchc.edu
-ssh vcell@${theBuildHost}
-cd /opt/build
-rm -rf vcell (if necessary)
-git clone https://github.com/virtualcell/vcell.git
-cd vcell/docker/build
-```
-
-**(Optional) Build vcell-batch-dev** containers (from <vcellroot>/docker/build)
-
-```bash
-export theRegistryHost=vcell-docker.cam.uchc.edu
-docker build -f Dockerfile-batch-dev --tag ${theRegistryHost}:5000/vcell-batch-dev ../..
-```
-
-**Build ALL containers** (sets the Docker tags to first 7 characters of Git commit hash)
-
-```bash
-export VCELL_TAG=`git rev-parse HEAD | cut -c -7`
-theRegistryHost=vcell-docker.cam.uchc.edu
-export VCELL_REPO_NAMESPACE=${theRegistryHost}:5000/schaff
-./build.sh all $VCELL_REPO_NAMESPACE $VCELL_TAG
-```
