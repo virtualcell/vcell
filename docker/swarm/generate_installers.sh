@@ -42,6 +42,16 @@ if [[ $# -lt 1 ]] ; then
     show_help
 fi
 
+
+mkdir -p ./generated_installers
+# remove old installers
+if [ -e "./generated_installers" ]; then
+	cmd="rm -f ./generated_installers/*"
+	echo $cmd
+	$cmd
+fi
+
+
 local_config_file=$1
 echo "reading configuration from $local_config_file"
 

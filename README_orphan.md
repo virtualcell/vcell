@@ -1,3 +1,48 @@
+##Random Info
+
+**Reset simulation hasdata status**  
+If VCell client simulation list view says 'hasdata=no' but there is data  
+-----Find sim id (click 'i' button when sim is selected) -> theSimID  
+-----log into vcell-node1 (or any node not in DMZ, not vcellapi or vcellapi-beta)  
+-----Check data exists, give cmd " ls /share/apps/vcell3/users/boris/SimID_theSimID* "  
+-----open oracle db tool (toad,sql,squirrel), log into vcell@vcell-db.cam.uchc.edu and do query " select * from vc_simulationjob where simref=theSimID; "  
+-----If the query column 'hasdata' is blank then do update " update vc_simulationJob set hasdata='Y' where simref=theSimID; "  and " commit; "  
+-----log into vcellapi(Rel) or vcellapi-beta(Alpha)  
+-----Restart VCell docker scheduler service  with cmd " sudo docker service update --force --detach=false vcell{rel,alpha}_sched "  
+
+**Rel restart, login vcellapi**  
+sudo docker service update --force --detach=false vcellrel_activemqint  
+sudo docker service update --force --detach=false vcellrel_activemqsim  
+sudo docker service update --force --detach=false vcellrel_mongodb  
+sudo docker service update --force --detach=false vcellrel_db  
+sudo docker service update --force --detach=false vcellrel_data  
+sudo docker service update --force --detach=false vcellrel_sched  
+sudo docker service update --force --detach=false vcellrel_submit  
+sudo docker service update --force --detach=false vcellrel_api  
+​
+
+**Alpha restart, login vcellapi-beta**  
+sudo docker service update --force --detach=false vcellalpha_activemqint  
+sudo docker service update --force --detach=false vcellalpha_activemqsim  
+sudo docker service update --force --detach=false vcellalpha_mongodb  
+sudo docker service update --force --detach=false vcellalpha_db  
+sudo docker service update --force --detach=false vcellalpha_data  
+sudo docker service update --force --detach=false vcellalpha_sched  
+sudo docker service update --force --detach=false vcellalpha_submit  
+sudo docker service update --force --detach=false vcellalpha_api  ​
+
+**Build quickrun linux solvers**  
+do this in a pristine checkout (cloned).  
+git clone https://github.com/virtualcell/vcell-solvers.git  
+cd vcell-solvers  
+<put attached Dockerfile-local here>  
+sudo docker build --tag=frm/vcell-solvers:latest -f Dockerfile-local .  
+sudo docker run -it --rm -v /Users/schaff/.vcell/simdata/temp:/vcelldata frm/vcell-solvers:latest SundialsSolverStandalone_x64 /vcelldata/SimID_1460763637_0_.cvodeInput /vcelldata/SimID_1460763637_0_.ida  
+-----where /Users/schaff/.vcell/simdata/temp is the simulation data directory (input file) mapped to /vcelldata inside the Docker container.  
+
+ 
+
+
 ## useful commands
 
 ```bash

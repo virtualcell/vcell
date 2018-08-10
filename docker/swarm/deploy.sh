@@ -192,19 +192,6 @@ fi
 #        if --link-installers, then also link installers to version independent installer names for each platform
 #
 if [ "$build_installers" == "true" ]; then
-	# remove old installers
-	if [ -e "./generated_installers" ]; then
-		cmd="rm -f ./generated_installers/*"
-		echo $cmd
-		$cmd
-	fi
-
-	# run vcell-clientgen Docker container for this version to generate new installers (placed into ./generated_installers)
-	echo ""
-	echo "./generate_installers.sh $local_config_file"
-	./generate_installers.sh $local_config_file
-	if [[ $? -ne 0 ]]; then echo "failed to run vcell-clientgen" && exit 1; fi
-
 	#
 	# if --installer-deploy-dir, then copy the installers from ./generated_installers directory to the installer deploy directory
 	#

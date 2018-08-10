@@ -133,6 +133,10 @@ Choose 1 of the following:
 //CLIENT and SERVER deploy commands (may request password at some point)
 
 ```bash
+./generate_installers.sh ./${VCELL_CONFIG_FILE_NAME}
+```
+
+```bash
 ./deploy.sh \
    --ssh-user vcell --ssh-key ~/.ssh/id_rsa --install-singularity --build-installers --installer-deploy-dir $VCELL_INSTALLER_REMOTE_DIR --link-installers \
    ${MANAGER_NODE} \
