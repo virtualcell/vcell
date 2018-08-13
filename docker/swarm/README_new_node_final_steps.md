@@ -45,3 +45,13 @@ sudo service docker stop
 sudo service docker start
 ```
 
+**Must have password-less ssh, containers (vcell-sched,vcell-submit) need to communicate with vcell-service and invoke slurm commands using ssh**
+**DO NOT DO THIS, IT HAS ALREADY BEEN DONE by system admins**
+
+```
+# Create ssh key pair(-C is comment to help identify key for human)
+ssh-keygen -t rsa -C vcell@vcell-docker.cam.uchc.edu
+# 2 files exist now, private key and *.pub public key
+#Copy public key to machine you want to ssh to
+ssh-copy-id vcell@vcell-service.cam.uchc.edu
+```
