@@ -88,6 +88,8 @@ VCELL_SLURM_CMD_SQUEUE=${VCELL_ROOTDIR}/docker/mockslurm/squeue
 VCELL_SLURM_CMD_SCANCEL=${VCELL_ROOTDIR}/docker/mockslurm/scancel
 VCELL_SLURM_PARTITION=$vcell_slurm_partition
 VCELL_SLURM_TMPDIR=/tmp
+VCELL_SLURM_LOCAL_SINGULARITY_DIR=/state/partition1/singularityImages
+VCELL_SLURM_CENTRAL_SINGULARITY_DIR=/share/apps/vcell3/singularityImages
 
 VCELL_API_PORT_EXTERNAL=$((8080 + $_site_port_offset))
 VCELL_JMS_SIM_PORT_EXTERNAL=$((61616 + $_site_port_offset))

@@ -424,7 +424,7 @@ public class SlurmProxy extends HtcProxy {
 		lsb.write("container_prefix=");
 		lsb.write("if command -v singularity >/dev/null 2>&1; then");
 		lsb.write("   #");
-		lsb.write("   # local copy of singularity image should already be present in ${TMPDIR}/singularityImages/ (pushed during deploy)");
+		lsb.write("   # Copy of singularity image will be downloaded if not found in "+slurm_singularity_local_image_filepath);
 		lsb.write("   #");
 		lsb.write("   localSingularityImage="+slurm_singularity_local_image_filepath);
 		lsb.write("   if [ ! -e \"$localSingularityImage\" ]; then");
@@ -459,7 +459,7 @@ public class SlurmProxy extends HtcProxy {
 		lsb.newline();
 
 		lsb.write("sendFailureMsg() {");
-		lsb.write("  echo ${cmd_prefix} " +
+		lsb.write("  echo ${container_prefix} " +
 				" --msg-userid "+jmsuser+
 				" --msg-password "+jmspswd+
 				" --msg-host "+jmshost_sim_external+
@@ -471,7 +471,7 @@ public class SlurmProxy extends HtcProxy {
 				" --msg-job-taskid "+simTask.getTaskID() +
 				" --msg-job-errmsg \"$1\"" +
 				" SendErrorMsg");
-		lsb.write("  ${cmd_prefix} " +
+		lsb.write("  ${container_prefix} " +
 				" --msg-userid "+jmsuser+
 				" --msg-password "+jmspswd+
 				" --msg-host "+jmshost_sim_external+

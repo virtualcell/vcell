@@ -85,3 +85,13 @@ abc=$(sinfo -N -h -p vcell2 --Format='nodelist' | xargs)
 **command line interface in python ... (similar to old vcell console)**  
 -----login build machine (vcell-node1), run /opt/build/vcell/docker/swarm/cli.py
 
+sudo docker node ls ({vcellapi(rel), vcellapi-beta(alpha)}shows all nodes in swarm that host belongs to, must be on manager node)
+sudo docker stack ls (shows all running stacks in the swarm)
+sudo docker stack ps {stack} (shows 'task' info for particular stack)
+sudo docker service ls (shows all services and port mappings for the swarm)
+sudo docker system df (shows disk usage on host)
+sudo docker system prune (gets rid of unused/dangling components)
+sudo docker stats (must be run on each host of swarm, show cpu,mem,... for each container)
+
+
+

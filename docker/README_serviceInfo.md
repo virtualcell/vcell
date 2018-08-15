@@ -59,7 +59,32 @@ vcell-batch.img  => singularity image temporarily stored /opt/build/vcell/docker
 Docker container containing install4j and built (on-the-fly) vcell-client software => docker image in registry  
 
 **logspout service [details](swarm/docker-stack-logspout.yml)**  
-(docker swarm managed, runs on each swarm node, forwards logs to elk from each swarm node, deployed as monitor stack)  
+not part of normal deploy, do this once manually after swarm has been initialized    
+
+```
+sudo docker stack deploy -c vcell/docker/swarm/docker-stack-logspout.yml logspout
+```
+
+ (docker swarm managed after manually deployed, runs on each swarm node, forwards logs to elk from each swarm node, deployed as monitor stack)  
+
+
+**Visualizer tool, github.com/dockersamples/docker-swarm-visualizer shows nodes, containers running on each node, follow directions**
+
+```
+#Add visualizer tool to swarm
+sudo docker stack deploy -c {vcellroot}/docker/swarm/docker-stack-visualizer.yml vis
+#Remove visulaizer tool from swarm
+sudo docker stack rm vis
+```
+
+**Monitoring tool**
+https://botleg.com/stories/monitoring-docker-swarm-with-cadvisor-influxdb-and-grafana/  
+
+```
+#Follow setup instuction on website to install monitor tool
+#Remove monitor tool
+sudo docker stack rm monitor
+```
 
 
 # VCell project Servers

@@ -118,6 +118,8 @@ services:
       - slurm_cmd_scancel=${VCELL_SLURM_CMD_SCANCEL:-scancel}
       - slurm_partition=${VCELL_SLURM_PARTITION:-vcell}
       - slurm_tmpdir=${VCELL_SLURM_TMPDIR}
+      - slurm_local_singularity_dir=${VCELL_SLURM_LOCAL_SINGULARITY_DIR}
+      - slurm_central_singularity_dir=${VCELL_SLURM_CENTRAL_SINGULARITY_DIR}
 
       - jmsuser=clientUser
       - jmshost_int_internal=activemqint
@@ -210,6 +212,7 @@ services:
     image: webcenter/activemq:5.14.3
     ports:
       - "61616"
+      - "8161"
     environment:
       - ACTIVEMQ_STATIC_QUEUES=simReq;dataReq;dbReq;simJob
       - ACTIVEMQ_STATIC_TOPICS=clientStatus
