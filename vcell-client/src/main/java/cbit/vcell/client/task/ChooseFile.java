@@ -607,8 +607,8 @@ private File showMathModelXMLFileChooser(Hashtable<String, Object> hashTable) th
 	fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
 	fileChooser.setMultiSelectionEnabled(false);
 	// fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_SBML_21);		// Can export Mathmodel to L2V1 ??
-	fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_SBML_23);
-	fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_SBML_24);
+//	fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_SBML_23);
+//	fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_SBML_24);
 //	fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_CELLML);
 	fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_MATLABV6);
 	fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_PDF);
@@ -637,8 +637,8 @@ private File showMathModelXMLFileChooser(Hashtable<String, Object> hashTable) th
 				selectedFile = new File(selectedFileName + ".xml");
 			} else if (fileFilter == FileFilters.FILE_FILTER_VCML && !n.endsWith(".vcml")) {
 				selectedFile = new File(selectedFileName + ".vcml");
-			} else if ((fileFilter == FileFilters.FILE_FILTER_SBML_23 || (fileFilter == FileFilters.FILE_FILTER_SBML_24)) && !n.endsWith(".xml")) {
-				selectedFile = new File(selectedFileName + ".xml");
+//			} else if ((fileFilter == FileFilters.FILE_FILTER_SBML_23 || (fileFilter == FileFilters.FILE_FILTER_SBML_24)) && !n.endsWith(".xml")) {
+//				selectedFile = new File(selectedFileName + ".xml");
 			} else if (fileFilter == FileFilters.FILE_FILTER_MATLABV6 && !n.endsWith(".m")) {
 				selectedFile = new File(selectedFileName + ".m");
 			} else if (fileFilter == FileFilters.FILE_FILTER_PDF && !n.endsWith(".pdf")) {
