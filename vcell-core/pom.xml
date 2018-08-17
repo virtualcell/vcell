@@ -421,7 +421,7 @@
 										<url>https://github.com/virtualcell/vcell-solvers/releases/download/v0.0.3/linux64.tgz</url>
 										<unpack>true</unpack>
 										<outputDirectory>${project.build.directory}/../../localsolvers/linux64</outputDirectory>
-										<md5>576bf50c80b9ab8801f14928afa1b1df</md5>
+										<md5>8c262fed27143720fa4be27c9028b8e7</md5>
 									</configuration>
 								</execution>
 								<execution>

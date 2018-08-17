@@ -13,7 +13,22 @@
 
 ## (../swarm/README.md): build Singularity image for Linux solvers
 
-builds a Singularity image named ./singularity-vm/${namespace}_vcell-batch_${tag}.img from the Docker image ${namespace}/vcell-batch:${tag}
+builds a Singularity image named ./singularity-vm/${namespace}_vcell-batch_${tag}.img from the Docker image ${namespace}/vcell-batch:${tag}  
+
+# 0. Choose VCell solvers version to include in build (Change only if new vcell-solvers build was committed) 
+**Check Solver build finished (if necessary)** https://hub.docker.com/r/virtualcell/vcell-solvers/builds/ and check tag exists https://hub.docker.com/r/virtualcell/vcell-solvers/tags/  *
+See [vcell-solvers README.md](C:\users\frm\VCellTrunkGitWorkspaceSolvers\README_tagging.md)
+--**Edit** {vcellroot}/docker/build/Dockerfile-batch-dev [Dockerfile-batch-dev](../build/Dockerfile-batch-dev)  
+----theTag=the tag that was created during a separate vcell-solver commit process (See https://github.com/virtualcell/vcell-solvers.git, README.md)  
+----Get the tag  from [dockerhub](https://hub.docker.com/r/virtualcell/vcell-solvers/tags/), pick the tag you want, usually latest  
+----Change line: "FROM virtualcell/vcell-solvers:{theTag}" to be proper tag number  
+
+**Edit** {vcellroot}/vcell-core/pom.xml [vcell-core pom](../../vcell-core/pom.xml)  
+----theTag= created as above  
+----Get the tag from [github][https://github.com/virtualcell/vcell-solvers/tags), pick the tag you want, usually latest  
+----Change all lines "https://github.com/virtualcell/vcell-solvers/releases/download/v{theTag}/{linux,win,mac}64.tgz", pick the tag you want, usually latest  
+
+**MUST commit any changes made during above to github on the VCell project**  
 
 #### 1.  Build VCell containers (from {vcell\_project\_dir}/docker/build/ directory)
 
@@ -40,7 +55,7 @@ export VCELL_REPO_NAMESPACE=${theRegistryHost}:5000/schaff
 ```
 
 Info: build the containers (e.g. vcell-docker.cam.uchc.edu:5000/schaff/vcell-api:f18b7aa) and upload to a private Docker registry (e.g. vcell-docker.cam.uchc.edu:5000).  
-A Singularity image for vcell-batch is also generated and stored locally (VCELL_ROOT/docker/build/singularity-vm) as no local Singularity repository is available yet.  Later in the deploy stage, the Singularity image is uploaded to the server file system and invoked for numerical simulation on the HPC cluster. 
+A Singularity image for vcell-batch is also generated and stored locally (VCELL_ROOT/docker/build/singularity-vm) as no local Singularity repository is available yet.  Singularity image is downloaded by solver .slurm.sub script to the server file system and invoked for numerical simulation on the HPC cluster. 
 
 
 # 2.  Deploy vcell using docker swarm mode

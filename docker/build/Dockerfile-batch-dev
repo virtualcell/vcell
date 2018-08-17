@@ -1,4 +1,4 @@
-FROM schaff/vcell-solvers:0.0.16-dev
+FROM virtualcell/vcell-solvers:0.0.16-dev_notused
 
 RUN apt-get -y update && \
     apt-get install -y openjdk-8-jre-headless curl
