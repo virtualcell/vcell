@@ -12,7 +12,11 @@ show_help() {
 	echo "    JavaPreprocessor64"
 	echo "    JavaPostprocessor64"
 	echo "    JavaSimExe64"
-	echo "    SendErrorMsg                 requires all --msg- and --msg-job options below)"
+	echo "    SendErrorMsg                 requires all --msg- and --msg-job options below"
+	echo "    SendCompletedMsg             requires all --msg- and --msg-job options below  (except --msg-job-errmsg)"
+	echo "    SendProgressMsg              requires all --msg- and --msg-job options below  (except --msg-job-errmsg)"
+	echo "    SendDataMsg                  requires all --msg- and --msg-job options below  (except --msg-job-errmsg)"
+	echo "    SendStartingMsg              requires all --msg- and --msg-job options below  (except --msg-job-errmsg)"
 	echo ""
 	echo "  Solver Commands - see https://github.com/virtualcell or http://vcell.org"
 	echo "    FiniteVolume_x64"
@@ -36,7 +40,9 @@ show_help() {
 	echo "    --msg-job-simkey  simkey     messaging job simkey"
 	echo "    --msg-job-jobindex  index    messaging job jobindex"
 	echo "    --msg-job-taskid  taskid     messaging job taskid"
-	echo "    --msg-job-errmsg  msg        messaging job error message"
+	echo "    --msg-job-errmsg  msg        messaging job error message (for SendErrorMsg command only)"
+	echo "    --msg-job-progress  prog     messaging job progress toward completion (decimal between 0.0 and 1.0)"
+	echo "    --msg-job-timepoint  time    messaging job time point (sim time of data point)"
 	exit 1
 }
 
@@ -72,6 +78,8 @@ msg_job_simkey=
 msg_job_jobindex=
 msg_job_taskid=
 msg_job_errmsg=
+msg_job_progress=
+msg_job_timepoint=
 while :; do
 	case $1 in
 		-h|--help)
@@ -121,6 +129,14 @@ while :; do
 		--msg-job-errmsg)
 			shift
 			msg_job_errmsg=$( rawurlencode "$1" )
+			;;
+		--msg-job-progress)
+			shift
+			msg_job_progress=$1
+			;;
+		--msg-job-timepoint)
+			shift
+			msg_job_timepoint=$1
 			;;
 		-?*)
 			printf 'ERROR: Unknown option: %s\n' "$1" >&2
@@ -205,6 +221,14 @@ case $command in
 		# failure code is 1002 (see cbit.rmi.event.WorkerEvent.JOB_FAILURE)
 		#
 		failurecode=1002
+
+		# defaults for progress and timepoint to zero
+		if [ -z ${msg_job_progress+x} ]; then
+			msg_job_progress=0
+		fi
+		if [ -z ${msg_job_timepoint+x} ]; then
+			msg_job_timepoint=0
+		fi
 		url="http://${msg_userid}:${msg_password}@${msg_host}:${msg_port}/api/message/workerEvent"
 		args="?type=queue"
 		args="${args}&JMSPriority=5"
@@ -220,6 +244,145 @@ case $command in
 		args="${args}&JobIndex=${msg_job_jobindex}"
 		args="${args}&WorkerEvent_Status=${failurecode}"
 		args="${args}&WorkerEvent_StatusMsg=${msg_job_errmsg}"
+		args="${args}&WorkerEvent_Progress=${msg_job_progress}"
+		args="${args}&WorkerEvent_TimePoint=${msg_job_timepoint}"
+
+		echo curl -XPOST "${url}${args}"
+		curl -XPOST "${url}${args}"
+		exit $?
+		;;
+	SendCompletedMsg)
+		#
+		# Send solver COMPLETE to VCell messaging infrastructure
+		#
+		# curl -XPOST http://admin:admin@vcellapi.cam.uchc.edu:8161/api/message/workerEvent?type=queue&JMSPriority=5\
+		# &JMSTimeToLive=600000&JMSDeliveryMode=persistent&MessageType=WorkerEvent&UserName=vcellNagios\
+		# &HostName=xanadu-04.cam.uchc.edu&SimKey=138069480&TaskID=0&JobIndex=0&WorkerEvent_Status=1003&\
+		# WorkerEvent_Progress=1&WorkerEvent_TimePoint=1
+		#
+		#
+		# complete code is 1003 (see cbit.rmi.event.WorkerEvent.JOB_COMPLETED)
+		#
+		completecode=1003
+		# defaults for timepoint to one
+		if [ -z ${msg_job_timepoint+x} ]; then
+			msg_job_timepoint=1
+		fi
+		url="http://${msg_userid}:${msg_password}@${msg_host}:${msg_port}/api/message/workerEvent"
+		args="?type=queue"
+		args="${args}&JMSPriority=5"
+		args="${args}&JMSTimeToLive=600000"
+		args="${args}&JMSDeliveryMode=persistent"
+		args="${args}&MessageType=WorkerEvent"
+		args="${args}&UserName=${msg_job_userid}"
+		if [ ! -z ${msg_job_host+x} ]; then
+			args="${args}&HostName=${msg_job_host}"
+		fi
+		args="${args}&SimKey=${msg_job_simkey}"
+		args="${args}&TaskID=${msg_job_taskid}"
+		args="${args}&JobIndex=${msg_job_jobindex}"
+		args="${args}&WorkerEvent_Status=${completecode}"
+		args="${args}&WorkerEvent_Progress=1"
+		args="${args}&WorkerEvent_TimePoint=${msg_job_timepoint}"
+		echo curl -XPOST "${url}${args}"
+		curl -XPOST "${url}${args}"
+		exit $?
+		;;
+	SendDataMsg)
+		#
+		# Send solver DATA message to VCell messaging infrastructure
+		#
+		# curl -XPOST http://admin:admin@vcellapi.cam.uchc.edu:8161/api/message/workerEvent?type=queue&JMSPriority=5\
+		# &JMSTimeToLive=60000&JMSDeliveryMode=nonpersistent&MessageType=WorkerEvent&UserName=cherubim0521\
+		# &HostName=shangrila12&SimKey=133718994&TaskID=0&JobIndex=0&WorkerEvent_Status=1000\
+		# &WorkerEvent_Progress=0.04875&WorkerEvent_TimePoint=0.39
+		#
+		#
+		# job data code is 1000 (see cbit.rmi.event.WorkerEvent.JOB_DATA)
+		#
+		jobdatacode=1000
+		url="http://${msg_userid}:${msg_password}@${msg_host}:${msg_port}/api/message/workerEvent"
+		args="?type=queue"
+		args="${args}&JMSPriority=5"
+		args="${args}&JMSTimeToLive=600000"
+		args="${args}&JMSDeliveryMode=nonpersistent"
+		args="${args}&MessageType=WorkerEvent"
+		args="${args}&UserName=${msg_job_userid}"
+		if [ ! -z ${msg_job_host+x} ]; then
+			args="${args}&HostName=${msg_job_host}"
+		fi
+		args="${args}&SimKey=${msg_job_simkey}"
+		args="${args}&TaskID=${msg_job_taskid}"
+		args="${args}&JobIndex=${msg_job_jobindex}"
+		args="${args}&WorkerEvent_Status=${jobdatacode}"
+		args="${args}&WorkerEvent_Progress=${msg_job_progress}"
+		args="${args}&WorkerEvent_TimePoint=${msg_job_timepoint}"
+		echo curl -XPOST "${url}${args}"
+		curl -XPOST "${url}${args}"
+		exit $?
+		;;
+	SendProgressMsg)
+		#
+		# Send solver Progress message to VCell messaging infrastructure
+		#
+		# curl -XPOST http://admin:admin@vcellapi.cam.uchc.edu:8161/api/message/workerEvent?type=queue&JMSPriority=5\
+		# &JMSTimeToLive=60000&JMSDeliveryMode=nonpersistent&MessageType=WorkerEvent&UserName=cherubim0521\
+		# &HostName=shangrila12&SimKey=133718994&TaskID=0&JobIndex=0&WorkerEvent_Status=1001\
+		# &WorkerEvent_Progress=0.05&WorkerEvent_TimePoint=0.399825
+		#
+		#
+		# job progress code is 1001 (see cbit.rmi.event.WorkerEvent.JOB_PROGRESS)
+		#
+		jobprogresscode=1001
+		url="http://${msg_userid}:${msg_password}@${msg_host}:${msg_port}/api/message/workerEvent"
+		args="?type=queue"
+		args="${args}&JMSPriority=5"
+		args="${args}&JMSTimeToLive=600000"
+		args="${args}&JMSDeliveryMode=nonpersistent"
+		args="${args}&MessageType=WorkerEvent"
+		args="${args}&UserName=${msg_job_userid}"
+		if [ ! -z ${msg_job_host+x} ]; then
+			args="${args}&HostName=${msg_job_host}"
+		fi
+		args="${args}&SimKey=${msg_job_simkey}"
+		args="${args}&TaskID=${msg_job_taskid}"
+		args="${args}&JobIndex=${msg_job_jobindex}"
+		args="${args}&WorkerEvent_Status=${jobprogresscode}"
+		args="${args}&WorkerEvent_Progress=${msg_job_progress}"
+		args="${args}&WorkerEvent_TimePoint=${msg_job_timepoint}"
+		echo curl -XPOST "${url}${args}"
+		curl -XPOST "${url}${args}"
+		exit $?
+		;;
+
+	SendStartingMsg)
+		#
+		# Send solver Starting message to VCell messaging infrastructure
+		#
+		# curl -XPOST http://admin:admin@vcellapi.cam.uchc.edu:8161/api/message/workerEvent?type=queue&JMSPriority=5\
+		# &JMSTimeToLive=600000&JMSDeliveryMode=persistent&MessageType=WorkerEvent&UserName=li\
+		# &HostName=xanadu-06.cam.uchc.edu&SimKey=136318902&TaskID=0&JobIndex=3&WorkerEvent_Status=999\
+		# &WorkerEvent_StatusMsg=preprocessing%20started&WorkerEvent_Progress=0&WorkerEvent_TimePoint=0		
+		#
+		#
+		# job starting code is 999 (see cbit.rmi.event.WorkerEvent.JOB_STARTING)
+		#
+		startingcode=999
+		url="http://${msg_userid}:${msg_password}@${msg_host}:${msg_port}/api/message/workerEvent"
+		args="?type=queue"
+		args="${args}&JMSPriority=5"
+		args="${args}&JMSTimeToLive=600000"
+		args="${args}&JMSDeliveryMode=persistent"
+		args="${args}&MessageType=WorkerEvent"
+		args="${args}&UserName=${msg_job_userid}"
+		if [ ! -z ${msg_job_host+x} ]; then
+			args="${args}&HostName=${msg_job_host}"
+		fi
+		args="${args}&SimKey=${msg_job_simkey}"
+		args="${args}&TaskID=${msg_job_taskid}"
+		args="${args}&JobIndex=${msg_job_jobindex}"
+		args="${args}&WorkerEvent_Status=${startingcode}"
+		args="${args}&WorkerEvent_StatusMsg=starting"
 		args="${args}&WorkerEvent_Progress=0"
 		args="${args}&WorkerEvent_TimePoint=0"
 		echo curl -XPOST "${url}${args}"
