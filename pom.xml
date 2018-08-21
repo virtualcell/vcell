@@ -64,6 +64,7 @@
 		<module>ojdbc6</module>
 		<module>ucp</module>
 		<module>vcell-admin</module>
+		<module>vcell-opt</module>
 		<module>vcell-api</module>
 		<module>vcell-apiclient</module>
 		<module>vcell-client</module>

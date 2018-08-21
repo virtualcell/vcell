@@ -1,4 +1,4 @@
-package org.vcell.rest.common;
+package org.vcell.restopt.common;
 
 import org.restlet.ext.json.JsonRepresentation;
 import org.restlet.resource.Get;

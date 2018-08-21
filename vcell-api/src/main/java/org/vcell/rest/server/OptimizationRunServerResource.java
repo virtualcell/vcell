@@ -20,6 +20,7 @@ import org.restlet.representation.StringRepresentation;
 import org.restlet.representation.Variant;
 import org.restlet.resource.Post;
 import org.restlet.resource.ResourceException;
+import org.vcell.api.client.VCellOptClient;
 import org.vcell.optimization.thrift.OptProblem;
 import org.vcell.rest.VCellApiApplication;
 import org.vcell.rest.common.OptimizationRunResource;
@@ -73,17 +74,20 @@ public class OptimizationRunServerResource extends AbstractServerResource implem
 	@Post
 	public Representation run(Representation optProblemJson) throws JSONException {
 		try {
-			VCellApiApplication application = ((VCellApiApplication)getApplication());
+//			VCellApiApplication application = ((VCellApiApplication)getApplication());
 			//User vcellUser = application.getVCellUser(getChallengeResponse(),AuthenticationPolicy.ignoreInvalidCredentials);
 			if (optProblemJson!=null && optProblemJson.getMediaType().isCompatible(MediaType.APPLICATION_JSON)){
 				JsonRepresentation jsonRep = new JsonRepresentation(optProblemJson);
-				JSONObject json = jsonRep.getJsonObject();
-				System.out.println(json);
-				TDeserializer deserializer = new TDeserializer(new TJSONProtocol.Factory());
-				OptProblem optProblem = new OptProblem();
-				deserializer.deserialize(optProblem, json.toString().getBytes());
-	
-				String optimizationId = application.getOptServerImpl().submit(optProblem);
+				VCellOptClient optClient = new VCellOptClient("opt",8080);
+				String optimizationId = optClient.submitOptimization(jsonRep.getText());
+
+//				JSONObject json = jsonRep.getJsonObject();
+//				System.out.println(json);
+//				TDeserializer deserializer = new TDeserializer(new TJSONProtocol.Factory());
+//				OptProblem optProblem = new OptProblem();
+//				deserializer.deserialize(optProblem, json.toString().getBytes());
+//	
+//				String optimizationId = application.getOptServerImpl().submit(optProblem);
 				
 				String redirectURL = "/"+VCellApiApplication.OPTIMIZATION+"/"+optimizationId;
 				System.out.println("should be redirected to "+redirectURL+" but leaving as client responsibility for now to create new url");

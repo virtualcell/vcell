@@ -47,6 +47,25 @@ services:
           memory: 2000M
         reservations:
           memory: 1000M
+  opt:
+    image: "${VCELL_REPO_NAMESPACE}/vcell-opt:${VCELL_TAG}"
+    environment:
+      - softwareVersion=${VCELL_VERSION}
+      - serverid=${VCELL_SITE}
+      
+    ports:
+      - "8080" # web service endpoint
+      - "8000" # java remote debugging
+    networks:
+      - vcellnet
+    deploy:
+      mode: replicated
+      replicas: 1
+      resources:
+        limits:
+          memory: 2000M
+        reservations:
+          memory: 1000M
   sched:
     image: "${VCELL_REPO_NAMESPACE}/vcell-sched:${VCELL_TAG}"
     environment:

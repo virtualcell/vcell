@@ -1,4 +1,4 @@
-package org.vcell.rest.server;
+package org.vcell.restopt;
 
 import java.io.File;
 import java.io.IOException;
@@ -10,20 +10,18 @@ import org.apache.thrift.TException;
 import org.apache.thrift.TSerializer;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TJSONProtocol;
-import org.vcell.api.client.VCellApiClient;
+import org.vcell.api.client.VCellOptClient;
 import org.vcell.optimization.thrift.OptProblem;
 import org.vcell.optimization.thrift.OptRun;
 import org.vcell.optimization.thrift.OptRunStatus;
 
 public class OptimizationApiTest {
 	public static final String host = "localhost";
-	public static final int port = 8081;
+	public static final int port = 8888;
 	
 	public static void main(String[] args){
 		try {
-			boolean bIgnoreCertProblems = true;
-			boolean bIgnoreHostMismatch = true;
-			VCellApiClient apiClient = new VCellApiClient(host, port, bIgnoreCertProblems, bIgnoreHostMismatch);
+			VCellOptClient optClient = new VCellOptClient(host, port);
 
 			File optProbFile = new File("../pythonScripts/VCell_Opt/optprob.bin");
 			System.out.println("using optProblem: "+optProbFile.getAbsolutePath());
@@ -32,16 +30,16 @@ public class OptimizationApiTest {
 			String optProblemJson = serializer.toString(optProblem);
 
 			ArrayList<String> jobIDs = new ArrayList<String>();
-			jobIDs.add(apiClient.submitOptimization(optProblemJson));
-			jobIDs.add(apiClient.submitOptimization(optProblemJson));
-			jobIDs.add(apiClient.submitOptimization(optProblemJson));
-			jobIDs.add(apiClient.submitOptimization(optProblemJson));
+			jobIDs.add(optClient.submitOptimization(optProblemJson));
+			jobIDs.add(optClient.submitOptimization(optProblemJson));
+			jobIDs.add(optClient.submitOptimization(optProblemJson));
+			jobIDs.add(optClient.submitOptimization(optProblemJson));
 			
 			boolean done = false;
 			while (!done){
 				done = true;
 				for (String jobID : jobIDs){
-					String optRunJson = apiClient.getOptRunJson(jobID);
+					String optRunJson = optClient.getOptRunJson(jobID);
 					TDeserializer deserializer = new TDeserializer(new TJSONProtocol.Factory());
 					OptRun optRun = new OptRun();
 					deserializer.deserialize(optRun, optRunJson.getBytes());
