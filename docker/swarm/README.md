@@ -10,6 +10,7 @@
 8) vcell-clientgen   => docker image in registry    (generates Install4J installers during deployment)  
 9) vcell-batch       => docker image in registry    (for batch processing, includes java code and Linux solver executables)  
 10) vcell-batch.img  => singularity image in ./singularity-vm/   (built from vcell-batch docker image)  
+11) vcell-opt =>     => docker image in registry    (opt)  
 
 ## (../swarm/README.md): build Singularity image for Linux solvers
 
@@ -26,7 +27,8 @@ See [vcell-solvers README.md](C:\users\frm\VCellTrunkGitWorkspaceSolvers\README_
 **Edit** {vcellroot}/vcell-core/pom.xml [vcell-core pom](../../vcell-core/pom.xml)  
 ----theTag= created as above  
 ----Get the tag from [github][https://github.com/virtualcell/vcell-solvers/tags), pick the tag you want, usually latest  
-----Change all lines "https://github.com/virtualcell/vcell-solvers/releases/download/v{theTag}/{linux,win,mac}64.tgz", pick the tag you want, usually latest  
+----Change all lines "https://github.com/virtualcell/vcell-solvers/releases/download/v{theTag}/{linux,win,mac}64.tgz", pick the tag you want, usually latest
+-----must change md5 if using deifferent tag or location from previous
 
 **MUST commit any changes made during above to github on the VCell project**  
 
@@ -190,3 +192,8 @@ Choose 1 of the following:
 ```
 
 [Info Local Service Debugging](README_localServicesDebug.md)
+
+
+/usr/local/deploy/config
+sudo $(cat ${VCELL_CONFIG_FILE_NAME} | xargs) docker stack deploy -c docker-compose_${VCELL_TAG}.yml vcellalpha
+

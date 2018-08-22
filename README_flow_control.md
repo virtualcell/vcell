@@ -153,6 +153,7 @@ vcell-api container
 -----org.vcell.api.client.VCellApiClient.sendRpcMessage(...)  (return from blocking call started above)  
 
 
-
+#Client get Bio/Math Model
+client-side
 
 
