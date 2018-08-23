@@ -168,6 +168,7 @@ Choose 1 of the following:
 **CLIENT and SERVER** deploy commands (may request password at some point)
 
 ```bash
+rm -rf ./generated_installers
 ./generate_installers.sh ./${VCELL_CONFIG_FILE_NAME}
 ```
 
