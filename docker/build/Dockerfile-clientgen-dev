@@ -30,11 +30,11 @@ VOLUME /buildsecrets
 #
 # Install4j code signing certificates and Install4J product key (using docker-compose 'secrets' facility)
 #
-ENV winCodeSignKeystore_pfx=/buildsecrets/winCodeSignKeystore_pfx \
-    macCodeSignKeystore_p12=/buildsecrets/macCodeSignKeystore_p12 \
-    winCodeSignKeystore_pswdfile=/buildsecrets/winCodeSignKeystore_pswdfile \
-    macCodeSignKeystore_pswdfile=/buildsecrets/macCodeSignKeystore_pswdfile \
-    Install4J_product_key_file=/buildsecrets/Install4J_product_key_file
+ENV winCodeSignKeystore_pfx=Expecting_this_to_be_defined_runtime_for_winCodeSignKeystore_pfx \
+    macCodeSignKeystore_p12=Expecting_this_to_be_defined_runtime_for_macCodeSignKeystore_p12 \
+    winCodeSignKeystore_pswdfile=Expecting_this_to_be_defined_runtime_for_winCodeSignKeystore_pswdfile \
+    macCodeSignKeystore_pswdfile=Expecting_this_to_be_defined_runtime_for_macCodeSignKeystore_pswdfile \
+    Install4J_product_key_file=Expecting_this_to_be_defined_runtime_for_Install4J_product_key_file
 
 #
 # these are to be overridden for a particular context

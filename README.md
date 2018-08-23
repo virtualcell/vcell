@@ -57,8 +57,11 @@ VCell Server Installation General Requirements
 
 
 
-
-0b) Understanding VCell services [detailed instructions](docker/README_serviceInfo.md)  
+0a) Creating certs [details](README_certs.md)  
+--(TLS/SSL website for (vcellapi.cam.uchc.edu,vcell-api.cam.uchc.edu)  
+--Microsoft authenticode codesigning (to prevent install4j from being rejected on windows clients)  
+--Apple codesigning for macos (prevents from mac refusing install4j install))  
+0b) Understanding VCell services [detailed instructions](docker/README_serviceInfo.md)   
 1) NEW VCell Server Node configuration [detailed instructions](docker/swarm/README_DockerSwarmConfig.md)  
 -----1a) Create new Docker swarm with node or Add node to existing Docker swarm [detailed instructions](docker/swarm/README_NodeAndSwarm.md)  
 -----1b) Finish NEW VCell Server Node configuration [detailed instructions](docker/swarm/README_new_node_final_steps.md)  
