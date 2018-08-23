@@ -356,7 +356,7 @@
 										<url>https://github.com/virtualcell/vcell-solvers/releases/download/v0.0.21/win64.zip</url>
 										<unpack>true</unpack>
 										<outputDirectory>${project.build.directory}/../../localsolvers/win64</outputDirectory>
-										<md5>7d0e5a77fd8673f018ad706ec9a1a9f0</md5>
+										<!-- <md5>7d0e5a77fd8673f018ad706ec9a1a9f0</md5> -->
 									</configuration>
 								</execution>
 							</executions>
@@ -388,7 +388,7 @@
 										<url>https://github.com/virtualcell/vcell-solvers/releases/download/v0.0.21/mac64.tgz</url>
 										<unpack>true</unpack>
 										<outputDirectory>${project.build.directory}/../../localsolvers/mac64</outputDirectory>
-										<md5>b536a5c3d84e6bafa3087f7ae311fe61</md5>
+										<!-- <md5>b536a5c3d84e6bafa3087f7ae311fe61</md5> -->
 									</configuration>
 								</execution>
 							</executions>
@@ -421,7 +421,7 @@
 										<url>https://github.com/virtualcell/vcell-solvers/releases/download/v0.0.21/linux64.tgz</url>
 										<unpack>true</unpack>
 										<outputDirectory>${project.build.directory}/../../localsolvers/linux64</outputDirectory>
-										<md5>8c262fed27143720fa4be27c9028b8e7</md5>
+										<!-- <md5>8c262fed27143720fa4be27c9028b8e7</md5> -->
 									</configuration>
 								</execution>
 								<execution>
@@ -434,7 +434,7 @@
 										<url>https://github.com/virtualcell/vcell-solvers/releases/download/v0.0.21/win64.zip</url>
 										<unpack>true</unpack>
 										<outputDirectory>${project.build.directory}/../../localsolvers/win64</outputDirectory>
-										<md5>7d0e5a77fd8673f018ad706ec9a1a9f0</md5>
+										<!-- <md5>7d0e5a77fd8673f018ad706ec9a1a9f0</md5> -->
 									</configuration>
 								</execution>
 			 					<execution>
@@ -447,7 +447,7 @@
 										<url>https://github.com/virtualcell/vcell-solvers/releases/download/v0.0.21/mac64.tgz</url>
 										<unpack>true</unpack>
 										<outputDirectory>${project.build.directory}/../../localsolvers/mac64</outputDirectory>
-										<md5>b536a5c3d84e6bafa3087f7ae311fe61</md5>
+										<!-- <md5>b536a5c3d84e6bafa3087f7ae311fe61</md5> -->
 									</configuration>
 								</execution>
 							</executions>
