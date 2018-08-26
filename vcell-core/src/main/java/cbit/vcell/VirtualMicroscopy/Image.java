@@ -13,6 +13,11 @@ import java.awt.Rectangle;
 import java.io.Serializable;
 import java.lang.reflect.Array;
 
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlElement;
+
 import org.vcell.util.Extent;
 import org.vcell.util.ISize;
 import org.vcell.util.Matchable;
@@ -20,14 +25,23 @@ import org.vcell.util.Origin;
 
 import cbit.image.ImageException;
 
+@XmlAccessorType(XmlAccessType.FIELD)
 public abstract class Image implements Serializable, Matchable {
+	@XmlAttribute
 	private int numX = 0;
+	@XmlAttribute
 	private int numY = 0;
+	@XmlAttribute
 	private int numZ = 0;
-	private org.vcell.util.Extent extent = new org.vcell.util.Extent(10, 10, 10);
+	@XmlElement
+	private Extent extent = new Extent(10, 10, 10);
+	@XmlElement
 	private Origin origin = new Origin(0,0,0);
-	private java.lang.String fieldName = new String();
-	private java.lang.String fieldDescription = new String("NoName");
+	@XmlAttribute
+	private String fieldName = new String();
+	@XmlAttribute
+	private String fieldDescription = new String("NoName");
+	public Image() {}//For jaxb
 
 public static class ImageStatistics {
 	public double minValue;

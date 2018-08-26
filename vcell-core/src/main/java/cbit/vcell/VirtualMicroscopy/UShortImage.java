@@ -17,7 +17,9 @@ import java.awt.image.ConvolveOp;
 import java.awt.image.DataBufferUShort;
 import java.awt.image.Kernel;
 import java.io.Serializable;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.BitSet;
 
 import javax.media.jai.BorderExtender;
@@ -33,6 +35,9 @@ import javax.media.jai.operator.DilateDescriptor;
 import javax.media.jai.operator.ErodeDescriptor;
 import javax.media.jai.operator.ExtremaDescriptor;
 import javax.media.jai.operator.LookupDescriptor;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.adapters.XmlAdapter;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 import org.vcell.util.Extent;
 import org.vcell.util.Matchable;
@@ -45,9 +50,13 @@ import cbit.image.ImageException;
 /**
  * This type was created in VisualAge.
  */
-public class UShortImage extends Image implements Serializable {
-	private short pixels[] = null;
 
+public class UShortImage extends Image implements Serializable {
+	@XmlElement
+	@XmlJavaTypeAdapter(UShortImage.UShortXmlAdapter.class)
+	private short pixels[] = null;
+	public UShortImage() {}//For jaxb
+	
 	public UShortImage(Image image) throws ImageException {
 		super(image);
 		if (image instanceof UShortImage){
@@ -75,6 +84,30 @@ public UShortImage(short pixels[], Origin aOrigin, org.vcell.util.Extent aExtent
 		throw new IllegalArgumentException("size ("+aNumX+","+aNumY+","+aNumZ+") not consistent with "+pixels.length+" pixels");
 	}
 	this.pixels = pixels;
+}
+public static class UShortXmlAdapter extends XmlAdapter<String, short[]>{
+
+	@Override
+	public short[] unmarshal(String v) throws Exception {
+		byte[] bytes = Base64.getDecoder().decode(v);
+		ByteBuffer byteBuffer = ByteBuffer.wrap(bytes);
+		short[] shorts = new short[bytes.length/Short.BYTES];
+		for (int i = 0; i < shorts.length; i++) {
+			shorts[i] = byteBuffer.getShort();
+		}
+		return shorts;
+	}
+
+	@Override
+	public String marshal(short[] v) throws Exception {
+		ByteBuffer byteBuf = ByteBuffer.allocate(v.length*Short.BYTES);
+		for (int i = 0; i < v.length; i++) {
+			byteBuf.putShort(v[i]);
+		}
+		byte[] bytes = byteBuf.array();
+		return Base64.getEncoder().encodeToString(bytes);
+	}
+	
 }
 public static BufferedImage createUnsignedBufferedImage(UShortImage uShortImage){
 	return createUnsignedBufferedImage(uShortImage.getPixels(), uShortImage.getNumX(), uShortImage.getNumY());

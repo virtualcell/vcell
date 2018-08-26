@@ -1570,7 +1570,7 @@ public AsynchClientTask[] createNewGeometryTasks(final TopLevelWindowManager req
 							}
 							hashTable.put(DIR_FILES, dirFiles);
 						}else{
-							origImageSizeInfo = imageDatasetReader.getImageSizeInfo(imageFile.getAbsolutePath());
+							origImageSizeInfo = imageDatasetReader.getImageSizeInfoForceZ(imageFile.getAbsolutePath(),null);
 							hashTable.put(IMPORT_SOURCE_NAME,"File: "+imageFile.getAbsolutePath());
 						}
 						hashTable.put(ORIG_IMAGE_SIZE_INFO, origImageSizeInfo);

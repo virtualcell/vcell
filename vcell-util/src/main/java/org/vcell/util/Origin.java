@@ -10,14 +10,20 @@
 
 package org.vcell.util;
 
+import javax.xml.bind.annotation.XmlAttribute;
 
 /**
  * This type was created in VisualAge.
  */
 public class Origin implements java.io.Serializable, Matchable {
+	@XmlAttribute
 	private double x;
+	@XmlAttribute
 	private double y;
+	@XmlAttribute
 	private double z;
+	public Origin() {}//For jaxb
+	
 /**
  * Origin constructor comment.
  */

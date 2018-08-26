@@ -12,6 +12,11 @@ package cbit.vcell.VirtualMicroscopy;
 
 import java.awt.Rectangle;
 
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlElement;
+
 import org.vcell.util.Compare;
 import org.vcell.util.Extent;
 import org.vcell.util.ISize;
@@ -30,12 +35,16 @@ import cbit.vcell.VirtualMicroscopy.Image.ImageStatistics;
  * 
  * 
  */
-
+@XmlAccessorType(XmlAccessType.FIELD)// prevent jaxb from calling 'setters' e.g setExtent(...) for class variables
 public class ImageDataset implements Matchable{
+	@XmlElement
 	private UShortImage[] images = null;
+	@XmlElement
 	private double[] imageTimeStamps = null;
+	@XmlAttribute
 	int numZ = -1;
-
+	public ImageDataset() {}//For jaxb
+	
 	/**
 	 * FRAPData constructor comment.
 	 */
