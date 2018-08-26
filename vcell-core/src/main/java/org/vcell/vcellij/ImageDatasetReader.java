@@ -11,11 +11,8 @@ import cbit.vcell.VirtualMicroscopy.ImageDataset;
 
 public interface ImageDatasetReader extends SciJavaPlugin {
 
-	public abstract ImageSizeInfo getImageSizeInfo(
-			String fileName) throws Exception;
-
 	public abstract ImageSizeInfo getImageSizeInfoForceZ(
-			String fileName, int forceZSize) throws Exception;
+			String fileName, Integer forceZSize) throws Exception;
 
 	public abstract ImageDataset readImageDataset(String imageID,
 			ClientTaskStatusSupport status) throws Exception;

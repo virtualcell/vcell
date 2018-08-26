@@ -10,14 +10,20 @@
 
 package org.vcell.util;
 
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlElement;
 
 /**
  * This type was created in VisualAge.
  */
 public class Extent implements java.io.Serializable, Matchable {
+	@XmlAttribute
 	private double x;
+	@XmlAttribute
 	private double y;
+	@XmlAttribute
 	private double z;
+	public Extent() {}//For jaxb
 
 /**
  * Origin constructor comment.
