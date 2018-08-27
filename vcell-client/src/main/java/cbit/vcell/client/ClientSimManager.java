@@ -57,7 +57,6 @@ import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.resource.VCellConfiguration;
-import cbit.vcell.resource.VisitSupport;
 import cbit.vcell.server.SimulationStatus;
 import cbit.vcell.simdata.DataManager;
 import cbit.vcell.simdata.DataSetControllerImpl;
@@ -255,9 +254,7 @@ public void showSimulationResults(OutputContext outputContext, Simulation[] simu
 }
 
 public enum ViewerType {
-	NativeViewer_only,
-	PythonViewer_only,
-	BothNativeAndPython
+	NativeViewer_only
 }
 
 private static void saveFailure(Hashtable<String, Object>hashTable,Simulation sim,Throwable throwable){
@@ -287,7 +284,7 @@ private AsynchClientTask[] showSimulationResults0(final boolean isLocal, final V
 				final SimulationWindow simWindow = documentWindowManager.haveSimulationWindow(vcSimulationIdentifier);
 				OutputContext outputContext = (OutputContext)hashTable.get("outputContext");
 				
-				if (simWindow == null && (viewerType==ViewerType.BothNativeAndPython || viewerType==ViewerType.NativeViewer_only)) {			
+				if (simWindow == null && ( viewerType==ViewerType.NativeViewer_only)) {			
 					try {
 						// make the manager and wire it up
 						DataViewerController dataViewerController = null;
@@ -324,55 +321,6 @@ private AsynchClientTask[] showSimulationResults0(final boolean isLocal, final V
 						exc.printStackTrace(System.out);
 						saveFailure(hashTable,sim, exc);
 					}
-				}
-				try {
-					if (viewerType==ViewerType.PythonViewer_only || viewerType==ViewerType.BothNativeAndPython){
-						VtkManager vtkManager = null;
-						if (!isLocal) {
-							vtkManager = documentWindowManager.getRequestManager().getVtkManager(outputContext,new VCSimulationDataIdentifier(vcSimulationIdentifier,0));
-						} else {
-							// ---- preliminary : construct the localDatasetControllerProvider
-							File primaryDir = ResourceUtil.getLocalRootDir();
-							User usr = sim.getVersion().getOwner();
-							DataSetControllerImpl dataSetControllerImpl = new DataSetControllerImpl(null,primaryDir,null);
-							ExportServiceImpl localExportServiceImpl = new ExportServiceImpl();
-							LocalDataSetControllerProvider localDSCProvider = new LocalDataSetControllerProvider(usr, dataSetControllerImpl, localExportServiceImpl);
-							VCDataManager vcDataManager = new VCDataManager(localDSCProvider);
-							File localSimDir = ResourceUtil.getLocalSimDir(User.tempUser.getName());
-							VCSimulationDataIdentifier simulationDataIdentifier = new LocalVCSimulationDataIdentifier(vcSimulationIdentifier, 0, localSimDir);
-							vtkManager = new VtkManager(outputContext, vcDataManager, simulationDataIdentifier);
-						}
-						//
-						// test ability to read data
-						//
-						VtuVarInfo[] vtuVarInfos = vtkManager.getVtuVarInfos();
-						double[] times = vtkManager.getDataSetTimes();
-						
-						//
-						// create the SimulationDataSetRef
-						//
-						VCDocument modelDocument = null;
-						if (documentWindowManager instanceof BioModelWindowManager){
-							modelDocument = ((BioModelWindowManager)documentWindowManager).getBioModel();
-						}else if (documentWindowManager instanceof MathModelWindowManager){
-							modelDocument = ((MathModelWindowManager)documentWindowManager).getMathModel();
-						}
-						SimulationDataSetRef simulationDataSetRef = VCellClientDataServiceImpl.createSimulationDataSetRef(sim, modelDocument, 0, isLocal);
-						
-//							Hashtable<VCSimulationIdentifier, SimulationDataSetRef> simDataSetRefs = (Hashtable<VCSimulationIdentifier, SimulationDataSetRef>)hashTable.get(H_SIM_DATASET_REFS);
-//							if (simDataSetRefs == null) {
-//								simDataSetRefs = new Hashtable<VCSimulationIdentifier, SimulationDataSetRef>();
-//								hashTable.put(H_SIM_DATASET_REFS, simDataSetRefs);
-//							}
-//							simDataSetRefs.put(vcSimulationIdentifier, simulationDataSetRef);
-						File visitExe = VCellConfiguration.getFileProperty(PropertyLoader.visitExe);
-						if (visitExe != null){
-							VisitSupport.launchVisTool(visitExe, simulationDataSetRef);
-						}
-					}
-				} catch (Throwable exc) {
-					exc.printStackTrace(System.out);
-					saveFailure(hashTable,sim, exc);
 				}
 			}			
 		}	
@@ -444,7 +392,7 @@ private AsynchClientTask[] showSimulationResults0(final boolean isLocal, final V
 			}
 		}			
 	};
-	if (viewerType==ViewerType.BothNativeAndPython || viewerType==ViewerType.NativeViewer_only){
+	if ( viewerType==ViewerType.NativeViewer_only){
 		taskList.add(displayResultsTask);
 	}
 	

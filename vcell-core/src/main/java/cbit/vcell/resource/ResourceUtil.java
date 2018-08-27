@@ -463,10 +463,6 @@ public class ResourceUtil {
 		return new File(getPythonScriptsDir(),VCELL_VTK_DIR);
 	}
 
-	public static File getVCellVisItPythonDir() {
-		return new File(getPythonScriptsDir(),VCELL_VISIT_DIR);
-	}
-
 	public static File getOptimizationRootDir()
 	{
 		if(optimizationRootDir == null)
