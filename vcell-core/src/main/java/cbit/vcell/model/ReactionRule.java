@@ -1051,6 +1051,44 @@ public class ReactionRule implements RbmObject, Serializable, ModelProcess, Prop
 			}
 		}
 		
+		// check if there are disjoint patterns (molecules not explicitely connected through components)
+		for(ReactantPattern rp : reactantPatterns) {
+			SpeciesPattern sp = rp.getSpeciesPattern();
+			if(sp.getMolecularTypePatterns().size() < 2) {
+				continue;	// no point in looking since the pattern has a single molecule
+			}
+			boolean isDisjoint = false;
+			for(MolecularTypePattern mtp : sp.getMolecularTypePatterns()) {
+				if(mtp.isDisjoint()) {
+					isDisjoint = true;
+					break;		// found an unconnected molecule in the species pattern
+				}
+			}
+			if(isDisjoint) {	// tell the world
+				String message = "Found disjoint sets in a reactant pattern, as in A().B() with no explicit bond through components.";
+				String toolTip = "These type of patterns may make NFSim run slower or even fail. Is it highly advised to express this pattern with a different syntax.";
+				issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, message, toolTip, Issue.Severity.WARNING));
+			}
+		}
+		for(ProductPattern pp : productPatterns) {
+			SpeciesPattern sp = pp.getSpeciesPattern();
+			if(sp.getMolecularTypePatterns().size() < 2) {
+				continue;
+			}
+			boolean isDisjoint = false;
+			for(MolecularTypePattern mtp : sp.getMolecularTypePatterns()) {
+				if(mtp.isDisjoint()) {
+					isDisjoint = true;
+					break;
+				}
+			}
+			if(isDisjoint) {
+				String message = "Found disjoint sets in a product pattern, as in A().B() with no explicit bond through components.";
+				String toolTip = "These type of patterns may make NFSim run slower or even fail. Is it highly advised to express this pattern with a different syntax.";
+				issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, message, toolTip, Issue.Severity.WARNING));
+			}
+		}
+		
 		// match management
 		issueContext = issueContext.newChildContext(ContextType.ReactionRule, this);
 		Map<String, Integer> matchedReactants = new LinkedHashMap<String, Integer>();

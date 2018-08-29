@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.vcell.model.rbm.MolecularComponentPattern.BondType;
 import org.vcell.util.Compare;
 import org.vcell.util.Displayable;
 import org.vcell.util.Issue;
@@ -91,13 +92,26 @@ public class MolecularTypePattern extends RbmElementAbstract implements Matchabl
 		setComponentPatterns(newValue);
 	}
 	
-	boolean isFullyDefined(){
-		for (MolecularComponentPattern patterns : componentPatternList){
-			if (!patterns.isFullyDefined()){
+	@Deprecated
+	boolean isFullyDefined() {
+		for (MolecularComponentPattern pattern : componentPatternList) {
+			if (!pattern.isFullyDefined()) {
 				return false;
 			}
 		}
 		return true;
+	}
+	
+	public boolean isDisjoint() {		// true if at least one site has an explicit bond
+		for(MolecularComponentPattern pattern : componentPatternList) {
+			if(pattern.getBondType() == BondType.Specified) {
+				SpeciesPattern.Bond bond = pattern.getBond();
+				if(pattern.getBond().molecularTypePattern != this) {
+					return false;	// we have at least an explicit bond with another molecule
+				}
+			}
+		}
+		return 	true;	// we found no explicit bond with another molecule	
 	}
 
 	public final MolecularType getMolecularType() {
