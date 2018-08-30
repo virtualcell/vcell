@@ -453,20 +453,22 @@ public SimulationContext(SimulationContext oldSimulationContext,Geometry newClon
 		}
 		
 		// copy SpatialObjects
-		SpatialObject[] otherSpatialObjects = oldSimulationContext.getSpatialObjects();
-		if (otherSpatialObjects != null) {
-			this.spatialObjects = new SpatialObject[otherSpatialObjects.length];
-			for (int i = 0; i < otherSpatialObjects.length; i++) {
-				if (otherSpatialObjects[i] instanceof CurveObject){
-					this.spatialObjects[i] = new CurveObject((CurveObject) otherSpatialObjects[i], this);
-				}else if (otherSpatialObjects[i] instanceof PointObject){
-					this.spatialObjects[i] = new PointObject((PointObject) otherSpatialObjects[i], this);
-				}else if (otherSpatialObjects[i] instanceof SurfaceRegionObject){
-					this.spatialObjects[i] = new SurfaceRegionObject((SurfaceRegionObject) otherSpatialObjects[i], this);
-				}else if (otherSpatialObjects[i] instanceof VolumeRegionObject){
-					this.spatialObjects[i] = new VolumeRegionObject((VolumeRegionObject) otherSpatialObjects[i], this);
-				}else{
-					throw new RuntimeException("unexpected Spatial object in SimulationContext()");
+		if(newClonedGeometry.getDimension() > 0) {
+			SpatialObject[] otherSpatialObjects = oldSimulationContext.getSpatialObjects();
+			if (otherSpatialObjects != null) {
+				this.spatialObjects = new SpatialObject[otherSpatialObjects.length];
+				for (int i = 0; i < otherSpatialObjects.length; i++) {
+					if (otherSpatialObjects[i] instanceof CurveObject){
+						this.spatialObjects[i] = new CurveObject((CurveObject) otherSpatialObjects[i], this);
+					}else if (otherSpatialObjects[i] instanceof PointObject){
+						this.spatialObjects[i] = new PointObject((PointObject) otherSpatialObjects[i], this);
+					}else if (otherSpatialObjects[i] instanceof SurfaceRegionObject){
+						this.spatialObjects[i] = new SurfaceRegionObject((SurfaceRegionObject) otherSpatialObjects[i], this);
+					}else if (otherSpatialObjects[i] instanceof VolumeRegionObject){
+						this.spatialObjects[i] = new VolumeRegionObject((VolumeRegionObject) otherSpatialObjects[i], this);
+					}else{
+						throw new RuntimeException("unexpected Spatial object in SimulationContext()");
+					}
 				}
 			}
 		}
@@ -484,20 +486,22 @@ public SimulationContext(SimulationContext oldSimulationContext,Geometry newClon
 		}
 		
 		// copy SpatialProcesses
-		SpatialProcess[] otherSpatialProcesses = oldSimulationContext.getSpatialProcesses();
-		if (otherSpatialProcesses != null) {
-			this.spatialProcesses = new SpatialProcess[otherSpatialProcesses.length];
-			for (int i = 0; i < otherSpatialProcesses.length; i++) {
-				if (otherSpatialProcesses[i] instanceof PointLocation){
-					this.spatialProcesses[i] = new PointLocation((PointLocation) otherSpatialProcesses[i], this);
-				}else if (otherSpatialProcesses[i] instanceof PointKinematics){
-					this.spatialProcesses[i] = new PointKinematics((PointKinematics) otherSpatialProcesses[i], this);
-				}else if (otherSpatialProcesses[i] instanceof SurfaceKinematics){
-					this.spatialProcesses[i] = new SurfaceKinematics((SurfaceKinematics) otherSpatialProcesses[i], this);
-				}else if (otherSpatialProcesses[i] instanceof VolumeKinematics){
-					this.spatialProcesses[i] = new VolumeKinematics((VolumeKinematics) otherSpatialProcesses[i], this);
-				}else{
-					throw new RuntimeException("unexpected Spatial process in SimulationContext()");
+		if(newClonedGeometry.getDimension() > 0) {
+			SpatialProcess[] otherSpatialProcesses = oldSimulationContext.getSpatialProcesses();
+			if (otherSpatialProcesses != null) {
+				this.spatialProcesses = new SpatialProcess[otherSpatialProcesses.length];
+				for (int i = 0; i < otherSpatialProcesses.length; i++) {
+					if (otherSpatialProcesses[i] instanceof PointLocation){
+						this.spatialProcesses[i] = new PointLocation((PointLocation) otherSpatialProcesses[i], this);
+					}else if (otherSpatialProcesses[i] instanceof PointKinematics){
+						this.spatialProcesses[i] = new PointKinematics((PointKinematics) otherSpatialProcesses[i], this);
+					}else if (otherSpatialProcesses[i] instanceof SurfaceKinematics){
+						this.spatialProcesses[i] = new SurfaceKinematics((SurfaceKinematics) otherSpatialProcesses[i], this);
+					}else if (otherSpatialProcesses[i] instanceof VolumeKinematics){
+						this.spatialProcesses[i] = new VolumeKinematics((VolumeKinematics) otherSpatialProcesses[i], this);
+					}else{
+						throw new RuntimeException("unexpected Spatial process in SimulationContext()");
+					}
 				}
 			}
 		}
@@ -3210,7 +3214,12 @@ public SpatialObject[] getSpatialObjects(GeometryClass geometryClass) {
 public static 
 	SimulationContext copySimulationContext(SimulationContext srcSimContext, String newSimulationContextName, boolean bSpatial, Application simContextType) 
 				throws java.beans.PropertyVetoException, ExpressionException, MappingException, GeometryException, ImageException {
-		Geometry newClonedGeometry = new Geometry(srcSimContext.getGeometry());
+		Geometry newClonedGeometry = null;
+		if(bSpatial) {
+			newClonedGeometry = new Geometry(srcSimContext.getGeometry());			
+		}else {
+			newClonedGeometry = new Geometry(srcSimContext.getGeometry().getName(),0);
+		}
 		newClonedGeometry.precomputeAll(new GeometryThumbnailImageFactoryAWT());
 		//if stoch copy to ode, we need to check is stoch is using particles. If yes, should convert particles to concentraton.
 		//the other 3 cases are fine. ode->ode, ode->stoch, stoch-> stoch 
