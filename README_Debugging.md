@@ -1,3 +1,25 @@
+**Find slurm sim logs**  
+login vcell@vcell-service  
+sacct --format="JobID,JobName%30,State,Submit,start,User,ExitCode" | grep -i {VCellSimID}  
+--e.g. sacct --format="JobID,JobName%30,State,Submit,start,User,ExitCode" | grep -i 139363583  
+less /share/apps/vcell3/htclogs/{JobName}.slurm.log  //JobName from sacct query
+--e.g less /share/apps/vcell3/htclogs/V_ALPHA_139363583_0_0.slurm.log  
+-----------------------------------------------------  
+**Find where simjob xxx.slurm.submit:TMPDIR originates in VCell deployment process**  
+select 'vcell' project in eclipse, Search->File..., for "using TMPDIR=$TMPDIR" (no double quotes), in *.java, whole workspace  
+Finds SlurmProxy.java, line references local variable "slurm_tmpdir"  
+slurm_tmpdir = PropertyLoader.getRequiredProperty(PropertyLoader.slurm_tmpdir)  
+PropertyLoader.slurm_tmpdir = "vcell.slurm.tmpdir"  
+Search {vcellroot}/docker for "vcell.slurm.tmpdir" (no double quotes)  
+Finds {vcellroot}/docker/build/Dockerfile-submit-dev, -Dvcell.slurm.tmpdir="${slurm_tmpdir}"  
+Search {vcellroot}/docker for "slurm_tmpdir" (no double quotes)  
+Finds {vcellroot}/docker/swarm/docker-compose.yml, slurm_tmpdir=${VCELL_SLURM_TMPDIR}  
+Search {vcellroot}/docker for "VCELL_SLURM_TMPDIR" (no double quotes)  
+Finds {vcellroot}/docker/swarm/serverconfig-uch.sh, VCELL_SLURM_TMPDIR=/scratch/vcell  
+-----------------------------------------------------   
+ **See if VCell hpc nodes are alive (may hang if a node can't be reached)**  
+ sinfo -N -h -p vcell2 --Format='nodelist' |   xargs  -n 1  -I {} sh -c 'echo {}; ssh {} date || (true);'  
+----------------------------------------------------- 
 
 sudo yum install -y epel-release  
 sudo yum-config-manager --enable epel  
@@ -44,10 +66,8 @@ File->Settings...->Build,Execution,Deployment->CMake->panelGUI
 
 Service configuration info including **java class** [detailed instructions](docker/README_serviceInfo.md)
 
-## Real location of required properties
-
-[script that creates server environment variables file](docker/swarm/serverconfig-uch.sh) 
- 
+**Definition of required properties**  
+[script that creates server environment variables file](docker/swarm/serverconfig-uch.sh)  
 client local run  alpha  
 -Dvcell.primarySimdatadir.internal=\\cfs05\vcell\users  
 -Dvcell.secondarySimdatadir.internal=\\cfs05\vcell\users  
@@ -78,20 +98,23 @@ sudo docker network inspect 8faccc2c5056
 sudo docker container inspect dd29d35fba3e94fa476020f4f2c3de860f745fc3be32f76107ca368f4fffbfd5  
 
 
-**Debug slurm jobs**
-**List slurm nodes, login vcell-service as vcell**  
-abc=$(sinfo -N -h -p vcell2 --Format='nodelist' | xargs)  
+**Debug slurm jobs**  
+--List slurm nodes, login vcell-service as vcell  
+----abc=$(sinfo -N -h -p vcell2 --Format='nodelist' | xargs)  
+--Get info for VCell simid, login vcell-service as vcell  
+----sacct --format="JobID,JobName%30,State,Submit,start,User,ExitCode" | grep -i 139363583  
 
 **command line interface in python ... (similar to old vcell console)**  
------login build machine (vcell-node1), run /opt/build/vcell/docker/swarm/cli.py
+-----login build machine (vcell-node1), run /opt/build/vcell/docker/swarm/cli.py  
 
-sudo docker node ls ({vcellapi(rel), vcellapi-beta(alpha)}shows all nodes in swarm that host belongs to, must be on manager node)
-sudo docker stack ls (shows all running stacks in the swarm)
-sudo docker stack ps {stack} (shows 'task' info for particular stack)
-sudo docker service ls (shows all services and port mappings for the swarm)
-sudo docker system df (shows disk usage on host)
-sudo docker system prune (gets rid of unused/dangling components)
-sudo docker stats (must be run on each host of swarm, show cpu,mem,... for each container)
+**Useful docker commands**  
+sudo docker node ls ({vcellapi(rel), vcellapi-beta(alpha)}shows all nodes in swarm that host belongs to, must be on manager node)  
+sudo docker stack ls (shows all running stacks in the swarm)  
+sudo docker stack ps {stack} (shows 'task' info for particular stack)  
+sudo docker service ls (shows all services and port mappings for the swarm)  
+sudo docker system df (shows disk usage on host)  
+sudo docker system prune (gets rid of unused/dangling components)  
+sudo docker stats (must be run on each host of swarm, show cpu,mem,... for each container)  
 
 
 
