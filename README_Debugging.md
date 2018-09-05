@@ -83,7 +83,9 @@ client local run  alpha
 -Dvcell.softwareVersion="frm\_VCell\_7.0"  
 -Dvcell.bioformatsJarFileName=vcell-bioformats-0.0.4-jar-with-dependencies.jar  
 -Dvcell.bioformatsJarDownloadURL=http://vcell.org/webstart/vcell-bioformats-0.0.4-jar-with-dependencies.jar  
-
+// required to run locally simulation with green button (dan)  
+-Dvcell.server.maxJobsPerScan=1  
+-Dvcell.limit.jobMemoryMB=100  
 
 **Debug network container activity (host 'netstat' command may not show Docker container activity)**  
 //Show network interfaces  
