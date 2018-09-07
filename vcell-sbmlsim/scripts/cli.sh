@@ -98,8 +98,8 @@ runjava()
 
 	props="-Dvcell.installDir=$PWD"
 	# props="${props} -Dvcell.softwareVersion=standalone_VCell_7.0"
-	# props="${props} -Dvcell.bioformatsJarFileName=vcell-bioformats-0.0.4-jar-with-dependencies.jar"
-	# props="${props} -Dvcell.bioformatsJarDownloadURL=http://vcell.org/webstart/vcell-bioformats-0.0.4-jar-with-dependencies.jar"
+	# props="${props} -Dvcell.bioformatsJarFileName=vcell-bioformats-0.0.5-jar-with-dependencies.jar"
+	# props="${props} -Dvcell.bioformatsJarDownloadURL=http://vcell.org/webstart/vcell-bioformats-0.0.5-jar-with-dependencies.jar"
 
 	echo java ${props} -cp $CLASSPATH $MAIN_CLASS $@
 	java ${props} -cp $CLASSPATH $MAIN_CLASS $@
