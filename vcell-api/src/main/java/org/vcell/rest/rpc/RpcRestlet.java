@@ -18,6 +18,8 @@ import org.vcell.api.client.VCellApiClient.VCellApiRpcBody;
 import org.vcell.api.client.VCellApiRpcRequest;
 import org.vcell.rest.VCellApiApplication;
 import org.vcell.rest.VCellApiApplication.AuthenticationPolicy;
+import org.vcell.rest.server.RestDatabaseService;
+import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 import org.vcell.util.document.UserLoginInfo;
 
@@ -27,8 +29,10 @@ import cbit.vcell.message.VCellQueue;
 
 public final class RpcRestlet extends Restlet {
 	private static Logger lg = LogManager.getLogger(RpcRestlet.class);
-	public RpcRestlet(Context context) {
+	RestDatabaseService restDatabaseService;
+	public RpcRestlet(Context context,RestDatabaseService restDatabaseService) {
 		super(context);
+		this.restDatabaseService = restDatabaseService;
 	}
 
 	@Override
@@ -64,36 +68,46 @@ public final class RpcRestlet extends Restlet {
 				RpcServiceType st = null;
 				VCellQueue queue = null;
 				switch (rpcBody.rpcRequest.rpcDestination) {
-				case DataRequestQueue:{
-					st = RpcServiceType.DATA;
-					queue = VCellQueue.DataRequestQueue;
-					break;
-				}
-				case DbRequestQueue:{
-					st = RpcServiceType.DB;
-					queue = VCellQueue.DbRequestQueue;
-					break;
-				}
-				case SimReqQueue:{
-					st = RpcServiceType.DISPATCH;
-					queue = VCellQueue.SimReqQueue;
-					break;
-				}
-				default:{
-					throw new RuntimeException("unsupported RPC Destination: "+rpcBody.rpcDestination);
-				}
+					case DataRequestQueue:{
+						st = RpcServiceType.DATA;
+						queue = VCellQueue.DataRequestQueue;
+						break;
+					}
+					case DbRequestQueue:{
+						st = RpcServiceType.DB;
+						queue = VCellQueue.DbRequestQueue;
+						break;
+					}
+					case SimReqQueue:{
+						st = RpcServiceType.DISPATCH;
+						queue = VCellQueue.SimReqQueue;
+						break;
+					}
+					default:{
+						throw new RuntimeException("unsupported RPC Destination: "+rpcBody.rpcDestination);
+					}
 				}
 				VCellApiRpcRequest vcellapiRpcRequest = rpcBody.rpcRequest;
-				Object[] arglist = vcellapiRpcRequest.args;
-				String[] specialProperties = rpcBody.specialProperties;
-				Object[] specialValues = rpcBody.specialValues;
-				VCRpcRequest vcRpcRequest = new VCRpcRequest(vcellUser, st, method, arglist);
-				VCellApiApplication vcellApiApplication = (VCellApiApplication)getApplication();
-				RpcService rpcService = vcellApiApplication.getRpcService();
-				Serializable result = rpcService.sendRpcMessage(
-						queue, vcRpcRequest, new Boolean(rpcBody.returnedRequired), specialProperties, specialValues, new UserLoginInfo(username,null));
-				
-				byte[] serializedResultObject = VCellApiClient.toCompressedSerialized(result);
+				Serializable serializableResultObject = null;
+				if(vcellapiRpcRequest.methodName != null && vcellapiRpcRequest.methodName.equals("getVCInfoContainer")) {
+					serializableResultObject = restDatabaseService.getVCInfoContainer(vcellUser);
+				}else if(vcellapiRpcRequest.methodName != null && vcellapiRpcRequest.methodName.equals("getBioModelXML")) {
+					serializableResultObject = restDatabaseService.getBioModelXML((KeyValue)vcellapiRpcRequest.args[1], vcellUser);
+				}else if(vcellapiRpcRequest.methodName != null && vcellapiRpcRequest.methodName.equals("getMathModelXML")) {
+					serializableResultObject = restDatabaseService.getMathModelXML((KeyValue)vcellapiRpcRequest.args[1], vcellUser);
+				}else if(vcellapiRpcRequest.methodName != null && vcellapiRpcRequest.methodName.equals("getSimulationStatus")) {
+					serializableResultObject = restDatabaseService.getSimulationStatus((KeyValue[])vcellapiRpcRequest.args[1], vcellUser);
+				}else {
+					Object[] arglist = vcellapiRpcRequest.args;
+					String[] specialProperties = rpcBody.specialProperties;
+					Object[] specialValues = rpcBody.specialValues;
+					VCRpcRequest vcRpcRequest = new VCRpcRequest(vcellUser, st, method, arglist);
+					VCellApiApplication vcellApiApplication = (VCellApiApplication)getApplication();
+					RpcService rpcService = vcellApiApplication.getRpcService();
+					serializableResultObject = rpcService.sendRpcMessage(
+							queue, vcRpcRequest, new Boolean(rpcBody.returnedRequired), specialProperties, specialValues, new UserLoginInfo(username,null));
+				}
+				byte[] serializedResultObject = VCellApiClient.toCompressedSerialized(serializableResultObject);
 				response.setStatus(Status.SUCCESS_OK, "rpc method="+method+" succeeded");
 				response.setEntity(new ByteArrayRepresentation(serializedResultObject));
 			} catch (Exception e) {

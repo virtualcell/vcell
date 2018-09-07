@@ -89,7 +89,7 @@ tag=$3
 
 build_api() {
 	echo "building $repo/vcell-api:$tag"
-	echo "sudo docker build -f Dockerfile-api-dev --tag $repo/vcell-api:$tag .."
+	echo "sudo docker build -f Dockerfile-api-dev --tag $repo/vcell-api:$tag ../.."
 	sudo docker build -f Dockerfile-api-dev --tag $repo/vcell-api:$tag ../..
 	if [[ $? -ne 0 ]]; then echo "docker build failed"; exit 1; fi
 	if [ "$skip_push" == "false" ]; then
@@ -99,7 +99,7 @@ build_api() {
 
 build_opt() {
 	echo "building $repo/vcell-opt:$tag"
-	echo "sudo docker build -f Dockerfile-opt-dev --tag $repo/vcell-opt:$tag .."
+	echo "sudo docker build -f Dockerfile-opt-dev --tag $repo/vcell-opt:$tag ../.."
 	sudo docker build -f Dockerfile-opt-dev --tag $repo/vcell-opt:$tag ../..
 	if [[ $? -ne 0 ]]; then echo "docker build failed"; exit 1; fi
 	if [ "$skip_push" == "false" ]; then
@@ -109,7 +109,7 @@ build_opt() {
 
 build_batch() {
 	echo "building $repo/vcell-batch:$tag"
-	echo "sudo docker build -f Dockerfile-batch-dev --tag $repo/vcell-batch:$tag .."
+	echo "sudo docker build -f Dockerfile-batch-dev --tag $repo/vcell-batch:$tag ../.."
 	sudo docker build -f Dockerfile-batch-dev --tag $repo/vcell-batch:$tag ../..
 	if [[ $? -ne 0 ]]; then echo "docker build failed"; exit 1; fi
 	if [ "$skip_push" == "false" ]; then
@@ -119,7 +119,7 @@ build_batch() {
 
 build_clientgen() {
 	echo "building $repo/vcell-clientgen:$tag"
-	echo "sudo docker build -f Dockerfile-clientgen-dev --tag $repo/vcell-clientgen:$tag .."
+	echo "sudo docker build -f Dockerfile-clientgen-dev --tag $repo/vcell-clientgen:$tag ../.."
 	sudo docker build -f Dockerfile-clientgen-dev --tag $repo/vcell-clientgen:$tag ../..
 	if [[ $? -ne 0 ]]; then echo "docker build failed"; exit 1; fi
 	if [ "$skip_push" == "false" ]; then
@@ -129,7 +129,7 @@ build_clientgen() {
 
 build_db() {
 	echo "building $repo/vcell-db:$tag"
-	echo "sudo docker build -f Dockerfile-db-dev --tag $repo/vcell-db:$tag .."
+	echo "sudo docker build -f Dockerfile-db-dev --tag $repo/vcell-db:$tag ../.."
 	sudo docker build -f Dockerfile-db-dev --tag $repo/vcell-db:$tag ../..
 	if [[ $? -ne 0 ]]; then echo "docker build failed"; exit 1; fi
 	if [ "$skip_push" == "false" ]; then
@@ -139,7 +139,7 @@ build_db() {
 
 build_sched() {
 	echo "building $repo/vcell-sched:$tag"
-	echo "sudo docker build -f Dockerfile-sched-dev --tag $repo/vcell-sched:$tag .."
+	echo "sudo docker build -f Dockerfile-sched-dev --tag $repo/vcell-sched:$tag ../.."
 	sudo docker build -f Dockerfile-sched-dev --tag $repo/vcell-sched:$tag ../..
 	if [[ $? -ne 0 ]]; then echo "docker build failed"; exit 1; fi
 	if [ "$skip_push" == "false" ]; then
@@ -149,7 +149,7 @@ build_sched() {
 
 build_submit() {
 	echo "building $repo/vcell-submit:$tag"
-	echo "sudo docker build -f Dockerfile-submit-dev --tag $repo/vcell-submit:$tag .."
+	echo "sudo docker build -f Dockerfile-submit-dev --tag $repo/vcell-submit:$tag ../.."
 	sudo docker build -f Dockerfile-submit-dev --tag $repo/vcell-submit:$tag ../..
 	if [[ $? -ne 0 ]]; then echo "docker build failed"; exit 1; fi
 	if [ "$skip_push" == "false" ]; then
@@ -159,7 +159,7 @@ build_submit() {
 
 build_data() {
 	echo "building $repo/vcell-data:$tag"
-	echo "sudo docker build -f Dockerfile-data-dev --tag $repo/vcell-data:$tag .."
+	echo "sudo docker build -f Dockerfile-data-dev --tag $repo/vcell-data:$tag ../.."
 	sudo docker build -f Dockerfile-data-dev --tag $repo/vcell-data:$tag ../..
 	if [[ $? -ne 0 ]]; then echo "docker build failed"; exit 1; fi
 	if [ "$skip_push" == "false" ]; then

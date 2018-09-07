@@ -341,7 +341,7 @@ public class VCellApiApplication extends WadlApplication {
 		
 	    rootRouter.attach("/"+SWVERSION, new SWVersionRestlet(getContext()));
 
-	    rootRouter.attach("/"+RPC, new RpcRestlet(getContext()));
+	    rootRouter.attach("/"+RPC, new RpcRestlet(getContext(),restDatabaseService));
 
 	    rootRouter.attach("/"+EVENTS, new EventsRestlet(getContext()));
 

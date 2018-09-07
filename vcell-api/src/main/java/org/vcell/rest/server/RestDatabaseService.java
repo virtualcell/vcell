@@ -26,6 +26,7 @@ import org.vcell.util.document.User;
 import org.vcell.util.document.UserInfo;
 import org.vcell.util.document.UserLoginInfo;
 import org.vcell.util.document.VCDataIdentifier;
+import org.vcell.util.document.VCInfoContainer;
 
 import cbit.sql.QueryHashtable;
 import cbit.vcell.biomodel.BioModel;
@@ -35,7 +36,9 @@ import cbit.vcell.math.MathException;
 import cbit.vcell.matrix.MatrixException;
 import cbit.vcell.message.VCMessageSession;
 import cbit.vcell.message.VCMessagingService;
+import cbit.vcell.message.server.dispatcher.SimulationDatabaseDirect;
 import cbit.vcell.model.ModelException;
+import cbit.vcell.modeldb.AdminDBTopLevel;
 import cbit.vcell.modeldb.BioModelRep;
 import cbit.vcell.modeldb.BioModelTable;
 import cbit.vcell.modeldb.DatabaseServerImpl;
@@ -70,11 +73,14 @@ public class RestDatabaseService {
 	ConcurrentHashMap<KeyValue, SimContextRep> scMap = new ConcurrentHashMap<KeyValue, SimContextRep>();
 	ConcurrentHashMap<KeyValue, SimulationRep> simMap = new ConcurrentHashMap<KeyValue, SimulationRep>();
 	VCMessagingService vcMessagingService = null;
+	SimulationDatabaseDirect simulationDatabaseDirect;
 
 	public RestDatabaseService(DatabaseServerImpl databaseServerImpl, LocalAdminDbServer localAdminDbServer, VCMessagingService vcMessagingService) {
 		this.databaseServerImpl = databaseServerImpl;
 		this.localAdminDbServer = localAdminDbServer;
 		this.vcMessagingService = vcMessagingService;
+		this.simulationDatabaseDirect = new SimulationDatabaseDirect(databaseServerImpl.getAdminDBTopLevel(), databaseServerImpl, false);
+
 	}
 	
 	public static class SimulationSaveResponse {
@@ -84,6 +90,18 @@ public class RestDatabaseService {
 			this.newBioModel = newBioModel;
 			this.newSimulation = newSimulation;
 		}
+	}
+	public VCInfoContainer getVCInfoContainer(User vcellUser) throws DataAccessException{
+		return databaseServerImpl.getVCInfoContainer(vcellUser);
+	}
+	public BigString getBioModelXML(KeyValue bmKey,User vcellUser) throws DataAccessException{
+		return databaseServerImpl.getBioModelXML(vcellUser, bmKey);
+	}
+	public BigString getMathModelXML(KeyValue mmKey,User vcellUser) throws DataAccessException{
+		return databaseServerImpl.getMathModelXML(vcellUser, mmKey);
+	}
+	public SimulationStatus[] getSimulationStatus(KeyValue[] simulationKeys,User vcellUser) throws DataAccessException{
+		return simulationDatabaseDirect.getSimulationStatus(simulationKeys);
 	}
 	
 	public SimulationSaveResponse saveSimulation(BiomodelSimulationSaveServerResource resource, User vcellUser, List<OverrideRepresentation> overrideRepresentations) throws PermissionException, ObjectNotFoundException, DataAccessException, SQLException, XmlParseException, PropertyVetoException, MappingException, ExpressionException{

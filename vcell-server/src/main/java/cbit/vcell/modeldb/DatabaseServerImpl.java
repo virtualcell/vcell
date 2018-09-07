@@ -44,6 +44,7 @@ import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometryInfo;
 import cbit.vcell.mapping.MappingException;
 import cbit.vcell.mathmodel.MathModelMetaData;
+import cbit.vcell.message.server.dispatcher.SimulationDatabaseDirect;
 import cbit.vcell.model.DBFormalSpecies;
 import cbit.vcell.model.DBSpecies;
 import cbit.vcell.model.FormalSpeciesType;
@@ -468,6 +469,9 @@ public DBFormalSpecies[] getDatabaseSpecies(User argUser,String likeString,boole
  */
 DBTopLevel getDBTopLevel() {
 	return dbTop;
+}
+public AdminDBTopLevel getAdminDBTopLevel() {
+	return adminDbTop;
 }
 
 
