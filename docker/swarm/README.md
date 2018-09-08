@@ -16,9 +16,28 @@
 
 builds a Singularity image named ./singularity-vm/${namespace}_vcell-batch_${tag}.img from the Docker image ${namespace}/vcell-batch:${tag}  
 
-# 0. Choose VCell solvers version to include in build (Change only if new vcell-solvers build was committed) 
-**Check Solver build finished (if necessary)** https://hub.docker.com/r/virtualcell/vcell-solvers/builds/ and check tag exists https://hub.docker.com/r/virtualcell/vcell-solvers/tags/  *
-See [vcell-solvers README.md](C:\users\frm\VCellTrunkGitWorkspaceSolvers\README_tagging.md)
+# 0. Choose VCell solvers version to include in build (Change only if new vcell-solvers build was committed)
+**Tag vcell-solvers commit (if not already)**  
+
+```
+git clone https://github.com/virtualcell/vcell-solvers.git
+cd vcell-solvers
+//List current tags
+git tag
+//Create new tag by increment latest tag from list, must start with v, rest all digits, e.g. "git tag v0.0.22"
+theNewTag=vx.x.x
+git tag ${theNewTag)
+//Push new tag to github, e.g. "git push origin v0.0.22"
+git push origin ${theNewTag)
+//github will alert travisci(mac,linux) and appveyor(win) to start building the tagged commit for client local solvers
+//they will send their archived solvers to github and add to tagged commit (win64.zip,linux64.tgz,mac64.tgz)
+
+```
+
+----Wait for the win,linux and mac archives to appear under the new commit tag (browse to https://github.com/virtualcell/vcell-solvers/releases/tag/${theNewTag})  
+
+**Check Solver build finished (if necessary)** https://hub.docker.com/r/virtualcell/vcell-solvers/builds/ and check tag exists https://hub.docker.com/r/virtualcell/vcell-solvers/tags/  
+See [vcell-solvers README.md](C:\users\frm\VCellTrunkGitWorkspaceSolvers\README_tagging.md)  
 --**Edit** {vcellroot}/docker/build/Dockerfile-batch-dev [Dockerfile-batch-dev](../build/Dockerfile-batch-dev)  
 ----theTag=the tag that was created during a separate vcell-solver commit process (See https://github.com/virtualcell/vcell-solvers.git, README.md)  
 ----Get the tag  from [dockerhub](https://hub.docker.com/r/virtualcell/vcell-solvers/tags/), pick the tag you want, usually latest  
