@@ -46,8 +46,7 @@ See [vcell-solvers README.md](C:\users\frm\VCellTrunkGitWorkspaceSolvers\README_
 **Edit** {vcellroot}/vcell-core/pom.xml [vcell-core pom](../../vcell-core/pom.xml)  
 ----theTag= created as above  
 ----Get the tag from [github][https://github.com/virtualcell/vcell-solvers/tags), pick the tag you want, usually latest  
-----Change all lines "https://github.com/virtualcell/vcell-solvers/releases/download/v{theTag}/{linux,win,mac}64.tgz", pick the tag you want, usually latest
------must change md5 if using deifferent tag or location from previous
+----Change all lines "https://github.com/virtualcell/vcell-solvers/releases/download/v{theTag}/{linux,win,mac}64.tgz", pick the tag you want, usually latest  
 
 **MUST commit any changes made during above to github on the VCell project**  
 

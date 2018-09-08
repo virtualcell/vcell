@@ -1,7 +1,7 @@
 **Find slurm sim logs**  
 login vcell@vcell-service  
 sacct --format="JobID,JobName%30,State,Submit,start,User,ExitCode" | grep -i {VCellSimID}  
---e.g. sacct --format="JobID,JobName%30,State,Submit,start,User,ExitCode" | grep -i 139363583  
+--e.g. sacct --format="JobID,JobName%30,State,Submit,Start,User,ExitCode" | grep -i 139363583  
 less /share/apps/vcell3/htclogs/{JobName}.slurm.log  //JobName from sacct query
 --e.g less /share/apps/vcell3/htclogs/V_ALPHA_139363583_0_0.slurm.log  
 -----------------------------------------------------  
@@ -18,6 +18,7 @@ Search {vcellroot}/docker for "VCELL_SLURM_TMPDIR" (no double quotes)
 Finds {vcellroot}/docker/swarm/serverconfig-uch.sh, VCELL_SLURM_TMPDIR=/scratch/vcell  
 -----------------------------------------------------   
  **See if VCell hpc nodes are alive (may hang if a node can't be reached)**  
+ login vcell@vcell-service   
  sinfo -N -h -p vcell2 --Format='nodelist' |   xargs  -n 1  -I {} sh -c 'echo {}; ssh {} date || (true);'  
 ----------------------------------------------------- 
 
