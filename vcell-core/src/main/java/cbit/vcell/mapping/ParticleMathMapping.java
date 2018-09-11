@@ -453,6 +453,10 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 			if (parm!=null && parm.getExpression()!=null && sm.getGeometryClass() instanceof SubVolume){
 				varHash.addVariable(newFunctionOrConstant(getMathSymbol(parm,sm.getGeometryClass()),getIdentifierSubstitutions(parm.getExpression(), parm.getUnitDefinition(), sm.getGeometryClass()), sm.getGeometryClass()));
 			}
+			parm = sm.getParameterFromRole(StructureMapping.ROLE_Size);
+			if (parm!=null && parm.getExpression()!=null){
+				varHash.addVariable(newFunctionOrConstant(getMathSymbol(parm,sm.getGeometryClass()),getIdentifierSubstitutions(parm.getExpression(), parm.getUnitDefinition(), sm.getGeometryClass()), sm.getGeometryClass()));
+			}
 		}
 	}
 
