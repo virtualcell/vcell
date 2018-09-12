@@ -34,6 +34,7 @@ public class NFsimSimulationOptions implements Serializable, Matchable, Vetoable
 	Integer equilibrateTime = null;
 	private Integer randomSeed = null;
 	boolean preventIntraBonds = false;
+	boolean matchComplexes = false;
 
 	protected transient PropertyChangeSupport propertyChange;
 	protected transient VetoableChangeSupport vetoChange;
@@ -56,6 +57,7 @@ public class NFsimSimulationOptions implements Serializable, Matchable, Vetoable
 		equilibrateTime = smoldynSimulationOptions.equilibrateTime;
 		randomSeed = smoldynSimulationOptions.randomSeed;
 		preventIntraBonds = smoldynSimulationOptions.preventIntraBonds;
+		matchComplexes = smoldynSimulationOptions.matchComplexes;
 	}
 
 	public NFsimSimulationOptions(CommentStringTokenizer tokens) throws DataAccessException {
@@ -87,6 +89,9 @@ public class NFsimSimulationOptions implements Serializable, Matchable, Vetoable
 			return false;
 		}
 		if (preventIntraBonds != nfsimSimulationOptions.preventIntraBonds) {
+			return false;
+		}
+		if (matchComplexes != nfsimSimulationOptions.matchComplexes) {
 			return false;
 		}
 		return true;
@@ -135,6 +140,12 @@ public class NFsimSimulationOptions implements Serializable, Matchable, Vetoable
 	}
 	public final void setPreventIntraBonds(boolean newValue) {
 		this.preventIntraBonds = newValue;
+	}
+	public final boolean getMatchComplexes() {
+		return matchComplexes;
+	}
+	public final void setMatchComplexes(boolean newValue) {
+		this.matchComplexes = newValue;
 	}
 
 	public synchronized void addPropertyChangeListener(java.beans.PropertyChangeListener listener) {
@@ -191,6 +202,9 @@ public class NFsimSimulationOptions implements Serializable, Matchable, Vetoable
 		if (preventIntraBonds == true) {
 			buffer.append("\t\t" + VCML.NFSimSimulationOptions_preventIntraBonds + " " + preventIntraBonds + "\n");			
 		}
+		if (matchComplexes == true) {
+			buffer.append("\t\t" + VCML.NFSimSimulationOptions_matchComplexes + " " + matchComplexes + "\n");			
+		}
 		buffer.append("\t" + VCML.EndBlock + "\n");
 		return buffer.toString();
 	}
@@ -232,6 +246,10 @@ public class NFsimSimulationOptions implements Serializable, Matchable, Vetoable
 				token = tokens.nextToken();
 				preventIntraBonds = Boolean.parseBoolean(token);
 				assert preventIntraBonds == true;
+			} else if(token.equalsIgnoreCase(VCML.NFSimSimulationOptions_matchComplexes)) {
+				token = tokens.nextToken();
+				matchComplexes = Boolean.parseBoolean(token);
+				assert matchComplexes == true;
 			}  else { 
 				throw new DataAccessException("unexpected identifier " + token);
 			}

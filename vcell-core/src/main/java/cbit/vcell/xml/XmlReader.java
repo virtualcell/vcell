@@ -6605,6 +6605,10 @@ private NFsimSimulationOptions getNFSimSimulationOptions(Element nfsimSimulation
 	if(temp != null) {
 		so.setPreventIntraBonds(new Boolean(temp));
 	}
+	temp = nfsimSimulationOptionsElement.getChildText(XMLTags.NFSimSimulationOptions_matchComplexes, vcNamespace);
+	if(temp != null) {
+		so.setMatchComplexes(new Boolean(temp));
+	}
 	return so;
 }
 

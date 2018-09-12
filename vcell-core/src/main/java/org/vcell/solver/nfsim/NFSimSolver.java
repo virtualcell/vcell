@@ -202,6 +202,10 @@ public class NFSimSolver extends SimpleCompiledSolver {
 		if(preventIntraBonds == true) {
 			adv.add("-bscb");			// false is by default, no need to specify
 		}
+		boolean matchComplexes = nfsso.getMatchComplexes();
+		if(matchComplexes == true) {
+			adv.add("-pcmatch");			// false is by default, no need to specify
+		}
 		
 		TimeBounds tb = getSimulationJob().getSimulation().getSolverTaskDescription().getTimeBounds();
 		double dtime = tb.getEndingTime() - tb.getStartingTime();
@@ -227,7 +231,7 @@ public class NFSimSolver extends SimpleCompiledSolver {
 		String baseCommands[] = { "-xml", inputFilename, "-o", outputFilename, "-sim", Double.toString(dtime), "-ss", speciesOutputFilename };
 		ArrayList<String> cmds = new ArrayList<String>();
 		cmds.add(executableName);
-
+		
 		Integer seed = nfsso.getRandomSeed();
 		if(seed != null) {
 			cmds.add("-seed");
@@ -262,9 +266,9 @@ public class NFSimSolver extends SimpleCompiledSolver {
 		cmds.add(timeSpecOption2);
 		
 		cmds.addAll(adv);
-		if (bMessaging) {
-			cmds.add("-v");
-		}
+//		if (bMessaging) {
+//			cmds.add("-v");
+//		}
 		return cmds.toArray(new String[cmds.size()]);
 	}
 

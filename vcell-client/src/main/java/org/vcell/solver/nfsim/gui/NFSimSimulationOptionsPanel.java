@@ -69,6 +69,10 @@ public class NFSimSimulationOptionsPanel extends CollapsiblePanel {
 	private JTextField preventIntraBondsTextField;
 	private JButton preventIntraBondsHelpButton = null;
 
+	private JCheckBox matchComplexesCheckBox;
+	private JTextField matchComplexesTextField;
+	private JButton matchComplexesHelpButton = null;
+
 	private IvjEventHandler ivjEventHandler = new IvjEventHandler();
 
 	private class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.FocusListener, PropertyChangeListener {
@@ -139,6 +143,12 @@ public class NFSimSimulationOptionsPanel extends CollapsiblePanel {
 						+ "<br> Block same complex binding throughout the entire system. This prevents intra-molecular bonds from forming, "
 						+ "but requires complex bookkeeping to be turned on."
 						+ "</html>");
+			} else if (source == matchComplexesHelpButton) {
+				DialogUtils.showInfoDialogAndResize(NFSimSimulationOptionsPanel.this, "Match complexes with product patterns", 
+						"<html><b>NFSim option</b> -pcmatch"
+						+ "<br> Match generated complexes to the rule product patterns, "
+						+ "could detect impossible combinations."
+						+ "</html>");
 
 // ----------------------------------------------------------------------------------------------------------
 			} else if (source == observableComputationCheckBox) {
@@ -167,6 +177,8 @@ public class NFSimSimulationOptionsPanel extends CollapsiblePanel {
 				}
 			} else if (source == preventIntraBondsCheckBox) {
 				setNewPreventIntraBonds();
+			} else if (source == matchComplexesCheckBox) {
+				setNewMatchComplexes();
 			}
 		}
 		public void focusGained(FocusEvent e) {
@@ -271,6 +283,9 @@ public class NFSimSimulationOptionsPanel extends CollapsiblePanel {
 	private void setNewPreventIntraBonds() {		// boolean
 		solverTaskDescription.getNFSimSimulationOptions().setPreventIntraBonds(preventIntraBondsCheckBox.isSelected());
 	}
+	private void setNewMatchComplexes() {			// boolean
+		solverTaskDescription.getNFSimSimulationOptions().setMatchComplexes(matchComplexesCheckBox.isSelected());
+	}
 
 	
 // ----------------------------------------------------------------------------------------------------------------------------	
@@ -329,6 +344,12 @@ public class NFSimSimulationOptionsPanel extends CollapsiblePanel {
 		preventIntraBondsHelpButton.setFont(font);
 		preventIntraBondsHelpButton.setBorder(border);
 		
+		matchComplexesCheckBox = new JCheckBox("Mach generated complexes to rule product patterns.");
+		matchComplexesTextField = new JTextField();
+		matchComplexesHelpButton = new JButton(" ? ");
+		matchComplexesHelpButton.setFont(font);
+		matchComplexesHelpButton.setBorder(border);
+
 		getContentPanel().setLayout(new GridBagLayout());		
 		int gridy = 0;
 		GridBagConstraints gbc = new GridBagConstraints();
@@ -470,6 +491,20 @@ public class NFSimSimulationOptionsPanel extends CollapsiblePanel {
 		gbc.insets = new Insets(0, 0, 0, 4);
 		getContentPanel().add(preventIntraBondsHelpButton, gbc);
 				
+		gridy++;
+		gbc = new GridBagConstraints();
+		gbc.gridx = 0;
+		gbc.gridy = gridy;
+		gbc.anchor = GridBagConstraints.LINE_START;
+		getContentPanel().add(matchComplexesCheckBox, gbc);
+
+		gbc = new GridBagConstraints();
+		gbc.gridx = 1;
+		gbc.gridy = gridy;
+		gbc.anchor = GridBagConstraints.LINE_START;
+		gbc.insets = new Insets(0, 0, 0, 4);
+		getContentPanel().add(matchComplexesHelpButton, gbc);
+				
 	}
 	
 	private void initConnections() {
@@ -480,6 +515,7 @@ public class NFSimSimulationOptionsPanel extends CollapsiblePanel {
 		equilibrateTimeCheckBox.addActionListener(ivjEventHandler);
 		randomSeedCheckBox.addActionListener(ivjEventHandler);
 		preventIntraBondsCheckBox.addActionListener(ivjEventHandler);
+		matchComplexesCheckBox.addActionListener(ivjEventHandler);
 
 		observableComputationTextField.addFocusListener(ivjEventHandler);
 		moleculeDistanceTextField.addFocusListener(ivjEventHandler);
@@ -488,6 +524,7 @@ public class NFSimSimulationOptionsPanel extends CollapsiblePanel {
 		equilibrateTimeTextField.addFocusListener(ivjEventHandler);
 		randomSeedTextField.addFocusListener(ivjEventHandler);
 		preventIntraBondsTextField.addFocusListener(ivjEventHandler);
+		matchComplexesTextField.addFocusListener(ivjEventHandler);
 
 		observableComputationHelpButton.addActionListener(ivjEventHandler);
 		moleculeDistanceHelpButton.addActionListener(ivjEventHandler);
@@ -496,6 +533,7 @@ public class NFSimSimulationOptionsPanel extends CollapsiblePanel {
 		equilibrateTimeHelpButton.addActionListener(ivjEventHandler);
 		randomSeedHelpButton.addActionListener(ivjEventHandler);
 		preventIntraBondsHelpButton.addActionListener(ivjEventHandler);
+		matchComplexesHelpButton.addActionListener(ivjEventHandler);
 	}
 	
 	public final void setSolverTaskDescription(SolverTaskDescription newValue) {
@@ -584,6 +622,12 @@ public class NFSimSimulationOptionsPanel extends CollapsiblePanel {
 			preventIntraBondsCheckBox.setSelected(false);
 		} else {			
 			preventIntraBondsCheckBox.setSelected(true);
+		}
+		boolean pcmatch = nfsimSimulationOptions.getMatchComplexes();
+		if (pcmatch == false) {
+			matchComplexesCheckBox.setSelected(false);
+		} else {			
+			matchComplexesCheckBox.setSelected(true);
 		}
 	}
 }

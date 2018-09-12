@@ -728,6 +728,7 @@ public class XMLTags {
 	public final static String NFSimSimulationOptions_equilibrateTime	= "EquilibrateTime";
 	public final static String NFSimSimulationOptions_randomSeed	= "RandomSeed";
 	public final static String NFSimSimulationOptions_preventIntraBonds	= "PreventIntraBonds";
+	public final static String NFSimSimulationOptions_matchComplexes	= "MatchComplexes";
 
 	public final static String ParticleInitialConcentrationTag			= "ParticleInitialConcentration"; // particle
 	public final static String ParticleDistributionTag			= "ParticleDistribution"; // particle
