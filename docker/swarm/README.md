@@ -34,7 +34,8 @@ git push origin ${theNewTag)
 
 ```
 
-----Wait for the win,linux and mac archives to appear under the new commit tag (browse to https://github.com/virtualcell/vcell-solvers/releases/tag/${theNewTag})  
+----Wait for the win,linux and mac archives to appear on github (solvers built by travisci,appveyor, used on **VCell Local CLIENTS**) under the new commit tag (browse to https://github.com/virtualcell/vcell-solvers/releases/tag/${theNewTag})  
+----Wait for ${theNewTag} to appear on dockerhub (builds solvers used on **VCell SERVER**), (browse to https://hub.docker.com/r/virtualcell/vcell-solvers/tags)
 
 **Check Solver build finished (if necessary)** https://hub.docker.com/r/virtualcell/vcell-solvers/builds/ and check tag exists https://hub.docker.com/r/virtualcell/vcell-solvers/tags/  
 See [vcell-solvers README.md](C:\users\frm\VCellTrunkGitWorkspaceSolvers\README_tagging.md)  
