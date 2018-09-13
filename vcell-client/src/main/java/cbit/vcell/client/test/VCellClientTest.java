@@ -319,8 +319,8 @@ public static void main(java.lang.String[] args) {
 		ResourceUtil.setNativeLibraryDirectory();
 		vcellClient = VCellClient.startClient(initialDocument, csInfo);
 
-		VCellClientDataService vcellClientDataService = new VCellClientDataServiceImpl(vcellClient);
-		VCellProxyServer.startVCellVisitDataServerThread(vcellClientDataService);
+//		VCellClientDataService vcellClientDataService = new VCellClientDataServiceImpl(vcellClient);
+//		VCellProxyServer.startVCellVisitDataServerThread(vcellClientDataService);
 
 		
 		//starting loading libraries
