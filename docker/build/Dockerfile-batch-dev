@@ -1,4 +1,4 @@
-FROM virtualcell/vcell-solvers:v0.0.22
+FROM virtualcell/vcell-solvers:v0.0.23
 
 RUN apt-get -y update && \
     apt-get install -y openjdk-8-jre-headless curl
