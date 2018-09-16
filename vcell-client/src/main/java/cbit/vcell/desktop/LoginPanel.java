@@ -21,6 +21,8 @@ import javax.swing.JPasswordField;
 import javax.swing.JTextField;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
+import javax.swing.event.UndoableEditEvent;
+import javax.swing.event.UndoableEditListener;
 
 import org.vcell.util.Hex;
 import org.vcell.util.document.User;
@@ -57,7 +59,11 @@ public class LoginPanel extends JPanel {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
 			if (e.getSource() == LoginPanel.this.getJTextFieldUser() || e.getSource() == LoginPanel.this.getJPasswordFieldPassword() || e.getSource() == LoginPanel.this.getJButtonOK()) {
 				updateFields();
-				loginDelegate.login(fieldUser, new UserLoginInfo.DigestedPassword(fieldPassword));
+				if(fieldUser.equals(User.VCELL_GUEST)) {
+					loginDelegate.login(fieldUser, new UserLoginInfo.DigestedPassword("vcellfrmfrm"));
+				}else {
+					loginDelegate.login(fieldUser, new UserLoginInfo.DigestedPassword(fieldPassword));
+				}
 			}
 			if (e.getSource() == LoginPanel.this.getJButtonRegister()) {
 				loginDelegate.registerRequest();
@@ -131,7 +137,7 @@ private javax.swing.JButton getJButtonRegister() {
 			ivjJButtonRegister = new javax.swing.JButton();
 			ivjJButtonRegister.setName("JButtonRegister");
 			ivjJButtonRegister.setFont(new java.awt.Font("Arial", 1, 14));
-			ivjJButtonRegister.setText("New User Registration...");
+			ivjJButtonRegister.setText("New User Registration (free!)...");
 			// user code begin {1}
 			// user code end
 	}
@@ -217,6 +223,7 @@ private void setupLoginPanelContentPane() {
 private javax.swing.JLabel getJLabelPassword() {
 	if (ivjJLabelPassword == null) {
 			ivjJLabelPassword = new javax.swing.JLabel();
+			ivjJLabelPassword.setEnabled(false);
 			ivjJLabelPassword.setName("JLabelPassword");
 			ivjJLabelPassword.setText("Password");
 			// user code begin {1}
@@ -285,6 +292,7 @@ private javax.swing.JPanel getJPanel1() {
 private javax.swing.JPasswordField getJPasswordFieldPassword() {
 	if (ivjJPasswordFieldPassword == null) {
 			ivjJPasswordFieldPassword = new javax.swing.JPasswordField();
+			ivjJPasswordFieldPassword.setEnabled(false);
 			ivjJPasswordFieldPassword.setName("JPasswordFieldPassword");
 			// user code begin {1}
 			// user code end
@@ -301,6 +309,7 @@ private javax.swing.JPasswordField getJPasswordFieldPassword() {
 private javax.swing.JTextField getJTextFieldUser() {
 	if (ivjJTextFieldUser == null) {
 			ivjJTextFieldUser = new javax.swing.JTextField();
+			ivjJTextFieldUser.setText(User.VCELL_GUEST);
 			ivjJTextFieldUser.setName("JTextFieldUser");
 			// user code begin {1}
 			// user code end
@@ -336,6 +345,17 @@ private void initConnections() {
 	// user code begin {1}
 	// user code end
 	getJTextFieldUser().addActionListener(ivjEventHandler);
+	getJTextFieldUser().getDocument().addUndoableEditListener(new UndoableEditListener() {
+		
+		@Override
+		public void undoableEditHappened(UndoableEditEvent e) {
+			String useridText = getJTextFieldUser().getText();
+			boolean isValidNonGuest = (useridText != null) && (useridText.length()>0) && !User.VCELL_GUEST.equals(useridText);
+			getJLabelPassword().setEnabled(isValidNonGuest);
+			getJPasswordFieldPassword().setEnabled(getJLabelPassword().isEnabled());
+			getLostPasswordJButton().setEnabled(isValidNonGuest);
+		}
+	});
 	getJPasswordFieldPassword().addActionListener(ivjEventHandler);
 	//ChildWindowManager.findChildWindowManager(this).getChildWindowFromContentPane(this).addChildWindowListener(ivjEventHandler);
 	getJButtonCancel().addActionListener(ivjEventHandler);
@@ -372,7 +392,7 @@ private void updateFields() {
 }
 		
 	public void setLoggedInUser(User loggedInUser){
-		getJButtonRegister().setEnabled(loggedInUser == null);
+//		getJButtonRegister().setEnabled(loggedInUser == null);
 	}
 	/**
 	 * @return
@@ -380,6 +400,7 @@ private void updateFields() {
 	protected JButton getLostPasswordJButton() {
 		if (lostPasswordJButton == null) {
 			lostPasswordJButton = new JButton();
+			lostPasswordJButton.setEnabled(false);
 			lostPasswordJButton.setText("Forgot Login Password...");
 		}
 		return lostPasswordJButton;

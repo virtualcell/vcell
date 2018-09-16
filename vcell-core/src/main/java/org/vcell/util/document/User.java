@@ -26,6 +26,8 @@ public class User implements java.io.Serializable, Matchable, Immutable {
 	public static final String[] publishers = {"frm","schaff","ion"};
 
 	public static final User tempUser = new User("temp",new KeyValue("123"));
+	public static final String VCELL_GUEST = "vcellguest";
+
 	/**
  * User constructor comment.
  */

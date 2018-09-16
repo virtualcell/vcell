@@ -1,6 +1,9 @@
 package org.vcell.rest.rpc;
 
 import java.io.Serializable;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -30,6 +33,24 @@ import cbit.vcell.message.VCellQueue;
 public final class RpcRestlet extends Restlet {
 	private static Logger lg = LogManager.getLogger(RpcRestlet.class);
 	RestDatabaseService restDatabaseService;
+	private static final List<String> vcellguestAllowed;
+	static {
+		String[] temp =  new String[] {
+				"getVCInfoContainer",
+				"getBioModelXML",
+				"getMathModelXML",
+				"getSimulationStatus",
+				"getParticleDataExists",
+				"getMesh",
+				"getDataSetTimes",
+				"getDataIdentifiers",
+				"getPreferences",
+				"getSimDataBlock",
+				"doDataOperation",//Read post processing data
+		};
+		Arrays.sort(temp);
+		vcellguestAllowed = Collections.unmodifiableList(Arrays.asList(temp));
+	}
 	public RpcRestlet(Context context,RestDatabaseService restDatabaseService) {
 		super(context);
 		this.restDatabaseService = restDatabaseService;
@@ -65,6 +86,11 @@ public final class RpcRestlet extends Restlet {
 					throw new RuntimeException("expecting post content of type VCellApiRpcBody");
 				}
 				VCellApiRpcBody rpcBody = (VCellApiRpcBody)rpcRequestBodyObject;
+				if(username.equals(User.VCELL_GUEST)) {
+					if(rpcBody.rpcRequest.methodName == null || !vcellguestAllowed.contains(rpcBody.rpcRequest.methodName)) {
+						throw new IllegalArgumentException(User.VCELL_GUEST+" not allowed to do '"+rpcBody.rpcRequest.methodName+"'");
+					}
+				}
 				RpcServiceType st = null;
 				VCellQueue queue = null;
 				switch (rpcBody.rpcRequest.rpcDestination) {
