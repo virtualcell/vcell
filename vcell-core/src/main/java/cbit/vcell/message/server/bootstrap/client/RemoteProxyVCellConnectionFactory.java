@@ -15,6 +15,9 @@ import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.http.client.ClientProtocolException;
@@ -47,6 +50,27 @@ import cbit.vcell.server.VCellConnectionFactory;
 
 public class RemoteProxyVCellConnectionFactory implements VCellConnectionFactory {
 
+	private static final List<String> vcellguestAllowed;
+	//MUST keep sycnhronized with org.vcell.rest.rpc.RpcRestlet
+	static {
+		String[] temp =  new String[] {
+				"getVCInfoContainer",
+				"getBioModelXML",
+				"getMathModelXML",
+				"getSimulationStatus",
+				"getParticleDataExists",
+				"getMesh",
+				"getDataSetTimes",
+				"getDataIdentifiers",
+				"getPreferences",
+				"getSimDataBlock",
+				"doDataOperation",//Read post processing data
+				"getODEData",
+				"getNFSimMolecularConfigurations",
+		};
+		Arrays.sort(temp);
+		vcellguestAllowed = Collections.unmodifiableList(Arrays.asList(temp));
+	}
 	private UserLoginInfo userLoginInfo;
 	private final String apihost;
 	private final Integer apiport;
@@ -60,6 +84,9 @@ public class RemoteProxyVCellConnectionFactory implements VCellConnectionFactory
 		@Override
 		public Object sendRpcMessage(VCellQueue queue, VCRpcRequest vcRpcRequest, boolean returnRequired, int timeoutMS,
 				String[] specialProperties, Object[] specialValues, UserLoginInfo userLoginInfo) throws Exception {
+			if(User.isGuest(userLoginInfo.getUserName()) && !vcellguestAllowed.contains(vcRpcRequest.getMethodName())) {
+				User.throwGuestException(vcRpcRequest.getMethodName());
+			}
 			final RpcDestination rpcDestination;
 			if (queue.equals(VCellQueue.DataRequestQueue)) {
 				rpcDestination = RpcDestination.DataRequestQueue;

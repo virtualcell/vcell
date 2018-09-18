@@ -36,7 +36,13 @@ public User(String userid, KeyValue key) {
 	this.key = key;
 }
 
+public static void throwGuestException(String theOffendingOp) {
+	throw new IllegalArgumentException(VCELL_GUEST+" not allowed to do '"+theOffendingOp+"'");
+}
 
+public static boolean isGuest(String checkThisName) {
+	return VCELL_GUEST.equals(checkThisName);
+}
 /**
  * @return {@link #equals(Object)}
  */

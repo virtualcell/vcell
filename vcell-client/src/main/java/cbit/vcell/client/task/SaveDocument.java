@@ -11,6 +11,7 @@
 package cbit.vcell.client.task;
 import java.util.Hashtable;
 
+import org.vcell.util.document.User;
 import org.vcell.util.document.VCDocument;
 import org.vcell.util.document.VersionableType;
 import org.vcell.util.document.VersionableTypeVersion;
@@ -45,6 +46,9 @@ public class SaveDocument extends AsynchClientTask {
 public void run(Hashtable<String, Object> hashTable) throws java.lang.Exception {
 	long l1 = System.currentTimeMillis();
 	DocumentWindowManager documentWindowManager = (DocumentWindowManager)hashTable.get(CommonTask.DOCUMENT_WINDOW_MANAGER.name);
+	if(documentWindowManager.getUser() == null || User.isGuest(documentWindowManager.getUser().getName())){
+		User.throwGuestException("saveDocument");
+	}
 	VCDocument currentDocument = documentWindowManager.getVCDocument();
 	DocumentManager documentManager = (DocumentManager)hashTable.get(CommonTask.DOCUMENT_MANAGER.name);
 	RequestManager requestManager = (RequestManager)hashTable.get("requestManager");

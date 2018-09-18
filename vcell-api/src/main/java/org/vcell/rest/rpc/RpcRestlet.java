@@ -34,6 +34,7 @@ public final class RpcRestlet extends Restlet {
 	private static Logger lg = LogManager.getLogger(RpcRestlet.class);
 	RestDatabaseService restDatabaseService;
 	private static final List<String> vcellguestAllowed;
+	//MUST keep sycnhronized with cbit.vcell.message.server.bootstrap.client.RemoteProxyVCellConnectionFactory
 	static {
 		String[] temp =  new String[] {
 				"getVCInfoContainer",
@@ -47,6 +48,8 @@ public final class RpcRestlet extends Restlet {
 				"getPreferences",
 				"getSimDataBlock",
 				"doDataOperation",//Read post processing data
+				"getODEData",
+				"getNFSimMolecularConfigurations",
 		};
 		Arrays.sort(temp);
 		vcellguestAllowed = Collections.unmodifiableList(Arrays.asList(temp));
@@ -86,10 +89,8 @@ public final class RpcRestlet extends Restlet {
 					throw new RuntimeException("expecting post content of type VCellApiRpcBody");
 				}
 				VCellApiRpcBody rpcBody = (VCellApiRpcBody)rpcRequestBodyObject;
-				if(username.equals(User.VCELL_GUEST)) {
-					if(rpcBody.rpcRequest.methodName == null || !vcellguestAllowed.contains(rpcBody.rpcRequest.methodName)) {
-						throw new IllegalArgumentException(User.VCELL_GUEST+" not allowed to do '"+rpcBody.rpcRequest.methodName+"'");
-					}
+				if(rpcBody.rpcRequest.methodName == null || (User.isGuest(username) && !vcellguestAllowed.contains(rpcBody.rpcRequest.methodName))) {
+						User.throwGuestException(rpcBody.rpcRequest.methodName);
 				}
 				RpcServiceType st = null;
 				VCellQueue queue = null;
