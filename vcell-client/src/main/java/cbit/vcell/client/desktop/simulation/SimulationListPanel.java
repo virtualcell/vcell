@@ -40,6 +40,7 @@ import javax.swing.table.TableCellEditor;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.NumberUtils;
+import org.vcell.util.document.User;
 import org.vcell.util.gui.DefaultScrollTableCellRenderer;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.DownArrowIcon;
@@ -875,6 +876,15 @@ private void refreshButtonsLax() {
  * Comment
  */
 private void runSimulations() {
+	if(User.isGuest(getSimulationWorkspace().getLoggedInUser().getName())) {
+		try {
+			User.throwGuestException("runVCellServerSimulations");
+		} catch (Exception e) {
+			e.printStackTrace();
+			DialogUtils.showErrorDialog(this, e.getMessage());
+			return;
+		}
+	}
 	final ArrayList<Simulation> simList = new ArrayList<Simulation>();
 	int[] selections = getScrollPaneTable().getSelectedRows();
 	for (int i = 0; i < selections.length; i++){

@@ -130,7 +130,9 @@ public ClientSimManager(DocumentWindowManager documentWindowManager, SimulationW
 	initHash(getSimWorkspace().getSimulations());
 }
 
-
+public User getLoggedInUser() {
+	return getDocumentWindowManager().getUser();
+}
 /**
  * Insert the method's description here.
  * Creation date: (6/7/2004 12:50:45 PM)

@@ -23,6 +23,7 @@ import org.vcell.chombo.ChomboMeshValidator;
 import org.vcell.chombo.ChomboMeshValidator.ChomboMeshRecommendation;
 import org.vcell.util.PropertyChangeListenerProxyVCell;
 import org.vcell.util.document.PropertyConstants;
+import org.vcell.util.document.User;
 import org.vcell.util.gui.DialogUtils;
 
 import cbit.vcell.client.ClientSimManager;
@@ -80,7 +81,9 @@ public SimulationWorkspace(DocumentWindowManager documentWindowManager, Simulati
 	this.clientSimManager = new ClientSimManager(documentWindowManager, this);
 }
 
-
+public User getLoggedInUser() {
+	return getClientSimManager().getLoggedInUser();
+}
 /**
  * The addPropertyChangeListener method was generated to support the propertyChange field.
  */
