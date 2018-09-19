@@ -332,8 +332,9 @@ public class SlurmProxy extends HtcProxy {
 	public static long getMemoryLimit(String vcellUserid,double memSizeMB) {
 		try {
 			//${vcellroot}/docker/swarm/serverconfig-uch.sh->VCELL_SIMDATADIR_EXTERNAL=/share/apps/vcell3/users 
-			String primaryDataDirExternal = PropertyLoader.getRequiredProperty(PropertyLoader.primarySimDataDirExternalProperty);
-			List<String> perUserLimits = Files.readAllLines(Paths.get(primaryDataDirExternal+"/sim_mem_per_user_limits.txt"));
+			//${vcellroot}/docker/swarm/serverconfig-uch.sh-> VCELL_SIMDATADIR_HOST=/opt/vcelldata/users 
+			//${vcellroot}/docker/swarm/docker-compose.yml-> Volume map "${VCELL_SIMDATADIR_HOST}:/simdata"
+			List<String> perUserLimits = Files.readAllLines(Paths.get("/simdata/sim_mem_per_user_limits.txt"));
 			for (Iterator iterator = perUserLimits.iterator(); iterator.hasNext();) {
 				String userAndLimit = ((String) iterator.next()).trim();
 				if(userAndLimit.length()==0 || userAndLimit.startsWith("//")) {
