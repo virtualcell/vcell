@@ -138,7 +138,7 @@ public enum SolverDescription {
 
 	   MovingBoundary(TimeStep.VARIABLE,ErrorTol.NO,TimeSpecCreated.DEFAULT,"Moving","Moving Boundary","MovingB",
 		  SolverLongDesc.MB,1,SupportedTimeSpec.DEFAULT_UNIFORM,
-		  new SolverFeature[]{SolverFeature.Feature_Spatial, SolverFeature.Feature_Moving, SolverFeature.Feature_Deterministic},
+		  new SolverFeature[]{SolverFeature.Feature_Spatial, SolverFeature.Feature_Moving, SolverFeature.Feature_Deterministic, SolverFeature.Feature_ServerOnly},
 		  SolverExecutable.MOVING_B, "KISAO",false),
 	   
        VCellPetsc(TimeStep.CONSTANT, ErrorTol.NO, TimeSpecCreated.DEFAULT, "Hybrid Implicit","Finite Volume-Particle Hybrid, Implicit (Experimental)","VCellPetsc",
