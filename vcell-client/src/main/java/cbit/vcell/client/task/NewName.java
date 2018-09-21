@@ -45,7 +45,7 @@ public class NewName extends AsynchClientTask {
 public void run(Hashtable<String, Object> hashTable) throws java.lang.Exception {
 	DocumentWindowManager documentWindowManager = (DocumentWindowManager)hashTable.get(CommonTask.DOCUMENT_WINDOW_MANAGER.name);
 	if(documentWindowManager.getUser() == null || User.isGuest(documentWindowManager.getUser().getName())){
-		User.throwGuestException("saveNewDocument");
+		throw new IllegalArgumentException(User.createGuestErrorMessage("saveNewDocument"));
 	}
 	VCDocument document = documentWindowManager.getVCDocument();
 	if (document.getDocumentType() == VCDocumentType.MATHMODEL_DOC) {

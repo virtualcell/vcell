@@ -90,7 +90,7 @@ public final class RpcRestlet extends Restlet {
 				}
 				VCellApiRpcBody rpcBody = (VCellApiRpcBody)rpcRequestBodyObject;
 				if(rpcBody.rpcRequest.methodName == null || (User.isGuest(username) && !vcellguestAllowed.contains(rpcBody.rpcRequest.methodName))) {
-						User.throwGuestException(rpcBody.rpcRequest.methodName);
+					throw new IllegalArgumentException(User.createGuestErrorMessage(rpcBody.rpcRequest.methodName));
 				}
 				RpcServiceType st = null;
 				VCellQueue queue = null;

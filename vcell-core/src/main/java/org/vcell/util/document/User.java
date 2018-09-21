@@ -36,10 +36,9 @@ public User(String userid, KeyValue key) {
 	this.key = key;
 }
 
-public static void throwGuestException(String theOffendingOp) {
-	throw new IllegalArgumentException(VCELL_GUEST+" not allowed to do '"+theOffendingOp+"'.  Register for free during login to use all VCell features.");
+public static String createGuestErrorMessage(String theOffendingOp) {
+	return VCELL_GUEST+" not allowed to do '"+theOffendingOp+"'.  Register for free during login to use all VCell features.";
 }
-
 public static boolean isGuest(String checkThisName) {
 	return VCELL_GUEST.equals(checkThisName);
 }

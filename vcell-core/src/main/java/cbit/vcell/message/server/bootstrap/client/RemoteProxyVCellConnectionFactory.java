@@ -85,7 +85,7 @@ public class RemoteProxyVCellConnectionFactory implements VCellConnectionFactory
 		public Object sendRpcMessage(VCellQueue queue, VCRpcRequest vcRpcRequest, boolean returnRequired, int timeoutMS,
 				String[] specialProperties, Object[] specialValues, UserLoginInfo userLoginInfo) throws Exception {
 			if(User.isGuest(userLoginInfo.getUserName()) && !vcellguestAllowed.contains(vcRpcRequest.getMethodName())) {
-				User.throwGuestException(vcRpcRequest.getMethodName());
+				throw new IllegalArgumentException(User.createGuestErrorMessage(vcRpcRequest.getMethodName()));
 			}
 			final RpcDestination rpcDestination;
 			if (queue.equals(VCellQueue.DataRequestQueue)) {

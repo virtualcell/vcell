@@ -877,13 +877,8 @@ private void refreshButtonsLax() {
  */
 private void runSimulations() {
 	if(User.isGuest(getSimulationWorkspace().getLoggedInUser().getName())) {
-		try {
-			User.throwGuestException("runVCellServerSimulations");
-		} catch (Exception e) {
-			e.printStackTrace();
-			DialogUtils.showErrorDialog(this, e.getMessage());
-			return;
-		}
+		DialogUtils.showErrorDialog(this, User.createGuestErrorMessage("runVCellServerSimulations"));
+		return;
 	}
 	final ArrayList<Simulation> simList = new ArrayList<Simulation>();
 	int[] selections = getScrollPaneTable().getSelectedRows();

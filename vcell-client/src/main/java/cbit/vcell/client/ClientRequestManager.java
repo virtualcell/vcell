@@ -103,6 +103,7 @@ import org.vcell.util.document.CurateSpec;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.MathModelChildSummary;
 import org.vcell.util.document.MathModelInfo;
+import org.vcell.util.document.User;
 import org.vcell.util.document.UserLoginInfo.DigestedPassword;
 import org.vcell.util.document.VCDataIdentifier;
 import org.vcell.util.document.VCDocument;
@@ -3574,6 +3575,11 @@ public SimulationStatus runSimulation(final SimulationInfo simInfo, int numSimul
 
 public void runSimulations(final ClientSimManager clientSimManager, final Simulation[] simulations) {
 	DocumentWindowManager documentWindowManager = clientSimManager.getDocumentWindowManager();
+	if(documentWindowManager.getUser() == null || User.isGuest(documentWindowManager.getUser().getName())){
+		DialogUtils.showErrorDialog(documentWindowManager.getComponent(), User.createGuestErrorMessage("runVCellServerSimulations"));
+		return;
+	}
+
 	/*	run some quick checks to see if we need to do a SaveAs */
 	boolean needSaveAs = false;
 	if (documentWindowManager.getVCDocument().getVersion() == null) {
@@ -3711,6 +3717,10 @@ public void saveDocument(DocumentWindowManager documentWindowManager, boolean re
  * @param replace boolean
  */
 public void saveDocument(final DocumentWindowManager documentWindowManager, boolean replace, AsynchClientTask closeWindowTask) {
+	if(documentWindowManager.getUser() == null || User.isGuest(documentWindowManager.getUser().getName())){
+		DialogUtils.showErrorDialog(documentWindowManager.getComponent(), User.createGuestErrorMessage("saveDocument"));
+		return;
+	}
 
 	/*	run some quick checks first to validate request to save or save edition */
 	if (documentWindowManager.getVCDocument().getVersion() == null) {
@@ -3806,6 +3816,10 @@ public void saveDocumentAsNew(DocumentWindowManager documentWindowManager) {
  * @param vcDocument cbit.vcell.document.VCDocument
  */
 public void saveDocumentAsNew(DocumentWindowManager documentWindowManager, AsynchClientTask closeWindowTask) {
+	if(documentWindowManager.getUser() == null || User.isGuest(documentWindowManager.getUser().getName())){
+		DialogUtils.showErrorDialog(documentWindowManager.getComponent(), User.createGuestErrorMessage("saveDocument"));
+		return;
+	}
 
 	/* block document window */
 	JFrame currentDocumentWindow = getMdiManager().blockWindow(documentWindowManager.getManagerID());
