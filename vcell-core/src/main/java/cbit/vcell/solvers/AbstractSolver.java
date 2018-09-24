@@ -366,6 +366,14 @@ public SimulationJob getSimulationJob() {
 	return simTask.getSimulationJob();
 }
 
+/**
+ * Override this in solvers where post processing of some error message is desired
+ * @param simulationMessage
+ * @return
+ */
+public String translateSimulationMessage(String simulationMessage) {
+	return simulationMessage;
+}
 
 /**
  * no-op

@@ -232,6 +232,7 @@ public class NFSimSolver extends SimpleCompiledSolver {
 		ArrayList<String> cmds = new ArrayList<String>();
 		cmds.add(executableName);
 		
+//		cmds.add("g:\\dan\\cprojects\\git\\vcell-solvers\\build\\bin\\NFsim_x64.exe");
 		Integer seed = nfsso.getRandomSeed();
 		if(seed != null) {
 			cmds.add("-seed");
@@ -271,6 +272,38 @@ public class NFSimSolver extends SimpleCompiledSolver {
 //		}
 		return cmds.toArray(new String[cmds.size()]);
 	}
+	
+	@Override
+	public String translateSimulationMessage(String simulationMessage) {
+		final String pattern1 = "produced a complex that does not match any product pattern";
+		final String pattern2 = "solver exited (code=3)";
+		if(simulationMessage.contains(pattern1)) {
+			StringBuilder improvedMessage = new StringBuilder();
+			String newLineDelimiters = "\n\r";
+			String resultDelimiter = "\n";
+			StringTokenizer lineTokenizer = new StringTokenizer(simulationMessage, newLineDelimiters);
+			String token = new String("");
+			while (lineTokenizer.hasMoreTokens()) {
+				token = lineTokenizer.nextToken();
+				if(token.contains(pattern1)) {
+					improvedMessage.append(resultDelimiter+ resultDelimiter + token + resultDelimiter);
+					improvedMessage.append("If any Reaction Rule contains disjoint patterns, try using a different syntax." + resultDelimiter + resultDelimiter);
+				}
+				if(token.contains("NFsim")) {
+					improvedMessage.append("Could not execute command:" + resultDelimiter);
+					improvedMessage.append(token + resultDelimiter);
+				}
+			}
+			String s = improvedMessage.toString();
+			return s;
+		} else if(simulationMessage.contains(pattern2)) {
+			String improvedMessage = simulationMessage + "\n";
+			improvedMessage += "A Reaction Rule produced a complex that does not match any product pattern.";
+			improvedMessage += "If any Reaction Rule contains disjoint patterns, try using a different syntax.";
+			return improvedMessage;
+		}
+		return simulationMessage;
+	}
 
 	/**
 	 * Insert the method's description here. Creation date: (10/11/2006 11:16:02
@@ -297,12 +330,16 @@ public class NFSimSolver extends SimpleCompiledSolver {
 		
 		final String baseName = "SimID_";
 		final String workingDir = "C:\\TEMP\\eee\\";
+//		final String workingDir = "G:\\dan\\cprojects\\test\\no_anchor_no_comp\\new\\work\\";
 		final String executable = "C:\\Users\\vasilescu\\.vcell\\solvers_DanDev_Version_5_3_build_99\\NFsim_x64.exe";
+//		final String executable = "g:\\dan\\cprojects\\git\\vcell-solvers\\build\\bin\\NFsim_x64.exe";
 //		final String workingDir = "C:\\Users\\jmasison\\.vcell\\simdata\\user\\sub\\";
 //		final String executable = "C:\\Users\\jmasison\\workspace\\VCell_trunk\\localsolvers\\win64\\NFsim_x64.exe";
 		
 		final String outputFile1 = "C:\\TEMP\\eee\\outputFile1.txt";		// results files
 		final String outputFile2 = "C:\\TEMP\\eee\\outputFile2.txt";
+//		final String outputFile1 = "G:\\dan\\cprojects\\test\\no_anchor_no_comp\\new\\outputFile1.txt";		// results files
+//		final String outputFile2 = "G:\\dan\\cprojects\\test\\no_anchor_no_comp\\new\\outputFile2.txt";
 				
 		final int seed = 1807259453;
 		final int steps = 50;			// 100

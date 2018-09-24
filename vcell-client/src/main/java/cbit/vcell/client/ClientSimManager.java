@@ -645,7 +645,9 @@ public void runQuickSimulation(final Simulation originalSimulation, ViewerType v
 				SolverStatus solverStatus = solver.getSolverStatus();
 				if (solverStatus != null) {
 					if (solverStatus.getStatus() == SolverStatus.SOLVER_ABORTED) {
-						throw new RuntimeException(solverStatus.getSimulationMessage().getDisplayMessage());
+						String simulationMessage = solverStatus.getSimulationMessage().getDisplayMessage();
+						String translatedMessage = solver.translateSimulationMessage(simulationMessage);
+						throw new RuntimeException(translatedMessage);
 					}
 					if (solverStatus.getStatus() != SolverStatus.SOLVER_STARTING &&
 						solverStatus.getStatus() != SolverStatus.SOLVER_READY &&

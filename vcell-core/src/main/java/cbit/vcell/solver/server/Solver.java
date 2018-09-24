@@ -38,6 +38,7 @@ public interface Solver {
 	double getProgress();
 	public SimulationJob getSimulationJob();
 	public SolverStatus getSolverStatus();
+	public String translateSimulationMessage(String simulationMessage);
 	/**
 	 *
 	 */
