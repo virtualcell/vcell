@@ -384,7 +384,7 @@ private javax.swing.JLabel getJLabelTitle() {
 		try {
 			ivjJLabelTitle = new javax.swing.JLabel();
 			ivjJLabelTitle.setName("JLabelTitle");
-			ivjJLabelTitle.setBorder(BorderFactory.createEmptyBorder(10, 0, 10, 0));
+			ivjJLabelTitle.setBorder(BorderFactory.createEmptyBorder(10, 0, 8, 0));
 			ivjJLabelTitle.setText("Choose solver algorithm and fine-tune time conditions:");
 			ivjJLabelTitle.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
 			ivjJLabelTitle.setFont(ivjJLabelTitle.getFont().deriveFont(java.awt.Font.BOLD));
@@ -676,7 +676,7 @@ private CollapsiblePanel getGeneralOptionsPanel() {
 		constraintsTimeBoundsPanel.fill = java.awt.GridBagConstraints.BOTH;
 		constraintsTimeBoundsPanel.weightx = 1.0;
 		constraintsTimeBoundsPanel.weighty = 1.0;
-		constraintsTimeBoundsPanel.insets = new java.awt.Insets(4, 4, 4, 4);
+		constraintsTimeBoundsPanel.insets = new java.awt.Insets(3, 4, 4, 4);
 		generalOptionsPanel.getContentPanel().add(getTimeBoundsPanel(), constraintsTimeBoundsPanel);
 
 		java.awt.GridBagConstraints constraintsTimeStepPanel = new java.awt.GridBagConstraints();
@@ -684,7 +684,7 @@ private CollapsiblePanel getGeneralOptionsPanel() {
 		constraintsTimeStepPanel.fill = java.awt.GridBagConstraints.BOTH;
 		constraintsTimeStepPanel.weightx = 1.0;
 		constraintsTimeStepPanel.weighty = 1.0;
-		constraintsTimeStepPanel.insets = new java.awt.Insets(4, 4, 4, 4);
+		constraintsTimeStepPanel.insets = new java.awt.Insets(3, 4, 4, 4);
 		generalOptionsPanel.getContentPanel().add(getTimeStepPanel(), constraintsTimeStepPanel);
 
 		java.awt.GridBagConstraints constraintsErrorTolerancePanel = new java.awt.GridBagConstraints();
@@ -692,7 +692,7 @@ private CollapsiblePanel getGeneralOptionsPanel() {
 		constraintsErrorTolerancePanel.gridx = 2; constraintsErrorTolerancePanel.gridy = 0;
 		constraintsErrorTolerancePanel.weightx = 1.0;
 		constraintsErrorTolerancePanel.weighty = 1.0;
-		constraintsErrorTolerancePanel.insets = new java.awt.Insets(4, 4, 4, 4);
+		constraintsErrorTolerancePanel.insets = new java.awt.Insets(3, 4, 4, 4);
 		constraintsErrorTolerancePanel.anchor = GridBagConstraints.FIRST_LINE_START;
 		generalOptionsPanel.getContentPanel().add(getErrorTolerancePanel(), constraintsErrorTolerancePanel);
 		
@@ -761,7 +761,7 @@ private void initialize() {
 		constraintsPanel2.gridy = 1;
 		constraintsPanel2.fill = java.awt.GridBagConstraints.BOTH;
 		constraintsPanel2.weightx = 1.0;
-		constraintsPanel2.insets = new java.awt.Insets(0, 4, 4, 4);
+		constraintsPanel2.insets = new java.awt.Insets(0, 4, 3, 4);
 		add(getSolverPanel(), constraintsPanel2);
 
 		gridy ++;
@@ -780,7 +780,7 @@ private void initialize() {
 		gbc1.gridy = gridy;
 		gbc1.fill = java.awt.GridBagConstraints.HORIZONTAL;
 		gbc1.weightx = 1.0;
-		gbc1.insets = new java.awt.Insets(4, 4, 4, 4);
+		gbc1.insets = new java.awt.Insets(3, 4, 3, 4);
 		add(getGeneralAndDeverloperToolsPanel(), gbc1);
 		
 		gridy ++;
