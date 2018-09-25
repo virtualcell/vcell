@@ -305,7 +305,7 @@ public class NFSimSimulationOptionsPanel extends CollapsiblePanel {
 		observableComputationHelpButton.setFont(font);
 		observableComputationHelpButton.setBorder(border);
 		
-		moleculeDistanceCheckBox = new JCheckBox("Set the distance to molecules that might have to be updated:");
+		moleculeDistanceCheckBox = new JCheckBox("Set distance to molecules that may be updated:");
 		moleculeDistanceTextField = new JTextField(NFsimSimulationOptions.DefaultDistanceToMolecules+"");
 		moleculeDistanceHelpButton = new JButton(" ? ");
 		moleculeDistanceHelpButton.setFont(font);
@@ -321,7 +321,7 @@ public class NFSimSimulationOptionsPanel extends CollapsiblePanel {
 		aggregateBookkeepingCheckBox.setSelected(true);
 		aggregateBookkeepingCheckBox.setEnabled(false);
 		
-		maxMoleculesPerTypeCheckBox = new JCheckBox("Set the maximal number of molecules per Molecular Type.");
+		maxMoleculesPerTypeCheckBox = new JCheckBox("Set the max. number of particles per Molecule.");
 		maxMoleculesPerTypeTextField = new JTextField(NFsimSimulationOptions.DefaultMaxMoleculesPerSpecies+"");
 		maxMoleculesPerTypeHelpButton = new JButton(" ? ");
 		maxMoleculesPerTypeHelpButton.setFont(font);
@@ -333,7 +333,7 @@ public class NFSimSimulationOptionsPanel extends CollapsiblePanel {
 		equilibrateTimeHelpButton.setFont(font);
 		equilibrateTimeHelpButton.setBorder(border);
 		
-		randomSeedCheckBox = new JCheckBox("Set a seed to NFsim's random number generator.");
+		randomSeedCheckBox = new JCheckBox("Set a seed to NFsim random number generator.");
 		randomSeedTextField = new JTextField();
 		randomSeedHelpButton.setFont(font);
 		randomSeedHelpButton.setBorder(border);
@@ -344,7 +344,7 @@ public class NFSimSimulationOptionsPanel extends CollapsiblePanel {
 		preventIntraBondsHelpButton.setFont(font);
 		preventIntraBondsHelpButton.setBorder(border);
 		
-		matchComplexesCheckBox = new JCheckBox("Mach generated complexes to rule product patterns.");
+		matchComplexesCheckBox = new JCheckBox("Match generated complexes to products.");
 		matchComplexesTextField = new JTextField();
 		matchComplexesHelpButton = new JButton(" ? ");
 		matchComplexesHelpButton.setFont(font);
@@ -358,52 +358,85 @@ public class NFSimSimulationOptionsPanel extends CollapsiblePanel {
 		gbc.gridx = 0;
 		gbc.gridy = gridy;
 		gbc.anchor = GridBagConstraints.LINE_START;
+		gbc.insets = new Insets(4, 0, 0, 0);
 		getContentPanel().add(observableComputationCheckBox, gbc);
 
 		gbc = new GridBagConstraints();
 		gbc.gridx = 1;
 		gbc.gridy = gridy;
 		gbc.anchor = GridBagConstraints.LINE_START;
-		gbc.insets = new Insets(0, 0, 0, 4);
+		gbc.insets = new Insets(4, 0, 0, 8);
 		getContentPanel().add(observableComputationHelpButton, gbc);
+		
+		gbc = new GridBagConstraints();
+		gbc.gridx = 2;
+		gbc.gridy = gridy;
+		gbc.anchor = GridBagConstraints.LINE_START;
+		gbc.insets = new Insets(4, 4, 0, 0);
+		getContentPanel().add(aggregateBookkeepingCheckBox, gbc);
+
+		gbc = new GridBagConstraints();
+		gbc.gridx = 3;
+		gbc.gridy = gridy;
+		gbc.anchor = GridBagConstraints.LINE_END;
+		gbc.insets = new Insets(4, 0, 0, 6);
+		getContentPanel().add(aggregateBookkeepingHelpButton, gbc);
+
+		// --------------------------------------------------------------------------
+		gridy++;
+		gbc = new GridBagConstraints();
+		gbc.gridx = 0;
+		gbc.gridy = gridy;
+		gbc.anchor = GridBagConstraints.LINE_START;
+		gbc.insets = new Insets(0, 0, 6, 0);
+		getContentPanel().add(preventIntraBondsCheckBox, gbc);
+
+		gbc = new GridBagConstraints();
+		gbc.gridx = 1;
+		gbc.gridy = gridy;
+		gbc.anchor = GridBagConstraints.LINE_START;
+		gbc.insets = new Insets(0, 0, 6, 8);
+		getContentPanel().add(preventIntraBondsHelpButton, gbc);
 				
+		gbc = new GridBagConstraints();
+		gbc.gridx = 2;
+		gbc.gridy = gridy;
+		gbc.anchor = GridBagConstraints.LINE_START;
+		gbc.insets = new Insets(0, 4, 6, 0);
+		getContentPanel().add(matchComplexesCheckBox, gbc);
+
+		gbc = new GridBagConstraints();
+		gbc.gridx = 3;
+		gbc.gridy = gridy;
+		gbc.anchor = GridBagConstraints.LINE_END;
+		gbc.insets = new Insets(0, 0, 6, 6);
+		getContentPanel().add(matchComplexesHelpButton, gbc);
+
 		// ----------------------------------------------------------------		
 		gridy++;
 		gbc = new GridBagConstraints();
 		gbc.gridx = 0;
 		gbc.gridy = gridy;
 		gbc.anchor = GridBagConstraints.LINE_START;
+		gbc.insets = new Insets(2, 0, 2, 0);
 		getContentPanel().add(moleculeDistanceCheckBox, gbc);
 
 		gbc = new GridBagConstraints();
 		gbc.gridx = 1;
 		gbc.gridy = gridy;
-		gbc.anchor = GridBagConstraints.LINE_START;
-		gbc.insets = new Insets(0, 0, 0, 4);
-		getContentPanel().add(moleculeDistanceHelpButton, gbc);
-				
-		gbc = new GridBagConstraints();
-		gbc.gridx = 2;
-		gbc.gridy = gridy;
 		gbc.weightx = 1;
+		gbc.gridwidth = 2;
+		gbc.insets = new Insets(2, 0, 2, 6);
 		gbc.fill = GridBagConstraints.HORIZONTAL;
 		gbc.anchor = GridBagConstraints.LINE_START;
 		getContentPanel().add(moleculeDistanceTextField, gbc);
 
-		// ----------------------------------------------------------------		
-		gridy++;
 		gbc = new GridBagConstraints();
-		gbc.gridx = 0;
+		gbc.gridx = 3;
 		gbc.gridy = gridy;
-		gbc.anchor = GridBagConstraints.LINE_START;
-		getContentPanel().add(aggregateBookkeepingCheckBox, gbc);
-
-		gbc = new GridBagConstraints();
-		gbc.gridx = 1;
-		gbc.gridy = gridy;
-		gbc.anchor = GridBagConstraints.LINE_START;
-		gbc.insets = new Insets(0, 0, 0, 4);
-		getContentPanel().add(aggregateBookkeepingHelpButton, gbc);
+		gbc.anchor = GridBagConstraints.LINE_END;
+		gbc.insets = new Insets(2, 0, 2, 6);
+		getContentPanel().add(moleculeDistanceHelpButton, gbc);
 				
 		// ----------------------------------------------------------------		
 		gridy++;
@@ -411,46 +444,26 @@ public class NFSimSimulationOptionsPanel extends CollapsiblePanel {
 		gbc.gridx = 0;
 		gbc.gridy = gridy;
 		gbc.anchor = GridBagConstraints.LINE_START;
+		gbc.insets = new Insets(0, 0, 2, 0);
 		getContentPanel().add(maxMoleculesPerTypeCheckBox, gbc);
 
 		gbc = new GridBagConstraints();
 		gbc.gridx = 1;
 		gbc.gridy = gridy;
-		gbc.anchor = GridBagConstraints.LINE_START;
-		gbc.insets = new Insets(0, 0, 0, 4);
-		getContentPanel().add(maxMoleculesPerTypeHelpButton, gbc);
-				
-		gbc = new GridBagConstraints();
-		gbc.gridx = 2;
-		gbc.gridy = gridy;
 		gbc.weightx = 1;
+		gbc.gridwidth = 2;
+		gbc.insets = new Insets(0, 0, 2, 6);
 		gbc.fill = GridBagConstraints.HORIZONTAL;
 		gbc.anchor = GridBagConstraints.LINE_START;
 		getContentPanel().add(maxMoleculesPerTypeTextField, gbc);
 		
-		// ----------------------------------------------------------------		
-//		gridy++;
-//		gbc = new GridBagConstraints();
-//		gbc.gridx = 0;
-//		gbc.gridy = gridy;
-//		gbc.anchor = GridBagConstraints.LINE_START;
-//		getContentPanel().add(equilibrateTimeCheckBox, gbc);
-//
-//		gbc = new GridBagConstraints();
-//		gbc.gridx = 1;
-//		gbc.gridy = gridy;
-//		gbc.anchor = GridBagConstraints.LINE_START;
-//		gbc.insets = new Insets(0, 0, 0, 4);
-//		getContentPanel().add(equilibrateTimeHelpButton, gbc);
-//				
-//		gbc = new GridBagConstraints();
-//		gbc.gridx = 2;
-//		gbc.gridy = gridy;
-//		gbc.weightx = 1;
-//		gbc.fill = GridBagConstraints.HORIZONTAL;
-//		gbc.anchor = GridBagConstraints.LINE_START;
-//		getContentPanel().add(equilibrateTimeTextField, gbc);
-
+		gbc = new GridBagConstraints();
+		gbc.gridx = 3;
+		gbc.gridy = gridy;
+		gbc.anchor = GridBagConstraints.LINE_END;
+		gbc.insets = new Insets(0, 0, 2, 6);
+		getContentPanel().add(maxMoleculesPerTypeHelpButton, gbc);
+				
 		// ----------------------------------------------------------------
 		
 		gridy++;
@@ -458,52 +471,55 @@ public class NFSimSimulationOptionsPanel extends CollapsiblePanel {
 		gbc.gridx = 0;
 		gbc.gridy = gridy;
 		gbc.anchor = GridBagConstraints.LINE_START;
+		gbc.insets = new Insets(0, 0, 6, 0);
 		getContentPanel().add(randomSeedCheckBox, gbc);
 
 		gbc = new GridBagConstraints();
 		gbc.gridx = 1;
 		gbc.gridy = gridy;
-		gbc.anchor = GridBagConstraints.LINE_START;
-		gbc.insets = new Insets(0, 0, 0, 4);
-		getContentPanel().add(randomSeedHelpButton, gbc);
-		
-		gbc = new GridBagConstraints();
-		gbc.gridx = 2;
-		gbc.gridy = gridy;
 		gbc.weightx = 1;
+		gbc.gridwidth = 2;
+		gbc.insets = new Insets(0, 0, 6, 6);
 		gbc.fill = GridBagConstraints.HORIZONTAL;
 		gbc.anchor = GridBagConstraints.LINE_START;
 		getContentPanel().add(randomSeedTextField, gbc);
 
+		gbc = new GridBagConstraints();
+		gbc.gridx = 3;
+		gbc.gridy = gridy;
+		gbc.anchor = GridBagConstraints.LINE_END;
+		gbc.insets = new Insets(0, 0, 6, 6);
+		getContentPanel().add(randomSeedHelpButton, gbc);
+		
 		// --------------------------------------------------------------------------
 		
-		gridy++;
-		gbc = new GridBagConstraints();
-		gbc.gridx = 0;
-		gbc.gridy = gridy;
-		gbc.anchor = GridBagConstraints.LINE_START;
-		getContentPanel().add(preventIntraBondsCheckBox, gbc);
-
-		gbc = new GridBagConstraints();
-		gbc.gridx = 1;
-		gbc.gridy = gridy;
-		gbc.anchor = GridBagConstraints.LINE_START;
-		gbc.insets = new Insets(0, 0, 0, 4);
-		getContentPanel().add(preventIntraBondsHelpButton, gbc);
-				
-		gridy++;
-		gbc = new GridBagConstraints();
-		gbc.gridx = 0;
-		gbc.gridy = gridy;
-		gbc.anchor = GridBagConstraints.LINE_START;
-		getContentPanel().add(matchComplexesCheckBox, gbc);
-
-		gbc = new GridBagConstraints();
-		gbc.gridx = 1;
-		gbc.gridy = gridy;
-		gbc.anchor = GridBagConstraints.LINE_START;
-		gbc.insets = new Insets(0, 0, 0, 4);
-		getContentPanel().add(matchComplexesHelpButton, gbc);
+//		gridy++;
+//		gbc = new GridBagConstraints();
+//		gbc.gridx = 0;
+//		gbc.gridy = gridy;
+//		gbc.anchor = GridBagConstraints.LINE_START;
+//		getContentPanel().add(preventIntraBondsCheckBox, gbc);
+//
+//		gbc = new GridBagConstraints();
+//		gbc.gridx = 1;
+//		gbc.gridy = gridy;
+//		gbc.anchor = GridBagConstraints.LINE_START;
+//		gbc.insets = new Insets(0, 0, 0, 4);
+//		getContentPanel().add(preventIntraBondsHelpButton, gbc);
+//				
+////		gridy++;
+//		gbc = new GridBagConstraints();
+//		gbc.gridx = 3;
+//		gbc.gridy = gridy;
+//		gbc.anchor = GridBagConstraints.LINE_START;
+//		getContentPanel().add(matchComplexesCheckBox, gbc);
+//
+//		gbc = new GridBagConstraints();
+//		gbc.gridx = 4;
+//		gbc.gridy = gridy;
+//		gbc.anchor = GridBagConstraints.LINE_END;
+//		gbc.insets = new Insets(0, 0, 0, 4);
+//		getContentPanel().add(matchComplexesHelpButton, gbc);
 				
 	}
 	
