@@ -353,7 +353,7 @@
 									</goals>
 <!-- This will download resource to {HomeDir}\.m2\repository\.cache\download-maven-plugin then extract to <outputDirectory>-->
 									<configuration>
-										<url>https://github.com/virtualcell/vcell-solvers/releases/download/v0.0.23/win64.zip</url>
+										<url>https://github.com/virtualcell/vcell-solvers/releases/download/v0.0.24/win64.zip</url>
 										<unpack>true</unpack>
 										<outputDirectory>${project.build.directory}/../../localsolvers/win64</outputDirectory>
 									</configuration>
@@ -384,7 +384,7 @@
 										<goal>wget</goal>
 									</goals>
 									<configuration>
-										<url>https://github.com/virtualcell/vcell-solvers/releases/download/v0.0.23/mac64.tgz</url>
+										<url>https://github.com/virtualcell/vcell-solvers/releases/download/v0.0.24/mac64.tgz</url>
 										<unpack>true</unpack>
 										<outputDirectory>${project.build.directory}/../../localsolvers/mac64</outputDirectory>
 									</configuration>
@@ -416,7 +416,7 @@
 										<goal>wget</goal>
 									</goals>
 									<configuration>
-										<url>https://github.com/virtualcell/vcell-solvers/releases/download/v0.0.23/linux64.tgz</url>
+										<url>https://github.com/virtualcell/vcell-solvers/releases/download/v0.0.24/linux64.tgz</url>
 										<unpack>true</unpack>
 										<outputDirectory>${project.build.directory}/../../localsolvers/linux64</outputDirectory>
 									</configuration>
@@ -428,7 +428,7 @@
 										<goal>wget</goal>
 									</goals>
 									<configuration>
-										<url>https://github.com/virtualcell/vcell-solvers/releases/download/v0.0.23/win64.zip</url>
+										<url>https://github.com/virtualcell/vcell-solvers/releases/download/v0.0.24/win64.zip</url>
 										<unpack>true</unpack>
 										<outputDirectory>${project.build.directory}/../../localsolvers/win64</outputDirectory>
 									</configuration>
@@ -440,7 +440,7 @@
 										<goal>wget</goal>
 									</goals>
 									<configuration>
-										<url>https://github.com/virtualcell/vcell-solvers/releases/download/v0.0.23/mac64.tgz</url>
+										<url>https://github.com/virtualcell/vcell-solvers/releases/download/v0.0.24/mac64.tgz</url>
 										<unpack>true</unpack>
 										<outputDirectory>${project.build.directory}/../../localsolvers/mac64</outputDirectory>
 									</configuration>
