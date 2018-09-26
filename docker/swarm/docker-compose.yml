@@ -104,6 +104,8 @@ services:
       - mongodb_database=test
     ports:
       - "8000" # java remote debugging
+    volumes:
+      - "${VCELL_SIMDATADIR_HOST}:/simdata"
     secrets:
       - dbpswd
       - jmspswd

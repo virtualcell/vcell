@@ -4,18 +4,15 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.StringTokenizer;
 
 import org.vcell.util.FileUtils;
+import org.vcell.util.document.KeyValue;
 import org.vcell.util.exe.ExecutableException;
 
 import cbit.vcell.message.server.cmd.CommandService;
@@ -24,7 +21,6 @@ import cbit.vcell.message.server.htc.HtcException;
 import cbit.vcell.message.server.htc.HtcJobNotFoundException;
 import cbit.vcell.message.server.htc.HtcJobStatus;
 import cbit.vcell.message.server.htc.HtcProxy;
-import cbit.vcell.message.server.htc.HtcProxy.HtcJobInfo;
 import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.server.HtcJobID;
@@ -329,32 +325,6 @@ public class SlurmProxy extends HtcProxy {
 		return statusMap;
 	}
 
-	public static long getMemoryLimit(String vcellUserid,double memSizeMB) {
-		try {
-			//${vcellroot}/docker/swarm/serverconfig-uch.sh->VCELL_SIMDATADIR_EXTERNAL=/share/apps/vcell3/users 
-			//${vcellroot}/docker/swarm/serverconfig-uch.sh-> VCELL_SIMDATADIR_HOST=/opt/vcelldata/users 
-			//${vcellroot}/docker/swarm/docker-compose.yml-> Volume map "${VCELL_SIMDATADIR_HOST}:/simdata"
-			List<String> perUserLimits = Files.readAllLines(Paths.get("/simdata/sim_mem_per_user_limits.txt"));
-			for (Iterator iterator = perUserLimits.iterator(); iterator.hasNext();) {
-				String userAndLimit = ((String) iterator.next()).trim();
-				if(userAndLimit.length()==0 || userAndLimit.startsWith("//")) {
-					continue;
-				}
-				StringTokenizer st = new StringTokenizer(userAndLimit);
-				if(st.nextToken().equals(vcellUserid) && st.hasMoreTokens()) {
-					long perUserMemMax = Long.parseLong(st.nextToken());
-					return perUserMemMax;
-				}
-			}
-		} catch (Exception e) {
-			//ignore, try defaults
-			e.printStackTrace();
-		}
-		long memoryMB = (long)Math.ceil(memSizeMB);
-		long minMemMB = 4096;
-		return Math.max(minMemMB, memoryMB * 2);
-		
-	}
 	/**
 	 * write bash script for submission
 	 * @param jobName
@@ -379,7 +349,8 @@ public class SlurmProxy extends HtcProxy {
 		lsb.write("#SBATCH -J " + jobName);
 		lsb.write("#SBATCH -o " + new File(htcLogDirExternal, jobName+".slurm.log").getAbsolutePath());
 		lsb.write("#SBATCH -e " + new File(htcLogDirExternal, jobName+".slurm.log").getAbsolutePath());
-		long memoryMB = getMemoryLimit(simTask.getUserName(),memSizeMB);
+		//SlurmProxy ultimately instantiated from {vcellroot}/docker/build/Dockerfile-submit-dev by way of cbit.vcell.message.server.batch.sim.HtcSimulationWorker
+		long memoryMB = HtcProxy.getMemoryLimit(simTask.getUserName(),memSizeMB,simTask.getSimulationInfo().getSimulationVersion().getVersionKey());
 		lsb.write("#SBATCH --mem="+memoryMB+"M");
 		lsb.write("#SBATCH --no-kill");
 		lsb.write("#SBATCH --no-requeue");

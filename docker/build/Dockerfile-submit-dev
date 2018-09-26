@@ -67,6 +67,7 @@ ENTRYPOINT java \
 	-Dlog4j.configurationFile=/usr/local/app/vcell-submit.log4j.xml \
 	-Dvcell.server.id="${serverid}" \
 	-Dvcell.primarySimdatadir.internal=/simdata \
+	-Dvcell.htc.simPerUserMemLimitFile=sim_mem_per_user_limits.txt \
 	-Dvcell.primarySimdatadir.external="${simdatadir_external}" \
 	-Dvcell.parallelDatadir.external="${simdatadir_parallel_external}" \
 	-Dvcell.nativesolverdir.external="${nativesolverdir_external}" \

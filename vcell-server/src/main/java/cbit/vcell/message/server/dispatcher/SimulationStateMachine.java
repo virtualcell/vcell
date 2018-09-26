@@ -21,6 +21,7 @@ import cbit.vcell.message.messages.MessageConstants;
 import cbit.vcell.message.messages.SimulationTaskMessage;
 import cbit.vcell.message.messages.StatusMessage;
 import cbit.vcell.message.messages.WorkerEventMessage;
+import cbit.vcell.message.server.htc.HtcProxy;
 import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.mongodb.VCMongoMessage;
 import cbit.vcell.resource.PropertyLoader;
@@ -466,7 +467,8 @@ public class SimulationStateMachine {
 		SimulationTask simulationTask = new SimulationTask(new SimulationJob(simulation, jobIndex, fieldDataIdentifierSpecs), taskID);
 
 		double requiredMemMB = simulationTask.getEstimatedMemorySizeMB();
-		double allowableMemMB = Double.parseDouble(PropertyLoader.getRequiredProperty(PropertyLoader.limitJobMemoryMB));
+		//SimulationStateMachine ultimately instantiated from {vcellroot}/docker/build/Dockerfile-sched-dev by way of cbit.vcell.message.server.dispatcher.SimulationDispatcher
+		double allowableMemMB = HtcProxy.getMemoryLimit(simulation.getVersion().getOwner().getName(), requiredMemMB, simulation.getVersion().getVersionKey());
 		
 		final SimulationJobStatus newSimJobStatus;
 		if (requiredMemMB > allowableMemMB) {						

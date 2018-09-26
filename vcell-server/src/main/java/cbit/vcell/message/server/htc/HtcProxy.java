@@ -8,7 +8,11 @@ import java.nio.CharBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetEncoder;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 
@@ -224,6 +228,58 @@ public abstract class HtcProxy {
 	}
 
 	public abstract String getSubmissionFileExtension();
+
+	public static long getMemoryLimit(String vcellUserid,double estimatedMemSizeMB,KeyValue simID) {
+		long defaultSimMemoryLimitMb = 4096;//set in case there is not PropertyLoader.simPerUserMemoryLimitFile
+		try {
+			//${vcellroot}/docker/swarm/serverconfig-uch.sh->VCELL_SIMDATADIR_EXTERNAL=/share/apps/vcell3/users 
+			//${vcellroot}/docker/swarm/serverconfig-uch.sh-> VCELL_SIMDATADIR_HOST=/opt/vcelldata/users 
+			//${vcellroot}/docker/swarm/docker-compose.yml-> Volume map "${VCELL_SIMDATADIR_HOST}:/simdata"
+			Long perUserMemMax = null;
+			Long perSimMemMax = null;
+			String memLimitFileDirVal = System.getProperty(PropertyLoader.primarySimDataDirInternalProperty);
+			String memLimitFileVal = System.getProperty(PropertyLoader.simPerUserMemoryLimitFile);
+			File memLimitFile = new File(memLimitFileDirVal,memLimitFileVal);
+			if(memLimitFile.exists()) {
+				List<String> perUserLimits = Files.readAllLines(Paths.get(memLimitFile.getAbsolutePath()));
+				for (Iterator<String> iterator = perUserLimits.iterator(); iterator.hasNext();) {
+					String userAndLimit = iterator.next().trim();
+					if(userAndLimit.length()==0 || userAndLimit.startsWith("//")) {
+						continue;
+					}
+					
+					StringTokenizer st = new StringTokenizer(userAndLimit);
+					String limitUserid = st.nextToken();
+					if(limitUserid.equals(vcellUserid)) {//check user
+						String memLimit = st.nextToken();
+						//get simid
+						String simSpecifier = st.nextToken();
+						// * means all sims for that user, don't set if sim specific limit is already set
+						if(simSpecifier.equals("*") && perSimMemMax == null) {
+							perUserMemMax = Long.parseLong(memLimit);// use this unless overriden by specific simid
+						}
+						//Set sim specific limit, set even if * limit has been set
+						if(simID != null && simID.toString().equals(simSpecifier)) {
+							perSimMemMax = Long.parseLong(memLimit);// use sim limit
+						}
+					}else if(limitUserid.equals("defaultSimMemoryLimitMb")) {//Master sim mem limit
+						defaultSimMemoryLimitMb = Long.parseLong(st.nextToken());
+					}
+				}
+				if(perUserMemMax != null || perSimMemMax != null) {
+					long finalMax = (perSimMemMax!=null?perSimMemMax:perUserMemMax);
+					System.out.println("Set memory limit for user '"+vcellUserid+"' to "+finalMax + (perSimMemMax!=null?" for simID="+simID.toString():""));
+					return finalMax;
+				}
+			}
+		} catch (Exception e) {
+			//ignore, try defaults
+			e.printStackTrace();
+		}
+		long memoryMB = (long)Math.ceil(estimatedMemSizeMB);
+		return Math.max(defaultSimMemoryLimitMb, memoryMB * 2);
+		
+	}
 
 }
 

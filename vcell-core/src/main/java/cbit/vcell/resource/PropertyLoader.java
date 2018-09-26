@@ -40,6 +40,7 @@ public class PropertyLoader {
 
 	public static final String vcellServerIDProperty        = record("vcell.server.id",ValueType.GEN);
 
+	public static final String simPerUserMemoryLimitFile	= record("vcell.htc.simPerUserMemLimitFile",ValueType.GEN);
 	public static final String primarySimDataDirInternalProperty	= record("vcell.primarySimdatadir.internal",ValueType.DIR);
 	public static final String secondarySimDataDirInternalProperty	= record("vcell.secondarySimdatadir.internal",ValueType.DIR);
 	public static final String primarySimDataDirExternalProperty	= record("vcell.primarySimdatadir.external",ValueType.GEN);
@@ -157,7 +158,7 @@ public class PropertyLoader {
 	public static final String maxPdeJobsPerUser	= record("vcell.server.maxPdeJobsPerUser",ValueType.GEN);
 	public static final String maxJobsPerScan		= record("vcell.server.maxJobsPerScan",ValueType.GEN);
 	//public static final String maxJobsPerSite		= record("vcell.server.maxJobsPerSite",ValueType.GEN);
-	public static final String limitJobMemoryMB		= record("vcell.limit.jobMemoryMB",ValueType.GEN);
+//	public static final String limitJobMemoryMB		= record("vcell.limit.jobMemoryMB",ValueType.GEN);
 
 	public static final String vcellSoftwareVersion = record("vcell.softwareVersion",ValueType.GEN);
 	public static final String vcellThirdPartyLicense = record("vcell.thirdPartyLicense",ValueType.GEN);
