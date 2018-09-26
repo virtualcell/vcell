@@ -40,8 +40,9 @@ public class NFsimSimulationOptions implements Serializable, Matchable, Vetoable
 	protected transient VetoableChangeSupport vetoChange;
 	
 	public static final String PROPERTY_NAME_RANDOM_SEED = "randomSeed";
-	public static final Integer DefaultMaxMoleculesPerSpecies = 200000;
+	public static final Integer DefaultMaxMoleculesPerType = 200000;
 	public static final Integer DefaultDistanceToMolecules = 1000;
+	public static final Integer DefaultRandomSeed = 1;
 	
 	public NFsimSimulationOptions() {
 		removeVetoableChangeListener(this);
@@ -181,14 +182,12 @@ public class NFsimSimulationOptions implements Serializable, Matchable, Vetoable
 	public String getVCML() {		
 		StringBuffer buffer = new StringBuffer();
 		buffer.append("\t" + VCML.NFSimSimulationOptions + " " + VCML.BeginBlock + "\n");
-		if (observableComputationOff == true) {
-			buffer.append("\t\t" + VCML.NFSimSimulationOptions_observableComputationOff + " " + observableComputationOff + "\n");			
-		}
+		buffer.append("\t\t" + VCML.NFSimSimulationOptions_observableComputationOff + " " + observableComputationOff + "\n");			
+		buffer.append("\t\t" + VCML.NFSimSimulationOptions_preventIntraBonds + " " + preventIntraBonds + "\n");			
+		buffer.append("\t\t" + VCML.NFSimSimulationOptions_aggregateBookkeeping + " " + aggregateBookkeeping + "\n");			
+		buffer.append("\t\t" + VCML.NFSimSimulationOptions_matchComplexes + " " + matchComplexes + "\n");			
 		if (moleculeDistance != null) {
 			buffer.append("\t\t" + VCML.NFSimSimulationOptions_moleculeDistance + " " + moleculeDistance + "\n");			
-		}
-		if (aggregateBookkeeping == true) {
-			buffer.append("\t\t" + VCML.NFSimSimulationOptions_aggregateBookkeeping + " " + aggregateBookkeeping + "\n");			
 		}
 		if (maxMoleculesPerType != null) {
 			buffer.append("\t\t" + VCML.NFSimSimulationOptions_maxMoleculesPerType + " " + maxMoleculesPerType + "\n");			
@@ -199,10 +198,6 @@ public class NFsimSimulationOptions implements Serializable, Matchable, Vetoable
 		if (randomSeed != null) {
 			buffer.append("\t\t" + VCML.NFSimSimulationOptions_randomSeed + " " + randomSeed + "\n");			
 		}
-		if (preventIntraBonds == true) {
-			buffer.append("\t\t" + VCML.NFSimSimulationOptions_preventIntraBonds + " " + preventIntraBonds + "\n");			
-		}
-		buffer.append("\t\t" + VCML.NFSimSimulationOptions_matchComplexes + " " + matchComplexes + "\n");			
 		buffer.append("\t" + VCML.EndBlock + "\n");
 		return buffer.toString();
 	}
@@ -223,14 +218,12 @@ public class NFsimSimulationOptions implements Serializable, Matchable, Vetoable
 			if(token.equalsIgnoreCase(VCML.NFSimSimulationOptions_observableComputationOff)) {
 				token = tokens.nextToken();
 				observableComputationOff = Boolean.parseBoolean(token);
-				assert observableComputationOff == true;		// when this option is present it must be set to true. Default is false
 			} else if(token.equalsIgnoreCase(VCML.NFSimSimulationOptions_moleculeDistance)) {
 				token = tokens.nextToken();
 				moleculeDistance = new Integer(token);
 			} else if(token.equalsIgnoreCase(VCML.NFSimSimulationOptions_aggregateBookkeeping)) {
 				token = tokens.nextToken();
 				aggregateBookkeeping = Boolean.parseBoolean(token);
-				assert aggregateBookkeeping == true;
 			} else if(token.equalsIgnoreCase(VCML.NFSimSimulationOptions_maxMoleculesPerType)) {
 				token = tokens.nextToken();
 				maxMoleculesPerType = new Integer(token);
@@ -243,7 +236,6 @@ public class NFsimSimulationOptions implements Serializable, Matchable, Vetoable
 			} else if(token.equalsIgnoreCase(VCML.NFSimSimulationOptions_preventIntraBonds)) {
 				token = tokens.nextToken();
 				preventIntraBonds = Boolean.parseBoolean(token);
-				assert preventIntraBonds == true;
 			} else if(token.equalsIgnoreCase(VCML.NFSimSimulationOptions_matchComplexes)) {
 				token = tokens.nextToken();
 				matchComplexes = Boolean.parseBoolean(token);

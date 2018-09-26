@@ -4794,20 +4794,24 @@ private Element getXML(SolverTaskDescription param) {
 private Element getXML(NFsimSimulationOptions sso) {			// we know that sso is not null, no need to check again
 	Element e = null;
 	Element ssoe = new Element(XMLTags.NFSimSimulationOptions);
-	if(sso.getObservableComputationOff() == true) {
-		e = new Element(XMLTags.NFSimSimulationOptions_observableComputationOff);
-		e.setText("true");		// we know it to be true, we don't save the default ("false") at all
-		ssoe.addContent(e);
-	}
+
+	e = new Element(XMLTags.NFSimSimulationOptions_observableComputationOff);
+	e.setText(String.valueOf(sso.getObservableComputationOff()));
+	ssoe.addContent(e);
+	e = new Element(XMLTags.NFSimSimulationOptions_preventIntraBonds);
+	e.setText(String.valueOf(sso.getPreventIntraBonds()));
+	ssoe.addContent(e);
+	e = new Element(XMLTags.NFSimSimulationOptions_aggregateBookkeeping);
+	e.setText(String.valueOf(sso.getAggregateBookkeeping()));
+	ssoe.addContent(e);
+	e = new Element(XMLTags.NFSimSimulationOptions_matchComplexes);
+	e.setText(String.valueOf(sso.getMatchComplexes()));
+	ssoe.addContent(e);
+	
 	if (sso.getMoleculeDistance() != null) {
 		e = new Element(XMLTags.NFSimSimulationOptions_moleculeDistance);
 		e.setText(sso.getMoleculeDistance() + "");
 		ssoe.addContent(e);			
-	}
-	if(sso.getAggregateBookkeeping() == true) {
-		e = new Element(XMLTags.NFSimSimulationOptions_aggregateBookkeeping);
-		e.setText("true");
-		ssoe.addContent(e);
 	}
 	if (sso.getMaxMoleculesPerType() != null) {
 		e = new Element(XMLTags.NFSimSimulationOptions_maxMoleculesPerType);
@@ -4824,14 +4828,6 @@ private Element getXML(NFsimSimulationOptions sso) {			// we know that sso is no
 		e.setText(sso.getRandomSeed() + "");
 		ssoe.addContent(e);			
 	}
-	if(sso.getPreventIntraBonds() == true) {
-		e = new Element(XMLTags.NFSimSimulationOptions_preventIntraBonds);
-		e.setText("true");
-		ssoe.addContent(e);
-	}
-	e = new Element(XMLTags.NFSimSimulationOptions_matchComplexes);
-	e.setText(String.valueOf(sso.getMatchComplexes()));
-	ssoe.addContent(e);
 	return ssoe;
 }
 private Element getXML(SmoldynSimulationOptions sso) {

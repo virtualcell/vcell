@@ -162,8 +162,16 @@ public class NFSimSimulationOptionsPanel extends CollapsiblePanel {
 				setNewAggregateBookkeeping();
 			} else if (source == maxMoleculesPerTypeCheckBox) {
 				maxMoleculesPerTypeTextField.setEditable(maxMoleculesPerTypeCheckBox.isSelected());
-				if(!maxMoleculesPerTypeCheckBox.isSelected()) {
-					setNewMaxMoleculesPerType();
+				if(maxMoleculesPerTypeCheckBox.isSelected()) {
+					Integer rs = solverTaskDescription.getNFSimSimulationOptions().getMaxMoleculesPerType();
+					if(rs == null) {
+						rs = new Integer(NFsimSimulationOptions.DefaultMaxMoleculesPerType);
+						solverTaskDescription.getNFSimSimulationOptions().setMaxMoleculesPerType(rs);
+					}
+					maxMoleculesPerTypeTextField.setText(rs.toString());
+				} else {
+					solverTaskDescription.getNFSimSimulationOptions().setMaxMoleculesPerType(null);
+					maxMoleculesPerTypeTextField.setText("");
 				}
 			} else if (source == equilibrateTimeCheckBox) {
 				equilibrateTimeTextField.setEditable(equilibrateTimeCheckBox.isSelected());
@@ -172,8 +180,17 @@ public class NFSimSimulationOptionsPanel extends CollapsiblePanel {
 				}
 			} else if (source == randomSeedCheckBox) {
 				randomSeedTextField.setEditable(randomSeedCheckBox.isSelected());
-				if(!randomSeedCheckBox.isSelected()) {
-					setNewRandomSeed();
+				if(randomSeedCheckBox.isSelected()) {
+					
+					Integer rs = solverTaskDescription.getNFSimSimulationOptions().getRandomSeed();
+					if(rs == null) {
+						rs = new Integer(NFsimSimulationOptions.DefaultRandomSeed);
+						solverTaskDescription.getNFSimSimulationOptions().setRandomSeed(rs);
+					}
+					randomSeedTextField.setText(rs.toString());
+				} else {
+					solverTaskDescription.getNFSimSimulationOptions().setRandomSeed(null);
+					randomSeedTextField.setText("");
 				}
 			} else if (source == preventIntraBondsCheckBox) {
 				setNewPreventIntraBonds();
@@ -224,33 +241,15 @@ public class NFSimSimulationOptionsPanel extends CollapsiblePanel {
 		Integer maxMoleculesPerType = null;
 		if (maxMoleculesPerTypeCheckBox.isSelected()) {
 			try {
-				String text = maxMoleculesPerTypeTextField.getText();
-				if(text == null || text.isEmpty()) {
-					maxMoleculesPerTypeTextField.setText("");
-					solverTaskDescription.getNFSimSimulationOptions().setMaxMoleculesPerType(null);
-					return;
-				}
-				maxMoleculesPerType = new Integer(text);
-//				if(maxMoleculesPerType < 0 || maxMoleculesPerType > 1000000) {  // just some large number
-//					throw new RuntimeException("Number must be positive and smaller than 1,000,000.");
-//				}
+				maxMoleculesPerType = new Integer(maxMoleculesPerTypeTextField.getText());
 			} catch (NumberFormatException ex) {
+				Integer mmpt = solverTaskDescription.getNFSimSimulationOptions().getMaxMoleculesPerType();
+				if(mmpt != null) {
+					mmpt = new Integer(NFsimSimulationOptions.DefaultMaxMoleculesPerType);
+					solverTaskDescription.getNFSimSimulationOptions().setMaxMoleculesPerType(mmpt);
+				}
+				maxMoleculesPerTypeTextField.setText(mmpt.toString());
 				DialogUtils.showErrorDialog(this, "Wrong number format: " + ex.getMessage());
-				maxMoleculesPerType = solverTaskDescription.getNFSimSimulationOptions().getMaxMoleculesPerType();
-				if(maxMoleculesPerType != null) {
-					maxMoleculesPerTypeTextField.setText(maxMoleculesPerType + "");
-				} else {
-					maxMoleculesPerTypeTextField.setText("");
-				}
-				return;
-			} catch (RuntimeException ex) {
-				DialogUtils.showErrorDialog(this, ex.getMessage());
-				maxMoleculesPerType = solverTaskDescription.getNFSimSimulationOptions().getMaxMoleculesPerType();
-				if(maxMoleculesPerType != null) {
-					maxMoleculesPerTypeTextField.setText(maxMoleculesPerType + "");
-				} else {
-					maxMoleculesPerTypeTextField.setText("");
-				}
 				return;
 			}
 		}
@@ -268,12 +267,18 @@ public class NFSimSimulationOptionsPanel extends CollapsiblePanel {
 		}
 		solverTaskDescription.getNFSimSimulationOptions().setEquilibrateTime(equilibrateTime);
 	}
-	private void setNewRandomSeed(){
+	private void setNewRandomSeed() {
 		Integer randomSeed = null;
 		if (randomSeedCheckBox.isSelected()) {
 			try {
 				randomSeed = new Integer(randomSeedTextField.getText());
 			} catch (NumberFormatException ex) {
+				Integer rs = solverTaskDescription.getNFSimSimulationOptions().getRandomSeed();
+				if(rs == null) {
+					rs = new Integer(NFsimSimulationOptions.DefaultRandomSeed);
+					solverTaskDescription.getNFSimSimulationOptions().setRandomSeed(rs);
+				}
+				randomSeedTextField.setText(rs.toString());
 				DialogUtils.showErrorDialog(this, "Wrong number format: " + ex.getMessage());
 				return;
 			}
@@ -321,8 +326,8 @@ public class NFSimSimulationOptionsPanel extends CollapsiblePanel {
 		aggregateBookkeepingCheckBox.setSelected(true);
 		aggregateBookkeepingCheckBox.setEnabled(false);
 		
-		maxMoleculesPerTypeCheckBox = new JCheckBox("Set the max. number of particles per Molecule.");
-		maxMoleculesPerTypeTextField = new JTextField(NFsimSimulationOptions.DefaultMaxMoleculesPerSpecies+"");
+		maxMoleculesPerTypeCheckBox = new JCheckBox("Set the max. number of Molecules per Type.");
+		maxMoleculesPerTypeTextField = new JTextField();
 		maxMoleculesPerTypeHelpButton = new JButton(" ? ");
 		maxMoleculesPerTypeHelpButton.setFont(font);
 		maxMoleculesPerTypeHelpButton.setBorder(border);
