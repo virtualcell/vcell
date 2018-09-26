@@ -4829,11 +4829,9 @@ private Element getXML(NFsimSimulationOptions sso) {			// we know that sso is no
 		e.setText("true");
 		ssoe.addContent(e);
 	}
-	if(sso.getMatchComplexes() == true) {
-		e = new Element(XMLTags.NFSimSimulationOptions_matchComplexes);
-		e.setText("true");
-		ssoe.addContent(e);
-	}
+	e = new Element(XMLTags.NFSimSimulationOptions_matchComplexes);
+	e.setText(String.valueOf(sso.getMatchComplexes()));
+	ssoe.addContent(e);
 	return ssoe;
 }
 private Element getXML(SmoldynSimulationOptions sso) {

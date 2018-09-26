@@ -34,7 +34,7 @@ public class NFsimSimulationOptions implements Serializable, Matchable, Vetoable
 	Integer equilibrateTime = null;
 	private Integer randomSeed = null;
 	boolean preventIntraBonds = false;
-	boolean matchComplexes = false;
+	boolean matchComplexes = true;		// initialized to true for a new sim or if is missing in existing (old) sim
 
 	protected transient PropertyChangeSupport propertyChange;
 	protected transient VetoableChangeSupport vetoChange;
@@ -202,9 +202,7 @@ public class NFsimSimulationOptions implements Serializable, Matchable, Vetoable
 		if (preventIntraBonds == true) {
 			buffer.append("\t\t" + VCML.NFSimSimulationOptions_preventIntraBonds + " " + preventIntraBonds + "\n");			
 		}
-		if (matchComplexes == true) {
-			buffer.append("\t\t" + VCML.NFSimSimulationOptions_matchComplexes + " " + matchComplexes + "\n");			
-		}
+		buffer.append("\t\t" + VCML.NFSimSimulationOptions_matchComplexes + " " + matchComplexes + "\n");			
 		buffer.append("\t" + VCML.EndBlock + "\n");
 		return buffer.toString();
 	}
@@ -249,7 +247,6 @@ public class NFsimSimulationOptions implements Serializable, Matchable, Vetoable
 			} else if(token.equalsIgnoreCase(VCML.NFSimSimulationOptions_matchComplexes)) {
 				token = tokens.nextToken();
 				matchComplexes = Boolean.parseBoolean(token);
-				assert matchComplexes == true;
 			}  else { 
 				throw new DataAccessException("unexpected identifier " + token);
 			}

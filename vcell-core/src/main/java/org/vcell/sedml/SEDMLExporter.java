@@ -195,8 +195,8 @@ public class SEDMLExporter {
 					
 					// Export the application itself to SBML, with default overrides
 					String sbmlString = null;
-					int level = 2;
-					int version = 4;
+					int level = 3;
+					int version = 1;
 					boolean isSpatial = simContext.getGeometry().getDimension() > 0 ? true : false;
 					SimulationJob simJob = null;
 					
@@ -220,7 +220,7 @@ public class SEDMLExporter {
 						try {
 							// check if model to be exported to SBML has units compatible with SBML default units (default units in SBML can be assumed only until SBML Level2)
 							ModelUnitSystem forcedModelUnitSystem = simContext.getModel().getUnitSystem();
-							if (level < 3 && !ModelUnitSystem.isCompatibleWithDefaultSBMLLevel2Units(forcedModelUnitSystem)) {
+							if (level < 4 && !ModelUnitSystem.isCompatibleWithDefaultSBMLLevel2Units(forcedModelUnitSystem)) {
 								forcedModelUnitSystem = ModelUnitSystem.createDefaultSBMLLevel2Units();
 							}
 							// create new Biomodel with new (SBML compatible)  unit system
