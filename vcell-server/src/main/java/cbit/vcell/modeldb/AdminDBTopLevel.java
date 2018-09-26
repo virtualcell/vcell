@@ -10,7 +10,9 @@
 
 package cbit.vcell.modeldb;
 import java.sql.Connection;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Map;
@@ -239,6 +241,53 @@ public SimulationJobStatusPersistent[] getSimulationJobStatusArray(KeyValue simK
 	}
 }
 
+public synchronized String getBasicStatistics(String fromDate,String toDate) throws SQLException,DataAccessException{
+	Object lock = new Object();
+	Connection con = conFactory.getConnection(lock);
+	Statement stmt = null;
+	try {
+		StringBuffer sb = new StringBuffer("<html><body>");
+		stmt = con.createStatement();
+		sb.append("<br>Users registered=");
+		ResultSet rset = stmt.executeQuery("select count(*) regusers from vc_userinfo where insertdate >= to_date('"+fromDate+"','DD-MM-YY') and insertdate <= to_date('"+toDate+"','DD-MM-YY')");
+		if(rset.next()) {
+			sb.append(rset.getInt("regusers")+"");
+		}
+		sb.append("</br>");
+		rset.close();
+		
+		sb.append("<table><tr><th>User</th><th>SimRuns</th></tr>");
+		rset = stmt.executeQuery("SELECT userid,  COUNT(vc_simulationjob.id) simcount FROM vc_userinfo,  vc_simulation,  vc_simulationjob"
+				+ " WHERE vc_userinfo.id = vc_simulation.ownerref AND "
+				+ "vc_simulationjob.simref = vc_simulation.id AND "
+				+ "vc_simulationjob.submitdate >= to_date('"+fromDate+"',   'DD-MM-YY')"
+				+ " AND vc_simulationjob.submitdate <= to_date('"+toDate+"',   'DD-MM-YY')"
+				+ " GROUP BY userid ORDER BY userid ASC");
+		while(rset.next()) {
+			sb.append("<tr><td>"+rset.getString(1)+"</td><td>"+rset.getInt(2)+"</td></td>");
+		}
+		sb.append("</table>");
+		rset.close();
+		
+		sb.append("</body></html>");
+		return sb.toString();
+	} catch (Throwable e) {
+		lg.error("failure in getSimulationJobStatusArray()",e);
+		handle_DataAccessException_SQLException(e);
+		return null; // never gets here;
+	} finally {
+		try{if(stmt != null) {stmt.close();}}catch(Exception e) {e.printStackTrace();}
+		conFactory.release(con,lock);
+	}
+	//select vcuserid,count(vc_simulationjob.id) simcount
+	//from vc_userinfo,vc_simulation,vc_simulationjob
+	//where vc_userinfo.id = vc_simulation.ownerref
+	//and vc_simulationjob.simref = vc_simulation.id
+	//and vc_simulationjob.submitdate >= to_date('04-SEP-2016','DD-MM-YY')
+	//and vc_simulationjob.submitdate <= to_date('05-SEP-2016','DD-MM-YY')
+	//group by userid
+	//order by simcount desc
+}
 
 /**
  * Insert the method's description here.

@@ -2,6 +2,7 @@ package org.vcell.rest.rpc;
 
 import java.io.Serializable;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.Collections;
 import java.util.List;
 
@@ -11,11 +12,16 @@ import org.restlet.Context;
 import org.restlet.Request;
 import org.restlet.Response;
 import org.restlet.Restlet;
+import org.restlet.data.Form;
 import org.restlet.data.MediaType;
 import org.restlet.data.Method;
 import org.restlet.data.Status;
 import org.restlet.engine.adapter.HttpRequest;
+import org.restlet.engine.adapter.HttpResponse;
+import org.restlet.engine.header.Header;
+import org.restlet.engine.header.HeaderConstants;
 import org.restlet.representation.ByteArrayRepresentation;
+import org.restlet.util.Series;
 import org.vcell.api.client.VCellApiClient;
 import org.vcell.api.client.VCellApiClient.VCellApiRpcBody;
 import org.vcell.api.client.VCellApiRpcRequest;
@@ -61,7 +67,75 @@ public final class RpcRestlet extends Restlet {
 
 	@Override
 	public void handle(Request req, Response response) {
-		if (req.getMethod().equals(Method.POST)){
+		if (req.getMethod().equals(Method.GET)){
+			try {
+				HttpRequest request = (HttpRequest)req;
+				Form form = request.getResourceRef().getQueryAsForm();
+				String requestTypeString = form.getFirstValue("stats", true);
+				String result = null;
+				if (requestTypeString!=null) {
+					String fromDate = form.getFirstValue("from", true);
+					String toDate = form.getFirstValue("to", true);
+					if (fromDate != null && toDate != null) {
+						result = restDatabaseService.getBasicStatistics(fromDate, toDate);
+					}
+				}
+				if (result == null){
+					throw new Exception("Expecting /"+VCellApiApplication.RPC+"?stats=basic&from=MM-DD-YY&to=MM-DD-YY");
+				}
+				
+				//Use "WWW-Authenticate - Basic" authentication scheme
+				//Browser takes care of asking user for credentials and sending them
+				//Must be used with https connection to hide credentials
+				Header authHeader = request.getHeaders().getFirst("Authorization");
+				if(authHeader != null) {//caller included a user and password
+					String typeAndCredential = authHeader.getValue();
+//					System.out.println("--"+up);
+					java.util.StringTokenizer st = new java.util.StringTokenizer(typeAndCredential," ");
+					String type=st.nextToken();
+					String userAndPasswordB64 = st.nextToken();
+					String s = new String(Base64.getDecoder().decode(userAndPasswordB64));
+//					System.out.println("type="+type+" decoded="+s);
+					if(type.equals("Basic")) {
+						java.util.StringTokenizer st2 = new java.util.StringTokenizer(s,":");
+						String usr=st2.nextToken();
+						String pw = st2.nextToken();
+//						System.out.println("user="+usr+" password="+pw);
+						UserLoginInfo.DigestedPassword dpw = new UserLoginInfo.DigestedPassword(pw);
+//						System.out.println(dpw);
+						VCellApiApplication application = ((VCellApiApplication)getApplication());
+						User authuser = application.getUserVerifier().authenticateUser(usr,dpw.getString().toCharArray());
+//						System.out.println(authuser);
+						if(authuser != null &&
+							(authuser.getName().equals("frm") || 
+							authuser.getName().equals("les") ||
+							authuser.getName().equals("ion") ||
+							authuser.getName().equals("ACowan"))) {
+							response.setStatus(Status.SUCCESS_OK);
+							response.setEntity(result, MediaType.TEXT_HTML);
+							return;
+						}
+					}
+				}
+				//If we get here either there was not user/pw or user/pw didn't authenticate
+				//We need to add a response header
+				//Response headers container might be null so add one if necessary
+				if(((HttpResponse)response).getHeaders() == null) {
+					((HttpResponse)response).getAttributes().
+						put(HeaderConstants.ATTRIBUTE_HEADERS,new Series(Header.class));
+				}
+				//Tell whoever called us we want a user and password that we will check against admin vcell users
+				HttpResponse.addHeader(response,"WWW-Authenticate", "Basic");
+				response.setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
+			} catch (Exception e) {
+				String errMesg = "<html><body>Error RpcRestlet.handle(...) req='"+req.toString()+"' <br>err='"+e.getMessage()+"'</br>"+"</body></html>";
+				getLogger().severe(errMesg);
+				e.printStackTrace();
+				response.setStatus(Status.SERVER_ERROR_INTERNAL);
+				response.setEntity(errMesg, MediaType.TEXT_HTML);
+			}
+
+		}else if (req.getMethod().equals(Method.POST)){
 			String destination = null;
 			String method = null;
 			try {
