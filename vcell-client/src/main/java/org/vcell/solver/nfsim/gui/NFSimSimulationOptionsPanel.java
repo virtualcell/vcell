@@ -122,7 +122,7 @@ public class NFSimSimulationOptionsPanel extends CollapsiblePanel {
 						+ "<br> To prevent your computer from running out of memory in case you accidentally create too many molecules, "
 						+ "NFsim sets a default limit of 100,000 molecules of any particular Molecule Type from being created. If the limit "
 						+ "is exceeded, NFsim just stops running gracefully, thereby potentially saving your computer."
-						+ "<br><br> NFSim option: -gml [limit] Default: 200,000"
+						+ "<br><br> NFSim option: -gml [limit] Default: 100,000"
 						+ "</html>");
 			} else if (source == equilibrateTimeHelpButton) {
 				DialogUtils.showInfoDialogAndResize(NFSimSimulationOptionsPanel.this, "Equilibrate for a set time", 
@@ -315,16 +315,12 @@ public class NFSimSimulationOptionsPanel extends CollapsiblePanel {
 		moleculeDistanceHelpButton = new JButton(" ? ");
 		moleculeDistanceHelpButton.setFont(font);
 		moleculeDistanceHelpButton.setBorder(border);
-		moleculeDistanceCheckBox.setSelected(true);
-		moleculeDistanceCheckBox.setEnabled(false);
 		
 		aggregateBookkeepingCheckBox = new JCheckBox("Turn on aggregate bookkeeping.");
 		aggregateBookkeepingTextField = new JTextField();
 		aggregateBookkeepingHelpButton = new JButton(" ? ");
 		aggregateBookkeepingHelpButton.setFont(font);
 		aggregateBookkeepingHelpButton.setBorder(border);
-		aggregateBookkeepingCheckBox.setSelected(true);
-		aggregateBookkeepingCheckBox.setEnabled(false);
 		
 		maxMoleculesPerTypeCheckBox = new JCheckBox("Set the max. number of Molecules per Type.");
 		maxMoleculesPerTypeTextField = new JTextField();
@@ -581,15 +577,18 @@ public class NFSimSimulationOptionsPanel extends CollapsiblePanel {
 				return;
 			}
 		}
-			
 		setVisible(true);
 		NFsimSimulationOptions nfsimSimulationOptions = solverTaskDescription.getNFSimSimulationOptions();
 		
 		boolean notf = nfsimSimulationOptions.getObservableComputationOff();
 		if (notf == false) {
-			observableComputationCheckBox.setSelected(false);
+			observableComputationCheckBox.setSelected(true);	// hardcoded, put it back here to false
+			observableComputationCheckBox.setEnabled(false);
+			nfsimSimulationOptions.setObservableComputationOff(observableComputationCheckBox.isSelected());
 		} else {			
 			observableComputationCheckBox.setSelected(true);
+			observableComputationCheckBox.setEnabled(false);
+			nfsimSimulationOptions.setObservableComputationOff(observableComputationCheckBox.isSelected());
 		}
 		Integer utl = nfsimSimulationOptions.getMoleculeDistance();
 		if (utl == null) {
@@ -607,9 +606,13 @@ public class NFSimSimulationOptionsPanel extends CollapsiblePanel {
 		}
 		boolean cb = nfsimSimulationOptions.getAggregateBookkeeping();
 		if (cb == false) {
-			aggregateBookkeepingCheckBox.setSelected(true);		// put it back here to false
+			aggregateBookkeepingCheckBox.setSelected(true);		// hardcoded, put it back here to false
+			aggregateBookkeepingCheckBox.setEnabled(false);
+			nfsimSimulationOptions.setAggregateBookkeeping(aggregateBookkeepingCheckBox.isSelected());
 		} else {			
 			aggregateBookkeepingCheckBox.setSelected(true);
+			aggregateBookkeepingCheckBox.setEnabled(false);
+			nfsimSimulationOptions.setAggregateBookkeeping(aggregateBookkeepingCheckBox.isSelected());
 		}
 		Integer gml = nfsimSimulationOptions.getMaxMoleculesPerType();
 		if (gml == null) {

@@ -29,7 +29,7 @@ public class NFsimSimulationOptions implements Serializable, Matchable, Vetoable
 
 	boolean observableComputationOff = true;
 	Integer moleculeDistance = DefaultDistanceToMolecules;
-	boolean aggregateBookkeeping = false;
+	boolean aggregateBookkeeping = true;
 	Integer maxMoleculesPerType = null;
 	Integer equilibrateTime = null;
 	private Integer randomSeed = null;
@@ -40,7 +40,7 @@ public class NFsimSimulationOptions implements Serializable, Matchable, Vetoable
 	protected transient VetoableChangeSupport vetoChange;
 	
 	public static final String PROPERTY_NAME_RANDOM_SEED = "randomSeed";
-	public static final Integer DefaultMaxMoleculesPerType = 200000;
+	public static final Integer DefaultMaxMoleculesPerType = 100000;
 	public static final Integer DefaultDistanceToMolecules = 1000;
 	public static final Integer DefaultRandomSeed = 1;
 	
