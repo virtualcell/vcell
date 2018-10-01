@@ -44,6 +44,7 @@ public class GeneralConfigurationPanel extends JPanel {
 		add(jpanel,BorderLayout.CENTER);
 		
 		String redhome = "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=\"#880000\">(home)</font>";
+		String redinstall = "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=\"#880000\">(install)</font>";
 
 		jpanel.setLayout(new GridBagLayout());
 		GridBagConstraints gbc = new GridBagConstraints();
@@ -60,7 +61,7 @@ public class GeneralConfigurationPanel extends JPanel {
 		gbc.insets = new Insets(4,4,2,4);			// top, left bottom, right
 		jpanel.add(l1, gbc);
 
-		String location = ResourceUtil.getVCellInstall().getAbsolutePath();			// C:\dan\projects\VCell_trunk2
+		String location = ResourceUtil.getVCellInstall().getAbsolutePath() + redinstall;	// C:\dan\projects\VCell_trunk2
 		JLabel l2 = new JLabel("<html>" + location + "</html>");
 		gbc.gridx = 1;
 		gbc.gridy = gridy;
@@ -76,7 +77,7 @@ public class GeneralConfigurationPanel extends JPanel {
 		gbc.insets = new Insets(4,4,2,4);
 		jpanel.add(l3, gbc);
 
-		location = ResourceUtil.getVcellHome().getAbsolutePath() + redhome;			// C:\Users\vasilescu\.vcell
+		location = ResourceUtil.getVcellHome().getAbsolutePath() + redhome;				// C:\Users\vasilescu\.vcell
 		JLabel l4 = new JLabel("<html>" + location + "</html>");
 		gbc.gridx = 1;
 		gbc.gridy = gridy;
@@ -86,7 +87,6 @@ public class GeneralConfigurationPanel extends JPanel {
 		// -----------------------------------------------------
 		String ddap  = ResourceUtil.getDownloadDirectory().getAbsolutePath();	// C:\Users\vasilescu\.vcell\download
 		String s2 = ResourceUtil.getLocalVisDataDir().getAbsolutePath();		// C:\Users\vasilescu\.vcell\visdata
-		String s4 = ResourceUtil.getLocalSolversDirectory().getAbsolutePath();	// C:\Program Files\VCell_Alpha\localsolvers\win64
 		
 		gridy++;
 		title = "&nbsp;&nbsp;&nbsp;Simulation Data&nbsp;&nbsp;&nbsp;";
@@ -122,12 +122,32 @@ public class GeneralConfigurationPanel extends JPanel {
 			ldap = ldap.substring(where + ResourceUtil.VCELL_HOME_DIR_NAME.length());
 			ldap = redhome + ldap;
 		}
-
 		JLabel l8 = new JLabel("<html>" + ldap + "</html>");
 		gbc.gridx = 1;
 		gbc.gridy = gridy;
 		gbc.insets = new Insets(4,4,2,4);
 		jpanel.add(l8, gbc);
+
+		gridy++;
+		title = "&nbsp;&nbsp;&nbsp;Local Solvers&nbsp;&nbsp;&nbsp;";
+		JLabel l9 = new JLabel("<html>" + title + "</html>");
+		gbc.gridx = 0;
+		gbc.gridy = gridy;
+		gbc.insets = new Insets(4,4,2,4);
+		jpanel.add(l9, gbc);
+
+		String lsap = ResourceUtil.getLocalSolversDirectory().getAbsolutePath();	// C:\Program Files\VCell_Alpha\localsolvers\win64
+		location = ResourceUtil.getVCellInstall().getAbsolutePath();
+		where = location.length();
+		if(where > 0) {
+			lsap = lsap.substring(where);
+			lsap = redinstall + lsap;
+		}
+		JLabel l10 = new JLabel("<html>" + lsap + "</html>");
+		gbc.gridx = 1;
+		gbc.gridy = gridy;
+		gbc.insets = new Insets(4,4,2,4);
+		jpanel.add(l10, gbc);
 
 		// ---------------------------------------------------------
 		gridy++;
