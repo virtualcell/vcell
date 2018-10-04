@@ -1,3 +1,50 @@
+**Reset simulation hasdata status (easier method)**  
+If VCell client simulation list view says 'hasdata=no' but there is data  
+-----Find sim id (click 'i' button when sim is selected) -> theSimID  
+-----log into vcell-node1 (or any node not in DMZ, not vcellapi or vcellapi-beta)  
+-----Check data exists, give cmd " ls /share/apps/vcell3/users/boris/SimID_theSimID* "  
+-----open oracle db tool (toad,sql,squirrel), log into vcell@vcell-db.cam.uchc.edu and do query " select * from vc_simulationjob where simref=theSimID; "  
+-----If the query column 'hasdata' is blank then do update " update vc_simulationJob set hasdata='Y' where simref=theSimID; "  and " commit; "  
+-----log into vcellapi(Rel) or vcellapi-beta(Alpha)  
+-----Restart VCell docker scheduler service  with cmd " sudo docker service update --force --detach=false vcell{rel,alpha}_sched "  
+
+**Reset simulation hasdata status (if easier method doesn't work, try this)**  
+//-----------------------------------------------------------------------------------------------------------------------  
+In SimulationJobTable.getSimulationJobStatus(...) find line where 'parsedHasData' is set after put conditional breakpoint (to monitor hasdata value):  
+//-----  
+if(parsedSimKey.toString().equals("140980969") || parsedSimKey.toString().equals("140984604")) {  
+	System.out.println("-----hasData---------------------------------------------");  
+	System.out.println("SimulationJobTable.getSimulationJobStatus(...) "+parsedSimKey.toString()+" "+parsedHasData);  
+	System.out.println("-----hasData---------------------------------------------");  
+}  
+return false;  
+//-----  
+In SimulationJobTable.getSQLUpdateList(...) find line //hasData block of code, after that block insert conditional breakpoint as follows (change simids as appropriate):  
+//-----  
+String theSimKey = simulationJobStatus.getVCSimulationIdentifier().getSimulationKey().toString();  
+if(theSimKey.equals("140984604") || theSimKey.equals("140980969")) {  
+	System.out.println("-----set hasdta------------------------------------------------------------");  
+	System.out.println("-----SimulationJobTable.getSqlUpdateList(...) "+simulationJobStatus);  
+	String changeStr = "hasData=null,";  
+	if(buffer.toString().endsWith(changeStr)) {  
+		System.out.println("--ORIGINAL="+buffer.toString());  
+		buffer.setLength(buffer.length()-changeStr.length());  
+		buffer.append("hasData='Y',");  
+		System.out.println("--CHANGED="+buffer.toString());		  
+	}  
+	System.out.println("-----set hasdata-----------------------------------------------------------");  
+}  
+return false;  
+//-----  
+Start remote debug session on the vcell-sched service  
+-----sudo docker stack ps vcellrel | grep -i running ( to find vcell-sched host for remote debug)  
+-----sudo docker service ls (to find service to attach to)  
+-----ssh to node servcie is running on and do sudo docker ps (find container name of vcell-sched  
+----- sudo docker container logs -f {containerID}  
+Let conditional code run for awhile until the database and services get synchronized (a few minutes)  
+//-----------------------------------------------------------------------------------------------------------------------
+
+
 **Find slurm sim logs**  
 login vcell@vcell-service  
 sacct --format="JobID,JobName%30,State,Submit,start,User,ExitCode" | grep -i {VCellSimID}  

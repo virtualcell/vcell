@@ -1,15 +1,5 @@
 ##Random Info
 
-**Reset simulation hasdata status**  
-If VCell client simulation list view says 'hasdata=no' but there is data  
------Find sim id (click 'i' button when sim is selected) -> theSimID  
------log into vcell-node1 (or any node not in DMZ, not vcellapi or vcellapi-beta)  
------Check data exists, give cmd " ls /share/apps/vcell3/users/boris/SimID_theSimID* "  
------open oracle db tool (toad,sql,squirrel), log into vcell@vcell-db.cam.uchc.edu and do query " select * from vc_simulationjob where simref=theSimID; "  
------If the query column 'hasdata' is blank then do update " update vc_simulationJob set hasdata='Y' where simref=theSimID; "  and " commit; "  
------log into vcellapi(Rel) or vcellapi-beta(Alpha)  
------Restart VCell docker scheduler service  with cmd " sudo docker service update --force --detach=false vcell{rel,alpha}_sched "  
-
 **Rel restart, login vcellapi**  
 sudo docker service update --force --detach=false vcellrel_activemqint  
 sudo docker service update --force --detach=false vcellrel_activemqsim  
