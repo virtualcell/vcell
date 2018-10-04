@@ -54,7 +54,7 @@ public class BioNetGenConfigurationPanel extends JPanel {
 		gbc.insets = new Insets(4,4,2,4);			// top, left bottom, right
 		jpanel.add(l1, gbc);
 
-		String location = NetworkTransformer.speciesLimit + "";
+		String location = NetworkTransformer.getDefaultSpeciesLimit() + "";
 		JLabel l2 = new JLabel("<html>" + location + "</html>");
 		gbc.gridx = 1;
 		gbc.gridy = gridy;
@@ -69,7 +69,7 @@ public class BioNetGenConfigurationPanel extends JPanel {
 		gbc.insets = new Insets(4,4,2,4);
 		jpanel.add(l3, gbc);
 
-		location = NetworkTransformer.reactionsLimit + "";
+		location = NetworkTransformer.getDefaultReactionsLimit() + "";
 		JLabel l4 = new JLabel("<html>" + location + "</html>");
 		gbc.gridx = 1;
 		gbc.gridy = gridy;

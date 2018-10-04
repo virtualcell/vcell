@@ -190,6 +190,10 @@ public class RbmNetworkGenerator {
 		}
 		
 		writer.println(BEGIN_PARAMETERS);
+		int speciesLimit = simulationContext.getNetworkConstraints().getSpeciesLimit();
+		int reactionsLimit = simulationContext.getNetworkConstraints().getReactionsLimit();
+		writer.println(NetworkConstraints.SPECIES_LIMIT_PARAMETER + "\t\t" + speciesLimit);
+		writer.println(NetworkConstraints.REACTIONS_LIMIT_PARAMETER + "\t\t" + reactionsLimit);
 		// the fake parameters used for reaction rule kinetics
 		for (FakeReactionRuleRateParameter p : kineticsParameterMap.keySet()) {
 			writer.println(p.fakeParameterName+"\t\t1");

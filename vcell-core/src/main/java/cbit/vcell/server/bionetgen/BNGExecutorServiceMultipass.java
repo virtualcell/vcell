@@ -44,6 +44,7 @@ import cbit.vcell.mapping.SimulationContext.NetworkGenerationRequirements;
 import cbit.vcell.mapping.TaskCallbackMessage;
 import cbit.vcell.mapping.TaskCallbackMessage.TaskCallbackStatus;
 import cbit.vcell.model.Model;
+import cbit.vcell.model.Model.ModelParameter;
 import cbit.vcell.model.RbmObservable;
 import cbit.vcell.model.ReactionRule;
 import cbit.vcell.model.Structure;
@@ -180,10 +181,10 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService, BioNetGe
 			int reactionsCount = correctedSR.reactionsList.size();
 			displayIterationMessage(i+1, speciesCount);
 			
-			if(speciesCount >= NetworkTransformer.speciesLimit) {
+			if(speciesCount >= NetworkTransformer.getSpeciesLimit(simContext)) {
 				break;		// don't continue iterations if we reach species limit
 			}
-			if(reactionsCount >= NetworkTransformer.reactionsLimit) {
+			if(reactionsCount >= NetworkTransformer.getReactionsLimit(simContext)) {
 				break;
 			}
 			if(correctedSR.speciesList.isEmpty()) {
@@ -957,6 +958,15 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService, BioNetGe
 		NetworkConstraints realNC = extractNetworkConstraints(cBngInputString);
 		simContext.getNetworkConstraints().setMaxMoleculesPerSpecies(realNC.getMaxMoleculesPerSpecies());
 		simContext.getNetworkConstraints().setMaxIteration(realNC.getMaxIteration());
+		ModelParameter speciesLimitParam = model.getModelParameter(NetworkConstraints.SPECIES_LIMIT_PARAMETER);
+		ModelParameter reactionsLimitParam = model.getModelParameter(NetworkConstraints.REACTIONS_LIMIT_PARAMETER);
+		String s = speciesLimitParam.getExpression().infix();
+		String r = reactionsLimitParam.getExpression().infix();
+		simContext.getNetworkConstraints().setSpeciesLimit((int)Float.parseFloat(s));		// extract speciesLimit and reactionsLimit
+		simContext.getNetworkConstraints().setReactionsLimit((int)Float.parseFloat(r));
+		simContext.getNetworkConstraints().setTestConstraints(simContext.getNetworkConstraints().getMaxIteration(), 
+				simContext.getNetworkConstraints().getMaxMoleculesPerSpecies(),
+				simContext.getNetworkConstraints().getSpeciesLimit(), simContext.getNetworkConstraints().getReactionsLimit());
 		RbmNetworkGenerator.generateNetworkEx(1, simContext.getNetworkConstraints().getMaxMoleculesPerSpecies(), writer, model.getRbmModelContainer(), simContext, NetworkGenerationRequirements.AllowTruncatedStandardTimeout);
 
 		String sInputString = bnglStringWriter.toString();

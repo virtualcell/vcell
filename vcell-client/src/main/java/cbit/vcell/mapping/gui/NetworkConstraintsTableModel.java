@@ -21,6 +21,9 @@ import cbit.vcell.parser.SymbolTable;
 public class NetworkConstraintsTableModel extends BioModelEditorRightSideTableModel<NetworkConstraintsEntity> implements java.beans.PropertyChangeListener {
 	public static final String sMaxIterationName = "Max Iterations";
 	public static final String sMaxMoleculesName = "Max Molecules / Species";
+	public static final String sSpeciesLimitName = "Species Limit";
+	public static final String sReactionsLimitName = "Reactions Limit";
+	
 	public static final String sValueType = "value";
 	
 	public static final int colCount = 3;
@@ -57,19 +60,27 @@ public class NetworkConstraintsTableModel extends BioModelEditorRightSideTableMo
 		if(rbmModelContainer == null) {
 			return nceList;
 		}
-		String s1, s2;
+		String s1, s2, s3, s4;
 		NetworkConstraintsEntity nce;
 		NetworkConstraints networkConstraints = simContext.getNetworkConstraints();
 		if (networkConstraints != null) {
 			s1 = networkConstraints.getMaxIteration() + "";
 			s2 = networkConstraints.getMaxMoleculesPerSpecies() + "";
+			s3 = networkConstraints.getSpeciesLimit() + "";
+			s4 = networkConstraints.getReactionsLimit() + "";
 		} else {
 			s1 = "?";
 			s2 = "?";
+			s3 = "?";
+			s4 = "?";
 		}
 		nce = new NetworkConstraintsEntity(sMaxIterationName, sValueType, s1);
 		nceList.add(nce);
 		nce = new NetworkConstraintsEntity(sMaxMoleculesName, sValueType, s2);
+		nceList.add(nce);
+		nce = new NetworkConstraintsEntity(sSpeciesLimitName, sValueType, s3);
+		nceList.add(nce);
+		nce = new NetworkConstraintsEntity(sReactionsLimitName, sValueType, s4);
 		nceList.add(nce);
 		// we read them here, all from rbmModelContainer.getMolecularTypeList()
 		// TODO: if the molecule is in the NetworkConstraints.maxStoichiometryMap set value from there
@@ -122,6 +133,10 @@ public class NetworkConstraintsTableModel extends BioModelEditorRightSideTableMo
 			colValue = networkConstraints.getMaxIteration() + "";
 		} else if(row == 1) {
 			colValue = networkConstraints.getMaxMoleculesPerSpecies() + "";
+		} else if(row == 2) {
+			colValue = networkConstraints.getSpeciesLimit() + "";
+		} else if(row == 3) {
+			colValue = networkConstraints.getReactionsLimit() + "";
 		}
 		if(nce != null) {
 			switch(column) {
@@ -149,6 +164,10 @@ public class NetworkConstraintsTableModel extends BioModelEditorRightSideTableMo
 			networkConstraints.setMaxIteration(Integer.valueOf(text));
 		} else if(row == 1) {
 			networkConstraints.setMaxMoleculesPerSpecies(Integer.valueOf(text));
+		} else if(row == 2) {
+			networkConstraints.setSpeciesLimit(Integer.valueOf(text));
+		} else if(row == 3) {
+			networkConstraints.setReactionsLimit(Integer.valueOf(text));
 		}
 		// TODO: add molecular type and max stoichiometry 
 		// to NetworkConstraints.maxStoichiometryMap (if stoichiometry is not trivial)
@@ -190,6 +209,12 @@ public class NetworkConstraintsTableModel extends BioModelEditorRightSideTableMo
 				List<NetworkConstraintsEntity> newData = computeData();
 				setData(newData);
 			} else if(evt.getPropertyName().equals(NetworkConstraints.PROPERTY_NAME_MOLECULES_PER_SPECIES)) {
+				List<NetworkConstraintsEntity> newData = computeData();
+				setData(newData);
+			} else if(evt.getPropertyName().equals(NetworkConstraints.PROPERTY_NAME_SPECIES_LIMIT)) {
+				List<NetworkConstraintsEntity> newData = computeData();
+				setData(newData);
+			} else if(evt.getPropertyName().equals(NetworkConstraints.PROPERTY_NAME_REACTIONS_LIMIT)) {
 				List<NetworkConstraintsEntity> newData = computeData();
 				setData(newData);
 			} else {

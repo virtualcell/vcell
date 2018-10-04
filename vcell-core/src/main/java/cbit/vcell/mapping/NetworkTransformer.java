@@ -14,6 +14,7 @@ import java.util.Map;
 import org.vcell.model.bngl.ParseException;
 import org.vcell.model.rbm.FakeReactionRuleRateParameter;
 import org.vcell.model.rbm.FakeSeedSpeciesInitialConditionsParameter;
+import org.vcell.model.rbm.NetworkConstraints;
 import org.vcell.model.rbm.RbmNetworkGenerator;
 import org.vcell.model.rbm.RbmNetworkGenerator.CompartmentMode;
 import org.vcell.model.rbm.RbmUtils;
@@ -69,8 +70,10 @@ public class NetworkTransformer implements SimContextTransformer {
 
 	private Map<FakeSeedSpeciesInitialConditionsParameter, Pair<SpeciesContext, Expression>> speciesEquivalenceMap = new LinkedHashMap<FakeSeedSpeciesInitialConditionsParameter, Pair<SpeciesContext, Expression>>();
 	private Map<FakeReactionRuleRateParameter, LocalParameter> kineticsParameterMap = new LinkedHashMap<FakeReactionRuleRateParameter, LocalParameter>();
-	public final static int speciesLimit = 800;			// 1000
-	public final static int reactionsLimit = 2500;		// 3000
+	public final static int defaultSpeciesLimit = 800;			// 1000
+	public final static int defaultReactionsLimit = 2500;		// 3000
+	public final static int defaultMaxIteration = 3;
+	public final static int defaultMaxMoleculesPerSpecies = 10;
 	public final static String endMessage = "\nPlease go to the Specifications / Network panel and adjust the number of Iterations.";
 	public final static String endMessage2 = "\nPlease go to the Specifications / Network panel and adjust the Max number of Molecules / Species if necessary.";
 		
@@ -253,16 +256,16 @@ public class NetworkTransformer implements SimContextTransformer {
 			simContext.setMd5hash(null);					// clean the cache if the user interrupts
 			throw new UserCancelException(msg);
 		}
-		if(outputSpec.getBNGSpecies().length > NetworkTransformer.speciesLimit) {
-			String message = NetworkTransformer.getSpeciesLimitExceededMessage(outputSpec);
+		if(outputSpec.getBNGSpecies().length > NetworkTransformer.getSpeciesLimit(simContext)) {
+			String message = NetworkTransformer.getSpeciesLimitExceededMessage(outputSpec, simContext);
 			tcm = new TaskCallbackMessage(TaskCallbackStatus.Error, message);
 			simContext.appendToConsole(tcm);
 			simContext.setMd5hash(null);
 			message = "Unable to generate Math for Application " + simContext.getName() + ".\n" + message;
 			throw new RuntimeException(message);
 		}
-		if(outputSpec.getBNGReactions().length > NetworkTransformer.reactionsLimit) {
-			String message = NetworkTransformer.getReactionsLimitExceededMessage(outputSpec);
+		if(outputSpec.getBNGReactions().length > NetworkTransformer.getReactionsLimit(simContext)) {
+			String message = NetworkTransformer.getReactionsLimitExceededMessage(outputSpec, simContext);
 			tcm = new TaskCallbackMessage(TaskCallbackStatus.Error, message);
 			simContext.appendToConsole(tcm);
 			simContext.setMd5hash(null);
@@ -321,6 +324,15 @@ public class NetworkTransformer implements SimContextTransformer {
 				continue;		// if it's already there we don't try to add it again; this should be true for all of them!
 			}
 			String s = p.getName();
+			if(NetworkConstraints.SPECIES_LIMIT_PARAMETER.equals(s)) {
+				System.out.println("found NetworkConstraints seciesLimit parameter.");
+				continue;
+			}
+			if(NetworkConstraints.REACTIONS_LIMIT_PARAMETER.equals(s)) {
+				System.out.println("found NetworkConstraints reactionsLimit parameter.");
+				continue;
+			}
+
 			FakeSeedSpeciesInitialConditionsParameter fakeICParam = FakeSeedSpeciesInitialConditionsParameter.fromString(s);
 			if(speciesEquivalenceMap.containsKey(fakeICParam)) {
 				continue;	// we get rid of the fake parameters we use as keys
@@ -862,21 +874,43 @@ public class NetworkTransformer implements SimContextTransformer {
 		}
 		return newExp;
 	}
-
-	public final static String getSpeciesLimitExceededMessage(BNGOutputSpec outputSpec) {
-		return "Species limit exceeded: max allowed number: " + speciesLimit + ", actual number: " + outputSpec.getBNGSpecies().length + endMessage;
+	
+	public final static int getSpeciesLimit(SimulationContext simContext) {
+		if(simContext != null && simContext.getNetworkConstraints() != null) {
+			return simContext.getNetworkConstraints().getSpeciesLimit();
+		}
+		return getDefaultSpeciesLimit();
+	}
+	public final static int getReactionsLimit(SimulationContext simContext) {
+		if(simContext != null && simContext.getNetworkConstraints() != null) {
+			return simContext.getNetworkConstraints().getReactionsLimit();
+		}
+		return getDefaultReactionsLimit();
+	}
+	public final static int getDefaultSpeciesLimit() {
+		return defaultSpeciesLimit;
+	}
+	public final static int getDefaultReactionsLimit() {
+		return defaultReactionsLimit;
 	}
 
-	public final static String getReactionsLimitExceededMessage(BNGOutputSpec outputSpec) {
-		return "Reactions limit exceeded: max allowed number: " + reactionsLimit + ", actual number: " + outputSpec.getBNGReactions().length + endMessage;
+	public final static String getSpeciesLimitExceededMessage(BNGOutputSpec outputSpec, SimulationContext simContext) {
+		return "Species limit exceeded: max allowed number: " + NetworkTransformer.getSpeciesLimit(simContext) + ", actual number: " + outputSpec.getBNGSpecies().length + endMessage;
 	}
 
-	public final static String getSpeciesLimitExceededMessage(int ourNumber) {
-		return "Species limit exceeded: max allowed number: " + speciesLimit + ", actual number: " + ourNumber + endMessage;
+	public final static String getReactionsLimitExceededMessage(BNGOutputSpec outputSpec, SimulationContext simContext) {
+		return "Reactions limit exceeded: max allowed number: " + NetworkTransformer.getReactionsLimit(simContext) + ", actual number: " + outputSpec.getBNGReactions().length + endMessage;
+	}
+	@Deprecated
+	public final static String getSpeciesLimitExceededMessage(int ourNumber, SimulationContext simContext) {
+		return "Species limit exceeded: max allowed number: " + NetworkTransformer.getSpeciesLimit(simContext) + ", actual number: " + ourNumber + endMessage;
+	}
+	public final static String getSpeciesLimitExceededMessage(int ourNumber, int speciesLimitCandidate) {
+		return "Species limit exceeded: max allowed number: " + speciesLimitCandidate + ", actual number: " + ourNumber + endMessage;
 	}
 
-	public final static String getReactionsLimitExceededMessage(int ourNumber) {
-		return "Reactions limit exceeded: max allowed number: " + reactionsLimit + ", actual number: " + ourNumber + endMessage;
+	public final static String getReactionsLimitExceededMessage(int ourNumber, SimulationContext simContext) {
+		return "Reactions limit exceeded: max allowed number: " + NetworkTransformer.getReactionsLimit(simContext) + ", actual number: " + ourNumber + endMessage;
 	}
 
 	public final static String getInsufficientIterationsMessage() {

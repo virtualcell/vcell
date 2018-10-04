@@ -44,6 +44,8 @@ public class EditConstraintsPanel extends DocumentEditorSubPanel  {
 	
 	JTextField maxIterationTextField;
 	JTextField maxMolTextField;
+	JTextField speciesLimitTextField;
+	JTextField reactionsLimitTextField;
 	
 	private JButton runButton;
 	private JButton applyButton;
@@ -58,6 +60,10 @@ public class EditConstraintsPanel extends DocumentEditorSubPanel  {
 				changeMaxIteration();
 			} else if (e.getSource() == maxMolTextField) {
 				changeMaxMolPerSpecies();
+			} else if (e.getSource() == speciesLimitTextField) {
+				changeSpeciesLimit();
+			} else if (e.getSource() == reactionsLimitTextField) {
+				changeReactionsLimit();
 			}
 		}
 
@@ -71,6 +77,10 @@ public class EditConstraintsPanel extends DocumentEditorSubPanel  {
 				changeMaxIteration();
 			} else if (e.getSource() == maxMolTextField) {
 				changeMaxMolPerSpecies();
+			} else if (e.getSource() == speciesLimitTextField) {
+				changeSpeciesLimit();
+			} else if (e.getSource() == reactionsLimitTextField) {
+				changeReactionsLimit();
 			}
 		}
 	}
@@ -95,10 +105,17 @@ private void initialize() {
 			
 		maxIterationTextField = new JTextField();
 		maxMolTextField = new JTextField();
+		speciesLimitTextField = new JTextField();
+		reactionsLimitTextField = new JTextField();
+
 		maxIterationTextField.addActionListener(eventHandler);
 		maxMolTextField.addActionListener(eventHandler);
+		speciesLimitTextField.addActionListener(eventHandler);
+		reactionsLimitTextField.addActionListener(eventHandler);
 		maxIterationTextField.addFocusListener(eventHandler);
 		maxMolTextField.addFocusListener(eventHandler);
+		speciesLimitTextField.addFocusListener(eventHandler);
+		reactionsLimitTextField.addFocusListener(eventHandler);
 		
 		maxIterationTextField.getDocument().addDocumentListener(new DocumentListener() {
 			public void changedUpdate(DocumentEvent e) {
@@ -125,7 +142,7 @@ private void initialize() {
 			public boolean isChanged() {
 				NetworkConstraints nc = owner.getSimulationContext().getNetworkConstraints();
 				String s1 = maxIterationTextField.getText();
-				String s2 = nc.getMaxIteration()  +"";
+				String s2 = nc.getMaxIteration() +"";
 				if(!s1.equals(s2)) {
 					return true;
 				}
@@ -164,6 +181,70 @@ private void initialize() {
 				return false;
 			}
 		});
+		speciesLimitTextField.getDocument().addDocumentListener(new DocumentListener() {
+			public void changedUpdate(DocumentEvent e) {
+				if(isChanged()) {
+					getApplyButton().setEnabled(true);
+				} else {
+					getApplyButton().setEnabled(false);					
+				}
+			}
+			public void removeUpdate(DocumentEvent e) {
+				if(isChanged()) {
+					getApplyButton().setEnabled(true);
+				} else {
+					getApplyButton().setEnabled(false);					
+				}
+			}
+			public void insertUpdate(DocumentEvent e) {
+				if(isChanged()) {
+					getApplyButton().setEnabled(true);
+				} else {
+					getApplyButton().setEnabled(false);
+				}
+			}
+			public boolean isChanged() {
+				NetworkConstraints nc = owner.getSimulationContext().getNetworkConstraints();
+				String s1 = speciesLimitTextField.getText();
+				String s2 = nc.getSpeciesLimit() +"";
+				if(!s1.equals(s2)) {
+					return true;
+				}
+				return false;
+			}
+		});
+		reactionsLimitTextField.getDocument().addDocumentListener(new DocumentListener() {
+			public void changedUpdate(DocumentEvent e) {
+				if(isChanged()) {
+					getApplyButton().setEnabled(true);
+				} else {
+					getApplyButton().setEnabled(false);					
+				}
+			}
+			public void removeUpdate(DocumentEvent e) {
+				if(isChanged()) {
+					getApplyButton().setEnabled(true);
+				} else {
+					getApplyButton().setEnabled(false);					
+				}
+			}
+			public void insertUpdate(DocumentEvent e) {
+				if(isChanged()) {
+					getApplyButton().setEnabled(true);
+				} else {
+					getApplyButton().setEnabled(false);
+				}
+			}
+			public boolean isChanged() {
+				NetworkConstraints nc = owner.getSimulationContext().getNetworkConstraints();
+				String s1 = reactionsLimitTextField.getText();
+				String s2 = nc.getReactionsLimit() +"";
+				if(!s1.equals(s2)) {
+					return true;
+				}
+				return false;
+			}
+		});
 
 		int gridy = 0;
 		GridBagConstraints gbc = new GridBagConstraints();		
@@ -192,7 +273,7 @@ private void initialize() {
 		gbc.weighty = 1.0;
 		gbc.gridwidth = 8;
 		gbc.fill = java.awt.GridBagConstraints.BOTH;
-		gbc.insets = new Insets(0, 8, 6, 0);
+		gbc.insets = new Insets(6, 8, 0, 0);
 		add(new JLabel("Max. Molecules / Species"), gbc);
 
 		gbc = new GridBagConstraints();
@@ -201,9 +282,51 @@ private void initialize() {
 		gbc.weightx = 1.0;
 		gbc.fill = GridBagConstraints.HORIZONTAL;
 		gbc.anchor = GridBagConstraints.EAST;
-		gbc.insets = new Insets(0, 0, 6, 10);
+		gbc.insets = new Insets(6, 0, 0, 10);
 		add(maxMolTextField, gbc);
 		
+		// ---------------------------------------------------------
+		gridy ++;	
+		gbc = new GridBagConstraints();
+		gbc.gridx = 0;
+		gbc.gridy = gridy;
+		gbc.weightx = 1.0;
+		gbc.weighty = 1.0;
+		gbc.gridwidth = 8;
+		gbc.fill = java.awt.GridBagConstraints.BOTH;
+		gbc.insets = new Insets(6, 8, 0, 0);
+		add(new JLabel("Species Limit"), gbc);
+
+		gbc = new GridBagConstraints();
+		gbc.gridx = 2;
+		gbc.gridy = gridy;
+		gbc.weightx = 1.0;
+		gbc.fill = GridBagConstraints.HORIZONTAL;
+		gbc.anchor = GridBagConstraints.EAST;
+		gbc.insets = new Insets(6, 0, 0, 10);
+		add(speciesLimitTextField, gbc);
+
+		gridy ++;	
+		gbc = new GridBagConstraints();
+		gbc.gridx = 0;
+		gbc.gridy = gridy;
+		gbc.weightx = 1.0;
+		gbc.weighty = 1.0;
+		gbc.gridwidth = 8;
+		gbc.fill = java.awt.GridBagConstraints.BOTH;
+		gbc.insets = new Insets(6, 8, 6, 0);
+		add(new JLabel("Reactions Limit"), gbc);
+
+		gbc = new GridBagConstraints();
+		gbc.gridx = 2;
+		gbc.gridy = gridy;
+		gbc.weightx = 1.0;
+		gbc.fill = GridBagConstraints.HORIZONTAL;
+		gbc.anchor = GridBagConstraints.EAST;
+		gbc.insets = new Insets(6, 0, 6, 10);
+		add(reactionsLimitTextField, gbc);
+		
+		// ---------------------------------------------------------
 		gridy ++;	
 		gbc = new GridBagConstraints();
 		gbc.gridx = 0;
@@ -231,6 +354,8 @@ private void initialize() {
 		
 		maxIterationTextField.setText(owner.getSimulationContext().getNetworkConstraints().getMaxIteration() + "");
 		maxMolTextField.setText(owner.getSimulationContext().getNetworkConstraints().getMaxMoleculesPerSpecies() + "");
+		speciesLimitTextField.setText(owner.getSimulationContext().getNetworkConstraints().getSpeciesLimit() + "");
+		reactionsLimitTextField.setText(owner.getSimulationContext().getNetworkConstraints().getReactionsLimit() + "");
 		
 		getApplyButton().setEnabled(false);	
 		
@@ -254,6 +379,8 @@ private JButton getRunButton() {
 				try {
 					int test = new Integer( maxIterationTextField.getText());
 					test = new Integer( maxMolTextField.getText());
+					test = new Integer( speciesLimitTextField.getText());
+					test = new Integer( reactionsLimitTextField.getText());
 				} catch (NumberFormatException ex) {
 					DialogUtils.showErrorDialog(parentChildWindow.getParent(), "Wrong number format: " + ex.getMessage());
 					return;
@@ -275,6 +402,8 @@ private JButton getApplyButton() {
 				try {
 					int test = new Integer( maxIterationTextField.getText());
 					test = new Integer( maxMolTextField.getText());
+					test = new Integer( speciesLimitTextField.getText());
+					test = new Integer( reactionsLimitTextField.getText());
 				} catch (NumberFormatException ex) {
 					DialogUtils.showErrorDialog(parentChildWindow.getParent(), "Wrong number format: " + ex.getMessage());
 					return;
@@ -311,9 +440,20 @@ public void changeMaxMolPerSpecies() {
 		return;
 	}
 }
-
 public void changeMaxIteration() {
 	String text = maxIterationTextField.getText();
+	if (text == null || text.trim().length() == 0) {
+		return;
+	}
+}
+public void changeSpeciesLimit() {
+	String text = speciesLimitTextField.getText();
+	if (text == null || text.trim().length() == 0) {
+		return;
+	}
+}
+public void changeReactionsLimit() {
+	String text = reactionsLimitTextField.getText();
 	if (text == null || text.trim().length() == 0) {
 		return;
 	}
@@ -322,6 +462,5 @@ public void changeMaxIteration() {
 public void setChildWindow(ChildWindow childWindow) {
 	this.parentChildWindow = childWindow;
 }
-
 
 }

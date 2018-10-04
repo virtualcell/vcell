@@ -11,7 +11,10 @@ import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.beans.PropertyChangeListener;
+import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.PrintWriter;
+import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.EventObject;
 import java.util.Hashtable;
@@ -29,6 +32,7 @@ import javax.swing.border.Border;
 import javax.swing.border.EtchedBorder;
 import javax.swing.border.TitledBorder;
 
+import org.vcell.model.rbm.NetworkConstraints;
 import org.vcell.model.rbm.RbmNetworkGenerator;
 import org.vcell.model.rbm.gui.EditConstraintsPanel.ActionButtons;
 import org.vcell.util.BeanUtils;
@@ -390,12 +394,12 @@ public class NetworkConstraintsPanel extends DocumentEditorSubPanel implements B
 		if(outputSpec == null || outputSpec.getBNGSpecies() == null || outputSpec.getBNGReactions() == null) {
 			return;
 		}
-		if(outputSpec.getBNGSpecies().length > NetworkTransformer.speciesLimit) {
-			String message = NetworkTransformer.getSpeciesLimitExceededMessage(outputSpec);
+		if(outputSpec.getBNGSpecies().length > NetworkTransformer.getSpeciesLimit(fieldSimulationContext)) {
+			String message = NetworkTransformer.getSpeciesLimitExceededMessage(outputSpec, fieldSimulationContext);
 			appendToConsole(message);
 		}
-		if(outputSpec.getBNGReactions().length > NetworkTransformer.reactionsLimit) {
-			String message = NetworkTransformer.getReactionsLimitExceededMessage(outputSpec);
+		if(outputSpec.getBNGReactions().length > NetworkTransformer.getReactionsLimit(fieldSimulationContext)) {
+			String message = NetworkTransformer.getReactionsLimitExceededMessage(outputSpec, fieldSimulationContext);
 			appendToConsole(message);
 		}
 	}
@@ -413,12 +417,12 @@ public class NetworkConstraintsPanel extends DocumentEditorSubPanel implements B
 		if(outputSpec == null || outputSpec.getBNGSpecies() == null || outputSpec.getBNGReactions() == null) {
 			return;
 		}
-		if(outputSpec.getBNGSpecies().length > NetworkTransformer.speciesLimit) {
-			String message = NetworkTransformer.getSpeciesLimitExceededMessage(outputSpec);
+		if(outputSpec.getBNGSpecies().length > NetworkTransformer.getSpeciesLimit(fieldSimulationContext)) {
+			String message = NetworkTransformer.getSpeciesLimitExceededMessage(outputSpec, fieldSimulationContext);
 			appendToConsole(message);
 		}
-		if(outputSpec.getBNGReactions().length > NetworkTransformer.reactionsLimit) {
-			String message = NetworkTransformer.getReactionsLimitExceededMessage(outputSpec);
+		if(outputSpec.getBNGReactions().length > NetworkTransformer.getReactionsLimit(fieldSimulationContext)) {
+			String message = NetworkTransformer.getReactionsLimitExceededMessage(outputSpec, fieldSimulationContext);
 			appendToConsole(message);
 		}
 	}
@@ -532,22 +536,28 @@ public class NetworkConstraintsPanel extends DocumentEditorSubPanel implements B
 		EditConstraintsPanel panel = new EditConstraintsPanel(this);
 		ChildWindowManager childWindowManager = ChildWindowManager.findChildWindowManager(this);
 		ChildWindow childWindow = childWindowManager.addChildWindow(panel, panel, "Edit / Test Constraints");
-		Dimension dim = new Dimension(360, 160);
+		Dimension dim = new Dimension(320, 210);
 		childWindow.pack();
 		panel.setChildWindow(childWindow);
 		childWindow.setPreferredSize(dim);
 		childWindow.showModal();
 		int maxIterations;
 		int maxMolecules;
+		int speciesLimit;
+		int reactionsLimit;
 		if (panel.getButtonPushed() == ActionButtons.Run) {
 			maxIterations = new Integer( panel.maxIterationTextField.getText());
 			maxMolecules = new Integer( panel.maxMolTextField.getText());
-			fieldSimulationContext.getNetworkConstraints().setTestConstraints(maxIterations, maxMolecules);
+			speciesLimit = new Integer( panel.speciesLimitTextField.getText());
+			reactionsLimit = new Integer( panel.reactionsLimitTextField.getText());
+			fieldSimulationContext.getNetworkConstraints().setTestConstraints(maxIterations, maxMolecules, speciesLimit, reactionsLimit);
 		} else if(panel.getButtonPushed() == ActionButtons.Apply) {
 			activateConsole();
 			maxIterations = new Integer( panel.maxIterationTextField.getText());
 			maxMolecules = new Integer( panel.maxMolTextField.getText());
-			fieldSimulationContext.getNetworkConstraints().setTestConstraints(maxIterations, maxMolecules);
+			speciesLimit = new Integer( panel.speciesLimitTextField.getText());
+			reactionsLimit = new Integer( panel.reactionsLimitTextField.getText());
+			fieldSimulationContext.getNetworkConstraints().setTestConstraints(maxIterations, maxMolecules, speciesLimit, reactionsLimit);
 			fieldSimulationContext.getNetworkConstraints().updateConstraintsFromTest();
 			// apply will invalidate everything: generated species, reactions, console, cache, etc
 			updateBioNetGenOutput(null);
@@ -563,6 +573,12 @@ public class NetworkConstraintsPanel extends DocumentEditorSubPanel implements B
 			fieldSimulationContext.appendToConsole(tcm);
 			return;
 		} else {
+			// when cancel we put back in sync the test values
+			maxIterations = fieldSimulationContext.getNetworkConstraints().getMaxIteration();
+			maxMolecules = fieldSimulationContext.getNetworkConstraints().getMaxMoleculesPerSpecies();
+			speciesLimit = fieldSimulationContext.getNetworkConstraints().getSpeciesLimit();
+			reactionsLimit = fieldSimulationContext.getNetworkConstraints().getReactionsLimit();
+			fieldSimulationContext.getNetworkConstraints().setTestConstraints(maxIterations, maxMolecules, speciesLimit, reactionsLimit);
 			return;
 		}
 		
@@ -598,9 +614,38 @@ public class NetworkConstraintsPanel extends DocumentEditorSubPanel implements B
 			public void setMessage(String message) {}
 			public boolean isInterrupted() { return false; }
 		};
+		String input = transformer.convertToBngl(fieldSimulationContext, true, dummyCallback, NetworkGenerationRequirements.ComputeFullNoTimeout);
+		// we alter the input string to use the test values for speciesLimit and reactionsLimit
+		//TODO: !!! aici
+		BufferedReader br = new BufferedReader(new StringReader(input));
+		StringBuilder sb = new StringBuilder();
+		int lineNumber = 0;
+		while (true) {
+			String line = null;
+			try {
+				line = br.readLine();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			if (line == null) {
+				break;				// end of document
+			}
+			if(line.isEmpty()) {
+				sb.append("\n");
+				lineNumber++;
+				continue;
+			}
+			if(line.contains(NetworkConstraints.SPECIES_LIMIT_PARAMETER)) {
+				sb.append(NetworkConstraints.SPECIES_LIMIT_PARAMETER + "\t\t" + speciesLimit + "\n");
+			} else if(line.contains(NetworkConstraints.REACTIONS_LIMIT_PARAMETER)) {
+				sb.append(NetworkConstraints.REACTIONS_LIMIT_PARAMETER + "\t\t" + reactionsLimit + "\n");
+			} else {
+				sb.append(line + "\n");
+			}
+		}
+		input = sb.toString();
 		
 		// we alter the input string to use the test values for max iterations and max molecules per species
-		String input = transformer.convertToBngl(fieldSimulationContext, true, dummyCallback, NetworkGenerationRequirements.ComputeFullNoTimeout);
 		// get rid of the default generate network command...
 		input = input.substring(0, input.indexOf("generate_network({"));
 		// ... and replace it with the "fake" one
