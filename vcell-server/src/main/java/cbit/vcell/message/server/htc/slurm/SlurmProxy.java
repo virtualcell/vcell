@@ -350,8 +350,9 @@ public class SlurmProxy extends HtcProxy {
 		lsb.write("#SBATCH -o " + new File(htcLogDirExternal, jobName+".slurm.log").getAbsolutePath());
 		lsb.write("#SBATCH -e " + new File(htcLogDirExternal, jobName+".slurm.log").getAbsolutePath());
 		//SlurmProxy ultimately instantiated from {vcellroot}/docker/build/Dockerfile-submit-dev by way of cbit.vcell.message.server.batch.sim.HtcSimulationWorker
-		long memoryMB = HtcProxy.getMemoryLimit(simTask.getUserName(),memSizeMB,simTask.getSimulationInfo().getSimulationVersion().getVersionKey());
-		lsb.write("#SBATCH --mem="+memoryMB+"M");
+		MemLimitResults memoryMBAllowed = HtcProxy.getMemoryLimit(simTask.getUserName(),memSizeMB,simTask.getSimulationInfo().getSimulationVersion().getVersionKey());
+		lsb.write("#SBATCH --mem="+memoryMBAllowed.getMemLimit()+"M");
+		lsb.write("# VCell SlurmProxy memory limit source="+memoryMBAllowed.getMemLimitSource());
 		lsb.write("#SBATCH --no-kill");
 		lsb.write("#SBATCH --no-requeue");
 		String nodelist = PropertyLoader.getProperty(PropertyLoader.htcNodeList, null);
@@ -383,7 +384,7 @@ public class SlurmProxy extends HtcProxy {
 		File slurm_singularity_central_filepath = new File(slurm_central_singularity_dir,new File(slurm_singularity_local_image_filepath).getName());
 		
 		String[] environmentVars = new String[] {
-				"java_mem_Xmx="+memoryMB+"M",
+				"java_mem_Xmx="+memoryMBAllowed.getMemLimit()+"M",
 				"jmshost_sim_internal="+jmshost_sim_external,
 				"jmsport_sim_internal="+jmsport_sim_external,
 				"jmsrestport_sim_internal="+jmsrestport_sim_external,

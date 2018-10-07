@@ -22,6 +22,7 @@ import cbit.vcell.message.messages.SimulationTaskMessage;
 import cbit.vcell.message.messages.StatusMessage;
 import cbit.vcell.message.messages.WorkerEventMessage;
 import cbit.vcell.message.server.htc.HtcProxy;
+import cbit.vcell.message.server.htc.HtcProxy.MemLimitResults;
 import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.mongodb.VCMongoMessage;
 import cbit.vcell.resource.PropertyLoader;
@@ -468,10 +469,10 @@ public class SimulationStateMachine {
 
 		double requiredMemMB = simulationTask.getEstimatedMemorySizeMB();
 		//SimulationStateMachine ultimately instantiated from {vcellroot}/docker/build/Dockerfile-sched-dev by way of cbit.vcell.message.server.dispatcher.SimulationDispatcher
-		double allowableMemMB = HtcProxy.getMemoryLimit(simulation.getVersion().getOwner().getName(), requiredMemMB, simulation.getVersion().getVersionKey());
+		MemLimitResults allowableMemMB = HtcProxy.getMemoryLimit(simulation.getVersion().getOwner().getName(), requiredMemMB, simulation.getVersion().getVersionKey());
 		
 		final SimulationJobStatus newSimJobStatus;
-		if (requiredMemMB > allowableMemMB) {						
+		if (requiredMemMB > allowableMemMB.getMemLimit()) {						
 			//
 			// fail the simulation
 			//
@@ -481,7 +482,7 @@ public class SimulationStateMachine {
 			SimulationExecutionStatus newSimExeStatus = new SimulationExecutionStatus(null,  null, new Date(), null, false, null);
 			newSimJobStatus = new SimulationJobStatus(VCellServerID.getSystemServerID(),vcSimID,jobIndex,
 					oldSimulationJobStatus.getSubmitDate(),SchedulerStatus.FAILED,taskID,
-					SimulationMessage.jobFailed("simulation required "+requiredMemMB+"MB of memory, only "+allowableMemMB+"MB allowed"),
+					SimulationMessage.jobFailed("simulation required "+requiredMemMB+"MB of memory, only "+allowableMemMB+"MB allowed from "+allowableMemMB.getMemLimitSource()),
 					newQueueStatus,newSimExeStatus);
 			
 			simulationDatabase.updateSimulationJobStatus(newSimJobStatus);
