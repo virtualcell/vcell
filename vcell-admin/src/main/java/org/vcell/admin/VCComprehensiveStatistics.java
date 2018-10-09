@@ -516,11 +516,25 @@ public class VCComprehensiveStatistics {
 	private void collectUserStats(long startDateInMs, long endDateInMs) throws SQLException {
 		Connection con = oracleConnection.getConnection(new Object());
 		Statement stmt = con.createStatement();
-		try {			
-			String sql = "select vc_userinfo.id, vc_userinfo.userid, vc_userstat.lastlogin from vc_userinfo, vc_userstat where vc_userstat.userref=vc_userinfo.id";
+		try {
+			SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy");
+			String startStr = sdf.format(new Date(startDateInMs));
+			String endStr = sdf.format(new Date(endDateInMs));
+//			String sql = "select vc_userinfo.id, vc_userinfo.userid, vc_userstat.lastlogin from vc_userinfo, vc_userstat where vc_userstat.userref=vc_userinfo.id";
+			String sql = 
+					"select s1.userref,userid,to_char(s1.creationdate,'DD-MM-YYYY')"+
+					" from vc_userinfo,vc_apiaccesstoken s1,"+
+					"("+
+					"select max(creationdate) creationdate,userref from vc_apiaccesstoken group by userref"+
+					") s2"+
+					" where s1.userref=s2.userref and"+
+					" s1.creationdate = s2.creationdate and"+
+					" vc_userinfo.id = s1.userref and"+
+					" s1.creationdate between to_date('"+startStr+"','DD-MM-YYYY') and to_date('"+endStr+"','DD-MM-YYYY')";
+			
 			ResultSet rset = stmt.executeQuery(sql);
 			while (rset.next()) {		
-				UserStat userStat = new UserStat(rset.getInt(1), rset.getString(2), VersionTable.getDate(rset, "lastlogin"));
+				UserStat userStat = new UserStat(rset.getInt(1), rset.getString(2), sdf.parse(rset.getString(3)));
 				if (internalDeveloper.contains(userStat.username)) {
 					userStat.isDeveloper = true;
 				}
