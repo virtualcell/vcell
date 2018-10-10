@@ -12,6 +12,9 @@ package org.vcell.util.document;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.Serializable;
+
+import org.vcell.util.document.VCDocument.VCDocumentType;
 
 import cbit.image.VCImageInfo;
 import cbit.vcell.geometry.GeometryInfo;
@@ -23,18 +26,75 @@ import cbit.vcell.geometry.GeometryInfo;
  */
 public class VCInfoContainer implements java.io.Serializable{
 
+	public static class PublicationInfo implements Serializable{
+		private KeyValue versionKey;
+		private String title;
+		private String[] authors;
+		private String citation;
+		private String pubmedid;
+		private String doi;
+		private String url;
+		private VCDocumentType vcDocumentType;
+		private User user;
+		private int theHashCode;
+		public PublicationInfo(KeyValue versionKey, String title, String[] authors, String citation, String pubmedid,
+				String doi, String url, VCDocumentType vcDocumentType, User user) {
+			super();
+			this.versionKey = versionKey;
+			this.title = title;
+			this.authors = authors;
+			this.citation = citation;
+			this.pubmedid = pubmedid;
+			this.doi = doi;
+			this.url = url;
+			this.vcDocumentType = vcDocumentType;
+			this.user = user;
+			theHashCode = (versionKey.toString()+(doi!=null && doi.length()>0?doi.toString():(pubmedid!=null && pubmedid.length()>0&& !pubmedid.equals("0")?pubmedid.toString():""))).hashCode();
+		}
+		public KeyValue getVersionKey() {
+			return versionKey;
+		}
+		public String getTitle() {
+			return title;
+		}
+		public String[] getAuthors() {
+			return authors;
+		}
+		public String getCitation() {
+			return citation;
+		}
+		public String getPubmedid() {
+			return pubmedid;
+		}
+		public String getDoi() {
+			return doi;
+		}
+		public String getUrl() {
+			return url;
+		}
+		public VCDocumentType getVcDocumentType() {
+			return vcDocumentType;
+		}
+		public User getUser() {
+			return user;
+		}
+		public int hashCode() {
+			return theHashCode;
+		}
+	}
 	transient User user = null;
 	transient VCImageInfo[] vcImageInfos = null;
 	transient GeometryInfo[] geometryInfos = null;
 	transient MathModelInfo[] mathModelInfos = null;
 	transient BioModelInfo[] bioModelInfos = null;
+	transient PublicationInfo[] publicationInfos = null;
 
 	private byte[] compressedBytes = null;
 	
 /**
  * VCInfoContainer constructor comment.
  */
-public VCInfoContainer(User argUser, VCImageInfo[] newVcImageInfos, GeometryInfo[] newGeometryInfos, MathModelInfo[] newMathModelInfos, BioModelInfo[] newBioModelInfos) {
+public VCInfoContainer(User argUser, VCImageInfo[] newVcImageInfos, GeometryInfo[] newGeometryInfos, MathModelInfo[] newMathModelInfos, BioModelInfo[] newBioModelInfos,PublicationInfo[] newPublicationInfos) {
 		
 	super();
 	
@@ -43,6 +103,7 @@ public VCInfoContainer(User argUser, VCImageInfo[] newVcImageInfos, GeometryInfo
 	geometryInfos = newGeometryInfos;
 	mathModelInfos = newMathModelInfos;
 	bioModelInfos = newBioModelInfos;
+	publicationInfos = newPublicationInfos;
 }
 
 
@@ -58,7 +119,12 @@ public org.vcell.util.document.BioModelInfo[] getBioModelInfos() {
 	return bioModelInfos;
 }
 
-
+public PublicationInfo[] getPublicationInfos() {
+	if (publicationInfos == null) {
+		inflate();
+	}
+	return publicationInfos;	
+}
 /**
  * Insert the method's description here.
  * Creation date: (9/26/2003 12:43:24 PM)
@@ -130,7 +196,7 @@ private void inflate() {
 		mathModelInfos = (MathModelInfo[])objArray[2];	
 		geometryInfos = (GeometryInfo[])objArray[3];
 		vcImageInfos = (VCImageInfo[])objArray[4];
-
+		publicationInfos = (PublicationInfo[])objArray[5];
 		compressedBytes = null;
 		
 	} catch (Exception ex) {
@@ -160,7 +226,7 @@ private void readObject(ObjectInputStream s) throws IOException, ClassNotFoundEx
  * @exception java.io.IOException The exception description.
  */
 private void writeObject(ObjectOutputStream s) throws IOException {
-	Object objArray[] =  { user, bioModelInfos, mathModelInfos, geometryInfos, vcImageInfos};
+	Object objArray[] =  { user, bioModelInfos, mathModelInfos, geometryInfos, vcImageInfos,publicationInfos};
 
 	if (compressedBytes == null) {
 		compressedBytes = org.vcell.util.BeanUtils.toCompressedSerialized(objArray);
