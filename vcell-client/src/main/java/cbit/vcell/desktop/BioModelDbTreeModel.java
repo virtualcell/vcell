@@ -37,6 +37,7 @@ public BioModelDbTreeModel(JTree tree) {
 	tutorialModelsNode = new BioModelNode(Tutorials, true);
 	educationModelsNode = new BioModelNode(Education, true);
 	publicModelsNode = new BioModelNode(Public_BioModels, true);
+	publishedModelsNode = new BioModelNode(Published_BioModels, true);
 }
 
 /**
@@ -47,7 +48,7 @@ public BioModelDbTreeModel(JTree tree) {
  */
 protected void createBaseTree() throws DataAccessException {
 	VCDocumentDbTreeModel.initBaseTree(rootNode,
-			new BioModelNode[] {myModelsNode, sharedModelsNode, publicModelsNode, tutorialModelsNode, educationModelsNode},
+			new BioModelNode[] {myModelsNode, sharedModelsNode, publicModelsNode, tutorialModelsNode, educationModelsNode, publishedModelsNode},
 			"Biological Models",
 			sharedModelsNode, SHARED_BIO_MODELS);
 	

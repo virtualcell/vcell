@@ -63,6 +63,7 @@ public abstract class VCDocumentDbTreeModel extends DefaultTreeModel implements 
 	protected BioModelNode bngRulesBasedModelsNode = null;
 	protected BioModelNode bngRulesBasedModelsNode61 = null;
 	protected BioModelNode publicModelsNode = null;
+	protected BioModelNode publishedModelsNode = null;
 	
 	public static final String Tutorials = "Tutorials";
 	public static final String Education = "Education";
@@ -70,9 +71,11 @@ public abstract class VCDocumentDbTreeModel extends DefaultTreeModel implements 
 	
 	public static final String SHARED_BIO_MODELS = "Shared BioModels";
 	public static final String Public_BioModels = "Public BioModels";
+	public static final String Published_BioModels = "Published BioModels";
 	
 	public static final String SHARED_MATH_MODELS = "Shared MathModels";
 	public static final String Public_MathModels = "Public MathModels";
+	public static final String Published_MathModels = "Published MathModels";
 	
 	public static final String SHARED_GEOMETRIES = "Shared Geometries";
 	public static final String PUBLIC_GEOMETRIES = "Public Geometries";
