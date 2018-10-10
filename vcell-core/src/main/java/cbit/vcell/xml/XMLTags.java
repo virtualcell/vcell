@@ -641,6 +641,8 @@ public class XMLTags {
 	public static final String RbmNetworkConstraintsTag = "NetworkConstraints";
 	public static final String RbmMaxIterationTag = "RbmMaxIteration";
 	public static final String RbmMaxMoleculesPerSpeciesTag = "RbmMaxMoleculesPerSpecies";
+	public static final String RbmSpeciesLimitTag = "RbmSpeciesLimit";
+	public static final String RbmReactionsLimitTag = "RbmReactionsLimit";
 	public static final String RbmMaxStoichiometryTag = "MaxStoichiometry";
 	public static final String RbmIntegerAttrTag = "Integer";
 	public static final String RbmMolecularTypeAnchorAllAttrTag = "AnchorAll";

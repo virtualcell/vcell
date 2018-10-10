@@ -5189,6 +5189,9 @@ private void getRbmNetworkConstraints(Element e, Model newModel) {
 		int maxMoleculesPerSpecies = Integer.parseInt(s);
 		nc.setMaxMoleculesPerSpecies(maxMoleculesPerSpecies);
 	}
+	/* 
+	 * there has never been a species limit or a reaction limit here, so we don't even try to read them
+	 */
 	List<Element> children = e.getChildren(XMLTags.RbmMaxStoichiometryTag, vcNamespace);
 	for (Element element : children) {
 		Integer i = 1;
@@ -5913,6 +5916,16 @@ public NetworkConstraints getAppNetworkConstraints(Element e, Model newModel) {
 	if(s!=null && !s.isEmpty()) {
 		int maxMoleculesPerSpecies = Integer.parseInt(s);
 		nc.setMaxMoleculesPerSpecies(maxMoleculesPerSpecies);
+	}
+	s = e.getAttributeValue(XMLTags.RbmSpeciesLimitTag);
+	if(s!=null && !s.isEmpty()) {
+		int speciesLimit = Integer.parseInt(s);
+		nc.setSpeciesLimit(speciesLimit);
+	}
+	s = e.getAttributeValue(XMLTags.RbmReactionsLimitTag);
+	if(s!=null && !s.isEmpty()) {
+		int reactionsLimit = Integer.parseInt(s);
+		nc.setReactionsLimit(reactionsLimit);
 	}
 	List<Element> children = e.getChildren(XMLTags.RbmMaxStoichiometryTag, vcNamespace);
 	for (Element element : children) {
