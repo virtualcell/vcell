@@ -120,6 +120,17 @@ public class TaskCallbackProcessor {
 					sc.firePropertyChange("appendToConsole", "", tcm);
 				}
 			}
+//			int currentSpecies = getCurrentIterationSpecies();
+//			int previousSpecies = getPreviousIterationSpecies();
+//			int testSpecies = sc.getNetworkConstraints().getTestSpeciesLimit();
+//			int numberSpecies = currentSpecies > previousSpecies ? currentSpecies : previousSpecies;
+//			if(numberSpecies > testSpecies) {	// we found more species than the max number of species we're trying to test
+//				String s = NetworkTransformer.getSpeciesLimitExceededMessage(numberSpecies, testSpecies);
+//				tcm = new TaskCallbackMessage(TaskCallbackStatus.Warning, s);
+//				consoleNotificationList.add(tcm);
+//				sc.firePropertyChange("appendToConsole", "", tcm);
+//				break;
+//			}
 			break;
 		case TaskEndAdjustSimulationContextFlagsOnly:
 			System.out.println("TaskEndAdjustSimulationContextFlagsOnly");

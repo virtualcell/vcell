@@ -24,13 +24,10 @@ public class NetworkConstraintsTableModel extends BioModelEditorRightSideTableMo
 	public static final String sSpeciesLimitName = "Species Limit";
 	public static final String sReactionsLimitName = "Reactions Limit";
 	
-	public static final String sValueType = "value";
-	
-	public static final int colCount = 3;
+	public static final int colCount = 2;
 	public static final int iColName = 0;
-	public static final int iColType = 1;
-	public static final int iColValue = 2;
-	private static String[] columnNames = new String[] {"Name", "Type", "Value"};
+	public static final int iColValue = 1;
+	private static String[] columnNames = new String[] {"Name", "Value"};
 	
 	private SimulationContext simContext = null;
 	
@@ -74,13 +71,13 @@ public class NetworkConstraintsTableModel extends BioModelEditorRightSideTableMo
 			s3 = "?";
 			s4 = "?";
 		}
-		nce = new NetworkConstraintsEntity(sMaxIterationName, sValueType, s1);
+		nce = new NetworkConstraintsEntity(sMaxIterationName, s1);
 		nceList.add(nce);
-		nce = new NetworkConstraintsEntity(sMaxMoleculesName, sValueType, s2);
+		nce = new NetworkConstraintsEntity(sMaxMoleculesName, s2);
 		nceList.add(nce);
-		nce = new NetworkConstraintsEntity(sSpeciesLimitName, sValueType, s3);
+		nce = new NetworkConstraintsEntity(sSpeciesLimitName, s3);
 		nceList.add(nce);
-		nce = new NetworkConstraintsEntity(sReactionsLimitName, sValueType, s4);
+		nce = new NetworkConstraintsEntity(sReactionsLimitName, s4);
 		nceList.add(nce);
 		// we read them here, all from rbmModelContainer.getMolecularTypeList()
 		// TODO: if the molecule is in the NetworkConstraints.maxStoichiometryMap set value from there
@@ -96,9 +93,6 @@ public class NetworkConstraintsTableModel extends BioModelEditorRightSideTableMo
 		switch (column){
 		
 			case iColName: {
-				return String.class;
-			}
-			case iColType: {
 				return String.class;
 			}
 			case iColValue: {
@@ -126,7 +120,6 @@ public class NetworkConstraintsTableModel extends BioModelEditorRightSideTableMo
 		}
 		NetworkConstraintsEntity nce = getValueAt(row);
 		String colName = nce.getName();
-		String colType = nce.getType();
 		String colValue = nce.getValue();
 		NetworkConstraints networkConstraints = simContext.getNetworkConstraints();
 		if(row == 0) {
@@ -142,8 +135,6 @@ public class NetworkConstraintsTableModel extends BioModelEditorRightSideTableMo
 			switch(column) {
 			case iColName:
 				return colName;
-			case iColType:
-				return colType;
 			case iColValue:
 				return colValue;
 			}

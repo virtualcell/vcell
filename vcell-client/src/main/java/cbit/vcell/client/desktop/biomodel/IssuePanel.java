@@ -301,10 +301,10 @@ public class IssuePanel extends DocumentEditorSubPanel {
 				case RbmNetworkConstraintsBad:
 					NetworkConstraints nc = sc.getNetworkConstraints();
 					if(issue.getMessage() == SimulationContext.IssueInsufficientMolecules) {
-						NetworkConstraintsEntity nce = new NetworkConstraintsEntity(NetworkConstraintsTableModel.sMaxMoleculesName, NetworkConstraintsTableModel.sValueType, nc.getMaxMoleculesPerSpecies() + "");
+						NetworkConstraintsEntity nce = new NetworkConstraintsEntity(NetworkConstraintsTableModel.sMaxMoleculesName, nc.getMaxMoleculesPerSpecies() + "");
 						followHyperlink(new ActiveView(sc, DocumentEditorTreeFolderClass.SPECIFICATIONS_NODE, ActiveViewID.network_setting), new Object[] {nce});
 					} else {
-						NetworkConstraintsEntity nce = new NetworkConstraintsEntity(NetworkConstraintsTableModel.sMaxIterationName, NetworkConstraintsTableModel.sValueType, nc.getMaxIteration() + "");
+						NetworkConstraintsEntity nce = new NetworkConstraintsEntity(NetworkConstraintsTableModel.sMaxIterationName, nc.getMaxIteration() + "");
 						followHyperlink(new ActiveView(sc, DocumentEditorTreeFolderClass.SPECIFICATIONS_NODE, ActiveViewID.network_setting), new Object[] {nce});
 					}
 					break;

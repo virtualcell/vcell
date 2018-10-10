@@ -616,7 +616,6 @@ public class NetworkConstraintsPanel extends DocumentEditorSubPanel implements B
 		};
 		String input = transformer.convertToBngl(fieldSimulationContext, true, dummyCallback, NetworkGenerationRequirements.ComputeFullNoTimeout);
 		// we alter the input string to use the test values for speciesLimit and reactionsLimit
-		//TODO: !!! aici
 		BufferedReader br = new BufferedReader(new StringReader(input));
 		StringBuilder sb = new StringBuilder();
 		int lineNumber = 0;

@@ -959,11 +959,15 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService, BioNetGe
 		simContext.getNetworkConstraints().setMaxMoleculesPerSpecies(realNC.getMaxMoleculesPerSpecies());
 		simContext.getNetworkConstraints().setMaxIteration(realNC.getMaxIteration());
 		ModelParameter speciesLimitParam = model.getModelParameter(NetworkConstraints.SPECIES_LIMIT_PARAMETER);
+		if(speciesLimitParam != null) {		// if it's not there we are already using the default
+			String s = speciesLimitParam.getExpression().infix();
+			simContext.getNetworkConstraints().setSpeciesLimit((int)Float.parseFloat(s));	// extract speciesLimit
+		}
 		ModelParameter reactionsLimitParam = model.getModelParameter(NetworkConstraints.REACTIONS_LIMIT_PARAMETER);
-		String s = speciesLimitParam.getExpression().infix();
-		String r = reactionsLimitParam.getExpression().infix();
-		simContext.getNetworkConstraints().setSpeciesLimit((int)Float.parseFloat(s));		// extract speciesLimit and reactionsLimit
-		simContext.getNetworkConstraints().setReactionsLimit((int)Float.parseFloat(r));
+		if(reactionsLimitParam != null) {
+			String r = reactionsLimitParam.getExpression().infix();
+			simContext.getNetworkConstraints().setReactionsLimit((int)Float.parseFloat(r));	// extract reactionsLimit
+		}
 		simContext.getNetworkConstraints().setTestConstraints(simContext.getNetworkConstraints().getMaxIteration(), 
 				simContext.getNetworkConstraints().getMaxMoleculesPerSpecies(),
 				simContext.getNetworkConstraints().getSpeciesLimit(), simContext.getNetworkConstraints().getReactionsLimit());
