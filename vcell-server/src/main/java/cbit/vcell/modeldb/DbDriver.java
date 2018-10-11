@@ -19,10 +19,13 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.Vector;
 
@@ -47,6 +50,7 @@ import org.vcell.util.document.GroupAccessNone;
 import org.vcell.util.document.GroupAccessSome;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.MathModelInfo;
+import org.vcell.util.document.PublicationInfo;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCDocument.VCDocumentType;
 import org.vcell.util.document.VCDocumentInfo;
@@ -59,7 +63,6 @@ import org.vcell.util.document.VersionableFamily;
 import org.vcell.util.document.VersionableRelationship;
 import org.vcell.util.document.VersionableType;
 import org.vcell.util.document.VersionableTypeVersion;
-import org.vcell.util.document.VCInfoContainer.PublicationInfo;
 
 import cbit.image.VCImageInfo;
 import cbit.sql.Field;
@@ -1200,7 +1203,6 @@ public static VCInfoContainer getVCInfoContainer(User user,Connection con, Datab
 	ResultSet rset = null;
 	boolean enableSpecial = true;
 	boolean enableDistinct = true;
-	StringBuffer publicationSB = new StringBuffer();
 	Statement stmt = con.createStatement();
 	try{
 		//
@@ -1221,7 +1223,6 @@ public static VCInfoContainer getVCInfoContainer(User user,Connection con, Datab
 				BioModelInfo versionInfo = (BioModelInfo)BioModelTable.table.getInfo(rset,con,dbSyntax);
 				if(!distinctV.contains(versionInfo.getVersion().getVersionKey().toString())){
 					tempInfos.add(versionInfo);
-					publicationSB.append((versionInfo.getVersion()!=null && versionInfo.getVersion().getFlag().isPublished()?(publicationSB.length()==0?"":",")+versionInfo.getVersion().getVersionKey().toString():""));
 					distinctV.add(versionInfo.getVersion().getVersionKey().toString());
 				}
 			}
@@ -1253,7 +1254,6 @@ public static VCInfoContainer getVCInfoContainer(User user,Connection con, Datab
 				MathModelInfo versionInfo = (MathModelInfo)MathModelTable.table.getInfo(rset,con,dbSyntax);
 				if(!distinctV.contains(versionInfo.getVersion().getVersionKey().toString())){
 					tempInfos.add(versionInfo);
-					publicationSB.append((versionInfo.getVersion()!=null && versionInfo.getVersion().getFlag().isPublished()?(publicationSB.length()==0?"":",")+versionInfo.getVersion().getVersionKey().toString():""));
 					distinctV.add(versionInfo.getVersion().getVersionKey().toString());
 				}
 			}
@@ -1327,66 +1327,98 @@ public static VCInfoContainer getVCInfoContainer(User user,Connection con, Datab
 			if (lg.isInfoEnabled()) {
 				lg.info("GeometryInfo Time="+(((double)System.currentTimeMillis()-beginTime)/(double)1000));
 			}
-		}
-
-/* Test
- 116930032,116929912,116929971,113655498,124562627,101963252,123465505,123465498,123269393,123269480,136977463,95706942,95707047,95693624,95693513," + 
-					"95686613,95682290,95676312,95675441,95675197,95674618,100961371,102802266,98296160,98139299,98139292,93386467,92705462,116898345,116898182,116704767,102061382," + 
-					"98174143,100596964,101981216,105608907,93313420,95094548,84069156,91986407,101962320,83091496,81992349,82250339,91133993,91134220,91134339,91141358,91164682," + 
-					"91162818,91134296,95177642,91141200,91147280,91164078,91162809,60113862,83446023,82065439,84235320,84275910,83932776,83932806,94538871,82799266,82799247," + 
-					"82799056,82798486,81284732,60705749,61699798,61680876,60705777,60647373,60647264,60799209,66265579,66264206,66264973,55178308,55174152,62849940,65311813," + 
-					"62477836,62467093,62585003,63307133,61340695,55396830,49411430,61629922,50584157,36230715,29897263,77305266,40882931,40883509,40883478,38086434,60227051," + 
-					"32568171,32568356,36053554,34826524,47429473,32288619,28730491,34855932,32579611,31584491,31523791,43726934,26581203,26454052,27192647,26454463,26455186," + 
-					"27192717,22403233,22403358,22403576,22403244,22403250,22403238,27087758,27088050,61414583,27088120,28625786,20754836,26928347,27072412,27072419,27072426," + 
-					"27071354,18894555,9590643,22681429,14647285,17028306,17098642,59280306,17263179,17257105,12522025,17326658,16804037,36275161,10829774,22523922,9254662," + 
-					"84985561,6436213,16763273,20253928,7803976,7803961,89712092,2915537,2913730,2917999,2917788,2917738,2912851,2962862,2930915,14272976,12119723
- */
+		}	
 		try {
-			//
-			//PublicationInfos
-			//
-			final String DOCTYPE_COL="doctype";
-			final String DOCID_COL="docid";
-			ArrayList<PublicationInfo> publicationInfoArr = new ArrayList<>();
-			sql = new StringBuffer(
-					"select vc_publication.*,'bm' "+DOCTYPE_COL+",vc_biomodel.id "+DOCID_COL+",vc_biomodel.ownerref,vc_userinfo.userid"+
-					" from vc_publication,vc_publicationmodellink,vc_biomodel,vc_userinfo" +
-					" where"+
-					" vc_biomodel.id=vc_publicationmodellink.biomodelref and vc_userinfo.id=vc_biomodel.ownerref"+
-					" and vc_publication.id=vc_publicationmodellink.pubref and vc_publicationmodellink.pubref is not null"+
-					" and vc_publicationmodellink.biomodelref is not null and vc_publicationmodellink.biomodelref in ("+publicationSB.toString()+")"+
-					" UNION ALL" +
-					" select vc_publication.*,'mm' "+DOCTYPE_COL+",vc_mathmodel.id "+DOCID_COL+",vc_mathmodel.ownerref,vc_userinfo.userid"+
-					" from vc_publication,vc_publicationmodellink,vc_mathmodel,vc_userinfo" +
-					" where"+
-					" vc_mathmodel.id=vc_publicationmodellink.mathmodelref and vc_userinfo.id=vc_mathmodel.ownerref"+
-					" and vc_publication.id=vc_publicationmodellink.pubref and vc_publicationmodellink.pubref is not null"+
-					" and vc_publicationmodellink.mathmodelref is not null and vc_publicationmodellink.mathmodelref in ("+publicationSB.toString()+")");
-			System.out.println(sql.toString());
-			rset = stmt.executeQuery(sql.toString());
-			while(rset.next()){
-				Publication publication = PublicationTable.table.getInfo(rset,con);
-				String docType = rset.getString(DOCTYPE_COL);
-				publicationInfoArr.add(
-					new PublicationInfo(new KeyValue(rset.getBigDecimal(DOCID_COL)), publication.title, publication.authors, publication.citation, publication.pubmedid, publication.doi, publication.url,
-							(docType.equals("bm")?VCDocumentType.BIOMODEL_DOC:VCDocumentType.MATHMODEL_DOC), new User(rset.getString(UserTable.table.userid.getUnqualifiedColName()),new KeyValue(rset.getBigDecimal("ownerref").toString()))));
-			}
-			rset.close();
-			publicationInfos = publicationInfoArr.toArray(new PublicationInfo[0]);
+			Vector<VersionInfo> bm_mm_VCDocumentInfos = new Vector<>();
+			bm_mm_VCDocumentInfos.addAll(Arrays.asList((bioModelInfos!=null?bioModelInfos:new BioModelInfo[0])));
+			bm_mm_VCDocumentInfos.addAll(Arrays.asList((mathModelInfos!=null?mathModelInfos:new MathModelInfo[0])));
+			DbDriver.addPublicationInfos(con, stmt, bm_mm_VCDocumentInfos);
 		} catch (Exception e) {
-			//Publication not included if error
 			e.printStackTrace();
+			//Don't fail if something goes wrong with setting publication info
 		}
-	
 	}finally{
 		if(stmt != null){
 			stmt.close();
 		}
 	}
-
-	results = new VCInfoContainer(user, vcImageInfos, geometryInfos, mathModelInfos, bioModelInfos,publicationInfos);
+	results = new VCInfoContainer(user, vcImageInfos, geometryInfos, mathModelInfos, bioModelInfos);
 
 	return results;
+}
+
+
+public static void addPublicationInfos(Connection con,Statement stmt,Vector<VersionInfo> mm_and_bm_VersionInfos) throws SQLException,DataAccessException{
+	StringBuffer publicationSB = new StringBuffer();
+	TreeMap<Long, VersionInfo> mapModelIdToVersionInfo = new TreeMap<>(new Comparator<Long>() {
+		@Override
+		public int compare(Long o1, Long o2) {
+			return  o1.compareTo(o2);
+		}
+	});
+	for (int i = 0; i < mm_and_bm_VersionInfos.size(); i++) {
+		if(mm_and_bm_VersionInfos.get(i).getVersion().getFlag().isPublished()) {
+			publicationSB.append((publicationSB.length()==0?"":",")+mm_and_bm_VersionInfos.get(i).getVersion().getVersionKey().toString());
+			mapModelIdToVersionInfo.put(Long.parseLong(mm_and_bm_VersionInfos.get(i).getVersion().getVersionKey().toString()), mm_and_bm_VersionInfos.get(i));
+		}
+	}
+
+	/* Test
+ 116930032,116929912,116929971,113655498,124562627,101963252,123465505,123465498,123269393,123269480,136977463,95706942,95707047,95693624,95693513," + 
+				"95686613,95682290,95676312,95675441,95675197,95674618,100961371,102802266,98296160,98139299,98139292,93386467,92705462,116898345,116898182,116704767,102061382," + 
+				"98174143,100596964,101981216,105608907,93313420,95094548,84069156,91986407,101962320,83091496,81992349,82250339,91133993,91134220,91134339,91141358,91164682," + 
+				"91162818,91134296,95177642,91141200,91147280,91164078,91162809,60113862,83446023,82065439,84235320,84275910,83932776,83932806,94538871,82799266,82799247," + 
+				"82799056,82798486,81284732,60705749,61699798,61680876,60705777,60647373,60647264,60799209,66265579,66264206,66264973,55178308,55174152,62849940,65311813," + 
+				"62477836,62467093,62585003,63307133,61340695,55396830,49411430,61629922,50584157,36230715,29897263,77305266,40882931,40883509,40883478,38086434,60227051," + 
+				"32568171,32568356,36053554,34826524,47429473,32288619,28730491,34855932,32579611,31584491,31523791,43726934,26581203,26454052,27192647,26454463,26455186," + 
+				"27192717,22403233,22403358,22403576,22403244,22403250,22403238,27087758,27088050,61414583,27088120,28625786,20754836,26928347,27072412,27072419,27072426," + 
+				"27071354,18894555,9590643,22681429,14647285,17028306,17098642,59280306,17263179,17257105,12522025,17326658,16804037,36275161,10829774,22523922,9254662," + 
+				"84985561,6436213,16763273,20253928,7803976,7803961,89712092,2915537,2913730,2917999,2917788,2917738,2912851,2962862,2930915,14272976,12119723
+ */
+	//
+	//PublicationInfos
+	//
+	final String DOCTYPE_COL="doctype";
+	final String DOCID_COL="docid";
+//	ArrayList<PublicationInfo> publicationInfoArr = new ArrayList<>();
+	String sql = new String(
+			"select vc_publication.*,'bm' "+DOCTYPE_COL+",vc_biomodel.id "+DOCID_COL+",vc_biomodel.ownerref,vc_userinfo.userid"+
+			" from vc_publication,vc_publicationmodellink,vc_biomodel,vc_userinfo" +
+			" where"+
+			" vc_biomodel.id=vc_publicationmodellink.biomodelref and vc_userinfo.id=vc_biomodel.ownerref"+
+			" and vc_publication.id=vc_publicationmodellink.pubref and vc_publicationmodellink.pubref is not null"+
+			" and vc_publicationmodellink.biomodelref is not null and vc_publicationmodellink.biomodelref in ("+publicationSB.toString()+")"+
+			" UNION ALL" +
+			" select vc_publication.*,'mm' "+DOCTYPE_COL+",vc_mathmodel.id "+DOCID_COL+",vc_mathmodel.ownerref,vc_userinfo.userid"+
+			" from vc_publication,vc_publicationmodellink,vc_mathmodel,vc_userinfo" +
+			" where"+
+			" vc_mathmodel.id=vc_publicationmodellink.mathmodelref and vc_userinfo.id=vc_mathmodel.ownerref"+
+			" and vc_publication.id=vc_publicationmodellink.pubref and vc_publicationmodellink.pubref is not null"+
+			" and vc_publicationmodellink.mathmodelref is not null and vc_publicationmodellink.mathmodelref in ("+publicationSB.toString()+")");
+	System.out.println(sql);
+	ResultSet rset = null;
+	try {
+		rset = stmt.executeQuery(sql);
+		while(rset.next()){
+				Publication publication = PublicationTable.table.getInfo(rset,con);
+				String docType = rset.getString(DOCTYPE_COL);
+				BigDecimal modelVersionID = rset.getBigDecimal(DOCID_COL);
+				KeyValue versionKey = new KeyValue(modelVersionID);
+				PublicationInfo publicationInfo = new PublicationInfo(versionKey, publication.title, publication.authors, publication.citation, publication.pubmedid, publication.doi, publication.url,
+					(docType.equals("bm")?VCDocumentType.BIOMODEL_DOC:VCDocumentType.MATHMODEL_DOC), new User(rset.getString(UserTable.table.userid.getUnqualifiedColName()),new KeyValue(rset.getBigDecimal("ownerref").toString())));
+				if(mapModelIdToVersionInfo.containsKey(modelVersionID.longValue()) && mapModelIdToVersionInfo.get(modelVersionID.longValue()) instanceof VCDocumentInfo) {
+					((VCDocumentInfo)mapModelIdToVersionInfo.get(modelVersionID.longValue())).addPublicationInfo(publicationInfo);				
+				}
+				//publicationInfoArr.add(publicationInfo);
+		}
+	} catch (Exception e) {
+		e.printStackTrace();
+		throw new DataAccessException(DbDriver.class.getName()+".getPublicationInfo(...) Error -"+e.getMessage(), e);
+	}finally {
+		if(rset != null) {rset.close();}
+	}
+
+//	return publicationInfoArr.toArray(new PublicationInfo[0]);
 }
 
 
@@ -1480,6 +1512,12 @@ public static Vector<VersionInfo> getVersionableInfos(Connection con,User user, 
 			if (previousVInfo==null || !previousVInfo.getVersion().getVersionKey().compareEqual(vInfo.getVersion().getVersionKey())){
 				vInfoList.addElement(vInfo);
 			}
+		}
+		try {
+			DbDriver.addPublicationInfos(con, stmt, vInfoList);
+		} catch (Exception e) {
+			e.printStackTrace();
+			//Don't fail if something goes wring with setting publication info
 		}
 	} finally {
 		stmt.close();

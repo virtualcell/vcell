@@ -10,10 +10,18 @@
 
 package org.vcell.util.document;
 
+import java.util.ArrayList;
+
 import org.vcell.util.document.VCDocument.VCDocumentType;
 
 public interface VCDocumentInfo extends VersionInfo {
 
+	default PublicationInfo[] getPublicationInfos() {
+		return new PublicationInfo[0];
+	}
+	default void addPublicationInfo(PublicationInfo publicationInfo) {
+		//do nothing, intended to be overriden
+	}
 /**
  * Insert the method's description here.
  * Creation date: (1/25/01 12:24:41 PM)

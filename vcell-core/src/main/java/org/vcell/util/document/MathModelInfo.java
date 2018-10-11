@@ -10,6 +10,8 @@
 
 package org.vcell.util.document;
 
+import java.util.ArrayList;
+
 import org.vcell.util.BigString;
 import org.vcell.util.document.VCDocument.VCDocumentType;
 
@@ -26,6 +28,7 @@ public class MathModelInfo implements VCDocumentInfo {
 	private MathModelChildSummary mathModelChildSummary = null;
 	private BigString mathModelChildSummaryString = null;
 	private VCellSoftwareVersion softwareVersion = null;
+	private ArrayList<PublicationInfo> publicationInfos = new ArrayList<>();
 /**
  * BioModelInfo constructor comment.
  */
@@ -58,6 +61,14 @@ public boolean equals(Object object) {
 		return true;
 	}
 	return false;
+}
+@Override
+public PublicationInfo[] getPublicationInfos() {
+	return publicationInfos.toArray(new PublicationInfo[0]);
+}
+@Override
+public void addPublicationInfo(PublicationInfo publicationInfo) {
+	publicationInfos.add(publicationInfo);
 }
 /**
  * Insert the method's description here.
@@ -105,7 +116,6 @@ public String toString() {
 public VersionableType getVersionType() {	
 	return VersionableType.MathModelMetaData;
 }
-
 public VCellSoftwareVersion getSoftwareVersion() {
 	return softwareVersion;
 }

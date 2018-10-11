@@ -122,6 +122,7 @@ protected synchronized static void initFinalTree(VCDocumentDbTreeModel vcDocumen
 	}	
 	vcDocumentDbTreeModel.sharedModelsNode.removeAllChildren();
 	vcDocumentDbTreeModel.publicModelsNode.removeAllChildren();
+//	vcDocumentDbTreeModel.publishedModelsNode.removeAllChildren();
 	boolean bTutorial = vcDocumentDbTreeModel.tutorialModelsNode != null;
 	boolean bEducation = vcDocumentDbTreeModel.educationModelsNode != null;
 	if(bTutorial){vcDocumentDbTreeModel.tutorialModelsNode.removeAllChildren();}
@@ -148,9 +149,15 @@ protected synchronized static void initFinalTree(VCDocumentDbTreeModel vcDocumen
 					groupid = version.getGroupAccess().getGroupid();
 				}
 				if (groupid.equals(GroupAccess.GROUPACCESS_ALL)) {
-					parentNode = vcDocumentDbTreeModel.publicModelsNode;
+						parentNode = vcDocumentDbTreeModel.publicModelsNode;
 				}
 			}
+			if(parentNode == vcDocumentDbTreeModel.publicModelsNode &&
+				vcdDocumentInfoNode.getVCDocumentInfo().getPublicationInfos() != null && 
+				vcdDocumentInfoNode.getVCDocumentInfo().getPublicationInfos().length > 0) {
+				parentNode = vcDocumentDbTreeModel.publishedModelsNode;
+			}
+
 			// when added to other node, this childNode was removed from userNode
 			parentNode.add(childNode);
 		}
