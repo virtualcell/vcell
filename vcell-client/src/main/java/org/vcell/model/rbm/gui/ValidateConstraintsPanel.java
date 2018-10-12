@@ -37,6 +37,8 @@ public class ValidateConstraintsPanel extends DocumentEditorSubPanel  {
 	
 	private JLabel maxIterationTextField;
 	private JLabel maxMolTextField;
+	private JLabel speciesLimitTextField;
+	private JLabel reactionsLimitTextField;
 	private JLabel somethingInsufficientLabel;
 	
 	private JButton applyButton;
@@ -70,6 +72,8 @@ private void initialize() {
 			
 		maxIterationTextField = new JLabel();
 		maxMolTextField = new JLabel();
+		speciesLimitTextField = new JLabel();
+		reactionsLimitTextField = new JLabel();
 		somethingInsufficientLabel = new JLabel();
 
 		int gridy = 0;
@@ -99,7 +103,7 @@ private void initialize() {
 		gbc.weighty = 1.0;
 		gbc.gridwidth = 8;
 		gbc.fill = java.awt.GridBagConstraints.BOTH;
-		gbc.insets = new Insets(0, 8, 4, 0);
+		gbc.insets = new Insets(6, 8, 0, 0);
 		add(new JLabel("Max. Molecules / Species"), gbc);
 
 		gbc = new GridBagConstraints();
@@ -108,9 +112,51 @@ private void initialize() {
 		gbc.weightx = 1.0;
 		gbc.fill = GridBagConstraints.HORIZONTAL;
 		gbc.anchor = GridBagConstraints.EAST;
-		gbc.insets = new Insets(0, 0, 4, 10);
+		gbc.insets = new Insets(6, 0, 0, 0);
 		add(maxMolTextField, gbc);
 		
+		// ------------------------------------------------------
+		gridy ++;	
+		gbc = new GridBagConstraints();
+		gbc.gridx = 0;
+		gbc.gridy = gridy;
+		gbc.weightx = 1.0;
+		gbc.weighty = 1.0;
+		gbc.gridwidth = 8;
+		gbc.fill = java.awt.GridBagConstraints.BOTH;
+		gbc.insets = new Insets(6, 8, 0, 0);
+		add(new JLabel("Species Limit"), gbc);
+
+		gbc = new GridBagConstraints();
+		gbc.gridx = 2;
+		gbc.gridy = gridy;
+		gbc.weightx = 1.0;
+		gbc.fill = GridBagConstraints.HORIZONTAL;
+		gbc.anchor = GridBagConstraints.EAST;
+		gbc.insets = new Insets(6, 0, 0, 0);
+		add(speciesLimitTextField, gbc);
+
+		gridy ++;	
+		gbc = new GridBagConstraints();
+		gbc.gridx = 0;
+		gbc.gridy = gridy;
+		gbc.weightx = 1.0;
+		gbc.weighty = 1.0;
+		gbc.gridwidth = 8;
+		gbc.fill = java.awt.GridBagConstraints.BOTH;
+		gbc.insets = new Insets(6, 8, 4, 0);
+		add(new JLabel("Reactions Limit"), gbc);
+
+		gbc = new GridBagConstraints();
+		gbc.gridx = 2;
+		gbc.gridy = gridy;
+		gbc.weightx = 1.0;
+		gbc.fill = GridBagConstraints.HORIZONTAL;
+		gbc.anchor = GridBagConstraints.EAST;
+		gbc.insets = new Insets(6, 0, 4, 0);
+		add(reactionsLimitTextField, gbc);
+		
+		// ------------------------------------------------------
 		gridy++;
 		gbc = new GridBagConstraints();
 		gbc.gridx = 0;
@@ -140,6 +186,8 @@ private void initialize() {
 		
 		maxIterationTextField.setText(owner.getSimulationContext().getNetworkConstraints().getTestMaxIteration() + "");
 		maxMolTextField.setText(owner.getSimulationContext().getNetworkConstraints().getTestMaxMoleculesPerSpecies() + "");
+		speciesLimitTextField.setText(owner.getSimulationContext().getNetworkConstraints().getTestSpeciesLimit() + "");
+		reactionsLimitTextField.setText(owner.getSimulationContext().getNetworkConstraints().getTestReactionsLimit() + "");
 
 		String s = "none";
 		TaskCallbackProcessor tcbp = owner.getSimulationContext().getTaskCallbackProcessor();
