@@ -12,6 +12,7 @@ package cbit.vcell.desktop;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
+import java.util.prefs.Preferences;
 
 import javax.swing.JButton;
 import javax.swing.JEditorPane;
@@ -54,14 +55,20 @@ public class LoginPanel extends JPanel {
 	private JButton ivjJButtonRegister = null;
 	private LoginDelegate loginDelegate;
 	private JEditorPane dtrpnUseThisLink;
+	private JButton btnGuestLogin;
+	private static final String J_TEXT_FIELD_USER = "JTextFieldUser";
 
 	class IvjEventHandler implements java.awt.event.ActionListener {
+
 		public void actionPerformed(java.awt.event.ActionEvent e) {
-			if (e.getSource() == LoginPanel.this.getJTextFieldUser() || e.getSource() == LoginPanel.this.getJPasswordFieldPassword() || e.getSource() == LoginPanel.this.getJButtonOK()) {
+			if (e.getSource() == LoginPanel.this.getJTextFieldUser() || e.getSource() == LoginPanel.this.getJPasswordFieldPassword() || 
+					e.getSource() == LoginPanel.this.getJButtonOK() || e.getSource() == LoginPanel.this.getBtnGuestLogin()) {
 				updateFields();
-				if(fieldUser.equals(User.VCELL_GUEST)) {
-					loginDelegate.login(fieldUser, new UserLoginInfo.DigestedPassword("vcellfrmfrm"));
+				if(e.getSource() == LoginPanel.this.getBtnGuestLogin() || fieldUser.equals(User.VCELL_GUEST)) {
+					loginDelegate.login(User.VCELL_GUEST, new UserLoginInfo.DigestedPassword("vcellfrmfrm"));
 				}else {
+					Preferences prefs = Preferences.userNodeForPackage(LoginPanel.class);
+					prefs.put(J_TEXT_FIELD_USER, fieldUser);
 					loginDelegate.login(fieldUser, new UserLoginInfo.DigestedPassword(fieldPassword));
 				}
 			}
@@ -157,26 +164,32 @@ private void setupLoginPanelContentPane() {
 //			gridBagLayout.columnWeights = new double[]{1.0, 0.0};
 //			gridBagLayout.rowHeights = new int[] {0,0,0,0,0, 0};
 			this.setLayout(gridBagLayout);
+			GridBagConstraints gbc_btnGuestLogin = new GridBagConstraints();
+			gbc_btnGuestLogin.gridwidth = 2;
+			gbc_btnGuestLogin.insets = new Insets(0, 0, 5, 5);
+			gbc_btnGuestLogin.gridx = 0;
+			gbc_btnGuestLogin.gridy = 0;
+			add(getBtnGuestLogin(), gbc_btnGuestLogin);
 
 			java.awt.GridBagConstraints constraintsJLabelUser = new java.awt.GridBagConstraints();
-			constraintsJLabelUser.gridx = 0; constraintsJLabelUser.gridy = 0;
+			constraintsJLabelUser.gridx = 0; constraintsJLabelUser.gridy = 1;
 			constraintsJLabelUser.insets = new Insets(4, 10, 5, 5);
 			this.add(getJLabelUser(), constraintsJLabelUser);
 
 			java.awt.GridBagConstraints constraintsJLabelPassword = new java.awt.GridBagConstraints();
-			constraintsJLabelPassword.gridx = 0; constraintsJLabelPassword.gridy = 1;
+			constraintsJLabelPassword.gridx = 0; constraintsJLabelPassword.gridy = 2;
 			constraintsJLabelPassword.insets = new Insets(4, 10, 5, 5);
 			this.add(getJLabelPassword(), constraintsJLabelPassword);
 
 			java.awt.GridBagConstraints constraintsJTextFieldUser = new java.awt.GridBagConstraints();
-			constraintsJTextFieldUser.gridx = 1; constraintsJTextFieldUser.gridy = 0;
+			constraintsJTextFieldUser.gridx = 1; constraintsJTextFieldUser.gridy = 1;
 			constraintsJTextFieldUser.fill = java.awt.GridBagConstraints.HORIZONTAL;
 			constraintsJTextFieldUser.weightx = 1.0;
 			constraintsJTextFieldUser.insets = new Insets(4, 4, 5, 10);
 			this.add(getJTextFieldUser(), constraintsJTextFieldUser);
 
 			java.awt.GridBagConstraints constraintsJPasswordFieldPassword = new java.awt.GridBagConstraints();
-			constraintsJPasswordFieldPassword.gridx = 1; constraintsJPasswordFieldPassword.gridy = 1;
+			constraintsJPasswordFieldPassword.gridx = 1; constraintsJPasswordFieldPassword.gridy = 2;
 			constraintsJPasswordFieldPassword.fill = java.awt.GridBagConstraints.HORIZONTAL;
 			constraintsJPasswordFieldPassword.weightx = 1.0;
 			constraintsJPasswordFieldPassword.insets = new Insets(4, 4, 5, 10);
@@ -184,7 +197,7 @@ private void setupLoginPanelContentPane() {
 
 			java.awt.GridBagConstraints constraintsJPanel1 = new java.awt.GridBagConstraints();
 			constraintsJPanel1.fill = GridBagConstraints.HORIZONTAL;
-			constraintsJPanel1.gridx = 0; constraintsJPanel1.gridy = 2;
+			constraintsJPanel1.gridx = 0; constraintsJPanel1.gridy = 3;
 			constraintsJPanel1.gridwidth = 2;
 			constraintsJPanel1.weightx = 1;
 			constraintsJPanel1.insets = new Insets(4, 10, 5, 3);
@@ -192,14 +205,14 @@ private void setupLoginPanelContentPane() {
 
 			java.awt.GridBagConstraints constraintsJButtonRegister = new java.awt.GridBagConstraints();
 			constraintsJButtonRegister.fill = GridBagConstraints.HORIZONTAL;
-			constraintsJButtonRegister.gridx = 0; constraintsJButtonRegister.gridy = 4;
+			constraintsJButtonRegister.gridx = 0; constraintsJButtonRegister.gridy = 5;
 			constraintsJButtonRegister.gridwidth = 2;
 			constraintsJButtonRegister.insets = new Insets(2, 10, 5, 10);
 			final GridBagConstraints gridBagConstraints = new GridBagConstraints();
 			gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
 			gridBagConstraints.insets = new Insets(4, 10, 5, 10);
 			gridBagConstraints.gridwidth = 2;
-			gridBagConstraints.gridy = 3;
+			gridBagConstraints.gridy = 4;
 			gridBagConstraints.gridx = 0;
 			this.add(getLostPasswordJButton(), gridBagConstraints);
 			this.add(getJButtonRegister(), constraintsJButtonRegister);
@@ -209,7 +222,7 @@ private void setupLoginPanelContentPane() {
 			gbc_dtrpnUseThisLink.gridwidth = 2;
 			gbc_dtrpnUseThisLink.insets = new Insets(4, 4, 4, 4);
 			gbc_dtrpnUseThisLink.gridx = 0;
-			gbc_dtrpnUseThisLink.gridy = 5;
+			gbc_dtrpnUseThisLink.gridy = 6;
 			add(getDtrpnUseThisLink(), gbc_dtrpnUseThisLink);
 			// user code begin {1}
 			// user code end
@@ -309,8 +322,7 @@ private javax.swing.JPasswordField getJPasswordFieldPassword() {
 private javax.swing.JTextField getJTextFieldUser() {
 	if (ivjJTextFieldUser == null) {
 			ivjJTextFieldUser = new javax.swing.JTextField();
-			ivjJTextFieldUser.setText(User.VCELL_GUEST);
-			ivjJTextFieldUser.setName("JTextFieldUser");
+			ivjJTextFieldUser.setName(J_TEXT_FIELD_USER);
 			// user code begin {1}
 			// user code end
 	}
@@ -362,6 +374,7 @@ private void initConnections() {
 	getJButtonOK().addActionListener(ivjEventHandler);
 	getJButtonRegister().addActionListener(ivjEventHandler);
 	getLostPasswordJButton().addActionListener(ivjEventHandler);
+	getBtnGuestLogin().addActionListener(ivjEventHandler);
 }
 
 /**
@@ -392,7 +405,12 @@ private void updateFields() {
 }
 		
 	public void setLoggedInUser(User loggedInUser){
-//		getJButtonRegister().setEnabled(loggedInUser == null);
+		try {
+			Preferences prefs = Preferences.userNodeForPackage(LoginPanel.class);
+			getJTextFieldUser().setText(prefs.get(J_TEXT_FIELD_USER, ""));
+		}catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 	/**
 	 * @return
@@ -429,5 +447,12 @@ private void updateFields() {
 		    });
 		}
 		return dtrpnUseThisLink;
+	}
+	private JButton getBtnGuestLogin() {
+		if (btnGuestLogin == null) {
+			btnGuestLogin = new JButton("Login in as Guest (no Registration)");
+			btnGuestLogin.setEnabled(true);
+		}
+		return btnGuestLogin;
 	}
 }
