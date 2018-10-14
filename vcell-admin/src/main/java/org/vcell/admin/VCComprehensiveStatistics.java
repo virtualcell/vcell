@@ -9,7 +9,9 @@ import java.sql.Statement;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
 
 import org.vcell.db.ConnectionFactory;
 import org.vcell.db.DatabaseService;
@@ -47,7 +49,23 @@ public class VCComprehensiveStatistics {
 	private static double MONTH_IN_MS = MONTH_IN_DAY * DAY_IN_MS;
 	
 	private ArrayList<String> internalUsers = new ArrayList<String>();
-	private ArrayList<String> internalDeveloper = new ArrayList<String>();
+	public static String[] INTERNAL_DEVELOPERS = new String[] {
+			"fgao",
+			"anu",
+			"liye",
+			"frm",
+			"ion",
+			"danv",
+			"curoli",
+			"schaff",
+			"jdutton",
+			"tutorial",
+			"Education",
+			"CellMLRep",
+			"raquel",
+			"vcelltestaccount",
+			"vcellNagios"
+	};
 	
 	private DatabaseServerImpl dbServerImpl = null;
 	private LocalAdminDbServer localAdminDbServer = null;
@@ -86,20 +104,6 @@ public class VCComprehensiveStatistics {
 		
 		oracleConnection = DatabaseService.getInstance().createConnectionFactory();
 		
-		internalDeveloper.add("fgao");
-		internalDeveloper.add("anu");
-		internalDeveloper.add("liye");
-		internalDeveloper.add("frm");
-		internalDeveloper.add("ion");
-		internalDeveloper.add("danv");
-		internalDeveloper.add("curoli");
-		internalDeveloper.add("schaff");
-		internalDeveloper.add("jdutton");
-		internalDeveloper.add("tutorial");
-		internalDeveloper.add("Education");
-		internalDeveloper.add("CellMLRep");
-		internalDeveloper.add("raquel");
-		internalDeveloper.add("vcelltestaccount");
 		
 		internalUsers.add("les");
 		internalUsers.add("boris");
@@ -251,6 +255,7 @@ public class VCComprehensiveStatistics {
 	}
 	private void collectMathModelStats(long startDateInMs, long endDateInMs) throws DataAccessException {
 		retrieveUsers();
+		List<String> internalDeveloper = Arrays.asList(VCComprehensiveStatistics.INTERNAL_DEVELOPERS);
 		for (User user : userList) {
 			if (!userConstraintList.contains(user.getName())) {
 				continue;
@@ -382,6 +387,7 @@ public class VCComprehensiveStatistics {
 	}
 	private void collectBioModelStats(long startDateInMs, long endDateInMs) throws DataAccessException {
 		retrieveUsers();
+		List<String> internalDeveloper = Arrays.asList(VCComprehensiveStatistics.INTERNAL_DEVELOPERS);
 		for (User user : userList) {
 			if (!userConstraintList.contains(user.getName())) {
 				continue;
@@ -533,6 +539,7 @@ public class VCComprehensiveStatistics {
 					" s1.creationdate between to_date('"+startStr+"','DD-MM-YYYY') and to_date('"+endStr+"','DD-MM-YYYY')";
 			
 			ResultSet rset = stmt.executeQuery(sql);
+			List<String> internalDeveloper = Arrays.asList(VCComprehensiveStatistics.INTERNAL_DEVELOPERS);
 			while (rset.next()) {		
 				UserStat userStat = new UserStat(rset.getInt(1), rset.getString(2), sdf.parse(rset.getString(3)));
 				if (internalDeveloper.contains(userStat.username)) {
