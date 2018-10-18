@@ -20,6 +20,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
 import javax.swing.event.UndoableEditEvent;
@@ -408,6 +409,15 @@ private void updateFields() {
 		try {
 			Preferences prefs = Preferences.userNodeForPackage(LoginPanel.class);
 			getJTextFieldUser().setText(prefs.get(J_TEXT_FIELD_USER, ""));
+			if(getJTextFieldUser().getText() != null && getJTextFieldUser().getText().length()>0) {
+				SwingUtilities.invokeLater(new Runnable() {
+					@Override
+					public void run() {
+						getJPasswordFieldPassword().requestFocusInWindow();	
+					}
+				});
+				
+			}
 		}catch (Exception e) {
 			e.printStackTrace();
 		}
