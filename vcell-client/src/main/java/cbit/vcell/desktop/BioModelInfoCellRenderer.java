@@ -10,7 +10,16 @@
 
 package cbit.vcell.desktop;
 
+import java.awt.Cursor;
+import java.awt.Desktop;
+import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 
 import javax.swing.JLabel;
 /**
@@ -19,8 +28,14 @@ import javax.swing.JLabel;
  * @author: 
  */
 import javax.swing.JTree;
+
+import org.vcell.util.document.PublicationInfo;
+import org.vcell.util.gui.DialogUtils;
+
+import cbit.vcell.client.desktop.biomodel.BioModelPropertiesPanel;
  
 public class BioModelInfoCellRenderer extends VCellBasicCellRenderer {
+	
 /**
  * MyRenderer constructor comment.
  */
@@ -58,6 +73,7 @@ int getMaxErrorLevel(BioModelNode node) {
 	//}
 	return BioModelNode.ERROR_NONE;
 }
+
 /**
  * Insert the method's description here.
  * Creation date: (7/27/2000 6:41:57 PM)
@@ -76,13 +92,12 @@ public java.awt.Component getTreeCellRendererComponent(JTree tree, Object value,
 		BioModelNode node = (BioModelNode) value;
 		
 		boolean bLoaded = false;
-
 		//
 		// Check if node is a SolverResultSetInfo
 		//
 		if (node.getUserObject() instanceof String && "Geometry".equals(node.getRenderHint("type"))) {
 			String label = (String)node.getUserObject();
-			component.setToolTipText("Geometry");
+			component.setToolTipText("alabala");
 			component.setText(label);
 			setIcon(fieldGeometryIcon);
 		}else if (node.getUserObject() instanceof String && "SimulationContext".equals(node.getRenderHint("type"))) {
@@ -107,6 +122,88 @@ public java.awt.Component getTreeCellRendererComponent(JTree tree, Object value,
 			component.setToolTipText("Annotation");
 			component.setText(label);
 			setIcon(fieldTextIcon);
+						
+		}else if (node.getUserObject() instanceof String && "PublicationsInfo".equals(node.getRenderHint("type"))) {
+			String label = (String)node.getUserObject();
+			component.setToolTipText("Publications Info");
+			component.setText(label);
+			setIcon(fieldTextIcon);
+						
+		}else if (node.getUserObject() instanceof PublicationInfo && "PublicationInfoTitle".equals(node.getRenderHint("type"))) {
+			PublicationInfo info = (PublicationInfo)node.getUserObject();
+			component.setToolTipText("Title");
+			String text = "<b>" + info.getTitle() + "</b> (";
+			int count = 0;
+			for(String author : info.getAuthors()) {
+				if(count > 0) {
+					text += "; ";
+				}
+				text += author;
+				count++;
+			}
+			text += ")";
+			component.setText("<html>" + text + "</html>");
+			setIcon(fieldTextIcon);
+						
+//		}else if (node.getUserObject() instanceof PublicationInfo && "PublicationInfoAuthors".equals(node.getRenderHint("type"))) {
+//			PublicationInfo info = (PublicationInfo)node.getUserObject();
+//			component.setToolTipText("Authors");
+//			String text = "";
+//			int count = 0;
+//			for(String author : info.getAuthors()) {
+//				if(count > 0) {
+//					text += ", ";
+//				}
+//				text += author;
+//				count++;
+//			}
+//			component.setText("<html>" + text + "</html>");
+//			setIcon(null);
+						
+		}else if (node.getUserObject() instanceof PublicationInfo && "PublicationInfoCitation".equals(node.getRenderHint("type"))) {
+			PublicationInfo info = (PublicationInfo)node.getUserObject();
+			component.setToolTipText("Citation");
+			String text = "";
+			text += info.getCitation();
+			component.setText("<html>" + text + "</html>");
+			setIcon(null);
+						
+		}else if (node.getUserObject() instanceof PublicationInfo && "PublicationInfoDoi".equals(node.getRenderHint("type"))) {
+			PublicationInfo info = (PublicationInfo)node.getUserObject();
+			component.setToolTipText("Doi");
+			String text = "";
+			text += info.getUrl();
+			text = "DOI: <a href=\"" + "https://doi.org/" + info.getDoi() + "\">" + info.getDoi() + "</a>";
+			component.setText("<html>" + text + "</html>");
+			
+//			addMouseListener(new MouseAdapter() {
+//				@Override
+//				public void mouseClicked(MouseEvent e) {
+//					try {
+//						Desktop.getDesktop().browse(new URI("http://www.google.com/webhp?nomo=1&hl=fr"));
+//					} catch (URISyntaxException | IOException ex) {
+//						//It looks like there's a problem
+//					}
+//				}
+//			});
+			
+//			component.addMouseListener(new MouseListener() {				
+//				public void mouseReleased(MouseEvent e) {					
+//				}				
+//				public void mousePressed(MouseEvent e) {					
+//				}				
+//				public void mouseExited(MouseEvent e) {
+//				}				
+//				public void mouseEntered(MouseEvent e) {
+//				}				
+//				public void mouseClicked(MouseEvent e) {
+//					if (e.getClickCount() == 2) {
+//						DialogUtils.browserLauncher(component, "http://www.google.com/webhp?nomo=1&hl=fr", "failed to open " + "http://www.google.com/webhp?nomo=1&hl=fr");
+//					}
+//				}
+//			});
+			
+			setIcon(null);
 						
 		} else{
 			setComponentProperties(component,node.getUserObject());

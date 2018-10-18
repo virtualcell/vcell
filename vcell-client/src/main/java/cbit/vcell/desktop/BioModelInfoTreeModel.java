@@ -51,6 +51,30 @@ private BioModelNode createVersionSubTree(BioModelInfo bioModelInfo) throws Data
 	if (bioModelInfo.getVersion().getAnnot()!=null && bioModelInfo.getVersion().getAnnot().trim().length()>0){
 		versionNode.add(new BioModelNode(new Annotation(bioModelInfo.getVersion().getAnnot()),false));
 	}
+	
+	if(bioModelInfo.getPublicationInfos().length > 0) {
+		String name = bioModelInfo.getPublicationInfos().length > 1 ? "Publications" : "Publication";
+		BioModelNode publicationsInfoNode = new BioModelNode(name, true);
+		publicationsInfoNode.setRenderHint("type","PublicationsInfo");
+		for(int i=0; i<bioModelInfo.getPublicationInfos().length; i++) {
+			BioModelNode piTitleNode = new BioModelNode(bioModelInfo.getPublicationInfos()[i], true);
+			piTitleNode.setRenderHint("type","PublicationInfoTitle");
+			publicationsInfoNode.add(piTitleNode);
+			
+//			BioModelNode piAuthorsNode = new BioModelNode(bioModelInfo.getPublicationInfos()[i], false);
+//			piAuthorsNode.setRenderHint("type","PublicationInfoAuthors");
+//			piTitleNode.add(piAuthorsNode);
+			
+			BioModelNode piCitationNode = new BioModelNode(bioModelInfo.getPublicationInfos()[i], false);
+			piCitationNode.setRenderHint("type","PublicationInfoCitation");
+			piTitleNode.add(piCitationNode);
+
+			BioModelNode piDoiNode = new BioModelNode(bioModelInfo.getPublicationInfos()[i], false);
+			piDoiNode.setRenderHint("type","PublicationInfoDoi");
+			piTitleNode.add(piDoiNode);
+		}
+		versionNode.add(publicationsInfoNode);
+	}
 
 	BioModelChildSummary bioModelChildSummary = bioModelInfo.getBioModelChildSummary();
 	if (bioModelChildSummary==null){
