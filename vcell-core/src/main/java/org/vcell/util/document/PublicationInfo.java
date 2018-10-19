@@ -1,6 +1,7 @@
 package org.vcell.util.document;
 
 import java.io.Serializable;
+import java.util.Date;
 
 import org.vcell.util.document.VCDocument.VCDocumentType;
 
@@ -12,11 +13,12 @@ public class PublicationInfo implements Serializable{
 	private String pubmedid;
 	private String doi;
 	private String url;
+	private Date pubdate;
 	private VCDocumentType vcDocumentType;
 	private User user;
 	private int theHashCode;
 	public PublicationInfo(KeyValue versionKey, String title, String[] authors, String citation, String pubmedid,
-			String doi, String url, VCDocumentType vcDocumentType, User user) {
+			String doi, String url, VCDocumentType vcDocumentType, User user,Date pubdate) {
 		super();
 		this.versionKey = versionKey;
 		this.title = title;
@@ -27,6 +29,7 @@ public class PublicationInfo implements Serializable{
 		this.url = url;
 		this.vcDocumentType = vcDocumentType;
 		this.user = user;
+		this.pubdate = pubdate;
 		theHashCode = (versionKey.toString()+(doi!=null && doi.length()>0?doi.toString():(pubmedid!=null && pubmedid.length()>0&& !pubmedid.equals("0")?pubmedid.toString():""))).hashCode();
 	}
 	public KeyValue getVersionKey() {
@@ -55,6 +58,9 @@ public class PublicationInfo implements Serializable{
 	}
 	public User getUser() {
 		return user;
+	}
+	public Date getPubDate() {
+		return pubdate;
 	}
 	public int hashCode() {
 		return theHashCode;

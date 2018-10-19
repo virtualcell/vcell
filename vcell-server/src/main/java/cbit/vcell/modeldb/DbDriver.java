@@ -17,6 +17,7 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -1404,8 +1405,9 @@ public static void addPublicationInfos(Connection con,Statement stmt,Vector<Vers
 				String docType = rset.getString(DOCTYPE_COL);
 				BigDecimal modelVersionID = rset.getBigDecimal(DOCID_COL);
 				KeyValue versionKey = new KeyValue(modelVersionID);
+				Timestamp timestamp = rset.getTimestamp("pubdate");
 				PublicationInfo publicationInfo = new PublicationInfo(versionKey, publication.title, publication.authors, publication.citation, publication.pubmedid, publication.doi, publication.url,
-					(docType.equals("bm")?VCDocumentType.BIOMODEL_DOC:VCDocumentType.MATHMODEL_DOC), new User(rset.getString(UserTable.table.userid.getUnqualifiedColName()),new KeyValue(rset.getBigDecimal("ownerref").toString())));
+					(docType.equals("bm")?VCDocumentType.BIOMODEL_DOC:VCDocumentType.MATHMODEL_DOC), new User(rset.getString(UserTable.table.userid.getUnqualifiedColName()),new KeyValue(rset.getBigDecimal("ownerref").toString())),timestamp);
 				if(mapModelIdToVersionInfo.containsKey(modelVersionID.longValue()) && mapModelIdToVersionInfo.get(modelVersionID.longValue()) instanceof VCDocumentInfo) {
 					((VCDocumentInfo)mapModelIdToVersionInfo.get(modelVersionID.longValue())).addPublicationInfo(publicationInfo);				
 				}
