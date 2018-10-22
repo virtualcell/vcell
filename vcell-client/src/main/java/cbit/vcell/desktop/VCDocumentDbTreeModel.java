@@ -122,7 +122,9 @@ protected synchronized static void initFinalTree(VCDocumentDbTreeModel vcDocumen
 	}	
 	vcDocumentDbTreeModel.sharedModelsNode.removeAllChildren();
 	vcDocumentDbTreeModel.publicModelsNode.removeAllChildren();
-//	vcDocumentDbTreeModel.publishedModelsNode.removeAllChildren();
+	if(vcDocumentDbTreeModel.publishedModelsNode != null) {
+		vcDocumentDbTreeModel.publishedModelsNode.removeAllChildren();
+	}
 	boolean bTutorial = vcDocumentDbTreeModel.tutorialModelsNode != null;
 	boolean bEducation = vcDocumentDbTreeModel.educationModelsNode != null;
 	if(bTutorial){vcDocumentDbTreeModel.tutorialModelsNode.removeAllChildren();}
