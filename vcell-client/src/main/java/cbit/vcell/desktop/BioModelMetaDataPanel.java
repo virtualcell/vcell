@@ -11,11 +11,19 @@
 package cbit.vcell.desktop;
 
 import java.awt.BorderLayout;
+import java.awt.Desktop;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 
 import javax.swing.JScrollPane;
 import javax.swing.JTree;
+import javax.swing.tree.DefaultMutableTreeNode;
 
 import org.vcell.util.document.BioModelInfo;
+import org.vcell.util.document.PublicationInfo;
 import org.vcell.util.gui.GuiUtils;
 
 import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
@@ -29,8 +37,10 @@ public class BioModelMetaDataPanel extends DocumentEditorSubPanel {
 
 	private class IvjEventHandler implements java.beans.PropertyChangeListener {
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
-			if (evt.getSource() == BioModelMetaDataPanel.this && (evt.getPropertyName().equals("bioModelInfo"))) 
-				connEtoM1(evt);
+			if (evt.getSource() == BioModelMetaDataPanel.this && (evt.getPropertyName().equals("bioModelInfo"))) {
+				getbioModelInfoTreeModel().setBioModelInfo(BioModelMetaDataPanel.this.getBioModelInfo());
+				GuiUtils.treeExpandAllRows(getJTree1());
+			}
 		};
 	}
 	private JTree ivjJTree1 = null;
@@ -44,58 +54,6 @@ public class BioModelMetaDataPanel extends DocumentEditorSubPanel {
 public BioModelMetaDataPanel() {
 	super();
 	initialize();
-}
-
-/**
- * connEtoM1:  (BioModelMetaDataPanel.bioModelInfo --> bioModelInfoTreeModel.bioModelInfo)
- * @param arg1 java.beans.PropertyChangeEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM1(java.beans.PropertyChangeEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		getbioModelInfoTreeModel().setBioModelInfo(this.getBioModelInfo());
-		GuiUtils.treeExpandAllRows(getJTree1());
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-/**
- * connPtoP2SetTarget:  (bioModelMetaDataTreeModel.this <--> JTree1.model)
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connPtoP2SetTarget() {
-	/* Set the target from the source */
-	try {
-		getJTree1().setModel(getbioModelInfoTreeModel());
-		// user code begin {1}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-/**
- * connPtoP3SetTarget:  (bioModelMetaDataCellRenderer.this <--> JTree1.cellRenderer)
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connPtoP3SetTarget() {
-	/* Set the target from the source */
-	try {
-		getJTree1().setCellRenderer(getbioModelInfoCellRenderer());
-		// user code begin {1}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
 }
 
 /**
@@ -162,12 +120,27 @@ private JTree getJTree1() {
 			ivjJTree1.setEnabled(true);
 			ivjJTree1.setRootVisible(false);
 			ivjJTree1.setRequestFocusEnabled(false);
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
+			ivjJTree1.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				if(e.getClickCount() == 1) {
+					DefaultMutableTreeNode value = (DefaultMutableTreeNode)ivjJTree1.getLastSelectedPathComponent();
+					if(value instanceof BioModelNode) {
+						BioModelNode node = (BioModelNode) value;
+						if(node.getUserObject() instanceof PublicationInfo && "PublicationInfoDoi".equals(node.getRenderHint("type"))) {
+							PublicationInfo info = (PublicationInfo)node.getUserObject();
+							try {
+							Desktop.getDesktop().browse(new URI("https://doi.org/" + info.getDoi()));
+							} catch (URISyntaxException | IOException ex) {
+								handleException(ex);
+							}
+						}
+					}
+				}
+			}
+		});
+		} catch (java.lang.Throwable ex) {
+			handleException(ex);
 		}
 	}
 	return ivjJTree1;
@@ -177,7 +150,6 @@ private JTree getJTree1() {
  * @param exception java.lang.Throwable
  */
 private void handleException(java.lang.Throwable exception) {
-
 	/* Uncomment the following lines to print uncaught exceptions to stdout */
 	// System.out.println("--------- UNCAUGHT EXCEPTION ---------");
 	// exception.printStackTrace(System.out);
@@ -186,13 +158,10 @@ private void handleException(java.lang.Throwable exception) {
  * Initializes connections
  * @exception java.lang.Exception The exception description.
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void initConnections() throws java.lang.Exception {
-	// user code begin {1}
-	// user code end
 	this.addPropertyChangeListener(ivjEventHandler);
-	connPtoP2SetTarget();
-	connPtoP3SetTarget();
+	getJTree1().setModel(getbioModelInfoTreeModel());
+	getJTree1().setCellRenderer(getbioModelInfoCellRenderer());
 }
 /**
  * Initialize the class.

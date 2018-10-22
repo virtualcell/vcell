@@ -145,21 +145,6 @@ public java.awt.Component getTreeCellRendererComponent(JTree tree, Object value,
 			component.setText("<html>" + text + "</html>");
 			setIcon(fieldTextIcon);
 						
-//		}else if (node.getUserObject() instanceof PublicationInfo && "PublicationInfoAuthors".equals(node.getRenderHint("type"))) {
-//			PublicationInfo info = (PublicationInfo)node.getUserObject();
-//			component.setToolTipText("Authors");
-//			String text = "";
-//			int count = 0;
-//			for(String author : info.getAuthors()) {
-//				if(count > 0) {
-//					text += ", ";
-//				}
-//				text += author;
-//				count++;
-//			}
-//			component.setText("<html>" + text + "</html>");
-//			setIcon(null);
-						
 		}else if (node.getUserObject() instanceof PublicationInfo && "PublicationInfoCitation".equals(node.getRenderHint("type"))) {
 			PublicationInfo info = (PublicationInfo)node.getUserObject();
 			component.setToolTipText("Citation");
@@ -175,37 +160,9 @@ public java.awt.Component getTreeCellRendererComponent(JTree tree, Object value,
 			text += info.getUrl();
 			text = "DOI: <a href=\"" + "https://doi.org/" + info.getDoi() + "\">" + info.getDoi() + "</a>";
 			component.setText("<html>" + text + "</html>");
-			
-//			addMouseListener(new MouseAdapter() {
-//				@Override
-//				public void mouseClicked(MouseEvent e) {
-//					try {
-//						Desktop.getDesktop().browse(new URI("http://www.google.com/webhp?nomo=1&hl=fr"));
-//					} catch (URISyntaxException | IOException ex) {
-//						//It looks like there's a problem
-//					}
-//				}
-//			});
-			
-//			component.addMouseListener(new MouseListener() {				
-//				public void mouseReleased(MouseEvent e) {					
-//				}				
-//				public void mousePressed(MouseEvent e) {					
-//				}				
-//				public void mouseExited(MouseEvent e) {
-//				}				
-//				public void mouseEntered(MouseEvent e) {
-//				}				
-//				public void mouseClicked(MouseEvent e) {
-//					if (e.getClickCount() == 2) {
-//						DialogUtils.browserLauncher(component, "http://www.google.com/webhp?nomo=1&hl=fr", "failed to open " + "http://www.google.com/webhp?nomo=1&hl=fr");
-//					}
-//				}
-//			});
-			
 			setIcon(null);
-						
-		} else{
+			
+		} else {
 			setComponentProperties(component,node.getUserObject());
 			
 		}
