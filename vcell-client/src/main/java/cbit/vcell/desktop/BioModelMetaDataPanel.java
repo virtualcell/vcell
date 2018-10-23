@@ -127,13 +127,16 @@ private JTree getJTree1() {
 					DefaultMutableTreeNode value = (DefaultMutableTreeNode)ivjJTree1.getLastSelectedPathComponent();
 					if(value instanceof BioModelNode) {
 						BioModelNode node = (BioModelNode) value;
-						if(node.getUserObject() instanceof PublicationInfo && "PublicationInfoDoi".equals(node.getRenderHint("type"))) {
-							PublicationInfo info = (PublicationInfo)node.getUserObject();
-							try {
-							Desktop.getDesktop().browse(new URI("https://doi.org/" + info.getDoi()));
-							} catch (URISyntaxException | IOException ex) {
-								handleException(ex);
+						try {
+							if(node.getUserObject() instanceof PublicationInfo && "PublicationInfoDoi".equals(node.getRenderHint("type"))) {
+								PublicationInfo info = (PublicationInfo)node.getUserObject();
+								Desktop.getDesktop().browse(new URI("https://doi.org/" + info.getDoi()));
+							} else if (node.getUserObject() instanceof PublicationInfo && "PublicationInfoUrl".equals(node.getRenderHint("type"))) {
+								PublicationInfo info = (PublicationInfo)node.getUserObject();
+								Desktop.getDesktop().browse(new URI(info.getUrl()));
 							}
+						} catch (URISyntaxException | IOException ex) {
+							handleException(ex);
 						}
 					}
 				}

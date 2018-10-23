@@ -10,6 +10,7 @@
 
 package cbit.vcell.desktop;
 
+import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Desktop;
 import java.awt.Dimension;
@@ -156,12 +157,17 @@ public java.awt.Component getTreeCellRendererComponent(JTree tree, Object value,
 		}else if (node.getUserObject() instanceof PublicationInfo && "PublicationInfoDoi".equals(node.getRenderHint("type"))) {
 			PublicationInfo info = (PublicationInfo)node.getUserObject();
 			component.setToolTipText("Doi");
-			String text = "";
-			text += info.getUrl();
-			text = "DOI: <a href=\"" + "https://doi.org/" + info.getDoi() + "\">" + info.getDoi() + "</a>";
+			String text = "<a href=\"" + "https://doi.org/" + info.getDoi() + "\">" + "DOI: " + info.getDoi() + "</a>";
 			component.setText("<html>" + text + "</html>");
 			setIcon(null);
 			
+		}else if (node.getUserObject() instanceof PublicationInfo && "PublicationInfoUrl".equals(node.getRenderHint("type"))) {
+			PublicationInfo info = (PublicationInfo)node.getUserObject();
+			component.setToolTipText("Url");
+			String text = "<a href=\"" + info.getUrl() + "\">" + "PubMed Link" + "</a>";
+			component.setText("<html>" + text + "</html>");
+			setIcon(null);
+
 		} else {
 			setComponentProperties(component,node.getUserObject());
 			
