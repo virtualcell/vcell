@@ -59,9 +59,9 @@ host=$1
 port=$2
 checkType=$3
 if [ "$debug" == "true" ]; then
-	curlcmd="curl"
+	curlcmd="curl --insecure"
 else
-	curlcmd="curl -s"
+	curlcmd="curl -s --insecure"
 fi
 
 simStatus=`$curlcmd https://$host:$port/health?check=$checkType`
@@ -92,6 +92,14 @@ if [ "$elapsedTime" == "null" ]; then
 fi
 if [ "$message" == "null" ]; then
 	message="no message"
+fi
+
+if [ "$checkType" == "login" ]; then
+        if [ "$statusCode" != 0 ]; then
+                find /tmp/failstamp -cmin +120 -exec sudo docker service update --force --detach=false vcellrel_sched \;
+		find /tmp/failstamp -cmin +120 -exec sudo docker service update --force --detach=false vcellrel_db \;
+		find /tmp/failstamp -cmin +120 -exec touch /tmp/failstamp \;
+        fi
 fi
 
 
