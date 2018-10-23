@@ -47,10 +47,14 @@ Let conditional code run for awhile until the database and services get synchron
 
 **Find slurm sim logs**  
 login vcell@vcell-service  
-sacct --format="JobID,JobName%30,State,Submit,start,User,ExitCode" | grep -i {VCellSimID}  
---e.g. sacct --format="JobID,JobName%30,State,Submit,Start,User,ExitCode" | grep -i 139363583  
+sacct --user=vcell --format="JobID,JobName%30,State,Submit,start,end,ExitCode" -S 2018-09-01 | grep -i -e vcellSimID  
+--e.g. sacct --user=vcell --format="JobID,JobName%30,State,Submit,start,end,ExitCode" -S 2018-09-01 | grep -i -e 140980636 -e 140980969  
+ls -U -1 /share/apps/vcell3/htclogs/V\_[REL,ALPHA]\_{vcellSimID*,...}  
+--e.g. ls -U -1 /share/apps/vcell3/htclogs/V\_REL\_{140980636*,140980969*,140981229^,140983532*,140984604*,140981909*,140983177*}  
 less /share/apps/vcell3/htclogs/{JobName}.slurm.log  //JobName from sacct query
---e.g less /share/apps/vcell3/htclogs/V_ALPHA_139363583_0_0.slurm.log  
+--e.g less /share/apps/vcell3/htclogs/V\_ALPHA\_139363583\_0\_0.slurm.log  
+grep 'job running on host'  /share/apps/vcell3/htclogs/V\_[REL,ALPHA]\_{vcellSimID*,...}.slurm.log  
+--e.g.grep 'job running on host'  /share/apps/vcell3/htclogs/V\_REL\_{140980636*,140980969*,140981229*,140983532*,140984604*,140981909*,140983177*}.slurm.log  
 -----------------------------------------------------  
 **Find where simjob xxx.slurm.submit:TMPDIR originates in VCell deployment process**  
 select 'vcell' project in eclipse, Search->File..., for "using TMPDIR=$TMPDIR" (no double quotes), in *.java, whole workspace  
@@ -152,7 +156,7 @@ sudo docker container inspect dd29d35fba3e94fa476020f4f2c3de860f745fc3be32f76107
 --List slurm nodes, login vcell-service as vcell  
 ----abc=$(sinfo -N -h -p vcell2 --Format='nodelist' | xargs)  
 --Get info for VCell simid, login vcell-service as vcell  
-----sacct --format="JobID,JobName%30,State,Submit,start,User,ExitCode" | grep -i 139363583  
+----sacct --user=vcell --format="JobID,JobName%30,State,Submit,start,end,ExitCode" -S 2018-09-01 | grep -i 139363583  
 
 **command line interface in python ... (similar to old vcell console)**  
 -----login build machine (vcell-node1), run /opt/build/vcell/docker/swarm/cli.py  
