@@ -11,12 +11,14 @@
 package cbit.vcell.modeldb;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.math.BigDecimal;
 import java.net.URL;
 import java.nio.file.Files;
@@ -1234,7 +1236,7 @@ public class DBBackupAndClean {
 					for(File file:files){
 						if(file.exists()){
 							long fileSize = file.length();
-							if(file.delete()){
+							if(deleteFileAndLink(file)){
 								delCount++;
 								totalSize+= fileSize;
 	//							System.out.println("deleted "+file.getAbsolutePath());
@@ -1264,7 +1266,42 @@ public class DBBackupAndClean {
 			}
 		}		
 	}
+	
+	public static boolean deleteFileAndLink(File f) throws Exception{
+		ProcessBuilder pb = new ProcessBuilder("readlink","-m",f.getAbsolutePath());
+		pb.redirectErrorStream(true);// out and err in one stream
 		
+//			System.out.println("\n--cmd begin--");
+//			Arrays.stream(pb.command().toArray()).map(s->s+" ").forEach(System.out::print);
+//			System.out.println("\n--cmd end--");
+
+		final Process p = pb.start();
+		BufferedReader br = new BufferedReader(new InputStreamReader(p.getInputStream()));
+		String line;
+		StringBuffer sb = new StringBuffer();
+		while((line=br.readLine())!=null){
+		   sb.append(line);
+		}
+		p.waitFor();
+		if(p.exitValue() == 0) {
+			File linkFile = null;
+			linkFile = new File(sb.toString().trim());
+			if(!linkFile.exists()) {
+				throw new Exception("broken link:'"+linkFile.getAbsolutePath()+"'");
+			}else {
+				if(linkFile.equals(f)) {
+					System.out.println("not link:'"+f.getAbsolutePath()+"'");
+					return true;//f.delete();
+				}else {
+					System.out.println("is link:'"+f.getAbsolutePath()+"' -> '"+linkFile.getAbsolutePath()+"'");
+					//f.delete();//delete link
+					return true;//linkFile.delete();//delete actual file
+				}
+			}
+		}else {
+			throw new Exception("process error:'"+f.getAbsolutePath()+"' exit code="+p.exitValue()+" cmd output='"+sb.toString()+"'");
+		}
+	}
 	private static void clean(String[] args) {
 		DBBackupHelper dbBackupHelper = new DBBackupHelper(args);
 		
