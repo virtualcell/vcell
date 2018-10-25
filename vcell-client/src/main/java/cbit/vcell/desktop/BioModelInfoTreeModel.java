@@ -10,6 +10,9 @@
 
 package cbit.vcell.desktop;
 
+import javax.swing.JTree;
+import javax.swing.tree.TreePath;
+
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.BioModelChildSummary;
 import org.vcell.util.document.BioModelChildSummary.MathType;
@@ -23,6 +26,8 @@ import org.vcell.util.document.BioModelInfo;
 public class BioModelInfoTreeModel extends javax.swing.tree.DefaultTreeModel {
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 	private BioModelInfo fieldBioModelInfo = null;
+	private BioModelNode publicationsInfoNode = null;
+	private BioModelNode applicationsNode = null;
 /**
  * BioModelDbTreeModel constructor comment.
  * @param root javax.swing.tree.TreeNode
@@ -37,6 +42,12 @@ public synchronized void addPropertyChangeListener(java.beans.PropertyChangeList
 	getPropertyChange().addPropertyChangeListener(listener);
 }
 
+public BioModelNode getPublicationsNode() {
+	return publicationsInfoNode;
+}
+public BioModelNode getApplicationsNode() {
+	return applicationsNode;
+}
 /**
  * Insert the method's description here.
  * Creation date: (11/28/00 2:41:43 PM)
@@ -44,17 +55,20 @@ public synchronized void addPropertyChangeListener(java.beans.PropertyChangeList
  * @param bioModelInfo cbit.vcell.biomodel.BioModelInfo
  */
 private BioModelNode createVersionSubTree(BioModelInfo bioModelInfo) throws DataAccessException {
-	BioModelNode versionNode = new BioModelNode(bioModelInfo,true);
+	BioModelNode versionNode = new BioModelNode(bioModelInfo, true);
+	publicationsInfoNode = null;
+	applicationsNode = null;
 	//
 	// add children of the BioModel to the node passed in
 	//
-	if (bioModelInfo.getVersion().getAnnot()!=null && bioModelInfo.getVersion().getAnnot().trim().length()>0){
-		versionNode.add(new BioModelNode(new Annotation(bioModelInfo.getVersion().getAnnot()),false));
+	if (bioModelInfo.getVersion().getAnnot() != null && bioModelInfo.getVersion().getAnnot().trim().length() > 0) {
+		String annotation = bioModelInfo.getVersion().getAnnot();
+		versionNode.add(new BioModelNode(new Annotation(annotation), false));
 	}
 	
 	if(bioModelInfo.getPublicationInfos().length > 0) {
 		String name = bioModelInfo.getPublicationInfos().length > 1 ? "Publications" : "Publication";
-		BioModelNode publicationsInfoNode = new BioModelNode(name, true);
+		publicationsInfoNode = new BioModelNode(name, true);
 		publicationsInfoNode.setRenderHint("type","PublicationsInfo");
 		
 		for(int i=0; i<bioModelInfo.getPublicationInfos().length; i++) {
@@ -80,25 +94,35 @@ private BioModelNode createVersionSubTree(BioModelInfo bioModelInfo) throws Data
 	}
 
 	BioModelChildSummary bioModelChildSummary = bioModelInfo.getBioModelChildSummary();
-	if (bioModelChildSummary==null){
+	if (bioModelChildSummary==null) {
 		versionNode.add(new BioModelNode("SUMMARY INFORMATION NOT AVAILABLE",false));
-	}else{
+	} else {
 		String scNames[] = bioModelChildSummary.getSimulationContextNames();
 		String scAnnot[] = bioModelChildSummary.getSimulationContextAnnotations();
 		int geomDims[] = bioModelChildSummary.getGeometryDimensions();
 		String geomNames[] = bioModelChildSummary.getGeometryNames();
 		MathType appTypes[] = bioModelChildSummary.getAppTypes();
- 		for (int i = 0; i < scNames.length; i++){
+		
+		String name = scNames.length > 1 ? "Applications" : "Application";
+		applicationsNode = new BioModelNode(name, true);
+		applicationsNode.setRenderHint("type","Applications");
+
+ 		for (int i = 0; i < scNames.length; i++) {
 			BioModelNode scNode = new BioModelNode(scNames[i],true);
 			scNode.setRenderHint("type","SimulationContext");
-			versionNode.add(scNode);
+			scNode.setRenderHint("appType",appTypes[i].getDescription());	// need these 2 hints to decide on the icon
+			scNode.setRenderHint("dimension",geomDims[i] + "");
+			applicationsNode.add(scNode);
+			
 			//add application type
 			BioModelNode appTypeNode = new BioModelNode(appTypes[i],false);
 			appTypeNode.setRenderHint("type","AppType");
 			scNode.add(appTypeNode);
+			
 			if (scAnnot[i]!=null && scAnnot[i].trim().length()>0){
 				scNode.add(new BioModelNode(new Annotation(scAnnot[i]),false));
 			}
+			
 			BioModelNode geometryNode = null;
 			if (geomDims[i]>0){
 				geometryNode = new BioModelNode((geomNames[i]+" ("+geomDims[i]+"D)"),false);
@@ -122,6 +146,7 @@ private BioModelNode createVersionSubTree(BioModelInfo bioModelInfo) throws Data
 				}
 			}
 		}
+ 		versionNode.add(applicationsNode);
 	}
 	return versionNode;
 }
@@ -159,13 +184,13 @@ public synchronized boolean hasListeners(java.lang.String propertyName) {
  * Creation date: (2/14/01 3:50:24 PM)
  */
 private void refreshTree() {
-	if (getBioModelInfo()!=null){
+	if (getBioModelInfo()!=null) {
 		try {
 			setRoot(createVersionSubTree(getBioModelInfo()));
-		}catch (DataAccessException e){
+		}catch (DataAccessException e) {
 			e.printStackTrace(System.out);
 		}
-	}else{
+	} else {
 		setRoot(new BioModelNode("empty"));
 	}
 }

@@ -30,8 +30,10 @@ import javax.swing.JLabel;
  */
 import javax.swing.JTree;
 
+import org.vcell.util.document.BioModelChildSummary.MathType;
 import org.vcell.util.document.PublicationInfo;
 import org.vcell.util.gui.DialogUtils;
+import org.vcell.util.gui.VCellIcons;
 
 import cbit.vcell.client.desktop.biomodel.BioModelPropertiesPanel;
  
@@ -98,14 +100,39 @@ public java.awt.Component getTreeCellRendererComponent(JTree tree, Object value,
 		//
 		if (node.getUserObject() instanceof String && "Geometry".equals(node.getRenderHint("type"))) {
 			String label = (String)node.getUserObject();
-			component.setToolTipText("alabala");
+			component.setToolTipText("Geometry");
 			component.setText(label);
 			setIcon(fieldGeometryIcon);
+			
+		}else if (node.getUserObject() instanceof String && "Applications".equals(node.getRenderHint("type"))) {
+			String label = (String)node.getUserObject();
+			component.setToolTipText("Applications List");
+			component.setText(label);
+			setIcon(fieldTextIcon);
+						
 		}else if (node.getUserObject() instanceof String && "SimulationContext".equals(node.getRenderHint("type"))) {
 			String label = (String)node.getUserObject();
 			component.setToolTipText("Application");
 			component.setText(label);
-			setIcon(fieldSimulationContextIcon);
+			
+			if(MathType.RuleBased.getDescription().equals(node.getRenderHint("appType"))) {
+				setIcon(VCellIcons.appRbmNonspIcon);
+			} else if(MathType.Stochastic.getDescription().equals(node.getRenderHint("appType"))) {
+				if("0".equals(node.getRenderHint("dimension"))) {
+					setIcon(VCellIcons.appStoNonspIcon);
+				} else {
+					setIcon(VCellIcons.appStoSpatialIcon);
+				}
+			} else if(MathType.Deterministic.getDescription().equals(node.getRenderHint("appType"))) {
+				if("0".equals(node.getRenderHint("dimension"))) {
+					setIcon(VCellIcons.appDetNonspIcon);
+				} else {
+					setIcon(VCellIcons.appDetSpatialIcon);
+				}
+			} else {
+				setIcon(fieldSimulationContextIcon);	// don't know what it is, use old "generic" icon
+			}
+			
 		}else if (node.getUserObject() instanceof String && "Simulation".equals(node.getRenderHint("type"))) {
 			String label = (String)node.getUserObject();
 			component.setToolTipText("Simulation");
