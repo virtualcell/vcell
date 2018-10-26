@@ -32,6 +32,7 @@ public class LoginManager {
 	public LoginManager(){
 	}
 	
+	public static final String LOGIN_PANEL_TITLE = "Virtual Cell login";
 	/**
 	 * @wbp.parser.entryPoint
 	 */
@@ -39,7 +40,7 @@ public class LoginManager {
 		loginPanel = new LoginPanel(loginDelegate);
 		loginPanel.setLoggedInUser(documentWindowManager.getUser());
 		
-		childWindow = ChildWindowManager.findChildWindowManager(requester).addChildWindow(loginPanel, loginPanel, "VCell Login");
+		childWindow = ChildWindowManager.findChildWindowManager(requester).addChildWindow(loginPanel, loginPanel, LOGIN_PANEL_TITLE);
 		childWindow.addChildWindowListener(new ChildWindowListener() {
 			
 			public void closing(ChildWindow childWindow) {
@@ -47,7 +48,7 @@ public class LoginManager {
 			}
 		});
 		childWindow.setIsCenteredOnParent();
-		childWindow.setTitle("Virtual Cell login");
+		childWindow.setTitle(LOGIN_PANEL_TITLE);
 		childWindow.pack();
 		childWindow.showModal();
 	}

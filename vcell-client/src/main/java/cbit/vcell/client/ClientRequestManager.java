@@ -75,6 +75,7 @@ import org.jlibsedml.ArchiveComponents;
 import org.jlibsedml.Libsedml;
 import org.jlibsedml.SEDMLDocument;
 import org.jlibsedml.SedML;
+import org.vcell.client.logicalwindow.LWTitledDialog;
 import org.vcell.model.bngl.ASTModel;
 import org.vcell.model.bngl.BngUnitSystem;
 import org.vcell.model.bngl.BngUnitSystem.BngUnitOrigin;
@@ -737,7 +738,18 @@ public XmlTreeDiff compareApplications(BioModel bioModel, String appName1, Strin
  * Creation date: (6/16/2004 11:07:33 AM)
  * @param clientServerInfo cbit.vcell.client.server.ClientServerInfo
  */
-public void connectAs(final String user,  final DigestedPassword digestedPassword, final TopLevelWindowManager requester) {
+public void connectAs(final String user,  final DigestedPassword digestedPassword, final TopLevelWindowManager topLevelWindowManager) {
+	Component requester = null;
+	Window[] windows = Window.getWindows();
+	for (int i = 0; i < windows.length; i++) {
+		System.out.println(windows[i]);
+		if(windows[i] instanceof LWTitledDialog) {
+			if(((LWTitledDialog)windows[i]).getTitle().equals(LoginManager.LOGIN_PANEL_TITLE)) {
+				requester = windows[i];
+				break;
+			}
+		}
+	}
 	String confirm = PopupGenerator.showWarningDialog(requester, getUserPreferences(), UserMessage.warn_changeUser,null);
 	if (confirm.equals(UserMessage.OPTION_CANCEL)){
 		return;
@@ -773,7 +785,7 @@ public void connectAs(final String user,  final DigestedPassword digestedPasswor
 			// ok, connect as a different user
 			// asynch & nothing to do on Swing queue (updates handled by events)
 			String taskName = "Connecting as " + user;
-			AsynchClientTask[] newTasks = newDocument(requester, new VCDocument.DocumentCreationInfo(VCDocumentType.BIOMODEL_DOC, 0));
+			AsynchClientTask[] newTasks = newDocument(topLevelWindowManager, new VCDocument.DocumentCreationInfo(VCDocumentType.BIOMODEL_DOC, 0));
 			AsynchClientTask task0 = new AsynchClientTask("preparing", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
 				@Override
 				public void run(Hashtable<String, Object> hashTable) throws Exception {
@@ -788,7 +800,7 @@ public void connectAs(final String user,  final DigestedPassword digestedPasswor
 			AsynchClientTask task1 = new AsynchClientTask(taskName, AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 				@Override
 				public void run(Hashtable<String, Object> hashTable) throws Exception {
-					getClientServerManager().connectAs(new VCellGuiInteractiveContext(requester), user, digestedPassword);
+					getClientServerManager().connectAs(new VCellGuiInteractiveContext(topLevelWindowManager), user, digestedPassword);
 				}
 			};
 			AsynchClientTask task2 = new AsynchClientTask(taskName, AsynchClientTask.TASKTYPE_SWING_BLOCKING, false, false) {
@@ -811,9 +823,9 @@ public void connectAs(final String user,  final DigestedPassword digestedPasswor
 			taskArray[taskArray.length - 1] = task2;
 
 			Hashtable<String, Object> hash = new Hashtable<String, Object>();
-			hash.put("guiParent", requester.getComponent());
+			hash.put("guiParent", requester);
 			hash.put("requestManager", this);
-			ClientTaskDispatcher.dispatch(requester.getComponent(), new Hashtable<String, Object>(), taskArray, false, false, null);
+			ClientTaskDispatcher.dispatch(requester, new Hashtable<String, Object>(), taskArray, false, false, null);
 		}
 	}
 }
