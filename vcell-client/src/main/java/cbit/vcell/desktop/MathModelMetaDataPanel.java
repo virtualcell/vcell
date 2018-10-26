@@ -11,12 +11,20 @@
 package cbit.vcell.desktop;
 
 import java.awt.BorderLayout;
+import java.awt.Desktop;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 
 import javax.swing.JScrollPane;
 import javax.swing.JTree;
 import javax.swing.ToolTipManager;
+import javax.swing.tree.DefaultMutableTreeNode;
 
 import org.vcell.util.document.MathModelInfo;
+import org.vcell.util.document.PublicationInfo;
 import org.vcell.util.gui.GuiUtils;
 
 import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
@@ -62,11 +70,29 @@ private JTree getJTree1() {
 			ivjJTree1.setEnabled(true);
 			ivjJTree1.setRootVisible(false);
 			ivjJTree1.setRequestFocusEnabled(false);
-			// user code begin {1}
-			// user code end
+			ivjJTree1.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				if(e.getClickCount() == 1) {
+					DefaultMutableTreeNode value = (DefaultMutableTreeNode)ivjJTree1.getLastSelectedPathComponent();
+					if(value instanceof BioModelNode) {
+						BioModelNode node = (BioModelNode) value;
+						try {
+							if(node.getUserObject() instanceof PublicationInfo && "PublicationInfoDoi".equals(node.getRenderHint("type"))) {
+								PublicationInfo info = (PublicationInfo)node.getUserObject();
+								Desktop.getDesktop().browse(new URI("https://doi.org/" + info.getDoi()));
+							} else if (node.getUserObject() instanceof PublicationInfo && "PublicationInfoUrl".equals(node.getRenderHint("type"))) {
+								PublicationInfo info = (PublicationInfo)node.getUserObject();
+								Desktop.getDesktop().browse(new URI(info.getUrl()));
+							}
+						} catch (URISyntaxException | IOException ex) {
+							handleException(ex);
+						}
+					}
+				}
+			}
+		});
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	}

@@ -52,8 +52,40 @@ private BioModelNode createVersionSubTree(MathModelInfo mathModelInfo) throws Da
 		versionNode.add(new BioModelNode(new Annotation(mathModelInfo.getVersion().getAnnot()),false));
 	}
 	
-	MathModelChildSummary mathModelChildSummary = mathModelInfo.getMathModelChildSummary();
+	if(mathModelInfo.getPublicationInfos().length > 0) {
+		String name = mathModelInfo.getPublicationInfos().length > 1 ? "Publications" : "Publication";
+		BioModelNode publicationsInfoNode = new BioModelNode(name, true);
+		publicationsInfoNode.setRenderHint("type","PublicationsInfo");
+		
+		for(int i=0; i<mathModelInfo.getPublicationInfos().length; i++) {
+			BioModelNode piTitleNode = new BioModelNode(mathModelInfo.getPublicationInfos()[i], true);
+			piTitleNode.setRenderHint("type","PublicationInfoTitle");
+			publicationsInfoNode.add(piTitleNode);
+			
+			BioModelNode piAuthorsNode = new BioModelNode(mathModelInfo.getPublicationInfos()[i], true);
+			piAuthorsNode.setRenderHint("type","PublicationInfoAuthors");
+			piTitleNode.add(piAuthorsNode);
+			
+			BioModelNode piCitationNode = new BioModelNode(mathModelInfo.getPublicationInfos()[i], false);
+			piCitationNode.setRenderHint("type","PublicationInfoCitation");
+			piTitleNode.add(piCitationNode);
 
+			BioModelNode piDoiNode = new BioModelNode(mathModelInfo.getPublicationInfos()[i], false);
+			piDoiNode.setRenderHint("type","PublicationInfoDoi");
+			piTitleNode.add(piDoiNode);
+
+			if(mathModelInfo.getPublicationInfos()[i].getUrl() != null && !mathModelInfo.getPublicationInfos()[i].getUrl().isEmpty()) {
+				if(mathModelInfo.getPublicationInfos()[i].getUrl().contains("pubmed") || mathModelInfo.getPublicationInfos()[i].getUrl().contains("PubMed")) {
+					BioModelNode piUrlNode = new BioModelNode(mathModelInfo.getPublicationInfos()[i], false);
+					piUrlNode.setRenderHint("type","PublicationInfoUrl");
+					piTitleNode.add(piUrlNode);
+				}
+			}
+		}
+		versionNode.add(publicationsInfoNode);
+	}	
+	
+	MathModelChildSummary mathModelChildSummary = mathModelInfo.getMathModelChildSummary();
 	if (mathModelChildSummary==null){
 		versionNode.add(new BioModelNode("SUMMARY INFORMATION NOT AVAILABLE",false));
 	}else{
