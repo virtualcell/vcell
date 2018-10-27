@@ -614,10 +614,21 @@ public synchronized void trimRows(int maxRowCount) {
 		}
 	}
 	System.out.println("final tolerance="+TOLERANCE+" final threshold="+threshold+", "+linkedList.size()+" remaining (keepAtMost="+maxRowCount+")");
-	if (linkedList.size()>maxRowCount){
-		throw new RuntimeException("sample tolerance "+TOLERANCE+" exceeded while removing time points, "+linkedList.size()+" remaining (keepAtMost="+maxRowCount+")");
+	ArrayList<double[]> values = new ArrayList<double[]>();
+	if (linkedList.size()>maxRowCount){//just sample list evenly in this case
+		values.add(fieldValues.get(0));//Add first value
+		if(maxRowCount > 2) {//Add values between first and last
+			for (int i = 1; i < (maxRowCount-1); i++) {
+				values.add(fieldValues.get((int) (i*fieldValues.size()/(maxRowCount-1))));
+			}
+		}
+		if(maxRowCount > 1) {//Add last value
+			values.add(fieldValues.get(fieldValues.size()-1));
+		}
+//		throw new RuntimeException("sample tolerance "+TOLERANCE+" exceeded while removing time points, "+linkedList.size()+" remaining (keepAtMost="+maxRowCount+")");
+	}else {
+		values.addAll(linkedList);
 	}
-	ArrayList<double[]> values = new ArrayList<double[]>(linkedList);
 	fieldValues = values;
 }
 
