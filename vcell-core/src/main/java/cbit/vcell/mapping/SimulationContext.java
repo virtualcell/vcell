@@ -686,16 +686,18 @@ public Simulation addNewSimulation(String simNamePrefix, MathMappingCallback cal
 	//
 	Simulation sims[] = bioModel.getSimulations();
 	String newSimName = null;
-	for (int i = 0; newSimName==null && i < 100; i++){
+	for (int i = 0; newSimName==null && i < (sims.length+1); i++){
 		String proposedName = simNamePrefix+i;
 		boolean bFound = false;
 		for (int j = 0; !bFound && j < sims.length; j++){
 			if (sims[j].getName().equals(proposedName)){
 				bFound = true;
+				break;
 			}
 		}
 		if (!bFound){
 			newSimName = proposedName;
+			break;
 		}
 	}
 	if (newSimName==null){
