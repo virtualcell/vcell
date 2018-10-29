@@ -62,8 +62,12 @@ private BioModelNode createVersionSubTree(BioModelInfo bioModelInfo) throws Data
 	// add children of the BioModel to the node passed in
 	//
 	if (bioModelInfo.getVersion().getAnnot() != null && bioModelInfo.getVersion().getAnnot().trim().length() > 0) {
+		BioModelNode provenanceNode = new BioModelNode("Provenance", true);
+		provenanceNode.setRenderHint("type","Provenance");
+		versionNode.add(provenanceNode);
+		
 		String annotation = bioModelInfo.getVersion().getAnnot();
-		versionNode.add(new BioModelNode(new Annotation(annotation), false));
+		provenanceNode.add(new BioModelNode(new Annotation(annotation), false));
 	}
 	
 	if(bioModelInfo.getPublicationInfos().length > 0) {
@@ -76,7 +80,7 @@ private BioModelNode createVersionSubTree(BioModelInfo bioModelInfo) throws Data
 			piTitleNode.setRenderHint("type","PublicationInfoTitle");
 			publicationsInfoNode.add(piTitleNode);
 			
-			BioModelNode piAuthorsNode = new BioModelNode(bioModelInfo.getPublicationInfos()[i], true);
+			BioModelNode piAuthorsNode = new BioModelNode(bioModelInfo.getPublicationInfos()[i], false);
 			piAuthorsNode.setRenderHint("type","PublicationInfoAuthors");
 			piTitleNode.add(piAuthorsNode);
 

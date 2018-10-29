@@ -76,17 +76,23 @@ public java.awt.Component getTreeCellRendererComponent(JTree tree, Object value,
 			component.setText(label);
 			setIcon(fieldAppTypeIcon);
 
+		}else if (node.getUserObject() instanceof String && "Provenance".equals(node.getRenderHint("type"))) {
+			String label = (String)node.getUserObject();
+			component.setToolTipText("Provenance");
+			component.setText("<html><b>" + label + "</b></html>");
+			setIcon(fieldTextIcon);
+
 		}else if (node.getUserObject() instanceof Annotation) {
 			String label = ((Annotation)node.getUserObject()).toString();
-			component.setToolTipText("Annotation");
+			component.setToolTipText("Version Annotation");
 			component.setText(label);
-			setIcon(fieldTextIcon);
+			setIcon(null);
 			
 			// ------------------------------------------------------
 		}else if (node.getUserObject() instanceof String && "PublicationsInfo".equals(node.getRenderHint("type"))) {
 			String label = (String)node.getUserObject();
 			component.setToolTipText("Publications Info");
-			component.setText(label);
+			component.setText("<html><b>" + label + "</b></html>");
 			setIcon(fieldTextIcon);
 						
 		}else if (node.getUserObject() instanceof PublicationInfo && "PublicationInfoTitle".equals(node.getRenderHint("type"))) {

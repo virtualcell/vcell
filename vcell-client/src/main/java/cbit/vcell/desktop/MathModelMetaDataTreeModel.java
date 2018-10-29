@@ -48,8 +48,13 @@ private BioModelNode createVersionSubTree(MathModelInfo mathModelInfo) throws Da
 	//
 	// add children of the MathModel to the node passed in
 	//
-	if (mathModelInfo.getVersion().getAnnot()!=null && mathModelInfo.getVersion().getAnnot().trim().length()>0){
-		versionNode.add(new BioModelNode(new Annotation(mathModelInfo.getVersion().getAnnot()),false));
+	if (mathModelInfo.getVersion().getAnnot()!=null && mathModelInfo.getVersion().getAnnot().trim().length()>0) {
+		BioModelNode provenanceNode = new BioModelNode("Provenance", true);
+		provenanceNode.setRenderHint("type","Provenance");
+		versionNode.add(provenanceNode);
+
+		String annotation = mathModelInfo.getVersion().getAnnot();
+		provenanceNode.add(new BioModelNode(new Annotation(annotation),false));
 	}
 	
 	if(mathModelInfo.getPublicationInfos().length > 0) {
