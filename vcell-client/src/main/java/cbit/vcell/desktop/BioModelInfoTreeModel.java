@@ -67,7 +67,7 @@ private BioModelNode createVersionSubTree(BioModelInfo bioModelInfo) throws Data
 	}
 	
 	if(bioModelInfo.getPublicationInfos().length > 0) {
-		String name = bioModelInfo.getPublicationInfos().length > 1 ? "Publications" : "Publication";
+		String name = bioModelInfo.getPublicationInfos().length > 1 ? "Publications"  : "Publication";
 		publicationsInfoNode = new BioModelNode(name, true);
 		publicationsInfoNode.setRenderHint("type","PublicationsInfo");
 		
@@ -76,6 +76,10 @@ private BioModelNode createVersionSubTree(BioModelInfo bioModelInfo) throws Data
 			piTitleNode.setRenderHint("type","PublicationInfoTitle");
 			publicationsInfoNode.add(piTitleNode);
 			
+			BioModelNode piAuthorsNode = new BioModelNode(bioModelInfo.getPublicationInfos()[i], true);
+			piAuthorsNode.setRenderHint("type","PublicationInfoAuthors");
+			piTitleNode.add(piAuthorsNode);
+
 			BioModelNode piCitationNode = new BioModelNode(bioModelInfo.getPublicationInfos()[i], false);
 			piCitationNode.setRenderHint("type","PublicationInfoCitation");
 			piTitleNode.add(piCitationNode);
@@ -85,9 +89,11 @@ private BioModelNode createVersionSubTree(BioModelInfo bioModelInfo) throws Data
 			piTitleNode.add(piDoiNode);
 
 			if(bioModelInfo.getPublicationInfos()[i].getUrl() != null && !bioModelInfo.getPublicationInfos()[i].getUrl().isEmpty()) {
-				BioModelNode piUrlNode = new BioModelNode(bioModelInfo.getPublicationInfos()[i], false);
-				piUrlNode.setRenderHint("type","PublicationInfoUrl");
-				piTitleNode.add(piUrlNode);
+				if(bioModelInfo.getPublicationInfos()[i].getUrl().contains("pubmed") || bioModelInfo.getPublicationInfos()[i].getUrl().contains("PubMed")) {
+					BioModelNode piUrlNode = new BioModelNode(bioModelInfo.getPublicationInfos()[i], false);
+					piUrlNode.setRenderHint("type","PublicationInfoUrl");
+					piTitleNode.add(piUrlNode);
+				}
 			}
 		}
 		versionNode.add(publicationsInfoNode);
@@ -103,7 +109,7 @@ private BioModelNode createVersionSubTree(BioModelInfo bioModelInfo) throws Data
 		String geomNames[] = bioModelChildSummary.getGeometryNames();
 		MathType appTypes[] = bioModelChildSummary.getAppTypes();
 		
-		String name = scNames.length > 1 ? "Applications" : "Application";
+		String name = scNames.length > 1 ? "Applications (" + scNames.length + ")" : "Application";
 		applicationsNode = new BioModelNode(name, true);
 		applicationsNode.setRenderHint("type","Applications");
 

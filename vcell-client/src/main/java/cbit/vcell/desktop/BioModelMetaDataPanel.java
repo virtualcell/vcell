@@ -17,10 +17,12 @@ import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Enumeration;
 
 import javax.swing.JScrollPane;
 import javax.swing.JTree;
 import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 
 import org.vcell.util.document.BioModelInfo;
@@ -40,18 +42,17 @@ public class BioModelMetaDataPanel extends DocumentEditorSubPanel {
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
 			if (evt.getSource() == BioModelMetaDataPanel.this && (evt.getPropertyName().equals("bioModelInfo"))) {
 				getbioModelInfoTreeModel().setBioModelInfo(BioModelMetaDataPanel.this.getBioModelInfo());
-				BioModelNode publicationsInfoNode = getbioModelInfoTreeModel().getPublicationsNode();
+//				BioModelNode publicationsInfoNode = getbioModelInfoTreeModel().getPublicationsNode();
 				BioModelNode applicationsNode = getbioModelInfoTreeModel().getApplicationsNode();
-				if(publicationsInfoNode == null) {
-					GuiUtils.treeExpandAllRows(getJTree1());
-				} else {
-					GuiUtils.treeExpandAllRows(getJTree1());
-			 		TreePath appPath = new TreePath(applicationsNode.getPath());	// collapse the applications path
-			 		int begin = getJTree1().getRowForPath(appPath);
-			 		int count = appPath.getPathCount();
-			 		for(int i = begin; i< begin+count; i++) {
-			 			getJTree1().collapseRow(i);
-			 		}
+				GuiUtils.treeExpandAllRows(getJTree1());
+				if(applicationsNode != null) {
+					TreePath appPath = new TreePath(applicationsNode.getPath());	// collapse the applications path
+					Enumeration e = applicationsNode.children();
+					while (e.hasMoreElements()) {
+						TreeNode childNode =  (TreeNode)e.nextElement();
+						TreePath childPath = appPath.pathByAddingChild(childNode);
+						getJTree1().collapsePath(childPath);
+					}
 				}
 			}
 		};
