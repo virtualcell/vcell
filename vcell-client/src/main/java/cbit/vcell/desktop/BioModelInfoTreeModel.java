@@ -10,6 +10,8 @@
 
 package cbit.vcell.desktop;
 
+import java.util.StringTokenizer;
+
 import javax.swing.JTree;
 import javax.swing.tree.TreePath;
 
@@ -66,8 +68,12 @@ private BioModelNode createVersionSubTree(BioModelInfo bioModelInfo) throws Data
 		provenanceNode.setRenderHint("type","Provenance");
 		versionNode.add(provenanceNode);
 		
-		String annotation = bioModelInfo.getVersion().getAnnot();
-		provenanceNode.add(new BioModelNode(new Annotation(annotation), false));
+		String annotations = bioModelInfo.getVersion().getAnnot();
+		StringTokenizer tokenizer = new StringTokenizer(annotations, "\n");
+		while (tokenizer.hasMoreTokens()) {	
+			String annotation = tokenizer.nextToken();
+			provenanceNode.add(new BioModelNode(new Annotation(annotation),false));
+		}
 	}
 	
 	if(bioModelInfo.getPublicationInfos().length > 0) {

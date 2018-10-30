@@ -113,9 +113,6 @@ protected synchronized static void initBaseTree(BioModelNode rootNode,BioModelNo
 	sharedModelsNode.setUserObject(sharedModelsNodeUserObject);
 }
 protected synchronized static void initFinalTree(VCDocumentDbTreeModel vcDocumentDbTreeModel, TreeMap<String, BioModelNode> treeMap, User loginUser){
-	if(vcDocumentDbTreeModel instanceof MathModelDbTreeModel) {
-		System.out.println("Math Models");
-	}
 	BioModelNode ownerNode = (BioModelNode)treeMap.get(loginUser.getName());
 	BioModelNode tempNode = new BioModelNode();
 	vcDocumentDbTreeModel.myModelsNode.setUserObject(loginUser);

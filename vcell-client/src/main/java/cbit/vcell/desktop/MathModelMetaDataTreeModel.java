@@ -10,9 +10,14 @@
 
 package cbit.vcell.desktop;
 
+import java.util.StringTokenizer;
+
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.BioModelChildSummary;
 import org.vcell.util.document.BioModelChildSummary.MathType;
+
+import cbit.vcell.solver.ode.ODESolverResultSet;
+
 import org.vcell.util.document.MathModelChildSummary;
 import org.vcell.util.document.MathModelInfo;
 /**
@@ -53,8 +58,12 @@ private BioModelNode createVersionSubTree(MathModelInfo mathModelInfo) throws Da
 		provenanceNode.setRenderHint("type","Provenance");
 		versionNode.add(provenanceNode);
 
-		String annotation = mathModelInfo.getVersion().getAnnot();
-		provenanceNode.add(new BioModelNode(new Annotation(annotation),false));
+		String annotations = mathModelInfo.getVersion().getAnnot();
+		StringTokenizer tokenizer = new StringTokenizer(annotations, "\n");
+		while (tokenizer.hasMoreTokens()) {	
+			String annotation = tokenizer.nextToken();
+			provenanceNode.add(new BioModelNode(new Annotation(annotation),false));
+		}
 	}
 	
 	if(mathModelInfo.getPublicationInfos().length > 0) {
