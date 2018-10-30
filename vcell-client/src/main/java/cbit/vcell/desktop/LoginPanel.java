@@ -66,7 +66,13 @@ public class LoginPanel extends JPanel {
 					e.getSource() == LoginPanel.this.getJButtonOK() || e.getSource() == LoginPanel.this.getBtnGuestLogin()) {
 				updateFields();
 				if(e.getSource() == LoginPanel.this.getBtnGuestLogin() || fieldUser.equals(User.VCELL_GUEST)) {
-					loginDelegate.login(User.VCELL_GUEST, new UserLoginInfo.DigestedPassword("vcellfrmfrm"));
+					String continueOption = "Continue";
+					String result = DialogUtils.showWarningDialog(LoginPanel.this, "VCell Guest Login...",
+						"The Guest account allows you to explore public models in the VCell database and build models and run simulations on your local machine. You will not be able to save a model to the database or use the VCell simulations servers.",
+						new String[] {continueOption,"Cancel"}, continueOption);
+					if(result != null && result.equals(continueOption)) {
+						loginDelegate.login(User.VCELL_GUEST, new UserLoginInfo.DigestedPassword("vcellfrmfrm"));
+					}
 				}else {
 					Preferences prefs = Preferences.userNodeForPackage(LoginPanel.class);
 					prefs.put(J_TEXT_FIELD_USER, fieldUser);
@@ -144,7 +150,7 @@ private javax.swing.JButton getJButtonRegister() {
 	if (ivjJButtonRegister == null) {
 			ivjJButtonRegister = new javax.swing.JButton();
 			ivjJButtonRegister.setName("JButtonRegister");
-			ivjJButtonRegister.setFont(new java.awt.Font("Arial", 1, 14));
+			ivjJButtonRegister.setFont(new Font("Tahoma", Font.BOLD, 14));
 			ivjJButtonRegister.setText("New User Registration (free!)...");
 			// user code begin {1}
 			// user code end
@@ -165,12 +171,6 @@ private void setupLoginPanelContentPane() {
 //			gridBagLayout.columnWeights = new double[]{1.0, 0.0};
 //			gridBagLayout.rowHeights = new int[] {0,0,0,0,0, 0};
 			this.setLayout(gridBagLayout);
-			GridBagConstraints gbc_btnGuestLogin = new GridBagConstraints();
-			gbc_btnGuestLogin.gridwidth = 2;
-			gbc_btnGuestLogin.insets = new Insets(0, 0, 5, 5);
-			gbc_btnGuestLogin.gridx = 0;
-			gbc_btnGuestLogin.gridy = 0;
-			add(getBtnGuestLogin(), gbc_btnGuestLogin);
 
 			java.awt.GridBagConstraints constraintsJLabelUser = new java.awt.GridBagConstraints();
 			constraintsJLabelUser.gridx = 0; constraintsJLabelUser.gridy = 1;
@@ -221,10 +221,17 @@ private void setupLoginPanelContentPane() {
 			gbc_dtrpnUseThisLink.fill = GridBagConstraints.BOTH;
 			gbc_dtrpnUseThisLink.weighty = 1.0;
 			gbc_dtrpnUseThisLink.gridwidth = 2;
-			gbc_dtrpnUseThisLink.insets = new Insets(4, 4, 4, 4);
+			gbc_dtrpnUseThisLink.insets = new Insets(4, 10, 5, 10);
 			gbc_dtrpnUseThisLink.gridx = 0;
 			gbc_dtrpnUseThisLink.gridy = 6;
 			add(getDtrpnUseThisLink(), gbc_dtrpnUseThisLink);
+			GridBagConstraints gbc_btnGuestLogin = new GridBagConstraints();
+			gbc_btnGuestLogin.insets = new Insets(2, 10, 5, 10);
+			gbc_btnGuestLogin.fill = GridBagConstraints.HORIZONTAL;
+			gbc_btnGuestLogin.gridwidth = 2;
+			gbc_btnGuestLogin.gridx = 0;
+			gbc_btnGuestLogin.gridy = 7;
+			add(getBtnGuestLogin(), gbc_btnGuestLogin);
 			// user code begin {1}
 			// user code end
 }
@@ -443,7 +450,7 @@ private void updateFields() {
 			dtrpnUseThisLink.setContentType("text/html");
 			String s =
 					"<html><body bgcolor=\"#"+Hex.toString(new byte[] {(byte)(getBackground().getRed()&0xFF),(byte)(getBackground().getGreen()&0xFF),(byte)(getBackground().getBlue()&0xFF)})+
-					"\"><font size=5 face=Arial>Use <a href=\"http://vcell.org/vcell_models/how_submit_publication.html\">this link</a> for details on how to<br>acknowledge Virtual Cell in your<br>publication and how to share your<br>published research through<br>the VCell database.</font></body></html>";
+					"\"><center><font size=5 face=Arial>Use <a href=\"http://vcell.org/vcell_models/how_submit_publication.html\">this link</a> for details on how to<br>acknowledge Virtual Cell in your<br>publication and how to share your<br>published research through<br>the VCell database.</font></center></body></html>";
 //			System.out.println(s);
 			dtrpnUseThisLink.setText(s);
 			dtrpnUseThisLink.setEditable(false);
@@ -460,7 +467,8 @@ private void updateFields() {
 	}
 	private JButton getBtnGuestLogin() {
 		if (btnGuestLogin == null) {
-			btnGuestLogin = new JButton("Login in as Guest (no Registration)");
+			btnGuestLogin = new JButton("Login in as Guest (no Registration)...");
+			btnGuestLogin.setFont(new Font("Tahoma", Font.BOLD, 14));
 			btnGuestLogin.setEnabled(true);
 		}
 		return btnGuestLogin;
