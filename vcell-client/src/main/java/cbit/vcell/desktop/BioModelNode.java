@@ -9,6 +9,12 @@
  */
 
 package cbit.vcell.desktop;
+
+import java.util.Enumeration;
+import java.util.Hashtable;
+
+import javax.swing.tree.DefaultMutableTreeNode;
+
 /**
  * Insert the type's description here.
  * Creation date: (11/28/00 1:04:38 PM)
@@ -16,7 +22,7 @@ package cbit.vcell.desktop;
  */
 @SuppressWarnings("serial")
 public class BioModelNode extends javax.swing.tree.DefaultMutableTreeNode {
-	private java.util.Hashtable<String, Object> renderHintHash = new java.util.Hashtable<String, Object>();
+	private Hashtable<String, Object> renderHintHash = new Hashtable<String, Object>();
 
 	public static final String MAX_ERROR_LEVEL = "MaxErrorLevel";
 	public static final int ERROR_NONE = 0;
@@ -51,6 +57,22 @@ public BioModelNode(Object userObject) {
  */
 public BioModelNode(Object userObject, boolean allowsChildren) {
 	super(userObject, allowsChildren);
+}
+
+@Override
+public BioModelNode clone() {		// shallow clone, no parent, no children
+	BioModelNode newNode;
+	newNode = (BioModelNode)super.clone();
+	newNode.setRenderHintHash((Hashtable<String, Object>)renderHintHash.clone());
+	return newNode;
+}
+
+public static BioModelNode deepClone(BioModelNode root) {		// recursively clone all children
+	BioModelNode newRoot = root.clone();
+	for(Enumeration childEnum = root.children(); childEnum.hasMoreElements();) {
+		newRoot.add(deepClone((BioModelNode)childEnum.nextElement()));
+	}
+	return newRoot;
 }
 
 
@@ -99,7 +121,12 @@ public BioModelNode findNodeByUserObject(Object argUserObject) {
 	return null;
 }
 
-
+public Hashtable<String, Object> getRenderHintHash() {
+	return renderHintHash;
+}
+public void setRenderHintHash(Hashtable<String, Object> thatHash) {
+	renderHintHash = thatHash;
+}
 /**
  * Insert the method's description here.
  * Creation date: (11/15/2002 10:48:55 AM)

@@ -67,7 +67,7 @@ private BioModelNode createVersionSubTree(MathModelInfo mathModelInfo) throws Da
 			piTitleNode.setRenderHint("type","PublicationInfoTitle");
 			publicationsInfoNode.add(piTitleNode);
 			
-			BioModelNode piAuthorsNode = new BioModelNode(mathModelInfo.getPublicationInfos()[i], true);
+			BioModelNode piAuthorsNode = new BioModelNode(mathModelInfo.getPublicationInfos()[i], false);
 			piAuthorsNode.setRenderHint("type","PublicationInfoAuthors");
 			piTitleNode.add(piAuthorsNode);
 			

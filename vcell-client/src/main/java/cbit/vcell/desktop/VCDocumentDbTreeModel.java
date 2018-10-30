@@ -112,14 +112,37 @@ protected synchronized static void initBaseTree(BioModelNode rootNode,BioModelNo
 	rootNode.setUserObject(rootNodeUserObject);
 	sharedModelsNode.setUserObject(sharedModelsNodeUserObject);
 }
-protected synchronized static void initFinalTree(VCDocumentDbTreeModel vcDocumentDbTreeModel,TreeMap<String, BioModelNode> treeMap,User loginUser){
-	BioModelNode ownerNode = (BioModelNode)treeMap.remove(loginUser.getName());
+protected synchronized static void initFinalTree(VCDocumentDbTreeModel vcDocumentDbTreeModel, TreeMap<String, BioModelNode> treeMap, User loginUser){
+	if(vcDocumentDbTreeModel instanceof MathModelDbTreeModel) {
+		System.out.println("Math Models");
+	}
+	BioModelNode ownerNode = (BioModelNode)treeMap.get(loginUser.getName());
+	BioModelNode tempNode = new BioModelNode();
 	vcDocumentDbTreeModel.myModelsNode.setUserObject(loginUser);
 	vcDocumentDbTreeModel.myModelsNode.removeAllChildren();
 	for (int c = 0; c < ownerNode.getChildCount();) {
 		BioModelNode childNode = (BioModelNode) ownerNode.getChildAt(c);
-		vcDocumentDbTreeModel.myModelsNode.add(childNode);
-	}	
+		BioModelNode clone = BioModelNode.deepClone(childNode);
+		vcDocumentDbTreeModel.myModelsNode.add(clone);
+		
+		BigDecimal groupid = GroupAccess.GROUPACCESS_NONE;	// we keep in tempNode only those children that are public
+		VCDocumentInfoNode vcdDocumentInfoNode = (VCDocumentInfoNode) childNode.getUserObject();
+		Version version = vcdDocumentInfoNode.getVCDocumentInfo().getVersion();
+		if (version != null && version.getGroupAccess() != null) {
+			groupid = version.getGroupAccess().getGroupid();
+		}
+		if (groupid.equals(GroupAccess.GROUPACCESS_ALL)) {
+			tempNode.add(childNode);	// also removes the child from owner node
+		} else {
+			ownerNode.remove(c);		// c always stays at 0
+		}
+		// ownerNode gets empty eventually
+	}
+	for (int c = 0; c < tempNode.getChildCount();) {		// we put back the public nodes for the login user
+		BioModelNode childNode = (BioModelNode) tempNode.getChildAt(c);
+		ownerNode.add(childNode);
+	}
+	
 	vcDocumentDbTreeModel.sharedModelsNode.removeAllChildren();
 	vcDocumentDbTreeModel.publicModelsNode.removeAllChildren();
 	if(vcDocumentDbTreeModel.publishedModelsNode != null) {
@@ -129,6 +152,7 @@ protected synchronized static void initFinalTree(VCDocumentDbTreeModel vcDocumen
 	boolean bEducation = vcDocumentDbTreeModel.educationModelsNode != null;
 	if(bTutorial){vcDocumentDbTreeModel.tutorialModelsNode.removeAllChildren();}
 	if(bEducation){vcDocumentDbTreeModel.educationModelsNode.removeAllChildren();}
+	
 	for (String username : treeMap.keySet()) {
 		BioModelNode userNode = treeMap.get(username);
 		BioModelNode parentNode = vcDocumentDbTreeModel.sharedModelsNode;
@@ -140,7 +164,7 @@ protected synchronized static void initFinalTree(VCDocumentDbTreeModel vcDocumen
 		} else {
 			bSpecificUser = false;
 		}
-		for (int c = 0; c < userNode.getChildCount();) {
+		for (int c = 0; c < userNode.getChildCount(); c++) {	// we just navigate through all of them, remove none
 			BioModelNode childNode = (BioModelNode) userNode.getChildAt(c);
 			VCDocumentInfoNode vcdDocumentInfoNode = (VCDocumentInfoNode) childNode.getUserObject();
 			if (!bSpecificUser) {
@@ -154,14 +178,19 @@ protected synchronized static void initFinalTree(VCDocumentDbTreeModel vcDocumen
 						parentNode = vcDocumentDbTreeModel.publicModelsNode;
 				}
 			}
-			if(parentNode == vcDocumentDbTreeModel.publicModelsNode &&
-				vcdDocumentInfoNode.getVCDocumentInfo().getPublicationInfos() != null && 
+			BioModelNode clone = BioModelNode.deepClone(childNode);
+			parentNode.add(clone);
+		}
+		for (int c = 0; c < userNode.getChildCount();) {
+			BioModelNode childNode = (BioModelNode) userNode.getChildAt(c);
+			VCDocumentInfoNode vcdDocumentInfoNode = (VCDocumentInfoNode) childNode.getUserObject();
+			if(	vcdDocumentInfoNode.getVCDocumentInfo().getPublicationInfos() != null && 
 				vcdDocumentInfoNode.getVCDocumentInfo().getPublicationInfos().length > 0) {
 				parentNode = vcDocumentDbTreeModel.publishedModelsNode;
+				parentNode.add(childNode);
+			} else {
+				userNode.remove(c);
 			}
-
-			// when added to other node, this childNode was removed from userNode
-			parentNode.add(childNode);
 		}
 	}
 
