@@ -60,22 +60,7 @@ private BioModelNode createVersionSubTree(BioModelInfo bioModelInfo) throws Data
 	BioModelNode versionNode = new BioModelNode(bioModelInfo, true);
 	publicationsInfoNode = null;
 	applicationsNode = null;
-	//
-	// add children of the BioModel to the node passed in
-	//
-	if (bioModelInfo.getVersion().getAnnot() != null && bioModelInfo.getVersion().getAnnot().trim().length() > 0) {
-		BioModelNode provenanceNode = new BioModelNode("Provenance", true);
-		provenanceNode.setRenderHint("type","Provenance");
-		versionNode.add(provenanceNode);
-		
-		String annotations = bioModelInfo.getVersion().getAnnot();
-		StringTokenizer tokenizer = new StringTokenizer(annotations, "\n");
-		while (tokenizer.hasMoreTokens()) {	
-			String annotation = tokenizer.nextToken();
-			provenanceNode.add(new BioModelNode(new Annotation(annotation),false));
-		}
-	}
-	
+
 	if(bioModelInfo.getPublicationInfos().length > 0) {
 		String name = bioModelInfo.getPublicationInfos().length > 1 ? "Publications"  : "Publication";
 		publicationsInfoNode = new BioModelNode(name, true);
@@ -107,6 +92,19 @@ private BioModelNode createVersionSubTree(BioModelInfo bioModelInfo) throws Data
 			}
 		}
 		versionNode.add(publicationsInfoNode);
+	}
+
+	if (bioModelInfo.getVersion().getAnnot() != null && bioModelInfo.getVersion().getAnnot().trim().length() > 0) {
+		BioModelNode provenanceNode = new BioModelNode("Provenance", true);
+		provenanceNode.setRenderHint("type","Provenance");
+		versionNode.add(provenanceNode);
+		
+		String annotations = bioModelInfo.getVersion().getAnnot();
+		StringTokenizer tokenizer = new StringTokenizer(annotations, "\n");
+		while (tokenizer.hasMoreTokens()) {	
+			String annotation = tokenizer.nextToken();
+			provenanceNode.add(new BioModelNode(new Annotation(annotation),false));
+		}
 	}
 
 	BioModelChildSummary bioModelChildSummary = bioModelInfo.getBioModelChildSummary();

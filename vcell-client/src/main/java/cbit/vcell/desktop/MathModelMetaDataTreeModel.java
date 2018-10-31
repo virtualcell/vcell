@@ -50,22 +50,7 @@ public synchronized void addPropertyChangeListener(java.beans.PropertyChangeList
  */
 private BioModelNode createVersionSubTree(MathModelInfo mathModelInfo) throws DataAccessException {
 	BioModelNode versionNode = new BioModelNode(mathModelInfo,true);
-	//
-	// add children of the MathModel to the node passed in
-	//
-	if (mathModelInfo.getVersion().getAnnot()!=null && mathModelInfo.getVersion().getAnnot().trim().length()>0) {
-		BioModelNode provenanceNode = new BioModelNode("Provenance", true);
-		provenanceNode.setRenderHint("type","Provenance");
-		versionNode.add(provenanceNode);
 
-		String annotations = mathModelInfo.getVersion().getAnnot();
-		StringTokenizer tokenizer = new StringTokenizer(annotations, "\n");
-		while (tokenizer.hasMoreTokens()) {	
-			String annotation = tokenizer.nextToken();
-			provenanceNode.add(new BioModelNode(new Annotation(annotation),false));
-		}
-	}
-	
 	if(mathModelInfo.getPublicationInfos().length > 0) {
 		String name = mathModelInfo.getPublicationInfos().length > 1 ? "Publications" : "Publication";
 		BioModelNode publicationsInfoNode = new BioModelNode(name, true);
@@ -98,7 +83,20 @@ private BioModelNode createVersionSubTree(MathModelInfo mathModelInfo) throws Da
 		}
 		versionNode.add(publicationsInfoNode);
 	}	
-	
+
+	if (mathModelInfo.getVersion().getAnnot()!=null && mathModelInfo.getVersion().getAnnot().trim().length()>0) {
+		BioModelNode provenanceNode = new BioModelNode("Provenance", true);
+		provenanceNode.setRenderHint("type","Provenance");
+		versionNode.add(provenanceNode);
+
+		String annotations = mathModelInfo.getVersion().getAnnot();
+		StringTokenizer tokenizer = new StringTokenizer(annotations, "\n");
+		while (tokenizer.hasMoreTokens()) {	
+			String annotation = tokenizer.nextToken();
+			provenanceNode.add(new BioModelNode(new Annotation(annotation),false));
+		}
+	}
+
 	MathModelChildSummary mathModelChildSummary = mathModelInfo.getMathModelChildSummary();
 	if (mathModelChildSummary==null){
 		versionNode.add(new BioModelNode("SUMMARY INFORMATION NOT AVAILABLE",false));
