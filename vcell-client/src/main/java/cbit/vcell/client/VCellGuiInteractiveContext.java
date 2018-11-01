@@ -1,5 +1,8 @@
 package cbit.vcell.client;
 
+import javax.swing.JDialog;
+import javax.swing.JOptionPane;
+
 import cbit.vcell.client.server.ClientServerManager.InteractiveContext;
 
 public class VCellGuiInteractiveContext implements InteractiveContext {
@@ -14,12 +17,16 @@ public class VCellGuiInteractiveContext implements InteractiveContext {
 
 	@Override
 	public void showErrorDialog(String errorMessage) {
-		cbit.vcell.client.PopupGenerator.showErrorDialog(topLevelWindowManager.getComponent(), errorMessage);
+		JDialog dialog = new JDialog();
+		dialog.setAlwaysOnTop(true);
+		JOptionPane.showMessageDialog(dialog, errorMessage, "Error...", JOptionPane.ERROR_MESSAGE, null);
 	}
 
 	@Override
 	public void showWarningDialog(String warningMessage) {
-		cbit.vcell.client.PopupGenerator.showWarningDialog(topLevelWindowManager.getComponent(), warningMessage);
+		JDialog dialog = new JDialog();
+		dialog.setAlwaysOnTop(true);
+		JOptionPane.showMessageDialog(dialog, warningMessage, "Warning...", JOptionPane.WARNING_MESSAGE, null);
 	}
 
 	@Override

@@ -15,8 +15,10 @@ import java.awt.Insets;
 import java.util.prefs.Preferences;
 
 import javax.swing.JButton;
+import javax.swing.JDialog;
 import javax.swing.JEditorPane;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
@@ -66,11 +68,12 @@ public class LoginPanel extends JPanel {
 					e.getSource() == LoginPanel.this.getJButtonOK() || e.getSource() == LoginPanel.this.getBtnGuestLogin()) {
 				updateFields();
 				if(e.getSource() == LoginPanel.this.getBtnGuestLogin() || fieldUser.equals(User.VCELL_GUEST)) {
-					String continueOption = "Continue";
-					String result = DialogUtils.showWarningDialog(LoginPanel.this, "VCell Guest Login...",
-						"The Guest account allows you to explore public models in the VCell database and build models and run simulations on your local machine. You will not be able to save a model to the database or use the VCell simulations servers.",
-						new String[] {continueOption,"Cancel"}, continueOption);
-					if(result != null && result.equals(continueOption)) {
+					JDialog dialog = new JDialog();
+					dialog.setAlwaysOnTop(true);
+					int confirm = JOptionPane.showOptionDialog(dialog,
+							"The Guest account allows you to explore public models in\nthe VCell database and build models and run simulations on your local machine.\nYou will not be able to save a model to the database or use the VCell simulations servers.",
+						"Change User...", JOptionPane.OK_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE, null, new String[] {"Continue","Cancel"}, "Continue");
+					if(confirm == 0) {
 						loginDelegate.login(User.VCELL_GUEST, new UserLoginInfo.DigestedPassword("vcellfrmfrm"));
 					}
 				}else {
