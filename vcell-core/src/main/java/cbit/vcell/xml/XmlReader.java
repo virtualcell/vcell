@@ -6553,6 +6553,10 @@ private SolverTaskDescription getSolverTaskDescription(Element param, Simulation
 		if (runParameterScanSeriallyAttributeValue != null) {
 			solverTaskDesc.setSerialParameterScan(new Boolean(runParameterScanSeriallyAttributeValue).booleanValue());
 		}
+		String timeoutDisabledAttributeValue = param.getAttributeValue(XMLTags.TimeoutSimulationDisabled);
+		if (timeoutDisabledAttributeValue != null) {
+			solverTaskDesc.setTimeoutDisabled(new Boolean(timeoutDisabledAttributeValue).booleanValue());
+		}
 		
 		Element nfsimSimulationOptionsElement = param.getChild(XMLTags.NFSimSimulationOptions, vcNamespace);
 		if (nfsimSimulationOptionsElement != null) {

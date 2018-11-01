@@ -24,6 +24,7 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JPanel;
+import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
 
@@ -95,6 +96,8 @@ public class SolverTaskDescriptionAdvancedPanel extends javax.swing.JPanel {
 	private UnitInfo unitInfo;
 	private ChomboDeveloperToolsPanel chomboDeveloperToolsPanel;
 	private MovingBoundarySolverOptionsPanel movingBoundarySolverOptionsPanel;
+	private JCheckBox timeoutDisabledCheckBox = null;
+
 
 	class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.ItemListener, java.beans.PropertyChangeListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
@@ -135,6 +138,9 @@ public class SolverTaskDescriptionAdvancedPanel extends javax.swing.JPanel {
 			}
 			else if (e.getSource() == serialParameterScanCheckBox) {
 				getSolverTaskDescription().setSerialParameterScan(serialParameterScanCheckBox.isSelected());
+			}
+			else if (e.getSource() == timeoutDisabledCheckBox) {
+				getSolverTaskDescription().setTimeoutDisabled(timeoutDisabledCheckBox.isSelected());
 			}
 		}
 	}
@@ -623,6 +629,7 @@ private void initConnections() throws java.lang.Exception {
 	getQuestionButton().addActionListener(ivjEventHandler);
 	getTimeBoundsPanel().addPropertyChangeListener(ivjEventHandler);
 	serialParameterScanCheckBox.addItemListener(ivjEventHandler);
+	timeoutDisabledCheckBox.addItemListener(ivjEventHandler);
 	sensitivityAnalysisComboBox.addActionListener(ivjEventHandler);
 	performSensitivityAnalysisCheckBox.addActionListener(ivjEventHandler);
 	sensitivityAnalysisHelpButton.addActionListener(ivjEventHandler);
@@ -679,11 +686,22 @@ private CollapsiblePanel getGeneralOptionsPanel() {
 		constraintsTimeBoundsPanel.insets = new java.awt.Insets(3, 4, 4, 4);
 		generalOptionsPanel.getContentPanel().add(getTimeBoundsPanel(), constraintsTimeBoundsPanel);
 
+		timeoutDisabledCheckBox = new JCheckBox("Disable Simulation Run Timeout");
+		timeoutDisabledCheckBox.setHorizontalTextPosition(SwingConstants.LEFT);
+		GridBagConstraints gridbag1 = new java.awt.GridBagConstraints();
+		gridbag1.gridx = 0;
+		gridbag1.gridy = 1;
+		gridbag1.weightx = 1.0;
+		gridbag1.fill = GridBagConstraints.HORIZONTAL;
+		gridbag1.insets = new java.awt.Insets(3, 6, 5, 0);
+		generalOptionsPanel.getContentPanel().add(timeoutDisabledCheckBox, gridbag1);
+		
 		java.awt.GridBagConstraints constraintsTimeStepPanel = new java.awt.GridBagConstraints();
 		constraintsTimeStepPanel.gridx = 1; constraintsTimeStepPanel.gridy = 0;
 		constraintsTimeStepPanel.fill = java.awt.GridBagConstraints.BOTH;
 		constraintsTimeStepPanel.weightx = 1.0;
 		constraintsTimeStepPanel.weighty = 1.0;
+		constraintsTimeStepPanel.gridheight = 2;
 		constraintsTimeStepPanel.insets = new java.awt.Insets(3, 4, 4, 4);
 		generalOptionsPanel.getContentPanel().add(getTimeStepPanel(), constraintsTimeStepPanel);
 
@@ -692,12 +710,11 @@ private CollapsiblePanel getGeneralOptionsPanel() {
 		constraintsErrorTolerancePanel.gridx = 2; constraintsErrorTolerancePanel.gridy = 0;
 		constraintsErrorTolerancePanel.weightx = 1.0;
 		constraintsErrorTolerancePanel.weighty = 1.0;
+		constraintsErrorTolerancePanel.gridheight = 2;
 		constraintsErrorTolerancePanel.insets = new java.awt.Insets(3, 4, 4, 4);
 		constraintsErrorTolerancePanel.anchor = GridBagConstraints.FIRST_LINE_START;
 		generalOptionsPanel.getContentPanel().add(getErrorTolerancePanel(), constraintsErrorTolerancePanel);
-		
 	}
-
 	return generalOptionsPanel;
 }
 
@@ -1007,6 +1024,11 @@ private void refresh() {
 	} else {
 		serialParameterScanCheckBox.setVisible(false);
 	}
+	
+	timeoutDisabledCheckBox.setVisible(true);
+	boolean bTimeoutDisabled = ivjTornOffSolverTaskDescription.isTimeoutDisabled();
+	timeoutDisabledCheckBox.setSelected(bTimeoutDisabled);
+	
 	managePanels(); // sensitivity panel's visibility
 	getMiscPanel().setVisible(supportedFeatures.contains(SolverFeature.Feature_SerialParameterScans)
 			|| supportedFeatures.contains(SolverFeature.Feature_StopAtSpatiallyUniform)

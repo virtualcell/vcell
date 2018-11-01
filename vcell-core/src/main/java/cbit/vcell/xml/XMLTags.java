@@ -195,6 +195,7 @@ public class XMLTags {
 	public final static String DataProcessingInstructionsTag = "DataProcessingInstructions";
 	public final static String DataProcessingScriptNameAttrTag = "DataProcessingScriptName";
 	public final static String RunParameterScanSerially = "RunParameterScanSerially";
+	public final static String TimeoutSimulationDisabled = "TimeoutSimulationDisabled";
     //End-Simulation
 
     // Begin electrical properties

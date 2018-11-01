@@ -4764,7 +4764,11 @@ private Element getXML(SolverTaskDescription param) {
 	if (bRunParameterScanSerially) {
 		solvertask.setAttribute(XMLTags.RunParameterScanSerially, String.valueOf(bRunParameterScanSerially));
 	}
-	
+	boolean bTimeoutSimulationDisabled = param.isTimeoutDisabled();
+	if (bTimeoutSimulationDisabled) {
+		solvertask.setAttribute(XMLTags.TimeoutSimulationDisabled, String.valueOf(bTimeoutSimulationDisabled));
+	}
+
 	SmoldynSimulationOptions smoldynSimulationOptions = param.getSmoldynSimulationOptions();
 	if (smoldynSimulationOptions != null) {		
 		solvertask.addContent(getXML(smoldynSimulationOptions));

@@ -77,6 +77,7 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
 	private SundialsPdeSolverOptions sundialsPdeSolverOptions = null;
 	private ChomboSolverSpec chomboSolverSpec = null;
 	private MovingBoundarySolverOptions movingBoundarySolverOptions = null;
+	private boolean bTimeoutDisabled = false;
 	/**
 	 * number of parallel processors to use for solution, if supported by
 	 * select solver
@@ -142,6 +143,7 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
 			stopAtSpatiallyUniformErrorTolerance = new ErrorTolerance(solverTaskDescription.stopAtSpatiallyUniformErrorTolerance);
 		}
 		bSerialParameterScan = solverTaskDescription.bSerialParameterScan;
+		bTimeoutDisabled = solverTaskDescription.bTimeoutDisabled;
 		if (simulation.getMathDescription().isNonSpatialStoch() && (solverTaskDescription.getStochOpt() != null))
 		{
 			setStochOpt(solverTaskDescription.getStochOpt());
@@ -274,6 +276,9 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
 				return false;
 			}
 			if (bSerialParameterScan != solverTaskDescription.bSerialParameterScan) {
+				return false;
+			}
+			if (bTimeoutDisabled != solverTaskDescription.bTimeoutDisabled) {
 				return false;
 			}
 			if  (!Compare.isEqualOrNull(smoldynSimulationOptions,solverTaskDescription.smoldynSimulationOptions)) {
@@ -587,6 +592,9 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
 			buffer.append(chomboSolverSpec.getVCML()+"\n");
 		}
 		buffer.append("\t" + VCML.NUM_PROCESSORS + " " + numProcessors + "\n");
+		if (bTimeoutDisabled) {
+			buffer.append(VCML.TimeoutSimulationDisabled + " " + bTimeoutDisabled + "\n");
+		}
 
 		if (movingBoundarySolverOptions != null) {
 			buffer.append(movingBoundarySolverOptions.getVCML()+"\n");
@@ -1076,6 +1084,11 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
 					token = tokens.nextToken();
 					numProcessors = Integer.parseInt(token);
 				}
+				else if (token.equalsIgnoreCase(VCML.TimeoutSimulationDisabled))
+				{
+					token = tokens.nextToken();
+					setTimeoutDisabled((new Boolean(token)).booleanValue());
+				}
 				else if (token.equalsIgnoreCase(VCML.MovingBoundarySolverOptions))
 				{
 					movingBoundarySolverOptions = new MovingBoundarySolverOptions(tokens);
@@ -1359,12 +1372,16 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
 	public final boolean isSerialParameterScan() {
 		return bSerialParameterScan;
 	}
-
-
 	public final void setSerialParameterScan(boolean arg_bSerialParameterScan) {
 		this.bSerialParameterScan = arg_bSerialParameterScan;
 	}
 
+	public final boolean isTimeoutDisabled() {
+		return bTimeoutDisabled;
+	}
+	public final void setTimeoutDisabled(boolean arg_timeoutDisabled) {
+		this.bTimeoutDisabled = arg_timeoutDisabled;
+	}
 
 	public final SmoldynSimulationOptions getSmoldynSimulationOptions() {
 		return smoldynSimulationOptions;

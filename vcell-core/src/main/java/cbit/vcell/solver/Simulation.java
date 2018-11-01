@@ -908,12 +908,18 @@ public void vetoableChange(java.beans.PropertyChangeEvent evt) throws java.beans
 		firePropertyChange("dataProcessingInstructions", oldValue, dataProcessingInstructions);
 }
 
-public boolean isSerialParameterScan() {
-	if (getSolverTaskDescription().isSerialParameterScan() && getScanCount() > 1) {
-		return true;
+	public boolean isSerialParameterScan() {
+		if (getSolverTaskDescription().isSerialParameterScan() && getScanCount() > 1) {
+			return true;
+		}
+		return false;
 	}
-	return false;
-}
+	public boolean isTimeoutDisabled() {
+		if (getSolverTaskDescription().isTimeoutDisabled()) {
+			return true;
+		}
+		return false;
+	}
 
 	public void propertyChange(PropertyChangeEvent evt) {
 		MathDescription md = getMathDescription();
