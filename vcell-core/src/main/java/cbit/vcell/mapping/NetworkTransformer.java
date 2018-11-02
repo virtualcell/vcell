@@ -188,7 +188,7 @@ public class NetworkTransformer implements SimContextTransformer {
 		if(isBngHashValid(input, md5hash, simContext)) {
 			String s = "Previously saved outputSpec is up-to-date, no need to generate network.";
 			System.out.println(s);
-			tcm = new TaskCallbackMessage(TaskCallbackStatus.Error, s);	// not an error, we just want to show it in red
+			tcm = new TaskCallbackMessage(TaskCallbackStatus.Notification, s);
 			simContext.appendToConsole(tcm);
 			if(simContext.isInsufficientIterations()) {
 				s = NetworkTransformer.getInsufficientIterationsMessage();
