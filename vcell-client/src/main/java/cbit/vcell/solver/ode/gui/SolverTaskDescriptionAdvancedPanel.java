@@ -97,12 +97,11 @@ public class SolverTaskDescriptionAdvancedPanel extends javax.swing.JPanel {
 	private ChomboDeveloperToolsPanel chomboDeveloperToolsPanel;
 	private MovingBoundarySolverOptionsPanel movingBoundarySolverOptionsPanel;
 	private JCheckBox timeoutDisabledCheckBox = null;
-
+	private JButton timeoutDisabledHelpButton = null;
 
 	class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.ItemListener, java.beans.PropertyChangeListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
-			if(e.getSource() == getQuestionButton())
-			{
+			if(e.getSource() == getQuestionButton()) {
 				displayHelpInfo();
 			} else if (e.getSource() == performSensitivityAnalysisCheckBox) {
 				performSensitivityAnalysisCheckbox_actionPerformed();
@@ -110,6 +109,15 @@ public class SolverTaskDescriptionAdvancedPanel extends javax.swing.JPanel {
 				sensitivityAnalysisComboBox_actionPerformed();
 			} else if (e.getSource() == sensitivityAnalysisHelpButton) {
 				showSensitivityAnalysisHelp();
+			} else if (e.getSource() == timeoutDisabledHelpButton) {
+				DialogUtils.showInfoDialog(SolverTaskDescriptionAdvancedPanel.this, "Disable forced timeout for very long Simulations", 
+						"<html>By default, Simulations running for a month are automatically terminated. The reason for "
+						+ "this is to free hardware resources locked by long forgotten / crashed simulations in a "
+						+ "consistent manner. <br>"
+						+ "However, we are allowing our power users to bypass this rule and allow very long simulations "
+						+ "to run indefinitely. If you need to run such a simulation, please contact us to be added to "
+						+ "the power user list."
+						+ "</html>");
 			}
 		}
 
@@ -630,6 +638,7 @@ private void initConnections() throws java.lang.Exception {
 	getTimeBoundsPanel().addPropertyChangeListener(ivjEventHandler);
 	serialParameterScanCheckBox.addItemListener(ivjEventHandler);
 	timeoutDisabledCheckBox.addItemListener(ivjEventHandler);
+	timeoutDisabledHelpButton.addActionListener(ivjEventHandler);
 	sensitivityAnalysisComboBox.addActionListener(ivjEventHandler);
 	performSensitivityAnalysisCheckBox.addActionListener(ivjEventHandler);
 	sensitivityAnalysisHelpButton.addActionListener(ivjEventHandler);
@@ -679,25 +688,41 @@ private CollapsiblePanel getGeneralOptionsPanel() {
 		generalOptionsPanel.getContentPanel().setLayout(new GridBagLayout());
 
 		java.awt.GridBagConstraints constraintsTimeBoundsPanel = new java.awt.GridBagConstraints();
-		constraintsTimeBoundsPanel.gridx = 0; constraintsTimeBoundsPanel.gridy = 0;
+		constraintsTimeBoundsPanel.gridx = 0;
+		constraintsTimeBoundsPanel.gridy = 0;
 		constraintsTimeBoundsPanel.fill = java.awt.GridBagConstraints.BOTH;
 		constraintsTimeBoundsPanel.weightx = 1.0;
 		constraintsTimeBoundsPanel.weighty = 1.0;
+		constraintsTimeBoundsPanel.gridwidth = 2;
 		constraintsTimeBoundsPanel.insets = new java.awt.Insets(3, 4, 4, 4);
 		generalOptionsPanel.getContentPanel().add(getTimeBoundsPanel(), constraintsTimeBoundsPanel);
 
 		timeoutDisabledCheckBox = new JCheckBox("Disable Simulation Run Timeout");
 		timeoutDisabledCheckBox.setHorizontalTextPosition(SwingConstants.LEFT);
-		GridBagConstraints gridbag1 = new java.awt.GridBagConstraints();
-		gridbag1.gridx = 0;
-		gridbag1.gridy = 1;
-		gridbag1.weightx = 1.0;
-		gridbag1.fill = GridBagConstraints.HORIZONTAL;
-		gridbag1.insets = new java.awt.Insets(3, 6, 5, 0);
-		generalOptionsPanel.getContentPanel().add(timeoutDisabledCheckBox, gridbag1);
+		GridBagConstraints gbc = new java.awt.GridBagConstraints();
+		gbc.gridx = 0;
+		gbc.gridy = 1;
+		gbc.weightx = 1.0;
+		gbc.fill = GridBagConstraints.HORIZONTAL;
+		gbc.insets = new java.awt.Insets(3, 6, 5, 0);
+		generalOptionsPanel.getContentPanel().add(timeoutDisabledCheckBox, gbc);
+		
+		timeoutDisabledHelpButton = new JButton("<html><b>&nbsp;&nbsp;?&nbsp;&nbsp;</b></html>");
+		Font font = timeoutDisabledHelpButton.getFont().deriveFont(Font.BOLD);
+		Border border = BorderFactory.createEmptyBorder(1, 1, 1, 1);
+		timeoutDisabledHelpButton.setFont(font);
+		timeoutDisabledHelpButton.setBorder(border);
+		gbc = new java.awt.GridBagConstraints();
+		gbc.gridx = 1;
+		gbc.gridy = 1;
+		gbc.weightx = 0;
+		gbc.fill = GridBagConstraints.HORIZONTAL;
+		gbc.insets = new java.awt.Insets(3, 0, 6, 6);
+		generalOptionsPanel.getContentPanel().add(timeoutDisabledHelpButton, gbc);
 		
 		java.awt.GridBagConstraints constraintsTimeStepPanel = new java.awt.GridBagConstraints();
-		constraintsTimeStepPanel.gridx = 1; constraintsTimeStepPanel.gridy = 0;
+		constraintsTimeStepPanel.gridx = 2;
+		constraintsTimeStepPanel.gridy = 0;
 		constraintsTimeStepPanel.fill = java.awt.GridBagConstraints.BOTH;
 		constraintsTimeStepPanel.weightx = 1.0;
 		constraintsTimeStepPanel.weighty = 1.0;
@@ -707,10 +732,11 @@ private CollapsiblePanel getGeneralOptionsPanel() {
 
 		java.awt.GridBagConstraints constraintsErrorTolerancePanel = new java.awt.GridBagConstraints();
 		constraintsErrorTolerancePanel.fill = java.awt.GridBagConstraints.BOTH;
-		constraintsErrorTolerancePanel.gridx = 2; constraintsErrorTolerancePanel.gridy = 0;
+		constraintsErrorTolerancePanel.gridx = 3;
+		constraintsErrorTolerancePanel.gridy = 0;
 		constraintsErrorTolerancePanel.weightx = 1.0;
 		constraintsErrorTolerancePanel.weighty = 1.0;
-		constraintsErrorTolerancePanel.gridheight = 2;
+//		constraintsErrorTolerancePanel.gridheight = 2;
 		constraintsErrorTolerancePanel.insets = new java.awt.Insets(3, 4, 4, 4);
 		constraintsErrorTolerancePanel.anchor = GridBagConstraints.FIRST_LINE_START;
 		generalOptionsPanel.getContentPanel().add(getErrorTolerancePanel(), constraintsErrorTolerancePanel);
@@ -1026,6 +1052,7 @@ private void refresh() {
 	}
 	
 	timeoutDisabledCheckBox.setVisible(true);
+	timeoutDisabledCheckBox.setEnabled(false);
 	boolean bTimeoutDisabled = ivjTornOffSolverTaskDescription.isTimeoutDisabled();
 	timeoutDisabledCheckBox.setSelected(bTimeoutDisabled);
 	
