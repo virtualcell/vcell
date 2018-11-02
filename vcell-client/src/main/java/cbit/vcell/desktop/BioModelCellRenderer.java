@@ -109,12 +109,30 @@ public java.awt.Component getTreeCellRendererComponent(JTree tree, Object value,
 				User nodeUser = infonode.getVCDocumentInfo().getVersion().getOwner();
 				String modelName = infonode.getVCDocumentInfo().getVersion().getName();
 				String username = nodeUser.getName();
-				if (nodeUser.compareEqual(sessionUser)
-						|| username.equals(VCDocumentDbTreeModel.USER_tutorial)
+				if (username.equals(VCDocumentDbTreeModel.USER_tutorial)
 						|| username.equals(VCDocumentDbTreeModel.USER_Education)
 						|| username.equals(VCDocumentDbTreeModel.USER_tutorial610)
 						|| username.equals(VCDocumentDbTreeModel.USER_tutorial611)) {
 					component.setText(modelName);
+				} else if(nodeUser.compareEqual(sessionUser)) {
+					Object pNode  = node.getParent();
+					if(pNode instanceof BioModelNode) {
+						BioModelNode parent = (BioModelNode) pNode;
+						if(parent.getUserObject() instanceof String) {
+							String str = (String)parent.getUserObject();
+							if(str.equals(VCDocumentDbTreeModel.Published_BioModels) || str.equals(VCDocumentDbTreeModel.Public_BioModels)) {
+								String prefix = sel ? "" : "<span style=\"color:#8B0000\">";
+								String suffix = sel ? "" : "</span>";
+								setText("<html><b>" + prefix + nodeUser.getName() + suffix + "</b>  : " + modelName + "</html>");
+							} else {
+								setText(modelName);
+							}
+						} else {
+							setText(modelName);
+						}
+					} else {
+						setText(modelName);
+					}
 				} else {
 					component.setText("<html><b>" + username + " </b> : " + modelName + "</html>");
 				}
