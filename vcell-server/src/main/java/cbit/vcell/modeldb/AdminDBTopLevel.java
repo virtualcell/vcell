@@ -240,7 +240,20 @@ public SimulationJobStatusPersistent[] getSimulationJobStatusArray(KeyValue simK
 		conFactory.release(con,lock);
 	}
 }
-
+private static final String QUERY_VALUE = "QUERY_VALUE";
+private static int htmlWithBreak(String descr,StringBuffer sb,Statement stmt,String query) throws SQLException{
+	sb.append("<br>"+descr);
+	System.out.println(query);
+	ResultSet rset = stmt.executeQuery(query);
+	int val = 0;
+	if(rset.next()) {
+		val = rset.getInt(QUERY_VALUE);
+		sb.append(val+"");
+	}
+	sb.append("</br>\n");
+	rset.close();
+	return val;
+}
 public synchronized String getBasicStatistics(String fromDate,String toDate) throws SQLException,DataAccessException{
 	Object lock = new Object();
 	Connection con = conFactory.getConnection(lock);
@@ -248,16 +261,57 @@ public synchronized String getBasicStatistics(String fromDate,String toDate) thr
 	try {
 		StringBuffer sb = new StringBuffer("<html><body>");
 		stmt = con.createStatement();
-		sb.append("<br>Users registered=");
-		ResultSet rset = stmt.executeQuery("select count(*) regusers from vc_userinfo where insertdate >= to_date('"+fromDate+"','DD-MM-YY') and insertdate <= to_date('"+toDate+"','DD-MM-YY')");
-		if(rset.next()) {
-			sb.append(rset.getInt("regusers")+"");
-		}
-		sb.append("</br>");
-		rset.close();
+		String usersBetweenQuery = "select count(*) "+QUERY_VALUE+" from vc_userinfo where insertdate >= to_date('"+fromDate+"','DD-MM-YY') and insertdate <= to_date('"+toDate+"','DD-MM-YY')";
+		htmlWithBreak("Users registered (between "+fromDate+" and "+toDate+")=", sb, stmt, usersBetweenQuery);
+		String totalUsersQuery = "select count(*) "+QUERY_VALUE+" from vc_userinfo";
+		htmlWithBreak("Number users=", sb, stmt, totalUsersQuery);
+		String usersWithSimsQuery = "select count(distinct ownerref) "+QUERY_VALUE+" from vc_simulation";
+		htmlWithBreak("Users with simulations=", sb, stmt, usersWithSimsQuery);
 		
+		String bmQuey = "select count(*) "+QUERY_VALUE+" from vc_biomodel";
+		htmlWithBreak("Biomodels=", sb, stmt, bmQuey);
+
+		String mmQuey = "select count(*) "+QUERY_VALUE+" from vc_mathmodel";
+		htmlWithBreak("Mathmodels=", sb, stmt, mmQuey);
+
+		String allModelsQuey = "select count(*) "+QUERY_VALUE+" from (select vc_biomodel.id from vc_biomodel union select vc_mathmodel.id from vc_mathmodel) t";
+		htmlWithBreak("Total models=", sb, stmt, allModelsQuey);
+
+		String pubbmQuey = "select count(*) "+QUERY_VALUE+" from vc_biomodel where PRIVACY=0";
+		htmlWithBreak("Public biomodels=", sb, stmt, pubbmQuey);
+
+		String pubmmQuey = "select count(*) "+QUERY_VALUE+" from vc_mathmodel where PRIVACY=0";
+		htmlWithBreak("Public math models=", sb, stmt, pubmmQuey);
+
+		String puballModelsQuey = "select count(*) "+QUERY_VALUE+" from (select vc_biomodel.id from vc_biomodel where PRIVACY=0 union select vc_mathmodel.id from vc_mathmodel where PRIVACY=0) t";
+		htmlWithBreak("Total public models=", sb, stmt, puballModelsQuey);
+
+		String allsims = "select count(*) "+QUERY_VALUE+" from vc_simulation";
+		htmlWithBreak("Number simulations=", sb, stmt, allsims);
+
+		String pubbmsimsQuey = "SELECT COUNT (*) "+QUERY_VALUE+" FROM VC_SIMULATION WHERE VC_SIMULATION.ID IN (" 
+				+ "SELECT DISTINCT VC_SIMULATION.ID FROM VC_BIOMODEL, VC_SIMULATION, VC_BIOMODELSIM " 
+				+ "WHERE VC_SIMULATION.ID = VC_BIOMODELSIM.simref " 
+				+ "AND VC_BIOMODEL.ID = VC_BIOMODELSIM.biomodelref " 
+				+ "AND vc_biomodel.privacy = 0)";
+		int pubbmsimsval = htmlWithBreak("Public biomodel simulations=", sb, stmt, pubbmsimsQuey);
+
+		String pubmmsimsQuey = "SELECT COUNT (*) "+QUERY_VALUE+" FROM VC_SIMULATION WHERE VC_SIMULATION.ID IN (" 
+				+ "SELECT DISTINCT VC_SIMULATION.ID FROM VC_MATHMODEL, VC_SIMULATION, VC_MATHMODELSIM " 
+				+ "WHERE VC_SIMULATION.ID = VC_MATHMODELSIM.simref "
+				+ "AND VC_MATHMODEL.ID = VC_MATHMODELSIM.mathmodelref " 
+				+ "AND VC_MATHMODEL.privacy = 0)";
+		int pubmmsimsval = htmlWithBreak("Public math model simulations=", sb, stmt, pubmmsimsQuey);
+
+		String puballsimssQuey = "select sum(t."+QUERY_VALUE+") "+QUERY_VALUE+" from ("+
+		pubbmsimsQuey +
+		" union "+
+		pubmmsimsQuey +
+		") t";
+		htmlWithBreak("Total public simulations=", sb, stmt, puballsimssQuey);
+		sb.append("<br></br>");
 		sb.append("<table><tr><th>User</th><th>SimRuns</th></tr>");
-		rset = stmt.executeQuery("SELECT userid,  COUNT(vc_simulationjob.id) simcount FROM vc_userinfo,  vc_simulation,  vc_simulationjob"
+		ResultSet rset = stmt.executeQuery("SELECT userid,  COUNT(vc_simulationjob.id) simcount FROM vc_userinfo,  vc_simulation,  vc_simulationjob"
 				+ " WHERE vc_userinfo.id = vc_simulation.ownerref AND "
 				+ "vc_simulationjob.simref = vc_simulation.id AND "
 				+ "vc_simulationjob.submitdate >= to_date('"+fromDate+"',   'DD-MM-YY')"
