@@ -103,8 +103,8 @@ public class RestDatabaseService {
 	public SimulationStatus[] getSimulationStatus(KeyValue[] simulationKeys,User vcellUser) throws DataAccessException{
 		return simulationDatabaseDirect.getSimulationStatus(simulationKeys);
 	}
-	public String getBasicStatistics(String fromDate,String toDate) throws SQLException, DataAccessException{
-		return databaseServerImpl.getAdminDBTopLevel().getBasicStatistics(fromDate,toDate);
+	public String getBasicStatistics() throws SQLException, DataAccessException{
+		return databaseServerImpl.getAdminDBTopLevel().getBasicStatistics();
 	}
 	
 	public SimulationSaveResponse saveSimulation(BiomodelSimulationSaveServerResource resource, User vcellUser, List<OverrideRepresentation> overrideRepresentations) throws PermissionException, ObjectNotFoundException, DataAccessException, SQLException, XmlParseException, PropertyVetoException, MappingException, ExpressionException{

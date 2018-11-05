@@ -78,18 +78,7 @@ public final class RpcRestlet extends Restlet {
 //					}				
 //				}else 
 				if (form.getFirst("stats") != null){
-					String requestTypeString = form.getFirstValue("stats", true);
-					String result = null;
-					if (requestTypeString!=null) {
-						String fromDate = form.getFirstValue("from", true);
-						String toDate = form.getFirstValue("to", true);
-						if (fromDate != null && toDate != null) {
-							result = restDatabaseService.getBasicStatistics(fromDate, toDate);
-						}
-					}
-					if (result == null){
-						throw new Exception("Expecting /"+VCellApiApplication.RPC+"?stats=basic&from=DD-MM-YY&to=DD-MM-YY");
-					}
+					String requestTypeString = form.getFirstValue("stats", true);//get .../rpc?stats=value 'value'
 					
 					//Use "WWW-Authenticate - Basic" authentication scheme
 					//Browser takes care of asking user for credentials and sending them
@@ -105,24 +94,27 @@ public final class RpcRestlet extends Restlet {
 	//					System.out.println("type="+type+" decoded="+s);
 						if(type.equals("Basic")) {
 							java.util.StringTokenizer st2 = new java.util.StringTokenizer(s,":");
-							String usr=st2.nextToken();
-							String pw = st2.nextToken();
-	//						System.out.println("user="+usr+" password="+pw);
-							UserLoginInfo.DigestedPassword dpw = new UserLoginInfo.DigestedPassword(pw);
-	//						System.out.println(dpw);
-							VCellApiApplication application = ((VCellApiApplication)getApplication());
-							User authuser = application.getUserVerifier().authenticateUser(usr,dpw.getString().toCharArray());
-	//						System.out.println(authuser);
-							if(authuser != null &&
-								(authuser.getName().equals("frm") || 
-								authuser.getName().equals("les") ||
-								authuser.getName().equals("ion") ||
-								authuser.getName().equals("danv") ||
-								authuser.getName().equals("mblinov") ||
-								authuser.getName().equals("ACowan"))) {
-								response.setStatus(Status.SUCCESS_OK);
-								response.setEntity(result, MediaType.TEXT_HTML);
-								return;
+							if(st2.countTokens() == 2) {
+								String usr=st2.nextToken();
+								String pw = st2.nextToken();
+		//						System.out.println("user="+usr+" password="+pw);
+								UserLoginInfo.DigestedPassword dpw = new UserLoginInfo.DigestedPassword(pw);
+		//						System.out.println(dpw);
+								VCellApiApplication application = ((VCellApiApplication)getApplication());
+								User authuser = application.getUserVerifier().authenticateUser(usr,dpw.getString().toCharArray());
+		//						System.out.println(authuser);
+								if(authuser != null &&
+									(authuser.getName().equals("frm") || 
+									authuser.getName().equals("les") ||
+									authuser.getName().equals("ion") ||
+									authuser.getName().equals("danv") ||
+									authuser.getName().equals("mblinov") ||
+									authuser.getName().equals("ACowan"))) {
+									String result = restDatabaseService.getBasicStatistics();
+									response.setStatus(Status.SUCCESS_OK);
+									response.setEntity(result, MediaType.TEXT_HTML);
+									return;
+								} 								
 							}
 						}
 					}

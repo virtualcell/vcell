@@ -254,75 +254,96 @@ private static int htmlWithBreak(String descr,StringBuffer sb,Statement stmt,Str
 	rset.close();
 	return val;
 }
-public synchronized String getBasicStatistics(String fromDate,String toDate) throws SQLException,DataAccessException{
+public synchronized String getBasicStatistics() throws SQLException,DataAccessException{
 	Object lock = new Object();
 	Connection con = conFactory.getConnection(lock);
 	Statement stmt = null;
 	try {
 		StringBuffer sb = new StringBuffer("<html><body>");
 		stmt = con.createStatement();
-		String usersBetweenQuery = "select count(*) "+QUERY_VALUE+" from vc_userinfo where insertdate >= to_date('"+fromDate+"','DD-MM-YY') and insertdate <= to_date('"+toDate+"','DD-MM-YY')";
-		htmlWithBreak("Users registered (between "+fromDate+" and "+toDate+")=", sb, stmt, usersBetweenQuery);
+		final int[] pastTime = new int[] {7,30,90,180,365};
+		final String[] pastTimeDescr = new String[] {"last week","last month","last 3 month","last 6 month","last year"};
+		for (int i = 0; i < pastTimeDescr.length; i++) {
+			htmlWithBreak("Users registered ("+pastTimeDescr[i]+")=", sb, stmt, "select count(*) "+QUERY_VALUE+" from vc_userinfo where insertdate >= (sysdate - "+pastTime[i]+")");
+		}
+//		String usersLastWeek = "select count(*) "+QUERY_VALUE+" from vc_userinfo where insertdate >= (sysdate - 7))";
+//		htmlWithBreak("Users registered (last week)=", sb, stmt, usersLastWeek);
+//		
+//		String usersLastMonth = "select count(*) "+QUERY_VALUE+" from vc_userinfo where insertdate >= (sysdate - 30))";
+//		htmlWithBreak("Users registered (last month)=", sb, stmt, usersLastMonth);
+//		
+//		String usersLast3Month = "select count(*) "+QUERY_VALUE+" from vc_userinfo where insertdate >= (sysdate - 90))";
+//		htmlWithBreak("Users registered (last 3 month)=", sb, stmt, usersLast3Month);
+//		
+//		String usersLast6Month = "select count(*) "+QUERY_VALUE+" from vc_userinfo where insertdate >= (sysdate - 180))";
+//		htmlWithBreak("Users registered (last 6 month)=", sb, stmt, usersLast6Month);
+//		
+//		String usersLastYear = "select count(*) "+QUERY_VALUE+" from vc_userinfo where insertdate >= (sysdate - 365))";
+//		htmlWithBreak("Users registered (last year)=", sb, stmt, usersLastYear);
+		
 		String totalUsersQuery = "select count(*) "+QUERY_VALUE+" from vc_userinfo";
 		htmlWithBreak("Number users=", sb, stmt, totalUsersQuery);
+		
 		String usersWithSimsQuery = "select count(distinct ownerref) "+QUERY_VALUE+" from vc_simulation";
 		htmlWithBreak("Users with simulations=", sb, stmt, usersWithSimsQuery);
 		
-		String bmQuey = "select count(*) "+QUERY_VALUE+" from vc_biomodel";
-		htmlWithBreak("Biomodels=", sb, stmt, bmQuey);
+		String bmQuery = "select count(*) "+QUERY_VALUE+" from vc_biomodel";
+		htmlWithBreak("Biomodels=", sb, stmt, bmQuery);
 
-		String mmQuey = "select count(*) "+QUERY_VALUE+" from vc_mathmodel";
-		htmlWithBreak("Mathmodels=", sb, stmt, mmQuey);
+		String mmQuery = "select count(*) "+QUERY_VALUE+" from vc_mathmodel";
+		htmlWithBreak("Mathmodels=", sb, stmt, mmQuery);
 
-		String allModelsQuey = "select count(*) "+QUERY_VALUE+" from (select vc_biomodel.id from vc_biomodel union select vc_mathmodel.id from vc_mathmodel) t";
-		htmlWithBreak("Total models=", sb, stmt, allModelsQuey);
+		String allModelsQuery = "select count(*) "+QUERY_VALUE+" from (select vc_biomodel.id from vc_biomodel union select vc_mathmodel.id from vc_mathmodel) t";
+		htmlWithBreak("Total models=", sb, stmt, allModelsQuery);
 
-		String pubbmQuey = "select count(*) "+QUERY_VALUE+" from vc_biomodel where PRIVACY=0";
-		htmlWithBreak("Public biomodels=", sb, stmt, pubbmQuey);
+		String pubbmQuery = "select count(*) "+QUERY_VALUE+" from vc_biomodel where PRIVACY=0";
+		htmlWithBreak("Public biomodels=", sb, stmt, pubbmQuery);
 
-		String pubmmQuey = "select count(*) "+QUERY_VALUE+" from vc_mathmodel where PRIVACY=0";
-		htmlWithBreak("Public math models=", sb, stmt, pubmmQuey);
+		String pubmmQuery = "select count(*) "+QUERY_VALUE+" from vc_mathmodel where PRIVACY=0";
+		htmlWithBreak("Public math models=", sb, stmt, pubmmQuery);
 
-		String puballModelsQuey = "select count(*) "+QUERY_VALUE+" from (select vc_biomodel.id from vc_biomodel where PRIVACY=0 union select vc_mathmodel.id from vc_mathmodel where PRIVACY=0) t";
-		htmlWithBreak("Total public models=", sb, stmt, puballModelsQuey);
+		String puballModelsQuery = "select count(*) "+QUERY_VALUE+" from (select vc_biomodel.id from vc_biomodel where PRIVACY=0 union select vc_mathmodel.id from vc_mathmodel where PRIVACY=0) t";
+		htmlWithBreak("Total public models=", sb, stmt, puballModelsQuery);
 
 		String allsims = "select count(*) "+QUERY_VALUE+" from vc_simulation";
 		htmlWithBreak("Number simulations=", sb, stmt, allsims);
 
-		String pubbmsimsQuey = "SELECT COUNT (*) "+QUERY_VALUE+" FROM VC_SIMULATION WHERE VC_SIMULATION.ID IN (" 
+		String pubbmsimsQuery = "SELECT COUNT (*) "+QUERY_VALUE+" FROM VC_SIMULATION WHERE VC_SIMULATION.ID IN (" 
 				+ "SELECT DISTINCT VC_SIMULATION.ID FROM VC_BIOMODEL, VC_SIMULATION, VC_BIOMODELSIM " 
 				+ "WHERE VC_SIMULATION.ID = VC_BIOMODELSIM.simref " 
 				+ "AND VC_BIOMODEL.ID = VC_BIOMODELSIM.biomodelref " 
 				+ "AND vc_biomodel.privacy = 0)";
-		int pubbmsimsval = htmlWithBreak("Public biomodel simulations=", sb, stmt, pubbmsimsQuey);
+		int pubbmsimsval = htmlWithBreak("Public biomodel simulations=", sb, stmt, pubbmsimsQuery);
 
-		String pubmmsimsQuey = "SELECT COUNT (*) "+QUERY_VALUE+" FROM VC_SIMULATION WHERE VC_SIMULATION.ID IN (" 
+		String pubmmsimsQuery = "SELECT COUNT (*) "+QUERY_VALUE+" FROM VC_SIMULATION WHERE VC_SIMULATION.ID IN (" 
 				+ "SELECT DISTINCT VC_SIMULATION.ID FROM VC_MATHMODEL, VC_SIMULATION, VC_MATHMODELSIM " 
 				+ "WHERE VC_SIMULATION.ID = VC_MATHMODELSIM.simref "
 				+ "AND VC_MATHMODEL.ID = VC_MATHMODELSIM.mathmodelref " 
 				+ "AND VC_MATHMODEL.privacy = 0)";
-		int pubmmsimsval = htmlWithBreak("Public math model simulations=", sb, stmt, pubmmsimsQuey);
+		int pubmmsimsval = htmlWithBreak("Public math model simulations=", sb, stmt, pubmmsimsQuery);
 
-		String puballsimssQuey = "select sum(t."+QUERY_VALUE+") "+QUERY_VALUE+" from ("+
-		pubbmsimsQuey +
+		String puballsimssQuery = "select sum(t."+QUERY_VALUE+") "+QUERY_VALUE+" from ("+
+		pubbmsimsQuery +
 		" union "+
-		pubmmsimsQuey +
+		pubmmsimsQuery +
 		") t";
-		htmlWithBreak("Total public simulations=", sb, stmt, puballsimssQuey);
-		sb.append("<br></br>");
-		sb.append("<table><tr><th>User</th><th>SimRuns</th></tr>");
-		ResultSet rset = stmt.executeQuery("SELECT userid,  COUNT(vc_simulationjob.id) simcount FROM vc_userinfo,  vc_simulation,  vc_simulationjob"
-				+ " WHERE vc_userinfo.id = vc_simulation.ownerref AND "
-				+ "vc_simulationjob.simref = vc_simulation.id AND "
-				+ "vc_simulationjob.submitdate >= to_date('"+fromDate+"',   'DD-MM-YY')"
-				+ " AND vc_simulationjob.submitdate <= to_date('"+toDate+"',   'DD-MM-YY')"
-				+ " GROUP BY userid ORDER BY userid ASC");
-		while(rset.next()) {
-			sb.append("<tr><td>"+rset.getString(1)+"</td><td>"+rset.getInt(2)+"</td></td>");
-		}
-		sb.append("</table>");
-		rset.close();
+		htmlWithBreak("Total public simulations=", sb, stmt, puballsimssQuery);
 		
+		for (int i = 0; i < pastTimeDescr.length; i++) {
+			sb.append("<br></br>");
+			sb.append("Users running sims "+pastTimeDescr[i]+":");
+			sb.append("<table><tr><th>User</th><th>SimRuns</th></tr>");
+			ResultSet rset = stmt.executeQuery(
+					"SELECT userid,  COUNT(vc_simulationjob.id) simcount FROM vc_userinfo,  vc_simulation,  vc_simulationjob"
+							+ " WHERE vc_userinfo.id = vc_simulation.ownerref AND "
+							+ "vc_simulationjob.simref = vc_simulation.id AND "
+							+ "vc_simulationjob.submitdate >= (sysdate -"+pastTime[i]+")" + " GROUP BY userid ORDER BY simcount desc");
+			while (rset.next()) {
+				sb.append("<tr><td>" + rset.getString(1) + "</td><td>" + rset.getInt(2) + "</td></td>\n");
+			}
+			sb.append("</table>");
+			rset.close();
+		}
 		sb.append("</body></html>");
 		return sb.toString();
 	} catch (Throwable e) {
