@@ -20,8 +20,6 @@ import org.vcell.util.ISize;
 import org.vcell.vcellij.ImageDatasetReader;
 
 import cbit.image.ImageSizeInfo;
-import cbit.vcell.VirtualMicroscopy.ImageDataset;
-import cbit.vcell.VirtualMicroscopy.ImageDatasets;
 import cbit.vcell.resource.ResourceUtil;
 
 @Plugin(type = ImageDatasetReader.class)
@@ -34,6 +32,8 @@ public class BioformatsImageDatasetReader extends AbstractService implements Ima
 	
 	public static final String BIOF_XML_START_DELIM = "bioformats xml start:";
 	public static final String BIOF_XML_END_DELIM = "bioformats xml end:";
+	public static final String BIOF_XML_STATUS_START_DELIM = "bioformats status start:";
+	public static final String BIOF_XML_STATUS_END_DELIM = "bioformats status end:";
 	private static File bioformatsExecutableJarFile = null;
 	
 	public BioformatsImageDatasetReader() throws Exception{
@@ -54,7 +54,26 @@ public class BioformatsImageDatasetReader extends AbstractService implements Ima
 //  mkdir META-INF
 //  echo -e "Manifest-Version: 1.0\nMain-Class: org.vcell.bioformats.BioFormatsImageDatasetReaderFrm\n"
 //	jar cf mynewbiof.jar .
-	private String runpb(ArrayList<String> cmdList) throws Exception{
+	private String runpb(ArrayList<String> cmdList, ClientTaskStatusSupport newParam) throws Exception{
+		//DEBUGGING CODE
+//		System.out.println("\n--cmd begin--");
+//		Arrays.stream(cmdList.toArray()).map(s->s+" ").forEach(System.out::print);
+//		System.out.println("\n--cmd end--");
+//		PrintStream origstdout = System.out;
+//		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+//		TeeOutputStream tos = new TeeOutputStream(origstdout, baos);
+//		PrintStream newps = new PrintStream(tos);
+//		try {
+//			
+//			System.setOut(newps);
+//		BioFormatsImageDatasetReaderFrm.main(cmdList.toArray(new String[0]));
+//		String output = baos.toString();
+//		output = output.substring(output.indexOf(BIOF_XML_START_DELIM)+BIOF_XML_START_DELIM.length()+1, output.indexOf(BIOF_XML_END_DELIM));
+//		if(true) {return output;}
+//		}finally {
+//			System.setOut(origstdout);
+//		}
+		
 		cmdList.add(0, "java");
 		cmdList.add(1,"-jar");
 		cmdList.add(2,
@@ -76,8 +95,19 @@ public class BioformatsImageDatasetReader extends AbstractService implements Ima
 		BufferedReader br = new BufferedReader(new InputStreamReader(p.getInputStream()));
 		String line;
 		StringBuffer sb = new StringBuffer();
+		int statusStartIndex = -1;
+		int statusEndIndex = -1;
 		while((line=br.readLine())!=null){
 		   sb.append(line);
+//		   if(line.length()<200) {System.out.println(line);}
+		   if(newParam != null) {
+			   statusStartIndex = line.indexOf(BIOF_XML_STATUS_START_DELIM);
+			   if(statusStartIndex != -1) {
+				   statusEndIndex = line.indexOf(BIOF_XML_STATUS_END_DELIM);
+				   if(statusEndIndex != -1);
+				   	newParam.setMessage(line.substring(statusStartIndex+BIOF_XML_STATUS_START_DELIM.length(), statusEndIndex));
+			   }
+		   }
 		}
 		return sb.substring(sb.indexOf(BIOF_XML_START_DELIM)+BIOF_XML_START_DELIM.length(), sb.indexOf(BIOF_XML_END_DELIM));
 	}
@@ -100,7 +130,7 @@ public class BioformatsImageDatasetReader extends AbstractService implements Ima
 		if(forceZSize != null) {
 			argsStr.add(forceZSize+"");
 		}
-		String xml = runpb(argsStr);
+		String xml = runpb(argsStr, null);
 		return (ImageSizeInfo)createInstanceFromXml(xml,ImageSizeInfo.class);
 	}
 
@@ -110,7 +140,7 @@ public class BioformatsImageDatasetReader extends AbstractService implements Ima
 				IMAGEDATA,
 				imageID
 			}));
-			String xml = runpb(argsStr);
+			String xml = runpb(argsStr, status);
 			return (ImageDataset)createInstanceFromXml(xml, ImageDataset.class);
 	}
 
@@ -124,7 +154,7 @@ public class BioformatsImageDatasetReader extends AbstractService implements Ima
 		argsStr.add(Boolean.toString(bMergeChannels));
 		argsStr.add((timeIndex==null?"null":timeIndex+""));
 		argsStr.add((resize==null?"null":resize.getX()+","+resize.getY()+","+resize.getZ()));
-			String xml = runpb(argsStr);
+			String xml = runpb(argsStr, status);
 			return ((ImageDatasets)createInstanceFromXml(xml, ImageDatasets.class)).getImageDatasets();
 	}
 
@@ -139,7 +169,7 @@ public class BioformatsImageDatasetReader extends AbstractService implements Ima
 		}
 		argsStr.add(Boolean.toString(isTimeSeries));
 		argsStr.add(timeInterval+"");
-		String xml = runpb(argsStr);
+		String xml = runpb(argsStr, status);
 		return (ImageDataset)createInstanceFromXml(xml, ImageDataset.class);
 	}
 

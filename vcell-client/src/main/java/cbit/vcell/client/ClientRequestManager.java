@@ -1720,7 +1720,10 @@ public AsynchClientTask[] createNewGeometryTasks(final TopLevelWindowManager req
 					int sizeXY = 0;
 					ISize firstImageISize = null;
 					for (int i = 0; i < dirFiles.length; i++) {
-						ImageDataset[] imageDatasets = ImageDatasetReaderService.getInstance().getImageDatasetReader().readImageDatasetChannels(dirFiles[i].getAbsolutePath(), null,bMergeChannels,null,resize);
+						if(getClientTaskStatusSupport() != null) {
+							getClientTaskStatusSupport().setMessage("reading files "+(i+1)+" of "+dirFiles.length);
+						}
+						ImageDataset[] imageDatasets = ImageDatasetReaderService.getInstance().getImageDatasetReader().readImageDatasetChannels(dirFiles[i].getAbsolutePath(), getClientTaskStatusSupport(),bMergeChannels,null,resize);
 						for (int c = 0; c < imageDatasets.length; c++) {
 							if(imageDatasets[c].getSizeZ() != 1 || imageDatasets[c].getSizeT() != 1){
 								throwImportWholeDirectoryException(imageFile,
@@ -1755,7 +1758,7 @@ public AsynchClientTask[] createNewGeometryTasks(final TopLevelWindowManager req
 					}
 					getClientTaskStatusSupport().setMessage("Reading file...");
 					ImageDataset[] imageDatasets =
-							ImageDatasetReaderService.getInstance().getImageDatasetReader().readImageDatasetChannels(imageFile.getAbsolutePath(), null,bMergeChannels,userPreferredTimeIndex,resize);
+							ImageDatasetReaderService.getInstance().getImageDatasetReader().readImageDatasetChannels(imageFile.getAbsolutePath(), getClientTaskStatusSupport(),bMergeChannels,userPreferredTimeIndex,resize);
 					fdfos = ClientRequestManager.createFDOSWithChannels(imageDatasets,null);
 				}
 				hashTable.put(FDFOS, fdfos);
