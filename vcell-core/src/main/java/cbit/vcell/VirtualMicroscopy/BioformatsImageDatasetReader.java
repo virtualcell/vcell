@@ -34,6 +34,9 @@ public class BioformatsImageDatasetReader extends AbstractService implements Ima
 	public static final String BIOF_XML_END_DELIM = "bioformats xml end:";
 	public static final String BIOF_XML_STATUS_START_DELIM = "bioformats status start:";
 	public static final String BIOF_XML_STATUS_END_DELIM = "bioformats status end:";
+	
+	public static final String BIOF_XML_ERROR_START_DELIM = "bioformats error start:";
+	public static final String BIOF_XML_ERROR_END_DELIM = "bioformats error end:";
 	private static File bioformatsExecutableJarFile = null;
 	
 	public BioformatsImageDatasetReader() throws Exception{
@@ -54,22 +57,36 @@ public class BioformatsImageDatasetReader extends AbstractService implements Ima
 //  mkdir META-INF
 //  echo -e "Manifest-Version: 1.0\nMain-Class: org.vcell.bioformats.BioFormatsImageDatasetReaderFrm\n"
 //	jar cf mynewbiof.jar .
-	private String runpb(ArrayList<String> cmdList, ClientTaskStatusSupport newParam) throws Exception{
+	private String runpb(ArrayList<String> cmdList, ClientTaskStatusSupport clientTaskStatusSupport) throws Exception{
 		//DEBUGGING CODE
+//		final Exception[] excHolder = new Exception[1];
 //		System.out.println("\n--cmd begin--");
 //		Arrays.stream(cmdList.toArray()).map(s->s+" ").forEach(System.out::print);
 //		System.out.println("\n--cmd end--");
-//		PrintStream origstdout = System.out;
+//		final PrintStream origstdout = System.out;
 //		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-//		TeeOutputStream tos = new TeeOutputStream(origstdout, baos);
-//		PrintStream newps = new PrintStream(tos);
+//		PrintStream newps = new PrintStream(baos) {
+//			@Override
+//			public void println(String x) {
+//				try {
+//					baos.write(x.getBytes());
+////					origstdout.println("-----"+x);
+//					detectException(x);
+//					detectMessage(clientTaskStatusSupport, x);
+//				}catch (Exception e) {
+//					excHolder[0] = e;
+//				}
+//			}
+//		};
 //		try {
-//			
 //			System.setOut(newps);
-//		BioFormatsImageDatasetReaderFrm.main(cmdList.toArray(new String[0]));
-//		String output = baos.toString();
-//		output = output.substring(output.indexOf(BIOF_XML_START_DELIM)+BIOF_XML_START_DELIM.length()+1, output.indexOf(BIOF_XML_END_DELIM));
-//		if(true) {return output;}
+//			BioFormatsImageDatasetReaderFrm.main(cmdList.toArray(new String[0]));
+//			String output = baos.toString();
+//			if(excHolder[0] != null) {
+//				throw excHolder[0];
+//			}
+//			output = output.substring(output.indexOf(BIOF_XML_START_DELIM)+BIOF_XML_START_DELIM.length()+1, output.indexOf(BIOF_XML_END_DELIM));
+//			if(true) {return output;}
 //		}finally {
 //			System.setOut(origstdout);
 //		}
@@ -95,21 +112,39 @@ public class BioformatsImageDatasetReader extends AbstractService implements Ima
 		BufferedReader br = new BufferedReader(new InputStreamReader(p.getInputStream()));
 		String line;
 		StringBuffer sb = new StringBuffer();
-		int statusStartIndex = -1;
-		int statusEndIndex = -1;
 		while((line=br.readLine())!=null){
 		   sb.append(line);
-//		   if(line.length()<200) {System.out.println(line);}
-		   if(newParam != null) {
+		   detectMessage(clientTaskStatusSupport, line);
+		   detectException(line);
+		}
+		return sb.substring(sb.indexOf(BIOF_XML_START_DELIM)+BIOF_XML_START_DELIM.length(), sb.indexOf(BIOF_XML_END_DELIM));
+	}
+
+	private void detectException(String line) throws Exception {
+		int statusStartIndex;
+		int statusEndIndex;
+		statusStartIndex = line.indexOf(BIOF_XML_ERROR_START_DELIM);
+		   if(statusStartIndex != -1) {
+			   statusEndIndex = line.indexOf(BIOF_XML_ERROR_END_DELIM);
+			   if(statusEndIndex != -1) {
+				   throw new Exception(line.substring(statusStartIndex+BIOF_XML_ERROR_START_DELIM.length(), statusEndIndex));
+			   }
+			   
+		   }
+	}
+
+	private void detectMessage(ClientTaskStatusSupport clientTaskStatusSupport, String line) {
+		int statusStartIndex;
+		int statusEndIndex;
+		if(clientTaskStatusSupport != null) {
 			   statusStartIndex = line.indexOf(BIOF_XML_STATUS_START_DELIM);
 			   if(statusStartIndex != -1) {
 				   statusEndIndex = line.indexOf(BIOF_XML_STATUS_END_DELIM);
-				   if(statusEndIndex != -1);
-				   	newParam.setMessage(line.substring(statusStartIndex+BIOF_XML_STATUS_START_DELIM.length(), statusEndIndex));
+				   if(statusEndIndex != -1) {
+					   clientTaskStatusSupport.setMessage(line.substring(statusStartIndex+BIOF_XML_STATUS_START_DELIM.length(), statusEndIndex));
+				   }
 			   }
 		   }
-		}
-		return sb.substring(sb.indexOf(BIOF_XML_START_DELIM)+BIOF_XML_START_DELIM.length(), sb.indexOf(BIOF_XML_END_DELIM));
 	}
 	
 	public static Object createInstanceFromXml(String xml,Class instanceClass) throws JAXBException {
