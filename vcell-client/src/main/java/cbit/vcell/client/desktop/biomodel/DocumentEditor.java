@@ -177,26 +177,26 @@ public abstract class DocumentEditor extends JPanel {
 					rightBottomTabbedPane.setIconAt(DocumentEditorTabID.problems.ordinal(), VCellIcons.issueWarningIcon);
 				} else {				// nothing to flash if the number of errors or warnings did not increase
 					rightBottomTabbedPane.setIconAt(DocumentEditorTabID.problems.ordinal(), null);
-					rightBottomTabbedPane.setTitleAt(DocumentEditorTabID.problems.ordinal(), "<html>" + title + "</html>");
+					rightBottomTabbedPane.setTitleAt(DocumentEditorTabID.problems.ordinal(), title );
 					problemSignalling.timer.stop();
 					return;				// clean up and exit
 				}
 			}
 			if(counter >= MaxBlinks) {	// last tick, we clean up and leave
 				rightBottomTabbedPane.setIconAt(DocumentEditorTabID.problems.ordinal(), null);
-				rightBottomTabbedPane.setTitleAt(DocumentEditorTabID.problems.ordinal(), "<html>" + title + "</html>");
+				rightBottomTabbedPane.setTitleAt(DocumentEditorTabID.problems.ordinal(), title);
 				problemSignalling.timer.stop();
 				return;
 			}
 			// text
 			if(counter%2 == 0) {		// even ticks, display title in colored background
 				if(oldNumErrors < issueManager.getNumErrors()) {
-					rightBottomTabbedPane.setTitleAt(DocumentEditorTabID.problems.ordinal(), "<html><body bgcolor=\"#FFB0B0\">" + title + "</body></html>");
+					rightBottomTabbedPane.setTitleAt(DocumentEditorTabID.problems.ordinal(), "*" + title + "*");
 				} else if(oldNumWarnings < issueManager.getNumWarnings()) {
-					rightBottomTabbedPane.setTitleAt(DocumentEditorTabID.problems.ordinal(), "<html><body bgcolor=\"#FFEFD0\">" + title + "</body></html>");
+					rightBottomTabbedPane.setTitleAt(DocumentEditorTabID.problems.ordinal(), "*" + title + "*");
 				}
 			} else if(counter%2 == 1) {	// off ticks, display title in normal background
-				rightBottomTabbedPane.setTitleAt(DocumentEditorTabID.problems.ordinal(), "<html>" + title + "</html>");
+				rightBottomTabbedPane.setTitleAt(DocumentEditorTabID.problems.ordinal(), title );
 			}
 			counter++;
 		}
@@ -311,15 +311,15 @@ public abstract class DocumentEditor extends JPanel {
 			boolean bHtml = false;
 			if (issueManager.getNumErrors() > 0) {
 				bHtml = true;
-				errString = "<font color=#9B0000>" + errString + "</font>";
+//				errString = "<font color=#9B0000>" + errString + "</font>";
 			}
 			if (issueManager.getNumWarnings() > 0) {
 				bHtml = true;
-				warnString = "<font color=#BA5C00>" + warnString + "</font>";	// 0xff8c00
+//				warnString = "<font color=#BA5C00>" + warnString + "</font>";	// 0xff8c00
 			}
 			String title = " Problems (" + errString + ", " + warnString + ") ";
 			if(bHtml) {
-				rightBottomTabbedPane.setTitleAt(DocumentEditorTabID.problems.ordinal(), "<html>" + title + "</html>");
+				rightBottomTabbedPane.setTitleAt(DocumentEditorTabID.problems.ordinal(), "*"+ title +"*" );
 				warningBarUpdate(issueEvent, title);
 			} else {
 				rightBottomTabbedPane.setTitleAt(DocumentEditorTabID.problems.ordinal(), title);

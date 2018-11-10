@@ -42,7 +42,7 @@ public class JTabbedPaneEnhanced extends JTabbedPane {
 		this(true);
 	}
 	
-	public JTabbedPaneEnhanced(boolean boldActivTab) {
+	private JTabbedPaneEnhanced(boolean boldActivTab) {
 		super();
 //		this.bBoldActiveTab = boldActivTab;
 //		addChangeListener(boldChangeListner);

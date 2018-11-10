@@ -66,23 +66,23 @@ public class ReactionRulePropertiesPanel extends JTabbedPaneEnhanced {
 	private ChangeListener changeListener = new ChangeListener() {
 		@Override
 		public void stateChanged(ChangeEvent e) {
-			final String prologue = "<html><b>";
-			final String epilogue = "</html></b>";
-			JTabbedPane sourceTabbedPane = (JTabbedPane) e.getSource();	// it's the ReactionRulePropertiesPanel itself
-			int numTabs = sourceTabbedPane.getTabCount();
-			for(int i = 0; i < numTabs; i++) {
-				String curTitle = sourceTabbedPane.getTitleAt(i);
-				if(curTitle.startsWith(prologue)) {
-					curTitle = curTitle.substring(prologue.length());
-					curTitle = curTitle.substring(0, curTitle.indexOf(epilogue));
-					setTitleAt(i, curTitle);
-				}
-			}
-			int index = sourceTabbedPane.getSelectedIndex();
-			System.out.println("Tab changed to: " + sourceTabbedPane.getTitleAt(index));
-			String selectedTitle = sourceTabbedPane.getTitleAt(index);	// we know it's clean of prologue or epilogue
-			selectedTitle = prologue + selectedTitle + epilogue;
-			setTitleAt(index, selectedTitle);
+//			final String prologue = "<html><b>";
+//			final String epilogue = "</html></b>";
+//			JTabbedPane sourceTabbedPane = (JTabbedPane) e.getSource();	// it's the ReactionRulePropertiesPanel itself
+//			int numTabs = sourceTabbedPane.getTabCount();
+//			for(int i = 0; i < numTabs; i++) {
+//				String curTitle = sourceTabbedPane.getTitleAt(i);
+//				if(curTitle.startsWith(prologue)) {
+//					curTitle = curTitle.substring(prologue.length());
+//					curTitle = curTitle.substring(0, curTitle.indexOf(epilogue));
+//					setTitleAt(i, curTitle);
+//				}
+//			}
+//			int index = sourceTabbedPane.getSelectedIndex();
+//			System.out.println("Tab changed to: " + sourceTabbedPane.getTitleAt(index));
+//			String selectedTitle = sourceTabbedPane.getTitleAt(index);	// we know it's clean of prologue or epilogue
+//			selectedTitle = prologue + selectedTitle + epilogue;
+//			setTitleAt(index, selectedTitle);
 		}
 	};
 		
