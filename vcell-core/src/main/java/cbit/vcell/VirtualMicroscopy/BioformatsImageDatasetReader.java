@@ -7,6 +7,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.concurrent.TimeUnit;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
@@ -117,6 +118,7 @@ public class BioformatsImageDatasetReader extends AbstractService implements Ima
 		   detectMessage(clientTaskStatusSupport, line);
 		   detectException(line);
 		}
+		p.waitFor(5, TimeUnit.SECONDS);
 		return sb.substring(sb.indexOf(BIOF_XML_START_DELIM)+BIOF_XML_START_DELIM.length(), sb.indexOf(BIOF_XML_END_DELIM));
 	}
 
