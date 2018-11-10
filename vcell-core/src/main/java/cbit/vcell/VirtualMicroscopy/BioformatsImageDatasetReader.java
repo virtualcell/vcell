@@ -71,7 +71,7 @@ public class BioformatsImageDatasetReader extends AbstractService implements Ima
 //			public void println(String x) {
 //				try {
 //					baos.write(x.getBytes());
-////					origstdout.println("-----"+x);
+//					origstdout.println(x.substring(0, Math.min(x.length()-1, 400)));
 //					detectException(x);
 //					detectMessage(clientTaskStatusSupport, x);
 //				}catch (Exception e) {
