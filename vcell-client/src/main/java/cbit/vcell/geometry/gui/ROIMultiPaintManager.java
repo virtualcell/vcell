@@ -3567,6 +3567,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 				}
 				if(newROIName == null || newROIName.length() == 0){
 					bNameOK = false;
+					newROIName = null;
 					PopupGenerator.showErrorDialog(overlayEditorPanelJAI, "No Domain Name entered, try again.");
 				}else{
 					if(newROIName.equals(RESERVED_NAME_BACKGROUND)){
@@ -3602,7 +3603,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 //						}
 //					}
 					overlayEditorPanelJAI.addROIName(newROIName, true, newROIName,true,/*true,true,*/unUsedColorIndex);
-				}else{
+				}else if(newROIName != null){
 					PopupGenerator.showErrorDialog(overlayEditorPanelJAI, "ROI Name "+newROIName+" already used, try again.");
 					newROIName = null;
 				}
