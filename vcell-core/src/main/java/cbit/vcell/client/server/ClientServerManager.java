@@ -14,6 +14,7 @@ import java.io.IOException;
 
 import org.apache.http.HttpStatus;
 import org.apache.http.client.HttpResponseException;
+import org.apache.http.conn.HttpHostConnectException;
 import org.vcell.service.VCellServiceHelper;
 import org.vcell.service.registration.RegistrationService;
 import org.vcell.util.AuthenticationException;
@@ -425,11 +426,11 @@ private VCellConnection connectToServer(InteractiveContext requester) {
 	} catch (AuthenticationException aexc) {
 		aexc.printStackTrace(System.out);
 		requester.showErrorDialog(aexc.getMessage());
-	} catch (ConnectionException cexc) {
+	} catch (ConnectionException | HttpHostConnectException cexc) {
 		String msg = badConnectMessage(badConnStr) + "\n" + cexc.getMessage();
 		cexc.printStackTrace(System.out);
 		ErrorUtils.sendRemoteLogMessage(getClientServerInfo().getUserLoginInfo(),msg);
-		if (reconnectStat != ReconnectStatus.SUBSEQUENT) {
+		if (reconnectStat == ReconnectStatus.NOT) {
 			requester.showConnectWarning(msg);
 		}
 	} catch (HttpResponseException httpexc) {
