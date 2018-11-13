@@ -17,6 +17,7 @@ import java.awt.event.ItemEvent;
 import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.TreeSet;
 
 import javax.swing.BorderFactory;
@@ -35,10 +36,14 @@ import org.vcell.chombo.gui.ChomboDeveloperToolsPanel;
 import org.vcell.chombo.gui.ChomboTimeBoundsPanel;
 import org.vcell.solver.nfsim.gui.NFSimSimulationOptionsPanel;
 import org.vcell.solver.smoldyn.gui.SmoldynSimulationOptionsPanel;
+import org.vcell.util.DataAccessException;
+import org.vcell.util.document.User;
+import org.vcell.util.document.User.SPECIALS;
 import org.vcell.util.gui.CollapsiblePanel;
 import org.vcell.util.gui.DialogUtils;
 
 import cbit.vcell.client.ClientTaskManager;
+import cbit.vcell.client.test.VCellClientTest;
 import cbit.vcell.geometry.ChomboInvalidGeometryException;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.math.Constant;
@@ -1052,7 +1057,19 @@ private void refresh() {
 	}
 	
 	timeoutDisabledCheckBox.setVisible(true);
-	timeoutDisabledCheckBox.setEnabled(false);
+	boolean found = false;
+	try {
+		User loginUser = VCellClientTest.getVCellClient().getClientServerManager().getUser();
+		TreeMap<SPECIALS, TreeMap<User, String>> specialUsers = VCellClientTest.getVCellClient().getClientServerManager().getUserMetaDbServer().getSpecialUsers();
+		TreeMap<User, String> powerUsers = specialUsers.get(User.SPECIALS.special1);
+		if(powerUsers.containsKey(loginUser)) {
+			found = true;
+		}
+	} catch (Exception e) {
+		e.printStackTrace();	// we don't want to make a fuss if it happens
+	}
+	timeoutDisabledCheckBox.setEnabled(found);
+	
 	boolean bTimeoutDisabled = ivjTornOffSolverTaskDescription.isTimeoutDisabled();
 	timeoutDisabledCheckBox.setSelected(bTimeoutDisabled);
 	
