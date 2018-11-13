@@ -11,6 +11,7 @@
 package cbit.vcell.message.server.bootstrap.client;
 
 import java.rmi.RemoteException;
+import java.util.TreeMap;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -19,6 +20,7 @@ import org.vcell.util.DataAccessException;
 import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.document.CurateSpec;
 import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.User;
 import org.vcell.util.document.UserLoginInfo;
 import org.vcell.util.document.VCInfoContainer;
 import org.vcell.util.document.VersionInfo;
@@ -51,7 +53,17 @@ public LocalUserMetaDbServerMessaging(UserLoginInfo userLoginInfo, RpcSender rpc
 	this.dbServerProxy = new RpcDbServerProxy(userLoginInfo, rpcSender);
 }
 
-
+public TreeMap<User.SPECIALS,TreeMap<User,String>> getSpecialUsers() throws DataAccessException{
+	try {
+	return dbServerProxy.getSpecialUsers();
+	} catch (DataAccessException e) {
+		lg.error(e.getMessage(),e);
+		throw e;
+	} catch (Throwable e) {
+		lg.error(e.getMessage(),e);
+		throw new DataAccessException(e.getMessage(),e);
+	}
+}
 /**
  * This method was created in VisualAge.
  * @return GeometryInfo

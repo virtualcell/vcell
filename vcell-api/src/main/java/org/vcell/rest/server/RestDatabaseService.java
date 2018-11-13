@@ -6,7 +6,9 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
+import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.vcell.rest.VCellApiApplication;
@@ -106,7 +108,9 @@ public class RestDatabaseService {
 	public String getBasicStatistics() throws SQLException, DataAccessException{
 		return databaseServerImpl.getAdminDBTopLevel().getBasicStatistics();
 	}
-	
+	public TreeMap<User.SPECIALS,TreeMap<User,String>> getSpecialUsers(User user) throws DataAccessException{
+		return databaseServerImpl.getSpecialUsers(user);
+	}
 	public SimulationSaveResponse saveSimulation(BiomodelSimulationSaveServerResource resource, User vcellUser, List<OverrideRepresentation> overrideRepresentations) throws PermissionException, ObjectNotFoundException, DataAccessException, SQLException, XmlParseException, PropertyVetoException, MappingException, ExpressionException{
 		String simId = resource.getAttribute(VCellApiApplication.SIMULATIONID);
 		KeyValue simKey = new KeyValue(simId);

@@ -9,10 +9,13 @@
  */
 
 package org.vcell.rest.rpc;
+import java.util.TreeMap;
+
 import org.vcell.util.BigString;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.document.CurateSpec;
+import org.vcell.util.document.User;
 import org.vcell.util.document.UserLoginInfo;
 import org.vcell.util.document.VCInfoContainer;
 import org.vcell.util.document.VersionableFamily;
@@ -35,6 +38,9 @@ public RpcDbServerProxy(UserLoginInfo userLoginInfo, VCMessageSession vcMessageS
 	super(userLoginInfo, vcMessageSession, VCellQueue.DbRequestQueue);
 }
 
+public TreeMap<User.SPECIALS,TreeMap<User,String>> getSpecialUsers() throws DataAccessException{
+	return (TreeMap<User.SPECIALS,TreeMap<User,String>>)rpc("getSpecialUsers",new Object[0]);
+}
 
 public org.vcell.util.document.VCDocumentInfo curate(CurateSpec curateSpec) throws DataAccessException, ObjectNotFoundException {
 	return (org.vcell.util.document.VCDocumentInfo)rpc("curate",new Object[]{userLoginInfo.getUser(),curateSpec});

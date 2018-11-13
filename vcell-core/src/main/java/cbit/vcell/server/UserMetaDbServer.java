@@ -9,6 +9,8 @@
  */
 
 package cbit.vcell.server;
+import java.util.TreeMap;
+
 import org.vcell.util.BigString;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ObjectNotFoundException;
@@ -18,6 +20,7 @@ import org.vcell.util.document.CurateSpec;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.MathModelInfo;
 import org.vcell.util.document.ReferenceQuerySpec;
+import org.vcell.util.document.User;
 import org.vcell.util.document.VCDocumentInfo;
 import org.vcell.util.document.VCInfoContainer;
 import org.vcell.util.document.VersionInfo;
@@ -48,6 +51,9 @@ import cbit.vcell.numericstest.TestSuiteOPResults;
  * This type was created in VisualAge.
  */
 public interface UserMetaDbServer {
+	
+TreeMap<User.SPECIALS,TreeMap<User,String>> getSpecialUsers() throws DataAccessException;
+
 /**
  * Insert the method's description here.
  * Creation date: (5/23/2006 9:42:56 AM)

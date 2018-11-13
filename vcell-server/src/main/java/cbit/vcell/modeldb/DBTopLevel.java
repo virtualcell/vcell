@@ -11,6 +11,7 @@
 package cbit.vcell.modeldb;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.TreeMap;
 import java.util.Vector;
 
 import org.vcell.db.ConnectionFactory;
@@ -921,6 +922,26 @@ VCImage getVCImage(QueryHashtable dbc, User user, KeyValue key, boolean bCheckPe
  * @return cbit.vcell.modeldb.VCInfoContainer
  * @param user cbit.vcell.server.User
  */
+TreeMap<User.SPECIALS,TreeMap<User,String>>  getSpecialUsers(User user,boolean bEnableRetry) throws DataAccessException, java.sql.SQLException{
+	
+	Object lock = new Object();
+	Connection con = conFactory.getConnection(lock);
+	try {
+		return DbDriver.getSpecialUsers(user,con,conFactory.getDatabaseSyntax());
+	} catch (Throwable e) {
+		lg.error(e.getMessage(),e);
+		if (bEnableRetry && isBadConnection(con)) {
+			conFactory.failed(con,lock);
+			return getSpecialUsers(user,false);
+		}else{
+			handle_DataAccessException_SQLException(e);
+			return null; // never gets here;
+		}
+	}finally{
+		conFactory.release(con,lock);
+	}
+}
+
 VCInfoContainer getVCInfoContainer(User user, boolean bEnableRetry) throws DataAccessException, java.sql.SQLException{
 	
 	Object lock = new Object();

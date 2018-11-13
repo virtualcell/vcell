@@ -9,6 +9,8 @@
  */
 
 package cbit.vcell.modeldb;
+import java.util.TreeMap;
+
 import org.vcell.db.ConnectionFactory;
 import org.vcell.db.KeyFactory;
 import org.vcell.util.BigString;
@@ -65,7 +67,9 @@ public LocalUserMetaDbServer(ConnectionFactory conFactory, KeyFactory keyFactory
 	dbServerImpl = new DatabaseServerImpl(conFactory,keyFactory);
 }
 
-
+public TreeMap<User.SPECIALS,TreeMap<User,String>> getSpecialUsers() throws DataAccessException{
+	return dbServerImpl.getSpecialUsers(user);
+}
 /**
  * This method was created in VisualAge.
  * @return GeometryInfo

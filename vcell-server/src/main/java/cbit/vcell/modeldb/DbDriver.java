@@ -10,7 +10,6 @@
 
 package cbit.vcell.modeldb;
 import java.math.BigDecimal;
-import java.net.MalformedURLException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -1183,6 +1182,33 @@ private static User getUserFromUserid(Connection con, String userid) throws SQLE
 	return user;
 }
 
+public static TreeMap<User.SPECIALS,TreeMap<User,String>>  getSpecialUsers(User user,Connection con, DatabaseSyntax dbSyntax) throws DataAccessException, java.sql.SQLException{
+	TreeMap<User.SPECIALS,TreeMap<User,String>> result = new TreeMap<>();
+	String sql = "SELECT "+
+			SpecialUsersTable.table.userRef.getQualifiedColName()+" userref,"+
+			SpecialUsersTable.table.special.getQualifiedColName()+" special,"+
+			SpecialUsersTable.table.userDetail.getQualifiedColName() +" userdetail,"+
+			UserTable.table.userid.getQualifiedColName()+" userid"+
+		" FROM "+SpecialUsersTable.table.getTableName()+","+UserTable.table.getTableName()+
+		" WHERE "+SpecialUsersTable.table.userRef.getQualifiedColName()+ " = " + UserTable.table.id.getQualifiedColName();
+	try (Statement stmt = con.createStatement();){
+		try(ResultSet rset = stmt.executeQuery(sql);){
+			while(rset.next()) {
+				String specialStr = rset.getString("special");
+				User.SPECIALS special = User.SPECIALS.valueOf(specialStr);
+				String userdetail = rset.getString("userdetail");
+				String userRef = rset.getString("userref");
+				String userId = rset.getString("userid");
+				if(!result.containsKey(special)) {
+					result.put(special, new TreeMap<User,String>(new User.UserNameComparator()));
+				}
+				TreeMap<User,String> userMapDetail = result.get(special);
+				userMapDetail.put(new User(userId,new KeyValue(userRef)), userdetail);
+			}
+		}
+	}
+	return result;
+}
 /**
  * Insert the method's description here.
  * Creation date: (9/24/2003 12:54:32 PM)

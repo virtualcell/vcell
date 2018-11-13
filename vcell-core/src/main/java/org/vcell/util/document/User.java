@@ -9,7 +9,9 @@
  */
 
 package org.vcell.util.document;
+import java.io.Serializable;
 import java.util.Arrays;
+import java.util.Comparator;
 
 import org.vcell.util.Immutable;
 import org.vcell.util.Matchable;
@@ -19,6 +21,7 @@ import org.vcell.util.Matchable;
  */
 @SuppressWarnings("serial")
 public class User implements java.io.Serializable, Matchable, Immutable {
+	public static enum SPECIALS { special0,special1,special2,special3,special4};//Must match a name 'special' column of 'specialusers' table
 	private String userName = null;
 	private KeyValue key = null;
 	private static final String VCellTestAccountName = "vcelltestaccount";
@@ -27,6 +30,14 @@ public class User implements java.io.Serializable, Matchable, Immutable {
 
 	public static final User tempUser = new User("temp",new KeyValue("123"));
 	public static final String VCELL_GUEST = "vcellguest";
+	
+	public static class UserNameComparator implements Serializable,Comparator<User>{
+		@Override
+		public int compare(User o1, User o2) {
+			return o1.getName().compareToIgnoreCase(o2.getName());
+		}
+	};
+
 
 	/**
  * User constructor comment.

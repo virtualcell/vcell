@@ -11,6 +11,8 @@
 package cbit.vcell.modeldb;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.Vector;
 
 import org.apache.logging.log4j.LogManager;
@@ -109,6 +111,15 @@ public DatabaseServerImpl(ConnectionFactory conFactory, KeyFactory keyFactory)
 		lg.error(e.getMessage(),e);
 		throw new DataAccessException("Error creating AdminDbTopLevel " + e.getMessage());
 	}		
+}
+
+public TreeMap<User.SPECIALS,TreeMap<User,String>> getSpecialUsers(User user) throws DataAccessException{
+	try {
+		return dbTop.getSpecialUsers(user,true);
+	} catch (Exception e) {
+		e.printStackTrace();
+		throw new DataAccessException(e.getMessage(),e);
+	}
 }
 
 public void cleanupDatabase() throws DataAccessException {
