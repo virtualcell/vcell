@@ -192,13 +192,13 @@ public final class RpcRestlet extends Restlet {
 				}
 				VCellApiRpcRequest vcellapiRpcRequest = rpcBody.rpcRequest;
 				Serializable serializableResultObject = null;
-				if(vcellapiRpcRequest.methodName != null && vcellapiRpcRequest.methodName.equals("getVCInfoContainer")) {
+				/*if(vcellapiRpcRequest.methodName != null && vcellapiRpcRequest.methodName.equals("getVCInfoContainer")) {
 					serializableResultObject = restDatabaseService.getVCInfoContainer(vcellUser);
 				}else if(vcellapiRpcRequest.methodName != null && vcellapiRpcRequest.methodName.equals("getBioModelXML")) {
 					serializableResultObject = restDatabaseService.getBioModelXML((KeyValue)vcellapiRpcRequest.args[1], vcellUser);
 				}else if(vcellapiRpcRequest.methodName != null && vcellapiRpcRequest.methodName.equals("getMathModelXML")) {
 					serializableResultObject = restDatabaseService.getMathModelXML((KeyValue)vcellapiRpcRequest.args[1], vcellUser);
-				}else if(vcellapiRpcRequest.methodName != null && vcellapiRpcRequest.methodName.equals("getSimulationStatus")) {
+				}else */if(vcellapiRpcRequest.methodName != null && vcellapiRpcRequest.methodName.equals("getSimulationStatus")) {
 					KeyValue[] simKeys = (vcellapiRpcRequest.args[1] instanceof KeyValue?new KeyValue[] {(KeyValue)vcellapiRpcRequest.args[1]}:(KeyValue[])vcellapiRpcRequest.args[1]);
 					serializableResultObject = restDatabaseService.getSimulationStatus(simKeys, vcellUser);
 				}else if(vcellapiRpcRequest.methodName != null && vcellapiRpcRequest.methodName.equals("getSpecialUsers")) {
