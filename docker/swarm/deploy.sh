@@ -121,7 +121,7 @@ vcell_version=`cat $local_config_file | grep VCELL_VERSION_NUMBER | cut -d"=" -f
 vcell_build=`cat $local_config_file | grep VCELL_BUILD_NUMBER | cut -d"=" -f2`
 singularity_filename=`cat $local_config_file | grep VCELL_SINGULARITY_FILENAME | cut -d"=" -f2`
 singularity_image_external=`cat $local_config_file | grep VCELL_SINGULARITY_IMAGE_EXTERNAL | cut -d"=" -f2`
-partitionName=`cat $local_config_file | grep VCELL_SLURM_PARTITION | cut -d"=" -f2`
+#partitionName=`cat $local_config_file | grep VCELL_SLURM_PARTITION | cut -d"=" -f2`
 batchHost=`cat $local_config_file | grep VCELL_BATCH_HOST | cut -d"=" -f2`
 slurm_singularity_central_dir=`cat $local_config_file | grep VCELL_SLURM_CENTRAL_SINGULARITY_DIR | cut -d"=" -f2`
 

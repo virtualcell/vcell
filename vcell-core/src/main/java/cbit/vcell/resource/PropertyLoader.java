@@ -63,6 +63,9 @@ public class PropertyLoader {
 	public static final String slurm_cmd_scontrol			= record("vcell.slurm.cmd.scontrol",ValueType.GEN);
 	public static final String slurm_cmd_sinfo				= record("vcell.slurm.cmd.sinfo",ValueType.GEN);
 	public static final String slurm_partition				= record("vcell.slurm.partition",ValueType.GEN);
+	public static final String slurm_reservation			= record("vcell.slurm.reservation",ValueType.GEN);
+	public static final String slurm_partition_pu			= record("vcell.slurm.partitionpu",ValueType.GEN);
+	public static final String slurm_reservation_pu			= record("vcell.slurm.reservationpu",ValueType.GEN);
 	public static final String slurm_tmpdir					= record("vcell.slurm.tmpdir",ValueType.GEN);
 	public static final String slurm_local_singularity_dir	= record("vcell.slurm.local.singularity.dir",ValueType.GEN);
 	public static final String slurm_central_singularity_dir= record("vcell.slurm.central.singularity.dir",ValueType.GEN);
