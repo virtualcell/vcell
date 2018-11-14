@@ -34,7 +34,7 @@ public class SimulationTask implements java.io.Serializable, Matchable {
 	private SimulationJob simulationJob = null;
 	private int taskID = 0;
 	private String computeResource = null;
-
+	private boolean isPowerUser = false;
 /**
  * SimulationTask constructor comment.
  * @param argName java.lang.String
@@ -43,18 +43,22 @@ public class SimulationTask implements java.io.Serializable, Matchable {
  * @param argUserid java.lang.String
  */
 public SimulationTask(SimulationJob argSimulationJob, int tid) {
-	this(argSimulationJob, tid, null);
+	this(argSimulationJob, tid, null,false);
 }
 
-public SimulationTask(SimulationJob argSimulationJob, int tid, String comres) {
+public SimulationTask(SimulationJob argSimulationJob, int tid, String comres, boolean isPowerUser) {
 	if (argSimulationJob == null || argSimulationJob.getSimulation() == null){
 		throw new RuntimeException("simulation cannot be null");
 	}
 	simulationJob = argSimulationJob;
 	taskID = tid;
 	computeResource = comres;
+	this.isPowerUser = isPowerUser;
 }
 
+public boolean isPowerUser() {
+	return isPowerUser;
+}
 public double getEstimatedMemorySizeMB() {
 	//
 	// calculate number of PDE variables and total number of spatial variables

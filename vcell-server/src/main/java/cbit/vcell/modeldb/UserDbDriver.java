@@ -15,6 +15,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Random;
 import java.util.UUID;
@@ -27,6 +28,7 @@ import org.vcell.util.DataAccessException;
 import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
+import org.vcell.util.document.User.SPECIALS;
 import org.vcell.util.document.UserInfo;
 import org.vcell.util.document.UserLoginInfo;
 
@@ -52,32 +54,47 @@ public UserDbDriver() {
  * @param user java.lang.String
  * @param imageName java.lang.String
  */
-public User getUserFromUserid(Connection con, String userid) throws SQLException {
+public User.SpecialUser getUserFromUserid(Connection con, String userid) throws SQLException {
 	Statement stmt;
 	String sql;
 	ResultSet rset;
 	if (lg.isTraceEnabled()) {
 		lg.trace("UserDbDriver.getUserFromUserid(userid=" + userid + ")");
 	}
-	sql = 	"SELECT " + UserTable.table.id + 
-			" FROM " + userTable.getTableName() + 
-			" WHERE " + UserTable.table.userid + " = '" + userid + "'";
+	sql = 	"SELECT DISTINCT " + UserTable.table.id.getQualifiedColName()+" userkey" + "," + SpecialUsersTable.table.special.getQualifiedColName() +" special" +
+			" FROM " + userTable.getTableName() + "," + SpecialUsersTable.table.getTableName() +
+			" WHERE " + UserTable.table.userid + " = '" + userid + "'" +
+			" AND "+SpecialUsersTable.table.userRef.getQualifiedColName()+"(+)="+userTable.id.getQualifiedColName();
 			
 	if (lg.isTraceEnabled()) {
 		lg.trace(sql);
 	}
 	stmt = con.createStatement();
-	User user = null;
+	BigDecimal userKey = null;
+	ArrayList<User.SPECIALS> specials = new ArrayList<>();
 	try {
 		rset = stmt.executeQuery(sql);
 		if (rset.next()) {
-			KeyValue userKey = new KeyValue(rset.getBigDecimal(UserTable.table.id.toString()));
-			user = new User(userid, userKey);
+			BigDecimal bigDecimal = rset.getBigDecimal("userkey");
+			if(userKey == null) {
+				userKey = bigDecimal;
+			}else if(!bigDecimal.equals(userKey)) {
+				throw new SQLException("Not expecting more than 1 id for userid='"+userid+"'");
+			}
+			String special = rset.getString("special");
+			if(!rset.wasNull()) {
+				try {
+					specials.add(SPECIALS.valueOf(special));
+				}catch(Exception e) {
+					//keep going
+					e.printStackTrace();
+				}
+			}
 		}
 	} finally {
 		stmt.close();
 	}
-	return user;
+	return new User.SpecialUser(userid, new KeyValue(userKey),specials.toArray(new User.SPECIALS[0]));
 }
 /**
  * @param con database connection

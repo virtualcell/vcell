@@ -1,6 +1,7 @@
 package cbit.vcell.message.server.dispatcher;
 
 import java.sql.SQLException;
+import java.util.Arrays;
 import java.util.Date;
 
 import org.apache.logging.log4j.LogManager;
@@ -465,7 +466,12 @@ public class SimulationStateMachine {
 		}
 
 		FieldDataIdentifierSpec[] fieldDataIdentifierSpecs = simulationDatabase.getFieldDataIdentifierSpecs(simulation);
-		SimulationTask simulationTask = new SimulationTask(new SimulationJob(simulation, jobIndex, fieldDataIdentifierSpecs), taskID);
+		boolean isPowerUser = false;
+		User myUser = simulationDatabase.getUser(simulation.getVersion().getOwner().getName());
+		if(myUser instanceof User.SpecialUser) {
+			isPowerUser = Arrays.asList(((User.SpecialUser)myUser).getMySpecials()).contains(User.SPECIALS.special1);//'special1' assigned as powerusers, long running sims
+		}
+		SimulationTask simulationTask = new SimulationTask(new SimulationJob(simulation, jobIndex, fieldDataIdentifierSpecs), taskID,null,isPowerUser);
 
 		double requiredMemMB = simulationTask.getEstimatedMemorySizeMB();
 		//SimulationStateMachine ultimately instantiated from {vcellroot}/docker/build/Dockerfile-sched-dev by way of cbit.vcell.message.server.dispatcher.SimulationDispatcher

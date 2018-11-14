@@ -38,6 +38,28 @@ public class User implements java.io.Serializable, Matchable, Immutable {
 		}
 	};
 
+	public static class SpecialUser extends User implements Serializable, Matchable, Immutable{
+		private SPECIALS[] mySpecials;
+		public SpecialUser(String userid, KeyValue key,SPECIALS[] mySpecials) {
+			super(userid, key);
+			this.mySpecials = mySpecials;
+		}
+		public SPECIALS[] getMySpecials() {
+			return mySpecials;
+		}
+//		@Override
+//		public boolean compareEqual(Matchable obj) {
+//			// TODO Auto-generated method stub
+//			if(obj == this) {
+//				return true;
+//			}
+//			boolean superCompare = super.compareEqual(obj);
+//			if(obj instanceof SpecialUser) {
+//				return superCompare && Compare.isEqualOrNullStrict(((SpecialUser)obj).getMySpecials(), getMySpecials());
+//			}
+//			return superCompare;
+//		}
+	}
 
 	/**
  * User constructor comment.

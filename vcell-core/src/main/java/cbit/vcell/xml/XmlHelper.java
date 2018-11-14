@@ -1053,6 +1053,7 @@ private static final String FieldFunctionIdentifierSpec_tag = "FieldFunctionIden
 private static final String ComputeResource_tag = "ComputeResource";
 private static final String TaskId_attr = "TaskId";
 private static final String JobIndex_attr = "JobIndex";
+private static final String powerUser_attr = "isPowerUser";
 
 public static String simTaskToXML(SimulationTask simTask) throws XmlParseException {
 
@@ -1071,7 +1072,9 @@ public static String simTaskToXML(SimulationTask simTask) throws XmlParseExcepti
 	container.setAttribute(TaskId_attr, ""+taskId);
 	int jobIndex = simJob.getJobIndex();
 	container.setAttribute(JobIndex_attr, ""+jobIndex);
-
+	boolean isPowerUser = simTask.isPowerUser();
+	container.setAttribute(powerUser_attr, ""+isPowerUser);
+	
 	String computeResource = simTask.getComputeResource();
 	if (computeResource!=null){
 		Element computeResourceElement = new Element(ComputeResource_tag);
@@ -1124,6 +1127,10 @@ public static SimulationTask XMLToSimTask(String xmlString) throws XmlParseExcep
 		}
 		int taskId = Integer.parseInt(root.getAttributeValue(TaskId_attr));
 		int jobIndex = Integer.parseInt(root.getAttributeValue(JobIndex_attr));
+		boolean isPowerUser = false;
+		if(root.getAttributeValue(powerUser_attr) != null){
+			isPowerUser = Boolean.parseBoolean(root.getAttributeValue(powerUser_attr));
+		}
 		String computeResource = root.getChildTextTrim(ComputeResource_tag, ns);
 		
 		List<?> children = root.getChildren(FieldFunctionIdentifierSpec_tag, ns);
@@ -1150,7 +1157,7 @@ public static SimulationTask XMLToSimTask(String xmlString) throws XmlParseExcep
 		sim.refreshDependencies();
 		
 		SimulationJob simJob = new SimulationJob(sim,jobIndex,fdisArray);
-		SimulationTask simTask = new SimulationTask(simJob,taskId,computeResource);
+		SimulationTask simTask = new SimulationTask(simJob,taskId,computeResource,isPowerUser);
 		return simTask;
 		
 	} catch (Exception pve) {

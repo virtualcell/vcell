@@ -98,6 +98,29 @@ public static <T extends Enum<?> >boolean isEqual(T e1, T e2) {
 	}
 	return e1.equals(e2);
 }
+public static <T extends Enum<?> >boolean isEqualOrNullStrict(T[] e1, T[] e2) {
+	if (e1==null && e2==null){
+		return true;
+	}
+	if(e1 != null && e2 != null) {
+		if(e1.length == e2.length) {
+			if(e1.length == 0 && e2.length == 0) {
+				return true;
+			}
+			String[] e1Str = new String[e1.length];
+			String[] e2Str = new String[e2.length];
+			for (int i = 0; i < e1.length; i++) {
+				e1Str[i] = e1[i].name();
+				e2Str[i] = e2[i].name();
+			}
+			return isEqual(e1Str, e2Str);
+		}
+	}
+	if((e1==null && e2!=null && e2.length==0) || (e2==null && e1 !=null && e1.length==0)) {
+		return true;
+	}
+	return false;
+}
 /**
  * @return boolean
  * @param v1 double[]
