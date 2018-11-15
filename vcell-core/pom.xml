@@ -431,6 +431,7 @@
 										<url>https://github.com/virtualcell/vcell-solvers/releases/download/v0.0.24/win64.zip</url>
 										<unpack>true</unpack>
 										<outputDirectory>${project.build.directory}/../../localsolvers/win64</outputDirectory>
+										<skipCache>true</skipCache>
 									</configuration>
 								</execution>
 			 					<execution>
