@@ -30,6 +30,7 @@ import org.vcell.relationship.RelationshipModel;
 import org.vcell.relationship.RelationshipObject;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Compare;
+import org.vcell.util.Displayable;
 import org.vcell.util.Issue;
 import org.vcell.util.Issue.IssueSource;
 import org.vcell.util.IssueContext;
@@ -70,7 +71,7 @@ import cbit.vcell.solver.Simulation;
  */
 @SuppressWarnings("serial")
 public class BioModel implements VCDocument, Matchable, VetoableChangeListener, PropertyChangeListener,
-Identifiable, IdentifiableProvider, IssueSource
+Identifiable, IdentifiableProvider, IssueSource, Displayable
 {
 	public static final String PROPERTY_NAME_SIMULATION_CONTEXTS = "simulationContexts";
 	public final static String SIMULATION_CONTEXT_DISPLAY_NAME = "Application";
@@ -1244,6 +1245,16 @@ public static void printRelationships(Set<RelationshipObject> roList) {
 	for(RelationshipObject ro : roList) {
 		printObject(ro);
 	}
+}
+
+public static final String typeName = "BioModel";
+@Override
+public String getDisplayName() {
+	return getName();
+}
+@Override
+public String getDisplayType() {
+	return typeName;
 }
 
 }

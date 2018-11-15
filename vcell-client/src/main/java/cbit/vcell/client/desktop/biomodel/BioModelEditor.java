@@ -122,6 +122,8 @@ public class BioModelEditor extends DocumentEditor {
 	private ObservablePropertiesPanel observablePropertiesPanel = null;
 	private ReactionRuleParticipantSignaturePropertiesPanel reactionRuleParticipantSignaturePropertiesPanel = null;
 	
+	private AnnotationsPanel annotationsPanel = null;
+	
 	private StructurePropertiesPanel structurePropertiesPanel = null;
 	private ParameterPropertiesPanel parameterPropertiesPanel = null;
 	private ReactionParticipantPropertiesPanel reactionParticipantPropertiesPanel = null;
@@ -560,6 +562,12 @@ private SpeciesPropertiesPanel getSpeciesPropertiesPanel() {
 	}
 	return speciesPropertiesPanel;
 }
+private AnnotationsPanel getAnnotationsPanel() {
+	if (annotationsPanel == null) {
+		annotationsPanel = new AnnotationsPanel();
+	}
+	return annotationsPanel;
+}
 private ReactionRuleParticipantSignaturePropertiesPanel getReactionRuleParticipantSignaturePropertiesPanel() {
 	if (reactionRuleParticipantSignaturePropertiesPanel == null) {
 		reactionRuleParticipantSignaturePropertiesPanel = new ReactionRuleParticipantSignaturePropertiesPanel();
@@ -689,6 +697,8 @@ private void initialize() {
 		getParameterPropertiesPanel().setSelectionManager(selectionManager);
 		getReactionParticipantPropertiesPanel().setSelectionManager(selectionManager);
 		
+		getAnnotationsPanel().setSelectionManager(selectionManager);
+		
 		// any other panels above which may display shapes (large / small) may need to have their issue manager set here
 		getSpeciesPropertiesPanel().setIssueManager(issueManager);
 		getReactionRuleParticipantSignaturePropertiesPanel().setIssueManager(issueManager);
@@ -709,11 +719,15 @@ protected void setRightBottomPanelOnSelection(Object[] selections) {
 	if (selections == null) {
 		return;
 	}
+	// TODO: here
 	JComponent bottomComponent = rightBottomEmptyPanel;
-	int destComponentIndex = DocumentEditorTabID.object_properties.ordinal();
+	JComponent annotationComponent = rightBottomEmptyAnnotationsPanel;
+	int destComponentIndex = DocumentEditorTabID.object_properties.ordinal();	// properties panel
+	int annComponentIndex = DocumentEditorTabID.annotations.ordinal();			// annotations panel
 	boolean bShowInDatabaseProperties = false;
 	boolean bShowPathway = false;
 	if (selections.length == 1) {
+		annotationComponent = getAnnotationsPanel();
 		Object singleSelection = selections[0];
 		if (singleSelection instanceof ReactionStep) {
 			bottomComponent = getReactionPropertiesPanel();
@@ -800,8 +814,10 @@ protected void setRightBottomPanelOnSelection(Object[] selections) {
 		}
 	}
 	if (bShowPathway) {
-		for (destComponentIndex = 0; destComponentIndex < rightBottomTabbedPane.getTabCount(); destComponentIndex ++) {
-			if (rightBottomTabbedPane.getComponentAt(destComponentIndex) == bottomComponent) {
+		int numTabs = rightBottomTabbedPane.getTabCount();
+		for (destComponentIndex = 0; destComponentIndex < numTabs; destComponentIndex ++) {
+			Component current = rightBottomTabbedPane.getComponentAt(destComponentIndex);
+			if ( current == bottomComponent) {
 				break;
 			}
 		}
@@ -825,10 +841,13 @@ protected void setRightBottomPanelOnSelection(Object[] selections) {
 	}
 	if (rightBottomTabbedPane.getComponentAt(destComponentIndex) != bottomComponent) {
 		bottomComponent.setBorder(GuiConstants.TAB_PANEL_BORDER);
+		annotationComponent.setBorder(GuiConstants.TAB_PANEL_BORDER);
 		rightBottomTabbedPane.setComponentAt(destComponentIndex, bottomComponent);
+		rightBottomTabbedPane.setComponentAt(annComponentIndex, annotationComponent);
 		rightSplitPane.repaint();
 	}
-	if (rightBottomTabbedPane.getSelectedComponent() != bottomComponent) {
+	if (rightBottomTabbedPane.getSelectedComponent() != bottomComponent &&
+			rightBottomTabbedPane.getSelectedComponent() != annotationComponent) {
 		rightBottomTabbedPane.setSelectedComponent(bottomComponent);
 	}
 }
@@ -980,6 +999,8 @@ public void setBioModel(BioModel bioModel) {
 	getMolecularTypePropertiesPanel().setBioModel(bioModel);
 	getObservablePropertiesPanel().setBioModel(bioModel);
 	bioPaxObjectPropertiesPanel.setBioModel(bioModel);
+	
+	getAnnotationsPanel().setBioModel(bioModel);
 }
 
 /**

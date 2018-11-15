@@ -82,11 +82,13 @@ import cbit.vcell.xml.gui.MiriamTreeModel.LinkNode;
 public abstract class DocumentEditor extends JPanel {
 	public static final String TAB_TITLE_PROBLEMS = "Problems";
 	private static final String TAB_TITLE_OBJECT_PROPERTIES = "Object Properties";
+	private static final String TAB_TITLE_ANNOTATIONS = "Annotations";
 	protected static final String generalTreeNodeDescription = "Select only one object (e.g. species, reaction, simulation) to view/edit properties.";
 	protected static final Logger LG = LogManager.getLogger(DocumentEditor.class);
 	
 	protected enum DocumentEditorTabID {
 		object_properties,
+		annotations,
 		problems,
 	}
 	protected enum DocumentEditorPopupMenuAction {
@@ -129,6 +131,7 @@ public abstract class DocumentEditor extends JPanel {
 	
 	protected JTabbedPane rightBottomTabbedPane = null;
 	protected JPanel rightBottomEmptyPanel = null;
+	protected JPanel rightBottomEmptyAnnotationsPanel = null;
 	private JSeparator popupMenuSeparator = null;
 	private DocumentEditorTreeCellEditor documentEditorTreeCellEditor;
 	protected JLabel treeNodeDescriptionLabel;
@@ -504,6 +507,7 @@ private void initialize() {
 		
 		rightBottomEmptyPanel = new JPanel(new GridBagLayout());
 		rightBottomEmptyPanel.setBackground(Color.white);
+		rightBottomEmptyPanel.setName("ObjectProperties");
 		treeNodeDescriptionLabel = new JLabel(generalTreeNodeDescription);
 		GridBagConstraints gbc = new GridBagConstraints();
 		gbc.gridx = 0;
@@ -514,13 +518,28 @@ private void initialize() {
 		gbc.fill = GridBagConstraints.HORIZONTAL;
 		gbc.anchor = GridBagConstraints.PAGE_START;
 		rightBottomEmptyPanel.add(treeNodeDescriptionLabel, gbc);
-		
+
+		rightBottomEmptyAnnotationsPanel = new JPanel(new GridBagLayout());
+		rightBottomEmptyAnnotationsPanel.setBackground(Color.white);
+		rightBottomEmptyAnnotationsPanel.setName("Annotations");
+		gbc = new GridBagConstraints();
+		gbc.gridx = 0;
+		gbc.insets = new Insets(10,10,4,4);
+		gbc.gridy = 0;
+		gbc.weighty = 1.0;
+		gbc.weightx = 1.0;
+		gbc.fill = GridBagConstraints.HORIZONTAL;
+		gbc.anchor = GridBagConstraints.PAGE_START;
+		rightBottomEmptyAnnotationsPanel.add(treeNodeDescriptionLabel, gbc);
+
 		issuePanel = new IssuePanel();		
 		rightBottomTabbedPane = new JTabbedPaneEnhanced();
 		rightBottomTabbedPane.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
 		rightBottomEmptyPanel.setBorder(GuiConstants.TAB_PANEL_BORDER);
+		rightBottomEmptyAnnotationsPanel.setBorder(GuiConstants.TAB_PANEL_BORDER);
 		issuePanel.setBorder(GuiConstants.TAB_PANEL_BORDER);
 		rightBottomTabbedPane.addTab(TAB_TITLE_OBJECT_PROPERTIES, rightBottomEmptyPanel);		
+		rightBottomTabbedPane.addTab(TAB_TITLE_ANNOTATIONS, rightBottomEmptyAnnotationsPanel);		
 		rightBottomTabbedPane.addTab(TAB_TITLE_PROBLEMS, issuePanel);		
 		rightBottomTabbedPane.setMinimumSize(new java.awt.Dimension(198, 148));		
 		rightSplitPane.setBottomComponent(rightBottomTabbedPane);

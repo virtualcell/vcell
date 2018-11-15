@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.vcell.util.Cacheable;
+import org.vcell.util.Displayable;
 import org.vcell.util.Issue;
 import org.vcell.util.Issue.IssueCategory;
 import org.vcell.util.Issue.IssueSource;
@@ -34,7 +35,7 @@ import cbit.vcell.units.VCUnitDefinition;
 
 @SuppressWarnings("serial")
 public abstract class Structure implements Serializable, ScopedSymbolTable, Matchable, Cacheable, VetoableChangeListener,
-		Identifiable, IssueSource
+		Identifiable, IssueSource, Displayable
 {
 	public final static String TYPE_NAME_FEATURE = "Compartment";
 	public final static String TYPE_NAME_MEMBRANE = "Membrane";
@@ -380,6 +381,17 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueList) {
 		}
 	}
 }
+
+public static final String typeName = "Structure";
+@Override
+public final String getDisplayName() {
+	return getName();
+}
+@Override
+public final String getDisplayType() {
+	return typeName;
+}
+
 
 }
 

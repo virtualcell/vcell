@@ -39,6 +39,7 @@ import cbit.vcell.desktop.BioModelNode;
 
 public class MiriamTreeModel extends DefaultTreeModel implements AnnotationEventListener {
 	private VCMetaData vcMetaData = null;
+	private boolean createTree;
 	
 	public static class LinkNode extends BioModelNode {
 		private MIRIAMQualifier miriamQualifier = null;
@@ -102,14 +103,65 @@ public class MiriamTreeModel extends DefaultTreeModel implements AnnotationEvent
 		}
 	}
 	
-	public MiriamTreeModel(TreeNode root, VCMetaData vcMetaData) {
+	public MiriamTreeModel(TreeNode root, VCMetaData vcMetaData, boolean createTree) {
 		super(root);
 		this.vcMetaData = vcMetaData;
+		this.createTree = createTree;
 		vcMetaData.addAnnotationEventListener(this);
 		createTree();
 	}
+	public MiriamTreeModel(TreeNode root, VCMetaData vcMetaData) {
+		this(root, vcMetaData, true);
+	}
 	
+	public void createTree(Identifiable identifiable) {
+		if(identifiable == null) {
+			((DefaultMutableTreeNode)getRoot()).removeAllChildren();
+			fireTreeStructureChanged(this, getPathToRoot(((DefaultMutableTreeNode)getRoot())), null, null);
+			return;
+		}
+		((DefaultMutableTreeNode)getRoot()).removeAllChildren();
+		MiriamManager miriamManager = vcMetaData.getMiriamManager();
+		TreeMap<Identifiable, Map<MiriamRefGroup, MIRIAMQualifier>> miriamDescrHeir = miriamManager.getMiriamTreeMap();
+		Map<Identifiable, Map<DateQualifier, Set<DublinCoreDate>>> dateMapMap = miriamManager.getDublinCoreDateMap();
+		Map<MiriamRefGroup, MIRIAMQualifier> refGroupMap = miriamDescrHeir.get(identifiable);
+		Map<DateQualifier, Set<DublinCoreDate>> dateMap = dateMapMap.get(identifiable);
+		VCID vcid = vcMetaData.getIdentifiableProvider().getVCID(identifiable);
+		
+//		String modelComponentType = vcid.getClassName();
+//		String modelComponentName = vcid.getLocalName();			
+//		IdentifiableNode modelComponentNode = new IdentifiableNode(identifiable, modelComponentType + " : " + modelComponentName);
+//		String freeTextAnnotation = vcMetaData.getFreeTextAnnotation(identifiable);
+//		if (freeTextAnnotation!=null){
+//			modelComponentNode.add(new BioModelNode(new Annotation(freeTextAnnotation),false));
+//		}else{
+//			modelComponentNode.add(new BioModelNode(new Annotation(""),false));
+//		}
+		
+		if (refGroupMap!=null){
+			for (MiriamRefGroup refGroup : refGroupMap.keySet()){
+				MIRIAMQualifier qualifier = refGroupMap.get(refGroup);
+				for (MiriamResource miriamResource : refGroup.getMiriamRefs()){
+					LinkNode linkNode = new LinkNode(qualifier, miriamResource);
+					((DefaultMutableTreeNode)getRoot()).add(linkNode);
+				}
+			}
+		}
+		if (dateMap!=null){
+			for (DublinCoreQualifier.DateQualifier qualifier : dateMap.keySet()){
+				Set<DublinCoreDate> dates = dateMap.get(qualifier);
+				for (DublinCoreDate date : dates){
+					((DefaultMutableTreeNode)getRoot()).add(new DateNode(qualifier,date));
+				}
+			}
+		}
+//		((DefaultMutableTreeNode)getRoot()).add(modelComponentNode);
+		fireTreeStructureChanged(this, getPathToRoot(((DefaultMutableTreeNode)getRoot())), null, null);
+	}
 	private void createTree() {
+		if(!createTree) {
+			return;
+		}
 		MiriamManager miriamManager = vcMetaData.getMiriamManager();
 		TreeMap<Identifiable, Map<MiriamRefGroup, MIRIAMQualifier>> miriamDescrHeir = miriamManager.getMiriamTreeMap();
 		Map<Identifiable, Map<DateQualifier, Set<DublinCoreDate>>> dateMapMap = miriamManager.getDublinCoreDateMap();
@@ -124,13 +176,14 @@ public class MiriamTreeModel extends DefaultTreeModel implements AnnotationEvent
 			String modelComponentType = vcid.getClassName();
 			String modelComponentName = vcid.getLocalName();			
 			IdentifiableNode modelComponentNode = new IdentifiableNode(identifiable, modelComponentType + " : " + modelComponentName);
+			
 			String freeTextAnnotation = vcMetaData.getFreeTextAnnotation(identifiable);
-
 			if (freeTextAnnotation!=null){
 				modelComponentNode.add(new BioModelNode(new Annotation(freeTextAnnotation),false));
 			}else{
 				modelComponentNode.add(new BioModelNode(new Annotation(""),false));
 			}
+			
 			if (refGroupMap!=null){
 				for (MiriamRefGroup refGroup : refGroupMap.keySet()){
 					MIRIAMQualifier qualifier = refGroupMap.get(refGroup);
@@ -151,11 +204,23 @@ public class MiriamTreeModel extends DefaultTreeModel implements AnnotationEvent
 			((DefaultMutableTreeNode)getRoot()).add(modelComponentNode);
 		}
 	}
-
+	public void annotationChanged() {
+		if(!createTree) {
+			DefaultMutableTreeNode root = (DefaultMutableTreeNode)getRoot();
+			TreeNode[] path = getPathToRoot(root);
+			fireTreeStructureChanged(this, path, null, null);
+		} else {
+			throw new RuntimeException("MiriamTreeModel function 'annotationChange()' with no arguments may only be called from the AnnotationsPanel.");
+		}
+	}
 	public void annotationChanged(AnnotationEvent annotationEvent) {
 		Identifiable identifiable = annotationEvent.getIdentifiable();
+		if(createTree) {
 		// if identifiable is not null, then we can repair just the subtree for that identifiable
-		createTree();
-		fireTreeStructureChanged(this, getPathToRoot(((DefaultMutableTreeNode)getRoot())), null, null);
+			createTree();
+		}
+		DefaultMutableTreeNode root = (DefaultMutableTreeNode)getRoot();
+		TreeNode[] path = getPathToRoot(root);
+		fireTreeStructureChanged(this, path, null, null);
 	}
 }

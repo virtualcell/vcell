@@ -830,7 +830,8 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 //		annotationTextArea.setEditable(bNonNullMolecularType);
 		if (bNonNullMolecularType) {
 			VCMetaData vcMetaData = bioModel.getModel().getVcMetaData();
-			annotationTextArea.setText(vcMetaData.getFreeTextAnnotation(molecularType));
+			String annText = vcMetaData.getFreeTextAnnotation(molecularType);
+			annotationTextArea.setText(annText);
 			annotationTextArea.setCaretPosition(0);
 //			annotationTextArea.setText(molecularType.comment);
 			
