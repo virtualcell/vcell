@@ -337,7 +337,7 @@ public void connect(InteractiveContext requester) {
 	checkClientServerSoftwareVersion(requester,clientServerInfo);
 
 	// get new server connection
-	VCellConnection newVCellConnection = connectToServer(requester);
+	VCellConnection newVCellConnection = connectToServer(requester,true);
 	// update managers, status, etc.
 	changeConnection(requester, newVCellConnection);
 	if (fieldConnectionStatus.getStatus() == ConnectionStatus.CONNECTED) {
@@ -391,46 +391,53 @@ public void connectAs(InteractiveContext requester, String user, DigestedPasswor
  * Insert the method's description here.
  * Creation date: (5/12/2004 4:48:13 PM)
  */
-private VCellConnection connectToServer(InteractiveContext requester) {
+private VCellConnection connectToServer(InteractiveContext requester,boolean bShowErrors) {
 	VCellThreadChecker.checkRemoteInvocation();
 
 	VCellConnection newVCellConnection = null;
 	VCellConnectionFactory vcConnFactory = null;
 	String badConnStr = "";
 	try {
-		switch (getClientServerInfo().getServerType()) {
-			case SERVER_REMOTE: {
-				String apihost = getClientServerInfo().getApihost();
-				Integer apiport = getClientServerInfo().getApiport();
-				try {
-					badConnStr += apihost+":"+apiport;
-					vcConnFactory = new RemoteProxyVCellConnectionFactory(apihost, apiport, getClientServerInfo().getUserLoginInfo());
-					setConnectionStatus(new ClientConnectionStatus(getClientServerInfo().getUsername(), apihost, apiport, ConnectionStatus.INITIALIZING));
-					newVCellConnection = vcConnFactory.createVCellConnection();
-				} catch (AuthenticationException ex) {
-					throw ex;
+		try {
+			switch (getClientServerInfo().getServerType()) {
+				case SERVER_REMOTE: {
+					String apihost = getClientServerInfo().getApihost();
+					Integer apiport = getClientServerInfo().getApiport();
+					try {
+						badConnStr += apihost+":"+apiport;
+						vcConnFactory = new RemoteProxyVCellConnectionFactory(apihost, apiport, getClientServerInfo().getUserLoginInfo());
+						setConnectionStatus(new ClientConnectionStatus(getClientServerInfo().getUsername(), apihost, apiport, ConnectionStatus.INITIALIZING));
+						newVCellConnection = vcConnFactory.createVCellConnection();
+					} catch (AuthenticationException ex) {
+						throw ex;
+					}
+					break;
 				}
-				break;
+				case SERVER_LOCAL: {
+					new PropertyLoader();
+					LocalVCellConnectionService localVCellConnectionService = VCellServiceHelper.getInstance().loadService(LocalVCellConnectionService.class);
+					vcConnFactory = localVCellConnectionService.getLocalVCellConnectionFactory(getClientServerInfo().getUserLoginInfo());
+					setConnectionStatus(new ClientConnectionStatus(getClientServerInfo().getUsername(), null, null, ConnectionStatus.INITIALIZING));
+					newVCellConnection = vcConnFactory.createVCellConnection();
+					break;
+				}
 			}
-			case SERVER_LOCAL: {
-				new PropertyLoader();
-				LocalVCellConnectionService localVCellConnectionService = VCellServiceHelper.getInstance().loadService(LocalVCellConnectionService.class);
-				vcConnFactory = localVCellConnectionService.getLocalVCellConnectionFactory(getClientServerInfo().getUserLoginInfo());
-				setConnectionStatus(new ClientConnectionStatus(getClientServerInfo().getUsername(), null, null, ConnectionStatus.INITIALIZING));
-				newVCellConnection = vcConnFactory.createVCellConnection();
-				break;
+			requester.clearConnectWarning();
+			reconnectStat = ReconnectStatus.NOT;
+		}catch(Exception e) {
+			e.printStackTrace();
+			if(bShowErrors) {
+				throw e;
 			}
 		}
-		requester.clearConnectWarning();
-		reconnectStat = ReconnectStatus.NOT;
 	} catch (AuthenticationException aexc) {
 		aexc.printStackTrace(System.out);
 		requester.showErrorDialog(aexc.getMessage());
-	} catch (ConnectionException | HttpHostConnectException cexc) {
+	} catch (ConnectionException cexc) {
 		String msg = badConnectMessage(badConnStr) + "\n" + cexc.getMessage();
 		cexc.printStackTrace(System.out);
 		ErrorUtils.sendRemoteLogMessage(getClientServerInfo().getUserLoginInfo(),msg);
-		if (reconnectStat == ReconnectStatus.NOT) {
+		if (reconnectStat != ReconnectStatus.SUBSEQUENT) {
 			requester.showConnectWarning(msg);
 		}
 	} catch (HttpResponseException httpexc) {
@@ -763,7 +770,7 @@ void reconnect() {
 		default:
 		}
 		InteractiveContext requester = defaultInteractiveContextProvider.getInteractiveContext();
-		VCellConnection connection = connectToServer(requester);
+		VCellConnection connection = connectToServer(requester,false);
 		if (connection != null) { //success
 			changeConnection(requester,connection);
 			rc.stop();
