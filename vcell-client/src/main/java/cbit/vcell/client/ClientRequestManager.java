@@ -434,12 +434,17 @@ private CloseOption checkBeforeClosing(DocumentWindowManager windowManager) {
 	}
 	// warn if necessary
 	if (isChanged) {
-		String choice = PopupGenerator.showWarningDialog(windowManager, getUserPreferences(), UserMessage.warn_close,null);
-		if (choice.equals(UserMessage.OPTION_CANCEL)){
+		JDialog dialog = new JDialog();
+		dialog.setAlwaysOnTop(true);
+		final String[] warnCloseArr = new String[] {UserMessage.OPTION_YES,"No",UserMessage.OPTION_CANCEL};
+		int confirm = JOptionPane.showOptionDialog(dialog, UserMessage.warn_close.getMessage(null), "Save warning...", JOptionPane.OK_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE, null, warnCloseArr, warnCloseArr[0]);
+
+//		String choice = PopupGenerator.showWarningDialog(windowManager, getUserPreferences(), UserMessage.warn_close,null);
+		if (confirm != 0 && confirm != 1/*choice.equals(UserMessage.OPTION_CANCEL)*/){
 			// user canceled
 			return CloseOption.CANCEL_CLOSE;
 		}
-		if (choice.equals(UserMessage.OPTION_YES)) {
+		if (confirm == 0/*choice.equals(UserMessage.OPTION_YES)*/) {
 			return CloseOption.SAVE_AND_CLOSE;
 		}
 	}
@@ -553,6 +558,13 @@ public boolean closeWindow(final java.lang.String windowID, final boolean exitIf
 					}
 				}
 			};
+			
+			if(((DocumentWindowManager)windowManager).getUser() == null || User.isGuest(((DocumentWindowManager)windowManager).getUser().getName())){
+				JDialog dialog = new JDialog();
+				dialog.setAlwaysOnTop(true);
+				JOptionPane.showMessageDialog(dialog, User.createGuestErrorMessage("saveDocument"), "Error...", JOptionPane.ERROR_MESSAGE, null);
+				return false;
+			}
 
 			saveDocument((DocumentWindowManager)windowManager, true, closeTask);
 			return true;

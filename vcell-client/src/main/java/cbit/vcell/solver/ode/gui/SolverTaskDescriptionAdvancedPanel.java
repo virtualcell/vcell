@@ -24,7 +24,9 @@ import javax.swing.BorderFactory;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JDialog;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 import javax.swing.UIManager;
@@ -116,14 +118,14 @@ public class SolverTaskDescriptionAdvancedPanel extends javax.swing.JPanel {
 			} else if (e.getSource() == sensitivityAnalysisHelpButton) {
 				showSensitivityAnalysisHelp();
 			} else if (e.getSource() == timeoutDisabledHelpButton) {
-				DialogUtils.showInfoDialog(SolverTaskDescriptionAdvancedPanel.this, "Disable forced timeout for very long Simulations", 
-						"<html>By default, Simulations running for 21 days are automatically terminated. The reason for "
+				JDialog dialog = new JDialog();
+				dialog.setAlwaysOnTop(true);
+				JOptionPane.showMessageDialog(dialog, "By default, Simulations running for 21 days are automatically terminated.\nThe reason for "
 						+ "this is to free hardware resources locked by long forgotten / crashed simulations in a "
-						+ "consistent manner. <br>"
+						+ "consistent manner.\n"
 						+ "However, we are allowing our power users to bypass this rule and allow very long simulations "
-						+ "to run indefinitely. If you need to run such a simulation, please contact us at <b>vcell_support@uchc.edu</b> "
-						+ "to be added to the power user list."
-						+ "</html>");
+						+ "to run indefinitely.\nIf you need to run such a simulation, please contact us at vcell_support@uchc.edu "
+						+ "to be added to the power user list.", "Disable forced timeout for very long Simulations", JOptionPane.PLAIN_MESSAGE, null);
 			}
 		}
 
