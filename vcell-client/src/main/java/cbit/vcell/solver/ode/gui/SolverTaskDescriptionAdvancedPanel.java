@@ -24,6 +24,7 @@ import javax.swing.BorderFactory;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 import javax.swing.UIManager;
@@ -116,12 +117,12 @@ public class SolverTaskDescriptionAdvancedPanel extends javax.swing.JPanel {
 				showSensitivityAnalysisHelp();
 			} else if (e.getSource() == timeoutDisabledHelpButton) {
 				DialogUtils.showInfoDialog(SolverTaskDescriptionAdvancedPanel.this, "Disable forced timeout for very long Simulations", 
-						"<html>By default, Simulations running for a month are automatically terminated. The reason for "
+						"<html>By default, Simulations running for 21 days are automatically terminated. The reason for "
 						+ "this is to free hardware resources locked by long forgotten / crashed simulations in a "
 						+ "consistent manner. <br>"
 						+ "However, we are allowing our power users to bypass this rule and allow very long simulations "
-						+ "to run indefinitely. If you need to run such a simulation, please contact us to be added to "
-						+ "the power user list."
+						+ "to run indefinitely. If you need to run such a simulation, please contact us at <b>vcell_support@uchc.edu</b> "
+						+ "to be added to the power user list."
 						+ "</html>");
 			}
 		}
@@ -696,18 +697,20 @@ private CollapsiblePanel getGeneralOptionsPanel() {
 		constraintsTimeBoundsPanel.gridx = 0;
 		constraintsTimeBoundsPanel.gridy = 0;
 		constraintsTimeBoundsPanel.fill = java.awt.GridBagConstraints.BOTH;
-		constraintsTimeBoundsPanel.weightx = 1.0;
+		constraintsTimeBoundsPanel.weightx = 0.2;
 		constraintsTimeBoundsPanel.weighty = 1.0;
-		constraintsTimeBoundsPanel.gridwidth = 2;
+		constraintsTimeBoundsPanel.gridwidth = 3;
 		constraintsTimeBoundsPanel.insets = new java.awt.Insets(3, 4, 4, 4);
 		generalOptionsPanel.getContentPanel().add(getTimeBoundsPanel(), constraintsTimeBoundsPanel);
 
 		timeoutDisabledCheckBox = new JCheckBox("Disable Simulation Run Timeout");
 		timeoutDisabledCheckBox.setHorizontalTextPosition(SwingConstants.LEFT);
+		timeoutDisabledCheckBox.setToolTipText("Override the 21 days limit for the duration of a Simulation run.");
 		GridBagConstraints gbc = new java.awt.GridBagConstraints();
 		gbc.gridx = 0;
 		gbc.gridy = 1;
-		gbc.weightx = 1.0;
+		gbc.weightx = 0;
+		gbc.anchor = GridBagConstraints.WEST;
 		gbc.fill = GridBagConstraints.HORIZONTAL;
 		gbc.insets = new java.awt.Insets(3, 6, 5, 0);
 		generalOptionsPanel.getContentPanel().add(timeoutDisabledCheckBox, gbc);
@@ -721,25 +724,34 @@ private CollapsiblePanel getGeneralOptionsPanel() {
 		gbc.gridx = 1;
 		gbc.gridy = 1;
 		gbc.weightx = 0;
-		gbc.fill = GridBagConstraints.HORIZONTAL;
-		gbc.insets = new java.awt.Insets(3, 0, 6, 6);
+		gbc.insets = new java.awt.Insets(3, 5, 6, 6);
 		generalOptionsPanel.getContentPanel().add(timeoutDisabledHelpButton, gbc);
 		
+		gbc = new java.awt.GridBagConstraints();
+		gbc.gridx = 2;
+		gbc.gridy = 1;
+		gbc.weightx = 0;
+		gbc.fill = GridBagConstraints.HORIZONTAL;
+		gbc.insets = new java.awt.Insets(3, 0, 6, 6);
+		generalOptionsPanel.getContentPanel().add(new JLabel(""), gbc);
+		
+		int gridx = 3;
 		java.awt.GridBagConstraints constraintsTimeStepPanel = new java.awt.GridBagConstraints();
-		constraintsTimeStepPanel.gridx = 2;
+		constraintsTimeStepPanel.gridx = gridx;
 		constraintsTimeStepPanel.gridy = 0;
 		constraintsTimeStepPanel.fill = java.awt.GridBagConstraints.BOTH;
-		constraintsTimeStepPanel.weightx = 1.0;
+		constraintsTimeStepPanel.weightx = 0.4;
 		constraintsTimeStepPanel.weighty = 1.0;
 		constraintsTimeStepPanel.gridheight = 2;
 		constraintsTimeStepPanel.insets = new java.awt.Insets(3, 4, 4, 4);
 		generalOptionsPanel.getContentPanel().add(getTimeStepPanel(), constraintsTimeStepPanel);
 
+		gridx++;
 		java.awt.GridBagConstraints constraintsErrorTolerancePanel = new java.awt.GridBagConstraints();
 		constraintsErrorTolerancePanel.fill = java.awt.GridBagConstraints.BOTH;
-		constraintsErrorTolerancePanel.gridx = 3;
+		constraintsErrorTolerancePanel.gridx = gridx;
 		constraintsErrorTolerancePanel.gridy = 0;
-		constraintsErrorTolerancePanel.weightx = 1.0;
+		constraintsErrorTolerancePanel.weightx = 0.4;
 		constraintsErrorTolerancePanel.weighty = 1.0;
 //		constraintsErrorTolerancePanel.gridheight = 2;
 		constraintsErrorTolerancePanel.insets = new java.awt.Insets(3, 4, 4, 4);
@@ -1062,7 +1074,7 @@ private void refresh() {
 		User loginUser = VCellClientTest.getVCellClient().getClientServerManager().getUser();
 		TreeMap<SPECIALS, TreeMap<User, String>> specialUsers = VCellClientTest.getVCellClient().getClientServerManager().getUserMetaDbServer().getSpecialUsers();
 		TreeMap<User, String> powerUsers = specialUsers.get(User.SPECIALS.special1);
-		if(powerUsers.containsKey(loginUser)) {
+		if(powerUsers != null && powerUsers.containsKey(loginUser)) {
 			found = true;
 		}
 	} catch (Exception e) {
