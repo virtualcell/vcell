@@ -94,6 +94,9 @@ public User.SpecialUser getUserFromUserid(Connection con, String userid) throws 
 	} finally {
 		stmt.close();
 	}
+	if(userKey == null) {
+		return null;
+	}
 	return new User.SpecialUser(userid, new KeyValue(userKey),specials.toArray(new User.SPECIALS[0]));
 }
 /**
