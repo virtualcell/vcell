@@ -198,10 +198,10 @@ public final class RpcRestlet extends Restlet {
 					serializableResultObject = restDatabaseService.getBioModelXML((KeyValue)vcellapiRpcRequest.args[1], vcellUser);
 				}else if(vcellapiRpcRequest.methodName != null && vcellapiRpcRequest.methodName.equals("getMathModelXML")) {
 					serializableResultObject = restDatabaseService.getMathModelXML((KeyValue)vcellapiRpcRequest.args[1], vcellUser);
-				}else if(vcellapiRpcRequest.methodName != null && vcellapiRpcRequest.methodName.equals("getSimulationStatus")) {
+				}else */if(vcellapiRpcRequest.methodName != null && vcellapiRpcRequest.methodName.equals("getSimulationStatus")) {
 					KeyValue[] simKeys = (vcellapiRpcRequest.args[1] instanceof KeyValue?new KeyValue[] {(KeyValue)vcellapiRpcRequest.args[1]}:(KeyValue[])vcellapiRpcRequest.args[1]);
 					serializableResultObject = restDatabaseService.getSimulationStatus(simKeys, vcellUser);
-				}else */if(vcellapiRpcRequest.methodName != null && vcellapiRpcRequest.methodName.equals("getSpecialUsers")) {
+				}else if(vcellapiRpcRequest.methodName != null && vcellapiRpcRequest.methodName.equals("getSpecialUsers")) {
 					serializableResultObject = restDatabaseService.getSpecialUsers(vcellUser);
 				}else {
 					Object[] arglist = vcellapiRpcRequest.args;
