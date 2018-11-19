@@ -256,7 +256,7 @@ public abstract class HtcProxy {
 		//  MemoryMax:HtcProxy.MemLimitResults.FALLBACK_MEM_LIMIT	No PropertyLoader.simPerUserMemoryLimitFile
 		//																estimated < FALLBACK
 		
-		long estimatedMemSizeMBL = (long)Math.ceil(estimatedMemSizeMB)*2;
+		long estimatedMemSizeMBL = Math.max((long)Math.ceil(estimatedMemSizeMB)*2,128);
 		Long defaultSimMemoryLimitMbFromFile = null;
 		File memLimitFile = null;
 		try {
