@@ -466,10 +466,18 @@ public class SimulationStateMachine {
 		}
 
 		FieldDataIdentifierSpec[] fieldDataIdentifierSpecs = simulationDatabase.getFieldDataIdentifierSpecs(simulation);
-		boolean isPowerUser = false;
-		User myUser = simulationDatabase.getUser(simulation.getVersion().getOwner().getName());
-		if(myUser instanceof User.SpecialUser) {
-			isPowerUser = Arrays.asList(((User.SpecialUser)myUser).getMySpecials()).contains(User.SPECIALS.special1);//'special1' assigned as powerusers, long running sims
+		//Check if user wants long running sims activated in SlurmProxy.generateScript(...)
+		//only happens if user is allowed to be power user (entry in vc_specialusers table) and
+		//has checked the 'timeoutDisabledCheckBox' in SolverTaskDescriptionAdvancedPanel on the client-side GUI
+		boolean isPowerUser = simulation.getSolverTaskDescription().isTimeoutDisabled();//Set from GUI
+		if(isPowerUser) {//Check if user allowed to be power user for 'special1' long running sims (see User.SPECIALS and vc_specialusers table)
+			User myUser = simulationDatabase.getUser(simulation.getVersion().getOwner().getName());
+			if(myUser instanceof User.SpecialUser) {
+				//'special1' assigned to users by request to allow long running sims
+				isPowerUser = isPowerUser && Arrays.asList(((User.SpecialUser)myUser).getMySpecials()).contains(User.SPECIALS.special1);
+			}else {
+				isPowerUser = false;
+			}
 		}
 		SimulationTask simulationTask = new SimulationTask(new SimulationJob(simulation, jobIndex, fieldDataIdentifierSpecs), taskID,null,isPowerUser);
 
