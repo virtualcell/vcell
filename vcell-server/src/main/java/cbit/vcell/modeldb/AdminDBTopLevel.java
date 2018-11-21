@@ -13,10 +13,12 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.Vector;
 
 import org.vcell.db.ConnectionFactory;
@@ -266,20 +268,6 @@ public synchronized String getBasicStatistics() throws SQLException,DataAccessEx
 		for (int i = 0; i < pastTimeDescr.length; i++) {
 			htmlWithBreak("Users registered ("+pastTimeDescr[i]+")=", sb, stmt, "select count(*) "+QUERY_VALUE+" from vc_userinfo where insertdate >= (sysdate - "+pastTime[i]+")");
 		}
-//		String usersLastWeek = "select count(*) "+QUERY_VALUE+" from vc_userinfo where insertdate >= (sysdate - 7))";
-//		htmlWithBreak("Users registered (last week)=", sb, stmt, usersLastWeek);
-//		
-//		String usersLastMonth = "select count(*) "+QUERY_VALUE+" from vc_userinfo where insertdate >= (sysdate - 30))";
-//		htmlWithBreak("Users registered (last month)=", sb, stmt, usersLastMonth);
-//		
-//		String usersLast3Month = "select count(*) "+QUERY_VALUE+" from vc_userinfo where insertdate >= (sysdate - 90))";
-//		htmlWithBreak("Users registered (last 3 month)=", sb, stmt, usersLast3Month);
-//		
-//		String usersLast6Month = "select count(*) "+QUERY_VALUE+" from vc_userinfo where insertdate >= (sysdate - 180))";
-//		htmlWithBreak("Users registered (last 6 month)=", sb, stmt, usersLast6Month);
-//		
-//		String usersLastYear = "select count(*) "+QUERY_VALUE+" from vc_userinfo where insertdate >= (sysdate - 365))";
-//		htmlWithBreak("Users registered (last year)=", sb, stmt, usersLastYear);
 		
 		String totalUsersQuery = "select count(*) "+QUERY_VALUE+" from vc_userinfo";
 		htmlWithBreak("Number users=", sb, stmt, totalUsersQuery);
@@ -329,21 +317,43 @@ public synchronized String getBasicStatistics() throws SQLException,DataAccessEx
 		") t";
 		htmlWithBreak("Total public simulations=", sb, stmt, puballsimssQuery);
 		
+		sb.append("<br></br>");
+		sb.append("Users running sims over various time periods:");
+		sb.append("<table>");
+		sb.append("<tr>");
+		for (int j = 0; j < pastTimeDescr.length; j++) {
+			sb.append("<th>"+pastTimeDescr[j]+"</th><th>Total</th>");					
+		}
+		sb.append("</tr>");
+		TreeMap<String,ArrayList<String>> pastMapRows = new TreeMap<>();
+		int maxRows = 0;
 		for (int i = 0; i < pastTimeDescr.length; i++) {
-			sb.append("<br></br>");
-			sb.append("Users running sims "+pastTimeDescr[i]+":");
-			sb.append("<table><tr><th>User</th><th>SimRuns</th></tr>");
 			ResultSet rset = stmt.executeQuery(
 					"SELECT userid,  COUNT(vc_simulationjob.id) simcount FROM vc_userinfo,  vc_simulation,  vc_simulationjob"
 							+ " WHERE vc_userinfo.id = vc_simulation.ownerref AND "
 							+ "vc_simulationjob.simref = vc_simulation.id AND "
 							+ "vc_simulationjob.submitdate >= (sysdate -"+pastTime[i]+")" + " GROUP BY userid ORDER BY simcount desc");
+			ArrayList<String> rows = new ArrayList<>();
+			pastMapRows.put(pastTimeDescr[i], rows);
 			while (rset.next()) {
-				sb.append("<tr><td>" + rset.getString(1) + "</td><td>" + rset.getInt(2) + "</td></td>\n");
+				rows.add("<td>" + rset.getString(1) + "</td><td>" + rset.getInt(2) + "</td>");
 			}
-			sb.append("</table>");
 			rset.close();
+			maxRows = Math.max(maxRows, rows.size());
 		}
+		for (int i = 0; i < maxRows; i++) {
+			sb.append("<tr>");
+			for (int j = 0; j < pastMapRows.size(); j++) {
+				ArrayList<String> rows = pastMapRows.get(pastTimeDescr[j]);
+				if(i < rows.size()) {
+					sb.append(rows.get(i));
+				}else {
+					sb.append("<td></td><td></td>");
+				}
+			}
+			sb.append("</tr>");
+		}
+		sb.append("</table>");
 		sb.append("</body></html>");
 		return sb.toString();
 	} catch (Throwable e) {
