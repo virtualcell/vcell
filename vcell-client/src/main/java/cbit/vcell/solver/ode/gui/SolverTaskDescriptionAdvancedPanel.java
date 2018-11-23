@@ -16,6 +16,7 @@ import java.awt.GridBagLayout;
 import java.awt.event.ItemEvent;
 import java.util.Comparator;
 import java.util.Enumeration;
+import java.util.Hashtable;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -46,6 +47,8 @@ import org.vcell.util.gui.CollapsiblePanel;
 import org.vcell.util.gui.DialogUtils;
 
 import cbit.vcell.client.ClientTaskManager;
+import cbit.vcell.client.task.AsynchClientTask;
+import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.client.test.VCellClientTest;
 import cbit.vcell.geometry.ChomboInvalidGeometryException;
 import cbit.vcell.geometry.Geometry;
@@ -1071,22 +1074,34 @@ private void refresh() {
 	}
 	
 	timeoutDisabledCheckBox.setVisible(true);
-	boolean found = false;
-	try {
-		User loginUser = VCellClientTest.getVCellClient().getClientServerManager().getUser();
-		TreeMap<SPECIALS, TreeMap<User, String>> specialUsers = VCellClientTest.getVCellClient().getClientServerManager().getUserMetaDbServer().getSpecialUsers();
-		TreeMap<User, String> powerUsers = specialUsers.get(User.SPECIALS.special1);
-		if(powerUsers != null && powerUsers.containsKey(loginUser)) {
-			found = true;
+	timeoutDisabledCheckBox.setSelected(ivjTornOffSolverTaskDescription.isTimeoutDisabled());
+	timeoutDisabledCheckBox.setEnabled(false);
+	final String TIMEOUT_DISABLE = "TIMEOUT_DISABLE";
+	AsynchClientTask timeoutDisableTask = new AsynchClientTask("timeoutDisableTask",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING,false) {
+		@Override
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
+			try {
+				User loginUser = VCellClientTest.getVCellClient().getClientServerManager().getUser();
+				TreeMap<SPECIALS, TreeMap<User, String>> specialUsers = VCellClientTest.getVCellClient().getClientServerManager().getUserMetaDbServer().getSpecialUsers();
+				TreeMap<User, String> powerUsers = specialUsers.get(User.SPECIALS.special1);
+				if(powerUsers != null && powerUsers.containsKey(loginUser)) {
+					hashTable.put(TIMEOUT_DISABLE, new Boolean(true));
+				}
+			} catch (Exception e) {
+				e.printStackTrace();	// we don't want to make a fuss if it happens
+			}
 		}
-	} catch (Exception e) {
-		e.printStackTrace();	// we don't want to make a fuss if it happens
-	}
-	timeoutDisabledCheckBox.setEnabled(found);
-	
-	boolean bTimeoutDisabled = ivjTornOffSolverTaskDescription.isTimeoutDisabled();
-	timeoutDisabledCheckBox.setSelected(bTimeoutDisabled);
-	
+	};
+	AsynchClientTask checkboxSetTask = new AsynchClientTask("checkboxSetTask",AsynchClientTask.TASKTYPE_SWING_BLOCKING,false) {
+		@Override
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
+			if(hashTable.get(TIMEOUT_DISABLE) != null && hashTable.get(TIMEOUT_DISABLE) instanceof Boolean && ((Boolean)hashTable.get(TIMEOUT_DISABLE)).booleanValue()) {	
+				timeoutDisabledCheckBox.setEnabled(true);		
+			}
+		}
+	};
+	ClientTaskDispatcher.dispatch(null, new Hashtable<>(), new AsynchClientTask[] {timeoutDisableTask,checkboxSetTask});
+
 	managePanels(); // sensitivity panel's visibility
 	getMiscPanel().setVisible(supportedFeatures.contains(SolverFeature.Feature_SerialParameterScans)
 			|| supportedFeatures.contains(SolverFeature.Feature_StopAtSpatiallyUniform)
