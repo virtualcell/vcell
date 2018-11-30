@@ -48,9 +48,9 @@ public class ListservMail {
 	private static String mailUser = "frm";
 	private static String mailFolder = "vcell-users-l bounced";
 	private static String vcellDbSchema = "vcell";
-	private static File rawBounceFile = new File("C:/Users/frm/workspace/VCell_trunk/listserv/rawBouncedEmails.txt");
-	private static File cleanBounceFile = new File("C:/Users/frm/workspace/VCell_trunk/listserv/cleanBouncedEmails.txt");
-	private static File listservEmailFileMinusBounce = new File("C:/Users/frm/workspace/VCell_trunk/listserv/listservEmailFileMinusBounce.txt");
+	private static File rawBounceFile = new File("C:/Users/frm/workspace/VCell_trunk_latest/listserv/rawBouncedEmails.txt");
+	private static File cleanBounceFile = new File("C:/Users/frm/workspace/VCell_trunk_latest/listserv/cleanBouncedEmails.txt");
+	private static File listservEmailFileMinusBounce = new File("C:/Users/frm/workspace/VCell_trunk_latest/listserv/listservEmailFileMinusBounce.txt");
 	private static String subjectSearchForBounced = "VCELL-USERS-L: error report from";
 	
 	private static enum listServeCmds {parsebounce,createemaillist}
@@ -174,8 +174,8 @@ public class ListservMail {
 					SimulationJobTable.table.simRef.getQualifiedColName() + " = " + SimulationTable.table.id.getQualifiedColName() +
 				" AND " +
 					UserTable.table.id.getQualifiedColName() + " = " + SimulationTable.table.ownerRef.getQualifiedColName() +
-	//			" AND " +
-	//				"LOWER("+UserTable.table.notify.getQualifiedColName()+"='on')" +
+//				" AND " +
+//					"LOWER("+UserTable.table.notify.getQualifiedColName()+")='on'" +
 				" AND " +
 					UserTable.table.email.getQualifiedColName()+ " NOT LIKE '%@qq.com' " +//these looked like multiple robot generated dates so exclude
 				" AND "+
