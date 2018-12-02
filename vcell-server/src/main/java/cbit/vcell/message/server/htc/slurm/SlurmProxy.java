@@ -360,7 +360,7 @@ public class SlurmProxy extends HtcProxy {
 		lsb.write("#SBATCH -o " + new File(htcLogDirExternal, jobName+".slurm.log").getAbsolutePath());
 		lsb.write("#SBATCH -e " + new File(htcLogDirExternal, jobName+".slurm.log").getAbsolutePath());
 		//SlurmProxy ultimately instantiated from {vcellroot}/docker/build/Dockerfile-submit-dev by way of cbit.vcell.message.server.batch.sim.HtcSimulationWorker
-		MemLimitResults memoryMBAllowed = HtcProxy.getMemoryLimit(simTask.getUserName(),memSizeMB,simTask.getSimulationInfo().getSimulationVersion().getVersionKey());
+		MemLimitResults memoryMBAllowed = HtcProxy.getMemoryLimit(simTask,memSizeMB);
 		lsb.write("#SBATCH --mem="+memoryMBAllowed.getMemLimit()+"M");
 		lsb.write("# VCell SlurmProxy memory limit source="+memoryMBAllowed.getMemLimitSource());
 		lsb.write("#SBATCH --no-kill");
