@@ -26,6 +26,7 @@ import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.server.HtcJobID;
 import cbit.vcell.simdata.PortableCommand;
+import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solvers.ExecutableCommand;
 
 public abstract class HtcProxy {
@@ -245,7 +246,10 @@ public abstract class HtcProxy {
 		}
 	}
 	public static final boolean bDebugMemLimit = false;
-	public static MemLimitResults getMemoryLimit(String vcellUserid,double estimatedMemSizeMB,KeyValue simID) {
+	public static MemLimitResults getMemoryLimit(SimulationTask simulationTask,double estimatedMemSizeMB) {
+		String vcellUserid = simulationTask.getUser().getName();
+		KeyValue simID = simulationTask.getSimulationInfo().getSimulationVersion().getVersionKey();
+		SolverDescription solverDescription = simulationTask.getSimulation().getSolverTaskDescription().getSolverDescription();
 		//One of 5 limits are returned (ordered from highest to lowest priority):
 		//  MemoryMax:PerSimulation									Has PropertyLoader.simPerUserMemoryLimitFile, specific user AND simID MATCHED in file (userid MemLimitMb simID)
 		//  MemoryMax:PerUser										Has PropertyLoader.simPerUserMemoryLimitFile, specific user (but not simID) MATCHED in file (userid MemLimitMb '*')
@@ -265,6 +269,7 @@ public abstract class HtcProxy {
 			//${vcellroot}/docker/swarm/docker-compose.yml-> Volume map "${VCELL_SIMDATADIR_HOST}:/simdata"
 			Long perUserMemMax = null;
 			Long perSimMemMax = null;
+			Long perSolverMax = null;
 			String memLimitFileDirVal = System.getProperty(PropertyLoader.primarySimDataDirInternalProperty);
 			String memLimitFileVal = System.getProperty(PropertyLoader.simPerUserMemoryLimitFile);
 			if(memLimitFileDirVal != null && memLimitFileVal != null) {
@@ -282,7 +287,7 @@ public abstract class HtcProxy {
 					
 					StringTokenizer st = new StringTokenizer(userAndLimit);
 					String limitUserid = st.nextToken();
-					if(limitUserid.equals(vcellUserid)) {//check user
+					if(limitUserid.equals(vcellUserid) || limitUserid.equals(solverDescription.name())) {//check user
 						long memLimit = 0;
 						try {
 							memLimit = Long.parseLong(st.nextToken());
@@ -290,6 +295,11 @@ public abstract class HtcProxy {
 							if(bDebugMemLimit){System.out.println("-----ERROR '"+userAndLimit+"' token memlimit not parsed");}
 							//bad line in limit file, continue processing other lines
 							//e.printStackTrace(System.out);
+							continue;
+						}
+						if(limitUserid.equals(solverDescription.name())) {
+							perSolverMax = memLimit;
+							if(bDebugMemLimit){System.out.println("-----"+"MATCH Solver "+userAndLimit);}
 							continue;
 						}
 						//get simid
@@ -337,6 +347,8 @@ public abstract class HtcProxy {
 						(perSimMemMax!=null?
 							"MemoryMax(FILE PerSimulation):"+simID+",User='"+vcellUserid+"' from "+memLimitFile.getAbsolutePath():
 							"MemoryMax(FILE PerUser):'"+vcellUserid+"' from "+memLimitFile.getAbsolutePath()));
+				}else if(perSolverMax != null) {
+					return new MemLimitResults(perSolverMax, "MemoryMax(FILE PerSolver):'"+solverDescription.name()+"' from "+memLimitFile.getAbsolutePath());
 				}
 			}else {
 				if(bDebugMemLimit){System.out.println("-----MemLimitFile "+(memLimitFile==null?"not defined":memLimitFile.getAbsolutePath()+" not exist"));}

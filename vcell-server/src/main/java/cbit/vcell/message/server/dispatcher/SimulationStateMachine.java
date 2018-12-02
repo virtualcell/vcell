@@ -483,7 +483,7 @@ public class SimulationStateMachine {
 
 		double requiredMemMB = simulationTask.getEstimatedMemorySizeMB();
 		//SimulationStateMachine ultimately instantiated from {vcellroot}/docker/build/Dockerfile-sched-dev by way of cbit.vcell.message.server.dispatcher.SimulationDispatcher
-		MemLimitResults allowableMemMB = HtcProxy.getMemoryLimit(simulation.getVersion().getOwner().getName(), requiredMemMB, simulation.getVersion().getVersionKey());
+		MemLimitResults allowableMemMB = HtcProxy.getMemoryLimit(simulationTask, requiredMemMB);
 		
 		final SimulationJobStatus newSimJobStatus;
 		if (requiredMemMB > allowableMemMB.getMemLimit()) {						
