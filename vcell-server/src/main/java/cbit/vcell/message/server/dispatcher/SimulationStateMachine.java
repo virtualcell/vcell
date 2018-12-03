@@ -26,7 +26,6 @@ import cbit.vcell.message.server.htc.HtcProxy;
 import cbit.vcell.message.server.htc.HtcProxy.MemLimitResults;
 import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.mongodb.VCMongoMessage;
-import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.server.HtcJobID;
 import cbit.vcell.server.RunningStateInfo;
 import cbit.vcell.server.SimulationExecutionStatus;
@@ -37,6 +36,7 @@ import cbit.vcell.server.SimulationStatus;
 import cbit.vcell.server.UpdateSynchronizationException;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationJob;
+import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.vcell.solver.server.SimulationMessage;
@@ -483,7 +483,11 @@ public class SimulationStateMachine {
 
 		double requiredMemMB = simulationTask.getEstimatedMemorySizeMB();
 		//SimulationStateMachine ultimately instantiated from {vcellroot}/docker/build/Dockerfile-sched-dev by way of cbit.vcell.message.server.dispatcher.SimulationDispatcher
-		MemLimitResults allowableMemMB = HtcProxy.getMemoryLimit(simulationTask, requiredMemMB);
+		String vcellUserid = simulationTask.getUser().getName();
+		KeyValue simID = simulationTask.getSimulationInfo().getSimulationVersion().getVersionKey();
+		SolverDescription solverDescription = simulationTask.getSimulation().getSolverTaskDescription().getSolverDescription();
+
+		MemLimitResults allowableMemMB = HtcProxy.getMemoryLimit(vcellUserid,simID,solverDescription, requiredMemMB);
 		
 		final SimulationJobStatus newSimJobStatus;
 		if (requiredMemMB > allowableMemMB.getMemLimit()) {						
