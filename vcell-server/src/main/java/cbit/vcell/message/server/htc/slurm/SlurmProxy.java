@@ -27,6 +27,7 @@ import cbit.vcell.server.HtcJobID;
 import cbit.vcell.server.HtcJobID.BatchSystemType;
 import cbit.vcell.simdata.PortableCommand;
 import cbit.vcell.simdata.PortableCommandWrapper;
+import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solvers.ExecutableCommand;
 import edu.uchc.connjur.wb.LineStringBuilder;
 
@@ -338,6 +339,11 @@ public class SlurmProxy extends HtcProxy {
 	String generateScript(String jobName, ExecutableCommand.Container commandSet, int ncpus, double memSizeMB, Collection<PortableCommand> postProcessingCommands, SimulationTask simTask) {
 		final boolean isParallel = ncpus > 1;
 
+		//SlurmProxy ultimately instantiated from {vcellroot}/docker/build/Dockerfile-submit-dev by way of cbit.vcell.message.server.batch.sim.HtcSimulationWorker
+		String vcellUserid = simTask.getUser().getName();
+		KeyValue simID = simTask.getSimulationInfo().getSimulationVersion().getVersionKey();
+		SolverDescription solverDescription = simTask.getSimulation().getSolverTaskDescription().getSolverDescription();
+		MemLimitResults memoryMBAllowed = HtcProxy.getMemoryLimit(vcellUserid,simID,solverDescription,memSizeMB);
 
 		LineStringBuilder lsb = new LineStringBuilder();
 
@@ -359,10 +365,7 @@ public class SlurmProxy extends HtcProxy {
 		lsb.write("#SBATCH -J " + jobName);
 		lsb.write("#SBATCH -o " + new File(htcLogDirExternal, jobName+".slurm.log").getAbsolutePath());
 		lsb.write("#SBATCH -e " + new File(htcLogDirExternal, jobName+".slurm.log").getAbsolutePath());
-		//SlurmProxy ultimately instantiated from {vcellroot}/docker/build/Dockerfile-submit-dev by way of cbit.vcell.message.server.batch.sim.HtcSimulationWorker
-		MemLimitResults memoryMBAllowed = HtcProxy.getMemoryLimit(simTask,memSizeMB);
 		lsb.write("#SBATCH --mem="+memoryMBAllowed.getMemLimit()+"M");
-		lsb.write("# VCell SlurmProxy memory limit source="+memoryMBAllowed.getMemLimitSource());
 		lsb.write("#SBATCH --no-kill");
 		lsb.write("#SBATCH --no-requeue");
 		String nodelist = PropertyLoader.getProperty(PropertyLoader.htcNodeList, null);
@@ -370,6 +373,7 @@ public class SlurmProxy extends HtcProxy {
 			lsb.write("#SBATCH --nodelist="+nodelist);
 		}
 		lsb.write("echo \"1 date=`date`\"");
+		lsb.write("# VCell SlurmProxy memory limit source="+memoryMBAllowed.getMemLimitSource());
 
 		String primaryDataDirExternal = PropertyLoader.getRequiredProperty(PropertyLoader.primarySimDataDirExternalProperty);
 

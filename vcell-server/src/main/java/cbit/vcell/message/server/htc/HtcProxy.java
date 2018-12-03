@@ -246,13 +246,11 @@ public abstract class HtcProxy {
 		}
 	}
 	public static final boolean bDebugMemLimit = false;
-	public static MemLimitResults getMemoryLimit(SimulationTask simulationTask,double estimatedMemSizeMB) {
-		String vcellUserid = simulationTask.getUser().getName();
-		KeyValue simID = simulationTask.getSimulationInfo().getSimulationVersion().getVersionKey();
-		SolverDescription solverDescription = simulationTask.getSimulation().getSolverTaskDescription().getSolverDescription();
+	public static MemLimitResults getMemoryLimit(String vcellUserid,KeyValue simID,SolverDescription solverDescription,double estimatedMemSizeMB) {
 		//One of 5 limits are returned (ordered from highest to lowest priority):
 		//  MemoryMax:PerSimulation									Has PropertyLoader.simPerUserMemoryLimitFile, specific user AND simID MATCHED in file (userid MemLimitMb simID)
 		//  MemoryMax:PerUser										Has PropertyLoader.simPerUserMemoryLimitFile, specific user (but not simID) MATCHED in file (userid MemLimitMb '*')
+		//  MemoryMax:PerSolver										Has PropertyLoader.simPerUserMemoryLimitFile, specific solverDescription (but not simID or user) MATCHED in file (solverName MemLimitMb '*')
 		//  MemoryMax:SimulationTask.getEstimatedMemorySizeMB()		Has PropertyLoader.simPerUserMemoryLimitFile, no user or sim MATCHED in file ('defaultSimMemoryLimitMb' MemLimitMb '*')
 		//																estimated > MemoryMax:AllUsersMemLimit
 		//  MemoryMax:AllUsersMemLimit(defaultSimMemoryLimitMb)		Has PropertyLoader.simPerUserMemoryLimitFile, no user or sim MATCHED in file ('defaultSimMemoryLimitMb' MemLimitMb '*')
@@ -287,7 +285,7 @@ public abstract class HtcProxy {
 					
 					StringTokenizer st = new StringTokenizer(userAndLimit);
 					String limitUserid = st.nextToken();
-					if(limitUserid.equals(vcellUserid) || limitUserid.equals(solverDescription.name())) {//check user
+					if(limitUserid.equals(vcellUserid) || (solverDescription != null && limitUserid.equals(solverDescription.name()))) {//check user
 						long memLimit = 0;
 						try {
 							memLimit = Long.parseLong(st.nextToken());
@@ -297,7 +295,7 @@ public abstract class HtcProxy {
 							//e.printStackTrace(System.out);
 							continue;
 						}
-						if(limitUserid.equals(solverDescription.name())) {
+						if(solverDescription != null && limitUserid.equals(solverDescription.name())) {
 							perSolverMax = memLimit;
 							if(bDebugMemLimit){System.out.println("-----"+"MATCH Solver "+userAndLimit);}
 							continue;
