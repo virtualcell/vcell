@@ -141,7 +141,7 @@ public class ViewGeneratedReactionsPanel extends DocumentEditorSubPanel  {
 					}
 				});
 			}
-			totalReactionsLabel.setText("Species: " + table.getModel().getRowCount());
+			totalReactionsLabel.setText("Reactions: " + table.getModel().getRowCount());
 		}
 	}
 	
