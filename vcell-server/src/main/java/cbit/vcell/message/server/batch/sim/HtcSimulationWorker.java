@@ -65,6 +65,7 @@ import cbit.vcell.server.HtcJobID.BatchSystemType;
 import cbit.vcell.simdata.PortableCommand;
 import cbit.vcell.simdata.SimulationData;
 import cbit.vcell.simdata.VtkMeshGenerator;
+import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solver.SolverException;
 import cbit.vcell.solver.SolverTaskDescription;
 import cbit.vcell.solver.server.SimulationMessage;
@@ -278,7 +279,11 @@ private HtcJobID submit2PBS(SimulationTask simTask, HtcProxy clonedHtcProxy, Pos
 	File parallelDirExternal = new File(chores.runDirectoryExternal);
 	File primaryUserDirInternal = new File(chores.finalDataDirectoryInternal);
 	File primaryUserDirExternal = new File(chores.finalDataDirectoryExternal);
-	Solver realSolver = (AbstractSolver)SolverFactory.createSolver(primaryUserDirInternal,parallelDirInternal, simTask, true);
+	boolean bNonSingularity =
+		simTask.getSimulation().getSolverTaskDescription().getSolverDescription() == SolverDescription.HybridEuler ||
+		simTask.getSimulation().getSolverTaskDescription().getSolverDescription() == SolverDescription.HybridMilstein ||
+		simTask.getSimulation().getSolverTaskDescription().getSolverDescription() == SolverDescription.HybridMilAdaptive;
+	Solver realSolver = (AbstractSolver)SolverFactory.createSolver((bNonSingularity?primaryUserDirExternal:primaryUserDirInternal),parallelDirInternal, simTask, true);
 	realSolver.setUnixMode();
 
 	String simTaskXmlText = XmlHelper.simTaskToXML(simTask);
