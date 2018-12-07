@@ -1417,7 +1417,13 @@ public synchronized DataIdentifier[] getVarAndFunctionDataIdentifiers(OutputCont
 	}
 
 	refreshLogFile();
-	if (!isComsol()){
+	boolean bIsComsol = false;
+	try {
+		bIsComsol = isComsol();
+	}catch (FileNotFoundException e){
+		e.printStackTrace(System.out);
+	}
+	if (!bIsComsol){
 		try {
 			refreshMeshFile();
 		}catch (MathException e){
@@ -1426,7 +1432,7 @@ public synchronized DataIdentifier[] getVarAndFunctionDataIdentifiers(OutputCont
 		}
 	}
 	
-	if (!isRulesData && !getIsODEData() && !isComsol() && dataFilenames != null) {
+	if (!isRulesData && !getIsODEData() && !bIsComsol && dataFilenames != null) {
 		// read variables only when I have never read the file since variables don't change
 		if (dataSetIdentifierList.size() == 0) {
 			File file = getPDEDataFile(0.0);
@@ -1485,7 +1491,7 @@ public synchronized DataIdentifier[] getVarAndFunctionDataIdentifiers(OutputCont
 		}
 	}
 
-	if (isComsol() && dataSetIdentifierList.size() == 0){
+	if (bIsComsol && dataSetIdentifierList.size() == 0){
 		ComsolSimFiles comsolSimFiles = getComsolSimFiles();
 		if (comsolSimFiles.simTaskXMLFile!=null){
 			try {
