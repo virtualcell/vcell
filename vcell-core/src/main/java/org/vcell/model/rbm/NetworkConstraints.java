@@ -2,6 +2,7 @@ package org.vcell.model.rbm;
 
 import java.io.Serializable;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -27,13 +28,13 @@ public class NetworkConstraints extends RbmElementAbstract implements Matchable,
 	private int maxMoleculesPerSpecies = NetworkTransformer.defaultMaxMoleculesPerSpecies;
 	private int speciesLimit = NetworkTransformer.defaultSpeciesLimit;
 	private int reactionsLimit = NetworkTransformer.defaultReactionsLimit;
-	
-	private Map<MolecularType, Integer> maxStoichiometryMap = new HashMap<MolecularType, Integer>();
+	private Map<MolecularType, Integer> maxStoichiometryMap = new LinkedHashMap<>();
 	
 	private transient int testMaxIteration = maxIteration;
 	private transient int testMaxMoleculesPerSpecies = maxMoleculesPerSpecies;
 	private transient int testSpeciesLimit = speciesLimit;
-	private int testReactionsLimit = reactionsLimit;
+	private transient int testReactionsLimit = reactionsLimit;
+	private transient Map<MolecularType, Integer> testMaxStoichiometryMap = new LinkedHashMap<>();
 
 	public NetworkConstraints() {		
 	}

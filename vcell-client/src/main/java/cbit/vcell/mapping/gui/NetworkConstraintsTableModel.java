@@ -3,9 +3,15 @@ package cbit.vcell.mapping.gui;
 import java.beans.PropertyChangeEvent;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
+import org.vcell.model.rbm.MolecularType;
 import org.vcell.model.rbm.NetworkConstraints;
 import org.vcell.model.rbm.common.NetworkConstraintsEntity;
 import org.vcell.util.gui.EditorScrollTable;
@@ -23,6 +29,7 @@ public class NetworkConstraintsTableModel extends BioModelEditorRightSideTableMo
 	public static final String sMaxMoleculesName = "Max Molecules / Species";
 	public static final String sSpeciesLimitName = "Species Limit";
 	public static final String sReactionsLimitName = "Reactions Limit";
+	public static final int defaultMaxStoichiometry = 3;	// default max molecules of each type per species
 	
 	public static final int colCount = 2;
 	public static final int iColName = 0;
@@ -41,10 +48,12 @@ public class NetworkConstraintsTableModel extends BioModelEditorRightSideTableMo
 			return;
 		}
 		if(this.simContext != null && this.simContext.getNetworkConstraints() != null) {
-			simContext.getNetworkConstraints().removePropertyChangeListener(this); 
+			simContext.getNetworkConstraints().removePropertyChangeListener(this);
+			simContext.getModel().removePropertyChangeListener(this);
 		}
 		this.simContext = simContext;
 		simContext.getNetworkConstraints().addPropertyChangeListener(this);
+		simContext.getModel().addPropertyChangeListener(this);
 		
 		List<NetworkConstraintsEntity> newData = computeData();
 		setData(newData);
@@ -79,13 +88,28 @@ public class NetworkConstraintsTableModel extends BioModelEditorRightSideTableMo
 		nceList.add(nce);
 		nce = new NetworkConstraintsEntity(sReactionsLimitName, s4);
 		nceList.add(nce);
-		// we read them here, all from rbmModelContainer.getMolecularTypeList()
-		// TODO: if the molecule is in the NetworkConstraints.maxStoichiometryMap set value from there
-		// otherwise put "default"
-//		for(MolecularType mt : rbmModelContainer.getMolecularTypeList()) {
-//			nce = new NetworkConstraintsEntity(mt.getDisplayName(), "max stoichiometry", "default");
-//			nceList.add(nce);
-//		}		
+
+		Map<MolecularType, Integer> stoichiometryMap = networkConstraints.getMaxStoichiometry();
+		Iterator<Entry<MolecularType, Integer>> it = stoichiometryMap.entrySet().iterator();
+		while (it.hasNext()) {
+			// first clean any entry that doesn't exist anymore (should never happen!)
+			MolecularType mt = it.next().getKey();
+			if(rbmModelContainer.getMolecularType(mt.getName()) == null) {
+				it.remove();
+			}
+		}
+		for(MolecularType mt : rbmModelContainer.getMolecularTypeList()) {
+			// add any new molecule that's not already there, with the default max stoichiometry
+			if(!stoichiometryMap.containsKey(mt)) {
+				stoichiometryMap.put(mt, defaultMaxStoichiometry);
+			}
+		}
+		for(Map.Entry<MolecularType, Integer> entry : stoichiometryMap.entrySet()) {
+			MolecularType mt = entry.getKey();
+			Integer value = entry.getValue();
+			nce = new NetworkConstraintsEntity("Max molecules " + mt.getDisplayName() + " / Species", value+"");
+			nceList.add(nce);
+		}		
 		return nceList;
 	}
 	
@@ -192,7 +216,6 @@ public class NetworkConstraintsTableModel extends BioModelEditorRightSideTableMo
 	@Override
 	public void propertyChange(PropertyChangeEvent evt) {
 		super.propertyChange(evt);
-//		super.propertyChange(evt);
 		Object source = evt.getSource();
 		
 		if (source instanceof NetworkConstraints) {
@@ -206,6 +229,13 @@ public class NetworkConstraintsTableModel extends BioModelEditorRightSideTableMo
 				List<NetworkConstraintsEntity> newData = computeData();
 				setData(newData);
 			} else if(evt.getPropertyName().equals(NetworkConstraints.PROPERTY_NAME_REACTIONS_LIMIT)) {
+				List<NetworkConstraintsEntity> newData = computeData();
+				setData(newData);
+			} else {
+				System.out.println("Property " + evt.getPropertyName() + " not yet implemented.");
+			}
+		} else if(source instanceof Model) {
+			if(evt.getPropertyName().equals(RbmModelContainer.PROPERTY_NAME_MOLECULAR_TYPE_LIST)) {
 				List<NetworkConstraintsEntity> newData = computeData();
 				setData(newData);
 			} else {
