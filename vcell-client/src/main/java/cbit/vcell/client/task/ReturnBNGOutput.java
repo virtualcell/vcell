@@ -114,8 +114,8 @@ private void validateConstraints(BNGOutputSpec outputSpec) {
 		owner.setNewCallbackMessage(tcm);
 		String string = "Updating the network constraints with the test values.";
 		System.out.println(string);
-		owner.updateOutputSpecToSimulationContext(outputSpec);
 		sc.getNetworkConstraints().updateConstraintsFromTest();
+		owner.updateOutputSpecToSimulationContext(outputSpec);
 		tcm = new TaskCallbackMessage(TaskCallbackStatus.Notification, string);
 		sc.firePropertyChange("appendToConsole", "", tcm);
 		return;
@@ -135,13 +135,11 @@ private void validateConstraints(BNGOutputSpec outputSpec) {
 
 @Override
 public ClientTaskStatusSupport getClientTaskStatusSupport() {
-	// TODO Auto-generated method stub
 	return super.getClientTaskStatusSupport();
 }
 
 @Override
 public void setClientTaskStatusSupport(ClientTaskStatusSupport clientTaskStatusSupport) {
-	// TODO Auto-generated method stub
 	super.setClientTaskStatusSupport(clientTaskStatusSupport);
 }
 

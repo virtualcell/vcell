@@ -2,16 +2,22 @@ package org.vcell.model.rbm;
 
 import java.io.Serializable;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
+import org.vcell.model.rbm.common.NetworkConstraintsEntity;
 import org.vcell.util.Compare;
 import org.vcell.util.Issue;
 import org.vcell.util.IssueContext;
 import org.vcell.util.Matchable;
 
 import cbit.vcell.mapping.NetworkTransformer;
+import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.model.Model;
+import cbit.vcell.model.Model.RbmModelContainer;
 
 @SuppressWarnings("serial")
 public class NetworkConstraints extends RbmElementAbstract implements Matchable, Serializable {
@@ -23,6 +29,8 @@ public class NetworkConstraints extends RbmElementAbstract implements Matchable,
 	
 	public static final String SPECIES_LIMIT_PARAMETER = "vcellReservedParameter_speciesLimit";
 	public static final String REACTIONS_LIMIT_PARAMETER = "vcellReservedParameter_reactionsLimit";
+	
+	public static final int defaultMaxStoichiometry = 20;	// default max molecules of each type per species
 	
 	private int maxIteration = NetworkTransformer.defaultMaxIteration;
 	private int maxMoleculesPerSpecies = NetworkTransformer.defaultMaxMoleculesPerSpecies;
@@ -56,21 +64,41 @@ public class NetworkConstraints extends RbmElementAbstract implements Matchable,
 		}
 	}
 	
-	public void setTestConstraints(int testMaxIteration, int testMaxMoleculesPerSpecies, int testSpeciesLimit, int testReactionsLimit) {
+	public void setTestConstraints(int testMaxIteration, int testMaxMoleculesPerSpecies, 
+			int testSpeciesLimit, int testReactionsLimit, Map<MolecularType, Integer> testMaxStoichiometryMap) {
 		this.testMaxIteration = testMaxIteration;
 		this.testMaxMoleculesPerSpecies = testMaxMoleculesPerSpecies;
 		this.testSpeciesLimit = testSpeciesLimit;
 		this.testReactionsLimit = testReactionsLimit;
+		this.testMaxStoichiometryMap = testMaxStoichiometryMap;
 	}
 	public void updateConstraintsFromTest() {
 		setMaxIteration(testMaxIteration);
 		setMaxMoleculesPerSpecies(testMaxMoleculesPerSpecies);
 		setSpeciesLimit(testSpeciesLimit);
 		setReactionsLimit(testReactionsLimit);
+		
+		for (Map.Entry<MolecularType, Integer> entry : testMaxStoichiometryMap.entrySet()) {
+			MolecularType key = entry.getKey();		// use the same instances of the molecular type 
+			int value = entry.getValue();
+			this.maxStoichiometryMap.put(key, value);
+		}
 	}
 	public boolean isTestConstraintsDifferent() {
 		if(testMaxIteration != maxIteration || testMaxMoleculesPerSpecies != maxMoleculesPerSpecies || testSpeciesLimit != speciesLimit || testReactionsLimit != reactionsLimit) {
 			return true;
+		}
+		for(Map.Entry<MolecularType, Integer> var1 : maxStoichiometryMap.entrySet()) {
+			boolean different = true;
+			for(Map.Entry<MolecularType, Integer> var2 : testMaxStoichiometryMap.entrySet()) {
+				if(Compare.isEqual(var1.getKey(),var2.getKey()) && Compare.isEqual(var1.getValue(),var2.getValue())) {
+					different = false;
+					break;
+				}
+			}
+			if(different == true) {
+				return true;
+			}
 		}
 		return false;
 	}
@@ -111,8 +139,8 @@ public class NetworkConstraints extends RbmElementAbstract implements Matchable,
 	
 	public void setMaxStoichiometry(MolecularType molecularType, Integer newValue) {
 		Integer oldValue;
-		if (newValue == null) {
-			oldValue = maxStoichiometryMap.remove(molecularType);
+		if (newValue == null || newValue < 1) {
+			throw new RuntimeException("Invalid stoichiometry value!");
 		} else {
 			oldValue = maxStoichiometryMap.get(molecularType);
 			maxStoichiometryMap.put(molecularType, newValue);
@@ -133,13 +161,55 @@ public class NetworkConstraints extends RbmElementAbstract implements Matchable,
 		return testReactionsLimit;
 	}
 
-	public Map<MolecularType, Integer> getMaxStoichiometry() {
+	public Map<MolecularType, Integer> getMaxStoichiometry(SimulationContext sc) {
+		updateStoichiometryMaps(sc);
 		return maxStoichiometryMap;
 	}
-	public Integer getMaxStoichiometry(MolecularType molecularType) {
+	public Integer getMaxStoichiometry(MolecularType molecularType, SimulationContext sc) {
+		updateStoichiometryMaps(sc);
 		return maxStoichiometryMap.get(molecularType);
 	}
-	
+	public Integer getTestMaxStoichiometry(MolecularType molecularType, SimulationContext sc) {
+		updateStoichiometryMaps(sc);
+		return testMaxStoichiometryMap.get(molecularType);
+	}
+	public void updateStoichiometryMaps(SimulationContext simContext) {
+		if(simContext == null || simContext.getModel() == null || simContext.getModel().getRbmModelContainer() == null) {
+			maxStoichiometryMap.clear();
+			testMaxStoichiometryMap.clear();
+			return;
+		}
+		// make certain we are consistent
+		Model model = simContext.getModel();
+		RbmModelContainer rbmModelContainer = model.getRbmModelContainer();
+		Iterator<Entry<MolecularType, Integer>> it = maxStoichiometryMap.entrySet().iterator();
+		while (it.hasNext()) {
+			// first clean any entry that doesn't exist anymore
+			MolecularType mt = it.next().getKey();
+			if(rbmModelContainer.getMolecularType(mt.getName()) == null) {
+				it.remove();
+			}
+		}
+		it = testMaxStoichiometryMap.entrySet().iterator();
+		while (it.hasNext()) {
+			MolecularType mt = it.next().getKey();
+			if(rbmModelContainer.getMolecularType(mt.getName()) == null) {
+				it.remove();
+			}
+		}
+		for(MolecularType mt : rbmModelContainer.getMolecularTypeList()) {
+			// add any new molecule that's not already there, with the default max stoichiometry
+			if(!maxStoichiometryMap.containsKey(mt)) {
+				maxStoichiometryMap.put(mt, defaultMaxStoichiometry);
+			}
+		}
+		for(MolecularType mt : rbmModelContainer.getMolecularTypeList()) {
+			// add any new molecule that's not already there, with the value from maxStoichiometryMap
+			if(!testMaxStoichiometryMap.containsKey(mt)) {
+				testMaxStoichiometryMap.put(mt, maxStoichiometryMap.get(mt));
+			}
+		}
+	}
 	public void clear() {
 		maxStoichiometryMap.clear();
 		maxIteration = NetworkTransformer.defaultMaxIteration;
@@ -170,7 +240,7 @@ public class NetworkConstraints extends RbmElementAbstract implements Matchable,
 		if (!Compare.isEqual(reactionsLimit, that.reactionsLimit)) {
 			return false;
 		}
-		Map<MolecularType, Integer> thatMaxStoichiometryMap = new HashMap<MolecularType, Integer>(maxStoichiometryMap);
+		Map<MolecularType, Integer> thatMaxStoichiometryMap = new HashMap<MolecularType, Integer>(that.maxStoichiometryMap);
 		for(Map.Entry<MolecularType, Integer> var1 : maxStoichiometryMap.entrySet()) {
 			boolean found = false;
 			for(Map.Entry<MolecularType, Integer> var2 : thatMaxStoichiometryMap.entrySet()) {
@@ -192,7 +262,7 @@ public class NetworkConstraints extends RbmElementAbstract implements Matchable,
 	
 	@Override
 	public void gatherIssues(IssueContext issueContext, List<Issue> issueList) {
-		// TODO Auto-generated method stub
+
 	}
 
 }

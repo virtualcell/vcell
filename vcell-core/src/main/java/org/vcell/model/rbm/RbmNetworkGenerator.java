@@ -440,9 +440,10 @@ public class RbmNetworkGenerator {
 	public static void generateNetwork(PrintWriter writer, RbmModelContainer rbmModelContainer, SimulationContext sc, NetworkGenerationRequirements networkGenerationRequirements) {
 		List<MolecularType> molList = rbmModelContainer.getMolecularTypeList();
 		NetworkConstraints constraints = sc.getNetworkConstraints();
-		generateNetworkEx(constraints.getMaxIteration(), constraints.getMaxMoleculesPerSpecies(), writer, rbmModelContainer, sc, networkGenerationRequirements);
+		generateNetworkEx(constraints.getMaxIteration(), constraints.getMaxMoleculesPerSpecies(), false, writer, rbmModelContainer, sc, networkGenerationRequirements);
 	}
-	public static void generateNetworkEx(int maxIterations, int maxMoleculesPerSpecies, PrintWriter writer, RbmModelContainer rbmModelContainer, SimulationContext sc, NetworkGenerationRequirements networkGenerationRequirements) {
+	public static void generateNetworkEx(int maxIterations, int maxMoleculesPerSpecies, boolean useTest,
+			PrintWriter writer, RbmModelContainer rbmModelContainer, SimulationContext sc, NetworkGenerationRequirements networkGenerationRequirements) {
 		List<MolecularType> molList = rbmModelContainer.getMolecularTypeList();
 		NetworkConstraints constraints = sc.getNetworkConstraints();
 		writer.print("generate_network({");
@@ -459,8 +460,13 @@ public class RbmNetworkGenerator {
 		writer.print(",");
 		writer.print("max_agg=>" + maxMoleculesPerSpecies);
 		StringBuilder max_stoich = new StringBuilder(); 
+		Integer stoich;
 		for (MolecularType mt : molList) {
-			Integer stoich = constraints.getMaxStoichiometry(mt);
+			if(useTest) {
+				stoich = constraints.getTestMaxStoichiometry(mt, sc);
+			} else {
+				stoich = constraints.getMaxStoichiometry(mt, sc);
+			}
 			if (stoich != null) {
 				if (max_stoich.length() > 0) {
 					max_stoich.append(",");
@@ -469,7 +475,7 @@ public class RbmNetworkGenerator {
 			}
 		}
 		if (max_stoich.length() > 0) {
-			writer.print(",max_stoich={" + max_stoich + "}");
+			writer.print(",max_stoich=>{" + max_stoich + "}");
 		}
 		writer.print(",overwrite=>1");
 		writer.println("})");

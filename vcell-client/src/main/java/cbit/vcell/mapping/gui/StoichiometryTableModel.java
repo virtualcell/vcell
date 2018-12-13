@@ -28,7 +28,7 @@ public class StoichiometryTableModel extends BioModelEditorRightSideTableModel<M
 	public static final int colCount = 2;
 	public static final int iColName = 0;
 	public static final int iColValue = 1;
-	private static String[] columnNames = new String[] {"Name", "Value"};
+	private static String[] columnNames = new String[] {"Molecule", "Max. Stoichiometry"};
 	
 	private SimulationContext simContext = null;
 	
@@ -55,7 +55,7 @@ public class StoichiometryTableModel extends BioModelEditorRightSideTableModel<M
 		}
 
 		NetworkConstraints networkConstraints = simContext.getNetworkConstraints();
-		Map<MolecularType, Integer> stoichiometryMap = networkConstraints.getMaxStoichiometry();
+		Map<MolecularType, Integer> stoichiometryMap = networkConstraints.getMaxStoichiometry(simContext);
 		for(Map.Entry<MolecularType, Integer> entry : stoichiometryMap.entrySet()) {
 			MolecularType mt = entry.getKey();
 			Integer value = entry.getValue();
@@ -71,7 +71,7 @@ public class StoichiometryTableModel extends BioModelEditorRightSideTableModel<M
 			Integer candidate = (Integer) getValueAt(row, 1);
 			MaxStoichiometryEntity nce = getValueAt(row);
 			MolecularType mt = nce.getMolecularType();
-			Integer oldValue = simContext.getNetworkConstraints().getMaxStoichiometry().get(mt);
+			Integer oldValue = simContext.getNetworkConstraints().getMaxStoichiometry(simContext).get(mt);
 			if(oldValue.intValue() != candidate.intValue()) {
 				return true;	// is changed
 			}
@@ -115,8 +115,6 @@ public class StoichiometryTableModel extends BioModelEditorRightSideTableModel<M
 	}
 	@Override
 	public void setValueAt(Object value, int row, int column) {
-		System.out.println(" --- setValueAt");
-
 		if (simContext == null || value == null) {
 			return;
 		}

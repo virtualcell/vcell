@@ -422,6 +422,10 @@ private void initialize() {
 	}
 }
 
+public StoichiometryTableModel getStoichiometryTableModel() {
+	return stoichiometryTableModel;
+}
+
 public ActionButtons getButtonPushed() {
 	return buttonPushed;
 }

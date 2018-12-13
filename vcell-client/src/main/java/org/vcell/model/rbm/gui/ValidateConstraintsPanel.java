@@ -19,6 +19,8 @@ import java.awt.event.ActionListener;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 
+import org.vcell.model.rbm.NetworkConstraints;
+
 import cbit.vcell.client.ChildWindowManager.ChildWindow;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
 import cbit.vcell.mapping.SimulationContext;
@@ -69,12 +71,18 @@ private void initialize() {
 	try {
 		setName("ValidateConstraintsPanel");
 		setLayout(new GridBagLayout());
-			
+		
 		maxIterationTextField = new JLabel();
 		maxMolTextField = new JLabel();
 		speciesLimitTextField = new JLabel();
 		reactionsLimitTextField = new JLabel();
 		somethingInsufficientLabel = new JLabel();
+
+		NetworkConstraints nc = owner.getSimulationContext().getNetworkConstraints();
+		maxIterationTextField.setText(nc.getTestMaxIteration() + "");
+		maxMolTextField.setText(nc.getTestMaxMoleculesPerSpecies() + "");
+		speciesLimitTextField.setText(nc.getTestSpeciesLimit() + "");
+		reactionsLimitTextField.setText(nc.getTestReactionsLimit() + "");
 
 		int gridy = 0;
 		GridBagConstraints gbc = new GridBagConstraints();		
@@ -184,11 +192,6 @@ private void initialize() {
 		gbc.insets = new Insets(6, 2, 8, 10);
 		add(getCancelButton(), gbc);
 		
-		maxIterationTextField.setText(owner.getSimulationContext().getNetworkConstraints().getTestMaxIteration() + "");
-		maxMolTextField.setText(owner.getSimulationContext().getNetworkConstraints().getTestMaxMoleculesPerSpecies() + "");
-		speciesLimitTextField.setText(owner.getSimulationContext().getNetworkConstraints().getTestSpeciesLimit() + "");
-		reactionsLimitTextField.setText(owner.getSimulationContext().getNetworkConstraints().getTestReactionsLimit() + "");
-
 		String s = "none";
 		TaskCallbackProcessor tcbp = owner.getSimulationContext().getTaskCallbackProcessor();
 		if(tcbp.getPreviousIterationSpecies()>0 && tcbp.getCurrentIterationSpecies()>0 && tcbp.getCurrentIterationSpecies()!=tcbp.getPreviousIterationSpecies()) {

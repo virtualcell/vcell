@@ -22,6 +22,7 @@ import org.vcell.model.bngl.ASTModel;
 import org.vcell.model.bngl.BngUnitSystem;
 import org.vcell.model.bngl.BngUnitSystem.BngUnitOrigin;
 import org.vcell.model.bngl.ParseException;
+import org.vcell.model.rbm.MolecularType;
 import org.vcell.model.rbm.NetworkConstraints;
 import org.vcell.model.rbm.RbmNetworkGenerator;
 import org.vcell.model.rbm.RbmNetworkGenerator.CompartmentMode;
@@ -41,10 +42,12 @@ import cbit.vcell.mapping.BioNetGenUpdaterCallback;
 import cbit.vcell.mapping.NetworkTransformer;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SimulationContext.NetworkGenerationRequirements;
+import cbit.vcell.mapping.SimulationContext.NetworkGenerationRequirements.RequestType;
 import cbit.vcell.mapping.TaskCallbackMessage;
 import cbit.vcell.mapping.TaskCallbackMessage.TaskCallbackStatus;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Model.ModelParameter;
+import cbit.vcell.model.Model.RbmModelContainer;
 import cbit.vcell.model.RbmObservable;
 import cbit.vcell.model.ReactionRule;
 import cbit.vcell.model.Structure;
@@ -956,6 +959,7 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService, BioNetGe
 		
 		// we parse the real numbers from the bngl file provided by the caller, the nc in the simContext has the default ones
 		NetworkConstraints realNC = extractNetworkConstraints(cBngInputString);
+		String maxStoichiometry = extractMaxStoichiometry(cBngInputString);
 		simContext.getNetworkConstraints().setMaxMoleculesPerSpecies(realNC.getMaxMoleculesPerSpecies());
 		simContext.getNetworkConstraints().setMaxIteration(realNC.getMaxIteration());
 		ModelParameter speciesLimitParam = model.getModelParameter(NetworkConstraints.SPECIES_LIMIT_PARAMETER);
@@ -970,9 +974,11 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService, BioNetGe
 		}
 		simContext.getNetworkConstraints().setTestConstraints(simContext.getNetworkConstraints().getMaxIteration(), 
 				simContext.getNetworkConstraints().getMaxMoleculesPerSpecies(),
-				simContext.getNetworkConstraints().getSpeciesLimit(), simContext.getNetworkConstraints().getReactionsLimit());
-		RbmNetworkGenerator.generateNetworkEx(1, simContext.getNetworkConstraints().getMaxMoleculesPerSpecies(), writer, model.getRbmModelContainer(), simContext, NetworkGenerationRequirements.AllowTruncatedStandardTimeout);
-
+				simContext.getNetworkConstraints().getSpeciesLimit(), 
+				simContext.getNetworkConstraints().getReactionsLimit(),
+				null);		// we don't need a testMaxStoichiometryMap (I guess)
+//		RbmNetworkGenerator.generateNetworkEx(1, simContext.getNetworkConstraints().getMaxMoleculesPerSpecies(), false, writer, model.getRbmModelContainer(), simContext, NetworkGenerationRequirements.AllowTruncatedStandardTimeout);
+		generateNetworkLocal(1, simContext.getNetworkConstraints().getMaxMoleculesPerSpecies(), maxStoichiometry, writer);
 		String sInputString = bnglStringWriter.toString();
 		return sInputString;
 	}
@@ -992,7 +998,27 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService, BioNetGe
 
 		return nc;
 	}
+	private static String extractMaxStoichiometry(String cBngInputString) {
+		String sMaxStoichiometry = "";
+		if(!cBngInputString.contains("max_stoich=>{")) {
+			return sMaxStoichiometry;
+		}
+		sMaxStoichiometry = cBngInputString.substring(cBngInputString.indexOf("max_stoich=>{") + "max_stoich=>{".length());
+		sMaxStoichiometry = sMaxStoichiometry.substring(0, sMaxStoichiometry.indexOf("},overwrite"));
+		return sMaxStoichiometry;
+	}
+	private static void generateNetworkLocal(int maxIterations, int maxMoleculesPerSpecies, String maxStoichiometry, PrintWriter writer) {
+		writer.print("generate_network({");
+		writer.print("max_iter=>1");
+		writer.print(",");
+		writer.print("max_agg=>" + maxMoleculesPerSpecies);
 
+		if (maxStoichiometry.length() > 0) {
+			writer.print(",max_stoich=>{" + maxStoichiometry + "}");
+		}
+		writer.print(",overwrite=>1");
+		writer.println("})");
+	}
 	
 	// output - the resulting .net file we received from bngl.exe
 	//  we extract the seed species from the .net file,insert them in the .bngl file

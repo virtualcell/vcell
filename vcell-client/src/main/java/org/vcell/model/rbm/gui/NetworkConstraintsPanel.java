@@ -18,6 +18,8 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.EventObject;
 import java.util.Hashtable;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -32,8 +34,10 @@ import javax.swing.border.Border;
 import javax.swing.border.EtchedBorder;
 import javax.swing.border.TitledBorder;
 
+import org.vcell.model.rbm.MolecularType;
 import org.vcell.model.rbm.NetworkConstraints;
 import org.vcell.model.rbm.RbmNetworkGenerator;
+import org.vcell.model.rbm.common.MaxStoichiometryEntity;
 import org.vcell.model.rbm.gui.EditConstraintsPanel.ActionButtons;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.ProgressDialogListener;
@@ -70,6 +74,7 @@ import cbit.vcell.mapping.SimulationContext.NetworkGenerationRequirements;
 import cbit.vcell.mapping.TaskCallbackMessage;
 import cbit.vcell.mapping.TaskCallbackMessage.TaskCallbackStatus;
 import cbit.vcell.mapping.gui.NetworkConstraintsTableModel;
+import cbit.vcell.mapping.gui.StoichiometryTableModel;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Model.RbmModelContainer;
 import cbit.vcell.model.SpeciesContext;
@@ -208,7 +213,7 @@ public class NetworkConstraintsPanel extends DocumentEditorSubPanel implements B
 		getCreateModelButton().addActionListener(eventHandler);
 		
 		// ------------------------------------------- The 2 group boxes --------------------------
-		JPanel leftPanel = new JPanel();
+		JPanel thePanel = new JPanel();
 
 		Border loweredEtchedBorder = BorderFactory.createEtchedBorder(EtchedBorder.LOWERED);
 		Border loweredBevelBorder = BorderFactory.createLoweredBevelBorder();
@@ -228,17 +233,17 @@ public class NetworkConstraintsPanel extends DocumentEditorSubPanel implements B
 		gbc.weightx = 1;
 		gbc.weighty = 1;
 		gbc.fill = GridBagConstraints.BOTH;
-		gbc.insets = new Insets(5, 3, 2, 1);
-		add(leftPanel, gbc);
+		gbc.insets = new Insets(1, 1, 1, 1);
+		add(thePanel, gbc);
 		
-		// ------------------------------------------- Populating the left group box ---------------
+		// ------------------------------------------- Populating the top group box ---------------
 		JPanel top = new JPanel();
 		JPanel bottom = new JPanel();
 		
 		top.setBorder(titleTop);
 		bottom.setBorder(titleBottom);
 		
-		leftPanel.setLayout(new GridBagLayout());
+		thePanel.setLayout(new GridBagLayout());
 		gbc = new GridBagConstraints();
 		gbc.gridx = 0;
 		gbc.gridy = 0;
@@ -246,7 +251,7 @@ public class NetworkConstraintsPanel extends DocumentEditorSubPanel implements B
 		gbc.weighty = 1.0;
 		gbc.fill = GridBagConstraints.BOTH;
 		gbc.insets = new Insets(5, 2, 2, 3);	//  top, left, bottom, right 
-		leftPanel.add(top, gbc);
+		thePanel.add(top, gbc);
 		
 		gbc = new GridBagConstraints();
 		gbc.gridx = 0;
@@ -255,7 +260,7 @@ public class NetworkConstraintsPanel extends DocumentEditorSubPanel implements B
 		gbc.weighty = 0;
 		gbc.fill = GridBagConstraints.HORIZONTAL;
 		gbc.insets = new Insets(5, 2, 2, 3);
-		leftPanel.add(bottom, gbc);
+		thePanel.add(bottom, gbc);
 		
 		// we may want to use a scroll pane whose viewing area is the JTable to provide similar look with NetGen Console
 		JScrollPane p = new JScrollPane(networkConstraintsTable);
@@ -278,7 +283,7 @@ public class NetworkConstraintsPanel extends DocumentEditorSubPanel implements B
 		gbc.gridy = gridy;
 		gbc.weightx = 1.0;
 		gbc.fill = GridBagConstraints.HORIZONTAL;
-		gbc.insets = new Insets(6, 4, 4, 10);
+		gbc.insets = new Insets(4, 11, 1, 10);
 		bottom.add(generatedSpeciesLabel, gbc);
 		
 		gbc = new GridBagConstraints();
@@ -286,7 +291,7 @@ public class NetworkConstraintsPanel extends DocumentEditorSubPanel implements B
 		gbc.gridy = gridy;
 //		gbc.weightx = 1.0;
 		gbc.fill = GridBagConstraints.HORIZONTAL;
-		gbc.insets = new Insets(6, 4, 4, 10);
+		gbc.insets = new Insets(4, 4, 1, 10);
 		bottom.add(getViewGeneratedSpeciesButton(), gbc);
 
 		gbc = new GridBagConstraints();
@@ -294,7 +299,7 @@ public class NetworkConstraintsPanel extends DocumentEditorSubPanel implements B
 		gbc.gridy = gridy;
 //		gbc.weightx = 1.0;
 		gbc.fill = GridBagConstraints.HORIZONTAL;
-		gbc.insets = new Insets(6, 4, 4, 10);
+		gbc.insets = new Insets(4, 4, 1, 10);
 		bottom.add(getRefreshMathButton(), gbc);
 
 		gridy++;
@@ -303,21 +308,21 @@ public class NetworkConstraintsPanel extends DocumentEditorSubPanel implements B
 		gbc.gridy = gridy;
 		gbc.weightx = 1.0;
 		gbc.fill = GridBagConstraints.HORIZONTAL;
-		gbc.insets = new Insets(4, 4, 4, 10);
+		gbc.insets = new Insets(3, 11, 1, 10);
 		bottom.add(generatedReactionsLabel, gbc);
 		
 		gbc = new GridBagConstraints();
 		gbc.gridx = 1;
 		gbc.gridy = gridy;
 		gbc.fill = GridBagConstraints.HORIZONTAL;
-		gbc.insets = new Insets(4, 4, 4, 10);
+		gbc.insets = new Insets(3, 4, 1, 10);
 		bottom.add(getViewGeneratedReactionsButton(), gbc);
 		
 		gbc = new GridBagConstraints();
 		gbc.gridx = 2;
 		gbc.gridy = gridy;
 		gbc.fill = GridBagConstraints.HORIZONTAL;
-		gbc.insets = new Insets(4, 4, 4, 10);
+		gbc.insets = new Insets(3, 4, 1, 10);
 		bottom.add(getCreateModelButton(), gbc);
 
 		gridy++;
@@ -326,14 +331,14 @@ public class NetworkConstraintsPanel extends DocumentEditorSubPanel implements B
 		gbc.gridy = gridy;
 		gbc.weightx = 1.0;
 		gbc.fill = GridBagConstraints.HORIZONTAL;
-		gbc.insets = new Insets(4, 4, 4, 10);
+		gbc.insets = new Insets(3, 11, 1, 10);
 		bottom.add(observablesMapLabel, gbc);
 
 		gbc = new GridBagConstraints();
 		gbc.gridx = 1;
 		gbc.gridy = gridy;
 		gbc.fill = GridBagConstraints.HORIZONTAL;
-		gbc.insets = new Insets(4, 4, 4, 10);
+		gbc.insets = new Insets(3, 4, 1, 10);
 		bottom.add(getViewObservablesMapButton(), gbc);
 		
 		gridy++;
@@ -343,7 +348,7 @@ public class NetworkConstraintsPanel extends DocumentEditorSubPanel implements B
 		gbc.weightx = 1.0;
 		gbc.gridwidth = 4;
 		gbc.fill = GridBagConstraints.HORIZONTAL;
-		gbc.insets = new Insets(4, 4, 4, 10);
+		gbc.insets = new Insets(3, 11, 4, 10);
 		bottom.add(somethingInsufficientLabel, gbc);
 
 		networkConstraintsTable.setDefaultRenderer(String.class, new DefaultScrollTableCellRenderer());
@@ -451,6 +456,7 @@ public class NetworkConstraintsPanel extends DocumentEditorSubPanel implements B
 	}
 	
 	public void refreshInterface() {
+		networkConstraintsTableModel.refreshData();
 		String text1 = null;
 		String text2 = null;
 		if (getSimulationContext().getNetworkConstraints() != null) {
@@ -545,19 +551,29 @@ public class NetworkConstraintsPanel extends DocumentEditorSubPanel implements B
 		int maxMolecules;
 		int speciesLimit;
 		int reactionsLimit;
+		Map<MolecularType, Integer> testMaxStoichiometryMap = new LinkedHashMap<>();
+		StoichiometryTableModel stoichiometryTableModel = panel.getStoichiometryTableModel();
+		for(int row = 0; row < stoichiometryTableModel.getRowCount(); row++) {
+			MaxStoichiometryEntity nce = stoichiometryTableModel.getValueAt(row);
+			MolecularType key = nce.getMolecularType();
+			Integer value = nce.getValue();
+			testMaxStoichiometryMap.put(key, value);
+		}
 		if (panel.getButtonPushed() == ActionButtons.Run) {
 			maxIterations = new Integer( panel.maxIterationTextField.getText());
 			maxMolecules = new Integer( panel.maxMolTextField.getText());
 			speciesLimit = new Integer( panel.speciesLimitTextField.getText());
 			reactionsLimit = new Integer( panel.reactionsLimitTextField.getText());
-			fieldSimulationContext.getNetworkConstraints().setTestConstraints(maxIterations, maxMolecules, speciesLimit, reactionsLimit);
+			fieldSimulationContext.getNetworkConstraints().setTestConstraints(maxIterations, maxMolecules, 
+					speciesLimit, reactionsLimit, testMaxStoichiometryMap);
 		} else if(panel.getButtonPushed() == ActionButtons.Apply) {
 			activateConsole();
 			maxIterations = new Integer( panel.maxIterationTextField.getText());
 			maxMolecules = new Integer( panel.maxMolTextField.getText());
 			speciesLimit = new Integer( panel.speciesLimitTextField.getText());
 			reactionsLimit = new Integer( panel.reactionsLimitTextField.getText());
-			fieldSimulationContext.getNetworkConstraints().setTestConstraints(maxIterations, maxMolecules, speciesLimit, reactionsLimit);
+			fieldSimulationContext.getNetworkConstraints().setTestConstraints(maxIterations, maxMolecules, 
+					speciesLimit, reactionsLimit, testMaxStoichiometryMap);
 			fieldSimulationContext.getNetworkConstraints().updateConstraintsFromTest();
 			// apply will invalidate everything: generated species, reactions, console, cache, etc
 			updateBioNetGenOutput(null);
@@ -578,7 +594,8 @@ public class NetworkConstraintsPanel extends DocumentEditorSubPanel implements B
 			maxMolecules = fieldSimulationContext.getNetworkConstraints().getMaxMoleculesPerSpecies();
 			speciesLimit = fieldSimulationContext.getNetworkConstraints().getSpeciesLimit();
 			reactionsLimit = fieldSimulationContext.getNetworkConstraints().getReactionsLimit();
-			fieldSimulationContext.getNetworkConstraints().setTestConstraints(maxIterations, maxMolecules, speciesLimit, reactionsLimit);
+			fieldSimulationContext.getNetworkConstraints().setTestConstraints(maxIterations, maxMolecules, 
+					speciesLimit, reactionsLimit, testMaxStoichiometryMap);
 			return;
 		}
 		
@@ -650,7 +667,8 @@ public class NetworkConstraintsPanel extends DocumentEditorSubPanel implements B
 		// ... and replace it with the "fake" one
 		StringWriter bnglStringWriter = new StringWriter();
 		PrintWriter pw = new PrintWriter(bnglStringWriter);
-		RbmNetworkGenerator.generateNetworkEx(maxIterations, maxMolecules, pw, fieldSimulationContext.getModel().getRbmModelContainer(), fieldSimulationContext, NetworkGenerationRequirements.ComputeFullNoTimeout);
+		// testMaxStoichiometryMap
+		RbmNetworkGenerator.generateNetworkEx(maxIterations, maxMolecules, true, pw, fieldSimulationContext.getModel().getRbmModelContainer(), fieldSimulationContext, NetworkGenerationRequirements.ComputeFullNoTimeout);
 		String genNetStr = bnglStringWriter.toString();
 		pw.close();
 		input += genNetStr;
@@ -809,7 +827,7 @@ public class NetworkConstraintsPanel extends DocumentEditorSubPanel implements B
 	}
 	@Override
 	protected void onSelectedObjectsChange(Object[] selectedObjects) {
-		// TODO Auto-generated method stub
+
 	}
 
 }

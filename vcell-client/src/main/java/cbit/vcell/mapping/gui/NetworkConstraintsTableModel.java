@@ -29,12 +29,11 @@ public class NetworkConstraintsTableModel extends BioModelEditorRightSideTableMo
 	public static final String sMaxMoleculesName = "Max Molecules / Species";
 	public static final String sSpeciesLimitName = "Species Limit";
 	public static final String sReactionsLimitName = "Reactions Limit";
-	public static final int defaultMaxStoichiometry = 3;	// default max molecules of each type per species
 	
 	public static final int colCount = 2;
 	public static final int iColName = 0;
 	public static final int iColValue = 1;
-	private static String[] columnNames = new String[] {"Name", "Value"};
+	private static String[] columnNames = new String[] {"Constraint", "Value"};
 	
 	private SimulationContext simContext = null;
 	
@@ -55,6 +54,10 @@ public class NetworkConstraintsTableModel extends BioModelEditorRightSideTableMo
 		simContext.getNetworkConstraints().addPropertyChangeListener(this);
 		simContext.getModel().addPropertyChangeListener(this);
 		
+		List<NetworkConstraintsEntity> newData = computeData();
+		setData(newData);
+	}
+	public void refreshData() {
 		List<NetworkConstraintsEntity> newData = computeData();
 		setData(newData);
 	}
@@ -89,7 +92,7 @@ public class NetworkConstraintsTableModel extends BioModelEditorRightSideTableMo
 		nce = new NetworkConstraintsEntity(sReactionsLimitName, s4);
 		nceList.add(nce);
 
-		Map<MolecularType, Integer> stoichiometryMap = networkConstraints.getMaxStoichiometry();
+		Map<MolecularType, Integer> stoichiometryMap = networkConstraints.getMaxStoichiometry(simContext);
 		Iterator<Entry<MolecularType, Integer>> it = stoichiometryMap.entrySet().iterator();
 		while (it.hasNext()) {
 			// first clean any entry that doesn't exist anymore (should never happen!)
@@ -101,7 +104,7 @@ public class NetworkConstraintsTableModel extends BioModelEditorRightSideTableMo
 		for(MolecularType mt : rbmModelContainer.getMolecularTypeList()) {
 			// add any new molecule that's not already there, with the default max stoichiometry
 			if(!stoichiometryMap.containsKey(mt)) {
-				stoichiometryMap.put(mt, defaultMaxStoichiometry);
+				stoichiometryMap.put(mt, NetworkConstraints.defaultMaxStoichiometry);
 			}
 		}
 		for(Map.Entry<MolecularType, Integer> entry : stoichiometryMap.entrySet()) {
@@ -167,26 +170,24 @@ public class NetworkConstraintsTableModel extends BioModelEditorRightSideTableMo
 	}
 	@Override
 	public void setValueAt(Object value, int row, int column) {
-		if (simContext == null || value == null) {
-			return;
-		}
-		String text = (String)value;
-		if (text == null || text.trim().length() == 0) {
-			return;
-		}
-		NetworkConstraints networkConstraints = simContext.getNetworkConstraints();
-		if(row == 0) {
-			networkConstraints.setMaxIteration(Integer.valueOf(text));
-		} else if(row == 1) {
-			networkConstraints.setMaxMoleculesPerSpecies(Integer.valueOf(text));
-		} else if(row == 2) {
-			networkConstraints.setSpeciesLimit(Integer.valueOf(text));
-		} else if(row == 3) {
-			networkConstraints.setReactionsLimit(Integer.valueOf(text));
-		}
-		// TODO: add molecular type and max stoichiometry 
-		// to NetworkConstraints.maxStoichiometryMap (if stoichiometry is not trivial)
-		// remove the combo from map if stoichiometry for that molecular type goes back to trivial
+		// old code, non-functional since the table is read-only
+//		if (simContext == null || value == null) {
+//			return;
+//		}
+//		String text = (String)value;
+//		if (text == null || text.trim().length() == 0) {
+//			return;
+//		}
+//		NetworkConstraints networkConstraints = simContext.getNetworkConstraints();
+//		if(row == 0) {
+//			networkConstraints.setMaxIteration(Integer.valueOf(text));
+//		} else if(row == 1) {
+//			networkConstraints.setMaxMoleculesPerSpecies(Integer.valueOf(text));
+//		} else if(row == 2) {
+//			networkConstraints.setSpeciesLimit(Integer.valueOf(text));
+//		} else if(row == 3) {
+//			networkConstraints.setReactionsLimit(Integer.valueOf(text));
+//		}
 		return;
 	}
 	@Override
@@ -232,14 +233,14 @@ public class NetworkConstraintsTableModel extends BioModelEditorRightSideTableMo
 				List<NetworkConstraintsEntity> newData = computeData();
 				setData(newData);
 			} else {
-				System.out.println("Property " + evt.getPropertyName() + " not yet implemented.");
+//				System.out.println("Property " + evt.getPropertyName() + " not yet implemented.");
 			}
 		} else if(source instanceof Model) {
 			if(evt.getPropertyName().equals(RbmModelContainer.PROPERTY_NAME_MOLECULAR_TYPE_LIST)) {
 				List<NetworkConstraintsEntity> newData = computeData();
 				setData(newData);
 			} else {
-				System.out.println("Property " + evt.getPropertyName() + " not yet implemented.");
+//				System.out.println("Property " + evt.getPropertyName() + " not yet implemented.");
 			}
 		}
 	}

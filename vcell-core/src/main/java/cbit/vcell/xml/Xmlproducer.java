@@ -3866,7 +3866,7 @@ public Element getXML(NetworkConstraints param) {
 	e.setAttribute(XMLTags.RbmMaxMoleculesPerSpeciesTag, Integer.toString(param.getMaxMoleculesPerSpecies()));
 	e.setAttribute(XMLTags.RbmSpeciesLimitTag, Integer.toString(param.getSpeciesLimit()));
 	e.setAttribute(XMLTags.RbmReactionsLimitTag, Integer.toString(param.getReactionsLimit()));
-	Map<MolecularType, Integer> sm = param.getMaxStoichiometry();
+	Map<MolecularType, Integer> sm = param.getMaxStoichiometry(null);
 	for (Map.Entry<MolecularType, Integer> m : sm.entrySet()) {
 		MolecularType mt = m.getKey();
 		Integer value = m.getValue();
