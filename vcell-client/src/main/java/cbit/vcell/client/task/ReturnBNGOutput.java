@@ -14,6 +14,7 @@ import java.awt.Dimension;
 import java.text.DecimalFormat;
 import java.util.Hashtable;
 
+import org.vcell.model.rbm.NetworkConstraints;
 import org.vcell.model.rbm.gui.NetworkConstraintsPanel;
 import org.vcell.model.rbm.gui.ValidateConstraintsPanel;
 import org.vcell.util.ClientTaskStatusSupport;
@@ -100,10 +101,16 @@ public void run(Hashtable<String, Object> hashTable) throws Exception {
 }
 
 private void validateConstraints(BNGOutputSpec outputSpec) {
-	ValidateConstraintsPanel panel = new ValidateConstraintsPanel(owner);
+	NetworkConstraints nc = owner.getSimulationContext().getNetworkConstraints();
+	Dimension dim = new Dimension(380, 210);
+	boolean showStoichiometryTable = false;
+	if(nc.isStoichiometryDifferent()) {
+		showStoichiometryTable = true;
+		dim = new Dimension(380, 310);	// make it larger to accommodate the table
+	}
+	ValidateConstraintsPanel panel = new ValidateConstraintsPanel(owner, showStoichiometryTable);
 	ChildWindowManager childWindowManager = ChildWindowManager.findChildWindowManager(owner);
 	ChildWindow childWindow = childWindowManager.addChildWindow(panel, panel, "Apply the new constraints?");
-	Dimension dim = new Dimension(380, 210);
 	childWindow.pack();
 	panel.setChildWindow(childWindow);
 	childWindow.setPreferredSize(dim);

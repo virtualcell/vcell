@@ -30,7 +30,7 @@ public class NetworkConstraints extends RbmElementAbstract implements Matchable,
 	public static final String SPECIES_LIMIT_PARAMETER = "vcellReservedParameter_speciesLimit";
 	public static final String REACTIONS_LIMIT_PARAMETER = "vcellReservedParameter_reactionsLimit";
 	
-	public static final int defaultMaxStoichiometry = 20;	// default max molecules of each type per species
+	public static final int defaultMaxStoichiometry = 100;	// default max molecules of each type per species
 	
 	private int maxIteration = NetworkTransformer.defaultMaxIteration;
 	private int maxMoleculesPerSpecies = NetworkTransformer.defaultMaxMoleculesPerSpecies;
@@ -88,6 +88,10 @@ public class NetworkConstraints extends RbmElementAbstract implements Matchable,
 		if(testMaxIteration != maxIteration || testMaxMoleculesPerSpecies != maxMoleculesPerSpecies || testSpeciesLimit != speciesLimit || testReactionsLimit != reactionsLimit) {
 			return true;
 		}
+		boolean ret = isStoichiometryDifferent();
+		return ret;
+	}
+	public boolean isStoichiometryDifferent() {
 		for(Map.Entry<MolecularType, Integer> var1 : maxStoichiometryMap.entrySet()) {
 			boolean different = true;
 			for(Map.Entry<MolecularType, Integer> var2 : testMaxStoichiometryMap.entrySet()) {
@@ -164,6 +168,10 @@ public class NetworkConstraints extends RbmElementAbstract implements Matchable,
 	public Map<MolecularType, Integer> getMaxStoichiometry(SimulationContext sc) {
 		updateStoichiometryMaps(sc);
 		return maxStoichiometryMap;
+	}
+	public Map<MolecularType, Integer> getTestMaxStoichiometry(SimulationContext sc) {
+		updateStoichiometryMaps(sc);
+		return testMaxStoichiometryMap;
 	}
 	public Integer getMaxStoichiometry(MolecularType molecularType, SimulationContext sc) {
 		updateStoichiometryMaps(sc);

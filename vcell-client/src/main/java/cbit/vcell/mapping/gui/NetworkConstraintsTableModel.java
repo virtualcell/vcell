@@ -17,6 +17,7 @@ import org.vcell.model.rbm.common.NetworkConstraintsEntity;
 import org.vcell.util.gui.EditorScrollTable;
 
 import cbit.vcell.client.desktop.biomodel.BioModelEditorRightSideTableModel;
+import cbit.vcell.mapping.NetworkTransformer;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Model.RbmModelContainer;
@@ -30,10 +31,11 @@ public class NetworkConstraintsTableModel extends BioModelEditorRightSideTableMo
 	public static final String sSpeciesLimitName = "Species Limit";
 	public static final String sReactionsLimitName = "Reactions Limit";
 	
-	public static final int colCount = 2;
+	public static final int colCount = 3;
 	public static final int iColName = 0;
 	public static final int iColValue = 1;
-	private static String[] columnNames = new String[] {"Constraint", "Value"};
+	public static final int iColDefault = 2;
+	private static String[] columnNames = new String[] {"Constraint", "Value", "Default"};
 	
 	private SimulationContext simContext = null;
 	
@@ -83,13 +85,13 @@ public class NetworkConstraintsTableModel extends BioModelEditorRightSideTableMo
 			s3 = "?";
 			s4 = "?";
 		}
-		nce = new NetworkConstraintsEntity(sMaxIterationName, s1);
+		nce = new NetworkConstraintsEntity(sMaxIterationName, s1, NetworkTransformer.defaultMaxIteration+"");
 		nceList.add(nce);
-		nce = new NetworkConstraintsEntity(sMaxMoleculesName, s2);
+		nce = new NetworkConstraintsEntity(sMaxMoleculesName, s2, NetworkTransformer.defaultMaxMoleculesPerSpecies+"");
 		nceList.add(nce);
-		nce = new NetworkConstraintsEntity(sSpeciesLimitName, s3);
+		nce = new NetworkConstraintsEntity(sSpeciesLimitName, s3, NetworkTransformer.defaultSpeciesLimit+"");
 		nceList.add(nce);
-		nce = new NetworkConstraintsEntity(sReactionsLimitName, s4);
+		nce = new NetworkConstraintsEntity(sReactionsLimitName, s4, NetworkTransformer.defaultReactionsLimit+"");
 		nceList.add(nce);
 
 		Map<MolecularType, Integer> stoichiometryMap = networkConstraints.getMaxStoichiometry(simContext);
@@ -110,21 +112,20 @@ public class NetworkConstraintsTableModel extends BioModelEditorRightSideTableMo
 		for(Map.Entry<MolecularType, Integer> entry : stoichiometryMap.entrySet()) {
 			MolecularType mt = entry.getKey();
 			Integer value = entry.getValue();
-			nce = new NetworkConstraintsEntity("Max molecules " + mt.getDisplayName() + " / Species", value+"");
+			nce = new NetworkConstraintsEntity("Max molecules " + mt.getDisplayName() + " / Species", value+"", NetworkConstraints.defaultMaxStoichiometry+"");
 			nceList.add(nce);
 		}		
 		return nceList;
 	}
 	
 	public Class<?> getColumnClass(int column) {
-		switch (column){
-		
-			case iColName: {
-				return String.class;
-			}
-			case iColValue: {
-				return String.class;
-			}
+		switch (column) {
+		case iColName:
+			return String.class;
+		case iColValue:
+			return String.class;
+		case iColDefault:
+			return String.class;
 		}
 		return Object.class;
 	}
@@ -140,6 +141,7 @@ public class NetworkConstraintsTableModel extends BioModelEditorRightSideTableMo
 	public boolean isSortable(int col) {
 		return false;
 	}
+	
 	@Override
 	public Object getValueAt(int row, int column) {
 		if(simContext == null) {
@@ -148,6 +150,7 @@ public class NetworkConstraintsTableModel extends BioModelEditorRightSideTableMo
 		NetworkConstraintsEntity nce = getValueAt(row);
 		String colName = nce.getName();
 		String colValue = nce.getValue();
+		String colDefault = nce.getDefaultValue();
 		NetworkConstraints networkConstraints = simContext.getNetworkConstraints();
 		if(row == 0) {
 			colValue = networkConstraints.getMaxIteration() + "";
@@ -164,13 +167,14 @@ public class NetworkConstraintsTableModel extends BioModelEditorRightSideTableMo
 				return colName;
 			case iColValue:
 				return colValue;
+			case iColDefault:
+				return colDefault;
 			}
 		}
 		return null;
 	}
 	@Override
-	public void setValueAt(Object value, int row, int column) {
-		// old code, non-functional since the table is read-only
+	public void setValueAt(Object value, int row, int column) {		// old code, table is read-only now
 //		if (simContext == null || value == null) {
 //			return;
 //		}

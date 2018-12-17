@@ -31,6 +31,7 @@ public class StoichiometryTableModel extends BioModelEditorRightSideTableModel<M
 	private static String[] columnNames = new String[] {"Molecule", "Max. Stoichiometry"};
 	
 	private SimulationContext simContext = null;
+	private boolean isValueEditable = true;
 	
 	public StoichiometryTableModel(EditorScrollTable table) {
 		super(table);
@@ -64,6 +65,30 @@ public class StoichiometryTableModel extends BioModelEditorRightSideTableModel<M
 		}		
 		return nceList;
 	}
+	public void displayTestMaxStoichiometry() {
+		ArrayList<MaxStoichiometryEntity> nceList = new ArrayList<MaxStoichiometryEntity>();
+
+		Model model = simContext.getModel();
+		RbmModelContainer rbmModelContainer = model.getRbmModelContainer();
+		if(rbmModelContainer == null) {
+			setData(nceList);
+			return;
+		}
+		NetworkConstraints networkConstraints = simContext.getNetworkConstraints();
+		Map<MolecularType, Integer> smTest = networkConstraints.getTestMaxStoichiometry(simContext);
+		Map<MolecularType, Integer> smOld = networkConstraints.getMaxStoichiometry(simContext);
+		for(Map.Entry<MolecularType, Integer> entry : smTest.entrySet()) {
+			MolecularType mt = entry.getKey();
+			Integer valueTest = entry.getValue();
+			Integer valueOld = smOld.get(mt);
+			MaxStoichiometryEntity nce = new MaxStoichiometryEntity(mt, valueTest);
+			if(valueTest != valueOld) {
+				nce.setChanged(true);	// not in use
+			}
+			nceList.add(nce);
+		}		
+		setData(nceList);
+	}
 	
 	public boolean isChanged() {
 		NetworkConstraints nc = simContext.getNetworkConstraints();
@@ -88,8 +113,12 @@ public class StoichiometryTableModel extends BioModelEditorRightSideTableModel<M
 		}
 		return Object.class;
 	}
+	
+	public void setValueEditable(boolean isValueEditable) {
+		this.isValueEditable = isValueEditable;
+	}
 	public boolean isCellEditable(int row, int column) {
-		if(column == iColValue) {
+		if(column == iColValue && isValueEditable) {
 			return true;
 		}
 		return false;

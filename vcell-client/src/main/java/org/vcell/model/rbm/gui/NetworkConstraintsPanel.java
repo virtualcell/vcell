@@ -542,7 +542,7 @@ public class NetworkConstraintsPanel extends DocumentEditorSubPanel implements B
 		EditConstraintsPanel panel = new EditConstraintsPanel(this);
 		ChildWindowManager childWindowManager = ChildWindowManager.findChildWindowManager(this);
 		ChildWindow childWindow = childWindowManager.addChildWindow(panel, panel, "Edit / Test Constraints");
-		Dimension dim = new Dimension(320, 310);
+		Dimension dim = new Dimension(320, 330);
 		childWindow.pack();
 		panel.setChildWindow(childWindow);
 		childWindow.setPreferredSize(dim);

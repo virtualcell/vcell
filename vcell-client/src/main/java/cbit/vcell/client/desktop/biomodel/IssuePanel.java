@@ -50,6 +50,7 @@ import cbit.vcell.mapping.BioEvent;
 import cbit.vcell.mapping.GeometryContext;
 import cbit.vcell.mapping.GeometryContext.UnmappedGeometryClass;
 import cbit.vcell.mapping.MicroscopeMeasurement;
+import cbit.vcell.mapping.NetworkTransformer;
 import cbit.vcell.mapping.ReactionSpec.ReactionCombo;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SimulationContext.SimulationContextNameScope;
@@ -301,10 +302,10 @@ public class IssuePanel extends DocumentEditorSubPanel {
 				case RbmNetworkConstraintsBad:
 					NetworkConstraints nc = sc.getNetworkConstraints();
 					if(issue.getMessage() == SimulationContext.IssueInsufficientMolecules) {
-						NetworkConstraintsEntity nce = new NetworkConstraintsEntity(NetworkConstraintsTableModel.sMaxMoleculesName, nc.getMaxMoleculesPerSpecies() + "");
+						NetworkConstraintsEntity nce = new NetworkConstraintsEntity(NetworkConstraintsTableModel.sMaxMoleculesName, nc.getMaxMoleculesPerSpecies()+"", NetworkTransformer.defaultMaxMoleculesPerSpecies+"");
 						followHyperlink(new ActiveView(sc, DocumentEditorTreeFolderClass.SPECIFICATIONS_NODE, ActiveViewID.network_setting), new Object[] {nce});
 					} else {
-						NetworkConstraintsEntity nce = new NetworkConstraintsEntity(NetworkConstraintsTableModel.sMaxIterationName, nc.getMaxIteration() + "");
+						NetworkConstraintsEntity nce = new NetworkConstraintsEntity(NetworkConstraintsTableModel.sMaxIterationName, nc.getMaxIteration()+"", NetworkTransformer.defaultMaxIteration+"");
 						followHyperlink(new ActiveView(sc, DocumentEditorTreeFolderClass.SPECIFICATIONS_NODE, ActiveViewID.network_setting), new Object[] {nce});
 					}
 					break;

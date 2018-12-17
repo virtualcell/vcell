@@ -18,13 +18,17 @@ import java.awt.event.ActionListener;
 
 import javax.swing.JButton;
 import javax.swing.JLabel;
+import javax.swing.JScrollPane;
+import javax.swing.ScrollPaneConstants;
 
 import org.vcell.model.rbm.NetworkConstraints;
+import org.vcell.util.gui.EditorScrollTable;
 
 import cbit.vcell.client.ChildWindowManager.ChildWindow;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.TaskCallbackProcessor;
+import cbit.vcell.mapping.gui.StoichiometryTableModel;
 
 @SuppressWarnings("serial")
 public class ValidateConstraintsPanel extends DocumentEditorSubPanel  {
@@ -36,6 +40,10 @@ public class ValidateConstraintsPanel extends DocumentEditorSubPanel  {
 	ActionButtons buttonPushed = ActionButtons.Cancel;
 	
 	private EventHandler eventHandler = new EventHandler();
+	private boolean showStoichiometryTable = false;
+	
+	private EditorScrollTable stoichiometryTable = null;
+	private StoichiometryTableModel stoichiometryTableModel = null;
 	
 	private JLabel maxIterationTextField;
 	private JLabel maxMolTextField;
@@ -54,9 +62,10 @@ public class ValidateConstraintsPanel extends DocumentEditorSubPanel  {
 		}
 	}
 	
-public ValidateConstraintsPanel(NetworkConstraintsPanel owner) {
+public ValidateConstraintsPanel(NetworkConstraintsPanel owner, boolean showStoichiometryTable) {
 	super();
 	this.owner = owner;
+	this.showStoichiometryTable = showStoichiometryTable;
 	initialize();
 }
 
@@ -89,7 +98,7 @@ private void initialize() {
 		gbc.gridx = 0;
 		gbc.gridy = gridy;
 		gbc.weightx = 1.0;
-		gbc.weighty = 1.0;
+//		gbc.weighty = 1.0;
 		gbc.fill = GridBagConstraints.BOTH;
 		gbc.insets = new Insets(6, 8, 0, 0);				//  top, left, bottom, right 
 		add(new JLabel("Max. Iterations"), gbc);
@@ -108,7 +117,7 @@ private void initialize() {
 		gbc.gridx = 0;
 		gbc.gridy = gridy;
 		gbc.weightx = 1.0;
-		gbc.weighty = 1.0;
+//		gbc.weighty = 1.0;
 		gbc.gridwidth = 8;
 		gbc.fill = java.awt.GridBagConstraints.BOTH;
 		gbc.insets = new Insets(6, 8, 0, 0);
@@ -129,7 +138,7 @@ private void initialize() {
 		gbc.gridx = 0;
 		gbc.gridy = gridy;
 		gbc.weightx = 1.0;
-		gbc.weighty = 1.0;
+//		gbc.weighty = 1.0;
 		gbc.gridwidth = 8;
 		gbc.fill = java.awt.GridBagConstraints.BOTH;
 		gbc.insets = new Insets(6, 8, 0, 0);
@@ -149,7 +158,7 @@ private void initialize() {
 		gbc.gridx = 0;
 		gbc.gridy = gridy;
 		gbc.weightx = 1.0;
-		gbc.weighty = 1.0;
+//		gbc.weighty = 1.0;
 		gbc.gridwidth = 8;
 		gbc.fill = java.awt.GridBagConstraints.BOTH;
 		gbc.insets = new Insets(6, 8, 4, 0);
@@ -165,6 +174,28 @@ private void initialize() {
 		add(reactionsLimitTextField, gbc);
 		
 		// ------------------------------------------------------
+		if(showStoichiometryTable) {
+			stoichiometryTable = new EditorScrollTable();
+			stoichiometryTableModel = new StoichiometryTableModel(stoichiometryTable);
+			stoichiometryTable.setModel(stoichiometryTableModel);
+			stoichiometryTableModel.setSimulationContext(owner.getSimulationContext());
+			stoichiometryTableModel.displayTestMaxStoichiometry();
+			stoichiometryTableModel.setValueEditable(false);		// we disable editing for the Value column
+
+			JScrollPane sp = new JScrollPane(stoichiometryTable);
+			sp.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+			gridy ++;
+			gbc = new GridBagConstraints();
+			gbc.gridx = 0;
+			gbc.gridy = gridy;
+			gbc.weightx = gbc.weighty = 1.0;
+			gbc.fill = GridBagConstraints.BOTH;
+			gbc.anchor = GridBagConstraints.WEST;
+			gbc.gridwidth = 4;
+			gbc.insets = new Insets(5, 8, 4, 10);
+			add(sp, gbc);
+		}
+		// -------------------------------------------------------
 		gridy++;
 		gbc = new GridBagConstraints();
 		gbc.gridx = 0;
