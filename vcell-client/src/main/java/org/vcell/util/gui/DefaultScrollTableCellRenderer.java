@@ -38,6 +38,7 @@ import cbit.vcell.client.desktop.biomodel.SelectionManager;
 import cbit.vcell.client.desktop.biomodel.SpatialObjectTableModel;
 import cbit.vcell.client.desktop.biomodel.SpatialProcessTableModel;
 import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.mapping.gui.NetworkConstraintsTableModel;
 import cbit.vcell.mapping.spatial.PointObject;
 import cbit.vcell.mapping.spatial.SpatialObject;
 import cbit.vcell.mapping.spatial.SurfaceRegionObject;
@@ -115,6 +116,15 @@ public class DefaultScrollTableCellRenderer extends DefaultTableCellRenderer {
 		if (bEnableUneditableForeground && (!table.isEnabled() || !tableModel.isCellEditable(row, column))) {
 			if (!isSelected) {
 				setForeground(uneditableForeground);
+				if(tableModel instanceof NetworkConstraintsTableModel && column == NetworkConstraintsTableModel.iColValue) {
+					NetworkConstraintsTableModel tm = (NetworkConstraintsTableModel)tableModel;
+					String def = (String) tm.getValueAt(row, NetworkConstraintsTableModel.iColDefault);
+					String val = (String)value;
+					if(!val.equals(def)){
+						value = "<html><b>" + value + "</b></html>";
+						setForeground(Color.red);
+					}
+				}
 			}
 		}
 		if (value instanceof Double) {

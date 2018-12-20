@@ -6,6 +6,7 @@ public class MaxStoichiometryEntity {
 	
 	private MolecularType mt = null;
 	private Integer value = null;
+	private boolean isChanged = false;	// changed in the test map
 	
 	public MaxStoichiometryEntity(MolecularType mt, Integer value) {
 		this.mt = mt;
@@ -23,5 +24,11 @@ public class MaxStoichiometryEntity {
 	}
 	public void setValue(Integer value) {
 		this.value = value;
+	}
+	public boolean isChanged() {
+		return isChanged;
+	}
+	public void setChanged(boolean isChanged) {
+		this.isChanged = isChanged;
 	}
 }
