@@ -178,16 +178,22 @@ protected synchronized static void initFinalTree(VCDocumentDbTreeModel vcDocumen
 			BioModelNode clone = BioModelNode.deepClone(childNode);
 			parentNode.add(clone);
 		}
+		//Populate 'Published' models tree node
 		for (int c = 0; c < userNode.getChildCount();) {
-			BioModelNode childNode = (BioModelNode) userNode.getChildAt(c);
-			VCDocumentInfoNode vcdDocumentInfoNode = (VCDocumentInfoNode) childNode.getUserObject();
-			if(	vcdDocumentInfoNode.getVCDocumentInfo().getPublicationInfos() != null && 
-				vcdDocumentInfoNode.getVCDocumentInfo().getPublicationInfos().length > 0) {
-				parentNode = vcDocumentDbTreeModel.publishedModelsNode;
-				parentNode.add(childNode);
-			} else {
-				userNode.remove(c);
+			BioModelNode versionableNode = (BioModelNode) userNode.getChildAt(c);
+			//Search through versions of BM/MM to see if any are published
+			for (int i = 0; i < versionableNode.getChildCount(); i++) {
+				BioModelNode versionBioModelNode = (BioModelNode)versionableNode.getChildAt(i);
+				VCDocumentInfo versionVCDocumentInfo = (VCDocumentInfo) versionBioModelNode.getUserObject();
+				if(	versionVCDocumentInfo.getPublicationInfos() != null && 
+					versionVCDocumentInfo.getPublicationInfos().length > 0) {
+					//Make new node
+					BioModelNode newPublishedNode = new BioModelNode(new VCDocumentInfoNode(versionVCDocumentInfo),true);
+					newPublishedNode.add(versionBioModelNode);
+					vcDocumentDbTreeModel.publishedModelsNode.add(newPublishedNode);
+				}
 			}
+			userNode.remove(c);
 		}
 	}
 
