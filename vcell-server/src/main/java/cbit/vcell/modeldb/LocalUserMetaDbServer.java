@@ -346,7 +346,7 @@ public org.vcell.util.Preference[] getPreferences() throws DataAccessException {
 /**
  * getReactionStepFromRXid method comment.
  */
-public Model getReactionStepAsModel(KeyValue reactionStepKey) throws DataAccessException {
+public String getReactionStepAsModel(KeyValue reactionStepKey) throws DataAccessException {
 	return dbServerImpl.getReactionStepAsModel(user, reactionStepKey);
 }
 

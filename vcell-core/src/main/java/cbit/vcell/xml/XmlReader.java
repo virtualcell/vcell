@@ -4506,7 +4506,7 @@ private MeshSpecification getMeshSpecification(Element param, Geometry geometry)
  * @return cbit.vcell.model.Model
  * @param param org.jdom.Element
  */
-private Model getModel(Element param) throws XmlParseException {
+public Model getModel(Element param) throws XmlParseException {
 	if (param==null) {
 		throw new XmlParseException("Invalid 'NULL' XML 'model' element arrived!");
 	}

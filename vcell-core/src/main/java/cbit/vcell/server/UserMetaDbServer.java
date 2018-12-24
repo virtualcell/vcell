@@ -283,7 +283,7 @@ BigString getMathModelXML(KeyValue key) throws DataAccessException, RemoteProxyE
 Preference[] getPreferences() throws DataAccessException, RemoteProxyException;
 
 
-public Model getReactionStepAsModel(KeyValue rxID) throws DataAccessException, RemoteProxyException;
+public String getReactionStepAsModel(KeyValue rxID) throws DataAccessException, RemoteProxyException;
 
 
 public ReactionStepInfo[] getReactionStepInfos(KeyValue reactionStepKeys[]) throws DataAccessException, RemoteProxyException;

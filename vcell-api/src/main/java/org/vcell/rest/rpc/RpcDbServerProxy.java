@@ -156,8 +156,8 @@ public org.vcell.util.Preference[] getPreferences() throws DataAccessException {
 	return (org.vcell.util.Preference[])rpc("getPreferences",new Object[]{userLoginInfo.getUser()});
 }
 
-public cbit.vcell.model.Model getReactionStepAsModel(org.vcell.util.document.KeyValue rxID) throws DataAccessException {
-	return (cbit.vcell.model.Model)rpc("getReactionStepAsModel",new Object[]{userLoginInfo.getUser(), rxID});
+public String getReactionStepAsModel(org.vcell.util.document.KeyValue rxID) throws DataAccessException {
+	return (String)rpc("getReactionStepAsModel",new Object[]{userLoginInfo.getUser(), rxID});
 }
 
 public cbit.vcell.model.ReactionStepInfo[] getReactionStepInfos(org.vcell.util.document.KeyValue[] reactionStepKeys) throws DataAccessException {

@@ -17,6 +17,7 @@ import java.util.Vector;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jdom.Element;
 import org.vcell.db.ConnectionFactory;
 import org.vcell.db.KeyFactory;
 import org.vcell.util.BigString;
@@ -39,6 +40,7 @@ import org.vcell.util.document.VersionableType;
 import cbit.image.VCImage;
 import cbit.image.VCImageInfo;
 import cbit.sql.QueryHashtable;
+import cbit.util.xml.XmlUtil;
 import cbit.vcell.biomodel.BioModelMetaData;
 import cbit.vcell.field.FieldDataDBOperationResults;
 import cbit.vcell.field.FieldDataDBOperationSpec;
@@ -68,6 +70,7 @@ import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationInfo;
 import cbit.vcell.xml.XmlHelper;
 import cbit.vcell.xml.XmlParseException;
+import cbit.vcell.xml.Xmlproducer;
 /**
  * This type was created in VisualAge.
  */
@@ -646,10 +649,13 @@ public Preference[] getPreferences(User user) throws DataAccessException {
 /**
  * getReactionStepFromRXid method comment.
  */
-public Model getReactionStepAsModel(User user, KeyValue reactionStepKey) throws DataAccessException {
+public String getReactionStepAsModel(User user, KeyValue reactionStepKey) throws DataAccessException {
 	try {
-		if (lg.isTraceEnabled()) lg.trace("DatabaseServerImpl.getReactionStep");
-		return dbTop.getReactionStepAsModel(new QueryHashtable(), user,reactionStepKey,true);
+		if (lg.isTraceEnabled()) lg.trace("DatabaseServerImpl.getReactionStepAsModel");
+		Model model =  dbTop.getReactionStepAsModel(new QueryHashtable(), user,reactionStepKey,true);
+		Element element = new Xmlproducer(true).getXML(model);
+		String str = XmlUtil.xmlToString(element, false);
+		return str;
 	} catch (SQLException e) {
 		lg.error(e.getMessage(),e);
 		throw new DataAccessException(e.getClass().getName()+": "+e.getMessage());

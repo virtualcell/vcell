@@ -647,10 +647,10 @@ public org.vcell.util.Preference[] getPreferences() throws DataAccessException {
  * getReactionStep method comment.
  * @throws RemoteException 
  */
-public cbit.vcell.model.Model getReactionStepAsModel(org.vcell.util.document.KeyValue rxID) throws DataAccessException {
+public String getReactionStepAsModel(org.vcell.util.document.KeyValue rxID) throws DataAccessException {
 
 	try {
-		if (lg.isTraceEnabled()) lg.trace("LocalUserMetaDbServerMessaging.getReactionStep()");
+		if (lg.isTraceEnabled()) lg.trace("LocalUserMetaDbServerMessaging.getReactionStepAsModel()");
 		return dbServerProxy.getReactionStepAsModel(rxID);
 	} catch (DataAccessException e) {
 		lg.error(e.getMessage(),e);

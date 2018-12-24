@@ -21,6 +21,7 @@ import java.util.Vector;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jdom.Element;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.BigString;
 import org.vcell.util.Compare;
@@ -95,6 +96,7 @@ import cbit.vcell.xml.VCMLComparator;
 import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XmlHelper;
 import cbit.vcell.xml.XmlParseException;
+import cbit.vcell.xml.XmlReader;
 /**
  * Insert the type's description here.
  * Creation date: (10/28/00 12:08:30 AM)
@@ -1412,7 +1414,9 @@ public Preference[] getPreferences() throws DataAccessException{
  */
 public Model getReactionStepAsModel(KeyValue reactionStepKey) throws DataAccessException {
 	try {
-		Model reactionModel = sessionManager.getUserMetaDbServer().getReactionStepAsModel(reactionStepKey);
+		String str = sessionManager.getUserMetaDbServer().getReactionStepAsModel(reactionStepKey);
+		Element element = XmlUtil.stringToXML(str, null).getRootElement();
+		Model reactionModel = new XmlReader(true).getModel(element);
 		if(reactionModel != null){
 			try{
 				reactionModel = (Model)BeanUtils.cloneSerializable(reactionModel);
@@ -1424,7 +1428,7 @@ public Model getReactionStepAsModel(KeyValue reactionStepKey) throws DataAccessE
 		}
 		return reactionModel;
 		
-	}catch (RemoteProxyException e){
+	}catch (Exception e){
 		e.printStackTrace(System.out);
 		throw new DataAccessException(e.getMessage());
 	}

@@ -4073,7 +4073,7 @@ private Element getXML(ComponentStateDefinition param) {
  * @return Element
  * @param param cbit.vcell.model.Model
  */
-private Element getXML(Model param) throws XmlParseException/*, cbit.vcell.parser.ExpressionException */{
+public Element getXML(Model param) throws XmlParseException/*, cbit.vcell.parser.ExpressionException */{
 	Element modelnode = new Element(XMLTags.ModelTag);
 	String versionName = (param.getName()!=null)?mangle(param.getName()):"unnamed_model";
 
