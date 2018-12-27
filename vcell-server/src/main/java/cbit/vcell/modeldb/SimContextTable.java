@@ -267,7 +267,7 @@ public static String getAppComponentsForDatabase(SimulationContext simContext) {
 	
 	NetworkConstraints constraints = simContext.getNetworkConstraints();
 	if(constraints != null) {
-		appComponentsElement.addContent(xmlProducer.getXML(constraints));
+		appComponentsElement.addContent(xmlProducer.getXML(constraints,simContext));
 	}
 	
 	// first fill in bioevents from simContext
