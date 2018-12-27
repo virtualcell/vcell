@@ -437,6 +437,37 @@ public class ResourceUtil {
 	public static File getVCellInstall()
 	{
 		return PropertyLoader.getRequiredDirectory(PropertyLoader.installationRoot);	}
+	
+	public static String getVCellJava() {
+		final String defaultJavaCmd = "java";
+		String javaCmd = defaultJavaCmd;
+		OperatingSystemInfo osi = OperatingSystemInfo.getInstance();
+		if(osi.isMac()) {
+			File searchThis = getVCellInstall();
+			while(!(searchThis.getName().startsWith("VCell") && searchThis.getName().endsWith(".app"))) {
+				searchThis = searchThis.getParentFile();
+				if(searchThis == null) {
+					break;
+				}
+			}
+			if(searchThis != null) {
+				File vcellJava = new File(searchThis,"Contents/PlugIns/jre.bundle/Contents/Home/jre/bin/java"+osi.getExeSuffix());
+				if(vcellJava.exists()) {
+					javaCmd = vcellJava.getAbsolutePath();
+				}
+			}
+			// /Applications/VCell_Rel.app/Contents/PlugIns/jre.bundle/Contents/Home/jre/bin/java
+		}else if(osi.isWindows() || osi.isLinux()) {
+			File vcellJava = new File(ResourceUtil.getVCellInstall(),"jre/bin/java"+osi.getExeSuffix());
+			if(vcellJava.exists()) {
+				javaCmd = vcellJava.getAbsolutePath();
+			}
+		}
+		if(javaCmd.equals(defaultJavaCmd)) {
+			(new Exception("Failed to find java executable in installation dir '"+ResourceUtil.getVCellInstall()+"'")).printStackTrace();
+		}
+		return javaCmd;
+	}
 
 	public static String getSiteName() {
 		return VCellSoftwareVersion.fromSystemProperty().getSite().name().toLowerCase();

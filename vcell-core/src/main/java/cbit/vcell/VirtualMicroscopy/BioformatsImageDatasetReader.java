@@ -92,7 +92,7 @@ public class BioformatsImageDatasetReader extends AbstractService implements Ima
 //			System.setOut(origstdout);
 //		}
 		
-		cmdList.add(0, "java");
+		cmdList.add(0, ResourceUtil.getVCellJava());
 		cmdList.add(1,"-jar");
 		cmdList.add(2,
 //			new File("/home/vcell/workspace_biofthrift/vcell-bioformats/target/vcell-bioformats-0.0.4.jar").getAbsolutePath()+":"+
