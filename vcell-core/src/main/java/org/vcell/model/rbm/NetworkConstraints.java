@@ -44,7 +44,7 @@ public class NetworkConstraints extends RbmElementAbstract implements Matchable,
 	private transient int testReactionsLimit = reactionsLimit;
 	private transient Map<MolecularType, Integer> testMaxStoichiometryMap = new LinkedHashMap<>();
 
-	public NetworkConstraints() {		
+	public NetworkConstraints() {
 	}
 	public NetworkConstraints(NetworkConstraints that) {
 		this();
