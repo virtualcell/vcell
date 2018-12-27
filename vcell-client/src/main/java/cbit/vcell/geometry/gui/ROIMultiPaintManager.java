@@ -98,6 +98,7 @@ import cbit.vcell.geometry.surface.Polygon;
 import cbit.vcell.geometry.surface.Surface;
 import cbit.vcell.geometry.surface.SurfaceCollection;
 import cbit.vcell.render.Vect3d;
+import cbit.vcell.resource.OperatingSystemInfo;
 
 public class ROIMultiPaintManager implements PropertyChangeListener{
 
@@ -634,6 +635,9 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 		}
 		
 		final JDialog jDialog = new JDialog(JOptionPane.getFrameForComponent(parentComponent));
+		if(OperatingSystemInfo.getInstance().isMac()) {
+			jDialog.setAlwaysOnTop(true);
+		}
 		jDialog.setTitle("Edit Geometry Attributes");
 		jDialog.setModal(true);
 		

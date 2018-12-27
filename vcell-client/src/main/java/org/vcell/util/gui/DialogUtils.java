@@ -74,6 +74,7 @@ import cbit.vcell.client.UserMessage;
 import cbit.vcell.client.desktop.biomodel.VCellSortTableModel;
 import cbit.vcell.client.server.UserPreferences;
 import cbit.vcell.client.test.VCellClientTest;
+import cbit.vcell.resource.OperatingSystemInfo;
 
 /**
  * Insert the type's description here.
@@ -234,7 +235,10 @@ public class DialogUtils {
 			default:
 					title = null;
 			}
-			LWDialog dialog = new LWTitledOptionPaneDialog(lwParent, title,pane); 
+			LWDialog dialog = new LWTitledOptionPaneDialog(lwParent, title,pane);
+			if(OperatingSystemInfo.getInstance().isMac()) {
+				dialog.setAlwaysOnTop(true);
+			}
 			dialog.setResizable(true);
 			try {
 				dialog.setVisible(true);
@@ -403,6 +407,9 @@ public class DialogUtils {
 		Producer<Integer> prod = ( ) -> {
 			JOptionPane inputDialog = new JOptionPane(stayOnTopComponent, JOptionPane.PLAIN_MESSAGE, JOptionPane.DEFAULT_OPTION,null,new String[] {getOKText(),getCancelText()});
 			JDialog d = new LWTitledOptionPaneDialog(lwParent,title,inputDialog);
+			if(OperatingSystemInfo.getInstance().isMac()) {
+				d.setAlwaysOnTop(true);				
+			}
 			d.setResizable(isResizeable);
 			if (okEnabler != null) {
 				okEnabler.setJOptionPane(inputDialog);
@@ -628,6 +635,9 @@ public class DialogUtils {
 		JPanel panel = MessagePanelFactory.createSimple(message);
 		JOptionPane pane = new JOptionPane(panel, JOptionPaneMessageType, 0, null, userMessage.getOptions(), userMessage.getDefaultSelection());
 		final JDialog dialog = new LWTitledOptionPaneDialog(lwParent, title, pane);
+		if(OperatingSystemInfo.getInstance().isMac()) {
+			dialog.setAlwaysOnTop(true);
+		}
 		dialog.setResizable(true);
 		dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 		dialog.pack();
@@ -834,6 +844,9 @@ public class DialogUtils {
 			JPanel panel = MessagePanelFactory.createSimple(message);
 			JOptionPane pane = new JOptionPane(panel, JOptionPane.WARNING_MESSAGE);
 			LWDialog dialog = new LWTitledOptionPaneDialog(lwParent, "Warning", pane);
+			if(OperatingSystemInfo.getInstance().isMac()) {
+				dialog.setAlwaysOnTop(true);
+			}
 			dialog.setResizable(true);
 			showOnce(dialog);
 		};
@@ -905,6 +918,10 @@ public class DialogUtils {
 				inputDialog.setInitialSelectionValue(initialValue);
 			}
 			final JDialog d = new LWTitledOptionPaneDialog(lwParent, "INPUT:", inputDialog);
+			BeanUtils.centerOnComponent(d, requester);
+			if(OperatingSystemInfo.getInstance().isMac()) {
+				d.setAlwaysOnTop(true);
+			}
 			d.setResizable(false);
 			String id = Long.toString(System.currentTimeMillis());
 			Hashtable<String, Object> choices  = new Hashtable<String, Object>();

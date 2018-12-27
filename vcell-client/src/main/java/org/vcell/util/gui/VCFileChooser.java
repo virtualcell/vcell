@@ -13,6 +13,8 @@ import java.awt.Component;
 import java.awt.Frame;
 
 import javax.swing.SwingUtilities;
+
+import cbit.vcell.resource.OperatingSystemInfo;
 /**
  * Insert the type's description here.
  * Creation date: (9/20/2004 4:26:26 PM)
@@ -155,6 +157,9 @@ public int showDialog(final Component parent, String approveButtonText) {
 	}
 
 	localDialog = new javax.swing.JDialog(frame, title, true);
+	if(OperatingSystemInfo.getInstance().isMac()) {
+		localDialog.setAlwaysOnTop(true);
+	}
 	java.awt.Container contentPane = localDialog.getContentPane();
 	contentPane.setLayout(new java.awt.BorderLayout());
 	contentPane.add(this, java.awt.BorderLayout.CENTER);
