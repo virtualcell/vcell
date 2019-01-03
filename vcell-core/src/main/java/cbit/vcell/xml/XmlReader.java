@@ -5198,7 +5198,7 @@ private void getRbmNetworkConstraints(Element e, Model newModel) {
 		MolecularType mt = null;
 		s = element.getAttributeValue(XMLTags.RbmIntegerAttrTag);
 		if(s!=null && !s.isEmpty()) {
-			i = Integer.getInteger(s);
+			i = Integer.valueOf(s);
 		}
 		s = element.getAttributeValue(XMLTags.RbmMolecularTypeTag);
 		if(s!=null && !s.isEmpty()) {
@@ -5933,7 +5933,7 @@ public NetworkConstraints getAppNetworkConstraints(Element e, Model newModel) {
 		MolecularType mt = null;
 		s = element.getAttributeValue(XMLTags.RbmIntegerAttrTag);
 		if(s!=null && !s.isEmpty()) {
-			i = Integer.getInteger(s);
+			i = Integer.valueOf(s);
 		}
 		s = element.getAttributeValue(XMLTags.RbmMolecularTypeTag);
 		if(s!=null && !s.isEmpty()) {
