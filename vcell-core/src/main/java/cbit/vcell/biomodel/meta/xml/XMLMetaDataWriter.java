@@ -50,6 +50,9 @@ public class XMLMetaDataWriter extends XMLMetaData {
 		Set<Registry.Entry> resources = metaData.getRegistry().getAllEntries();
 		for (Registry.Entry entry : resources) {
 			VCID vcid = identifiableProvider.getVCID(entry.getIdentifiable());
+			if(vcid == null) {
+				throw new RuntimeException("Identifiable missing for " + entry.getResource());
+			}
 			Identifiable identifiable = identifiableProvider.getIdentifiableObject(vcid);
 			if (identifiable != null && entry.getResource() != null){
 				Element entryElement = new Element(XMLMetaData.URI_BINDING_TAG);

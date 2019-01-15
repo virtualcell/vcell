@@ -64,19 +64,28 @@ public class MIRIAMRef extends KeyOfTwo<String, String> {
 		}
 		
 		String[] split = urn.split(":");
-		if(split.length != 4) { 
-			throw new URNParseFailureException(urn + ": Need four components, but got " + split.length); 
-		} 
 		if(!split[0].equals("urn")) {
-			throw new URNParseFailureException(urn + ": First component needs to be 'urn', but is '" 
-					+ split[0] + "'");
+			throw new URNParseFailureException(urn + ": First component needs to be 'urn', but is '" + split[0] + "'");
 		}
 		if(!split[1].equals("miriam")) {
-			throw new URNParseFailureException(urn + "Second component needs to be 'miriam', but is '" 
-					+ split[1] + "'");
+			throw new URNParseFailureException(urn + "Second component needs to be 'miriam', but is '" + split[1] + "'");
 		}
 		String type = decode(split[2]);
-		String id = decode(split[3]);
+		String id = "";
+		if(split.length == 4) {
+			id += decode(split[3]);
+
+		} else if(split.length == 5) {
+			id += decode(split[3]);
+			if(id != null && (id.equalsIgnoreCase("GO") || id.equalsIgnoreCase("CHEBI"))) {
+				id += ":";
+				id += decode(split[4]);
+			} else {
+				throw new URNParseFailureException(urn + ": Unrecognized fourth component.");
+			}
+		} else {
+			throw new URNParseFailureException(urn + ": Wrong number of components " + split.length);
+		}
 		return new MIRIAMRef(type, id);
 	}
 	

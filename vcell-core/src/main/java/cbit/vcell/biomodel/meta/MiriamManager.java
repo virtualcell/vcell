@@ -23,6 +23,8 @@ import org.vcell.sybil.models.miriam.MIRIAMQualifier;
 import org.vcell.sybil.models.miriam.MIRIAMRef.URNParseFailureException;
 import org.vcell.util.document.Identifiable;
 
+import cbit.vcell.biomodel.meta.MiriamManager.MiriamResource;
+
 public interface MiriamManager {
 	
 
@@ -53,6 +55,8 @@ public interface MiriamManager {
 	void addMiriamRefGroup(Identifiable identifiable, MIRIAMQualifier miriamQualifier, Set<MiriamResource> miriamResources) throws URNParseFailureException;
 	
 	void remove(Identifiable identifiable, MIRIAMQualifier miriamQualifier, MiriamRefGroup miriamRefGroup) throws URNParseFailureException;
+	void remove2(Identifiable identifiable, MIRIAMQualifier miriamQualifier, MiriamRefGroup miriamRefGroup) throws URNParseFailureException;
+	void remove(Identifiable entity, MIRIAMQualifier qualifier, MiriamResource miriamResource) throws URNParseFailureException;
 
 	List<URL> getStoredCrossReferencedLinks(MiriamResource miriamResource) throws MalformedURLException;
 	void addStoredCrossReferencedLink(MiriamResource miriamResource, URL url);
@@ -72,5 +76,6 @@ public interface MiriamManager {
 	public Map<Identifiable, Map<DublinCoreQualifier.DateQualifier, Set<DublinCoreDate>>> getDublinCoreDateMap();
 
 	void addCreatorToAnnotation(Identifiable identifiable, String familyName, String givenName, String email, String organization);
+
 
 }

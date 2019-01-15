@@ -55,7 +55,8 @@ public java.awt.Component getTreeCellRendererComponent(JTree tree, Object value,
 			LinkNode ln = (LinkNode)value;
 			String link = ln.getLink();
 			String text = ln.getText();
-			String qualifier = ln.getMiriamQualifier().getDescription();
+//			String qualifier = ln.getMiriamQualifier().getDescription();
+			String qualifier = "";
 			if (link != null) {
 				String colorString = (sel)?"white":"blue";
 				component.setToolTipText("Double-click to open link");

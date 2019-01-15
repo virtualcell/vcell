@@ -23,16 +23,20 @@ import java.util.Set;
 import org.openrdf.model.Graph;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
+import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.vocabulary.RDF;
 import org.vcell.sybil.models.AnnotationQualifiers;
+
+import cbit.vcell.biomodel.meta.VCMetaData;
 
 public class MIRIAMizer {
 
 	public RefGroup newRefGroup(Graph graph, Resource resource, MIRIAMQualifier qualifier) {
 		Resource bag = graph.getValueFactory().createBNode();
 		graph.add(bag, RDF.TYPE, RDF.BAG);
-		graph.add(resource, qualifier.getProperty(), bag);
+		URI uri = qualifier.getProperty();
+		graph.add(resource, uri, bag);
 		RefGroup group = new RefGroup(bag);
 		return group;		
 	}
@@ -98,7 +102,9 @@ public class MIRIAMizer {
 
 	public void detachRefGroup(Graph graph, Resource resource, RefGroup group) {
 		Iterator<Statement> iter = graph.match(resource, null, group.getResource());
-		while(iter.hasNext()) { iter.next(); iter.remove(); }
+		while(iter.hasNext()) {
+			iter.next();
+			iter.remove(); }
 	}
 	
 	public void detachRefGroups(Graph graph, Resource resource, MIRIAMQualifier qualifier) {
@@ -121,6 +127,14 @@ public class MIRIAMizer {
 	public void deleteRefGroup(Graph graph, Resource resource, RefGroup group) {
 		detachRefGroup(graph, resource, group);
 		group.delete(graph);
+	}
+	public void deleteRefGroup(VCMetaData vcMetaData, Resource resource, RefGroup group) {
+		Graph graph = vcMetaData.getRdfData();
+		detachRefGroup(graph, resource, group);
+		System.out.println(vcMetaData.printRdfStatements());
+
+		group.delete(graph);
+		System.out.println(vcMetaData.printRdfStatements());
 	}
 
 	public void deleteRefGroups(Graph graph, Resource resource, MIRIAMQualifier qualifier) {

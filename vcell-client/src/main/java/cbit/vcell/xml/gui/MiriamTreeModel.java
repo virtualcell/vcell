@@ -69,6 +69,9 @@ public class MiriamTreeModel extends DefaultTreeModel implements AnnotationEvent
 		public MIRIAMQualifier getMiriamQualifier() {
 			return miriamQualifier;
 		}
+		public MiriamResource getMiriamResource() {
+			return miriamResource;
+		}
 	}
 	
 	public static class IdentifiableNode extends BioModelNode {
@@ -123,20 +126,10 @@ public class MiriamTreeModel extends DefaultTreeModel implements AnnotationEvent
 		((DefaultMutableTreeNode)getRoot()).removeAllChildren();
 		MiriamManager miriamManager = vcMetaData.getMiriamManager();
 		TreeMap<Identifiable, Map<MiriamRefGroup, MIRIAMQualifier>> miriamDescrHeir = miriamManager.getMiriamTreeMap();
-		Map<Identifiable, Map<DateQualifier, Set<DublinCoreDate>>> dateMapMap = miriamManager.getDublinCoreDateMap();
 		Map<MiriamRefGroup, MIRIAMQualifier> refGroupMap = miriamDescrHeir.get(identifiable);
-		Map<DateQualifier, Set<DublinCoreDate>> dateMap = dateMapMap.get(identifiable);
 		VCID vcid = vcMetaData.getIdentifiableProvider().getVCID(identifiable);
-		
-//		String modelComponentType = vcid.getClassName();
-//		String modelComponentName = vcid.getLocalName();			
-//		IdentifiableNode modelComponentNode = new IdentifiableNode(identifiable, modelComponentType + " : " + modelComponentName);
-//		String freeTextAnnotation = vcMetaData.getFreeTextAnnotation(identifiable);
-//		if (freeTextAnnotation!=null){
-//			modelComponentNode.add(new BioModelNode(new Annotation(freeTextAnnotation),false));
-//		}else{
-//			modelComponentNode.add(new BioModelNode(new Annotation(""),false));
-//		}
+//		Map<Identifiable, Map<DateQualifier, Set<DublinCoreDate>>> dateMapMap = miriamManager.getDublinCoreDateMap();
+//		Map<DateQualifier, Set<DublinCoreDate>> dateMap = dateMapMap.get(identifiable);
 		
 		if (refGroupMap!=null){
 			for (MiriamRefGroup refGroup : refGroupMap.keySet()){
@@ -147,15 +140,14 @@ public class MiriamTreeModel extends DefaultTreeModel implements AnnotationEvent
 				}
 			}
 		}
-		if (dateMap!=null){
-			for (DublinCoreQualifier.DateQualifier qualifier : dateMap.keySet()){
-				Set<DublinCoreDate> dates = dateMap.get(qualifier);
-				for (DublinCoreDate date : dates){
-					((DefaultMutableTreeNode)getRoot()).add(new DateNode(qualifier,date));
-				}
-			}
-		}
-//		((DefaultMutableTreeNode)getRoot()).add(modelComponentNode);
+//		if (dateMap!=null){
+//			for (DublinCoreQualifier.DateQualifier qualifier : dateMap.keySet()){
+//				Set<DublinCoreDate> dates = dateMap.get(qualifier);
+//				for (DublinCoreDate date : dates){
+//					((DefaultMutableTreeNode)getRoot()).add(new DateNode(qualifier,date));
+//				}
+//			}
+//		}
 		fireTreeStructureChanged(this, getPathToRoot(((DefaultMutableTreeNode)getRoot())), null, null);
 	}
 	private void createTree() {
