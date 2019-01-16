@@ -38,7 +38,6 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
-import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
@@ -55,13 +54,9 @@ import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeSelectionModel;
 import javax.swing.tree.TreePath;
 
-import org.openrdf.model.Resource;
 import org.vcell.model.rbm.MolecularType;
-import org.vcell.model.rbm.RbmUtils;
 import org.vcell.pathway.BioPaxObject;
 import org.vcell.sybil.models.miriam.MIRIAMQualifier;
-import org.vcell.sybil.models.miriam.MIRIAMizer;
-import org.vcell.sybil.models.miriam.RefGroup;
 import org.vcell.sybil.models.miriam.MIRIAMRef.URNParseFailureException;
 import org.vcell.util.Compare;
 import org.vcell.util.Displayable;
@@ -73,7 +68,6 @@ import cbit.vcell.biomodel.meta.MiriamManager;
 import cbit.vcell.biomodel.meta.VCMetaData;
 import cbit.vcell.biomodel.meta.VCMetaDataMiriamManager;
 import cbit.vcell.biomodel.meta.VCMetaDataMiriamManager.VCMetaDataDataType;
-import cbit.vcell.biomodel.meta.registry.Registry.Entry;
 import cbit.vcell.biomodel.meta.MiriamManager.DataType;
 import cbit.vcell.biomodel.meta.MiriamManager.MiriamRefGroup;
 import cbit.vcell.biomodel.meta.MiriamManager.MiriamResource;
@@ -85,10 +79,7 @@ import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.Species;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
-import cbit.vcell.xml.gui.MIRIAMAnnotationEditor;
-import cbit.vcell.xml.gui.MIRIAMAnnotationViewer;
 import cbit.vcell.xml.gui.MiriamTreeModel;
-import cbit.vcell.xml.gui.MiriamTreeModel.IdentifiableNode;
 import cbit.vcell.xml.gui.MiriamTreeModel.LinkNode;
 /**
  * Superclass for all the Annotation panels
@@ -122,7 +113,6 @@ public class AnnotationsPanel extends DocumentEditorSubPanel {
 	private JTextField jTextFieldFormalID = null;	// immortal ID text
 	private JButton jButtonAdd = null;
 	private JButton jButtonDelete = null;
-	private JButton jButtonGoTo = null;
 
 	private JTextPane annotationTextArea = null;
 
@@ -163,11 +153,6 @@ public class AnnotationsPanel extends DocumentEditorSubPanel {
 				addIdentifier();
 			} else if(evt.getSource() == getJButtonDelete()) {
 				removeIdentifier();
-			} else if(evt.getSource() == getJButtonGoTo()) {
-				navigate();
-			} else if(evt.getSource() == getJComboBoxURI()) {
-				VCMetaDataDataType mdt = (VCMetaDataDataType)getJComboBoxURI().getSelectedItem();
-				getJTextFieldFormalID().setText("NewID");
 			}
 		}
 	}
@@ -268,34 +253,29 @@ private JPanel getJPanelNewIdentifier() {
 	gridx = 0;
 	gridy++;
 	
+	JLabel linkLabel = new JLabel();
+	String s = "<html>" + "Navigate to" + "&nbsp;<font color=\"" + "blue" + "\"><a href=" + mdt.getDataTypeURL() + ">" + mdt.getDataTypeURL() + "</a></font>&nbsp;&nbsp;";
+	s += "and find the identifier ID, then paste it in the box above." + "</html>";
+	linkLabel.setToolTipText("Double-click to open link");
+	linkLabel.setText(s);
+	linkLabel.addMouseListener(new MouseAdapter() {
+		public void mousePressed(MouseEvent e) {
+			if(e.getClickCount() == 2) {
+				showBrowseToLink(mdt);
+			}
+		} 
+	});
+	
 	gbc = new GridBagConstraints();
 	gbc.insets = new Insets(3, 15, 3, 0);
 	gbc.gridx = gridx;
 	gbc.gridy = gridy;
-	gbc.gridwidth = 2;
+	gbc.gridwidth = 6;
 	gbc.anchor = GridBagConstraints.WEST;
-	jPanelNewIdentifier.add(new JLabel("URL: " + mdt.getDataTypeURL()), gbc);
-	
-	JButton buttonGoTo = new JButton();
-	buttonGoTo.setText(ACTION_GOTO);
-	buttonGoTo.setToolTipText("Navigate to the provider web site");
-	buttonGoTo.addActionListener(new ActionListener() {
-		@Override
-		public void actionPerformed(ActionEvent e) {
-			navigate();
-		}
-	});
-
-	gridx = 3;
-	gbc = new GridBagConstraints();
-	gbc.insets = new Insets(3, 15, 3, 5);
-	gbc.gridx = gridx;
-	gbc.gridy = gridy;
-	gbc.anchor = GridBagConstraints.WEST;
-	jPanelNewIdentifier.add(buttonGoTo, gbc);
+	jPanelNewIdentifier.add(linkLabel, gbc);
 	
 	// ---------------------------------------------------------------------
-	final int MaxRowLength = 100;
+	final int MaxRowLength = 120;
 	List <String> rows = new ArrayList<> ();
 	String value = mdt.getDescription();
 	StringTokenizer tokenizer = new StringTokenizer(value, " ");
@@ -312,8 +292,6 @@ private JPanel getJPanelNewIdentifier() {
 	if(!row.isEmpty()) {
 		rows.add(row);
 	}
-
-
 	for(String currentRow : rows) {
 		gridx = 0;
 		gridy++;
@@ -327,26 +305,44 @@ private JPanel getJPanelNewIdentifier() {
 		jPanelNewIdentifier.add(new JLabel(currentRow), gbc);
 
 	}
-	
-//	gridx = 0;
-//	gridy++;
-//	gbc = new GridBagConstraints();
-//	gbc.insets = new Insets(3, 15, 3, 0);
-//	gbc.gridx = gridx;
-//	gbc.gridy = gridy;
-//	gbc.gridwidth = 6;
-//	gbc.fill = GridBagConstraints.HORIZONTAL;
-//	gbc.weightx = 1.0;
-//	jPanelNewIdentifier.add(new JLabel(mdt.getDescription()), gbc);
-
 	return jPanelNewIdentifier;
+}
+private JPanel getJPanelLeftTitle() {
+	JPanel jPanelLeftTitle = new JPanel();
+	jPanelLeftTitle.setLayout(new GridBagLayout());
+	jPanelLeftTitle.setPreferredSize(new Dimension(260, 37));
+	jPanelLeftTitle.setBorder(BorderFactory.createLineBorder(SystemColor.windowBorder, 1));
+	int gridx = 0;
+	GridBagConstraints gbc = new GridBagConstraints();
+	gbc.insets = new Insets(3, 15, 3, 0);		// top left bottom right
+	gbc.gridx = gridx;
+	gbc.gridy = 0;
+	gbc.fill = GridBagConstraints.HORIZONTAL;
+	gbc.weightx = 1.0;
+	jPanelLeftTitle.add(new JLabel("User defined cross-references."), gbc);
+	return jPanelLeftTitle;
+}
+private JPanel getJPanelRightTitle() {
+	JPanel jPanelRightTitle = new JPanel();
+	jPanelRightTitle.setLayout(new GridBagLayout());
+	jPanelRightTitle.setPreferredSize(new Dimension(260, 37));
+	jPanelRightTitle.setBorder(BorderFactory.createLineBorder(SystemColor.windowBorder, 1));
+	int gridx = 0;
+	GridBagConstraints gbc = new GridBagConstraints();
+	gbc.insets = new Insets(3, 15, 3, 0);		// top left bottom right
+	gbc.gridx = gridx;
+	gbc.gridy = 0;
+	gbc.fill = GridBagConstraints.HORIZONTAL;
+	gbc.weightx = 1.0;
+	jPanelRightTitle.add(new JLabel("Text Annotations"), gbc);
+	return jPanelRightTitle;
 }
 private JPanel getJPanelIdentifierManager() {
 	if (jPanelIdentifierManager == null) {
 		jPanelIdentifierManager = new JPanel();
 		jPanelIdentifierManager.setLayout(new GridBagLayout());
-		jPanelIdentifierManager.setPreferredSize(new Dimension(300, 37));
-		jPanelIdentifierManager.setBorder(BorderFactory.createLineBorder(SystemColor.windowBorder, 2));
+		jPanelIdentifierManager.setPreferredSize(new Dimension(260, 37));
+		jPanelIdentifierManager.setBorder(BorderFactory.createLineBorder(SystemColor.windowBorder, 1));
 		
 		int gridx = 0;
 		GridBagConstraints gbc = new GridBagConstraints();
@@ -367,22 +363,8 @@ private JPanel getJPanelIdentifierManager() {
 		gbc.insets = new Insets(3, 5, 3, 5);
 		gbc.gridx = gridx;
 		gbc.gridy = 0;
-		jPanelIdentifierManager.add(getJButtonGoTo(), gbc);
-
-		gridx++;
-		gbc = new GridBagConstraints();
-		gbc.insets = new Insets(3, 5, 3, 5);
-		gbc.gridx = gridx;
-		gbc.gridy = 0;
 		jPanelIdentifierManager.add(getJButtonAdd(), gbc);
 
-//		gridx++;
-//		gbc = new GridBagConstraints();
-//		gbc.insets = new Insets(3, 5, 3, 5);
-//		gbc.gridx = gridx;
-//		gbc.gridy = 0;
-//		jPanelIdentifierManager.add(getJButtonDelete(), gbc);
-		
 		gridx++;
 		gbc = new GridBagConstraints();
 		gbc.insets = new Insets(3, 0, 3, 0);
@@ -393,9 +375,6 @@ private JPanel getJPanelIdentifierManager() {
 		jPanelIdentifierManager.add(new JLabel(""), gbc);
 		
 		getJButtonAdd().addActionListener(eventHandler);
-//		getJButtonDelete().addActionListener(eventHandler);
-		getJButtonGoTo().addActionListener(eventHandler);
-
 	}
 	return jPanelIdentifierManager;
 }
@@ -490,6 +469,17 @@ private JSplitPane getSplitPane() {
 		gbc.insets = new Insets(3, 3, 1, 3);
 		gbc.fill = java.awt.GridBagConstraints.HORIZONTAL;
 		gbc.anchor = GridBagConstraints.NORTHWEST;
+		leftPanel.add(getJPanelLeftTitle(), gbc);
+
+		gridy++;
+		gbc = new java.awt.GridBagConstraints();
+		gbc.gridx = 0; 
+		gbc.gridy = gridy;
+		gbc.weightx = 1.0;
+		gbc.weighty = 0;
+		gbc.insets = new Insets(2, 3, 1, 3);
+		gbc.fill = java.awt.GridBagConstraints.HORIZONTAL;
+		gbc.anchor = GridBagConstraints.NORTHWEST;
 		leftPanel.add(getJPanelIdentifierManager(), gbc);
 
 		gridy++;
@@ -513,21 +503,48 @@ private JSplitPane getSplitPane() {
 		gbc.fill = java.awt.GridBagConstraints.BOTH;
 		gbc.anchor = GridBagConstraints.SOUTHWEST;
 		leftPanel.add(getJPanelLowerLeft(), gbc);
+		// -----------------------------------------------------------------------
 		
+		JPanel rightPanel = new JPanel();
+		rightPanel.setLayout(new GridBagLayout());
+		rightPanel.setBackground(Color.white);
+
+		gridy = 0;
+		gbc = new java.awt.GridBagConstraints();
+		gbc.gridx = 0; 
+		gbc.gridy = gridy;
+		gbc.weightx = 1.0;
+		gbc.weighty = 0;
+		gbc.insets = new Insets(3, 3, 1, 3);
+		gbc.fill = java.awt.GridBagConstraints.HORIZONTAL;
+		gbc.anchor = GridBagConstraints.NORTHWEST;
+		rightPanel.add(getJPanelRightTitle(), gbc);
+
 		annotationTextArea = new JTextPane();
 		annotationTextArea.setContentType("text/html");
 		annotationTextArea.setEditable(false);
 		annotationTextArea.addFocusListener(eventHandler);
 		annotationTextArea.addMouseListener(eventHandler);
-		JScrollPane rightPanel = new JScrollPane(annotationTextArea);
-		
+		JScrollPane annotationPanel = new JScrollPane(annotationTextArea);
+
+		gridy++;
+		gbc = new java.awt.GridBagConstraints();
+		gbc.gridx = 0; 
+		gbc.gridy = gridy;
+		gbc.weightx = 1.0;
+		gbc.weighty = 1.0;
+		gbc.insets = new Insets(1, 1, 1, 3);
+		gbc.fill = java.awt.GridBagConstraints.BOTH;
+		gbc.anchor = GridBagConstraints.NORTHWEST;
+		rightPanel.add(annotationPanel, gbc);
+		// ----------------------------------------------------------------------------------
+				
 		splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
 		splitPane.setOneTouchExpandable(true);
 		splitPane.setLeftComponent(leftPanel);
 		splitPane.setRightComponent(rightPanel);
 		splitPane.setResizeWeight(0.1);
 		splitPane.setDividerLocation(0.3);
-
 	}
 	return splitPane;
 }
@@ -626,17 +643,6 @@ private void initialize() {
 		
 		int gridy = 0;
 		GridBagConstraints gbc = new java.awt.GridBagConstraints();
-//		gbc.gridx = 0; 
-//		gbc.gridy = gridy;
-//		gbc.weightx = 1.0;
-//		gbc.weighty = 0;
-//		gbc.insets = new Insets(4, 4, 4, 4);
-//		gbc.fill = java.awt.GridBagConstraints.HORIZONTAL;
-//		gbc.anchor = GridBagConstraints.NORTHWEST;
-//		add(getJPanelIdentifierManager(), gbc);
-//
-//		gridy++;
-//		gbc = new java.awt.GridBagConstraints();
 		gbc.gridx = 0; 
 		gbc.gridy = gridy;
 		gbc.weightx = 1.0;
@@ -835,10 +841,7 @@ private void removeIdentifier() {
 		}
 	}
 }
-private void navigate() {
-	VCMetaDataDataType mdt = (VCMetaDataDataType)getJComboBoxURI().getSelectedItem();
-	showBrowseToLink(mdt);
-}
+
 private boolean isEqual(MiriamResource aThis, MiriamResource aThat) {
 	if (aThis == aThat) {
 		return true;
@@ -898,16 +901,10 @@ private JButton getJButtonDelete() {
 	if (jButtonDelete == null) {
 		jButtonDelete = new JButton();
 		jButtonDelete.setText(ACTION_DELETE);
+		jButtonDelete.setToolTipText("Delete the selected cross-reference");
+
 	}
 	return jButtonDelete;
-}
-private JButton getJButtonGoTo() {
-	if (jButtonGoTo == null) {
-		jButtonGoTo = new JButton();
-		jButtonGoTo.setText(ACTION_GOTO);
-		jButtonGoTo.setToolTipText("Navigate to the provider web site");
-	}
-	return jButtonGoTo;
 }
 
 	/*
