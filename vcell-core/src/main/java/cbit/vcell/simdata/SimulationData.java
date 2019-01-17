@@ -267,7 +267,7 @@ public class SimulationData extends VCData {
 		}
 		// TODO: here
 		public File getNFSimOutputFile() {
-			String simOutputFile = createCanonicalNFSimOutputFileName(((VCSimulationDataIdentifier)getVCDataiDataIdentifier()).getSimulationKey(), ((VCSimulationDataIdentifier)getVCDataiDataIdentifier()).getJobIndex());
+			String simOutputFile = createCanonicalNFSimOutputFileName(getsimulationKey(), getJobIndex());
 			return getFile(simOutputFile);
 		}
 		public File getMeshFile(boolean bHDF5){
