@@ -60,6 +60,7 @@ import org.vcell.sybil.models.miriam.MIRIAMQualifier;
 import org.vcell.sybil.models.miriam.MIRIAMRef.URNParseFailureException;
 import org.vcell.util.Compare;
 import org.vcell.util.Displayable;
+import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.Identifiable;
 import org.vcell.util.gui.DialogUtils;
 
@@ -143,7 +144,6 @@ public class AnnotationsPanel extends DocumentEditorSubPanel {
 					|| evt.getSource() instanceof BioPaxObject
 					) {
 				initializeComboBoxURI();
-				getJTextFieldFormalID().setText("NewID");
 				updateInterface();
 			}
 		}
@@ -230,7 +230,7 @@ private JPanel getJPanelNewIdentifier() {
 	gbc.gridy = gridy;
 	gbc.anchor = GridBagConstraints.WEST;
 	jPanelNewIdentifier.add(getJTextFieldFormalID(), gbc);
-	getJTextFieldFormalID().setText(mdt.getExample());
+	getJTextFieldFormalID().setText("NewID");
 		
 	gridx++;
 	gbc = new GridBagConstraints();
@@ -762,6 +762,9 @@ private static Identifiable getIdentifiable(Identifiable selectedObject) {
 @Override
 protected void onSelectedObjectsChange(Object[] selectedObjects) {
 	if (selectedObjects != null && selectedObjects.length == 1) {
+		if(selectedObjects[0] instanceof BioModelInfo) {
+			return;
+		}
 		if(selectedObjects[0] instanceof Identifiable && selectedObjects[0] instanceof Displayable) {
 			selectedObject = (Identifiable)selectedObjects[0];
 			System.out.println("class: " + selectedObject.getClass().getSimpleName() + ", selected object: " + ((Displayable)selectedObject).getDisplayName());
@@ -810,14 +813,14 @@ private void removeIdentifier() {
 		Identifiable entity = getIdentifiable(selectedObject);
 		//Map<MiriamRefGroup, MIRIAMQualifier> refGroupsToRemove = vcMetaData.getMiriamManager().getAllMiriamRefGroups(entity);
 		MiriamManager mm = vcMetaData.getMiriamManager();
-		Map<MiriamRefGroup,MIRIAMQualifier> refGroupsToRemove = vcMetaData.getMiriamManager().getMiriamTreeMap().get(entity);
+		Map<MiriamRefGroup,MIRIAMQualifier> refGroupsToRemove = mm.getMiriamTreeMap().get(entity);
 
 		
 		boolean found = false;
 		for (MiriamRefGroup refGroup : refGroupsToRemove.keySet()){
 			MIRIAMQualifier qualifier = refGroupsToRemove.get(refGroup);
 			if(!qualifier.equals(MIRIAMQualifier.MODEL_isDescribedBy)) {
-				continue;
+//				continue;
 			}
 			for (MiriamResource miriamResource : refGroup.getMiriamRefs()) {
 				
@@ -825,7 +828,7 @@ private void removeIdentifier() {
 					continue;
 				}
 				try {
-					vcMetaData.getMiriamManager().remove2(entity, qualifier, refGroup);	// remove the ref group for this resource
+					mm.remove2(entity, qualifier, refGroup);	// remove the ref group for this resource
 					System.out.println(vcMetaData.printRdfStatements());
 
 					found = true;
@@ -855,7 +858,7 @@ private boolean isEqual(MiriamResource aThis, MiriamResource aThat) {
 	MiriamResource athis = (MiriamResource)aThis;
 	MiriamResource athat = (MiriamResource)aThat;
 	
-	if (!athis.getDataType().equals(athat.getDataType())) {
+	if (athis.getDataType() != null && athat.getDataType() != null && !athis.getDataType().equals(athat.getDataType())) {
 		return false;
 	}
 	if (!Compare.isEqual(athis.getMiriamURN(), athat.getMiriamURN())) {

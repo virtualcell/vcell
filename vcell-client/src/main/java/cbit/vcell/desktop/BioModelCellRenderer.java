@@ -13,6 +13,7 @@ import javax.swing.JLabel;
 import javax.swing.JTree;
 
 import org.vcell.sybil.models.AnnotationQualifier;
+import org.vcell.sybil.models.miriam.MIRIAMQualifier;
 import org.vcell.util.document.BioModelChildSummary;
 import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.User;
@@ -46,22 +47,29 @@ public java.awt.Component getTreeCellRendererComponent(JTree tree, Object value,
 	JLabel component = (JLabel) super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
 	//
 	try {
-		if (value instanceof DateNode){
+		if (value instanceof DateNode) {
 			DateNode dateNode = (DateNode)value;
 			AnnotationQualifier qualifier = dateNode.getDateQualifier();
 			String colorString = (sel)?"white":"black";
 			component.setText("<html>"+qualifier.getDescription()+"&nbsp;<font color=\""+colorString+"\">" + dateNode.getDate().getDateString() + "</font></html>");
-		} else if (value instanceof LinkNode){
+		} else if (value instanceof LinkNode) {
 			LinkNode ln = (LinkNode)value;
 			String link = ln.getLink();
 			String text = ln.getText();
-//			String qualifier = ln.getMiriamQualifier().getDescription();
+			MIRIAMQualifier mQualifier = ln.getMiriamQualifier();
 			String qualifier = "";
+			if(mQualifier.equals(MIRIAMQualifier.MODEL_isDescribedBy)) {
+				String colorString = (sel)?"white":"black";
+				qualifier = "<font color=\""+colorString+"\">" + mQualifier.getDescription() + "</font>"; 
+			} else {
+				String colorString = (sel)?"white":"#8B0000";
+				qualifier = "<font color=\""+colorString+"\">" + mQualifier.getDescription() + "</font>"; 
+			}
 			if (link != null) {
 				String colorString = (sel)?"white":"blue";
 				component.setToolTipText("Double-click to open link");
 				component.setText("<html>"+qualifier+"&nbsp;<font color=\""+colorString+"\"><a href=" + link + ">" + text + "</a></font></html>");
-			}else{
+			} else {
 				String colorString = (sel)?"white":"black";
 				component.setText("<html>"+qualifier+"&nbsp;<font color=\""+colorString+"\">" + text + "</font></html>");
 			}
