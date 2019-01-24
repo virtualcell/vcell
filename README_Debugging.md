@@ -47,8 +47,8 @@ Let conditional code run for awhile until the database and services get synchron
 
 **Find slurm sim logs**  
 login vcell@vcell-service  
-sacct --user=vcell --format="JobID,JobName%30,State,Submit,start,end,ExitCode" -S 2018-09-01 | grep -i -e vcellSimID  
---e.g. sacct --user=vcell --format="JobID,JobName%30,State,Submit,start,end,ExitCode" -S 2018-09-01 | grep -i -e 140980636 -e 140980969  
+sacct --user=vcell --format="JobID,JobName%30,NodeList,State,Submit,start,end,ExitCode" -S 2018-09-01 | grep -i -e vcellSimID  
+--e.g. sacct --user=vcell --format="JobID,JobName%30,NodeList,State,Submit,start,end,ExitCode" -S 2018-09-01 | grep -i -e 140980636 -e 140980969  
 ls -U -1 /share/apps/vcell3/htclogs/V\_[REL,ALPHA]\_{vcellSimID*,...}  
 --e.g. ls -U -1 /share/apps/vcell3/htclogs/V\_REL\_{140980636*,140980969*,140981229^,140983532*,140984604*,140981909*,140983177*}  
 less /share/apps/vcell3/htclogs/{JobName}.slurm.log  //JobName from sacct query
