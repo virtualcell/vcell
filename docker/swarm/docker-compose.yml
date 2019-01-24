@@ -109,6 +109,7 @@ services:
       - "8000" # java remote debugging
     volumes:
       - "${VCELL_SIMDATADIR_HOST}:/simdata"
+      - "${VCELL_SIMDATADIR_ARCHIVE_HOST}:${VCELL_SIMDATADIR_ARCHIVE_HOST}"
     secrets:
       - dbpswd
       - jmspswd
@@ -175,6 +176,7 @@ services:
       - "8000" # java remote debugging
     volumes:
       - "${VCELL_SIMDATADIR_HOST}:/simdata"
+      - "${VCELL_SIMDATADIR_ARCHIVE_HOST}:${VCELL_SIMDATADIR_ARCHIVE_HOST}"
       - "${VCELL_HTCLOGS_HOST}:/htclogs"
     secrets:
       - jmspswd
@@ -252,6 +254,7 @@ services:
       - "8000" # java remote debugging
     volumes:
       - "${VCELL_SIMDATADIR_HOST}:/simdata"
+      - "${VCELL_SIMDATADIR_ARCHIVE_HOST}:${VCELL_SIMDATADIR_ARCHIVE_HOST}"
       - "${VCELL_EXPORTDIR_HOST}:/exportdir"
     secrets:
       - jmspswd

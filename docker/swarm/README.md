@@ -72,6 +72,7 @@ cd vcell/docker/build
 export VCELL_TAG=`git rev-parse HEAD | cut -c -7`
 theRegistryHost=vcell-docker.cam.uchc.edu
 export VCELL_REPO_NAMESPACE=${theRegistryHost}:5000/schaff
+echo $VCELL_TAG $VCELL_REPO_NAMESPACE
 ./build.sh all $VCELL_REPO_NAMESPACE $VCELL_TAG
 ```
 
