@@ -3154,10 +3154,13 @@ private void calcAutoAllTimes() throws Exception {
 		}
 		bStateVar = stateVarNames.contains(getPdeDataContext().getVariableName());
 	}
-	if(theVariable == null){
-		throw new Exception("Unexpected Alltimes... selected variable '"+getPdeDataContext().getVariableName()+"' is not stateVariable or OutputFunction");
+	if(theVariable == null){//fix for old data that has incompatible speciesContext variable naming
+		getPDEDataContextPanel1().getdisplayAdapterServicePanel1().enableAutoAllTimes(false);
+//		throw new Exception("Unexpected Alltimes... selected variable '"+getPdeDataContext().getVariableName()+"' is not stateVariable or OutputFunction");
+	}else {
+		getPDEDataContextPanel1().getdisplayAdapterServicePanel1().enableAutoAllTimes(true);
 	}
-	if(getPDEDataContextPanel1().getdisplayAdapterService1().getAllTimes()){// min-max over all timepoints (allTimes)
+	if(theVariable != null && getPDEDataContextPanel1().getdisplayAdapterService1().getAllTimes()){// min-max over all timepoints (allTimes)
 		if(theVariable.isConstant()){
 			getPDEDataContextPanel1().getdisplayAdapterServicePanel1().changeAllTimesButtonText(DisplayAdapterServicePanel.ALL_TIMES__STATE_TEXT);
 			double constVal = theVariable.getExpression().evaluateConstant();
