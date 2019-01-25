@@ -105,6 +105,9 @@ public class RestDatabaseService {
 	public SimulationStatus[] getSimulationStatus(KeyValue[] simulationKeys,User vcellUser) throws DataAccessException{
 		return simulationDatabaseDirect.getSimulationStatus(simulationKeys);
 	}
+	public SimulationStatus getSimulationStatus(KeyValue simulationKey,User vcellUser) throws DataAccessException{
+		return simulationDatabaseDirect.getSimulationStatus(simulationKey);
+	}
 	public String getBasicStatistics() throws SQLException, DataAccessException{
 		return databaseServerImpl.getAdminDBTopLevel().getBasicStatistics();
 	}
