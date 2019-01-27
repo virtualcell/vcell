@@ -11,6 +11,8 @@
 package cbit.vcell.solvers;
 
 import java.io.File;
+import java.io.FileFilter;
+import java.nio.file.Files;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
@@ -140,22 +142,37 @@ public void runSolver() {
 		if(OperatingSystemInfo.getInstance().isLinux()){
 			final String LD_LIB_PATH = "LD_LIBRARY_PATH";
 			File solversDir = ResourceUtil.getLocalSolversDirectory();
-			String existingLD_LIB_PATH = null;
-			Map<String, String>envMap = System.getenv();
-			Iterator<String> envIter = envMap.keySet().iterator();
-			while(envIter.hasNext()){
-				String key = envIter.next();
-				String val = envMap.get(key).toString();
-//				System.out.println(key+"\n     "+val);
-				if(key.equals(LD_LIB_PATH)){
-					existingLD_LIB_PATH = val;
-					if(existingLD_LIB_PATH != null && existingLD_LIB_PATH.length() > 0 && !existingLD_LIB_PATH.endsWith(":")){
-						existingLD_LIB_PATH+= ":";
+			//Fix broken symbolic links
+			File[] libzipSolverFiles = solversDir.listFiles(new FileFilter() {
+				@Override
+				public boolean accept(File pathname) {
+					if(pathname.isFile() && pathname.getName().startsWith("libzip.so") && !Files.isSymbolicLink(pathname.toPath()) && pathname.length() == 0) {
+						return true;
 					}
-					break;
+					return false;
 				}
+			});
+			for (int i = 0; i < libzipSolverFiles.length; i++) {
+				libzipSolverFiles[i].delete();
+				Files.createSymbolicLink(libzipSolverFiles[i].toPath(), new File(solversDir,"libzip.so.3.0").toPath());
 			}
-			String newLD_LIB_PATH = (existingLD_LIB_PATH==null?"":existingLD_LIB_PATH)+solversDir.getAbsolutePath();
+//			String existingLD_LIB_PATH = null;
+//			Map<String, String>envMap = System.getenv();
+//			Iterator<String> envIter = envMap.keySet().iterator();
+//			while(envIter.hasNext()){
+//				String key = envIter.next();
+//				String val = envMap.get(key).toString();
+////				System.out.println(key+"\n     "+val);
+//				if(key.equals(LD_LIB_PATH)){
+//					existingLD_LIB_PATH = val;
+//					if(existingLD_LIB_PATH != null && existingLD_LIB_PATH.length() > 0 && !existingLD_LIB_PATH.endsWith(":")){
+//						existingLD_LIB_PATH+= ":";
+//					}
+//					break;
+//				}
+//			}
+//			String newLD_LIB_PATH = (existingLD_LIB_PATH==null?"":existingLD_LIB_PATH)+solversDir.getAbsolutePath();
+			String newLD_LIB_PATH = "/lib64:/usr/lib64:/lib/:/usr/lib:"+solversDir.getAbsolutePath();
 			System.out.println("-----Setting executable "+LD_LIB_PATH+" to "+newLD_LIB_PATH);
 			getMathExecutable().addEnvironmentVariable(LD_LIB_PATH, newLD_LIB_PATH);			
 		}
