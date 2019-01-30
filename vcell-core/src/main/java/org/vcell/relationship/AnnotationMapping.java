@@ -196,7 +196,9 @@ public class AnnotationMapping {
 			String type = temp[1];
 			if(db.toUpperCase().contains("OBO.GO")){
 				db = "GENE_ONTOLOGY";
-				id = id.split(":")[1];
+				if(id.contains(":")) {
+					id = id.split(":")[1];
+				}
 			}
 			String refId = db + "_" + id;
 			Xref xref = (Xref) bioModel.getPathwayModel().findBioPaxObject(refId);
