@@ -10,7 +10,7 @@ If VCell client simulation list view says 'hasdata=no' but there is data
 
 **Reset simulation hasdata status (if easier method doesn't work, try this)**  
 //-----------------------------------------------------------------------------------------------------------------------  
-In SimulationJobTable.getSimulationJobStatus(...) find line where 'parsedHasData' is set after put conditional breakpoint (to monitor hasdata value):  
+In SimulationJobTable.getSimulationJobStatus(...) find line where 'parsedHasData' is set, on next line(~147) put conditional breakpoint (to monitor hasdata value):  
 //-----  
 if(parsedSimKey.toString().equals("140980969") || parsedSimKey.toString().equals("140984604")) {  
 	System.out.println("-----hasData---------------------------------------------");  
@@ -19,10 +19,14 @@ if(parsedSimKey.toString().equals("140980969") || parsedSimKey.toString().equals
 }  
 return false;  
 //-----  
-In SimulationJobTable.getSQLUpdateList(...) find line //hasData block of code, after that block insert conditional breakpoint as follows (change simids as appropriate):  
+In SimulationJobTable.getSQLUpdateList(...) find line '//hasData' block of code, after that block (~275) insert conditional breakpoint as follows (change simids as appropriate):  
 //-----  
-String theSimKey = simulationJobStatus.getVCSimulationIdentifier().getSimulationKey().toString();  
-if(theSimKey.equals("140984604") || theSimKey.equals("140980969")) {  
+String parsedSimKey = simulationJobStatus.getVCSimulationIdentifier().getSimulationKey().toString();
+if(parsedSimKey.toString().equals("149162204") ||
+		parsedSimKey.toString().equals("149162470") ||
+		parsedSimKey.toString().equals("149162959") ||
+		parsedSimKey.toString().equals("149163092") ||
+		parsedSimKey.toString().equals("149163722")) {
 	System.out.println("-----set hasdta------------------------------------------------------------");  
 	System.out.println("-----SimulationJobTable.getSqlUpdateList(...) "+simulationJobStatus);  
 	String changeStr = "hasData=null,";  
@@ -36,12 +40,13 @@ if(theSimKey.equals("140984604") || theSimKey.equals("140980969")) {
 }  
 return false;  
 //-----  
-Start remote debug session on the vcell-sched service  
+Start remote debug session on the vcell-sched service (using vcell-server project)
 -----sudo docker stack ps vcellrel | grep -i running ( to find vcell-sched host for remote debug)  
 -----sudo docker service ls (to find service to attach to)  
 -----ssh to node servcie is running on and do sudo docker ps (find container name of vcell-sched  
 ----- sudo docker container logs -f {containerID}  
-Let conditional code run for awhile until the database and services get synchronized (a few minutes)  
+Let conditional code run for awhile until the database and services get synchronized (a few minutes)
+-----Restart VCell docker scheduler service  with cmd " sudo docker service update --force --detach=false vcell{rel,alpha}_sched "  
 //-----------------------------------------------------------------------------------------------------------------------
 
 
