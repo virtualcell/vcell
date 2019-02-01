@@ -27,6 +27,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Enumeration;
 
+import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -338,7 +339,9 @@ private class LocalMetaDataPanel extends JPanel {
 		try {
 			setName("LocalMetaDataPanel");
 			setLayout(new BorderLayout());
-			add(new JScrollPane(getJTree()), BorderLayout.CENTER);
+			JScrollPane sp = new JScrollPane(getJTree());
+			sp.setBorder(BorderFactory.createEmptyBorder());
+			add(sp, BorderLayout.CENTER);
 //			this.addPropertyChangeListener(ivjEventHandler);
 			getJTree().setModel(mathModelInfoTreeModel);
 			getJTree().setCellRenderer(mathModelInfoCellRenderer);
@@ -351,7 +354,7 @@ private class LocalMetaDataPanel extends JPanel {
 	
 	private void updateInterface() {
 		try {
-			if(mathModel == null) {
+			if(mathModel == null || mathModel.getVersion() == null) {
 				return;
 			}
 //			Dimension preferredSize = new Dimension(100, 50);

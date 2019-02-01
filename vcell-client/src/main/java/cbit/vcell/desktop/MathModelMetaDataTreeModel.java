@@ -85,7 +85,7 @@ private BioModelNode createVersionSubTree(MathModelInfo mathModelInfo) throws Da
 	}	
 
 	if (mathModelInfo.getVersion().getAnnot()!=null && mathModelInfo.getVersion().getAnnot().trim().length()>0) {
-		BioModelNode provenanceNode = new BioModelNode("Provenance", true);
+		BioModelNode provenanceNode = new BioModelNode("Model Provenance", true);
 		provenanceNode.setRenderHint("type","Provenance");
 		versionNode.add(provenanceNode);
 
