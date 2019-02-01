@@ -162,7 +162,7 @@ public class BioModelEditorTreeModel extends DocumentEditorTreeModel implements 
 		try {
 			bPopulatingRoot = true;
 			rootNode.setUserObject(bioModel);
-			populateAnnotationNode();
+//			populateAnnotationNode();
 			populateApplicationsNode(true);
 			nodeStructureChanged(rootNode);
 		} finally {
