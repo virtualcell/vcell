@@ -95,7 +95,7 @@ private BioModelNode createVersionSubTree(BioModelInfo bioModelInfo) throws Data
 	}
 
 	if (bioModelInfo.getVersion().getAnnot() != null && bioModelInfo.getVersion().getAnnot().trim().length() > 0) {
-		BioModelNode provenanceNode = new BioModelNode("Provenance", true);
+		BioModelNode provenanceNode = new BioModelNode("Model Provenance", true);
 		provenanceNode.setRenderHint("type","Provenance");
 		versionNode.add(provenanceNode);
 		
@@ -117,7 +117,7 @@ private BioModelNode createVersionSubTree(BioModelInfo bioModelInfo) throws Data
 		String geomNames[] = bioModelChildSummary.getGeometryNames();
 		MathType appTypes[] = bioModelChildSummary.getAppTypes();
 		
-		String name = scNames.length > 1 ? "Applications (" + scNames.length + ")" : "Application";
+		String name = scNames.length > 1 ? "Applications Provenance" : "Application Provenance";
 		applicationsNode = new BioModelNode(name, true);
 		applicationsNode.setRenderHint("type","Applications");
 

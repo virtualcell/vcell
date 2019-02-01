@@ -33,6 +33,7 @@ import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -374,12 +375,15 @@ private class LocalMetaDataPanel extends JPanel {
 		try {
 			setName("LocalMetaDataPanel");
 			setLayout(new BorderLayout());
-			add(new JScrollPane(getJTree()), BorderLayout.CENTER);
+			JScrollPane sp = new JScrollPane(getJTree());
+			sp.setBorder(BorderFactory.createEmptyBorder());
+			add(sp, BorderLayout.CENTER);
 //			this.addPropertyChangeListener(ivjEventHandler);
 			getJTree().setModel(bioModelInfoTreeModel);
 			getJTree().setCellRenderer(bioModelInfoCellRenderer);
 			javax.swing.ToolTipManager.sharedInstance().registerComponent(getJTree());
 			getJTree().getSelectionModel().setSelectionMode(javax.swing.tree.TreeSelectionModel.SINGLE_TREE_SELECTION);
+//			getJTree().setSelectionModel(null);
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);
 		}
@@ -387,7 +391,7 @@ private class LocalMetaDataPanel extends JPanel {
 	
 	private void updateInterface() {
 		try {
-			if(bioModel == null) {
+			if(bioModel == null || bioModel.getVersion() == null) {
 				return;
 			}
 			Dimension preferredSize = new Dimension(100, 50);
