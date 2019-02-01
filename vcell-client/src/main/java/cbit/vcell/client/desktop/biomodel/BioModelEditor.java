@@ -780,7 +780,9 @@ protected void setRightBottomPanelOnSelection(Object[] selections) {
 			bottomComponent = getSpatialProcessPropertyPanel();
 		} else if (singleSelection instanceof BioPaxObject) {
 			bottomComponent = bioPaxObjectPropertiesPanel;
-		} else if (singleSelection instanceof BioModel || singleSelection instanceof VCMetaData) {
+		} else if (singleSelection instanceof BioModel) {
+			bottomComponent = bioModelEditorAnnotationPanel;	// only contains Notes, is displayed in the Object Properties Panel
+		} else if (singleSelection instanceof VCMetaData) {
 			bottomComponent = bioModelEditorAnnotationPanel;
 		} else if (singleSelection instanceof PathwayData) {
 			bShowPathway = true;
@@ -846,9 +848,14 @@ protected void setRightBottomPanelOnSelection(Object[] selections) {
 		rightBottomTabbedPane.setComponentAt(annComponentIndex, annotationComponent);
 		rightSplitPane.repaint();
 	}
-	if (rightBottomTabbedPane.getSelectedComponent() != bottomComponent &&
-			rightBottomTabbedPane.getSelectedComponent() != annotationComponent) {
+	Component selectedComponent = rightBottomTabbedPane.getSelectedComponent();
+	if (selectedComponent != bottomComponent 
+//			&& rightBottomTabbedPane.getSelectedComponent() != annotationComponent
+			) {
 		rightBottomTabbedPane.setSelectedComponent(bottomComponent);
+	} else if(selections.length == 1 && selections[0] instanceof BioModel && bottomComponent instanceof BioModelEditorAnnotationPanel) {
+		// if the biomodel name is selected in the upper left tree, we select the Annotations tab
+		rightBottomTabbedPane.setSelectedComponent(annotationComponent);
 	}
 }
 
