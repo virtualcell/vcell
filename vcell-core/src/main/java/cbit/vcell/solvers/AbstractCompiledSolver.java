@@ -11,19 +11,23 @@
 package cbit.vcell.solvers;
 
 import java.io.File;
-import java.io.FileFilter;
+import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
-import java.util.Map;
 import java.util.Vector;
+
+import org.vcell.util.document.User;
 
 import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.resource.OperatingSystemInfo;
 import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.solver.AnnotatedFunction;
 import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solver.SolverException;
+import cbit.vcell.solver.SolverUtilities;
 import cbit.vcell.solver.TimeBounds;
 import cbit.vcell.solver.server.SimulationMessage;
 import cbit.vcell.solver.server.SolverStatus;
@@ -126,6 +130,12 @@ public void propertyChange(java.beans.PropertyChangeEvent event) {
 		}
 	}
 }
+private static Path createSymbolicLink(File mySolverLinkDir,String linkName,File localSolverPath) throws IOException{
+	Path path0 = new File(mySolverLinkDir,linkName).toPath();
+	Path path1 = localSolverPath.toPath();
+	System.out.println("linking "+path0+" "+path1);
+	return Files.createSymbolicLink(path0,path1);
+}
 /**
  * Insert the method's description here.
  * Creation date: (6/26/2001 3:08:31 PM)
@@ -139,43 +149,7 @@ public void runSolver() {
 		initialize();
 		setSolverStatus(new SolverStatus(SolverStatus.SOLVER_RUNNING, SimulationMessage.MESSAGE_SOLVER_RUNNING_START));
 		fireSolverStarting(SimulationMessage.MESSAGE_SOLVEREVENT_STARTING);
-		if(OperatingSystemInfo.getInstance().isLinux()){
-			final String LD_LIB_PATH = "LD_LIBRARY_PATH";
-			File solversDir = ResourceUtil.getLocalSolversDirectory();
-			//Fix broken symbolic links
-			File[] libzipSolverFiles = solversDir.listFiles(new FileFilter() {
-				@Override
-				public boolean accept(File pathname) {
-					if(pathname.isFile() && pathname.getName().startsWith("libzip.so") && !Files.isSymbolicLink(pathname.toPath()) && pathname.length() == 0) {
-						return true;
-					}
-					return false;
-				}
-			});
-			for (int i = 0; i < libzipSolverFiles.length; i++) {
-				libzipSolverFiles[i].delete();
-				Files.createSymbolicLink(libzipSolverFiles[i].toPath(), new File(solversDir,"libzip.so.3.0").toPath());
-			}
-//			String existingLD_LIB_PATH = null;
-//			Map<String, String>envMap = System.getenv();
-//			Iterator<String> envIter = envMap.keySet().iterator();
-//			while(envIter.hasNext()){
-//				String key = envIter.next();
-//				String val = envMap.get(key).toString();
-////				System.out.println(key+"\n     "+val);
-//				if(key.equals(LD_LIB_PATH)){
-//					existingLD_LIB_PATH = val;
-//					if(existingLD_LIB_PATH != null && existingLD_LIB_PATH.length() > 0 && !existingLD_LIB_PATH.endsWith(":")){
-//						existingLD_LIB_PATH+= ":";
-//					}
-//					break;
-//				}
-//			}
-//			String newLD_LIB_PATH = (existingLD_LIB_PATH==null?"":existingLD_LIB_PATH)+solversDir.getAbsolutePath();
-			String newLD_LIB_PATH = "/lib64:/usr/lib64:/lib/:/usr/lib:"+solversDir.getAbsolutePath();
-			System.out.println("-----Setting executable "+LD_LIB_PATH+" to "+newLD_LIB_PATH);
-			getMathExecutable().addEnvironmentVariable(LD_LIB_PATH, newLD_LIB_PATH);			
-		}
+		checkLinuxSharedLibs();
 		getMathExecutable().start();
 		cleanup();
 		//  getMathExecutable().start() may end prematurely (error or user stop), so check status before firing...
@@ -203,6 +177,71 @@ public void runSolver() {
 		synchronized(this) {
 			fieldThread = null;
 		}
+	}
+}
+private void checkLinuxSharedLibs() throws IOException, InterruptedException {
+	if(OperatingSystemInfo.getInstance().isLinux()){
+		File localSimDir = ResourceUtil.getLocalSimDir(User.tempUser.getName());
+		File mySolverLinkDir = new File(localSimDir,simTask.getSimKey().toString()+ResourceUtil.LOCAL_SOLVER_LIB_LINK_SUFFIX);
+		if(mySolverLinkDir.exists()) {
+			File[] temp = mySolverLinkDir.listFiles();
+			for (int i = 0; i < temp.length; i++) {
+				temp[i].delete();
+			}
+		}else {
+			mySolverLinkDir.mkdir();
+		}
+		SolverDescription mySolverDescription = getSimulationJob().getSimulation().getSolverTaskDescription().getSolverDescription();
+		File localSolverPath = SolverUtilities.getExes(mySolverDescription)[0];
+		Path linkSolver = createSymbolicLink(mySolverLinkDir, localSolverPath.getName(),localSolverPath);
+		final String LD_LIB_PATH = "LD_LIBRARY_PATH";
+		String newLD_LIB_PATH = mySolverLinkDir.getAbsolutePath();
+		File solversDir = ResourceUtil.getLocalSolversDirectory();
+		System.out.println("-----reading solverdir libs "+solversDir.getAbsolutePath());
+		ArrayList<File> tempAL = new ArrayList<File>();
+			 File[] temp = solversDir.listFiles();
+			 for (int i = 0; i < temp.length; i++) {
+					if(temp[i].getName().startsWith("lib") && temp[i].isFile() && temp[i].length() != 0 &&  !Files.isSymbolicLink(temp[i].toPath()) ) {
+						tempAL.add(temp[i]);
+						System.out.println(temp[i].getName());
+					}		
+			}
+		File[] libzipSolverFiles = (File[])tempAL.toArray(new File[0]);
+			ProcessBuilder pb = new ProcessBuilder("ldd",linkSolver.toString());
+			pb.redirectErrorStream(true);
+			Process p = pb.start();
+			int ioByte = -1;
+			StringBuffer sb = new StringBuffer();
+			while((ioByte = p.getInputStream().read()) != -1) {
+				sb.append((char)ioByte);
+			}
+			p.waitFor();
+			System.out.println("-----ldd output:\n"+sb.toString());
+			java.io.BufferedReader br = new java.io.BufferedReader(new java.io.StringReader(sb.toString()));
+			String line = null;
+			System.out.println("-----reading ldd:");
+			while((line = br.readLine()) != null) {
+				System.out.println(line);
+				java.util.StringTokenizer libInfo = new java.util.StringTokenizer(line," \t");	
+				if(libInfo.countTokens() == 4) {// "libname => libpath offset"  -or- "libname => not found"
+					String libName = libInfo.nextToken();
+					String ptr = libInfo.nextToken();
+					String libPath = libInfo.nextToken();
+					String aux = libInfo.nextToken();
+					if(libPath.equals("not") && aux.equals("found")) {
+						for (int i = 0; i < libzipSolverFiles.length; i++) {
+							if(libzipSolverFiles[i].getName().startsWith(libName)) {
+								//System.out.println(libName+" "+ptr+" "+libPath+" "+aux+" "+org.apache.commons.lang3.StringUtils.getJaroWinklerDistance("libhdf5.so",libName));						
+								System.out.println(libName+" "+ptr+" "+libPath+" "+aux+" match="+libzipSolverFiles[i]);
+								createSymbolicLink(mySolverLinkDir, libName,libzipSolverFiles[i]);
+							}
+						}
+					}
+				}
+			}
+
+		System.out.println("-----Setting executable "+LD_LIB_PATH+" to "+newLD_LIB_PATH);
+		getMathExecutable().addEnvironmentVariable(LD_LIB_PATH, newLD_LIB_PATH);			
 	}
 }
 /**

@@ -35,6 +35,7 @@ import org.vcell.util.logging.NoLogging;
 import cbit.vcell.util.NativeLoader;
 
 public class ResourceUtil {
+	public static final String LOCAL_SOLVER_LIB_LINK_SUFFIX = "_link";
 	private static final String LOCALSOLVERS_DIR = "localsolvers";
 	private static final String PYTHONSCRIPTS_DIR = "pythonScripts";
 	private static final String VCELL_OPT_DIR = "VCell_Opt";
@@ -308,6 +309,12 @@ public class ResourceUtil {
 			localSimDir = new File(getLocalRootDir(), userSubDirName);
 			if (localSimDir.exists()) {
 				for (File file : localSimDir.listFiles()) {
+					if(file.isDirectory() && file.getName().endsWith(LOCAL_SOLVER_LIB_LINK_SUFFIX)) {
+						File[] links = file.listFiles();
+						for (int i = 0; i < links.length; i++) {
+							links[i].delete();
+						}
+					}
 					file.delete();
 				}
 			} else {
