@@ -21,17 +21,19 @@ public class ReactionStepInfo implements java.io.Serializable {
 	private String reactionName = null;
 	private java.util.Date bioModelVersionDate = null;
 	private String descriptiveText = null;
+	private String structType = null;
 
 /**
  * ReactionStepInfo constructor comment.
  */
-public ReactionStepInfo(org.vcell.util.document.KeyValue argReactionKey, org.vcell.util.document.User argOwner, String argBioModelName, String argReactionName, java.util.Date argBioModelVersionDate) {
+public ReactionStepInfo(org.vcell.util.document.KeyValue argReactionKey, org.vcell.util.document.User argOwner, String argBioModelName, String argReactionName, java.util.Date argBioModelVersionDate,String structType) {
 	super();
 	this.reactionKey = argReactionKey;
 	this.owner = argOwner;
 	this.bioModelName = argBioModelName;
 	this.reactionName = argReactionName;
 	this.bioModelVersionDate = argBioModelVersionDate;
+	this.structType = structType;
 	refreshDescriptiveText();
 }
 
@@ -45,6 +47,9 @@ public java.lang.String getBioModelName() {
 	return bioModelName;
 }
 
+public String getStructType() {
+	return structType;
+}
 
 /**
  * Insert the method's description here.

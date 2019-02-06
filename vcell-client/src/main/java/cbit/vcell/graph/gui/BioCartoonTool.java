@@ -14,6 +14,7 @@ import java.awt.Container;
 import java.awt.Dimension;
 import java.beans.PropertyVetoException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
@@ -21,6 +22,7 @@ import java.util.IdentityHashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.Vector;
 
@@ -426,8 +428,22 @@ public abstract class BioCartoonTool extends cbit.gui.graph.gui.CartoonTool {
 				Model clonedModel = (Model)org.vcell.util.BeanUtils.cloneSerializable(pasteModel);
 				clonedModel.refreshDependencies();
 				IssueContext issueContext = new IssueContext(ContextType.Model, clonedModel, null);
+				HashMap<String,HashMap<ReactionParticipant,Structure>> userResolved_rxPartMapStruct = null;
+				if(userResolvedRxElements != null) {
+					userResolved_rxPartMapStruct = new HashMap<>();
+					for(int i=0;reactionStepsArrOrig!= null && i<reactionStepsArrOrig.length;i++){
+						userResolved_rxPartMapStruct.put(reactionStepsArrOrig[i].getName(), new HashMap<ReactionParticipant,Structure>());
+						ReactionParticipant[] reactionParticipantsOrig = reactionStepsArrOrig[i].getReactionParticipants();
+						for (int j = 0; j < reactionParticipantsOrig.length; j++) {
+							HashMap<Structure, Species> preferredReactionElement = UserResolvedRxElements.getPreferredReactionElement(userResolvedRxElements, reactionParticipantsOrig[j]);
+							Entry<Structure, Species> userChosenStructSpecies = preferredReactionElement.entrySet().iterator().next();
+							userResolved_rxPartMapStruct.get(reactionStepsArrOrig[i].getName()).put(reactionParticipantsOrig[j],userChosenStructSpecies.getKey());
+						}
+					}
+//					pasteHelper[0].rxPartMapStruct = new_rxPartMapStruct;
+				}
 				pasteHelper[0] =
-					pasteReactionSteps0(null,requester, issueContext, reactionStepsArrOrig,
+					pasteReactionSteps0(userResolved_rxPartMapStruct,requester, issueContext, reactionStepsArrOrig,
 							clonedModel, clonedModel.getStructure(struct.getName()), bNew,/*bUseDBSpecies,*/
 							UserResolvedRxElements.createCompatibleUserResolvedRxElements(userResolvedRxElements, clonedModel));
 				if (pasteHelper[0].issues.size() != 0) {
@@ -707,10 +723,43 @@ public abstract class BioCartoonTool extends cbit.gui.graph.gui.CartoonTool {
 		if(userResolvedRxElements != null){
 			for (int i = 0; i < userResolvedRxElements.toSpeciesArr.length; i++) {
 				if(userResolvedRxElements.toSpeciesArr[i] != null){
-					if(!pasteToModel.contains(userResolvedRxElements.toSpeciesArr[i])){
-						throw new RuntimeException("PasteToModel does not contain preferred Species "+userResolvedRxElements.toSpeciesArr[i]);
-					}
+//					Structure toNewStruct = userResolvedRxElements.toStructureArr[i];
+//					SpeciesContext[] toNewSC = pasteToModel.getSpeciesContexts(toNewStruct);
+//					SpeciesContext[] usersSC = userResolvedRxElements.fromSpeciesContextArr;
+//					boolean bFound = false;
+//					for (int j = 0; j < toNewSC.length; j++) {
+//						boolean structeql = toNewSC[j].getStructure().getName().equals(usersSC[i].getStructure().getName());
+//						boolean specieseql = toNewSC[j].getSpecies().getCommonName().equals(usersSC[i].getSpecies().getCommonName());
+//						System.out.println(toNewSC[j]+" "+structeql+" "+usersSC[i]+" "+specieseql);
+//						if(structeql &&  specieseql) {
+//							bFound = true;
+//							break;
+//						}
+//					}
+//					if(!bFound) {
+//						throw new Exception("Expecting speciesContext '"+usersSC[i].getSpecies().getCommonName()+"' to exist already in structure "+toNewStruct.getName());
+//					}
+//
+////					if(!pasteToModel.contains(userResolvedRxElements.toSpeciesArr[i])){
+////						throw new RuntimeException("PasteToModel does not contain preferred Species "+userResolvedRxElements.toSpeciesArr[i]);
+////					}
 				}
+//				else {
+//					Structure toNewStruct = userResolvedRxElements.toStructureArr[i];
+//					SpeciesContext[] toNewSC = pasteToModel.getSpeciesContexts(toNewStruct);
+//					SpeciesContext[] usersSC = userResolvedRxElements.fromSpeciesContextArr;
+//					boolean bFound = false;
+//					for (int j = 0; j < toNewSC.length; j++) {
+//						System.out.println(toNewSC[j]+" "+usersSC[i]);
+//						if(toNewSC[j].getStructure().equals(usersSC[i].getStructure()) &&  toNewSC[j].getSpecies().equals(usersSC[i].getSpecies())) {
+//							bFound = true;
+//							break;
+//						}
+//					}
+//					if(!bFound) {
+//						throw new Exception("Expecting speciesContext '"+usersSC[i].getName()+"' to exist already");
+//					}
+//				}
 				if(userResolvedRxElements.toStructureArr[i] != null){
 					if(!pasteToModel.contains(userResolvedRxElements.toStructureArr[i])){
 						throw new RuntimeException("PasteToModel does not contain preferred Structure "+userResolvedRxElements.toStructureArr[i]);
@@ -756,10 +805,10 @@ public abstract class BioCartoonTool extends cbit.gui.graph.gui.CartoonTool {
 			if(rxPartMapStructure == null){//null during 'issues' trial
 				rxPartMapStructure = new HashMap<String,HashMap<ReactionParticipant,Structure>>();
 			}
-			if(rxPartMapStructure.get(copyFromReactionStep.getName()) == null){// Ask user to assign species to compartments for each reaction to be pasted
-				rxPartMapStructure.put(copyFromReactionStep.getName(),
-						askUserResolveMembraneConnections(parent, pasteToModel.getStructures(), currentStruct,fromRxnStruct, toRxnStruct,copyFromRxParticipantArr, toStructureTopology, structTopology));
-			}
+//			if(rxPartMapStructure.get(copyFromReactionStep.getName()) == null){// Ask user to assign species to compartments for each reaction to be pasted
+//				rxPartMapStructure.put(copyFromReactionStep.getName(),
+//						askUserResolveMembraneConnections(parent, pasteToModel.getStructures(), currentStruct,fromRxnStruct, toRxnStruct,copyFromRxParticipantArr, toStructureTopology, structTopology));
+//			}
 			for(int i=0;i<copyFromRxParticipantArr.length;i+= 1){
 				Structure pasteToStruct = currentStruct;
 //				if(toRxnStruct instanceof Membrane){
@@ -774,23 +823,50 @@ public abstract class BioCartoonTool extends cbit.gui.graph.gui.CartoonTool {
 //					}
 //				}
 				// this adds the speciesContexts and species (if any) to the model)
-				String rootSC = ReactionCartoonTool.speciesContextRootFinder(copyFromRxParticipantArr[i].getSpeciesContext());
-				SpeciesContext newSc = null;
-				SpeciesContext[] matchSC = pasteToModel.getSpeciesContexts();
-				for(int j=0;matchSC != null && j<matchSC.length;j++){
-					String matchRoot = ReactionCartoonTool.speciesContextRootFinder(matchSC[j]);
-					if(matchRoot != null && matchRoot.equals(rootSC) && matchSC[j].getStructure().getName().equals(pasteToStruct.getName())){
-						newSc = matchSC[j];
-						reactionsAndSpeciesContexts.put(newSc, matchSC[j]);
-						break;
+					SpeciesContext newSc = null;
+					for (int j = 0; j < userResolvedRxElements.fromSpeciesContextArr.length; j++) {
+						if(userResolvedRxElements.fromSpeciesContextArr[j] == copyFromRxParticipantArr[i].getSpeciesContext()) {
+							if(userResolvedRxElements.toSpeciesArr[j] == null) {
+								newSc = pasteSpecies(parent, copyFromRxParticipantArr[i].getSpecies(),null,pasteToModel,pasteToStruct,bNew, /*bUseDBSpecies,*/speciesHash,
+									UserResolvedRxElements.getPreferredReactionElement(userResolvedRxElements,copyFromRxParticipantArr[i]));
+								reactionsAndSpeciesContexts.put(newSc,copyFromRxParticipantArr[i].getSpeciesContext());
+							}else {
+								String rootSC = ReactionCartoonTool.speciesContextRootFinder(copyFromRxParticipantArr[i].getSpeciesContext());
+								SpeciesContext[] matchSC = pasteToModel.getSpeciesContexts();
+								for(int k=0;matchSC != null && k<matchSC.length;k++){
+									String matchRoot = ReactionCartoonTool.speciesContextRootFinder(matchSC[k]);
+									if(matchRoot != null && matchRoot.equals(rootSC) && matchSC[k].getStructure().getName().equals(pasteToStruct.getName())){
+										newSc = matchSC[k];
+										reactionsAndSpeciesContexts.put(newSc, matchSC[k]);
+										break;
+									}
+								}
+							}
+							if(newSc == null) {
+								throw new Exception("Couldn't assign speciesContext='"+copyFromRxParticipantArr[i].getSpeciesContext().getName()+"' to species='"+userResolvedRxElements.toSpeciesArr[j].getCommonName()+"' in structure='"+userResolvedRxElements.toStructureArr[j].getName()+"', species/structure not exist");
+							}
+
+						}
 					}
-				}
-				
-				if(newSc == null){
-					newSc = pasteSpecies(parent, copyFromRxParticipantArr[i].getSpecies(),rootSC,pasteToModel,pasteToStruct,bNew, /*bUseDBSpecies,*/speciesHash,
-							UserResolvedRxElements.getPreferredReactionElement(userResolvedRxElements,copyFromRxParticipantArr[i]));
-					reactionsAndSpeciesContexts.put(newSc,copyFromRxParticipantArr[i].getSpeciesContext());
-				}
+//				String rootSC = ReactionCartoonTool.speciesContextRootFinder(copyFromRxParticipantArr[i].getSpeciesContext());
+//				SpeciesContext newSc = null;
+////				if(!bNew) {
+//				SpeciesContext[] matchSC = pasteToModel.getSpeciesContexts();
+//				for(int j=0;matchSC != null && j<matchSC.length;j++){
+//					String matchRoot = ReactionCartoonTool.speciesContextRootFinder(matchSC[j]);
+//					if(matchRoot != null && matchRoot.equals(rootSC) && matchSC[j].getStructure().getName().equals(pasteToStruct.getName())){
+//						newSc = matchSC[j];
+//						reactionsAndSpeciesContexts.put(newSc, matchSC[j]);
+//						break;
+//					}
+//				}
+////				}
+//				
+//				if(newSc == null){
+//					newSc = pasteSpecies(parent, copyFromRxParticipantArr[i].getSpecies(),rootSC,pasteToModel,pasteToStruct,bNew, /*bUseDBSpecies,*/speciesHash,
+//							UserResolvedRxElements.getPreferredReactionElement(userResolvedRxElements,copyFromRxParticipantArr[i]));
+//					reactionsAndSpeciesContexts.put(newSc,copyFromRxParticipantArr[i].getSpeciesContext());
+//				}
 				// record the old-new speciesContexts (reactionparticipants) in the IdHashMap, this is useful, esp for 'Paste new', while replacing proxyparams.
 				SpeciesContext oldSc = copyFromRxParticipantArr[i].getSpeciesContext();
 				if (speciesContextHash.get(oldSc) == null) {

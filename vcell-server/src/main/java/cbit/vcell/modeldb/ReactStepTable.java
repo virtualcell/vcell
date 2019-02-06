@@ -253,13 +253,15 @@ public String getSQLReactionStepInfosQuery(KeyValue[] rxIDs,User user, DatabaseS
 		BioModelTable.table.name,			//3
 		ReactStepTable.table.name,			//4
 		ReactStepTable.table.id,			//5
-		BioModelTable.table.versionDate		//6
+		BioModelTable.table.versionDate,	//6
+		StructTable.table.structType
 	};
 	Table[] t =
 	{
 		ReactStepTable.table,
 		BioModelTable.table,
-		UserTable.table
+		UserTable.table,
+		StructTable.table,
 	};
 	//
 	StringBuffer sbForId = new StringBuffer("(" + ReactStepTable.table.id.getQualifiedColName() + " IN (");
@@ -290,7 +292,9 @@ public String getSQLReactionStepInfosQuery(KeyValue[] rxIDs,User user, DatabaseS
 		//" AND " +
 		ReactStepTable.table.modelRef.getQualifiedColName() + " = " + BioModelTable.table.modelRef.getQualifiedColName() +
 		" AND " +
-		BioModelTable.table.ownerRef.getQualifiedColName() + " = " + UserTable.table.id.getQualifiedColName();
+		BioModelTable.table.ownerRef.getQualifiedColName() + " = " + UserTable.table.id.getQualifiedColName() +
+		" AND "+
+		ReactStepTable.table.structRef.getQualifiedColName() + " = " + StructTable.table.id.getQualifiedColName();
 	String special = " ORDER BY " + ReactStepTable.table.id.getQualifiedColName();
 	sql = DatabasePolicySQL.enforceOwnershipSelect(user,f,t,(OuterJoin)null,condition,special,dbSyntax,true);
 	StringBuffer sb = new StringBuffer(sql);
@@ -306,6 +310,8 @@ public String getSQLReactionStepInfosQuery(KeyValue[] rxIDs,User user, DatabaseS
  * @return java.lang.String
  * @param likeString java.lang.String
  */
+private static final String BMID_NAME = "bmid";
+private static final String SPECCONT_NAME = "scname";
 public String getSQLUserReactionListQuery(ReactionQuerySpec rqs, User user, DatabaseSyntax dbSyntax) {
 	
 	String reactant_or_flux_likeString = rqs.getReactantLikeString();
@@ -349,7 +355,7 @@ public String getSQLUserReactionListQuery(ReactionQuerySpec rqs, User user, Data
 			subConditions.append("(");
 			subConditions.append("(vc_reactpart_sub.role = 'reactant' OR vc_reactpart_sub.role = 'flux') AND ");
 			if(bHasLike){
-				subConditions.append("upper(vc_species_sub.commonname) LIKE upper('"+reactant_or_flux_likeString+"')");
+				subConditions.append("upper("+"vc_modelsc_sub.name"+") LIKE upper('"+reactant_or_flux_likeString+"')");
 				if(bHasDBspid){subConditions.append(" OR ");}
 			}
 			if(bHasDBspid){
@@ -370,7 +376,7 @@ public String getSQLUserReactionListQuery(ReactionQuerySpec rqs, User user, Data
 			subConditions.append("(");
 			subConditions.append("vc_reactpart_sub.role = 'catalyst' AND ");
 			if(bHasLike){
-				subConditions.append("upper(vc_species_sub.commonname) LIKE upper('"+catalyst_likeString+"')");
+				subConditions.append("upper("+"vc_modelsc_sub.name"+") LIKE upper('"+catalyst_likeString+"')");
 				if(bHasDBspid){subConditions.append(" OR ");}
 			}
 			if(bHasDBspid){
@@ -391,7 +397,7 @@ public String getSQLUserReactionListQuery(ReactionQuerySpec rqs, User user, Data
 			subConditions.append("(");
 			subConditions.append("vc_reactpart_sub.role = 'product' AND ");
 			if(bHasLike){
-				subConditions.append("upper(vc_species_sub.commonname) LIKE upper('"+product_likeString+"')");
+				subConditions.append("upper ("+"vc_modelsc_sub.name"+") LIKE upper('"+product_likeString+"')");
 				if(bHasDBspid){subConditions.append(" OR ");}
 			}
 			if(bHasDBspid){
@@ -408,8 +414,10 @@ public String getSQLUserReactionListQuery(ReactionQuerySpec rqs, User user, Data
 	}
 	//
 	String sql = null;
-	Field specialBMField = new Field("id bmid",SQLDataType.integer,"");
+	Field specialBMField = new Field("id "+BMID_NAME,SQLDataType.integer,"");
 	specialBMField.setTableName(BioModelTable.table.getTableName());
+	Field specialSCField = new Field("name "+SPECCONT_NAME,SQLDataType.varchar2_255,"");
+	specialSCField.setTableName(SpeciesContextModelTable.table.getTableName());
 	Field[] f =
 	{
 		ReactStepTable.table.name,			//1
@@ -419,7 +427,8 @@ public String getSQLUserReactionListQuery(ReactionQuerySpec rqs, User user, Data
 		ReactPartTable.table.stoich,		//5
 		SpeciesTable.table.commonName,		//6
 		specialBMField,				//7
-		ReactStepTable.table.structRef	//8
+		ReactStepTable.table.structRef,	//8
+		specialSCField
 	};
 	Table[] t =
 	{
@@ -478,7 +487,7 @@ public String getSQLUserReactionListQuery(ReactionQuerySpec rqs, User user, Data
 		    (typeWildCard != null ? "," + DBSpeciesTable.table.getTableName() + " vc_dbspecies_sub":"") +
 		    " WHERE " +
 		    "(" +
-		    (repWildCard != null ? "upper(vc_species_sub.commonname) LIKE upper('"+repWildCard+"')":"") +
+		    (repWildCard != null ? "upper("+"vc_modelsc_sub.name"+") LIKE upper('"+repWildCard+"')":"") +
 		    (repWildCard != null && typeWildCard != null?" OR  ":"") +
 		    (typeWildCard != null?
 			    "(" +
@@ -515,7 +524,7 @@ public String getSQLUserReactionListQuery(ReactionQuerySpec rqs, User user, Data
 		" AND " +
 		ReactStepTable.table.modelRef.getQualifiedColName() + " = " + BioModelTable.table.modelRef.getQualifiedColName();
 
-	String special = " ORDER BY " + ReactStepTable.table.id.getQualifiedColName();
+	String special = " ORDER BY " + ReactStepTable.table.id.getQualifiedColName()+" , "+BMID_NAME;
 	sql = DatabasePolicySQL.enforceOwnershipSelect(user,f,t,(OuterJoin)null,condition,special,dbSyntax,true);
 	StringBuffer sb = new StringBuffer(sql);
 	//LOBs cannot be accessed if the query uses the DISTINCT or UNIQUE keyword
@@ -629,28 +638,32 @@ public ReactionDescription[] getUserReactionList(java.sql.ResultSet rset)throws 
 	ReactionDescription[] result = null;
 	java.util.Vector rxidV = null;
 	//
+
 	java.math.BigDecimal rxid = null;
+	java.math.BigDecimal bmid = null;
 	ReactionDescription dbfr = null;
 	//
 	while(rset.next()){
 		java.math.BigDecimal currRXID = rset.getBigDecimal(ReactStepTable.table.id.toString());
+		java.math.BigDecimal currBMID = rset.getBigDecimal(BMID_NAME);
 		if(rset.isFirst()){
 			rxid = currRXID;
+			bmid = currBMID;
 		}
-		if(rxid != null && !rxid.equals(currRXID)){
+		if(!rxid.equals(currRXID) || !bmid.equals(currBMID)){
 			rxid = currRXID;
+			bmid = currBMID;
 			dbfr = null;
 		}
 		//
 		if(dbfr == null){
 			ReactionType rxType = ReactionType.fromDatabaseName(rset.getString(ReactStepTable.table.reactType.toString()));
 			String rxName = rset.getString(ReactStepTable.table.name.toString());
-			java.math.BigDecimal currBioModelID = rset.getBigDecimal("bmid");
 			java.math.BigDecimal currStructID = rset.getBigDecimal(ReactStepTable.table.structRef.toString());
-			dbfr = new ReactionDescription(rxName,rxType,new KeyValue(rxid),new KeyValue(currBioModelID),new KeyValue(currStructID));
+			dbfr = new ReactionDescription(rxName,rxType,new KeyValue(rxid),new KeyValue(bmid),new KeyValue(currStructID));
 			resultV.add(dbfr);
 		}
-		String name = rset.getString(SpeciesTable.table.commonName.toString());
+		String name = rset.getString(SPECCONT_NAME/*SpeciesTable.table.commonName.toString()*/);
 		DBNonFormalUnboundSpecies dbnfu = new DBNonFormalUnboundSpecies(name);
 		//
 		String partRole = rset.getString(ReactPartTable.table.role.toString());

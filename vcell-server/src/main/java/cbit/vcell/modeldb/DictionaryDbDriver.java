@@ -811,7 +811,8 @@ public ReactionStepInfo[] getReactionStepInfos(Connection con,User user,KeyValue
 	       String bioModelName = rset.getString(ReactStepTable.RXIDDN_BIOMODEL_NAME_INDEX);
 	       String rxName = rset.getString(ReactStepTable.RXIDDN_REACTSTEP_NAME_INDEX);
 	       java.sql.Date bioModelDate = rset.getDate(BioModelTable.table.versionDate.toString());
-	       ReactionStepInfo reactionStepInfo = new ReactionStepInfo(rxKey,owner,bioModelName,rxName,bioModelDate);
+	       String structType = rset.getString(StructTable.table.structType.getUnqualifiedColName());
+	       ReactionStepInfo reactionStepInfo = new ReactionStepInfo(rxKey,owner,bioModelName,rxName,bioModelDate,structType);
 	       reactionStepInfoList.add(reactionStepInfo);
         }
     } finally {

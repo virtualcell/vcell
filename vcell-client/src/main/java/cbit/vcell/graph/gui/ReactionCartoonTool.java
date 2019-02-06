@@ -43,8 +43,10 @@ import javax.swing.AbstractAction;
 import javax.swing.ActionMap;
 import javax.swing.InputMap;
 import javax.swing.JComponent;
+import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 import javax.swing.JTextField;
 import javax.swing.JViewport;
@@ -86,8 +88,10 @@ import cbit.gui.graph.gui.GraphPane;
 import cbit.gui.graph.visualstate.VisualState.PaintLayer;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.biomodel.meta.VCMetaData;
+import cbit.vcell.client.BioModelWindowManager;
 import cbit.vcell.client.ChildWindowManager;
 import cbit.vcell.client.ChildWindowManager.ChildWindow;
+import cbit.vcell.client.desktop.DocumentWindow;
 import cbit.vcell.client.desktop.biomodel.BioModelEditor;
 import cbit.vcell.client.server.ClientServerManager;
 import cbit.vcell.client.server.UserPreferences;
@@ -119,6 +123,7 @@ import cbit.vcell.model.Model;
 import cbit.vcell.model.Model.StructureTopology;
 import cbit.vcell.model.Product;
 import cbit.vcell.model.Reactant;
+import cbit.vcell.model.ReactionDescription;
 import cbit.vcell.model.ReactionParticipant;
 import cbit.vcell.model.ReactionRule;
 import cbit.vcell.model.ReactionRuleParticipant;
@@ -132,6 +137,7 @@ import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
 import cbit.vcell.model.StructureUtil;
 import cbit.vcell.model.gui.DBReactionWizardPanel;
+import cbit.vcell.model.gui.RXParticipantResolverPanel;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.publish.ITextWriter;
@@ -584,7 +590,7 @@ public class ReactionCartoonTool extends BioCartoonTool implements BioCartoonToo
 		} else if (/*menuAction.equals(CartoonToolEditActions.Paste.MENU_ACTION)
 				|| */menuAction.equals(CartoonToolEditActions.PasteNew.MENU_ACTION)) {
 			if (shape instanceof ReactionContainerShape) {
-				pasteReactionsAndSpecies(((ReactionContainerShape) shape).getStructure());
+				pasteReactionsAndSpecies(getGraphPane().getRootPane(),((ReactionContainerShape) shape).getStructure());
 			}
 		} else if (menuAction.equals(CartoonToolEditActions.Delete.MENU_ACTION)) {
 			try {
@@ -657,7 +663,7 @@ public class ReactionCartoonTool extends BioCartoonTool implements BioCartoonToo
 
 	}
 	
-	private void pasteReactionsAndSpecies(Structure structure){
+	private void pasteReactionsAndSpecies(Component requester,Structure structure){
 		final String RXSPECIES_PASTERX = "Reactions";
 		final String RXSPECIES_SPECIES = "Species";
 		ReactionSpeciesCopy reactionSpeciesCopy = (ReactionSpeciesCopy) SimpleTransferable.getFromClipboard(VCellTransferable.REACTION_SPECIES_ARRAY_FLAVOR);
@@ -693,7 +699,34 @@ public class ReactionCartoonTool extends BioCartoonTool implements BioCartoonToo
 			
 			
 			if(reactionSpeciesCopy.getReactStepArr() != null && reactionSpeciesCopy.getReactionRuleArr() == null && (response == null || response.equals(RXSPECIES_PASTERX))){
-				pasteReactionSteps(getGraphPane(),reactionSpeciesCopy.getReactStepArr(), getModel(),structure,true, null,ReactionCartoonTool.this);
+				BioModel bioModel = null;
+				try {
+					bioModel = findBioModel(requester);
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+					DialogUtils.showErrorDialog(requester, e.getMessage());
+					return;
+				}
+				ReactionDescription reactionDescription = DBReactionWizardPanel.createReactionDescription(reactionSpeciesCopy.getReactStepArr()[0], null, reactionSpeciesCopy.getFromStructure().getKey());
+				RXParticipantResolverPanel rxParticipantResolverPanel = new RXParticipantResolverPanel();
+//				rxParticipantResolverPanel.setPasteToModel(getModel());
+				rxParticipantResolverPanel.setupRX(reactionDescription,getModel(),structure);
+//				JDialog j = new JDialog();
+//				j.setModal(true);
+//				j.setAlwaysOnTop(true);
+//				j.getContentPane().add(rxParticipantResolverPanel);
+//				j.pack();
+//				j.setVisible(true);
+				int result = DialogUtils.showComponentOKCancelDialog(getGraphPane(), rxParticipantResolverPanel, "Assign Reaction elements");
+				if(result != JOptionPane.OK_OPTION) {
+					return;
+				}
+				DBReactionWizardPanel.applySelectedReactionElements(requester, ReactionCartoonTool.this, null, reactionDescription,
+					reactionSpeciesCopy.getReactStepArr()[0].getModel(), reactionSpeciesCopy.getFromStructure(),reactionSpeciesCopy.getReactStepArr()[0],
+					bioModel.getModel(), structure,
+					rxParticipantResolverPanel.getSpeciesAssignmentJCB(), rxParticipantResolverPanel.getStructureAssignmentJCB());
+//				pasteReactionSteps(getGraphPane(),reactionSpeciesCopy.getReactStepArr(), getModel(),structure,true, null,ReactionCartoonTool.this);
 			} else if(reactionSpeciesCopy.getReactionRuleArr() != null && (response == null || response.equals(RXSPECIES_PASTERX))){
 				pasteReactionsAndRules(getGraphPane(), reactionSpeciesCopy, getModel(), structure, ReactionCartoonTool.this);
 			}
@@ -985,12 +1018,7 @@ public class ReactionCartoonTool extends BioCartoonTool implements BioCartoonToo
 		for(HashSet<ReactionParticipant> objReactPart:rxPartHashMap.values()){
 			reactionParticipantCount+= objReactPart.size();
 		}
-		//find bioModel and get SymbolTable references to SpeciesContext
-		BioModelEditor bioModelEditor = (BioModelEditor)BeanUtils.findTypeParentOfComponent(requester, BioModelEditor.class);
-		if(bioModelEditor == null){
-			throw new Exception("Error deleting Speciescontext, Can't find BiomodelEditor");
-		}
-		BioModel bioModel = bioModelEditor.getBioModelWindowManager().getVCDocument();
+		BioModel bioModel = findBioModel(requester);
 		HashMap<SpeciesContext,HashSet<SymbolTableEntry>> referencingSymbolsHashMap = new HashMap<SpeciesContext,HashSet<SymbolTableEntry>>();
 		for (int i = 0; i < speciesContextArr.length; i++) {
 			List<SymbolTableEntry> referencingSymbolsList = bioModel.findReferences(speciesContextArr[i]);
@@ -1094,6 +1122,18 @@ public class ReactionCartoonTool extends BioCartoonTool implements BioCartoonToo
 		}
 		return new DeleteSpeciesInfo(rxPartHashMap, bUnresolvableHashMap,rowData);
 
+	}
+
+	private static BioModel findBioModel(Component requester) throws Exception {
+		BioModelEditor bioModelEditor = (BioModelEditor)BeanUtils.findTypeParentOfComponent(requester, BioModelEditor.class);
+		if(bioModelEditor == null){
+			DocumentWindow documentWindow = (DocumentWindow)BeanUtils.findTypeParentOfComponent(requester, DocumentWindow.class);
+			if(documentWindow == null || !(documentWindow.getTopLevelWindowManager() instanceof BioModelWindowManager)) {
+				throw new Exception("Can't find BioModel from "+requester.getClass().getName());
+			}
+			return ((BioModelWindowManager)documentWindow.getTopLevelWindowManager()).getBioModel();
+		}
+		return bioModelEditor.getBioModelWindowManager().getVCDocument();
 	}
 	
 	private int getDragDistanceSquared() {
@@ -2773,7 +2813,7 @@ public class ReactionCartoonTool extends BioCartoonTool implements BioCartoonToo
 		dbrqWiz.setRXPasteInterface(ReactionCartoonTool.this);
 		
 		ChildWindowManager childWindowManager = ChildWindowManager.findChildWindowManager(this.getGraphPane());
-		ChildWindow childWindow = childWindowManager.addChildWindow( dbrqWiz, SEARCHABLE_REACTIONS_CONTEXT_OBJECT, "Create Reaction within structure '" + struct.getName() + "'" );
+		ChildWindow childWindow = childWindowManager.addChildWindow( dbrqWiz, SEARCHABLE_REACTIONS_CONTEXT_OBJECT, "Create Reaction within "+struct.getTypeName()+" '" + struct.getName() + "'" );
 		
 		dbrqWiz.setChildWindow(childWindow); // this is needed so that the wizard can close itself.
 		
