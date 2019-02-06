@@ -296,7 +296,7 @@ private static class OutputFunctionViewer extends JPanel{
 			}
 		});
 		
-		SimulationOwner simulationOwner = new SimulationOwner() {
+		SimulationOwner simulationOwner = new SimulationOwner.FieldDataSimOwner() {
 			private OutputFunctionContext outputFunctionContext = new OutputFunctionContext(this);
 			{
 				outputFunctionContext.addPropertyChangeListener(new PropertyChangeListener() {

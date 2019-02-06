@@ -493,7 +493,7 @@ for (String line : mappings){
 buffer.append(line+"\n");
 }
 //System.out.println(buffer.toString());
-		}else if (simulationOwner instanceof MathModel){
+		}else if (simulationOwner instanceof MathModel || simulationOwner instanceof SimulationOwner.FieldDataSimOwner){
 			savedMetadataMap = metadataMap;
 		}else{
 			throw new RuntimeException("Unexpected SimulationOwner="+simulationOwner.getClass().getName());
