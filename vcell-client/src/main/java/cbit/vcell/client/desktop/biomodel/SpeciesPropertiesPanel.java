@@ -293,7 +293,7 @@ public class SpeciesPropertiesPanel extends DocumentEditorSubPanel {
 		@Override
 		public void focusLost(FocusEvent e) {
 			if (e.getSource() == annotationTextArea) {
-				changeFreeTextAnnotation();
+//				changeFreeTextAnnotation();
 			} else if (e.getSource() == nameTextField) {
 				changeName();
 			} else if (e.getSource() == sbmlNameTextField) {
@@ -318,10 +318,9 @@ public class SpeciesPropertiesPanel extends DocumentEditorSubPanel {
 		}
 		@Override
 		public void mouseExited(MouseEvent e) {
-			// TODO Auto-generated method stub
 			super.mouseExited(e);
 			if(e.getSource() == annotationTextArea){
-				changeFreeTextAnnotation();
+//				changeFreeTextAnnotation();
 			}
 		}
 		@Override
@@ -379,8 +378,8 @@ private void handleException(java.lang.Throwable exception) {
  * @exception java.lang.Exception The exception description.
  */
 private void initConnections() throws java.lang.Exception {
-	annotationTextArea.addFocusListener(eventHandler);
-	annotationTextArea.addMouseListener(eventHandler);
+//	annotationTextArea.addFocusListener(eventHandler);
+//	annotationTextArea.addMouseListener(eventHandler);
 	nameTextField.addFocusListener(eventHandler);
 	sbmlNameTextField.addFocusListener(eventHandler);
 	getPCLinkValueEditorPane().addHyperlinkListener(eventHandler);
@@ -589,31 +588,31 @@ private void initialize() {
 		gbc.insets = new Insets(2, 4, 2, 4);
 		generalPanel.add(linkedPOScrollPane, gbc);
 		
-		gridy ++;
-		gbc = new java.awt.GridBagConstraints();
-		gbc.gridx = 0; 
-		gbc.gridy = gridy;
-		gbc.insets = new Insets(7, 8, 4, 6);
-		gbc.anchor = GridBagConstraints.FIRST_LINE_END;
-		generalPanel.add(new JLabel("Annotation "), gbc);
-
-		annotationTextArea = new javax.swing.JTextArea("", 1, 30);
-		annotationTextArea.setLineWrap(true);
-		annotationTextArea.setWrapStyleWord(true);
-		annotationTextArea.setFont(new Font("monospaced", Font.PLAIN, 11));
-		annotationTextArea.setEditable(false);
-		javax.swing.JScrollPane jsp = new javax.swing.JScrollPane(annotationTextArea);
-		
-		gbc = new java.awt.GridBagConstraints();
-		gbc.weightx = 1.0;
-		gbc.weighty = 0.1;
-		gbc.gridx = 1; 
-		gbc.gridy = gridy;
-        gbc.gridwidth = 3;
-		gbc.anchor = GridBagConstraints.LINE_START;
-		gbc.fill = java.awt.GridBagConstraints.BOTH;
-		gbc.insets = new Insets(2, 4, 4, 4);
-		generalPanel.add(jsp, gbc);
+//		gridy ++;
+//		gbc = new java.awt.GridBagConstraints();
+//		gbc.gridx = 0; 
+//		gbc.gridy = gridy;
+//		gbc.insets = new Insets(7, 8, 4, 6);
+//		gbc.anchor = GridBagConstraints.FIRST_LINE_END;
+//		generalPanel.add(new JLabel("Annotation "), gbc);
+//
+//		annotationTextArea = new javax.swing.JTextArea("", 1, 30);
+//		annotationTextArea.setLineWrap(true);
+//		annotationTextArea.setWrapStyleWord(true);
+//		annotationTextArea.setFont(new Font("monospaced", Font.PLAIN, 11));
+//		annotationTextArea.setEditable(false);
+//		javax.swing.JScrollPane jsp = new javax.swing.JScrollPane(annotationTextArea);
+//		
+//		gbc = new java.awt.GridBagConstraints();
+//		gbc.weightx = 1.0;
+//		gbc.weighty = 0.1;
+//		gbc.gridx = 1; 
+//		gbc.gridy = gridy;
+//        gbc.gridwidth = 3;
+//		gbc.anchor = GridBagConstraints.LINE_START;
+//		gbc.fill = java.awt.GridBagConstraints.BOTH;
+//		gbc.insets = new Insets(2, 4, 4, 4);
+//		generalPanel.add(jsp, gbc);
 	
 		GridBagConstraints gbc1 = new GridBagConstraints();
 		gbc1.gridx = 0;
@@ -702,26 +701,24 @@ private JButton getZoomSmallerButton() {
 	return zoomSmallerButton;
 }
 
-/**
- * Comment
- */
+@Deprecated
 private void changeFreeTextAnnotation() {
-	try{
-		if (getSpeciesContext() == null) {
-			return;
-		}
-		// set text from annotationTextField in free text annotation for species in vcMetaData (from model)
-		if(bioModel.getModel() != null && bioModel.getModel().getVcMetaData() != null){
-			VCMetaData vcMetaData = bioModel.getModel().getVcMetaData();
-			String textAreaStr = (annotationTextArea.getText() == null || annotationTextArea.getText().length()==0?null:annotationTextArea.getText());
-			if(!Compare.isEqualOrNull(vcMetaData.getFreeTextAnnotation(getSpeciesContext().getSpecies()),textAreaStr)){
-				vcMetaData.setFreeTextAnnotation(getSpeciesContext().getSpecies(), textAreaStr);	
-			}
-		}
-	} catch(Exception e){
-		e.printStackTrace(System.out);
-		PopupGenerator.showErrorDialog(this,"Edit Species Error\n"+e.getMessage(), e);
-	}
+//	try{
+//		if (getSpeciesContext() == null) {
+//			return;
+//		}
+//		// set text from annotationTextField in free text annotation for species in vcMetaData (from model)
+//		if(bioModel.getModel() != null && bioModel.getModel().getVcMetaData() != null){
+//			VCMetaData vcMetaData = bioModel.getModel().getVcMetaData();
+//			String textAreaStr = (annotationTextArea.getText() == null || annotationTextArea.getText().length()==0?null:annotationTextArea.getText());
+//			if(!Compare.isEqualOrNull(vcMetaData.getFreeTextAnnotation(getSpeciesContext().getSpecies()),textAreaStr)){
+//				vcMetaData.setFreeTextAnnotation(getSpeciesContext().getSpecies(), textAreaStr);	
+//			}
+//		}
+//	} catch(Exception e){
+//		e.printStackTrace(System.out);
+//		PopupGenerator.showErrorDialog(this,"Edit Species Error\n"+e.getMessage(), e);
+//	}
 }
 
 // wei's code
@@ -795,16 +792,16 @@ void setSpeciesContext(SpeciesContext newValue) {
 
 private void updateInterface() {
 	boolean bNonNullSpeciesContext = fieldSpeciesContext != null && bioModel != null;
-	annotationTextArea.setEditable(bNonNullSpeciesContext);
+//	annotationTextArea.setEditable(bNonNullSpeciesContext);
 	nameTextField.setEditable(bNonNullSpeciesContext);
 	sbmlNameTextField.setEditable(bNonNullSpeciesContext);
 	if (bNonNullSpeciesContext) {
 		nameTextField.setText(getSpeciesContext().getName());
 		sbmlNameTextField.setText(getSpeciesContext().getSbmlName());
-		annotationTextArea.setText(bioModel.getModel().getVcMetaData().getFreeTextAnnotation(getSpeciesContext().getSpecies()));
+//		annotationTextArea.setText(bioModel.getModel().getVcMetaData().getFreeTextAnnotation(getSpeciesContext().getSpecies()));
 		updatePCLink();		
 	} else {
-		annotationTextArea.setText(null);
+//		annotationTextArea.setText(null);
 		getPCLinkValueEditorPane().setText(null);
 		nameTextField.setText(null);
 		sbmlNameTextField.setText(null);

@@ -140,7 +140,7 @@ public class ReactionRuleKineticsPropertiesPanel extends DocumentEditorSubPanel 
 		@Override
 		public void mouseExited(MouseEvent e) {
 			if(e.getSource() == annotationTextArea){
-				changeFreeTextAnnotation();
+//				changeFreeTextAnnotation();
 			}
 		}
 		@Override
@@ -151,7 +151,7 @@ public class ReactionRuleKineticsPropertiesPanel extends DocumentEditorSubPanel 
 			if (e.getSource() == nameTextField) {
 				changeName();
 			} else if (e.getSource() == annotationTextArea) {
-				changeFreeTextAnnotation();
+//				changeFreeTextAnnotation();
 			}
 		}
 	}
@@ -263,9 +263,9 @@ public class ReactionRuleKineticsPropertiesPanel extends DocumentEditorSubPanel 
 			gbc.gridwidth = 4;
 			add(getScrollPaneTable().getEnclosingScrollPane(), gbc);
 
-			// 'true' means expanded
-			CollapsiblePanel collapsiblePanel = new CollapsiblePanel(" Annotation and Pathway Links ", true);
-			collapsiblePanel.getContentPanel().setLayout(new GridBagLayout());
+//			// 'true' means expanded
+//			CollapsiblePanel collapsiblePanel = new CollapsiblePanel(" Annotation and Pathway Links ", true);
+//			collapsiblePanel.getContentPanel().setLayout(new GridBagLayout());
 						
 			JPanel jp1 = new JPanel();
 			jp1.setLayout(new GridBagLayout());
@@ -283,31 +283,31 @@ public class ReactionRuleKineticsPropertiesPanel extends DocumentEditorSubPanel 
 			gbc.gridy = 0;
 			gbc.weightx = 1.0;
 			gbc.gridwidth = GridBagConstraints.REMAINDER;
-			gbc.fill = GridBagConstraints.HORIZONTAL;
+			gbc.fill = GridBagConstraints.BOTH;
 			jp1.add(linkedPOScrollPane, gbc);
 			
-			gbc = new GridBagConstraints();
-			gbc.gridx = 0;
-			gbc.gridy = 0;
-			gbc.weightx = 1.0;
-			gbc.fill = GridBagConstraints.HORIZONTAL;
-			gbc.anchor = GridBagConstraints.LINE_START;
-			collapsiblePanel.getContentPanel().add(jp1, gbc);
+//			gbc = new GridBagConstraints();
+//			gbc.gridx = 0;
+//			gbc.gridy = 0;
+//			gbc.weightx = 1.0;
+//			gbc.fill = GridBagConstraints.HORIZONTAL;
+//			gbc.anchor = GridBagConstraints.LINE_START;
+//			collapsiblePanel.getContentPanel().add(jp1, gbc);
 
-			annotationTextArea = new javax.swing.JTextArea("", 4, 30);
-			annotationTextArea.setLineWrap(true);
-			annotationTextArea.setWrapStyleWord(true);
-			annotationTextArea.setFont(new Font("monospaced", Font.PLAIN, 11));
-			annotationTextArea.setEditable(false);
-			gbc = new GridBagConstraints();
-			gbc.gridx = 0;
-			gbc.gridy = 1;
-			gbc.weightx = 1.0;
-			gbc.weighty = 0.5;
-			gbc.fill = GridBagConstraints.BOTH;
-			gbc.anchor = GridBagConstraints.SOUTHWEST;
-			JScrollPane jp2 = new JScrollPane(annotationTextArea);
-			collapsiblePanel.getContentPanel().add(jp2, gbc);
+//			annotationTextArea = new javax.swing.JTextArea("", 4, 30);
+//			annotationTextArea.setLineWrap(true);
+//			annotationTextArea.setWrapStyleWord(true);
+//			annotationTextArea.setFont(new Font("monospaced", Font.PLAIN, 11));
+//			annotationTextArea.setEditable(false);
+//			gbc = new GridBagConstraints();
+//			gbc.gridx = 0;
+//			gbc.gridy = 1;
+//			gbc.weightx = 1.0;
+//			gbc.weighty = 0.5;
+//			gbc.fill = GridBagConstraints.BOTH;
+//			gbc.anchor = GridBagConstraints.SOUTHWEST;
+//			JScrollPane jp2 = new JScrollPane(annotationTextArea);
+//			collapsiblePanel.getContentPanel().add(jp2, gbc);
 
 			gridy ++;
 			gbc = new java.awt.GridBagConstraints();
@@ -315,14 +315,14 @@ public class ReactionRuleKineticsPropertiesPanel extends DocumentEditorSubPanel 
 			gbc.gridy = gridy;
 			gbc.gridwidth = 4;
 			gbc.weightx = 1.0;
-			gbc.fill = java.awt.GridBagConstraints.HORIZONTAL;
-			add(collapsiblePanel, gbc);
+			gbc.fill = java.awt.GridBagConstraints.BOTH;
+			add(jp1, gbc);
 
 			getKineticsTypeComboBox().addActionListener(eventHandler);
 			getKineticsTypeComboBox().setEnabled(false);
 			initKineticChoices();
-			annotationTextArea.addFocusListener(eventHandler);
-			annotationTextArea.addMouseListener(eventHandler);
+//			annotationTextArea.addFocusListener(eventHandler);
+//			annotationTextArea.addMouseListener(eventHandler);
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);
 		}
@@ -476,14 +476,14 @@ public class ReactionRuleKineticsPropertiesPanel extends DocumentEditorSubPanel 
 	protected void updateInterface() {
 		
 		boolean bNonNullRule = reactionRule != null && bioModel != null;
-		annotationTextArea.setEditable(bNonNullRule);
+//		annotationTextArea.setEditable(bNonNullRule);
 		//getKineticsTypeComboBox().setEnabled(bNonNullRule);	// TODO: here!!!
 		getKineticsTypeComboBox().setEnabled(false);			// TODO: here!!!
 
 		if (bNonNullRule) {
 //			initKineticChoices();
 			VCMetaData vcMetaData = bioModel.getModel().getVcMetaData();
-			annotationTextArea.setText(vcMetaData.getFreeTextAnnotation(reactionRule));
+//			annotationTextArea.setText(vcMetaData.getFreeTextAnnotation(reactionRule));
 			nameTextField.setEditable(true);
 			nameTextField.setText(reactionRule.getName());
 			getKineticsTypeComboBox().setSelectedItem(getRateLawType(reactionRule.getKineticLaw()));
@@ -499,7 +499,7 @@ public class ReactionRuleKineticsPropertiesPanel extends DocumentEditorSubPanel 
 				isReversibleCheckBox.setEnabled(true);
 			}
 		} else {
-			annotationTextArea.setText(null);
+//			annotationTextArea.setText(null);
 			nameTextField.setEditable(false);
 			nameTextField.setText(null);
 			isReversibleCheckBox.setSelected(false);
@@ -608,24 +608,24 @@ public class ReactionRuleKineticsPropertiesPanel extends DocumentEditorSubPanel 
 		getJToggleButton().setToolTipText("Feature unavailable at this time.");
 	}
 	
-	
+	@Deprecated
 	private void changeFreeTextAnnotation() {
-		try{
-			if (reactionRule == null) {
-				return;
-			}
-			// set text from annotationTextField in free text annotation for species in vcMetaData (from model)
-			if(bioModel.getModel() != null && bioModel.getModel().getVcMetaData() != null){
-				VCMetaData vcMetaData = bioModel.getModel().getVcMetaData();
-				String textAreaStr = (annotationTextArea.getText() == null || annotationTextArea.getText().length()==0?null:annotationTextArea.getText());
-				if(!Compare.isEqualOrNull(vcMetaData.getFreeTextAnnotation(reactionRule),textAreaStr)){
-					vcMetaData.setFreeTextAnnotation(reactionRule, textAreaStr);	
-				}
-			}
-		} catch(Exception e){
-			e.printStackTrace(System.out);
-			PopupGenerator.showErrorDialog(this,"Edit Reaction Rule Error\n"+e.getMessage(), e);
-		}
+//		try{
+//			if (reactionRule == null) {
+//				return;
+//			}
+//			// set text from annotationTextField in free text annotation for species in vcMetaData (from model)
+//			if(bioModel.getModel() != null && bioModel.getModel().getVcMetaData() != null){
+//				VCMetaData vcMetaData = bioModel.getModel().getVcMetaData();
+//				String textAreaStr = (annotationTextArea.getText() == null || annotationTextArea.getText().length()==0?null:annotationTextArea.getText());
+//				if(!Compare.isEqualOrNull(vcMetaData.getFreeTextAnnotation(reactionRule),textAreaStr)){
+//					vcMetaData.setFreeTextAnnotation(reactionRule, textAreaStr);	
+//				}
+//			}
+//		} catch(Exception e){
+//			e.printStackTrace(System.out);
+//			PopupGenerator.showErrorDialog(this,"Edit Reaction Rule Error\n"+e.getMessage(), e);
+//		}
 	}
 
 }

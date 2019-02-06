@@ -125,8 +125,8 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 //					titleLabel.setText("Properties for " + molecularType.getDisplayType() + ": " + molecularType.getDisplayName());
 //					titleLabel.setText("Anchor");
 				} else if(evt.getPropertyName().equals(MolecularType.PROPERTY_NAME_ANNOTATION)) {
-					annotationTextArea.setText((String)evt.getNewValue());
-					annotationTextArea.setCaretPosition(0);
+//					annotationTextArea.setText((String)evt.getNewValue());
+//					annotationTextArea.setCaretPosition(0);
 				}
 			}
 		}
@@ -298,8 +298,7 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 	private MolecularTypeTreeModel molecularTypeTreeModel = null;
 	private MolecularType molecularType;
 	private JLabel titleLabel = null;
-//	private JTextArea annotationTextArea;
-	private JTextPane annotationTextArea;
+//	private JTextPane annotationTextArea;
 	private JScrollPane linkedPOScrollPane;
 
 	private JRadioButton anchorAllButton;
@@ -544,7 +543,7 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 		Border loweredEtchedBorder = BorderFactory.createEtchedBorder(EtchedBorder.LOWERED);
 		Border loweredBevelBorder = BorderFactory.createLoweredBevelBorder();
 
-		TitledBorder annotationBorder = BorderFactory.createTitledBorder(loweredEtchedBorder, " Annotation and Pathway Links ");
+		TitledBorder annotationBorder = BorderFactory.createTitledBorder(loweredEtchedBorder, " Pathway Links ");
 		annotationBorder.setTitleJustification(TitledBorder.LEFT);
 		annotationBorder.setTitlePosition(TitledBorder.TOP);
 		annotationBorder.setTitleFont(getFont().deriveFont(Font.BOLD));
@@ -678,7 +677,7 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 
 		// -------------------------------------------------------------------------------------------
 		
-		JPanel generalPanel = new JPanel();		// right bottom panel, contains just the annotation
+		JPanel generalPanel = new JPanel();		// right bottom panel, contains just the link
 		generalPanel.setBorder(annotationBorder);
 		generalPanel.setLayout(new GridBagLayout());
 
@@ -687,6 +686,7 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 		gbc.gridx = 0;
 		gbc.gridy = 0;
 		gbc.anchor = GridBagConstraints.LINE_START;
+		gbc.insets = new Insets(4, 4, 4, 4);
 		JLabel pathwayLink = new JLabel("Linked Pathway Object(s): ");
 		generalPanel.add(pathwayLink, gbc);
 		
@@ -694,34 +694,28 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 		gbc = new java.awt.GridBagConstraints();
 		gbc.gridx = 1; 
 		gbc.gridy = gridy;
-		gbc.weightx = 1.0;
+//		gbc.weightx = 1.0;
 		gbc.gridwidth = GridBagConstraints.REMAINDER;
 		gbc.fill = java.awt.GridBagConstraints.HORIZONTAL;
 		gbc.insets = new Insets(4, 4, 4, 4);
 		generalPanel.add(linkedPOScrollPane, gbc);
 		
+//		annotationTextArea = new JTextPane();
+//		annotationTextArea.setContentType("text/html");
+//		annotationTextArea.setEditable(false);
+//		javax.swing.JScrollPane jsp = new javax.swing.JScrollPane(annotationTextArea);
+//		
 		gridy ++;
-//		annotationTextArea = new javax.swing.JTextArea("", 1, 30);
-//		annotationTextArea.setLineWrap(true);
-//		annotationTextArea.setWrapStyleWord(true);
-//		annotationTextArea.setFont(new Font("monospaced", Font.PLAIN, 11));
-		annotationTextArea = new JTextPane();
-		annotationTextArea.setContentType("text/html");
-		annotationTextArea.setEditable(false);
-		javax.swing.JScrollPane jsp = new javax.swing.JScrollPane(annotationTextArea);
-		
 		gbc = new java.awt.GridBagConstraints();
 		gbc.weightx = 1.0;
 		gbc.weighty = 1.0;
 		gbc.gridx = 0; 
 		gbc.gridy = gridy;
-		gbc.gridwidth = 2;
-		gbc.weightx = 1.0;
-		gbc.weighty = 1.0;
+//		gbc.gridwidth = 2;
 		gbc.anchor = GridBagConstraints.LINE_START;
 		gbc.fill = java.awt.GridBagConstraints.BOTH;
 		gbc.insets = new Insets(4, 4, 4, 4);
-		generalPanel.add(jsp, gbc);
+		generalPanel.add(new JLabel(), gbc);
 
 		scrollPane = new JScrollPane(shapePanel);
 		scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
@@ -729,6 +723,8 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 		
 		splitPaneHorizontal.setTopComponent(scrollPane);
 		splitPaneHorizontal.setBottomComponent(generalPanel);
+		splitPaneHorizontal.setResizeWeight(1.0);
+//		splitPaneHorizontal.setDividerLocation(1);
 
 		// -----------------------------------------------------------------------------
 		splitPane.setOneTouchExpandable(true);
@@ -746,8 +742,8 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 		add(splitPane, BorderLayout.CENTER);
 		setBackground(Color.white);
 
-		annotationTextArea.addFocusListener(eventHandler);
-		annotationTextArea.addMouseListener(eventHandler);
+//		annotationTextArea.addFocusListener(eventHandler);
+//		annotationTextArea.addMouseListener(eventHandler);
 	}
 	
 	private JMenuItem getAddFromTreeMenuItem() {
@@ -831,8 +827,8 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 		if (bNonNullMolecularType) {
 			VCMetaData vcMetaData = bioModel.getModel().getVcMetaData();
 			String annText = vcMetaData.getFreeTextAnnotation(molecularType);
-			annotationTextArea.setText(annText);
-			annotationTextArea.setCaretPosition(0);
+//			annotationTextArea.setText(annText);
+//			annotationTextArea.setCaretPosition(0);
 //			annotationTextArea.setText(molecularType.comment);
 			
 //			titleLabel.setText("Properties for " + molecularType.getDisplayType() + ": " + molecularType.getDisplayName());
@@ -850,7 +846,7 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 			shapePanel.repaint();
 //			splitPane.getRightComponent().repaint();
 		} else {
-			annotationTextArea.setText(null);
+//			annotationTextArea.setText(null);
 		}
 		listLinkedPathwayObjects();
 	}

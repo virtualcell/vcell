@@ -235,7 +235,7 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 		public void mouseExited(MouseEvent e) {
 //			super.mouseExited(e);
 			if(e.getSource() == annotationTextArea){
-				changeFreeTextAnnotation();
+//				changeFreeTextAnnotation();
 			}
 		}
 		@Override
@@ -266,7 +266,7 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 		@Override
 		public void focusLost(FocusEvent e) {
 			if (e.getSource() == annotationTextArea) {
-				changeFreeTextAnnotation();
+//				changeFreeTextAnnotation();
 			}
 		}
 	}
@@ -680,27 +680,27 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 		optionsPanel.add(new JLabel(""), gbc);
 
 // -----------------------------------------------------------------------------------------		
-		JPanel generalPanel = new JPanel();		// right bottom panel, contains just the annotation
-		generalPanel.setBorder(annotationBorder);
-		generalPanel.setLayout(new GridBagLayout());
-
-		gridy = 0;
-		annotationTextArea = new javax.swing.JTextArea("", 1, 30);
-		annotationTextArea.setLineWrap(true);
-		annotationTextArea.setWrapStyleWord(true);
-		annotationTextArea.setFont(new Font("monospaced", Font.PLAIN, 11));
-		annotationTextArea.setEditable(false);
-		javax.swing.JScrollPane jsp = new javax.swing.JScrollPane(annotationTextArea);
-		
-		gbc = new java.awt.GridBagConstraints();
-		gbc.weightx = 1.0;
-		gbc.weighty = 0.1;
-		gbc.gridx = 0; 
-		gbc.gridy = gridy;
-		gbc.anchor = GridBagConstraints.LINE_START;
-		gbc.fill = java.awt.GridBagConstraints.BOTH;
-		gbc.insets = new Insets(4, 4, 4, 4);
-		generalPanel.add(jsp, gbc);
+//		JPanel generalPanel = new JPanel();		// right bottom panel, contains just the annotation
+//		generalPanel.setBorder(annotationBorder);
+//		generalPanel.setLayout(new GridBagLayout());
+//
+//		gridy = 0;
+//		annotationTextArea = new javax.swing.JTextArea("", 1, 30);
+//		annotationTextArea.setLineWrap(true);
+//		annotationTextArea.setWrapStyleWord(true);
+//		annotationTextArea.setFont(new Font("monospaced", Font.PLAIN, 11));
+//		annotationTextArea.setEditable(false);
+//		javax.swing.JScrollPane jsp = new javax.swing.JScrollPane(annotationTextArea);
+//		
+//		gbc = new java.awt.GridBagConstraints();
+//		gbc.weightx = 1.0;
+//		gbc.weighty = 0.1;
+//		gbc.gridx = 0; 
+//		gbc.gridy = gridy;
+//		gbc.anchor = GridBagConstraints.LINE_START;
+//		gbc.fill = java.awt.GridBagConstraints.BOTH;
+//		gbc.insets = new Insets(4, 4, 4, 4);
+//		generalPanel.add(jsp, gbc);
 
 		scrollPane = new JScrollPane(shapePanel);	// where we display the shapes
 		scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
@@ -711,18 +711,18 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 		containerOfScrollPanel.add(optionsPanel, BorderLayout.WEST);
 		containerOfScrollPanel.add(scrollPane, BorderLayout.CENTER);
 
-		splitPaneHorizontal.setTopComponent(containerOfScrollPanel);
-		splitPaneHorizontal.setBottomComponent(generalPanel);
-		splitPaneHorizontal.setResizeWeight(0.9d);
-		splitPaneHorizontal.setDividerLocation(0.8d);
+//		splitPaneHorizontal.setTopComponent(containerOfScrollPanel);
+//		splitPaneHorizontal.setBottomComponent(generalPanel);
+//		splitPaneHorizontal.setResizeWeight(0.9d);
+//		splitPaneHorizontal.setDividerLocation(0.8d);
 		
 		setName("ObservablePropertiesPanel");
 		setLayout(new BorderLayout());
-		add(splitPaneHorizontal, BorderLayout.CENTER);
+		add(containerOfScrollPanel, BorderLayout.CENTER);
 		setBackground(Color.white);
 		
-		annotationTextArea.addFocusListener(eventHandler);
-		annotationTextArea.addMouseListener(eventHandler);
+//		annotationTextArea.addFocusListener(eventHandler);
+//		annotationTextArea.addMouseListener(eventHandler);
 	}
 	
 	private JButton getAddSpeciesButton() {
@@ -806,12 +806,12 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 	
 	private void updateInterface() {
 		boolean bNonNullObservable = observable != null && bioModel != null;
-		annotationTextArea.setEditable(bNonNullObservable);
+//		annotationTextArea.setEditable(bNonNullObservable);
 		if (bNonNullObservable) {
 			VCMetaData vcMetaData = bioModel.getModel().getVcMetaData();
-			annotationTextArea.setText(vcMetaData.getFreeTextAnnotation(observable));
+//			annotationTextArea.setText(vcMetaData.getFreeTextAnnotation(observable));
 		} else {
-			annotationTextArea.setText(null);
+//			annotationTextArea.setText(null);
 		}
 		updateShape();
 	}
@@ -858,23 +858,24 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 		return zoomSmallerButton;
 	}
 	
+	@Deprecated
 	private void changeFreeTextAnnotation() {
-		try{
-			if (observable == null) {
-				return;
-			}
-			// set text from annotationTextField in free text annotation for species in vcMetaData (from model)
-			if(bioModel.getModel() != null && bioModel.getModel().getVcMetaData() != null){
-				VCMetaData vcMetaData = bioModel.getModel().getVcMetaData();
-				String textAreaStr = (annotationTextArea.getText() == null || annotationTextArea.getText().length()==0?null:annotationTextArea.getText());
-				if(!Compare.isEqualOrNull(vcMetaData.getFreeTextAnnotation(observable),textAreaStr)){
-					vcMetaData.setFreeTextAnnotation(observable, textAreaStr);	
-				}
-			}
-		} catch(Exception e){
-			e.printStackTrace(System.out);
-			PopupGenerator.showErrorDialog(this,"Edit Observable Error\n"+e.getMessage(), e);
-		}
+//		try{
+//			if (observable == null) {
+//				return;
+//			}
+//			// set text from annotationTextField in free text annotation for species in vcMetaData (from model)
+//			if(bioModel.getModel() != null && bioModel.getModel().getVcMetaData() != null){
+//				VCMetaData vcMetaData = bioModel.getModel().getVcMetaData();
+//				String textAreaStr = (annotationTextArea.getText() == null || annotationTextArea.getText().length()==0?null:annotationTextArea.getText());
+//				if(!Compare.isEqualOrNull(vcMetaData.getFreeTextAnnotation(observable),textAreaStr)){
+//					vcMetaData.setFreeTextAnnotation(observable, textAreaStr);	
+//				}
+//			}
+//		} catch(Exception e){
+//			e.printStackTrace(System.out);
+//			PopupGenerator.showErrorDialog(this,"Edit Observable Error\n"+e.getMessage(), e);
+//		}
 	}
 	
 	private void showPopupMenu(MouseEvent e, PointLocationInShapeContext locationContext) {

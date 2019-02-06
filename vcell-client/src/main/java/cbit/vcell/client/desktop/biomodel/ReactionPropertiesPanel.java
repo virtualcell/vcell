@@ -132,7 +132,7 @@ public class ReactionPropertiesPanel extends DocumentEditorSubPanel {
 		@Override
 		public void focusLost(FocusEvent e) {
 			if (e.getSource() == annotationTextArea) {
-				changeFreeTextAnnotation();
+//				changeFreeTextAnnotation();
 			} else if (e.getSource() == nameTextField) {
 				changeName();
 			}
@@ -141,7 +141,7 @@ public class ReactionPropertiesPanel extends DocumentEditorSubPanel {
 		public void mouseExited(MouseEvent e) {
 			super.mouseExited(e);
 			if(e.getSource() == annotationTextArea){
-				changeFreeTextAnnotation();
+//				changeFreeTextAnnotation();
 			}
 		}
 		@Override
@@ -201,8 +201,8 @@ private void handleException(java.lang.Throwable exception) {
 }
 
 private void initConnections() throws java.lang.Exception {
-	annotationTextArea.addFocusListener(eventHandler);
-	annotationTextArea.addMouseListener(eventHandler);
+//	annotationTextArea.addFocusListener(eventHandler);
+//	annotationTextArea.addMouseListener(eventHandler);
 }
 
 private void initialize() {
@@ -314,12 +314,12 @@ private void initialize() {
 		gbc.gridy = gridy;
 		gbc.fill = java.awt.GridBagConstraints.BOTH;
 		gbc.weightx = 1.0;
-		gbc.weighty = 1.0;
+		gbc.weighty = 0.5;
 		gbc.gridwidth = 4;
 		add(getScrollPaneTable().getEnclosingScrollPane(), gbc);
 		
-		CollapsiblePanel collapsiblePanel = new CollapsiblePanel("Annotation and Pathway Links", true);
-		collapsiblePanel.getContentPanel().setLayout(new GridBagLayout());
+//		CollapsiblePanel collapsiblePanel = new CollapsiblePanel("Pathway Links", true);
+//		collapsiblePanel.getContentPanel().setLayout(new GridBagLayout());
 
 		JPanel jp1 = new JPanel();
 		jp1.setLayout(new GridBagLayout());
@@ -336,30 +336,31 @@ private void initialize() {
 		gbc.gridx = 1;
 		gbc.gridy = 0;
 		gbc.weightx = 1.0;
+		gbc.weighty = 1.0;
 		gbc.gridwidth = GridBagConstraints.REMAINDER;
+		gbc.gridheight = GridBagConstraints.REMAINDER;
 		gbc.fill = GridBagConstraints.HORIZONTAL;
 		jp1.add(linkedPOScrollPane, gbc);
 		
+//		gbc = new GridBagConstraints();
+//		gbc.gridx = 0;
+//		gbc.gridy = 0;
+//		gbc.weightx = 1.0;
+//		gbc.fill = GridBagConstraints.HORIZONTAL;
+//		gbc.anchor = GridBagConstraints.LINE_START;
+//		collapsiblePanel.getContentPanel().add(jp1, gbc);
+//		
+		annotationTextArea = new JTextArea(2,20);	// initialized but not used
+//		annotationTextArea.setLineWrap(true);
+//		annotationTextArea.setWrapStyleWord(true);
+//		annotationTextArea.setFont(new Font("monospaced", Font.PLAIN, 11));
+		gridy++;
 		gbc = new GridBagConstraints();
 		gbc.gridx = 0;
-		gbc.gridy = 0;
-		gbc.weightx = 1.0;
-		gbc.fill = GridBagConstraints.HORIZONTAL;
+		gbc.gridy = gridy;
+		gbc.fill = GridBagConstraints.BOTH;
 		gbc.anchor = GridBagConstraints.LINE_START;
-		collapsiblePanel.getContentPanel().add(jp1, gbc);
-		
-		annotationTextArea = new JTextArea(2,20);
-		annotationTextArea.setLineWrap(true);
-		annotationTextArea.setWrapStyleWord(true);
-		annotationTextArea.setFont(new Font("monospaced", Font.PLAIN, 11));
-		gbc = new GridBagConstraints();
-		gbc.gridx = 0;
-		gbc.gridy = 1;
-		gbc.weightx = 1.0;
-		gbc.fill = GridBagConstraints.HORIZONTAL;
-		gbc.anchor = GridBagConstraints.LINE_START;
-		JScrollPane jp2 = new JScrollPane(annotationTextArea);
-		collapsiblePanel.getContentPanel().add(jp2, gbc);
+		add(new JLabel(), gbc);
 
 		gridy ++;
 		gbc = new java.awt.GridBagConstraints();
@@ -367,9 +368,9 @@ private void initialize() {
 		gbc.gridy = gridy;
 		gbc.gridwidth = 4;
 		gbc.weightx = 1.0;
-		gbc.weighty = 0.2;
+		gbc.weighty = 0.5;
 		gbc.fill = java.awt.GridBagConstraints.HORIZONTAL;
-		add(collapsiblePanel, gbc);
+		add(jp1, gbc);
 				
 		setBackground(Color.white);
 		
@@ -385,23 +386,24 @@ private void initialize() {
 	// user code end
 }
 
-private void changeFreeTextAnnotation() {
-	try{
-		if(reactionStep == null) {
-			return;
-		}
-		// set text from annotationTextField in free text annotation for simple reactions in vcMetaData (from model)
-		if(bioModel.getModel() != null && bioModel.getModel().getVcMetaData() != null){
-			VCMetaData vcMetaData = bioModel.getModel().getVcMetaData();
-			String textAreaStr = (annotationTextArea.getText() == null || annotationTextArea.getText().length()==0?null:annotationTextArea.getText());
-			if(!Compare.isEqualOrNull(vcMetaData.getFreeTextAnnotation(reactionStep),textAreaStr)){
-				vcMetaData.setFreeTextAnnotation(reactionStep, textAreaStr);	
-			}
-		}
-	} catch(Exception e){
-		e.printStackTrace(System.out);
-		PopupGenerator.showErrorDialog(this,"Edit Reaction Error\n"+e.getMessage(), e);
-	}
+@Deprecated
+private void changeFreeTextAnnotation() {	// kept for historic reasons
+//	try{
+//		if(reactionStep == null) {
+//			return;
+//		}
+//		// set text from annotationTextField in free text annotation for simple reactions in vcMetaData (from model)
+//		if(bioModel.getModel() != null && bioModel.getModel().getVcMetaData() != null){
+//			VCMetaData vcMetaData = bioModel.getModel().getVcMetaData();
+//			String textAreaStr = (annotationTextArea.getText() == null || annotationTextArea.getText().length()==0?null:annotationTextArea.getText());
+//			if(!Compare.isEqualOrNull(vcMetaData.getFreeTextAnnotation(reactionStep),textAreaStr)){
+//				vcMetaData.setFreeTextAnnotation(reactionStep, textAreaStr);	
+//			}
+//		}
+//	} catch(Exception e){
+//		e.printStackTrace(System.out);
+//		PopupGenerator.showErrorDialog(this,"Edit Reaction Error\n"+e.getMessage(), e);
+//	}
 }
 /**
  * main entrypoint - starts the part when it is run as an application
@@ -452,7 +454,7 @@ private void setReactionStep(ReactionStep newValue) {
 	}
 	// commit the changes before switch to another reaction step
 	changeName();
-	changeFreeTextAnnotation();
+//	changeFreeTextAnnotation();
 	
 	reactionStep = newValue;
 	if (newValue != null) {
@@ -748,7 +750,7 @@ protected void updateInterface() {
 		getKineticsTypeComboBox().setSelectedItem(getKineticType(reactionStep.getKinetics()));
 		updateToggleButtonLabel();
 		nameTextField.setText(reactionStep.getName());
-		annotationTextArea.setText(bioModel.getModel().getVcMetaData().getFreeTextAnnotation(reactionStep));
+//		annotationTextArea.setText(bioModel.getModel().getVcMetaData().getFreeTextAnnotation(reactionStep));
 		final boolean reversible = reactionStep.isReversible();
 		if(reactionStep.getKinetics() instanceof HMM_IRRKinetics) {
 			isReversibleCheckBox.setSelected(false);	// the flag says true for MM irreversible
@@ -768,7 +770,7 @@ protected void updateInterface() {
 		}
 	} else {
 		nameTextField.setText(null);
-		annotationTextArea.setText(null);
+//		annotationTextArea.setText(null);
 		electricalPropertiesLabel.setVisible(false);
 		reactionElectricalPropertiesPanel.setVisible(false);
 		isReversibleCheckBox.setSelected(false);

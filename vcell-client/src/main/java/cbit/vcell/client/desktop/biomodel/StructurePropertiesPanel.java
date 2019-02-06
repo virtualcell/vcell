@@ -31,6 +31,7 @@ import javax.swing.DefaultListCellRenderer;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.JPanel;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
@@ -76,7 +77,7 @@ public class StructurePropertiesPanel extends DocumentEditorSubPanel {
 		}
 		public void focusLost(FocusEvent e) {
 			if (e.getSource() == annotationTextArea) {
-				changeAnnotation();
+//				changeAnnotation();
 			} else if (e.getSource() == nameTextField) {
 				changeName();
 			} else if (e.getSource() == positiveFeatureComboBox) {
@@ -90,7 +91,7 @@ public class StructurePropertiesPanel extends DocumentEditorSubPanel {
 			// TODO Auto-generated method stub
 			super.mouseExited(e);
 			if(e.getSource() == annotationTextArea){
-				changeAnnotation();
+//				changeAnnotation();
 			}
 		}
 
@@ -137,8 +138,8 @@ private void handleException(java.lang.Throwable exception) {
  * @exception java.lang.Exception The exception description.
  */
 private void initConnections() throws java.lang.Exception {
-	annotationTextArea.addFocusListener(eventHandler);
-	annotationTextArea.addMouseListener(eventHandler);
+//	annotationTextArea.addFocusListener(eventHandler);
+//	annotationTextArea.addMouseListener(eventHandler);
 	nameTextField.addFocusListener(eventHandler);
 	positiveFeatureComboBox.addFocusListener(eventHandler);
 	positiveFeatureComboBox.addActionListener(eventHandler);
@@ -190,11 +191,11 @@ private void initialize() {
 		negativeFeatureLabel = new JLabel("Negative (outside feature)");
 		negativeFeatureComboBox = new JComboBox<String>();
 
-		annotationTextArea = new javax.swing.JTextArea("", 1, 30);
-		annotationTextArea.setLineWrap(true);
-		annotationTextArea.setWrapStyleWord(true);
-		annotationTextArea.setFont(new Font("monospaced", Font.PLAIN, 11));
-		annotationTextArea.setEditable(false);
+//		annotationTextArea = new javax.swing.JTextArea("", 1, 30);
+//		annotationTextArea.setLineWrap(true);
+//		annotationTextArea.setWrapStyleWord(true);
+//		annotationTextArea.setFont(new Font("monospaced", Font.PLAIN, 11));
+//		annotationTextArea.setEditable(false);
 
 		int gridy = 0;
 		GridBagConstraints gbc = new java.awt.GridBagConstraints();
@@ -328,16 +329,16 @@ private void initialize() {
 		//electrophysiologyExplanationLabel.setFont(label.getFont().deriveFont(Font.BOLD));
 		add(electrophysiologyExplanationLabel, gbc);
 
-		// annotation
-		gridy ++;
-		gbc = new java.awt.GridBagConstraints();
-		gbc.gridx = 0; 
-		gbc.gridy = gridy;
-		gbc.insets = new Insets(9, 8, 4, 6);
-		gbc.anchor = GridBagConstraints.FIRST_LINE_END;
-		add(new JLabel("Annotation "), gbc);
-
-		javax.swing.JScrollPane jsp = new javax.swing.JScrollPane(annotationTextArea);
+//		// annotation
+//		gridy ++;
+//		gbc = new java.awt.GridBagConstraints();
+//		gbc.gridx = 0; 
+//		gbc.gridy = gridy;
+//		gbc.insets = new Insets(9, 8, 4, 6);
+//		gbc.anchor = GridBagConstraints.FIRST_LINE_END;
+//		add(new JLabel("Annotation "), gbc);
+//
+//		javax.swing.JScrollPane jsp = new javax.swing.JScrollPane(annotationTextArea);
 		
 		gbc = new java.awt.GridBagConstraints();
 		gbc.weightx = 1.0;
@@ -347,7 +348,7 @@ private void initialize() {
 		gbc.anchor = GridBagConstraints.LINE_START;
 		gbc.fill = java.awt.GridBagConstraints.BOTH;
 		gbc.insets = new Insets(4, 4, 4, 4);
-		add(jsp, gbc);
+		add(new JLabel(), gbc);		// empty space filling
 		
 		
 		DefaultListCellRenderer comboBoxListCellRenderer = new DefaultListCellRenderer() {
@@ -374,23 +375,21 @@ private void initialize() {
 	}
 }
 
-/**
- * Comment
- */
+@Deprecated
 private void changeAnnotation() {
-	try{
-		if (structure == null || fieldModel == null) {
-			return;
-		}
-		VCMetaData vcMetaData = fieldModel.getVcMetaData();
-		String textAreaStr = (annotationTextArea.getText() == null || annotationTextArea.getText().length()==0?null:annotationTextArea.getText());
-		if(!Compare.isEqualOrNull(vcMetaData.getFreeTextAnnotation(structure),textAreaStr)){
-			vcMetaData.setFreeTextAnnotation(structure, textAreaStr);	
-		}
-	} catch(Exception e){
-		e.printStackTrace(System.out);
-		PopupGenerator.showErrorDialog(this, e.getMessage(), e);
-	}
+//	try{
+//		if (structure == null || fieldModel == null) {
+//			return;
+//		}
+//		VCMetaData vcMetaData = fieldModel.getVcMetaData();
+//		String textAreaStr = (annotationTextArea.getText() == null || annotationTextArea.getText().length()==0?null:annotationTextArea.getText());
+//		if(!Compare.isEqualOrNull(vcMetaData.getFreeTextAnnotation(structure),textAreaStr)){
+//			vcMetaData.setFreeTextAnnotation(structure, textAreaStr);	
+//		}
+//	} catch(Exception e){
+//		e.printStackTrace(System.out);
+//		PopupGenerator.showErrorDialog(this, e.getMessage(), e);
+//	}
 }
 
 public void setModel(Model model) {
@@ -462,7 +461,7 @@ void setStructure(Structure newValue) {
 private void updateInterface() {
 	boolean bNonNullStructure = structure != null && fieldModel != null;
 	nameTextField.setEditable(bNonNullStructure);
-	annotationTextArea.setEditable(bNonNullStructure);
+//	annotationTextArea.setEditable(bNonNullStructure);
 	boolean bMembrane = bNonNullStructure && structure instanceof Membrane;
 	voltageLabel.setVisible(bMembrane);
 	voltageTextField.setVisible(bMembrane);
@@ -476,7 +475,7 @@ private void updateInterface() {
 
 	if (bNonNullStructure) {
 		nameTextField.setText(structure.getName());
-		annotationTextArea.setText(fieldModel.getVcMetaData().getFreeTextAnnotation(structure));
+//		annotationTextArea.setText(fieldModel.getVcMetaData().getFreeTextAnnotation(structure));
 		StructureSize structureSize = structure.getStructureSize();
 		sizeTextField.setText(structureSize.getName() + " [" + structureSize.getUnitDefinition().getSymbolUnicode() + "]");
 		if (bMembrane) {
@@ -496,7 +495,7 @@ private void updateInterface() {
 			this.electrophysiologyExplanationLabel.setText(getExplanationText());
 		}
 	} else {
-		annotationTextArea.setText(null);
+//		annotationTextArea.setText(null);
 		nameTextField.setText(null);
 		sizeTextField.setText(null);
 		voltageTextField.setText(null);
