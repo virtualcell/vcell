@@ -5,6 +5,13 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.event.ActionListener;
 
+import javax.swing.DefaultListCellRenderer;
+import javax.swing.JComboBox;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+
 import org.vcell.util.gui.LineBorderBean;
 import org.vcell.util.gui.TitledBorderBean;
 
@@ -13,13 +20,6 @@ import cbit.vcell.model.ReactionCanvas;
 import cbit.vcell.model.ReactionDescription;
 import cbit.vcell.model.Species;
 import cbit.vcell.model.Structure;
-
-import javax.swing.DefaultListCellRenderer;
-import javax.swing.JComboBox;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
 
 public class RXParticipantResolverPanel extends JPanel implements ActionListener{
 	

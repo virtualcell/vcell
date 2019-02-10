@@ -31,9 +31,7 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 
 import org.vcell.util.BeanUtils;
-import org.vcell.util.Compare;
 import org.vcell.util.DataAccessException;
-import org.vcell.util.UserCancelException;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.LineBorderBean;
@@ -49,7 +47,6 @@ import cbit.vcell.dictionary.DBNonFormalUnboundSpecies;
 import cbit.vcell.dictionary.DictionaryQueryResults;
 import cbit.vcell.graph.gui.BioCartoonTool;
 import cbit.vcell.graph.gui.BioCartoonTool.RXPasteInterface;
-import cbit.vcell.graph.gui.BioCartoonTool.UserResolvedRxElements;
 import cbit.vcell.model.Catalyst;
 import cbit.vcell.model.DBFormalSpecies;
 import cbit.vcell.model.FluxReaction;
@@ -64,8 +61,6 @@ import cbit.vcell.model.ReactionParticipant;
 import cbit.vcell.model.ReactionQuerySpec;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.ReactionStepInfo;
-import cbit.vcell.model.Species;
-import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
 
 /**
@@ -352,8 +347,30 @@ private void bfnActionPerformed(java.awt.event.ActionEvent actionEvent) {
 					break;
 				}
 			}
-			applySelectedReactionElements(DBReactionWizardPanel.this, rxPasteInterface, childWindow, myResolvedReaction, fromModel,DBReactionWizardPanel.this.getStructure(),fromRXStep,
-				DBReactionWizardPanel.this.getModel(), DBReactionWizardPanel.this.getStructure(),getRXParticipantResolverPanel().getSpeciesAssignmentJCB(), getRXParticipantResolverPanel().getStructureAssignmentJCB());
+			BioCartoonTool.AssignmentHelper assignmentHelper = new BioCartoonTool.AssignmentHelper() {
+				@Override
+				public JComboBox[] getStructureAssignmentJCB() {
+					return getRXParticipantResolverPanel().getStructureAssignmentJCB();
+				}
+				@Override
+				public JComboBox[] getSpeciesAssignmentJCB() {
+					return getRXParticipantResolverPanel().getSpeciesAssignmentJCB();
+				}
+				@Override
+				public Component getParent() {
+					return DBReactionWizardPanel.this;
+				}
+				@Override
+				public Component getAssignmentInterface() {
+					return null;
+				}
+				@Override
+				public boolean shouldCloseParent() {
+					return true;
+				}
+			};
+			BioCartoonTool.pasteReactionSteps(DBReactionWizardPanel.this, rxPasteInterface, myResolvedReaction, fromModel,DBReactionWizardPanel.this.getStructure(),fromRXStep,
+				DBReactionWizardPanel.this.getModel(), DBReactionWizardPanel.this.getStructure(),assignmentHelper);
 		}
 		//
 		configureBFN();
@@ -2519,94 +2536,94 @@ public void setRXPasteInterface(RXPasteInterface rxPasteInterface){
 /**
  * Comment
  */
-public static void applySelectedReactionElements(Component requester,
-	RXPasteInterface rxPasteInterface,ChildWindow closeThisParent,ReactionDescription resolvedReaction,
-	Model fromModel,Structure fromStructure,ReactionStep fromRXStep,Model pasteToModel,Structure pasteToStructure,
-	JComboBox[] speciesAssignmentJCB,JComboBox[] structureAssignmentJCB){
-
-	
-	AsynchClientTask getRXSourceModelTask = new AsynchClientTask("Get RX source model",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
-		
-		@Override
-		public void run(Hashtable<String, Object> hashTable) throws Exception {
-			//Get the complete original model the user selected reaction is from
-//			Model fromModel = getDocumentManager().getBioModel(resolvedReaction.getVCellBioModelID()).getModel();
-			//find the user selected ReactionStep in the original model
-//			ReactionStep fromRXStep = null;
-//			ReactionStep[] rxArr = fromModel.getReactionSteps();
-//			for (int i = 0; i < rxArr.length; i++) {
-//				if(rxArr[i].getKey().equals(resolvedReaction.getVCellRXID())){
-//					fromRXStep = rxArr[i];
-//					break;
+//public static void applySelectedReactionElements(Component requester,
+//	RXPasteInterface rxPasteInterface,ChildWindow closeThisParent,ReactionDescription resolvedReaction,
+//	Model fromModel,Structure fromStructure,ReactionStep fromRXStep,Model pasteToModel,Structure pasteToStructure,
+//	JComboBox[] speciesAssignmentJCB,JComboBox[] structureAssignmentJCB){
+//
+//	
+//	AsynchClientTask getRXSourceModelTask = new AsynchClientTask("Get RX source model",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+//		
+//		@Override
+//		public void run(Hashtable<String, Object> hashTable) throws Exception {
+//			//Get the complete original model the user selected reaction is from
+////			Model fromModel = getDocumentManager().getBioModel(resolvedReaction.getVCellBioModelID()).getModel();
+//			//find the user selected ReactionStep in the original model
+////			ReactionStep fromRXStep = null;
+////			ReactionStep[] rxArr = fromModel.getReactionSteps();
+////			for (int i = 0; i < rxArr.length; i++) {
+////				if(rxArr[i].getKey().equals(resolvedReaction.getVCellRXID())){
+////					fromRXStep = rxArr[i];
+////					break;
+////				}
+////			}
+//			//Create user assignment preferences
+//			BioCartoonTool.UserResolvedRxElements userResolvedRxElements =
+//				new BioCartoonTool.UserResolvedRxElements();
+//			userResolvedRxElements.fromSpeciesContextArr = new SpeciesContext[resolvedReaction.elementCount()];
+//			userResolvedRxElements.toSpeciesArr = new Species[resolvedReaction.elementCount()];
+//			userResolvedRxElements.toStructureArr = new Structure[resolvedReaction.elementCount()];
+//			StringBuffer warningsSB = new StringBuffer();
+//			for (int i = 0; i < resolvedReaction.elementCount(); i++) {
+//				System.out.println(resolvedReaction.getOrigSpeciesContextName(i));
+//				userResolvedRxElements.fromSpeciesContextArr[i] =
+//					fromModel.getSpeciesContext(resolvedReaction.getOrigSpeciesContextName(i));
+//				userResolvedRxElements.toSpeciesArr[i] =
+//					(speciesAssignmentJCB[i].getSelectedItem() instanceof Species?
+//							(Species)speciesAssignmentJCB[i].getSelectedItem():
+//								null);
+//				userResolvedRxElements.toStructureArr[i] =
+//					(Structure)structureAssignmentJCB[i].getSelectedItem();
+//				if(userResolvedRxElements.toSpeciesArr[i] != null){
+//					SpeciesContext fromSpeciesContext = userResolvedRxElements.fromSpeciesContextArr[i];
+//					Species toSpecies = userResolvedRxElements.toSpeciesArr[i];
+//					if(fromSpeciesContext.getSpecies().getDBSpecies() != null &&
+//							!Compare.isEqualOrNull(toSpecies.getDBSpecies(),fromSpeciesContext.getSpecies().getDBSpecies())){
+//						warningsSB.append(
+//							(warningsSB.length()>0?"\n":"")+							
+//							"'"+fromSpeciesContext.getSpecies().getCommonName()+"' formal("+
+//							(fromSpeciesContext.getSpecies().getDBSpecies() != null?fromSpeciesContext.getSpecies().getDBSpecies().getPreferredName():"null")+")"+
+//							"\nwill be re-assigned to\n"+
+//							"'"+toSpecies.getCommonName()+"' formal("+
+//							(toSpecies.getDBSpecies() != null?toSpecies.getDBSpecies().getPreferredName():"null")+")"
+//						);
+//					}				
 //				}
 //			}
-			//Create user assignment preferences
-			BioCartoonTool.UserResolvedRxElements userResolvedRxElements =
-				new BioCartoonTool.UserResolvedRxElements();
-			userResolvedRxElements.fromSpeciesContextArr = new SpeciesContext[resolvedReaction.elementCount()];
-			userResolvedRxElements.toSpeciesArr = new Species[resolvedReaction.elementCount()];
-			userResolvedRxElements.toStructureArr = new Structure[resolvedReaction.elementCount()];
-			StringBuffer warningsSB = new StringBuffer();
-			for (int i = 0; i < resolvedReaction.elementCount(); i++) {
-				System.out.println(resolvedReaction.getOrigSpeciesContextName(i));
-				userResolvedRxElements.fromSpeciesContextArr[i] =
-					fromModel.getSpeciesContext(resolvedReaction.getOrigSpeciesContextName(i));
-				userResolvedRxElements.toSpeciesArr[i] =
-					(speciesAssignmentJCB[i].getSelectedItem() instanceof Species?
-							(Species)speciesAssignmentJCB[i].getSelectedItem():
-								null);
-				userResolvedRxElements.toStructureArr[i] =
-					(Structure)structureAssignmentJCB[i].getSelectedItem();
-				if(userResolvedRxElements.toSpeciesArr[i] != null){
-					SpeciesContext fromSpeciesContext = userResolvedRxElements.fromSpeciesContextArr[i];
-					Species toSpecies = userResolvedRxElements.toSpeciesArr[i];
-					if(fromSpeciesContext.getSpecies().getDBSpecies() != null &&
-							!Compare.isEqualOrNull(toSpecies.getDBSpecies(),fromSpeciesContext.getSpecies().getDBSpecies())){
-						warningsSB.append(
-							(warningsSB.length()>0?"\n":"")+							
-							"'"+fromSpeciesContext.getSpecies().getCommonName()+"' formal("+
-							(fromSpeciesContext.getSpecies().getDBSpecies() != null?fromSpeciesContext.getSpecies().getDBSpecies().getPreferredName():"null")+")"+
-							"\nwill be re-assigned to\n"+
-							"'"+toSpecies.getCommonName()+"' formal("+
-							(toSpecies.getDBSpecies() != null?toSpecies.getDBSpecies().getPreferredName():"null")+")"
-						);
-					}				
-				}
-			}
-			if(warningsSB.length() > 0){
-				final String proceed = "Add reaction anyway";
-				final String cancel = "Cancel";
-				String result = DialogUtils.showWarningDialog(requester/*DBReactionWizardPanel.this*/,
-						"A user choice selected under 'Assign to Model species' will force re-assignment of "+
-						"the formal reference for one of the species in the reaction.\n"+warningsSB,
-						new String[] {proceed,cancel}, cancel);
-				if(result.equals(cancel)){
-					throw UserCancelException.CANCEL_GENERIC;
-				}
-			}
-			hashTable.put("fromRXStep", fromRXStep);
-			hashTable.put("userResolvedRxElements", userResolvedRxElements);
-		}
-	};
-	AsynchClientTask pasteReactionTask = new AsynchClientTask("Paste reaction",AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
-		
-		@Override
-		public void run(Hashtable<String, Object> hashTable) throws Exception {
-			// TODO Auto-generated method stub
-//			Model pasteToModel = DBReactionWizardPanel.this.getModel();
-//			Structure pasteToStructure = fromStructure;//DBReactionWizardPanel.this.getStructure();
-			BioCartoonTool.pasteReactionSteps(requester/*DBReactionWizardPanel.this*/,
-					new ReactionStep[] {(ReactionStep)hashTable.get("fromRXStep")},
-					pasteToModel, pasteToStructure, false,
-					(UserResolvedRxElements)hashTable.get("userResolvedRxElements"),rxPasteInterface);
-			closeParent(closeThisParent);
-		}
-	};
-	
-	ClientTaskDispatcher.dispatch(requester, new Hashtable<String, Object>(),
-			new AsynchClientTask[] {getRXSourceModelTask,pasteReactionTask},
-			false,false,null,true);
-}
+//			if(warningsSB.length() > 0){
+//				final String proceed = "Add reaction anyway";
+//				final String cancel = "Cancel";
+//				String result = DialogUtils.showWarningDialog(requester/*DBReactionWizardPanel.this*/,
+//						"A user choice selected under 'Assign to Model species' will force re-assignment of "+
+//						"the formal reference for one of the species in the reaction.\n"+warningsSB,
+//						new String[] {proceed,cancel}, cancel);
+//				if(result.equals(cancel)){
+//					throw UserCancelException.CANCEL_GENERIC;
+//				}
+//			}
+//			hashTable.put("fromRXStep", fromRXStep);
+//			hashTable.put("userResolvedRxElements", userResolvedRxElements);
+//		}
+//	};
+//	AsynchClientTask pasteReactionTask = new AsynchClientTask("Paste reaction",AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+//		
+//		@Override
+//		public void run(Hashtable<String, Object> hashTable) throws Exception {
+//			// TODO Auto-generated method stub
+////			Model pasteToModel = DBReactionWizardPanel.this.getModel();
+////			Structure pasteToStructure = fromStructure;//DBReactionWizardPanel.this.getStructure();
+//			BioCartoonTool.pasteReactionSteps(requester/*DBReactionWizardPanel.this*/,
+//					new ReactionStep[] {(ReactionStep)hashTable.get("fromRXStep")},
+//					pasteToModel, pasteToStructure, false,
+//					(UserResolvedRxElements)hashTable.get("userResolvedRxElements"),rxPasteInterface);
+//			closeParent(closeThisParent);
+//		}
+//	};
+//	
+//	ClientTaskDispatcher.dispatch(requester, new Hashtable<String, Object>(),
+//			new AsynchClientTask[] {getRXSourceModelTask,pasteReactionTask},
+//			false,false,null,true);
+//}
 
 
 /**

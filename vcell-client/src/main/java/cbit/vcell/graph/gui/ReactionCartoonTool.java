@@ -42,11 +42,10 @@ import java.util.Vector;
 import javax.swing.AbstractAction;
 import javax.swing.ActionMap;
 import javax.swing.InputMap;
+import javax.swing.JComboBox;
 import javax.swing.JComponent;
-import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 import javax.swing.JTextField;
 import javax.swing.JViewport;
@@ -663,7 +662,7 @@ public class ReactionCartoonTool extends BioCartoonTool implements BioCartoonToo
 
 	}
 	
-	private void pasteReactionsAndSpecies(Component requester,Structure structure){
+	private void pasteReactionsAndSpecies(Component requester,Structure pasteToStructure){
 		final String RXSPECIES_PASTERX = "Reactions";
 		final String RXSPECIES_SPECIES = "Species";
 		ReactionSpeciesCopy reactionSpeciesCopy = (ReactionSpeciesCopy) SimpleTransferable.getFromClipboard(VCellTransferable.REACTION_SPECIES_ARRAY_FLAVOR);
@@ -691,7 +690,7 @@ public class ReactionCartoonTool extends BioCartoonTool implements BioCartoonToo
 				Vector<BioModelEntityObject> pastedSpeciesContextV = new Vector<BioModelEntityObject>();
 				for (int i = 0; i < reactionSpeciesCopy.getSpeciesContextArr().length; i++) {
 					String rootSC = speciesContextRootFinder(reactionSpeciesCopy.getSpeciesContextArr()[i]);
-					pastedSpeciesContextV.add(pasteSpecies(getGraphPane(), reactionSpeciesCopy.getSpeciesContextArr()[i].getSpecies(), rootSC, getModel(),structure,true,speciesHash, null));
+					pastedSpeciesContextV.add(pasteSpecies(getGraphPane(), reactionSpeciesCopy.getSpeciesContextArr()[i].getSpecies(), rootSC, getModel(),pasteToStructure,true,speciesHash, null));
 					copyRelativePosition(getGraphModel(),reactionSpeciesCopy.getSpeciesContextArr()[i], pastedSpeciesContextV.lastElement());
 				}
 				ReactionCartoonTool.selectAndSaveDiagram(ReactionCartoonTool.this, pastedSpeciesContextV);
@@ -711,24 +710,47 @@ public class ReactionCartoonTool extends BioCartoonTool implements BioCartoonToo
 				ReactionDescription reactionDescription = DBReactionWizardPanel.createReactionDescription(reactionSpeciesCopy.getReactStepArr()[0], null, reactionSpeciesCopy.getFromStructure().getKey());
 				RXParticipantResolverPanel rxParticipantResolverPanel = new RXParticipantResolverPanel();
 //				rxParticipantResolverPanel.setPasteToModel(getModel());
-				rxParticipantResolverPanel.setupRX(reactionDescription,getModel(),structure);
+				rxParticipantResolverPanel.setupRX(reactionDescription,getModel(),pasteToStructure);
 //				JDialog j = new JDialog();
 //				j.setModal(true);
 //				j.setAlwaysOnTop(true);
 //				j.getContentPane().add(rxParticipantResolverPanel);
 //				j.pack();
 //				j.setVisible(true);
-				int result = DialogUtils.showComponentOKCancelDialog(getGraphPane(), rxParticipantResolverPanel, "Assign Reaction elements");
-				if(result != JOptionPane.OK_OPTION) {
-					return;
-				}
-				DBReactionWizardPanel.applySelectedReactionElements(requester, ReactionCartoonTool.this, null, reactionDescription,
+//				int result = DialogUtils.showComponentOKCancelDialog(getGraphPane(), rxParticipantResolverPanel, "Assign Reaction elements");
+//				if(result != JOptionPane.OK_OPTION) {
+//					return;
+//				}
+				BioCartoonTool.AssignmentHelper assignmentHelper = new BioCartoonTool.AssignmentHelper() {
+					@Override
+					public JComboBox[] getStructureAssignmentJCB() {
+						return rxParticipantResolverPanel.getStructureAssignmentJCB();
+					}
+					@Override
+					public JComboBox[] getSpeciesAssignmentJCB() {
+						return rxParticipantResolverPanel.getSpeciesAssignmentJCB();
+					}
+					@Override
+					public Component getParent() {
+						return getGraphPane();
+					}
+					@Override
+					public Component getAssignmentInterface() {
+						return rxParticipantResolverPanel;
+					}
+					@Override
+					public boolean shouldCloseParent() {
+						return false;
+					}
+				};
+
+				BioCartoonTool.pasteReactionSteps(requester, ReactionCartoonTool.this, reactionDescription,
 					reactionSpeciesCopy.getReactStepArr()[0].getModel(), reactionSpeciesCopy.getFromStructure(),reactionSpeciesCopy.getReactStepArr()[0],
-					bioModel.getModel(), structure,
-					rxParticipantResolverPanel.getSpeciesAssignmentJCB(), rxParticipantResolverPanel.getStructureAssignmentJCB());
+					bioModel.getModel(), pasteToStructure,
+					assignmentHelper);
 //				pasteReactionSteps(getGraphPane(),reactionSpeciesCopy.getReactStepArr(), getModel(),structure,true, null,ReactionCartoonTool.this);
 			} else if(reactionSpeciesCopy.getReactionRuleArr() != null && (response == null || response.equals(RXSPECIES_PASTERX))){
-				pasteReactionsAndRules(getGraphPane(), reactionSpeciesCopy, getModel(), structure, ReactionCartoonTool.this);
+				pasteReactionsAndRules(getGraphPane(), reactionSpeciesCopy, getModel(), pasteToStructure, ReactionCartoonTool.this);
 			}
 			
 			

@@ -10,11 +10,10 @@
 
 package cbit.vcell.graph.gui;
 import java.awt.Component;
-import java.awt.Container;
 import java.awt.Dimension;
+import java.awt.Window;
 import java.beans.PropertyVetoException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
@@ -26,18 +25,13 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.Vector;
 
-import javax.swing.BoxLayout;
 import javax.swing.JComboBox;
-import javax.swing.JLabel;
-import javax.swing.JList;
 import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.ListCellRenderer;
 
 import org.vcell.model.rbm.MolecularType;
 import org.vcell.model.rbm.RbmNetworkGenerator.CompartmentMode;
 import org.vcell.model.rbm.RbmUtils;
+import org.vcell.util.BeanUtils;
 import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.Compare;
 import org.vcell.util.Issue;
@@ -69,6 +63,7 @@ import cbit.vcell.model.Model.StructureTopology;
 import cbit.vcell.model.ModelException;
 import cbit.vcell.model.Product;
 import cbit.vcell.model.Reactant;
+import cbit.vcell.model.ReactionDescription;
 import cbit.vcell.model.ReactionParticipant;
 import cbit.vcell.model.ReactionRule;
 import cbit.vcell.model.ReactionSpeciesCopy;
@@ -403,6 +398,14 @@ public abstract class BioCartoonTool extends cbit.gui.graph.gui.CartoonTool {
 		ClientTaskDispatcher.dispatch(requester, new Hashtable<>(), new AsynchClientTask[] {issueTask, pasteRXTask}, false);
 	}
 	
+	public interface AssignmentHelper {
+		JComboBox[] getSpeciesAssignmentJCB();
+		JComboBox[] getStructureAssignmentJCB();
+		Component getAssignmentInterface();
+		Component getParent();
+		boolean shouldCloseParent();
+	}
+	
 	/**
 	 * pasteReactionSteps : this method clones the model argument and calls the private pasteReationSteps0 method with the cloned model to see if
 	 * there are any issues with the paste operation. If so, the issue list is popped up in a warning dialog, and user is given the option of proceeding
@@ -415,17 +418,80 @@ public abstract class BioCartoonTool extends cbit.gui.graph.gui.CartoonTool {
 	 * @param guiRequestComponent : the parent component for the warning dialog that pops up the issues, if any, encountered in the pasting process
 	 * @throws Exception
 	 */
-	public static final void pasteReactionSteps(Component requester,ReactionStep[] reactionStepsArrOrig,
-			Model pasteModel, Structure struct,
-			boolean bNew,/*boolean bUseDBSpecies,*/
-			UserResolvedRxElements userResolvedRxElements,
-			RXPasteInterface rxPasteInterface){
+	public static final void pasteReactionSteps(Component requester,
+			RXPasteInterface rxPasteInterface,ReactionDescription resolvedReaction,
+			Model fromModel,Structure fromStructure,ReactionStep fromRXStep,Model pasteToModel,Structure pasteToStructure,
+			BioCartoonTool.AssignmentHelper assignmentHelper){
 		
+		
+		AsynchClientTask getRXSourceModelTask = new AsynchClientTask("Get RX source model",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+			
+			@Override
+			public void run(Hashtable<String, Object> hashTable) throws Exception {
+				if(assignmentHelper.getAssignmentInterface() != null) {
+					int result = DialogUtils.showComponentOKCancelDialog(assignmentHelper.getParent(), assignmentHelper.getAssignmentInterface(), "Assign Reaction elements");
+					if(result != JOptionPane.OK_OPTION) {
+						throw UserCancelException.CANCEL_GENERIC;
+					}
+				}
+				JComboBox[] speciesAssignmentJCB = assignmentHelper.getSpeciesAssignmentJCB();
+				JComboBox[] structureAssignmentJCB = assignmentHelper.getStructureAssignmentJCB();
+				//Create user assignment preferences
+				BioCartoonTool.UserResolvedRxElements userResolvedRxElements =
+					new BioCartoonTool.UserResolvedRxElements();
+				userResolvedRxElements.fromSpeciesContextArr = new SpeciesContext[resolvedReaction.elementCount()];
+				userResolvedRxElements.toSpeciesArr = new Species[resolvedReaction.elementCount()];
+				userResolvedRxElements.toStructureArr = new Structure[resolvedReaction.elementCount()];
+				StringBuffer warningsSB = new StringBuffer();
+				for (int i = 0; i < resolvedReaction.elementCount(); i++) {
+					System.out.println(resolvedReaction.getOrigSpeciesContextName(i));
+					userResolvedRxElements.fromSpeciesContextArr[i] =
+						fromModel.getSpeciesContext(resolvedReaction.getOrigSpeciesContextName(i));
+					userResolvedRxElements.toSpeciesArr[i] =
+						(speciesAssignmentJCB[i].getSelectedItem() instanceof Species?
+								(Species)speciesAssignmentJCB[i].getSelectedItem():
+									null);
+					userResolvedRxElements.toStructureArr[i] =
+						(Structure)structureAssignmentJCB[i].getSelectedItem();
+					if(userResolvedRxElements.toSpeciesArr[i] != null){
+						SpeciesContext fromSpeciesContext = userResolvedRxElements.fromSpeciesContextArr[i];
+						Species toSpecies = userResolvedRxElements.toSpeciesArr[i];
+						if(fromSpeciesContext.getSpecies().getDBSpecies() != null &&
+								!Compare.isEqualOrNull(toSpecies.getDBSpecies(),fromSpeciesContext.getSpecies().getDBSpecies())){
+							warningsSB.append(
+								(warningsSB.length()>0?"\n":"")+							
+								"'"+fromSpeciesContext.getSpecies().getCommonName()+"' formal("+
+								(fromSpeciesContext.getSpecies().getDBSpecies() != null?fromSpeciesContext.getSpecies().getDBSpecies().getPreferredName():"null")+")"+
+								"\nwill be re-assigned to\n"+
+								"'"+toSpecies.getCommonName()+"' formal("+
+								(toSpecies.getDBSpecies() != null?toSpecies.getDBSpecies().getPreferredName():"null")+")"
+							);
+						}				
+					}
+				}
+				if(warningsSB.length() > 0){
+					final String proceed = "Add reaction anyway";
+					final String cancel = "Cancel";
+					String result = DialogUtils.showWarningDialog(requester/*DBReactionWizardPanel.this*/,
+							"A user choice selected under 'Assign to Model species' will force re-assignment of "+
+							"the formal reference for one of the species in the reaction.\n"+warningsSB,
+							new String[] {proceed,cancel}, cancel);
+					if(result.equals(cancel)){
+						throw UserCancelException.CANCEL_GENERIC;
+					}
+				}
+				hashTable.put("fromRXStep", fromRXStep);
+				hashTable.put("userResolvedRxElements", userResolvedRxElements);
+			}
+		};
+
 		PasteHelper[] pasteHelper = new PasteHelper[1];
 		AsynchClientTask issueTask = new AsynchClientTask("Checking Issues...",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 			@Override
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
-				Model clonedModel = (Model)org.vcell.util.BeanUtils.cloneSerializable(pasteModel);
+				ReactionStep[] reactionStepsArrOrig = new ReactionStep[] {(ReactionStep)hashTable.get("fromRXStep")};
+				UserResolvedRxElements userResolvedRxElements = (UserResolvedRxElements)hashTable.get("userResolvedRxElements");
+				Model clonedModel = (Model)org.vcell.util.BeanUtils.cloneSerializable(pasteToModel);
 				clonedModel.refreshDependencies();
 				IssueContext issueContext = new IssueContext(ContextType.Model, clonedModel, null);
 				HashMap<String,HashMap<ReactionParticipant,Structure>> userResolved_rxPartMapStruct = null;
@@ -444,7 +510,7 @@ public abstract class BioCartoonTool extends cbit.gui.graph.gui.CartoonTool {
 				}
 				pasteHelper[0] =
 					pasteReactionSteps0(userResolved_rxPartMapStruct,requester, issueContext, reactionStepsArrOrig,
-							clonedModel, clonedModel.getStructure(struct.getName()), bNew,/*bUseDBSpecies,*/
+							clonedModel, clonedModel.getStructure(pasteToStructure.getName()), false,/*bUseDBSpecies,*/
 							UserResolvedRxElements.createCompatibleUserResolvedRxElements(userResolvedRxElements, clonedModel));
 				if (pasteHelper[0].issues.size() != 0) {
 					if (!printIssues(pasteHelper[0].issues, requester)) {
@@ -460,7 +526,7 @@ public abstract class BioCartoonTool extends cbit.gui.graph.gui.CartoonTool {
 							ReactionParticipant[] origRXParts = reactionStepsArrOrig[i].getReactionParticipants();
 							for(int j=0;j< origRXParts.length;j++){
 								if(origRXParts[j].getName().equals(rxPart.getName())){
-									new_rxPartMapStruct.get(reactionStepsArrOrig[i].getName()).put(origRXParts[j],pasteModel.getStructure(pasteHelper[0].rxPartMapStruct.get(reactionStepsArrOrig[i].getName()).get(rxPart).getName()));
+									new_rxPartMapStruct.get(reactionStepsArrOrig[i].getName()).put(origRXParts[j],pasteToModel.getStructure(pasteHelper[0].rxPartMapStruct.get(reactionStepsArrOrig[i].getName()).get(rxPart).getName()));
 								}
 							}
 						}
@@ -472,9 +538,11 @@ public abstract class BioCartoonTool extends cbit.gui.graph.gui.CartoonTool {
 		AsynchClientTask pasteRXTask = new AsynchClientTask("Pasting Reaction...",AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
 			@Override
 			public void run(Hashtable<String, Object> hashTable)throws Exception {
-				IssueContext issueContext = new IssueContext(ContextType.Model, pasteModel, null);
+				UserResolvedRxElements userResolvedRxElements = (UserResolvedRxElements)hashTable.get("userResolvedRxElements");
+				ReactionStep[] reactionStepsArrOrig = new ReactionStep[] {(ReactionStep)hashTable.get("fromRXStep")};
+				IssueContext issueContext = new IssueContext(ContextType.Model, pasteToModel, null);
 				pasteHelper[0] = pasteReactionSteps0(pasteHelper[0].rxPartMapStruct,requester, issueContext, reactionStepsArrOrig,
-						pasteModel, struct, bNew,/*bUseDBSpecies,*/userResolvedRxElements);
+						pasteToModel, pasteToStructure, false,/*bUseDBSpecies,*/userResolvedRxElements);
 				if (pasteHelper[0].issues.size() != 0) {
 					printIssues(pasteHelper[0].issues, requester);
 				}
@@ -489,7 +557,29 @@ public abstract class BioCartoonTool extends cbit.gui.graph.gui.CartoonTool {
 			}
 		};
 
-		ClientTaskDispatcher.dispatch(requester, new Hashtable<>(), new AsynchClientTask[] {issueTask,pasteRXTask}, false);
+		AsynchClientTask reshowInterface = new AsynchClientTask("Reshow interaface...",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING,false,true) {
+			@Override
+			public void run(Hashtable<String, Object> hashTable) throws Exception {
+				Object error = hashTable.get(ClientTaskDispatcher.TASK_ABORTED_BY_ERROR);
+				if(assignmentHelper.getAssignmentInterface() != null && error != null) {
+					hashTable.remove(ClientTaskDispatcher.TASK_ABORTED_BY_ERROR);
+					//Reshow the interface if there was an error
+					new Thread(new Runnable() {
+						@Override
+						public void run() {
+							DialogUtils.showErrorDialog(assignmentHelper.getParent(), ((Throwable)error).getMessage());
+							BioCartoonTool.pasteReactionSteps(requester, rxPasteInterface, resolvedReaction, fromModel, fromStructure, fromRXStep, pasteToModel, pasteToStructure, assignmentHelper);
+						}
+					}).start();
+				}else if(assignmentHelper.shouldCloseParent() && error == null) {
+					//Assume we're responsible for closing the parent
+					Window closeThis = (Window)BeanUtils.findTypeParentOfComponent(assignmentHelper.getParent(), Window.class);
+					closeThis.dispose();
+				}
+			}
+			
+		};
+		ClientTaskDispatcher.dispatch(requester, new Hashtable<>(), new AsynchClientTask[] {getRXSourceModelTask,issueTask,pasteRXTask,reshowInterface}, false);
 	}
 
 
@@ -568,106 +658,106 @@ public abstract class BioCartoonTool extends cbit.gui.graph.gui.CartoonTool {
 		}
 	}
 	
-	private static final String DUMMY_CHOOSE = "ChooseCompartment...";
-	private static HashMap<ReactionParticipant,Structure> askUserResolveMembraneConnections(Component requester,Structure[] allStructures,Structure currentStruct,Structure fromRxnStruct,Structure toRxnStruct,
-			ReactionParticipant[] copyFromRxParticipantArr,StructureTopology toStructureTopology,StructureTopology structTopology){
-		HashMap<ReactionParticipant,Structure> userMap = new HashMap<>();
-		boolean bMembrane = toRxnStruct instanceof Membrane;
-		if(!bMembrane){
-			for(int i=0;i<copyFromRxParticipantArr.length;i+= 1){
-				userMap.put(copyFromRxParticipantArr[i],null);
-				for(Structure struct:allStructures){
-					if(fromRxnStruct.getName().equals(copyFromRxParticipantArr[i].getStructure().getName())){
-						userMap.put(copyFromRxParticipantArr[i],toRxnStruct);
-					}
-				}
-			}
-//			return userMap;
-		}else{
-			for(int i=0;i<copyFromRxParticipantArr.length;i+= 1){
-				Structure pasteToStruct = currentStruct;
-				Membrane oldMembr = (Membrane)fromRxnStruct;
-				pasteToStruct =
-				matchMembraneAdjacentStructure(allStructures,currentStruct, copyFromRxParticipantArr[i].getStructure(), structTopology, toStructureTopology, oldMembr, pasteToStruct);
-				userMap.put(copyFromRxParticipantArr[i],pasteToStruct);
-			}
-		}
-		JScrollPane jScrollPane = null;
-		JPanel rxMapperPanel = null;
-		Hashtable<JLabel,ReactionParticipant> mapLabelToPart = null;
-		boolean bUnselected;
-		do{
-			bUnselected = false;
-			if(jScrollPane == null){
-				rxMapperPanel = new JPanel();
-				rxMapperPanel.setLayout(new BoxLayout(rxMapperPanel, BoxLayout.Y_AXIS));
-				//((BoxLayout)rxMapperPanel.getLayout())
-				int height = 0;
-				final int[] widthlabels = new int[] {0};
-				int widthcombo= 0;
-				mapLabelToPart = new Hashtable<>();
-				for(ReactionParticipant rxPart:userMap.keySet()){
-					if(!bMembrane || (rxPart.getStructure() instanceof Feature)){
-						JPanel row = new JPanel();
-						JLabel rxpartLabel = new JLabel(rxPart.getName());
-						row.add(rxpartLabel);
-						mapLabelToPart.put(rxpartLabel, rxPart);
-						JComboBox<Structure> structJC = new JComboBox<>();
-						structJC.setRenderer(new ListCellRenderer<Structure>() {
-							@Override
-							public Component getListCellRendererComponent(
-									JList<? extends Structure> list, Structure value, int index,
-									boolean isSelected, boolean cellHasFocus) {
-								// TODO Auto-generated method stub
-								JLabel label = new JLabel(value.getName());
-								widthlabels[0] = Math.max(widthlabels[0], label.getPreferredSize().width);
-								return label;
-							}
-						});
-						height+= structJC.getPreferredSize().getHeight();
-						widthcombo = Math.max(widthcombo, structJC.getPreferredSize().width);
-						try{
-							Feature dummyFeature = new Feature(DUMMY_CHOOSE);
-							structJC.addItem(dummyFeature);
-						}catch(Exception e){
-							e.printStackTrace();
-						}
-						for(Structure struct:allStructures){
-							if(!bMembrane || (struct instanceof Feature)){
-								structJC.addItem(struct);
-							}
-						}
-						structJC.setSelectedItem((userMap.get(rxPart) == null?0:userMap.get(rxPart)));
-						row.add(structJC);
-						rxMapperPanel.add(row);
-					}
-				}
-				height+= 25;
-				rxMapperPanel.setSize(widthcombo+widthlabels[0], height);
-				rxMapperPanel.setPreferredSize(new Dimension(widthcombo+widthlabels[0], height));
-				jScrollPane = new JScrollPane(rxMapperPanel);
-				jScrollPane.setPreferredSize(new Dimension(150,100));
-			}
-			if(rxMapperPanel.getComponentCount() != 0){
-				int result = DialogUtils.showComponentOKCancelDialog(requester, jScrollPane, "Assign Compartments for RX '"+copyFromRxParticipantArr[0].getReactionStep().getName()+"' Participants");
-				if(result != JOptionPane.OK_OPTION){
-					throw UserCancelException.CANCEL_GENERIC;
-				}
-				
-				for(int i =0;i< rxMapperPanel.getComponentCount();i++){
-					JLabel label0 = (JLabel)(((Container)rxMapperPanel.getComponent(i)).getComponent(0));
-					JComboBox<Structure> struct0 = (JComboBox<Structure>)(((Container)rxMapperPanel.getComponent(i)).getComponent(1));
-					if(((Structure)struct0.getSelectedItem()).getName().equals(DUMMY_CHOOSE)){
-						bUnselected = true;
-						DialogUtils.showWarningDialog(requester, "Choose a valid compartment for each ReactionParticipant");
-						break;
-					}
-					userMap.put(mapLabelToPart.get(label0),(Structure)struct0.getSelectedItem());
-				}
-			}
-		}while(bUnselected);
-		return userMap;
-	}
+//	private static final String DUMMY_CHOOSE = "ChooseCompartment...";
+//	private static HashMap<ReactionParticipant,Structure> askUserResolveMembraneConnections(Component requester,Structure[] allStructures,Structure currentStruct,Structure fromRxnStruct,Structure toRxnStruct,
+//			ReactionParticipant[] copyFromRxParticipantArr,StructureTopology toStructureTopology,StructureTopology structTopology){
+//		HashMap<ReactionParticipant,Structure> userMap = new HashMap<>();
+//		boolean bMembrane = toRxnStruct instanceof Membrane;
+//		if(!bMembrane){
+//			for(int i=0;i<copyFromRxParticipantArr.length;i+= 1){
+//				userMap.put(copyFromRxParticipantArr[i],null);
+//				for(Structure struct:allStructures){
+//					if(fromRxnStruct.getName().equals(copyFromRxParticipantArr[i].getStructure().getName())){
+//						userMap.put(copyFromRxParticipantArr[i],toRxnStruct);
+//					}
+//				}
+//			}
+////			return userMap;
+//		}else{
+//			for(int i=0;i<copyFromRxParticipantArr.length;i+= 1){
+//				Structure pasteToStruct = currentStruct;
+//				Membrane oldMembr = (Membrane)fromRxnStruct;
+//				pasteToStruct =
+//				matchMembraneAdjacentStructure(allStructures,currentStruct, copyFromRxParticipantArr[i].getStructure(), structTopology, toStructureTopology, oldMembr, pasteToStruct);
+//				userMap.put(copyFromRxParticipantArr[i],pasteToStruct);
+//			}
+//		}
+//		JScrollPane jScrollPane = null;
+//		JPanel rxMapperPanel = null;
+//		Hashtable<JLabel,ReactionParticipant> mapLabelToPart = null;
+//		boolean bUnselected;
+//		do{
+//			bUnselected = false;
+//			if(jScrollPane == null){
+//				rxMapperPanel = new JPanel();
+//				rxMapperPanel.setLayout(new BoxLayout(rxMapperPanel, BoxLayout.Y_AXIS));
+//				//((BoxLayout)rxMapperPanel.getLayout())
+//				int height = 0;
+//				final int[] widthlabels = new int[] {0};
+//				int widthcombo= 0;
+//				mapLabelToPart = new Hashtable<>();
+//				for(ReactionParticipant rxPart:userMap.keySet()){
+//					if(!bMembrane || (rxPart.getStructure() instanceof Feature)){
+//						JPanel row = new JPanel();
+//						JLabel rxpartLabel = new JLabel(rxPart.getName());
+//						row.add(rxpartLabel);
+//						mapLabelToPart.put(rxpartLabel, rxPart);
+//						JComboBox<Structure> structJC = new JComboBox<>();
+//						structJC.setRenderer(new ListCellRenderer<Structure>() {
+//							@Override
+//							public Component getListCellRendererComponent(
+//									JList<? extends Structure> list, Structure value, int index,
+//									boolean isSelected, boolean cellHasFocus) {
+//								// TODO Auto-generated method stub
+//								JLabel label = new JLabel(value.getName());
+//								widthlabels[0] = Math.max(widthlabels[0], label.getPreferredSize().width);
+//								return label;
+//							}
+//						});
+//						height+= structJC.getPreferredSize().getHeight();
+//						widthcombo = Math.max(widthcombo, structJC.getPreferredSize().width);
+//						try{
+//							Feature dummyFeature = new Feature(DUMMY_CHOOSE);
+//							structJC.addItem(dummyFeature);
+//						}catch(Exception e){
+//							e.printStackTrace();
+//						}
+//						for(Structure struct:allStructures){
+//							if(!bMembrane || (struct instanceof Feature)){
+//								structJC.addItem(struct);
+//							}
+//						}
+//						structJC.setSelectedItem((userMap.get(rxPart) == null?0:userMap.get(rxPart)));
+//						row.add(structJC);
+//						rxMapperPanel.add(row);
+//					}
+//				}
+//				height+= 25;
+//				rxMapperPanel.setSize(widthcombo+widthlabels[0], height);
+//				rxMapperPanel.setPreferredSize(new Dimension(widthcombo+widthlabels[0], height));
+//				jScrollPane = new JScrollPane(rxMapperPanel);
+//				jScrollPane.setPreferredSize(new Dimension(150,100));
+//			}
+//			if(rxMapperPanel.getComponentCount() != 0){
+//				int result = DialogUtils.showComponentOKCancelDialog(requester, jScrollPane, "Assign Compartments for RX '"+copyFromRxParticipantArr[0].getReactionStep().getName()+"' Participants");
+//				if(result != JOptionPane.OK_OPTION){
+//					throw UserCancelException.CANCEL_GENERIC;
+//				}
+//				
+//				for(int i =0;i< rxMapperPanel.getComponentCount();i++){
+//					JLabel label0 = (JLabel)(((Container)rxMapperPanel.getComponent(i)).getComponent(0));
+//					JComboBox<Structure> struct0 = (JComboBox<Structure>)(((Container)rxMapperPanel.getComponent(i)).getComponent(1));
+//					if(((Structure)struct0.getSelectedItem()).getName().equals(DUMMY_CHOOSE)){
+//						bUnselected = true;
+//						DialogUtils.showWarningDialog(requester, "Choose a valid compartment for each ReactionParticipant");
+//						break;
+//					}
+//					userMap.put(mapLabelToPart.get(label0),(Structure)struct0.getSelectedItem());
+//				}
+//			}
+//		}while(bUnselected);
+//		return userMap;
+//	}
 	
 	private static Structure matchMembraneAdjacentStructure(Structure[] toAllStructures,Structure currentStruct,Structure rxPartStruct,StructureTopology structTopology,StructureTopology toStructureTopology,Membrane oldMembr,Structure pasteToStruct){
 		if((structTopology.getOutsideFeature(oldMembr) != null && rxPartStruct.getName().equals(structTopology.getOutsideFeature(oldMembr).getName())) ||
@@ -831,16 +921,18 @@ public abstract class BioCartoonTool extends cbit.gui.graph.gui.CartoonTool {
 									UserResolvedRxElements.getPreferredReactionElement(userResolvedRxElements,copyFromRxParticipantArr[i]));
 								reactionsAndSpeciesContexts.put(newSc,copyFromRxParticipantArr[i].getSpeciesContext());
 							}else {
-								String rootSC = ReactionCartoonTool.speciesContextRootFinder(copyFromRxParticipantArr[i].getSpeciesContext());
-								SpeciesContext[] matchSC = pasteToModel.getSpeciesContexts();
-								for(int k=0;matchSC != null && k<matchSC.length;k++){
-									String matchRoot = ReactionCartoonTool.speciesContextRootFinder(matchSC[k]);
-									if(matchRoot != null && matchRoot.equals(rootSC) && matchSC[k].getStructure().getName().equals(pasteToStruct.getName())){
-										newSc = matchSC[k];
-										reactionsAndSpeciesContexts.put(newSc, matchSC[k]);
-										break;
-									}
-								}
+								newSc = pasteToModel.getSpeciesContext(userResolvedRxElements.toSpeciesArr[j], userResolvedRxElements.toStructureArr[j]);
+								reactionsAndSpeciesContexts.put(newSc,copyFromRxParticipantArr[i].getSpeciesContext());
+//								String rootSC = ReactionCartoonTool.speciesContextRootFinder(copyFromRxParticipantArr[i].getSpeciesContext());
+//								SpeciesContext[] matchSC = pasteToModel.getSpeciesContexts();
+//								for(int k=0;matchSC != null && k<matchSC.length;k++){
+//									String matchRoot = ReactionCartoonTool.speciesContextRootFinder(matchSC[k]);
+//									if(matchRoot != null && matchRoot.equals(rootSC) && matchSC[k].getStructure().getName().equals(pasteToStruct.getName())){
+//										newSc = matchSC[k];
+//										reactionsAndSpeciesContexts.put(newSc, matchSC[k]);
+//										break;
+//									}
+//								}
 							}
 							if(newSc == null) {
 								throw new Exception("Couldn't assign speciesContext='"+copyFromRxParticipantArr[i].getSpeciesContext().getName()+"' to species='"+userResolvedRxElements.toSpeciesArr[j].getCommonName()+"' in structure='"+userResolvedRxElements.toStructureArr[j].getName()+"', species/structure not exist");
