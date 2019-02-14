@@ -155,7 +155,7 @@ public class RXParticipantResolverPanel extends JPanel implements ActionListener
 				speciesOrder[j+1] = pasteToModel.getSpecies(j);
 			}
 			for(int i=0;i<resolvedReaction.elementCount();i+= 1){
-				javax.swing.JComboBox jcb = new javax.swing.JComboBox();
+				JComboBox jcb = new JComboBox();
 				jcb.setRenderer(speciesListCellRenderer);
 				speciesAssignmentJCB[i] = jcb;
 				jcb.addItem("New Species");
