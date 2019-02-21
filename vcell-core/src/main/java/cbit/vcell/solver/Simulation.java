@@ -920,6 +920,12 @@ public void vetoableChange(java.beans.PropertyChangeEvent evt) throws java.beans
 		}
 		return false;
 	}
+	public boolean isBorderExtrapolationDisabled() {
+		if (getSolverTaskDescription().isBorderExtrapolationDisabled()) {
+			return true;
+		}
+		return false;
+	}
 
 	public void propertyChange(PropertyChangeEvent evt) {
 		MathDescription md = getMathDescription();

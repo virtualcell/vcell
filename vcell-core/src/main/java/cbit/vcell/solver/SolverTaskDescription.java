@@ -78,6 +78,8 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
 	private ChomboSolverSpec chomboSolverSpec = null;
 	private MovingBoundarySolverOptions movingBoundarySolverOptions = null;
 	private boolean bTimeoutDisabled = false;
+	private boolean bBorderExtrapolationDisabled = false;
+
 	/**
 	 * number of parallel processors to use for solution, if supported by
 	 * select solver
@@ -144,6 +146,8 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
 		}
 		bSerialParameterScan = solverTaskDescription.bSerialParameterScan;
 		bTimeoutDisabled = solverTaskDescription.bTimeoutDisabled;
+		bBorderExtrapolationDisabled = solverTaskDescription.bBorderExtrapolationDisabled;
+
 		if (simulation.getMathDescription().isNonSpatialStoch() && (solverTaskDescription.getStochOpt() != null))
 		{
 			setStochOpt(solverTaskDescription.getStochOpt());
@@ -281,6 +285,10 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
 			if (bTimeoutDisabled != solverTaskDescription.bTimeoutDisabled) {
 				return false;
 			}
+			if (bBorderExtrapolationDisabled != solverTaskDescription.bBorderExtrapolationDisabled) {
+				return false;
+			}
+
 			if  (!Compare.isEqualOrNull(smoldynSimulationOptions,solverTaskDescription.smoldynSimulationOptions)) {
 				return false;
 			}
@@ -594,6 +602,9 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
 		buffer.append("\t" + VCML.NUM_PROCESSORS + " " + numProcessors + "\n");
 		if (bTimeoutDisabled) {
 			buffer.append(VCML.TimeoutSimulationDisabled + " " + bTimeoutDisabled + "\n");
+		}
+		if (bBorderExtrapolationDisabled) {
+			buffer.append(VCML.BorderExtrapolationDisabled + " " + bBorderExtrapolationDisabled + "\n");
 		}
 
 		if (movingBoundarySolverOptions != null) {
@@ -1088,7 +1099,11 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
 				{
 					token = tokens.nextToken();
 					setTimeoutDisabled((new Boolean(token)).booleanValue());
+				}else if (token.equalsIgnoreCase(VCML.BorderExtrapolationDisabled)){
+					token = tokens.nextToken();
+					setBorderExtrapolationDisabled((new Boolean(token)).booleanValue());
 				}
+
 				else if (token.equalsIgnoreCase(VCML.MovingBoundarySolverOptions))
 				{
 					movingBoundarySolverOptions = new MovingBoundarySolverOptions(tokens);
@@ -1381,6 +1396,12 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
 	}
 	public final void setTimeoutDisabled(boolean arg_timeoutDisabled) {
 		this.bTimeoutDisabled = arg_timeoutDisabled;
+	}
+	public final boolean isBorderExtrapolationDisabled() {
+		return bBorderExtrapolationDisabled;
+	}
+	public final void setBorderExtrapolationDisabled(boolean borderExtrapolationDisabled) {
+		this.bBorderExtrapolationDisabled = borderExtrapolationDisabled;
 	}
 
 	public final SmoldynSimulationOptions getSmoldynSimulationOptions() {

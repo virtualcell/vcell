@@ -61,6 +61,7 @@ import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solver.SolverDescription.SolverFeature;
 import cbit.vcell.solver.SolverTaskDescription;
 import cbit.vcell.solvers.mb.gui.MovingBoundarySolverOptionsPanel;
+import java.awt.Insets;
 
 /**
  * Insert the class' description here.
@@ -109,6 +110,8 @@ public class SolverTaskDescriptionAdvancedPanel extends javax.swing.JPanel {
 	private MovingBoundarySolverOptionsPanel movingBoundarySolverOptionsPanel;
 	private JCheckBox timeoutDisabledCheckBox = null;
 	private JButton timeoutDisabledHelpButton = null;
+	private JCheckBox borderExtrapolationDisabledChkBox;
+	private GridBagConstraints gbc_1;
 
 	class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.ItemListener, java.beans.PropertyChangeListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
@@ -161,6 +164,10 @@ public class SolverTaskDescriptionAdvancedPanel extends javax.swing.JPanel {
 			else if (e.getSource() == timeoutDisabledCheckBox) {
 				getSolverTaskDescription().setTimeoutDisabled(timeoutDisabledCheckBox.isSelected());
 			}
+			else if (e.getSource() == borderExtrapolationDisabledChkBox) {
+				getSolverTaskDescription().setBorderExtrapolationDisabled(borderExtrapolationDisabledChkBox.isSelected());
+			}
+
 		}
 	}
 
@@ -649,6 +656,7 @@ private void initConnections() throws java.lang.Exception {
 	getTimeBoundsPanel().addPropertyChangeListener(ivjEventHandler);
 	serialParameterScanCheckBox.addItemListener(ivjEventHandler);
 	timeoutDisabledCheckBox.addItemListener(ivjEventHandler);
+	borderExtrapolationDisabledChkBox.addItemListener(ivjEventHandler);
 	timeoutDisabledHelpButton.addActionListener(ivjEventHandler);
 	sensitivityAnalysisComboBox.addActionListener(ivjEventHandler);
 	performSensitivityAnalysisCheckBox.addActionListener(ivjEventHandler);
@@ -702,14 +710,11 @@ private CollapsiblePanel getGeneralOptionsPanel() {
 		constraintsTimeBoundsPanel.gridx = 0;
 		constraintsTimeBoundsPanel.gridy = 0;
 		constraintsTimeBoundsPanel.fill = java.awt.GridBagConstraints.BOTH;
-		constraintsTimeBoundsPanel.weightx = 0.2;
 		constraintsTimeBoundsPanel.weighty = 1.0;
-		constraintsTimeBoundsPanel.gridwidth = 3;
-		constraintsTimeBoundsPanel.insets = new java.awt.Insets(3, 4, 4, 4);
+		constraintsTimeBoundsPanel.gridwidth = 2;
 		generalOptionsPanel.getContentPanel().add(getTimeBoundsPanel(), constraintsTimeBoundsPanel);
 
 		timeoutDisabledCheckBox = new JCheckBox("Disable Simulation Run Timeout");
-		timeoutDisabledCheckBox.setHorizontalTextPosition(SwingConstants.LEFT);
 		timeoutDisabledCheckBox.setToolTipText("Override the 21 days limit for the duration of a Simulation run.");
 		GridBagConstraints gbc = new java.awt.GridBagConstraints();
 		gbc.gridx = 0;
@@ -717,7 +722,6 @@ private CollapsiblePanel getGeneralOptionsPanel() {
 		gbc.weightx = 0;
 		gbc.anchor = GridBagConstraints.WEST;
 		gbc.fill = GridBagConstraints.HORIZONTAL;
-		gbc.insets = new java.awt.Insets(3, 6, 5, 0);
 		generalOptionsPanel.getContentPanel().add(timeoutDisabledCheckBox, gbc);
 		
 		timeoutDisabledHelpButton = new JButton("<html><b>&nbsp;&nbsp;?&nbsp;&nbsp;</b></html>");
@@ -725,12 +729,13 @@ private CollapsiblePanel getGeneralOptionsPanel() {
 		Border border = BorderFactory.createEmptyBorder(1, 1, 1, 1);
 		timeoutDisabledHelpButton.setFont(font);
 		timeoutDisabledHelpButton.setBorder(border);
-		gbc = new java.awt.GridBagConstraints();
-		gbc.gridx = 1;
-		gbc.gridy = 1;
-		gbc.weightx = 0;
-		gbc.insets = new java.awt.Insets(3, 5, 6, 6);
-		generalOptionsPanel.getContentPanel().add(timeoutDisabledHelpButton, gbc);
+		gbc_1 = new java.awt.GridBagConstraints();
+		gbc_1.anchor = GridBagConstraints.WEST;
+		gbc_1.gridx = 1;
+		gbc_1.gridy = 1;
+		gbc_1.weightx = 0;
+		gbc_1.insets = new java.awt.Insets(3, 5, 6, 6);
+		generalOptionsPanel.getContentPanel().add(timeoutDisabledHelpButton, gbc_1);
 		
 		gbc = new java.awt.GridBagConstraints();
 		gbc.gridx = 2;
@@ -747,21 +752,24 @@ private CollapsiblePanel getGeneralOptionsPanel() {
 		constraintsTimeStepPanel.fill = java.awt.GridBagConstraints.BOTH;
 		constraintsTimeStepPanel.weightx = 0.4;
 		constraintsTimeStepPanel.weighty = 1.0;
-		constraintsTimeStepPanel.gridheight = 2;
-		constraintsTimeStepPanel.insets = new java.awt.Insets(3, 4, 4, 4);
+		constraintsTimeStepPanel.gridheight = 3;
 		generalOptionsPanel.getContentPanel().add(getTimeStepPanel(), constraintsTimeStepPanel);
 
 		gridx++;
 		java.awt.GridBagConstraints constraintsErrorTolerancePanel = new java.awt.GridBagConstraints();
+		constraintsErrorTolerancePanel.gridheight = 2;
 		constraintsErrorTolerancePanel.fill = java.awt.GridBagConstraints.BOTH;
 		constraintsErrorTolerancePanel.gridx = gridx;
 		constraintsErrorTolerancePanel.gridy = 0;
 		constraintsErrorTolerancePanel.weightx = 0.4;
 		constraintsErrorTolerancePanel.weighty = 1.0;
-//		constraintsErrorTolerancePanel.gridheight = 2;
-		constraintsErrorTolerancePanel.insets = new java.awt.Insets(3, 4, 4, 4);
 		constraintsErrorTolerancePanel.anchor = GridBagConstraints.FIRST_LINE_START;
 		generalOptionsPanel.getContentPanel().add(getErrorTolerancePanel(), constraintsErrorTolerancePanel);
+		GridBagConstraints gbc_borderExtrapolationDisabledChkBox = new GridBagConstraints();
+		gbc_borderExtrapolationDisabledChkBox.anchor = GridBagConstraints.WEST;
+		gbc_borderExtrapolationDisabledChkBox.gridx = 0;
+		gbc_borderExtrapolationDisabledChkBox.gridy = 2;
+		generalOptionsPanel.getContentPanel().add(getBorderExtrapolationDisabledChkBox(), gbc_borderExtrapolationDisabledChkBox);
 	}
 	return generalOptionsPanel;
 }
@@ -1073,6 +1081,12 @@ private void refresh() {
 		serialParameterScanCheckBox.setVisible(false);
 	}
 	
+	borderExtrapolationDisabledChkBox.setVisible(true);
+	boolean bBorderExtrapolationDisabled = ivjTornOffSolverTaskDescription.isBorderExtrapolationDisabled();
+	borderExtrapolationDisabledChkBox.setSelected(bBorderExtrapolationDisabled);
+	boolean isSDS = getSolverTaskDescription().getSolverDescription().equals(SolverDescription.SundialsPDE);
+	borderExtrapolationDisabledChkBox.setEnabled(isSDS);
+
 	timeoutDisabledCheckBox.setVisible(true);
 	timeoutDisabledCheckBox.setSelected(ivjTornOffSolverTaskDescription.isTimeoutDisabled());
 	timeoutDisabledCheckBox.setEnabled(false);
@@ -1344,5 +1358,11 @@ private ChomboDeveloperToolsPanel getChomboDeveloperToolsPanel() {
 				throw new ChomboInvalidGeometryException(chomboMeshRecommendation);
 			}
 		}
+	}
+	private JCheckBox getBorderExtrapolationDisabledChkBox() {
+		if (borderExtrapolationDisabledChkBox == null) {
+			borderExtrapolationDisabledChkBox = new JCheckBox("Disable Border Extrapolation");
+		}
+		return borderExtrapolationDisabledChkBox;
 	}
 }

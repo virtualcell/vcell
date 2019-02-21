@@ -6557,7 +6557,11 @@ private SolverTaskDescription getSolverTaskDescription(Element param, Simulation
 		if (timeoutDisabledAttributeValue != null) {
 			solverTaskDesc.setTimeoutDisabled(new Boolean(timeoutDisabledAttributeValue).booleanValue());
 		}
-		
+		String borderExtrapolationDisabled = param.getAttributeValue(XMLTags.BorderExtrapolationDisabled);
+		if (borderExtrapolationDisabled != null) {
+			solverTaskDesc.setBorderExtrapolationDisabled(new Boolean(borderExtrapolationDisabled).booleanValue());
+		}
+
 		Element nfsimSimulationOptionsElement = param.getChild(XMLTags.NFSimSimulationOptions, vcNamespace);
 		if (nfsimSimulationOptionsElement != null) {
 			NFsimSimulationOptions nfsimSimulationOptions = getNFSimSimulationOptions(nfsimSimulationOptionsElement);

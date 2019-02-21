@@ -160,7 +160,8 @@ public class VCML {
 	public final static String StopAtSpatiallyUniform 	= "StopAtSpatiallyUniform";
 	public final static String RunParameterScanSerially = "RunParameterScanSerially";
 	public final static String TimeoutSimulationDisabled = "TimeoutSimulationDisabled";
-	
+	public final static String BorderExtrapolationDisabled = "BorderExtrapolationDisabled";
+
 	public final static String SensitivityParameter		= "SensitivityParameter";
 	public final static String TimeBounds				= "TimeBounds";
 	public final static String SolverDescription		= "SolverDescription";

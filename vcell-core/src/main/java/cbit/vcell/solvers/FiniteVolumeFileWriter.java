@@ -1342,6 +1342,12 @@ private void writeSimulationParamters() throws ExpressionException, MathExceptio
 		if (simulation.getMathDescription().hasVelocity()) {
 			printWriter.print(" " + solverTaskDesc.getSundialsPdeSolverOptions().getMaxOrderAdvection());
 		}
+		if(solverTaskDesc.isBorderExtrapolationDisabled()) {
+			//Set with GUI checkbox in SolverTaskDescriptionAdvancedPanel
+			//Tells vcell-solvers/VCell/src/SundialsPdeScheduler.cpp not to extrapolate values at boundaries
+			//Read by vcell-solvers/VCell/src/FVSolver.cpp::loadSimulationParameters(...) from file {vcellUserDataDir}/SimID_xxx.fvinput
+			printWriter.print(" " + (""+solverTaskDesc.isBorderExtrapolationDisabled()).toLowerCase());			
+		}
 		printWriter.println();
 		Vector<Discontinuity> discontinuities = new Vector<Discontinuity>();
 		TreeSet<Double> discontinuityTimes = new TreeSet<Double>();

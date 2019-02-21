@@ -4768,6 +4768,10 @@ private Element getXML(SolverTaskDescription param) {
 	if (bTimeoutSimulationDisabled) {
 		solvertask.setAttribute(XMLTags.TimeoutSimulationDisabled, String.valueOf(bTimeoutSimulationDisabled));
 	}
+	boolean bBorderExtrapolationDisabled = param.isBorderExtrapolationDisabled();
+	if (bBorderExtrapolationDisabled) {
+		solvertask.setAttribute(XMLTags.BorderExtrapolationDisabled, String.valueOf(bBorderExtrapolationDisabled));
+	}
 
 	SmoldynSimulationOptions smoldynSimulationOptions = param.getSmoldynSimulationOptions();
 	if (smoldynSimulationOptions != null) {		
