@@ -529,7 +529,7 @@ public cbit.vcell.model.ReactionCanvasDisplaySpec toReactionCanvasDisplaySpec() 
 			if(rCount > 0){
 				left.append(" + ");
 			}
-			left.append((getStoich(i) > 1?getStoich(i)+"":"") +" " + getReactionElement(i).getPreferredName());
+			left.append((getStoich(i) > 1?getStoich(i)+"":"") +" " + reSpeciesContextNames.get(i)/*getReactionElement(i).getPreferredName()*/);
 			left.append((isFluxReaction() && i == getFluxIndexOutside()?" (Outside)":""));
 			rCount+= 1;
 		}
@@ -548,7 +548,7 @@ public cbit.vcell.model.ReactionCanvasDisplaySpec toReactionCanvasDisplaySpec() 
 			if(rCount > 0){
 				center.append(" , ");
 			}
-			center.append(getReactionElement(i).getPreferredName());
+			center.append(reSpeciesContextNames.get(i)/*getReactionElement(i).getPreferredName()*/);
 			rCount+= 1;
 		}
 	}
@@ -560,7 +560,7 @@ public cbit.vcell.model.ReactionCanvasDisplaySpec toReactionCanvasDisplaySpec() 
 			if(rCount > 0){
 				right.append(" + ");
 			}
-			right.append((getStoich(i) > 1?getStoich(i)+"":"") +" " + getReactionElement(i).getPreferredName());
+			right.append((getStoich(i) > 1?getStoich(i)+"":"") +" " + reSpeciesContextNames.get(i)/*getReactionElement(i).getPreferredName()*/);
 			right.append((isFluxReaction() && i == getFluxIndexInside()?" (Inside)":""));
 			rCount+= 1;
 		}

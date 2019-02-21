@@ -4,6 +4,8 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
+import java.util.TreeMap;
 
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JComboBox;
@@ -19,6 +21,7 @@ import cbit.vcell.model.Model;
 import cbit.vcell.model.ReactionCanvas;
 import cbit.vcell.model.ReactionDescription;
 import cbit.vcell.model.Species;
+import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
 
 public class RXParticipantResolverPanel extends JPanel implements ActionListener{
@@ -110,7 +113,8 @@ public class RXParticipantResolverPanel extends JPanel implements ActionListener
 				gbc.gridy = i+1;
 				javax.swing.JLabel jlabel =
 					new javax.swing.JLabel(
-						resolvedReaction.getReactionElement(i).getPreferredName()+
+						resolvedReaction.getOrigSpeciesContextName(i)+
+						//resolvedReaction.getReactionElement(i).getPreferredName()+
 						(resolvedReaction.isFluxReaction() && resolvedReaction.getFluxIndexOutside()==i?" (Outside)":"") +
 						(resolvedReaction.isFluxReaction() && resolvedReaction.getFluxIndexInside()==i?" (Inside)":""));
 				//jlabel.setOpaque(true);
@@ -130,9 +134,35 @@ public class RXParticipantResolverPanel extends JPanel implements ActionListener
 				public Component getListCellRendererComponent(JList list,
 						Object value, int index, boolean isSelected,
 						boolean cellHasFocus) {
-					// TODO Auto-generated method stub
+					//'value' can be String or Species
+					SpeciesContext[] speciesContexts =  pasteToModel.getSpeciesContexts();
+					ArrayList<String> speciesContextsWithSpeciesEqualToValue = new ArrayList<>();
+					//if 'value' is Species collect all speciesContexts that have 'value' as species and save their name
+					for (int i = 0; i < speciesContexts.length; i++) {
+						if(speciesContexts[i].getSpecies().equals(value)) {
+							speciesContextsWithSpeciesEqualToValue.add(speciesContexts[i].getName());
+						}
+					}
+					if(speciesContextsWithSpeciesEqualToValue.size()>0) {
+						//Try to trim species context names assuming they end with structure names
+						//Also there may be more than 1 species context with a given species (value)
+						String finalVal = "";//This has comma separated list of species contexts that share 'value' as species
+						for (int j = 0; j < speciesContextsWithSpeciesEqualToValue.size(); j++) {
+							String temp=speciesContextsWithSpeciesEqualToValue.get(j);
+							for (int i = 0; i < pasteToModel.getStructures().length; i++) {
+								if(((String)temp).endsWith("_"+pasteToModel.getStructures()[i].getName())) {
+									temp = ((String)temp).substring(0,((String)temp).length()-("_"+speciesContexts[i].getStructure().getName()).length());
+									break;
+								}
+							}
+							finalVal+= (finalVal.length()>0?",":"")+temp;
+						}
+						if(finalVal.length()>0) {
+							value = finalVal;
+						}
+					}
 					return super.getListCellRendererComponent(list,
-							(value instanceof Species?"Existing "+((Species)value).getCommonName():value),
+							(value instanceof Species?((Species)value).getCommonName():value),
 							index, isSelected,
 							cellHasFocus);
 				}

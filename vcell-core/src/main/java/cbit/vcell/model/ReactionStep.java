@@ -202,6 +202,9 @@ public void addReactionParticipant(ReactionParticipant reactionParticipant) thro
 		}catch (Exception e){
 			e.printStackTrace(System.out);
 			System.out.println("exception: error adding reactionParticipant to reactionStep ..."+e.getMessage());
+			if(e instanceof PropertyVetoException) {
+				throw e;
+			}
 		}
 	}	
 }            
