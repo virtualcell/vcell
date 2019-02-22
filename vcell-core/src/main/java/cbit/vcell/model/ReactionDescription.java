@@ -50,6 +50,7 @@ public class ReactionDescription implements java.io.Serializable, org.vcell.util
 	//
 	private java.util.Vector reactionElements = new java.util.Vector();// SpeciesDescritpion
 	private java.util.Vector reSpeciesContextNames = null;// String (Original SpeciesContext Names from Database)
+	private java.util.Vector reStructNames = null;// String (Original Struct Names from Database)
 	private java.util.Vector stoich = new java.util.Vector(); // Integer
 	private java.util.Vector type = new java.util.Vector();// Character
 	private java.util.Vector resolvedSC = new java.util.Vector();//SpeciesContexts
@@ -86,11 +87,11 @@ public ReactionDescription(String argReactionName,ReactionType argReactionType,o
 
 		public void addReactionElement(SpeciesDescription argReactElement,int argStoich,char argType){
 			//This method for adding Dictionary Reactions (they have no original structures)
-			addReactionElement(argReactElement,null,argStoich,argType);
+			addReactionElement(argReactElement,null,null,argStoich,argType);
 		}
 
 
-public void addReactionElement(SpeciesDescription argReactElement,String originalSpeciesContextName,int argStoich,char argType){
+public void addReactionElement(SpeciesDescription argReactElement,String originalSpeciesContextName,String originalStructName,int argStoich,char argType){
 	if(argType != RX_ELEMENT_REACTANT &&
 		argType != RX_ELEMENT_PRODUCT &&
 		argType != RX_ELEMENT_FLUX &&
@@ -183,6 +184,10 @@ public void addReactionElement(SpeciesDescription argReactElement,String origina
 			reSpeciesContextNames = new java.util.Vector();
 		}
 		reSpeciesContextNames.add(sortedIndex,originalSpeciesContextName);
+		if(reStructNames == null){
+			reStructNames = new java.util.Vector();
+		}
+		reStructNames.add(sortedIndex,originalStructName);
 	}
 }
 
@@ -316,6 +321,12 @@ public String getOrigSpeciesContextName(int index){
 		throw new RuntimeException("Reaction has no Orig Struct Names");
 	}
 	return ((String)reSpeciesContextNames.get(index));
+}
+public String getOrigStructName(int index){
+	if(reStructNames == null){
+		throw new RuntimeException("Reaction has no Orig Struct Names");
+	}
+	return ((String)reStructNames.get(index));
 }
 
 

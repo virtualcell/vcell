@@ -17,6 +17,7 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Vector;
 
@@ -357,6 +358,11 @@ private void bfnActionPerformed(java.awt.event.ActionEvent actionEvent) {
 					return getRXParticipantResolverPanel().getSpeciesAssignmentJCB();
 				}
 				@Override
+				public ArrayList<JTextField> getFinalNames() {
+					// TODO Auto-generated method stub
+					return getRXParticipantResolverPanel().getFinalNamesJTF();
+				}
+				@Override
 				public Component getParent() {
 					return DBReactionWizardPanel.this;
 				}
@@ -410,7 +416,7 @@ public static ReactionDescription createReactionDescription(ReactionStep rxStep,
 		}else{
 			throw new RuntimeException("Unsupported ReationParticiapnt="+rpArr[i].getClass().getName());
 		}
-		dbfr.addReactionElement(dbnfu,rpArr[i].getSpeciesContext().getName(),rpArr[i].getStoichiometry(),role);
+		dbfr.addReactionElement(dbnfu,rpArr[i].getSpeciesContext().getName(),rpArr[i].getSpeciesContext().getStructure().getName(),rpArr[i].getStoichiometry(),role);
 	}
 	if(dbfr.isFluxReaction()){//make sure flux is in right direction
 		Structure outsideStruct = rxStep.getModel().getStructureTopology().getOutsideFeature((Membrane)rxStep.getStructure());

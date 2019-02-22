@@ -731,6 +731,11 @@ public class ReactionCartoonTool extends BioCartoonTool implements BioCartoonToo
 						return rxParticipantResolverPanel.getSpeciesAssignmentJCB();
 					}
 					@Override
+					public ArrayList<JTextField> getFinalNames() {
+						// TODO Auto-generated method stub
+						return rxParticipantResolverPanel.getFinalNamesJTF();
+					}
+					@Override
 					public Component getParent() {
 						return getGraphPane();
 					}

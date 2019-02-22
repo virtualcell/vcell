@@ -27,6 +27,7 @@ import java.util.Vector;
 
 import javax.swing.JComboBox;
 import javax.swing.JOptionPane;
+import javax.swing.JTextField;
 
 import org.vcell.model.rbm.MolecularType;
 import org.vcell.model.rbm.RbmNetworkGenerator.CompartmentMode;
@@ -401,6 +402,7 @@ public abstract class BioCartoonTool extends cbit.gui.graph.gui.CartoonTool {
 	public interface AssignmentHelper {
 		JComboBox[] getSpeciesAssignmentJCB();
 		JComboBox[] getStructureAssignmentJCB();
+		ArrayList<JTextField> getFinalNames();
 		Component getAssignmentInterface();
 		Component getParent();
 		boolean shouldCloseParent();
@@ -436,20 +438,23 @@ public abstract class BioCartoonTool extends cbit.gui.graph.gui.CartoonTool {
 				}
 				JComboBox[] speciesAssignmentJCB = assignmentHelper.getSpeciesAssignmentJCB();
 				JComboBox[] structureAssignmentJCB = assignmentHelper.getStructureAssignmentJCB();
+				ArrayList<JTextField> finalNamesJTF = assignmentHelper.getFinalNames();
 				//Create user assignment preferences
 				BioCartoonTool.UserResolvedRxElements userResolvedRxElements =
 					new BioCartoonTool.UserResolvedRxElements();
 				userResolvedRxElements.fromSpeciesContextArr = new SpeciesContext[resolvedReaction.elementCount()];
 				userResolvedRxElements.toSpeciesArr = new Species[resolvedReaction.elementCount()];
 				userResolvedRxElements.toStructureArr = new Structure[resolvedReaction.elementCount()];
+				userResolvedRxElements.finalNames = new ArrayList<>();
 				StringBuffer warningsSB = new StringBuffer();
 				for (int i = 0; i < resolvedReaction.elementCount(); i++) {
+					userResolvedRxElements.finalNames.add(finalNamesJTF.get(i));
 					System.out.println(resolvedReaction.getOrigSpeciesContextName(i));
 					userResolvedRxElements.fromSpeciesContextArr[i] =
 						fromModel.getSpeciesContext(resolvedReaction.getOrigSpeciesContextName(i));
 					userResolvedRxElements.toSpeciesArr[i] =
-						(speciesAssignmentJCB[i].getSelectedItem() instanceof Species?
-								(Species)speciesAssignmentJCB[i].getSelectedItem():
+						(speciesAssignmentJCB[i].getSelectedItem() instanceof SpeciesContext?
+								((SpeciesContext)speciesAssignmentJCB[i].getSelectedItem()).getSpecies():
 									null);
 					userResolvedRxElements.toStructureArr[i] =
 						(Structure)structureAssignmentJCB[i].getSelectedItem();
@@ -587,6 +592,7 @@ public abstract class BioCartoonTool extends cbit.gui.graph.gui.CartoonTool {
 		public SpeciesContext[] fromSpeciesContextArr;
 		public Species[] toSpeciesArr;//some elements can be null if user chose 'new' for them
 		public Structure[] toStructureArr;
+		public ArrayList<JTextField> finalNames;
 
 		public static UserResolvedRxElements createCompatibleUserResolvedRxElements(
 				UserResolvedRxElements origResolvedRxP,Model compatibleModel){
@@ -595,6 +601,7 @@ public abstract class BioCartoonTool extends cbit.gui.graph.gui.CartoonTool {
 				return null;
 			}
 			UserResolvedRxElements compatibleResolvedRxP = new UserResolvedRxElements();
+			compatibleResolvedRxP.finalNames = origResolvedRxP.finalNames;
 			compatibleResolvedRxP.fromSpeciesContextArr = origResolvedRxP.fromSpeciesContextArr;
 			//Find species
 			compatibleResolvedRxP.toSpeciesArr = new Species[origResolvedRxP.toSpeciesArr.length];
@@ -919,9 +926,15 @@ public abstract class BioCartoonTool extends cbit.gui.graph.gui.CartoonTool {
 							if(userResolvedRxElements.toSpeciesArr[j] == null) {
 								newSc = pasteSpecies(parent, copyFromRxParticipantArr[i].getSpecies(),null,pasteToModel,pasteToStruct,bNew, /*bUseDBSpecies,*/speciesHash,
 									UserResolvedRxElements.getPreferredReactionElement(userResolvedRxElements,copyFromRxParticipantArr[i]));
+								changeName(userResolvedRxElements, newSc, j,pasteToModel,userResolvedRxElements.finalNames.get(j).getText());
 								reactionsAndSpeciesContexts.put(newSc,copyFromRxParticipantArr[i].getSpeciesContext());
 							}else {
 								newSc = pasteToModel.getSpeciesContext(userResolvedRxElements.toSpeciesArr[j], userResolvedRxElements.toStructureArr[j]);
+								if(newSc == null) {
+									newSc = pasteSpecies(parent, copyFromRxParticipantArr[i].getSpecies(),null,pasteToModel,pasteToStruct,bNew, /*bUseDBSpecies,*/speciesHash,
+											UserResolvedRxElements.getPreferredReactionElement(userResolvedRxElements,copyFromRxParticipantArr[i]));
+										changeName(userResolvedRxElements, newSc, j,pasteToModel,userResolvedRxElements.finalNames.get(j).getText());									
+								}
 								reactionsAndSpeciesContexts.put(newSc,copyFromRxParticipantArr[i].getSpeciesContext());
 //								String rootSC = ReactionCartoonTool.speciesContextRootFinder(copyFromRxParticipantArr[i].getSpeciesContext());
 //								SpeciesContext[] matchSC = pasteToModel.getSpeciesContexts();
@@ -1161,6 +1174,22 @@ public abstract class BioCartoonTool extends cbit.gui.graph.gui.CartoonTool {
 			copiedStructName = fromRxnStruct.getName();
 		}while(true);
 		return new PasteHelper(issueVector, rxPartMapStructure,reactionsAndSpeciesContexts);
+	}
+
+
+	public static void changeName(UserResolvedRxElements userResolvedRxElements, SpeciesContext newSc, int j,Model model,String forceName) throws PropertyVetoException {
+		String newName = null;
+		if(forceName != null && forceName.trim().length()>0) {
+			newName = forceName.trim();
+		}else if(userResolvedRxElements.fromSpeciesContextArr[j].getName().endsWith(userResolvedRxElements.toStructureArr[j].getName())) {
+			newName = userResolvedRxElements.fromSpeciesContextArr[j].getName();
+		}else {
+			newName = userResolvedRxElements.fromSpeciesContextArr[j].getName()+"_"+userResolvedRxElements.toStructureArr[j].getName();
+		}
+		while(!Model.isNameUnused(newName, model)) {
+			newName = TokenMangler.getNextEnumeratedToken(newName);
+		}
+		newSc.setName(newName);
 	}
 
 	private static Species getNewSpecies(

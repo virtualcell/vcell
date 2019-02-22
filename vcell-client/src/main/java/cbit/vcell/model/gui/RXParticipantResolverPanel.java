@@ -13,6 +13,7 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JTextField;
 
 import org.vcell.util.gui.LineBorderBean;
 import org.vcell.util.gui.TitledBorderBean;
@@ -28,13 +29,14 @@ public class RXParticipantResolverPanel extends JPanel implements ActionListener
 	
 	private JComboBox[] speciesAssignmentJCB = null;
 	private JComboBox[] structureAssignmentJCB = null;
+	private ArrayList<JTextField> finalNamesJTF = null;
 	private JLabel ivjResolveHighlightJLabel;
 	private JScrollPane ivjJScrollPane1;
 	private ReactionCanvas ivjReactionCanvas1;
 	private JScrollPane ivjJScrollPane2;
 	private JPanel ivjRXParticipantsJPanel;
 	private ReactionDescription resolvedReaction = null;
-	private Species[] speciesOrder = null;
+//	private Species[] speciesOrder = null;
 //	private Model pasteToModel;
 //	private Model fromModel;
 
@@ -64,6 +66,9 @@ public class RXParticipantResolverPanel extends JPanel implements ActionListener
 	public JComboBox[] getStructureAssignmentJCB() {
 		return structureAssignmentJCB;
 	}
+	public ArrayList<JTextField> getFinalNamesJTF() {
+		return finalNamesJTF;
+	}
 //	public void setPasteToModel(Model model) {
 //		pasteToModel = model;
 //	}
@@ -90,7 +95,6 @@ public class RXParticipantResolverPanel extends JPanel implements ActionListener
 					structureAssignmentJCB[i].removeActionListener(this);
 				}
 			}
-
 			getReactionCanvas1().setReactionCanvasDisplaySpec(resolvedReaction.toReactionCanvasDisplaySpec());
 
 			getRXParticipantsJPanel().removeAll();
@@ -102,7 +106,7 @@ public class RXParticipantResolverPanel extends JPanel implements ActionListener
 			gbc.gridx = 0;
 			gbc.gridy = 0;
 
-			javax.swing.JLabel rxjlabel = new javax.swing.JLabel("RX Elements");
+			javax.swing.JLabel rxjlabel = new javax.swing.JLabel("from RX Elements");
 			//rxjlabel.setForeground(java.awt.Color.white);
 			//rxjlabel.setOpaque(true);
 			//rxjlabel.setBackground(java.awt.Color.white);
@@ -113,7 +117,7 @@ public class RXParticipantResolverPanel extends JPanel implements ActionListener
 				gbc.gridy = i+1;
 				javax.swing.JLabel jlabel =
 					new javax.swing.JLabel(
-						resolvedReaction.getOrigSpeciesContextName(i)+
+						resolvedReaction.getOrigSpeciesContextName(i)/*+" "+resolvedReaction.getReactionElement(i).getPreferredName()*/+" ("+resolvedReaction.getOrigStructName(i)+")"+
 						//resolvedReaction.getReactionElement(i).getPreferredName()+
 						(resolvedReaction.isFluxReaction() && resolvedReaction.getFluxIndexOutside()==i?" (Outside)":"") +
 						(resolvedReaction.isFluxReaction() && resolvedReaction.getFluxIndexInside()==i?" (Inside)":""));
@@ -134,35 +138,39 @@ public class RXParticipantResolverPanel extends JPanel implements ActionListener
 				public Component getListCellRendererComponent(JList list,
 						Object value, int index, boolean isSelected,
 						boolean cellHasFocus) {
-					//'value' can be String or Species
-					SpeciesContext[] speciesContexts =  pasteToModel.getSpeciesContexts();
-					ArrayList<String> speciesContextsWithSpeciesEqualToValue = new ArrayList<>();
-					//if 'value' is Species collect all speciesContexts that have 'value' as species and save their name
-					for (int i = 0; i < speciesContexts.length; i++) {
-						if(speciesContexts[i].getSpecies().equals(value)) {
-							speciesContextsWithSpeciesEqualToValue.add(speciesContexts[i].getName());
-						}
-					}
-					if(speciesContextsWithSpeciesEqualToValue.size()>0) {
-						//Try to trim species context names assuming they end with structure names
-						//Also there may be more than 1 species context with a given species (value)
-						String finalVal = "";//This has comma separated list of species contexts that share 'value' as species
-						for (int j = 0; j < speciesContextsWithSpeciesEqualToValue.size(); j++) {
-							String temp=speciesContextsWithSpeciesEqualToValue.get(j);
-							for (int i = 0; i < pasteToModel.getStructures().length; i++) {
-								if(((String)temp).endsWith("_"+pasteToModel.getStructures()[i].getName())) {
-									temp = ((String)temp).substring(0,((String)temp).length()-("_"+speciesContexts[i].getStructure().getName()).length());
-									break;
-								}
-							}
-							finalVal+= (finalVal.length()>0?",":"")+temp;
-						}
-						if(finalVal.length()>0) {
-							value = finalVal;
-						}
-					}
+//					//'value' can be String or Species
+//					SpeciesContext[] speciesContexts =  pasteToModel.getSpeciesContexts();
+//					ArrayList<String> speciesContextsWithSpeciesEqualToValue = new ArrayList<>();
+//					//if 'value' is Species collect all speciesContexts that have 'value' as species and save their name
+//					for (int i = 0; i < speciesContexts.length; i++) {
+//						if(speciesContexts[i].getSpecies().equals(value)) {
+//							speciesContextsWithSpeciesEqualToValue.add(speciesContexts[i].getName());
+//						}
+//					}
+//					if(speciesContextsWithSpeciesEqualToValue.size()>0) {
+//						//Try to trim species context names assuming they end with structure names
+//						//Also there may be more than 1 species context with a given species (value)
+//						String finalVal = "";//This has comma separated list of species contexts that share 'value' as species
+//						for (int j = 0; j < speciesContextsWithSpeciesEqualToValue.size(); j++) {
+//							String temp=speciesContextsWithSpeciesEqualToValue.get(j);
+//							for (int i = 0; i < pasteToModel.getStructures().length; i++) {
+//								String structName = pasteToModel.getStructures()[i].getName();
+//								if(((String)temp).endsWith("_"+structName)) {
+//									int structNameLength = ("_"+structName).length();
+//									int tempNameLength = ((String)temp).length();
+//									temp = ((String)temp).substring(0,tempNameLength-structNameLength);
+//									break;
+//								}
+//							}
+//							finalVal+= (finalVal.length()>0?",":"")+temp;
+//						}
+//						if(finalVal.length()>0) {
+//							value = finalVal+" "+(value instanceof Species?((Species)value).getCommonName():value);
+//						}
+//					}
 					return super.getListCellRendererComponent(list,
-							(value instanceof Species?((Species)value).getCommonName():value),
+							(value instanceof SpeciesContext?((SpeciesContext)value).getName():value),
+//							(value instanceof Species?((Species)value).getCommonName():value),
 							index, isSelected,
 							cellHasFocus);
 				}
@@ -179,18 +187,27 @@ public class RXParticipantResolverPanel extends JPanel implements ActionListener
 //			for(int j=0;j<fromModel.getSpecies().length;j+= 1){
 //				speciesOrder[j+1] = fromModel.getSpecies(j);
 //			}
-			speciesOrder = new Species[pasteToModel.getSpecies().length+1];
-			speciesOrder[0] = null;
-			for(int j=0;j<pasteToModel.getSpecies().length;j+= 1){
-				speciesOrder[j+1] = pasteToModel.getSpecies(j);
+			SpeciesContext[] speciesContextOrder = new SpeciesContext[pasteToModel.getSpeciesContexts().length+1];
+			speciesContextOrder[0] = null;
+			for(int j=0;j<pasteToModel.getSpeciesContexts().length;j+= 1){
+				speciesContextOrder[j+1] = pasteToModel.getSpeciesContexts(j);
 			}
+			ArrayList<JComboBox<Object>> scComboBoxArr = new ArrayList<>();
 			for(int i=0;i<resolvedReaction.elementCount();i+= 1){
 				JComboBox jcb = new JComboBox();
+				scComboBoxArr.add(jcb);
 				jcb.setRenderer(speciesListCellRenderer);
 				speciesAssignmentJCB[i] = jcb;
 				jcb.addItem("New Species");
-				for(int j=1;j<speciesOrder.length;j+= 1){
-					jcb.addItem(/*"Existing "+*/speciesOrder[j]/*.getCommonName()*/);
+				SpeciesContext initSC = null;
+				for(int j=1;j<speciesContextOrder.length;j+= 1){
+					jcb.addItem(/*"Existing "+*/speciesContextOrder[j]/*.getCommonName()*/);
+					if(resolvedReaction.getOrigSpeciesContextName(i).equals(speciesContextOrder[j].getName())) {
+						initSC = speciesContextOrder[j];
+					}
+				}
+				if(initSC != null) {
+					jcb.setSelectedItem(initSC);
 				}
 				gbc.gridy = i+1;
 				getRXParticipantsJPanel().add(jcb,gbc);
@@ -225,10 +242,18 @@ public class RXParticipantResolverPanel extends JPanel implements ActionListener
 				javax.swing.JComboBox jcb = new javax.swing.JComboBox();
 				jcb.setRenderer(structureListCellRenderer);
 				structureAssignmentJCB[i] = jcb;
+				Structure initStruct = null;
 				for (int j = 0; j < pasteToModel.getStructures().length; j++) {
 					jcb.addItem(pasteToModel.getStructures()[j]);
+					if(resolvedReaction.getOrigStructName(i).equals(pasteToModel.getStructures()[j].getName())) {
+						initStruct = pasteToModel.getStructures()[j];
+					}
 				}
-				structureAssignmentJCB[i].setSelectedItem(pastToStructure);
+				if(initStruct != null) {
+					structureAssignmentJCB[i].setSelectedItem(initStruct);
+				}else {
+					structureAssignmentJCB[i].setSelectedItem(pastToStructure);
+				}
 //				if(resolvedReaction.isFluxReaction() && resolvedReaction.isFlux(i) && resolvedReaction.getFluxIndexOutside() == i){
 //					jcb.addItem(structTopology.getOutsideFeature((Membrane)getStructure())/*.getName()*/);
 //					jcb.setEnabled(false);
@@ -248,6 +273,18 @@ public class RXParticipantResolverPanel extends JPanel implements ActionListener
 				getRXParticipantsJPanel().add(jcb,gbc);
 			}
 
+			finalNamesJTF = new ArrayList<>();
+			gbc.gridx = 3;
+			gbc.gridy = 0;
+			javax.swing.JLabel finalLabel = new javax.swing.JLabel("Custom Name");
+			getRXParticipantsJPanel().add(finalLabel,gbc);
+			for(int i=0;i<resolvedReaction.elementCount();i+= 1){
+				gbc.gridy = i+1;
+				JTextField finalNameJTextField = new JTextField("");
+				finalNamesJTF.add(finalNameJTextField);
+				getRXParticipantsJPanel().add(finalNameJTextField,gbc);
+			}
+			
 			for(int i=0;i<resolvedReaction.elementCount();i+= 1){
 				speciesAssignmentJCB[i].addActionListener(this);
 				structureAssignmentJCB[i].addActionListener(this);
@@ -255,7 +292,6 @@ public class RXParticipantResolverPanel extends JPanel implements ActionListener
 		}
 	}
 
-	
 	private void initialize() {
 	try {
 		LineBorderBean ivjLocalBorder10 = new LineBorderBean();
