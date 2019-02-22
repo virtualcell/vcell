@@ -183,10 +183,12 @@ public void setReactionParticipantsFromDatabase(Model model, ReactionParticipant
 				if (model.getStructureTopology().getInsideFeature(membrane) == structure){
 					Product product = new Product(null, this);
 					product.setSpeciesContext(flux.getSpeciesContext());
+					product.setStoichiometry(flux.getStoichiometry());
 					participants.add(product);
 				}else if (model.getStructureTopology().getOutsideFeature(membrane) == structure){
 					Reactant reactant = new Reactant(null, this);
 					reactant.setSpeciesContext(flux.getSpeciesContext());
+					reactant.setStoichiometry(flux.getStoichiometry());
 					participants.add(reactant);
 				}else{
 					throw new DataAccessException("unable to translate Flux reaction \""+getName()+"\" saved prior to version 5.3, can't reconcile structure topology");
