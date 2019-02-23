@@ -187,10 +187,10 @@ public class RXParticipantResolverPanel extends JPanel implements ActionListener
 //			for(int j=0;j<fromModel.getSpecies().length;j+= 1){
 //				speciesOrder[j+1] = fromModel.getSpecies(j);
 //			}
-			SpeciesContext[] speciesContextOrder = new SpeciesContext[pasteToModel.getSpeciesContexts().length+1];
-			speciesContextOrder[0] = null;
+			SpeciesContext[] speciesContextOrder = new SpeciesContext[pasteToModel.getSpeciesContexts().length];
+//			speciesContextOrder[0] = null;
 			for(int j=0;j<pasteToModel.getSpeciesContexts().length;j+= 1){
-				speciesContextOrder[j+1] = pasteToModel.getSpeciesContexts(j);
+				speciesContextOrder[j] = pasteToModel.getSpeciesContexts(j);
 			}
 			ArrayList<JComboBox<Object>> scComboBoxArr = new ArrayList<>();
 			for(int i=0;i<resolvedReaction.elementCount();i+= 1){
@@ -200,7 +200,7 @@ public class RXParticipantResolverPanel extends JPanel implements ActionListener
 				speciesAssignmentJCB[i] = jcb;
 				jcb.addItem("New Species");
 				SpeciesContext initSC = null;
-				for(int j=1;j<speciesContextOrder.length;j+= 1){
+				for(int j=0;j<speciesContextOrder.length;j+= 1){
 					jcb.addItem(/*"Existing "+*/speciesContextOrder[j]/*.getCommonName()*/);
 					if(resolvedReaction.getOrigSpeciesContextName(i).equals(speciesContextOrder[j].getName())) {
 						initSC = speciesContextOrder[j];
@@ -213,7 +213,27 @@ public class RXParticipantResolverPanel extends JPanel implements ActionListener
 				getRXParticipantsJPanel().add(jcb,gbc);
 //				jcb.setEnabled(false);
 			}
-			
+			for(int i=0;i<resolvedReaction.elementCount();i+= 1){
+				if(speciesAssignmentJCB[i].getSelectedIndex() == 0) {
+					int matchCount = 0;
+					SpeciesContext foundSC = null;
+					for (int j = 0; j < speciesContextOrder.length; j++) {
+						String structName = speciesContextOrder[j].getStructure().getName();
+						if(speciesContextOrder[j].getName().endsWith("_"+structName)) {
+							int structNameLength = ("_"+structName).length();
+							int tempNameLength = speciesContextOrder[j].getName().length();
+							String temp = speciesContextOrder[j].getName().substring(0,tempNameLength-structNameLength);
+							if(resolvedReaction.getOrigSpeciesContextName(i).startsWith(temp)) {
+								foundSC = speciesContextOrder[j];
+								matchCount++;								
+							}
+						}
+					}
+					if(matchCount == 1) {
+						speciesAssignmentJCB[i].setSelectedItem(foundSC);
+					}
+				}
+			}
 			gbc.gridx = 2;
 			gbc.gridy = 0;
 			structureAssignmentJCB = new javax.swing.JComboBox[resolvedReaction.elementCount()];

@@ -922,18 +922,21 @@ public abstract class BioCartoonTool extends cbit.gui.graph.gui.CartoonTool {
 				// this adds the speciesContexts and species (if any) to the model)
 					SpeciesContext newSc = null;
 					for (int j = 0; j < userResolvedRxElements.fromSpeciesContextArr.length; j++) {
+						String forceName = userResolvedRxElements.finalNames.get(j).getText();
 						if(userResolvedRxElements.fromSpeciesContextArr[j] == copyFromRxParticipantArr[i].getSpeciesContext()) {
 							if(userResolvedRxElements.toSpeciesArr[j] == null) {
 								newSc = pasteSpecies(parent, copyFromRxParticipantArr[i].getSpecies(),null,pasteToModel,pasteToStruct,bNew, /*bUseDBSpecies,*/speciesHash,
 									UserResolvedRxElements.getPreferredReactionElement(userResolvedRxElements,copyFromRxParticipantArr[i]));
-								changeName(userResolvedRxElements, newSc, j,pasteToModel,userResolvedRxElements.finalNames.get(j).getText());
+								changeName(userResolvedRxElements, newSc, j,pasteToModel,forceName);
 								reactionsAndSpeciesContexts.put(newSc,copyFromRxParticipantArr[i].getSpeciesContext());
 							}else {
 								newSc = pasteToModel.getSpeciesContext(userResolvedRxElements.toSpeciesArr[j], userResolvedRxElements.toStructureArr[j]);
 								if(newSc == null) {
 									newSc = pasteSpecies(parent, copyFromRxParticipantArr[i].getSpecies(),null,pasteToModel,pasteToStruct,bNew, /*bUseDBSpecies,*/speciesHash,
 											UserResolvedRxElements.getPreferredReactionElement(userResolvedRxElements,copyFromRxParticipantArr[i]));
-										changeName(userResolvedRxElements, newSc, j,pasteToModel,userResolvedRxElements.finalNames.get(j).getText());									
+										changeName(userResolvedRxElements, newSc, j,pasteToModel,forceName);									
+								}else if(forceName != null && forceName.length()>0) {
+									throw new Exception("Paste custom name error:\nCan't rename existing speciesContext '"+newSc.getName()+"' in structure '"+newSc.getStructure().getName()+"'");
 								}
 								reactionsAndSpeciesContexts.put(newSc,copyFromRxParticipantArr[i].getSpeciesContext());
 //								String rootSC = ReactionCartoonTool.speciesContextRootFinder(copyFromRxParticipantArr[i].getSpeciesContext());
@@ -1187,6 +1190,9 @@ public abstract class BioCartoonTool extends cbit.gui.graph.gui.CartoonTool {
 			newName = userResolvedRxElements.fromSpeciesContextArr[j].getName()+"_"+userResolvedRxElements.toStructureArr[j].getName();
 		}
 		while(!Model.isNameUnused(newName, model)) {
+			if(newName.endsWith("_"+newSc.getStructure().getName())) {
+				newName = newName+"_";
+			}
 			newName = TokenMangler.getNextEnumeratedToken(newName);
 		}
 		newSc.setName(newName);
