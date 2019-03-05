@@ -178,9 +178,11 @@ import cbit.vcell.geometry.CSGPrimitive;
 import cbit.vcell.geometry.CSGScale;
 import cbit.vcell.geometry.CSGTranslation;
 import cbit.vcell.geometry.Geometry;
+import cbit.vcell.geometry.GeometryClass;
 import cbit.vcell.geometry.GeometryException;
 import cbit.vcell.geometry.GeometryInfo;
 import cbit.vcell.geometry.GeometryThumbnailImageFactoryAWT;
+import cbit.vcell.geometry.ImageSubVolume;
 import cbit.vcell.geometry.SubVolume;
 import cbit.vcell.geometry.SurfaceClass;
 import cbit.vcell.geometry.gui.ROIMultiPaintManager;
@@ -1663,7 +1665,18 @@ public AsynchClientTask[] createNewGeometryTasks(final TopLevelWindowManager req
 						if(workspaceGeom.getGeometrySpec().getImage().getDescription() != null){
 							hashTable.put(INITIAL_ANNOTATION, workspaceGeom.getGeometrySpec().getImage().getDescription());
 						}
-						hashTable.put(VCPIXELCLASSES,workspaceGeom.getGeometrySpec().getImage().getPixelClasses());
+						GeometryClass[] myGeometryClasses = workspaceGeom.getGeometryClasses();
+						VCPixelClass[] myPixelClasses = workspaceGeom.getGeometrySpec().getImage().getPixelClasses();
+						VCPixelClass[] newPixelClasses = new VCPixelClass[myPixelClasses.length];
+						for (int i = 0; i < myPixelClasses.length; i++) {
+							for (int j = 0; j < myGeometryClasses.length; j++) {
+								if(myGeometryClasses[j] instanceof ImageSubVolume && myPixelClasses[i].getPixel() == ((ImageSubVolume)myGeometryClasses[j]).getPixelValue()) {
+									newPixelClasses[i] = new VCPixelClass(null, myGeometryClasses[j].getName(), myPixelClasses[i].getPixel());
+									break;
+								}
+							}
+						}
+						hashTable.put(VCPIXELCLASSES,newPixelClasses);
 					}else{
 						throw new Exception("Expecting image source for GEOM_OPTION_FROM_WORKSPACE");
 					}
