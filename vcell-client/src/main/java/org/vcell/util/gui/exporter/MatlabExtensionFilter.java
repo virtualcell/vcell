@@ -39,7 +39,7 @@ public class MatlabExtensionFilter extends SelectorExtensionFilter {
 				if (functionName.endsWith(".m")){
 					functionName = functionName.substring(0,functionName.length()-2);
 				}
-				coder.write_V6_MFile(pw,functionName);
+				coder.write_V6_MFile(pw,functionName,simulationContext.getOutputFunctionContext());
 				pw.flush();
 				pw.close();
 				String resultString = sw.getBuffer().toString();

@@ -26,6 +26,8 @@ import cbit.vcell.matrix.RationalMatrix;
 import cbit.vcell.matrix.RationalNumberMatrix;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.solver.AnnotatedFunction;
+import cbit.vcell.solver.OutputFunctionContext;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationSymbolTable;
 /**
@@ -55,7 +57,7 @@ public MatlabOdeFileCoder(Simulation argSimulation, RationalNumberMatrix argStoi
  * Insert the method's description here.
  * Creation date: (3/8/00 10:31:52 PM)
  */
-public void write_V6_MFile(java.io.PrintWriter pw, String functionName) throws MathException, ExpressionException {
+public void write_V6_MFile(java.io.PrintWriter pw, String functionName,OutputFunctionContext outputFunctionContext) throws MathException, ExpressionException {
 	MathDescription mathDesc = simulation.getMathDescription();
 	if (!mathDesc.isValid()){
 		throw new MathException("invalid math description\n" + mathDesc.getWarning());
@@ -221,8 +223,8 @@ public void write_V6_MFile(java.io.PrintWriter pw, String functionName) throws M
 	pw.println("[T,Y] = ode15s(@f,timeSpan,yinit,odeset('OutputFcn',@odeplot),param,yinit);");
 	pw.println("");
 	pw.println("% get the solution");
-	pw.println("all = zeros(size(T), numVars);");
-	pw.println("for i = 1:size(T)");
+	pw.println("all = zeros(length(T), numVars);");
+	pw.println("for i = 1:length(T)");
 	pw.println("\tall(i,:) = getRow(T(i), Y(i,:), yinit, param);");
 	pw.println("end");
 	pw.println("");
@@ -256,6 +258,15 @@ public void write_V6_MFile(java.io.PrintWriter pw, String functionName) throws M
 	pw.println("\t% Functions");
 	for (int i = 0; i < functions.length; i++){
 		pw.println("\t"+cbit.vcell.parser.SymbolUtils.getEscapedTokenMatlab(functions[i].getName())+" = "+functions[i].getExpression().infix_Matlab()+";");
+	}
+	//
+	// print OutputFunctions
+	//
+	pw.println("\t% OutputFunctions");
+	if(outputFunctionContext != null && outputFunctionContext.getOutputFunctionsList() != null) {
+		for (AnnotatedFunction annotatedFunction:outputFunctionContext.getOutputFunctionsList()){
+			pw.println("\t"+cbit.vcell.parser.SymbolUtils.getEscapedTokenMatlab(annotatedFunction.getName())+" = "+annotatedFunction.getExpression().infix_Matlab()+";");	
+		}
 	}
 	pw.println("");
 	pw.println("\trowValue = [" + varNamesForValueArray + "];");
@@ -291,6 +302,16 @@ public void write_V6_MFile(java.io.PrintWriter pw, String functionName) throws M
 	for (int i = 0; i < functions.length; i++){
 		pw.println("\t"+cbit.vcell.parser.SymbolUtils.getEscapedTokenMatlab(functions[i].getName())+" = "+functions[i].getExpression().infix_Matlab()+";");
 	}
+	//
+	// print OutputFunctions
+	//
+	pw.println("\t% OutputFunctions");
+	if(outputFunctionContext != null && outputFunctionContext.getOutputFunctionsList() != null) {
+		for (AnnotatedFunction annotatedFunction:outputFunctionContext.getOutputFunctionsList()){
+			pw.println("\t"+cbit.vcell.parser.SymbolUtils.getEscapedTokenMatlab(annotatedFunction.getName())+" = "+annotatedFunction.getExpression().infix_Matlab()+";");	
+		}
+	}
+
 	pw.println("\t% Rates");
 	pw.println("\tdydt = [");
 	for (int i=0;i<volVars.length;i++){
