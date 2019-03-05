@@ -42,6 +42,7 @@ import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.matlab.MatlabOdeFileCoder;
 import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.solver.OutputFunctionContext;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationJob;
 import cbit.vcell.xml.XmlHelper;
@@ -60,7 +61,7 @@ public class ExportDocument extends ExportTask {
  * Insert the method's description here.
  * Creation date: (7/26/2004 12:29:53 PM)
  */
-private String exportMatlab(File exportFile, javax.swing.filechooser.FileFilter fileFilter, MathDescription mathDesc) throws ExpressionException, MathException {
+private String exportMatlab(File exportFile, javax.swing.filechooser.FileFilter fileFilter, MathDescription mathDesc,OutputFunctionContext outputFunctionContext) throws ExpressionException, MathException {
 	Simulation sim = new Simulation(mathDesc);
 	MatlabOdeFileCoder coder = new MatlabOdeFileCoder(sim);
 	java.io.StringWriter sw = new java.io.StringWriter();
@@ -70,7 +71,7 @@ private String exportMatlab(File exportFile, javax.swing.filechooser.FileFilter 
 		functionName = functionName.substring(0,functionName.length()-2);
 	}
 	if (fileFilter.getDescription().equals(FileFilters.FILE_FILTER_MATLABV6.getDescription())){
-		coder.write_V6_MFile(pw,functionName);
+		coder.write_V6_MFile(pw,functionName,outputFunctionContext);
 	}
 	pw.flush();
 	pw.close();
@@ -325,7 +326,7 @@ public void run(Hashtable<String, Object> hashTable) throws java.lang.Exception 
 				if(mathModel.getMathDescription() != null && 
 				  (!mathModel.getMathDescription().isSpatial() && !mathModel.getMathDescription().isNonSpatialStoch())){
 					MathDescription mathDesc = mathModel.getMathDescription();
-					resultString = exportMatlab(exportFile, fileFilter, mathDesc);
+					resultString = exportMatlab(exportFile, fileFilter, mathDesc,mathModel.getOutputFunctionContext());
 				}else{
 					throw new Exception("Matlab export failed: NOT an non-spatial deterministic model.");
 				}
