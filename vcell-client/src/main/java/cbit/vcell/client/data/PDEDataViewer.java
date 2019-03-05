@@ -127,6 +127,7 @@ import cbit.vcell.export.server.ExportSpecs;
 import cbit.vcell.export.server.FileDataContainerManager;
 import cbit.vcell.export.server.FormatSpecificSpecs;
 import cbit.vcell.geometry.Curve;
+import cbit.vcell.geometry.GeometryClass;
 import cbit.vcell.geometry.SampledCurve;
 import cbit.vcell.geometry.SinglePoint;
 import cbit.vcell.geometry.gui.DataValueSurfaceViewer;
@@ -2230,7 +2231,29 @@ public void setPdeDataContext(ClientPDEDataContext pdeDataContext) {
 	if(ivjJTabbedPane1.getTitleAt(ivjJTabbedPane1.getSelectedIndex()).equals(POST_PROCESS_IMAGE_TABNAME)){
 		postProcessPdeDataViewerPanel.update();
 	}
+//	checkDataIdentifiersAndGeomDomains();
 }
+
+//private void checkDataIdentifiersAndGeomDomains() {
+//	if(fieldPdeDataContext != null && getSimulation() != null) {//Check that dataID domains exist in geometry (may not exist if geom changes)
+//		DataIdentifier[] myDataIdentifiers = fieldPdeDataContext.getDataIdentifiers();
+//		GeometryClass[] myGeomClasses = getSimulation().getSimulationOwner().getGeometry().getGeometryClasses();
+//		for (int i = 0; myDataIdentifiers != null && i < myDataIdentifiers.length; i++) {
+//			if(myDataIdentifiers[i].getDomain() != null) {
+//				boolean bFound = false;
+//				for (int j = 0; myGeomClasses != null && j < myGeomClasses.length; j++) {
+//					if(myDataIdentifiers[i].getDomain().getName().equals(myGeomClasses[j].getName())) {
+//						bFound = true;
+//						break;
+//					}
+//				}
+//				if(!bFound) {
+//					System.out.println("-----Domain Not Found "+myDataIdentifiers[i].getName()+" domian="+myDataIdentifiers[i].getDomain().getName());
+//				}
+//			}
+//		}
+//	}
+//}
 
 private boolean isPostProcess(){
 	return getPdeDataContext() instanceof PostProcessDataPDEDataContext;
@@ -2259,6 +2282,7 @@ public void setSimulation(Simulation simulation) {
 	fieldSimulation = simulation;
 	firePropertyChange("simulation", oldValue, simulation);
 	postProcessPdeDataViewerPanel.setsimulation(getSimulation());
+//	checkDataIdentifiersAndGeomDomains();
 }
 
 

@@ -23,6 +23,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -42,6 +44,7 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 import org.vcell.util.BeanUtils;
+import org.vcell.util.Issue;
 import org.vcell.util.gui.DefaultScrollTableCellRenderer;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.VCellIcons;
@@ -55,6 +58,7 @@ import cbit.vcell.client.desktop.biomodel.IssueManager;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.client.task.ClientTaskDispatcher.BlockingTimer;
+import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometryClass;
 import cbit.vcell.geometry.SubVolume;
 import cbit.vcell.geometry.SurfaceClass;
@@ -174,20 +178,40 @@ public class OutputFunctionsPanel extends DocumentEditorSubPanel {
 				SimulationWorkspace sw_new = (SimulationWorkspace)evt.getNewValue();
 				if (sw_old != null) {
 					sw_old.removePropertyChangeListener(this);
-					sw_old.getSimulationOwner().removePropertyChangeListener(this);
 				} 
 				if (sw_new != null) {
 					sw_new.addPropertyChangeListener(this);
-					sw_new.getSimulationOwner().addPropertyChangeListener(this);			
 					setOutputFunctionContext(sw_new.getSimulationOwner().getOutputFunctionContext());
 				} else {
 					setOutputFunctionContext(null);
 				}
+				addRemovePropChangeSimOwner((sw_old == null?null:sw_old.getSimulationOwner()), (sw_new == null?null:sw_new.getSimulationOwner()));
+				GeometryClass[] geometryClasses = simulationWorkspace.getSimulationOwner().getGeometry().getGeometryClasses();
+				outputFnsListTableModel.setAvailableDomains(geometryClasses);
 			}
-			if (getSimulationWorkspace() != null && (evt.getPropertyName().equals("geometry"))) {
+			if (getSimulationWorkspace() != null && evt.getSource() == getSimulationWorkspace().getSimulationOwner() && (evt.getPropertyName().equals("mathDescription"))) {
+				GeometryClass[] geometryClasses = simulationWorkspace.getSimulationOwner().getGeometry().getGeometryClasses();
+				outputFnsListTableModel.setAvailableDomains(geometryClasses);				
+			}
+			if ((evt.getPropertyName().equals("geometry") &&
+				getSimulationWorkspace() != null &&
+				getSimulationWorkspace().getSimulationOwner() instanceof SimulationContext) &&
+				evt.getSource() == ((SimulationContext)getSimulationWorkspace().getSimulationOwner()).getGeometryContext() ) {
+				if(evt.getNewValue() != null && outputFunctionContext != null) {
+					GeometryClass[] newGeometryClasses = ((Geometry)evt.getNewValue()).getGeometryClasses();
+					outputFnsListTableModel.setAvailableDomains(newGeometryClasses);
+				}
+			}
+			if ((evt.getPropertyName().equals("geometry") && getSimulationWorkspace() != null && evt.getSource() == getSimulationWorkspace().getSimulationOwner())) {
+				if(evt.getNewValue() != null && outputFunctionContext != null) {
+					GeometryClass[] newGeometryClasses = ((Geometry)evt.getNewValue()).getGeometryClasses();
+					outputFnsListTableModel.setAvailableDomains(newGeometryClasses);
+				}
 			}
 			if (evt.getSource() == getSimulationWorkspace() && (evt.getPropertyName().equals("simulationOwner"))) {
+				SimulationOwner so_old = (SimulationOwner)evt.getOldValue();
 				SimulationOwner so_new = (SimulationOwner)evt.getNewValue();
+				addRemovePropChangeSimOwner(so_old, so_new);
 				if (so_new != null) {
 					setOutputFunctionContext(so_new.getOutputFunctionContext());
 				} else {
@@ -196,6 +220,24 @@ public class OutputFunctionsPanel extends DocumentEditorSubPanel {
 			}
 		}
 
+		private void addRemovePropChangeSimOwner(SimulationOwner so_old,SimulationOwner so_new) {
+			if(so_old != null) {
+				so_old.removePropertyChangeListener(this);
+				so_old.getGeometry().removePropertyChangeListener(this);
+				if(so_old instanceof SimulationContext && ((SimulationContext)so_old).getGeometryContext() != null){
+					((SimulationContext)so_old).getGeometryContext().removePropertyChangeListener(this);
+				}
+			}
+			if(so_new != null) {
+				so_new.addPropertyChangeListener(this);
+				so_new.getGeometry().addPropertyChangeListener(this);
+				if(so_new instanceof SimulationContext && ((SimulationContext)so_new).getGeometryContext() != null){
+					((SimulationContext)so_new).getGeometryContext().addPropertyChangeListener(this);
+				}
+			}
+
+		}
+		
 		public void valueChanged(ListSelectionEvent e) {
 			if (e.getValueIsAdjusting()) {
 				return;

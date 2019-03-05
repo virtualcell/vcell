@@ -607,6 +607,19 @@ public class OutputFunctionContext implements ScopedSymbolTable, Matchable, Seri
 			} catch (ExpressionException ex) {
 				issueList.add(new Issue(new OutputFunctionIssueSource(this, af), issueContext, IssueCategory.OUTPUTFUNCTIONCONTEXT_FUNCTION_EXPBINDING, ex.getMessage(), Issue.SEVERITY_ERROR));
 			}
+			if(getSimulationOwner().getGeometry() != null && getSimulationOwner().getGeometry().getDimension() > 0) {
+				GeometryClass[] geomClasses = getSimulationOwner().getGeometry().getGeometryClasses();
+				boolean bFound = false;
+				for (int i = 0; i < geomClasses.length; i++) {
+					if(af.getDomain() != null && af.getDomain().getName().equals(geomClasses[i].getName())) {
+						bFound = true;
+						break;
+					}							
+				}
+				if(!bFound) {
+					issueList.add(new Issue(new OutputFunctionIssueSource(this, af), issueContext, IssueCategory.InternalError, "OutputFunction '"+af.getName()+"' domain='"+af.getDomain().getName()+"' not found in geometry", Issue.SEVERITY_WARNING));
+				}
+			}
 		}
 		
 	}

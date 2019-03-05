@@ -12,14 +12,20 @@ package cbit.vcell.client.desktop.simulation;
 import java.beans.PropertyChangeListener;
 import java.util.Comparator;
 
+import javax.swing.DefaultCellEditor;
+import javax.swing.JComboBox;
+import javax.swing.table.TableColumn;
+
 import org.vcell.util.gui.ScrollTable;
 
 import cbit.gui.ScopedExpression;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.desktop.biomodel.VCellSortTableModel;
 import cbit.vcell.geometry.Geometry;
+import cbit.vcell.geometry.GeometryClass;
 import cbit.vcell.geometry.GeometryOwner;
 import cbit.vcell.math.InconsistentDomainException;
+import cbit.vcell.math.Variable.Domain;
 import cbit.vcell.math.VariableType;
 import cbit.vcell.parser.AutoCompleteSymbolFilter;
 import cbit.vcell.parser.Expression;
@@ -154,7 +160,7 @@ public boolean isSortable(int col) {
  * @param columnIndex int
  */
 public boolean isCellEditable(int rowIndex, int columnIndex) {
-	return columnIndex == COLUMN_OUTPUTFN_EXPRESSION;
+	return columnIndex == COLUMN_OUTPUTFN_EXPRESSION || columnIndex == COLUMN_OUTPUTFN_VARIABLETYPE;
 }
 
 
@@ -212,7 +218,18 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 			}
 			break;
 		}
-
+		case COLUMN_OUTPUTFN_VARIABLETYPE:{
+			for (int i = 0; i < availableGeometryClasses.length; i++) {
+				if(availableGeometryClasses[i].getName().equals(aValue)) {
+					Domain newDomain = new Domain(availableGeometryClasses[i]);
+					outputFunction.setDomain(newDomain);
+					fireTableRowsUpdated(rowIndex,rowIndex);
+					outputFunctionContext.firePropertyChange("outputFunctions", null, outputFunctionContext.getOutputFunctionsList());
+					break;
+				}
+			}
+			break;
+		}
 	}
 }
 
@@ -220,6 +237,19 @@ private OutputFunctionContext getOutputFunctionContext() {
 	return outputFunctionContext;
 }
 
+private GeometryClass[] availableGeometryClasses = null;
+public void setAvailableDomains(GeometryClass[] availableGeometryClasses) {
+	this.availableGeometryClasses = availableGeometryClasses;
+	if(ownerTable.getColumnModel().getColumnCount() > COLUMN_OUTPUTFN_VARIABLETYPE) {
+		TableColumn varTypeCol = ownerTable.getColumnModel().getColumn(COLUMN_OUTPUTFN_VARIABLETYPE);
+		JComboBox<String> varTypesCB = new JComboBox<>();
+		for (int i = 0; availableGeometryClasses != null && i < availableGeometryClasses.length; i++) {
+			varTypesCB.addItem(availableGeometryClasses[i].getName());
+		}
+		varTypeCol.setCellEditor(new DefaultCellEditor(varTypesCB));
+	}
+
+}
 public void setOutputFunctionContext(OutputFunctionContext newValue) {
 	OutputFunctionContext oldValue = this.outputFunctionContext;
 	if (oldValue!=null){
