@@ -10,6 +10,7 @@
 
 package cbit.vcell.matlab;
 
+import java.util.ArrayList;
 import java.util.Vector;
 
 import org.vcell.util.BeanUtils;
@@ -142,7 +143,17 @@ public void write_V6_MFile(java.io.PrintWriter pw, String functionName,OutputFun
 		varNamesForStringArray = varNamesForStringArray + "'" + func.getName() + "';";
 		varNamesForValueArray = varNamesForValueArray + func.getName() + " ";
 	}
-	
+	int numOutputFunctions = 0;
+	String outputFunctionNamesForStringArray = "";
+	String outputFunctionNamesForValueArray = "";
+	if(outputFunctionContext != null && outputFunctionContext.getOutputFunctionsList() != null) {
+		ArrayList<AnnotatedFunction> annotFuncList = outputFunctionContext.getOutputFunctionsList();
+		for (int i = 0; i < annotFuncList.size(); i++) {
+			numOutputFunctions++;
+			outputFunctionNamesForStringArray = outputFunctionNamesForStringArray+"'"+annotFuncList.get(i).getName()+"'"+(i == (annotFuncList.size()-1)?"":";");
+			outputFunctionNamesForValueArray =  outputFunctionNamesForValueArray +    annotFuncList.get(i).getName() +   (i == (annotFuncList.size()-1)?"":" ");
+		}
+	}
 	
 	pw.println("");
 	pw.println("%");
@@ -153,8 +164,8 @@ public void write_V6_MFile(java.io.PrintWriter pw, String functionName,OutputFun
 	pw.println("timeSpan = ["+beginTime+" "+endTime+"];");
 	pw.println("");
 	pw.println("% output variable lengh and names");
-	pw.println("numVars = " + numVars + ";");
-	pw.println("allNames = {" + varNamesForStringArray + "};");
+	pw.println("numVars = " + (numVars+numOutputFunctions) + ";");
+	pw.println("allNames = {" + varNamesForStringArray + outputFunctionNamesForStringArray +"};");
 	
 	pw.println("");
 	pw.println("if nargin >= 1");
@@ -269,7 +280,7 @@ public void write_V6_MFile(java.io.PrintWriter pw, String functionName,OutputFun
 		}
 	}
 	pw.println("");
-	pw.println("\trowValue = [" + varNamesForValueArray + "];");
+	pw.println("\trowValue = [" + varNamesForValueArray + outputFunctionNamesForValueArray + "];");
 	pw.println("end");
 		
 	//
@@ -302,16 +313,6 @@ public void write_V6_MFile(java.io.PrintWriter pw, String functionName,OutputFun
 	for (int i = 0; i < functions.length; i++){
 		pw.println("\t"+cbit.vcell.parser.SymbolUtils.getEscapedTokenMatlab(functions[i].getName())+" = "+functions[i].getExpression().infix_Matlab()+";");
 	}
-	//
-	// print OutputFunctions
-	//
-	pw.println("\t% OutputFunctions");
-	if(outputFunctionContext != null && outputFunctionContext.getOutputFunctionsList() != null) {
-		for (AnnotatedFunction annotatedFunction:outputFunctionContext.getOutputFunctionsList()){
-			pw.println("\t"+cbit.vcell.parser.SymbolUtils.getEscapedTokenMatlab(annotatedFunction.getName())+" = "+annotatedFunction.getExpression().infix_Matlab()+";");	
-		}
-	}
-
 	pw.println("\t% Rates");
 	pw.println("\tdydt = [");
 	for (int i=0;i<volVars.length;i++){
