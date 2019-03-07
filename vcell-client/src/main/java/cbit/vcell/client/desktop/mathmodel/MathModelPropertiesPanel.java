@@ -65,7 +65,7 @@ import cbit.vcell.mathmodel.MathModel;
 public class MathModelPropertiesPanel extends DocumentEditorSubPanel {
 	private MathModel mathModel = null;
 	private EventHandler eventHandler = new EventHandler();
-	private JLabelLikeTextField nameLabel, ownerLabel, lastModifiedLabel, permissionLabel;
+	private JLabelLikeTextField nameLabel, ownerLabel, idLabel, lastModifiedLabel, permissionLabel;
 	private JButton changePermissionButton;
 	private MathModelWindowManager mathModelWindowManager;
 	private JLabel geometryLabel, detStochIconLabel;
@@ -128,6 +128,7 @@ private void handleException(java.lang.Throwable exception) {
 private void initialize() {
 	try {		
 		nameLabel = new JLabelLikeTextField();
+		idLabel = new JLabelLikeTextField();
 		ownerLabel = new JLabelLikeTextField();
 		lastModifiedLabel = new JLabelLikeTextField();
 		permissionLabel = new JLabelLikeTextField();
@@ -173,6 +174,24 @@ private void initialize() {
 		gbc.anchor = GridBagConstraints.LINE_START;		
 		add(nameLabel, gbc);
 		
+		gridy ++;
+		gbc = new java.awt.GridBagConstraints();
+		gbc.gridx = 0; 
+		gbc.gridy = gridy;
+		gbc.insets = new Insets(4, 4, 4, 4);
+		gbc.anchor = GridBagConstraints.LINE_END;		
+		label = new JLabel("VCell Identifier:");
+		add(label, gbc);
+		
+		gbc = new java.awt.GridBagConstraints();
+		gbc.gridx = 1; 
+		gbc.gridy = gridy;
+		gbc.gridwidth = 2;
+		gbc.fill = java.awt.GridBagConstraints.BOTH;
+		gbc.insets = new Insets(4, 4, 4, 4);
+		gbc.anchor = GridBagConstraints.LINE_START;		
+		add(idLabel, gbc);
+
 		gridy ++;
 		gbc = new java.awt.GridBagConstraints();
 		gbc.gridx = 0; 
@@ -308,6 +327,8 @@ private void updateInterface() {
 	try {
 		if (version != null) {
 			ownerLabel.setText(version.getOwner().getName());
+			String text = "mathmodel-" + version.getVersionKey().toString();
+			idLabel.setText(text);
 			lastModifiedLabel.setText(version.getDate().toString());
 			MathModelInfo mathModelInfo = mathModelWindowManager.getRequestManager().getDocumentManager().getMathModelInfo(version.getVersionKey());
 			permissionLabel.setText(mathModelInfo.getVersion().getGroupAccess().getDescription());

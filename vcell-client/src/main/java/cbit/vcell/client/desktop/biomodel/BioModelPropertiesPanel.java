@@ -72,7 +72,7 @@ public class BioModelPropertiesPanel extends JPanel {
 	
 	private BioModel bioModel = null;
 	private EventHandler eventHandler = new EventHandler();
-	private JLabelLikeTextField nameLabel, ownerLabel, lastModifiedLabel, permissionLabel;
+	private JLabelLikeTextField nameLabel, ownerLabel, idLabel, lastModifiedLabel, permissionLabel;
 	private JButton changePermissionButton;
 	private BioModelWindowManager bioModelWindowManager;
 	private LocalMetaDataPanel applicationsPanel = null;
@@ -134,6 +134,7 @@ private void handleException(java.lang.Throwable exception) {
 private void initialize() {
 	try {		
 		nameLabel = new JLabelLikeTextField();
+		idLabel = new JLabelLikeTextField();
 		ownerLabel = new JLabelLikeTextField();
 		lastModifiedLabel = new JLabelLikeTextField();
 		permissionLabel = new JLabelLikeTextField();
@@ -184,6 +185,23 @@ private void initialize() {
 		gbc.gridy = gridy;
 		gbc.insets = new Insets(4, 4, 4, 4);
 		gbc.anchor = GridBagConstraints.LINE_END;		
+		label = new JLabel("VCell Identifier:");
+		mainPanel.add(label, gbc);
+		
+		gbc = new java.awt.GridBagConstraints();
+		gbc.gridx = 1; 
+		gbc.gridy = gridy;
+		gbc.fill = java.awt.GridBagConstraints.BOTH;
+		gbc.insets = new Insets(4, 4, 4, 4);
+		gbc.anchor = GridBagConstraints.LINE_START;		
+		mainPanel.add(idLabel, gbc);
+		
+		gridy ++;
+		gbc = new java.awt.GridBagConstraints();
+		gbc.gridx = 0; 
+		gbc.gridy = gridy;
+		gbc.insets = new Insets(4, 4, 4, 4);
+		gbc.anchor = GridBagConstraints.LINE_END;		
 		label = new JLabel("Owner:");
 		mainPanel.add(label, gbc);
 		
@@ -194,7 +212,7 @@ private void initialize() {
 		gbc.insets = new Insets(4, 4, 4, 4);
 		gbc.anchor = GridBagConstraints.LINE_START;		
 		mainPanel.add(ownerLabel, gbc);
-
+		
 		gridy ++;
 		gbc = new java.awt.GridBagConstraints();
 		gbc.gridx = 0; 
@@ -310,6 +328,8 @@ private void updateInterface() {
 	Version version = bioModel.getVersion();
 	if (version != null) {
 		ownerLabel.setText(version.getOwner().getName());
+		String text = "biomodel-" + version.getVersionKey().toString();
+		idLabel.setText(text);
 		lastModifiedLabel.setText(version.getDate().toString());
 		try {
 			BioModelInfo bioModelInfo = bioModelWindowManager.getRequestManager().getDocumentManager().getBioModelInfo(version.getVersionKey());
