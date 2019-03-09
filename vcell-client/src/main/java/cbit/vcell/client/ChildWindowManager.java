@@ -425,7 +425,7 @@ public class ChildWindowManager {
 			throw new IllegalArgumentException("child window with content pane already exists");
 		}
 		if (getChildWindowFromContext(contextObject)!=null){
-			throw new IllegalArgumentException("child window with content object "+contextObject+" already exists");
+			throw new IllegalArgumentException("child window with contextobject "+contextObject+" already exists, title='"+title+"'");
 		}
 		
 		ChildWindow childWindow = new ChildWindow(contentPane, contextObject, title);

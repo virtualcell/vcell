@@ -18,6 +18,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.IdentityHashMap;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -405,7 +406,7 @@ public abstract class BioCartoonTool extends cbit.gui.graph.gui.CartoonTool {
 		ArrayList<JTextField> getFinalNames();
 		Component getAssignmentInterface();
 		Component getParent();
-		boolean shouldCloseParent();
+		void close();
 	}
 	
 	/**
@@ -543,13 +544,29 @@ public abstract class BioCartoonTool extends cbit.gui.graph.gui.CartoonTool {
 		AsynchClientTask pasteRXTask = new AsynchClientTask("Pasting Reaction...",AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
 			@Override
 			public void run(Hashtable<String, Object> hashTable)throws Exception {
+				Issue[] checkedIssues = pasteHelper[0].issues.toArray(new Issue[0]);
 				UserResolvedRxElements userResolvedRxElements = (UserResolvedRxElements)hashTable.get("userResolvedRxElements");
 				ReactionStep[] reactionStepsArrOrig = new ReactionStep[] {(ReactionStep)hashTable.get("fromRXStep")};
 				IssueContext issueContext = new IssueContext(ContextType.Model, pasteToModel, null);
 				pasteHelper[0] = pasteReactionSteps0(pasteHelper[0].rxPartMapStruct,requester, issueContext, reactionStepsArrOrig,
 						pasteToModel, pasteToStructure, false,/*bUseDBSpecies,*/userResolvedRxElements);
+				Vector<Issue> uncheckedIssues = new Vector<>();
 				if (pasteHelper[0].issues.size() != 0) {
-					printIssues(pasteHelper[0].issues, requester);
+					for (Issue issue : pasteHelper[0].issues) {
+						boolean bFound = false;
+						for (int i = 0; i < checkedIssues.length; i++) {
+							if(checkedIssues[i].getMessage().equals(issue.getMessage())) {
+								bFound = true;
+								break;
+							}
+						}
+						if(!bFound) {
+							uncheckedIssues.add(issue);
+						}
+					}
+				}
+				if(uncheckedIssues.size() > 0) {
+					printIssues(uncheckedIssues, requester);
 				}
 				if(rxPasteInterface != null){
 					for(BioModelEntityObject newBioModelEntityObject:pasteHelper[0].reactionsAndSpeciesContexts.keySet()){
@@ -562,7 +579,7 @@ public abstract class BioCartoonTool extends cbit.gui.graph.gui.CartoonTool {
 			}
 		};
 
-		AsynchClientTask reshowInterface = new AsynchClientTask("Reshow interaface...",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING,false,true) {
+		AsynchClientTask reshowInterface = new AsynchClientTask("Reshow interface...",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING,false,true) {
 			@Override
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
 				Object error = hashTable.get(ClientTaskDispatcher.TASK_ABORTED_BY_ERROR);
@@ -576,10 +593,11 @@ public abstract class BioCartoonTool extends cbit.gui.graph.gui.CartoonTool {
 							BioCartoonTool.pasteReactionSteps(requester, rxPasteInterface, resolvedReaction, fromModel, fromStructure, fromRXStep, pasteToModel, pasteToStructure, assignmentHelper);
 						}
 					}).start();
-				}else if(assignmentHelper.shouldCloseParent() && error == null) {
-					//Assume we're responsible for closing the parent
-					Window closeThis = (Window)BeanUtils.findTypeParentOfComponent(assignmentHelper.getParent(), Window.class);
-					closeThis.dispose();
+				}else if(assignmentHelper.getAssignmentInterface() == null && error != null) {
+					//DialogUtils.showErrorDialog(assignmentHelper.getParent(), ((Throwable)error).getMessage());
+					System.out.println("got here");
+				}else if(error == null) {
+					assignmentHelper.close();
 				}
 			}
 			
@@ -930,13 +948,18 @@ public abstract class BioCartoonTool extends cbit.gui.graph.gui.CartoonTool {
 								changeName(userResolvedRxElements, newSc, j,pasteToModel,forceName);
 								reactionsAndSpeciesContexts.put(newSc,copyFromRxParticipantArr[i].getSpeciesContext());
 							}else {
+								if(forceName != null && forceName.length()>0 && pasteToModel.getSpeciesContext(forceName) != null) {
+									if(pasteToModel.getSpeciesContext(forceName).getStructure().getName() == userResolvedRxElements.toStructureArr[j].getName()) {
+										throw new Exception("Paste custom name error:\nSpeciesContext name '"+forceName+"' in structure '"+userResolvedRxElements.toStructureArr[j].getName()+"' already used");										
+									}
+								}
 								newSc = pasteToModel.getSpeciesContext(userResolvedRxElements.toSpeciesArr[j], userResolvedRxElements.toStructureArr[j]);
 								if(newSc == null) {
 									newSc = pasteSpecies(parent, copyFromRxParticipantArr[i].getSpecies(),null,pasteToModel,pasteToStruct,bNew, /*bUseDBSpecies,*/speciesHash,
 											UserResolvedRxElements.getPreferredReactionElement(userResolvedRxElements,copyFromRxParticipantArr[i]));
 										changeName(userResolvedRxElements, newSc, j,pasteToModel,forceName);									
 								}else if(forceName != null && forceName.length()>0) {
-									throw new Exception("Paste custom name error:\nCan't rename existing speciesContext '"+newSc.getName()+"' in structure '"+newSc.getStructure().getName()+"'");
+									throw new Exception("Paste custom name error:\nCan't rename existing speciesContext '"+newSc.getName()+"' in structure '"+newSc.getStructure().getName()+"' to '"+forceName+"'");
 								}
 								reactionsAndSpeciesContexts.put(newSc,copyFromRxParticipantArr[i].getSpeciesContext());
 //								String rootSC = ReactionCartoonTool.speciesContextRootFinder(copyFromRxParticipantArr[i].getSpeciesContext());

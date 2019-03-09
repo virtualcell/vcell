@@ -744,8 +744,8 @@ public class ReactionCartoonTool extends BioCartoonTool implements BioCartoonToo
 						return rxParticipantResolverPanel;
 					}
 					@Override
-					public boolean shouldCloseParent() {
-						return false;
+					public void close() {
+						//Do Nothing
 					}
 				};
 

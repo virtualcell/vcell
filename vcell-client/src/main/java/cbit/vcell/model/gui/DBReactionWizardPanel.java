@@ -33,6 +33,8 @@ import javax.swing.JTextField;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.DataAccessException;
+import org.vcell.util.UserCancelException;
+import org.vcell.util.UtilCancelException;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.LineBorderBean;
@@ -304,7 +306,7 @@ public ChildWindow getChildWindow(){
 private void bfnActionPerformed(java.awt.event.ActionEvent actionEvent) {
 	try{
 		//
-		javax.swing.DefaultListModel pndlm = (javax.swing.DefaultListModel)getParameterNamesJList().getModel();
+		DefaultListModel pndlm = (DefaultListModel)getParameterNamesJList().getModel();
 		//
 		if(actionEvent.getSource().equals(getBackJButton())){
 			if(getRXParticipantResolverPanel().isVisible() && pndlm.size() == 0 && getSearchDictionaryJRadioButton().isSelected() == false){
@@ -337,47 +339,49 @@ private void bfnActionPerformed(java.awt.event.ActionEvent actionEvent) {
 			}
 			//
 			((java.awt.CardLayout)getCardLayoutJPanel().getLayout()).next(getCardLayoutJPanel());
-		}else if(actionEvent.getSource().equals(getFinishJButton())){
-			ReactionDescription myResolvedReaction = getRXParticipantResolverPanel().getResolvedReaction();
-			Model fromModel = getDocumentManager().getBioModel(myResolvedReaction.getVCellBioModelID()).getModel();
-			ReactionStep[] rxArr = fromModel.getReactionSteps();
-			ReactionStep fromRXStep = null;
-			for (int i = 0; i < rxArr.length; i++) {
-				if(rxArr[i].getKey().equals(myResolvedReaction.getVCellRXID())){
-					fromRXStep = rxArr[i];
-					break;
-				}
-			}
-			BioCartoonTool.AssignmentHelper assignmentHelper = new BioCartoonTool.AssignmentHelper() {
-				@Override
-				public JComboBox[] getStructureAssignmentJCB() {
-					return getRXParticipantResolverPanel().getStructureAssignmentJCB();
-				}
-				@Override
-				public JComboBox[] getSpeciesAssignmentJCB() {
-					return getRXParticipantResolverPanel().getSpeciesAssignmentJCB();
-				}
-				@Override
-				public ArrayList<JTextField> getFinalNames() {
-					// TODO Auto-generated method stub
-					return getRXParticipantResolverPanel().getFinalNamesJTF();
-				}
-				@Override
-				public Component getParent() {
-					return DBReactionWizardPanel.this;
-				}
-				@Override
-				public Component getAssignmentInterface() {
-					return null;
-				}
-				@Override
-				public boolean shouldCloseParent() {
-					return true;
-				}
-			};
-			BioCartoonTool.pasteReactionSteps(DBReactionWizardPanel.this, rxPasteInterface, myResolvedReaction, fromModel,DBReactionWizardPanel.this.getStructure(),fromRXStep,
-				DBReactionWizardPanel.this.getModel(), DBReactionWizardPanel.this.getStructure(),assignmentHelper);
 		}
+//		else if(actionEvent.getSource().equals(getFinishJButton())){
+//			ReactionDescription myResolvedReaction = getRXParticipantResolverPanel().getResolvedReaction();
+//			Model fromModel = getDocumentManager().getBioModel(myResolvedReaction.getVCellBioModelID()).getModel();
+//			ReactionStep[] rxArr = fromModel.getReactionSteps();
+//			ReactionStep fromRXStep = null;
+//			for (int i = 0; i < rxArr.length; i++) {
+//				if(rxArr[i].getKey().equals(myResolvedReaction.getVCellRXID())){
+//					fromRXStep = rxArr[i];
+//					break;
+//				}
+//			}
+//			BioCartoonTool.AssignmentHelper assignmentHelper = new BioCartoonTool.AssignmentHelper() {
+//				@Override
+//				public JComboBox[] getStructureAssignmentJCB() {
+//					return getRXParticipantResolverPanel().getStructureAssignmentJCB();
+//				}
+//				@Override
+//				public JComboBox[] getSpeciesAssignmentJCB() {
+//					return getRXParticipantResolverPanel().getSpeciesAssignmentJCB();
+//				}
+//				@Override
+//				public ArrayList<JTextField> getFinalNames() {
+//					// TODO Auto-generated method stub
+//					return getRXParticipantResolverPanel().getFinalNamesJTF();
+//				}
+//				@Override
+//				public Component getParent() {
+//					return DBReactionWizardPanel.this;
+//				}
+//				@Override
+//				public Component getAssignmentInterface() {
+//					return null;
+//				}
+//				@Override
+//				public boolean shouldCloseParent() {
+//					return true;
+//				}
+//			};
+//			BioCartoonTool.pasteReactionSteps(DBReactionWizardPanel.this, rxPasteInterface, myResolvedReaction, fromModel,DBReactionWizardPanel.this.getStructure(),fromRXStep,
+//				DBReactionWizardPanel.this.getModel(), DBReactionWizardPanel.this.getStructure(),assignmentHelper);
+//			DBReactionWizardPanel.this.getChildWindow().close();
+//		}
 		//
 		configureBFN();
 	}catch(Exception e){
@@ -463,9 +467,12 @@ private void configureBFN() {
 //			(!getFindRXTextRadioButton().isSelected()?getCurrentDBFormalSpecies() != null:false);
 //		bBackEnabled = false;
 //	}else 
-	if(getSearchResultsJPanel().isShowing() && getSearchDictionaryJRadioButton().isSelected()){
+	if(getSearchResultsJPanel().isShowing() /*&& getSearchDictionaryJRadioButton().isSelected()*/){
 		bBackEnabled = false;
-		bNextEnabled = !getReactionsJList().isSelectionEmpty();
+		bNextEnabled = !getParameterNamesJList().isSelectionEmpty();
+		if(!bNextEnabled) {
+			((DefaultListModel)getParameterValuesJList().getModel()).removeAllElements();
+		}
 	}else if(getParameterJPanel().isShowing()){
 		bNextEnabled = getReactionStep0() != null;
 	}else if(getRXParticipantResolverPanel().isShowing()){
@@ -573,17 +580,97 @@ private void connEtoC12(java.awt.event.ActionEvent arg1) {
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void connEtoC13(java.awt.event.ActionEvent arg1) {
+//	try {
+//		// user code begin {1}
+//		// user code end
+//		this.bfnActionPerformed(arg1);
+//		// user code begin {2}
+//		// user code end
+//	} catch (java.lang.Throwable ivjExc) {
+//		// user code begin {3}
+//		// user code end
+//		handleException(ivjExc);
+//	}
+	BioCartoonTool.AssignmentHelper assignmentHelper = new BioCartoonTool.AssignmentHelper() {
+		@Override
+		public JComboBox[] getStructureAssignmentJCB() {
+			return getRXParticipantResolverPanel().getStructureAssignmentJCB();
+		}
+		@Override
+		public JComboBox[] getSpeciesAssignmentJCB() {
+			return getRXParticipantResolverPanel().getSpeciesAssignmentJCB();
+		}
+		@Override
+		public ArrayList<JTextField> getFinalNames() {
+			// TODO Auto-generated method stub
+			return getRXParticipantResolverPanel().getFinalNamesJTF();
+		}
+		@Override
+		public Component getParent() {
+			return DBReactionWizardPanel.this;
+		}
+		@Override
+		public Component getAssignmentInterface() {
+			return null;
+		}
+		@Override
+		public void close() {
+			DBReactionWizardPanel.closeParent(childWindow);
+		}
+	};
+	final String MY_RES_RX = "MY_RES_RX";
+	final String FROM_MODEL = "FROM_MODEL";
+	final String FROM_RXSTEP = "FROM_RXSTEP";
+	AsynchClientTask getRXTask = new AsynchClientTask("Getting reactions...",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+		@Override
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
+			ReactionDescription myResolvedReaction = getRXParticipantResolverPanel().getResolvedReaction();
+			Model fromModel = getDocumentManager().getBioModel(myResolvedReaction.getVCellBioModelID()).getModel();
+			ReactionStep[] rxArr = fromModel.getReactionSteps();
+			ReactionStep fromRXStep = null;
+			for (int i = 0; i < rxArr.length; i++) {
+				if(rxArr[i].getKey().equals(myResolvedReaction.getVCellRXID())){
+					fromRXStep = rxArr[i];
+					break;
+				}
+			}
+			hashTable.put(FROM_RXSTEP, fromRXStep);
+			hashTable.put(MY_RES_RX, myResolvedReaction);
+			hashTable.put(FROM_MODEL, fromModel);
+		}
+	};
+	AsynchClientTask applyReactionTask = new AsynchClientTask("",AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+		@Override
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
+			BioCartoonTool.pasteReactionSteps(DBReactionWizardPanel.this, rxPasteInterface,
+				(ReactionDescription)hashTable.get(MY_RES_RX), (Model)hashTable.get(FROM_MODEL),DBReactionWizardPanel.this.getStructure(),(ReactionStep)hashTable.get(FROM_RXSTEP),
+				DBReactionWizardPanel.this.getModel(), DBReactionWizardPanel.this.getStructure(),assignmentHelper);
+		}
+	};
+	AsynchClientTask finishTask = new AsynchClientTask("",AsynchClientTask.TASKTYPE_SWING_NONBLOCKING,false,false) {
+		@Override
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
+			DBReactionWizardPanel.this.getChildWindow().close();
+			configureBFN();
+		}
+	};
+			
+	//Must integrate this with BioCartoonTool.pasteReactionSteps to fix the 'VCellThreadChecker.checkRemoteInvocation' warnings
+	Hashtable<String, Object> hashTable = new Hashtable<>();
 	try {
-		// user code begin {1}
-		// user code end
-		this.bfnActionPerformed(arg1);
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
+		getRXTask.run(hashTable);
+		applyReactionTask.run(hashTable);
+//		finishTask.run(hashTable);
+	} catch (UserCancelException e) {
+		//ignore
+	} catch (UtilCancelException e) {
+		//ignore
+	} catch (Exception e) {
+		// TODO Auto-generated catch block
+		e.printStackTrace();
+		DialogUtils.showErrorDialog(this, e.getMessage());
 	}
+//	ClientTaskDispatcher.dispatch(this, new Hashtable<>(), new AsynchClientTask[] {getRXTask,applyReactionTask,finishTask});
 }
 
 

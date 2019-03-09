@@ -853,6 +853,8 @@ private void updateShape() {
 			getSpeciesContext().setName(newName);
 		} catch (PropertyVetoException e1) {
 			e1.printStackTrace();
+			//Set textfield back to original name before show error to avoid focuslost popup same error again
+			nameTextField.setText(getSpeciesContext().getName());
 			DialogUtils.showErrorDialog(SpeciesPropertiesPanel.this, e1.getMessage());
 		}
 	}
