@@ -500,7 +500,7 @@ public class SimulationStateMachine {
 			SimulationExecutionStatus newSimExeStatus = new SimulationExecutionStatus(null,  null, new Date(), null, false, null);
 			newSimJobStatus = new SimulationJobStatus(VCellServerID.getSystemServerID(),vcSimID,jobIndex,
 					oldSimulationJobStatus.getSubmitDate(),SchedulerStatus.FAILED,taskID,
-					SimulationMessage.jobFailed("simulation required "+requiredMemMB+"MB of memory, only "+allowableMemMB+"MB allowed from "+allowableMemMB.getMemLimitSource()),
+					SimulationMessage.jobFailed("simulation required "+requiredMemMB+"MB of memory, only "+allowableMemMB.getMemLimit()+"MB allowed from "+allowableMemMB.getMemLimitSource()),
 					newQueueStatus,newSimExeStatus);
 			
 			simulationDatabase.updateSimulationJobStatus(newSimJobStatus);
