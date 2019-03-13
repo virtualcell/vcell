@@ -720,6 +720,11 @@ public class StochSimOptionsPanel extends CollapsiblePanel {
 //			getHistogramButton().setSelected(true);
 			getJTextFieldNumOfTrials().setText(numTrials+"");
 		}
+		
+		// TODO: temporarily disable the button
+		// UNDO THIS WHEN DEVELOPMENT IS COMPLETE
+		getMultiRunButton().setEnabled(false);
+
 		boolean isUseCustomSeed = sso.isUseCustomSeed();
 		int customSeed = sso.getCustomSeed();
 		

@@ -639,7 +639,8 @@ public class OutputOptionsPanel extends CollapsiblePanel {
 		getUniformOutputRadioButton().setEnabled(false);
 		BeanUtils.enableComponents(getUniformOutputPanel(), false);
 		
-		if (solverTaskDescription.getSolverDescription().equals(SolverDescription.Smoldyn)) {
+		if (solverTaskDescription.getSolverDescription().equals(SolverDescription.Smoldyn) ||
+				solverTaskDescription.getSolverDescription().equals(SolverDescription.NFSim) ) {
 			getDefaultOutputPanel().setVisible(false);
 			getDefaultOutputRadioButton().setVisible(false);
 		} else if (solverTaskDescription.getSolverDescription().isChomboSolver()) {

@@ -244,6 +244,13 @@ public class NFSimGeneralOptionsPanel  extends CollapsiblePanel {
 			return;
 		}
 
+		// TODO: temporarily disable the button
+		// UNDO THIS WHEN DEVELOPMENT IS COMPLETE
+		if(solverTaskDescription.getSolverDescription().isNFSimSolver()) {
+			getMultiRunButton().setEnabled(false);
+			return;
+		}
+
 		// TODO: initialize multiple runs and num of trials from solverTaskDescription settings
 
 	}
