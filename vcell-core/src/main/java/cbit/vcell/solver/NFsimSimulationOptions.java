@@ -35,6 +35,8 @@ public class NFsimSimulationOptions implements Serializable, Matchable, Vetoable
 	private Integer randomSeed = null;
 	boolean preventIntraBonds = false;
 	boolean matchComplexes = true;		// initialized to true for a new sim or if is missing in existing (old) sim
+	private Integer numRuns = DefaultNumRuns;
+
 
 	protected transient PropertyChangeSupport propertyChange;
 	protected transient VetoableChangeSupport vetoChange;
@@ -43,6 +45,7 @@ public class NFsimSimulationOptions implements Serializable, Matchable, Vetoable
 	public static final Integer DefaultMaxMoleculesPerType = 100000;
 	public static final Integer DefaultDistanceToMolecules = 1000;
 	public static final Integer DefaultRandomSeed = 1;
+	public static final Integer DefaultNumRuns = 10;
 	
 	public NFsimSimulationOptions() {
 		removeVetoableChangeListener(this);

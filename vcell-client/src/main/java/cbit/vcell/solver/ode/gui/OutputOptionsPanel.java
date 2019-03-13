@@ -60,7 +60,7 @@ public class OutputOptionsPanel extends CollapsiblePanel {
 	private javax.swing.ButtonGroup ivjbuttonGroup1 = null;
 	
 	private javax.swing.JLabel ivjPointsLabel = null;
-		
+	
 	private SolverTaskDescription solverTaskDescription = null;
 	private ChomboOutputOptionsPanel chomboOutputOptionsPanel = null;
 	
@@ -84,6 +84,9 @@ public class OutputOptionsPanel extends CollapsiblePanel {
 				refresh();
 			}
 			if (evt.getSource() == solverTaskDescription && evt.getPropertyName().equals(SolverTaskDescription.PROPERTY_STOCH_SIM_OPTIONS)) {
+				refresh();
+			}
+			if (evt.getSource() == solverTaskDescription && evt.getPropertyName().equals(SolverTaskDescription.PROPERTY_NFSIM_SIMULATION_OPTIONS)) {
 				refresh();
 			}
 		}
@@ -135,32 +138,32 @@ public class OutputOptionsPanel extends CollapsiblePanel {
 
 				java.awt.GridBagConstraints constraintsKeepAtMostLabel = new java.awt.GridBagConstraints();
 				constraintsKeepAtMostLabel.gridx = 2; constraintsKeepAtMostLabel.gridy = 0;
-				constraintsKeepAtMostLabel.insets = new java.awt.Insets(4, 4, 4, 4);
+				constraintsKeepAtMostLabel.insets = new java.awt.Insets(3, 4, 3, 4);
 				getDefaultOutputPanel().add(getKeepAtMostLabel(), constraintsKeepAtMostLabel);
 
 				java.awt.GridBagConstraints constraintsKeepEveryTextField = new java.awt.GridBagConstraints();
 				constraintsKeepEveryTextField.gridx = 0; constraintsKeepEveryTextField.gridy = 0;
 				constraintsKeepEveryTextField.fill = java.awt.GridBagConstraints.HORIZONTAL;
-				constraintsKeepEveryTextField.insets = new java.awt.Insets(4, 4, 4, 4);
+				constraintsKeepEveryTextField.insets = new java.awt.Insets(3, 4, 3, 4);
 				getDefaultOutputPanel().add(getKeepEveryTextField(), constraintsKeepEveryTextField);
 
 
 				java.awt.GridBagConstraints constraintsKeepAtMostTextField = new java.awt.GridBagConstraints();
 				constraintsKeepAtMostTextField.gridx = 3; constraintsKeepAtMostTextField.gridy = 0;
 				constraintsKeepAtMostTextField.fill = java.awt.GridBagConstraints.HORIZONTAL;
-				constraintsKeepAtMostTextField.insets = new java.awt.Insets(4, 4, 4, 4);
+				constraintsKeepAtMostTextField.insets = new java.awt.Insets(3, 4, 3, 4);
 				getDefaultOutputPanel().add(getKeepAtMostTextField(), constraintsKeepAtMostTextField);
 
 				java.awt.GridBagConstraints constraintsPointsLabel = new java.awt.GridBagConstraints();
 				constraintsPointsLabel.gridx = 4; constraintsPointsLabel.gridy = 0;
 				constraintsPointsLabel.anchor = java.awt.GridBagConstraints.WEST;
 				constraintsPointsLabel.weightx = 1.0;
-				constraintsPointsLabel.insets = new java.awt.Insets(4, 4, 4, 4);
+				constraintsPointsLabel.insets = new java.awt.Insets(3, 4, 3, 4);
 				getDefaultOutputPanel().add(getPointsLabel(), constraintsPointsLabel);
 
 				java.awt.GridBagConstraints constraintsJLabel4 = new java.awt.GridBagConstraints();
 				constraintsJLabel4.gridx = 1; constraintsJLabel4.gridy = 0;
-				constraintsJLabel4.insets = new java.awt.Insets(4, 4, 4, 4);
+				constraintsJLabel4.insets = new java.awt.Insets(3, 4, 3, 4);
 				JLabel jlabel4 = new javax.swing.JLabel("time samples");
 				getDefaultOutputPanel().add(jlabel4, constraintsJLabel4);
 			} catch (java.lang.Throwable ivjExc) {
@@ -203,12 +206,12 @@ public class OutputOptionsPanel extends CollapsiblePanel {
 				constraintsTimeStepUnitsLabel.anchor = java.awt.GridBagConstraints.WEST;
 				constraintsTimeStepUnitsLabel.weightx = 1.0;
 				constraintsTimeStepUnitsLabel.fill = GridBagConstraints.HORIZONTAL;
-				constraintsTimeStepUnitsLabel.insets = new java.awt.Insets(4, 4, 4, 4);
+				constraintsTimeStepUnitsLabel.insets = new java.awt.Insets(3, 4, 3, 4);
 				getUniformOutputPanel().add(getTimeStepUnitsLabel(), constraintsTimeStepUnitsLabel);
 
 				java.awt.GridBagConstraints constraintsOutputTimeStepTextField = new java.awt.GridBagConstraints();
 				constraintsOutputTimeStepTextField.gridx = 0; constraintsOutputTimeStepTextField.gridy = 0;
-				constraintsOutputTimeStepTextField.insets = new java.awt.Insets(4, 4, 4, 4);
+				constraintsOutputTimeStepTextField.insets = new java.awt.Insets(3, 4, 3, 4);
 				getUniformOutputPanel().add(getOutputTimeStepTextField(), constraintsOutputTimeStepTextField);
 			} catch (java.lang.Throwable ivjExc) {
 				handleException(ivjExc);
@@ -303,13 +306,13 @@ public class OutputOptionsPanel extends CollapsiblePanel {
 				constraintsOutputTimesTextField.gridx = 0; constraintsOutputTimesTextField.gridy = 0;
 				constraintsOutputTimesTextField.fill = java.awt.GridBagConstraints.HORIZONTAL;
 				constraintsOutputTimesTextField.weightx = 1.0;
-				constraintsOutputTimesTextField.insets = new java.awt.Insets(3, 4, 4, 4);
+				constraintsOutputTimesTextField.insets = new java.awt.Insets(3, 4, 3, 4);
 				ivjExplicitOutputPanel.add(getOutputTimesTextField(), constraintsOutputTimesTextField);
 
 				java.awt.GridBagConstraints constraintsJLabel3 = new java.awt.GridBagConstraints();
 				constraintsJLabel3.gridx = 0; constraintsJLabel3.gridy = 1;
 				constraintsJLabel3.gridwidth = 2;
-				constraintsJLabel3.insets = new java.awt.Insets(3, 4, 4, 4);
+				constraintsJLabel3.insets = new java.awt.Insets(3, 4, 3, 4);
 				JLabel jlabel3 = new javax.swing.JLabel("(Comma or space separated numbers, e.g. 0.5, 0.8, 1.2, 1.7)");
 				ivjExplicitOutputPanel.add(jlabel3, constraintsJLabel3);
 			} catch (java.lang.Throwable ivjExc) {
@@ -359,7 +362,7 @@ public class OutputOptionsPanel extends CollapsiblePanel {
 			java.awt.GridBagConstraints constraintsDefaultOutputRadioButton = new java.awt.GridBagConstraints();
 			constraintsDefaultOutputRadioButton.gridx = 0; 
 			constraintsDefaultOutputRadioButton.gridy = 0;
-			constraintsDefaultOutputRadioButton.insets = new java.awt.Insets(4, 4, 4, 4);
+			constraintsDefaultOutputRadioButton.insets = new java.awt.Insets(3, 4, 1, 4);
 			constraintsDefaultOutputRadioButton.anchor = GridBagConstraints.LINE_START;
 			getContentPanel().add(getDefaultOutputRadioButton(), constraintsDefaultOutputRadioButton);
 	
@@ -369,14 +372,14 @@ public class OutputOptionsPanel extends CollapsiblePanel {
 			constraintsDefaultOutputPanel.fill = java.awt.GridBagConstraints.BOTH;
 			constraintsDefaultOutputPanel.weightx = 1.0;
 			constraintsDefaultOutputPanel.weighty = 1.0;
-			constraintsDefaultOutputPanel.insets = new java.awt.Insets(4, 4, 4, 4);
+			constraintsDefaultOutputPanel.insets = new java.awt.Insets(3, 4, 1, 4);
 			getContentPanel().add(getDefaultOutputPanel(), constraintsDefaultOutputPanel);
 	
 			// 1
 			java.awt.GridBagConstraints constraintsUniformOutputRadioButton = new java.awt.GridBagConstraints();
 			constraintsUniformOutputRadioButton.gridx = 0; 
 			constraintsUniformOutputRadioButton.gridy = 1;
-			constraintsUniformOutputRadioButton.insets = new java.awt.Insets(3, 4, 4, 4);
+			constraintsUniformOutputRadioButton.insets = new java.awt.Insets(1, 4, 2, 4);
 			constraintsUniformOutputRadioButton.anchor = GridBagConstraints.LINE_START;
 			getContentPanel().add(getUniformOutputRadioButton(), constraintsUniformOutputRadioButton);
 	
@@ -386,14 +389,14 @@ public class OutputOptionsPanel extends CollapsiblePanel {
 			constraintsUniformOutputPanel.fill = java.awt.GridBagConstraints.BOTH;
 			constraintsUniformOutputPanel.weightx = 1.0;
 			constraintsUniformOutputPanel.weighty = 1.0;
-			constraintsUniformOutputPanel.insets = new java.awt.Insets(3, 4, 4, 4);
+			constraintsUniformOutputPanel.insets = new java.awt.Insets(1, 4, 2, 4);
 			getContentPanel().add(getUniformOutputPanel(), constraintsUniformOutputPanel);
 	
 			// 2
 			java.awt.GridBagConstraints constraintsExplicitOutputRadioButton = new java.awt.GridBagConstraints();
 			constraintsExplicitOutputRadioButton.gridx = 0; 
 			constraintsExplicitOutputRadioButton.gridy = 2;
-			constraintsExplicitOutputRadioButton.insets = new java.awt.Insets(3, 4, 4, 4);
+			constraintsExplicitOutputRadioButton.insets = new java.awt.Insets(1, 4, 2, 4);
 			constraintsExplicitOutputRadioButton.anchor = GridBagConstraints.FIRST_LINE_START;
 			getContentPanel().add(getExplicitOutputRadioButton(), constraintsExplicitOutputRadioButton);
 	
@@ -404,7 +407,7 @@ public class OutputOptionsPanel extends CollapsiblePanel {
 			constraintsExplicitOutputPanel.anchor = GridBagConstraints.PAGE_START;
 			constraintsExplicitOutputPanel.weightx = 1.0;
 			constraintsExplicitOutputPanel.weighty = 1.0;
-			constraintsExplicitOutputPanel.insets = new java.awt.Insets(0, 4, 4, 4);
+			constraintsExplicitOutputPanel.insets = new java.awt.Insets(0, 4, 2, 4);
 			getContentPanel().add(getExplicitOutputPanel(), constraintsExplicitOutputPanel);
 				
 			chomboOutputOptionsPanel = new ChomboOutputOptionsPanel();
@@ -418,7 +421,6 @@ public class OutputOptionsPanel extends CollapsiblePanel {
 			gbc.weighty = 1.0;
 			gbc.insets = new java.awt.Insets(0, 4, 4, 4);
 			getContentPanel().add(chomboOutputOptionsPanel, gbc);
-					
 			
 			getbuttonGroup1().add(getDefaultOutputRadioButton());
 			getbuttonGroup1().add(getUniformOutputRadioButton());
@@ -655,8 +657,10 @@ public class OutputOptionsPanel extends CollapsiblePanel {
 		}
 		
 		if (solverTaskDescription.getSimulation().getMathDescription().getGeometry().getDimension() > 0
-				|| solverTaskDescription.getSimulation().getMathDescription().isNonSpatialStoch()
-				|| solverTaskDescription.getSolverDescription().isNFSimSolver() ) {
+				|| solverTaskDescription.getSimulation().getMathDescription().isNonSpatialStoch() ) {
+			getExplicitOutputPanel().setVisible(false);
+			getExplicitOutputRadioButton().setVisible(false);
+		} else if(solverTaskDescription.getSolverDescription().isNFSimSolver() ) {
 			getExplicitOutputPanel().setVisible(false);
 			getExplicitOutputRadioButton().setVisible(false);
 		} else {
@@ -773,7 +777,7 @@ public class OutputOptionsPanel extends CollapsiblePanel {
 		getKeepEveryTextField().addFocusListener(ivjEventHandler);
 		getKeepAtMostTextField().addFocusListener(ivjEventHandler);
 		getOutputTimesTextField().addFocusListener(ivjEventHandler);
-
+		
 		getOutputTimeStepTextField().setInputVerifier(new InputVerifier() {
 
 			@Override

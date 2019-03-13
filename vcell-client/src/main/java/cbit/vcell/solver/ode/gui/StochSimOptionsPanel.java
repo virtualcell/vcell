@@ -40,6 +40,7 @@ public class StochSimOptionsPanel extends CollapsiblePanel {
 	private SolverTaskDescription solverTaskDescription = null;	
 
 	private javax.swing.JRadioButton trajectoryRadioButton = null;
+	private javax.swing.JRadioButton multiRunRadioButton = null;
 	private javax.swing.JRadioButton histogramRadioButton = null;
 	private javax.swing.ButtonGroup buttonGroupTrials = null;
 	private javax.swing.JLabel numOfTrialsLabel = null;
@@ -79,7 +80,7 @@ public class StochSimOptionsPanel extends CollapsiblePanel {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
 			if (e.getSource() == getCustomizedSeedRadioButton() || e.getSource() == getRandomSeedRadioButton()) {
 				setNewOptions();
-			}  else if (e.getSource() == getTrajectoryButton() || e.getSource() == getHistogramButton()){				
+			}  else if (e.getSource() == getTrajectoryButton() || e.getSource() == getMultiRunButton() || e.getSource() == getHistogramButton()) {				
 				setNewOptions();
 			}
 		}
@@ -117,15 +118,56 @@ public class StochSimOptionsPanel extends CollapsiblePanel {
 
 			getContentPanel().setLayout(new java.awt.GridBagLayout());
 			// 1
-			JPanel trialPanel = new JPanel(new GridLayout(0,1));
-			trialPanel.add(getTrajectoryButton());
-			trialPanel.add(getHistogramButton());	
+//			JPanel trialPanel = new JPanel(new GridLayout(0,1));
+//			trialPanel.add(getTrajectoryButton());
+//			trialPanel.add(getMultiRunButton());
+//			trialPanel.add(getHistogramButton());	
+//			JPanel panela = new JPanel(new FlowLayout(FlowLayout.LEFT));
+//			panela.add(getNumOfTrialsLabel());
+//			panela.add(getJTextFieldNumOfTrials());
+//			trialPanel.add(panela);
+//			trialPanel.setBorder(new EtchedBorder());
+			
+			JPanel trialPanel = new JPanel(new GridBagLayout());
+			GridBagConstraints gbc = new GridBagConstraints();
+			
+			gbc.gridx = 0;
+			gbc.gridy = 0;
+			gbc.anchor = GridBagConstraints.WEST;
+			gbc.fill = GridBagConstraints.HORIZONTAL;
+			gbc.insets = new Insets(2,1,1,1);
+			trialPanel.add(getTrajectoryButton(), gbc);
+			
+			gbc = new GridBagConstraints();
+			gbc.gridx = 0;
+			gbc.gridy = 1;
+			gbc.anchor = GridBagConstraints.WEST;
+			gbc.fill = GridBagConstraints.HORIZONTAL;
+			gbc.insets = new Insets(1,1,1,1);
+			trialPanel.add(getMultiRunButton(), gbc);
+			
+			gbc = new GridBagConstraints();
+			gbc.gridx = 0;
+			gbc.gridy = 2;
+			gbc.anchor = GridBagConstraints.WEST;
+			gbc.fill = GridBagConstraints.HORIZONTAL;
+			gbc.insets = new Insets(1,1,1,1);
+			trialPanel.add(getHistogramButton(), gbc);
+			
 			JPanel panela = new JPanel(new FlowLayout(FlowLayout.LEFT));
 			panela.add(getNumOfTrialsLabel());
 			panela.add(getJTextFieldNumOfTrials());
-			trialPanel.add(panela);
-			trialPanel.setBorder(new EtchedBorder());
 			
+			gbc = new GridBagConstraints();
+			gbc.gridx = 0;
+			gbc.gridy = 3;
+			gbc.anchor = GridBagConstraints.WEST;
+			gbc.weightx = 1.0;
+			gbc.fill = GridBagConstraints.HORIZONTAL;
+			gbc.insets = new Insets(1,1,2,1);
+			trialPanel.add(panela, gbc);
+			trialPanel.setBorder(new EtchedBorder());
+
 			// 2
 			JPanel seedPanel = new JPanel(new GridLayout(0,1));
 			JPanel panelb = new JPanel(new FlowLayout(FlowLayout.LEFT));
@@ -141,7 +183,7 @@ public class StochSimOptionsPanel extends CollapsiblePanel {
 			advancedPanel.getContentPanel().setLayout(new GridBagLayout());
 			
 			// 0
-			GridBagConstraints gbc = new GridBagConstraints();
+			gbc = new GridBagConstraints();
 			gbc.gridx = 0;
 			gbc.gridy = 0;
 			gbc.anchor = GridBagConstraints.LINE_END;
@@ -239,6 +281,7 @@ public class StochSimOptionsPanel extends CollapsiblePanel {
 			
 			//trial radio button group
 			getButtonGroupTrials().add(getTrajectoryButton());
+			getButtonGroupTrials().add(getMultiRunButton());
 			getButtonGroupTrials().add(getHistogramButton());
 			
 		} catch (java.lang.Throwable ivjExc) {
@@ -250,6 +293,7 @@ public class StochSimOptionsPanel extends CollapsiblePanel {
 		getCustomizedSeedRadioButton().addActionListener(ivjEventHandler);
 		getRandomSeedRadioButton().addActionListener(ivjEventHandler);
 		getTrajectoryButton().addActionListener(ivjEventHandler);
+		getMultiRunButton().addActionListener(ivjEventHandler);
 		getHistogramButton().addActionListener(ivjEventHandler);
 		getJTextFieldCustomSeed().addFocusListener(ivjEventHandler);
 		getJTextFieldNumOfTrials().addFocusListener(ivjEventHandler);
@@ -504,6 +548,18 @@ public class StochSimOptionsPanel extends CollapsiblePanel {
 		}
 		return trajectoryRadioButton;
 	}
+	private javax.swing.JRadioButton getMultiRunButton() {
+		if (multiRunRadioButton == null) {
+			try {
+				multiRunRadioButton = new javax.swing.JRadioButton();
+				multiRunRadioButton.setName("MultiRun");
+				multiRunRadioButton.setText("Multiple Runs");
+			} catch (java.lang.Throwable ivjExc) {
+				handleException(ivjExc);
+			}
+		}
+		return multiRunRadioButton;
+	}
 
 	/**
 	 * Return the CustomizedSeed property value.
@@ -604,7 +660,7 @@ public class StochSimOptionsPanel extends CollapsiblePanel {
 		try{
 			NonspatialStochSimOptions stochOpt = getSolverTaskDescription().getStochOpt();
 			long numTrials = 1;
-			if (getHistogramButton().isSelected()) {
+			if (getHistogramButton().isSelected() || getMultiRunButton().isSelected()) {
 				numTrials = Integer.parseInt(getJTextFieldNumOfTrials().getText());				
 			}
 			boolean bUseCustomSeed = getCustomizedSeedRadioButton().isSelected();
@@ -655,10 +711,13 @@ public class StochSimOptionsPanel extends CollapsiblePanel {
 		long numTrials = sso.getNumOfTrials();		
 		if(numTrials == 1){ // 1 trial
 			getJTextFieldNumOfTrials().setEnabled(false);
+//			getMultiRunButton().setEnabled(false);
 			getTrajectoryButton().setSelected(true);
 		}else{//more than 1 trial
 			getJTextFieldNumOfTrials().setEnabled(true);
-			getHistogramButton().setSelected(true);
+//			getMultiRunButton().setSelected(true);
+			getMultiRunButton().setEnabled(true);
+//			getHistogramButton().setSelected(true);
 			getJTextFieldNumOfTrials().setText(numTrials+"");
 		}
 		boolean isUseCustomSeed = sso.isUseCustomSeed();

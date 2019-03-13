@@ -91,6 +91,7 @@ public class SolverTaskDescriptionAdvancedPanel extends javax.swing.JPanel {
 	private Object ivjSolverComboBoxModel = null;
 	private OutputOptionsPanel ivjOutputOptionsPanel = null;
 	private StochSimOptionsPanel stochSimOptionsPanel = null;
+	private NFSimGeneralOptionsPanel nFSimGeneralOptionsPanel = null;
 	private SmoldynSimulationOptionsPanel smoldynSimulationOptionsPanel = null;
 	private NFSimSimulationOptionsPanel nfsimSimulationOptionsPanel = null;
 	private SundialsPdeSolverOptionsPanel sundialsPdeSolverOptionsPanel = null;
@@ -455,6 +456,16 @@ private StochSimOptionsPanel getStochSimOptionsPanel() {
 		}
 	}
 	return stochSimOptionsPanel;
+}
+private NFSimGeneralOptionsPanel getNFSimGeneralOptionsPanel() {
+	if (nFSimGeneralOptionsPanel == null) {
+		try {
+			nFSimGeneralOptionsPanel = new NFSimGeneralOptionsPanel();
+		} catch (java.lang.Throwable ivjExc) {
+			handleException(ivjExc);
+		}
+	}
+	return nFSimGeneralOptionsPanel;
 }
 
 private NFSimSimulationOptionsPanel getNFSimSimulationOptionsPanel() {
@@ -875,6 +886,15 @@ private void initialize() {
 		add(getStochSimOptionsPanel(), constraintsJPanelStoch);
 
 		gridy ++;
+		gbc = new java.awt.GridBagConstraints();
+		gbc.gridx = 0;
+		gbc.gridy = gridy;
+		gbc.fill = java.awt.GridBagConstraints.BOTH;
+		gbc.weightx = 1.0;
+		gbc.insets = new java.awt.Insets(1, 4, 2, 4);
+		add(getNFSimGeneralOptionsPanel(), gbc);
+
+		gridy ++;
 		java.awt.GridBagConstraints constraintsJPanel1 = new java.awt.GridBagConstraints();
 		constraintsJPanel1.gridx = 0;
 		constraintsJPanel1.gridy = gridy;
@@ -1025,6 +1045,7 @@ private void setTornOffSolverTaskDescription(SolverTaskDescription newValue) {
 			getTimeStepPanel().setSolverTaskDescription(ivjTornOffSolverTaskDescription);
 			getErrorTolerancePanel().setSolverTaskDescription(ivjTornOffSolverTaskDescription);
 			getStochSimOptionsPanel().setSolverTaskDescription(ivjTornOffSolverTaskDescription);
+			getNFSimGeneralOptionsPanel().setSolverTaskDescription(ivjTornOffSolverTaskDescription);
 			getNFSimSimulationOptionsPanel().setSolverTaskDescription(ivjTornOffSolverTaskDescription);
 			getSmoldynSimulationOptionsPanel().setSolverTaskDescription(ivjTornOffSolverTaskDescription);
 			getOutputOptionsPanel().setSolverTaskDescription(ivjTornOffSolverTaskDescription, unitInfo);
@@ -1081,7 +1102,8 @@ private void refresh() {
 		serialParameterScanCheckBox.setVisible(false);
 	}
 	
-	borderExtrapolationDisabledChkBox.setVisible(true);
+	boolean bBorderExtrapolationVisible = !ivjTornOffSolverTaskDescription.getSolverDescription().isNFSimSolver();
+	borderExtrapolationDisabledChkBox.setVisible(bBorderExtrapolationVisible);
 	boolean bBorderExtrapolationDisabled = ivjTornOffSolverTaskDescription.isBorderExtrapolationDisabled();
 	borderExtrapolationDisabledChkBox.setSelected(bBorderExtrapolationDisabled);
 	boolean isSDS = getSolverTaskDescription().getSolverDescription().equals(SolverDescription.SundialsPDE);

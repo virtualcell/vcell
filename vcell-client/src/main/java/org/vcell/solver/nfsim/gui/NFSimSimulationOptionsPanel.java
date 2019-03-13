@@ -77,6 +77,7 @@ public class NFSimSimulationOptionsPanel extends CollapsiblePanel {
 
 	private class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.FocusListener, PropertyChangeListener {
 
+		@SuppressWarnings("deprecation")
 		public void actionPerformed(ActionEvent e) {
 			Object source = e.getSource();
 			if (source == observableComputationHelpButton) {
