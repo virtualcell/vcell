@@ -26,12 +26,15 @@ import javax.mail.Message;
 import javax.mail.Multipart;
 import javax.mail.Part;
 import javax.mail.Session;
+import javax.mail.Store;
 
 import com.sun.mail.imap.IMAPFolder;
 import com.sun.mail.imap.IMAPInputStream;
 import com.sun.mail.imap.IMAPMessage;
 import com.sun.mail.imap.IMAPNestedMessage;
 import com.sun.mail.imap.IMAPSSLStore;
+import com.sun.mail.pop3.POP3Folder;
+import com.sun.mail.pop3.POP3SSLStore;
 
 import cbit.vcell.messaging.db.SimulationJobTable;
 import cbit.vcell.modeldb.SimulationTable;
@@ -99,18 +102,21 @@ public class ListservMail {
 		System.exit(1);
 	}
 	private static void getBouncedEmails(String emailPassword) throws Exception{
-		IMAPSSLStore store = null;
-		IMAPFolder[] inboxs = null;
+//		IMAPSSLStore store = null;
+		Store store = null;
+		Folder[] inboxs = null;
 		BufferedWriter bw = null;
 		try{
 	
 		    // connect to mail server using imaps protocol
 		    Properties properties = System.getProperties();
 		    Session session = Session.getDefaultInstance(properties);
-		    store = (IMAPSSLStore) session.getStore("imaps");// Use this instead of pop3s to access non 'Inbox' folders
+		    store = session.getStore("imaps");// Use this instead of pop3s to access non 'Inbox' folders
+//		    store = session.getStore("pop3s");// 
 		    store.connect(mailServer, mailUser, emailPassword);
-		    inboxs = new IMAPFolder[]  {(IMAPFolder) store.getFolder(mailFolder)};
-		    inboxs[0].open(Folder.READ_ONLY);
+		    inboxs = new Folder[]  {(Folder) store.getFolder(mailFolder)};
+//		    inboxs = new Folder[]  {(Folder) store.getDefaultFolder().getFolder("INBOX").getFolder(mailFolder)};
+		    ((IMAPFolder)inboxs[0]).open(Folder.READ_ONLY);
 	
 		    // get the list of messages from folder
 		    Message[] messages = inboxs[0].getMessages();
@@ -123,7 +129,7 @@ public class ListservMail {
 //			    	  break;
 //			      }
 			      System.out.println("Message " + (i + 1));
-			      IMAPMessage message = (IMAPMessage)messages[i];
+			      Message message = messages[i];
 			      System.out.println("From : " + message.getFrom()[0]);
 			      System.out.println("Subject : " + message.getSubject());
 			      System.out.println("Sent Date : " + message.getSentDate());
@@ -212,7 +218,7 @@ public class ListservMail {
 //		order by email;
 	}
 	
-	private static void readMessage(IMAPMessage message,int partNum,int size) throws Exception{
+	private static void readMessage(Message message,int partNum,int size) throws Exception{
   	  Object obj = message.getContent();
   	  if(obj instanceof Multipart){
   		  readMultiPart(((Multipart)obj), partNum, size);
