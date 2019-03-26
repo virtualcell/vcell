@@ -663,13 +663,15 @@ public class StochSimOptionsPanel extends CollapsiblePanel {
 			if (getHistogramButton().isSelected() || getMultiRunButton().isSelected()) {
 				numTrials = Integer.parseInt(getJTextFieldNumOfTrials().getText());				
 			}
+			boolean bHistogram = getHistogramButton().isSelected();
 			boolean bUseCustomSeed = getCustomizedSeedRadioButton().isSelected();
 			int customSeed = stochOpt.getCustomSeed();
 			if (bUseCustomSeed) {
 				customSeed = (Integer.parseInt(getJTextFieldCustomSeed().getText()));
 			}
 		
-			getSolverTaskDescription().setStochOpt(new NonspatialStochSimOptions(bUseCustomSeed, customSeed, numTrials));
+			NonspatialStochSimOptions nssso = new NonspatialStochSimOptions(bUseCustomSeed, customSeed, numTrials, bHistogram);
+			getSolverTaskDescription().setStochOpt(nssso);
 			
 			if (!getSolverTaskDescription().getSolverDescription().equals(SolverDescription.StochGibson)) {		
 				NonspatialStochHybridOptions stochHybridOpt = getSolverTaskDescription().getStochHybridOpt();
@@ -689,13 +691,15 @@ public class StochSimOptionsPanel extends CollapsiblePanel {
 				if(getSDEToleranceTextField().isEnabled() && getSDEToleranceTextField().getText().length() > 0) {
 					SDETolerance = Double.parseDouble(getSDEToleranceTextField().getText());
 				}
-				getSolverTaskDescription().setStochHybridOpt(new NonspatialStochHybridOptions(epsilon, lambda, MSRTolerance, SDETolerance));
+				NonspatialStochHybridOptions nssho = new NonspatialStochHybridOptions(epsilon, lambda, MSRTolerance, SDETolerance);
+				getSolverTaskDescription().setStochHybridOpt(nssho);
 			}
-		} catch(Exception e){
+		} catch(Exception e) {
 			PopupGenerator.showErrorDialog(this, e.getMessage(), e);
 		}
 	}
 	
+	// deals with the visual elements when some selection changes (enable / disable other fields, for example)
 	private void refresh() {
 		
 		if (getSolverTaskDescription() != null) {
@@ -708,17 +712,21 @@ public class StochSimOptionsPanel extends CollapsiblePanel {
 		setVisible(true);		
 		NonspatialStochSimOptions sso = getSolverTaskDescription().getStochOpt();	
 		
-		long numTrials = sso.getNumOfTrials();		
-		if(numTrials == 1){ // 1 trial
+		long numTrials = sso.getNumOfTrials();
+		boolean bHistogram = sso.isHistogram();
+		if(numTrials == 1) { // 1 trial
 			getJTextFieldNumOfTrials().setEnabled(false);
 //			getMultiRunButton().setEnabled(false);
 			getTrajectoryButton().setSelected(true);
 		}else{//more than 1 trial
 			getJTextFieldNumOfTrials().setEnabled(true);
-//			getMultiRunButton().setSelected(true);
-			getMultiRunButton().setEnabled(true);
-//			getHistogramButton().setSelected(true);
+//			getMultiRunButton().setEnabled(true);
 			getJTextFieldNumOfTrials().setText(numTrials+"");
+			if(bHistogram) {
+				getHistogramButton().setSelected(true);
+			} else {
+				getMultiRunButton().setSelected(true);
+			}
 		}
 		
 		// TODO: temporarily disable the button

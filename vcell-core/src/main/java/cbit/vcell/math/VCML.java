@@ -142,6 +142,7 @@ public class VCML {
 	public final static String UseCustomSeed			= "UseCustomSeed"; //stoch
 	public final static String CustomSeed				= "CustomSeed"; //stoch
 	public final static String NumOfTrials				= "NumOfTrials"; //stoch
+	public final static String Histogram				= "Histogram"; //stoch
 	//follwing 4 VCML tags are added on July 18th, 2007 to store simulation info. for stochastic hybrid simulation
 	public final static String Epsilon 					= "Epsilon"; //stoch
 	public final static String Lambda					= "Lambda"; //stoch

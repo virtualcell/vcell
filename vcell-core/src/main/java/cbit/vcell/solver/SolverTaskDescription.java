@@ -880,10 +880,12 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
 				}
 				if (token.equalsIgnoreCase(VCML.NFSimSimulationOptions)) {
 					getNFSimSimulationOptions().readVCML(tokens);
+					// TODO: multiple runs
 					continue;
 				}
 				if (token.equalsIgnoreCase(VCML.StochSimOptions)) {
 					boolean useCustomSeed = false;
+					boolean bHistogram = false;
 					int customSeed = -1;
 					long numOfTrials = 1;
 					Double epsilon = null;
@@ -923,6 +925,16 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
 							} else {
 								numOfTrials = val2;
 							}
+							// we properly initialize bHistogram for the older format where bHistogram didn't exist, based on numOfTrials
+							// if numOfTrials == 1 it's single trajectory, otherwise it's histogram
+							if(numOfTrials > 1) {
+								bHistogram = true;
+							}
+							continue;
+						}
+						if (token.equalsIgnoreCase(VCML.Histogram)) {
+							token = tokens.nextToken();
+							bHistogram = Boolean.parseBoolean(token);
 							continue;
 						}
 						
@@ -970,7 +982,7 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
 					if (getSimulation()!=null && getSimulation().getMathDescription()!=null)
 					{
 						if(getSimulation().getMathDescription().isNonSpatialStoch()){
-							setStochOpt(new NonspatialStochSimOptions(useCustomSeed, customSeed, numOfTrials));
+							setStochOpt(new NonspatialStochSimOptions(useCustomSeed, customSeed, numOfTrials, bHistogram));
 							if (epsilon!=null && lambda!=null && MSRTolerance!=null && SDETolerance!=null){
 								setStochHybridOpt(new NonspatialStochHybridOptions(epsilon, lambda, MSRTolerance, SDETolerance));
 							}

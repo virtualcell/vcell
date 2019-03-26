@@ -4658,6 +4658,8 @@ private Element getXML(NonspatialStochSimOptions stochOpts, NonspatialStochHybri
 			stochSimOptions.setAttribute(XMLTags.CustomSeedAttrTag, String.valueOf(stochOpts.getCustomSeed()));
 		}
 		stochSimOptions.setAttribute(XMLTags.NumberOfTrialAttrTag, String.valueOf(stochOpts.getNumOfTrials()));
+		stochSimOptions.setAttribute(XMLTags.IsHistogram, String.valueOf(stochOpts.isHistogram()));
+		
 		if (hybridOptions != null) {
 			stochSimOptions.setAttribute(XMLTags.HybridEpsilonAttrTag, String.valueOf(hybridOptions.getEpsilon()));
 			stochSimOptions.setAttribute(XMLTags.HybridLambdaAttrTag, String.valueOf(hybridOptions.getLambda()));

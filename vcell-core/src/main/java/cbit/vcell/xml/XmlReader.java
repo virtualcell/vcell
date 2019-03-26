@@ -7085,7 +7085,16 @@ private NonspatialStochSimOptions getStochSimOptions(Element param) {
 	if(isUseCustomSeed)
 		customSeed = Integer.parseInt( param.getAttributeValue(XMLTags.CustomSeedAttrTag) );
 	int numOfTrials = Integer.parseInt( param.getAttributeValue(XMLTags.NumberOfTrialAttrTag) );
-	return new NonspatialStochSimOptions(isUseCustomSeed, customSeed, numOfTrials);
+	boolean bHistogram = true;	// initialize for old style cases when XMLTags.IsHistogram may be missing
+	if(numOfTrials == 1) {
+		bHistogram = false;
+	}
+	String histAttr = param.getAttributeValue(XMLTags.IsHistogram);
+	if(histAttr != null && !histAttr.isEmpty()) {
+		bHistogram = Boolean.parseBoolean(histAttr);
+	}
+
+	return new NonspatialStochSimOptions(isUseCustomSeed, customSeed, numOfTrials, bHistogram);
 }
 
 

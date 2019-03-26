@@ -19,6 +19,7 @@ public class NonspatialStochSimOptions implements java.io.Serializable, Matchabl
 	protected boolean useCustomSeed = false;
 	protected int customSeed = 0;
 	protected long numOfTrials = 1;
+	protected boolean bHistogram = false;
 
 /**
  * StochSimOptions constructor comment.
@@ -29,6 +30,7 @@ public NonspatialStochSimOptions()
 	useCustomSeed = false;
 	customSeed = 0;
 	numOfTrials = 1;
+	bHistogram = false;
 }
 
 
@@ -37,11 +39,12 @@ public NonspatialStochSimOptions()
  * @param status int
  * @param message java.lang.String
  */
-public NonspatialStochSimOptions(boolean arg_useCustomSeed, int arg_customSeed, long arg_numOfTrials) 
+public NonspatialStochSimOptions(boolean arg_useCustomSeed, int arg_customSeed, long arg_numOfTrials, boolean arg_bHistogram) 
 {
 	useCustomSeed = arg_useCustomSeed;
 	customSeed = arg_customSeed;
 	numOfTrials = arg_numOfTrials;
+	bHistogram = arg_bHistogram;
 }
 
 public NonspatialStochSimOptions(NonspatialStochSimOptions sso) 
@@ -49,6 +52,7 @@ public NonspatialStochSimOptions(NonspatialStochSimOptions sso)
 	useCustomSeed = sso.useCustomSeed;
 	customSeed = sso.customSeed;
 	numOfTrials = sso.numOfTrials;
+	bHistogram = sso.bHistogram;
 }
 
 /**
@@ -73,6 +77,9 @@ public boolean compareEqual(Matchable obj)
 			}
 		}
 		if (getNumOfTrials() != stochOpt.getNumOfTrials()) {
+			return false;
+		}
+		if (isHistogram() != stochOpt.isHistogram()) {
 			return false;
 		}
 		return true;
@@ -100,6 +107,10 @@ public long getNumOfTrials() {
 	return numOfTrials;
 }
 
+public boolean isHistogram() {
+	return bHistogram;
+}
+
 
 /**
  * Insert the method's description here.
@@ -115,6 +126,7 @@ public String getVCML()
 	//		UseCustomSeed	false
 	//		CustomSeed	0
 	//		NumOfTrials	1
+	//		Histogram false
 	//   }
 	// if useCustomSeed == false, customSeed wont be compared
 	// ODE/PDE applications don't need to take care of this
@@ -126,6 +138,7 @@ public String getVCML()
 	buffer.append("   " + VCML.UseCustomSeed + " " + isUseCustomSeed() + "\n");
 	buffer.append("   " + VCML.CustomSeed + " " + getCustomSeed() + "\n");
 	buffer.append("   " + VCML.NumOfTrials + " " + getNumOfTrials() + "\n");
+	buffer.append("   " + VCML.Histogram + " " + isHistogram() + "\n");
 
 	buffer.append(VCML.EndBlock+"\n");
 
@@ -156,6 +169,7 @@ public void readVCML(CommentStringTokenizer tokens) throws DataAccessException
 	//		UseCustomSeed		false
 	//		CustomSeed		0
 	//		NumOfTrials		1
+	//		Histogram	false
 	//   }
 	//
 	//	
@@ -196,8 +210,19 @@ public void readVCML(CommentStringTokenizer tokens) throws DataAccessException
 				} else {
 					numOfTrials = val2;
 				}
+				bHistogram = false;		// we properly initialize bHistogram for the older format where bHistogram didn't exist, based on numOfTrials
+										// if numOfTrials == 1 it's single trajectory, otherwise it's histogram
+				if(numOfTrials > 1) {
+					bHistogram = true;
+				}
 				continue;
 			}
+			if (token.equalsIgnoreCase(VCML.Histogram)) {
+				token = tokens.nextToken();
+				bHistogram = Boolean.parseBoolean(token);
+				continue;
+			}
+
 			throw new DataAccessException("unexpected identifier " + token);
 		}
 	} catch (Throwable e) {

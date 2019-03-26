@@ -177,6 +177,7 @@ public class XMLTags {
     public final static String UseCustomSeedAttrTag = "UseCustomSeed"; //stoch
     public final static String CustomSeedAttrTag = "CustomSeed"; //stoch
     public final static String NumberOfTrialAttrTag = "NumberOfTrial"; //stoch
+    public final static String IsHistogram = "Histogram"; //stoch
     //added 20th July, 2007 for simulation parameters of stochasitc hybrid solvers
     public final static String HybridEpsilonAttrTag = "Epsilon";//stoch
     public final static String HybridLambdaAttrTag = "Lambda";//stoch
