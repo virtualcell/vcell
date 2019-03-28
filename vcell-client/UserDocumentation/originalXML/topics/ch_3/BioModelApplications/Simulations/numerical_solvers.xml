@@ -59,6 +59,10 @@
 	<item><bold>Gibson (Next Reaction Stochastic Method): </bold> 
 	Gibson-Bruck is an improved exact stochastic method based on Gillespie's SSA. It uses only a single random number per simulation event and takes time proportional to the logarithm of the number of reactions.  
 	Better performance is also acheived by utilizing a dependency graph and an indexed priority queue.</item>
+	<item><bold>NFsim biochemical reaction simulator</bold> 
+	designed to stochastically simulate systems that have a large or even infinite number of possible molecular interactions or states. A publication describing NFsim can be 
+	found at http://www.nature.com/nmeth/journal/v8/n2/full/nmeth.1546.html. A user can set end simulation time, output interval N (simulations results are outputted every N seconds)
+	and Advanced Solver Options.</item>
 	</list>
 	<para>
 	Note: to exercise hybrid solvers you need to go to species specifications and check the checkbox for "Force Continuous" for at least one species.  See <link target = "SpeciesSpecifications" label = "Species">Species Specifications.</link>
