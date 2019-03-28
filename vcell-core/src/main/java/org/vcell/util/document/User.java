@@ -21,7 +21,7 @@ import org.vcell.util.Matchable;
  */
 @SuppressWarnings("serial")
 public class User implements java.io.Serializable, Matchable, Immutable {
-	public static enum SPECIALS { special0,special1,special2,special3,special4};//Must match a name 'special' column of 'specialusers' table
+	public static enum SPECIALS { special0,special1,special2,special3,publication};//Must match a name 'special' column of 'specialusers' table
 	private String userName = null;
 	private KeyValue key = null;
 	private static final String VCellTestAccountName = "vcelltestaccount";

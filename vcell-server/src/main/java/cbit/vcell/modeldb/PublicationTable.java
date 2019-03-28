@@ -163,6 +163,7 @@ public PublicationRep getPublicationRep(User user, ResultSet rset) throws Illega
 	KeyValue pubKey = new KeyValue(rset.getBigDecimal(table.id.toString()));
 	String title = rset.getString(table.title.toString());
 	String authorsList = rset.getString(table.authors.toString());
+	authorsList = (authorsList==null?"":authorsList);
 	Integer year = rset.getInt(table.year.toString());
 	String citation = rset.getString(table.citation.toString());
 	String pubmedid = rset.getString(table.pubmedid.toString());
@@ -174,30 +175,34 @@ public PublicationRep getPublicationRep(User user, ResultSet rset) throws Illega
 	
 	String bmRefsString = rset.getString("bmRefs");
 	ArrayList<BioModelReferenceRep> bmRefList = new ArrayList<BioModelReferenceRep>();
-	String[] bmRefStrings = bmRefsString.replace("[", "").replace("]", "").split(",");
-	for (String bmRefString : bmRefStrings) {
-		String bmRefComponents[] = bmRefString.split(";");
-		if (bmRefComponents.length==4){
-			KeyValue bmKey = new KeyValue(bmRefComponents[0]);
-			String bmName = bmRefComponents[1];
-			KeyValue ownerKey = new KeyValue(bmRefComponents[2]);
-			String ownerUserid = bmRefComponents[3];
-			bmRefList.add(new BioModelReferenceRep(bmKey, bmName, new User(ownerUserid,ownerKey)));
+	if(bmRefsString != null && bmRefsString.length()>0) {
+		String[] bmRefStrings = bmRefsString.replace("[", "").replace("]", "").split(",");
+		for (String bmRefString : bmRefStrings) {
+			String bmRefComponents[] = bmRefString.split(";");
+			if (bmRefComponents.length==4){
+				KeyValue bmKey = new KeyValue(bmRefComponents[0]);
+				String bmName = bmRefComponents[1];
+				KeyValue ownerKey = new KeyValue(bmRefComponents[2]);
+				String ownerUserid = bmRefComponents[3];
+				bmRefList.add(new BioModelReferenceRep(bmKey, bmName, new User(ownerUserid,ownerKey)));
+			}
 		}
 	}
 	BioModelReferenceRep[] bmRefArray = bmRefList.toArray(new BioModelReferenceRep[0]);
 	
 	String mmRefsString = rset.getString("mmRefs");
 	ArrayList<MathModelReferenceRep> mmRefList = new ArrayList<MathModelReferenceRep>();
-	String[] mmRefStrings = mmRefsString.replace("[", "").replace("]", "").split(",");
-	for (String mmRefString : mmRefStrings) {
-		String mmRefComponents[] = mmRefString.split(";");
-		if (mmRefComponents.length==4){
-			KeyValue mmKey = new KeyValue(mmRefComponents[0]);
-			String mmName = mmRefComponents[1];
-			KeyValue ownerKey = new KeyValue(mmRefComponents[2]);
-			String ownerUserid = mmRefComponents[3];
-			mmRefList.add(new MathModelReferenceRep(mmKey, mmName, new User(ownerUserid,ownerKey)));
+	if(mmRefsString != null && mmRefsString.length() > 0) {
+		String[] mmRefStrings = mmRefsString.replace("[", "").replace("]", "").split(",");
+		for (String mmRefString : mmRefStrings) {
+			String mmRefComponents[] = mmRefString.split(";");
+			if (mmRefComponents.length==4){
+				KeyValue mmKey = new KeyValue(mmRefComponents[0]);
+				String mmName = mmRefComponents[1];
+				KeyValue ownerKey = new KeyValue(mmRefComponents[2]);
+				String ownerUserid = mmRefComponents[3];
+				mmRefList.add(new MathModelReferenceRep(mmKey, mmName, new User(ownerUserid,ownerKey)));
+			}
 		}
 	}
 	MathModelReferenceRep[] mmRefArray = mmRefList.toArray(new MathModelReferenceRep[0]);

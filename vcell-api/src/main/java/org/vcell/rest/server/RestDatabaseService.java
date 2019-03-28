@@ -13,6 +13,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.vcell.rest.VCellApiApplication;
 import org.vcell.rest.common.OverrideRepresentation;
+import org.vcell.rest.common.PublicationRepresentation;
 import org.vcell.rest.common.SimulationRepresentation;
 import org.vcell.rest.common.SimulationStatusRepresentation;
 import org.vcell.rest.rpc.RpcDataServerProxy;
@@ -470,13 +471,13 @@ public class RestDatabaseService {
 		return getBioModelRep(new KeyValue(bioModelID), vcellUser);
 	}
 	
-	public PublicationRep query(PublicationServerResource resource, User vcellUser) throws NumberFormatException, ObjectNotFoundException, SQLException, DataAccessException {
-		if (vcellUser==null){
-			vcellUser = VCellApiApplication.DUMMY_USER;
-		}
-		String pubID = (String)resource.getRequestAttributes().get(VCellApiApplication.PUBLICATIONID);
-		return getPublicationRep(new KeyValue(pubID), vcellUser);
-	}
+//	public PublicationRep query(PublicationServerResource resource, User vcellUser) throws NumberFormatException, ObjectNotFoundException, SQLException, DataAccessException {
+//		if (vcellUser==null){
+//			vcellUser = VCellApiApplication.DUMMY_USER;
+//		}
+//		String pubID = (String)resource.getRequestAttributes().get(VCellApiApplication.PUBLICATIONID);
+//		return getPublicationRep(new KeyValue(pubID), vcellUser);
+//	}
 
 
 	
@@ -522,6 +523,10 @@ public class RestDatabaseService {
 			throw new ObjectNotFoundException("failed to get biomodel");
 		}
 		return bioModelReps[0];
+	}
+	
+	public KeyValue savePublicationRep(PublicationRep publicationRep,User vcellUser) throws SQLException, DataAccessException{
+		return databaseServerImpl.savePublicationRep(publicationRep,vcellUser);
 	}
 	
 	public PublicationRep getPublicationRep(KeyValue pubKey, User vcellUser) throws SQLException, ObjectNotFoundException, DataAccessException {	

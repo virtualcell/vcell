@@ -29,6 +29,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.Vector;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.vcell.db.DatabaseSyntax;
@@ -63,6 +64,7 @@ import org.vcell.util.document.VersionableFamily;
 import org.vcell.util.document.VersionableRelationship;
 import org.vcell.util.document.VersionableType;
 import org.vcell.util.document.VersionableTypeVersion;
+import org.vcell.util.document.User.SPECIALS;
 
 import cbit.image.VCImageInfo;
 import cbit.sql.Field;
@@ -147,6 +149,83 @@ public DbDriver(DatabaseSyntax dbSyntax, KeyFactory keyFactory) {
 	this.keyFactory = keyFactory;
 }
 
+public static KeyValue savePublicationRep(Connection con,PublicationRep publicationRep,User user,DatabaseSyntax databaseSyntax) throws SQLException, DataAccessException{
+	
+	String pubID = null;
+	TreeMap<SPECIALS, TreeMap<User, String>> specialUsers = getSpecialUsers(user,con,databaseSyntax);
+	TreeMap<User, String> usersAllowedToModifyPublications = specialUsers.get(User.SPECIALS.publication);
+	if(usersAllowedToModifyPublications == null || !usersAllowedToModifyPublications.containsKey(user)) {
+		throw new DataAccessException("User "+user.getName()+" does not have permission to edit publications");
+	}
+	final String YMD_FORMAT_STRING = "yyyy-MM-dd";
+	SimpleDateFormat simpleDateFormat = new SimpleDateFormat(YMD_FORMAT_STRING);
+	String sql = null;
+	Statement stmt = null;
+	try {
+		if(publicationRep.getPubKey() == null) {
+			stmt = con.createStatement();
+			ResultSet rset = stmt.executeQuery("select newseq.nextval from dual");
+			rset.next();
+			pubID = rset.getString(1);
+			rset.close();
+			stmt.close();
+			sql = "INSERT INTO "+PublicationTable.table.getTableName()+" VALUES (" +
+			pubID.toString()+","+
+			(publicationRep.getTitle()==null?"NULL":"'"+publicationRep.getTitle()+"'")+","+
+			(publicationRep.getAuthors()==null || publicationRep.getAuthors().length==0?"NULL":"'"+StringUtils.join(publicationRep.getAuthors(), ';')+"'")+","+
+			(publicationRep.getYear()==null?"NULL":publicationRep.getYear())+","+
+			(publicationRep.getCitation()==null?"NULL":"'"+publicationRep.getCitation()+"'")+","+
+			(publicationRep.getPubmedid()==null?"NULL":"'"+publicationRep.getPubmedid()+"'")+","+
+			(publicationRep.getDoi()==null?"NULL":"'"+publicationRep.getDoi()+"'")+","+
+			(publicationRep.getEndnoteid()==null || publicationRep.getEndnoteid().length()==0?"NULL":publicationRep.getEndnoteid())+","+
+			(publicationRep.getUrl()==null?"NULL":"'"+publicationRep.getUrl()+"'")+","+
+			(publicationRep.getWittid()==null|| publicationRep.getWittid().length()==0?"NULL":publicationRep.getWittid())+","+
+			(publicationRep.getDate()==null?"NULL":" TO_DATE('" + simpleDateFormat.format(publicationRep.getDate()) + "','"+YMD_FORMAT_STRING+"') ")+
+			")";		
+		}else {
+			pubID = publicationRep.getPubKey().toString();
+			sql = "UPDATE "+PublicationTable.table.getTableName()+" SET "+
+			PublicationTable.table.title.getUnqualifiedColName()+"="+(publicationRep.getTitle()==null?"NULL":"'"+publicationRep.getTitle()+"'")+","+
+			PublicationTable.table.authors.getUnqualifiedColName()+"="+(publicationRep.getAuthors()==null || publicationRep.getAuthors().length==0?"NULL":"'"+StringUtils.join(publicationRep.getAuthors(), ';')+"'")+","+
+			PublicationTable.table.year.getUnqualifiedColName()+"="+(publicationRep.getYear()==null?"NULL":publicationRep.getYear())+","+
+			PublicationTable.table.citation.getUnqualifiedColName()+"="+(publicationRep.getCitation()==null?"NULL":"'"+publicationRep.getCitation()+"'")+","+
+			PublicationTable.table.pubmedid.getUnqualifiedColName()+"="+(publicationRep.getPubmedid()==null?"NULL":"'"+publicationRep.getPubmedid()+"'")+","+
+			PublicationTable.table.doi.getUnqualifiedColName()+"="+(publicationRep.getDoi()==null?"NULL":"'"+publicationRep.getDoi()+"'")+","+
+			PublicationTable.table.endnoteid.getUnqualifiedColName()+"="+(publicationRep.getEndnoteid()==null || publicationRep.getEndnoteid().length()==0?"NULL":publicationRep.getEndnoteid())+","+
+			PublicationTable.table.url.getUnqualifiedColName()+"="+(publicationRep.getUrl()==null?"NULL":"'"+publicationRep.getUrl()+"'")+","+
+			PublicationTable.table.wittid.getUnqualifiedColName()+"="+(publicationRep.getWittid()==null|| publicationRep.getWittid().length()==0?"NULL":publicationRep.getWittid())+","+
+			PublicationTable.table.pubdate.getUnqualifiedColName()+"="+(publicationRep.getDate()==null?"NULL":" TO_DATE('" + simpleDateFormat.format(publicationRep.getDate()) + "','"+YMD_FORMAT_STRING+"') ")+
+			" WHERE "+PublicationTable.table.id.getUnqualifiedColName()+"="+ pubID.toString();		
+		}
+		updateCleanSQL(con, sql);
+		//Remove all current links to this publication
+		updateCleanSQL(con, "DELETE FROM "+PublicationModelLinkTable.table.getTableName()+" WHERE "+PublicationModelLinkTable.table.pubRef.getUnqualifiedColName()+"="+pubID.toString());
+		//Add link table entry
+			if(publicationRep.getBiomodelReferenceReps() != null && publicationRep.getBiomodelReferenceReps().length > 0) {
+			for(BioModelReferenceRep bioModelReferenceRep:publicationRep.getBiomodelReferenceReps()) {
+				try {
+					updateCleanSQL(con, "INSERT INTO "+PublicationModelLinkTable.table.getTableName()+" VALUES (newseq.nextval,"+pubID.toString()+","+bioModelReferenceRep.getBmKey().toString()+",NULL)");
+				} catch (Exception e) {
+					e.printStackTrace();
+					throw new SQLException("Error inserting biomodelKey="+bioModelReferenceRep.getBmKey().toString()+" link to publicationID="+pubID.toString()+"\n"+e.getMessage(),e);
+				}
+			}
+		}
+		if(publicationRep.getMathmodelReferenceReps() != null && publicationRep.getMathmodelReferenceReps().length > 0) {
+			for(MathModelReferenceRep mathModelReferenceRep:publicationRep.getMathmodelReferenceReps()) {
+				try {
+					updateCleanSQL(con, "INSERT INTO "+PublicationModelLinkTable.table.getTableName()+" VALUES (newseq.nextval,"+pubID.toString()+",NULL,"+mathModelReferenceRep.getMmKey().toString()+")");
+				} catch (Exception e) {
+					e.printStackTrace();
+					throw new SQLException("Error inserting mathmodelKey="+mathModelReferenceRep.getMmKey().toString()+" link to publicationID="+pubID.toString()+"\n"+e.getMessage(),e);
+				}
+			}
+		}
+		return new KeyValue(pubID.toString());
+	}finally {
+		if(stmt != null) {try{stmt.close();}catch(Exception e) {e.printStackTrace();}}
+	}
+}
 
 public static void cleanupDeletedReferences(Connection con,User user,ExternalDataIdentifier extDataID,boolean bPrintOnly) throws SQLException{
 	

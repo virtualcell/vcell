@@ -1,5 +1,7 @@
 package org.vcell.rest.common;
 
+import java.util.Date;
+
 import cbit.vcell.modeldb.PublicationRep;
 import cbit.vcell.parser.ExpressionException;
 
@@ -16,6 +18,7 @@ public class PublicationRepresentation {
 	public String wittid;
 	public BiomodelReferenceRepresentation[] biomodelReferences;
 	public MathmodelReferenceRepresentation[] mathmodelReferences;
+	public Date date;
 
 	public PublicationRepresentation(){
 		
@@ -70,6 +73,9 @@ public class PublicationRepresentation {
 		return wittid;
 	}
 
+	public Date getDate() {
+		return date;
+	}
 	public PublicationRepresentation(PublicationRep publicationRep) throws ExpressionException{
 		this.pubKey = publicationRep.getPubKey().toString();
 		this.title = publicationRep.getTitle();
@@ -81,6 +87,7 @@ public class PublicationRepresentation {
 		this.endnoteid = publicationRep.getEndnoteid();
 		this.url = publicationRep.getUrl();
 		this.wittid = publicationRep.getWittid();
+		this.date = publicationRep.getDate();
 
 		this.biomodelReferences = new BiomodelReferenceRepresentation[publicationRep.getBiomodelReferenceReps().length];
 		for (int i=0;i<biomodelReferences.length;i++){

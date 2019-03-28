@@ -17,6 +17,12 @@
 						</td></tr>
 	</tbody></table>
 	<input type='submit' value='Search' style='font-size:large'>
+	
+</form>
+
+<form action="/publication/new" method="post">
+<input type="hidden" value="editNew" name="pubop" />
+<input type='submit' value='Create New...' style='font-size:large'>
 </form>
 </center>
 
@@ -49,9 +55,15 @@
 
 <td>
 <#if pub.biomodelReferences??>
+<table>
 <#list pub.biomodelReferences as biomodelReference>
+<tr>
+<td>
 &nbsp;<a href='/biomodel/${biomodelReference.bmKey}'>${biomodelReference.name}</a>
+</td>
+</tr>
 </#list>
+</table>
 <br/>
 
 <#else>

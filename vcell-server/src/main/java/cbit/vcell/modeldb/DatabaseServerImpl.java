@@ -344,6 +344,10 @@ public BioModelRep[] getBioModelReps(User user, String conditions, OrderBy order
 	return dbTop.getBioModelReps(user, conditions, orderBy, startRow, numRows, true);
 }
 
+public KeyValue savePublicationRep(PublicationRep publicationRep,User vcellUser) throws DataAccessException, SQLException{
+	return dbTop.savePublicationRep(publicationRep,vcellUser,true);
+}
+
 public PublicationRep[] getPublicationReps(User vcellUser, String conditions, OrderBy orderBy) throws SQLException, DataAccessException {
 	return dbTop.getPublicationReps(vcellUser, conditions, orderBy, true);
 }
