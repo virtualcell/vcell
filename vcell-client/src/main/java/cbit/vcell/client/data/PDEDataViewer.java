@@ -2541,6 +2541,10 @@ private void showTimePlot() {
 
 			@Override
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
+				Exception timeSeriesJobFailed = (Exception)hashTable.get(PDEDataViewer.StringKey_timeSeriesJobException);
+				if(timeSeriesJobFailed != null) {
+					throw timeSeriesJobFailed;
+				}
 				TSJobResultsNoStats tsJobResultsNoStats = (TSJobResultsNoStats)hashTable.get(StringKey_timeSeriesJobResults);
 				//Make independent Plotviewer that is unaffected by changes (time,var,paramscan) in 'this' PDEDataviewer except to pass-thru OutputContext changes
 				PdeTimePlotMultipleVariablesPanel.MultiTimePlotHelper multiTimePlotHelper = (PdeTimePlotMultipleVariablesPanel.MultiTimePlotHelper)hashTable.get(MULTITPHELPER_TASK_KEY);

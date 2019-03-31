@@ -2585,21 +2585,25 @@ private FunctionIndexes[] findFunctionIndexes(VCDataIdentifier vcdID,AnnotatedFu
 							}
 						}
 					}
-				}else if (dsi.getVariableType().equals(VariableType.VOLUME_REGION) && dsi.getName().endsWith(InsideVariable.INSIDE_VARIABLE_SUFFIX)){					
-					int insideVolumeIndex = mesh.getMembraneElements()[dataIndexes[i]].getInsideVolumeIndex();
-					int volRegionIndex = mesh.getVolumeRegionIndex(insideVolumeIndex);
-					varNames[j]=dsi.getName();
-					simFileVarNames[j] = dsi.getName().substring(0,dsi.getName().lastIndexOf("_"));
-					varIndexes[i][j] = volRegionIndex;
-					inside_near_far_indexes[i][j] = interpolateFindNearFarIndex(mesh, dataIndexes[i], true, true);
-				}else if (dsi.getVariableType().equals(VariableType.VOLUME_REGION) && dsi.getName().endsWith(OutsideVariable.OUTSIDE_VARIABLE_SUFFIX)){					
-					int outsideVolumeIndex = mesh.getMembraneElements()[dataIndexes[i]].getOutsideVolumeIndex();
-					int volRegionIndex = mesh.getVolumeRegionIndex(outsideVolumeIndex);
-					varNames[j]=dsi.getName();
-					simFileVarNames[j] = dsi.getName().substring(0,dsi.getName().lastIndexOf("_"));
-					varIndexes[i][j] = volRegionIndex;
-					outside_near_far_indexes[i][j] = interpolateFindNearFarIndex(mesh, dataIndexes[i], false, true);
-				}else if (dsi.getVariableType().equals(VariableType.MEMBRANE)){
+				}else if(dsi.getVariableType().equals(VariableType.VOLUME_REGION)) {
+					if (dsi.getName().endsWith(InsideVariable.INSIDE_VARIABLE_SUFFIX)){					
+						int insideVolumeIndex = mesh.getMembraneElements()[dataIndexes[i]].getInsideVolumeIndex();
+						int volRegionIndex = mesh.getVolumeRegionIndex(insideVolumeIndex);
+						varNames[j]=dsi.getName();
+						simFileVarNames[j] = dsi.getName().substring(0,dsi.getName().lastIndexOf("_"));
+						varIndexes[i][j] = volRegionIndex;
+						inside_near_far_indexes[i][j] = interpolateFindNearFarIndex(mesh, dataIndexes[i], true, true);
+					}else if (dsi.getName().endsWith(OutsideVariable.OUTSIDE_VARIABLE_SUFFIX)){					
+						int outsideVolumeIndex = mesh.getMembraneElements()[dataIndexes[i]].getOutsideVolumeIndex();
+						int volRegionIndex = mesh.getVolumeRegionIndex(outsideVolumeIndex);
+						varNames[j]=dsi.getName();
+						simFileVarNames[j] = dsi.getName().substring(0,dsi.getName().lastIndexOf("_"));
+						varIndexes[i][j] = volRegionIndex;
+						outside_near_far_indexes[i][j] = interpolateFindNearFarIndex(mesh, dataIndexes[i], false, true);
+					}else {
+						throw new DataAccessException("Must use '"+dsi.getName()+InsideVariable.INSIDE_VARIABLE_SUFFIX+"' or '"+dsi.getName()+OutsideVariable.OUTSIDE_VARIABLE_SUFFIX+"' when referencing VOLUME_REGION var '"+dsi.getName()+"' in membrane func '"+function.getName()+"'");
+					}
+				}else  if (dsi.getVariableType().equals(VariableType.MEMBRANE)){
 					varNames[j]=dsi.getName();
 					simFileVarNames[j] = dsi.getName();
 					varIndexes[i][j] = dataIndexes[i];
