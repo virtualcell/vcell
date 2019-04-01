@@ -4840,6 +4840,10 @@ private Element getXML(NFsimSimulationOptions sso) {			// we know that sso is no
 		e.setText(sso.getRandomSeed() + "");
 		ssoe.addContent(e);			
 	}
+	e = new Element(XMLTags.NFSimSimulationOptions_numOfTrials);
+	e.setText(sso.getNumOfTrials() + "");
+	ssoe.addContent(e);
+	
 	return ssoe;
 }
 private Element getXML(SmoldynSimulationOptions sso) {

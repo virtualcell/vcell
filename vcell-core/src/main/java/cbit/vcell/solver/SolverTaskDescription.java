@@ -170,7 +170,11 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
 			smoldynSimulationOptions = null;
 		}
 		if (simulation.getMathDescription().isRuleBased()) {
-			nfsimSimulationOptions = new NFsimSimulationOptions(solverTaskDescription.nfsimSimulationOptions);
+			if(solverTaskDescription.nfsimSimulationOptions != null) {
+				nfsimSimulationOptions = new NFsimSimulationOptions(solverTaskDescription.nfsimSimulationOptions);
+			} else {
+				nfsimSimulationOptions = new NFsimSimulationOptions();
+			}
 		} else {
 			nfsimSimulationOptions = null;
 		}
@@ -536,6 +540,12 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
 		//			AbsoluteErrorTolerance	1e-8
 		//			RelativeErrorTolerance 1e-4
 		//		}
+		//		NFSimSimulationOptions {
+		//			ObservableComputationOff 1
+		//			MoleculeDistance 1000
+		//			...
+		//			NumOfTrials	1
+		//		}
 		//      RunParameterScanSerially false
 		//		KeepEvery 1
 		//		KeepAtMost	1000
@@ -880,7 +890,6 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
 				}
 				if (token.equalsIgnoreCase(VCML.NFSimSimulationOptions)) {
 					getNFSimSimulationOptions().readVCML(tokens);
-					// TODO: multiple runs
 					continue;
 				}
 				if (token.equalsIgnoreCase(VCML.StochSimOptions)) {

@@ -238,7 +238,7 @@ public class VCML {
 	public final static String NFSimSimulationOptions_randomSeed	= "RandomSeed";
 	public final static String NFSimSimulationOptions_preventIntraBonds	= "PreventIntraBonds";
 	public final static String NFSimSimulationOptions_matchComplexes	= "MatchComplexes";
-
+	public final static String NFSimSimulationOptions_NumOfTrials	= "NumOfTrials";
 	public final static String SmoldynSimulationOptions	= "SmoldynSimulationOptions";
 	public final static String SmoldynSimulationOptions_randomSeed	= "RandomSeed";
 	public final static String SmoldynSimulationOptions_accuracy	= "Accuracy";

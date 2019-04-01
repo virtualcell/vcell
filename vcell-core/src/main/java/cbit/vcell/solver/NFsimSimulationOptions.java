@@ -35,7 +35,9 @@ public class NFsimSimulationOptions implements Serializable, Matchable, Vetoable
 	private Integer randomSeed = null;
 	boolean preventIntraBonds = false;
 	boolean matchComplexes = true;		// initialized to true for a new sim or if is missing in existing (old) sim
-	private Integer numRuns = DefaultNumRuns;
+//	private Integer numRuns = DefaultNumRuns;
+	
+	protected int numOfTrials = 1;		// single trajectory if 1 (default), multiple trajectories if >1
 
 
 	protected transient PropertyChangeSupport propertyChange;
@@ -62,6 +64,7 @@ public class NFsimSimulationOptions implements Serializable, Matchable, Vetoable
 		randomSeed = smoldynSimulationOptions.randomSeed;
 		preventIntraBonds = smoldynSimulationOptions.preventIntraBonds;
 		matchComplexes = smoldynSimulationOptions.matchComplexes;
+		numOfTrials = smoldynSimulationOptions.numOfTrials;
 	}
 
 	public NFsimSimulationOptions(CommentStringTokenizer tokens) throws DataAccessException {
@@ -96,6 +99,9 @@ public class NFsimSimulationOptions implements Serializable, Matchable, Vetoable
 			return false;
 		}
 		if (matchComplexes != nfsimSimulationOptions.matchComplexes) {
+			return false;
+		}
+		if (numOfTrials != nfsimSimulationOptions.numOfTrials) {
 			return false;
 		}
 		return true;
@@ -151,6 +157,12 @@ public class NFsimSimulationOptions implements Serializable, Matchable, Vetoable
 	public final void setMatchComplexes(boolean newValue) {
 		this.matchComplexes = newValue;
 	}
+	public int getNumOfTrials() {
+		return numOfTrials;
+	}
+	public final void setNumOfTrials(int newValue) {
+		this.numOfTrials = newValue;
+	}
 
 	public synchronized void addPropertyChangeListener(java.beans.PropertyChangeListener listener) {
 		getPropertyChange().addPropertyChangeListener(listener);
@@ -201,6 +213,8 @@ public class NFsimSimulationOptions implements Serializable, Matchable, Vetoable
 		if (randomSeed != null) {
 			buffer.append("\t\t" + VCML.NFSimSimulationOptions_randomSeed + " " + randomSeed + "\n");			
 		}
+		buffer.append("\t\t" + VCML.NFSimSimulationOptions_NumOfTrials + " " + numOfTrials + "\n");
+
 		buffer.append("\t" + VCML.EndBlock + "\n");
 		return buffer.toString();
 	}
@@ -242,7 +256,15 @@ public class NFsimSimulationOptions implements Serializable, Matchable, Vetoable
 			} else if(token.equalsIgnoreCase(VCML.NFSimSimulationOptions_matchComplexes)) {
 				token = tokens.nextToken();
 				matchComplexes = Boolean.parseBoolean(token);
-			}  else { 
+			} else if (token.equalsIgnoreCase(VCML.NFSimSimulationOptions_NumOfTrials)) {
+				token = tokens.nextToken();
+				int val2 = Integer.parseInt(token);
+				if(val2 < 1 ) {
+					throw new DataAccessException("unexpected token " + token + ", num of trials is requied to be at least 1. ");
+				} else {
+					numOfTrials = val2;
+				}
+			} else { 
 				throw new DataAccessException("unexpected identifier " + token);
 			}
 		}

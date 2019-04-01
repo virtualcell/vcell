@@ -10,6 +10,8 @@ import javax.swing.JPanel;
 import org.vcell.util.gui.CollapsiblePanel;
 import org.vcell.util.gui.DialogUtils;
 
+import cbit.vcell.client.PopupGenerator;
+import cbit.vcell.solver.NFsimSimulationOptions;
 import cbit.vcell.solver.OutputTimeSpec;
 import cbit.vcell.solver.SolverTaskDescription;
 
@@ -63,9 +65,9 @@ public class NFSimGeneralOptionsPanel  extends CollapsiblePanel {
 			if (e.isTemporary()) {
 				return;
 			}
-//			if (true) { 
-//				setNewOptions();
-//			}
+			if (e.getSource() == getJTextFieldNumOfTrials()) { 
+				setNewOptions();
+			}
 		}
 	}
 
@@ -243,27 +245,47 @@ public class NFSimGeneralOptionsPanel  extends CollapsiblePanel {
 			setVisible(false);
 			return;
 		}
-
+		setVisible(true);
+		
+		NFsimSimulationOptions sso = solverTaskDescription.getNFSimSimulationOptions();
+		int numTrials = sso.getNumOfTrials();
+		if(numTrials == 1) { // 1 trial
+			getTrajectoryButton().setSelected(true);
+			getJTextFieldNumOfTrials().setEnabled(false);
+		} else {
+			getMultiRunButton().setSelected(true);
+			getJTextFieldNumOfTrials().setEnabled(true);
+			getJTextFieldNumOfTrials().setText(numTrials+"");
+		}
+		
 		// TODO: temporarily disable the button
 		// UNDO THIS WHEN DEVELOPMENT IS COMPLETE
-		if(solverTaskDescription.getSolverDescription().isNFSimSolver()) {
-			getMultiRunButton().setEnabled(false);
-			return;
-		}
+//		if(solverTaskDescription.getSolverDescription().isNFSimSolver()) {
+//			getMultiRunButton().setEnabled(false);
+//			return;
+//		}
 
-		// TODO: initialize multiple runs and num of trials from solverTaskDescription settings
-
+		
 	}
 
 	private void setNewOptions() {
-		try {
-			OutputTimeSpec ots = null;
-
-		} catch (Exception e) {
-			DialogUtils.showErrorDialog(this, e.getMessage(), e);
+		if(!isVisible()) {
+			return;
 		}
+		try {
+		NFsimSimulationOptions sso = solverTaskDescription.getNFSimSimulationOptions();
+		int numTrials = 1;
 
+		if(getMultiRunButton().isSelected()) {
+			numTrials = Integer.parseInt(getJTextFieldNumOfTrials().getText());
+		}
+		sso.setNumOfTrials(numTrials);
+		NFsimSimulationOptions nsso = new NFsimSimulationOptions(sso);
+		solverTaskDescription.setNFSimSimulationOptions(nsso);
 		
+		} catch(Exception e) {
+			PopupGenerator.showErrorDialog(this, e.getMessage(), e);
+		}
 	}
 	
 }

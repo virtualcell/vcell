@@ -6630,6 +6630,10 @@ private NFsimSimulationOptions getNFSimSimulationOptions(Element nfsimSimulation
 	if(temp != null) {
 		so.setMatchComplexes(new Boolean(temp));
 	}
+	temp = nfsimSimulationOptionsElement.getChildText(XMLTags.NFSimSimulationOptions_numOfTrials, vcNamespace);
+	if(temp != null) {
+		so.setNumOfTrials(new Integer(temp));
+	}
 	return so;
 }
 
