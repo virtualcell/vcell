@@ -487,17 +487,16 @@ public class ReactionCartoonTool extends BioCartoonTool implements BioCartoonToo
 					newDiagramOrderList.add(getModel().getDiagram(structure));
 				}
 				Diagram[] autosortDiagramOrder = newDiagramOrderList.toArray(new Diagram[0]);
-				if(bWarn){
-				final String OK = "OK";
-				String response =
-					DialogUtils.showWarningDialog(getGraphPane(), "Existing 'Structure' order preference set by user may be reset, continue?", new String[] {OK,"Cancel"},OK);
-				if(response != null &&  response.equals(OK)){
-					getModel().setDiagrams(autosortDiagramOrder);
-				}else{
-					allStructureSuite.setModelStructureOrder(true);
-					return;
-				}
-				}else{
+				if(bWarn && autoSortedStructures.size() > 1) {	// no point in warning if there's just one structure
+					final String OK = "OK";
+					String response = DialogUtils.showWarningDialog(getGraphPane(), "Existing 'Structure' order preference set by user may be reset, continue?", new String[] {OK,"Cancel"},OK);
+					if(response != null &&  response.equals(OK)) {
+						getModel().setDiagrams(autosortDiagramOrder);
+					} else {
+						allStructureSuite.setModelStructureOrder(true);
+						return;
+					}
+				} else {
 					getModel().setDiagrams(autosortDiagramOrder);
 				}
 			}
