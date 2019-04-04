@@ -344,6 +344,10 @@ public BioModelRep[] getBioModelReps(User user, String conditions, OrderBy order
 	return dbTop.getBioModelReps(user, conditions, orderBy, startRow, numRows, true);
 }
 
+public void publishDirectly(KeyValue[] publishTheseBiomodels,KeyValue[] publishTheseMathmodels, User user) throws SQLException, DataAccessException {
+	dbTop.publishDirectly(publishTheseBiomodels, publishTheseMathmodels, user, true);
+}
+
 public KeyValue savePublicationRep(PublicationRep publicationRep,User vcellUser) throws DataAccessException, SQLException{
 	return dbTop.savePublicationRep(publicationRep,vcellUser,true);
 }

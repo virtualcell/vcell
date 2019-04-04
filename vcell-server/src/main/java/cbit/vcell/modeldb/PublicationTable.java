@@ -101,7 +101,8 @@ public String getPreparedStatement_PublicationReps(String conditions, OrderBy or
 		   "(select '['||wm_concat("+"SQ1_"+biomodelTable.id.getQualifiedColName()+"||';'"+
 		   						"||"+"SQ1_"+biomodelTable.name.getQualifiedColName()+"||';'"+
 		   						"||"+"SQ1_"+userTable.id.getQualifiedColName()+"||';'"+
-		   						"||"+"SQ1_"+userTable.userid.getQualifiedColName()+")||']' "+
+		   						"||"+"SQ1_"+userTable.userid.getQualifiedColName()+"||';'"+
+		   						"||"+"SQ1_"+biomodelTable.versionFlag.getQualifiedColName()+")||']' "+
 		   "   from "+pubModelTable.getTableName()+" SQ1_"+pubModelTable.getTableName()+", "+
 		              biomodelTable.getTableName()+" SQ1_"+biomodelTable.getTableName()+", "+
 		              userTable.getTableName()+" SQ1_"+userTable.getTableName()+" "+
@@ -109,11 +110,12 @@ public String getPreparedStatement_PublicationReps(String conditions, OrderBy or
 	          "SQ1_"+pubModelTable.pubRef.getQualifiedColName()+" = "+pubTable.id.getQualifiedColName()+" and  "+
 	          "SQ1_"+pubModelTable.bioModelRef.getQualifiedColName()+" = SQ1_"+biomodelTable.id.getQualifiedColName()+" and "+
 	          "SQ1_"+userTable.id.getQualifiedColName()+" = SQ1_"+biomodelTable.ownerRef.getQualifiedColName()+") bmRefs,  "+
-		
+	          
 		   "(select '['||wm_concat("+"SQ2_"+mathmodelTable.id.getQualifiedColName()+"||';'"+
 								"||"+"SQ2_"+mathmodelTable.name.getQualifiedColName()+"||';'"+
 								"||"+"SQ2_"+userTable.id.getQualifiedColName()+"||';'"+
-								"||"+"SQ2_"+userTable.userid.getQualifiedColName()+")||']' "+
+								"||"+"SQ2_"+userTable.userid.getQualifiedColName()+"||';'"+
+								"||"+"SQ2_"+mathmodelTable.versionFlag.getQualifiedColName()+")||']' "+
 		   "   from "+pubModelTable.getTableName()+" SQ2_"+pubModelTable.getTableName()+", "+
 		              mathmodelTable.getTableName()+" SQ2_"+mathmodelTable.getTableName()+", "+
 		              userTable.getTableName()+" SQ2_"+userTable.getTableName()+" "+
@@ -179,12 +181,13 @@ public PublicationRep getPublicationRep(User user, ResultSet rset) throws Illega
 		String[] bmRefStrings = bmRefsString.replace("[", "").replace("]", "").split(",");
 		for (String bmRefString : bmRefStrings) {
 			String bmRefComponents[] = bmRefString.split(";");
-			if (bmRefComponents.length==4){
+			if (bmRefComponents.length==5){
 				KeyValue bmKey = new KeyValue(bmRefComponents[0]);
 				String bmName = bmRefComponents[1];
 				KeyValue ownerKey = new KeyValue(bmRefComponents[2]);
 				String ownerUserid = bmRefComponents[3];
-				bmRefList.add(new BioModelReferenceRep(bmKey, bmName, new User(ownerUserid,ownerKey)));
+				Long versionFlag = Long.valueOf(bmRefComponents[4]);
+				bmRefList.add(new BioModelReferenceRep(bmKey, bmName, new User(ownerUserid,ownerKey),versionFlag));
 			}
 		}
 	}
@@ -196,12 +199,13 @@ public PublicationRep getPublicationRep(User user, ResultSet rset) throws Illega
 		String[] mmRefStrings = mmRefsString.replace("[", "").replace("]", "").split(",");
 		for (String mmRefString : mmRefStrings) {
 			String mmRefComponents[] = mmRefString.split(";");
-			if (mmRefComponents.length==4){
+			if (mmRefComponents.length==5){
 				KeyValue mmKey = new KeyValue(mmRefComponents[0]);
 				String mmName = mmRefComponents[1];
 				KeyValue ownerKey = new KeyValue(mmRefComponents[2]);
 				String ownerUserid = mmRefComponents[3];
-				mmRefList.add(new MathModelReferenceRep(mmKey, mmName, new User(ownerUserid,ownerKey)));
+				Long versionFlag = Long.valueOf(mmRefComponents[4]);
+				mmRefList.add(new MathModelReferenceRep(mmKey, mmName, new User(ownerUserid,ownerKey),versionFlag));
 			}
 		}
 	}

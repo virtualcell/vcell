@@ -9,7 +9,7 @@ public class MathmodelReferenceRepresentation {
 	public String name;	
 	public String ownerName;	
 	public String ownerKey;
-	
+	public String versionFlag;
 	public MathmodelReferenceRepresentation(){
 		
 	}	
@@ -29,6 +29,9 @@ public class MathmodelReferenceRepresentation {
 	public String getOwnerKey() {
 		return ownerKey;
 	}
+	public String getVersionFlag() {
+		return versionFlag;
+	}
 
 
 	public MathmodelReferenceRepresentation(MathModelReferenceRep mathModelReferenceRep) throws ExpressionException{
@@ -36,5 +39,6 @@ public class MathmodelReferenceRepresentation {
 		this.name = mathModelReferenceRep.getName();
 		this.ownerName = mathModelReferenceRep.getOwner().getName();
 		this.ownerKey = mathModelReferenceRep.getOwner().getID().toString();
+		this.versionFlag=mathModelReferenceRep.getVersionFlag().toString();
 	}
 }

@@ -525,6 +525,10 @@ public class RestDatabaseService {
 		return bioModelReps[0];
 	}
 	
+	public void publishDirectly(KeyValue[] publishTheseBiomodels,KeyValue[] publishTheseMathmodels, User user) throws SQLException, DataAccessException {
+		databaseServerImpl.publishDirectly(publishTheseBiomodels, publishTheseMathmodels, user);
+	}
+	
 	public KeyValue savePublicationRep(PublicationRep publicationRep,User vcellUser) throws SQLException, DataAccessException{
 		return databaseServerImpl.savePublicationRep(publicationRep,vcellUser);
 	}

@@ -1997,6 +1997,29 @@ public BioModelRep[] getBioModelReps(User user, String conditions, OrderBy order
 	}
 }
 
+public void publishDirectly(KeyValue[] publishTheseBiomodels,KeyValue[] publishTheseMathmodels, User user, boolean bEnableRetry) throws SQLException, DataAccessException {
+	Object lock = new Object();
+	Connection con = conFactory.getConnection(lock);
+	try {
+		DbDriver.publishDirectly(con,publishTheseBiomodels,publishTheseMathmodels,user,conFactory.getDatabaseSyntax());
+		con.commit();
+	}catch (Throwable e) {
+		lg.error(e.getMessage(),e);
+		try {
+			con.rollback();
+		}catch (Throwable rbe){
+			lg.error("exception during rollback, bEnableRetry = "+bEnableRetry, rbe);
+		}
+		if (bEnableRetry && isBadConnection(con)) {
+			conFactory.failed(con,lock);
+			publishDirectly(publishTheseBiomodels,publishTheseMathmodels,user, false);
+		}else{
+			handle_DataAccessException_SQLException(e);
+		}
+	}finally{
+		conFactory.release(con,lock);
+	}
+}
 public KeyValue savePublicationRep(PublicationRep publicationRep, User user, boolean bEnableRetry) throws SQLException, DataAccessException {
 	Object lock = new Object();
 	Connection con = conFactory.getConnection(lock);

@@ -17,7 +17,7 @@
 </center>
 <br>title: &quot;${publication.title!""}&quot;</br>
 <br>year: ${publication.year!""}</br>
-<br>authors: <#list publication.authors as author>${author}&nbsp;&nbsp;</#list></br>
+<br>authors:  <#if publication.authors??><#list publication.authors as author> ${author!""}; </#list></#if></br>
 <br>citation: ${publication.citation!""}</br>
 <br>pubmedid: ${publication.pubmedid!""}</br>
 <br>citation: ${publication.citation!""}</br>
@@ -26,18 +26,39 @@
 <br>wittid: ${publication.wittid!""}</br>
 <br>pubdate: <#if publication.date??>${publication.date?string["MM/dd/yyyy"]}<#else> </#if></br>
 
+<#assign needspub = 0>
+<form action="/publication/${publication.pubKey}" method="post">
 <br/><h3>BioModels</h3>
 <#if publication.biomodelReferences??>
-<#list publication.biomodelReferences as biomodel><a href='/biomodel/${biomodel.bmKey}'>${biomodel.name}(${biomodel.bmKey})</a>&nbsp;&nbsp;
-</#list>
-<#else>--</#if>
-<br/><h3>MathModels</h3>
-<#if publication.mathmodelReferences??>
-<#list publication.mathmodelReferences as mathmodel><a href='/mathmodel/${mathmodel.mmKey}'>${mathmodel.name}(mathmodel.mmKey)</a>&nbsp;&nbsp;
-</#list>
-<#else>--</#if>
+	<#list publication.biomodelReferences as biomodel>
+		<a href='/biomodel/${biomodel.bmKey}'>${biomodel.name}(${biomodel.bmKey})</a>
+		<#if biomodel.versionFlag != "3">
+			<#assign needspub = needspub+1>
+			<input type="checkbox" name="bmpublic" value="${biomodel.bmKey}">Make published
+		<#else>&nbsp;(published)</#if>
+		</br>
+	</#list>
 
-<br/><br/><br/>
+<#else>--</#if>
+<br/><br/><h3>MathModels</h3>
+<#if publication.mathmodelReferences??>
+	<#list publication.mathmodelReferences as mathmodel>
+		<a href='/mathmodel/${mathmodel.mmKey}'>${mathmodel.name}(${mathmodel.mmKey})</a>
+		<#if mathmodel.versionFlag != "3">
+			<#assign needspub = needspub+1>
+			<input type="checkbox" name="mmpublic" value="${mathmodel.mmKey}">Make published
+		<#else>&nbsp;(published)</#if>
+		</br>
+	</#list>
+<#else>--</#if>
+<br/>
+<input type="hidden" value="makepublic" name="pubop" />
+<#if (needspub > 0) >
+	<br/>
+	<input type='submit' value='Apply Publish' style='font-size:large'>
+</#if>
+</form>
+<br/><br/>
 <#if jsonResponse??> JSON response <br/>
 ${jsonResponse}
 <br/>

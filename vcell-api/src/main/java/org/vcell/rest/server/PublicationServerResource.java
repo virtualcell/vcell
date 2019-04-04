@@ -136,7 +136,9 @@ public class PublicationServerResource extends AbstractServerResource implements
 				authors[i] = authors[i].trim();
 			}
         	String thePubID = form.getFirstValue("pubId");
-        	PublicationRep publicationRep = new PublicationRep(
+        	BioModelReferenceRep[] bioModelReferenceReps = (BioModelReferenceRep[])convertToReferenceRep(form.getFirstValue("biomodelReferences"),BioModelReferenceRep.class);
+			MathModelReferenceRep[] mathModelReferenceReps = (MathModelReferenceRep[])convertToReferenceRep(form.getFirstValue("mathmodelReferences"),MathModelReferenceRep.class);
+			PublicationRep publicationRep = new PublicationRep(
         		(thePubID == null || thePubID.equals(AUTOMATICALLY_GENERATED)?null:new KeyValue(Integer.valueOf(thePubID).toString())),
         		form.getFirstValue("title"),
         		authors,
@@ -146,11 +148,13 @@ public class PublicationServerResource extends AbstractServerResource implements
         		form.getFirstValue("doi"),
         		form.getFirstValue("endnoteid"),
         		form.getFirstValue("url"),
-        		(BioModelReferenceRep[])convertToReferenceRep(form.getFirstValue("biomodelReferences"),BioModelReferenceRep.class),
-        		(MathModelReferenceRep[])convertToReferenceRep(form.getFirstValue("mathmodelReferences"),MathModelReferenceRep.class),
+        		bioModelReferenceReps,
+        		mathModelReferenceReps,
         		form.getFirstValue("wittid"),
         		(form.getFirstValue("pubdate")==null || form.getFirstValue("pubdate").trim().length()==0?null:sdf.parse(form.getFirstValue("pubdate"))));
         	KeyValue savedOrEditedPubID = ((VCellApiApplication)getApplication()).getRestDatabaseService().savePublicationRep(publicationRep, vcellUser);
+        	String address = getRequest().getClientInfo().getAddress();
+        	int port = getRequest().getClientInfo().getPort();
         	String myHost = getHostRef().getHostDomain();
         	String rootRefStr = "https://"+myHost;
         	StringRepresentation  s = new StringRepresentation(("<html>" + 
@@ -159,6 +163,20 @@ public class PublicationServerResource extends AbstractServerResource implements
         			"</boady></html>").toCharArray());
         	s.setMediaType(MediaType.TEXT_HTML);
         	return s;
+        }else if(pubop.equals("makepublic")) {
+        	String[] bmKeys = form.getValuesArray("bmpublic");
+        	KeyValue[] publishTheseBiomodels = new KeyValue[(bmKeys==null?0:bmKeys.length)];
+        	for (int i = 0; i < publishTheseBiomodels.length; i++) {
+        		publishTheseBiomodels[i] = new KeyValue(bmKeys[i]);
+			}
+        	String[] mmKeys = form.getValuesArray("mmpublic");
+        	KeyValue[] publishTheseMathmodels = new KeyValue[(mmKeys==null?0:mmKeys.length)];
+        	for (int i = 0; i < publishTheseMathmodels.length; i++) {
+        		publishTheseMathmodels[i] = new KeyValue(mmKeys[i]);
+			}
+        	if(publishTheseBiomodels.length>0 || publishTheseMathmodels.length > 0){
+        		((VCellApiApplication)getApplication()).getRestDatabaseService().publishDirectly(publishTheseBiomodels, publishTheseMathmodels, vcellUser);
+        	}
         }else {
         	return new StringRepresentation(("value of pubop="+pubop+" not expected").toCharArray());
         }
@@ -182,13 +200,13 @@ public class PublicationServerResource extends AbstractServerResource implements
 		if(classType.equals(BioModelReferenceRep.class)) {
 			BioModelReferenceRep[] biomodelReferenceReps = new BioModelReferenceRep[modelKeys.length];
 			for (int i = 0; i < modelKeys.length; i++) {
-				biomodelReferenceReps[i] = new BioModelReferenceRep(new KeyValue(modelKeys[i]), null, null);
+				biomodelReferenceReps[i] = new BioModelReferenceRep(new KeyValue(modelKeys[i]), null, null,null);
 			}
 			return biomodelReferenceReps;
 		}else if(classType.equals(MathModelReferenceRep.class)) {
 			MathModelReferenceRep[] mathmodelReferenceReps = new MathModelReferenceRep[modelKeys.length];
 			for (int i = 0; i < modelKeys.length; i++) {
-				mathmodelReferenceReps[i] = new MathModelReferenceRep(new KeyValue(modelKeys[i]), null, null);
+				mathmodelReferenceReps[i] = new MathModelReferenceRep(new KeyValue(modelKeys[i]), null, null,null);
 			}	
 			return mathmodelReferenceReps;
 		}

@@ -9,6 +9,7 @@ public class BiomodelReferenceRepresentation {
 	public String name;	
 	public String ownerName;	
 	public String ownerKey;
+	public String versionFlag;
 	
 	public BiomodelReferenceRepresentation(){
 		
@@ -29,6 +30,9 @@ public class BiomodelReferenceRepresentation {
 	public String getOwnerKey() {
 		return ownerKey;
 	}
+	public String getVersionFlag() {
+		return versionFlag;
+	}
 
 
 	public BiomodelReferenceRepresentation(BioModelReferenceRep bioModelReferenceRep) throws ExpressionException{
@@ -36,5 +40,6 @@ public class BiomodelReferenceRepresentation {
 		this.name = bioModelReferenceRep.getName();
 		this.ownerName = bioModelReferenceRep.getOwner().getName();
 		this.ownerKey = bioModelReferenceRep.getOwner().getID().toString();
+		this.versionFlag = bioModelReferenceRep.getVersionFlag().toString();
 	}
 }

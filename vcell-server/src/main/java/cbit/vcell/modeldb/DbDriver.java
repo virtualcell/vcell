@@ -149,6 +149,32 @@ public DbDriver(DatabaseSyntax dbSyntax, KeyFactory keyFactory) {
 	this.keyFactory = keyFactory;
 }
 
+public static void publishDirectly(Connection con,KeyValue[] publishTheseBiomodels,KeyValue[] publishTheseMathmodels,User user,DatabaseSyntax databaseSyntax) throws SQLException,DataAccessException{
+	TreeMap<SPECIALS, TreeMap<User, String>> specialUsers = getSpecialUsers(user,con,databaseSyntax);
+	TreeMap<User, String> usersAllowedToModifyPublications = specialUsers.get(User.SPECIALS.publication);
+	if(usersAllowedToModifyPublications == null || !usersAllowedToModifyPublications.containsKey(user)) {
+		throw new DataAccessException("User "+user.getName()+" does not have permission to publish directly");
+	}
+	if(publishTheseBiomodels != null && publishTheseBiomodels.length>0) {
+		String sql = "UPDATE "+BioModelTable.table.getTableName()+
+			" SET "+BioModelTable.table.privacy.getUnqualifiedColName()+"="+GroupAccess.GROUPACCESS_ALL.toString()+
+			" WHERE "+BioModelTable.table.id.getUnqualifiedColName()+" IN ("+StringUtils.join(publishTheseBiomodels, ',')+")";
+		updateCleanSQL(con, sql);
+		sql = "UPDATE "+BioModelTable.table.getTableName()+" SET "+BioModelTable.table.versionFlag.getUnqualifiedColName()+"="+VersionFlag.Published.getIntValue()+
+			" WHERE "+BioModelTable.table.id.getUnqualifiedColName()+" IN ("+StringUtils.join(publishTheseBiomodels, ',')+")";
+		updateCleanSQL(con, sql);
+	}
+	if(publishTheseMathmodels != null && publishTheseMathmodels.length>0) {
+		String sql = "UPDATE "+MathModelTable.table.getTableName()+
+			" SET "+MathModelTable.table.privacy.getUnqualifiedColName()+"="+GroupAccess.GROUPACCESS_ALL.toString()+
+			" WHERE "+MathModelTable.table.id.getUnqualifiedColName()+" IN ("+StringUtils.join(publishTheseBiomodels, ',')+")";
+		updateCleanSQL(con, sql);
+		sql = "UPDATE "+MathModelTable.table.getTableName()+" SET "+MathModelTable.table.versionFlag.getUnqualifiedColName()+"="+VersionFlag.Published.getIntValue()+
+			" WHERE "+MathModelTable.table.id.getUnqualifiedColName()+" IN ("+StringUtils.join(publishTheseBiomodels, ',')+")";
+		updateCleanSQL(con, sql);
+	}
+}
+
 public static KeyValue savePublicationRep(Connection con,PublicationRep publicationRep,User user,DatabaseSyntax databaseSyntax) throws SQLException, DataAccessException{
 	
 	String pubID = null;
