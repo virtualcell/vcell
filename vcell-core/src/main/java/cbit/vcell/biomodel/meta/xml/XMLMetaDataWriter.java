@@ -48,9 +48,13 @@ public class XMLMetaDataWriter extends XMLMetaData {
 		// add resource binding table
 		Element bindingListElement = new Element(XMLMetaData.URI_BINDING_LIST_TAG);
 		Set<Registry.Entry> resources = metaData.getRegistry().getAllEntries();
-		for (Registry.Entry entry : resources) {
-			if(entry.getIdentifiable() == null) {
+		
+
+		for (Iterator<Registry.Entry> i = resources.iterator(); i.hasNext(); ) {
+			Registry.Entry entry = i.next();
+			if (entry.getIdentifiable() == null) {
 				System.err.println("Null identifiable for metadata registry entry");
+				i.remove();
 				continue;
 			}
 			VCID vcid = identifiableProvider.getVCID(entry.getIdentifiable());
@@ -58,10 +62,10 @@ public class XMLMetaDataWriter extends XMLMetaData {
 				throw new RuntimeException("Identifiable missing for " + entry.getResource());
 			}
 			Identifiable identifiable = identifiableProvider.getIdentifiableObject(vcid);
-			if (identifiable != null && entry.getResource() != null){
+			if (identifiable != null && entry.getResource() != null) {
 				Element entryElement = new Element(XMLMetaData.URI_BINDING_TAG);
 				Resource resource = entry.getResource();
-				if (resource!=null){
+				if (resource!=null) {
 					entryElement.setAttribute(XMLMetaData.URI_ATTR_TAG, resource.stringValue());				
 				}
 				entryElement.setAttribute(XMLMetaData.VCID_ATTR_TAG, vcid.toASCIIString());

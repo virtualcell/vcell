@@ -1098,6 +1098,9 @@ public Identifiable getIdentifiableObject(VCID vcid) {
 }
 
 public VCID getVCID(Identifiable identifiable) {
+	if(identifiable == null) {
+		return null;
+	}
 	String localName;
 	String className;
 	if (identifiable instanceof SpeciesContext){

@@ -183,6 +183,9 @@ public class VCMetaData implements Serializable {
 		for (Registry.Entry entry : entries) {
 			Identifiable entryIdentifiable = entry.getIdentifiable();
 			VCID vcid = identifiableProvider.getVCID(entryIdentifiable);
+			if(vcid == null) {
+				continue;
+			}
 			Identifiable identifiable = identifiableProvider.getIdentifiableObject(vcid);
 			if (identifiable == null) {
 				// use miriamManager to remove RDF statements from resource for identifiable
