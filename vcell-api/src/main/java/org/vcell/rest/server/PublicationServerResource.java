@@ -44,6 +44,7 @@ import com.google.gson.Gson;
 import cbit.vcell.modeldb.BioModelReferenceRep;
 import cbit.vcell.modeldb.MathModelReferenceRep;
 import cbit.vcell.modeldb.PublicationRep;
+import cbit.vcell.resource.PropertyLoader;
 import freemarker.template.Configuration;
 
 public class PublicationServerResource extends AbstractServerResource implements PublicationResource {
@@ -106,6 +107,11 @@ public class PublicationServerResource extends AbstractServerResource implements
 	@Post
     public Representation handleForm(Representation entity) {
 		try {
+        	String myHost = getHostRef().getHostDomain();
+        	String allowedPublicationHost = PropertyLoader.getProperty(PropertyLoader.vcellPublicationHost,"");
+			if(!allowedPublicationHost.equals(myHost)) {
+        		throw new PermissionException("Host '"+myHost+"' not allowed to edit publications");
+        	}
         Form form = new Form(entity);
     	VCellApiApplication application = ((VCellApiApplication)getApplication());
     	User vcellUser = application.getVCellUser(getChallengeResponse(),AuthenticationPolicy.ignoreInvalidCredentials);
@@ -153,15 +159,9 @@ public class PublicationServerResource extends AbstractServerResource implements
         		form.getFirstValue("wittid"),
         		(form.getFirstValue("pubdate")==null || form.getFirstValue("pubdate").trim().length()==0?null:sdf.parse(form.getFirstValue("pubdate"))));
         	KeyValue savedOrEditedPubID = ((VCellApiApplication)getApplication()).getRestDatabaseService().savePublicationRep(publicationRep, vcellUser);
-        	String address = getRequest().getClientInfo().getAddress();
-        	int port = getRequest().getClientInfo().getPort();
-        	String myHost = getHostRef().getHostDomain();
-        	String rootRefStr = "https://"+myHost;
-        	StringRepresentation  s = new StringRepresentation(("<html>" + 
-        	"<head><meta http-equiv=\"refresh\" content=\"0; URL='"+rootRefStr+"/publication/"+savedOrEditedPubID.toString()+"' /></head>"
-        			+ "<body>If you are not redirected automatically, click the saved/updated publication ID <a href=\""+rootRefStr+"/publication/"+savedOrEditedPubID.toString()+"\">"+savedOrEditedPubID.toString()+"</a>.\n" + 
-        			"</boady></html>").toCharArray());
-        	s.setMediaType(MediaType.TEXT_HTML);
+//        	String address = getRequest().getClientInfo().getAddress();
+//        	int port = getRequest().getClientInfo().getPort();
+        	StringRepresentation s = getPubInfoHtml(myHost, savedOrEditedPubID);
         	return s;
         }else if(pubop.equals("makepublic")) {
         	String[] bmKeys = form.getValuesArray("bmpublic");
@@ -177,6 +177,9 @@ public class PublicationServerResource extends AbstractServerResource implements
         	if(publishTheseBiomodels.length>0 || publishTheseMathmodels.length > 0){
         		((VCellApiApplication)getApplication()).getRestDatabaseService().publishDirectly(publishTheseBiomodels, publishTheseMathmodels, vcellUser);
         	}
+        	Object pubidObj = getRequestAttributes().get(VCellApiApplication.PUBLICATIONID);
+        	StringRepresentation s = getPubInfoHtml(myHost, new KeyValue(pubidObj.toString()));
+        	return s;
         }else {
         	return new StringRepresentation(("value of pubop="+pubop+" not expected").toCharArray());
         }
@@ -189,6 +192,16 @@ public class PublicationServerResource extends AbstractServerResource implements
 			return new StringRepresentation(e.getClass().getName()+" "+e.getMessage());
 		}
     }
+
+	private StringRepresentation getPubInfoHtml(String myHost, KeyValue savedOrEditedPubID) {
+		String rootRefStr = "https://"+myHost;
+		StringRepresentation  s = new StringRepresentation(("<html>" + 
+		"<head><meta http-equiv=\"refresh\" content=\"0; URL='"+rootRefStr+"/publication/"+savedOrEditedPubID.toString()+"' /></head>"
+				+ "<body>If you are not redirected automatically, click the saved/updated publication ID <a href=\""+rootRefStr+"/publication/"+savedOrEditedPubID.toString()+"\">"+savedOrEditedPubID.toString()+"</a>.\n" + 
+				"</boady></html>").toCharArray());
+		s.setMediaType(MediaType.TEXT_HTML);
+		return s;
+	}
 	private Object convertToReferenceRep(String str,Class classType) throws Exception{
 		if(str == null || str.trim().length()==0) {
 			return null;

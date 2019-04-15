@@ -38,6 +38,7 @@ case $VCELL_SITE in
 		_site_port_offset=0
 		VCELL_API_HOST_EXTERNAL=vcellapi.cam.uchc.edu
 		VCELL_API_PORT_EXTERNAL=443
+		VCELL_API_PUBLICATION_HOST=vcell-node1
 		_applicationId="1471-8022-1038-5553"
 		;;
 	BETA)
@@ -50,6 +51,7 @@ case $VCELL_SITE in
 		_site_port_offset=2
 		VCELL_API_HOST_EXTERNAL=vcellapi-beta.cam.uchc.edu
 		VCELL_API_PORT_EXTERNAL=8080
+		VCELL_API_PUBLICATION_HOST=vcell-node4
 		_applicationId="1471-8022-1038-5554"
 		;;
 	TEST)

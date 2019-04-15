@@ -165,6 +165,7 @@ public class PropertyLoader {
 
 	public static final String vcellSoftwareVersion = record("vcell.softwareVersion",ValueType.GEN);
 	public static final String vcellThirdPartyLicense = record("vcell.thirdPartyLicense",ValueType.GEN);
+	public static final String vcellPublicationHost = record("vcell.publication.host",ValueType.GEN);
 
 	public static final String vcellSMTPHostName = record("vcell.smtp.hostName",ValueType.GEN);
 	public static final String vcellSMTPPort = record("vcell.smtp.port",ValueType.GEN);
