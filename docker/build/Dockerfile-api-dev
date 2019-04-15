@@ -33,7 +33,8 @@ ENV softwareVersion=SOFTWARE-VERSION-NOT-SET \
     jmsblob_minsize=100000 \
     smtp_hostname="smtp-host-not-set" \
 	smtp_port="smtp-port-not-set" \
-	smtp_emailaddress="smtp-emailaddress-not-set"
+	smtp_emailaddress="smtp-emailaddress-not-set" \
+	publicationHost="publicationHost_not_set"
 
 ENV dbpswdfile=/run/secrets/dbpswd \
     jmspswdfile=/run/secrets/jmspswd \

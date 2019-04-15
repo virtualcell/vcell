@@ -6,6 +6,8 @@ services:
       - softwareVersion=${VCELL_VERSION}
       - serverid=${VCELL_SITE}
       
+      - publicationHost=${VCELL_API_PUBLICATION_HOST}
+      
       - dburl=${VCELL_DB_URL}
       - dbdriver=${VCELL_DB_DRIVER}
       - dbuser=${VCELL_DB_USER}
