@@ -882,7 +882,7 @@ private JMenu getToolMenu() {
 			toolMenu.add(getRunVFrapItem());
 			toolMenu.add(getImageJServiceMenuItem());	// moved here from Tools
 		    toolMenu.add(new JSeparator());
-			toolMenu.add(new JSeparator());
+//			toolMenu.add(new JSeparator());
 			toolMenu.add(getTransMAMenuItem());
 //			toolMenu.add(getViewJobsMenuItem());		// moved to Server
 		} catch (Throwable ivjExc) {

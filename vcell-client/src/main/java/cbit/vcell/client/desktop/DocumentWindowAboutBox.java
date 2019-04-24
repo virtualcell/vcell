@@ -31,7 +31,7 @@ public class DocumentWindowAboutBox extends JPanel {
 	private static final String SMOLDYN_WEB_URL = "http://www.smoldyn.org";
 	private static final String BIONETGEN_WEB_URL = "http://bionetgen.org";
 	private static final String NFSIM_WEB_URL = "http://emonet.biology.yale.edu/nfsim/";
-	private static final String ACKNOWLEGE_PUB__WEB_URL = "http://vcell.org/vcell_models/how_submit_publication.html";
+	private static final String ACKNOWLEGE_PUB__WEB_URL = "http://vcell.org/publish-a-vcell-model";
 	private static final String VCELL_WEB_URL = "http://www.vcell.org";
 	private JLabel appName = null;
 	private JLabel copyright = null;
