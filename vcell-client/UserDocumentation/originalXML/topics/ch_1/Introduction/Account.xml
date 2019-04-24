@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <vcelldoc>
-<page title="Server">
+<page title="Account">
 
 	<introduction>
-	The <bold>Server</bold> menu bar option allows the user to change the server settings for the current user of VCell.
+	The <bold>Account</bold> menu bar option allows the user to change the account settings for the current user of VCell.
 	</introduction>
 	
 	<appearance>
@@ -11,7 +11,7 @@
 	</appearance>
 	
 	<operations> 
-	Clicking the Server menu displays the following selections 
+	Clicking the Account menu displays the following selections 
 	<list>
 		<item>
 		<link target = "ChangeUser">Change User...</link> - allows user to change the user of the currently open VCell document by providing a different user name and password.

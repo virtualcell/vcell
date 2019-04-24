@@ -19,7 +19,7 @@
     			<tocitem target="ImportBNGL" text="File->Import Menu (BNGL files)"/>
     			<tocitem target="Export" text="File->Export Menu"/>
     		</tocitem>
-    		<tocitem target="Server" text="Server Menu">
+    		<tocitem target="Account" text="Account Menu">
     			<tocitem target="Login" text="User Login"/>
     			<tocitem target="ChangeUser" text="Change User Menu"/>
     			<tocitem target="UpdateRegistrationInfo" text="Update Registration Information Menu"/>

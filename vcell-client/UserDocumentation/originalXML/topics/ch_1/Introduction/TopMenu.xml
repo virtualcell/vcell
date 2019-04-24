@@ -17,7 +17,7 @@
 	     <link target = "File">File</link>,  
 	  </item>
  	  <item>     
-         <link target = "Server">Server</link>,
+         <link target = "Account">Account</link>,
 	  </item>
 	  <item>
          <link target = "Window">Window</link>,

@@ -203,7 +203,7 @@ public void sendLostPassword(Connection con,String userid) throws SQLException, 
 			PropertyLoader.getRequiredProperty(PropertyLoader.vcellSMTPEmailAddress),
 			userInfo.email,
 			"re: VCell Info",
-			"Your password has been reset to '"+clearTextPassword+"'.  Login with the new password and change your password as soon as possible."
+			"Your password has been reset to '"+clearTextPassword+"'.  Login with the new password and change your password as soon as possible.  To change your password, log into VCell and select Account->'Update Registration Info...' from the Top Menu.  Enter a new password where indicated."
 		);
 	} catch (Exception e) {
 		e.printStackTrace();
