@@ -12,6 +12,7 @@ package cbit.vcell.client.desktop;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.Desktop;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -19,6 +20,9 @@ import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -132,6 +136,12 @@ public class DocumentWindow extends LWTopFrame implements TopLevelWindow, Reconn
 	private JMenuItem ivjEdit_Annotation_JMenuItem = null;
 	private JMenuItem ivjTestingFrameworkMenuItem = null;
 	private JMenuItem ivjJMenuItemOnlineHelp = null;
+	private JMenuItem ivjJMenuItemOnlineSupport = null;
+	private JMenuItem ivjJMenuItemDiscussionGroup = null;
+	private JMenuItem ivjJMenuItemManagePermissions = null;
+	private JMenuItem ivjJMenuItemOnlinePublish = null;
+	
+	private JMenuItem ivjJMenuItemEmailSupport = null;
 	private JMenuItem newHelpMenuItem = null;
 //	private JMenuItem ivjRunBNGMenuItem = null;
 	private JMenuItem ivjRunVFrapMenuItem = null;
@@ -211,6 +221,17 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.I
 				connEtoC37(e);
 			if (e.getSource() == DocumentWindow.this.getJMenuItemOnlineHelp())
 				connEtoC25(e);
+			if (e.getSource() == DocumentWindow.this.getJMenuItemOnlineSupport())
+				onlineSupport(e);
+			if (e.getSource() == DocumentWindow.this.getJMenuItemDiscussionGroup())
+				discussionGroup(e);
+			if (e.getSource() == DocumentWindow.this.getJMenuItemManagePermissions())
+				managePermissions(e);
+			if (e.getSource() == DocumentWindow.this.getJMenuItemOnlinePublish())
+				onlinePublish(e);
+			
+			if (e.getSource() == DocumentWindow.this.getJMenuItemEmailSupport())
+				emailSupport(e);
 			if (e.getSource() == DocumentWindow.this.getNewHelpMenuItem())
 				showVCellHelpWindow();
 //			if (e.getSource() == DocumentWindow.this.getRunBNGMenuItem())
@@ -507,7 +528,51 @@ private void connEtoC25(java.awt.event.ActionEvent arg1) {
 		handleException(ivjExc);
 	}
 }
+private void onlineSupport(java.awt.event.ActionEvent arg1) {
+	try {
+		this.invokeOnlineSupport();
+	} catch (java.lang.Throwable ivjExc) {
+		handleException(ivjExc);
+	}
+}
+private void discussionGroup(java.awt.event.ActionEvent arg1) {
+	try {
+		this.invokeDiscussionGroup();
+	} catch (java.lang.Throwable ivjExc) {
+		handleException(ivjExc);
+	}
+}
+private void managePermissions(java.awt.event.ActionEvent arg1) {
+	try {
+		this.invokeManagePermissions();
+	} catch (java.lang.Throwable ivjExc) {
+		handleException(ivjExc);
+	}
+}
+private void onlinePublish(java.awt.event.ActionEvent arg1) {
+	try {
+		this.invokeOnlinePublish();
+	} catch (java.lang.Throwable ivjExc) {
+		handleException(ivjExc);
+	}
+}
 
+private void emailSupport(java.awt.event.ActionEvent arg1) {
+	try {
+	Desktop desktop;
+	if (Desktop.isDesktopSupported() && (desktop = Desktop.getDesktop()).isSupported(Desktop.Action.MAIL) ) {
+		URI mailto = new URI("mailto:vcell_support@uchc.edu");		// "mailto:john@example.com?subject=Hello%20World"
+		desktop.mail(mailto);
+	} else {
+		throw new RuntimeException("Desktop doesn't support mailto");
+	}
+	} catch(URISyntaxException | IOException ex) {
+		handleException(ex);
+	}
+	
+	
+	
+}
 
 ///**
 // * connEtoC26:  (RunBNGMenuItem.action.actionPerformed(java.awt.event.ActionEvent) --> DocumentWindow.launchBNG()V)
@@ -768,7 +833,7 @@ private javax.swing.JMenuItem getAbout_BoxMenuItem() {
 		try {
 			ivjAbout_BoxMenuItem = new javax.swing.JMenuItem();
 			ivjAbout_BoxMenuItem.setName("About_BoxMenuItem");
-			ivjAbout_BoxMenuItem.setText("About the Virtual Cell");
+			ivjAbout_BoxMenuItem.setText("About VCell");
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -796,15 +861,30 @@ private JMenu getToolMenu() {
 	if (toolMenu == null) {
 		try {
 			toolMenu = new javax.swing.JMenu();
+			//getImageJServiceMenuItem().setText(createImageJServiceMenuText());
+			toolMenu.addMenuListener(new MenuListener() {
+				@Override
+				public void menuSelected(MenuEvent e) {
+					getImageJServiceMenuItem().setText(createImageJServiceMenuText());
+				}
+				@Override
+				public void menuDeselected(MenuEvent e) {
+				}
+				@Override
+				public void menuCanceled(MenuEvent e) {
+				}
+			});
+
 			toolMenu.setName("ToolMenu");
 			toolMenu.setText("Tools");
 //			toolMenu.add(getRunBNGMenuItem());
 			toolMenu.add(new JSeparator());
 			toolMenu.add(getRunVFrapItem());
+			toolMenu.add(getImageJServiceMenuItem());	// moved here from Tools
 		    toolMenu.add(new JSeparator());
 			toolMenu.add(new JSeparator());
 			toolMenu.add(getTransMAMenuItem());
-//			toolMenu.add(getViewJobsMenuItem());	// moved to Server
+//			toolMenu.add(getViewJobsMenuItem());		// moved to Server
 		} catch (Throwable ivjExc) {
 			handleException(ivjExc);
 		}
@@ -1101,10 +1181,19 @@ private javax.swing.JMenu getHelpMenu() {
 			ivjHelpMenu.setText("Help");
 			ivjHelpMenu.add(getNewHelpMenuItem());
 			ivjHelpMenu.add(getJMenuItemOnlineHelp());
+			//ivjHelpMenu.add(getJMenuItemOnlineSupport());
+			ivjHelpMenu.add(getJMenuItemDiscussionGroup());
+			ivjHelpMenu.add(getJMenuItemManagePermissions());
+			ivjHelpMenu.add(getJMenuItemOnlinePublish());
+			ivjHelpMenu.add(getJMenuItemEmailSupport());
+			
+//			ivjHelpMenu.add(getSeparator());
+//			ivjHelpMenu.add(getPermissionsMenuItem());
+
 			ivjHelpMenu.add(getJSeparator6());
-			ivjHelpMenu.add(getAbout_BoxMenuItem());
-			ivjHelpMenu.add(getSeparator());
 			ivjHelpMenu.add(getMntmLicenseInformation());
+			ivjHelpMenu.add(getAbout_BoxMenuItem());
+//			ivjHelpMenu.add(getSeparator());
 			ivjHelpMenu.add(getStatusbarMenuItem());
 			// user code begin {1}
 			// user code end
@@ -1232,7 +1321,7 @@ private javax.swing.JMenuItem getJMenuItemOnlineHelp() {
 		try {
 			ivjJMenuItemOnlineHelp = new javax.swing.JMenuItem();
 			ivjJMenuItemOnlineHelp.setName("JMenuItemOnlineHelp");
-			ivjJMenuItemOnlineHelp.setText("Online Resources");
+			ivjJMenuItemOnlineHelp.setText("VCell Website");		// "Online Resources"
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -1243,13 +1332,73 @@ private javax.swing.JMenuItem getJMenuItemOnlineHelp() {
 	}
 	return ivjJMenuItemOnlineHelp;
 }
+private javax.swing.JMenuItem getJMenuItemOnlineSupport() {
+	if (ivjJMenuItemOnlineSupport == null) {
+		try {
+			ivjJMenuItemOnlineSupport = new javax.swing.JMenuItem();
+			ivjJMenuItemOnlineSupport.setName("JMenuItemOnlineSupport");
+			ivjJMenuItemOnlineSupport.setText("VCell Support on the Web");
+		} catch (java.lang.Throwable ivjExc) {
+			handleException(ivjExc);
+		}
+	}
+	return ivjJMenuItemOnlineSupport;
+}
+private javax.swing.JMenuItem getJMenuItemDiscussionGroup() {
+	if (ivjJMenuItemDiscussionGroup == null) {
+		try {
+			ivjJMenuItemDiscussionGroup = new javax.swing.JMenuItem();
+			ivjJMenuItemDiscussionGroup.setName("JMenuItemDiscussionGroup");
+			ivjJMenuItemDiscussionGroup.setText("VCell Open Discussion Forum");
+		} catch (java.lang.Throwable ivjExc) {
+			handleException(ivjExc);
+		}
+	}
+	return ivjJMenuItemDiscussionGroup;
+}
+private javax.swing.JMenuItem getJMenuItemManagePermissions() {
+	if (ivjJMenuItemManagePermissions == null) {
+		try {
+			ivjJMenuItemManagePermissions = new javax.swing.JMenuItem();
+			ivjJMenuItemManagePermissions.setName("JMenuItemManagePermissions");
+			ivjJMenuItemManagePermissions.setText("How to Change Permissions");
+		} catch (java.lang.Throwable ivjExc) {
+			handleException(ivjExc);
+		}
+	}
+	return ivjJMenuItemManagePermissions;
+}
+private javax.swing.JMenuItem getJMenuItemOnlinePublish() {
+	if (ivjJMenuItemOnlinePublish == null) {
+		try {
+			ivjJMenuItemOnlinePublish = new javax.swing.JMenuItem();
+			ivjJMenuItemOnlinePublish.setName("JMenuItemOnlinePublish");
+			ivjJMenuItemOnlinePublish.setText("How to Publish a Model ");
+		} catch (java.lang.Throwable ivjExc) {
+			handleException(ivjExc);
+		}
+	}
+	return ivjJMenuItemOnlinePublish;
+}
+private javax.swing.JMenuItem getJMenuItemEmailSupport() {
+	if (ivjJMenuItemEmailSupport == null) {
+		try {
+			ivjJMenuItemEmailSupport = new javax.swing.JMenuItem();
+			ivjJMenuItemEmailSupport.setName("JMenuItemEmailSupport");
+			ivjJMenuItemEmailSupport.setText("Contact VCell Support");
+		} catch (java.lang.Throwable ivjExc) {
+			handleException(ivjExc);
+		}
+	}
+	return ivjJMenuItemEmailSupport;
+}
 
 private javax.swing.JMenuItem getNewHelpMenuItem() {
 	if (newHelpMenuItem == null) {
 		try {
 			newHelpMenuItem = new javax.swing.JMenuItem();
 			newHelpMenuItem.setName("newHelpMenuItem");
-			newHelpMenuItem.setText("Help");
+			newHelpMenuItem.setText("VCell Help");
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -1771,26 +1920,26 @@ private javax.swing.JMenu getServerMenu() {
 	if (ivjServerMenu == null) {
 		try {
 			ivjServerMenu = new javax.swing.JMenu();
-			//getImageJServiceMenuItem().setText(createImageJServiceMenuText());
-			ivjServerMenu.addMenuListener(new MenuListener() {
-				@Override
-				public void menuSelected(MenuEvent e) {
-					getImageJServiceMenuItem().setText(createImageJServiceMenuText());
-				}
-				@Override
-				public void menuDeselected(MenuEvent e) {
-				}
-				@Override
-				public void menuCanceled(MenuEvent e) {
-				}
-			});
+//			//getImageJServiceMenuItem().setText(createImageJServiceMenuText());
+//			ivjServerMenu.addMenuListener(new MenuListener() {
+//				@Override
+//				public void menuSelected(MenuEvent e) {
+//					getImageJServiceMenuItem().setText(createImageJServiceMenuText());
+//				}
+//				@Override
+//				public void menuDeselected(MenuEvent e) {
+//				}
+//				@Override
+//				public void menuCanceled(MenuEvent e) {
+//				}
+//			});
 			ivjServerMenu.setName("ServerMenu");
-			ivjServerMenu.setText("Server");
+			ivjServerMenu.setText("Account");
 			ivjServerMenu.add(getChange_UserMenuItem());
 			ivjServerMenu.add(getChange_ProxyMenuItem());
 			ivjServerMenu.add(getUpdate_UserMenuItem());
 			ivjServerMenu.add(getReconnectMenuItem());
-			ivjServerMenu.add(getImageJServiceMenuItem());
+//			ivjServerMenu.add(getImageJServiceMenuItem());		// moved to Tools
 			ivjServerMenu.add(new JSeparator());
 			ivjServerMenu.add(getViewJobsMenuItem());
 			// user code begin {1}
@@ -2021,6 +2170,12 @@ private void initConnections() throws java.lang.Exception {
 	getEdit_Annotation_JMenuItem().addActionListener(ivjEventHandler);
 	getTestingFrameworkMenuItem().addActionListener(ivjEventHandler);
 	getJMenuItemOnlineHelp().addActionListener(ivjEventHandler);
+	getJMenuItemOnlineSupport().addActionListener(ivjEventHandler);
+	getJMenuItemDiscussionGroup().addActionListener(ivjEventHandler);
+	getJMenuItemManagePermissions().addActionListener(ivjEventHandler);
+	getJMenuItemOnlinePublish().addActionListener(ivjEventHandler);
+
+	getJMenuItemEmailSupport().addActionListener(ivjEventHandler);
 	getNewHelpMenuItem().addActionListener(ivjEventHandler);
 //	getRunBNGMenuItem().addActionListener(ivjEventHandler);
 	getRunVFrapItem().addActionListener(ivjEventHandler);
@@ -2059,6 +2214,27 @@ private void invokeOnlineHelp() {
 	PopupGenerator.browserLauncher(this, "http://vcell.org",
 		"Please visit "+"http://vcell.org"+" for Online Help");
 }
+private void invokeOnlineSupport() {
+
+	PopupGenerator.browserLauncher(this, "http://vcell.org/support",
+		"Please visit "+"http://vcell.org/support"+" for Online Support");
+}
+private void invokeDiscussionGroup() {
+
+	PopupGenerator.browserLauncher(this, "https://groups.google.com/forum/#!forum/vcell-discuss",
+		"Please visit "+"https://groups.google.com/forum/#!forum/vcell-discuss"+" for Discussion Group");
+}
+private void invokeManagePermissions() {
+
+	PopupGenerator.browserLauncher(this, "http://vcell.org/webstart/VCell_Tutorials/VCell_Help/topics/ch_1/Introduction/Permissions.html",
+		"Please visit "+"http://vcell.org/webstart/VCell_Tutorials/VCell_Help/topics/ch_1/Introduction/Permissions.html"+" for instructions on how to change permissions to your Model");
+}
+private void invokeOnlinePublish() {
+
+	PopupGenerator.browserLauncher(this, "http://vcell.org/publish-a-vcell-model",
+		"Please visit "+"http://vcell.org/publish-a-vcell-model"+" for instructions on how to Publish your Model");
+}
+
 
 
 /**
@@ -2186,7 +2362,7 @@ public static void showAboutBox(Component parent) {
 	}
 	/* Create the AboutBox dialog */
 	DocumentWindowAboutBox aDocumentWindowAboutBox = new DocumentWindowAboutBox(version,build);
-	DialogUtils.showComponentCloseDialog(parent, aDocumentWindowAboutBox, "About the Virtual Cell");
+	DialogUtils.showComponentCloseDialog(parent, aDocumentWindowAboutBox, "About VCell");
 }
 
 private void showAboutBox() {
@@ -2553,7 +2729,7 @@ public void showViewJobsDialog() {
 
 	private JMenuItem getMntmLicenseInformation() {
 		if (mntmLicenseInformation == null) {
-			mntmLicenseInformation = new JMenuItem("Virtual Cell License Information");
+			mntmLicenseInformation = new JMenuItem("VCell License Information");
 			mntmLicenseInformation.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent arg0) {
 					Integer year = 2013;
