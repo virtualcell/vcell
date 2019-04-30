@@ -86,6 +86,8 @@ public class SimulationListPanel extends DocumentEditorSubPanel {
 
 //	private static final String QUICK_RUN_PYTHON_TOOL_TIP = "Python Quick Run";
 	private static final String QUICK_RUN_NATIVE_TOOL_TIP = "Native Quick Run";
+	private static final String SERVER_RUN_TOOL_TIP = "Run and Save Simulation";
+	
 	private OutputFunctionsPanel outputFunctionsPanel;
 	private JToolBar toolBar = null;
 	private JButton ivjEditButton = null;
@@ -438,7 +440,7 @@ private javax.swing.JButton getRunButton() {
 		try {
 			ivjRunButton = new javax.swing.JButton("", VCellIcons.runSimIcon);
 			ivjRunButton.setName("RunButton");
-			ivjRunButton.setToolTipText("Run and Save Simulation");
+			ivjRunButton.setToolTipText(SERVER_RUN_TOOL_TIP);
 			ivjRunButton.setEnabled(false);
 			// user code begin {1}
 			// user code end
@@ -801,6 +803,15 @@ private boolean canQuickRun(SolverTaskDescription taskDesc) {
 	quickNativeRunButton.setToolTipText(QUICK_RUN_NATIVE_TOOL_TIP);
 	return true;
 }
+private boolean canServerRun(SolverTaskDescription taskDesc) {
+	if(taskDesc.getSolverDescription().isComsolSolver()) {
+		System.err.println("SimulationListPanel.canServerRun(): quick run solver only, server run not supported");
+		getRunButton().setToolTipText("Not supported by selected solver");
+		return false;
+	}
+	getRunButton().setToolTipText(SERVER_RUN_TOOL_TIP);
+	return true;
+}
 /**
  * Comment
  */
@@ -823,6 +834,8 @@ private void refreshButtonsLax() {
 	boolean bStatusDetails = false;
 //	boolean bParticleView = false;
 	boolean bQuickRun = false;
+	
+	getRunButton().setEnabled(bRunnable);
 
 	Simulation firstSelection = null;
 	if (selections != null && selections.length > 0) {
@@ -836,6 +849,7 @@ private void refreshButtonsLax() {
 			}
 			final boolean onlyOne = firstSelection.getScanCount() == 1;
 //			bParticleView = onlyOne;
+			bRunnable = onlyOne && simStatus.isRunnable() && canServerRun(firstSelection.getSolverTaskDescription());
 			bQuickRun = onlyOne && canQuickRun( firstSelection.getSolverTaskDescription() );
 		}
 
@@ -844,7 +858,7 @@ private void refreshButtonsLax() {
 			Simulation sim = ivjSimulationListTableModel1.getValueAt(selections[i]);
 			SimulationStatus simStatus = getSimulationWorkspace().getSimulationStatus(sim);
 			bDeletable = bDeletable || !simStatus.isRunning();
-			bRunnable = bRunnable || simStatus.isRunnable();
+			bRunnable = bRunnable || (simStatus.isRunnable() && canServerRun(sim.getSolverTaskDescription()));
 			bStoppable = bStoppable || simStatus.isStoppable();
 			bHasData = bHasData || simStatus.getHasData();
 		}
