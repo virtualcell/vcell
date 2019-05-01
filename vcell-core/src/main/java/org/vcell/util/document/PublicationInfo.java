@@ -17,8 +17,9 @@ public class PublicationInfo implements Serializable{
 	private VCDocumentType vcDocumentType;
 	private User user;
 	private int theHashCode;
+	private boolean isCurated;
 	public PublicationInfo(KeyValue versionKey, String title, String[] authors, String citation, String pubmedid,
-			String doi, String url, VCDocumentType vcDocumentType, User user,Date pubdate) {
+			String doi, String url, VCDocumentType vcDocumentType, User user,Date pubdate,boolean isCurated) {
 		super();
 		this.versionKey = versionKey;
 		this.title = title;
@@ -31,6 +32,7 @@ public class PublicationInfo implements Serializable{
 		this.user = user;
 		this.pubdate = pubdate;
 		theHashCode = (versionKey.toString()+(doi!=null && doi.length()>0?doi.toString():(pubmedid!=null && pubmedid.length()>0&& !pubmedid.equals("0")?pubmedid.toString():""))).hashCode();
+		this.isCurated = isCurated;
 	}
 	public KeyValue getVersionKey() {
 		return versionKey;
@@ -64,5 +66,8 @@ public class PublicationInfo implements Serializable{
 	}
 	public int hashCode() {
 		return theHashCode;
+	}
+	public boolean isCurated() {
+		return isCurated;
 	}
 }

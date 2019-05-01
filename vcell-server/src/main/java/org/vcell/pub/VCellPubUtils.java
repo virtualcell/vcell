@@ -35,6 +35,7 @@ public class VCellPubUtils {
 	}
 
 	private static void read() throws IOException {
+		if(true) {throw new RuntimeException("Don't use this until 'iscurated' has been incorporated into xml data");}
 		System.out.println("starting to read");
 		Gson gson = new Gson();
 		FileReader reader = new FileReader("src/org/vcell/pub/pubMedData.json");
@@ -47,7 +48,7 @@ public class VCellPubUtils {
 		HashMap<Publication,PublishedModels> publishedModels = new HashMap<Publication,PublishedModels>();
 		int countModels = 0;
 		for (Record r : pubMedData.variables){
-			Publication pub = new Publication(null,r.pubTitle,r.authors,r.pubCitation,r.pubMedId,null,null);
+			Publication pub = new Publication(null,r.pubTitle,r.authors,r.pubCitation,r.pubMedId,null,null,false /*change if this is implemented in source xml data*/);
 			PublishedModels pubModels = publishedModels.get(pub);
 			if (pubModels==null){
 				pubModels = new PublishedModels(pub, new KeyValue[] { new KeyValue(r.modelKey) }, new KeyValue[0] );
@@ -194,6 +195,7 @@ public class VCellPubUtils {
 
 
 	private static void readNewRecords(File xmlFile) throws IOException {
+		if(true) {throw new RuntimeException("Don't use this until 'iscurated' has been incorporated into xml data");}
 		System.out.println("starting to read");
 		/**
 		 * 	public final Field id					= new Field("title",			"VARCHAR2(4000)",	"")

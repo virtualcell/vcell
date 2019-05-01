@@ -157,7 +157,8 @@ public class PublicationServerResource extends AbstractServerResource implements
         		bioModelReferenceReps,
         		mathModelReferenceReps,
         		form.getFirstValue("wittid"),
-        		(form.getFirstValue("pubdate")==null || form.getFirstValue("pubdate").trim().length()==0?null:sdf.parse(form.getFirstValue("pubdate"))));
+        		(form.getFirstValue("pubdate")==null || form.getFirstValue("pubdate").trim().length()==0?null:sdf.parse(form.getFirstValue("pubdate"))),
+        		(form.getFirstValue("bcurated")==null || form.getFirstValue("bcurated").trim().length()==0?false:(form.getFirstValue("bcurated").equalsIgnoreCase("T")?true:false)));
         	KeyValue savedOrEditedPubID = ((VCellApiApplication)getApplication()).getRestDatabaseService().savePublicationRep(publicationRep, vcellUser);
 //        	String address = getRequest().getClientInfo().getAddress();
 //        	int port = getRequest().getClientInfo().getPort();

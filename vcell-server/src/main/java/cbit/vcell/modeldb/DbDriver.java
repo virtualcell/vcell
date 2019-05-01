@@ -188,6 +188,7 @@ public static KeyValue savePublicationRep(Connection con,PublicationRep publicat
 	String sql = null;
 	Statement stmt = null;
 	try {
+		String curatedTF = publicationRep.isCurated()?"'T'":"'F'";
 		if(publicationRep.getPubKey() == null) {
 			stmt = con.createStatement();
 			ResultSet rset = stmt.executeQuery("select newseq.nextval from dual");
@@ -206,7 +207,8 @@ public static KeyValue savePublicationRep(Connection con,PublicationRep publicat
 			(publicationRep.getEndnoteid()==null || publicationRep.getEndnoteid().length()==0?"NULL":publicationRep.getEndnoteid())+","+
 			(publicationRep.getUrl()==null?"NULL":"'"+publicationRep.getUrl()+"'")+","+
 			(publicationRep.getWittid()==null|| publicationRep.getWittid().length()==0?"NULL":publicationRep.getWittid())+","+
-			(publicationRep.getDate()==null?"NULL":" TO_DATE('" + simpleDateFormat.format(publicationRep.getDate()) + "','"+YMD_FORMAT_STRING+"') ")+
+			(publicationRep.getDate()==null?"NULL":" TO_DATE('" + simpleDateFormat.format(publicationRep.getDate()) + "','"+YMD_FORMAT_STRING+"') ")+","+
+			curatedTF+
 			")";		
 		}else {
 			pubID = publicationRep.getPubKey().toString();
@@ -220,7 +222,8 @@ public static KeyValue savePublicationRep(Connection con,PublicationRep publicat
 			PublicationTable.table.endnoteid.getUnqualifiedColName()+"="+(publicationRep.getEndnoteid()==null || publicationRep.getEndnoteid().length()==0?"NULL":publicationRep.getEndnoteid())+","+
 			PublicationTable.table.url.getUnqualifiedColName()+"="+(publicationRep.getUrl()==null?"NULL":"'"+publicationRep.getUrl()+"'")+","+
 			PublicationTable.table.wittid.getUnqualifiedColName()+"="+(publicationRep.getWittid()==null|| publicationRep.getWittid().length()==0?"NULL":publicationRep.getWittid())+","+
-			PublicationTable.table.pubdate.getUnqualifiedColName()+"="+(publicationRep.getDate()==null?"NULL":" TO_DATE('" + simpleDateFormat.format(publicationRep.getDate()) + "','"+YMD_FORMAT_STRING+"') ")+
+			PublicationTable.table.pubdate.getUnqualifiedColName()+"="+(publicationRep.getDate()==null?"NULL":" TO_DATE('" + simpleDateFormat.format(publicationRep.getDate()) + "','"+YMD_FORMAT_STRING+"') ")+","+
+			PublicationTable.table.iscurated.getUnqualifiedColName()+"="+curatedTF+
 			" WHERE "+PublicationTable.table.id.getUnqualifiedColName()+"="+ pubID.toString();		
 		}
 		updateCleanSQL(con, sql);
@@ -1499,6 +1502,8 @@ public static void addPublicationInfos(Connection con,Statement stmt,Vector<Vers
 	}
 	//
 	//PublicationInfos
+	//alter table "VCELL"."VC_PUBLICATION" add iscurated VARCHAR2(1);
+	//alter table "VCELL"."VC_PUBLICATION" drop column iscurated;
 	//
 	final String DOCTYPE_COL="doctype";
 	final String DOCID_COL="docid";
@@ -1527,7 +1532,8 @@ public static void addPublicationInfos(Connection con,Statement stmt,Vector<Vers
 				KeyValue versionKey = new KeyValue(modelVersionID);
 				Timestamp timestamp = rset.getTimestamp("pubdate");
 				PublicationInfo publicationInfo = new PublicationInfo(versionKey, publication.title, publication.authors, publication.citation, publication.pubmedid, publication.doi, publication.url,
-					(docType.equals("bm")?VCDocumentType.BIOMODEL_DOC:VCDocumentType.MATHMODEL_DOC), new User(rset.getString(UserTable.table.userid.getUnqualifiedColName()),new KeyValue(rset.getBigDecimal("ownerref").toString())),timestamp);
+					(docType.equals("bm")?VCDocumentType.BIOMODEL_DOC:VCDocumentType.MATHMODEL_DOC), new User(rset.getString(UserTable.table.userid.getUnqualifiedColName()),new KeyValue(rset.getBigDecimal("ownerref").toString())),timestamp,
+					publication.isCurated);
 				if(mapModelIdToVersionInfo.containsKey(modelVersionID.longValue()) && mapModelIdToVersionInfo.get(modelVersionID.longValue()) instanceof VCDocumentInfo) {
 					((VCDocumentInfo)mapModelIdToVersionInfo.get(modelVersionID.longValue())).addPublicationInfo(publicationInfo);				
 				}

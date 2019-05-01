@@ -7,6 +7,7 @@
 <table>
 	<input type="hidden" value="applyEdit" name="pubop" />
 	<tr><td>pubId</td><td><input type='text' name='pubId' value='${publicationRepr.pubKey}' readonly/></td></tr>
+	<tr><td>curated (T/F)</td><td><input style="width:100px;" type='text' name='bcurated' <#if publicationRepr.isCurated()>value='T'<#else>value='F'</#if>/></td></tr>
 	<tr><td>title</td><td><input style="width:800px;" type='text' name='title' value='${publicationRepr.title!""}'/></td></tr>
 	<tr><td>authors (sep=;)</td><td><input style="width:800px;" type='text' name='authors'<#if publicationRepr.authors??>value='${publicationRepr.authors?join("; ")}'<#else>value=''</#if>/></td></tr>
 	<tr><td>year</td><td><input type='text' name='year'<#if publicationRepr.year??>value='${publicationRepr.year?string.computer}'<#else>value=''</#if>/></td></tr>

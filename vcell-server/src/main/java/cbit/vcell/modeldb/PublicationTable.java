@@ -43,8 +43,9 @@ public class PublicationTable extends Table {
 	public final Field url					= new Field("url",				SQLDataType.varchar2_128,	"");
 	public final Field wittid				= new Field("wittid",			SQLDataType.integer,		"");
 	public final Field pubdate				= new Field("pubDate",			SQLDataType.date,			"");
+	public final Field iscurated			= new Field("iscurated",		SQLDataType.varchar2_1,		"");
 	
-	private final Field fields[] = {title,authors,year,citation,pubmedid,doi,endnoteid,url,wittid,pubdate };
+	private final Field fields[] = {title,authors,year,citation,pubmedid,doi,endnoteid,url,wittid,pubdate,iscurated };
 	
 	public static final PublicationTable table = new PublicationTable();
 
@@ -73,9 +74,14 @@ public Publication getInfo(ResultSet rset,Connection con) throws SQLException,Da
 	String doi = rset.getString(PublicationTable.table.doi.toString());
 	String url = rset.getString(PublicationTable.table.url.toString());
 	
-	return new Publication(key, title, authors, citation, pubmedid, doi, url);
+	
+	return new Publication(key, title, authors, citation, pubmedid, doi, url,PublicationTable.isCurated(rset));
 }
 
+private static boolean isCurated(ResultSet rset) throws SQLException{
+	String isCurated = rset.getString(PublicationTable.table.iscurated.toString());
+	return (!rset.wasNull() && isCurated!=null && isCurated.equalsIgnoreCase("T")?true:false);
+}
 public String getPreparedStatement_PublicationReps(String conditions, OrderBy orderBy){
 
 	UserTable userTable = UserTable.table;
@@ -97,7 +103,8 @@ public String getPreparedStatement_PublicationReps(String conditions, OrderBy or
 		    pubTable.url.getQualifiedColName()+", "+
 		    pubTable.wittid.getQualifiedColName()+", "+
 		    pubTable.pubdate.getQualifiedColName()+", "+
-		
+		    pubTable.iscurated.getQualifiedColName()+", "+
+		    
 		   "(select '['||wm_concat("+"SQ1_"+biomodelTable.id.getQualifiedColName()+"||';'"+
 		   						"||"+"SQ1_"+biomodelTable.name.getQualifiedColName()+"||';'"+
 		   						"||"+"SQ1_"+userTable.id.getQualifiedColName()+"||';'"+
@@ -174,6 +181,7 @@ public PublicationRep getPublicationRep(User user, ResultSet rset) throws Illega
 	String url = rset.getString(table.url.toString());
 	String wittid = rset.getString(table.wittid.toString());
 	java.util.Date pubdate = VersionTable.getDate(rset,table.pubdate.toString());
+	boolean bCurated = PublicationTable.isCurated(rset);
 	
 	String bmRefsString = rset.getString("bmRefs");
 	ArrayList<BioModelReferenceRep> bmRefList = new ArrayList<BioModelReferenceRep>();
@@ -212,7 +220,7 @@ public PublicationRep getPublicationRep(User user, ResultSet rset) throws Illega
 	MathModelReferenceRep[] mmRefArray = mmRefList.toArray(new MathModelReferenceRep[0]);
 	
 	
-	return new PublicationRep(pubKey,title,authorsList.split(";"),year,citation,pubmedid,doi,endnoteid,url,bmRefArray,mmRefArray,wittid,pubdate);
+	return new PublicationRep(pubKey,title,authorsList.split(";"),year,citation,pubmedid,doi,endnoteid,url,bmRefArray,mmRefArray,wittid,pubdate,bCurated);
 }
 
 }
