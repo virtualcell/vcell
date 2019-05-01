@@ -167,10 +167,10 @@ public static void publishDirectly(Connection con,KeyValue[] publishTheseBiomode
 	if(publishTheseMathmodels != null && publishTheseMathmodels.length>0) {
 		String sql = "UPDATE "+MathModelTable.table.getTableName()+
 			" SET "+MathModelTable.table.privacy.getUnqualifiedColName()+"="+GroupAccess.GROUPACCESS_ALL.toString()+
-			" WHERE "+MathModelTable.table.id.getUnqualifiedColName()+" IN ("+StringUtils.join(publishTheseBiomodels, ',')+")";
+			" WHERE "+MathModelTable.table.id.getUnqualifiedColName()+" IN ("+StringUtils.join(publishTheseMathmodels, ',')+")";
 		updateCleanSQL(con, sql);
 		sql = "UPDATE "+MathModelTable.table.getTableName()+" SET "+MathModelTable.table.versionFlag.getUnqualifiedColName()+"="+VersionFlag.Published.getIntValue()+
-			" WHERE "+MathModelTable.table.id.getUnqualifiedColName()+" IN ("+StringUtils.join(publishTheseBiomodels, ',')+")";
+			" WHERE "+MathModelTable.table.id.getUnqualifiedColName()+" IN ("+StringUtils.join(publishTheseMathmodels, ',')+")";
 		updateCleanSQL(con, sql);
 	}
 }
