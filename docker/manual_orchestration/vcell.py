@@ -402,7 +402,7 @@ def test_connection():
     #
     setdebug(True)
 
-    c = ssh("vcell-service.cam.uchc.edu","vcell")
+    c = ssh("hpc-ext-1.cam.uchc.edu","vcell")
     print ("done")
 
 

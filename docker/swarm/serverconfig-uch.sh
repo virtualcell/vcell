@@ -27,9 +27,9 @@ VCELL_TAG=$_tag
 VCELL_VERSION_NUMBER=$_version_number
 VCELL_BUILD_NUMBER=$_build_number
 #SLURM parameter values
-vcell_slurm_partition=vcell2
+vcell_slurm_partition=vcell
 vcell_slurm_reservation=vcell
-vcell_slurm_partition_pu=vcell2pu
+vcell_slurm_partition_pu=vcellpu
 vcell_slurm_reservation_pu=vcellpu
 
 
@@ -96,7 +96,7 @@ VCELL_DB_USER="vcell"
 VCELL_JMS_SIM_HOST_EXTERNAL=$VCELL_API_HOST_EXTERNAL
 VCELL_MONGO_HOST_EXTERNAL=$VCELL_API_HOST_EXTERNAL
 VCELL_INSTALLER_SCP_DESTINATION=vcell@apache.cam.uchc.edu:/apache_webroot/htdocs/webstart/${_site_camel}
-VCELL_BATCH_HOST=vcell-service.cam.uchc.edu
+VCELL_BATCH_HOST=hpc-ext-1.cam.uchc.edu
 VCELL_SLURM_CMD_SBATCH=sbatch
 VCELL_SLURM_CMD_SACCT=sacct
 VCELL_SLURM_CMD_SQUEUE=squeue

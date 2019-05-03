@@ -30,7 +30,7 @@ public class CommandServiceSsh_sshjTest {
 	public void test() throws IOException, ExecutableException {
 		CommandServiceSsh_sshj cmd = null;
 		try {
-			cmd = new CommandServiceSsh_sshj("vcell-service.cam.uchc.edu", "vcell", new File("/Users/schaff/.ssh/schaff_rsa"));
+			cmd = new CommandServiceSsh_sshj("hpc-ext-1.cam.uchc.edu", "vcell", new File("/Users/schaff/.ssh/schaff_rsa"));
 			System.out.println("after created cmdService");
 			CommandOutput output = cmd.command(new String[] { "ls -al | head -4" });
 			System.out.println("ls output is: "+output.getStandardOutput());
@@ -52,7 +52,7 @@ public class CommandServiceSsh_sshjTest {
 	public void testSLURM() throws IOException, ExecutableException {
 		CommandServiceSsh_sshj cmd = null;
 		try {
-			cmd = new CommandServiceSsh_sshj("vcell-service.cam.uchc.edu", "vcell", new File("/Users/schaff/.ssh/schaff_rsa"));
+			cmd = new CommandServiceSsh_sshj("hpc-ext-1.cam.uchc.edu", "vcell", new File("/Users/schaff/.ssh/schaff_rsa"));
 			System.out.println("after created cmdService");
 			CommandOutput output = cmd.command(new String[] { "sacctls -al | head -4" });
 			System.out.println("ls output is: "+output.getStandardOutput());

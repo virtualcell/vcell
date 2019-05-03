@@ -97,7 +97,7 @@ defined in Dockerfile-clientgen-dev and used inside vcell-clientgen container, t
 
 
 #### Build VCell and deploy to production servers (from ./docker/swarm/ directory)  
-NOTE: current partition of SLURM for vcell is found by this command run "sinfo -N -h -p vcell2 --Format='nodelist'" (must run on vcell-service, or other slurm node)  
+NOTE: current partition of SLURM for vcell is found by this command run "sinfo -N -h -p vcell2 --Format='nodelist'" (must run on hpc-ext-1.cam.uchc.edu, or other slurm node)  
 Assume step 1 has completed successfully  
 
 **login to vcell-node1 as user 'vcell'**

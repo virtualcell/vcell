@@ -49,7 +49,7 @@ show_help() {
 	echo "example:"
 	echo ""
 	echo "deploy.sh --ssh-user vcell --ssh-key ~/.ssh/schaff_rsa \\"
-	echo "  vcell-service.cam.uchc.edu \\"
+	echo "  vcellapi-beta.cam.uchc.edu \\"
 	echo "  ./server.config /usr/local/deploy/Test/server_01.config \\"
 	echo "  ./docker-compose.yml /usr/local/deploy/Test/docker-compose_01.yml \\"
 	echo "  vcelltest"

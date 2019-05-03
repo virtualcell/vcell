@@ -51,9 +51,9 @@ Let conditional code run for awhile until the database and services get synchron
 
 
 **Find slurm sim logs**  
-login vcell@vcell-service  
-sacct --user=vcell --format="JobID,JobName%30,NodeList,State,Submit,start,end,ExitCode" -S 2018-09-01 | grep -i -e vcellSimID  
---e.g. sacct --user=vcell --format="JobID,JobName%30,NodeList,State,Submit,start,end,ExitCode" -S 2018-09-01 | grep -i -e 140980636 -e 140980969  
+login vcell@hpc-ext-1.cam.uchc.edu  
+sacct --user=vcell --format="NodeList,JobID,JobName%30,NodeList,State,Submit,start,end,ExitCode" -S 2018-09-01 | grep -i -e vcellSimID  
+--e.g. sacct --user=vcell --format="NodeList,JobID,JobName%30,NodeList,State,Submit,start,end,ExitCode" -S 2018-09-01 | grep -i -e 140980636 -e 140980969  
 ls -U -1 /share/apps/vcell3/htclogs/V\_[REL,ALPHA]\_{vcellSimID*,...}  
 --e.g. ls -U -1 /share/apps/vcell3/htclogs/V\_REL\_{140980636*,140980969*,140981229^,140983532*,140984604*,140981909*,140983177*}  
 less /share/apps/vcell3/htclogs/{JobName}.slurm.log  //JobName from sacct query
@@ -74,7 +74,7 @@ Search {vcellroot}/docker for "VCELL_SLURM_TMPDIR" (no double quotes)
 Finds {vcellroot}/docker/swarm/serverconfig-uch.sh, VCELL_SLURM_TMPDIR=/scratch/vcell  
 -----------------------------------------------------   
  **See if VCell hpc nodes are alive (may hang if a node can't be reached)**  
- login vcell@vcell-service   
+ login vcell@hpc-ext-1.cam.uchc.edu   
  sinfo -N -h -p vcell2 --Format='nodelist' |   xargs  -n 1  -I {} sh -c 'echo {}; ssh {} date || (true);'  
 ----------------------------------------------------- 
 
@@ -158,10 +158,10 @@ sudo docker container inspect dd29d35fba3e94fa476020f4f2c3de860f745fc3be32f76107
 
 
 **Debug slurm jobs**  
---List slurm nodes, login vcell-service as vcell  
+--List slurm nodes, login hpc-ext-1.cam.uchc.edu as vcell  
 ----abc=$(sinfo -N -h -p vcell2 --Format='nodelist' | xargs)  
---Get info for VCell simid, login vcell-service as vcell  
-----sacct --user=vcell --format="JobID,JobName%30,State,Submit,start,end,ExitCode" -S 2018-09-01 | grep -i 139363583  
+--Get info for VCell simid, login hpc-ext-1.cam.uchc.edu as vcell  
+----sacct --user=vcell --format="NodeList,JobID,JobName%30,State,Submit,start,end,ExitCode" -S 2018-09-01 | grep -i 139363583  
 
 **command line interface in python ... (similar to old vcell console)**  
 -----login build machine (vcell-node1), run /opt/build/vcell/docker/swarm/cli.py  
