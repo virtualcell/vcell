@@ -14,6 +14,8 @@ import javax.swing.JTree;
 
 import org.vcell.util.document.MathModelInfo;
 import org.vcell.util.document.User;
+
+import cbit.vcell.desktop.BioModelNode.UserNameNode;
  
 @SuppressWarnings("serial")
 public class MathModelCellRenderer extends VCDocumentDbCellRenderer {
@@ -38,7 +40,20 @@ public java.awt.Component getTreeCellRendererComponent(JTree tree, Object value,
 	JLabel component = (JLabel) super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
 	//
 	try {
-		if (value instanceof BioModelNode) {
+		if(value instanceof UserNameNode) {
+			UserNameNode node = (UserNameNode) value;
+			String label = (String)node.getUserObject();
+			String qualifier = "";
+			if (sessionUser != null && sessionUser.getName().contentEquals(label)) {
+				String colorString = (sel)?"white":"#8B0000";
+				qualifier = "<font color=\""+colorString+"\">" + label + "</font>"; 
+			} else {
+				String colorString = (sel)?"white":"black";
+				qualifier = "<font color=\""+colorString+"\">" + label + "</font>"; 
+			}
+			component.setToolTipText(label);
+			component.setText("<html><b>" + qualifier + "</b></html>");
+		} else if (value instanceof BioModelNode) {
 			BioModelNode node = (BioModelNode) value;
 			Object userObject = node.getUserObject();
 			if (userObject instanceof User) {
@@ -50,11 +65,11 @@ public java.awt.Component getTreeCellRendererComponent(JTree tree, Object value,
 				}
 				component.setToolTipText(label);
 				component.setText(label);
-			}else if(userObject instanceof MathModelInfo){
+			} else if(userObject instanceof MathModelInfo) {
 				MathModelInfo mathModelInfo = (MathModelInfo)userObject;
-				if(mathModelInfo.getVersion().getFlag().compareEqual(org.vcell.util.document.VersionFlag.Archived)){
+				if(mathModelInfo.getVersion().getFlag().compareEqual(org.vcell.util.document.VersionFlag.Archived)) {
 					component.setText("(Archived) "+component.getText());
-				}else if(mathModelInfo.getVersion().getFlag().compareEqual(org.vcell.util.document.VersionFlag.Published)){
+				}else if(mathModelInfo.getVersion().getFlag().compareEqual(org.vcell.util.document.VersionFlag.Published)) {
 					component.setText("(Published) "+component.getText());
 				}
 			} else if (userObject instanceof VCDocumentInfoNode) {
@@ -69,9 +84,12 @@ public java.awt.Component getTreeCellRendererComponent(JTree tree, Object value,
 					Object pNode  = node.getParent();
 					if(pNode instanceof BioModelNode) {
 						BioModelNode parent = (BioModelNode) pNode;
+						// TODO: do this differently
 						if(parent.getUserObject() instanceof String) {
 							String str = (String)parent.getUserObject();
-							if(str.equals(VCDocumentDbTreeModel.Published_MathModels) || str.equals(VCDocumentDbTreeModel.Public_MathModels)) {
+							if(str.equals(VCDocumentDbTreeModel.Published_MathModels) 
+									|| str.equals(VCDocumentDbTreeModel.Curated_MathModels)
+									|| str.equals(VCDocumentDbTreeModel.Other_MathModels)) {
 								String prefix = sel ? "" : "<span style=\"color:#8B0000\">";
 								String suffix = sel ? "" : "</span>";
 								setText("<html><b>" + prefix + nodeUser.getName() + suffix + "</b>  : " + modelName + "</html>");
@@ -85,7 +103,13 @@ public java.awt.Component getTreeCellRendererComponent(JTree tree, Object value,
 						setText(modelName);
 					}
 				} else {
-					setText("<html><b>" + nodeUser.getName() + " </b> : " + modelName + "</html>");
+					Object pNode  = node.getParent();
+					if(pNode instanceof UserNameNode) {		// if we are inside an UserName folder, don't prefix again the model
+															// with the user name
+						setText("<html>" + modelName + "</html>");
+					} else {
+						setText("<html><b>" + nodeUser.getName() + " </b> : " + modelName + "</html>");
+					}
 				}
 			}
 		}

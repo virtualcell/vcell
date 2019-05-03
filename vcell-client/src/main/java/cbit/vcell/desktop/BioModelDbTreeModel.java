@@ -36,8 +36,12 @@ public BioModelDbTreeModel(JTree tree) {
 	super(tree);
 	tutorialModelsNode = new BioModelNode(Tutorials, true);
 	educationModelsNode = new BioModelNode(Education, true);
-	publicModelsNode = new BioModelNode(Public_BioModels, true);
+	allPublicModelsNode = new BioModelNode(Public_BioModels, true);
+
 	publishedModelsNode = new BioModelNode(Published_BioModels, true);
+	curatedModelsNode = new BioModelNode(Curated_BioModels, true);
+	otherModelsNode = new BioModelNode(Other_BioModels, true);
+	modelBricksNode = new BioModelNode(ModelBricks, true);
 }
 
 /**
@@ -47,10 +51,26 @@ public BioModelDbTreeModel(JTree tree) {
  * @param docManager cbit.vcell.clientdb.DocumentManager
  */
 protected void createBaseTree() throws DataAccessException {
-	VCDocumentDbTreeModel.initBaseTree(rootNode,
-			new BioModelNode[] {myModelsNode, sharedModelsNode, publicModelsNode, tutorialModelsNode, educationModelsNode, publishedModelsNode},
-			"Biological Models",
-			sharedModelsNode, SHARED_BIO_MODELS);
+//	VCDocumentDbTreeModel.initBaseTree(rootNode,
+//			new BioModelNode[] {myModelsNode, sharedModelsNode, otherModelsNode, tutorialModelsNode, educationModelsNode, publishedModelsNode, modelBricksNode},
+//			"Biological Models",
+//			sharedModelsNode, SHARED_BIO_MODELS);
+	
+	rootNode.removeAllChildren();
+	
+	rootNode.add(myModelsNode);
+	rootNode.add(sharedModelsNode);
+	rootNode.add(tutorialModelsNode);
+	rootNode.add(educationModelsNode);
+	rootNode.add(allPublicModelsNode);
+//	rootNode.add(modelBricksNode);
+	
+	allPublicModelsNode.add(publishedModelsNode);
+	allPublicModelsNode.add(curatedModelsNode);
+	allPublicModelsNode.add(otherModelsNode);
+	
+	rootNode.setUserObject("Biological Models");
+	sharedModelsNode.setUserObject(SHARED_BIO_MODELS);
 	
 	BioModelInfo bioModelInfos[] = getDocumentManager().getBioModelInfos();
 	User loginUser = getDocumentManager().getUser();

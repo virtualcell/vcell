@@ -14,6 +14,7 @@ import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.Iterator;
 import java.util.TreeMap;
 import java.util.Vector;
 
@@ -35,6 +36,7 @@ import cbit.vcell.client.server.ConnectionStatus;
 import cbit.vcell.client.task.CommonTask;
 import cbit.vcell.clientdb.DatabaseListener;
 import cbit.vcell.clientdb.DocumentManager;
+import cbit.vcell.desktop.BioModelNode.UserNameNode;
 import cbit.vcell.desktop.VCellBasicCellRenderer.VCDocumentInfoNode;
 import cbit.vcell.geometry.GeometryInfo;
 /**
@@ -57,13 +59,19 @@ public abstract class VCDocumentDbTreeModel extends DefaultTreeModel implements 
 	public static final String USER_Education = "Education";
 	public static final String USER_tutorial610 = "tutorial60";
 	public static final String USER_tutorial611 = "tutorial61";
+	public static final String USER_modelBricks = "ModelBrick";
 	
 	protected BioModelNode tutorialModelsNode = null;
 	protected BioModelNode educationModelsNode = null;
 	protected BioModelNode bngRulesBasedModelsNode = null;
 	protected BioModelNode bngRulesBasedModelsNode61 = null;
-	protected BioModelNode publicModelsNode = null;
+	
+	protected BioModelNode allPublicModelsNode = null;	// contains folders only: Published, Curated and Other
 	protected BioModelNode publishedModelsNode = null;
+	protected BioModelNode curatedModelsNode = null;
+	protected BioModelNode otherModelsNode = null;		// public models that are neither published nor curated
+	
+	protected BioModelNode modelBricksNode = null;
 	
 	public static final String Tutorials = "Tutorials";
 	public static final String Education = "Education";
@@ -71,11 +79,16 @@ public abstract class VCDocumentDbTreeModel extends DefaultTreeModel implements 
 	
 	public static final String SHARED_BIO_MODELS = "Shared BioModels";
 	public static final String Public_BioModels = "Public BioModels";
-	public static final String Published_BioModels = "Published BioModels";
+	public static final String Published_BioModels = "Published";
+	public static final String Curated_BioModels = "Curated";
+	public static final String Other_BioModels = "Other";
+	public static final String ModelBricks = "Model Bricks";
 	
-	public static final String SHARED_MATH_MODELS = "Shared MathModels";
+	public static final String SHARED_MATH_MODELS = "Shared With Me";
 	public static final String Public_MathModels = "Public MathModels";
-	public static final String Published_MathModels = "Published MathModels";
+	public static final String Published_MathModels = "Published";
+	public static final String Curated_MathModels = "Curated";
+	public static final String Other_MathModels = "Other";
 	
 	public static final String SHARED_GEOMETRIES = "Shared Geometries";
 	public static final String PUBLIC_GEOMETRIES = "Public Geometries";
@@ -117,6 +130,170 @@ protected synchronized static void initFinalTree(VCDocumentDbTreeModel vcDocumen
 	BioModelNode tempNode = new BioModelNode();
 	vcDocumentDbTreeModel.myModelsNode.setUserObject(loginUser);
 	vcDocumentDbTreeModel.myModelsNode.removeAllChildren();
+	
+	for (int c = 0; c < ownerNode.getChildCount();) {		// c stays zero, during each iteration we keep extracting the first element
+		BioModelNode childNode = (BioModelNode) ownerNode.getChildAt(c);
+//		VCDocumentInfoNode vcdDocumentInfoNode = (VCDocumentInfoNode) childNode.getUserObject();
+//		System.out.println(vcdDocumentInfoNode.getVCDocumentInfo().getVersion().getName());
+
+		BioModelNode cloneNode = childNode.clone();
+		vcDocumentDbTreeModel.myModelsNode.add(childNode);	// this slowly empties ownerNode
+
+		for (int i = 0; i < childNode.getChildCount(); i++) {
+			BioModelNode versionBioModelNode = (BioModelNode)childNode.getChildAt(i);
+			VCDocumentInfo versionVCDocumentInfo = (VCDocumentInfo) versionBioModelNode.getUserObject();
+			BigDecimal groupid = versionVCDocumentInfo.getVersion().getGroupAccess().getGroupid();
+//			System.out.println("    " + groupid);
+		
+			if (groupid.equals(GroupAccess.GROUPACCESS_ALL)) {
+				BioModelNode versionCloneNode = versionBioModelNode.clone();
+				cloneNode.add(versionCloneNode);
+			}
+		}
+		if(cloneNode.getChildCount() > 0) {
+			tempNode.add(cloneNode);					// we keep adding only the clones of the public versions (if any) to the cloneNode
+		}
+		// ownerNode gets empty eventually
+	}
+	for (int c = 0; c < tempNode.getChildCount();) {	// we put back in ownerNode the clone nodes with public versions
+		BioModelNode childNode = (BioModelNode) tempNode.getChildAt(c);
+		ownerNode.add(childNode);
+	}
+
+	vcDocumentDbTreeModel.sharedModelsNode.removeAllChildren();
+		
+	boolean bTutorial = vcDocumentDbTreeModel.tutorialModelsNode != null;
+	boolean bEducation = vcDocumentDbTreeModel.educationModelsNode != null;
+	boolean bModelBricks = vcDocumentDbTreeModel.modelBricksNode != null;
+	boolean bPublished = vcDocumentDbTreeModel.publishedModelsNode != null;
+	boolean bCurated = vcDocumentDbTreeModel.curatedModelsNode != null;
+	boolean bOther = vcDocumentDbTreeModel.otherModelsNode != null;
+	
+	if(bTutorial){vcDocumentDbTreeModel.tutorialModelsNode.removeAllChildren();}
+	if(bEducation){vcDocumentDbTreeModel.educationModelsNode.removeAllChildren();}
+	if(bModelBricks){vcDocumentDbTreeModel.modelBricksNode.removeAllChildren();}
+	if(bPublished){vcDocumentDbTreeModel.publishedModelsNode.removeAllChildren();}
+	if(bCurated){vcDocumentDbTreeModel.curatedModelsNode.removeAllChildren();}
+	if(bOther){vcDocumentDbTreeModel.otherModelsNode.removeAllChildren();}
+	
+	for (String username : treeMap.keySet()) {
+		BioModelNode userNode = treeMap.get(username);
+		BioModelNode parentNode = vcDocumentDbTreeModel.sharedModelsNode;	// initialize to something
+		boolean bSpecificUser = true;
+		if ((username.equals(USER_tutorial) || username.equals(USER_tutorial610) || username.equals(USER_tutorial611)) && bTutorial) {
+			parentNode = vcDocumentDbTreeModel.tutorialModelsNode;
+		} else if (username.equals(USER_Education) && bEducation) {
+			parentNode = vcDocumentDbTreeModel.educationModelsNode;
+		} else if (username.equals(USER_modelBricks) && bModelBricks) {
+			parentNode = vcDocumentDbTreeModel.modelBricksNode;
+		} else {
+			bSpecificUser = false;
+		}
+		
+		boolean added = false;
+		UserNameNode userNameNode = new UserNameNode(username, true);
+		for (int c = 0; c < userNode.getChildCount(); c++) {	// we just navigate through all of them, remove none
+			BioModelNode childNode = (BioModelNode) userNode.getChildAt(c);
+			VCDocumentInfoNode vcdDocumentInfoNode = (VCDocumentInfoNode) childNode.getUserObject();
+//			System.out.println(vcdDocumentInfoNode.getVCDocumentInfo().getVersion().getName());
+			
+			if (!bSpecificUser) {
+				parentNode = vcDocumentDbTreeModel.otherModelsNode;		// ******* Other Public folder *******
+
+				BioModelNode cloneNode = childNode.clone();
+				for (int i = 0; i < childNode.getChildCount(); i++) {
+					BioModelNode versionBioModelNode = (BioModelNode)childNode.getChildAt(i);
+					VCDocumentInfo versionVCDocumentInfo = (VCDocumentInfo) versionBioModelNode.getUserObject();
+					BigDecimal groupid = versionVCDocumentInfo.getVersion().getGroupAccess().getGroupid();
+//					System.out.println("    " + groupid);
+
+					if (groupid.equals(GroupAccess.GROUPACCESS_ALL)) {
+						if(	versionVCDocumentInfo.getPublicationInfos() != null && versionVCDocumentInfo.getPublicationInfos().length > 0) {
+							continue;	// we don't show in "Other" anything that is published or curated
+						}
+						BioModelNode versionCloneNode = versionBioModelNode.clone();	// clone the public versions
+						cloneNode.add(versionCloneNode);								// and add them to the clone node
+					}
+				}
+				if(cloneNode.getChildCount() > 0) {
+					userNameNode.add(cloneNode);					// we keep adding only the clones of the public versions (if any) to the cloneNode
+					if(added == false) {
+						parentNode.add(userNameNode);
+						added = true;
+					}
+				}
+			} else {		// anything belonging to users Education, Tutorial or modelBricks go to their own folders
+				parentNode.add(childNode);
+			}
+		}
+		
+		// -------------------------------------------- shared folder -----------------------------------------------
+		added = false;
+		userNameNode = new UserNameNode(username, true);
+		for (int c = 0; c < userNode.getChildCount(); c++) {	// we just navigate through all of them, remove none
+			if(username.equalsIgnoreCase(loginUser.getName())) {
+				break;			// the login user can't share with himself
+			}
+			
+			BioModelNode childNode = (BioModelNode) userNode.getChildAt(c);
+			VCDocumentInfoNode vcdDocumentInfoNode = (VCDocumentInfoNode) childNode.getUserObject();
+			System.out.println(vcdDocumentInfoNode.getVCDocumentInfo().getVersion().getName());
+
+			if (!bSpecificUser) {
+				parentNode = vcDocumentDbTreeModel.sharedModelsNode;	// ******** Shared Folder ***********
+				
+				BioModelNode cloneNode = childNode.clone();
+				for (int i = 0; i < childNode.getChildCount(); i++) {
+					BioModelNode versionBioModelNode = (BioModelNode)childNode.getChildAt(i);
+					VCDocumentInfo versionVCDocumentInfo = (VCDocumentInfo) versionBioModelNode.getUserObject();
+					BigDecimal groupid = versionVCDocumentInfo.getVersion().getGroupAccess().getGroupid();
+//					System.out.println("    " + groupid);
+					if(groupid.equals(GroupAccess.GROUPACCESS_ALL) || groupid.equals(GroupAccess.GROUPACCESS_NONE)) {
+						continue;		// we skip private and public versions (that includes published versions)
+					}
+
+					BioModelNode versionCloneNode = versionBioModelNode.clone();	// clone the shared versions
+					cloneNode.add(versionCloneNode);								// and add them to the clone node
+				}
+				if(cloneNode.getChildCount() > 0) {
+					userNameNode.add(cloneNode);		// we keep adding only the clones of the shared versions (if any) to the cloneNode
+					if(added == false) {
+						parentNode.add(userNameNode);	// now that we know for sure that the user name node is populated, we add it to the shared node if it's not there already
+						added = true;
+					}
+				}
+			}
+		}
+		// -------------------------------------------- published folder ------------------------------------------------
+
+								//		(username.contentEquals("CMC") || username.contentEquals("eungdamr") || username.contentEquals("Leon"))
+		//Populate 'Published' models tree node
+		for (int c = 0; c < userNode.getChildCount();) {
+			BioModelNode versionableNode = (BioModelNode) userNode.getChildAt(c);
+			//Search through versions of BM/MM to see if any are published
+			for (int i = 0; i < versionableNode.getChildCount(); i++) {
+				BioModelNode versionBioModelNode = (BioModelNode)versionableNode.getChildAt(i);
+				VCDocumentInfo versionVCDocumentInfo = (VCDocumentInfo) versionBioModelNode.getUserObject();
+				if(	versionVCDocumentInfo.getPublicationInfos() != null && versionVCDocumentInfo.getPublicationInfos().length > 0) {
+					//Make new node
+					BioModelNode newPublishedNode = new BioModelNode(new VCDocumentInfoNode(versionVCDocumentInfo), true);
+					newPublishedNode.add(versionBioModelNode);
+					if(versionVCDocumentInfo.getVersion().getFlag().compareEqual(org.vcell.util.document.VersionFlag.Published)) {
+						vcDocumentDbTreeModel.publishedModelsNode.add(newPublishedNode);
+					} else {
+						vcDocumentDbTreeModel.curatedModelsNode.add(newPublishedNode);
+					}
+				}
+			}
+			userNode.remove(c);
+		}
+	}
+}
+protected synchronized static void initFinalTree2(VCDocumentDbTreeModel vcDocumentDbTreeModel, TreeMap<String, BioModelNode> treeMap, User loginUser){
+	BioModelNode ownerNode = (BioModelNode)treeMap.get(loginUser.getName());
+	BioModelNode tempNode = new BioModelNode();
+	vcDocumentDbTreeModel.myModelsNode.setUserObject(loginUser);
+	vcDocumentDbTreeModel.myModelsNode.removeAllChildren();
 	for (int c = 0; c < ownerNode.getChildCount();) {
 		BioModelNode childNode = (BioModelNode) ownerNode.getChildAt(c);
 		BioModelNode clone = BioModelNode.deepClone(childNode);
@@ -141,14 +318,16 @@ protected synchronized static void initFinalTree(VCDocumentDbTreeModel vcDocumen
 	}
 	
 	vcDocumentDbTreeModel.sharedModelsNode.removeAllChildren();
-	vcDocumentDbTreeModel.publicModelsNode.removeAllChildren();
+	vcDocumentDbTreeModel.otherModelsNode.removeAllChildren();
 	if(vcDocumentDbTreeModel.publishedModelsNode != null) {
 		vcDocumentDbTreeModel.publishedModelsNode.removeAllChildren();
 	}
 	boolean bTutorial = vcDocumentDbTreeModel.tutorialModelsNode != null;
 	boolean bEducation = vcDocumentDbTreeModel.educationModelsNode != null;
+	boolean bModelBricks = vcDocumentDbTreeModel.modelBricksNode != null;
 	if(bTutorial){vcDocumentDbTreeModel.tutorialModelsNode.removeAllChildren();}
 	if(bEducation){vcDocumentDbTreeModel.educationModelsNode.removeAllChildren();}
+	if(bModelBricks){vcDocumentDbTreeModel.modelBricksNode.removeAllChildren();}
 	
 	for (String username : treeMap.keySet()) {
 		BioModelNode userNode = treeMap.get(username);
@@ -158,6 +337,8 @@ protected synchronized static void initFinalTree(VCDocumentDbTreeModel vcDocumen
 			parentNode = vcDocumentDbTreeModel.tutorialModelsNode;
 		} else if (username.equals(USER_Education) && bEducation) {
 			parentNode = vcDocumentDbTreeModel.educationModelsNode;
+		} else if (username.equals(USER_modelBricks) && bModelBricks) {
+			parentNode = vcDocumentDbTreeModel.modelBricksNode;
 		} else {
 			bSpecificUser = false;
 		}
@@ -172,7 +353,7 @@ protected synchronized static void initFinalTree(VCDocumentDbTreeModel vcDocumen
 					groupid = version.getGroupAccess().getGroupid();
 				}
 				if (groupid.equals(GroupAccess.GROUPACCESS_ALL)) {
-						parentNode = vcDocumentDbTreeModel.publicModelsNode;
+						parentNode = vcDocumentDbTreeModel.otherModelsNode;
 				}
 			}
 			BioModelNode clone = BioModelNode.deepClone(childNode);
@@ -196,8 +377,8 @@ protected synchronized static void initFinalTree(VCDocumentDbTreeModel vcDocumen
 			userNode.remove(c);
 		}
 	}
-
 }
+
 protected synchronized static TreeMap<String, BioModelNode> initOwners(VCDocumentInfo[] vcDocumentInfos,User loginUser,VCDocumentDbTreeModel subTreeParent,Method subTreeMethod){
 	//
 	// get list of users (owners)

@@ -19,6 +19,7 @@ import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.User;
 import org.vcell.util.gui.VCellIcons;
 
+import cbit.vcell.desktop.BioModelNode.UserNameNode;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.xml.gui.MiriamTreeModel.DateNode;
@@ -73,10 +74,23 @@ public java.awt.Component getTreeCellRendererComponent(JTree tree, Object value,
 				String colorString = (sel)?"white":"black";
 				component.setText("<html>"+qualifier+"&nbsp;<font color=\""+colorString+"\">" + text + "</font></html>");
 			}
+		} else if(value instanceof UserNameNode) {
+			UserNameNode node = (UserNameNode) value;
+			String label = (String)node.getUserObject();
+			String qualifier = "";
+			if (sessionUser != null && sessionUser.getName().contentEquals(label)) {
+				String colorString = (sel)?"white":"#8B0000";
+				qualifier = "<font color=\""+colorString+"\">" + label + "</font>"; 
+			} else {
+				String colorString = (sel)?"white":"black";
+				qualifier = "<font color=\""+colorString+"\">" + label + "</font>"; 
+			}
+			component.setToolTipText(label);
+			component.setText("<html><b>" + qualifier + "</b></html>");
 		} else if (value instanceof BioModelNode) {
 			BioModelNode node = (BioModelNode) value;
 			Object userObject = node.getUserObject();
-			if (userObject instanceof User){
+			if (userObject instanceof User) {
 				String label = null;
 				if ( sessionUser != null && sessionUser.compareEqual((User)userObject)){
 					label = "My BioModels ("+((User)userObject).getName()+") (" + node.getChildCount() + ")";
@@ -85,7 +99,7 @@ public java.awt.Component getTreeCellRendererComponent(JTree tree, Object value,
 				}
 				component.setToolTipText(label);
 				component.setText(label);
-			}else if(userObject instanceof BioModelInfo){
+			}else if(userObject instanceof BioModelInfo) {
 				BioModelInfo biomodelInfo = (BioModelInfo)userObject;
 				if(biomodelInfo.getVersion().getFlag().compareEqual(org.vcell.util.document.VersionFlag.Archived)){
 					component.setText("(Archived) "+component.getText());
@@ -121,15 +135,19 @@ public java.awt.Component getTreeCellRendererComponent(JTree tree, Object value,
 				if (username.equals(VCDocumentDbTreeModel.USER_tutorial)
 						|| username.equals(VCDocumentDbTreeModel.USER_Education)
 						|| username.equals(VCDocumentDbTreeModel.USER_tutorial610)
-						|| username.equals(VCDocumentDbTreeModel.USER_tutorial611)) {
+						|| username.equals(VCDocumentDbTreeModel.USER_tutorial611)
+						|| username.equals(VCDocumentDbTreeModel.USER_modelBricks)) {
 					component.setText(modelName);
 				} else if(nodeUser.compareEqual(sessionUser)) {
 					Object pNode  = node.getParent();
 					if(pNode instanceof BioModelNode) {
 						BioModelNode parent = (BioModelNode) pNode;
+						// TODO: do this differently
 						if(parent.getUserObject() instanceof String) {
 							String str = (String)parent.getUserObject();
-							if(str.equals(VCDocumentDbTreeModel.Published_BioModels) || str.equals(VCDocumentDbTreeModel.Public_BioModels)) {
+							if(str.equals(VCDocumentDbTreeModel.Published_BioModels) 
+									|| str.equals(VCDocumentDbTreeModel.Curated_BioModels) 
+									|| str.equals(VCDocumentDbTreeModel.Other_BioModels)) {
 								String prefix = sel ? "" : "<span style=\"color:#8B0000\">";
 								String suffix = sel ? "" : "</span>";
 								setText("<html><b>" + prefix + nodeUser.getName() + suffix + "</b>  : " + modelName + "</html>");
@@ -143,7 +161,13 @@ public java.awt.Component getTreeCellRendererComponent(JTree tree, Object value,
 						setText(modelName);
 					}
 				} else {
-					component.setText("<html><b>" + username + " </b> : " + modelName + "</html>");
+					Object pNode  = node.getParent();
+					if(pNode instanceof UserNameNode) {		// if we are inside an UserName folder, don't prefix again the model
+															// with the user name
+						setText("<html>" + modelName + "</html>");
+					} else {
+						setText("<html><b>" + nodeUser.getName() + " </b> : " + modelName + "</html>");
+					}
 				}
 			}
 		}
