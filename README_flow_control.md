@@ -116,7 +116,7 @@ vcell-submit container/service
 -HtcSimulationWorker.initQueueConsumer().QueueListener.onQueueMessage(...) (receives sim task message)  
 --HtcSimulationWorker.submit2PBS(...) (writes simtask.xml to the user directory)  
 ---SlurmProxy.submitJb(...) (generates .slurm.sub script, writes to htclogs dir (/htclogs inside container) (/share/apps/vcell/htclogs outside container))  
-----SlurmProxy.submitJobFile(...) (ssh vcell-service (because this is a slurm submit node), executes sbatch xxx.slurm.sub, parses stdout from sbatch to get slurm jobid)  
+----SlurmProxy.submitJobFile(...) (ssh hpc-ext-1.cam.uchc.edu (because this is a slurm submit node), executes sbatch xxx.slurm.sub, parses stdout from sbatch to get slurm jobid)  
 -----WorkerEventMessage.sendAccepted(...) (sends message to AMQsim queue 'workerEvent' type jobAccepted)  
 =====Now submitted sim task waits to be processed by SLURM  
 -SLURM read xxx.slurm.sub, parses #SBATCH directives, chooses a hpc node and executes bash script xxx.slurm.sub  
