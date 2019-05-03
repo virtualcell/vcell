@@ -22,6 +22,13 @@ import javax.swing.tree.DefaultMutableTreeNode;
  */
 @SuppressWarnings("serial")
 public class BioModelNode extends javax.swing.tree.DefaultMutableTreeNode {
+	
+	public static class UserNameNode extends BioModelNode {
+		public UserNameNode(Object userObject, boolean allowsChildren) {
+			super(userObject, allowsChildren);
+		}
+	}
+	
 	private Hashtable<String, Object> renderHintHash = new Hashtable<String, Object>();
 
 	public static final String MAX_ERROR_LEVEL = "MaxErrorLevel";

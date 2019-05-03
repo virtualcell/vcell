@@ -33,9 +33,13 @@ public class MathModelDbTreeModel extends VCDocumentDbTreeModel {
  */
 public MathModelDbTreeModel(JTree tree) {
 	super(tree);
-	educationModelsNode = new BioModelNode(Education, true);
-	publicModelsNode = new BioModelNode(Public_MathModels, true);
+	tutorialModelsNode = new BioModelNode(Tutorials, true);
+	educationModelsNode = new BioModelNode(Education, true);	// this may go to curated
+	allPublicModelsNode = new BioModelNode(Public_MathModels, true);
+
 	publishedModelsNode = new BioModelNode(Published_MathModels, true);
+	curatedModelsNode = new BioModelNode(Curated_MathModels, true);
+	otherModelsNode = new BioModelNode(Other_MathModels, true);
 }
 
 
@@ -46,8 +50,37 @@ public MathModelDbTreeModel(JTree tree) {
  * @param docManager cbit.vcell.clientdb.DocumentManager
  */
 protected void createBaseTree() throws DataAccessException {
+	
+	rootNode.removeAllChildren();
+	
+	rootNode.add(myModelsNode);
+	rootNode.add(sharedModelsNode);
+//	rootNode.add(tutorialModelsNode);
+	rootNode.add(educationModelsNode);
+	rootNode.add(allPublicModelsNode);
+	
+	allPublicModelsNode.add(publishedModelsNode);
+	allPublicModelsNode.add(curatedModelsNode);
+	allPublicModelsNode.add(otherModelsNode);
+	
+	rootNode.setUserObject("Math Models");
+	sharedModelsNode.setUserObject(SHARED_MATH_MODELS);
+	
+	MathModelInfo mathModelInfos[] = getDocumentManager().getMathModelInfos();
+	User loginUser = getDocumentManager().getUser();
+	TreeMap<String, BioModelNode> treeMap = null;
+	try{
+		treeMap = VCDocumentDbTreeModel.initOwners(mathModelInfos, loginUser, this, this.getClass().getMethod("createOwnerSubTree", new Class[] {User.class,MathModelInfo[].class}));
+	}catch(Exception e){
+		e.printStackTrace();
+		treeMap = new TreeMap<String,BioModelNode>();
+		treeMap.put(loginUser.getName(), new BioModelNode("Error:"+e.getMessage()));
+	}
+	initFinalTree(this, treeMap, loginUser);
+}
+protected void createBaseTree2() throws DataAccessException {
 	VCDocumentDbTreeModel.initBaseTree(rootNode,
-			new BioModelNode[] {myModelsNode,sharedModelsNode,publicModelsNode,educationModelsNode,publishedModelsNode},
+			new BioModelNode[] {myModelsNode,sharedModelsNode,otherModelsNode,educationModelsNode,publishedModelsNode},
 			"Math Models", sharedModelsNode, SHARED_MATH_MODELS);
 	
 	MathModelInfo mathModelInfos[] = getDocumentManager().getMathModelInfos();

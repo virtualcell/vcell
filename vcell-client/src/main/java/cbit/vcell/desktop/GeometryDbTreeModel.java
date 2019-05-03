@@ -33,7 +33,7 @@ public class GeometryDbTreeModel extends VCDocumentDbTreeModel {
  */
 public GeometryDbTreeModel(JTree tree) {
 	super(tree);
-	publicModelsNode = new BioModelNode(PUBLIC_GEOMETRIES, true);	
+	otherModelsNode = new BioModelNode(PUBLIC_GEOMETRIES, true);	
 }
 
 
@@ -44,7 +44,7 @@ public GeometryDbTreeModel(JTree tree) {
  * @param docManager cbit.vcell.clientdb.DocumentManager
  */
 protected void createBaseTree() throws DataAccessException {
-	VCDocumentDbTreeModel.initBaseTree(rootNode, new BioModelNode[] {myModelsNode,sharedModelsNode,publicModelsNode}, "Geometries", sharedModelsNode, SHARED_GEOMETRIES);
+	VCDocumentDbTreeModel.initBaseTree(rootNode, new BioModelNode[] {myModelsNode,sharedModelsNode,otherModelsNode}, "Geometries", sharedModelsNode, SHARED_GEOMETRIES);
 	
 	GeometryInfo geometryInfos[] = getDocumentManager().getGeometryInfos();
 	User loginUser = getDocumentManager().getUser();

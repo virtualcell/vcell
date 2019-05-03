@@ -45,6 +45,7 @@ public java.awt.Component getTreeCellRendererComponent(JTree tree, Object value,
 				|| VCDocumentDbTreeModel.Public_BioModels.equals(userObject)
 				|| VCDocumentDbTreeModel.Public_MathModels.equals(userObject)
 				|| VCDocumentDbTreeModel.Published_BioModels.equals(userObject)
+				|| VCDocumentDbTreeModel.ModelBricks.equals(userObject)
 				|| VCDocumentDbTreeModel.Published_MathModels.equals(userObject)
 				|| VCDocumentDbTreeModel.PUBLIC_GEOMETRIES.equals(userObject)
 				|| VCDocumentDbTreeModel.Education.equals(userObject)
