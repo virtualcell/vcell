@@ -205,10 +205,17 @@ public class SlurmProxy extends HtcProxy {
 			line = line.replaceAll(" +", " ").trim();
 			line = line.replaceAll("=", " ").trim();
 			String[] tokens = line.split(" ");
-			String CPUAlloc = tokens[1];
-			String CPUErr = tokens[3];
-			String CPUTot = tokens[5];
-			String CPULoad = tokens[7];
+			String CPUAlloc = "0";
+			String CPUErr = "0";
+			String CPUTot = "0";
+			String CPULoad = "0";
+			for (int i = 0; i < tokens.length; i+=2) {
+				String val = (tokens[i+1].equals("N/A")?"0":tokens[i+1]);
+				CPUAlloc = (tokens[i].equals("CPUAlloc")?val:CPUAlloc);
+				CPUErr = (tokens[i].equals("CPUErr")?val:CPUErr);
+				CPUTot = (tokens[i].equals("CPUTot")?val:CPUTot);
+				CPULoad = (tokens[i].equals("CPULoad")?val:CPULoad);
+			}
 			
 			Integer cpuAlloc = null;
 			Integer cpuErr = null;
