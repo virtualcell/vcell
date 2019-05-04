@@ -19,8 +19,7 @@ public class PublicationRepresentation {
 	public BiomodelReferenceRepresentation[] biomodelReferences;
 	public MathmodelReferenceRepresentation[] mathmodelReferences;
 	public Date date;
-	public boolean bcurated;
-	
+
 	public PublicationRepresentation(){
 		
 	}	
@@ -77,9 +76,6 @@ public class PublicationRepresentation {
 	public Date getDate() {
 		return date;
 	}
-	public boolean isCurated() {
-		return bcurated;
-	}
 	public PublicationRepresentation(PublicationRep publicationRep) throws ExpressionException{
 		this.pubKey = publicationRep.getPubKey().toString();
 		this.title = publicationRep.getTitle();
@@ -92,8 +88,7 @@ public class PublicationRepresentation {
 		this.url = publicationRep.getUrl();
 		this.wittid = publicationRep.getWittid();
 		this.date = publicationRep.getDate();
-		this.bcurated = publicationRep.isCurated();
-		
+
 		this.biomodelReferences = new BiomodelReferenceRepresentation[publicationRep.getBiomodelReferenceReps().length];
 		for (int i=0;i<biomodelReferences.length;i++){
 			this.biomodelReferences[i] = new BiomodelReferenceRepresentation(publicationRep.getBiomodelReferenceReps()[i]);

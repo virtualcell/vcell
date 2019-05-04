@@ -18,10 +18,9 @@ public class PublicationRep {
 	private MathModelReferenceRep[] mathModelReferenceReps = new MathModelReferenceRep[0];
 	private final String wittid;
 	private final Date date;
-	private boolean bcurated;
 	
 	public PublicationRep(KeyValue pubKey, String title, String[] authors, Integer year, String citation, String pubmedid, String doi, String endnoteid,
-			String url, BioModelReferenceRep[] bioModelReferenceReps, MathModelReferenceRep[] mathModelReferenceReps, String wittid, Date date,boolean bcurated) {
+			String url, BioModelReferenceRep[] bioModelReferenceReps, MathModelReferenceRep[] mathModelReferenceReps, String wittid, Date date) {
 		
 		super();
 		this.pubKey = pubKey;
@@ -37,7 +36,6 @@ public class PublicationRep {
 		this.mathModelReferenceReps = mathModelReferenceReps;
 		this.wittid = wittid;
 		this.date = date;
-		this.bcurated = bcurated;
 	}
 
 	public KeyValue getPubKey() {
@@ -91,7 +89,5 @@ public class PublicationRep {
 	public Date getDate() {
 		return date;
 	}
-	public boolean isCurated() {
-		return bcurated;
-	}
+	
 }

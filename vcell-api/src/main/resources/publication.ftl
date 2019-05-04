@@ -15,7 +15,6 @@
 <input type='submit' value='edit...' style='font-size:large'>
 </form>
 </center>
-<br>curated: <#if publication.isCurated()>T<#else>F</#if></br>
 <br>title: &quot;${publication.title!""}&quot;</br>
 <br>year: ${publication.year!""}</br>
 <br>authors:  <#if publication.authors??><#list publication.authors as author> ${author!""}; </#list></#if></br>

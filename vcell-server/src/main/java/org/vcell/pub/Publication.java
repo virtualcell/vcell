@@ -14,9 +14,8 @@ public class Publication implements Serializable {
 	public final String pubmedid;
 	public final String doi;
 	public final String url;
-	public final boolean isCurated;
 	
-	public Publication(KeyValue key, String title, String[] authors, String citation, String pubmedid, String doi, String url,boolean isCurated) {
+	public Publication(KeyValue key, String title, String[] authors, String citation, String pubmedid, String doi, String url) {
 		super();
 		this.key = key;
 		this.title = title;
@@ -25,7 +24,6 @@ public class Publication implements Serializable {
 		this.pubmedid = pubmedid;
 		this.doi = doi;
 		this.url = url;
-		this.isCurated = isCurated;
 	}
 	
 	@Override
@@ -48,9 +46,6 @@ public class Publication implements Serializable {
 				return false;
 			}
 			if (!Compare.isEqualOrNull(doi,other.doi)){
-				return false;
-			}
-			if(isCurated != other.isCurated) {
 				return false;
 			}
 			return true;

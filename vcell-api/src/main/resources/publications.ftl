@@ -30,7 +30,6 @@
 <table border='1'>
 <tr>
 <th>pub&nbsp;ids</th>
-<th>pub&nbsp;curated</th>
 <th>pub&nbsp;title</th>
 <th>pub&nbsp;year</th>
 <th>citation</th>
@@ -44,7 +43,6 @@
 <#list publications as pub>
 <tr>
 <td><#if pub.pubKey??><a href="/publication/${pub.pubKey}">${pub.pubKey}</a><#else>-</#if></td>
-<td><#if pub.isCurated()>T<#else>F</#if></td>
 <td>${pub.title!""}</td>
 <td>${pub.year!""}</td>
 <td>${pub.citation!""}</td>
