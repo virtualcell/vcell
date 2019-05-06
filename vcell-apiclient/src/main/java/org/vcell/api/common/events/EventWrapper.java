@@ -16,7 +16,7 @@ public class EventWrapper {
 	
 	public EventWrapper(long id, long timestamp, String userid, EventType eventType, String eventJSON) {
 		this.id = id;
-		this.timestamp = System.currentTimeMillis();
+		this.timestamp = timestamp;
 		this.userid = userid;
 		this.eventType = eventType;
 		this.eventJSON = eventJSON;
