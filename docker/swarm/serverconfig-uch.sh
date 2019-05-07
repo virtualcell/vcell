@@ -27,9 +27,9 @@ VCELL_TAG=$_tag
 VCELL_VERSION_NUMBER=$_version_number
 VCELL_BUILD_NUMBER=$_build_number
 #SLURM parameter values
-vcell_slurm_partition=vcell2
+vcell_slurm_partition=vcell
 vcell_slurm_reservation=vcell
-vcell_slurm_partition_pu=vcell2pu
+vcell_slurm_partition_pu=vcellpu
 vcell_slurm_reservation_pu=vcellpu
 
 
