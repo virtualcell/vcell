@@ -513,6 +513,20 @@ public class SlurmProxy extends HtcProxy {
 		lsb.write("  fi");
 		lsb.write("}");
 		
+		/**
+		 * excerpt from vcell-batch Dockerfile
+		 * 
+		 * ENV softwareVersion=VCell_7.0_build_99 \
+		 *   serverid=TEST2 \
+		 *   jmsurl="failover:(tcp://vcell-service.cam.uchc.edu:61616)" \
+		 *   jmsuser=clientUser \
+		 *   jmspswd=dummy \
+		 *   solverprimarydata=/simdata/ \
+		 *   mongodbhost="vcell-service.cam.uchc.edu" \
+		 *   mongodbport=27017 \
+		 *   jmsblob_minsize=100000
+		 */
+
 		if (isParallel) {
 			String MPI_HOME_EXTERNAL= PropertyLoader.getProperty(PropertyLoader.MPI_HOME_EXTERNAL,"");
 

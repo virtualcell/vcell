@@ -232,7 +232,7 @@ def main():
     parser_showjobs.add_argument("--host", type=str, default='vcellapi.cam.uchc.edu', help='host of server')
     parser_showjobs.add_argument("--apiport", type=int, default='443', help='port of api server')
     parser_showjobs.add_argument("--withslurm", type=bool, default=False)
-    parser_showjobs.add_argument("--slurmhost", type=str, default="hpc-ext-1.cam.uchc.edu")
+    parser_showjobs.add_argument("--slurmhost", type=str, default="vcell-service.cam.uchc.edu")
     parser_showjobs.add_argument("--partition", type=str, default="vcell2,vcell")
     parser_showjobs.set_defaults(which='showjobs')
 
@@ -256,7 +256,7 @@ def main():
     parser_killjobs.set_defaults(which='killjob')
 
     parser_slurmjobs = subparsers.add_parser('slurmjobs', help='slurm running jobs (see slurmjobs --help)')
-    parser_slurmjobs.add_argument("--slurmhost", type=str, default="hpc-ext-1.cam.uchc.edu")
+    parser_slurmjobs.add_argument("--slurmhost", type=str, default="vcell-service.cam.uchc.edu")
     parser_slurmjobs.add_argument("--partition", type=str, default="vcell2,vcell")
     parser_slurmjobs.set_defaults(which='slurmjobs')
 

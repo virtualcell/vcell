@@ -116,8 +116,8 @@ Oracle database, has all models, sim status, all user data,  everything
 ## vcell-docker.cam.uchc.edu, NOT Swarm node, (VCell docker registry) [details](build/README_Registry.md)
 (internal docker registry, contains images for vcell system, tagged by git-hub commit hashes)  
 
-# hpc-ext-1.cam.uchc.edu, NOT Docker (SLURM submit node)
-Slurm partition "vcell"  
+# vcell-service.cam.uchc.edu, NOT Docker (SLURM submit node)
+Slurm partition "vcell2"  
 sbatch /share/apps/vcell3/htclogs/V_REL_39393939393_0_0.slurm.sub  
 squeue  
 sinfo  
