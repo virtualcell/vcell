@@ -81,14 +81,14 @@ public abstract class VCDocumentDbTreeModel extends DefaultTreeModel implements 
 	public static final String Public_BioModels = "Public BioModels";
 	public static final String Published_BioModels = "Published";
 	public static final String Curated_BioModels = "Curated";
-	public static final String Other_BioModels = "Other";
+	public static final String Other_BioModels = "Uncurated";
 	public static final String ModelBricks = "Model Bricks";
 	
 	public static final String SHARED_MATH_MODELS = "Shared With Me";
 	public static final String Public_MathModels = "Public MathModels";
 	public static final String Published_MathModels = "Published";
 	public static final String Curated_MathModels = "Curated";
-	public static final String Other_MathModels = "Other";
+	public static final String Other_MathModels = "Uncurated";
 	
 	public static final String SHARED_GEOMETRIES = "Shared Geometries";
 	public static final String PUBLIC_GEOMETRIES = "Public Geometries";
@@ -142,10 +142,13 @@ protected synchronized static void initFinalTree(VCDocumentDbTreeModel vcDocumen
 		for (int i = 0; i < childNode.getChildCount(); i++) {
 			BioModelNode versionBioModelNode = (BioModelNode)childNode.getChildAt(i);
 			VCDocumentInfo versionVCDocumentInfo = (VCDocumentInfo) versionBioModelNode.getUserObject();
-			BigDecimal groupid = versionVCDocumentInfo.getVersion().getGroupAccess().getGroupid();
+//			BigDecimal groupid = versionVCDocumentInfo.getVersion().getGroupAccess().getGroupid();
 //			System.out.println("    " + groupid);
 		
-			if (groupid.equals(GroupAccess.GROUPACCESS_ALL)) {
+			// use the form below if want to populate the Other folder with my Public models
+//			if (groupid.equals(GroupAccess.GROUPACCESS_ALL)) {
+			// use the form below to populate only the Published folder with my Published models
+			if(	versionVCDocumentInfo.getPublicationInfos() != null && versionVCDocumentInfo.getPublicationInfos().length > 0) {
 				BioModelNode versionCloneNode = versionBioModelNode.clone();
 				cloneNode.add(versionCloneNode);
 			}
@@ -194,7 +197,7 @@ protected synchronized static void initFinalTree(VCDocumentDbTreeModel vcDocumen
 		UserNameNode userNameNode = new UserNameNode(username, true);
 		for (int c = 0; c < userNode.getChildCount(); c++) {	// we just navigate through all of them, remove none
 			BioModelNode childNode = (BioModelNode) userNode.getChildAt(c);
-			VCDocumentInfoNode vcdDocumentInfoNode = (VCDocumentInfoNode) childNode.getUserObject();
+//			VCDocumentInfoNode vcdDocumentInfoNode = (VCDocumentInfoNode) childNode.getUserObject();
 //			System.out.println(vcdDocumentInfoNode.getVCDocumentInfo().getVersion().getName());
 			
 			if (!bSpecificUser) {
@@ -236,8 +239,8 @@ protected synchronized static void initFinalTree(VCDocumentDbTreeModel vcDocumen
 			}
 			
 			BioModelNode childNode = (BioModelNode) userNode.getChildAt(c);
-			VCDocumentInfoNode vcdDocumentInfoNode = (VCDocumentInfoNode) childNode.getUserObject();
-			System.out.println(vcdDocumentInfoNode.getVCDocumentInfo().getVersion().getName());
+//			VCDocumentInfoNode vcdDocumentInfoNode = (VCDocumentInfoNode) childNode.getUserObject();
+//			System.out.println(vcdDocumentInfoNode.getVCDocumentInfo().getVersion().getName());
 
 			if (!bSpecificUser) {
 				parentNode = vcDocumentDbTreeModel.sharedModelsNode;	// ******** Shared Folder ***********
