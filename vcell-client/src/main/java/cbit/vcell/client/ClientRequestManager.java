@@ -3691,7 +3691,7 @@ public void runSimulations(final ClientSimManager clientSimManager, final Simula
 		// get a new name
 		AsynchClientTask newName = new NewName();
 		// save it
-		AsynchClientTask saveDocument = new SaveDocument();
+		AsynchClientTask saveDocument = new SaveDocument(true);
 		// clean up
 		AsynchClientTask finishSave = new FinishSave();
 		// run the simulations
@@ -3712,7 +3712,7 @@ public void runSimulations(final ClientSimManager clientSimManager, final Simula
 		// check if unchanged document
 		AsynchClientTask checkUnchanged = new CheckUnchanged(true);
 		// save it
-		AsynchClientTask saveDocument = new SaveDocument();
+		AsynchClientTask saveDocument = new SaveDocument(false);
 		// check for lost results
 		AsynchClientTask checkBeforeDelete = new CheckBeforeDelete();
 		// delete old document
@@ -3799,13 +3799,13 @@ public void saveDocument(final DocumentWindowManager documentWindowManager, bool
 	AsynchClientTask setMathDescription = new SetMathDescription();
 	// check if unchanged document
 	AsynchClientTask checkUnchanged = new CheckUnchanged(false);
-	// save it
-	AsynchClientTask saveDocument = new SaveDocument();
 	// clean up
 	AsynchClientTask finishSave = new FinishSave();
 	// assemble array
 	AsynchClientTask[] tasks = null;
 	if (replace) {
+		// save it
+		AsynchClientTask saveDocument = new SaveDocument(false);
 		// check for lost results
 		AsynchClientTask checkBeforeDelete = new CheckBeforeDelete();
 		// delete old document
@@ -3820,6 +3820,8 @@ public void saveDocument(final DocumentWindowManager documentWindowManager, bool
 			finishSave
 		};
 	} else {
+		// save it
+		AsynchClientTask saveDocument = new SaveDocument(true);
 		tasks = new AsynchClientTask[] {
 			documentValid,
 			setMathDescription,
@@ -3868,7 +3870,7 @@ public void saveDocumentAsNew(DocumentWindowManager documentWindowManager, Async
 	// get a new name
 	AsynchClientTask newName = new NewName();
 	// save it
-	AsynchClientTask saveDocument = new SaveDocument();
+	AsynchClientTask saveDocument = new SaveDocument(true);
 	// clean up
 	AsynchClientTask finishSave = new FinishSave();
 	// assemble array

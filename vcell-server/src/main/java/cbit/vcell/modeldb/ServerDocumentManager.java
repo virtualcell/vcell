@@ -20,6 +20,7 @@ import org.apache.logging.log4j.Logger;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ObjectNotFoundException;
+import org.vcell.util.ServerRejectedSaveException;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.document.BioModelChildSummary;
 import org.vcell.util.document.KeyValue;
@@ -1550,6 +1551,12 @@ long start = System.currentTimeMillis();
 		if (lg.isTraceEnabled()) {
 			lg.trace("Total time: " + ((double)(System.currentTimeMillis() - start)) / 1000 + " roundtrip: " + ((double)roundtripTimer) / 1000);
 		}
+		//If we got here were were doing 'save' or 'save as new version' but no changes were detected
+		boolean bError = !bSomethingChanged && !isSaveAsNew;
+		if(bError) {
+			throw new ServerRejectedSaveException("Warning: BioModel was not saved because contents match already saved version "+origBioModel.getVersion().getDate()+" "+origBioModel.getVersion().getVersionKey());
+		}
+
 		return bioModelXML;
 	}
 }
@@ -2055,6 +2062,12 @@ public String saveMathModel(QueryHashtable dbc, User user, String mathModelXML, 
 		dbServer.insertVersionableXML(user,VersionableType.MathModelMetaData,updatedMathModel.getVersion().getVersionKey(),mathModelXML);
 		return mathModelXML;
 	} else {
+		//If we got here were were doing 'save' or 'save as new version' but no changes were detected
+		boolean bError = !bSomethingChanged && !isSaveAsNew;
+		if(bError) {
+			throw new ServerRejectedSaveException("Warning: MathModel was not saved because contents match already saved version "+origMathModel.getVersion().getDate()+" "+origMathModel.getVersion().getVersionKey());
+		}
+
 		return mathModelXML;
 	}
 }

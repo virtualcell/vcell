@@ -11,6 +11,7 @@
 package cbit.vcell.client.task;
 import java.util.Hashtable;
 
+import org.vcell.util.ServerRejectedSaveException;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCDocument;
 import org.vcell.util.document.VersionableType;
@@ -32,9 +33,10 @@ import cbit.vcell.solver.Simulation;
 public class SaveDocument extends AsynchClientTask {
 	
 	public static final String DOC_KEY = "savedDocument";
-
-	public SaveDocument() {
+	private boolean bFailIfServerRejectSave = false;
+	public SaveDocument(boolean bFailIfServerRejectSave) {
 		super("Saving document to database", TASKTYPE_NONSWING_BLOCKING);
+		this.bFailIfServerRejectSave = bFailIfServerRejectSave;
 	}
 
 /**
@@ -76,7 +78,15 @@ public void run(Hashtable<String, Object> hashTable) throws java.lang.Exception 
 //				--------------------------------
 				savedDocument = documentManager.saveAsNew((BioModel)currentDocument, newName, independentSims);
 			} else {
-				savedDocument = documentManager.save((BioModel)currentDocument, independentSims);
+				try {
+					savedDocument = documentManager.save((BioModel)currentDocument, independentSims);
+				}catch(ServerRejectedSaveException srse) {
+					if(bFailIfServerRejectSave) {
+						throw srse;
+					}
+					srse.printStackTrace();
+					savedDocument = currentDocument;
+				}
 			}
 			break;
 		}
@@ -96,7 +106,15 @@ public void run(Hashtable<String, Object> hashTable) throws java.lang.Exception 
 				//--------------------------------
 				savedDocument = documentManager.saveAsNew((MathModel)currentDocument, newName, independentSims);
 			} else {
-				savedDocument = documentManager.save((MathModel)currentDocument, independentSims);
+				try {
+					savedDocument = documentManager.save((MathModel)currentDocument, independentSims);
+				}catch(ServerRejectedSaveException srse) {
+					if(bFailIfServerRejectSave) {
+						throw srse;
+					}
+					srse.printStackTrace();
+					savedDocument = currentDocument;
+				}
 			}
 			break;
 		}
