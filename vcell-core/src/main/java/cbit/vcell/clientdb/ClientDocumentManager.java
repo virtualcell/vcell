@@ -10,13 +10,19 @@
 
 package cbit.vcell.clientdb;
 
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.EventListener;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.Locale;
+import java.util.TimeZone;
 import java.util.Vector;
 
 import org.apache.logging.log4j.LogManager;
@@ -2350,7 +2356,29 @@ public VCImage save(VCImage vcImage) throws DataAccessException {
 	}	
 }
 
-
+// the version time is assumed to be EDT (or whatever locale the user is at) but it really is UTC
+// hence, the apparent time we display in the biomodel nodes is 4 hours in advance
+// we use the converter below to get the current date; used only for display purposes (in the BioModelInfo)
+private static Version convertVersionToLocalTime(Version utcVersion) {
+	Date date = null;
+	if (utcVersion.getDate() != null) {
+		DateFormat dateFormat = new SimpleDateFormat("dd-MMM-yyyy HH:mm:ss");  
+		String strDate = dateFormat.format(utcVersion.getDate());
+		strDate = strDate + " UTC";
+		dateFormat = new SimpleDateFormat("dd-MMM-yyyy HH:mm:ss zzz");
+		try {
+			date = dateFormat.parse(strDate);
+		} catch (ParseException e) {
+			date = null;
+		}
+	} else {
+		date = null;
+	}
+	Version localVersion = new Version(	utcVersion.getVersionKey(), utcVersion.getName(), utcVersion.getOwner(),
+			utcVersion.getGroupAccess(), utcVersion.getBranchPointRefKey(),
+			utcVersion.getBranchID(), date, utcVersion.getFlag(), utcVersion.getAnnot() );
+	return localVersion;
+}
 /**
  * Insert the method's description here.
  * Creation date: (10/28/00 12:08:30 AM)
@@ -2372,11 +2400,11 @@ public BioModel save(BioModel bioModel, String independentSims[]) throws DataAcc
 		BioModel savedBioModel = getBioModelFromDatabaseXML(new XMLHolder<BioModel>(savedBioModelXML));
 		
 		KeyValue savedKey = savedBioModel.getVersion().getVersionKey();
-
 		if (xmlHash.get(savedKey)==null){
 			xmlHash.put(savedKey, savedBioModelXML);
 		}
 
+//		Version localTimeVersion = convertVersionToLocalTime(savedBioModel.getVersion());
 		BioModelInfo savedBioModelInfo = new BioModelInfo(savedBioModel.getVersion(),savedBioModel.getModel().getKey(),savedBioModel.createBioModelChildSummary(),VCellSoftwareVersion.fromSystemProperty());
 		bioModelInfoHash.put(savedKey,savedBioModelInfo);
 		
