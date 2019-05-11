@@ -10,6 +10,7 @@
 
 package cbit.vcell.modeldb;
 import java.beans.PropertyVetoException;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Hashtable;
@@ -20,7 +21,6 @@ import org.apache.logging.log4j.Logger;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ObjectNotFoundException;
-import org.vcell.util.ServerRejectedSaveException;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.document.BioModelChildSummary;
 import org.vcell.util.document.KeyValue;
@@ -35,6 +35,7 @@ import cbit.sql.QueryHashtable;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.biomodel.BioModelMetaData;
 import cbit.vcell.biomodel.meta.VCMetaData;
+import cbit.vcell.clientdb.ServerRejectedSaveException;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.SurfaceClass;
 import cbit.vcell.geometry.surface.GeometrySurfaceDescription;
@@ -1554,7 +1555,7 @@ long start = System.currentTimeMillis();
 		//If we got here were were doing 'save' or 'save as new version' but no changes were detected
 		boolean bError = !bSomethingChanged && !isSaveAsNew;
 		if(bError) {
-			throw new ServerRejectedSaveException("Warning: BioModel was not saved because contents match already saved version "+origBioModel.getVersion().getDate()+" "+origBioModel.getVersion().getVersionKey());
+			throw new ServerRejectedSaveException(origBioModel.getVersion().getVersionKey().toString());
 		}
 
 		return bioModelXML;
@@ -2065,7 +2066,7 @@ public String saveMathModel(QueryHashtable dbc, User user, String mathModelXML, 
 		//If we got here were were doing 'save' or 'save as new version' but no changes were detected
 		boolean bError = !bSomethingChanged && !isSaveAsNew;
 		if(bError) {
-			throw new ServerRejectedSaveException("Warning: MathModel was not saved because contents match already saved version "+origMathModel.getVersion().getDate()+" "+origMathModel.getVersion().getVersionKey());
+			throw new ServerRejectedSaveException(origMathModel.getVersion().getVersionKey().toString());
 		}
 
 		return mathModelXML;

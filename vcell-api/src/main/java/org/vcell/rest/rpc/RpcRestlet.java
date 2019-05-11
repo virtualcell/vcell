@@ -32,6 +32,7 @@ import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 import org.vcell.util.document.UserLoginInfo;
 
+import cbit.vcell.clientdb.ServerRejectedSaveException;
 import cbit.vcell.message.VCRpcRequest;
 import cbit.vcell.message.VCRpcRequest.RpcServiceType;
 import cbit.vcell.message.VCellQueue;
@@ -223,6 +224,16 @@ public final class RpcRestlet extends Restlet {
 				getLogger().severe("internal error invoking "+destination+":"+method+"(): "+e.getMessage());
 				e.printStackTrace();
 				response.setStatus(Status.SERVER_ERROR_INTERNAL);
+				if(e.getCause() instanceof ServerRejectedSaveException) {//send back actual exception, client needs specific cause
+					try {
+						byte[] serializedResultObject = VCellApiClient.toCompressedSerialized(e.getCause());
+						response.setEntity(new ByteArrayRepresentation(serializedResultObject));
+						return;
+					} catch (Exception e1) {
+						e1.printStackTrace();
+						//continue and send error message
+					}
+				}
 				response.setEntity("internal error invoking "+destination+":"+method+"(): "+e.getMessage(), MediaType.TEXT_PLAIN);
 			}
 		}

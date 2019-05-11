@@ -21,6 +21,7 @@ import org.vcell.util.document.VCInfoContainer;
 import org.vcell.util.document.VersionableFamily;
 
 import cbit.vcell.biomodel.BioModelMetaData;
+import cbit.vcell.clientdb.ServerRejectedSaveException;
 import cbit.vcell.field.FieldDataDBOperationResults;
 import cbit.vcell.field.FieldDataDBOperationSpec;
 import cbit.vcell.mathmodel.MathModelMetaData;
@@ -241,7 +242,10 @@ private Object rpc(String methodName, Object[] args) throws ObjectNotFoundExcept
 		throw e;
 	} catch (Exception e){
 		lg.error(e);
-		throw new RuntimeException(e.getMessage());
+		if(e.getCause() instanceof ServerRejectedSaveException) {
+			throw (ServerRejectedSaveException)e.getCause();
+		}
+		throw new RuntimeException(e.getMessage(),e);
 	}
 }
 

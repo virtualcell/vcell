@@ -2,6 +2,7 @@ package org.vcell.api.client;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -676,13 +677,7 @@ public class VCellApiClient {
 					}
 					
 				} else {
-					HttpEntity entity = response.getEntity();
-					String message = null;
-					try (BufferedReader reader = new BufferedReader(new InputStreamReader(entity.getContent()));){
-						message = reader.lines().collect(Collectors.joining());
-					}
-					lg.error("RPC method "+rpcDestination+":"+rpcRequest.methodName+"() failed: response status: " + status + "\nreason: " + message);
-					throw new ClientProtocolException("RPC method "+rpcDestination+":"+rpcRequest.methodName+"() failed: response status: " + status + "\nreason: " + message);
+					return throwExceptionWithCause(response.getEntity(), rpcDestination.toString(), rpcRequest.methodName, status);
 				}
 			}
 
@@ -754,6 +749,28 @@ public class VCellApiClient {
 
 		String vcellSoftwareVersion = httpclient.execute(httpget, new VCellStringResponseHandler("getServerSoftwareVersion()", httpget), httpClientContext);
 		return vcellSoftwareVersion;
+	}
+
+	public static Serializable throwExceptionWithCause(HttpEntity entity,String rpcDestinationStr,String rpcRequestMethodName,int status) throws IOException, ClientProtocolException {
+//		HttpEntity entity = response.getEntity();
+		Serializable returnValue = null;
+		ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+		entity.writeTo(byteArrayOutputStream);
+		byte[] returnValueBytes = byteArrayOutputStream.toByteArray();
+		try {
+			returnValue = fromCompressedSerialized(returnValueBytes);
+		} catch (Exception e) {
+			//ignore, later code will read response as plain text if necessary
+		}
+		if(returnValue instanceof Exception) {//e.g.ServerRejectedSaveException
+			throw new ClientProtocolException(((Exception)returnValue).getMessage(),(Exception)returnValue);
+		}
+		String message = null;
+		try (BufferedReader reader = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(returnValueBytes)));){
+			message = reader.lines().collect(Collectors.joining());
+		}
+		lg.error("RPC method "+rpcDestinationStr+":"+rpcRequestMethodName+"() failed: response status: " + status + "\nreason: " + message);
+		throw new ClientProtocolException("RPC method "+rpcDestinationStr+":"+rpcRequestMethodName+"() failed: response status: " + status + "\nreason: " + message,(returnValue instanceof Exception?(Exception)returnValue:null));
 	}
 	
 }

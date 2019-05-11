@@ -11,8 +11,6 @@
 package cbit.vcell.client.task;
 import java.util.Hashtable;
 
-import org.vcell.util.ServerRejectedSaveException;
-import org.vcell.util.document.User;
 import org.vcell.util.document.VCDocument;
 import org.vcell.util.document.VersionableType;
 import org.vcell.util.document.VersionableTypeVersion;
@@ -22,6 +20,7 @@ import cbit.vcell.client.DocumentWindowManager;
 import cbit.vcell.client.MathModelWindowManager;
 import cbit.vcell.client.RequestManager;
 import cbit.vcell.clientdb.DocumentManager;
+import cbit.vcell.clientdb.ServerRejectedSaveException;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.solver.Simulation;
@@ -80,11 +79,14 @@ public void run(Hashtable<String, Object> hashTable) throws java.lang.Exception 
 			} else {
 				try {
 					savedDocument = documentManager.save((BioModel)currentDocument, independentSims);
-				}catch(ServerRejectedSaveException srse) {
-					if(bFailIfServerRejectSave) {
-						throw srse;
+				}catch(Exception e) {
+					e.printStackTrace();
+					if(!(e instanceof ServerRejectedSaveException)) {
+						throw e;
+					}else if(bFailIfServerRejectSave) {//ServerRejectedSaveException and we want to fail quickly
+						throw new Exception("No changes found to save.  (Use 'Save As...' instead)");
 					}
-					srse.printStackTrace();
+					//ServerRejectedSaveException but we will continue with the original document
 					savedDocument = currentDocument;
 				}
 			}
@@ -108,11 +110,14 @@ public void run(Hashtable<String, Object> hashTable) throws java.lang.Exception 
 			} else {
 				try {
 					savedDocument = documentManager.save((MathModel)currentDocument, independentSims);
-				}catch(ServerRejectedSaveException srse) {
-					if(bFailIfServerRejectSave) {
-						throw srse;
+				}catch(Exception e) {
+					e.printStackTrace();
+					if(!(e instanceof ServerRejectedSaveException)) {
+						throw e;
+					}else if(bFailIfServerRejectSave) {//ServerRejectedSaveException and we want to fail quickly
+						throw new Exception("No changes found to save.  (Use 'Save As...' instead)");
 					}
-					srse.printStackTrace();
+					//ServerRejectedSaveException but we will continue with the original document
 					savedDocument = currentDocument;
 				}
 			}

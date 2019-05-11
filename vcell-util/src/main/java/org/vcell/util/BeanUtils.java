@@ -45,6 +45,7 @@ import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.net.InetSocketAddress;
 import java.net.URL;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
@@ -98,6 +99,7 @@ import edu.uchc.connjur.wb.ExecutionTrace;
 public final class BeanUtils {
 	private static final Logger lg = LogManager.getLogger(BeanUtils.class);
 	public static final String vcDateFormat = "dd-MMM-yyyy HH:mm:ss";
+	public static final DateTimeFormatter vcDateTimeFormatter = DateTimeFormatter.ofPattern(vcDateFormat);
 
 	/**
 	 * newline used in email of Content-Type: text/plain
