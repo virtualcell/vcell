@@ -52,7 +52,8 @@ public java.awt.Component getTreeCellRendererComponent(JTree tree, Object value,
 				qualifier = "<font color=\""+colorString+"\">" + label + "</font>"; 
 			}
 			component.setToolTipText(label);
-			component.setText("<html><b>" + qualifier + "</b></html>");
+			component.setText("<html><b>" + qualifier + "</b>" + " (" + node.getChildCount() + ")" + "</html>");
+			component.setIcon(fieldFolderUserIcon);
 		} else if (value instanceof BioModelNode) {
 			BioModelNode node = (BioModelNode) value;
 			Object userObject = node.getUserObject();

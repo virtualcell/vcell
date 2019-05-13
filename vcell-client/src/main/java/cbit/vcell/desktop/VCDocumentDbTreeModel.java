@@ -77,7 +77,7 @@ public abstract class VCDocumentDbTreeModel extends DefaultTreeModel implements 
 	public static final String Education = "Education";
 //	public static final String BNGRulesBased61 = "Tutorials Beta";
 	
-	public static final String SHARED_BIO_MODELS = "Shared BioModels";
+	public static final String SHARED_BIO_MODELS = "Shared With Me";
 	public static final String Public_BioModels = "Public BioModels";
 	public static final String Published_BioModels = "Published";
 	public static final String Curated_BioModels = "Curated";

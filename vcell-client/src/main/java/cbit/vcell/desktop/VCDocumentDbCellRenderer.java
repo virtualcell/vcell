@@ -12,6 +12,8 @@ package cbit.vcell.desktop;
 import javax.swing.JTree;
 
 import org.vcell.util.document.User;
+
+import cbit.vcell.desktop.BioModelNode.UserNameNode;
  
 @SuppressWarnings("serial")
 public class VCDocumentDbCellRenderer extends VCellBasicCellRenderer {
@@ -39,20 +41,39 @@ public java.awt.Component getTreeCellRendererComponent(JTree tree, Object value,
 	if (value instanceof BioModelNode) {
 		BioModelNode node = (BioModelNode) value;
 		Object userObject = node.getUserObject();
-		if (VCDocumentDbTreeModel.SHARED_BIO_MODELS.equals(userObject)
-				|| VCDocumentDbTreeModel.SHARED_MATH_MODELS.equals(userObject)
-				|| VCDocumentDbTreeModel.SHARED_GEOMETRIES.equals(userObject)
-				|| VCDocumentDbTreeModel.Public_BioModels.equals(userObject)
-				|| VCDocumentDbTreeModel.Public_MathModels.equals(userObject)
-				|| VCDocumentDbTreeModel.Published_BioModels.equals(userObject)
-				|| VCDocumentDbTreeModel.ModelBricks.equals(userObject)
-				|| VCDocumentDbTreeModel.Published_MathModels.equals(userObject)
-				|| VCDocumentDbTreeModel.PUBLIC_GEOMETRIES.equals(userObject)
-				|| VCDocumentDbTreeModel.Education.equals(userObject)
-				|| VCDocumentDbTreeModel.Tutorials.equals(userObject)
+		if (
+		//		VCDocumentDbTreeModel.SHARED_BIO_MODELS.equals(userObject) ||
+		//		VCDocumentDbTreeModel.SHARED_MATH_MODELS.equals(userObject) ||
+				VCDocumentDbTreeModel.SHARED_GEOMETRIES.equals(userObject) ||
+		//		VCDocumentDbTreeModel.Public_BioModels.equals(userObject) ||
+		//		VCDocumentDbTreeModel.Public_MathModels.equals(userObject) ||
+				VCDocumentDbTreeModel.Published_BioModels.equals(userObject) ||
+				VCDocumentDbTreeModel.Curated_BioModels.equals(userObject) ||
+				VCDocumentDbTreeModel.Other_BioModels.equals(userObject) ||
+				VCDocumentDbTreeModel.ModelBricks.equals(userObject) ||
+				VCDocumentDbTreeModel.Published_MathModels.equals(userObject) ||
+				VCDocumentDbTreeModel.Curated_MathModels.equals(userObject) ||
+				VCDocumentDbTreeModel.Other_MathModels.equals(userObject) ||
+				VCDocumentDbTreeModel.PUBLIC_GEOMETRIES.equals(userObject) ||
+				VCDocumentDbTreeModel.Education.equals(userObject) ||
+				VCDocumentDbTreeModel.Tutorials.equals(userObject)
 				) {
 			setText(getText() + " (" + node.getChildCount() + ")");
 		}
+		if(
+				VCDocumentDbTreeModel.SHARED_BIO_MODELS.equals(userObject) ||
+				VCDocumentDbTreeModel.SHARED_MATH_MODELS.equals(userObject) ||
+				VCDocumentDbTreeModel.SHARED_GEOMETRIES.equals(userObject)
+				) {
+				setIcon(fieldFolderSharedIcon);
+			}
+		else if(
+				VCDocumentDbTreeModel.Public_BioModels.equals(userObject) ||
+				VCDocumentDbTreeModel.Public_MathModels.equals(userObject) ||
+				VCDocumentDbTreeModel.PUBLIC_GEOMETRIES.equals(userObject)
+				) {
+				setIcon(fieldFolderPublicIcon);
+			}
 	}
 	return this;
 }

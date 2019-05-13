@@ -80,6 +80,9 @@ public class VCellBasicCellRenderer extends javax.swing.tree.DefaultTreeCellRend
 	protected javax.swing.Icon fieldFolderOpenErrorIcon = null;
 	protected javax.swing.Icon fieldFolderOpenWarningIcon = null;
 	protected javax.swing.Icon fieldFolderClosedIcon = null;
+	protected javax.swing.Icon fieldFolderUserIcon = null;
+	protected javax.swing.Icon fieldFolderSharedIcon = null;
+	protected javax.swing.Icon fieldFolderPublicIcon = null;
 	protected javax.swing.Icon fieldFolderClosedErrorIcon = null;
 	protected javax.swing.Icon fieldFolderClosedWarningIcon = null;
 	protected java.awt.Font selectedFont = null;
@@ -109,6 +112,9 @@ public VCellBasicCellRenderer() {
 	fieldFolderOpenIcon = new ImageIcon(getClass().getResource("/images/closedFolder_16x16.gif"));
 	fieldFolderOpenErrorIcon = new ImageIcon(getClass().getResource("/images/closedFolderError_16x16.gif"));
 	fieldFolderOpenWarningIcon = new ImageIcon(getClass().getResource("/images/closedFolderWarning_16x16.gif"));
+	fieldFolderUserIcon = new ImageIcon(getClass().getResource("/icons/userFolder.png"));
+	fieldFolderSharedIcon = new ImageIcon(getClass().getResource("/icons/sharedFolder.png"));
+	fieldFolderPublicIcon = new ImageIcon(getClass().getResource("/icons/publicFolder.png"));
 }
 
 
