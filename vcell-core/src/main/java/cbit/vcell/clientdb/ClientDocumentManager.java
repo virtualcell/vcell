@@ -2404,8 +2404,8 @@ public BioModel save(BioModel bioModel, String independentSims[]) throws DataAcc
 			xmlHash.put(savedKey, savedBioModelXML);
 		}
 
-//		Version localTimeVersion = convertVersionToLocalTime(savedBioModel.getVersion());
-		BioModelInfo savedBioModelInfo = new BioModelInfo(savedBioModel.getVersion(),savedBioModel.getModel().getKey(),savedBioModel.createBioModelChildSummary(),VCellSoftwareVersion.fromSystemProperty());
+		Version localTimeVersion = convertVersionToLocalTime(savedBioModel.getVersion());
+		BioModelInfo savedBioModelInfo = new BioModelInfo(localTimeVersion,savedBioModel.getModel().getKey(),savedBioModel.createBioModelChildSummary(),VCellSoftwareVersion.fromSystemProperty());
 		bioModelInfoHash.put(savedKey,savedBioModelInfo);
 		
 		SimulationContext[] scArr = savedBioModel.getSimulationContexts();
@@ -2501,7 +2501,8 @@ public MathModel save(MathModel mathModel, String independentSims[]) throws Data
 			xmlHash.put(savedKey, savedMathModelXML);
 		}
 
-		MathModelInfo savedMathModelInfo = new MathModelInfo(savedMathModel.getVersion(),savedMathModel.getMathDescription().getKey(),savedMathModel.createMathModelChildSummary(),VCellSoftwareVersion.fromSystemProperty());
+		Version localTimeVersion = convertVersionToLocalTime(savedMathModel.getVersion());
+		MathModelInfo savedMathModelInfo = new MathModelInfo(localTimeVersion,savedMathModel.getMathDescription().getKey(),savedMathModel.createMathModelChildSummary(),VCellSoftwareVersion.fromSystemProperty());
 		mathModelInfoHash.put(savedKey,savedMathModelInfo);
 		updateGeometryRelatedHashes(savedMathModel.getMathDescription().getGeometry());
 		
@@ -2592,7 +2593,8 @@ public BioModel saveAsNew(BioModel bioModel, java.lang.String newName, String in
 			xmlHash.put(savedKey, savedBioModelXML);
 		}
 
-		BioModelInfo savedBioModelInfo = new BioModelInfo(savedBioModel.getVersion(),savedBioModel.getModel().getKey(),savedBioModel.createBioModelChildSummary(),VCellSoftwareVersion.fromSystemProperty());
+		Version localTimeVersion = convertVersionToLocalTime(savedBioModel.getVersion());
+		BioModelInfo savedBioModelInfo = new BioModelInfo(localTimeVersion,savedBioModel.getModel().getKey(),savedBioModel.createBioModelChildSummary(),VCellSoftwareVersion.fromSystemProperty());
 		bioModelInfoHash.put(savedKey,savedBioModelInfo);
 
 		SimulationContext[] scArr = savedBioModel.getSimulationContexts();
@@ -2679,7 +2681,8 @@ public MathModel saveAsNew(MathModel mathModel, java.lang.String newName, String
 			xmlHash.put(savedKey, savedMathModelXML);
 		}
 
-		MathModelInfo savedMathModelInfo = new MathModelInfo(savedMathModel.getVersion(),savedMathModel.getMathDescription().getKey(),savedMathModel.createMathModelChildSummary(),VCellSoftwareVersion.fromSystemProperty());
+		Version localTimeVersion = convertVersionToLocalTime(savedMathModel.getVersion());
+		MathModelInfo savedMathModelInfo = new MathModelInfo(localTimeVersion,savedMathModel.getMathDescription().getKey(),savedMathModel.createMathModelChildSummary(),VCellSoftwareVersion.fromSystemProperty());
 		mathModelInfoHash.put(savedKey,savedMathModelInfo);
 		
 		updateGeometryRelatedHashes(savedMathModel.getMathDescription().getGeometry());
@@ -3138,7 +3141,8 @@ private void updateGeometryRelatedHashes(Geometry savedGeometry){
 		VCImageInfo savedVCImageInfo = new VCImageInfo(savedVCImage.getVersion(), size, savedVCImage.getExtent(), null,VCellSoftwareVersion.fromSystemProperty());
 		imgInfoHash.put(savedVCImage.getVersion().getVersionKey(),savedVCImageInfo);
 	}
-	GeometryInfo savedGeometryInfo = new GeometryInfo(savedGeometry.getVersion(),savedGeometry.getDimension(),savedGeometry.getExtent(),savedGeometry.getOrigin(),imageRef,VCellSoftwareVersion.fromSystemProperty());
+	Version localTimeVersion = convertVersionToLocalTime(savedGeometry.getVersion());
+	GeometryInfo savedGeometryInfo = new GeometryInfo(localTimeVersion,savedGeometry.getDimension(),savedGeometry.getExtent(),savedGeometry.getOrigin(),imageRef,VCellSoftwareVersion.fromSystemProperty());
 	geoInfoHash.put(savedGeometry.getVersion().getVersionKey(),savedGeometryInfo);
 	
 	fireDatabaseInsert(new DatabaseEvent(this, DatabaseEvent.INSERT, null, geoInfoHash.get(savedGeometry.getVersion().getVersionKey())));
