@@ -80,9 +80,13 @@ public class VCellBasicCellRenderer extends javax.swing.tree.DefaultTreeCellRend
 	protected javax.swing.Icon fieldFolderOpenErrorIcon = null;
 	protected javax.swing.Icon fieldFolderOpenWarningIcon = null;
 	protected javax.swing.Icon fieldFolderClosedIcon = null;
+	protected javax.swing.Icon fieldFolderSelfIcon = null;
 	protected javax.swing.Icon fieldFolderUserIcon = null;
 	protected javax.swing.Icon fieldFolderSharedIcon = null;
 	protected javax.swing.Icon fieldFolderPublicIcon = null;
+	protected javax.swing.Icon fieldFolderWeakPublicIcon = null;
+	protected javax.swing.Icon fieldFolderPublishedIcon = null;
+	protected javax.swing.Icon fieldFolderCuratedIcon = null;
 	protected javax.swing.Icon fieldFolderClosedErrorIcon = null;
 	protected javax.swing.Icon fieldFolderClosedWarningIcon = null;
 	protected java.awt.Font selectedFont = null;
@@ -93,8 +97,8 @@ public class VCellBasicCellRenderer extends javax.swing.tree.DefaultTreeCellRend
  */
 public VCellBasicCellRenderer() {
 	super();
-	fieldMathModelIcon = new ImageIcon(getClass().getResource("/images/math_16x16.gif"));
-	fieldBioModelIcon = new ImageIcon(getClass().getResource("/images/bioModel_16x16.gif"));
+	fieldMathModelIcon = new ImageIcon(getClass().getResource("/icons/mathModel.png"));
+	fieldBioModelIcon = new ImageIcon(getClass().getResource("/icons/biomodel.png"));
 	fieldBioModelErrorIcon = new ImageIcon(getClass().getResource("/images/bioModelError_16x16.gif"));
 	fieldBioModelWarningIcon = new ImageIcon(getClass().getResource("/images/bioModelWarning_16x16.gif"));
 	fieldGeometryIcon = new ImageIcon(getClass().getResource("/images/geometry2_16x16.gif"));
@@ -112,9 +116,13 @@ public VCellBasicCellRenderer() {
 	fieldFolderOpenIcon = new ImageIcon(getClass().getResource("/images/closedFolder_16x16.gif"));
 	fieldFolderOpenErrorIcon = new ImageIcon(getClass().getResource("/images/closedFolderError_16x16.gif"));
 	fieldFolderOpenWarningIcon = new ImageIcon(getClass().getResource("/images/closedFolderWarning_16x16.gif"));
+	fieldFolderSelfIcon = new ImageIcon(getClass().getResource("/icons/selfFolder.png"));
 	fieldFolderUserIcon = new ImageIcon(getClass().getResource("/icons/userFolder.png"));
 	fieldFolderSharedIcon = new ImageIcon(getClass().getResource("/icons/sharedFolder.png"));
-	fieldFolderPublicIcon = new ImageIcon(getClass().getResource("/icons/publicFolder.png"));
+	fieldFolderPublicIcon = new ImageIcon(getClass().getResource("/icons/publicFolder2.png"));
+	fieldFolderWeakPublicIcon = new ImageIcon(getClass().getResource("/icons/publicFolder.png"));
+	fieldFolderPublishedIcon = new ImageIcon(getClass().getResource("/icons/publishedFolder.png"));
+	fieldFolderCuratedIcon = new ImageIcon(getClass().getResource("/icons/curatedFolder.png"));
 }
 
 
