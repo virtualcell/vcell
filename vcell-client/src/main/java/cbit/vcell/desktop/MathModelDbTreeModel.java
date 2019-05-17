@@ -259,6 +259,7 @@ public void databaseInsert(DatabaseEvent databaseEvent) {
 				//
 				parentNode.insert(newVersionNode,0); // !!!!!!!!!! right now ignore order !!!!!!!!!!
 				insertNodeInto(newVersionNode,parentNode,0);
+				nodeStructureChanged(parentNode);
 			}
 		} catch (DataAccessException e){
 			e.printStackTrace(System.out);
