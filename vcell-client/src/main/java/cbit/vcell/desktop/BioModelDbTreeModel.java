@@ -14,6 +14,7 @@ import java.util.TreeMap;
 import java.util.Vector;
 
 import javax.swing.JTree;
+import javax.swing.tree.TreePath;
 
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.BioModelInfo;

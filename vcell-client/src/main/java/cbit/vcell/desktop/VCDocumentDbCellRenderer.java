@@ -67,7 +67,7 @@ public java.awt.Component getTreeCellRendererComponent(JTree tree, Object value,
 			setText(getText() + " (" + node.getChildCount() + ")");
 		}
 		if(userObject instanceof User && sessionUser != null && ((User)userObject).compareEqual(sessionUser)) {
-			setIcon(fieldFolderSelfIcon);
+			setIcon(fieldFolderSelfIcon);	// My BioModels / My MathModels / My Geometries folders (with a little locker)
 		}
 		else if(
 			VCDocumentDbTreeModel.SHARED_BIO_MODELS.equals(userObject) ||
@@ -98,8 +98,8 @@ public java.awt.Component getTreeCellRendererComponent(JTree tree, Object value,
 		else if(userObject instanceof VCDocumentInfoNode) {
 			VCDocumentInfoNode infonode = (VCDocumentInfoNode)userObject;
 			User nodeUser = infonode.getVCDocumentInfo().getVersion().getOwner();
-			String modelName = infonode.getVCDocumentInfo().getVersion().getName();
-			String username = nodeUser.getName();
+//			String modelName = infonode.getVCDocumentInfo().getVersion().getName();
+//			String username = nodeUser.getName();
 			if(sessionUser != null && nodeUser.compareEqual(sessionUser)) {
 				if(!node.isRoot() && node.getParent() instanceof BioModelNode) {
 					BioModelNode parent = (BioModelNode) node.getParent();

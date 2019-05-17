@@ -52,7 +52,7 @@ public java.awt.Component getTreeCellRendererComponent(JTree tree, Object value,
 				qualifier = "<font color=\""+colorString+"\">" + label + "</font>"; 
 			}
 			component.setToolTipText(label);
-			component.setText("<html><b>" + qualifier + "</b>" + " (" + node.getChildCount() + ")" + "</html>");
+			component.setText("<html>" + qualifier + " (" + node.getChildCount() + ")" + "</html>");
 			component.setIcon(fieldFolderUserIcon);
 		} else if (value instanceof BioModelNode) {
 			BioModelNode node = (BioModelNode) value;
@@ -80,14 +80,13 @@ public java.awt.Component getTreeCellRendererComponent(JTree tree, Object value,
 				String username = nodeUser.getName();
 				if (username.equals(VCDocumentDbTreeModel.USER_tutorial)
 						|| username.equals(VCDocumentDbTreeModel.USER_Education)) {
-					setText(modelName);
+					setText(modelName);		// keep it simple for Education and Tutorial
 				} else if(nodeUser.compareEqual(sessionUser)) {
 					Object pNode  = node.getParent();
 					if(pNode instanceof BioModelNode) {
 						BioModelNode parent = (BioModelNode) pNode;
-						// TODO: do this differently
-						if(parent.getUserObject() instanceof String) {
-							String str = (String)parent.getUserObject();
+						if(parent.getUserObject() instanceof String) {		// the Published, Curated and Other folders are the only
+							String str = (String)parent.getUserObject();	// ones where the user object is a String
 							if(str.equals(VCDocumentDbTreeModel.Published_MathModels) 
 									|| str.equals(VCDocumentDbTreeModel.Curated_MathModels)
 									|| str.equals(VCDocumentDbTreeModel.Other_MathModels)) {
@@ -95,21 +94,32 @@ public java.awt.Component getTreeCellRendererComponent(JTree tree, Object value,
 								String suffix = sel ? "" : "</span>";
 								setText("<html><b>" + prefix + nodeUser.getName() + suffix + "</b>  : " + modelName + "</html>");
 							} else {
-								setText(modelName);
+								setText(modelName);	// unreachable
 							}
 						} else {
-							setText(modelName);
+							String str = modelName;
+							if(node.getChildCount() > 1) {
+								String prefix = sel ? "" : "<span style=\"color:#8B0000\">";
+								String suffix = sel ? "" : "</span>";
+								str += prefix + " (" + node.getChildCount() + ")" + suffix;
+							}
+							setText("<html>" + str + "</html>");
 						}
 					} else {
-						setText(modelName);
+						setText(modelName);			// unreachable
 					}
 				} else {
 					Object pNode  = node.getParent();
-					if(pNode instanceof UserNameNode) {		// if we are inside an UserName folder, don't prefix again the model
-															// with the user name
-						setText("<html>" + modelName + "</html>");
+					if(pNode instanceof UserNameNode) {		// if we are inside an UserName folder (like Shared or Uncurated public),
+						String str = modelName;				// don't prefix again the model with the user name
+						if(node.getChildCount() > 1) {
+							String prefix = sel ? "" : "<span style=\"color:#8B0000\">";
+							String suffix = sel ? "" : "</span>";
+							str += prefix + " (" + node.getChildCount() + ")" + suffix;
+						}
+						setText("<html>" + str + "</html>");
 					} else {
-						setText("<html><b>" + nodeUser.getName() + " </b> : " + modelName + "</html>");
+						setText("<html><b>" + nodeUser.getName() + " </b> : " + modelName + "</html>");	// content of "Published" folder
 					}
 				}
 			}

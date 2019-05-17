@@ -490,6 +490,11 @@ public void refreshTree() {
 		rootNode.removeAllChildren();
 	}
 	nodeStructureChanged(rootNode);
+	
+	if(allPublicModelsNode != null) {
+		TreePath path = new TreePath(allPublicModelsNode.getPath());
+		getOwnerTree().expandPath(path);
+	}
 }
 /**
  * Insert the method's description here.
@@ -564,6 +569,13 @@ public void updateConnectionStatus(ConnectionStatus connStatus) {
 	}
 }
 
+protected BioModelNode getPublicNode() {
+	return allPublicModelsNode;
+}
+protected JTree getOwnerTree() {
+	return ownerTree;
+}
+
 private BioModelNode findNode(BioModelNode node, VCDocumentInfo vcDocumentInfo) {	
 	Object userObject = node.getUserObject();
 	if (userObject instanceof VCDocumentInfoNode && ((VCDocumentInfoNode)userObject).getVCDocumentInfo() == vcDocumentInfo) {
@@ -571,7 +583,6 @@ private BioModelNode findNode(BioModelNode node, VCDocumentInfo vcDocumentInfo) 
 			return node;
 		}
 	}
-	
 	for (int i = 0; i < node.getChildCount(); i ++){
 		BioModelNode child = (BioModelNode)node.getChildAt(i);
 		BioModelNode matchNode = findNode(child, vcDocumentInfo);
