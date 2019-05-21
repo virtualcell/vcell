@@ -11,6 +11,7 @@
 package cbit.vcell.desktop;
 import java.math.BigDecimal;
 
+import javax.swing.JLabel;
 import javax.swing.JTree;
 
 import org.vcell.util.document.GroupAccess;
@@ -44,6 +45,7 @@ public final void setSessionUser(User sessionUser) {
 
 public java.awt.Component getTreeCellRendererComponent(JTree tree, Object value, boolean sel, boolean expanded, boolean leaf, int row, boolean hasFocus) {
 	super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
+
 	if (value instanceof BioModelNode) {
 		BioModelNode node = (BioModelNode) value;
 		Object userObject = node.getUserObject();
@@ -108,15 +110,26 @@ public java.awt.Component getTreeCellRendererComponent(JTree tree, Object value,
 						// we are inside My BioModels or My MathModels folder, all models here are ours
 						// each of them has at least one version
 						boolean bPublished = false;
+						boolean bCurated = false;
 						boolean bPublic = false;
 						boolean bShared = false;
+						boolean bError = false;
 						for (int i = 0; i < node.getChildCount(); i++) {	// check all versions
 							BioModelNode versionBioModelNode = (BioModelNode)node.getChildAt(i);
 							VCDocumentInfo versionVCDocumentInfo = (VCDocumentInfo) versionBioModelNode.getUserObject();
 							BigDecimal groupid = versionVCDocumentInfo.getVersion().getGroupAccess().getGroupid();
-							if(versionVCDocumentInfo.getVersion().getFlag().compareEqual(VersionFlag.Published)) {
-								bPublished = true;
-								break;		// published has highest precedence
+							if(versionVCDocumentInfo.getPublicationInfos() != null && versionVCDocumentInfo.getPublicationInfos().length > 0) {
+								if(versionVCDocumentInfo.getVersion().getFlag().compareEqual(VersionFlag.Published)) {
+									bPublished = true;
+								} else {
+									bCurated = true;
+								}
+							} else {
+								if(versionVCDocumentInfo.getVersion().getFlag().compareEqual(VersionFlag.Published)) {
+									// error - we can't have published flag with no publication info whatsoever
+									bError = true;
+									break;
+								}
 							}
 							if(groupid.equals(GroupAccess.GROUPACCESS_ALL)) {
 								bPublic = true;
@@ -126,8 +139,12 @@ public java.awt.Component getTreeCellRendererComponent(JTree tree, Object value,
 								bShared = true;
 							}
 						}
-						if(bPublished) {
+						if(bError) {
+							setIcon(fieldFolderWarningIcon);
+						} else if(bPublished) {
 							setIcon(fieldFolderPublishedIcon);
+						} else if(bCurated) {
+							setIcon(fieldFolderCuratedIcon);
 						} else if(bPublic) {
 							setIcon(fieldFolderWeakPublicIcon);
 						} else if(bShared) {

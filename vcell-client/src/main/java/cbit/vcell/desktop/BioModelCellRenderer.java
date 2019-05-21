@@ -102,10 +102,18 @@ public java.awt.Component getTreeCellRendererComponent(JTree tree, Object value,
 				component.setText(label);
 			}else if(userObject instanceof BioModelInfo) {
 				BioModelInfo biomodelInfo = (BioModelInfo)userObject;
-				if(biomodelInfo.getVersion().getFlag().compareEqual(org.vcell.util.document.VersionFlag.Archived)){
+				if(biomodelInfo.getPublicationInfos() != null && biomodelInfo.getPublicationInfos().length > 0) {
+					if(biomodelInfo.getVersion().getFlag().compareEqual(org.vcell.util.document.VersionFlag.Published)) {
+						component.setText("(Published) "+component.getText());
+					} else {
+						component.setText("(Curated) "+component.getText());
+					}
+				} else if(biomodelInfo.getVersion().getFlag().compareEqual(org.vcell.util.document.VersionFlag.Archived)) {
 					component.setText("(Archived) "+component.getText());
-				}else if(biomodelInfo.getVersion().getFlag().compareEqual(org.vcell.util.document.VersionFlag.Published)){
-					component.setText("(Published) "+component.getText());
+				}
+				String str = component.getToolTipText();
+				if(str != null && !str.isEmpty()) {
+					component.setToolTipText(str + " " + biomodelInfo.getVersion().getVersionKey());
 				}
 			}else if (userObject instanceof Geometry) {
 				Geometry geo = (Geometry)userObject;
