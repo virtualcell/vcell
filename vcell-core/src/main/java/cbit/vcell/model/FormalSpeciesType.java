@@ -10,13 +10,14 @@
 
 package cbit.vcell.model;
 
+import java.io.Serializable;
 
 /**
  * Insert the type's description here.
  * Creation date: (2/25/2003 3:22:05 PM)
  * @author: Frank Morgan
  */
-public class FormalSpeciesType implements java.io.Serializable{
+public class FormalSpeciesType implements Serializable{
 	
 	private int type;
 	    
