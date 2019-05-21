@@ -1481,7 +1481,6 @@ public static VCInfoContainer getVCInfoContainer(User user,Connection con, Datab
 
 
 public static void addPublicationInfos(Connection con,Statement stmt,Vector<VersionInfo> mm_and_bm_VersionInfos) throws SQLException,DataAccessException{
-	StringBuffer publicationSB = new StringBuffer();
 	TreeMap<Long, VersionInfo> mapModelIdToVersionInfo = new TreeMap<>(new Comparator<Long>() {
 		@Override
 		public int compare(Long o1, Long o2) {
@@ -1489,13 +1488,7 @@ public static void addPublicationInfos(Connection con,Statement stmt,Vector<Vers
 		}
 	});
 	for (int i = 0; i < mm_and_bm_VersionInfos.size(); i++) {
-		if(mm_and_bm_VersionInfos.get(i).getVersion().getFlag().isPublished()) {
-			publicationSB.append((publicationSB.length()==0?"":",")+mm_and_bm_VersionInfos.get(i).getVersion().getVersionKey().toString());
 			mapModelIdToVersionInfo.put(Long.parseLong(mm_and_bm_VersionInfos.get(i).getVersion().getVersionKey().toString()), mm_and_bm_VersionInfos.get(i));
-		}
-	}
-	if(publicationSB.length() == 0) {
-		return;
 	}
 	//
 	//PublicationInfos
@@ -1508,14 +1501,14 @@ public static void addPublicationInfos(Connection con,Statement stmt,Vector<Vers
 			" where"+
 			" vc_biomodel.id=vc_publicationmodellink.biomodelref and vc_userinfo.id=vc_biomodel.ownerref"+
 			" and vc_publication.id=vc_publicationmodellink.pubref and vc_publicationmodellink.pubref is not null"+
-			" and vc_publicationmodellink.biomodelref is not null and vc_publicationmodellink.biomodelref in ("+publicationSB.toString()+")"+
+			" and vc_publicationmodellink.biomodelref is not null"+
 			" UNION ALL" +
 			" select vc_publication.*,'mm' "+DOCTYPE_COL+",vc_mathmodel.id "+DOCID_COL+",vc_mathmodel.ownerref,vc_userinfo.userid"+
 			" from vc_publication,vc_publicationmodellink,vc_mathmodel,vc_userinfo" +
 			" where"+
 			" vc_mathmodel.id=vc_publicationmodellink.mathmodelref and vc_userinfo.id=vc_mathmodel.ownerref"+
 			" and vc_publication.id=vc_publicationmodellink.pubref and vc_publicationmodellink.pubref is not null"+
-			" and vc_publicationmodellink.mathmodelref is not null and vc_publicationmodellink.mathmodelref in ("+publicationSB.toString()+")");
+			" and vc_publicationmodellink.mathmodelref is not null");
 	System.out.println(sql);
 	ResultSet rset = null;
 	try {
