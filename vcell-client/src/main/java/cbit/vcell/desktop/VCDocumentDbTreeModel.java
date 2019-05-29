@@ -199,7 +199,7 @@ protected synchronized static void initFinalTree(VCDocumentDbTreeModel vcDocumen
 		for (int c = 0; c < userNode.getChildCount(); c++) {	// we just navigate through all of them, remove none
 			BioModelNode childNode = (BioModelNode) userNode.getChildAt(c);
 //			VCDocumentInfoNode vcdDocumentInfoNode = (VCDocumentInfoNode) childNode.getUserObject();
-//			System.out.println(vcdDocumentInfoNode.getVCDocumentInfo().getVersion().getName());
+//			String name = vcdDocumentInfoNode.getVCDocumentInfo().getVersion().getName();
 			
 			if (!bSpecificUser) {
 				parentNode = vcDocumentDbTreeModel.otherModelsNode;		// ******* Other Public folder *******
@@ -227,7 +227,8 @@ protected synchronized static void initFinalTree(VCDocumentDbTreeModel vcDocumen
 					}
 				}
 			} else {		// anything belonging to users Education, Tutorial or modelBricks go to their own folders
-				parentNode.add(childNode);
+				BioModelNode clone = BioModelNode.deepClone(childNode);
+				parentNode.add(clone);
 			}
 		}
 		
