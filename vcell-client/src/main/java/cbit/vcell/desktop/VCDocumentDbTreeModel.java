@@ -26,6 +26,7 @@ import org.vcell.util.DataAccessException;
 import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.GroupAccess;
 import org.vcell.util.document.MathModelInfo;
+import org.vcell.util.document.PublicationInfo;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCDocumentInfo;
 import org.vcell.util.document.Version;
@@ -269,18 +270,18 @@ protected synchronized static void initFinalTree(VCDocumentDbTreeModel vcDocumen
 		}
 		// -------------------------------------------- published folder ------------------------------------------------
 
-								//		(username.contentEquals("CMC") || username.contentEquals("eungdamr") || username.contentEquals("Leon"))
-		//Populate 'Published' models tree node
-		if(username.contentEquals("dantest")) {
-			System.out.println("dantest");
-		}
+//		(username.contentEquals("CMC") || username.contentEquals("eungdamr") || username.contentEquals("Leon"))
+//		if(username.contentEquals("boris") && vcDocumentDbTreeModel instanceof MathModelDbTreeModel) {
+//			System.out.println("boris");
+//		}
 		for (int c = 0; c < userNode.getChildCount();) {
 			BioModelNode versionableNode = (BioModelNode) userNode.getChildAt(c);
 			//Search through versions of BM/MM to see if any are published
 			for (int i = 0; i < versionableNode.getChildCount(); ) {
 				BioModelNode versionBioModelNode = (BioModelNode)versionableNode.getChildAt(i);
 				VCDocumentInfo versionVCDocumentInfo = (VCDocumentInfo) versionBioModelNode.getUserObject();
-				if(	versionVCDocumentInfo.getPublicationInfos() != null && versionVCDocumentInfo.getPublicationInfos().length > 0) {
+				PublicationInfo[] pi = versionVCDocumentInfo.getPublicationInfos();
+				if(	pi != null && pi.length > 0) {
 					//Make new node
 					BioModelNode newPublishedNode = new BioModelNode(new VCDocumentInfoNode(versionVCDocumentInfo), true);
 					newPublishedNode.add(versionBioModelNode);
