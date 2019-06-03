@@ -8,9 +8,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.jgrapht.EdgeFactory;
-import org.jgrapht.UndirectedGraph;
 import org.jgrapht.alg.isomorphism.VF2GraphIsomorphismInspector;
+import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.graph.SimpleGraph;
 import org.vcell.model.bngl.BNGLParser;
 import org.vcell.util.Pair;
@@ -32,31 +31,30 @@ public class SpeciesGraphIsomorphismInspector {
 			return name;
 		}
 	}
-	static class BNGEdge {
-		BNGVertex sourceVertex;
-		BNGVertex targetVertex;
+	public static class BNGEdge extends DefaultEdge{
 		String name;
-		public BNGEdge(BNGVertex sourceVertex, BNGVertex targetVertex) {
-			this.sourceVertex = sourceVertex;
-			this.targetVertex = targetVertex;
-			//
-			// sort edge name (because it should be undirected)
-			//
-			String name1 = sourceVertex.getName();
-			String name2 = targetVertex.getName();
-			if (name1.compareTo(name2)<0){
-				this.name = name1+"_"+name2;
-			}else{
-				this.name = name2+"_"+name1;
-			}
-		}
+//		public BNGEdge() {
+//			super();
+//		}
 		public String getName(){
+			if(this.name == null) {
+				//
+				// sort edge name (because it should be undirected)
+				//
+				String name1 = ((BNGVertex)getSource()).getName();
+				String name2 = ((BNGVertex)getTarget()).getName();
+				if (name1.compareTo(name2)<0){
+					this.name = name1+"_"+name2;
+				}else{
+					this.name = name2+"_"+name1;
+				}
+			}
 			return this.name;
 		}
 		
 	}
 	
-	public UndirectedGraph<BNGVertex, BNGEdge> initialize(BNGSpecies bngSpecies) {
+	public SimpleGraph<BNGVertex, BNGEdge> initialize(BNGSpecies bngSpecies) {
 		List<BNGSpecies> bngSpeciesList = new ArrayList<>(); 
 		if(bngSpecies instanceof BNGComplexSpecies) {
 			bngSpeciesList.addAll(Arrays.asList(bngSpecies.parseBNGSpeciesName()));
@@ -64,15 +62,7 @@ public class SpeciesGraphIsomorphismInspector {
 			bngSpeciesList.add(bngSpecies);		// if it's a simple species to begin with we'll only have one element in this list
 		}
 		
-		EdgeFactory<BNGVertex, BNGEdge> edgeFactory = new EdgeFactory<BNGVertex, BNGEdge>() {
-			@Override
-			public BNGEdge createEdge(
-					BNGVertex sourceVertex,
-					BNGVertex targetVertex) {
-				return new BNGEdge(sourceVertex,targetVertex);
-			}
-		};
-		UndirectedGraph<BNGVertex, BNGEdge> speciesGraph = new SimpleGraph<BNGVertex, BNGEdge>(edgeFactory);
+		SimpleGraph<BNGVertex, BNGEdge> speciesGraph = new SimpleGraph<BNGVertex, BNGEdge>(BNGEdge.class);
 		Map <Integer, Pair<BNGVertex, BNGVertex>> bondMap = new LinkedHashMap<>();
 		for(BNGSpecies ss : bngSpeciesList) {
 			// must be multi state (actually multi-site!), we have at least 2 components (sites): RbmUtils.SiteStruct and RbmUtils.SiteProduct
@@ -125,8 +115,8 @@ public class SpeciesGraphIsomorphismInspector {
 	}
 
 	public boolean isIsomorphism(BNGSpecies ours, BNGSpecies theirs) {
-		UndirectedGraph<BNGVertex, BNGEdge> ourGraph = initialize(ours);
-		UndirectedGraph<BNGVertex, BNGEdge> theirGraph = initialize(theirs);
+		SimpleGraph<BNGVertex, BNGEdge> ourGraph = initialize(ours);
+		SimpleGraph<BNGVertex, BNGEdge> theirGraph = initialize(theirs);
 		Comparator<BNGVertex> vertexComparator = new Comparator<BNGVertex>() {
 
 			@Override
