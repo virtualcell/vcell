@@ -87,6 +87,7 @@ public class VCellBasicCellRenderer extends javax.swing.tree.DefaultTreeCellRend
 	protected javax.swing.Icon fieldFolderWeakPublicIcon = null;
 	protected javax.swing.Icon fieldFolderPublishedIcon = null;
 	protected javax.swing.Icon fieldFolderCuratedIcon = null;
+	protected javax.swing.Icon fieldFolderBricksIcon = null;
 	protected javax.swing.Icon fieldFolderWarningIcon = null;
 	protected javax.swing.Icon fieldFolderClosedErrorIcon = null;
 	protected javax.swing.Icon fieldFolderClosedWarningIcon = null;
@@ -119,11 +120,12 @@ public VCellBasicCellRenderer() {
 	fieldFolderOpenWarningIcon = new ImageIcon(getClass().getResource("/images/closedFolderWarning_16x16.gif"));
 	fieldFolderSelfIcon = new ImageIcon(getClass().getResource("/icons/selfFolder.png"));
 	fieldFolderUserIcon = new ImageIcon(getClass().getResource("/icons/userFolder.png"));
-	fieldFolderSharedIcon = new ImageIcon(getClass().getResource("/icons/sharedFolder.png"));
+	fieldFolderSharedIcon = new ImageIcon(getClass().getResource("/icons/sharedFolder2.png"));
 	fieldFolderPublicIcon = new ImageIcon(getClass().getResource("/icons/publicFolder2.png"));
 	fieldFolderWeakPublicIcon = new ImageIcon(getClass().getResource("/icons/publicFolder.png"));
 	fieldFolderPublishedIcon = new ImageIcon(getClass().getResource("/icons/publishedFolder.png"));
 	fieldFolderCuratedIcon = new ImageIcon(getClass().getResource("/icons/curatedFolder.png"));
+	fieldFolderBricksIcon = new ImageIcon(getClass().getResource("/icons/bricksFolder.png"));
 	fieldFolderWarningIcon = new ImageIcon(getClass().getResource("/icons/warningFolder.png"));
 }
 

@@ -28,6 +28,11 @@ public class BioModelNode extends javax.swing.tree.DefaultMutableTreeNode {
 			super(userObject, allowsChildren);
 		}
 	}
+	public static class PublicationInfoNode extends BioModelNode {
+		public PublicationInfoNode(Object userObject, boolean allowsChildren) {
+			super(userObject, allowsChildren);
+		}
+	}
 	
 	private Hashtable<String, Object> renderHintHash = new Hashtable<String, Object>();
 

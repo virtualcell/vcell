@@ -9,12 +9,17 @@
  */
 
 package cbit.vcell.desktop;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+
 import javax.swing.JLabel;
 import javax.swing.JTree;
 
 import org.vcell.util.document.MathModelInfo;
+import org.vcell.util.document.PublicationInfo;
 import org.vcell.util.document.User;
 
+import cbit.vcell.desktop.BioModelNode.PublicationInfoNode;
 import cbit.vcell.desktop.BioModelNode.UserNameNode;
  
 @SuppressWarnings("serial")
@@ -54,6 +59,33 @@ public java.awt.Component getTreeCellRendererComponent(JTree tree, Object value,
 			component.setToolTipText(label);
 			component.setText("<html>" + qualifier + " (" + node.getChildCount() + ")" + "</html>");
 			component.setIcon(fieldFolderUserIcon);
+		} else if(value instanceof PublicationInfoNode) {
+			BioModelNode node = (PublicationInfoNode)value;
+			PublicationInfo pi = (PublicationInfo) node.getUserObject();
+			String label = pi.getTitle();
+			String name = pi.getAuthors()[0];
+			if(name.contains(",")) {
+				name = name.substring(0, name.indexOf(","));
+			}
+			int year = Integer.parseInt((new SimpleDateFormat("yyyy")).format(pi.getPubDate()));
+			String label2 = name + " " + year + " " + label;
+			int maxLen = MaxPublicationLabelLength + (node.getChildCount() > 1 ? 0 : 4);
+			if(label2.length() > maxLen) {
+				label2 = label2.substring(0, maxLen) + "...";
+			}
+			if(node.getChildCount() > 1) {
+				String prefix = sel ? "" : "<span style=\"color:#8B0000\">";
+				String suffix = sel ? "" : "</span>";
+				label += prefix + " (" + node.getChildCount() + ")" + suffix;
+				label2 += prefix + " (" + node.getChildCount() + ")" + suffix;
+			}
+			component.setText("<html>" + label2 + "</html>");			
+			component.setToolTipText("<html>" + label + "</html>");
+			if(pi.getPubDate().compareTo(Calendar.getInstance().getTime()) > 0) {	// sanity check
+				setIcon(fieldFolderWarningIcon);
+			} else if(pi.getDoi() == null) {
+				setIcon(fieldFolderWarningIcon);
+			}
 		} else if (value instanceof BioModelNode) {
 			BioModelNode node = (BioModelNode) value;
 			Object userObject = node.getUserObject();

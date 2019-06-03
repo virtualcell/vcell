@@ -12,13 +12,17 @@ package cbit.vcell.desktop;
 
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.TreeMap;
 import java.util.Vector;
 
 import javax.swing.JTree;
+import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 
@@ -37,6 +41,7 @@ import cbit.vcell.client.server.ConnectionStatus;
 import cbit.vcell.client.task.CommonTask;
 import cbit.vcell.clientdb.DatabaseListener;
 import cbit.vcell.clientdb.DocumentManager;
+import cbit.vcell.desktop.BioModelNode.PublicationInfoNode;
 import cbit.vcell.desktop.BioModelNode.UserNameNode;
 import cbit.vcell.desktop.VCellBasicCellRenderer.VCDocumentInfoNode;
 import cbit.vcell.geometry.GeometryInfo;
@@ -164,6 +169,13 @@ protected synchronized static void initFinalTree(VCDocumentDbTreeModel vcDocumen
 //		ownerNode.add(childNode);
 //	}
 
+	// key is DOI, value is the list of model nodes associated with the PublicationInfo object
+	LinkedHashMap<String, LinkedList<BioModelNode>> publishedModelsMap = new LinkedHashMap<>();
+	LinkedHashMap<String, LinkedList<BioModelNode>> curatedModelsMap = new LinkedHashMap<>();
+	
+	// key is DOI, value is a PublicationInfo instance associated to the DOI
+	LinkedHashMap<String, PublicationInfo> publicationsMap = new LinkedHashMap<>();
+	
 	vcDocumentDbTreeModel.sharedModelsNode.removeAllChildren();
 		
 	boolean bTutorial = vcDocumentDbTreeModel.tutorialModelsNode != null;
@@ -180,7 +192,7 @@ protected synchronized static void initFinalTree(VCDocumentDbTreeModel vcDocumen
 	if(bCurated){vcDocumentDbTreeModel.curatedModelsNode.removeAllChildren();}
 	if(bOther){vcDocumentDbTreeModel.otherModelsNode.removeAllChildren();}
 	
-	for (String username : treeMap.keySet()) {
+	for (String username : treeMap.keySet()) {								// iterate through all users
 		BioModelNode userNode = treeMap.get(username);
 		BioModelNode parentNode = vcDocumentDbTreeModel.sharedModelsNode;	// initialize to something
 		boolean bSpecificUser = true;
@@ -275,30 +287,139 @@ protected synchronized static void initFinalTree(VCDocumentDbTreeModel vcDocumen
 //		if(username.contentEquals("boris") && vcDocumentDbTreeModel instanceof MathModelDbTreeModel) {
 //			System.out.println("boris");
 //		}
-		for (int c = 0; c < userNode.getChildCount();) {
+//		for (int c = 0; c < userNode.getChildCount();) {
+//			BioModelNode versionableNode = (BioModelNode) userNode.getChildAt(c);
+//			//Search through versions of BM/MM to see if any are published
+//			for (int i = 0; i < versionableNode.getChildCount(); ) {
+//				BioModelNode versionBioModelNode = (BioModelNode)versionableNode.getChildAt(i);
+//				VCDocumentInfo versionVCDocumentInfo = (VCDocumentInfo) versionBioModelNode.getUserObject();
+//				PublicationInfo[] pi = versionVCDocumentInfo.getPublicationInfos();
+//				if(	pi != null && pi.length > 0) {
+//					//Make new node
+//					BioModelNode newPublishedNode = new BioModelNode(new VCDocumentInfoNode(versionVCDocumentInfo), true);
+//					newPublishedNode.add(versionBioModelNode);
+//					if(versionVCDocumentInfo.getVersion().getFlag().compareEqual(org.vcell.util.document.VersionFlag.Published)) {
+//						vcDocumentDbTreeModel.publishedModelsNode.add(newPublishedNode);
+//					} else {
+//						vcDocumentDbTreeModel.curatedModelsNode.add(newPublishedNode);
+//					}
+//				} else {
+//					versionableNode.remove(i);
+//				}
+//			}
+//			userNode.remove(c);
+//		}
+		
+		for (int c = 0; c < userNode.getChildCount(); ) {
 			BioModelNode versionableNode = (BioModelNode) userNode.getChildAt(c);
 			//Search through versions of BM/MM to see if any are published
-			for (int i = 0; i < versionableNode.getChildCount(); ) {
+			for (int i = 0; i < versionableNode.getChildCount(); ) {	// the versions
 				BioModelNode versionBioModelNode = (BioModelNode)versionableNode.getChildAt(i);
 				VCDocumentInfo versionVCDocumentInfo = (VCDocumentInfo) versionBioModelNode.getUserObject();
-				PublicationInfo[] pi = versionVCDocumentInfo.getPublicationInfos();
-				if(	pi != null && pi.length > 0) {
-					//Make new node
-					BioModelNode newPublishedNode = new BioModelNode(new VCDocumentInfoNode(versionVCDocumentInfo), true);
-					newPublishedNode.add(versionBioModelNode);
-					if(versionVCDocumentInfo.getVersion().getFlag().compareEqual(org.vcell.util.document.VersionFlag.Published)) {
-						vcDocumentDbTreeModel.publishedModelsNode.add(newPublishedNode);
-					} else {
-						vcDocumentDbTreeModel.curatedModelsNode.add(newPublishedNode);
+				PublicationInfo[] piArray = versionVCDocumentInfo.getPublicationInfos();
+				if(	piArray != null && piArray.length > 0) {
+					for(PublicationInfo pi : piArray) {
+						String key = pi.getDoi();
+						if(key == null) {
+							System.err.println("Null DOI in PublicationInfo " + username + ", " + pi.getTitle());
+							key = pi.getTitle();
+//							continue;
+						}
+						if(!publicationsMap.containsKey(key)) {
+							publicationsMap.put(key, pi);
+						}
+						if(versionVCDocumentInfo.getVersion().getFlag().compareEqual(org.vcell.util.document.VersionFlag.Published)) {
+							// published
+							LinkedList<BioModelNode> modelsList;
+							if(publishedModelsMap.containsKey(key)) {
+								modelsList = publishedModelsMap.get(key);
+							} else {
+								modelsList = new LinkedList<> ();
+							}
+							BioModelNode newPublishedNode = new BioModelNode(new VCDocumentInfoNode(versionVCDocumentInfo), true);
+							BioModelNode clonedNode = versionBioModelNode.clone();
+							newPublishedNode.add(clonedNode);
+							modelsList.add(newPublishedNode);
+							publishedModelsMap.put(key, modelsList);
+							
+						} else {
+							// curated
+							LinkedList<BioModelNode> modelsList;
+							if(curatedModelsMap.containsKey(key)) {
+								modelsList = curatedModelsMap.get(key);
+							} else {
+								modelsList = new LinkedList<> ();
+							}
+							BioModelNode newCuratedNode = new BioModelNode(new VCDocumentInfoNode(versionVCDocumentInfo), true);
+							BioModelNode clonedNode = versionBioModelNode.clone();
+							newCuratedNode.add(clonedNode);
+							modelsList.add(newCuratedNode);
+							curatedModelsMap.put(key, modelsList);
+						}
 					}
-				} else {
-					versionableNode.remove(i);
 				}
+				versionableNode.remove(i);
 			}
 			userNode.remove(c);
 		}
 	}
+	
+	for(String key : publishedModelsMap.keySet()) {
+		LinkedList<BioModelNode> modelsList = publishedModelsMap.get(key);
+		PublicationInfo pi = publicationsMap.get(key);
+		BioModelNode newPublicationNode = new BioModelNode.PublicationInfoNode(pi, true);
+		for(BioModelNode node : modelsList) {
+			newPublicationNode.add(node);
+		}
+		vcDocumentDbTreeModel.publishedModelsNode.add(newPublicationNode);
+	}
+	for(String key : curatedModelsMap.keySet()) {
+		LinkedList<BioModelNode> modelsList = curatedModelsMap.get(key);
+		PublicationInfo pi = publicationsMap.get(key);
+		BioModelNode newCurationNode = new BioModelNode.PublicationInfoNode(pi, true);
+		for(BioModelNode node : modelsList) {
+			newCurationNode.add(node);
+		}
+		vcDocumentDbTreeModel.curatedModelsNode.add(newCurationNode);
+	}
+//	vcDocumentDbTreeModel.publishedModelsNode = shallowSortByPublication(vcDocumentDbTreeModel.publishedModelsNode);
+//	vcDocumentDbTreeModel.curatedModelsNode = shallowSortByPublication(vcDocumentDbTreeModel.curatedModelsNode);
 }
+private static BioModelNode shallowSortByPublication(BioModelNode root) {
+	if(root == null) {
+		return null;
+	}
+	for(int i = 0; i < root.getChildCount() - 1; i++) {
+		BioModelNode currChild = (BioModelNode) root.getChildAt(i);
+		if(!(currChild instanceof PublicationInfoNode)) {
+			System.err.println("Unexpected class for PublicationInfoNode");
+			return root;
+		}
+		int currYear = Integer.parseInt((new SimpleDateFormat("yyyy")).format(((PublicationInfo) currChild.getUserObject()).getPubDate()));
+		String currTitle = ((PublicationInfo) currChild.getUserObject()).getTitle();
+		
+		for(int j = i + 1; j <= root.getChildCount() - 1; j++) {
+			BioModelNode prevChild = (BioModelNode) root.getChildAt(j);
+			if(!(prevChild instanceof PublicationInfoNode)) {
+				System.err.println("Unexpected class for PublicationInfoNode");
+				return root;
+			}
+			int prevYear = Integer.parseInt((new SimpleDateFormat("yyyy")).format(((PublicationInfo) prevChild.getUserObject()).getPubDate()));
+			String prevTitle = ((PublicationInfo) prevChild.getUserObject()).getTitle();
+			
+			if(currYear == 2004 && currTitle.startsWith("A signal transduction")) {
+				System.out.println("here");
+			}
+			
+			if(currTitle.compareToIgnoreCase(prevTitle) > 0) {
+				root.insert(currChild, j);
+				root.insert(prevChild, i);
+			}
+		}
+	}
+	return root;
+}
+
 protected synchronized static void initFinalTree2(VCDocumentDbTreeModel vcDocumentDbTreeModel, TreeMap<String, BioModelNode> treeMap, User loginUser){
 	BioModelNode ownerNode = (BioModelNode)treeMap.get(loginUser.getName());
 	BioModelNode tempNode = new BioModelNode();

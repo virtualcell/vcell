@@ -26,6 +26,8 @@ import cbit.vcell.desktop.VCellBasicCellRenderer.VCDocumentInfoNode;
 public class VCDocumentDbCellRenderer extends VCellBasicCellRenderer {
 	
 	protected User sessionUser = null;
+	
+	protected static final int MaxPublicationLabelLength = 40;
 
 /**
  * MyRenderer constructor comment.
@@ -50,23 +52,31 @@ public java.awt.Component getTreeCellRendererComponent(JTree tree, Object value,
 		BioModelNode node = (BioModelNode) value;
 		Object userObject = node.getUserObject();
 		if (
-			VCDocumentDbTreeModel.Published_BioModels.equals(userObject) ||
-			VCDocumentDbTreeModel.Curated_BioModels.equals(userObject) ||
 			VCDocumentDbTreeModel.ModelBricks.equals(userObject) ||
-			VCDocumentDbTreeModel.Published_MathModels.equals(userObject) ||
-			VCDocumentDbTreeModel.Curated_MathModels.equals(userObject) ||
 			VCDocumentDbTreeModel.Education.equals(userObject) ||
 			VCDocumentDbTreeModel.Tutorials.equals(userObject)
 			) {
 			setText(getText() + " (" + node.getChildCount() + ")");
 		} else if(
-				VCDocumentDbTreeModel.SHARED_BIO_MODELS.equals(userObject) ||
-				VCDocumentDbTreeModel.SHARED_MATH_MODELS.equals(userObject) ||
-				VCDocumentDbTreeModel.SHARED_GEOMETRIES.equals(userObject) ||
-				VCDocumentDbTreeModel.Other_BioModels.equals(userObject) ||
-				VCDocumentDbTreeModel.Other_MathModels.equals(userObject) ||
-				VCDocumentDbTreeModel.PUBLIC_GEOMETRIES.equals(userObject)
-				) {
+			VCDocumentDbTreeModel.Published_BioModels.equals(userObject) ||
+			VCDocumentDbTreeModel.Curated_BioModels.equals(userObject) ||
+			VCDocumentDbTreeModel.Published_MathModels.equals(userObject) ||
+			VCDocumentDbTreeModel.Curated_MathModels.equals(userObject)
+			) {
+			int count = 0;
+			for(int i = 0; i < node.getChildCount(); i++) {
+				BioModelNode child = (BioModelNode)node.getChildAt(i);
+				count += child.getChildCount();
+			}
+			setText(getText() + " (" + count + ")");
+		} else if(
+			VCDocumentDbTreeModel.SHARED_BIO_MODELS.equals(userObject) ||
+			VCDocumentDbTreeModel.SHARED_MATH_MODELS.equals(userObject) ||
+			VCDocumentDbTreeModel.SHARED_GEOMETRIES.equals(userObject) ||
+			VCDocumentDbTreeModel.Other_BioModels.equals(userObject) ||
+			VCDocumentDbTreeModel.Other_MathModels.equals(userObject) ||
+			VCDocumentDbTreeModel.PUBLIC_GEOMETRIES.equals(userObject)
+			) {
 			int count = 0;
 			for(int i = 0; i < node.getChildCount(); i++) {
 				BioModelNode child = (BioModelNode)node.getChildAt(i);
@@ -103,6 +113,11 @@ public java.awt.Component getTreeCellRendererComponent(JTree tree, Object value,
 			) {
 			setIcon(fieldFolderCuratedIcon);
 		}
+		else if(
+				VCDocumentDbTreeModel.ModelBricks.equals(userObject)
+				) {
+				setIcon(fieldFolderBricksIcon);
+			}
 		// contents of My BioModels / My MathModels
 		// for each group, we look at all the versions and choose the group icon based on the highest share level of any child
 		// highest lvl is Public, next is Shared. The groups with private versions only are showed with simple folder
