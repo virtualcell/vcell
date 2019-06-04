@@ -63,6 +63,8 @@ public java.awt.Component getTreeCellRendererComponent(JTree tree, Object value,
 			VCDocumentDbTreeModel.Published_MathModels.equals(userObject) ||
 			VCDocumentDbTreeModel.Curated_MathModels.equals(userObject)
 			) {
+			// no matter which view we use (by author or by publication title)
+			// the algorithm below works perfectly for both
 			int count = 0;
 			for(int i = 0; i < node.getChildCount(); i++) {
 				BioModelNode child = (BioModelNode)node.getChildAt(i);
@@ -83,7 +85,23 @@ public java.awt.Component getTreeCellRendererComponent(JTree tree, Object value,
 				count += child.getChildCount();
 			}
 			setText(getText() + " (" + count + ")");
+		} else if(
+				VCDocumentDbTreeModel.Public_BioModels.equals(userObject) ||
+				VCDocumentDbTreeModel.Public_MathModels.equals(userObject)
+			) {
+			// works equally well for view by author or view by publication title
+			int count = 0;
+			for(int i = 0; i < node.getChildCount(); i++) {
+				BioModelNode child = (BioModelNode)node.getChildAt(i);
+				for(int j = 0; j < child.getChildCount(); j++) {
+					BioModelNode nephew = (BioModelNode)child.getChildAt(j);
+					count += nephew.getChildCount();
+				}
+			}
+			setText(getText() + " (" + count + ")");
 		}
+		
+		// ----------------------------------------------------------------------------------------
 		if(userObject instanceof User && sessionUser != null && ((User)userObject).compareEqual(sessionUser)) {
 			setIcon(fieldFolderSelfIcon);	// My BioModels / My MathModels / My Geometries folders (with a little locker)
 		}
