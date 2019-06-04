@@ -6,6 +6,7 @@ import java.util.Date;
 import org.vcell.util.document.VCDocument.VCDocumentType;
 
 public class PublicationInfo implements Serializable{
+	private KeyValue publicationKey;
 	private KeyValue versionKey;
 	private String title;
 	private String[] authors;
@@ -17,9 +18,10 @@ public class PublicationInfo implements Serializable{
 	private VCDocumentType vcDocumentType;
 	private User user;
 	private int theHashCode;
-	public PublicationInfo(KeyValue versionKey, String title, String[] authors, String citation, String pubmedid,
+	public PublicationInfo(KeyValue publicationKey,KeyValue versionKey, String title, String[] authors, String citation, String pubmedid,
 			String doi, String url, VCDocumentType vcDocumentType, User user,Date pubdate) {
 		super();
+		this.publicationKey = publicationKey;
 		this.versionKey = versionKey;
 		this.title = title;
 		this.authors = authors;
@@ -30,7 +32,10 @@ public class PublicationInfo implements Serializable{
 		this.vcDocumentType = vcDocumentType;
 		this.user = user;
 		this.pubdate = pubdate;
-		theHashCode = (versionKey.toString()+(doi!=null && doi.length()>0?doi.toString():(pubmedid!=null && pubmedid.length()>0&& !pubmedid.equals("0")?pubmedid.toString():""))).hashCode();
+		this.theHashCode = this.publicationKey.hashCode();
+	}
+	public KeyValue getPublicationKey() {
+		return publicationKey;
 	}
 	public KeyValue getVersionKey() {
 		return versionKey;
