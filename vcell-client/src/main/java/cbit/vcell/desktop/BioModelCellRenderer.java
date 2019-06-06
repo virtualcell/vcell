@@ -112,7 +112,7 @@ public java.awt.Component getTreeCellRendererComponent(JTree tree, Object value,
 			String qualifier = "";
 			if (sessionUser != null && sessionUser.getName().contentEquals(label)) {
 				String colorString = (sel)?"white":"#8B0000";
-				qualifier = "<font color=\""+colorString+"\">" + label + "</font>"; 
+				qualifier = "<font color=\""+colorString+"\"><b>" + label + "</b></font>"; 
 			} else {
 				String colorString = (sel)?"white":"black";
 				qualifier = "<font color=\""+colorString+"\">" + label + "</font>"; 
@@ -132,7 +132,7 @@ public java.awt.Component getTreeCellRendererComponent(JTree tree, Object value,
 				}
 				component.setToolTipText(label);
 				component.setText(label);
-			}else if(userObject instanceof BioModelInfo) {
+			} else if(userObject instanceof BioModelInfo) {
 				BioModelInfo biomodelInfo = (BioModelInfo)userObject;
 				if(biomodelInfo.getPublicationInfos() != null && biomodelInfo.getPublicationInfos().length > 0) {
 					if(biomodelInfo.getVersion().getFlag().compareEqual(org.vcell.util.document.VersionFlag.Published)) {
@@ -147,7 +147,26 @@ public java.awt.Component getTreeCellRendererComponent(JTree tree, Object value,
 				if(str != null && !str.isEmpty()) {
 					component.setToolTipText(str + " " + biomodelInfo.getVersion().getVersionKey());
 				}
-			}else if (userObject instanceof Geometry) {
+				// we change color of version if it's in the Other folder (Uncurated) and belongs to login user
+				Object pNode  = node.getParent();
+				if(pNode instanceof BioModelNode) {
+					pNode = ((BioModelNode)pNode).getParent();
+					if(pNode instanceof BioModelNode && ((BioModelNode)pNode).getUserObject() instanceof String) {
+						str = (String)((BioModelNode)pNode).getUserObject();
+						pNode = ((BioModelNode)pNode).getParent();
+						if(((BioModelNode)pNode).getUserObject() instanceof String 
+								&& str.equalsIgnoreCase(sessionUser.getName())) {
+							str = (String)((BioModelNode)pNode).getUserObject();
+							if(str.equals(VCDocumentDbTreeModel.Other_BioModels)) {
+								String prefix = sel ? "" : "<span style=\"color:#808080\">";	// GRAY
+								String suffix = sel ? "" : "</span>";
+								String str1 = prefix + component.getText() + suffix;
+								setText("<html>" + str1 + "</html>"); 
+							}
+						}
+					}
+				}
+			} else if (userObject instanceof Geometry) {
 				Geometry geo = (Geometry)userObject;
 				String label = "";
 				//geomety info, when spatial--shows name+1D/2D/3D				
@@ -188,12 +207,16 @@ public java.awt.Component getTreeCellRendererComponent(JTree tree, Object value,
 							String str = (String)parent.getUserObject();	// ones where the user object is a String
 							if(str.equals(VCDocumentDbTreeModel.Published_BioModels) 
 									|| str.equals(VCDocumentDbTreeModel.Curated_BioModels) 
-									|| str.equals(VCDocumentDbTreeModel.Other_BioModels)) {
+									/*|| str.equals(VCDocumentDbTreeModel.Other_BioModels)*/) {
 								String prefix = sel ? "" : "<span style=\"color:#8B0000\">";
 								String suffix = sel ? "" : "</span>";
 								setText("<html><b>" + prefix + nodeUser.getName() + suffix + "</b>  : " + modelName + "</html>");
 							} else {
-								setText(modelName);	// unreachable
+								// in the Other folder / owner folder
+								String prefix = sel ? "" : "<span style=\"color:#808080\">";	// GRAY
+								String suffix = sel ? "" : "</span>";
+								String str1 = prefix + modelName + suffix;
+								setText("<html>" + str1 + "</html>");	// the name of the model container - which holds the versions
 							}
 						} else {
 							String str = modelName;

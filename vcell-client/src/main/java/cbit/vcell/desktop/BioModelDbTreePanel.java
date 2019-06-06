@@ -27,6 +27,7 @@ import javax.swing.tree.TreePath;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.GroupAccessAll;
+import org.vcell.util.document.MathModelInfo;
 import org.vcell.util.document.Version;
 import org.vcell.util.document.VersionFlag;
 import org.vcell.util.document.VersionInfo;
@@ -112,17 +113,41 @@ protected void actionsOnClick(MouseEvent mouseEvent) {
 			if(getSelectedVersionInfo() instanceof BioModelInfo){
 				Version version = getSelectedVersionInfo().getVersion();
 				boolean isOwner = version.getOwner().compareEqual(getDocumentManager().getUser());
-				configureArhivePublishMenuState(version,isOwner);
-				getJMenuItemPermission().setEnabled(isOwner && !version.getFlag().compareEqual(VersionFlag.Published));
-				getJMenuItemDelete().setEnabled(isOwner &&
-					!version.getFlag().compareEqual(VersionFlag.Archived) &&
-					!version.getFlag().compareEqual(VersionFlag.Published));
+				
+				boolean shouldDisable = false;
+				if(treePath != null && shouldDisablePopupMenu(treePath)) {
+					shouldDisable = true;
+				} else if(treePath != null && treePath.getParentPath() != null && shouldDisablePopupMenu(treePath.getParentPath())) {
+					shouldDisable = true;
+				}
+				if(shouldDisable) {
+					getJMenuItemOpen().setEnabled(false);
+					getJMenuItemDelete().setEnabled(false);
+					getJMenuItemPermission().setEnabled(false);
+					getJMenuItemArchive().setEnabled(false);
+					getJMenuItemPublish().setEnabled(false);
+				} else {
+					configureArhivePublishMenuState(version,isOwner);
+					getJMenuItemPermission().setEnabled(isOwner && !version.getFlag().compareEqual(VersionFlag.Published));
+					getJMenuItemDelete().setEnabled(isOwner &&
+							!version.getFlag().compareEqual(VersionFlag.Archived) &&
+							!version.getFlag().compareEqual(VersionFlag.Published));
+				}
 				compareWithMenuItemEnable(getSelectedVersionInfo());
 				getBioModelPopupMenu().show(getJTree1(), mouseEvent.getPoint().x, mouseEvent.getPoint().y);
 			}
 		}
-	}else {
-		ifNeedsDoubleClickEvent(mouseEvent,BioModelInfo.class);
+	} else {
+		TreePath treePath = ((JTree)mouseEvent.getSource()).getPathForLocation(mouseEvent.getX(), mouseEvent.getY());
+		boolean shouldDisable = false;
+		if(treePath != null && shouldDisablePopupMenu(treePath)) {
+			shouldDisable = true;
+		} else if(treePath != null && treePath.getParentPath() != null && shouldDisablePopupMenu(treePath.getParentPath())) {
+			shouldDisable = true;
+		}
+		if(!shouldDisable) {
+			ifNeedsDoubleClickEvent(mouseEvent,BioModelInfo.class);
+		}
 	}
 }
 

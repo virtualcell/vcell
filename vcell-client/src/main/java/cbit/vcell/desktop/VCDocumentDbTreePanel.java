@@ -32,10 +32,12 @@ import javax.swing.event.TreeModelListener;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.TreePath;
 
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ProgressDialogListener;
 import org.vcell.util.UserCancelException;
+import org.vcell.util.document.Version;
 import org.vcell.util.document.VersionInfo;
 import org.vcell.util.gui.CollapsiblePanel;
 import org.vcell.util.gui.DialogUtils;
@@ -214,6 +216,34 @@ private javax.swing.tree.VariableHeightLayoutCache getLocalSelectionModelVariabl
 		handleException(ivjExc);
 	};
 	return ivjLocalSelectionModelVariableHeightLayoutCache;
+}
+
+protected boolean shouldDisablePopupMenu(TreePath treePath) {
+	if(getSelectedVersionInfo() == null || getSelectedVersionInfo().getVersion() == null) {
+		return false;
+	}
+	Version version = getSelectedVersionInfo().getVersion();
+	boolean isOwner = version.getOwner().compareEqual(getDocumentManager().getUser());
+	if(!isOwner) {
+		return false;
+	}
+	TreePath p1 = treePath.getParentPath();
+	TreePath p2 = null;
+	if(p1 != null && p1.getParentPath() != null) {
+		p2 = p1.getParentPath();
+	}
+	if(p2 != null && p2.getLastPathComponent() instanceof BioModelNode) {
+		BioModelNode n2 = (BioModelNode)p2.getLastPathComponent();
+		if(n2.getUserObject() instanceof String) {
+			String str = (String)n2.getUserObject();
+			if(str.equals(VCDocumentDbTreeModel.Other_MathModels) || 
+					str.equals(VCDocumentDbTreeModel.Other_BioModels) ||
+					str.equals(VCDocumentDbTreeModel.PUBLIC_GEOMETRIES)) {
+				return true;
+			}
+		}
+	}
+	return false;
 }
 
 /**

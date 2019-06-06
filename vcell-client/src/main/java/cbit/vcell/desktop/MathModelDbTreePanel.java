@@ -30,6 +30,7 @@ import org.vcell.util.document.VersionFlag;
 import org.vcell.util.document.VersionInfo;
 
 import cbit.vcell.clientdb.DatabaseEvent;
+import cbit.vcell.desktop.BioModelNode.UserNameNode;
 import cbit.vcell.desktop.VCellBasicCellRenderer.VCDocumentInfoNode;
 /**
  * Insert the type's description here.
@@ -96,28 +97,50 @@ public MathModelDbTreePanel(boolean bMetadata) {
 	initialize();
 }
 
-/**
- * Comment
- */
 protected void actionsOnClick(MouseEvent mouseEvent) {
 	if (mouseEvent.isPopupTrigger()) {
 		if(!getPopupMenuDisabled()){
 			TreePath treePath = ((JTree)mouseEvent.getSource()).getPathForLocation(mouseEvent.getX(), mouseEvent.getY());
+			
 			((JTree)mouseEvent.getSource()).setSelectionPath(treePath);
 			if(getSelectedVersionInfo() instanceof MathModelInfo){
 				Version version = getSelectedVersionInfo().getVersion();
 				boolean isOwner = version.getOwner().compareEqual(getDocumentManager().getUser());
-				configureArhivePublishMenuState(version,isOwner);
-				getJMenuItemPermission().setEnabled(isOwner && !version.getFlag().compareEqual(VersionFlag.Published));
-				getJMenuItemDelete().setEnabled(isOwner &&
-					!version.getFlag().compareEqual(VersionFlag.Archived) &&
-					!version.getFlag().compareEqual(VersionFlag.Published));
+				
+				boolean shouldDisable = false;
+				if(treePath != null && shouldDisablePopupMenu(treePath)) {
+					shouldDisable = true;
+				} else if(treePath != null && treePath.getParentPath() != null && shouldDisablePopupMenu(treePath.getParentPath())) {
+					shouldDisable = true;
+				}
+				if(shouldDisable) {
+					getJMenuItemOpen().setEnabled(false);
+					getJMenuItemDelete().setEnabled(false);
+					getJMenuItemPermission().setEnabled(false);
+					getJMenuItemArchive().setEnabled(false);
+					getJMenuItemPublish().setEnabled(false);
+				} else {
+					configureArhivePublishMenuState(version,isOwner);
+					getJMenuItemPermission().setEnabled(isOwner && !version.getFlag().compareEqual(VersionFlag.Published));
+					getJMenuItemDelete().setEnabled(isOwner &&
+						!version.getFlag().compareEqual(VersionFlag.Archived) &&
+						!version.getFlag().compareEqual(VersionFlag.Published));
+				}
 				compareWithMenuItemEnable(getSelectedVersionInfo());
 				getMathModelPopupMenu().show(getJTree1(), mouseEvent.getPoint().x, mouseEvent.getPoint().y);
 			}
 		}
-	} else{
-		ifNeedsDoubleClickEvent(mouseEvent,MathModelInfo.class);
+	} else {
+		TreePath treePath = ((JTree)mouseEvent.getSource()).getPathForLocation(mouseEvent.getX(), mouseEvent.getY());
+		boolean shouldDisable = false;
+		if(treePath != null && shouldDisablePopupMenu(treePath)) {
+			shouldDisable = true;
+		} else if(treePath != null && treePath.getParentPath() != null && shouldDisablePopupMenu(treePath.getParentPath())) {
+			shouldDisable = true;
+		}
+		if(!shouldDisable) {
+			ifNeedsDoubleClickEvent(mouseEvent,MathModelInfo.class);
+		}
 	}	
 }
 
