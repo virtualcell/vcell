@@ -216,8 +216,17 @@ public java.awt.Component getTreeCellRendererComponent(JTree tree, Object value,
 								String prefix = sel ? "" : "<span style=\"color:#808080\">";	// GRAY
 								String suffix = sel ? "" : "</span>";
 								String str1 = prefix + modelName + suffix;
+								if(node.getChildCount() > 1) {
+									prefix = sel ? "" : "<span style=\"color:#8B0000\">";
+									suffix = sel ? "" : "</span>";
+									str1 += prefix + " (" + node.getChildCount() + ")" + suffix;
+								}
 								setText("<html>" + str1 + "</html>");	// the name of the model container - which holds the versions
 							}
+						} else if(parent.getUserObject() instanceof PublicationInfo) {
+							String prefix = sel ? "" : "<span style=\"color:#8B0000\">";
+							String suffix = sel ? "" : "</span>";
+							setText("<html><b>" + prefix + nodeUser.getName() + suffix + "</b>  : " + modelName + "</html>");
 						} else {
 							String str = modelName;
 							if(node.getChildCount() > 1) {
