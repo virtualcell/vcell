@@ -205,7 +205,7 @@ public static KeyValue savePublicationRep(Connection con,PublicationRep publicat
 			(publicationRep.getDoi()==null?"NULL":"'"+publicationRep.getDoi()+"'")+","+
 			(publicationRep.getEndnoteid()==null || publicationRep.getEndnoteid().length()==0?"NULL":publicationRep.getEndnoteid())+","+
 			(publicationRep.getUrl()==null?"NULL":"'"+publicationRep.getUrl()+"'")+","+
-			(publicationRep.getWittid()==null|| publicationRep.getWittid().length()==0?"NULL":publicationRep.getWittid())+","+
+			parseWittid(publicationRep.getWittid())+","+
 			(publicationRep.getDate()==null?"NULL":" TO_DATE('" + simpleDateFormat.format(publicationRep.getDate()) + "','"+YMD_FORMAT_STRING+"') ")+
 			")";		
 		}else {
@@ -219,7 +219,7 @@ public static KeyValue savePublicationRep(Connection con,PublicationRep publicat
 			PublicationTable.table.doi.getUnqualifiedColName()+"="+(publicationRep.getDoi()==null?"NULL":"'"+publicationRep.getDoi()+"'")+","+
 			PublicationTable.table.endnoteid.getUnqualifiedColName()+"="+(publicationRep.getEndnoteid()==null || publicationRep.getEndnoteid().length()==0?"NULL":publicationRep.getEndnoteid())+","+
 			PublicationTable.table.url.getUnqualifiedColName()+"="+(publicationRep.getUrl()==null?"NULL":"'"+publicationRep.getUrl()+"'")+","+
-			PublicationTable.table.wittid.getUnqualifiedColName()+"="+(publicationRep.getWittid()==null|| publicationRep.getWittid().length()==0?"NULL":publicationRep.getWittid())+","+
+			PublicationTable.table.wittid.getUnqualifiedColName()+"="+parseWittid(publicationRep.getWittid())+","+
 			PublicationTable.table.pubdate.getUnqualifiedColName()+"="+(publicationRep.getDate()==null?"NULL":" TO_DATE('" + simpleDateFormat.format(publicationRep.getDate()) + "','"+YMD_FORMAT_STRING+"') ")+
 			" WHERE "+PublicationTable.table.id.getUnqualifiedColName()+"="+ pubID.toString();		
 		}
@@ -253,6 +253,17 @@ public static KeyValue savePublicationRep(Connection con,PublicationRep publicat
 	}
 }
 
+private static String parseWittid(String wittid) throws DataAccessException{
+	if(wittid == null || wittid.trim().length() == 0) {
+		return "-1";
+	}
+	try {
+		return new Long(wittid).toString();
+	} catch (NumberFormatException e) {
+		e.printStackTrace();
+		throw new DataAccessException("Error parsing wittid='"+wittid+"', expecting integer.");
+	}
+}
 public static void cleanupDeletedReferences(Connection con,User user,ExternalDataIdentifier extDataID,boolean bPrintOnly) throws SQLException{
 	
 	KeyValue extDataIDKey = extDataID.getKey();
