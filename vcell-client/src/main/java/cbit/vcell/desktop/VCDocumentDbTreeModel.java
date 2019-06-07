@@ -14,10 +14,14 @@ import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.TreeMap;
 import java.util.Vector;
 
@@ -381,7 +385,8 @@ protected synchronized static void initFinalTree(VCDocumentDbTreeModel vcDocumen
 			userNode.remove(c);
 		}
 	}
-	
+
+	shallowOrderByPublication(publishedModelsMap, publicationsMap);
 	for(KeyValue key : publishedModelsMap.keySet()) {
 		LinkedList<BioModelNode> modelsList = publishedModelsMap.get(key);
 		PublicationInfo pi = publicationsMap.get(key);
@@ -403,39 +408,33 @@ protected synchronized static void initFinalTree(VCDocumentDbTreeModel vcDocumen
 //	vcDocumentDbTreeModel.publishedModelsNode = shallowSortByPublication(vcDocumentDbTreeModel.publishedModelsNode);
 //	vcDocumentDbTreeModel.curatedModelsNode = shallowSortByPublication(vcDocumentDbTreeModel.curatedModelsNode);
 }
-private static BioModelNode shallowSortByPublication(BioModelNode root) {
-	if(root == null) {
-		return null;
-	}
-	for(int i = 0; i < root.getChildCount() - 1; i++) {
-		BioModelNode currChild = (BioModelNode) root.getChildAt(i);
-		if(!(currChild instanceof PublicationInfoNode)) {
-			System.err.println("Unexpected class for PublicationInfoNode");
-			return root;
-		}
-		int currYear = Integer.parseInt((new SimpleDateFormat("yyyy")).format(((PublicationInfo) currChild.getUserObject()).getPubDate()));
-		String currTitle = ((PublicationInfo) currChild.getUserObject()).getTitle();
-		
-		for(int j = i + 1; j <= root.getChildCount() - 1; j++) {
-			BioModelNode prevChild = (BioModelNode) root.getChildAt(j);
-			if(!(prevChild instanceof PublicationInfoNode)) {
-				System.err.println("Unexpected class for PublicationInfoNode");
-				return root;
-			}
-			int prevYear = Integer.parseInt((new SimpleDateFormat("yyyy")).format(((PublicationInfo) prevChild.getUserObject()).getPubDate()));
-			String prevTitle = ((PublicationInfo) prevChild.getUserObject()).getTitle();
+
+private static void shallowOrderByPublication(LinkedHashMap<KeyValue, LinkedList<BioModelNode>> m, LinkedHashMap<KeyValue, PublicationInfo> p) {
+	List<Map.Entry<KeyValue, LinkedList<BioModelNode>>> entries = new ArrayList<>(m.entrySet());
+	Collections.sort(entries, new Comparator<Map.Entry<KeyValue, LinkedList<BioModelNode>>>() {
+		@Override
+		public int compare(Map.Entry<KeyValue, LinkedList<BioModelNode>> lhs, Map.Entry<KeyValue, LinkedList<BioModelNode>> rhs) {
+
+			PublicationInfo lpi = p.get(lhs.getKey());
+			PublicationInfo rpi = p.get(rhs.getKey());
 			
-			if(currYear == 2004 && currTitle.startsWith("A signal transduction")) {
-				System.out.println("here");
-			}
+			int ly = Integer.parseInt((new SimpleDateFormat("yyyy")).format(lpi.getPubDate()));
+			String[] lt = lpi.getAuthors();
+			int ry = Integer.parseInt((new SimpleDateFormat("yyyy")).format(rpi.getPubDate()));
+			String[] rt = rpi.getAuthors();
+
 			
-			if(currTitle.compareToIgnoreCase(prevTitle) > 0) {
-				root.insert(currChild, j);
-				root.insert(prevChild, i);
+			int ret = Integer.compare(ry, ly);
+			if(ret == 0 && lt != null && rt != null && lt.length > 0 && rt.length > 0) {
+				ret = lt[0].compareToIgnoreCase(rt[0]);
 			}
+			return ret;
 		}
+	});
+	m.clear();
+	for(Map.Entry<KeyValue, LinkedList<BioModelNode>> e : entries) {
+		m.put(e.getKey(), e.getValue());
 	}
-	return root;
 }
 
 protected synchronized static void initFinalTree2(VCDocumentDbTreeModel vcDocumentDbTreeModel, TreeMap<String, BioModelNode> treeMap, User loginUser){

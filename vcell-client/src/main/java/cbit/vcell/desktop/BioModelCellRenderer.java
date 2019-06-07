@@ -83,7 +83,10 @@ public java.awt.Component getTreeCellRendererComponent(JTree tree, Object value,
 			BioModelNode node = (PublicationInfoNode)value;
 			PublicationInfo pi = (PublicationInfo) node.getUserObject();
 			String label = pi.getTitle();
-			String name = pi.getAuthors()[0];
+			String name = "";
+			if(pi.getAuthors() != null && pi.getAuthors().length > 0) {
+				name = pi.getAuthors()[0];
+			}
 			if(name.contains(",")) {
 				name = name.substring(0, name.indexOf(","));
 			}
@@ -104,6 +107,8 @@ public java.awt.Component getTreeCellRendererComponent(JTree tree, Object value,
 			if(pi.getPubDate().compareTo(Calendar.getInstance().getTime()) > 0) {	// sanity check
 				setIcon(fieldFolderWarningIcon);
 			} else if(pi.getDoi() == null) {
+				setIcon(fieldFolderWarningIcon);
+			} else if(name.contains(" ")) {
 				setIcon(fieldFolderWarningIcon);
 			}
 		} else if(value instanceof UserNameNode) {
