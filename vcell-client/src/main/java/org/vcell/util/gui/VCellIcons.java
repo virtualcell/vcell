@@ -73,6 +73,12 @@ public abstract class VCellIcons {
 	public final static Icon dataSetsIcon = makeIcon("/data_sets_20x20.gif");
 	public final static Icon dataExporterIcon = makeIcon("/data_exporter_20x20.gif");
 	
+	// Attachments, Links
+	public final static Icon bookmarkIcon = makeIcon("/icons/bookmark.png");
+	public final static Icon certificateIcon = makeIcon("/icons/certificate2.png");
+	public final static Icon linkIcon = makeIcon("/icons/link.png");
+	public final static Icon noteIcon = makeIcon("/icons/note3.png");
+
 	// Rule Based Modeling
 	public final static Icon rbmIcon = makeIcon("/icons/rbm.png");
 //	public final static Icon rbmMolecularTypeIcon = makeIcon("/icons/rbm_molecule.png");
