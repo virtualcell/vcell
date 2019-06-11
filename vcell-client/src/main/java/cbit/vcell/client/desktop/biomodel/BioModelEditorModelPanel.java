@@ -34,6 +34,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 
 import javax.swing.Box;
 import javax.swing.DefaultComboBoxModel;
@@ -68,9 +69,11 @@ import org.vcell.pathway.BioPaxObject;
 import org.vcell.pathway.Conversion;
 import org.vcell.pathway.EntityImpl;
 import org.vcell.relationship.RelationshipObject;
+import org.vcell.sybil.models.miriam.MIRIAMQualifier;
 import org.vcell.util.Displayable;
 import org.vcell.util.Pair;
 import org.vcell.util.UserCancelException;
+import org.vcell.util.document.Identifiable;
 import org.vcell.util.gui.DefaultScrollTableCellRenderer;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.DownArrowIcon;
@@ -83,6 +86,8 @@ import cbit.gui.ModelProcessEquation;
 import cbit.gui.TextFieldAutoCompletion;
 import cbit.gui.graph.GraphModel;
 import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.biomodel.meta.MiriamManager;
+import cbit.vcell.biomodel.meta.MiriamManager.MiriamRefGroup;
 import cbit.vcell.client.ChildWindowListener;
 import cbit.vcell.client.ChildWindowManager;
 import cbit.vcell.client.ChildWindowManager.ChildWindow;
@@ -761,9 +766,25 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 							if(finalName != null && finalName.length() > LIMIT){
 								finalName = finalName.substring(0, LIMIT-DOTS.length()-1)+DOTS;
 							}
-							setText("<html><u>" + finalName + "</u></html>");						
+							setText("<html><u>" + finalName + "</u></html>");
 							setToolTipText(tooltip.toString());
 						}
+						String freeText = bioModel.getVCMetaData().getFreeTextAnnotation(bioModelEntityObject);
+						Identifiable entity = AnnotationsPanel.getIdentifiable(bioModelEntityObject);
+						MiriamManager miriamManager = bioModel.getVCMetaData().getMiriamManager();
+						TreeMap<Identifiable, Map<MiriamRefGroup, MIRIAMQualifier>> miriamDescrHeir = miriamManager.getMiriamTreeMap();
+						Map<MiriamRefGroup, MIRIAMQualifier> refGroupMap = miriamDescrHeir.get(entity);
+
+						Icon icon = VCellIcons.issueGoodIcon;
+						if(freeText != null && !freeText.isEmpty()) {
+							icon = VCellIcons.noteIcon;
+//							icon = VCellIcons.addIcon(icon, VCellIcons.linkIcon);
+//							icon = VCellIcons.addIcon(icon, VCellIcons.certificateIcon);
+//							icon = VCellIcons.addIcon(icon, VCellIcons.noteIcon);
+						} else if(refGroupMap != null && !refGroupMap.isEmpty()) {
+							icon = VCellIcons.bookmarkIcon;
+						}
+						setIcon(icon);
 					}
 				}
 				return this;
