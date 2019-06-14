@@ -85,6 +85,7 @@ public class VCellBasicCellRenderer extends javax.swing.tree.DefaultTreeCellRend
 	protected javax.swing.Icon fieldFolderSharedIcon = null;
 	protected javax.swing.Icon fieldFolderPublicIcon = null;
 	protected javax.swing.Icon fieldFolderWeakPublicIcon = null;
+	protected javax.swing.Icon fieldFolderMediumPublicIcon = null;
 	protected javax.swing.Icon fieldFolderPublishedIcon = null;
 	protected javax.swing.Icon fieldFolderCuratedIcon = null;
 	protected javax.swing.Icon fieldFolderBricksIcon = null;
@@ -123,6 +124,7 @@ public VCellBasicCellRenderer() {
 	fieldFolderSharedIcon = new ImageIcon(getClass().getResource("/icons/sharedFolder2.png"));
 	fieldFolderPublicIcon = new ImageIcon(getClass().getResource("/icons/publicFolder2.png"));
 	fieldFolderWeakPublicIcon = new ImageIcon(getClass().getResource("/icons/publicFolder.png"));
+	fieldFolderMediumPublicIcon = new ImageIcon(getClass().getResource("/icons/publicFolder3.png"));
 	fieldFolderPublishedIcon = new ImageIcon(getClass().getResource("/icons/publishedFolder.png"));
 	fieldFolderCuratedIcon = new ImageIcon(getClass().getResource("/icons/curatedFolder.png"));
 	fieldFolderBricksIcon = new ImageIcon(getClass().getResource("/icons/bricksFolder.png"));

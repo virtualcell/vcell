@@ -126,11 +126,17 @@ public java.awt.Component getTreeCellRendererComponent(JTree tree, Object value,
 			setIcon(fieldFolderPublishedIcon);
 		}
 		else if(
-			VCDocumentDbTreeModel.Curated_BioModels.equals(userObject) ||
-			VCDocumentDbTreeModel.Curated_MathModels.equals(userObject)
-			) {
-			setIcon(fieldFolderCuratedIcon);
-		}
+				VCDocumentDbTreeModel.Curated_BioModels.equals(userObject) ||
+				VCDocumentDbTreeModel.Curated_MathModels.equals(userObject)
+				) {
+				setIcon(fieldFolderCuratedIcon);
+			}
+		else if(
+				VCDocumentDbTreeModel.Other_BioModels.equals(userObject) ||
+				VCDocumentDbTreeModel.Other_MathModels.equals(userObject)
+				) {
+				setIcon(fieldFolderMediumPublicIcon);
+			}
 		else if(
 				VCDocumentDbTreeModel.ModelBricks.equals(userObject)
 				) {
