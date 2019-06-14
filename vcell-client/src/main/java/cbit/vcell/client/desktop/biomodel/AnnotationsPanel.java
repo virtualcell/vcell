@@ -727,7 +727,7 @@ private void updateInterface() {
 		annotationTextArea.setEditable(false);
 	}
 }
-private static Identifiable getIdentifiable(Identifiable selectedObject) {
+public static Identifiable getIdentifiable(Identifiable selectedObject) {
 	//
 	// for SpeciesContext objects:
 	//		MIRIAM tree needs the Species				!!!
