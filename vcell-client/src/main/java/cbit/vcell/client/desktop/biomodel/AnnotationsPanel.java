@@ -62,6 +62,7 @@ import org.vcell.util.Compare;
 import org.vcell.util.Displayable;
 import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.Identifiable;
+import org.vcell.util.document.MathModelInfo;
 import org.vcell.util.gui.DialogUtils;
 
 import cbit.vcell.biomodel.BioModel;
@@ -762,7 +763,7 @@ public static Identifiable getIdentifiable(Identifiable selectedObject) {
 @Override
 protected void onSelectedObjectsChange(Object[] selectedObjects) {
 	if (selectedObjects != null && selectedObjects.length == 1) {
-		if(selectedObjects[0] instanceof BioModelInfo) {
+		if(selectedObjects[0] instanceof BioModelInfo || selectedObjects[0] instanceof MathModelInfo) {
 			return;
 		}
 		if(selectedObjects[0] instanceof Identifiable && selectedObjects[0] instanceof Displayable) {
