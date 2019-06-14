@@ -653,11 +653,11 @@ public class StochSimOptionsPanel extends CollapsiblePanel {
 	 * MSR Tolerance : Maximum allowed effect of slow reactions per numerical integration of the SDEs,
 	 * SDE Tolerance : Maximum allowed value of the drift and diffusion errors
 	 */
-	private void setNewOptions(){
-		if(!isVisible()){
+	private void setNewOptions() {
+		if(!isVisible()) {
 			return;
 		}
-		try{
+		try {
 			NonspatialStochSimOptions stochOpt = getSolverTaskDescription().getStochOpt();
 			long numTrials = 1;
 			if (getHistogramButton().isSelected() || getMultiRunButton().isSelected()) {
@@ -731,7 +731,7 @@ public class StochSimOptionsPanel extends CollapsiblePanel {
 		
 		// TODO: temporarily disable the button
 		// UNDO THIS WHEN DEVELOPMENT IS COMPLETE
-		getMultiRunButton().setEnabled(false);
+//		getMultiRunButton().setEnabled(false);
 
 		boolean isUseCustomSeed = sso.isUseCustomSeed();
 		int customSeed = sso.getCustomSeed();
