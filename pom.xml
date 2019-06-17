@@ -99,11 +99,8 @@
 		<license.licenseName>MIT</license.licenseName>
 		<license.copyrightOwners>UConn Health</license.copyrightOwners>
 
-		<!--
-		NB: Disable javadoc doclint for now; see:
-		http://blog.joda.org/2014/02/turning-off-doclint-in-jdk-8-javadoc.html
-		-->
-		<additionalparam>-Xdoclint:none</additionalparam>
+		<!-- NB: Disable javadoc doclint -->
+		<doclint>none</doclint>
 	</properties>
 
 	<repositories>
