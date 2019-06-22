@@ -48,9 +48,10 @@ public void dataJobMessage(DataJobEvent dje) {
  * @param event cbit.rmi.event.ExportEvent
  */
 public void exportMessage(ExportEvent event) {
-	getExportMonitorPanel().addExportEvent(event, event.getDataIdString());
+	if(getExportMonitorPanel() != null) {//is null for ODEDataViewer
+		getExportMonitorPanel().addExportEvent(event, event.getDataIdString());
+	}
 }
-
 
 /**
  * Gets the dataViewerManager property (cbit.vcell.client.DataViewerManager) value.

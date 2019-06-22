@@ -669,30 +669,32 @@ private FileDataContainerID getCurveTimeSeries(OutputContext outputContext,User 
 		}
 	}
 
-	fileDataContainerManager.append(fileDataContainerID,"\n");
-	fileDataContainerManager.append(fileDataContainerID,"\"Centroid(XYZ):Times:Values[Times,Centroid]\",X,Y,Z,distance");
-	for (int i = 0; i < variableValues[0].length; i++) {
-		fileDataContainerManager.append(fileDataContainerID,","+variableValues[0][i]);
-	}
-	fileDataContainerManager.append(fileDataContainerID,"\n");
-	double distance = 0;
-	for (int i = 0; i < pointIndexes.length; i++) {
-		if(pointIndexes.length > 1 && (i == (pointIndexes.length-1)) && pointIndexes[i] == pointIndexes[i-1]) {
-			continue;
-		}
-		Coordinate coord = curve.getMesh().getCoordinateFromMembraneIndex(pointIndexes[i]);
-//		double value = variableValues[i+1][0];
-		fileDataContainerManager.append(fileDataContainerID,"," + coord.getX()+","+coord.getY()+","+coord.getZ());
-		if(i>0) {
-			Coordinate prevCoord = curve.getMesh().getCoordinateFromMembraneIndex(pointIndexes[i-1]);
-			distance+= coord.distanceTo(prevCoord);
-		}
-		fileDataContainerManager.append(fileDataContainerID,"," + distance);
-		for (int t = 0; t < variableValues[t].length; t++) {
-			fileDataContainerManager.append(fileDataContainerID,","+variableValues[i+1][t]);
-		}
-
+	if(curve instanceof SpatialSelectionMembrane){
 		fileDataContainerManager.append(fileDataContainerID,"\n");
+		fileDataContainerManager.append(fileDataContainerID,"\"Centroid(XYZ):Times:Values[Times,Centroid]\",X,Y,Z,distance");
+		for (int i = 0; i < variableValues[0].length; i++) {
+			fileDataContainerManager.append(fileDataContainerID,","+variableValues[0][i]);
+		}
+		fileDataContainerManager.append(fileDataContainerID,"\n");
+		double distance = 0;
+		for (int i = 0; i < pointIndexes.length; i++) {
+			if(pointIndexes.length > 1 && (i == (pointIndexes.length-1)) && pointIndexes[i] == pointIndexes[i-1]) {
+				continue;
+			}
+			Coordinate coord = curve.getMesh().getCoordinateFromMembraneIndex(pointIndexes[i]);
+	//		double value = variableValues[i+1][0];
+			fileDataContainerManager.append(fileDataContainerID,"," + coord.getX()+","+coord.getY()+","+coord.getZ());
+			if(i>0) {
+				Coordinate prevCoord = curve.getMesh().getCoordinateFromMembraneIndex(pointIndexes[i-1]);
+				distance+= coord.distanceTo(prevCoord);
+			}
+			fileDataContainerManager.append(fileDataContainerID,"," + distance);
+			for (int t = 0; t < variableValues[t].length; t++) {
+				fileDataContainerManager.append(fileDataContainerID,","+variableValues[i+1][t]);
+			}
+	
+			fileDataContainerManager.append(fileDataContainerID,"\n");
+		}
 	}
 	return fileDataContainerID;   
 }
