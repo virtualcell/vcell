@@ -327,6 +327,8 @@ public class VCMetaData implements Serializable {
 		for (Identifiable identifiable : identifiables){
 			Map<MiriamRefGroup, MIRIAMQualifier> refGroupMap = miriamDescrHeir.get(identifiable);
 			if (refGroupMap!=null){
+				// Here we make a biopax object based on an annotation
+				// TODO: some biomodels database was moved permanently, this call may fail
 				String info = annoMapping.annotation2BioPaxObject(bioModel, identifiable);
 				boolean printInfo = false;
 				if(printInfo) { System.out.println(info); }

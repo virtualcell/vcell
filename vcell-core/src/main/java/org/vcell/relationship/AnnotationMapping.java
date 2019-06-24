@@ -229,12 +229,12 @@ public class AnnotationMapping {
 			try {
 //				System.out.println(xref.getDb() + "***" + xref.getId());
 				if(xref.getDb().toLowerCase().equals("uniprot")){
-					String name = dbReader.getMoleculeDataBaseReference(xref.getId());
-					if(name != null)names.add(name);
+//					String name = dbReader.getMoleculeDataBaseReference(xref.getId());
+//					if(name != null)names.add(name);
 //					System.out.println(xref.getId() + ">>>>>>>"+ name);
 				}else if(xref.getDb().toLowerCase().equals("interpro")){
-					String name = dbReader.getMoleculeDataBaseReference("interpro", xref.getId());
-					if(name != null)names.add(name);
+//					String name = dbReader.getMoleculeDataBaseReference("interpro", xref.getId());
+//					if(name != null)names.add(name);
 //					System.out.println(xref.getId() + ">>>>>>>"+ name);
 				}else if(xref.getDb().toLowerCase().equals("obo.chebi")){
 					String id = xref.getId().substring(6);
