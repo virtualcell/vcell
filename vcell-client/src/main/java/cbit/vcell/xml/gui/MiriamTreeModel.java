@@ -60,10 +60,10 @@ public class MiriamTreeModel extends DefaultTreeModel implements AnnotationEvent
 		}
 		public String getText() {
 			DataType dataType = miriamResource.getDataType();
-			if (dataType!=null){
+			if (dataType!=null) {
 				return miriamResource.getDataType().getDataTypeName()+" ("+miriamResource.getIdentifier()+")";
-			}else{
-				return "UNKNOWN DATA TYPE (urn="+miriamResource.getMiriamURN()+")";
+			} else {
+				return "UNKNOWN DATA TYPE (urn="+miriamResource.getMiriamURN() + ")";
 			}
 		}
 		public MIRIAMQualifier getMiriamQualifier() {

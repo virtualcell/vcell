@@ -43,6 +43,7 @@ import org.vcell.util.document.Identifiable;
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.biomodel.meta.VCMetaData;
 import cbit.vcell.biomodel.meta.xml.rdf.XMLRDFWriter;
+import cbit.vcell.model.Species;
 import cbit.vcell.xml.XMLTags;
 
 /**
@@ -260,11 +261,13 @@ public class SBMLAnnotationUtil {
 	 */
 	public void readAnnotation(Identifiable identifiable, SBase sBase) throws XMLStreamException {
 		readMetaID(identifiable, sBase);
-		XMLNode annotationRoot = sBase.getAnnotation().getXMLNode();
+		XMLNode annotationRoot = sBase.getAnnotation().getFullAnnotation();
 		if (annotationRoot != null) {
 			long childCount = annotationRoot.getNumChildren();
 			for(int i = 0; i < childCount; ++i) {
 				XMLNode annotationBranch = annotationRoot.getChild(i);
+//				String txt = annotationBranch.toXMLString();
+//				System.out.println(txt);
 				String namespace = annotationBranch.getNamespaceURI(annotationBranch.getPrefix());
 				if(namespace != null) {
 					if(namespace.equals(DefaultNameSpaces.RDF.uri)) {

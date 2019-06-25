@@ -231,10 +231,16 @@ public class AnnotationMapping {
 				if(xref.getDb().toLowerCase().equals("uniprot")){
 //					String name = dbReader.getMoleculeDataBaseReference(xref.getId());
 //					if(name != null)names.add(name);
+//					if(xref.getId() != null && xref.getDb().toLowerCase() != null) {
+//						names.add(xref.getDb().toLowerCase()+ ":" + xref.getId());
+//					}
 //					System.out.println(xref.getId() + ">>>>>>>"+ name);
 				}else if(xref.getDb().toLowerCase().equals("interpro")){
 //					String name = dbReader.getMoleculeDataBaseReference("interpro", xref.getId());
 //					if(name != null)names.add(name);
+//					if(xref.getId() != null && xref.getDb().toLowerCase() != null) {
+//						names.add(xref.getDb().toLowerCase()+ ":" + xref.getId());
+//					}
 //					System.out.println(xref.getId() + ">>>>>>>"+ name);
 				}else if(xref.getDb().toLowerCase().equals("obo.chebi")){
 					String id = xref.getId().substring(6);
@@ -242,8 +248,13 @@ public class AnnotationMapping {
 					if(name != null)names.add(name);
 //					System.out.println(xref.getId() + ">>>>>>>"+ name);
 				}else if(xref.getDb().toLowerCase().equals("gene_ontology")){
-					String name = dbReader.getGOTerm(xref.getId());
-					if(name != null)names.add(name);
+//					String name = dbReader.getGOTerm(xref.getId());
+//					if(name != null) {
+//						names.add(name);
+//					} else 
+//					if(xref.getId() != null && xref.getDb().toLowerCase() != null) {
+//						names.add(xref.getDb().toLowerCase()+ ":" + xref.getId());
+//					}
 //					System.out.println(xref.getId() + ">>>>>>>"+ name);
 				}
 //				else if(xref.getDb().toLowerCase().equals("ec-code")){

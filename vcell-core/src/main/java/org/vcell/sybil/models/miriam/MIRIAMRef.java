@@ -56,7 +56,15 @@ public class MIRIAMRef extends KeyOfTwo<String, String> {
 				throw new URNParseFailureException(e.getMessage());
 			}
 			String[] pathParts = url.getPath().split("/");
-			if(pathParts.length == 3){
+			if(pathParts.length == 3) {				// post processing when importing from SBML (from BMDB database for example)
+				if(pathParts[1].equalsIgnoreCase("go")) {
+					pathParts[1] = "obo.go";
+				} else if(pathParts[1].equalsIgnoreCase("obo.chebi")) {
+					pathParts[1] = "chebi";
+				} else if(pathParts[1].contains("omim")) {
+					System.out.println(pathParts[1]);
+					pathParts[1] = "omim";
+				}
 				return new MIRIAMRef(pathParts[1],pathParts[2]);
 			}else{
 				throw new URNParseFailureException("couldn't interpret urn "+urn);

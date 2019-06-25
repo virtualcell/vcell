@@ -1996,6 +1996,12 @@ public class SBMLImporter {
 
 			sbmlAnnotationUtil.readAnnotation(vcBioModel, sbmlModel);
 			sbmlAnnotationUtil.readNotes(vcBioModel, sbmlModel);
+//			try {
+//				vcBioModel.getVCMetaData().printRdfPretty();
+//				vcBioModel.getVCMetaData().printRdfStatements();
+//			} catch(Exception e) {
+//				System.out.println("Error importing RBM MetaData from SBML");
+//			}
 
 			vcBioModel.refreshDependencies();
 

@@ -135,6 +135,12 @@ public class VCMetaDataMiriamManager implements MiriamManager, Serializable {
 				"urn:miriam:kegg.pathway",
 				"KEGG PATHWAY is a collection of manually drawn pathway maps representing our knowledge on the molecular interaction and reaction networks.",
 				"hsa00620");
+		public final static DataType DataType_KEGGORTHOLOGY = new VCMetaDataDataType("KEGG Orthology",
+				"http://www.genome.jp/kegg/orthology/",
+				"https://www.kegg.jp/entry/",
+				"urn:miriam:kegg.orthology",
+				"KEGG ORTHOLOGY is undefined.",
+				"KO5079");
 		public final static DataType DataType_KEGGREACTION 	= new VCMetaDataDataType("KEGG Reaction",
 				"http://www.genome.jp/kegg/reaction/",
 				"https://www.kegg.jp/entry/",																// ^R\d+$
@@ -159,7 +165,7 @@ public class VCMetaDataMiriamManager implements MiriamManager, Serializable {
 				"https://reactome.org/PathwayBrowser/#/",													// (^R-[A-Z]{3}-\d+(-\d+)?(\.\d+)?$)|(^REACT_\d+(\.\d+)?$)
 				"urn:miriam:reactome",
 				"The Reactome project is a collaboration to develop a curated resource of core pathways and reactions in human biology.",
-				"R-HSA-201451");
+				"R-HSA-201451");																			// https://reactome.org/content/detail/R-HSA-50825
 		public final static DataType DataType_UNIPROT 		= new VCMetaDataDataType("UniProt",
 				"http://www.uniprot.org/",
 //				"http://www.ebi.uniprot.org/entry/",														// old
@@ -203,23 +209,92 @@ public class VCMetaDataMiriamManager implements MiriamManager, Serializable {
 //				"urn:miriam:",
 //				"BindingDB Description",
 //				null);
+		public final static DataType DataType_Mamo 			= new VCMetaDataDataType("Mamo",
+				"http://bioportal.bioontology.org/ontologies/MAMO/",
+				"http://identifiers.org/mamo/",
+				"urn:miriam:mamo",
+				"Mathematical Modelling Ontology (MAMO) is a classification of the types of mathematical models used  in the life sciences.",
+				"MAMO_0000046");		// 7 digits
+		public final static DataType DataType_Teddy			= new VCMetaDataDataType("Teddy",
+				"http://co.mbine.org/standards/teddy/",
+				"https://www.ebi.ac.uk/ols/ontologies/teddy/terms?short_form=",
+				"urn:miriam:biomodels.teddy",
+				"The Terminology for Description of Dynamics (TEDDY) is an ontology for dynamical behaviours, observable dynamical phenomena, and control elements of bio-models and biological systems in Systems Biology and Synthetic Biology.",
+				"TEDDY_0000035");
+		public final static DataType DataType_PubChem_Compound	= new VCMetaDataDataType("PubChem Compound",
+				"https://pubchem.ncbi.nlm.nih.gov/",
+				"https://pubchem.ncbi.nlm.nih.gov/summary/summary.cgi?cid=",
+				"urn:miriam:pubchem.compound",
+				"PubChem is the collection of freely accessible chemical information.",
+				"24794350");
+		public final static DataType DataType_PubChem_Substance	= new VCMetaDataDataType("PubChem Substance",
+				"https://pubchem.ncbi.nlm.nih.gov/",
+				"https://pubchem.ncbi.nlm.nih.gov/summary/summary.cgi?cid=",
+				"urn:miriam:pubchem.substance",
+				"PubChem is the collection of freely accessible chemical information.",
+				"3324");
+		public final static DataType DataType_Doid			= new VCMetaDataDataType("Doid",
+				"http://disease-ontology.org/",
+				"http://purl.bioontology.org/ontology/DOID/",		// http://disease-ontology.org/term/
+				"urn:miriam:doid",
+				"The Human Disease Ontology is a standardized ontology for human disease disease terms, phenotype characteristics and related medical vocabulary disease concepts.",
+				"DOID:417");
+		public final static DataType DataType_Omim			= new VCMetaDataDataType("Omim",
+				"https://www.omim.org/",
+				"https://www.omim.org/entry/",
+				"urn:miriam:omim",
+				"OMIM is a comprehensive, authoritative compendium of human genes and genetic phenotypes.",
+				"601997");
+		public final static DataType DataType_3dmet	= new VCMetaDataDataType("3Dmet",
+				"http://www.3dmet.dna.affrc.go.jp/",
+				"http://www.3dmet.dna.affrc.go.jp/cgi/show_data.php?acc=",
+				"urn:miriam:3dmet",
+				"3DMET is a database collecting three-dimensional structures of natural metabolites.",
+				"B00006");
+		public final static DataType DataType_CL			= new VCMetaDataDataType("Cell Ontology",
+				"http://bioportal.bioontology.org/ontologies/CL/",
+				"http://purl.bioontology.org/ontology/CL/",
+				"urn:miriam:cl",
+				"The Cell Ontology is a structured controlled vocabulary for cell types.",
+				"CL:0000145");
+		public final static DataType DataType_Cas			= new VCMetaDataDataType("Cas",
+				"http://commonchemistry.org/",
+				"http://commonchemistry.org/ChemicalDetail.aspx?ref=",
+				"urn:miriam:cas",
+				"CAS (Chemical Abstracts Service) is a comprehensive database of chemical information.",
+				"50-78-2");
+		public final static DataType DataType_BTO			= new VCMetaDataDataType("BTO",
+				"http://bioportal.bioontology.org/ontologies/BTO/",
+				"http://purl.bioontology.org/ontology/BTO/",
+				"urn:miriam:bto",
+				"The Brenda Tissue Ontology is a structured controlled vocabulary used to identify the source of an enzyme cited in the Brenda enzyme database. It comprises terms of tissues, cell lines, cell types and cell cultures.",
+				"BTO:0000028");
+		public final static DataType DataType_Pato			= new VCMetaDataDataType("Pato",
+				"http://bioportal.bioontology.org/ontologies/PATO/",
+				"http://purl.bioontology.org/ontology/PATO/",
+				"urn:miriam:pato",
+				"PATO is an ontology of phenotypic qualities.",
+				"PATO:0002220");
+		public final static DataType DataType_PW			= new VCMetaDataDataType("Pw",
+				"http://rgd.mcw.edu/rgdweb/ontology/",
+				"http://rgd.mcw.edu/rgdweb/ontology/annot.html?acc_id=",
+				"urn:miriam:pw",
+				"The Pathway Ontology captures information on biological networks, the relationships between networks and the alterations or malfunctioning of such networks within a hierarchical structure.",
+				"PW:0000703");
 
 		private String name = null;
 		private String siteUrl = null;
+		private String urlPrefix = null;
 		private String urnPrefix = null;
 		private String description = null;
-		private String urlPrefix = null;
 		private String example = null;
 		
-//		public VCMetaDataDataType(String name, String siteUrl, String urlPrefix, String urnPrefix, String description) {
-//			this(name, siteUrl, urlPrefix, urnPrefix, description, null);
-//		}
 		public VCMetaDataDataType(String name, String siteUrl, String urlPrefix, String urnPrefix, String description, String example) {
 			this.name = name;
 			this.siteUrl = siteUrl;
+			this.urlPrefix = urlPrefix;
 			this.urnPrefix = urnPrefix;
 			this.description = description;
-			this.urlPrefix = urlPrefix;
 			this.example = example;
 			all.put(urnPrefix,this);
 		}
@@ -270,7 +345,8 @@ public class VCMetaDataMiriamManager implements MiriamManager, Serializable {
 			this.sybilRef = argSybilRef;
 		}
 		public DataType getDataType() {
-			DataType dataType = VCMetaDataDataType.all.get("urn:miriam:"+sybilRef.type());
+			String key = "urn:miriam:"+sybilRef.type();
+			DataType dataType = VCMetaDataDataType.all.get(key);
 			return dataType;
 		}
 		public String getMiriamURN() {

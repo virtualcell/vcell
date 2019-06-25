@@ -464,11 +464,11 @@ public BioModel getBioModel(Element param,VCellSoftwareVersion docVcellSoftwareV
 	String name = unMangle(param.getAttributeValue(XMLTags.NameAttrTag));
 	try {
 		biomodel.setName( name );
-		//String annotation = param.getAttributeValue(XMLTags.AnnotationAttrTag);
+//		String annotation = param.getAttributeValue(XMLTags.AnnotationAttrTag);
 
-		//if (annotation!=null) {
-			//biomodel.setDescription(unMangle(annotation));
-		//}
+//		if (annotation!=null) {
+//			biomodel.setDescription(unMangle(annotation));
+//		}
 		//get annotation
 		String annotationText = param.getChildText(XMLTags.AnnotationTag, vcNamespace);
 		if (annotationText!=null && annotationText.length()>0) {
