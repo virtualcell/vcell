@@ -281,7 +281,32 @@ public class VCMetaDataMiriamManager implements MiriamManager, Serializable {
 				"urn:miriam:pw",
 				"The Pathway Ontology captures information on biological networks, the relationships between networks and the alterations or malfunctioning of such networks within a hierarchical structure.",
 				"PW:0000703");
-
+		public final static DataType DataType_Mod			= new VCMetaDataDataType("Mod",
+				"https://www.ebi.ac.uk/ols/ontologies/mod/",
+				"https://www.ebi.ac.uk/ols/ontologies/mod/terms?obo_id=",
+				"urn:miriam:mod",											// or urn:miriam:​obo.psi-mod
+				"The Proteomics Standards Initiative modification ontology (PSI-MOD, MOD) aims to define a concensus nomenclature and ontology reconciling, in a hierarchical representation, the complementary descriptions of residue modifications.",
+				"MOD:00046");												// or  MOD:00696
+		public final static DataType DataType_Fma			= new VCMetaDataDataType("Fma",
+				"http://purl.bioontology.org/ontology/FMA_subset/",
+				"https://www.ebi.ac.uk/ols/ontologies/fma/terms?obo_id=",
+				"urn:miriam:fma",
+				"The Foundational Model of Anatomy Ontology (FMA) represents a coherent body of explicit declarative knowledge about human anatomy.",
+				"FMA:74531");
+		public final static DataType DataType_Pr			= new VCMetaDataDataType("Pr",
+				"https://proconsortium.org/",
+				"http://purl.bioontology.org/ontology/PR/",	// or https://proconsortium.org/app/entry/  or  https://www.ebi.ac.uk/ols/ontologies/pr/terms?obo_id=
+				"urn:miriam:pr",
+				"The PRotein Ontology (PRO) describes the relationships of proteins and protein evolutionary classes, to delineate the multiple protein forms of a gene locus.",
+				"PR:000007300");
+		public final static DataType DataType_SBO			= new VCMetaDataDataType("SBO",
+				"https://www.ebi.ac.uk/sbo/",
+				"https://www.ebi.ac.uk/ols/ontologies/sbo/terms?obo_id=",
+				"urn:miriam:biomodels.sbo",
+				"The Systems Biology Ontology maintains controlled vocabularies and ontologies tailored specifically for the kinds of problems being faced in Systems Biology, especially in the context of computational modeling.",
+				"SBO:0000170");
+		
+		
 		private String name = null;
 		private String siteUrl = null;
 		private String urlPrefix = null;

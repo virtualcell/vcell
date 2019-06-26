@@ -62,8 +62,9 @@ public class MIRIAMRef extends KeyOfTwo<String, String> {
 				} else if(pathParts[1].equalsIgnoreCase("obo.chebi")) {
 					pathParts[1] = "chebi";
 				} else if(pathParts[1].contains("omim")) {
-					System.out.println(pathParts[1]);
 					pathParts[1] = "omim";
+				} else if(pathParts[1].equalsIgnoreCase("obo.psi-mod")) {
+					pathParts[1] = "mod";
 				}
 				return new MIRIAMRef(pathParts[1],pathParts[2]);
 			}else{
@@ -79,6 +80,7 @@ public class MIRIAMRef extends KeyOfTwo<String, String> {
 			throw new URNParseFailureException(urn + "Second component needs to be 'miriam', but is '" + split[1] + "'");
 		}
 		String type = decode(split[2]);
+		type = type.toLowerCase();
 		String id = "";
 		if(split.length == 4) {
 			id += decode(split[3]);
