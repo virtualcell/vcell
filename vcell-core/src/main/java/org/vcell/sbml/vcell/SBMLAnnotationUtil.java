@@ -266,8 +266,6 @@ public class SBMLAnnotationUtil {
 			long childCount = annotationRoot.getNumChildren();
 			for(int i = 0; i < childCount; ++i) {
 				XMLNode annotationBranch = annotationRoot.getChild(i);
-//				String txt = annotationBranch.toXMLString();
-//				System.out.println(txt);
 				String namespace = annotationBranch.getNamespaceURI(annotationBranch.getPrefix());
 				if(namespace != null) {
 					if(namespace.equals(DefaultNameSpaces.RDF.uri)) {
@@ -360,7 +358,9 @@ public class SBMLAnnotationUtil {
 		if (notesNode != null) {
 			Element notesElement = xmlNodeToElement(notesNode);
 			if (notesElement != null) {
-				metaData.setXhtmlNotes(identifiable, notesElement);
+//				metaData.setXhtmlNotes(identifiable, notesElement);
+				String txt = notesNode.toXMLString();
+				metaData.setFreeTextAnnotation(identifiable, txt);
 			}
 		}
 	}

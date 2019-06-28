@@ -21,6 +21,7 @@ import java.awt.event.MouseEvent;
 
 import javax.swing.JLabel;
 import javax.swing.JTextArea;
+import javax.swing.JTextPane;
 
 import org.vcell.util.Compare;
 
@@ -35,7 +36,7 @@ import cbit.vcell.client.PopupGenerator;
 public class BioModelEditorAnnotationPanel extends DocumentEditorSubPanel {
 	private BioModel bioModel = null;
 	private EventHandler eventHandler = new EventHandler();
-	private JTextArea annotationTextArea;
+	private JTextPane annotationTextArea;
 
 	private class EventHandler extends MouseAdapter implements FocusListener {
 		public void focusGained(FocusEvent e) {
@@ -80,9 +81,11 @@ private void handleException(java.lang.Throwable exception) {
  */
 private void initialize() {
 	try {		
-		annotationTextArea = new javax.swing.JTextArea();
-		annotationTextArea.setLineWrap(true);
-		annotationTextArea.setWrapStyleWord(true);
+		annotationTextArea = new javax.swing.JTextPane();
+//		annotationTextArea.setLineWrap(true);
+//		annotationTextArea.setWrapStyleWord(true);
+		annotationTextArea.setContentType("text/html");
+		annotationTextArea.setEditable(false);
 		
 		setLayout(new GridBagLayout());
 		setBackground(Color.white);
@@ -121,7 +124,7 @@ private void changeAnnotation() {
 		}
 		String textAreaStr = (annotationTextArea.getText() == null || annotationTextArea.getText().length()==0?null:annotationTextArea.getText());
 		if(!Compare.isEqualOrNull(bioModel.getVCMetaData().getFreeTextAnnotation(bioModel),textAreaStr)){
-			bioModel.getVCMetaData().setFreeTextAnnotation(bioModel, textAreaStr);	
+//			bioModel.getVCMetaData().setFreeTextAnnotation(bioModel, textAreaStr);	
 		}
 	} catch(Exception e){
 		e.printStackTrace(System.out);
