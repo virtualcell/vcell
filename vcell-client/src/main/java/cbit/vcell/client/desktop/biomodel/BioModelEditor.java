@@ -640,7 +640,7 @@ private void initialize() {
 		bioModelEditorSabioPanel = new BioModelEditorSabioPanel();
 		leftBottomTabbedPane.addTab("Sabio", bioModelEditorSabioPanel);
 		int index = leftBottomTabbedPane.getTabCount() - 1;
-		leftBottomTabbedPane.setEnabledAt(index, false);
+//		leftBottomTabbedPane.setEnabledAt(index, false);
 		rightSplitPane.setTopComponent(bioModelEditorModelPanel);
 		
 		bioModelEditorTreeModel = new BioModelEditorTreeModel(documentEditorTree);
