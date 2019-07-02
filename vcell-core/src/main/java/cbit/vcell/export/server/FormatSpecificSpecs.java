@@ -130,9 +130,9 @@ public abstract class FormatSpecificSpecs implements Serializable {
 				}
 				case Coordinate.Y_AXIS:{
 					//
-					// ZX plane
+					// XZ plane
 					//
-					return new Dimension(mesh.getSizeZ(),mesh.getSizeX());
+					return new Dimension(mesh.getSizeX(),mesh.getSizeZ());
 				}
 				case Coordinate.Z_AXIS:{
 					//
