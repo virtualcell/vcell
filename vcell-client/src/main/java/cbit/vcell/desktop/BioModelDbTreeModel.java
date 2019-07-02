@@ -64,7 +64,7 @@ protected void createBaseTree() throws DataAccessException {
 	rootNode.add(tutorialModelsNode);
 	rootNode.add(educationModelsNode);
 	rootNode.add(allPublicModelsNode);
-//	rootNode.add(modelBricksNode);
+	rootNode.add(modelBricksNode);
 	
 	allPublicModelsNode.add(publishedModelsNode);
 	allPublicModelsNode.add(curatedModelsNode);
