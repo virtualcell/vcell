@@ -260,10 +260,10 @@ public class NFSimGeneralOptionsPanel  extends CollapsiblePanel {
 		
 		// TODO: temporarily disable the button
 		// UNDO THIS WHEN DEVELOPMENT IS COMPLETE
-//		if(solverTaskDescription.getSolverDescription().isNFSimSolver()) {
-//			getMultiRunButton().setEnabled(false);
-//			return;
-//		}
+		if(solverTaskDescription.getSolverDescription().isNFSimSolver()) {
+			getMultiRunButton().setEnabled(false);
+			return;
+		}
 
 		
 	}
