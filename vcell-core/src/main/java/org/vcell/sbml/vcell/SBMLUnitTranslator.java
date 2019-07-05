@@ -184,6 +184,9 @@ public static UnitDefinition getSBMLUnitDefinition(VCUnitDefinition vcUnitDefn, 
 			if (kind==Kind.ITEM){
 				kindSymbol = "molecules";
 			}
+			if(kind == Kind.METER) {
+				kind = Kind.METRE;
+			}
 			VCUnitDefinition kindVcUnit = vcUnitSystem.getInstance(kindSymbol);
 			if (kindVcUnit.isCompatible(vcUnit)){
 				if (kindVcUnit.isEquivalent(vcUnit)){
