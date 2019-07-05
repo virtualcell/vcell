@@ -42,6 +42,7 @@ import org.vcell.util.document.BioModelChildSummary;
 import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.MathModelChildSummary;
 import org.vcell.util.document.MathModelInfo;
+import org.vcell.util.document.PublicationInfo;
 import org.vcell.util.document.VCDocumentInfo;
 import org.vcell.util.gui.CollapsiblePanel;
 import org.vcell.util.gui.generic.DatePanel;
@@ -92,6 +93,44 @@ public class DatabaseSearchPanel extends CollapsiblePanel {
 					if (mathModelChildSummary.toDatabaseSerialization().toLowerCase().contains(lowerCaseNamePattern)) {
 						return true;
 					}
+				}
+			}
+			if(docInfo.getPublicationInfos().length > 0) {	// search in the publication info
+				for(PublicationInfo pi : docInfo.getPublicationInfos()) {
+					if(pi.getTitle() != null && pi.getTitle().length() > 0) {
+						if(pi.getTitle().toLowerCase().contains(lowerCaseNamePattern)) {
+							return true;
+						}
+					}
+					if(pi.getAuthors().length > 0) {
+						for(String author : pi.getAuthors()) {
+							if(author.toLowerCase().contains(lowerCaseNamePattern)) {
+								return true;
+							}
+						}
+					}
+					if(pi.getCitation() != null && pi.getCitation().length() > 0) {
+						if(pi.getCitation().toLowerCase().contains(lowerCaseNamePattern)) {
+							return true;
+						}
+					}
+					if(pi.getPubmedid() != null && pi.getPubmedid().length() > 0) {
+						if(pi.getPubmedid().toLowerCase().contains(lowerCaseNamePattern)) {
+							return true;
+						}
+						if("PubMed PMID:".toLowerCase().contains(lowerCaseNamePattern)) {
+							return true;
+						}
+					}
+					if(pi.getDoi() != null && pi.getDoi().length() > 0) {
+						if(pi.getDoi().toLowerCase().contains(lowerCaseNamePattern)) {
+							return true;
+						}
+						if("DOI:".toLowerCase().contains(lowerCaseNamePattern)) {
+							return true;
+						}
+					}
+					
 				}
 			}
 			return false;
