@@ -122,6 +122,15 @@ public final class BeanUtils {
 		}
 	};
 
+	public static Range selectRange(boolean bAuto,boolean bAllTimes,Range rangeFromClient,Range currentVarAndTimeValRange) {
+		if(bAuto && !bAllTimes) {// value range at each current time-point
+			return currentVarAndTimeValRange;
+		}
+		// will have been set by user, custom range
+		// or will have been calculated during sim run (PostProcessing), if bAlltimes selected
+		return rangeFromClient;
+	}
+
 	public static <T> T[] addElement(T[] array, T element) {
 		@SuppressWarnings("unchecked")
 		T[] arrayNew =

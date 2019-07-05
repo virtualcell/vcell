@@ -11,6 +11,7 @@
 package cbit.vcell.export.server;
 import java.io.Serializable;
 
+import org.vcell.util.BeanUtils;
 import org.vcell.util.Compare;
 import org.vcell.util.Matchable;
 import org.vcell.util.Range;
@@ -255,12 +256,13 @@ public String toString() {
 		return "ExportSpecs [" + getVCDataIdentifier() + ", format: " + getFormat() + ", " + getVariableSpecs() + ", " + getGeometrySpecs() + ", " + getFormatSpecificSpecs() + "]";
 }
 
-public static void setupDisplayAdapterService(DisplayPreferences displayPreferences,DisplayAdapterService displayAdapterService,Range valueDomain) {
-	displayAdapterService.setValueDomain(valueDomain);
-
-	Range activeScaleRange = (displayPreferences==null?valueDomain:(displayPreferences.getScaleSettings()==null?valueDomain:displayPreferences.getScaleSettings()));
-	displayAdapterService.setActiveScaleRange(activeScaleRange);
+public static void setupDisplayAdapterService(DisplayPreferences displayPreferences,DisplayAdapterService displayAdapterService,Range currentVarAndTimeValRange) {
+	displayAdapterService.setValueDomain(currentVarAndTimeValRange);
 	
+	displayAdapterService.setActiveScaleRange(currentVarAndTimeValRange);
+	if(displayPreferences != null) {
+		displayAdapterService.setActiveScaleRange(BeanUtils.selectRange(displayPreferences.isAuto(), displayPreferences.isAlltimes(), displayPreferences.getScaleSettings(), currentVarAndTimeValRange));
+	}
 	String colorMode = (displayPreferences==null?DisplayAdapterService.BLUERED:(displayPreferences.getColorMode()==null?DisplayAdapterService.BLUERED:displayPreferences.getColorMode()));
 	displayAdapterService.setActiveColorModelID(colorMode);
 	

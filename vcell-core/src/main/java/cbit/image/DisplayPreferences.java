@@ -26,6 +26,8 @@ public class DisplayPreferences implements java.io.Serializable,Matchable {
 	private org.vcell.util.Range scaleSettings;
 	private int[] specialColors;
 	BitSet domainValid;
+	private boolean bAuto = false;
+	private boolean bAllTimes = false;
 
 /**
  * Insert the method's description here.
@@ -33,15 +35,23 @@ public class DisplayPreferences implements java.io.Serializable,Matchable {
  * @param colorMode java.lang.String
  * @param scaleSettingd cbit.image.Range
  */
-public DisplayPreferences(String colorMode, Range scaleSettings,int[] specialColors) {
+public DisplayPreferences(String colorMode, Range scaleSettings,int[] specialColors,boolean bAuto,boolean bAllTimes) {
 	this.colorMode = colorMode;
 	this.scaleSettings = scaleSettings;
 	this.specialColors = specialColors;
+	this.bAuto = bAuto;
+	this.bAllTimes = bAllTimes;
 }
 
 public DisplayPreferences(DisplayPreferences displayPreferences,BitSet domainValid){
-	this(displayPreferences.colorMode,displayPreferences.scaleSettings,displayPreferences.specialColors);
+	this(displayPreferences.colorMode,displayPreferences.scaleSettings,displayPreferences.specialColors,displayPreferences.bAuto,displayPreferences.bAllTimes);
 	this.domainValid = domainValid;
+}
+public boolean isAuto() {
+	return bAuto;
+}
+public boolean isAlltimes() {
+	return bAllTimes;
 }
 public BitSet getDomainValid(){
 	return domainValid;

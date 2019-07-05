@@ -551,11 +551,11 @@ public Range getCustomScaleRange() {
  * @param stateID java.lang.String
  */
 public DisplayPreferences getDisplayPreferences(String stateID) {
-    if (hasStateID(stateID)) {
+    if (hasStateID(stateID) && !getAutoScale()) {
         DisplayAdapterServiceState storedState = (DisplayAdapterServiceState) states.get(stateID);
-        return new DisplayPreferences(getActiveColorModelID(), storedState.getCustomScaleRange(),getSpecialColors()/*storedState.getCustomSpecialColors()*/);
+        return new DisplayPreferences(getActiveColorModelID(), storedState.getCustomScaleRange(),getSpecialColors()/*storedState.getCustomSpecialColors()*/,getAutoScale(),getAllTimes());
     } else {
-        return new DisplayPreferences(getActiveColorModelID(), getActiveScaleRange(),getSpecialColors());
+        return new DisplayPreferences(getActiveColorModelID(), getActiveScaleRange(),getSpecialColors(),getAutoScale(),getAllTimes());
     }
 }
 

@@ -38,6 +38,8 @@ import javax.swing.JSlider;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
+import org.vcell.util.BeanUtils;
+import org.vcell.util.Range;
 import org.vcell.util.gui.DialogUtils;
 
 import cbit.image.DisplayAdapterService;
@@ -511,14 +513,18 @@ public class MediaSettingsPanel extends JPanel {
 						exportInfoJTextArea.append("Display Scaling: "+imageScale+(meshMode==ImagePaneModel.MESH_MODE?" ("+scalingCombobox.getSelectedItem()+")":"")+"\n");
 						exportInfoJTextArea.append("\nVariable Display Preferences:\n");
 						for (int i = 0; i < variableNames.length; i++) {
-							boolean bDefaultScaleRange = displayPreferences[i].getScaleSettings() == null;
+							Range dataScaleRange = BeanUtils.selectRange(displayPreferences[i].isAuto(), displayPreferences[i].isAlltimes(), displayPreferences[i].getScaleSettings(), null);;
+							
 							boolean bSpecialColorsCustom =
 								!Arrays.equals(DisplayAdapterService.createGraySpecialColors(), displayPreferences[i].getSpecialColors()) &&
 								!Arrays.equals(DisplayAdapterService.createBlueRedSpecialColors(), displayPreferences[i].getSpecialColors());
 							exportInfoJTextArea.append(
 								"'"+variableNames[i]+"':\n"+
 								"     ColorScheme: "+(displayPreferences[i].isGrayScale()?"Gray":"Color")+" (click 'Gray' or 'BlueRed' in 'Results Viewer' to change)\n"+
-								"     Value Scale Range: "+(bDefaultScaleRange?"Min/Max each timepoint (uncheck 'Auto(current time)' in 'Results Viewer' to change)":"User Defined->"+displayPreferences[i].getScaleSettings())+"\n"+
+								"     Data Scale Range: "+
+									(displayPreferences[i].isAuto() && !displayPreferences[i].isAlltimes()?"Min/Max at each timepoint (uncheck 'Auto(current time)' in 'Results Viewer' to change)":
+										(!displayPreferences[i].isAuto()?"User Defined->"+dataScaleRange:"All Times->"+dataScaleRange)
+									)+"\n"+
 								"     Special Colors: "+(bSpecialColorsCustom?"User Defined":"Default (right-click 'BM AM NN ND NR' color bar in 'Results Viewer' to change)")+"\n"+
 								"     Domain Infomation: "+(displayPreferences[i].getDomainValid()==null?"False":"True")+"\n"
 							);

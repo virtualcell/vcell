@@ -1377,8 +1377,8 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 				GeometrySpecs geometrySpecs = new GeometrySpecs(null, Coordinate.Z_AXIS, 0, geoMode);
 				
 				double duration = 10000; //10s
-				DisplayPreferences pref1 = new DisplayPreferences("BlueRed", new Range(0.01,1.1),DisplayAdapterService.createBlueRedSpecialColors());
-				DisplayPreferences pref2 = new DisplayPreferences("BlueRed", new Range(0.01,1.1),DisplayAdapterService.createBlueRedSpecialColors());
+				DisplayPreferences pref1 = new DisplayPreferences("BlueRed", new Range(0.01,1.1),DisplayAdapterService.createBlueRedSpecialColors(),true,false);
+				DisplayPreferences pref2 = new DisplayPreferences("BlueRed", new Range(0.01,1.1),DisplayAdapterService.createBlueRedSpecialColors(),true,false);
 				DisplayPreferences[] displayPref = new DisplayPreferences[]{pref1, pref2};
 				int imageScale = 1;
 				int membraneScale = 1;
