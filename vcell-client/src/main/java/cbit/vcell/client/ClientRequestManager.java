@@ -64,6 +64,7 @@ import javax.swing.filechooser.FileFilter;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpEntity;
+import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -2340,6 +2341,9 @@ public static void downloadExportedData(final Component requester, final UserPre
 					CloseableHttpResponse response = null;
 					try {
 						response = httpclient.execute(httpGetArr[0]);
+						if(response.getStatusLine() != null && (response.getStatusLine().getStatusCode() != HttpStatus.SC_OK)) {
+							throw new Exception(evt.getLocation()+" "+response.getStatusLine().getReasonPhrase());
+						}
 					    HttpEntity entity = response.getEntity();
 					    if (entity != null) {
 					    	long size = entity.getContentLength();
