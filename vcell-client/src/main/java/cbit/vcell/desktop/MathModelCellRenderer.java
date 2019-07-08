@@ -145,7 +145,16 @@ public java.awt.Component getTreeCellRendererComponent(JTree tree, Object value,
 				String username = nodeUser.getName();
 				if (username.equals(VCDocumentDbTreeModel.USER_tutorial)
 						|| username.equals(VCDocumentDbTreeModel.USER_Education)) {
-					setText(modelName);		// keep it simple for Education and Tutorial
+					if(node.getParent() instanceof BioModelNode && ((BioModelNode)node.getParent()).getUserObject() instanceof String) {
+						String pName = (String)((BioModelNode)node.getParent()).getUserObject();
+						if(pName.equals(VCDocumentDbTreeModel.Curated_MathModels)) {
+							setText("<html><b>" + nodeUser.getName() + " </b> : " + modelName + "</html>");	// we add the user name to Curated
+						} else {
+							component.setText(modelName);				// keep it simple for Education and Tutorial
+						}
+					} else {
+						component.setText(modelName);
+					}
 				} else if(nodeUser.compareEqual(sessionUser)) {
 					Object pNode  = node.getParent();
 					if(pNode instanceof BioModelNode) {
