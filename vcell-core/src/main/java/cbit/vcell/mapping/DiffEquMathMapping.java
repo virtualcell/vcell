@@ -1052,7 +1052,7 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 		SpeciesContextMapping scm = (SpeciesContextMapping)enum1.nextElement();
 		if (scm.getVariable()==null && scm.getDependencyExpression()!=null){
 			// check if speciesContext has a rateRule; then the speciesContext should not be added as a constant
-			if (rateRules == null) {
+//			if (rateRules == null) {
 				if (simContext.getRateRule(scm.getSpeciesContext()) == null) {
 					StructureMapping sm = simContext.getGeometryContext().getStructureMapping(scm.getSpeciesContext().getStructure());
 					if (sm.getGeometryClass() == null) {
@@ -1066,7 +1066,7 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 					dependentVariable.setDomain(new Domain(sm.getGeometryClass()));
 					varHash.addVariable(dependentVariable);
 				}
-			}
+//			}
 		}
 	}
 	BioEvent[] bioevents = simContext.getBioEvents();
