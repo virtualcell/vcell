@@ -89,7 +89,7 @@ public class Registry implements Serializable {
 	
 	public String generateFreeURI(Identifiable identifiable) {
 		while (true){
-			String uri = XMLTags.VCML_NS + "/" + identifiable.getClass().getName() + "/" + (Math.abs((new Random()).nextInt()));
+			String uri = XMLTags.VCML_NS + "/" + identifiable.getClass().getName() + "/metaid_" + (Math.abs((new Random()).nextInt()));
 			if (uriToEntry.get(uri)==null){
 				return uri;
 			}

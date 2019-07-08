@@ -20,6 +20,7 @@ import java.util.Vector;
 import javax.xml.stream.XMLStreamException;
 
 import org.jdom.Element;
+import org.jdom.output.XMLOutputter;
 import org.openrdf.model.Graph;
 import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
@@ -28,12 +29,14 @@ import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.rio.RDFParseException;
 import org.sbml.jsbml.Annotation;
 import org.sbml.jsbml.SBase;
+import org.sbml.jsbml.util.TreeNodeChangeEvent;
 import org.sbml.jsbml.xml.XMLAttributes;
 import org.sbml.jsbml.xml.XMLNamespaces;
 import org.sbml.jsbml.xml.XMLNode;
 import org.sbml.jsbml.xml.XMLTriple;
 import org.sbpax.impl.HashGraph;
 import org.sbpax.schemas.util.DefaultNameSpaces;
+import org.sbpax.schemas.util.NameSpace;
 import org.sbpax.util.SesameRioUtil;
 import org.vcell.sybil.rdf.RDFChopper;
 import org.vcell.sybil.rdf.smelt.NamespaceAssimilator;
@@ -97,7 +100,9 @@ public class SBMLAnnotationUtil {
 			Resource mappedResource = namespaceAssimilator.map(resource);
 			if(mappedResource instanceof URI) {
 				String metaID = ((URI) mappedResource).getLocalName();
-				sBase.setMetaId(metaID);				
+				// TODO: old meta id is badly formatted (numeric only), it needs to start with a letter
+				// the new format (set in generateFreeURI() in Registry.java) we have a "metaid_" prefix before the unique number
+				sBase.setMetaId(metaID);
 			}
 		}
 	}
@@ -129,6 +134,9 @@ public class SBMLAnnotationUtil {
 		XMLNode rootRDF = null;
 		if (rdfChunk != null && metaData.getBaseURIExtended() != null) {
 			Element element = XMLRDFWriter.createElement(rdfChunk, nsSBML);
+//			XMLOutputter o = new XMLOutputter();
+//			String ss1 = o.outputString(element);
+//			System.out.println(ss1);
 			if(element.getAttributes().isEmpty() && element.getContent().isEmpty()) {
 				// an empty element with just a namespace (as below) will be interpreted wrongly as a note and will fail with a null pointer exception
 				// <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" />
@@ -137,12 +145,17 @@ public class SBMLAnnotationUtil {
 			} else {
 				XMLNamespaces xmlnss = new XMLNamespaces();
 				xmlnss.add(DefaultNameSpaces.RDF.uri, DefaultNameSpaces.RDF.prefix);
+//				xmlnss.add(DefaultNameSpaces.BQBIOL.uri, DefaultNameSpaces.BQBIOL.prefix);
+//				xmlnss.add(DefaultNameSpaces.BQMODEL.uri, DefaultNameSpaces.BQMODEL.prefix);
 				String str = XmlUtil.xmlToString(element);
+				str = "<annotation>" + str;
+				str += "</annotation>";
 				rootRDF = XMLNode.convertStringToXMLNode(str, xmlnss);
 			}
 		}
 		if (rootRDF != null && rootRDF.getNumChildren() > 0) {
-			rootAnnotation.addChild(rootRDF);
+//			rootAnnotation.addChild(rootRDF);
+			sBase.setAnnotation(rootRDF);
 		}
 		
 		// Deal with the non-RDF; VCell free-text annotations
@@ -271,7 +284,7 @@ public class SBMLAnnotationUtil {
 					if(namespace.equals(DefaultNameSpaces.RDF.uri)) {
 						// read in RDF annotation
 						String text = annotationBranch.toXMLString();
-						
+
 						// TODO this is a hack to be replaced by proper URI management.
 						text = text.replace("about=\"#","about=\"");
 						Graph rdfNew = new HashGraph();
@@ -419,5 +432,29 @@ public class SBMLAnnotationUtil {
 			return vcellElement;
 		}
 		return null;
+	}
+
+	private static final String sameAs = "owl:sameAs";
+	private static final String startDesc = "<rdf:Description";
+	private static final String endDesc = "</rdf:Description>";
+	public static String postProcessCleanup(String ret) {
+		if(ret == null || ret.isEmpty()) {
+			return ret;
+		}
+		String result = "";
+		while(true) {
+			if(!ret.contains(sameAs)) {
+				break;							// exit condition
+			}
+			String prefix = ret.substring(0, ret.indexOf(sameAs));
+			String suffix = ret.substring(ret.indexOf(sameAs) + sameAs.length());
+			prefix = prefix.substring(0, prefix.lastIndexOf(startDesc));
+			int index = suffix.indexOf(endDesc) + endDesc.length();
+			suffix = suffix.substring(index);
+			result += prefix;
+			ret = suffix;
+		}
+		result += ret;
+		return result;
 	}
 }

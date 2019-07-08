@@ -175,6 +175,13 @@ public class VCMetaData implements Serializable {
 		
 	public void add(Graph rdfModel){
 		getRdfData().addAll(rdfModel);
+//		try {
+//			String s1 = printRdfStatements();
+//			String s2 = printRdfPretty();
+//			System.out.println(s2);
+//		} catch (RDFHandlerException e) {
+//			e.printStackTrace();
+//		}
 		miriamManager.invalidateCache();
 	}
 	

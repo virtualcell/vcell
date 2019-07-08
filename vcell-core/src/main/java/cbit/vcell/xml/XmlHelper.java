@@ -49,6 +49,7 @@ import org.sbml.jsbml.SBMLException;
 import org.vcell.cellml.CellQuanVCTranslator;
 import org.vcell.sbml.SbmlException;
 import org.vcell.sbml.vcell.MathModel_SBMLExporter;
+import org.vcell.sbml.vcell.SBMLAnnotationUtil;
 import org.vcell.sbml.vcell.SBMLExporter;
 import org.vcell.sbml.vcell.SBMLImporter;
 import org.vcell.sedml.RelativeFileModelResolver;
@@ -240,7 +241,11 @@ public static String exportSBML(VCDocument vcDoc, int level, int version, int pk
 			SBMLExporter sbmlExporter = new SBMLExporter(modifiedBiomodel, level, version, isSpatial);
 			sbmlExporter.setSelectedSimContext(simContextFromModifiedBioModel);
 			sbmlExporter.setSelectedSimulationJob(modifiedSimJob);
-			return sbmlExporter.getSBMLFile();
+			String ret  = sbmlExporter.getSBMLFile();
+			
+			// cleanup the string of all the "sameAs" statements
+			ret = SBMLAnnotationUtil.postProcessCleanup(ret);
+			return ret;
 		} catch (ExpressionException | SbmlException | SBMLException | XMLStreamException e) {
 			e.printStackTrace(System.out);
 			throw new XmlParseException(e);

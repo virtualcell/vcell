@@ -47,7 +47,9 @@ public class NamespaceAssimilator implements RDFSmelter {
 			rdfNew.add(subjectNew, predicateNew, objectNew);
 		}
 		for(Map.Entry<Resource, Resource> entry : resourceMap.entrySet()) {
-			rdfNew.add(entry.getKey(), OWL.SAMEAS, entry.getValue());
+			Resource subject = entry.getKey();
+			Resource value = entry.getValue();
+			rdfNew.add(subject, OWL.SAMEAS, value);
 		}
 		return rdfNew;
 	}
