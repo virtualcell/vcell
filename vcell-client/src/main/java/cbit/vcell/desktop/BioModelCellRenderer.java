@@ -200,8 +200,7 @@ public java.awt.Component getTreeCellRendererComponent(JTree tree, Object value,
 				if (username.equals(VCDocumentDbTreeModel.USER_tutorial)
 						|| username.equals(VCDocumentDbTreeModel.USER_Education)
 						|| username.equals(VCDocumentDbTreeModel.USER_tutorial610)
-						|| username.equals(VCDocumentDbTreeModel.USER_tutorial611)
-						|| username.equals(VCDocumentDbTreeModel.USER_modelBricks)) {
+						|| username.equals(VCDocumentDbTreeModel.USER_tutorial611)) {
 					if(node.getParent() instanceof BioModelNode && ((BioModelNode)node.getParent()).getUserObject() instanceof String) {
 						String pName = (String)((BioModelNode)node.getParent()).getUserObject();
 						if(pName.equals(VCDocumentDbTreeModel.Curated_BioModels)) {
@@ -212,6 +211,39 @@ public java.awt.Component getTreeCellRendererComponent(JTree tree, Object value,
 					} else {
 						component.setText(modelName);
 					}
+				} else if (username.equals(VCDocumentDbTreeModel.USER_modelBricks)) {
+					if(node.getParent() instanceof UserNameNode && sessionUser.getName().contentEquals(VCDocumentDbTreeModel.USER_modelBricks)) {
+						// login user is ModelBrick, must gray everything in the Other (Uncurated) folder
+						String toolTip = modelName;
+						String prefix = sel ? "" : "<span style=\"color:#808080\">";	// GRAY
+						String suffix = sel ? "" : "</span>";
+						String str1 = prefix + modelName + suffix;
+						component.setText("<html>" + str1 + "</html>");
+						component.setToolTipText(toolTip);
+
+					} else if(node.getParent() instanceof BioModelNode && ((BioModelNode)node.getParent()).getUserObject() instanceof String) {
+						String pName = (String)((BioModelNode)node.getParent()).getUserObject();
+						String toolTip = modelName;
+						if(!sessionUser.getName().contentEquals(VCDocumentDbTreeModel.USER_modelBricks) 
+								&& modelName.contains(VCDocumentDbTreeModel.ModelBricksNameSeparator)) {
+							modelName = modelName.substring(modelName.indexOf(VCDocumentDbTreeModel.ModelBricksNameSeparator) + VCDocumentDbTreeModel.ModelBricksNameSeparator.length());
+							String prefix = toolTip.substring(0, toolTip.indexOf(VCDocumentDbTreeModel.ModelBricksNameSeparator));
+							toolTip = "id: " + prefix + ", name: " + modelName;
+						}
+						if(pName.equals(VCDocumentDbTreeModel.Curated_BioModels)) {
+							setText("<html><b>" + nodeUser.getName() + " </b> : " + modelName + "</html>");	// we add the user name to Curated
+							component.setToolTipText(toolTip);
+						} else if(pName.equals(VCDocumentDbTreeModel.ModelBricks)) {
+							component.setText(modelName);
+							component.setToolTipText(toolTip);
+						} else {
+							component.setText(modelName);				// keep it simple for anything else
+							component.setToolTipText(toolTip);
+						}
+					} else {
+						component.setText(modelName);
+					}
+
 				} else if(nodeUser.compareEqual(sessionUser)) {
 					Object pNode  = node.getParent();
 					if(pNode instanceof BioModelNode) {

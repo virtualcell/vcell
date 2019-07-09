@@ -49,6 +49,7 @@ import cbit.vcell.client.desktop.TestingFrameworkWindowPanel;
 import cbit.vcell.client.desktop.TopLevelWindow;
 import cbit.vcell.client.server.ConnectionStatus;
 import cbit.vcell.client.server.SimStatusListener;
+import cbit.vcell.desktop.VCDocumentDbTreeModel;
 import cbit.vcell.field.gui.FieldDataGUIPanel;
 import cbit.vcell.field.gui.FieldDataWindow;
 /**
@@ -154,11 +155,19 @@ private long numberOfWindowsShowing( ) {
  * @return java.lang.String
  * @param version cbit.sql.Version
  */
-public static String createCanonicalTitle(VCDocument vcDocument) {
+public static String createCanonicalTitle(VCDocument vcDocument, User loginUser) {
 
 	Version version = vcDocument.getVersion();
 	VCDocumentType docType = vcDocument.getDocumentType();
 	String docName = (version != null?version.getName():(vcDocument.getName()==null?"NoName":vcDocument.getName()+" (NoVersion)"));
+	if(version != null && version.getOwner() != null && loginUser != null) {
+		User owner = version.getOwner();
+		if(docName.contains(VCDocumentDbTreeModel.ModelBricksNameSeparator) 
+			&& owner.getName().contentEquals(VCDocumentDbTreeModel.USER_modelBricks) 
+			&& !loginUser.getName().contentEquals(VCDocumentDbTreeModel.USER_modelBricks)) {
+			docName = docName.substring(docName.indexOf(VCDocumentDbTreeModel.ModelBricksNameSeparator) + VCDocumentDbTreeModel.ModelBricksNameSeparator.length());
+		}
+	}
 	java.util.Date docDate = (version != null?version.getDate():null);
 	VersionFlag versionFlag = (version != null?version.getFlag():null);
 	String title =
@@ -506,7 +515,7 @@ public void setCanonicalTitle(java.lang.String windowID) {
 	if (manager instanceof DocumentWindowManager) {
 		windowTitle =
 			createCanonicalTitle(
-				((DocumentWindowManager)manager).getVCDocument());
+				((DocumentWindowManager)manager).getVCDocument(), ((DocumentWindowManager)manager).getUser());
 	} else if (manager instanceof DatabaseWindowManager) {
 		windowTitle = "Database Manager";
 	} else if (manager instanceof TestingFrameworkWindowManager) {

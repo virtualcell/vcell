@@ -42,7 +42,7 @@ public BioModelDbTreeModel(JTree tree) {
 	publishedModelsNode = new BioModelNode(Published_BioModels, true);
 	curatedModelsNode = new BioModelNode(Curated_BioModels, true);
 	otherModelsNode = new BioModelNode(Other_BioModels, true);
-	modelBricksNode = new BioModelNode(ModelBricks, true);
+//	modelBricksNode = new BioModelNode(ModelBricks, true);
 }
 
 /**
@@ -64,7 +64,7 @@ protected void createBaseTree() throws DataAccessException {
 	rootNode.add(tutorialModelsNode);
 	rootNode.add(educationModelsNode);
 	rootNode.add(allPublicModelsNode);
-	rootNode.add(modelBricksNode);
+//	rootNode.add(modelBricksNode);
 	
 	allPublicModelsNode.add(publishedModelsNode);
 	allPublicModelsNode.add(curatedModelsNode);

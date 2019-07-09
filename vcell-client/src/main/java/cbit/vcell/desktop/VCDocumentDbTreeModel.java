@@ -103,6 +103,8 @@ public abstract class VCDocumentDbTreeModel extends DefaultTreeModel implements 
 	
 	public static final String SHARED_GEOMETRIES = "Shared Geometries";
 	public static final String PUBLIC_GEOMETRIES = "Public Geometries";
+	
+	public static final String ModelBricksNameSeparator = "::";
 /**
  * BioModelDbTreeModel constructor comment.
  * @param root javax.swing.tree.TreeNode
