@@ -340,6 +340,8 @@ protected synchronized static void initFinalTree(VCDocumentDbTreeModel vcDocumen
 				VCDocumentInfo versionVCDocumentInfo = (VCDocumentInfo) versionBioModelNode.getUserObject();
 				PublicationInfo[] piArray = versionVCDocumentInfo.getPublicationInfos();
 				if(	piArray != null && piArray.length > 0) {
+					boolean foundCurated = false;				// we already placed this version in Curated, no need to look for more publications for curated
+					boolean foundPublished = false;				// same as above for published
 					for(PublicationInfo pi : piArray) {
 						KeyValue key = pi.getPublicationKey();
 						if(!publicationsMap.containsKey(key)) {
@@ -347,6 +349,9 @@ protected synchronized static void initFinalTree(VCDocumentDbTreeModel vcDocumen
 						}
 						if(versionVCDocumentInfo.getVersion().getFlag().compareEqual(org.vcell.util.document.VersionFlag.Published)) {
 							// published
+							if(foundPublished) {
+								continue;
+							}
 							LinkedList<BioModelNode> modelsList;
 							if(publishedModelsMap.containsKey(key)) {
 								modelsList = publishedModelsMap.get(key);
@@ -358,9 +363,13 @@ protected synchronized static void initFinalTree(VCDocumentDbTreeModel vcDocumen
 							newPublishedNode.add(clonedNode);
 							modelsList.add(newPublishedNode);
 							publishedModelsMap.put(key, modelsList);
+							foundPublished = true;
 							
 						} else {
 							// curated
+							if(foundCurated) {
+								continue;		// otherwise we may add the same version multiple times to Curated, once for each PublicationInfo
+							}
 							// the code below shows by author + model name
 							BioModelNode newCuratedNode = new BioModelNode(new VCDocumentInfoNode(versionVCDocumentInfo), true);
 							BioModelNode clonedNode = versionBioModelNode.clone();
@@ -379,6 +388,7 @@ protected synchronized static void initFinalTree(VCDocumentDbTreeModel vcDocumen
 //							newCuratedNode.add(clonedNode);
 //							modelsList.add(newCuratedNode);
 //							curatedModelsMap.put(key, modelsList);
+							foundCurated = true;
 						}
 					}
 				}
