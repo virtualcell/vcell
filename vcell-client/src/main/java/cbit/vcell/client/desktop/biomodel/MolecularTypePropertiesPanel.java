@@ -684,7 +684,7 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 		gridy = 0;
 		gbc = new GridBagConstraints();
 		gbc.gridx = 0;
-		gbc.gridy = 0;
+		gbc.gridy = gridy;
 		gbc.anchor = GridBagConstraints.LINE_START;
 		gbc.insets = new Insets(4, 4, 4, 4);
 		JLabel pathwayLink = new JLabel("Linked Pathway Object(s): ");
@@ -695,8 +695,10 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 		gbc.gridx = 1; 
 		gbc.gridy = gridy;
 //		gbc.weightx = 1.0;
-		gbc.gridwidth = GridBagConstraints.REMAINDER;
-		gbc.fill = java.awt.GridBagConstraints.HORIZONTAL;
+		gbc.gridwidth = 3;
+		gbc.gridheight = 3;
+		gbc.anchor = GridBagConstraints.NORTHWEST;
+		gbc.fill = java.awt.GridBagConstraints.BOTH;
 		gbc.insets = new Insets(4, 4, 4, 4);
 		generalPanel.add(linkedPOScrollPane, gbc);
 		
@@ -704,14 +706,14 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 //		annotationTextArea.setContentType("text/html");
 //		annotationTextArea.setEditable(false);
 //		javax.swing.JScrollPane jsp = new javax.swing.JScrollPane(annotationTextArea);
-//		
+
 		gridy ++;
 		gbc = new java.awt.GridBagConstraints();
 		gbc.weightx = 1.0;
 		gbc.weighty = 1.0;
 		gbc.gridx = 0; 
 		gbc.gridy = gridy;
-//		gbc.gridwidth = 2;
+		gbc.gridwidth = 2;
 		gbc.anchor = GridBagConstraints.LINE_START;
 		gbc.fill = java.awt.GridBagConstraints.BOTH;
 		gbc.insets = new Insets(4, 4, 4, 4);

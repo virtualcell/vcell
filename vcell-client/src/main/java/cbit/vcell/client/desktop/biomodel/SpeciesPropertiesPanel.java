@@ -576,7 +576,6 @@ private void initialize() {
 		generalPanel.add(new JLabel("Linked Pathway Object(s)"), gbc);
 
 		linkedPOScrollPane = new JScrollPane();
-		
 		gbc = new java.awt.GridBagConstraints();
 		gbc.weightx = 1.0;
 		gbc.weighty = 0.1;
