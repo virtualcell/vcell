@@ -36,6 +36,7 @@ import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.AsynchClientTaskFunction;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.mapping.SimulationContext.Application;
 import cbit.vcell.mapping.SimulationContext.NetworkGenerationRequirements;
 import cbit.vcell.math.gui.MathDescEditor;
 import cbit.vcell.math.gui.MathDescPanel;
@@ -44,12 +45,12 @@ import cbit.vcell.math.gui.MathDescPanel;
 public class MathematicsPanel extends JPanel {
 	private JPanel mainPanel;
 	private JPanel ivjButtonsPanel;
-//	private JRadioButton ivjViewEqunsRadioButton = null;
-//	private JRadioButton ivjViewVCMDLRadioButton = null;
+	private JRadioButton ivjViewEqunsRadioButton = null;
+	private JRadioButton ivjViewVCMDLRadioButton = null;
 	private JButton ivjCreateMathModelButton = null;
 	private JButton ivjRefreshMathButton = null;
-//	private ButtonGroup ivjbuttonGroup = null;
-//	private MathDescPanel mathDescPanel = null;
+	private ButtonGroup ivjbuttonGroup = null;
+	private MathDescPanel mathDescPanel = null;
 	private IvjEventHandler ivjEventHandler = new IvjEventHandler();
 	private SimulationContext simulationContext = null;
 	private MultiPurposeTextPanel ivjVCMLPanel = null;
@@ -65,9 +66,9 @@ public class MathematicsPanel extends JPanel {
 				createMathModel(e);
 		}
 		public void itemStateChanged(java.awt.event.ItemEvent e) {
-//			if (e.getSource() == getViewEqunsRadioButton() || e.getSource() == getViewVCMDLRadioButton()) { 
-//				viewMath_ItemStateChanged(e);
-//			}
+			if (e.getSource() == getViewEqunsRadioButton() || e.getSource() == getViewVCMDLRadioButton()) { 
+				viewMath_ItemStateChanged(e);
+			}
 		};
 		
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
@@ -85,16 +86,16 @@ public class MathematicsPanel extends JPanel {
 		add(getButtonsPanel(), BorderLayout.NORTH);
 		add(getMainPanel(), BorderLayout.CENTER);	
 		
-//		ivjbuttonGroup = new javax.swing.ButtonGroup();
-//		ivjbuttonGroup.add(getViewEqunsRadioButton());
-//		ivjbuttonGroup.add(getViewVCMDLRadioButton());
-//		getViewEqunsRadioButton().addItemListener(ivjEventHandler);
-//		getViewVCMDLRadioButton().addItemListener(ivjEventHandler);
+		ivjbuttonGroup = new javax.swing.ButtonGroup();
+		ivjbuttonGroup.add(getViewEqunsRadioButton());
+		ivjbuttonGroup.add(getViewVCMDLRadioButton());
+		getViewEqunsRadioButton().addItemListener(ivjEventHandler);
+		getViewVCMDLRadioButton().addItemListener(ivjEventHandler);
 		getRefreshMathButton().addActionListener(ivjEventHandler);
 		getRefreshMathButton().setPreferredSize(getCreateMathModelButton().getPreferredSize());
 		getCreateMathModelButton().addActionListener(ivjEventHandler);
 		
-		cardLayout.show(getMainPanel(), getVCMLPanel().getName());
+//		cardLayout.show(getMainPanel(), getVCMLPanel().getName());
 	}
 	
 	private javax.swing.JPanel getButtonsPanel() {
@@ -102,11 +103,11 @@ public class MathematicsPanel extends JPanel {
 			ivjButtonsPanel = new javax.swing.JPanel();
 			ivjButtonsPanel.setName("ButtonsPanel");
 			ivjButtonsPanel.setLayout(new BoxLayout(ivjButtonsPanel, BoxLayout.X_AXIS));
-			JLabel label = new JLabel("Math Description Language");
+			JLabel label = new JLabel("Choose View:");
 			label.setFont(label.getFont().deriveFont(Font.BOLD));
 			ivjButtonsPanel.add(label);
-//			ivjButtonsPanel.add(getViewEqunsRadioButton());
-//			ivjButtonsPanel.add(getViewVCMDLRadioButton());
+			ivjButtonsPanel.add(getViewEqunsRadioButton());
+			ivjButtonsPanel.add(getViewVCMDLRadioButton());
 			ivjButtonsPanel.add(Box.createHorizontalGlue());
 			ivjButtonsPanel.add(getRefreshMathButton());
 			ivjButtonsPanel.add(Box.createRigidArea(new Dimension(3,5)));
@@ -141,7 +142,7 @@ public class MathematicsPanel extends JPanel {
 			mainPanel = new javax.swing.JPanel();
 			mainPanel.setName("MathViewerPanel");
 			mainPanel.setLayout(cardLayout);
-//			mainPanel.add(getMathDescPanel(), getMathDescPanel().getName());
+			mainPanel.add(getMathDescPanel(), getMathDescPanel().getName());
 			mainPanel.add(getVCMLPanel(), getVCMLPanel().getName());
 		}
 		return mainPanel;
@@ -156,31 +157,31 @@ public class MathematicsPanel extends JPanel {
 		return ivjVCMLPanel;
 	}
 	
-//	private MathDescPanel getMathDescPanel() {
-//		if (mathDescPanel == null) {
-//			mathDescPanel = new MathDescPanel();
-//			mathDescPanel.setName("MathDescPanel");
-//		}
-//		return mathDescPanel;
-//	}
-//	private javax.swing.JRadioButton getViewEqunsRadioButton() {
-//		if (ivjViewEqunsRadioButton == null) {
-//			ivjViewEqunsRadioButton = new javax.swing.JRadioButton("Math Equations");
-//			ivjViewEqunsRadioButton.setName("ViewEqunsRadioButton");
-//			ivjViewEqunsRadioButton.setSelected(true);
-//			ivjViewEqunsRadioButton.setActionCommand("MathDescPanel1");
-//		}
-//		return ivjViewEqunsRadioButton;
-//	}
-//	
-//	private javax.swing.JRadioButton getViewVCMDLRadioButton() {
-//		if (ivjViewVCMDLRadioButton == null) {
-//			ivjViewVCMDLRadioButton = new javax.swing.JRadioButton("Math Description Language");
-//			ivjViewVCMDLRadioButton.setName("ViewVCMDLRadioButton");
-//			ivjViewVCMDLRadioButton.setActionCommand("VCMLPanel");
-//		}
-//		return ivjViewVCMDLRadioButton;
-//	}
+	private MathDescPanel getMathDescPanel() {
+		if (mathDescPanel == null) {
+			mathDescPanel = new MathDescPanel();
+			mathDescPanel.setName("MathDescPanel");
+		}
+		return mathDescPanel;
+	}
+	private javax.swing.JRadioButton getViewEqunsRadioButton() {
+		if (ivjViewEqunsRadioButton == null) {
+			ivjViewEqunsRadioButton = new javax.swing.JRadioButton("Math Equations");
+			ivjViewEqunsRadioButton.setName("ViewEqunsRadioButton");
+			ivjViewEqunsRadioButton.setSelected(true);
+			ivjViewEqunsRadioButton.setActionCommand("MathDescPanel1");
+		}
+		return ivjViewEqunsRadioButton;
+	}
+	
+	private javax.swing.JRadioButton getViewVCMDLRadioButton() {
+		if (ivjViewVCMDLRadioButton == null) {
+			ivjViewVCMDLRadioButton = new javax.swing.JRadioButton("Math Description Language");
+			ivjViewVCMDLRadioButton.setName("ViewVCMDLRadioButton");
+			ivjViewVCMDLRadioButton.setActionCommand("VCMLPanel");
+		}
+		return ivjViewVCMDLRadioButton;
+	}
 	
 	private void refreshMath() {
 		ClientTaskDispatcher.dispatchColl(MathematicsPanel.this, new Hashtable<String, Object>(), ClientRequestManager.updateMath(this, simulationContext, true,NetworkGenerationRequirements.ComputeFullStandardTimeout), false);
@@ -224,20 +225,30 @@ public class MathematicsPanel extends JPanel {
 		if (simulationContext != null) {
 			newValue.addPropertyChangeListener(ivjEventHandler);
 		}
-//		getMathDescPanel().setMathDescription(newValue.getMathDescription());
+		if(simulationContext.getApplicationType().equals(Application.RULE_BASED_STOCHASTIC)) {
+			getViewEqunsRadioButton().setEnabled(false);
+			if(getViewEqunsRadioButton().isSelected()) {
+				getViewEqunsRadioButton().setSelected(false);
+				getViewVCMDLRadioButton().setSelected(true);
+				cardLayout.show(getMainPanel(), getVCMLPanel().getName());
+			}
+		} else {
+			getViewEqunsRadioButton().setEnabled(true);
+		}
+		getMathDescPanel().setMathDescription(newValue.getMathDescription());
 		refreshVCML();
 	}
 	
 	private void viewMath_ItemStateChanged(ItemEvent itemEvent) {
-//		if (itemEvent.getStateChange() == ItemEvent.SELECTED) {
-//			if (itemEvent.getSource() == getViewEqunsRadioButton()) {
-//				cardLayout.show(getMainPanel(), getMathDescPanel().getName());
-//				return;
-//			}else if (itemEvent.getSource() == getViewVCMDLRadioButton()) {
+		if (itemEvent.getStateChange() == ItemEvent.SELECTED) {
+			if (itemEvent.getSource() == getViewEqunsRadioButton()) {
+				cardLayout.show(getMainPanel(), getMathDescPanel().getName());
+				return;
+			}else if (itemEvent.getSource() == getViewVCMDLRadioButton()) {
 				cardLayout.show(getMainPanel(), getVCMLPanel().getName());
-//				return;			
-//			}
-//		}
+				return;			
+			}
+		}
 	}
 	
 	private void refreshVCML() {
@@ -245,7 +256,7 @@ public class MathematicsPanel extends JPanel {
 			try {
 				getVCMLPanel().setText(simulationContext.getMathDescription().getVCML_database());
 				getVCMLPanel().setCaretPosition(0);
-//				getMathDescPanel().setMathDescription(simulationContext.getMathDescription());
+				getMathDescPanel().setMathDescription(simulationContext.getMathDescription());
 			}catch (Exception e){
 				e.printStackTrace(System.out);
 				getVCMLPanel().setText("error displaying math language: "+e.getMessage());
