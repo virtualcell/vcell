@@ -101,9 +101,9 @@ public abstract class BioModelEditorApplicationRightSidePanel<T> extends Documen
 		deleteButton.addActionListener(eventHandler);
 		
 		// disable 'add new' button for rate rules temporarily
-		if (this instanceof RateRulesDisplayPanel) {
-			addNewButton.setEnabled(false);
-		}
+//		if (this instanceof RateRulesDisplayPanel) {
+//			addNewButton.setEnabled(false);
+//		}
 		
 		deleteButton.setEnabled(false);
 		textFieldSearch.getDocument().addDocumentListener(eventHandler);
