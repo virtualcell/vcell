@@ -80,6 +80,12 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.beans.Prope
 				currentDocumentInfo();
 			if (evt.getSource() == DatabaseWindowPanel.this.getBioModelDbTreePanel1() && (evt.getPropertyName().equals("selectedVersionInfo"))) 
 				currentDocumentInfo();
+			if (evt.getSource() == DatabaseWindowPanel.this.getBioModelDbTreePanel1() && (evt.getPropertyName().equals("selectedPublicationInfo"))) {
+				Object[] piObjects = new Object[] {evt.getNewValue()};
+				if(selectionManager != null) {
+					selectionManager.setSelectedObjects(piObjects);
+				}
+			}
 		};
 		public void stateChanged(javax.swing.event.ChangeEvent e) {
 			if (e.getSource() == DatabaseWindowPanel.this.getJTabbedPane1()) {

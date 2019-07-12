@@ -434,6 +434,9 @@ protected void setSelectedVersionInfo(VersionInfo selectedVersionInfo) {
 	// but some else might have changes, e.g. GroupAccess
 	firePropertyChange("selectedVersionInfo", null, selectedVersionInfo);
 }
+protected void setSelectedPublicationInfo(BioModelNode selectedModelNode) {
+	firePropertyChange("selectedPublicationInfo", null, selectedModelNode);
+}
 
 /**
  * Comment

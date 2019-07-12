@@ -50,6 +50,7 @@ import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.clientdb.DocumentManager;
 import cbit.vcell.data.DataSymbol;
 import cbit.vcell.desktop.BioModelNode;
+import cbit.vcell.desktop.BioModelNode.PublicationInfoNode;
 import cbit.vcell.geometry.CSGObject;
 import cbit.vcell.geometry.GeometryInfo;
 import cbit.vcell.geometry.gui.CSGObjectPropertiesPanel;
@@ -750,6 +751,9 @@ protected void setRightBottomPanelOnSelection(Object[] selections) {
 			bottomComponent = parameterEstimationTaskPropertiesPanel;
 		} else if (singleSelection instanceof Product || singleSelection instanceof Reactant) {
 			bottomComponent = getReactionParticipantPropertiesPanel();
+		} else if(singleSelection instanceof BioModelNode.PublicationInfoNode) {
+			bShowInDatabaseProperties = true;
+			bottomComponent = bioModelMetaDataPanel;
 		} else if (singleSelection instanceof BioModelInfo) {
 			bShowInDatabaseProperties = true;
 			bottomComponent = bioModelMetaDataPanel;
