@@ -25,12 +25,13 @@ import javax.swing.tree.TreePath;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.GroupAccessAll;
 import org.vcell.util.document.MathModelInfo;
+import org.vcell.util.document.PublicationInfo;
 import org.vcell.util.document.Version;
 import org.vcell.util.document.VersionFlag;
 import org.vcell.util.document.VersionInfo;
 
 import cbit.vcell.clientdb.DatabaseEvent;
-import cbit.vcell.desktop.BioModelNode.UserNameNode;
+import cbit.vcell.desktop.BioModelNode.PublicationInfoNode;
 import cbit.vcell.desktop.VCellBasicCellRenderer.VCDocumentInfoNode;
 /**
  * Insert the type's description here.
@@ -81,6 +82,8 @@ public class MathModelDbTreePanel extends VCDocumentDbTreePanel {
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
 			if (evt.getSource() == MathModelDbTreePanel.this && (evt.getPropertyName().equals("selectedVersionInfo"))) {
 				getMathModelMetaDataPanel().setMathModelInfo((MathModelInfo)getSelectedVersionInfo());
+			} else if(evt.getSource() == MathModelDbTreePanel.this && (evt.getPropertyName().equals("selectedPublicationInfo"))) {
+				getMathModelMetaDataPanel().setPublicationInfo((PublicationInfoNode)evt.getNewValue());
 			}
 		}
 	}
@@ -757,7 +760,10 @@ protected void treeSelection() {
 	}
 	BioModelNode bioModelNode = (BioModelNode)treePath.getLastPathComponent();
 	Object object = bioModelNode.getUserObject();
-	if (object instanceof VersionInfo){
+	if(object instanceof PublicationInfo) {
+		setSelectedVersionInfo(null);				// TODO: is this line needed?
+		setSelectedPublicationInfo(bioModelNode);
+	} else if (object instanceof VersionInfo) {
 		setSelectedVersionInfo((VersionInfo)object);
 	}else if (object instanceof VCDocumentInfoNode && bioModelNode.getChildCount()>0 && ((BioModelNode)bioModelNode.getChildAt(0)).getUserObject() instanceof MathModelInfo){
 		MathModelInfo mathModelInfo = (MathModelInfo)((BioModelNode)bioModelNode.getChildAt(0)).getUserObject();

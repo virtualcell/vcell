@@ -28,6 +28,7 @@ import org.vcell.util.document.PublicationInfo;
 import org.vcell.util.gui.GuiUtils;
 
 import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
+import cbit.vcell.desktop.BioModelNode.PublicationInfoNode;
 /**
  * Insert the type's description here.
  * Creation date: (3/29/01 10:39:36 AM)
@@ -35,46 +36,108 @@ import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
  */
 @SuppressWarnings("serial")
 public class MathModelMetaDataPanel extends DocumentEditorSubPanel {
-	private JTree ivjJTree1 = null;
-	private MathModelMetaDataCellRenderer ivjmathModelMetaDataCellRenderer = null;
-	private MathModelMetaDataTreeModel ivjmathModelMetaDataTreeModel = null;
-	private MathModelInfo fieldMathModelInfo = null;
-	private IvjEventHandler ivjEventHandler = new IvjEventHandler();
-
+	
 	private class IvjEventHandler implements java.beans.PropertyChangeListener {
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
 			if (evt.getSource() == MathModelMetaDataPanel.this && (evt.getPropertyName().equals("mathModelInfo"))) {
-				getmathModelMetaDataTreeModel().setMathModelInfo(getMathModelInfo());
+				getJTree1().setModel(getmathModelMetaDataTreeModel());
+				getJTree1().setCellRenderer(getmathModelMetaDataCellRenderer());
+
+				getmathModelMetaDataTreeModel().setMathModelInfo(MathModelMetaDataPanel.this.getMathModelInfo());
 				GuiUtils.treeExpandAllRows(getJTree1());
+				// here we don't need to expand one lvl only, like we do for BioModels (different structure)
+			} else if(evt.getSource() == MathModelMetaDataPanel.this && (evt.getPropertyName().equals("publicationInfo"))) {
+				getJTree1().setModel(getPublicationInfoNodeTreeModel());
+				getJTree1().setCellRenderer(getPublicationInfoNodeCellRenderer());
+				getPublicationInfoNodeTreeModel().setPublicationsInfoNode(MathModelMetaDataPanel.this.getPublicationInfoNode());
+				GuiUtils.treeExpandAllRows(tree);
 			}
 		}
 	}
-/**
- * BioModelMetaDataPanel constructor comment.
- */
+	
+	private IvjEventHandler ivjEventHandler = new IvjEventHandler();
+	private JTree tree = null;
+	
+	private MathModelMetaDataCellRenderer ivjmathModelMetaDataCellRenderer = null;
+	private MathModelMetaDataTreeModel ivjmathModelMetaDataTreeModel = null;
+	private MathModelInfo fieldMathModelInfo = null;
+
+	private PublicationInfoNodeCellRenderer publicationInfoNodeCellRenderer = null;
+	private PublicationInfoNodeTreeModel publicationInfoNodeTreeModel = null;
+	private PublicationInfoNode fieldPublicationInfoNode = null;
+
+
 public MathModelMetaDataPanel() {
 	super();
 	initialize();
 }
 
-/**
- * Return the JTree1 property value.
- * @return cbit.gui.JTreeFancy
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private JTree getJTree1() {
-	if (ivjJTree1 == null) {
+public MathModelInfo getMathModelInfo() {
+	return fieldMathModelInfo;
+}
+public PublicationInfoNode getPublicationInfoNode() {
+	return fieldPublicationInfoNode;
+}
+
+private MathModelMetaDataCellRenderer getmathModelMetaDataCellRenderer() {
+	if (ivjmathModelMetaDataCellRenderer == null) {
 		try {
-			ivjJTree1 = new JTree();
-			ivjJTree1.setName("JTree1");
-			ivjJTree1.setEnabled(true);
-			ivjJTree1.setRootVisible(false);
-			ivjJTree1.setRequestFocusEnabled(false);
-			ivjJTree1.addMouseListener(new MouseAdapter() {
+			ivjmathModelMetaDataCellRenderer = new MathModelMetaDataCellRenderer();
+			ivjmathModelMetaDataCellRenderer.setName("mathModelMetaDataCellRenderer");
+		} catch (java.lang.Throwable ivjExc) {
+			handleException(ivjExc);
+		}
+	}
+	return ivjmathModelMetaDataCellRenderer;
+}
+private PublicationInfoNodeCellRenderer getPublicationInfoNodeCellRenderer() {
+	if (publicationInfoNodeCellRenderer == null) {
+		try {
+			publicationInfoNodeCellRenderer = new PublicationInfoNodeCellRenderer();
+			publicationInfoNodeCellRenderer.setName("publicationInfoNodeCellRenderer");
+			publicationInfoNodeCellRenderer.setText("publicationInfoNodeCellRenderer");
+			publicationInfoNodeCellRenderer.setBounds(446, 285, 179, 16);
+		} catch (java.lang.Throwable ivjExc) {
+			handleException(ivjExc);
+		}
+	}
+	return publicationInfoNodeCellRenderer;
+}
+
+private MathModelMetaDataTreeModel getmathModelMetaDataTreeModel() {
+	if (ivjmathModelMetaDataTreeModel == null) {
+		try {
+			ivjmathModelMetaDataTreeModel = new MathModelMetaDataTreeModel();
+		} catch (java.lang.Throwable ivjExc) {
+			handleException(ivjExc);
+		}
+	}
+	return ivjmathModelMetaDataTreeModel;
+}
+private PublicationInfoNodeTreeModel getPublicationInfoNodeTreeModel() {
+	if (publicationInfoNodeTreeModel == null) {
+		try {
+			publicationInfoNodeTreeModel = new PublicationInfoNodeTreeModel();
+		} catch (java.lang.Throwable ivjExc) {
+			handleException(ivjExc);
+		}
+	}
+	return publicationInfoNodeTreeModel;
+}
+
+private JTree getJTree1() {
+	if (tree == null) {
+		try {
+			tree = new JTree();
+			tree.setName("JTree1");
+			tree.setEnabled(true);
+			tree.setRootVisible(false);
+			tree.setRequestFocusEnabled(false);
+			tree.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
 				if(e.getClickCount() == 1) {
-					DefaultMutableTreeNode value = (DefaultMutableTreeNode)ivjJTree1.getLastSelectedPathComponent();
+					DefaultMutableTreeNode value = (DefaultMutableTreeNode)tree.getLastSelectedPathComponent();
 					if(value instanceof BioModelNode) {
 						BioModelNode node = (BioModelNode) value;
 						try {
@@ -96,86 +159,25 @@ private JTree getJTree1() {
 			handleException(ivjExc);
 		}
 	}
-	return ivjJTree1;
-}
-/**
- * Gets the mathModelInfo property (cbit.vcell.mathmodel.MathModelInfo) value.
- * @return The mathModelInfo property value.
- * @see #setMathModelInfo
- */
-public MathModelInfo getMathModelInfo() {
-	return fieldMathModelInfo;
+	return tree;
 }
 
-/**
- * Return the mathModelMetaDataCellRenderer property value.
- * @return cbit.vcell.desktop.MathModelMetaDataCellRenderer
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private MathModelMetaDataCellRenderer getmathModelMetaDataCellRenderer() {
-	if (ivjmathModelMetaDataCellRenderer == null) {
-		try {
-			ivjmathModelMetaDataCellRenderer = new MathModelMetaDataCellRenderer();
-			ivjmathModelMetaDataCellRenderer.setName("mathModelMetaDataCellRenderer");
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjmathModelMetaDataCellRenderer;
-}
-/**
- * Return the mathModelMetaDataTreeModel property value.
- * @return cbit.vcell.desktop.MathModelMetaDataTreeModel
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private MathModelMetaDataTreeModel getmathModelMetaDataTreeModel() {
-	if (ivjmathModelMetaDataTreeModel == null) {
-		try {
-			ivjmathModelMetaDataTreeModel = new MathModelMetaDataTreeModel();
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjmathModelMetaDataTreeModel;
-}
-/**
- * Called whenever the part throws an exception.
- * @param exception java.lang.Throwable
- */
+
 private void handleException(java.lang.Throwable exception) {
 
 	/* Uncomment the following lines to print uncaught exceptions to stdout */
 	// System.out.println("--------- UNCAUGHT EXCEPTION ---------");
 	// exception.printStackTrace(System.out);
 }
-/**
- * Initializes connections
- * @exception java.lang.Exception The exception description.
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
+
 private void initConnections() throws java.lang.Exception {
-	// user code begin {1}
-	// user code end
 	this.addPropertyChangeListener(ivjEventHandler);
 	getJTree1().setCellRenderer(getmathModelMetaDataCellRenderer());
 	getJTree1().setModel(getmathModelMetaDataTreeModel());
 }
-/**
- * Initialize the class.
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
+
 private void initialize() {
 	try {
-		// user code begin {1}
-		// user code end
 		setName("BioModelMetaDataPanel");
 		setLayout(new BorderLayout());
 //		setSize(379, 460);
@@ -187,13 +189,8 @@ private void initialize() {
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
 	}
-	// user code begin {2}
-	// user code end
 }
-/**
- * main entrypoint - starts the part when it is run as an application
- * @param args java.lang.String[]
- */
+
 public static void main(java.lang.String[] args) {
 	try {
 		javax.swing.JFrame frame = new javax.swing.JFrame();
@@ -215,25 +212,29 @@ public static void main(java.lang.String[] args) {
 	}
 }
 
-/**
- * Sets the mathModelInfo property (cbit.vcell.mathmodel.MathModelInfo) value.
- * @param mathModelInfo The new value for the property.
- * @see #getMathModelInfo
- */
 public void setMathModelInfo(MathModelInfo mathModelInfo) {
 	MathModelInfo oldValue = fieldMathModelInfo;
 	fieldMathModelInfo = mathModelInfo;
 	firePropertyChange("mathModelInfo", oldValue, mathModelInfo);
+}
+public void setPublicationInfo(PublicationInfoNode publicationInfoNode) {
+	PublicationInfoNode oldValue = fieldPublicationInfoNode;
+	fieldPublicationInfoNode = publicationInfoNode;
+	firePropertyChange("publicationInfo", oldValue, publicationInfoNode);
 }
 
 @Override
 protected void onSelectedObjectsChange(Object[] selectedObjects) {
 	if (selectedObjects == null || selectedObjects.length != 1) {
 		setMathModelInfo(null);
+		setPublicationInfo(null);
 	} else if (selectedObjects[0] instanceof MathModelInfo) {
 		setMathModelInfo((MathModelInfo) selectedObjects[0]);
+	} else if (selectedObjects[0] instanceof PublicationInfoNode) {
+		setPublicationInfo((PublicationInfoNode) selectedObjects[0]);
 	} else {
 		setMathModelInfo(null);
+		setPublicationInfo(null);
 	}	
 }
 
