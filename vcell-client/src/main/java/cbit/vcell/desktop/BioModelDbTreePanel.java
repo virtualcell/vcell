@@ -34,6 +34,7 @@ import org.vcell.util.document.VersionFlag;
 import org.vcell.util.document.VersionInfo;
 
 import cbit.vcell.biomodel.BioModelMetaData;
+import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.clientdb.DatabaseEvent;
 import cbit.vcell.desktop.BioModelNode.PublicationInfoNode;
 import cbit.vcell.desktop.VCellBasicCellRenderer.VCDocumentInfoNode;
@@ -83,7 +84,8 @@ public class BioModelDbTreePanel extends VCDocumentDbTreePanel {
 			if (e.getSource() == BioModelDbTreePanel.this.getJMenuItemArchive()) 
 				refireActionPerformed(e);
 			if (e.getSource() == BioModelDbTreePanel.this.getJMenuItemPublish()) 
-				refireActionPerformed(e);
+				onlinePublish(e);
+//				refireActionPerformed(e);
 		};
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
 			if (evt.getSource() == BioModelDbTreePanel.this && (evt.getPropertyName().equals("selectedVersionInfo"))) {
@@ -175,16 +177,16 @@ private void configureArhivePublishMenuState(Version version,boolean isOwner) {
 		&&
 		!version.getFlag().isPublished());
 	
-	getJMenuItemPublish().setEnabled(
-		isOwner
-		&&
-		version.getFlag().isArchived()
-		&&
-		(version.getGroupAccess() instanceof GroupAccessAll)
-		&&
-		!version.getFlag().isPublished()
-		&&
-		version.getOwner().isPublisher());
+	getJMenuItemPublish().setEnabled(isOwner);
+//		isOwner
+//		&&
+//		version.getFlag().isArchived()
+//		&&
+//		(version.getGroupAccess() instanceof GroupAccessAll)
+//		&&
+//		!version.getFlag().isPublished()
+//		&&
+//		version.getOwner().isPublisher());
 }
 
 
@@ -524,11 +526,6 @@ private javax.swing.JMenuItem getJMenuItemPermission() {
 	return ivjJMenuItemPermission;
 }
 
-/**
- * Return the JMenuItemPublish property value.
- * @return javax.swing.JMenuItem
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private javax.swing.JMenuItem getJMenuItemPublish() {
 	if (ivjJMenuItemPublish == null) {
 		try {
@@ -536,15 +533,23 @@ private javax.swing.JMenuItem getJMenuItemPublish() {
 			ivjJMenuItemPublish.setName("JMenuItemPublish");
 			ivjJMenuItemPublish.setText("Publish");
 			ivjJMenuItemPublish.setActionCommand("Publish");
-			// user code begin {1}
-			// user code end
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	}
 	return ivjJMenuItemPublish;
+}
+private void onlinePublish(java.awt.event.ActionEvent arg1) {
+	try {
+		this.invokeOnlinePublish();
+	} catch (java.lang.Throwable ivjExc) {
+		handleException(ivjExc);
+	}
+}
+private void invokeOnlinePublish() {
+
+	PopupGenerator.browserLauncher(this, "http://vcell.org/publish-a-vcell-model",
+		"Please visit "+"http://vcell.org/publish-a-vcell-model"+" for instructions on how to Publish your Model");
 }
 
 /**
