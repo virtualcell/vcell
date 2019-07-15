@@ -17,6 +17,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 
+import org.apache.commons.codec.DecoderException;
+import org.apache.commons.codec.binary.Hex;
 import org.vcell.pub.Publication;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.KeyValue;
@@ -99,9 +101,9 @@ public String getPreparedStatement_PublicationReps(String conditions, OrderBy or
 		    pubTable.pubdate.getQualifiedColName()+", "+
 		
 		   "(select '['||wm_concat("+"SQ1_"+biomodelTable.id.getQualifiedColName()+"||';'"+
-		   						"||"+"SQ1_"+biomodelTable.name.getQualifiedColName()+"||';'"+
+		   						"|| UTL_RAW.CAST_TO_RAW("+"SQ1_"+biomodelTable.name.getQualifiedColName()+") ||';'"+
 		   						"||"+"SQ1_"+userTable.id.getQualifiedColName()+"||';'"+
-		   						"||"+"SQ1_"+userTable.userid.getQualifiedColName()+"||';'"+
+		   						"|| UTL_RAW.CAST_TO_RAW("+"SQ1_"+userTable.userid.getQualifiedColName()+") ||';'"+
 		   						"||"+"SQ1_"+biomodelTable.versionFlag.getQualifiedColName()+")||']' "+
 		   "   from "+pubModelTable.getTableName()+" SQ1_"+pubModelTable.getTableName()+", "+
 		              biomodelTable.getTableName()+" SQ1_"+biomodelTable.getTableName()+", "+
@@ -112,9 +114,9 @@ public String getPreparedStatement_PublicationReps(String conditions, OrderBy or
 	          "SQ1_"+userTable.id.getQualifiedColName()+" = SQ1_"+biomodelTable.ownerRef.getQualifiedColName()+") bmRefs,  "+
 	          
 		   "(select '['||wm_concat("+"SQ2_"+mathmodelTable.id.getQualifiedColName()+"||';'"+
-								"||"+"SQ2_"+mathmodelTable.name.getQualifiedColName()+"||';'"+
+								"|| UTL_RAW.CAST_TO_RAW("+"SQ2_"+mathmodelTable.name.getQualifiedColName()+") ||';'"+
 								"||"+"SQ2_"+userTable.id.getQualifiedColName()+"||';'"+
-								"||"+"SQ2_"+userTable.userid.getQualifiedColName()+"||';'"+
+								"|| UTL_RAW.CAST_TO_RAW("+"SQ2_"+userTable.userid.getQualifiedColName()+") ||';'"+
 								"||"+"SQ2_"+mathmodelTable.versionFlag.getQualifiedColName()+")||']' "+
 		   "   from "+pubModelTable.getTableName()+" SQ2_"+pubModelTable.getTableName()+", "+
 		              mathmodelTable.getTableName()+" SQ2_"+mathmodelTable.getTableName()+", "+
@@ -160,7 +162,7 @@ public void setPreparedStatement_PublicationReps(PreparedStatement stmt, User us
 	}
 }
 
-public PublicationRep getPublicationRep(User user, ResultSet rset) throws IllegalArgumentException, SQLException {
+public PublicationRep getPublicationRep(User user, ResultSet rset) throws IllegalArgumentException, SQLException,DataAccessException {
 	
 	KeyValue pubKey = new KeyValue(rset.getBigDecimal(table.id.toString()));
 	String title = rset.getString(table.title.toString());
@@ -182,12 +184,18 @@ public PublicationRep getPublicationRep(User user, ResultSet rset) throws Illega
 		for (String bmRefString : bmRefStrings) {
 			String bmRefComponents[] = bmRefString.split(";");
 			if (bmRefComponents.length==5){
-				KeyValue bmKey = new KeyValue(bmRefComponents[0]);
-				String bmName = bmRefComponents[1];
-				KeyValue ownerKey = new KeyValue(bmRefComponents[2]);
-				String ownerUserid = bmRefComponents[3];
-				Long versionFlag = Long.valueOf(bmRefComponents[4]);
-				bmRefList.add(new BioModelReferenceRep(bmKey, bmName, new User(ownerUserid,ownerKey),versionFlag));
+				try {
+					KeyValue bmKey = new KeyValue(bmRefComponents[0]);
+					String bmName = new String(Hex.decodeHex(bmRefComponents[1].toCharArray()));
+					KeyValue ownerKey = new KeyValue(bmRefComponents[2]);
+					String ownerUserid = new String(Hex.decodeHex(bmRefComponents[3].toCharArray()));
+					Long versionFlag = Long.valueOf(bmRefComponents[4]);
+					bmRefList.add(new BioModelReferenceRep(bmKey, bmName, new User(ownerUserid,ownerKey),versionFlag));
+				} catch (DecoderException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+					throw new DataAccessException(e.getMessage(),e);
+				}
 			}
 		}
 	}
