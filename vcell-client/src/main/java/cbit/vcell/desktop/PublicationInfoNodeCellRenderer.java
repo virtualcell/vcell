@@ -150,13 +150,13 @@ public java.awt.Component getTreeCellRendererComponent(JTree tree, Object value,
 			String label = ((User)node.getUserObject()).getName();
 			component.setToolTipText("Model Owner");
 			component.setText("<html>" + label + "</html>");
-			setIcon(fieldTextIcon);
+			setIcon(fieldUsersIcon);
 			
 		} else if(node.getUserObject() instanceof Date && "ModelDate".equals(node.getRenderHint("type"))) {
 			Date date = (Date)node.getUserObject();
 			component.setToolTipText("Model Creation Date");
 			component.setText("<html>" + date + "</html>");
-			setIcon(null);
+			setIcon(fieldCalendarIcon);
 			
 		} else {
 			setComponentProperties(component,node.getUserObject());

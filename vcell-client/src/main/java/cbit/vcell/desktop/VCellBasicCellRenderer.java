@@ -76,6 +76,9 @@ public class VCellBasicCellRenderer extends javax.swing.tree.DefaultTreeCellRend
 	protected javax.swing.Icon fieldSimulationContextErrorIcon = null;
 	protected javax.swing.Icon fieldSimulationContextWarningIcon = null;
 	protected javax.swing.Icon fieldTextIcon = null;
+	protected javax.swing.Icon fieldUserIcon = null;
+	protected javax.swing.Icon fieldUsersIcon = null;
+	protected javax.swing.Icon fieldCalendarIcon = null;
 	protected javax.swing.Icon fieldFolderOpenIcon = null;
 	protected javax.swing.Icon fieldFolderOpenErrorIcon = null;
 	protected javax.swing.Icon fieldFolderOpenWarningIcon = null;
@@ -113,6 +116,9 @@ public VCellBasicCellRenderer() {
 	fieldSimulationContextErrorIcon = new ImageIcon(getClass().getResource("/images/application3Error_16x16.gif"));
 	fieldSimulationContextWarningIcon = new ImageIcon(getClass().getResource("/images/application3Warning_16x16.gif"));
 	fieldTextIcon = new ImageIcon(getClass().getResource("/images/text_16x16.gif"));
+	fieldUserIcon = new ImageIcon(getClass().getResource("/icons/aUser.png"));
+	fieldUsersIcon = new ImageIcon(getClass().getResource("/icons/aUsers.png"));
+	fieldCalendarIcon = new ImageIcon(getClass().getResource("/icons/calendar.png"));
 	fieldFolderClosedIcon = new ImageIcon(getClass().getResource("/images/closedFolder_16x16.gif"));
 	fieldFolderClosedErrorIcon = new ImageIcon(getClass().getResource("/images/closedFolderError_16x16.gif"));
 	fieldFolderClosedWarningIcon = new ImageIcon(getClass().getResource("/images/closedFolderWarning_16x16.gif"));
