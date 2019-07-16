@@ -198,7 +198,7 @@ public java.awt.Component getTreeCellRendererComponent(JTree tree, Object value,
 				String modelName = infonode.getVCDocumentInfo().getVersion().getName();
 				String username = nodeUser.getName();
 				if (username.equals(VCDocumentDbTreeModel.USER_tutorial)
-						|| username.equals(VCDocumentDbTreeModel.USER_Education)
+//						|| username.equals(VCDocumentDbTreeModel.USER_Education)
 						|| username.equals(VCDocumentDbTreeModel.USER_tutorial610)
 						|| username.equals(VCDocumentDbTreeModel.USER_tutorial611)) {
 					if(node.getParent() instanceof BioModelNode && ((BioModelNode)node.getParent()).getUserObject() instanceof String) {

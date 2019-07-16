@@ -36,7 +36,7 @@ public class BioModelDbTreeModel extends VCDocumentDbTreeModel {
 public BioModelDbTreeModel(JTree tree) {
 	super(tree);
 	tutorialModelsNode = new BioModelNode(Tutorials, true);
-	educationModelsNode = new BioModelNode(Education, true);
+//	educationModelsNode = new BioModelNode(Education, true);
 	allPublicModelsNode = new BioModelNode(Public_BioModels, true);
 
 	publishedModelsNode = new BioModelNode(Published_BioModels, true);
@@ -62,7 +62,7 @@ protected void createBaseTree() throws DataAccessException {
 	rootNode.add(myModelsNode);
 	rootNode.add(sharedModelsNode);
 	rootNode.add(tutorialModelsNode);
-	rootNode.add(educationModelsNode);
+//	rootNode.add(educationModelsNode);
 	rootNode.add(allPublicModelsNode);
 //	rootNode.add(modelBricksNode);
 	

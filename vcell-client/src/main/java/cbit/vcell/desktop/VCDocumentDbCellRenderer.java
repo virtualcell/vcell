@@ -53,7 +53,7 @@ public java.awt.Component getTreeCellRendererComponent(JTree tree, Object value,
 		Object userObject = node.getUserObject();
 		if (
 			VCDocumentDbTreeModel.ModelBricks.equals(userObject) ||
-			VCDocumentDbTreeModel.Education.equals(userObject) ||
+//			VCDocumentDbTreeModel.Education.equals(userObject) ||
 			VCDocumentDbTreeModel.Tutorials.equals(userObject)
 			) {
 			setText(getText() + " (" + node.getChildCount() + ")");

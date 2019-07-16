@@ -34,7 +34,7 @@ public class MathModelDbTreeModel extends VCDocumentDbTreeModel {
 public MathModelDbTreeModel(JTree tree) {
 	super(tree);
 	tutorialModelsNode = new BioModelNode(Tutorials, true);
-	educationModelsNode = new BioModelNode(Education, true);	// this may go to curated
+//	educationModelsNode = new BioModelNode(Education, true);	// this may go to curated
 	allPublicModelsNode = new BioModelNode(Public_MathModels, true);
 
 	publishedModelsNode = new BioModelNode(Published_MathModels, true);
@@ -56,7 +56,7 @@ protected void createBaseTree() throws DataAccessException {
 	rootNode.add(myModelsNode);
 	rootNode.add(sharedModelsNode);
 //	rootNode.add(tutorialModelsNode);
-	rootNode.add(educationModelsNode);
+//	rootNode.add(educationModelsNode);
 	rootNode.add(allPublicModelsNode);
 	
 	allPublicModelsNode.add(publishedModelsNode);
@@ -80,7 +80,7 @@ protected void createBaseTree() throws DataAccessException {
 }
 protected void createBaseTree2() throws DataAccessException {
 	VCDocumentDbTreeModel.initBaseTree(rootNode,
-			new BioModelNode[] {myModelsNode,sharedModelsNode,otherModelsNode,educationModelsNode,publishedModelsNode},
+			new BioModelNode[] {myModelsNode,sharedModelsNode,otherModelsNode,/*educationModelsNode,*/publishedModelsNode},
 			"Math Models", sharedModelsNode, SHARED_MATH_MODELS);
 	
 	MathModelInfo mathModelInfos[] = getDocumentManager().getMathModelInfos();

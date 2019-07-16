@@ -67,13 +67,13 @@ public abstract class VCDocumentDbTreeModel extends DefaultTreeModel implements 
 	private JTree ownerTree = null;
 	
 	public static final String USER_tutorial = "tutorial";
-	public static final String USER_Education = "Education";
+	//public static final String USER_Education = "Education";
 	public static final String USER_tutorial610 = "tutorial60";
 	public static final String USER_tutorial611 = "tutorial61";
 	public static final String USER_modelBricks = "ModelBrick";
 	
 	protected BioModelNode tutorialModelsNode = null;
-	protected BioModelNode educationModelsNode = null;
+	//protected BioModelNode educationModelsNode = null;
 	protected BioModelNode bngRulesBasedModelsNode = null;
 	protected BioModelNode bngRulesBasedModelsNode61 = null;
 	
@@ -85,7 +85,7 @@ public abstract class VCDocumentDbTreeModel extends DefaultTreeModel implements 
 	protected BioModelNode modelBricksNode = null;
 	
 	public static final String Tutorials = "Tutorials";
-	public static final String Education = "Education";
+	//public static final String Education = "Education";
 //	public static final String BNGRulesBased61 = "Tutorials Beta";
 	
 	public static final String SHARED_BIO_MODELS = "Shared With Me";
@@ -195,14 +195,14 @@ protected synchronized static void initFinalTree(VCDocumentDbTreeModel vcDocumen
 	vcDocumentDbTreeModel.sharedModelsNode.removeAllChildren();
 		
 	boolean bTutorial = vcDocumentDbTreeModel.tutorialModelsNode != null;
-	boolean bEducation = vcDocumentDbTreeModel.educationModelsNode != null;
+	//boolean bEducation = vcDocumentDbTreeModel.educationModelsNode != null;
 	boolean bModelBricks = vcDocumentDbTreeModel.modelBricksNode != null;
 	boolean bPublished = vcDocumentDbTreeModel.publishedModelsNode != null;
 	boolean bCurated = vcDocumentDbTreeModel.curatedModelsNode != null;
 	boolean bOther = vcDocumentDbTreeModel.otherModelsNode != null;
 	
 	if(bTutorial){vcDocumentDbTreeModel.tutorialModelsNode.removeAllChildren();}
-	if(bEducation){vcDocumentDbTreeModel.educationModelsNode.removeAllChildren();}
+	//if(bEducation){vcDocumentDbTreeModel.educationModelsNode.removeAllChildren();}
 	if(bModelBricks){vcDocumentDbTreeModel.modelBricksNode.removeAllChildren();}
 	if(bPublished){vcDocumentDbTreeModel.publishedModelsNode.removeAllChildren();}
 	if(bCurated){vcDocumentDbTreeModel.curatedModelsNode.removeAllChildren();}
@@ -214,8 +214,8 @@ protected synchronized static void initFinalTree(VCDocumentDbTreeModel vcDocumen
 		boolean bSpecificUser = true;
 		if ((username.equals(USER_tutorial) || username.equals(USER_tutorial610) || username.equals(USER_tutorial611)) && bTutorial) {
 			parentNode = vcDocumentDbTreeModel.tutorialModelsNode;
-		} else if (username.equals(USER_Education) && bEducation) {
-			parentNode = vcDocumentDbTreeModel.educationModelsNode;
+//		} else if (username.equals(USER_Education) && bEducation) {
+//			parentNode = vcDocumentDbTreeModel.educationModelsNode;
 		} else if (username.equals(USER_modelBricks) && bModelBricks) {
 			parentNode = vcDocumentDbTreeModel.modelBricksNode;
 		} else {
@@ -483,10 +483,10 @@ protected synchronized static void initFinalTree2(VCDocumentDbTreeModel vcDocume
 		vcDocumentDbTreeModel.publishedModelsNode.removeAllChildren();
 	}
 	boolean bTutorial = vcDocumentDbTreeModel.tutorialModelsNode != null;
-	boolean bEducation = vcDocumentDbTreeModel.educationModelsNode != null;
+//	boolean bEducation = vcDocumentDbTreeModel.educationModelsNode != null;
 	boolean bModelBricks = vcDocumentDbTreeModel.modelBricksNode != null;
 	if(bTutorial){vcDocumentDbTreeModel.tutorialModelsNode.removeAllChildren();}
-	if(bEducation){vcDocumentDbTreeModel.educationModelsNode.removeAllChildren();}
+//	if(bEducation){vcDocumentDbTreeModel.educationModelsNode.removeAllChildren();}
 	if(bModelBricks){vcDocumentDbTreeModel.modelBricksNode.removeAllChildren();}
 	
 	for (String username : treeMap.keySet()) {
@@ -495,8 +495,8 @@ protected synchronized static void initFinalTree2(VCDocumentDbTreeModel vcDocume
 		boolean bSpecificUser = true;
 		if ((username.equals(USER_tutorial) || username.equals(USER_tutorial610) || username.equals(USER_tutorial611)) && bTutorial) {
 			parentNode = vcDocumentDbTreeModel.tutorialModelsNode;
-		} else if (username.equals(USER_Education) && bEducation) {
-			parentNode = vcDocumentDbTreeModel.educationModelsNode;
+//		} else if (username.equals(USER_Education) && bEducation) {
+//			parentNode = vcDocumentDbTreeModel.educationModelsNode;
 		} else if (username.equals(USER_modelBricks) && bModelBricks) {
 			parentNode = vcDocumentDbTreeModel.modelBricksNode;
 		} else {
