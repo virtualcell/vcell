@@ -22,7 +22,9 @@ import org.vcell.util.gui.ScrollTable;
 import cbit.gui.ScopedExpression;
 import cbit.vcell.mapping.RateRule;
 import cbit.vcell.parser.AutoCompleteSymbolFilter;
+import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.SymbolTable;
+import cbit.vcell.parser.SymbolTableEntry;
 
 @SuppressWarnings("serial")
 public class RateRulesSummaryTableModel extends BioModelEditorApplicationRightSideTableModel<RateRule> implements PropertyChangeListener{
@@ -108,9 +110,10 @@ public class RateRulesSummaryTableModel extends BioModelEditorApplicationRightSi
 	}
 
 	public boolean isCellEditable(int rowIndex, int columnIndex) {
-		return false;
+		//return false;
 		//Make none of the fields editable until code for adding new rate rules is fixed. 10/20/2014
 		//return columnIndex == COLUMN_RATERULE_NAME; 
+		return true;
 	}
 
 	@Override
@@ -146,10 +149,19 @@ public class RateRulesSummaryTableModel extends BioModelEditorApplicationRightSi
 				rateRule = getValueAt(row);
 			}
 			switch (column) {
-				case COLUMN_RATERULE_NAME: {
+				case COLUMN_RATERULE_NAME:
 					/** @author anu : TODO : RATE RULES */
 					rateRule.setName((String)value);
-				} 
+					break;
+				case COLUMN_RATERULE_VAR:
+					String var = (String)value;
+					SymbolTableEntry ste = simulationContext.getModel().getEntry(var);
+					rateRule.setRateRuleVar(ste);
+					break;
+				case COLUMN_RATERULE_EXPR:
+					Expression exp = new Expression((String)value);
+					rateRule.setRateRuleExpression(exp);
+					break;
 			}
 		} catch(Exception e){
 			e.printStackTrace(System.out);
@@ -198,6 +210,7 @@ public class RateRulesSummaryTableModel extends BioModelEditorApplicationRightSi
 	@Override
 	public int getRowCount() {
 		// -1 added 10/20/2014 to suppress extra row for adding new rule until adding rate rules framework is fixed.  Had been return getRowCountWithAddNew();
-		return getRowCountWithAddNew()-1;  
+		// return getRowCountWithAddNew()-1;
+		return getRowCountWithAddNew();
 	}
 }

@@ -49,11 +49,11 @@ public abstract class BioModelEditorApplicationRightSidePanel<T> extends Documen
 		
 		public void actionPerformed(ActionEvent e) {
 			if (e.getSource() == addNewButton) {
-//				int[] selectedRows = table.getSelectedRows();
+				int[] selectedRows = table.getSelectedRows();
 				newButtonPressed();
-//				if(selectedRows == null || selectedRows.length == 0){
+				if(selectedRows == null || selectedRows.length == 0){
 					table.getSelectionModel().setSelectionInterval(table.getRowCount()-1, table.getRowCount()-1);
-//				}
+				}
 			} else if (e.getSource() == deleteButton) {
 				deleteButtonPressed();
 			}

@@ -88,6 +88,9 @@ public class RateRule implements Matchable, Serializable, VetoableChangeListener
 	public SymbolTableEntry getRateRuleVar() {
 		return rateRuleVar;
 	}
+	public void setRateRuleVar(SymbolTableEntry rateRuleVar) {
+		this.rateRuleVar = rateRuleVar;
+	}
 	
 	public Expression getRateRuleExpression() {
 		return rateRuleExpression;
