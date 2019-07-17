@@ -2054,8 +2054,7 @@ public class SBMLImporter {
 		}
 
 		@SuppressWarnings("serial")
-		VCUnitSystem tempVCUnitSystem = new VCUnitSystem() {
-		};
+		VCUnitSystem tempVCUnitSystem = ModelUnitSystem.createDefaultVCModelUnitSystem();
 		sbmlUnitIdentifierHash = new HashMap<String, VCUnitDefinition>();
 		// add base SI unit identifiers (as defined in SBML spec) to hash
 		sbmlUnitIdentifierHash.put("ampere", tempVCUnitSystem.getInstance("A"));
