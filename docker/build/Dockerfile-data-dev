@@ -2,6 +2,7 @@ FROM schaff/vtk-openjdk-alpine:latest
 
 RUN mkdir -p /usr/local/app && \
 	apk update && \
+	apk add --no-cache ttf-dejavu && \
     apk add openssh-client && \
     apk add screen
 
