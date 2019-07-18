@@ -2805,9 +2805,10 @@ private void updateInterface() {
 		break;
 	case NRRD:
 //	case IMAGEJ:
-		if(getBothVarRadioButton().isSelected()){
+		if(!getVolVarRadioButton().isSelected()){
 			getVolVarRadioButton().doClick();
 		}
+		getMembVarRadioButton().setEnabled(false);
 		getBothVarRadioButton().setEnabled(false);
 		break;
 	case VTK_IMAGE:
