@@ -294,6 +294,12 @@ public class VCMetaData implements Serializable {
 		}
 		fireAnnotationEventListener(new AnnotationEvent(identifiable));
 	}
+	public void deleteFreeTextAnnotation(Identifiable identifiable) {
+		NonRDFAnnotation nonRDFAnnotation = getExistingNonRDFAnnotation(identifiable);
+		if(nonRDFAnnotation != null) {
+			nonRDFAnnotation.setFreeTextAnnotation(null);
+		}
+	}
 	
 	public MiriamManager getMiriamManager(){
 		return miriamManager;

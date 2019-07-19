@@ -725,8 +725,40 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 		reactionsTable.setDefaultRenderer(Kinetics.class, tableRenderer);
 		reactionsTable.setDefaultRenderer(RbmKineticLaw.class, tableRenderer);
 		reactionsTable.setDefaultRenderer(ModelProcessDynamics.class, tableRenderer);
+		
+		
+		DefaultScrollTableCellRenderer structureTypeTableCellRenderer = new DefaultScrollTableCellRenderer() {
+			@Override
+			public Component getTableCellRendererComponent(JTable table,
+					Object value, boolean isSelected, boolean hasFocus,
+					int row, int column) {
+				super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
 				
-		DefaultScrollTableCellRenderer tableCellRenderer = new DefaultScrollTableCellRenderer() {
+				if (table.getModel() instanceof VCellSortTableModel<?>) {		// all the code just to deal with the annotations icons
+					if (table.getModel() == structureTableModel && structureTableModel.getValueAt(row) instanceof Structure) {
+						Structure structure = structureTableModel.getValueAt(row);
+						if(structure != null) {
+							String freeText = bioModel.getVCMetaData().getFreeTextAnnotation(structure);
+							Identifiable entity = AnnotationsPanel.getIdentifiable(structure);
+							MiriamManager miriamManager = bioModel.getVCMetaData().getMiriamManager();
+							TreeMap<Identifiable, Map<MiriamRefGroup, MIRIAMQualifier>> miriamDescrHeir = miriamManager.getMiriamTreeMap();
+							Map<MiriamRefGroup, MIRIAMQualifier> refGroupMap = miriamDescrHeir.get(entity);
+
+							Icon icon = VCellIcons.issueGoodIcon;
+							if(freeText != null && !freeText.isEmpty()) {
+								icon = VCellIcons.noteIcon;
+							} else if(refGroupMap != null && !refGroupMap.isEmpty()) {
+								icon = VCellIcons.noteIcon;
+							}
+							setIcon(icon);
+						}
+					}
+				}
+				return this;
+			}			
+		};
+				
+		DefaultScrollTableCellRenderer linkTableCellRenderer = new DefaultScrollTableCellRenderer() {
 			@Override
 			public Component getTableCellRendererComponent(JTable table,
 					Object value, boolean isSelected, boolean hasFocus,
@@ -778,11 +810,12 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 						Icon icon = VCellIcons.issueGoodIcon;
 						if(freeText != null && !freeText.isEmpty()) {
 							icon = VCellIcons.noteIcon;
+//							icon = VCellIcons.bookmarkIcon;
 //							icon = VCellIcons.addIcon(icon, VCellIcons.linkIcon);
 //							icon = VCellIcons.addIcon(icon, VCellIcons.certificateIcon);
 //							icon = VCellIcons.addIcon(icon, VCellIcons.noteIcon);
 						} else if(refGroupMap != null && !refGroupMap.isEmpty()) {
-							icon = VCellIcons.bookmarkIcon;
+							icon = VCellIcons.noteIcon;
 						}
 						setIcon(icon);
 					}
@@ -1219,14 +1252,15 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 			}
 		};
 		// TODO: here are the renderers associated with the columns
-		reactionsTable.getColumnModel().getColumn(BioModelEditorReactionTableModel.COLUMN_LINK).setCellRenderer(tableCellRenderer);
+		reactionsTable.getColumnModel().getColumn(BioModelEditorReactionTableModel.COLUMN_LINK).setCellRenderer(linkTableCellRenderer);
 		reactionsTable.getColumnModel().getColumn(BioModelEditorReactionTableModel.COLUMN_EQUATION).setCellRenderer(rbmReactionExpressionCellRenderer);
 		reactionsTable.getColumnModel().getColumn(BioModelEditorReactionTableModel.COLUMN_DEFINITION).setCellRenderer(rbmReactionDefinitionCellRenderer);
 		speciesTable.getColumnModel().getColumn(BioModelEditorSpeciesTableModel.COLUMN_NAME).setCellRenderer(rbmSpeciesNameCellRenderer);
-		speciesTable.getColumnModel().getColumn(BioModelEditorSpeciesTableModel.COLUMN_LINK).setCellRenderer(tableCellRenderer);
-		molecularTypeTable.getColumnModel().getColumn(MolecularTypeTableModel.Column.link.ordinal()).setCellRenderer(tableCellRenderer);
+		speciesTable.getColumnModel().getColumn(BioModelEditorSpeciesTableModel.COLUMN_LINK).setCellRenderer(linkTableCellRenderer);
+		molecularTypeTable.getColumnModel().getColumn(MolecularTypeTableModel.Column.link.ordinal()).setCellRenderer(linkTableCellRenderer);
 		observablesTable.getColumnModel().getColumn(ObservableTableModel.Column.species_pattern.ordinal()).setCellRenderer(rbmObservablePatternCellRenderer);
 		observablesTable.getColumnModel().getColumn(ObservableTableModel.Column.structure.ordinal()).setCellRenderer(tableRenderer);
+		structuresTable.getColumnModel().getColumn(BioModelEditorStructureTableModel.COLUMN_TYPE).setCellRenderer(structureTypeTableCellRenderer);
 		
 		// all "depictions" have their own renderer
 		molecularTypeTable.getColumnModel().getColumn(MolecularTypeTableModel.Column.depiction.ordinal()).setCellRenderer(rbmMolecularTypeShapeDepictionCellRenderer);

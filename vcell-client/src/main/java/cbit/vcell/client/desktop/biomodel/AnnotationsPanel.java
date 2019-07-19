@@ -117,6 +117,8 @@ public class AnnotationsPanel extends DocumentEditorSubPanel {
 	private JButton jButtonDelete = null;
 
 	private JTextPane annotationTextArea = null;
+	String emptyHtmlText = null;	// content of annotationTextArea after initialization with null
+									// this will contain an empty html object like "<html><header></header><body></body></html>" 
 
 	private class EventHandler extends MouseAdapter implements ActionListener, FocusListener, PropertyChangeListener {
 		public void focusGained(FocusEvent e) {
@@ -652,6 +654,11 @@ private void initialize() {
 		gbc.fill = java.awt.GridBagConstraints.BOTH;
 		gbc.anchor = GridBagConstraints.SOUTHWEST;
 		add(getBottomPanel(), gbc);
+		
+		JTextPane tenpTextPane = new JTextPane();	// used just to initialize emptyText once
+		tenpTextPane.setContentType("text/html");
+		tenpTextPane.setText(null);
+		emptyHtmlText = tenpTextPane.getText();
 
         getJTreeMIRIAM().addTreeSelectionListener(new TreeSelectionListener() {
 			public void valueChanged(TreeSelectionEvent e) {
@@ -672,14 +679,21 @@ private void initialize() {
 
 private void changeAnnotation() {
 	try{
-		if (bioModel == null) {
+		if (bioModel == null || selectedObject == null) {
 			return;
 		}
+
 		String textAreaStr = (annotationTextArea.getText() == null || annotationTextArea.getText().length()==0?null:annotationTextArea.getText());
 		String oldText = bioModel.getVCMetaData().getFreeTextAnnotation(selectedObject);
-		if(selectedObject != null && !Compare.isEqualOrNull(oldText,textAreaStr)) {
-			bioModel.getVCMetaData().setFreeTextAnnotation(selectedObject, textAreaStr);	
+
+		if(emptyHtmlText.equals(textAreaStr)) {						// no annotation now, the field is empty
+			bioModel.getVCMetaData().deleteFreeTextAnnotation(selectedObject);	// delete, if there's something previously saved
+		} else if(!Compare.isEqualOrNull(oldText,textAreaStr)) {	// some text annotation different from what's already saved
+			bioModel.getVCMetaData().setFreeTextAnnotation(selectedObject, textAreaStr);	// overwrite
 		}
+//		if(selectedObject != null && !Compare.isEqualOrNull(oldText,textAreaStr)) {
+//			bioModel.getVCMetaData().setFreeTextAnnotation(selectedObject, textAreaStr);	
+//		}
 	} catch(Exception e){
 		e.printStackTrace(System.out);
 		PopupGenerator.showErrorDialog(this,"Annotation Error\n"+e.getMessage(), e);
@@ -715,7 +729,11 @@ private void updateInterface() {
 		miriamTreeModel.createTree(entity);
 		
 		String freeText = bioModel.getVCMetaData().getFreeTextAnnotation(selectedObject);
-		annotationTextArea.setText(freeText);
+		if(freeText == null || freeText.isEmpty()) {
+			annotationTextArea.setText(null);
+		} else {
+			annotationTextArea.setText(freeText);
+		}
 		annotationTextArea.setEditable(true);
 		annotationTextArea.setCaretPosition(0);
 	} else {
