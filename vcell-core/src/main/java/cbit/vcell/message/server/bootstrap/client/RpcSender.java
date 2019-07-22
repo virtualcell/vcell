@@ -1,6 +1,7 @@
 package cbit.vcell.message.server.bootstrap.client;
 
 import java.io.IOException;
+import java.util.EventObject;
 
 import org.vcell.util.document.UserLoginInfo;
 
@@ -13,4 +14,5 @@ public interface RpcSender {
 			String[] specialProperties, Object[] specialValues, UserLoginInfo userLoginInfo) throws Exception;
 
 	public MessageEvent[] getMessageEvents() throws IOException;
+	public void clearEvent(Object eventObject)throws IOException;
 }

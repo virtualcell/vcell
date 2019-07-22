@@ -17,6 +17,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.EventObject;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -102,6 +103,11 @@ public class RemoteProxyVCellConnectionFactory implements VCellConnectionFactory
 					userLoginInfo.getUserName(), 
 					rpcDestination, vcRpcRequest.getMethodName(), vcRpcRequest.getArguments());
 			return vcellApiClient.sendRpcMessage(rpcDestination,apiRpcRequest,returnRequired,timeoutMS,specialProperties,specialValues);
+		}
+
+		@Override
+		public void clearEvent(Object eventObject) throws IOException{
+			vcellApiClient.clearEvent(eventObject);
 		}
 
 		@Override

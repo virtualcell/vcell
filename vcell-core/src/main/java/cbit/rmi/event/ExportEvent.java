@@ -33,21 +33,22 @@ public class ExportEvent extends MessageEvent {
 	private final String dataIdString;
 	private final TimeSpecs timeSpecs;
 	private final VariableSpecs variableSpecs;
+	private final String clientJobID;
 	
 	public ExportEvent(Object source, long jobID, User user, 
 			VCDataIdentifier vcDataId, int argEventType, 
 			String format, String location, Double argProgress,
-			TimeSpecs timeSpecs, VariableSpecs variableSpecs) {
+			TimeSpecs timeSpecs, VariableSpecs variableSpecs,String clientJobID) {
 
 		this(source,jobID,user,
 			vcDataId.getID(),vcDataId.getDataKey(),argEventType,
-			format,location,argProgress,timeSpecs,variableSpecs);
+			format,location,argProgress,timeSpecs,variableSpecs,clientJobID);
 	}
 	
 	public ExportEvent(Object source, long jobID, User user, 
 		String dataIdString, KeyValue dataKey, int argEventType, 
 		String format, String location, Double argProgress,
-		TimeSpecs timeSpecs, VariableSpecs variableSpecs) {
+		TimeSpecs timeSpecs, VariableSpecs variableSpecs,String clientJobID) {
 	super(source, new MessageSource(source, dataIdString), new MessageData(argProgress));
 	this.eventType = argEventType;
 	this.format = format;
@@ -59,9 +60,12 @@ public class ExportEvent extends MessageEvent {
 	this.dataKey = dataKey;
 	this.timeSpecs = timeSpecs;
 	this.variableSpecs = variableSpecs;
+	this.clientJobID = clientJobID;
 }
 
-
+public String getclientJobID() {
+	return clientJobID;
+}
 /**
  * Insert the method's description here.
  * Creation date: (1/4/01 1:24:16 PM)
@@ -193,7 +197,7 @@ public ExportEventRepresentation toJsonRep() {
 			eventType,progress,format,
 			location,user.getName(),user.getID().toString(), jobID,
 			dataIdString, dataKey.toString(),
-			exportTimeSpecs, exportVariableSpecs);
+			exportTimeSpecs, exportVariableSpecs,clientJobID);
 }
 
 
@@ -211,7 +215,7 @@ public static ExportEvent fromJsonRep(Object eventSource, ExportEventRepresentat
 		eventSource, rep.jobid, user, 
 		rep.dataIdString, new KeyValue(rep.dataKey), rep.eventType, 
 		rep.format, rep.location, rep.progress,
-		timeSpecs, variableSpecs);
+		timeSpecs, variableSpecs,rep.clientJobID);
 	return event;
 }
 }

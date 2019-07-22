@@ -66,7 +66,7 @@ public ASCIIExporter(ExportServiceImpl exportServiceImpl) {
  * @throws IOException 
  * @deprecated
  */
-private List<ExportOutput> exportODEData(OutputContext outputContext,long jobID, User user, DataServerImpl dataServerImpl, VCDataIdentifier vcdID, VariableSpecs variableSpecs, TimeSpecs timeSpecs, ASCIISpecs asciiSpecs,FileDataContainerManager fileDataContainerManager) throws DataAccessException, IOException {
+private List<ExportOutput> exportODEData(OutputContext outputContext,long jobID, User user, DataServerImpl dataServerImpl, VCDataIdentifier vcdID, VariableSpecs variableSpecs, TimeSpecs timeSpecs, ASCIISpecs asciiSpecs,FileDataContainerManager fileDataContainerManager,ExportSpecs exportSpecs) throws DataAccessException, IOException {
 	String simID = vcdID.getID();
 	String dataType = ".csv";
 	String dataID = "_";
@@ -74,7 +74,7 @@ private List<ExportOutput> exportODEData(OutputContext outputContext,long jobID,
 	ExportOutput exportOutput = new ExportOutput(true, dataType, simID, dataID, fileDataContainerManager);
 	SimulationDescription simulationDescription = new SimulationDescription(outputContext, user, dataServerImpl,vcdID,true, null);
 	fileDataContainerManager.append(exportOutput.getFileDataContainerID(),simulationDescription.getHeader(dataType));
-	fileDataContainerManager.append(exportOutput.getFileDataContainerID(),getODEDataValues(jobID, user, dataServerImpl, vcdID, variableSpecs.getVariableNames(), timeSpecs.getBeginTimeIndex(), timeSpecs.getEndTimeIndex(), asciiSpecs.getSwitchRowsColumns(),fileDataContainerManager));
+	fileDataContainerManager.append(exportOutput.getFileDataContainerID(),getODEDataValues(jobID, user, dataServerImpl, vcdID, variableSpecs.getVariableNames(), timeSpecs.getBeginTimeIndex(), timeSpecs.getEndTimeIndex(), asciiSpecs.getSwitchRowsColumns(),fileDataContainerManager, exportSpecs));
 	dataID += variableSpecs.getModeID() == 0 ? variableSpecs.getVariableNames()[0] : "ManyVars";
 	return Arrays.asList(exportOutput);
 }
@@ -161,10 +161,10 @@ private List<ExportOutput> exportParticleData(OutputContext outputContext,long j
 		int numberOfParticles = particles.size(); 
 		int numberOfTimes = endIndex - beginIndex + 1;
 		if (particleProgress != null) {
-			particleProgress.nextName();
+			particleProgress.nextName(exportSpecs);
 		}
 		else {
-			particleProgress = new ParticleProgress(jobID, vcdID, vnames.length, numberOfTimes,numberOfParticles);
+			particleProgress = new ParticleProgress(jobID, vcdID, vnames.length, numberOfTimes,numberOfParticles, exportSpecs);
 		}
 
 		// now make csv formatted data
@@ -202,13 +202,13 @@ private List<ExportOutput> exportParticleData(OutputContext outputContext,long j
 			}
 		}
 		final char COMMA  = ',';
-		int nextTimeIndex = particleProgress.nextTimeIndex(0, false);
+		int nextTimeIndex = particleProgress.nextTimeIndex(0, false, exportSpecs);
 		for (int i=beginIndex;i<=endIndex;i++) {
 			particleDataBlk = dataServerImpl.getParticleDataBlock(user, vcdID,allTimes[i]);
 			particles = particleDataBlk.getCoordinates(smoldynSpecies);
 			
 			if (i >= nextTimeIndex) {
-				nextTimeIndex = particleProgress.nextTimeIndex(i, true);
+				nextTimeIndex = particleProgress.nextTimeIndex(i, true, exportSpecs);
 			}
 
 			if (switchRowsColumns) {
@@ -242,12 +242,12 @@ private List<ExportOutput> exportParticleData(OutputContext outputContext,long j
 		 		}
 			}
 		}
-		particleProgress.endOfTimes();
+		particleProgress.endOfTimes(exportSpecs);
 		final String dataID = vcellName + "_Particles";
 		ExportOutput exportOutputCSV = new ExportOutput(true, dataType, simID, dataID, fileDataContainerManager);
 		fileDataContainerManager.append(exportOutputCSV.getFileDataContainerID(),header.toString());
 		
-		int nextDataIndex = particleProgress.nextDataIndex(0, false);
+		int nextDataIndex = particleProgress.nextDataIndex(0, false, exportSpecs);
 		
 		StringBuilder all = new StringBuilder( );
 		for (int i=0;i<dataLines.length;i++) {
@@ -257,7 +257,7 @@ private List<ExportOutput> exportParticleData(OutputContext outputContext,long j
 			all.append(NEWLINE);
 			
 			if (i >= nextDataIndex) {
-				nextDataIndex = particleProgress.nextDataIndex(i, true);
+				nextDataIndex = particleProgress.nextDataIndex(i, true, exportSpecs);
 			}
 		}
 		fileDataContainerManager.append(exportOutputCSV.getFileDataContainerID(),all.toString());
@@ -322,7 +322,7 @@ private int[] getallSampleIndexes(GeometrySpecs geometrySpecs,CartesianMesh mesh
 
 private ExportOutput sofyaFormat(OutputContext outputContext,long jobID, User user, DataServerImpl dataServerImpl,
 		final VCDataIdentifier orig_vcdID, VariableSpecs variableSpecs, TimeSpecs timeSpecs, 
-		GeometrySpecs geometrySpecs, ASCIISpecs asciiSpecs,String contextName,FileDataContainerManager fileDataContainerManager) throws DataAccessException,IOException{
+		GeometrySpecs geometrySpecs, ASCIISpecs asciiSpecs,String contextName,FileDataContainerManager fileDataContainerManager,ExportSpecs exportSpecs) throws DataAccessException,IOException{
 	ExportSpecs.SimNameSimDataID[] simNameSimDataIDs = asciiSpecs.getSimNameSimDataIDs();
 	CartesianMesh mesh = dataServerImpl.getMesh(user, orig_vcdID);//use mesh to calulate indexes
 	final int SIM_COUNT = simNameSimDataIDs.length;
@@ -351,7 +351,7 @@ private ExportOutput sofyaFormat(OutputContext outputContext,long jobID, User us
 			progressCounter++;
 			if((System.currentTimeMillis()-lastTime)>MESSAGE_LIMIT){
 				lastTime = System.currentTimeMillis();
-				exportServiceImpl.fireExportProgress(jobID, orig_vcdID, "multisim-point", progressCounter/(SIM_COUNT*TIME_COUNT));
+				exportServiceImpl.fireExportProgress(jobID, orig_vcdID, "multisim-point", progressCounter/(SIM_COUNT*TIME_COUNT), exportSpecs);
 			}
 			int simJobIndex = simNameSimDataIDs[simIndex].getDefaultJobIndex();
 			VCDataIdentifier vcdID = simNameSimDataIDs[simIndex].getVCDataIdentifier(simJobIndex);
@@ -430,7 +430,7 @@ private ExportOutput sofyaFormat(OutputContext outputContext,long jobID, User us
  */
 private List<ExportOutput> exportPDEData(OutputContext outputContext,long jobID, User user, DataServerImpl dataServerImpl,
 		final VCDataIdentifier orig_vcdID, VariableSpecs variableSpecs, TimeSpecs timeSpecs, 
-		GeometrySpecs geometrySpecs, ASCIISpecs asciiSpecs,String contextName,FileDataContainerManager fileDataContainerManager) 
+		GeometrySpecs geometrySpecs, ASCIISpecs asciiSpecs,String contextName,FileDataContainerManager fileDataContainerManager,ExportSpecs exportSpecs) 
 						throws DataAccessException, IOException {
 						
 	
@@ -453,7 +453,7 @@ private List<ExportOutput> exportPDEData(OutputContext outputContext,long jobID,
 			break;
 	}
 	if(asciiSpecs.getCSVRoiLayout() == ASCIISpecs.csvRoiLayout.time_sim_var){
-		exportOutputV.add(new ExportOutput[] {sofyaFormat(outputContext, jobID, user, dataServerImpl, orig_vcdID, variableSpecs, timeSpecs, geometrySpecs, asciiSpecs, contextName, fileDataContainerManager)});
+		exportOutputV.add(new ExportOutput[] {sofyaFormat(outputContext, jobID, user, dataServerImpl, orig_vcdID, variableSpecs, timeSpecs, geometrySpecs, asciiSpecs, contextName, fileDataContainerManager, exportSpecs)});
 	}else{
 		for (int v = 0; v < SIM_COUNT; v++) {
 			int simJobIndex = simNameSimDataIDs[v].getDefaultJobIndex();
@@ -511,7 +511,7 @@ private List<ExportOutput> exportPDEData(OutputContext outputContext,long jobID,
 									getPointsTimeSeries(outputContext,user, dataServerImpl, vcdID, variableSpecs.getVariableNames()[i], geometrySpecs, allTimes, beginTimeIndex, endTimeIndex, asciiSpecs.getSwitchRowsColumns(),fileDataContainerManager));
 								fileDataContainerManager.append(exportOutput1.getFileDataContainerID(),"\n");
 								progressCounter++;
-								exportServiceImpl.fireExportProgress(jobID, orig_vcdID, "CSV", progressCounter/TOTAL_EXPORTS_OPS);
+								exportServiceImpl.fireExportProgress(jobID, orig_vcdID, "CSV", progressCounter/TOTAL_EXPORTS_OPS, exportSpecs);
 							}
 							outputV.add(exportOutput1);
 						}
@@ -526,7 +526,7 @@ private List<ExportOutput> exportPDEData(OutputContext outputContext,long jobID,
 										fileDataContainerManager.append(exportOutput1.getFileDataContainerID(),getCurveTimeSeries(outputContext,user, dataServerImpl, vcdID, variableSpecs.getVariableNames()[i], geometrySpecs.getCurves()[s], allTimes, beginTimeIndex, endTimeIndex, asciiSpecs.getSwitchRowsColumns(),fileDataContainerManager));
 										fileDataContainerManager.append(exportOutput1.getFileDataContainerID(),"\n");
 										progressCounter++;
-										exportServiceImpl.fireExportProgress(jobID, orig_vcdID, "CSV", progressCounter/TOTAL_EXPORTS_OPS);
+										exportServiceImpl.fireExportProgress(jobID, orig_vcdID, "CSV", progressCounter/TOTAL_EXPORTS_OPS, exportSpecs);
 									}
 								}
 							}
@@ -554,7 +554,7 @@ private List<ExportOutput> exportPDEData(OutputContext outputContext,long jobID,
 								output[j * TIME_COUNT + i] = exportOutput1;
 								
 								progressCounter++;
-								exportServiceImpl.fireExportProgress(jobID, orig_vcdID, "CSV", progressCounter/TOTAL_EXPORTS_OPS);
+								exportServiceImpl.fireExportProgress(jobID, orig_vcdID, "CSV", progressCounter/TOTAL_EXPORTS_OPS, exportSpecs);
 								//data1.cleanup();
 							//data2.cleanup();
 							}
@@ -730,7 +730,7 @@ private String getSpatialSelectionDescription(SpatialSelection spatialSelection)
  * @exception org.vcell.util.DataAccessException The exception description.
  * @throws IOException 
  */
-private FileDataContainerID getODEDataValues(long jobID, User user, DataServerImpl dataServerImpl, VCDataIdentifier vcdID, String[] variableNames, int beginIndex, int endIndex, boolean switchRowsColumns,FileDataContainerManager fileDataContainerManager) throws DataAccessException, IOException {
+private FileDataContainerID getODEDataValues(long jobID, User user, DataServerImpl dataServerImpl, VCDataIdentifier vcdID, String[] variableNames, int beginIndex, int endIndex, boolean switchRowsColumns,FileDataContainerManager fileDataContainerManager,ExportSpecs exportSpecs) throws DataAccessException, IOException {
 
 	ODESimData odeSimData = dataServerImpl.getODEData(user, vcdID);
 	double progress = 0.0;
@@ -750,7 +750,7 @@ private FileDataContainerID getODEDataValues(long jobID, User user, DataServerIm
 	for (int k=0;k<variableNames.length;k++) {
 		for (int i=beginIndex;i<=endIndex;i++) {
 			progress = (double)(i + k * (endIndex - beginIndex + 1)) / (2 * variableNames.length * (endIndex - beginIndex + 1));
-			exportServiceImpl.fireExportProgress(jobID, vcdID, "CSV", progress);
+			exportServiceImpl.fireExportProgress(jobID, vcdID, "CSV", progress,exportSpecs);
 			try {
 				variableValues[k][i - beginIndex] = odeSimData.extractColumn(odeSimData.findColumn(variableNames[k]))[i];
 			}catch (cbit.vcell.parser.ExpressionException e){
@@ -784,7 +784,7 @@ private FileDataContainerID getODEDataValues(long jobID, User user, DataServerIm
 			fileDataContainerManager.append(fileDataContainerID,"," + variableNames[k]);
 			for (int i=beginIndex;i<=endIndex;i++) {
 				progress = 0.5 + (double)(i + k * (endIndex - beginIndex + 1)) / (2 * variableNames.length * (endIndex - beginIndex + 1));
-				exportServiceImpl.fireExportProgress(jobID, vcdID, "CSV", progress);
+				exportServiceImpl.fireExportProgress(jobID, vcdID, "CSV", progress, exportSpecs);
 				fileDataContainerManager.append(fileDataContainerID,"," + variableValues[k][i - beginIndex]);
 			}
 			fileDataContainerManager.append(fileDataContainerID,"\n");
@@ -801,7 +801,7 @@ private FileDataContainerID getODEDataValues(long jobID, User user, DataServerIm
 			fileDataContainerManager.append(fileDataContainerID,"," + allTimes[i]);
 			for (int k=0;k<variableNames.length;k++) {
 				progress = 0.5 + (double)(i + k * (endIndex - beginIndex + 1)) / (2 * variableNames.length * (endIndex - beginIndex + 1));
-				exportServiceImpl.fireExportProgress(jobID, vcdID, "CSV", progress);
+				exportServiceImpl.fireExportProgress(jobID, vcdID, "CSV", progress, exportSpecs);
 				fileDataContainerManager.append(fileDataContainerID,"," + variableValues[k][i - beginIndex]);
 			}
 			fileDataContainerManager.append(fileDataContainerID,"\n");
@@ -1008,7 +1008,8 @@ public Collection<ExportOutput >makeASCIIData(OutputContext outputContext,JobReq
 					exportSpecs.getGeometrySpecs(),
 					asciiSpecs,
 					exportSpecs.getContextName(),
-					fileDataContainerManager
+					fileDataContainerManager,
+					exportSpecs
 					);
 		case ODE_VARIABLE_DATA:
 			return exportODEData(
@@ -1020,7 +1021,8 @@ public Collection<ExportOutput >makeASCIIData(OutputContext outputContext,JobReq
 					exportSpecs.getVariableSpecs(),
 					exportSpecs.getTimeSpecs(),
 					asciiSpecs,
-					fileDataContainerManager
+					fileDataContainerManager,
+					exportSpecs
 					);
 		case PDE_PARTICLE_DATA:
 			return exportParticleData(
@@ -1064,7 +1066,7 @@ private class ParticleProgress {
 	boolean dataCalled;
 	 
 	
-	ParticleProgress(long jobID, VCDataIdentifier vcdID, int nNames, int nTimes, int nDataLines) {
+	ParticleProgress(long jobID, VCDataIdentifier vcdID, int nNames, int nTimes, int nDataLines,ExportSpecs exportSpecs) {
 		super();
 		this.jobID = jobID;
 		this.vcdID = vcdID;
@@ -1079,11 +1081,11 @@ private class ParticleProgress {
 		nameCounter = 0;
 		nextIncr = stepIncr = PROGRESS_PERCENT_INCREMENT / 100.0;
 		dataCalled = false;
-		fire(0.00001);  //fire one just to get started
+		fire(0.00001,exportSpecs);  //fire one just to get started
 	}
 	
-	private void fire(double increment) {
-		exportServiceImpl.fireExportProgress(jobID, vcdID, CSV_LABEL,increment);  
+	private void fire(double increment,ExportSpecs exportSpecs) {
+		exportServiceImpl.fireExportProgress(jobID, vcdID, CSV_LABEL,increment,exportSpecs);  
 		while (increment >= nextIncr) {
 			nextIncr += stepIncr;
 		}
@@ -1092,11 +1094,11 @@ private class ParticleProgress {
 	/**
 	 * indicate have moved to next name
 	 */
-	void nextName( ) {
+	void nextName(ExportSpecs exportSpecs) {
 		dataCalled = false;
 		double increment = ++nameCounter * nameIncr; 
 		if (increment > nextIncr) {
-			fire(increment);
+			fire(increment,exportSpecs);
 		}
 	}
 	
@@ -1105,10 +1107,10 @@ private class ParticleProgress {
 	 * @param fireNow send progress report if past time 
 	 * @return time index to fire next notification at
 	 */
-	int nextTimeIndex(int currentTimeStep, boolean fireNow) {
+	int nextTimeIndex(int currentTimeStep, boolean fireNow,ExportSpecs exportSpecs) {
 		final double current = (nameCounter * nameIncr) + (currentTimeStep * timeIncr);
 		if (fireNow  && current > nextIncr) {
-			fire(current);
+			fire(current,exportSpecs);
 		}
 		if (!dataCalled) {
 			double distFromName = nextIncr - current; 
@@ -1122,10 +1124,10 @@ private class ParticleProgress {
 	/**
 	 * indicate particle exporter is doing processing time steps
 	 */
-	void endOfTimes( ) {
+	void endOfTimes(ExportSpecs exportSpecs) {
 		final double current =  (nameCounter * nameIncr)  + (TIMES_PERCENT / 100.0);
 		if (current > nextIncr) {
-			fire(current);
+			fire(current,exportSpecs);
 		}
 	}
 	
@@ -1134,11 +1136,11 @@ private class ParticleProgress {
 	 * @param fireNow send progress report 
 	 * @return data index to fire next notification at
 	 */
-	int nextDataIndex(int currentDataIndex, boolean fireNow) {
+	int nextDataIndex(int currentDataIndex, boolean fireNow,ExportSpecs exportSpecs) {
 		dataCalled = true;
 		final double current =  (nameCounter * nameIncr)  + (TIMES_PERCENT / 100.0) + (currentDataIndex * dataIncr);
 		if (fireNow  && current > nextIncr) {
-			fire(current);
+			fire(current,exportSpecs);
 		}
 		double distFromName = nextIncr - current; 
 		VCAssert.assertTrue(distFromName >= 0, "positive step");

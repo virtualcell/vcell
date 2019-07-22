@@ -457,7 +457,7 @@ for (int sliceNumber = startSlice; sliceNumber < startSlice+sliceCount; sliceNum
 				throw UserCancelException.CANCEL_GENERIC;
 			}
 		}
-		exportServiceImpl.fireExportProgress(jobID, vcdID, "MEDIA", (particleInfo==null?progress:.5+(progress/2.0)));
+		exportServiceImpl.fireExportProgress(jobID, vcdID, "MEDIA", (particleInfo==null?progress:.5+(progress/2.0)),exportSpecs);
 		progress+= progressIncr;
 		MirrorInfo currentSliceTimeMirrorInfo =
 			renderAndMirrorSliceTimePixels(exportRenderInfo, varNames[varNameIndex0], allTimes[timeIndex0],

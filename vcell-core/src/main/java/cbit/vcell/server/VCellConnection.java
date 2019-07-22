@@ -12,6 +12,7 @@ package cbit.vcell.server;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.EventObject;
 
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.UserLoginInfo;
@@ -82,4 +83,7 @@ void sendErrorReport(Throwable exception, ExtraContext extra) throws RemoteProxy
 
 MessageEvent[] getMessageEvents() throws RemoteProxyException, IOException;
 //void reportPerformanceMonitorEvent(PerformanceMonitorEvent performanceMonitorEvent) throws RemoteProxyException;
+void clearEvent(Object eventObject) throws IOException;
+
 }
+

@@ -10,7 +10,9 @@
 
 package cbit.vcell.message.server.bootstrap;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.sql.SQLException;
+import java.util.EventObject;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -191,6 +193,12 @@ public void sendErrorReport(Throwable exception) {
 
 public MessageEvent[] getMessageEvents() {
 	return messageService.getMessageEvents();
+}
+
+
+@Override
+public void clearEvent(Object eventObject) throws IOException {
+	messageService.clearEvent(eventObject);
 }
 
 

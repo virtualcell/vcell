@@ -2,6 +2,7 @@ package org.vcell.rest.events;
 
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.StringTokenizer;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -16,6 +17,8 @@ import org.vcell.rest.server.ClientTopicMessageCollector;
 import org.vcell.util.Compare;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 
 import cbit.rmi.event.DataJobEvent;
 import cbit.rmi.event.ExportEvent;
@@ -115,7 +118,51 @@ public class RestEventService {
 		}
 	}
 	
-	
+	private static final String DJE = DataJobEvent.class.getName()+":";
+	private static final String EE = ExportEvent.class.getName()+":";
+	private static final String SJSE = SimulationJobStatusEvent.class.getName()+":";
+	public void clearEvent(String clearThisEvent) {
+		//clearThisEvent from AsynchMessageManager.poll() originates from client on complete, stop or failed event
+		if(clearThisEvent == null) {
+			return;
+		}
+		String jobid = null;
+		String userid = null;
+		String simkey = null;
+		String taskid = null;
+		String jobindex = null;
+		if(clearThisEvent.startsWith(DJE)) {
+			jobid = clearThisEvent.substring(DJE.length());
+		}else if(clearThisEvent.startsWith(EE)) {
+			jobid = clearThisEvent.substring(EE.length());
+		}else if(clearThisEvent.startsWith(SJSE)) {
+			String temp = clearThisEvent.substring(SJSE.length());
+			StringTokenizer st = new StringTokenizer(temp, ":");
+			userid = st.nextToken();
+			simkey = st.nextToken();
+			taskid = st.nextToken();
+			jobindex = st.nextToken();
+		}else {
+			return;
+		}
+		JsonParser parser = new JsonParser();
+		Iterator<EventWrapper> iter = events.iterator();
+		while (iter.hasNext()) {
+			EventWrapper eventWrapper = iter.next();
+			JsonObject o = parser.parse(eventWrapper.eventJSON).getAsJsonObject();
+			if(o.has("jobid") && o.get("jobid").getAsString().equals(jobid)){
+				events.remove(eventWrapper);
+			}else if(o.has("jobStatus") && o.get("jobStatus") instanceof JsonObject ){
+				JsonObject jstat = (JsonObject)o.get("jobStatus");
+				if(jstat.has("owner_userid") && jstat.get("owner_userid").getAsString().equals(userid) &&
+					jstat.has("simulationKey") && jstat.get("simulationKey").getAsString().equals(simkey) &&
+					jstat.has("taskID") && jstat.get("taskID").getAsString().equals(taskid) &&
+					jstat.has("jobIndex") && jstat.get("jobIndex").getAsString().equals(jobindex)){
+					events.remove(eventWrapper);
+				}
+			}
+		}		
+	}
 	public EventWrapper[] query(String userid, long lasttimestamp) {
 		ArrayList<EventWrapper> eventList = new ArrayList<EventWrapper>();
 		Iterator<EventWrapper> iter = events.iterator();

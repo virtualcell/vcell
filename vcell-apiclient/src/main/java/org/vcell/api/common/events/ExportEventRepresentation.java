@@ -13,12 +13,13 @@ public class ExportEventRepresentation {
 	public final String dataKey;
 	public final ExportTimeSpecs exportTimeSpecs;
 	public final ExportVariableSpecs exportVariableSpecs;
+	public final String clientJobID;
 	
 	public ExportEventRepresentation(
 			int eventType, Double progress, String format, 
 			String location, String username, String userkey, long jobid,
 			String dataIdString, String dataKey,
-			ExportTimeSpecs exportTimeSpecs, ExportVariableSpecs exportVariableSpecs) {
+			ExportTimeSpecs exportTimeSpecs, ExportVariableSpecs exportVariableSpecs,String clientJobID) {
 		
 		this.eventType = eventType;
 		this.progress = progress;
@@ -31,6 +32,7 @@ public class ExportEventRepresentation {
 		this.dataKey = dataKey;
 		this.exportTimeSpecs = exportTimeSpecs;
 		this.exportVariableSpecs = exportVariableSpecs;
+		this.clientJobID = clientJobID;
 	}
 	
 	

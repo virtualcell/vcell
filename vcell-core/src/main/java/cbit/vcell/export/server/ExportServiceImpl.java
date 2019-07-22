@@ -98,19 +98,19 @@ protected ExportEvent fireExportCompleted(long jobID, VCDataIdentifier vcdID, St
 	}
 	ExportEvent event = new ExportEvent(
 			this, jobID, user, vcdID.getID(), dataKey, ExportEvent.EXPORT_COMPLETE, 
-			format, location, null, timeSpecs, varSpecs);
+			format, location, null, timeSpecs, varSpecs,(exportSpecs==null?null:exportSpecs.getClientJobID()));
 	fireExportEvent(event);
 	return event;
 }
 
 
-protected void fireExportAssembling(long jobID, VCDataIdentifier vcdID, String format) {
+protected void fireExportAssembling(long jobID, VCDataIdentifier vcdID, String format,ExportSpecs exportSpecs) {
 	User user = null;
 	Object object = jobRequestIDs.get(new Long(jobID));
 	if (object != null) {
 		user = (User)object;
 	}
-	ExportEvent event = new ExportEvent(this, jobID, user, vcdID, ExportEvent.EXPORT_ASSEMBLING, format, null, null, null, null);
+	ExportEvent event = new ExportEvent(this, jobID, user, vcdID, ExportEvent.EXPORT_ASSEMBLING, format, null, null, null, null,(exportSpecs==null?null:exportSpecs.getClientJobID()));
 	fireExportEvent(event);
 }
 
@@ -140,13 +140,13 @@ protected void fireExportEvent(ExportEvent event) {
  * Creation date: (4/1/2001 11:20:45 AM)
  * @deprecated
  */
-protected void fireExportFailed(long jobID, VCDataIdentifier vcdID, String format, String message) {
+protected void fireExportFailed(long jobID, VCDataIdentifier vcdID, String format, String message,ExportSpecs exportSpecs) {
 	User user = null;
 	Object object = jobRequestIDs.get(new Long(jobID));
 	if (object != null) {
 		user = (User)object;
 	}
-	ExportEvent event = new ExportEvent(this, jobID, user, vcdID, ExportEvent.EXPORT_FAILURE, format, message, null, null, null);
+	ExportEvent event = new ExportEvent(this, jobID, user, vcdID, ExportEvent.EXPORT_FAILURE, format, message, null, null, null,(exportSpecs==null?null:exportSpecs.getClientJobID()));
 	fireExportEvent(event);
 }
 
@@ -157,13 +157,13 @@ protected void fireExportFailed(long jobID, VCDataIdentifier vcdID, String forma
  * @param exportSpecs cbit.vcell.export.server.ExportSpecs
  * @param progress double
  */
-protected void fireExportProgress(long jobID, VCDataIdentifier vcdID, String format, double progress) {
+protected void fireExportProgress(long jobID, VCDataIdentifier vcdID, String format, double progress,ExportSpecs exportSpecs) {
 	User user = null;
 	Object object = jobRequestIDs.get(new Long(jobID));
 	if (object != null) {
 		user = (User)object;
 	}
-	ExportEvent event = new ExportEvent(this, jobID, user, vcdID, ExportEvent.EXPORT_PROGRESS, format, null, new Double(progress), null, null);
+	ExportEvent event = new ExportEvent(this, jobID, user, vcdID, ExportEvent.EXPORT_PROGRESS, format, null, new Double(progress), null, null,(exportSpecs==null?null:exportSpecs.getClientJobID()));
 	fireExportEvent(event);
 }
 
@@ -173,13 +173,13 @@ protected void fireExportProgress(long jobID, VCDataIdentifier vcdID, String for
  * Creation date: (4/1/2001 11:20:45 AM)
  * @deprecated
  */
-protected void fireExportStarted(long jobID, VCDataIdentifier vcdID, String format) {
+protected void fireExportStarted(long jobID, VCDataIdentifier vcdID, String format,ExportSpecs exportSpecs) {
 	User user = null;
 	Object object = jobRequestIDs.get(new Long(jobID));
 	if (object != null) {
 		user = (User)object;
 	}
-	ExportEvent event = new ExportEvent(this, jobID, user, vcdID, ExportEvent.EXPORT_START, format, null, null, null, null);
+	ExportEvent event = new ExportEvent(this, jobID, user, vcdID, ExportEvent.EXPORT_START, format, null, null, null, null,(exportSpecs==null?null:exportSpecs.getClientJobID()));
 	fireExportEvent(event);
 }
 
@@ -223,7 +223,7 @@ public ExportEvent makeRemoteFile(OutputContext outputContext,User user, DataSer
 //			fileFormat = "IMAGEJ";
 //			break;
 	}
-	fireExportStarted(newExportJob.getJobID(), exportSpecs.getVCDataIdentifier(), fileFormat);
+	fireExportStarted(newExportJob.getJobID(), exportSpecs.getVCDataIdentifier(), fileFormat,exportSpecs);
 
 	try {
 
@@ -301,7 +301,7 @@ public ExportEvent makeRemoteFile(OutputContext outputContext,User user, DataSer
 	}
 	catch (Throwable exc) {
 		lg.error(exc.getMessage(), exc);
-		fireExportFailed(newExportJob.getJobID(), exportSpecs.getVCDataIdentifier(), fileFormat, exc.getMessage());
+		fireExportFailed(newExportJob.getJobID(), exportSpecs.getVCDataIdentifier(), fileFormat, exc.getMessage(),exportSpecs);
 		throw new DataAccessException(exc.getMessage());
 	}
 }
@@ -360,7 +360,7 @@ private ExportEvent makeRemoteFile(String fileFormat, String exportBaseDir, Stri
  */
 private ExportEvent makeRemoteFile(String fileFormat, String exportBaseDir, String exportBaseURL, ExportOutput[] exportOutputs, ExportSpecs exportSpecs, JobRequest newExportJob,FileDataContainerManager fileDataContainerManager) throws DataFormatException, IOException, MalformedURLException {
 			boolean exportValid = true;
-			fireExportAssembling(newExportJob.getJobID(), exportSpecs.getVCDataIdentifier(), fileFormat);
+			fireExportAssembling(newExportJob.getJobID(), exportSpecs.getVCDataIdentifier(), fileFormat,exportSpecs);
 
 			// check outputs and package into zip file
 			File zipFile = new File(exportBaseDir + newExportJob.getJobID() + ".zip");

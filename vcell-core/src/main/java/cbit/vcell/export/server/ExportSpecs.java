@@ -10,6 +10,7 @@
 
 package cbit.vcell.export.server;
 import java.io.Serializable;
+import java.util.UUID;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Compare;
@@ -34,7 +35,8 @@ public class ExportSpecs implements Serializable {
 	private FormatSpecificSpecs formatSpecificSpecs;
 	private String simulatioName;
 	private String contextName;
-
+	private String clientJobID = UUID.randomUUID().toString();
+	
 	public interface SimulationSelector{
 		public void selectSimulations();
 		public void selectParamScanInfo();
@@ -178,7 +180,9 @@ public boolean equals(Object object) {
 	return false;
 }
 
-
+public String getClientJobID() {
+	return clientJobID;
+}
 /**
  * This method was created in VisualAge.
  * @return cbit.vcell.export.server.VariableSpecs
