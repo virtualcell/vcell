@@ -62,7 +62,6 @@ public class MathDescEditor extends JPanel implements ActionListener, KeyListene
 	private MathDescPanel mathDescPanel = null;		// the tree
 	private MultiPurposeTextPanel vcmlPane = null;	// the text editor
 	private CardLayout cardLayout = new CardLayout();
-
 	
 	private final static Set<String> autoCompletionWords = new HashSet<String>();
 	private final static Set<String> keywords = new HashSet<String>();
@@ -75,7 +74,6 @@ public MathDescEditor() {
 	initialize();
 }
 
-
 /**
  * Method to handle events for the ActionListener interface.
  * @param e java.awt.event.ActionEvent
@@ -85,7 +83,6 @@ public void actionPerformed(java.awt.event.ActionEvent e) {
 		applyChanges(e);
 	if (e.getSource() == getCancelButton()) 
 		cancelChanges(e);
-
 }
 
 @Override
@@ -94,7 +91,6 @@ public void itemStateChanged(ItemEvent e) {
 		viewMath_ItemStateChanged(e);
 	}
 }
-
 
 /**
  * Comment
@@ -187,7 +183,6 @@ private javax.swing.JRadioButton getViewVCMDLRadioButton() {
 	return ivjViewVCMDLRadioButton;
 }
 
-
 /**
  * Return the ApplyButton property value.
  * @return javax.swing.JButton
@@ -234,8 +229,6 @@ private javax.swing.JPanel getButtonsPanel() {
 		GridBagConstraints gbc = new java.awt.GridBagConstraints();
 		gbc.gridx = gridx; 
 		gbc.gridy = 0;
-		gbc.weightx = 0;
-		gbc.weighty = 0;
 		gbc.insets = new Insets(8, 5, 0, 2);
 		gbc.anchor = GridBagConstraints.NORTHWEST;
 		JLabel label = new JLabel("Choose View:");
@@ -246,7 +239,6 @@ private javax.swing.JPanel getButtonsPanel() {
 		gbc = new java.awt.GridBagConstraints();
 		gbc.gridx = gridx; 
 		gbc.gridy = 0;
-		gbc.weightx = 0;
 		gbc.insets = new Insets(3, 5, 3, 1);
 		gbc.anchor = GridBagConstraints.NORTHWEST;
 		ivjButtonsPanel.add(getViewEqunsRadioButton(), gbc);
@@ -255,7 +247,6 @@ private javax.swing.JPanel getButtonsPanel() {
 		gbc = new java.awt.GridBagConstraints();
 		gbc.gridx = gridx; 
 		gbc.gridy = 0;
-		gbc.weightx = 0;
 		gbc.insets = new Insets(3, 3, 3, 2);
 		gbc.anchor = GridBagConstraints.NORTHWEST;
 		ivjButtonsPanel.add(getViewVCMDLRadioButton(), gbc);
@@ -274,7 +265,6 @@ private javax.swing.JPanel getButtonsPanel() {
 		gbc = new java.awt.GridBagConstraints();
 		gbc.gridx = gridx; 
 		gbc.gridy = 0;
-		gbc.weightx = 0;
 		gbc.insets = new Insets(3, 5, 3, 1);
 		gbc.anchor = GridBagConstraints.NORTHEAST;
 		ivjButtonsPanel.add(getApplyButton(), gbc);
@@ -283,7 +273,6 @@ private javax.swing.JPanel getButtonsPanel() {
 		gbc = new java.awt.GridBagConstraints();
 		gbc.gridx = gridx; 
 		gbc.gridy = 0;
-		gbc.weightx = 0;
 		gbc.insets = new Insets(3, 3, 3, 5);
 		gbc.anchor = GridBagConstraints.NORTHEAST;
 		ivjButtonsPanel.add(getCancelButton(), gbc);
@@ -359,39 +348,6 @@ private void initConnections() throws java.lang.Exception {
 /**
  * Initialize class
  */
-//private void initialize1() {
-//	try {
-//		setName("MathDescEditor");
-//		setLayout(new java.awt.GridBagLayout());
-//		setSize(981, 242);
-//
-//		java.awt.GridBagConstraints constraintsApplyButton = new java.awt.GridBagConstraints();
-//		constraintsApplyButton.gridx = 0; constraintsApplyButton.gridy = 1;
-//		constraintsApplyButton.insets = new java.awt.Insets(0, 9, 9, 0);
-//		add(getApplyButton(), constraintsApplyButton);
-//
-//		java.awt.GridBagConstraints constraintsCancelButton = new java.awt.GridBagConstraints();
-//		constraintsCancelButton.gridx = 1; constraintsCancelButton.gridy = 1;
-//		constraintsCancelButton.anchor = java.awt.GridBagConstraints.WEST;
-//		constraintsCancelButton.insets = new java.awt.Insets(0, 9, 9, 0);
-//		constraintsCancelButton.fill = java.awt.GridBagConstraints.BOTH;
-//		constraintsCancelButton.gridwidth = 1;		
-//		add(getCancelButton(), constraintsCancelButton);
-//		
-//		java.awt.GridBagConstraints constraintslineNumberedTextArea1 = new java.awt.GridBagConstraints();
-//		constraintslineNumberedTextArea1.gridx = 0; constraintslineNumberedTextArea1.gridy = 0;
-//		constraintslineNumberedTextArea1.gridwidth = 6;
-//		constraintslineNumberedTextArea1.fill = java.awt.GridBagConstraints.BOTH;
-//		constraintslineNumberedTextArea1.weightx = 1.0;
-//		constraintslineNumberedTextArea1.weighty = 1.0;
-//		constraintslineNumberedTextArea1.insets = new java.awt.Insets(4, 4, 4, 4);
-//		add(getVCMLPane(), constraintslineNumberedTextArea1);
-//		initConnections();
-//	} catch (java.lang.Throwable ivjExc) {
-//		handleException(ivjExc);
-//	}
-//}
-
 private void initialize() {
 	try {
 		setName("ViewMathPanel");
@@ -407,10 +363,7 @@ private void initialize() {
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
 	}
-
 }
-
-
 
 /**
  * Method to handle events for the KeyListener interface.
@@ -436,14 +389,12 @@ public void keyPressed(java.awt.event.KeyEvent e) {
 public void keyReleased(java.awt.event.KeyEvent e) {
 }
 
-
 /**
  * Method to handle events for the KeyListener interface.
  * @param e java.awt.event.KeyEvent
  */
 public void keyTyped(java.awt.event.KeyEvent e) {
 }
-
 
 /**
  * Set the MathDescription to a new value.
