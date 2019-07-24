@@ -9,16 +9,30 @@
  */
 
 package cbit.vcell.math.gui;
+import java.awt.BorderLayout;
+import java.awt.CardLayout;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.ButtonGroup;
 import javax.swing.JButton;
+import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JRadioButton;
 import javax.swing.JTextPane;
 import javax.swing.text.BadLocationException;
 
@@ -33,12 +47,22 @@ import cbit.vcell.math.VCML;
  * 
  */
 @SuppressWarnings("serial")
-public class MathDescEditor extends JPanel implements ActionListener, KeyListener {
+public class MathDescEditor extends JPanel implements ActionListener, KeyListener, ItemListener {
 	private JButton ivjCancelButton = null;
 	private MathDescription ivjMathDescription = null;
 	private JButton ivjApplyButton = null;
 	protected transient java.beans.PropertyChangeSupport propertyChange;
-	private MultiPurposeTextPanel vcmlPane = null;
+	
+	private JRadioButton ivjViewEqunsRadioButton = null;
+	private JRadioButton ivjViewVCMDLRadioButton = null;
+	private ButtonGroup ivjbuttonGroup = null;
+
+	private JPanel mainPanel;
+	private JPanel ivjButtonsPanel;
+	private MathDescPanel mathDescPanel = null;		// the tree
+	private MultiPurposeTextPanel vcmlPane = null;	// the text editor
+	private CardLayout cardLayout = new CardLayout();
+
 	
 	private final static Set<String> autoCompletionWords = new HashSet<String>();
 	private final static Set<String> keywords = new HashSet<String>();
@@ -62,6 +86,13 @@ public void actionPerformed(java.awt.event.ActionEvent e) {
 	if (e.getSource() == getCancelButton()) 
 		cancelChanges(e);
 
+}
+
+@Override
+public void itemStateChanged(ItemEvent e) {
+	if (e.getSource() == getViewEqunsRadioButton() || e.getSource() == getViewVCMDLRadioButton()) { 
+		viewMath_ItemStateChanged(e);
+	}
 }
 
 
@@ -123,6 +154,40 @@ private void cancelChanges(java.awt.event.ActionEvent arg1) {
 	}
 }
 
+
+private void viewMath_ItemStateChanged(ItemEvent itemEvent) {
+	if (itemEvent.getStateChange() == ItemEvent.SELECTED) {
+		if (itemEvent.getSource() == getViewEqunsRadioButton()) {
+			cardLayout.show(getMainPanel(), getMathDescPanel().getName());	// eq viewer
+			return;
+		}else 
+			if (itemEvent.getSource() == getViewVCMDLRadioButton()) {
+			cardLayout.show(getMainPanel(), getVCMLPane().getName());		// text editor
+			return;			
+		}
+	}
+}
+
+private javax.swing.JRadioButton getViewEqunsRadioButton() {
+	if (ivjViewEqunsRadioButton == null) {
+		ivjViewEqunsRadioButton = new javax.swing.JRadioButton("Math Equations");
+		ivjViewEqunsRadioButton.setName("ViewEqunsRadioButton");
+		ivjViewEqunsRadioButton.setSelected(true);
+		ivjViewEqunsRadioButton.setActionCommand("MathDescPanel1");
+	}
+	return ivjViewEqunsRadioButton;
+}
+
+private javax.swing.JRadioButton getViewVCMDLRadioButton() {
+	if (ivjViewVCMDLRadioButton == null) {
+		ivjViewVCMDLRadioButton = new javax.swing.JRadioButton("Math Description Language");
+		ivjViewVCMDLRadioButton.setName("ViewVCMDLRadioButton");
+		ivjViewVCMDLRadioButton.setActionCommand("VCMLPanel");
+	}
+	return ivjViewVCMDLRadioButton;
+}
+
+
 /**
  * Return the ApplyButton property value.
  * @return javax.swing.JButton
@@ -159,14 +224,92 @@ private javax.swing.JButton getCancelButton() {
 	return ivjCancelButton;
 }
 
+private javax.swing.JPanel getButtonsPanel() {
+	if (ivjButtonsPanel == null) {
+		ivjButtonsPanel = new javax.swing.JPanel();
+		ivjButtonsPanel.setName("ButtonsPanel");
+		ivjButtonsPanel.setLayout(new GridBagLayout());
+		
+		int gridx = 0;
+		GridBagConstraints gbc = new java.awt.GridBagConstraints();
+		gbc.gridx = gridx; 
+		gbc.gridy = 0;
+		gbc.weightx = 0;
+		gbc.weighty = 0;
+		gbc.insets = new Insets(8, 5, 0, 2);
+		gbc.anchor = GridBagConstraints.NORTHWEST;
+		JLabel label = new JLabel("Choose View:");
+		label.setFont(label.getFont().deriveFont(Font.BOLD));
+		ivjButtonsPanel.add(label, gbc);
+		
+		gridx++;
+		gbc = new java.awt.GridBagConstraints();
+		gbc.gridx = gridx; 
+		gbc.gridy = 0;
+		gbc.weightx = 0;
+		gbc.insets = new Insets(3, 5, 3, 1);
+		gbc.anchor = GridBagConstraints.NORTHWEST;
+		ivjButtonsPanel.add(getViewEqunsRadioButton(), gbc);
+		
+		gridx++;
+		gbc = new java.awt.GridBagConstraints();
+		gbc.gridx = gridx; 
+		gbc.gridy = 0;
+		gbc.weightx = 0;
+		gbc.insets = new Insets(3, 3, 3, 2);
+		gbc.anchor = GridBagConstraints.NORTHWEST;
+		ivjButtonsPanel.add(getViewVCMDLRadioButton(), gbc);
+		
+		gridx++;
+		gbc = new java.awt.GridBagConstraints();
+		gbc.gridx = gridx; 
+		gbc.gridy = 0;
+		gbc.weightx = 1.0;
+		gbc.weighty = 1.0;
+		gbc.fill = java.awt.GridBagConstraints.BOTH;
+		gbc.insets = new Insets(3, 5, 3, 2);
+		ivjButtonsPanel.add(new JLabel(), gbc);
+		
+		gridx++;
+		gbc = new java.awt.GridBagConstraints();
+		gbc.gridx = gridx; 
+		gbc.gridy = 0;
+		gbc.weightx = 0;
+		gbc.insets = new Insets(3, 5, 3, 1);
+		gbc.anchor = GridBagConstraints.NORTHEAST;
+		ivjButtonsPanel.add(getApplyButton(), gbc);
+		
+		gridx++;
+		gbc = new java.awt.GridBagConstraints();
+		gbc.gridx = gridx; 
+		gbc.gridy = 0;
+		gbc.weightx = 0;
+		gbc.insets = new Insets(3, 3, 3, 5);
+		gbc.anchor = GridBagConstraints.NORTHEAST;
+		ivjButtonsPanel.add(getCancelButton(), gbc);
+	}
+	return ivjButtonsPanel;
+}
+
+private javax.swing.JPanel getMainPanel() {
+	if (mainPanel == null) {
+		mainPanel = new javax.swing.JPanel();
+		mainPanel.setName("MathEditPanel");
+		mainPanel.setLayout(cardLayout);
+		mainPanel.add(getVCMLPane(), getVCMLPane().getName());
+		mainPanel.add(getMathDescPanel(), getMathDescPanel().getName());
+	}
+	return mainPanel;
+}
 /**
  * Return the lineNumberedTextPanel1 property value.
  * @return cbit.gui.MultiPurposeTextPanel
  */
-private MultiPurposeTextPanel getVCMLPane() {
+private MultiPurposeTextPanel getVCMLPane() {		// the text editor
 	if (vcmlPane == null) {
 		try {
 			vcmlPane = new MultiPurposeTextPanel();
+			vcmlPane.setName("VCMLPanel");
 			vcmlPane.setAutoCompletionWords(getAutoCompletionWords());
 			vcmlPane.setKeywords(getkeywords());
 		} catch (java.lang.Throwable ivjExc) {
@@ -175,7 +318,13 @@ private MultiPurposeTextPanel getVCMLPane() {
 	}
 	return vcmlPane;
 }
-
+private MathDescPanel getMathDescPanel() {			// the tree view
+	if (mathDescPanel == null) {
+		mathDescPanel = new MathDescPanel();
+		mathDescPanel.setName("MathDescPanel");
+	}
+	return mathDescPanel;
+}
 
 /**
  * Return the MathDescription property value.
@@ -200,6 +349,8 @@ private void handleException(Throwable exception) {
  * Initializes connections
  */
 private void initConnections() throws java.lang.Exception {
+	getViewVCMDLRadioButton().addItemListener(this);
+	getViewEqunsRadioButton().addItemListener(this);
 	getApplyButton().addActionListener(this);
 	getCancelButton().addActionListener(this);
 	getVCMLPane().getTextPane().addKeyListener(this);
@@ -208,38 +359,58 @@ private void initConnections() throws java.lang.Exception {
 /**
  * Initialize class
  */
+//private void initialize1() {
+//	try {
+//		setName("MathDescEditor");
+//		setLayout(new java.awt.GridBagLayout());
+//		setSize(981, 242);
+//
+//		java.awt.GridBagConstraints constraintsApplyButton = new java.awt.GridBagConstraints();
+//		constraintsApplyButton.gridx = 0; constraintsApplyButton.gridy = 1;
+//		constraintsApplyButton.insets = new java.awt.Insets(0, 9, 9, 0);
+//		add(getApplyButton(), constraintsApplyButton);
+//
+//		java.awt.GridBagConstraints constraintsCancelButton = new java.awt.GridBagConstraints();
+//		constraintsCancelButton.gridx = 1; constraintsCancelButton.gridy = 1;
+//		constraintsCancelButton.anchor = java.awt.GridBagConstraints.WEST;
+//		constraintsCancelButton.insets = new java.awt.Insets(0, 9, 9, 0);
+//		constraintsCancelButton.fill = java.awt.GridBagConstraints.BOTH;
+//		constraintsCancelButton.gridwidth = 1;		
+//		add(getCancelButton(), constraintsCancelButton);
+//		
+//		java.awt.GridBagConstraints constraintslineNumberedTextArea1 = new java.awt.GridBagConstraints();
+//		constraintslineNumberedTextArea1.gridx = 0; constraintslineNumberedTextArea1.gridy = 0;
+//		constraintslineNumberedTextArea1.gridwidth = 6;
+//		constraintslineNumberedTextArea1.fill = java.awt.GridBagConstraints.BOTH;
+//		constraintslineNumberedTextArea1.weightx = 1.0;
+//		constraintslineNumberedTextArea1.weighty = 1.0;
+//		constraintslineNumberedTextArea1.insets = new java.awt.Insets(4, 4, 4, 4);
+//		add(getVCMLPane(), constraintslineNumberedTextArea1);
+//		initConnections();
+//	} catch (java.lang.Throwable ivjExc) {
+//		handleException(ivjExc);
+//	}
+//}
+
 private void initialize() {
 	try {
-		setName("MathDescEditor");
-		setLayout(new java.awt.GridBagLayout());
-		setSize(981, 242);
-
-		java.awt.GridBagConstraints constraintsApplyButton = new java.awt.GridBagConstraints();
-		constraintsApplyButton.gridx = 0; constraintsApplyButton.gridy = 1;
-		constraintsApplyButton.insets = new java.awt.Insets(0, 9, 9, 0);
-		add(getApplyButton(), constraintsApplyButton);
-
-		java.awt.GridBagConstraints constraintsCancelButton = new java.awt.GridBagConstraints();
-		constraintsCancelButton.gridx = 1; constraintsCancelButton.gridy = 1;
-		constraintsCancelButton.anchor = java.awt.GridBagConstraints.WEST;
-		constraintsCancelButton.insets = new java.awt.Insets(0, 9, 9, 0);
-		constraintsCancelButton.fill = java.awt.GridBagConstraints.BOTH;
-		constraintsCancelButton.gridwidth = 1;		
-		add(getCancelButton(), constraintsCancelButton);
+		setName("ViewMathPanel");
+		setLayout(new java.awt.BorderLayout());
+		add(getButtonsPanel(), BorderLayout.NORTH);
+		add(getMainPanel(), BorderLayout.CENTER);	
 		
-		java.awt.GridBagConstraints constraintslineNumberedTextArea1 = new java.awt.GridBagConstraints();
-		constraintslineNumberedTextArea1.gridx = 0; constraintslineNumberedTextArea1.gridy = 0;
-		constraintslineNumberedTextArea1.gridwidth = 6;
-		constraintslineNumberedTextArea1.fill = java.awt.GridBagConstraints.BOTH;
-		constraintslineNumberedTextArea1.weightx = 1.0;
-		constraintslineNumberedTextArea1.weighty = 1.0;
-		constraintslineNumberedTextArea1.insets = new java.awt.Insets(4, 4, 4, 4);
-		add(getVCMLPane(), constraintslineNumberedTextArea1);
+		ivjbuttonGroup = new javax.swing.ButtonGroup();
+		ivjbuttonGroup.add(getViewEqunsRadioButton());
+		ivjbuttonGroup.add(getViewVCMDLRadioButton());
+		ivjbuttonGroup.setSelected(getViewVCMDLRadioButton().getModel(), true);
 		initConnections();
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
 	}
+
 }
+
+
 
 /**
  * Method to handle events for the KeyListener interface.
@@ -283,6 +454,7 @@ public void setMathDescription(MathDescription newValue) {
 		try {
 			MathDescription oldValue = getMathDescription();
 			ivjMathDescription = newValue;			
+			getMathDescPanel().setMathDescription(getMathDescription());
 			getVCMLPane().setText(getMathDescription().getVCML_database());
 			getVCMLPane().setCaretPosition(0);
 			firePropertyChange("mathDescription", oldValue, newValue);
@@ -723,4 +895,5 @@ public static Set<String> getkeywords() {
 	}
 	 return keywords;
 }
+
 }
