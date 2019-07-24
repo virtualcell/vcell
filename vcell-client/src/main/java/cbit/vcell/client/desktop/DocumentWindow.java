@@ -133,7 +133,7 @@ public class DocumentWindow extends LWTopFrame implements TopLevelWindow, Reconn
 	private JMenuItem ivjNonSpatialMenuItem = null;
 	private JMenuItem ivjSpatialExistingMenuItem = null;
 	private JMenuItem ivjSpatialCreateNewMenuItem = null;
-	private JMenuItem ivjEdit_Annotation_JMenuItem = null;
+//	private JMenuItem ivjEdit_Annotation_JMenuItem = null;
 	private JMenuItem ivjTestingFrameworkMenuItem = null;
 	private JMenuItem ivjJMenuItemOnlineHelp = null;
 	private JMenuItem ivjJMenuItemOnlineSupport = null;
@@ -215,8 +215,8 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.I
 				newDocument(e);
 			if (e.getSource() == DocumentWindow.this.getJMenuItemExport())
 				connEtoC17(e);
-			if (e.getSource() == DocumentWindow.this.getEdit_Annotation_JMenuItem())
-				connEtoC36(e);
+//			if (e.getSource() == DocumentWindow.this.getEdit_Annotation_JMenuItem())
+//				connEtoC36(e);
 			if (e.getSource() == DocumentWindow.this.getTestingFrameworkMenuItem())
 				connEtoC37(e);
 			if (e.getSource() == DocumentWindow.this.getJMenuItemOnlineHelp())
@@ -259,7 +259,7 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.I
 		};
 	};
 	private JMenuItem ivjJMenuItemFieldData = null;
-	private JMenuItem jMenuItemMIRIAM = null;
+//	private JMenuItem jMenuItemMIRIAM = null;
 	private JMenuItem jMenuItemPreferences = null;
 
 /**
@@ -1046,22 +1046,22 @@ private javax.swing.JMenuBar getDocumentWindowJMenuBar() {
  * @return javax.swing.JMenuItem
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JMenuItem getEdit_Annotation_JMenuItem() {
-	if (ivjEdit_Annotation_JMenuItem == null) {
-		try {
-			ivjEdit_Annotation_JMenuItem = new javax.swing.JMenuItem();
-			ivjEdit_Annotation_JMenuItem.setName("Edit_Annotation_JMenuItem");
-			ivjEdit_Annotation_JMenuItem.setText("Edit Annotation...");
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjEdit_Annotation_JMenuItem;
-}
+//private javax.swing.JMenuItem getEdit_Annotation_JMenuItem() {
+//	if (ivjEdit_Annotation_JMenuItem == null) {
+//		try {
+//			ivjEdit_Annotation_JMenuItem = new javax.swing.JMenuItem();
+//			ivjEdit_Annotation_JMenuItem.setName("Edit_Annotation_JMenuItem");
+//			ivjEdit_Annotation_JMenuItem.setText("Edit Annotation...");
+//			// user code begin {1}
+//			// user code end
+//		} catch (java.lang.Throwable ivjExc) {
+//			// user code begin {2}
+//			// user code end
+//			handleException(ivjExc);
+//		}
+//	}
+//	return ivjEdit_Annotation_JMenuItem;
+//}
 
 /**
  * Return the ExitMenuItem property value.
@@ -1110,9 +1110,9 @@ private javax.swing.JMenu getFileMenu() {
 			ivjFileMenu.add(getJMenuItemCompare());
 			ivjFileMenu.add(new JSeparator());
 			ivjFileMenu.add(getPermissionsMenuItem());
-			ivjFileMenu.add(getJMenuItemMIRIAM());
+//			ivjFileMenu.add(getJMenuItemMIRIAM());
 			ivjFileMenu.add(getJMenuItemPreferences());
-			ivjFileMenu.add(getEdit_Annotation_JMenuItem());
+//			ivjFileMenu.add(getEdit_Annotation_JMenuItem());
 			ivjFileMenu.add(new JSeparator());
 			ivjFileMenu.add(getJMenuItemFieldData());
 			ivjFileMenu.add(getTestingFrameworkMenuItem());
@@ -2167,7 +2167,7 @@ private void initConnections() throws java.lang.Exception {
 	getSpatialExistingMenuItem().addActionListener(ivjEventHandler);
 	getSpatialCreateNewMenuItem().addActionListener(ivjEventHandler);
 	getJMenuItemExport().addActionListener(ivjEventHandler);
-	getEdit_Annotation_JMenuItem().addActionListener(ivjEventHandler);
+//	getEdit_Annotation_JMenuItem().addActionListener(ivjEventHandler);
 	getTestingFrameworkMenuItem().addActionListener(ivjEventHandler);
 	getJMenuItemOnlineHelp().addActionListener(ivjEventHandler);
 	getJMenuItemOnlineSupport().addActionListener(ivjEventHandler);
@@ -2535,7 +2535,7 @@ public void updateConnectionStatus(ConnectionStatus connStatus) {
 			getTestingFrameworkMenuItem().setVisible(isTestUser);
 			getTestingFrameworkMenuItem().setEnabled(true);
 			getJMenuItemFieldData().setEnabled(true);
-			getJMenuItemMIRIAM().setEnabled(true);
+//			getJMenuItemMIRIAM().setEnabled(true);
 			getJMenuItemPreferences().setEnabled(true);
 			getTransMAMenuItem().setEnabled(
 					getWindowManager() != null &&
@@ -2566,7 +2566,7 @@ public void updateConnectionStatus(ConnectionStatus connStatus) {
 			getTestingFrameworkMenuItem().setVisible(isTestUser);
 			getTestingFrameworkMenuItem().setEnabled(isTestUser);
 			getJMenuItemFieldData().setEnabled(false);
-			getJMenuItemMIRIAM().setEnabled(false);
+//			getJMenuItemMIRIAM().setEnabled(false);
 			getJMenuItemPreferences().setEnabled(false);
 			getPermissionsMenuItem().setEnabled(false);
 			break;
@@ -2589,7 +2589,7 @@ public void updateConnectionStatus(ConnectionStatus connStatus) {
 			getTestingFrameworkMenuItem().setVisible(isTestUser);
 			getTestingFrameworkMenuItem().setEnabled(false);
 			getJMenuItemFieldData().setEnabled(false);
-			getJMenuItemMIRIAM().setEnabled(false);
+//			getJMenuItemMIRIAM().setEnabled(false);
 			getJMenuItemPreferences().setEnabled(false);
 			getPermissionsMenuItem().setEnabled(false);
 			checkForReconnecting(connStatus);
@@ -2647,22 +2647,22 @@ private void viewStatusBar() {
  *
  * @return javax.swing.JMenuItem
  */
-private JMenuItem getJMenuItemMIRIAM() {
-	if (jMenuItemMIRIAM == null) {
-		jMenuItemMIRIAM = new JMenuItem();
-		jMenuItemMIRIAM.setText("Model Annotation ...");
-		jMenuItemMIRIAM.addActionListener(new java.awt.event.ActionListener() {
-			public void actionPerformed(java.awt.event.ActionEvent e) {
-				if(getTopLevelWindowManager() instanceof BioModelWindowManager){
-					((BioModelWindowManager)getTopLevelWindowManager()).showMIRIAMWindow();
-				}else{
-					PopupGenerator.showInfoDialog(DocumentWindow.this, "Sorry, Currently only BioModels have a MIRIAM editor.");
-				}
-			}
-		});
-	}
-	return jMenuItemMIRIAM;
-}
+//private JMenuItem getJMenuItemMIRIAM() {
+//	if (jMenuItemMIRIAM == null) {
+//		jMenuItemMIRIAM = new JMenuItem();
+//		jMenuItemMIRIAM.setText("Model Annotation ...");
+//		jMenuItemMIRIAM.addActionListener(new java.awt.event.ActionListener() {
+//			public void actionPerformed(java.awt.event.ActionEvent e) {
+//				if(getTopLevelWindowManager() instanceof BioModelWindowManager){
+//					((BioModelWindowManager)getTopLevelWindowManager()).showMIRIAMWindow();
+//				}else{
+//					PopupGenerator.showInfoDialog(DocumentWindow.this, "Sorry, Currently only BioModels have a MIRIAM editor.");
+//				}
+//			}
+//		});
+//	}
+//	return jMenuItemMIRIAM;
+//}
 
 private JMenuItem getJMenuItemPreferences() {
 	if (jMenuItemPreferences == null) {
