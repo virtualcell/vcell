@@ -22,6 +22,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
@@ -98,6 +100,8 @@ public class AnnotationsPanel extends DocumentEditorSubPanel {
 	
 	public static final String ACTION_ADD ="Add...";
 	public static final String ACTION_DELETE ="Delete";
+	public static final String ACTION_ADD_TEXT = "Add";
+	public static final String ACTION_REMOVE_TEXT = "Delete";
 	public static final String ACTION_GOTO ="Go";
 	private EventHandler eventHandler = new EventHandler();
 	
@@ -113,14 +117,18 @@ public class AnnotationsPanel extends DocumentEditorSubPanel {
 	private JComboBox jComboBoxURI = null;			// identity provider combo
 	private DefaultComboBoxModel defaultComboBoxModel = null;
 	private JTextField jTextFieldFormalID = null;	// immortal ID text
-	private JButton jButtonAdd = null;
-	private JButton jButtonDelete = null;
+	private JButton jButtonAddRef = null;			// add a cross-reference
+	private JButton jButtonDeleteRef = null;		// delete selected cross-reference
+//	private JButton jButtonAddText = null;			// add text annotation
+	private JButton jButtonRemoveText = null;		// remove text annotation
 
 	private JTextPane annotationTextArea = null;
-	String emptyHtmlText = null;	// content of annotationTextArea after initialization with null
-									// this will contain an empty html object like "<html><header></header><body></body></html>" 
+	private String emptyHtmlText = null;	// content of annotationTextArea after initialization with null
+						// will contain an empty html object "<html><header></header><body><p style="margin-top: 0"></p></body></html>"
+	private static String emptyHtmlText2 = "<html><header></header><body></body></html>";	// really empty
+	
 
-	private class EventHandler extends MouseAdapter implements ActionListener, FocusListener, PropertyChangeListener {
+	private class EventHandler extends MouseAdapter implements ActionListener, FocusListener, PropertyChangeListener, KeyListener {
 		public void focusGained(FocusEvent e) {
 		}
 		public void focusLost(FocusEvent e) {
@@ -152,11 +160,32 @@ public class AnnotationsPanel extends DocumentEditorSubPanel {
 		}
 		@Override
 		public void actionPerformed(ActionEvent evt) {
-			if (evt.getSource() == getJButtonAdd()) {
+			if (evt.getSource() == getJButtonAddRef()) {
 				addIdentifier();
-			} else if(evt.getSource() == getJButtonDelete()) {
+			} else if(evt.getSource() == getJButtonDeleteRef()) {
 				removeIdentifier();
+			} else if(evt.getSource() == getJButtonRemoveText()) {
+				removeText();
+//			} else if(evt.getSource() == getJButtonAddText()) {
+//				addText();
 			}
+		}
+		@Override
+		public void keyPressed(KeyEvent e) {
+		}
+		@Override
+		public void keyReleased(KeyEvent e) {
+			// too expensive to parse it at each keystroke
+//			System.out.println("key released");
+//			if (e.getSource() == annotationTextArea) {
+//				String text = annotationTextArea.getText();
+//				text = text.replaceAll("(\n\r|\n|\r)", "");
+//				text = text.replaceAll(" ", "");
+//				System.out.println(text);
+//			}
+		}
+		@Override
+		public void keyTyped(KeyEvent e) {
 		}
 	}
 	
@@ -328,16 +357,43 @@ private JPanel getJPanelLeftTitle() {
 private JPanel getJPanelRightTitle() {
 	JPanel jPanelRightTitle = new JPanel();
 	jPanelRightTitle.setLayout(new GridBagLayout());
-	jPanelRightTitle.setPreferredSize(new Dimension(260, 37));
 	jPanelRightTitle.setBorder(BorderFactory.createLineBorder(SystemColor.windowBorder, 1));
+	
 	int gridx = 0;
 	GridBagConstraints gbc = new GridBagConstraints();
-	gbc.insets = new Insets(3, 15, 3, 0);		// top left bottom right
 	gbc.gridx = gridx;
 	gbc.gridy = 0;
-	gbc.fill = GridBagConstraints.HORIZONTAL;
-	gbc.weightx = 1.0;
+	gbc.insets = new Insets(6, 8, 0, 0);		// top left bottom right
+	gbc.anchor = GridBagConstraints.NORTHWEST;
 	jPanelRightTitle.add(new JLabel("Text Annotations"), gbc);
+	
+	gridx++;
+	gbc = new java.awt.GridBagConstraints();
+	gbc.gridx = gridx; 
+	gbc.gridy = 0;
+	gbc.weightx = 1.0;
+	gbc.weighty = 1.0;
+	gbc.fill = java.awt.GridBagConstraints.BOTH;
+	jPanelRightTitle.add(new JLabel(), gbc);
+	
+//	gridx++;
+//	gbc = new java.awt.GridBagConstraints();
+//	gbc.gridx = gridx; 
+//	gbc.gridy = 0;
+//	gbc.insets = new Insets(3, 0, 3, 3);
+//	gbc.anchor = GridBagConstraints.NORTHEAST;
+//	jPanelRightTitle.add(getJButtonAddText(), gbc);
+	
+	gridx++;
+	gbc = new java.awt.GridBagConstraints();
+	gbc.gridx = gridx; 
+	gbc.gridy = 0;
+	gbc.insets = new Insets(3, 0, 3, 3);
+	gbc.anchor = GridBagConstraints.NORTHEAST;
+	jPanelRightTitle.add(getJButtonRemoveText(), gbc);
+	
+//	getJButtonAddText().addActionListener(eventHandler);
+	getJButtonRemoveText().addActionListener(eventHandler);
 	return jPanelRightTitle;
 }
 private JPanel getJPanelIdentifierManager() {
@@ -366,7 +422,7 @@ private JPanel getJPanelIdentifierManager() {
 		gbc.insets = new Insets(3, 5, 3, 5);
 		gbc.gridx = gridx;
 		gbc.gridy = 0;
-		jPanelIdentifierManager.add(getJButtonAdd(), gbc);
+		jPanelIdentifierManager.add(getJButtonAddRef(), gbc);
 
 		gridx++;
 		gbc = new GridBagConstraints();
@@ -377,7 +433,7 @@ private JPanel getJPanelIdentifierManager() {
 		gbc.weightx = 1.0;
 		jPanelIdentifierManager.add(new JLabel(""), gbc);
 		
-		getJButtonAdd().addActionListener(eventHandler);
+		getJButtonAddRef().addActionListener(eventHandler);
 	}
 	return jPanelIdentifierManager;
 }
@@ -393,7 +449,7 @@ private JPanel getJPanelLowerLeft() {
 		gbc.insets = new Insets(3, 3, 3, 3);
 		gbc.gridx = gridx;
 		gbc.gridy = 0;
-		jPanelLowerLeft.add(getJButtonDelete(), gbc);
+		jPanelLowerLeft.add(getJButtonDeleteRef(), gbc);
 		
 		gridx++;
 		gbc = new GridBagConstraints();
@@ -404,8 +460,8 @@ private JPanel getJPanelLowerLeft() {
 		gbc.weightx = 1.0;
 		jPanelLowerLeft.add(new JLabel(""), gbc);
 		
-		getJButtonDelete().setEnabled(false);
-		getJButtonDelete().addActionListener(eventHandler);
+		getJButtonDeleteRef().setEnabled(false);
+		getJButtonDeleteRef().addActionListener(eventHandler);
 	}
 	return jPanelLowerLeft;
 }
@@ -516,9 +572,7 @@ private JSplitPane getSplitPane() {
 		gbc = new java.awt.GridBagConstraints();
 		gbc.gridx = 0; 
 		gbc.gridy = gridy;
-		gbc.weightx = 1.0;
-		gbc.weighty = 0;
-		gbc.insets = new Insets(3, 3, 1, 3);
+		gbc.insets = new Insets(3, 3, 2, 2);
 		gbc.fill = java.awt.GridBagConstraints.HORIZONTAL;
 		gbc.anchor = GridBagConstraints.NORTHWEST;
 		rightPanel.add(getJPanelRightTitle(), gbc);
@@ -536,7 +590,7 @@ private JSplitPane getSplitPane() {
 		gbc.gridy = gridy;
 		gbc.weightx = 1.0;
 		gbc.weighty = 1.0;
-		gbc.insets = new Insets(1, 1, 1, 3);
+		gbc.insets = new Insets(1, 3, 1, 2);
 		gbc.fill = java.awt.GridBagConstraints.BOTH;
 		gbc.anchor = GridBagConstraints.NORTHWEST;
 		rightPanel.add(annotationPanel, gbc);
@@ -548,6 +602,8 @@ private JSplitPane getSplitPane() {
 		splitPane.setRightComponent(rightPanel);
 		splitPane.setResizeWeight(0.1);
 		splitPane.setDividerLocation(0.3);
+		
+		annotationTextArea.addKeyListener(eventHandler);
 	}
 	return splitPane;
 }
@@ -664,10 +720,10 @@ private void initialize() {
 			public void valueChanged(TreeSelectionEvent e) {
 				TreePath tp = ((JTree)e.getSource()).getSelectionPath();
 				if(tp == null) {
-					getJButtonDelete().setEnabled(false);
+					getJButtonDeleteRef().setEnabled(false);
 				} else {
 					Object lastPathComponent = tp.getLastPathComponent();
-					getJButtonDelete().setEnabled(tp != null && lastPathComponent instanceof LinkNode);
+					getJButtonDeleteRef().setEnabled(tp != null && lastPathComponent instanceof LinkNode);
 				}
 			}
 		});
@@ -691,9 +747,6 @@ private void changeAnnotation() {
 		} else if(!Compare.isEqualOrNull(oldText,textAreaStr)) {	// some text annotation different from what's already saved
 			bioModel.getVCMetaData().setFreeTextAnnotation(selectedObject, textAreaStr);	// overwrite
 		}
-//		if(selectedObject != null && !Compare.isEqualOrNull(oldText,textAreaStr)) {
-//			bioModel.getVCMetaData().setFreeTextAnnotation(selectedObject, textAreaStr);	
-//		}
 	} catch(Exception e){
 		e.printStackTrace(System.out);
 		PopupGenerator.showErrorDialog(this,"Annotation Error\n"+e.getMessage(), e);
@@ -724,7 +777,9 @@ private void updateInterface() {
 	if(selectedObject != null && entity != null) {
 		getJComboBoxURI().setEnabled(true);
 		getJTextFieldFormalID().setEnabled(true);
-		getJButtonAdd().setEnabled(true);
+		getJButtonAddRef().setEnabled(true);
+//		getJButtonAddText().setEnabled(true);
+		getJButtonRemoveText().setEnabled(true);
 		VCMetaDataDataType mdt = (VCMetaDataDataType)getJComboBoxURI().getSelectedItem();
 		miriamTreeModel.createTree(entity);
 		
@@ -739,7 +794,9 @@ private void updateInterface() {
 	} else {
 		getJComboBoxURI().setEnabled(false);
 		getJTextFieldFormalID().setEnabled(false);
-		getJButtonAdd().setEnabled(false);
+		getJButtonAddRef().setEnabled(false);
+//		getJButtonAddText().setEnabled(false);
+		getJButtonRemoveText().setEnabled(false);
 		miriamTreeModel.createTree(null);
 
 		annotationTextArea.setText(null);
@@ -792,7 +849,7 @@ protected void onSelectedObjectsChange(Object[] selectedObjects) {
 			System.out.println("Unsupported or null entity");
 		}
 		initializeComboBoxURI();		// if selectedObject or entity are null we just empty the combobox
-		getJButtonDelete().setEnabled(false);
+		getJButtonDeleteRef().setEnabled(false);
 		getJTextFieldFormalID().setText("NewID");
 		updateInterface();
 	}
@@ -864,6 +921,25 @@ private void removeIdentifier() {
 	}
 }
 
+private void addText() {
+	if (bioModel == null || selectedObject == null) {
+		return;
+	}
+	String textAreaStr = (annotationTextArea.getText() == null || annotationTextArea.getText().length()==0?null:annotationTextArea.getText());
+	String oldText = bioModel.getVCMetaData().getFreeTextAnnotation(selectedObject);
+
+	if(!Compare.isEqualOrNull(oldText,textAreaStr)) {
+		bioModel.getVCMetaData().setFreeTextAnnotation(selectedObject, textAreaStr);	// overwrite
+	}
+}
+private void removeText() {
+	if (bioModel == null || selectedObject == null) {
+		return;
+	}
+	annotationTextArea.setText(null);
+	bioModel.getVCMetaData().deleteFreeTextAnnotation(selectedObject);	// delete, if there's something previously saved
+}
+
 private boolean isEqual(MiriamResource aThis, MiriamResource aThat) {
 	if (aThis == aThat) {
 		return true;
@@ -911,24 +987,39 @@ private void initializeComboBoxURI() {
 	((ComboboxToolTipRenderer)getJComboBoxURI().getRenderer()).setTooltips(tooltips);
 }
 
-private JButton getJButtonAdd() {
-	if (jButtonAdd == null) {
-		jButtonAdd = new JButton();
-		jButtonAdd.setText(ACTION_ADD);
-		jButtonAdd.setToolTipText("Add a new reference with this provider");
+private JButton getJButtonAddRef() {
+	if (jButtonAddRef == null) {
+		jButtonAddRef = new JButton();
+		jButtonAddRef.setText(ACTION_ADD);
+		jButtonAddRef.setToolTipText("Add a new reference with this provider");
 	}
-	return jButtonAdd;
+	return jButtonAddRef;
 }
-private JButton getJButtonDelete() {
-	if (jButtonDelete == null) {
-		jButtonDelete = new JButton();
-		jButtonDelete.setText(ACTION_DELETE);
-		jButtonDelete.setToolTipText("Delete the selected cross-reference");
+private JButton getJButtonDeleteRef() {
+	if (jButtonDeleteRef == null) {
+		jButtonDeleteRef = new JButton();
+		jButtonDeleteRef.setText(ACTION_DELETE);
+		jButtonDeleteRef.setToolTipText("Delete the selected cross-reference");
 
 	}
-	return jButtonDelete;
+	return jButtonDeleteRef;
 }
-
+//private JButton getJButtonAddText() {
+//	if (jButtonAddText == null) {
+//		jButtonAddText = new JButton();
+//		jButtonAddText.setText(ACTION_ADD_TEXT);
+//		jButtonAddText.setToolTipText("Add the text annotation");
+//	}
+//	return jButtonAddText;
+//}
+private JButton getJButtonRemoveText() {
+	if (jButtonRemoveText == null) {
+		jButtonRemoveText = new JButton();
+		jButtonRemoveText.setText(ACTION_REMOVE_TEXT);
+		jButtonRemoveText.setToolTipText("Remove the entire text annotation");
+	}
+	return jButtonRemoveText;
+}
 	/*
 
 Universal (goes in all types of annotations):
