@@ -14,14 +14,29 @@
 	Clicking the Help menu shows the possible menu item selections. Selecting  
 	<list>
  	  <item>
-	     <bold> Online Resources </bold> - launches a separate web browser that goes to the Virtual Cell web page.
+	     <bold> VCell Website </bold> - launches a separate web browser that goes to the Virtual Cell web page.
 	  </item>
-	  <item>   
-         <bold> About The Virtual Cell</bold> - pops up a dialog that displays the Version and edition of the currently launched VCell. <imgReference target = "AboutVCell.PNG"/>
+	  <item>
+	  	<bold>VCell Open Discussion Forum</bold> - launches a eparate web browser that goes to the VCell Google Groups Forum.
+	  </item>
+	  <item>
+		<link target = "Permissions">Permissions...</link> - explains how to change access to your model by specific users or by the public.
+	  </item>
+	  <item>
+		<bold>How to Publish a Model</bold> - describes the steps to provide access to your model to the public and how to cite the VCell resource. 
+	  </item>
+	  <item>
+		<bold>Contact VCell Support</bold> - opens an email to vcell_support@uchc.edu
 	  </item>
 	  <item>           
          <bold> Virtual Cell License Information</bold> - shows a dialog that displays the license information for the Virtual Cell. <imgReference target = "VCellLicense.PNG"/>
 	  </item>
+	  <item>   
+         <bold> About The Virtual Cell</bold> - pops up a dialog that displays the Version and edition of the currently launched VCell. <imgReference target = "AboutVCell.PNG"/>
+	  </item>
+	  <item>
+	  	<bold>Status Bar</bold> when selected shows a status bar at the bottom of the VCell main window stating the connection status and memory usage.
+	  </item>	
 	</list> 
 	</operations>
 	

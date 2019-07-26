@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<vcelldoc>
+<page title="PP_Annotations">
+	
+	<introduction>
+Each element in a VCell BioModel, as well as the BioModel itself, can be annotated with either unique identifiers or plain text information. Annotations are created and displayed in the <bold>Annotations Property Pane</bold>.
+ 	</introduction>
+	
+	<appearance>
+		<imgReference target = "PP_Annotations.PNG"/>
+	</appearance>
+	
+	<operations>
+		<list>
+		<item>
+		<bold>Select</bold> a VCell element (e.g. species or reaction) to highlight it, then <bold>select</bold> the Annotations tab in the lower right Properties Panes of the VCell workspace to view any unique identifiers (left panel) or text (right panel) that have been associated with the VCell element.
+		</item>
+		<item>
+		Follow the <bold>annotation link</bold> by double click on the underlined link portion of the annotation.
+		<imgReference target = "PP_Annotate_links.PNG"/>
+		</item>
+		<item>
+<bold>Add</bold> new unique identifiers using the drop down menu to select a supported provider.  Double click the provider link to go to the appropriate web site to search for the appropriate provider.  Add the identifier to the annotation pane using the exact format shown in the example. Supported identity providers are:
+		</item>
+		<imgReference target = "PP_AddAnnotations.PNG"/>
+		<item>
+<bold>Type or Paste</bold> text annotations into the text field
+		</item>
+		<item>
+<bold>BioModel Annotations</bold> are entered in the same way when the loaded BioModel name in the top level of the VCell <link target = "GeneralNavAndWinSetup">Navigation Menu</link> is selected.
+		</item>
+		</list>
+	</operations>	
+</page>
+
+</vcelldoc>

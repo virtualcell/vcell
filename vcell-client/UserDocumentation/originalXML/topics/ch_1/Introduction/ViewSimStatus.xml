@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<vcelldoc>
+<page title="ViewSimStatus">
+
+	
+	<introduction> 
+View Simulation Jobs opens a window that allows the user to search for VCell simulation jobs and return a table of the simulation information; the user can also find and stop simulations that are not yet completed. 
+	</introduction>
+	
+	<appearance>  
+<imgReference target = "ViewSimStatus.PNG"/>
+	</appearance>
+	
+	<operations>
+<para>
+The View Simulation Job Status window searches for simulation jobs under your username.  <bold>User Options</bold> provide selection for search parameters.
+<list>
+<item><bold>Status Filter</bold> allows the user to select any combination of types of job status.</item>
+<item><bold>Max # of results</bold> limits the number of results returned.</item>
+<item><bold>Time interval selector</bold> allows the user to chooose among several time options.</item>
+<item><bold>Hide orphaned</bold> when selected hides simulation jobs that are no longer associated with a Model/Application.</item>
+</list>
+</para>
+<para>
+Select <bold>Refresh</bold> to initiate a new search after changing user options.  Properties and Actions provide details of a selected query result. <bold>Stop Simulation</bold> stops a selected simulation that is currently running.  Use the <bold>Search</bold> bar to filter the table of simulation jobs based on Model Name. <bold>Close</bold> the window when finished.
+</para>
+	</operations>
+	
+</page>
+
+</vcelldoc>

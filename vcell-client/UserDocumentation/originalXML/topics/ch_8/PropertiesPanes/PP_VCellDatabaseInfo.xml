@@ -15,15 +15,12 @@
 	<operations>
 	<bold>BioModels</bold> contain 1 or more 'Applications', each application may contain 1 or more simulations.
 	<list>
-	<item><bold>Model Annotation </bold> text if it exists is displayed as the first line in the panel.  
-	See <link target="EditAnnotation">Edit Model Annotation</link> for more information.</item>
-	<item><bold>Applications info</bold> See <link target="PP_ApplicationProps">Application Properties </link> 
+		<item><bold>Applications info</bold> See <link target="PP_ApplicationProps">Application Properties </link> 
 	(application name, type, annotation, geometry, simulation names).  
 	See also <link target="ApplicationOverview">Applications Overview</link> for more information.</item>
 	</list>
 	<bold>MathModels</bold> are like stand-alone 'Applications' and contain 1 or more simulations.
 	<list>
-	<item><bold>Annotation</bold> user notes entered for the MathModel from File->'Edit Annotation'.</item>
 	<item><bold>Type</bold> (e.g 'deterministic').</item>
 	<item><bold>Geometry</bold> ('compartmental' or 'geometry name' and (1D,2D,3D dimension)).</item>
 	<item><bold>Simulation Names</bold></item>

@@ -11,9 +11,7 @@
     			<tocitem target="Open" text="File->Open Menu"/>
     			<tocitem target="SaveAs" text="File->Save As Menu"/>
     			<tocitem target="RevertToSaved" text="File->Revert to Saved Menu"/>
-    			<tocitem target="Permissions" text="File->Permissions Menu"/>
-    			<tocitem target="ModelAnnotation" text="File->Model Annotation Menu"/>
-    			<tocitem target="EditAnnotation" text="File->Edit Annotation Menu"/>
+    			<tocitem target="Permissions" text="File->Permissions Menu"/> 			 
     			<tocitem target="FieldData" text="File->Field Data Menu"/>
     			<tocitem target="Import" text="File->Import Menu (SBML files)"/>
     			<tocitem target="ImportBNGL" text="File->Import Menu (BNGL files)"/>
@@ -22,20 +20,15 @@
     		<tocitem target="Account" text="Account Menu">
     			<tocitem target="Login" text="User Login"/>
     			<tocitem target="ChangeUser" text="Change User Menu"/>
+    			<tocitem target="SetProxy" text= "Set Proxy Window"/>
     			<tocitem target="UpdateRegistrationInfo" text="Update Registration Information Menu"/>
     			<tocitem target="NewUserRegistration" text="New User Registration"/>
+    			<tocitem target="ViewSimStatus" text="View Simulation Jobs"/>
     		</tocitem>	
     		<tocitem target="Window" text="Window Menu"/>
     		<tocitem target="Tools" text="Tools Menu">
-    			<tocitem target="LaunchBioNetGen" text="Launch BioNetGen Menu">
-    			 	<tocitem target="BioNetGenRulesEditor" text="BioNetGen Rules Editor"/>
-    				<tocitem target="BioNetGenMessages" text="BioNetGen Messages"/>
-	    			<tocitem target="BioNetGenOutput" text="BioNetGen Outputs"/>
-    				<tocitem target="BioNetGenHelp" text="BioNetGen Help"/>
-    			</tocitem>
     			<tocitem target="LaunchVirtualFRAP" text="Launch Virtual FRAP Menu"/>
-    			<tocitem target="LaunchVisITvisualization" text="Launch Visit Visualization Tool Menu"/>
-    			<tocitem target="TransformToStochCapable" text="Transform to Stochastic Capable Menu"/>
+ 				<tocitem target="TransformToStochCapable" text="Transform to Stochastic Capable Menu"/>
     		</tocitem>
     		<tocitem target="Help" text="Help Menu"/>
     	</tocitem>
@@ -147,6 +140,7 @@
 	    <tocitem target="PropertiesPaneOverview" text="Properties Panes">
 	    	<tocitem target="PP_ApplicationProps" text="Application Info Properties Pane"/>
 	    	<tocitem target="PP_VCellDatabaseInfo" text="Database Info Properties Pane"/>
+			<tocitem target="PP_Annotations" text="Annotations Properties Pane"/>
 	    	<tocitem target="PP_MemFlux" text="Membrane Flux Properties Pane"/>
 	    	<tocitem target="PP_Molecules" text="Molecules Properties Pane"/>
 	    	<tocitem target="PP_Observables" text="Observables Properties Pane"/>	    	

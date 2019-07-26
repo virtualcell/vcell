@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<vcelldoc>
+<page title="SetProxy">
+
+	
+	<introduction> 
+Set Proxy allows a user to define a proxy to enable connection through a firewall
+	</introduction>
+	
+	<appearance>  
+<imgReference target = "SetProxy.PNG"/>
+	</appearance>
+	
+	<operations>
+The dialog box should be completed exactly as indicated.  The proxyType can be...
+	</operations>
+	
+</page>
+
+</vcelldoc>

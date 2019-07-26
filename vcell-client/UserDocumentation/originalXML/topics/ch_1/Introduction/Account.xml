@@ -17,22 +17,21 @@
 		<link target = "ChangeUser">Change User...</link> - allows user to change the user of the currently open VCell document by providing a different user name and password.
 		</item>
 		<item>
+		<link target = "SetProxy">Set Proxy...</link> - allows the user to set a Proxy if local policy prevents direct connection to the VCell server.
+		</item>
+		<item>
 		<link target = "UpdateRegistrationInfo">Update Registration Info...</link> - allows user to update his/her registration information.
 		</item>
 		<item>
 		<bold>Reconnect</bold> - allows user to reconnect to the server. The status bar displays the connecting status.
 		</item>
 		<item>
-		<bold>Change Server</bold> - is currently disabled in this menu.
-		</item>
-		<item>
-		<bold>Local</bold> - is currently disabled in this menu.
+		<link target = "ViewSimStatus">View Simulation Jobs</link> - provides a way to view and stop simulation jobs.
 		</item>
 	</list>
 	</operations>
 	
-	<comments> Change Server and Local are not enabled. What is the purpose of these menu items? </comments>
-
+	
 </page>
 
 </vcelldoc>
