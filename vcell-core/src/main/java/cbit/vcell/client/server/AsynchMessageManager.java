@@ -9,7 +9,6 @@
  */
 
 package cbit.vcell.client.server;
-import java.util.StringTokenizer;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
@@ -37,8 +36,6 @@ import cbit.rmi.event.SimulationJobStatusListener;
 import cbit.rmi.event.VCellMessageEvent;
 import cbit.rmi.event.VCellMessageEventListener;
 import cbit.vcell.resource.VCellExecutorService;
-import cbit.vcell.server.SimulationJobStatus;
-import cbit.vcell.server.SimulationJobStatus.SchedulerStatus;
 import cbit.vcell.server.VCellConnection;
 import edu.uchc.connjur.wb.ExecutionTrace;
 
@@ -142,20 +139,6 @@ private void poll( )  {
 	    if (queuedEvents != null) {
 		    for (MessageEvent messageEvent : queuedEvents){
 		    	onMessageEvent(messageEvent);
-		    	if(messageEvent instanceof DataJobEvent && (messageEvent.getEventTypeID()==MessageEvent.DATA_COMPLETE || messageEvent.getEventTypeID()==MessageEvent.DATA_FAILURE)) {
-		    		DataJobEvent dataJobEvent = (DataJobEvent)messageEvent;
-		    		clientServerManager.clearEvent(DataJobEvent.class.getName()+":"+dataJobEvent.getVcDataJobID().getJobID());
-		    	}else if(messageEvent instanceof ExportEvent && (messageEvent.getEventTypeID()==MessageEvent.EXPORT_COMPLETE || messageEvent.getEventTypeID()==MessageEvent.EXPORT_FAILURE)) {
-		    		ExportEvent exportEvent = (ExportEvent)messageEvent;
-		    		clientServerManager.clearEvent(ExportEvent.class.getName()+":"+exportEvent.getJobID());
-		    	}else if(messageEvent instanceof SimulationJobStatusEvent) {
-		    		SimulationJobStatusEvent simulationJobStatusEvent = (SimulationJobStatusEvent)messageEvent;
-		    		SimulationJobStatus jobStatus = simulationJobStatusEvent.getJobStatus();
-		    		if(jobStatus.getSchedulerStatus() == SchedulerStatus.COMPLETED || jobStatus.getSchedulerStatus() == SchedulerStatus.FAILED || jobStatus.getSchedulerStatus() == SchedulerStatus.STOPPED) {
-		    			clientServerManager.clearEvent(SimulationJobStatusEvent.class.getName()+":"+jobStatus.getVCSimulationIdentifier().getOwner().getName()+":"+jobStatus.getVCSimulationIdentifier().getSimulationKey()+":"+jobStatus.getTaskID()+":"+jobStatus.getJobIndex());
-		    		}
-		    	}
-		    	
 		    }
 	    }
 	    // report polling call performance

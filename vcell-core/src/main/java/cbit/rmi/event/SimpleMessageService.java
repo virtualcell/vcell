@@ -10,9 +10,6 @@
 
 package cbit.rmi.event;
 
-import java.io.IOException;
-import java.util.EventObject;
-
 import org.vcell.util.document.User;
 
 import cbit.vcell.mongodb.VCMongoMessage;
@@ -39,9 +36,6 @@ public void messageEvent(MessageEvent event) {
 		VCMongoMessage.sendClientMessageEventQueued(event);
 		messageQueue.push(event);
 	}	
-}
-public void clearEvent(Object eventObject) throws IOException {
-	//do nothing
 }
 
 public MessageEvent[] getMessageEvents() {

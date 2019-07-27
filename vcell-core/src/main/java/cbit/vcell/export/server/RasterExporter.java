@@ -285,18 +285,18 @@ private void appendSlice(String varName,double[] unslicedData,NrrdInfo sliceNrrd
 	NRRDHelper.appendDoubleData(sliceNrrdInfo, fileDataContainerManager,sliceData,varName);
 }
 private NrrdInfo[] exportPDEData(OutputContext outputContext,long jobID, User user, DataServerImpl dataServerImpl, VCDataIdentifier vcdID, VariableSpecs variableSpecs,
-	TimeSpecs timeSpecs2, GeometrySpecs geometrySpecs, RasterSpecs rasterSpecs, FileDataContainerManager fileDataContainerManager,ExportSpecs exportSpecs) throws RemoteException, DataAccessException, IOException {
+	TimeSpecs timeSpecs2, GeometrySpecs geometrySpecs, RasterSpecs rasterSpecs, FileDataContainerManager fileDataContainerManager) throws RemoteException, DataAccessException, IOException {
 	
 	CartesianMesh mesh = dataServerImpl.getMesh(user, vcdID);
 	DataProcessingOutputInfo dataProcessingOutputInfo = null;
 	//check if any of export variables are PostProcess and if so try to get PostProcessOutputInfo
-	exportServiceImpl.fireExportProgress(jobID, vcdID, "Check PostProcess",0.0, exportSpecs);
+	exportServiceImpl.fireExportProgress(jobID, vcdID, "Check PostProcess",0.0);
 	DataIdentifier[] dataIdentifiers = dataServerImpl.getDataIdentifiers(outputContext, user, vcdID);
 	for (int i = 0; i < dataIdentifiers.length; i++) {
 		for(int j=0;j<variableSpecs.getVariableNames().length;j++){
 			if(variableSpecs.getVariableNames()[j].equals(dataIdentifiers[i].getName()) && VariableType.POSTPROCESSING.equals(dataIdentifiers[i].getVariableType())){
 				try{//we need PostProcessOutputInfo
-					exportServiceImpl.fireExportProgress(jobID, vcdID, "Read PostProcess",0.0, exportSpecs);
+					exportServiceImpl.fireExportProgress(jobID, vcdID, "Read PostProcess",0.0);
 					dataProcessingOutputInfo = (DataProcessingOutputInfo)dataServerImpl.doDataOperation(user,new DataOperation.DataProcessingOutputInfoOP(vcdID,false,outputContext));
 					break;
 				}catch(Exception e){
@@ -318,7 +318,7 @@ private NrrdInfo[] exportPDEData(OutputContext outputContext,long jobID, User us
 					int progressEnd = variableSpecs.getVariableNames().length*(timeSpecs2.getEndTimeIndex()-timeSpecs2.getBeginTimeIndex()+1);
 					for (int i = 0; i < variableSpecs.getVariableNames().length; i++){
 						for (int j = timeSpecs2.getBeginTimeIndex(); j <= timeSpecs2.getEndTimeIndex(); j++){
-							lastUpdateTime = fireThrottledProgress(exportServiceImpl, lastUpdateTime, "NRRD-snglfull",jobID, vcdID, progressIndex,progressEnd, exportSpecs);
+							lastUpdateTime = fireThrottledProgress(exportServiceImpl, lastUpdateTime, "NRRD-snglfull",jobID, vcdID, progressIndex,progressEnd);
 							progressIndex++;
 							double[] data = dataServerImpl.getSimDataBlock(outputContext,user, vcdID, variableSpecs.getVariableNames()[i], timeSpecs2.getAllTimes()[j]).getData();
 							NRRDHelper.appendDoubleData(nrrdInfo, fileDataContainerManager, data, variableSpecs.getVariableNames()[i]);
@@ -335,7 +335,7 @@ private NrrdInfo[] exportPDEData(OutputContext outputContext,long jobID, User us
 					int progressEnd = variableSpecs.getVariableNames().length*(timeSpecs2.getEndTimeIndex()-timeSpecs2.getBeginTimeIndex()+1);
 					for (int i = 0; i < variableSpecs.getVariableNames().length; i++){
 						for (int j = timeSpecs2.getBeginTimeIndex(); j <= timeSpecs2.getEndTimeIndex(); j++){
-							lastUpdateTime = fireThrottledProgress(exportServiceImpl, lastUpdateTime, "NRRD-snglslice",jobID, vcdID, progressIndex,progressEnd, exportSpecs);
+							lastUpdateTime = fireThrottledProgress(exportServiceImpl, lastUpdateTime, "NRRD-snglslice",jobID, vcdID, progressIndex,progressEnd);
 							progressIndex++;
 							double[] data = dataServerImpl.getSimDataBlock(outputContext,user, vcdID, variableSpecs.getVariableNames()[i], timeSpecs2.getAllTimes()[j]).getData();
 							appendSlice(variableSpecs.getVariableNames()[i], data, sliceNrrdInfo, mesh, geometrySpecs, fileDataContainerManager);
@@ -357,7 +357,7 @@ private NrrdInfo[] exportPDEData(OutputContext outputContext,long jobID, User us
 					int progressIndex = 1;
 					int progressEnd = (timeSpecs2.getEndTimeIndex()-timeSpecs2.getBeginTimeIndex()+1);
 					for (int j = timeSpecs2.getBeginTimeIndex(); j <= timeSpecs2.getEndTimeIndex(); j++){
-						lastUpdateTime = fireThrottledProgress(exportServiceImpl, lastUpdateTime, "NRRD-timefull",jobID, vcdID, progressIndex,progressEnd, exportSpecs);
+						lastUpdateTime = fireThrottledProgress(exportServiceImpl, lastUpdateTime, "NRRD-timefull",jobID, vcdID, progressIndex,progressEnd);
 						progressIndex++;
 						NrrdInfo nrrdInfo = nrrdHelper.createTimeFullNrrdInfo(fileDataContainerManager, vcdID, variableSpecs, timeSpecs2.getAllTimes()[j], rasterSpecs);
 						nrrdinfoV.add(nrrdInfo);
@@ -379,7 +379,7 @@ private NrrdInfo[] exportPDEData(OutputContext outputContext,long jobID, User us
 					int progressIndex = 1;
 					int progressEnd = (timeSpecs2.getEndTimeIndex()-timeSpecs2.getBeginTimeIndex()+1);
 					for (int j = timeSpecs2.getBeginTimeIndex(); j <= timeSpecs2.getEndTimeIndex(); j++){
-						lastUpdateTime = fireThrottledProgress(exportServiceImpl, lastUpdateTime, "NRRD-timeslice",jobID, vcdID, progressIndex,progressEnd, exportSpecs);
+						lastUpdateTime = fireThrottledProgress(exportServiceImpl, lastUpdateTime, "NRRD-timeslice",jobID, vcdID, progressIndex,progressEnd);
 						progressIndex++;
 						NrrdInfo sliceNrrdInfo =
 							createSliceNrrdHelper(mesh, dataProcessingOutputInfo, vcdID, variableSpecs, timeSpecs2, geometrySpecs, rasterSpecs, fileDataContainerManager).
@@ -414,7 +414,7 @@ private NrrdInfo[] exportPDEData(OutputContext outputContext,long jobID, User us
 						NrrdInfo nrrdInfo = nrrdhelHelper.createVariableFullNrrdInfo(fileDataContainerManager, vcdID, variableSpecs.getVariableNames()[i], timeSpecs2, rasterSpecs);
 						nrrdinfoV.add(nrrdInfo);		
 						for (int j = timeSpecs2.getBeginTimeIndex(); j <= timeSpecs2.getEndTimeIndex(); j++){
-							lastUpdateTime = fireThrottledProgress(exportServiceImpl, lastUpdateTime, "NRRD-varsfull",jobID, vcdID, progressIndex,progressEnd, exportSpecs);
+							lastUpdateTime = fireThrottledProgress(exportServiceImpl, lastUpdateTime, "NRRD-varsfull",jobID, vcdID, progressIndex,progressEnd);
 							progressIndex++;
 							double[] data = dataServerImpl.getSimDataBlock(outputContext,user, vcdID, variableSpecs.getVariableNames()[i], timeSpecs2.getAllTimes()[j]).getData();
 							NRRDHelper.appendDoubleData(nrrdInfo, fileDataContainerManager, data, variableSpecs.getVariableNames()[i]);
@@ -438,7 +438,7 @@ private NrrdInfo[] exportPDEData(OutputContext outputContext,long jobID, User us
 									createVariableFullNrrdInfo(fileDataContainerManager, vcdID, variableSpecs.getVariableNames()[i], timeSpecs2, rasterSpecs);
 						nrrdinfoV.add(sliceNrrdInfo);		
 						for (int j = timeSpecs2.getBeginTimeIndex(); j <= timeSpecs2.getEndTimeIndex(); j++){
-							lastUpdateTime = fireThrottledProgress(exportServiceImpl, lastUpdateTime, "NRRD-varsfull",jobID, vcdID, progressIndex,progressEnd, exportSpecs);
+							lastUpdateTime = fireThrottledProgress(exportServiceImpl, lastUpdateTime, "NRRD-varsfull",jobID, vcdID, progressIndex,progressEnd);
 							progressIndex++;
 							double[] data = dataServerImpl.getSimDataBlock(outputContext,user, vcdID, variableSpecs.getVariableNames()[i], timeSpecs2.getAllTimes()[j]).getData();
 							appendSlice(variableSpecs.getVariableNames()[i], data, sliceNrrdInfo, mesh, geometrySpecs, fileDataContainerManager);
@@ -463,10 +463,10 @@ private NrrdInfo[] exportPDEData(OutputContext outputContext,long jobID, User us
 	}											
 }
 
-	private static long fireThrottledProgress(ExportServiceImpl exportServiceImpl,long lastUpdateTime,String message,long jobID,VCDataIdentifier vcdID,int progressIndex,int endIndex,ExportSpecs exportSpecs){
+	private static long fireThrottledProgress(ExportServiceImpl exportServiceImpl,long lastUpdateTime,String message,long jobID,VCDataIdentifier vcdID,int progressIndex,int endIndex){
 		if(lastUpdateTime == 0 || (System.currentTimeMillis() - lastUpdateTime)>5000){
 			lastUpdateTime = System.currentTimeMillis();
-			exportServiceImpl.fireExportProgress(jobID, vcdID, message,(double)(progressIndex)/(double)(endIndex+1), exportSpecs);
+			exportServiceImpl.fireExportProgress(jobID, vcdID, message,(double)(progressIndex)/(double)(endIndex+1));
 		}
 		return lastUpdateTime;
 	}
@@ -486,7 +486,7 @@ public NrrdInfo[] makeRasterData(OutputContext outputContext,JobRequest jobReque
 		exportSpecs.getTimeSpecs(),
 		exportSpecs.getGeometrySpecs(),
 		(RasterSpecs)exportSpecs.getFormatSpecificSpecs(),
-		fileDataContainerManager,exportSpecs
+		fileDataContainerManager
 	);
 }
 
@@ -863,7 +863,7 @@ public ExportOutput[] makeUCDData(OutputContext outputContext,JobRequest jobRequ
 		for (int j = timeSpecs.getBeginTimeIndex(); j <= timeSpecs.getEndTimeIndex(); j++){
 			exportServiceImpl.fireExportProgress(
 					jobRequest.getJobID(), vcdID, "UCD",
-					(double)(j-timeSpecs.getBeginTimeIndex())/(double)(timeSpecs.getEndTimeIndex()-timeSpecs.getBeginTimeIndex()+1), exportSpecs);
+					(double)(j-timeSpecs.getBeginTimeIndex())/(double)(timeSpecs.getEndTimeIndex()-timeSpecs.getBeginTimeIndex()+1));
 			
 //			String fileID = simID + "_Full_" + formatTime(timeSpecs.getAllTimes()[j]) + "time_" + variableSpecs.getVariableNames().length + "vars";
 
@@ -968,7 +968,7 @@ public ExportOutput[] makeVTKImageData(OutputContext outputContext,JobRequest jo
 	for (int j = timeSpecs.getBeginTimeIndex(); j <= timeSpecs.getEndTimeIndex(); j++){
 		exportServiceImpl.fireExportProgress(
 				jobRequest.getJobID(), vcdID, "VTKIMG",
-				(double)(j-timeSpecs.getBeginTimeIndex())/(double)(timeSpecs.getEndTimeIndex()-timeSpecs.getBeginTimeIndex()+1), exportSpecs);
+				(double)(j-timeSpecs.getBeginTimeIndex())/(double)(timeSpecs.getEndTimeIndex()-timeSpecs.getBeginTimeIndex()+1));
 
 		StringBuffer sb = new StringBuffer();
 		sb.append("# vtk DataFile Version 2.0"+"\n");
@@ -1051,7 +1051,7 @@ public ExportOutput[] makeVTKUnstructuredData_Chombo(OutputContext outputContext
 	ChomboVtkFileWriter chomboVTKFileWriter = new ChomboVtkFileWriter();
 	File[] vtkFiles = chomboVTKFileWriter.writeVtuExportFiles(chomboFiles, tmpDir, new ChomboVtkFileWriter.ProgressListener() {
 		public void progress(double percentDone) {
-			exportServiceImpl.fireExportProgress(jobRequest.getJobID(), vcdID, "VTKUNSTR", percentDone, exportSpecs);
+			exportServiceImpl.fireExportProgress(jobRequest.getJobID(), vcdID, "VTKUNSTR", percentDone);
 		}
 	});
 	
@@ -1080,7 +1080,7 @@ public ExportOutput[] makeVTKUnstructuredData_VCell(OutputContext outputContext,
 	CartesianMeshVtkFileWriter cartesianMeshVtkFileWriter = new CartesianMeshVtkFileWriter();
 	File[] vtkFiles = cartesianMeshVtkFileWriter.writeVtuExportFiles(vcellFiles, tmpDir, new CartesianMeshVtkFileWriter.ProgressListener() {
 		public void progress(double percentDone) {
-			exportServiceImpl.fireExportProgress(jobRequest.getJobID(), vcdID, "VTKUNSTR", percentDone, exportSpecs);
+			exportServiceImpl.fireExportProgress(jobRequest.getJobID(), vcdID, "VTKUNSTR", percentDone);
 		}
 	});
 	
@@ -1114,7 +1114,7 @@ public ExportOutput[] makeVTKUnstructuredData(OutputContext outputContext,JobReq
 	for (int j = timeSpecs.getBeginTimeIndex(); j <= timeSpecs.getEndTimeIndex(); j++){
 	exportServiceImpl.fireExportProgress(
 	jobRequest.getJobID(), vcdID, "VTKUNSTR",
-	(double)(j-timeSpecs.getBeginTimeIndex())/(double)(timeSpecs.getEndTimeIndex()-timeSpecs.getBeginTimeIndex()+1), exportSpecs);
+	(double)(j-timeSpecs.getBeginTimeIndex())/(double)(timeSpecs.getEndTimeIndex()-timeSpecs.getBeginTimeIndex()+1));
 	
 	//String fileID = simID + "_Full_" + formatTime(timeSpecs.getAllTimes()[j]) + "time_" + variableSpecs.getVariableNames().length + "vars";
 	

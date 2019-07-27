@@ -10,7 +10,6 @@
 
 package cbit.vcell.message.server.bootstrap.client;
 import java.io.IOException;
-import java.util.EventObject;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -97,12 +96,6 @@ public void sendErrorReport(Throwable exception, ExtraContext extra) {
 @Override
 public MessageEvent[] getMessageEvents() throws RemoteProxyException, IOException {
 	return rpcSender.getMessageEvents();
-}
-
-
-@Override
-public void clearEvent(Object eventObject) throws IOException {
-	rpcSender.clearEvent(eventObject);
 }
 
 }

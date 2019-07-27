@@ -11,7 +11,6 @@
 package cbit.vcell.client.server;
 
 import java.io.IOException;
-import java.util.EventObject;
 
 import org.apache.http.HttpStatus;
 import org.apache.http.client.HttpResponseException;
@@ -285,9 +284,6 @@ public void cleanup() {
 	setVcellConnection(null);
 }
 
-public void clearEvent(Object eventObject) throws IOException{
-	vcellConnection.clearEvent(eventObject);
-}
 public MessageEvent[] getMessageEvents() throws RemoteProxyException, IOException{
 	if (vcellConnection!=null && isStatusConnected()){
 		return vcellConnection.getMessageEvents();
