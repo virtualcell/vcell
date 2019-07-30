@@ -126,8 +126,8 @@ public final void showPreferencesWindow(){
 	ChildWindow childWindow = childWindowManager.getChildWindowFromContext(PREFERENCES_WINDOW);
 	VCellConfigurationPanel vcellConfigurationPanel = new VCellConfigurationPanel(this);
 	if (childWindow==null){
-		childWindow = childWindowManager.addChildWindow(vcellConfigurationPanel, PREFERENCES_WINDOW, "View/Edit VCell Preferences");
-		childWindow.setSize(600,400);
+		childWindow = childWindowManager.addChildWindow(vcellConfigurationPanel, PREFERENCES_WINDOW, "View VCell Properties");
+		childWindow.setSize(650,300);
 		childWindow.setResizable(true);
 		vcellConfigurationPanel.setChildWindow(childWindow);
 	}

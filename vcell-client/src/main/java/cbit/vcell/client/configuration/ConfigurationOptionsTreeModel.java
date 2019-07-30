@@ -85,8 +85,8 @@ public class ConfigurationOptionsTreeModel extends DefaultTreeModel
 		rootNode.removeAllChildren();
 
 		rootNode.add(generalNode);
-		rootNode.add(comsolNode);
-		generalNode.add(bioNetGenNode);
+//		rootNode.add(comsolNode);
+//		generalNode.add(bioNetGenNode);
 		
 		nodeStructureChanged(rootNode);
 		GuiUtils.treeExpandAllRows(ownerTree);
