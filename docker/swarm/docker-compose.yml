@@ -165,6 +165,7 @@ services:
       - slurm_tmpdir=${VCELL_SLURM_TMPDIR}
       - slurm_local_singularity_dir=${VCELL_SLURM_LOCAL_SINGULARITY_DIR}
       - slurm_central_singularity_dir=${VCELL_SLURM_CENTRAL_SINGULARITY_DIR}
+      - simdatadir_archive_host=${VCELL_SIMDATADIR_ARCHIVE_HOST}
 
       - jmsuser=clientUser
       - jmshost_int_internal=activemqint

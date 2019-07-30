@@ -51,7 +51,8 @@ ENV softwareVersion=SOFTWARE-VERSION-NOT-SET \
     slurm_tmpdir="slurm-tmpdir-not-set" \
     slurm_local_singularity_dir="slurm_local_singularity_dir-not-set" \
     slurm_central_singularity_dir="slurm_central_singularity_dir-not-set" \
-    jmsblob_minsize=100000
+    jmsblob_minsize=100000 \
+    simdatadir_archive_host="simdatadir_archive_host-not-set"
 
 ENV jmspswdfile=/run/secrets/jmspswd \
     batchuserkeyfile=/run/secrets/batchuserkeyfile
@@ -113,5 +114,6 @@ ENTRYPOINT java \
 	-Dvcell.mongodb.host.external=${mongodb_host_external} \
 	-Dvcell.mongodb.port.external=${mongodb_port_external} \
 	-Dvcell.mongodb.database=${mongodb_database} \
+	-Dvcell.simdatadir.archive.host=${simdatadir_archive_host} \
 	-cp "./lib/*" cbit.vcell.message.server.batch.sim.HtcSimulationWorker \
 	"${batchhost}" "${batchuser}" "${batchuserkeyfile}"

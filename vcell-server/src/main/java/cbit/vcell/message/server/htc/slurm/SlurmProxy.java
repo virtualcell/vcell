@@ -402,6 +402,7 @@ public class SlurmProxy extends HtcProxy {
 		String slurm_tmpdir = PropertyLoader.getRequiredProperty(PropertyLoader.slurm_tmpdir);
 		String slurm_central_singularity_dir = PropertyLoader.getRequiredProperty(PropertyLoader.slurm_central_singularity_dir);
 		String slurm_local_singularity_dir = PropertyLoader.getRequiredProperty(PropertyLoader.slurm_local_singularity_dir);
+		String simDataDirArchiveHost = PropertyLoader.getRequiredProperty(PropertyLoader.simDataDirArchiveHost);
 		File slurm_singularity_central_filepath = new File(slurm_central_singularity_dir,new File(slurm_singularity_local_image_filepath).getName());
 		
 		String[] environmentVars = new String[] {
@@ -465,7 +466,7 @@ public class SlurmProxy extends HtcProxy {
 		for (String envVar : environmentVars) {
 			singularityEnvironmentVars.append(" --env "+envVar);
 		}
-		lsb.write("   container_prefix=\"singularity run --bind "+primaryDataDirExternal+":/simdata --bind "+htclogdir_external+":/htclogs  --bind "+slurm_tmpdir+":/solvertmp $localSingularityImage "+singularityEnvironmentVars+" \"");
+		lsb.write("   container_prefix=\"singularity run --bind "+primaryDataDirExternal+":/simdata --bind "+simDataDirArchiveHost+":"+simDataDirArchiveHost+" --bind "+htclogdir_external+":/htclogs  --bind "+slurm_tmpdir+":/solvertmp $localSingularityImage "+singularityEnvironmentVars+" \"");
 		lsb.write("else");
 		lsb.write("    echo \"Required singularity command not found (module load singularity/2.4.2) \"");
 		lsb.write("    exit 1");
