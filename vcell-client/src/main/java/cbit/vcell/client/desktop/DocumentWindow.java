@@ -1111,7 +1111,7 @@ private javax.swing.JMenu getFileMenu() {
 			ivjFileMenu.add(new JSeparator());
 			ivjFileMenu.add(getPermissionsMenuItem());
 //			ivjFileMenu.add(getJMenuItemMIRIAM());
-			ivjFileMenu.add(getJMenuItemPreferences());
+//			ivjFileMenu.add(getJMenuItemPreferences());
 //			ivjFileMenu.add(getEdit_Annotation_JMenuItem());
 			ivjFileMenu.add(new JSeparator());
 			ivjFileMenu.add(getJMenuItemFieldData());
@@ -1186,6 +1186,7 @@ private javax.swing.JMenu getHelpMenu() {
 			ivjHelpMenu.add(getJMenuItemManagePermissions());
 			ivjHelpMenu.add(getJMenuItemOnlinePublish());
 			ivjHelpMenu.add(getJMenuItemEmailSupport());
+			ivjHelpMenu.add(getJMenuItemPreferences());
 			
 //			ivjHelpMenu.add(getSeparator());
 //			ivjHelpMenu.add(getPermissionsMenuItem());
@@ -2667,7 +2668,7 @@ private void viewStatusBar() {
 private JMenuItem getJMenuItemPreferences() {
 	if (jMenuItemPreferences == null) {
 		jMenuItemPreferences = new JMenuItem();
-		jMenuItemPreferences.setText("Preferences ...");
+		jMenuItemPreferences.setText("VCell Properties ...");
 		jMenuItemPreferences.addActionListener(new java.awt.event.ActionListener() {
 			public void actionPerformed(java.awt.event.ActionEvent e) {
 				getTopLevelWindowManager().showPreferencesWindow();

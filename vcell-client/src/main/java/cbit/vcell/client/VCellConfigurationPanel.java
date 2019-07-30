@@ -103,12 +103,12 @@ public class VCellConfigurationPanel extends JPanel {
 //		Border margin = new EmptyBorder(5,3,1,1);
 //		treePanel.setBorder(margin);
 		
-		Dimension dim = new Dimension(200, 400);
+		Dimension dim = new Dimension(150, 300);
 		treePanel.setPreferredSize(dim);		// code that contributes to prevent resizing horizontally
 		treePanel.setMinimumSize(dim);
 		treePanel.setMaximumSize(dim);
 		splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT) {
-			private final int location = 200;	// all code below to make it impossible to move the divider
+			private final int location = 150;	// all code below to make it impossible to move the divider
 			{									// so that the left component cannot be resized
 				setDividerLocation(location);
 				setResizeWeight(0);				// left component is fixed width
