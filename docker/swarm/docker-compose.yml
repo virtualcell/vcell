@@ -43,7 +43,7 @@ services:
       - mongodb
     deploy:
       mode: replicated
-      replicas: 1
+      replicas: 2
       resources:
         limits:
           memory: 2000M

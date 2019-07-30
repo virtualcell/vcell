@@ -14,7 +14,6 @@ import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
-import java.util.EventObject;
 import java.util.Locale;
 import java.util.stream.Collectors;
 import java.util.zip.DeflaterOutputStream;
@@ -64,12 +63,9 @@ import org.vcell.api.common.BiomodelRepresentation;
 import org.vcell.api.common.SimulationRepresentation;
 import org.vcell.api.common.SimulationTaskRepresentation;
 import org.vcell.api.common.UserInfo;
-import org.vcell.api.common.events.DataJobEventRepresentation;
 import org.vcell.api.common.events.EventWrapper;
 
 import com.google.gson.Gson;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 
 /**
  * This example demonstrates the use of the {@link ResponseHandler} to simplify
@@ -222,40 +218,6 @@ public class VCellApiClient {
 		Gson gson = new Gson();
 		BiomodelRepresentation[] biomodelReps = gson.fromJson(bimodelsJson,BiomodelRepresentation[].class);
 		return biomodelReps;
-	}
-	
-	public void clearEvent(Object eventObject) throws IOException{
-
-		System.out.println(eventObject);
-		HttpPost httpPost = null;
-		String s = "https://"+httpHost.getHostName()+":"+httpHost.getPort()+"/events?action=clearEvent&eventid="+eventObject.toString();
-		httpPost = new HttpPost(s);
-		httpclient.execute(httpPost);
-		
-//		HttpPost httpPost = null;
-//		String s = eventWrapper.eventJSON;
-//		//"{\"eventType\":1005,\"format\":\"CSV\",\"username\":\"frm\",\"userkey\":\"227\",\"jobid\":3836720494,\"dataIdString\":\"SimID_109808517_0_\",\"dataKey\":\"109808517\"}";
-//		//"{\"eventType\":1007,\"format\":\"CSV\",\"location\":\"http://vcell.org/export/3836720494.zip\",\"username\":\"frm\",\"userkey\":\"227\",\"jobid\":3836720494,\"dataIdString\":\"SimID_109808517_0_\",\"dataKey\":\"109808517\",\"exportTimeSpecs\":{\"beginTimeIndex\":0,\"endTimeIndex\":10,\"allTimes\":[0.0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0],\"modeID\":1},\"exportVariableSpecs\":{\"variableNames\":[\"C_cyt\"],\"modeID\":1}}";
-//		//"{\"eventType\":1015,\"progress\":0.0,\"username\":\"frm\",\"userkey\":\"227\",\"jobid\":8479268402768707765,\"isBackgroundTask\":true,\"dataIdString\":\"SimID_109808517_0_\",\"dataKey\":\"109808517\"}";
-//		//"{\"jobStatus\":{\"vcellServerID\":\"TEST\",\"simulationKey\":\"109803670\",\"taskID\":160,\"jobIndex\":0,\"submitDate\":\"May 6, 2019 4:40:25 AM\",\"owner_userid\":\"frm\",\"onwer_userkey\":\"227\",\"schedulerStatus\":\"COMPLETED\",\"detailedState\":\"WORKEREVENT_COMPLETED\",\"detailedStateMessage\":\"completed\",\"queuePriority\":5,\"queueDate\":\"May 6, 2019 4:40:25 AM\",\"queueId\":\"QUEUE_ID_NULL\",\"simexe_latestUpdateDate\":\"May 6, 2019 4:40:25 AM\",\"simexe_endDate\":\"May 6, 2019 4:40:29 AM\",\"computeHost\":\"ernie\",\"hasData\":true},\"progress\":1.0,\"timePoint\":1.0,\"username\":\"frm\"}";
-//		JsonParser parser = new JsonParser();
-//		JsonObject o = parser.parse(s).getAsJsonObject();
-//		if(o.has("jobid")){
-////			System.out.println("jobid="+o.get("jobid"));
-//			httpPost = new HttpPost("https://"+httpHost.getHostName()+":"+httpHost.getPort()+
-//				"/event?eventype="+eventWrapper.eventType.name()+"&jobid="+o.get("jobid"));
-//		}else if(o.has("jobStatus") && o.get("jobStatus") instanceof JsonObject ){
-//			JsonObject jstat = (JsonObject)o.get("jobStatus");
-//			if(jstat.has("simulationKey") && jstat.has("taskID") && jstat.has("jobIndex")){
-////				System.out.println("simkey="+jstat.get("simulationKey")+" taskid="+jstat.get("taskID")+" jobindex="+jstat.get("jobIndex"));
-//				httpPost = new HttpPost("https://"+httpHost.getHostName()+":"+httpHost.getPort()+
-//					"/event?eventype="+eventWrapper.eventType.name()+"&simid="+jstat.get("simulationKey")+"&taskid="+jstat.get("taskID")+"&jobindex="+jstat.get("jobIndex"));
-//			}
-//		}else{
-//			System.out.println(this.getClass().getName()+".clearEvent() unexpected json");
-//			return;
-//		}
-//		httpclient.execute(httpPost);
 	}
 	
 	public EventWrapper[] getEvents(long beginTimestamp) throws IOException {
