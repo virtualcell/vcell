@@ -133,8 +133,8 @@ public enum SolverDescription {
 
 	   Comsol(TimeStep.VARIABLE,ErrorTol.NO,TimeSpecCreated.DEFAULT,"Comsol","Comsol Multiphysics","Comsol",
 		  SolverLongDesc.COMSOL,1,SupportedTimeSpec.DEFAULT_UNIFORM,
-		  new SolverFeature[]{SolverFeature.Feature_Deprecated /*SolverFeature.Feature_Spatial,   SolverFeature.Feature_Moving  , SolverFeature.Feature_Deterministic*/},
-		  null, "KISAO",false),
+		  new SolverFeature[]{SolverFeature.Feature_Spatial, /*  SolverFeature.Feature_Moving  */ SolverFeature.Feature_Deterministic},
+		  null, "KISAO",true),
 
 	   MovingBoundary(TimeStep.VARIABLE,ErrorTol.NO,TimeSpecCreated.DEFAULT,"Moving","Moving Boundary","MovingB",
 		  SolverLongDesc.MB,1,SupportedTimeSpec.DEFAULT_UNIFORM,
@@ -178,7 +178,6 @@ public enum SolverDescription {
 		Feature_Parallel("Parallel execution"),
 		Feature_Hybrid("Hybrid: both Deterministic and Stochastic"),
 		Feature_Moving("Moving Membrane"),
-		Feature_Deprecated("Deprecated Solver"),
 		;
 
 		private final String name;

@@ -183,6 +183,11 @@ public abstract class VCDocumentDecorator {
 				Issue issue = new Issue(source,issueContext, IssueCategory.MathDescription_MathException, text, tooltip, Issue.Severity.ERROR);
 				issueList.add(issue);
 			}
+			if(solvDesc.deprecated) {
+				text = "Solver " + solvDesc.getDatabaseName() + " is deprecated";
+				Issue issue = new Issue(sim, issueContext, IssueCategory.MathDescription_MathException, text, text, Issue.Severity.WARNING);
+				issueList.add(issue);
+			}
 		}
 
 		/**
