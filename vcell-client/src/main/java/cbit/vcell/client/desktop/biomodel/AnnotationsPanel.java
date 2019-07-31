@@ -133,14 +133,14 @@ public class AnnotationsPanel extends DocumentEditorSubPanel {
 		}
 		public void focusLost(FocusEvent e) {
 			if (e.getSource() == annotationTextArea) {
-				changeAnnotation();
+				changeTextAnnotation();
 			}
 		}
 		@Override
 		public void mouseExited(MouseEvent e) {
 			super.mouseExited(e);
 			if(e.getSource() == annotationTextArea) {
-				changeAnnotation();
+				changeTextAnnotation();
 			}
 		}
 		@Override
@@ -733,7 +733,7 @@ private void initialize() {
 	}
 }
 
-private void changeAnnotation() {
+private void changeTextAnnotation() {
 	try{
 		if (bioModel == null || selectedObject == null) {
 			return;
