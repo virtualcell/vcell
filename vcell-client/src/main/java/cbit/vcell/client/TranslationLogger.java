@@ -83,7 +83,8 @@ public class TranslationLogger extends VCLogger implements AutoCloseable {
 			for (Message m : messages) {
 				messageBuf.append(++i +") " + m.message + "\n");
 			}
-			UserMessage userMessage = new UserMessage(messageBuf.toString(), new String [] {TranslationLogger.OK_OPTION}, 
+			String str = messageBuf.toString();
+			UserMessage userMessage = new UserMessage(str, new String [] {TranslationLogger.OK_OPTION}, 
 					TranslationLogger.OK_OPTION);
 			PopupGenerator.showWarningDialog(requester, null, userMessage, null);       //'value' not used.
 		}

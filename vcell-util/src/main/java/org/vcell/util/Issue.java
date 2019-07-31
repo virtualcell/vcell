@@ -175,6 +175,7 @@ public class Issue implements java.io.Serializable, Matchable {
 		SBMLImport_UnsupportedAttributeOrElement,
 		SBMLImport_Reaction,
 		SBMLImport_MissingSpeciesInitCondition,
+		SBMLImport_UnsupportedFeature,
 
 		Workflow_missingInput,
 

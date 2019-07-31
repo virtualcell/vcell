@@ -1336,9 +1336,14 @@ public class SBMLImporter {
 			return;
 		}
 
+		boolean bRateRule = false;
 		for (int i = 0; i < sbmlModel.getNumRules(); i++) {
 			Rule rule = (org.sbml.jsbml.Rule) listofRules.get(i);
 			if (rule instanceof RateRule) {
+				bRateRule = true;
+				// TODO: re-enable importing of rate rules here
+				break;
+/*				
 				// Get the rate rule and store it in the hashMap, and create
 				// VCell rateRule.
 				RateRule sbmlRateRule = (RateRule) rule;
@@ -1356,7 +1361,7 @@ public class SBMLImporter {
 				// rate rule variable
 				String varName = sbmlRateRule.getVariable();
 				SymbolTableEntry rateRuleVar = vcBioModel.getSimulationContext(0).getEntry(varName);
-				if (rateRuleVar instanceof Structure) {
+				if (rateRuleVar instanceof Structure) {	// actually rateRuleVar instanceof Structure.StructureSize
 					throw new SBMLImportException(
 							"Compartment '"
 									+ rateRuleVar.getName()
@@ -1380,8 +1385,16 @@ public class SBMLImporter {
 							"Unable to create and add rate rule to VC model : "
 									+ e.getMessage());
 				}
+				*/
 			} // end if - RateRule
 		} // end - for i : rules
+		if(bRateRule) {
+			localIssueList.add(new Issue(vcBioModel, issueContext, IssueCategory.SBMLImport_UnsupportedFeature,
+				"RateRules are not supported at this time. It may be possible to implement some of them through the Physiology.",
+				Issue.Severity.WARNING));
+		}
+		
+//		throw new SBMLImportException("Rate rules are not allowed in VCell at this time.");
 	}
 
 	protected void addSpecies(VCMetaData metaData) {
@@ -2014,9 +2027,8 @@ public class SBMLImporter {
 				for (int i = 0; i < warningIssues.length; i++) {
 					if (warningIssues[i].getSeverity() == Issue.SEVERITY_WARNING
 							|| warningIssues[i].getSeverity() == Issue.SEVERITY_INFO) {
-						messageBuffer.append(warningIssues[i].getCategory()
-								+ " " + warningIssues[i].getSeverityName()
-								+ " : " + warningIssues[i].getMessage() + "\n");
+						messageBuffer.append("- " + warningIssues[i].getMessage()
+								+ " (" + warningIssues[i].getCategory() + ", " + warningIssues[i].getSeverityName() + ")\n");
 						issueCount++;
 					}
 				}
