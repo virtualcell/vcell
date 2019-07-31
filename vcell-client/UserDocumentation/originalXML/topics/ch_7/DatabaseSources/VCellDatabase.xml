@@ -22,20 +22,25 @@
 		<para>
 	The <bold>VCell DB</bold> tab has a <bold>Search</bold> section that allows the user to search for models by name (and annotations).  Under <bold>Advanced</bold> searches can also include date modified and 
 	models that contain 1 or more species names.
-	The models are listed in a tree structure as 'folders'. The number of models stored in the database under each 'folder' is displayed in parenthesis.
+	The models are listed in a tree structure as 'folders'. A "key" icon by the folder indicates that the models is shared with other users.  a "globe" icon indicates a model that has been made public.  The number of models stored in the database under each 'folder' is displayed in parenthesis.
 	The possible folders that are listed include:
 	</para>
 	<list>
-		<item> <bold>My BioModels</bold> - where the current user's models are listed with user name in parenthesis.</item>
-		<item> <bold>Shared BioModels</bold> - where models shared by other users with current user are listed (as "userName : modelName").</item>
-		<item> <bold>Public BioModels</bold> - where VCell models created by users and used in their publications are listed (as "userName : modelName").</item>
-		<item> <bold>Tutorials</bold> - list models that are designed for specific modeling problems, such as FRAP binding or Calcium diffusion. These models can be used as tutorials for modelers seeking to model similar problems.</item>
-		<item> <bold>Education</bold> - lists simple models that have been created to demonstrate the VCell functionality to train new users of the VCell.</item> 
-	</list>	 
+		<item> <bold>My BioModels</bold> - where the current user's models are listed with user name in parenthesis.  The "lock" icon indicates these models are private to the user unless otherwise indicated.</item>
+		<item> <bold>Shared With Me</bold> - where models shared by other users with current user are grouped by user name and listed as model name.</item>
+		<item> <bold>Tutorials</bold> - list models that are designed to demonstrate specific components of VCell, such as FRAP (for spatial simulations), or Multiple Applications of a BioModel (MultiApp). These models can be used as starting models for modelers seeking to model similar problems.</item>
+		<item> <bold>Public BioModels</bold> - list all VCell models available to the general public.</item>
+	</list>
+<bold>Public BioModels</bold> - list all VCell models available to the general public.	
+	<list>
+		<item> The <bold>Published</bold> folder contains public Models created by users and used in a publications.  Models are grouped by the publication citation and listed by user name and model name.</item>
+		<item> The <bold>Curated</bold> folder contains VCell models created by the VCell team or collaborators to reproduce a model described in a publication. Curated models are listed by user name : model name</item>
+		<item> The <bold>Uncurated</bold> folder contains public Models created by users that have not been peer reviewed. </item>	
+	</list>
 	
 	<para>
-	Expanding a tree node displays all the models of the user stored in the VCell database. Each model, when expanded, will list all the versions/editions of the models stored.
-	Selecting any model or one of its versions lists a summary of the model (about its applications, geometries, simulations, annotations, etc) in the <bold>Selected BioModel Summary</bold> in the lower panel of the window.
+	Expanding a tree node displays all the models of relevant type. Each model, when expanded, will list all the versions/editions of the models stored.
+	Selecting any model or one of its versions lists a summary of the model (Associated Citations, Model Provenance, and Applications Provenance including Geometries and Simulations) in the <bold>Selected BioModel Summary</bold> in the <link target="PP_VCellDatabaseInfo">Database File Info</link> Properties Pane in the lower right of the window.
 	</para> 
 
 	<para>
@@ -49,17 +54,15 @@
 		</item>
 		<item> <bold>Permissions...</bold> - allows user to share his/her models with other users. Please refer to the section <link target="Permissions">File -> Permissions</link>. 
 		</item>
-		<item> <bold>Archive</bold> - this option is designed for use when models are used in publications or need to be saved in a final state. 
+		<item> <bold>Archive</bold> - this option is designed for use when models are used in publications or need to be saved in a final state. An Archived BioModel or MathModel is protected from deletion or alteration by the owner.
 			<para> 
-			This maybe useful when models are a requirement for publication in a journal or associated with textbook examples. Models can always be made public through Permissions without archiving. 
-			When model results are reported in publications, it is ideal to make the model public. Once information of the publication and the public model are provided to the Virtual Cell team, they will be
-			added to the VCell “Published Models” web page. An Archived BioModel or MathModel is protected from deletion or alteration by the owner. 
-			Their permissions can be set to either 'Private' or 'Public''. Users may wish to 'Archive'' the public model and 'Create a New Edition' to continue model development.
-			A description of the restrictions imposed on Archived documents is displayed. Press <bold>OK</bold> to set 'ARCHIVE' mode. 
-			Current Archive restrictions: ARCHIVING cannot be undone without VCELL administrative assistance. ARCHIVED versions of documents cannot be deleted without VCELL administrative assistance.
+			A description of the restrictions imposed on Archived documents is displayed. The current Archive restrictions: ARCHIVING cannot be undone without VCELL administrative assistance. ARCHIVED versions of documents cannot be deleted without VCELL administrative assistance.  Press <bold>OK</bold> to set 'ARCHIVE' mode. 
+			Models can always be made public using <link target="Permissions">Permissions</link> without archiving, and archived models can have permissions set to either 'Private' or 'Public''. 
+			Models with results reported in publications should be made available to the public; see <link target="http://vcell.org/publish-a-vcell-model">vcell.org</link> for information on how to report publication information. Once information of the publication and the public model are provided to the Virtual Cell team, the model will be
+			added to the "Published Models" folder and the model will be automatically archived. If the users wishes to continue developing the model, it can be copied into a new BioModel or MathModel name in the user's private model folder.  The model and citation will also be listed on the VCell “Published Models” web page.  
 			</para>
 		</item>
-		<item> <bold>Publish</bold> - this option is currently disabled.
+		<item> <bold>Publish</bold> - takes you to <link target="http://vcell.org/publish-a-vcell-model">instructions</link> on how to identify a VCell model in a publication and how to associate a model with publication information in the VCell Database.
 		</item>
 		<item> <bold>Compare With</bold> - allows user to compare models.  
 		In the dialog that appears, the user can select the model he/she wishes to compare against the selected baseline model and press the <bold>Open</bold> button.

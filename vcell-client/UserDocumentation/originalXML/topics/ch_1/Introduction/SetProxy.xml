@@ -12,7 +12,18 @@ Set Proxy allows a user to define a proxy to enable connection through a firewal
 	</appearance>
 	
 	<operations>
-The dialog box should be completed exactly as indicated.  The proxyType can be...
+The dialog box should be completed exactly as indicated.  
+	<list>
+	<item>
+	Proxy Type can be either http or slocks
+	</item>
+	<item>
+	Proxy Host is either a FQDN or IP Address
+	</item>
+	<item>
+	Proxy Port is the port number
+	</item>
+	</list>
 	</operations>
 	
 </page>

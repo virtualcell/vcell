@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<vcelldoc>
+<page title="UID Providers for Annotations">
+
+	
+	<introduction>The <link target = "PP_Annotations">Annotations Properties Pane</link> accepts input of unique identifiers from a set of providers depending on the model element selected.
+	</introduction>
+	
+	<appearance>
+	All elements accept UIDs from
+	<list>
+		<item>
+		PubMed 
+		</item>
+		<item>
+		DOI
+		</item>
+	</list>
+
+	<para>	
+	<bold>Models</bold> also accept UIDs from
+	<list>
+	<item>BioModels Database
+	</item>
+	<item>Reactome
+	</item>
+	<item>NeuronDB
+	</item>
+	<item>MOdelDB at SenseLab
+	</item>
+	</list>
+	</para>
+
+	<para>
+	Structures also accept UIDS from
+	<list>
+	<item>
+	Brenda
+	</item>
+	<item>
+	Gene Ontology
+	</item>
+	</list>
+	</para>
+
+	<para>
+	Species and Molecules also accept UIDs from
+	<list>
+	<item>ChEBI
+	</item>
+	<item>
+	KEGG Compound
+	</item>
+	<item>
+	UniProt
+	</item>
+	<item>
+	Enzyme Nomenclature
+	</item>
+	<item>
+	Gene Ontology
+	</item>
+	<item>
+	Reactome
+	</item>
+	</list>
+	</para>
+	
+	<para>
+	Reactions also accept UIDs from
+	<list>
+	<item>
+	KEGG Pathway
+	</item>
+	<item>
+	KEGG Reaction
+	</item>
+	<item>
+	Reactome
+	</item>
+	<item>
+	Brenda
+	</item>
+	<item>
+	IntAct
+	</item>
+	</list>
+	</para>
+	
+	<para>
+	Additional UIDs are supported only when associated with imported models (e.g. from BioModels Database), including
+	<list>
+	<item>
+	InterPro
+	</item>
+	<item>
+	Enzyme Nomenclature
+	</item>
+	<item>
+	Ensembl
+	</item>
+	<item>
+	KEGG Orthology
+	</item>
+	<item>
+	KEGG Reaction
+	</item>
+	<item>
+	Taxonomy
+	</item>
+	<item>
+	ICD
+	</item>
+	<item>
+	Mamo
+	</item>
+	<item>
+	PubChem Compound
+	</item>
+	<item>
+	Teddy
+	</item>
+	<item>
+	PubChem Substance
+	</item>
+	<item>
+	Doid
+	</item>
+	<item>
+	Omim
+	</item>
+	<item>
+	3Dmet
+	</item>
+	<item>
+	Cell Ontology
+	</item>
+	<item>
+	Cas
+	</item>
+	<item>
+	BTO
+	</item>
+	<item>
+	Pato
+	</item>
+	<item>
+	Pw
+	</item>
+	<item>
+	Mod
+	</item>
+	<item>
+	Fma
+	</item>
+	<item>
+	Pr
+	</item>
+	<item>
+	SBO
+	</item>
+	</list>
+	</para>
+
+  </appearance>
+	
+	<operations>  </operations>
+	
+</page>
+
+</vcelldoc>

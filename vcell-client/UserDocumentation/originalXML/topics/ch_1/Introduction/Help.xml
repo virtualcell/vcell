@@ -28,6 +28,9 @@
 	  <item>
 		<bold>Contact VCell Support</bold> - opens an email to vcell_support@uchc.edu
 	  </item>
+	<item>
+	<bold>VCell Properties</bold> - displays locations for local files including the Installation Directory and VCell Home Directory.
+	</item>
 	  <item>           
          <bold> Virtual Cell License Information</bold> - shows a dialog that displays the license information for the Virtual Cell. <imgReference target = "VCellLicense.PNG"/>
 	  </item>

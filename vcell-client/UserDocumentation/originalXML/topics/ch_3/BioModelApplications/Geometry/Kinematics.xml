@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<vcelldoc>
+<page title="Kinematics">
+
+	<introduction>
+Virtual Cell supports moving boundary applications for 2D geometries using a movie boundary solver.  
+Specifying a velocity field for objects using the <bold>Kinematics</bold> tab in the Geometry workspace automatically invokes use of the moving boundary solver for simulations. 
+Either a constant value or a function can be used to describe the velocity of defined spatial objects within the simulation.
+<imgReference target="KinematicsTab.png"/>
+	</introduction>
+
+	<appearance>
+The kinematics tab in the geometry workspace displays two Tables.
+	<para>
+The top <bold>Spatial Objects Table</bold> identifies the different spatial objects in the BioModel along with the associated properties that can be used in kinematic expressions for each object.
+	<imgReference target="SpatialObjectsTable.png"/>
+	<list>
+	<item><bold>Volume Objects</bold> are defined by the BioModel structures and can use properties of <bold>centroid, velocity and size</bold>.</item>
+	<item><bold>Surface Objects</bold> are defined by the BioModel structures and can use properties of <bold>normal, velocity, distance, direction, and size</bold>.</item>
+	<item><bold>Point Objects</bold> are defined in the kinematics and can use properties of <bold>position (x and y coordinates), velocity, direction, and distance</bold>.</item>
+	</list>
+	</para>
+	Each type of Object has a Properties Pane that allows the user to select the properties that will be used to define the kinematics.  See the appropriate Properties Pane information for each type of spatial Object.
+	<para><bold>Add</bold> a new Point Object in the Spatial Objects table using the <bold>New</bold> button.
+	</para>
+	<bold>Delete</bold> a selected Point Object in the Spatial Objects table using the <bold>Delete</bold> button.
+	<list>
+	<item><link target="PP_KinematicsPointObject">Point Object Properties Pane</link></item>
+	<item><link target="PP_KinematicsSurfaceObject">Surface Object Properties Pane</link></item>	
+	<item><link target="PP_KinematicsVolumeObject">Volume Object Properties Pane</link></item>
+	</list>
+	</appearance>
+
+	<operations>
+The lower <bold>Spatial Process</bold> table defines the movement of objects in the simulation.
+	<imgReference target="SpatialProcessTable.png"/>
+	<list>
+	<item><bold>Surface Kinematics</bold> (sproc) define membrane velocities</item>
+	<item><bold>Volume Kinematics</bold> (vproc) define volume velocities</item>
+	<item><bold>Point Location Processes</bold> (pproc) define point locations over time (x and y coordinates)</item>
+	<item><bold>Point Kinematics</bold> (pproc) define point initial positions and velocities</item>
+	</list>
+	
+	<para><bold>Add</bold> a new Spatial Process by first selecting a spatial object and then use the dropdown box in the <bold>New</bold> button in the Spatial Process Table.</para> 
+	<bold>Add or Edit</bold> the expression for velocity using the properties enabled for that object. See the Properties Pane information for each type of spatial process. 
+	<list>
+	<item><link target="PP_KinematicsPointLocationProcess">Point Location</link></item>
+	<item><link target="PP_KinematicsPointProcess">Point Kinematic Process</link></item>	
+	<item><link target="PP_KinematicsSurfaceProcess">Surface Kinematic Process</link></item>	
+	<item><link target="PP_KinematicsVolumeProcess">Volume Kinematic Process</link></item>
+	</list>
+	
+	</operations>
+</page>
+
+</vcelldoc>

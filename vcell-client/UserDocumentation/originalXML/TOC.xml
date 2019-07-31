@@ -70,6 +70,7 @@
    		   			<tocitem target="geom_spatial_mapping" text="Spatial"/>
    		   			<tocitem target="geom_nonspatial_mapping" text="Non-Spatial"/>
    		   		</tocitem>
+				<tocitem target="Kinematics" text="Kinematics"/>
     		</tocitem>
     		<tocitem target="SpecificationsOverview" text="Specifications">
     	   		<tocitem target="SpeciesSpecifications" text="Species">
@@ -135,12 +136,18 @@
    	   		<tocitem target="VCellDatabase" text="VCell Database"/>
    	   		<tocitem target="BioModelsNet" text="BioModels Database"/>
    	   		<tocitem target="PathwayCommonsPanel" text="Pathway Commons Database"/>
-   	   		<tocitem target="SabioRK" text="SABIO-RK Database"/>
    		</tocitem>
 	    <tocitem target="PropertiesPaneOverview" text="Properties Panes">
 	    	<tocitem target="PP_ApplicationProps" text="Application Info Properties Pane"/>
 	    	<tocitem target="PP_VCellDatabaseInfo" text="Database Info Properties Pane"/>
 			<tocitem target="PP_Annotations" text="Annotations Properties Pane"/>
+			<tocitem target="PP_KinematicsPointLocationProcess" text="Point Location Process Kinematics Properties Pane"/>
+			<tocitem target="PP_KinematicsPointObject" text="Point Object Kinematics Properties Pane"/>			
+			<tocitem target="PP_KinematicsPointProcess" text="Point Process Kinematics Properties Pane"/>			
+			<tocitem target="PP_KinematicsSurfaceObject" text="Surface Object Kinematics Properties Pane"/>			
+			<tocitem target="PP_KinematicsSurfaceProcess" text="Surface Process Kinematics Properties Pane"/>			
+			<tocitem target="PP_KinematicsVolumeObject" text="Volume Object Kinematics Properties Pane"/>			
+			<tocitem target="PP_KinematicsVolumeProcess" text="Volume Process Kinematics Properties Pane"/>			
 	    	<tocitem target="PP_MemFlux" text="Membrane Flux Properties Pane"/>
 	    	<tocitem target="PP_Molecules" text="Molecules Properties Pane"/>
 	    	<tocitem target="PP_Observables" text="Observables Properties Pane"/>	    	
@@ -155,6 +162,7 @@
 	    	<tocitem target="PP_Structures" text="Structures Properties Pane"/>
 		</tocitem>
 	    <tocitem target="AppendixOverview" text="Appendix">
+			<tocitem target="AnnotationProviders" text="UID Providers for Annotations"/>
 	    	<tocitem target="Definitions" text="Definitions"/>
 	    	<tocitem target="Errors" text="Errors"/>
 	    	<tocitem target="Warnings" text="Warnings"/>

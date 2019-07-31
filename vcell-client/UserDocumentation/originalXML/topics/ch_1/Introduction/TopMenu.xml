@@ -1,12 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <vcelldoc>
 <page title="Top Menu">
-	
-	<introduction>
-	This section describes the general menu options available to the user when a VCell document (<bold>Biomodel/Mathmodel/Geometry</bold>) is created or opened.  	
+		<introduction>
+	This section describes the general menu options available to the user when a VCell document (<bold>Biomodel/Mathmodel/Geometry</bold>) is created or opened.	
 	</introduction>
-	
-	<appearance>
+		<appearance>
 		<imgReference target = "TopMenuBar.png"/>
 	</appearance>
 	
@@ -14,7 +12,7 @@
 	The top menu options available to the user are
 	<list>
  	  <item>
-	     <link target = "File">File</link>,  
+	     <link target = "File">File</link>,
 	  </item>
  	  <item>     
          <link target = "Account">Account</link>,
@@ -22,13 +20,13 @@
 	  <item>
          <link target = "Window">Window</link>,
      	  </item>
-	  <item>         
+	  <item>
          <link target = "Tools">Tools</link> and
 	  </item>
-	  <item>         
-         <link target = "Help">Help</link>.          	
+	  <item>
+         <link target = "Help">Help</link>.
 	  </item>
-	</list> 
+	</list>
 
 	</operations>
 	

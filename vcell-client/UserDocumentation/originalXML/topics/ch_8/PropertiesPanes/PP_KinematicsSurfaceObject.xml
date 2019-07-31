@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<vcelldoc>
+<page title="Surface Object Kinematics Properties Pane">
+
+	<introduction>
+When a <bold>Spatial Object</bold> is selected, Object Properties are displayed for that Object.  
+The Surface Object Kinematics Properties Pane is used to display and enable properties that will be used to describe the surface's kinematic process.
+	</introduction>
+	<appearance>
+		<imgReference target="PP_KinematicsSurfaceObject.png"/>
+	</appearance>
+	<operations>
+Use the <bold>check box</bold> to enable those properties that will be used to describe the kinematics for the selected object.
+	<para>
+When a <bold>Surface Object</bold> is selected, the table displays
+	<list>
+	<item><bold>Surface Normal</bold> to specify the x and y component of the normal to the surface. (z is not used because the current solver is limited to 2D)</item>
+	<item><bold>Surface Velocity</bold> to specify the x and y components of the surface velocity.</item>
+	<item><bold>Distance to Surface</bold> to specify the shortest distance from a point object to the surface.</item>
+	<item><bold>Direction to Surface</bold> to specify the x and y direction from a point object to the surface.</item>
+	<item><bold>Surface Size</bold> to specify the surface area.</item>
+	</list>
+	</para>
+	</operations>
+
+</page>
+
+</vcelldoc>

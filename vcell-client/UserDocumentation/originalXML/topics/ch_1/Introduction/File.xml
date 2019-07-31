@@ -14,13 +14,13 @@
 	Clicking the File menu displays a popup menu with the following choices: 
 	<list>
  	  <item>
-		<link target = "New">New</link>,
+		<link target = "New">New</link>
 	  </item>
 	  <item>	  
-		<link target = "Open">Open</link>,
+		<link target = "Open">Open</link>
 	  </item>
 	  <item>		
-		<bold> Close </bold> - closes the currently open document,
+		<bold> Close </bold> - closes the currently open document.
 	  </item>
 	  <item>
 		<bold> Save </bold> - saves the current document to database, overwriting the older version. Note that this menu option is disabled for a new document. 
@@ -36,32 +36,32 @@
  		<para>
  	  <list>
 	  <item>		
-		<bold> Save New Version </bold> - saves copy of document to database as a new version (with same name but latest time stamp),
+		<bold> Save New Version </bold> - saves copy of document to database as a new version (with same name but latest time stamp).
 	  </item>
 	  <item>		
-		<link target = "SaveAs">Save As...</link> - saves copy of document to database with new name,
+		<link target = "SaveAs">Save As...</link> - saves copy of document to database with new name.
 	  </item>
 	  <item>		
-		<bold>Save As Local...</bold> - saves copy of current document to users local computer (see <link target = "Export">Export...</link>),
+		<bold>Save As Local...</bold> - saves copy of current document to users local computer (see <link target = "Export">Export...</link>).
 	  </item>
 	  <item>		
-		<link target = "RevertToSaved">Revert To Saved</link>,
+		<link target = "RevertToSaved">Revert To Saved</link>
 	  </item>
 	  <item>
-		<bold>Compare With Saved</bold> -  compares the currently open document with its latest saved version in the database and displays the result in a separate window. 
+		<bold>Compare With Saved</bold> - compares the currently open document with its latest saved version in the database and displays the result in a separate window. 
 		Refer to the section on <link target = "ManageDBCompareWith">Compare With</link> for further information. 
 	  </item>
 	  <item>
-		<link target = "Permissions">Permissions...</link>,
+		<link target = "Permissions">Permissions...</link>
 	  </item>
 	  <item>
-		<link target = "FieldData">Field Data...</link>,
+		<link target = "FieldData">Field Data...</link>
 	  </item>
 	  <item>		
-		<link target = "Import">Import...</link>,
+		<link target = "Import">Import...</link>
 	  </item>
 	  <item>
-		<link target = "Export">Export...</link>,
+		<link target = "Export">Export...</link>
 	  </item>
 	  <item>		
 		<bold>Exit</bold> - exits the Virtual Cell, closing all open documents and prompting user to save any unsaved document(s).

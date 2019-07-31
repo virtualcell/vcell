@@ -4,7 +4,7 @@
 
 	
 	<introduction>
-	<link target="http://www.ebi.ac.uk/biomodels-main/">'BioModels Database' (http://www.ebi.ac.uk/biomodels-main/)</link> database is a data resource that allows researchers to store, search and retrieve published mathematical models of biological interest.	
+	<link target="http://www.ebi.ac.uk/biomodels/">BioModels Database</link> database is a data resource that allows researchers to store, search and retrieve published mathematical models of biological interest.	
 	The database contains a list of curated models stored in SBML (Systems Biology Markup Language) format, and that can be converted to and from a set of limited representative formats.  
 	</introduction>
 	

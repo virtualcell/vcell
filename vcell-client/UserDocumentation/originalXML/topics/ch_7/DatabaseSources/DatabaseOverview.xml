@@ -19,7 +19,6 @@
 		<item> <link target="VCellDatabase">VCell database (internal)</link> </item>
 		<item> <link target="BioModelsNet">'BioModels Database' repository (external)</link> </item>
 		<item> <link target="PathwayCommonsPanel">Pathway Commons repository (external)</link> </item>
-		<item> <link target="SabioRK">Sabio-RK repository (external)</link> (available in VCell soon)</item>
 	</list>
 	For more information about the external model repositories visit their respective web sites:
 	<list>

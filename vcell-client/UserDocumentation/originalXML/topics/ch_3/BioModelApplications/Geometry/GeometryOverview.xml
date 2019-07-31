@@ -22,11 +22,14 @@ Geometries can be viewed as:
 <item>Individual image planes in the x,y,z dimension.</item>
 <item>Rendered surface boundaries between compartment regions.</item>
 </list>
+<link target="Kinematics">Kinematics</link> can be used to specify velocities of spatial objects in applications that employing moving boundaries.  The current moving boundary solver can be used for 2D geometries only.
+<para>
 The Geometry domain (origin and extent) can be edited. The geometry can be exported in different surface mesh formats by clicking the <bold>Export...</bold> button.  
 Analytic geometries functions can be edited in place by double-clicking the table cell containing the analytic expression.
 An analytic geometry can be converted to an <link target="geom_from_images">Image Geometry</link> by clicking the <bold>Edit Image</bold> button.
 The currently defined geometry can be changed (replaced).  
 <imgReference target = "frm_geometry_overview.png"/>
+</para>
 </introduction>
 	
 </page>

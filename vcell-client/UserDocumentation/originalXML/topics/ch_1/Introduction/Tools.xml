@@ -15,7 +15,7 @@
 	     <link target = "LaunchVirtualFRAP">Launch Virtual FRAP</link> - opens VirtualFRAP, a tool to analyze fluorescence photobleaching experiments using VCell spatial modeling technology.  
 	  </item>
 	  <item>
-	  	<bold>Start ImageJ Service</bold> - creates a link to ImageJ running on the host computer.  This service is currently under development.
+	  	<bold>Start ImageJ Service</bold> - allows the VCell client to accept commands from an ImageJ plugin.  An ImageJ plugin to use VCell from ImageJ is currently under development.
 	  </item>
  	  <item>
 	     <link target = "TransformToStochCapable">Transform to Stochastic Capable</link> - launches a tool to convert a deterministic model to a stochastic-capable model, where possible.  

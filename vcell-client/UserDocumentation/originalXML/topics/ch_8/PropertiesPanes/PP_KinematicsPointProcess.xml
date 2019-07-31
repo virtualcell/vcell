@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<vcelldoc>
+<page title="Point Process Kinematics Properties Pane">
+
+	<introduction>
+The Point Kinematics Process Properties Pane is used to display and edit properties of a kinematic process involving a point object.
+	</introduction>
+	<appearance>
+		<imgReference target="PP_KinematicsPointProcess.png"/>
+	</appearance>
+	<operations>
+	When a <bold>Point kinematic Process</bold> is selected an expression can be entered or edited for the volume velocity.
+	<para>
+	<bold>Add or Edit</bold> an expression in the Expression column in the table.  
+	The expression can use any of the properties previously selected for that object in the <link target="PP_KinematicsPointObject">Point Object Properties Pane</link>. When entering an expression, a dropdown box will appear to select enabled properties as you type, or press the space bar to view the dropdown menu of all available object properties enabled for the velocity expression.
+	</para>
+	<para>
+	Once you enter an Expression for the locations in x,and y, if you later uncheck the box that enables that property in the Point Object Property Pane, an error symbol will appear next to the Object in the <bold>Object Table</bold>, with an explanation for the error displayed in the <link target="PP_Problems">Problems</link> tab of the Properties Pane.
+	</para>
+	<para>Note that the size of the computational should be large enough to contain the object for the entire time course of any simulations.
+	The computational domain can be adjusted in using the <bold>Edit Domain</bold> button in the <bold>Geometry Definition Tab</bold> of the <link target="GeometryOverview">Geometry</link> workspace.
+	</para>
+ 	</operations>
+
+</page>
+
+</vcelldoc>

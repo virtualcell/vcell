@@ -11,6 +11,7 @@
 	
 	<operations>  
 	<list>
+	<item><link target="AnnotationProviders">UID Providers for Annotations</link></item>
 	<item><link target="Definitions">Definitions</link></item>
 	<item><link target="Errors">Error Codes</link></item>
 	<item><link target="Warnings">Warnings</link></item>
