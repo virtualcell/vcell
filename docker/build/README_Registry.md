@@ -33,12 +33,20 @@ $GOPATH/bin/deckschrubber -day 30 -registry https://vcell-docker.cam.uchc.edu:50
 ##Renew self-signed certs for docker registry
 
 ```bash
+common ssl comands -> https://www.sslshopper.com/article-most-common-openssl-commands.html
 ssh vcell@vcell-docker
 cd /usr/local/deploy
 //check when current cert ends
 openssl x509 -in ./registry_certs/new.crt -noout -enddate
 //create new request using the same key as old cert
 openssl req -new -key ./registry_certs/domain.key -out ./registry_certs/new.csr
+	Country Name (2 letter code) [XX]:US
+	State or Province Name (full name) []:.
+	Locality Name (eg, city) [Default City]:.
+	Organization Name (eg, company) [Default Company Ltd]:UCHC
+	Organizational Unit Name (eg, section) []:CCAM
+	Common Name (eg, your name or your server's hostname) []:dockerregistry
+	Email Address []:.
 //check new.csr
 openssl req -in ./registry_certs/new.csr  -noout -text
 //create new certificate using csr and old key

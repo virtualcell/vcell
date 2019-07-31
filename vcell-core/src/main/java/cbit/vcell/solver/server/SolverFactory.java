@@ -91,7 +91,7 @@ public class SolverFactory {
 		FACTORY.put(SolverDescription.Smoldyn, (t,d,pwd,m) -> new SmoldynSolver(t, d,m) ); 
 		FACTORY.put(SolverDescription.NFSim, (t,d,pwd,m) -> new NFSimSolver(t, d,m) ); 
 		FACTORY.put(SolverDescription.MovingBoundary, (t,d,pwd,m) -> new MovingBoundarySolver(t, d,m) ); 
-//		FACTORY.put(SolverDescription.Comsol, (t,d,pwd,m) -> new ComsolSolver(t, d) ); 
+		FACTORY.put(SolverDescription.Comsol, (t,d,pwd,m) -> new ComsolSolver(t, d) ); 
 	}
 	
 public static Solver createSolver(File userDir, SimulationTask simTask, boolean bMessaging) throws SolverException {

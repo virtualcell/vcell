@@ -37,6 +37,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
+import java.nio.file.Files;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
@@ -48,6 +50,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Random;
 import java.util.StringTokenizer;
+import java.util.TreeSet;
 import java.util.Vector;
 import java.util.zip.DataFormatException;
 import java.util.zip.GZIPInputStream;
@@ -2320,6 +2323,10 @@ private final static String BYTES_KEY = "bytes";
  * Comment
  */
 public static void downloadExportedData(final Component requester, final UserPreferences userPrefs, final ExportEvent evt) {
+	TreeSet<String> exportsRecord = getExportsRecord();
+	if(exportsRecord.contains(evt.getJobID()+"")) {
+		return;
+	}
 	AsynchClientTask task1 = new AsynchClientTask("Retrieving data from '"+evt.getLocation()+"'", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 
 		@Override
@@ -2505,6 +2512,8 @@ public static void downloadExportedData(final Component requester, final UserPre
 
 		@Override
 		public void run(Hashtable<String, Object> hashTable) throws Exception {
+			addExportRecord(evt.getJobID()+"");
+			
 			File selectedFile = (File)hashTable.get("selectedFile");
 			if (selectedFile == null) {
 				return;
@@ -2529,6 +2538,32 @@ public static void downloadExportedData(final Component requester, final UserPre
 		}
 	};
 	ClientTaskDispatcher.dispatch(requester, new Hashtable<String, Object>(), new AsynchClientTask[] {task1, task2, task3}, false,true,null);
+}
+
+private static String EXPORT_RECORD_FILE_NAME = "exportRecords";
+private static TreeSet<String> getExportsRecord(){
+	try {
+		if(ResourceUtil.getVcellHome() != null) {
+			File exportRecordsFile = new File(ResourceUtil.getVcellHome(), EXPORT_RECORD_FILE_NAME);
+			if(exportRecordsFile.exists()) {
+				List<String> exportRecordsList = Files.readAllLines(exportRecordsFile.toPath());
+				return new TreeSet<String>(exportRecordsList);
+			}
+		}
+	} catch (Exception e) {
+		e.printStackTrace();
+	}
+	return new TreeSet<String>();
+}
+private static void addExportRecord(String exportRecord) {
+	try {
+		if(ResourceUtil.getVcellHome() != null) {
+			File exportRecordsFile = new File(ResourceUtil.getVcellHome(), EXPORT_RECORD_FILE_NAME);
+			Files.write(exportRecordsFile.toPath(), (exportRecord+System.lineSeparator()).getBytes(), StandardOpenOption.CREATE,StandardOpenOption.WRITE,StandardOpenOption.APPEND);
+		}
+	} catch (Exception e) {
+		e.printStackTrace();
+	}
 }
 
 public void exitApplication() {
