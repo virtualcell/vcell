@@ -28,13 +28,13 @@ public class ApplicationProtocolsPanel extends ApplicationSubPanel {
 	private EventsDisplayPanel eventsDisplayPanel;
 	private ElectricalMembraneMappingPanel electricalMembraneMappingPanel;
 	private MicroscopeMeasurementPanel microscopeMeasurementPanel;
-	private RateRulesDisplayPanel rateRulesDisplayPanel;
+//	private RateRulesDisplayPanel rateRulesDisplayPanel;
 	
 	private enum ProtocolsPanelTabID {
 		events("Events"),
 		electrical("Electrical"),
-		microscope_measurements("Microscope Measurements"),
-		rate_rules("Rate Rules");
+		microscope_measurements("Microscope Measurements");
+//		rate_rules("Rate Rules");
 		
 		String title = null;
 		ProtocolsPanelTabID(String name) {
@@ -66,13 +66,13 @@ public class ApplicationProtocolsPanel extends ApplicationSubPanel {
 		eventsDisplayPanel = new EventsDisplayPanel();
 		electricalMembraneMappingPanel = new ElectricalMembraneMappingPanel();
 		microscopeMeasurementPanel = new MicroscopeMeasurementPanel();
-		rateRulesDisplayPanel = new RateRulesDisplayPanel();
+//		rateRulesDisplayPanel = new RateRulesDisplayPanel();
 		
 		protocolPanelTabs = new ProtocolsPanelTab[ProtocolsPanelTabID.values().length]; 
 		protocolPanelTabs[ProtocolsPanelTabID.events.ordinal()] = new ProtocolsPanelTab(ProtocolsPanelTabID.events, eventsDisplayPanel, null);
 		protocolPanelTabs[ProtocolsPanelTabID.electrical.ordinal()] = new ProtocolsPanelTab(ProtocolsPanelTabID.electrical, electricalMembraneMappingPanel, null);
 		protocolPanelTabs[ProtocolsPanelTabID.microscope_measurements.ordinal()] = new ProtocolsPanelTab(ProtocolsPanelTabID.microscope_measurements, microscopeMeasurementPanel, null);
-		protocolPanelTabs[ProtocolsPanelTabID.rate_rules.ordinal()] = new ProtocolsPanelTab(ProtocolsPanelTabID.rate_rules, rateRulesDisplayPanel, null);
+//		protocolPanelTabs[ProtocolsPanelTabID.rate_rules.ordinal()] = new ProtocolsPanelTab(ProtocolsPanelTabID.rate_rules, rateRulesDisplayPanel, null);
 		
 		for (ProtocolsPanelTab tab : protocolPanelTabs) {
 			tab.component.setBorder(GuiConstants.TAB_PANEL_BORDER);
@@ -91,14 +91,14 @@ public class ApplicationProtocolsPanel extends ApplicationSubPanel {
 		super.setSimulationContext(newValue);
 //		electricalMembraneMappingPanel.setSimulationContext(simulationContext);
 		showOrHideSubpanels();
-		rateRulesDisplayPanel.setSimulationContext(simulationContext);
+//		rateRulesDisplayPanel.setSimulationContext(simulationContext);
 	}
 	
 	@Override
 	public void setSelectionManager(SelectionManager selectionManager) {
 		super.setSelectionManager(selectionManager);
 		eventsDisplayPanel.setSelectionManager(selectionManager);
-		rateRulesDisplayPanel.setSelectionManager(selectionManager);
+//		rateRulesDisplayPanel.setSelectionManager(selectionManager);
 	}
 
 	private void showOrHidePanel(ProtocolsPanelTabID tabID, boolean bShow) {
@@ -131,7 +131,7 @@ public class ApplicationProtocolsPanel extends ApplicationSubPanel {
 		showOrHideEventsPanel();
 		showOrHideelectricalMembraneMappingPanel();
 		showOrHideMicroscopeMeasurementPanel();
-		showOrHideRateRulesPanel();
+//		showOrHideRateRulesPanel();
 	}
 	
 	private void showOrHideelectricalMembraneMappingPanel() {
@@ -158,13 +158,13 @@ public class ApplicationProtocolsPanel extends ApplicationSubPanel {
 		}
 	}
 
-	private void showOrHideRateRulesPanel() {
-		boolean bShow = simulationContext.getGeometry().getDimension() == 0 && !simulationContext.isStoch();
-		showOrHidePanel(ProtocolsPanelTabID.rate_rules, bShow);
-		if (bShow) {
-			rateRulesDisplayPanel.setSimulationContext(simulationContext);
-		}
-	}
+//	private void showOrHideRateRulesPanel() {
+//		boolean bShow = simulationContext.getGeometry().getDimension() == 0 && !simulationContext.isStoch();
+//		showOrHidePanel(ProtocolsPanelTabID.rate_rules, bShow);
+//		if (bShow) {
+//			rateRulesDisplayPanel.setSimulationContext(simulationContext);
+//		}
+//	}
 
 	@Override
 	public ActiveView getActiveView() {
@@ -176,8 +176,8 @@ public class ApplicationProtocolsPanel extends ApplicationSubPanel {
 			activeViewID =  ActiveViewID.electrical;
 		} else if (selectedComponent == microscopeMeasurementPanel) {
 			activeViewID = ActiveViewID.microscope_measuremments;
-		} else if (selectedComponent == rateRulesDisplayPanel) {
-			activeViewID =  ActiveViewID.rateRules;
+//		} else if (selectedComponent == rateRulesDisplayPanel) {
+//			activeViewID =  ActiveViewID.rateRules;
 		}
 		return new ActiveView(simulationContext, DocumentEditorTreeFolderClass.PROTOCOLS_NODE, activeViewID);
 	}
