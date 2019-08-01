@@ -738,14 +738,14 @@ private void changeTextAnnotation() {
 		if (bioModel == null || selectedObject == null) {
 			return;
 		}
-
+		Identifiable entity = getIdentifiable(selectedObject);
 		String textAreaStr = (annotationTextArea.getText() == null || annotationTextArea.getText().length()==0?null:annotationTextArea.getText());
-		String oldText = bioModel.getVCMetaData().getFreeTextAnnotation(selectedObject);
+		String oldText = bioModel.getVCMetaData().getFreeTextAnnotation(entity);
 
 		if(emptyHtmlText.equals(textAreaStr)) {						// no annotation now, the field is empty
-			bioModel.getVCMetaData().deleteFreeTextAnnotation(selectedObject);	// delete, if there's something previously saved
+			bioModel.getVCMetaData().deleteFreeTextAnnotation(entity);	// delete, if there's something previously saved
 		} else if(!Compare.isEqualOrNull(oldText,textAreaStr)) {	// some text annotation different from what's already saved
-			bioModel.getVCMetaData().setFreeTextAnnotation(selectedObject, textAreaStr);	// overwrite
+			bioModel.getVCMetaData().setFreeTextAnnotation(entity, textAreaStr);	// overwrite
 		}
 	} catch(Exception e){
 		e.printStackTrace(System.out);
@@ -783,7 +783,7 @@ private void updateInterface() {
 		VCMetaDataDataType mdt = (VCMetaDataDataType)getJComboBoxURI().getSelectedItem();
 		miriamTreeModel.createTree(entity);
 		
-		String freeText = bioModel.getVCMetaData().getFreeTextAnnotation(selectedObject);
+		String freeText = bioModel.getVCMetaData().getFreeTextAnnotation(entity);
 		if(freeText == null || freeText.isEmpty()) {
 			annotationTextArea.setText(null);
 		} else {
