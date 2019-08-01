@@ -131,6 +131,7 @@ public class SBMLAnnotationUtil {
 		if(identifiable == root && rdfChunk != null) { 
 			rdfChunk.addAll(chopper.getRemains());
 		}
+		String strRdfAnnotations = null;
 		XMLNode rootRDF = null;
 		if (rdfChunk != null && metaData.getBaseURIExtended() != null) {
 			Element element = XMLRDFWriter.createElement(rdfChunk, nsSBML);
@@ -145,17 +146,18 @@ public class SBMLAnnotationUtil {
 			} else {
 				XMLNamespaces xmlnss = new XMLNamespaces();
 				xmlnss.add(DefaultNameSpaces.RDF.uri, DefaultNameSpaces.RDF.prefix);
-//				xmlnss.add(DefaultNameSpaces.BQBIOL.uri, DefaultNameSpaces.BQBIOL.prefix);
-//				xmlnss.add(DefaultNameSpaces.BQMODEL.uri, DefaultNameSpaces.BQMODEL.prefix);
-				String str = XmlUtil.xmlToString(element);
-				str = "<annotation>" + str;
-				str += "</annotation>";
-				rootRDF = XMLNode.convertStringToXMLNode(str, xmlnss);
+				strRdfAnnotations = XmlUtil.xmlToString(element);
+				// TODO: for some reason, converting strRdfAnnotations directly to rootRDF node through XMLNode.convertStringToXMLNode isn't working
+				// we need to use the trick below to create a temp root annotation and extract the rootRdf node from it
+				strRdfAnnotations = "<annotation>" + strRdfAnnotations;
+				strRdfAnnotations += "</annotation>";
+				XMLNode tempRootAnnotation = XMLNode.convertStringToXMLNode(strRdfAnnotations, xmlnss);
+				int numChildren = tempRootAnnotation.getNumChildren();		// it's supposed to be exactly one, the rdf root node
+				rootRDF = tempRootAnnotation.getChild(0);
 			}
 		}
 		if (rootRDF != null && rootRDF.getNumChildren() > 0) {
-//			rootAnnotation.addChild(rootRDF);
-			sBase.setAnnotation(rootRDF);
+			rootAnnotation.addChild(rootRDF);		// add the rdf root node which may contain multiple rdf annotations
 		}
 		
 		// Deal with the non-RDF; VCell free-text annotations
@@ -178,7 +180,7 @@ public class SBMLAnnotationUtil {
 			}
 		}
 		if (rootVCellInfo.getNumChildren() > 0) {
-			rootAnnotation.addChild(rootVCellInfo);
+			rootAnnotation.addChild(rootVCellInfo);		// add the vcellinfo root node which may contain the free text annotation
 		}
 		
 		// Deal with the non-RDF (other tool-related?) annotation
@@ -441,6 +443,7 @@ public class SBMLAnnotationUtil {
 		if(ret == null || ret.isEmpty()) {
 			return ret;
 		}
+//		ret = ret.replace("&lt;", "<");
 		String result = "";
 		while(true) {
 			if(!ret.contains(sameAs)) {
