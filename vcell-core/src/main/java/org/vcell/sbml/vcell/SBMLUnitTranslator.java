@@ -129,11 +129,23 @@ private static ArrayList<Unit> convertVCUnitsToSbmlUnits_NOT_USED(double unitMul
 //	return null;
 }
 
+public static boolean isDouble(String s) {
+	try {
+		Double.parseDouble(s);
+		return true;
+	} catch(NumberFormatException e) {
+		return false;
+	}
+}
 
 public static UnitDefinition getSBMLUnitDefinition(VCUnitDefinition vcUnitDefn, int level, int version, VCUnitSystem vcUnitSystem) throws SbmlException {
 	final UnitDefinition sbmlUnitDefn = new UnitDefinition(3,1);
 	if (vcUnitDefn.isCompatible(vcUnitSystem.getInstance_DIMENSIONLESS())){
-		double multiplier = Double.parseDouble(vcUnitDefn.getSymbol());
+		double multiplier = 1.0;
+		String symbol = vcUnitDefn.getSymbol();
+		if(isDouble(symbol)) {
+			multiplier = Double.parseDouble(symbol);
+		}
 		sbmlUnitDefn.addUnit(new Unit(multiplier,0,Kind.DIMENSIONLESS,1.0,3,1));
 		return sbmlUnitDefn;
 	}

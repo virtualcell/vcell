@@ -116,6 +116,8 @@ import cbit.vcell.model.LumpedKinetics;
 import cbit.vcell.model.Membrane;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Model.ModelParameter;
+import cbit.vcell.model.Model.ReservedSymbol;
+import cbit.vcell.model.Model.ReservedSymbolRole;
 import cbit.vcell.model.Model.StructureTopology;
 import cbit.vcell.model.ModelUnitSystem;
 import cbit.vcell.model.Parameter;
@@ -453,6 +455,56 @@ protected void addParameters() throws ExpressionException, SbmlException {
 			sbmlParamAssignmentRule.setMath(paramFormulaNode);
 		}
 		sbmlParam.setConstant(bParamIsNumeric);
+		VCUnitDefinition vcParamUnit = vcParam.getUnitDefinition();
+		if (!vcParamUnit.isTBD()) {
+			sbmlParam.setUnits(getOrCreateSBMLUnit(vcParamUnit));
+		}
+	}
+	}
+	
+	ReservedSymbol[] vcReservedSymbols = vcModel.getReservedSymbols();  
+	if (vcReservedSymbols != null) {
+	for (ReservedSymbol vcParam : vcReservedSymbols) {
+		if(vcParam.isTime() || vcParam.isX() || vcParam.isY() || vcParam.isZ()) {
+			continue;
+		}
+		if(vcParam.getRole().equals(ReservedSymbolRole.KMILLIVOLTS)) {
+//			System.out.println("KMILLIVOLTS");
+//			continue;
+		}
+		if(vcParam.getRole().equals(ReservedSymbolRole.K_GHK)) {
+//			System.out.println("K_GHK");
+		}
+		
+		org.sbml.jsbml.Parameter sbmlParam = sbmlModel.createParameter();
+		sbmlParam.setId(vcParam.getName());
+		sbmlParam.setConstant(vcParam.isConstant());
+		
+		Expression reservedSymbolExpression = vcParam.getExpression();
+		if(reservedSymbolExpression == null) {
+			if(vcParam.isTemperature()) {
+				SimulationContext sc = getSelectedSimContext();
+				double T = sc.getTemperatureKelvin();
+				sbmlParam.setValue(T);
+				sbmlParam.setConstant(true);
+			}
+		} else {
+			Expression paramExpr = new Expression(reservedSymbolExpression);
+			boolean bParamIsNumeric = true;
+			if (paramExpr.isNumeric()) {
+				sbmlParam.setValue(paramExpr.evaluateConstant());
+				if (getSelectedSimContext().getRateRule(vcParam) != null) {
+					bParamIsNumeric = false;
+				}
+			} else {
+				bParamIsNumeric = false;
+				ASTNode paramFormulaNode = getFormulaFromExpression(paramExpr);
+				AssignmentRule sbmlParamAssignmentRule = sbmlModel.createAssignmentRule();
+				sbmlParamAssignmentRule.setVariable(vcParam.getName());
+				sbmlParamAssignmentRule.setMath(paramFormulaNode);
+			}
+			sbmlParam.setConstant(bParamIsNumeric);
+		}
 		VCUnitDefinition vcParamUnit = vcParam.getUnitDefinition();
 		if (!vcParamUnit.isTBD()) {
 			sbmlParam.setUnits(getOrCreateSBMLUnit(vcParamUnit));

@@ -789,6 +789,9 @@ public class Model implements Versionable, Matchable, PropertyChangeListener, Ve
 	public boolean isTime() {
 		return (this.role.equals(ReservedSymbolRole.TIME));
 	}
+	public boolean isTemperature() {
+		return (this.role.equals(ReservedSymbolRole.TEMPERATURE));
+	}
 
 
 	@Override
