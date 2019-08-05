@@ -233,6 +233,8 @@ private void initQueueConsumer() {
 				}
 				synchronized (messageProducer_sim) {
 					WorkerEventMessage.sendAccepted(messageProducer_sim, HtcSimulationWorker.class.getName(), simTask, ManageUtils.getHostName(), pbsId);
+					WorkerEventMessage.sendStarting(messageProducer_sim, HtcSimulationWorker.class.getName(), simTask, ManageUtils.getHostName(), SimulationMessage.MESSAGE_WORKEREVENT_STARTING);
+					WorkerEventMessage.sendProgress(messageProducer_sim, HtcSimulationWorker.class.getName(), simTask, ManageUtils.getHostName(), 0, 0, SimulationMessage.MESSAGE_JOB_RUNNING_UNKNOWN);
 				}
 				if (lg.isInfoEnabled()) {
 					lg.info("onQueueMessage() sent 'accepted' message for job: simulation key="+simTask.getSimKey()+", job="+simTask.getSimulationJobID()+", task="+simTask.getTaskID()+" for user "+simTask.getUserName());
