@@ -19,15 +19,29 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
+import java.net.URLEncoder;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 import javax.swing.JButton;
 import javax.swing.JScrollPane;
@@ -40,22 +54,30 @@ import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 
+import org.apache.commons.io.IOUtils;
 import org.jdom.DataConversionException;
 import org.jdom.Element;
+import org.vcell.util.BeanUtils;
+import org.vcell.util.UnzipUtility;
 import org.vcell.util.document.VCDocumentInfo;
 import org.vcell.util.gui.CollapsiblePanel;
 
 import cbit.vcell.client.DocumentWindowManager;
+import cbit.vcell.client.desktop.biomodel.BioModelEditorPathwayCommonsPanel.PathwayCommonsKeyword;
+import cbit.vcell.client.desktop.biomodel.BioModelEditorPathwayCommonsPanel.PathwayCommonsVersion;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.desktop.BioModelNode;
+import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.xml.ExternalDocInfo;
 import uk.ac.ebi.www.biomodels_main.services.BioModelsWebServices.BioModelsWebServices;
 import uk.ac.ebi.www.biomodels_main.services.BioModelsWebServices.BioModelsWebServicesServiceLocator;
 
 @SuppressWarnings("serial")
 public class BioModelsNetPanel extends DocumentEditorSubPanel {
-	public static final String BIO_MODELS_NET = "BMDB";	
+	public static final String BIO_MODELS_NET = "BMDB";
+	private static final String defaultBaseURL = "https://www.ebi.ac.uk/biomodels/search/download?models=";
+
 
 	private class BioModelsNetTreeCellRenderer extends DefaultTreeCellRenderer  {
 		public BioModelsNetTreeCellRenderer() {
@@ -193,13 +215,63 @@ public class BioModelsNetPanel extends DocumentEditorSubPanel {
 		AsynchClientTask task1 = new AsynchClientTask("Importing " + bioModelsNetInfo.getName(), AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {		
 			@Override
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
-				BioModelsWebServicesServiceLocator bioModelsWebServicesServiceLocator =	new BioModelsWebServicesServiceLocator();
-				BioModelsWebServices bioModelsWebServices = bioModelsWebServicesServiceLocator.getBioModelsWebServices();
-				String bioModelSBML = bioModelsWebServices.getModelSBMLById(bioModelsNetInfo.getId());
+				String simDataDir = ResourceUtil.getLocalRootDir().getAbsolutePath();		// C:\Users\vasilescu\.vcell\simdata
+				String tempDir = simDataDir + File.separator + "temp";
+				String destDirectory = tempDir + File.separator + bioModelsNetInfo.getId();
+				String zipFilePath = destDirectory + ".zip";
+
+				byte[] responseContent = null;
+				URL url = new URL(defaultBaseURL + bioModelsNetInfo.getId());
+				ByteArrayOutputStream baos = new ByteArrayOutputStream();
+				InputStream is = null;
+				try {
+				  is = url.openStream ();
+				  byte[] byteChunk = new byte[4096]; // Or whatever size you want to read in at a time.
+				  int n;
+
+				  while ( (n = is.read(byteChunk)) > 0 ) {
+				    baos.write(byteChunk, 0, n);
+				  }
+				  responseContent = baos.toByteArray();
+				}
+				catch (IOException e) {
+				  System.err.printf ("Failed while reading bytes from %s: %s", url.toExternalForm(), e.getMessage());
+//				  e.printStackTrace ();
+				  throw new RuntimeException("Failed while reading bytes from: " + url.toExternalForm());
+				}
+				finally {
+				  if (is != null) { is.close(); }
+				}
+				if(responseContent == null) {
+					throw new RuntimeException("Failed while reading bytes from: " + url.toExternalForm());
+				}
+				
+				try {
+					File file = new File(zipFilePath);
+					Files.write(file.toPath(), responseContent, StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING);
+					UnzipUtility uu = new UnzipUtility();
+					uu.unzip(zipFilePath, destDirectory);
+				} catch(IOException e) {
+					e.printStackTrace();
+				}
+				
+				String unzippedPath = destDirectory + File.separator + bioModelsNetInfo.getId() + ".xml";
+				String bioModelSBML = new String(Files.readAllBytes(Paths.get(unzippedPath)), StandardCharsets.UTF_8);
+				
 				ExternalDocInfo externalDocInfo = ExternalDocInfo.createBioModelsNetExternalDocInfo(bioModelSBML, bioModelsNetInfo.getName());
 				if (externalDocInfo != null) {
 					hashTable.put("externalDocInfo", externalDocInfo);
 				}
+				System.out.println("done downloading");
+
+// TODO: old way of doing things
+//				BioModelsWebServicesServiceLocator bioModelsWebServicesServiceLocator =	new BioModelsWebServicesServiceLocator();
+//				BioModelsWebServices bioModelsWebServices = bioModelsWebServicesServiceLocator.getBioModelsWebServices();
+//				String bioModelSBML = bioModelsWebServices.getModelSBMLById(bioModelsNetInfo.getId());
+//				ExternalDocInfo externalDocInfo = ExternalDocInfo.createBioModelsNetExternalDocInfo(bioModelSBML, bioModelsNetInfo.getName());
+//				if (externalDocInfo != null) {
+//					hashTable.put("externalDocInfo", externalDocInfo);
+//				}
 			}
 		};
 		AsynchClientTask task2 = new AsynchClientTask("Opening",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {		
@@ -214,6 +286,25 @@ public class BioModelsNetPanel extends DocumentEditorSubPanel {
 		};
 		ClientTaskDispatcher.dispatch(documentWindowManager.getComponent(), new Hashtable<String, Object>(), new AsynchClientTask[] {task1, task2}, false);
 	}
+	
+//	private static final String UTF_8 = "UTF-8";
+//	public static String uncompressString(String str) throws IOException {
+//		if (str == null || str.length() == 0) {
+//			return str;
+//		}
+//		ByteArrayInputStream in = new ByteArrayInputStream(str.getBytes(UTF_8));
+//		GZIPInputStream gzip = new GZIPInputStream(in);
+//		ByteArrayOutputStream out = new ByteArrayOutputStream();
+//		byte[] b = new byte[1000];
+//		int len;
+//		while ((len = in.read(b)) > 0) {
+//			out.write(b, 0, len);
+//		}
+//		gzip.close();
+//		out.close();
+//		String uncompressedString = out.toString(UTF_8);
+//		return uncompressedString;
+//		}
 
 	public void treeSelectionChanged() {
 		importButton.setEnabled(false);
