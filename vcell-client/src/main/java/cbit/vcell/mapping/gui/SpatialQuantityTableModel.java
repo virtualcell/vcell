@@ -11,12 +11,16 @@
 package cbit.vcell.mapping.gui;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.LinkedList;
+import java.util.List;
 
 import org.vcell.util.gui.ScrollTable;
 
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.desktop.biomodel.VCellSortTableModel;
 import cbit.vcell.mapping.spatial.SpatialObject;
+import cbit.vcell.mapping.spatial.SpatialObject.QuantityCategory;
+import cbit.vcell.mapping.spatial.SpatialObject.QuantityComponent;
 import cbit.vcell.mapping.spatial.SpatialObject.SpatialQuantity;
 /**
  * Insert the type's description here.
@@ -124,7 +128,16 @@ private void refreshData() {
 	if (spatialObject == null){
 		setData(null);
 	} else {
-		setData(Arrays.asList(spatialObject.getSpatialQuantities()));
+		List<SpatialQuantity> actual = new LinkedList<>();
+		List<SpatialQuantity> all = Arrays.asList(spatialObject.getSpatialQuantities());
+		for(SpatialQuantity sc : all) {
+			// TODO: disable features not supported yet
+			QuantityComponent qk = sc.getQuantityComponent();
+			if(qk != QuantityComponent.Z) {
+				actual.add(sc);
+			}
+		}
+		setData(actual);
 	}
 }
 
@@ -143,6 +156,8 @@ public Object getValueAt(int row, int col) {
 				return spatialQuantity.getDescription();
 			}
 			case COLUMN_ENABLED:{
+				// the SpatialQuantity state (enabled or disabled) is not stored individually
+				// this returns the state of the QuantityCategory
 				return new Boolean(spatialQuantity.isEnabled());
 			}
 			case COLUMN_UNIT:{
