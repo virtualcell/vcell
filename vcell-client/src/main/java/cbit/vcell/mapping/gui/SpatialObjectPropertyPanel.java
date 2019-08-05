@@ -25,6 +25,8 @@ import org.vcell.util.gui.sorttable.JSortTable;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
 import cbit.vcell.mapping.spatial.SpatialObject;
 import cbit.vcell.mapping.spatial.SpatialObject.QuantityCategory;
+import cbit.vcell.mapping.spatial.SurfaceRegionObject;
+import cbit.vcell.mapping.spatial.VolumeRegionObject;
 import cbit.vcell.parser.ExpressionException;
 /**
  * This type was created in VisualAge.
@@ -168,6 +170,21 @@ void setSpatialObject(SpatialObject newValue) {
 			checkbox.addActionListener(actionListener);
 			checkbox.setText(category.description);
 			checkbox.setSelected(spatialObject.isQuantityCategoryEnabled(category));
+			checkbox.setBackground(Color.lightGray.brighter());
+			// TODO: disable features not supported yet
+			if(spatialObject instanceof SurfaceRegionObject) {
+				if(category.xmlName.contentEquals(QuantityCategory.SurfaceDistanceMap.xmlName)) {
+					checkbox.setEnabled(false);
+				}
+				if(category.xmlName.contentEquals(QuantityCategory.DirectionToSurface.xmlName)) {
+					checkbox.setEnabled(false);
+				}
+			}
+			if(spatialObject instanceof VolumeRegionObject) {
+				if(category.xmlName.contentEquals(QuantityCategory.Centroid.xmlName)) {
+					checkbox.setEnabled(false);
+				}
+			}
 			optionsPanel.add(checkbox);
 			System.out.println("adding checkbox for "+checkbox.getText());
 			optionsCheckboxes.add(checkbox);

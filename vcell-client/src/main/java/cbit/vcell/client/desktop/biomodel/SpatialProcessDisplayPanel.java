@@ -94,7 +94,9 @@ public class SpatialProcessDisplayPanel extends BioModelEditorApplicationRightSi
 				popup.add(newPointKinematicsMenuItem);
 				popup.add(newSurfaceKinematicsMenuItem);
 				popup.add(newVolumeKinematicsMenuItem);
-				
+				// TODO: disable features not supported yet
+				newPointLocationMenuItem.setEnabled(false);
+				newPointKinematicsMenuItem.setEnabled(false);
 				
 				popup.show(addNewButton, 0, addNewButton.getHeight());
 			}
