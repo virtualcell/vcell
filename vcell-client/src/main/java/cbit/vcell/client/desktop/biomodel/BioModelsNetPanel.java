@@ -258,6 +258,14 @@ public class BioModelsNetPanel extends DocumentEditorSubPanel {
 				String unzippedPath = destDirectory + File.separator + bioModelsNetInfo.getId() + ".xml";
 				String bioModelSBML = new String(Files.readAllBytes(Paths.get(unzippedPath)), StandardCharsets.UTF_8);
 				
+				try {
+					Files.deleteIfExists(Paths.get(zipFilePath));		// the original zip file
+					Files.deleteIfExists(Paths.get(unzippedPath));		// the unzipped SBML file
+					Files.deleteIfExists(Paths.get(destDirectory));		// its directory
+				} catch(IOException e) {
+					e.printStackTrace();
+				}
+				
 				ExternalDocInfo externalDocInfo = ExternalDocInfo.createBioModelsNetExternalDocInfo(bioModelSBML, bioModelsNetInfo.getName());
 				if (externalDocInfo != null) {
 					hashTable.put("externalDocInfo", externalDocInfo);
