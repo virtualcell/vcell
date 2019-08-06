@@ -14,11 +14,17 @@ public class BioModelsNetModelInfo {
 	private String id;
 	private String name;
 	private String link;
+	private boolean supported;
+	
 	public BioModelsNetModelInfo(String id, String name, String link) {
+		this(id, name, link, true);
+	}
+	public BioModelsNetModelInfo(String id, String name, String link, boolean supported) {
 		super();
 		this.id = id;
 		this.name = name;
 		this.link = link;
+		this.supported = supported;
 	}
 	public final String getId() {
 		return id;
@@ -28,6 +34,9 @@ public class BioModelsNetModelInfo {
 	}
 	public final String getLink() {
 		return link;
+	}
+	public final boolean isSupported() {
+		return supported;
 	}
 	
 }

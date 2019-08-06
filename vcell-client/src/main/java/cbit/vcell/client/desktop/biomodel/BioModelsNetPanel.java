@@ -10,6 +10,7 @@
 
 package cbit.vcell.client.desktop.biomodel;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
@@ -43,6 +44,7 @@ import java.util.zip.GZIPInputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
@@ -61,6 +63,7 @@ import org.vcell.util.BeanUtils;
 import org.vcell.util.UnzipUtility;
 import org.vcell.util.document.VCDocumentInfo;
 import org.vcell.util.gui.CollapsiblePanel;
+import org.vcell.util.gui.VCellIcons;
 
 import cbit.vcell.client.DocumentWindowManager;
 import cbit.vcell.client.desktop.biomodel.BioModelEditorPathwayCommonsPanel.PathwayCommonsKeyword;
@@ -68,6 +71,7 @@ import cbit.vcell.client.desktop.biomodel.BioModelEditorPathwayCommonsPanel.Path
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.desktop.BioModelNode;
+import cbit.vcell.desktop.VCellBasicCellRenderer;
 import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.xml.ExternalDocInfo;
 import uk.ac.ebi.www.biomodels_main.services.BioModelsWebServices.BioModelsWebServices;
@@ -77,9 +81,12 @@ import uk.ac.ebi.www.biomodels_main.services.BioModelsWebServices.BioModelsWebSe
 public class BioModelsNetPanel extends DocumentEditorSubPanel {
 	public static final String BIO_MODELS_NET = "BMDB";
 	private static final String defaultBaseURL = "https://www.ebi.ac.uk/biomodels/search/download?models=";
+//	private static final String BIOMODELS_DATABASE_URL = "http://www.ebi.ac.uk/biomodels-main/";
+
 
 
 	private class BioModelsNetTreeCellRenderer extends DefaultTreeCellRenderer  {
+		
 		public BioModelsNetTreeCellRenderer() {
 			super();
 			setPreferredSize(new Dimension(250,30));
@@ -100,6 +107,14 @@ public class BioModelsNetPanel extends DocumentEditorSubPanel {
 		        Object userObj = node.getUserObject();
 		    	if (userObj instanceof BioModelsNetModelInfo) {
 		    		text = ((BioModelsNetModelInfo) userObj).getName();
+		    		if(((BioModelsNetModelInfo) userObj).isSupported()) {
+		    			setIcon(VCellIcons.modelCuratedIcon);
+//		    			setTextNonSelectionColor(Color.black);
+		    		} else {
+		    			setIcon(VCellIcons.issueWarningIcon);
+//		    			setTextNonSelectionColor(Color.red.darker());
+		    		}
+		    		
 		    	} else if (userObj instanceof String) {
 		    		text = (String)userObj;
 		    	}
@@ -162,7 +177,6 @@ public class BioModelsNetPanel extends DocumentEditorSubPanel {
 		}
 	}
 	
-	private static final String BIOMODELS_DATABASE_URL = "http://www.ebi.ac.uk/biomodels-main/";
 	private DocumentWindowManager documentWindowManager = null;
 	private JTextField searchTextField;
 	private JButton searchButton = null;
@@ -211,7 +225,7 @@ public class BioModelsNetPanel extends DocumentEditorSubPanel {
 		if (!(userObject instanceof BioModelsNetModelInfo)) {
 			return;
 		}
-		final BioModelsNetModelInfo bioModelsNetInfo = (BioModelsNetModelInfo) userObject;
+		BioModelsNetModelInfo bioModelsNetInfo = (BioModelsNetModelInfo) userObject;
 		AsynchClientTask task1 = new AsynchClientTask("Importing " + bioModelsNetInfo.getName(), AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {		
 			@Override
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
@@ -358,7 +372,6 @@ public class BioModelsNetPanel extends DocumentEditorSubPanel {
 		         }
 		     }
 		 });
-				
 		CollapsiblePanel searchPanel = new CollapsiblePanel("Search", false);
 		searchPanel.getContentPanel().setLayout(new GridBagLayout());
 		GridBagConstraints gbc = new GridBagConstraints();
@@ -438,13 +451,11 @@ public class BioModelsNetPanel extends DocumentEditorSubPanel {
 			Element temp = (Element) ruleiterator.next();
 			//System.out.println(temp.getAttributeValue("TagName") + ":" + temp.getAttributeValue("AttrName"));
 			boolean bSupported = temp.getAttribute(BioModelsNetPanel.SUPPORTED_ATTRIBUTE_NAME).getBooleanValue();
-			if(bSupported){
-				String id = temp.getAttributeValue(BioModelsNetPanel.ID_ATTRIBUTE_NAME);
-				String name = temp.getAttributeValue(BioModelsNetPanel.MODELNAME_ATTRIBUTE_NAME);
-				vcellCompatibleBioModelsList.add(new BioModelsNetModelInfo(id, name, BIOMODELS_DATABASE_URL + "/" + id));
-			}
-		}
 
+			String id = temp.getAttributeValue(BioModelsNetPanel.ID_ATTRIBUTE_NAME);
+			String name = temp.getAttributeValue(BioModelsNetPanel.MODELNAME_ATTRIBUTE_NAME);
+			vcellCompatibleBioModelsList.add(new BioModelsNetModelInfo(id, name, defaultBaseURL + id, bSupported));
+		}
 		return vcellCompatibleBioModelsList;
 	}
 
