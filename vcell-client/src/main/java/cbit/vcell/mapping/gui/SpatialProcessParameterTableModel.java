@@ -11,15 +11,22 @@
 package cbit.vcell.mapping.gui;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.LinkedList;
+import java.util.List;
 
 import org.vcell.util.gui.ScrollTable;
 
 import cbit.gui.ScopedExpression;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.desktop.biomodel.VCellSortTableModel;
+import cbit.vcell.mapping.ParameterContext;
 import cbit.vcell.mapping.ParameterContext.LocalParameter;
+import cbit.vcell.mapping.ParameterContext.ParameterRoleEnum;
 import cbit.vcell.mapping.SpeciesContextSpec;
+import cbit.vcell.mapping.spatial.SpatialObject.QuantityComponent;
+import cbit.vcell.mapping.spatial.SpatialObject.SpatialQuantity;
 import cbit.vcell.mapping.spatial.processes.SpatialProcess;
+import cbit.vcell.mapping.spatial.processes.SpatialProcess.SpatialProcessParameterType;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.parser.AutoCompleteSymbolFilter;
 import cbit.vcell.parser.Expression;
@@ -141,10 +148,28 @@ public Class<?> getColumnClass(int column) {
  * @param row int
  */
 private void refreshData() {
-	if (spatialProcess == null){
+	if (spatialProcess == null) {
 		setData(null);
 	} else {
-		setData(Arrays.asList(spatialProcess.getParameters()));
+//		setData(Arrays.asList(spatialProcess.getParameters()));
+		List<ParameterContext.LocalParameter> actual = new LinkedList<>();
+		List<ParameterContext.LocalParameter> all = Arrays.asList(spatialProcess.getParameters());
+		for(ParameterContext.LocalParameter sc : all) {
+			// TODO: disable features not supported yet
+			ParameterRoleEnum pre = sc.getRole();
+			if(pre instanceof SpatialProcessParameterType) {
+				SpatialProcessParameterType sppt = (SpatialProcessParameterType)pre;
+				if(sppt.getDefaultName() == null || sppt.getDefaultName().isEmpty()) {
+					actual.add(sc);		// user defined
+				} else {
+					if(!sppt.getDefaultName().contains("Z")) {
+						actual.add(sc);
+					}
+
+				}
+			}
+		}
+		setData(actual);
 	}
 }
 
