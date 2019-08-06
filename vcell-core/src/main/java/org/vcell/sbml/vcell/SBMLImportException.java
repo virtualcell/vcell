@@ -74,7 +74,7 @@ public class SBMLImportException extends RuntimeException {
 		Throwable t = getCause();
 		while (t != null) {
 			sb.append(" : ");
-			sb.append(t.getMessage().trim( ));
+			sb.append( (t.getMessage()==null?t.getClass().getName():t.getMessage().trim( )));
 			t = t.getCause();
 		}
 		
