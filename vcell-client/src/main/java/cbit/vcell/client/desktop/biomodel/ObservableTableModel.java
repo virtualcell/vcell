@@ -44,6 +44,7 @@ public class ObservableTableModel  extends BioModelEditorRightSideTableModel<Rbm
 		name("Name"),
 		structure("Structure"),
 		depiction("Depiction"),
+		notes("Notes"),
 		species_pattern("BioNetGen Definition"),
 		type("Count");
 		
@@ -191,13 +192,16 @@ public class ObservableTableModel  extends BioModelEditorRightSideTableModel<Rbm
 		if (o == null) {
 			return false;
 		}
-		if (col == Column.structure){
+		if (col == Column.structure) {
 			return false;
 		}
 		if (col == Column.type) {
 			return true;
 		}
 		if (col == Column.depiction) {
+			return false;
+		}
+		if (col == Column.notes) {
 			return false;
 		}
 		final List<SpeciesPattern> spList = o.getSpeciesPatternList();
@@ -315,6 +319,8 @@ public class ObservableTableModel  extends BioModelEditorRightSideTableModel<Rbm
 		case type:
 			return RbmObservable.ObservableType.class;
 		case depiction:
+			return Object.class;
+		case notes:
 			return Object.class;
 		}
 		return String.class;

@@ -142,8 +142,13 @@ public class SelectionManager {
 //		}
 	}
 	
+	public class AnnotationNavigator {
+		
+	}
+	
 	public static final String PROPERTY_NAME_ACTIVE_VIEW = "activeView";
 	public static final String PROPERTY_NAME_SELECTED_OBJECTS = "selectedObjects";
+	public static final String PROPERTY_NAME_SELECTED_PANEL = "selectedPanel";
 	private Object[] selectedObjects = null;
 	private ActiveView activeView = null;
 	private transient java.beans.PropertyChangeSupport propertyChange;
@@ -229,6 +234,10 @@ public class SelectionManager {
 	}
 	public boolean isBusy() {
 		return bBusy;
+	}
+	
+	public AnnotationNavigator getAnnotationNavigator() {
+		return new AnnotationNavigator();
 	}
 
 //	private void show() {

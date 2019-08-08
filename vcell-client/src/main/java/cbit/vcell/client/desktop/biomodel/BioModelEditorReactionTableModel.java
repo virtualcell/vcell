@@ -48,10 +48,11 @@ public class BioModelEditorReactionTableModel extends BioModelEditorRightSideTab
 	public final static int COLUMN_STRUCTURE = 2;
 	public final static int COLUMN_DEPICTION = 3;
 	public final static int COLUMN_KINETICS = 4;
-	public final static int COLUMN_LINK = 5;
-	public final static int COLUMN_DEFINITION = 6;
+	public final static int COLUMN_NOTES = 5;
+	public final static int COLUMN_LINK = 6;
+	public final static int COLUMN_DEFINITION = 7;
 	protected transient java.beans.PropertyChangeSupport propertyChange;
-	private static String[] columnNames = new String[] {"Reaction", "Name", "Structure", "Depiction", "Kinetics", "Link", "BioNetGen Definition"};
+	private static String[] columnNames = new String[] {"Reaction", "Name", "Structure", "Depiction", "Kinetics", "Notes", "Link", "BioNetGen Definition"};
 	
 	public BioModelEditorReactionTableModel(EditorScrollTable table) {
 		super(table);
@@ -392,9 +393,10 @@ public class BioModelEditorReactionTableModel extends BioModelEditorRightSideTab
 	public boolean isSortable(int col) {
 		switch (col) {
 		case COLUMN_LINK:
+		case COLUMN_NOTES:
 			return false;
 		default:
-			return true;	// sortable by all
+			return true;	// sortable by most
 		}
 	}
 	

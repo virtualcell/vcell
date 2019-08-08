@@ -36,8 +36,9 @@ public class BioModelEditorStructureTableModel extends BioModelEditorRightSideTa
 
 	public final static int COLUMN_NAME = 0;
 	public final static int COLUMN_TYPE = 1;
-	public final static int COLUMN_ELECTRICAL = 2;
-	private static String[] columnNames = new String[] {"Name", "Type", "Electrical (Membrane Polarity)"};
+	public final static int COLUMN_NOTES = 2;
+	public final static int COLUMN_ELECTRICAL = 3;
+	private static String[] columnNames = new String[] {"Name", "Type", "Notes", "Electrical (Membrane Polarity)"};
 
 	public BioModelEditorStructureTableModel(EditorScrollTable table) {
 		super(table);
@@ -210,6 +211,9 @@ public class BioModelEditorStructureTableModel extends BioModelEditorRightSideTa
 
 	@Override
 	public boolean isSortable(int col) {
+		if(col == COLUMN_NOTES) {
+			return false;
+		}
 		return true;
 	}
 	

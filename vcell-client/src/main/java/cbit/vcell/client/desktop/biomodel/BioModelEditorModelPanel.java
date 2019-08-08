@@ -19,6 +19,8 @@ import java.awt.Graphics;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -60,6 +62,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.table.TableCellRenderer;
 
 import org.vcell.model.rbm.MolecularType;
 import org.vcell.model.rbm.RbmNetworkGenerator.CompartmentMode;
@@ -95,6 +98,7 @@ import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.UserMessage;
 import cbit.vcell.client.constants.GuiConstants;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorTreeModel.DocumentEditorTreeFolderClass;
+import cbit.vcell.client.desktop.biomodel.MolecularTypeTableModel.Column;
 import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveView;
 import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveViewID;
 import cbit.vcell.clientdb.DocumentManager;
@@ -303,29 +307,75 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 			if (e.getSource() == tabbedPane) {
 				showDiagramView();
 			} else if (e.getClickCount() == 2) {
-				if(e.getSource() == reactionsTable){
-					if (reactionsTable.getSelectedRow() == reactionsTable.getRowCount() - 1) { // last add new row.
-						addNewReaction();
-					}else{
-	//					System.out.println(reactionsTable.getSelectedRow()+" "+reactionsTable.getSelectedColumn());
-						Object reactionTableSelection = reactionsTable.getValueAt(reactionsTable.getSelectedRow(),reactionsTable.getSelectedColumn());
-						if(reactionTableSelection instanceof BioPaxObject){
-	//						System.out.println(reactionTableSelection);
-							selectionManager.followHyperlink(new ActiveView(null,DocumentEditorTreeFolderClass.PATHWAY_DIAGRAM_NODE, ActiveViewID.pathway_diagram),new Object[]{reactionTableSelection});
-						}
+				if(e.getSource() == reactionsTable) {
+					EditorScrollTable table = reactionsTable;
+					int row = table.getSelectedRow();
+					int col = table.getSelectedColumn();
+					Object tableSelection = table.getValueAt(row, col);
+					if(col == BioModelEditorReactionTableModel.COLUMN_LINK && tableSelection instanceof BioPaxObject) {
+						selectionManager.followHyperlink(new ActiveView(null,DocumentEditorTreeFolderClass.PATHWAY_DIAGRAM_NODE, ActiveViewID.pathway_diagram),new Object[]{tableSelection});
+					} else if(col == BioModelEditorReactionTableModel.COLUMN_NOTES) {
+						selectionManager.firePropertyChange(SelectionManager.PROPERTY_NAME_SELECTED_PANEL, null, selectionManager.getAnnotationNavigator());
 					}
-				}else if(e.getSource() == speciesTable){
-					Object speciesTableSelection = speciesTable.getValueAt(speciesTable.getSelectedRow(),speciesTable.getSelectedColumn());
-					if(speciesTableSelection instanceof BioPaxObject){
-//						System.out.println(reactionTableSelection);
-						selectionManager.followHyperlink(new ActiveView(null,DocumentEditorTreeFolderClass.PATHWAY_DIAGRAM_NODE, ActiveViewID.pathway_diagram),new Object[]{speciesTableSelection});
-					}					
+				} else if(e.getSource() == speciesTable) {
+					EditorScrollTable table = speciesTable;
+					int row = table.getSelectedRow();
+					int col = table.getSelectedColumn();
+					Object tableSelection = table.getValueAt(row, col);
+					if(col == BioModelEditorSpeciesTableModel.COLUMN_LINK && tableSelection instanceof BioPaxObject) {
+						selectionManager.followHyperlink(new ActiveView(null, DocumentEditorTreeFolderClass.PATHWAY_DIAGRAM_NODE, ActiveViewID.pathway_diagram), new Object[]{tableSelection});
+					} else if(col == BioModelEditorSpeciesTableModel.COLUMN_NOTES) {
+						selectionManager.firePropertyChange(SelectionManager.PROPERTY_NAME_SELECTED_PANEL, null, selectionManager.getAnnotationNavigator());
+					}
 				} else if(e.getSource() == molecularTypeTable) {
-					Object moleculesTableSelection = molecularTypeTable.getValueAt(molecularTypeTable.getSelectedRow(),molecularTypeTable.getSelectedColumn());
-					if(moleculesTableSelection instanceof BioPaxObject){
-						selectionManager.followHyperlink(new ActiveView(null,DocumentEditorTreeFolderClass.PATHWAY_DIAGRAM_NODE, ActiveViewID.pathway_diagram),new Object[]{moleculesTableSelection});
-					}					
+					EditorScrollTable table = molecularTypeTable;
+					int row = table.getSelectedRow();
+					int col = table.getSelectedColumn();
+					Object tableSelection = table.getValueAt(row, col);
+					if(col == MolecularTypeTableModel.Column.link.ordinal() && tableSelection instanceof BioPaxObject) {
+						selectionManager.followHyperlink(new ActiveView(null,DocumentEditorTreeFolderClass.PATHWAY_DIAGRAM_NODE, ActiveViewID.pathway_diagram),new Object[]{tableSelection});
+					} else if(col == MolecularTypeTableModel.Column.notes.ordinal()) {
+						selectionManager.firePropertyChange(SelectionManager.PROPERTY_NAME_SELECTED_PANEL, null, selectionManager.getAnnotationNavigator());
+					}
+				} else if(e.getSource() == observablesTable) {
+					EditorScrollTable table = observablesTable;
+					int col = table.getSelectedColumn();
+					if(col == ObservableTableModel.Column.notes.ordinal()) {
+						selectionManager.firePropertyChange(SelectionManager.PROPERTY_NAME_SELECTED_PANEL, null, selectionManager.getAnnotationNavigator());
+					}
+					
+				} else if(e.getSource() == structuresTable) {
+					EditorScrollTable table = structuresTable;
+					int col = table.getSelectedColumn();
+					if(col == BioModelEditorStructureTableModel.COLUMN_NOTES) {
+						selectionManager.firePropertyChange(SelectionManager.PROPERTY_NAME_SELECTED_PANEL, null, selectionManager.getAnnotationNavigator());
+					}
 				}
+/*				
+				BioModelEditorReactionTableModel.COLUMN_NOTES
+				BioModelEditorSpeciesTableModel.COLUMN_NOTES
+				MolecularTypeTableModel.Column.notes.ordinal()
+				ObservableTableModel.Column.notes.ordinal()
+				BioModelEditorStructureTableModel.COLUMN_NOTES
+*/
+				
+					// TODO: different behavior depending on whether we clicked on icon vs. the rest of the cell's body
+//					if(col == MolecularTypeTableModel.Column.link.ordinal()) {
+//						Point whereClicked = e.getPoint();
+//						Rectangle cellRectangle = table.getCellRect(row, col, true);
+//						Icon icon = VCellIcons.noteIcon;
+//						Rectangle iconRectangle = new Rectangle(cellRectangle.x, cellRectangle.y, icon.getIconWidth(), icon.getIconHeight());
+//						if(iconRectangle.contains(whereClicked)) {
+//							// if we clicked in the annotation icon general area we navigate to that panel.
+//							selectionManager.firePropertyChange(SelectionManager.PROPERTY_NAME_SELECTED_PANEL, null, selectionManager.getAnnotationNavigator());
+//						} else {
+//							Object tableSelection = table.getValueAt(row, col);
+//							if(tableSelection instanceof BioPaxObject) {
+//								// if we have a link to a BioPaxObject, navigate to it
+//								selectionManager.followHyperlink(new ActiveView(null,DocumentEditorTreeFolderClass.PATHWAY_DIAGRAM_NODE, ActiveViewID.pathway_diagram),new Object[]{tableSelection});
+//							}
+//						}
+//					}
 			}
 		}
 		public void mousePressed(MouseEvent e) {
@@ -726,38 +776,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 		reactionsTable.setDefaultRenderer(RbmKineticLaw.class, tableRenderer);
 		reactionsTable.setDefaultRenderer(ModelProcessDynamics.class, tableRenderer);
 		
-		
-		DefaultScrollTableCellRenderer structureTypeTableCellRenderer = new DefaultScrollTableCellRenderer() {
-			@Override
-			public Component getTableCellRendererComponent(JTable table,
-					Object value, boolean isSelected, boolean hasFocus,
-					int row, int column) {
-				super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-				
-				if (table.getModel() instanceof VCellSortTableModel<?>) {		// all the code just to deal with the annotations icons
-					if (table.getModel() == structureTableModel && structureTableModel.getValueAt(row) instanceof Structure) {
-						Structure structure = structureTableModel.getValueAt(row);
-						if(structure != null) {
-							String freeText = bioModel.getVCMetaData().getFreeTextAnnotation(structure);
-							Identifiable entity = AnnotationsPanel.getIdentifiable(structure);
-							MiriamManager miriamManager = bioModel.getVCMetaData().getMiriamManager();
-							TreeMap<Identifiable, Map<MiriamRefGroup, MIRIAMQualifier>> miriamDescrHeir = miriamManager.getMiriamTreeMap();
-							Map<MiriamRefGroup, MIRIAMQualifier> refGroupMap = miriamDescrHeir.get(entity);
-
-							Icon icon = VCellIcons.issueGoodIcon;
-							if(freeText != null && !freeText.isEmpty()) {
-								icon = VCellIcons.noteIcon;
-							} else if(refGroupMap != null && !refGroupMap.isEmpty()) {
-								icon = VCellIcons.noteIcon;
-							}
-							setIcon(icon);
-						}
-					}
-				}
-				return this;
-			}			
-		};
-				
+		// Link to biopax object Table Cell Renderer
 		DefaultScrollTableCellRenderer linkTableCellRenderer = new DefaultScrollTableCellRenderer() {
 			@Override
 			public Component getTableCellRendererComponent(JTable table,
@@ -801,28 +820,62 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 							setText("<html><u>" + finalName + "</u></html>");
 							setToolTipText(tooltip.toString());
 						}
-						String freeText = bioModel.getVCMetaData().getFreeTextAnnotation(bioModelEntityObject);
-						Identifiable entity = AnnotationsPanel.getIdentifiable(bioModelEntityObject);
+					}
+				}
+				return this;
+			}
+		};
+		// Annotations icon column renderer
+		DefaultScrollTableCellRenderer annotationTableCellRenderer = new DefaultScrollTableCellRenderer() {
+			final Color lightBlueBackground = new Color(214, 234, 248);
+			@Override
+			public Component getTableCellRendererComponent(JTable table,
+					Object value, boolean isSelected, boolean hasFocus,
+					int row, int column) {
+				super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+				Identifiable entity = null;
+				if (table.getModel() instanceof VCellSortTableModel<?>) {
+					if (table.getModel() == reactionTableModel) {
+						entity = (BioModelEntityObject)reactionTableModel.getValueAt(row);
+					} else if (table.getModel() == speciesTableModel) {
+						entity = speciesTableModel.getValueAt(row);
+					} else if(table.getModel() == molecularTypeTableModel) {
+						entity = molecularTypeTableModel.getValueAt(row);
+					} else if(table.getModel() == observableTableModel) {
+						entity = observableTableModel.getValueAt(row);
+					} else if(table.getModel() == structureTableModel) {
+						entity = structureTableModel.getValueAt(row);
+					}
+					if (entity != null) {
+						if(isSelected) {
+							setBackground(lightBlueBackground);
+						}
+						Identifiable identifiable = AnnotationsPanel.getIdentifiable(entity);
+						String freeText = bioModel.getVCMetaData().getFreeTextAnnotation(identifiable);
 						MiriamManager miriamManager = bioModel.getVCMetaData().getMiriamManager();
 						TreeMap<Identifiable, Map<MiriamRefGroup, MIRIAMQualifier>> miriamDescrHeir = miriamManager.getMiriamTreeMap();
-						Map<MiriamRefGroup, MIRIAMQualifier> refGroupMap = miriamDescrHeir.get(entity);
+						Map<MiriamRefGroup, MIRIAMQualifier> refGroupMap = miriamDescrHeir.get(identifiable);
 
-						Icon icon = VCellIcons.issueGoodIcon;
+						Icon icon1 = VCellIcons.issueGoodIcon;
+						Icon icon2 = VCellIcons.issueGoodIcon;
 						if(freeText != null && !freeText.isEmpty()) {
-							icon = VCellIcons.noteIcon;
+							icon2 = VCellIcons.noteIcon;
 //							icon = VCellIcons.bookmarkIcon;
 //							icon = VCellIcons.addIcon(icon, VCellIcons.linkIcon);
 //							icon = VCellIcons.addIcon(icon, VCellIcons.certificateIcon);
 //							icon = VCellIcons.addIcon(icon, VCellIcons.noteIcon);
-						} else if(refGroupMap != null && !refGroupMap.isEmpty()) {
-							icon = VCellIcons.noteIcon;
+						} 
+						if(refGroupMap != null && !refGroupMap.isEmpty()) {
+							icon1 = VCellIcons.linkIcon;
 						}
+						Icon icon = VCellIcons.addIcon(icon1, icon2);
 						setIcon(icon);
 					}
 				}
 				return this;
 			}
 		};
+
 		DefaultScrollTableCellRenderer rbmReactionExpressionCellRenderer = new DefaultScrollTableCellRenderer() {
 			@Override
 			public Component getTableCellRendererComponent(JTable table,
@@ -1251,25 +1304,44 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 				}
 			}
 		};
+		
+		
 		// TODO: here are the renderers associated with the columns
 		reactionsTable.getColumnModel().getColumn(BioModelEditorReactionTableModel.COLUMN_LINK).setCellRenderer(linkTableCellRenderer);
 		reactionsTable.getColumnModel().getColumn(BioModelEditorReactionTableModel.COLUMN_EQUATION).setCellRenderer(rbmReactionExpressionCellRenderer);
 		reactionsTable.getColumnModel().getColumn(BioModelEditorReactionTableModel.COLUMN_DEFINITION).setCellRenderer(rbmReactionDefinitionCellRenderer);
+		reactionsTable.getColumnModel().getColumn(BioModelEditorReactionTableModel.COLUMN_NOTES).setCellRenderer(annotationTableCellRenderer);
 		speciesTable.getColumnModel().getColumn(BioModelEditorSpeciesTableModel.COLUMN_NAME).setCellRenderer(rbmSpeciesNameCellRenderer);
 		speciesTable.getColumnModel().getColumn(BioModelEditorSpeciesTableModel.COLUMN_LINK).setCellRenderer(linkTableCellRenderer);
+		speciesTable.getColumnModel().getColumn(BioModelEditorSpeciesTableModel.COLUMN_NOTES).setCellRenderer(annotationTableCellRenderer);
 		molecularTypeTable.getColumnModel().getColumn(MolecularTypeTableModel.Column.link.ordinal()).setCellRenderer(linkTableCellRenderer);
+		molecularTypeTable.getColumnModel().getColumn(MolecularTypeTableModel.Column.notes.ordinal()).setCellRenderer(annotationTableCellRenderer);
 		observablesTable.getColumnModel().getColumn(ObservableTableModel.Column.species_pattern.ordinal()).setCellRenderer(rbmObservablePatternCellRenderer);
 		observablesTable.getColumnModel().getColumn(ObservableTableModel.Column.structure.ordinal()).setCellRenderer(tableRenderer);
-		structuresTable.getColumnModel().getColumn(BioModelEditorStructureTableModel.COLUMN_TYPE).setCellRenderer(structureTypeTableCellRenderer);
+		observablesTable.getColumnModel().getColumn(ObservableTableModel.Column.notes.ordinal()).setCellRenderer(annotationTableCellRenderer);
+		structuresTable.getColumnModel().getColumn(BioModelEditorStructureTableModel.COLUMN_NOTES).setCellRenderer(annotationTableCellRenderer);
 		
+		// fixed width columns
+		final int notesWidth = 65;
+		molecularTypeTable.getColumnModel().getColumn(MolecularTypeTableModel.Column.depiction.ordinal()).setMaxWidth(180);
+		molecularTypeTable.getColumnModel().getColumn(MolecularTypeTableModel.Column.notes.ordinal()).setPreferredWidth(notesWidth);
+		molecularTypeTable.getColumnModel().getColumn(MolecularTypeTableModel.Column.notes.ordinal()).setMaxWidth(notesWidth);
+		speciesTable.getColumnModel().getColumn(BioModelEditorSpeciesTableModel.COLUMN_NOTES).setPreferredWidth(notesWidth);
+		speciesTable.getColumnModel().getColumn(BioModelEditorSpeciesTableModel.COLUMN_NOTES).setMaxWidth(notesWidth);
+		observablesTable.getColumnModel().getColumn(ObservableTableModel.Column.notes.ordinal()).setPreferredWidth(notesWidth);
+		observablesTable.getColumnModel().getColumn(ObservableTableModel.Column.notes.ordinal()).setMaxWidth(notesWidth);
+		reactionsTable.getColumnModel().getColumn(BioModelEditorReactionTableModel.COLUMN_DEPICTION).setPreferredWidth(180);
+		reactionsTable.getColumnModel().getColumn(BioModelEditorReactionTableModel.COLUMN_NOTES).setPreferredWidth(notesWidth);
+		reactionsTable.getColumnModel().getColumn(BioModelEditorReactionTableModel.COLUMN_NOTES).setMaxWidth(notesWidth);
+		structuresTable.getColumnModel().getColumn(BioModelEditorStructureTableModel.COLUMN_NOTES).setPreferredWidth(notesWidth);
+		structuresTable.getColumnModel().getColumn(BioModelEditorStructureTableModel.COLUMN_NOTES).setMaxWidth(notesWidth);
+
 		// all "depictions" have their own renderer
 		molecularTypeTable.getColumnModel().getColumn(MolecularTypeTableModel.Column.depiction.ordinal()).setCellRenderer(rbmMolecularTypeShapeDepictionCellRenderer);
-		molecularTypeTable.getColumnModel().getColumn(MolecularTypeTableModel.Column.depiction.ordinal()).setMaxWidth(180);
 		speciesTable.getColumnModel().getColumn(BioModelEditorSpeciesTableModel.COLUMN_DEPICTION).setCellRenderer(rbmSpeciesShapeDepictionCellRenderer);
 		speciesTable.getColumnModel().getColumn(BioModelEditorSpeciesTableModel.COLUMN_DEFINITION).setCellRenderer(rbmTableRenderer);
 		observablesTable.getColumnModel().getColumn(ObservableTableModel.Column.depiction.ordinal()).setCellRenderer(rbmObservableShapeDepictionCellRenderer);
 		reactionsTable.getColumnModel().getColumn(BioModelEditorReactionTableModel.COLUMN_DEPICTION).setCellRenderer(rbmReactionShapeDepictionCellRenderer);
-		reactionsTable.getColumnModel().getColumn(BioModelEditorReactionTableModel.COLUMN_DEPICTION).setPreferredWidth(180);
 		
 		observablesTable.getColumnModel().getColumn(ObservableTableModel.Column.type.ordinal()).setCellEditor(observableTableModel.getObservableTypeComboBoxEditor());
 		observableTableModel.updateObservableTypeComboBox();
@@ -1282,6 +1354,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 		molecularTypeTable.addKeyListener(eventHandler);
 		observablesTable.addMouseListener(eventHandler);
 		observablesTable.addKeyListener(eventHandler);
+		structuresTable.addMouseListener(eventHandler);
 		structuresTable.addKeyListener(eventHandler);
 	}
 	
@@ -2177,5 +2250,20 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 				break;
 			}
 		}
+	}
+	private boolean hasAnnotation(Identifiable identifiable) {
+		Identifiable entity = AnnotationsPanel.getIdentifiable(identifiable);
+		String freeText = bioModel.getVCMetaData().getFreeTextAnnotation(entity);
+		MiriamManager miriamManager = bioModel.getVCMetaData().getMiriamManager();
+		TreeMap<Identifiable, Map<MiriamRefGroup, MIRIAMQualifier>> miriamDescrHeir = miriamManager.getMiriamTreeMap();
+		Map<MiriamRefGroup, MIRIAMQualifier> refGroupMap = miriamDescrHeir.get(entity);
+
+		Icon icon = VCellIcons.issueGoodIcon;
+		if(freeText != null && !freeText.isEmpty()) {
+			return true;
+		} else if(refGroupMap != null && !refGroupMap.isEmpty()) {
+			return true;
+		}
+		return false;
 	}
 }

@@ -46,9 +46,10 @@ public class BioModelEditorSpeciesTableModel extends BioModelEditorRightSideTabl
 	public final static int COLUMN_NAME = 0;
 	public final static int COLUMN_STRUCTURE = 1;	
 	public final static int COLUMN_DEPICTION = 2;	
-	public final static int COLUMN_LINK = 3;
-	public final static int COLUMN_DEFINITION = 4;	
-	private static String[] columnNames = new String[] {"Name","Structure","Depiction","Link","BioNetGen Definition"};
+	public final static int COLUMN_NOTES = 3;
+	public final static int COLUMN_LINK = 4;
+	public final static int COLUMN_DEFINITION = 5;	
+	private static String[] columnNames = new String[] {"Name", "Structure", "Depiction", "Notes", "Link", "BioNetGen Definition"};
 
 	public BioModelEditorSpeciesTableModel(EditorScrollTable table) {
 		super(table);
@@ -282,6 +283,7 @@ public class BioModelEditorSpeciesTableModel extends BioModelEditorRightSideTabl
 	public boolean isSortable(int col) {
 		switch (col) {
 		case COLUMN_LINK:
+		case COLUMN_NOTES:
 			return false;
 		default:
 			return true;

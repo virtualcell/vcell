@@ -817,6 +817,8 @@ protected void setRightBottomPanelOnSelection(Object[] selections) {
 			} else if (folderClass == DocumentEditorTreeFolderClass.PARAMETER_ESTIMATION_NODE) {
 				bottomComponent = parameterEstimationTaskPropertiesPanel;
 			}
+		} else if(singleSelection instanceof SelectionManager.AnnotationNavigator) {
+			bottomComponent = bioModelEditorAnnotationPanel;
 		}
 	}
 	if (bShowPathway) {
@@ -859,6 +861,9 @@ protected void setRightBottomPanelOnSelection(Object[] selections) {
 		rightBottomTabbedPane.setSelectedComponent(bottomComponent);
 	} else if(selections.length == 1 && selections[0] instanceof BioModel && bottomComponent instanceof BioModelEditorAnnotationPanel) {
 		// if the biomodel name is selected in the upper left tree, we select the Annotations tab
+		rightBottomTabbedPane.setSelectedComponent(annotationComponent);
+	} else if(selections.length == 1 && selections[0] instanceof SelectionManager.AnnotationNavigator && bottomComponent instanceof BioModelEditorAnnotationPanel) {
+		// we want to navigate to the AnnotationPanel
 		rightBottomTabbedPane.setSelectedComponent(annotationComponent);
 	}
 }

@@ -270,6 +270,8 @@ public abstract class DocumentEditor extends JPanel {
 					onSelectedObjectsChange();
 				} else if (evt.getPropertyName().equals(SelectionManager.PROPERTY_NAME_ACTIVE_VIEW)) {
 					onActiveViewChange();
+				} else if(evt.getPropertyName().equals(SelectionManager.PROPERTY_NAME_SELECTED_PANEL)) {
+					setRightBottomPanelOnSelection(new Object[] {evt.getNewValue()});
 				}
 			}
 		};
