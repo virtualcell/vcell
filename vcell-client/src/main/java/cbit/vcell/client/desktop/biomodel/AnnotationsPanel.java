@@ -100,7 +100,6 @@ public class AnnotationsPanel extends DocumentEditorSubPanel {
 	
 	public static final String ACTION_ADD ="Add...";
 	public static final String ACTION_DELETE ="Delete";
-	public static final String ACTION_ADD_TEXT = "Add";
 	public static final String ACTION_REMOVE_TEXT = "Delete";
 	public static final String ACTION_GOTO ="Go";
 	private EventHandler eventHandler = new EventHandler();
@@ -119,7 +118,6 @@ public class AnnotationsPanel extends DocumentEditorSubPanel {
 	private JTextField jTextFieldFormalID = null;	// immortal ID text
 	private JButton jButtonAddRef = null;			// add a cross-reference
 	private JButton jButtonDeleteRef = null;		// delete selected cross-reference
-//	private JButton jButtonAddText = null;			// add text annotation
 	private JButton jButtonRemoveText = null;		// remove text annotation
 
 	private JTextPane annotationTextArea = null;
@@ -166,8 +164,6 @@ public class AnnotationsPanel extends DocumentEditorSubPanel {
 				removeIdentifier();
 			} else if(evt.getSource() == getJButtonRemoveText()) {
 				removeText();
-//			} else if(evt.getSource() == getJButtonAddText()) {
-//				addText();
 			}
 		}
 		@Override
@@ -376,14 +372,6 @@ private JPanel getJPanelRightTitle() {
 	gbc.fill = java.awt.GridBagConstraints.BOTH;
 	jPanelRightTitle.add(new JLabel(), gbc);
 	
-//	gridx++;
-//	gbc = new java.awt.GridBagConstraints();
-//	gbc.gridx = gridx; 
-//	gbc.gridy = 0;
-//	gbc.insets = new Insets(3, 0, 3, 3);
-//	gbc.anchor = GridBagConstraints.NORTHEAST;
-//	jPanelRightTitle.add(getJButtonAddText(), gbc);
-	
 	gridx++;
 	gbc = new java.awt.GridBagConstraints();
 	gbc.gridx = gridx; 
@@ -392,7 +380,6 @@ private JPanel getJPanelRightTitle() {
 	gbc.anchor = GridBagConstraints.NORTHEAST;
 	jPanelRightTitle.add(getJButtonRemoveText(), gbc);
 	
-//	getJButtonAddText().addActionListener(eventHandler);
 	getJButtonRemoveText().addActionListener(eventHandler);
 	return jPanelRightTitle;
 }
@@ -742,15 +729,23 @@ private void changeTextAnnotation() {
 		String textAreaStr = (annotationTextArea.getText() == null || annotationTextArea.getText().length()==0?null:annotationTextArea.getText());
 		String oldText = bioModel.getVCMetaData().getFreeTextAnnotation(entity);
 
-		if(emptyHtmlText.equals(textAreaStr)) {						// no annotation now, the field is empty
+		if(textAreaStr == null || textAreaStr.isEmpty() || emptyHtmlText.equals(textAreaStr)) {	// no annotation now, the field is empty
 			bioModel.getVCMetaData().deleteFreeTextAnnotation(entity);	// delete, if there's something previously saved
-		} else if(!Compare.isEqualOrNull(oldText,textAreaStr)) {	// some text annotation different from what's already saved
+		} else if(!Compare.isEqualOrNull(oldText,textAreaStr)) {		// some text annotation different from what's already saved
 			bioModel.getVCMetaData().setFreeTextAnnotation(entity, textAreaStr);	// overwrite
 		}
 	} catch(Exception e){
 		e.printStackTrace(System.out);
 		PopupGenerator.showErrorDialog(this,"Annotation Error\n"+e.getMessage(), e);
 	}
+}
+private void removeText() {
+	if (bioModel == null || selectedObject == null) {
+		return;
+	}
+	Identifiable entity = getIdentifiable(selectedObject);
+	annotationTextArea.setText(null);
+	bioModel.getVCMetaData().deleteFreeTextAnnotation(entity);	// delete, if there's something previously saved
 }
 
 public void setBioModel(BioModel newValue) {
@@ -778,7 +773,6 @@ private void updateInterface() {
 		getJComboBoxURI().setEnabled(true);
 		getJTextFieldFormalID().setEnabled(true);
 		getJButtonAddRef().setEnabled(true);
-//		getJButtonAddText().setEnabled(true);
 		getJButtonRemoveText().setEnabled(true);
 		VCMetaDataDataType mdt = (VCMetaDataDataType)getJComboBoxURI().getSelectedItem();
 		miriamTreeModel.createTree(entity);
@@ -795,7 +789,6 @@ private void updateInterface() {
 		getJComboBoxURI().setEnabled(false);
 		getJTextFieldFormalID().setEnabled(false);
 		getJButtonAddRef().setEnabled(false);
-//		getJButtonAddText().setEnabled(false);
 		getJButtonRemoveText().setEnabled(false);
 		miriamTreeModel.createTree(null);
 
@@ -921,25 +914,6 @@ private void removeIdentifier() {
 	}
 }
 
-private void addText() {
-	if (bioModel == null || selectedObject == null) {
-		return;
-	}
-	String textAreaStr = (annotationTextArea.getText() == null || annotationTextArea.getText().length()==0?null:annotationTextArea.getText());
-	String oldText = bioModel.getVCMetaData().getFreeTextAnnotation(selectedObject);
-
-	if(!Compare.isEqualOrNull(oldText,textAreaStr)) {
-		bioModel.getVCMetaData().setFreeTextAnnotation(selectedObject, textAreaStr);	// overwrite
-	}
-}
-private void removeText() {
-	if (bioModel == null || selectedObject == null) {
-		return;
-	}
-	annotationTextArea.setText(null);
-	bioModel.getVCMetaData().deleteFreeTextAnnotation(selectedObject);	// delete, if there's something previously saved
-}
-
 private boolean isEqual(MiriamResource aThis, MiriamResource aThat) {
 	if (aThis == aThat) {
 		return true;
@@ -1004,14 +978,6 @@ private JButton getJButtonDeleteRef() {
 	}
 	return jButtonDeleteRef;
 }
-//private JButton getJButtonAddText() {
-//	if (jButtonAddText == null) {
-//		jButtonAddText = new JButton();
-//		jButtonAddText.setText(ACTION_ADD_TEXT);
-//		jButtonAddText.setToolTipText("Add the text annotation");
-//	}
-//	return jButtonAddText;
-//}
 private JButton getJButtonRemoveText() {
 	if (jButtonRemoveText == null) {
 		jButtonRemoveText = new JButton();
