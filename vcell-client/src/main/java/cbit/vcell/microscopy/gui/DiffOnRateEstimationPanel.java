@@ -31,6 +31,8 @@ import org.vcell.util.NumberUtils;
 import org.vcell.util.gui.DialogUtils;
 
 import cbit.vcell.microscopy.gui.estparamwizard.FRAPReacDiffEstimationGuidePanel;
+import cbit.vcell.model.Model;
+import cbit.vcell.model.Model.ReservedSymbolRole;
 
 @SuppressWarnings("serial")
 public class DiffOnRateEstimationPanel extends JPanel 
@@ -334,8 +336,9 @@ public class DiffOnRateEstimationPanel extends JPanel
 			double bsRadius = Double.parseDouble(BsRadiusTextField.getText());
 			double freeDiffRate = getFreeDiffRate().doubleValue();
 			double bsDiffRate = 0;
-			//kon = 4*PI*D*R, D is sum of reactants' diff rates, R is sum of reactants' radius. 1/602 is a conversion rate from um3/s to 1/(uM.s)
-			double kon = 4*FRAPReacDiffEstimationGuidePanel.PI*(freeDiffRate+bsDiffRate)*(fRadius+bsRadius)/602.0;
+			//kon = 4*PI*D*R, D is sum of reactants' diff rates, R is sum of reactants' radius. 1/602.214179 is a conversion rate from um3/s to 1/(uM.s)
+			//double kon = 4*FRAPReacDiffEstimationGuidePanel.PI*(freeDiffRate+bsDiffRate)*(fRadius+bsRadius)/602.0;
+			double kon = 4*FRAPReacDiffEstimationGuidePanel.PI*(freeDiffRate+bsDiffRate)*(fRadius+bsRadius)*Model.reservedConstantsMap.get(ReservedSymbolRole.KMOLE);
 			onRateValLabel.setText(NumberUtils.formatNumber(kon, 10));
 		}catch(NumberFormatException e)
 		{

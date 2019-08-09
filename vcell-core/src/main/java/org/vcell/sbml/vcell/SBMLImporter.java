@@ -1422,8 +1422,7 @@ public class SBMLImporter {
 				Species vcSpecies = null;
 				// create a species with speciesName as commonName. If it is
 				// different in the annotation, can change it later
-				Element sbmlImportRelatedElement = sbmlAnnotationUtil
-						.readVCellSpecificAnnotation(sbmlSpecies);
+				Element sbmlImportRelatedElement = sbmlAnnotationUtil.readVCellSpecificAnnotation(sbmlSpecies);
 				if (sbmlImportRelatedElement != null) {
 					Element embeddedElement = getEmbeddedElementInAnnotation(
 							sbmlImportRelatedElement, SPECIES_NAME);
@@ -2071,7 +2070,7 @@ public class SBMLImporter {
 		// add base SI unit identifiers (as defined in SBML spec) to hash
 		sbmlUnitIdentifierHash.put("ampere", tempVCUnitSystem.getInstance("A"));
 		sbmlUnitIdentifierHash.put("avogadro",
-				tempVCUnitSystem.getInstance("6.02e23"));
+				tempVCUnitSystem.getInstance("6.02214179e23"));
 		// sbmlUnitIdentifierHash.put("becquerel",
 		// tempVCUnitSystem.getInstance("becquerel"));
 		// sbmlUnitIdentifierHash.put("candela",

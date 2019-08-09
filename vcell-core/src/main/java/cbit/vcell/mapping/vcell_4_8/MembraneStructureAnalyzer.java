@@ -23,6 +23,8 @@ import cbit.vcell.model.FluxReaction;
 import cbit.vcell.model.Kinetics;
 import cbit.vcell.model.LumpedKinetics;
 import cbit.vcell.model.Membrane;
+import cbit.vcell.model.Model;
+import cbit.vcell.model.Model.ReservedSymbolRole;
 import cbit.vcell.model.Model.StructureTopology;
 import cbit.vcell.model.Product;
 import cbit.vcell.model.Reactant;
@@ -246,7 +248,7 @@ void refreshResolvedFluxes() throws Exception {
 	//
 	// for each reaction, incorporate all reactionSteps involving binding with volumetric species
 	//
-	double kMoleValue = 1/602.0;
+	double kMoleValue = Model.reservedConstantsMap.get(ReservedSymbolRole.KMOLE);
 	for (int i=0;i<reactionSpecs.length;i++){
 		if (reactionSpecs[i].isExcluded()){
 			continue;

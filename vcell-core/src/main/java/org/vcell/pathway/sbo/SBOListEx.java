@@ -2277,7 +2277,7 @@ public static final SBOTerm x_0000566 =
 			"SBO:0000538");
 public static final SBOTerm x_0000567 = 
 		SBOUtil.createTerm("SBO:0000567", "gas constant", "universal gas constant", 
-			"A physical constant featured in many fundamental equations in the physical sciences. It is equivalent to the Boltzmann constant, but expressed in units of energy per temperature increment per mole (rather than energy per temperature increment per particle). It has the value 8.314 J.K-1.mol-1 and is denoted by the symbol R.", 
+			"A physical constant featured in many fundamental equations in the physical sciences. It is equivalent to the Boltzmann constant, but expressed in units of energy per temperature increment per mole (rather than energy per temperature increment per particle). It has the value 8.31446261815 J.K-1.mol-1 and is denoted by the symbol R.", 
 			"SBO:0000565");
 public static final SBOTerm x_0000568 = 
 		SBOUtil.createTerm("SBO:0000568", "?", "Faraday constant", 

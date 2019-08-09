@@ -1340,7 +1340,7 @@ public static Model getExampleWithCurrent() throws Exception {
 		chargeValenceParameter.setExpression(new Expression(2));
 	}
 	//ghk.setPermeability(new Expression("(Vmax*B_cyt/(Kd_Bcyt+B_cyt))"));
-	ghk.setParameterValue(ghk.getPermeabilityParameter(),new Expression(8.314e-2));
+	ghk.setParameterValue(ghk.getPermeabilityParameter(),new Expression(8.31446261815e-2));
 	//ghk.setParameterValue("Vmax",Double.toString(Vmax));
 	//ghk.setParameterValue("Kd_Bcyt",Double.toString(Kd_Bcyt));
 	model.addReactionStep(fr);

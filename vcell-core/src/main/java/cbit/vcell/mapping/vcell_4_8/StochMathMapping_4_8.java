@@ -50,6 +50,7 @@ import cbit.vcell.model.MassActionSolver;
 import cbit.vcell.model.Membrane;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Model.ModelParameter;
+import cbit.vcell.model.Model.ReservedSymbolRole;
 import cbit.vcell.model.ModelException;
 import cbit.vcell.model.ModelUnitSystem;
 import cbit.vcell.model.Parameter;
@@ -172,7 +173,7 @@ Expression getProbabilityRate(ReactionStep rs, boolean isForwardDirection) throw
 		    	factorExpr = new Expression(sm.getStructure().getStructureSize(), getNameScope());
 		    } else {
 		    	factorExpr = new Expression(sm.getStructure().getStructureSize(), getNameScope());
-		    	Expression kmoleExpr = new Expression(1.0/602.0);
+		    	Expression kmoleExpr = new Expression(Model.reservedConstantsMap.get(ReservedSymbolRole.KMOLE));
 		    	factorExpr = Expression.mult(factorExpr, kmoleExpr);
 			}
 			
@@ -193,7 +194,7 @@ Expression getProbabilityRate(ReactionStep rs, boolean isForwardDirection) throw
 						if(reactSM.getStructure() instanceof Membrane) {
 							speciesFactor = Expression.invert(new Expression(reactSM.getStructure().getStructureSize(), getNameScope()));
 						} else {
-							Expression exp1 = new Expression(1.0/602.0);
+							Expression exp1 = new Expression(Model.reservedConstantsMap.get(ReservedSymbolRole.KMOLE));
 							Expression exp2 = new Expression(reactSM.getStructure().getStructureSize(), getNameScope());
 							speciesFactor =  Expression.div(Expression.invert(exp1), exp2);
 						}
@@ -234,7 +235,7 @@ Expression getProbabilityRate(ReactionStep rs, boolean isForwardDirection) throw
 		    	factorExpr = new Expression(sm.getStructure().getStructureSize(), getNameScope());
 		    } else {
 		    	factorExpr = new Expression(sm.getStructure().getStructureSize(), getNameScope());
-		    	Expression exp = new Expression(1.0/602.0);
+		    	Expression exp = new Expression(Model.reservedConstantsMap.get(ReservedSymbolRole.KMOLE));
 		    	factorExpr = Expression.mult(factorExpr, exp);
 			}
 		    
@@ -256,7 +257,7 @@ Expression getProbabilityRate(ReactionStep rs, boolean isForwardDirection) throw
 						if(reactSM.getStructure() instanceof Membrane) {
 							speciesFactor = Expression.invert(new Expression(reactSM.getStructure().getStructureSize(), getNameScope()));
 						} else {
-							Expression exp1 = new Expression(1.0/602.0);
+							Expression exp1 = new Expression(Model.reservedConstantsMap.get(ReservedSymbolRole.KMOLE));
 							Expression exp2 = new Expression(reactSM.getStructure().getStructureSize(), getNameScope());
 							speciesFactor =  Expression.div(Expression.invert(exp1), exp2);
 						}
@@ -879,7 +880,7 @@ private void refresh() throws MappingException, ExpressionException, MatrixExcep
 						SpeciesContext scOut = fluxFunc.getReactants().get(0).getSpeciesContext();
 						Expression speciesFactor = null;
 						if(scOut.getStructure() instanceof Feature) {
-							Expression exp1 = new Expression(1.0/602.0);
+							Expression exp1 = new Expression(Model.reservedConstantsMap.get(ReservedSymbolRole.KMOLE));
 							Expression exp2 = new Expression(scOut.getStructure().getStructureSize(), getNameScope());
 							speciesFactor =  Expression.div(Expression.invert(exp1), exp2);
 						} else {
@@ -889,7 +890,7 @@ private void refresh() throws MappingException, ExpressionException, MatrixExcep
 						//get probability expression by adding factor to rate (rate: rate*size_mem/KMOLE)
 						Expression expr1 = Expression.mult(rate, speciesExp);
 						Expression numeratorExpr = Expression.mult(expr1, new Expression(sm.getStructure().getStructureSize(), getNameScope()));
-						Expression exp = new Expression(1.0/602.0);
+						Expression exp = new Expression(Model.reservedConstantsMap.get(ReservedSymbolRole.KMOLE));
 						Expression probExp = Expression.mult(numeratorExpr, exp);
 						probExp.bindExpression(reactionStep);//bind symbol table before substitute identifiers in the reaction step
 
@@ -933,7 +934,7 @@ private void refresh() throws MappingException, ExpressionException, MatrixExcep
 						SpeciesContext scIn = fluxFunc.getProducts().get(0).getSpeciesContext();
 						Expression speciesFactor = null;
 						if(scIn.getStructure() instanceof Feature) {
-							Expression exp1 = new Expression(1.0/602.0);
+							Expression exp1 = new Expression(Model.reservedConstantsMap.get(ReservedSymbolRole.KMOLE));
 							Expression exp2 = new Expression(scIn.getStructure().getStructureSize(), getNameScope());
 							speciesFactor =  Expression.div(Expression.invert(exp1), exp2);
 						} else {
@@ -943,7 +944,7 @@ private void refresh() throws MappingException, ExpressionException, MatrixExcep
 						//get probability expression by adding factor to rate (rate: rate*size_mem/KMOLE)
 						Expression expr1 = Expression.mult(rate, speciesExp);
 						Expression numeratorExpr = Expression.mult(expr1, new Expression(sm.getStructure().getStructureSize(), getNameScope()));
-						Expression exp = new Expression(1.0/602.0);
+						Expression exp = new Expression(Model.reservedConstantsMap.get(ReservedSymbolRole.KMOLE));
 						Expression probRevExp = Expression.mult(numeratorExpr, exp);
 						probRevExp.bindExpression(reactionStep);//bind symbol table before substitute identifiers in the reaction step
 						

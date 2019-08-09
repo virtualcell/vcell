@@ -135,7 +135,7 @@ public abstract class SBMLUtils {
  * 		Calculates species concentration unit conversion from 'fromUnit' to 'toUnit'. 
  * 		If they are directly compatible, it computes the non-dimensional conversion factor/
  * 		If the 'fromUnit' is in item and 'toUnit' is in moles, it checks compatibility of fromUnit/KMOLE with toUnit.
- * 		Note : KMOLE is the Virtual VCell-defined reserved work (constant) = 1/602.
+ * 		Note : KMOLE is the Virtual VCell-defined reserved work (constant) = 1.0/602.214179.
  * 		If the 'toUnit' is in item and 'fromUnit' is in moles, it checks compatibility of fromUnit*KMOLE with toUnit.
  * 		 
  * @param fromUnit

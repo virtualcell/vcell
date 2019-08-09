@@ -173,7 +173,7 @@ public static ConstraintContainerImpl getMichaelisMentenExample() {
 		//
 		// with substitution of constants and change of units
 		//
-		//        4*pi*(Res/1e4)*((De/1e8)+(Ds/1e8))*6.02e23   
+		//        4*pi*(Res/1e4)*((De/1e8)+(Ds/1e8))*6.02214179e23   
 		//  k1 < --------------------------------------------  [1/(uM s)]    where Res [um] and De,Ds [um^2/sec]  
 		//              1e3 * 1e6
 		//
@@ -185,7 +185,7 @@ public static ConstraintContainerImpl getMichaelisMentenExample() {
 		//  k1 < 7564.9551098*(Re+Rs)*(De+Ds)  [1/(uM s)]
 		//              
 		//
-		ccImpl.addGeneralConstraint(new GeneralConstraint(new Expression("k1<4*PI*602*(Re+Rs)*(De+Ds)"),AbstractConstraint.PHYSICAL_LIMIT,"diffusion limited rate"));
+		ccImpl.addGeneralConstraint(new GeneralConstraint(new Expression("k1<4*PI*602.214179*(Re+Rs)*(De+Ds)"),AbstractConstraint.PHYSICAL_LIMIT,"diffusion limited rate"));
 		
 		//
 		// 6) Modeling Assumption

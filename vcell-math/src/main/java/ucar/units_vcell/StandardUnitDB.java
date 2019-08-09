@@ -361,7 +361,7 @@ StandardUnitDB
 	au("e",				"1.60217733-19 C");
 	au("chemical faraday",		"9.64957e4 C");
 	au("physical faraday",		"9.65219e4 C");
-	au("C12 faraday",		"9.648531e4 C");
+	au("C12 faraday",		"9.64853321e4 C");
 	au("gamma",			"nT");	// exact
 	au("gauss",			"1e-4 T");	// exact
 	au("maxwell",			"1e-8 Wb");	// exact

@@ -214,7 +214,7 @@ public class VCUnitDefinition implements Matchable, Serializable{
 		// so have to explicitly look for such cases.
 		//
 		final VCUnitDefinition molecules_per_uM_um3 = fieldVCUnitSystem.getInstance("molecules.uM-1.um-3");
-		final RationalNumber value_molecules_per_uM_um3 = new RationalNumber(602);
+		final RationalNumber value_molecules_per_uM_um3 = new RationalNumber(602214179,1000000);
 		
 		RationalNumber tempValue = value_molecules_per_uM_um3;
 		VCUnitDefinition tempUnit = molecules_per_uM_um3;

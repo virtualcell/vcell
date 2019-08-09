@@ -217,7 +217,7 @@ public void bNGOutputPanel_Initialize() {
 			"## simple_ode_end.net : network file set to end-of-simulation concentrations.\n\n" +
 			"begin model\n" +
 			"begin parameters\n\n" +
-			"  NA        6.02e23      # Avogadro's number (molecules/mole)\n" +
+			"  NA        6.02214179e23	# Avogadro's number (molecules/mole)\n" +
 			"  f         0.01         # fraction of cell to simulate \n  V         3e-12*f      # cytoplasmic volume of cell simulation (liters)\n\n" +
 			"  # Initial molecule counts.\n  # multiply concentration by (V*NA) to convert M to molecules/cell\n" +
 			"  seed_S    1e-7 * V*NA       # concentration(M) * simulation volume * NA\n" +

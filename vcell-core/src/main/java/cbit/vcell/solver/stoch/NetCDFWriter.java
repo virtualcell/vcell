@@ -631,7 +631,7 @@ public class NetCDFWriter {
 			if(totalOrder == 0)
 			{
 				results[i].setLawType(ReactionRateLaw.order_0);
-				coefExp = new Expression(coefExp.flatten().infix()+"/6.02e23");
+				coefExp = new Expression(coefExp.flatten().infix()+"/6.02214179e23");
 				try{
 					coefExp.bindExpression(simSymbolTable);
 					coefExp = simSymbolTable.substituteFunctions(coefExp).flatten();
@@ -662,8 +662,8 @@ public class NetCDFWriter {
 			{
 				if(varSymbols.length == 1) // second order, two same molecules 
 				{
-					//k= c*6.02e23/2, since in VCell, "/2" is already incorporated into c, so we don'y need to take care of this item from the conversion.
-					coefExp = new Expression(coefExp.flatten().infix()+"*6.02e23");
+					//k= c*6.02214179e23/2, since in VCell, "/2" is already incorporated into c, so we don'y need to take care of this item from the conversion.
+					coefExp = new Expression(coefExp.flatten().infix()+"*6.02214179e23");
 					results[i].setLawType(ReactionRateLaw.order_2_1substrate);
 					try{
 						coefExp.bindExpression(simSymbolTable);
@@ -678,7 +678,7 @@ public class NetCDFWriter {
 				}
 				else if(varSymbols.length == 2) //second order, two different molecules
 				{
-					coefExp = new Expression(coefExp.flatten().infix()+"*6.02e23");
+					coefExp = new Expression(coefExp.flatten().infix()+"*6.02214179e23");
 					results[i].setLawType(ReactionRateLaw.order_2_2substrate);
 					try{
 						coefExp.bindExpression(simSymbolTable);

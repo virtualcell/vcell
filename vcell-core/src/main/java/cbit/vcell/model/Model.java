@@ -1912,23 +1912,37 @@ public class Model implements Versionable, Matchable, PropertyChangeListener, Ve
 		} catch (ExpressionException e) {
 			e.printStackTrace();
 		}
-	}      
+	}
+	
+public final static Map<ReservedSymbolRole, Double> reservedConstantsMap = new HashMap<ReservedSymbolRole, Double> () {
+	{
+		put(ReservedSymbolRole.PI_CONSTANT, Math.PI);
+		put(ReservedSymbolRole.FARADAY_CONSTANT, 9.64853321e4);			// exactly 96485.3321233100184 C/mol
+		put(ReservedSymbolRole.FARADAY_CONSTANT_NMOLE, 9.64853321e-5);	// was 9.648
+		put(ReservedSymbolRole.N_PMOLE, 6.02214179e11);
+		put(ReservedSymbolRole.K_GHK, 1e-9);
+		put(ReservedSymbolRole.GAS_CONSTANT, 8314.46261815);			// exactly 8314.46261815324  (was 8314.0)
+		put(ReservedSymbolRole.KMILLIVOLTS, 1000.0);
+		put(ReservedSymbolRole.KMOLE, 1.0/602.214179);
+	}
+};
 
 private ReservedSymbol[] createReservedSymbols() {
-	return  new ReservedSymbol[]{ 
-			new ReservedSymbol(ReservedSymbolRole.TIME, "t","time", unitSystem.getTimeUnit(), null), 
-			new ReservedSymbol(ReservedSymbolRole.X, "x","x coord", unitSystem.getLengthUnit(), null),  
-			new ReservedSymbol(ReservedSymbolRole.Y, "y","y coord", unitSystem.getLengthUnit(), null), 
-			new ReservedSymbol(ReservedSymbolRole.Z, "z","z coord", unitSystem.getLengthUnit(), null),	
-			new ReservedSymbol(ReservedSymbolRole.TEMPERATURE, "_T_","temperature", unitSystem.getTemperatureUnit(), null), 
-			new ReservedSymbol(ReservedSymbolRole.PI_CONSTANT, "_PI_","PI constant", unitSystem.getInstance_DIMENSIONLESS(),new Expression(Math.PI)),  
-			new ReservedSymbol(ReservedSymbolRole.FARADAY_CONSTANT, "_F_","Faraday constant",unitSystem.getFaradayConstantUnit(), new Expression(9.648e4)),  
-			new ReservedSymbol(ReservedSymbolRole.FARADAY_CONSTANT_NMOLE, "_F_nmol_","Faraday constant", unitSystem.getFaradayConstantNMoleUnit(),new Expression(9.648e-5)), 
-			new ReservedSymbol(ReservedSymbolRole.N_PMOLE, "_N_pmol_","Avagadro Num (scaled)",unitSystem.getN_PMoleUnit(),new Expression(6.02e11)), 
-			new ReservedSymbol(ReservedSymbolRole.K_GHK, "_K_GHK_","GHK unit scale",unitSystem.getK_GHKUnit(), new Expression(1e-9)), 
-			new ReservedSymbol(ReservedSymbolRole.GAS_CONSTANT, "_R_","Gas Constant",unitSystem.getGasConstantUnit(), new Expression(8314.0)), 
-			new ReservedSymbol(ReservedSymbolRole.KMILLIVOLTS, "K_millivolts_per_volt","voltage scale", unitSystem.getK_mV_perV_Unit(), new Expression(1000)), 
-			new ReservedSymbol(ReservedSymbolRole.KMOLE, "KMOLE", "Flux unit conversion", unitSystem.getKMoleUnit(), new Expression(new RationalNumber(1, 602)))
+	return  new ReservedSymbol[] { 
+		new ReservedSymbol(ReservedSymbolRole.TIME, "t","time", unitSystem.getTimeUnit(), null), 
+		new ReservedSymbol(ReservedSymbolRole.X, "x","x coord", unitSystem.getLengthUnit(), null),  
+		new ReservedSymbol(ReservedSymbolRole.Y, "y","y coord", unitSystem.getLengthUnit(), null), 
+		new ReservedSymbol(ReservedSymbolRole.Z, "z","z coord", unitSystem.getLengthUnit(), null),	
+		new ReservedSymbol(ReservedSymbolRole.TEMPERATURE, "_T_","temperature", unitSystem.getTemperatureUnit(), null),
+			
+		new ReservedSymbol(ReservedSymbolRole.PI_CONSTANT, "_PI_","PI constant", unitSystem.getInstance_DIMENSIONLESS(),new Expression(reservedConstantsMap.get(ReservedSymbolRole.PI_CONSTANT))),
+		new ReservedSymbol(ReservedSymbolRole.FARADAY_CONSTANT, "_F_","Faraday constant",unitSystem.getFaradayConstantUnit(), new Expression(reservedConstantsMap.get(ReservedSymbolRole.FARADAY_CONSTANT))),  
+		new ReservedSymbol(ReservedSymbolRole.FARADAY_CONSTANT_NMOLE, "_F_nmol_","Faraday constant", unitSystem.getFaradayConstantNMoleUnit(),new Expression(reservedConstantsMap.get(ReservedSymbolRole.FARADAY_CONSTANT_NMOLE))), 
+		new ReservedSymbol(ReservedSymbolRole.N_PMOLE, "_N_pmol_","Avagadro Num (scaled)",unitSystem.getN_PMoleUnit(),new Expression(reservedConstantsMap.get(ReservedSymbolRole.N_PMOLE))), 
+		new ReservedSymbol(ReservedSymbolRole.K_GHK, "_K_GHK_","GHK unit scale",unitSystem.getK_GHKUnit(), new Expression(reservedConstantsMap.get(ReservedSymbolRole.K_GHK))), 
+		new ReservedSymbol(ReservedSymbolRole.GAS_CONSTANT, "_R_","Gas Constant",unitSystem.getGasConstantUnit(), new Expression(reservedConstantsMap.get(ReservedSymbolRole.GAS_CONSTANT))), 
+		new ReservedSymbol(ReservedSymbolRole.KMILLIVOLTS, "K_millivolts_per_volt","voltage scale", unitSystem.getK_mV_perV_Unit(), new Expression(reservedConstantsMap.get(ReservedSymbolRole.KMILLIVOLTS))), 
+		new ReservedSymbol(ReservedSymbolRole.KMOLE, "KMOLE", "Flux unit conversion", unitSystem.getKMoleUnit(), new Expression(reservedConstantsMap.get(ReservedSymbolRole.KMOLE)))
 	};
 }
 
