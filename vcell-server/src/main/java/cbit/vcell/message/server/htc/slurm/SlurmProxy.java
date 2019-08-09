@@ -451,15 +451,43 @@ public class SlurmProxy extends HtcProxy {
 		lsb.write("   #");
 		lsb.write("   localSingularityImage="+slurm_singularity_local_image_filepath);
 		lsb.write("   if [ ! -e \"$localSingularityImage\" ]; then");
-		lsb.write("       echo \"local singularity image $localSingularityImage not found, trying to download to hpc from central\"");
+		lsb.write("       echo \"local singularity image $localSingularityImage not found, trying to download to hpc from \""+slurm_singularity_central_filepath.getAbsolutePath());
 		lsb.write("       mkdir -p "+slurm_local_singularity_dir);
 		lsb.write("       singularitytempfile=$(mktemp -up "+slurm_central_singularity_dir+")");
-		lsb.write("       cp "+slurm_singularity_central_filepath.getAbsolutePath()+" ${singularitytempfile}");
-		lsb.write("       mv -n ${singularitytempfile} "+slurm_singularity_local_image_filepath);
+		// Copy using locking so when new deployments occur and singularity has to be copied to compute host
+		// and multiple parameter scan land on same compute host at same time and all try to download the singularity image
+		// they won't interfere with each other
+		lsb.write("		  flock -E 100 -n /tmp/vcellSingularityLock_"+softwareVersion+".lock sh -c \"cp "+slurm_singularity_central_filepath.getAbsolutePath()+" ${singularitytempfile}"+" ; mv -n ${singularitytempfile} "+slurm_singularity_local_image_filepath+"\"");
+		lsb.write("		  theStatus=$?");
+		lsb.write("		  if [ $theStatus -eq 100 ]");
+		lsb.write("		  then");
+		lsb.write("		      echo \"lock in use, waiting for lock owner to copy singularityImage\"");
+		lsb.write("		      let c=0");
+		lsb.write("		      until [ -f $localSingularityImage ]");
+		lsb.write("		      do");
+		lsb.write("		  	    sleep 3");
+		lsb.write("		  	    let c=c+1");
+		lsb.write("		  		if [ $c -eq 20 ]");
+		lsb.write("		  		then");
+		lsb.write("		  			echo \"Exceeded wait time for lock owner to copy singularityImage\"");
+		lsb.write("		  			break");
+		lsb.write("		  		fi");
+		lsb.write("		      done");
+		lsb.write("		  else");
+		lsb.write("		      if [ $theStatus -eq 0 ]");
+		lsb.write("		      then");
+		lsb.write("		            echo copy succeeded");
+		lsb.write("		      else");
+		lsb.write("		            echo copy failed");
+		lsb.write("		      fi");
+		lsb.write("		  fi");
+
 		lsb.write("       rm -f ${singularitytempfile}");
 		lsb.write("       if [ ! -e \"$localSingularityImage\" ]; then");		
 		lsb.write("           echo \"Failed to copy $localSingularityImage to hpc from central\"");
 		lsb.write("           exit 1");
+		lsb.write("       else");
+		lsb.write("           echo successful copy from "+slurm_singularity_central_filepath.getAbsolutePath()+" to "+slurm_singularity_local_image_filepath);
 		lsb.write("       fi");
 		lsb.write("   fi");
 		StringBuffer singularityEnvironmentVars = new StringBuffer();
