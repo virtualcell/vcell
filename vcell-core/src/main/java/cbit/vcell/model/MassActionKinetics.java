@@ -179,7 +179,8 @@ protected void updateGeneratedExpressions() throws cbit.vcell.parser.ExpressionE
 	int productCount = 0;
 	for (int i = 0; i < rp_Array.length; i++) {
 		Expression term = null;
-		Expression speciesContext = getSymbolExpression(rp_Array[i].getSpeciesContext());
+		SpeciesContext sc = rp_Array[i].getSpeciesContext();
+		Expression speciesContext = getSymbolExpression(sc);
 		int stoichiometry = rp_Array[i].getStoichiometry();
 		if (rp_Array[i] instanceof Reactant){
 			reactantCount++;

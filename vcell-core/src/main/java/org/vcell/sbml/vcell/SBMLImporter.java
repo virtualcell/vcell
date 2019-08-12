@@ -34,6 +34,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.StringTokenizer;
@@ -985,7 +986,7 @@ public class SBMLImporter {
 	 * allows the import of such reactions.
 	 *
 	 **/
-	private void addReactionParticipants(org.sbml.jsbml.Reaction sbmlRxn, ReactionStep vcRxn) throws Exception {
+	private void addReactionParticipants(org.sbml.jsbml.Reaction sbmlRxn, ReactionStep vcRxn, Map<String, String> sbmlToVclNameMap) throws Exception {
 		Model vcModel = vcBioModel.getSimulationContext(0).getModel();
 		//VCReactionProxy proxy = VCReactionProxy.factory(vcRxn);
 		//VCAssert.assertTrue(vcModel == proxy.getModel(), "mismatch in Model between ReactionStep and SimulationContext" );
@@ -1092,7 +1093,12 @@ public class SBMLImporter {
 			// now add the reactants for the sbml reaction from
 			// sbmlReactionParticipantsHash as reactants to vcRxn
 			for (Entry<String, Integer> es : sbmlReactantsHash.entrySet()) {
-				SpeciesContext speciesContext = vcModel.getSpeciesContext(es.getKey());
+				String sbmlReactantSpId = es.getKey();
+				String vcSpeciesName = sbmlReactantSpId;
+				if(sbmlToVclNameMap.get(sbmlReactantSpId) != null) {
+					vcSpeciesName = sbmlToVclNameMap.get(sbmlReactantSpId);
+				}
+				SpeciesContext speciesContext = vcModel.getSpeciesContext(vcSpeciesName);
 				int stoich = es.getValue(); 
 				vcRxn.addReactant(speciesContext, stoich);	
 			}
@@ -1199,7 +1205,12 @@ public class SBMLImporter {
 			// now add the products for the sbml reaction from sbmlProductsHash
 			// as products to vcRxn
 			for (Entry<String, Integer> es : sbmlProductsHash.entrySet()) {
-				SpeciesContext speciesContext = vcModel.getSpeciesContext(es.getKey());
+				String sbmlProductSpId = es.getKey();
+				String vcSpeciesName = sbmlProductSpId;
+				if(sbmlToVclNameMap.get(sbmlProductSpId) != null) {
+					vcSpeciesName = sbmlToVclNameMap.get(sbmlProductSpId);
+				}
+				SpeciesContext speciesContext = vcModel.getSpeciesContext(vcSpeciesName);
 				int stoich = es.getValue(); 
 				vcRxn.addProduct(speciesContext, stoich);	
 			}
@@ -1222,14 +1233,17 @@ public class SBMLImporter {
 		for (int j = 0; j < (int) sbmlRxn.getNumModifiers(); j++) {
 			ModifierSpeciesReference spRef = sbmlRxn.getModifier(j);
 			String sbmlSpId = spRef.getSpecies();
+			String vcSpeciesName = sbmlSpId;
+			if(sbmlToVclNameMap.get(sbmlSpId) != null) {
+				vcSpeciesName = sbmlToVclNameMap.get(sbmlSpId);
+			}
 			if (sbmlModel.getSpecies(sbmlSpId) != null) {
 				// check if this modifier species is preesent in vcRxn (could
 				// have been added as reactamt/product/catalyst).
 				// If alreay a catalyst in vcRxn, do nothing
 				ArrayList<ReactionParticipant> vcRxnParticipants = getVCReactionParticipantsFromSymbol(
-						vcRxn, sbmlSpId);
-				SpeciesContext speciesContext = vcModel
-						.getSpeciesContext(sbmlSpId);
+						vcRxn, vcSpeciesName);
+				SpeciesContext speciesContext = vcModel.getSpeciesContext(vcSpeciesName);
 				if (vcRxnParticipants == null || vcRxnParticipants.size() == 0) {
 					// If not in reactionParticipantList of vcRxn, add as
 					// catalyst.
@@ -1397,7 +1411,7 @@ public class SBMLImporter {
 //		throw new SBMLImportException("Rate rules are not allowed in VCell at this time.");
 	}
 
-	protected void addSpecies(VCMetaData metaData) {
+	protected void addSpecies(VCMetaData metaData, Map<String, String> vcToSbmlNameMap, Map<String, String> sbmlToVcNameMap) {
 		if (sbmlModel == null) {
 			throw new SBMLImportException("SBML model is NULL");
 		}
@@ -1408,35 +1422,34 @@ public class SBMLImporter {
 		}
 		HashMap<String, Species> vcSpeciesHash = new HashMap<String, Species>();
 		HashMap<Species, org.sbml.jsbml.Species> vc_sbmlSpeciesHash = new HashMap<Species, org.sbml.jsbml.Species>();
-		SpeciesContext[] vcSpeciesContexts = new SpeciesContext[(int) sbmlModel
-				.getNumSpecies()];
+		SpeciesContext[] vcSpeciesContexts = new SpeciesContext[(int) sbmlModel.getNumSpecies()];
 		// Get species from SBMLmodel; Add/get speciesContext
 		try {
 			// First pass - add the speciesContexts
 			for (int i = 0; i < sbmlModel.getNumSpecies(); i++) {
-				org.sbml.jsbml.Species sbmlSpecies = (org.sbml.jsbml.Species) listOfSpecies
-						.get(i);
+				org.sbml.jsbml.Species sbmlSpecies = (org.sbml.jsbml.Species) listOfSpecies.get(i);
 				// Sometimes, the species name can be null or a blank string; in
 				// that case, use species id as the name.
-				String speciesName = sbmlSpecies.getId();
+				String sbmlSpeciesId = sbmlSpecies.getId();
+				String vcSpeciesId = sbmlSpeciesId;			// we'll try to use the sbmlSpeciesId as name for the vCell species
 				Species vcSpecies = null;
 				// create a species with speciesName as commonName. If it is
 				// different in the annotation, can change it later
 				Element sbmlImportRelatedElement = sbmlAnnotationUtil.readVCellSpecificAnnotation(sbmlSpecies);
 				if (sbmlImportRelatedElement != null) {
-					Element embeddedElement = getEmbeddedElementInAnnotation(
-							sbmlImportRelatedElement, SPECIES_NAME);
+					Element embeddedElement = getEmbeddedElementInAnnotation(sbmlImportRelatedElement, SPECIES_NAME);
 					if (embeddedElement != null) {
 						// Get the species name from annotation and create the
 						// species.
-						if (embeddedElement.getName()
-								.equals(XMLTags.SpeciesTag)) {
-							String vcSpeciesName = embeddedElement
-									.getAttributeValue(XMLTags.NameAttrTag);
+						if (embeddedElement.getName().equals(XMLTags.SpeciesTag)) {
+							String vcSpeciesName = embeddedElement.getAttributeValue(XMLTags.NameAttrTag);
 							vcSpecies = vcSpeciesHash.get(vcSpeciesName);
 							if (vcSpecies == null) {
-								vcSpecies = new Species(vcSpeciesName,
-										vcSpeciesName);
+								ReservedSymbol rs = vcBioModel.getModel().getReservedSymbolByName(vcSpeciesName);
+								if(rs != null) {
+									System.out.println("Here too?");
+								}
+								vcSpecies = new Species(vcSpeciesName, vcSpeciesName);
 								vcSpeciesHash.put(vcSpeciesName, vcSpecies);
 							}
 						}
@@ -1445,12 +1458,24 @@ public class SBMLImporter {
 					} else {
 						// Annotation element is present, but doesn't contain
 						// the species element.
-						vcSpecies = new Species(speciesName, speciesName);
-						vcSpeciesHash.put(speciesName, vcSpecies);
+						ReservedSymbol rs = vcBioModel.getModel().getReservedSymbolByName(sbmlSpeciesId);
+						if(rs != null) {
+							vcSpeciesId = "s_" + sbmlSpeciesId;
+							vcToSbmlNameMap.put(vcSpeciesId, sbmlSpeciesId);
+							sbmlToVcNameMap.put(sbmlSpeciesId, vcSpeciesId);
+						}
+						vcSpecies = new Species(vcSpeciesId, vcSpeciesId);
+						vcSpeciesHash.put(vcSpeciesId, vcSpecies);
 					}
 				} else {
-					vcSpecies = new Species(speciesName, speciesName);
-					vcSpeciesHash.put(speciesName, vcSpecies);
+					ReservedSymbol rs = vcBioModel.getModel().getReservedSymbolByName(sbmlSpeciesId);
+					if(rs != null) {		// try to rename the vCell species if its name is a vCell reserved symbol
+						vcSpeciesId = "s_" + sbmlSpeciesId;
+						vcToSbmlNameMap.put(vcSpeciesId, sbmlSpeciesId);
+						sbmlToVcNameMap.put(sbmlSpeciesId, vcSpeciesId);
+					}
+					vcSpecies = new Species(vcSpeciesId, vcSpeciesId);
+					vcSpeciesHash.put(vcSpeciesId, vcSpecies);
 				}
 
 				// store vc & sbml species in hash to read in annotation later
@@ -1459,11 +1484,9 @@ public class SBMLImporter {
 				// Get matching compartment name (of sbmlSpecies[i]) from
 				// feature list
 				String compartmentId = sbmlSpecies.getCompartment();
-				Structure spStructure = vcBioModel.getSimulationContext(0).getModel().getStructure(
-						compartmentId);
-				vcSpeciesContexts[i] = new SpeciesContext(vcSpecies,
-						spStructure);
-				vcSpeciesContexts[i].setName(speciesName);
+				Structure spStructure = vcBioModel.getSimulationContext(0).getModel().getStructure(compartmentId);
+				vcSpeciesContexts[i] = new SpeciesContext(vcSpecies, spStructure);
+				vcSpeciesContexts[i].setName(vcSpeciesId);
 				
 				if(sbmlSpecies.isSetName()) {
 					String sbmlSpeciesName = sbmlSpecies.getName();
@@ -1520,19 +1543,22 @@ public class SBMLImporter {
 	 * units/factor.
 	 * 
 	 */
-	private void setSpeciesInitialConditions() {
+	private void setSpeciesInitialConditions(Map<String, String> vcToSbmlNameMap) {
 		try {
 			// fill in SpeciesContextSpec for each speciesContext
 			Model vcModel = vcBioModel.getSimulationContext(0).getModel();
 			SpeciesContext[] vcSpeciesContexts = vcModel.getSpeciesContexts();
 			for (int i = 0; i < vcSpeciesContexts.length; i++) {
-				org.sbml.jsbml.Species sbmlSpecies = (org.sbml.jsbml.Species) sbmlModel
-						.getSpecies(vcSpeciesContexts[i].getName());
+				String vcSpeciesContextName = vcSpeciesContexts[i].getName();
+				String sbmlSpeciesName = vcSpeciesContextName;
+				if(vcToSbmlNameMap.get(vcSpeciesContextName) != null) {
+					sbmlSpeciesName = vcToSbmlNameMap.get(vcSpeciesContextName);
+				}
+				org.sbml.jsbml.Species sbmlSpecies = (org.sbml.jsbml.Species) sbmlModel.getSpecies(sbmlSpeciesName);
 				// Sometimes, the species name can be null or a blank string; in
 				// that case, use species id as the name.
 				String speciesName = sbmlSpecies.getId();
-				Compartment compartment = (Compartment) sbmlModel
-						.getCompartment(sbmlSpecies.getCompartment());
+				Compartment compartment = (Compartment) sbmlModel.getCompartment(sbmlSpecies.getCompartment());
 
 				Expression initExpr = null;
 				if (sbmlSpecies.isSetInitialConcentration()) { // If initial
@@ -1702,15 +1728,12 @@ public class SBMLImporter {
 		// stored in rxnAnnotation.
 		// Retrieve this to re-set rate param name.
 		if (sbmlImportElement != null) {
-			Element embeddedRxnElement = getEmbeddedElementInAnnotation(
-					sbmlImportElement, RATE_NAME);
+			Element embeddedRxnElement = getEmbeddedElementInAnnotation(sbmlImportElement, RATE_NAME);
 			String vcRateParamName = null;
 			if (embeddedRxnElement != null) {
 				if (embeddedRxnElement.getName().equals(XMLTags.RateTag)) {
-					vcRateParamName = embeddedRxnElement
-							.getAttributeValue(XMLTags.NameAttrTag);
-					vcKinetics.getAuthoritativeParameter().setName(
-							vcRateParamName);
+					vcRateParamName = embeddedRxnElement.getAttributeValue(XMLTags.NameAttrTag);
+					vcKinetics.getAuthoritativeParameter().setName(vcRateParamName);
 				}
 			}
 		}
@@ -1720,8 +1743,7 @@ public class SBMLImporter {
 		 * it is the reactionRateParamter name; if it is from LumpedKinetics, it
 		 * is the LumpedReactionRateParameter name.
 		 */
-		String origRateParamName = vcKinetics.getAuthoritativeParameter()
-				.getName();
+		String origRateParamName = vcKinetics.getAuthoritativeParameter().getName();
 
 		/*
 		 * Check if any parameters (global/local) have the same name as kinetics
@@ -1732,17 +1754,15 @@ public class SBMLImporter {
 		 */
 		ListOf listofGlobalParams = sbmlModel.getListOfParameters();
 		for (int j = 0; j < sbmlModel.getNumParameters(); j++) {
-			org.sbml.jsbml.Parameter param = (org.sbml.jsbml.Parameter) listofGlobalParams
-					.get(j);
+			org.sbml.jsbml.Parameter param = (org.sbml.jsbml.Parameter) listofGlobalParams.get(j);
 			String paramName = param.getId();
 			// Check if reaction rate param clashes with an existing
 			// (pre-defined) kinetic parameter - eg., reaction rate param 'J'
 			// If so, change the name of the kinetic param (say, by adding
 			// reaction name to it).
 			if (paramName.equals(origRateParamName)) {
-				vcKinetics.getAuthoritativeParameter().setName(
-						origRateParamName + "_"
-								+ TokenMangler.mangleToSName(sbmlRxn.getId()));
+				String newName = origRateParamName + "_" + TokenMangler.mangleToSName(sbmlRxn.getId());
+				vcKinetics.getAuthoritativeParameter().setName(newName);
 			}
 		}
 
@@ -1753,16 +1773,12 @@ public class SBMLImporter {
 				org.sbml.jsbml.LocalParameter param = (org.sbml.jsbml.LocalParameter) listofLocalParams.get(j);
 				String paramName = param.getId();
 				// Check if reaction rate param clashes with an existing
-				// (pre-defined) kinetic parameter - eg., reaction rate param
-				// 'J'
+				// (pre-defined) kinetic parameter - eg., reaction rate param 'J'
 				// If so, change the name of the kinetic param (say, by adding
 				// reaction name to it).
 				if (paramName.equals(origRateParamName)) {
-					vcKinetics.getAuthoritativeParameter().setName(
-							origRateParamName
-									+ "_"
-									+ TokenMangler.mangleToSName(sbmlRxn
-											.getId()));
+					String newName = origRateParamName + "_" + TokenMangler.mangleToSName(sbmlRxn.getId());
+					vcKinetics.getAuthoritativeParameter().setName(newName);
 				}
 			}
 		}
@@ -1959,7 +1975,7 @@ public class SBMLImporter {
 			this.level = sbmlModel.getLevel();
 			// this.version = sbmlModel.getVersion();
 			String ns = document.getNamespace();
-
+			
 			try {
 				// create SBML unit system for the model and create the bioModel.
 				ModelUnitSystem modelUnitSystem;
@@ -2728,7 +2744,9 @@ public class SBMLImporter {
 		VCMetaData vcMetaData = vcBioModel.getVCMetaData();
 		addCompartments(vcMetaData);
 		// Add species/speciesContexts
-		addSpecies(vcMetaData);
+		Map<String, String> vcToSbmlNameMap = new HashMap<> ();		// when sbml file uses a vCell reserved symbol as species or reaction name
+		Map<String, String> sbmlToVcNameMap = new HashMap<> ();		// happens with x, y, z in the BMDB database
+		addSpecies(vcMetaData, vcToSbmlNameMap, sbmlToVcNameMap);
 		// Add Parameters
 		try {
 			addParameters();
@@ -2737,13 +2755,22 @@ public class SBMLImporter {
 			throw new SBMLImportException(e.getMessage(), e);
 		}
 		// Set initial conditions on species
-		setSpeciesInitialConditions();
+		setSpeciesInitialConditions(vcToSbmlNameMap);
 		// Add InitialAssignments
 		addInitialAssignments();
 		// Add constraints (not handled in VCell)
 		addConstraints();
 		// Add Reactions
-		addReactions(vcMetaData);
+		addReactions(vcMetaData, vcToSbmlNameMap, sbmlToVcNameMap);
+		// Check if we found and renamed successfully any reserved symbols used as species or reaction name
+		for(Map.Entry<String, String> entry : sbmlToVcNameMap.entrySet()) {
+			String sbmlName = entry.getKey();
+			String vcName = entry.getValue();
+			localIssueList.add(new Issue(vcBioModel, issueContext, IssueCategory.SBMLImport_ReservedSymbolUsed,
+					"Reserved vCell symbol '" + sbmlName + "' found and replaced with '" + vcName + 
+					"' during import. Please check for correctness.", Issue.Severity.WARNING));
+		}
+		
 		// Add Rules Rules : adding these later (after assignment rules, since
 		// compartment/species/parameter need to be defined before rate rules
 		// for those vars can be read in).
@@ -2876,7 +2903,7 @@ public class SBMLImporter {
 	 * addReactions:
 	 *
 	 */
-	protected void addReactions(VCMetaData metaData) {
+	protected void addReactions(VCMetaData metaData, Map<String, String> vcToSbmlNameMap, Map<String, String> sbmlToVcNameMap) {
 		if (sbmlModel == null) {
 			throw new SBMLImportException("SBML model is NULL");
 		}
@@ -2895,6 +2922,13 @@ public class SBMLImporter {
 			for (Reaction sbmlRxn: reactions) {
 				ReactionStep vcReaction = null;
 				String rxnName = sbmlRxn.getId();
+				ReservedSymbol rs = vcBioModel.getModel().getReservedSymbolByName(rxnName);
+				if(rs != null) {
+					rxnName = "r_" + rxnName;
+					vcToSbmlNameMap.put(rxnName, sbmlRxn.getId());
+					sbmlToVcNameMap.put(sbmlRxn.getId(), rxnName);
+				}
+				
 				boolean bReversible = true;
 				if (sbmlRxn.isSetReversible()){
 					bReversible = sbmlRxn.getReversible();
@@ -2991,7 +3025,7 @@ public class SBMLImporter {
 
 				// Now add the reactants, products, modifiers as specified by
 				// the sbmlRxn
-				addReactionParticipants(sbmlRxn, vcReaction);
+				addReactionParticipants(sbmlRxn, vcReaction, sbmlToVcNameMap);
 
 				KineticLaw kLaw = sbmlRxn.getKineticLaw();
 				Kinetics kinetics = null;
@@ -3000,6 +3034,11 @@ public class SBMLImporter {
 					// to an expression (infix) to be used in VCell kinetics
 					ASTNode sbmlRateMath = kLaw.getMath();
 					Expression kLawRateExpr = getExpressionFromFormula(sbmlRateMath);
+					for(Map.Entry<String, String> entry : sbmlToVcNameMap.entrySet()) {
+						String sbmlName = entry.getKey();
+						String vcName = entry.getValue();
+						kLawRateExpr.substituteInPlace(new Expression(sbmlName), new Expression(vcName));
+					}
 					Expression vcRateExpression = new Expression(kLawRateExpr);
 
 					// Check the kinetic rate equation for occurances of any
@@ -3042,8 +3081,7 @@ public class SBMLImporter {
 					// If the name of the rate parameter has been changed by
 					// user, or matches with global/local param,
 					// it has to be changed.
-					resolveRxnParameterNameConflicts(sbmlRxn, kinetics,
-							sbmlImportRelatedElement);
+					resolveRxnParameterNameConflicts(sbmlRxn, kinetics, sbmlImportRelatedElement);
 
 					/**
 					 * Now, based on the kinetic law expression, see if the rate
