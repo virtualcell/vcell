@@ -17,7 +17,7 @@
 	<item>for each application, multiple <link target="simulations_overview">Simulations</link> 
 	can be created that can include different initial conditions.
 	</item>
-	<item><link target="PEOverview"> Parameter Estimation</link> can be performed.</item> 
+	<item><link target="PEOverview">Parameter Estimation</link> can be performed.</item> 
 	</list>  
 	</introduction>
 
@@ -31,7 +31,7 @@
 	(See <bold>Spatial Stochastic </bold> or <bold>Non-Spatial Stochastic </bold>under <link target="SpeciesSpecifications">Species Specifications</link>).</item>
 	<item><def target="def_RuleBased">Network-free</def>, a special stochastic <link target="NFSimApp">network-free application</link> that does not require generating a network to simulate. </item> 
 	</list>
-	<imgReference target = "ApplicationTypes.png"/>.
+	<imgReference target = "ApplicationTypes.png"/>
 	<para> Additionally, by defining <link target="GeometryOverview">Geometry</link>, deterministic, stochastic or network-free 
 	applications can be made:</para>
 	<list> 
@@ -44,7 +44,8 @@
 	and species diffuse within compartments. A spatial application is 
 	simulated using either partial differential equations
 	(for <def target="def_Deterministic">deterministic</def> applications), or using the stochastic agent-based
-	 simulation algorithm SmolDyn (for <def target="def_Stochastic">stochastic</def> applications).  
+	 simulation algorithm SmolDyn (for <def target="def_Stochastic">stochastic</def> applications). 
+	Deterministic spatial applications can also utilize our moving boundary solver in cases where movement of volumes or surfaces can be described within the simulation.   
 	Presently <def target="def_RuleBased">Network-free</def> applications do not allow spatial geometry (compartmental only).
 	</item> 
 	</list>
@@ -55,12 +56,11 @@
 	</appearance>
 	<operations>  
         <bold>Create</bold> a new application by selecting "Applications" in the left menu.  Right 
-	click opens a menu to create either a deterministic or stochastic application.  Or, use the 
+	click opens a menu to create a deterministic, stochastic, or network-free application.  Or, use the 
 	<bold>New Application</bold> button in the main window.
 	<para><bold>View/Edit</bold> application components and properties by double-clicking, or selecting the + icon beside, the 'Applications' tree in the navigation panel to expose the names of applications contained in the BioModel; select one of the Application names to activate the 'view' and 'properties' panels that display all the application detail editors.</para>
-		<imgReference target = "ApplicationOverview.png">
-		</imgReference>
-	</operations>
+		<imgReference target = "ApplicationOverview.png"/>
+			</operations>
 	
 </page>
 

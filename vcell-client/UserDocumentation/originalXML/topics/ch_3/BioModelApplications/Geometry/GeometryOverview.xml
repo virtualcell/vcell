@@ -8,7 +8,7 @@ There are 2 types of geometries in VCell, <bold>spatial</bold> and <bold>non-spa
 <item>Non-spatial geometries (0 dimensional and not spatially resolved) are implicitly defined in non-spatial applications (for ODE and non-spatial stochastic simulations).</item>
 <item>Spatial geometries (1,2,3 dimensional and spatially resolved) must be explicitly defined by the user in spatial applications (for PDE and spatial stochastic simulations).</item>
 </list>
-Spatial geometries can be defined in several ways:
+Using the <bold>Geometry Definition Tab</bold> Spatial geometries can be defined in several ways:
 <list>
 <item>Re-using previously defined geometries from other VCell model applications (including shared models from other users).</item>
 <item>Creating new geometries by defining analytic equations that describe compartment distributions in space.  (<link target="geom_Analytic">Analytic Geometry</link>)</item>

@@ -16,7 +16,7 @@
 	<list>
 	<item>Structure name: Name of the selected volume structure in the model.</item>
 	<item>Size variable name: Variable having a numerical value equal to the selected volume structure's size in a simulation geometry.</item>
-	<item>Annotation: User notes associated with the selected volume compartment structure.</item>
+	<item><bold>Add or Edit Annotations</bold> for the structure using the <link target= "PP_Annotations">Annotations</link> tab in the Properties Pane.</item>
 	</list>
 	
 	<para>
@@ -28,7 +28,7 @@
 	<item>Voltage variable name: Variable having a numerical value equal to (voltage(positive feature) - voltage(negative feature))</item>
 	<item>Positive (inside feature): The volume structure used in calculation of "voltage variable"</item>
 	<item>Negative (outside feature): The volume structure used in calculation of "voltage variable"</item>
-	<item>Annotation: User notes associated with selected membrane structure.</item>
+	<item><bold>Add or Edit Annotations</bold> for the structure using the <link target= "PP_Annotations">Annotations</link> tab in the Properties Pane.</item>
 	</list>
 	</para>
 

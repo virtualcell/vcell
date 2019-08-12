@@ -16,8 +16,7 @@ displays its value.
 Properties and values are read-only. <bold>Blue underlined</bold> items are 
 <bold>hyperlinks</bold> to various resources. Double clicking on any hyperlink opens a default web browser 
 with the linked web page.		
-		<imgReference target = "PP_Pathways.png">
-		</imgReference>
+		<imgReference target = "PP_Pathways.png"/>
 	</appearance>
 	
 	<operations>

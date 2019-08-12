@@ -19,8 +19,7 @@ Various physical entities and interactions are shown as circles of different col
 The relationships between entities are shown as full lines (for biochemical reactions) 
 or dotted lines 9for catalysis and control). Entity names are shortened. 
 Mouse over entity gives the full entity name.
-		<imgReference target = "PathwayDiagramView.png">
-		</imgReference>
+		<imgReference target = "PathwayDiagramView.png"/>
 <para>
 Selecting a single entity activates the bottom 
 <link target = "PP_Pathways">Entity Properties</link> pane 
@@ -29,10 +28,10 @@ that shows the properties of a selected entity.
 	</appearance>
 	<operations>
 More entities can be added from the 
-		<link target = "PathwayImportTable"> Pathway Preview</link>.
+		<link target = "PathwayImportTable">Pathway Preview</link>.
 		<para>
 		Selecting multiple entities activates 
-		<link target = "GroupOperationsPanel"> Group</link> button.
+		<link target = "GroupOperationsPanel">Group</link> button.
 		</para>
 		<para>
 		Selected entities can be imported into the BioModel and be either created new or linked to existing

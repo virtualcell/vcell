@@ -19,8 +19,8 @@
 	<para>
 	Once you entered an Expression for the locations in x and y, if you later uncheck the box that enables that property in the Point Object Property Pane, an error symbol will appear next to the Object in the <bold>Object Table</bold>, with an explanation for the error displayed in the <link target="PP_Problems">Problems</link> tab of the Properties Pane.
 	</para>
-	<para>Note that the size of the computational should be large enough to contain the object for the entire time course of any simulations.
-	The computational domain can be adjusted in using the <bold>Edit Domain</bold> button in the <bold>Geometry Definition Tab</bold> of the <link target="GeometryOverview">Geometry</link> workspace.
+	<para>Note that the size of the computational domain should be large enough to contain the object for the entire time course of any simulations.
+	The computational domain can be adjusted using the <bold>Edit Domain</bold> button in the <bold>Geometry Definition Tab</bold> of the <link target="GeometryOverview">Geometry</link> workspace.
 	</para>
  	</operations>
 

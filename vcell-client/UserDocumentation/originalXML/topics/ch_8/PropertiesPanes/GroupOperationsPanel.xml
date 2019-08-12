@@ -13,8 +13,7 @@ and the
 	<appearance>
 This toolbar shows buttons allowing group, delete and link operations on selected 
 entities. A <bold>Search</bold> feature filters entities by string.
-		<imgReference target = "OperationsToolbar.png">
-		</imgReference>
+		<imgReference target = "OperationsToolbar.png"/>
 	</appearance>
 	
 	<operations>
@@ -32,26 +31,23 @@ If no compartments are specified, it shows the default compartment c0. In the
 example below, the reactants are located in c1 while the product is located on the membrane. 
 The reaction itself must be treated as a membrane reaction because at least one reaction participant 
 is located on the membrane. ID is the name that will be assigned to the species or reaction in the Physiology.
-		<imgReference target = "PathwayImportDlg.png">
-		</imgReference>
+		<imgReference target = "PathwayImportDlg.png"/>
 <para></para>
 Once that step is finished the imported entities are displayed within the 
 		<link target = "ReactDiagView"> Reaction Diagram View</link> 
 		and show a small 'L' mark inside nodes, indicating their linked status. 
-		<imgReference target = "PathwayDiagramLinkedComp.png">
-		</imgReference>
+		<imgReference target = "PathwayDiagramLinkedComp.png"/>
 <para></para>
 Returning to the Pathway Diagram View it can be noticed that the linked entities display a 
 small 'L' mark within their circle representation, indicating their linked status.
-		<imgReference target = "PathwayDiagramLinked1.png">
-		</imgReference>
+		<imgReference target = "PathwayDiagramLinked1.png"/>
 <para></para>
 
 <bold>Editing Physiology Links.</bold> The user can link/unlink every pathway object to every object in the physiology (reactions or species).
 Selecting <bold>Physiology Links -> Edit Physiology Links...</bold> will start a dialog box with the list of all objects that can be linked
 (species for a physical entity or reactions for an interaction). The user can create new links or deleted existing links by checking/unchecking 
-checkboxes in the dialog. As usual, Search field is provided for easy filtering.
-		<imgReference target = "PhysiologyEditLinks.png"></imgReference>
+checkboxes in the dialog. The search field is provided for easy filtering.
+		<imgReference target = "PhysiologyEditLinks.png"/>
 
 <para></para>
 <bold>Grouping.</bold> Selecting multiple entities either 
@@ -60,16 +56,15 @@ in a <link target = "PathwayDiagramView">Pathway Diagram</link> view or in a
 enables a <bold>Group</bold> button. 
 Grouping reduces clutter and allows the user to focus on the significant parts of the view. Consider 
 the view below:
-		<imgReference target = "PathwayDiagramLinked1.png">
-		</imgReference>
+		<imgReference target = "PathwayDiagramLinked1.png"/>
+
 <para></para>
 The user may choose to group all the linked items (those marked with a 'L' letter) under a group 
 and all the participants of the other reaction under a second group. The entities can be selected 
 either in a <link target = "PathwayDiagramView">Pathway Diagram</link> view or in a 
 <link target = "PathwayObjectsView">Pathway Objects</link> view.  The result will look as 
 follows: 
-		<imgReference target = "PathwayGroupedItems.png">
-		</imgReference>
+		<imgReference target = "PathwayGroupedItems.png"/>
 <para>
 Existing groups can be grouped in even larger groups. Also groups can be broken down into 
 their original subcomponents using the Ungroup option.
@@ -79,8 +74,7 @@ that linked entities cannot be deleted as long as the link exists. In the case o
 where some entities can be deleted and some others can not, a warning dialog box will display 
 pertinent information. In the example below the user tried to delete two reactions one of which 
 is linked.
-		<imgReference target = "PathwayDeleteObjectDlg.png">
-		</imgReference>
+		<imgReference target = "PathwayDeleteObjectDlg.png"/>
 </para>	
 
 </operations>

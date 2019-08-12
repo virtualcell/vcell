@@ -3,7 +3,7 @@
 <page title="Kinematics">
 
 	<introduction>
-Virtual Cell supports moving boundary applications for 2D geometries using a movie boundary solver.  
+Virtual Cell supports moving boundary applications for 2D geometries using a moving boundary solver.  
 Specifying a velocity field for objects using the <bold>Kinematics</bold> tab in the Geometry workspace automatically invokes use of the moving boundary solver for simulations. 
 Either a constant value or a function can be used to describe the velocity of defined spatial objects within the simulation.
 <imgReference target="KinematicsTab.png"/>
@@ -16,7 +16,7 @@ The top <bold>Spatial Objects Table</bold> identifies the different spatial obje
 	<imgReference target="SpatialObjectsTable.png"/>
 	<list>
 	<item><bold>Volume Objects</bold> are defined by the BioModel structures and can use properties of <bold>centroid, velocity and size</bold>.</item>
-	<item><bold>Surface Objects</bold> are defined by the BioModel structures and can use properties of <bold>normal, velocity, distance, direction, and size</bold>.</item>
+	<item><bold>Surface Objects</bold> are defined by the BioModel structures and can use properties of <bold> unit normal, velocity, distance, direction, and size</bold>.</item>
 	<item><bold>Point Objects</bold> are defined in the kinematics and can use properties of <bold>position (x and y coordinates), velocity, direction, and distance</bold>.</item>
 	</list>
 	</para>
@@ -35,17 +35,16 @@ The top <bold>Spatial Objects Table</bold> identifies the different spatial obje
 The lower <bold>Spatial Process</bold> table defines the movement of objects in the simulation.
 	<imgReference target="SpatialProcessTable.png"/>
 	<list>
+	<item><bold>Point Location Processes</bold> (pproc) define point locations over time (x and y coordinates)</item>
+	<item><bold>Point Kinematics</bold> (pproc) is not currently supported</item>
 	<item><bold>Surface Kinematics</bold> (sproc) define membrane velocities</item>
 	<item><bold>Volume Kinematics</bold> (vproc) define volume velocities</item>
-	<item><bold>Point Location Processes</bold> (pproc) define point locations over time (x and y coordinates)</item>
-	<item><bold>Point Kinematics</bold> (pproc) define point initial positions and velocities</item>
 	</list>
 	
 	<para><bold>Add</bold> a new Spatial Process by first selecting a spatial object and then use the dropdown box in the <bold>New</bold> button in the Spatial Process Table.</para> 
 	<bold>Add or Edit</bold> the expression for velocity using the properties enabled for that object. See the Properties Pane information for each type of spatial process. 
 	<list>
 	<item><link target="PP_KinematicsPointLocationProcess">Point Location</link></item>
-	<item><link target="PP_KinematicsPointProcess">Point Kinematic Process</link></item>	
 	<item><link target="PP_KinematicsSurfaceProcess">Surface Kinematic Process</link></item>	
 	<item><link target="PP_KinematicsVolumeProcess">Volume Kinematic Process</link></item>
 	</list>

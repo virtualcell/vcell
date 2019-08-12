@@ -71,10 +71,11 @@ to compute. Coarse (lower number of points in x and Y) mesh sizes are suggested 
 	<para>This tab allows user to choose a desired solver, set time bounds, time step and error tolerance, select output options and other miscellaneous settings.
 	All the options/choices in this panel vary according to the selected solver.
 	</para>
+	<imgReference target="sim_SolverSetting1.png"/>
 	<list>
 	<item>Integrator</item>
 	<para>An appropriate integrator (solver) is automatically selected by default based on model and geometry characteristics.  Additional solvers may be available and can be chosen from the drop-down menu. 
-	Press the <imgReference target="solverQuestionBtn.png"/>  button to show a description of the currently selected solver.  
+ <imgReference target="solverQuestionBtn.png"/>  Pressing the question button displays a description of the currently selected solver.  
 	Please reference the description of the Virtual Cell <link target = "numerical_solvers">numerical solvers</link>.</para>
 	<para></para>
 	<item>General (options will be displayed based on integrator (solver) type chosen)</item>
@@ -82,6 +83,10 @@ to compute. Coarse (lower number of points in x and Y) mesh sizes are suggested 
 	<para>1. Time Bounds --- starting time and ending time.</para>
 	<para>2. Time Step --- minimum, maximum and default time step.</para>
 	<para>3. Error Tolerance --- absolute and relative error tolerance.</para>
+	<para> The Disable Simualtion Run Timeout allows specially authorized users to exceed the 21 day limit after which simulations using VCell servers are automatically terminated.  Contact
+	VCell_support@vcell.uchc.edu if you need to run a simulation that exceeds the time limit.</para>
+	<para>Disable Border Extrapolation is used with the Fully-implicit Finite Volume Solver to avoid possible errors when steep concentration gradients occur at membranes. 
+	 See the <link target = "numerical_solvers">numerical solvers</link> section for a discussion of when to use this option.</para>
 	<para></para>
 	<item>Output Options</item>
 	<para>1. Keep every N time samples and at most M time samples: keep every N simulation results time samples and the total time samples should not exceed M. </para>
@@ -91,7 +96,6 @@ to compute. Coarse (lower number of points in x and Y) mesh sizes are suggested 
 	<para>1. Run parameter Scan Serially.</para>
 	<para>2. Stop at Spatial Uniform: stop the simulation when the system reaches spatial uniform based on the error tolerance.</para>
 	<para>3. Data processing script: display particle count in specified regions of interest.</para>
-	<para><imgReference target="sim_SolverSetting1.png"/></para>
 	<para></para>
 	<item>General Settings for Non-spatial Stochastic Solvers</item>
 	<para>The following settings are applicable for all non-spatial stochastic simulations.</para>

@@ -16,8 +16,8 @@ When a <bold>Surface Object</bold> is selected, the table displays
 	<list>
 	<item><bold>Surface Normal</bold> to specify the x and y component of the normal to the surface. (z is not used because the current solver is limited to 2D)</item>
 	<item><bold>Surface Velocity</bold> to specify the x and y components of the surface velocity.</item>
-	<item><bold>Distance to Surface</bold> to specify the shortest distance from a point object to the surface.</item>
-	<item><bold>Direction to Surface</bold> to specify the x and y direction from a point object to the surface.</item>
+	<item><bold>Distance to Surface</bold> to specify the shortest distance from a point object to the surface. Currently unavailable.</item>
+	<item><bold>Direction to Surface</bold> to specify the x and y direction from a point object to the surface. Currently unavailable.</item>
 	<item><bold>Surface Size</bold> to specify the surface area.</item>
 	</list>
 	</para>

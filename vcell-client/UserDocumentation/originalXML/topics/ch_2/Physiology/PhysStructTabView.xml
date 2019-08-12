@@ -8,16 +8,16 @@
 	
 	<appearance>
 The structure table lists structures and their properties (Name, Type of structure, Electrical properties).  Items in black can be edited; items that cannot be edited are in brown.
-	<imgReference target = "StructureTable.png"> </imgReference>	
+	<imgReference target = "StructureTable.png"/>	
 	</appearance>
 	
 	<operations>
 <para> <bold> Add a new volume structure  </bold> using the "Add New Compartment" button below the table.</para>
 <para> <bold> Add a new membrane structure </bold> using the "Add New Membrane" button below the table.</para>
-<para> <bold> Edit </bold> the structure name by double clicking in the table, or within the <link target = "PP_Structures"> Properties pane</link>.</para>
+<para> <bold> Edit </bold> the structure name by double clicking in the table, or within the <link target = "PP_Structures">Properties Pane</link>.</para>
 <para> <bold> Delete </bold> structures by selecting one or more structures and using the "Delete" button.  Structures that contain species cannot be deleted.</para>
 
-<para>The bottom pane of the window displays the <link target = "PP_Structures">Structure Properties </link> depending on on the current selection.</para>
+<para>The bottom pane of the window displays the <link target = "PP_Structures">Structure Properties</link> depending on on the current selection.</para>
 	</operations>
 
 

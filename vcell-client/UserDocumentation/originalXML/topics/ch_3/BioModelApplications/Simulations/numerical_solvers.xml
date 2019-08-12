@@ -80,7 +80,12 @@
 	The finite volume method represents partial differential equations as algebraic discretization equations which exactly preserves conservation laws.  
 	Similar to the finite difference method, values are calculated at discrete places on a meshed geometry.  
 	This method employs Sundials stiff solver CVODE for time stepping (method of lines). Please note that relative and absolute tolerances affect the accuracy of time descritization only, 
-	therefore spatial discritization is the only significant source of solution error.</item>
+	therefore spatial discritization is the only significant source of solution error.
+	<para>By default, VCell estimates the values of a volume variable at a membrane, typically required for computing membrane fluxes and/or rates of (un)binding to (from) the membrane, by extrapolating its volume values to the surface. 
+	This is done by applying a first-order extrapolation (which is second-order accurate). 
+	However, for steep concentration gradients at the membrane, this may result in negative estimates of concentrations at the membrane. 
+	In such cases, a zeroth-order extrapolation (i.e. equating concentration at the membrane to the concentration at the nearest grid point) is a better option. 
+	This option is applied when the box ‘Disable Border Extrapolation’ is checked.</para></item>
 	<item><bold>EBChombo, Semi-Implicit (Fixed Time Step, Experimental): </bold> 
 	Chombo provides a set of tools for implementing finite difference methods for the solution of partial differential equations on block-structured adaptively refined rectangular grids.  
 	Both elliptic and time-dependent modules are included. Chombo supports calculations in complex geometries with both embedded boundaries and mapped grids, and Chombo also supports particle methods.  

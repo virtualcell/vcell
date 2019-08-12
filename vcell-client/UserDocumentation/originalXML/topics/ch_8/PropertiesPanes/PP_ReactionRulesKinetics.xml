@@ -23,9 +23,7 @@
     <para><bold>Make reaction reversible</bold> by checking the Reversible box.  This box must be checked to enable specification of the reverse rate. When the box is checked, the user can edit the reverse rate expression.  Checking the Reversible box in the kinetic pane also checks the box in the editor pane, and vice versa.</para>    
     <para> <bold> Edit the expression</bold> for the forward rate and, if the reversible box is checked, for the reverse rate in the Expression column. If references to new parameters are added, new rows will automatically be added for those parameters.  An expression for each new parameter must be added in the Expression column.  Parameters can be set to <def target = "def_Global">global</def> or <def target = "def_Local">local</def> using the checkbox.  The reaction rule rate is always local;   species concentrations and universal constants are always global.</para>
     <para><bold>Edit units</bold> for the rate expression in the Units column. Incompatible units will be silently rejected.</para>
-    <para><bold> Add annotations</bold> in the Annotation text field, which can be shown or hidden by selecting the 
-    plus or minus sign next to the Annotations text.  
-    </para>
+	<para><bold>Add or Edit Annotations</bold> for the reaction rule using the <link target= "PP_Annotations">Annotations</link> tab in the Properties Pane.</para>
   </operations>
 
 </page>

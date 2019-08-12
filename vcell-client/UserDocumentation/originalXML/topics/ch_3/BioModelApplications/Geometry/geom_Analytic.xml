@@ -32,7 +32,7 @@
 	<bold>Define overall boundaries</bold> (origin and size) of the geometry by selecting the "Edit Domain..." button and filling in the size of the domain and the position of the origion within the domain.  The default geometry has a single subdomain (subdomain0) that encompass the entire geometry.  
 	</para>
 	<para>
-	<bold>Create a new domain</bold> based on an analytic function by clicking the “Add Subdomain…” button. 
+	<bold>Create a new domain</bold> based on an analytic function by clicking the <bold>Add Subdomain…</bold> button. 
 	Choose the <bold>Analytic...</bold> menu item to show the analytic function helper.  A function defines all the points within the geometry boundary where a subdomain is to be assigned. 
 	Simple definitions are provided for commonly used analytic function shapes or functions can be entered completely manually. 
 	The simple definitions (e.g. circle) can be used as is or are useful as templates for more complicated shapes. 
@@ -47,13 +47,13 @@
 	CSG primitives can be combined using union and intersection rules to create more intricate subdomain definitions.
 	</para>
 	<para>
-	<bold>Re-Order the list</bold> of subdomains by selecting a specific subdomain and pressing the  “front” or “back” buttons.  A new subdomain is placed at the top of the subdomain table list.
+	<bold>Re-Order the list</bold> of subdomains by selecting a specific subdomain and pressing the <bold>front</bold> or <bold>back</bold> buttons.  A new subdomain is placed at the top of the subdomain table list.
 	</para>
 	<para>
-	The <bold>final geometry</bold> is created from the subdomain list by evaluating each function at values of x, y, z starting at the bottom of the list.  Non-zero function values at a particular x, y, z coordinate mark a point in the geometry as being part of that function’s subdomain.  	Non-zero subdomain values that come from functions higher in the table list functions replace any previous subdomain values as the evaluation proceeds.  	A display of the overall geometry defined by the current set of subdomain functions is displayed below the table list.
+	The <bold>final geometry</bold> is created from the subdomain list by evaluating each function at values of x, y, z starting at the bottom of the list.  Non-zero function values at a particular x, y, z coordinate mark a point in the geometry as being part of that function's subdomain.  	Non-zero subdomain values that come from functions higher in the table list functions replace any previous subdomain values as the evaluation proceeds.  	A display of the overall geometry defined by the current set of subdomain functions is displayed below the table list.
 	</para>
 	<para>
-	<bold>Edit analytic functions </bold> within the geometry viewer if the current model geometry is already an analytic type.
+	<bold>Edit analytic functions </bold> within the geometry definition tab if the current model geometry is already an analytic type.
 	</para>
 	</operations>
 	

@@ -12,12 +12,18 @@
 	</introduction>
 	
 	<appearance>
-	The Molecules Table displays the Molecule <bold>name</bold>, a <bold>Depiction</bold> of each molecule and the 
-	<def target = "def_BioNetGen"> BioNetGen </def> definition of the molecule. 
-	In the molecular <bold>depiction</bold>, green circles denote molecular Sites, and an associated small yellow circle denotes a Site that has possible states. 
-	Selecting a molecule brings the <link target = "PP_Molecules">Molecule Properties</link> 
-	pane to the bottom right of the workspace, where a user can specify and edit a selected <bold>Molecule</bold>.
-	<imgReference target = "BNG_MoleculesTable.png"> </imgReference>
+	The Molecules Table displays several columns:
+	<list>
+	<item>Molecule <bold>name</bold></item>
+	<item>Molecular <bold>Depiction</bold> of each molecule. Green circles denote molecular Sites, and an associated small yellow circle denotes a Site that has possible states.</item>
+	<item><bold>Links</bold> show links to pathway items (see <link target="PathwayOverview">Biology Pathways</link>). Double click on that link to navigate to the Pathway Diagram. 
+	A text bubble icon indicates the presence of annotations for the current selection in the <link target ="PP_Annotations">Annotations</link> Properties Panel.</item>
+	<item><def target = "def_BioNetGen">BioNetGen</def> definition of the molecule. 
+	Selecting a molecule brings the <link target = "PP_Molecules">Molecule Properties Pane</link> 
+	 to the bottom right of the workspace, where a user can specify and edit a selected <bold>Molecule</bold>.
+	</item>
+	</list>
+	<imgReference target = "BNG_MoleculesTable.png"/>
 	</appearance>
 	
 	<operations>
@@ -26,8 +32,7 @@
 	<para> <bold>Search</bold> the list of molecules by entering a name 
 	or an element of molecular structure in the Search box below the table.</para>
 	<para><bold>Delete</bold> molecules by selecting the row and using the Delete button below the table. A molecule will not be deleted if it is used elsewhere in the model.</para>
-	<para><bold>Add annotation </bold> about a molecules within the <link target = "PP_Molecules"> 
-	Molecule Properties pane </link>.</para>
+	<para><bold>Add or Edit Annotations</bold> using the <link target= "PP_Annotations">Annotations</link> tab in the Properties Pane.</para>
 	</operations>
 	
 	<properties>

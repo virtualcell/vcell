@@ -6,7 +6,6 @@
   Membrane Fluxes are reactions that involved the movement of species or charge across a membrame.  The membrane flux 
   panel is used to display and edit properties of the membrane flux.
   </introduction>
-		
   <appearance>
   <imgReference target = "PP_MemFlux.png"/>
   <para>
@@ -15,14 +14,11 @@
   A button is available to convert the rate law either from flux and current ("molecules per second") to 
   flux density and current density ("micromolar per second") or vice versa.  Below is a table of the kinetic terms used to define the reaction rate J and the electric current density I that 
   includes all mathematical terms referred to in the mathematical expression for J or other kinetic terms. Items in brown 
-  cannot be edited. 
+  cannot be edited.
   </para>
   </appearance>
-	
   <operations>
-    <para>
-    <bold>Edit the reaction name</bold> using the text field. A name already given to another reaction will be rejected.
-    </para>
+     <bold>Edit the reaction name</bold> using the text field. A name already given to another reaction will be rejected.
     <para>
     <bold>Select flux type</bold> using the check boxes to select "include molecules" and/or "include electical in the flux 
     reaction The charge valence combobox allows selecting a charge per molecule in elementary charges, an integer from 
@@ -53,9 +49,8 @@
     checkbox, except for the reaction rate, which is always local.  Species concentrations and universal constants 
     are always global.</item> 
 	</list>
-    <bold> Add Annotations</bold> in the Annotation text field, which can be shown or hiddenby selecting the plus or minus 
-    sign next to the <bold>Add Annotation Here</bold>.text.  Annotations apply to the entire reaction.
     </para>
+	<para><bold>Add or Edit Annotations</bold> for the flux reaction using the <link target= "PP_Annotations">Annotations</link> tab in the Properties Pane.</para>
   </operations>
 
 </page>

@@ -15,8 +15,8 @@ The available properties are:
 	<list>
 	<item><bold>Point Position</bold> to specify the x and y position. (z is not used because the current solver is limited to 2D)</item>
 	<item><bold>Point Velocity</bold> to specify the x and y components of the point velocity.</item>
-	<item><bold>Distance to Point</bold> to specify the distance from another point to the point object.</item>
-	<item><bold>Direction to Point</bold> to specify the x and y direction from another point to the point object.</item>
+	<item><bold>Distance to Point</bold> to specify the distance from points in the computational box to the point object.</item>
+	<item><bold>Direction to Point</bold> to specify the x and y direction from points in the computational box to the point object.</item>
 	</list>
 	</operations>
 

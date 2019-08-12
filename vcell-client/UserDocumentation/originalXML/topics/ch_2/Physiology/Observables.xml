@@ -13,10 +13,10 @@
 	<item>A species pattern defines common features of multiple species, and consists of one 
 	or more of the <link target = "Molecules">molecules</link> that compose a species. Molecules may or may not be explicitely connected, but must be present in every species selected by the species pattern. Sites that have multiple possible states are depicted with a small yellow ball above the site. </item>
 	<item>Each molecule within a species pattern may have sites left undefined. If a site does not have defined states (where states are possible) and the site can be in the bound or unbound state, the site is colored white.</item>
-	<item>An observable may identify sites with a defined binding state - i.e. the funciton can explicitly identify a site bound to another site, a site unbound, or a site bound to an unspecified (i.e. any other) site; in this case the site is colored green with a bond drawn as a colored line if one exists.</item>
+	<item>An observable may identify sites with a defined binding state - i.e. the function can explicitly identify a site bound to another site, a site unbound, or a site bound to an unspecified (i.e. any other) site; in this case the site is colored green with a bond drawn as a colored line if one exists.</item>
 	<item> A site that has a defined state is always shown in green.</item>
 	</list>
-		<imgReference target = "observables.PNG"> </imgReference>
+		<imgReference target = "observables.PNG"/>
 	</introduction>
 	
 	<appearance>
@@ -36,12 +36,12 @@
 	</appearance>
 	
 	<operations>
-	<para><bold>Edit</bold> an Observable name within the table.  Note that the function defined by the observable and its properties must be specified in the <link target = "PP_Observables">Observables Properties</link> pane. 
+	<para><bold>Edit</bold> an Observable name within the table.  Note that the function defined by the observable and its properties must be specified in the <link target = "PP_Observables">Observables Properties Pane</link>. 
     </para>
 	<para> <bold>Filter</bold> the list of observables using the Search Box to enter a name or any part of the observable composition.</para>
 	<para><bold>Delete</bold> an observable by selecting and using the "Delete" button below the table.</para>
 	<para><bold>Add annotation </bold> about the observable within the <link target = "PP_Observables"> 
-	Observable Properties pane </link>.</para>
+	Observable Properties Pane</link>.</para>
 	</operations>
 	
 	<properties>

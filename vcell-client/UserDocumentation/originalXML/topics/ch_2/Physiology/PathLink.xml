@@ -7,7 +7,7 @@
 	</introduction>
 	
 	<appearance>
-	<imgReference target = "ShowPathwayLinks.png"> </imgReference>	
+	<imgReference target = "ShowPathwayLinks.png"/>	
 	</appearance>
 	
 	<operations>
@@ -22,12 +22,12 @@
 	<item>Select <bold>Show Linked Pathway Objects</bold> under the <bold>Pathway Links</bold> menu.</item>
 	</list>
 	In either case a <link target = "PathwayDiagramView">Pathway Diagram</link> view appear in the main model workspace.  Linked objects appear in red in the pathway diagram. 
-	<imgReference target = "LinkedPathwayObject.png"> </imgReference>
+	<imgReference target = "LinkedPathwayObject.png"/>
 	</para>
 	<para>
 	
 	<bold>/Add or edit Pathway Links.</bold> by selecting <bold>Physiology Links -> Edit Physiology Links...</bold> to initiate a  dialog box with the list of all objects in the Biomodel (physical entities for a species or interactions for a reaction). Create new links or delete existing links by checking/unchecking the checkbox in the table of objects in the dialog box. A Search field is provided for filtering the list of objects.
-		<imgReference target = "PathwayEditLinks.png"></imgReference>	
+		<imgReference target = "PathwayEditLinks.png"/>
 		</para>
 	</operations>
 	

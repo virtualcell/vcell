@@ -73,9 +73,16 @@
 	    These include (from left to right) random, within an ellipse within each structure, so that most lines point downward, to make lines
 	    shorter and more similar to each other in lengths, and to place nodes more evenly across each structure.  For rule-based models, there are additional buttons to either have all participants in a reaction depicted separately (and therefore reactants/products may be duplicated in the view) or have the same reactant/product depiction connected to multiple reactions.
 	    </para>
-	   
-     
-	
+	    <para>Buttons to the right of the layout buttons alter the depiction of species and reactions in the diagram and are particularly useful for <bold>Rule-based models</bold>.
+	    <imgReference target="RxDiag_RulePartUngroup.png"/>  When selected depicts reaction rules individually; species are repeated for each rule in which they participate.
+	    <imgReference target="RxDiag_RulePartGroup.png"/>  When selected depicts each reaction rules organized by individual species.
+	    <imgReference target="RxDiag_HighlightCatalyst.png"/>  Toggles all catalysts to be colored distinct from reactant and product species 
+		<imgReference target="RxDiag_EqSpecies.png"/>  When selected depicts all species as the same size.
+		<imgReference target="RxDiag_RxSizeSpecies.png"/>  When selected depicts species as different sizes based on the number of reactions they are involved in.
+		<imgReference target="RxDiag_MolSizeSpecies.png"/>  When selected depicts species as different sizes based on the number of molecules that make up the species.
+		</para>	
+		<para>The Reaction Diagram pane can be allowed to float free from the rest of the VCell workspace.  This can be useful when looking at simulation results or parameters, for example. 
+		<imgReference target="RxDiag_Float.png"/>  Allows the Reaction Diagram pane to float.  Closing the Reaction diagram window returns it to the VCell workspace.</para>
 	<para>
 	The mouse popup menu provides several functions depending on the current selection (structures,reactions,species):
 	<list>

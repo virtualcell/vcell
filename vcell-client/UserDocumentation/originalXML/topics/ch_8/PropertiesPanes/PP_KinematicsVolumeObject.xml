@@ -14,7 +14,7 @@ The Volume Object Kinematics Properties Pane is used to display and enable those
 Use the <bold>check box</bold> to enable properties that will be used to describe the kinematics for the selected object.
 The available properties are:
 	<list>
-	<item><bold>Volume Centroid</bold> to specify the centroid x and y position. (z is not used because the current solver is limited to 2D)</item>
+	<item><bold>Volume Centroid</bold> to specify the centroid x and y position. (the current solver is limited to 2D) This property is currently not available to use.</item>
 	<item><bold>Interior Velocity</bold> to specify the x and y velocity components.</item>
 	<item><bold>Volume Regions Size</bold> to specify the size (area in 2D) of the volume object</item>
 	</list>

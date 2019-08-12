@@ -22,26 +22,28 @@
 		<item><bold>Kinetics</bold> list the kinetic type for the reaction; select the reaction and edit in the properties pane below. For reaction rules, only Mass Action kinetics are allowed. </item>
 		<item><bold>BioNetGen Definition</bold> provides the BioNetGen Language (BNGL) string that encodes the rule. It
 			cannot be edited but can be searched.</item>
+		<item><bold>Links</bold> show links to pathway items (see <link target="PathwayOverview">Biology Pathways</link>); double click on that link to navigate to the Pathway Diagram. 
+		A text bubble icon indicates the presence of annotations for the current selection in the <link target ="PP_Annotations">Annotations</link> Properties Panel.</item>
 	</list> 
-Below the table are buttons to create or delete reactions or rules, to duplicate reaction rules, define Pathway Links and to search the reaction table.  
-	<imgReference target = "Mix_Rules.PNG"></imgReference>
-	 
-	 <para>The bottom pane of the window displays a <link target = "PP_Reactions">Reaction Properties Pane</link>,
-	<link target = "PP_MemFlux"> Membrane Flux property pane</link>, 
-	or <link target = "PP_ReactionRulesEditor"> Reaction Rules Properties</link> pane, depending on the current selection. </para>
+	Below the table are buttons to create or delete reactions or rules, to duplicate reaction rules, define Pathway Links and to search the reaction table.  
+	Note that buttons related to Reaction Rules only appear if <def target="def_molecules">Molecules</def> have been created in the model.
+		<imgReference target = "Mix_Rules.PNG"/>
+		 
+	 <para>The bottom pane of the window displays a <link target = "PP_Reactions">Reaction Properties pane</link>,
+	<link target = "PP_MemFlux"> Membrane Flux Properties pane</link>, 
+	or <link target = "PP_ReactionRulesEditor"> Reaction Rules Properties pane</link>, depending on the current selection. </para>
 	</appearance>
 	
 	<operations>
-	<bold>New Reaction</bold> calls a popup menu to add a new reaction or flux. Select the structure where the reaction occurs from the Structure drop-down menu, define a name for the reaction and type the reaction using the format "a+b->c" where a and b, etc. are reactants and c, etc are products. Numbers before a species name are used to indicate stoichiometry.   If a, b, etc have not been defined, they are automatically created as species within the 
-	structure where the reaction occurs.
+	<bold>New Reaction</bold> calls a popup menu to add a new reaction or flux. Select the structure where the reaction occurs from the Structure drop-down menu, define a name for the reaction and type the reaction using the format "a+b->c" where a and b, etc. are reactants and c, etc are products. Numbers before a species name are used to indicate stoichiometry.  If a, b, etc have not been defined, they are automatically created as species within the structure where the reaction occurs.
 
 		<imgReference target = "RxnAdd2.png"/>
-		
 	<para><bold>New Rule</bold> opens the <link target = "PP_ReactionRulesEditor">reaction rule editor</link> in the properties pane below.  New rules must be created and edited within the Editor.</para>
 		
 	<para><bold>Edit</bold> kinetic laws by selecting a row 
 	in the table and editing the <link target = "PP_Reactions"> Reaction Properties pane</link>,  
-	<link target = "PP_MemFlux"> Flux Properties pane</link> or <link target = "PP_ReactionRulesEditor">Rule Editor</link> as appropriate.</para>  
+	<link target = "PP_MemFlux"> Flux Properties pane</link> or <link target = "PP_ReactionRulesEditor">Rule Editor</link> as appropriate.</para>
+	<para><bold>Add or Edit Annotations</bold> using the <link target= "PP_Annotations">Annotations</link> tab in the Properties Pane.</para>
 	<para><bold>Delete</bold> a reaction, flux or rule by selecting a row or rows.</para> 
 	<para><bold>Duplicate</bold> will create an exact copy of highlighted rule 
 		with a new name "oldname_0".</para> 
