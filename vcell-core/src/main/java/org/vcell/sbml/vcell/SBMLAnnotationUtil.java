@@ -20,6 +20,7 @@ import java.util.Vector;
 import javax.xml.stream.XMLStreamException;
 
 import org.jdom.Element;
+import org.jdom.Namespace;
 import org.jdom.output.XMLOutputter;
 import org.openrdf.model.Graph;
 import org.openrdf.model.Resource;
@@ -164,13 +165,14 @@ public class SBMLAnnotationUtil {
 		// get free text annotation from NonRDFAnnotation (associated with identifiable); create XMLNode
 		XMLNode rootVCellInfo = new XMLNode(tripleVCellInfo, new XMLAttributes());
 		rootVCellInfo.addNamespace(XMLTags.SBML_VCELL_NS, XMLTags.VCELL_NS_PREFIX);
-		String freeTextStr = metaData.getFreeTextAnnotation(identifiable);
-		if (freeTextStr != null && freeTextStr.length() > 0) {
-			XMLNode contentFreeText = new XMLNode(freeTextStr);
-			XMLNode rootFreeText = new XMLNode(tripleFreeText, new XMLAttributes());
-			rootFreeText.addChild(contentFreeText);
-			rootVCellInfo.addChild(rootFreeText);
-		}
+// TODO: old way of writing the text annotations. Now we use Notes
+//		String freeTextStr = metaData.getFreeTextAnnotation(identifiable);
+//		if (freeTextStr != null && freeTextStr.length() > 0) {
+//			XMLNode contentFreeText = new XMLNode(freeTextStr);
+//			XMLNode rootFreeText = new XMLNode(tripleFreeText, new XMLAttributes());
+//			rootFreeText.addChild(contentFreeText);
+//			rootVCellInfo.addChild(rootFreeText);
+//		}
 		// VCell specific info to be exported to SBML as annotation - used for import, not needed for metadata
 		if (vcellImportRelatedElement != null) {
 			XMLNode xn = elementToXMLNode(vcellImportRelatedElement);
@@ -180,7 +182,7 @@ public class SBMLAnnotationUtil {
 			}
 		}
 		if (rootVCellInfo.getNumChildren() > 0) {
-			rootAnnotation.addChild(rootVCellInfo);		// add the vcellinfo root node which may contain the free text annotation
+			rootAnnotation.addChild(rootVCellInfo);		// add the vcellinfo root node which may contain the free text annotation (not anymore!  dan aug 2019)
 		}
 		
 		// Deal with the non-RDF (other tool-related?) annotation
@@ -201,17 +203,6 @@ public class SBMLAnnotationUtil {
 		}
 		writeMetaID(identifiable, sBase);
 	}
-
-	public void writeNotes(Identifiable identifiable, SBase sBaseObj) throws XMLStreamException {
-		// get XHTML notes for 'identifiable' from NonRDFAnnotation from VCMetadata
-		Element notesElement = metaData.getXhtmlNotes(identifiable);
-		if (notesElement != null) {
-			XMLNode notes = elementToXMLNode(notesElement);
-			if (notes!=null){
-				sBaseObj.setNotes(notes);
-			}
-		}
-	}	
 
 	/**
 	 * readVCellSpecificAnnotation : separate method to handle only the VCellRelatedInfo annotation stored in VCellInfo element of 
@@ -302,30 +293,43 @@ public class SBMLAnnotationUtil {
 //						System.out.println("SBBox Data :\n" + MIRIAMAnnotationViewer.prettyPrintJenaModel(metaData.getSBbox().getData(), XMLTags.VCML_NS));
 //						System.out.println(MIRIAMAnnotationViewer.printResourceMappings(metaData));
 						
-					} else if(namespace.equals(tripleVCellInfo.getURI()) || namespace.equals(XMLTags.VCML_NS_OLD) ||
-							namespace.equals(XMLTags.VCML_NS)) {
-						int numChildren = (int)annotationBranch.getNumChildren();
-						for (int j = 0; j < numChildren; j++) {
-							XMLNode child = annotationBranch.getChild(j);
-							if (child.isElement() && child.getName().equals(XMLTags.FreeTextAnnotationTag)) {
-								XMLNode contentFreeText = child.getChild(0);						
-								// read in the string (not XML string, but character string) from the XMLNode;
-								// set free text annotation for identifiable in metadata. 
-								String freeText = contentFreeText.getCharacters();
-								metaData.setFreeTextAnnotation(identifiable, freeText);
-							}
-						}
+// TODO: old way of reading the text annotations, as application-specific (vCell) annotations. Now we use Notes, which is more compatible with SBML standard
+//					} else if(namespace.equals(tripleVCellInfo.getURI()) || namespace.equals(XMLTags.VCML_NS_OLD) ||
+//							namespace.equals(XMLTags.VCML_NS)) {
+//						int numChildren = (int)annotationBranch.getNumChildren();
+//						for (int j = 0; j < numChildren; j++) {
+//							XMLNode child = annotationBranch.getChild(j);
+//							if (child.isElement() && child.getName().equals(XMLTags.FreeTextAnnotationTag)) {
+//								XMLNode contentFreeText = child.getChild(0);						
+//								// read in the string (not XML string, but character string) from the XMLNode;
+//								// set free text annotation for identifiable in metadata. 
+//								String freeText = contentFreeText.getCharacters();
+//								metaData.setFreeTextAnnotation(identifiable, freeText);
+//							}
+//						}
 					} else {
 						// other (tool-specific, non-RDF, XML) annotations 
 						Element elementXML = null;
 //						String xmlString = annotationBranch.toXMLString();
 //						Element annotationElement = null;
 						try {
+							XMLNode clonedAnnotationBranch = annotationBranch.clone();
+							String annotationBranchString = clonedAnnotationBranch.toXMLString();
+							annotationBranchString = annotationBranchString.replace("\t", "");
+							annotationBranchString = annotationBranchString.replace("\r", "");
+							annotationBranchString = annotationBranchString.replace("\n", "");
+							annotationBranchString = annotationBranchString.trim();
+							if(annotationBranchString.isEmpty()) {
+								// we ignore some parasitic empty annotation blocs which were causing crashes during roundtrip tests
+								// TODO: why (and where) are they being generated anyway
+								continue;
+							}
 							XMLNode clonedAnnotRoot = new XMLNode(annotationRoot);
 							clonedAnnotRoot.setNamespaces(annotationRoot.getNamespaces());
 							clonedAnnotRoot.removeChildren();
 							clonedAnnotRoot.addChild(annotationBranch.clone());
-							elementXML = (XmlUtil.stringToXML(clonedAnnotRoot.toXMLString(), null)).getRootElement();//(XmlUtil.stringToXML(xmlString, null)).getRootElement();
+							String str = clonedAnnotRoot.toXMLString();
+							elementXML = (XmlUtil.stringToXML(str, null)).getRootElement();//(XmlUtil.stringToXML(xmlString, null)).getRootElement();
 						} catch (Exception e) {
 //							e.printStackTrace(System.out);
 							// don't do anything .... we want to continue reading in the model, we cannot fail import because annotation is not well-formed.
@@ -347,8 +351,6 @@ public class SBMLAnnotationUtil {
 //								}
 //							}
 						}
-
-						
 						
 //						Element elementXML = xmlNodeToElement(annotationBranch);
 						Element[] xmlAnnotations = metaData.getXmlAnnotations(identifiable);
@@ -366,19 +368,37 @@ public class SBMLAnnotationUtil {
 		}
 	}
 	
+/*
+  // Something like this is what we read:
+  <notes>
+    <html xmlns="http://www.w3.org/1999/xhtml">
+	  <head>
+	  </head>
+      <body>
+		my text
+      </body>
+    </html>
+  </notes>
+ */
 	public void readNotes(Identifiable identifiable, SBase sBaseObj) throws XMLStreamException {
- 		// convert XMLNode of xhtml notes to JDOM element, set it on the non-RDFAnnotation of 
-		// identifiable in metaData
 		XMLNode notesNode = sBaseObj.getNotes();
 		if (notesNode != null) {
-			Element notesElement = xmlNodeToElement(notesNode);
-			if (notesElement != null) {
-//				metaData.setXhtmlNotes(identifiable, notesElement);
-				String txt = notesNode.toXMLString();
-				metaData.setFreeTextAnnotation(identifiable, txt);
-			}
+			String txt = notesNode.toXMLString();
+			metaData.setFreeTextAnnotation(identifiable, txt);
 		}
 	}
+	public void writeNotes(Identifiable identifiable, SBase sBaseObj) throws XMLStreamException {
+		String notes = metaData.getFreeTextAnnotation(identifiable);
+		if(notes != null) {
+			if(notes.startsWith("<html>")) {
+				notes = notes.substring("<html>".length());
+				// hack to add the proper namespace, without it importing will fail
+				notes = "<html xmlns=\"http://www.w3.org/1999/xhtml\">" + notes;
+			}
+			sBaseObj.setNotes(notes);
+			writeMetaID(identifiable, sBaseObj);
+		}
+	}	
 
 	// Converts from libSBML XMLNode to JDOM element (used in VCML) 
  	private static Element xmlNodeToElement(XMLNode xmlNode) throws XMLStreamException {

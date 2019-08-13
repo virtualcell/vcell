@@ -339,49 +339,39 @@ public class SBMLImporter {
 									+ " for compartments at this time");
 				}
 				structIndx++;
-				sbmlAnnotationUtil.readAnnotation(structList.get(i),
-						compartment);
+				sbmlAnnotationUtil.readAnnotation(structList.get(i), compartment);
 				sbmlAnnotationUtil.readNotes(structList.get(i), compartment);
 			}
 
 			// Second pass - connect the structures
 			Model model = vcBioModel.getSimulationContext(0).getModel();
 			for (int i = 0; i < sbmlModel.getNumCompartments(); i++) {
-				org.sbml.jsbml.Compartment sbmlCompartment = (org.sbml.jsbml.Compartment) listofCompartments
-						.get(i);
+				org.sbml.jsbml.Compartment sbmlCompartment = (org.sbml.jsbml.Compartment) listofCompartments.get(i);
 				String outsideCompartmentId = null;
-				if (sbmlCompartment.getOutside() != null
-						&& sbmlCompartment.getOutside().length() > 0) {
+				if (sbmlCompartment.getOutside() != null && sbmlCompartment.getOutside().length() > 0) {
 					// compartment.getOutside returns the Sid of the 'outside'
 					// compartment, so get the compartment from model.
 					outsideCompartmentId = sbmlCompartment.getOutside();
 				} else {
-					Element sbmlImportRelatedElement = sbmlAnnotationUtil
-							.readVCellSpecificAnnotation(sbmlCompartment);
+					Element sbmlImportRelatedElement = sbmlAnnotationUtil.readVCellSpecificAnnotation(sbmlCompartment);
 					if (sbmlImportRelatedElement != null) {
 						Element embeddedVCellElement = sbmlImportRelatedElement
-								.getChild(OUTSIDE_COMP_NAME, Namespace
-										.getNamespace(SBMLUtils.SBML_VCELL_NS));
+								.getChild(OUTSIDE_COMP_NAME, Namespace.getNamespace(SBMLUtils.SBML_VCELL_NS));
 						if (embeddedVCellElement != null) {
-							outsideCompartmentId = embeddedVCellElement
-									.getAttributeValue(XMLTags.NameTag);
+							outsideCompartmentId = embeddedVCellElement.getAttributeValue(XMLTags.NameTag);
 						}
 					}
 				}
 				if (outsideCompartmentId != null) {
-					Compartment outsideCompartment = sbmlModel
-							.getCompartment(outsideCompartmentId);
-					Structure outsideStructure = (Structure) structureNameMap
-							.get(outsideCompartment.getId());
-					Structure struct = (Structure) structureNameMap
-							.get(sbmlCompartment.getId());
+					Compartment outsideCompartment = sbmlModel.getCompartment(outsideCompartmentId);
+					Structure outsideStructure = (Structure) structureNameMap.get(outsideCompartment.getId());
+					Structure struct = (Structure) structureNameMap.get(sbmlCompartment.getId());
 					struct.setSbmlParentStructure(outsideStructure);
 				}
 			}
 
 			// set the structures in vc vcBioModel.getSimulationContext(0)
-			Structure[] structures = structList
-					.toArray(new Structure[structList.size()]);
+			Structure[] structures = structList.toArray(new Structure[structList.size()]);
 			model.setStructures(structures);
 
 			// Third pass thro' the list of compartments : set the sizes on the
@@ -389,8 +379,7 @@ public class SBMLImporter {
 			// the structures on vcBioModel.getSimulationContext(0).
 			boolean allSizesSet = true;
 			for (int i = 0; i < sbmlModel.getNumCompartments(); i++) {
-				org.sbml.jsbml.Compartment compartment = (org.sbml.jsbml.Compartment) listofCompartments
-						.get(i);
+				org.sbml.jsbml.Compartment compartment = (org.sbml.jsbml.Compartment) listofCompartments.get(i);
 				String compartmentName = compartment.getId();
 
 				if (!compartment.isSetSize()) {
@@ -419,8 +408,7 @@ public class SBMLImporter {
 						InitialAssignment compInitAssgnment = sbmlModel
 								.getInitialAssignment(compartmentName);
 						if (compInitAssgnment != null) {
-							sizeExpr = getExpressionFromFormula(compInitAssgnment
-									.getMath());
+							sizeExpr = getExpressionFromFormula(compInitAssgnment.getMath());
 						}
 					}
 					if (sizeExpr != null && !sizeExpr.isNumeric()) {
@@ -444,8 +432,7 @@ public class SBMLImporter {
 					// Now set the size of the compartment.
 					Structure struct = model.getStructure(compartmentName);
 					StructureMapping.StructureMappingParameter mappingParam = vcBioModel.getSimulationContext(0)
-							.getGeometryContext().getStructureMapping(struct)
-							.getSizeParameter();
+							.getGeometryContext().getStructureMapping(struct).getSizeParameter();
 					mappingParam.setExpression(sizeExpr);
 				}
 			}
