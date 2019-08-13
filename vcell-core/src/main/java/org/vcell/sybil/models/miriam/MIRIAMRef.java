@@ -72,6 +72,11 @@ public class MIRIAMRef extends KeyOfTwo<String, String> {
 					String suffix = pathParts[2] + "/" + pathParts[3];
 					return new MIRIAMRef(pathParts[1], suffix);
 				}
+			} else if(pathParts.length == 5) {
+				if(pathParts[1].equalsIgnoreCase("doi")) {
+					String suffix = pathParts[2] + "/" + pathParts[3] + "/" + pathParts[4];
+					return new MIRIAMRef(pathParts[1], suffix);
+				}
 			} else {
 				throw new URNParseFailureException("couldn't interpret urn "+urn);
 			}
