@@ -2383,6 +2383,13 @@ public class SBMLImporter {
 			}
 		}
 
+		ModelUnitSystem mus = ModelUnitSystem.createDefaultVCModelUnitSystem();
+		if(modelVolumeUnit.isEquivalent(mus.getInstance_DIMENSIONLESS())) {
+			if(modelLengthUnit == null && modelAreaUnit == null) {
+				modelLengthUnit = mus.getInstance_DIMENSIONLESS();
+				modelAreaUnit = mus.getInstance_DIMENSIONLESS();
+			}
+		}
 		if (modelSubstanceUnit == null) {
 			modelSubstanceUnit = defaultSubstanceUnit;
 		}
