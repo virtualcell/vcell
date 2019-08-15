@@ -2555,7 +2555,10 @@ private void refreshVariables() throws MappingException {
 	while (enum1.hasMoreElements()){
 		SpeciesContextMapping scm = (SpeciesContextMapping)enum1.nextElement();
 		SpeciesContextSpec scs = simContext.getReactionContext().getSpeciesContextSpec(scm.getSpeciesContext());
-		if (scm.getDependencyExpression() == null && (!scs.isConstant() || getSimulationContext().hasEventAssignment(scs.getSpeciesContext()))){
+		Expression depExp = scm.getDependencyExpression();
+		boolean isVariable = !scs.isConstant();
+		boolean hasEvent = getSimulationContext().hasEventAssignment(scs.getSpeciesContext());
+		if (depExp == null && (isVariable || hasEvent)){
 			StructureMapping sm = simContext.getGeometryContext().getStructureMapping(scm.getSpeciesContext().getStructure());
 			Structure struct = scm.getSpeciesContext().getStructure();
 			Domain domain = null;

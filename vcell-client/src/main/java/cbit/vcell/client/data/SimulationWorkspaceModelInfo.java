@@ -408,7 +408,7 @@ String mathInfo = var.getClass().getSimpleName()+"("+var.getName()+")";
 							//
 							// for SpeciesConcentrationParameters corresponding to Generated species, add GeneratedSpeciesSymbolTableEntry
 							//
-							if (mathMapping.getTransformation() != null){
+							if (mathMapping.getTransformation() != null && mathMapping.getTransformation().modelEntityMappings != null){
 								for (ModelEntityMapping mem : mathMapping.getTransformation().modelEntityMappings){
 									if (mem.newModelObj == transformedModelSpeciesContext){
 										if (mem.origModelObj instanceof GeneratedSpeciesSymbolTableEntry){

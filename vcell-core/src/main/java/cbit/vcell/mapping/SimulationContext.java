@@ -2491,9 +2491,14 @@ public void checkValidity() throws MappingException
 		RateRule[] rateRules = getRateRules();
 		if (rateRules != null && rateRules.length > 0) {
 			if (getModel() != null) {
-				ReactionStep[] reactionSteps = getModel().getReactionSteps();
+				
+				ReactionSpec[] rSpecs = getReactionContext().getReactionSpecs();
 				ReactionParticipant[] reactionParticipants = null;
-				for (ReactionStep rs : reactionSteps) {
+				for(ReactionSpec rSpec : rSpecs) {
+					if(rSpec.isExcluded()) {
+						continue;			// we don't care if the reaction is excluded
+					}
+					ReactionStep rs = rSpec.getReactionStep();
 					reactionParticipants = rs.getReactionParticipants();
 					for (ReactionParticipant rp : reactionParticipants) {
 						if (rp instanceof Reactant || rp instanceof Product) {
@@ -2749,6 +2754,12 @@ public SimContextTransformer createNewTransformer(){
 				return new NetworkTransformer();
 			}
 		}
+		// if rate rule present, invoke RateRuleTransformer
+		RateRule[] rateRules = getRateRules();
+		if(rateRules != null && rateRules.length > 0) {
+			return new RateRuleTransformer();
+		}
+		
 		if (getGeometry().getDimension() == 0) {
 			if (!getGeometryContext().isAllSizeSpecifiedPositive()) {
 				// old models may not have absolute sizes for structures, we clone the original simulation context
