@@ -1343,16 +1343,15 @@ public class SBMLImporter {
 			if (rule instanceof RateRule) {
 				bRateRule = true;
 				// TODO: re-enable importing of rate rules here
-				break;
-/*				
+//				break;
+				
 				// Get the rate rule and store it in the hashMap, and create
 				// VCell rateRule.
 				RateRule sbmlRateRule = (RateRule) rule;
 				// rate rule name
 				String rateruleName = sbmlRateRule.getId();
 				if (rateruleName == null || rateruleName.length() == 0) {
-					rateruleName = TokenMangler.mangleToSName(sbmlRateRule
-							.getName());
+					rateruleName = TokenMangler.mangleToSName(sbmlRateRule.getName());
 					// if rate rule name is still null, get free rate rule name
 					// from vcBioModel.getSimulationContext(0).
 					if (rateruleName == null || rateruleName.length() == 0) {
@@ -1362,31 +1361,23 @@ public class SBMLImporter {
 				// rate rule variable
 				String varName = sbmlRateRule.getVariable();
 				SymbolTableEntry rateRuleVar = vcBioModel.getSimulationContext(0).getEntry(varName);
-				if (rateRuleVar instanceof Structure) {	// actually rateRuleVar instanceof Structure.StructureSize
-					throw new SBMLImportException(
-							"Compartment '"
-									+ rateRuleVar.getName()
-									+ "' has a rate rule : not allowed in VCell at this time.");
+				if (rateRuleVar instanceof Structure || rateRuleVar instanceof Structure.StructureSize) {
+					throw new SBMLImportException("Compartment '" + rateRuleVar.getName() + "' has a rate rule: not allowed in VCell at this time.");
 				}
 				try {
 					if (rateRuleVar != null) {
-						Expression vcRateRuleExpr = getExpressionFromFormula(sbmlRateRule
-								.getMath());
-						cbit.vcell.mapping.RateRule vcRateRule = new cbit.vcell.mapping.RateRule(
-								rateruleName, rateRuleVar, vcRateRuleExpr,
-								vcBioModel.getSimulationContext(0));
+						Expression vcRateRuleExpr = getExpressionFromFormula(sbmlRateRule.getMath());
+						cbit.vcell.mapping.RateRule vcRateRule = new cbit.vcell.mapping.RateRule(rateruleName, rateRuleVar, 
+								vcRateRuleExpr,	vcBioModel.getSimulationContext(0));
 						vcRateRule.bind();
-						rateRulesHash
-								.put(rateRuleVar.getName(), vcRateRuleExpr);
+						rateRulesHash.put(rateRuleVar.getName(), vcRateRuleExpr);
 						vcBioModel.getSimulationContext(0).addRateRule(vcRateRule);
 					}
 				} catch (PropertyVetoException e) {
 					e.printStackTrace(System.out);
-					throw new SBMLImportException(
-							"Unable to create and add rate rule to VC model : "
-									+ e.getMessage());
+					throw new SBMLImportException("Unable to create and add rate rule to VC model : " + e.getMessage());
 				}
-				*/
+
 			} // end if - RateRule
 		} // end - for i : rules
 		if(bRateRule) {
