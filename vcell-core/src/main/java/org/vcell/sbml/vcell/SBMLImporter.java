@@ -575,67 +575,42 @@ public class SBMLImporter {
 
 		for (int i = 0; i < sbmlModel.getNumInitialAssignments(); i++) {
 			try {
-				InitialAssignment initAssgn = (InitialAssignment) listofInitialAssgns
-						.get(i);
+				InitialAssignment initAssgn = (InitialAssignment) listofInitialAssgns.get(i);
 				String initAssgnSymbol = initAssgn.getSymbol();
-				Expression initAssignMathExpr = getExpressionFromFormula(initAssgn
-						.getMath());
+				Expression initAssignMathExpr = getExpressionFromFormula(initAssgn.getMath());
 				// if initial assignment is for a compartment, VCell doesn't
 				// support compartmentSize expressions, warn and bail out.
 				if (sbmlModel.getCompartment(initAssgnSymbol) != null) {
 					if (!initAssignMathExpr.isNumeric()) {
-						logger.sendMessage(
-								VCLogger.Priority.HighPriority,
-								VCLogger.ErrorType.CompartmentError,
-								"compartment '"
-										+ initAssgnSymbol
-										+ "' size has an initial assignment, cannot handle it at this time.");
+						logger.sendMessage(VCLogger.Priority.HighPriority, VCLogger.ErrorType.CompartmentError,
+							"compartment '" + initAssgnSymbol + "' size has an initial assignment, cannot handle it at this time.");
 					}
-					// if init assgn for compartment is numeric, the numeric
-					// value for size is set in addCompartments().
+					// if init assgn for compartment is numeric, the numeric value for size is set in addCompartments().
 				}
-				// Check if init assgn expr for a species is in terms of x,y,z
-				// or other species. Not allowed for species.
+				// TODO: replace the x, y, z
+				// Check if init assgn expr for a species is in terms of x,y,z or other species. Not allowed for species.
 				if (!bSpatial && sbmlModel.getSpecies(initAssgnSymbol) != null) {
 					if (initAssignMathExpr.hasSymbol(vcModel.getX().getName())
-							|| initAssignMathExpr.hasSymbol(vcModel.getY()
-									.getName())
-							|| initAssignMathExpr.hasSymbol(vcModel.getZ()
-									.getName())) {
-						logger.sendMessage(
-								VCLogger.Priority.HighPriority,
-								VCLogger.ErrorType.SpeciesError,
-								"species '"
-										+ initAssgnSymbol
-										+ "' initial assignment expression cannot contain 'x', 'y', 'z'.");
+							|| initAssignMathExpr.hasSymbol(vcModel.getY().getName())
+							|| initAssignMathExpr.hasSymbol(vcModel.getZ().getName())) {
+						logger.sendMessage(VCLogger.Priority.HighPriority, VCLogger.ErrorType.SpeciesError,
+							"species '" + initAssgnSymbol + "' initial assignment expression cannot contain 'x', 'y', 'z'.");
 					}
 				}
 
-				initAssignMathExpr = adjustExpression(initAssignMathExpr,
-						vcModel);
+				initAssignMathExpr = adjustExpression(initAssignMathExpr, vcModel);
 				// set the init assgn expr on VCell species init condn or global
 				// parameter expression
-				SpeciesContextSpec scs = vcBioModel.getSimulationContext(0).getReactionContext()
-						.getSpeciesContextSpec(
-								vcBioModel.getSimulationContext(0).getModel().getSpeciesContext(
-										initAssgnSymbol));
-				ModelParameter mp = vcBioModel.getSimulationContext(0).getModel().getModelParameter(
-						initAssgnSymbol);
+				SpeciesContextSpec scs = vcBioModel.getSimulationContext(0).getReactionContext().getSpeciesContextSpec(
+								vcBioModel.getSimulationContext(0).getModel().getSpeciesContext(initAssgnSymbol));
+				ModelParameter mp = vcBioModel.getSimulationContext(0).getModel().getModelParameter(initAssgnSymbol);
 				if (scs != null) {
-					scs.getInitialConditionParameter().setExpression(
-							initAssignMathExpr);
+					scs.getInitialConditionParameter().setExpression(initAssignMathExpr);
 				} else if (mp != null) {
 					mp.setExpression(initAssignMathExpr);
 				} else {
-					localIssueList
-							.add(new Issue(
-									new SBMLIssueSource(initAssgn),
-									issueContext,
-									IssueCategory.SBMLImport_UnsupportedAttributeOrElement,
-									"Symbol '"
-											+ initAssgnSymbol
-											+ "' not a species or global parameter in VCell; initial assignment ignored.",
-									Issue.SEVERITY_WARNING));
+					localIssueList.add(new Issue(new SBMLIssueSource(initAssgn), issueContext, IssueCategory.SBMLImport_UnsupportedAttributeOrElement,
+						"Symbol '" + initAssgnSymbol + "' not a species or global parameter in VCell; initial assignment ignored.", Issue.SEVERITY_WARNING));
 					// logger.sendMessage(VCLogger.Priority.MediumPriority,
 					// VCLogger.ErrorType.UnsupportedConstruct,
 					// "Symbol '"+initAssgnSymbol+"' not a species or global parameter in VCell; initial assignment ignored..");
@@ -1327,11 +1302,11 @@ public class SBMLImporter {
 	 * @throws SBMLException 
 	 *
 	 **/
-	protected void addRateRules() throws ExpressionException, SBMLException, XMLStreamException {
+	protected void addRateRules(Map<String, String> sbmlToVcNameMap) throws ExpressionException, SBMLException, XMLStreamException {
 		if (sbmlModel == null) {
 			throw new SBMLImportException("SBML model is NULL");
 		}
-		ListOf listofRules = sbmlModel.getListOfRules();
+		ListOf<Rule> listofRules = sbmlModel.getListOfRules();
 		if (listofRules == null) {
 			System.out.println("No Rules specified");
 			return;
@@ -1342,36 +1317,43 @@ public class SBMLImporter {
 			Rule rule = (org.sbml.jsbml.Rule) listofRules.get(i);
 			if (rule instanceof RateRule) {
 				bRateRule = true;
-				// TODO: re-enable importing of rate rules here
-//				break;
-				
-				// Get the rate rule and store it in the hashMap, and create
-				// VCell rateRule.
+				// Get the rate rule and store it in the hashMap, and create VCell rateRule.
 				RateRule sbmlRateRule = (RateRule) rule;
 				// rate rule name
-				String rateruleName = sbmlRateRule.getId();
-				if (rateruleName == null || rateruleName.length() == 0) {
-					rateruleName = TokenMangler.mangleToSName(sbmlRateRule.getName());
+				String sbmlRateRuleName = sbmlRateRule.getId();		// TODO: we may want to actually make sure that the name is not a reserved symbol
+				if (sbmlRateRuleName == null || sbmlRateRuleName.length() == 0) {
+					sbmlRateRuleName = TokenMangler.mangleToSName(sbmlRateRule.getName());
 					// if rate rule name is still null, get free rate rule name
 					// from vcBioModel.getSimulationContext(0).
-					if (rateruleName == null || rateruleName.length() == 0) {
-						rateruleName = vcBioModel.getSimulationContext(0).getFreeRateRuleName();
+					if (sbmlRateRuleName == null || sbmlRateRuleName.length() == 0) {
+						sbmlRateRuleName = vcBioModel.getSimulationContext(0).getFreeRateRuleName();
 					}
 				}
 				// rate rule variable
-				String varName = sbmlRateRule.getVariable();
-				SymbolTableEntry rateRuleVar = vcBioModel.getSimulationContext(0).getEntry(varName);
-				if (rateRuleVar instanceof Structure || rateRuleVar instanceof Structure.StructureSize) {
-					throw new SBMLImportException("Compartment '" + rateRuleVar.getName() + "' has a rate rule: not allowed in VCell at this time.");
+				String sbmlVarName = sbmlRateRule.getVariable();
+				String vcSpeciesName = sbmlVarName;
+				if(sbmlToVcNameMap.get(sbmlVarName) != null) {
+					vcSpeciesName = sbmlToVcNameMap.get(sbmlVarName);
 				}
-				try {
-					if (rateRuleVar != null) {
-						Expression vcRateRuleExpr = getExpressionFromFormula(sbmlRateRule.getMath());
-						cbit.vcell.mapping.RateRule vcRateRule = new cbit.vcell.mapping.RateRule(rateruleName, rateRuleVar, 
+				
+				SymbolTableEntry vcRateRuleVar = vcBioModel.getSimulationContext(0).getEntry(vcSpeciesName);
+				if (vcRateRuleVar instanceof Structure || vcRateRuleVar instanceof Structure.StructureSize) {
+					throw new SBMLImportException("Compartment '" + vcRateRuleVar.getName() + "' has a rate rule: not allowed in VCell at this time.");
+				}
+				try {		// we really only know how to deal with species variables right now
+					if (vcRateRuleVar != null) {
+						Expression sbmlRateRuleExpr = getExpressionFromFormula(sbmlRateRule.getMath());
+						for(Map.Entry<String, String> entry : sbmlToVcNameMap.entrySet()) {
+							String sbmlName = entry.getKey();
+							String vcName = entry.getValue();
+							sbmlRateRuleExpr.substituteInPlace(new Expression(sbmlName), new Expression(vcName));
+						}
+						Expression vcRateRuleExpr = new Expression(sbmlRateRuleExpr);
+						cbit.vcell.mapping.RateRule vcRateRule = new cbit.vcell.mapping.RateRule(sbmlRateRuleName, vcRateRuleVar, 
 								vcRateRuleExpr,	vcBioModel.getSimulationContext(0));
 						vcRateRule.bind();
-						rateRulesHash.put(rateRuleVar.getName(), vcRateRuleExpr);
-						vcBioModel.getSimulationContext(0).addRateRule(vcRateRule);
+						rateRulesHash.put(vcRateRuleVar.getName(), vcRateRuleExpr);
+						vcBioModel.getSimulationContext(0).addRateRule(vcRateRule);	// when we import from SBML there can't be more than one sim context 
 					}
 				} catch (PropertyVetoException e) {
 					e.printStackTrace(System.out);
@@ -1381,11 +1363,9 @@ public class SBMLImporter {
 			} // end if - RateRule
 		} // end - for i : rules
 		if(bRateRule) {
-			localIssueList.add(new Issue(vcBioModel, issueContext, IssueCategory.SBMLImport_UnsupportedFeature,
-				"RateRules are not supported at this time. It may be possible to implement some of them through the Physiology.",
-				Issue.Severity.WARNING));
+			localIssueList.add(new Issue(vcBioModel, issueContext, IssueCategory.SBMLImport_RestrictedFeature,
+				"RateRules are supported at this time with restrictions. Please check the generated math for consistency.", Issue.Severity.WARNING));
 		}
-		
 //		throw new SBMLImportException("Rate rules are not allowed in VCell at this time.");
 	}
 
@@ -2760,7 +2740,7 @@ public class SBMLImporter {
 		// compartment/species/parameter need to be defined before rate rules
 		// for those vars can be read in).
 		try {
-			addRateRules();
+			addRateRules(sbmlToVcNameMap);
 		} catch (ExpressionException | SBMLException | XMLStreamException ee) {
 			ee.printStackTrace(System.out);
 			throw new SBMLImportException(ee.getMessage(), ee);
