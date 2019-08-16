@@ -54,6 +54,7 @@ import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 
 import org.apache.commons.io.IOUtils;
@@ -115,8 +116,28 @@ public class BioModelsNetPanel extends DocumentEditorSubPanel {
 //		    			setTextNonSelectionColor(Color.red.darker());
 		    		}
 		    		
-		    	} else if (userObj instanceof String) {
+		    	} else if (userObj instanceof String) {		// the BMDB root
+		    		int count = node.getChildCount();
+		    		int supported = 0;
+		    		for(int i=0; i<node.getChildCount(); i++) {
+		    			Object val = node.getChildAt(i);
+		    			if(val instanceof BioModelNode) {
+		    				BioModelNode nod = (BioModelNode)val;
+		    				Object userOb = nod.getUserObject();
+		    				if (userOb instanceof BioModelsNetModelInfo) {
+		    					BioModelsNetModelInfo bmnmi = (BioModelsNetModelInfo) userOb;
+		    					if(bmnmi.isSupported()) {
+		    						supported++;
+		    					}
+		    				}
+		    			}
+		    		}
 		    		text = (String)userObj;
+		    		if(supported != count) {
+		    			text += " (supported " + supported + "/" + count + ")";
+		    		} else {
+		    			text +=  " (" + count + ")";
+		    		}
 		    	}
 			}
 			setText(text);
@@ -271,7 +292,7 @@ public class BioModelsNetPanel extends DocumentEditorSubPanel {
 				
 				String unzippedPath = destDirectory + File.separator + bioModelsNetInfo.getId() + ".xml";
 				String bioModelSBML = new String(Files.readAllBytes(Paths.get(unzippedPath)), StandardCharsets.UTF_8);
-				
+		
 				try {
 					Files.deleteIfExists(Paths.get(zipFilePath));		// the original zip file
 					Files.deleteIfExists(Paths.get(unzippedPath));		// the unzipped SBML file
@@ -451,10 +472,11 @@ public class BioModelsNetPanel extends DocumentEditorSubPanel {
 			Element temp = (Element) ruleiterator.next();
 			//System.out.println(temp.getAttributeValue("TagName") + ":" + temp.getAttributeValue("AttrName"));
 			boolean bSupported = temp.getAttribute(BioModelsNetPanel.SUPPORTED_ATTRIBUTE_NAME).getBooleanValue();
-
+//			if(bSupported) {
 			String id = temp.getAttributeValue(BioModelsNetPanel.ID_ATTRIBUTE_NAME);
 			String name = temp.getAttributeValue(BioModelsNetPanel.MODELNAME_ATTRIBUTE_NAME);
 			vcellCompatibleBioModelsList.add(new BioModelsNetModelInfo(id, name, defaultBaseURL + id, bSupported));
+//			}
 		}
 		return vcellCompatibleBioModelsList;
 	}
