@@ -3,7 +3,7 @@
 
 **During build, supply internal registry as part of Docker image namespace (e.g. vcell-docker.cam.uchc.edu:5000/schaff/<container_name>:<tag_name>)**  
 **Build VCell and deploy to production servers (from ./docker/build/ directory)**  
-current partition of SLURM for vcell is shangrila[13-14], xanadu-[22-23]
+current partition of SLURM for vcell is xanadu-[01-05]
 
 build the containers (e.g. vcell-docker.cam.uchc.edu:5000/schaff/vcell-api:f18b7aa) and upload to a private Docker registry (e.g. vcell-docker.cam.uchc.edu:5000).  A Singularity image for vcell-batch is also generated and temporarily stored locally on the build machine as a Singularity Image in directory (vcell-node1.cam.uchc.edu:/opt/build/vcell/docker/build/singularity-vm) as no local Singularity repository is available yet.  Later in the deploy stage, the Singularity image is uploaded to the server file system and invoked for numerical simulation on the HPC cluster. 
 
