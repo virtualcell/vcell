@@ -13,10 +13,15 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.UnknownHostException;
+import java.nio.file.Files;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.Hashtable;
+import java.util.Iterator;
 import java.util.List;
+import java.util.StringTokenizer;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
@@ -49,6 +54,7 @@ import cbit.vcell.message.server.ServiceInstanceStatus;
 import cbit.vcell.message.server.ServiceProvider;
 import cbit.vcell.message.server.bootstrap.ServiceType;
 import cbit.vcell.message.server.cmd.CommandService;
+import cbit.vcell.message.server.cmd.CommandService.CommandOutput;
 import cbit.vcell.message.server.cmd.CommandServiceLocal;
 import cbit.vcell.message.server.cmd.CommandServiceSshNative;
 import cbit.vcell.message.server.combined.VCellServices;
@@ -68,6 +74,7 @@ import cbit.vcell.simdata.VtkMeshGenerator;
 import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solver.SolverException;
 import cbit.vcell.solver.SolverTaskDescription;
+import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.vcell.solver.server.SimulationMessage;
 import cbit.vcell.solver.server.Solver;
 import cbit.vcell.solver.server.SolverFactory;
@@ -206,8 +213,237 @@ private PostProcessingChores choresFor(SimulationTask simTask) {
 	return chores;
 }
 
+
+
+//------------------------------Job Monitor Section BEGIN
+private static class MonitorJobInfo {
+	private long slurmJobID;
+	private boolean bDelete;
+	private VCSimulationIdentifier vcsimID;
+	private int jobIndex;
+	private int taskID;
+	public MonitorJobInfo(long slurmJobID,VCSimulationIdentifier vcsimID, int jobIndex, int taskID) {
+		this(slurmJobID);
+		this.bDelete = false;
+		this.vcsimID = vcsimID;
+		this.jobIndex = jobIndex;
+		this.taskID = taskID;
+	}
+	public MonitorJobInfo(long slurmJobID) {
+		this.slurmJobID = slurmJobID;
+		this.bDelete = true;;
+	}
+	public static MonitorJobInfo fromString(String str) {
+		StringTokenizer st = new StringTokenizer(str," \n\r");
+		boolean bDelete = (st.nextToken().equals("+")?false:true);// + or -
+		long slurmJobID = Long.parseLong(st.nextToken());// slurmJobID
+		if(!bDelete) {
+			KeyValue simKey = new KeyValue(st.nextToken());// simkey
+			String username = st.nextToken();// username
+			KeyValue userkey = new KeyValue(st.nextToken());// userkey
+			int simJobIndex = Integer.parseInt(st.nextToken());// simjobidindex
+			int simTaskID = Integer.parseInt(st.nextToken());// simtaskid
+			return new MonitorJobInfo(slurmJobID,new VCSimulationIdentifier(simKey, new User(username, userkey)), simJobIndex, simTaskID);
+		}else {
+			return new MonitorJobInfo(slurmJobID);
+		}
+	}
+	public String toString() {
+		return ((bDelete?"-":"+")+" "+
+		slurmJobID+" "+
+			(!bDelete?
+					vcsimID.getSimulationKey().toString()+" "+	//simkey
+					"'"+vcsimID.getOwner().getName()+"' "+		//username
+					vcsimID.getOwner().getID().toString()+" "+	//userkey
+					jobIndex+" "+								//simjobidindex
+					taskID										//simtaskid
+			:""));																		
+	}
+	
+}
+private static String MONITOR_JOBS_FILE_NAME = "monitorJobsList";
+private static File monitorJobsFile = new File(System.getProperty(PropertyLoader.primarySimDataDirInternalProperty), MONITOR_JOBS_FILE_NAME+"_"+System.getProperty(PropertyLoader.vcellServerIDProperty)+".txt");
+private static Hashtable<String,MonitorJobInfo> getMonitorJobs(){
+	Hashtable<String,MonitorJobInfo> result = new Hashtable<>();
+	ArrayList<String> theseJobsAreDone = new ArrayList<>();
+	try {
+		if(monitorJobsFile.exists()) {
+			List<String> monitorJobsList = Files.readAllLines(monitorJobsFile.toPath());
+			for (Iterator<String> iterator = monitorJobsList.iterator(); iterator.hasNext();) {
+				String slurmJobInfoStr = (String) iterator.next();
+				if(slurmJobInfoStr != null && slurmJobInfoStr.trim().length() > 0) {
+					MonitorJobInfo monitorJobInfo = MonitorJobInfo.fromString(slurmJobInfoStr);
+					if(monitorJobInfo.bDelete) {
+						theseJobsAreDone.add(monitorJobInfo.slurmJobID+"");
+					}else {
+						result.put(monitorJobInfo.slurmJobID+"", monitorJobInfo);
+					}
+				}
+			}
+		}
+	} catch (Exception e) {
+		e.printStackTrace();
+	}
+	for (String string : theseJobsAreDone) {
+		result.remove(string);
+	}
+	System.out.println("----------removed "+theseJobsAreDone.size()+ " left with "+result.size());
+	return result;
+}
+private void addMonitorJob(long slurmJobID,SimulationTask simTask,boolean bDelete) {
+	try {
+		MonitorJobInfo newJobInfo = null;
+		if(bDelete) {
+			monitorTheseJobs.remove(slurmJobID+"");
+			newJobInfo = new MonitorJobInfo(slurmJobID);
+		}else {
+			newJobInfo = new MonitorJobInfo(slurmJobID, simTask.getSimulationInfo().getAuthoritativeVCSimulationIdentifier(), simTask.getSimulationJob().getJobIndex(), simTask.getTaskID());
+			monitorTheseJobs.put(slurmJobID+"", newJobInfo);
+		}
+		Files.write(monitorJobsFile.toPath(),(newJobInfo.toString()+"\n").getBytes(),StandardOpenOption.CREATE,StandardOpenOption.WRITE,StandardOpenOption.APPEND);
+	} catch (Exception e) {
+		e.printStackTrace();
+	}
+}
+private void removeMonitorJob(long slurmJobID) {
+	addMonitorJob(slurmJobID,null,true);
+}
+private Hashtable<String,MonitorJobInfo> monitorTheseJobs;
+private Thread monitorJobsThread = null;
+public void startJobMonitor() {
+	monitorTheseJobs = getMonitorJobs();
+	try {
+		System.out.println("----------Resetting slurm monitorJobsFile");
+		//clean jobs file
+		StringBuffer sb = new StringBuffer();
+		for (Iterator<String> iterator = monitorTheseJobs.keySet().iterator(); iterator.hasNext();) {
+			sb.append((iterator.next())+"\n");	
+		}
+		Files.write(monitorJobsFile.toPath(),sb.toString().getBytes(),StandardOpenOption.CREATE,StandardOpenOption.WRITE,StandardOpenOption.TRUNCATE_EXISTING);
+	} catch (IOException e1) {
+		e1.printStackTrace();
+	}
+	monitorJobsThread = new Thread(new Runnable() {
+		@Override
+		public void run() {
+			while(true) {
+				try {
+					int sleeptime=60000;
+					Thread.sleep(sleeptime);
+					StringBuffer slurmJobidSB = new StringBuffer();
+					for(String jobid:monitorTheseJobs.keySet()) {
+						slurmJobidSB.append((slurmJobidSB.length()>0?",":"")+jobid);
+					}
+					if(slurmJobidSB.length() == 0) {
+						continue;
+					}
+					StringBuffer slurmJobInfoSB = new StringBuffer();
+					try {
+						HtcSimulationWorker.this.htcProxy.getCommandService();
+						String[] tryStr = new String[] {"sacct","--format=jobid,jobname%40,state%30 -n -j "+slurmJobidSB.toString()+"| grep -v \".batch\""};
+						CommandOutput commandOutput = htcProxy.getCommandService().command(tryStr);
+						slurmJobInfoSB.append(commandOutput.getStandardOutput());
+//						System.out.println("-----sacct stdoutput:\n"+commandOutput.getStandardOutput());
+//						System.out.println("-----sacct stderror:\n"+commandOutput.getStandardError());
+					}catch(Exception e) {
+						e.printStackTrace();
+					}
+//					Process p = null;
+//					try{
+//						String[] cmd = new String[] {"ssh","-i","/run/secrets/batchuserkeyfile","vcell@172.16.246.118","sacct --format=jobid,jobname%40,state -n -j "+slurmJobidSB.toString()+"| grep -v \".batch\""};
+//						ProcessBuilder pb = new ProcessBuilder(Arrays.asList(cmd));
+//						pb.redirectErrorStream(true);
+//						p = pb.start();
+//						int ioByte = -1;
+//						while((ioByte = p.getInputStream().read()) != -1) {
+//							sb.append((char)ioByte);
+//						}
+//						p.waitFor();
+//					}catch(Exception e) {
+//						e.printStackTrace();
+//						continue;
+//					}
+					
+//					System.out.println("-----");
+//					System.out.println("-----"+sb.toString());
+//					System.out.println("-----");
+					
+					StringTokenizer st = new StringTokenizer(slurmJobInfoSB.toString()," \n\r\t");
+					while(st.hasMoreTokens()) {
+						String slurmJobID = st.nextToken();
+						String jobName = st.nextToken();
+						String jobState = st.nextToken();
+						if(jobState.equalsIgnoreCase("FAILED") ||
+							jobState.startsWith("CANCELLED") ||
+							jobState.equalsIgnoreCase("BOOT_FAIL") ||
+							jobState.equalsIgnoreCase("DEADLINE") ||
+							jobState.equalsIgnoreCase("NODE_FAIL") ||
+							jobState.equalsIgnoreCase("OUT_OF_MEMORY") ||
+							jobState.equalsIgnoreCase("PREEMPTED") ||
+							jobState.equalsIgnoreCase("TIMEOUT")) {
+							MonitorJobInfo failedMonitorJobInfo = monitorTheseJobs.get(slurmJobID);
+							WorkerEventMessage.sendWorkerExitError(messageProducer_sim, HtcSimulationWorker.class.getName(), ManageUtils.getHostName(), failedMonitorJobInfo.vcsimID, failedMonitorJobInfo.jobIndex, failedMonitorJobInfo.taskID,
+								SimulationMessage.jobFailed("Fail found by monitor, slrmJobID="+slurmJobID+" jobName="+jobName+" jobState="+jobState));
+//							WorkerEventMessage.sendFailed(messageProducer_sim,  HtcSimulationWorker.class.getName(), monitorTheseJobs.get(jobid), ManageUtils.getHostName(), SimulationMessage.jobFailed("Fail found by monitor "+jobName+" "+jobState));
+							removeMonitorJob(Long.parseLong(slurmJobID));
+						}else if(jobState.equalsIgnoreCase("COMPLETED")) {
+							removeMonitorJob(Long.parseLong(slurmJobID));
+						}
+					}
+//					BF BOOT_FAIL
+//					Job terminated due to launch failure, typically due to a hardware failure (e.g. unable to boot the node or block and the job can not be requeued).
+//					CA CANCELLED
+//					Job was explicitly cancelled by the user or system administrator. The job may or may not have been initiated.
+//					CD COMPLETED
+//					Job has terminated all processes on all nodes with an exit code of zero.
+//					DL DEADLINE
+//					Job terminated on deadline.
+//					F FAILED
+//					Job terminated with non-zero exit code or other failure condition.
+//					NF NODE_FAIL
+//					Job terminated due to failure of one or more allocated nodes.
+//					OOM OUT_OF_MEMORY
+//					Job experienced out of memory error.
+//					PD PENDING
+//					Job is awaiting resource allocation.
+//					PR PREEMPTED
+//					Job terminated due to preemption.
+//					R RUNNING
+//					Job currently has an allocation.
+//					RQ REQUEUED
+//					Job was requeued.
+//					RS RESIZING
+//					Job is about to change size.
+//					RV REVOKED
+//					Sibling was removed from cluster due to other cluster starting the job.
+//					S SUSPENDED
+//					Job has an allocation, but execution has been suspended and CPUs have been released for other jobs.
+//					TO TIMEOUT
+//					Job terminated upon reaching its time limit.
+					
+//					CommandOutput commandOutput = htcProxy.getCommandService().command(cmd);
+//					System.out.println("-----sacct stdoutput:\n"+commandOutput.getStandardOutput());
+//					System.out.println("-----sacct stderror:\n"+commandOutput.getStandardError());
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		}
+	});
+	monitorJobsThread.setDaemon(true);
+	monitorJobsThread.start();
+
+}
+//------------------------------Job Monitor Section END
+
+
+
+
 private void initQueueConsumer() {
 
+	startJobMonitor();
+	
 	this.messageProducer_sim = vcMessagingService_sim.createProducerSession();
 	this.messageProducer_int = vcMessagingService_int.createProducerSession();
 
@@ -228,6 +464,7 @@ private void initQueueConsumer() {
 					lg.info("onQueueMessage() submit job: simulation key="+simTask.getSimKey()+", job="+simTask.getSimulationJobID()+", task="+simTask.getTaskID()+" for user "+simTask.getUserName());
 				}
 				HtcJobID pbsId = submit2PBS(simTask, clonedHtcProxy, rd);
+				addMonitorJob(pbsId.getJobNumber(), simTask, false);
 				if (lg.isInfoEnabled()) {
 					lg.info("onQueueMessage() sending 'accepted' message for job: simulation key="+simTask.getSimKey()+", job="+simTask.getSimulationJobID()+", task="+simTask.getTaskID()+" for user "+simTask.getUserName());
 				}
