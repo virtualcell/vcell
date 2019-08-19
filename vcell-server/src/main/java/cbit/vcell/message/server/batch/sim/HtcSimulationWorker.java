@@ -382,11 +382,14 @@ public void startJobMonitor() {
 							jobState.equalsIgnoreCase("PREEMPTED") ||
 							jobState.equalsIgnoreCase("TIMEOUT")) {
 							MonitorJobInfo failedMonitorJobInfo = monitorTheseJobs.get(slurmJobID);
-							WorkerEventMessage.sendWorkerExitError(messageProducer_sim, HtcSimulationWorker.class.getName(), ManageUtils.getHostName(), failedMonitorJobInfo.vcsimID, failedMonitorJobInfo.jobIndex, failedMonitorJobInfo.taskID,
+							WorkerEventMessage.sendWorkerExitError(messageProducer_sim, HtcSimulationWorker.class.getName(), ManageUtils.getHostName(),
+								failedMonitorJobInfo.vcsimID, failedMonitorJobInfo.jobIndex, failedMonitorJobInfo.taskID,
 								SimulationMessage.jobFailed("Fail found by monitor, slrmJobID="+slurmJobID+" jobName="+jobName+" jobState="+jobState));
-//							WorkerEventMessage.sendFailed(messageProducer_sim,  HtcSimulationWorker.class.getName(), monitorTheseJobs.get(jobid), ManageUtils.getHostName(), SimulationMessage.jobFailed("Fail found by monitor "+jobName+" "+jobState));
 							removeMonitorJob(Long.parseLong(slurmJobID));
 						}else if(jobState.equalsIgnoreCase("COMPLETED")) {
+							MonitorJobInfo completedMonitorJobInfo = monitorTheseJobs.get(slurmJobID);
+							WorkerEventMessage.sendAlternateCompleted(messageProducer_sim, HtcSimulationWorker.class.getName(), completedMonitorJobInfo.vcsimID,
+								ManageUtils.getHostName(), completedMonitorJobInfo.jobIndex, completedMonitorJobInfo.taskID);
 							removeMonitorJob(Long.parseLong(slurmJobID));
 						}
 					}

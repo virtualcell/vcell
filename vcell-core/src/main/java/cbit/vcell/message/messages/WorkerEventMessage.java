@@ -15,8 +15,6 @@ import org.vcell.util.DataAccessException;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 
-import com.google.gson.Gson;
-
 import cbit.rmi.event.WorkerEvent;
 import cbit.vcell.message.VCMessage;
 import cbit.vcell.message.VCMessageSession;
@@ -221,7 +219,13 @@ public static WorkerEventMessage sendCompleted(VCMessageSession session, Object 
 
 	return workerEventMessage;
 }
+public static WorkerEventMessage sendAlternateCompleted(VCMessageSession session, Object source, VCSimulationIdentifier vcSimID, String hostName,int jobIndex,int taskID) throws VCMessagingException {
+	WorkerEvent workerEvent = new WorkerEvent(WorkerEvent.JOB_COMPLETED, source, vcSimID,jobIndex, hostName,taskID, null,null, SimulationMessage.MESSAGE_JOB_COMPLETED);
+	WorkerEventMessage workerEventMessage = new WorkerEventMessage(workerEvent);
+	workerEventMessage.sendWorkerEvent(session);
 
+	return workerEventMessage;
+}
 
 /**
  * Insert the method's description here.

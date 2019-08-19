@@ -609,7 +609,25 @@ public class SlurmProxy extends HtcProxy {
 			if (ec.getLdLibraryPath()!=null){
 				lsb.write("    export LD_LIBRARY_PATH="+ec.getLdLibraryPath().path+":$LD_LIBRARY_PATH");
 			}
-			lsb.write("    "+"${cmd_prefix}" + cmd);
+			lsb.write("singdevlooperr=\"Failed to mount squashfs image in (read only)\"");
+			lsb.write("let c=0");
+			lsb.write("while [ true ]");
+			lsb.write("    do");
+			lsb.write("      cmdstdout=$("+"${cmd_prefix}" + cmd+" 2>&1)");
+			lsb.write("      innerstate=$?");
+			lsb.write("      if [[ $cmdstdout != *$singdevlooperr* ]]");
+			lsb.write("      then");
+			lsb.write("        exit $innerstate");
+			lsb.write("      fi");
+			lsb.write("      sleep 6");
+			lsb.write("		 let c=c+1");
+			lsb.write("		 if [ $c -eq 10 ]");
+			lsb.write("		 then");
+			lsb.write("		  	echo \"Exceeded retry for singularity mount squashfs error\"");
+			lsb.write("		  	exit $innerstate");
+			lsb.write("		 fi");
+			lsb.write("		 echo retrying $c of 10...");
+			lsb.write("    done");
 			lsb.write(")");
 			lsb.write("stat=$?");
 
