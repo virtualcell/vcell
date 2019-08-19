@@ -121,6 +121,7 @@ import cbit.vcell.geometry.surface.GeometricRegion;
 import cbit.vcell.geometry.surface.GeometrySurfaceDescription;
 import cbit.vcell.geometry.surface.SurfaceGeometricRegion;
 import cbit.vcell.geometry.surface.VolumeGeometricRegion;
+import cbit.vcell.mapping.AssignmentRule;
 import cbit.vcell.mapping.BioEvent;
 import cbit.vcell.mapping.BioEvent.BioEventParameterType;
 import cbit.vcell.mapping.BioEvent.TriggerType;
@@ -3675,8 +3676,31 @@ public RateRule[] getRateRules(SimulationContext simContext, Element rateRulesEl
 			rateRulesVector.add(newRateRule);
 		}
 	}
-	
 	return ((RateRule[])BeanUtils.getArray(rateRulesVector, RateRule.class));
+}
+public AssignmentRule[] getAssignmentRules(SimulationContext simContext, Element assignmentRulesElement) throws XmlParseException  {
+	Iterator<Element> assignmentRulesIterator = assignmentRulesElement.getChildren(XMLTags.AssignmentRuleTag, vcNamespace).iterator();
+	Vector<AssignmentRule> assignmentRulesVector = new Vector<AssignmentRule>();
+	while (assignmentRulesIterator.hasNext()) {
+		Element rrElement = (Element) assignmentRulesIterator.next();
+
+		AssignmentRule newAssignmentRule = null;
+		try {
+			String rrName = unMangle(rrElement.getAttributeValue(XMLTags.NameAttrTag));
+			String varname = rrElement.getAttributeValue(XMLTags.AssignmentRuleVariableAttrTag);
+			SymbolTableEntry rrVar = simContext.getEntry(varname);
+			Expression rrExp = unMangleExpression(rrElement.getText());
+		    newAssignmentRule = new AssignmentRule(rrName, rrVar, rrExp, simContext);
+			newAssignmentRule.bind();
+		} catch (ExpressionBindingException e) {
+			e.printStackTrace(System.out);
+			throw new XmlParseException(e.getMessage());
+		}
+		if (newAssignmentRule != null) {
+			assignmentRulesVector.add(newAssignmentRule);
+		}
+	}
+	return ((AssignmentRule[])BeanUtils.getArray(assignmentRulesVector, AssignmentRule.class));
 }
 
 
@@ -6269,6 +6293,16 @@ private SimulationContext getSimulationContext(Element param, BioModel biomodel)
 		} catch (PropertyVetoException e) {
 			e.printStackTrace(System.out);
 			throw new RuntimeException("Error adding rate rules to simulationContext", e);
+		}
+	}
+	tempelement = param.getChild(XMLTags.AssignmentRulesTag, vcNamespace);
+	if(tempelement != null){
+		AssignmentRule[] assignmentRules = getAssignmentRules(newsimcontext, tempelement);
+		try {
+			newsimcontext.setAssignmentRules(assignmentRules);
+		} catch (PropertyVetoException e) {
+			e.printStackTrace(System.out);
+			throw new RuntimeException("Error adding assignment rules to simulationContext", e);
 		}
 	}
 

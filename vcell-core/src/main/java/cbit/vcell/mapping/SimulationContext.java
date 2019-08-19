@@ -136,6 +136,7 @@ public class SimulationContext implements SimulationOwner, Versionable, Matchabl
 
 	// for rate rule
 	public static final String PROPERTY_NAME_RATERULES = "raterules";
+	public static final String PROPERTY_NAME_ASSIGNMENTRULES = "assignmentrules";
 	
 	public class SimulationContextNameScope extends BioNameScope {
 		private transient NameScope nameScopes[] = null;
@@ -344,6 +345,7 @@ public class SimulationContext implements SimulationOwner, Versionable, Matchabl
 	
 	// rate rules
 	private RateRule[] fieldRateRules = null;
+	private AssignmentRule[] fieldAssignmentRules = null;
 	public static final String FLUOR_DATA_NAME = "fluor";
 
 	private transient TaskCallbackProcessor tcp = new TaskCallbackProcessor(this);
@@ -512,6 +514,13 @@ public SimulationContext(SimulationContext oldSimulationContext,Geometry newClon
 			fieldRateRules = new RateRule[rateRules.length];
 			for (int i = 0; i < rateRules.length; i++) {
 				fieldRateRules[i] = new RateRule(rateRules[i], this);
+			}
+		}
+		AssignmentRule[] assignmentRules = oldSimulationContext.getAssignmentRules();
+		if (assignmentRules != null) {
+			fieldAssignmentRules = new AssignmentRule[assignmentRules.length];
+			for (int i = 0; i < assignmentRules.length; i++) {
+				fieldAssignmentRules[i] = new AssignmentRule(assignmentRules[i], this);
 			}
 		}
 	}
@@ -1844,6 +1853,11 @@ public void refreshDependencies1(boolean isRemoveUncoupledParameters) {
 			fieldRateRules[i].refreshDependencies();
 		}
 	}
+	if (fieldAssignmentRules != null) {
+		for (int i = 0; i < fieldAssignmentRules.length; i++) {
+			fieldAssignmentRules[i].refreshDependencies();
+		}
+	}
 }
 
 
@@ -2163,6 +2177,9 @@ public void setGeometry(Geometry geometry) throws MappingException {
 				}
 				if (fieldRateRules != null) {
 					setRateRules(null);
+				}
+				if (fieldAssignmentRules != null) {
+					setAssignmentRules(null);
 				}
 				if (fieldAnalysisTasks != null) {
 					setAnalysisTasks(null);
@@ -2510,6 +2527,28 @@ public void checkValidity() throws MappingException
 				}
 			}
 		}
+		AssignmentRule[] assignmentRules = getAssignmentRules();	// Same as above for AssignmentRules
+		if (assignmentRules != null && assignmentRules.length > 0) {
+			if (getModel() != null) {
+				
+				ReactionSpec[] rSpecs = getReactionContext().getReactionSpecs();
+				ReactionParticipant[] reactionParticipants = null;
+				for(ReactionSpec rSpec : rSpecs) {
+					if(rSpec.isExcluded()) {
+						continue;			// we don't care if the reaction is excluded
+					}
+					ReactionStep rs = rSpec.getReactionStep();
+					reactionParticipants = rs.getReactionParticipants();
+					for (ReactionParticipant rp : reactionParticipants) {
+						if (rp instanceof Reactant || rp instanceof Product) {
+							if (getAssignmentRule(rp.getSpeciesContext()) != null) {
+								throw new RuntimeException("Species '" + rp.getSpeciesContext().getName() + "' is a reactant/product in reaction '" + rs.getName() + "' ; cannot also have an assignment rule." );
+							}
+						}
+					}
+				}
+			}
+		}
 	}
 }
 public boolean isUsingConcentration() {
@@ -2754,9 +2793,10 @@ public SimContextTransformer createNewTransformer(){
 				return new NetworkTransformer();
 			}
 		}
-		// if rate rule present, invoke RateRuleTransformer
+		// if RateRule or AssignmentRule present, invoke RateRuleTransformer
 		RateRule[] rateRules = getRateRules();
-		if(rateRules != null && rateRules.length > 0) {
+		AssignmentRule[] assignmentRules = getAssignmentRules();
+		if((rateRules != null && rateRules.length > 0) || (assignmentRules != null && assignmentRules.length > 0)) {
 			return new RateRuleTransformer();
 		}
 		
@@ -2899,7 +2939,6 @@ public RateRule createRateRule(SymbolTableEntry varSTE) throws PropertyVetoExcep
 	RateRule rateRule = new RateRule(rateRuleName, varSTE, new Expression(0.0), this);
 	return addRateRule(rateRule);
 }
-
 public RateRule addRateRule(RateRule rateRule) throws PropertyVetoException {
 	if (fieldRateRules == null){
 		setRateRules(new RateRule[] { rateRule });
@@ -2909,7 +2948,6 @@ public RateRule addRateRule(RateRule rateRule) throws PropertyVetoException {
 	}
 	return rateRule;
 }
-
 public void removeRateRule(RateRule rateRule) throws PropertyVetoException {
 	boolean bFound = false;
 	for (int i = 0; fieldRateRules!=null && i < fieldRateRules.length; i++){
@@ -2924,12 +2962,9 @@ public void removeRateRule(RateRule rateRule) throws PropertyVetoException {
 	RateRule[] newRateRules = (RateRule[])BeanUtils.removeElement(fieldRateRules, rateRule);
 	setRateRules(newRateRules);
 }
-
 public RateRule[] getRateRules() {
 	return fieldRateRules;
 }
-
-
 public RateRule getRateRule(String rateRulename) {
 	if (fieldRateRules != null) {
 		for (RateRule rr : fieldRateRules) {
@@ -2940,14 +2975,12 @@ public RateRule getRateRule(String rateRulename) {
 	}
 	return null;
 }
-
 public void setRateRules(RateRule[] rateRules) throws java.beans.PropertyVetoException {
 	RateRule[] oldValue = fieldRateRules;
 	fireVetoableChange(PROPERTY_NAME_RATERULES, oldValue, rateRules);
 	fieldRateRules = rateRules;
 	firePropertyChange(PROPERTY_NAME_RATERULES, oldValue, rateRules);
 }
-
 public String getFreeRateRuleName() {	
 	int count = 0;
 	while (true) {
@@ -2958,12 +2991,79 @@ public String getFreeRateRuleName() {
 		count ++;
 	}
 }
-
 public RateRule getRateRule(SymbolTableEntry rateRuleVar) {
 	if (fieldRateRules != null) {
 		for (RateRule rr : fieldRateRules) {
 			if (rr.getRateRuleVar() == rateRuleVar) {
 				return rr;
+			}
+		}
+	}
+	return null;
+}
+// -----------------------------------------------------------------------------------------------------------------
+public AssignmentRule createAssignmentRule(SymbolTableEntry varSTE) throws PropertyVetoException {
+	String assignmentRuleName = getFreeAssignmentRuleName();
+	AssignmentRule assignmentRule = new AssignmentRule(assignmentRuleName, varSTE, new Expression(0.0), this);
+	return addAssignmentRule(assignmentRule);
+}
+public AssignmentRule addAssignmentRule(AssignmentRule assignmentRule) throws PropertyVetoException {
+	if (fieldAssignmentRules == null){
+		setAssignmentRules(new AssignmentRule[] { assignmentRule });
+	} else {
+		AssignmentRule[] newAssignmentRules = (AssignmentRule[])BeanUtils.addElement(fieldAssignmentRules, assignmentRule);
+		setAssignmentRules(newAssignmentRules);
+	}
+	return assignmentRule;
+}
+public void removeAssignmentRule(AssignmentRule assignmentRule) throws PropertyVetoException {
+	boolean bFound = false;
+	for (int i = 0; fieldAssignmentRules!=null && i < fieldAssignmentRules.length; i++) {
+		if(fieldAssignmentRules[i] == assignmentRule) {
+			bFound = true;
+			break;
+		}
+	}
+	if(!bFound) {
+		throw new RuntimeException("Assignment rule '" + assignmentRule.getName() + "' not found.");
+	}
+	AssignmentRule[] newAssignmentRules = (AssignmentRule[])BeanUtils.removeElement(fieldAssignmentRules, assignmentRule);
+	setAssignmentRules(newAssignmentRules);
+}
+public AssignmentRule[] getAssignmentRules() {
+	return fieldAssignmentRules;
+}
+public AssignmentRule getAssignmentRule(String assignmentRuleName) {
+	if (fieldAssignmentRules != null) {
+		for (AssignmentRule ar : fieldAssignmentRules) {
+			if (ar.getName().equals(assignmentRuleName)) {
+				return ar;
+			}
+		}
+	}
+	return null;
+}
+public void setAssignmentRules(AssignmentRule[] assignmentRules) throws java.beans.PropertyVetoException {
+	AssignmentRule[] oldValue = fieldAssignmentRules;
+	fireVetoableChange(PROPERTY_NAME_ASSIGNMENTRULES, oldValue, assignmentRules);
+	fieldAssignmentRules = assignmentRules;
+	firePropertyChange(PROPERTY_NAME_ASSIGNMENTRULES, oldValue, assignmentRules);
+}
+public String getFreeAssignmentRuleName() {	
+	int count = 0;
+	while (true) {
+		String assignmentRuleName = "assignmentRule" + count;
+		if (getAssignmentRule(assignmentRuleName) == null) {
+			return assignmentRuleName;
+		}
+		count ++;
+	}
+}
+public AssignmentRule getAssignmentRule(SymbolTableEntry assignmentRuleVar) {
+	if (fieldAssignmentRules != null) {
+		for (AssignmentRule ar : fieldAssignmentRules) {
+			if (ar.getAssignmentRuleVar() == assignmentRuleVar) {
+				return ar;
 			}
 		}
 	}

@@ -106,6 +106,7 @@ import cbit.vcell.geometry.surface.GeometricRegion;
 import cbit.vcell.geometry.surface.GeometrySurfaceDescription;
 import cbit.vcell.geometry.surface.SurfaceGeometricRegion;
 import cbit.vcell.geometry.surface.VolumeGeometricRegion;
+import cbit.vcell.mapping.AssignmentRule;
 import cbit.vcell.mapping.BioEvent;
 import cbit.vcell.mapping.CurrentDensityClampStimulus;
 import cbit.vcell.mapping.ElectricalStimulus;
@@ -1690,6 +1691,10 @@ public Element getXML(SimulationContext param, BioModel bioModel) throws XmlPars
 	RateRule[] rateRules = param.getRateRules();
 	if (param.getRateRules()!=null && rateRules.length>0){
 		simulationcontext.addContent( getXML(rateRules) );
+	}
+	AssignmentRule[] assignmentRules = param.getAssignmentRules();
+	if (param.getAssignmentRules()!=null && assignmentRules.length>0){
+		simulationcontext.addContent( getXML(assignmentRules) );
 	}
 
 	// Add Datacontext
@@ -5095,8 +5100,19 @@ public Element getXML(RateRule[] rateRules) throws XmlParseException{
 
 		rateRulesElement.addContent(rateRuleElement);
 	}
-
 	return rateRulesElement;
+}
+public Element getXML(AssignmentRule[] assignmentRules) throws XmlParseException {
+	Element assignmentRulesElement = new Element(XMLTags.AssignmentRulesTag);
+	for (int i = 0; i < assignmentRules.length; i++) {
+		Element assignmentRuleElement = new Element(XMLTags.AssignmentRuleTag);
+		assignmentRuleElement.setAttribute(XMLTags.NameAttrTag, mangle(assignmentRules[i].getName()));
+		assignmentRuleElement.setAttribute(XMLTags.AssignmentRuleVariableAttrTag, assignmentRules[i].getAssignmentRuleVar().getName());
+		assignmentRuleElement.addContent(mangleExpression(assignmentRules[i].getAssignmentRuleExpression()));
+
+		assignmentRulesElement.addContent(assignmentRuleElement);
+	}
+	return assignmentRulesElement;
 }
 
 	private Element getXML(ChomboSolverSpec chomboSolverSpec) {

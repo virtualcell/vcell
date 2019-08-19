@@ -583,6 +583,10 @@ public class XMLTags {
 	public final static String RateRuleTag  = "RateRule";
 	public final static String RateRuleVariableAttrTag  = "RateRuleVariable";
 	
+	public final static String AssignmentRulesTag = "AssignmentRules";
+	public final static String AssignmentRuleTag  = "AssignmentRule";
+	public final static String AssignmentRuleVariableAttrTag  = "AssignmentRuleVariable";
+
 //	public final static String RateRuleVariablesTag = "RateRuleVariables";
 //	public final static String RateRuleVariableTag  = "RateRuleVariable";
 //	public static final String RoleVariableRateTag  = "variable rate";	

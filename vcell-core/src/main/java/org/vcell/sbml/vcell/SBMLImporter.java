@@ -382,12 +382,13 @@ public class SBMLImporter {
 					allSizesSet = false;
 				} else {
 					double size = compartment.getSize();
-					// Check if size is specified by a rule
+					// Check if size is specified by an assignment rule
+					// Note that we'll do the x,y,z correction for assignmentRulesHash only after loading the species
+					// However, it doesn't matter here because compartments must have a numeric expression
 					Expression sizeExpr = getValueFromAssignmentRule(compartmentName);
 					if (sizeExpr != null && !sizeExpr.isNumeric()) {
 						// We are NOT handling compartment sizes with assignment
-						// rules/initial Assignments that are NON-numeric at
-						// this time ...
+						// rules/initial Assignments that are NON-numeric at this time ...
 						logger.sendMessage(VCLogger.Priority.HighPriority, VCLogger.ErrorType.CompartmentError,
 							"compartment " + compartmentName + " size has an assignment rule which is not a numeric value, cannot handle it at this time.");
 					}
@@ -1218,7 +1219,7 @@ public class SBMLImporter {
 	 * definitions, etc.
 	 *
 	 **/
-	protected void addAssignmentRules() throws Exception {
+	protected void parseAssignmentRules() throws Exception {
 		if (sbmlModel == null) {
 			throw new SBMLImportException("SBML model is NULL");
 		}
@@ -1237,21 +1238,24 @@ public class SBMLImporter {
 				// check if assignment rule is for species. If so, check if
 				// expression has x/y/z term. This is not allowed for
 				// non-spatial models in vcell.
-				org.sbml.jsbml.Species ruleSpecies = sbmlModel.getSpecies(assgnRuleVar);
-				if (ruleSpecies != null) {
-					if (assignmentRuleMathExpr != null) {
-						Model vcModel = vcBioModel.getSimulationContext(0).getModel();
-						if (!bSpatial) {
-							if (assignmentRuleMathExpr.hasSymbol(vcModel.getX().getName())
-									|| assignmentRuleMathExpr.hasSymbol(vcModel.getY().getName())
-									|| assignmentRuleMathExpr.hasSymbol(vcModel.getZ().getName())) {
-								logger.sendMessage(VCLogger.Priority.HighPriority, VCLogger.ErrorType.SpeciesError,
-									"An assignment rule for species " + ruleSpecies.getId() + " contains "
-										+ RESERVED_SPATIAL + " variable(s) (x,y,z), this is not allowed for a non-spatial model in VCell");
-							}
-						}
-					}
-				}
+//				org.sbml.jsbml.Species ruleSpecies = sbmlModel.getSpecies(assgnRuleVar);
+//				if (ruleSpecies != null) {
+//					if (assignmentRuleMathExpr != null) {
+//						Model vcModel = vcBioModel.getSimulationContext(0).getModel();
+//						if (!bSpatial) {
+//							if (assignmentRuleMathExpr.hasSymbol(vcModel.getX().getName())
+//									|| assignmentRuleMathExpr.hasSymbol(vcModel.getY().getName())
+//									|| assignmentRuleMathExpr.hasSymbol(vcModel.getZ().getName())) {
+//								logger.sendMessage(VCLogger.Priority.HighPriority, VCLogger.ErrorType.SpeciesError,
+//									"An assignment rule for species " + ruleSpecies.getId() + " contains "
+//										+ RESERVED_SPATIAL + " variable(s) (x,y,z), this is not allowed for a non-spatial model in VCell");
+//							}
+//						}
+//					}
+//				}
+				
+				// note that at this point the variable may be x,y,z. Even more, the expression may contain x,y,z
+				// we'll do the right corrections once we create the species and do the proper renaming for x,y,z
 				assignmentRulesHash.put(assignmentRule.getVariable(), assignmentRuleMathExpr);
 			}
 		} // end - for i : rules
@@ -1273,6 +1277,56 @@ public class SBMLImporter {
 		return false;
 	}
 
+	protected void addAssignmentRules(Map<String, String> sbmlToVcNameMap) throws ExpressionException, PropertyVetoException {
+		if (assignmentRulesHash == null || assignmentRulesHash.isEmpty()) {
+			System.out.println("SBML Import: no assignment rules.");
+			return;
+		}
+		
+		Model vcModel = vcBioModel.getSimulationContext(0).getModel();
+		// now that the species, structures and parameters are initialized, let's see if any
+		// assignment rule variables or expressions contain x,y,z and substitute them
+		HashMap <String, Expression> destMap = new HashMap<> ();
+				
+		for (Map.Entry<String, Expression> entry : assignmentRulesHash.entrySet()) {
+			
+			String sbmlVariableName = entry.getKey();
+			Expression oldExpression = entry.getValue();
+			String vcVariableName = sbmlVariableName;
+			if(sbmlToVcNameMap.containsKey(sbmlVariableName)) {
+				vcVariableName = sbmlToVcNameMap.get(sbmlVariableName);
+			}
+			if(sbmlToVcNameMap.containsKey(vcModel.getX().getName())) {
+				// we replace x,y,z only if they are species variables
+				String oldName = vcModel.getX().getName();
+				String newName = sbmlToVcNameMap.get(oldName);
+				oldExpression.substituteInPlace(new Expression(oldName), new Expression(newName));
+			}
+			Expression newExpression = new Expression(oldExpression);
+			destMap.put(vcVariableName, newExpression);
+			
+			String vcAssignmentRuleName = vcBioModel.getSimulationContext(0).getFreeAssignmentRuleName();
+			SymbolTableEntry ste = vcBioModel.getSimulationContext(0).getEntry(vcVariableName);
+			if(ste == null) {
+				// TODO: this should never happen; verify !!!
+				throw new RuntimeException("No SymbolTableEntry for SBML variable " + sbmlVariableName);
+			}
+			if ((ste instanceof Structure || ste instanceof Structure.StructureSize) && !newExpression.isNumeric()) {
+				throw new SBMLImportException("Structure '" + ste.getName() + "' is used as a assignment rule variable: not allowed in VCell at this time.");
+			}
+			if (ste instanceof cbit.vcell.model.Parameter && !newExpression.isNumeric()) {
+				throw new SBMLImportException("Parameter '" + ste.getName() + "' is used as a assignment rule variable: not allowed in VCell at this time.");
+			}
+			if(ste instanceof SpeciesContext) {
+				cbit.vcell.mapping.AssignmentRule vcAssignmentRule = new cbit.vcell.mapping.AssignmentRule(vcAssignmentRuleName, ste, 
+						newExpression, vcBioModel.getSimulationContext(0));
+				vcAssignmentRule.bind();
+				vcBioModel.getSimulationContext(0).addAssignmentRule(vcAssignmentRule);	// when we import from SBML there can't be more than one sim context
+			}
+		}
+		assignmentRulesHash = destMap;
+	}
+	
 	/**
 	 * addRateRules : Adds Rate Rules from the SBML document Rate rules are
 	 * allowed (initial concentration of species; parameter definitions, etc.
@@ -1289,7 +1343,6 @@ public class SBMLImporter {
 			System.out.println("No Rules specified");
 			return;
 		}
-
 		boolean bRateRule = false;
 		for (int i = 0; i < sbmlModel.getNumRules(); i++) {
 			Rule rule = (org.sbml.jsbml.Rule) listofRules.get(i);
@@ -1297,8 +1350,7 @@ public class SBMLImporter {
 				bRateRule = true;
 				// Get the rate rule and store it in the hashMap, and create VCell rateRule.
 				RateRule sbmlRateRule = (RateRule) rule;
-				// rate rule name
-				String sbmlRateRuleName = sbmlRateRule.getId();		// TODO: we may want to actually make sure that the name is not a reserved symbol
+				String sbmlRateRuleName = sbmlRateRule.getId();			// --------------------- rate rule name
 				if (sbmlRateRuleName == null || sbmlRateRuleName.length() == 0) {
 					sbmlRateRuleName = TokenMangler.mangleToSName(sbmlRateRule.getName());
 					// if rate rule name is still null, get free rate rule name
@@ -1307,32 +1359,40 @@ public class SBMLImporter {
 						sbmlRateRuleName = vcBioModel.getSimulationContext(0).getFreeRateRuleName();
 					}
 				}
-				// rate rule variable
-				String sbmlVarName = sbmlRateRule.getVariable();
+				String sbmlVarName = sbmlRateRule.getVariable();		// --------------------- rate rule variable
 				String vcSpeciesName = sbmlVarName;
 				if(sbmlToVcNameMap.get(sbmlVarName) != null) {
 					vcSpeciesName = sbmlToVcNameMap.get(sbmlVarName);
 				}
-				
 				SymbolTableEntry vcRateRuleVar = vcBioModel.getSimulationContext(0).getEntry(vcSpeciesName);
-				if (vcRateRuleVar instanceof Structure || vcRateRuleVar instanceof Structure.StructureSize) {
-					throw new SBMLImportException("Compartment '" + vcRateRuleVar.getName() + "' has a rate rule: not allowed in VCell at this time.");
+				if(vcRateRuleVar == null) {
+					// TODO: this should never happen; verify !!!
+					throw new RuntimeException("No SymbolTableEntry for SBML variable " + sbmlVarName);
 				}
-				try {		// we really only know how to deal with species variables right now
-					if (vcRateRuleVar != null) {
-						Expression sbmlRateRuleExpr = getExpressionFromFormula(sbmlRateRule.getMath());
-						for(Map.Entry<String, String> entry : sbmlToVcNameMap.entrySet()) {
-							String sbmlName = entry.getKey();
-							String vcName = entry.getValue();
-							sbmlRateRuleExpr.substituteInPlace(new Expression(sbmlName), new Expression(vcName));
-						}
-						Expression vcRateRuleExpr = new Expression(sbmlRateRuleExpr);
-						cbit.vcell.mapping.RateRule vcRateRule = new cbit.vcell.mapping.RateRule(sbmlRateRuleName, vcRateRuleVar, 
-								vcRateRuleExpr,	vcBioModel.getSimulationContext(0));
-						vcRateRule.bind();
-						rateRulesHash.put(vcRateRuleVar.getName(), vcRateRuleExpr);
-						vcBioModel.getSimulationContext(0).addRateRule(vcRateRule);	// when we import from SBML there can't be more than one sim context 
+				if (vcRateRuleVar instanceof Structure || vcRateRuleVar instanceof Structure.StructureSize) {
+					throw new SBMLImportException("Structure '" + vcRateRuleVar.getName() + "' is used as a rate rule variable: not allowed in VCell at this time.");
+				}
+				if (vcRateRuleVar instanceof cbit.vcell.model.Parameter) {
+					throw new SBMLImportException("Parameter '" + vcRateRuleVar.getName() + "' is used as a rate rule variable: not allowed in VCell at this time.");
+				}
+				if(!(vcRateRuleVar instanceof SpeciesContext)) {
+					// probably this will never happen, rate rule variables can only be Structure, Parameter or Species
+					throw new RuntimeException("Rate Rule variable '" + sbmlVarName + "' must be a Species");
+				}
+				try {													// --------------------- rate rule expression
+					Expression sbmlRateRuleExpr = getExpressionFromFormula(sbmlRateRule.getMath());
+					// if the map is populated, we know for sure that it's non spatial model
+					for(Map.Entry<String, String> entry : sbmlToVcNameMap.entrySet()) {
+						String sbmlName = entry.getKey();
+						String vcName = entry.getValue();
+						sbmlRateRuleExpr.substituteInPlace(new Expression(sbmlName), new Expression(vcName));
 					}
+					Expression vcRateRuleExpr = new Expression(sbmlRateRuleExpr);
+					cbit.vcell.mapping.RateRule vcRateRule = new cbit.vcell.mapping.RateRule(sbmlRateRuleName, vcRateRuleVar, 
+						vcRateRuleExpr,	vcBioModel.getSimulationContext(0));
+					vcRateRule.bind();
+					rateRulesHash.put(vcRateRuleVar.getName(), vcRateRuleExpr);
+					vcBioModel.getSimulationContext(0).addRateRule(vcRateRule);	// when we import from SBML there can't be more than one sim context 
 				} catch (PropertyVetoException e) {
 					e.printStackTrace(System.out);
 					throw new SBMLImportException("Unable to create and add rate rule to VC model : " + e.getMessage());
@@ -2639,7 +2699,7 @@ public class SBMLImporter {
 		// Add Assignment Rules : adding these first, since compartment/species/parameter initial conditions 
 		// could be defined by assignment rules
 		try {
-			addAssignmentRules();
+			parseAssignmentRules();		// we just read and place them in a hash
 		} catch (SBMLImportException sie) {
 			throw sie;
 		} catch (Exception ee) {
@@ -2651,6 +2711,7 @@ public class SBMLImporter {
 		addCompartments(vcMetaData);
 		// Add species/speciesContexts
 		addSpecies(vcMetaData, vcToSbmlNameMap, sbmlToVcNameMap);
+		
 		// Add Parameters
 		try {
 			addParameters();
@@ -2658,6 +2719,16 @@ public class SBMLImporter {
 			e.printStackTrace(System.out);
 			throw new SBMLImportException(e.getMessage(), e);
 		}
+		
+		// Create the vCell Assignment Rules, now that the species, parameters and structures are defined
+		// If species variables were renamed from x,y,z, apply corrections to the hash
+		try {
+			addAssignmentRules(sbmlToVcNameMap);
+		} catch (ExpressionException | PropertyVetoException e) {
+			e.printStackTrace();
+			throw new SBMLImportException(e.getMessage(), e);
+		}
+		
 		// Set initial conditions on species
 		setSpeciesInitialConditions(vcToSbmlNameMap);
 		// Add InitialAssignments
@@ -2826,7 +2897,7 @@ public class SBMLImporter {
 			for (Reaction sbmlRxn: reactions) {
 				ReactionStep vcReaction = null;
 				String rxnName = sbmlRxn.getId();
-				if(isRestrictedXYZ(rxnName)) {
+				if(isRestrictedXYZ(rxnName)) {		// simply rename any x,y,z reaction if non-spatial model
 					rxnName = "r_" + rxnName;
 					vcToSbmlNameMap.put(rxnName, sbmlRxn.getId());
 					sbmlToVcNameMap.put(sbmlRxn.getId(), rxnName);
@@ -2856,10 +2927,8 @@ public class SBMLImporter {
 									.getTypedStructure(Membrane.class, vcModel,
 											structName);
 							if (!ci.isGood()) {
-								throw new SBMLImportException(
-										"Appears that the flux reaction is occuring on "
-												+ ci.actualName()
-												+ ", not a membrane.");
+								throw new SBMLImportException("Appears that the flux reaction is occuring on " 
+										+ ci.actualName() + ", not a membrane.");
 							}
 							vcReaction = new FluxReaction(vcModel, ci.get(), null, rxnName, bReversible);
 							vcReaction.setModel(vcModel);
@@ -2881,13 +2950,8 @@ public class SBMLImporter {
 								((FluxReaction) vcReaction)
 										.setPhysicsOptions(ReactionStep.PHYSICS_ELECTRICAL_ONLY);
 							} else {
-								localIssueList.add(new Issue(vcReaction,
-										issueContext,
-										IssueCategory.SBMLImport_Reaction,
-										"Unknown FluxOption : " + fluxOptionStr
-												+ " for SBML reaction : "
-												+ rxnName,
-										Issue.SEVERITY_WARNING));
+								localIssueList.add(new Issue(vcReaction, issueContext, IssueCategory.SBMLImport_Reaction,
+										"Unknown FluxOption : " + fluxOptionStr + " for SBML reaction : " + rxnName, Issue.SEVERITY_WARNING));
 								// logger.sendMessage(VCLogger.Priority.MediumPriority,
 								// VCLogger.ErrorType.ReactionError,
 								// "Unknown FluxOption : " + fluxOptionStr +
@@ -2896,8 +2960,7 @@ public class SBMLImporter {
 						} else if (embeddedRxnElement.getName().equals(
 								XMLTags.SimpleReactionTag)) {
 							// if embedded element is a simple reaction, set
-							// simple reaction's structure from element
-							// attributes
+							// simple reaction's structure from element attributes
 							vcReaction = new SimpleReaction(vcModel, reactionStructure, rxnName, bReversible);
 						}
 					} else {
@@ -2937,6 +3000,8 @@ public class SBMLImporter {
 					// to an expression (infix) to be used in VCell kinetics
 					ASTNode sbmlRateMath = kLaw.getMath();
 					Expression kLawRateExpr = getExpressionFromFormula(sbmlRateMath);
+					// if we have x,y,z that were renamed, here we replace them in the reaction's expression
+					// we don't need to make sure it's not spatial here, we checked before renaming the variables
 					for(Map.Entry<String, String> entry : sbmlToVcNameMap.entrySet()) {
 						String sbmlName = entry.getKey();
 						String vcName = entry.getValue();

@@ -29,12 +29,14 @@ public class ApplicationProtocolsPanel extends ApplicationSubPanel {
 	private ElectricalMembraneMappingPanel electricalMembraneMappingPanel;
 	private MicroscopeMeasurementPanel microscopeMeasurementPanel;
 	private RateRulesDisplayPanel rateRulesDisplayPanel;
+	private AssignmentRulesDisplayPanel assignmentRulesDisplayPanel;
 	
 	private enum ProtocolsPanelTabID {
 		events("Events"),
 		electrical("Electrical"),
 		microscope_measurements("Microscope Measurements"),
-		rate_rules("Rate Rules");
+		rate_rules("Rate Rules"),
+		assignment_rules("Assignment Rules");
 		
 		String title = null;
 		ProtocolsPanelTabID(String name) {
@@ -67,12 +69,14 @@ public class ApplicationProtocolsPanel extends ApplicationSubPanel {
 		electricalMembraneMappingPanel = new ElectricalMembraneMappingPanel();
 		microscopeMeasurementPanel = new MicroscopeMeasurementPanel();
 		rateRulesDisplayPanel = new RateRulesDisplayPanel();
+		assignmentRulesDisplayPanel = new AssignmentRulesDisplayPanel();
 		
 		protocolPanelTabs = new ProtocolsPanelTab[ProtocolsPanelTabID.values().length]; 
 		protocolPanelTabs[ProtocolsPanelTabID.events.ordinal()] = new ProtocolsPanelTab(ProtocolsPanelTabID.events, eventsDisplayPanel, null);
 		protocolPanelTabs[ProtocolsPanelTabID.electrical.ordinal()] = new ProtocolsPanelTab(ProtocolsPanelTabID.electrical, electricalMembraneMappingPanel, null);
 		protocolPanelTabs[ProtocolsPanelTabID.microscope_measurements.ordinal()] = new ProtocolsPanelTab(ProtocolsPanelTabID.microscope_measurements, microscopeMeasurementPanel, null);
 		protocolPanelTabs[ProtocolsPanelTabID.rate_rules.ordinal()] = new ProtocolsPanelTab(ProtocolsPanelTabID.rate_rules, rateRulesDisplayPanel, null);
+		protocolPanelTabs[ProtocolsPanelTabID.assignment_rules.ordinal()] = new ProtocolsPanelTab(ProtocolsPanelTabID.assignment_rules, assignmentRulesDisplayPanel, null);
 		
 		for (ProtocolsPanelTab tab : protocolPanelTabs) {
 			tab.component.setBorder(GuiConstants.TAB_PANEL_BORDER);
@@ -92,6 +96,7 @@ public class ApplicationProtocolsPanel extends ApplicationSubPanel {
 //		electricalMembraneMappingPanel.setSimulationContext(simulationContext);
 		showOrHideSubpanels();
 		rateRulesDisplayPanel.setSimulationContext(simulationContext);
+		assignmentRulesDisplayPanel.setSimulationContext(simulationContext);
 	}
 	
 	@Override
@@ -99,6 +104,7 @@ public class ApplicationProtocolsPanel extends ApplicationSubPanel {
 		super.setSelectionManager(selectionManager);
 		eventsDisplayPanel.setSelectionManager(selectionManager);
 		rateRulesDisplayPanel.setSelectionManager(selectionManager);
+		assignmentRulesDisplayPanel.setSelectionManager(selectionManager);
 	}
 
 	private void showOrHidePanel(ProtocolsPanelTabID tabID, boolean bShow) {
@@ -132,6 +138,7 @@ public class ApplicationProtocolsPanel extends ApplicationSubPanel {
 		showOrHideelectricalMembraneMappingPanel();
 		showOrHideMicroscopeMeasurementPanel();
 		showOrHideRateRulesPanel();
+		showOrHideAssignmentRulesPanel();
 	}
 	
 	private void showOrHideelectricalMembraneMappingPanel() {
@@ -165,6 +172,13 @@ public class ApplicationProtocolsPanel extends ApplicationSubPanel {
 			rateRulesDisplayPanel.setSimulationContext(simulationContext);
 		}
 	}
+	private void showOrHideAssignmentRulesPanel() {
+		boolean bShow = simulationContext.getGeometry().getDimension() == 0 && !simulationContext.isStoch();
+		showOrHidePanel(ProtocolsPanelTabID.assignment_rules, bShow);
+		if (bShow) {
+			assignmentRulesDisplayPanel.setSimulationContext(simulationContext);
+		}
+	}
 
 	@Override
 	public ActiveView getActiveView() {
@@ -178,6 +192,8 @@ public class ApplicationProtocolsPanel extends ApplicationSubPanel {
 			activeViewID = ActiveViewID.microscope_measuremments;
 		} else if (selectedComponent == rateRulesDisplayPanel) {
 			activeViewID =  ActiveViewID.rateRules;
+		} else if (selectedComponent == assignmentRulesDisplayPanel) {
+			activeViewID =  ActiveViewID.assignmentRules;
 		}
 		return new ActiveView(simulationContext, DocumentEditorTreeFolderClass.PROTOCOLS_NODE, activeViewID);
 	}

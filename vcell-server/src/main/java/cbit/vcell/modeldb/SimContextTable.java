@@ -34,6 +34,7 @@ import cbit.sql.QueryHashtable;
 import cbit.sql.Table;
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.geometry.Geometry;
+import cbit.vcell.mapping.AssignmentRule;
 import cbit.vcell.mapping.BioEvent;
 import cbit.vcell.mapping.RateRule;
 import cbit.vcell.mapping.ReactionRuleSpec;
@@ -326,6 +327,15 @@ public static String getAppComponentsForDatabase(SimulationContext simContext) {
 			throw new RuntimeException("Error generating XML for bioevents : " + e.getMessage(), e);
 		}
 	}
+	AssignmentRule[] assignmentRules = simContext.getAssignmentRules();
+	if (assignmentRules != null && assignmentRules.length > 0) {
+		try {
+			Element assignmentRulesElement = xmlProducer.getXML(assignmentRules);
+			appComponentsElement.addContent(assignmentRulesElement);
+		} catch (XmlParseException e) {
+			throw new RuntimeException("Error generating XML for bioevents : " + e.getMessage(), e);
+		}
+	}
 	
 	// ReactionRuleSpecs
 	ReactionRuleSpec[] reactionRuleSpecs = simContext.getReactionContext().getReactionRuleSpecs();
@@ -449,6 +459,11 @@ public void readAppComponents(Connection con, SimulationContext simContext, Data
 			if (rateRulesElement != null) {
 				RateRule[] rateRules = xmlReader.getRateRules(simContext, rateRulesElement);
 				simContext.setRateRules(rateRules);
+			}
+			Element assignmentRulesElement = appComponentsElement.getChild(XMLTags.AssignmentRulesTag);
+			if (assignmentRulesElement != null) {
+				AssignmentRule[] assignmentRules = xmlReader.getAssignmentRules(simContext, assignmentRulesElement);
+				simContext.setAssignmentRules(assignmentRules);
 			}
 			// get reaction rule specs
 			Element reactionRuleSpecsElement = appComponentsElement.getChild(XMLTags.ReactionRuleSpecsTag);

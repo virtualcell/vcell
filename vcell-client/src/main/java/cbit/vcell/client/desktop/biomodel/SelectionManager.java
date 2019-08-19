@@ -59,6 +59,7 @@ public class SelectionManager {
 		electrical,
 		microscope_measuremments,
 		rateRules,
+		assignmentRules,
 		
 		simulations,
 		output_functions,
