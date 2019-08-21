@@ -19,7 +19,6 @@ import java.awt.Insets;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.awt.event.WindowListener;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -157,8 +156,9 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 			numRunsLabel = new JLabel("");
 			java.awt.GridBagConstraints gbc = new java.awt.GridBagConstraints();
 			gbc.gridx = 0; gbc.gridy = gridy;
+			gbc.gridwidth=2;
 			gbc.insets = new java.awt.Insets(10, 4, 4, 4);
-			gbc.anchor = GridBagConstraints.LINE_END;
+			gbc.anchor = GridBagConstraints.WEST;
 			runStatusPanel.add(numRunsLabel, gbc);
 			
 			gridy++;
@@ -265,6 +265,7 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 
 		@Override
 		public void setMessageImpl(String message) {
+			numRunsLabel.setText(message);
 		}
 		@Override
 		public void setProgress(int progress) {
@@ -281,15 +282,8 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 		}	
 		public void setNumRunMessage(int currentRun, int totalRun)
 		{
-			if(totalRun == 1)
-			{
-				numRunsLabel.setVisible(false);
-			}
-			else
-			{
-				numRunsLabel.setVisible(true);
-				numRunsLabel.setText("Running No." + (currentRun+1)  + " of total " + totalRun + " runs.");
-			}
+			numRunsLabel.setVisible(true);
+			numRunsLabel.setText("Running No." + (currentRun+1)  + " of total " + totalRun + " runs.");
 		}
 		public void showProgressBar(CopasiOptimizationMethod com) {
 			progressBar.setValue(0);
@@ -543,7 +537,7 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 				getRunStatusDialog().setObjectFunctionValue(optSolverCallbacks.getObjectiveFunctionValue());
 				getRunStatusDialog().setNumRunMessage(optSolverCallbacks.getRunNumber(), parameterEstimationTask.getOptimizationSolverSpec().getNumOfRuns());
 				if (optimizationMethodParameterTableModel.copasiOptimizationMethod.getType().getProgressType() == CopasiOptSettings.CopasiOptProgressType.Progress) {
-					getRunStatusDialog().setProgress(optSolverCallbacks.getPercent());
+					getRunStatusDialog().setProgress((int) (optSolverCallbacks.getRunNumber() * 100.0 /parameterEstimationTask.getOptimizationSolverSpec().getNumOfRuns()));
 				}
 				else if (optimizationMethodParameterTableModel.copasiOptimizationMethod.getType().getProgressType() == CopasiOptSettings.CopasiOptProgressType.Current_Value) {
 					getRunStatusDialog().setCurrentValue(optSolverCallbacks.getCurrentValue());
@@ -1088,6 +1082,7 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 		AsynchClientTask task1 = new AsynchClientTask("checking issues", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 			@Override
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
+				getClientTaskStatusSupport().setProgress(0);
 				StringBuffer issueText = new StringBuffer();				
 				java.util.Vector<Issue> issueList = new java.util.Vector<Issue>();
 				IssueContext issueContext = new IssueContext();
@@ -1109,12 +1104,12 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 		};
 		taskList.add(task1);
 		
-		AsynchClientTask task2 = new AsynchClientTask("solving", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {		
+		AsynchClientTask task2 = new AsynchClientTask("Starting param esitmation job...", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {		
 			@Override
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
 				MathMappingCallback mathMappingCallback = new MathMappingCallbackTaskAdapter(getClientTaskStatusSupport());
 				//OptimizationResultSet optResultSet = CopasiOptimizationSolver.solveLocalPython(new ParameterEstimationTaskSimulatorIDA(),parameterEstimationTask,optSolverCallbacks,mathMappingCallback);
-				OptimizationResultSet optResultSet = CopasiOptimizationSolver.solveRemoteApi(new ParameterEstimationTaskSimulatorIDA(),parameterEstimationTask,optSolverCallbacks,mathMappingCallback);
+				OptimizationResultSet optResultSet = CopasiOptimizationSolver.solveRemoteApi(new ParameterEstimationTaskSimulatorIDA(),parameterEstimationTask,optSolverCallbacks,mathMappingCallback,getClientTaskStatusSupport());
 				hashTable.put(ORS_KEY, optResultSet);
 			}
 

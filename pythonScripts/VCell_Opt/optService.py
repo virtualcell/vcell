@@ -7,6 +7,7 @@ import COPASI
 import vcellopt.ttypes as VCELLOPT
 import tempfile
 import os
+import os.path
 
 from thrift.TSerialization import TTransport
 from thrift.TSerialization import TBinaryProtocol
@@ -323,6 +324,13 @@ def main():
         numObjFuncEvals = 0
         numParamsToFit = fitProblem.getOptItemSize()
 
+        # Create intermediate results file
+        dir_path = os.path.dirname(os.path.realpath(resultFile))
+        interresults=os.path.join(dir_path,"interresults.txt")
+        with open(interresults, 'a') as foutput:
+            foutput.write(str(vcellOptProblem.numberOfOptimizationRuns)+"\n")
+            foutput.close()
+            
         for i in range(0, vcellOptProblem.numberOfOptimizationRuns):
             result = True
             try:
@@ -361,6 +369,11 @@ def main():
                     print "param " + paramName + " --> " + str(paramValue)
                 assert isinstance(currentFuncValue, float)
                 leastError = currentFuncValue
+
+            with open(interresults, 'a') as foutput:
+                foutput.write(str(i)+" "+str(leastError)+" "+str(numObjFuncEvals)+"\n")
+                foutput.close()
+
         #result = dataModel.saveModel('test_succeeded.cps', True)
         #assert(result==True)
 

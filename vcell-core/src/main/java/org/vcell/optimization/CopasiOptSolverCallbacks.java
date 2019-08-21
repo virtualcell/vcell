@@ -92,7 +92,14 @@ public class CopasiOptSolverCallbacks {
 		return propertyChange;
 	}
 
-	
+	public Double getEndValue() {
+		if(copasiEvaluationHolder != null)
+		{
+			return copasiEvaluationHolder.getEndValue();
+		}
+		return null;
+		
+	}
 	public int getEvaluationCount()
 	{
 		if(copasiEvaluationHolder != null)

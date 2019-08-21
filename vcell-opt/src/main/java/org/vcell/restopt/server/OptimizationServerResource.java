@@ -1,5 +1,10 @@
 package org.vcell.restopt.server;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.util.List;
+import java.util.StringTokenizer;
+
 import org.apache.thrift.TSerializer;
 import org.apache.thrift.protocol.TJSONProtocol;
 import org.restlet.data.Status;
@@ -47,6 +52,7 @@ public class OptimizationServerResource extends WadlServerResource implements Op
 				switch (optRunContext.getStatus()){
 					case Complete:{
 						OptRun optRun = CopasiServicePython.readOptRun(optRunContext.getOptRunBinaryFile());
+						encodeStatusParams(optimizationId, optRunContext, optRun);
 						return optRun;
 					}
 					case Queued:
@@ -56,7 +62,7 @@ public class OptimizationServerResource extends WadlServerResource implements Op
 						OptRun optRun = new OptRun();
 						optRun.setOptProblem(optProblem);
 						optRun.setStatus(optRunContext.getStatus());
-						optRun.setStatusMessage(optRunContext.getStatus().name());
+						encodeStatusParams(optimizationId, optRunContext, optRun);
 						return optRun;
 					}
 					default:{
@@ -73,6 +79,23 @@ public class OptimizationServerResource extends WadlServerResource implements Op
 				throw new ResourceException(Status.SERVER_ERROR_INTERNAL, e.getMessage());
 			}
 //		}
+	}
+
+
+	private void encodeStatusParams(String optimizationId, OptRunContext optRunContext, OptRun optRun)
+			throws IOException {
+		java.io.File f = new java.io.File("/root/.vcell/optimization/"+optimizationId+"/interresults.txt");
+		String statusMessage = optRunContext.getStatus().name();
+		if(f.exists()) {
+			List<String> progressLines = Files.readAllLines(f.toPath());
+			if(progressLines.size()>1) {
+				StringTokenizer st = new StringTokenizer(progressLines.get(progressLines.size()-1), " \t\r\n");
+				if(st.countTokens() == 3) {
+					statusMessage = statusMessage+":"+st.nextToken()+":"+st.nextToken()+":"+st.nextToken();
+				}
+			}
+		}
+		optRun.setStatusMessage(statusMessage);
 	}
 
 

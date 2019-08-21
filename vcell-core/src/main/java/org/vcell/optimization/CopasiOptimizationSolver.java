@@ -15,6 +15,9 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.attribute.FileAttribute;
 import java.util.Random;
+import java.util.StringTokenizer;
+
+import javax.swing.SwingUtilities;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.thrift.TDeserializer;
@@ -26,6 +29,7 @@ import org.vcell.optimization.thrift.OptProblem;
 import org.vcell.optimization.thrift.OptResultSet;
 import org.vcell.optimization.thrift.OptRun;
 import org.vcell.optimization.thrift.OptRunStatus;
+import org.vcell.util.ClientTaskStatusSupport;
 import org.vcell.util.UserCancelException;
 
 import cbit.vcell.mapping.SimulationContext.MathMappingCallback;
@@ -108,10 +112,14 @@ public class CopasiOptimizationSolver {
 			ParameterEstimationTaskSimulatorIDA parestSimulator,
 			ParameterEstimationTask parameterEstimationTask, 
 			CopasiOptSolverCallbacks optSolverCallbacks,
-			MathMappingCallback mathMappingCallback) 
+			MathMappingCallback mathMappingCallback,
+			ClientTaskStatusSupport clientTaskStatusSupport) 
 					throws IOException, ExpressionException, OptimizationException {
 
 		try {
+			if(clientTaskStatusSupport != null) {
+				clientTaskStatusSupport.setMessage("Generating opt problem...");
+			}
 			OptProblem optProblem = CopasiServicePython.makeOptProblem(parameterEstimationTask);
 			
 			boolean bIgnoreCertProblems = true;
@@ -127,11 +135,17 @@ public class CopasiOptimizationSolver {
 			TSerializer serializer = new TSerializer(new TJSONProtocol.Factory());
 			String optProblemJson = serializer.toString(optProblem);
 
+			if(clientTaskStatusSupport != null) {
+				clientTaskStatusSupport.setMessage("Submitting opt problem...");
+			}
 			String optimizationId = apiClient.submitOptimization(optProblemJson);
 			
 			final long TIMEOUT_MS = 1000*200; // 200 second timeout
 			long startTime = System.currentTimeMillis();
 			OptRun optRun = null;
+			if(clientTaskStatusSupport != null) {
+				clientTaskStatusSupport.setMessage("Waiting for progress...");
+			}
 			while ((System.currentTimeMillis()-startTime)<TIMEOUT_MS) {
 				if (optSolverCallbacks.getStopRequested()){
 					throw new RuntimeException(STOP_REQUESTED);
@@ -141,6 +155,22 @@ public class CopasiOptimizationSolver {
 				optRun = new OptRun();
 				deserializer.deserialize(optRun, optRunJson.getBytes());
 				OptRunStatus status = optRun.status;
+				String statusMessage = optRun.getStatusMessage();
+				if(statusMessage != null && (statusMessage.startsWith(OptRunStatus.Running.name()) || statusMessage.startsWith(OptRunStatus.Complete.name()))) {
+					StringTokenizer st = new StringTokenizer(statusMessage," :\t\r\n");
+					if(st.countTokens() == 4) {
+						st.nextToken();//OptRunStatus mesg
+						int runNum = Integer.parseInt(st.nextToken());
+						double objFunctionValue = Double.parseDouble(st.nextToken());
+						int numObjFuncEvals = Integer.parseInt(st.nextToken());
+						SwingUtilities.invokeLater(new Runnable() {
+							@Override
+							public void run() {
+								optSolverCallbacks.setEvaluation(numObjFuncEvals, objFunctionValue, objFunctionValue, optSolverCallbacks.getEndValue(), runNum);								
+							}
+						});
+					}
+				}
 				if (status==OptRunStatus.Complete){
 					System.out.println("job "+optimizationId+": status "+status+" "+optRun.getOptResultSet().toString());
 					break;
