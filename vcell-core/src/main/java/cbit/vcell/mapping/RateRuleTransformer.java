@@ -90,6 +90,10 @@ public class RateRuleTransformer implements SimContextTransformer {
 
 	private void transform(SimulationContext simContext, SimulationContext transformedSimulationContext, MathMappingCallback mathMappingCallback, NetworkGenerationRequirements networkGenerationRequirements){
 
+		if(transformedSimulationContext.getRateRules() == null) {
+			return;
+		}
+		
 		long startTime = System.currentTimeMillis();
 		long endTime = System.currentTimeMillis();
 		long elapsedTime = endTime - startTime;
