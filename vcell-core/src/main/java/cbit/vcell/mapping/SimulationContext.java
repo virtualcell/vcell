@@ -1169,6 +1169,18 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueVector, boo
 		}
 	}
 	
+	if (fieldRateRules != null) {
+		for (RateRule rr : fieldRateRules) {
+			rr.gatherIssues(issueContext, issueVector);
+		}
+	}
+	if (fieldAssignmentRules != null) {
+		for (AssignmentRule ar : fieldAssignmentRules) {
+			ar.gatherIssues(issueContext, issueVector);
+		}
+	}
+
+	
 	if(applicationType.equals(Application.NETWORK_DETERMINISTIC) && getModel().getRbmModelContainer().getMolecularTypeList().size() > 0) {
 		// we're going to use network transformer to flatten (or we already did)
 		if(isInsufficientIterations()) {

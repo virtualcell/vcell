@@ -16,6 +16,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 
+import org.vcell.util.Displayable;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.ScrollTable;
 
@@ -31,9 +32,10 @@ public class RateRulesSummaryTableModel extends BioModelEditorApplicationRightSi
 
 	public final static int COLUMN_RATERULE_NAME = 0;
 	public final static int COLUMN_RATERULE_VAR = 1;
-	public final static int COLUMN_RATERULE_EXPR = 2;
+	public final static int COLUMN_RATERULE_TYPE = 2;
+	public final static int COLUMN_RATERULE_EXPR = 3;
 	
-	private static String[] columnNames = new String[] {"Name", "Variable", "Expression"};
+	private static String[] columnNames = new String[] {"Name", "Variable", "Type", "Expression"};
 
 	public RateRulesSummaryTableModel(ScrollTable table) {
 		super(table, columnNames);
@@ -49,6 +51,9 @@ public class RateRulesSummaryTableModel extends BioModelEditorApplicationRightSi
 			}
 			case COLUMN_RATERULE_EXPR:{
 				return ScopedExpression.class;
+			}
+			case COLUMN_RATERULE_TYPE:{
+				return String.class;
 			}
 			default:{
 				return Object.class;
@@ -97,6 +102,14 @@ public class RateRulesSummaryTableModel extends BioModelEditorApplicationRightSi
 							return new ScopedExpression(rateRule.getRateRuleExpression(), simulationContext.getModel().getNameScope());
 						}
 					}
+					case COLUMN_RATERULE_TYPE: {
+						SymbolTableEntry sto = rateRule.getRateRuleVar();
+						if(sto instanceof Displayable) {
+							return ((Displayable)sto).getDisplayType();
+						} else {
+							return "Unknown";
+						}
+					}
 				}
 			} else {
 				if (column == COLUMN_RATERULE_NAME) {
@@ -112,8 +125,14 @@ public class RateRulesSummaryTableModel extends BioModelEditorApplicationRightSi
 	public boolean isCellEditable(int rowIndex, int columnIndex) {
 		//return false;
 		//Make none of the fields editable until code for adding new rate rules is fixed. 10/20/2014
-		//return columnIndex == COLUMN_RATERULE_NAME; 
-		return true;
+		switch (columnIndex) {
+		case COLUMN_RATERULE_NAME:
+		case COLUMN_RATERULE_VAR:
+		case COLUMN_RATERULE_EXPR:
+			return true;
+		default:
+			return false;
+		}
 	}
 
 	@Override
@@ -139,9 +158,9 @@ public class RateRulesSummaryTableModel extends BioModelEditorApplicationRightSi
 	
 	public void setValueAt(Object value, int row, int column) {
 		try{
-			if (value == null || value.toString().length() == 0 || BioModelEditorRightSideTableModel.ADD_NEW_HERE_TEXT.equals(value)) {
-				return;
-			}
+//			if (value == null || value.toString().length() == 0 || BioModelEditorRightSideTableModel.ADD_NEW_HERE_TEXT.equals(value)) {
+//				return;
+//			}
 			RateRule rateRule = getValueAt(row);
 			if (rateRule == null) {
 				rateRule = simulationContext.createRateRule(null);
@@ -161,7 +180,10 @@ public class RateRulesSummaryTableModel extends BioModelEditorApplicationRightSi
 				case COLUMN_RATERULE_EXPR:
 					Expression exp = new Expression((String)value);
 					rateRule.setRateRuleExpression(exp);
+					rateRule.bind();
 					break;
+				case COLUMN_RATERULE_TYPE:
+					return;
 			}
 		} catch(Exception e){
 			e.printStackTrace(System.out);
@@ -211,6 +233,6 @@ public class RateRulesSummaryTableModel extends BioModelEditorApplicationRightSi
 	public int getRowCount() {
 		// -1 added 10/20/2014 to suppress extra row for adding new rule until adding rate rules framework is fixed.  Had been return getRowCountWithAddNew();
 		// return getRowCountWithAddNew()-1;
-		return getRowCountWithAddNew();
+		return super.getRowCount();
 	}
 }

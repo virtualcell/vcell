@@ -1315,9 +1315,9 @@ public class SBMLImporter {
 				throw new SBMLImportException("Structure '" + ste.getName() + "' is used as a assignment rule variable: not allowed in VCell at this time.");
 			}
 			if (ste instanceof cbit.vcell.model.Parameter && !newExpression.isNumeric()) {
-				throw new SBMLImportException("Parameter '" + ste.getName() + "' is used as a assignment rule variable: not allowed in VCell at this time.");
+//				throw new SBMLImportException("Parameter '" + ste.getName() + "' is used as a assignment rule variable: not allowed in VCell at this time.");
 			}
-			if(ste instanceof SpeciesContext) {
+			if(ste instanceof SpeciesContext || ste instanceof cbit.vcell.model.Parameter) {
 				cbit.vcell.mapping.AssignmentRule vcAssignmentRule = new cbit.vcell.mapping.AssignmentRule(vcAssignmentRuleName, ste, 
 						newExpression, vcBioModel.getSimulationContext(0));
 				vcAssignmentRule.bind();

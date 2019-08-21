@@ -7,15 +7,21 @@ import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
 import java.beans.VetoableChangeSupport;
 import java.io.Serializable;
+import java.util.List;
 
 import org.vcell.util.Compare;
+import org.vcell.util.Displayable;
+import org.vcell.util.Issue;
+import org.vcell.util.IssueContext;
 import org.vcell.util.Matchable;
+import org.vcell.util.Issue.IssueCategory;
+import org.vcell.util.Issue.IssueSource;
 
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.SymbolTableEntry;
 
-public class AssignmentRule implements Matchable, Serializable, VetoableChangeListener, PropertyChangeListener{
+public class AssignmentRule implements Matchable, Serializable, IssueSource, Displayable, VetoableChangeListener, PropertyChangeListener{
 	private String fieldName = null;
 	private SymbolTableEntry assignmentRuleVar = null;
 	private Expression assignmentRuleExpression = null;
@@ -136,6 +142,38 @@ public class AssignmentRule implements Matchable, Serializable, VetoableChangeLi
 			e.printStackTrace(System.out);
 			throw new RuntimeException(e.getMessage());
 		}
+	}
+
+	public void gatherIssues(IssueContext issueContext, List<Issue> issueList) {
+//		issueContext = issueContext.newChildContext(ContextType.SpeciesContext, this);
+		if(fieldName == null || fieldName.isEmpty()) {
+			String msg = typeName + " Name is missing";
+			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, Issue.Severity.WARNING));
+		}
+		if(assignmentRuleVar == null || assignmentRuleVar.getName() == null || assignmentRuleVar.getName().isEmpty()) {
+			String msg = typeName + " Variable is missing";
+			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, Issue.Severity.WARNING));
+		} else if(!(assignmentRuleVar instanceof SymbolTableEntry)) {
+			String msg = typeName + " Variable is not a SymbolTableEntry";
+			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, Issue.Severity.WARNING));
+		}
+		if(assignmentRuleExpression == null) {
+			String msg = typeName + " Expression is missing";
+			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, Issue.Severity.WARNING));
+		}
+	}
+
+	public static final String typeName = "AssignmentRule";
+	@Override
+	public String getDisplayName() {
+		if(fieldName == null) {
+			return "";
+		}
+		return fieldName;
+	}
+	@Override
+	public String getDisplayType() {
+		return typeName;
 	}
 
 }

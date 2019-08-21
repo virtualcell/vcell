@@ -16,11 +16,13 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 
+import org.vcell.util.Displayable;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.ScrollTable;
 
 import cbit.gui.ScopedExpression;
 import cbit.vcell.mapping.AssignmentRule;
+import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.parser.AutoCompleteSymbolFilter;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.SymbolTable;
@@ -31,9 +33,10 @@ public class AssignmentRulesSummaryTableModel extends BioModelEditorApplicationR
 
 	public final static int COLUMN_ASSIGNMENTRULE_NAME = 0;
 	public final static int COLUMN_ASSIGNMENTRULE_VAR = 1;
-	public final static int COLUMN_ASSIGNMENTRULE_EXPR = 2;
+	public final static int COLUMN_ASSIGNMENTRULE_TYPE = 2;
+	public final static int COLUMN_ASSIGNMENTRULE_EXPR = 3;
 	
-	private static String[] columnNames = new String[] {"Name", "Variable", "Expression"};
+	private static String[] columnNames = new String[] {"Name", "Variable", "Type", "Expression"};
 
 	public AssignmentRulesSummaryTableModel(ScrollTable table) {
 		super(table, columnNames);
@@ -49,6 +52,9 @@ public class AssignmentRulesSummaryTableModel extends BioModelEditorApplicationR
 			}
 			case COLUMN_ASSIGNMENTRULE_EXPR:{
 				return ScopedExpression.class;
+			}
+			case COLUMN_ASSIGNMENTRULE_TYPE:{
+				return String.class;
 			}
 			default:{
 				return Object.class;
@@ -94,7 +100,16 @@ public class AssignmentRulesSummaryTableModel extends BioModelEditorApplicationR
 						if(assignmentRule.getAssignmentRuleExpression() == null) {
 							return null; 
 						} else {
-							return new ScopedExpression(assignmentRule.getAssignmentRuleExpression(), simulationContext.getModel().getNameScope());
+							ScopedExpression se = new ScopedExpression(assignmentRule.getAssignmentRuleExpression(), simulationContext.getModel().getNameScope());
+							return se;
+						}
+					}
+					case COLUMN_ASSIGNMENTRULE_TYPE: {
+						SymbolTableEntry sto = assignmentRule.getAssignmentRuleVar();
+						if(sto instanceof Displayable) {
+							return ((Displayable)sto).getDisplayType();
+						} else {
+							return "Unknown";
 						}
 					}
 				}
@@ -108,15 +123,21 @@ public class AssignmentRulesSummaryTableModel extends BioModelEditorApplicationR
 	public boolean isCellEditable(int rowIndex, int columnIndex) {
 		//return false;
 		//Make none of the fields editable until code for adding new  rules is fixed. 10/20/2014
-		//return columnIndex == COLUMN_RULE_NAME; 
-		return true;
+		switch (columnIndex) {
+		case COLUMN_ASSIGNMENTRULE_NAME:
+		case COLUMN_ASSIGNMENTRULE_VAR:
+		case COLUMN_ASSIGNMENTRULE_EXPR:
+			return true;
+		default:
+			return false;
+		}
 	}
 
 	@Override
 	public void propertyChange(java.beans.PropertyChangeEvent evt) {
 		super.propertyChange(evt);
 		
-		if (evt.getPropertyName().equals("assignmentRules")) {
+		if (evt.getPropertyName().equals(SimulationContext.PROPERTY_NAME_ASSIGNMENTRULES)) {
 			AssignmentRule[] oldValue = (AssignmentRule[])evt.getOldValue();
 			if (oldValue != null) {			
 				for (AssignmentRule rr : oldValue) {
@@ -135,9 +156,9 @@ public class AssignmentRulesSummaryTableModel extends BioModelEditorApplicationR
 	
 	public void setValueAt(Object value, int row, int column) {
 		try{
-			if (value == null || value.toString().length() == 0 || BioModelEditorRightSideTableModel.ADD_NEW_HERE_TEXT.equals(value)) {
-				return;
-			}
+//			if (value == null || value.toString().length() == 0 || BioModelEditorRightSideTableModel.ADD_NEW_HERE_TEXT.equals(value)) {
+//				return;
+//			}
 			AssignmentRule assignmentRule = getValueAt(row);
 			if (assignmentRule == null) {
 				assignmentRule = simulationContext.createAssignmentRule(null);
@@ -157,7 +178,10 @@ public class AssignmentRulesSummaryTableModel extends BioModelEditorApplicationR
 				case COLUMN_ASSIGNMENTRULE_EXPR:
 					Expression exp = new Expression((String)value);
 					assignmentRule.setAssignmentRuleExpression(exp);
+					assignmentRule.bind();
 					break;
+				case COLUMN_ASSIGNMENTRULE_TYPE:
+					return;
 			}
 		} catch(Exception e){
 			e.printStackTrace(System.out);
@@ -207,6 +231,6 @@ public class AssignmentRulesSummaryTableModel extends BioModelEditorApplicationR
 	public int getRowCount() {
 		// -1 added 10/20/2014 to suppress extra row for adding new rule until adding  rules framework is fixed.  Had been return getRowCountWithAddNew();
 		// return getRowCountWithAddNew()-1;
-		return getRowCountWithAddNew() -1;
+		return super.getRowCount();
 	}
 }

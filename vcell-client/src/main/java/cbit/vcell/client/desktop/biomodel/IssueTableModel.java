@@ -35,10 +35,12 @@ import cbit.vcell.client.desktop.DecoratedIssueSource;
 import cbit.vcell.client.desktop.biomodel.IssueManager.IssueEvent;
 import cbit.vcell.client.desktop.biomodel.IssueManager.IssueEventListener;
 import cbit.vcell.geometry.Geometry;
+import cbit.vcell.mapping.AssignmentRule;
 import cbit.vcell.mapping.BioEvent;
 import cbit.vcell.mapping.GeometryContext;
 import cbit.vcell.mapping.GeometryContext.UnmappedGeometryClass;
 import cbit.vcell.mapping.MicroscopeMeasurement;
+import cbit.vcell.mapping.RateRule;
 import cbit.vcell.mapping.ReactionSpec;
 import cbit.vcell.mapping.ReactionSpec.ReactionCombo;
 import cbit.vcell.mapping.SimulationContext;
@@ -250,6 +252,10 @@ public class IssueTableModel extends VCellSortTableModel<Issue> implements Issue
 				SimulationContext simulationContext = (SimulationContext) ((OutputFunctionIssueSource)source).getOutputFunctionContext().getSimulationOwner();
 				description = "App(" + simulationContext.getName() + ") / " 
 					+ "Simulations" + " / " + "Output Functions";
+			} else if (source instanceof RateRule) {
+				description = "Protocols / " + RateRule.typeName;
+			} else if(source instanceof AssignmentRule) {
+				description = "Protocols / " + AssignmentRule.typeName;
 			} else if (source instanceof Simulation) {
 				Simulation simulation = (Simulation)source;
 				try {
@@ -418,6 +424,10 @@ public class IssueTableModel extends VCellSortTableModel<Issue> implements Issue
 				return ((BioEvent)object).getName()+"";
 			} else if (object instanceof MathDescription) {
 				return ((MathDescription)object).getName()+"";
+			} else if (object instanceof AssignmentRule) {
+				return ((AssignmentRule)object).getDisplayName()+"";
+			} else if (object instanceof RateRule) {
+				return ((RateRule)object).getDisplayName()+"";
 			} else {
 				System.err.println("unknown object type in IssueTableModel.getSourceObjectDescription(): " + object.getClass());
 			}

@@ -46,11 +46,13 @@ import cbit.vcell.client.desktop.biomodel.DocumentEditorTreeModel.DocumentEditor
 import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveView;
 import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveViewID;
 import cbit.vcell.geometry.Geometry;
+import cbit.vcell.mapping.AssignmentRule;
 import cbit.vcell.mapping.BioEvent;
 import cbit.vcell.mapping.GeometryContext;
 import cbit.vcell.mapping.GeometryContext.UnmappedGeometryClass;
 import cbit.vcell.mapping.MicroscopeMeasurement;
 import cbit.vcell.mapping.NetworkTransformer;
+import cbit.vcell.mapping.RateRule;
 import cbit.vcell.mapping.ReactionSpec.ReactionCombo;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SimulationContext.SimulationContextNameScope;
@@ -258,6 +260,14 @@ public class IssuePanel extends DocumentEditorSubPanel {
 				} else if (simulationOwner instanceof MathModel) {
 					followHyperlink(new ActiveView(null, DocumentEditorTreeFolderClass.MATH_SIMULATIONS_NODE, ActiveViewID.math_simulations),new Object[] {simulation});
 				}
+			} else if (object instanceof AssignmentRule) {
+				AssignmentRule ar = (AssignmentRule)object;
+				SimulationContext sc = ar.getSimulationContext();
+				followHyperlink(new ActiveView(sc, DocumentEditorTreeFolderClass.PROTOCOLS_NODE, ActiveViewID.assignmentRules),new Object[] {ar});
+			} else if (object instanceof RateRule) {
+				RateRule rr = (RateRule)object;
+				SimulationContext sc = rr.getSimulationContext();
+				followHyperlink(new ActiveView(sc, DocumentEditorTreeFolderClass.PROTOCOLS_NODE, ActiveViewID.rateRules),new Object[] {rr});
 			} else if (object instanceof GeometryContext) {
 				setActiveView(new ActiveView(((GeometryContext)object).getSimulationContext(), DocumentEditorTreeFolderClass.GEOMETRY_NODE, ActiveViewID.geometry_definition));
 			} else if (object instanceof Structure) {
