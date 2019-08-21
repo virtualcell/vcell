@@ -31,6 +31,7 @@ import cbit.vcell.client.BioModelWindowManager;
 import cbit.vcell.client.constants.GuiConstants;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorTreeModel.DocumentEditorTreeFolderClass;
 import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveView;
+import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveViewID;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.geometry.GeometryOwner;
@@ -275,6 +276,7 @@ public class BioModelEditorApplicationPanel extends DocumentEditorSubPanel {
 			break;
 		case PROTOCOLS_NODE:
 			selectTab(ApplicationPanelTabID.protocols);
+			applicationProtocolsPanel.selectTab(activeView.getActiveViewID());
 			break;
 		case SIMULATIONS_NODE:
 			selectTab(ApplicationPanelTabID.simulations);

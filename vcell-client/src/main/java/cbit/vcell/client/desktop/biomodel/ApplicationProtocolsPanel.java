@@ -88,6 +88,8 @@ public class ApplicationProtocolsPanel extends ApplicationSubPanel {
 	public void setIssueManager(IssueManager issueManager) {
 		super.setIssueManager(issueManager);
 		eventsDisplayPanel.setIssueManager(issueManager);
+		rateRulesDisplayPanel.setIssueManager(issueManager);
+		assignmentRulesDisplayPanel.setIssueManager(issueManager);
 	}
 
 	@Override
@@ -177,6 +179,31 @@ public class ApplicationProtocolsPanel extends ApplicationSubPanel {
 		showOrHidePanel(ProtocolsPanelTabID.assignment_rules, bShow);
 		if (bShow) {
 			assignmentRulesDisplayPanel.setSimulationContext(simulationContext);
+		}
+	}
+	
+	public void selectTab(ActiveViewID activeViewID) {
+		if(activeViewID == null) {
+			return;
+		}
+		switch (activeViewID) {
+		case events:
+			tabbedPane.setSelectedComponent(eventsDisplayPanel);
+			break;
+		case electrical:
+			tabbedPane.setSelectedComponent(electricalMembraneMappingPanel);
+			break;
+		case microscope_measuremments:
+			tabbedPane.setSelectedComponent(microscopeMeasurementPanel);
+			break;
+		case rateRules:
+			tabbedPane.setSelectedComponent(rateRulesDisplayPanel);
+			break;
+		case assignmentRules:
+			tabbedPane.setSelectedComponent(assignmentRulesDisplayPanel);
+			break;
+		default:
+			break;
 		}
 	}
 
