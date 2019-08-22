@@ -1369,16 +1369,6 @@ public class SBMLImporter {
 					// TODO: this should never happen; verify !!!
 					throw new RuntimeException("No SymbolTableEntry for SBML variable " + sbmlVarName);
 				}
-				if (vcRateRuleVar instanceof Structure || vcRateRuleVar instanceof Structure.StructureSize) {
-					throw new SBMLImportException("Structure '" + vcRateRuleVar.getName() + "' is used as a rate rule variable: not allowed in VCell at this time.");
-				}
-				if (vcRateRuleVar instanceof cbit.vcell.model.Parameter) {
-					throw new SBMLImportException("Parameter '" + vcRateRuleVar.getName() + "' is used as a rate rule variable: not allowed in VCell at this time.");
-				}
-				if(!(vcRateRuleVar instanceof SpeciesContext)) {
-					// probably this will never happen, rate rule variables can only be Structure, Parameter or Species
-					throw new RuntimeException("Rate Rule variable '" + sbmlVarName + "' must be a Species");
-				}
 				try {													// --------------------- rate rule expression
 					Expression sbmlRateRuleExpr = getExpressionFromFormula(sbmlRateRule.getMath());
 					// if the map is populated, we know for sure that it's non spatial model
@@ -2019,8 +2009,7 @@ public class SBMLImporter {
 				}
 			}
 		} catch (Exception e) {
-			throw new SBMLImportException("Unable to read SBML file : \n"
-					+ output, e);
+			throw new SBMLImportException("Unable to read SBML file : \n" + output, e);
 		}
 
 		return vcBioModel;

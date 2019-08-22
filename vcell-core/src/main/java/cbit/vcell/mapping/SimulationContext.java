@@ -67,6 +67,7 @@ import cbit.vcell.geometry.surface.VolumeGeometricRegion;
 import cbit.vcell.mapping.AbstractMathMapping.MathMappingNameScope;
 import cbit.vcell.mapping.BioEvent.EventAssignment;
 import cbit.vcell.mapping.MicroscopeMeasurement.ProjectionZKernel;
+import cbit.vcell.mapping.NetworkTransformer.GeneratedSpeciesSymbolTableEntry;
 import cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecParameter;
 import cbit.vcell.mapping.spatial.CurveObject;
 import cbit.vcell.mapping.spatial.PointObject;
@@ -2554,7 +2555,9 @@ public void checkValidity() throws MappingException
 					for (ReactionParticipant rp : reactionParticipants) {
 						if (rp instanceof Reactant || rp instanceof Product) {
 							if (getAssignmentRule(rp.getSpeciesContext()) != null) {
-								throw new RuntimeException("Species '" + rp.getSpeciesContext().getName() + "' is a reactant/product in reaction '" + rs.getName() + "' ; cannot also have an assignment rule." );
+//								if(!getReactionContext().getSpeciesContextSpec(rp.getSpeciesContext()).isConstant()) {
+									throw new RuntimeException("Species '" + rp.getSpeciesContext().getName() + "' is a reactant/product in reaction '" + rs.getName() + "' ; cannot also have an assignment rule." );
+//								}
 							}
 						}
 					}

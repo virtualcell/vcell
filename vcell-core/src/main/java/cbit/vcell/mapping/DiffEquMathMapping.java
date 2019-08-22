@@ -108,6 +108,7 @@ import cbit.vcell.model.ModelUnitSystem;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.SimpleReaction;
+import cbit.vcell.model.Species;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
 import cbit.vcell.model.Structure.StructureSize;
@@ -1085,6 +1086,35 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 			}
 		}
 	}
+	
+	// deal with assignment rules
+	enum1 = getSpeciesContextMappings();
+	while (enum1.hasMoreElements()){
+		SpeciesContextMapping scm = (SpeciesContextMapping)enum1.nextElement();
+		if (scm.getVariable()==null && scm.getDependencyExpression()!=null) {
+			AssignmentRule ar = simContext.getAssignmentRule(scm.getSpeciesContext());
+			if (ar != null && (ar.getAssignmentRuleVar() instanceof SpeciesContext)) {		// TODO: we limit assignment rules to SpeciesContext for now
+				StructureMapping sm = simContext.getGeometryContext().getStructureMapping(scm.getSpeciesContext().getStructure());
+				if (sm.getGeometryClass() == null) {
+					Structure s = sm.getStructure(); 
+					if (s != null) {
+						throw new RuntimeException("unmapped structure " + s.getName());
+					}
+					throw new RuntimeException("structure mapping with no structure or mapping");
+				}
+				String name = getMathSymbol(scm.getSpeciesContext(),sm.getGeometryClass());
+				Expression orig = ar.getAssignmentRuleExpression();
+				Expression ex = getIdentifierSubstitutions(orig, scm.getSpeciesContext().getUnitDefinition(), sm.getGeometryClass());
+				GeometryClass gc = sm.getGeometryClass();
+				Variable dependentVariable = newFunctionOrConstant(name, ex, gc);
+				dependentVariable.setDomain(new Domain(sm.getGeometryClass()));
+				varHash.removeVariable(name);
+				varHash.addVariable(dependentVariable);
+			}
+		}
+	}
+
+	
 	//
 	// set Variables to MathDescription all at once with the order resolved by "VariableHash"
 	//
