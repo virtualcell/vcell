@@ -299,6 +299,18 @@ public class VCMetaDataMiriamManager implements MiriamManager, Serializable {
 				"urn:miriam:pr",
 				"The PRotein Ontology (PRO) describes the relationships of proteins and protein evolutionary classes, to delineate the multiple protein forms of a gene locus.",
 				"PR:000007300");
+		public final static DataType DataType_Ncit			= new VCMetaDataDataType("Ncit",
+				"http://www.ontobee.org/ontology/NCIT/",
+				"http://purl.obolibrary.org/obo/NCIT_",
+				"urn:miriam:ncit",
+				"NCIt is a reference terminology that includes broad coverage of the cancer domain, including cancer related diseases, findings and abnormalities.",
+				"C67381");
+		public final static DataType DataType_So			= new VCMetaDataDataType("So",
+				"http://www.sequenceontology.org/",
+				"http://www.sequenceontology.org/browser/current_release/term/",
+				"urn:miriam:so",
+				"SO is a collaborative ontology project for the definition of sequence features used in biological sequence annotation.",
+				"SO:0000234");
 		public final static DataType DataType_SBO			= new VCMetaDataDataType("SBO",
 				"https://www.ebi.ac.uk/sbo/",
 				"https://www.ebi.ac.uk/ols/ontologies/sbo/terms?obo_id=",
