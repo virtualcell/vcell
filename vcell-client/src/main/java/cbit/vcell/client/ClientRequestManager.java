@@ -3383,7 +3383,7 @@ private void openAfterChecking(VCDocumentInfo documentInfo, final TopLevelWindow
 			// TODO Auto-generated method stub
 			if (documentInfo instanceof ExternalDocInfo) {
 				ExternalDocInfo externalDocInfo = (ExternalDocInfo)documentInfo;
-				if(externalDocInfo.isBioModelsNet()){
+				if(externalDocInfo.isBioModelsNet() || externalDocInfo.isFromXmlFile()){
 					DocumentWindowManager windowManager = (DocumentWindowManager)hashTable.get(WIN_MGR_KEY);
 					if(windowManager instanceof BioModelWindowManager){
 						((BioModelWindowManager)windowManager).specialLayout();

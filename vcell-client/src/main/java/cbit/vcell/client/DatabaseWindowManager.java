@@ -967,7 +967,7 @@ public VCDocumentInfo selectDocument(VCDocumentType documentType, TopLevelWindow
 		case EXTERNALFILE_DOC: {
 			// Get XML FIle, read the chars into a stringBuffer and create new XMLInfo.
 			File modelFile = showFileChooserDialog(requester, FileFilters.FILE_FILTER_EXTERNALDOC);
-			return new ExternalDocInfo(modelFile);
+			return new ExternalDocInfo(modelFile, true);
 		}		
 		default: {
 			throw new RuntimeException("ERROR: Unknown document type: " + documentType);
