@@ -166,7 +166,7 @@ public class RateRule implements Matchable, Serializable, IssueSource, Displayab
 		}
 		if(rateRuleVar == null || rateRuleVar.getName() == null || rateRuleVar.getName().isEmpty()) {
 			String msg = typeName + " Variable is missing";
-			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, Issue.Severity.WARNING));
+			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, Issue.Severity.ERROR));
 		} else if(!(rateRuleVar instanceof SymbolTableEntry)) {
 			String msg = typeName + " Variable is not a SymbolTableEntry";
 			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, Issue.Severity.WARNING));

@@ -152,7 +152,7 @@ public class AssignmentRule implements Matchable, Serializable, IssueSource, Dis
 		}
 		if(assignmentRuleVar == null || assignmentRuleVar.getName() == null || assignmentRuleVar.getName().isEmpty()) {
 			String msg = typeName + " Variable is missing";
-			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, Issue.Severity.WARNING));
+			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, Issue.Severity.ERROR));
 		} else if(!(assignmentRuleVar instanceof SymbolTableEntry)) {
 			String msg = typeName + " Variable is not a SymbolTableEntry";
 			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, Issue.Severity.WARNING));

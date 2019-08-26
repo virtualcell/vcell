@@ -5095,7 +5095,9 @@ public Element getXML(RateRule[] rateRules) throws XmlParseException{
 	for (int i = 0; i < rateRules.length; i++) {
 		Element rateRuleElement = new Element(XMLTags.RateRuleTag);
 		rateRuleElement.setAttribute(XMLTags.NameAttrTag, mangle(rateRules[i].getName()));
-		rateRuleElement.setAttribute(XMLTags.RateRuleVariableAttrTag, rateRules[i].getRateRuleVar().getName());
+		if(rateRules[i].getRateRuleVar() != null) {
+			rateRuleElement.setAttribute(XMLTags.RateRuleVariableAttrTag, rateRules[i].getRateRuleVar().getName());
+		}
 		rateRuleElement.addContent(mangleExpression(rateRules[i].getRateRuleExpression()));
 
 		rateRulesElement.addContent(rateRuleElement);
@@ -5107,7 +5109,9 @@ public Element getXML(AssignmentRule[] assignmentRules) throws XmlParseException
 	for (int i = 0; i < assignmentRules.length; i++) {
 		Element assignmentRuleElement = new Element(XMLTags.AssignmentRuleTag);
 		assignmentRuleElement.setAttribute(XMLTags.NameAttrTag, mangle(assignmentRules[i].getName()));
-		assignmentRuleElement.setAttribute(XMLTags.AssignmentRuleVariableAttrTag, assignmentRules[i].getAssignmentRuleVar().getName());
+		if(assignmentRules[i].getAssignmentRuleVar() != null) {
+			assignmentRuleElement.setAttribute(XMLTags.AssignmentRuleVariableAttrTag, assignmentRules[i].getAssignmentRuleVar().getName());
+		}
 		assignmentRuleElement.addContent(mangleExpression(assignmentRules[i].getAssignmentRuleExpression()));
 
 		assignmentRulesElement.addContent(assignmentRuleElement);
