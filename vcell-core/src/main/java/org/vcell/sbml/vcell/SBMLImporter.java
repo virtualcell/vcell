@@ -184,6 +184,7 @@ import cbit.vcell.model.Structure;
 import cbit.vcell.model.StructureSorter;
 import cbit.vcell.parser.AbstractNameScope;
 import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.ExpressionMathMLParser;
 import cbit.vcell.parser.LambdaFunction;
@@ -299,7 +300,73 @@ public class SBMLImporter {
 		this.bSpatial = isSpatial;
 	}
 	
-	protected void addCompartments(VCMetaData metaData) {
+	protected void finalizeCompartments(Map<String, Expression> deferredStructureExpression) {
+		if(deferredStructureExpression.isEmpty()) {
+			return;
+		}
+		
+		Model vcModel = vcBioModel.getSimulationContext(0).getModel();
+		GeometryContext gc = vcBioModel.getSimulationContext(0).getGeometryContext();
+
+		ModelParameter[] modelParameters = vcModel.getModelParameters();
+		
+		for (Map.Entry<String, Expression> entry : deferredStructureExpression.entrySet()) {
+			String compartmentName = entry.getKey();
+			Expression sizeExpr = entry.getValue();
+			Structure struct = vcModel.getStructure(compartmentName);
+			StructureMapping.StructureMappingParameter mappingParam = gc.getStructureMapping(struct).getSizeParameter();
+			
+			// the only chance to evaluate the structure size expression (set by an initial assignment) as a constant
+			// if we fail here, it may be a species variable involved in the expression, or who knows what else, which we don't have yet
+			try {
+				
+				String[] symbols = sizeExpr.getSymbols();
+				for(String symbol : symbols) {
+
+					SymbolTableEntry ste = vcBioModel.getSimulationContext(0).getEntry(symbol);
+					ModelParameter mp = vcModel.getModelParameter(symbol);
+					if(ste instanceof Structure.StructureSize) {
+						StructureMapping.StructureMappingParameter mapping = gc.getStructureMapping(struct).getSizeParameter();
+						try {
+							double value = mapping.getExpression().evaluateConstant();
+							sizeExpr.substituteInPlace(new Expression(symbol), new Expression(value));
+						} catch (ExpressionException e) {
+							throw new SBMLImportException("Error adding Feature '" + compartmentName + "' to vcModel: cannot evaluate InitialAssignment '" + sizeExpr.infix() + "' to a constant");
+						} 
+					} else if(mp != null) {
+						double value = mp.getExpression().evaluateConstant();
+						sizeExpr.substituteInPlace(new Expression(symbol), new Expression(value));
+
+					} else {
+						throw new SBMLImportException("Error adding Feature '" + compartmentName + "' to vcModel: cannot evaluate InitialAssignment '" + sizeExpr.infix() + "' to a constant");
+					}
+				}
+				mappingParam.setExpression(new Expression(sizeExpr));
+			} catch (ExpressionException e) {
+				e.printStackTrace(System.out);
+				throw new SBMLImportException("Error adding Feature '" + compartmentName + "' to vcModel: " + e.getMessage(), e);
+			}
+		}
+		
+		boolean allSizesSet = true;
+		for(Structure struct : vcModel.getStructures()) {
+			StructureMapping.StructureMappingParameter mappingParam = gc.getStructureMapping(struct).getSizeParameter();
+			if(!mappingParam.getExpression().isNumeric()) {
+				allSizesSet = false;
+				break;
+			}
+		}
+		if (allSizesSet) {
+			try {
+				StructureSizeSolver.updateRelativeStructureSizes(vcBioModel.getSimulationContext(0));
+			} catch (Exception e) {
+				e.printStackTrace(System.out);
+				throw new SBMLImportException("Error adding Feature to vcModel " + e.getMessage(), e);
+			}
+		}
+	}
+	
+	protected void addCompartments(VCMetaData metaData, Map<String, Expression> deferredStructureExpression) {
 		if (sbmlModel == null) {
 			throw new SBMLImportException("SBML model is NULL");
 		}
@@ -390,7 +457,7 @@ public class SBMLImporter {
 						// We are NOT handling compartment sizes with assignment
 						// rules/initial Assignments that are NON-numeric at this time ...
 						logger.sendMessage(VCLogger.Priority.HighPriority, VCLogger.ErrorType.CompartmentError,
-							"compartment " + compartmentName + " size has an assignment rule which is not a numeric value, cannot handle it at this time.");
+							"Compartment '" + compartmentName + "' size has an assignment rule which is not a numeric value, cannot handle it at this time.");
 					}
 					// check if sizeExpr is null - no assignment rule for size -
 					// check if it is specified by initial assignment
@@ -405,7 +472,12 @@ public class SBMLImporter {
 						// rules/initial Assignments that are NON-numeric at
 						// this time ...
 						logger.sendMessage(VCLogger.Priority.HighPriority, VCLogger.ErrorType.CompartmentError,
-							"compartment " + compartmentName + " size has an initial assignment which is not a numeric value, cannot handle it at this time.");
+							"Compartment '" + compartmentName + "' size has an initial assignment which is not a numeric value, cannot handle it at this time.");
+// TODO: uncomment below to try and compute the expression later, in finalizeCompartment()
+//						allSizesSet = false;
+//						System.out.println(sizeExpr.infix());
+//						sizeExpr = new Expression(size);
+//						deferredStructureExpression.put(compartmentName, sizeExpr);
 					}
 
 					// no init assignment or assignment rule; create expression
@@ -418,7 +490,9 @@ public class SBMLImporter {
 					Structure struct = model.getStructure(compartmentName);
 					GeometryContext gc = vcBioModel.getSimulationContext(0).getGeometryContext();
 					StructureMapping.StructureMappingParameter mappingParam = gc.getStructureMapping(struct).getSizeParameter();
-					mappingParam.setExpression(sizeExpr);
+					if(!deferredStructureExpression.containsKey(compartmentName)) {
+						mappingParam.setExpression(sizeExpr);
+					}
 				}
 			}
 
@@ -557,6 +631,7 @@ public class SBMLImporter {
 		}
 		Model vcModel = vcBioModel.getSimulationContext(0).getModel();
 
+		boolean hasStructureInitialAssignmentExpression = false;
 		for (int i = 0; i < sbmlModel.getNumInitialAssignments(); i++) {
 			try {
 				InitialAssignment initAssgn = (InitialAssignment) listofInitialAssgns.get(i);
@@ -566,6 +641,8 @@ public class SBMLImporter {
 				// support compartmentSize expressions, warn and bail out.
 				if (sbmlModel.getCompartment(initAssgnSymbol) != null) {
 					if (!initAssignMathExpr.isNumeric()) {
+//						hasStructureInitialAssignmentExpression = true;
+// TODO: uncomment the line above to deal with expressions used as initial assignment for structures
 						logger.sendMessage(VCLogger.Priority.HighPriority, VCLogger.ErrorType.CompartmentError,
 							"compartment '" + initAssgnSymbol + "' size has an initial assignment, cannot handle it at this time.");
 					}
@@ -1228,9 +1305,11 @@ public class SBMLImporter {
 			System.out.println("No Rules specified");
 			return;
 		}
+		boolean bAssignmentRule = false;
 		for (int i = 0; i < sbmlModel.getNumRules(); i++) {
 			Rule rule = (org.sbml.jsbml.Rule) listofRules.get(i);
 			if (rule instanceof AssignmentRule) {
+				bAssignmentRule = true;
 				// Get the assignment rule and store it in the hashMap.
 				AssignmentRule assignmentRule = (AssignmentRule) rule;
 				Expression assignmentRuleMathExpr = getExpressionFromFormula(assignmentRule.getMath());
@@ -1259,6 +1338,11 @@ public class SBMLImporter {
 				assignmentRulesHash.put(assignmentRule.getVariable(), assignmentRuleMathExpr);
 			}
 		} // end - for i : rules
+		if(bAssignmentRule) {
+			localIssueList.add(new Issue(vcBioModel, issueContext, IssueCategory.SBMLImport_RestrictedFeature,
+				"AssignmentRules are supported at this time with restrictions. Please check the generated math for consistency.", Issue.Severity.WARNING));
+		}
+
 	}
 	
 	// returns true if reserved x,y,z symbols are used inappropriately - like in a non-spatial model
@@ -2697,7 +2781,8 @@ public class SBMLImporter {
 		}
 		// Add features/compartments
 		VCMetaData vcMetaData = vcBioModel.getVCMetaData();
-		addCompartments(vcMetaData);
+		Map<String, Expression> deferredStructureExpression = new HashMap<> ();
+		addCompartments(vcMetaData, deferredStructureExpression);
 		// Add species/speciesContexts
 		addSpecies(vcMetaData, vcToSbmlNameMap, sbmlToVcNameMap);
 		
@@ -2709,6 +2794,10 @@ public class SBMLImporter {
 			throw new SBMLImportException(e.getMessage(), e);
 		}
 		
+		// now that we have the parameters loaded, we can bind
+		// TODO: use BMDB model Whitcomb to test comp size initialized with expression
+		finalizeCompartments(deferredStructureExpression);
+		
 		// Create the vCell Assignment Rules, now that the species, parameters and structures are defined
 		// If species variables were renamed from x,y,z, apply corrections to the hash
 		try {
@@ -2717,13 +2806,16 @@ public class SBMLImporter {
 			e.printStackTrace();
 			throw new SBMLImportException(e.getMessage(), e);
 		}
-		
 		// Set initial conditions on species
+		// assignment rules must be present already because initConc set by an assignment rule
+		// takes precedence over initConc value set on species
 		setSpeciesInitialConditions(vcToSbmlNameMap);
+		
 		// Add InitialAssignments
 		addInitialAssignments();
 		// Add constraints (not handled in VCell)
 		addConstraints();
+		
 		// Add Reactions
 		addReactions(vcMetaData, vcToSbmlNameMap, sbmlToVcNameMap);
 		// Check if we found and renamed successfully any reserved symbols used as species or reaction name
