@@ -156,6 +156,28 @@ public class AssignmentRule implements Matchable, Serializable, IssueSource, Dis
 		} else if(!(assignmentRuleVar instanceof SymbolTableEntry)) {
 			String msg = typeName + " Variable is not a SymbolTableEntry";
 			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, Issue.Severity.WARNING));
+		} else {
+			if(simulationContext.getAssignmentRules() != null) {
+				for(AssignmentRule ar : simulationContext.getAssignmentRules()) {
+					if(ar == this) {
+						continue;
+					}
+					if(assignmentRuleVar.getName().equals(ar.getAssignmentRuleVar().getName())) {
+						String msg = typeName + " Variable '" + assignmentRuleVar.getName() + " is duplicated";
+						issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, Issue.Severity.ERROR));
+						break;
+					}
+				}
+			}
+			if(simulationContext.getRateRules() != null) {
+				for(RateRule rr : simulationContext.getRateRules()) {
+					if(assignmentRuleVar.getName().equals(rr.getRateRuleVar().getName())) {
+						String msg = typeName + " Variable '" + assignmentRuleVar.getName() + "' is duplicated as a " + RateRule.typeName + " Variable";
+						issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, Issue.Severity.ERROR));
+						break;
+					}
+				}
+			}
 		}
 		if(assignmentRuleExpression == null) {
 			String msg = typeName + " Expression is missing";

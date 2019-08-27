@@ -89,7 +89,7 @@ public abstract class Structure implements Serializable, ScopedSymbolTable, Matc
 		}
 	}
 
-	public class StructureSize extends ModelQuantity {
+	public class StructureSize extends ModelQuantity implements Displayable {
 
 		@Override
 		public String getDescription() {
@@ -135,6 +135,16 @@ public abstract class Structure implements Serializable, ScopedSymbolTable, Matc
 
 		public void setUnitDefinition(VCUnitDefinition unit) {
 			throw new RuntimeException("cannot set units on structure sizes, structure '"+getStructure().getName()+"' is in units of "+getUnitDefinition().getSymbol());
+		}
+		
+		public static final String typeName = "StructureSize";
+		@Override
+		public final String getDisplayName() {
+			return getName();
+		}
+		@Override
+		public final String getDisplayType() {
+			return typeName;
 		}
 	}
 	

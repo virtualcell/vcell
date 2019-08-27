@@ -159,7 +159,6 @@ public class RateRule implements Matchable, Serializable, IssueSource, Displayab
 	}
 	
 	public void gatherIssues(IssueContext issueContext, List<Issue> issueList) {
-//		issueContext = issueContext.newChildContext(ContextType.SpeciesContext, this);
 		if(fieldName == null || fieldName.isEmpty()) {
 			String msg = typeName + " Name is missing";
 			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, Issue.Severity.WARNING));
@@ -170,6 +169,28 @@ public class RateRule implements Matchable, Serializable, IssueSource, Displayab
 		} else if(!(rateRuleVar instanceof SymbolTableEntry)) {
 			String msg = typeName + " Variable is not a SymbolTableEntry";
 			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, Issue.Severity.WARNING));
+		} else {
+			if(simulationContext.getRateRules() != null) {
+				for(RateRule rr : simulationContext.getRateRules()) {
+					if(rr == this) {
+						continue;
+					}
+					if(rateRuleVar.getName().equals(rr.getRateRuleVar().getName())) {
+						String msg = typeName + " Variable '" + rateRuleVar.getName() + " is duplicated";
+						issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, Issue.Severity.ERROR));
+						break;
+					}
+				}
+			}
+			if(simulationContext.getAssignmentRules() != null) {
+				for(AssignmentRule ar : simulationContext.getAssignmentRules()) {
+					if(rateRuleVar.getName().equals(ar.getAssignmentRuleVar().getName())) {
+						String msg = typeName + " Variable '" + rateRuleVar.getName() + "' is duplicated as an " + AssignmentRule.typeName + " Variable";
+						issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, Issue.Severity.ERROR));
+						break;
+					}
+				}
+			}
 		}
 		if(rateRuleExpression == null) {
 			String msg = typeName + " Expression is missing";
