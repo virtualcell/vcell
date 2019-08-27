@@ -94,7 +94,6 @@ public class MIRIAMRef extends KeyOfTwo<String, String> {
 		String id = "";
 		if(split.length == 4) {
 			id += decode(split[3]);
-
 		} else if(split.length == 5) {
 			id += decode(split[3]);
 			if(id != null && (id.equalsIgnoreCase("GO") || id.equalsIgnoreCase("CHEBI"))) {
@@ -105,6 +104,9 @@ public class MIRIAMRef extends KeyOfTwo<String, String> {
 			}
 		} else {
 			throw new URNParseFailureException(urn + ": Wrong number of components " + split.length);
+		}
+		if(type.equalsIgnoreCase("sbo")) {		// correction for urn:miriam:sbo
+			type = "biomodels." + type;			// we want it to be urn:miriam:biomodels.sbo
 		}
 		return new MIRIAMRef(type, id);
 	}
