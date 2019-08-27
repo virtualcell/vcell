@@ -32,6 +32,7 @@ import java.net.URLEncoder;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
@@ -255,6 +256,9 @@ public class BioModelsNetPanel extends DocumentEditorSubPanel {
 				String destDirectory = tempDir + File.separator + bioModelsNetInfo.getId();
 				String zipFilePath = destDirectory + ".zip";
 
+				Path tempDirPath = Paths.get(tempDir);
+				Files.createDirectories(tempDirPath);	// temp may not be there, we make it
+				
 				byte[] responseContent = null;
 				URL url = new URL(defaultBaseURL + bioModelsNetInfo.getId());
 				ByteArrayOutputStream baos = new ByteArrayOutputStream();
