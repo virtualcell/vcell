@@ -782,6 +782,21 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueVector) {
 			issueVector.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, Issue.SEVERITY_ERROR));
 		}
 	}
+	if(getSimulationContext().getAssignmentRules() != null && getSimulationContext().getAssignmentRules().length > 0) {
+		for(AssignmentRule ar : getSimulationContext().getAssignmentRules()) {
+			if(ar.getAssignmentRuleVar() == null) {
+				continue;				// some assignment rule variable may be still not initialized
+			}
+			SpeciesContext sc = getSpeciesContext();
+			if(sc.getName().equalsIgnoreCase(ar.getAssignmentRuleVar().getName())) {
+				if(!bConstant) {		// the assignment rule variables must be clamped
+					String msg = "Assignment rule species variables must be Clamped";
+					String tip = "Used in " + AssignmentRule.typeName + " '" + ar.getDisplayName() + "'";
+					issueVector.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.ERROR));
+				}
+			}
+		}
+	}
 }
 
 /**

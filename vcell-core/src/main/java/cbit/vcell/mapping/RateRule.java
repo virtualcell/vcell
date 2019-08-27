@@ -18,6 +18,7 @@ import org.vcell.util.IssueContext.ContextType;
 import org.vcell.util.IssueContext;
 import org.vcell.util.Matchable;
 
+import cbit.vcell.model.Structure;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.SymbolTableEntry;
@@ -169,11 +170,17 @@ public class RateRule implements Matchable, Serializable, IssueSource, Displayab
 		} else if(!(rateRuleVar instanceof SymbolTableEntry)) {
 			String msg = typeName + " Variable is not a SymbolTableEntry";
 			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, Issue.Severity.WARNING));
-		} else {
+		} else if(rateRuleVar instanceof Structure.StructureSize) {
+			String msg = Structure.StructureSize.typeName + " Variable is not supported at this time";
+			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, Issue.Severity.ERROR));
+		} else {						// we know that the rateRuleVar can't be null
 			if(simulationContext.getRateRules() != null) {
 				for(RateRule rr : simulationContext.getRateRules()) {
 					if(rr == this) {
 						continue;
+					}
+					if(rr.getRateRuleVar() == null) {
+						continue;		// another rate rule variable may be still not initialized
 					}
 					if(rateRuleVar.getName().equals(rr.getRateRuleVar().getName())) {
 						String msg = typeName + " Variable '" + rateRuleVar.getName() + " is duplicated";
@@ -184,6 +191,9 @@ public class RateRule implements Matchable, Serializable, IssueSource, Displayab
 			}
 			if(simulationContext.getAssignmentRules() != null) {
 				for(AssignmentRule ar : simulationContext.getAssignmentRules()) {
+					if(ar.getAssignmentRuleVar() == null) {
+						continue;		// we may be in the middle of creating the assignment rule and the variable is still missing
+					}
 					if(rateRuleVar.getName().equals(ar.getAssignmentRuleVar().getName())) {
 						String msg = typeName + " Variable '" + rateRuleVar.getName() + "' is duplicated as an " + AssignmentRule.typeName + " Variable";
 						issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, Issue.Severity.ERROR));

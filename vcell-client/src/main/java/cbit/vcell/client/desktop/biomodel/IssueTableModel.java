@@ -253,9 +253,11 @@ public class IssueTableModel extends VCellSortTableModel<Issue> implements Issue
 				description = "App(" + simulationContext.getName() + ") / " 
 					+ "Simulations" + " / " + "Output Functions";
 			} else if (source instanceof RateRule) {
-				description = "Protocols / " + RateRule.typeName;
+				SimulationContext simulationContext = ((RateRule)source).getSimulationContext();
+				description = "App(" + simulationContext.getName() + ") / " + "Protocols / " + RateRule.typeName;
 			} else if(source instanceof AssignmentRule) {
-				description = "Protocols / " + AssignmentRule.typeName;
+				SimulationContext simulationContext = ((AssignmentRule)source).getSimulationContext();
+				description = "App(" + simulationContext.getName() + ") / " + "Protocols / " + AssignmentRule.typeName;
 			} else if (source instanceof Simulation) {
 				Simulation simulation = (Simulation)source;
 				try {

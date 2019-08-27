@@ -17,6 +17,7 @@ import org.vcell.util.Matchable;
 import org.vcell.util.Issue.IssueCategory;
 import org.vcell.util.Issue.IssueSource;
 
+import cbit.vcell.model.Structure;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.SymbolTableEntry;
@@ -156,10 +157,16 @@ public class AssignmentRule implements Matchable, Serializable, IssueSource, Dis
 		} else if(!(assignmentRuleVar instanceof SymbolTableEntry)) {
 			String msg = typeName + " Variable is not a SymbolTableEntry";
 			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, Issue.Severity.WARNING));
-		} else {
+		} else if(assignmentRuleVar instanceof Structure.StructureSize) {
+			String msg = Structure.StructureSize.typeName + " Variable is not supported at this time";
+			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, Issue.Severity.ERROR));
+		} else {						// we know that assignmentRuleVar can't be null
 			if(simulationContext.getAssignmentRules() != null) {
 				for(AssignmentRule ar : simulationContext.getAssignmentRules()) {
 					if(ar == this) {
+						continue;
+					}
+					if(ar.getAssignmentRuleVar() == null) {
 						continue;
 					}
 					if(assignmentRuleVar.getName().equals(ar.getAssignmentRuleVar().getName())) {
@@ -171,6 +178,9 @@ public class AssignmentRule implements Matchable, Serializable, IssueSource, Dis
 			}
 			if(simulationContext.getRateRules() != null) {
 				for(RateRule rr : simulationContext.getRateRules()) {
+					if(rr.getRateRuleVar() == null) {
+						continue;		// we may be in the middle of creating the assignment rule and the variable is still missing
+					}
 					if(assignmentRuleVar.getName().equals(rr.getRateRuleVar().getName())) {
 						String msg = typeName + " Variable '" + assignmentRuleVar.getName() + "' is duplicated as a " + RateRule.typeName + " Variable";
 						issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, Issue.Severity.ERROR));
