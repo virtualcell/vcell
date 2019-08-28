@@ -219,6 +219,11 @@ public abstract class VCellIcons {
 	public final static Icon odeQuickRunIcon = makeIcon("/icons/ode_quick_run.png");
 	public final static Icon pythonQuickRunIcon = makeIcon("/icons/python_quick_run.png");
 	
+	// rate and assignment rules
+	public final static Icon ruleRateIcon = makeIcon("/icons/ruleRate.png");
+	public final static Icon ruleAssignIcon = makeIcon("/icons/ruleAssign.png");
+	
+	
 	//Window Manager
 	public final static Icon SHOW_WINDOWS = makeIcon("/icons/showWindows.png");
 	
