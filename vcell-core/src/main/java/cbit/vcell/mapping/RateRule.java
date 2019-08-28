@@ -18,6 +18,11 @@ import org.vcell.util.IssueContext.ContextType;
 import org.vcell.util.IssueContext;
 import org.vcell.util.Matchable;
 
+import cbit.vcell.model.Product;
+import cbit.vcell.model.Reactant;
+import cbit.vcell.model.ReactionParticipant;
+import cbit.vcell.model.ReactionStep;
+import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
@@ -205,6 +210,26 @@ public class RateRule implements Matchable, Serializable, IssueSource, Displayab
 		if(rateRuleExpression == null) {
 			String msg = typeName + " Expression is missing";
 			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, Issue.Severity.WARNING));
+		}
+		// rate rule variable must not be also a reactant or a product in a reaction
+		ReactionContext rc = getSimulationContext().getReactionContext();
+		ReactionSpec[] rsArray = rc.getReactionSpecs();
+		if(rateRuleVar instanceof SpeciesContext) {
+			for(ReactionSpec rs : rsArray) {
+				if(rs.isExcluded()) {
+					continue;		// we don't care about reactions which are excluded
+				}
+				ReactionStep step = rs.getReactionStep();
+				for(ReactionParticipant p : step.getReactionParticipants()) {
+					if(p instanceof Product || p instanceof Reactant) {
+						SpeciesContext sc = p.getSpeciesContext();
+						if(sc.getName().equalsIgnoreCase(rateRuleVar.getName())) {
+							String msg = "Reaction '" + step.getDisplayName() + "' participant '" + rateRuleVar.getName() + "' cannot be a rate rule variable at the same time.";
+							issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, msg, Issue.Severity.ERROR));
+						}
+					}
+				}
+			}
 		}
 	}
 
