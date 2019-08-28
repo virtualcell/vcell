@@ -10,13 +10,17 @@
 
 package cbit.vcell.mapping.gui;
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.FlowLayout;
 import java.awt.Graphics;
 import java.util.Hashtable;
+import java.util.Map;
+import java.util.TreeMap;
 import java.util.Vector;
 
 import javax.swing.ButtonGroup;
+import javax.swing.Icon;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -28,20 +32,28 @@ import javax.swing.table.TableModel;
 
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.vcell.model.rbm.SpeciesPattern;
+import org.vcell.sybil.models.miriam.MIRIAMQualifier;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.TokenMangler;
+import org.vcell.util.document.Identifiable;
 import org.vcell.util.gui.DefaultScrollTableActionManager;
 import org.vcell.util.gui.DefaultScrollTableCellRenderer;
 import org.vcell.util.gui.DialogUtils;
+import org.vcell.util.gui.VCellIcons;
 import org.vcell.util.gui.ScrollTable.ScrollTableBooleanCellRenderer;
 import org.vcell.util.gui.sorttable.JSortTable;
 import org.vcell.util.gui.sorttable.SortTableModel;
 
 import cbit.gui.ScopedExpression;
+import cbit.vcell.biomodel.meta.MiriamManager;
+import cbit.vcell.biomodel.meta.MiriamManager.MiriamRefGroup;
 import cbit.vcell.client.PopupGenerator;
+import cbit.vcell.client.desktop.biomodel.AnnotationsPanel;
 import cbit.vcell.client.desktop.biomodel.ApplicationSpecificationsPanel;
+import cbit.vcell.client.desktop.biomodel.BioModelEditorReactionTableModel;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
 import cbit.vcell.client.desktop.biomodel.IssueManager;
+import cbit.vcell.client.desktop.biomodel.ObservableTableModel;
 import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveViewID;
 import cbit.vcell.client.desktop.biomodel.VCellSortTableModel;
 import cbit.vcell.client.task.AsynchClientTask;
@@ -50,14 +62,17 @@ import cbit.vcell.desktop.VCellCopyPasteHelper;
 import cbit.vcell.desktop.VCellTransferable;
 import cbit.vcell.graph.SmallShapeManager;
 import cbit.vcell.graph.SpeciesPatternSmallShape;
+import cbit.vcell.mapping.AssignmentRule;
 import cbit.vcell.mapping.DiffEquMathMapping;
 import cbit.vcell.mapping.MathMapping;
 import cbit.vcell.mapping.MathSymbolMapping;
+import cbit.vcell.mapping.RateRule;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SpeciesContextSpec;
 import cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecParameter;
 import cbit.vcell.mapping.gui.StructureMappingTableRenderer.TextIcon;
 import cbit.vcell.math.Variable;
+import cbit.vcell.model.BioModelEntityObject;
 import cbit.vcell.model.Species;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
@@ -542,6 +557,58 @@ private void initialize() {
 				}
 			}
 		};
+		
+		DefaultScrollTableCellRenderer rulesTableCellRenderer = new DefaultScrollTableCellRenderer() {
+			
+			int a = 0;
+			@Override
+			public Component getTableCellRendererComponent(JTable table,
+					Object value, boolean isSelected, boolean hasFocus,
+					int row, int column) {
+				super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+				
+				if (table.getModel() instanceof SpeciesContextSpecsTableModel) {
+					Icon icon = VCellIcons.issueGoodIcon;
+					Object selectedObject = null;
+					if (table.getModel() == tableModel) {
+						selectedObject = tableModel.getValueAt(row);
+					}
+					if (selectedObject != null) {
+						if(selectedObject instanceof SpeciesContextSpec) {
+							SpeciesContextSpec scs = (SpeciesContextSpec)selectedObject;
+							SpeciesContext sc = scs.getSpeciesContext();
+
+							boolean foundRuleMatch = false;
+							if(fieldSimulationContext.getRateRules() != null && fieldSimulationContext.getRateRules().length > 0) {
+								for(RateRule rr : fieldSimulationContext.getRateRules()) {
+									if(rr.getRateRuleVar() == null) {
+										continue;
+									}
+									if(sc.getName().equals(rr.getRateRuleVar().getName())) {
+										foundRuleMatch = true;
+										icon = VCellIcons.ruleRateIcon;
+										break;
+									}
+								}
+							}
+							if(!foundRuleMatch && fieldSimulationContext.getAssignmentRules() != null && fieldSimulationContext.getAssignmentRules().length > 0) {
+								for(AssignmentRule rr : fieldSimulationContext.getAssignmentRules()) {
+									if(rr.getAssignmentRuleVar() == null) {
+										continue;
+									}
+									if(sc.getName().equals(rr.getAssignmentRuleVar().getName())) {
+										icon = VCellIcons.ruleAssignIcon;
+										break;
+									}
+								}
+							}
+						}
+					}
+					setIcon(icon);
+				}
+				return this;
+			}
+		};
 
 		getScrollPaneTable().setDefaultRenderer(SpeciesContext.class, renderer);
 		getScrollPaneTable().setDefaultRenderer(Structure.class, renderer);
@@ -550,6 +617,12 @@ private void initialize() {
 		getScrollPaneTable().setDefaultRenderer(Species.class, renderer);
 		getScrollPaneTable().setDefaultRenderer(ScopedExpression.class, renderer);
 		getScrollPaneTable().setDefaultRenderer(Boolean.class, new ScrollTableBooleanCellRenderer());
+		
+		getScrollPaneTable().setDefaultRenderer(SpeciesContextSpecsTableModel.RulesProvenance.class, rulesTableCellRenderer);
+		
+//		int ordinal = SpeciesContextSpecsTableModel.ColumnType.COLUMN_RULES.ordinal();
+//		getScrollPaneTable().getColumnModel().getColumn(ordinal).setCellRenderer(rulesTableCellRenderer);
+
 		
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);

@@ -16,6 +16,7 @@ import java.util.Comparator;
 import java.util.List;
 
 import org.vcell.model.rbm.SpeciesPattern;
+import org.vcell.util.Displayable;
 import org.vcell.util.gui.GuiUtils;
 import org.vcell.util.gui.ScrollTable;
 
@@ -40,11 +41,27 @@ import cbit.vcell.parser.ExpressionException;
  */
 @SuppressWarnings("serial")
 public class SpeciesContextSpecsTableModel extends VCellSortTableModel<SpeciesContextSpec> implements java.beans.PropertyChangeListener {
+	
+	public class RulesProvenance implements Displayable {
+		
+		public static final String displayName = "RulesProvenance";
+		public static final String typeName = "RulesProvenance";
+		@Override
+		public String getDisplayName() {
+			return displayName;
+		}
+		@Override
+		public String getDisplayType() {
+			return typeName;
+		}
+	}
+	
 	public enum ColumnType {
 		COLUMN_SPECIESCONTEXT("Species"),
 		COLUMN_STRUCTURE("Structure"),
 		COLUMN_DEPICTION("Depiction"),
 		COLUMN_CLAMPED("Clamped"),
+		COLUMN_RULES("Rules"),
 		COLUMN_INITIAL("Initial Condition"),
 		COLUMN_WELLMIXED("Well Mixed"),
 		COLUMN_DIFFUSION("Diffusion Constant"),
@@ -114,6 +131,9 @@ public Class<?> getColumnClass(int column) {
 		}
 		case COLUMN_DEPICTION:{
 			return SpeciesPattern.class;
+		}
+		case COLUMN_RULES:{
+			return RulesProvenance.class;
 		}
 		case COLUMN_CLAMPED:
 		case COLUMN_WELLMIXED:
@@ -195,6 +215,9 @@ public Object getValueAt(int row, int col) {
 			case COLUMN_CLAMPED:{
 				return new Boolean(scSpec.isConstant());
 			}
+			case COLUMN_RULES:{
+				return null;
+			}
 			case COLUMN_WELLMIXED:{
 				return (scSpec.isConstant() || scSpec.isWellMixed()) && !getSimulationContext().isStoch();
 			}
@@ -249,6 +272,9 @@ public boolean isCellEditable(int rowIndex, int columnIndex) {
 		}
 		case COLUMN_CLAMPED:{
 			return true;
+		}
+		case COLUMN_RULES:{
+			return false;
 		}
 		case COLUMN_WELLMIXED:{
 			return !speciesContextSpec.isConstant() && !getSimulationContext().isStoch();
