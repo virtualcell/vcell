@@ -15,6 +15,8 @@ import java.awt.Component;
 import javax.swing.Icon;
 import javax.swing.JComponent;
 
+import org.vcell.util.gui.VCellIcons;
+
 import cbit.vcell.client.constants.GuiConstants;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorTreeModel.DocumentEditorTreeFolderClass;
 import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveView;
@@ -75,8 +77,8 @@ public class ApplicationProtocolsPanel extends ApplicationSubPanel {
 		protocolPanelTabs[ProtocolsPanelTabID.events.ordinal()] = new ProtocolsPanelTab(ProtocolsPanelTabID.events, eventsDisplayPanel, null);
 		protocolPanelTabs[ProtocolsPanelTabID.electrical.ordinal()] = new ProtocolsPanelTab(ProtocolsPanelTabID.electrical, electricalMembraneMappingPanel, null);
 		protocolPanelTabs[ProtocolsPanelTabID.microscope_measurements.ordinal()] = new ProtocolsPanelTab(ProtocolsPanelTabID.microscope_measurements, microscopeMeasurementPanel, null);
-		protocolPanelTabs[ProtocolsPanelTabID.rate_rules.ordinal()] = new ProtocolsPanelTab(ProtocolsPanelTabID.rate_rules, rateRulesDisplayPanel, null);
-		protocolPanelTabs[ProtocolsPanelTabID.assignment_rules.ordinal()] = new ProtocolsPanelTab(ProtocolsPanelTabID.assignment_rules, assignmentRulesDisplayPanel, null);
+		protocolPanelTabs[ProtocolsPanelTabID.rate_rules.ordinal()] = new ProtocolsPanelTab(ProtocolsPanelTabID.rate_rules, rateRulesDisplayPanel, VCellIcons.ruleRateIcon);
+		protocolPanelTabs[ProtocolsPanelTabID.assignment_rules.ordinal()] = new ProtocolsPanelTab(ProtocolsPanelTabID.assignment_rules, assignmentRulesDisplayPanel, VCellIcons.ruleAssignIcon);
 		
 		for (ProtocolsPanelTab tab : protocolPanelTabs) {
 			tab.component.setBorder(GuiConstants.TAB_PANEL_BORDER);
