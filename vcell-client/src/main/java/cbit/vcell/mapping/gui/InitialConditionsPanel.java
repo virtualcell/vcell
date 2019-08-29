@@ -559,11 +559,10 @@ private void initialize() {
 		};
 		
 		DefaultScrollTableCellRenderer rulesTableCellRenderer = new DefaultScrollTableCellRenderer() {
+			final Color lightBlueBackground = new Color(214, 234, 248);
 			
-			int a = 0;
 			@Override
-			public Component getTableCellRendererComponent(JTable table,
-					Object value, boolean isSelected, boolean hasFocus,
+			public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus,
 					int row, int column) {
 				super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
 				
@@ -574,6 +573,9 @@ private void initialize() {
 						selectedObject = tableModel.getValueAt(row);
 					}
 					if (selectedObject != null) {
+						if(isSelected) {
+							setBackground(lightBlueBackground);
+						}
 						if(selectedObject instanceof SpeciesContextSpec) {
 							SpeciesContextSpec scs = (SpeciesContextSpec)selectedObject;
 							SpeciesContext sc = scs.getSpeciesContext();
