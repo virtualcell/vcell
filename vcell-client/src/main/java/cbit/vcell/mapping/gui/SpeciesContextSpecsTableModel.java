@@ -23,6 +23,7 @@ import org.vcell.util.gui.ScrollTable;
 import cbit.gui.ScopedExpression;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.desktop.biomodel.VCellSortTableModel;
+import cbit.vcell.mapping.AssignmentRule;
 import cbit.vcell.mapping.GeometryContext;
 import cbit.vcell.mapping.ReactionContext;
 import cbit.vcell.mapping.SimulationContext;
@@ -34,6 +35,7 @@ import cbit.vcell.model.Structure;
 import cbit.vcell.parser.AutoCompleteSymbolFilter;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.parser.SymbolTableEntry;
 /**
  * Insert the type's description here.
  * Creation date: (2/23/01 10:52:36 PM)
@@ -312,6 +314,10 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 	if (evt.getSource() instanceof SpeciesContext && evt.getPropertyName().equals("name")) {
 		fireTableRowsUpdated(0,getRowCount()-1);
 	}
+	if(evt.getSource() == getSimulationContext() && evt.getPropertyName().equals(SimulationContext.PROPERTY_NAME_ASSIGNMENTRULES_VAR)) {
+		AssignmentRule ar = (AssignmentRule)evt.getNewValue();
+		onAssignmentRuleVariableChanged(ar);
+	}
 	if (evt.getSource() instanceof SpeciesContextSpec) {
 		fireTableRowsUpdated(0,getRowCount()-1);
 	}
@@ -321,6 +327,22 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 	if (evt.getSource() instanceof GeometryContext) {
 		refreshColumns();
 		fireTableStructureChanged();
+	}
+}
+
+private void onAssignmentRuleVariableChanged(AssignmentRule ar) {
+	if(ar != null && ar.getSimulationContext() == fieldSimulationContext && ar.getAssignmentRuleVar() != null) {
+		SymbolTableEntry ste = ar.getAssignmentRuleVar();
+		if(ste instanceof SpeciesContext) {
+			SpeciesContext sc = (SpeciesContext)ste;
+			SpeciesContextSpec[] scss = fieldSimulationContext.getReactionContext().getSpeciesContextSpecs();
+			for(SpeciesContextSpec scs : scss) {
+				if(scs.getSpeciesContext() != null && scs.getSpeciesContext() == sc) {
+					scs.setConstant(true);
+					break;		// can't find more than one
+				}
+			}
+		}
 	}
 }
 

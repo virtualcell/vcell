@@ -138,6 +138,7 @@ public class SimulationContext implements SimulationOwner, Versionable, Matchabl
 	// for rate rule
 	public static final String PROPERTY_NAME_RATERULES = "raterules";
 	public static final String PROPERTY_NAME_ASSIGNMENTRULES = "assignmentrules";
+	public static final String PROPERTY_NAME_ASSIGNMENTRULES_VAR = "assignmentrulesVar";
 	
 	public class SimulationContextNameScope extends BioNameScope {
 		private transient NameScope nameScopes[] = null;
@@ -3084,7 +3085,10 @@ public AssignmentRule getAssignmentRule(SymbolTableEntry assignmentRuleVar) {
 	}
 	return null;
 }
-
+public void setAssignmentRuleVariable(AssignmentRule assignmentRule) {
+	firePropertyChange(PROPERTY_NAME_ASSIGNMENTRULES_VAR, null, assignmentRule);
+}
+// --------------------------------------------------------------------------------
 public NetworkConstraints getNetworkConstraints() {
 	if(networkConstraints == null) {
 		networkConstraints = new NetworkConstraints();		// we make the default

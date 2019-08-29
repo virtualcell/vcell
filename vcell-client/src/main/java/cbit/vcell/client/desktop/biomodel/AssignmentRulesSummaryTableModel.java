@@ -174,6 +174,9 @@ public class AssignmentRulesSummaryTableModel extends BioModelEditorApplicationR
 					String var = (String)value;
 					SymbolTableEntry ste = simulationContext.getModel().getEntry(var);
 					assignmentRule.setAssignmentRuleVar(ste);
+					if(simulationContext != null && ste != null) {	// broadcast the change
+						simulationContext.setAssignmentRuleVariable(assignmentRule);
+					}
 					break;
 				case COLUMN_ASSIGNMENTRULE_EXPR:
 					Expression exp = new Expression((String)value);
