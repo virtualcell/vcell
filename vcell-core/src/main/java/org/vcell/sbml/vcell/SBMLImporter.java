@@ -2863,8 +2863,33 @@ public class SBMLImporter {
 		if (bSpatial) {
 			addGeometry();
 		}
+		
+		// post processing
+		postProcessing();
 	}
-
+	
+	private void postProcessing() {
+		
+		// clamp all AssignmentRule species
+		SimulationContext simContext = vcBioModel.getSimulationContext(0);	// the one and only
+		cbit.vcell.mapping.AssignmentRule[] ars = simContext.getAssignmentRules();
+		if(ars != null && ars.length > 0) {
+			for(cbit.vcell.mapping.AssignmentRule ar : ars) {
+				SymbolTableEntry ste = ar.getAssignmentRuleVar();
+				if(ste instanceof SpeciesContext) {
+					SpeciesContext sc = (SpeciesContext)ste;
+					SpeciesContextSpec[] scss = simContext.getReactionContext().getSpeciesContextSpecs();
+					for(SpeciesContextSpec scs : scss) {
+						if(scs.getSpeciesContext() != null && scs.getSpeciesContext() == sc) {
+							scs.setConstant(true);
+							break;
+						}
+					}
+				}
+			}
+		}
+	}
+	
 	private void checkIdentifiersNameLength() throws Exception {
 		// Check compartment name lengths
 		ListOf listofIds = sbmlModel.getListOfCompartments();
