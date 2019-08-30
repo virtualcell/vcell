@@ -10,11 +10,20 @@
 
 package cbit.vcell.client.desktop.biomodel;
 
+import java.awt.Component;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
+import javax.swing.DefaultCellEditor;
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.DefaultListCellRenderer;
+import javax.swing.JComboBox;
+import javax.swing.JList;
+import javax.swing.SwingConstants;
 
 import org.vcell.util.Displayable;
 import org.vcell.util.gui.DialogUtils;
@@ -23,6 +32,7 @@ import org.vcell.util.gui.ScrollTable;
 import cbit.gui.ScopedExpression;
 import cbit.vcell.mapping.AssignmentRule;
 import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.parser.AutoCompleteSymbolFilter;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.SymbolTable;
@@ -30,6 +40,8 @@ import cbit.vcell.parser.SymbolTableEntry;
 
 @SuppressWarnings("serial")
 public class AssignmentRulesSummaryTableModel extends BioModelEditorApplicationRightSideTableModel<AssignmentRule> implements PropertyChangeListener{
+
+	JComboBox<String> steComboBox = null;
 
 	public final static int COLUMN_ASSIGNMENTRULE_NAME = 0;
 	public final static int COLUMN_ASSIGNMENTRULE_VAR = 1;
@@ -81,6 +93,67 @@ public class AssignmentRulesSummaryTableModel extends BioModelEditorApplicationR
 		return assignmentRulesList;
 	}
 
+	private void updateSubdomainComboBox() {
+		if(steComboBox == null) {
+			steComboBox = new JComboBox<> ();
+		}
+		if(simulationContext == null) {
+			return;
+		}
+		
+		SpeciesContext[] scs = simulationContext.getModel().getSpeciesContexts();
+		DefaultComboBoxModel<String> aModel = new DefaultComboBoxModel<> ();
+		for (SpeciesContext sc : scs) {
+			aModel.addElement(sc.getName());
+		}
+		
+		steComboBox.addFocusListener(new java.awt.event.FocusAdapter() {
+			@Override
+			public void focusGained(java.awt.event.FocusEvent evt) {
+				DefaultComboBoxModel<String> aModel = (DefaultComboBoxModel<String>) steComboBox.getModel();
+				SpeciesContext[] scs = simulationContext.getModel().getSpeciesContexts();
+				for (SpeciesContext sc : scs) {
+					int position = aModel.getIndexOf(sc.getName());
+					if(position == -1) {	// element is missing, add it
+						aModel.addElement(sc.getName());
+					}
+				}
+				Set<String> elementsToRemove = new HashSet<> ();
+				for(int i=0; i<aModel.getSize(); i++) {
+					String candidate = aModel.getElementAt(i);
+					SpeciesContext sc = simulationContext.getModel().getSpeciesContext(candidate);
+					if(sc == null) {
+						elementsToRemove.add(candidate);
+					}
+				}
+				for(String candidate : elementsToRemove) {
+					aModel.removeElement(candidate);
+				}
+			}
+		});
+		
+		steComboBox.setRenderer(new DefaultListCellRenderer() {
+			@Override
+			public Component getListCellRendererComponent(JList<?> list, Object value,
+					int index, boolean isSelected, boolean cellHasFocus) {
+				super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+				setHorizontalTextPosition(SwingConstants.LEFT);
+				if(value == null) {
+					setText("");
+				} else if (value instanceof String) {
+					setText((String)value);
+				} else {
+					setText(value.toString());
+					System.out.println("not String");
+				}
+				return this;
+			}
+		});
+		
+		steComboBox.setModel(aModel);
+		ownerTable.getColumnModel().getColumn(COLUMN_ASSIGNMENTRULE_VAR).setCellEditor(new DefaultCellEditor(steComboBox));
+	}
+
 	public Object getValueAt(int row, int column) {
 		try{
 			AssignmentRule assignmentRule = getValueAt(row);
@@ -90,10 +163,11 @@ public class AssignmentRulesSummaryTableModel extends BioModelEditorApplicationR
 						return assignmentRule.getName();
 					} 
 					case COLUMN_ASSIGNMENTRULE_VAR: {
-						if(assignmentRule.getAssignmentRuleVar() == null){
-							return null;
+						SymbolTableEntry ste = assignmentRule.getAssignmentRuleVar();
+						if(ste != null) {
+							return ste.getName();
 						} else {
-							return assignmentRule.getAssignmentRuleVar().getName();
+							return "";
 						}
 					}	
 					case COLUMN_ASSIGNMENTRULE_EXPR: {
@@ -155,10 +229,7 @@ public class AssignmentRulesSummaryTableModel extends BioModelEditorApplicationR
 	}
 	
 	public void setValueAt(Object value, int row, int column) {
-		try{
-//			if (value == null || value.toString().length() == 0 || BioModelEditorRightSideTableModel.ADD_NEW_HERE_TEXT.equals(value)) {
-//				return;
-//			}
+		try {
 			AssignmentRule assignmentRule = getValueAt(row);
 			if (assignmentRule == null) {
 				assignmentRule = simulationContext.createAssignmentRule(null);
@@ -171,11 +242,14 @@ public class AssignmentRulesSummaryTableModel extends BioModelEditorApplicationR
 					assignmentRule.setName((String)value);
 					break;
 				case COLUMN_ASSIGNMENTRULE_VAR:
-					String var = (String)value;
-					SymbolTableEntry ste = simulationContext.getModel().getEntry(var);
-					assignmentRule.setAssignmentRuleVar(ste);
-					if(simulationContext != null && ste != null) {	// broadcast the change
-						simulationContext.setAssignmentRuleVariable(assignmentRule);
+					if(value instanceof String) {
+						String var = (String)value;
+						SymbolTableEntry ste = simulationContext.getModel().getEntry(var);
+						assignmentRule.setAssignmentRuleVar(ste);
+						if(simulationContext != null && ste != null) {	// broadcast the change
+							// the event generated by the simContext used to clamp the SpeciesContextSpec
+							simulationContext.setAssignmentRuleVariable(assignmentRule);
+						}
 					}
 					break;
 				case COLUMN_ASSIGNMENTRULE_EXPR:
@@ -186,7 +260,7 @@ public class AssignmentRulesSummaryTableModel extends BioModelEditorApplicationR
 				case COLUMN_ASSIGNMENTRULE_TYPE:
 					return;
 			}
-		} catch(Exception e){
+		} catch(Exception e) {
 			e.printStackTrace(System.out);
 			DialogUtils.showErrorDialog(ownerTable, e.getMessage());
 		}
@@ -216,6 +290,12 @@ public class AssignmentRulesSummaryTableModel extends BioModelEditorApplicationR
 		}
 		}
 		return null;
+	}
+
+	@Override
+	public void setSimulationContext(SimulationContext newValue) {
+		super.setSimulationContext(newValue);
+		updateSubdomainComboBox();
 	}
 
 	public SymbolTable getSymbolTable(int row, int column) {

@@ -10,25 +10,47 @@
 
 package cbit.vcell.client.desktop.biomodel;
 
+import java.awt.Color;
+import java.awt.Component;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import javax.swing.ComboBoxModel;
+import javax.swing.DefaultCellEditor;
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.DefaultListCellRenderer;
+import javax.swing.Icon;
+import javax.swing.JComboBox;
+import javax.swing.JList;
+import javax.swing.SwingConstants;
+
 import org.vcell.util.Displayable;
+import org.vcell.util.gui.ColorIcon;
+import org.vcell.util.gui.ColorIconEx;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.ScrollTable;
 
 import cbit.gui.ScopedExpression;
+import cbit.vcell.geometry.GeometryClass;
+import cbit.vcell.geometry.SubVolume;
+import cbit.vcell.geometry.SurfaceClass;
 import cbit.vcell.mapping.RateRule;
+import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.parser.AutoCompleteSymbolFilter;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.SymbolTable;
 import cbit.vcell.parser.SymbolTableEntry;
 
 @SuppressWarnings("serial")
-public class RateRulesSummaryTableModel extends BioModelEditorApplicationRightSideTableModel<RateRule> implements PropertyChangeListener{
+public class RateRulesSummaryTableModel extends BioModelEditorApplicationRightSideTableModel<RateRule> implements PropertyChangeListener {
+	
+	JComboBox<String> steComboBox = null;
 
 	public final static int COLUMN_RATERULE_NAME = 0;
 	public final static int COLUMN_RATERULE_VAR = 1;
@@ -65,6 +87,7 @@ public class RateRulesSummaryTableModel extends BioModelEditorApplicationRightSi
 		if (simulationContext == null || simulationContext.getRateRules() == null){
 			return null;
 		}
+		
 		List<RateRule> rateRulesList = new ArrayList<RateRule>();
 		for (RateRule rateRule : simulationContext.getRateRules()) {
 			if (searchText == null || searchText.length() == 0) {
@@ -80,6 +103,75 @@ public class RateRulesSummaryTableModel extends BioModelEditorApplicationRightSi
 		return rateRulesList;
 	}
 
+	private void updateSubdomainComboBox() {
+		if(steComboBox == null) {
+			steComboBox = new JComboBox<> ();
+		}
+		if(simulationContext == null) {
+			return;
+		}
+		
+		SpeciesContext[] scs = simulationContext.getModel().getSpeciesContexts();
+		DefaultComboBoxModel<String> aModel = new DefaultComboBoxModel<> ();
+		for (SpeciesContext sc : scs) {
+			aModel.addElement(sc.getName());
+		}
+		steComboBox.addMouseListener(new java.awt.event.MouseAdapter() {
+			@Override
+			public void mouseClicked(java.awt.event.MouseEvent evt) {
+			}
+			@Override
+			public void mouseEntered(java.awt.event.MouseEvent evt) {
+			}
+		});
+		
+		steComboBox.addFocusListener(new java.awt.event.FocusAdapter() {
+			@Override
+			public void focusGained(java.awt.event.FocusEvent evt) {
+				DefaultComboBoxModel<String> aModel = (DefaultComboBoxModel<String>) steComboBox.getModel();
+				SpeciesContext[] scs = simulationContext.getModel().getSpeciesContexts();
+				for (SpeciesContext sc : scs) {
+					int position = aModel.getIndexOf(sc.getName());
+					if(position == -1) {	// element is missing, add it
+						aModel.addElement(sc.getName());
+					}
+				}
+				Set<String> elementsToRemove = new HashSet<> ();
+				for(int i=0; i<aModel.getSize(); i++) {
+					String candidate = aModel.getElementAt(i);
+					SpeciesContext sc = simulationContext.getModel().getSpeciesContext(candidate);
+					if(sc == null) {
+						elementsToRemove.add(candidate);
+					}
+				}
+				for(String candidate : elementsToRemove) {
+					aModel.removeElement(candidate);
+				}
+			}
+		});
+		
+		steComboBox.setRenderer(new DefaultListCellRenderer() {
+			@Override
+			public Component getListCellRendererComponent(JList<?> list, Object value,
+					int index, boolean isSelected, boolean cellHasFocus) {
+				super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+				setHorizontalTextPosition(SwingConstants.LEFT);
+				if(value == null) {
+					setText("");
+				} else if (value instanceof String) {
+					setText((String)value);
+				} else {
+					setText(value.toString());
+					System.out.println("not String");
+				}
+				return this;
+			}
+		});
+		
+		steComboBox.setModel(aModel);
+		ownerTable.getColumnModel().getColumn(COLUMN_RATERULE_VAR).setCellEditor(new DefaultCellEditor(steComboBox));
+	}
+
 	public Object getValueAt(int row, int column) {
 		try{
 			RateRule rateRule = getValueAt(row);
@@ -89,10 +181,11 @@ public class RateRulesSummaryTableModel extends BioModelEditorApplicationRightSi
 						return rateRule.getName();
 					} 
 					case COLUMN_RATERULE_VAR: {
-						if (rateRule.getRateRuleVar() == null){
-							return null;
+						SymbolTableEntry ste = rateRule.getRateRuleVar();
+						if(ste != null) {
+							return ste.getName();
 						} else {
-							return rateRule.getRateRuleVar().getName();
+							return "";
 						}
 					}	
 					case COLUMN_RATERULE_EXPR: {
@@ -103,17 +196,13 @@ public class RateRulesSummaryTableModel extends BioModelEditorApplicationRightSi
 						}
 					}
 					case COLUMN_RATERULE_TYPE: {
-						SymbolTableEntry sto = rateRule.getRateRuleVar();
-						if(sto instanceof Displayable) {
-							return ((Displayable)sto).getDisplayType();
+						SymbolTableEntry ste = rateRule.getRateRuleVar();
+						if(ste instanceof Displayable) {
+							return ((Displayable)ste).getDisplayType();
 						} else {
 							return "Unknown";
 						}
 					}
-				}
-			} else {
-				if (column == COLUMN_RATERULE_NAME) {
-					return BioModelEditorRightSideTableModel.ADD_NEW_HERE_TEXT;
 				}
 			}
 		} catch(Exception e){
@@ -157,10 +246,7 @@ public class RateRulesSummaryTableModel extends BioModelEditorApplicationRightSi
 	}
 	
 	public void setValueAt(Object value, int row, int column) {
-		try{
-//			if (value == null || value.toString().length() == 0 || BioModelEditorRightSideTableModel.ADD_NEW_HERE_TEXT.equals(value)) {
-//				return;
-//			}
+		try {
 			RateRule rateRule = getValueAt(row);
 			if (rateRule == null) {
 				rateRule = simulationContext.createRateRule(null);
@@ -169,13 +255,17 @@ public class RateRulesSummaryTableModel extends BioModelEditorApplicationRightSi
 			}
 			switch (column) {
 				case COLUMN_RATERULE_NAME:
-					/** @author anu : TODO : RATE RULES */
 					rateRule.setName((String)value);
 					break;
 				case COLUMN_RATERULE_VAR:
-					String var = (String)value;
-					SymbolTableEntry ste = simulationContext.getModel().getEntry(var);
-					rateRule.setRateRuleVar(ste);
+					if(value instanceof String) {
+						String var = (String)value;
+						SymbolTableEntry ste = simulationContext.getModel().getEntry(var);
+						rateRule.setRateRuleVar(ste);
+//					} else if(value instanceof SymbolTableEntry) {
+//						SymbolTableEntry ste = (SymbolTableEntry)value;
+//						rateRule.setRateRuleVar(ste);
+					}
 					break;
 				case COLUMN_RATERULE_EXPR:
 					Expression exp = new Expression((String)value);
@@ -185,7 +275,7 @@ public class RateRulesSummaryTableModel extends BioModelEditorApplicationRightSi
 				case COLUMN_RATERULE_TYPE:
 					return;
 			}
-		} catch(Exception e){
+		} catch(Exception e) {
 			e.printStackTrace(System.out);
 			DialogUtils.showErrorDialog(ownerTable, e.getMessage());
 		}
@@ -215,6 +305,12 @@ public class RateRulesSummaryTableModel extends BioModelEditorApplicationRightSi
 		}
 		}
 		return null;
+	}
+
+	@Override
+	public void setSimulationContext(SimulationContext newValue) {
+		super.setSimulationContext(newValue);
+		updateSubdomainComboBox();
 	}
 
 	public SymbolTable getSymbolTable(int row, int column) {
