@@ -26,8 +26,8 @@
 			Different molecules comprising a species appear as differently colored shapes, connect by bonds.  
 			Sites that have states are marked with a yellow dot. 
 			The states of sites are omitted for clarity.</item>
-		<item><bold>Links</bold> show links to pathway items (see <link target="PathwayOverview">Biology Pathways</link>); double click on that link to navigate to the Pathway Diagram. 
-		A text bubble icon indicates the presence of annotations for the current selection in the <link target ="PP_Annotations">Annotations Properties Pane</link>.</item>
+		<item><bold>Notes</bold> show a link icon if there are annotated links to database entries or a text bubble if there are text annotations for the species.  Double click in the Notes column to show the <link target ="PP_Annotations">Annotations Properties</link> Pane for a species.</item>	
+		<item><bold>Links</bold> show links to pathway items (see <link target="PathwayOverview">Biology Pathways</link>); double click on that link to navigate to the Pathway Diagram.</item>
 		<item><bold>BioNetGen Definition</bold> provides a BNGL string for species with molecular detail. The two ends of the same bond will have the same color font. This field is cannot be edited but is searchable.</item></list> 
 	</appearance>
 	

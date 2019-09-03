@@ -16,17 +16,17 @@
 	<item>An observable may identify sites with a defined binding state - i.e. the function can explicitly identify a site bound to another site, a site unbound, or a site bound to an unspecified (i.e. any other) site; in this case the site is colored green with a bond drawn as a colored line if one exists.</item>
 	<item> A site that has a defined state is always shown in green.</item>
 	</list>
-		<imgReference target = "observables.PNG"/>
 	</introduction>
 	
 	<appearance>
-
-		The Observables Table displays 
+		<imgReference target = "observables.PNG"/>
+		<para></para>The Observables Table displays 
 		<list>
 			<item>The <bold>Name</bold> of Observable (can be edited).</item>
 			<item>The <bold>Structure</bold> indicates where the species selected by an Observable are located .</item>
 			<item>The <bold>Depiction</bold> of each Observable. Green circles within each molecular shape denote 
 			molecular sites, small yellow circles denote that this site has possible states. </item> 
+			<item><bold>Notes</bold> show a link icon if there are annotated links to database entries or a text bubble if there are text annotations for the reaction.  Double click in the Notes column to show the <link target ="PP_Annotations">Annotations Properties</link> Pane for a reaction.</item>
 			<item>A <def target = "def_BioNetGen">BioNetGen</def> definition.  The definition cannot be edited but can be searched.</item>
 			<item> The <bold>Count</bold> of either <bold>Molecules</bold> or <bold>Species</bold>. The count of molecules is a <bold>weighted</bold> sum of the population levels of all the species that match the pattern(s) defined in the observable. Each amount is multiplied by the number of times that the species is matched by the pattern(s). For example, a species that consists of two instances of a receptor (i.e. a dimer) is counted twice.
 			The count of species is an <bold>unweighted</bold> sum of
@@ -36,12 +36,11 @@
 	</appearance>
 	
 	<operations>
-	<para><bold>Edit</bold> an Observable name within the table.  Note that the function defined by the observable and its properties must be specified in the <link target = "PP_Observables">Observables Properties Pane</link>. 
+	<para><bold>Edit</bold> an Observable name within the table.  Note that the function defined by the observable and its properties must be specified in the <link target = "PP_Observables">Observables Properties</link> Pane. 
     </para>
 	<para> <bold>Filter</bold> the list of observables using the Search Box to enter a name or any part of the observable composition.</para>
 	<para><bold>Delete</bold> an observable by selecting and using the "Delete" button below the table.</para>
-	<para><bold>Add annotation </bold> about the observable within the <link target = "PP_Observables"> 
-	Observable Properties Pane</link>.</para>
+	<para><bold>Add or Edit Annotations</bold> using the <link target= "PP_Annotations">Annotations</link> tab in the Properties Pane.</para>
 	</operations>
 	
 	<properties>
