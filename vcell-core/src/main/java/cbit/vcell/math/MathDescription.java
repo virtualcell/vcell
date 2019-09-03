@@ -3377,7 +3377,7 @@ void substituteInPlace(MathSymbolTableFactory mathSymbolTableFactory, Function f
  * @param databaseMathDescription cbit.vcell.math.MathDescription
  */
 public static MathCompareResults testEquivalency(MathSymbolTableFactory mathSymbolTableFactory, MathDescription mathDescription1, MathDescription mathDescription2) {
-
+// test commit
 	try {
 		MathCompareResults invariantResults = mathDescription2.compareInvariantAttributes(mathDescription1,false);
 		if (!invariantResults.isEquivalent()){
