@@ -8,6 +8,7 @@
 	</introduction>
 	
 	<appearance>
+		<imgReference target = "Mix_Rules.PNG"/>
 
 	The Reactions table has several columns:
 	<list> 
@@ -22,12 +23,11 @@
 		<item><bold>Kinetics</bold> list the kinetic type for the reaction; select the reaction and edit in the properties pane below. For reaction rules, only Mass Action kinetics are allowed. </item>
 		<item><bold>BioNetGen Definition</bold> provides the BioNetGen Language (BNGL) string that encodes the rule. It
 			cannot be edited but can be searched.</item>
-		<item><bold>Links</bold> show links to pathway items (see <link target="PathwayOverview">Biology Pathways</link>); double click on that link to navigate to the Pathway Diagram. 
-		A text bubble icon indicates the presence of annotations for the current selection in the <link target ="PP_Annotations">Annotations</link> Properties Panel.</item>
+		<item><bold>Notes</bold> show a link icon if there are annotated links to database entries or a text bubble if there are text annotations for the reaction.  Double click in the Notes column to show the <link target ="PP_Annotations">Annotations Properties</link> Pane for a reaction.  </item>	
+		<item><bold>Links</bold> show links to pathway items (see <link target="PathwayOverview">Biology Pathways</link>); double click on that link to navigate to the Pathway Diagram.</item>
 	</list> 
 	Below the table are buttons to create or delete reactions or rules, to duplicate reaction rules, define Pathway Links and to search the reaction table.  
 	Note that buttons related to Reaction Rules only appear if <def target="def_molecules">Molecules</def> have been created in the model.
-		<imgReference target = "Mix_Rules.PNG"/>
 		 
 	 <para>The bottom pane of the window displays a <link target = "PP_Reactions">Reaction Properties pane</link>,
 	<link target = "PP_MemFlux"> Membrane Flux Properties pane</link>, 

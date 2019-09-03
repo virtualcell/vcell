@@ -18,12 +18,13 @@
 	<operations>
 	<para>
 	<bold>Protocols</bold> can be accessed by clicking the <bold>Protocols</bold> item under any <bold>Application</bold> in the 'Navigation' panel tree structure. 
-	This selects the <bold>Protocols</bold> tab for the application in the 'View' panel on the right. The 'Protocols' tab has the following 2 sub-tabs.
+	This selects the <bold>Protocols</bold> tab for the application in the 'View' panel on the right. The 'Protocols' tab has different sub-tabs depending on the type of application.
 	</para>  
 	<list>
-		<item> <link target="Events">Events</link> </item>
-		<item> <link target="Electrical">Electrical Mapping</link> </item>
-		<item> <link target="MicroscopeMeasurement">Microscope Measurements</link> </item>
+		<item> <link target="Electrical">Electrical</link> mapping protocols are available for all Application types.</item>
+		<item> <link target="Events">Events</link> are available for Non-spatial Deterministic (ODE) Applications.</item>
+		<item> <link target ="RateRules">Rate Rules</link> are available for Non-spatial Determininistic (ODE) Applications.</item>
+		<item> <link target="MicroscopeMeasurement">Microscope Measurements</link> are available for Spatial Deterministic (PDE) Applications.</item>
 	</list>
 	</operations>
 	

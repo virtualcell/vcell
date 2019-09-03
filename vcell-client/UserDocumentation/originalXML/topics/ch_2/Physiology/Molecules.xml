@@ -12,18 +12,18 @@
 	</introduction>
 	
 	<appearance>
-	The Molecules Table displays several columns:
+	<imgReference target = "BNG_MoleculesTable.png"/>
+	<para></para>The Molecules Table displays several columns:
 	<list>
 	<item>Molecule <bold>name</bold></item>
 	<item>Molecular <bold>Depiction</bold> of each molecule. Green circles denote molecular Sites, and an associated small yellow circle denotes a Site that has possible states.</item>
-	<item><bold>Links</bold> show links to pathway items (see <link target="PathwayOverview">Biology Pathways</link>). Double click on that link to navigate to the Pathway Diagram. 
-	A text bubble icon indicates the presence of annotations for the current selection in the <link target ="PP_Annotations">Annotations</link> Properties Panel.</item>
+	<item><bold>Notes</bold> show a link icon if there are annotated links to database entries or a text bubble if there are text annotations for the reaction.  Double click in the Notes column to show the <link target ="PP_Annotations">Annotations Properties</link> Pane for a reaction.</item>
+	<item><bold>Links</bold> show links to pathway items (see <link target="PathwayOverview">Biology Pathways</link>). Double click on that link to navigate to the Pathway Diagram.</item> 
 	<item><def target = "def_BioNetGen">BioNetGen</def> definition of the molecule. 
 	Selecting a molecule brings the <link target = "PP_Molecules">Molecule Properties Pane</link> 
 	 to the bottom right of the workspace, where a user can specify and edit a selected <bold>Molecule</bold>.
 	</item>
 	</list>
-	<imgReference target = "BNG_MoleculesTable.png"/>
 	</appearance>
 	
 	<operations>

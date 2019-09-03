@@ -84,7 +84,8 @@
     	   		<tocitem target="Events" text="Events"/>
    	 	  		<tocitem target="Electrical" text="Electrical Mapping"/>
    	 	  		<tocitem target="MicroscopeMeasurement" text="Microscope Measurements"/>
-    		</tocitem>
+   	 	  		<tocitem target= "RateRules" text ="Rate Rules"/>
+   	 	  	</tocitem>
     		<tocitem target="simulations_overview" text="Simulations">
     	   		<tocitem target="simulations" text="Simulations"/>
     	   		<tocitem target="simulationEditor" text="Simulation Editor"/>
