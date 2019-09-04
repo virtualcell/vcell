@@ -4,9 +4,10 @@
 <page title="Rate Rules">
 
 	
-	<introduction><bold>Rate Rules</bold> allow a user to specify rate of change of a variable (species) using a specified function, rather than describing a kinetic law in the reaction editor.  This is convenient for many ODE applications, and is also used in many SBML models that are imported into VCell.  
+	<introduction><bold>Rate Rules</bold> allow a user to specify rate of change of a variable (species) using a specified function, rather than describing a kinetic law in the reaction editor.  This is convenient for many ODE applications, and is also used in many SBML models that are imported into VCell. 
+	<para>The functional form of a Rate Rule is <bold>dx/dt = f(W)</bold> (left hand side is a rate of change) where x is the variable, f is an arbitrary function returning a numerical result and W is a vector of symbols that may include x. </para>
 	The variable cannot be a reactant or product species already defined in the reaction network, where the math will be defined by the kinetic rate law as part of the reaction diagram. 
-	Rather, a rate rule expression defines the rate of change of a variable that can act to catalyze a reaction.  VCell implements Rate Rules at the Application level by creating a "dummy" species in the math whose value depends on expression value divided by time.
+	Rather, a rate rule expression defines the rate of change of a variable that can act to catalyze a reaction.
  	</introduction>
 	
 	<appearance>
@@ -16,7 +17,7 @@
 	<list>
   	<item><bold>Name</bold> is a user defined name for the rule.</item>
 	<item>The <bold>Variable</bold> is the user defined species variable whose rate of change (dx/dt) will be determined by the rate rule expression.  In general the variable should not be a species already described in the reaction network or a predefined variable or constant in VCell. </item>
-  	<item><bold>Type</bold> defines the variable Type and cannot be edited.  In VCell, a new "species" is created in the math description for the variable, and the value of the valuable will be reported in the results as a species concentration.</item>
+  	<item><bold>Type</bold> defines the variable Type and cannot be edited.  In VCell, a new "species" is created in the math description for the variable, and the value of the variable will be reported in the results as a species concentration.</item>
 	<item><bold>Expression</bold> is the expression that will be evaluated for define the value of the variable (species).</item>	
 	</list>
 	</appearance>
@@ -25,7 +26,7 @@
 	<bold>Create a new</bold> Rate Rule using the New button at the top of the Rate Rules window.
 	<para>
 	<bold>Edit</bold> the Rate Rule by double clicking within the appropriate column.  
-	The user must enter a variable name for the <bold>Variable</bold> and enter an appropriate <bold>Expression</bold> for the rate of change.
+	The user must choose (select from a list) a species for the <bold>Variable</bold> and enter an appropriate <bold>Expression</bold> for the rate of change.
 	</para>
 	<para>
     The <bold>Name</bold> of the Rate Rule can also be edited.
