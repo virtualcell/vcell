@@ -614,17 +614,20 @@ private void initialize() {
 
 		getScrollPaneTable().setDefaultRenderer(SpeciesContext.class, renderer);
 		getScrollPaneTable().setDefaultRenderer(Structure.class, renderer);
-		getScrollPaneTable().setDefaultRenderer(SpeciesPattern.class, rbmSpeciesShapeDepictionCellRenderer);
-
+		getScrollPaneTable().setDefaultRenderer(SpeciesPattern.class, rbmSpeciesShapeDepictionCellRenderer);	// depiction icons
 		getScrollPaneTable().setDefaultRenderer(Species.class, renderer);
 		getScrollPaneTable().setDefaultRenderer(ScopedExpression.class, renderer);
 		getScrollPaneTable().setDefaultRenderer(Boolean.class, new ScrollTableBooleanCellRenderer());
+		getScrollPaneTable().setDefaultRenderer(SpeciesContextSpecsTableModel.RulesProvenance.class, rulesTableCellRenderer);	// rules icons
 		
-		getScrollPaneTable().setDefaultRenderer(SpeciesContextSpecsTableModel.RulesProvenance.class, rulesTableCellRenderer);
-		
+		// TODO: find out why the code below is not working properly
 //		int ordinal = SpeciesContextSpecsTableModel.ColumnType.COLUMN_RULES.ordinal();
 //		getScrollPaneTable().getColumnModel().getColumn(ordinal).setCellRenderer(rulesTableCellRenderer);
-
+		
+//		final int rulesWidth = 50;		// fixed max size, there's no point to enlarge some columns
+//		int index = SpeciesContextSpecsTableModel.ColumnType.COLUMN_RULES.ordinal();
+//		getScrollPaneTable().getColumnModel().getColumn(index).setPreferredWidth(rulesWidth);
+//		getScrollPaneTable().getColumnModel().getColumn(index).setMaxWidth(rulesWidth);
 		
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
