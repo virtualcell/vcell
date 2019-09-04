@@ -31,6 +31,13 @@
 	<para>
     The <bold>Name</bold> of the Rate Rule can also be edited.
 	</para>
+	
+	<para></para>
+	The Specifications / Species panel has an extra "Rules" column for non-spatial deterministic applications, where we indicate if a species is being used as a rule variable.
+	<imgReference target= "SpeciesSpecifications_nonspatial_det.png"/>
+	<para>
+	In the example above, species <bold>'e'</bold> is marked with the rate rule icon.
+	</para>
 	</operations>
 	
 </page>
