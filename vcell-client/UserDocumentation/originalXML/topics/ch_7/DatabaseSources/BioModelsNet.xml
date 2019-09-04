@@ -10,6 +10,9 @@
 	
 	<appearance>
 		<imgReference target = "BiomodelsNetDB.png"/>  
+	<para>
+	The models that are incompatible with the Virtual Cell are marked with an exclamation icon. The most likely reasons are inconsistent unit systems and non-integer stoichiometry.
+	</para>
 	</appearance>
 	
 	<operations>
