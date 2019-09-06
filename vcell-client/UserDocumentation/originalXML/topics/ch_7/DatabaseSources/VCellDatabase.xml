@@ -4,10 +4,8 @@
 
 	
 	<introduction>
-	<para>
 	The Virtual Cell Database repository stores all the models created using the Virtual Cell software.  
 	The current user has access to the models created by him/her, models that are shared with the current user by other VCell users and those that are public. 
-	</para>
 	</introduction>
 	
 	<appearance>
@@ -19,21 +17,25 @@
 	The Virtual Cell Database can be accessed from 'Database' panel on the lower left corner of any VCell document window. The first tab in this panel is the <bold>VCell Database</bold> tab.
 	Choosing this tab displays another set of 3 tabs - <bold>BioModels</bold>, <bold>MathModels</bold>, and <bold>Geometry</bold> that display the accessible models of that document type.
 	</para>
-		<para>
-	The <bold>VCell DB</bold> tab has a <bold>Search</bold> section that allows the user to search for models by name (and annotations).  Under <bold>Advanced</bold> searches can also include date modified and 
-	models that contain 1 or more species names.
-	The models are listed in a tree structure as 'folders'. A "key" icon by the folder indicates that the models is shared with other users.  a "globe" icon indicates a model that has been made public.  The number of models stored in the database under each 'folder' is displayed in parenthesis.
-	The possible folders that are listed include:
+	<para></para>
+	The <bold>VCell DB</bold> tab has a <bold>Search</bold> section that allows the user to search for models by name (and annotations).  Under <bold>Advanced</bold> searches can
+	 also include date modified and models that contain 1 or more species names.
+	<imgReference target = "VCDatabaseSearch.png"/>
+	<para>The models are listed in a tree structure as 'folders'. A "key" icon by the folder indicates that the models is shared with other users.  a "globe" icon indicates a model that has been made public.  The number of models stored in the database under each 'folder' is displayed in parenthesis.
 	</para>
+	The possible folders that are listed include:
 	<list>
-		<item> <bold>My BioModels</bold> - where the current user's models are listed with user name in parenthesis.  The "lock" icon indicates these models are private to the user unless otherwise indicated.</item>
-		<item> <bold>Shared With Me</bold> - where models shared by other users with current user are grouped by user name and listed as model name.</item>
+		<item> <bold>My BioModels</bold> - where the current user's models are listed with user name in parenthesis.  The "lock" icon indicates these models are private to the user unless otherwise indicated.
+				The example below shows a private model, one that was shared with another user and one that was marked as public.<imgReference target = "VCDatabaseMyModels.png"/><para></para></item>
+		<item> <bold>Shared With Me</bold> - where models shared by other users with current user are grouped by user name and listed as model name.
+				<imgReference target = "VCDatabaseShared.png"/><para></para></item>
 		<item> <bold>Tutorials</bold> - list models that are designed to demonstrate specific components of VCell, such as FRAP (for spatial simulations), or Multiple Applications of a BioModel (MultiApp). These models can be used as starting models for modelers seeking to model similar problems.</item>
 		<item> <bold>Public BioModels</bold> - list all VCell models available to the general public.</item>
 	</list>
 <bold>Public BioModels</bold> - list all VCell models available to the general public.	
 	<list>
-		<item> The <bold>Published</bold> folder contains public Models created by users and used in a publications.  Models are grouped by the publication citation and listed by user name and model name.</item>
+		<item> The <bold>Published</bold> folder contains public Models created by users and used in a publications.  Models are grouped by the publication citation and listed by user name and model name.
+				<imgReference target = "VCDatabasePublished.png"/><para></para></item>
 		<item> The <bold>Curated</bold> folder contains VCell models created by the VCell team or collaborators to reproduce a model described in a publication. Curated models are listed by user name : model name</item>
 		<item> The <bold>Uncurated</bold> folder contains public Models created by users that have not been peer reviewed. </item>	
 	</list>
@@ -43,9 +45,8 @@
 	Selecting any model or one of its versions lists a summary of the model (Associated Citations, Model Provenance, and Applications Provenance including Geometries and Simulations) in the <bold>Selected BioModel Summary</bold> in the <link target="PP_VCellDatabaseInfo">Database File Info</link> Properties Pane in the lower right of the window.
 	</para> 
 
-	<para>
-	Right clicking any selected model brings up a pop-up menu. The options available are: 
-	</para>	
+	<para>Right clicking any selected model brings up a pop-up menu. <imgReference target = "VCDatabaseMenus.png"/></para>
+	The options available are: 
 
 	<list>
 		<item> <bold>Open</bold> - opens the selected model. Please refer to the section <link target="Open">File ->Open</link>.

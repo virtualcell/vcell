@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <vcelldoc>
-<page title="Database Info Properties Pane" target="PP_VCellDatabaseInfo">
+<page title="Database Info Panel" target="PP_VCellDatabaseInfo">
 
 	<introduction>
 	Selecting a BioModel or MathModel from the tree list under the <bold>VCell DB tab</bold> (<bold>lower left</bold> of VCell document window) 
@@ -9,7 +9,7 @@
 	</introduction>
 	
 	<appearance>
-			<imgReference target = "VCDatabaseInfo.GIF"/>		
+			<imgReference target = "VCDatabaseInfo.png"/>		
 	</appearance>
 	
 	<operations>
@@ -25,6 +25,12 @@
 	<item><bold>Geometry</bold> ('compartmental' or 'geometry name' and (1D,2D,3D dimension)).</item>
 	<item><bold>Simulation Names</bold></item>
 	</list>
+	
+	<para>
+	Information about Published Models is displayed in a different, publication-centric format.
+	</para>
+	<imgReference target = "VCPublicationInfo.png"/>
+	
 	</operations>	
 
 </page>
