@@ -60,7 +60,7 @@
 	<bold>New Application</bold> button in the main window.
 	<para><bold>View/Edit</bold> application components and properties by double-clicking, or selecting the + icon beside, the 'Applications' tree in the navigation panel to expose the names of applications contained in the BioModel; select one of the Application names to activate the 'view' and 'properties' panels that display all the application detail editors.</para>
 		<imgReference target = "ApplicationOverview.png"/>
-			</operations>
+    </operations>
 	
 </page>
 

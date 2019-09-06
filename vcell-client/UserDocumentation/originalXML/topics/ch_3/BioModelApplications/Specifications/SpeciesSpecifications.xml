@@ -11,8 +11,11 @@
 	</introduction>
 	
 	<appearance>
-		<bold>Deterministic</bold>
+		<bold>Non-Spatial Deterministic</bold>
+		<imgReference target = "SpeciesSpecifications_nonsp_det.png"/>
+		<para><bold>Spatial Deterministic</bold>
 		<imgReference target = "SpeciesSpecifications.png"/>
+		</para>
 		<para><bold>Spatial Stochastic</bold>
 		<imgReference target = "SpeciesSpecifications_spatial_stoch.png"/>
 		</para>
@@ -68,6 +71,9 @@
 	<item><bold>Set Force Continuous</bold> (for stochastic applications) by selecting a 'Species' table row and clicking the 
 	'Force Continuous' column (spatial stochastic) check-box.  The checked species will be treated by the solver as determistic (continuous) variables.  
 	Stochastic applications with 1 or more 'Force Continuous' check-boxes set are considered to be <link target="ApplicationOverview">Hybrid Deterministic Stochastic</link>.</item>
+
+	<item><bold>Rules</bold> (for non-spatial deterministic applications, view only) Indicates if 
+	a <link target="RateRules">rate rule</link> or an <link target="AssignmentRules">assignment rule</link> is associated to the species (variable).</item>
 	</list>
 	</operations>
 	

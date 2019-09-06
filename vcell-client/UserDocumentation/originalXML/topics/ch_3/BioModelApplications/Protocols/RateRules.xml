@@ -4,7 +4,7 @@
 <page title="Rate Rules">
 
 	
-	<introduction><bold>Rate Rules</bold> allow a user to specify rate of change of a variable (species) using a specified function, rather than describing a kinetic law in the reaction editor.  This is convenient for many ODE applications, and is also used in many SBML models that are imported into VCell. 
+	<introduction><bold>Rate Rules</bold> allow a user to define the rate of change of a variable (species) using a specified function, rather than describing a kinetic law in the reaction editor.  This is convenient for many ODE applications, and is also used in many SBML models that are imported into VCell. 
 	<para>The functional form of a Rate Rule is <bold>dx/dt = f(W)</bold> (left hand side is a rate of change) where x is the variable, f is an arbitrary function returning a numerical result and W is a vector of symbols that may include x. </para>
 	The variable cannot be a reactant or product species already defined in the reaction network, where the math will be defined by the kinetic rate law as part of the reaction diagram. 
 	Rather, a rate rule expression defines the rate of change of a variable that can act to catalyze a reaction.
