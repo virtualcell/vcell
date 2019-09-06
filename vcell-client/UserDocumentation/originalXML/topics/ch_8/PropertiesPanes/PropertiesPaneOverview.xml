@@ -6,20 +6,29 @@
 	<introduction> 
 	The bottom right pane of the VCell document window contains an <bold>Object Properties</bold> tab that 
 	displays properties of any entity (e.g. species, reaction, structure) selected in the main View Pane
-	of the document window. 
+	of the document window.
+	<para>
+	Adjacent tabs provide more information about selected entities, the state of your biomodel, or other biomodels. 
+	Some of these panels may be hidden or visible at times, depending on their relevance to the selected entity.
+	</para>
 	</introduction>
-
+	
+	<appearance>
+			<imgReference target = "PropetriesAndInfoTabsSet.png"/>		
+	</appearance>
+	
 	<operations>
 	Properties are specific to the item selected. The different properties displayed include:
 	<list>
 	<item><link target=	"PP_ApplicationProps">Application Properties</link></item>
-	<item><link target=	"PP_VCellDatabaseInfo">Database Properties</link></item>
+	<item><link target=	"PP_Annotations">Annotations</link></item>
+	<item><link target=	"PP_VCellDatabaseInfo">Database File Info</link></item>
 	<item><link target=	"PP_MemFlux">Membrane Flux</link></item>
 	<item><link target=	"PP_Molecules">Molecules</link></item>
 	<item><link target=	"PP_Observables">Observables Properties</link></item>
 	<item><link target=	"PP_Parameters">Parameters</link></item>
 	<item><link target=	"PP_Pathways">Pathway Information</link></item>
-	<item><link target=	"PP_Problems">Problems</link></item>
+	<item><link target=	"PP_Problems">Problems (Issues)</link></item>
 	<item><link target=	"PP_Reactions">Reactions</link></item>
 	<item><link target=	"PP_ReactionRulesEditor">Reaction Rules Editor</link></item>
 	<item><link target=	"PP_ReactionRulesKinetics">Reaction Rules Kinetics</link></item>

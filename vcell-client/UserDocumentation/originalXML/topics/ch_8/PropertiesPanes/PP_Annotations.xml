@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <vcelldoc>
-<page title="Annotations Properties Pane">
+<page title="Annotations Panel" target="PP_Annotations">
 	
 	<introduction>
 Each element in a VCell BioModel, as well as the BioModel itself, can be annotated with either unique identifiers or plain text information. Annotations are created and displayed in the <bold>Annotations Property Pane</bold>.

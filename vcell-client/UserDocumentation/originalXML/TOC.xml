@@ -141,8 +141,8 @@
    		</tocitem>
 	    <tocitem target="PropertiesPaneOverview" text="Properties Panes">
 	    	<tocitem target="PP_ApplicationProps" text="Application Info Properties Pane"/>
-	    	<tocitem target="PP_VCellDatabaseInfo" text="Database Info Properties Pane"/>
-			<tocitem target="PP_Annotations" text="Annotations Properties Pane"/>
+	    	<tocitem target="PP_VCellDatabaseInfo" text="Database Info Panel"/>
+			<tocitem target="PP_Annotations" text="Annotations Panel"/>
 			<tocitem target="PP_KinematicsPointLocationProcess" text="Point Location Process Kinematics Properties Pane"/>
 			<tocitem target="PP_KinematicsPointObject" text="Point Object Kinematics Properties Pane"/>			
 			<tocitem target="PP_KinematicsSurfaceObject" text="Surface Object Kinematics Properties Pane"/>			
@@ -154,7 +154,7 @@
 	    	<tocitem target="PP_Observables" text="Observables Properties Pane"/>	    	
 	    	<tocitem target="PP_Parameters" text="Parameter Properties Pane"/>
 	    	<tocitem target="PP_Pathways" text="Pathway Properties Pane"/>
-	    	<tocitem target="PP_Problems" text="Problems Properties Pane"/>
+	    	<tocitem target="PP_Problems" text="Problems (Issues) Panel"/>
 	    	<tocitem target="PP_Reactions" text="Reactions Properties Pane"/>
     		<tocitem target="PP_ReactionRulesEditor" text="Reaction Rules Editor Pane"/>
     		<tocitem target="PP_ReactionRulesKinetics" text="Reaction Rules Kinetics Pane"/>
