@@ -140,7 +140,7 @@
    	   		<tocitem target="PathwayCommonsPanel" text="Pathway Commons Database"/>
    		</tocitem>
 	    <tocitem target="PropertiesPaneOverview" text="Properties Panes">
-	    	<tocitem target="PP_ApplicationProps" text="Application Info Properties Pane"/>
+	    	<tocitem target="PP_ApplicationProps" text="Application Properties Pane"/>
 	    	<tocitem target="PP_VCellDatabaseInfo" text="Database Info Panel"/>
 			<tocitem target="PP_Annotations" text="Annotations Panel"/>
 			<tocitem target="PP_KinematicsPointLocationProcess" text="Point Location Process Kinematics Properties Pane"/>

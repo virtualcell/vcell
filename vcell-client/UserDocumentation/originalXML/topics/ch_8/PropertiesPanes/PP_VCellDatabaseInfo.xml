@@ -31,6 +31,10 @@
 	</para>
 	<imgReference target = "VCPublicationInfo.png"/>
 	
+	<para></para>
+	Information about the models in the <link target="http://www.ebi.ac.uk/biomodels/">BioModels Database</link> is also provided in this panel.
+	<imgReference target = "BiomodelsNetDB.png"/>
+	
 	</operations>	
 
 </page>

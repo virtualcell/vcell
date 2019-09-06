@@ -4,8 +4,11 @@
 
 	<introduction>
 	Selecting the <bold>Applications (count)</bold> main tree list item from the upper left document window panel of a BioModel will display a 
-	list of 'Applications' in the upper right panel of the document window.  Selecting an 'Application' from the displayed list will show 
-	an 'Object Properties' panel in the lower right of the document window.
+	list of 'Applications' in the upper right panel of the document window.  
+	<imgReference target = "ApplicationListExample.png"/>
+	<para>
+	Selecting an 'Application' from the displayed list will show an 'Object Properties' panel in the lower right of the document window.
+	</para>
 	</introduction>
 	
 	<appearance>
