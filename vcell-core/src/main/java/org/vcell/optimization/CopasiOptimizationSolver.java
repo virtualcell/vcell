@@ -14,6 +14,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.attribute.FileAttribute;
+import java.util.Base64;
 import java.util.Random;
 import java.util.StringTokenizer;
 
@@ -22,6 +23,7 @@ import javax.swing.SwingUtilities;
 import org.apache.commons.io.FileUtils;
 import org.apache.thrift.TDeserializer;
 import org.apache.thrift.TSerializer;
+import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TJSONProtocol;
 import org.vcell.api.client.VCellApiClient;
 import org.vcell.optimization.thrift.OptParameterValue;
@@ -138,8 +140,36 @@ public class CopasiOptimizationSolver {
 			if(clientTaskStatusSupport != null) {
 				clientTaskStatusSupport.setMessage("Submitting opt problem...");
 			}
-			String optimizationId = apiClient.submitOptimization(optProblemJson);
+			//Submit but allow user to get out from restlet blocking call
+			final String[] optIdHolder = new String[] {null};
+			final Exception[] exceptHolder = new Exception[] {null};
+			Thread submitThread = new Thread(new Runnable() {
+				@Override
+				public void run() {
+					try {
+						optIdHolder[0]= apiClient.submitOptimization(optProblemJson);
+						if(optSolverCallbacks.getStopRequested()) {
+							apiClient.getOptRunJson(optIdHolder[0],optSolverCallbacks.getStopRequested());
+						}
+					} catch (Exception e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+						exceptHolder[0] = e;
+					}
+				}
+			});
+			submitThread.setDaemon(true);
+			submitThread.start();
 			
+			while(optIdHolder[0] == null && exceptHolder[0]==null && !optSolverCallbacks.getStopRequested()) {
+				Thread.sleep(200);
+			}
+			if(exceptHolder[0]!=null) {
+				throw exceptHolder[0];
+			}
+			if(optSolverCallbacks.getStopRequested()) {
+				throw UserCancelException.CANCEL_GENERIC;
+			}
 			final long TIMEOUT_MS = 1000*200; // 200 second timeout
 			long startTime = System.currentTimeMillis();
 			OptRun optRun = null;
@@ -147,41 +177,105 @@ public class CopasiOptimizationSolver {
 				clientTaskStatusSupport.setMessage("Waiting for progress...");
 			}
 			while ((System.currentTimeMillis()-startTime)<TIMEOUT_MS) {
+				String optRunJson = apiClient.getOptRunJson(optIdHolder[0],optSolverCallbacks.getStopRequested());
 				if (optSolverCallbacks.getStopRequested()){
-					throw new RuntimeException(STOP_REQUESTED);
+					throw UserCancelException.CANCEL_GENERIC;
 				}
-				String optRunJson = apiClient.getOptRunJson(optimizationId);
-				TDeserializer deserializer = new TDeserializer(new TJSONProtocol.Factory());
-				optRun = new OptRun();
-				deserializer.deserialize(optRun, optRunJson.getBytes());
-				OptRunStatus status = optRun.status;
-				String statusMessage = optRun.getStatusMessage();
-				if(statusMessage != null && (statusMessage.startsWith(OptRunStatus.Running.name()) || statusMessage.startsWith(OptRunStatus.Complete.name()))) {
-					StringTokenizer st = new StringTokenizer(statusMessage," :\t\r\n");
-					if(st.countTokens() == 4) {
-						st.nextToken();//OptRunStatus mesg
-						int runNum = Integer.parseInt(st.nextToken());
-						double objFunctionValue = Double.parseDouble(st.nextToken());
-						int numObjFuncEvals = Integer.parseInt(st.nextToken());
-						SwingUtilities.invokeLater(new Runnable() {
-							@Override
-							public void run() {
-								optSolverCallbacks.setEvaluation(numObjFuncEvals, objFunctionValue, objFunctionValue, optSolverCallbacks.getEndValue(), runNum);								
-							}
-						});
+				if(optRunJson.startsWith(OptRunStatus.Queued.name()+":")) {
+					SwingUtilities.invokeLater(new Runnable() {
+						@Override
+						public void run() {
+							optSolverCallbacks.setEvaluation(0, 0, 0, optSolverCallbacks.getEndValue(), 0);								
+						}
+					});		
+					if(clientTaskStatusSupport != null) {
+						clientTaskStatusSupport.setMessage(optRunJson);
 					}
+
+				}else if(optRunJson.startsWith("Failed:") || optRunJson.startsWith("exception:") || optRunJson.startsWith("Exception:")) {
+					SwingUtilities.invokeLater(new Runnable() {
+						@Override
+						public void run() {
+							optSolverCallbacks.setEvaluation(0, 0, 0, optSolverCallbacks.getEndValue(), 0);								
+						}
+					});
+					if(clientTaskStatusSupport != null) {
+						clientTaskStatusSupport.setMessage(optRunJson);
+					}
+
+				}else if(optRunJson.startsWith(OptRunStatus.Running.name()+":")) {
+					SwingUtilities.invokeLater(new Runnable() {
+						@Override
+						public void run() {
+							try {
+								StringTokenizer st = new StringTokenizer(optRunJson," :\t\r\n");
+								if(st.countTokens() != 4) {
+									System.out.println(optRunJson);
+									return;
+								}
+								st.nextToken();//OptRunStatus mesg
+								int runNum = Integer.parseInt(st.nextToken());
+								double objFunctionValue = Double.parseDouble(st.nextToken());
+								int numObjFuncEvals = Integer.parseInt(st.nextToken());
+								SwingUtilities.invokeLater(new Runnable() {
+									@Override
+									public void run() {
+										optSolverCallbacks.setEvaluation(numObjFuncEvals, objFunctionValue, objFunctionValue, optSolverCallbacks.getEndValue(), runNum);								
+									}
+								});
+							} catch (Exception e) {
+								System.out.println(optRunJson);
+								e.printStackTrace();
+							}
+						}
+					});
+					if(clientTaskStatusSupport != null) {
+						clientTaskStatusSupport.setMessage(optRunJson);
+					}
+
+				}else {
+//					File f = new File("/home/vcell/fake_share_apps_vcell3/users/ParamOptemize_"+optimizationId+"/ParamOptemize_"+optimizationId+"_optRun.bin");
+//					byte[] filesbytes = FileUtils.readFileToByteArray(f);
+					byte[] jsonbytes = Base64.getDecoder().decode(optRunJson);//optRunJson.getBytes();
+//					System.out.println(filesbytes.length+" "+jsonbytes.length);
+//					for (int i = 0; i < filesbytes.length; i++) {
+//						if(filesbytes[i] != jsonbytes[i]) {
+//							System.out.println("differ at "+i);
+//							break;
+//						}
+//					}
+					TDeserializer deserializer = new TDeserializer(new TBinaryProtocol.Factory());
+//					TDeserializer deserializer = new TDeserializer(new TJSONProtocol.Factory());
+					optRun = new OptRun();
+					deserializer.deserialize(optRun, jsonbytes);
+					OptRunStatus status = optRun.status;
+					String statusMessage = optRun.getStatusMessage();
+					if(statusMessage != null && (statusMessage.startsWith(OptRunStatus.Running.name()) || statusMessage.startsWith(OptRunStatus.Complete.name()))) {
+						StringTokenizer st = new StringTokenizer(statusMessage," :\t\r\n");
+						if(st.countTokens() == 4) {
+							st.nextToken();//OptRunStatus mesg
+							int runNum = Integer.parseInt(st.nextToken());
+							double objFunctionValue = Double.parseDouble(st.nextToken());
+							int numObjFuncEvals = Integer.parseInt(st.nextToken());
+							SwingUtilities.invokeLater(new Runnable() {
+								@Override
+								public void run() {
+									optSolverCallbacks.setEvaluation(numObjFuncEvals, objFunctionValue, objFunctionValue, optSolverCallbacks.getEndValue(), runNum);								
+								}
+							});
+						}
+					}
+					if (status==OptRunStatus.Complete){
+						System.out.println("job "+optIdHolder[0]+": status "+status+" "+optRun.getOptResultSet().toString());
+						break;
+					}
+					if (status==OptRunStatus.Failed){
+						throw new RuntimeException("optimization failed, message="+optRun.statusMessage);
+					}
+					System.out.println("job "+optIdHolder[0]+": status "+status);
 				}
-				if (status==OptRunStatus.Complete){
-					System.out.println("job "+optimizationId+": status "+status+" "+optRun.getOptResultSet().toString());
-					break;
-				}
-				if (status==OptRunStatus.Failed){
-					throw new RuntimeException("optimization failed, message="+optRun.statusMessage);
-				}
-				
-				System.out.println("job "+optimizationId+": status "+status);
 				try {
-					Thread.sleep(1000);
+					Thread.sleep(2000);
 				}catch (InterruptedException e){}
 			}
 			if((System.currentTimeMillis()-startTime) >= TIMEOUT_MS) {
@@ -213,11 +307,10 @@ public class CopasiOptimizationSolver {
 			System.out.println("-----------SOLUTION FROM VCellAPI---------------\n" + optResultSet.toString());
 
 			return copasiOptimizationResultSet;
+		}catch(UserCancelException e) {
+			throw e;
 		} catch (Exception e) {
 			e.printStackTrace(System.out);
-			if(e.getMessage() != null && e.getMessage().equals(STOP_REQUESTED)){
-				throw UserCancelException.CANCEL_GENERIC;
-			}
 			throw new OptimizationException(e.getCause() != null ? e.getCause().getMessage() : e.getMessage());
 		}
 	}

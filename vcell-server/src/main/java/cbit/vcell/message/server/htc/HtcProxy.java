@@ -22,6 +22,7 @@ import org.vcell.util.document.KeyValue;
 import org.vcell.util.exe.ExecutableException;
 
 import cbit.vcell.message.server.cmd.CommandService;
+import cbit.vcell.message.server.htc.HtcProxy.HtcJobInfo;
 import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.server.HtcJobID;
@@ -143,6 +144,7 @@ public abstract class HtcProxy {
 	public abstract void killJobSafe(HtcJobInfo htcJobInfo) throws ExecutableException, HtcJobNotFoundException, HtcException;
 	public abstract void killJobUnsafe(HtcJobID htcJobId) throws ExecutableException, HtcJobNotFoundException, HtcException;
 	public abstract void killJobs(String htcJobSubstring) throws ExecutableException, HtcJobNotFoundException, HtcException;
+	public abstract Map<HtcJobInfo,HtcJobStatus> getJobStatus(List<HtcJobInfo> requestedHtcJobInfos) throws ExecutableException, IOException;
 
 	/**
 	 * @param postProcessingCommands may be null if no commands desired
@@ -152,7 +154,7 @@ public abstract class HtcProxy {
 	 */
 	public abstract HtcJobID submitJob(String jobName, File sub_file_internal, File sub_file_external, ExecutableCommand.Container commandSet,
 			int ncpus, double memSize, Collection<PortableCommand> postProcessingCommands, SimulationTask simTask) throws ExecutableException;
-
+	public abstract HtcJobID submitOptimizationJob(String jobName, File sub_file_internal, File sub_file_external,File optProblemInput,File optProblemOutput)throws ExecutableException;
 	public abstract HtcProxy cloneThreadsafe();
 
 	public abstract Map<HtcJobInfo,HtcJobStatus> getRunningJobs() throws ExecutableException, IOException;

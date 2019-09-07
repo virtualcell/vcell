@@ -23,6 +23,7 @@ import cbit.vcell.message.server.htc.HtcJobStatus;
 import cbit.vcell.message.server.htc.HtcProxy;
 import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.resource.PropertyLoader;
+import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.server.HtcJobID;
 import cbit.vcell.server.HtcJobID.BatchSystemType;
 import cbit.vcell.simdata.PortableCommand;
@@ -288,7 +289,7 @@ public class SlurmProxy extends HtcProxy {
 		if (requestedHtcJobInfos.size()==0) {
 			throw new RuntimeException("htcJobList is empty");
 		}
-		final String JOB_CMD_SACCT = PropertyLoader.getProperty(PropertyLoader.slurm_cmd_squeue,"sacct");
+		final String JOB_CMD_SACCT = PropertyLoader.getProperty(PropertyLoader.slurm_cmd_sacct,"sacct");
 		ArrayList<String> jobNumbers = new ArrayList<String>();
 		for (HtcJobInfo jobInfo : requestedHtcJobInfos) {
 			jobNumbers.add(Long.toString(jobInfo.getHtcJobID().getJobNumber()));
@@ -313,8 +314,9 @@ public class SlurmProxy extends HtcProxy {
 	static Map<HtcJobInfo, HtcJobStatus> extractJobIds(String output) throws IOException {
 		BufferedReader reader = new BufferedReader(new StringReader(output));
 		String line = reader.readLine();
-		if (!line.equals("JobID|JobName|State")){
-			throw new RuntimeException("unexpected first line from sacct: '"+line+"'");
+		while(!line.equals("JobID|JobName|State")){
+			line = reader.readLine();
+//			throw new RuntimeException("unexpected first line from sacct: '"+line+"'");
 		}
 		Map<HtcJobInfo, HtcJobStatus> statusMap = new HashMap<HtcJobInfo, HtcJobStatus>();
 		while ((line = reader.readLine()) != null){
@@ -354,33 +356,7 @@ public class SlurmProxy extends HtcProxy {
 
 		LineStringBuilder lsb = new LineStringBuilder();
 
-		lsb.write("#!/usr/bin/bash");
-		File htcLogDirExternal = new File(PropertyLoader.getRequiredProperty(PropertyLoader.htcLogDirExternal));
-		if(simTask.isPowerUser()) {
-			String partition_pu = PropertyLoader.getRequiredProperty(PropertyLoader.slurm_partition_pu);
-			String reservation_pu = PropertyLoader.getRequiredProperty(PropertyLoader.slurm_reservation_pu);
-			lsb.write("#SBATCH --partition=" + partition_pu);
-//			lsb.write("#SBATCH --reservation=" + reservation_pu);		
-			lsb.write("#SBATCH --qos=" + reservation_pu);			
-		}else {
-			String partition = PropertyLoader.getRequiredProperty(PropertyLoader.slurm_partition);
-			String reservation = PropertyLoader.getRequiredProperty(PropertyLoader.slurm_reservation);
-			lsb.write("#SBATCH --partition=" + partition);
-			lsb.write("#SBATCH --reservation=" +reservation);
-			lsb.write("#SBATCH --qos=" +reservation);
-		}
-		lsb.write("#SBATCH -J " + jobName);
-		lsb.write("#SBATCH -o " + new File(htcLogDirExternal, jobName+".slurm.log").getAbsolutePath());
-		lsb.write("#SBATCH -e " + new File(htcLogDirExternal, jobName+".slurm.log").getAbsolutePath());
-		lsb.write("#SBATCH --mem="+memoryMBAllowed.getMemLimit()+"M");
-		lsb.write("#SBATCH --no-kill");
-		lsb.write("#SBATCH --no-requeue");
-		String nodelist = PropertyLoader.getProperty(PropertyLoader.htcNodeList, null);
-		if (nodelist!=null && nodelist.trim().length()>0) {
-			lsb.write("#SBATCH --nodelist="+nodelist);
-		}
-		lsb.write("echo \"1 date=`date`\"");
-		lsb.write("# VCell SlurmProxy memory limit source="+memoryMBAllowed.getMemLimitSource());
+		slurmScriptInit(jobName, simTask.isPowerUser(), memoryMBAllowed, lsb);
 
 		String primaryDataDirExternal = PropertyLoader.getRequiredProperty(PropertyLoader.primarySimDataDirExternalProperty);
 
@@ -421,93 +397,10 @@ public class SlurmProxy extends HtcProxy {
 				"softwareVersion="+softwareVersion,
 				"serverid="+serverid
 		};
-		lsb.write("TMPDIR="+slurm_tmpdir);
-		lsb.write("echo \"using TMPDIR=$TMPDIR\"");
-		lsb.write("if [ ! -e $TMPDIR ]; then mkdir -p $TMPDIR ; fi");
-		
-		//
-		// Initialize Singularity
-		//
-		lsb.write("echo `hostname`\n");
-		lsb.write("export MODULEPATH=/isg/shared/modulefiles:/tgcapps/modulefiles\n");
-		lsb.write("source /usr/share/Modules/init/bash\n");
-		lsb.write("module load singularity/2.4.2\n");
-		
-		lsb.write("echo \"job running on host `hostname -f`\"");
-		lsb.newline();
-		lsb.write("echo \"id is `id`\"");
-		lsb.newline();
-		lsb.write("echo \"bash version is `bash --version`\"");
-		lsb.write("date");
-		lsb.newline();
-		lsb.write("echo ENVIRONMENT");
-		lsb.write("env");
-		lsb.newline();
-		
-		lsb.write("container_prefix=");
-		lsb.write("if command -v singularity >/dev/null 2>&1; then");
-		lsb.write("   #");
-		lsb.write("   # Copy of singularity image will be downloaded if not found in "+slurm_singularity_local_image_filepath);
-		lsb.write("   #");
-		lsb.write("   localSingularityImage="+slurm_singularity_local_image_filepath);
-		lsb.write("   if [ ! -e \"$localSingularityImage\" ]; then");
-		lsb.write("       echo \"local singularity image $localSingularityImage not found, trying to download to hpc from \""+slurm_singularity_central_filepath.getAbsolutePath());
-		lsb.write("       mkdir -p "+slurm_local_singularity_dir);
-		lsb.write("       singularitytempfile=$(mktemp -up "+slurm_central_singularity_dir+")");
-		// Copy using locking so when new deployments occur and singularity has to be copied to compute host
-		// and multiple parameter scan land on same compute host at same time and all try to download the singularity image
-		// they won't interfere with each other
-		lsb.write("		  flock -E 100 -n /tmp/vcellSingularityLock_"+softwareVersion+".lock sh -c \"cp "+slurm_singularity_central_filepath.getAbsolutePath()+" ${singularitytempfile}"+" ; mv -n ${singularitytempfile} "+slurm_singularity_local_image_filepath+"\"");
-		lsb.write("		  theStatus=$?");
-		lsb.write("		  if [ $theStatus -eq 100 ]");
-		lsb.write("		  then");
-		lsb.write("		      echo \"lock in use, waiting for lock owner to copy singularityImage\"");
-		lsb.write("		      let c=0");
-		lsb.write("		      until [ -f $localSingularityImage ]");
-		lsb.write("		      do");
-		lsb.write("		  	    sleep 3");
-		lsb.write("		  	    let c=c+1");
-		lsb.write("		  		if [ $c -eq 20 ]");
-		lsb.write("		  		then");
-		lsb.write("		  			echo \"Exceeded wait time for lock owner to copy singularityImage\"");
-		lsb.write("		  			break");
-		lsb.write("		  		fi");
-		lsb.write("		      done");
-		lsb.write("		  else");
-		lsb.write("		      if [ $theStatus -eq 0 ]");
-		lsb.write("		      then");
-		lsb.write("		            echo copy succeeded");
-		lsb.write("		      else");
-		lsb.write("		            echo copy failed");
-		lsb.write("		      fi");
-		lsb.write("		  fi");
-
-		lsb.write("       rm -f ${singularitytempfile}");
-		lsb.write("       if [ ! -e \"$localSingularityImage\" ]; then");		
-		lsb.write("           echo \"Failed to copy $localSingularityImage to hpc from central\"");
-		lsb.write("           exit 1");
-		lsb.write("       else");
-		lsb.write("           echo successful copy from "+slurm_singularity_central_filepath.getAbsolutePath()+" to "+slurm_singularity_local_image_filepath);
-		lsb.write("       fi");
-		lsb.write("   fi");
-		StringBuffer singularityEnvironmentVars = new StringBuffer();
-		for (String envVar : environmentVars) {
-			singularityEnvironmentVars.append(" --env "+envVar);
-		}
-		lsb.write("   container_prefix=\"singularity run --bind "+primaryDataDirExternal+":/simdata --bind "+simDataDirArchiveHost+":"+simDataDirArchiveHost+" --bind "+htclogdir_external+":/htclogs  --bind "+slurm_tmpdir+":/solvertmp $localSingularityImage "+singularityEnvironmentVars+" \"");
-		lsb.write("else");
-		lsb.write("    echo \"Required singularity command not found (module load singularity/2.4.2) \"");
-		lsb.write("    exit 1");
-//		StringBuffer dockerEnvironmentVars = new StringBuffer();
-//		for (String envVar : environmentVars) {
-//			dockerEnvironmentVars.append(" -e "+envVar);
-//		}
-//		lsb.write("   container_prefix=\"docker run --rm -v "+primaryDataDirExternal+":/simdata -v "+htclogdir_external+":/htclogs -v "+slurm_tmpdir+":/solvertmp "+dockerEnvironmentVars+" "+docker_image+" \"");
-		lsb.write("fi");
-		lsb.write("echo \"container_prefix is '${container_prefix}'\"");
-		lsb.write("echo \"3 date=`date`\"");
-
-		lsb.newline();
+		slurmInitSingularity(lsb, primaryDataDirExternal, htclogdir_external, softwareVersion,
+				slurm_singularity_local_image_filepath, slurm_tmpdir, slurm_central_singularity_dir,
+				slurm_local_singularity_dir, simDataDirArchiveHost, slurm_singularity_central_filepath,
+				environmentVars);
 
 		lsb.write("sendFailureMsg() {");
 		lsb.write("  echo ${container_prefix} " +
@@ -655,6 +548,132 @@ public class SlurmProxy extends HtcProxy {
 		return lsb.sb.toString();
 	}
 
+
+	private void slurmInitSingularity(LineStringBuilder lsb, String primaryDataDirExternal, String htclogdir_external,
+			String softwareVersion, String slurm_singularity_local_image_filepath, String slurm_tmpdir,
+			String slurm_central_singularity_dir, String slurm_local_singularity_dir, String simDataDirArchiveHost,
+			File slurm_singularity_central_filepath, String[] environmentVars) {
+		lsb.write("TMPDIR="+slurm_tmpdir);
+		lsb.write("echo \"using TMPDIR=$TMPDIR\"");
+		lsb.write("if [ ! -e $TMPDIR ]; then mkdir -p $TMPDIR ; fi");
+		
+		//
+		// Initialize Singularity
+		//
+		lsb.write("echo `hostname`\n");
+		lsb.write("export MODULEPATH=/isg/shared/modulefiles:/tgcapps/modulefiles\n");
+		lsb.write("source /usr/share/Modules/init/bash\n");
+		lsb.write("module load singularity/2.4.2\n");
+		
+		lsb.write("echo \"job running on host `hostname -f`\"");
+		lsb.newline();
+		lsb.write("echo \"id is `id`\"");
+		lsb.newline();
+		lsb.write("echo \"bash version is `bash --version`\"");
+		lsb.write("date");
+		lsb.newline();
+		lsb.write("echo ENVIRONMENT");
+		lsb.write("env");
+		lsb.newline();
+		
+		lsb.write("container_prefix=");
+		lsb.write("if command -v singularity >/dev/null 2>&1; then");
+		lsb.write("   #");
+		lsb.write("   # Copy of singularity image will be downloaded if not found in "+slurm_singularity_local_image_filepath);
+		lsb.write("   #");
+		lsb.write("   localSingularityImage="+slurm_singularity_local_image_filepath);
+		lsb.write("   if [ ! -e \"$localSingularityImage\" ]; then");
+		lsb.write("       echo \"local singularity image $localSingularityImage not found, trying to download to hpc from \""+slurm_singularity_central_filepath.getAbsolutePath());
+		lsb.write("       mkdir -p "+slurm_local_singularity_dir);
+		lsb.write("       singularitytempfile=$(mktemp -up "+slurm_central_singularity_dir+")");
+		// Copy using locking so when new deployments occur and singularity has to be copied to compute host
+		// and multiple parameter scan land on same compute host at same time and all try to download the singularity image
+		// they won't interfere with each other
+		lsb.write("		  flock -E 100 -n /tmp/vcellSingularityLock_"+softwareVersion+".lock sh -c \"cp "+slurm_singularity_central_filepath.getAbsolutePath()+" ${singularitytempfile}"+" ; mv -n ${singularitytempfile} "+slurm_singularity_local_image_filepath+"\"");
+		lsb.write("		  theStatus=$?");
+		lsb.write("		  if [ $theStatus -eq 100 ]");
+		lsb.write("		  then");
+		lsb.write("		      echo \"lock in use, waiting for lock owner to copy singularityImage\"");
+		lsb.write("		      let c=0");
+		lsb.write("		      until [ -f $localSingularityImage ]");
+		lsb.write("		      do");
+		lsb.write("		  	    sleep 3");
+		lsb.write("		  	    let c=c+1");
+		lsb.write("		  		if [ $c -eq 20 ]");
+		lsb.write("		  		then");
+		lsb.write("		  			echo \"Exceeded wait time for lock owner to copy singularityImage\"");
+		lsb.write("		  			break");
+		lsb.write("		  		fi");
+		lsb.write("		      done");
+		lsb.write("		  else");
+		lsb.write("		      if [ $theStatus -eq 0 ]");
+		lsb.write("		      then");
+		lsb.write("		            echo copy succeeded");
+		lsb.write("		      else");
+		lsb.write("		            echo copy failed");
+		lsb.write("		      fi");
+		lsb.write("		  fi");
+
+		lsb.write("       rm -f ${singularitytempfile}");
+		lsb.write("       if [ ! -e \"$localSingularityImage\" ]; then");		
+		lsb.write("           echo \"Failed to copy $localSingularityImage to hpc from central\"");
+		lsb.write("           exit 1");
+		lsb.write("       else");
+		lsb.write("           echo successful copy from "+slurm_singularity_central_filepath.getAbsolutePath()+" to "+slurm_singularity_local_image_filepath);
+		lsb.write("       fi");
+		lsb.write("   fi");
+		StringBuffer singularityEnvironmentVars = new StringBuffer();
+		for (String envVar : environmentVars) {
+			singularityEnvironmentVars.append(" --env "+envVar);
+		}
+		lsb.write("   container_prefix=\"singularity run --bind "+primaryDataDirExternal+":/simdata --bind "+simDataDirArchiveHost+":"+simDataDirArchiveHost+" --bind "+htclogdir_external+":/htclogs  --bind "+slurm_tmpdir+":/solvertmp $localSingularityImage "+singularityEnvironmentVars+" \"");
+		lsb.write("else");
+		lsb.write("    echo \"Required singularity command not found (module load singularity/2.4.2) \"");
+		lsb.write("    exit 1");
+//		StringBuffer dockerEnvironmentVars = new StringBuffer();
+//		for (String envVar : environmentVars) {
+//			dockerEnvironmentVars.append(" -e "+envVar);
+//		}
+//		lsb.write("   container_prefix=\"docker run --rm -v "+primaryDataDirExternal+":/simdata -v "+htclogdir_external+":/htclogs -v "+slurm_tmpdir+":/solvertmp "+dockerEnvironmentVars+" "+docker_image+" \"");
+		lsb.write("fi");
+		lsb.write("echo \"container_prefix is '${container_prefix}'\"");
+		lsb.write("echo \"3 date=`date`\"");
+
+		lsb.newline();
+	}
+
+
+	private void slurmScriptInit(String jobName, boolean bPowerUser, MemLimitResults memoryMBAllowed,
+			LineStringBuilder lsb) {
+		lsb.write("#!/usr/bin/bash");
+		File htcLogDirExternal = new File(PropertyLoader.getRequiredProperty(PropertyLoader.htcLogDirExternal));
+		if(bPowerUser) {
+			String partition_pu = PropertyLoader.getRequiredProperty(PropertyLoader.slurm_partition_pu);
+			String reservation_pu = PropertyLoader.getRequiredProperty(PropertyLoader.slurm_reservation_pu);
+			lsb.write("#SBATCH --partition=" + partition_pu);
+//			lsb.write("#SBATCH --reservation=" + reservation_pu);		
+			lsb.write("#SBATCH --qos=" + reservation_pu);			
+		}else {
+			String partition = PropertyLoader.getRequiredProperty(PropertyLoader.slurm_partition);
+			String reservation = PropertyLoader.getRequiredProperty(PropertyLoader.slurm_reservation);
+			lsb.write("#SBATCH --partition=" + partition);
+			lsb.write("#SBATCH --reservation=" +reservation);
+			lsb.write("#SBATCH --qos=" +reservation);
+		}
+		lsb.write("#SBATCH -J " + jobName);
+		lsb.write("#SBATCH -o " + new File(htcLogDirExternal, jobName+".slurm.log").getAbsolutePath());
+		lsb.write("#SBATCH -e " + new File(htcLogDirExternal, jobName+".slurm.log").getAbsolutePath());
+		lsb.write("#SBATCH --mem="+memoryMBAllowed.getMemLimit()+"M");
+		lsb.write("#SBATCH --no-kill");
+		lsb.write("#SBATCH --no-requeue");
+		String nodelist = PropertyLoader.getProperty(PropertyLoader.htcNodeList, null);
+		if (nodelist!=null && nodelist.trim().length()>0) {
+			lsb.write("#SBATCH --nodelist="+nodelist);
+		}
+		lsb.write("echo \"1 date=`date`\"");
+		lsb.write("# VCell SlurmProxy memory limit source="+memoryMBAllowed.getMemLimitSource());
+	}
+
 	@Override
 	public HtcJobID submitJob(String jobName, File sub_file_internal, File sub_file_external, ExecutableCommand.Container commandSet, int ncpus, double memSizeMB, Collection<PortableCommand> postProcessingCommands, SimulationTask simTask) throws ExecutableException {
 		try {
@@ -701,6 +720,68 @@ public class SlurmProxy extends HtcProxy {
 			LG.debug("SLURM job '"+CommandOutput.concatCommandStrings(completeCommand)+"' started as htcJobId '"+htcJobID+"'");
 		}
 		return htcJobID;
+	}
+
+	@Override
+	public HtcJobID submitOptimizationJob(String jobName, File sub_file_internal, File sub_file_external,File optProblemInput,File optProblemOutput) throws ExecutableException{
+		try {
+			if (LG.isDebugEnabled()) {
+				LG.debug("generating local SLURM submit script for jobName="+jobName);
+			}
+//			String text = generateScript(jobName, commandSet, ncpus, memSizeMB, postProcessingCommands, simTask);
+
+			String primaryDataDirExternal = PropertyLoader.getRequiredProperty(PropertyLoader.primarySimDataDirExternalProperty);
+		    String htclogdir_external = PropertyLoader.getRequiredProperty(PropertyLoader.htcLogDirExternal);
+			String serverid=PropertyLoader.getRequiredProperty(PropertyLoader.vcellServerIDProperty);
+			String softwareVersion=PropertyLoader.getRequiredProperty(PropertyLoader.vcellSoftwareVersion);
+			String remote_singularity_image = PropertyLoader.getRequiredProperty(PropertyLoader.vcellbatch_singularity_image);
+			String slurm_singularity_local_image_filepath = remote_singularity_image;
+//			String docker_image = PropertyLoader.getRequiredProperty(PropertyLoader.vcellbatch_docker_name);
+			String slurm_tmpdir = PropertyLoader.getRequiredProperty(PropertyLoader.slurm_tmpdir);
+			String slurm_central_singularity_dir = PropertyLoader.getRequiredProperty(PropertyLoader.slurm_central_singularity_dir);
+			String slurm_local_singularity_dir = PropertyLoader.getRequiredProperty(PropertyLoader.slurm_local_singularity_dir);
+			String simDataDirArchiveHost = PropertyLoader.getRequiredProperty(PropertyLoader.simDataDirArchiveHost);
+			File slurm_singularity_central_filepath = new File(slurm_central_singularity_dir,new File(slurm_singularity_local_image_filepath).getName());
+
+			HtcProxy.MemLimitResults memoryMBAllowed = new HtcProxy.MemLimitResults(256, "Optimization Default");
+			String[] environmentVars = new String[] {
+					"java_mem_Xmx="+memoryMBAllowed.getMemLimit()+"M",
+					"datadir_external="+primaryDataDirExternal,
+					"htclogdir_external="+htclogdir_external,
+					"softwareVersion="+softwareVersion,
+					"serverid="+serverid
+			};
+
+			LineStringBuilder lsb = new LineStringBuilder();
+			slurmScriptInit(jobName, false, memoryMBAllowed, lsb);
+			slurmInitSingularity(lsb, primaryDataDirExternal, htclogdir_external, softwareVersion,
+					slurm_singularity_local_image_filepath, slurm_tmpdir, slurm_central_singularity_dir,
+					slurm_local_singularity_dir, simDataDirArchiveHost, slurm_singularity_central_filepath,
+					environmentVars);
+
+			lsb.write("   cmd_prefix=\"$container_prefix\"");
+			lsb.write("echo \"cmd_prefix is '${cmd_prefix}'\"");
+			lsb.append("echo command = ");
+			lsb.write("${cmd_prefix}" + "");
+			
+			lsb.write("${cmd_prefix}" + " ParamOptemize_python"+" "+optProblemInput.getAbsolutePath()+" "+optProblemOutput.getAbsolutePath());
+
+			File tempFile = File.createTempFile("tempSubFile", ".sub");
+
+			writeUnixStyleTextFile(tempFile, lsb.toString());
+
+			// move submission file to final location (either locally or remotely).
+			if (LG.isDebugEnabled()) {
+				LG.debug("moving local SLURM submit file '"+tempFile.getAbsolutePath()+"' to remote file '"+sub_file_external+"'");
+			}
+			FileUtils.copyFile(tempFile, sub_file_internal);
+			tempFile.delete();
+		} catch (IOException ex) {
+			ex.printStackTrace(System.out);
+			return null;
+		}
+
+		return submitJobFile(sub_file_external);
 	}
 
 

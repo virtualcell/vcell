@@ -19,7 +19,6 @@ import org.restlet.representation.Variant;
 import org.restlet.resource.Directory;
 import org.restlet.resource.ResourceException;
 import org.restlet.routing.Router;
-import org.vcell.optimization.OptServerImpl;
 import org.vcell.rest.UserVerifier.AuthenticationStatus;
 import org.vcell.rest.admin.AdminJobsRestlet;
 import org.vcell.rest.admin.AdminService;
@@ -179,7 +178,6 @@ public class VCellApiApplication extends WadlApplication {
 	private UserVerifier userVerifier = null;
 	private Configuration templateConfiguration = null;
 	private File javascriptDir = null;
-	private OptServerImpl optServerImpl = null;
 	private RpcService rpcService = null;
 	private RestEventService restEventService = null;
 	private HealthService healthService = null;
@@ -189,11 +187,7 @@ public class VCellApiApplication extends WadlApplication {
 	protected Variant getPreferredWadlVariant(Request request) {
 		return new Variant(MediaType.APPLICATION_WADL);
 	}
-	
-	public OptServerImpl getOptServerImpl() {
-		return optServerImpl;
-	}
-	
+		
 	public RpcService getRpcService() {
 		return rpcService;
 	}
@@ -213,7 +207,7 @@ public class VCellApiApplication extends WadlApplication {
 
 	public VCellApiApplication(
 			RestDatabaseService restDatabaseService, 
-			UserVerifier userVerifier, OptServerImpl optServerImpl, 
+			UserVerifier userVerifier, 
 			RpcService rpcService, 
 			RestEventService restEventService, 
 			AdminService adminService,
@@ -230,7 +224,6 @@ public class VCellApiApplication extends WadlApplication {
 		this.restDatabaseService = restDatabaseService;
 		this.adminService = adminService;
 		this.userVerifier = userVerifier;
-		this.optServerImpl = optServerImpl;
 		this.rpcService = rpcService;
 		this.restEventService = restEventService;
 		this.templateConfiguration = templateConfiguration;
@@ -310,7 +303,7 @@ public class VCellApiApplication extends WadlApplication {
 	    rootRouter.attach("/"+ACCESSTOKENRESOURCE, new AuthenticationTokenRestlet(getContext()));
 	    rootRouter.attach("/"+WEBAPP, new Directory(getContext(), WEBAPP_URI));
 	    rootRouter.attach("/"+OPTIMIZATION, OptimizationRunServerResource.class);
-	    rootRouter.attach("/"+OPTIMIZATION+"/{"+OPTIMIZATIONID+"}", OptimizationServerResource.class);
+	    rootRouter.attach("/"+OPTIMIZATION+"/{"+OPTIMIZATIONID+"}", OptimizationRunServerResource.class);
 	    rootRouter.attach("/"+PUBLICATION, PublicationsServerResource.class);
 	    rootRouter.attach("/"+PUBLICATION+"/{"+PUBLICATIONID+"}", PublicationServerResource.class);
 		rootRouter.attach("/"+BIOMODEL, BiomodelsServerResource.class);  

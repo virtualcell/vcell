@@ -17,6 +17,7 @@ from thrift.TSerialization import serialize
 
 def main():
     #sys.setrecursionlimit(100000)
+    interresults = [None]
     try:
         #--------------------------------------------------------------------------
         # parse input and deserialize the (thrift) optimization problem
@@ -27,6 +28,9 @@ def main():
         args = parser.parse_args()
         assert isinstance(args.resultfile, str)
         resultFile = args.resultfile
+        
+        dir_path = os.path.dirname(os.path.realpath(resultFile))
+        interresults[0]=os.path.join(dir_path,"interresults.txt")
 
         f_optfile = open(args.optfile, "rb")
         blob_opt = f_optfile.read()
@@ -325,9 +329,7 @@ def main():
         numParamsToFit = fitProblem.getOptItemSize()
 
         # Create intermediate results file
-        dir_path = os.path.dirname(os.path.realpath(resultFile))
-        interresults=os.path.join(dir_path,"interresults.txt")
-        with open(interresults, 'a') as foutput:
+        with open(interresults[0], 'a') as foutput:
             foutput.write(str(vcellOptProblem.numberOfOptimizationRuns)+"\n")
             foutput.close()
             
@@ -370,7 +372,7 @@ def main():
                 assert isinstance(currentFuncValue, float)
                 leastError = currentFuncValue
 
-            with open(interresults, 'a') as foutput:
+            with open(interresults[0], 'a') as foutput:
                 foutput.write(str(i)+" "+str(leastError)+" "+str(numObjFuncEvals)+"\n")
                 foutput.close()
 
@@ -400,6 +402,10 @@ def main():
             foutput.write(transportOut.getvalue())
             foutput.close()
 
+        with open(interresults[0], 'a') as foutput:
+            foutput.write("done")
+            foutput.close()
+
         # writeOptSolverResultSet(resultFile, leastError, numObjFuncEvals, paramNames, paramValues)
 
     except:
@@ -407,6 +413,11 @@ def main():
         traceback.print_exception(e_info[0],e_info[1],e_info[2],file=sys.stdout)
         sys.stderr.write("exception: "+str(e_info[0])+": "+str(e_info[1])+"\n")
         sys.stderr.flush()
+        if interresults[0] != None:
+            with open(interresults[0], 'a') as foutput:
+                foutput.write("exception: "+str(e_info[0])+": "+str(e_info[1]))
+                foutput.close()
+        
         return -1
     else:
         return 0

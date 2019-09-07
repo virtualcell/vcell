@@ -12,20 +12,29 @@ package cbit.vcell.message.server.batch.sim;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.net.ServerSocket;
+import java.net.Socket;
 import java.net.UnknownHostException;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Random;
 import java.util.StringTokenizer;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.vcell.optimization.CopasiServicePython;
+import org.vcell.optimization.thrift.OptProblem;
+import org.vcell.optimization.thrift.OptRunStatus;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
@@ -58,7 +67,9 @@ import cbit.vcell.message.server.cmd.CommandService.CommandOutput;
 import cbit.vcell.message.server.cmd.CommandServiceLocal;
 import cbit.vcell.message.server.cmd.CommandServiceSshNative;
 import cbit.vcell.message.server.combined.VCellServices;
+import cbit.vcell.message.server.htc.HtcJobStatus;
 import cbit.vcell.message.server.htc.HtcProxy;
+import cbit.vcell.message.server.htc.HtcProxy.HtcJobInfo;
 import cbit.vcell.message.server.htc.slurm.SlurmProxy;
 import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.mongodb.VCMongoMessage;
@@ -117,9 +128,209 @@ public final String getJobSelector() {
 
 public void init() {
 	initQueueConsumer();
+	initOptimizationSocket();
 }
 
+private ServerSocket optimizationServersocket;
+private static class OptServerJobInfo {
+	private String optID;
+	private HtcJobInfo htcJobInfo;
+	public OptServerJobInfo(String optID, HtcJobInfo htcJobInfo) {
+		super();
+		this.optID = optID;
+		this.htcJobInfo = htcJobInfo;
+	}
+	public String getOptID() {
+		return optID;
+	}
+	public HtcJobInfo getHtcJobInfo() {
+		return htcJobInfo;
+	}
+}
+private void initOptimizationSocket() {
+	Thread optThread = new Thread(new Runnable() {
+		@Override
+		public void run() {
+			try {
+				optimizationServersocket = new ServerSocket(8877);
+				while(true) {
+					Socket optSocket = optimizationServersocket.accept();
+					
+					Thread thread = new Thread(new Runnable() {
+						@Override
+						public void run() {
+							OptServerJobInfo optServerJobInfo = null;
+							try (ObjectInputStream is = new ObjectInputStream(optSocket.getInputStream());
+									ObjectOutputStream oos = new ObjectOutputStream(optSocket.getOutputStream());
+									Socket myOptSocket = optSocket) {
+								long jobStart = 0;
+								while(true) {
+									try {
+										Object obj = is.readObject();
+										Boolean bStop = (Boolean)is.readObject();
+										if(bStop) {
+											optServerStopJob(optServerJobInfo);
+											oos.writeObject(new Boolean(true));
+											return;
+										}
+										if(obj instanceof String && obj.toString().equals("checkIfDone")) {//check and remove connection and job status
+											if(sendOptResults(optServerJobInfo.getOptID(),oos)) {
+												return;
+											}
+											HtcJobStatus htcJobStatus = optServerGetJobStatus(optServerJobInfo.getHtcJobInfo());
+											if(htcJobStatus == null) {//pending
+												oos.writeObject(new Boolean(true));
+											}else {
+												if(htcJobStatus.isFailed()) {
+													throw new Exception("slurm job "+optServerJobInfo.getHtcJobInfo().getHtcJobID()+" failed");
+												}else if(htcJobStatus.isComplete()) {
+													if(!sendOptResults(optServerJobInfo.optID,oos)) {
+														throw new Exception("job done but results missing");
+													}else {
+														return;
+													}
+												}else {//running
+													oos.writeObject(OptRunStatus.Running.name()+":");
+												}
+											}
+										}else if(obj instanceof OptProblem) {//Start opt job
+											OptProblem optProblem = (OptProblem) obj;
+											optServerJobInfo = submitOptProblem(optProblem);
+											oos.writeObject(optServerJobInfo.getOptID());
+											jobStart = System.currentTimeMillis();
+										}else if(obj instanceof String) {//Get opt job status
+											String optID = obj.toString();
+											if(sendOptResults(optID,oos)) {
+												return;
+											}
+											File f = generateOptInterresultsFilePath(optID);
+											long lastModified = f.lastModified();
+											if(lastModified == 0 && (System.currentTimeMillis()-jobStart) > 60000) {
+												throw new Exception("results progress timed out");
+											}else if(lastModified != 0 && (lastModified-jobStart) > 60000) {
+												throw new Exception("results progress timed out");
+											}else if(lastModified != 0) {
+												jobStart = lastModified;
+											}
+											if(f.exists()) {
+												List<String> progressLines = Files.readAllLines(f.toPath());
+												if(progressLines != null && progressLines.size()>0) {
+													String optRunstatus = progressLines.get(progressLines.size()-1);
+													if(optRunstatus.toLowerCase().trim().startsWith("except")) {
+														throw new Exception("python script error "+optRunstatus);
+													}
+													optRunstatus = OptRunStatus.Running.name()+":"+optRunstatus;
+													oos.writeObject(optRunstatus);
+												}else {
+													oos.writeObject(OptRunStatus.Queued.name()+":0:0:0");
+												}
+												
+											}else {
+												oos.writeObject(OptRunStatus.Queued.name()+":0:0:0");
+											}
 
+										}else {
+											throw new Exception("Unexpected paramOpt command "+obj.getClass().getName());
+										}
+									} catch (Exception e) {
+										oos.writeObject(OptRunStatus.Failed.name()+":"+e.getMessage());
+										throw e;
+									}
+								}
+							} catch (Exception e) {
+								e.printStackTrace();
+							}finally {
+								//cleanup
+								if(optServerJobInfo != null && optServerJobInfo.getOptID() != null) {
+									File optDir = generateOptimizeDirName(optServerJobInfo.getOptID());
+									if(optDir.exists()) {
+										generateOptProblemFilePath(optServerJobInfo.getOptID()).delete();
+										generateOptOutputFilePath(optServerJobInfo.getOptID()).delete();
+										generateOptInterresultsFilePath(optServerJobInfo.getOptID()).delete();
+										optDir.delete();
+									}
+								}
+							}
+						}
+					},"paramOptProblem");
+					thread.setDaemon(true);
+					thread.start();
+				}
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+	});
+	optThread.setDaemon(true);
+	optThread.start();
+}
+private boolean sendOptResults(String optID,ObjectOutputStream oos) throws IOException {
+	File f = generateOptOutputFilePath(optID);
+	if(f.exists()) {// opt job done
+		byte[] bytes = FileUtils.readFileToByteArray(f);
+		oos.writeObject(bytes);
+		return true;
+	}
+	return false;
+}
+private File generateOptimizeDirName(String optID) {
+	File primaryUserDirInternal = new File(PropertyLoader.getRequiredProperty(PropertyLoader.primarySimDataDirInternalProperty));
+	File optProblemDir = new File(primaryUserDirInternal,generateOptFilePrefix(optID));
+	return optProblemDir;
+}
+private File generateOptOutputFilePath(String optID) {
+	String optOutputFileName = generateOptFilePrefix(optID)+"_optRun.bin";
+	return new File(generateOptimizeDirName(optID), optOutputFileName);
+}
+private File generateOptProblemFilePath(String optID) {
+	String optOutputFileName = generateOptFilePrefix(optID)+"_optProblem.bin";
+	return new File(generateOptimizeDirName(optID), optOutputFileName);
+}
+private File generateOptInterresultsFilePath(String optID) {
+	return new File(generateOptimizeDirName(optID), "interresults.txt");
+}
+private String generateOptFilePrefix(String optID) {
+	return "ParamOptemize_"+optID;
+
+}
+private Random random = new Random(System.currentTimeMillis());
+private OptServerJobInfo submitOptProblem(OptProblem optProblem) throws IOException, ExecutableException {
+		HtcProxy htcProxyClone = htcProxy.cloneThreadsafe();
+		File htcLogDirExternal = new File(PropertyLoader.getRequiredProperty(PropertyLoader.htcLogDirExternal));
+		File htcLogDirInternal = new File(PropertyLoader.getRequiredProperty(PropertyLoader.htcLogDirInternal));
+		int optID = random.nextInt(1000000);
+		String optSubFileName = generateOptFilePrefix(optID+"")+".sub";
+		File sub_file_external = new File(htcLogDirExternal, optSubFileName);
+		File sub_file_internal = new File(htcLogDirInternal, optSubFileName);
+		File optProblemFile = generateOptProblemFilePath(optID+"");
+		File optOutputFile = generateOptOutputFilePath(optID+"");
+		CopasiServicePython.writeOptProblem(optProblemFile, optProblem);//save param optimization problem to user dir
+		String slurmOptJobName = generateOptFilePrefix(optID+"");
+		HtcJobID htcJobID = htcProxyClone.submitOptimizationJob(slurmOptJobName, sub_file_internal, sub_file_external,optProblemFile,optOutputFile);
+		return new OptServerJobInfo(optID+"", new HtcJobInfo(htcJobID, slurmOptJobName));
+}
+private void optServerStopJob(OptServerJobInfo optServerJobInfo) {
+	try {
+		HtcProxy htcProxyClone = htcProxy.cloneThreadsafe();
+		htcProxyClone.killJobSafe(optServerJobInfo.getHtcJobInfo());
+//		CommandOutput commandOutput = htcProxyClone.getCommandService().command(new String[] {"scancel",optServerJobInfo.htcJobID.getJobNumber()+""});
+//		return commandOutput.getExitStatus()==0;
+	} catch (Exception e) {
+		// TODO Auto-generated catch block
+		e.printStackTrace();
+	}
+}
+private HtcJobStatus optServerGetJobStatus(HtcJobInfo htcJobInfo) {
+	HtcProxy htcProxyClone = htcProxy.cloneThreadsafe();
+	try {
+		return htcProxyClone.getJobStatus(Arrays.asList(new HtcJobInfo[] {htcJobInfo})).get(htcJobInfo);
+	} catch (Exception e) {
+		// TODO Auto-generated catch block
+		e.printStackTrace();
+		return null;
+	}
+}
 private static class PostProcessingChores {
 	/**
 	 * where solver runs

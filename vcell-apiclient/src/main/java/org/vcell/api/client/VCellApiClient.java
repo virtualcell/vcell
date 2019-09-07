@@ -13,7 +13,9 @@ import java.net.URISyntaxException;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
+import java.security.Principal;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.Locale;
 import java.util.stream.Collectors;
 import java.util.zip.DeflaterOutputStream;
@@ -21,11 +23,13 @@ import java.util.zip.InflaterInputStream;
 
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
+import org.apache.http.HttpHeaders;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.ProtocolException;
 import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.Credentials;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.AuthCache;
 import org.apache.http.client.ClientProtocolException;
@@ -56,6 +60,7 @@ import org.apache.http.util.EntityUtils;
 import org.apache.http.util.TextUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.vcell.api.client.examples.VCellApiClientTest;
 import org.vcell.api.client.query.BioModelsQuerySpec;
 import org.vcell.api.client.query.SimTasksQuerySpec;
 import org.vcell.api.common.AccessTokenRepresentation;
@@ -180,7 +185,6 @@ public class VCellApiClient {
 		}
 	}
 	
-	
 
 	public SimulationTaskRepresentation[] getSimTasks(SimTasksQuerySpec simTasksQuerySpec) throws IOException {
 
@@ -291,8 +295,9 @@ public class VCellApiClient {
 		return simulationRepresentation;
 	}
 	
-	public String getOptRunJson(String optimizationId) throws IOException {
-		HttpGet httpget = new HttpGet("https://"+httpHost.getHostName()+":"+httpHost.getPort()+"/optimization/"+optimizationId);
+	public String getOptRunJson(String optimizationId,boolean bStop) throws IOException {
+		
+		HttpGet httpget = new HttpGet("https://"+httpHost.getHostName()+":"+httpHost.getPort()+"/optimization/"+optimizationId+"?bStop="+bStop);
 		
 		if (lg.isInfoEnabled()) {
 			lg.info("Executing request to retrieve optimization run " + httpget.getRequestLine());
@@ -320,23 +325,29 @@ public class VCellApiClient {
 
 			public String handleResponse(final HttpResponse response) throws ClientProtocolException, IOException {
 				int status = response.getStatusLine().getStatusCode();
-				if (status == 202) {
+				if (status == 200) {
 					HttpEntity entity = response.getEntity();
-					if (lg.isInfoEnabled()) {
-						try (BufferedReader reader = new BufferedReader(new InputStreamReader(entity.getContent()));){
-							lg.info("optimizationId = "+reader.readLine());
-						}
+					String message = null;
+					try (BufferedReader reader = new BufferedReader(new InputStreamReader(entity.getContent()));){
+						message = reader.lines().collect(Collectors.joining());
 					}
-			        final Header locationHeader = response.getFirstHeader("location");
-			        if (locationHeader == null) {
-			            // got a redirect response, but no location header
-			            throw new ClientProtocolException(
-			                    "Received redirect response " + response.getStatusLine()
-			                    + " but no location header");
-			        }
-			        final String location = locationHeader.getValue();
-			        URI uri = createLocationURI(location);
-					return uri.toString();
+					return message;
+//					HttpEntity entity = response.getEntity();
+//					if (lg.isInfoEnabled()) {
+//						try (BufferedReader reader = new BufferedReader(new InputStreamReader(entity.getContent()));){
+//							lg.info("optimizationId = "+reader.readLine());
+//						}
+//					}
+//			        final Header locationHeader = response.getFirstHeader("location");
+//			        if (locationHeader == null) {
+//			            // got a redirect response, but no location header
+//			            throw new ClientProtocolException(
+//			                    "Received redirect response " + response.getStatusLine()
+//			                    + " but no location header");
+//			        }
+//			        final String location = locationHeader.getValue();
+//			        URI uri = createLocationURI(location);
+//					return uri.toString();
 				} else {
 					HttpEntity entity = response.getEntity();
 					String message = null;
@@ -355,8 +366,9 @@ public class VCellApiClient {
 			lg.info("returned: "+toStringTruncated(responseUri));
 		}
 
-		String optimizationId = responseUri.substring(responseUri.lastIndexOf('/') + 1);
-		return optimizationId;
+		return responseUri;
+//		String optimizationId = responseUri.substring(responseUri.lastIndexOf('/') + 1);
+//		return optimizationId;
 	}
 	
 	/**

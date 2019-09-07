@@ -9,6 +9,7 @@ show_help() {
 	echo "  or   singularity run --bind /host/path/to/file:/simdata docker://schaff/vcell-batch:latest [OPTIONS] command <args>"
 	echo ""
 	echo "  Script Commands"
+	echo "    ParamOptemize_python"
 	echo "    JavaPreprocessor64"
 	echo "    JavaPostprocessor64"
 	echo "    JavaSimExe64"
@@ -167,6 +168,10 @@ arguments=${arguments//$datadir_external/$datadir_internal}
 arguments=${arguments//$htclogdir_external/$htclogdir_internal}
 
 case $command in
+	ParamOptemize_python)
+		/usr/bin/python /vcellscripts/VCell_Opt/optService.py $arguments
+		exit $?
+		;;
 	FiniteVolume_x64)
 		/vcellbin/FiniteVolume_x64 $arguments
 		exit $?

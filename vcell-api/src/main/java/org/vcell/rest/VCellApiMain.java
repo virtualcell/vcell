@@ -22,7 +22,6 @@ import org.restlet.util.Series;
 import org.vcell.db.ConnectionFactory;
 import org.vcell.db.DatabaseService;
 import org.vcell.db.KeyFactory;
-import org.vcell.optimization.OptServerImpl;
 import org.vcell.rest.admin.AdminService;
 import org.vcell.rest.events.RestEventService;
 import org.vcell.rest.health.HealthService;
@@ -200,12 +199,10 @@ public class VCellApiMain {
 			Configuration templateConfiguration = new Configuration();
 			templateConfiguration.setObjectWrapper(new DefaultObjectWrapper());
 			
-			lg.trace("verify python installation");
-			PythonSupport.verifyInstallation(new PythonPackage[] { PythonPackage.COPASI, PythonPackage.LIBSBML, PythonPackage.THRIFT });
-
-			lg.trace("start Optimization Service");
-			OptServerImpl optServerImpl = new OptServerImpl();
-			optServerImpl.start();
+//			lg.trace("verify python installation");
+//			PythonSupport.verifyInstallation(new PythonPackage[] { PythonPackage.COPASI, PythonPackage.LIBSBML, PythonPackage.THRIFT });
+//
+//			lg.trace("start Optimization Service");
 			
 			
 			lg.trace("create app");
@@ -216,7 +213,7 @@ public class VCellApiMain {
 			HealthService healthService = new HealthService(restEventService, "localhost", port, bIgnoreCertProblems, bIgnoreHostProblems, testUserInfo.userid, testUserInfo.digestedPassword0);
 			AdminService adminService = new AdminService(adminDbTopLevel, databaseServerImpl);
 			RpcService rpcService = new RpcService(vcMessagingService_int);
-			WadlApplication app = new VCellApiApplication(restDatabaseService, userVerifier, optServerImpl, rpcService, restEventService, adminService, templateConfiguration, healthService, javascriptDir);
+			WadlApplication app = new VCellApiApplication(restDatabaseService, userVerifier, rpcService, restEventService, adminService, templateConfiguration, healthService, javascriptDir);
 			lg.trace("attach app");
 			component.getDefaultHost().attach(app);  
 
