@@ -606,13 +606,17 @@ public class SBMLImporter {
 
 	protected void addCompartmentTypes() {
 		if (sbmlModel.getNumCompartmentTypes() > 0) {
-			throw new SBMLImportException("VCell doesn't support CompartmentTypes at this time");
+//			throw new SBMLImportException("VCell doesn't support CompartmentTypes at this time");
+			localIssueList.add(new Issue(vcBioModel, issueContext, IssueCategory.SBMLImport_RestrictedFeature,
+					"VCell doesn't support CompartmentTypes at this time, ignoring. Please check the generated math for consistency.", Issue.Severity.WARNING));
 		}
 	}
 
 	protected void addSpeciesTypes() {
 		if (sbmlModel.getNumSpeciesTypes() > 0) {
-			throw new SBMLImportException("VCell doesn't support SpeciesTypes at this time");
+//			throw new SBMLImportException("VCell doesn't support SpeciesTypes at this time");
+			localIssueList.add(new Issue(vcBioModel, issueContext, IssueCategory.SBMLImport_RestrictedFeature,
+					"VCell doesn't support SpeciesTypes at this time, ignoring. Please check the generated math for consistency.", Issue.Severity.WARNING));
 		}
 	}
 
