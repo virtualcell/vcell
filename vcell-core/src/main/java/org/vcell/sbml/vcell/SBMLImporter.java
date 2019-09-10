@@ -1979,6 +1979,7 @@ public class SBMLImporter {
 					if(indexOf != -1) {
 						line = line.substring(0,indexOf-1)+line.substring(indexOf+str.length());
 					}
+					sb.append(line+"\n");
 				}
 				SBMLReader reader = new SBMLReader();
 				document = reader.readSBMLFromString(sb.toString());
