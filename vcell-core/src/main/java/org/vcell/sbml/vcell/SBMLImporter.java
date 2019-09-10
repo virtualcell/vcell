@@ -25,7 +25,9 @@ package org.vcell.sbml.vcell;
  */
 
 import java.beans.PropertyVetoException;
+import java.io.File;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -42,6 +44,7 @@ import java.util.Vector;
 
 import javax.xml.stream.XMLStreamException;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jdom.Element;
@@ -184,7 +187,6 @@ import cbit.vcell.model.Structure;
 import cbit.vcell.model.StructureSorter;
 import cbit.vcell.parser.AbstractNameScope;
 import cbit.vcell.parser.Expression;
-import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.ExpressionMathMLParser;
 import cbit.vcell.parser.LambdaFunction;
@@ -1957,12 +1959,29 @@ public class SBMLImporter {
 	 */
 	public BioModel getBioModel() throws XMLStreamException, IOException {
 		SBMLDocument document;
+
 		String output = "didn't check";
 		try {
 			if (sbmlFileName != null) {
 				// Read SBML model into libSBML SBMLDocument and create an SBML model
+				List<String> readLines = FileUtils.readLines(new File(sbmlFileName),Charset.defaultCharset());
+				StringBuffer sb = new StringBuffer();
+				//Temporary fix for org.sbml.jsbml.xml.parsers.RenderParser.processEndDocument(SBMLDocument sbmlDocument)
+				//throws NPE when "<sbml ... xmlns:render... " is defined in input document
+				for (String line:readLines) {
+					String str = "xmlns:render=\"http://www.sbml.org/sbml/level3/version1/render/version1\"";
+					int indexOf = line.indexOf(str);
+					if(indexOf != -1) {
+						line = line.substring(0,indexOf-1)+line.substring(indexOf+str.length());
+					}
+					str = "render:required=\"false\"";
+					indexOf = line.indexOf(str);
+					if(indexOf != -1) {
+						line = line.substring(0,indexOf-1)+line.substring(indexOf+str.length());
+					}
+				}
 				SBMLReader reader = new SBMLReader();
-				document = reader.readSBML(sbmlFileName);
+				document = reader.readSBMLFromString(sb.toString());
 	//		document.checkConsistencyOffline();
 	//		long numProblems = document.getNumErrors();
 	//
