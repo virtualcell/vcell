@@ -691,12 +691,11 @@ public class SBMLImporter {
 		}
 	}
 
-	protected void addFunctionDefinitions() {
+	private void addFunctionDefinitions() {
 		if (sbmlModel == null) {
 			throw new SBMLImportException("SBML model is NULL");
 		}
-		ListOf listofFunctionDefinitions = sbmlModel
-				.getListOfFunctionDefinitions();
+		ListOf<FunctionDefinition> listofFunctionDefinitions = sbmlModel.getListOfFunctionDefinitions();
 		if (listofFunctionDefinitions == null) {
 			System.out.println("No Function Definitions");
 			return;
@@ -704,12 +703,10 @@ public class SBMLImporter {
 		// The function definitions contain lambda function definition.
 		// Each lambda function has a name, (list of) argument(s), function body
 		// which is represented as a math element.
-		lambdaFunctions = new LambdaFunction[(int) sbmlModel
-				.getNumFunctionDefinitions()];
+		lambdaFunctions = new LambdaFunction[(int) sbmlModel.getNumFunctionDefinitions()];
 		try {
 			for (int i = 0; i < sbmlModel.getNumFunctionDefinitions(); i++) {
-				FunctionDefinition fnDefn = (FunctionDefinition) listofFunctionDefinitions
-						.get(i);
+				FunctionDefinition fnDefn = (FunctionDefinition) listofFunctionDefinitions.get(i);
 				String functionName = new String(fnDefn.getId());
 				ASTNode math = null;
 				Vector<String> argsVector = new Vector<String>();
@@ -723,29 +720,23 @@ public class SBMLImporter {
 						continue;
 					}
 					// Add function arguments into vector, print args
-					// Note that lambda function always should have at least 2
-					// children
+					// Note that lambda function always should have at least 2 children
 					for (int j = 0; j < math.getNumChildren() - 1; ++j) {
 						argsVector.addElement(new String(math.getChild(j).getName()));
 					}
-
 					functionArgs = argsVector.toArray(new String[0]);
-
 					math = math.getChild(math.getNumChildren() - 1);
 					// formula = libsbml.formulaToString(math);
-
 					Expression fnExpr = getExpressionFromFormula(math);
-					lambdaFunctions[i] = new LambdaFunction(functionName,
-							fnExpr, functionArgs);
+					lambdaFunctions[i] = new LambdaFunction(functionName, fnExpr, functionArgs);
 				}
 			}
 		} catch (Exception e) {
 			e.printStackTrace(System.out);
-			throw new SBMLImportException("Error adding Lambda function"
-					+ e.getMessage(), e);
+			throw new SBMLImportException("Error adding Lambda function" + e.getMessage(), e);
 		}
 	}
-
+	
 	/**
 	 * addParameters : Adds global parameters from SBML model to VCell model. If
 	 * expression for global parameter contains species, creates a conc_factor
@@ -996,6 +987,44 @@ public class SBMLImporter {
 		// adjustedExpr = adjustTimeConvFactor(model, adjustedExpr);
 
 		return adjustedExpr;
+	}
+	
+	private void processParameters() throws ExpressionException {
+		SimulationContext simContext = vcBioModel.getSimulationContext(0);
+		Model vcModel = simContext.getModel();
+		ModelParameter[] mps = vcModel.getModelParameters();
+		if (mps == null || mps.length == 0) {
+			System.out.println("SBML Import: no model parameters.");
+			return;
+		}
+		for (ModelParameter mp : mps) {
+			Expression expression = mp.getExpression();
+			if(expression.isNumeric()) {
+				continue;
+			}
+			String[] symbols = expression.getSymbols();	// check if the expression has unresolved symbols
+			if(symbols != null) {
+				for(String symbol : symbols) {
+					SymbolTableEntry ste = simContext.getEntry(symbol);
+					if(ste == null) {
+						ReactionStep candidate = vcBioModel.getModel().getReactionStep(symbol);
+						if(candidate != null) {
+							// we replace the reaction name with the expression of the reaction rate, if possible
+							Kinetics kinetics = candidate.getKinetics();
+							KineticsParameter reactionRate = kinetics.getKineticsParameterFromRole(Kinetics.ROLE_LumpedReactionRate);
+							if(reactionRate != null && reactionRate.getExpression() != null) {
+								Expression rrExpression = reactionRate.getExpression();
+								expression.substituteInPlace(new Expression(symbol), new Expression(rrExpression.flatten()));
+							} else {
+								throw new SBMLImportException("Unsupported use of a Reaction name '" + symbol + "' in the expression of Global Parameter '" + mp.getDisplayName() + "'.");
+							}
+						} else {
+							System.out.println("Symbol '" + symbol + "' still unresolved.");
+						}
+					}
+				}
+			}
+		}
 	}
 
 	/**
@@ -1423,7 +1452,8 @@ public class SBMLImporter {
 							Kinetics kinetics = candidate.getKinetics();
 							KineticsParameter reactionRate = kinetics.getKineticsParameterFromRole(Kinetics.ROLE_LumpedReactionRate);
 							if(reactionRate != null && reactionRate.getExpression() != null) {
-								oldExpression.substituteInPlace(new Expression(symbol), new Expression(reactionRate.getExpression()));
+								Expression rrExpression = reactionRate.getExpression();
+								oldExpression.substituteInPlace(new Expression(symbol), new Expression(rrExpression.flatten()));
 							} else {
 								throw new RuntimeException("Unsupported use of a Reaction name '" + symbol + "' in the expression of an AssignmentRule variable '" + vcVariableName + "'.");
 							}
@@ -1439,7 +1469,7 @@ public class SBMLImporter {
 		assignmentRulesHash = destMap;
 	}
 	
-	private void finalizeAssignmentRules() throws ExpressionBindingException, PropertyVetoException {
+	private void finalizeAssignmentRules() {
 		SimulationContext simContext = vcBioModel.getSimulationContext(0);
 		
 		for (Map.Entry<String, Expression> entry : assignmentRulesHash.entrySet()) {
@@ -1456,12 +1486,17 @@ public class SBMLImporter {
 			if (ste instanceof cbit.vcell.model.Parameter && !vcExpression.isNumeric()) {
 				System.out.println("Warning: Parameter '" + ste.getName() + "' is used as a assignment rule variable.");
 			}
-			
+
 			if(ste instanceof SpeciesContext || ste instanceof cbit.vcell.model.Parameter) {
 				String vcAssignmentRuleName = simContext.getFreeAssignmentRuleName();
 				cbit.vcell.mapping.AssignmentRule vcAssignmentRule = new cbit.vcell.mapping.AssignmentRule(vcAssignmentRuleName, ste, vcExpression, simContext);
-				vcAssignmentRule.bind();
-				simContext.addAssignmentRule(vcAssignmentRule);
+				try {
+					vcAssignmentRule.bind();
+					simContext.addAssignmentRule(vcAssignmentRule);
+				} catch(PropertyVetoException | ExpressionBindingException e) {
+					e.printStackTrace(System.out);
+					throw new SBMLImportException("Unable to create and add assignment rule to VC model : " + e.getMessage());
+				}
 			}
 		}
 	}
@@ -1516,7 +1551,7 @@ public class SBMLImporter {
 	// if yes, we replace the reaction name with the expression of the reaction rate
 	private void processRateRules() throws ExpressionException {
 		if (assignmentRulesHash == null || assignmentRulesHash.isEmpty()) {
-			System.out.println("SBML Import: no assignment rules.");
+			System.out.println("SBML Import: no rate rules.");
 			return;
 		}
 		SimulationContext simContext = vcBioModel.getSimulationContext(0);
@@ -1536,7 +1571,8 @@ public class SBMLImporter {
 							Kinetics kinetics = candidate.getKinetics();
 							KineticsParameter reactionRate = kinetics.getKineticsParameterFromRole(Kinetics.ROLE_LumpedReactionRate);
 							if(reactionRate != null && reactionRate.getExpression() != null) {
-								vcRateRuleExpr.substituteInPlace(new Expression(symbol), new Expression(reactionRate.getExpression()));
+								Expression rrExpression = reactionRate.getExpression();
+								vcRateRuleExpr.substituteInPlace(new Expression(symbol), new Expression(rrExpression.flatten()));
 							} else {
 								throw new RuntimeException("Unsupported use of a Reaction name '" + symbol + "' in the expression of RateRule variable '" + vcVariableName + "'.");
 							}
@@ -1553,19 +1589,22 @@ public class SBMLImporter {
 	}
 
 	// at the very end, create the RateRules and add them to the simulation context
-	private void finalizeRateRules() throws ExpressionBindingException {
+	private void finalizeRateRules() {
 		SimulationContext simContext = vcBioModel.getSimulationContext(0);
 		
 		for (Map.Entry<String, Expression> entry : rateRulesHash.entrySet()) {
 			String vcVariableName = entry.getKey();
 			Expression vcRateRuleExpr = entry.getValue();
+			String str = vcRateRuleExpr.infix();
+//			str = str.replace("* v)", "* 3.0)");
 			SymbolTableEntry ste = simContext.getEntry(vcVariableName);
 			try {													// --------------------- rate rule expression
+				vcRateRuleExpr = new Expression(str);
 				String vcRateRuleName = simContext.getFreeRateRuleName();
 				cbit.vcell.mapping.RateRule vcRateRule = new cbit.vcell.mapping.RateRule(vcRateRuleName, ste, vcRateRuleExpr, simContext);
 				vcRateRule.bind();
 				simContext.addRateRule(vcRateRule);
-			} catch (PropertyVetoException e) {
+			} catch (PropertyVetoException | ExpressionException e) {
 				e.printStackTrace(System.out);
 				throw new SBMLImportException("Unable to create and add rate rule to VC model : " + e.getMessage());
 			}
@@ -2624,26 +2663,18 @@ public class SBMLImporter {
 	 * @throws XMLStreamException 
 	 * @throws SBMLException 
 	 */
-	private Expression getExpressionFromFormula(ASTNode math)
-			throws ExpressionException, SBMLException, XMLStreamException {
+	private Expression getExpressionFromFormula(ASTNode math) throws ExpressionException, SBMLException, XMLStreamException {
 		String mathMLStr = JSBML.writeMathMLToString(math);
 		if (mathMLStr.contains(DELAY_URL)) {
-			throw new SBMLImportException("unsupported SBML element 'delay'",
-					SBMLImportException.Category.DELAY);
-
+			throw new SBMLImportException("unsupported SBML element 'delay'", SBMLImportException.Category.DELAY);
 		}
-		ExpressionMathMLParser exprMathMLParser = new ExpressionMathMLParser(
-				lambdaFunctions);
+		ExpressionMathMLParser exprMathMLParser = new ExpressionMathMLParser(lambdaFunctions);
 		Expression expr = exprMathMLParser.fromMathML(mathMLStr);
 		return expr;
 	}
 
-	/**
-	 * getReactionStructure :
-	 */
 	private Structure getReactionStructure(org.sbml.jsbml.Reaction sbmlRxn,
-			SpeciesContext[] speciesContexts, Element sbmlImportElement)
-			throws Exception {
+			SpeciesContext[] speciesContexts, Element sbmlImportElement) throws Exception {
 		Structure struct = null;
 		String structName = null;
 		Model vcModel = vcBioModel.getSimulationContext(0).getModel();
@@ -2666,11 +2697,9 @@ public class SBMLImporter {
 		if (sbmlImportElement != null) {
 			// Get the embedded element in the annotation str (fluxStep or
 			// simpleReaction), and the structure attribute from the element.
-			Element embeddedElement = getEmbeddedElementInAnnotation(
-					sbmlImportElement, REACTION);
+			Element embeddedElement = getEmbeddedElementInAnnotation(sbmlImportElement, REACTION);
 			if (embeddedElement != null) {
-				structName = embeddedElement
-						.getAttributeValue(XMLTags.StructureAttrTag);
+				structName = embeddedElement.getAttributeValue(XMLTags.StructureAttrTag);
 				// Using the structName, get the structure from the structures
 				// (compartments) list.
 				struct = vcModel.getStructure(structName);
@@ -2941,6 +2970,7 @@ public class SBMLImporter {
 		// for those vars can be read in).
 		try {
 			fixRateRules(sbmlToVcNameMap);
+			processParameters();
 			processAssignmentRules();
 			processRateRules();
 		} catch (ExpressionException | SBMLException | XMLStreamException e) {
@@ -2954,8 +2984,7 @@ public class SBMLImporter {
 			vcBioModel.getSimulationContext(0).getModel().setStructures(sortedStructures);
 		} catch (PropertyVetoException e1) {
 			e1.printStackTrace(System.out);
-			throw new SBMLImportException("Error while sorting compartments: "
-					+ e1.getMessage(), e1);
+			throw new SBMLImportException("Error while sorting compartments: " + e1.getMessage(), e1);
 		}
 
 		// Add Events
@@ -2975,20 +3004,15 @@ public class SBMLImporter {
 		}
 		
 		// post processing
-		try {
-			finalizeAssignmentRules();
-			finalizeRateRules();
-		} catch (PropertyVetoException | ExpressionBindingException e) {
-			e.printStackTrace(System.out);
-			throw new SBMLImportException(e.getMessage(), e);
-		}
+		finalizeAssignmentRules();
+		finalizeRateRules();
 		postProcessing();
 	}
 	
 	private void postProcessing() {
 		
 		// clamp all AssignmentRule species
-		SimulationContext simContext = vcBioModel.getSimulationContext(0);	// the one and only
+		SimulationContext simContext = vcBioModel.getSimulationContext(0);
 		cbit.vcell.mapping.AssignmentRule[] ars = simContext.getAssignmentRules();
 		if(ars != null && ars.length > 0) {
 			for(cbit.vcell.mapping.AssignmentRule ar : ars) {
