@@ -989,7 +989,7 @@ public class SBMLImporter {
 		return adjustedExpr;
 	}
 	
-	private void processParameters() throws ExpressionException {
+	private void processParameters() throws ExpressionException, PropertyVetoException {
 		SimulationContext simContext = vcBioModel.getSimulationContext(0);
 		Model vcModel = simContext.getModel();
 		ModelParameter[] mps = vcModel.getModelParameters();
@@ -1009,6 +1009,7 @@ public class SBMLImporter {
 					if(ste == null) {
 						ReactionStep candidate = vcBioModel.getModel().getReactionStep(symbol);
 						if(candidate != null) {
+							convertLocalParameters(candidate);
 							// we replace the reaction name with the expression of the reaction rate, if possible
 							Kinetics kinetics = candidate.getKinetics();
 							KineticsParameter reactionRate = kinetics.getKineticsParameterFromRole(Kinetics.ROLE_LumpedReactionRate);
@@ -1392,7 +1393,7 @@ public class SBMLImporter {
 
 	// called after the species, structures and parameters are initialized
 	// check if any assignment rule variables or expressions contain x,y,z and substitute them
-	private void fixAssignmentRules(Map<String, String> sbmlToVcNameMap) throws ExpressionException, PropertyVetoException {
+	private void readAssignmentRules(Map<String, String> sbmlToVcNameMap) throws ExpressionException, PropertyVetoException {
 		if (assignmentRulesHash == null || assignmentRulesHash.isEmpty()) {
 			System.out.println("SBML Import: no assignment rules.");
 			return;
@@ -1431,7 +1432,7 @@ public class SBMLImporter {
 	
 	// called after the reactions are parsed, we check if the rule expression references any reaction by name
 	// if yes, we replace the reaction name with the expression of the reaction rate
-	private void processAssignmentRules() throws ExpressionException {
+	private void processAssignmentRules() throws ExpressionException, PropertyVetoException {
 		if (assignmentRulesHash == null || assignmentRulesHash.isEmpty()) {
 			System.out.println("SBML Import: no assignment rules.");
 			return;
@@ -1448,7 +1449,8 @@ public class SBMLImporter {
 					SymbolTableEntry ste = simContext.getEntry(symbol);
 					if(ste == null) {	// a symbol in the expression is not species or global; we check if it's a reaction name
 						ReactionStep candidate = vcBioModel.getModel().getReactionStep(symbol);
-						if(candidate != null) {		// we replace the reaction name with the expression of the reaction rate, if possible
+						if(candidate != null) {					// we replace the reaction name with the expression of the reaction rate, if possible
+							convertLocalParameters(candidate);	// convert user defined local parameters to global, otherwise the expression won't bind
 							Kinetics kinetics = candidate.getKinetics();
 							KineticsParameter reactionRate = kinetics.getKineticsParameterFromRole(Kinetics.ROLE_LumpedReactionRate);
 							if(reactionRate != null && reactionRate.getExpression() != null) {
@@ -1501,7 +1503,7 @@ public class SBMLImporter {
 		}
 	}
 	//------------------------------------------------------------------------------------------------------------------------------------------
-	private void fixRateRules(Map<String, String> sbmlToVcNameMap) throws ExpressionException, SBMLException, XMLStreamException {
+	private void readRateRules(Map<String, String> sbmlToVcNameMap) throws ExpressionException, SBMLException, XMLStreamException {
 		if (sbmlModel == null) {
 			throw new SBMLImportException("SBML model is NULL");
 		}
@@ -1549,7 +1551,7 @@ public class SBMLImporter {
 	
 	// called after the reactions are parsed, we check if the rule expression references any reaction by name
 	// if yes, we replace the reaction name with the expression of the reaction rate
-	private void processRateRules() throws ExpressionException {
+	private void processRateRules() throws ExpressionException, PropertyVetoException {
 		if (assignmentRulesHash == null || assignmentRulesHash.isEmpty()) {
 			System.out.println("SBML Import: no rate rules.");
 			return;
@@ -1567,6 +1569,7 @@ public class SBMLImporter {
 					if(ste == null) {
 						ReactionStep candidate = vcBioModel.getModel().getReactionStep(symbol);
 						if(candidate != null) {
+							convertLocalParameters(candidate);
 							// we replace the reaction name with the expression of the reaction rate, if possible
 							Kinetics kinetics = candidate.getKinetics();
 							KineticsParameter reactionRate = kinetics.getKineticsParameterFromRole(Kinetics.ROLE_LumpedReactionRate);
@@ -1586,6 +1589,48 @@ public class SBMLImporter {
 			destMap.put(vcVariableName, newExpression);
 		}
 		rateRulesHash = destMap;
+		for (Map.Entry<String, Expression> entry : rateRulesHash.entrySet()) {
+			String vcVariableName = entry.getKey();
+			Expression vcRateRuleExpr = entry.getValue();
+			String[] symbols = vcRateRuleExpr.getSymbols();	// check if the expression has unresolved symbols
+			if(symbols != null) {
+				for(String symbol : symbols) {
+					SymbolTableEntry ste = simContext.getEntry(symbol);
+					if(ste == null) {
+						throw new SBMLException("RateRule variable '" + vcVariableName + "' expression symbol '" + symbol + "' still unresolved.");
+					}
+				}
+			}
+		}
+	}
+	// convert user defined local parameters to global in this reaction
+	private void convertLocalParameters(ReactionStep rs) throws ExpressionException, PropertyVetoException {
+		KineticsParameter[] kps = rs.getKinetics().getKineticsParameters();
+		for(KineticsParameter kp : kps) {
+			if(kp.getRole() == Kinetics.ROLE_UserDefined) {
+				String newName = rs.getDisplayName() + "_" + kp.getName();
+				rs.getKinetics().renameParameter(kp.getName(), newName);
+			}
+		}
+		kps = rs.getKinetics().getKineticsParameters();
+		for(KineticsParameter kp : kps) {
+			if(kp.getRole() == Kinetics.ROLE_UserDefined) {
+				ModelParameter mp = rs.getKinetics().getReactionStep().getModel().getModelParameter(kp.getName());
+				if(mp != null) {
+					throw new SBMLException("Unable to convert user defined parameter '" + kp.getName() + "' to global in reaction '" + rs.getDisplayName() + "': it already exists.");
+				}
+				
+				if (!kp.getExpression().isNumeric()) {	// if parameter is not numeric and its expression contains other local parameters, throw exception
+					String[] symbols = kp.getExpression().getSymbols();
+					for (int i = 0; i < symbols.length; i++) {
+						if (rs.getKinetics().getKineticsParameter(symbols[i]) != null) {
+							throw new SBMLException("Parameter '" + kp.getName() + "' contains other local kinetic parameters and cannot be converted to global.");
+						}
+					}
+				}
+				rs.getKinetics().convertParameterType(kp, true);
+			}
+		}
 	}
 
 	// at the very end, create the RateRules and add them to the simulation context
@@ -1595,11 +1640,8 @@ public class SBMLImporter {
 		for (Map.Entry<String, Expression> entry : rateRulesHash.entrySet()) {
 			String vcVariableName = entry.getKey();
 			Expression vcRateRuleExpr = entry.getValue();
-			String str = vcRateRuleExpr.infix();
-//			str = str.replace("* v)", "* 3.0)");
 			SymbolTableEntry ste = simContext.getEntry(vcVariableName);
 			try {													// --------------------- rate rule expression
-				vcRateRuleExpr = new Expression(str);
 				String vcRateRuleName = simContext.getFreeRateRuleName();
 				cbit.vcell.mapping.RateRule vcRateRule = new cbit.vcell.mapping.RateRule(vcRateRuleName, ste, vcRateRuleExpr, simContext);
 				vcRateRule.bind();
@@ -2939,7 +2981,7 @@ public class SBMLImporter {
 		// Create the vCell Assignment Rules, now that the species, parameters and structures are defined
 		// If species variables were renamed from x,y,z, apply corrections to the hash
 		try {
-			fixAssignmentRules(sbmlToVcNameMap);
+			readAssignmentRules(sbmlToVcNameMap);
 		} catch (ExpressionException | PropertyVetoException e) {
 			e.printStackTrace();
 			throw new SBMLImportException(e.getMessage(), e);
@@ -2969,11 +3011,11 @@ public class SBMLImporter {
 		// compartment/species/parameter need to be defined before rate rules
 		// for those vars can be read in).
 		try {
-			fixRateRules(sbmlToVcNameMap);
+			readRateRules(sbmlToVcNameMap);
 			processParameters();
 			processAssignmentRules();
 			processRateRules();
-		} catch (ExpressionException | SBMLException | XMLStreamException e) {
+		} catch (ExpressionException | SBMLException | XMLStreamException | PropertyVetoException e) {
 			e.printStackTrace(System.out);
 			throw new SBMLImportException(e.getMessage(), e);
 		}
