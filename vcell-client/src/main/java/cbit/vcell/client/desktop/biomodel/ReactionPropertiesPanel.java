@@ -57,6 +57,8 @@ import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveViewID;
 import cbit.vcell.model.DistributedKinetics;
 import cbit.vcell.model.Feature;
 import cbit.vcell.model.FluxReaction;
+import cbit.vcell.model.GeneralKinetics;
+import cbit.vcell.model.GeneralLumpedKinetics;
 import cbit.vcell.model.HMM_IRRKinetics;
 import cbit.vcell.model.HMM_REVKinetics;
 import cbit.vcell.model.Kinetics;
@@ -89,6 +91,8 @@ public class ReactionPropertiesPanel extends DocumentEditorSubPanel {
 	private JTextField nameTextField = null;
 	private JLabel electricalPropertiesLabel;
 	private JCheckBox isReversibleCheckBox;
+	private JLabel reversibleLabel;
+
 
 	// wei's code
 	private BioModel bioModel = null;
@@ -223,6 +227,9 @@ private void initialize() {
 		electricalPropertiesLabel = new JLabel("Electrical Properties");
 		electricalPropertiesLabel.setVisible(false);
 
+		reversibleLabel = new JLabel("Reversible");
+		reversibleLabel.setVisible(false);
+
 		reactionElectricalPropertiesPanel = new ReactionElectricalPropertiesPanel();
 		reactionElectricalPropertiesPanel.setVisible(false);
 		
@@ -269,7 +276,7 @@ private void initialize() {
 		gbc.gridx = 0; 
 		gbc.gridy = gridyy;
 		gbc.anchor = GridBagConstraints.LINE_END;
-		p.add(new JLabel("Reversible"), gbc);
+		p.add(reversibleLabel, gbc);
 		
 		gbc = new java.awt.GridBagConstraints();
 		gbc.gridx = 1; 
@@ -741,6 +748,8 @@ protected void updateInterface() {
 	kineticsTypeComboBox.setEnabled(bNonNullReactionStep);
 	BeanUtils.enableComponents(reactionElectricalPropertiesPanel, bNonNullReactionStep);
 	jToggleButton.setEnabled(bNonNullReactionStep);
+	reversibleLabel.setVisible(true);
+	isReversibleCheckBox.setVisible(true);
 	if (bNonNullReactionStep) {
 		initKineticChoices();
 		boolean bMembrane = reactionStep.getStructure() instanceof Membrane;
@@ -764,6 +773,9 @@ protected void updateInterface() {
 		} else if(reactionStep.getKinetics() instanceof Macroscopic_IRRKinetics) {
 			isReversibleCheckBox.setSelected(false);
 			isReversibleCheckBox.setEnabled(false);
+		} else if(reactionStep.getKinetics() instanceof GeneralKinetics || reactionStep.getKinetics() instanceof GeneralLumpedKinetics) {
+			reversibleLabel.setVisible(false);
+			isReversibleCheckBox.setVisible(false);
 		} else {
 			isReversibleCheckBox.setSelected(reversible);
 			isReversibleCheckBox.setEnabled(true);
