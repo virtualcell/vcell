@@ -1552,7 +1552,7 @@ public class SBMLImporter {
 	// called after the reactions are parsed, we check if the rule expression references any reaction by name
 	// if yes, we replace the reaction name with the expression of the reaction rate
 	private void processRateRules() throws ExpressionException, PropertyVetoException {
-		if (assignmentRulesHash == null || assignmentRulesHash.isEmpty()) {
+		if (rateRulesHash == null || rateRulesHash.isEmpty()) {
 			System.out.println("SBML Import: no rate rules.");
 			return;
 		}
