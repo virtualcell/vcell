@@ -2367,6 +2367,8 @@ public class SBMLImporter {
 			sbmlUnitIdentifierHash.put(UnitDefinition.AREA, tempVCUnitSystem.getInstance("m2"));
 			sbmlUnitIdentifierHash.put(UnitDefinition.LENGTH, tempVCUnitSystem.getInstance("m"));
 			sbmlUnitIdentifierHash.put(UnitDefinition.TIME, tempVCUnitSystem.getInstance("s"));
+		} else {
+			sbmlUnitIdentifierHash.put(UnitDefinition.TIME, tempVCUnitSystem.getInstance("s"));
 		}
 
 		if (sbmlModel.isSetSubstanceUnits()){
@@ -2648,9 +2650,28 @@ public class SBMLImporter {
 			// default (VC)modelUnitSystem
 			return ModelUnitSystem.createDefaultVCModelUnitSystem();
 		} else {
+			ModelUnitSystem modelUnitSystem = ModelUnitSystem.createDefaultVCModelUnitSystem();
+			VCUnitDefinition mole = modelUnitSystem.getInstance("mole");
+			VCUnitDefinition molecules = modelUnitSystem.getInstance("molecules");
+			VCUnitDefinition dimensionless = modelUnitSystem.getInstance_DIMENSIONLESS();
+			if (modelSubstanceUnit == null) {
+				modelSubstanceUnit = dimensionless;
+			}
+			if (modelVolumeUnit == null) {
+				modelVolumeUnit = dimensionless;
+			}
+			if (modelAreaUnit == null) {
+				modelAreaUnit = dimensionless;
+			}
+			if (modelLengthUnit == null) {
+				modelLengthUnit = dimensionless;
+			}
+			if (!modelSubstanceUnit.isCompatible(mole) && !modelSubstanceUnit.isCompatible(molecules) && !modelSubstanceUnit.isCompatible(dimensionless)) {
+				localIssueList.add(new Issue(vcBioModel, issueContext, IssueCategory.SBMLImport_RestrictedFeature,
+						"Model substance unit ["+modelSubstanceUnit+"] is not compatible with mole or molecules", Issue.Severity.WARNING));
+			}
 			return ModelUnitSystem.createSBMLUnitSystem(modelSubstanceUnit,
-					modelVolumeUnit, modelAreaUnit, modelLengthUnit,
-					modelTimeUnit);
+					modelVolumeUnit, modelAreaUnit, modelLengthUnit, modelTimeUnit);
 		}
 
 	}

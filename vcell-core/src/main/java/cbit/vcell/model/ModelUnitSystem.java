@@ -467,36 +467,41 @@ public class ModelUnitSystem extends VCUnitSystem implements Matchable {
 		}
 		
 		private static ModelUnitSystem createUnitSystem(VCUnitDefinition volumeSubstanceUnit, VCUnitDefinition membraneSubstanceUnit, VCUnitDefinition lumpedReactionSubstanceUnit, VCUnitDefinition volumeUnit, VCUnitDefinition areaUnit, VCUnitDefinition lengthUnit, VCUnitDefinition timeUnit) {
+			return createUnitSystem(volumeSubstanceUnit, membraneSubstanceUnit, lumpedReactionSubstanceUnit, volumeUnit, areaUnit, lengthUnit, timeUnit, false);
+		}
+		private static ModelUnitSystem createUnitSystem(VCUnitDefinition volumeSubstanceUnit, VCUnitDefinition membraneSubstanceUnit, VCUnitDefinition lumpedReactionSubstanceUnit, VCUnitDefinition volumeUnit, VCUnitDefinition areaUnit, VCUnitDefinition lengthUnit, VCUnitDefinition timeUnit, 
+				boolean bSilent) {
 			ModelUnitSystem modelUnitSystem = new ModelUnitSystem();
-			VCUnitDefinition mole = modelUnitSystem.getInstance("mole");
-			VCUnitDefinition molecules = modelUnitSystem.getInstance("molecules");
-			if (volumeSubstanceUnit==null || (!volumeSubstanceUnit.isCompatible(mole) && !volumeSubstanceUnit.isCompatible(molecules) && !volumeSubstanceUnit.isCompatible(modelUnitSystem.getInstance_DIMENSIONLESS()))){
-				throw new RuntimeException("volume substance unit ["+volumeSubstanceUnit+"] must be compatible with mole or molecules");
-			}
-			if (membraneSubstanceUnit==null || (!membraneSubstanceUnit.isCompatible(mole) && !membraneSubstanceUnit.isCompatible(molecules) && !membraneSubstanceUnit.isCompatible(modelUnitSystem.getInstance_DIMENSIONLESS()))){
-				throw new RuntimeException("membrane substance unit ["+membraneSubstanceUnit+"] must be compatible with mole or molecules");
-			}
-			if (lumpedReactionSubstanceUnit==null || (!lumpedReactionSubstanceUnit.isCompatible(mole) && !lumpedReactionSubstanceUnit.isCompatible(molecules) && !lumpedReactionSubstanceUnit.isCompatible(modelUnitSystem.getInstance_DIMENSIONLESS()))){
-				throw new RuntimeException("lumped reaction substance unit ["+lumpedReactionSubstanceUnit+"] must be compatible with mole or molecules");
-			}
-			if (lengthUnit==null || (!lengthUnit.isCompatible(modelUnitSystem.getInstance("m")) && !lengthUnit.isCompatible(modelUnitSystem.getInstance_DIMENSIONLESS()))){
-				throw new RuntimeException("length unit ["+lengthUnit+"] must be compatible with meter");
-			}
-			if (areaUnit==null || (!areaUnit.isCompatible(modelUnitSystem.getInstance("m2")) && !areaUnit.isCompatible(modelUnitSystem.getInstance_DIMENSIONLESS()))){
-				throw new RuntimeException("area unit ["+areaUnit+"] must be compatible with meter^2");
-			}
-			if (volumeUnit==null || (!volumeUnit.isCompatible(modelUnitSystem.getInstance("m3")) && !volumeUnit.isCompatible(modelUnitSystem.getInstance_DIMENSIONLESS()))){
-				throw new RuntimeException("volume unit ["+volumeUnit+"] must be compatible with meter^3");
-			}
-			// if vol unit is dimensionless, area and length should also be dimensionless.
-			if (volumeUnit.isCompatible(modelUnitSystem.getInstance_DIMENSIONLESS())) {
-				if (!lengthUnit.isCompatible(modelUnitSystem.getInstance_DIMENSIONLESS()) && !areaUnit.isCompatible(modelUnitSystem.getInstance_DIMENSIONLESS())) {
-					throw new RuntimeException("If volume unit is dimensionless, length and area units should also be dimensionless.");
+			if(!bSilent) {
+				VCUnitDefinition mole = modelUnitSystem.getInstance("mole");
+				VCUnitDefinition molecules = modelUnitSystem.getInstance("molecules");
+				if (volumeSubstanceUnit==null || (!volumeSubstanceUnit.isCompatible(mole) && !volumeSubstanceUnit.isCompatible(molecules) && !volumeSubstanceUnit.isCompatible(modelUnitSystem.getInstance_DIMENSIONLESS()))){
+					throw new RuntimeException("volume substance unit ["+volumeSubstanceUnit+"] must be compatible with mole or molecules");
 				}
-			}
-			
-			if (timeUnit==null || (!timeUnit.isCompatible(modelUnitSystem.getInstance("s")) && !timeUnit.isCompatible(modelUnitSystem.getInstance_DIMENSIONLESS()))){
-				throw new RuntimeException("time unit ["+timeUnit+"] must be compatible with seconds");
+				if (membraneSubstanceUnit==null || (!membraneSubstanceUnit.isCompatible(mole) && !membraneSubstanceUnit.isCompatible(molecules) && !membraneSubstanceUnit.isCompatible(modelUnitSystem.getInstance_DIMENSIONLESS()))){
+					throw new RuntimeException("membrane substance unit ["+membraneSubstanceUnit+"] must be compatible with mole or molecules");
+				}
+				if (lumpedReactionSubstanceUnit==null || (!lumpedReactionSubstanceUnit.isCompatible(mole) && !lumpedReactionSubstanceUnit.isCompatible(molecules) && !lumpedReactionSubstanceUnit.isCompatible(modelUnitSystem.getInstance_DIMENSIONLESS()))){
+					throw new RuntimeException("lumped reaction substance unit ["+lumpedReactionSubstanceUnit+"] must be compatible with mole or molecules");
+				}
+				if (lengthUnit==null || (!lengthUnit.isCompatible(modelUnitSystem.getInstance("m")) && !lengthUnit.isCompatible(modelUnitSystem.getInstance_DIMENSIONLESS()))){
+					throw new RuntimeException("length unit ["+lengthUnit+"] must be compatible with meter");
+				}
+				if (areaUnit==null || (!areaUnit.isCompatible(modelUnitSystem.getInstance("m2")) && !areaUnit.isCompatible(modelUnitSystem.getInstance_DIMENSIONLESS()))){
+					throw new RuntimeException("area unit ["+areaUnit+"] must be compatible with meter^2");
+				}
+				if (volumeUnit==null || (!volumeUnit.isCompatible(modelUnitSystem.getInstance("m3")) && !volumeUnit.isCompatible(modelUnitSystem.getInstance_DIMENSIONLESS()))){
+					throw new RuntimeException("volume unit ["+volumeUnit+"] must be compatible with meter^3");
+				}
+				// if vol unit is dimensionless, area and length should also be dimensionless.
+				if (volumeUnit.isCompatible(modelUnitSystem.getInstance_DIMENSIONLESS())) {
+					if (!lengthUnit.isCompatible(modelUnitSystem.getInstance_DIMENSIONLESS()) && !areaUnit.isCompatible(modelUnitSystem.getInstance_DIMENSIONLESS())) {
+						throw new RuntimeException("If volume unit is dimensionless, length and area units should also be dimensionless.");
+					}
+				}
+				if (timeUnit==null || (!timeUnit.isCompatible(modelUnitSystem.getInstance("s")) && !timeUnit.isCompatible(modelUnitSystem.getInstance_DIMENSIONLESS()))){
+					throw new RuntimeException("time unit ["+timeUnit+"] must be compatible with seconds");
+				}
 			}
 			modelUnitSystem.UNITSYMBOL_lengthUnit = lengthUnit.getSymbol();				 
 			modelUnitSystem.UNITSYMBOL_areaUnit = areaUnit.getSymbol();					 
@@ -510,7 +515,7 @@ public class ModelUnitSystem extends VCUnitSystem implements Matchable {
 		}
 		
 		public static ModelUnitSystem createSBMLUnitSystem(VCUnitDefinition modelSubstanceUnit, VCUnitDefinition modelVolumeUnit, VCUnitDefinition modelAreaUnit, VCUnitDefinition modelLengthUnit, VCUnitDefinition modelTimeUnit) {
-			return createUnitSystem(modelSubstanceUnit, modelSubstanceUnit, modelSubstanceUnit, modelVolumeUnit, modelAreaUnit, modelLengthUnit, modelTimeUnit);
+			return createUnitSystem(modelSubstanceUnit, modelSubstanceUnit, modelSubstanceUnit, modelVolumeUnit, modelAreaUnit, modelLengthUnit, modelTimeUnit, true);
 		}
 		
 		public static ModelUnitSystem createVCModelUnitSystem(String volumeSubstanceSymbol, String membraneSubstanceSymbol, String lumpedReactionSubstanceSymbol, String volumeSymbol, String areaSymbol, String lengthSymbol, String timeSymbol) {
