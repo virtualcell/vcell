@@ -9,9 +9,11 @@
  */
 
 package cbit.vcell.message.server.batch.sim;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
@@ -28,6 +30,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 import java.util.StringTokenizer;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
@@ -204,6 +207,7 @@ private void initOptimizationSocket() {
 												return;
 											}
 											File f = generateOptInterresultsFilePath(optID);
+											boolean bExist = hackFileExists(f);//make container read results status
 											long lastModified = f.lastModified();
 											if(lastModified == 0 && (System.currentTimeMillis()-jobStart) > 60000) {
 												throw new Exception("results progress timed out");
@@ -212,7 +216,7 @@ private void initOptimizationSocket() {
 											}else if(lastModified != 0) {
 												jobStart = lastModified;
 											}
-											if(f.exists()) {
+											if(bExist/*f.exists()*/) {
 												List<String> progressLines = Files.readAllLines(f.toPath());
 												if(progressLines != null && progressLines.size()>0) {
 													String optRunstatus = progressLines.get(progressLines.size()-1);
@@ -306,6 +310,11 @@ private OptServerJobInfo submitOptProblem(OptProblem optProblem) throws IOExcept
 		File optProblemFile = generateOptProblemFilePath(optID+"");
 		File optOutputFile = generateOptOutputFilePath(optID+"");
 		CopasiServicePython.writeOptProblem(optProblemFile, optProblem);//save param optimization problem to user dir
+		//make sure all can read and write
+		File optDir = generateOptimizeDirName(optID+"");
+		optDir.setReadable(true,false);
+		optDir.setWritable(true,false);
+		
 		String slurmOptJobName = generateOptFilePrefix(optID+"");
 		HtcJobID htcJobID = htcProxyClone.submitOptimizationJob(slurmOptJobName, sub_file_internal, sub_file_external,optProblemFile,optOutputFile);
 		return new OptServerJobInfo(optID+"", new HtcJobInfo(htcJobID, slurmOptJobName));
@@ -330,6 +339,35 @@ private HtcJobStatus optServerGetJobStatus(HtcJobInfo htcJobInfo) {
 		e.printStackTrace();
 		return null;
 	}
+}
+private static boolean hackFileExists(File watchThisFile) {
+	try {
+		//Force container bind mount to update file status
+		ProcessBuilder pb = new ProcessBuilder("sh","-c","ls "+watchThisFile.getAbsolutePath()+"*");
+		pb.redirectErrorStream(true);
+		Process p = pb.start();
+		BufferedReader br = new BufferedReader(new InputStreamReader(p.getInputStream()));
+//		StringBuffer sb = new StringBuffer();
+		String line = null;
+		while((line = br.readLine()) != null) {
+			//sb.append(line+"\n");
+			System.out.println("'"+line+"'");
+			if(line.trim().startsWith("ls: ")) {
+//				System.out.println("false");
+				break;
+			}else if(line.trim().equals(watchThisFile.getAbsolutePath())) {
+//				System.out.println("true");
+				return true;
+			}
+		}
+		p.waitFor(10,TimeUnit.SECONDS);
+		br.close();
+//		System.out.println("false");
+	} catch (Exception e) {
+		// TODO Auto-generated catch block
+		e.printStackTrace();
+	}
+	return false;
 }
 private static class PostProcessingChores {
 	/**

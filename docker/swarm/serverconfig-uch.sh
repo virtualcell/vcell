@@ -65,6 +65,7 @@ case $VCELL_SITE in
 		_site_port_offset=4
 		VCELL_API_HOST_EXTERNAL=vcellapi-beta.cam.uchc.edu
 		VCELL_API_PORT_EXTERNAL=8082
+		VCELL_API_PUBLICATION_HOST=vcell-node4
 		_applicationId="1471-8022-1038-5556"
 		;;
 	TEST3)
