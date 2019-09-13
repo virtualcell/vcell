@@ -3202,19 +3202,14 @@ public class SBMLImporter {
 				Element sbmlImportRelatedElement = sbmlAnnotationUtil.readVCellSpecificAnnotation(sbmlRxn);
 				Structure reactionStructure = getReactionStructure(sbmlRxn, vcSpeciesContexts, sbmlImportRelatedElement);
 				if (sbmlImportRelatedElement != null) {
-					Element embeddedRxnElement = getEmbeddedElementInAnnotation(
-							sbmlImportRelatedElement, REACTION);
+					Element embeddedRxnElement = getEmbeddedElementInAnnotation(sbmlImportRelatedElement, REACTION);
 					if (embeddedRxnElement != null) {
-						if (embeddedRxnElement.getName().equals(
-								XMLTags.FluxStepTag)) {
+						if (embeddedRxnElement.getName().equals(XMLTags.FluxStepTag)) {
 							// If embedded element is a flux reaction, set flux
 							// reaction's strucure, flux carrier, physicsOption
 							// from the element attributes.
-							String structName = embeddedRxnElement
-									.getAttributeValue(XMLTags.StructureAttrTag);
-							CastInfo<Membrane> ci = SBMLHelper
-									.getTypedStructure(Membrane.class, vcModel,
-											structName);
+							String structName = embeddedRxnElement.getAttributeValue(XMLTags.StructureAttrTag);
+							CastInfo<Membrane> ci = SBMLHelper.getTypedStructure(Membrane.class, vcModel, structName);
 							if (!ci.isGood()) {
 								throw new SBMLImportException("Appears that the flux reaction is occuring on " 
 										+ ci.actualName() + ", not a membrane.");
@@ -3224,20 +3219,13 @@ public class SBMLImporter {
 							// Set the fluxOption on the flux reaction based on
 							// whether it is molecular, molecular & electrical,
 							// electrical.
-							String fluxOptionStr = embeddedRxnElement
-									.getAttributeValue(XMLTags.FluxOptionAttrTag);
-							if (fluxOptionStr
-									.equals(XMLTags.FluxOptionMolecularOnly)) {
-								((FluxReaction) vcReaction)
-										.setPhysicsOptions(ReactionStep.PHYSICS_MOLECULAR_ONLY);
-							} else if (fluxOptionStr
-									.equals(XMLTags.FluxOptionMolecularAndElectrical)) {
-								((FluxReaction) vcReaction)
-										.setPhysicsOptions(ReactionStep.PHYSICS_MOLECULAR_AND_ELECTRICAL);
-							} else if (fluxOptionStr
-									.equals(XMLTags.FluxOptionElectricalOnly)) {
-								((FluxReaction) vcReaction)
-										.setPhysicsOptions(ReactionStep.PHYSICS_ELECTRICAL_ONLY);
+							String fluxOptionStr = embeddedRxnElement.getAttributeValue(XMLTags.FluxOptionAttrTag);
+							if (fluxOptionStr.equals(XMLTags.FluxOptionMolecularOnly)) {
+								((FluxReaction) vcReaction).setPhysicsOptions(ReactionStep.PHYSICS_MOLECULAR_ONLY);
+							} else if (fluxOptionStr.equals(XMLTags.FluxOptionMolecularAndElectrical)) {
+								((FluxReaction) vcReaction).setPhysicsOptions(ReactionStep.PHYSICS_MOLECULAR_AND_ELECTRICAL);
+							} else if (fluxOptionStr.equals(XMLTags.FluxOptionElectricalOnly)) {
+								((FluxReaction) vcReaction).setPhysicsOptions(ReactionStep.PHYSICS_ELECTRICAL_ONLY);
 							} else {
 								localIssueList.add(new Issue(vcReaction, issueContext, IssueCategory.SBMLImport_Reaction,
 										"Unknown FluxOption : " + fluxOptionStr + " for SBML reaction : " + rxnName, Issue.SEVERITY_WARNING));
@@ -3246,8 +3234,7 @@ public class SBMLImporter {
 								// "Unknown FluxOption : " + fluxOptionStr +
 								// " for SBML reaction : " + rxnName);
 							}
-						} else if (embeddedRxnElement.getName().equals(
-								XMLTags.SimpleReactionTag)) {
+						} else if (embeddedRxnElement.getName().equals(XMLTags.SimpleReactionTag)) {
 							// if embedded element is a simple reaction, set
 							// simple reaction's structure from element attributes
 							vcReaction = new SimpleReaction(vcModel, reactionStructure, rxnName, bReversible);
@@ -3266,16 +3253,13 @@ public class SBMLImporter {
 				// characters. Choosing 64, since that is (as of 12/2/08)
 				// the limit on the reactionName length.
 				if (rxnName.length() > 64) {
-					String freeTextAnnotation = metaData
-							.getFreeTextAnnotation(vcReaction);
+					String freeTextAnnotation = metaData.getFreeTextAnnotation(vcReaction);
 					if (freeTextAnnotation == null) {
 						freeTextAnnotation = "";
 					}
-					StringBuffer oldRxnAnnotation = new StringBuffer(
-							freeTextAnnotation);
+					StringBuffer oldRxnAnnotation = new StringBuffer(freeTextAnnotation);
 					oldRxnAnnotation.append("\n\n" + rxnName);
-					metaData.setFreeTextAnnotation(vcReaction,
-							oldRxnAnnotation.toString());
+					metaData.setFreeTextAnnotation(vcReaction, oldRxnAnnotation.toString());
 				}
 
 				// Now add the reactants, products, modifiers as specified by
@@ -3303,14 +3287,16 @@ public class SBMLImporter {
 					// If there exists any such species, it should be added as a
 					// modifier (catalyst) to the reaction.
 					for (int k = 0; k < vcSpeciesContexts.length; k++) {
-						if (vcRateExpression.hasSymbol(vcSpeciesContexts[k].getName())) {
-							if ((vcReaction.getReactant(vcSpeciesContexts[k].getName()) == null)
-								&& (vcReaction.getProduct(vcSpeciesContexts[k].getName()) == null)
-								&& (vcReaction.getCatalyst(vcSpeciesContexts[k].getName()) == null)) {
+						SpeciesContext sc = vcSpeciesContexts[k];
+						if (vcRateExpression.hasSymbol(sc.getName())) {
+							ReactionParticipant r = vcReaction.getReactant(sc.getName());
+							ReactionParticipant p = vcReaction.getProduct(sc.getName());
+							ReactionParticipant c = vcReaction.getCatalyst(sc.getName());
+							if ((r == null) && (p == null) && (c == null)) {
 								// This means that the speciesContext is not a
 								// reactant, product or modifier : it has to be
 								// added to the VC Rxn as a catalyst
-								vcReaction.addCatalyst(vcSpeciesContexts[k]);
+								vcReaction.addCatalyst(sc);
 							}
 						}
 					}
@@ -3320,8 +3306,7 @@ public class SBMLImporter {
 						// if spatial SBML ('isSpatial' attribute set), create
 						// DistributedKinetics)
 						SpatialReactionPlugin ssrplugin = (SpatialReactionPlugin) sbmlRxn.getPlugin(SBMLUtils.SBML_SPATIAL_NS_PREFIX);
-						// (a) the requiredElements attributes should be
-						// 'spatial'
+						// (a) the requiredElements attributes should be 'spatial'
 						if (ssrplugin != null && ssrplugin.getIsLocal()) {
 							kinetics = new GeneralKinetics(vcReaction);
 						} else {
@@ -3336,8 +3321,7 @@ public class SBMLImporter {
 					vcReaction.setKinetics(kinetics);
 
 					// If the name of the rate parameter has been changed by
-					// user, or matches with global/local param,
-					// it has to be changed.
+					// user, or matches with global/local param, it has to be changed.
 					resolveRxnParameterNameConflicts(sbmlRxn, kinetics, sbmlImportRelatedElement);
 
 					/**
@@ -3364,7 +3348,6 @@ public class SBMLImporter {
 					KineticsParameter kp = kinetics.getAuthoritativeParameter();
 					if (lg.isDebugEnabled()) {
 						lg.debug("Setting " + kp.getName() + ":  " + vcRateExpression.infix());
-						
 					}
 					kinetics.setParameterValue(kp, vcRateExpression);
 
@@ -3372,8 +3355,7 @@ public class SBMLImporter {
 					// and if they have species,
 					// check if the species are already reactionParticipants in
 					// the reaction. If not, add them as catalysts.
-					KineticsProxyParameter[] kpps = kinetics
-							.getProxyParameters();
+					KineticsProxyParameter[] kpps = kinetics.getProxyParameters();
 					for (int j = 0; j < kpps.length; j++) {
 						if (kpps[j].getTarget() instanceof ModelParameter) {
 							ModelParameter mp = (ModelParameter) kpps[j].getTarget();
@@ -3383,13 +3365,16 @@ public class SBMLImporter {
 							while (refSpIterator.hasNext()) {
 								String spName = refSpIterator.next();
 								org.sbml.jsbml.Species sp = sbmlModel.getSpecies(spName);
-								ArrayList<ReactionParticipant> rpArray = getVCReactionParticipantsFromSymbol(
-										vcReaction, sp.getId());
+								String spId = sp.getId();
+								String vcSpeciesName = spId;
+								if(sbmlToVcNameMap.get(spId) != null) {
+									vcSpeciesName = sbmlToVcNameMap.get(spId);
+								}
+								ArrayList<ReactionParticipant> rpArray = getVCReactionParticipantsFromSymbol(vcReaction, vcSpeciesName);
 								if (rpArray == null || rpArray.size() == 0) {
-									// This means that the speciesContext is not
-									// a reactant, product or modifier : it has
-									// to be added as a catalyst
-									vcReaction.addCatalyst(vcModel .getSpeciesContext(sp.getId()));
+									// This means that the speciesContext is not a reactant,
+									// product or modifier : it has to be added as a catalyst
+									vcReaction.addCatalyst(vcModel.getSpeciesContext(vcSpeciesName));
 								}
 							}
 						}

@@ -4354,8 +4354,15 @@ public void vetoableChange(PropertyChangeEvent e) throws ModelPropertyVetoExcept
 						break;
 					}
 				}
-				if (!bFound){
-					throw new ModelPropertyVetoException("reaction '"+newReactionStepArr[i].getName()+"' requires '"+rpArray[k].getSpeciesContext().getName()+"'",e);
+				if (!bFound) {
+					String rName = newReactionStepArr[i].getName();
+					String sName = "??";
+					if(rpArray != null && rpArray[k] != null && rpArray[k].getSpeciesContext() != null && rpArray[k].getSpeciesContext().getName() != null) {
+						sName = rpArray[k].getSpeciesContext().getName();
+						throw new ModelPropertyVetoException("Reaction '" + rName +"' requires '"+ sName + "'", e);
+					} else {
+						throw new ModelPropertyVetoException("Reaction '" + rName +"' has a null participant", e);
+					}
 				}
 			}
 		}
