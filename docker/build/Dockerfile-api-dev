@@ -1,7 +1,7 @@
 FROM ubuntu:18.04
 
 RUN apt-get -y update && \
-    apt-get install -y openjdk-8-jre dnsutils && \
+    apt-get install -y curl openjdk-8-jre dnsutils && \
     mkdir -p /usr/local/app/lib 
 	
 WORKDIR /usr/local/app
