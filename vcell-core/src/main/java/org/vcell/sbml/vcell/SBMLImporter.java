@@ -2177,7 +2177,60 @@ public class SBMLImporter {
 				}
 				document = sbmlModel.getSBMLDocument();
 			}
-
+			
+			int numPackages = 0;
+			String msgPackages = "";
+			boolean b = document.getPackageRequired("comp");
+			if(document.isPackageEnabled("comp")) {
+				numPackages++;
+				msgPackages += "'comp', ";
+			}
+			if(document.isPackageEnabled("fbc")) {
+				numPackages++;
+				msgPackages += "'fbc', ";
+			}
+			if(document.isPackageEnabled("multi")) {
+				numPackages++;
+				msgPackages += "'multi', ";
+			}
+			if(document.isPackageEnabled("qual")) {
+				numPackages++;
+				msgPackages += "'qual', ";
+			}
+			String ext = "extension";
+			String is = "is";
+			String has = "has";
+			if(numPackages > 0) {
+				if(numPackages > 1) {
+					ext += "s";
+					is = "are";
+				}
+				msgPackages = msgPackages.substring(0, msgPackages.length()-1);
+				msgPackages = "The model includes elements of SBML " + ext + " " + msgPackages + " which " + is + " required for simulating the model but " + is + " not supported.";
+				throw new SBMLImportException(msgPackages);
+			}
+			if(document.isPackageEnabled("groups")) {
+				numPackages++;
+				msgPackages += "'groups', ";
+			}
+			if(document.isPackageEnabled("layout")) {
+				numPackages++;
+				msgPackages += "'layout', ";
+			}
+			if(document.isPackageEnabled("render")) {
+				numPackages++;
+				msgPackages += "'render', ";
+			}
+			if(numPackages > 0) {
+				if(numPackages > 1) {
+					ext += "s";
+					is = "are";
+					has = "have";
+				}
+				msgPackages = "The model includes elements of SBML " + ext + " " + msgPackages + " which " + is + " not required for simulating the model and " + has + " been ignored.";
+				localIssueList.add(new Issue(vcBioModel, issueContext, IssueCategory.SBMLImport_UnsupportedFeature, msgPackages, Issue.Severity.WARNING));
+			}
+			
 			// Convert SBML Model to VCell model
 			// An SBML model will correspond to a simcontext - which needs a
 			// Model and a Geometry
@@ -2206,9 +2259,7 @@ public class SBMLImporter {
 					modelUnitSystem = createSBMLUnitSystemForVCModel();
 				} catch (Exception e) {
 					e.printStackTrace(System.out);
-					throw new SBMLImportException(
-							"Inconsistent unit system. Cannot import SBML model into VCell",
-							Category.INCONSISTENT_UNIT, e);
+					throw new SBMLImportException("Inconsistent unit system. Cannot import SBML model into VCell", Category.INCONSISTENT_UNIT, e);
 				}
 				Geometry geometry = new Geometry(BioModelChildSummary.COMPARTMENTAL_GEO_STR, 0);
 				vcBioModel = new BioModel(null,modelUnitSystem);
