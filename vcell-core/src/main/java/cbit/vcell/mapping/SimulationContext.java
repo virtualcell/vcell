@@ -138,7 +138,8 @@ public class SimulationContext implements SimulationOwner, Versionable, Matchabl
 	// for rate rule
 	public static final String PROPERTY_NAME_RATERULES = "raterules";
 	public static final String PROPERTY_NAME_ASSIGNMENTRULES = "assignmentrules";
-	public static final String PROPERTY_NAME_ASSIGNMENTRULES_VAR = "assignmentrulesVar";
+	public static final String PROPERTY_NAME_RATE_RULE_CHANGE = "rateRuleChange";
+	public static final String PROPERTY_NAME_ASSIGNMENT_RULE_CHANGE = "assignmentRuleChange";
 	
 	public class SimulationContextNameScope extends BioNameScope {
 		private transient NameScope nameScopes[] = null;
@@ -3017,6 +3018,9 @@ public RateRule getRateRule(SymbolTableEntry rateRuleVar) {
 	}
 	return null;
 }
+public void fireRateRuleChanged(RateRule oldRule, RateRule newRule) {
+	firePropertyChange(PROPERTY_NAME_RATE_RULE_CHANGE, oldRule, newRule);
+}
 // -----------------------------------------------------------------------------------------------------------------
 public AssignmentRule createAssignmentRule(SymbolTableEntry varSTE) throws PropertyVetoException {
 	String assignmentRuleName = getFreeAssignmentRuleName();
@@ -3085,8 +3089,8 @@ public AssignmentRule getAssignmentRule(SymbolTableEntry assignmentRuleVar) {
 	}
 	return null;
 }
-public void setAssignmentRuleVariable(AssignmentRule assignmentRule) {
-	firePropertyChange(PROPERTY_NAME_ASSIGNMENTRULES_VAR, null, assignmentRule);
+public void fireAssignmentRuleChanged(AssignmentRule oldRule, AssignmentRule newRule) {
+	firePropertyChange(PROPERTY_NAME_ASSIGNMENT_RULE_CHANGE, oldRule, newRule);
 }
 // --------------------------------------------------------------------------------
 public NetworkConstraints getNetworkConstraints() {

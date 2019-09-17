@@ -10,35 +10,26 @@
 
 package cbit.vcell.client.desktop.biomodel;
 
-import java.awt.Color;
 import java.awt.Component;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-import javax.swing.ComboBoxModel;
 import javax.swing.DefaultCellEditor;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
-import javax.swing.Icon;
 import javax.swing.JComboBox;
 import javax.swing.JList;
 import javax.swing.SwingConstants;
 
 import org.vcell.util.Displayable;
-import org.vcell.util.gui.ColorIcon;
-import org.vcell.util.gui.ColorIconEx;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.ScrollTable;
 
 import cbit.gui.ScopedExpression;
-import cbit.vcell.geometry.GeometryClass;
-import cbit.vcell.geometry.SubVolume;
-import cbit.vcell.geometry.SurfaceClass;
 import cbit.vcell.mapping.RateRule;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.model.SpeciesContext;
@@ -260,17 +251,26 @@ public class RateRulesSummaryTableModel extends BioModelEditorApplicationRightSi
 				case COLUMN_RATERULE_VAR:
 					if(value instanceof String) {
 						String var = (String)value;
-						SymbolTableEntry ste = simulationContext.getModel().getEntry(var);
-						rateRule.setRateRuleVar(ste);
-//					} else if(value instanceof SymbolTableEntry) {
-//						SymbolTableEntry ste = (SymbolTableEntry)value;
-//						rateRule.setRateRuleVar(ste);
+						SymbolTableEntry newVar = simulationContext.getModel().getEntry(var);
+						SymbolTableEntry oldVar = rateRule.getRateRuleVar();
+						RateRule oldRule = new RateRule(null, oldVar, null, simulationContext);	// dummy rule to propagate the old var
+						rateRule.setRateRuleVar(newVar);
+						if(simulationContext != null && newVar != null) {	// broadcast the change
+							simulationContext.fireRateRuleChanged(oldRule, rateRule);
+						}
 					}
 					break;
 				case COLUMN_RATERULE_EXPR:
+					SymbolTableEntry ste = null;
+					if(rateRule.getRateRuleVar() != null) {
+						ste = simulationContext.getModel().getEntry(rateRule.getRateRuleVar().getName());
+					}
 					Expression exp = new Expression((String)value);
 					rateRule.setRateRuleExpression(exp);
 					rateRule.bind();
+					if(simulationContext != null && ste != null) {	// broadcast the change
+						simulationContext.fireRateRuleChanged(null, rateRule);
+					}
 					break;
 				case COLUMN_RATERULE_TYPE:
 					return;

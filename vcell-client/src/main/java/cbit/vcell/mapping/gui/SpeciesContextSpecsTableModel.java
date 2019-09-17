@@ -25,6 +25,7 @@ import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.desktop.biomodel.VCellSortTableModel;
 import cbit.vcell.mapping.AssignmentRule;
 import cbit.vcell.mapping.GeometryContext;
+import cbit.vcell.mapping.RateRule;
 import cbit.vcell.mapping.ReactionContext;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SpeciesContextSpec;
@@ -34,6 +35,7 @@ import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
 import cbit.vcell.parser.AutoCompleteSymbolFilter;
 import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.SymbolTableEntry;
 /**
@@ -285,6 +287,11 @@ public boolean isCellEditable(int rowIndex, int columnIndex) {
 			return !speciesContextSpec.isConstant() && getSimulationContext().isStoch();
 		}
 		case COLUMN_INITIAL:{
+			RateRule rr = fieldSimulationContext.getRateRule(speciesContextSpec.getSpeciesContext());
+			AssignmentRule ar = fieldSimulationContext.getAssignmentRule(speciesContextSpec.getSpeciesContext());
+			if(rr != null || ar != null) {
+				return false;
+			}
 			return true;
 		}
 		case COLUMN_DIFFUSION: {
@@ -303,20 +310,23 @@ public boolean isCellEditable(int rowIndex, int columnIndex) {
 	 *   and the property that has changed.
 	 */
 public void propertyChange(java.beans.PropertyChangeEvent evt) {
-	if (evt.getSource() instanceof ReactionContext
-		&& evt.getPropertyName().equals("speciesContextSpecs")) {
-
+	
+	if (evt.getSource() instanceof ReactionContext && evt.getPropertyName().equals("speciesContextSpecs")) {
 		updateListenersReactionContext((ReactionContext)evt.getSource(),true);
 		updateListenersReactionContext((ReactionContext)evt.getSource(),false);
 		refreshData();
-		
 	}
 	if (evt.getSource() instanceof SpeciesContext && evt.getPropertyName().equals("name")) {
 		fireTableRowsUpdated(0,getRowCount()-1);
 	}
-	if(evt.getSource() == getSimulationContext() && evt.getPropertyName().equals(SimulationContext.PROPERTY_NAME_ASSIGNMENTRULES_VAR)) {
-		AssignmentRule ar = (AssignmentRule)evt.getNewValue();
-		onAssignmentRuleVariableChanged(ar);
+	if(evt.getSource() == getSimulationContext() && evt.getPropertyName().equals(SimulationContext.PROPERTY_NAME_ASSIGNMENT_RULE_CHANGE)) {
+		AssignmentRule oldRule = (AssignmentRule)evt.getOldValue();
+		AssignmentRule newRule = (AssignmentRule)evt.getNewValue();
+		onAssignmentRuleVariableChanged(oldRule, newRule);
+	} else if(evt.getSource() == getSimulationContext() && evt.getPropertyName().equals(SimulationContext.PROPERTY_NAME_RATE_RULE_CHANGE)) {
+		RateRule oldRule = (RateRule)evt.getOldValue();
+		RateRule newRule = (RateRule)evt.getNewValue();
+		onRateRuleVariableChanged(oldRule, newRule);
 	}
 	if (evt.getSource() instanceof SpeciesContextSpec) {
 		fireTableRowsUpdated(0,getRowCount()-1);
@@ -330,16 +340,94 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 	}
 }
 
-private void onAssignmentRuleVariableChanged(AssignmentRule ar) {
-	if(ar != null && ar.getSimulationContext() == fieldSimulationContext && ar.getAssignmentRuleVar() != null) {
-		SymbolTableEntry ste = ar.getAssignmentRuleVar();
+private void onAssignmentRuleVariableChanged(AssignmentRule oldRule, AssignmentRule newRule) {
+	if(oldRule != null && oldRule.getSimulationContext() == fieldSimulationContext && oldRule.getAssignmentRuleVar() != null) {
+		SymbolTableEntry ste = oldRule.getAssignmentRuleVar();
+		if(ste instanceof SpeciesContext) {
+			SpeciesContext sc = (SpeciesContext)ste;
+			SpeciesContextSpec[] scss = fieldSimulationContext.getReactionContext().getSpeciesContextSpecs();
+			for(SpeciesContextSpec scs : scss) {
+				if(scs.getSpeciesContext() != null && scs.getSpeciesContext() == sc) {
+					scs.setConstant(false);
+					try {
+						if(getSimulationContext().isUsingConcentration()) {
+							scs.getInitialConcentrationParameter().setExpression(new Expression("0"));
+						} else {
+							scs.getInitialCountParameter().setExpression(new Expression("0"));
+						}
+					} catch(ExpressionException e) {
+						e.printStackTrace();
+					}
+				}
+			}
+		}
+	}
+	if(newRule != null && newRule.getSimulationContext() == fieldSimulationContext && newRule.getAssignmentRuleVar() != null) {
+		SymbolTableEntry ste = newRule.getAssignmentRuleVar();
 		if(ste instanceof SpeciesContext) {
 			SpeciesContext sc = (SpeciesContext)ste;
 			SpeciesContextSpec[] scss = fieldSimulationContext.getReactionContext().getSpeciesContextSpecs();
 			for(SpeciesContextSpec scs : scss) {
 				if(scs.getSpeciesContext() != null && scs.getSpeciesContext() == sc) {
 					scs.setConstant(true);
+					try {
+						Expression ex = newRule.getAssignmentRuleExpression();
+						if(getSimulationContext().isUsingConcentration()) {
+							scs.getInitialConcentrationParameter().setExpression(new Expression(ex));
+						} else {
+							scs.getInitialCountParameter().setExpression(new Expression(ex));
+						}
+					} catch (ExpressionBindingException e) {
+						e.printStackTrace();
+					}
+					fireTableRowsUpdated(0,getRowCount()-1);
 					break;		// can't find more than one
+				}
+			}
+		}
+	}
+}
+private void onRateRuleVariableChanged(RateRule oldRule, RateRule newRule) {
+	if(oldRule != null && oldRule.getSimulationContext() == fieldSimulationContext && oldRule.getRateRuleVar() != null) {
+		SymbolTableEntry ste = oldRule.getRateRuleVar();
+		if(ste instanceof SpeciesContext) {
+			SpeciesContext sc = (SpeciesContext)ste;
+			SpeciesContextSpec[] scss = fieldSimulationContext.getReactionContext().getSpeciesContextSpecs();
+			for(SpeciesContextSpec scs : scss) {
+				if(scs.getSpeciesContext() != null && scs.getSpeciesContext() == sc) {
+					try {
+						if(getSimulationContext().isUsingConcentration()) {
+							scs.getInitialConcentrationParameter().setExpression(new Expression("0"));
+						} else {
+							scs.getInitialCountParameter().setExpression(new Expression("0"));
+						}
+					} catch (ExpressionException e) {
+						e.printStackTrace();
+					}
+					break;
+				}
+			}
+		}
+	}
+	if(newRule != null && newRule.getSimulationContext() == fieldSimulationContext && newRule.getRateRuleVar() != null) {
+		SymbolTableEntry ste = newRule.getRateRuleVar();
+		if(ste instanceof SpeciesContext) {
+			SpeciesContext sc = (SpeciesContext)ste;
+			SpeciesContextSpec[] scss = fieldSimulationContext.getReactionContext().getSpeciesContextSpecs();
+			for(SpeciesContextSpec scs : scss) {
+				if(scs.getSpeciesContext() != null && scs.getSpeciesContext() == sc) {
+					try {
+						Expression ex = newRule.getRateRuleExpression();
+						if(getSimulationContext().isUsingConcentration()) {
+							scs.getInitialConcentrationParameter().setExpression(new Expression(ex));
+						} else {
+							scs.getInitialCountParameter().setExpression(new Expression(ex));
+						}
+					} catch (ExpressionBindingException e) {
+						e.printStackTrace();
+					}
+					fireTableRowsUpdated(0,getRowCount()-1);
+					break;
 				}
 			}
 		}
