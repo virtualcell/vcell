@@ -237,6 +237,100 @@ public class BioModelsNetPanel extends DocumentEditorSubPanel {
 		initialize();
 	}
 	
+	private ExternalDocInfo download(String name, String id) throws Exception {
+		String simDataDir = ResourceUtil.getLocalRootDir().getAbsolutePath();		// C:\Users\vasilescu\.vcell\simdata
+		String tempDir = simDataDir + File.separator + "temp";
+		String destDirectory = tempDir + File.separator + id;
+		String zipFilePath = destDirectory + ".zip";
+
+		Path tempDirPath = Paths.get(tempDir);
+		Files.createDirectories(tempDirPath);	// temp may not be there, we make it
+		
+		byte[] responseContent = null;
+		URL url = new URL(defaultBaseURL + id);
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		InputStream is = null;
+		try {
+		  is = url.openStream ();
+		  byte[] byteChunk = new byte[4096]; // Or whatever size you want to read in at a time.
+		  int n;
+
+		  while ( (n = is.read(byteChunk)) > 0 ) {
+		    baos.write(byteChunk, 0, n);
+		  }
+		  responseContent = baos.toByteArray();
+		}
+		catch (IOException e) {
+		  System.err.printf ("Failed while reading bytes from %s: %s", url.toExternalForm(), e.getMessage());
+//		  e.printStackTrace ();
+		  throw new RuntimeException("Failed while reading bytes from: " + url.toExternalForm());
+		}
+		finally {
+		  if (is != null) { is.close(); }
+		}
+		if(responseContent == null) {
+			throw new RuntimeException("Failed while reading bytes from: " + url.toExternalForm());
+		}
+		
+		try {
+			File file = new File(zipFilePath);
+			Files.write(file.toPath(), responseContent, StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING);
+			UnzipUtility uu = new UnzipUtility();
+			uu.unzip(zipFilePath, destDirectory);
+		} catch(IOException e) {
+			e.printStackTrace();
+		}
+		
+		String unzippedPath = destDirectory + File.separator + id + ".xml";
+		String bioModelSBML = new String(Files.readAllBytes(Paths.get(unzippedPath)), StandardCharsets.UTF_8);
+		
+//		bioModelSBML = bioModelSBML.replace("<notanumber/>", "<ci> a </ci>");
+		try {
+			Files.deleteIfExists(Paths.get(zipFilePath));		// the original zip file
+			Files.deleteIfExists(Paths.get(unzippedPath));		// the unzipped SBML file
+			Files.deleteIfExists(Paths.get(destDirectory));		// its directory
+		} catch(IOException e) {
+			e.printStackTrace();
+		}
+		
+		ExternalDocInfo externalDocInfo = ExternalDocInfo.createBioModelsNetExternalDocInfo(bioModelSBML, name);
+		return externalDocInfo;
+	}
+	
+	public void importFromBioModelsNetTest() {
+		try {
+			int i = 731;
+			String name = "tested" + i;
+			String id = "BIOMD0000000" + i;
+			
+			AsynchClientTask task1 = new AsynchClientTask("Importing " + name, AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+				@Override
+				public void run(Hashtable<String, Object> hashTable) throws Exception {
+					ExternalDocInfo externalDocInfo = download(name, id);
+					if (externalDocInfo != null) {
+						hashTable.put("externalDocInfo", externalDocInfo);
+					}
+					System.out.println("done downloading: " + id);
+				}
+			};
+			AsynchClientTask task2 = new AsynchClientTask("Opening",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+				@Override
+				public void run(Hashtable<String, Object> hashTable) throws Exception {
+					ExternalDocInfo externalDocInfo = (ExternalDocInfo) hashTable.get("externalDocInfo");
+					if (externalDocInfo == null) {
+						return;
+					}
+					documentWindowManager.getRequestManager().openDocument(externalDocInfo, documentWindowManager, true);
+					System.out.println("opened: " + id);
+				}
+			};
+			ClientTaskDispatcher.dispatch(documentWindowManager.getComponent(), new Hashtable<String, Object>(), new AsynchClientTask[] {task1, task2}, false);
+			System.out.println("task dispatched for " + id);
+		} catch(Exception e) {
+			System.err.println(e.getMessage());
+		}
+	}
+	
 	public void importFromBioModelsNet() {
 		Object obj = tree.getLastSelectedPathComponent();
 		if (obj == null || !(obj instanceof BioModelNode)) {
@@ -247,78 +341,18 @@ public class BioModelsNetPanel extends DocumentEditorSubPanel {
 		if (!(userObject instanceof BioModelsNetModelInfo)) {
 			return;
 		}
+		
 		BioModelsNetModelInfo bioModelsNetInfo = (BioModelsNetModelInfo) userObject;
-		AsynchClientTask task1 = new AsynchClientTask("Importing " + bioModelsNetInfo.getName(), AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {		
+		String name = bioModelsNetInfo.getName();
+		String id = bioModelsNetInfo.getId();
+		AsynchClientTask task1 = new AsynchClientTask("Importing " + name, AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {		
 			@Override
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
-				String simDataDir = ResourceUtil.getLocalRootDir().getAbsolutePath();		// C:\Users\vasilescu\.vcell\simdata
-				String tempDir = simDataDir + File.separator + "temp";
-				String destDirectory = tempDir + File.separator + bioModelsNetInfo.getId();
-				String zipFilePath = destDirectory + ".zip";
-
-				Path tempDirPath = Paths.get(tempDir);
-				Files.createDirectories(tempDirPath);	// temp may not be there, we make it
-				
-				byte[] responseContent = null;
-				URL url = new URL(defaultBaseURL + bioModelsNetInfo.getId());
-				ByteArrayOutputStream baos = new ByteArrayOutputStream();
-				InputStream is = null;
-				try {
-				  is = url.openStream ();
-				  byte[] byteChunk = new byte[4096]; // Or whatever size you want to read in at a time.
-				  int n;
-
-				  while ( (n = is.read(byteChunk)) > 0 ) {
-				    baos.write(byteChunk, 0, n);
-				  }
-				  responseContent = baos.toByteArray();
-				}
-				catch (IOException e) {
-				  System.err.printf ("Failed while reading bytes from %s: %s", url.toExternalForm(), e.getMessage());
-//				  e.printStackTrace ();
-				  throw new RuntimeException("Failed while reading bytes from: " + url.toExternalForm());
-				}
-				finally {
-				  if (is != null) { is.close(); }
-				}
-				if(responseContent == null) {
-					throw new RuntimeException("Failed while reading bytes from: " + url.toExternalForm());
-				}
-				
-				try {
-					File file = new File(zipFilePath);
-					Files.write(file.toPath(), responseContent, StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING);
-					UnzipUtility uu = new UnzipUtility();
-					uu.unzip(zipFilePath, destDirectory);
-				} catch(IOException e) {
-					e.printStackTrace();
-				}
-				
-				String unzippedPath = destDirectory + File.separator + bioModelsNetInfo.getId() + ".xml";
-				String bioModelSBML = new String(Files.readAllBytes(Paths.get(unzippedPath)), StandardCharsets.UTF_8);
-		
-				try {
-					Files.deleteIfExists(Paths.get(zipFilePath));		// the original zip file
-					Files.deleteIfExists(Paths.get(unzippedPath));		// the unzipped SBML file
-					Files.deleteIfExists(Paths.get(destDirectory));		// its directory
-				} catch(IOException e) {
-					e.printStackTrace();
-				}
-				
-				ExternalDocInfo externalDocInfo = ExternalDocInfo.createBioModelsNetExternalDocInfo(bioModelSBML, bioModelsNetInfo.getName());
+				ExternalDocInfo externalDocInfo = download(name, id);
 				if (externalDocInfo != null) {
 					hashTable.put("externalDocInfo", externalDocInfo);
 				}
 				System.out.println("done downloading");
-
-// TODO: old way of doing things
-//				BioModelsWebServicesServiceLocator bioModelsWebServicesServiceLocator =	new BioModelsWebServicesServiceLocator();
-//				BioModelsWebServices bioModelsWebServices = bioModelsWebServicesServiceLocator.getBioModelsWebServices();
-//				String bioModelSBML = bioModelsWebServices.getModelSBMLById(bioModelsNetInfo.getId());
-//				ExternalDocInfo externalDocInfo = ExternalDocInfo.createBioModelsNetExternalDocInfo(bioModelSBML, bioModelsNetInfo.getName());
-//				if (externalDocInfo != null) {
-//					hashTable.put("externalDocInfo", externalDocInfo);
-//				}
 			}
 		};
 		AsynchClientTask task2 = new AsynchClientTask("Opening",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {		
@@ -334,25 +368,6 @@ public class BioModelsNetPanel extends DocumentEditorSubPanel {
 		ClientTaskDispatcher.dispatch(documentWindowManager.getComponent(), new Hashtable<String, Object>(), new AsynchClientTask[] {task1, task2}, false);
 	}
 	
-//	private static final String UTF_8 = "UTF-8";
-//	public static String uncompressString(String str) throws IOException {
-//		if (str == null || str.length() == 0) {
-//			return str;
-//		}
-//		ByteArrayInputStream in = new ByteArrayInputStream(str.getBytes(UTF_8));
-//		GZIPInputStream gzip = new GZIPInputStream(in);
-//		ByteArrayOutputStream out = new ByteArrayOutputStream();
-//		byte[] b = new byte[1000];
-//		int len;
-//		while ((len = in.read(b)) > 0) {
-//			out.write(b, 0, len);
-//		}
-//		gzip.close();
-//		out.close();
-//		String uncompressedString = out.toString(UTF_8);
-//		return uncompressedString;
-//		}
-
 	public void treeSelectionChanged() {
 		importButton.setEnabled(false);
 		
