@@ -2128,11 +2128,18 @@ public class SBMLImporter {
 	 * @throws XMLStreamException 
 	 */
 	public BioModel getBioModel() throws XMLStreamException, IOException {
+		
+//		sbmlFileName = null;
+		
+		if (sbmlFileName == null && sbmlModel == null) {
+			throw new IllegalStateException("Expected non-null SBML model");
+		}
+		
 		SBMLDocument document;
-
-		String output = "didn't check";
-		try {
-			if (sbmlFileName != null) {
+		String defaultErrorPrefix = "Unable to read SBML file";
+	
+		if (sbmlFileName != null) {
+			try {
 				// Read SBML model into libSBML SBMLDocument and create an SBML model
 				List<String> readLines = FileUtils.readLines(new File(sbmlFileName),Charset.defaultCharset());
 				StringBuffer sb = new StringBuffer();
@@ -2167,19 +2174,26 @@ public class SBMLImporter {
 	//		}
 
 				sbmlModel = document.getModel();
-				if (sbmlModel == null) {
-					throw new SBMLImportException("Unable to read SBML file : \n" + output);
-				}
+			} catch(Exception e) {
+				throw new SBMLImportException(defaultErrorPrefix + ": \n" + sbmlFileName, e);
 			}
-			else {
-				if (sbmlModel == null) {
-					throw new IllegalStateException("Expected non-null SBML model");
-				}
+			if (sbmlModel == null) {
+				throw new SBMLImportException(defaultErrorPrefix + ": \n" + sbmlFileName);
+			}
+		} else {	// sbmlModel != null
+			try {
 				document = sbmlModel.getSBMLDocument();
+			} catch(Exception e) {
+				throw new SBMLImportException(defaultErrorPrefix + ".\n", e);
 			}
-			
-			int numPackages = 0;
-			String msgPackages = "";
+		}
+		if(document == null) {
+			throw new SBMLImportException(defaultErrorPrefix + ".\n");
+		}
+
+		int numPackages = 0;
+		String msgPackages = "";
+		try {
 			boolean b = document.getPackageRequired("comp");
 			if(document.isPackageEnabled("comp")) {
 				numPackages++;
@@ -2197,18 +2211,23 @@ public class SBMLImporter {
 				numPackages++;
 				msgPackages += "'qual', ";
 			}
-			String ext = "extension";
-			String is = "is";
-			String has = "has";
-			if(numPackages > 0) {
-				if(numPackages > 1) {
-					ext += "s";
-					is = "are";
-				}
-				msgPackages = msgPackages.substring(0, msgPackages.length()-1);
-				msgPackages = "The model includes elements of SBML " + ext + " " + msgPackages + " which " + is + " required for simulating the model but " + is + " not supported.";
-				throw new SBMLImportException(msgPackages);
+		} catch(Exception e) {
+			e.printStackTrace(System.out);
+			throw new SBMLImportException("Unable to check the SBML file package requirements.");
+		}
+		String ext = "extension";
+		String is = "is";
+		String has = "has";
+		if(numPackages > 0) {
+			if(numPackages > 1) {
+				ext += "s";
+				is = "are";
 			}
+			msgPackages = msgPackages.substring(0, msgPackages.length()-1);
+			msgPackages = "The model includes elements of SBML " + ext + " " + msgPackages + " which " + is + " required for simulating the model but " + is + " not supported.";
+			throw new SBMLImportException("Unable to import the SBML file.\n" + msgPackages);
+		}
+		try {
 			if(document.isPackageEnabled("groups")) {
 				numPackages++;
 				msgPackages += "'groups', ";
@@ -2221,122 +2240,90 @@ public class SBMLImporter {
 				numPackages++;
 				msgPackages += "'render', ";
 			}
-			if(numPackages > 0) {
-				if(numPackages > 1) {
-					ext += "s";
-					is = "are";
-					has = "have";
-				}
-				msgPackages = "The model includes elements of SBML " + ext + " " + msgPackages + " which " + is + " not required for simulating the model and " + has + " been ignored.";
-				localIssueList.add(new Issue(vcBioModel, issueContext, IssueCategory.SBMLImport_UnsupportedFeature, msgPackages, Issue.Severity.WARNING));
+		} catch(Exception e) {
+			e.printStackTrace(System.out);	// we're going to ignore these packages anyway
+		}
+		if(numPackages > 0) {
+			if(numPackages > 1) {
+				ext += "s";
+				is = "are";
+				has = "have";
 			}
-			
-			// Convert SBML Model to VCell model
-			// An SBML model will correspond to a simcontext - which needs a
-			// Model and a Geometry
-			// SBML handles only nonspatial geometries at this time, hence
-			// creating a non-spatial default geometry
-			String modelName = sbmlModel.getId();
-			if (modelName == null || modelName.trim().equals("")) {
-				modelName = sbmlModel.getName();
-			}
-			// if sbml 'model' didn't have either id or name set, use a default
-			// name, say 'newModel'
-			if (modelName == null || modelName.trim().equals("")) {
-				modelName = "newModel";
-			}
-
-			// get namespace based on SBML model level and version to use in
-			// SBMLAnnotationUtil
-			this.level = sbmlModel.getLevel();
-			// this.version = sbmlModel.getVersion();
-			String ns = document.getNamespace();
-			
-			try {
-				// create SBML unit system for the model and create the bioModel.
-				ModelUnitSystem modelUnitSystem;
-				try {
-					modelUnitSystem = createSBMLUnitSystemForVCModel();
-				} catch (Exception e) {
-					e.printStackTrace(System.out);
-					throw new SBMLImportException("Inconsistent unit system. Cannot import SBML model into VCell", Category.INCONSISTENT_UNIT, e);
-				}
-				Geometry geometry = new Geometry(BioModelChildSummary.COMPARTMENTAL_GEO_STR, 0);
-				vcBioModel = new BioModel(null,modelUnitSystem);
-				SimulationContext simulationContext = new SimulationContext(vcBioModel.getModel(), geometry, null, null, Application.NETWORK_DETERMINISTIC);
-				vcBioModel.addSimulationContext(simulationContext);
-				simulationContext.setName(vcBioModel.getSimulationContext(0).getModel().getName());
-				// vcBioModel.getSimulationContext(0).setName(vcBioModel.getSimulationContext(0).getModel().getName()+"_"+vcBioModel.getSimulationContext(0).getGeometry().getName());
-			} catch (PropertyVetoException e) {
-				e.printStackTrace(System.out);
-				throw new SBMLImportException("Could not create simulation context corresponding to the input SBML model",e);
-			}
-			
-			// SBML annotation
-			sbmlAnnotationUtil = new SBMLAnnotationUtil(vcBioModel.getVCMetaData(), vcBioModel, ns);
-
-			translateSBMLModel();
-
-			try {
-				// **** TEMPORARY BLOCK - to name the biomodel with proper name,
-				// rather than model id
-				String biomodelName = sbmlModel.getName();
-				// if name is not set, use id
-				if ((biomodelName == null) || biomodelName.trim().equals("")) {
-					biomodelName = sbmlModel.getId();
-				}
-				// if id is not set, use a default, say, 'newModel'
-				if ((biomodelName == null) || biomodelName.trim().equals("")) {
-					biomodelName = "newBioModel";
-				}
-				vcBioModel.setName(biomodelName);
-				// **** end - TEMPORARY BLOCK
-			} catch (Exception e) {
-				e.printStackTrace(System.out);
-				throw new SBMLImportException("Could not create Biomodel", e);
-			}
-
-			sbmlAnnotationUtil.readAnnotation(vcBioModel, sbmlModel);
-			sbmlAnnotationUtil.readNotes(vcBioModel, sbmlModel);
-//			try {
-//				vcBioModel.getVCMetaData().printRdfPretty();
-//				vcBioModel.getVCMetaData().printRdfStatements();
-//			} catch(Exception e) {
-//				System.out.println("Error importing RBM MetaData from SBML");
-//			}
-
-			vcBioModel.refreshDependencies();
-
-			Issue warningIssues[] = localIssueList
-					.toArray(new Issue[localIssueList.size()]);
-			if (warningIssues != null && warningIssues.length > 0) {
-				StringBuffer messageBuffer = new StringBuffer(
-						"Issues encountered during SBML Import:\n");
-				int issueCount = 0;
-				for (int i = 0; i < warningIssues.length; i++) {
-					if (warningIssues[i].getSeverity() == Issue.SEVERITY_WARNING
-							|| warningIssues[i].getSeverity() == Issue.SEVERITY_INFO) {
-						messageBuffer.append("- " + warningIssues[i].getMessage()
-								+ " (" + warningIssues[i].getCategory() + ", " + warningIssues[i].getSeverityName() + ")\n");
-						issueCount++;
-					}
-				}
-				if (issueCount > 0) {
-					try {
-						logger.sendMessage(VCLogger.Priority.MediumPriority,
-								VCLogger.ErrorType.OverallWarning,
-								messageBuffer.toString());
-					} catch (Exception e) {
-						e.printStackTrace(System.out);
-					}
-					// PopupGenerator.showWarningDialog(requester,messageBuffer.toString(),new
-					// String[] { "OK" }, "OK");
-				}
-			}
-		} catch (Exception e) {
-			throw new SBMLImportException("Unable to read SBML file : \n" + output, e);
+			msgPackages = "The model includes elements of SBML " + ext + " " + msgPackages + " which " + is + " not required for simulating the model and " + has + " been ignored.";
+			localIssueList.add(new Issue(vcBioModel, issueContext, IssueCategory.SBMLImport_UnsupportedFeature, msgPackages, Issue.Severity.WARNING));
 		}
 
+		// Convert SBML Model to VCell model
+		// An SBML model will correspond to a simcontext - which needs a Model and a Geometry
+		// SBML handles only nonspatial geometries at this time, hence creating a non-spatial default geometry
+
+		// get namespace based on SBML model level and version to use in SBMLAnnotationUtil
+		this.level = sbmlModel.getLevel();
+		// this.version = sbmlModel.getVersion();
+		String ns = document.getNamespace();
+			
+		// create SBML unit system for the model and create the bioModel.
+		ModelUnitSystem modelUnitSystem;
+		try {
+			modelUnitSystem = createSBMLUnitSystemForVCModel();
+		} catch (Exception e) {
+			e.printStackTrace(System.out);
+			throw new SBMLImportException("Inconsistent unit system. Cannot import SBML model into VCell.", Category.INCONSISTENT_UNIT, e);
+		}
+		try {
+			Geometry geometry = new Geometry(BioModelChildSummary.COMPARTMENTAL_GEO_STR, 0);
+			vcBioModel = new BioModel(null,modelUnitSystem);
+			SimulationContext simulationContext = new SimulationContext(vcBioModel.getModel(), geometry, null, null, Application.NETWORK_DETERMINISTIC);
+			vcBioModel.addSimulationContext(simulationContext);
+			simulationContext.setName(vcBioModel.getSimulationContext(0).getModel().getName());
+			// vcBioModel.getSimulationContext(0).setName(vcBioModel.getSimulationContext(0).getModel().getName()+"_"+vcBioModel.getSimulationContext(0).getGeometry().getName());
+		} catch (Exception e) {		// PropertyVetoException
+			e.printStackTrace(System.out);
+			throw new SBMLImportException("Could not create simulation context corresponding to the input SBML model.\n", e);
+		}
+		try {
+			String biomodelName = sbmlModel.getName();
+			if ((biomodelName == null) || biomodelName.trim().equals("")) {
+				biomodelName = sbmlModel.getId();
+			}
+			if ((biomodelName == null) || biomodelName.trim().equals("")) {
+				biomodelName = "newBioModel";
+			}
+			vcBioModel.setName(biomodelName);
+			
+			sbmlAnnotationUtil = new SBMLAnnotationUtil(vcBioModel.getVCMetaData(), vcBioModel, ns);
+			sbmlAnnotationUtil.readAnnotation(vcBioModel, sbmlModel);
+			sbmlAnnotationUtil.readNotes(vcBioModel, sbmlModel);
+//			vcBioModel.getVCMetaData().printRdfPretty();
+//			vcBioModel.getVCMetaData().printRdfStatements();
+			
+			translateSBMLModel();
+			vcBioModel.refreshDependencies();
+
+		} catch(Exception e) {
+			e.printStackTrace(System.out);
+			throw new SBMLImportException("Could not create Biomodel corresponding to the input SBML model.\n", e);
+		}
+
+		Issue warnings[] = localIssueList.toArray(new Issue[localIssueList.size()]);
+		if (warnings != null && warnings.length > 0) {
+			StringBuffer messageBuffer = new StringBuffer("Issues encountered during SBML Import:\n");
+			int issueCount = 0;
+			for (int i = 0; i < warnings.length; i++) {
+				if (warnings[i].getSeverity() == Issue.Severity.WARNING || warnings[i].getSeverity() == Issue.Severity.INFO) {
+//					messageBuffer.append("- " + warnings[i].getMessage() + " (" + warnings[i].getCategory() + ", " + warnings[i].getSeverity().name() + ")\n");
+					messageBuffer.append("- " + warnings[i].getMessage() + "\n");
+					issueCount++;
+				}
+			}
+			if (issueCount > 0) {
+				try {
+					logger.sendMessage(VCLogger.Priority.MediumPriority, VCLogger.ErrorType.OverallWarning, messageBuffer.toString());
+				} catch (Exception e) {
+					e.printStackTrace(System.out);
+				}
+			}
+		}
 		return vcBioModel;
 	}
 
