@@ -10,7 +10,11 @@
 
 package org.vcell.sbml.gui;
 
+import java.awt.Color;
+
+import javax.swing.JButton;
 import javax.swing.JPanel;
+import javax.swing.JTextPane;
 
 import cbit.vcell.solver.Simulation;
 
@@ -318,18 +322,21 @@ private javax.swing.JPanel getSimulationsListPanel() {
 			ivjLocalBorder.setTitleFont(new java.awt.Font("Arial", 1, 12));
 			ivjLocalBorder.setBorder(ivjLocalBorder1);
 			ivjLocalBorder.setTitleColor(new java.awt.Color(0,0,0));
-			ivjLocalBorder.setTitle("Select Simulation to Export");
+//			ivjLocalBorder.setTitle("Select Simulation to Export");
 			ivjSimulationsListPanel = new javax.swing.JPanel();
 			ivjSimulationsListPanel.setName("SimulationsListPanel");
-			ivjSimulationsListPanel.setBorder(ivjLocalBorder);
+			ivjSimulationsListPanel.setPreferredSize(new java.awt.Dimension(120, 400));
+			ivjSimulationsListPanel.setMinimumSize(new java.awt.Dimension(120, 400));
+//			ivjSimulationsListPanel.setBorder(ivjLocalBorder);
 			ivjSimulationsListPanel.setLayout(new java.awt.GridBagLayout());
 
 			java.awt.GridBagConstraints constraintsSimListScrollPane = new java.awt.GridBagConstraints();
-			constraintsSimListScrollPane.gridx = 0; constraintsSimListScrollPane.gridy = 0;
+			constraintsSimListScrollPane.gridx = 0;
+			constraintsSimListScrollPane.gridy = 0;
 			constraintsSimListScrollPane.fill = java.awt.GridBagConstraints.BOTH;
 			constraintsSimListScrollPane.weightx = 1.0;
 			constraintsSimListScrollPane.weighty = 1.0;
-			constraintsSimListScrollPane.insets = new java.awt.Insets(4, 4, 4, 4);
+			constraintsSimListScrollPane.insets = new java.awt.Insets(4, 4, 4, 2);
 			getSimulationsListPanel().add(getSimListScrollPane(), constraintsSimListScrollPane);
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);
@@ -356,15 +363,16 @@ private javax.swing.JPanel getSimulationSummaryPanel() {
 			ivjLocalBorder2.setTitle("");
 			ivjSimulationSummaryPanel = new javax.swing.JPanel();
 			ivjSimulationSummaryPanel.setName("SimulationSummaryPanel");
-			ivjSimulationSummaryPanel.setBorder(ivjLocalBorder2);
+//			ivjSimulationSummaryPanel.setBorder(ivjLocalBorder2);
 			ivjSimulationSummaryPanel.setLayout(new java.awt.GridBagLayout());
 
 			java.awt.GridBagConstraints constraintssimSummaryPanel = new java.awt.GridBagConstraints();
-			constraintssimSummaryPanel.gridx = 0; constraintssimSummaryPanel.gridy = 0;
+			constraintssimSummaryPanel.gridx = 0;
+			constraintssimSummaryPanel.gridy = 0;
 			constraintssimSummaryPanel.fill = java.awt.GridBagConstraints.BOTH;
 			constraintssimSummaryPanel.weightx = 1.0;
 			constraintssimSummaryPanel.weighty = 1.0;
-			constraintssimSummaryPanel.insets = new java.awt.Insets(4, 4, 4, 4);
+			constraintssimSummaryPanel.insets = new java.awt.Insets(4, 2, 0, 2);
 			getSimulationSummaryPanel().add(getsimSummaryPanel(), constraintssimSummaryPanel);
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);
@@ -405,22 +413,46 @@ private void initialize() {
 		setLayout(new java.awt.GridBagLayout());
 		setSize(607, 433);
 
-		java.awt.GridBagConstraints constraintsSimulationsListPanel = new java.awt.GridBagConstraints();
-		constraintsSimulationsListPanel.gridx = 0; constraintsSimulationsListPanel.gridy = 0;
-		constraintsSimulationsListPanel.fill = java.awt.GridBagConstraints.BOTH;
-		constraintsSimulationsListPanel.weightx = 1.0;
-		constraintsSimulationsListPanel.weighty = 1.0;
-		constraintsSimulationsListPanel.ipadx = 100;
-		constraintsSimulationsListPanel.insets = new java.awt.Insets(4, 4, 4, 4);
-		add(getSimulationsListPanel(), constraintsSimulationsListPanel);
+		JButton button = new JButton();
+		Color initialBackground = button.getBackground();
+		String message = "The simulations in the list below have some initial conditions overriden. The right panel shows the overriden parameters.\n";
+		message += "  Select one of them to export the overriden initial conditions and press OK, or\n";
+		message += "  Press OK without selection to export the original initial conditions.";
+		JTextPane textPane = new JTextPane();
+		textPane.setText(message);
+		textPane.setEditable(false);
+		textPane.setBackground(initialBackground);
+		
+		int gridy = 0;
+		java.awt.GridBagConstraints gbc = new java.awt.GridBagConstraints();
+		gbc.gridx = 0;
+		gbc.gridy = gridy;
+		gbc.gridwidth = 2;
+		gbc.fill = java.awt.GridBagConstraints.HORIZONTAL;
+		gbc.weightx = 0;
+		gbc.weighty = 0;
+		gbc.insets = new java.awt.Insets(4, 4, 4, 4);
+		add(textPane, gbc);
 
-		java.awt.GridBagConstraints constraintsSimulationSummaryPanel = new java.awt.GridBagConstraints();
-		constraintsSimulationSummaryPanel.gridx = 1; constraintsSimulationSummaryPanel.gridy = 0;
-		constraintsSimulationSummaryPanel.fill = java.awt.GridBagConstraints.BOTH;
-		constraintsSimulationSummaryPanel.weightx = 1.0;
-		constraintsSimulationSummaryPanel.weighty = 1.0;
-		constraintsSimulationSummaryPanel.insets = new java.awt.Insets(4, 4, 4, 4);
-		add(getSimulationSummaryPanel(), constraintsSimulationSummaryPanel);
+		gridy++;
+		gbc = new java.awt.GridBagConstraints();
+		gbc.gridx = 0;
+		gbc.gridy = gridy;
+		gbc.fill = java.awt.GridBagConstraints.BOTH;
+		gbc.weightx = 1.0;
+		gbc.weighty = 1.0;
+		gbc.ipadx = 100;
+		gbc.insets = new java.awt.Insets(4, 4, 4, 4);
+		add(getSimulationsListPanel(), gbc);
+
+		gbc = new java.awt.GridBagConstraints();
+		gbc.gridx = 1;
+		gbc.gridy = gridy;
+		gbc.fill = java.awt.GridBagConstraints.BOTH;
+		gbc.weightx = 1.0;
+		gbc.weighty = 1.0;
+		gbc.insets = new java.awt.Insets(4, 4, 4, 4);
+		add(getSimulationSummaryPanel(), gbc);
 		initConnections();
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);

@@ -11,6 +11,7 @@
 package org.vcell.util.gui;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Desktop;
@@ -45,6 +46,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
+import javax.swing.JTextPane;
 import javax.swing.ListCellRenderer;
 import javax.swing.ListSelectionModel;
 import javax.swing.UIManager;
@@ -971,6 +973,9 @@ public class DialogUtils {
 		return showListDialog(requester,names,dialogTitle,null);
 	}
 
+	public static Object showListDialog(final Component requester, final Object[] names, final String dialogTitle, final ListCellRenderer<Object> listCellRenderer) {
+		return showListDialog(requester, names, dialogTitle, listCellRenderer, null);
+	}
 
 	/**
 	 * Insert the method's description here.
@@ -981,11 +986,23 @@ public class DialogUtils {
 	 * @param preferences cbit.vcell.client.UserPreferences
 	 * @param preferenceName java.lang.String
 	 */
-	public static Object showListDialog(final Component requester,final  Object[] names,final  String dialogTitle,final  ListCellRenderer<Object> listCellRenderer) {
+	public static Object showListDialog(final Component requester,final  Object[] names,final  String dialogTitle,final  ListCellRenderer<Object> listCellRenderer, String message) {
 		checkForNull(requester);
 		LWContainerHandle lwParent = LWNamespace.findLWOwner(requester);
 		Producer<Object> prod = ( ) -> {
-			JPanel panel = new JPanel(new BorderLayout());
+			JPanel panel = new JPanel(new BorderLayout(1,2));
+			if(message == null) {
+				panel = new JPanel(new BorderLayout());
+			} else {
+				panel = new JPanel(new BorderLayout(1,2));
+				JButton button = new JButton();
+				Color initialBackground = button.getBackground();
+				JTextPane textPane = new JTextPane();
+				textPane.setText(message);
+				textPane.setEditable(false);
+				textPane.setBackground(initialBackground);
+				panel.add(textPane, BorderLayout.NORTH);
+			}
 			final JOptionPane pane = new JOptionPane(null, JOptionPane.QUESTION_MESSAGE, JOptionPane.OK_CANCEL_OPTION);
 			JScrollPane scroller = new JScrollPane(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 			final JList<Object> list = new JList<>(names);
@@ -1004,14 +1021,14 @@ public class DialogUtils {
 
 			setInternalNotCancelEnabled(pane,false,false);
 			list.addListSelectionListener(
-					new javax.swing.event.ListSelectionListener(){
-						public void valueChanged(javax.swing.event.ListSelectionEvent e){
-							if(!e.getValueIsAdjusting()){
-								DialogUtils.setInternalNotCancelEnabled(pane,list.getSelectedIndex() != -1,false);
-							}
+				new javax.swing.event.ListSelectionListener(){
+					public void valueChanged(javax.swing.event.ListSelectionEvent e){
+						if(!e.getValueIsAdjusting()){
+							DialogUtils.setInternalNotCancelEnabled(pane,list.getSelectedIndex() != -1,false);
 						}
 					}
-					);
+				}
+			);
 
 			final JDialog dialog = new LWTitledOptionPaneDialog(lwParent, dialogTitle,pane);
 			dialog.setResizable(true);

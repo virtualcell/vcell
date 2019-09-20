@@ -1,6 +1,8 @@
 package org.vcell.util.gui.exporter;
 
 import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Vector;
 
 import javax.swing.JFrame;
@@ -217,6 +219,24 @@ public class SbmlExtensionFilter extends SelectorExtensionFilter {
 			c.selectedFile.renameTo(new File(selectedFileName));
 		}
 	}
+	public boolean isExportingOverrides() {
+		if(selectedSimWOSBE != null) {
+			return true;
+		}
+		return false;
+	}
+	public int getScanCount() {
+		if (selectedSimWOSBE != null) {
+			return selectedSimWOSBE.getScanCount();
+		}
+		return 0;
+	}
+	public String getSimulationOverrideName() {
+		if (selectedSimWOSBE != null) {
+			return selectedSimWOSBE.getName();
+		}
+		return "";
+	}
 	
 	@Override
 	public void writeBioModel(DocumentManager documentManager, BioModel bioModel, File exportFile, SimulationContext simulationContext) throws Exception {
@@ -227,13 +247,17 @@ public class SbmlExtensionFilter extends SelectorExtensionFilter {
 			XmlUtil.writeXMLStringToFile(resultString, exportFile.getAbsolutePath(), true);
 			return;
 		} else {
+			String originalExportFilename = exportFile.getPath();
+			Files.deleteIfExists(Paths.get(originalExportFilename));
 			for (int sc = 0; sc < selectedSimWOSBE.getScanCount(); sc++) {
 				SimulationJob simJob = new SimulationJob(selectedSimWOSBE, sc, null);
 				String resultString = XmlHelper.exportSBML(bioModel, sbmlLevel, sbmlVersion, sbmlPkgVersion, isSpatial, selectedSimContext, simJob);
-				// Need to export each parameter scan into a separate file 
+				// Need to export each parameter scan into a separate file
 				String newExportFileName = exportFile.getPath().substring(0, exportFile.getPath().indexOf(".xml")) + "_" + sc + ".xml";
-				exportFile.renameTo(new File(newExportFileName));
+				Files.deleteIfExists(Paths.get(newExportFileName));
 				XmlUtil.writeXMLStringToFile(resultString, exportFile.getAbsolutePath(), true);
+				exportFile.renameTo(new File(newExportFileName));
+				Files.deleteIfExists(Paths.get(originalExportFilename));
 			}
 			return;
 		}
