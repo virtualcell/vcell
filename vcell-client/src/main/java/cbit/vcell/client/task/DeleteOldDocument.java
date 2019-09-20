@@ -52,9 +52,6 @@ protected Collection<KeyInfo> requiredKeys() {
  * @param clientWorker cbit.vcell.desktop.controls.ClientWorker
  */
 public void run(Hashtable<String, Object> hashTable) throws java.lang.Exception {
-	if(hashTable.get(DeleteDocumentLostResults.B_DELETE_NEW_LOST_RESULTS_CANCEL) != null && ((Boolean)hashTable.get(DeleteDocumentLostResults.B_DELETE_NEW_LOST_RESULTS_CANCEL))) {//don't delete old if we cancelled because of lost results and have deleted new
-		return;
-	}
 	DocumentWindowManager dwm = (DocumentWindowManager) fetch(hashTable,DOCUMENT_WINDOW_MANAGER);
 	VCDocument currentDocument = dwm.getVCDocument();
 	DocumentManager documentManager = (DocumentManager)fetch(hashTable,DOCUMENT_MANAGER);

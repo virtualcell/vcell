@@ -21,7 +21,6 @@ public class UserCancelException extends RuntimeException {
 	public static final UserCancelException WARN_NO_CHANGES = new UserCancelException("User canceled on warning: no changes");
 	public static final UserCancelException CHOOSE_SAVE_AS = new UserCancelException("User chose to save as on warning: no changes");
 	public static final UserCancelException CANCEL_DELETE_OLD = new UserCancelException("User chose to cancel deletion of old version");
-	public static final UserCancelException CANCEL_LOST_RESULTS = new UserCancelException("User chose to keep old but delete new");
 	public static final UserCancelException CANCEL_FILE_SELECTION = new UserCancelException("User canceled selecting a file");
 	public static final UserCancelException CANCEL_DB_SELECTION = new UserCancelException("User canceled selecting from database");
 	public static final UserCancelException CANCEL_EDIT_IMG_ATTR = new UserCancelException("User canceled Edit Image Attributes");
