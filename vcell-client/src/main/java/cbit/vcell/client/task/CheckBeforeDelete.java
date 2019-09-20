@@ -284,7 +284,7 @@ public void run(Hashtable<String, Object> hashTable) throws Exception {
 			throw UserCancelException.CANCEL_DELETE_OLD;
 		}
 		if (choice.equals(UserMessage.OPTION_CANCEL) ) {
-			throw UserCancelException.CANCEL_GENERIC;
+			throw UserCancelException.CANCEL_LOST_RESULTS;
 			
 		}
 	}

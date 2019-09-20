@@ -161,6 +161,7 @@ import cbit.vcell.client.task.CheckUnchanged;
 import cbit.vcell.client.task.ChooseFile;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.client.task.CommonTask;
+import cbit.vcell.client.task.DeleteDocumentLostResults;
 import cbit.vcell.client.task.DeleteOldDocument;
 import cbit.vcell.client.task.DocumentToExport;
 import cbit.vcell.client.task.DocumentValidTask;
@@ -3756,6 +3757,8 @@ public void runSimulations(final ClientSimManager clientSimManager, final Simula
 		AsynchClientTask checkBeforeDelete = new CheckBeforeDelete();
 		// delete old document
 		AsynchClientTask deleteOldDocument = new DeleteOldDocument();
+		// delete new document if cancel because of lost results
+		AsynchClientTask deleteDocLostResults = new DeleteDocumentLostResults();
 		// clean up
 		AsynchClientTask finishSave = new FinishSave();
 		// run the simulations
@@ -3767,6 +3770,7 @@ public void runSimulations(final ClientSimManager clientSimManager, final Simula
 			checkUnchanged,
 			saveDocument,
 			checkBeforeDelete,
+			deleteDocLostResults,
 			deleteOldDocument,
 			finishSave,
 			runSims
@@ -3847,6 +3851,8 @@ public void saveDocument(final DocumentWindowManager documentWindowManager, bool
 		AsynchClientTask saveDocument = new SaveDocument(false);
 		// check for lost results
 		AsynchClientTask checkBeforeDelete = new CheckBeforeDelete();
+		// delete new document if cancel because of lost results
+		AsynchClientTask deleteDocLostResults = new DeleteDocumentLostResults();
 		// delete old document
 		AsynchClientTask deleteOldDocument = new DeleteOldDocument();
 		tasks = new AsynchClientTask[] {
@@ -3855,6 +3861,7 @@ public void saveDocument(final DocumentWindowManager documentWindowManager, bool
 			checkUnchanged,
 			saveDocument,
 			checkBeforeDelete,
+			deleteDocLostResults,
 			deleteOldDocument,
 			finishSave
 		};
