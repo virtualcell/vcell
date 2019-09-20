@@ -19,12 +19,12 @@
   <BioModelInfo ID="BIOMD0000000017" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Hoefnagel2002_PyruvateBranches" />
   <BioModelInfo ID="BIOMD0000000018" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Morrison1989 - Folate Cycle" />
   <BioModelInfo ID="BIOMD0000000019" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Schoeberl2002 - EGF MAPK" />
-  <BioModelInfo ID="BIOMD0000000020" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Hodgkin-Huxley1952 squid-axon" />
+  <BioModelInfo ID="BIOMD0000000020" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="hodgkin-huxley squid-axon 1952" />
   <BioModelInfo ID="BIOMD0000000021" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Leloup1999_CircClock" />
   <BioModelInfo ID="BIOMD0000000022" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Ueda2001_CircClock" />
   <BioModelInfo ID="BIOMD0000000023" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Rohwer2001_Sucrose" />
-  <BioModelInfo ID="BIOMD0000000024" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Scheper1999_CircClock" exception="Unable to read SBML file : &#xA;didn't check" />
-  <BioModelInfo ID="BIOMD0000000025" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Smolen2002_CircClock" exception="Unable to read SBML file : &#xA;didn't check" />
+  <BioModelInfo ID="BIOMD0000000024" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Scheper1999_CircClock" exception="Could not create Biomodel corresponding to the input SBML model.&#xA;" />
+  <BioModelInfo ID="BIOMD0000000025" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Smolen2002_CircClock" exception="Could not create Biomodel corresponding to the input SBML model.&#xA;" />
   <BioModelInfo ID="BIOMD0000000026" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Markevich2004_MAPK_orderedElementary" />
   <BioModelInfo ID="BIOMD0000000027" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Markevich2004 - MAPK double phosphorylation,  ordered Michaelis-Menton" />
   <BioModelInfo ID="BIOMD0000000028" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Markevich2004_MAPK_phosphoRandomElementary" />
@@ -33,12 +33,12 @@
   <BioModelInfo ID="BIOMD0000000031" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Markevich2004_MAPK_orderedMM2kinases" />
   <BioModelInfo ID="BIOMD0000000032" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Kofahl2004_PheromonePathway" />
   <BioModelInfo ID="BIOMD0000000033" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Brown2004 - NGF and EGF signaling" />
-  <BioModelInfo ID="BIOMD0000000034" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Smolen2004_CircClock" exception="Unable to read SBML file : &#xA;didn't check" />
+  <BioModelInfo ID="BIOMD0000000034" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Smolen2004_CircClock" exception="Could not create Biomodel corresponding to the input SBML model.&#xA;" />
   <BioModelInfo ID="BIOMD0000000035" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Vilar2002_Oscillator" />
   <BioModelInfo ID="BIOMD0000000036" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Tyson1999_CircClock" />
   <BioModelInfo ID="BIOMD0000000037" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Marwan2003 - Genetics, regulatory hierarchy between genes" />
   <BioModelInfo ID="BIOMD0000000038" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Rohwer2000_Phosphotransferase_System" />
-  <BioModelInfo ID="BIOMD0000000039" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Marhl2000_CaOscillations" exception="Unable to read SBML file : &#xA;didn't check" />
+  <BioModelInfo ID="BIOMD0000000039" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Marhl2000_CaOscillations" exception="Could not create Biomodel corresponding to the input SBML model.&#xA;" />
   <BioModelInfo ID="BIOMD0000000040" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Field1974_Oregonator" />
   <BioModelInfo ID="BIOMD0000000041" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Kongas2007 - Creatine Kinase in energy metabolic signaling in muscle" />
   <BioModelInfo ID="BIOMD0000000042" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Nielsen1998_Glycolysis" />
@@ -58,11 +58,11 @@
   <BioModelInfo ID="BIOMD0000000056" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Chen2004 - Cell Cycle Regulation" />
   <BioModelInfo ID="BIOMD0000000057" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Sneyd2002_IP3_Receptor" />
   <BioModelInfo ID="BIOMD0000000058" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Bindschadler2001_coupled_Ca_oscillators" />
-  <BioModelInfo ID="BIOMD0000000059" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Fridlyand2003_Calcium_flux" exception="Unable to read SBML file : &#xA;didn't check" />
+  <BioModelInfo ID="BIOMD0000000059" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Fridlyand2003_Calcium_flux" exception="Could not create Biomodel corresponding to the input SBML model.&#xA;" />
   <BioModelInfo ID="BIOMD0000000060" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Keizer1996_Ryanodine_receptor_adaptation" />
   <BioModelInfo ID="BIOMD0000000061" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Hynne2001_Glycolysis" />
   <BioModelInfo ID="BIOMD0000000062" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Bhartiya2003_Tryptophan_operon" />
-  <BioModelInfo ID="BIOMD0000000063" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Galazzo1990_FermentationPathwayKinetics" exception="Unable to read SBML file : &#xA;didn't check" />
+  <BioModelInfo ID="BIOMD0000000063" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Galazzo1990_FermentationPathwayKinetics" exception="Could not create Biomodel corresponding to the input SBML model.&#xA;" />
   <BioModelInfo ID="BIOMD0000000064" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Teusink2000_Glycolysis" />
   <BioModelInfo ID="BIOMD0000000065" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Yildirim2003_Lac_Operon" />
   <BioModelInfo ID="BIOMD0000000066" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Chassagnole2001_Threonine Synthesis" />
@@ -74,13 +74,13 @@
   <BioModelInfo ID="BIOMD0000000072" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Yi2003_GproteinCycle" />
   <BioModelInfo ID="BIOMD0000000073" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Leloup2003_CircClock_DD" />
   <BioModelInfo ID="BIOMD0000000074" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Leloup2003_CircClock_DD_REV-ERBalpha" />
-  <BioModelInfo ID="BIOMD0000000075" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Xu2003 - Phosphoinositide turnover" />
+  <BioModelInfo ID="BIOMD0000000075" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Xu2003 - Phosphoinositide turnover" exception="Inconsistent unit system. Cannot import SBML model into VCell." />
   <BioModelInfo ID="BIOMD0000000076" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Cronwright2002_Glycerol_Synthesis" />
   <BioModelInfo ID="BIOMD0000000077" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Blum2000_LHsecretion_1" />
   <BioModelInfo ID="BIOMD0000000078" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Leloup2003_CircClock_LD" />
   <BioModelInfo ID="BIOMD0000000079" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Goldbeter2006_weightCycling" />
   <BioModelInfo ID="BIOMD0000000080" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Thomsen1989_AdenylateCyclase" />
-  <BioModelInfo ID="BIOMD0000000081" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Suh2004_KCNQ_Regulation" exception="Unable to read SBML file : &#xA;didn't check" />
+  <BioModelInfo ID="BIOMD0000000081" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Suh2004_KCNQ_Regulation" exception="Inconsistent unit system. Cannot import SBML model into VCell." />
   <BioModelInfo ID="BIOMD0000000082" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Thomsen1988_AdenylateCyclase_Inhibition" />
   <BioModelInfo ID="BIOMD0000000083" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Leloup2003_CircClock_LD_REV-ERBalpha" />
   <BioModelInfo ID="BIOMD0000000084" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Hornberg2005_ERKcascade" />
@@ -109,12 +109,12 @@
   <BioModelInfo ID="BIOMD0000000107" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Novak1993 - Cell cycle M-phase control" />
   <BioModelInfo ID="BIOMD0000000108" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Kowald2006_SOD" />
   <BioModelInfo ID="BIOMD0000000109" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Haberichter2007_cellcycle" />
-  <BioModelInfo ID="BIOMD0000000110" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Qu2003_CellCycle" exception="Unable to read SBML file : &#xA;didn't check" />
+  <BioModelInfo ID="BIOMD0000000110" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Qu2003_CellCycle" />
   <BioModelInfo ID="BIOMD0000000111" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Novak2001_FissionYeast_CellCycle" />
   <BioModelInfo ID="BIOMD0000000112" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Clarke2006_Smad_signalling" />
   <BioModelInfo ID="BIOMD0000000113" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Dupont1992_Ca_dpt_protein_phospho" />
-  <BioModelInfo ID="BIOMD0000000114" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Somogyi1990_CaOscillations" exception="Unable to read SBML file : &#xA;didn't check" />
-  <BioModelInfo ID="BIOMD0000000115" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Somogyi1990_CaOscillations_SingleCaSpike" exception="Unable to read SBML file : &#xA;didn't check" />
+  <BioModelInfo ID="BIOMD0000000114" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Somogyi1990_CaOscillations" />
+  <BioModelInfo ID="BIOMD0000000115" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Somogyi1990_CaOscillations_SingleCaSpike" />
   <BioModelInfo ID="BIOMD0000000116" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="McClean2007_CrossTalk" />
   <BioModelInfo ID="BIOMD0000000117" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Dupont1991_CaOscillation" />
   <BioModelInfo ID="BIOMD0000000118" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Golomb2006_SomaticBursting" />
@@ -144,20 +144,20 @@
   <BioModelInfo ID="BIOMD0000000142" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Izhikevich2004_SpikingNeurons_Class2Excitable" />
   <BioModelInfo ID="BIOMD0000000143" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Olsen2003_neutrophil_oscillatory_metabolism" />
   <BioModelInfo ID="BIOMD0000000144" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Calzone2007_CellCycle" />
-  <BioModelInfo ID="BIOMD0000000145" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Wang2007 - ATP induced intracellular Calcium Oscillation" exception="Unable to read SBML file : &#xA;didn't check" />
+  <BioModelInfo ID="BIOMD0000000145" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Wang2007 - ATP induced intracellular Calcium Oscillation" exception="Could not create Biomodel corresponding to the input SBML model.&#xA;" />
   <BioModelInfo ID="BIOMD0000000146" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Hatakeyama2003_MAPK" />
   <BioModelInfo ID="BIOMD0000000147" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="ODea2007_IkappaB" />
   <BioModelInfo ID="BIOMD0000000148" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Komarova2003_BoneRemodeling" />
   <BioModelInfo ID="BIOMD0000000149" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Kim2007 - Crosstalk between Wnt and ERK pathways" />
   <BioModelInfo ID="BIOMD0000000150" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Morris2002_CellCycle_CDK2Cyclin" />
-  <BioModelInfo ID="BIOMD0000000151" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Singh2006_IL6_Signal_Transduction" exception="Unable to read SBML file : &#xA;didn't check" />
+  <BioModelInfo ID="BIOMD0000000151" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Singh2006_IL6_Signal_Transduction" exception="Could not create Biomodel corresponding to the input SBML model.&#xA;" />
   <BioModelInfo ID="BIOMD0000000152" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Fernandez2006_ModelA" />
   <BioModelInfo ID="BIOMD0000000153" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Fernandez2006_ModelB" />
-  <BioModelInfo ID="BIOMD0000000154" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Zatorsky2006_p53_Model3" exception="Unable to read SBML file : &#xA;didn't check" />
-  <BioModelInfo ID="BIOMD0000000155" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Zatorsky2006_p53_Model6" exception="Unable to read SBML file : &#xA;didn't check" />
+  <BioModelInfo ID="BIOMD0000000154" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Zatorsky2006_p53_Model3" exception="Could not create Biomodel corresponding to the input SBML model.&#xA;" />
+  <BioModelInfo ID="BIOMD0000000155" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Zatorsky2006_p53_Model6" exception="Could not create Biomodel corresponding to the input SBML model.&#xA;" />
   <BioModelInfo ID="BIOMD0000000156" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Zatorsky2006_p53_Model5" />
   <BioModelInfo ID="BIOMD0000000157" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Zatorsky2006_p53_Model4" />
-  <BioModelInfo ID="BIOMD0000000158" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Zatorsky2006_p53_Model2" exception="Unable to read SBML file : &#xA;didn't check" />
+  <BioModelInfo ID="BIOMD0000000158" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Zatorsky2006_p53_Model2" />
   <BioModelInfo ID="BIOMD0000000159" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Zatorsky2006_p53_Model1" />
   <BioModelInfo ID="BIOMD0000000160" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Xie2007_CircClock" />
   <BioModelInfo ID="BIOMD0000000161" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Eungdamrong2007_Ras_Activation" />
@@ -174,7 +174,7 @@
   <BioModelInfo ID="BIOMD0000000172" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Pritchard2002_glycolysis" />
   <BioModelInfo ID="BIOMD0000000173" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Schmierer_2008_Smad_Tgfb" />
   <BioModelInfo ID="BIOMD0000000174" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Del_Conte_Zerial2008_Rab5_Rab7_cut_out_switch" />
-  <BioModelInfo ID="BIOMD0000000175" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Birtwistle2007_ErbB_Signalling" exception="Unable to read SBML file : &#xA;didn't check" />
+  <BioModelInfo ID="BIOMD0000000175" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Birtwistle2007_ErbB_Signalling" />
   <BioModelInfo ID="BIOMD0000000176" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Conant2007_WGD_glycolysis_2A3AB" />
   <BioModelInfo ID="BIOMD0000000177" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Conant2007_glycolysis_2C" />
   <BioModelInfo ID="BIOMD0000000178" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Lebeda2008 - BoTN Paralysis (4 step model)" />
@@ -195,17 +195,17 @@
   <BioModelInfo ID="BIOMD0000000193" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Ibrahim2008_MCC_assembly_model_KDM" />
   <BioModelInfo ID="BIOMD0000000194" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Ibrahim2008_Cdc20_Sequestring_Template_Model" />
   <BioModelInfo ID="BIOMD0000000195" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Tyson2001_Cell_Cycle_Regulation" />
-  <BioModelInfo ID="BIOMD0000000196" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Srividhya2006_CellCycle" exception="Unable to read SBML file : &#xA;didn't check" />
+  <BioModelInfo ID="BIOMD0000000196" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Srividhya2006_CellCycle" exception="Could not create Biomodel corresponding to the input SBML model.&#xA;" />
   <BioModelInfo ID="BIOMD0000000197" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Bartholome2007_MDCKII" />
   <BioModelInfo ID="BIOMD0000000198" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Stone1996 - activation of soluble guanylate cyclase by nitric oxide" />
-  <BioModelInfo ID="BIOMD0000000199" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Santolini2001_nNOS_Mechanism_Regulation" exception="Unable to read SBML file : &#xA;didn't check" />
+  <BioModelInfo ID="BIOMD0000000199" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Santolini2001_nNOS_Mechanism_Regulation" exception="Could not create Biomodel corresponding to the input SBML model.&#xA;" />
   <BioModelInfo ID="BIOMD0000000200" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Bray1995_chemotaxis_receptorlinkedcomplex" />
   <BioModelInfo ID="BIOMD0000000201" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Goldbeter2008_Somite_Segmentation_Clock_Notch_Wnt_FGF" />
   <BioModelInfo ID="BIOMD0000000202" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="ChenXF2008_CICR" />
   <BioModelInfo ID="BIOMD0000000203" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Chickarmane2006 - Stem cell switch reversible" />
   <BioModelInfo ID="BIOMD0000000204" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Chickarmane2006 - Stem cell switch irreversible" />
   <BioModelInfo ID="BIOMD0000000205" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Ung2008_EGFR_Endocytosis" />
-  <BioModelInfo ID="BIOMD0000000206" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Wolf2000_Glycolytic_Oscillations" exception="Unable to read SBML file : &#xA;didn't check" />
+  <BioModelInfo ID="BIOMD0000000206" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Wolf2000_Glycolytic_Oscillations" exception="Could not create Biomodel corresponding to the input SBML model.&#xA;" />
   <BioModelInfo ID="BIOMD0000000207" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Romond1999_CellCycle" />
   <BioModelInfo ID="BIOMD0000000208" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Deineko2003_CellCycle" />
   <BioModelInfo ID="BIOMD0000000209" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Chickarmane2008 - Stem cell lineage determination" />
@@ -231,7 +231,7 @@
   <BioModelInfo ID="BIOMD0000000229" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Ma2002_cAMP_oscillations" />
   <BioModelInfo ID="BIOMD0000000230" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Ihekwaba2004_NFkB_Sensitivity" />
   <BioModelInfo ID="BIOMD0000000231" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Valero2006_Adenine_TernaryCycle" />
-  <BioModelInfo ID="BIOMD0000000232" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Nazaret2009_TCA_RC_ATP" exception="Unable to read SBML file : &#xA;didn't check" />
+  <BioModelInfo ID="BIOMD0000000232" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Nazaret2009_TCA_RC_ATP" exception="Could not create Biomodel corresponding to the input SBML model.&#xA;" />
   <BioModelInfo ID="BIOMD0000000233" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Wilhelm2009_BistableReaction" />
   <BioModelInfo ID="BIOMD0000000234" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Tham2008 - PDmodel, Tumour shrinkage by gemcitabine and carboplatin " />
   <BioModelInfo ID="BIOMD0000000235" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Kuhn2009_EndoMesodermNetwork" />
@@ -243,11 +243,11 @@
   <BioModelInfo ID="BIOMD0000000241" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Shi1993_Caffeine_pressor_tolerance" />
   <BioModelInfo ID="BIOMD0000000242" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Bai2003_G1phaseRegulation" />
   <BioModelInfo ID="BIOMD0000000243" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Neumann2010_CD95Stimulation_NFkB_Apoptosis" />
-  <BioModelInfo ID="BIOMD0000000244" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Kotte2010_Ecoli_Metabolic_Adaption" exception="Unable to read SBML file : &#xA;didn't check" />
-  <BioModelInfo ID="BIOMD0000000245" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Lei2001_Yeast_Aerobic_Metabolism" exception="Unable to read SBML file : &#xA;didn't check" />
-  <BioModelInfo ID="BIOMD0000000246" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Vasalou2010_Pacemaker_Neuron_SCN" exception="Unable to read SBML file : &#xA;didn't check" />
+  <BioModelInfo ID="BIOMD0000000244" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Kotte2010_Ecoli_Metabolic_Adaption" exception="Could not create Biomodel corresponding to the input SBML model.&#xA;" />
+  <BioModelInfo ID="BIOMD0000000245" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Lei2001_Yeast_Aerobic_Metabolism" exception="Could not create Biomodel corresponding to the input SBML model.&#xA;" />
+  <BioModelInfo ID="BIOMD0000000246" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Vasalou2010_Pacemaker_Neuron_SCN" exception="Could not create Biomodel corresponding to the input SBML model.&#xA;" />
   <BioModelInfo ID="BIOMD0000000247" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Ralser2007_Carbohydrate_Rerouting_ROS" />
-  <BioModelInfo ID="BIOMD0000000248" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Lai2007_O2_Transport_Metabolism" exception="Unable to read SBML file : &#xA;didn't check" />
+  <BioModelInfo ID="BIOMD0000000248" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Lai2007_O2_Transport_Metabolism" />
   <BioModelInfo ID="BIOMD0000000249" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Restif2006 - Whooping cough" />
   <BioModelInfo ID="BIOMD0000000250" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Nakakuki2010_CellFateDecision_Mechanistic" />
   <BioModelInfo ID="BIOMD0000000251" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Nakakuki2010_CellFateDecision_Core" />
@@ -261,11 +261,11 @@
   <BioModelInfo ID="BIOMD0000000259" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Tiago2010_FeMetabolism_FeDeficient" />
   <BioModelInfo ID="BIOMD0000000260" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Tiago2010_FeMetabolism_FeAdequate" />
   <BioModelInfo ID="BIOMD0000000261" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Tiago2010_FeMetabolism_FeLoaded" />
-  <BioModelInfo ID="BIOMD0000000262" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Fujita2010_Akt_Signalling_EGF" exception="Unable to read SBML file : &#xA;didn't check" />
-  <BioModelInfo ID="BIOMD0000000263" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Fujita2010_Akt_Signalling_NGF" exception="Unable to read SBML file : &#xA;didn't check" />
-  <BioModelInfo ID="BIOMD0000000264" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Fujita2010_Akt_Signalling_EGFRinhib" exception="Unable to read SBML file : &#xA;didn't check" />
+  <BioModelInfo ID="BIOMD0000000262" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Fujita2010_Akt_Signalling_EGF" />
+  <BioModelInfo ID="BIOMD0000000263" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Fujita2010_Akt_Signalling_NGF" />
+  <BioModelInfo ID="BIOMD0000000264" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Fujita2010_Akt_Signalling_EGFRinhib" />
   <BioModelInfo ID="BIOMD0000000265" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Conradie2010_RPControl_CellCycle" />
-  <BioModelInfo ID="BIOMD0000000266" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Voit2003 - Trehalose Cycle" />
+  <BioModelInfo ID="BIOMD0000000266" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Voit2003_Trehalose_Cycle" />
   <BioModelInfo ID="BIOMD0000000267" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Lebeda2008 - BoNT paralysis (3 step model)" />
   <BioModelInfo ID="BIOMD0000000268" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Reed2008_Glutathione_Metabolism" />
   <BioModelInfo ID="BIOMD0000000269" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Liu2010_Hormonal_Crosstalk_Arabidopsis" />
@@ -274,7 +274,7 @@
   <BioModelInfo ID="BIOMD0000000272" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Becker2010_EpoR_AuxiliaryModel" />
   <BioModelInfo ID="BIOMD0000000273" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Pokhilko2010_CircClock" />
   <BioModelInfo ID="BIOMD0000000274" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Rattanakul2003_BoneFormationModel" />
-  <BioModelInfo ID="BIOMD0000000275" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Goldbeter2007_Somitogenesis_Switch" exception="Unable to read SBML file : &#xA;didn't check" />
+  <BioModelInfo ID="BIOMD0000000275" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Goldbeter2007_Somitogenesis_Switch" />
   <BioModelInfo ID="BIOMD0000000276" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Shrestha2010_HypoCalcemia_PTHresponse" />
   <BioModelInfo ID="BIOMD0000000277" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Shrestha2010_HyperCalcemia_PTHresponse" />
   <BioModelInfo ID="BIOMD0000000278" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Lemaire2004 - Role of RANK/RANKL/OPG pathway in bone remodelling process" />
@@ -287,7 +287,7 @@
   <BioModelInfo ID="BIOMD0000000285" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Tang2010_PolyGlutamate" />
   <BioModelInfo ID="BIOMD0000000286" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Proctor2010 - a link between GSK3 and p53 in Alzheimer's Disease" />
   <BioModelInfo ID="BIOMD0000000287" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Passos2010_DNAdamage_CellularSenescence" />
-  <BioModelInfo ID="BIOMD0000000288" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Wang2009 - PI3K Ras Crosstalk" exception="Unable to read SBML file : &#xA;didn't check" />
+  <BioModelInfo ID="BIOMD0000000288" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Wang2009 - PI3K Ras Crosstalk" />
   <BioModelInfo ID="BIOMD0000000289" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Alexander2010_Tcell_Regulation_Sys1" />
   <BioModelInfo ID="BIOMD0000000290" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Alexander2010_Tcell_Regulation_Sys2" />
   <BioModelInfo ID="BIOMD0000000291" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Nikolaev2005_AlbuminBilirubinAdsorption" />
@@ -296,7 +296,7 @@
   <BioModelInfo ID="BIOMD0000000294" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Restif2007 - Vaccination invasion" />
   <BioModelInfo ID="BIOMD0000000295" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Akman2008_Circadian_Clock_Model1" />
   <BioModelInfo ID="BIOMD0000000296" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Balagaddé2008_E_coli_Predator_Prey" />
-  <BioModelInfo ID="BIOMD0000000297" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Ciliberto2003 - Swe1 / CDK network model for morphogenesis checkpoint" />
+  <BioModelInfo ID="BIOMD0000000297" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Ciliberto2003_Morphogenesis_Checkpoint" />
   <BioModelInfo ID="BIOMD0000000298" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Leloup1999_CircadianRhythms_Drosophila" />
   <BioModelInfo ID="BIOMD0000000299" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Leloup1999_CircadianRhythms_Neurospora" />
   <BioModelInfo ID="BIOMD0000000300" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Schmierer2010_FIH_Ankyrins" />
@@ -304,7 +304,7 @@
   <BioModelInfo ID="BIOMD0000000302" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Wang1996_Synaptic_Inhibition_Two_Neuron" />
   <BioModelInfo ID="BIOMD0000000303" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Liu2011_Complement_System" />
   <BioModelInfo ID="BIOMD0000000304" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Plant1981_BurstingNerveCells" />
-  <BioModelInfo ID="BIOMD0000000305" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Kolomeisky2003_MyosinV_Processivity" exception="Unable to read SBML file : &#xA;didn't check" />
+  <BioModelInfo ID="BIOMD0000000305" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Kolomeisky2003_MyosinV_Processivity" />
   <BioModelInfo ID="BIOMD0000000306" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Tyson2003_Activator_Inhibitor" />
   <BioModelInfo ID="BIOMD0000000307" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Tyson2003_Substrate_Depletion_Osc" />
   <BioModelInfo ID="BIOMD0000000308" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Tyson2003_NegFB_Oscillator" />
@@ -318,7 +318,7 @@
   <BioModelInfo ID="BIOMD0000000316" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Shen-Orr2002_FeedForward_AND_gate" />
   <BioModelInfo ID="BIOMD0000000317" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Shen-Orr2002_Single_Input_Module" />
   <BioModelInfo ID="BIOMD0000000318" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Yao2008_Rb_E2F_Switch" />
-  <BioModelInfo ID="BIOMD0000000319" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Decroly1982_Enzymatic_Oscillator" exception="Unable to read SBML file : &#xA;didn't check" />
+  <BioModelInfo ID="BIOMD0000000319" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Decroly1982_Enzymatic_Oscillator" exception="Could not create Biomodel corresponding to the input SBML model.&#xA;" />
   <BioModelInfo ID="BIOMD0000000320" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Grange2001 - PK interaction of L-dopa and benserazide" />
   <BioModelInfo ID="BIOMD0000000321" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Grange2001 - L Dopa PK model" />
   <BioModelInfo ID="BIOMD0000000322" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Kim2011_Oscillator_SimpleI" />
@@ -326,7 +326,7 @@
   <BioModelInfo ID="BIOMD0000000324" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Morris1981_MuscleFibre_Voltage_full" />
   <BioModelInfo ID="BIOMD0000000325" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Palini2011_Minimal_2_Feedback_Model" />
   <BioModelInfo ID="BIOMD0000000326" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="DellOrco2009_phototransduction" />
-  <BioModelInfo ID="BIOMD0000000327" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Whitcomb2004_Bicarbonate_Pancreas" exception="Unable to read SBML file : &#xA;didn't check" />
+  <BioModelInfo ID="BIOMD0000000327" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Whitcomb2004_Bicarbonate_Pancreas" exception="Could not create Biomodel corresponding to the input SBML model.&#xA;" />
   <BioModelInfo ID="BIOMD0000000328" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Bucher2011_Atorvastatin_Metabolism" />
   <BioModelInfo ID="BIOMD0000000329" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Kummer2000 - Oscillations in Calcium Signalling" />
   <BioModelInfo ID="BIOMD0000000330" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Larsen2004_CalciumSpiking" />
@@ -339,9 +339,9 @@
   <BioModelInfo ID="BIOMD0000000337" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Pfeiffer2001_ATP-ProducingPathways_CooperationCompetition" />
   <BioModelInfo ID="BIOMD0000000338" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Wajima2009_BloodCoagulation_aPTTtest" />
   <BioModelInfo ID="BIOMD0000000339" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Wajima2009_BloodCoagulation_PTtest" />
-  <BioModelInfo ID="BIOMD0000000340" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Wajima2009_BloodCoagulation_warfarin_heparin" exception="Unable to read SBML file : &#xA;didn't check" />
+  <BioModelInfo ID="BIOMD0000000340" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Wajima2009_BloodCoagulation_warfarin_heparin" exception="Could not create Biomodel corresponding to the input SBML model.&#xA;" />
   <BioModelInfo ID="BIOMD0000000341" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Topp2000_BetaCellMass_Diabetes" />
-  <BioModelInfo ID="BIOMD0000000342" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Zi2011_TGF-beta_Pathway" exception="Unable to read SBML file : &#xA;didn't check" />
+  <BioModelInfo ID="BIOMD0000000342" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Zi2011_TGF-beta_Pathway" exception="Could not create Biomodel corresponding to the input SBML model.&#xA;" />
   <BioModelInfo ID="BIOMD0000000343" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Brannmark2010_InsulinSignalling_Mifamodel" />
   <BioModelInfo ID="BIOMD0000000344" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Proctor2011_ProteinHomeostasis_NormalCondition" />
   <BioModelInfo ID="BIOMD0000000345" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Koschorreck2008_InsulinClearance" />
@@ -352,7 +352,7 @@
   <BioModelInfo ID="BIOMD0000000350" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Troein2011_ClockCircuit_OstreococcusTauri" />
   <BioModelInfo ID="BIOMD0000000351" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Vernoux2011_AuxinSignaling_AuxinSingleStepInput" />
   <BioModelInfo ID="BIOMD0000000352" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Vernoux2011_AuxinSignaling_AuxinFluctuating" />
-  <BioModelInfo ID="BIOMD0000000353" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Nag2011_ChloroplasticStarchDegradation" exception="Unable to read SBML file : &#xA;didn't check" />
+  <BioModelInfo ID="BIOMD0000000353" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Nag2011_ChloroplasticStarchDegradation" exception="Inconsistent unit system. Cannot import SBML model into VCell." />
   <BioModelInfo ID="BIOMD0000000354" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Abell2011_CalciumSignaling_WithoutAdaptation" />
   <BioModelInfo ID="BIOMD0000000355" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Abell2011_CalciumSignaling_WithAdaptation" />
   <BioModelInfo ID="BIOMD0000000356" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Nyman2011_M3Hierarachical_InsulinGlucosedynamics" />
@@ -366,7 +366,7 @@
   <BioModelInfo ID="BIOMD0000000364" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Lee2010_ThrombinActivation_OneForm" />
   <BioModelInfo ID="BIOMD0000000365" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Hockin1999_BloodCoagulation_VaInactivation" />
   <BioModelInfo ID="BIOMD0000000366" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Orfao2008_ThrombinGeneration_AmidolyticActivity" />
-  <BioModelInfo ID="BIOMD0000000367" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Muller2008_ThrombinGeneration_minimal" />
+  <BioModelInfo ID="BIOMD0000000367" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Muller2008_treshold_minimal" />
   <BioModelInfo ID="BIOMD0000000368" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Beltrami1995_ThrombinGeneration_C" />
   <BioModelInfo ID="BIOMD0000000369" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Beltrami1995_ThrombinGeneration_D" />
   <BioModelInfo ID="BIOMD0000000370" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Vinod2011_MitoticExit" />
@@ -382,16 +382,16 @@
   <BioModelInfo ID="BIOMD0000000380" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Smallbone2011_TrehaloseBiosynthesis" />
   <BioModelInfo ID="BIOMD0000000381" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Maree2006_DuCa_Type1DiabetesModel" />
   <BioModelInfo ID="BIOMD0000000382" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Sturis1991_InsulinGlucoseModel_UltradianOscillation" />
-  <BioModelInfo ID="BIOMD0000000383" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Arnold2011_Farquhar1980_RuBisCO-CalvinCycle" exception="Unable to read SBML file : &#xA;didn't check" />
-  <BioModelInfo ID="BIOMD0000000384" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Arnold2011_Medlyn2002_RuBisCO-CalvinCycle" exception="Unable to read SBML file : &#xA;didn't check" />
-  <BioModelInfo ID="BIOMD0000000385" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Arnold2011_Schultz2003_RuBisCO-CalvinCycle" exception="Unable to read SBML file : &#xA;didn't check" />
-  <BioModelInfo ID="BIOMD0000000386" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Arnold2011_Sharkey2007_RuBisCO-CalvinCycle" exception="Unable to read SBML file : &#xA;didn't check" />
-  <BioModelInfo ID="BIOMD0000000387" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Arnold2011_Damour2007_RuBisCO-CalvinCycle" exception="Unable to read SBML file : &#xA;didn't check" />
-  <BioModelInfo ID="BIOMD0000000388" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Arnold2011_Zhu2009_CalvinCycle" exception="Unable to read SBML file : &#xA;didn't check" />
+  <BioModelInfo ID="BIOMD0000000383" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Arnold2011_Farquhar1980_RuBisCO-CalvinCycle" exception="Could not create Biomodel corresponding to the input SBML model.&#xA;" />
+  <BioModelInfo ID="BIOMD0000000384" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Arnold2011_Medlyn2002_RuBisCO-CalvinCycle" exception="Could not create Biomodel corresponding to the input SBML model.&#xA;" />
+  <BioModelInfo ID="BIOMD0000000385" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Arnold2011_Schultz2003_RuBisCO-CalvinCycle" exception="Could not create Biomodel corresponding to the input SBML model.&#xA;" />
+  <BioModelInfo ID="BIOMD0000000386" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Arnold2011_Sharkey2007_RuBisCO-CalvinCycle" exception="Could not create Biomodel corresponding to the input SBML model.&#xA;" />
+  <BioModelInfo ID="BIOMD0000000387" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Arnold2011_Damour2007_RuBisCO-CalvinCycle" exception="Could not create Biomodel corresponding to the input SBML model.&#xA;" />
+  <BioModelInfo ID="BIOMD0000000388" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Arnold2011_Zhu2009_CalvinCycle" exception="Could not create Biomodel corresponding to the input SBML model.&#xA;" />
   <BioModelInfo ID="BIOMD0000000389" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Arnold2011_Hahn1986_CalvinCycle_Starch_Sucrose" />
   <BioModelInfo ID="BIOMD0000000390" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Arnold2011_Giersch1990_CalvinCycle" />
   <BioModelInfo ID="BIOMD0000000391" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Arnold2011_Poolman2000_CalvinCycle_Starch" />
-  <BioModelInfo ID="BIOMD0000000392" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Arnold2011_Laisk2006_CalvinCycle_Starch_Sucrose" exception="Unable to read SBML file : &#xA;didn't check" />
+  <BioModelInfo ID="BIOMD0000000392" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Arnold2011_Laisk2006_CalvinCycle_Starch_Sucrose" exception="Could not create Biomodel corresponding to the input SBML model.&#xA;" />
   <BioModelInfo ID="BIOMD0000000393" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Arnold2011_Zhu2007_CalvinCycle_Starch_Sucrose_Photorespiration" />
   <BioModelInfo ID="BIOMD0000000394" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Sivakumar2011 - EGF Receptor Signaling Pathway" />
   <BioModelInfo ID="BIOMD0000000395" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Sivakumar2011 - Hedgehog Signaling Pathway" />
@@ -414,7 +414,7 @@
   <BioModelInfo ID="BIOMD0000000412" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Pokhilko2012_CircClock_RepressilatorFeedbackloop" />
   <BioModelInfo ID="BIOMD0000000413" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Band2012_DII-Venus_FullModel" />
   <BioModelInfo ID="BIOMD0000000414" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Band2012_DII-Venus_ReducedModel" />
-  <BioModelInfo ID="BIOMD0000000415" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Mellor2012_LipooxygenasePathway" exception="Unable to read SBML file : &#xA;didn't check" />
+  <BioModelInfo ID="BIOMD0000000415" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Mellor2012_LipooxygenasePathway" exception="Could not create Biomodel corresponding to the input SBML model.&#xA;" />
   <BioModelInfo ID="BIOMD0000000416" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Muraro2011_Cytokinin-Auxin_CrossRegulation" />
   <BioModelInfo ID="BIOMD0000000417" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Ratushny2012_NF" />
   <BioModelInfo ID="BIOMD0000000418" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Ratushny2012_SPF" />
@@ -425,10 +425,10 @@
   <BioModelInfo ID="BIOMD0000000423" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Nyman2012_InsulinSignalling" />
   <BioModelInfo ID="BIOMD0000000424" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Faratian2009 - Role of PTEN in Trastuzumab resistance" />
   <BioModelInfo ID="BIOMD0000000425" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Tan2012 - Antibiotic Treatment, Inoculum Effect" />
-  <BioModelInfo ID="BIOMD0000000426" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Mosca2012 - Central Carbon Metabolism Regulated by AKT" exception="Unable to read SBML file : &#xA;didn't check" />
+  <BioModelInfo ID="BIOMD0000000426" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Mosca2012 - Central Carbon Metabolism Regulated by AKT" exception="Could not create Biomodel corresponding to the input SBML model.&#xA;" />
   <BioModelInfo ID="BIOMD0000000427" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Bianconi2012 - EGFR and IGF1R pathway in lung cancer" />
   <BioModelInfo ID="BIOMD0000000428" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Achcar2012 - Glycolysis in bloodstream form T. brucei" />
-  <BioModelInfo ID="BIOMD0000000429" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Schaber2012 - Hog pathway in yeast" exception="Unable to read SBML file : &#xA;didn't check" />
+  <BioModelInfo ID="BIOMD0000000429" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Schaber2012 - Hog pathway in yeast" exception="Could not create Biomodel corresponding to the input SBML model.&#xA;" />
   <BioModelInfo ID="BIOMD0000000430" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Sarma2012 - Interaction topologies of MAPK cascade (M4_K2_USEQ)" />
   <BioModelInfo ID="BIOMD0000000431" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Sarma2012 - Interaction topologies of MAPK cascade (M4_K2_PSEQ)" />
   <BioModelInfo ID="BIOMD0000000432" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Sarma2012 - Interaction topologies of MAPK cascade (M4_K2_QSS_USEQ)" />
@@ -438,7 +438,7 @@
   <BioModelInfo ID="BIOMD0000000436" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Gupta2009 - Eicosanoid Metabolism" />
   <BioModelInfo ID="BIOMD0000000437" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Tseng2012 - Circadian clock of N.crassa" />
   <BioModelInfo ID="BIOMD0000000438" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Saeidi2012 - Quorum sensing device that produces GFP" />
-  <BioModelInfo ID="BIOMD0000000439" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Smith2009 - RGS mediated GTP hydrolysis" exception="Unable to read SBML file : &#xA;didn't check" />
+  <BioModelInfo ID="BIOMD0000000439" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Smith2009 - RGS mediated GTP hydrolysis" />
   <BioModelInfo ID="BIOMD0000000440" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Sarma2012 - Oscillations in MAPK cascade (S1)" />
   <BioModelInfo ID="BIOMD0000000441" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Sarma2012 - Oscillations in MAPK cascade (S2)" />
   <BioModelInfo ID="BIOMD0000000442" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Sarma2012 - Oscillations in MAPK cascade (S2), inclusion of external signalling module" />
@@ -462,23 +462,23 @@
   <BioModelInfo ID="BIOMD0000000460" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Liebal2012 - B.subtilis sigB proteolysis model" />
   <BioModelInfo ID="BIOMD0000000461" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Liebal2012 - B.subtilis transcription inhibition model" />
   <BioModelInfo ID="BIOMD0000000462" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Proctor2012 - Role of Amyloid-beta dimers in aggregation formation" />
-  <BioModelInfo ID="BIOMD0000000463" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Heldt2012 - Influenza Virus Replication" exception="Unable to read SBML file : &#xA;didn't check" />
+  <BioModelInfo ID="BIOMD0000000463" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Heldt2012 - Influenza Virus Replication" exception="Could not create Biomodel corresponding to the input SBML model.&#xA;" />
   <BioModelInfo ID="BIOMD0000000464" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Koo2013 - Shear stress induced calcium influx and eNOS activation - Model 1" />
   <BioModelInfo ID="BIOMD0000000465" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Koo2013 - Shear stress induced AKT and eNOS phosphorylation - Model 2" />
   <BioModelInfo ID="BIOMD0000000466" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Koo2013 - Shear stress induced eNOS expression - Model 3" />
   <BioModelInfo ID="BIOMD0000000467" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Koo2013 - Shear stress induced NO production - Model 4" />
   <BioModelInfo ID="BIOMD0000000468" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Koo2013 - Integrated shear stress induced NO production model" />
-  <BioModelInfo ID="BIOMD0000000469" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Smallbone2013 - E.coli metabolic model with linlog rate law" exception="Unable to read SBML file : &#xA;didn't check" />
-  <BioModelInfo ID="BIOMD0000000470" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Smallbone2013 - E.coli metabolic model with modular rate law" exception="Unable to read SBML file : &#xA;didn't check" />
-  <BioModelInfo ID="BIOMD0000000471" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Smallbone2013 - Yeast metabolic model with linlog rate law" exception="Unable to read SBML file : &#xA;didn't check" />
-  <BioModelInfo ID="BIOMD0000000472" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Smallbone2013 - Yeast metabolic model with modular rate law" exception="Unable to read SBML file : &#xA;didn't check" />
-  <BioModelInfo ID="BIOMD0000000473" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Smallbone2013 - Yeast metabolic model with modular rate law, merged with Pritchard 2002" exception="Unable to read SBML file : &#xA;didn't check" />
+  <BioModelInfo ID="BIOMD0000000469" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Smallbone2013 - E.coli metabolic model with linlog rate law" exception="Could not create Biomodel corresponding to the input SBML model.&#xA;" />
+  <BioModelInfo ID="BIOMD0000000470" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Smallbone2013 - E.coli metabolic model with modular rate law" exception="Could not create Biomodel corresponding to the input SBML model.&#xA;" />
+  <BioModelInfo ID="BIOMD0000000471" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Smallbone2013 - Yeast metabolic model with linlog rate law" exception="Could not create Biomodel corresponding to the input SBML model.&#xA;" />
+  <BioModelInfo ID="BIOMD0000000472" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Smallbone2013 - Yeast metabolic model with modular rate law" exception="Could not create Biomodel corresponding to the input SBML model.&#xA;" />
+  <BioModelInfo ID="BIOMD0000000473" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Smallbone2013 - Yeast metabolic model with modular rate law, merged with Pritchard 2002" exception="Could not create Biomodel corresponding to the input SBML model.&#xA;" />
   <BioModelInfo ID="BIOMD0000000474" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Smith2013 - Regulation of Insulin Signalling by Oxidative Stress" />
   <BioModelInfo ID="BIOMD0000000475" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Amara2013 - PCNA ubiquitylation in the activation of PRR pathway" />
   <BioModelInfo ID="BIOMD0000000476" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Adams2012 - Locke2006 Circadian Rhythm model refined with Input Signal Light Function" />
   <BioModelInfo ID="BIOMD0000000477" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Mol2013 - Immune Signal Transduction in Leishmaniasis" />
   <BioModelInfo ID="BIOMD0000000478" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Besozzi2012 - Oscillatory regimes in the Ras/cAMP/PKA pathway in S.cerevisiae" />
-  <BioModelInfo ID="BIOMD0000000479" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Croft2013 - GPCR-RGS interaction that compartmentalizes RGS activity" exception="Unable to read SBML file : &#xA;didn't check" />
+  <BioModelInfo ID="BIOMD0000000479" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Croft2013 - GPCR-RGS interaction that compartmentalizes RGS activity" />
   <BioModelInfo ID="BIOMD0000000480" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Carbo2013 - Mucosal Immune Response during H.pylori Infection" />
   <BioModelInfo ID="BIOMD0000000481" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Stötzel2012 - Bovine estrous cycle, synchronization with prostaglandin F2α" />
   <BioModelInfo ID="BIOMD0000000482" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Noguchi2013 - Insulin dependent glucose metabolism" />
@@ -492,11 +492,11 @@
   <BioModelInfo ID="BIOMD0000000490" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Demin2013 - PKPD behaviour - 5-Lipoxygenase inhibitors" />
   <BioModelInfo ID="BIOMD0000000491" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Pathak2013 - MAPK activation in response to various abiotic stresses" />
   <BioModelInfo ID="BIOMD0000000492" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Pathak2013 - MAPK activation in response to various biotic stresses" />
-  <BioModelInfo ID="BIOMD0000000493" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Schittler2010 - Cell fate of progenitor cells, osteoblasts or chondrocytes" exception="Unable to read SBML file : &#xA;didn't check" />
+  <BioModelInfo ID="BIOMD0000000493" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Schittler2010 - Cell fate of progenitor cells, osteoblasts or chondrocytes" />
   <BioModelInfo ID="BIOMD0000000494" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Roblitz2013 - Menstrual Cycle following GnRH analogue administration" />
   <BioModelInfo ID="BIOMD0000000495" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Sen2013 - Phospholipid Synthesis in P.knowlesi" />
-  <BioModelInfo ID="BIOMD0000000496" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Stanford2013 - Kinetic model of yeast metabolic network (standard)" exception="Unable to read SBML file : &#xA;didn't check" />
-  <BioModelInfo ID="BIOMD0000000497" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Stanford2013 - Kinetic model of yeast metabolic network (regulation)" exception="Unable to read SBML file : &#xA;didn't check" />
+  <BioModelInfo ID="BIOMD0000000496" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Stanford2013 - Kinetic model of yeast metabolic network (standard)" exception="Could not create Biomodel corresponding to the input SBML model.&#xA;" />
+  <BioModelInfo ID="BIOMD0000000497" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Stanford2013 - Kinetic model of yeast metabolic network (regulation)" exception="Could not create Biomodel corresponding to the input SBML model.&#xA;" />
   <BioModelInfo ID="BIOMD0000000498" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Mitchell2013 - Liver Iron Metabolism" />
   <BioModelInfo ID="BIOMD0000000499" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Vizan2013 - TGF pathway long term signaling" />
   <BioModelInfo ID="BIOMD0000000500" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Begitt2014 - STAT1 cooperative DNA binding - single GAS polymer model" />
@@ -526,9 +526,9 @@
   <BioModelInfo ID="BIOMD0000000524" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Kallenberger2014 - CD95L induced apoptosis initiated by caspase-8, wild-type HeLa cells (cis/trans variant)" />
   <BioModelInfo ID="BIOMD0000000525" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Kallenberger2014 - CD95L induced apoptosis initiated by caspase-8, CD95 HeLa cells (cis/trans-cis/trans variant)" />
   <BioModelInfo ID="BIOMD0000000526" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Kallenberger2014 - CD95L induced apoptosis initiated by caspase-8, wild-type HeLa cells (cis/trans-cis/trans variant)" />
-  <BioModelInfo ID="BIOMD0000000527" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Kaiser2014 - Salmonella persistence after ciprofloxacin treatment" exception="Unable to read SBML file : &#xA;didn't check" />
-  <BioModelInfo ID="BIOMD0000000528" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Fribourg2014 - Dynamics of viral antagonism and innate immune response (H1N1 influenza A virus - Cal/09)" exception="Unable to read SBML file : &#xA;didn't check" />
-  <BioModelInfo ID="BIOMD0000000529" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Fribourg2014 - Dynamics of viral antagonism and innate immune response (H1N1 influenza A virus - NC/99)" exception="Unable to read SBML file : &#xA;didn't check" />
+  <BioModelInfo ID="BIOMD0000000527" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Kaiser2014 - Salmonella persistence after ciprofloxacin treatment" />
+  <BioModelInfo ID="BIOMD0000000528" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Fribourg2014 - Dynamics of viral antagonism and innate immune response (H1N1 influenza A virus - Cal/09)" />
+  <BioModelInfo ID="BIOMD0000000529" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Fribourg2014 - Dynamics of viral antagonism and innate immune response (H1N1 influenza A virus - NC/99)" />
   <BioModelInfo ID="BIOMD0000000530" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Schmitz2014 - RNA triplex formation" />
   <BioModelInfo ID="BIOMD0000000531" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Crespo2012 - Kinetics of Amyloid Fibril Formation" />
   <BioModelInfo ID="BIOMD0000000532" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Vazquez2014 - Chemical inhibition from amyloid protein aggregation kinetics" />
@@ -538,15 +538,15 @@
   <BioModelInfo ID="BIOMD0000000536" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Dwivedi2014 - Crohns IL6 Disease model - sgp130 activity" />
   <BioModelInfo ID="BIOMD0000000537" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Dwivedi2014 - Crohns IL6 Disease model - Anti-IL6R Antibody" />
   <BioModelInfo ID="BIOMD0000000538" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Clarke2000 - One-hit model of cell death in neuronal degenerations" />
-  <BioModelInfo ID="BIOMD0000000539" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="François2005 - Mixed Feedback Loop (two-gene network)" exception="Unable to read SBML file : &#xA;didn't check" />
+  <BioModelInfo ID="BIOMD0000000539" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="François2005 - Mixed Feedback Loop (two-gene network)" />
   <BioModelInfo ID="BIOMD0000000540" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Yugi2014 - Insulin induced signalling (PFKL phosphorylation) - model 1" />
   <BioModelInfo ID="BIOMD0000000541" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Yugi2014 - Insulin induced signalling (PFKL phosphorylation) - model 2" />
   <BioModelInfo ID="BIOMD0000000542" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Yuraszeck2010 - Vulnerabilities in the Tau Network in Tau Pathophysiology" />
   <BioModelInfo ID="BIOMD0000000543" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Qi2013 - IL-6 and IFN crosstalk model (non-competitive)" />
   <BioModelInfo ID="BIOMD0000000544" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Qi2013 - IL-6 and IFN crosstalk model" />
   <BioModelInfo ID="BIOMD0000000545" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Ouyang2014 - photomorphogenic UV-B signalling network" />
-  <BioModelInfo ID="BIOMD0000000546" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Miao2010 - Innate and adaptive immune responses to primary Influenza A Virus infection" exception="Unable to read SBML file : &#xA;didn't check" />
-  <BioModelInfo ID="BIOMD0000000547" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Talemi2014 - Arsenic toxicity and detoxification mechanisms in yeast" exception="Unable to read SBML file : &#xA;didn't check" />
+  <BioModelInfo ID="BIOMD0000000546" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Miao2010 - Innate and adaptive immune responses to primary Influenza A Virus infection" />
+  <BioModelInfo ID="BIOMD0000000547" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Talemi2014 - Arsenic toxicity and detoxification mechanisms in yeast" exception="Could not create Biomodel corresponding to the input SBML model.&#xA;" />
   <BioModelInfo ID="BIOMD0000000548" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Sneppen2009 - Modeling proteasome dynamics in Parkinson's disease" />
   <BioModelInfo ID="BIOMD0000000549" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Baker2013 - Cytokine Mediated Inflammation in Rheumatoid Arthritis - Age Dependent" />
   <BioModelInfo ID="BIOMD0000000550" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Baker2013 - Cytokine Mediated Inflammation in Rheumatoid Arthritis" />
@@ -559,24 +559,24 @@
   <BioModelInfo ID="BIOMD0000000557" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Reiterer2013 - pseudophosphatase STYX role in ERK signalling" />
   <BioModelInfo ID="BIOMD0000000558" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Cloutier2012 - Feedback motif for Parkinson's disease" />
   <BioModelInfo ID="BIOMD0000000559" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Ouzounoglou2014 - Modeling of alpha-synuclein effects on neuronal homeostasis" />
-  <BioModelInfo ID="BIOMD0000000560" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Hui2014 - Age-related changes in articular cartilage" />
+  <BioModelInfo ID="BIOMD0000000560" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Hui2016 - Age-related changes in articular cartilage" />
   <BioModelInfo ID="BIOMD0000000561" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Martins2013 - True and apparent inhibition of amyloid fribril formation" />
-  <BioModelInfo ID="BIOMD0000000562" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Chaouiya2013 - EGF and TNFalpha mediated signalling pathway" exception="Unable to read SBML file : &#xA;didn't check" />
+  <BioModelInfo ID="BIOMD0000000562" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Chaouiya2013 - EGF and TNFalpha mediated signalling pathway" exception="Unable to import the SBML file.&#xA;The model includes elements of SBML extension 'qual', which is required for simulating the model but is not supported." />
   <BioModelInfo ID="BIOMD0000000563" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Pritchard2014 - plant-microbe interaction" />
   <BioModelInfo ID="BIOMD0000000564" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Gould2013 - Temperature Sensitive Circadian Clock" />
   <BioModelInfo ID="BIOMD0000000565" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Machado2014 - Curcumin production pathway in Escherichia coli" />
-  <BioModelInfo ID="BIOMD0000000566" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Morris2009 - α-Synuclein aggregation variable temperature and pH" />
-  <BioModelInfo ID="BIOMD0000000567" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Morris2008 - Fitting protein aggregation data via F-W 2-step mechanism" />
+  <BioModelInfo ID="BIOMD0000000566" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Morris2008 - Fitting protein aggregation data via F-W 2-step mechanism" />
+  <BioModelInfo ID="BIOMD0000000567" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Morris2009 - α-Synuclein aggregation variable temperature and pH" />
   <BioModelInfo ID="BIOMD0000000568" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Mueller2015 - Hepatocyte proliferation, T160 phosphorylation of CDK2" />
   <BioModelInfo ID="BIOMD0000000569" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Dutta-Roy2015 - Opening of the multiple AMPA receptor conductance states" />
-  <BioModelInfo ID="BIOMD0000000570" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Aubert2002 - Coupling between Brain electrical activity, Metabolism and Hemodynamics" exception="Unable to read SBML file : &#xA;didn't check" />
+  <BioModelInfo ID="BIOMD0000000570" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Aubert2002 - Coupling between Brain electrical activity, Metabolism and Hemodynamics" />
   <BioModelInfo ID="BIOMD0000000571" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Nishio2008 - Design of the phosphotransferase system for enhanced glucose uptake in E. coli." />
   <BioModelInfo ID="BIOMD0000000572" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Costa2014 - Computational Model of L. lactis Metabolism" />
   <BioModelInfo ID="BIOMD0000000573" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Aguilera 2014 - HIV latency. Interaction between HIV proteins and immune response" />
   <BioModelInfo ID="BIOMD0000000574" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Lai2014 - Hemiconcerted MWC model of intact calmodulin with two targets" />
   <BioModelInfo ID="BIOMD0000000575" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Sass2009 - Approach to an α-synuclein-based BST model of Parkinson's disease" />
   <BioModelInfo ID="BIOMD0000000576" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Kolodkin2013 - Nuclear receptor-mediated cortisol signalling network" />
-  <BioModelInfo ID="BIOMD0000000577" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Zhou2015 - Circadian clock with immune regulator NPR1" exception="Unable to read SBML file : &#xA;didn't check" />
+  <BioModelInfo ID="BIOMD0000000577" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Zhou2015 - Circadian clock with immune regulator NPR1" exception="Could not create Biomodel corresponding to the input SBML model.&#xA;" />
   <BioModelInfo ID="BIOMD0000000578" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Invergo2014 - Phototransduction cascade in mouse rod cells" />
   <BioModelInfo ID="BIOMD0000000579" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Sengupta2015 - Knowledge base model of human energy pool network (HEPNet)" />
   <BioModelInfo ID="BIOMD0000000580" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Sonntag2012 - mTOR model - IRS dependent regulation of AMPK by insulin" />
@@ -591,8 +591,8 @@
   <BioModelInfo ID="BIOMD0000000589" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Valero2016 - Ascorbate-Glutathione cycle in chloroplasts under light/dark conditions" />
   <BioModelInfo ID="BIOMD0000000590" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Hermansen2015 - denovo biosynthesis of pyrimidines in yeast" />
   <BioModelInfo ID="BIOMD0000000591" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Boehm2014 - isoform-specific dimerization of pSTAT5A and pSTAT5B" />
-  <BioModelInfo ID="BIOMD0000000592" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Martinez-Sanchez2015 - T CD4+ lymphocyte transcriptional regulatory network" exception="Unable to read SBML file : &#xA;didn't check" />
-  <BioModelInfo ID="BIOMD0000000593" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Martinez-Sanchez2015 - T CD4+ lymphocyte transcriptional-signaling regulatory network" exception="Unable to read SBML file : &#xA;didn't check" />
+  <BioModelInfo ID="BIOMD0000000592" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Martinez-Sanchez2015 - T CD4+ lymphocyte transcriptional regulatory network" exception="Unable to import the SBML file.&#xA;The model includes elements of SBML extension 'qual', which is required for simulating the model but is not supported." />
+  <BioModelInfo ID="BIOMD0000000593" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Martinez-Sanchez2015 - T CD4+ lymphocyte transcriptional-signaling regulatory network" exception="Unable to import the SBML file.&#xA;The model includes elements of SBML extension 'qual', which is required for simulating the model but is not supported." />
   <BioModelInfo ID="BIOMD0000000594" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Capuani2015 - Binding of Cbl and Gbr2 to EGFR (Multisite Phosphorylation Model - MPM)" />
   <BioModelInfo ID="BIOMD0000000595" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Capuani2015 - Binding of Cbl and Grb2 to EGFR (Early Activation Model - EAM)" />
   <BioModelInfo ID="BIOMD0000000596" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Philipson2015 - Innate immune response modulated by NLRX1" />
@@ -602,23 +602,23 @@
   <BioModelInfo ID="BIOMD0000000600" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Cellière2011 - Plasticity of TGF-β Signalling" />
   <BioModelInfo ID="BIOMD0000000601" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Rosas2015 - Caffeine-induced luminal SR calcium changes" />
   <BioModelInfo ID="BIOMD0000000602" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Stavrum2013 - Tryptophan Metabolism in Liver" />
-  <BioModelInfo ID="BIOMD0000000603" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Petelenz-Kurdziel2013 - Osmo adaptation WT" />
-  <BioModelInfo ID="BIOMD0000000604" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Petelenz-Kurdziel2013 - Osmo adaptation pfk2627D" />
-  <BioModelInfo ID="BIOMD0000000605" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Petelenz-Kurdziel2013 - Osmo adaptation HOG1att" />
-  <BioModelInfo ID="BIOMD0000000606" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Petelenz-Kurdziel2013 - Osmo adaptation hog1D" />
-  <BioModelInfo ID="BIOMD0000000607" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Petelenz-Kurdziel2013 - Osmo adaptation fps1D1" />
-  <BioModelInfo ID="BIOMD0000000608" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Palsson2013 - Fully-integrated immune response model (FIRM)" exception="Unable to read SBML file : &#xA;didn't check" />
+  <BioModelInfo ID="BIOMD0000000603" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="PetelenzKuehn_osmoadaptation_WT" />
+  <BioModelInfo ID="BIOMD0000000604" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="PetelenzKuehn_osmoadaptation_pfk2627D" />
+  <BioModelInfo ID="BIOMD0000000605" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="PetelenzKuehn_osmoadaptation_HOG1att" />
+  <BioModelInfo ID="BIOMD0000000606" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="PetelenzKuehn_osmoadaptation_hog1D" />
+  <BioModelInfo ID="BIOMD0000000607" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="PetelenzKuehn_osmoadaptation_fps1D1" />
+  <BioModelInfo ID="BIOMD0000000608" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Palsson2013 - Fully-integrated immune response model (FIRM)" exception="Could not create Biomodel corresponding to the input SBML model.&#xA;" />
   <BioModelInfo ID="BIOMD0000000609" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Reddyhoff2015 - Acetaminophen metabolism and toxicity" />
-  <BioModelInfo ID="BIOMD0000000610" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Petelenz-Kurdziel2013 - Osmo adaptation gpd1D" />
+  <BioModelInfo ID="BIOMD0000000610" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="PetelenzKuehn_osmoadaptation_gpd1D" />
   <BioModelInfo ID="BIOMD0000000611" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Nayak2015 - Blood Coagulation Network - Predicting the Effects of Various Therapies on Biomarkers" />
   <BioModelInfo ID="BIOMD0000000612" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Proctor2016 - Circadian rhythm of PTH and the dynamics of signaling molecules on bone remodeling" />
-  <BioModelInfo ID="BIOMD0000000613" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Peterson2010 - Integrated calcium homeostasis and bone remodelling" exception="Unable to read SBML file : &#xA;didn't check" />
-  <BioModelInfo ID="BIOMD0000000614" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Kamihira2000 - calcitonin fibrillation kinetics" />
-  <BioModelInfo ID="BIOMD0000000615" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Kuznetsov2016(II) - α-syn aggregation kinetics in Parkinson's Disease" exception="Unable to read SBML file : &#xA;didn't check" />
-  <BioModelInfo ID="BIOMD0000000616" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Dunster2014 - WBC Interactions (Model1)" exception="Unable to read SBML file : &#xA;didn't check" />
-  <BioModelInfo ID="BIOMD0000000617" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Walsh2014 - Inhibition kinetics of DAPT on APP Cleavage" exception="Unable to read SBML file : &#xA;didn't check" />
+  <BioModelInfo ID="BIOMD0000000613" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Peterson2010 - Integrated calcium homeostasis and bone remodelling" exception="Unable to import the SBML file.&#xA;The model includes elements of SBML extension 'comp', which is required for simulating the model but is not supported." />
+  <BioModelInfo ID="BIOMD0000000614" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Kamihira2000" />
+  <BioModelInfo ID="BIOMD0000000615" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Kuznetsov2016(II) - α-syn aggregation kinetics in Parkinson's Disease" />
+  <BioModelInfo ID="BIOMD0000000616" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Dunster2014 - WBC Interactions (Model1)" />
+  <BioModelInfo ID="BIOMD0000000617" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Walsh2014 - Inhibition kinetics of DAPT on APP Cleavage" />
   <BioModelInfo ID="BIOMD0000000618" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Krohn2011 - Cerebral amyloid-β proteostasis regulated by membrane transport protein ABCC1" />
-  <BioModelInfo ID="BIOMD0000000619" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Sluka2016  - Acetaminophen PBPK" exception="Unable to read SBML file : &#xA;didn't check" />
+  <BioModelInfo ID="BIOMD0000000619" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Sluka2016  - Acetaminophen PBPK" exception="Could not create Biomodel corresponding to the input SBML model.&#xA;" />
   <BioModelInfo ID="BIOMD0000000620" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Palmer2014 - Effect of IL-1β-Blocking therapies in T2DM - Disease Condition" />
   <BioModelInfo ID="BIOMD0000000621" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Palmer2014 - Effect of IL-1β-Blocking therapies in T2DM - Healthy Condition" />
   <BioModelInfo ID="BIOMD0000000622" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="NguyenLK2011 - Ubiquitination dynamics in Ring1B/Bmi1 system" />
@@ -629,7 +629,7 @@
   <BioModelInfo ID="BIOMD0000000627" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Winter2017 - Brain Energy Metabolism with PPP" />
   <BioModelInfo ID="BIOMD0000000628" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Li2012 Calcium mediated synaptic plasticity" />
   <BioModelInfo ID="BIOMD0000000629" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Haffez2017 - RAR interaction with synthetic analogues" />
-  <BioModelInfo ID="BIOMD0000000630" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Venkatraman2011 - PLS-UPA behaviour in the presence of substrate competition" />
+  <BioModelInfo ID="BIOMD0000000630" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Venkatraman2011 - PLS-UPA behaviour in the presence of substrate competition_1_1_1_1" />
   <BioModelInfo ID="BIOMD0000000631" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="DeCaluwe2016 - Circadian Clock" />
   <BioModelInfo ID="BIOMD0000000632" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Kollarovic2016 - Cell fate decision at G1-S transition" />
   <BioModelInfo ID="BIOMD0000000633" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Bulik2016 - Regulation of hepatic glucose metabolism" />
@@ -637,14 +637,14 @@
   <BioModelInfo ID="BIOMD0000000635" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Nair2015 - Interaction between neuromodulators via GPCRs - Effect on cAMP/PKA signaling (D1 Neuron)" />
   <BioModelInfo ID="BIOMD0000000636" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Nair2015 - Interaction between neuromodulators via GPCRs - Effect on cAMP/PKA signaling (D2 Neuron)" />
   <BioModelInfo ID="BIOMD0000000637" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Bush2016 - Simplified Carrousel model of GPCR" />
-  <BioModelInfo ID="BIOMD0000000638" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Bush2016 - Extended Carrousel model of GPCR-RGS" exception="Unable to read SBML file : &#xA;didn't check" />
+  <BioModelInfo ID="BIOMD0000000638" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Bush2016 - Extended Carrousel model of GPCR-RGS" />
   <BioModelInfo ID="BIOMD0000000639" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Thiaville2016 - Wild type folate pathway model with proposed PanB reaction" />
   <BioModelInfo ID="BIOMD0000000640" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="DallePezze2016 - Activation of AMPK and mTOR by amino acids" />
-  <BioModelInfo ID="BIOMD0000000641" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Jaiswal2017 - Cell cycle arrest" exception="Unable to read SBML file : &#xA;didn't check" />
+  <BioModelInfo ID="BIOMD0000000641" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Jaiswal2017 - Cell cycle arrest" />
   <BioModelInfo ID="BIOMD0000000642" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Mufudza2012 - Estrogen effect on the dynamics of breast cancer" />
-  <BioModelInfo ID="BIOMD0000000643" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Musante2017 - Switching behaviour of PP2A inhibition by ARPP-16 - mutual inhibitions" exception="Unable to read SBML file : &#xA;didn't check" />
-  <BioModelInfo ID="BIOMD0000000644" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Musante2017 - Switching behaviour of PP2A inhibition by ARPP-16 - mutual inhibitions and PKA inhibits MAST3" exception="Unable to read SBML file : &#xA;didn't check" />
-  <BioModelInfo ID="BIOMD0000000645" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Musante2017 - Switching behaviour of PP2A inhibition by ARPP-16 - mutual inhibitions and PKA inhibits MAST3 and dominant negative effect" exception="Unable to read SBML file : &#xA;didn't check" />
+  <BioModelInfo ID="BIOMD0000000643" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Musante2017 - Switching behaviour of PP2A inhibition by ARPP-16 - mutual inhibitions" />
+  <BioModelInfo ID="BIOMD0000000644" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Musante2017 - Switching behaviour of PP2A inhibition by ARPP-16 - mutual inhibitions and PKA inhibits MAST3" />
+  <BioModelInfo ID="BIOMD0000000645" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Musante2017 - Switching behaviour of PP2A inhibition by ARPP-16 - mutual inhibitions and PKA inhibits MAST3 and dominant negative effect" />
   <BioModelInfo ID="BIOMD0000000646" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Barr2016 - All-or-nothing G1/S transition" />
   <BioModelInfo ID="BIOMD0000000647" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Kwang2003 - The influence of RKIP on the ERK signaling pathway" />
   <BioModelInfo ID="BIOMD0000000648" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Padala2017- ERK, PI3K/Akt and Wnt signalling network (normal)" />
@@ -673,7 +673,7 @@
   <BioModelInfo ID="BIOMD0000000672" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Brown1997 - Plasma Melatonin Levels" />
   <BioModelInfo ID="BIOMD0000000673" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Lockwood2006 - Alzheimer's Disease PBPK model" />
   <BioModelInfo ID="BIOMD0000000674" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Reyes-Palomares2012 - a combined model hepatic polyamine and sulfur aminoacid metabolism - version1" />
-  <BioModelInfo ID="BIOMD0000000675" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Chen2000 - Budding yeast cell cycle" />
+  <BioModelInfo ID="BIOMD0000000675" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Chen2000_CellCycle" />
   <BioModelInfo ID="BIOMD0000000676" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Chen2006 - Nitric Oxide Release from Endothelial Cells" />
   <BioModelInfo ID="BIOMD0000000677" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Holmes2006 - Hill's model of muscle contraction" />
   <BioModelInfo ID="BIOMD0000000678" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Tomida2003 - Calcium Oscillatory-induced translocation of nuclear factor of activated T cells" />
@@ -681,7 +681,7 @@
   <BioModelInfo ID="BIOMD0000000680" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Waugh2006 - Diabetic Wound Healing - TGF-B Dynamics" />
   <BioModelInfo ID="BIOMD0000000681" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Waugh2006 - Diabetic Wound Healing - Treated and Untreated Macrophage Dynamics" />
   <BioModelInfo ID="BIOMD0000000682" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Wierschem2004 - Electrical bursting activity in Pancreatic Islets" />
-  <BioModelInfo ID="BIOMD0000000683" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Wodarz1999 - Cytotoxic T lymphocyte memory response to HIV infection" />
+  <BioModelInfo ID="BIOMD0000000683" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Wodarz1999 CTL memory response HIV" />
   <BioModelInfo ID="BIOMD0000000684" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Wodarz2003 Immunological Memory" />
   <BioModelInfo ID="BIOMD0000000685" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Wodarz2003 - Cytotoxic T lymphocyte cross-priming" />
   <BioModelInfo ID="BIOMD0000000686" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Wodarz2007 - Basic Model of Cytomegalovirus Infection" />
@@ -693,16 +693,124 @@
   <BioModelInfo ID="BIOMD0000000692" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Phillips2003 - The Mechanism of Ras GTPase Activation by Neurofibromin" />
   <BioModelInfo ID="BIOMD0000000693" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Wang2008 - Mimicking the inhibitory effect of riluzole on membrane conductance in skeletal fibres" />
   <BioModelInfo ID="BIOMD0000000695" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="FelixGarza2017 - Blue Light Treatment of Psoriasis (simplified)" />
-  <BioModelInfo ID="BIOMD0000000696" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Boada2016 - Incoherent type 1 feed-forward loop (I1-FFL)" exception="Unable to read SBML file : &#xA;didn't check" />
+  <BioModelInfo ID="BIOMD0000000696" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Boada2016 - Incoherent type 1 feed-forward loop (I1-FFL)" exception="Could not create Biomodel corresponding to the input SBML model.&#xA;" />
   <BioModelInfo ID="BIOMD0000000697" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Ciliberto2003 - CyclinE / Cdk2 timer in the cell cycle of Xenopus laevis embryo" />
   <BioModelInfo ID="BIOMD0000000698" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Reed2004 - Methionine Cycle" />
   <BioModelInfo ID="BIOMD0000000699" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Caydasi2012 - Regulation of Tem1 by the GAP complex in spindle position cell cycle checkpoint - Ubiquitous association model" />
   <BioModelInfo ID="BIOMD0000000700" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Heldt2018 - Proliferation-quiescence decision in response to DNA damage" />
-  <BioModelInfo ID="BIOMD0000000701" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Caydasi2012 - Regulation of Tem1 by the GAP complex in Spindle Position Checkpoint - Hotspot association" />
   <BioModelInfo ID="BIOMD0000000702" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Caydasi2012 - Regulation of Tem1 by the GAP complex in Spindle Position Checkpoint - Ubiquitous inactive model" />
   <BioModelInfo ID="BIOMD0000000703" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Diedrichs2018 - A data-entrained computational model for testing the regulatory logic of the vertebrate unfolded protein response" />
   <BioModelInfo ID="BIOMD0000000704" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Aguda1999 - G2 DNA damage checkpoint" />
   <BioModelInfo ID="BIOMD0000000705" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Smith2010 - Response of FOXO Transcription Factors to Post-Translational Modifications Made by Ageing-Related Signalling Pathways" />
   <BioModelInfo ID="BIOMD0000000706" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Smith2010 - Response of FOXO Transcription Factors to Post-Translational Modifications (with acetylation pathway)" />
+  <BioModelInfo ID="BIOMD0000000707" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Revilla2003 - Controlling HIV infection using recombinant viruses" />
+  <BioModelInfo ID="BIOMD0000000708" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Liu2017 - Dynamics of Avian Influenza with Logistic Growth" />
+  <BioModelInfo ID="BIOMD0000000709" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Liu2017 - Dynamics of Avian Influenza with Allee Growth Effect" />
+  <BioModelInfo ID="BIOMD0000000710" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Hernandez-Vargas2012 - Innate immune system dynamics to Influenza virus" />
+  <BioModelInfo ID="BIOMD0000000711" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Hancioglu2007 - Human Immune Response to Influenza A virus Infection" />
+  <BioModelInfo ID="BIOMD0000000712" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Manchanda2014 - Effect on Immune System by 4 different Influenza A virus strains" />
+  <BioModelInfo ID="BIOMD0000000713" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Aston2018 - Dynamics of Hepatitis C Infection" />
+  <BioModelInfo ID="BIOMD0000000714" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Reynolds2006 - Reduced model of the acute inflammatory response" />
+  <BioModelInfo ID="BIOMD0000000715" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Huo2017 - SEIS epidemic model with the impact of media" />
+  <BioModelInfo ID="BIOMD0000000716" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Lee2018 - Avian human bilinear incidence (BI) model" />
+  <BioModelInfo ID="BIOMD0000000717" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Lee2018 - Avian human half-saturated incidence (HSI) model" />
+  <BioModelInfo ID="BIOMD0000000718" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Li2008 - Caulobacter Cell Cycle" />
+  <BioModelInfo ID="BIOMD0000000719" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Tsai2014 - Cell cycle duration control by oscillatory Dynamics  in Early Xenopus laevis Embryos" />
+  <BioModelInfo ID="BIOMD0000000720" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Yan2012 - Rb-E2F pathway dynamics with miR449" />
+  <BioModelInfo ID="BIOMD0000000721" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Graham2013 - Role of osteocytes in targeted bone remodeling" />
+  <BioModelInfo ID="BIOMD0000000722" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Bianchi2015 -Model for lymphangiogenesis in normal and diabetic wounds" />
+  <BioModelInfo ID="BIOMD0000000723" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Weis2014 - Data driven Mammalian Cell Cycle Model" />
+  <BioModelInfo ID="BIOMD0000000724" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Theinmozhi2018 - Mechanism of PD1 inhibiting TCR signaling in Tumor immune regulation" />
+  <BioModelInfo ID="BIOMD0000000725" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Salcedo-Sora2016 - Microbial folate biosynthesis and utilisation" />
+  <BioModelInfo ID="BIOMD0000000726" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Ruan2017 - Transmission dynamics and control of rabies in China" />
+  <BioModelInfo ID="BIOMD0000000727" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Li2009- Assymetric Caulobacter cell cycle" />
+  <BioModelInfo ID="BIOMD0000000728" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Norel1990 - MPF and Cyclin Oscillations" />
+  <BioModelInfo ID="BIOMD0000000729" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Goldbeter1996 - Cyclin Cdc2 kinase Oscillations" />
+  <BioModelInfo ID="BIOMD0000000730" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Gerard2009 - An Integrated Mammalian Cell Cycle Model" />
+  <BioModelInfo ID="BIOMD0000000731" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Robertson-Tessi M 2012 A model of tumor Immune interaction" />
+  <BioModelInfo ID="BIOMD0000000732" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Kirschner1998_Immunotherapy_Tumour" />
+  <BioModelInfo ID="BIOMD0000000733" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Moore_2004_Mathematical model for CML and T cell interaction" />
+  <BioModelInfo ID="BIOMD0000000734" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Parmar2017_Mouse Iron Distribution - Rich and Deficient iron diets (tracer)" exception="Could not create Biomodel corresponding to the input SBML model.&#xA;" />
+  <BioModelInfo ID="BIOMD0000000735" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Mouse Iron Distribution - Adequate iron diet (tracer)" />
+  <BioModelInfo ID="BIOMD0000000736" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Mouse Iron Distribution - Adequate iron diet (No Tracer)" />
+  <BioModelInfo ID="BIOMD0000000737" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Mouse Iron Distribution - Deficient iron diet (No Tracer)" />
+  <BioModelInfo ID="BIOMD0000000738" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Mouse Iron Distribution - Rich iron diet (No Tracer)" />
+  <BioModelInfo ID="BIOMD0000000739" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Bravo2012 - Modelling blood coagulation factor Va inactivation by APC" />
+  <BioModelInfo ID="BIOMD0000000740" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Panteleev2010 - Blood Coagulation: Full Model" />
+  <BioModelInfo ID="BIOMD0000000741" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Eftimie2018 - Cancer and Immune biomarkers" />
+  <BioModelInfo ID="BIOMD0000000742" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Garcia2018basic - cancer and immune cell count basic model" />
+  <BioModelInfo ID="BIOMD0000000743" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Gallaher2018 - Tumor–Immune dynamics in multiple myeloma" />
+  <BioModelInfo ID="BIOMD0000000744" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Hu2019 - Pancreatic cancer dynamics" />
+  <BioModelInfo ID="BIOMD0000000745" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Jarrett2018 - trastuzumab-induced immune response in murine HER2+ breast cancer model" />
+  <BioModelInfo ID="BIOMD0000000746" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Saad2017 - immune checkpoint and BCG in superficial bladder cancer" />
+  <BioModelInfo ID="BIOMD0000000747" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Nagashima2002 - Simulating blood coagulation inhibitory effects" />
+  <BioModelInfo ID="BIOMD0000000748" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Phan2017 - innate immune in oncolytic virotherapy" />
+  <BioModelInfo ID="BIOMD0000000749" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Reppas2015 - tumor control via alternating immunostimulating and immunosuppressive phases" />
+  <BioModelInfo ID="BIOMD0000000750" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Lolas2016 - tumour-induced neoneurogenesis and perineural tumour growth" />
+  <BioModelInfo ID="BIOMD0000000751" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Wilkie2013b - immune-induced cancer dormancy and immune evasion-basic" />
+  <BioModelInfo ID="BIOMD0000000752" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Wilkie2013r - immune-induced cancer dormancy and immune evasion-resistance" />
+  <BioModelInfo ID="BIOMD0000000753" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Figueredo2013/1 - immunointeraction base model" />
+  <BioModelInfo ID="BIOMD0000000754" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Figueredo2013/2 - immunointeraction model with IL2" />
+  <BioModelInfo ID="BIOMD0000000755" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Hansen2019 - Nine species reduced model of blood coagulation" />
+  <BioModelInfo ID="BIOMD0000000756" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Figueredo2013/3 - immunointeraction full model" />
+  <BioModelInfo ID="BIOMD0000000757" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Abernathy2016 - glioblastoma treatment" />
+  <BioModelInfo ID="BIOMD0000000758" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Babbs2012 - immunotherapy" />
+  <BioModelInfo ID="BIOMD0000000759" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="den Breems2015 - macrophage in cancer" />
+  <BioModelInfo ID="BIOMD0000000760" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Feizabadi2011 - immunodeficiency in cancer core model" />
+  <BioModelInfo ID="BIOMD0000000761" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Cappuccio2006 - Cancer immunotherapy by interleukin-21" />
+  <BioModelInfo ID="BIOMD0000000762" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Kuznetsov1994 - Nonlinear dynamics of immunogenic tumors" />
+  <BioModelInfo ID="BIOMD0000000763" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Dritschel2018 - A mathematical model of cytotoxic and helper T cell interactions in a tumour microenvironment" />
+  <BioModelInfo ID="BIOMD0000000764" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Malinzi2019 - chemovirotherapy" />
+  <BioModelInfo ID="BIOMD0000000765" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Mager2005 - Quasi-equilibrium pharmacokinetic model for drugs exhibiting target-mediated drug disposition" />
+  <BioModelInfo ID="BIOMD0000000766" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Macnamara2015/1 - virotherapy full model" />
+  <BioModelInfo ID="BIOMD0000000767" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Macnamara2015/2 - virotherapy virus-free submodel" />
+  <BioModelInfo ID="BIOMD0000000768" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Eftimie2010 - immunity to melanoma" />
+  <BioModelInfo ID="BIOMD0000000769" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Eftimie2017/2 - interaction of Th and macrophage in melanoma" />
+  <BioModelInfo ID="BIOMD0000000770" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Eftimie2017/1 - interaction of Th and macrophage" />
+  <BioModelInfo ID="BIOMD0000000771" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Bajzer2008 - Modeling of cancer virotherapy with recombinant measles viruses" />
+  <BioModelInfo ID="BIOMD0000000772" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="New Model" />
+  <BioModelInfo ID="BIOMD0000000773" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Wodarz2018/2 - model with transit amplifying cells" />
+  <BioModelInfo ID="BIOMD0000000774" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Wodarz2018/1 - simple model" />
+  <BioModelInfo ID="BIOMD0000000775" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Iarosz2015 - brain tumor" exception="Could not create Biomodel corresponding to the input SBML model.&#xA;" />
+  <BioModelInfo ID="BIOMD0000000776" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Monro2008 - chemotherapy resistance" />
+  <BioModelInfo ID="BIOMD0000000777" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Chakrabarty2010 - A control theory approach to cancer remission aided by an optimal therapy" />
+  <BioModelInfo ID="BIOMD0000000778" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Wei2017 - tumor, T cell and cytokine interaction" />
+  <BioModelInfo ID="BIOMD0000000779" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="dePillis2009 - Mathematical model creation for cancer chemo-immunotherapy" />
+  <BioModelInfo ID="BIOMD0000000780" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Wang2016/1 - oncolytic efficacy of M1 virus-SNTM model" />
+  <BioModelInfo ID="BIOMD0000000781" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Wang2016/2 - oncolytic efficacy of M1 virus-SNT model" />
+  <BioModelInfo ID="BIOMD0000000782" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Wang2016/3 - oncolytic efficacy of M1 virus-SN model" />
+  <BioModelInfo ID="BIOMD0000000783" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Dong2014 - Mathematical modeling on helper t cells in a tumor immune system" />
+  <BioModelInfo ID="BIOMD0000000784" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Lopez2014 - A Validated Mathematical Model of Tumor Growth Including Tumor-Host Interaction and Cell-Mediated Immune Response" />
+  <BioModelInfo ID="BIOMD0000000785" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Sotolongo-Costa2003 - Behavior of tumors under nonstationary therapy" />
+  <BioModelInfo ID="BIOMD0000000786" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Lipniacki2004 - Mathematical model of NFKB regulatory module" />
+  <BioModelInfo ID="BIOMD0000000787" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Frascoli2014 - A dynamical model of tumour immunotherapy" />
+  <BioModelInfo ID="BIOMD0000000788" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Schropp2019 - Target-Mediated Drug Disposition Model for Bispecific Antibodies" />
+  <BioModelInfo ID="BIOMD0000000789" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Jenner2018 - treatment of oncolytic virus" exception="Could not create Biomodel corresponding to the input SBML model.&#xA;" />
+  <BioModelInfo ID="BIOMD0000000790" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Alvarez2019 - A nonlinear mathematical model of cell-mediated immune response for tumor phenotypic heterogeneity" />
+  <BioModelInfo ID="BIOMD0000000791" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Wilson2012 - tumor vaccine efficacy" exception="Could not create Biomodel corresponding to the input SBML model.&#xA;" />
+  <BioModelInfo ID="BIOMD0000000792" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Hu2019 - Modeling Pancreatic Cancer Dynamics with Immunotherapy" />
+  <BioModelInfo ID="BIOMD0000000793" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Chen2011/1 - bone marrow invasion absolute model" />
+  <BioModelInfo ID="BIOMD0000000794" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Benary2019 - Controlling NFKB dynamics by B-TrCP" />
+  <BioModelInfo ID="BIOMD0000000795" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Chen2011/2 - bone marrow invasion relative model" />
+  <BioModelInfo ID="BIOMD0000000796" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Yang2012 - cancer growth with angiogenesis" />
+  <BioModelInfo ID="BIOMD0000000797" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Hu2018 - Dynamics of tumor-CD4+-cytokine-host cells interactions with treatments" />
+  <BioModelInfo ID="BIOMD0000000798" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Sharp2019 - AML" />
+  <BioModelInfo ID="BIOMD0000000799" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Cucuianu2010 - A hypothetical-mathematical model of acute myeloid leukaemia pathogenesis" />
+  <BioModelInfo ID="BIOMD0000000800" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Precup2012 - Mathematical modeling of cell dynamics after allogeneic bone marrow transplantation" />
+  <BioModelInfo ID="BIOMD0000000801" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Sturrock2015 - glioma growth" />
+  <BioModelInfo ID="BIOMD0000000802" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Hoffman2018- ADCC against cancer" />
+  <BioModelInfo ID="BIOMD0000000803" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Park2019 - IL7 receptor signaling in T cells" />
+  <BioModelInfo ID="BIOMD0000000804" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Koenders2015 - multiple myeloma" />
+  <BioModelInfo ID="BIOMD0000000805" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Al-Husari2013 - pH and lactate in tumor" />
+  <BioModelInfo ID="BIOMD0000000806" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Eftimie2019 - Macrophages Plasticity" />
+  <BioModelInfo ID="BIOMD0000000807" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Fassoni2019 - Oncogenesis encompassing mutations and genetic instability" />
+  <BioModelInfo ID="BIOMD0000000808" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Kronik2008 - Improving alloreactive CTL immunotherapy for malignant gliomas using a simulation model of their interactive dynamics" exception="Could not create Biomodel corresponding to the input SBML model.&#xA;" />
+  <BioModelInfo ID="BIOMD0000000809" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Malinzi2018 - tumour-immune interaction model" />
+  <BioModelInfo ID="BIOMD0000000810" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Ganguli2018-immuno regulatory mechanisms in tumor microenvironment" />
+  <BioModelInfo ID="BIOMD0000000811" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="He2017 - A mathematical model of pancreatic cancer with two kinds of treatments" />
+  <BioModelInfo ID="BIOMD0000000812" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Galante2012 - B7-H1 and a Mathematical Model for Cytotoxic T Cell and Tumor Cell Interaction" />
+  <BioModelInfo ID="BIOMD0000000813" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Anderson2015 - Qualitative behavior of systems of tumor-CD4+-cytokine interactions with treatments" />
+  <BioModelInfo ID="BIOMD0000000814" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Perez-Garcia19 - Computational design of improved standardized chemotherapy protocols for grade 2 oligodendrogliomas" exception="Could not create Biomodel corresponding to the input SBML model.&#xA;" />
+  <BioModelInfo ID="BIOMD0000000815" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Chrobak2011 - A mathematical model of induced cancer-adaptive immune system competition" />
 </Supported_BioModelsNet>
 
