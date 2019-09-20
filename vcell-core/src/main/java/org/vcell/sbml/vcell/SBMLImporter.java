@@ -550,8 +550,7 @@ public class SBMLImporter {
 							TriggerType.GeneralTrigger, true, vcBioModel.getSimulationContext(0));
 					if (event.isSetDelay()) {
 						Expression durationExpr = null;
-						durationExpr = getExpressionFromFormula(event
-								.getDelay().getMath());
+						durationExpr = getExpressionFromFormula(event.getDelay().getMath());
 						durationExpr = adjustExpression(durationExpr, vcModel);
 						boolean bUseValsFromTriggerTime = true;
 						if (event.isSetUseValuesFromTriggerTime()) {
@@ -579,12 +578,18 @@ public class SBMLImporter {
 						String varName = sbmlEvntAssgn.getVariable();
 						SymbolTableEntry varSTE = vcBioModel.getSimulationContext(0).getEntry(varName);
 						if (varSTE != null) {
-							Expression evntAssgnExpr = getExpressionFromFormula(sbmlEvntAssgn
-									.getMath());
-							evntAssgnExpr = adjustExpression(evntAssgnExpr,
-									vcModel);
-							EventAssignment vcEvntAssgn = vcEvent.new EventAssignment(
-									varSTE, evntAssgnExpr);
+							Expression evntAssgnExpr;
+							ASTNode node = sbmlEvntAssgn.getMath();
+							if(node == null) {
+								evntAssgnExpr = new Expression("0.0");
+								String msg = "Event assignment expression is null for event '" + eventName + "'.";
+								localIssueList.add(new Issue(vcBioModel, issueContext, IssueCategory.SBMLImport_UnsupportedAttributeOrElement, msg, Issue.Severity.WARNING));
+							} else {
+								evntAssgnExpr = getExpressionFromFormula(node);
+
+							}
+							evntAssgnExpr = adjustExpression(evntAssgnExpr, vcModel);
+							EventAssignment vcEvntAssgn = vcEvent.new EventAssignment(varSTE, evntAssgnExpr);
 							vcEvntAssgnList.add(vcEvntAssgn);
 						} else {
 							logger.sendMessage(VCLogger.Priority.HighPriority,
