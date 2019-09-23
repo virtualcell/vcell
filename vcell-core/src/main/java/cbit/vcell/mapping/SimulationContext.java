@@ -2558,7 +2558,7 @@ public void checkValidity() throws MappingException
 						if (rp instanceof Reactant || rp instanceof Product) {
 							if (getAssignmentRule(rp.getSpeciesContext()) != null) {
 //								if(!getReactionContext().getSpeciesContextSpec(rp.getSpeciesContext()).isConstant()) {
-									throw new RuntimeException("Species '" + rp.getSpeciesContext().getName() + "' is a reactant/product in reaction '" + rs.getName() + "' ; cannot also have an assignment rule." );
+//									throw new RuntimeException("Species '" + rp.getSpeciesContext().getName() + "' is a reactant/product in reaction '" + rs.getName() + "' ; cannot also have an assignment rule." );
 //								}
 							}
 						}
