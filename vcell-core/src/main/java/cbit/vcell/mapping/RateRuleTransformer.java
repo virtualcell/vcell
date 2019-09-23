@@ -108,10 +108,28 @@ public class RateRuleTransformer implements SimContextTransformer {
 			
 			String rrName = rr.getName();
 			SymbolTableEntry ste = rr.getRateRuleVar();
-			if(!(ste instanceof SpeciesContext)) {					// we assume that it's a species rate rule and the species is there
-				throw new RuntimeException("The variable for RateRule '" + rrName + "' is missing or not a Species.");
+			SpeciesContext sc;
+			if(ste instanceof Model.ModelParameter) {
+				if(model.getStructures().length > 1) {
+					throw new RuntimeException("The variable for RateRule '" + rrName + "' cannot be a Global Parameter in a multi-compartmental BioModel.");
+				}
+				String speciesName = "s_" + rr.getRateRuleVar().getName();
+				Structure struct = model.getStructure(0);
+				Species sp = new Species(speciesName, speciesName);
+				sc = new SpeciesContext(sp, struct, null);
+				try {
+					model.addSpecies(sp);
+					model.addSpeciesContext(sc);
+				} catch (PropertyVetoException exc) {
+					exc.printStackTrace();
+					throw new RuntimeException("RateRule '" + rr.getName() + "' conversion failed.\n" + exc.getMessage());
+				}
+			} else if(ste instanceof SpeciesContext) {
+				sc = (SpeciesContext)ste;
+			} else {
+				throw new RuntimeException("The variable for RateRule '" + rrName + "' is missing or not a Species / Global Parameter.");
 			}
-			SpeciesContext sc = (SpeciesContext)ste;
+			
 			SpeciesContextSpec scs = reactionContext.getSpeciesContextSpec(sc);
 			if(scs.isConstant()) {
 				scs.setConstant(false);		// rate rules species must not be constant (even if they are for plain reactions)  TODO: conflict here!!!
