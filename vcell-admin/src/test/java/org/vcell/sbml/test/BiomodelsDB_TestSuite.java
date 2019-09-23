@@ -271,6 +271,15 @@ public class BiomodelsDB_TestSuite {
 
 					String modelName = service.getModelNameById(modelID.toString());
 					String modelSBML = service.getModelById(modelID.toString());
+					
+					/*
+					modelSBML = modelSBML.replace("id=\"x\"", "id=\"s_x\"");
+					modelSBML = modelSBML.replace("id=\"y\"", "id=\"s_y\"");
+					modelSBML = modelSBML.replace("id=\"z\"", "id=\"s_z\"");
+					modelSBML = modelSBML.replace("species=\"x\"", "species=\"s_x\"");
+					modelSBML = modelSBML.replace("species=\"y\"", "species=\"s_y\"");
+					modelSBML = modelSBML.replace("species=\"z\"", "species=\"s_z\"");
+					*/
 
 					Element bioModelInfo = new Element(BioModelsNetPanel.BIOMODELINFO_ELEMENT_NAME);
 					bioModelInfo.setAttribute(BioModelsNetPanel.ID_ATTRIBUTE_NAME, modelID.toString());
