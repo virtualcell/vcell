@@ -97,6 +97,7 @@ import cbit.vcell.mapping.GeometryContext;
 import cbit.vcell.mapping.MembraneMapping;
 import cbit.vcell.mapping.ParameterContext.LocalParameter;
 import cbit.vcell.mapping.RateRule;
+import cbit.vcell.mapping.ReactionContext;
 import cbit.vcell.mapping.ReactionSpec;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SimulationContext.Application;
@@ -107,6 +108,7 @@ import cbit.vcell.mapping.StructureMapping.StructureMappingParameter;
 import cbit.vcell.mapping.spatial.SpatialObject.QuantityComponent;
 import cbit.vcell.mapping.spatial.SpatialObject.SpatialQuantity;
 import cbit.vcell.math.BoundaryConditionType;
+import cbit.vcell.math.Constant;
 import cbit.vcell.model.DistributedKinetics;
 import cbit.vcell.model.Feature;
 import cbit.vcell.model.FluxReaction;
@@ -130,6 +132,7 @@ import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.ExpressionMathMLPrinter;
 import cbit.vcell.parser.ExpressionMathMLPrinter.MathType;
 import cbit.vcell.parser.SymbolTableEntry;
+import cbit.vcell.solver.MathOverrides;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationJob;
 import cbit.vcell.units.VCUnitDefinition;
@@ -1312,8 +1315,55 @@ protected void addAssignmentRules()  {
 		}
 	}
 }
-protected void addInitialAssignments()  {	// used for parameter scan exports
+protected void addInitialAssignments() throws ExpressionException  {	// used for parameter scan exports
+	
+//	private SimulationContext vcSelectedSimContext = null;
+//	private SimulationJob vcSelectedSimJob = null;
 
+	if(vcSelectedSimJob == null) {
+		return;
+	}
+	int index = vcSelectedSimJob.getJobIndex();
+	System.out.println("Simulation Job index = " + index);
+	
+	MathOverrides mo = vcSelectedSimJob.getSimulation().getMathOverrides();
+	if(mo == null || !mo.hasOverrides()) {
+		return;
+	}
+	
+	String[] ocns = mo.getOverridenConstantNames();
+//	String[] scns = mo.getScannedConstantNames();
+//	
+//	
+	for(String ocn : ocns) {
+		Expression exp = mo.getActualExpression(ocn, index);
+//		Constant co = mo.getConstant(ocn);
+//		SymbolTableEntry ste = vcSelectedSimContext.getEntry(ocn);
+//		SpeciesContext sc = vcSelectedSimContext.getModel().getSpeciesContext(ocn);
+//		ReactionContext rc = vcSelectedSimContext.getReactionContext();
+//		SpeciesContextSpec[] scs = rc.getSpeciesContextSpecs();
+//		ModelParameter mp = vcSelectedSimContext.getModel().getModelParameter(ocn);
+		System.out.println("   overriden constant: " + ocn + ", " + exp.infix());
+	}
+	
+	
+//	for(String scn : scns) {
+//		System.out.println("  scanned constant: " + scn);
+//	}
+
+//	String initAssgnSymbol = "s0";
+//	Expression initAssignMathExpr = new Expression("0.0");
+//	SpeciesContext sc = vcBioModel.getSimulationContext(0).getModel().getSpeciesContext(initAssgnSymbol);
+//	SpeciesContextSpec scs = vcBioModel.getSimulationContext(0).getReactionContext().getSpeciesContextSpec(sc);
+//	ModelParameter mp = vcBioModel.getSimulationContext(0).getModel().getModelParameter(initAssgnSymbol);
+//	if (scs != null) {
+//		Expression exp = scs.getInitialConditionParameter().getExpression();
+////		scs.getInitialConditionParameter().setExpression(initAssignMathExpr);
+//	} else if (mp != null) {
+//		Expression exp = mp.getExpression();
+////		mp.setExpression(initAssignMathExpr);
+//	}
+	// TODO: here
 }
 
 
@@ -2116,6 +2166,12 @@ public void translateBioModel() throws SbmlException, XMLStreamException {
 		throw new RuntimeException(e.getMessage());
 	}
 
+	try {
+		addInitialAssignments();
+	} catch (ExpressionException e) {
+		e.printStackTrace(System.out);
+		throw new RuntimeException(e.getMessage());
+	}
 	addRateRules();
 	addAssignmentRules();
 	
