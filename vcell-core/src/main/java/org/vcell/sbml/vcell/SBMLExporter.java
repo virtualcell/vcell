@@ -1298,6 +1298,24 @@ protected void addRateRules()  {
 		}
 	}
 }
+protected void addAssignmentRules()  {
+	cbit.vcell.mapping.AssignmentRule[] vcAssignmentRules = getSelectedSimContext().getAssignmentRules();
+	if (vcAssignmentRules != null) {
+		for(cbit.vcell.mapping.AssignmentRule vcRule : vcAssignmentRules) {
+			org.sbml.jsbml.AssignmentRule sbmlRule = sbmlModel.createAssignmentRule();
+			sbmlRule.setId(vcRule.getName());
+			sbmlRule.setName(vcRule.getName());
+			sbmlRule.setVariable(vcRule.getAssignmentRuleVar().getName());
+			Expression vcRuleExpression = vcRule.getAssignmentRuleExpression();
+			ASTNode math = getFormulaFromExpression(vcRuleExpression);
+			sbmlRule.setMath(math);
+		}
+	}
+}
+protected void addInitialAssignments()  {	// used for parameter scan exports
+
+}
+
 
 /**
  * 	getAnnotationElement : 
@@ -2097,8 +2115,10 @@ public void translateBioModel() throws SbmlException, XMLStreamException {
 		e.printStackTrace(System.out);
 		throw new RuntimeException(e.getMessage());
 	}
-	// Add rate rules
+
 	addRateRules();
+	addAssignmentRules();
+	
 	// Add Reactions
 	addReactions();
 	// Add Events

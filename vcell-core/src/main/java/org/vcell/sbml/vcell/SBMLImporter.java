@@ -637,7 +637,7 @@ public class SBMLImporter {
 			throw new SBMLImportException("SBML model is NULL");
 		}
 		ListOf listofInitialAssgns = sbmlModel.getListOfInitialAssignments();
-		if (listofInitialAssgns == null) {
+		if (listofInitialAssgns == null || listofInitialAssgns.isEmpty()) {
 			System.out.println("No Initial Assignments specified");
 			return;
 		}
@@ -690,8 +690,7 @@ public class SBMLImporter {
 				}
 			} catch (Exception e) {
 				e.printStackTrace(System.out);
-				throw new RuntimeException("Error reading InitialAssignment : "
-						+ e.getMessage());
+				throw new RuntimeException("Error reading InitialAssignment : " + e.getMessage());
 			}
 		}
 	}
