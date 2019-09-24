@@ -1358,11 +1358,7 @@ protected void addInitialAssignments() throws ExpressionException, MappingExcept
 			KineticsParameter kp = (KineticsParameter)ste;
 			Kinetics ks = kp.getKinetics();
 			ReactionStep rs = ks.getReactionStep();
-			if(vcSelectedSimContext.getModel().getReactionSteps().length == 1) {
-				name = TokenMangler.mangleToSName(kp.getName());
-			} else {			// >1
-				name = TokenMangler.mangleToSName(kp.getName() + "_" + rs.getName());
-			}
+			name = TokenMangler.mangleToSName(kp.getName() + "_" + rs.getName());
 		} else {
 			name = ocn;
 			System.out.println("Unexpected override or parameter scan entity: " + ocn);
