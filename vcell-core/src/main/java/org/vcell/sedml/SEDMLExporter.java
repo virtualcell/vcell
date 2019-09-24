@@ -248,6 +248,9 @@ public class SEDMLExporter {
 					sedmlModel.addModel(new Model(simContextId, simContextName, sbmlLanguageURN, sbmlFilePathStrRelative));
 		
 					// required for mathOverrides, if any
+					//
+					// TODO: check addInitialAssignments() in SBMLExporter !!!
+					//
 					MathMapping mathMapping = simContext.createNewMathMapping();
 					MathSymbolMapping mathSymbolMapping = mathMapping.getMathSymbolMapping();
 
@@ -731,7 +734,7 @@ public class SEDMLExporter {
 		return note;
 	}
 
-	private SymbolTableEntry getSymbolTableEntryForModelEntity(MathSymbolMapping mathSymbolMapping, String paramName) {
+	public static SymbolTableEntry getSymbolTableEntryForModelEntity(MathSymbolMapping mathSymbolMapping, String paramName) {
 		cbit.vcell.math.Variable mathVar = mathSymbolMapping.findVariableByName(paramName);
 		SymbolTableEntry[] stEntries = mathSymbolMapping.getBiologicalSymbol(mathVar);
 		if (stEntries == null || stEntries.length == 0) {

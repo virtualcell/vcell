@@ -66,6 +66,7 @@ import org.sbml.jsbml.ext.spatial.SpatialSymbolReference;
 import org.vcell.sbml.SBMLHelper;
 import org.vcell.sbml.SBMLUtils;
 import org.vcell.sbml.SbmlException;
+import org.vcell.sedml.SEDMLExporter;
 import org.vcell.util.Extent;
 import org.vcell.util.ISize;
 import org.vcell.util.Origin;
@@ -94,6 +95,9 @@ import cbit.vcell.mapping.BioEvent;
 import cbit.vcell.mapping.BioEvent.BioEventParameterType;
 import cbit.vcell.mapping.BioEvent.EventAssignment;
 import cbit.vcell.mapping.GeometryContext;
+import cbit.vcell.mapping.MappingException;
+import cbit.vcell.mapping.MathMapping;
+import cbit.vcell.mapping.MathSymbolMapping;
 import cbit.vcell.mapping.MembraneMapping;
 import cbit.vcell.mapping.ParameterContext.LocalParameter;
 import cbit.vcell.mapping.RateRule;
@@ -109,6 +113,8 @@ import cbit.vcell.mapping.spatial.SpatialObject.QuantityComponent;
 import cbit.vcell.mapping.spatial.SpatialObject.SpatialQuantity;
 import cbit.vcell.math.BoundaryConditionType;
 import cbit.vcell.math.Constant;
+import cbit.vcell.math.MathException;
+import cbit.vcell.matrix.MatrixException;
 import cbit.vcell.model.DistributedKinetics;
 import cbit.vcell.model.Feature;
 import cbit.vcell.model.FluxReaction;
@@ -121,6 +127,7 @@ import cbit.vcell.model.Model.ModelParameter;
 import cbit.vcell.model.Model.ReservedSymbol;
 import cbit.vcell.model.Model.ReservedSymbolRole;
 import cbit.vcell.model.Model.StructureTopology;
+import cbit.vcell.model.ModelException;
 import cbit.vcell.model.ModelUnitSystem;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.model.ReactionParticipant;
@@ -1306,8 +1313,8 @@ protected void addAssignmentRules()  {
 	if (vcAssignmentRules != null) {
 		for(cbit.vcell.mapping.AssignmentRule vcRule : vcAssignmentRules) {
 			org.sbml.jsbml.AssignmentRule sbmlRule = sbmlModel.createAssignmentRule();
-			sbmlRule.setId(vcRule.getName());
-			sbmlRule.setName(vcRule.getName());
+//			sbmlRule.setId(vcRule.getName());
+//			sbmlRule.setName(vcRule.getName());
 			sbmlRule.setVariable(vcRule.getAssignmentRuleVar().getName());
 			Expression vcRuleExpression = vcRule.getAssignmentRuleExpression();
 			ASTNode math = getFormulaFromExpression(vcRuleExpression);
@@ -1315,11 +1322,8 @@ protected void addAssignmentRules()  {
 		}
 	}
 }
-protected void addInitialAssignments() throws ExpressionException  {	// used for parameter scan exports
-	
-//	private SimulationContext vcSelectedSimContext = null;
-//	private SimulationJob vcSelectedSimJob = null;
-
+protected void addInitialAssignments() throws ExpressionException, MappingException, MathException, MatrixException, ModelException  {
+	// used for overrides and parameter scan exports
 	if(vcSelectedSimJob == null) {
 		return;
 	}
@@ -1330,40 +1334,48 @@ protected void addInitialAssignments() throws ExpressionException  {	// used for
 	if(mo == null || !mo.hasOverrides()) {
 		return;
 	}
-	
+	//
+	// TODO: SEDMLExporter is doing it differently, much more complicated
+	//
+	MathMapping mm = vcSelectedSimContext.createNewMathMapping();
+	MathSymbolMapping msm = mm.getMathSymbolMapping();
 	String[] ocns = mo.getOverridenConstantNames();
-//	String[] scns = mo.getScannedConstantNames();
-//	
-//	
-	for(String ocn : ocns) {
-		Expression exp = mo.getActualExpression(ocn, index);
-//		Constant co = mo.getConstant(ocn);
-//		SymbolTableEntry ste = vcSelectedSimContext.getEntry(ocn);
-//		SpeciesContext sc = vcSelectedSimContext.getModel().getSpeciesContext(ocn);
-//		ReactionContext rc = vcSelectedSimContext.getReactionContext();
-//		SpeciesContextSpec[] scs = rc.getSpeciesContextSpecs();
-//		ModelParameter mp = vcSelectedSimContext.getModel().getModelParameter(ocn);
-		System.out.println("   overriden constant: " + ocn + ", " + exp.infix());
-	}
-	
-	
-//	for(String scn : scns) {
-//		System.out.println("  scanned constant: " + scn);
-//	}
 
-//	String initAssgnSymbol = "s0";
-//	Expression initAssignMathExpr = new Expression("0.0");
-//	SpeciesContext sc = vcBioModel.getSimulationContext(0).getModel().getSpeciesContext(initAssgnSymbol);
-//	SpeciesContextSpec scs = vcBioModel.getSimulationContext(0).getReactionContext().getSpeciesContextSpec(sc);
-//	ModelParameter mp = vcBioModel.getSimulationContext(0).getModel().getModelParameter(initAssgnSymbol);
-//	if (scs != null) {
-//		Expression exp = scs.getInitialConditionParameter().getExpression();
-////		scs.getInitialConditionParameter().setExpression(initAssignMathExpr);
-//	} else if (mp != null) {
-//		Expression exp = mp.getExpression();
-////		mp.setExpression(initAssignMathExpr);
-//	}
-	// TODO: here
+	for(String ocn : ocns) {
+		SymbolTableEntry ste = SEDMLExporter.getSymbolTableEntryForModelEntity(msm, ocn);
+		ModelParameter mp = vcSelectedSimContext.getModel().getModelParameter(ocn);
+		Expression exp = mo.getActualExpression(ocn, index);
+		String name = "";
+		if(ste != null && ste instanceof SpeciesContextSpecParameter) {
+			SpeciesContextSpecParameter scsp = (SpeciesContextSpecParameter)ste;
+			SpeciesContext sc = scsp.getSpeciesContext();
+			name = sc.getName();
+		} else if(ste != null && ste instanceof ModelParameter) {
+			name = ste.getName();
+		} else if(ste != null && ste instanceof KineticsParameter) {
+			// note: if we call this before adding the reactions, we can't verify that the name we use 
+			// here will match the name we assign when we actually add the reaction
+			KineticsParameter kp = (KineticsParameter)ste;
+			Kinetics ks = kp.getKinetics();
+			ReactionStep rs = ks.getReactionStep();
+			if(vcSelectedSimContext.getModel().getReactionSteps().length == 1) {
+				name = TokenMangler.mangleToSName(kp.getName());
+			} else {			// >1
+				name = TokenMangler.mangleToSName(kp.getName() + "_" + rs.getName());
+			}
+		} else {
+			name = ocn;
+			System.out.println("Unexpected override or parameter scan entity: " + ocn);
+		}
+//		System.out.println("  symbol: " + name + ", overriden constant: " + ocn + ", expression: " + exp.infix());
+		org.sbml.jsbml.InitialAssignment ia = sbmlModel.createInitialAssignment();
+//		String id = TokenMangler.mangleToSName("initialAssignment_" + name "_" + index);	// no point in defining id or name for initial assignment
+//		ia.setId(id);
+//		ia.setName(id);
+		ia.setVariable(name);
+		ASTNode math = getFormulaFromExpression(exp);
+		ia.setMath(math);
+	}
 }
 
 
@@ -2168,7 +2180,7 @@ public void translateBioModel() throws SbmlException, XMLStreamException {
 
 	try {
 		addInitialAssignments();
-	} catch (ExpressionException e) {
+	} catch (Exception e) {
 		e.printStackTrace(System.out);
 		throw new RuntimeException(e.getMessage());
 	}
