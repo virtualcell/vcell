@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
+import java.util.TreeSet;
 
 import org.vcell.model.rbm.SpeciesPattern;
 import org.vcell.util.Displayable;
@@ -327,6 +328,20 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 		RateRule oldRule = (RateRule)evt.getOldValue();
 		RateRule newRule = (RateRule)evt.getNewValue();
 		onRateRuleVariableChanged(oldRule, newRule);
+	} else if(evt.getSource() == getSimulationContext() && evt.getPropertyName().equals(SimulationContext.PROPERTY_NAME_ASSIGNMENTRULES)) {
+		System.out.println(evt.getPropertyName());
+		AssignmentRule[] oldRules = (AssignmentRule[])evt.getOldValue();
+		AssignmentRule[] newRules = (AssignmentRule[])evt.getNewValue();
+		if(oldRules != null && newRules != null && oldRules.length > newRules.length) {
+			onAssignmentRuleDelete(oldRules, newRules);
+		}
+	} else if(evt.getSource() == getSimulationContext() && evt.getPropertyName().equals(SimulationContext.PROPERTY_NAME_RATERULES)) {
+		System.out.println(evt.getPropertyName());
+		RateRule[] oldRules = (RateRule[])evt.getOldValue();
+		RateRule[] newRules = (RateRule[])evt.getNewValue();
+		if(oldRules != null && newRules != null && oldRules.length > newRules.length) {
+			onRateRuleDelete(oldRules, newRules);
+		}
 	}
 	if (evt.getSource() instanceof SpeciesContextSpec) {
 		fireTableRowsUpdated(0,getRowCount()-1);
@@ -340,50 +355,60 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 	}
 }
 
+private void removeRuleVariableMark(SpeciesContext sc, boolean unclamp) {
+	SpeciesContextSpec[] scss = fieldSimulationContext.getReactionContext().getSpeciesContextSpecs();
+	for(SpeciesContextSpec scs : scss) {
+		if(scs.getSpeciesContext() != null && scs.getSpeciesContext() == sc) {
+			if(unclamp) {
+				scs.setConstant(false);
+			}
+			try {
+				if(getSimulationContext().isUsingConcentration()) {
+					scs.getInitialConcentrationParameter().setExpression(new Expression("0"));
+				} else {
+					scs.getInitialCountParameter().setExpression(new Expression("0"));
+				}
+			} catch(ExpressionException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+}
+private void setRuleVariableMark(SpeciesContext sc, Expression ex, boolean clamp) {
+	SpeciesContextSpec[] scss = fieldSimulationContext.getReactionContext().getSpeciesContextSpecs();
+	for(SpeciesContextSpec scs : scss) {
+		if(scs.getSpeciesContext() != null && scs.getSpeciesContext() == sc) {
+			if(clamp) {
+				scs.setConstant(true);
+			}
+			try {
+				if(getSimulationContext().isUsingConcentration()) {
+					scs.getInitialConcentrationParameter().setExpression(new Expression(ex));
+				} else {
+					scs.getInitialCountParameter().setExpression(new Expression(ex));
+				}
+			} catch (ExpressionBindingException e) {
+				e.printStackTrace();
+			}
+			fireTableRowsUpdated(0,getRowCount()-1);
+			break;		// can't find more than one
+		}
+	}
+}
 private void onAssignmentRuleVariableChanged(AssignmentRule oldRule, AssignmentRule newRule) {
 	if(oldRule != null && oldRule.getSimulationContext() == fieldSimulationContext && oldRule.getAssignmentRuleVar() != null) {
 		SymbolTableEntry ste = oldRule.getAssignmentRuleVar();
 		if(ste instanceof SpeciesContext) {
 			SpeciesContext sc = (SpeciesContext)ste;
-			SpeciesContextSpec[] scss = fieldSimulationContext.getReactionContext().getSpeciesContextSpecs();
-			for(SpeciesContextSpec scs : scss) {
-				if(scs.getSpeciesContext() != null && scs.getSpeciesContext() == sc) {
-					scs.setConstant(false);
-					try {
-						if(getSimulationContext().isUsingConcentration()) {
-							scs.getInitialConcentrationParameter().setExpression(new Expression("0"));
-						} else {
-							scs.getInitialCountParameter().setExpression(new Expression("0"));
-						}
-					} catch(ExpressionException e) {
-						e.printStackTrace();
-					}
-				}
-			}
+			removeRuleVariableMark(sc, true);
 		}
 	}
 	if(newRule != null && newRule.getSimulationContext() == fieldSimulationContext && newRule.getAssignmentRuleVar() != null) {
 		SymbolTableEntry ste = newRule.getAssignmentRuleVar();
 		if(ste instanceof SpeciesContext) {
 			SpeciesContext sc = (SpeciesContext)ste;
-			SpeciesContextSpec[] scss = fieldSimulationContext.getReactionContext().getSpeciesContextSpecs();
-			for(SpeciesContextSpec scs : scss) {
-				if(scs.getSpeciesContext() != null && scs.getSpeciesContext() == sc) {
-					scs.setConstant(true);
-					try {
-						Expression ex = newRule.getAssignmentRuleExpression();
-						if(getSimulationContext().isUsingConcentration()) {
-							scs.getInitialConcentrationParameter().setExpression(new Expression(ex));
-						} else {
-							scs.getInitialCountParameter().setExpression(new Expression(ex));
-						}
-					} catch (ExpressionBindingException e) {
-						e.printStackTrace();
-					}
-					fireTableRowsUpdated(0,getRowCount()-1);
-					break;		// can't find more than one
-				}
-			}
+			Expression ex = newRule.getAssignmentRuleExpression();
+			setRuleVariableMark(sc, ex, true);
 		}
 	}
 }
@@ -392,45 +417,66 @@ private void onRateRuleVariableChanged(RateRule oldRule, RateRule newRule) {
 		SymbolTableEntry ste = oldRule.getRateRuleVar();
 		if(ste instanceof SpeciesContext) {
 			SpeciesContext sc = (SpeciesContext)ste;
-			SpeciesContextSpec[] scss = fieldSimulationContext.getReactionContext().getSpeciesContextSpecs();
-			for(SpeciesContextSpec scs : scss) {
-				if(scs.getSpeciesContext() != null && scs.getSpeciesContext() == sc) {
-					try {
-						if(getSimulationContext().isUsingConcentration()) {
-							scs.getInitialConcentrationParameter().setExpression(new Expression("0"));
-						} else {
-							scs.getInitialCountParameter().setExpression(new Expression("0"));
-						}
-					} catch (ExpressionException e) {
-						e.printStackTrace();
-					}
-					break;
-				}
-			}
+			removeRuleVariableMark(sc, false);
 		}
 	}
 	if(newRule != null && newRule.getSimulationContext() == fieldSimulationContext && newRule.getRateRuleVar() != null) {
 		SymbolTableEntry ste = newRule.getRateRuleVar();
 		if(ste instanceof SpeciesContext) {
 			SpeciesContext sc = (SpeciesContext)ste;
-			SpeciesContextSpec[] scss = fieldSimulationContext.getReactionContext().getSpeciesContextSpecs();
-			for(SpeciesContextSpec scs : scss) {
-				if(scs.getSpeciesContext() != null && scs.getSpeciesContext() == sc) {
-					try {
-						Expression ex = newRule.getRateRuleExpression();
-						if(getSimulationContext().isUsingConcentration()) {
-							scs.getInitialConcentrationParameter().setExpression(new Expression(ex));
-						} else {
-							scs.getInitialCountParameter().setExpression(new Expression(ex));
-						}
-					} catch (ExpressionBindingException e) {
-						e.printStackTrace();
-					}
-					fireTableRowsUpdated(0,getRowCount()-1);
-					break;
-				}
+			Expression ex = newRule.getRateRuleExpression();
+			setRuleVariableMark(sc, ex, false);
+		}
+	}
+}
+private void onAssignmentRuleDelete(AssignmentRule[] oldRules, AssignmentRule[] newRules ) {
+	System.out.println("old: " + oldRules.length + ", new: " + newRules.length);
+	AssignmentRule deleted = null;
+	for(AssignmentRule candidate : oldRules) {
+		boolean found = false;
+		for(AssignmentRule rule : newRules) {
+			if(candidate.getName().equalsIgnoreCase(rule.getName())) {
+				found = true;
+				break;
 			}
 		}
+		if(found == false) {
+			deleted = candidate;
+			break;
+		}
+	}
+	if(deleted == null || deleted.getSimulationContext() != fieldSimulationContext) {
+		return;
+	}
+	SymbolTableEntry ste = deleted.getAssignmentRuleVar();
+	if(ste instanceof SpeciesContext) {
+		SpeciesContext sc = (SpeciesContext)ste;
+		removeRuleVariableMark(sc, true);
+	}
+}
+private void onRateRuleDelete(RateRule[] oldRules, RateRule[] newRules ) {
+	System.out.println("old: " + oldRules.length + ", new: " + newRules.length);
+	RateRule deleted = null;
+	for(RateRule candidate : oldRules) {
+		boolean found = false;
+		for(RateRule rule : newRules) {
+			if(candidate.getName().equalsIgnoreCase(rule.getName())) {
+				found = true;
+				break;
+			}
+		}
+		if(found == false) {
+			deleted = candidate;
+			break;
+		}
+	}
+	if(deleted == null || deleted.getSimulationContext() != fieldSimulationContext) {
+		return;
+	}
+	SymbolTableEntry ste = deleted.getRateRuleVar();
+	if(ste instanceof SpeciesContext) {
+		SpeciesContext sc = (SpeciesContext)ste;
+		removeRuleVariableMark(sc, false);
 	}
 }
 

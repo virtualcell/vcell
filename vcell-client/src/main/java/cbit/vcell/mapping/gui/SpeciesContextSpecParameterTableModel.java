@@ -21,6 +21,7 @@ import cbit.vcell.mapping.SpeciesContextSpec;
 import cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecParameter;
 import cbit.vcell.mapping.StructureMapping;
 import cbit.vcell.model.Parameter;
+import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.parser.AutoCompleteSymbolFilter;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
@@ -194,6 +195,16 @@ public Object getValueAt(int row, int col) {
  */
 public boolean isCellEditable(int rowIndex, int columnIndex) {
 	Parameter parameter = getValueAt(rowIndex);
+	if(parameter instanceof SpeciesContextSpecParameter) {
+		SpeciesContext sc = ((SpeciesContextSpecParameter) parameter).getSpeciesContext();
+		SimulationContext simContext = fieldSpeciesContextSpec.getSimulationContext();
+		if(simContext.getAssignmentRule(sc) != null) {
+			return false;	// not editable if it's an assignment rule variable
+		}
+		if(simContext.getRateRule(sc) != null) {
+			return false;	// not editable if it's a rate rule variable
+		}
+	}
 	if (columnIndex == COLUMN_NAME){
 		return parameter.isNameEditable();
 	}else if (columnIndex == COLUMN_VALUE){
