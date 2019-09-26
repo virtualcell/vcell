@@ -71,6 +71,7 @@ import org.sbml.jsbml.SBMLReader;
 import org.sbml.jsbml.SBase;
 import org.sbml.jsbml.SpeciesReference;
 import org.sbml.jsbml.UnitDefinition;
+// import org.sbml.jsbml.ext.comp.*;
 import org.sbml.jsbml.ext.spatial.AdjacentDomains;
 import org.sbml.jsbml.ext.spatial.AdvectionCoefficient;
 import org.sbml.jsbml.ext.spatial.AnalyticGeometry;
@@ -186,6 +187,7 @@ import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
 import cbit.vcell.model.StructureSorter;
 import cbit.vcell.parser.AbstractNameScope;
+import cbit.vcell.parser.DivideByZeroException;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
@@ -1477,32 +1479,49 @@ public class SBMLImporter {
 	
 	private void finalizeAssignmentRules() {
 		SimulationContext simContext = vcBioModel.getSimulationContext(0);
-		
+		Model vcModel = simContext.getModel();
+		GeometryContext gc = simContext.getGeometryContext();
+
+		boolean foundConstStructureSize = false;
 		for (Map.Entry<String, Expression> entry : assignmentRulesHash.entrySet()) {
 			String vcVariableName = entry.getKey();
 			Expression vcExpression = entry.getValue();
 			SymbolTableEntry ste = simContext.getEntry(vcVariableName);
-			if(ste == null) {
-				// TODO: this should never happen; verify !!!
-				throw new RuntimeException("No SymbolTableEntry for AssignmentRule variable " + vcVariableName);
-			}
-			if ((ste instanceof Structure || ste instanceof Structure.StructureSize) && !vcExpression.isNumeric()) {
-				throw new SBMLImportException("Structure '" + ste.getName() + "' is used as a assignment rule variable: not allowed in VCell at this time.");
-			}
-			if (ste instanceof cbit.vcell.model.Parameter && !vcExpression.isNumeric()) {
-				System.out.println("Warning: Parameter '" + ste.getName() + "' is used as a assignment rule variable.");
-			}
-
-			if(ste instanceof SpeciesContext || ste instanceof cbit.vcell.model.Parameter) {
-				String vcAssignmentRuleName = simContext.getFreeAssignmentRuleName();
-				cbit.vcell.mapping.AssignmentRule vcAssignmentRule = new cbit.vcell.mapping.AssignmentRule(vcAssignmentRuleName, ste, vcExpression, simContext);
-				try {
-					vcAssignmentRule.bind();
-					simContext.addAssignmentRule(vcAssignmentRule);
-				} catch(PropertyVetoException | ExpressionBindingException e) {
-					e.printStackTrace(System.out);
-					throw new SBMLImportException("Unable to create and add assignment rule to VC model : " + e.getMessage());
+			try {
+				String vcRuleName = simContext.getFreeAssignmentRuleName();
+				cbit.vcell.mapping.AssignmentRule vcRule = new cbit.vcell.mapping.AssignmentRule(vcRuleName, ste, vcExpression, simContext);
+				vcRule.bind();
+				if (ste instanceof Structure.StructureSize) {	// we allow StructureSize variable if it evaluates to a constant
+					double constantSize;
+					try {
+						constantSize = vcExpression.evaluateConstant();
+					} catch (ExpressionException e1) {
+						throw new SBMLImportException("Structure '" + ste.getName() + "' is used as a non-constant assignment rule variable: not allowed in VCell at this time.");
+					}
+					// it is a constant, we don't make a rule, we just override the structure size in the geometry
+					Structure.StructureSize ss = (Structure.StructureSize)ste;
+					Structure struct = ss.getStructure();
+					StructureMapping.StructureMappingParameter mapping = gc.getStructureMapping(struct).getSizeParameter();
+					 Expression constExpression = new Expression(constantSize);
+					mapping.setExpression(constExpression);
+					foundConstStructureSize = true;
+				} else {	// ste instanceof SpeciesContext || cbit.vcell.model.Parameter
+					simContext.addAssignmentRule(vcRule);
 				}
+			} catch (PropertyVetoException | ExpressionException e) {
+				e.printStackTrace(System.out);
+				throw new SBMLImportException("Unable to create and add assignment rule to VC model : " + e.getMessage());
+			}
+		}
+		if (foundConstStructureSize) {
+			try {
+				StructureSizeSolver.updateRelativeStructureSizes(simContext);
+				String msg = "One or more AssignmentRule variables of StructureSize type evaluated to constant and were used as initial assignment for the Feature (Structure)";
+				localIssueList.add(new Issue(vcModel, issueContext, IssueCategory.SBMLImport_RestrictedFeature, msg, Issue.Severity.WARNING));
+			} catch (Exception e) {
+				e.printStackTrace(System.out);
+				String msg = "Error initializing a Feature from an assignment rule StructureSize variable. ";
+				throw new SBMLImportException(msg + e.getMessage(), e);
 			}
 		}
 	}
@@ -1640,19 +1659,49 @@ public class SBMLImporter {
 	// at the very end, create the RateRules and add them to the simulation context
 	private void finalizeRateRules() {
 		SimulationContext simContext = vcBioModel.getSimulationContext(0);
-		
+		Model vcModel = simContext.getModel();
+		GeometryContext gc = simContext.getGeometryContext();
+
+		boolean foundConstStructureSize = false;
 		for (Map.Entry<String, Expression> entry : rateRulesHash.entrySet()) {
 			String vcVariableName = entry.getKey();
-			Expression vcRateRuleExpr = entry.getValue();
+			Expression vcExpression = entry.getValue();
 			SymbolTableEntry ste = simContext.getEntry(vcVariableName);
 			try {													// --------------------- rate rule expression
-				String vcRateRuleName = simContext.getFreeRateRuleName();
-				cbit.vcell.mapping.RateRule vcRateRule = new cbit.vcell.mapping.RateRule(vcRateRuleName, ste, vcRateRuleExpr, simContext);
-				vcRateRule.bind();
-				simContext.addRateRule(vcRateRule);
+				String vcRuleName = simContext.getFreeRateRuleName();
+				cbit.vcell.mapping.RateRule vcRule = new cbit.vcell.mapping.RateRule(vcRuleName, ste, vcExpression, simContext);
+				vcRule.bind();
+				if (ste instanceof Structure.StructureSize) {
+					double constantSize;
+					try {
+						constantSize = vcExpression.evaluateConstant();
+					} catch (ExpressionException e1) {
+						throw new SBMLImportException("Structure '" + ste.getName() + "' is used as a non-constant rate rule variable: not allowed in VCell at this time.");
+					}
+					// it is a constant, so we don't even make a rule, we just override the structure size in the geometry
+					Structure.StructureSize ss = (Structure.StructureSize)ste;
+					Structure struct = ss.getStructure();
+					StructureMapping.StructureMappingParameter mapping = gc.getStructureMapping(struct).getSizeParameter();
+					 Expression constExpression = new Expression(constantSize);
+					mapping.setExpression(constExpression);
+					foundConstStructureSize = true;
+				} else {
+					simContext.addRateRule(vcRule);
+				}
 			} catch (PropertyVetoException | ExpressionException e) {
 				e.printStackTrace(System.out);
 				throw new SBMLImportException("Unable to create and add rate rule to VC model : " + e.getMessage());
+			}
+		}
+		if (foundConstStructureSize) {
+			try {
+				StructureSizeSolver.updateRelativeStructureSizes(simContext);
+				String msg = "One or more RateRule variables of StructureSize type evaluated to constant and were used as initial assignment for the Feature (Structure)";
+				localIssueList.add(new Issue(vcModel, issueContext, IssueCategory.SBMLImport_RestrictedFeature, msg, Issue.Severity.WARNING));
+			} catch (Exception e) {
+				e.printStackTrace(System.out);
+				String msg = "Error initializing a Feature from a RateRule StructureSize variable. ";
+				throw new SBMLImportException(msg + e.getMessage(), e);
 			}
 		}
 	}
@@ -1876,9 +1925,7 @@ public class SBMLImporter {
 			}
 		} catch (Throwable e) {
 			e.printStackTrace(System.out);
-			throw new SBMLImportException(
-					"Error setting initial condition for species context; "
-							+ e.getMessage(), e);
+			throw new SBMLImportException("Error setting initial condition for species context; " + e.getMessage(), e);
 		}
 	}
 
@@ -2202,6 +2249,9 @@ public class SBMLImporter {
 			if(document.isPackageEnabled("comp")) {
 				numPackages++;
 				msgPackages += "'comp', ";
+//				CompSBMLDocumentPlugin cdp = null;
+//				CompModelPlugin cmp = null;
+//				CompSBasePlugin csp = null;
 			}
 			if(document.isPackageEnabled("fbc")) {
 				numPackages++;
