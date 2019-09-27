@@ -1084,29 +1084,33 @@ long start = System.currentTimeMillis();
 			if (bMustSaveMathDescription){
 				MathCompareResults mathCompareResults = null;
 				if (databaseMathDescription!=null){
-					try {
-						mathCompareResults = MathDescription.testEquivalency(SimulationSymbolTable.createMathSymbolTableFactory(),memoryMathDescription,databaseMathDescription);
-						if (mathCompareResults!=null && !mathCompareResults.isEquivalent() &&
-							(mathCompareResults.decision.equals(Decision.MathDifferent_DIFFERENT_NUMBER_OF_VARIABLES) ||
-							 mathCompareResults.decision.equals(Decision.MathDifferent_VARIABLE_NOT_FOUND_AS_FUNCTION))){
-
-							//
-							// if there is a different number of variables or cannot find variables by name (even considering change of state variables)
-							// then try the VCell 4.8 generated math.
-							//
-							MathDescription mathDesc_4_8 = new MathMapping_4_8(scArray[i]).getMathDescription();
-							mathCompareResults = MathDescription.testEquivalency(SimulationSymbolTable.createMathSymbolTableFactory(),mathDesc_4_8, databaseMathDescription);
-						}
-					}catch (Exception e){
-						lg.error(e.getLocalizedMessage(),e);
-						mathCompareResults = new MathCompareResults(Decision.MathDifferent_FAILURE_UNKNOWN,"Exception: '"+e.getMessage()+"'");
-						if (lg.isTraceEnabled()) {
-							lg.trace("FAILED TO COMPARE THE FOLLOWING MATH DESCRIPTIONS");
-							try {
-								lg.trace("MemoryMathDescription:\n"+((memoryMathDescription!=null)?(memoryMathDescription.getVCML_database()):("null")));
-								lg.trace("DatabaseMathDescription:\n"+((databaseMathDescription!=null)?(databaseMathDescription.getVCML_database()):("null")));
-							}catch (Exception e2){
-								lg.error(e2.getLocalizedMessage(), e2);
+					if(MathDescription.originalHasLowPrecisionConstants.contains(databaseMathDescription.getVersion().getVersionKey().toString())) {
+						mathCompareResults = new MathCompareResults(Decision.MathDifferent_LOW_PRECISION_CONSTANTS);
+					}else {
+						try {
+							mathCompareResults = MathDescription.testEquivalency(SimulationSymbolTable.createMathSymbolTableFactory(),memoryMathDescription,databaseMathDescription);
+							if (mathCompareResults!=null && !mathCompareResults.isEquivalent() &&
+								(mathCompareResults.decision.equals(Decision.MathDifferent_DIFFERENT_NUMBER_OF_VARIABLES) ||
+								 mathCompareResults.decision.equals(Decision.MathDifferent_VARIABLE_NOT_FOUND_AS_FUNCTION))){
+	
+								//
+								// if there is a different number of variables or cannot find variables by name (even considering change of state variables)
+								// then try the VCell 4.8 generated math.
+								//
+								MathDescription mathDesc_4_8 = new MathMapping_4_8(scArray[i]).getMathDescription();
+								mathCompareResults = MathDescription.testEquivalency(SimulationSymbolTable.createMathSymbolTableFactory(),mathDesc_4_8, databaseMathDescription);
+							}
+						}catch (Exception e){
+							lg.error(e.getLocalizedMessage(),e);
+							mathCompareResults = new MathCompareResults(Decision.MathDifferent_FAILURE_UNKNOWN,"Exception: '"+e.getMessage()+"'");
+							if (lg.isTraceEnabled()) {
+								lg.trace("FAILED TO COMPARE THE FOLLOWING MATH DESCRIPTIONS");
+								try {
+									lg.trace("MemoryMathDescription:\n"+((memoryMathDescription!=null)?(memoryMathDescription.getVCML_database()):("null")));
+									lg.trace("DatabaseMathDescription:\n"+((databaseMathDescription!=null)?(databaseMathDescription.getVCML_database()):("null")));
+								}catch (Exception e2){
+									lg.error(e2.getLocalizedMessage(), e2);
+								}
 							}
 						}
 					}

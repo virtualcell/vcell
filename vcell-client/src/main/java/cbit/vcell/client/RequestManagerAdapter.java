@@ -61,6 +61,8 @@ public class RequestManagerAdapter implements RequestManager {
 	@Override
 	public void deleteDocument(VCDocumentInfo documentInfo,TopLevelWindowManager requester) {}
 	@Override
+	public void deleteDocument(VCDocumentInfo documentInfo,TopLevelWindowManager requester,boolean bDontAsk) {}
+	@Override
 	public void exitApplication() {}
 	@Override
 	public void exportDocument(TopLevelWindowManager manager, FileFilter forceFileFilter) {}

@@ -22,6 +22,7 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Random;
+import java.util.TreeSet;
 import java.util.Vector;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
@@ -74,6 +75,7 @@ import cbit.vcell.parser.SymbolTableFunctionEntry;
 @SuppressWarnings("serial")
 public class MathDescription implements Versionable, Matchable, SymbolTable, Serializable, ProblemRequirements, IssueSource {
 	
+	public static final TreeSet<String> originalHasLowPrecisionConstants = new TreeSet<>();
 	public final static String MATH_FUNC_INIT_SUFFIX_PREFIX = "_init_";
 	
 	protected transient java.util.ArrayList<ChangeListener> aChangeListener = null;

@@ -39,6 +39,7 @@ import java.io.InputStream;
 import java.io.Reader;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
@@ -2271,12 +2272,16 @@ public void sendLostPassword(final DocumentWindowManager currWindowManager, fina
 		PopupGenerator.showErrorDialog(currWindowManager, "Update user Registration error:\n" + e.getMessage(), e);
 	}
 }
+
+public void deleteDocument(final VCDocumentInfo documentInfo, final TopLevelWindowManager requester) {
+	deleteDocument(documentInfo, requester, false);
+}
 /**
  * Insert the method's description here.
  * Creation date: (6/22/2004 10:50:34 PM)
  * @param documentInfo cbit.vcell.document.VCDocumentInfo
  */
-public void deleteDocument(final VCDocumentInfo documentInfo, final TopLevelWindowManager requester) {
+public void deleteDocument(final VCDocumentInfo documentInfo, final TopLevelWindowManager requester,boolean bDontAsk) {
 	if (documentInfo != null) {
 		// see if we have this open
 		String documentID = documentInfo.getVersion().getVersionKey().toString();
@@ -2286,7 +2291,14 @@ public void deleteDocument(final VCDocumentInfo documentInfo, final TopLevelWind
 			return;
 		} else {
 			// don't have it open, try to delete it
-			String confirm = PopupGenerator.showWarningDialog(requester, getUserPreferences(), UserMessage.warn_deleteDocument,documentInfo.getVersion().getName());
+			String confirm = UserMessage.OPTION_CANCEL;
+			if(bDontAsk) {
+				confirm = UserMessage.OPTION_DELETE;
+			}else {
+				SimpleDateFormat sdf = new SimpleDateFormat(BeanUtils.vcDateFormat);
+				confirm = PopupGenerator.showWarningDialog(requester, getUserPreferences(),
+					UserMessage.warn_deleteDocument,documentInfo.getVersion().getName()+" "+sdf.format(documentInfo.getVersion().getDate()));				
+			}
 			if (confirm.equals(UserMessage.OPTION_DELETE)){
 				AsynchClientTask task1 = new AsynchClientTask("Deleting document...", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 
@@ -3819,7 +3831,7 @@ public void saveDocument(final DocumentWindowManager documentWindowManager, bool
 			}
 		}
 	}
-
+	
 	/* request is valid, go ahead with save */
 
 	/* block document window */

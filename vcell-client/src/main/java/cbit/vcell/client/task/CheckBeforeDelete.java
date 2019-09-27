@@ -9,7 +9,10 @@
  */
 
 package cbit.vcell.client.task;
+import java.util.HashMap;
 import java.util.Hashtable;
+import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.Vector;
 
 import org.vcell.util.BeanUtils;
@@ -25,6 +28,7 @@ import cbit.vcell.client.UserMessage;
 import cbit.vcell.clientdb.DocumentManager;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.mathmodel.MathModel;
+import cbit.vcell.model.Model;
 import cbit.vcell.server.SimulationStatus;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationInfo;
@@ -41,17 +45,19 @@ public class CheckBeforeDelete extends AsynchClientTask {
 	}
 
 
+	private enum LostFlag {DIFF,LOW_PRECISION,DIFF_AND_LOW_PRECISION};
 /**
  * Insert the method's description here.
  * Creation date: (6/1/2004 3:44:03 PM)
  * @return cbit.vcell.solver.SolverResultSetInfo[]
  * @param bioModel cbit.vcell.biomodel.BioModel
  */
-private Simulation[] checkLostResults(BioModel oldBioModel, BioModel newlySavedBioModel, cbit.vcell.clientdb.DocumentManager documentManager, Simulation submittedSimulations[]) throws Exception {
+private HashMap<Simulation, LostFlag> checkLostResults(BioModel oldBioModel, BioModel newlySavedBioModel, cbit.vcell.clientdb.DocumentManager documentManager, Simulation submittedSimulations[]) throws Exception {
 	//
 	// before deleting old version, prompt user if old simulation results will not be availlable in new edition
 	//
-	Vector<Simulation> lostResultsSimulationList = new Vector<Simulation>();
+	HashMap<Simulation, LostFlag> lostSimResultsMap = new HashMap<>();
+//	Vector<Simulation> lostResultsSimulationList = new Vector<Simulation>();
 	Simulation oldSimulations[] = oldBioModel.getSimulations();
 	for (int i = 0; i < oldSimulations.length; i++){
 		Simulation oldSimulation = oldSimulations[i];
@@ -125,14 +131,28 @@ private Simulation[] checkLostResults(BioModel oldBioModel, BioModel newlySavedB
 				// if don't ignore this data loss, then add results set to list of warnings
 				//
 				if (!bIgnore) {
-					lostResultsSimulationList.add(correspondingSimulation);
+					lostSimResultsMap.put(correspondingSimulation,LostFlag.DIFF);
 				}
 			}
+			checkLowPrecisionChange(lostSimResultsMap,correspondingSimulation,oldSimulation);
 		}
 	}
-	return (Simulation[])BeanUtils.getArray(lostResultsSimulationList, Simulation.class);
+	return lostSimResultsMap;
 }
 
+private void checkLowPrecisionChange(HashMap<Simulation, LostFlag> lostSimResultsMap,Simulation correspondingSimulation,Simulation oldSimulation) {
+	if(correspondingSimulation!=null &&
+		oldSimulation.getMathDescription().getVersion() != null &&
+		oldSimulation.getMathDescription().getVersion().getVersionKey() != null &&
+		MathDescription.originalHasLowPrecisionConstants.contains(oldSimulation.getMathDescription().getVersion().getVersionKey().toString())
+		) {
+		if(lostSimResultsMap.get(correspondingSimulation) == LostFlag.DIFF ) {
+			lostSimResultsMap.put(correspondingSimulation,LostFlag.DIFF_AND_LOW_PRECISION);
+		}else {
+			lostSimResultsMap.put(correspondingSimulation,LostFlag.LOW_PRECISION);
+		}
+	}
+}
 
 /**
  * Insert the method's description here.
@@ -140,11 +160,11 @@ private Simulation[] checkLostResults(BioModel oldBioModel, BioModel newlySavedB
  * @return cbit.vcell.solver.SolverResultSetInfo[]
  * @param mathmodel cbit.vcell.mathmodel.Mathmodel
  */
-private Simulation[] checkLostResults(MathModel oldMathmodel, MathModel newlySavedMathmodel, cbit.vcell.clientdb.DocumentManager documentManager, Simulation submittedSimulations[]) throws Exception {
+private HashMap<Simulation, LostFlag> checkLostResults(MathModel oldMathmodel, MathModel newlySavedMathmodel, cbit.vcell.clientdb.DocumentManager documentManager, Simulation submittedSimulations[]) throws Exception {
 	//
 	// before deleting old version, prompt user if old simulation results will not be availlable in new edition
 	//
-	Vector<Simulation> lostResultsSimulationList = new Vector<Simulation>();
+	HashMap<Simulation, LostFlag> lostSimResultsMap = new HashMap<>();
 	Simulation oldSimulations[] = oldMathmodel.getSimulations();
 	for (int i = 0; i < oldSimulations.length; i++){
 		Simulation oldSimulation = oldSimulations[i];
@@ -221,12 +241,13 @@ private Simulation[] checkLostResults(MathModel oldMathmodel, MathModel newlySav
 				// if don't ignore this data loss, then add results set to list of warnings
 				//
 				if (!bIgnore) {
-					lostResultsSimulationList.add(correspondingSimulation);
+					lostSimResultsMap.put(correspondingSimulation,LostFlag.DIFF);
 				}
 			}
+			checkLowPrecisionChange(lostSimResultsMap,correspondingSimulation,oldSimulation);
 		}
 	}
-	return (Simulation[])BeanUtils.getArray(lostResultsSimulationList, Simulation.class);
+	return lostSimResultsMap;
 }
 
 /**
@@ -262,7 +283,7 @@ public void run(Hashtable<String, Object> hashTable) throws Exception {
 		return;
 	}
 	// we saved a new one, now check for lost simulation data and warn the user
-	Simulation[] simulationsWithLostResults = null;
+	HashMap<Simulation, LostFlag> simulationsWithLostResults = null;
 	switch (currentDocument.getDocumentType()) {
 		case BIOMODEL_DOC: {
 			simulationsWithLostResults = checkLostResults((BioModel)currentDocument, (BioModel)savedDocument, documentManager, simulations);
@@ -276,14 +297,31 @@ public void run(Hashtable<String, Object> hashTable) throws Exception {
 		default:
 			return; // nothing to check for in this case
 	}
-	boolean bLost = simulationsWithLostResults != null && simulationsWithLostResults.length > 0;
+	boolean bLost = simulationsWithLostResults != null && simulationsWithLostResults.size() > 0;
 	if (bLost) {
-		String choice = PopupGenerator.showWarningDialog(documentWindowManager, documentWindowManager.getUserPreferences(), UserMessage.question_LostResults, null);
+		String s = "Several universal constants now have higher precision than in previous VCell versions.  For example, the gas constant R was previously 8314.0 and is now 8314.46261815 (for a full list of updated constant values see […..])."+
+		 "  This causes the math to be slightly modified and thus the newly generated math will yield very small differences if the simulations are rerun.  You can either:" +
+"() ignore the difference and keep all existing simulation results.  If you later rerun the simulations, you may notice very small differences in the numerical results because of the higher precision constants."+
+"() save as a new model.  Simulation results are not retained in the new model.  The existing simulation results can be accessed by reopening the original model.";
+
+		UserMessage userMessage = UserMessage.question_LostResults;
+		if(      !simulationsWithLostResults.values().contains(LostFlag.DIFF) &&  simulationsWithLostResults.values().contains(LostFlag.LOW_PRECISION) && !simulationsWithLostResults.values().contains(LostFlag.DIFF_AND_LOW_PRECISION)) {
+			userMessage = new UserMessage(s, UserMessage.question_LostResults.getOptions(), UserMessage.question_LostResults.getDefaultSelection());
+		}else if(!simulationsWithLostResults.values().contains(LostFlag.DIFF) && !simulationsWithLostResults.values().contains(LostFlag.LOW_PRECISION) &&  simulationsWithLostResults.values().contains(LostFlag.DIFF_AND_LOW_PRECISION)) {
+			userMessage = new UserMessage(UserMessage.question_LostResults.getMessage(null)+",also "+s, UserMessage.question_LostResults.getOptions(), UserMessage.question_LostResults.getDefaultSelection());			
+		}
+		String choice = PopupGenerator.showWarningDialog(documentWindowManager, documentWindowManager.getUserPreferences(), userMessage, null);
 		if (choice.equals(UserMessage.OPTION_SAVE_AS_NEW_EDITION)){
 			// user canceled deletion
 			throw UserCancelException.CANCEL_DELETE_OLD;
 		}
 		if (choice.equals(UserMessage.OPTION_CANCEL) ) {
+			//Delete the NEW document that was created on the server by default during save because user doesn't want it
+			if(savedDocument instanceof BioModel) {
+				documentWindowManager.getRequestManager().deleteDocument(documentWindowManager.getRequestManager().getDocumentManager().getBioModelInfo(savedDocument.getVersion().getVersionKey()), documentWindowManager,true);
+			}else if(savedDocument instanceof MathModel) {
+				documentWindowManager.getRequestManager().deleteDocument(documentWindowManager.getRequestManager().getDocumentManager().getMathModelInfo(savedDocument.getVersion().getVersionKey()), documentWindowManager,true);				
+			}
 			throw UserCancelException.CANCEL_GENERIC;
 			
 		}

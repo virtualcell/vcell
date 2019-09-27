@@ -120,6 +120,8 @@ void sendLostPassword(DocumentWindowManager docWindowManager, String userid);
  */
 void deleteDocument(VCDocumentInfo documentInfo, TopLevelWindowManager requester);
 
+void deleteDocument(VCDocumentInfo documentInfo, TopLevelWindowManager requester,boolean bDontAsk);
+
 
 /**
  * Insert the method's description here.
