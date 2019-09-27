@@ -1696,14 +1696,6 @@ public class SBMLImporter {
 					foundConstStructureSize = true;
 				} else {
 					simContext.addRateRule(vcRule);
-					if(ste instanceof SpeciesContext) {		// override default values and initial assignments, if any
-						SpeciesContextSpec scs = simContext.getReactionContext().getSpeciesContextSpec((SpeciesContext)ste);
-						if(simContext.isUsingConcentration()) {
-							scs.getInitialConcentrationParameter().setExpression(new Expression(vcExpression));
-						} else {
-							scs.getInitialCountParameter().setExpression(new Expression(vcExpression));
-						}
-					}
 				}
 			} catch (PropertyVetoException | ExpressionException e) {
 				e.printStackTrace(System.out);
