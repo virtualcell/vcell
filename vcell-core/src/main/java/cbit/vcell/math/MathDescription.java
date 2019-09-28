@@ -59,6 +59,7 @@ import cbit.vcell.math.ParticleObservable.ObservableType;
 import cbit.vcell.math.PdeEquation.BoundaryConditionValue;
 import cbit.vcell.math.SubDomain.BoundaryConditionSpec;
 import cbit.vcell.math.Variable.Domain;
+import cbit.vcell.model.Model.ReservedSymbol;
 import cbit.vcell.model.common.VCellErrorMessages;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
@@ -269,6 +270,22 @@ public void clearVersion() {
 }
 
 
+public static void updateReservedSymbols(MathDescription updateThis,ReservedSymbol[] reservedSymbols) {
+	for (int i = 0; i < updateThis.variableList.size(); i++) {
+		for (int j = 0; j < reservedSymbols.length; j++) {
+			if(reservedSymbols[j].getName().equals(updateThis.variableList.get(i).getName()) && reservedSymbols[j].getExpression() != null) {
+				//System.out.println("--Found "+updateThis.variableList.get(i)+" "+reservedSymbols[j].getName()+" "+reservedSymbols[j].getExpression().infix());
+				try {
+					updateThis.variableList.get(i).getExpression().substituteInPlace(updateThis.variableList.get(i).getExpression(), reservedSymbols[j].getExpression());
+				} catch (ExpressionException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				break;
+			}
+		}
+	}
+}
 /**
  * This method was created in VisualAge.
  * @return boolean

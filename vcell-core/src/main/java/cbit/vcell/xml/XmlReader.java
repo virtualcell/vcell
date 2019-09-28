@@ -6055,26 +6055,26 @@ private SimulationContext getSimulationContext(Element param, BioModel biomodel)
 	Element xmlMathDescription = param.getChild(XMLTags.MathDescriptionTag, vcNamespace);
 	if (xmlMathDescription!=null) {
 		newmathdesc = getMathDescription( xmlMathDescription, newgeometry );
-		try {
-			Enumeration<Constant> myenum = newmathdesc.getConstants();
-			while(myenum.hasMoreElements()) {
-				Constant nextElement = myenum.nextElement();
-				String name2 = nextElement.getName();
-				ReservedSymbol reservedSymbolByName = biomodel.getModel().getReservedSymbolByName(name2);
-				if(reservedSymbolByName != null && nextElement.getExpression() != null && reservedSymbolByName.getExpression() != null) {
-					System.out.println(name2);
-					boolean equals = nextElement.getExpression().infix().equals(reservedSymbolByName.getExpression().infix());
-					System.out.println("--"+" "+nextElement.getExpression().infix() +" "+reservedSymbolByName.getExpression().infix()+" "+equals);
-					if(!equals) {
-						MathDescription.originalHasLowPrecisionConstants.add(newmathdesc.getVersion().getVersionKey().toString());
-						break;
-					}
-				}
-			}
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+//		try {
+//			Enumeration<Constant> myenum = newmathdesc.getConstants();
+//			while(myenum.hasMoreElements()) {
+//				Constant nextElement = myenum.nextElement();
+//				String name2 = nextElement.getName();
+//				ReservedSymbol reservedSymbolByName = biomodel.getModel().getReservedSymbolByName(name2);
+//				if(reservedSymbolByName != null && nextElement.getExpression() != null && reservedSymbolByName.getExpression() != null) {
+////					System.out.println(name2);
+//					boolean equals = nextElement.getExpression().infix().equals(reservedSymbolByName.getExpression().infix());
+////					System.out.println("--"+" "+nextElement.getExpression().infix() +" "+reservedSymbolByName.getExpression().infix()+" "+equals);
+//					if(!equals) {
+//						MathDescription.originalHasLowPrecisionConstants.add(newmathdesc.getVersion().getVersionKey().toString());
+//						break;
+//					}
+//				}
+//			}
+//		} catch (Exception e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
 	}
 	
 	//Retrieve Version (Metada)

@@ -9,6 +9,7 @@
  */
 
 package cbit.vcell.client.task;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.TreeMap;
@@ -299,31 +300,44 @@ public void run(Hashtable<String, Object> hashTable) throws Exception {
 	}
 	boolean bLost = simulationsWithLostResults != null && simulationsWithLostResults.size() > 0;
 	if (bLost) {
-		String s = "Several universal constants now have higher precision than in previous VCell versions.  For example, the gas constant R was previously 8314.0 and is now 8314.46261815 (for a full list of updated constant values see […..])."+
-		 "  This causes the math to be slightly modified and thus the newly generated math will yield very small differences if the simulations are rerun.  You can either:" +
-"() ignore the difference and keep all existing simulation results.  If you later rerun the simulations, you may notice very small differences in the numerical results because of the higher precision constants."+
-"() save as a new model.  Simulation results are not retained in the new model.  The existing simulation results can be accessed by reopening the original model.";
-
 		UserMessage userMessage = UserMessage.question_LostResults;
-		if(      !simulationsWithLostResults.values().contains(LostFlag.DIFF) &&  simulationsWithLostResults.values().contains(LostFlag.LOW_PRECISION) && !simulationsWithLostResults.values().contains(LostFlag.DIFF_AND_LOW_PRECISION)) {
-			userMessage = new UserMessage(s, UserMessage.question_LostResults.getOptions(), UserMessage.question_LostResults.getDefaultSelection());
-		}else if(!simulationsWithLostResults.values().contains(LostFlag.DIFF) && !simulationsWithLostResults.values().contains(LostFlag.LOW_PRECISION) &&  simulationsWithLostResults.values().contains(LostFlag.DIFF_AND_LOW_PRECISION)) {
-			userMessage = new UserMessage(UserMessage.question_LostResults.getMessage(null)+",also "+s, UserMessage.question_LostResults.getOptions(), UserMessage.question_LostResults.getDefaultSelection());			
+		if(!simulationsWithLostResults.values().contains(LostFlag.DIFF) &&  simulationsWithLostResults.values().contains(LostFlag.LOW_PRECISION) && !simulationsWithLostResults.values().contains(LostFlag.DIFF_AND_LOW_PRECISION)) {
+			userMessage = UserMessage.question_LostResultsLowPrecision;
 		}
+//		else if(!simulationsWithLostResults.values().contains(LostFlag.DIFF) && !simulationsWithLostResults.values().contains(LostFlag.LOW_PRECISION) &&  simulationsWithLostResults.values().contains(LostFlag.DIFF_AND_LOW_PRECISION)) {
+//			userMessage = new UserMessage(UserMessage.question_LostResults.getMessage(null)+",also "+s, UserMessage.question_LostResults.getOptions(), UserMessage.question_LostResults.getDefaultSelection());			
+//		}
 		String choice = PopupGenerator.showWarningDialog(documentWindowManager, documentWindowManager.getUserPreferences(), userMessage, null);
-		if (choice.equals(UserMessage.OPTION_SAVE_AS_NEW_EDITION)){
-			// user canceled deletion
+		if (choice.equals(UserMessage.OPTION_SAVE_AS_NEW)){
+			//Delete the NEW document that was created on the server by default during save because we will save again with new name
+			//Clear simulation versions on current document so when we SaveAs... new document will have no sim results because
+			//we are re-saving as a result of lowPrecisionConstants
+			if(savedDocument instanceof BioModel) {
+				documentWindowManager.getRequestManager().deleteDocument(documentWindowManager.getRequestManager().getDocumentManager().getBioModelInfo(savedDocument.getVersion().getVersionKey()), documentWindowManager,true);
+				for (int i = 0; i < ((BioModel)currentDocument).getSimulations().length; i++) {
+					((BioModel)currentDocument).getSimulations()[i].clearVersion();
+				}
+			}else if(savedDocument instanceof MathModel) {
+				documentWindowManager.getRequestManager().deleteDocument(documentWindowManager.getRequestManager().getDocumentManager().getMathModelInfo(savedDocument.getVersion().getVersionKey()), documentWindowManager,true);				
+				for (int i = 0; i < ((MathModel)currentDocument).getSimulations().length; i++) {
+					((MathModel)currentDocument).getSimulations()[i].clearVersion();
+				}
+			}
+			documentWindowManager.saveDocumentAsNew();
 			throw UserCancelException.CANCEL_DELETE_OLD;
-		}
-		if (choice.equals(UserMessage.OPTION_CANCEL) ) {
-			//Delete the NEW document that was created on the server by default during save because user doesn't want it
+		}else if (choice.equals(UserMessage.OPTION_CANCEL) ) {
+			//Delete the NEW document that was created on the server by default during save because user doesn't want it,  don't delete original
 			if(savedDocument instanceof BioModel) {
 				documentWindowManager.getRequestManager().deleteDocument(documentWindowManager.getRequestManager().getDocumentManager().getBioModelInfo(savedDocument.getVersion().getVersionKey()), documentWindowManager,true);
 			}else if(savedDocument instanceof MathModel) {
 				documentWindowManager.getRequestManager().deleteDocument(documentWindowManager.getRequestManager().getDocumentManager().getMathModelInfo(savedDocument.getVersion().getVersionKey()), documentWindowManager,true);				
 			}
-			throw UserCancelException.CANCEL_GENERIC;
-			
+			throw UserCancelException.CANCEL_DELETE_OLD;
+		}else if (choice.equals(UserMessage.OPTION_SAVE_AS_NEW_EDITION) ) {
+			//NEW document has already been saved, prevent DeleteOldDocument from removing original doc
+			throw UserCancelException.CANCEL_DELETE_OLD;
+		}else if (choice.equals(UserMessage.OPTION_DISCARD_RESULTS) ) {
+			//do nothing here, NEW document has already been saved and original doc will be deleted
 		}
 	}
 	

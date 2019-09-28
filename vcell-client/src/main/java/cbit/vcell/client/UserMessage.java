@@ -35,6 +35,7 @@ public class UserMessage {
 	public final static String OPTION_DELETE = "Delete";
 	public final static String OPTION_CONTINUE= "Continue";
 	public final static String OPTION_DISCARD_RESULTS = "Save and Discard results";
+	public final static String OPTION_KEEP_OLD_RESULTS = "Save, Keep old results";
 	public final static String OPTION_CLOSE = "Close";
 	public final static String OPTION_SAVE_AS_NEW = "Save As New...";
 	public final static String OPTION_UPDATE_DATABASE = "Update Database";
@@ -69,6 +70,19 @@ public class UserMessage {
 
 	public final static UserMessage question_LostResults = new UserMessage("Saving the model will erase all existing simulation results. Save model and discard simulation results or create a new model edition?",
 				new String[] {OPTION_CANCEL, OPTION_DISCARD_RESULTS, OPTION_SAVE_AS_NEW_EDITION},		OPTION_CANCEL,		-1);
+
+	public final static UserMessage question_LostResultsLowPrecision = new UserMessage(
+			"Note: Several universal constants now have higher precision than in previous VCell versions.\n"+
+					"(see BioModel->'Parameters, Functions and Units'->'Predefined Constants and Math Functions').\n"+
+					"_F_      9.648e4 -> 9.64853321e4\n"+
+					"_F_nmol_ 9.648e-5 -> 9.64853321e-5\n"+
+					"_N_pmol_ 6.02e11 -> 6.02214179e11\n"+
+					"_R_      8314.0 -> 8314.46261815\n"+
+					"KMOLE    (1.0/602.0) -> (1.0/602.214179)\n"+
+			 "  This causes the math to be slightly modified and thus the newly generated math will yield very small differences if the simulations are rerun.  You can either:\n" +
+	"1. "+UserMessage.OPTION_KEEP_OLD_RESULTS+".\n     If you later rerun the simulations, you may notice very small differences in the numerical results because of the higher precision constants.\n"+
+	"2. "+UserMessage.OPTION_SAVE_AS_NEW+" model.\n     Simulation results are not retained in the new model.  The existing simulation results can be accessed by reopening the original model.",
+			new String[] {OPTION_CANCEL, OPTION_KEEP_OLD_RESULTS,OPTION_SAVE_AS_NEW},		OPTION_CANCEL,		-1);
 
 	public final static UserMessage warn_RevertToSaved = new UserMessage("Are you sure you want to discard changes and revert to saved version?",
 				new String[] {OPTION_DISCARD_CHANGES, OPTION_CANCEL}, 			OPTION_DISCARD_CHANGES,	UserPreferences.WARN_REVERT_TO_SAVED);

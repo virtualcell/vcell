@@ -47,7 +47,6 @@ public class MathCompareResults {
 		MathDifferent_FAILURE_FLATTENING_DIV_BY_ZERO(false,"MathDifferent:FailedFlatteningDivideByZero"),
 
 		MathDifferent_NOT_SAVED(false,"MathDifferent:NotSaved"),
-		MathDifferent_LOW_PRECISION_CONSTANTS(false,"MathDifferent:LowPrecisionConstants"),
 		MathEquivalent_SAME_MATHDESC_AS_IN_DB(true,"MathEquivalent:SameMathDescAsInDB"),
 		
 		MathDifferent_DIFFERENT_PostProcessingBlock(false,"MathDifferent:DifferentPostProcessingBlock"), 
