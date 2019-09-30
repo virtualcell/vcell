@@ -514,12 +514,12 @@ public class SlurmProxy extends HtcProxy {
 			lsb.write("      fi");
 			lsb.write("      sleep 6");
 			lsb.write("		 let c=c+1");
-			lsb.write("		 if [ $c -eq 10 ]");
+			lsb.write("		 if [ $c -eq 30 ]");
 			lsb.write("		 then");
 			lsb.write("		  	echo \"Exceeded retry for singularity mount squashfs error\"");
 			lsb.write("		  	exit $innerstate");
 			lsb.write("		 fi");
-			lsb.write("		 echo retrying $c of 10...");
+			lsb.write("		 echo retrying $c of 30...");
 			lsb.write("    done");
 			lsb.write(")");
 			lsb.write("stat=$?");
@@ -599,7 +599,7 @@ public class SlurmProxy extends HtcProxy {
 		lsb.write("		      do");
 		lsb.write("		  	    sleep 3");
 		lsb.write("		  	    let c=c+1");
-		lsb.write("		  		if [ $c -eq 20 ]");
+		lsb.write("		  		if [ $c -eq 60 ]");
 		lsb.write("		  		then");
 		lsb.write("		  			echo \"Exceeded wait time for lock owner to copy singularityImage\"");
 		lsb.write("		  			break");
