@@ -23,7 +23,7 @@
 	<list>
 		<item> <link target="Electrical">Electrical</link> mapping protocols are available for all Application types.</item>
 		<item> <link target="Events">Events</link> are available for Non-spatial Deterministic (ODE) Applications.</item>
-		<item> <link target ="RateRules">Rate Rules</link> are available for Non-spatial Determininistic (ODE) Applications.</item>
+		<item> <link target ="RateRules">Rate Rules</link> and <link target ="AssignmentRules">Assignment Rules</link> are available for Non-spatial Determininistic (ODE) Applications.</item>
 		<item> <link target="MicroscopeMeasurement">Microscope Measurements</link> are available for Spatial Deterministic (PDE) Applications.</item>
 	</list>
 	</operations>
