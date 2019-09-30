@@ -46,7 +46,7 @@ public class CheckBeforeDelete extends AsynchClientTask {
 	}
 
 
-	private enum LostFlag {DIFF,LOW_PRECISION,DIFF_AND_LOW_PRECISION};
+	public static enum LostFlag {DIFF,LOW_PRECISION,DIFF_AND_LOW_PRECISION};
 /**
  * Insert the method's description here.
  * Creation date: (6/1/2004 3:44:03 PM)
@@ -141,7 +141,7 @@ private HashMap<Simulation, LostFlag> checkLostResults(BioModel oldBioModel, Bio
 	return lostSimResultsMap;
 }
 
-private void checkLowPrecisionChange(HashMap<Simulation, LostFlag> lostSimResultsMap,Simulation correspondingSimulation,Simulation oldSimulation) {
+public static void checkLowPrecisionChange(HashMap<Simulation, LostFlag> lostSimResultsMap,Simulation correspondingSimulation,Simulation oldSimulation) {
 	if(correspondingSimulation!=null &&
 		oldSimulation.getMathDescription().getVersion() != null &&
 		oldSimulation.getMathDescription().getVersion().getVersionKey() != null &&
@@ -245,12 +245,12 @@ private HashMap<Simulation, LostFlag> checkLostResults(MathModel oldMathmodel, M
 					lostSimResultsMap.put(correspondingSimulation,LostFlag.DIFF);
 				}
 			}
-			checkLowPrecisionChange(lostSimResultsMap,correspondingSimulation,oldSimulation);
 		}
 	}
 	return lostSimResultsMap;
 }
 
+private static TreeSet<String> pendingSaves = new TreeSet<>();
 /**
  * Insert the method's description here.
  * Creation date: (5/31/2004 6:04:14 PM)
@@ -278,10 +278,12 @@ public void run(Hashtable<String, Object> hashTable) throws Exception {
 	// just to make sure, verify that we actually did save a new edition
 	Version oldVersion = currentDocument.getVersion();
 	Version newVersion = savedDocument.getVersion();
-	if (newVersion.getVersionKey().compareEqual(oldVersion.getVersionKey())) {
+	final boolean bNewDocumentWasNotSaved = newVersion.getVersionKey().compareEqual(oldVersion.getVersionKey());
+	if (bNewDocumentWasNotSaved) {
 		//throw new DataAccessException("CheckBeforeDelete task called but saved document has same version with current document");
 		hashTable.put("conditionalSkip", new String[] {DeleteOldDocument.class.getName()});
-		return;
+		hashTable.remove(SaveDocument.DOC_KEY);
+//		return;
 	}
 	// we saved a new one, now check for lost simulation data and warn the user
 	HashMap<Simulation, LostFlag> simulationsWithLostResults = null;
@@ -298,47 +300,84 @@ public void run(Hashtable<String, Object> hashTable) throws Exception {
 		default:
 			return; // nothing to check for in this case
 	}
+
 	boolean bLost = simulationsWithLostResults != null && simulationsWithLostResults.size() > 0;
 	if (bLost) {
 		UserMessage userMessage = UserMessage.question_LostResults;
 		if(!simulationsWithLostResults.values().contains(LostFlag.DIFF) &&  simulationsWithLostResults.values().contains(LostFlag.LOW_PRECISION) && !simulationsWithLostResults.values().contains(LostFlag.DIFF_AND_LOW_PRECISION)) {
 			userMessage = UserMessage.question_LostResultsLowPrecision;
+			if(pendingSaves.contains(currentDocument.getVersion().getVersionKey().toString())) {
+				pendingSaves.remove(currentDocument.getVersion().getVersionKey().toString());
+				hashTable.remove("conditionalSkip");
+				return;
+			}
 		}
 //		else if(!simulationsWithLostResults.values().contains(LostFlag.DIFF) && !simulationsWithLostResults.values().contains(LostFlag.LOW_PRECISION) &&  simulationsWithLostResults.values().contains(LostFlag.DIFF_AND_LOW_PRECISION)) {
 //			userMessage = new UserMessage(UserMessage.question_LostResults.getMessage(null)+",also "+s, UserMessage.question_LostResults.getOptions(), UserMessage.question_LostResults.getDefaultSelection());			
 //		}
 		String choice = PopupGenerator.showWarningDialog(documentWindowManager, documentWindowManager.getUserPreferences(), userMessage, null);
-		if (choice.equals(UserMessage.OPTION_SAVE_AS_NEW)){
+		if (choice.equals(UserMessage.OPTION_SAVE_AS_NEW)){// from UserMessage.question_LostResultsLowPrecision
 			//Delete the NEW document that was created on the server by default during save because we will save again with new name
 			//Clear simulation versions on current document so when we SaveAs... new document will have no sim results because
 			//we are re-saving as a result of lowPrecisionConstants
-			if(savedDocument instanceof BioModel) {
-				documentWindowManager.getRequestManager().deleteDocument(documentWindowManager.getRequestManager().getDocumentManager().getBioModelInfo(savedDocument.getVersion().getVersionKey()), documentWindowManager,true);
+			if(currentDocument instanceof BioModel) {
+				if(!bNewDocumentWasNotSaved) {documentWindowManager.getRequestManager().deleteDocument(documentWindowManager.getRequestManager().getDocumentManager().getBioModelInfo(savedDocument.getVersion().getVersionKey()), documentWindowManager,true);}
 				for (int i = 0; i < ((BioModel)currentDocument).getSimulations().length; i++) {
 					((BioModel)currentDocument).getSimulations()[i].clearVersion();
 				}
-			}else if(savedDocument instanceof MathModel) {
-				documentWindowManager.getRequestManager().deleteDocument(documentWindowManager.getRequestManager().getDocumentManager().getMathModelInfo(savedDocument.getVersion().getVersionKey()), documentWindowManager,true);				
-				for (int i = 0; i < ((MathModel)currentDocument).getSimulations().length; i++) {
-					((MathModel)currentDocument).getSimulations()[i].clearVersion();
-				}
 			}
+//			else if(currentDocument instanceof MathModel) {
+//				if(!bNewDocumentWasNotSaved) {documentWindowManager.getRequestManager().deleteDocument(documentWindowManager.getRequestManager().getDocumentManager().getMathModelInfo(savedDocument.getVersion().getVersionKey()), documentWindowManager,true);}			
+//				for (int i = 0; i < ((MathModel)currentDocument).getSimulations().length; i++) {
+//					((MathModel)currentDocument).getSimulations()[i].clearVersion();
+//				}
+//			}
 			documentWindowManager.saveDocumentAsNew();
-			throw UserCancelException.CANCEL_DELETE_OLD;
-		}else if (choice.equals(UserMessage.OPTION_CANCEL) ) {
+//			hashTable.put(SaveDocument.DOC_KEY, documentWindowManager.getVCDocument());
+			hashTable.put("conditionalSkip", new String[] {FinishSave.class.getName(),DeleteOldDocument.class.getName()});
+		}else if (choice.equals(UserMessage.OPTION_CANCEL) ) {// from UserMessage.question_LostResults or UserMessage.question_LostResultsLowPrecision
 			//Delete the NEW document that was created on the server by default during save because user doesn't want it,  don't delete original
-			if(savedDocument instanceof BioModel) {
-				documentWindowManager.getRequestManager().deleteDocument(documentWindowManager.getRequestManager().getDocumentManager().getBioModelInfo(savedDocument.getVersion().getVersionKey()), documentWindowManager,true);
-			}else if(savedDocument instanceof MathModel) {
-				documentWindowManager.getRequestManager().deleteDocument(documentWindowManager.getRequestManager().getDocumentManager().getMathModelInfo(savedDocument.getVersion().getVersionKey()), documentWindowManager,true);				
+			if(currentDocument instanceof BioModel) {
+				if(!bNewDocumentWasNotSaved) {documentWindowManager.getRequestManager().deleteDocument(documentWindowManager.getRequestManager().getDocumentManager().getBioModelInfo(savedDocument.getVersion().getVersionKey()), documentWindowManager,true);}
+			}else if(currentDocument instanceof MathModel) {
+				if(!bNewDocumentWasNotSaved) {documentWindowManager.getRequestManager().deleteDocument(documentWindowManager.getRequestManager().getDocumentManager().getMathModelInfo(savedDocument.getVersion().getVersionKey()), documentWindowManager,true);}			
 			}
-			throw UserCancelException.CANCEL_DELETE_OLD;
-		}else if (choice.equals(UserMessage.OPTION_SAVE_AS_NEW_EDITION) ) {
+			throw UserCancelException.CANCEL_GENERIC;
+		}else if (choice.equals(UserMessage.OPTION_SAVE_AS_NEW_EDITION) ) {// from UserMessage.question_LostResults
 			//NEW document has already been saved, prevent DeleteOldDocument from removing original doc
-			throw UserCancelException.CANCEL_DELETE_OLD;
-		}else if (choice.equals(UserMessage.OPTION_DISCARD_RESULTS) ) {
+			hashTable.put("conditionalSkip", new String[] {DeleteOldDocument.class.getName()});
+//			hashTable.put(SaveDocument.DOC_KEY, savedDocument);
+			if (bNewDocumentWasNotSaved) {
+				throw new Exception(this.getClass().getName()+" new document should have been saved");
+//				documentWindowManager.saveDocument(false);
+//				hashTable.put(SaveDocument.DOC_KEY, documentWindowManager.getVCDocument());
+			}
+		}else if (choice.equals(UserMessage.OPTION_DISCARD_RESULTS) ) {// from UserMessage.question_LostResults
 			//do nothing here, NEW document has already been saved and original doc will be deleted
+			if (bNewDocumentWasNotSaved) {
+				throw new Exception(this.getClass().getName()+" detected real changes but new document was not saved");
+				//hashTable.put("conditionalSkip", new String[] {DeleteOldDocument.class.getName()});
+			}else {
+				hashTable.remove("conditionalSkip");
+			}
+		}else if (choice.equals(UserMessage.OPTION_KEEP_OLD_RESULTS) ) {// from UserMessage.question_LostResultsLowPrecision
+			//do nothing here, NEW document has already been saved and original doc will be deleted
+			if (bNewDocumentWasNotSaved) {
+				documentWindowManager.getVCDocument().setDescription(documentWindowManager.getVCDocument().getDescription()+" ");
+				pendingSaves.add(currentDocument.getVersion().getVersionKey().toString());
+				documentWindowManager.saveDocument(true);
+				hashTable.put("conditionalSkip", new String[] {FinishSave.class.getName(),DeleteOldDocument.class.getName()});
+			}else {
+				hashTable.remove("conditionalSkip");
+			}
 		}
+	}else { 
+		if (bNewDocumentWasNotSaved) {
+			hashTable.put("conditionalSkip", new String[] {DeleteOldDocument.class.getName()});
+		}
+//		else {
+//			hashTable.put(SaveDocument.DOC_KEY, savedDocument);
+//		}
 	}
 	
 }

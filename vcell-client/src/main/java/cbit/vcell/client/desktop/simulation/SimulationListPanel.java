@@ -918,7 +918,13 @@ private void runSimulations() {
 		activateConsole();
 
 		Simulation[] toRun = simList.toArray(new Simulation[0]);
-		getSimulationWorkspace().runSimulations(toRun, this);
+		try {
+			getSimulationWorkspace().runSimulations(toRun, this);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			DialogUtils.showErrorDialog(this, e.getMessage());
+		}
 	}
 }
 
