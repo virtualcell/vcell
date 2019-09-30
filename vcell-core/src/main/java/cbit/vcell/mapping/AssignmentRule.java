@@ -7,7 +7,9 @@ import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
 import java.beans.VetoableChangeSupport;
 import java.io.Serializable;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.vcell.util.Compare;
 import org.vcell.util.Displayable;
@@ -145,7 +147,7 @@ public class AssignmentRule implements Matchable, Serializable, IssueSource, Dis
 		}
 	}
 
-	public void gatherIssues(IssueContext issueContext, List<Issue> issueList) {
+	public void gatherIssues(IssueContext issueContext, List<Issue> issueList, Set<String> alreadyIssue) {
 //		issueContext = issueContext.newChildContext(ContextType.SpeciesContext, this);
 		if(fieldName == null || fieldName.isEmpty()) {
 			String msg = typeName + " Name is missing";
@@ -160,32 +162,42 @@ public class AssignmentRule implements Matchable, Serializable, IssueSource, Dis
 		} else if(assignmentRuleVar instanceof Structure.StructureSize) {
 			String msg = Structure.StructureSize.typeName + " Variable is not supported at this time";
 			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, Issue.Severity.ERROR));
-		} else {						// we know that assignmentRuleVar can't be null
-			if(simulationContext.getAssignmentRules() != null) {
-				for(AssignmentRule ar : simulationContext.getAssignmentRules()) {
-					if(ar == this) {
-						continue;
-					}
-					if(ar.getAssignmentRuleVar() == null) {
-						continue;
-					}
-					if(assignmentRuleVar.getName().equals(ar.getAssignmentRuleVar().getName())) {
-						String msg = typeName + " Variable '" + assignmentRuleVar.getName() + " is duplicated";
+		} else if(assignmentRuleExpression != null) {
+			String[] symbols = assignmentRuleExpression.getSymbols();
+			if(symbols != null && symbols.length > 0) {
+				for(String symbol : symbols) {
+					if(symbol.contentEquals(assignmentRuleVar.getName())) {
+						String msg = "An " + typeName + " Variable cannot be part of its Expression.";
 						issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, Issue.Severity.ERROR));
-						break;
 					}
 				}
 			}
-			if(simulationContext.getRateRules() != null) {
-				for(RateRule rr : simulationContext.getRateRules()) {
-					if(rr.getRateRuleVar() == null) {
-						continue;		// we may be in the middle of creating the assignment rule and the variable is still missing
-					}
-					if(assignmentRuleVar.getName().equals(rr.getRateRuleVar().getName())) {
-						String msg = typeName + " Variable '" + assignmentRuleVar.getName() + "' is duplicated as a " + RateRule.typeName + " Variable";
-						issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, Issue.Severity.ERROR));
-						break;
-					}
+		} else if(simulationContext.getAssignmentRules() != null) {
+			for(AssignmentRule ar : simulationContext.getAssignmentRules()) {
+				if(ar == this) {
+					continue;
+				}
+				if(ar.getAssignmentRuleVar() == null) {
+					continue;
+				}
+				String ruleVariableName = assignmentRuleVar.getName();
+				if(!alreadyIssue.contains(ruleVariableName) && ruleVariableName.equals(ar.getAssignmentRuleVar().getName())) {
+					String msg = typeName + " Variable '" + assignmentRuleVar.getName() + " is duplicated in " + ar.getDisplayName();
+					issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, Issue.Severity.ERROR));
+					alreadyIssue.add(ruleVariableName);
+					break;
+				}
+			}
+		} else if(simulationContext.getRateRules() != null) {
+		// the code below is commented out for rate rules, so that we don't have 2 mirrored issues about the same duplicated variable
+			for(RateRule rr : simulationContext.getRateRules()) {
+				if(rr.getRateRuleVar() == null) {
+					continue;		// we may be in the middle of creating the assignment rule and the variable is still missing
+				}
+				if(assignmentRuleVar.getName().equals(rr.getRateRuleVar().getName())) {
+					String msg = typeName + " Variable '" + assignmentRuleVar.getName() + "' is duplicated as a " + RateRule.typeName + " Variable";
+					issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, Issue.Severity.ERROR));
+					break;
 				}
 			}
 		}

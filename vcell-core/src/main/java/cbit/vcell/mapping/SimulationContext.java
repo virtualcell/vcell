@@ -21,6 +21,7 @@ import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.Vector;
 
 import org.vcell.model.rbm.NetworkConstraints;
@@ -1173,13 +1174,15 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueVector, boo
 	}
 	
 	if (fieldRateRules != null) {
+		Set<String> alreadyIssue = new HashSet<> ();		// to avoid duplicated Issues for the same problem
 		for (RateRule rr : fieldRateRules) {
-			rr.gatherIssues(issueContext, issueVector);
+			rr.gatherIssues(issueContext, issueVector, alreadyIssue);
 		}
 	}
 	if (fieldAssignmentRules != null) {
+		Set<String> alreadyIssue = new HashSet<> ();
 		for (AssignmentRule ar : fieldAssignmentRules) {
-			ar.gatherIssues(issueContext, issueVector);
+			ar.gatherIssues(issueContext, issueVector, alreadyIssue);
 		}
 	}
 
