@@ -71,7 +71,8 @@ import org.sbml.jsbml.SBMLReader;
 import org.sbml.jsbml.SBase;
 import org.sbml.jsbml.SpeciesReference;
 import org.sbml.jsbml.UnitDefinition;
-// import org.sbml.jsbml.ext.comp.*;
+import org.sbml.jsbml.ext.comp.*;
+import org.sbml.jsbml.ext.comp.util.CompFlatteningConverter;
 import org.sbml.jsbml.ext.spatial.AdjacentDomains;
 import org.sbml.jsbml.ext.spatial.AdvectionCoefficient;
 import org.sbml.jsbml.ext.spatial.AnalyticGeometry;
@@ -2258,9 +2259,10 @@ public class SBMLImporter {
 			if(document.isPackageEnabled("comp")) {
 				numPackages++;
 				msgPackages += "'comp', ";
-//				CompSBMLDocumentPlugin cdp = null;
-//				CompModelPlugin cmp = null;
-//				CompSBasePlugin csp = null;
+				CompSBMLDocumentPlugin cdp = null;
+				CompModelPlugin cmp = null;
+				CompSBasePlugin csp = null;
+				CompFlatteningConverter ccc = null;
 			}
 			if(document.isPackageEnabled("fbc")) {
 				numPackages++;
@@ -3808,7 +3810,7 @@ public class SBMLImporter {
 				case linear:
 					distanceMapSampledFieldGeometry = sfg;
 					break;
-				case nearestneighbor:
+				case nearestNeighbor:
 					segmentedSampledFieldGeometry = sfg;
 					break;
 				default:

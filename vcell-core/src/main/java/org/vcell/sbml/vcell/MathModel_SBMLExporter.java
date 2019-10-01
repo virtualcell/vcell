@@ -619,7 +619,7 @@ private static void addGeometry(Model sbmlModel, MathModel vcMathModel) {
 		if (vcImage.getNumZ()>1){
 			sampledField.setNumSamples3(vcImage.getNumZ());
 		}
-		sampledField.setInterpolationType(InterpolationKind.nearestneighbor);
+		sampledField.setInterpolationType(InterpolationKind.nearestNeighbor);
 		sampledField.setDataType(DataKind.UINT8);
 		// add image from vcGeometrySpec to sampledField.
 		try {

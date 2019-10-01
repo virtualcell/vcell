@@ -1923,7 +1923,7 @@ private void addGeometry() throws SbmlException {
 				segmentedImageSampledField.setNumSamples1(vcImage.getNumX());
 				segmentedImageSampledField.setNumSamples2(vcImage.getNumY());
 				segmentedImageSampledField.setNumSamples3(vcImage.getNumZ());
-				segmentedImageSampledField.setInterpolationType(InterpolationKind.nearestneighbor);
+				segmentedImageSampledField.setInterpolationType(InterpolationKind.nearestNeighbor);
 				segmentedImageSampledField.setCompression(CompressionKind.uncompressed);
 				segmentedImageSampledField.setDataType(DataKind.UINT8);
 				segmentedImageSampledFieldGeometry.setSampledField(segmentedImageSampledField.getId());
