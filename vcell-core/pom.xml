@@ -239,6 +239,11 @@
 			<artifactId>commons-math3</artifactId>
 		</dependency>
 		<dependency>
+			<groupId>jaxen</groupId>
+			<artifactId>jaxen</artifactId>
+			<version>1.2.0</version>
+		</dependency>
+		<dependency>
 			<groupId>org.jlibsedml</groupId>
 			<artifactId>jlibsedml</artifactId>
 			<version>2.2.3</version>
@@ -251,9 +256,13 @@
 					<groupId>xml-apis</groupId>
 					<artifactId>xml-apis</artifactId>
 				</exclusion>
+<!-- 				<exclusion> -->
+<!-- 					<groupId>xom</groupId> -->
+<!-- 					<artifactId>xom</artifactId> -->
+<!-- 				</exclusion> -->
 				<exclusion>
-					<groupId>xom</groupId>
-					<artifactId>xom</artifactId>
+					<groupId>jaxen</groupId>
+					<artifactId>jaxen</artifactId>
 				</exclusion>
 			</exclusions>
 		</dependency>

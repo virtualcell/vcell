@@ -221,6 +221,7 @@ private File showBioModelXMLFileChooser(Hashtable<String, Object> hashTable) thr
 		fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_PDF);
 		fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_SMOLDYN_INPUT);
 		*/
+		fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_SEDML);
 
 	} else {
 		defaultFileFilter = forceFileFilter;
