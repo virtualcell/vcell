@@ -83,9 +83,10 @@ public class RateRuleTransformer implements SimContextTransformer {
 		transformedSimContext.getModel().refreshDependencies();
 		transformedSimContext.refreshDependencies1(false);
 
+// TODO: we don't perform the transformation anymore because we deal with the rate rules in the DiffEquMathMapping.java
 		transform(originalSimContext, transformedSimContext, mathMappingCallback, networkGenerationRequirements);
 		
-		return new SimContextTransformation(originalSimContext, transformedSimContext, null);
+		return new SimContextTransformation(originalSimContext, originalSimContext, null);
 	}
 
 	private void transform(SimulationContext simContext, SimulationContext transformedSimulationContext, MathMappingCallback mathMappingCallback, NetworkGenerationRequirements networkGenerationRequirements){

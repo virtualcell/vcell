@@ -2522,53 +2522,56 @@ public void checkValidity() throws MappingException
 		if (!getGeometryContext().isAllSizeSpecifiedPositive()){
 			throw new MappingException("Application "+getName()+":\nAll structure sizes must be assigned positive values.\nPlease go to StructureMapping tab to check the sizes.");
 		}
+		// TODO: eliminate after testing, we now allow species to be both reaction participant and rate rule variable (with conditions, checked elsewhere)
 		// if rate rules are present, if any species has a rate rules, it should not be a reaction participant in any reaction.
-		RateRule[] rateRules = getRateRules();
-		if (rateRules != null && rateRules.length > 0) {
-			if (getModel() != null) {
-				
-				ReactionSpec[] rSpecs = getReactionContext().getReactionSpecs();
-				ReactionParticipant[] reactionParticipants = null;
-				for(ReactionSpec rSpec : rSpecs) {
-					if(rSpec.isExcluded()) {
-						continue;			// we don't care if the reaction is excluded
-					}
-					ReactionStep rs = rSpec.getReactionStep();
-					reactionParticipants = rs.getReactionParticipants();
-					for (ReactionParticipant rp : reactionParticipants) {
-						if (rp instanceof Reactant || rp instanceof Product) {
-							if (getRateRule(rp.getSpeciesContext()) != null) {
-								throw new RuntimeException("Species '" + rp.getSpeciesContext().getName() + "' is a reactant/product in reaction '" + rs.getName() + "' ; cannot also have a rate rule." );
-							}
-						}
-					}
-				}
-			}
-		}
-		AssignmentRule[] assignmentRules = getAssignmentRules();	// Same as above for AssignmentRules
-		if (assignmentRules != null && assignmentRules.length > 0) {
-			if (getModel() != null) {
-				
-				ReactionSpec[] rSpecs = getReactionContext().getReactionSpecs();
-				ReactionParticipant[] reactionParticipants = null;
-				for(ReactionSpec rSpec : rSpecs) {
-					if(rSpec.isExcluded()) {
-						continue;			// we don't care if the reaction is excluded
-					}
-					ReactionStep rs = rSpec.getReactionStep();
-					reactionParticipants = rs.getReactionParticipants();
-					for (ReactionParticipant rp : reactionParticipants) {
-						if (rp instanceof Reactant || rp instanceof Product) {
-							if (getAssignmentRule(rp.getSpeciesContext()) != null) {
+//		RateRule[] rateRules = getRateRules();
+//		if (rateRules != null && rateRules.length > 0) {
+//			if (getModel() != null) {
+//				
+//				ReactionSpec[] rSpecs = getReactionContext().getReactionSpecs();
+//				ReactionParticipant[] reactionParticipants = null;
+//				for(ReactionSpec rSpec : rSpecs) {
+//					if(rSpec.isExcluded()) {
+//						continue;			// we don't care if the reaction is excluded
+//					}
+//					ReactionStep rs = rSpec.getReactionStep();
+//					reactionParticipants = rs.getReactionParticipants();
+//					for (ReactionParticipant rp : reactionParticipants) {
+//						if (rp instanceof Reactant || rp instanceof Product) {
+//							if (getRateRule(rp.getSpeciesContext()) != null) {
+//								throw new RuntimeException("Species '" + rp.getSpeciesContext().getName() + "' is a reactant/product in reaction '" + rs.getName() + "' ; cannot also have a rate rule." );
+//							}
+//						}
+//					}
+//				}
+//			}
+//		}
+		
+		// TODO: eliminate the code below after testing, we now allow species to be both reaction participant and assignment rule variable (with conditions)
+//		AssignmentRule[] assignmentRules = getAssignmentRules();	// Same as above for AssignmentRules
+//		if (assignmentRules != null && assignmentRules.length > 0) {
+//			if (getModel() != null) {
+//				
+//				ReactionSpec[] rSpecs = getReactionContext().getReactionSpecs();
+//				ReactionParticipant[] reactionParticipants = null;
+//				for(ReactionSpec rSpec : rSpecs) {
+//					if(rSpec.isExcluded()) {
+//						continue;			// we don't care if the reaction is excluded
+//					}
+//					ReactionStep rs = rSpec.getReactionStep();
+//					reactionParticipants = rs.getReactionParticipants();
+//					for (ReactionParticipant rp : reactionParticipants) {
+//						if (rp instanceof Reactant || rp instanceof Product) {
+//							if (getAssignmentRule(rp.getSpeciesContext()) != null) {
 //								if(!getReactionContext().getSpeciesContextSpec(rp.getSpeciesContext()).isConstant()) {
 //									throw new RuntimeException("Species '" + rp.getSpeciesContext().getName() + "' is a reactant/product in reaction '" + rs.getName() + "' ; cannot also have an assignment rule." );
 //								}
-							}
-						}
-					}
-				}
-			}
-		}
+//							}
+//						}
+//					}
+//				}
+//			}
+//		}
 	}
 }
 public boolean isUsingConcentration() {

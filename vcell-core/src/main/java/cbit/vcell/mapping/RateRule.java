@@ -214,6 +214,7 @@ public class RateRule implements Matchable, Serializable, IssueSource, Displayab
 			String msg = typeName + " Expression is missing";
 			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, Issue.Severity.WARNING));
 		}
+		// TODO: the following code belongs to SpeciesContextSpec rather than here (so that the Issue navigates to the Specifications / Species panel
 		// rate rule variable must not be also a reactant or a product in a reaction
 		ReactionContext rc = getSimulationContext().getReactionContext();
 		ReactionSpec[] rsArray = rc.getReactionSpecs();
@@ -226,8 +227,10 @@ public class RateRule implements Matchable, Serializable, IssueSource, Displayab
 				for(ReactionParticipant p : step.getReactionParticipants()) {
 					if(p instanceof Product || p instanceof Reactant) {
 						SpeciesContext sc = p.getSpeciesContext();
-						if(sc.getName().equalsIgnoreCase(rateRuleVar.getName())) {
-							String msg = "Reaction '" + step.getDisplayName() + "' participant '" + rateRuleVar.getName() + "' cannot be a rate rule variable at the same time.";
+						SpeciesContextSpec scs = rc.getSpeciesContextSpec(sc);
+						if(!scs.isConstant() && sc.getName().equalsIgnoreCase(rateRuleVar.getName())) {
+//							String msg = "Reaction '" + step.getDisplayName() + "' participant '" + rateRuleVar.getName() + "' must be clamped to be a rate rule variable too.";
+							String msg = "'" + rateRuleVar.getName() + "' must be clamped to be both a rate rule variable and a participant in reaction '" + step.getDisplayName() + "'.";
 							issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, msg, Issue.Severity.ERROR));
 						}
 					}
