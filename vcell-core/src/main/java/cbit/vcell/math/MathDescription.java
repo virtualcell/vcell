@@ -271,7 +271,10 @@ public void clearVersion() {
 
 
 public static void updateReservedSymbols(MathDescription updateThis,ReservedSymbol[] reservedSymbols) {
+	//Code to make ServerDocumentManager.saveBioModel(...) ignore old LowPrecisionMathConstants that were converted to HighPrecisionMathConstants
+	//
 	for (int i = 0; i < updateThis.variableList.size(); i++) {
+		//Deal with Model.reservedConstantsMap
 		for (int j = 0; j < reservedSymbols.length; j++) {
 			if(reservedSymbols[j].getName().equals(updateThis.variableList.get(i).getName()) && reservedSymbols[j].getExpression() != null) {
 				//System.out.println("--Found "+updateThis.variableList.get(i)+" "+reservedSymbols[j].getName()+" "+reservedSymbols[j].getExpression().infix());
@@ -282,6 +285,21 @@ public static void updateReservedSymbols(MathDescription updateThis,ReservedSymb
 					e.printStackTrace();
 				}
 				break;
+			}
+		}
+		//Deal with VCUnitDefinition.getDimensionlessScale().molecules_per_uM_um3
+		if(updateThis.variableList.get(i) instanceof Function) {
+			Function f = (Function)updateThis.variableList.get(i);
+			String expr = (f.getExpression()!=null?f.getExpression().infix():null);
+			try {
+				if(expr != null && (expr.equals("(602.0 / 1.0)"))) {
+					f.getExpression().substituteInPlace(f.getExpression(), new Expression("("+ExpressionUtils.value_molecules_per_uM_um3_NUMERATOR+" / 1000000.0)"));
+				}else if(expr != null && (expr.equals("(1.0 / 602.0)"))) {
+					f.getExpression().substituteInPlace(f.getExpression(), new Expression("(1000000.0 / "+ExpressionUtils.value_molecules_per_uM_um3_NUMERATOR+")"));
+				}
+			} catch (ExpressionException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
 			}
 		}
 	}
