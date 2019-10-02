@@ -18,6 +18,7 @@ import org.vcell.util.Matchable;
 import cbit.vcell.matrix.RationalExp;
 import cbit.vcell.matrix.RationalNumber;
 import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.parser.ExpressionUtils;
 import cbit.vcell.parser.RationalExpUtils;
 import cbit.vcell.units.parser.UnitSymbol;
 
@@ -214,7 +215,7 @@ public class VCUnitDefinition implements Matchable, Serializable{
 		// so have to explicitly look for such cases.
 		//
 		final VCUnitDefinition molecules_per_uM_um3 = fieldVCUnitSystem.getInstance("molecules.uM-1.um-3");
-		final RationalNumber value_molecules_per_uM_um3 = new RationalNumber(602214179,1000000);
+		final RationalNumber value_molecules_per_uM_um3 = new RationalNumber(new Double(ExpressionUtils.value_molecules_per_uM_um3_NUMERATOR).longValue(),1000000);
 		
 		RationalNumber tempValue = value_molecules_per_uM_um3;
 		VCUnitDefinition tempUnit = molecules_per_uM_um3;

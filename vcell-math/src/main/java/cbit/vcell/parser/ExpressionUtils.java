@@ -20,6 +20,7 @@ import cbit.vcell.parser.ASTFuncNode.FunctionType;
  * @author: Jim Schaff
  */
 public class ExpressionUtils {
+	public static String value_molecules_per_uM_um3_NUMERATOR = "6.02214179E8";
 /**
  * Insert the method's description here.
  * Creation date: (12/22/2002 3:41:17 PM)
