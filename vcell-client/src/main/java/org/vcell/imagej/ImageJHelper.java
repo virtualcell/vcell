@@ -1120,7 +1120,7 @@ public class ImageJHelper {
     						for(IJSimInfo ijSimInfo:ijContextInfo.ijSimId) {
     							if(ijSimInfo.cacheKey == cacheKey) {
     								if(!ijSimInfo.isDB) {
-    									KeyValue simKey = new KeyValue(ijSimInfo.simId.substring("SimId_".length()-1));
+    									KeyValue simKey = new KeyValue(ijSimInfo.simId.substring("SimId_".length()));
     									ijDataResponder = IJDataResponder.create(simKey, ResourceUtil.getLocalRootDir(), jobid);
     								}else if(VCellClientTest.getVCellClient() != null) {
     									ijDataResponder = IJDataResponder.create(VCellClientTest.getVCellClient(), new KeyValue(ijModelInfo.modelkey) , ijContextInfo.name, ijSimInfo.name, jobid);

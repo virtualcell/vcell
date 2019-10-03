@@ -8,6 +8,9 @@ import org.jfree.data.xy.XYDataset
 import org.jfree.data.xy.DefaultXYDataset
 import javax.swing.JFrame
 import org.vcell.imagej.helper.VCellHelper.IJTimeSeriesJobResults
+import org.vcell.imagej.helper.VCellHelper.VCellModelSearch
+import org.vcell.imagej.helper.VCellHelper.ModelType
+import org.vcell.imagej.helper.VCellHelper.VCellModelSearchResults
 
 
 vh.getApiInfo()
@@ -18,7 +21,14 @@ for(int i=0;i<indices.length;i++){
 	indices[i] = start+i
 }
 String[] vars = ["C_cyt"]
-ijTimeSeriesJobResults = vh.getTimeSeries(vars, indices, 0.05, 1, 0.05, false, false, 0, Integer.valueOf("7"))
+vcms = new VCellModelSearch(ModelType.quick,null,null,null,null,null,null)
+vcmsr = vh.getSearchedModelSimCacheKey(true,vcms,null)
+theCacheKey = vcmsr.get(0).getCacheKey();
+println(theCacheKey)
+
+//public IJTimeSeriesJobResults getTimeSeries(String[] variableNames, int[] indices, double startTime, int step, double endTime,boolean calcSpaceStats, boolean calcTimeStats, int jobid, int cachekey) throws Exception{
+
+ijTimeSeriesJobResults = vh.getTimeSeries(vars, indices, 0.05 as double, 1, 0.05 as double, false, false, 0, theCacheKey as int)
 double[] vals = new double[indices.length]
 for(int i=0;i<indices.length;i++){
 	vals[i] = ijTimeSeriesJobResults.data[0][i+1][0]
@@ -43,3 +53,4 @@ frame.getContentPane().add(chartPanel)
         //Display the window.
 frame.pack();
 frame.setVisible(true);
+
