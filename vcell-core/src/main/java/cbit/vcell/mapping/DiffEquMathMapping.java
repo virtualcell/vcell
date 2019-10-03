@@ -368,11 +368,11 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 			GeometryClass geometryClass = getDefaultGeometryClass(modelParamExpr);
 			VCUnitDefinition paramUnit = modelParameters[j].getUnitDefinition();
 			modelParamExpr = getIdentifierSubstitutions(modelParamExpr, paramUnit, geometryClass);
-			if (eventAssignTargets.contains(modelParameters[j]) || rateRuleVarTargets.contains(modelParameters[j])) {
+//			if (eventAssignTargets.contains(modelParameters[j]) || rateRuleVarTargets.contains(modelParameters[j])) {
+			if (eventAssignTargets.contains(modelParameters[j])) {
 				EventAssignmentOrRateRuleInitParameter eap = null;
 				try {
-					eap = addEventAssignmentOrRateRuleInitParameter(modelParameters[j], modelParamExpr, 
-							PARAMETER_ROLE_EVENTASSIGN_OR_RATERULE_INITCONDN, paramUnit);
+					eap = addEventAssignmentOrRateRuleInitParameter(modelParameters[j], modelParamExpr, PARAMETER_ROLE_EVENTASSIGN_OR_RATERULE_INITCONDN, paramUnit);
 				} catch (PropertyVetoException e) {
 					e.printStackTrace(System.out);
 					throw new MappingException(e.getMessage());
@@ -381,23 +381,24 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 				varHash.addVariable(volVar);
 				eventOrRateRuleVolVarHash.put(volVar, eap);
 				/** RATE RULES */
-				if (rateRuleVarTargets.contains(modelParameters[j])) {
-					RateRuleRateParameter rateParam = null;
-					try {
-						Expression origExp = simContext.getRateRule(modelParameters[j]).getRateRuleExpression();
-						VCUnitDefinition rateUnit = modelUnitSystem.getInstance_TBD();
-						if (paramUnit != null && !paramUnit.equals(modelUnitSystem.getInstance_TBD())) {
-							rateUnit = paramUnit.divideBy(timeUnit);
-						}
-						Expression rateExpr = getIdentifierSubstitutions(origExp, rateUnit, geometryClass);
-						rateParam = addRateRuleRateParameter(modelParameters[j], rateExpr, PARAMETER_ROLE_RATERULE_RATE, rateUnit);
-					} catch (PropertyVetoException e) {
-						e.printStackTrace(System.out);
-						throw new MappingException(e.getMessage());
-					}
-					rateRuleRateParamHash.put(volVar, rateParam);
-				}
-
+//				if (rateRuleVarTargets.contains(modelParameters[j])) {
+//					RateRuleRateParameter rateParam = null;
+//					try {
+//						Expression origExp = simContext.getRateRule(modelParameters[j]).getRateRuleExpression();
+//						VCUnitDefinition rateUnit = modelUnitSystem.getInstance_TBD();
+//						if (paramUnit != null && !paramUnit.equals(modelUnitSystem.getInstance_TBD())) {
+//							rateUnit = paramUnit.divideBy(timeUnit);
+//						}
+//						Expression rateExpr = getIdentifierSubstitutions(origExp, rateUnit, geometryClass);
+//						rateParam = addRateRuleRateParameter(modelParameters[j], rateExpr, PARAMETER_ROLE_RATERULE_RATE, rateUnit);
+//					} catch (PropertyVetoException e) {
+//						e.printStackTrace(System.out);
+//						throw new MappingException(e.getMessage());
+//					}
+//					rateRuleRateParamHash.put(volVar, rateParam);
+//				}
+			} else if(rateRuleVarTargets.contains(modelParameters[j])) {
+				; // do nothing, will do elsewhere
 			} else {
 				varHash.addVariable(newFunctionOrConstant(getMathSymbol(modelParameters[j], geometryClass), modelParamExpr,geometryClass));
 			}
@@ -1089,38 +1090,6 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 	}
 	
 	// deal with rate rules
-//	for (SymbolTableEntry rrvSTE : rateRuleVarTargets) {
-//		if (rrvSTE instanceof SpeciesContext) {
-//			SpeciesContext sc = (SpeciesContext)rrvSTE;
-//			SpeciesContextMapping scm = getSpeciesContextMapping(sc);
-//			Variable var = scm.getVariable();
-//			
-//			
-//			
-//			if (var instanceof VolVariable || var instanceof MemVariable) {
-//				throw new RuntimeException("SpeciesContext '" + rrvSTE.getName() + "' has an equation and is also a rate rule variable, which is not allowed.");
-//			}
-//
-//			// get the initial condition expression of the speciesContext.
-//			SpeciesContextSpec scs = simContext.getReactionContext().getSpeciesContextSpec(sc);
-//			SpeciesContextSpecParameter scsInitParam = scs.getInitialConditionParameter();
-//			
-//			Domain domain = null;
-//			if (sm.getGeometryClass()!=null){
-//				domain = new Domain(sm.getGeometryClass());
-//			}
-//			if (sm.getGeometryClass() instanceof SurfaceClass) {
-//				scm.setVariable(new MemVariable(scm.getSpeciesContext().getName(),domain));
-//			} else {
-//				scm.setVariable(new VolVariable(scm.getSpeciesContext().getName(),domain));
-//			}
-//
-//
-//		
-//		}
-//	}
-	
-	// deal with rate rules
 	enum1 = getSpeciesContextMappings();
 	while (enum1.hasMoreElements()){
 		SpeciesContextMapping scm = (SpeciesContextMapping)enum1.nextElement();
@@ -1151,18 +1120,14 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 				} else {
 					scm.setVariable(new VolVariable(scm.getSpeciesContext().getName(), domain));
 				}
-				Variable dependentVariable = new VolVariable(scm.getSpeciesContext().getName(), domain);
-//				Variable dependentVariable = newFunctionOrConstant(name, ex, gc);
-//				dependentVariable.setDomain(new Domain(sm.getGeometryClass()));
 				Variable oldVariablre = varHash.getVariable(name);
-				if(oldVariablre != null) {
+				if(oldVariablre != null) {			// should always be null
 					varHash.removeVariable(name);
 				}
-				varHash.addVariable(dependentVariable);
-				
-				SpeciesContextSpec    scs = simContext.getReactionContext().getSpeciesContextSpec(sc);
+				varHash.addVariable(scm.getVariable());
 				
 //				// create the rate parameter
+				SpeciesContextSpec scs = simContext.getReactionContext().getSpeciesContextSpec(sc);
 				SpeciesContextSpecParameter scsInitParam = scs.getInitialConditionParameter();
 				VCUnitDefinition scsInitParamUnit = scsInitParam.getUnitDefinition();
 				RateRuleRateParameter rateParam = null;
@@ -1173,16 +1138,9 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 						rateUnit = scsInitParamUnit.divideBy(timeUnit);
 					}
 					Expression rateExpr = getIdentifierSubstitutions(origExp, rateUnit, gc);
-					
 					String argName = sc.getName() + MATH_FUNC_SUFFIX_RATERULE_RATE;
-
 					Variable param = newFunctionOrConstant(argName, rateExpr, gc);
 					varHash.addVariable(param);
-
-					
-//					scm.setRate(rateExpr);
-					
-					
 					rateParam = addRateRuleRateParameter(sc, rateExpr, PARAMETER_ROLE_RATERULE_RATE, rateUnit);
 				} catch (PropertyVetoException e) {
 					e.printStackTrace(System.out);
@@ -1190,6 +1148,54 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 				}
 				rateRuleRateParamHash.put(scm.getVariable(), rateParam);
 			}
+		}
+	}
+	for(ModelParameter mp : modelParameters) {
+		Variable var = varHash.getVariable(mp.getName());
+		RateRule rr = simContext.getRateRule(mp);
+		Expression modelParamExpr = mp.getExpression();
+		if(var == null && rr != null) {		// at this point var should be a constant 
+			GeometryClass gc = getDefaultGeometryClass(modelParamExpr);
+			Domain domain = null;
+			if(gc != null) {
+				domain = new Domain(gc);
+			}
+			Variable variable;
+			if(gc instanceof SurfaceClass) {
+				variable = new MemVariable(mp.getName(), domain);	// domain is null
+			} else {
+				variable = new VolVariable(mp.getName(), domain);
+			}
+			varHash.addVariable(variable);
+			RateRuleRateParameter rateParam = null;
+			try {
+				Expression origExp = rr.getRateRuleExpression();
+				VCUnitDefinition rateUnit = modelUnitSystem.getInstance_TBD();
+				if (mp.getUnitDefinition() != null && !mp.getUnitDefinition().equals(modelUnitSystem.getInstance_TBD())) {
+					rateUnit = mp.getUnitDefinition().divideBy(timeUnit);
+				}
+				Expression rateExpr = getIdentifierSubstitutions(origExp, rateUnit, null);
+				String argName = mp.getName() + MATH_FUNC_SUFFIX_RATERULE_RATE;
+				Variable param = newFunctionOrConstant(argName, rateExpr, null);
+				varHash.addVariable(param);
+				rateParam = addRateRuleRateParameter(mp, rateExpr, PARAMETER_ROLE_RATERULE_RATE, rateUnit);
+			} catch (PropertyVetoException e) {
+				e.printStackTrace(System.out);
+				throw new MappingException(e.getMessage());
+			}
+//			rateRuleRateParamHash.put(variable, rateParam);
+
+			SubDomain subDomain = mathDesc.getSubDomains().nextElement();	// we know it's non-spatial
+			Equation equation = null;
+			Expression initial = new Expression(mp.getExpression());		// TODO: can it be null? should check and maybe try mp.getConstantValue() too ???
+			Expression rateExpr = new Expression(0.0);
+//			RateRuleRateParameter rateParam = rateRuleRateParamHash.get(variable);
+			if (rateParam != null) {
+				rateExpr = new Expression(getMathSymbol(rateParam, null)); 
+			}
+			// ODE Equation for rate rule variable being a global parameter
+			equation = new OdeEquation(variable, initial, rateExpr);
+			subDomain.addEquation(equation);
 		}
 	}
 	
@@ -1219,6 +1225,18 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 			}
 		}
 	}
+//	for (int j = 0; j < modelParameters.length; j++){
+//		RateRule rr = simContext.getRateRule(modelParameters[j]);
+//		AssignmentRule ar = simContext.getAssignmentRule(modelParameters[j]);
+//		if(rr != null || ar != null) {
+//			continue;
+//		}
+//		Expression modelParamExpr = modelParameters[j].getExpression();
+//		GeometryClass geometryClass = getDefaultGeometryClass(modelParamExpr);
+//		modelParamExpr = getIdentifierSubstitutions(modelParamExpr, modelParameters[j].getUnitDefinition(), geometryClass);
+//		varHash.addVariable(newFunctionOrConstant(getMathSymbol(modelParameters[j], geometryClass), modelParamExpr,geometryClass));
+//	}
+
 
 	
 	//
@@ -1400,9 +1418,6 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 						}
 						equation = new OdeEquation(variable, initial, rateExpr);
 						subDomain.addEquation(equation);
-
-						
-						
 //						VCUnitDefinition scmUd = scm.getSpeciesContext().getUnitDefinition().divideBy(timeUnit);
 //						GeometryClass scmGc = simContext.getGeometryContext().getStructureMapping(sc.getStructure()).getGeometryClass();
 //						Expression exp = getIdentifierSubstitutions(scm.getRate(), scmUd, scmGc);
@@ -1413,6 +1428,7 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 				}
 			}
 		}
+		
 		//
 		// create fast system (if neccessary)
 		//
@@ -1702,7 +1718,6 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 			}
 		}
 	}
-
 
 	// create equations for event assignment or rate rule targets that are model params/species, etc.
 	Set<VolVariable> hashKeySet = eventOrRateRuleVolVarHash.keySet();

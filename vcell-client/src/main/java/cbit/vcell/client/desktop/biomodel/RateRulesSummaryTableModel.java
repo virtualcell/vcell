@@ -33,6 +33,7 @@ import cbit.gui.ScopedExpression;
 import cbit.vcell.mapping.RateRule;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.model.SpeciesContext;
+import cbit.vcell.model.Model.ModelParameter;
 import cbit.vcell.parser.AutoCompleteSymbolFilter;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.SymbolTable;
@@ -101,11 +102,14 @@ public class RateRulesSummaryTableModel extends BioModelEditorApplicationRightSi
 		if(simulationContext == null) {
 			return;
 		}
-		
 		SpeciesContext[] scs = simulationContext.getModel().getSpeciesContexts();
+		ModelParameter[] mps = simulationContext.getModel().getModelParameters();
 		DefaultComboBoxModel<String> aModel = new DefaultComboBoxModel<> ();
 		for (SpeciesContext sc : scs) {
 			aModel.addElement(sc.getName());
+		}
+		for (ModelParameter mp : mps) {
+			aModel.addElement(mp.getName());
 		}
 		steComboBox.addMouseListener(new java.awt.event.MouseAdapter() {
 			@Override
@@ -121,17 +125,25 @@ public class RateRulesSummaryTableModel extends BioModelEditorApplicationRightSi
 			public void focusGained(java.awt.event.FocusEvent evt) {
 				DefaultComboBoxModel<String> aModel = (DefaultComboBoxModel<String>) steComboBox.getModel();
 				SpeciesContext[] scs = simulationContext.getModel().getSpeciesContexts();
+				ModelParameter[] mps = simulationContext.getModel().getModelParameters();
 				for (SpeciesContext sc : scs) {
 					int position = aModel.getIndexOf(sc.getName());
 					if(position == -1) {	// element is missing, add it
 						aModel.addElement(sc.getName());
 					}
 				}
+				for (ModelParameter mp : mps) {
+					int position = aModel.getIndexOf(mp.getName());
+					if(position == -1) {
+						aModel.addElement(mp.getName());
+					}
+				}
 				Set<String> elementsToRemove = new HashSet<> ();
 				for(int i=0; i<aModel.getSize(); i++) {
 					String candidate = aModel.getElementAt(i);
 					SpeciesContext sc = simulationContext.getModel().getSpeciesContext(candidate);
-					if(sc == null) {
+					ModelParameter mp = simulationContext.getModel().getModelParameter(candidate);
+					if(sc == null && mp == null) {
 						elementsToRemove.add(candidate);
 					}
 				}
