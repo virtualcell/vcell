@@ -11,7 +11,9 @@
 package cbit.vcell.client.desktop.biomodel;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
+import java.awt.ComponentOrientation;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -51,6 +53,7 @@ import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.table.TableModel;
 
 import org.vcell.util.VCAssert;
 import org.vcell.util.gui.DefaultScrollTableCellRenderer;
@@ -70,12 +73,17 @@ import cbit.vcell.client.constants.GuiConstants;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorTreeModel.DocumentEditorTreeFolderClass;
 import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveView;
 import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveViewID;
+import cbit.vcell.mapping.AssignmentRule;
+import cbit.vcell.mapping.RateRule;
 import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.mapping.SpeciesContextSpec;
 import cbit.vcell.mapping.SimulationContext.SimulationContextParameter;
+import cbit.vcell.mapping.gui.SpeciesContextSpecsTableModel;
 import cbit.vcell.model.EditableSymbolTableEntry;
 import cbit.vcell.model.Model.ModelParameter;
 import cbit.vcell.model.ModelUnitSystem;
 import cbit.vcell.model.Parameter;
+import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.parser.NameScope;
 
 @SuppressWarnings("serial")
@@ -525,22 +533,125 @@ public class BioModelParametersPanel extends DocumentEditorSubPanel {
 		add(buttonPanel, BorderLayout.SOUTH);
 
 		parametersFunctionsTable.getSelectionModel().addListSelectionListener(eventHandler);
-		parametersFunctionsTable.setDefaultRenderer(NameScope.class, new DefaultScrollTableCellRenderer(){
+		parametersFunctionsTable.setDefaultRenderer(NameScope.class, new DefaultScrollTableCellRenderer() {
 
 			@Override
 			public Component getTableCellRendererComponent(JTable table,
-					Object value, boolean isSelected, boolean hasFocus, int row,
-					int column) {
-				super.getTableCellRendererComponent(table, value, isSelected, hasFocus,
-						row, column);
+					Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+				super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
 				if (value instanceof NameScope) {
 					NameScope nameScope = (NameScope)value;
-					setText(nameScope.getPathDescription());
+					String text = nameScope.getPathDescription();
+					setText(text);
 				}
 				return this;
 			}
 			
 		});
+		
+		DefaultScrollTableCellRenderer nameTableCellRenderer = new DefaultScrollTableCellRenderer() {
+			final Color lightBlueBackground = new Color(214, 234, 248);
+			int PADDING = 7;
+			
+			@Override
+			public void setBounds(int x, int y, int width, int height) {
+				super.setBounds(x, y, width, height);
+				if (getIcon() != null) {
+					int textWidth = getFontMetrics(getFont()).stringWidth(getText());
+					Insets insets = getInsets();
+					// TODO: check that the text width is not bigger than the cell width and truncate the name
+					int iconTextGap = width - textWidth - getIcon().getIconWidth() - insets.left - insets.right - PADDING;
+					setIconTextGap(iconTextGap);
+				} else {
+				setIconTextGap(0);
+				}
+			}
+			@Override
+			public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+				super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+				
+				if(table.getModel() instanceof BioModelParametersTableModel) {
+					BioModelParametersTableModel tableModel = (BioModelParametersTableModel)table.getModel();
+					Object selectedObject = tableModel.getValueAt(row);
+					if(selectedObject instanceof ModelParameter) {
+						ModelParameter mp = (ModelParameter)selectedObject;
+						
+						RateRule rr = null;
+						AssignmentRule ar = null;
+						for (SimulationContext simContext : bioModel.getSimulationContexts()) {
+							rr = simContext.getRateRule(mp);
+							ar = simContext.getAssignmentRule(mp);
+							if(rr != null || ar != null) {
+								break;
+							}
+						}
+						Icon icon = null;
+						if(rr != null) {
+							icon = VCellIcons.ruleRateIcon;
+						} else if(ar != null) {
+							icon = VCellIcons.ruleAssignIcon;
+						}
+						setIcon(icon);
+						this.setHorizontalTextPosition(SwingConstants.LEFT);
+						if(isSelected) {
+							setBackground(lightBlueBackground);
+							setForeground(Color.BLACK);
+						}
+					}
+				}
+				
+//				this.setHorizontalTextPosition(SwingConstants.TRAILING);
+//				this.setComponentOrientation(ComponentOrientation.LEFT_TO_RIGHT);
+//				this.setHorizontalAlignment(SwingConstants.LEADING);
+
+
+//				if (table.getModel() instanceof SpeciesContextSpecsTableModel) {
+//					Icon icon = VCellIcons.issueGoodIcon;
+//					Object selectedObject = null;
+//					if (table.getModel() == tableModel) {
+//						selectedObject = tableModel.getValueAt(row);
+//					}
+//					if (selectedObject != null) {
+//						if(isSelected) {
+//							setBackground(lightBlueBackground);
+//						}
+//						if(selectedObject instanceof SpeciesContextSpec) {
+//							SpeciesContextSpec scs = (SpeciesContextSpec)selectedObject;
+//							SpeciesContext sc = scs.getSpeciesContext();
+//
+//							boolean foundRuleMatch = false;
+//							if(fieldSimulationContext.getRateRules() != null && fieldSimulationContext.getRateRules().length > 0) {
+//								for(RateRule rr : fieldSimulationContext.getRateRules()) {
+//									if(rr.getRateRuleVar() == null) {
+//										continue;
+//									}
+//									if(sc.getName().equals(rr.getRateRuleVar().getName())) {
+//										foundRuleMatch = true;
+//										icon = VCellIcons.ruleRateIcon;
+//										break;
+//									}
+//								}
+//							}
+//							if(!foundRuleMatch && fieldSimulationContext.getAssignmentRules() != null && fieldSimulationContext.getAssignmentRules().length > 0) {
+//								for(AssignmentRule rr : fieldSimulationContext.getAssignmentRules()) {
+//									if(rr.getAssignmentRuleVar() == null) {
+//										continue;
+//									}
+//									if(sc.getName().equals(rr.getAssignmentRuleVar().getName())) {
+//										icon = VCellIcons.ruleAssignIcon;
+//										break;
+//									}
+//								}
+//							}
+//						}
+//					}
+//					setIcon(icon);
+//				}
+				return this;
+			}
+		};
+		parametersFunctionsTable.getColumnModel().getColumn(BioModelParametersTableModel.COLUMN_NAME).setCellRenderer(nameTableCellRenderer);
+
 		{ //make double click on units panel bring up editing box
 			JPanel p = getModelUnitSystemPanel();
 			VCAssert.assertValid(p);
