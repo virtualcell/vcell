@@ -49,7 +49,7 @@ public class RateRulesSummaryTableModel extends BioModelEditorApplicationRightSi
 	public final static int COLUMN_RATERULE_TYPE = 2;
 	public final static int COLUMN_RATERULE_EXPR = 3;
 	
-	private static String[] columnNames = new String[] {"Name", "Variable", "Type", "Expression"};
+	private static String[] columnNames = new String[] {"Name", "Variable", "Type", "Rate Expression"};
 
 	public RateRulesSummaryTableModel(ScrollTable table) {
 		super(table, columnNames);

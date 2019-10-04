@@ -49,7 +49,7 @@ public class AssignmentRulesSummaryTableModel extends BioModelEditorApplicationR
 	public final static int COLUMN_ASSIGNMENTRULE_TYPE = 2;
 	public final static int COLUMN_ASSIGNMENTRULE_EXPR = 3;
 	
-	private static String[] columnNames = new String[] {"Name", "Variable", "Type", "Expression"};
+	private static String[] columnNames = new String[] {"Name", "Variable", "Type", "Assignment Function Expression"};
 
 	public AssignmentRulesSummaryTableModel(ScrollTable table) {
 		super(table, columnNames);
