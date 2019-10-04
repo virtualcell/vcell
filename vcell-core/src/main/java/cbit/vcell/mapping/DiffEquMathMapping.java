@@ -126,6 +126,7 @@ import cbit.vcell.units.VCUnitDefinition;
 public class DiffEquMathMapping extends AbstractMathMapping {
 	private static final String MATH_FUNC_SUFFIX_EVENTASSIGN_OR_RATERULE_INIT = "_protocol_init";
 	private static final String MATH_FUNC_SUFFIX_RATERULE_RATE = "_rate";
+	private static final String MATH_FUNC_SUFFIX_ASSIGNMENTRULE = "_assign";
 	public static final int PARAMETER_ROLE_TOTALMASS = 0;
 	public static final int PARAMETER_ROLE_DEPENDENT_VARIABLE = 1;
 	public static final int PARAMETER_ROLE_EVENTASSIGN_OR_RATERULE_INITCONDN = 7;
@@ -330,6 +331,7 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 	HashMap<VolVariable, EventAssignmentOrRateRuleInitParameter> eventOrRateRuleVolVarHash = new HashMap<VolVariable, EventAssignmentOrRateRuleInitParameter>();
 	HashMap<Variable, RateRuleRateParameter> rateRuleRateParamHash = new HashMap<Variable, RateRuleRateParameter>();
 	ArrayList<SymbolTableEntry> rateRuleVarTargets = new ArrayList<SymbolTableEntry>();
+	ArrayList<SymbolTableEntry> assignmentRuleVarTargets = new ArrayList<SymbolTableEntry>();
 	Model model = simContext.getModel();
 	ModelUnitSystem modelUnitSystem = model.getUnitSystem();
 	VCUnitDefinition timeUnit = modelUnitSystem.getTimeUnit();
@@ -354,15 +356,25 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 		}
 		
 		/** @author anu : RATE RULES */
-		RateRule[] rateRules = simContext.getRateRules();
-		if (rateRules != null && rateRules.length > 0) {
-			for (RateRule rr : rateRules) {
-				SymbolTableEntry rateRuleVar = rr.getRateRuleVar();
-				if (!rateRuleVarTargets.contains(rateRuleVar)) {
-					rateRuleVarTargets.add(rateRuleVar);
+		RateRule[] rrs = simContext.getRateRules();
+		if (rrs != null && rrs.length > 0) {
+			for (RateRule rr : rrs) {
+				SymbolTableEntry rrVar = rr.getRateRuleVar();
+				if (!rateRuleVarTargets.contains(rrVar)) {
+					rateRuleVarTargets.add(rrVar);
 				}
 			}
 		}
+		AssignmentRule[] ars = simContext.getAssignmentRules();
+		if (ars != null && ars.length > 0) {
+			for (AssignmentRule ar : ars) {
+				SymbolTableEntry arVar = ar.getAssignmentRuleVar();
+				if (!assignmentRuleVarTargets.contains(arVar)) {
+					assignmentRuleVarTargets.add(arVar);
+				}
+			}
+		}
+		
 		for (int j=0;j<modelParameters.length;j++){
 			Expression modelParamExpr = modelParameters[j].getExpression();
 			GeometryClass geometryClass = getDefaultGeometryClass(modelParamExpr);
@@ -380,7 +392,9 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 				VolVariable volVar = new VolVariable(modelParameters[j].getName(),null);
 				varHash.addVariable(volVar);
 				eventOrRateRuleVolVarHash.put(volVar, eap);
-				/** RATE RULES */
+			} else if(rateRuleVarTargets.contains(modelParameters[j])) {
+				; // do nothing, will do elsewhere
+//				/** RATE RULES */
 //				if (rateRuleVarTargets.contains(modelParameters[j])) {
 //					RateRuleRateParameter rateParam = null;
 //					try {
@@ -397,10 +411,11 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 //					}
 //					rateRuleRateParamHash.put(volVar, rateParam);
 //				}
-			} else if(rateRuleVarTargets.contains(modelParameters[j])) {
+			} else if(assignmentRuleVarTargets.contains(modelParameters[j])) {
 				; // do nothing, will do elsewhere
 			} else {
-				varHash.addVariable(newFunctionOrConstant(getMathSymbol(modelParameters[j], geometryClass), modelParamExpr,geometryClass));
+				Variable variable = newFunctionOrConstant(getMathSymbol(modelParameters[j], geometryClass), modelParamExpr, geometryClass);
+				varHash.addVariable(variable);
 			}
 		}
 	} else {
@@ -1089,15 +1104,17 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 		}
 	}
 	
+	//
 	// deal with rate rules
+	//
 	enum1 = getSpeciesContextMappings();
-	while (enum1.hasMoreElements()){
+	while(enum1.hasMoreElements()) {				// species context used as rate rule variable
 		SpeciesContextMapping scm = (SpeciesContextMapping)enum1.nextElement();
 		Variable var = scm.getVariable();
 		Expression exp = scm.getDependencyExpression();
 		if (var == null && exp != null) {
 			RateRule rr = simContext.getRateRule(scm.getSpeciesContext());
-			if (rr != null && (rr.getRateRuleVar() instanceof SpeciesContext)) {		// TODO: we limit assignment rules to SpeciesContext for now
+			if (rr != null && (rr.getRateRuleVar() instanceof SpeciesContext)) {
 				SpeciesContext sc = scm.getSpeciesContext();
 				StructureMapping sm = simContext.getGeometryContext().getStructureMapping(sc.getStructure());
 				if (sm.getGeometryClass() == null) {
@@ -1146,11 +1163,11 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 					e.printStackTrace(System.out);
 					throw new MappingException(e.getMessage());
 				}
-				rateRuleRateParamHash.put(scm.getVariable(), rateParam);
+				rateRuleRateParamHash.put(scm.getVariable(), rateParam);	// we generate the ODE equation elsewhere
 			}
 		}
 	}
-	for(ModelParameter mp : modelParameters) {
+	for(ModelParameter mp : modelParameters) {		// global parameter used as rate rule variable
 		Variable var = varHash.getVariable(mp.getName());
 		RateRule rr = simContext.getRateRule(mp);
 		Expression modelParamExpr = mp.getExpression();
@@ -1187,21 +1204,22 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 
 			SubDomain subDomain = mathDesc.getSubDomains().nextElement();	// we know it's non-spatial
 			Equation equation = null;
-			Expression initial = new Expression(mp.getExpression());		// TODO: can it be null? should check and maybe try mp.getConstantValue() too ???
+			Expression initial = new Expression(mp.getExpression());	// TODO: can it be null? should check and maybe try mp.getConstantValue() too ???
 			Expression rateExpr = new Expression(0.0);
 //			RateRuleRateParameter rateParam = rateRuleRateParamHash.get(variable);
 			if (rateParam != null) {
 				rateExpr = new Expression(getMathSymbol(rateParam, null)); 
 			}
-			// ODE Equation for rate rule variable being a global parameter
-			equation = new OdeEquation(variable, initial, rateExpr);
+			equation = new OdeEquation(variable, initial, rateExpr);	// ODE Equation for rate rule variable being a global parameter
 			subDomain.addEquation(equation);
 		}
 	}
 	
+	//
 	// deal with assignment rules
+	//
 	enum1 = getSpeciesContextMappings();
-	while (enum1.hasMoreElements()){
+	while(enum1.hasMoreElements()) {			// species context used as assignment rule variable
 		SpeciesContextMapping scm = (SpeciesContextMapping)enum1.nextElement();
 		if (scm.getVariable()==null && scm.getDependencyExpression()!=null) {
 			AssignmentRule ar = simContext.getAssignmentRule(scm.getSpeciesContext());
@@ -1225,20 +1243,38 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 			}
 		}
 	}
-//	for (int j = 0; j < modelParameters.length; j++){
-//		RateRule rr = simContext.getRateRule(modelParameters[j]);
-//		AssignmentRule ar = simContext.getAssignmentRule(modelParameters[j]);
-//		if(rr != null || ar != null) {
-//			continue;
-//		}
-//		Expression modelParamExpr = modelParameters[j].getExpression();
-//		GeometryClass geometryClass = getDefaultGeometryClass(modelParamExpr);
-//		modelParamExpr = getIdentifierSubstitutions(modelParamExpr, modelParameters[j].getUnitDefinition(), geometryClass);
-//		varHash.addVariable(newFunctionOrConstant(getMathSymbol(modelParameters[j], geometryClass), modelParamExpr,geometryClass));
-//	}
+	for(ModelParameter mp : modelParameters) {		// global parameter used as assignment rule variable
+		Variable var = varHash.getVariable(mp.getName());
+		AssignmentRule ar = simContext.getAssignmentRule(mp);
+		Expression modelParamExpr = mp.getExpression();
+		if(var == null && ar != null) {		// at this point var (global parameter used as assignment rule variable) should be null
+//			GeometryClass gc = getDefaultGeometryClass(modelParamExpr);		// TODO: this is probably wrong, gives null all the time
+//			Domain domain = null;
+//			if(gc != null) {
+//				domain = new Domain(gc);
+//			}
+//			Variable variable;
+//			if(gc instanceof SurfaceClass) {
+//				variable = new MemVariable(mp.getName(), null);		// domain is null
+//			} else {
+//				variable = new VolVariable(mp.getName(), null);
+//			}
+//			varHash.addVariable(variable);
+			
+			Expression origExp = ar.getAssignmentRuleExpression();
+			VCUnitDefinition rateUnit = modelUnitSystem.getInstance_TBD();
+			if (mp.getUnitDefinition() != null && !mp.getUnitDefinition().equals(modelUnitSystem.getInstance_TBD())) {
+				rateUnit = mp.getUnitDefinition().divideBy(timeUnit);
+			}
+			Expression rateExpr = getIdentifierSubstitutions(origExp, rateUnit, null);
+			String argName = mp.getName();
+			Variable param = newFunctionOrConstant(argName, rateExpr, null);
+			varHash.addVariable(param);
 
 
-	
+		}
+	}
+
 	//
 	// set Variables to MathDescription all at once with the order resolved by "VariableHash"
 	//
@@ -1404,7 +1440,8 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 				}
 			} else if(scm.getVariable() instanceof VolVariable && scm.getDependencyExpression() != null) {
 				RateRule rr = simContext.getRateRule(scm.getSpeciesContext());
-				if (rr != null && (rr.getRateRuleVar() instanceof SpeciesContext)) {	// TODO: we limit assignment rules to SpeciesContext for now
+				if (rr != null && (rr.getRateRuleVar() instanceof SpeciesContext)) {
+					// we generate rate rule ODE equation only for species variable, for global parameters variable we do it elsewhere
 					VolVariable variable = (VolVariable)scm.getVariable();
 					Equation equation = null;
 					if (sm.getGeometryClass() == subVolume) {
