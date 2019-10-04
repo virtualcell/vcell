@@ -288,9 +288,9 @@ public boolean isCellEditable(int rowIndex, int columnIndex) {
 			return !speciesContextSpec.isConstant() && getSimulationContext().isStoch();
 		}
 		case COLUMN_INITIAL:{
-			RateRule rr = fieldSimulationContext.getRateRule(speciesContextSpec.getSpeciesContext());
+//			RateRule rr = fieldSimulationContext.getRateRule(speciesContextSpec.getSpeciesContext());
 			AssignmentRule ar = fieldSimulationContext.getAssignmentRule(speciesContextSpec.getSpeciesContext());
-			if(rr != null || ar != null) {
+			if(/*rr != null || */ar != null) {
 				return false;
 			}
 			return true;
@@ -324,10 +324,10 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 		AssignmentRule oldRule = (AssignmentRule)evt.getOldValue();
 		AssignmentRule newRule = (AssignmentRule)evt.getNewValue();
 		onAssignmentRuleVariableChanged(oldRule, newRule);
-	} else if(evt.getSource() == getSimulationContext() && evt.getPropertyName().equals(SimulationContext.PROPERTY_NAME_RATE_RULE_CHANGE)) {
-		RateRule oldRule = (RateRule)evt.getOldValue();
-		RateRule newRule = (RateRule)evt.getNewValue();
-		onRateRuleVariableChanged(oldRule, newRule);
+//	} else if(evt.getSource() == getSimulationContext() && evt.getPropertyName().equals(SimulationContext.PROPERTY_NAME_RATE_RULE_CHANGE)) {
+//		RateRule oldRule = (RateRule)evt.getOldValue();
+//		RateRule newRule = (RateRule)evt.getNewValue();
+//		onRateRuleVariableChanged(oldRule, newRule);
 	} else if(evt.getSource() == getSimulationContext() && evt.getPropertyName().equals(SimulationContext.PROPERTY_NAME_ASSIGNMENTRULES)) {
 		System.out.println(evt.getPropertyName());
 		AssignmentRule[] oldRules = (AssignmentRule[])evt.getOldValue();
@@ -335,13 +335,13 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 		if(oldRules != null && newRules != null && oldRules.length > newRules.length) {
 			onAssignmentRuleDelete(oldRules, newRules);
 		}
-	} else if(evt.getSource() == getSimulationContext() && evt.getPropertyName().equals(SimulationContext.PROPERTY_NAME_RATERULES)) {
-		System.out.println(evt.getPropertyName());
-		RateRule[] oldRules = (RateRule[])evt.getOldValue();
-		RateRule[] newRules = (RateRule[])evt.getNewValue();
-		if(oldRules != null && newRules != null && oldRules.length > newRules.length) {
-			onRateRuleDelete(oldRules, newRules);
-		}
+//	} else if(evt.getSource() == getSimulationContext() && evt.getPropertyName().equals(SimulationContext.PROPERTY_NAME_RATERULES)) {
+//		System.out.println(evt.getPropertyName());
+//		RateRule[] oldRules = (RateRule[])evt.getOldValue();
+//		RateRule[] newRules = (RateRule[])evt.getNewValue();
+//		if(oldRules != null && newRules != null && oldRules.length > newRules.length) {
+//			onRateRuleDelete(oldRules, newRules);
+//		}
 	}
 	if (evt.getSource() instanceof SpeciesContextSpec) {
 		fireTableRowsUpdated(0,getRowCount()-1);
@@ -412,23 +412,23 @@ private void onAssignmentRuleVariableChanged(AssignmentRule oldRule, AssignmentR
 		}
 	}
 }
-private void onRateRuleVariableChanged(RateRule oldRule, RateRule newRule) {
-	if(oldRule != null && oldRule.getSimulationContext() == fieldSimulationContext && oldRule.getRateRuleVar() != null) {
-		SymbolTableEntry ste = oldRule.getRateRuleVar();
-		if(ste instanceof SpeciesContext) {
-			SpeciesContext sc = (SpeciesContext)ste;
-			removeRuleVariableMark(sc, false);
-		}
-	}
-	if(newRule != null && newRule.getSimulationContext() == fieldSimulationContext && newRule.getRateRuleVar() != null) {
-		SymbolTableEntry ste = newRule.getRateRuleVar();
-		if(ste instanceof SpeciesContext) {
-			SpeciesContext sc = (SpeciesContext)ste;
-			Expression ex = newRule.getRateRuleExpression();
-			setRuleVariableMark(sc, ex, false);
-		}
-	}
-}
+//private void onRateRuleVariableChanged(RateRule oldRule, RateRule newRule) {
+//	if(oldRule != null && oldRule.getSimulationContext() == fieldSimulationContext && oldRule.getRateRuleVar() != null) {
+//		SymbolTableEntry ste = oldRule.getRateRuleVar();
+//		if(ste instanceof SpeciesContext) {
+//			SpeciesContext sc = (SpeciesContext)ste;
+//			removeRuleVariableMark(sc, false);
+//		}
+//	}
+//	if(newRule != null && newRule.getSimulationContext() == fieldSimulationContext && newRule.getRateRuleVar() != null) {
+//		SymbolTableEntry ste = newRule.getRateRuleVar();
+//		if(ste instanceof SpeciesContext) {
+//			SpeciesContext sc = (SpeciesContext)ste;
+//			Expression ex = newRule.getRateRuleExpression();
+//			setRuleVariableMark(sc, ex, false);
+//		}
+//	}
+//}
 private void onAssignmentRuleDelete(AssignmentRule[] oldRules, AssignmentRule[] newRules ) {
 	System.out.println("old: " + oldRules.length + ", new: " + newRules.length);
 	AssignmentRule deleted = null;
@@ -454,31 +454,31 @@ private void onAssignmentRuleDelete(AssignmentRule[] oldRules, AssignmentRule[] 
 		removeRuleVariableMark(sc, true);
 	}
 }
-private void onRateRuleDelete(RateRule[] oldRules, RateRule[] newRules ) {
-	System.out.println("old: " + oldRules.length + ", new: " + newRules.length);
-	RateRule deleted = null;
-	for(RateRule candidate : oldRules) {
-		boolean found = false;
-		for(RateRule rule : newRules) {
-			if(candidate.getName().equalsIgnoreCase(rule.getName())) {
-				found = true;
-				break;
-			}
-		}
-		if(found == false) {
-			deleted = candidate;
-			break;
-		}
-	}
-	if(deleted == null || deleted.getSimulationContext() != fieldSimulationContext) {
-		return;
-	}
-	SymbolTableEntry ste = deleted.getRateRuleVar();
-	if(ste instanceof SpeciesContext) {
-		SpeciesContext sc = (SpeciesContext)ste;
-		removeRuleVariableMark(sc, false);
-	}
-}
+//private void onRateRuleDelete(RateRule[] oldRules, RateRule[] newRules ) {
+//	System.out.println("old: " + oldRules.length + ", new: " + newRules.length);
+//	RateRule deleted = null;
+//	for(RateRule candidate : oldRules) {
+//		boolean found = false;
+//		for(RateRule rule : newRules) {
+//			if(candidate.getName().equalsIgnoreCase(rule.getName())) {
+//				found = true;
+//				break;
+//			}
+//		}
+//		if(found == false) {
+//			deleted = candidate;
+//			break;
+//		}
+//	}
+//	if(deleted == null || deleted.getSimulationContext() != fieldSimulationContext) {
+//		return;
+//	}
+//	SymbolTableEntry ste = deleted.getRateRuleVar();
+//	if(ste instanceof SpeciesContext) {
+//		SpeciesContext sc = (SpeciesContext)ste;
+//		removeRuleVariableMark(sc, false);
+//	}
+//}
 
 /**
  * Sets the simulationContext property (cbit.vcell.mapping.SimulationContext) value.
