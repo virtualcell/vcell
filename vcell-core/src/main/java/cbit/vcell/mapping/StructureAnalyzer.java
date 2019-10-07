@@ -139,7 +139,7 @@ public void refresh() {
 //System.out.println("StructureAnalyzer.refresh()");
 		refreshStructures();
 		refreshTotalSpeciesContextMappings();
-		if (speciesContextMappings!=null && reactionSteps!=null){
+		if (speciesContextMappings!=null){
 			refreshTotalMatrices();
 			refreshTotalDependancies();
 		}
@@ -361,7 +361,7 @@ private void refreshTotalDependancies() throws Exception {
 	}
 
 	if (totalNullSpaceMatrix == null){
-		//System.out.println("the matrix has full rank, there are no dependencies");
+		System.out.println("the matrix has full rank, there are no dependencies");
 		return;
 	}
 		
@@ -567,6 +567,14 @@ public static StructureAnalyzer.Dependency[] refreshTotalDependancies(RationalMa
 private void refreshTotalMatrices() throws Exception {
 
 //System.out.println("StructureAnalyzer.refreshTotalMatrices()");
+	//
+	// if we have no reaction, the totalNullSpaceMatrix is the identity matrix
+	//
+	if (reactionSteps == null) {
+		totalNullSpaceMatrix = new RationalNumberMatrix(speciesContextMappings.length, speciesContextMappings.length);
+		totalNullSpaceMatrix.identity();
+		return;
+	}
 	//
 	// update scheme matrix for full system (slow and fast)
 	//
