@@ -1152,7 +1152,7 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 					Expression origExp = simContext.getRateRule(sc).getRateRuleExpression();
 					VCUnitDefinition rateUnit = modelUnitSystem.getInstance_TBD();
 					if (scsInitParamUnit != null && !scsInitParamUnit.equals(modelUnitSystem.getInstance_TBD())) {
-						rateUnit = scsInitParamUnit.divideBy(timeUnit);
+						rateUnit = scsInitParamUnit;
 					}
 					Expression rateExpr = getIdentifierSubstitutions(origExp, rateUnit, gc);
 					String argName = sc.getName() + MATH_FUNC_SUFFIX_RATERULE_RATE;
@@ -1264,14 +1264,12 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 			Expression origExp = ar.getAssignmentRuleExpression();
 			VCUnitDefinition rateUnit = modelUnitSystem.getInstance_TBD();
 			if (mp.getUnitDefinition() != null && !mp.getUnitDefinition().equals(modelUnitSystem.getInstance_TBD())) {
-				rateUnit = mp.getUnitDefinition().divideBy(timeUnit);
+				rateUnit = mp.getUnitDefinition();
 			}
 			Expression rateExpr = getIdentifierSubstitutions(origExp, rateUnit, null);
 			String argName = mp.getName();
 			Variable param = newFunctionOrConstant(argName, rateExpr, null);
 			varHash.addVariable(param);
-
-
 		}
 	}
 
