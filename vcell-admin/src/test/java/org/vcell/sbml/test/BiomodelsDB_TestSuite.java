@@ -288,10 +288,10 @@ public class BiomodelsDB_TestSuite {
 					modelSBML = modelSBML.replace("name=\"z\"", "name=\"s_z\"");
 					modelSBML = modelSBML.replace("name=\"t\"", "name=\"s_t\"");
 					
-					modelSBML = modelSBML.replace("<ci> x", "<ci> s_x");
-					modelSBML = modelSBML.replace("<ci> y", "<ci> s_y");
-					modelSBML = modelSBML.replace("<ci> z", "<ci> s_z");
-					modelSBML = modelSBML.replace("<ci> t", "<ci> s_t");
+					modelSBML = modelSBML.replace("<ci> x ", "<ci> s_x ");
+					modelSBML = modelSBML.replace("<ci> y ", "<ci> s_y ");
+					modelSBML = modelSBML.replace("<ci> z ", "<ci> s_z ");
+					modelSBML = modelSBML.replace("<ci> t ", "<ci> s_t ");
 
 					*/
 
