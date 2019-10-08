@@ -754,7 +754,7 @@ public class SBMLImporter {
 	 * @throws PropertyVetoException
 	 */
 
-	protected void addParameters() throws Exception {
+	protected void addParameters( Map<String, String> vcToSbmlNameMap, Map<String, String> sbmlToVcNameMap) throws Exception {
 		ListOf listofGlobalParams = sbmlModel.getListOfParameters();
 		if (listofGlobalParams == null) {
 			System.out.println("No Global Parameters");
@@ -775,11 +775,9 @@ public class SBMLImporter {
 		}
 
 		ModelUnitSystem modelUnitSystem = vcModel.getUnitSystem();
-
 		for (int i = 0; i < sbmlModel.getNumParameters(); i++) {
 			Parameter sbmlGlobalParam = (Parameter) listofGlobalParams.get(i);
 			String paramName = sbmlGlobalParam.getId();
-
 			SpatialParameterPlugin spplugin = null;
 			if (bSpatial) {
 				// check if parameter id is x/y/z : if so, check if its
@@ -957,9 +955,22 @@ public class SBMLImporter {
 				if (glParamUnitDefn == null) {
 					glParamUnitDefn = modelUnitSystem.getInstance_TBD();
 				}
-				// Also check if the SBML global param is a reserved symbol in
-				// VCell : cannot add reserved symbol to model params.
-				if (!reservedSymbolHash.contains(paramName)) {
+				
+				// special treatment for x,y,z
+				if(isRestrictedXYZT(paramName)) {
+					String vcSpeciesId = "s_" + paramName;
+					vcToSbmlNameMap.put(vcSpeciesId, paramName);
+					sbmlToVcNameMap.put(paramName, vcSpeciesId);
+
+					ModelParameter vcGlobalParam = vcModel.new ModelParameter(vcSpeciesId, valueExpr, Model.ROLE_UserDefined, glParamUnitDefn);
+					if (vcSpeciesId.length() > 64) {
+						vcGlobalParam.setDescription("Parameter Name : " + vcSpeciesId);
+					}
+					vcModelParamsList.add(vcGlobalParam);
+				} else if (!reservedSymbolHash.contains(paramName)) {
+					// Also check if the SBML global param is a reserved symbol in
+					// VCell : cannot add reserved symbol to model params.
+					// we dealt with x,y,z above
 					ModelParameter vcGlobalParam = vcModel.new ModelParameter(paramName, valueExpr, Model.ROLE_UserDefined, glParamUnitDefn);
 					if (paramName.length() > 64) {
 						// record global parameter name in annotation if it is
@@ -1384,7 +1395,7 @@ public class SBMLImporter {
 	}
 	
 	// returns true if reserved x,y,z symbols are used inappropriately - like in a non-spatial model
-	private boolean isRestrictedXYZ(String name) {
+	private boolean isRestrictedXYZT(String name) {
 		if(bSpatial) {
 			return false;
 		}
@@ -1392,7 +1403,7 @@ public class SBMLImporter {
 		if(rs == null) {
 			return false;
 		}
-		if(rs.isX() || rs.isY() || rs.isZ()) {
+		if(rs.isX() || rs.isY() || rs.isZ() || rs.isTime()) {
 			return true;
 		}
 		return false;
@@ -1428,6 +1439,11 @@ public class SBMLImporter {
 			}
 			if(sbmlToVcNameMap.containsKey(vcModel.getZ().getName())) {
 				String oldName = vcModel.getZ().getName();
+				String newName = sbmlToVcNameMap.get(oldName);
+				oldExpression.substituteInPlace(new Expression(oldName), new Expression(newName));
+			}
+			if(sbmlToVcNameMap.containsKey(vcModel.getTIME().getName())) {
+				String oldName = vcModel.getTIME().getName();
 				String newName = sbmlToVcNameMap.get(oldName);
 				oldExpression.substituteInPlace(new Expression(oldName), new Expression(newName));
 			}
@@ -1750,7 +1766,7 @@ public class SBMLImporter {
 							String vcSpeciesName = embeddedElement.getAttributeValue(XMLTags.NameAttrTag);
 							vcSpecies = vcSpeciesHash.get(vcSpeciesName);
 							if (vcSpecies == null) {
-								if(isRestrictedXYZ(vcSpeciesName)) {
+								if(isRestrictedXYZT(vcSpeciesName)) {
 									System.out.println("Here too?");
 								}
 								vcSpecies = new Species(vcSpeciesName, vcSpeciesName);
@@ -1762,7 +1778,7 @@ public class SBMLImporter {
 					} else {
 						// Annotation element is present, but doesn't contain
 						// the species element.
-						if(isRestrictedXYZ(sbmlSpeciesId)) {
+						if(isRestrictedXYZT(sbmlSpeciesId)) {
 							vcSpeciesId = "s_" + sbmlSpeciesId;
 							vcToSbmlNameMap.put(vcSpeciesId, sbmlSpeciesId);
 							sbmlToVcNameMap.put(sbmlSpeciesId, vcSpeciesId);
@@ -1771,7 +1787,7 @@ public class SBMLImporter {
 						vcSpeciesHash.put(vcSpeciesId, vcSpecies);
 					}
 				} else {
-					if(isRestrictedXYZ(sbmlSpeciesId)) {		// try to rename the vCell species if its name is a vCell reserved symbol
+					if(isRestrictedXYZT(sbmlSpeciesId)) {		// try to rename the vCell species if its name is a vCell reserved symbol
 						vcSpeciesId = "s_" + sbmlSpeciesId;
 						vcToSbmlNameMap.put(vcSpeciesId, sbmlSpeciesId);
 						sbmlToVcNameMap.put(sbmlSpeciesId, vcSpeciesId);
@@ -3092,7 +3108,7 @@ public class SBMLImporter {
 		
 		// Add Parameters
 		try {
-			addParameters();
+			addParameters(vcToSbmlNameMap, sbmlToVcNameMap);
 		} catch (Exception e) {
 			e.printStackTrace(System.out);
 			throw new SBMLImportException(e.getMessage(), e);
@@ -3310,7 +3326,7 @@ public class SBMLImporter {
 			for (Reaction sbmlRxn: reactions) {
 				ReactionStep vcReaction = null;
 				String rxnName = sbmlRxn.getId();
-				if(isRestrictedXYZ(rxnName)) {		// simply rename any x,y,z reaction if non-spatial model
+				if(isRestrictedXYZT(rxnName)) {		// simply rename any x,y,z reaction if non-spatial model
 					rxnName = "r_" + rxnName;
 					vcToSbmlNameMap.put(rxnName, sbmlRxn.getId());
 					sbmlToVcNameMap.put(sbmlRxn.getId(), rxnName);
