@@ -279,6 +279,20 @@ public class BiomodelsDB_TestSuite {
 					modelSBML = modelSBML.replace("species=\"x\"", "species=\"s_x\"");
 					modelSBML = modelSBML.replace("species=\"y\"", "species=\"s_y\"");
 					modelSBML = modelSBML.replace("species=\"z\"", "species=\"s_z\"");
+
+					modelSBML = modelSBML.replace("id=\"t\"", "id=\"s_t\"");
+					modelSBML = modelSBML.replace("species=\"t\"", "species=\"s_t\"");
+
+					modelSBML = modelSBML.replace("name=\"x\"", "name=\"s_x\"");
+					modelSBML = modelSBML.replace("name=\"y\"", "name=\"s_y\"");
+					modelSBML = modelSBML.replace("name=\"z\"", "name=\"s_z\"");
+					modelSBML = modelSBML.replace("name=\"t\"", "name=\"s_t\"");
+					
+					modelSBML = modelSBML.replace("<ci> x", "<ci> s_x");
+					modelSBML = modelSBML.replace("<ci> y", "<ci> s_y");
+					modelSBML = modelSBML.replace("<ci> z", "<ci> s_z");
+					modelSBML = modelSBML.replace("<ci> t", "<ci> s_t");
+
 					*/
 
 					Element bioModelInfo = new Element(BioModelsNetPanel.BIOMODELINFO_ELEMENT_NAME);
