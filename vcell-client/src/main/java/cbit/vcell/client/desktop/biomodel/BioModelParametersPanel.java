@@ -551,7 +551,7 @@ public class BioModelParametersPanel extends DocumentEditorSubPanel {
 		
 		DefaultScrollTableCellRenderer nameTableCellRenderer = new DefaultScrollTableCellRenderer() {
 			final Color lightBlueBackground = new Color(214, 234, 248);
-			int PADDING = 7;
+			int PADDING = 3;
 			
 			@Override
 			public void setBounds(int x, int y, int width, int height) {
@@ -586,10 +586,15 @@ public class BioModelParametersPanel extends DocumentEditorSubPanel {
 							}
 						}
 						Icon icon = null;
+						String message = "The default value of this Global is being overriden by a rate / assignment rule in one or more applications";
 						if(rr != null) {
-							icon = VCellIcons.ruleRateIcon;
+							icon = VCellIcons.ruleRateIcon;		// ruleRateIcon
+							setToolTipText(message);
 						} else if(ar != null) {
-							icon = VCellIcons.ruleAssignIcon;
+							icon = VCellIcons.ruleAssignIcon;	// ruleAssignIcon
+							setToolTipText(message);
+						} else {
+							setToolTipText(null);
 						}
 						setIcon(icon);
 						this.setHorizontalTextPosition(SwingConstants.LEFT);
