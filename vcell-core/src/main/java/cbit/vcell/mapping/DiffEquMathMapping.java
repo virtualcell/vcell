@@ -1107,6 +1107,52 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 	//
 	// deal with rate rules
 	//
+	for(ModelParameter mp : modelParameters) {		// initial assignment for global parameter used as rate rule variable
+		RateRule rr = simContext.getRateRule(mp);
+		if(rr == null) {
+			continue;		// we only care about global parameters that are rate rule variables
+		}
+		Variable var = varHash.getVariable(mp.getName());
+		if(var != null) {
+			throw new MappingException("Global Parameters that are rate rule Variables should be unmapped at this point.");
+		}
+		Expression modelParamExpr = rr.getRateRuleExpression();
+		if(modelParamExpr == null) {
+			continue;
+		}
+			
+		GeometryClass gc = getDefaultGeometryClass(modelParamExpr);
+		VCUnitDefinition paramUnit = mp.getUnitDefinition();
+		Expression mpInitExpr = new Expression(modelParamExpr);
+		
+		String argName = mp.getName() + MATH_FUNC_SUFFIX_EVENTASSIGN_OR_RATERULE_INIT;
+		EventAssignmentOrRateRuleInitParameter mpInitParam = new EventAssignmentOrRateRuleInitParameter(argName, modelParamExpr, PARAMETER_ROLE_EVENTASSIGN_OR_RATERULE_INITCONDN, paramUnit);
+
+		String[] symbols = mpInitExpr.getSymbols();
+		if(symbols != null) {
+		// check if 'initExpr' has other speciesContexts or rate rule global parameter variables in its expression
+		// need to replace it with 'spContext_init', modelParameter_init
+			for (String symbol : symbols) {
+				// if symbol is a speciesContext, replacing it with a reference to initial condition for that speciesContext.
+				SymbolTableEntry ste = mpInitExpr.getSymbolBinding(symbol);
+				if (ste instanceof SpeciesContext) {
+					SpeciesContextSpec scs = simContext.getReactionContext().getSpeciesContextSpec((SpeciesContext)ste);
+					// TODO: what if initial count???
+					SpeciesContextSpecParameter spCInitParm = scs.getParameterFromRole(SpeciesContextSpec.ROLE_InitialConcentration);
+					// need to get init condn expression, but can't get it from getMathSymbol() (mapping between bio and math), hence get it as below.
+					Expression scsInitExpr = new Expression(spCInitParm, getNameScope());
+					scsInitExpr.bindExpression(this);
+					mpInitExpr.substituteInPlace(new Expression(ste.getName()), scsInitExpr);
+				} else {
+					System.out.println(argName);
+				}
+			}
+		}
+		String name = getMathSymbol(mpInitParam, gc);
+		Expression exp = getIdentifierSubstitutions(mpInitExpr, mpInitParam.getUnitDefinition(), gc);
+		Variable mpInitVariable = newFunctionOrConstant(name, exp, gc);
+		varHash.addVariable(mpInitVariable);
+	}
 	enum1 = getSpeciesContextMappings();
 	while(enum1.hasMoreElements()) {				// species context used as rate rule variable
 		SpeciesContextMapping scm = (SpeciesContextMapping)enum1.nextElement();
@@ -1204,10 +1250,11 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 
 			SubDomain subDomain = mathDesc.getSubDomains().nextElement();	// we know it's non-spatial
 			Equation equation = null;
+			// TODO: replace the expression with the variable  ex: "g0_protocol_init" computed above
 			Expression initial = new Expression(mp.getExpression());	// TODO: can it be null? should check and maybe try mp.getConstantValue() too ???
 			Expression rateExpr = new Expression(0.0);
 //			RateRuleRateParameter rateParam = rateRuleRateParamHash.get(variable);
-			if (rateParam != null) {
+			if (rateParam != null) {		// ex: g0_rate
 				rateExpr = new Expression(getMathSymbol(rateParam, null)); 
 			}
 			equation = new OdeEquation(variable, initial, rateExpr);	// ODE Equation for rate rule variable being a global parameter
