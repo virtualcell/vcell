@@ -16,6 +16,7 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
 
 import org.vcell.util.Compare;
 import org.vcell.util.Extent;
@@ -35,6 +36,7 @@ import cbit.vcell.VirtualMicroscopy.Image.ImageStatistics;
  * 
  * 
  */
+@XmlRootElement
 @XmlAccessorType(XmlAccessType.FIELD)// prevent jaxb from calling 'setters' e.g setExtent(...) for class variables
 public class ImageDataset implements Matchable{
 	@XmlElement
