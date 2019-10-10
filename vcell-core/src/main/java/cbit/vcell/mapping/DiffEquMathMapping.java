@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
 
@@ -1107,6 +1108,7 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 	//
 	// deal with rate rules
 	//
+	Map<ModelParameter, Variable> initModelParameterHash = new HashMap<> ();
 	for(ModelParameter mp : modelParameters) {		// initial assignment for global parameter used as rate rule variable
 		RateRule rr = simContext.getRateRule(mp);
 		if(rr == null) {
@@ -1116,11 +1118,10 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 		if(var != null) {
 			throw new MappingException("Global Parameters that are rate rule Variables should be unmapped at this point.");
 		}
-		Expression modelParamExpr = rr.getRateRuleExpression();
+		Expression modelParamExpr = mp.getExpression();
 		if(modelParamExpr == null) {
 			continue;
 		}
-			
 		GeometryClass gc = getDefaultGeometryClass(modelParamExpr);
 		VCUnitDefinition paramUnit = mp.getUnitDefinition();
 		Expression mpInitExpr = new Expression(modelParamExpr);
@@ -1143,8 +1144,24 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 					Expression scsInitExpr = new Expression(spCInitParm, getNameScope());
 					scsInitExpr.bindExpression(this);
 					mpInitExpr.substituteInPlace(new Expression(ste.getName()), scsInitExpr);
+				} else if(ste instanceof ModelParameter) {
+					ModelParameter mpArg = (ModelParameter)ste;
+					System.out.println(mpArg.getName());
+					if(simContext.getRateRule(mpArg) == null) {
+						continue;		// only globals that are RateRule variables need to be replaced with their _init variable
+					}
+					Variable mpArgVar = initModelParameterHash.get(mpArg);
+					if(mpArgVar != null) {		// we already made it, we only need to use it
+						Expression mpArgInitExpr = new Expression(mpArgVar.getName());
+						mpArgInitExpr.bindExpression(this);
+						mpInitExpr.substituteInPlace(new Expression(ste.getName()), mpArgInitExpr);
+					} else {
+//						Expression mpArgInitExpr = new Expression(mpArg.getName() + MATH_FUNC_SUFFIX_EVENTASSIGN_OR_RATERULE_INIT);
+//						mpArgInitExpr.bindExpression(this);
+//						mpInitExpr.substituteInPlace(new Expression(ste.getName()), mpArgInitExpr);
+					}
 				} else {
-					System.out.println(argName);
+					System.out.println("other");					
 				}
 			}
 		}
@@ -1152,6 +1169,7 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 		Expression exp = getIdentifierSubstitutions(mpInitExpr, mpInitParam.getUnitDefinition(), gc);
 		Variable mpInitVariable = newFunctionOrConstant(name, exp, gc);
 		varHash.addVariable(mpInitVariable);
+		initModelParameterHash.put(mp, mpInitVariable);
 	}
 	enum1 = getSpeciesContextMappings();
 	while(enum1.hasMoreElements()) {				// species context used as rate rule variable
@@ -1251,7 +1269,11 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 			SubDomain subDomain = mathDesc.getSubDomains().nextElement();	// we know it's non-spatial
 			Equation equation = null;
 			// TODO: replace the expression with the variable  ex: "g0_protocol_init" computed above
-			Expression initial = new Expression(mp.getExpression());	// TODO: can it be null? should check and maybe try mp.getConstantValue() too ???
+			Expression initial = new Expression(mp.getExpression());
+			Variable mpInitVariable = initModelParameterHash.get(mp);	// TODO: can it be null? should check and maybe try mp.getConstantValue() too ???
+			if(mpInitVariable != null) {
+				initial = new Expression(mpInitVariable.getName());
+			}
 			Expression rateExpr = new Expression(0.0);
 //			RateRuleRateParameter rateParam = rateRuleRateParamHash.get(variable);
 			if (rateParam != null) {		// ex: g0_rate
