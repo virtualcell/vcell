@@ -173,6 +173,7 @@ import cbit.vcell.client.task.NewName;
 import cbit.vcell.client.task.RunSims;
 import cbit.vcell.client.task.SaveDocument;
 import cbit.vcell.client.task.SetMathDescription;
+import cbit.vcell.client.task.CheckBeforeDelete.LOW_PRECISION_SAVE;
 import cbit.vcell.client.task.CheckBeforeDelete.LostFlag;
 import cbit.vcell.clientdb.DocumentManager;
 import cbit.vcell.desktop.ImageDbTreePanel;
@@ -3681,18 +3682,6 @@ public void runSimulations(final ClientSimManager clientSimManager, final Simula
 		}
 	}
 
-	//Check LowPrecision Constants and fail because CheckBeforeDelete might save a different document
-	if(!needSaveAs && documentWindowManager.getVCDocument() instanceof BioModel) {
-		HashMap<Simulation, LostFlag> lowPrecFlags = new HashMap<>();
-		Simulation[] sims = ((BioModel)documentWindowManager.getVCDocument()).getSimulations();
-		for (int i = 0; sims != null && i < simulations.length; i++) {
-			CheckBeforeDelete.checkLowPrecisionChange(lowPrecFlags, sims[i], sims[i]);
-		}
-		if(lowPrecFlags.size() > 0) {
-			throw new RuntimeException("Common Constants need upgrading, please save model before running simulations for more information");
-		}
-	}
-
 	// Before running the simulation, check if all the sizes of structures are set
 	if(simulations != null && simulations.length > 0)
 	{
@@ -3793,8 +3782,11 @@ public void runSimulations(final ClientSimManager clientSimManager, final Simula
 			checkUnchanged,
 			saveDocument,
 			checkBeforeDelete,
+			CheckBeforeDelete.getLowPrecisionConstantsNewNameTask(),
+			CheckBeforeDelete.getLowPrecisionConstantsSaveTask(),
 			deleteOldDocument,
 			finishSave,
+//			lowPrecisionConstantsWaitSave,
 			runSims
 			};
 	}
@@ -3881,6 +3873,8 @@ public void saveDocument(final DocumentWindowManager documentWindowManager, bool
 			checkUnchanged,
 			saveDocument,
 			checkBeforeDelete,
+			CheckBeforeDelete.getLowPrecisionConstantsNewNameTask(),
+			CheckBeforeDelete.getLowPrecisionConstantsSaveTask(),
 			deleteOldDocument,
 			finishSave
 		};

@@ -23,6 +23,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.Vector;
 import java.util.function.Consumer;
 
@@ -493,6 +495,8 @@ public BioModel getBioModel(Element param,VCellSoftwareVersion docVcellSoftwareV
 	java.util.Iterator<Element> iterator = children.iterator();
 //long l3 = System.currentTimeMillis();
 //System.out.println("model-------- "+((double)(l3-l2))/1000);
+	Long lpcBMKey = Long.valueOf(biomodel.getVersion().getVersionKey().toString());
+	MathDescription.originalHasLowPrecisionConstants.remove(lpcBMKey);
 	while (iterator.hasNext()) {
 //long l4 = System.currentTimeMillis();
 		Element tempElement = iterator.next();
@@ -6055,6 +6059,8 @@ private SimulationContext getSimulationContext(Element param, BioModel biomodel)
 	Element xmlMathDescription = param.getChild(XMLTags.MathDescriptionTag, vcNamespace);
 	if (xmlMathDescription!=null) {
 		newmathdesc = getMathDescription( xmlMathDescription, newgeometry );
+		Long lpcBMKey = Long.valueOf(biomodel.getVersion().getVersionKey().toString());
+//		MathDescription.originalHasLowPrecisionConstants.remove(lpcBMKey);
 		try {
 			Enumeration<Constant> myenum = newmathdesc.getConstants();
 			while(myenum.hasMoreElements()) {
@@ -6066,7 +6072,12 @@ private SimulationContext getSimulationContext(Element param, BioModel biomodel)
 					boolean equals = nextElement.getExpression().infix().equals(reservedSymbolByName.getExpression().infix());
 //					System.out.println("--"+" "+nextElement.getExpression().infix() +" "+reservedSymbolByName.getExpression().infix()+" "+equals);
 					if(!equals) {
-						MathDescription.originalHasLowPrecisionConstants.add(newmathdesc.getVersion().getVersionKey().toString());
+						TreeSet<String> treeSet = MathDescription.originalHasLowPrecisionConstants.get(lpcBMKey);
+						if(treeSet == null) {
+							treeSet = new TreeSet<>();
+							MathDescription.originalHasLowPrecisionConstants.put(lpcBMKey,treeSet);
+						}
+						treeSet.add(newmathdesc.getVersion().getVersionKey().toString());
 						break;
 					}
 				}

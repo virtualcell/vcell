@@ -9,14 +9,10 @@
  */
 
 package cbit.vcell.client.task;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Hashtable;
-import java.util.TreeMap;
 import java.util.TreeSet;
-import java.util.Vector;
 
-import org.vcell.util.BeanUtils;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.document.VCDocument;
 import org.vcell.util.document.Version;
@@ -26,13 +22,16 @@ import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.DocumentWindowManager;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.UserMessage;
+import cbit.vcell.client.task.CheckBeforeDelete.LOW_PRECISION_SAVE;
 import cbit.vcell.clientdb.DocumentManager;
+import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.mathmodel.MathModel;
-import cbit.vcell.model.Model;
 import cbit.vcell.server.SimulationStatus;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationInfo;
+import cbit.vcell.xml.XMLSource;
+import cbit.vcell.xml.XmlHelper;
 
 /**
  * Insert the type's description here.
@@ -142,10 +141,15 @@ private HashMap<Simulation, LostFlag> checkLostResults(BioModel oldBioModel, Bio
 }
 
 public static void checkLowPrecisionChange(HashMap<Simulation, LostFlag> lostSimResultsMap,Simulation correspondingSimulation,Simulation oldSimulation) {
+	Long bmKey = null;
+	if(oldSimulation.getSimulationOwner() instanceof SimulationContext && ((SimulationContext)oldSimulation.getSimulationOwner()).getBioModel().getVersion() != null) {
+		bmKey = new Long(((SimulationContext)oldSimulation.getSimulationOwner()).getBioModel().getVersion().getVersionKey().toString());
+	}
 	if(correspondingSimulation!=null &&
 		oldSimulation.getMathDescription().getVersion() != null &&
 		oldSimulation.getMathDescription().getVersion().getVersionKey() != null &&
-		MathDescription.originalHasLowPrecisionConstants.contains(oldSimulation.getMathDescription().getVersion().getVersionKey().toString())
+		MathDescription.originalHasLowPrecisionConstants.containsKey(bmKey) &&
+		MathDescription.originalHasLowPrecisionConstants.get(bmKey).contains(oldSimulation.getMathDescription().getVersion().getVersionKey().toString())
 		) {
 		if(lostSimResultsMap.get(correspondingSimulation) == LostFlag.DIFF ) {
 			lostSimResultsMap.put(correspondingSimulation,LostFlag.DIFF_AND_LOW_PRECISION);
@@ -250,7 +254,8 @@ private HashMap<Simulation, LostFlag> checkLostResults(MathModel oldMathmodel, M
 	return lostSimResultsMap;
 }
 
-private static TreeSet<String> pendingSaves = new TreeSet<>();
+//public static TreeSet<String> alreadyAskedAboutLostResults = new TreeSet<>();
+public enum LOW_PRECISION_SAVE {KEEPOLDRESULTS,ASNEW};
 /**
  * Insert the method's description here.
  * Creation date: (5/31/2004 6:04:14 PM)
@@ -306,11 +311,10 @@ public void run(Hashtable<String, Object> hashTable) throws Exception {
 		UserMessage userMessage = UserMessage.question_LostResults;
 		if(!simulationsWithLostResults.values().contains(LostFlag.DIFF) &&  simulationsWithLostResults.values().contains(LostFlag.LOW_PRECISION) && !simulationsWithLostResults.values().contains(LostFlag.DIFF_AND_LOW_PRECISION)) {
 			userMessage = UserMessage.question_LostResultsLowPrecision;
-			if(pendingSaves.contains(currentDocument.getVersion().getVersionKey().toString())) {
-				pendingSaves.remove(currentDocument.getVersion().getVersionKey().toString());
-				hashTable.remove("conditionalSkip");
-				return;
-			}
+//			if(alreadyAskedAboutLostResults.remove(currentDocument.getVersion().getVersionKey().toString())) {
+//				hashTable.remove("conditionalSkip");
+//				return;
+//			}
 		}
 //		else if(!simulationsWithLostResults.values().contains(LostFlag.DIFF) && !simulationsWithLostResults.values().contains(LostFlag.LOW_PRECISION) &&  simulationsWithLostResults.values().contains(LostFlag.DIFF_AND_LOW_PRECISION)) {
 //			userMessage = new UserMessage(UserMessage.question_LostResults.getMessage(null)+",also "+s, UserMessage.question_LostResults.getOptions(), UserMessage.question_LostResults.getDefaultSelection());			
@@ -320,21 +324,22 @@ public void run(Hashtable<String, Object> hashTable) throws Exception {
 			//Delete the NEW document that was created on the server by default during save because we will save again with new name
 			//Clear simulation versions on current document so when we SaveAs... new document will have no sim results because
 			//we are re-saving as a result of lowPrecisionConstants
-			if(currentDocument instanceof BioModel) {
-				if(!bNewDocumentWasNotSaved) {documentWindowManager.getRequestManager().deleteDocument(documentWindowManager.getRequestManager().getDocumentManager().getBioModelInfo(savedDocument.getVersion().getVersionKey()), documentWindowManager,true);}
-				for (int i = 0; i < ((BioModel)currentDocument).getSimulations().length; i++) {
-					((BioModel)currentDocument).getSimulations()[i].clearVersion();
-				}
-			}
+//			if(currentDocument instanceof BioModel) {
+//				if(!bNewDocumentWasNotSaved) {documentWindowManager.getRequestManager().deleteDocument(documentWindowManager.getRequestManager().getDocumentManager().getBioModelInfo(savedDocument.getVersion().getVersionKey()), documentWindowManager,true);}
+//				for (int i = 0; i < ((BioModel)currentDocument).getSimulations().length; i++) {
+//					((BioModel)currentDocument).getSimulations()[i].clearVersion();
+//				}
+//			}
 //			else if(currentDocument instanceof MathModel) {
 //				if(!bNewDocumentWasNotSaved) {documentWindowManager.getRequestManager().deleteDocument(documentWindowManager.getRequestManager().getDocumentManager().getMathModelInfo(savedDocument.getVersion().getVersionKey()), documentWindowManager,true);}			
 //				for (int i = 0; i < ((MathModel)currentDocument).getSimulations().length; i++) {
 //					((MathModel)currentDocument).getSimulations()[i].clearVersion();
 //				}
 //			}
-			documentWindowManager.saveDocumentAsNew();
+			hashTable.put(LOW_PRECISION_SAVE.class.getName(), CheckBeforeDelete.LOW_PRECISION_SAVE.ASNEW);
+//			documentWindowManager.saveDocumentAsNew();
 //			hashTable.put(SaveDocument.DOC_KEY, documentWindowManager.getVCDocument());
-			hashTable.put("conditionalSkip", new String[] {FinishSave.class.getName(),DeleteOldDocument.class.getName()});
+//			hashTable.put("conditionalSkip", new String[] {FinishSave.class.getName(),DeleteOldDocument.class.getName()});
 		}else if (choice.equals(UserMessage.OPTION_CANCEL) ) {// from UserMessage.question_LostResults or UserMessage.question_LostResultsLowPrecision
 			//Delete the NEW document that was created on the server by default during save because user doesn't want it,  don't delete original
 			if(currentDocument instanceof BioModel) {
@@ -363,10 +368,11 @@ public void run(Hashtable<String, Object> hashTable) throws Exception {
 		}else if (choice.equals(UserMessage.OPTION_KEEP_OLD_RESULTS) ) {// from UserMessage.question_LostResultsLowPrecision
 			//do nothing here, NEW document has already been saved and original doc will be deleted
 			if (bNewDocumentWasNotSaved) {
-				documentWindowManager.getVCDocument().setDescription(documentWindowManager.getVCDocument().getDescription()+" ");
-				pendingSaves.add(currentDocument.getVersion().getVersionKey().toString());
-				documentWindowManager.saveDocument(true);
-				hashTable.put("conditionalSkip", new String[] {FinishSave.class.getName(),DeleteOldDocument.class.getName()});
+//				documentWindowManager.getVCDocument().setDescription(documentWindowManager.getVCDocument().getDescription()+" ");
+//				alreadyAskedAboutLostResults.add(currentDocument.getVersion().getVersionKey().toString());
+				hashTable.put(LOW_PRECISION_SAVE.class.getName(), CheckBeforeDelete.LOW_PRECISION_SAVE.KEEPOLDRESULTS);
+//				documentWindowManager.saveDocument(true);
+//				hashTable.put("conditionalSkip", new String[] {FinishSave.class.getName(),DeleteOldDocument.class.getName()});
 			}else {
 				hashTable.remove("conditionalSkip");
 			}
@@ -382,4 +388,87 @@ public void run(Hashtable<String, Object> hashTable) throws Exception {
 	
 }
 
+public static AsynchClientTask getLowPrecisionConstantsNewNameTask() {
+	return new AsynchClientTask("LowPrecisionConstant New Name...",AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+		@Override
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
+			if(hashTable.get(LOW_PRECISION_SAVE.class.getName()) != null && ((CheckBeforeDelete.LOW_PRECISION_SAVE)hashTable.get(LOW_PRECISION_SAVE.class.getName()) == LOW_PRECISION_SAVE.ASNEW)) {
+				DocumentWindowManager documentWindowManager = (DocumentWindowManager)hashTable.get(CommonTask.DOCUMENT_WINDOW_MANAGER.name);
+				VCDocument currentDocument = documentWindowManager.getVCDocument();
+				if(hashTable.get("newName") != null) {
+					throw new Exception("Unexpected: New Name for saved document has already been defined elsewhere");
+				}
+				try {
+					(new NewName()).run(hashTable);
+				} catch (UserCancelException e) {
+					VCDocument savedDocument = (VCDocument)hashTable.get(SaveDocument.DOC_KEY);
+					if(savedDocument != null) {
+						boolean bNewDocumentWasNotSaved = savedDocument.getVersion().getVersionKey().compareEqual(currentDocument.getVersion().getVersionKey());
+						if(!bNewDocumentWasNotSaved) {//can only be BioModels with LowPrecisionCheck
+							documentWindowManager.getRequestManager().deleteDocument(
+								documentWindowManager.getRequestManager().getDocumentManager().getBioModelInfo(
+									savedDocument.getVersion().getVersionKey()), documentWindowManager,true);
+						}
+					}
+					throw e;
+				}
+			}
+		}
+	};
+}
+public static AsynchClientTask getLowPrecisionConstantsSaveTask() {
+	return new AsynchClientTask("LowPrecisionConstant Save...",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+		@Override
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
+			if(hashTable.get(LOW_PRECISION_SAVE.class.getName()) != null) {
+				hashTable.put("conditionalSkip", new String[] {DeleteOldDocument.class.getName()});
+//				Simulation[] storedSims = (Simulation[])hashTable.get("simulations");
+				if(((CheckBeforeDelete.LOW_PRECISION_SAVE)hashTable.get(LOW_PRECISION_SAVE.class.getName()) == LOW_PRECISION_SAVE.ASNEW)) {
+//					hashTable.put("simulations", ((BioModel)currentDocument).getSimulations());
+					//If LOWPRECISION saveASNew then clear sim results
+//					try {
+//						if(true) {throw new Exception("test");}
+						//Save new document
+						(new SaveDocument(false)).run(hashTable);
+						//delete sim versions so they have to be re-run to use new HighPrecisionConstants
+						//and re-save the new document
+						BioModel lpcDoc = (BioModel)hashTable.remove(SaveDocument.DOC_KEY);
+						hashTable.remove("newName");
+						for (int i = 0; i < ((BioModel)lpcDoc).getSimulations().length; i++) {
+							((BioModel)lpcDoc).getSimulations()[i].clearVersion();
+						}
+						Hashtable<String, Object> delSimVersionHash = new Hashtable<>();
+						final DocumentWindowManager dwm = (DocumentWindowManager)hashTable.get(CommonTask.DOCUMENT_WINDOW_MANAGER.name);
+						delSimVersionHash.put(CommonTask.DOCUMENT_MANAGER.name,dwm.getRequestManager().getDocumentManager());
+						delSimVersionHash.put(CommonTask.DOCUMENT_WINDOW_MANAGER.name, hashTable.get(CommonTask.DOCUMENT_WINDOW_MANAGER.name));
+						delSimVersionHash.put("LOW_PRECISION_CONSTANT_DOC", lpcDoc);
+						//Save doc with sims that have cleared versions
+						(new SaveDocument(false)).run(delSimVersionHash);
+						hashTable.put(SaveDocument.DOC_KEY, delSimVersionHash.get(SaveDocument.DOC_KEY));
+						//Remove previous new doc with uncleared sim versions
+						if(!lpcDoc.getVersion().getVersionKey().equals(delSimVersionHash.get(SaveDocument.DOC_KEY))) {
+							dwm.getRequestManager().deleteDocument(
+								dwm.getRequestManager().getDocumentManager().getBioModelInfo(lpcDoc.getVersion().getVersionKey()), dwm,true);
+						}
+//					} catch (Exception e) {
+//						// TODO Auto-generated catch block
+//						e.printStackTrace();
+////						documentWindowManager.resetDocument(XmlHelper.XMLToBioModel(new XMLSource(originalCurrentDocStr)));
+//						throw e;
+//					}
+				}else {
+					try {
+//						if(true) {throw new Exception("test");}
+						(new SaveDocument(false)).run(hashTable);
+					} catch (Exception e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+						throw e;
+					}
+
+				}
+			}
+		}
+	};
+}
 }

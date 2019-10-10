@@ -14,6 +14,7 @@ import java.util.Hashtable;
 import java.util.Vector;
 
 import org.vcell.util.BeanUtils;
+import org.vcell.util.Compare;
 import org.vcell.util.ISize;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.document.VCDocument;
@@ -27,6 +28,7 @@ import cbit.vcell.client.UserMessage;
 import cbit.vcell.client.server.JobManager;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.surface.GeometrySurfaceDescription;
+import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.ParticleProperties;
 import cbit.vcell.math.SubDomain;
@@ -138,9 +140,16 @@ public void run(Hashtable<String, Object> hashTable) throws java.lang.Exception 
 			Vector<Simulation> v = new Vector<Simulation>();
 			for (int i = 0; i < simulations.length; i++){
 				for (int j = 0; j < allSims.length; j++){
-					if (simulations[i].getName().equals(allSims[j].getName())) {
-						v.add(allSims[j]);
-						break;
+					if(allSims[i].getSimulationOwner() instanceof SimulationContext) {
+						if (simulations[i].getName().equals(allSims[j].getName()) && Compare.isEqualOrNull(allSims[i].getSimulationOwner().getName(), (simulations[i].getSimulationOwner()!=null?simulations[i].getSimulationOwner().getName():null))) {
+							v.add(allSims[j]);
+							break;
+						}
+					}else {
+						if (simulations[i].getName().equals(allSims[j].getName())) {
+							v.add(allSims[j]);
+							break;
+						}						
 					}
 				}
 			}
