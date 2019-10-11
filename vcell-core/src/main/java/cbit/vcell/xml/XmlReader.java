@@ -495,8 +495,10 @@ public BioModel getBioModel(Element param,VCellSoftwareVersion docVcellSoftwareV
 	java.util.Iterator<Element> iterator = children.iterator();
 //long l3 = System.currentTimeMillis();
 //System.out.println("model-------- "+((double)(l3-l2))/1000);
-	Long lpcBMKey = Long.valueOf(biomodel.getVersion().getVersionKey().toString());
-	MathDescription.originalHasLowPrecisionConstants.remove(lpcBMKey);
+	if(biomodel.getVersion() != null && biomodel.getVersion().getVersionKey() != null) {
+		Long lpcBMKey = Long.valueOf(biomodel.getVersion().getVersionKey().toString());
+		MathDescription.originalHasLowPrecisionConstants.remove(lpcBMKey);
+	}
 	while (iterator.hasNext()) {
 //long l4 = System.currentTimeMillis();
 		Element tempElement = iterator.next();
@@ -6059,32 +6061,35 @@ private SimulationContext getSimulationContext(Element param, BioModel biomodel)
 	Element xmlMathDescription = param.getChild(XMLTags.MathDescriptionTag, vcNamespace);
 	if (xmlMathDescription!=null) {
 		newmathdesc = getMathDescription( xmlMathDescription, newgeometry );
-		Long lpcBMKey = Long.valueOf(biomodel.getVersion().getVersionKey().toString());
-//		MathDescription.originalHasLowPrecisionConstants.remove(lpcBMKey);
-		try {
-			Enumeration<Constant> myenum = newmathdesc.getConstants();
-			while(myenum.hasMoreElements()) {
-				Constant nextElement = myenum.nextElement();
-				String name2 = nextElement.getName();
-				ReservedSymbol reservedSymbolByName = biomodel.getModel().getReservedSymbolByName(name2);
-				if(reservedSymbolByName != null && nextElement.getExpression() != null && reservedSymbolByName.getExpression() != null) {
-//					System.out.println(name2);
-					boolean equals = nextElement.getExpression().infix().equals(reservedSymbolByName.getExpression().infix());
-//					System.out.println("--"+" "+nextElement.getExpression().infix() +" "+reservedSymbolByName.getExpression().infix()+" "+equals);
-					if(!equals) {
-						TreeSet<String> treeSet = MathDescription.originalHasLowPrecisionConstants.get(lpcBMKey);
-						if(treeSet == null) {
-							treeSet = new TreeSet<>();
-							MathDescription.originalHasLowPrecisionConstants.put(lpcBMKey,treeSet);
+		if(biomodel.getVersion() != null && biomodel.getVersion().getVersionKey() != null) {
+			Long lpcBMKey = Long.valueOf(biomodel.getVersion().getVersionKey().toString());
+			
+	//		MathDescription.originalHasLowPrecisionConstants.remove(lpcBMKey);
+			try {
+				Enumeration<Constant> myenum = newmathdesc.getConstants();
+				while(myenum.hasMoreElements()) {
+					Constant nextElement = myenum.nextElement();
+					String name2 = nextElement.getName();
+					ReservedSymbol reservedSymbolByName = biomodel.getModel().getReservedSymbolByName(name2);
+					if(reservedSymbolByName != null && nextElement.getExpression() != null && reservedSymbolByName.getExpression() != null) {
+	//					System.out.println(name2);
+						boolean equals = nextElement.getExpression().infix().equals(reservedSymbolByName.getExpression().infix());
+	//					System.out.println("--"+" "+nextElement.getExpression().infix() +" "+reservedSymbolByName.getExpression().infix()+" "+equals);
+						if(!equals) {
+							TreeSet<String> treeSet = MathDescription.originalHasLowPrecisionConstants.get(lpcBMKey);
+							if(treeSet == null) {
+								treeSet = new TreeSet<>();
+								MathDescription.originalHasLowPrecisionConstants.put(lpcBMKey,treeSet);
+							}
+							treeSet.add(newmathdesc.getVersion().getVersionKey().toString());
+							break;
 						}
-						treeSet.add(newmathdesc.getVersion().getVersionKey().toString());
-						break;
 					}
 				}
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
 			}
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
 		}
 	}
 	
