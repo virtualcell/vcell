@@ -1172,9 +1172,9 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 				}
 				Variable mpArgVar = initModelParameterHashTmp.get(mpArg);
 				if(mpArgVar != null) {		// we already made it, we only need to use it
-					//Expression mpArgInitExpr = new Expression(mpArgVar.getName());
-					//mpArgInitExpr.bindExpression(this);
-					//mpInitExpr.substituteInPlace(new Expression(ste.getName()), mpArgInitExpr);
+					Expression mpArgInitExpr = new Expression(mpArgVar.getName());
+					mpArgInitExpr.bindExpression(this);
+					mpInitExpr.substituteInPlace(new Expression(ste.getName()), mpArgInitExpr);
 				}
 			} else {
 				System.out.println("other");					
