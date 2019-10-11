@@ -85,6 +85,7 @@ import cbit.vcell.model.ModelUnitSystem;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.parser.NameScope;
+import cbit.vcell.parser.SymbolTableEntry;
 
 @SuppressWarnings("serial")
 public class BioModelParametersPanel extends DocumentEditorSubPanel {
@@ -573,20 +574,20 @@ public class BioModelParametersPanel extends DocumentEditorSubPanel {
 				if(table.getModel() instanceof BioModelParametersTableModel) {
 					BioModelParametersTableModel tableModel = (BioModelParametersTableModel)table.getModel();
 					Object selectedObject = tableModel.getValueAt(row);
-					if(selectedObject instanceof ModelParameter) {
-						ModelParameter mp = (ModelParameter)selectedObject;
+					if(selectedObject instanceof ModelParameter || selectedObject instanceof SpeciesContext) {
+						SymbolTableEntry ste = (SymbolTableEntry)selectedObject;
 						
 						RateRule rr = null;
 						AssignmentRule ar = null;
 						for (SimulationContext simContext : bioModel.getSimulationContexts()) {
-							rr = simContext.getRateRule(mp);
-							ar = simContext.getAssignmentRule(mp);
+							rr = simContext.getRateRule(ste);
+							ar = simContext.getAssignmentRule(ste);
 							if(rr != null || ar != null) {
 								break;
 							}
 						}
 						Icon icon = null;
-						String message = "The default value of this Global is being overriden by a rate / assignment rule in one or more applications";
+						String message = "The default value of this entity is being overriden by a rate / assignment rule in one or more applications";
 						if(rr != null) {
 							icon = VCellIcons.ruleRateIcon;		// ruleRateIcon
 							setToolTipText(message);
@@ -610,48 +611,7 @@ public class BioModelParametersPanel extends DocumentEditorSubPanel {
 //				this.setHorizontalAlignment(SwingConstants.LEADING);
 
 
-//				if (table.getModel() instanceof SpeciesContextSpecsTableModel) {
-//					Icon icon = VCellIcons.issueGoodIcon;
-//					Object selectedObject = null;
-//					if (table.getModel() == tableModel) {
-//						selectedObject = tableModel.getValueAt(row);
-//					}
-//					if (selectedObject != null) {
-//						if(isSelected) {
-//							setBackground(lightBlueBackground);
-//						}
-//						if(selectedObject instanceof SpeciesContextSpec) {
-//							SpeciesContextSpec scs = (SpeciesContextSpec)selectedObject;
-//							SpeciesContext sc = scs.getSpeciesContext();
-//
-//							boolean foundRuleMatch = false;
-//							if(fieldSimulationContext.getRateRules() != null && fieldSimulationContext.getRateRules().length > 0) {
-//								for(RateRule rr : fieldSimulationContext.getRateRules()) {
-//									if(rr.getRateRuleVar() == null) {
-//										continue;
-//									}
-//									if(sc.getName().equals(rr.getRateRuleVar().getName())) {
-//										foundRuleMatch = true;
-//										icon = VCellIcons.ruleRateIcon;
-//										break;
-//									}
-//								}
-//							}
-//							if(!foundRuleMatch && fieldSimulationContext.getAssignmentRules() != null && fieldSimulationContext.getAssignmentRules().length > 0) {
-//								for(AssignmentRule rr : fieldSimulationContext.getAssignmentRules()) {
-//									if(rr.getAssignmentRuleVar() == null) {
-//										continue;
-//									}
-//									if(sc.getName().equals(rr.getAssignmentRuleVar().getName())) {
-//										icon = VCellIcons.ruleAssignIcon;
-//										break;
-//									}
-//								}
-//							}
-//						}
-//					}
-//					setIcon(icon);
-//				}
+
 				return this;
 			}
 		};
