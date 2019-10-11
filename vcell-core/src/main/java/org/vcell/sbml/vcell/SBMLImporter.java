@@ -517,23 +517,19 @@ public class SBMLImporter {
 		if (sbmlModel.getNumEvents() > 0) {
 			// VCell does not support events in spatial model
 			if (bSpatial) {
-				throw new SBMLImportException(
-						"Events are not supported in a spatial VCell model.");
+				throw new SBMLImportException("Events are not supported in a spatial VCell model.");
 			}
 
 			ListOf<Event> listofEvents = sbmlModel.getListOfEvents();
-
 			Model vcModel = vcBioModel.getSimulationContext(0).getModel();
 			for (int i = 0; i < sbmlModel.getNumEvents(); i++) {
 				try {
 					Event event = listofEvents.get(i);
 
-					// trigger - adjust for species context and time conversion
-					// factors if necessary
+					// trigger - adjust for species context and time conversion factors if necessary
 					Expression triggerExpr = null;
 					if (event.isSetTrigger()) {
-						triggerExpr = getExpressionFromFormula(event
-								.getTrigger().getMath());
+						triggerExpr = getExpressionFromFormula(event.getTrigger().getMath());
 						triggerExpr = adjustExpression(triggerExpr, vcModel);
 					}
 
@@ -547,18 +543,16 @@ public class SBMLImporter {
 							eventName = vcBioModel.getSimulationContext(0).getFreeEventName(null);
 						}
 					}
-
+					
 					// delay
-					BioEvent vcEvent = new BioEvent(eventName,
-							TriggerType.GeneralTrigger, true, vcBioModel.getSimulationContext(0));
+					BioEvent vcEvent = new BioEvent(eventName, TriggerType.GeneralTrigger, true, vcBioModel.getSimulationContext(0));
 					if (event.isSetDelay()) {
 						Expression durationExpr = null;
 						durationExpr = getExpressionFromFormula(event.getDelay().getMath());
 						durationExpr = adjustExpression(durationExpr, vcModel);
 						boolean bUseValsFromTriggerTime = true;
 						if (event.isSetUseValuesFromTriggerTime()) {
-							bUseValsFromTriggerTime = event
-									.isSetUseValuesFromTriggerTime();
+							bUseValsFromTriggerTime = event.isSetUseValuesFromTriggerTime();
 						} else {
 							if (durationExpr != null && !durationExpr.isZero()) {
 								bUseValsFromTriggerTime = false;
@@ -569,15 +563,16 @@ public class SBMLImporter {
 							bUseValsFromTriggerTime = false;
 						}
 						vcEvent.setUseValuesFromTriggerTime(bUseValsFromTriggerTime);
-						vcEvent.getParameter(BioEventParameterType.TriggerDelay)
-								.setExpression(durationExpr);
+						vcEvent.getParameter(BioEventParameterType.TriggerDelay).setExpression(durationExpr);
 					}
-
+					
+					cbit.vcell.mapping.ParameterContext.LocalParameter triggerParameter = vcEvent.getParameter(BioEventParameterType.GeneralTriggerFunction);
+					triggerParameter.setExpression(triggerExpr);
+					
 					// event assignments
 					ArrayList<EventAssignment> vcEvntAssgnList = new ArrayList<EventAssignment>();
 					for (int j = 0; j < event.getNumEventAssignments(); j++) {
-						org.sbml.jsbml.EventAssignment sbmlEvntAssgn = event
-								.getEventAssignment(j);
+						org.sbml.jsbml.EventAssignment sbmlEvntAssgn = event.getEventAssignment(j);
 						String varName = sbmlEvntAssgn.getVariable();
 						SymbolTableEntry varSTE = vcBioModel.getSimulationContext(0).getEntry(varName);
 						if (varSTE != null) {
@@ -595,10 +590,8 @@ public class SBMLImporter {
 							EventAssignment vcEvntAssgn = vcEvent.new EventAssignment(varSTE, evntAssgnExpr);
 							vcEvntAssgnList.add(vcEvntAssgn);
 						} else {
-							logger.sendMessage(VCLogger.Priority.HighPriority,
-									VCLogger.ErrorType.UnsupportedConstruct,
-									"No symbolTableEntry for '" + varName
-											+ "'; Cannot add event assignment.");
+							logger.sendMessage(VCLogger.Priority.HighPriority, VCLogger.ErrorType.UnsupportedConstruct,
+									"No symbolTableEntry for '" + varName + "'; Cannot add event assignment.");
 						}
 					}
 
@@ -2519,6 +2512,7 @@ public class SBMLImporter {
 		for (int i = 0; i < sbmlModel.getNumUnitDefinitions(); i++) {
 			UnitDefinition ud = (org.sbml.jsbml.UnitDefinition) listofUnitDefns.get(i);
 			String unitName = ud.getId();
+			System.out.println("sbml id: " + unitName);
 			VCUnitDefinition vcUnitDef = SBMLUnitTranslator.getVCUnitDefinition(ud, tempVCUnitSystem);
 			sbmlUnitIdentifierHash.put(unitName, vcUnitDef);
 		}

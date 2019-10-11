@@ -390,7 +390,9 @@ public static UnitDefinition getSBMLUnitDefinition(VCUnitDefinition vcUnitDefn, 
 			}
 			}
 			String vcScaleStr = Double.toString(unitMultiplier*Math.pow((Math.pow(10, unitScale)), unitExponent));
-			VCUnitDefinition vcUnit = vcUnitSystem.getInstance(vcScaleStr + " " + prefix+unitKindSymbol + unitExponent);
+			String symbol = vcScaleStr + " " + prefix+unitKindSymbol + unitExponent;
+			System.out.println("symbol: " + symbol);
+			VCUnitDefinition vcUnit = vcUnitSystem.getInstance(symbol);
 			return vcUnit;
 		}
 	}
