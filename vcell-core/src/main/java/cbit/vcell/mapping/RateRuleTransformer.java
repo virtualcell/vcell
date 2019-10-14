@@ -106,16 +106,23 @@ public class RateRuleTransformer implements SimContextTransformer {
 		SpeciesContextSpec[] scss = reactionContext.getSpeciesContextSpecs();
 
 		for(RateRule rr : transformedSimulationContext.getRateRules()) {
-			
 			String rrName = rr.getName();
 			SymbolTableEntry ste = rr.getRateRuleVar();
 			SpeciesContext sc;
 			if(ste instanceof Model.ModelParameter) {
-				if(model.getStructures().length > 1) {
-					throw new RuntimeException("The variable for RateRule '" + rrName + "' cannot be a Global Parameter in a multi-compartmental BioModel.");
-				}
-				String speciesName = "s_" + rr.getRateRuleVar().getName();
+				
+				Model.ModelParameter mp = (Model.ModelParameter)ste;
+				String speciesName = mp.getName();
+				Expression exp = mp.getExpression();
 				Structure struct = model.getStructure(0);
+				
+				try {
+					model.removeModelParameter(mp);
+				} catch (PropertyVetoException e) {
+					e.printStackTrace();
+				}
+
+				
 				Species sp = new Species(speciesName, speciesName);
 				sc = new SpeciesContext(sp, struct, null);
 				try {
@@ -125,46 +132,79 @@ public class RateRuleTransformer implements SimContextTransformer {
 					exc.printStackTrace();
 					throw new RuntimeException("RateRule '" + rr.getName() + "' conversion failed.\n" + exc.getMessage());
 				}
-			} else if(ste instanceof SpeciesContext) {
-				sc = (SpeciesContext)ste;
-			} else {
-				throw new RuntimeException("The variable for RateRule '" + rrName + "' is missing or not a Species / Global Parameter.");
+				rr.setRateRuleVar(sc);
+				SpeciesContextSpec scs = reactionContext.getSpeciesContextSpec(sc);
+				try {
+					scs.getInitialConcentrationParameter().setExpression(exp);
+				} catch (ExpressionBindingException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 			}
 			
-			SpeciesContextSpec scs = reactionContext.getSpeciesContextSpec(sc);
-			if(scs.isConstant()) {
-				scs.setConstant(false);		// rate rules species must not be constant (even if they are for plain reactions)  TODO: conflict here!!!
-			}
-			
-			// make a reaction with name derived from the ReactionRule name
-			String reactionName = rr.getName();
-			reactionName = TokenMangler.getNextEnumeratedToken(reactionName);
-			Structure structure = sc.getStructure();	// the rate rule happens in the compartment where its species variable is defined
-			SimpleReaction sr = null;
-			try {
-				sr = new SimpleReaction(model, structure, reactionName, false);
-				
-				int stoichiometry = 1;		// add the species variable as the unique product of this reaction
-				sr.addProduct(sc, stoichiometry);
-
-				
-				KineticsDescription newKineticChoice = KineticsDescription.GeneralLumped;
-				sr.setKinetics(newKineticChoice.createKinetics(sr));		// kinetics as GeneralLumped
-				
-				// initialize the reaction rate with the expression of the rate rule
-				Kinetics.KineticsParameter kp = sr.getKinetics().getKineticsParameterFromRole(Kinetics.ROLE_LumpedReactionRate);
-				Expression rrExpression = rr.getRateRuleExpression();
-				sr.getKinetics().setParameterValue(kp, new Expression(rrExpression));
-				sr.getKinetics().resolveUndefinedUnits();
-				
-				model.addReactionStep(sr);
-				
-				transformedSimulationContext.removeRateRule(rr);
-
-			} catch (Exception exc) {
-				throw new RuntimeException("RateRule '" + rr.getName() + "' conversion failed.\n" + exc.getMessage());
-			}
 		}
+		
+		
+//		for(RateRule rr : transformedSimulationContext.getRateRules()) {
+//			
+//			String rrName = rr.getName();
+//			SymbolTableEntry ste = rr.getRateRuleVar();
+//			SpeciesContext sc;
+//			if(ste instanceof Model.ModelParameter) {
+//				if(model.getStructures().length > 1) {
+//					throw new RuntimeException("The variable for RateRule '" + rrName + "' cannot be a Global Parameter in a multi-compartmental BioModel.");
+//				}
+//				String speciesName = "s_" + rr.getRateRuleVar().getName();
+//				Structure struct = model.getStructure(0);
+//				Species sp = new Species(speciesName, speciesName);
+//				sc = new SpeciesContext(sp, struct, null);
+//				try {
+//					model.addSpecies(sp);
+//					model.addSpeciesContext(sc);
+//				} catch (PropertyVetoException exc) {
+//					exc.printStackTrace();
+//					throw new RuntimeException("RateRule '" + rr.getName() + "' conversion failed.\n" + exc.getMessage());
+//				}
+//			} else if(ste instanceof SpeciesContext) {
+//				sc = (SpeciesContext)ste;
+//			} else {
+//				throw new RuntimeException("The variable for RateRule '" + rrName + "' is missing or not a Species / Global Parameter.");
+//			}
+//			
+//			SpeciesContextSpec scs = reactionContext.getSpeciesContextSpec(sc);
+//			if(scs.isConstant()) {
+//				scs.setConstant(false);		// rate rules species must not be constant (even if they are for plain reactions)  TODO: conflict here!!!
+//			}
+//			
+//			// make a reaction with name derived from the ReactionRule name
+//			String reactionName = rr.getName();
+//			reactionName = TokenMangler.getNextEnumeratedToken(reactionName);
+//			Structure structure = sc.getStructure();	// the rate rule happens in the compartment where its species variable is defined
+//			SimpleReaction sr = null;
+//			try {
+//				sr = new SimpleReaction(model, structure, reactionName, false);
+//				
+//				int stoichiometry = 1;		// add the species variable as the unique product of this reaction
+//				sr.addProduct(sc, stoichiometry);
+//
+//				
+//				KineticsDescription newKineticChoice = KineticsDescription.GeneralLumped;
+//				sr.setKinetics(newKineticChoice.createKinetics(sr));		// kinetics as GeneralLumped
+//				
+//				// initialize the reaction rate with the expression of the rate rule
+//				Kinetics.KineticsParameter kp = sr.getKinetics().getKineticsParameterFromRole(Kinetics.ROLE_LumpedReactionRate);
+//				Expression rrExpression = rr.getRateRuleExpression();
+//				sr.getKinetics().setParameterValue(kp, new Expression(rrExpression));
+//				sr.getKinetics().resolveUndefinedUnits();
+//				
+//				model.addReactionStep(sr);
+//				
+//				transformedSimulationContext.removeRateRule(rr);
+//
+//			} catch (Exception exc) {
+//				throw new RuntimeException("RateRule '" + rr.getName() + "' conversion failed.\n" + exc.getMessage());
+//			}
+//		}
 		System.out.println("Done transforming");		
 		msg = "Generating math...";
 		mathMappingCallback.setMessage(msg);
