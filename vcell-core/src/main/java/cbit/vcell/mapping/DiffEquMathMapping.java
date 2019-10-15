@@ -756,7 +756,8 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 	// initial conditions (either function or constant) for rate rule variables that are model parameters
 	//
 	Map<ModelParameter, Variable> initModelParameterHashTmp = new HashMap<> ();		// the init variables with expressions still containing variables
-	Map<EventAssignmentOrRateRuleInitParameter, ModelParameter> rateRuleInitMappingToModelParam = new HashMap<> ();		// here we store the init parameter of the model parameter
+	Map<EventAssignmentOrRateRuleInitParameter, ModelParameter> rateRuleInitToModelParamMapping = new HashMap<> ();		// here we store the init parameter of the model parameter
+	Map<ModelParameter, EventAssignmentOrRateRuleInitParameter> modelParamTorateRuleInitMapping = new HashMap<> ();		// here we store the init parameter of the model parameter
 	for(ModelParameter mp : modelParameters) {		// initial assignment for global parameter used as rate rule variable
 		RateRule rr = simContext.getRateRule(mp);
 		if(rr == null) {
@@ -785,7 +786,8 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 			e.printStackTrace(System.out);
 			throw new MappingException(e.getMessage());
 		}
-		rateRuleInitMappingToModelParam.put(mpInitParam, mp);
+		rateRuleInitToModelParamMapping.put(mpInitParam, mp);
+		modelParamTorateRuleInitMapping.put(mp, mpInitParam);
 	}
 				
 	//
@@ -794,9 +796,10 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 	for (int i = 0; i < fieldMathMappingParameters.length; i++){
 		GeometryClass geometryClass = fieldMathMappingParameters[i].getGeometryClass();
 		fieldMathMappingParameters[i].getExpression().bindExpression(simContext);
-		Variable var = newFunctionOrConstant(getMathSymbol(fieldMathMappingParameters[i],geometryClass),getIdentifierSubstitutions(fieldMathMappingParameters[i].getExpression(),fieldMathMappingParameters[i].getUnitDefinition(),geometryClass),fieldMathMappingParameters[i].getGeometryClass());
+		Expression exp = getIdentifierSubstitutions(fieldMathMappingParameters[i].getExpression(), fieldMathMappingParameters[i].getUnitDefinition(), geometryClass);
+		Variable var = newFunctionOrConstant(getMathSymbol(fieldMathMappingParameters[i],geometryClass),exp, geometryClass);
 		varHash.addVariable(var);
-		ModelParameter mp = rateRuleInitMappingToModelParam.get(fieldMathMappingParameters[i]);
+		ModelParameter mp = rateRuleInitToModelParamMapping.get(fieldMathMappingParameters[i]);
 		if (mp != null) {
 			initModelParameterHashTmp.put(mp, var);
 		}
@@ -871,19 +874,17 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 						Expression scsInitExpr = new Expression(spCInitParm, getNameScope());
 						initConcExpr.substituteInPlace(new Expression(spC.getName()), scsInitExpr);
 					} 
-					
 				} else if (ste instanceof ModelParameter) {
 					ModelParameter mpArg = (ModelParameter)ste;
 					System.out.println(mpArg.getName());
 					if(simContext.getRateRule(mpArg) == null) {
 						continue;		// only globals that are RateRule variables need to be replaced with their _init variable
 					}
-					Variable mpArgVar = initModelParameterHashTmp.get(mpArg);
-					if(mpArgVar != null) {		// we already made it, we only need to use it
-						Expression mpArgInitExpr = new Expression(mpArgVar, getNameScope());
-						// mpArgInitExpr.bindExpression(this);
+					EventAssignmentOrRateRuleInitParameter mpInitParam = modelParamTorateRuleInitMapping.get(mpArg);
+					if(mpInitParam != null) {		// we already made it, we only need to use it
+						Expression mpArgInitExpr = new Expression(mpInitParam, getNameScope());
 						initConcExpr.substituteInPlace(new Expression(ste.getName()), mpArgInitExpr);
-					}						
+					}
 				} else {
 					String msg = ste.getName() == null ? "??" : ste.getName();
 					String msg2 = initConcParm.getName() == null ? "??" : initConcParm.getName();
@@ -1046,10 +1047,8 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 				Expression sizeFunctionExpression = Expression.function(sizeFunctionName, new Expression[] {new Expression("'"+compartmentName+"'")} );
 //				sizeFunctionExpression.bindExpression(mathDesc);
 				varHash.addVariable(newFunctionOrConstant(getMathSymbol(sizeParm,sm.getGeometryClass()),getIdentifierSubstitutions(Expression.mult(totalVolumeCorrection,sizeFunctionExpression),sizeUnit,sm.getGeometryClass()),sm.getGeometryClass()));
-
 			}
 		}
-
 	}
 
 	//
@@ -1095,54 +1094,56 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 	//
 	// substitute init functions for event assignment variables
 	//
-	for (Map.Entry<VolVariable,EventAssignmentOrRateRuleInitParameter> entry : eventVolVarHash.entrySet()) {
-		EventAssignmentOrRateRuleInitParameter eap = entry.getValue();
-
-		String argName = eap.getName();
-		Expression modelParamExpr = eap.getExpression();
-		GeometryClass gc = getDefaultGeometryClass(modelParamExpr);
-		VCUnitDefinition paramUnit = eap.getUnitDefinition();
-		Expression mpInitExpr = new Expression(modelParamExpr);
-		String[] symbols = mpInitExpr.getSymbols();
-		if(symbols == null || symbols.length == 0) {
-			continue;
-		}
-		// TODO: this is still not working well
-		// check if 'initExpr' has other speciesContexts or rate rule global parameter variables in its expression
-		// need to replace it with 'spContext_init', modelParameter_init
-		for (String symbol : symbols) {
-			// if symbol is a speciesContext, replacing it with a reference to initial condition for that speciesContext.
-			SymbolTableEntry ste = mpInitExpr.getSymbolBinding(symbol);
-			if (ste == null) {
-				System.out.println("Unexpected NULL symbol in the initial expression of " + argName);
-			} else if (ste instanceof SpeciesContext) {
-				SpeciesContextSpec scs = simContext.getReactionContext().getSpeciesContextSpec((SpeciesContext)ste);
-				// TODO: what if initial count???
-				SpeciesContextSpecParameter spCInitParm = scs.getParameterFromRole(SpeciesContextSpec.ROLE_InitialConcentration);
-				// need to get init condn expression, but can't get it from getMathSymbol() (mapping between bio and math), hence get it as below.
-				Expression scsInitExpr = new Expression(spCInitParm, getNameScope());
-				mpInitExpr.substituteInPlace(new Expression(ste.getName()), scsInitExpr);
-			} else if(ste instanceof ModelParameter) {
-				ModelParameter mpArg = (ModelParameter)ste;
-				System.out.println(mpArg.getName());
-				if(simContext.getRateRule(mpArg) == null) {
-					continue;		// only globals that are RateRule variables need to be replaced with their _init variable
-				}
-				Variable mpArgVar = initModelParameterHashTmp.get(mpArg);
-				if(mpArgVar != null) {		// we already made it, we only need to use it
-					Expression mpArgInitExpr = new Expression(mpArgVar, getNameScope());
-					mpInitExpr.substituteInPlace(new Expression(ste.getName()), mpArgInitExpr);
-				}
-			} else {
-				String msg = ste.getName() == null ? "??" : ste.getName();
-				System.out.println("Unexpected symbol type for " + msg + " in the initial expression of " + argName);
-			}
-		}
-		varHash.removeVariable(argName);
-		Expression exp = getIdentifierSubstitutions(mpInitExpr, paramUnit, gc);
-		Variable varInit = newFunctionOrConstant(argName, exp, gc);
-		varHash.addVariable(varInit);
-	}
+//	for (Map.Entry<VolVariable,EventAssignmentOrRateRuleInitParameter> entry : eventVolVarHash.entrySet()) {
+//		EventAssignmentOrRateRuleInitParameter eap = entry.getValue();
+//
+//		String argName = eap.getName();
+//		Expression modelParamExpr = eap.getExpression();
+//		GeometryClass gc = getDefaultGeometryClass(modelParamExpr);
+//		VCUnitDefinition paramUnit = eap.getUnitDefinition();
+//		Expression mpInitExpr = new Expression(modelParamExpr);
+//		String[] symbols = mpInitExpr.getSymbols();
+//		if(symbols == null || symbols.length == 0) {
+//			continue;
+//		}
+//		// TODO: this is still not working well
+//		// check if 'initExpr' has other speciesContexts or rate rule global parameter variables in its expression
+//		// need to replace it with 'spContext_init', modelParameter_init
+//		for (String symbol : symbols) {
+//			// if symbol is a speciesContext, replacing it with a reference to initial condition for that speciesContext.
+//			SymbolTableEntry ste = mpInitExpr.getSymbolBinding(symbol);
+//			if (ste == null) {
+//				System.out.println("Unexpected NULL symbol in the initial expression of " + argName);
+//			} else if (ste instanceof SpeciesContext) {
+//				SpeciesContextSpec scs = simContext.getReactionContext().getSpeciesContextSpec((SpeciesContext)ste);
+//				// TODO: what if initial count???
+//				SpeciesContextSpecParameter spCInitParm = scs.getParameterFromRole(SpeciesContextSpec.ROLE_InitialConcentration);
+//				// need to get init condn expression, but can't get it from getMathSymbol() (mapping between bio and math), hence get it as below.
+//				Expression scsInitExpr = new Expression(spCInitParm, getNameScope());
+//				mpInitExpr.substituteInPlace(new Expression(ste.getName()), scsInitExpr);
+//			} else if(ste instanceof ModelParameter) {
+//				ModelParameter mpArg = (ModelParameter)ste;
+//				System.out.println(mpArg.getName());
+//				if(simContext.getRateRule(mpArg) == null) {
+//					continue;		// only globals that are RateRule variables need to be replaced with their _init variable
+//				}
+//				Variable mpArgVar = initModelParameterHashTmp.get(mpArg);
+//				if(mpArgVar != null && eventVolVarHash.get(mpArgVar) != null) {
+//					EventAssignmentOrRateRuleInitParameter mpInitParam = eventVolVarHash.get(mpArgVar);
+//					Expression mpArgInitExpr = new Expression(mpInitParam, getNameScope());
+//					mpInitExpr.substituteInPlace(new Expression(ste.getName()), mpArgInitExpr);
+//
+//				}
+//			} else {
+//				String msg = ste.getName() == null ? "??" : ste.getName();
+//				System.out.println("Unexpected symbol type for " + msg + " in the initial expression of " + argName);
+//			}
+//		}
+//		varHash.removeVariable(argName);
+//		Expression exp = getIdentifierSubstitutions(mpInitExpr, paramUnit, gc);
+//		Variable varInit = newFunctionOrConstant(argName, exp, gc);
+//		varHash.addVariable(varInit);
+//	}
 	
 	//
 	// deal with rate rules
@@ -1161,6 +1162,8 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 		Expression mpInitExpr = new Expression(modelParamExpr);
 		String[] symbols = mpInitExpr.getSymbols();
 		if(symbols == null || symbols.length == 0) {
+			// stays as it is in variable hash
+			initModelParameterHash.put(mp, mpInitVariable);  // we just move it into the initModelParameterHash
 			continue;
 		}
 		// check if 'initExpr' has other speciesContexts or rate rule global parameter variables in its expression
@@ -1183,9 +1186,9 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 				if(simContext.getRateRule(mpArg) == null) {
 					continue;		// only globals that are RateRule variables need to be replaced with their _init variable
 				}
-				Variable mpArgVar = initModelParameterHashTmp.get(mpArg);
-				if(mpArgVar != null) {		// we already made it, we only need to use it
-					Expression mpArgInitExpr = new Expression(mpArgVar, getNameScope());
+				EventAssignmentOrRateRuleInitParameter mpInitParam = modelParamTorateRuleInitMapping.get(mpArg);
+				if(mpInitParam != null) {		// we already made it, we only need to use it
+					Expression mpArgInitExpr = new Expression(mpInitParam, getNameScope());
 					mpInitExpr.substituteInPlace(new Expression(ste.getName()), mpArgInitExpr);
 				}
 			} else {
