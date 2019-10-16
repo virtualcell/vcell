@@ -468,7 +468,7 @@ public void getEntries(Map<String, SymbolTableEntry> entryMap) {
 		if (!name.startsWith("Kflux_") &&
 //			!name.endsWith(MathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_molecule_per_um2) && 
 //			!name.endsWith(MathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_uM) && 
-			!name.endsWith(DiffEquMathMapping.PARAMETER_MASS_CONSERVATION_SUFFIX) &&
+			!(name.endsWith(DiffEquMathMapping.PARAMETER_MASS_CONSERVATION_SUFFIX) && name.startsWith(DiffEquMathMapping.PARAMETER_MASS_CONSERVATION_PREFIX)) &&
 			!name.equals(Simulation.PSF_FUNCTION_NAME)){
 			return true;
 		}else{
