@@ -850,7 +850,7 @@ public class Model implements Versionable, Matchable, PropertyChangeListener, Ve
 		private VCUnitDefinition fieldUnitDefinition = null;
 		private String modelParameterAnnotation;
 		
-		private static final String MODEL_PARAMETER_DESCRIPTION = "Global Parameter";
+		private static final String MODEL_PARAMETER_DESCRIPTION = "user defined";
 		
 		public ModelParameter(String argName, Expression expression, int argRole, VCUnitDefinition argUnitDefinition) {
 			if (argName == null){
