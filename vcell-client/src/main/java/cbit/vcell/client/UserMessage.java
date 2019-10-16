@@ -73,7 +73,7 @@ public class UserMessage {
 
 	public final static UserMessage question_LostResultsLowPrecision = new UserMessage(
 			"Note: Several universal constants now have higher precision than in previous VCell versions.\n"+
-					"(see BioModel->'Parameters, Functions and Units'->'Predefined Constants and Math Functions').\n"+
+					"(see BioModel->'Parameters, functions, units, etc.'->'Predefined Constants and Math Functions').\n"+
 					"_F_      9.648e4 -> 9.64853321e4\n"+
 					"_F_nmol_ 9.648e-5 -> 9.64853321e-5\n"+
 					"_N_pmol_ 6.02e11 -> 6.02214179e11\n"+
