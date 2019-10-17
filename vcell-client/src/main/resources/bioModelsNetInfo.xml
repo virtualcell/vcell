@@ -569,7 +569,7 @@
   <BioModelInfo ID="BIOMD0000000567" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Morris2009 - α-Synuclein aggregation variable temperature and pH" />
   <BioModelInfo ID="BIOMD0000000568" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Mueller2015 - Hepatocyte proliferation, T160 phosphorylation of CDK2" />
   <BioModelInfo ID="BIOMD0000000569" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Dutta-Roy2015 - Opening of the multiple AMPA receptor conductance states" />
-  <BioModelInfo ID="BIOMD0000000570" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Aubert2002 - Coupling between Brain electrical activity, Metabolism and Hemodynamics" />
+  <BioModelInfo ID="BIOMD0000000570" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Aubert2002 - Coupling between Brain electrical activity, Metabolism and Hemodynamics" exception="Could not create Biomodel corresponding to the input SBML model.&#xA;" />
   <BioModelInfo ID="BIOMD0000000571" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Nishio2008 - Design of the phosphotransferase system for enhanced glucose uptake in E. coli." />
   <BioModelInfo ID="BIOMD0000000572" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Costa2014 - Computational Model of L. lactis Metabolism" />
   <BioModelInfo ID="BIOMD0000000573" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Aguilera 2014 - HIV latency. Interaction between HIV proteins and immune response" />
@@ -626,7 +626,7 @@
   <BioModelInfo ID="BIOMD0000000624" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Sluka2016 - Acetaminophen metabolism" />
   <BioModelInfo ID="BIOMD0000000625" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Leber2016 - Expanded model of Tfh-Tfr differentiation - Helicobacter pylori infection" />
   <BioModelInfo ID="BIOMD0000000626" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Ray2013 - Meiotic initiation in S. cerevisiae" />
-  <BioModelInfo ID="BIOMD0000000627" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Winter2017 - Brain Energy Metabolism with PPP" />
+  <BioModelInfo ID="BIOMD0000000627" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Winter2017 - Brain Energy Metabolism with PPP" exception="Could not create Biomodel corresponding to the input SBML model.&#xA;" />
   <BioModelInfo ID="BIOMD0000000628" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Li2012 Calcium mediated synaptic plasticity" />
   <BioModelInfo ID="BIOMD0000000629" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Haffez2017 - RAR interaction with synthetic analogues" />
   <BioModelInfo ID="BIOMD0000000630" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Venkatraman2011 - PLS-UPA behaviour in the presence of substrate competition_1_1_1_1" />
@@ -730,7 +730,7 @@
   <BioModelInfo ID="BIOMD0000000731" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Robertson-Tessi M 2012 A model of tumor Immune interaction" />
   <BioModelInfo ID="BIOMD0000000732" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Kirschner1998_Immunotherapy_Tumour" />
   <BioModelInfo ID="BIOMD0000000733" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Moore_2004_Mathematical model for CML and T cell interaction" />
-  <BioModelInfo ID="BIOMD0000000734" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Parmar2017_Mouse Iron Distribution - Rich and Deficient iron diets (tracer)" exception="Could not create Biomodel corresponding to the input SBML model.&#xA;" />
+  <BioModelInfo ID="BIOMD0000000734" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Mouse Iron Distribution - Rich and Deficient iron diets (tracer)" />
   <BioModelInfo ID="BIOMD0000000735" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Mouse Iron Distribution - Adequate iron diet (tracer)" />
   <BioModelInfo ID="BIOMD0000000736" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Mouse Iron Distribution - Adequate iron diet (No Tracer)" />
   <BioModelInfo ID="BIOMD0000000737" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Mouse Iron Distribution - Deficient iron diet (No Tracer)" />
@@ -785,9 +785,9 @@
   <BioModelInfo ID="BIOMD0000000786" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Lipniacki2004 - Mathematical model of NFKB regulatory module" />
   <BioModelInfo ID="BIOMD0000000787" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Frascoli2014 - A dynamical model of tumour immunotherapy" />
   <BioModelInfo ID="BIOMD0000000788" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Schropp2019 - Target-Mediated Drug Disposition Model for Bispecific Antibodies" />
-  <BioModelInfo ID="BIOMD0000000789" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Jenner2018 - treatment of oncolytic virus" exception="Could not create Biomodel corresponding to the input SBML model.&#xA;" />
+  <BioModelInfo ID="BIOMD0000000789" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Jenner2018 - treatment of oncolytic virus" />
   <BioModelInfo ID="BIOMD0000000790" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Alvarez2019 - A nonlinear mathematical model of cell-mediated immune response for tumor phenotypic heterogeneity" />
-  <BioModelInfo ID="BIOMD0000000791" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Wilson2012 - tumor vaccine efficacy" exception="Could not create Biomodel corresponding to the input SBML model.&#xA;" />
+  <BioModelInfo ID="BIOMD0000000791" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Wilson2012 - tumor vaccine efficacy" />
   <BioModelInfo ID="BIOMD0000000792" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Hu2019 - Modeling Pancreatic Cancer Dynamics with Immunotherapy" />
   <BioModelInfo ID="BIOMD0000000793" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Chen2011/1 - bone marrow invasion absolute model" />
   <BioModelInfo ID="BIOMD0000000794" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Benary2019 - Controlling NFKB dynamics by B-TrCP" />
@@ -802,7 +802,7 @@
   <BioModelInfo ID="BIOMD0000000803" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Park2019 - IL7 receptor signaling in T cells" />
   <BioModelInfo ID="BIOMD0000000804" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Koenders2015 - multiple myeloma" />
   <BioModelInfo ID="BIOMD0000000805" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Al-Husari2013 - pH and lactate in tumor" />
-  <BioModelInfo ID="BIOMD0000000806" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Eftimie2019 - Macrophages Plasticity" />
+  <BioModelInfo ID="BIOMD0000000806" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Eftimie2019-Macrophages Plasticity" />
   <BioModelInfo ID="BIOMD0000000807" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Fassoni2019 - Oncogenesis encompassing mutations and genetic instability" />
   <BioModelInfo ID="BIOMD0000000808" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Kronik2008 - Improving alloreactive CTL immunotherapy for malignant gliomas using a simulation model of their interactive dynamics" exception="Could not create Biomodel corresponding to the input SBML model.&#xA;" />
   <BioModelInfo ID="BIOMD0000000809" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Malinzi2018 - tumour-immune interaction model" />
@@ -812,5 +812,17 @@
   <BioModelInfo ID="BIOMD0000000813" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Anderson2015 - Qualitative behavior of systems of tumor-CD4+-cytokine interactions with treatments" />
   <BioModelInfo ID="BIOMD0000000814" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Perez-Garcia19 - Computational design of improved standardized chemotherapy protocols for grade 2 oligodendrogliomas" exception="Could not create Biomodel corresponding to the input SBML model.&#xA;" />
   <BioModelInfo ID="BIOMD0000000815" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Chrobak2011 - A mathematical model of induced cancer-adaptive immune system competition" />
+  <BioModelInfo ID="BIOMD0000000816" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Gevertz2018 - Cancer Treatment with Oncolytic Viruses and Dendritic Cell injections original model" />
+  <BioModelInfo ID="BIOMD0000000817" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Gevertz2018 - cancer treatment with oncolytic viruses and dendritic cell injections minimal model" />
+  <BioModelInfo ID="BIOMD0000000818" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Lee2008 - ERK and PI3K signal integration by Myc" />
+  <BioModelInfo ID="BIOMD0000000819" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Nazari2018 - IL6 mediated stem cell driven tumor growth and targeted treatment" />
+  <BioModelInfo ID="BIOMD0000000820" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="West2019 - Cellular interactions constrain tumor growth" />
+  <BioModelInfo ID="BIOMD0000000821" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Yazdjer2019 - reinforcement learning-based control of tumor growth under anti-angiogenic therapy" />
+  <BioModelInfo ID="BIOMD0000000822" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Dorvash2019 - Dynamic modeling of signal transduction by mTOR complexes in cancer" exception="Could not create Biomodel corresponding to the input SBML model.&#xA;" />
+  <BioModelInfo ID="BIOMD0000000823" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Varusai2018 - Dynamic modelling of the mTOR signalling network reveals complex emergent behaviours conferred by DEPTOR" />
+  <BioModelInfo ID="BIOMD0000000824" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Lewkiewics2019 - effects of aging on naive T cell populations and diversity" />
+  <BioModelInfo ID="BIOMD0000000825" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Greene2019 - Differentiate Spontaneous and Induced Evolution to Drug Resistance During Cancer Treatment" />
+  <BioModelInfo ID="BIOMD0000000826" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Shin_2018_EGFR-PYK2-c-Met interaction network_model" />
+  <BioModelInfo ID="BIOMD0000000827" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Ito2019 - gefitnib resistance of lung adenocarcinoma caused by MET amplification" />
 </Supported_BioModelsNet>
 
