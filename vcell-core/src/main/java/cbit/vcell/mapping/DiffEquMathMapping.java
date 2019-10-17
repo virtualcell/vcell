@@ -1281,14 +1281,18 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 		RateRule rr = simContext.getRateRule(mp);
 		Expression modelParamExpr = mp.getExpression();
 		if(var == null && rr != null) {		// at this point var should be a constant 
-			GeometryClass gc = getDefaultGeometryClass(modelParamExpr);
+			// we're under the assumption that it's non-spatial
+			GeometryClass[] geometryClasses = simContext.getGeometryContext().getGeometry().getGeometryClasses();
+			GeometryClass gc = geometryClasses[0];
+//			SubDomain subDomain = mathDesc.getSubDomains().nextElement();
+//			GeometryClass gc = getDefaultGeometryClass(modelParamExpr);
 			Domain domain = null;
 			if(gc != null) {
 				domain = new Domain(gc);
 			}
 			Variable variable;
 			if(gc instanceof SurfaceClass) {
-				variable = new MemVariable(mp.getName(), domain);	// domain is null
+				variable = new MemVariable(mp.getName(), domain);
 			} else {
 				variable = new VolVariable(mp.getName(), domain);
 			}
@@ -1300,9 +1304,9 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 				if (mp.getUnitDefinition() != null && !mp.getUnitDefinition().equals(modelUnitSystem.getInstance_TBD())) {
 					rateUnit = mp.getUnitDefinition().divideBy(timeUnit);
 				}
-				Expression rateExpr = getIdentifierSubstitutions(origExp, rateUnit, null);
+				Expression rateExpr = getIdentifierSubstitutions(origExp, rateUnit, gc);
 				String argName = mp.getName() + MATH_FUNC_SUFFIX_RATERULE_RATE;
-				Variable param = newFunctionOrConstant(argName, rateExpr, null);
+				Variable param = newFunctionOrConstant(argName, rateExpr, gc);
 				varHash.addVariable(param);
 				rateParam = addRateRuleRateParameter(mp, rateExpr, PARAMETER_ROLE_RATERULE_RATE, rateUnit);
 			} catch (PropertyVetoException e) {
@@ -1323,7 +1327,7 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 			Expression rateExpr = new Expression(0.0);
 			//RateRuleRateParameter rateParam = rateRuleRateParamHash.get(variable);
 			if (rateParam != null) {		// ex: g0_rate
-				rateExpr = new Expression(getMathSymbol(rateParam, null)); 
+				rateExpr = new Expression(getMathSymbol(rateParam, gc)); 
 			}
 			equation = new OdeEquation(variable, initial, rateExpr);	// ODE Equation for rate rule variable being a global parameter
 			subDomain.addEquation(equation);
@@ -1376,14 +1380,19 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 //			}
 //			varHash.addVariable(variable);
 			
+			// we're under the assumption that it's non-spatial
+			GeometryClass[] geometryClasses = simContext.getGeometryContext().getGeometry().getGeometryClasses();
+			GeometryClass gc = geometryClasses[0];
+			SubDomain subDomain = mathDesc.getSubDomains().nextElement();
+			
 			Expression origExp = ar.getAssignmentRuleExpression();
 			VCUnitDefinition rateUnit = modelUnitSystem.getInstance_TBD();
 			if (mp.getUnitDefinition() != null && !mp.getUnitDefinition().equals(modelUnitSystem.getInstance_TBD())) {
 				rateUnit = mp.getUnitDefinition();
 			}
-			Expression rateExpr = getIdentifierSubstitutions(origExp, rateUnit, null);
+			Expression rateExpr = getIdentifierSubstitutions(origExp, rateUnit, gc);
 			String argName = mp.getName();
-			Variable param = newFunctionOrConstant(argName, rateExpr, null);
+			Variable param = newFunctionOrConstant(argName, rateExpr, gc);
 			varHash.addVariable(param);
 		}
 	}
