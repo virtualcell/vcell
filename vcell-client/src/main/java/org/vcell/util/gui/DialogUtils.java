@@ -27,6 +27,8 @@ import java.awt.event.ComponentEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
@@ -872,9 +874,29 @@ public class DialogUtils {
 		Doer doer = ( ) -> {
 			JPanel panel = MessagePanelFactory.createSimple(message);
 			JOptionPane pane = new JOptionPane(panel, JOptionPane.INFORMATION_MESSAGE);
-			LWDialog dialog = new LWTitledOptionPaneDialog(lwParent,title,pane);
-			dialog.setResizable(true);
-			showOnce(dialog);
+			if(OperatingSystemInfo.getInstance().isMac()) {
+				//On Mac: problem when one keepOnTop,Modal dialogue shows another keepOnTop,Modal dialogue, second one may go behind initially
+				final JDialog dialog = new JDialog(JOptionPane.getRootFrame(),true);
+				pane.addPropertyChangeListener(new PropertyChangeListener() {
+					@Override
+					public void propertyChange(PropertyChangeEvent event) {
+						Object nvalue = event.getNewValue();
+						if (event.getPropertyName().equals("value") && nvalue != null && nvalue != JOptionPane.UNINITIALIZED_VALUE) {
+							dialog.setVisible(false);
+						}
+					}
+				});
+				dialog.getContentPane().add(pane);
+				dialog.pack();
+				dialog.setAlwaysOnTop(true);
+				dialog.setResizable(true);
+				BeanUtils.centerOnComponent(dialog, requester);
+				showOnce(dialog);
+			}else {
+				LWDialog dialog = new LWTitledOptionPaneDialog(lwParent,title,pane);
+				dialog.setResizable(true);
+				showOnce(dialog);
+			}
 		};
 
 		VCSwingFunction.executeAsRuntimeException(doer);
