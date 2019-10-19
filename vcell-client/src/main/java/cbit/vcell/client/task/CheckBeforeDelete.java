@@ -428,8 +428,15 @@ public static AsynchClientTask getLowPrecisionConstantsSaveTask() {
 					//If LOWPRECISION saveASNew then clear sim results
 //					try {
 //						if(true) {throw new Exception("test");}
+					final DocumentWindowManager dwm = (DocumentWindowManager)hashTable.get(CommonTask.DOCUMENT_WINDOW_MANAGER.name);
+						BioModel tempSavedoc = (BioModel)hashTable.get(SaveDocument.DOC_KEY);
 						//Save new document
 						(new SaveDocument(false)).run(hashTable);
+						//delete tempSavedoc
+						if(tempSavedoc != null && dwm.getVCDocument() != null && dwm.getVCDocument().getVersion() != null && !tempSavedoc.getVersion().getVersionKey().compareEqual(dwm.getVCDocument().getVersion().getVersionKey())) {
+							dwm.getRequestManager().deleteDocument(
+								dwm.getRequestManager().getDocumentManager().getBioModelInfo(tempSavedoc.getVersion().getVersionKey()), dwm,true);
+						}
 						//delete sim versions so they have to be re-run to use new HighPrecisionConstants
 						//and re-save the new document
 						BioModel lpcDoc = (BioModel)hashTable.remove(SaveDocument.DOC_KEY);
@@ -438,7 +445,6 @@ public static AsynchClientTask getLowPrecisionConstantsSaveTask() {
 							((BioModel)lpcDoc).getSimulations()[i].clearVersion();
 						}
 						Hashtable<String, Object> delSimVersionHash = new Hashtable<>();
-						final DocumentWindowManager dwm = (DocumentWindowManager)hashTable.get(CommonTask.DOCUMENT_WINDOW_MANAGER.name);
 						delSimVersionHash.put(CommonTask.DOCUMENT_MANAGER.name,dwm.getRequestManager().getDocumentManager());
 						delSimVersionHash.put(CommonTask.DOCUMENT_WINDOW_MANAGER.name, hashTable.get(CommonTask.DOCUMENT_WINDOW_MANAGER.name));
 						delSimVersionHash.put("LOW_PRECISION_CONSTANT_DOC", lpcDoc);

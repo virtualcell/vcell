@@ -141,7 +141,7 @@ public void run(Hashtable<String, Object> hashTable) throws java.lang.Exception 
 			for (int i = 0; i < simulations.length; i++){
 				for (int j = 0; j < allSims.length; j++){
 					if(allSims[i].getSimulationOwner() instanceof SimulationContext) {
-						if (simulations[i].getName().equals(allSims[j].getName()) && Compare.isEqualOrNull(allSims[i].getSimulationOwner().getName(), (simulations[i].getSimulationOwner()!=null?simulations[i].getSimulationOwner().getName():null))) {
+						if (simulations[i].getName().equals(allSims[j].getName()) && Compare.isEqualOrNull(allSims[j].getSimulationOwner().getName(), (simulations[i].getSimulationOwner()!=null?simulations[i].getSimulationOwner().getName():null))) {
 							v.add(allSims[j]);
 							break;
 						}
