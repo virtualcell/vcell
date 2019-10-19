@@ -589,7 +589,7 @@ public void startJobMonitor() {
 					StringBuffer slurmJobInfoSB = new StringBuffer();
 					try {
 						HtcSimulationWorker.this.htcProxy.getCommandService();
-						String[] tryStr = new String[] {"sacct","--format=jobid,jobname%40,state%30 -n -j "+slurmJobidSB.toString()+"| grep -v \".batch\""};
+						String[] tryStr = new String[] {"sacct","--format=jobid%25,jobname%40,state%30 -n -j "+slurmJobidSB.toString()+" | grep -v \".batch\""+" | grep -v \".extern\""};
 						CommandOutput commandOutput = htcProxy.getCommandService().command(tryStr);
 						slurmJobInfoSB.append(commandOutput.getStandardOutput());
 //						System.out.println("-----sacct stdoutput:\n"+commandOutput.getStandardOutput());
