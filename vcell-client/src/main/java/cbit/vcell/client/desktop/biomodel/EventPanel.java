@@ -60,12 +60,17 @@ import cbit.vcell.mapping.BioEvent.BioEventParameterType;
 import cbit.vcell.mapping.BioEvent.EventAssignment;
 import cbit.vcell.mapping.ParameterContext.LocalParameter;
 import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.mapping.SpeciesContextSpec;
 import cbit.vcell.mapping.gui.ElectricalStimulusPanel;
+import cbit.vcell.math.Equation;
+import cbit.vcell.math.MathException;
 import cbit.vcell.model.Model;
+import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.parser.AutoCompleteSymbolFilter;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.parser.SymbolTable;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.parser.SymbolTableFunctionEntry;
 
@@ -730,7 +735,7 @@ public class EventPanel extends DocumentEditorSubPanel {
 				e.printStackTrace(System.out);
 			}
 		}
-
+		
 		public static void populateVariableComboBoxModel(DefaultComboBoxModel<String> defaultComboBoxModel,SimulationContext simContext/*,boolean bExcludeFuncAndReserved*/){
 			// fill comboboxmodel with possible variables from simContext (symboltable entries) list
 			defaultComboBoxModel.removeAllElements();
@@ -744,13 +749,31 @@ public class EventPanel extends DocumentEditorSubPanel {
 					symbolTableEntry instanceof Model.ReservedSymbol)) {
 					continue;
 				}
+				if(symbolTableEntry instanceof Model.ModelParameter) {	// exclude global parameters that are rate or assignment rule variables
+					if(simContext.getRateRule(symbolTableEntry) != null) {
+						;	// it's a rate rule variable, we're fine
+					} else {
+						Model.ModelParameter mp = (Model.ModelParameter)symbolTableEntry;
+						Expression exp = mp.getExpression();
+						try {
+							boolean isConstant = BioEvent.isConstantExpression(simContext, exp);
+							if(!isConstant) {
+								System.out.println(mp.getName() + " - NO");		// skip this
+								continue;
+							}
+//							System.out.println(mp.getName() + " - yes: ");
+						} catch (ExpressionException e) {
+							System.out.println(mp.getName() + " - NO");			// skip this
+							continue;
+						}
+					}
+				}
 				varNameList.add(varName);
 			}
 			Collections.sort(varNameList);
 			for (String varName : varNameList) {
 				defaultComboBoxModel.addElement(varName);
 			}
-
 		}
 		private void addEventAssignment() {
 

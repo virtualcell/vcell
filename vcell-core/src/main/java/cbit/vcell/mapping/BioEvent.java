@@ -18,7 +18,9 @@ import java.beans.VetoableChangeSupport;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.vcell.util.Compare;
 import org.vcell.util.Issue;
@@ -39,6 +41,7 @@ import cbit.vcell.model.BioNameScope;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.ModelUnitSystem;
 import cbit.vcell.model.Parameter;
+import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
@@ -396,7 +399,36 @@ public class BioEvent implements Matchable, Serializable, VetoableChangeListener
 	public void setParameterValue(BioEventParameterType parameterType, Expression expression) throws ExpressionBindingException, PropertyVetoException {
 		parameterContext.getLocalParameterFromRole(parameterType).setExpression(expression);
 	}
-	
+
+	public static boolean isConstantExpression(SimulationContext simContext, Expression origExpression) throws ExpressionException {
+		if (origExpression == null) {
+			return false;
+		}
+		Map<String, SymbolTableEntry> entryMap = new HashMap<String, SymbolTableEntry>();
+		simContext.getEntries(entryMap);
+		origExpression.flatten();
+		String[] symbols = origExpression.getSymbols();
+		if(symbols == null || symbols.length == 0) {
+			return true;
+		}
+		for(String symbol : symbols) {
+			SymbolTableEntry ste = entryMap.get(symbol);
+			if(ste instanceof Model.ModelParameter) {
+				Model.ModelParameter mp = (Model.ModelParameter)ste;
+				Expression exp = mp.getExpression();
+				double ct = exp.evaluateConstant();
+			} else if(ste instanceof SpeciesContext) {
+				return false;
+//				SpeciesContext sc = (SpeciesContext)ste;
+//				SpeciesContextSpec scs = simContext.getReactionContext().getSpeciesContextSpec(sc);
+//				Expression exp = scs.getInitialConcentrationParameter().getExpression();
+//				double ct = exp.evaluateConstant();
+			} else {
+				continue;	// we just skip things that we don't know what they are
+			}
+		}
+		return true;
+	}
 	public void gatherIssues(IssueContext issueContext, List<Issue> issueList) {
 //		System.out.println("Event: " + name);
 		// check all event assignment symbols
@@ -411,8 +443,30 @@ public class BioEvent implements Matchable, Serializable, VetoableChangeListener
 					String tip = "Remove the Action containing the missing parameter from the BioEvent '" + name + "'.";
 					issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.ERROR));
 					break;	// found one issue on this event assignment, we show it and go to next
+				} 
+				if(ste instanceof Model.ModelParameter) {	// exclude global parameters that are not variables or constants
+					boolean isGood = true;
+					if(simulationContext.getRateRule(ste) != null) {
+						;		// if a rate rule variable, we're okay - because it'll become a volume variable during math generation
+					} else {
+						Model.ModelParameter mp = (Model.ModelParameter)ste;
+						Expression exp = mp.getExpression();
+						try {
+							boolean isConstant = isConstantExpression(simulationContext, exp);
+							if(!isConstant) {
+								isGood = false;
+							} else {
+								// if we get here, we're good
+							}
+						} catch (ExpressionException e) {
+							isGood = false;						}
+					}
+					if(!isGood) {
+						String msg = "Global Parameter '" + ste.getName() + "' is also an Action Variable for BioEvent '" + name + "' and must evaluate to a constant.";
+						issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, msg, Issue.Severity.ERROR));
+						break;	// found one issue on this event assignment, we show it and go to next
+					}
 				}
-			
 				Expression exp = ea.assignmentExpression;		// the expression of the event assignment
 				String[] symbols = exp.getSymbols();
 				if(symbols != null) {
