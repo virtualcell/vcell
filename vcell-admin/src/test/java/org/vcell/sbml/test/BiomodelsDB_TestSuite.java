@@ -64,6 +64,9 @@ import cbit.vcell.solver.test.VariableComparisonSummary;
 import uk.ac.ebi.www.biomodels_main.services.BioModelsWebServices.BioModelsWebServices;
 import uk.ac.ebi.www.biomodels_main.services.BioModelsWebServices.BioModelsWebServicesServiceLocator;
 
+import java.io.FileOutputStream;
+import java.util.Scanner;
+
 public class BiomodelsDB_TestSuite {
 
 	private static void write(Element bioModelInfoElement, File file) throws IOException{
@@ -99,16 +102,18 @@ public class BiomodelsDB_TestSuite {
 	}
 
 	public static void main(String[] args){
+		ys_runall();
+		System.exit(0);
 		try {
 			/*sanity check -- we currently only have a copasi_java dll for 32-bit, so let's make sure 
 			 * we're running on the right JVM. (Note we can run this on 64 bit machine, just have to install
 			 * a 32 bit JVM...)
 			 */
 			OperatingSystemInfo osi = OperatingSystemInfo.getInstance();
-			if (!osi.isWindows() || osi.is64bit()) {
-				System.err.println("run on 32 bit JVM");
-				System.exit(99);
-			}
+//			if (!osi.isWindows() || osi.is64bit()) {
+//				System.err.println("run on 32 bit JVM");
+//				System.exit(99);
+//			}
 			
 
 			//following are set in command line processing
@@ -324,7 +329,18 @@ public class BiomodelsDB_TestSuite {
 
 						SimSpec simSpec = SimSpec.fromSBML(modelSBML);
 						String[] varsToTest = simSpec.getVarsList();
-
+/*			            for(int i=0; i<varsToTest.length; i++) {
+			            	if(varsToTest[i].contentEquals("x")) {
+			            		varsToTest[i] = "s_x";
+			            	} else if(varsToTest[i].contentEquals("y")) {
+			            		varsToTest[i] = "s_y";
+			            	} else if(varsToTest[i].contentEquals("z")) {
+			            		varsToTest[i] = "s_z";
+			            	} else if(varsToTest[i].contentEquals("t")) {
+			            		varsToTest[i] = "s_t";
+			            	}
+			            }
+*/
 						printWriter.print("ModelId: " + modelID + ": ");
 						
 						//if a model crashes out the libSBML dll, we will terminate abruptly. Flush
@@ -631,7 +647,232 @@ public class BiomodelsDB_TestSuite {
 		}
 		System.exit(0);
 	}
+
 	
+	public static void ys_runall() {
+		  System.out.println("testing");
+		  try {
+		    OperatingSystemInfo osi = OperatingSystemInfo.getInstance();
+		    if (!osi.isWindows() || osi.is64bit()) {
+		      System.err.println("run on 32 bit JVM");
+		      //System.exit(99);
+		    }
+
+		    //File outDir = new File("C:\\Users\\yskaf\\Documents\\ModelFiles\\vcell_output\\runAll_10_21_19");
+		    File outDir = new File("C:\\TEMP\\ddd\\274out");
+
+		    if (!outDir.exists()){
+		      outDir.mkdirs();
+		    }
+
+		    WriterFlusher flusher = new WriterFlusher(10);
+		    PrintWriter detailWriter;
+		    PrintWriter bngWriter;
+		    PrintWriter sbmlWriter;
+		    SBMLExceptionSorter sbmlExceptions;
+
+		    detailWriter = new PrintWriter( new File(outDir, "compareDetail.txt") );
+		    bngWriter = new PrintWriter( new File(outDir, "bngErrors.txt") );
+		    sbmlWriter = new PrintWriter( new File(outDir, "sbmlErrors.txt") );
+		    sbmlExceptions = new LiveSorter();
+		    flusher.add(detailWriter);
+		    flusher.add(bngWriter);
+		    flusher.add(sbmlWriter);
+
+		    PropertyLoader.loadProperties();
+		    ResourceUtil.setNativeLibraryDirectory();
+
+		    PrintWriter printWriter = new PrintWriter(new FileWriter(new File(outDir, "summary.log"),true));
+		    flusher.add(printWriter);
+
+		    try {
+		      File inDir = new File("C:\\TEMP\\ddd\\274");
+		      //File inDir = new File("C:\\Users\\yskaf\\Documents\\ModelFiles\\temp");
+		      File[] directoryListing = inDir.listFiles();
+		      if (directoryListing != null) {
+		        printWriter.println(" | *BIOMODEL ID* | *BioModel name* | *PASS* | *Rel Error (VC/COP)(VC/MSBML)(COP/MSBML)* | *Exception* | ");
+		        for (File modelFile : directoryListing) {
+		          String fileName = modelFile.getName();
+
+
+		          int end = fileName.indexOf(".");
+		          String modelName = fileName.substring(0, end);
+		          String modelSBML = new Scanner(modelFile).useDelimiter("\\Z").next();
+		          String modelID = modelName.replaceAll("[^0-9]", "");
+
+		          // **********
+//		          try {
+//		            modelSBML = modelSBML.replace("id=\"x\"", "id=\"s_x\"");
+//		            modelSBML = modelSBML.replace("id=\"y\"", "id=\"s_y\"");
+//		            modelSBML = modelSBML.replace("id=\"z\"", "id=\"s_z\"");
+//		            modelSBML = modelSBML.replace("species=\"x\"", "species=\"s_x\"");
+//		            modelSBML = modelSBML.replace("species=\"y\"", "species=\"s_y\"");
+//		            modelSBML = modelSBML.replace("species=\"z\"", "species=\"s_z\"");
+//
+//		            modelSBML = modelSBML.replace("id=\"t\"", "id=\"s_t\"");
+//		            modelSBML = modelSBML.replace("species=\"t\"", "species=\"s_t\"");
+//
+//		            modelSBML = modelSBML.replace("name=\"x\"", "name=\"s_x\"");
+//		            modelSBML = modelSBML.replace("name=\"y\"", "name=\"s_y\"");
+//		            modelSBML = modelSBML.replace("name=\"z\"", "name=\"s_z\"");
+//		            modelSBML = modelSBML.replace("name=\"t\"", "name=\"s_t\"");
+//
+//		            modelSBML = modelSBML.replace("<ci> x ", "<ci> s_x ");
+//		            modelSBML = modelSBML.replace("<ci> y ", "<ci> s_y ");
+//		            modelSBML = modelSBML.replace("<ci> z ", "<ci> s_z ");
+//		            modelSBML = modelSBML.replace("<ci> t ", "<ci> s_t ");
+//
+//		          /*FileOutputStream fooStream = new FileOutputStream(modelFile, false); // true to append, false to overwrite
+//		          byte[] myBytes = modelSBML.getBytes();
+//		          fooStream.write(myBytes);
+//		          fooStream.close();*/
+//
+//		          } catch (Exception e) {
+//		            printWriter.print(modelName + ": error with SBML replacement.");
+//		            printWriter.print(e.getMessage());
+//		          }
+
+		          Element bioModelInfo = new Element(BioModelsNetPanel.BIOMODELINFO_ELEMENT_NAME);
+		          bioModelInfo.setAttribute(BioModelsNetPanel.ID_ATTRIBUTE_NAME, modelID);
+		          bioModelInfo.setAttribute(BioModelsNetPanel.SUPPORTED_ATTRIBUTE_NAME,"false");
+		          bioModelInfo.setAttribute("vcell_ran","false");
+		          bioModelInfo.setAttribute("COPASI_ran","false");
+		          bioModelInfo.setAttribute("mSBML_ran","false");
+		          bioModelInfo.setAttribute(BioModelsNetPanel.MODELNAME_ATTRIBUTE_NAME, modelName);
+
+
+		          boolean bUseUTF8 = true;
+		          File sbmlFile = new File(outDir,modelName+".sbml");
+		          XmlUtil.writeXMLStringToFile(modelSBML, sbmlFile.getAbsolutePath(), bUseUTF8);
+
+		          PrintStream saved_sysout = System.out;
+		          PrintStream saved_syserr = System.err;
+		          PrintStream new_sysout = null;
+		          PrintStream new_syserr = null;
+
+		          try {
+		            String filePrefix = modelName;
+		            String sbmlText = modelSBML;
+
+		            File logFile = new File(outDir,filePrefix+".log");
+		            new_sysout = new PrintStream(logFile);
+		            new_syserr = new_sysout;
+		            System.setOut(new_sysout);
+		            System.setErr(new_syserr);
+		            StringBuffer combinedErrorBuffer = new StringBuffer();
+
+		            SimSpec simSpec = SimSpec.fromSBML(modelSBML);
+		            String[] varsToTest = simSpec.getVarsList();
+/*		            for(int i=0; i<varsToTest.length; i++) {
+		            	if(varsToTest[i].contentEquals("x")) {
+		            		varsToTest[i] = "s_x";
+		            	} else if(varsToTest[i].contentEquals("y")) {
+		            		varsToTest[i] = "s_y";
+		            	} else if(varsToTest[i].contentEquals("z")) {
+		            		varsToTest[i] = "s_z";
+		            	} else if(varsToTest[i].contentEquals("t")) {
+		            		varsToTest[i] = "s_t";
+		            	}
+		            }
+		            */
+
+		            printWriter.print(modelName + ": ");
+		            printWriter.flush( );
+		            try {
+		              // get VCell solution with an embedded "ROUND TRIP" (time and species concentrations)
+		              ODESolverResultSet vcellResults_RT = null;
+		              try {
+		                VCellSBMLSolver vcellSBMLSolver_RT = new VCellSBMLSolver();
+		                vcellSBMLSolver_RT.setRoundTrip(false);
+		                // TODO try with round-trip later.
+		                String columnDelimiter = vcellSBMLSolver_RT.getResultsFileColumnDelimiter();
+		                File resultFile = vcellSBMLSolver_RT.solve(filePrefix, outDir, sbmlFile.getAbsolutePath(), simSpec);
+		                vcellResults_RT = readResultFile(resultFile, columnDelimiter);
+		                bioModelInfo.setAttribute("vcell_ran","true");
+		              }catch (BNGException e){
+		                bngWriter.println(modelID + " " + e.getMessage());
+		                throw e;
+		              }catch (SBMLImportException e) {
+		                //ModelException me = new ModelException(modelID,e);
+		                //write(sbmlWriter,me);
+		                //sbmlExceptions.add(me);
+		                throw e;
+		              }catch (Exception e){
+		                printWriter.println("vcell solve(roundtrip=true) failed");
+		                e.printStackTrace(printWriter);
+		                System.out.println("vcell solve(roundtrip=true) failed");
+		                e.printStackTrace(System.out);
+		                combinedErrorBuffer.append(" *VCELL_RT* _"+e.getMessage()+"_ ");
+
+		                Element vcellSolverReport = new Element("SolverReport");
+		                vcellSolverReport.setAttribute("solverName","vcell");
+		                vcellSolverReport.setAttribute("errorMessage",e.getMessage());
+		                bioModelInfo.addContent(vcellSolverReport);
+
+		                bioModelInfo.setAttribute("vcell_ran","false");
+		              }
+
+		              if (vcellResults_RT!=null) {
+		                bioModelInfo.setAttribute(BioModelsNetPanel.SUPPORTED_ATTRIBUTE_NAME,"true");
+		                printWriter.println("PASS");
+		              }else{
+		                bioModelInfo.setAttribute(BioModelsNetPanel.SUPPORTED_ATTRIBUTE_NAME,"false");
+		                printWriter.println("FAIL");
+		              }
+		            }catch (Exception e){
+		              e.printStackTrace(printWriter);
+		              combinedErrorBuffer.append(" *UNKNOWN* _"+e.getMessage()+"_ ");
+		              bioModelInfo.setAttribute(BioModelsNetPanel.SUPPORTED_ATTRIBUTE_NAME,"false");
+		              bioModelInfo.setAttribute("exception",e.getMessage());
+		            }
+		            printWriter.flush();
+		            write(bioModelInfo,new File(outDir,modelName+"_report.xml")); // write for each model just in case files get corrupted (it happened).
+		          }finally{
+		            if (new_sysout!=null){
+		              new_sysout.close();
+		              new_sysout=null;
+		            }
+		            if (new_syserr!=null){
+		              new_syserr.close();
+		              new_syserr=null;
+		            }
+		            System.setOut(saved_sysout);
+		            System.setOut(saved_syserr);
+		          }
+		        }
+		      }
+		      else {
+		        System.err.println("inDir not a directory");
+		        System.exit(99);
+		      }
+
+		      //this writes out the SBML import exceptions grouped by type
+		      if (!sbmlExceptions.isEmpty()) {
+		        Map<Category, Collection<ModelException>> map = sbmlExceptions.getMap();
+		        try (PrintWriter pw = new PrintWriter(new File(outDir,"sbmlSorted.txt")) ) {
+		          //SBMLImportException.Category
+		          for (Category c : Category.values()) {
+		            Collection<ModelException> meCollection = map.get(c);
+		            for (ModelException me : meCollection) {
+		              write(pw,me);
+		            }
+		          }
+		        }
+		      }
+
+		    }finally{
+		      printWriter.close();
+		      detailWriter.close( );
+		      bngWriter.close( );
+		    }
+
+		    }catch (Throwable e){
+		      e.printStackTrace(System.out);
+		      e.printStackTrace(System.err);
+		    }
+		  System.exit(0);
+		}
+
 	/**
 	* see {@link BiomodelsDB_TestSuite#listModels(PrintWriter, SortedSet) }
 	 */
