@@ -765,7 +765,11 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 		}
 		Variable var = varHash.getVariable(mp.getName());
 		if(var != null) {
-			throw new MappingException("Global Parameters that are rate rule Variables should be unmapped at this point.");
+			if(eventVolVarHash.containsKey(var)) {
+				System.out.println("Global Parameters that are rate rule Variables should be unmapped at this point, unless they are EventAssignments too.");
+			} else {
+				throw new MappingException("Global Parameters that are rate rule Variables should be unmapped at this point.");
+			}
 		}
 		Expression modelParamExpr = mp.getExpression();
 		if(modelParamExpr == null) {
