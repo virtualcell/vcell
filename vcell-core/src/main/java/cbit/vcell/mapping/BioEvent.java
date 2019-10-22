@@ -42,6 +42,7 @@ import cbit.vcell.model.Model;
 import cbit.vcell.model.ModelUnitSystem;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.model.SpeciesContext;
+import cbit.vcell.model.Structure.StructureSize;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
@@ -443,7 +444,7 @@ public class BioEvent implements Matchable, Serializable, VetoableChangeListener
 					String tip = "Remove the Action containing the missing parameter from the BioEvent '" + name + "'.";
 					issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.ERROR));
 					break;	// found one issue on this event assignment, we show it and go to next
-				} 
+				}
 				if(ste instanceof Model.ModelParameter) {	// exclude global parameters that are not variables or constants
 					boolean isGood = true;
 					if(simulationContext.getRateRule(ste) != null) {
@@ -467,6 +468,12 @@ public class BioEvent implements Matchable, Serializable, VetoableChangeListener
 						break;	// found one issue on this event assignment, we show it and go to next
 					}
 				}
+				if (ste instanceof StructureSize) {
+					String msg = "Event Assignment Variable for compartment size is not supported yet";
+					issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, msg, Issue.Severity.ERROR));
+					break;	// found one issue on this event assignment, we show it and go to next
+				}
+
 				Expression exp = ea.assignmentExpression;		// the expression of the event assignment
 				String[] symbols = exp.getSymbols();
 				if(symbols != null) {
