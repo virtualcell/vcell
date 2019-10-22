@@ -513,7 +513,7 @@ public class SBMLImporter {
 		}
 	}
 
-	protected void addEvents() {
+	protected void addEvents(Map<String, String> sbmlToVcNameMap) {
 		if (sbmlModel.getNumEvents() > 0) {
 			// VCell does not support events in spatial model
 			if (bSpatial) {
@@ -521,7 +521,11 @@ public class SBMLImporter {
 			}
 
 			ListOf<Event> listofEvents = sbmlModel.getListOfEvents();
-			Model vcModel = vcBioModel.getSimulationContext(0).getModel();
+			SimulationContext simContext = vcBioModel.getSimulationContext(0);
+			Model vcModel = simContext.getModel();
+			Map<String, SymbolTableEntry> entryMap = new HashMap<String, SymbolTableEntry>();
+			simContext.getEntries(entryMap);
+			
 			for (int i = 0; i < sbmlModel.getNumEvents(); i++) {
 				try {
 					Event event = listofEvents.get(i);
@@ -532,7 +536,17 @@ public class SBMLImporter {
 						triggerExpr = getExpressionFromFormula(event.getTrigger().getMath());
 						triggerExpr = adjustExpression(triggerExpr, vcModel);
 					}
-
+					// convert reserved symbols, if any
+					if(!sbmlToVcNameMap.isEmpty() && triggerExpr != null && triggerExpr.getSymbols() != null && triggerExpr.getSymbols().length > 0) {
+						String[] symbols = triggerExpr.getSymbols();
+						for(String oldSymbol : symbols) {
+							String newSymbol = sbmlToVcNameMap.get(oldSymbol);
+							if(newSymbol != null) {
+								triggerExpr.substituteInPlace(new Expression(oldSymbol), new Expression(newSymbol));
+							}
+						}
+					}
+					
 					// create bioevent
 					String eventName = event.getId();
 					if (eventName == null || eventName.length() == 0) {
@@ -550,6 +564,16 @@ public class SBMLImporter {
 						Expression durationExpr = null;
 						durationExpr = getExpressionFromFormula(event.getDelay().getMath());
 						durationExpr = adjustExpression(durationExpr, vcModel);
+						// convert reserved symbols, if any
+						if(!sbmlToVcNameMap.isEmpty() && durationExpr != null && durationExpr.getSymbols() != null && durationExpr.getSymbols().length > 0) {
+							String[] symbols = durationExpr.getSymbols();
+							for(String oldSymbol : symbols) {
+								String newSymbol = sbmlToVcNameMap.get(oldSymbol);
+								if(newSymbol != null) {
+									durationExpr.substituteInPlace(new Expression(oldSymbol), new Expression(newSymbol));
+								}
+							}
+						}
 						boolean bUseValsFromTriggerTime = true;
 						if (event.isSetUseValuesFromTriggerTime()) {
 							bUseValsFromTriggerTime = event.isSetUseValuesFromTriggerTime();
@@ -573,9 +597,13 @@ public class SBMLImporter {
 					ArrayList<EventAssignment> vcEvntAssgnList = new ArrayList<EventAssignment>();
 					for (int j = 0; j < event.getNumEventAssignments(); j++) {
 						org.sbml.jsbml.EventAssignment sbmlEvntAssgn = event.getEventAssignment(j);
-						String varName = sbmlEvntAssgn.getVariable();
-						SymbolTableEntry varSTE = vcBioModel.getSimulationContext(0).getEntry(varName);
-						if (varSTE != null) {
+						String sbmlVarName = sbmlEvntAssgn.getVariable();
+						String vcVarName = sbmlVarName;
+						if(sbmlToVcNameMap.get(sbmlVarName) != null) {		// convert reserved symbols, if any
+							vcVarName = sbmlToVcNameMap.get(sbmlVarName);
+						}
+						SymbolTableEntry ste = simContext.getEntry(vcVarName);
+						if (ste != null) {
 							Expression evntAssgnExpr;
 							ASTNode node = sbmlEvntAssgn.getMath();
 							if(node == null) {
@@ -587,11 +615,22 @@ public class SBMLImporter {
 
 							}
 							evntAssgnExpr = adjustExpression(evntAssgnExpr, vcModel);
-							EventAssignment vcEvntAssgn = vcEvent.new EventAssignment(varSTE, evntAssgnExpr);
+							// convert reserved symbols, if any
+							if(!sbmlToVcNameMap.isEmpty() && evntAssgnExpr != null && evntAssgnExpr.getSymbols() != null && evntAssgnExpr.getSymbols().length > 0) {
+								String[] symbols = evntAssgnExpr.getSymbols();
+								for(String oldSymbol : symbols) {
+									String newSymbol = sbmlToVcNameMap.get(oldSymbol);
+									if(newSymbol != null) {
+										evntAssgnExpr.substituteInPlace(new Expression(oldSymbol), new Expression(newSymbol));
+									}
+								}
+							}
+							
+							EventAssignment vcEvntAssgn = vcEvent.new EventAssignment(ste, evntAssgnExpr);
 							vcEvntAssgnList.add(vcEvntAssgn);
 						} else {
 							logger.sendMessage(VCLogger.Priority.HighPriority, VCLogger.ErrorType.UnsupportedConstruct,
-									"No symbolTableEntry for '" + varName + "'; Cannot add event assignment.");
+									"No symbolTableEntry for '" + vcVarName + "'; Cannot add event assignment.");
 						}
 					}
 
@@ -3164,7 +3203,7 @@ public class SBMLImporter {
 		}
 
 		// Add Events
-		addEvents();
+		addEvents(sbmlToVcNameMap);
 		// Check if names of species, structures, reactions, parameters are long
 		// (say, > 64), if so give warning.
 		try {
