@@ -466,6 +466,7 @@ public class VCMetaDataMiriamManager implements MiriamManager, Serializable {
 			list.add(VCMetaDataDataType.DataType_GO);
 			list.add(VCMetaDataDataType.DataType_REACTOME);
 		} else if(entity instanceof ReactionRule || entity instanceof ReactionStep) {
+			list.add(VCMetaDataDataType.DataType_GO);
 			list.add(VCMetaDataDataType.DataType_KEGGPATHWAY);
 			list.add(VCMetaDataDataType.DataType_KEGGREACTION);
 			list.add(VCMetaDataDataType.DataType_REACTOME);
