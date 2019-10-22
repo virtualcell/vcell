@@ -29,6 +29,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -136,6 +137,7 @@ import cbit.vcell.geometry.AnalyticSubVolume;
 import cbit.vcell.geometry.CSGObject;
 import cbit.vcell.geometry.CSGPrimitive.PrimitiveType;
 import cbit.vcell.geometry.CSGSetOperator.OperatorType;
+import cbit.vcell.geometry.CompartmentSubVolume;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometryClass;
 import cbit.vcell.geometry.GeometrySpec;
@@ -306,69 +308,85 @@ public class SBMLImporter {
 		this.bSpatial = isSpatial;
 	}
 	
+	private static Expression flattenUnbound(Expression originalExpression, SimulationContext simContext, Map<String, SymbolTableEntry> entryMap, int depth) throws ExpressionException {
+		if(depth > 20) {
+			throw new ExpressionException("Too many iterations.");
+		}
+		Model model = simContext.getModel();
+		GeometryContext gc = simContext.getGeometryContext();
+		
+		String[] originalSymbols = originalExpression.getSymbols();
+		Expression newExpression = new Expression(originalExpression);
+		for(String symbol : originalSymbols) {
+			SymbolTableEntry ste = entryMap.get(symbol);
+			Expression steExp = ste.getExpression();
+			if(ste instanceof Structure.StructureSize) {
+				Structure symbolStructure = model.getStructure(symbol);
+				StructureMapping.StructureMappingParameter mapping = gc.getStructureMapping(symbolStructure).getSizeParameter();
+				steExp = mapping.getExpression();
+			}
+			if(steExp == null) {
+				throw new ExpressionException("Symbol expression is null.");
+			}
+			newExpression.substituteInPlace(new Expression(symbol), new Expression(steExp));
+		}
+		String[] newSymbols = newExpression.getSymbols();
+		if(newSymbols == null || newSymbols.length == 0) {
+			double constant = newExpression.evaluateConstant();
+			return new Expression(constant);
+		} else if(newSymbols.length != originalSymbols.length) {
+			depth++;
+			return flattenUnbound(newExpression, simContext, entryMap, depth);
+		} else if(newSymbols.length == originalSymbols.length) {
+			Arrays.sort(originalSymbols);
+			Arrays.sort(newSymbols);
+			for(int i=0; i<newSymbols.length; i++) {
+				if(!originalSymbols[i].contentEquals(newSymbols[i])) {
+					depth++;
+					return flattenUnbound(newExpression, simContext, entryMap, depth);
+				}
+			}
+			throw new ExpressionException("Expressions identical.");	// some symbols can't be replaced with numbers, it means they're variables
+		}
+		return newExpression;
+	}
 	protected void finalizeCompartments(Map<String, Expression> deferredStructureExpression) {
 		if(deferredStructureExpression.isEmpty()) {
 			return;
 		}
-		
-		Model vcModel = vcBioModel.getSimulationContext(0).getModel();
-		GeometryContext gc = vcBioModel.getSimulationContext(0).getGeometryContext();
-
+		SimulationContext simContext = vcBioModel.getSimulationContext(0);
+		Model vcModel = simContext.getModel();
+		GeometryContext gc = simContext.getGeometryContext();
 		ModelParameter[] modelParameters = vcModel.getModelParameters();
-		
+		Map<String, SymbolTableEntry> entryMap = new HashMap<String, SymbolTableEntry>();
+		simContext.getEntries(entryMap);
+
 		for (Map.Entry<String, Expression> entry : deferredStructureExpression.entrySet()) {
 			String compartmentName = entry.getKey();
 			Expression sizeExpr = entry.getValue();
+			Expression origExpr = new Expression(sizeExpr);
 			Structure struct = vcModel.getStructure(compartmentName);
 			StructureMapping.StructureMappingParameter mappingParam = gc.getStructureMapping(struct).getSizeParameter();
 			
 			// the only chance to evaluate the structure size expression (set by an initial assignment) as a constant
 			// if we fail here, it may be a species variable involved in the expression, or who knows what else, which we don't have yet
 			try {
-				
-				String[] symbols = sizeExpr.getSymbols();
-				for(String symbol : symbols) {
-
-					SymbolTableEntry ste = vcBioModel.getSimulationContext(0).getEntry(symbol);
-					ModelParameter mp = vcModel.getModelParameter(symbol);
-					if(ste instanceof Structure.StructureSize) {
-						StructureMapping.StructureMappingParameter mapping = gc.getStructureMapping(struct).getSizeParameter();
-						try {
-							double value = mapping.getExpression().evaluateConstant();
-							sizeExpr.substituteInPlace(new Expression(symbol), new Expression(value));
-						} catch (ExpressionException e) {
-							throw new SBMLImportException("Error adding Feature '" + compartmentName + "' to vcModel: cannot evaluate InitialAssignment '" + sizeExpr.infix() + "' to a constant");
-						} 
-					} else if(mp != null) {
-						double value = mp.getExpression().evaluateConstant();
-						sizeExpr.substituteInPlace(new Expression(symbol), new Expression(value));
-
-					} else {
-						throw new SBMLImportException("Error adding Feature '" + compartmentName + "' to vcModel: cannot evaluate InitialAssignment '" + sizeExpr.infix() + "' to a constant");
-					}
-				}
-				mappingParam.setExpression(new Expression(sizeExpr));
+				sizeExpr = flattenUnbound(sizeExpr, simContext, entryMap, 0);	// if we were succesful, it should be a number
+				double constant = sizeExpr.evaluateConstant();
+				mappingParam.setExpression(new Expression(constant));
+				String msg = "Initial assignment for Structure '" + compartmentName + "' from expression '" + origExpr.infix() + "' was succesfully converted to a number.";
+				localIssueList.add(new Issue(vcBioModel, issueContext, IssueCategory.SBMLImport_RestrictedFeature, msg, Issue.Severity.WARNING));
 			} catch (ExpressionException e) {
 				e.printStackTrace(System.out);
-				throw new SBMLImportException("Error adding Feature '" + compartmentName + "' to vcModel: " + e.getMessage(), e);
+				String msg = "Failed to set the initial assignment for symbol '" + compartmentName + "' from expression '" + origExpr.infix() + "'. Ignored.";
+				localIssueList.add(new Issue(vcBioModel, issueContext, IssueCategory.SBMLImport_UnsupportedAttributeOrElement, msg, Issue.Severity.WARNING));
 			}
 		}
-		
-		boolean allSizesSet = true;
-		for(Structure struct : vcModel.getStructures()) {
-			StructureMapping.StructureMappingParameter mappingParam = gc.getStructureMapping(struct).getSizeParameter();
-			if(!mappingParam.getExpression().isNumeric()) {
-				allSizesSet = false;
-				break;
-			}
-		}
-		if (allSizesSet) {
-			try {
-				StructureSizeSolver.updateRelativeStructureSizes(vcBioModel.getSimulationContext(0));
-			} catch (Exception e) {
-				e.printStackTrace(System.out);
-				throw new SBMLImportException("Error adding Feature to vcModel " + e.getMessage(), e);
-			}
+		try {
+			StructureSizeSolver.updateRelativeStructureSizes(vcBioModel.getSimulationContext(0));
+		} catch (Exception e) {
+			e.printStackTrace(System.out);
+			throw new SBMLImportException("Error adding Feature to vcModel " + e.getMessage(), e);
 		}
 	}
 	
@@ -477,13 +495,13 @@ public class SBMLImporter {
 						// We are NOT handling compartment sizes with assignment
 						// rules/initial Assignments that are NON-numeric at
 						// this time ...
-						logger.sendMessage(VCLogger.Priority.HighPriority, VCLogger.ErrorType.CompartmentError,
-							"Compartment '" + compartmentName + "' size has an initial assignment which is not a numeric value, cannot handle it at this time.");
+//						logger.sendMessage(VCLogger.Priority.HighPriority, VCLogger.ErrorType.CompartmentError,
+//							"Compartment '" + compartmentName + "' size has an initial assignment which is not a numeric value, cannot handle it at this time.");
 // TODO: uncomment below to try and compute the expression later, in finalizeCompartment()
-//						allSizesSet = false;
-//						System.out.println(sizeExpr.infix());
-//						sizeExpr = new Expression(size);
-//						deferredStructureExpression.put(compartmentName, sizeExpr);
+						allSizesSet = false;
+						System.out.println(sizeExpr.infix());
+						deferredStructureExpression.put(compartmentName, sizeExpr);
+						sizeExpr = new Expression(size);
 					}
 
 					// no init assignment or assignment rule; create expression
@@ -496,9 +514,9 @@ public class SBMLImporter {
 					Structure struct = model.getStructure(compartmentName);
 					GeometryContext gc = vcBioModel.getSimulationContext(0).getGeometryContext();
 					StructureMapping.StructureMappingParameter mappingParam = gc.getStructureMapping(struct).getSizeParameter();
-					if(!deferredStructureExpression.containsKey(compartmentName)) {
+//					if(!deferredStructureExpression.containsKey(compartmentName)) {
 						mappingParam.setExpression(sizeExpr);
-					}
+//					}
 				}
 			}
 
@@ -667,7 +685,7 @@ public class SBMLImporter {
 		}
 	}
 
-	protected void addInitialAssignments() {
+	protected void addInitialAssignments(Map<String, Expression> deferredStructureExpression) {
 		if (sbmlModel == null) {
 			throw new SBMLImportException("SBML model is NULL");
 		}
@@ -676,9 +694,11 @@ public class SBMLImporter {
 			System.out.println("No Initial Assignments specified");
 			return;
 		}
-		Model vcModel = vcBioModel.getSimulationContext(0).getModel();
+		SimulationContext simContext = vcBioModel.getSimulationContext(0);
+		Model vcModel = simContext.getModel();
+		Map<String, SymbolTableEntry> entryMap = new HashMap<String, SymbolTableEntry>();
+		simContext.getEntries(entryMap);
 
-		boolean hasStructureInitialAssignmentExpression = false;
 		for (int i = 0; i < sbmlModel.getNumInitialAssignments(); i++) {
 			try {
 				InitialAssignment initAssgn = (InitialAssignment) listofInitialAssgns.get(i);
@@ -688,12 +708,19 @@ public class SBMLImporter {
 				// support compartmentSize expressions, warn and bail out.
 				if (sbmlModel.getCompartment(initAssgnSymbol) != null) {
 					if (!initAssignMathExpr.isNumeric()) {
-//						hasStructureInitialAssignmentExpression = true;
-// TODO: uncomment the line above to deal with expressions used as initial assignment for structures
-						logger.sendMessage(VCLogger.Priority.HighPriority, VCLogger.ErrorType.CompartmentError,
+						if(deferredStructureExpression.get(initAssgnSymbol) != null) {
+							// it's in the deferredStructureExpression map since addCompartments()
+							// we still hope to evaluate it to a constant in finalizeCompartments()
+							continue;	// nothing to do here
+						} else {
+							// it's missing from deferredStructureExpression map, this should never happen
+							logger.sendMessage(VCLogger.Priority.HighPriority, VCLogger.ErrorType.CompartmentError,
 							"compartment '" + initAssgnSymbol + "' size has an initial assignment, cannot handle it at this time.");
+							continue;
+						}
+					} else {
+						continue;	// if init assgn for compartment is numeric, the numeric value for size is set in addCompartments(), nothing to do here.
 					}
-					// if init assgn for compartment is numeric, the numeric value for size is set in addCompartments().
 				}
 				// TODO: replace the x, y, z
 				// Check if init assgn expr for a species is in terms of x,y,z or other species. Not allowed for species.
@@ -716,9 +743,20 @@ public class SBMLImporter {
 					scs.getInitialConditionParameter().setExpression(initAssignMathExpr);
 				} else if (mp != null) {
 					mp.setExpression(initAssignMathExpr);
+//				} else if(entryMap.get(initAssgnSymbol) != null) {
+//					SymbolTableEntry ste = entryMap.get(initAssgnSymbol);
+//					if(ste instanceof Structure.StructureSize) {
+//						Structure struct = vcModel.getStructure(initAssgnSymbol);
+//						GeometryContext gc = simContext.getGeometryContext();
+//						StructureMapping.StructureMappingParameter mappingParam = gc.getStructureMapping(struct).getSizeParameter();
+//						mappingParam.setExpression(initAssignMathExpr);
+//					} else {
+//						String msg = "Symbol '" + initAssgnSymbol + "' is not a species, a global parameter or a structure size parameter in VCell; initial assignment ignored.";
+//						localIssueList.add(new Issue(new SBMLIssueSource(initAssgn), issueContext, IssueCategory.SBMLImport_UnsupportedAttributeOrElement, msg, Issue.Severity.WARNING));
+//					}
 				} else {
-					localIssueList.add(new Issue(new SBMLIssueSource(initAssgn), issueContext, IssueCategory.SBMLImport_UnsupportedAttributeOrElement,
-						"Symbol '" + initAssgnSymbol + "' not a species or global parameter in VCell; initial assignment ignored.", Issue.SEVERITY_WARNING));
+					String msg = "Symbol '" + initAssgnSymbol + "' is not a known symbol in the model; initial assignment ignored.";
+					localIssueList.add(new Issue(new SBMLIssueSource(initAssgn), issueContext, IssueCategory.SBMLImport_UnsupportedAttributeOrElement, msg, Issue.Severity.WARNING));
 					// logger.sendMessage(VCLogger.Priority.MediumPriority,
 					// VCLogger.ErrorType.UnsupportedConstruct,
 					// "Symbol '"+initAssgnSymbol+"' not a species or global parameter in VCell; initial assignment ignored..");
@@ -3147,10 +3185,6 @@ public class SBMLImporter {
 			throw new SBMLImportException(e.getMessage(), e);
 		}
 		
-		// now that we have the parameters loaded, we can bind
-		// TODO: use BMDB model Whitcomb to test comp size initialized with expression
-		finalizeCompartments(deferredStructureExpression);
-		
 		// Create the vCell Assignment Rules, now that the species, parameters and structures are defined
 		// If species variables were renamed from x,y,z, apply corrections to the hash
 		try {
@@ -3165,7 +3199,9 @@ public class SBMLImporter {
 		setSpeciesInitialConditions(vcToSbmlNameMap);
 		
 		// Add InitialAssignments
-		addInitialAssignments();
+		addInitialAssignments(deferredStructureExpression);
+		
+
 		// Add constraints (not handled in VCell)
 		addConstraints();
 		
@@ -3192,6 +3228,11 @@ public class SBMLImporter {
 			e.printStackTrace(System.out);
 			throw new SBMLImportException(e.getMessage(), e);
 		}
+		
+		// now that we have the parameters loaded, we can bind
+		// TODO: use BMDB model Whitcomb to test comp size initialized with expression
+		finalizeCompartments(deferredStructureExpression);
+
 		// Sort VCell-model Structures in structure array according to reaction
 		// adjacency and parentCompartment.
 		Structure[] sortedStructures = StructureSorter.sortStructures(vcBioModel.getSimulationContext(0).getModel());
