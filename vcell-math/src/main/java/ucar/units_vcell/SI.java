@@ -437,7 +437,8 @@ SI
      */
     public static final Unit	GRAM;
     
-   
+    public static final Unit AVOGADRO;
+    
     static
     {
 	BaseUnit	ampere		= null;
@@ -490,6 +491,7 @@ SI
 	Unit		rad		= null;
 	Unit		rem		= null;
 	Unit		gram	= null;
+	Unit		avogadro = null;
 
 	try
 	{
@@ -520,6 +522,7 @@ SI
             degree_celsius  = du("degree celsius", "Cel", new OffsetUnit(kelvin, 273.15));
             lumen           = du("lumen", "lm", candela.multiplyBy(steradian));
             lux             = du("lux", "lx", lumen.divideBy(metre.raiseTo(new RationalNumber(2))));
+            avogadro		= du("avogadro", "Avogadro", new ScaledUnit(6.02214179e23, DerivedUnitImpl.DIMENSIONLESS));
 
             becquerel       = du("becquerel", "Bq", hertz);
             gray            = du("gray", "Gy", joule.divideBy(kilogram));
@@ -621,6 +624,7 @@ SI
 	RAD            = rad;
 	REM            = rem;
 	GRAM		   = gram;
+	AVOGADRO	= avogadro;
     }
 
     /**
@@ -690,7 +694,7 @@ SI
     derivedUnitDB()
 	throws NameException, UnitExistsException, NoSuchUnitException
     {
-	UnitDBImpl	db = new UnitDBImpl(42, 43);
+	UnitDBImpl	db = new UnitDBImpl(43, 44);
 
 	db.addUnit(HERTZ);
 	db.addUnit(NEWTON);
@@ -736,6 +740,7 @@ SI
 	db.addUnit(RAD);
 	db.addUnit(REM);
 	db.addUnit(GRAM);
+	db.addUnit(AVOGADRO);
 
 	db.addAlias("litre",	"liter",	"l");
 	db.addAlias("tonne",	"metric ton");
