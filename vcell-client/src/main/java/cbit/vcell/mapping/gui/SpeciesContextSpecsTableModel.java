@@ -435,7 +435,7 @@ private void onAssignmentRuleDelete(AssignmentRule[] oldRules, AssignmentRule[] 
 	for(AssignmentRule candidate : oldRules) {
 		boolean found = false;
 		for(AssignmentRule rule : newRules) {
-			if(candidate.getName().equalsIgnoreCase(rule.getName())) {
+			if(candidate.getName().equals(rule.getName())) {
 				found = true;
 				break;
 			}
@@ -460,7 +460,7 @@ private void onAssignmentRuleDelete(AssignmentRule[] oldRules, AssignmentRule[] 
 //	for(RateRule candidate : oldRules) {
 //		boolean found = false;
 //		for(RateRule rule : newRules) {
-//			if(candidate.getName().equalsIgnoreCase(rule.getName())) {
+//			if(candidate.getName().equals(rule.getName())) {
 //				found = true;
 //				break;
 //			}

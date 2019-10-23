@@ -788,7 +788,7 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueVector) {
 				continue;				// some assignment rule variable may be still not initialized
 			}
 			SpeciesContext sc = getSpeciesContext();
-			if(sc.getName().equalsIgnoreCase(ar.getAssignmentRuleVar().getName())) {
+			if(sc.getName().equals(ar.getAssignmentRuleVar().getName())) {
 				if(!bConstant) {		// the assignment rule variables must be clamped
 					String msg = "Assignment rule species variables must be Clamped";
 					String tip = "Used in " + AssignmentRule.typeName + " '" + ar.getDisplayName() + "'";

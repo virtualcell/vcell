@@ -228,7 +228,7 @@ public class RateRule implements Matchable, Serializable, IssueSource, Displayab
 					if(p instanceof Product || p instanceof Reactant) {
 						SpeciesContext sc = p.getSpeciesContext();
 						SpeciesContextSpec scs = rc.getSpeciesContextSpec(sc);
-						if(!scs.isConstant() && sc.getName().equalsIgnoreCase(rateRuleVar.getName())) {
+						if(!scs.isConstant() && sc.getName().equals(rateRuleVar.getName())) {
 //							String msg = "Reaction '" + step.getDisplayName() + "' participant '" + rateRuleVar.getName() + "' must be clamped to be a rate rule variable too.";
 							String msg = "'" + rateRuleVar.getName() + "' must be clamped to be both a rate rule variable and a participant in reaction '" + step.getDisplayName() + "'.";
 							issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, msg, Issue.Severity.ERROR));
