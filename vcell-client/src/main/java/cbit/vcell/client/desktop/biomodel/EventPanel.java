@@ -66,6 +66,7 @@ import cbit.vcell.math.Equation;
 import cbit.vcell.math.MathException;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.SpeciesContext;
+import cbit.vcell.model.Structure;
 import cbit.vcell.parser.AutoCompleteSymbolFilter;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
@@ -746,6 +747,7 @@ public class EventPanel extends DocumentEditorSubPanel {
 				SymbolTableEntry symbolTableEntry = entryMap.get(varName);
 				if (/*bExcludeFuncAndReserved && */
 					(symbolTableEntry instanceof SymbolTableFunctionEntry || 
+					symbolTableEntry instanceof Structure.StructureSize || 
 					symbolTableEntry instanceof Model.ReservedSymbol)) {
 					continue;
 				}
