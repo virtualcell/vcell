@@ -685,7 +685,7 @@ public class SBMLImporter {
 		}
 	}
 
-	protected void addInitialAssignments(Map<String, Expression> deferredStructureExpression) {
+	protected void addInitialAssignments(Map<String, Expression> deferredStructureExpression, Map<String, String> sbmlToVcNameMap) {
 		if (sbmlModel == null) {
 			throw new SBMLImportException("SBML model is NULL");
 		}
@@ -702,20 +702,25 @@ public class SBMLImporter {
 		for (int i = 0; i < sbmlModel.getNumInitialAssignments(); i++) {
 			try {
 				InitialAssignment initAssgn = (InitialAssignment) listofInitialAssgns.get(i);
-				String initAssgnSymbol = initAssgn.getSymbol();
+				String sbmlInitAssgnSymbolName = initAssgn.getSymbol();
+				String vcInitAssgnSymbolName = sbmlInitAssgnSymbolName;
+				if(sbmlToVcNameMap.get(sbmlInitAssgnSymbolName) != null) {		// convert reserved symbols, if any
+					vcInitAssgnSymbolName = sbmlToVcNameMap.get(sbmlInitAssgnSymbolName);
+				}
+
 				Expression initAssignMathExpr = getExpressionFromFormula(initAssgn.getMath());
 				// if initial assignment is for a compartment, VCell doesn't
 				// support compartmentSize expressions, warn and bail out.
-				if (sbmlModel.getCompartment(initAssgnSymbol) != null) {
+				if (sbmlModel.getCompartment(sbmlInitAssgnSymbolName) != null) {
 					if (!initAssignMathExpr.isNumeric()) {
-						if(deferredStructureExpression.get(initAssgnSymbol) != null) {
+						if(deferredStructureExpression.get(sbmlInitAssgnSymbolName) != null) {
 							// it's in the deferredStructureExpression map since addCompartments()
 							// we still hope to evaluate it to a constant in finalizeCompartments()
 							continue;	// nothing to do here
 						} else {
 							// it's missing from deferredStructureExpression map, this should never happen
 							logger.sendMessage(VCLogger.Priority.HighPriority, VCLogger.ErrorType.CompartmentError,
-							"compartment '" + initAssgnSymbol + "' size has an initial assignment, cannot handle it at this time.");
+							"compartment '" + sbmlInitAssgnSymbolName + "' size has an initial assignment, cannot handle it at this time.");
 							continue;
 						}
 					} else {
@@ -724,21 +729,21 @@ public class SBMLImporter {
 				}
 				// TODO: replace the x, y, z
 				// Check if init assgn expr for a species is in terms of x,y,z or other species. Not allowed for species.
-				if (!bSpatial && sbmlModel.getSpecies(initAssgnSymbol) != null) {
+				if (!bSpatial && sbmlModel.getSpecies(sbmlInitAssgnSymbolName) != null) {
 					if (initAssignMathExpr.hasSymbol(vcModel.getX().getName())
 							|| initAssignMathExpr.hasSymbol(vcModel.getY().getName())
 							|| initAssignMathExpr.hasSymbol(vcModel.getZ().getName())) {
 						logger.sendMessage(VCLogger.Priority.HighPriority, VCLogger.ErrorType.SpeciesError,
-							"species '" + initAssgnSymbol + "' initial assignment expression cannot contain 'x', 'y', 'z'.");
+							"species '" + sbmlInitAssgnSymbolName + "' initial assignment expression cannot contain 'x', 'y', 'z'.");
 					}
 				}
 
 				initAssignMathExpr = adjustExpression(initAssignMathExpr, vcModel);
 				// set the init assgn expr on VCell species init condn or global
 				// parameter expression
-				SpeciesContextSpec scs = vcBioModel.getSimulationContext(0).getReactionContext().getSpeciesContextSpec(
-								vcBioModel.getSimulationContext(0).getModel().getSpeciesContext(initAssgnSymbol));
-				ModelParameter mp = vcBioModel.getSimulationContext(0).getModel().getModelParameter(initAssgnSymbol);
+				SpeciesContext sc = vcBioModel.getSimulationContext(0).getModel().getSpeciesContext(vcInitAssgnSymbolName);
+				SpeciesContextSpec scs = vcBioModel.getSimulationContext(0).getReactionContext().getSpeciesContextSpec(sc);
+				ModelParameter mp = vcBioModel.getSimulationContext(0).getModel().getModelParameter(vcInitAssgnSymbolName);
 				if (scs != null) {
 					scs.getInitialConditionParameter().setExpression(initAssignMathExpr);
 				} else if (mp != null) {
@@ -755,7 +760,7 @@ public class SBMLImporter {
 //						localIssueList.add(new Issue(new SBMLIssueSource(initAssgn), issueContext, IssueCategory.SBMLImport_UnsupportedAttributeOrElement, msg, Issue.Severity.WARNING));
 //					}
 				} else {
-					String msg = "Symbol '" + initAssgnSymbol + "' is not a known symbol in the model; initial assignment ignored.";
+					String msg = "Symbol '" + sbmlInitAssgnSymbolName + "' is not a known symbol in the model; initial assignment ignored.";
 					localIssueList.add(new Issue(new SBMLIssueSource(initAssgn), issueContext, IssueCategory.SBMLImport_UnsupportedAttributeOrElement, msg, Issue.Severity.WARNING));
 					// logger.sendMessage(VCLogger.Priority.MediumPriority,
 					// VCLogger.ErrorType.UnsupportedConstruct,
@@ -3199,7 +3204,7 @@ public class SBMLImporter {
 		setSpeciesInitialConditions(vcToSbmlNameMap);
 		
 		// Add InitialAssignments
-		addInitialAssignments(deferredStructureExpression);
+		addInitialAssignments(deferredStructureExpression, sbmlToVcNameMap);
 		
 
 		// Add constraints (not handled in VCell)
