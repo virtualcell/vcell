@@ -11,6 +11,7 @@
 package cbit.vcell.mapping;
 import java.beans.PropertyVetoException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -799,7 +800,7 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 	//
 	for (int i = 0; i < fieldMathMappingParameters.length; i++){
 		GeometryClass geometryClass = fieldMathMappingParameters[i].getGeometryClass();
-		fieldMathMappingParameters[i].getExpression().bindExpression(simContext);
+		fieldMathMappingParameters[i].getExpression().bindExpression(this);
 		Expression exp = getIdentifierSubstitutions(fieldMathMappingParameters[i].getExpression(), fieldMathMappingParameters[i].getUnitDefinition(), geometryClass);
 		Variable var = newFunctionOrConstant(getMathSymbol(fieldMathMappingParameters[i],geometryClass),exp, geometryClass);
 		varHash.addVariable(var);
@@ -1156,6 +1157,8 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 	// we'll need this init variable (function or constant) for the ODE Equation
 	//
 	Map<ModelParameter, Variable> initModelParameterHash = new HashMap<> ();	// here we store the init variable with the final substitutions within their expressions
+	Map<String, SymbolTableEntry> entryMap = new HashMap<String, SymbolTableEntry>();
+	simContext.getEntries(entryMap);
 	for (Map.Entry<ModelParameter, Variable> entry : initModelParameterHashTmp.entrySet()) {
 		ModelParameter mp = entry.getKey();
 		Variable mpInitVariable = entry.getValue();
@@ -1170,6 +1173,15 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 			initModelParameterHash.put(mp, mpInitVariable);  // we just move it into the initModelParameterHash
 			continue;
 		}
+// TODO: work in progress
+//		mpInitExpr = flattenUnbound(mpInitExpr, simContext, entryMap, modelParamTorateRuleInitMapping, 0);
+//		symbols = mpInitExpr.getSymbols();
+//		if(symbols == null || symbols.length == 0) {
+//			// stays as it is in variable hash
+//			initModelParameterHash.put(mp, mpInitVariable);  // we just move it into the initModelParameterHash
+//			continue;
+//		}
+
 		// check if 'initExpr' has other speciesContexts or rate rule global parameter variables in its expression
 		// need to replace it with 'spContext_init', modelParameter_init
 		for (String symbol : symbols) {
@@ -2037,6 +2049,94 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 //System.out.println(mathDesc.getVCML());
 //System.out.println("]]]]]]]]]]]]]]]]]]]]]] VCML string end ]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]");
 }
+
+// TODO: work in progress
+//private static Expression flattenUnbound(Expression originalExpression, SimulationContext simContext, Map<String, SymbolTableEntry> entryMap, 
+//		Map<ModelParameter, EventAssignmentOrRateRuleInitParameter> modelParamTorateRuleInitMapping, int depth) {
+//	if(depth > 20) {
+//		return originalExpression;	// we just exit gracefully, will get meaningful exception during math consistency verification
+//	}
+//	Model model = simContext.getModel();
+//	GeometryContext gc = simContext.getGeometryContext();
+//	String[] originalSymbols = originalExpression.getSymbols();
+//	if(originalSymbols == null || originalSymbols.length == 0) {
+//		return originalExpression;
+//	}
+//	Expression newExpression = new Expression(originalExpression);
+//	
+//
+//
+//
+//
+//
+//	// check if 'initExpr' has other speciesContexts or rate rule global parameter variables in its expression
+//	// need to replace it with 'spContext_init', modelParameter_init
+//	for (String symbol : originalSymbols) {
+//		// if symbol is a speciesContext, replacing it with a reference to initial condition for that speciesContext.
+//		SymbolTableEntry ste = newExpression.getSymbolBinding(symbol);
+//		if (ste == null) {
+//			System.out.println("Unexpected NULL symbol in the initial expression");
+//		} else if (ste instanceof SpeciesContext) {
+//			SpeciesContextSpec scs = simContext.getReactionContext().getSpeciesContextSpec((SpeciesContext)ste);
+//			// TODO: what if initial count???
+//			SpeciesContextSpecParameter spCInitParm = scs.getParameterFromRole(SpeciesContextSpec.ROLE_InitialConcentration);
+//			// need to get init condn expression, but can't get it from getMathSymbol() (mapping between bio and math), hence get it as below.
+//			Expression scsInitExpr = new Expression(spCInitParm, getNameScope());
+//			mpInitExpr.substituteInPlace(new Expression(ste.getName()), scsInitExpr);
+//		} else if(ste instanceof ModelParameter) {
+//			ModelParameter mpArg = (ModelParameter)ste;
+//			System.out.println(mpArg.getName());
+//			if(simContext.getRateRule(mpArg) == null) {
+//				continue;		// only globals that are RateRule variables need to be replaced with their _init variable
+//			}
+//			EventAssignmentOrRateRuleInitParameter mpInitParam = modelParamTorateRuleInitMapping.get(mpArg);
+//			if(mpInitParam != null) {		// we already made it, we only need to use it
+//				Expression mpArgInitExpr = new Expression(mpInitParam, getNameScope());
+//				mpInitExpr.substituteInPlace(new Expression(ste.getName()), mpArgInitExpr);
+//			}
+//		} else {
+//			String msg = ste.getName() == null ? "??" : ste.getName();
+//			System.out.println("Unexpected symbol type for " + msg + " in the initial expression of " + argName);
+//		}
+//	}
+//
+//	
+//	
+//	for(String symbol : originalSymbols) {
+//		SymbolTableEntry ste = entryMap.get(symbol);
+//		Expression steExp = ste.getExpression();
+//		if(ste instanceof Structure.StructureSize) {
+//			Structure symbolStructure = model.getStructure(symbol);
+//			StructureMapping.StructureMappingParameter mapping = gc.getStructureMapping(symbolStructure).getSizeParameter();
+//			steExp = mapping.getExpression();
+//		}
+//		if(steExp == null) {
+//			return originalExpression;	// we just exit gracefully, will get meaningful exception during math consistency verification
+//		}
+//		try {
+//			newExpression.substituteInPlace(new Expression(symbol), new Expression(steExp));
+//		} catch(ExpressionException e) {
+//			return originalExpression;	// we just exit gracefully, will get meaningful exception during math consistency verification
+//		}
+//	}
+//	String[] newSymbols = newExpression.getSymbols();
+//	if(newSymbols == null || newSymbols.length == 0) {
+//		return originalExpression;
+//	} else if(newSymbols.length != originalSymbols.length) {
+//		depth++;
+//		return flattenUnbound(newExpression, simContext, entryMap, modelParamTorateRuleInitMapping, depth);
+//	} else if(newSymbols.length == originalSymbols.length) {
+//		Arrays.sort(originalSymbols);
+//		Arrays.sort(newSymbols);
+//		for(int i=0; i<newSymbols.length; i++) {
+//			if(!originalSymbols[i].contentEquals(newSymbols[i])) {
+//				depth++;
+//				return flattenUnbound(newExpression, simContext, entryMap, modelParamTorateRuleInitMapping, depth);
+//			}
+//		}
+//	}
+//	return newExpression;
+//}
 
 //determine membrane inside and outside subvolume
 public static Pair<SubVolume,SubVolume> computeBoundaryConditionSource(Model model, SimulationContext simContext, SurfaceClass surfaceClass) {
