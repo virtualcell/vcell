@@ -465,7 +465,8 @@ protected void refreshInterface() {
 	// entity::Link
 	for(RelationshipObject rObject : bioModel.getRelationshipModel().getRelationshipObjects(bioPaxObject)){
 		BioModelEntityObject beObject = rObject.getBioModelEntityObject();
-		propertyList.add(new BioPaxObjectProperty("Linked physiology object", beObject.getName(), beObject));
+		String sType = beObject.getDisplayType();
+		propertyList.add(new BioPaxObjectProperty("Linked physiology object (" + sType + ")", beObject.getName(), beObject));
 	}
 
 	if(entity instanceof PhysicalEntity){	// ------------------------ PHYSICAL ENTITY -----------------------
