@@ -19,6 +19,7 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 
+import org.vcell.model.rbm.MolecularType;
 import org.vcell.pathway.BioPaxObject;
 import org.vcell.pathway.Conversion;
 import org.vcell.pathway.PathwayEvent;
@@ -183,6 +184,20 @@ public class BioPaxRelationshipTableModel extends VCellSortTableModel<BioPaxRela
 					if (relationshipObjects != null) {
 						for (RelationshipObject ro : relationshipObjects) {
 							if (ro.getBioModelEntityObject() == rs) {
+								entityRow.setSelected(true);
+								break;
+							}
+						}
+					}
+					if (!bShowLinkOnly || entityRow.selected) {
+						allEntityRows.add(entityRow);
+					}
+				}
+				for(MolecularType mt : bioModel.getModel().getRbmModelContainer().getMolecularTypeList()) {
+					BioPaxRelationshipTableRow entityRow = new BioPaxRelationshipTableRow(mt);
+					if (relationshipObjects != null) {
+						for (RelationshipObject ro : relationshipObjects) {
+							if (ro.getBioModelEntityObject() == mt) {
 								entityRow.setSelected(true);
 								break;
 							}
