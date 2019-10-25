@@ -166,20 +166,19 @@ public class RateRule implements Matchable, Serializable, IssueSource, Displayab
 	}
 	
 	public void gatherIssues(IssueContext issueContext, List<Issue> issueList, Set<String> alreadyIssue) {
-		if(fieldName == null || fieldName.isEmpty()) {
-			String msg = typeName + " Name is missing";
-			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, Issue.Severity.WARNING));
-		}
+		// if we find an issue with the current rule we post it and stop looking for more
+		// we look into errors first, then warnings
 		if(rateRuleVar == null || rateRuleVar.getName() == null || rateRuleVar.getName().isEmpty()) {
 			String msg = typeName + " Variable is missing";
 			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, Issue.Severity.ERROR));
-		} else if(!(rateRuleVar instanceof SymbolTableEntry)) {
-			String msg = typeName + " Variable is not a SymbolTableEntry";
-			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, Issue.Severity.WARNING));
-		} else if(rateRuleVar instanceof Structure.StructureSize) {
+			return;
+		}
+		if(rateRuleVar instanceof Structure.StructureSize) {
 			String msg = Structure.StructureSize.typeName + " Variable is not supported at this time";
 			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, Issue.Severity.ERROR));
-		} else if(simulationContext.getRateRules() != null) {
+			return;
+		}
+		if(simulationContext.getRateRules() != null) {
 			for(RateRule rr : simulationContext.getRateRules()) {
 				if(rr == this) {
 					continue;
@@ -192,13 +191,13 @@ public class RateRule implements Matchable, Serializable, IssueSource, Displayab
 					String msg = typeName + " Variable '" + rateRuleVar.getName() + " is duplicated in " + rr.getDisplayName();
 					issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, Issue.Severity.ERROR));
 					alreadyIssue.add(ruleVariableName);
-					break;
+					return;
 				}
 			}
 		}
 		// we do the following check for the assignemnt rule too, so there's no point in complaining here too about the same problem
 		// TODO: uncomment to raise an issue here as well
-//		else if(simulationContext.getAssignmentRules() != null) {
+//		if(simulationContext.getAssignmentRules() != null) {
 //			for(AssignmentRule ar : simulationContext.getAssignmentRules()) {
 //				if(ar.getAssignmentRuleVar() == null) {
 //					continue;		// we may be in the middle of creating the assignment rule and the variable is still missing
@@ -206,14 +205,10 @@ public class RateRule implements Matchable, Serializable, IssueSource, Displayab
 //				if(rateRuleVar.getName().equals(ar.getAssignmentRuleVar().getName())) {
 //					String msg = typeName + " Variable '" + rateRuleVar.getName() + "' is duplicated as an " + AssignmentRule.typeName + " Variable";
 //					issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, Issue.Severity.ERROR));
-//					break;
+//					return;
 //				}
 //			}
 //		}
-		if(rateRuleExpression == null) {
-			String msg = typeName + " Expression is missing";
-			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, Issue.Severity.WARNING));
-		}
 		// TODO: the following code belongs to SpeciesContextSpec rather than here (so that the Issue navigates to the Specifications / Species panel
 		// rate rule variable must not be also a reactant or a product in a reaction
 		ReactionContext rc = getSimulationContext().getReactionContext();
@@ -229,13 +224,28 @@ public class RateRule implements Matchable, Serializable, IssueSource, Displayab
 						SpeciesContext sc = p.getSpeciesContext();
 						SpeciesContextSpec scs = rc.getSpeciesContextSpec(sc);
 						if(!scs.isConstant() && sc.getName().equals(rateRuleVar.getName())) {
-//							String msg = "Reaction '" + step.getDisplayName() + "' participant '" + rateRuleVar.getName() + "' must be clamped to be a rate rule variable too.";
 							String msg = "'" + rateRuleVar.getName() + "' must be clamped to be both a rate rule variable and a participant in reaction '" + step.getDisplayName() + "'.";
 							issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, msg, Issue.Severity.ERROR));
+							return;
 						}
 					}
 				}
 			}
+		}
+		if(fieldName == null || fieldName.isEmpty()) {
+			String msg = typeName + " Name is missing";
+			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, Issue.Severity.ERROR));
+			return;
+		}
+		if(rateRuleExpression == null) {
+			String msg = typeName + " Expression is missing";
+			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, Issue.Severity.ERROR));
+			return;
+		}
+		if(!(rateRuleVar instanceof SymbolTableEntry)) {
+			String msg = typeName + " Variable is not a SymbolTableEntry";
+			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, Issue.Severity.ERROR));
+			return;
 		}
 	}
 

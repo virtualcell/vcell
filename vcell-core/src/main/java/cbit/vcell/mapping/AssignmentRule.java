@@ -149,30 +149,31 @@ public class AssignmentRule implements Matchable, Serializable, IssueSource, Dis
 
 	public void gatherIssues(IssueContext issueContext, List<Issue> issueList, Set<String> alreadyIssue) {
 //		issueContext = issueContext.newChildContext(ContextType.SpeciesContext, this);
-		if(fieldName == null || fieldName.isEmpty()) {
-			String msg = typeName + " Name is missing";
-			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, Issue.Severity.WARNING));
-		}
+		// if we find an issue with the current rule we post it and stop looking for more
+		// we look into errors first, then warnings
 		if(assignmentRuleVar == null || assignmentRuleVar.getName() == null || assignmentRuleVar.getName().isEmpty()) {
 			String msg = typeName + " Variable is missing";
 			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, Issue.Severity.ERROR));
-		} else if(!(assignmentRuleVar instanceof SymbolTableEntry)) {
-			String msg = typeName + " Variable is not a SymbolTableEntry";
-			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, Issue.Severity.WARNING));
-		} else if(assignmentRuleVar instanceof Structure.StructureSize) {
+			return;
+		}
+		if(assignmentRuleVar instanceof Structure.StructureSize) {
 			String msg = Structure.StructureSize.typeName + " Variable is not supported at this time";
 			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, Issue.Severity.ERROR));
-		} else if(assignmentRuleExpression != null) {
+			return;
+		}
+		if(assignmentRuleExpression != null) {
 			String[] symbols = assignmentRuleExpression.getSymbols();
 			if(symbols != null && symbols.length > 0) {
 				for(String symbol : symbols) {
 					if(symbol.contentEquals(assignmentRuleVar.getName())) {
 						String msg = "An " + typeName + " Variable cannot be part of its Expression.";
 						issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, Issue.Severity.ERROR));
+						return;
 					}
 				}
 			}
-		} else if(simulationContext.getAssignmentRules() != null) {
+		}
+		if(simulationContext.getAssignmentRules() != null) {
 			for(AssignmentRule ar : simulationContext.getAssignmentRules()) {
 				if(ar == this) {
 					continue;
@@ -185,10 +186,11 @@ public class AssignmentRule implements Matchable, Serializable, IssueSource, Dis
 					String msg = typeName + " Variable '" + assignmentRuleVar.getName() + " is duplicated in " + ar.getDisplayName();
 					issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, Issue.Severity.ERROR));
 					alreadyIssue.add(ruleVariableName);
-					break;
+					return;
 				}
 			}
-		} else if(simulationContext.getRateRules() != null) {
+		}
+		if(simulationContext.getRateRules() != null) {
 		// the code below is commented out for rate rules, so that we don't have 2 mirrored issues about the same duplicated variable
 			for(RateRule rr : simulationContext.getRateRules()) {
 				if(rr.getRateRuleVar() == null) {
@@ -197,13 +199,24 @@ public class AssignmentRule implements Matchable, Serializable, IssueSource, Dis
 				if(assignmentRuleVar.getName().equals(rr.getRateRuleVar().getName())) {
 					String msg = typeName + " Variable '" + assignmentRuleVar.getName() + "' is duplicated as a " + RateRule.typeName + " Variable";
 					issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, Issue.Severity.ERROR));
-					break;
+					return;
 				}
 			}
 		}
+		if(!(assignmentRuleVar instanceof SymbolTableEntry)) {
+			String msg = typeName + " Variable is not a SymbolTableEntry";
+			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, Issue.Severity.ERROR));
+			return;
+		}
+		if(fieldName == null || fieldName.isEmpty()) {
+			String msg = typeName + " Name is missing";
+			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, Issue.Severity.ERROR));
+			return;
+		}
 		if(assignmentRuleExpression == null) {
 			String msg = typeName + " Expression is missing";
-			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, Issue.Severity.WARNING));
+			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, Issue.Severity.ERROR));
+			return;
 		}
 	}
 
