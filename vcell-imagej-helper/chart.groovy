@@ -13,22 +13,21 @@ import org.vcell.imagej.helper.VCellHelper.ModelType
 import org.vcell.imagej.helper.VCellHelper.VCellModelSearchResults
 
 
-vh.getApiInfo()
-start = 0
-end = 40000
+start = 1279
+end = 1321
 int[] indices = new int[end-start]
 for(int i=0;i<indices.length;i++){
 	indices[i] = start+i
 }
-String[] vars = ["C_cyt"]
-vcms = new VCellModelSearch(ModelType.quick,null,null,null,null,null,null)
+String[] vars = ["r"]
+vcms = new VCellModelSearch(ModelType.bm,"tutorial","Tutorial_FRAPbinding","Spatial","FRAP binding",null,null)
 vcmsr = vh.getSearchedModelSimCacheKey(true,vcms,null)
 theCacheKey = vcmsr.get(0).getCacheKey();
 println(theCacheKey)
 
 //public IJTimeSeriesJobResults getTimeSeries(String[] variableNames, int[] indices, double startTime, int step, double endTime,boolean calcSpaceStats, boolean calcTimeStats, int jobid, int cachekey) throws Exception{
 
-ijTimeSeriesJobResults = vh.getTimeSeries(vars, indices, 0.05 as double, 1, 0.05 as double, false, false, 0, theCacheKey as int)
+ijTimeSeriesJobResults = vh.getTimeSeries(vars, indices, 22 as double, 1, 22 as double, false, false, 0, theCacheKey as int)
 double[] vals = new double[indices.length]
 for(int i=0;i<indices.length;i++){
 	vals[i] = ijTimeSeriesJobResults.data[0][i+1][0]

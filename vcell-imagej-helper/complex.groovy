@@ -41,10 +41,21 @@ import net.imglib2.util.Intervals;
 import net.imglib2.view.IterableRandomAccessibleInterval;
 
 
-
-exampleFilesDir = new File("/home/vcell/workspace_trunk/vcell/vcell-imagej-helper");/*new File(System.getProperty("user.dir", "."))*/
+exampleFilesDir = new File("DownloadedExamplesDir");
 	
     	try {
+	    	if(exampleFilesDir.getName().equals("DownloadedExamplesDir")){
+	    		ij.IJ.showMessage("You must set the 'exampleFilesDir' variable to the location of the downloaded example files")
+	    		return;
+	    	}
+	    	if(!exampleFilesDir.exists()){
+	    		ij.IJ.showMessage("Couldn't find directory "+exampleFilesDir.getAbsoutePath()+".  hint: don't use '\' in directory path")
+	    		return;
+	    	}
+	    	if(!exampleFilesDir.isDirectory()){
+	    		ij.IJ.showMessage("Selected item is not a directory "+exampleFilesDir.getAbsoutePath())
+	    		return;
+	    	}
 //			VCellHelper vh = new VCellHelper();
 //			ImageJ ij = new ImageJ();
 //			ij.launch(new String[0]);
