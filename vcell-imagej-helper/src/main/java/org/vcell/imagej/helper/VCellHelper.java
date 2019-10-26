@@ -548,11 +548,12 @@ public class VCellHelper extends AbstractService implements ImageJService
 			throw new Exception("Expecting only 1 timepoint but got "+nodes.getLength());
 		}
 //		if(basicStackDimensions.xsize != xsize || basicStackDimensions.ysize != ysize || basicStackDimensions.zsize != zsize) {
-//			throw new Exception("One or more sim data xyz dimensions="+basicStackDimensions.xsize+","+basicStackDimensions.ysize+","+basicStackDimensions.zsize+" does not match expected xyz sizes="+xsize+","+ysize+","+zsize);
-//		}
-		double[] timePointData = VCellHelper.getData(nodes.item(0));
-		return new TimePointData(timePointData, basicStackDimensions);
-	}
+//		throw new Exception("One or more sim data xyz dimensions="+basicStackDimensions.xsize+","+basicStackDimensions.ysize+","+basicStackDimensions.zsize+" does not match expected xyz sizes="+xsize+","+ysize+","+zsize);
+//	}
+	double[] timePointData = (timePointIndexes!=null?VCellHelper.getData(nodes.item(0)):null);//VCellHelper.getData(nodes.item(0));
+	return new TimePointData(timePointData, basicStackDimensions);
+}
+
 	
 	public String getSimulationDataCacheKey(String simulationJobId) throws Exception{
     	// Get the data cachekey that corresponds to the simulation job that just ran (ijSolverStatus.simJobId)

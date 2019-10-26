@@ -1799,10 +1799,14 @@ public class ImageJHelper {
 			double[] times = (dataSetControllerImpl != null?dataSetControllerImpl.getDataSetTimes(vcSimulationDataIdentifier):vcDataManager.getDataSetTimes(vcSimulationDataIdentifier));
 			CartesianMesh mesh = (dataSetControllerImpl != null?dataSetControllerImpl.getMesh(vcSimulationDataIdentifier):vcDataManager.getMesh(vcSimulationDataIdentifier));
 			BasicStackDimensions basicStackDimensions = new BasicStackDimensions(mesh.getSizeX(),mesh.getSizeY(),mesh.getSizeZ(), 1, 1);
-			for(int timeIndex:timeIndexes) {
-				double timePoint = times[timeIndex];
-				SimDataBlock simDataBlock = (dataSetControllerImpl != null?dataSetControllerImpl.getSimDataBlock(outputContext, vcSimulationDataIdentifier, varname,timePoint):vcDataManager.getSimDataBlock(outputContext, vcSimulationDataIdentifier, varname, timePoint));
-				ijDatas.add(new IJData(basicStackDimensions, convertDoubleToBytes(simDataBlock.getData()),varname,timePoint,vcSimulationDataIdentifier.getJobIndex()));				
+			if(timeIndexes != null) {
+				for(int timeIndex:timeIndexes) {
+					double timePoint = times[timeIndex];
+					SimDataBlock simDataBlock = (dataSetControllerImpl != null?dataSetControllerImpl.getSimDataBlock(outputContext, vcSimulationDataIdentifier, varname,timePoint):vcDataManager.getSimDataBlock(outputContext, vcSimulationDataIdentifier, varname, timePoint));
+					ijDatas.add(new IJData(basicStackDimensions, convertDoubleToBytes(simDataBlock.getData()),varname,timePoint,vcSimulationDataIdentifier.getJobIndex()));				
+				}
+			}else {
+				ijDatas.add(new IJData(basicStackDimensions, null,varname,-1.0,vcSimulationDataIdentifier.getJobIndex()));	
 			}
 			return ijDatas;
 		}
