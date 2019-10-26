@@ -470,7 +470,7 @@ private void updateFields() {
 	}
 	private JButton getBtnGuestLogin() {
 		if (btnGuestLogin == null) {
-			btnGuestLogin = new JButton("Login in as Guest (no Registration)...");
+			btnGuestLogin = new JButton("Login as Guest (no Registration)...");
 			btnGuestLogin.setFont(new Font("Tahoma", Font.BOLD, 14));
 			btnGuestLogin.setEnabled(true);
 		}
