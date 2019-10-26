@@ -1824,6 +1824,7 @@ private void startStopImageJService() {
 			 "Start VCell's FIJI Service",
 				"VCell's FIJI (ImageJ) service allows scripts running in FIJI to communicate with VCell "+
 						"allowing query, control, and transfer of model/simulation data between VCell and FIJI.\n"+
+						"(see Help->'VCell Help' then search 'start imagej service')\n"+
 						(existingVCPlugins.length == 0?"Install FIJI (https://imagej.net/Fiji) before starting this service.":
 							"Current plugin path:\n"+existingVCPlugins[0].getAbsolutePath()+"\n"+"Available version="+imageJVCellPluginVersion)
 						,options, CANCEL);
