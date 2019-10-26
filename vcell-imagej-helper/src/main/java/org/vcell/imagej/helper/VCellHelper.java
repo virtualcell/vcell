@@ -82,8 +82,8 @@ public class VCellHelper extends AbstractService implements ImageJService
 	}
 
 	public int findVCellApiServerPort() throws Exception{
-		final int start = 8000;
-		final int end = 8100;
+		final int start = 50000;
+		final int end = 50100;
 		int tryCount = end-start+1;
 		for(int i = lastVCellApiPort;i<=end;i++) {
 			if(i == -1) {
@@ -110,31 +110,31 @@ public class VCellHelper extends AbstractService implements ImageJService
 		return lastVCellApiPort;
 		
 	}
-	public String getApiInfo() throws Exception{
-		findVCellApiServerPort();
-		URL url = new URL("http://localhost:"+lastVCellApiPort+"/");
-	//	URL url = new URL("http://localhost:8080/list");
-		HttpURLConnection con = (HttpURLConnection)url.openConnection();
-		int responseCode = con.getResponseCode();
-		if(responseCode == HttpURLConnection.HTTP_OK) {
-			BufferedInputStream bis = new BufferedInputStream(con.getInputStream());
-	        int currChar;
-	        StringBuffer sb = new StringBuffer();
-	        while ((currChar = bis.read()) != -1) {
-	            sb.append((char)currChar);
-	        }
-	        return sb.toString();
-		}else {
-			throw new Exception("Expecting OK but got "+responseCode+" "+con.getResponseMessage());
-		}
-
-//		InputStream in = con.getInputStream();
-//		String encoding = con.getContentEncoding();
-//		encoding = encoding == null ? "UTF-8" : encoding;
-//		String body = IOUtils.toString(in, encoding);
-//		System.out.println(body);
-
-	}
+//	public String getApiInfo() throws Exception{
+//		findVCellApiServerPort();
+//		URL url = new URL("http://localhost:"+lastVCellApiPort+"/");
+//	//	URL url = new URL("http://localhost:8080/list");
+//		HttpURLConnection con = (HttpURLConnection)url.openConnection();
+//		int responseCode = con.getResponseCode();
+//		if(responseCode == HttpURLConnection.HTTP_OK) {
+//			BufferedInputStream bis = new BufferedInputStream(con.getInputStream());
+//	        int currChar;
+//	        StringBuffer sb = new StringBuffer();
+//	        while ((currChar = bis.read()) != -1) {
+//	            sb.append((char)currChar);
+//	        }
+//	        return sb.toString();
+//		}else {
+//			throw new Exception("Expecting OK but got "+responseCode+" "+con.getResponseMessage());
+//		}
+//
+////		InputStream in = con.getInputStream();
+////		String encoding = con.getContentEncoding();
+////		encoding = encoding == null ? "UTF-8" : encoding;
+////		String body = IOUtils.toString(in, encoding);
+////		System.out.println(body);
+//
+//	}
 	
 	public static Document getDocument(URL url) throws Exception{
 		HttpURLConnection con = (HttpURLConnection)url.openConnection();
@@ -402,7 +402,7 @@ public class VCellHelper extends AbstractService implements ImageJService
 						String currentContext = (modelType == ModelType.bm?modelContext.getAttributes().getNamedItem("name").getNodeValue():null);
 						boolean bContextMatch = modelType == ModelType.mm || vcCellModelSearch.getApplicationName() == null || regexContextNameSearch.matcher(currentContext).matches();
 						boolean bgeomDim = (vcCellModelSearch.getGeometryDimension() == null?true:vcCellModelSearch.getGeometryDimension() == Integer.parseInt(modelContext.getAttributes().getNamedItem("geomDim").getNodeValue()));
-						boolean bMathType = (vcCellModelSearch.getMathType() == null?true:vcCellModelSearch.getMathType() == modelContext.getAttributes().getNamedItem("mathType").getNodeValue());
+						boolean bMathType = (vcCellModelSearch.getMathType() == null?true:vcCellModelSearch.getMathType().equals(modelContext.getAttributes().getNamedItem("mathType").getNodeValue()));
 						if(!bContextMatch || !bgeomDim || !bMathType) {continue;}
 //						System.out.println(currentContext);
 						NodeList simInfos = modelContext.getChildNodes();

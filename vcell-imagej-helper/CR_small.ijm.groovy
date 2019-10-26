@@ -42,14 +42,14 @@ import net.imglib2.view.IterableRandomAccessibleInterval;
 
 
 
-
+exampleFilesDir = new File("/home/vcell/workspace_trunk/vcell/vcell-imagej-helper");/*new File(System.getProperty("user.dir", "."))*/
 	
     	try {
 //			VCellHelper vh = new VCellHelper();
 //			ImageJ ij = new ImageJ();
 //			ij.launch(new String[0]);
 			
-			ExampleDatasets exampleDatasets = openExample(ij, new File("C:\\Users\\frm\\VCellTrunkGitWorkspace2\\vcell\\vcell-imagej-helper")/*new File(System.getProperty("user.dir", "."))*/);
+			ExampleDatasets exampleDatasets = openExample(ij, exampleFilesDir);
 			int ANALYZE_BEGIN_TIMEINDEX = 3;
 			int ANALYZE_END_TIMEINDEX = 8;
 	    	int ANALYZE_COUNT = ANALYZE_END_TIMEINDEX - ANALYZE_BEGIN_TIMEINDEX +1;
@@ -82,6 +82,7 @@ import net.imglib2.view.IterableRandomAccessibleInterval;
 	    	double[] mse = new double[diffRates.length];
 			for (int i = 0; i < diffRates.length; i++) {
 				String simulationCacheKey = getSimulationCacheKey(vh);
+				println(simulationCacheKey)
 				IJSolverStatus ijSolverStatus = runFrapSolver(vh, diffRates[i],simulationCacheKey,overrideGeom);
 				String simulationDataCacheKey = waitForSolverGetCacheForData(vh, ijSolverStatus);
 				SCIFIOImgPlus<DoubleType> annotatedZProjectedSimPostBleachData = zProjectNormalizeSimData(vh, "Sim Data "+diffRates[i], simulationDataCacheKey, "rf", 0, ijSolverStatus.getJobIndex(), ANALYZE_BEGIN_TIMEINDEX, ANALYZE_END_TIMEINDEX);
@@ -89,7 +90,8 @@ import net.imglib2.view.IterableRandomAccessibleInterval;
 				mse[i] = calcMSE(ij, annotatedZProjectedSimPostBleachData,exampleDatasets,analyzeOrigInterval);
 			}
 	    	for(int i=0;i<mse.length;i++){
-	    		System.out.println("diffRate="+diffRates[i]+" MSE="+(mse[i]));
+	    		println("diffRate="+diffRates[i]+" MSE="+(mse[i]));
+	    		ij.IJ.log("diffRate="+diffRates[i]+" MSE="+(mse[i]))
 	    	}
 
 		} catch (Exception e) {
@@ -103,13 +105,20 @@ import net.imglib2.view.IterableRandomAccessibleInterval;
 		// model name 
 		// application name (if searching for BioModels, not applicable for MathModels)
 		// simulation name
-		// version time range (all VCell Models saved on the VCell server have a last date 'saved')
+		// integer Geometry dimension 0-ODE (1,2,3)-PDE
+		// math type 'Deterministic' or 'Stochastic'
     	SimpleDateFormat easyDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-    	VCellHelper.VCellModelVersionTimeRange vcellModelVersionTimeRange = new VCellHelper.VCellModelVersionTimeRange(easyDate.parse("2018-06-01 00:00:00"), easyDate.parse("2018-08-01 00:00:00"));
-    	VCellHelper.VCellModelSearch search = new VCellHelper.VCellModelSearch(VCellHelper.ModelType.bm, "frm", "Tutorial_FRAPbinding", "Spatial", "FRAP binding",null,null);
+    	//VCellHelper.VCellModelSearch search = new VCellHelper.VCellModelSearch(VCellHelper.ModelType.bm, "tutorial", "Tutorial_FRAPbinding", "Spatial", "FRAP binding",null,null);
+    	VCellHelper.VCellModelSearch search = new VCellHelper.VCellModelSearch(VCellHelper.ModelType.bm, "tutorial", "Tutorial_FRAPbinding", "Spatial", "FRAP binding",2,"Deterministic");
+		// version time range (all VCell Models saved on the VCell server have a last date 'saved')
+    	VCellHelper.VCellModelVersionTimeRange vcellModelVersionTimeRange = new VCellHelper.VCellModelVersionTimeRange(easyDate.parse("2015-06-01 00:00:00"), easyDate.parse("2025-01-01 00:00:00"));
+		//Search VCell database for models matching search parameters
     	ArrayList<VCellModelSearchResults> vcellModelSearchResults = vh.getSearchedModelSimCacheKey(true, search,vcellModelVersionTimeRange);
-		if(vcellModelSearchResults.size() != 1) {
-			throw new Exception("Expecting only 1 model from search results");
+		//This search should only find 1
+    	if(vcellModelSearchResults.size() != 1) {
+			ij.IJ.showMessage("Expecting 1 search result for "+search.getModelName()+" but got "+vcellModelSearchResults.size()+", make sure model is open in VCell client");
+			return;
+    		//throw new Exception("Expecting only 1 model from search results");
 		}
     	String cacheKey = vcellModelSearchResults.get(0).getCacheKey();
     	return cacheKey;
@@ -130,11 +139,13 @@ import net.imglib2.view.IterableRandomAccessibleInterval;
 	def String waitForSolverGetCacheForData(VCellHelper vh,IJSolverStatus ijSolverStatus) throws Exception{
     	//Wait for solver to finish
     	System.out.println(ijSolverStatus.toString());
+    	ij.IJ.log(ijSolverStatus.toString())
     	String simulationJobId = ijSolverStatus.simJobId;
     	while(true) {
     		Thread.sleep(5000);
         	ijSolverStatus =  vh.getSolverStatus(simulationJobId);
         	System.out.println(ijSolverStatus.toString());
+        	ij.IJ.log(ijSolverStatus.toString())
         	String statusName = ijSolverStatus.statusName.toLowerCase();
         	if(statusName.equals("finished") || statusName.equals("stopped") || statusName.equals("aborted")) {
         		break;
@@ -316,6 +327,7 @@ import net.imglib2.view.IterableRandomAccessibleInterval;
 		}
     	return new ExampleDatasets(experimentalData, preBleachImage, segmentedGeom, analysisROI);
     }
+    //Haven't yet found a way to reliably zoom image display programatically so it may display small despite the following code
     def void showAndZoom(ImageJ ij,String displayName,Object thingToDisplay,double zoomFactor) throws Exception{
 //    	if(!displayName.startsWith("Sim Data")) {
 //    		return;

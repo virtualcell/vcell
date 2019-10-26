@@ -199,6 +199,9 @@ public class PropertyLoader {
 	public static final String suppressQStatStandardOutLogging = record("vcell.htc.logQStatOutput", ValueType.BOOL);
 	
 	public static final String nagiosMonitorPort = record("test.monitor.port", ValueType.GEN);
+	
+	public static final String imageJVcellPluginURL = record("vcell.imagej.plugin.url", ValueType.GEN);
+
 	/**
 	 * native library directory, server side
 	 */

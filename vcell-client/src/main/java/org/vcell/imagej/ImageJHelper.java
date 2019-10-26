@@ -2205,7 +2205,7 @@ public class ImageJHelper {
 										}
 										
 										//Update everything
-						mathUpdateTasks = (ArrayList<AsynchClientTask>)ClientRequestManager.updateMath(null, simulationContext, true,NetworkGenerationRequirements.ComputeFullStandardTimeout);
+						mathUpdateTasks = (ArrayList<AsynchClientTask>)ClientRequestManager.updateMath(null, simulationContext, false,NetworkGenerationRequirements.ComputeFullStandardTimeout);
 //										break getout;
 //									}
 //								}
@@ -2300,7 +2300,7 @@ public class ImageJHelper {
 							}
 BioModel bioModel = ((SimulationContext)finalSim.getSimulationOwner()).getBioModel();
 bioModel.clearVersion();
-File outputFile = new File("C:/temp/laser.xml");
+File outputFile = File.createTempFile("laser", ".xml");//new File("C:/temp/laser.xml");
 outputFile.delete();
 FileUtils.writeByteArrayToFile(XmlHelper.bioModelToXML(bioModel).getBytes(), outputFile);
 					    	Thread.sleep(1000);
@@ -2508,8 +2508,8 @@ FileUtils.writeByteArrayToFile(XmlHelper.bioModelToXML(bioModel).getBytes(), out
 		}
 	}
 	private static Server imageJServer;
-	private static final int IJSERVER_BEGIN_PORT_RANGE = 8000;
-	private static final int IJSERVER_END_PORT_RANGE = 8100;
+	private static final int IJSERVER_BEGIN_PORT_RANGE = 50000;
+	private static final int IJSERVER_END_PORT_RANGE = 50100;
     public static void startService(Integer onlyThisPort) throws Exception{
     	if(ImageJHelper.serviceExists()) {
     		throw new Exception("ImageJServer already exists, only 1 allowed");

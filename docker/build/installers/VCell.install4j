@@ -163,6 +163,7 @@
 -Dvcell.onlineResourcesURL=http://vcell.org
 -Dvcell.bioformatsJarFileName=${compiler:bioformatsJarFile}
 -Dvcell.bioformatsJarDownloadURL=${compiler:bioformatsJarDownloadURL}
+-Dvcell.imagej.plugin.url=http://vcell.org/webstart/vcell-imagej-helper-1.jar
 -Dcom.apple.mrj.application.apple.menu.about.name=VCell_${compiler:Site}
 -Dvcell.dummyvm=${compiler:sys.date}</content>
       </vmOptionsFile>
@@ -214,6 +215,7 @@
 -Dvcell.onlineResourcesURL=http://vcell.org
 -Dvcell.bioformatsJarFileName=${compiler:bioformatsJarFile}
 -Dvcell.bioformatsJarDownloadURL=${compiler:bioformatsJarDownloadURL}
+-Dvcell.imagej.plugin.url=http://vcell.org/webstart/vcell-imagej-helper-1.jar
 -Dvcell.dummyvm=${compiler:sys.date}</content>
       </vmOptionsFile>
       <customScript mode="1" file="">
@@ -260,6 +262,7 @@
 -Dvcell.onlineResourcesURL=http://vcell.org
 -Dvcell.bioformatsJarFileName=${compiler:bioformatsJarFile}
 -Dvcell.bioformatsJarDownloadURL=${compiler:bioformatsJarDownloadURL}
+-Dvcell.imagej.plugin.url=http://vcell.org/webstart/vcell-imagej-helper-1.jar
 -Xmx800M
 -Dvcell.dummyvm=${compiler:sys.date}</content>
       </vmOptionsFile>
@@ -307,6 +310,7 @@
 -Dvcell.onlineResourcesURL=http://vcell.org
 -Dvcell.bioformatsJarFileName=${compiler:bioformatsJarFile}
 -Dvcell.bioformatsJarDownloadURL=${compiler:bioformatsJarDownloadURL}
+-Dvcell.imagej.plugin.url=http://vcell.org/webstart/vcell-imagej-helper-1.jar
 -Dvcell.dummyvm=${compiler:sys.date}</content>
       </vmOptionsFile>
       <customScript mode="1" file="">
@@ -351,6 +355,7 @@
 -Dvcell.onlineResourcesURL=http://vcell.org
 -Dvcell.bioformatsJarFileName=${compiler:bioformatsJarFile}
 -Dvcell.bioformatsJarDownloadURL=${compiler:bioformatsJarDownloadURL}
+-Dvcell.imagej.plugin.url=http://vcell.org/webstart/vcell-imagej-helper-1.jar
 -Dvcell.dummyvm=${compiler:sys.date}</content>
       </vmOptionsFile>
       <customScript mode="1" file="">
@@ -395,6 +400,7 @@
 -Dvcell.onlineResourcesURL=http://vcell.org
 -Dvcell.bioformatsJarFileName=${compiler:bioformatsJarFile}
 -Dvcell.bioformatsJarDownloadURL=${compiler:bioformatsJarDownloadURL}
+-Dvcell.imagej.plugin.url=http://vcell.org/webstart/vcell-imagej-helper-1.jar
 -Dvcell.dummyvm=${compiler:sys.date}</content>
       </vmOptionsFile>
       <customScript mode="1" file="">
