@@ -2005,10 +2005,18 @@ public boolean isValid() {
 	IssueContext issueContext = new IssueContext(ContextType.MathDescription,this,null);
 	ArrayList<Issue> issueList = new ArrayList<Issue>();
 	gatherIssues(issueContext, issueList);
+	boolean hasError = false;
 	if (issueList.size() > 0) {
 		setWarning(issueList.get(0).getMessage());
+		for (Issue issue : issueList) {
+			if (issue.getSeverity() == Issue.Severity.ERROR) {
+				hasError=true;
+				setWarning(issue.getMessage());
+				break;
+			}
+		}
 	}
-	return issueList.size() == 0;
+	return !hasError;
 }
 /**
  * This method was created in VisualAge.
@@ -2210,7 +2218,7 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueList) {
 				}
 				if (odeCount==0){
 					Issue issue = new Issue(this, issueContext, IssueCategory.MathDescription_CompartmentalModel, 
-							VCellErrorMessages.MATH_DESCRIPTION_COMPARTMENT_MODEL_4, Issue.SEVERITY_ERROR);
+							VCellErrorMessages.MATH_DESCRIPTION_COMPARTMENT_MODEL_4, Issue.Severity.WARNING);
 					issueList.add(issue);
 				}
 	
