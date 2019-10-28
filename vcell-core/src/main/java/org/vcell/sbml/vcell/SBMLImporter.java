@@ -2363,6 +2363,10 @@ public class SBMLImporter {
 				numPackages++;
 				msgPackages += "'multi', ";
 			}
+			if(document.isPackageEnabled("qual")) {
+				numPackages++;
+				msgPackages += "'qual', ";
+			}
 		} catch(Exception e) {
 			e.printStackTrace(System.out);
 			throw new SBMLImportException("Unable to check the SBML file package requirements.");
@@ -2391,10 +2395,6 @@ public class SBMLImporter {
 			if(document.isPackageEnabled("render")) {
 				numPackages++;
 				msgPackages += "'render', ";
-			}
-			if(document.isPackageEnabled("qual")) {
-				numPackages++;
-				msgPackages += "'qual', ";
 			}
 		} catch(Exception e) {
 			e.printStackTrace(System.out);	// we're going to ignore these packages anyway
