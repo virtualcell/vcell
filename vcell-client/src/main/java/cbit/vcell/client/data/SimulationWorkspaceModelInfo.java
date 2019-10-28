@@ -29,6 +29,7 @@ import cbit.vcell.mapping.AbstractMathMapping.ObservableConcentrationParameter;
 import cbit.vcell.mapping.AbstractMathMapping.ObservableCountParameter;
 import cbit.vcell.mapping.AbstractMathMapping.SpeciesConcentrationParameter;
 import cbit.vcell.mapping.AbstractMathMapping.SpeciesCountParameter;
+import cbit.vcell.mapping.AssignmentRule;
 import cbit.vcell.mapping.MappingException;
 import cbit.vcell.mapping.MathMapping;
 import cbit.vcell.mapping.MathSymbolMapping;
@@ -45,6 +46,8 @@ import cbit.vcell.matrix.MatrixException;
 import cbit.vcell.model.Kinetics;
 import cbit.vcell.model.Kinetics.KineticsParameter;
 import cbit.vcell.model.Kinetics.KineticsProxyParameter;
+import cbit.vcell.model.Model;
+import cbit.vcell.model.Model.ModelParameter;
 import cbit.vcell.model.ModelException;
 import cbit.vcell.model.ModelUnitSystem;
 import cbit.vcell.model.RbmObservable;
@@ -376,6 +379,7 @@ ArrayList<String> mappings = new ArrayList<String>();
 				MathSymbolMapping mathSymbolMapping = mathMapping.getMathSymbolMapping();
 				Enumeration<Variable> varEnum = mathDescription.getVariables();
 				addOutputFunctionsToMetaData(simulationContext, metadataMap);
+				addAssignmentRuleParametersToMetaData(simulationContext, metadataMap);
 				boolean isSymbolsNotFound = false;
 				while (varEnum.hasMoreElements()){
 					String tooltipString = null;
@@ -572,6 +576,21 @@ private static void addOutputFunctionsToMetaData(SimulationContext simulationCon
 				}
 			}
 		}
+}
+private static void addAssignmentRuleParametersToMetaData(SimulationContext simulationContext, HashMap<String, DataSymbolMetadata> metaDataMap) {
+	if(metaDataMap != null && simulationContext.getAssignmentRules() != null ) {
+		for(AssignmentRule ar : simulationContext.getAssignmentRules()) {
+			if(ar.getAssignmentRuleVar() instanceof Model.ModelParameter) {
+				
+				Model.ModelParameter mp = (Model.ModelParameter)ar.getAssignmentRuleVar();
+				VCUnitDefinition unit = mp.getUnitDefinition();
+				String tooltip = null;
+				DataSymbolMetadata dsmd = new DataSymbolMetadata(BioModelCategoryType.Other, unit, tooltip);
+				metaDataMap.put(mp.getName(), dsmd);
+			}
+		}
+	}
+
 }
 
 }

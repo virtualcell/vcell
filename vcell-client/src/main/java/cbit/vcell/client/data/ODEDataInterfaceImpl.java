@@ -112,7 +112,9 @@ class ODEDataInterfaceImpl implements ODEDataInterface {
 		}else{
 			ArrayList<ColumnDescription> selectedColumnDescriptions = new ArrayList<ColumnDescription>();
 			for (int i = 0; i < getOdeSolverResultSet().getColumnDescriptions().length; i++) {
-				DataSymbolMetadata dataSymbolMetadata = simulationModelInfo.getDataSymbolMetadataResolver().getDataSymbolMetadata(getOdeSolverResultSet().getColumnDescriptions()[i].getName());
+				String name = getOdeSolverResultSet().getColumnDescriptions()[i].getName();
+				DataSymbolMetadataResolver dataSymbolMetadataResolver = simulationModelInfo.getDataSymbolMetadataResolver();
+				DataSymbolMetadata dataSymbolMetadata = dataSymbolMetadataResolver.getDataSymbolMetadata(name);
 				ModelCategoryType selectedFilterCategory = null;
 				if (dataSymbolMetadata!=null){
 					selectedFilterCategory = dataSymbolMetadata.filterCategory;
