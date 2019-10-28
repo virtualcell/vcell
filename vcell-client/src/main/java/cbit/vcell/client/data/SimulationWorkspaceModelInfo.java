@@ -584,13 +584,12 @@ private static void addAssignmentRuleParametersToMetaData(SimulationContext simu
 				
 				Model.ModelParameter mp = (Model.ModelParameter)ar.getAssignmentRuleVar();
 				VCUnitDefinition unit = mp.getUnitDefinition();
-				String tooltip = null;
+				String tooltip = "Assignment Rule Variable (ModelParameter), Function";
 				DataSymbolMetadata dsmd = new DataSymbolMetadata(BioModelCategoryType.Other, unit, tooltip);
 				metaDataMap.put(mp.getName(), dsmd);
 			}
 		}
 	}
-
 }
 
 }
