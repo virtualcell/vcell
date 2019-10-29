@@ -179,7 +179,9 @@ protected ProgressDialog getDialog() {
 		}else{
 			dialog.setCancelButtonVisible(false);
 		}
-		BeanUtils.centerOnComponent(dialog, owner.getWindow());
+		if(owner != null) {
+			BeanUtils.centerOnComponent(dialog, owner.getWindow());
+		}
 		dialog.setResizable(false);
 		if (title != null) {
 			dialog.setTitle(title);
