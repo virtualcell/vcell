@@ -52,6 +52,8 @@ import org.vcell.pathway.GroupObject;
 import org.vcell.pathway.Interaction;
 import org.vcell.pathway.InteractionParticipant;
 import org.vcell.pathway.InteractionVocabulary;
+import org.vcell.pathway.PathwayEvent;
+import org.vcell.pathway.PathwayListener;
 import org.vcell.pathway.PhysicalEntity;
 import org.vcell.pathway.Protein;
 import org.vcell.pathway.PublicationXref;
@@ -68,6 +70,8 @@ import org.vcell.pathway.sbpax.SBMeasurable;
 import org.vcell.pathway.sbpax.SBVocabulary;
 import org.vcell.relationship.AnnotationMapping;
 import org.vcell.relationship.PathwayMapping;
+import org.vcell.relationship.RelationshipEvent;
+import org.vcell.relationship.RelationshipListener;
 import org.vcell.relationship.RelationshipObject;
 import org.vcell.util.gui.DefaultScrollTableCellRenderer;
 import org.vcell.util.gui.DialogUtils;
@@ -84,7 +88,7 @@ import cbit.vcell.model.SpeciesContext;
 
 
 @SuppressWarnings("serial")
-public class BioPaxObjectPropertiesPanel extends DocumentEditorSubPanel {
+public class BioPaxObjectPropertiesPanel extends DocumentEditorSubPanel implements RelationshipListener {
 	
 	private BioPaxObject bioPaxObject = null;	
 	private BioModel bioModel = null;
@@ -409,7 +413,16 @@ public void setBioModel(BioModel newValue) {
 	if (bioModel == newValue) {
 		return;
 	}
+	BioModel oldValue = bioModel;
+	if (oldValue != null) {
+//		oldValue.getModel().removePropertyChangeListener(this);		// doesn't appear that we need here to listen to the model
+		oldValue.getRelationshipModel().removeRelationShipListener(this);
+	}
 	bioModel = newValue;
+	if (newValue != null) {
+//		newValue.getModel().addPropertyChangeListener(this);
+		newValue.getRelationshipModel().addRelationShipListener(this);
+	}
 }
 
 @Override
@@ -737,6 +750,12 @@ private String getEntityName(Entity bpObject){
 	}
 }
 
+@Override
+public void relationshipChanged(RelationshipEvent event) {
+	if (bioPaxObject != null && event.getRelationshipObject() != null && event.getRelationshipObject().getBioPaxObject() == bioPaxObject) {
+		refreshInterface();
+	}
+}
 
 public static void main(String[] argv) {
 	
@@ -767,6 +786,6 @@ public static void main(String[] argv) {
 	f.getContentPane().add(p, BorderLayout.CENTER);   
 	f.setSize(400, 150);   
 	f.setVisible(true);   
-	}  
+	}
 
 }
