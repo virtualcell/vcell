@@ -41,6 +41,8 @@ import javax.swing.ListSelectionModel;
 
 import org.vcell.pathway.BioPaxObject;
 import org.vcell.pathway.Entity;
+import org.vcell.relationship.RelationshipEvent;
+import org.vcell.relationship.RelationshipListener;
 import org.vcell.relationship.RelationshipObject;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Compare;
@@ -119,7 +121,7 @@ public class ReactionPropertiesPanel extends DocumentEditorSubPanel {
 			KineticsDescription.GeneralPermeability
 	};
 	
-	private class EventHandler extends MouseAdapter implements ActionListener, FocusListener, PropertyChangeListener {
+	private class EventHandler extends MouseAdapter implements RelationshipListener, ActionListener, FocusListener, PropertyChangeListener {
 		@Override
 		public void actionPerformed(java.awt.event.ActionEvent e) {
 			if (e.getSource() == getKineticsTypeComboBox()) { 
@@ -153,6 +155,12 @@ public class ReactionPropertiesPanel extends DocumentEditorSubPanel {
 			if (evt.getSource() == reactionStep) {
 				updateInterface();
 			}			
+		}
+		@Override
+		public void relationshipChanged(RelationshipEvent event) {
+			if(reactionStep != null && event.getRelationshipObject() != null && event.getRelationshipObject().getBioModelEntityObject() == reactionStep) {
+				listLinkedPathwayObjects();
+			}
 		}
 	}
 	
@@ -831,8 +839,16 @@ public void setBioModel(BioModel newValue) {
 	if (bioModel == newValue) {
 		return;
 	}
+	BioModel oldValue = bioModel;
+	if (oldValue != null) {
+		oldValue.getRelationshipModel().removeRelationShipListener(eventHandler);
+	}
 	bioModel = newValue;
+	if (newValue != null) {
+		newValue.getRelationshipModel().addRelationShipListener(eventHandler);
+	}
 }
+
 @Override
 public void setSelectionManager(SelectionManager selectionManager) {
 	super.setSelectionManager(selectionManager);

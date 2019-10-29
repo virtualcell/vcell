@@ -80,6 +80,8 @@ import org.vcell.model.rbm.SpeciesPattern;
 import org.vcell.model.rbm.SpeciesPattern.Bond;
 import org.vcell.pathway.BioPaxObject;
 import org.vcell.pathway.Entity;
+import org.vcell.relationship.RelationshipEvent;
+import org.vcell.relationship.RelationshipListener;
 import org.vcell.relationship.RelationshipObject;
 import org.vcell.sybil.models.miriam.MIRIAMQualifier;
 import org.vcell.sybil.models.miriam.MIRIAMRef.URNParseFailureException;
@@ -254,7 +256,7 @@ public class SpeciesPropertiesPanel extends DocumentEditorSubPanel {
 
 	}
 	
-	private class EventHandler extends MouseAdapter implements java.awt.event.ActionListener, HyperlinkListener, FocusListener, PropertyChangeListener, TreeSelectionListener,
+	private class EventHandler extends MouseAdapter implements java.awt.event.ActionListener, RelationshipListener, HyperlinkListener, FocusListener, PropertyChangeListener, TreeSelectionListener,
 	TreeWillExpandListener
 	{
 		@Override
@@ -340,6 +342,12 @@ public class SpeciesPropertiesPanel extends DocumentEditorSubPanel {
 			}
 			if (veto) {
 				throw new ExpandVetoException(e);
+			}
+		}
+		@Override
+		public void relationshipChanged(RelationshipEvent event) {
+			if(fieldSpeciesContext != null && event.getRelationshipObject() != null && event.getRelationshipObject().getBioModelEntityObject() == fieldSpeciesContext) {
+				listLinkedPathwayObjects();
 			}
 		}
 	}
@@ -758,7 +766,14 @@ public void setBioModel(BioModel newValue) {
 	if (bioModel == newValue) {
 		return;
 	}
+	BioModel oldValue = bioModel;
+	if (oldValue != null) {
+		oldValue.getRelationshipModel().removeRelationShipListener(eventHandler);
+	}
 	bioModel = newValue;
+	if (newValue != null) {
+		newValue.getRelationshipModel().addRelationShipListener(eventHandler);
+	}
 	speciesPropertiesTreeModel.setBioModel(bioModel);
 }
 

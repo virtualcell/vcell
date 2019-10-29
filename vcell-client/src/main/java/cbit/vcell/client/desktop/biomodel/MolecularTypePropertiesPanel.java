@@ -81,6 +81,8 @@ import org.vcell.model.rbm.MolecularTypePattern;
 import org.vcell.model.rbm.SpeciesPattern;
 import org.vcell.pathway.BioPaxObject;
 import org.vcell.pathway.Entity;
+import org.vcell.relationship.RelationshipEvent;
+import org.vcell.relationship.RelationshipListener;
 import org.vcell.relationship.RelationshipObject;
 import org.vcell.util.Displayable;
 import org.vcell.util.Pair;
@@ -115,8 +117,8 @@ import cbit.vcell.model.Structure;
 
 @SuppressWarnings("serial")
 public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
-	private class InternalEventHandler implements PropertyChangeListener, ActionListener, MouseListener, TreeSelectionListener,
-		TreeWillExpandListener, FocusListener, ItemListener
+	private class InternalEventHandler implements RelationshipListener, PropertyChangeListener, ActionListener, MouseListener, 
+		TreeSelectionListener, TreeWillExpandListener, FocusListener, ItemListener
 	{
 		@Override
 		public void propertyChange(PropertyChangeEvent evt) {
@@ -221,6 +223,12 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 				molecularType.getAnchors().add(struct);
 			} else {
 				molecularType.getAnchors().remove(struct);
+			}
+		}
+		@Override
+		public void relationshipChanged(RelationshipEvent event) {
+			if(molecularType != null && event.getRelationshipObject() != null && event.getRelationshipObject().getBioModelEntityObject() == molecularType) {
+				listLinkedPathwayObjects();
 			}
 		}
 	}
@@ -1342,6 +1350,16 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 	}
 	
 	public void setBioModel(BioModel newValue) {
+		if (bioModel == newValue) {
+			return;
+		}
+		BioModel oldValue = bioModel;
+		if (oldValue != null) {
+			oldValue.getRelationshipModel().removeRelationShipListener(eventHandler);
+		}
 		bioModel = newValue;
+		if (newValue != null) {
+			newValue.getRelationshipModel().addRelationShipListener(eventHandler);
+		}
 	}	
 }

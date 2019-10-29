@@ -41,6 +41,8 @@ import javax.swing.tree.TreePath;
 
 import org.vcell.pathway.BioPaxObject;
 import org.vcell.pathway.Entity;
+import org.vcell.relationship.RelationshipEvent;
+import org.vcell.relationship.RelationshipListener;
 import org.vcell.relationship.RelationshipObject;
 import org.vcell.util.Compare;
 import org.vcell.util.gui.CollapsiblePanel;
@@ -101,7 +103,7 @@ public class ReactionRuleKineticsPropertiesPanel extends DocumentEditorSubPanel 
 //		RateLawType.Saturable,
 	};
 	
-	private class InternalEventHandler implements PropertyChangeListener, ActionListener, FocusListener, MouseListener
+	private class InternalEventHandler implements RelationshipListener, PropertyChangeListener, ActionListener, FocusListener, MouseListener
 	{
 		@Override
 		public void propertyChange(PropertyChangeEvent evt) {
@@ -152,6 +154,12 @@ public class ReactionRuleKineticsPropertiesPanel extends DocumentEditorSubPanel 
 				changeName();
 			} else if (e.getSource() == annotationTextArea) {
 //				changeFreeTextAnnotation();
+			}
+		}
+		@Override
+		public void relationshipChanged(RelationshipEvent event) {
+			if(reactionRule != null && event.getRelationshipObject() != null && event.getRelationshipObject().getBioModelEntityObject() == reactionRule) {
+				listLinkedPathwayObjects();
 			}
 		}
 	}
@@ -360,7 +368,14 @@ public class ReactionRuleKineticsPropertiesPanel extends DocumentEditorSubPanel 
 		if (bioModel == newValue) {
 			return;
 		}
+		BioModel oldValue = bioModel;
+		if (oldValue != null) {
+			oldValue.getRelationshipModel().removeRelationShipListener(eventHandler);
+		}
 		bioModel = newValue;
+		if (newValue != null) {
+			newValue.getRelationshipModel().addRelationShipListener(eventHandler);
+		}
 	}	
 	
 	@Override
