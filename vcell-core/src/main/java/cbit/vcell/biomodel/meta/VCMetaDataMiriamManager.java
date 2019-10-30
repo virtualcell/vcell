@@ -317,6 +317,12 @@ public class VCMetaDataMiriamManager implements MiriamManager, Serializable {
 				"urn:miriam:biomodels.sbo",
 				"The Systems Biology Ontology maintains controlled vocabularies and ontologies tailored specifically for the kinds of problems being faced in Systems Biology, especially in the context of computational modeling.",
 				"SBO:0000170");
+		public final static DataType DataType_EFO			= new VCMetaDataDataType("EFO",
+				"https://www.ebi.ac.uk/efo/",
+				"https://www.ebi.ac.uk/efo/EFO_",
+				"urn:miriam:efo",
+				"The Experimental Factor Ontology (EFO) provides a systematic description of experimental variables available in EBI databases.",
+				"0009534");
 		
 		
 		private String name = null;

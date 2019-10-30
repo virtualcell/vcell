@@ -52,9 +52,11 @@ public class MiriamTreeModel extends DefaultTreeModel implements AnnotationEvent
 		}
 		public String getLink() {
 			DataType dataType = miriamResource.getDataType();
-			if (dataType!=null && dataType.getBaseURL()!=null){
-				return miriamResource.getDataType().getBaseURL()+miriamResource.getIdentifier();
-			}else{
+			if (dataType != null && dataType.getBaseURL() != null) {
+				String baseURL = miriamResource.getDataType().getBaseURL();
+				String identifier = miriamResource.getIdentifier();
+				return baseURL + identifier;
+			} else {
 				return null;
 			}
 		}

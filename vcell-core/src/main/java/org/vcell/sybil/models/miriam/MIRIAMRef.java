@@ -78,7 +78,7 @@ public class MIRIAMRef extends KeyOfTwo<String, String> {
 					return new MIRIAMRef(pathParts[1], suffix);
 				}
 			} else {
-				throw new URNParseFailureException("couldn't interpret urn "+urn);
+				throw new URNParseFailureException("couldn't interpret urn " + urn);
 			}
 		}
 		
