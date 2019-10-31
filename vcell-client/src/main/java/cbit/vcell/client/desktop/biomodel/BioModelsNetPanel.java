@@ -114,7 +114,7 @@ public class BioModelsNetPanel extends DocumentEditorSubPanel {
 		    			setIcon(VCellIcons.modelCuratedIcon);
 //		    			setTextNonSelectionColor(Color.black);
 		    		} else {
-		    			setIcon(VCellIcons.issueWarningIcon);
+		    			setIcon(VCellIcons.modelCuratedBadIcon);
 //		    			setTextNonSelectionColor(Color.red.darker());
 		    		}
 		    		
