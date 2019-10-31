@@ -64,7 +64,6 @@ public Expression fromMathML(String mathML) throws ExpressionException {
 
 		SimpleNode root = getRootNode(mathElement);
 		Expression exp = new Expression(root);
-		
 		return exp;	
 	}
 
@@ -324,7 +323,8 @@ private SimpleNode getRootNode(Element nodeMathML) throws ExpressionException {
 		//
 		for (int i = 1; i < children.size(); i++){
 			Element childMathML = (Element)children.get(i);
-			vcellOperationNode.jjtAddChild(getRootNode(childMathML));
+			SimpleNode n = getRootNode(childMathML);
+			vcellOperationNode.jjtAddChild(n);
 		}
 		return vcellOperationNode;
 

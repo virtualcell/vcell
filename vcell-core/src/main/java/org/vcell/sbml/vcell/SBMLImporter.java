@@ -773,6 +773,14 @@ public class SBMLImporter {
 		}
 	}
 
+	// Hard to detect bugs may occur when replacing the lambda function formal arguments with the actual arguments
+	// when they overlap - for example formal arguments xyz and actual arguments azc will result in a substitution error
+	// because of z being both a formal and an actual argument
+	// in the above example, an expression like x+y+z won't result in a+z+c as expected, but a+c+c
+	// the code involved is in the substitute method of the LambdaFunction class
+	// to prevent this from happening, we create unique formal arguments based on the ones provided in the
+	// lambda function definition and the lambda function id
+	final static String FormalArgumentSuffix = "LambdaFunctionFormalArgument";
 	private void addFunctionDefinitions() {
 		if (sbmlModel == null) {
 			throw new SBMLImportException("SBML model is NULL");
@@ -792,6 +800,7 @@ public class SBMLImporter {
 				String functionName = new String(fnDefn.getId());
 				ASTNode math = null;
 				Vector<String> argsVector = new Vector<String>();
+				Vector<String> secureArgsVector = new Vector<>();
 				String[] functionArgs = null;
 
 				if (fnDefn.isSetMath()) {
@@ -804,12 +813,17 @@ public class SBMLImporter {
 					// Add function arguments into vector, print args
 					// Note that lambda function always should have at least 2 children
 					for (int j = 0; j < math.getNumChildren() - 1; ++j) {
-						argsVector.addElement(new String(math.getChild(j).getName()));
+						String baseName = new String(math.getChild(j).getName());
+						argsVector.addElement(baseName);
+						secureArgsVector.addElement(baseName + "_" + functionName + FormalArgumentSuffix);
 					}
-					functionArgs = argsVector.toArray(new String[0]);
+					functionArgs = secureArgsVector.toArray(new String[0]);
 					math = math.getChild(math.getNumChildren() - 1);
 					// formula = libsbml.formulaToString(math);
 					Expression fnExpr = getExpressionFromFormula(math);
+					for(int j=0; j<argsVector.size(); j++) {
+						fnExpr.substituteInPlace(new Expression(argsVector.get(j)), new Expression(secureArgsVector.get(j)));
+					}
 					lambdaFunctions[i] = new LambdaFunction(functionName, fnExpr, functionArgs);
 				}
 			}
