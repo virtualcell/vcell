@@ -67,6 +67,7 @@ import org.vcell.util.document.VCDocumentInfo;
 import org.vcell.util.gui.CollapsiblePanel;
 import org.vcell.util.gui.VCellIcons;
 
+import cbit.vcell.biomodel.meta.VCMetaDataMiriamManager;
 import cbit.vcell.client.DocumentWindowManager;
 import cbit.vcell.client.desktop.biomodel.BioModelEditorPathwayCommonsPanel.PathwayCommonsKeyword;
 import cbit.vcell.client.desktop.biomodel.BioModelEditorPathwayCommonsPanel.PathwayCommonsVersion;
@@ -82,7 +83,7 @@ import uk.ac.ebi.www.biomodels_main.services.BioModelsWebServices.BioModelsWebSe
 @SuppressWarnings("serial")
 public class BioModelsNetPanel extends DocumentEditorSubPanel {
 	public static final String BIO_MODELS_NET = "BMDB";
-	private static final String defaultBaseURL = "https://www.ebi.ac.uk/biomodels/search/download?models=";
+	private static final String defaultBaseURL = "https://www.ebi.ac.uk/biomodels/search/download?models=";	// used for downloads
 //	private static final String BIOMODELS_DATABASE_URL = "http://www.ebi.ac.uk/biomodels-main/";
 
 
@@ -494,7 +495,7 @@ public class BioModelsNetPanel extends DocumentEditorSubPanel {
 //			if(bSupported) {
 			String id = temp.getAttributeValue(BioModelsNetPanel.ID_ATTRIBUTE_NAME);
 			String name = temp.getAttributeValue(BioModelsNetPanel.MODELNAME_ATTRIBUTE_NAME);
-			vcellCompatibleBioModelsList.add(new BioModelsNetModelInfo(id, name, defaultBaseURL + id, bSupported));
+			vcellCompatibleBioModelsList.add(new BioModelsNetModelInfo(id, name, VCMetaDataMiriamManager.biomodelsDbWebAccessBaseURL + id, bSupported));
 //			}
 		}
 		return vcellCompatibleBioModelsList;

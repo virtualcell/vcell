@@ -59,7 +59,8 @@ import cbit.vcell.model.Structure;
 
 @SuppressWarnings("serial")
 public class VCMetaDataMiriamManager implements MiriamManager, Serializable {
-	
+	public static final String biomodelsDbWebAccessBaseURL = "http://identifiers.org/biomodels.db/";					// used to open model in browser
+
 	public static class VCMetaDataDataType implements DataType {
 		
 		private final static HashMap<String,DataType> all = new HashMap<String,DataType>();
@@ -78,7 +79,7 @@ public class VCMetaDataMiriamManager implements MiriamManager, Serializable {
 				"10.1038/nbt1156");
 		public final static DataType DataType_BIOMODELS 	= new VCMetaDataDataType("BioModels Database",
 				"http://www.ebi.ac.uk/biomodels/",
-				"http://www.ebi.ac.uk/biomodels-main/",														// ^((BIOMD|MODEL)\d{10})|(BMID\d{12})$
+				biomodelsDbWebAccessBaseURL,																// ^((BIOMD|MODEL)\d{10})|(BMID\d{12})$
 				"urn:miriam:biomodels.db",
 				"BioModels Database is a data resource that allows biologists to store, search and retrieve published mathematical models of biological interests.",
 				"BIOMD0000000048");
