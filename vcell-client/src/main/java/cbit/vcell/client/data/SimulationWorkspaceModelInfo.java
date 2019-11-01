@@ -383,8 +383,10 @@ ArrayList<String> mappings = new ArrayList<String>();
 				boolean isSymbolsNotFound = false;
 				while (varEnum.hasMoreElements()){
 					String tooltipString = null;
+					String displayName = null;
 					Variable var = varEnum.nextElement();
-String mathInfo = var.getClass().getSimpleName()+"("+var.getName()+")";
+//String mathInfo = var.getClass().getSimpleName()+"("+var.getName()+")";
+String mathInfo = "Math: " + var.getClass().getSimpleName();
 					SymbolTableEntry[] bioSymbols1 = mathSymbolMapping.getBiologicalSymbol(var);
 					if (bioSymbols1 != null && bioSymbols1.length>0){
 						
@@ -425,6 +427,7 @@ String mathInfo = var.getClass().getSimpleName()+"("+var.getName()+")";
 								SpeciesPattern sp = transformedModelSpeciesContext.getSpeciesPattern();
 								tooltipString = sp.toString();
 							}
+							displayName = transformedModelSpeciesContext.getSbmlName();
 						}else if (bestBioSymbol instanceof KineticsParameter){
 							KineticsParameter kineticsParameter = (KineticsParameter)bestBioSymbol;
 							if(kineticsParameter.getRole() == Kinetics.ROLE_ReactionRate){
@@ -451,21 +454,24 @@ String mathInfo = var.getClass().getSimpleName()+"("+var.getName()+")";
 							}
 						}
 						VCUnitDefinition unit = bestBioSymbol.getUnitDefinition();
-if (tooltipString==null){
-tooltipString = "<html>";
-}else{
-tooltipString = "<html>"+tooltipString+"<br/>";
+if (tooltipString==null) {
+	tooltipString = "<html>";
+} else {
+	tooltipString = "<html>"+tooltipString+"<br/>";
+}
+if(displayName != null && !displayName.isEmpty() && !displayName.contentEquals(var.getName())) {
+	tooltipString += "Alt. Name: " + displayName + "<br/>";
 }
 tooltipString += mathInfo + "<br/>";
 for (SymbolTableEntry bioSymbol : sortedBioSymbols){
-VCUnitDefinition unitDefinition = bioSymbol.getUnitDefinition();
-String unitSymbol = (unitDefinition!=null)?(unitDefinition.getSymbol()):("<null unit>");
-String bioInfo = bioSymbol.getClass().getSimpleName()+"("+bioSymbol.getName()+",["+unitSymbol+"])  category="+filterCategory+", unit=["+unitSymbol+"]";
-//tooltipString += " ==> "+bioInfo + "<br/>";		// TODO: uncomment this for more info on tooltip string
-mappings.add(var.getName()+"   "+mathInfo+"    ==>    "+bioInfo+", tooltipString="+tooltipString);
+	VCUnitDefinition unitDefinition = bioSymbol.getUnitDefinition();
+	String unitSymbol = (unitDefinition!=null)?(unitDefinition.getSymbol()):("<null unit>");
+	String bioInfo = bioSymbol.getClass().getSimpleName()+"("+bioSymbol.getName()+",["+unitSymbol+"])  category="+filterCategory+", unit=["+unitSymbol+"]";
+	//tooltipString += " ==> "+bioInfo + "<br/>";		// TODO: uncomment this for more info on tooltip string
+	mappings.add(var.getName()+"   "+mathInfo+"    ==>    "+bioInfo+", tooltipString="+tooltipString);
 }
 tooltipString+="</html>";
-						metadataMap.put(var.getName(),new DataSymbolMetadata(filterCategory, unit, tooltipString));
+						metadataMap.put(var.getName(), new DataSymbolMetadata(filterCategory, unit, tooltipString, displayName));
 					}else{
 						isSymbolsNotFound = true;
 String bioInfo = "Biological Symbol Not Found";
