@@ -326,10 +326,12 @@ public class PathwayMapping {
 		// use user defined id as the name of the speciesContext
 		String safeId = getSafetyName(id);
 		String name;
+		String name2 = null;
 		if(bioPaxObject.getName().size() == 0) {
 			name = getSafetyName(bioPaxObject.getID());
 		} else {
 			name = getSafetyName(bioPaxObject.getName().get(0));
+			name2 = bioPaxObject.getName().get(0);
 		}
 		
 		Model model = bioModel.getModel();
@@ -342,6 +344,10 @@ public class PathwayMapping {
 				freeSpeciesContext = new SpeciesContext(model.getSpecies(name), model.getStructure(location));
 			}
 			freeSpeciesContext.setName(safeId);
+			if(name2 != null && name2.length() > 0) {	// if there is a name, we load it as free-format SBMLName
+				freeSpeciesContext.setSbmlName(name2);
+			}
+			
 			RelationshipObject newRelationship = new RelationshipObject(freeSpeciesContext, bioPaxObject);
 			bioModel.getRelationshipModel().addRelationshipObject(newRelationship);		
 		} else {
