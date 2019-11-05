@@ -38,6 +38,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSlider;
 
+import org.sbml.jsbml.UnitDefinition;
 import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.gui.CollapsiblePanel;
 
@@ -55,7 +56,9 @@ import cbit.vcell.parser.SymbolTable;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.simdata.SimDataConstants;
 import cbit.vcell.solver.DataSymbolMetadata;
+import cbit.vcell.solver.SimulationModelInfo.DataSymbolMetadataResolver;
 import cbit.vcell.solver.SimulationModelInfo.ModelCategoryType;
+import cbit.vcell.units.VCUnitDefinition;
 import cbit.vcell.util.ColumnDescription;
 
 /**
@@ -79,6 +82,9 @@ public class ODESolverPlotSpecificationPanel extends JPanel {
 	private JLabel ivjXAxisLabel = null;
 	private JList ivjYAxisChoice = null;
 	private CollapsiblePanel filterPanel = null;
+	private JPanel speciesOptionsPanel = null;
+	JCheckBox concentrationCheckBox = null;
+	JCheckBox countCheckBox = null;
 	private JLabel ivjCurLabel = null;
 	private JSlider ivjSensitivityParameterSlider = null;
 	private JScrollPane ivjJScrollPaneYAxis = null;
@@ -109,6 +115,12 @@ public class ODESolverPlotSpecificationPanel extends JPanel {
 				firePropertyChange(ODE_DATA_CHANGED, false, true);
 			}else if(filterSettings != null && filterSettings.containsKey(e.getSource())){
 				processFilterSelection();
+			} else if(e.getSource() == concentrationCheckBox || e.getSource() == countCheckBox) {
+				try {
+					updateChoices(getMyDataInterface());
+				}catch(Exception exc){
+					exc.printStackTrace();
+				}
 			}
 		};
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
@@ -1208,8 +1220,8 @@ private void sortColumnDescriptions(ArrayList<ColumnDescription> columnDescripti
  * Creation date: (2/8/2001 4:56:15 PM)
  * @param cbit.vcell.solver.ode.ODESolverResultSet
  */
-private synchronized void updateChoices(ODEDataInterface oDEDataInterface) throws ExpressionException,ObjectNotFoundException {
-	if (oDEDataInterface == null) {
+private synchronized void updateChoices(ODEDataInterface odedi) throws ExpressionException,ObjectNotFoundException {
+	if (odedi == null) {
 		return;
 	}
 	Object xAxisSelection = getXAxisComboBox_frm().getSelectedItem();
@@ -1219,19 +1231,30 @@ private synchronized void updateChoices(ODEDataInterface oDEDataInterface) throw
 	ArrayList<ColumnDescription> sensitivityColumnDescriptions = new ArrayList<ColumnDescription>();
 	ColumnDescription timeColumnDescription = null;
 	//find TIME columnDescription
-	ColumnDescription[] columnDescriptions = getMyDataInterface().getAllColumnDescriptions();
+	ColumnDescription[] columnDescriptions = odedi.getAllColumnDescriptions();
     for (int i = 0; i < columnDescriptions.length; i++) {
         if (columnDescriptions[i].getName().equals(ReservedVariable.TIME.getName())) {
         	timeColumnDescription = columnDescriptions[i];
         }
     }
 	//find filtered columnDescriptions
-	columnDescriptions = getMyDataInterface().getFilteredColumnDescriptions();
+	columnDescriptions = odedi.getFilteredColumnDescriptions();
+	DataSymbolMetadataResolver damdr = odedi.getDataSymbolMetadataResolver();
+
     for (int i = 0; i < columnDescriptions.length; i++) {
         ColumnDescription cd = columnDescriptions[i];
+        // or maybe anything that is measured in molecules??
         //If the column is "TrialNo" from multiple trials, we don't put the column "TrialNo" in. amended March 12th, 2007
         //If the column is "_initConnt" generated when using concentration as initial condition, we dont' put the function in list. amended again in August, 2008.
         if (cd.getParameterName() == null) {
+        	String name = cd.getName();
+        	DataSymbolMetadata damd = damdr.getDataSymbolMetadata(name);
+        	// filter entities measured as count vs concentration, based on the checkbox settings
+        	if(damd.unit.getSymbol().contentEquals("molecules") && !countCheckBox.isSelected()) {
+        		continue;
+        	} else if(damd.unit.getSymbol().contentEquals("uM") && !concentrationCheckBox.isSelected()) {
+        		continue;
+        	}
         	if (!cd.getName().equals(SimDataConstants.HISTOGRAM_INDEX_NAME) && !cd.getName().contains(DiffEquMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_COUNT)) {
         		variableColumnDescriptions.add(cd);
         	}
@@ -1248,7 +1271,7 @@ private synchronized void updateChoices(ODEDataInterface oDEDataInterface) throw
     	sortedColumndDescriptions.add(timeColumnDescription); // add time first
 	}
     
-    boolean bMultiTrialData = oDEDataInterface.isMultiTrialData();
+    boolean bMultiTrialData = odedi.isMultiTrialData();
     
     sortedColumndDescriptions.addAll(variableColumnDescriptions);
     if(!bMultiTrialData)
@@ -1265,7 +1288,7 @@ private synchronized void updateChoices(ODEDataInterface oDEDataInterface) throw
 	    getComboBoxModelX_frm().removeAllElements();
 	    if(!bMultiTrialData) {
 	       	// Don't put anything in X Axis, if the results of multiple trials are being displayed.
-	    	ArrayList<ColumnDescription> xColumnDescriptions = new ArrayList<ColumnDescription>(Arrays.asList(getMyDataInterface().getAllColumnDescriptions()));
+	    	ArrayList<ColumnDescription> xColumnDescriptions = new ArrayList<ColumnDescription>(Arrays.asList(odedi.getAllColumnDescriptions()));
 	    	sortColumnDescriptions(xColumnDescriptions);
 	    	if(timeColumnDescription != null){
 	    		getComboBoxModelX_frm().addElement(timeColumnDescription.getName());
@@ -1445,15 +1468,13 @@ private void showFilterSettings() {
 				}
 			}
 		}
-	}else{
+	} else {
 //		DialogUtils.showWarningDialog(this, "Cannot display filter, no filter categories set.");
 		getFilterPanel().getContentPanel().setLayout(new BorderLayout());
 		getFilterPanel().getContentPanel().add(new JLabel("No Filters"));
 		return;
 	}
 	
-	JPanel filterPanel = getFilterPanel().getContentPanel();//new JPanel();
-	filterPanel.setLayout(new BoxLayout(filterPanel, BoxLayout.Y_AXIS));
 //	filterPanel.setBorder(new LineBorder(Color.black));
 	JCheckBox[] sortedJCheckBoxes = filterSettings.keySet().toArray(new JCheckBox[0]);
 	Arrays.sort(sortedJCheckBoxes, new Comparator<JCheckBox>() {
@@ -1466,11 +1487,77 @@ private void showFilterSettings() {
 	for (int i = 0; i < sortedJCheckBoxes.length; i++) {
 		sortedJCheckBoxes[i].removeItemListener(ivjEventHandler);
 		sortedJCheckBoxes[i].addItemListener(ivjEventHandler);
-
-		sortedJCheckBoxes[i].setAlignmentX(0f);
-		filterPanel.add(sortedJCheckBoxes[i]);
 	}
+	
+	JPanel filterContentPanel = getFilterPanel().getContentPanel();
+	filterContentPanel.setLayout(new GridBagLayout());
+	int gridx = 0;
+	int gridy = 0;
+	for (int i = 0; i < sortedJCheckBoxes.length; i++) {
+		GridBagConstraints gbc = new GridBagConstraints();
+		gbc.gridx = gridx;
+		gbc.gridy = gridy;
+		gbc.insets = new Insets(4, 2, 0, 0);
+		gbc.weightx = 1;
+		gbc.anchor = GridBagConstraints.WEST;
+		gbc.fill = GridBagConstraints.HORIZONTAL;
+		filterContentPanel.add(sortedJCheckBoxes[i], gbc);
+		gridy++;
+	}
+	GridBagConstraints gbc = new GridBagConstraints();
+	gbc.gridx = gridx;
+	gbc.gridy = gridy;
+	gbc.insets = new Insets(1, 10, 3, 0);
+	gbc.anchor = GridBagConstraints.WEST;
+	filterContentPanel.add(getSpeciesOptionsPanel(), gbc);
+	
+//	JPanel filterContentPanel = getFilterPanel().getContentPanel();//new JPanel();
+//	filterContentPanel.setLayout(new BoxLayout(filterContentPanel, BoxLayout.Y_AXIS));
+//	for (int i = 0; i < sortedJCheckBoxes.length; i++) {
+//		sortedJCheckBoxes[i].setAlignmentX(0f);
+//		filterContentPanel.add(sortedJCheckBoxes[i]);
+//	}
+//	filterContentPanel.add(getSpeciesOptionsPanel());
 }
+
+private JPanel getSpeciesOptionsPanel() {
+	if (speciesOptionsPanel == null) {
+		speciesOptionsPanel = new JPanel();
+		speciesOptionsPanel.setName("speciesOptionsPanel");
+		speciesOptionsPanel.setLayout(new GridBagLayout());
+		
+		int gridx = 0;
+		int gridy = 0;
+		GridBagConstraints gbc = new GridBagConstraints();
+		gbc.gridx = gridx;
+		gbc.gridy = gridy;
+		gbc.weightx = 1;
+		gbc.fill = GridBagConstraints.HORIZONTAL;
+		speciesOptionsPanel.add(new JLabel(""), gbc);
+
+		gridx++;
+		concentrationCheckBox = new JCheckBox("Concentration");
+		gbc.gridx = gridx;
+		gbc.gridy = gridy;
+		gbc.insets = new Insets(0, 4, 0, 0);
+		gbc.weightx = 0;
+		speciesOptionsPanel.add(concentrationCheckBox, gbc);
+
+		gridx++;
+		countCheckBox = new JCheckBox("Count");
+		gbc.gridx = gridx;
+		gbc.gridy = gridy;
+		gbc.insets = new Insets(0, 4, 0, 0);
+		gbc.weightx = 0;
+		speciesOptionsPanel.add(countCheckBox, gbc);
+		
+		concentrationCheckBox.addItemListener(ivjEventHandler);
+		countCheckBox.addItemListener(ivjEventHandler);
+		concentrationCheckBox.setSelected(true);
+	}
+	return speciesOptionsPanel;
+}
+
 
 private void processFilterSelection(){
 	if(filterSettings != null){
