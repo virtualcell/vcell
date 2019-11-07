@@ -1250,9 +1250,10 @@ private synchronized void updateChoices(ODEDataInterface odedi) throws Expressio
         	String name = cd.getName();
         	DataSymbolMetadata damd = damdr.getDataSymbolMetadata(name);
         	// filter entities measured as count vs concentration, based on the checkbox settings
-        	if(damd.unit.getSymbol().contentEquals("molecules") && !countCheckBox.isSelected()) {
+        	String sUnit = damd.unit.getSymbol();
+        	if(sUnit.contentEquals("molecules") && !countCheckBox.isSelected()) {
         		continue;
-        	} else if(damd.unit.getSymbol().contentEquals("uM") && !concentrationCheckBox.isSelected()) {
+        	} else if((sUnit.contentEquals("M") || sUnit.contentEquals("mM") || sUnit.contentEquals("uM") || sUnit.contentEquals("nM") || sUnit.contentEquals("pM")) && !concentrationCheckBox.isSelected()) {
         		continue;
         	}
         	if (!cd.getName().equals(SimDataConstants.HISTOGRAM_INDEX_NAME) && !cd.getName().contains(DiffEquMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_COUNT)) {
