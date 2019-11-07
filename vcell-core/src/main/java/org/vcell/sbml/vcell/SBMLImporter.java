@@ -867,6 +867,7 @@ public class SBMLImporter {
 		for (int i = 0; i < sbmlModel.getNumParameters(); i++) {
 			Parameter sbmlGlobalParam = (Parameter) listofGlobalParams.get(i);
 			String paramName = sbmlGlobalParam.getId();
+			String sbmlParamName = sbmlGlobalParam.getName();
 			SpatialParameterPlugin spplugin = null;
 			if (bSpatial) {
 				// check if parameter id is x/y/z : if so, check if its
@@ -1055,6 +1056,9 @@ public class SBMLImporter {
 					if (vcSpeciesId.length() > 64) {
 						vcGlobalParam.setDescription("Parameter Name : " + vcSpeciesId);
 					}
+					if(sbmlParamName != null && !sbmlParamName.isEmpty()) {
+						vcGlobalParam.setSbmlName(sbmlParamName);
+					}
 					vcModelParamsList.add(vcGlobalParam);
 				} else if (!reservedSymbolHash.contains(paramName)) {
 					// Also check if the SBML global param is a reserved symbol in
@@ -1065,6 +1069,9 @@ public class SBMLImporter {
 						// record global parameter name in annotation if it is
 						// longer than 64 characeters
 						vcGlobalParam.setDescription("Parameter Name : " + paramName);
+					}
+					if(sbmlParamName != null && !sbmlParamName.isEmpty()) {
+						vcGlobalParam.setSbmlName(sbmlParamName);
 					}
 					vcModelParamsList.add(vcGlobalParam);
 				}

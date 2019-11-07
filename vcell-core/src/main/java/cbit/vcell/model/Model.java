@@ -845,6 +845,7 @@ public class Model implements Versionable, Matchable, PropertyChangeListener, Ve
 	public class ModelParameter extends Parameter implements ExpressionContainer, IssueSource, Displayable {
 		
 		private String fieldParameterName = null;
+		private String sbmlName = null;
 		private Expression fieldParameterExpression = null;
 		private int fieldParameterRole = -1;
 		private VCUnitDefinition fieldUnitDefinition = null;
@@ -919,16 +920,16 @@ public class Model implements Versionable, Matchable, PropertyChangeListener, Ve
 			return this.fieldParameterExpression;
 		}
 
-
 		public int getIndex() {
 			return -1;
 		}
 
-
 		public String getName(){ 
 			return this.fieldParameterName; 
 		}   
-
+		public String getSbmlName() {
+			return this.sbmlName;
+		}
 
 		public NameScope getNameScope() {
 			return Model.this.nameScope;
@@ -958,7 +959,15 @@ public class Model implements Versionable, Matchable, PropertyChangeListener, Ve
 			fieldParameterName = name;
 			super.firePropertyChange("name", oldValue, name);
 		}
-
+		public void setSbmlName(String newString) throws PropertyVetoException {
+			String oldValue = this.sbmlName;
+			String newValue = SpeciesContext.fixSbmlName(newString);
+			
+			fireVetoableChange("sbmlName", oldValue, newValue);
+			this.sbmlName = newValue;
+			firePropertyChange("sbmlName", oldValue, newValue);
+		}
+		
 		private static final String typeName = "GlobalParameter";
 		@Override
 		public final String getDisplayName() {
