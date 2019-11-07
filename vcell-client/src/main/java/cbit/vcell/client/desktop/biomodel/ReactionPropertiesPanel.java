@@ -89,8 +89,9 @@ public class ReactionPropertiesPanel extends DocumentEditorSubPanel {
 	private ScrollTable ivjScrollPaneTable = null;
 	private EventHandler eventHandler = new EventHandler();
 	private ReactionElectricalPropertiesPanel reactionElectricalPropertiesPanel;
-	private JTextArea annotationTextArea = null;
 	private JTextField nameTextField = null;
+	private JTextField sbmlNameTextField = null;
+
 	private JLabel electricalPropertiesLabel;
 	private JCheckBox isReversibleCheckBox;
 	private JLabel reversibleLabel;
@@ -128,6 +129,8 @@ public class ReactionPropertiesPanel extends DocumentEditorSubPanel {
 				updateKineticChoice();
 			} else if (e.getSource() == nameTextField) {
 				changeName();
+			} else if(e.getSource() == sbmlNameTextField) {
+				changeSbmlName();
 			} else if (e.getSource() == isReversibleCheckBox) {
 				setReversible(isReversibleCheckBox.isSelected());
 			}
@@ -137,18 +140,15 @@ public class ReactionPropertiesPanel extends DocumentEditorSubPanel {
 		}
 		@Override
 		public void focusLost(FocusEvent e) {
-			if (e.getSource() == annotationTextArea) {
-//				changeFreeTextAnnotation();
-			} else if (e.getSource() == nameTextField) {
+			if (e.getSource() == nameTextField) {
 				changeName();
+			} else if (e.getSource() == sbmlNameTextField) {
+				changeSbmlName();
 			}
 		}
 		@Override
 		public void mouseExited(MouseEvent e) {
 			super.mouseExited(e);
-			if(e.getSource() == annotationTextArea){
-//				changeFreeTextAnnotation();
-			}
 		}
 		@Override
 		public void propertyChange(PropertyChangeEvent evt) {
@@ -213,8 +213,10 @@ private void handleException(java.lang.Throwable exception) {
 }
 
 private void initConnections() throws java.lang.Exception {
-//	annotationTextArea.addFocusListener(eventHandler);
-//	annotationTextArea.addMouseListener(eventHandler);
+	nameTextField.addFocusListener(eventHandler);
+	nameTextField.addActionListener(eventHandler);
+	sbmlNameTextField.addActionListener(eventHandler);
+	sbmlNameTextField.addFocusListener(eventHandler);
 }
 
 private void initialize() {
@@ -224,9 +226,9 @@ private void initialize() {
 		
 		nameTextField = new JTextField();
 		nameTextField.setEditable(false);
-		nameTextField.addFocusListener(eventHandler);
-		nameTextField.addActionListener(eventHandler);
-		
+		sbmlNameTextField = new JTextField();
+		sbmlNameTextField.setEditable(true);
+
 		isReversibleCheckBox = new JCheckBox("");
 		isReversibleCheckBox.addActionListener(eventHandler);
 		isReversibleCheckBox.setBackground(Color.white);
@@ -234,12 +236,11 @@ private void initialize() {
 		
 		electricalPropertiesLabel = new JLabel("Electrical Properties");
 		electricalPropertiesLabel.setVisible(false);
+		reactionElectricalPropertiesPanel = new ReactionElectricalPropertiesPanel();
+		reactionElectricalPropertiesPanel.setVisible(false);
 
 		reversibleLabel = new JLabel("Reversible");
 		reversibleLabel.setVisible(false);
-
-		reactionElectricalPropertiesPanel = new ReactionElectricalPropertiesPanel();
-		reactionElectricalPropertiesPanel.setVisible(false);
 		
 		int gridy = 0;
 		GridBagConstraints gbc = new java.awt.GridBagConstraints();
@@ -253,10 +254,27 @@ private void initialize() {
 		gbc.gridx = 1; 
 		gbc.gridy = gridy;
 		gbc.insets = new java.awt.Insets(2, 4, 4, 4);
-		gbc.weightx = 1.0;
-		gbc.gridwidth = 3;
+		gbc.weightx = 0.7;
+		gbc.gridwidth = 2;
 		gbc.fill = GridBagConstraints.HORIZONTAL;
 		add(nameTextField, gbc);
+		
+		gbc = new java.awt.GridBagConstraints();
+		gbc.gridx = 3; 
+		gbc.gridy = gridy;
+		gbc.insets = new java.awt.Insets(2, 4, 4, 4);
+		gbc.anchor = GridBagConstraints.LINE_START;		
+		add(new JLabel("Sbml Name"), gbc);
+		
+		gbc = new java.awt.GridBagConstraints();
+		gbc.gridx = 4; 
+		gbc.gridy = gridy;
+		gbc.insets = new java.awt.Insets(2, 4, 4, 4);
+		gbc.weightx = 1;
+		gbc.fill = GridBagConstraints.HORIZONTAL;
+//		gbc.anchor = GridBagConstraints.LINE_START;		
+		add(sbmlNameTextField, gbc);
+		// ---------------------------------------------
 		
 		gridy ++;
 		gbc = new java.awt.GridBagConstraints();
@@ -269,7 +287,7 @@ private void initialize() {
 		gbc = new java.awt.GridBagConstraints();
 		gbc.gridx = 1; 
 		gbc.gridy = gridy;
-		gbc.gridwidth = 3;
+		gbc.gridwidth = GridBagConstraints.REMAINDER;
 		gbc.fill = java.awt.GridBagConstraints.HORIZONTAL;
 		gbc.weightx = 1.0;
 		gbc.insets = new java.awt.Insets(0, 4, 0, 4);
@@ -320,7 +338,9 @@ private void initialize() {
 		gbc = new GridBagConstraints();
 		gbc.gridx = 3;
 		gbc.gridy = gridy;
-		gbc.insets = new java.awt.Insets(0, 4, 4, 4);
+		gbc.fill = java.awt.GridBagConstraints.HORIZONTAL;
+		gbc.gridwidth = 2;
+		gbc.insets = new java.awt.Insets(0, 4, 4, 3);
 		add(getJToggleButton(), gbc);
 		
 		gridy ++;
@@ -329,8 +349,9 @@ private void initialize() {
 		gbc.gridy = gridy;
 		gbc.fill = java.awt.GridBagConstraints.BOTH;
 		gbc.weightx = 1.0;
-		gbc.weighty = 0.5;
-		gbc.gridwidth = 4;
+		gbc.weighty = 1.0;
+		gbc.gridwidth = 5;
+		gbc.insets = new java.awt.Insets(0, 4, 0, 4);
 		add(getScrollPaneTable().getEnclosingScrollPane(), gbc);
 		
 //		CollapsiblePanel collapsiblePanel = new CollapsiblePanel("Pathway Links", true);
@@ -338,6 +359,7 @@ private void initialize() {
 
 		JPanel jp1 = new JPanel();
 		jp1.setLayout(new GridBagLayout());
+		jp1.setBackground(Color.white);
 		
 		gbc = new GridBagConstraints();
 		gbc.gridx = 0;
@@ -357,33 +379,14 @@ private void initialize() {
 		gbc.fill = GridBagConstraints.HORIZONTAL;
 		jp1.add(linkedPOScrollPane, gbc);
 		
-//		gbc = new GridBagConstraints();
-//		gbc.gridx = 0;
-//		gbc.gridy = 0;
-//		gbc.weightx = 1.0;
-//		gbc.fill = GridBagConstraints.HORIZONTAL;
-//		gbc.anchor = GridBagConstraints.LINE_START;
-//		collapsiblePanel.getContentPanel().add(jp1, gbc);
-//		
-		annotationTextArea = new JTextArea(2,20);	// initialized but not used
-//		annotationTextArea.setLineWrap(true);
-//		annotationTextArea.setWrapStyleWord(true);
-//		annotationTextArea.setFont(new Font("monospaced", Font.PLAIN, 11));
-		gridy++;
-		gbc = new GridBagConstraints();
-		gbc.gridx = 0;
-		gbc.gridy = gridy;
-		gbc.fill = GridBagConstraints.BOTH;
-		gbc.anchor = GridBagConstraints.LINE_START;
-		add(new JLabel(), gbc);
-
 		gridy ++;
 		gbc = new java.awt.GridBagConstraints();
 		gbc.gridx = 0; 
 		gbc.gridy = gridy;
-		gbc.gridwidth = 4;
+		gbc.gridwidth = GridBagConstraints.REMAINDER;
 		gbc.weightx = 1.0;
-		gbc.weighty = 0.5;
+//		gbc.weighty = 0.5;
+		gbc.insets = new java.awt.Insets(4, 4, 4, 4);
 		gbc.fill = java.awt.GridBagConstraints.HORIZONTAL;
 		add(jp1, gbc);
 				
@@ -397,29 +400,8 @@ private void initialize() {
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
 	}
-	// user code begin {2}
-	// user code end
 }
 
-@Deprecated
-private void changeFreeTextAnnotation() {	// kept for historic reasons
-//	try{
-//		if(reactionStep == null) {
-//			return;
-//		}
-//		// set text from annotationTextField in free text annotation for simple reactions in vcMetaData (from model)
-//		if(bioModel.getModel() != null && bioModel.getModel().getVcMetaData() != null){
-//			VCMetaData vcMetaData = bioModel.getModel().getVcMetaData();
-//			String textAreaStr = (annotationTextArea.getText() == null || annotationTextArea.getText().length()==0?null:annotationTextArea.getText());
-//			if(!Compare.isEqualOrNull(vcMetaData.getFreeTextAnnotation(reactionStep),textAreaStr)){
-//				vcMetaData.setFreeTextAnnotation(reactionStep, textAreaStr);	
-//			}
-//		}
-//	} catch(Exception e){
-//		e.printStackTrace(System.out);
-//		PopupGenerator.showErrorDialog(this,"Edit Reaction Error\n"+e.getMessage(), e);
-//	}
-}
 /**
  * main entrypoint - starts the part when it is run as an application
  * @param args java.lang.String[]
@@ -469,7 +451,7 @@ private void setReactionStep(ReactionStep newValue) {
 	}
 	// commit the changes before switch to another reaction step
 	changeName();
-//	changeFreeTextAnnotation();
+	changeSbmlName();
 	
 	reactionStep = newValue;
 	if (newValue != null) {
@@ -752,6 +734,7 @@ private void initKineticChoices() {
 protected void updateInterface() {
 	boolean bNonNullReactionStep = reactionStep != null;
 	nameTextField.setEditable(bNonNullReactionStep);
+	sbmlNameTextField.setEditable(bNonNullReactionStep);
 	getParameterTableModel().setEditable(bNonNullReactionStep);
 	kineticsTypeComboBox.setEnabled(bNonNullReactionStep);
 	BeanUtils.enableComponents(reactionElectricalPropertiesPanel, bNonNullReactionStep);
@@ -767,7 +750,9 @@ protected void updateInterface() {
 		getKineticsTypeComboBox().setSelectedItem(getKineticType(reactionStep.getKinetics()));
 		updateToggleButtonLabel();
 		nameTextField.setText(reactionStep.getName());
-//		annotationTextArea.setText(bioModel.getModel().getVcMetaData().getFreeTextAnnotation(reactionStep));
+		sbmlNameTextField.setText(reactionStep.getSbmlName());
+		sbmlNameTextField.setToolTipText(reactionStep.getSbmlName());
+		sbmlNameTextField.setCaretPosition(0);
 		final boolean reversible = reactionStep.isReversible();
 		if(reactionStep.getKinetics() instanceof HMM_IRRKinetics) {
 			isReversibleCheckBox.setSelected(false);	// the flag says true for MM irreversible
@@ -790,13 +775,31 @@ protected void updateInterface() {
 		}
 	} else {
 		nameTextField.setText(null);
-//		annotationTextArea.setText(null);
+		sbmlNameTextField.setText(null);
+		sbmlNameTextField.setToolTipText(null);
 		electricalPropertiesLabel.setVisible(false);
 		reactionElectricalPropertiesPanel.setVisible(false);
 		isReversibleCheckBox.setSelected(false);
 		isReversibleCheckBox.setEnabled(true);
 	}
 	listLinkedPathwayObjects();
+}
+
+private void changeSbmlName() {
+	if (reactionStep == null) {
+		return;
+	}
+	String newName = sbmlNameTextField.getText();
+	if (newName.equals(reactionStep.getSbmlName())) {
+		return;
+	}
+	try {
+		reactionStep.setSbmlName(newName);
+		sbmlNameTextField.setToolTipText(newName);
+	} catch (PropertyVetoException e) {
+		e.printStackTrace();
+		DialogUtils.showErrorDialog(ReactionPropertiesPanel.this, e.getMessage());
+	}
 }
 
 @Override

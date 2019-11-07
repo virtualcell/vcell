@@ -219,6 +219,9 @@ public Object getValueAt(int row, int col) {
 
 public boolean isCellEditable(int row, int col) {
 	EditableSymbolTableEntry parameter = getValueAt(row);
+	if(parameter == null) {
+		return false;
+	}
 	switch (col) {
 	case COLUMN_PATH:
 		return false;

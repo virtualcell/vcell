@@ -251,7 +251,7 @@ public void setName(String name) throws PropertyVetoException {
 }
 
 
-private static String fixSbmlName(String newString) {
+public static String fixSbmlName(String newString) {
 	if(newString == null || newString.isEmpty()) {
 		return null;
 	}
@@ -295,7 +295,7 @@ public String toString() {
 }
 
 public void vetoableChange(PropertyChangeEvent e) throws PropertyVetoException {
-	if (e.getSource()==this){
+	if (e.getSource()==this) {
 		if (e.getPropertyName().equals("name")){
 			String newName = (String)e.getNewValue();
 			if (newName == null){

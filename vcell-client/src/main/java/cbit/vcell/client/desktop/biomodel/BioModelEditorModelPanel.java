@@ -1074,6 +1074,39 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 				return this;
 			}
 		};
+		DefaultScrollTableCellRenderer reactionNameCellRenderer = new DefaultScrollTableCellRenderer() {
+			@Override
+			public Component getTableCellRendererComponent(JTable table,
+					Object value, boolean isSelected, boolean hasFocus,
+					int row, int column) {
+				super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+				if (table.getModel() instanceof VCellSortTableModel<?>) {
+					Object selectedObject = null;
+					if (table.getModel() == reactionTableModel) {
+						selectedObject = reactionTableModel.getValueAt(row);
+					}
+					setToolTipText(null);
+					if (selectedObject != null) {
+						if(selectedObject instanceof ReactionStep) {
+							ReactionStep rs = (ReactionStep)selectedObject;
+							String sbmlName = rs.getSbmlName();
+							if(sbmlName != null && !sbmlName.isEmpty()) {
+								String text = "<html>";
+								text += sbmlName;
+								text += "</html>";
+								setToolTipText(text);
+							} else {
+								setToolTipText(rs.getDisplayName());
+							}
+						} else if(selectedObject instanceof ReactionRule) {
+							ReactionRule rr = (ReactionRule)selectedObject;
+							setToolTipText(rr.getDisplayName());
+						}
+					}
+				}
+				return this;
+			}
+		};
 		
 		//
 		// this renderer only paints the molecular type small shape in the MolecularType Table
@@ -1307,6 +1340,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 		
 		
 		// TODO: here are the renderers associated with the columns
+		reactionsTable.getColumnModel().getColumn(BioModelEditorReactionTableModel.COLUMN_NAME).setCellRenderer(reactionNameCellRenderer);
 		reactionsTable.getColumnModel().getColumn(BioModelEditorReactionTableModel.COLUMN_LINK).setCellRenderer(linkTableCellRenderer);
 		reactionsTable.getColumnModel().getColumn(BioModelEditorReactionTableModel.COLUMN_EQUATION).setCellRenderer(rbmReactionExpressionCellRenderer);
 		reactionsTable.getColumnModel().getColumn(BioModelEditorReactionTableModel.COLUMN_DEFINITION).setCellRenderer(rbmReactionDefinitionCellRenderer);

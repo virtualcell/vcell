@@ -92,6 +92,7 @@ public abstract class ReactionStep implements ModelProcess, Model.ElectricalTopo
    private Structure structure = null;
    
 	private String fieldName = null;
+	private String sbmlName = null;
 	protected transient java.beans.VetoableChangeSupport vetoPropertyChange;
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 	private Kinetics fieldKinetics = null;
@@ -226,6 +227,9 @@ protected boolean compareEqual0(ReactionStep rs) {
 	if (!getName().equals(rs.getName())){
 		return false;
 	}
+	if (!getSbmlName().equals(rs.getSbmlName())){
+		return false;
+	}
 	
 	if (!getStructure().compareEqual(rs.getStructure())){
 		return false;
@@ -327,12 +331,20 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueList) {
 			}
 		}
 	}
-	
 	if(fieldKinetics instanceof MassActionKinetics) {
 		if(getNumReactants() == 0) {
 			String msg = "With Mass Action kinetics this reaction will be interpreted as a degradation of the product.";
 			String tool = "Use General Kinetics if you want the product to be generated. As is now this reaction is interpreted as a degradation.";
 			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, tool, Issue.Severity.WARNING));
+		}
+	}
+	if(sbmlName == null) {
+		String message = "SbmlName is null.";
+		issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, message, Issue.Severity.INFO));
+	} else {
+		if(sbmlName.isEmpty()) {
+			String message = "SbmlName cannot be an empty string.";
+			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, message, Issue.Severity.ERROR));
 		}
 	}
 }
@@ -461,6 +473,9 @@ public SymbolTableEntry getLocalEntry(String identifier) {
  */
 public String getName() {
 	return fieldName;
+}
+public String getSbmlName() {
+	return sbmlName;
 }
 /**
  * Insert the method's description here.
@@ -906,6 +921,14 @@ public void setName(String name) throws java.beans.PropertyVetoException {
 	fieldName = name;
 	firePropertyChange("name", oldValue, name);
 }
+public void setSbmlName(String newString) throws PropertyVetoException {
+	String oldValue = this.sbmlName;
+	String newValue = SpeciesContext.fixSbmlName(newString);
+	
+	fireVetoableChange("sbmlName", oldValue, newValue);
+	this.sbmlName = newValue;
+	firePropertyChange("sbmlName", oldValue, newValue);
+}
 /**
  * Sets the physicsOptions property (int) value.
  * @param physicsOptions The new value for the property.
@@ -1023,6 +1046,12 @@ public void vetoableChange(PropertyChangeEvent e) throws PropertyVetoException {
 			}
 		}
 	}
+ 	if(e.getSource()==this && e.getPropertyName().equals("sbmlName")) {
+ 		String newName = (String)e.getNewValue();
+ 		if(newName == null) {
+ 			return;
+ 		}
+ 	}
 }
 /**
  * This method was created by a SmartGuide.

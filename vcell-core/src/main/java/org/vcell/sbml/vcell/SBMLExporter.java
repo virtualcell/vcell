@@ -558,7 +558,12 @@ protected void addReactions() throws SbmlException, XMLStreamException {
 		String rxnName = vcReactionStep.getName();
 		org.sbml.jsbml.Reaction sbmlReaction = sbmlModel.createReaction();
 		sbmlReaction.setId(org.vcell.util.TokenMangler.mangleToSName(rxnName));
+		
 		sbmlReaction.setName(rxnName);
+		String rxnSbmlName = vcReactionStep.getSbmlName();
+		if(rxnSbmlName != null && !rxnSbmlName.isEmpty()) {
+			sbmlReaction.setName(rxnSbmlName);
+		}
 			
 		// If the reactionStep is a flux reaction, add the details to the annotation (structure, carrier valence, flux carrier, fluxOption, etc.)
 		// If reactionStep is a simple reaction, add annotation to indicate the structure of reaction.

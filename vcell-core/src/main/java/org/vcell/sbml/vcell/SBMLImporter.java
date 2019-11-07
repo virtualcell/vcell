@@ -3418,11 +3418,12 @@ public class SBMLImporter {
 		try {
 			for (Reaction sbmlRxn: reactions) {
 				ReactionStep vcReaction = null;
-				String rxnName = sbmlRxn.getId();
-				if(isRestrictedXYZT(rxnName)) {		// simply rename any x,y,z reaction if non-spatial model
-					rxnName = "r_" + rxnName;
-					vcToSbmlNameMap.put(rxnName, sbmlRxn.getId());
-					sbmlToVcNameMap.put(sbmlRxn.getId(), rxnName);
+				String rxnSbmlId = sbmlRxn.getId();
+				String rxnSbmlName = sbmlRxn.getName();
+				if(isRestrictedXYZT(rxnSbmlId)) {		// simply rename any x,y,z reaction if non-spatial model
+					rxnSbmlId = "r_" + rxnSbmlId;
+					vcToSbmlNameMap.put(rxnSbmlId, sbmlRxn.getId());
+					sbmlToVcNameMap.put(sbmlRxn.getId(), rxnSbmlId);
 				}
 				
 				boolean bReversible = true;
@@ -3447,7 +3448,7 @@ public class SBMLImporter {
 								throw new SBMLImportException("Appears that the flux reaction is occuring on " 
 										+ ci.actualName() + ", not a membrane.");
 							}
-							vcReaction = new FluxReaction(vcModel, ci.get(), null, rxnName, bReversible);
+							vcReaction = new FluxReaction(vcModel, ci.get(), null, rxnSbmlId, bReversible);
 							vcReaction.setModel(vcModel);
 							// Set the fluxOption on the flux reaction based on
 							// whether it is molecular, molecular & electrical,
@@ -3461,7 +3462,7 @@ public class SBMLImporter {
 								((FluxReaction) vcReaction).setPhysicsOptions(ReactionStep.PHYSICS_ELECTRICAL_ONLY);
 							} else {
 								localIssueList.add(new Issue(vcReaction, issueContext, IssueCategory.SBMLImport_Reaction,
-										"Unknown FluxOption : " + fluxOptionStr + " for SBML reaction : " + rxnName, Issue.SEVERITY_WARNING));
+										"Unknown FluxOption : " + fluxOptionStr + " for SBML reaction : " + rxnSbmlId, Issue.SEVERITY_WARNING));
 								// logger.sendMessage(VCLogger.Priority.MediumPriority,
 								// VCLogger.ErrorType.ReactionError,
 								// "Unknown FluxOption : " + fluxOptionStr +
@@ -3470,28 +3471,31 @@ public class SBMLImporter {
 						} else if (embeddedRxnElement.getName().equals(XMLTags.SimpleReactionTag)) {
 							// if embedded element is a simple reaction, set
 							// simple reaction's structure from element attributes
-							vcReaction = new SimpleReaction(vcModel, reactionStructure, rxnName, bReversible);
+							vcReaction = new SimpleReaction(vcModel, reactionStructure, rxnSbmlId, bReversible);
 						}
 					} else {
-						vcReaction = new SimpleReaction(vcModel, reactionStructure, rxnName, bReversible);
+						vcReaction = new SimpleReaction(vcModel, reactionStructure, rxnSbmlId, bReversible);
 					}
 				} else {
-					vcReaction = new SimpleReaction(vcModel, reactionStructure, rxnName, bReversible);
+					vcReaction = new SimpleReaction(vcModel, reactionStructure, rxnSbmlId, bReversible);
 				}
-
+				
+				if(rxnSbmlName != null && !rxnSbmlName.isEmpty()) {
+					vcReaction.setSbmlName(rxnSbmlName);
+				}
 				// set annotations and notes on vcReactions[i]
 				sbmlAnnotationUtil.readAnnotation(vcReaction, sbmlRxn);
 				sbmlAnnotationUtil.readNotes(vcReaction, sbmlRxn);
 				// record reaction name in annotation if it is greater than 64
 				// characters. Choosing 64, since that is (as of 12/2/08)
 				// the limit on the reactionName length.
-				if (rxnName.length() > 64) {
+				if (rxnSbmlId.length() > 64) {
 					String freeTextAnnotation = metaData.getFreeTextAnnotation(vcReaction);
 					if (freeTextAnnotation == null) {
 						freeTextAnnotation = "";
 					}
 					StringBuffer oldRxnAnnotation = new StringBuffer(freeTextAnnotation);
-					oldRxnAnnotation.append("\n\n" + rxnName);
+					oldRxnAnnotation.append("\n\n" + rxnSbmlId);
 					metaData.setFreeTextAnnotation(vcReaction, oldRxnAnnotation.toString());
 				}
 
@@ -3692,7 +3696,6 @@ public class SBMLImporter {
 			e1.printStackTrace(System.out);
 			throw new SBMLImportException(e1.getMessage(), e1);
 		}
-
 	}
 
 	public static cbit.vcell.geometry.CSGNode getVCellCSGNode(org.sbml.jsbml.ext.spatial.CSGNode sbmlCSGNode) {
