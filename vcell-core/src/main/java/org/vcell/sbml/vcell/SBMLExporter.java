@@ -444,6 +444,10 @@ protected void addParameters() throws ExpressionException, SbmlException {
 	for (ModelParameter vcParam : vcGlobalParams) {
 		org.sbml.jsbml.Parameter sbmlParam = sbmlModel.createParameter();
 		sbmlParam.setId(vcParam.getName());
+		String sbmlName = vcParam.getSbmlName();
+		if(sbmlName != null && !sbmlName.isEmpty()) {
+			sbmlParam.setName(sbmlName);
+		}
 		sbmlParam.setConstant(vcParam.isConstant());
 		
 		Expression paramExpr = new Expression(vcParam.getExpression());
