@@ -1547,6 +1547,7 @@ public Element getXML(SimulationContext param, BioModel bioModel) throws XmlPars
 			setBooleanAttribute(simulationcontext, XMLTags.RandomizeInitConditionTag,param.isRandomizeInitCondition());
 		}
 	}
+	setBooleanAttribute(simulationcontext,XMLTags.MassConservationModelReductionTag, param.isUsingMassConservationModelReduction());
 	setBooleanAttribute(simulationcontext,XMLTags.InsufficientIterationsTag,param.isInsufficientIterations());
 	setBooleanAttribute(simulationcontext,XMLTags.InsufficientMaxMoleculesTag,param.isInsufficientMaxMolecules());
 	NetworkConstraints constraints = param.getNetworkConstraints();

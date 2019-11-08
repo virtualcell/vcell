@@ -592,6 +592,7 @@ public class XMLTags {
 //	public static final String RoleVariableRateTag  = "variable rate";	
 	
 	// for database storage of simContext (application) related components
+	public final static String MassConservationModelReductionTag = "MassConservationModelReduction";
 	public final static String ApplicationComponents = "AppComponents";
 	public static final String ApplicationSpecificFlagsTag = "ApplicationSpecificFlags";
 	

@@ -852,7 +852,10 @@ public boolean compareEqual(Matchable object) {
 	{
 		return false;
 	}
-	 
+	if(simContext.bMassConservationModelReduction != bMassConservationModelReduction) {
+		return false;
+	}
+
 	if (!Compare.isEqual(getName(),simContext.getName())){
 		return false;
 	}

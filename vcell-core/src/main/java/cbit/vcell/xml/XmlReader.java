@@ -5998,6 +5998,7 @@ private SimulationContext getSimulationContext(Element param, BioModel biomodel)
 	boolean bRandomizeInitCondition = false;
 	boolean bInsufficientIterations = false;
 	boolean bInsufficientMaxMolecules = false;
+	boolean bMassConservationModelReduction = true;		// default is true for now
 	
 	NetworkConstraints nc = null;
 	Element ncElement = param.getChild(XMLTags.RbmNetworkConstraintsTag, vcNamespace);
@@ -6023,6 +6024,9 @@ private SimulationContext getSimulationContext(Element param, BioModel biomodel)
 		if((param.getAttributeValue(XMLTags.RandomizeInitConditionTag)!= null) && (param.getAttributeValue(XMLTags.RandomizeInitConditionTag).equals("true"))) {
 			bRandomizeInitCondition = true;
 		}
+	}
+	if((param.getAttributeValue(XMLTags.MassConservationModelReductionTag)!= null) && (param.getAttributeValue(XMLTags.MassConservationModelReductionTag).equals("false"))) {
+		bMassConservationModelReduction = false;
 	}
 	if((param.getAttributeValue(XMLTags.InsufficientIterationsTag)!= null) && (param.getAttributeValue(XMLTags.InsufficientIterationsTag).equals("true"))) {
 		bInsufficientIterations = true;
@@ -6123,7 +6127,8 @@ private SimulationContext getSimulationContext(Element param, BioModel biomodel)
 		}
 		//set if using concentration
 		newsimcontext.setUsingConcentration(bUseConcentration);
-		
+		// set mass conservation model reduction flag
+		newsimcontext.setUsingMassConservationModelReduction(bMassConservationModelReduction);
 		// set if randomizing init condition or not (for stochastic applications
 		if (bStoch) {
 			newsimcontext.setRandomizeInitConditions(bRandomizeInitCondition);
