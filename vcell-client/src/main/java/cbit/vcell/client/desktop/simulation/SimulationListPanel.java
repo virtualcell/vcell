@@ -10,8 +10,12 @@
 
 package cbit.vcell.client.desktop.simulation;
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.beans.PropertyVetoException;
@@ -28,7 +32,10 @@ import javax.swing.Box;
 import javax.swing.DefaultCellEditor;
 import javax.swing.Icon;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.JTable;
 import javax.swing.JTextField;
@@ -107,6 +114,9 @@ public class SimulationListPanel extends DocumentEditorSubPanel {
 	private JButton moreActionsButton = null;
 	private JButton stopButton;
 	private JButton statusDetailsButton;
+	
+	private JPanel massConservationModelReductionPanel = null;
+	private JCheckBox massConservationModelReductionCheckBox = null;
 
 	private class IvjEventHandler implements java.awt.event.ActionListener,
 		java.beans.PropertyChangeListener, javax.swing.event.ListSelectionListener, MouseListener {
@@ -135,6 +145,11 @@ public class SimulationListPanel extends DocumentEditorSubPanel {
 //				quickRun(ViewerType.PythonViewer_only);
 			} else if (e.getSource() == quickNativeRunButton) {
 				quickRun(ViewerType.NativeViewer_only);
+			} else if(e.getSource() == getMassConservationModelReductionCheckBox()) {
+				if (fieldSimulationWorkspace != null && fieldSimulationWorkspace.getSimulationOwner() instanceof SimulationContext) {
+					SimulationContext simulationContext = (SimulationContext)fieldSimulationWorkspace.getSimulationOwner();
+					simulationContext.setUsingMassConservationModelReduction(getMassConservationModelReductionCheckBox().isSelected());
+				}
 			}
 		};
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
@@ -304,7 +319,14 @@ private javax.swing.JToolBar getToolBar() {
 			toolBar.add(copyButton);
 			toolBar.add(getEditButton());
 			toolBar.add(getDeleteButton());
+			toolBar.addSeparator();
+
+			toolBar.add(getMassConservationModelReductionPanel());
+//			toolBar.add(getMassConservationModelReductionCheckBox());
+			
 			toolBar.add(Box.createHorizontalGlue());
+
+			
 			toolBar.add(getRunButton());
 			toolBar.add(stopButton);
 //			toolBar.add(getPythonResultsButton());
@@ -333,6 +355,51 @@ private javax.swing.JToolBar getToolBar() {
 		}
 	}
 	return toolBar;
+}
+
+private JCheckBox getMassConservationModelReductionCheckBox() {
+	if(massConservationModelReductionCheckBox == null) {
+		massConservationModelReductionCheckBox = new JCheckBox("Mass Conservation Model Reduction");
+//		massConservationModelReductionCheckbox.addItemListener(ivjEventHandler);
+		massConservationModelReductionCheckBox.setSelected(true);
+	}
+	return massConservationModelReductionCheckBox;
+}
+
+private JPanel getMassConservationModelReductionPanel() {
+	if(massConservationModelReductionPanel == null) {
+		massConservationModelReductionPanel = new JPanel();
+		massConservationModelReductionPanel.setName("speciesOptionsPanel");
+		massConservationModelReductionPanel.setLayout(new GridBagLayout());
+		massConservationModelReductionPanel.setSize(60, ReactionCartoonEditorPanel.TOOL_BAR_BUTTON_SIZE.height);
+//		massConservationModelReductionPanel.setBackground(Color.yellow);
+		
+		int gridx = 0;
+		int gridy = 0;
+		GridBagConstraints gbc = new GridBagConstraints();
+		gbc.gridx = gridx;
+		gbc.gridy = gridy;
+		gbc.weightx = 1;
+		gbc.fill = GridBagConstraints.HORIZONTAL;
+		massConservationModelReductionPanel.add(new JLabel(""), gbc);
+
+		gridx++;
+		gbc = new GridBagConstraints();
+		gbc.gridx = gridx;
+		gbc.gridy = gridy;
+		gbc.insets = new Insets(0, 4, 0, 0);
+		gbc.weightx = 0;
+		massConservationModelReductionPanel.add(getMassConservationModelReductionCheckBox(), gbc);
+		
+		gridx++;
+		gbc = new GridBagConstraints();
+		gbc.gridx = gridx;
+		gbc.gridy = gridy;
+		gbc.weightx = 1;
+		gbc.fill = GridBagConstraints.HORIZONTAL;
+		massConservationModelReductionPanel.add(new JLabel(""), gbc);
+	}
+	return massConservationModelReductionPanel;
 }
 
 /**
@@ -591,6 +658,8 @@ private void initConnections() throws java.lang.Exception {
 	getEditButton().addActionListener(ivjEventHandler);
 	getDeleteButton().addActionListener(ivjEventHandler);
 	getRunButton().addActionListener(ivjEventHandler);
+	getMassConservationModelReductionCheckBox().addActionListener(ivjEventHandler);
+
 //	getPythonResultsButton().addActionListener(ivjEventHandler);
 	getNativeResultsButton().addActionListener(ivjEventHandler);
 	getMoreActionsButton().addActionListener(ivjEventHandler);
@@ -866,6 +935,14 @@ private void refreshButtonsLax() {
 	copyButton.setEnabled(bCopy);
 	getEditButton().setEnabled(bEditable);
 	getDeleteButton().setEnabled(bDeletable);
+	if(fieldSimulationWorkspace != null && fieldSimulationWorkspace.getSimulationOwner() instanceof SimulationContext) {
+		SimulationContext simulationContext = (SimulationContext)fieldSimulationWorkspace.getSimulationOwner();
+		getMassConservationModelReductionCheckBox().setEnabled(true);
+		getMassConservationModelReductionCheckBox().setSelected(simulationContext.isUsingMassConservationModelReduction());
+	} else {
+		getMassConservationModelReductionCheckBox().setEnabled(false);
+	}
+	
 	getRunButton().setEnabled(bRunnable);
 	stopButton.setEnabled(bStoppable);
 	if(selections != null && selections.length == 1) {

@@ -2581,6 +2581,9 @@ public boolean isUsingConcentration() {
 public boolean isUsingMassConservationModelReduction() {
 	return bMassConservationModelReduction;
 }
+public void setUsingMassConservationModelReduction(boolean bMassConservationModelReduction) {
+	this.bMassConservationModelReduction = bMassConservationModelReduction;
+}
 
 public void setUsingConcentration(boolean bUseConcentration) /*throws MappingException, PropertyVetoException*/ {
 	if(applicationType == Application.NETWORK_STOCHASTIC || applicationType == Application.RULE_BASED_STOCHASTIC)
