@@ -4326,7 +4326,7 @@ private Element getXML(ReactionStep param) throws XmlParseException {
 	} else if (param instanceof SimpleReaction) {
 		rsElement = getXML((SimpleReaction)param);
 	}
-	if(param.getSbmlName() != null && !param.getSbmlName().isEmpty()) {
+	if(rsElement != null && param.getSbmlName() != null && !param.getSbmlName().isEmpty()) {
 		rsElement.setAttribute(XMLTags.SbmlNameAttrTag, mangle(param.getSbmlName()));	
 	}
 	return rsElement;

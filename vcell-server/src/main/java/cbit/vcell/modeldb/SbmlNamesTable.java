@@ -63,7 +63,7 @@ public static void updateInsertNameSQL(Connection con,KeyValue updateThisReferen
 	if(newSbmlName != null && !newSbmlName.isEmpty()) {
 		String sql = 
 				"MERGE INTO "+SbmlNamesTable.TABLE_NAME+" d"+
-				" USING (SELECT "+updateThisReference.toString()+" "+forSbmlNameColumn.getUnqualifiedColName()+", '"+newSbmlName+"' "+SbmlNamesTable.table.name.getUnqualifiedColName()+" from dual) s"+
+				" USING (SELECT "+updateThisReference.toString()+" "+forSbmlNameColumn.getUnqualifiedColName()+", '"+TokenMangler.getSQLEscapedString(newSbmlName, 255)+"' "+SbmlNamesTable.table.name.getUnqualifiedColName()+" from dual) s"+
 				" ON (d."+forSbmlNameColumn.getUnqualifiedColName()+" is not null and d."+forSbmlNameColumn.getUnqualifiedColName()+" = s."+forSbmlNameColumn.getUnqualifiedColName()+")"+
 				" WHEN MATCHED THEN UPDATE SET d."+SbmlNamesTable.table.name.getUnqualifiedColName()+" = s."+SbmlNamesTable.table.name.getUnqualifiedColName()+""+
 				" WHEN NOT MATCHED THEN INSERT ("+SbmlNamesTable.table.id.getUnqualifiedColName()+", "+SbmlNamesTable.table.name.getUnqualifiedColName()+","+forSbmlNameColumn.getUnqualifiedColName()+")"+
@@ -82,7 +82,7 @@ public static void updateSbmlName(Connection con,Object obj,KeyValue key) throws
 			if(rset.next()) {
 				String sbmlName = rset.getString(SbmlNamesTable.table.name.getUnqualifiedColName());
 				if(!rset.wasNull()) {
-					((ReactionStep)obj).setSbmlName(sbmlName);
+					((ReactionStep)obj).setSbmlName(TokenMangler.getSQLRestoredString(sbmlName));
 				}
 			}
 		}
