@@ -891,7 +891,9 @@ public class Model implements Versionable, Matchable, PropertyChangeListener, Ve
 			if (fieldParameterRole != mp.fieldParameterRole){
 				return false;
 			}
-			
+			if (!Compare.isEqualOrNull(getSbmlName(),mp.getSbmlName())) {
+				return false;
+			}
 			return true;
 		}
 

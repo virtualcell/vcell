@@ -6775,12 +6775,11 @@ public ModelParameter[] getModelParams(Element globalParams, Model model) throws
 		org.jdom.Element paramElement = (Element) globalsIterator.next();
 		modelParamsVector.add(getModelParameter(paramElement, model));
 	}
-	
 	return ((ModelParameter[])BeanUtils.getArray(modelParamsVector, ModelParameter.class));
 }
 
 
-public ModelParameter getModelParameter(Element paramElement, Model model) {
+public ModelParameter getModelParameter(Element paramElement, Model model) throws XmlParseException {
 	//get its attributes : name, role and unit definition
 	String glParamName = unMangle( paramElement.getAttributeValue(XMLTags.NameAttrTag) );
 	String role = paramElement.getAttributeValue(XMLTags.ParamRoleAttrTag);
@@ -6815,10 +6814,20 @@ public ModelParameter getModelParameter(Element paramElement, Model model) {
 	}
 	
 	//create new global parameter
-	ModelParameter newGlParam = model.new ModelParameter(glParamName, glParamExp, glParamRole, glParamUnit);
-	newGlParam.setModelParameterAnnotation(glParamAnnotation);
-
-	return newGlParam;
+	try {
+		ModelParameter newGlParam = model.new ModelParameter(glParamName, glParamExp, glParamRole, glParamUnit);
+		if(paramElement.getAttributeValue(XMLTags.SbmlNameAttrTag) != null) {
+			String sbmlName = unMangle(paramElement.getAttributeValue(XMLTags.SbmlNameAttrTag));
+			if(sbmlName != null && !sbmlName.isEmpty()) {
+				newGlParam.setSbmlName(sbmlName);
+			}
+		}
+		newGlParam.setModelParameterAnnotation(glParamAnnotation);
+		return newGlParam;
+	} catch (java.beans.PropertyVetoException e) {
+		e.printStackTrace();
+		throw new XmlParseException("An error occurred while trying to create the ModelParameter " + glParamName, e);
+	}
 }
 
 public SimulationContextParameter[] getSimulationContextParams(Element appParams, SimulationContext simContext) throws XmlParseException {

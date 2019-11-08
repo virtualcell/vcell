@@ -3789,6 +3789,10 @@ private Element getXML(ModelParameter modelParam) {
 	if (unit != null) {
 		glParamElement.setAttribute(XMLTags.VCUnitDefinitionAttrTag, unit.getSymbol());
 	}
+	// add SBML Name, if exists
+	if(modelParam.getSbmlName() != null && !modelParam.getSbmlName().isEmpty()) {
+		glParamElement.setAttribute(XMLTags.SbmlNameAttrTag, mangle(modelParam.getSbmlName()));	
+	}
 	// add expression as content
 	glParamElement.addContent(mangleExpression(modelParam.getExpression()) );
 	//add annotation (if there is any)
@@ -4428,7 +4432,7 @@ private Element getXML(SpeciesContext param) {
 	Element speciecontext = new Element( XMLTags.SpeciesContextTag);
 	//Add atributes
 	speciecontext.setAttribute(XMLTags.NameAttrTag, mangle(param.getName()));
-	if(param.getSbmlName() != null) {
+	if(param.getSbmlName() != null && !param.getSbmlName().isEmpty()) {
 		speciecontext.setAttribute(XMLTags.SbmlNameAttrTag, mangle(param.getSbmlName()));
 	}
 	speciecontext.setAttribute(XMLTags.SpeciesRefAttrTag, mangle(param.getSpecies().getCommonName()));
