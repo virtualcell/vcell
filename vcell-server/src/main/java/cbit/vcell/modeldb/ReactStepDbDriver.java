@@ -316,6 +316,7 @@ private ReactionStep getReactionStep(QueryHashtable dbc, Connection con, ResultS
 
 	dbc.put(rsKey,rs);
 	
+	SbmlNamesTable.updateSbmlName(con, rs, rsKey);
 //	MIRIAMTable.table.setMIRIAMAnnotation(con, rs, rs.getKey());
 	return rs;
 }
@@ -907,7 +908,7 @@ private void insertReactionStepSQL(Connection con, KeyValue modelKey, KeyValue s
 						ReactStepTable.table.kineticsLarge,
 						ReactStepTable.table.kineticsSmall,
 						dbSyntax);
-	
+	SbmlNamesTable.updateInsertNameSQL(con, newKey, SbmlNamesTable.table.reactstepref, reactionStep.getSbmlName());
 //	MIRIAMTable.table.insertMIRIAM(con,reactionStep,newKey);
 }
 

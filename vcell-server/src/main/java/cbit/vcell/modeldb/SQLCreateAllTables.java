@@ -311,6 +311,7 @@ public static Table[] getVCellTables() {
 		cbit.vcell.modeldb.MathVerifier.LoadModelsStatTable.table, // new
 		cbit.vcell.modeldb.UserLoginInfoTable.table, // new
 		cbit.vcell.modeldb.VCMetaDataTable.table, // new
+		cbit.vcell.modeldb.SbmlNamesTable.table, // new
 		};
 	return tables;
 }

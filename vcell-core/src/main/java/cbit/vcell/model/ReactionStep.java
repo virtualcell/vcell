@@ -227,7 +227,7 @@ protected boolean compareEqual0(ReactionStep rs) {
 	if (!getName().equals(rs.getName())){
 		return false;
 	}
-	if (!getSbmlName().equals(rs.getSbmlName())){
+	if (!Compare.isEqualOrNull(getSbmlName(), rs.getSbmlName())){
 		return false;
 	}
 	

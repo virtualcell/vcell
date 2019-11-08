@@ -1780,6 +1780,10 @@ private FluxReaction getFluxReaction( Element param, Model model) throws XmlPars
 	try {
 		fluxreaction = new FluxReaction(model, structureref, key, name, bReversible);
 		fluxreaction.setModel(model);
+        if(param.getAttributeValue(XMLTags.SbmlNameAttrTag) != null) {
+        	fluxreaction.setSbmlName(unMangle(param.getAttributeValue(XMLTags.SbmlNameAttrTag)));
+        }
+
 	} catch (Exception e) {
 		e.printStackTrace();
 		throw new XmlParseException( "An exception occurred while trying to create the FluxReaction " + name, e);
@@ -5762,6 +5766,9 @@ private SimpleReaction getSimpleReaction(Element param, Model model) throws XmlP
     
     try {
         simplereaction = new SimpleReaction(model, structureref, key, name, bReversible);
+        if(param.getAttributeValue(XMLTags.SbmlNameAttrTag) != null) {
+        	simplereaction.setSbmlName(unMangle(param.getAttributeValue(XMLTags.SbmlNameAttrTag)));
+        }
     } catch (java.beans.PropertyVetoException e) {
         e.printStackTrace();
         throw new XmlParseException("An error occurred while trying to create the simpleReaction " + name, e);
