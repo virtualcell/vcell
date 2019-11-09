@@ -156,6 +156,7 @@ public class SimulationListPanel extends DocumentEditorSubPanel {
 			if (evt.getSource() == fieldSimulationWorkspace && evt.getPropertyName().equals(SimulationWorkspace.PROPERTY_NAME_SIMULATION_STATUS)) {
 				refreshButtonsLax();
 			}
+			massConservationButtonAdjust();
 		};
 		public void valueChanged(javax.swing.event.ListSelectionEvent e) {
 			if (e.getValueIsAdjusting()) {
@@ -935,13 +936,7 @@ private void refreshButtonsLax() {
 	copyButton.setEnabled(bCopy);
 	getEditButton().setEnabled(bEditable);
 	getDeleteButton().setEnabled(bDeletable);
-	if(fieldSimulationWorkspace != null && fieldSimulationWorkspace.getSimulationOwner() instanceof SimulationContext) {
-		SimulationContext simulationContext = (SimulationContext)fieldSimulationWorkspace.getSimulationOwner();
-		getMassConservationModelReductionCheckBox().setEnabled(true);
-		getMassConservationModelReductionCheckBox().setSelected(simulationContext.isUsingMassConservationModelReduction());
-	} else {
-		getMassConservationModelReductionCheckBox().setEnabled(false);
-	}
+	massConservationButtonAdjust();
 	
 	getRunButton().setEnabled(bRunnable);
 	stopButton.setEnabled(bStoppable);
@@ -960,6 +955,16 @@ private void refreshButtonsLax() {
 //	particleViewButton.setEnabled(bParticleView);
 //	quickPythonRunButton.setEnabled(bQuickRun);
 	quickNativeRunButton.setEnabled(bQuickRun);
+}
+
+private void massConservationButtonAdjust() {
+	if(fieldSimulationWorkspace != null && fieldSimulationWorkspace.getSimulationOwner() instanceof SimulationContext) {
+		SimulationContext simulationContext = (SimulationContext)fieldSimulationWorkspace.getSimulationOwner();
+		getMassConservationModelReductionCheckBox().setEnabled(true);
+		getMassConservationModelReductionCheckBox().setSelected(simulationContext.isUsingMassConservationModelReduction());
+	} else {
+		getMassConservationModelReductionCheckBox().setEnabled(false);
+	}
 }
 
 

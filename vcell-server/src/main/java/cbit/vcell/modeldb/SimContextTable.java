@@ -263,6 +263,11 @@ public static String getAppComponentsForDatabase(SimulationContext simContext) {
 	} else {
 		appComponentsElement.setAttribute(XMLTags.InsufficientMaxMoleculesTag, "false");
 	}
+	if(simContext.isUsingMassConservationModelReduction()) {
+		appComponentsElement.setAttribute(XMLTags.MassConservationModelReductionTag, "true");
+	} else {
+		appComponentsElement.setAttribute(XMLTags.MassConservationModelReductionTag, "false");
+	}
 		
 	Xmlproducer xmlProducer = new Xmlproducer(false);
 	
@@ -414,6 +419,11 @@ public void readAppComponents(Connection con, SimulationContext simContext, Data
 				simContext.setInsufficientMaxMolecules(true);
 			} else {
 				simContext.setInsufficientMaxMolecules(false);
+			}
+			if((appComponentsElement.getAttributeValue(XMLTags.MassConservationModelReductionTag)!= null) && (appComponentsElement.getAttributeValue(XMLTags.MassConservationModelReductionTag).equals("true"))) {
+				simContext.setUsingMassConservationModelReduction(true);
+			} else {
+				simContext.setUsingMassConservationModelReduction(false);
 			}
 
 			XmlReader xmlReader = new XmlReader(false);
