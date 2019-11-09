@@ -842,7 +842,7 @@ public class Model implements Versionable, Matchable, PropertyChangeListener, Ve
 		return functionArgTypes;
 	}
 	
-	public class ModelParameter extends Parameter implements ExpressionContainer, IssueSource, Displayable {
+	public class ModelParameter extends Parameter implements ExpressionContainer, IssueSource, Displayable,VCellSbmlName {
 		
 		private String fieldParameterName = null;
 		private String sbmlName = null;

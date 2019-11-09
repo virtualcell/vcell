@@ -54,7 +54,7 @@ import cbit.vcell.units.VCUnitDefinition;
 
 @SuppressWarnings("serial")
 public class SpeciesContext implements Cacheable, Matchable, EditableSymbolTableEntry, VetoableChangeListener, BioModelEntityObject,
-	IssueSource, Displayable
+	IssueSource, Displayable,VCellSbmlName
 {
 	private KeyValue key = null;
 

@@ -9,6 +9,8 @@
  */
 
 package cbit.vcell.modeldb;
+import java.beans.PropertyVetoException;
+
 import org.vcell.db.DatabaseSyntax;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.TokenMangler;
@@ -53,8 +55,9 @@ public class ReactStepTable extends cbit.sql.Table {
 	public final Field kineticsLarge		= new Field("kineticsLRG",	SQLDataType.clob_text,		"");
 	public final Field kineticsSmall		= new Field("kineticsSML",	SQLDataType.varchar2_4000,	"");
 	public final Field annotation			= new Field("annotation",	SQLDataType.varchar2_4000,	"");
+	public final Field sbmlname	 			= new Field("sbmlname",		SQLDataType.varchar2_255,	"");
 
-	private final Field fields[] = {reactType,modelRef,structRef,kinetics,name,chargeValence,physicsOptions,kineticsLarge,kineticsSmall,annotation};
+	private final Field fields[] = {reactType,modelRef,structRef,kinetics,name,chargeValence,physicsOptions,kineticsLarge,kineticsSmall,annotation,sbmlname};
 	
 	public static final ReactStepTable table = new ReactStepTable();
 
@@ -202,6 +205,18 @@ public ReactionStep getReactionStep(Structure structure, Model model, KeyValue r
 //		annot = TokenMangler.getSQLRestoredString(annot);
 //		rs.setAnnotation(annot);
 	}
+	
+	String sbmlName = rset.getString(ReactStepTable.table.sbmlname.toString());
+	if (!rset.wasNull() && sbmlName != null && sbmlName.length()>0){
+		sbmlName = TokenMangler.getSQLRestoredString(sbmlName);
+		try {
+			rs.setSbmlName(sbmlName);
+		} catch (PropertyVetoException e) {
+			e.printStackTrace();
+			throw new DataAccessException(e.getMessage(), e);
+		}
+	}
+
 	return rs;
 }
 
@@ -575,7 +590,12 @@ public String getSQLValueList(ReactionStep reactionStep, KeyValue modelKey, KeyV
 			buffer.append(DbDriver.INSERT_CLOB_HERE+","+"null"+",");
 		}
 	
-		buffer.append("NULL");
+		buffer.append("NULL,");
+		if(reactionStep.getSbmlName() != null && reactionStep.getSbmlName().length()>0){
+			buffer.append("'"+TokenMangler.getSQLEscapedString(reactionStep.getSbmlName())+"'");
+		}else {
+			buffer.append("NULL");
+		}
 		buffer.append(")");
 		
 		return buffer.toString();

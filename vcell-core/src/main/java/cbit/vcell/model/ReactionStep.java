@@ -61,7 +61,7 @@ import cbit.vcell.parser.SymbolTableFunctionEntry;
 @SuppressWarnings("serial")
 public abstract class ReactionStep implements ModelProcess, Model.ElectricalTopologyListener,
 		Cacheable, Serializable, ScopedSymbolTable, Matchable, VetoableChangeListener, PropertyChangeListener, Identifiable, 
-		IssueSource, Displayable
+		IssueSource, Displayable,VCellSbmlName
 {
 
 	public static final String PROPERTY_NAME_REACTION_PARTICIPANTS = "reactionParticipants";
