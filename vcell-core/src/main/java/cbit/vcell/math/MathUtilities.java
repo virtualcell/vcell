@@ -126,14 +126,19 @@ private static Enumeration<Variable> getRequiredVariablesExplicit(Expression exp
 	}	
 	return requiredVarList.elements();
 }
+
+public static Expression substituteFunctions(Expression exp, SymbolTable symbolTable) throws ExpressionException {
+	return substituteFunctions(exp, symbolTable, false);
+}
 /**
  * This method was created in VisualAge.
  * @return cbit.vcell.parser.Expression
  * @param exp cbit.vcell.parser.Expression
  * @exception java.lang.Exception The exception description.
  */
-public static Expression substituteFunctions(Expression exp, SymbolTable symbolTable) throws ExpressionException {
+public static Expression substituteFunctions(Expression exp, SymbolTable symbolTable,boolean bFlattenAgressive) throws ExpressionException {
 	Expression exp2 = new Expression(exp);
+
 	//
 	// do until no more functions to substitute
 	//
@@ -148,6 +153,10 @@ public static Expression substituteFunctions(Expression exp, SymbolTable symbolT
 		if (lg.isDebugEnabled()) {
 			lg.debug("substituteFunctions() exp2 = '"+exp2+"'");
 		}
+		if(bFlattenAgressive) {
+			exp2 = exp2.flatten();		
+		}
+
 		Enumeration<Variable> enum1 = getRequiredVariablesExplicit(exp2, symbolTable);
 		Vector<Variable> functionList = new Vector<Variable>();
 		while (enum1.hasMoreElements()){
@@ -180,7 +189,6 @@ public static Expression substituteFunctions(Expression exp, SymbolTable symbolT
 			}
 		}
 	}
-//	exp2 = exp2.flatten();
 	exp2.bindExpression(symbolTable);
 	return exp2;
 }

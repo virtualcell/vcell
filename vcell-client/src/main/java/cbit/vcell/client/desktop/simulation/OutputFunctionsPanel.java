@@ -75,6 +75,7 @@ import cbit.vcell.math.Variable;
 import cbit.vcell.math.Variable.Domain;
 import cbit.vcell.math.VariableType;
 import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.solver.AnnotatedFunction;
@@ -609,7 +610,13 @@ public class OutputFunctionsPanel extends DocumentEditorSubPanel {
 		
 		// here use math description as symbol table because we allow 
 		// new expression itself to be function of constant.
-		expr = MathUtilities.substituteFunctions(expr, outputFunctionContext).flatten();
+		try {
+			expr = MathUtilities.substituteFunctions(expr, outputFunctionContext).flatten();
+		} catch (ExpressionBindingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			expr = MathUtilities.substituteFunctions(expr, outputFunctionContext,true).flatten();
+		}
 		String[] symbols = expr.getSymbols();
 		// using bit operation to determine whether geometry classes for symbols in expression are vol, membrane or both. 01 => vol; 10 => membrane; 11 => both 
 		int gatherFlag = 0;		 

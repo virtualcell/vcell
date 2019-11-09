@@ -468,7 +468,13 @@ public class OutputFunctionContext implements ScopedSymbolTable, Matchable, Seri
 		
 		// here use math description as symbol table because we allow 
 		// new expression itself to be function of constant.
-		newexp = MathUtilities.substituteFunctions(newexp, this).flatten();
+		try {
+			newexp = MathUtilities.substituteFunctions(newexp, this).flatten();
+		} catch (ExpressionBindingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			newexp = MathUtilities.substituteFunctions(newexp, this,true).flatten();
+		}
 		String[] symbols = newexp.getSymbols();
 		VariableType functionType = outputFunction.getFunctionType();
 		String funcName = outputFunction.getName();
