@@ -9,9 +9,9 @@ import org.vcell.imagej.helper.VCellHelper.IJVarInfos
 
 lastVCellApiPort = vcHelper.findVCellApiServerPort();//search for port that vcell is providing IJ related services on
 System.out.println(lastVCellApiPort);
-SimpleDateFormat easyDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-VCellHelper.VCellModelVersionTimeRange vcellModelVersionTimeRange = new VCellHelper.VCellModelVersionTimeRange(easyDate.parse("2015-06-01 00:00:00"), easyDate.parse("2018-08-01 00:00:00"));
-VCellHelper.VCellModelSearch search = new VCellHelper.VCellModelSearch(VCellHelper.ModelType.mm, "frm", "Model5_2D_2C_Circle_R1_15_standard_V4", null, "Simulation0",2,"Deterministic");
+//SimpleDateFormat easyDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+//VCellHelper.VCellModelVersionTimeRange vcellModelVersionTimeRange = new VCellHelper.VCellModelVersionTimeRange(easyDate.parse("2015-06-01 00:00:00"), easyDate.parse("2018-08-01 00:00:00"));
+VCellHelper.VCellModelSearch search = new VCellHelper.VCellModelSearch(VCellHelper.ModelType.mm, "KerbaicBITE", "Model5_2D_2C_Circle_R1_15_standard_V4", null, "Simulation1",null,null);
 ArrayList<VCellHelper.VCellModelSearchResults> vcellModelSearchResults = vcHelper.getSearchedModelSimCacheKey(false, search,null);
 System.out.println(vcellModelSearchResults);
 int theCacheKey = Integer.valueOf(vcellModelSearchResults.get(0).getCacheKey()).intValue();
@@ -25,7 +25,7 @@ for (int i = 0; i < ijVarInfo.size(); i++) {
 }
 String[] vars = varList.toArray(new String[0]);
 int[] dataIndexes = [5269,5281];
-double[] times = [0,2.0];
+double[] times = [5.0,300.0];
 //Get the data values using the cache-key
 //IJTimeSeriesJobResults getTimeSeries(String[] variableNames, int[] indices, double startTime, int step, double endTime,boolean calcSpaceStats, boolean calcTimeStats, int jobid, int cachekey) throws Exception{
 for (int t = 0; t < times.length; t++) {
