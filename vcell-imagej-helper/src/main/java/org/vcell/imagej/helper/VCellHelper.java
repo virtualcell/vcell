@@ -796,13 +796,27 @@ public class VCellHelper extends AbstractService implements ImageJService
 	@XmlRootElement
 	public static class IJTimeSeriesJobResults{
 		@XmlElement
-		private String[] variableNames;
+		public String[] variableNames;
 		@XmlElement
-		private int[] indices;//all variable share same indices
+		public int[] indices;//all variable share same indices
 		@XmlElement
-		private double[] times;//all vars share times
+		public double[] times;//all vars share times
 		@XmlElement
-		private double[][][] data;//[varname][indices][times];
+		public double[][][] data;//[varname][indices][times];
+		@XmlElement
+		public double[][] min;
+		@XmlElement
+		public double[][] max;
+		@XmlElement
+		public double[][] unweightedMean;
+		@XmlElement
+		public double[][] weightedMean = null;
+		@XmlElement
+		public double[] totalSpace = null;
+		@XmlElement
+		public double[][] unweightedSum;
+		@XmlElement
+		public double[][] weightedSum;
 		public IJTimeSeriesJobResults() {
 			
 		}

@@ -8,6 +8,7 @@ import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -85,6 +86,7 @@ import org.vcell.imagej.ImageJHelper.ApiSolverHandler.IJGeom;
 import org.vcell.sbml.SBMLUtils;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.ClientTaskStatusSupport;
+import org.vcell.util.Compare;
 import org.vcell.util.Coordinate;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.Extent;
@@ -92,6 +94,7 @@ import org.vcell.util.FileUtils;
 import org.vcell.util.ISize;
 import org.vcell.util.Origin;
 import org.vcell.util.ProgressDialogListener;
+import org.vcell.util.Range;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.document.BioModelChildSummary;
 import org.vcell.util.document.BioModelChildSummary.MathType;
@@ -99,6 +102,7 @@ import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.MathModelInfo;
 import org.vcell.util.document.TSJobResultsNoStats;
+import org.vcell.util.document.TSJobResultsSpaceStats;
 import org.vcell.util.document.TimeSeriesJobResults;
 import org.vcell.util.document.TimeSeriesJobSpec;
 import org.vcell.util.document.User;
@@ -131,6 +135,7 @@ import cbit.vcell.client.RequestManager;
 import cbit.vcell.client.TopLevelWindowManager;
 import cbit.vcell.client.TranslationLogger;
 import cbit.vcell.client.VCellClient;
+import cbit.vcell.client.data.SimulationWorkspaceModelInfo;
 import cbit.vcell.client.desktop.biomodel.MathematicsPanel;
 import cbit.vcell.client.desktop.simulation.SimulationWindow;
 import cbit.vcell.client.server.ClientServerManager;
@@ -172,16 +177,20 @@ import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.simdata.ClientPDEDataContext;
 import cbit.vcell.simdata.DataIdentifier;
+import cbit.vcell.simdata.DataInfoProvider;
 import cbit.vcell.simdata.DataManager;
+import cbit.vcell.simdata.DataServerImpl;
 import cbit.vcell.simdata.DataSetControllerImpl;
 import cbit.vcell.simdata.ODEDataBlock;
 import cbit.vcell.simdata.OutputContext;
 import cbit.vcell.simdata.PDEDataContext;
 import cbit.vcell.simdata.PDEDataManager;
+import cbit.vcell.simdata.ServerPDEDataContext;
 import cbit.vcell.simdata.SimDataBlock;
 import cbit.vcell.simdata.SimDataConstants;
 import cbit.vcell.simdata.SimulationData;
 import cbit.vcell.simdata.VCDataManager;
+import cbit.vcell.simdata.gui.PDEDataContextPanel.RecodeDataForDomainInfo;
 import cbit.vcell.solver.AnnotatedFunction;
 import cbit.vcell.solver.MathOverrides;
 import cbit.vcell.solver.MeshSpecification;
@@ -1045,6 +1054,21 @@ public class ImageJHelper {
 		private double[] times;//all vars share times
 		@XmlElement
 		private double[][][] data;//[varname][indices][times];
+		@XmlElement
+		private double[][] min;
+		@XmlElement
+		private double[][] max;
+		@XmlElement
+		private double[][] unweightedMean;
+		@XmlElement
+		private double[][] weightedMean = null;
+		@XmlElement
+		private double[] totalSpace = null;
+		@XmlElement
+		private double[][] unweightedSum;
+		@XmlElement
+		private double[][] weightedSum;
+
 		public IJTimeSeriesJobResults() {
 			
 		}
@@ -1055,6 +1079,22 @@ public class ImageJHelper {
 			this.times = times;
 			this.data = data;
 		}
+		public IJTimeSeriesJobResults(String[] variableNames, int[] indices, double[] times, double[][] min,
+				double[][] max, double[][] unweightedMean, double[][] weightedMean, double[] totalSpace,
+				double[][] unweightedSum, double[][] weightedSum) {
+			super();
+			this.variableNames = variableNames;
+			this.indices = indices;
+			this.times = times;
+			this.min = min;
+			this.max = max;
+			this.unweightedMean = unweightedMean;
+			this.weightedMean = weightedMean;
+			this.totalSpace = totalSpace;
+			this.unweightedSum = unweightedSum;
+			this.weightedSum = weightedSum;
+		}
+
 	}
 	
 	@XmlRootElement
@@ -1383,6 +1423,55 @@ public class ImageJHelper {
 	    	}
 		}
 	}
+	
+	private static SimulationWorkspaceModelInfo getOpenSimulationWorkspaceModelInfo(VCSimulationIdentifier quickrunKey) {
+		if(VCellClientTest.getVCellClient() == null) {
+			return null;
+		}
+//		ArrayList<SimulationWorkspaceModelInfo> result = new ArrayList<>();
+		Collection<TopLevelWindowManager> windowManagers = VCellClientTest.getVCellClient().getMdiManager().getWindowManagers();
+		for(TopLevelWindowManager topLevelWindowManager:windowManagers) {
+	    	if(topLevelWindowManager instanceof DocumentWindowManager) {
+	    		DocumentWindowManager documentWindowManager = (DocumentWindowManager)topLevelWindowManager;
+	    		VCDocument.VCDocumentType currDocType = documentWindowManager.getVCDocument().getDocumentType();
+	    		if(currDocType == VCDocumentType.BIOMODEL_DOC || currDocType == VCDocumentType.MATHMODEL_DOC) {
+	    			if(documentWindowManager instanceof BioModelWindowManager) {
+	    				SimulationWindow simWindow = ((BioModelWindowManager)documentWindowManager).haveSimulationWindow(quickrunKey);
+	    				if(simWindow != null) {
+	    					return new SimulationWorkspaceModelInfo(simWindow.getSimOwner(), simWindow.getSimulation().getName());
+	    				}
+//	    				System.out.println(((BioModelWindowManager)documentWindowManager).haveSimulationWindow(quickrunKey));
+//	    				for(SimulationContext simulationContext:((BioModelWindowManager)documentWindowManager).getBioModel().getSimulationContexts()) {
+//	    					Simulation[] sims = simulationContext.getSimulations();
+//	    					for (int i = 0; i < sims.length; i++) {
+//								if(quickrunKey.equals(sims[i].getKey())) {
+//									result.add(new SimulationWorkspaceModelInfo(simulationContext, sims[i].getName()));
+//								}
+//							}
+//	    				}
+	    			}else if(documentWindowManager instanceof MathModelWindowManager) {
+	    				SimulationWindow simWindow = ((MathModelWindowManager)documentWindowManager).haveSimulationWindow(quickrunKey);
+	    				if(simWindow != null) {
+	    					return new SimulationWorkspaceModelInfo(simWindow.getSimOwner(), simWindow.getSimulation().getName());
+	    				}
+
+//	    				MathModel mathModel = ((MathModelWindowManager)documentWindowManager).getMathModel();
+//    					Simulation[] sims = mathModel.getSimulations();
+//    					for (int i = 0; i < sims.length; i++) {
+//							if(quickrunKey.equals(sims[i].getKey())) {
+//								result.add(new SimulationWorkspaceModelInfo(mathModel, sims[i].getName()));
+//							}
+//						}
+	    			}
+	    		}
+	    	}
+		}
+//		if(result.size() > 0) {
+//			return result.toArray(new SimulationWorkspaceModelInfo[0]);
+//		}
+		return null;
+	}
+
 	private static List<NameValuePair> getParamsFromRequest(HttpServletRequest request) throws ServletException{
     	List<NameValuePair> params = null;
         StringBuilder requestURL = new StringBuilder(request.getRequestURL().toString());
@@ -1752,19 +1841,31 @@ public class ImageJHelper {
 		private VCSimulationDataIdentifier vcSimulationDataIdentifier;
 		private Integer jobCount;
 		private User user;
+		private PDEDataContext pdeDataContext;
+		private SimulationModelInfo simulationModelInfo;
+//		private ClientPDEDataContext clientPDEDataContext;
+//		private ServerPDEDataContext serverPDEDataContext;
 		private IJDataResponder(OutputContext outputContext,VCSimulationDataIdentifier vcSimulationDataIdentifier,Integer jobcount,User user) {
 			this.vcSimulationDataIdentifier = vcSimulationDataIdentifier;
 			this.outputContext = outputContext;
 			this.jobCount = jobcount;
 			this.user = user;
 		}
-		private IJDataResponder(VCDataManager vcDataManager,OutputContext outputContext,VCSimulationDataIdentifier vcSimulationDataIdentifier,Integer jobcount,User user) {//saved to database
+		private IJDataResponder(VCDataManager vcDataManager,OutputContext outputContext,VCSimulationDataIdentifier vcSimulationDataIdentifier,Integer jobcount,User user,SimulationModelInfo simulationModelInfo) {//saved to database
 			this(outputContext,  vcSimulationDataIdentifier,jobcount,user);
 			this.vcDataManager = vcDataManager;
+			this.pdeDataContext = new ClientPDEDataContext(new PDEDataManager(outputContext, vcDataManager, vcSimulationDataIdentifier));
+			this.simulationModelInfo = simulationModelInfo;
 		}
-		private IJDataResponder(DataSetControllerImpl dataSetControllerImpl,OutputContext outputContext,VCSimulationDataIdentifier vcSimulationDataIdentifier,Integer jobCount,User user) {//quickrun
+		private IJDataResponder(DataSetControllerImpl dataSetControllerImpl,OutputContext outputContext,VCSimulationDataIdentifier vcSimulationDataIdentifier,Integer jobCount,User user,SimulationModelInfo simulationModelInfo) throws Exception {//quickrun
 			this(outputContext, vcSimulationDataIdentifier,jobCount,user);
 			this.dataSetControllerImpl = dataSetControllerImpl;
+			this.pdeDataContext = new ServerPDEDataContext(outputContext, user, new DataServerImpl(dataSetControllerImpl, null), vcSimulationDataIdentifier);
+//	        ArrayList<IJModelInfo> modelInfos = new ArrayList<>();
+//	        ArrayList<KeyValue> openVCDocumentVersionKeys = new ArrayList<>();		     
+//        	populateDesktopIJModelInfos(IJDocType.quick,openVCDocumentVersionKeys, modelInfos);
+//        	modelInfos.get(0).contexts.get(0).ijSimId.get(0).
+			this.simulationModelInfo = simulationModelInfo;
 		}
 		public static IJDataResponder create(VCellClient vCellClient,KeyValue modelKey,String simContextName,String simName,Integer jobIndex) throws Exception{
 			SimulationOwner simOwner = null;
@@ -1782,7 +1883,8 @@ public class ImageJHelper {
 					VCSimulationDataIdentifier vcSimulationDataIdentifier = new VCSimulationDataIdentifier(vcSimulationIdentifier, (jobIndex!=null?jobIndex:0));
 					OutputContext outputContext = new OutputContext(simOwner.getOutputFunctionContext().getOutputFunctionsList().toArray(new AnnotatedFunction[0]));
 					VCDataManager vcDataManager = new VCDataManager(vCellClient.getClientServerManager());
-					return new IJDataResponder(vcDataManager, outputContext, vcSimulationDataIdentifier,sim.getScanCount(),sim.getSimulationVersion().getOwner());
+					SimulationModelInfo simulationModelInfo0 = new SimulationWorkspaceModelInfo(simOwner, simName);
+					return new IJDataResponder(vcDataManager, outputContext, vcSimulationDataIdentifier,sim.getScanCount(),sim.getSimulationVersion().getOwner(),simulationModelInfo0);
 				}
 			}
 			throw new Exception("IJREsponder: simulation name '"+simName+"' not found");
@@ -1792,12 +1894,13 @@ public class ImageJHelper {
 			VCSimulationDataIdentifier vcSimulationDataIdentifier = new VCSimulationDataIdentifier(vcSimulationIdentifier, jobIndex);
 //			SimulationData simulationData = new SimulationData(vcSimulationDataIdentifier, simDataDir, simDataDir, null);
 			DataSetControllerImpl dsci = new DataSetControllerImpl(null, simDataDir,null);
-			return new IJDataResponder(dsci, null, vcSimulationDataIdentifier,1,User.tempUser);
+			final SimulationWorkspaceModelInfo openSimulationWorkspaceModelInfo = getOpenSimulationWorkspaceModelInfo(vcSimulationIdentifier);
+			return new IJDataResponder(dsci, null, vcSimulationDataIdentifier,1,User.tempUser,openSimulationWorkspaceModelInfo);
 		}
 		public ArrayList<IJData> getIJData(String varname,int[] timeIndexes) throws Exception{
 			ArrayList<IJData> ijDatas = new ArrayList<>();
 			double[] times = (dataSetControllerImpl != null?dataSetControllerImpl.getDataSetTimes(vcSimulationDataIdentifier):vcDataManager.getDataSetTimes(vcSimulationDataIdentifier));
-			CartesianMesh mesh = (dataSetControllerImpl != null?dataSetControllerImpl.getMesh(vcSimulationDataIdentifier):vcDataManager.getMesh(vcSimulationDataIdentifier));
+			CartesianMesh mesh = pdeDataContext.getCartesianMesh();
 			BasicStackDimensions basicStackDimensions = new BasicStackDimensions(mesh.getSizeX(),mesh.getSizeY(),mesh.getSizeZ(), 1, 1);
 			if(timeIndexes != null) {
 				for(int timeIndex:timeIndexes) {
@@ -1810,6 +1913,14 @@ public class ImageJHelper {
 			}
 			return ijDatas;
 		}
+//		public DataIdentifier[] getDataIdentifiers() throws FileNotFoundException, DataAccessException, IOException {
+//			return pdeDataContext.getDataIdentifiers();
+////			return (dataSetControllerImpl != null?dataSetControllerImpl.getDataIdentifiers(outputContext, vcSimulationDataIdentifier):vcDataManager.getDataIdentifiers(outputContext, vcSimulationDataIdentifier));
+//		}
+//		public CartesianMesh getMesh() throws DataAccessException, IOException, MathException {
+//			return pdeDataContext.getCartesianMesh();
+////			return (dataSetControllerImpl != null?dataSetControllerImpl.getMesh(vcSimulationDataIdentifier):vcDataManager.getMesh(vcSimulationDataIdentifier));
+//		}
 		public IJData getOdeIJData(String varName) throws Exception{
 			ODESolverResultSet odeSolverResultSet = SimDataIdMapToOdeResultSet.get(vcSimulationDataIdentifier.toString());
 			if(odeSolverResultSet == null) {
@@ -1844,18 +1955,62 @@ public class ImageJHelper {
 			return ijData;
 		}
 		public IJTimeSeriesJobResults getIJTimeSeriesData(IJTimeSeriesJobSpec ijTimeSeriesJobSpec) throws Exception{
+			TimeSeriesJobSpec timeSeriesJobSpec = null;
+			BitSet[] domainMaskArr = new BitSet[ijTimeSeriesJobSpec.variableNames.length];
+			for (int i = 0; i < domainMaskArr.length; i++) {
+				if(i==0) {
+					pdeDataContext.setVariableName(ijTimeSeriesJobSpec.variableNames[i]);
+					domainMaskArr[i] = getDomainMask(pdeDataContext.getDataIdentifier(),simulationModelInfo);
+					System.out.println(domainMaskArr[i].cardinality());
+					if(ijTimeSeriesJobSpec.indices == null) {
+						ijTimeSeriesJobSpec.indices = new int[domainMaskArr[i].cardinality()];
+						int cnt = 0;
+						for (int j = domainMaskArr[i].nextSetBit(0); j >= 0; j = domainMaskArr[i].nextSetBit(j+1)) {
+							ijTimeSeriesJobSpec.indices[cnt++] = j;
+							if (i == Integer.MAX_VALUE) {
+								break; // or (i+1) would overflow
+							}
+						}
+					}else {
+						domainMaskArr[i].clear();
+						for (int j = 0; j < ijTimeSeriesJobSpec.indices.length; j++) {
+							domainMaskArr[i].set(ijTimeSeriesJobSpec.indices[j]);
+						}
+					}
+				}else {
+					domainMaskArr[i] = domainMaskArr[0];
+				}
+			}
+
 			int[][] copiedIndices = new int[ijTimeSeriesJobSpec.variableNames.length][];
-			for (int i = 0; i < copiedIndices.length; i++) {
+			for (int i = 0; i < ijTimeSeriesJobSpec.variableNames.length; i++) {
 				copiedIndices[i] = ijTimeSeriesJobSpec.indices;
 			}
-			TimeSeriesJobSpec timeSeriesJobSpec = new TimeSeriesJobSpec(ijTimeSeriesJobSpec.variableNames, copiedIndices,null,
-						ijTimeSeriesJobSpec.startTime, ijTimeSeriesJobSpec.step, ijTimeSeriesJobSpec.endTime, /*ijTimeSeriesJobSpec.calcTimeStats, ijTimeSeriesJobSpec.calcSpaceStats,*/ new VCDataJobID(vcSimulationDataIdentifier.getJobIndex(), user, false));
-			TSJobResultsNoStats timeSeriesJobResults = (TSJobResultsNoStats)(dataSetControllerImpl != null?dataSetControllerImpl.getTimeSeriesValues(outputContext, vcSimulationDataIdentifier, timeSeriesJobSpec):vcDataManager.getTimeSeriesValues(outputContext, vcSimulationDataIdentifier, timeSeriesJobSpec));
-			double[][][] newData = new double[timeSeriesJobResults.getVariableNames().length][][];
-			for (int i = 0; i < newData.length; i++) {
-				newData[i] = timeSeriesJobResults.getTimesAndValuesForVariable(timeSeriesJobResults.getVariableNames()[i]);
+
+			if(!(ijTimeSeriesJobSpec.calcTimeStats || ijTimeSeriesJobSpec.calcSpaceStats)) {
+				timeSeriesJobSpec = new TimeSeriesJobSpec(ijTimeSeriesJobSpec.variableNames, copiedIndices,null,
+					ijTimeSeriesJobSpec.startTime, ijTimeSeriesJobSpec.step, ijTimeSeriesJobSpec.endTime, new VCDataJobID(vcSimulationDataIdentifier.getJobIndex(), user, false));
+			}else if(!ijTimeSeriesJobSpec.calcTimeStats){
+				timeSeriesJobSpec = new TimeSeriesJobSpec(ijTimeSeriesJobSpec.variableNames, domainMaskArr,
+					ijTimeSeriesJobSpec.startTime, ijTimeSeriesJobSpec.step, ijTimeSeriesJobSpec.endTime, ijTimeSeriesJobSpec.calcSpaceStats, ijTimeSeriesJobSpec.calcTimeStats, new VCDataJobID(vcSimulationDataIdentifier.getJobIndex(), user, false));				
+			}else {
+				throw new IllegalArgumentException("calc time states not yet implemented");
 			}
-			return new IJTimeSeriesJobResults(timeSeriesJobResults.getVariableNames(), timeSeriesJobResults.getIndices()[0], timeSeriesJobResults.getTimes(), newData);
+			
+			
+			TimeSeriesJobResults timeSeriesJobResults = (dataSetControllerImpl != null?dataSetControllerImpl.getTimeSeriesValues(outputContext, vcSimulationDataIdentifier, timeSeriesJobSpec):vcDataManager.getTimeSeriesValues(outputContext, vcSimulationDataIdentifier, timeSeriesJobSpec));
+			if(timeSeriesJobResults instanceof TSJobResultsNoStats) {
+				double[][][] newData = new double[timeSeriesJobResults.getVariableNames().length][][];
+				for (int i = 0; i < newData.length; i++) {
+					newData[i] = ((TSJobResultsNoStats)timeSeriesJobResults).getTimesAndValuesForVariable(timeSeriesJobResults.getVariableNames()[i]);
+				}
+				return new IJTimeSeriesJobResults(timeSeriesJobResults.getVariableNames(), timeSeriesJobResults.getIndices()[0], timeSeriesJobResults.getTimes(), newData);
+			}else if(timeSeriesJobResults instanceof TSJobResultsSpaceStats) {
+				TSJobResultsSpaceStats tsjrst = ((TSJobResultsSpaceStats) timeSeriesJobResults);
+				return new IJTimeSeriesJobResults(timeSeriesJobResults.getVariableNames(), timeSeriesJobResults.getIndices()[0], timeSeriesJobResults.getTimes(),
+					tsjrst.getMinimums(),tsjrst.getMaximums(), tsjrst.getUnweightedMean(), tsjrst.getWeightedMean(), tsjrst.getTotalSpace(), tsjrst.getUnweightedSum(), tsjrst.getWeightedSum());
+			}
+			throw new Exception("Unexpected Results type= "+timeSeriesJobResults.getClass().getName());
 		}
 		public IJVarInfos getIJVarInfos(String simName,Long cachekey,Integer scancount) throws Exception{
 			DataIdentifier[] dataIdentifiers = (dataSetControllerImpl != null?dataSetControllerImpl.getDataIdentifiers(outputContext, vcSimulationDataIdentifier):vcDataManager.getDataIdentifiers(outputContext, vcSimulationDataIdentifier));
@@ -1885,7 +2040,242 @@ public class ImageJHelper {
     		response.setStatus(HttpServletResponse.SC_OK);
     		response.getWriter().write(xml);    	
 		}
+		public BitSet getDomainMask(DataIdentifier di,SimulationModelInfo simulationModelInfo) {
+//			SimulationModelInfo simulationModelInfo = new SimulationWorkspaceModelInfo(simOwner, argSimulationName);
+			final CartesianMesh cartesianMesh = pdeDataContext.getCartesianMesh();
+			double[] originalData = new double[cartesianMesh.getISize().getXYZ()];
+			Arrays.fill(originalData, 1.0);
+			DataInfoProvider dip = new DataInfoProvider(pdeDataContext, simulationModelInfo);
+			final RecodeDataForDomainInfo recodeDataForDomain0 = recodeDataForDomain0(di, dip, originalData, cartesianMesh);
+			BitSet domainBitSet = new BitSet(originalData.length);
+			for (int i = 0; i < originalData.length; i++) {
+				if(recodeDataForDomain0.getRecodedDataForDomain()[i] == 1.0) {
+					domainBitSet.set(i);
+				}
+			}
+			return domainBitSet;
+		}
+		
+		private static RecodeDataForDomainInfo recodeDataForDomain0(DataIdentifier di,DataInfoProvider dip,double[] originalData,CartesianMesh mesh) {
+			Domain varDomain = di.getDomain();
+			double[] tempRecodedData = null;
+			Range dataRange = null;
+			VariableType vt = di.getVariableType();
+			boolean bRecoding = dip != null && varDomain != null;	
+			Double notInDomainValue = null;
+//			if (getPdeDataContext().getDataValues() != originalData ||
+//				recodeDataForDomainInfo == null ||
+//				((getDataInfoProvider() == null) != bDataInfoProviderNull) ||
+//				!Compare.isEqualOrNull(functionStatisticsRange, lastFunctionStatisticsRange)) {
+//				lastFunctionStatisticsRange = functionStatisticsRange;
+//				bDataInfoProviderNull = (dip== null);
+//				originalData = getPdeDataContext().getDataValues();
+				tempRecodedData = originalData;
+				
+				double illegalNumber = Double.POSITIVE_INFINITY;
+				if (bRecoding) {
+					tempRecodedData = new double[originalData.length];
+					System.arraycopy(originalData, 0, tempRecodedData, 0, tempRecodedData.length);
+					for(int i = 0; i < originalData.length; i++){
+						if(!Double.isNaN(originalData[i])){
+							illegalNumber = Math.min(illegalNumber, originalData[i]);
+						}
+					}
+				}
+				illegalNumber-=1;//
+				notInDomainValue = new Double(illegalNumber);
+
+				final CartesianMesh cartesianMesh = mesh;
+				double minCurrTime = Double.POSITIVE_INFINITY;
+				double maxCurrTime = Double.NEGATIVE_INFINITY;
+				for (int i = 0; i < tempRecodedData.length; i ++) {
+					if (bRecoding) {
+						if(!isInDomain(cartesianMesh, varDomain, dip, i, vt)){
+							tempRecodedData[i] = illegalNumber;
+						}
+					}
+					if(!Double.isNaN(tempRecodedData[i]) && tempRecodedData[i] != illegalNumber){
+						minCurrTime = Math.min(minCurrTime, tempRecodedData[i]);
+						maxCurrTime = Math.max(maxCurrTime, tempRecodedData[i]);
+					}
+				}
+//				if(!getdisplayAdapterService1().getAllTimes() || functionStatisticsRange == null){
+//					dataRange = new Range(minCurrTime,maxCurrTime);
+//				}else if(functionStatisticsRange != null){
+//					dataRange = functionStatisticsRange;
+//				}else{
+//					throw new RuntimeException("Unexpected state for range calculation");
+//				}
+//			}else{
+//				dataRange = recodeDataForDomainInfo.getRecodedDataRange();
+//				tempRecodedData = recodeDataForDomainInfo.getRecodedDataForDomain();
+//			}
+			if (bRecoding) {
+				return new RecodeDataForDomainInfo(true, tempRecodedData, dataRange,notInDomainValue);
+			}else{
+				return new RecodeDataForDomainInfo(false, tempRecodedData, dataRange,notInDomainValue);		
+			}
+		}
+
+		public static boolean isInDomain(CartesianMesh cartesianMesh,Domain varDomain,DataInfoProvider dataInfoProvider,int i,VariableType vt){
+			if(!cartesianMesh.hasSubvolumeInfo()){
+				return true;
+			}
+			if (vt.equals(VariableType.VOLUME) && !(cartesianMesh.isChomboMesh())) {
+				int subvol = cartesianMesh.getSubVolumeFromVolumeIndex(i);
+				if (varDomain != null &&
+					dataInfoProvider.getSimulationModelInfo().getVolumeNameGeometry(subvol) != null &&
+					!dataInfoProvider.getSimulationModelInfo().getVolumeNameGeometry(subvol).equals(varDomain.getName())) {
+					return false;
+				}
+			} else if (vt.equals(VariableType.VOLUME_REGION)) {
+				int subvol = cartesianMesh.getVolumeRegionMapSubvolume().get(i);
+				if (varDomain != null &&
+					dataInfoProvider.getSimulationModelInfo().getVolumeNameGeometry(subvol) != null &&
+					!dataInfoProvider.getSimulationModelInfo().getVolumeNameGeometry(subvol).equals(varDomain.getName())) {
+					return false;
+				}
+			} else if (vt.equals(VariableType.MEMBRANE) && !(cartesianMesh.isChomboMesh())) {
+				int insideVolumeIndex = cartesianMesh.getMembraneElements()[i].getInsideVolumeIndex();
+				int subvol1 =  cartesianMesh.getSubVolumeFromVolumeIndex(insideVolumeIndex);
+				int outsideVolumeIndex = cartesianMesh.getMembraneElements()[i].getOutsideVolumeIndex();
+				int subvol2 =  cartesianMesh.getSubVolumeFromVolumeIndex(outsideVolumeIndex);
+				if (varDomain != null &&
+					dataInfoProvider.getSimulationModelInfo().getMembraneName(subvol1, subvol2, true) != null &&
+					!dataInfoProvider.getSimulationModelInfo().getMembraneName(subvol1, subvol2, true).equals(varDomain.getName())) {
+					return false;
+				}
+			} else if (vt.equals(VariableType.MEMBRANE_REGION)) {
+				int[] subvols = cartesianMesh.getMembraneRegionMapSubvolumesInOut().get(i);
+				if (varDomain != null &&
+					dataInfoProvider.getSimulationModelInfo().getMembraneName(subvols[0], subvols[1], true) != null &&
+					!dataInfoProvider.getSimulationModelInfo().getMembraneName(subvols[0], subvols[1], true).equals(varDomain.getName())) {
+					return false;
+				}
+			}
+			return true;
+		}
+
 	}
+	
+	
+	
+	
+//	private static RecodeDataForDomainInfo recodeDataForDomain0(DataIdentifier di,DataInfoProvider dip,double[] originalData,CartesianMesh mesh) {
+//		Domain varDomain = di.getDomain();
+//		double[] tempRecodedData = null;
+//		Range dataRange = null;
+//		VariableType vt = di.getVariableType();
+//		boolean bRecoding = dip != null && varDomain != null;	
+//		Double notInDomainValue = null;
+////		if (getPdeDataContext().getDataValues() != originalData ||
+////			recodeDataForDomainInfo == null ||
+////			((getDataInfoProvider() == null) != bDataInfoProviderNull) ||
+////			!Compare.isEqualOrNull(functionStatisticsRange, lastFunctionStatisticsRange)) {
+////			lastFunctionStatisticsRange = functionStatisticsRange;
+////			bDataInfoProviderNull = (dip== null);
+////			originalData = getPdeDataContext().getDataValues();
+//			tempRecodedData = originalData;
+//			
+//			double illegalNumber = Double.POSITIVE_INFINITY;
+//			if (bRecoding) {
+//				tempRecodedData = new double[originalData.length];
+//				System.arraycopy(originalData, 0, tempRecodedData, 0, tempRecodedData.length);
+//				for(int i = 0; i < originalData.length; i++){
+//					if(!Double.isNaN(originalData[i])){
+//						illegalNumber = Math.min(illegalNumber, originalData[i]);
+//					}
+//				}
+//			}
+//			illegalNumber-=1;//
+//			notInDomainValue = new Double(illegalNumber);
+//
+//			final CartesianMesh cartesianMesh = mesh;
+//			double minCurrTime = Double.POSITIVE_INFINITY;
+//			double maxCurrTime = Double.NEGATIVE_INFINITY;
+//			for (int i = 0; i < tempRecodedData.length; i ++) {
+//				if (bRecoding) {
+//					if(!isInDomain(cartesianMesh, varDomain, dip, i, vt)){
+//						tempRecodedData[i] = illegalNumber;
+//					}
+//				}
+//				if(!Double.isNaN(tempRecodedData[i]) && tempRecodedData[i] != illegalNumber){
+//					minCurrTime = Math.min(minCurrTime, tempRecodedData[i]);
+//					maxCurrTime = Math.max(maxCurrTime, tempRecodedData[i]);
+//				}
+//			}
+////			if(!getdisplayAdapterService1().getAllTimes() || functionStatisticsRange == null){
+////				dataRange = new Range(minCurrTime,maxCurrTime);
+////			}else if(functionStatisticsRange != null){
+////				dataRange = functionStatisticsRange;
+////			}else{
+////				throw new RuntimeException("Unexpected state for range calculation");
+////			}
+////		}else{
+////			dataRange = recodeDataForDomainInfo.getRecodedDataRange();
+////			tempRecodedData = recodeDataForDomainInfo.getRecodedDataForDomain();
+////		}
+//		if (bRecoding) {
+//			return new RecodeDataForDomainInfo(true, tempRecodedData, dataRange,notInDomainValue);
+//		}else{
+//			return new RecodeDataForDomainInfo(false, tempRecodedData, dataRange,notInDomainValue);		
+//		}
+//	}
+//
+//	public static boolean isInDomain(CartesianMesh cartesianMesh,Domain varDomain,DataInfoProvider dataInfoProvider,int i,VariableType vt){
+//		if(!cartesianMesh.hasSubvolumeInfo()){
+//			return true;
+//		}
+//		if (vt.equals(VariableType.VOLUME) && !(cartesianMesh.isChomboMesh())) {
+//			int subvol = cartesianMesh.getSubVolumeFromVolumeIndex(i);
+//			if (varDomain != null &&
+//				dataInfoProvider.getSimulationModelInfo().getVolumeNameGeometry(subvol) != null &&
+//				!dataInfoProvider.getSimulationModelInfo().getVolumeNameGeometry(subvol).equals(varDomain.getName())) {
+//				return false;
+//			}
+//		} else if (vt.equals(VariableType.VOLUME_REGION)) {
+//			int subvol = cartesianMesh.getVolumeRegionMapSubvolume().get(i);
+//			if (varDomain != null &&
+//				dataInfoProvider.getSimulationModelInfo().getVolumeNameGeometry(subvol) != null &&
+//				!dataInfoProvider.getSimulationModelInfo().getVolumeNameGeometry(subvol).equals(varDomain.getName())) {
+//				return false;
+//			}
+//		} else if (vt.equals(VariableType.MEMBRANE) && !(cartesianMesh.isChomboMesh())) {
+//			int insideVolumeIndex = cartesianMesh.getMembraneElements()[i].getInsideVolumeIndex();
+//			int subvol1 =  cartesianMesh.getSubVolumeFromVolumeIndex(insideVolumeIndex);
+//			int outsideVolumeIndex = cartesianMesh.getMembraneElements()[i].getOutsideVolumeIndex();
+//			int subvol2 =  cartesianMesh.getSubVolumeFromVolumeIndex(outsideVolumeIndex);
+//			if (varDomain != null &&
+//				dataInfoProvider.getSimulationModelInfo().getMembraneName(subvol1, subvol2, true) != null &&
+//				!dataInfoProvider.getSimulationModelInfo().getMembraneName(subvol1, subvol2, true).equals(varDomain.getName())) {
+//				return false;
+//			}
+//		} else if (vt.equals(VariableType.MEMBRANE_REGION)) {
+//			int[] subvols = cartesianMesh.getMembraneRegionMapSubvolumesInOut().get(i);
+//			if (varDomain != null &&
+//				dataInfoProvider.getSimulationModelInfo().getMembraneName(subvols[0], subvols[1], true) != null &&
+//				!dataInfoProvider.getSimulationModelInfo().getMembraneName(subvols[0], subvols[1], true).equals(varDomain.getName())) {
+//				return false;
+//			}
+//		}
+//		return true;
+//	}
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 	
 	private static enum IJGetDataParams {cachekey,varname,timeindex,jobindex}
 	public static class ApiGetDataHandler extends AbstractHandler{

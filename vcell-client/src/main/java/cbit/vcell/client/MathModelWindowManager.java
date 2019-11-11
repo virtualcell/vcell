@@ -211,7 +211,7 @@ public boolean hasUnappliedChanges() {
  * @return boolean
  * @param vcSimulationIdentifier cbit.vcell.server.VCSimulationIdentifier
  */
-SimulationWindow haveSimulationWindow(VCSimulationIdentifier vcSimulationIdentifier) {
+public SimulationWindow haveSimulationWindow(VCSimulationIdentifier vcSimulationIdentifier) {
 	if (simulationWindowsHash.containsKey(vcSimulationIdentifier)) {
 		return (SimulationWindow)simulationWindowsHash.get(vcSimulationIdentifier);
 	} else {

@@ -345,7 +345,7 @@ public BioModel getVCDocument() {
  * Creation date: (6/11/2004 7:57:44 AM)
  * @return cbit.vcell.document.VCDocument
  */
-SimulationWindow haveSimulationWindow(VCSimulationIdentifier vcSimulationIdentifier) {
+public SimulationWindow haveSimulationWindow(VCSimulationIdentifier vcSimulationIdentifier) {
 	Enumeration<ApplicationComponents> en = getApplicationsHash().elements();
 	while (en.hasMoreElements()) {
 		ApplicationComponents appComponents = en.nextElement();
