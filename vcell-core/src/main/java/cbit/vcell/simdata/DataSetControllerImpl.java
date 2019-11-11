@@ -3454,13 +3454,13 @@ private TimeSeriesJobResults getSpecialTimeSeriesValues(OutputContext outputCont
 		final int ABSOLUTE_SIZE_LIMIT = 10000;
 		for(int i=0;i<variableNames.length;i+= 1){
 			DataSetIdentifier dsi = (DataSetIdentifier)simData.getEntry(variableNames[i]);
-			if(dsi.getVariableType().equals(VariableType.VOLUME)){
+			if((dsi != null && dsi.getVariableType().equals(VariableType.VOLUME))){
 				if(timeSeriesJobSpec.getIndices()[i].length >
 				mesh.getNumVolumeElements()*SIGNIFICANT_ROI_FRACTION){
 					bIsSpecial = true;
 					break;
 				}
-			}else if(dsi.getVariableType().equals(VariableType.MEMBRANE)){
+			}else if((dsi != null && dsi.getVariableType().equals(VariableType.MEMBRANE))){
 				if(timeSeriesJobSpec.getIndices()[i].length >
 				mesh.getNumMembraneElements()*SIGNIFICANT_ROI_FRACTION){
 					bIsSpecial = true;
