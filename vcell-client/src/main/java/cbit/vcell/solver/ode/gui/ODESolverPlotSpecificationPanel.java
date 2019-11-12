@@ -46,6 +46,8 @@ import cbit.plot.Plot2D;
 import cbit.plot.PlotData;
 import cbit.plot.SingleXPlot2D;
 import cbit.vcell.client.data.ODEDataInterface;
+import cbit.vcell.client.data.SimulationWorkspaceModelInfo.BioModelCategoryType;
+import cbit.vcell.mapping.AbstractMathMapping;
 import cbit.vcell.mapping.DiffEquMathMapping;
 import cbit.vcell.math.Constant;
 import cbit.vcell.math.FunctionColumnDescription;
@@ -1249,13 +1251,25 @@ private synchronized void updateChoices(ODEDataInterface odedi) throws Expressio
         if (cd.getParameterName() == null) {
         	String name = cd.getName();
         	DataSymbolMetadata damd = damdr.getDataSymbolMetadata(name);
+        	
         	// filter entities measured as count vs concentration, based on the checkbox settings
-        	String sUnit = damd.unit.getSymbol();
-        	if(sUnit.contentEquals("molecules") && !countCheckBox.isSelected()) {
-        		continue;
-        	} else if((sUnit.contentEquals("M") || sUnit.contentEquals("mM") || sUnit.contentEquals("uM") || sUnit.contentEquals("nM") || sUnit.contentEquals("pM")) && !concentrationCheckBox.isSelected()) {
-        		continue;
-        	}
+			ModelCategoryType filterCategory = null;
+			if (damd != null) {
+				filterCategory = damd.filterCategory;
+			}
+			if(countCheckBox != null && concentrationCheckBox != null) {
+				if(filterCategory instanceof BioModelCategoryType && filterCategory == BioModelCategoryType.Species && cd.getName().endsWith(AbstractMathMapping.MATH_VAR_SUFFIX_SPECIES_COUNT) && !countCheckBox.isSelected()) {
+					continue;
+				} else if(filterCategory instanceof BioModelCategoryType && filterCategory == BioModelCategoryType.Species && !cd.getName().endsWith(AbstractMathMapping.MATH_VAR_SUFFIX_SPECIES_COUNT) && !concentrationCheckBox.isSelected()) {
+					continue;
+				}
+			}
+			
+			// filter out entities starting with "UnitFactor_" prefix
+			if(filterCategory instanceof BioModelCategoryType && filterCategory == BioModelCategoryType.Other && cd.getName().startsWith(AbstractMathMapping.PARAMETER_K_UNITFACTOR_PREFIX)) {
+				continue;
+			}
+        	
         	if (!cd.getName().equals(SimDataConstants.HISTOGRAM_INDEX_NAME) && !cd.getName().contains(DiffEquMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_COUNT)) {
         		variableColumnDescriptions.add(cd);
         	}
@@ -1283,7 +1297,7 @@ private synchronized void updateChoices(ODEDataInterface odedi) throws Expressio
 //    setPlottableColumnIndices(sortedIndices);
    
     // finally, update widgets
-    try{
+    try {
     	getXAxisComboBox_frm().removeItemListener(ivjEventHandler);
     	getYAxisChoice().removeListSelectionListener(ivjEventHandler);
 	    getComboBoxModelX_frm().removeAllElements();
@@ -1294,8 +1308,8 @@ private synchronized void updateChoices(ODEDataInterface odedi) throws Expressio
 	    	if(timeColumnDescription != null){
 	    		getComboBoxModelX_frm().addElement(timeColumnDescription.getName());
 	    	}
-	    	for(ColumnDescription columnDescription:xColumnDescriptions){
-	    		if(!columnDescription.getName().equals((timeColumnDescription==null?null:timeColumnDescription.getName()))){
+	    	for(ColumnDescription columnDescription:xColumnDescriptions) {
+	    		if(!columnDescription.getName().equals((timeColumnDescription==null?null:timeColumnDescription.getName()))) {
 	    			getComboBoxModelX_frm().addElement(columnDescription.getName());
 	    		}
 	    	}
@@ -1315,34 +1329,34 @@ private synchronized void updateChoices(ODEDataInterface odedi) throws Expressio
 	    	//Don't put anything in X Axis, if the results of multifple trials are being displayed.
 	    	if(!bMultiTrialData) {
 	    		getXAxisComboBox_frm().setSelectedItem(xAxisSelection);
-		    	if(getXAxisComboBox_frm().getSelectedIndex() == -1){
+		    	if(getXAxisComboBox_frm().getSelectedIndex() == -1) {
 		    		getXAxisComboBox_frm().setSelectedIndex(0);
 		    	}
 	    	}
-	    	if(yAxisSelections != null && yAxisSelections.length > 0){
+	    	if(yAxisSelections != null && yAxisSelections.length > 0) {
 	    		ArrayList<Integer> carryoverSelections = new ArrayList<Integer>();
 	    		for (int i = 0; i < getYAxisChoice().getModel().getSize(); i++) {
 	    			for (int j = 0; j < yAxisSelections.length; j++) {
-						if(getYAxisChoice().getModel().getElementAt(i).equals(yAxisSelections[j])){
+						if(getYAxisChoice().getModel().getElementAt(i).equals(yAxisSelections[j])) {
 							carryoverSelections.add(i);
 							break;
 						}
 					}
 				}
-	    		if(carryoverSelections.size() > 0){
+	    		if(carryoverSelections.size() > 0) {
 	    			int[] carryoverInts = new int[carryoverSelections.size()];
 	    			for (int i = 0; i < carryoverInts.length; i++) {
 						carryoverInts[i] = carryoverSelections.get(i);
 					}
 	    			getYAxisChoice().setSelectedIndices(carryoverInts);
-	    		}else{
+	    		} else {
 	    			getYAxisChoice().setSelectedIndex((getYAxisChoice().getModel().getSize()>1?1:0));
 	    		}
-	    	}else{
+	    	} else {
 	    		getYAxisChoice().setSelectedIndex(sortedColumndDescriptions.size() > 1 ? 1 : 0);
 	    	}
 	    }
-    }finally{
+    } finally {
     	getXAxisComboBox_frm().addItemListener(ivjEventHandler);
     	getYAxisChoice().addListSelectionListener(ivjEventHandler);
     }
@@ -1476,6 +1490,17 @@ private void showFilterSettings() {
 		return;
 	}
 	
+	boolean hasCount = false;
+	ColumnDescription[] columnDescriptions = getMyDataInterface().getAllColumnDescriptions();
+	if(columnDescriptions != null) {
+		for(ColumnDescription cd : columnDescriptions) {
+			if(cd.getName().endsWith(AbstractMathMapping.MATH_VAR_SUFFIX_SPECIES_COUNT)) {
+				hasCount = true;
+				break;
+			}
+		}
+	}
+	
 //	filterPanel.setBorder(new LineBorder(Color.black));
 	JCheckBox[] sortedJCheckBoxes = filterSettings.keySet().toArray(new JCheckBox[0]);
 	Arrays.sort(sortedJCheckBoxes, new Comparator<JCheckBox>() {
@@ -1498,27 +1523,25 @@ private void showFilterSettings() {
 		GridBagConstraints gbc = new GridBagConstraints();
 		gbc.gridx = gridx;
 		gbc.gridy = gridy;
-		gbc.insets = new Insets(4, 2, 0, 0);
+		if(!hasCount && (i == sortedJCheckBoxes.length-1)) {
+			gbc.insets = new Insets(4, 2, 4, 0);
+		} else {
+			gbc.insets = new Insets(4, 2, 0, 0);
+		}
 		gbc.weightx = 1;
 		gbc.anchor = GridBagConstraints.WEST;
 		gbc.fill = GridBagConstraints.HORIZONTAL;
 		filterContentPanel.add(sortedJCheckBoxes[i], gbc);
 		gridy++;
 	}
-	GridBagConstraints gbc = new GridBagConstraints();
-	gbc.gridx = gridx;
-	gbc.gridy = gridy;
-	gbc.insets = new Insets(1, 10, 3, 0);
-	gbc.anchor = GridBagConstraints.WEST;
-	filterContentPanel.add(getSpeciesOptionsPanel(), gbc);
-	
-//	JPanel filterContentPanel = getFilterPanel().getContentPanel();//new JPanel();
-//	filterContentPanel.setLayout(new BoxLayout(filterContentPanel, BoxLayout.Y_AXIS));
-//	for (int i = 0; i < sortedJCheckBoxes.length; i++) {
-//		sortedJCheckBoxes[i].setAlignmentX(0f);
-//		filterContentPanel.add(sortedJCheckBoxes[i]);
-//	}
-//	filterContentPanel.add(getSpeciesOptionsPanel());
+	if(hasCount) {
+		GridBagConstraints gbc = new GridBagConstraints();
+		gbc.gridx = gridx;
+		gbc.gridy = gridy;
+		gbc.insets = new Insets(1, 10, 3, 0);
+		gbc.anchor = GridBagConstraints.WEST;
+		filterContentPanel.add(getSpeciesOptionsPanel(), gbc);
+	}
 }
 
 private JPanel getSpeciesOptionsPanel() {
@@ -1538,6 +1561,7 @@ private JPanel getSpeciesOptionsPanel() {
 
 		gridx++;
 		concentrationCheckBox = new JCheckBox("Concentration");
+		concentrationCheckBox.setToolTipText("Show Species measured as concentration units.");
 		gbc.gridx = gridx;
 		gbc.gridy = gridy;
 		gbc.insets = new Insets(0, 4, 0, 0);
@@ -1546,6 +1570,7 @@ private JPanel getSpeciesOptionsPanel() {
 
 		gridx++;
 		countCheckBox = new JCheckBox("Count");
+		countCheckBox.setToolTipText("Show Species measured as number of molecules.");
 		gbc.gridx = gridx;
 		gbc.gridy = gridy;
 		gbc.insets = new Insets(0, 4, 0, 0);

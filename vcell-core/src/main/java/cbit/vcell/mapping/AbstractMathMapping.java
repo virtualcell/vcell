@@ -539,7 +539,7 @@ public class RateRuleRateParameter extends MathMappingParameter {
 }
 
 public static final int PARAMETER_ROLE_KFLUX = 2;
-private static final String PARAMETER_K_UNITFACTOR_PREFIX = "UnitFactor_";
+public static final String PARAMETER_K_UNITFACTOR_PREFIX = "UnitFactor_";
 private static final String PARAMETER_BOUNDARY_XM_SUFFIX = "_boundaryXm";
 private static final String PARAMETER_BOUNDARY_XP_SUFFIX = "_boundaryXp";
 private static final String PARAMETER_BOUNDARY_YM_SUFFIX = "_boundaryYm";
