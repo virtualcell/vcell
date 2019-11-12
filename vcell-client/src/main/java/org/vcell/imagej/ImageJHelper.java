@@ -1622,7 +1622,7 @@ public class ImageJHelper {
 				        	}
 					        ArrayList<IJContextInfo> ijContextInfos = new ArrayList<>();
 				        	BioModelChildSummary bioModelChildSummary = bioModelInfo.getBioModelChildSummary();
-							if(bioModelChildSummary.getSimulationContextNames() != null) {
+							if(bioModelChildSummary != null && bioModelChildSummary.getSimulationContextNames() != null) {
 				        		for(int i = 0; i<bioModelInfo.getBioModelChildSummary().getSimulationContextNames().length;i++) {
 				        			String bioModelContextName = bioModelInfo.getBioModelChildSummary().getSimulationContextNames()[i];
 				        			if(bioModelContextName != null) {
