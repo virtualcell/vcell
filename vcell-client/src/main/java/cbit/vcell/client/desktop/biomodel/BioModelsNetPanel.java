@@ -50,6 +50,7 @@ import javax.swing.JButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.JTree;
+import javax.swing.ToolTipManager;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
@@ -105,6 +106,7 @@ public class BioModelsNetPanel extends DocumentEditorSubPanel {
                 boolean hasFocus) {
 			super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
 			String text = null;
+			String toolTipText = null;
 			if (value instanceof BioModelNode) {
 		        BioModelNode node = (BioModelNode)value;
 		        Object userObj = node.getUserObject();
@@ -112,9 +114,11 @@ public class BioModelsNetPanel extends DocumentEditorSubPanel {
 		    		text = ((BioModelsNetModelInfo) userObj).getName();
 		    		if(((BioModelsNetModelInfo) userObj).isSupported()) {
 		    			setIcon(VCellIcons.modelCuratedIcon);
+		    			toolTipText = "BMDB Id: " + ((BioModelsNetModelInfo) userObj).getId();
 //		    			setTextNonSelectionColor(Color.black);
 		    		} else {
-		    			setIcon(VCellIcons.modelCuratedBadIcon);
+		    			setIcon(VCellIcons.issueWarningIcon);
+		    			toolTipText = "BMDB Id: " + ((BioModelsNetModelInfo) userObj).getId() + " (model not compatible with vCell).";
 //		    			setTextNonSelectionColor(Color.red.darker());
 		    		}
 		    		
@@ -142,6 +146,7 @@ public class BioModelsNetPanel extends DocumentEditorSubPanel {
 		    		}
 		    	}
 			}
+			this.setToolTipText(toolTipText);
 			setText(text);
 			return this;
 		}
@@ -397,6 +402,7 @@ public class BioModelsNetPanel extends DocumentEditorSubPanel {
 		importButton.setEnabled(false);
 		tree = new JTree();
 		tree.setCellRenderer(new BioModelsNetTreeCellRenderer());
+		ToolTipManager.sharedInstance().registerComponent(tree);
 		treeModel = new BioModelsNetTreeModel();
 		tree.setModel(treeModel);
 		tree.getSelectionModel().addTreeSelectionListener(eventHandler);
