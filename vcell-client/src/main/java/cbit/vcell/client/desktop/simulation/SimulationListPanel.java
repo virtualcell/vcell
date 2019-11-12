@@ -13,6 +13,7 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
+import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -28,6 +29,7 @@ import java.util.Hashtable;
 import java.util.Objects;
 import java.util.Vector;
 
+import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.DefaultCellEditor;
 import javax.swing.Icon;
@@ -43,6 +45,7 @@ import javax.swing.JToolBar;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
 import javax.swing.UIManager;
+import javax.swing.border.Border;
 import javax.swing.table.TableCellEditor;
 
 import org.vcell.util.BeanUtils;
@@ -117,9 +120,11 @@ public class SimulationListPanel extends DocumentEditorSubPanel {
 	
 	private JPanel massConservationModelReductionPanel = null;
 	private JCheckBox massConservationModelReductionCheckBox = null;
+	private JButton massConservationModelReductionHelpButton = null;
 
 	private class IvjEventHandler implements java.awt.event.ActionListener,
 		java.beans.PropertyChangeListener, javax.swing.event.ListSelectionListener, MouseListener {
+		
 		public void actionPerformed(java.awt.event.ActionEvent e) {
 			if (e.getSource() == getNewButton()) {
 				newSimulation(NetworkGenerationRequirements.AllowTruncatedStandardTimeout);
@@ -150,6 +155,8 @@ public class SimulationListPanel extends DocumentEditorSubPanel {
 					SimulationContext simulationContext = (SimulationContext)fieldSimulationWorkspace.getSimulationOwner();
 					simulationContext.setUsingMassConservationModelReduction(getMassConservationModelReductionCheckBox().isSelected());
 				}
+			} else if(e.getSource() == getMassConservationModelReductionHelpButton()) {
+				showHelp();
 			}
 		};
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
@@ -206,6 +213,14 @@ private void tableSelectionChanged(javax.swing.event.ListSelectionEvent arg1) {
 	}
 }
 
+private void showHelp() {
+	String message = "When checked, we generate differential equations only for the independent variables.<br>";
+	message += "The dependent variables will be computed as functions of mass conservation totals.<br>";
+	message += "Running the simulation will be marginally faster but some simulations may become unstable.";
+	message = "<html>" + message + "</html>";
+	PopupGenerator.showInfoDialog(this, "Mass Conservation Model Reduction", message);
+
+}
 /**
  * Comment
  */
@@ -321,10 +336,7 @@ private javax.swing.JToolBar getToolBar() {
 			toolBar.add(getEditButton());
 			toolBar.add(getDeleteButton());
 			toolBar.addSeparator();
-
 			toolBar.add(getMassConservationModelReductionPanel());
-//			toolBar.add(getMassConservationModelReductionCheckBox());
-			
 			toolBar.add(Box.createHorizontalGlue());
 
 			
@@ -360,11 +372,25 @@ private javax.swing.JToolBar getToolBar() {
 
 private JCheckBox getMassConservationModelReductionCheckBox() {
 	if(massConservationModelReductionCheckBox == null) {
-		massConservationModelReductionCheckBox = new JCheckBox("Mass Conservation Model Reduction");
-//		massConservationModelReductionCheckbox.addItemListener(ivjEventHandler);
+		massConservationModelReductionCheckBox = new JCheckBox("Model Reduction");
+		massConservationModelReductionCheckBox.setToolTipText("Toggle Mass Conservation Model Reduction");
 		massConservationModelReductionCheckBox.setSelected(true);
 	}
 	return massConservationModelReductionCheckBox;
+}
+private JButton getMassConservationModelReductionHelpButton() {
+	if(massConservationModelReductionHelpButton == null) {
+		massConservationModelReductionHelpButton = new JButton("  ?  ");
+		massConservationModelReductionHelpButton.setVisible(true);
+		Font font = massConservationModelReductionHelpButton.getFont().deriveFont(Font.BOLD);
+		Border border = BorderFactory.createEmptyBorder(1, 1, 1, 1);
+		massConservationModelReductionHelpButton.setFont(font);
+		massConservationModelReductionHelpButton.setBorder(border);
+		massConservationModelReductionHelpButton.setFocusPainted(false);
+		massConservationModelReductionHelpButton.setFocusable(false);
+		massConservationModelReductionHelpButton.setToolTipText("Mass Conservation Model Reduction Help");
+	}
+	return massConservationModelReductionHelpButton;
 }
 
 private JPanel getMassConservationModelReductionPanel() {
@@ -392,6 +418,14 @@ private JPanel getMassConservationModelReductionPanel() {
 		gbc.weightx = 0;
 		massConservationModelReductionPanel.add(getMassConservationModelReductionCheckBox(), gbc);
 		
+		gridx++;
+		gbc = new GridBagConstraints();
+		gbc.gridx = gridx;
+		gbc.gridy = gridy;
+		gbc.insets = new Insets(2, 2, 2, 2);
+		gbc.weightx = 0;
+		massConservationModelReductionPanel.add(getMassConservationModelReductionHelpButton(), gbc);
+
 		gridx++;
 		gbc = new GridBagConstraints();
 		gbc.gridx = gridx;
@@ -660,6 +694,7 @@ private void initConnections() throws java.lang.Exception {
 	getDeleteButton().addActionListener(ivjEventHandler);
 	getRunButton().addActionListener(ivjEventHandler);
 	getMassConservationModelReductionCheckBox().addActionListener(ivjEventHandler);
+	getMassConservationModelReductionHelpButton().addActionListener(ivjEventHandler);
 
 //	getPythonResultsButton().addActionListener(ivjEventHandler);
 	getNativeResultsButton().addActionListener(ivjEventHandler);
