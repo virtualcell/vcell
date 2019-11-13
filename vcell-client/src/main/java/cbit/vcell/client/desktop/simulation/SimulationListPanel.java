@@ -993,12 +993,22 @@ private void refreshButtonsLax() {
 }
 
 private void massConservationButtonAdjust() {
-	if(fieldSimulationWorkspace != null && fieldSimulationWorkspace.getSimulationOwner() instanceof SimulationContext) {
-		SimulationContext simulationContext = (SimulationContext)fieldSimulationWorkspace.getSimulationOwner();
-		getMassConservationModelReductionCheckBox().setEnabled(true);
-		getMassConservationModelReductionCheckBox().setSelected(simulationContext.isUsingMassConservationModelReduction());
+	
+	if(fieldSimulationWorkspace != null && fieldSimulationWorkspace.getSimulationOwner() instanceof SimulationContext && fieldSimulationWorkspace.getSimulationOwner().getMathDescription() != null) {
+		SimulationContext simContext = (SimulationContext)fieldSimulationWorkspace.getSimulationOwner();
+		if(!fieldSimulationWorkspace.getSimulationOwner().getMathDescription().isSpatial() && simContext.getApplicationType() == SimulationContext.Application.NETWORK_DETERMINISTIC) {
+			getMassConservationModelReductionCheckBox().setVisible(true);
+			getMassConservationModelReductionCheckBox().setEnabled(true);
+			getMassConservationModelReductionCheckBox().setSelected(simContext.isUsingMassConservationModelReduction());
+			getMassConservationModelReductionHelpButton().setVisible(true);
+			getMassConservationModelReductionHelpButton().setEnabled(true);
+		} else {
+			getMassConservationModelReductionCheckBox().setVisible(false);
+			getMassConservationModelReductionHelpButton().setVisible(false);
+		}
 	} else {
-		getMassConservationModelReductionCheckBox().setEnabled(false);
+		getMassConservationModelReductionCheckBox().setVisible(false);
+		getMassConservationModelReductionHelpButton().setVisible(false);
 	}
 }
 
