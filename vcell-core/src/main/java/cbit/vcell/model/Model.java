@@ -2576,14 +2576,25 @@ public FluxReaction createFluxReaction(Membrane membrane) {
 }
 
 public static boolean isNameUnused(String name, Model model) {
-	if (model.getSpecies(name) == null && model.getSpeciesContext(name) == null &&
-			model.getReactionStep(name) == null &&
-			model.getRbmModelContainer().getObservable(name) == null &&
-			model.getRbmModelContainer().getReactionRule(name) == null ) {
-		return true;
-	} else {
+	if (model.getSpecies(name) != null) {
 		return false;
 	}
+	if(model.getSpeciesContext(name) != null) {
+		return false;
+	}
+	if(model.getModelParameter(name) != null) {
+		return false;
+	}
+	if(model.getReactionStep(name) != null) {
+		return false;
+	}
+	if(model.getRbmModelContainer().getObservable(name) != null) {
+		return false;
+	}
+	if(model.getRbmModelContainer().getReactionRule(name) != null ) {
+		return false;
+	}
+	return true;
 }
 /**
  * @return java.lang.String
