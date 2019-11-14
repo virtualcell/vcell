@@ -67,6 +67,7 @@ import cbit.vcell.client.desktop.biomodel.IssueManager;
 import cbit.vcell.client.desktop.biomodel.SimulationConsolePanel;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
+import cbit.vcell.geometry.GeometryOwner;
 import cbit.vcell.graph.gui.ReactionCartoonEditorPanel;
 import cbit.vcell.graph.gui.VisItShapeIcon;
 import cbit.vcell.graph.gui.VisItShapeIcon.State;
@@ -163,7 +164,14 @@ public class SimulationListPanel extends DocumentEditorSubPanel {
 			if (evt.getSource() == fieldSimulationWorkspace && evt.getPropertyName().equals(SimulationWorkspace.PROPERTY_NAME_SIMULATION_STATUS)) {
 				refreshButtonsLax();
 			}
-			massConservationButtonAdjust();
+			if (evt.getSource() instanceof SimulationContext && evt.getPropertyName().equals(GeometryOwner.PROPERTY_NAME_GEOMETRY)) {
+				if(fieldSimulationWorkspace != null && fieldSimulationWorkspace.getSimulationOwner() instanceof SimulationContext) {
+					if(evt.getSource() == fieldSimulationWorkspace.getSimulationOwner()) {
+						massConservationButtonAdjust();
+					}
+				}
+//				massConservationButtonAdjust();
+			}
 		};
 		public void valueChanged(javax.swing.event.ListSelectionEvent e) {
 			if (e.getValueIsAdjusting()) {
@@ -994,9 +1002,9 @@ private void refreshButtonsLax() {
 
 private void massConservationButtonAdjust() {
 	
-	if(fieldSimulationWorkspace != null && fieldSimulationWorkspace.getSimulationOwner() instanceof SimulationContext && fieldSimulationWorkspace.getSimulationOwner().getMathDescription() != null) {
+	if(fieldSimulationWorkspace != null && fieldSimulationWorkspace.getSimulationOwner() instanceof SimulationContext) {
 		SimulationContext simContext = (SimulationContext)fieldSimulationWorkspace.getSimulationOwner();
-		if(!fieldSimulationWorkspace.getSimulationOwner().getMathDescription().isSpatial() && simContext.getApplicationType() == SimulationContext.Application.NETWORK_DETERMINISTIC) {
+		if(simContext.getGeometry().getDimension() == 0 && simContext.getApplicationType() == SimulationContext.Application.NETWORK_DETERMINISTIC) {
 			getMassConservationModelReductionCheckBox().setVisible(true);
 			getMassConservationModelReductionCheckBox().setEnabled(true);
 			getMassConservationModelReductionCheckBox().setSelected(simContext.isUsingMassConservationModelReduction());
@@ -1080,10 +1088,16 @@ public void setSimulationWorkspace(SimulationWorkspace newValue) {
 	SimulationWorkspace oldValue = fieldSimulationWorkspace;
 	if (oldValue != null) {
 		oldValue.removePropertyChangeListener(ivjEventHandler);
+		if(oldValue.getSimulationOwner() instanceof SimulationContext) {
+			oldValue.getSimulationOwner().removePropertyChangeListener(ivjEventHandler);
+		}
 	}
 	fieldSimulationWorkspace = newValue;
 	if (fieldSimulationWorkspace != null) {
 		fieldSimulationWorkspace.addPropertyChangeListener(ivjEventHandler);
+		if(fieldSimulationWorkspace.getSimulationOwner() instanceof SimulationContext) {
+			fieldSimulationWorkspace.getSimulationOwner().addPropertyChangeListener(ivjEventHandler);
+		}
 	}
 	getSimulationListTableModel1().setSimulationWorkspace(fieldSimulationWorkspace);
 	refreshButtonsLax();
