@@ -15,6 +15,7 @@ import java.awt.Font;
 
 import javax.swing.Icon;
 import javax.swing.JTree;
+import javax.swing.tree.TreeNode;
 
 import org.vcell.util.gui.VCellIcons;
 
@@ -198,6 +199,30 @@ public class BioModelEditorTreeCellRenderer extends DocumentEditorTreeCellRender
 	    			break;
 	    		case PROTOCOLS_NODE:
 	    			icon = VCellIcons.protocolsIcon;
+	    	        TreeNode tn = node.getParent();
+	    	        if(tn instanceof BioModelNode) {
+	    	        	BioModelNode applicationNode = (BioModelNode)tn;
+	    	        	Object uo = applicationNode.getUserObject();
+	    	        	if (uo instanceof SimulationContext) {
+	    	        		SimulationContext sc = (SimulationContext)uo;
+	    	        		int numProtocols = 0;
+//	    	        		if(sc.getBioEvents() != null) {
+//	    	        			numProtocols += sc.getBioEvents().length;
+//	    	        		}
+//	    	        		if(sc.getElectricalStimuli() != null) {
+//	    	        			numProtocols += sc.getElectricalStimuli().length;
+//	    	        		}
+	    	        		if(sc.getRateRules() != null) {
+	    	        			numProtocols += sc.getRateRules().length;
+	    	        		}
+	    	        		if(sc.getAssignmentRules() != null) {
+	    	        			numProtocols += sc.getAssignmentRules().length;
+	    	        		}
+	    	        		if(numProtocols > 0) {
+	    	        			labelText += " (rules: " + numProtocols + ")";
+	    	        		}
+	    	        	}
+	    	        }
 	    			break;
 	    		case SIMULATIONS_NODE:
 	    			icon = VCellIcons.simulationIcon;
