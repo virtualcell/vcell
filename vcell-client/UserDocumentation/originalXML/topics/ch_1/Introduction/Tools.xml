@@ -15,21 +15,8 @@
 	     <link target = "LaunchVirtualFRAP">Launch Virtual FRAP</link> - opens VirtualFRAP, a tool to analyze fluorescence photobleaching experiments using VCell spatial modeling technology.  
 	  </item>
 	  <item>
-	  	<bold>Start ImageJ Service</bold> - VCell's FIJI (ImageJ) service allows scripts running in FIJI to communicate with VCell allowing query, control, and transfer of model/simulation data between VCell and FIJI. 
-	  	To get started download and <bold>install FIJI</bold> from https://imagej.net/Fiji.  Fiji provides a scripting environment that can be used with an installable VCell plugin to allow 
-	  	communication between FIJI and a VCell client running on the users local computer. 
-	  	<bold>Download example files</bold> from http://vcell.org/webstart/packImageJExample.zip and extract to a directory. 
-	  	<bold>Start VCell</bold> open menu item Tools->'Start FIJI (ImageJ) Service', a plugin change/install dialog will appear that will show the path to any previously installed plugin and the version of any newly available plugin. 
-	  	If there is no VCell plugin currently installed in FIJI choose 'install new plugin...', navigate to the FIJI installation and select the 'plugins' directory where the plugin will be automatically installed. 
-	  	If a plugin was previously installed choose one of 2 things; 'Continue' to use the current plugin -or- 'Update plugin or Change path...' to reinstall/update the plugin. 
-	  	If no error messages are dislayed the VCell Tools menu should now have the item 'Stop FIJI (ImageJ) Service xxxx' where xxxx is the port number VCell client is listening for commands from the plugin you have installed. 
-	  	You can choose Tools->'Stop FIJI (ImageJ) Service xxxx' to stop the VCell FIJI service. 
-	  	<bold>Start FIJI</bold> open menu Plugins->New->Macro and the scripting editor will appear.  In the scripting editor choose <bold>Language->Groovy</bold> (The examples use Groovy which is very much like the Java programming language).
-	  	In the scripting editor choose File->Open... and navigate to the 'examples' directory you extracted the downloaded examples to and open the file 'chart.groovy', click the 'Run' button at the bottom 
-	  	of the editor and if everything is setup correctly you will see a chart displayed of the simulation values at timepoint 22 along a line x-axis at y=0 from the public VCell Tutorials 
-	  	biomodel 'Tutorial_FRAPbinding', application "Spatial", simulation "FRAP binding". 
-	  	The other example 'complex.groovy' is a more extensive example that runs a VCell simulation after changing it's geometry and a parameter value then compares the result to some pre-existing data.
-	  </item>
+	  	  <link target = "ImageJService">Start ImageJ Service</link> - VCell's FIJI (ImageJ) service allows scripts running in FIJI to communicate with VCell allowing query, control, and transfer of model/simulation data between VCell and FIJI. 
+	   </item>
  	  <item>
 	     <link target = "TransformToStochCapable">Transform to Stochastic Capable</link> - launches a tool to convert a deterministic model to a stochastic-capable model, where possible.  
 	  </item>

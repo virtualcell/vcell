@@ -28,6 +28,7 @@
     		<tocitem target="Window" text="Window Menu"/>
     		<tocitem target="Tools" text="Tools Menu">
     			<tocitem target="LaunchVirtualFRAP" text="Launch Virtual FRAP Menu"/>
+    			<tocitem target="ImageJService" text="Start ImageJ Service"/>
  				<tocitem target="TransformToStochCapable" text="Transform to Stochastic Capable Menu"/>
     		</tocitem>
     		<tocitem target="Help" text="Help Menu"/>

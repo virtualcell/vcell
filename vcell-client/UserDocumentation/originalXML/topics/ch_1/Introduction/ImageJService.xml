@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<vcelldoc>
+<page title="ImageJ Service">
+
+	<introduction>
+	The <bold>Start ImageJ Service</bold> allows the image analysis program Fiji to communicate with VCell using Fiji scripts.  Fiji scripts can then query, control, and transfer model/simulation data between VCell and Fiji.
+	To use the service, first <bold>download and install Fiji </bold> (https://imagej.net/Fiji).  Fiji provides a scripting environment that can be used with a VCell plugin (installed from VCell) to allow 
+	  	communication between Fiji and a VCell client running on the user's local computer. Then select <bold>Start Fiji (ImageJ) Service</bold> from the tools menu
+	</introduction>
+	
+	<appearance>
+	<imgReference target = "Tools_StartImageJ.PNG"/>
+		
+	</appearance>
+	
+	<operations> 
+	<para>One of two dialog boxes will appear.</para>
+	<imgReference target = "ImageJService.PNG"/> 
+	 
+<list>
+		<item>If a VCell plugin is not currently installed in Fiji choose <bold>install new plugin</bold>, then navigate to the FIJI installation folder and select the 'plugins' folder; the VCell plugin for FIJI will be automatically installed in the selected plugins folder. 
+		</item>
+	  	<item>If a plugin was previously installed choose either <bold>Continue</bold> to use the current plugin -or- <bold>Update plugin or Change path</bold> to reinstall/update the plugin. 
+	  	</item>
+</list>
+	  	<para>If no error messages are dislayed the VCell Tools menu should now have the item 'Stop Fiji (ImageJ) Service xxxx' where xxxx is the port number VCell client is listening for commands from the plugin you have installed. You can choose Tools->'Stop Fiji (ImageJ) Service xxxx' to stop the VCell Fiji service.
+	  	</para>
+	  	<para><bold>Start</bold> the Fiji program.  From the Plugins menu within Fiji select <bold>New->Macro</bold> to bring up the scripting editor.  
+	  	</para>
+	  	<para><bold>Example files can be downloaded</bold> from http://vcell.org/webstart/packImageJExample.zip and extracted to a directory.
+	  	</para>
+	  	<para>To use the example scripts choose <bold>Language->Groovy</bold> in the scripting editor  (the examples use Groovy which is very much like the Java programming language).
+	  	In the scripting editor choose <bold>File->Open</bold> and navigate to the 'examples' directory you extracted the downloaded examples to and open one of the example files.  At this writing there are 3 example files:
+<imgReference target = "ImageJ_ChartGroovy.PNG"/>
+</para>
+<list>
+	<item><bold>chart.groovy</bold>. Click the <bold>Run</bold> button at the bottom 
+	of the editor to display a chart of simulation values at t= 22s along a line x-axis at y=0 from the public VCell Tutorial 
+	biomodel 'Tutorial_FRAPbinding', application "Spatial", simulation "FRAP binding".
+	</item>
+	<item> <bold>complex.groovy</bold>. <bold>Replaces</bold> the geometry in the public VCell Tutorial 
+	biomodel 'Tutorial_FRAPbinding', application "Spatial", <bold>edits</bold> the simulation to change a parameter, <bold>runs</bold> a new VCell simulation, then <bold>compares</bold> the result to some pre-existing data.
+	</item>
+	<item> <bold>Said_Kerbai2.groovy</bold> was written for a user to display data from multiple variables after creating a user defined ROI
+	</item>
+</list>	
+	</operations>
+	
+	<comments>  </comments>
+
+</page>
+
+</vcelldoc>
