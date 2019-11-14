@@ -1,56 +1,33 @@
 package org.vcell.imagej;
 
-import java.awt.Component;
-import java.beans.PropertyVetoException;
-import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringWriter;
 import java.net.BindException;
-import java.net.HttpURLConnection;
-import java.net.InetSocketAddress;
-import java.net.ServerSocket;
-import java.net.Socket;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URL;
-import java.net.URLConnection;
-import java.net.URLDecoder;
 import java.nio.ByteBuffer;
-import java.nio.DoubleBuffer;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Base64;
 import java.util.BitSet;
 import java.util.Collection;
 import java.util.Date;
-import java.util.Enumeration;
-import java.util.EventObject;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import java.util.StringTokenizer;
-import java.util.TreeMap;
-import java.util.Vector;
-import java.util.stream.Collectors;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.swing.JOptionPane;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
@@ -59,43 +36,24 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlInlineBinaryData;
 import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
-import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.ResponseHandler;
-import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.utils.URLEncodedUtils;
-import org.apache.http.impl.client.BasicCookieStore;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.util.EntityUtils;
 import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.Request;
-import org.eclipse.jetty.server.Response;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.handler.AbstractHandler;
 import org.eclipse.jetty.server.handler.ContextHandler;
 import org.eclipse.jetty.server.handler.ContextHandlerCollection;
 import org.jdom.Namespace;
-import org.sbml.jsbml.ext.spatial.SampledVolume;
 import org.vcell.imagej.ImageJHelper.ApiSolverHandler.IJGeom;
-import org.vcell.sbml.SBMLUtils;
 import org.vcell.util.BeanUtils;
-import org.vcell.util.ClientTaskStatusSupport;
-import org.vcell.util.Compare;
-import org.vcell.util.Coordinate;
-import org.vcell.util.DataAccessException;
 import org.vcell.util.Extent;
 import org.vcell.util.FileUtils;
+import org.vcell.util.Hex;
 import org.vcell.util.ISize;
 import org.vcell.util.Origin;
-import org.vcell.util.ProgressDialogListener;
 import org.vcell.util.Range;
-import org.vcell.util.UserCancelException;
 import org.vcell.util.document.BioModelChildSummary;
 import org.vcell.util.document.BioModelChildSummary.MathType;
 import org.vcell.util.document.BioModelInfo;
@@ -106,24 +64,13 @@ import org.vcell.util.document.TSJobResultsSpaceStats;
 import org.vcell.util.document.TimeSeriesJobResults;
 import org.vcell.util.document.TimeSeriesJobSpec;
 import org.vcell.util.document.User;
-import org.vcell.util.document.VCDataIdentifier;
 import org.vcell.util.document.VCDataJobID;
 import org.vcell.util.document.VCDocument;
 import org.vcell.util.document.VCDocument.VCDocumentType;
-import org.vcell.util.gui.DialogUtils;
-import org.vcell.vmicro.workflow.data.ExternalDataInfo;
-import org.vcell.vmicro.workflow.data.LocalWorkspace;
-import org.w3c.dom.Document;
-import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 
-import cbit.image.ImageException;
-import cbit.image.ThumbnailImage;
-import cbit.image.VCImage;
+import cbit.image.DisplayAdapterService;
 import cbit.image.VCImageUncompressed;
 import cbit.image.VCPixelClass;
-import cbit.util.xml.XmlUtil;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.BioModelWindowManager;
 import cbit.vcell.client.ChildWindowManager;
@@ -136,49 +83,27 @@ import cbit.vcell.client.TopLevelWindowManager;
 import cbit.vcell.client.TranslationLogger;
 import cbit.vcell.client.VCellClient;
 import cbit.vcell.client.data.SimulationWorkspaceModelInfo;
-import cbit.vcell.client.desktop.biomodel.MathematicsPanel;
 import cbit.vcell.client.desktop.simulation.SimulationWindow;
-import cbit.vcell.client.server.ClientServerManager;
 import cbit.vcell.client.task.AsynchClientTask;
-import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.client.test.VCellClientTest;
-import cbit.vcell.export.nrrd.NrrdInfo;
-import cbit.vcell.export.nrrd.NrrdWriter;
-import cbit.vcell.export.server.FileDataContainerManager;
-import cbit.vcell.field.io.FieldDataFileOperationResults;
 import cbit.vcell.geometry.Geometry;
-import cbit.vcell.geometry.GeometryException;
-import cbit.vcell.geometry.GeometrySpec;
-import cbit.vcell.geometry.GeometryThumbnailImageFactory;
-import cbit.vcell.geometry.GeometryThumbnailImageFactoryAWT;
-import cbit.vcell.geometry.ImageSubVolume;
-import cbit.vcell.geometry.SampledCurve;
 import cbit.vcell.geometry.SubVolume;
-import cbit.vcell.geometry.surface.GeometrySurfaceDescription;
-import cbit.vcell.mapping.FeatureMapping;
-import cbit.vcell.mapping.MappingException;
 import cbit.vcell.mapping.MathMappingCallbackTaskAdapter;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SimulationContext.MathMappingCallback;
 import cbit.vcell.mapping.SimulationContext.NetworkGenerationRequirements;
 import cbit.vcell.mapping.SpeciesContextSpec;
 import cbit.vcell.mapping.StructureMapping;
-import cbit.vcell.math.VariableType;
 import cbit.vcell.math.Constant;
-import cbit.vcell.math.MathException;
-import cbit.vcell.math.ReservedVariable;
-import cbit.vcell.math.Variable;
 import cbit.vcell.math.Variable.Domain;
+import cbit.vcell.math.VariableType;
 import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.messaging.server.SimulationTask;
-import cbit.vcell.model.Model.Owner;
 import cbit.vcell.parser.Expression;
-import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.simdata.ClientPDEDataContext;
 import cbit.vcell.simdata.DataIdentifier;
 import cbit.vcell.simdata.DataInfoProvider;
-import cbit.vcell.simdata.DataManager;
 import cbit.vcell.simdata.DataServerImpl;
 import cbit.vcell.simdata.DataSetControllerImpl;
 import cbit.vcell.simdata.ODEDataBlock;
@@ -188,34 +113,24 @@ import cbit.vcell.simdata.PDEDataManager;
 import cbit.vcell.simdata.ServerPDEDataContext;
 import cbit.vcell.simdata.SimDataBlock;
 import cbit.vcell.simdata.SimDataConstants;
-import cbit.vcell.simdata.SimulationData;
 import cbit.vcell.simdata.VCDataManager;
 import cbit.vcell.simdata.gui.PDEDataContextPanel.RecodeDataForDomainInfo;
 import cbit.vcell.solver.AnnotatedFunction;
 import cbit.vcell.solver.MathOverrides;
-import cbit.vcell.solver.MeshSpecification;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationJob;
 import cbit.vcell.solver.SimulationModelInfo;
 import cbit.vcell.solver.SimulationOwner;
-import cbit.vcell.solver.SimulationSymbolTable;
 import cbit.vcell.solver.SolverDescription;
-import cbit.vcell.solver.SolverException;
 import cbit.vcell.solver.SolverUtilities;
-import cbit.vcell.solver.TempSimulation;
-import cbit.vcell.solver.TimeBounds;
-import cbit.vcell.solver.UniformOutputTimeSpec;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.vcell.solver.ode.ODESimData;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.solver.server.Solver;
-import cbit.vcell.solver.server.SolverEvent;
 import cbit.vcell.solver.server.SolverFactory;
-import cbit.vcell.solver.server.SolverListener;
 import cbit.vcell.solver.server.SolverStatus;
 import cbit.vcell.solvers.CartesianMesh;
-import cbit.vcell.util.ColumnDescription;
 import cbit.vcell.xml.ExternalDocInfo;
 import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XMLTags;
@@ -778,7 +693,7 @@ public class ImageJHelper {
 	private static JAXBContext jaxbContext = null;
 	static {
 		try {
-			jaxbContext = JAXBContext.newInstance(new Class[] {VCCommandList.class,IJModelInfos.class,IJSolverStatus.class,IJTimeSeriesJobResults.class,IJDataList.class,IJVarInfos.class,IJFieldData.class,IJGeom.class});
+			jaxbContext = JAXBContext.newInstance(new Class[] {VCCommandList.class,IJModelInfos.class,IJSolverStatus.class,IJTimeSeriesJobResults.class,IJDataList.class,IJVarInfos.class,IJFieldData.class,IJGeom.class,CTable.class});
 		} catch (JAXBException e) {
 			e.printStackTrace();
 		}
@@ -821,6 +736,52 @@ public class ImageJHelper {
 			this.commandInfo = commandInfo;
 		}
 	}
+	
+	@XmlRootElement()
+	private static class CTable{
+		@XmlElement()
+		String lutServiceFormat;
+		//from DisplayAdapterService
+//		public static final int NUM_SPECIAL_COLORS = 8;
+//		public static final int BELOW_MIN_COLOR_OFFSET = 0;
+//		public static final int ABOVE_MAX_COLOR_OFFSET = 1;
+//		public static final int NAN_COLOR_OFFSET = 2;
+//		public static final int NOT_IN_DOMAIN_COLOR_OFFSET = 3;
+//		public static final int NO_RANGE_COLOR_OFFSET = 4;
+//		public static final int FOREGROUND_HIGHLIGHT_COLOR_OFFSET = 5;
+//		public static final int FOREGROUND_NONHIGHLIGHT_COLOR_OFFSET = 6;
+//		public static final int NULL_COLOR_OFFSET = 7;
+		@XmlElement()
+		static String[] specialColors = new String[] {"BELOW_MIN_COLOR_OFFSET","ABOVE_MAX_COLOR_OFFSET","NAN_COLOR_OFFSET","NOT_IN_DOMAIN_COLOR_OFFSET",
+				"NO_RANGE_COLOR_OFFSET","FOREGROUND_HIGHLIGHT_COLOR_OFFSET","FOREGROUND_NONHIGHLIGHT_COLOR_OFFSET","NULL_COLOR_OFFSET"};
+		public CTable() {
+			
+		}
+		public CTable(String cmapName) {
+			int[] argb = null;
+			int[] specialColors = null;
+			if(cmapName.equals("bg")) {
+				argb = DisplayAdapterService.createBlueRedColorModel();
+				specialColors = DisplayAdapterService.createBlueRedSpecialColors();
+			}else {
+				argb = DisplayAdapterService.createGrayColorModel();
+				specialColors = DisplayAdapterService.createGraySpecialColors();
+			}
+			for (int i = 0; i < specialColors.length; i++) {
+				argb[argb.length-specialColors.length+i] = specialColors[i];
+			}
+			StringBuffer sb = new StringBuffer();
+			for (int i = 0; i < argb.length; i++) {
+				byte[] byteArr = Hex.toBytes(Hex.toString(argb[i]).substring(2));
+				for (int j = 0; j < byteArr.length; j++) {
+					sb.append((j!=0?" ":"")+(byteArr[j]&0x000000FF));
+				}
+				sb.append("\n");
+			}
+			lutServiceFormat = sb.toString();
+		}
+	}
+	
 	public static enum ApiEnum {hello,getinfo,getdata,gettimeseries,solver};
 	private static String GETINFO_PARMS = IJListParams.type.name()+"={"+IJDocType.bm.name()+","+IJDocType.mm.name()+","+IJDocType.quick.name()+"}"+"&"+IJListParams.open.name()+"={true,false}";
 	private static String GETDATA_PARMS = IJGetDataParams.cachekey.name()+"=int"+"&"+IJGetDataParams.varname.name()+"=string"+"&"+IJGetDataParams.timeindex.name()+"="+"double";
@@ -2034,12 +1995,6 @@ public class ImageJHelper {
 		public void respondIdentifiers(HttpServletResponse response,String simName,Long cachekey) throws Exception{
     		respond(response, createXML(getIJVarInfos(simName, cachekey, jobCount)));
 		}
-		private void respond(HttpServletResponse response,String xml) throws IOException{
-    		response.setContentType("text/xml; charset=utf-8");
-//    		response.setContentLength(xml.length());
-    		response.setStatus(HttpServletResponse.SC_OK);
-    		response.getWriter().write(xml);    	
-		}
 		public BitSet getDomainMask(DataIdentifier di,SimulationModelInfo simulationModelInfo) {
 //			SimulationModelInfo simulationModelInfo = new SimulationWorkspaceModelInfo(simOwner, argSimulationName);
 			final CartesianMesh cartesianMesh = pdeDataContext.getCartesianMesh();
@@ -2158,6 +2113,13 @@ public class ImageJHelper {
 
 	}
 	
+	private static void respond(HttpServletResponse response,String xml) throws IOException{
+		response.setContentType("text/xml; charset=utf-8");
+//		response.setContentLength(xml.length());
+		response.setStatus(HttpServletResponse.SC_OK);
+		response.getWriter().write(xml);    	
+	}
+
 	
 	
 	
@@ -2277,7 +2239,7 @@ public class ImageJHelper {
 	
 	
 	
-	private static enum IJGetDataParams {cachekey,varname,timeindex,jobindex}
+	private static enum IJGetDataParams {cachekey,varname,timeindex,jobindex,colortable}
 	public static class ApiGetDataHandler extends AbstractHandler{
 		@Override
 		public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response)
@@ -2288,12 +2250,15 @@ public class ImageJHelper {
 	    	String[] decodedVarNames = null;
 	    	int[] timeIndexes = null;
 	    	int jobIndex = 0;//jobIndex 0 by default
+	    	String colortableName = null;
 	    	Map<String, String[]> parameterMap = request.getParameterMap();
 	    	for(String param:parameterMap.keySet()) {
 	    		if(param.equals(IJGetDataParams.cachekey.name())) {
 	    			cacheKey = Long.valueOf(parameterMap.get(param)[0]);
 	    		}else if(param.equals(IJGetDataParams.varname.name())) {
 	    			decodedVarNames = parameterMap.get(param);//Values are already URLDecoded at this point
+	    		}else if(param.equals(IJGetDataParams.colortable.name())) {
+	    			colortableName = parameterMap.get(param)[0];//Values are already URLDecoded at this point
 	    		}else if(param.equals(IJGetDataParams.timeindex.name())) {
 	    			String[] timeIndexeStr = parameterMap.get(param);
 	    			timeIndexes = new int[timeIndexeStr.length];
@@ -2306,10 +2271,19 @@ public class ImageJHelper {
 
 	    	}
 	    	if(cacheKey == null) {
-	    		response.setContentType("text/html; charset=utf-8");
-	    		response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-	    		response.getWriter().println("<h1>Expecting '"+GETINFO_PARMS+"' in request</h1>");
-	    	}else {		        
+	    		if(colortableName != null) {
+		    		try {
+						respond(response, createXML(new CTable(colortableName)));
+					} catch (Exception e) {
+						e.printStackTrace();
+						throw new ServletException(e.getMessage(),e);
+					}
+	    		}else {
+		    		response.setContentType("text/html; charset=utf-8");
+		    		response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+		    		response.getWriter().println("<h1>Expecting '"+GETINFO_PARMS+"' in request</h1>");
+	    		}
+	    	}else {	        
 		        if(cacheKey != null) {
 			        boolean bFound = false;
 		        	if(ijModelInfoCache != null) {

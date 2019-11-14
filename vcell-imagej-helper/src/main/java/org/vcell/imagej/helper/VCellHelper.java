@@ -1,6 +1,5 @@
 package org.vcell.imagej.helper;
 
-import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -52,7 +51,9 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import net.imagej.ImageJService;
+import net.imagej.lut.LUTService;
 import net.imglib2.Dimensions;
+import net.imglib2.display.ColorTable;
 
 @Plugin(type = Service.class)
 public class VCellHelper extends AbstractService implements ImageJService
@@ -532,6 +533,16 @@ public class VCellHelper extends AbstractService implements ImageJService
 		}
 		
 	}
+	public ColorTable getVCellColorTable(String name) throws Exception{
+		URL dataUrl = new URL("http://localhost:"+findVCellApiServerPort()+"/"+"getdata"+"?"+"colortable"+"="+name);
+    	Document doc = VCellHelper.getDocument(dataUrl);
+//    	System.out.println(documentToString(doc));
+    	final NodeList elementsByTagName = doc.getElementsByTagName("lutServiceFormat");
+    	LUTService lutService = (LUTService)getContext().getService(LUTService.class.getName());
+    	ColorTable ct = lutService.loadLUT(new ByteArrayInputStream(elementsByTagName.item(0).getTextContent().getBytes()));
+    	return ct;
+	}
+	
 	public TimePointData getTimePointData(String simulationDataCacheKey,String variableName,int[] timePointIndexes,int simulationJobIndex) throws Exception{
 		StringBuffer timeIndexParams = new StringBuffer();
 		if(timePointIndexes != null) {
