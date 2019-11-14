@@ -46,7 +46,7 @@ vcms = new VCellModelSearch(ModelType.bm,
 
 //Do a search: (for this demo must have already opened public BioModel "Tutorial_FRAPbinding" listed under "Tutorials within VCell client"
 // vh.getSearchedModelSimCacheKey(boolean openOnly,VCellModelSearch vcms,VCellModelVersionTimeRange vcmvtr)
-/*ArrayList<VCellModelSearchResults>*/vcmsrArrayList = vh.getSearchedModelSimCacheKey(true/*only open models*/,vcms,null/*only saved models withing this date range*/)
+/*ArrayList<VCellModelSearchResults>*/vcmsrArrayList = vh.getSearchedModelSimCacheKey(false/*only open models*/,vcms,null/*only saved models withing this date range*/)
 
 //For this search there should only be 1 result, get the search cache-key from the returned list, used for subsequent data operations
 /*VCellModelSearchResults extends VCellModelSearch*/vcmsr = vcmsrArrayList.get(0)
