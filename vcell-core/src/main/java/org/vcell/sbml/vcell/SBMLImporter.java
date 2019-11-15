@@ -1484,10 +1484,10 @@ public class SBMLImporter {
 				assignmentRulesHash.put(assignmentRule.getVariable(), assignmentRuleMathExpr);
 			}
 		}
-		if(bAssignmentRule) {
-			localIssueList.add(new Issue(vcBioModel, issueContext, IssueCategory.SBMLImport_RestrictedFeature,
-				"AssignmentRules are supported at this time with restrictions. Please check the generated math for consistency.", Issue.Severity.WARNING));
-		}
+//		if(bAssignmentRule) {
+//			localIssueList.add(new Issue(vcBioModel, issueContext, IssueCategory.SBMLImport_RestrictedFeature,
+//				"AssignmentRules are supported at this time with restrictions. Please check the generated math for consistency.", Issue.Severity.WARNING));
+//		}
 	}
 	
 	// returns true if reserved x,y,z symbols are used inappropriately - like in a non-spatial model
@@ -1688,10 +1688,10 @@ public class SBMLImporter {
 				rateRulesHash.put(ste.getName(), vcRateRuleExpr);
 			}
 		}
-		if(bRateRule) {
-			localIssueList.add(new Issue(vcBioModel, issueContext, IssueCategory.SBMLImport_RestrictedFeature,
-				"RateRules are supported at this time with restrictions. Please check the generated math for consistency.", Issue.Severity.WARNING));
-		}
+//		if(bRateRule) {
+//			localIssueList.add(new Issue(vcBioModel, issueContext, IssueCategory.SBMLImport_RestrictedFeature,
+//				"RateRules are supported at this time with restrictions. Please check the generated math for consistency.", Issue.Severity.WARNING));
+//		}
 	}
 	
 	// called after the reactions are parsed, we check if the rule expression references any reaction by name
