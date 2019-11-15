@@ -222,13 +222,15 @@ private void tableSelectionChanged(javax.swing.event.ListSelectionEvent arg1) {
 }
 
 private void showHelp() {
-	String message = "When checked, we generate differential equations only for the independent variables.<br>";
-	message += "The dependent variables will be computed as functions of mass conservation totals.<br>";
-	message += "Running the simulation will be marginally faster but some simulations may become unstable.";
-	message = "<html>" + message + "</html>";
-	PopupGenerator.showInfoDialog(this, "Mass Conservation Model Reduction", message);
-
+	 String message = "In earlier VCell versions, math generation in ODE compartmental Applications automatically ";
+	 message += "reduced the system, using mass conservation, to solve the minimal number of ODEs for a minimal set of variables; ";
+	 message += "the rest of the variables (i.e. species) were determined from algebraic mass conservation relations. \rAt the ";
+	 message += "expense of slightly longer simulation times, users may now turn off variable reduction. This makes the generated ";
+	 message += "math easier to understand and can avoid occasional numerical simulation issues.";
+//	message = "<html>" + message + "</html>";
+	PopupGenerator.showInfoDialog(this, "Variable reduction by mass conservation", message);
 }
+
 /**
  * Comment
  */
@@ -380,8 +382,8 @@ private javax.swing.JToolBar getToolBar() {
 
 private JCheckBox getMassConservationModelReductionCheckBox() {
 	if(massConservationModelReductionCheckBox == null) {
-		massConservationModelReductionCheckBox = new JCheckBox("Model Reduction");
-		massConservationModelReductionCheckBox.setToolTipText("Toggle Mass Conservation Model Reduction");
+		massConservationModelReductionCheckBox = new JCheckBox("Variable Reduction");
+		massConservationModelReductionCheckBox.setToolTipText("Toggle ODE variable reduction by mass conservation.");
 		massConservationModelReductionCheckBox.setSelected(true);
 	}
 	return massConservationModelReductionCheckBox;
@@ -396,7 +398,7 @@ private JButton getMassConservationModelReductionHelpButton() {
 		massConservationModelReductionHelpButton.setBorder(border);
 		massConservationModelReductionHelpButton.setFocusPainted(false);
 		massConservationModelReductionHelpButton.setFocusable(false);
-		massConservationModelReductionHelpButton.setToolTipText("Mass Conservation Model Reduction Help");
+		massConservationModelReductionHelpButton.setToolTipText("Variable reduction by mass conservation help.");
 	}
 	return massConservationModelReductionHelpButton;
 }
