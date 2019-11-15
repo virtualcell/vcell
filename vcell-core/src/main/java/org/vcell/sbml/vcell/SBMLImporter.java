@@ -2477,7 +2477,7 @@ public class SBMLImporter {
 			translateSBMLModel();
 			vcBioModel.refreshDependencies();
 			
-			idToNameConversion();
+//			idToNameConversion();
 
 		} catch(Exception e) {
 			e.printStackTrace(System.out);
