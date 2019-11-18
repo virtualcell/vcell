@@ -24,7 +24,6 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -54,13 +53,13 @@ import org.vcell.client.logicalwindow.LWTopFrame;
 import org.vcell.documentation.VcellHelpViewer;
 import org.vcell.imagej.ImageJHelper;
 import org.vcell.util.BeanUtils;
-import org.vcell.util.ConfigurationException;
-import org.vcell.util.UserCancelException;
+import org.vcell.util.TokenMangler;
 import org.vcell.util.UtilCancelException;
 import org.vcell.util.document.User;
 import org.vcell.util.document.UserLoginInfo;
 import org.vcell.util.document.VCDocument;
 import org.vcell.util.document.VCDocument.VCDocumentType;
+import org.vcell.util.document.VCellSoftwareVersion;
 import org.vcell.util.document.VersionFlag;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.SimpleUserMessage;
@@ -72,7 +71,6 @@ import org.vcell.util.importer.PathwayImportPanel.PathwayImportOption;
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.biomodel.meta.VCMetaData;
-import cbit.vcell.client.BioModelWindowManager;
 import cbit.vcell.client.ChildWindowManager;
 import cbit.vcell.client.ClientRequestManager;
 import cbit.vcell.client.DocumentWindowManager;
@@ -88,7 +86,6 @@ import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.client.task.LaunchVirtualFRAP;
 import cbit.vcell.desktop.LoginDelegate;
 import cbit.vcell.desktop.LoginManager;
-import cbit.vcell.desktop.LoginPanel;
 import cbit.vcell.model.gui.TransformMassActionPanel;
 import cbit.vcell.resource.OperatingSystemInfo;
 import cbit.vcell.resource.PropertyLoader;
@@ -1782,17 +1779,17 @@ private void startStopImageJService() {
 		final String NEW_IJ_PLUGIN = "Install new plugin...";
 		final String CHANGE_IJ_PLUGIN = "Update plugin or Change path...";
 		Preferences prefs = Preferences.userNodeForPackage(DocumentWindow.class);
+		String imageJVCellPluginVersion = "vcell-imagej-helper-"+TokenMangler.fixTokenStrict(VCellSoftwareVersion.fromSystemProperty().getSoftwareVersionString())+".jar";
 		String imageJPluginPath = prefs.get(IMAGEJ_PLUGIN_PATH, null);
 		URL imageJVCellPluginURL = null;
 		try {
-			imageJVCellPluginURL = new URL(PropertyLoader.getRequiredProperty(PropertyLoader.imageJVcellPluginURL));
+			imageJVCellPluginURL = new URL(PropertyLoader.getRequiredProperty(PropertyLoader.imageJVcellPluginURL)+"/"+imageJVCellPluginVersion);
 		} catch (Exception e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
 			DialogUtils.showErrorDialog(this, "Error download URL: "+e1.getMessage());
 			return;
 		}
-		String imageJVCellPluginVersion = new File(imageJVCellPluginURL.getPath()).getName();
 		String downLoadOption = NEW_IJ_PLUGIN;
 //		File ijPluginFile = null;
 		File[] existingVCPlugins = new File[] {};
@@ -1806,10 +1803,14 @@ private void startStopImageJService() {
 				}
 			});
 			if(existingVCPlugins.length > 1) {
-				DialogUtils.showErrorDialog(this, "Found "+existingVCPlugins.length+"VCell Imagej plugins, remove all but 1 and try again\nPlugin path="+imageJPluginPath);
+				StringBuffer sb = new StringBuffer();
+				for (int i = 0; i < existingVCPlugins.length; i++) {
+					sb.append((i!=0?"\n":"")+existingVCPlugins[i].getName());
+				}
+				DialogUtils.showWarningDialog(this, "Found "+existingVCPlugins.length+" installed VCell Imagej plugins:\n"+
+						sb.toString()+"\nRemove the "+existingVCPlugins.length+" plugins from ImageJ directory and start service again.\nPlugin path="+imageJPluginPath);
 				return;
 			}
-//			ijPluginFile = new File(imageJPluginPath,"vcell-imagej-helper-"+imageJInstalledVCellPluginVersion+".jar");
 			if(existingVCPlugins.length == 1) {
 				downLoadOption = CHANGE_IJ_PLUGIN;
 				if(imageJVCellPluginVersion.equals(existingVCPlugins[0].getName())) {
