@@ -384,7 +384,12 @@ private JCheckBox getMassConservationModelReductionCheckBox() {
 	if(massConservationModelReductionCheckBox == null) {
 		massConservationModelReductionCheckBox = new JCheckBox("Variable Reduction");
 		massConservationModelReductionCheckBox.setToolTipText("Toggle ODE variable reduction by mass conservation.");
-		massConservationModelReductionCheckBox.setSelected(true);
+		if(fieldSimulationWorkspace != null && fieldSimulationWorkspace.getSimulationOwner() instanceof SimulationContext) {
+			SimulationContext sc = (SimulationContext)fieldSimulationWorkspace.getSimulationOwner();
+			massConservationModelReductionCheckBox.setSelected(sc.isUsingMassConservationModelReduction());
+		} else {
+			massConservationModelReductionCheckBox.setSelected(false);
+		}
 	}
 	return massConservationModelReductionCheckBox;
 }

@@ -341,7 +341,7 @@ public class SimulationContext implements SimulationOwner, Versionable, Matchabl
 //	private boolean bStoch;
 //	private boolean bRuleBased;
 	private final Application applicationType;
-	private boolean bMassConservationModelReduction = true;
+	private boolean bMassConservationModelReduction = false;
 	private boolean bConcentration = true;
 	private boolean bRandomizeInitCondition = false;
 	private DataContext dataContext = new DataContext(getNameScope());
