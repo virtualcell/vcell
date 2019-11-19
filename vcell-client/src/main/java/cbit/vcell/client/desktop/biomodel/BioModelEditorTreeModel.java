@@ -350,6 +350,14 @@ public class BioModelEditorTreeModel extends DocumentEditorTreeModel implements 
 							}
 						}
 					}
+				} else if(evt.getPropertyName().equals(SimulationContext.PROPERTY_NAME_ASSIGNMENTRULES)) {
+					nodeChanged(rootNode);
+				} else if(evt.getPropertyName().equals(SimulationContext.PROPERTY_NAME_RATERULES)) {
+					nodeChanged(rootNode);
+//				} else if(evt.getPropertyName().equals(SimulationContext.PROPERTY_NAME_BIOEVENTS)) {
+//					nodeChanged(rootNode);
+//				} else if(evt.getPropertyName().equals(// TODO: what else??? electric? )) {
+//					nodeChanged(rootNode);
 				}
 			}
 		} catch (Exception e){

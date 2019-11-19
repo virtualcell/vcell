@@ -1484,10 +1484,10 @@ public class SBMLImporter {
 				assignmentRulesHash.put(assignmentRule.getVariable(), assignmentRuleMathExpr);
 			}
 		}
-		if(bAssignmentRule) {
-			localIssueList.add(new Issue(vcBioModel, issueContext, IssueCategory.SBMLImport_RestrictedFeature,
-				"AssignmentRules are supported at this time with restrictions. Please check the generated math for consistency.", Issue.Severity.WARNING));
-		}
+//		if(bAssignmentRule) {
+//			localIssueList.add(new Issue(vcBioModel, issueContext, IssueCategory.SBMLImport_RestrictedFeature,
+//				"AssignmentRules are supported at this time with restrictions. Please check the generated math for consistency.", Issue.Severity.WARNING));
+//		}
 	}
 	
 	// returns true if reserved x,y,z symbols are used inappropriately - like in a non-spatial model
@@ -1688,10 +1688,10 @@ public class SBMLImporter {
 				rateRulesHash.put(ste.getName(), vcRateRuleExpr);
 			}
 		}
-		if(bRateRule) {
-			localIssueList.add(new Issue(vcBioModel, issueContext, IssueCategory.SBMLImport_RestrictedFeature,
-				"RateRules are supported at this time with restrictions. Please check the generated math for consistency.", Issue.Severity.WARNING));
-		}
+//		if(bRateRule) {
+//			localIssueList.add(new Issue(vcBioModel, issueContext, IssueCategory.SBMLImport_RestrictedFeature,
+//				"RateRules are supported at this time with restrictions. Please check the generated math for consistency.", Issue.Severity.WARNING));
+//		}
 	}
 	
 	// called after the reactions are parsed, we check if the rule expression references any reaction by name
@@ -2476,8 +2476,6 @@ public class SBMLImporter {
 			
 			translateSBMLModel();
 			vcBioModel.refreshDependencies();
-			
-			idToNameConversion();
 
 		} catch(Exception e) {
 			e.printStackTrace(System.out);
@@ -2506,119 +2504,6 @@ public class SBMLImporter {
 		return vcBioModel;
 	}
 	
-	private void idToNameConversion() {
-		List<String> idsList = new ArrayList<>();		// species
-		for(SpeciesContext sc : vcBioModel.getModel().getSpeciesContexts()) {
-			String id = sc.getName();
-			String name = sc.getSbmlName();
-			if(name == null || name.isEmpty()) {
-				continue;
-			}
-			if(isRestrictedXYZT(name)) {
-				continue;
-			}
-			name = TokenMangler.fixTokenStrict(name, 60);
-			if(id.equals(name)) {
-				continue;
-			}
-			idsList.add(new String(id));
-		}
-		for(String id : idsList) {
-			SpeciesContext sc = vcBioModel.getModel().getSpeciesContext(id);
-			String name = sc.getSbmlName();		// we already know there's a SBML name from above
-			name = TokenMangler.fixTokenStrict(name, 60);
-			while (true) {
-				if (Model.isNameUnused(name, vcBioModel.getModel())) {
-					break;
-				}	
-				name = TokenMangler.getNextEnumeratedToken(name);
-			}
-			if(id.equals(name)) {
-				continue;
-			}
-			try {
-				System.out.println(name + " <-- " + id);
-				sc.setName(name);
-			} catch(PropertyVetoException e) {
-				e.printStackTrace();			// we just keep the id rather than abort
-			}
-		}
-		
-		idsList = new ArrayList<>();					// reactions
-		for(ReactionStep rs : vcBioModel.getModel().getReactionSteps()) {
-			String id = rs.getName();
-			String name = rs.getSbmlName();
-			if(name == null || name.isEmpty()) {
-				continue;
-			}
-			if(isRestrictedXYZT(name)) {
-				continue;
-			}
-			name = TokenMangler.fixTokenStrict(name, 60);
-			if(id.equals(name)) {
-				continue;
-			}
-			idsList.add(new String(id));
-		}
-		for(String id : idsList) {
-			ReactionStep rs = vcBioModel.getModel().getReactionStep(id);
-			String name = rs.getSbmlName();		// we already know there's a SBML name from above
-			name = TokenMangler.fixTokenStrict(name, 60);
-			while (true) {
-				if (Model.isNameUnused(name, vcBioModel.getModel())) {
-					break;
-				}	
-				name = TokenMangler.getNextEnumeratedToken(name);
-			}
-			if(id.equals(name)) {
-				continue;
-			}
-			try {
-				System.out.println(name + " <-- " + id);
-				rs.setName(name);
-			} catch(PropertyVetoException e) {
-				e.printStackTrace();
-			}
-		}
-		
-		idsList = new ArrayList<>();					// global parameters
-		for(ModelParameter mp : vcBioModel.getModel().getModelParameters()) {
-			String id = mp.getName();
-			String name = mp.getSbmlName();
-			if(name == null || name.isEmpty()) {
-				continue;
-			}
-			if(isRestrictedXYZT(name)) {
-				continue;
-			}
-			name = TokenMangler.fixTokenStrict(name, 60);
-			if(id.equals(name)) {
-				continue;
-			}
-			idsList.add(new String(id));
-		}
-		for(String id : idsList) {
-			ModelParameter mp = vcBioModel.getModel().getModelParameter(id);
-			String name = mp.getSbmlName();		// we already know there's a SBML name from above
-			name = TokenMangler.fixTokenStrict(name, 60);
-			while (true) {
-				if (Model.isNameUnused(name, vcBioModel.getModel())) {
-					break;
-				}	
-				name = TokenMangler.getNextEnumeratedToken(name);
-			}
-			if(id.equals(name)) {
-				continue;
-			}
-			try {
-				System.out.println(name + " <-- " + id);
-				mp.setName(name);
-			} catch(PropertyVetoException e) {
-				e.printStackTrace();
-			}
-		}
-	}
-
 	private ModelUnitSystem createSBMLUnitSystemForVCModel() throws Exception {
 		if (sbmlModel == null) {
 			throw new SBMLImportException("SBML model is NULL");

@@ -212,10 +212,13 @@ import cbit.vcell.math.MembraneSubDomain;
 import cbit.vcell.math.VariableType;
 import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.model.Model;
+import cbit.vcell.model.Model.ModelParameter;
 import cbit.vcell.model.Model.RbmModelContainer;
+import cbit.vcell.model.Model.ReservedSymbol;
 import cbit.vcell.model.RbmObservable;
 import cbit.vcell.model.ReactionRule;
 import cbit.vcell.model.ReactionStep;
+import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
 import cbit.vcell.numericstest.ModelGeometryOP;
 import cbit.vcell.numericstest.ModelGeometryOPResults;
@@ -3211,6 +3214,7 @@ private void openAfterChecking(VCDocumentInfo documentInfo, final TopLevelWindow
 		@Override
 		public void run(Hashtable<String, Object> hashTable) throws Exception {
 			VCDocument doc = null;
+			boolean isBMDB = false;
 			VCDocumentInfo documentInfo = (VCDocumentInfo)hashTable.get(DOCUMENT_INFO);
 			if (documentInfo instanceof BioModelInfo) {
 				BioModelInfo bmi = (BioModelInfo)documentInfo;
@@ -3320,6 +3324,7 @@ private void openAfterChecking(VCDocumentInfo documentInfo, final TopLevelWindow
 							doc = XmlHelper.XMLToGeometry(xmlSource);
 						} else if (xmlType.equals(XMLTags.SbmlRootNodeTag)) {
 							Namespace namespace = rootElement.getNamespace(XMLTags.SBML_SPATIAL_NS_PREFIX);
+							isBMDB = externalDocInfo.isBioModelsNet();
 							boolean bIsSpatial = (namespace==null) ? false : true;
 							doc = XmlHelper.importSBML(transLogger, xmlSource, bIsSpatial);
 						} else if (xmlType.equals(XMLTags.CellmlRootNodeTag)) {
@@ -3358,6 +3363,7 @@ private void openAfterChecking(VCDocumentInfo documentInfo, final TopLevelWindow
 				}
 			}
 			requester.prepareDocumentToLoad(doc, inNewWindow);
+			hashTable.put("isBMDB", isBMDB);
 			hashTable.put("doc", doc);
 		}
 	};
@@ -3368,11 +3374,16 @@ private void openAfterChecking(VCDocumentInfo documentInfo, final TopLevelWindow
 				Throwable exc = (Throwable)hashTable.get(ClientTaskDispatcher.TASK_ABORTED_BY_ERROR);
 				if (exc == null) {
 					VCDocument doc = (VCDocument)hashTable.get("doc");
+					boolean isBMDB = (boolean)hashTable.get("isBMDB");
 					DocumentWindowManager windowManager = null;
 					if (inNewWindow) {
 						windowManager = createDocumentWindowManager(doc);
 						// request was to create a new top-level window with this doc
 						getMdiManager().createNewDocumentWindow(windowManager);
+						if(isBMDB) {
+							idToNameConversion(doc);
+						}
+
 //						if (windowManager instanceof BioModelWindowManager) {
 //							((BioModelWindowManager)windowManager).preloadApps();
 //						}
@@ -3409,6 +3420,135 @@ private void openAfterChecking(VCDocumentInfo documentInfo, final TopLevelWindow
 	};
 	AsynchClientTask task4 = new AsynchClientTaskFunction(ClientRequestManager::setWindowFocus, "Set window focus", AsynchClientTask.TASKTYPE_SWING_BLOCKING, false, false);
 	ClientTaskDispatcher.dispatch(requester.getComponent(), hashTable, new AsynchClientTask[]{task0, task1, task2,task3, task4}, false);
+}
+
+private static boolean isRestrictedXYZT(String name, BioModel vcBioModel) {
+
+	ReservedSymbol rs = vcBioModel.getModel().getReservedSymbolByName(name);
+	if(rs == null) {
+		return false;
+	}
+	if(rs.isX() || rs.isY() || rs.isZ() || rs.isTime()) {
+		return true;
+	}
+	return false;
+}
+
+private static void idToNameConversion(VCDocument vcDoc) {
+	if(!(vcDoc instanceof BioModel)) {
+		return;
+	}
+	BioModel vcBioModel = (BioModel)vcDoc;
+	List<String> idsList = new ArrayList<>();		// species
+	for(SpeciesContext sc : vcBioModel.getModel().getSpeciesContexts()) {
+		String id = sc.getName();
+		String name = sc.getSbmlName();
+		if(name == null || name.isEmpty()) {
+			continue;
+		}
+		if(isRestrictedXYZT(name, vcBioModel)) {
+			continue;
+		}
+		name = TokenMangler.fixTokenStrict(name, 60);
+		if(id.equals(name)) {
+			continue;
+		}
+		idsList.add(new String(id));
+	}
+	for(String id : idsList) {
+		SpeciesContext sc = vcBioModel.getModel().getSpeciesContext(id);
+		String name = sc.getSbmlName();		// we already know there's a SBML name from above
+		name = TokenMangler.fixTokenStrict(name, 60);
+		while (true) {
+			if (cbit.vcell.model.Model.isNameUnused(name, vcBioModel.getModel())) {
+				break;
+			}	
+			name = TokenMangler.getNextEnumeratedToken(name);
+		}
+		if(id.equals(name)) {
+			continue;
+		}
+		try {
+			System.out.println(name + " <-- " + id);
+			sc.setName(name);
+		} catch(PropertyVetoException e) {
+			e.printStackTrace();			// we just keep the id rather than abort
+		}
+	}
+	
+	idsList = new ArrayList<>();					// reactions
+	for(ReactionStep rs : vcBioModel.getModel().getReactionSteps()) {
+		String id = rs.getName();
+		String name = rs.getSbmlName();
+		if(name == null || name.isEmpty()) {
+			continue;
+		}
+		if(isRestrictedXYZT(name, vcBioModel)) {
+			continue;
+		}
+		name = TokenMangler.fixTokenStrict(name, 60);
+		if(id.equals(name)) {
+			continue;
+		}
+		idsList.add(new String(id));
+	}
+	for(String id : idsList) {
+		ReactionStep rs = vcBioModel.getModel().getReactionStep(id);
+		String name = rs.getSbmlName();		// we already know there's a SBML name from above
+		name = TokenMangler.fixTokenStrict(name, 60);
+		while (true) {
+			if (cbit.vcell.model.Model.isNameUnused(name, vcBioModel.getModel())) {
+				break;
+			}	
+			name = TokenMangler.getNextEnumeratedToken(name);
+		}
+		if(id.equals(name)) {
+			continue;
+		}
+		try {
+			System.out.println(name + " <-- " + id);
+			rs.setName(name);
+		} catch(PropertyVetoException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	idsList = new ArrayList<>();					// global parameters
+	for(ModelParameter mp : vcBioModel.getModel().getModelParameters()) {
+		String id = mp.getName();
+		String name = mp.getSbmlName();
+		if(name == null || name.isEmpty()) {
+			continue;
+		}
+		if(isRestrictedXYZT(name, vcBioModel)) {
+			continue;
+		}
+		name = TokenMangler.fixTokenStrict(name, 60);
+		if(id.equals(name)) {
+			continue;
+		}
+		idsList.add(new String(id));
+	}
+	for(String id : idsList) {
+		ModelParameter mp = vcBioModel.getModel().getModelParameter(id);
+		String name = mp.getSbmlName();		// we already know there's a SBML name from above
+		name = TokenMangler.fixTokenStrict(name, 60);
+		while (true) {
+			if (cbit.vcell.model.Model.isNameUnused(name, vcBioModel.getModel())) {
+				break;
+			}	
+			name = TokenMangler.getNextEnumeratedToken(name);
+		}
+		if(id.equals(name)) {
+			continue;
+		}
+		try {
+			System.out.println(name + " <-- " + id);
+			mp.setName(name);
+		} catch(PropertyVetoException e) {
+			e.printStackTrace();
+		}
+	}
 }
 
 /**

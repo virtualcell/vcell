@@ -577,6 +577,7 @@ public class Model implements Versionable, Matchable, PropertyChangeListener, Ve
 		GAS_CONSTANT, 
 		KMILLIVOLTS, 
 		KMOLE
+//		NaN
 	};
 
 	public ReservedSymbol getTIME() {
@@ -637,6 +638,10 @@ public class Model implements Versionable, Matchable, PropertyChangeListener, Ve
 		public ReservedSymbol getKMILLIVOLTS() {
 			return getReservedSymbolByRole(ReservedSymbolRole.KMILLIVOLTS);
 		}
+
+//		public ReservedSymbol getNaN() {
+//			return getReservedSymbolByRole(ReservedSymbolRole.NaN);
+//		}
 
 		/** @deprecated : used only for backward compatibility */
 		public ReservedSymbol getKMOLE() {
@@ -1935,6 +1940,7 @@ public final static Map<ReservedSymbolRole, Double> reservedConstantsMap = new H
 		put(ReservedSymbolRole.GAS_CONSTANT, 8314.46261815);			// exactly 8314.46261815324  (was 8314.0)
 		put(ReservedSymbolRole.KMILLIVOLTS, 1000.0);
 		put(ReservedSymbolRole.KMOLE, 1.0/602.214179);
+//		put(ReservedSymbolRole.NaN, 0.0);
 	}
 };
 
@@ -1954,6 +1960,7 @@ private ReservedSymbol[] createReservedSymbols() {
 		new ReservedSymbol(ReservedSymbolRole.GAS_CONSTANT, "_R_","Gas Constant",unitSystem.getGasConstantUnit(), new Expression(reservedConstantsMap.get(ReservedSymbolRole.GAS_CONSTANT))), 
 		new ReservedSymbol(ReservedSymbolRole.KMILLIVOLTS, "K_millivolts_per_volt","voltage scale", unitSystem.getK_mV_perV_Unit(), new Expression(reservedConstantsMap.get(ReservedSymbolRole.KMILLIVOLTS))), 
 		new ReservedSymbol(ReservedSymbolRole.KMOLE, "KMOLE", "Flux unit conversion", unitSystem.getKMoleUnit(), new Expression(reservedConstantsMap.get(ReservedSymbolRole.KMOLE)))
+//		new ReservedSymbol(ReservedSymbolRole.NaN, "_NaN_", "Not a number", unitSystem.getInstance_DIMENSIONLESS(), new Expression(reservedConstantsMap.get(ReservedSymbolRole.NaN)))
 	};
 }
 

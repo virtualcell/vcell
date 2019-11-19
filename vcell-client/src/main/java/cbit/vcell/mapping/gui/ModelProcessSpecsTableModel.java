@@ -250,6 +250,9 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 	if (evt.getSource() instanceof ReactionContext && evt.getPropertyName().equals("ModelProcessSpecs")) {
 		refreshData();
 	}
+	if (evt.getSource() instanceof ReactionContext && evt.getPropertyName().equals("reactionSpecs")) {
+		refreshData();
+	}
 	if (evt.getSource() instanceof ReactionContext && evt.getPropertyName().equals("reactionRuleSpecs")) {
 		refreshData();
 	}

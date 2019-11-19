@@ -260,7 +260,6 @@ public abstract class HtcProxy {
 		//  MemoryMax:HtcProxy.MemLimitResults.FALLBACK_MEM_LIMIT	No PropertyLoader.simPerUserMemoryLimitFile
 		//																estimated < FALLBACK
 		
-		long estimatedMemSizeMBL = Math.max((long)Math.ceil(estimatedMemSizeMB)*2,128);
 		Long defaultSimMemoryLimitMbFromFile = null;
 		File memLimitFile = null;
 		try {
@@ -348,7 +347,14 @@ public abstract class HtcProxy {
 							"MemoryMax(FILE PerSimulation):"+simID+",User='"+vcellUserid+"' from "+memLimitFile.getAbsolutePath():
 							"MemoryMax(FILE PerUser):'"+vcellUserid+"' from "+memLimitFile.getAbsolutePath()));
 				}else if(perSolverMax != null) {
-					return new MemLimitResults(perSolverMax, "MemoryMax(FILE PerSolver):'"+solverDescription.name()+"' from "+memLimitFile.getAbsolutePath());
+					if(perSolverMax == 0) {//Use estimated size always if solver had 0 for memory limit
+						return new MemLimitResults(
+							Math.max((long)Math.ceil(estimatedMemSizeMB*1.5),
+										(defaultSimMemoryLimitMbFromFile!=null?defaultSimMemoryLimitMbFromFile:MemLimitResults.FALLBACK_MEM_LIMIT_MB)),
+							"MemoryMax(FILE PerSolver ESTIMATED):'"+solverDescription.name()+"' from "+memLimitFile.getAbsolutePath());
+					}else {
+						return new MemLimitResults(perSolverMax, "MemoryMax(FILE PerSolver):'"+solverDescription.name()+"' from "+memLimitFile.getAbsolutePath());
+					}
 				}
 			}else {
 				if(bDebugMemLimit){System.out.println("-----MemLimitFile "+(memLimitFile==null?"not defined":memLimitFile.getAbsolutePath()+" not exist"));}
@@ -357,15 +363,20 @@ public abstract class HtcProxy {
 			//ignore, try defaults
 			e.printStackTrace();
 		}
+//		long estimatedMemSizeMBL = (long)Math.ceil(estimatedMemSizeMB*1.5);
 		boolean bHasMemLimitFile = defaultSimMemoryLimitMbFromFile!=null;
 		long maxAllowedMem = (bHasMemLimitFile?defaultSimMemoryLimitMbFromFile:MemLimitResults.FALLBACK_MEM_LIMIT_MB);
-		boolean bUseEstimated = (estimatedMemSizeMBL <= maxAllowedMem);
-		return new MemLimitResults((bUseEstimated?estimatedMemSizeMBL:maxAllowedMem),
-			(bUseEstimated?
-				"MemoryMax(ESTIMATED):SimulationTask.getEstimatedMemorySizeMB()="+estimatedMemSizeMBL:
-					(bHasMemLimitFile?
-						"MemoryMax(FILE AllUsers):AllUsersMemLimit(defaultSimMemoryLimitMb) from "+memLimitFile.getAbsolutePath():
-						"MemoryMax(HARDCODE):HtcProxy.MemLimitResults.FALLBACK_MEM_LIMIT_MB")));
+//		boolean bUseEstimated = (estimatedMemSizeMBL <= maxAllowedMem);
+//		return new MemLimitResults(maxAllowedMem,
+//			(bUseEstimated?
+//				"MemoryMax(ESTIMATED):SimulationTask.getEstimatedMemorySizeMB()="+estimatedMemSizeMBL:
+//					(bHasMemLimitFile?
+//						"MemoryMax(FILE AllUsers):AllUsersMemLimit(defaultSimMemoryLimitMb) from "+memLimitFile.getAbsolutePath():
+//						"MemoryMax(HARDCODE):HtcProxy.MemLimitResults.FALLBACK_MEM_LIMIT_MB")));
+		return new MemLimitResults(maxAllowedMem,
+				(bHasMemLimitFile?
+				"MemoryMax(FILE AllUsers):AllUsersMemLimit(defaultSimMemoryLimitMb) from "+memLimitFile.getAbsolutePath():
+				"MemoryMax(HARDCODE):HtcProxy.MemLimitResults.FALLBACK_MEM_LIMIT_MB"));
 	}
 
 }

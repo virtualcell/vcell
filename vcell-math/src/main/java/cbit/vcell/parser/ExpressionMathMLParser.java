@@ -12,6 +12,7 @@ package cbit.vcell.parser;
 import java.io.StringReader;
 import java.util.Iterator;
 import java.util.Vector;
+import java.util.concurrent.atomic.AtomicStampedReference;
 
 import org.jdom.Document;
 import org.jdom.Element;
@@ -459,6 +460,10 @@ private SimpleNode getRootNode(Element nodeMathML) throws ExpressionException {
 	} else if (nodeMathML.getName().equals(MathMLTags.MATH)){
 		SimpleNode node = getRootNode((Element)nodeMathML.getChildren().get(0));
 		return node;
+//	} else if (nodeMathML.getName().equals(MathMLTags.NOT_A_NUMBER)){
+//		ASTIdNode idNode = new ASTIdNode();
+//		idNode.name = "_NaN_";
+//		return idNode;
 	} else if (nodeMathML.getName().equals(MathMLTags.CSYMBOL)){
 		// check that the CSYMBOL element represents 'time' (possible options : time, delay)
 		if ((nodeMathML.getAttributeValue(MathMLTags.DEFINITIONURL)).indexOf("time") > -1) {
