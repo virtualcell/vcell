@@ -63,6 +63,8 @@ public class MIRIAMRef extends KeyOfTwo<String, String> {
 					pathParts[1] = "chebi";
 				} else if(pathParts[1].contains("omim")) {
 					pathParts[1] = "omim";
+				} else if(pathParts[1].contains("biomodels.sbo")) {
+					pathParts[1] = "sbo";
 				} else if(pathParts[1].equalsIgnoreCase("obo.psi-mod")) {
 					pathParts[1] = "mod";
 				}

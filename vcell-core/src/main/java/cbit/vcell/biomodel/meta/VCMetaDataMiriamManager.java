@@ -315,7 +315,7 @@ public class VCMetaDataMiriamManager implements MiriamManager, Serializable {
 		public final static DataType DataType_SBO			= new VCMetaDataDataType("SBO",
 				"https://www.ebi.ac.uk/sbo/",
 				"https://www.ebi.ac.uk/ols/ontologies/sbo/terms?obo_id=",
-				"urn:miriam:biomodels.sbo",
+				"urn:miriam:sbo",
 				"The Systems Biology Ontology maintains controlled vocabularies and ontologies tailored specifically for the kinds of problems being faced in Systems Biology, especially in the context of computational modeling.",
 				"SBO:0000170");
 		public final static DataType DataType_EFO			= new VCMetaDataDataType("EFO",
@@ -635,7 +635,7 @@ public class VCMetaDataMiriamManager implements MiriamManager, Serializable {
 		}
 	}
 
-	public MiriamResource createMiriamResource(String urnString) throws URNParseFailureException{
+	public MiriamResource createMiriamResource(String urnString) throws URNParseFailureException {
 		return new VCMetaDataMiriamResource(MIRIAMRef.createFromURN(urnString));
 	}
 
