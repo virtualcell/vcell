@@ -324,7 +324,19 @@ public class VCMetaDataMiriamManager implements MiriamManager, Serializable {
 				"urn:miriam:efo",
 				"The Experimental Factor Ontology (EFO) provides a systematic description of experimental variables available in EBI databases.",
 				"0009534");
-		
+		public final static DataType DataType_OMIT			= new VCMetaDataDataType("OMIT",		// used for species
+				"https://www.ebi.ac.uk/ols/ontologies/omit/",
+				"http://purl.obolibrary.org/obo/",		//   http://purl.obolibrary.org/obo/OMIT_0024493  note the _ in the id
+				"urn:miriam:omit",
+				"Ontology to establish data exchange standards and common data elements in the microRNA (miR) domain.",
+				"OMIT_0024493");
+		public final static DataType DataType_NcbiGene		= new VCMetaDataDataType("NcbiGene",	// used for species
+				"https://www.ncbi.nlm.nih.gov/gene/",
+				"http://identifiers.org/ncbigene/",
+				"urn:miriam:ncbigene",
+				"NCBI Gene integrates information from a wide range of species. A record may include nomenclature, Reference Sequences (RefSeqs), maps, pathways, variations, phenotypes, and links to genome-, phenotype-, and locus-specific resources worldwide.",
+				"852125");
+
 		
 		private String name = null;
 		private String siteUrl = null;

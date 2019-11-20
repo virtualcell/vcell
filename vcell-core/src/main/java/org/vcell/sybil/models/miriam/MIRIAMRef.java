@@ -48,11 +48,11 @@ public class MIRIAMRef extends KeyOfTwo<String, String> {
 	}
 	
 	public static MIRIAMRef createFromURN(String urn) throws URNParseFailureException {
-		if(urn.startsWith("http://")){
+		if(urn.startsWith("http://")) {
 			URL url = null;
 			try{
 				url = new URL(urn);
-			}catch(Exception e){
+			}catch(Exception e) {
 				throw new URNParseFailureException(e.getMessage());
 			}
 			String[] pathParts = url.getPath().split("/");
@@ -107,8 +107,8 @@ public class MIRIAMRef extends KeyOfTwo<String, String> {
 		} else {
 			throw new URNParseFailureException(urn + ": Wrong number of components " + split.length);
 		}
-		if(type.equalsIgnoreCase("sbo")) {		// correction for urn:miriam:sbo
-			type = "biomodels." + type;			// we want it to be urn:miriam:biomodels.sbo
+		if(id.startsWith("OMIT:")) {
+			id = id.replace("OMIT:", "OMIT_");		// OMIT format for id is, surprisingly  "OMIT_xxxxxxx" instead of "OMIT:xxxxxxx"
 		}
 		return new MIRIAMRef(type, id);
 	}
