@@ -167,7 +167,11 @@ public class RateRule implements Matchable, Serializable, IssueSource, Displayab
 	
 	public void gatherIssues(IssueContext issueContext, List<Issue> issueList, Set<String> alreadyIssue) {
 		// if we find an issue with the current rule we post it and stop looking for more
-		// we look into errors first, then warnings
+		if(fieldName == null || fieldName.isEmpty()) {
+			String msg = typeName + " Name is missing";
+			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, Issue.Severity.ERROR));
+			return;
+		}
 		if(rateRuleVar == null || rateRuleVar.getName() == null || rateRuleVar.getName().isEmpty()) {
 			String msg = typeName + " Variable is missing";
 			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, Issue.Severity.ERROR));
@@ -178,6 +182,31 @@ public class RateRule implements Matchable, Serializable, IssueSource, Displayab
 			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, Issue.Severity.ERROR));
 			return;
 		}
+		if(!(rateRuleVar instanceof SymbolTableEntry)) {
+			String msg = typeName + " Variable is not a SymbolTableEntry";
+			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, Issue.Severity.ERROR));
+			return;
+		}
+		if(rateRuleExpression == null) {
+			String msg = typeName + " Expression is missing";
+			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, Issue.Severity.ERROR));
+			return;
+		}
+		if(rateRuleExpression != null) {
+			String[] symbols = rateRuleExpression.getSymbols();
+			if(symbols != null && symbols.length > 0) {
+				for(String symbol : symbols) {
+					SymbolTableEntry ste = simulationContext.getEntry(symbol);
+					if(ste == null) {
+						String msg = "Missing Symbol '" + symbol + "' in Expression for " + typeName + " '" + fieldName + "'.";
+						issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, Issue.Severity.ERROR));
+						return;
+					}
+				}
+			}
+		}
+		// now we look into errors caused by interaction with other rules
+		// TODO: should also look into interaction with events!
 		if(simulationContext.getRateRules() != null) {
 			for(RateRule rr : simulationContext.getRateRules()) {
 				if(rr == this) {
@@ -231,21 +260,6 @@ public class RateRule implements Matchable, Serializable, IssueSource, Displayab
 					}
 				}
 			}
-		}
-		if(fieldName == null || fieldName.isEmpty()) {
-			String msg = typeName + " Name is missing";
-			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, Issue.Severity.ERROR));
-			return;
-		}
-		if(rateRuleExpression == null) {
-			String msg = typeName + " Expression is missing";
-			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, Issue.Severity.ERROR));
-			return;
-		}
-		if(!(rateRuleVar instanceof SymbolTableEntry)) {
-			String msg = typeName + " Variable is not a SymbolTableEntry";
-			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, Issue.Severity.ERROR));
-			return;
 		}
 	}
 
