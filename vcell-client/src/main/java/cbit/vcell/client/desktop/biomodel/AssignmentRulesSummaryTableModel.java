@@ -31,11 +31,17 @@ import org.vcell.util.gui.ScrollTable;
 
 import cbit.gui.ScopedExpression;
 import cbit.vcell.mapping.AssignmentRule;
+import cbit.vcell.mapping.ReactionContext;
 import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.mapping.SpeciesContextSpec;
+import cbit.vcell.model.Parameter;
 import cbit.vcell.model.SpeciesContext;
+import cbit.vcell.model.Model;
 import cbit.vcell.model.Model.ModelParameter;
 import cbit.vcell.parser.AutoCompleteSymbolFilter;
 import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionBindingException;
+import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.SymbolTable;
 import cbit.vcell.parser.SymbolTableEntry;
 
@@ -237,6 +243,36 @@ public class AssignmentRulesSummaryTableModel extends BioModelEditorApplicationR
 				}
 			}
 		}
+		if(evt.getSource() == simulationContext && evt.getPropertyName().equals(Model.PROPERTY_NAME_MODEL_ENTITY_NAME)) {
+			String oldName = (String)evt.getOldValue();
+			String newName = (String)evt.getNewValue();
+			
+			boolean replaced = false;
+			for(int i=0; simulationContext.getAssignmentRules() != null && i<simulationContext.getAssignmentRules().length; i++) {
+				AssignmentRule rule = simulationContext.getAssignmentRules()[i];
+				Expression exp = rule.getAssignmentRuleExpression();
+				if(exp == null || exp.getSymbols() == null || exp.getSymbols().length == 0) {
+					continue;
+				}
+				for(String symbol : exp.getSymbols()) {
+					if(symbol.contentEquals(oldName)) {
+						try {
+							exp.substituteInPlace(new Expression(oldName), new Expression(newName));
+							replaced = true;
+						} catch (ExpressionException e) {
+							e.printStackTrace();
+							throw new RuntimeException("Failed to rename symbol '" + oldName + "' with '" + newName + "' in the Expression of Assignment Rule " + rule.getDisplayName() + "'.");
+						}
+					}
+				}
+				try {
+					rule.bind();
+				} catch (ExpressionBindingException e) {
+					e.printStackTrace();
+					throw new RuntimeException("Failed to rename symbol '" + oldName + "' with '" + newName + "' in the Expression of Assignment Rule " + rule.getDisplayName() + "'.");
+				}
+			}
+		}
 		refreshData();
 	}
 	
@@ -315,10 +351,14 @@ public class AssignmentRulesSummaryTableModel extends BioModelEditorApplicationR
 
 	@Override
 	public void setSimulationContext(SimulationContext newValue) {
+		SimulationContext oldValue = simulationContext;
+		if(oldValue == newValue) {
+			return;
+		}
 		super.setSimulationContext(newValue);
 		updateSubdomainComboBox();
 	}
-
+	
 	public SymbolTable getSymbolTable(int row, int column) {
 		return null;
 	}
