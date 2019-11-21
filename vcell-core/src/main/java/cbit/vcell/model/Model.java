@@ -84,6 +84,7 @@ public class Model implements Versionable, Matchable, PropertyChangeListener, Ve
 	public static final String PROPERTY_NAME_STRUCTURES = "structures";
 	public static final String PROPERTY_NAME_SPECIES_CONTEXTS = "speciesContexts";
 	private static final String PROPERTY_NAME_SPECIES = "species";
+	public static final String PROPERTY_NAME_MODEL_ENTITY_NAME = "modelEntityName";
 	
 	public static final String PROPERTY_NAME_RATERULEVARIABLES = "rateruleVariables";
 	
@@ -3331,6 +3332,14 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 			}
 		}
 	}
+	
+	if ( (  evt.getSource() instanceof ModelParameter ||
+			evt.getSource() instanceof SpeciesContext ||
+			evt.getSource() instanceof StructureSize )
+			 && evt.getPropertyName().equals("name") ) {
+		firePropertyChange(PROPERTY_NAME_MODEL_ENTITY_NAME, evt.getOldValue(), evt.getNewValue());
+	}
+	
 }
 
 

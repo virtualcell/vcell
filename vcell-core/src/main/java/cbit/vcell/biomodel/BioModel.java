@@ -691,6 +691,10 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 			}
 		}
 	}
+	if (evt.getSource() == fieldModel && (evt.getPropertyName().equals(Model.PROPERTY_NAME_MODEL_ENTITY_NAME))) {
+		firePropertyChange(Model.PROPERTY_NAME_MODEL_ENTITY_NAME, evt.getOldValue(), evt.getNewValue());
+	}
+
 }
 
 

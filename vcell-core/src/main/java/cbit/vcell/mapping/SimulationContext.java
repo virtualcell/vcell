@@ -1716,6 +1716,9 @@ public void propertyChange(java.beans.PropertyChangeEvent event) {
 			firePropertyChange(PropertyConstants.PROPERTY_NAME_SIMULATIONS,oldSimulations,newSimulations);
 		}
 	}
+	if (event.getSource() == getBioModel() && event.getPropertyName().equals(Model.PROPERTY_NAME_MODEL_ENTITY_NAME)){
+		firePropertyChange(Model.PROPERTY_NAME_MODEL_ENTITY_NAME, event.getOldValue(), event.getNewValue());
+	}
 }
 
 
