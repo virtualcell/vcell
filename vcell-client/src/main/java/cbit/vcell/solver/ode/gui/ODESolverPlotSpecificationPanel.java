@@ -1580,6 +1580,7 @@ private JPanel getSpeciesOptionsPanel() {
 		concentrationCheckBox.addItemListener(ivjEventHandler);
 		countCheckBox.addItemListener(ivjEventHandler);
 		concentrationCheckBox.setSelected(true);
+		countCheckBox.setSelected(true);
 	}
 	return speciesOptionsPanel;
 }
