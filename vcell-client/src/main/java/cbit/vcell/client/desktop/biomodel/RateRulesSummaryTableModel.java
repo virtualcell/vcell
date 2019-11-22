@@ -32,10 +32,13 @@ import org.vcell.util.gui.ScrollTable;
 import cbit.gui.ScopedExpression;
 import cbit.vcell.mapping.RateRule;
 import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.model.Model;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Model.ModelParameter;
 import cbit.vcell.parser.AutoCompleteSymbolFilter;
 import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionBindingException;
+import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.SymbolTable;
 import cbit.vcell.parser.SymbolTableEntry;
 
@@ -245,6 +248,37 @@ public class RateRulesSummaryTableModel extends BioModelEditorApplicationRightSi
 				}
 			}
 		}
+		if(evt.getSource() == simulationContext && evt.getPropertyName().equals(Model.PROPERTY_NAME_MODEL_ENTITY_NAME)) {
+			String oldName = (String)evt.getOldValue();
+			String newName = (String)evt.getNewValue();
+
+			boolean replaced = false;
+			for(int i=0; simulationContext.getRateRules() != null && i<simulationContext.getRateRules().length; i++) {
+				RateRule rule = simulationContext.getRateRules()[i];
+				Expression exp = rule.getRateRuleExpression();
+				if(exp == null || exp.getSymbols() == null || exp.getSymbols().length == 0) {
+					continue;
+				}
+				String errMsg = "Failed to rename symbol '" + oldName + "' with '" + newName + "' in the Expression of " + RateRule.typeName + " '" + rule.getDisplayName() + "'.";
+				for(String symbol : exp.getSymbols()) {
+					if(symbol.contentEquals(oldName)) {
+						try {
+							exp.substituteInPlace(new Expression(oldName), new Expression(newName));
+							replaced = true;
+						} catch (ExpressionException e) {
+							e.printStackTrace();
+							throw new RuntimeException(errMsg);
+						}
+					}
+				}
+				try {
+					rule.bind();
+				} catch (ExpressionBindingException e) {
+					e.printStackTrace();
+					throw new RuntimeException(errMsg);
+				}
+			}
+		}
 		refreshData();
 	}
 	
@@ -321,6 +355,9 @@ public class RateRulesSummaryTableModel extends BioModelEditorApplicationRightSi
 
 	@Override
 	public void setSimulationContext(SimulationContext newValue) {
+		if(simulationContext == newValue) {
+			return;
+		}
 		super.setSimulationContext(newValue);
 		updateSubdomainComboBox();
 	}

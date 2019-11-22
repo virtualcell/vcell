@@ -31,10 +31,7 @@ import org.vcell.util.gui.ScrollTable;
 
 import cbit.gui.ScopedExpression;
 import cbit.vcell.mapping.AssignmentRule;
-import cbit.vcell.mapping.ReactionContext;
 import cbit.vcell.mapping.SimulationContext;
-import cbit.vcell.mapping.SpeciesContextSpec;
-import cbit.vcell.model.Parameter;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Model.ModelParameter;
@@ -254,6 +251,7 @@ public class AssignmentRulesSummaryTableModel extends BioModelEditorApplicationR
 				if(exp == null || exp.getSymbols() == null || exp.getSymbols().length == 0) {
 					continue;
 				}
+				String errMsg = "Failed to rename symbol '" + oldName + "' with '" + newName + "' in the Expression of " + AssignmentRule.typeName + " '" + rule.getDisplayName() + "'.";
 				for(String symbol : exp.getSymbols()) {
 					if(symbol.contentEquals(oldName)) {
 						try {
@@ -261,7 +259,7 @@ public class AssignmentRulesSummaryTableModel extends BioModelEditorApplicationR
 							replaced = true;
 						} catch (ExpressionException e) {
 							e.printStackTrace();
-							throw new RuntimeException("Failed to rename symbol '" + oldName + "' with '" + newName + "' in the Expression of Assignment Rule " + rule.getDisplayName() + "'.");
+							throw new RuntimeException(errMsg);
 						}
 					}
 				}
@@ -269,7 +267,7 @@ public class AssignmentRulesSummaryTableModel extends BioModelEditorApplicationR
 					rule.bind();
 				} catch (ExpressionBindingException e) {
 					e.printStackTrace();
-					throw new RuntimeException("Failed to rename symbol '" + oldName + "' with '" + newName + "' in the Expression of Assignment Rule " + rule.getDisplayName() + "'.");
+					throw new RuntimeException(errMsg);
 				}
 			}
 		}
@@ -351,8 +349,7 @@ public class AssignmentRulesSummaryTableModel extends BioModelEditorApplicationR
 
 	@Override
 	public void setSimulationContext(SimulationContext newValue) {
-		SimulationContext oldValue = simulationContext;
-		if(oldValue == newValue) {
+		if(simulationContext == newValue) {
 			return;
 		}
 		super.setSimulationContext(newValue);
