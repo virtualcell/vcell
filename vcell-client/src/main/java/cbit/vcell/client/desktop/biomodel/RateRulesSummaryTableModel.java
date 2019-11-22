@@ -252,8 +252,8 @@ public class RateRulesSummaryTableModel extends BioModelEditorApplicationRightSi
 			String oldName = (String)evt.getOldValue();
 			String newName = (String)evt.getNewValue();
 
-			boolean replaced = false;
 			for(int i=0; simulationContext.getRateRules() != null && i<simulationContext.getRateRules().length; i++) {
+				boolean replaced = false;
 				RateRule rule = simulationContext.getRateRules()[i];
 				Expression exp = rule.getRateRuleExpression();
 				if(exp == null || exp.getSymbols() == null || exp.getSymbols().length == 0) {
@@ -272,7 +272,9 @@ public class RateRulesSummaryTableModel extends BioModelEditorApplicationRightSi
 					}
 				}
 				try {
-					rule.bind();
+					if(replaced) {
+						rule.bind();
+					}
 				} catch (ExpressionBindingException e) {
 					e.printStackTrace();
 					throw new RuntimeException(errMsg);

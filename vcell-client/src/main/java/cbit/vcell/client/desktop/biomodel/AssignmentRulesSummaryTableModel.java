@@ -244,8 +244,8 @@ public class AssignmentRulesSummaryTableModel extends BioModelEditorApplicationR
 			String oldName = (String)evt.getOldValue();
 			String newName = (String)evt.getNewValue();
 			
-			boolean replaced = false;
 			for(int i=0; simulationContext.getAssignmentRules() != null && i<simulationContext.getAssignmentRules().length; i++) {
+				boolean replaced = false;
 				AssignmentRule rule = simulationContext.getAssignmentRules()[i];
 				Expression exp = rule.getAssignmentRuleExpression();
 				if(exp == null || exp.getSymbols() == null || exp.getSymbols().length == 0) {
@@ -264,7 +264,9 @@ public class AssignmentRulesSummaryTableModel extends BioModelEditorApplicationR
 					}
 				}
 				try {
-					rule.bind();
+					if(replaced) {
+						rule.bind();
+					}
 				} catch (ExpressionBindingException e) {
 					e.printStackTrace();
 					throw new RuntimeException(errMsg);
