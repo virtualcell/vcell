@@ -618,7 +618,7 @@ public static String mathModelToXML(MathModel mathModel) throws XmlParseExceptio
 		for (SolverDescription sd : SolverDescription.values()) {
 			KisaoTerm solverKisaoTerm = KisaoOntology.getInstance().getTermById(sd.getKisao());
 			if(solverKisaoTerm == null) {
-				break;
+				continue;
 			}
 			boolean isExactlySame = solverKisaoTerm.equals(sedmlKisao);
 			if (isExactlySame && !solverKisaoTerm.isObsolete()) {
