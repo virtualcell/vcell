@@ -797,6 +797,21 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueVector) {
 			}
 		}
 	}
+	if(getSimulationContext().getRateRules() != null && getSimulationContext().getRateRules().length > 0) {
+		for(RateRule ar : getSimulationContext().getRateRules()) {
+			if(ar.getRateRuleVar() == null) {
+				continue;				// some rate rule variable may be still not initialized
+			}
+			SpeciesContext sc = getSpeciesContext();
+			if(sc.getName().equals(ar.getRateRuleVar().getName())) {
+				if(!bConstant) {		// the rate rule variables must be clamped
+					String msg = "Rate rule species variables must be Clamped";
+					String tip = "Used in " + RateRule.typeName + " '" + ar.getDisplayName() + "'";
+					issueVector.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.ERROR));
+				}
+			}
+		}
+	}
 }
 
 /**
