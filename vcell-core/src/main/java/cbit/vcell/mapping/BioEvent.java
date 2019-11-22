@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.vcell.util.Compare;
+import org.vcell.util.Displayable;
 import org.vcell.util.Issue;
 import org.vcell.util.Issue.IssueCategory;
 import org.vcell.util.Issue.IssueSource;
@@ -55,7 +56,8 @@ import cbit.vcell.units.VCUnitSystem;
 import net.sourceforge.interval.ia_math.RealInterval;
 
 @SuppressWarnings("serial")
-public class BioEvent implements Matchable, Serializable, VetoableChangeListener, PropertyChangeListener, IssueSource {
+public class BioEvent implements Matchable, Serializable, VetoableChangeListener, PropertyChangeListener, 
+	IssueSource, Displayable {
 	
 	private static final String PROPERTY_NAME_NAME = "name";
 
@@ -1104,6 +1106,19 @@ public class BioEvent implements Matchable, Serializable, VetoableChangeListener
 			return "not yet implemented";
 		}
 		}
+	}
+
+	public static final String typeName = "BioEvent";
+	@Override
+	public String getDisplayName() {
+		if(name == null) {
+			return "";
+		}
+		return name;
+	}
+	@Override
+	public String getDisplayType() {
+		return typeName;
 	}
 
 }
