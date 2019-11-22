@@ -234,7 +234,7 @@ public class RateRulesSummaryTableModel extends BioModelEditorApplicationRightSi
 	public void propertyChange(java.beans.PropertyChangeEvent evt) {
 		super.propertyChange(evt);
 		
-		if (evt.getPropertyName().equals("rateRules")) {
+		if (evt.getPropertyName().equals(SimulationContext.PROPERTY_NAME_RATERULES)) {
 			RateRule[] oldValue = (RateRule[])evt.getOldValue();
 			if (oldValue != null) {			
 				for (RateRule rr : oldValue) {
