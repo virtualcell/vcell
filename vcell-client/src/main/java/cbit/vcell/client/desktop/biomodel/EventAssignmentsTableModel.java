@@ -27,6 +27,8 @@ import cbit.vcell.parser.ExpressionException;
 
 @SuppressWarnings("serial")
 public class EventAssignmentsTableModel extends VCellSortTableModel<EventAssignment> implements PropertyChangeListener {
+	protected static final String PROPERTY_NAME_SIMULATOIN_CONTEXT = "simulationContext";
+
 		private class VariableColumnComparator implements Comparator<EventAssignment> {
 			protected int index;
 			protected boolean ascending;
@@ -164,8 +166,23 @@ public class EventAssignmentsTableModel extends VCellSortTableModel<EventAssignm
 		if (evt.getSource() == this && (evt.getPropertyName().equals("bioEvent"))) {
 			refreshData();
 		}
+		if (evt.getSource() == this && (evt.getPropertyName().equals(PROPERTY_NAME_SIMULATOIN_CONTEXT))) {
+			simulationContextChange(evt);
+		}
 		if (evt.getSource() == fieldBioEvent && (evt.getPropertyName().equals("eventAssignments"))) {
 			refreshData();
+		}
+	}
+	
+	protected void simulationContextChange(java.beans.PropertyChangeEvent evt) {
+		refreshData();
+		SimulationContext oldValue = (SimulationContext)evt.getOldValue();
+		if (oldValue != null) {
+			oldValue.removePropertyChangeListener(this);
+		}
+		SimulationContext newValue = (SimulationContext)evt.getNewValue();
+		if (newValue != null) {
+			newValue.addPropertyChangeListener(this);
 		}
 	}
 
@@ -221,13 +238,16 @@ public class EventAssignmentsTableModel extends VCellSortTableModel<EventAssignm
 		return fieldSimContext;
 	}
 
-	public void setSimulationContext(SimulationContext argSimContext) {
-		SimulationContext oldValue = fieldSimContext;
-		fieldSimContext = argSimContext;
-		if (argSimContext != null) {
-			autoCompleteSymbolFilter = argSimContext.getAutoCompleteSymbolFilter();
+	public void setSimulationContext(SimulationContext newValue) {
+		if(fieldSimContext == newValue) {
+			return;
 		}
-		firePropertyChange("simulationContext", oldValue, argSimContext);
+		SimulationContext oldValue = fieldSimContext;
+		fieldSimContext = newValue;
+		if (newValue != null) {
+			autoCompleteSymbolFilter = newValue.getAutoCompleteSymbolFilter();
+		}
+		firePropertyChange(PROPERTY_NAME_SIMULATOIN_CONTEXT, oldValue, newValue);
 	}
 
 	public Comparator<EventAssignment> getComparator(int col, boolean ascending)

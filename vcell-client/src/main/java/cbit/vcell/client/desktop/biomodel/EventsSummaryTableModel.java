@@ -24,8 +24,10 @@ import cbit.vcell.mapping.BioEvent;
 import cbit.vcell.mapping.BioEvent.BioEventParameterType;
 import cbit.vcell.mapping.BioEvent.EventAssignment;
 import cbit.vcell.mapping.ParameterContext.LocalParameter;
+import cbit.vcell.model.Model;
 import cbit.vcell.parser.AutoCompleteSymbolFilter;
 import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.SymbolTable;
 
@@ -134,7 +136,46 @@ public class EventsSummaryTableModel extends BioModelEditorApplicationRightSideT
 	public void propertyChange(java.beans.PropertyChangeEvent evt) {
 		super.propertyChange(evt);
 		
-		if (evt.getPropertyName().equals("trigger") || evt.getPropertyName().equals("delay") || evt.getPropertyName().equals("eventAssignments")) {
+		if(evt.getSource() == simulationContext && evt.getPropertyName().equals(Model.PROPERTY_NAME_MODEL_ENTITY_NAME)) {
+			String oldName = (String)evt.getOldValue();
+			String newName = (String)evt.getNewValue();
+
+			for(int i=0; simulationContext.getBioEvents() != null && i<simulationContext.getBioEvents().length; i++) {
+				boolean replaced = false;
+				BioEvent event = simulationContext.getBioEvents()[i];
+				ArrayList<EventAssignment> eas = event.getEventAssignments();
+				if(eas == null || eas.isEmpty()) {
+					continue;
+				}
+				String errMsg = "Failed to rename symbol '" + oldName + "' with '" + newName + "' in an EventAssignment Expression of " + BioEvent.typeName + " '" + event.getDisplayName() + "'.";
+				for(EventAssignment ea : eas) {
+					Expression exp = ea.getAssignmentExpression();
+					if(exp == null || exp.getSymbols() == null || exp.getSymbols().length == 0) {
+						continue;
+					}
+					for(String symbol : exp.getSymbols()) {
+						if(symbol.contentEquals(oldName)) {
+							try {
+								exp.substituteInPlace(new Expression(oldName), new Expression(newName));
+								replaced = true;
+							} catch (ExpressionException e) {
+								e.printStackTrace();
+								throw new RuntimeException(errMsg);
+							}
+						}
+					}
+				}
+				try {
+					if(replaced) {
+						event.bind();
+					}
+				} catch (ExpressionBindingException e) {
+					e.printStackTrace();
+					throw new RuntimeException(errMsg);
+				}
+			}
+			refreshData();
+		} else if (evt.getPropertyName().equals("trigger") || evt.getPropertyName().equals("delay") || evt.getPropertyName().equals("eventAssignments")) {
 			fireTableRowsUpdated(0, getRowCount()-1);
 		} else {
 			if (evt.getPropertyName().equals("bioevents")) {
