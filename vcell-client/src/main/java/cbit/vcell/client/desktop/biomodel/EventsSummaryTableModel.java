@@ -151,7 +151,7 @@ public class EventsSummaryTableModel extends BioModelEditorApplicationRightSideT
 							continue;
 						}
 						for(String symbol : exp.getSymbols()) {
-							if(symbol.contentEquals(oldName)) {
+							if(symbol != null && symbol.contentEquals(oldName)) {
 								try {
 									exp.substituteInPlace(new Expression(oldName), new Expression(newName));
 									replaced = true;
@@ -166,23 +166,25 @@ public class EventsSummaryTableModel extends BioModelEditorApplicationRightSideT
 				}
 				// ---------------------- check expressions for trigger function, trigger delay and trigger time
 				LocalParameter[] params = event.getEventParameters();
-				for(LocalParameter param : params) {
-					if(param == null) {
-						continue;
-					}
-					Expression exp = param.getExpression();
-					if(exp == null || exp.getSymbols() == null || exp.getSymbols().length == 0) {
-						continue;
-					}
-					for(String symbol : exp.getSymbols()) {
-						if(symbol.contentEquals(oldName)) {
-							try {
-								exp.substituteInPlace(new Expression(oldName), new Expression(newName));
-								replaced = true;
-							} catch (ExpressionException e) {
-								e.printStackTrace();
-								String errMsg = "Failed to rename symbol '" + oldName + "' with '" + newName + "' in an Expression of " + BioEvent.typeName + " '" + event.getDisplayName() + "' Parameter.";
-								throw new RuntimeException(errMsg);
+				if(params != null) {
+					for(LocalParameter param : params) {
+						if(param == null) {
+							continue;
+						}
+						Expression exp = param.getExpression();
+						if(exp == null || exp.getSymbols() == null || exp.getSymbols().length == 0) {
+							continue;
+						}
+						for(String symbol : exp.getSymbols()) {
+							if(symbol != null && symbol.contentEquals(oldName)) {
+								try {
+									exp.substituteInPlace(new Expression(oldName), new Expression(newName));
+									replaced = true;
+								} catch (ExpressionException e) {
+									e.printStackTrace();
+									String errMsg = "Failed to rename symbol '" + oldName + "' with '" + newName + "' in an Expression of " + BioEvent.typeName + " '" + event.getDisplayName() + "' Parameter.";
+									throw new RuntimeException(errMsg);
+								}
 							}
 						}
 					}
