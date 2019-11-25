@@ -3381,7 +3381,7 @@ private void openAfterChecking(VCDocumentInfo documentInfo, final TopLevelWindow
 						// request was to create a new top-level window with this doc
 						getMdiManager().createNewDocumentWindow(windowManager);
 						if(isBMDB) {
-//							idToNameConversion(doc);
+							idToNameConversion(doc);
 						}
 
 //						if (windowManager instanceof BioModelWindowManager) {
