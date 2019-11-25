@@ -3292,26 +3292,21 @@ public class SBMLImporter {
 	}
 	
 	private void postProcessing() {
-		
-		// clamp all AssignmentRule species
+		// clamp all RateRule and AssignmentRule species
 		SimulationContext simContext = vcBioModel.getSimulationContext(0);
-		cbit.vcell.mapping.AssignmentRule[] ars = simContext.getAssignmentRules();
-		if(ars != null && ars.length > 0) {
-			for(cbit.vcell.mapping.AssignmentRule ar : ars) {
-				SymbolTableEntry ste = ar.getAssignmentRuleVar();
-				if(ste instanceof SpeciesContext) {
-					SpeciesContext sc = (SpeciesContext)ste;
-					SpeciesContextSpec[] scss = simContext.getReactionContext().getSpeciesContextSpecs();
-					for(SpeciesContextSpec scs : scss) {
-						if(scs.getSpeciesContext() != null && scs.getSpeciesContext() == sc) {
-							scs.setConstant(true);
-							break;
-						}
-					}
-				}
+		SpeciesContextSpec[] scss = simContext.getReactionContext().getSpeciesContextSpecs();
+		for(SpeciesContextSpec scs : scss) {
+			SpeciesContext sc = scs.getSpeciesContext();
+			if(simContext.getAssignmentRule(sc) != null || simContext.getRateRule(sc) != null) {
+				scs.setConstant(true);
 			}
 		}
 	}
+	
+//	ReactionContext rc = vcBioModel.getSimulationContext(0).getReactionContext();
+//	SpeciesContextSpec speciesContextSpec = rc.getSpeciesContextSpec(vcSpeciesContexts[i]);
+//	for(cbit.vcell.mapping.RateRule rr : simContext.getRateRules()) {
+
 	
 	private void checkIdentifiersNameLength() throws Exception {
 		// Check compartment name lengths
