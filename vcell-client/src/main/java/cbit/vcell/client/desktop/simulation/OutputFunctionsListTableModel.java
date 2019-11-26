@@ -10,7 +10,11 @@
 
 package cbit.vcell.client.desktop.simulation;
 import java.beans.PropertyChangeListener;
+import java.beans.PropertyVetoException;
+import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.Hashtable;
+import java.util.List;
 
 import javax.swing.DefaultCellEditor;
 import javax.swing.JComboBox;
@@ -21,17 +25,30 @@ import org.vcell.util.gui.ScrollTable;
 import cbit.gui.ScopedExpression;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.desktop.biomodel.VCellSortTableModel;
+import cbit.vcell.client.task.AsynchClientTask;
+import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometryClass;
 import cbit.vcell.geometry.GeometryOwner;
+import cbit.vcell.mapping.MappingException;
+import cbit.vcell.mapping.MathMapping;
+import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.mapping.SimulationContext.MathMappingCallback;
+import cbit.vcell.mapping.SimulationContext.NetworkGenerationRequirements;
 import cbit.vcell.math.InconsistentDomainException;
+import cbit.vcell.math.MathDescription;
+import cbit.vcell.math.MathException;
 import cbit.vcell.math.Variable.Domain;
+import cbit.vcell.model.Model;
+import cbit.vcell.model.ModelException;
 import cbit.vcell.math.VariableType;
+import cbit.vcell.matrix.MatrixException;
 import cbit.vcell.parser.AutoCompleteSymbolFilter;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.solver.AnnotatedFunction;
 import cbit.vcell.solver.OutputFunctionContext;
+import cbit.vcell.solver.SimulationOwner;
 /**
  * Insert the type's description here.
  * Creation date: (5/7/2004 4:07:40 PM)
@@ -170,8 +187,78 @@ public boolean isCellEditable(int rowIndex, int columnIndex) {
 	 *   	and the property that has changed.
 	 */
 public void propertyChange(java.beans.PropertyChangeEvent evt) {
-	if (evt.getSource() == getOutputFunctionContext() && evt.getPropertyName().equals(OutputFunctionContext.PROPERTY_OUTPUT_FUNCTIONS)) {
+	OutputFunctionContext fc = getOutputFunctionContext();
+	SimulationOwner so = null;
+	if(fc != null) {
+		so = fc.getSimulationOwner();
+	}
+
+	if (evt.getSource() == fc && evt.getPropertyName().equals(OutputFunctionContext.PROPERTY_OUTPUT_FUNCTIONS)) {
 		setData(outputFunctionContext.getOutputFunctionsList());
+	}
+	if(evt.getSource() instanceof SimulationContext && evt.getSource() == so && evt.getPropertyName().equals(Model.PROPERTY_NAME_MODEL_ENTITY_NAME)) {
+		SimulationContext simulationContext = (SimulationContext)so;
+		
+		Hashtable<String,Object> hashTable = new Hashtable<String, Object>();
+		
+		AsynchClientTask task0 = new AsynchClientTask("Renaming Functions", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING, false, false) {
+			@Override
+			public void run(Hashtable<String, Object> hashTable) throws Exception {
+				MathMappingCallback callback = new MathMappingCallback() {
+					@Override
+					public void setProgressFraction(float fractionDone) { }
+					@Override
+					public void setMessage(String message) { }
+					@Override
+					public boolean isInterrupted() { return false; }
+				};
+				MathMapping mathMapping = simulationContext.createNewMathMapping(callback, NetworkGenerationRequirements.ComputeFullNoTimeout);
+				MathDescription mathDesc = null;
+				try {
+					mathDesc = mathMapping.getMathDescription(callback);
+				} catch (MappingException | MathException | MatrixException | ExpressionException | ModelException e1) {
+					e1.printStackTrace();
+				}
+				String oldName = (String)evt.getOldValue();
+				String newName = (String)evt.getNewValue();
+				ArrayList<AnnotatedFunction> afList = fc.getOutputFunctionsList();
+				if(afList != null) {
+					List<Expression> changedExpressions = new ArrayList<> ();
+					for(AnnotatedFunction af : afList) {
+						if(af == null) {
+							continue;
+						}
+						Expression exp = af.getExpression();
+						if(exp == null || exp.getSymbols() == null || exp.getSymbols().length == 0) {
+							continue;
+						}
+						String errMsg = "Failed to rename symbol '" + oldName + "' with '" + newName + "' in the Expression of Function '" + af.getName() + "'.";
+						for(String symbol : exp.getSymbols()) {
+							if(symbol.contentEquals(oldName)) {
+								try {
+									exp.substituteInPlace(new Expression(oldName), new Expression(newName));
+									changedExpressions.add(exp);
+								} catch (ExpressionException e) {
+									e.printStackTrace();
+									throw new RuntimeException(errMsg);
+								}
+							}
+						}
+					}
+					if(changedExpressions.size() > 0) {
+						try {
+							simulationContext.setMathDescription(mathDesc);
+							for(Expression exp : changedExpressions) {
+								exp.bindExpression(outputFunctionContext);
+							}
+						} catch (ExpressionException | PropertyVetoException e) {
+							e.printStackTrace();
+						}
+					}
+				}
+			}
+		};
+		ClientTaskDispatcher.dispatch(ownerTable, hashTable, new AsynchClientTask[]{task0}, false);
 	}
 	if (evt.getPropertyName().equals(GeometryOwner.PROPERTY_NAME_GEOMETRY)) {
 		Geometry oldGeometry = (Geometry)evt.getOldValue();
