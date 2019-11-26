@@ -199,8 +199,15 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 	if(evt.getSource() instanceof SimulationContext && evt.getSource() == so && evt.getPropertyName().equals(Model.PROPERTY_NAME_MODEL_ENTITY_NAME)) {
 		SimulationContext simulationContext = (SimulationContext)so;
 		
-		Hashtable<String,Object> hashTable = new Hashtable<String, Object>();
+		if(fc.getOutputFunctionsList() == null || fc.getOutputFunctionsList().isEmpty()) {
+			return;
+		}
 		
+		Hashtable<String,Object> hashTable = new Hashtable<String, Object>();
+		//
+		// WARNING: this should NOT be used under any circumstance for batch renaming
+		// MathDescription, MathMapping, expressions are NOT thread safe
+		//
 		AsynchClientTask task0 = new AsynchClientTask("Renaming Functions", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING, false, false) {
 			@Override
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
@@ -222,38 +229,36 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 				String oldName = (String)evt.getOldValue();
 				String newName = (String)evt.getNewValue();
 				ArrayList<AnnotatedFunction> afList = fc.getOutputFunctionsList();
-				if(afList != null) {
-					List<Expression> changedExpressions = new ArrayList<> ();
-					for(AnnotatedFunction af : afList) {
-						if(af == null) {
-							continue;
-						}
-						Expression exp = af.getExpression();
-						if(exp == null || exp.getSymbols() == null || exp.getSymbols().length == 0) {
-							continue;
-						}
-						String errMsg = "Failed to rename symbol '" + oldName + "' with '" + newName + "' in the Expression of Function '" + af.getName() + "'.";
-						for(String symbol : exp.getSymbols()) {
-							if(symbol.contentEquals(oldName)) {
-								try {
-									exp.substituteInPlace(new Expression(oldName), new Expression(newName));
-									changedExpressions.add(exp);
-								} catch (ExpressionException e) {
-									e.printStackTrace();
-									throw new RuntimeException(errMsg);
-								}
+				List<Expression> changedExpressions = new ArrayList<> ();
+				for(AnnotatedFunction af : afList) {
+					if(af == null) {
+						continue;
+					}
+					Expression exp = af.getExpression();
+					if(exp == null || exp.getSymbols() == null || exp.getSymbols().length == 0) {
+						continue;
+					}
+					String errMsg = "Failed to rename symbol '" + oldName + "' with '" + newName + "' in the Expression of Function '" + af.getName() + "'.";
+					for(String symbol : exp.getSymbols()) {
+						if(symbol.contentEquals(oldName)) {
+							try {
+								exp.substituteInPlace(new Expression(oldName), new Expression(newName));
+								changedExpressions.add(exp);
+							} catch (ExpressionException e) {
+								e.printStackTrace();
+								throw new RuntimeException(errMsg);
 							}
 						}
 					}
-					if(changedExpressions.size() > 0) {
-						try {
-							simulationContext.setMathDescription(mathDesc);
-							for(Expression exp : changedExpressions) {
-								exp.bindExpression(outputFunctionContext);
-							}
-						} catch (ExpressionException | PropertyVetoException e) {
-							e.printStackTrace();
+				}
+				if(changedExpressions.size() > 0) {
+					try {
+						simulationContext.setMathDescription(mathDesc);
+						for(Expression exp : changedExpressions) {
+							exp.bindExpression(outputFunctionContext);
 						}
+					} catch (ExpressionException | PropertyVetoException e) {
+						e.printStackTrace();
 					}
 				}
 			}
