@@ -3215,6 +3215,7 @@ private void openAfterChecking(VCDocumentInfo documentInfo, final TopLevelWindow
 		public void run(Hashtable<String, Object> hashTable) throws Exception {
 			VCDocument doc = null;
 			boolean isBMDB = false;
+			boolean isSEDML = false;
 			VCDocumentInfo documentInfo = (VCDocumentInfo)hashTable.get(DOCUMENT_INFO);
 			if (documentInfo instanceof BioModelInfo) {
 				BioModelInfo bmi = (BioModelInfo)documentInfo;
@@ -3337,6 +3338,7 @@ private void openAfterChecking(VCDocumentInfo documentInfo, final TopLevelWindow
 							doc = VFrapXmlHelper.VFRAPToBioModel(hashTable, xmlSource, getDocumentManager(), requester);
 						} else if (xmlType.equals(XMLTags.SedMLTypeTag)) {
 							doc = XmlHelper.sedmlToBioModel(transLogger, externalDocInfo, (SedML)hashTable.get(SEDML_MODEL), (AbstractTask)hashTable.get(SEDML_TASK));
+							isSEDML = true;
 						} else { // unknown XML format
 							throw new RuntimeException("unsupported XML format, first element tag is <"+rootElement.getName()+">");
 						}
@@ -3364,6 +3366,7 @@ private void openAfterChecking(VCDocumentInfo documentInfo, final TopLevelWindow
 			}
 			requester.prepareDocumentToLoad(doc, inNewWindow);
 			hashTable.put("isBMDB", isBMDB);
+			hashTable.put("isSEDML", isSEDML);
 			hashTable.put("doc", doc);
 		}
 	};
@@ -3409,7 +3412,8 @@ private void openAfterChecking(VCDocumentInfo documentInfo, final TopLevelWindow
 			// TODO Auto-generated method stub
 			if (documentInfo instanceof ExternalDocInfo) {
 				ExternalDocInfo externalDocInfo = (ExternalDocInfo)documentInfo;
-				if(externalDocInfo.isBioModelsNet() || externalDocInfo.isFromXmlFile()){
+				boolean isSEDML = (boolean)hashTable.get("isSEDML");
+				if(externalDocInfo.isBioModelsNet() || externalDocInfo.isFromXmlFile() || isSEDML){
 					DocumentWindowManager windowManager = (DocumentWindowManager)hashTable.get(WIN_MGR_KEY);
 					if(windowManager instanceof BioModelWindowManager){
 						((BioModelWindowManager)windowManager).specialLayout();
