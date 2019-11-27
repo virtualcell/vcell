@@ -200,6 +200,7 @@ import cbit.vcell.geometry.surface.StlReader;
 import cbit.vcell.geometry.surface.SurfaceCollection;
 import cbit.vcell.geometry.surface.SurfaceGeometricRegion;
 import cbit.vcell.geometry.surface.VolumeGeometricRegion;
+import cbit.vcell.mapping.MappingException;
 import cbit.vcell.mapping.MathMapping;
 import cbit.vcell.mapping.MathMappingCallbackTaskAdapter;
 import cbit.vcell.mapping.SimulationContext;
@@ -208,10 +209,13 @@ import cbit.vcell.mapping.SimulationContext.NetworkGenerationRequirements;
 import cbit.vcell.mapping.SpeciesContextSpec;
 import cbit.vcell.math.CompartmentSubDomain;
 import cbit.vcell.math.MathDescription;
+import cbit.vcell.math.MathException;
 import cbit.vcell.math.MembraneSubDomain;
 import cbit.vcell.math.VariableType;
 import cbit.vcell.mathmodel.MathModel;
+import cbit.vcell.matrix.MatrixException;
 import cbit.vcell.model.Model;
+import cbit.vcell.model.ModelException;
 import cbit.vcell.model.Model.ModelParameter;
 import cbit.vcell.model.Model.RbmModelContainer;
 import cbit.vcell.model.Model.ReservedSymbol;
@@ -223,6 +227,7 @@ import cbit.vcell.model.Structure;
 import cbit.vcell.numericstest.ModelGeometryOP;
 import cbit.vcell.numericstest.ModelGeometryOPResults;
 import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.render.Vect3d;
 import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.server.SimulationStatus;
@@ -3358,9 +3363,9 @@ private void openAfterChecking(VCDocumentInfo documentInfo, final TopLevelWindow
 			// create biopax objects using annotation
 			if (doc instanceof BioModel) {
 				BioModel bioModel = (BioModel) doc;
-				try{
+				try {
 					bioModel.getVCMetaData().createBioPaxObjects(bioModel);
-				}catch(Exception e){
+				} catch(Exception e) {
 					e.printStackTrace();
 				}
 			}
@@ -3370,6 +3375,42 @@ private void openAfterChecking(VCDocumentInfo documentInfo, final TopLevelWindow
 			hashTable.put("doc", doc);
 		}
 	};
+//	AsynchClientTask task2 = new AsynchClientTask("Consistency", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING, true, true) {
+//		@Override
+//		public void run(Hashtable<String, Object> hashTable) throws Exception {
+//			VCDocument doc = (VCDocument)hashTable.get("doc");
+//			boolean isBMDB = (boolean)hashTable.get("isBMDB");
+//			if (isBMDB && doc instanceof BioModel) {
+//				BioModel bioModel = (BioModel) doc;
+//				SimulationContext simulationContext = bioModel.getSimulationContext(0);
+//				MathMappingCallback callback = new MathMappingCallback() {
+//					@Override
+//					public void setProgressFraction(float fractionDone) { }
+//					@Override
+//					public void setMessage(String message) { }
+//					@Override
+//					public boolean isInterrupted() { return false; }
+//				};
+//				MathMapping mathMapping = simulationContext.createNewMathMapping(callback, NetworkGenerationRequirements.ComputeFullNoTimeout);
+//				MathDescription mathDesc = null;
+//				try {
+//					mathDesc = mathMapping.getMathDescription(callback);
+//					simulationContext.setMathDescription(mathDesc);
+//					
+//					Simulation sim = new Simulation(mathDesc);
+//					sim.setName(simulationContext.getBioModel().getFreeSimulationName());
+//					simulationContext.addSimulation(sim);
+//					bioModel.refreshDependencies();
+//					
+//					
+//				} catch (MappingException | MathException | MatrixException | ExpressionException | ModelException e1) {
+//					e1.printStackTrace();
+//				}
+//			}
+//			hashTable.put("doc", doc);
+//		}
+//	};
+
 	AsynchClientTask task2 = new AsynchClientTask("Showing document", AsynchClientTask.TASKTYPE_SWING_BLOCKING, false, false) {
 		@Override
 		public void run(Hashtable<String, Object> hashTable) throws Exception {
@@ -3377,19 +3418,18 @@ private void openAfterChecking(VCDocumentInfo documentInfo, final TopLevelWindow
 				Throwable exc = (Throwable)hashTable.get(ClientTaskDispatcher.TASK_ABORTED_BY_ERROR);
 				if (exc == null) {
 					VCDocument doc = (VCDocument)hashTable.get("doc");
-					boolean isBMDB = (boolean)hashTable.get("isBMDB");
+//					boolean isBMDB = (boolean)hashTable.get("isBMDB");
 					DocumentWindowManager windowManager = null;
 					if (inNewWindow) {
 						windowManager = createDocumentWindowManager(doc);
 						// request was to create a new top-level window with this doc
 						getMdiManager().createNewDocumentWindow(windowManager);
-						if(isBMDB) {
-							idToNameConversion(doc);
-						}
+
 
 //						if (windowManager instanceof BioModelWindowManager) {
 //							((BioModelWindowManager)windowManager).preloadApps();
 //						}
+
 					} else {
 						// request was to replace the document in an existing window
 						windowManager = (DocumentWindowManager)requester;
@@ -3397,6 +3437,7 @@ private void openAfterChecking(VCDocumentInfo documentInfo, final TopLevelWindow
 						windowManager.resetDocument(doc);
 					}
 					hashTable.put(WIN_MGR_KEY, windowManager);
+					hashTable.put("doc", doc);
 				}
 			} finally {
 				if (!inNewWindow) {
@@ -3409,8 +3450,7 @@ private void openAfterChecking(VCDocumentInfo documentInfo, final TopLevelWindow
 	AsynchClientTask task3 = new AsynchClientTask("Special Layout", AsynchClientTask.TASKTYPE_SWING_BLOCKING, false, false) {
 		@Override
 		public void run(Hashtable<String, Object> hashTable) throws Exception {
-			// TODO Auto-generated method stub
-			if (documentInfo instanceof ExternalDocInfo) {
+		if (documentInfo instanceof ExternalDocInfo) {
 				ExternalDocInfo externalDocInfo = (ExternalDocInfo)documentInfo;
 				boolean isSEDML = (boolean)hashTable.get("isSEDML");
 				if(externalDocInfo.isBioModelsNet() || externalDocInfo.isFromXmlFile() || isSEDML){
@@ -3423,7 +3463,20 @@ private void openAfterChecking(VCDocumentInfo documentInfo, final TopLevelWindow
 		}
 	};
 	AsynchClientTask task4 = new AsynchClientTaskFunction(ClientRequestManager::setWindowFocus, "Set window focus", AsynchClientTask.TASKTYPE_SWING_BLOCKING, false, false);
-	ClientTaskDispatcher.dispatch(requester.getComponent(), hashTable, new AsynchClientTask[]{task0, task1, task2,task3, task4}, false);
+	
+	AsynchClientTask task5 = new AsynchClientTask("Renaming", AsynchClientTask.TASKTYPE_SWING_BLOCKING, false, false) {	// TASKTYPE_NONSWING_BLOCKING
+		@Override
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
+		VCDocument doc = (VCDocument)hashTable.get("doc");
+		boolean isBMDB = (boolean)hashTable.get("isBMDB");
+		if (documentInfo instanceof ExternalDocInfo) {
+				if(isBMDB) {
+//					idToNameConversion(doc);
+				}
+			}
+		}
+	};
+	ClientTaskDispatcher.dispatch(requester.getComponent(), hashTable, new AsynchClientTask[]{task0, task1, task2,task3, task4, task5}, false);
 }
 
 private static boolean isRestrictedXYZT(String name, BioModel vcBioModel) {
@@ -3438,7 +3491,7 @@ private static boolean isRestrictedXYZT(String name, BioModel vcBioModel) {
 	return false;
 }
 
-private static void idToNameConversion(VCDocument vcDoc) {
+public static void idToNameConversion(VCDocument vcDoc) {
 	if(!(vcDoc instanceof BioModel)) {
 		return;
 	}

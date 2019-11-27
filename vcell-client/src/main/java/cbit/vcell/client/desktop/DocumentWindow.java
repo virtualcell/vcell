@@ -2845,6 +2845,8 @@ public void showViewJobsDialog() {
 	viewSpeciesDialog.setModal(false);
 	viewSpeciesDialog.setResizable(true);
 	viewSpeciesDialog.setVisible(true);
+	
+//	ClientRequestManager.idToNameConversion(getWindowManager().getVCDocument());
 
 }
 
