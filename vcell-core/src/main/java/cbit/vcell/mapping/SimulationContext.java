@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Hashtable;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -69,6 +70,7 @@ import cbit.vcell.mapping.AbstractMathMapping.MathMappingNameScope;
 import cbit.vcell.mapping.BioEvent.EventAssignment;
 import cbit.vcell.mapping.MicroscopeMeasurement.ProjectionZKernel;
 import cbit.vcell.mapping.NetworkTransformer.GeneratedSpeciesSymbolTableEntry;
+import cbit.vcell.mapping.ParameterContext.LocalParameter;
 import cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecParameter;
 import cbit.vcell.mapping.spatial.CurveObject;
 import cbit.vcell.mapping.spatial.PointObject;
@@ -346,6 +348,7 @@ public class SimulationContext implements SimulationOwner, Versionable, Matchabl
 	private boolean bRandomizeInitCondition = false;
 	private DataContext dataContext = new DataContext(getNameScope());
 	private final MicroscopeMeasurement microscopeMeasurement = new MicroscopeMeasurement(SimulationContext.FLUOR_DATA_NAME,new ProjectionZKernel(), this);
+	private boolean bIgnoreEvents = false;
 	
 	// rate rules
 	private RateRule[] fieldRateRules = null;
@@ -1717,10 +1720,141 @@ public void propertyChange(java.beans.PropertyChangeEvent event) {
 		}
 	}
 	if (event.getSource() == getBioModel() && event.getPropertyName().equals(Model.PROPERTY_NAME_MODEL_ENTITY_NAME)){
-		firePropertyChange(Model.PROPERTY_NAME_MODEL_ENTITY_NAME, event.getOldValue(), event.getNewValue());
+		if (!isbIgnoreEvents()) {
+			firePropertyChange(Model.PROPERTY_NAME_MODEL_ENTITY_NAME, event.getOldValue(), event.getNewValue());
+		}
 	}
 }
 
+public void substituteChangedNamesInExpressions(Map<String, String> entitiesToRename) {
+	fixAssignmentRuleExpressions(entitiesToRename);
+	fixRateRuleExpressions(entitiesToRename);
+	fixEventsExpressions(entitiesToRename);
+	this.refreshDependencies();
+}
+
+private void fixAssignmentRuleExpressions(Map<String, String> entitiesToRename) {
+	for(int i=0; getAssignmentRules() != null && i<getAssignmentRules().length; i++) {
+		boolean replaced = false;
+		AssignmentRule rule = getAssignmentRules()[i];
+		Expression exp = rule.getAssignmentRuleExpression();
+		if(exp == null || exp.getSymbols() == null || exp.getSymbols().length == 0) {
+			continue;
+		}
+		String errMsg = "Failed to rename";
+		for(String symbol : exp.getSymbols()) {
+			if(entitiesToRename.containsKey(symbol)) {
+				try {
+					exp.substituteInPlace(new Expression(symbol), new Expression(entitiesToRename.get(symbol)));
+					replaced = true;
+				} catch (ExpressionException e) {
+					e.printStackTrace();
+					throw new RuntimeException(errMsg);
+				}
+			}
+		}
+		try {
+			if(replaced) {
+				rule.bind();
+			}
+		} catch (ExpressionBindingException e) {
+			e.printStackTrace();
+			throw new RuntimeException(errMsg);
+		}
+	}
+}
+private void fixRateRuleExpressions(Map<String, String> entitiesToRename) {
+	for(int i=0; getRateRules() != null && i<getRateRules().length; i++) {
+		boolean replaced = false;
+		RateRule rule = getRateRules()[i];
+		Expression exp = rule.getRateRuleExpression();
+		if(exp == null || exp.getSymbols() == null || exp.getSymbols().length == 0) {
+			continue;
+		}
+		String errMsg = "Failed to rename";
+		for(String symbol : exp.getSymbols()) {
+			if(entitiesToRename.containsKey(symbol)) {
+				try {
+					exp.substituteInPlace(new Expression(symbol), new Expression(entitiesToRename.get(symbol)));
+					replaced = true;
+				} catch (ExpressionException e) {
+					e.printStackTrace();
+					throw new RuntimeException(errMsg);
+				}
+			}
+		}
+		try {
+			if(replaced) {
+				rule.bind();
+			}
+		} catch (ExpressionBindingException e) {
+			e.printStackTrace();
+			throw new RuntimeException(errMsg);
+		}
+	}
+}
+private void fixEventsExpressions(Map<String, String> entitiesToRename) {
+	for(int i=0; getBioEvents() != null && i<getBioEvents().length; i++) {
+		boolean replaced = false;
+		BioEvent event = getBioEvents()[i];
+		// ---------------------- check expressions for the assignments of this event 
+		ArrayList<EventAssignment> eas = event.getEventAssignments();
+		if(eas != null) {
+			for(EventAssignment ea : eas) {
+				Expression exp = ea.getAssignmentExpression();
+				if(exp == null || exp.getSymbols() == null || exp.getSymbols().length == 0) {
+					continue;
+				}
+				for(String symbol : exp.getSymbols()) {
+					if(entitiesToRename.containsKey(symbol)) {
+						try {
+							exp.substituteInPlace(new Expression(symbol), new Expression(entitiesToRename.get(symbol)));
+							replaced = true;
+						} catch (ExpressionException e) {
+							e.printStackTrace();
+							String errMsg = "Failed to rename.";
+							throw new RuntimeException(errMsg);
+						}
+					}
+				}
+			}
+		}
+		// ---------------------- check expressions for trigger function, trigger delay and trigger time
+		LocalParameter[] params = event.getEventParameters();
+		if(params != null) {
+			for(LocalParameter param : params) {
+				if(param == null) {
+					continue;
+				}
+				Expression exp = param.getExpression();
+				if(exp == null || exp.getSymbols() == null || exp.getSymbols().length == 0) {
+					continue;
+				}
+				for(String symbol : exp.getSymbols()) {
+					if(entitiesToRename.containsKey(symbol)) {
+						try {
+							exp.substituteInPlace(new Expression(symbol), new Expression(entitiesToRename.get(symbol)));
+							replaced = true;
+						} catch (ExpressionException e) {
+							e.printStackTrace();
+							String errMsg = "Failed to rename.";
+							throw new RuntimeException(errMsg);
+						}
+					}
+				}
+			}
+		}
+		try {
+			if(replaced) {
+				event.bind();
+			}
+		} catch (ExpressionBindingException e) {
+			e.printStackTrace();
+			String errMsg = "Failed to bind.";
+			throw new RuntimeException(errMsg);
+		}
+	}
+}
 
 /**
  * This method was created in VisualAge.
@@ -3440,6 +3574,14 @@ public static
 		destSimContext.setName(newSimulationContextName);	
 		return destSimContext;
 	}
+
+public boolean isbIgnoreEvents() {
+	return bIgnoreEvents;
+}
+
+public void setbIgnoreEvents(boolean bIgnoreEvents) {
+	this.bIgnoreEvents = bIgnoreEvents;
+}
 
 
 
