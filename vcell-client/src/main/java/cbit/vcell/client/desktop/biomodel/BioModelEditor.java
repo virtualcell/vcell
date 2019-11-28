@@ -158,6 +158,7 @@ public class BioModelEditor extends DocumentEditor {
 
 	public void specialLayout(){
 		bioModelEditorModelPanel.specialLayout();
+		bioModelEditorTreeModel.selectSimulationNode();
 	}
 
 @Override

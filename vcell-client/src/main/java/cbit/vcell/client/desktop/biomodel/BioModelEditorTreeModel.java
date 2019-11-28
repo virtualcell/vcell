@@ -180,6 +180,13 @@ public class BioModelEditorTreeModel extends DocumentEditorTreeModel implements 
 		}
 	}
 
+	public void selectSimulationNode() {
+		if (applicationsNode.getChildCount() > 0) {
+			selectedBioModelNode = (BioModelNode) applicationsNode.getChildAt(0).getChildAt(3);
+			ownerTree.setSelectionPath(new TreePath(selectedBioModelNode.getPath()));
+		}
+	}
+	
 	private void populateAnnotationNode() {
 		for (BioModelNode node : annotationNodes) {
 			if (node.isNodeDescendant(selectedBioModelNode)) {
