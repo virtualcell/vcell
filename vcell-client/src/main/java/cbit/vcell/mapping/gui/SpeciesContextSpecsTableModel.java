@@ -362,15 +362,15 @@ private void removeRuleVariableMark(SpeciesContext sc, boolean unclamp) {
 			if(unclamp) {
 				scs.setConstant(false);
 			}
-			try {
-				if(getSimulationContext().isUsingConcentration()) {
-					scs.getInitialConcentrationParameter().setExpression(new Expression("0"));
-				} else {
-					scs.getInitialCountParameter().setExpression(new Expression("0"));
-				}
-			} catch(ExpressionException e) {
-				e.printStackTrace();
-			}
+//			try {
+//				if(getSimulationContext().isUsingConcentration()) {
+//					scs.getInitialConcentrationParameter().setExpression(new Expression("0"));
+//				} else {
+//					scs.getInitialCountParameter().setExpression(new Expression("0"));
+//				}
+//			} catch(ExpressionException e) {
+//				e.printStackTrace();
+//			}
 		}
 	}
 }
@@ -381,15 +381,15 @@ private void setRuleVariableMark(SpeciesContext sc, Expression ex, boolean clamp
 			if(clamp) {
 				scs.setConstant(true);
 			}
-			try {
-				if(getSimulationContext().isUsingConcentration()) {
-					scs.getInitialConcentrationParameter().setExpression(new Expression(ex));
-				} else {
-					scs.getInitialCountParameter().setExpression(new Expression(ex));
-				}
-			} catch (ExpressionBindingException e) {
-				e.printStackTrace();
-			}
+//			try {
+//				if(getSimulationContext().isUsingConcentration()) {
+//					scs.getInitialConcentrationParameter().setExpression(new Expression(ex));
+//				} else {
+//					scs.getInitialCountParameter().setExpression(new Expression(ex));
+//				}
+//			} catch (ExpressionBindingException e) {
+//				e.printStackTrace();
+//			}
 			fireTableRowsUpdated(0,getRowCount()-1);
 			break;		// can't find more than one
 		}
