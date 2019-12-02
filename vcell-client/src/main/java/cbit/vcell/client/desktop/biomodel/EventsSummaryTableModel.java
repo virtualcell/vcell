@@ -136,71 +136,72 @@ public class EventsSummaryTableModel extends BioModelEditorApplicationRightSideT
 	public void propertyChange(java.beans.PropertyChangeEvent evt) {
 		super.propertyChange(evt);
 		
-		if(evt.getSource() == simulationContext && evt.getPropertyName().equals(Model.PROPERTY_NAME_MODEL_ENTITY_NAME)) {
-			String oldName = (String)evt.getOldValue();
-			String newName = (String)evt.getNewValue();
-			for(int i=0; simulationContext.getBioEvents() != null && i<simulationContext.getBioEvents().length; i++) {
-				boolean replaced = false;
-				BioEvent event = simulationContext.getBioEvents()[i];
-				// ---------------------- check expressions for the assignments of this event 
-				ArrayList<EventAssignment> eas = event.getEventAssignments();
-				if(eas != null) {
-					for(EventAssignment ea : eas) {
-						Expression exp = ea.getAssignmentExpression();
-						if(exp == null || exp.getSymbols() == null || exp.getSymbols().length == 0) {
-							continue;
-						}
-						for(String symbol : exp.getSymbols()) {
-							if(symbol != null && symbol.contentEquals(oldName)) {
-								try {
-									exp.substituteInPlace(new Expression(oldName), new Expression(newName));
-									replaced = true;
-								} catch (ExpressionException e) {
-									e.printStackTrace();
-									String errMsg = "Failed to rename symbol '" + oldName + "' with '" + newName + "' in an EventAssignment Expression of " + BioEvent.typeName + " '" + event.getDisplayName() + "'.";
-									throw new RuntimeException(errMsg);
-								}
-							}
-						}
-					}
-				}
-				// ---------------------- check expressions for trigger function, trigger delay and trigger time
-				LocalParameter[] params = event.getEventParameters();
-				if(params != null) {
-					for(LocalParameter param : params) {
-						if(param == null) {
-							continue;
-						}
-						Expression exp = param.getExpression();
-						if(exp == null || exp.getSymbols() == null || exp.getSymbols().length == 0) {
-							continue;
-						}
-						for(String symbol : exp.getSymbols()) {
-							if(symbol != null && symbol.contentEquals(oldName)) {
-								try {
-									exp.substituteInPlace(new Expression(oldName), new Expression(newName));
-									replaced = true;
-								} catch (ExpressionException e) {
-									e.printStackTrace();
-									String errMsg = "Failed to rename symbol '" + oldName + "' with '" + newName + "' in an Expression of " + BioEvent.typeName + " '" + event.getDisplayName() + "' Parameter.";
-									throw new RuntimeException(errMsg);
-								}
-							}
-						}
-					}
-				}
-				try {
-					if(replaced) {
-						event.bind();
-					}
-				} catch (ExpressionBindingException e) {
-					e.printStackTrace();
-					String errMsg = "Failed to bind an Expression of " + BioEvent.typeName + " '" + event.getDisplayName() + "' after renaming variable '" + oldName + "'.";
-					throw new RuntimeException(errMsg);
-				}
-			}
-			refreshData();
-		} else if (evt.getPropertyName().equals("trigger") || evt.getPropertyName().equals("delay") || evt.getPropertyName().equals("eventAssignments")) {
+//		if(evt.getSource() == simulationContext && evt.getPropertyName().equals(Model.PROPERTY_NAME_MODEL_ENTITY_NAME)) {
+//			String oldName = (String)evt.getOldValue();
+//			String newName = (String)evt.getNewValue();
+//			for(int i=0; simulationContext.getBioEvents() != null && i<simulationContext.getBioEvents().length; i++) {
+//				boolean replaced = false;
+//				BioEvent event = simulationContext.getBioEvents()[i];
+//				// ---------------------- check expressions for the assignments of this event 
+//				ArrayList<EventAssignment> eas = event.getEventAssignments();
+//				if(eas != null) {
+//					for(EventAssignment ea : eas) {
+//						Expression exp = ea.getAssignmentExpression();
+//						if(exp == null || exp.getSymbols() == null || exp.getSymbols().length == 0) {
+//							continue;
+//						}
+//						for(String symbol : exp.getSymbols()) {
+//							if(symbol != null && symbol.contentEquals(oldName)) {
+//								try {
+//									exp.substituteInPlace(new Expression(oldName), new Expression(newName));
+//									replaced = true;
+//								} catch (ExpressionException e) {
+//									e.printStackTrace();
+//									String errMsg = "Failed to rename symbol '" + oldName + "' with '" + newName + "' in an EventAssignment Expression of " + BioEvent.typeName + " '" + event.getDisplayName() + "'.";
+//									throw new RuntimeException(errMsg);
+//								}
+//							}
+//						}
+//					}
+//				}
+//				// ---------------------- check expressions for trigger function, trigger delay and trigger time
+//				LocalParameter[] params = event.getEventParameters();
+//				if(params != null) {
+//					for(LocalParameter param : params) {
+//						if(param == null) {
+//							continue;
+//						}
+//						Expression exp = param.getExpression();
+//						if(exp == null || exp.getSymbols() == null || exp.getSymbols().length == 0) {
+//							continue;
+//						}
+//						for(String symbol : exp.getSymbols()) {
+//							if(symbol != null && symbol.contentEquals(oldName)) {
+//								try {
+//									exp.substituteInPlace(new Expression(oldName), new Expression(newName));
+//									replaced = true;
+//								} catch (ExpressionException e) {
+//									e.printStackTrace();
+//									String errMsg = "Failed to rename symbol '" + oldName + "' with '" + newName + "' in an Expression of " + BioEvent.typeName + " '" + event.getDisplayName() + "' Parameter.";
+//									throw new RuntimeException(errMsg);
+//								}
+//							}
+//						}
+//					}
+//				}
+//				try {
+//					if(replaced) {
+//						event.bind();
+//					}
+//				} catch (ExpressionBindingException e) {
+//					e.printStackTrace();
+//					String errMsg = "Failed to bind an Expression of " + BioEvent.typeName + " '" + event.getDisplayName() + "' after renaming variable '" + oldName + "'.";
+//					throw new RuntimeException(errMsg);
+//				}
+//			}
+//			refreshData();
+//		} else 
+		if (evt.getPropertyName().equals("trigger") || evt.getPropertyName().equals("delay") || evt.getPropertyName().equals("eventAssignments")) {
 			fireTableRowsUpdated(0, getRowCount()-1);
 		} else {
 			if (evt.getPropertyName().equals("bioevents")) {

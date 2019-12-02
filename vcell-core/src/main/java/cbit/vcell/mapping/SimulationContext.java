@@ -1721,7 +1721,10 @@ public void propertyChange(java.beans.PropertyChangeEvent event) {
 	}
 	if (event.getSource() == getBioModel() && event.getPropertyName().equals(Model.PROPERTY_NAME_MODEL_ENTITY_NAME)){
 		if (!isbIgnoreEvents()) {
-			firePropertyChange(Model.PROPERTY_NAME_MODEL_ENTITY_NAME, event.getOldValue(), event.getNewValue());
+//			firePropertyChange(Model.PROPERTY_NAME_MODEL_ENTITY_NAME, event.getOldValue(), event.getNewValue());
+			Map<String, String> entitiesToRename = new LinkedHashMap<> ();
+			entitiesToRename.put((String)event.getOldValue(), (String)event.getNewValue());
+			substituteChangedNamesInExpressions(entitiesToRename);
 		}
 	}
 }
