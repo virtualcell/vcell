@@ -189,7 +189,8 @@ public class AssignmentRulesSummaryTableModel extends BioModelEditorApplicationR
 						if(assignmentRule.getAssignmentRuleExpression() == null) {
 							return null; 
 						} else {
-							ScopedExpression se = new ScopedExpression(assignmentRule.getAssignmentRuleExpression(), simulationContext.getModel().getNameScope());
+//							ScopedExpression se = new ScopedExpression(assignmentRule.getAssignmentRuleExpression(), simulationContext.getModel().getNameScope());
+							ScopedExpression se = new ScopedExpression(assignmentRule.getAssignmentRuleExpression(), null);
 							return se;
 						}
 					}
@@ -240,39 +241,6 @@ public class AssignmentRulesSummaryTableModel extends BioModelEditorApplicationR
 				}
 			}
 		}
-//		if(evt.getSource() == simulationContext && evt.getPropertyName().equals(Model.PROPERTY_NAME_MODEL_ENTITY_NAME)) {
-//			String oldName = (String)evt.getOldValue();
-//			String newName = (String)evt.getNewValue();
-//			
-//			for(int i=0; simulationContext.getAssignmentRules() != null && i<simulationContext.getAssignmentRules().length; i++) {
-//				boolean replaced = false;
-//				AssignmentRule rule = simulationContext.getAssignmentRules()[i];
-//				Expression exp = rule.getAssignmentRuleExpression();
-//				if(exp == null || exp.getSymbols() == null || exp.getSymbols().length == 0) {
-//					continue;
-//				}
-//				String errMsg = "Failed to rename symbol '" + oldName + "' with '" + newName + "' in the Expression of " + AssignmentRule.typeName + " '" + rule.getDisplayName() + "'.";
-//				for(String symbol : exp.getSymbols()) {
-//					if(symbol.contentEquals(oldName)) {
-//						try {
-//							exp.substituteInPlace(new Expression(oldName), new Expression(newName));
-//							replaced = true;
-//						} catch (ExpressionException e) {
-//							e.printStackTrace();
-//							throw new RuntimeException(errMsg);
-//						}
-//					}
-//				}
-//				try {
-//					if(replaced) {
-//						rule.bind();
-//					}
-//				} catch (ExpressionBindingException e) {
-//					e.printStackTrace();
-//					throw new RuntimeException(errMsg);
-//				}
-//			}
-//		}
 		refreshData();
 	}
 	
