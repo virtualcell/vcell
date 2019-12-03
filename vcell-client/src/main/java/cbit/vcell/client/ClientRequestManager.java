@@ -3863,33 +3863,33 @@ public class ClientRequestManager
 			}
 			entitiesToRename.put(id, name);
 		}
-//	for(Structure struct : vcBioModel.getModel().getStructures()) {
-//		String id = struct.getName();
-//		String name = struct.getSbmlName();
-//		if(name == null || name.isEmpty()) {
-//			continue;
-//		}
-//		if(isRestrictedXYZT(name, vcBioModel)) {
-//			continue;
-//		}
-//		name = TokenMangler.fixTokenStrict(name, 60);
-//		while (true) {
-//			if (cbit.vcell.model.Model.isNameUnused(name, vcBioModel.getModel())) {
-//				break;
-//			}	
-//			name = TokenMangler.getNextEnumeratedToken(name);
-//		}
-//		if(id.equals(name)) {
-//			continue;
-//		}
-//		try {
-//			System.out.println(name + " <-- " + id);
-//			mp.setName(name);
-//		} catch(PropertyVetoException e) {
-//			e.printStackTrace();
-//		}
-//		entitiesToRename.put(id, name);
-//	}
+	for(Structure struct : vcBioModel.getModel().getStructures()) {
+		String id = struct.getName();
+		String name = struct.getFieldSbmlName();
+		if(name == null || name.isEmpty()) {
+			continue;
+		}
+		if(isRestrictedXYZT(name, vcBioModel)) {
+			continue;
+		}
+		name = TokenMangler.fixTokenStrict(name, 60);
+		while (true) {
+			if (cbit.vcell.model.Model.isNameUnused(name, vcBioModel.getModel())) {
+				break;
+			}	
+			name = TokenMangler.getNextEnumeratedToken(name);
+		}
+		if(id.equals(name)) {
+			continue;
+		}
+		try {
+			System.out.println(name + " <-- " + id);
+			struct.setName(name, false);
+		} catch(PropertyVetoException e) {
+			e.printStackTrace();
+		}
+		entitiesToRename.put(id, name);
+	}
 		vcBioModel.getSimulationContext(0).substituteChangedNamesInExpressions(entitiesToRename);
 
 		for (ReactionStep rs : vcBioModel.getModel().getReactionSteps()) {

@@ -423,6 +423,10 @@ public class SBMLImporter {
 					logger.sendMessage(VCLogger.Priority.HighPriority, VCLogger.ErrorType.CompartmentError, msg);
 					throw new SBMLImportException(msg);
 				}
+				if (compartment.isSetName()) {
+					structList.get(structIndx).setFieldSbmlName(compartment.getName());					
+				}
+		
 				structIndx++;
 				sbmlAnnotationUtil.readAnnotation(structList.get(i), compartment);
 				sbmlAnnotationUtil.readNotes(structList.get(i), compartment);

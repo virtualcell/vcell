@@ -41,7 +41,16 @@ public abstract class Structure implements Serializable, ScopedSymbolTable, Matc
 	public final static String TYPE_NAME_MEMBRANE = "Membrane";
 	
 	private String fieldName = new String();
+	private String fieldSbmlName = new String();
 	protected transient java.beans.VetoableChangeSupport vetoPropertyChange;
+	public String getFieldSbmlName() {
+		return fieldSbmlName;
+	}
+
+	public void setFieldSbmlName(String fieldSbmlName) {
+		this.fieldSbmlName = fieldSbmlName;
+	}
+
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 	private KeyValue fieldKey = null;
 	private StructureNameScope fieldNameScope = new Structure.StructureNameScope();
