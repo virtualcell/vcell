@@ -22,6 +22,7 @@ import cbit.vcell.client.desktop.biomodel.DocumentEditorTreeModel.DocumentEditor
 import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveView;
 import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveViewID;
 import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.mapping.SimulationContext.Application;
 import cbit.vcell.mapping.gui.ElectricalMembraneMappingPanel;
 import cbit.vcell.mapping.gui.MicroscopeMeasurementPanel;
 
@@ -162,7 +163,8 @@ public class ApplicationProtocolsPanel extends ApplicationSubPanel {
 	}
 	
 	private void showOrHideEventsPanel() {
-		boolean bShow = simulationContext.getGeometry().getDimension() == 0 && !simulationContext.isStoch();
+//		boolean bShow = simulationContext.getGeometry().getDimension() == 0 && !simulationContext.isStoch();
+		boolean bShow = simulationContext.getGeometry().getDimension() == 0 && simulationContext.getApplicationType() == Application.NETWORK_DETERMINISTIC;
 		showOrHidePanel(ProtocolsPanelTabID.events, bShow);
 		if (bShow) {
 			eventsDisplayPanel.setSimulationContext(simulationContext);
@@ -170,14 +172,16 @@ public class ApplicationProtocolsPanel extends ApplicationSubPanel {
 	}
 
 	private void showOrHideRateRulesPanel() {
-		boolean bShow = simulationContext.getGeometry().getDimension() == 0 && !simulationContext.isStoch();
+//		boolean bShow = simulationContext.getGeometry().getDimension() == 0 && !simulationContext.isStoch();
+		boolean bShow = simulationContext.getGeometry().getDimension() == 0 && simulationContext.getApplicationType() == Application.NETWORK_DETERMINISTIC;
 		showOrHidePanel(ProtocolsPanelTabID.rate_rules, bShow);
 		if (bShow) {
 			rateRulesDisplayPanel.setSimulationContext(simulationContext);
 		}
 	}
 	private void showOrHideAssignmentRulesPanel() {
-		boolean bShow = simulationContext.getGeometry().getDimension() == 0 && !simulationContext.isStoch();
+//		boolean bShow = simulationContext.getGeometry().getDimension() == 0 && !simulationContext.isStoch();
+		boolean bShow = simulationContext.getGeometry().getDimension() == 0 && simulationContext.getApplicationType() == Application.NETWORK_DETERMINISTIC;
 		showOrHidePanel(ProtocolsPanelTabID.assignment_rules, bShow);
 		if (bShow) {
 			assignmentRulesDisplayPanel.setSimulationContext(simulationContext);
