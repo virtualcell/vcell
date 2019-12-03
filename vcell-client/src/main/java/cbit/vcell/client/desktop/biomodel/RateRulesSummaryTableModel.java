@@ -149,6 +149,14 @@ public class RateRulesSummaryTableModel extends BioModelEditorApplicationRightSi
 					if(sc == null && mp == null) {
 						elementsToRemove.add(candidate);
 					}
+					if(sc != null && simulationContext.getAssignmentRule(sc) != null) {
+						elementsToRemove.add(candidate);
+						continue;
+					}
+					if(mp != null && simulationContext.getAssignmentRule(mp) != null) {
+						elementsToRemove.add(candidate);
+						continue;
+					}
 				}
 				for(String candidate : elementsToRemove) {
 					aModel.removeElement(candidate);

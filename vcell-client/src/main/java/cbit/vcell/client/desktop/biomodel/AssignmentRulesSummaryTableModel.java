@@ -31,6 +31,8 @@ import org.vcell.util.gui.ScrollTable;
 
 import cbit.gui.ScopedExpression;
 import cbit.vcell.mapping.AssignmentRule;
+import cbit.vcell.mapping.BioEvent;
+import cbit.vcell.mapping.BioEvent.EventAssignment;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Model;
@@ -139,6 +141,37 @@ public class AssignmentRulesSummaryTableModel extends BioModelEditorApplicationR
 					ModelParameter mp = simulationContext.getModel().getModelParameter(candidate);
 					if(sc == null && mp == null) {
 						elementsToRemove.add(candidate);
+					}
+					if(sc != null && simulationContext.getRateRule(sc) != null) {
+						elementsToRemove.add(candidate);
+						continue;
+					}
+					if(mp != null && simulationContext.getRateRule(mp) != null) {
+						elementsToRemove.add(candidate);
+						continue;
+					}
+					if(simulationContext.getBioEvents() == null) {
+						continue;
+					}
+					boolean found = false;
+					for(BioEvent event : simulationContext.getBioEvents()) {
+						ArrayList<EventAssignment> eas = event.getEventAssignments();
+						if(eas == null) {
+							continue;
+						}
+						for(EventAssignment ea : eas) {
+							if(ea.getTarget() != null && candidate.contentEquals(ea.getTarget().getName())) {
+								found = true;
+								break;
+							}
+						}
+						if(found) {
+							break;
+						}
+					}
+					if(found) {
+						elementsToRemove.add(candidate);
+						continue;
 					}
 				}
 				for(String candidate : elementsToRemove) {
