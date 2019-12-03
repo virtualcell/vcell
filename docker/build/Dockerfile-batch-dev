@@ -124,7 +124,7 @@ ENV softwareVersion=SOFTWARE-VERSION-NOT-SET \
     jmsblob_minsize=100000
 
 VOLUME /simdata
-VOLUME /share/apps/vcell7/users
+VOLUME /share/apps/vcell10/users
 VOLUME /htclogs
 VOLUME /solvertmp
 

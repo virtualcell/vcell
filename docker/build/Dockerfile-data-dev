@@ -88,7 +88,7 @@ ENV softwareVersion=SOFTWARE-VERSION-NOT-SET \
 ENV jmspswdfile=/run/secrets/jmspswd
 
 VOLUME /simdata
-VOLUME /share/apps/vcell7/users
+VOLUME /share/apps/vcell10/users
 VOLUME /exportdir
 
 EXPOSE 8000
