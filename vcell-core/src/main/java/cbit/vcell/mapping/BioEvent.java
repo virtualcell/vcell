@@ -125,6 +125,10 @@ public class BioEvent implements Matchable, Serializable, VetoableChangeListener
 
 			return true;
 		}
+		
+		public void setTarget(SymbolTableEntry target) {
+			this.target = target;
+		}
 		public final SymbolTableEntry getTarget() {
 			return target;
 		}
