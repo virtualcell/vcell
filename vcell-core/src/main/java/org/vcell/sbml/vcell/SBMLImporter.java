@@ -166,6 +166,7 @@ import cbit.vcell.mapping.SpeciesContextSpec;
 import cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecParameter;
 import cbit.vcell.mapping.StructureMapping;
 import cbit.vcell.math.BoundaryConditionType;
+import cbit.vcell.model.DistributedKinetics;
 import cbit.vcell.model.Feature;
 import cbit.vcell.model.FluxReaction;
 import cbit.vcell.model.GeneralKinetics;
@@ -174,6 +175,7 @@ import cbit.vcell.model.Kinetics;
 import cbit.vcell.model.Kinetics.KineticsParameter;
 import cbit.vcell.model.Kinetics.KineticsProxyParameter;
 import cbit.vcell.model.Kinetics.UnresolvedParameter;
+import cbit.vcell.model.LumpedKinetics;
 import cbit.vcell.model.Membrane;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Model.ModelParameter;
@@ -2480,6 +2482,12 @@ public class SBMLImporter {
 			
 			translateSBMLModel();
 			vcBioModel.refreshDependencies();
+			ReactionStep[] reax = vcBioModel.getModel().getReactionSteps();
+			for (int i = 0; i < reax.length; i++) {
+				if (reax[i].getKinetics().getKineticsDescription().isLumped()) {
+					DistributedKinetics.toDistributedKinetics((LumpedKinetics) reax[i].getKinetics());
+				}
+			}
 
 		} catch(Exception e) {
 			e.printStackTrace(System.out);
