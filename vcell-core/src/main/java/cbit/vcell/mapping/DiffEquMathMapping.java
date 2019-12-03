@@ -391,7 +391,16 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 					e.printStackTrace(System.out);
 					throw new MappingException(e.getMessage());
 				}
-				VolVariable volVar = new VolVariable(modelParameters[j].getName(),null);
+				
+				if(geometryClass == null) {
+					GeometryClass[] geometryClasses = simContext.getGeometryContext().getGeometry().getGeometryClasses();
+					geometryClass = geometryClasses[0];
+				}
+				Domain domain = null;
+				if(geometryClass != null) {
+					domain = new Domain(geometryClass);	// the volume variable will look like Compartment::g0 rather than just g0
+				}
+				VolVariable volVar = new VolVariable(modelParameters[j].getName(), domain);
 				varHash.addVariable(volVar);
 				eventVolVarHash.put(volVar, eap);
 			} else if(rateRuleVarTargets.contains(modelParameters[j])) {
