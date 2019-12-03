@@ -587,35 +587,16 @@ public class BioModelParametersPanel extends DocumentEditorSubPanel {
 								break;
 							}
 						}
-						String sbmlName = null;
-						if(selectedObject instanceof ModelParameter) {
-							sbmlName = ((ModelParameter)ste).getSbmlName();
-						} else if(selectedObject instanceof SpeciesContext) {
-							sbmlName = ((SpeciesContext)ste).getSbmlName();
-						}
 						Icon icon = null;
-						String text = null;
-						String message = "The default value of this entity is being overriden by a rate / assignment rule in one or more applications";
 						if(rr != null) {
-							icon = VCellIcons.ruleRateIcon;		// ruleRateIcon
-							if(sbmlName != null && !sbmlName.isEmpty()) {
-								text = "Alt. Name: " + sbmlName + "<br>";
-							}
-							text += message;
-							text = "<html>" + text + "</html>";
+							String text = "<html>The default value of this entity is being overriden by a Rate Rule in one or more applications</html>";
+							icon = VCellIcons.ruleRateIcon;
+							setToolTipText(text);
 						} else if(ar != null) {
-							icon = VCellIcons.ruleAssignIcon;	// ruleAssignIcon
-							if(sbmlName != null && !sbmlName.isEmpty()) {
-								text = "Alt. Name: " + sbmlName + "<br>";
-							}
-							text += message;
-							text = "<html>" + text + "</html>";
-						} else {
-							if(sbmlName != null && !sbmlName.isEmpty()) {
-								text = "Alt. Name: " + sbmlName;
-							}
+							String text = "<html>The default value of this entity is being overriden by an Assignment Rule in one or more applications</html>";
+							icon = VCellIcons.ruleAssignIcon;
+							setToolTipText(text);
 						}
-						setToolTipText(text);
 						setIcon(icon);
 						this.setHorizontalTextPosition(SwingConstants.LEFT);
 						if(isSelected) {
