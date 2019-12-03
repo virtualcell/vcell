@@ -1269,6 +1269,30 @@ protected void addEvents() {
 				e.printStackTrace(System.out);
 				throw new RuntimeException("failed to generate trigger expression for event "+vcEvent.getName()+": "+e.getMessage());
 			}
+
+			// create trigger parameter(s)
+			// TODO - need to iterate through all possible types of trigger
+			// TODO - need to rename trigger functions with namescope as to not overlap when more than one event
+			// TODO - need checks for possible non-numeric functions (see TODO blocks inline) - can it happen?
+			LocalParameter tParam = vcEvent.getParameter(BioEventParameterType.SingleTriggerTime);
+			if (tParam != null && tParam.getExpression() != null && !tParam.getExpression().isZero()) {
+				org.sbml.jsbml.Parameter tp = sbmlModel.createParameter();
+				tp.setId(tParam.getName());
+				tp.setName(tParam.getName());
+				tp.setConstant(tParam.isConstant());
+				Expression tExpr = tParam.getExpression();
+				if (tExpr.isNumeric()) {
+					try {
+						tp.setValue(tExpr.evaluateConstant());
+					} catch (ExpressionException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				} else {
+					// TODO
+					throw new RuntimeException("trigger parameter not numeric not yet implemented");
+				}
+			}			
 			
 			// create delay
 			LocalParameter delayParam = vcEvent.getParameter(BioEventParameterType.TriggerDelay);
