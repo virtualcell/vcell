@@ -751,21 +751,24 @@ public class EventPanel extends DocumentEditorSubPanel {
 					symbolTableEntry instanceof Model.ReservedSymbol)) {
 					continue;
 				}
+				if(simContext.getAssignmentRule(symbolTableEntry) != null) {
+					continue;	// we don't allow assignment rule variables, they'll become functions in the math
+				}
 				if(symbolTableEntry instanceof Model.ModelParameter) {	// exclude global parameters that are rate or assignment rule variables
 					if(simContext.getRateRule(symbolTableEntry) != null) {
-						;	// it's a rate rule variable, we're fine
+						;		// it's a rate rule variable, we can use it
 					} else {
 						Model.ModelParameter mp = (Model.ModelParameter)symbolTableEntry;
 						Expression exp = mp.getExpression();
 						try {
 							boolean isConstant = BioEvent.isConstantExpression(simContext, exp);
 							if(!isConstant) {
-								System.out.println(mp.getName() + " - NO");		// skip this
+//								System.out.println(mp.getName() + " - NO");		// skip this
 								continue;
 							}
 //							System.out.println(mp.getName() + " - yes: ");
 						} catch (ExpressionException e) {
-							System.out.println(mp.getName() + " - NO");			// skip this
+//							System.out.println(mp.getName() + " - NO");			// skip this
 							continue;
 						}
 					}

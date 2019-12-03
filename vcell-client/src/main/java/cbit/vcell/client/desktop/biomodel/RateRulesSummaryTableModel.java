@@ -149,6 +149,14 @@ public class RateRulesSummaryTableModel extends BioModelEditorApplicationRightSi
 					if(sc == null && mp == null) {
 						elementsToRemove.add(candidate);
 					}
+					if(sc != null && simulationContext.getAssignmentRule(sc) != null) {
+						elementsToRemove.add(candidate);
+						continue;
+					}
+					if(mp != null && simulationContext.getAssignmentRule(mp) != null) {
+						elementsToRemove.add(candidate);
+						continue;
+					}
 				}
 				for(String candidate : elementsToRemove) {
 					aModel.removeElement(candidate);
@@ -198,7 +206,10 @@ public class RateRulesSummaryTableModel extends BioModelEditorApplicationRightSi
 						if (rateRule.getRateRuleExpression() == null) {
 							return null; 
 						} else {
-							return new ScopedExpression(rateRule.getRateRuleExpression(), simulationContext.getModel().getNameScope());
+							// using the model name scope would result in names like c0.c0 for a compartment because actually
+							// it's the compartment size parameter, not the compartment itself
+//							return new ScopedExpression(rateRule.getRateRuleExpression(), simulationContext.getModel().getNameScope());
+							return new ScopedExpression(rateRule.getRateRuleExpression(), null);
 						}
 					}
 					case COLUMN_RATERULE_TYPE: {
@@ -248,39 +259,6 @@ public class RateRulesSummaryTableModel extends BioModelEditorApplicationRightSi
 				}
 			}
 		}
-//		if(evt.getSource() == simulationContext && evt.getPropertyName().equals(Model.PROPERTY_NAME_MODEL_ENTITY_NAME)) {
-//			String oldName = (String)evt.getOldValue();
-//			String newName = (String)evt.getNewValue();
-//
-//			for(int i=0; simulationContext.getRateRules() != null && i<simulationContext.getRateRules().length; i++) {
-//				boolean replaced = false;
-//				RateRule rule = simulationContext.getRateRules()[i];
-//				Expression exp = rule.getRateRuleExpression();
-//				if(exp == null || exp.getSymbols() == null || exp.getSymbols().length == 0) {
-//					continue;
-//				}
-//				String errMsg = "Failed to rename symbol '" + oldName + "' with '" + newName + "' in the Expression of " + RateRule.typeName + " '" + rule.getDisplayName() + "'.";
-//				for(String symbol : exp.getSymbols()) {
-//					if(symbol.contentEquals(oldName)) {
-//						try {
-//							exp.substituteInPlace(new Expression(oldName), new Expression(newName));
-//							replaced = true;
-//						} catch (ExpressionException e) {
-//							e.printStackTrace();
-//							throw new RuntimeException(errMsg);
-//						}
-//					}
-//				}
-//				try {
-//					if(replaced) {
-//						rule.bind();
-//					}
-//				} catch (ExpressionBindingException e) {
-//					e.printStackTrace();
-//					throw new RuntimeException(errMsg);
-//				}
-//			}
-//		}
 		refreshData();
 	}
 	
