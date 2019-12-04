@@ -240,8 +240,8 @@ public class SEDMLExporter {
 						throw new RuntimeException("unsupported Document Type "+vcBioModel.getClass().getName()+" for SBML export");
 					}
 					
-					String sbmlFilePathStrAbsolute = savePath + FileUtils.WINDOWS_SEPARATOR + bioModelName + "_" + simContextName + ".xml";
-					String sbmlFilePathStrRelative = bioModelName + "_" + simContextName + ".xml";
+					String sbmlFilePathStrAbsolute = savePath + FileUtils.WINDOWS_SEPARATOR + bioModelName + "_" + TokenMangler.mangleToSName(simContextName) + ".xml";
+					String sbmlFilePathStrRelative = bioModelName + "_" +  TokenMangler.mangleToSName(simContextName) + ".xml";
 					XmlUtil.writeXMLStringToFile(sbmlString, sbmlFilePathStrAbsolute, true);
 					sbmlFilePathStrAbsoluteList.add(sbmlFilePathStrRelative);
 			        String simContextId = TokenMangler.mangleToSName(simContextName);
