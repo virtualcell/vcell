@@ -3884,7 +3884,7 @@ public class ClientRequestManager
 		}
 		try {
 			System.out.println(name + " <-- " + id);
-			struct.setName(name, false);
+			struct.setName(name, true);
 		} catch(PropertyVetoException e) {
 			e.printStackTrace();
 		}
