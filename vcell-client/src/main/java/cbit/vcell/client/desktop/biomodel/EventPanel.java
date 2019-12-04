@@ -738,9 +738,16 @@ public class EventPanel extends DocumentEditorSubPanel {
 			}
 		}
 		
-		public static void populateVariableComboBoxModel(DefaultComboBoxModel<String> defaultComboBoxModel,SimulationContext simContext/*,boolean bExcludeFuncAndReserved*/){
-			// fill comboboxmodel with possible variables from simContext (symboltable entries) list
+		
+		private static void populateVariableComboBoxModel(DefaultComboBoxModel<String> defaultComboBoxModel, SimulationContext simContext) {
 			defaultComboBoxModel.removeAllElements();
+			ArrayList<String> varNameList = filterEventAssignmentVariables(simContext);
+			for (String varName : varNameList) {
+				defaultComboBoxModel.addElement(varName);
+			}
+		}
+		public static ArrayList<String> filterEventAssignmentVariables(SimulationContext simContext) {
+			// fill comboboxmodel with possible variables from simContext (symboltable entries) list
 			Map<String, SymbolTableEntry> entryMap = new HashMap<String, SymbolTableEntry>();
 			simContext.getEntries(entryMap);
 			ArrayList<String> varNameList = new ArrayList<String>();
@@ -778,10 +785,9 @@ public class EventPanel extends DocumentEditorSubPanel {
 				varNameList.add(varName);
 			}
 			Collections.sort(varNameList);
-			for (String varName : varNameList) {
-				defaultComboBoxModel.addElement(varName);
-			}
+			return varNameList;
 		}
+		
 		private void addEventAssignment() {
 
 			populateVariableComboBoxModel(getVarNameComboBoxModel(),getSimulationContext()/*,true*/);

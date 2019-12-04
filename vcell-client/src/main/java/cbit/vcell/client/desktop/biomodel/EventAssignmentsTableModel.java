@@ -78,6 +78,7 @@ public class EventAssignmentsTableModel extends VCellSortTableModel<EventAssignm
 		private AutoCompleteSymbolFilter autoCompleteSymbolFilter = null;
 		
 		JComboBox<String> steComboBox = null;
+		DefaultComboBoxModel<String> aModel = new DefaultComboBoxModel<> ();
 
 
 	/**
@@ -208,6 +209,7 @@ public class EventAssignmentsTableModel extends VCellSortTableModel<EventAssignm
 		ArrayList<EventAssignment> eventAssignments = null;
 		if (getSimulationContext() != null && fieldBioEvent != null) {
 			eventAssignments = fieldBioEvent.getEventAssignments();
+			populateVariableComboBoxModel(aModel, fieldSimContext);
 		}
 		setData(eventAssignments);
 	}
@@ -281,30 +283,36 @@ public class EventAssignmentsTableModel extends VCellSortTableModel<EventAssignm
 	  return new VariableColumnComparator(col, ascending);
 	}
 
-	private void updateSteComboBox() {
-		if(steComboBox == null) {
-			steComboBox = new JComboBox<> ();
+	private static void populateVariableComboBoxModel(DefaultComboBoxModel<String> defaultComboBoxModel, SimulationContext simContext) {
+		defaultComboBoxModel.removeAllElements();
+		ArrayList<String> varNameList = EventPanel.filterEventAssignmentVariables(simContext);
+		for (String varName : varNameList) {
+			defaultComboBoxModel.addElement(varName);
 		}
+	}
+
+	private void updateSteComboBox() {
 		if(fieldSimContext == null) {
 			return;
 		}
-		DefaultComboBoxModel<String> aModel = new DefaultComboBoxModel<> ();
-		EventPanel.populateVariableComboBoxModel(aModel, fieldSimContext);
+		if(steComboBox == null) {
+			steComboBox = new JComboBox<> ();
+		}
+		populateVariableComboBoxModel(aModel, fieldSimContext);
 		
-		steComboBox.addFocusListener(new java.awt.event.FocusAdapter() {
-			@Override
-			public void focusGained(java.awt.event.FocusEvent evt) {
-				
-				DefaultComboBoxModel<String> aModel = (DefaultComboBoxModel<String>) steComboBox.getModel();
-				// TODO: aModel must be updated
-//				EventPanel.populateVariableComboBoxModel(aModel, fieldSimContext);
-			}
-		});
+//		steComboBox.addFocusListener(new java.awt.event.FocusAdapter() {
+//			@Override
+//			public void focusGained(java.awt.event.FocusEvent evt) {
+//				
+//				DefaultComboBoxModel<String> aModel = (DefaultComboBoxModel<String>) steComboBox.getModel();
+//				ArrayList<String> varNameList = EventPanel.filterEventAssignmentVariables(fieldSimContext);
+//				// TODO: repopulate aModel
+//			}
+//		});
 		
 		steComboBox.setRenderer(new DefaultListCellRenderer() {
 			@Override
-			public Component getListCellRendererComponent(JList<?> list, Object value,
-					int index, boolean isSelected, boolean cellHasFocus) {
+			public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
 				super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
 				setHorizontalTextPosition(SwingConstants.LEFT);
 				if(value == null) {
@@ -318,7 +326,6 @@ public class EventAssignmentsTableModel extends VCellSortTableModel<EventAssignm
 				return this;
 			}
 		});
-		
 		steComboBox.setModel(aModel);
 		ownerTable.getColumnModel().getColumn(COLUMN_EVENTASSGN_VARNAME).setCellEditor(new DefaultCellEditor(steComboBox));
 	}
