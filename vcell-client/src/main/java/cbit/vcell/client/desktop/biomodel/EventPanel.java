@@ -65,6 +65,7 @@ import cbit.vcell.mapping.gui.ElectricalStimulusPanel;
 import cbit.vcell.math.Equation;
 import cbit.vcell.math.MathException;
 import cbit.vcell.model.Model;
+import cbit.vcell.model.RbmObservable;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
 import cbit.vcell.parser.AutoCompleteSymbolFilter;
@@ -748,7 +749,8 @@ public class EventPanel extends DocumentEditorSubPanel {
 				if (/*bExcludeFuncAndReserved && */
 					(symbolTableEntry instanceof SymbolTableFunctionEntry || 
 					symbolTableEntry instanceof Structure.StructureSize || 
-					symbolTableEntry instanceof Model.ReservedSymbol)) {
+					symbolTableEntry instanceof Model.ReservedSymbol ||
+					symbolTableEntry instanceof RbmObservable)) {
 					continue;
 				}
 				if(simContext.getAssignmentRule(symbolTableEntry) != null) {
