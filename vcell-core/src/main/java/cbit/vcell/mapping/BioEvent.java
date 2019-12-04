@@ -498,6 +498,24 @@ public class BioEvent implements Matchable, Serializable, VetoableChangeListener
 						break;	// found one issue on this event assignment, we show it and go to next
 					}
 				}
+				boolean found = false;
+				for(EventAssignment other : eventAssignmentList) {		// we already know that the list is not null
+					if(ea == other) {
+						continue;		// don't compare against self
+					}
+					if(ea.getTarget() != other.getTarget()) {
+						continue;		// assignments have different target variables, all is well
+					}
+					// different assignments of the same event have the same target variable
+					String msg = "Duplicated event action target Variable '" + ea.getTarget().getName() + "' for BioEvent '" + name + "'.";
+					issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, msg, Issue.Severity.ERROR));
+					found = true;
+					break;
+				}
+				if(found == true) {
+					break;	// found one issue on this event assignment, we show it and go to next
+				}
+
 			}
 		} else {
 			String msg = "No Action assigned to BioEvent '" + name + "'.";
