@@ -12,15 +12,20 @@ package cbit.vcell.client.desktop.biomodel;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.Container;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.HashMap;
 import java.util.Hashtable;
+import java.util.List;
+import java.util.Map;
 
 import javax.swing.Icon;
 import javax.swing.JComponent;
 import javax.swing.JTabbedPane;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
@@ -184,7 +189,7 @@ public class BioModelEditorApplicationPanel extends DocumentEditorSubPanel {
 				parameterEstimationPanel.setSelectionManager(null);
 				showOrHideFittingPanel();
 				parameterEstimationPanel.setSelectionManager(selectionManager);
-//				showOrHideProtocolsPanel();
+				showOrHideProtocolsPanel();
 				if (respondingToSelectionManager){
 					selectionManager.setSelectedObjects(new Object[0]);
 					selectionManager.setSelectedObjects(selectedObj);
@@ -195,17 +200,34 @@ public class BioModelEditorApplicationPanel extends DocumentEditorSubPanel {
 	}
 
 	private void showOrHideProtocolsPanel() {
-		boolean bShow = !simulationContext.isRuleBased();
-		ApplicationPanelTab protocolsTab = appPanelTabs[ApplicationPanelTabID.protocols.ordinal()];
-		int protocolsTabIndexInPane = tabbedPane.indexOfComponent(protocolsTab.component);
-		if(bShow){
-			if(protocolsTabIndexInPane == -1){
-				tabbedPane.insertTab(protocolsTab.id.title, protocolsTab.icon, protocolsTab.component,"protocols",ApplicationPanelTabID.protocols.ordinal());
+		// TODO: disable the 3 lines below to force disable all the protocols
+//		boolean bShow = false;
+//		enableSubComponents(applicationProtocolsPanel, bShow);
+//		applicationProtocolsPanel.setEnabled(bShow);
+//		
+//		boolean bShow = !simulationContext.isRuleBased();
+//		ApplicationPanelTab protocolsTab = appPanelTabs[ApplicationPanelTabID.protocols.ordinal()];
+//		int protocolsTabIndexInPane = tabbedPane.indexOfComponent(protocolsTab.component);
+//		if(bShow){
+//			if(protocolsTabIndexInPane == -1){
+//				tabbedPane.insertTab(protocolsTab.id.title, protocolsTab.icon, protocolsTab.component,"protocols",ApplicationPanelTabID.protocols.ordinal());
+//			}
+//		}else if(protocolsTabIndexInPane != -1){
+//			tabbedPane.remove(protocolsTabIndexInPane);
+//		}
+	}
+	
+	// recursive disable all JComponent children
+	static void enableSubComponents(JComponent parent, boolean enable) {
+		Component[] children = parent.getComponents();
+		for(Component comp : children) {
+			if(comp instanceof JComponent) {
+				enableSubComponents((JComponent)comp, enable);
 			}
-		}else if(protocolsTabIndexInPane != -1){
-			tabbedPane.remove(protocolsTabIndexInPane);
+			comp.setEnabled(enable);
 		}
 	}
+
 	
 	private void showOrHideFittingPanel() {
 		ApplicationPanelTab tab = appPanelTabs[ApplicationPanelTabID.parameterEstimation.ordinal()];
