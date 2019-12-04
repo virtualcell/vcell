@@ -114,6 +114,7 @@ import cbit.vcell.mapping.spatial.SpatialObject.SpatialQuantity;
 import cbit.vcell.math.BoundaryConditionType;
 import cbit.vcell.math.Constant;
 import cbit.vcell.math.MathException;
+import cbit.vcell.math.MathUtilities;
 import cbit.vcell.matrix.MatrixException;
 import cbit.vcell.model.DistributedKinetics;
 import cbit.vcell.model.Feature;
@@ -1259,41 +1260,27 @@ protected void addEvents() {
 		for (BioEvent vcEvent : vcBioevents) {
 			Event sbmlEvent = sbmlModel.createEvent();
 			sbmlEvent.setId(vcEvent.getName());
+
 			// create trigger
 			Trigger trigger = sbmlEvent.createTrigger();
+			// NOTE: VCell solver behavior is to fire if trigger is true at timepoint 0
+			// solver does work correctly if there is a non-zero delay
+			// BUT - solver does not correctly simulate when the delay is 0 and when it also fires at 0
+			// ----> will need a fix in solver
+			// HOWEVER - the correct SBML translation requires to set the initial value to false
+			trigger.setInitialValue(false);
+			// get the math for the trigger in terms of variables and globals only
 			try {
 				Expression triggerExpr = vcEvent.generateTriggerExpression();
-				ASTNode math = getFormulaFromExpression(triggerExpr,MathType.BOOLEAN);
+				Expression flattenedTrigger = MathUtilities.substituteModelParameters(triggerExpr, vcSelectedSimContext);
+				// TODO - we will need to add event parameter info into VCell notes so we can recover the semantic of trigger type on roundtrip and transform back a flattened expression
+				ASTNode math = getFormulaFromExpression(flattenedTrigger,MathType.BOOLEAN);
 				trigger.setMath(math);
 			}catch (ExpressionException e){
 				e.printStackTrace(System.out);
 				throw new RuntimeException("failed to generate trigger expression for event "+vcEvent.getName()+": "+e.getMessage());
 			}
-
-			// create trigger parameter(s)
-			// TODO - need to iterate through all possible types of trigger
-			// TODO - need to rename trigger functions with namescope as to not overlap when more than one event
-			// TODO - need checks for possible non-numeric functions (see TODO blocks inline) - can it happen?
-			LocalParameter tParam = vcEvent.getParameter(BioEventParameterType.SingleTriggerTime);
-			if (tParam != null && tParam.getExpression() != null && !tParam.getExpression().isZero()) {
-				org.sbml.jsbml.Parameter tp = sbmlModel.createParameter();
-				tp.setId(tParam.getName());
-				tp.setName(tParam.getName());
-				tp.setConstant(tParam.isConstant());
-				Expression tExpr = tParam.getExpression();
-				if (tExpr.isNumeric()) {
-					try {
-						tp.setValue(tExpr.evaluateConstant());
-					} catch (ExpressionException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-				} else {
-					// TODO
-					throw new RuntimeException("trigger parameter not numeric not yet implemented");
-				}
-			}			
-			
+		
 			// create delay
 			LocalParameter delayParam = vcEvent.getParameter(BioEventParameterType.TriggerDelay);
 			if (delayParam != null && delayParam.getExpression() != null && !delayParam.getExpression().isZero()) {
