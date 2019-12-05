@@ -115,23 +115,10 @@ public class ApplicationProtocolsPanel extends ApplicationSubPanel {
 	private void showOrHidePanel(ProtocolsPanelTabID tabID, boolean bShow) {
 		ProtocolsPanelTab tab = protocolPanelTabs[tabID.ordinal()];
 		int index = tabbedPane.indexOfComponent(tab.component);
-		if (bShow) {
-			// tabbedPane.setEnabledAt(index, true);
-			tabbedPane.addTab(tab.id.title, tab.icon, tab.component);
-		} else {
-			if (index >= 0) {
-				Component selectedComponent = tabbedPane.getSelectedComponent();
-				tabbedPane.remove(tab.component);
-				if (selectedComponent == tab.component) {
-					for (int i = 0; i < tabbedPane.getTabCount(); ++i) {
-						if (tabbedPane.isEnabledAt(i)) {
-							tabbedPane.setSelectedIndex(i);
-							break;
-						}
-					}
-				}
-			}
-		}
+		// we are always actually showing all tabs
+		tabbedPane.addTab(tab.id.title, tab.icon, tab.component);
+		// but they are only usable if compatible
+		BioModelEditorApplicationPanel.enableSubComponents(tab.component, bShow);
 	}
 
 	public void geometryChanged() {
@@ -147,7 +134,9 @@ public class ApplicationProtocolsPanel extends ApplicationSubPanel {
 	}
 	
 	private void showOrHideelectricalMembraneMappingPanel() {
-		boolean bShow = true;
+		boolean okODE = (simulationContext.getGeometry().getDimension() == 0 && simulationContext.getApplicationType() == Application.NETWORK_DETERMINISTIC);
+		boolean okPDE = simulationContext.getGeometry().getDimension() > 0 && !simulationContext.isStoch();
+		boolean bShow = okODE || okPDE;
 		showOrHidePanel(ProtocolsPanelTabID.electrical, bShow);
 		if (bShow) {
 			electricalMembraneMappingPanel.setSimulationContext(simulationContext);

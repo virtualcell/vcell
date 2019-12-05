@@ -189,7 +189,6 @@ public class BioModelEditorApplicationPanel extends DocumentEditorSubPanel {
 				parameterEstimationPanel.setSelectionManager(null);
 				showOrHideFittingPanel();
 				parameterEstimationPanel.setSelectionManager(selectionManager);
-				showOrHideProtocolsPanel();
 				if (respondingToSelectionManager){
 					selectionManager.setSelectedObjects(new Object[0]);
 					selectionManager.setSelectedObjects(selectedObj);
@@ -199,23 +198,6 @@ public class BioModelEditorApplicationPanel extends DocumentEditorSubPanel {
 		ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), new AsynchClientTask[] { task1, task2});
 	}
 
-	private void showOrHideProtocolsPanel() {
-		// TODO: disable the 3 lines below to force disable all the protocols
-//		boolean bShow = false;
-//		enableSubComponents(applicationProtocolsPanel, bShow);
-//		applicationProtocolsPanel.setEnabled(bShow);
-//		
-//		boolean bShow = !simulationContext.isRuleBased();
-//		ApplicationPanelTab protocolsTab = appPanelTabs[ApplicationPanelTabID.protocols.ordinal()];
-//		int protocolsTabIndexInPane = tabbedPane.indexOfComponent(protocolsTab.component);
-//		if(bShow){
-//			if(protocolsTabIndexInPane == -1){
-//				tabbedPane.insertTab(protocolsTab.id.title, protocolsTab.icon, protocolsTab.component,"protocols",ApplicationPanelTabID.protocols.ordinal());
-//			}
-//		}else if(protocolsTabIndexInPane != -1){
-//			tabbedPane.remove(protocolsTabIndexInPane);
-//		}
-	}
 	
 	// recursive disable all JComponent children
 	static void enableSubComponents(JComponent parent, boolean enable) {
