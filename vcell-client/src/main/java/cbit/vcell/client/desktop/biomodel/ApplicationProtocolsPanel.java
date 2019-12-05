@@ -14,6 +14,7 @@ import java.awt.Component;
 
 import javax.swing.Icon;
 import javax.swing.JComponent;
+import javax.swing.SwingUtilities;
 
 import org.vcell.util.gui.VCellIcons;
 
@@ -98,10 +99,7 @@ public class ApplicationProtocolsPanel extends ApplicationSubPanel {
 	@Override
 	public void setSimulationContext(SimulationContext newValue) {
 		super.setSimulationContext(newValue);
-//		electricalMembraneMappingPanel.setSimulationContext(simulationContext);
 		showOrHideSubpanels();
-		rateRulesDisplayPanel.setSimulationContext(simulationContext);
-		assignmentRulesDisplayPanel.setSimulationContext(simulationContext);
 	}
 	
 	@Override
@@ -119,6 +117,11 @@ public class ApplicationProtocolsPanel extends ApplicationSubPanel {
 		tabbedPane.addTab(tab.id.title, tab.icon, tab.component);
 		// but they are only usable if compatible
 		BioModelEditorApplicationPanel.enableSubComponents(tab.component, bShow);
+		SwingUtilities.invokeLater(new Runnable() {
+			public void run() {
+				tabbedPane.setEnabledAt(tabID.ordinal(), bShow);
+			}				
+		});
 	}
 
 	public void geometryChanged() {
@@ -134,9 +137,7 @@ public class ApplicationProtocolsPanel extends ApplicationSubPanel {
 	}
 	
 	private void showOrHideelectricalMembraneMappingPanel() {
-		boolean okODE = (simulationContext.getGeometry().getDimension() == 0 && simulationContext.getApplicationType() == Application.NETWORK_DETERMINISTIC);
-		boolean okPDE = simulationContext.getGeometry().getDimension() > 0 && !simulationContext.isStoch();
-		boolean bShow = okODE || okPDE;
+		boolean bShow = simulationContext.getApplicationType() == Application.NETWORK_DETERMINISTIC;
 		showOrHidePanel(ProtocolsPanelTabID.electrical, bShow);
 		if (bShow) {
 			electricalMembraneMappingPanel.setSimulationContext(simulationContext);
@@ -144,7 +145,7 @@ public class ApplicationProtocolsPanel extends ApplicationSubPanel {
 	}
 
 	private void showOrHideMicroscopeMeasurementPanel() {
-		boolean bShow = simulationContext.getGeometry().getDimension() > 0 && !simulationContext.isStoch();
+		boolean bShow = simulationContext.getGeometry().getDimension() > 0 && simulationContext.getApplicationType() == Application.NETWORK_DETERMINISTIC;
 		showOrHidePanel(ProtocolsPanelTabID.microscope_measurements, bShow);
 		if (bShow) {
 			microscopeMeasurementPanel.setSimulationContext(simulationContext);
@@ -152,7 +153,6 @@ public class ApplicationProtocolsPanel extends ApplicationSubPanel {
 	}
 	
 	private void showOrHideEventsPanel() {
-//		boolean bShow = simulationContext.getGeometry().getDimension() == 0 && !simulationContext.isStoch();
 		boolean bShow = simulationContext.getGeometry().getDimension() == 0 && simulationContext.getApplicationType() == Application.NETWORK_DETERMINISTIC;
 		showOrHidePanel(ProtocolsPanelTabID.events, bShow);
 		if (bShow) {
@@ -161,7 +161,6 @@ public class ApplicationProtocolsPanel extends ApplicationSubPanel {
 	}
 
 	private void showOrHideRateRulesPanel() {
-//		boolean bShow = simulationContext.getGeometry().getDimension() == 0 && !simulationContext.isStoch();
 		boolean bShow = simulationContext.getGeometry().getDimension() == 0 && simulationContext.getApplicationType() == Application.NETWORK_DETERMINISTIC;
 		showOrHidePanel(ProtocolsPanelTabID.rate_rules, bShow);
 		if (bShow) {
@@ -169,7 +168,6 @@ public class ApplicationProtocolsPanel extends ApplicationSubPanel {
 		}
 	}
 	private void showOrHideAssignmentRulesPanel() {
-//		boolean bShow = simulationContext.getGeometry().getDimension() == 0 && !simulationContext.isStoch();
 		boolean bShow = simulationContext.getGeometry().getDimension() == 0 && simulationContext.getApplicationType() == Application.NETWORK_DETERMINISTIC;
 		showOrHidePanel(ProtocolsPanelTabID.assignment_rules, bShow);
 		if (bShow) {
