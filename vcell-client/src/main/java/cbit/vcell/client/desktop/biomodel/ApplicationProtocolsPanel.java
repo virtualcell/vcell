@@ -29,18 +29,18 @@ import cbit.vcell.mapping.gui.MicroscopeMeasurementPanel;
 
 @SuppressWarnings("serial")
 public class ApplicationProtocolsPanel extends ApplicationSubPanel {
-	private EventsDisplayPanel eventsDisplayPanel;
 	private ElectricalMembraneMappingPanel electricalMembraneMappingPanel;
-	private MicroscopeMeasurementPanel microscopeMeasurementPanel;
+	private EventsDisplayPanel eventsDisplayPanel;
 	private RateRulesDisplayPanel rateRulesDisplayPanel;
 	private AssignmentRulesDisplayPanel assignmentRulesDisplayPanel;
+	private MicroscopeMeasurementPanel microscopeMeasurementPanel;
 	
 	private enum ProtocolsPanelTabID {
-		events("Events"),
 		electrical("Electrical"),
-		microscope_measurements("Microscope Measurements"),
+		events("Events"),
 		rate_rules("Rate Rules"),
-		assignment_rules("Assignment Rules");
+		assignment_rules("Assignment Rules"),
+		microscope_measurements("Microscope Measurements");
 		
 		String title = null;
 		ProtocolsPanelTabID(String name) {
@@ -69,22 +69,22 @@ public class ApplicationProtocolsPanel extends ApplicationSubPanel {
 	@Override
 	protected void initialize(){
 		super.initialize();
-		eventsDisplayPanel = new EventsDisplayPanel();
 		electricalMembraneMappingPanel = new ElectricalMembraneMappingPanel();
-		microscopeMeasurementPanel = new MicroscopeMeasurementPanel();
+		eventsDisplayPanel = new EventsDisplayPanel();
 		rateRulesDisplayPanel = new RateRulesDisplayPanel();
 		assignmentRulesDisplayPanel = new AssignmentRulesDisplayPanel();
+		microscopeMeasurementPanel = new MicroscopeMeasurementPanel();
 		
 		protocolPanelTabs = new ProtocolsPanelTab[ProtocolsPanelTabID.values().length]; 
-		protocolPanelTabs[ProtocolsPanelTabID.events.ordinal()] = new ProtocolsPanelTab(ProtocolsPanelTabID.events, eventsDisplayPanel, null);
 		protocolPanelTabs[ProtocolsPanelTabID.electrical.ordinal()] = new ProtocolsPanelTab(ProtocolsPanelTabID.electrical, electricalMembraneMappingPanel, null);
-		protocolPanelTabs[ProtocolsPanelTabID.microscope_measurements.ordinal()] = new ProtocolsPanelTab(ProtocolsPanelTabID.microscope_measurements, microscopeMeasurementPanel, null);
+		protocolPanelTabs[ProtocolsPanelTabID.events.ordinal()] = new ProtocolsPanelTab(ProtocolsPanelTabID.events, eventsDisplayPanel, null);
 		protocolPanelTabs[ProtocolsPanelTabID.rate_rules.ordinal()] = new ProtocolsPanelTab(ProtocolsPanelTabID.rate_rules, rateRulesDisplayPanel, VCellIcons.ruleRateIcon);
 		protocolPanelTabs[ProtocolsPanelTabID.assignment_rules.ordinal()] = new ProtocolsPanelTab(ProtocolsPanelTabID.assignment_rules, assignmentRulesDisplayPanel, VCellIcons.ruleAssignIcon);
+		protocolPanelTabs[ProtocolsPanelTabID.microscope_measurements.ordinal()] = new ProtocolsPanelTab(ProtocolsPanelTabID.microscope_measurements, microscopeMeasurementPanel, null);
 		
 		for (ProtocolsPanelTab tab : protocolPanelTabs) {
 			tab.component.setBorder(GuiConstants.TAB_PANEL_BORDER);
-			tabbedPane.addTab(tab.id.title, tab.icon, tab.component);
+			tabbedPane.insertTab(tab.id.title, tab.icon, tab.component, null, tab.id.ordinal());
 		}		
 	}	
 	
@@ -114,11 +114,10 @@ public class ApplicationProtocolsPanel extends ApplicationSubPanel {
 		ProtocolsPanelTab tab = protocolPanelTabs[tabID.ordinal()];
 		int index = tabbedPane.indexOfComponent(tab.component);
 		// we are always actually showing all tabs
-		tabbedPane.addTab(tab.id.title, tab.icon, tab.component);
 		// but they are only usable if compatible
-		BioModelEditorApplicationPanel.enableSubComponents(tab.component, bShow);
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
+				BioModelEditorApplicationPanel.enableSubComponents(tab.component, bShow);
 				tabbedPane.setEnabledAt(tabID.ordinal(), bShow);
 			}				
 		});
