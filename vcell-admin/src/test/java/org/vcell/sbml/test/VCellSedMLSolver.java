@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.Vector;
 
 import org.jlibsedml.AbstractTask;
 import org.jlibsedml.Libsedml;
@@ -21,6 +22,7 @@ import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.simdata.SimDataConstants;
+import cbit.vcell.solver.AnnotatedFunction;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationJob;
 import cbit.vcell.solver.SolverDescription;
@@ -29,6 +31,8 @@ import cbit.vcell.solver.SolverUtilities;
 import cbit.vcell.solver.ode.CVodeFileWriter;
 import cbit.vcell.solver.ode.IDAFileWriter;
 import cbit.vcell.solver.ode.ODESolverResultSet;
+import cbit.vcell.solver.stoch.StochFileWriter;
+import cbit.vcell.solvers.FunctionFileGenerator;
 import cbit.vcell.xml.ExternalDocInfo;
 import cbit.vcell.xml.XmlHelper;
 
@@ -136,6 +140,9 @@ public class VCellSedMLSolver {
 		if(SolverDescription.CVODE.getKisao().contentEquals(kisao)) {
 			ODESolverResultSet odeSolverResultSet = solveCvode(outDir, bioModel);
 			System.out.println("Finished: " + docName + ": - task '" + sedmlTask.getId() + "'.");
+		} else if(SolverDescription.StochGibson.getKisao().contentEquals(kisao)) {
+			ODESolverResultSet odeSolverResultSet = solveGibson(outDir, bioModel);
+			System.out.println("Finished: " + docName + ": - task '" + sedmlTask.getId() + "'.");
 		} else if(SolverDescription.IDA.getKisao().contentEquals(kisao)) {
 			ODESolverResultSet odeSolverResultSet = solveIDA(outDir, bioModel);
 			System.out.println("Finished: " + docName + ": - task '" + sedmlTask.getId() + "'.");
@@ -198,6 +205,31 @@ public class VCellSedMLSolver {
 		ODESolverResultSet odeSolverResultSet = VCellSBMLSolver.getODESolverResultSet(simJob, idaOutputFile.getPath());
 		return odeSolverResultSet;
 	}
+	private static ODESolverResultSet solveGibson(File outDir, BioModel bioModel) throws Exception {
+		String docName = bioModel.getName();
+		Simulation sim = bioModel.getSimulation(0);
+		File gibsonInputFile = new File(outDir, docName + SimDataConstants.STOCHINPUT_DATA_EXTENSION);
+		PrintWriter gibsonPW = new java.io.PrintWriter(gibsonInputFile);
+		SimulationJob simJob = new SimulationJob(sim, 0, null);
+		SimulationTask simTask = new SimulationTask(simJob, 0);
+		StochFileWriter stFileWriter = new StochFileWriter(gibsonPW, simTask, false);
+		stFileWriter.write();
+		gibsonPW.close();
+		File gibsonOutputFile = new File(outDir, docName + SimDataConstants.IDA_DATA_EXTENSION);
+		
+		writeFunctionFile(outDir, docName, SimDataConstants.FUNCTIONFILE_EXTENSION, simTask);
+		
+		String executableName = null;
+		try {
+		executableName = SolverUtilities.getExes(SolverDescription.StochGibson)[0].getAbsolutePath();
+		} catch (IOException e) {
+			throw new RuntimeException("failed to get executable for solver "+SolverDescription.StochGibson.getDisplayLabel()+": "+e.getMessage(),e);
+		}
+		Executable executable = new Executable(new String[]{executableName, "gibson", gibsonInputFile.getAbsolutePath(), gibsonOutputFile.getAbsolutePath()});
+		executable.start();
+		ODESolverResultSet odeSolverResultSet = VCellSBMLSolver.getODESolverResultSet(simJob, gibsonOutputFile.getPath());
+		return odeSolverResultSet;
+	}
 
 	// ---------------------------------------------------------------------- Utilities --------------------------------------
 	private static void sanityCheck(VCDocument doc) {
@@ -229,6 +261,32 @@ public class VCellSedMLSolver {
 		if (!f.delete()) {
 			throw new FileNotFoundException("Failed to delete file: " + f);
 		}
+	}
+	
+	// needed for gibson
+	private static void writeFunctionFile(File outDir, String docName, String ext, SimulationTask simTask) {
+		String functionFileName = getBaseName(outDir.getAbsolutePath(), docName) + ext;
+		Vector<AnnotatedFunction> funcList = createFunctionList(simTask);
+		FunctionFileGenerator functionFileGenerator = new FunctionFileGenerator(functionFileName, funcList);
+
+		try {
+			functionFileGenerator.generateFunctionFile();		
+		} catch (Exception e) {
+			e.printStackTrace(System.out);
+			throw new RuntimeException("Error creating .function file for "+functionFileGenerator.getBasefileName()+e.getMessage(),e);
+		}		
+	}
+	private static Vector<AnnotatedFunction> createFunctionList(SimulationTask simTask) {
+		try {
+			return simTask.getSimulationJob().getSimulationSymbolTable().createAnnotatedFunctionsList(simTask.getSimulation().getMathDescription());
+		} catch(Exception e) {
+			e.printStackTrace();
+			throw new RuntimeException("Simulation '"+simTask.getSimulationInfo().getName()+"', error createFunctionList(): "+e.getMessage(),e);
+		}
+	}
+	private static String getBaseName(String outDir, String docName) {
+		String baseName = outDir + "\\" + docName;
+		return baseName;
 	}
 
 	private class LocalLogger extends VCLogger {
