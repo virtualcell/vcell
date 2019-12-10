@@ -1,6 +1,9 @@
 package org.vcell.sbml.test;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.PrintWriter;
 
 import org.jlibsedml.AbstractTask;
 import org.jlibsedml.Libsedml;
@@ -8,22 +11,48 @@ import org.jlibsedml.SedML;
 import org.vcell.sbml.vcell.SBMLImportException;
 import org.vcell.sbml.vcell.SBMLImporter;
 import org.vcell.util.document.VCDocument;
+import org.vcell.util.exe.Executable;
 
 import cbit.util.xml.VCLogger;
+import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.math.MathDescription;
+import cbit.vcell.messaging.server.SimulationTask;
+import cbit.vcell.resource.PropertyLoader;
+import cbit.vcell.resource.ResourceUtil;
+import cbit.vcell.simdata.SimDataConstants;
+import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.SimulationJob;
+import cbit.vcell.solver.SolverDescription;
+import cbit.vcell.solver.SolverUtilities;
+import cbit.vcell.solver.ode.CVodeFileWriter;
+import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.xml.ExternalDocInfo;
 import cbit.vcell.xml.XmlHelper;
 
 
 public class VCellSedMLSolver {
 
-	public static void main(String[] args){
+	static String inString = "C:\\TEMP\\ddd\\sedml";
+	static String outRootString = "C:\\TEMP\\ddd\\sedml\\out";
+
+	public static void main(String[] args) {
 
 		// place the sedml file and the sbml file(s) in inDir directory
-		File inDir = new File("C:\\TEMP\\ddd\\sedml");
-		File outDir = new File("C:\\TEMP\\ddd\\sedml\\out");
+		File inDir = new File(inString);
+		File outRootDir = new File(outRootString);
 		
-		if (!outDir.exists()) {
-			outDir.mkdirs();
+		// delete the output directory and all its content recursively
+		if(outRootDir.exists()) {
+			try {
+				deleteRecursively(outRootDir);
+			} catch (IOException e) {
+				System.err.println("Failed to empty outRootDir.");
+				System.exit(99);
+			}
+		}
+		if(!outRootDir.exists()) {
+			outRootDir.mkdirs();
 		}
 		
 		File[] directoryListing = inDir.listFiles();
@@ -53,14 +82,14 @@ public class VCellSedMLSolver {
 		}
 		if(sedmlFile == null) {
 			System.err.println("no sedml file found");
-			System.exit(98);
+			System.exit(99);
 		}
 		
 		try {
 			SedML sedml = Libsedml.readDocument(sedmlFile).getSedMLModel();
 			if (sedml == null || sedml.getModels().isEmpty()) {
 				System.err.println("the sedml file '" + sedmlFile.getName() + "'does not contain a valid document");
-				System.exit(97);
+				System.exit(99);
 			}
 			VCellSedMLSolver vCellSedMLSolver = new VCellSedMLSolver();
 			ExternalDocInfo externalDocInfo = new ExternalDocInfo(sedmlFile, true);
@@ -77,21 +106,89 @@ public class VCellSedMLSolver {
 	// everything is done here
 	public void doWork(ExternalDocInfo externalDocInfo, AbstractTask sedmlTask, SedML sedml) throws Exception {
 
+		// create the VCDocument (bioModel + application + simulation), do sanity checks
 		cbit.util.xml.VCLogger sedmlImportLogger = new LocalLogger();
-		
-		// create the VCDocument (bioModel + application + simulation)
 		VCDocument doc = XmlHelper.sedmlToBioModel(sedmlImportLogger, externalDocInfo, sedml, sedmlTask);
+		sanityCheck(doc);
 		
-		// TODO: write the output file, invoke the solver
-		
-		
+		// create the work directory for this task, invoke the solver
 		String docName = doc.getName();
-		System.out.println(docName + ": - task '" + sedmlTask.getId() + "'.");
+		String outString = outRootString + "\\" + docName + "_" + sedmlTask.getId();
+		File outDir = new File(outString);
+		if (!outDir.exists()) {
+			outDir.mkdirs();
+		}
+		
+		BioModel bioModel = (BioModel)doc;
+		SimulationContext simContext = bioModel.getSimulationContext(0);
+		MathDescription mathDesc = simContext.getMathDescription();
+		String vcml = mathDesc.getVCML();
+		try (PrintWriter pw = new PrintWriter(outString + "\\vcmlTrace.xml")) {
+			pw.println(vcml);
+		}
+		
+		ODESolverResultSet odeSolverResultSet = solveCvode(outDir, bioModel);
+
+		System.out.println("Finished: " + docName + ": - task '" + sedmlTask.getId() + "'.");
 		System.out.println("-------------------------------------------------------------------------");
 	}
 	
+	private static ODESolverResultSet solveCvode(File outDir, BioModel bioModel) throws Exception {
+		String docName = bioModel.getName();
+		Simulation sim = bioModel.getSimulation(0);
+		File cvodeFile = new File(outDir, docName + SimDataConstants.CVODEINPUT_DATA_EXTENSION);
+		PrintWriter cvodePW = new java.io.PrintWriter(cvodeFile);
+		SimulationJob simJob = new SimulationJob(sim, 0, null);
+		SimulationTask simTask = new SimulationTask(simJob, 0); 
+		CVodeFileWriter cvodeFileWriter = new CVodeFileWriter(cvodePW, simTask);
+		cvodeFileWriter.write();
+		cvodePW.close();
+		// use the cvodeStandalone solver
+		File cvodeOutputFile = new File(outDir, docName + SimDataConstants.IDA_DATA_EXTENSION);
+		String executableName = null;
+		try {
+			// we need to specify the vCell install dir in the Eclipse Debug configuration, as VM argument 
+			// so that the code next knows where to look for the solver
+			// -Dvcell.installDir=G:\dan\jprojects\git\vcell
+			// OR
+			// just type the string with the full path explicitly
+			// OR
+			// provide a .properties file in the working directory
+			executableName = SolverUtilities.getExes(SolverDescription.CVODE)[0].getAbsolutePath();
+		}catch (IOException e){
+			throw new RuntimeException("failed to get executable for solver "+SolverDescription.CVODE.getDisplayLabel()+": "+e.getMessage(),e);
+		}
+		Executable executable = new Executable(new String[]{executableName, cvodeFile.getAbsolutePath(), cvodeOutputFile.getAbsolutePath()});
+		executable.start();
+		ODESolverResultSet odeSolverResultSet = VCellSBMLSolver.getODESolverResultSet(simJob, cvodeOutputFile.getPath());
+		return odeSolverResultSet;
+	}
+	
+	// ---------------------------------------------------------------------- Utilities --------------------------------------
+	private static void sanityCheck(VCDocument doc) {
+		if(doc == null) {
+			throw new RuntimeException("Imported VCDocument is null.");
+		}
+		String docName = doc.getName();
+		if(docName == null || docName.isEmpty()) {
+			throw new RuntimeException("The name of the imported VCDocument is null or empty.");
+		}
+		if(!(doc instanceof BioModel)) {
+			throw new RuntimeException("The imported VCDocument '" + docName + "' is not a BioModel.");
+		}
+	}
+	private static void deleteRecursively(File f) throws IOException {
+		if (f.isDirectory()) {
+			for (File c : f.listFiles()) {
+				deleteRecursively(c);
+			}
+		}
+		if (!f.delete()) {
+			throw new FileNotFoundException("Failed to delete file: " + f);
+		}
+	}
 
-	public class LocalLogger extends VCLogger {
+	private class LocalLogger extends VCLogger {
 		@Override
 		public void sendMessage(Priority p, ErrorType et, String message) throws Exception {
 			System.out.println("LOGGER: msgLevel="+p+", msgType="+et+", "+message);
