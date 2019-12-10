@@ -24,6 +24,7 @@ import cbit.vcell.simdata.SimDataConstants;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationJob;
 import cbit.vcell.solver.SolverDescription;
+import cbit.vcell.solver.SolverTaskDescription;
 import cbit.vcell.solver.SolverUtilities;
 import cbit.vcell.solver.ode.CVodeFileWriter;
 import cbit.vcell.solver.ode.ODESolverResultSet;
@@ -127,9 +128,16 @@ public class VCellSedMLSolver {
 			pw.println(vcml);
 		}
 		
-		ODESolverResultSet odeSolverResultSet = solveCvode(outDir, bioModel);
-
-		System.out.println("Finished: " + docName + ": - task '" + sedmlTask.getId() + "'.");
+		Simulation sim = bioModel.getSimulation(0);
+		SolverTaskDescription std = sim.getSolverTaskDescription();
+		SolverDescription sd = std.getSolverDescription();
+		String kisao = sd.getKisao();
+		if(SolverDescription.CVODE.getKisao().contentEquals(kisao)) {
+			ODESolverResultSet odeSolverResultSet = solveCvode(outDir, bioModel);
+			System.out.println("Finished: " + docName + ": - task '" + sedmlTask.getId() + "'.");
+		} else {
+			System.out.println("Unsupported solver: " + kisao);
+		}
 		System.out.println("-------------------------------------------------------------------------");
 	}
 	
@@ -155,7 +163,7 @@ public class VCellSedMLSolver {
 			// OR
 			// provide a .properties file in the working directory
 			executableName = SolverUtilities.getExes(SolverDescription.CVODE)[0].getAbsolutePath();
-		}catch (IOException e){
+		} catch (IOException e) {
 			throw new RuntimeException("failed to get executable for solver "+SolverDescription.CVODE.getDisplayLabel()+": "+e.getMessage(),e);
 		}
 		Executable executable = new Executable(new String[]{executableName, cvodeFile.getAbsolutePath(), cvodeOutputFile.getAbsolutePath()});
