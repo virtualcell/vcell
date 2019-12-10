@@ -27,6 +27,7 @@ import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solver.SolverTaskDescription;
 import cbit.vcell.solver.SolverUtilities;
 import cbit.vcell.solver.ode.CVodeFileWriter;
+import cbit.vcell.solver.ode.IDAFileWriter;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.xml.ExternalDocInfo;
 import cbit.vcell.xml.XmlHelper;
@@ -135,6 +136,9 @@ public class VCellSedMLSolver {
 		if(SolverDescription.CVODE.getKisao().contentEquals(kisao)) {
 			ODESolverResultSet odeSolverResultSet = solveCvode(outDir, bioModel);
 			System.out.println("Finished: " + docName + ": - task '" + sedmlTask.getId() + "'.");
+		} else if(SolverDescription.IDA.getKisao().contentEquals(kisao)) {
+			ODESolverResultSet odeSolverResultSet = solveIDA(outDir, bioModel);
+			System.out.println("Finished: " + docName + ": - task '" + sedmlTask.getId() + "'.");
 		} else {
 			System.out.println("Unsupported solver: " + kisao);
 		}
@@ -144,8 +148,8 @@ public class VCellSedMLSolver {
 	private static ODESolverResultSet solveCvode(File outDir, BioModel bioModel) throws Exception {
 		String docName = bioModel.getName();
 		Simulation sim = bioModel.getSimulation(0);
-		File cvodeFile = new File(outDir, docName + SimDataConstants.CVODEINPUT_DATA_EXTENSION);
-		PrintWriter cvodePW = new java.io.PrintWriter(cvodeFile);
+		File cvodeInputFile = new File(outDir, docName + SimDataConstants.CVODEINPUT_DATA_EXTENSION);
+		PrintWriter cvodePW = new java.io.PrintWriter(cvodeInputFile);
 		SimulationJob simJob = new SimulationJob(sim, 0, null);
 		SimulationTask simTask = new SimulationTask(simJob, 0); 
 		CVodeFileWriter cvodeFileWriter = new CVodeFileWriter(cvodePW, simTask);
@@ -166,12 +170,35 @@ public class VCellSedMLSolver {
 		} catch (IOException e) {
 			throw new RuntimeException("failed to get executable for solver "+SolverDescription.CVODE.getDisplayLabel()+": "+e.getMessage(),e);
 		}
-		Executable executable = new Executable(new String[]{executableName, cvodeFile.getAbsolutePath(), cvodeOutputFile.getAbsolutePath()});
+		Executable executable = new Executable(new String[]{executableName, cvodeInputFile.getAbsolutePath(), cvodeOutputFile.getAbsolutePath()});
 		executable.start();
 		ODESolverResultSet odeSolverResultSet = VCellSBMLSolver.getODESolverResultSet(simJob, cvodeOutputFile.getPath());
 		return odeSolverResultSet;
 	}
-	
+	private static ODESolverResultSet solveIDA(File outDir, BioModel bioModel) throws Exception {
+		String docName = bioModel.getName();
+		Simulation sim = bioModel.getSimulation(0);
+		File idaInputFile = new File(outDir, docName + SimDataConstants.IDAINPUT_DATA_EXTENSION);
+		PrintWriter idaPW = new java.io.PrintWriter(idaInputFile);
+		SimulationJob simJob = new SimulationJob(sim, 0, null);
+		SimulationTask simTask = new SimulationTask(simJob, 0);
+	    IDAFileWriter idaFileWriter = new IDAFileWriter(idaPW, simTask);
+	    idaFileWriter.write();
+		idaPW.close();
+		// use the idastandalone solver
+		File idaOutputFile = new File(outDir, docName + SimDataConstants.IDA_DATA_EXTENSION);
+		String executableName = null;
+		try {
+			executableName = SolverUtilities.getExes(SolverDescription.IDA)[0].getAbsolutePath();
+		} catch (IOException e) {
+			throw new RuntimeException("failed to get executable for solver "+SolverDescription.IDA.getDisplayLabel()+": "+e.getMessage(),e);
+		}
+		Executable executable = new Executable(new String[]{executableName, idaInputFile.getAbsolutePath(), idaOutputFile.getAbsolutePath()});
+		executable.start();
+		ODESolverResultSet odeSolverResultSet = VCellSBMLSolver.getODESolverResultSet(simJob, idaOutputFile.getPath());
+		return odeSolverResultSet;
+	}
+
 	// ---------------------------------------------------------------------- Utilities --------------------------------------
 	private static void sanityCheck(VCDocument doc) {
 		if(doc == null) {
@@ -184,7 +211,15 @@ public class VCellSedMLSolver {
 		if(!(doc instanceof BioModel)) {
 			throw new RuntimeException("The imported VCDocument '" + docName + "' is not a BioModel.");
 		}
+		BioModel bioModel = (BioModel)doc;
+		if(bioModel.getSimulationContext(0) == null) {
+			throw new RuntimeException("The imported VCDocument '" + docName + "' has no Application");
+		}
+		if(bioModel.getSimulation(0) == null) {
+			throw new RuntimeException("The imported VCDocument '" + docName + "' has no Simulation");
+		}
 	}
+	
 	private static void deleteRecursively(File f) throws IOException {
 		if (f.isDirectory()) {
 			for (File c : f.listFiles()) {
