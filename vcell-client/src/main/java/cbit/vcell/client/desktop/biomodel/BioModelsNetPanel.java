@@ -59,6 +59,7 @@ import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.jdom.DataConversionException;
 import org.jdom.Element;
@@ -68,6 +69,7 @@ import org.vcell.util.document.VCDocumentInfo;
 import org.vcell.util.gui.CollapsiblePanel;
 import org.vcell.util.gui.VCellIcons;
 
+import cbit.util.xml.XmlUtil;
 import cbit.vcell.biomodel.meta.VCMetaDataMiriamManager;
 import cbit.vcell.client.DocumentWindowManager;
 import cbit.vcell.client.desktop.biomodel.BioModelEditorPathwayCommonsPanel.PathwayCommonsKeyword;
@@ -289,12 +291,32 @@ public class BioModelsNetPanel extends DocumentEditorSubPanel {
 		
 		String unzippedPath = destDirectory + File.separator + id + ".xml";
 		String bioModelSBML = new String(Files.readAllBytes(Paths.get(unzippedPath)), StandardCharsets.UTF_8);
+		String prettyXML = tempDir + File.separator + "pretty.xml";
+		try {
+			bioModelSBML = bioModelSBML.replace("\t", " ");
+			bioModelSBML = bioModelSBML.replace("  ", " ");
+			bioModelSBML = bioModelSBML.replace("\n ", "\n");
+			String prettyFormat = XmlUtil.beautify(bioModelSBML);
+			FileUtils.writeStringToFile(new File(prettyXML), prettyFormat, StandardCharsets.UTF_8);
 		
+		} catch(Exception e) {
+		}
+		
+/*
+TODO:
+1. mark entities in the kinetic law as catalysts automatically if they are not reaction participants
+2. use xrefs to create annotations when importing from pathway commons
+3. which other entities must get annotations:
+	- global parameters for sure
+	- what else? rules? applications? simulations? events?
+	any idea which entities in the BMDB database have attached notes or RDF annotations?
+ */
 //		bioModelSBML = bioModelSBML.replace("<notanumber/>", "<ci> a </ci>");
 		try {
 			Files.deleteIfExists(Paths.get(zipFilePath));		// the original zip file
 			Files.deleteIfExists(Paths.get(unzippedPath));		// the unzipped SBML file
 			Files.deleteIfExists(Paths.get(destDirectory));		// its directory
+			Files.deleteIfExists(Paths.get(prettyXML));			// the pretty xml
 		} catch(IOException e) {
 			e.printStackTrace();
 		}
