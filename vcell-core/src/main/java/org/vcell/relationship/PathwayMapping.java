@@ -35,11 +35,18 @@ import org.vcell.pathway.Conversion;
 import org.vcell.pathway.InteractionParticipant;
 import org.vcell.pathway.PhysicalEntity;
 import org.vcell.pathway.Transport;
+import org.vcell.pathway.Xref;
 import org.vcell.pathway.kinetics.SBPAXKineticsExtractor;
 import org.vcell.pathway.persistence.BiopaxProxy.PhysicalEntityProxy;
+import org.vcell.sybil.models.miriam.MIRIAMQualifier;
+import org.vcell.sybil.models.miriam.MIRIAMRef;
+import org.vcell.sybil.models.miriam.MIRIAMRef.URNParseFailureException;
 import org.vcell.util.TokenMangler;
 
 import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.biomodel.meta.MiriamManager;
+import cbit.vcell.biomodel.meta.MiriamManager.MiriamResource;
+import cbit.vcell.biomodel.meta.VCMetaData;
 import cbit.vcell.model.Catalyst;
 import cbit.vcell.model.FluxReaction;
 import cbit.vcell.model.Membrane;
@@ -265,6 +272,28 @@ public class PathwayMapping {
 			}
 		} else {
 			mt.setComment("");
+		}
+		
+		VCMetaData vcMetaData = bioModel.getVCMetaData();
+		MiriamManager miriamManager = vcMetaData.getMiriamManager();
+		MIRIAMQualifier qualifier = MIRIAMQualifier.MODEL_isDescribedBy;
+		
+		ArrayList<Xref> xrefList = bioPaxObject.getxRef();
+		for(Xref xref : xrefList) {
+			String url = xref.getURL();
+			if(url == null || url.isEmpty()) {
+				continue;
+			}
+			System.out.println(xref.getDb() + ": " + xref.getId());
+			try {
+				HashSet<MiriamResource> miriamResources = new HashSet<MiriamResource>();
+				MiriamResource mr = miriamManager.createMiriamResource(url);
+				miriamResources.add(mr);
+				miriamManager.addMiriamRefGroup(mt, qualifier, miriamResources);
+			} catch (URNParseFailureException e) {
+				e.printStackTrace();
+			}
+			System.out.println(xref.getDisplayName());
 		}
 		return mt;
 	}
