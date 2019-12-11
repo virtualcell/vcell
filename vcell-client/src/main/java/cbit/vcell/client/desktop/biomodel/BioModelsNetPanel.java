@@ -293,10 +293,12 @@ public class BioModelsNetPanel extends DocumentEditorSubPanel {
 		String bioModelSBML = new String(Files.readAllBytes(Paths.get(unzippedPath)), StandardCharsets.UTF_8);
 		String prettyXML = tempDir + File.separator + "pretty.xml";
 		try {
-			bioModelSBML = bioModelSBML.replace("\t", " ");
-			bioModelSBML = bioModelSBML.replace("  ", " ");
-			bioModelSBML = bioModelSBML.replace("\n ", "\n");
-			String prettyFormat = XmlUtil.beautify(bioModelSBML);
+			// we don't want to modify the original xml because it may change the formatting of Notes
+			String prettyFormat = new String(bioModelSBML);
+			prettyFormat = prettyFormat.replace("\t", " ");
+			prettyFormat = prettyFormat.replace("  ", " ");
+			prettyFormat = prettyFormat.replace("\n ", "\n");
+			prettyFormat = XmlUtil.beautify(prettyFormat);
 			FileUtils.writeStringToFile(new File(prettyXML), prettyFormat, StandardCharsets.UTF_8);
 		
 		} catch(Exception e) {
@@ -305,11 +307,22 @@ public class BioModelsNetPanel extends DocumentEditorSubPanel {
 /*
 TODO:
 1. mark entities in the kinetic law as catalysts automatically if they are not reaction participants
+	- and get rid of the catalyst button!
+	
 2. use xrefs to create annotations when importing from pathway commons
+	- make them all functional
+	- improve the group of hardcoded providers
+	- expand to other entities, not only molecular types
+	
 3. which other entities must get annotations:
 	- global parameters for sure
 	- what else? rules? applications? simulations? events?
-	any idea which entities in the BMDB database have attached notes or RDF annotations?
+	- any idea which entities in the BMDB database have attached notes or RDF annotations?
+	- add more qualifiers in our editor, not just isDescribedBy
+	
+4. which other sbml entities deserve renaming to SBML name?
+	- compartments and...?
+	- make sure to propagate both sbml name and sbml id all the way back to export
  */
 //		bioModelSBML = bioModelSBML.replace("<notanumber/>", "<ci> a </ci>");
 		try {
