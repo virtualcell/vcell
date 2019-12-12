@@ -3289,6 +3289,9 @@ public class ClientRequestManager
 		// may want to insert corrected VCDocumentInfo later if our import debugger
 		// corrects it (BNGL Debugger).
 		hashTable.put(DOCUMENT_INFO, documentInfo);
+		hashTable.put("isBMDB", false);
+		hashTable.put("isSEDML", false);
+
 
 		// start a thread that gets it and updates the GUI by creating a new document
 		// desktop
@@ -3740,13 +3743,16 @@ public class ClientRequestManager
 			@Override
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
 				VCDocument doc = (VCDocument) hashTable.get("doc");
+				if(!(doc instanceof BioModel)) {
+					return;
+				}
 				boolean isBMDB = (boolean) hashTable.get("isBMDB");
 				if (documentInfo instanceof ExternalDocInfo) {
 					if (isBMDB) {
 						idToNameConversion(doc);
 					}
 				}
-				if (isBMDB && doc instanceof BioModel) {
+				if (isBMDB) {
 					BioModel bioModel = (BioModel) doc;
 					SimulationContext simulationContext = bioModel.getSimulationContext(0);
 					simulationContext.setName(BMDB_DEFAULT_APPLICATION);
@@ -3780,8 +3786,8 @@ public class ClientRequestManager
 							| ModelException e1) {
 						e1.printStackTrace();
 					}
+					hashTable.put("doc", doc);
 				}
-				hashTable.put("doc", doc);
 			}
 		};
 		ClientTaskDispatcher.dispatch(requester.getComponent(), hashTable,

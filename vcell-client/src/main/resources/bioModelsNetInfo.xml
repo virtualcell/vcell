@@ -818,7 +818,7 @@
   <BioModelInfo ID="BIOMD0000000819" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Nazari2018 - IL6 mediated stem cell driven tumor growth and targeted treatment" />
   <BioModelInfo ID="BIOMD0000000820" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="West2019 - Cellular interactions constrain tumor growth" />
   <BioModelInfo ID="BIOMD0000000821" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Yazdjer2019 - reinforcement learning-based control of tumor growth under anti-angiogenic therapy" />
-  <BioModelInfo ID="BIOMD0000000822" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Dorvash2019 - Dynamic modeling of signal transduction by mTOR complexes in cancer" />
+  <BioModelInfo ID="BIOMD0000000822" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Dorvash2019 - Dynamic modeling of signal transduction by mTOR complexes in cancer" />
   <BioModelInfo ID="BIOMD0000000823" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Varusai2018 - Dynamic modelling of the mTOR signalling network reveals complex emergent behaviours conferred by DEPTOR" />
   <BioModelInfo ID="BIOMD0000000824" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Lewkiewics2019 - effects of aging on naive T cell populations and diversity" />
   <BioModelInfo ID="BIOMD0000000825" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Greene2019 - Differentiate Spontaneous and Induced Evolution to Drug Resistance During Cancer Treatment" />
