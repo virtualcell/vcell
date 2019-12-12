@@ -70,6 +70,12 @@ updateSiteBaseUrl=$compiler_updateSiteBaseUrl,\
 vcellClasspathColonSep=$compiler_vcellClasspathColonSep,\
 rmiHosts=$compiler_rmiHosts,\
 bioformatsJarFile=$compiler_bioformatsJarFile,\
-bioformatsJarDownloadURL=$compiler_bioformatsJarDownloadURL\
+bioformatsJarDownloadURL=$compiler_bioformatsJarDownloadURL,\
+COPASI_WEB_URL=$compiler_COPASI_WEB_URL,\
+SMOLDYN_WEB_URL=$compiler_SMOLDYN_WEB_URL,\
+BIONETGEN_WEB_URL=$compiler_BIONETGEN_WEB_URL,\
+NFSIM_WEB_URL=$compiler_NFSIM_WEB_URL,\
+ACKNOWLEGE_PUB__WEB_URL=$compiler_ACKNOWLEGE_PUB__WEB_URL,\
+VCELL_WEB_URL=$compiler_VCELL_WEB_URL\
 	VCell.install4j
 

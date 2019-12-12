@@ -111,6 +111,14 @@ public class PropertyLoader {
 
 	public static final String bioformatsJarFileName		= record("vcell.bioformatsJarFileName",ValueType.GEN);
 	public static final String bioformatsJarDownloadURL		= record("vcell.bioformatsJarDownloadURL",ValueType.URL);
+	
+	// VCell special URLs
+	public static final String COPASI_WEB_URL				= record("vcell.COPASI_WEB_URL",ValueType.URL);
+	public static final String SMOLDYN_WEB_URL				= record("vcell.SMOLDYN_WEB_URL",ValueType.URL);
+	public static final String BIONETGEN_WEB_URL			= record("vcell.BIONETGEN_WEB_URL",ValueType.URL);
+	public static final String NFSIM_WEB_URL				= record("vcell.NFSIM_WEB_URL",ValueType.URL);
+	public static final String ACKNOWLEGE_PUB__WEB_URL		= record("vcell.ACKNOWLEGE_PUB__WEB_URL",ValueType.URL);
+	public static final String VCELL_WEB_URL				= record("vcell.VCELL_WEB_URL",ValueType.URL);
 
 	//
 	public static final String databaseThreadsProperty		= record("vcell.databaseThreads",ValueType.GEN);
