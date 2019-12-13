@@ -470,30 +470,44 @@ public class VCMetaDataMiriamManager implements MiriamManager, Serializable {
 		List<DataType> list = new ArrayList<>();
 		list.add(VCMetaDataDataType.DataType_PUBMED);
 		list.add(VCMetaDataDataType.DataType_DOI);
+		list.add(VCMetaDataDataType.DataType_Ncit);
+		list.add(VCMetaDataDataType.DataType_GO);
 		
 		if(entity instanceof BioModel) {
 			list.add(VCMetaDataDataType.DataType_BIOMODELS);
 			list.add(VCMetaDataDataType.DataType_REACTOME);
 			list.add(VCMetaDataDataType.DataType_NeuronDB);
 			list.add(VCMetaDataDataType.DataType_SenseLab);
-//			list.add(VCMetaDataDataType.DataType_CellML);
+			list.add(VCMetaDataDataType.DataType_Mamo);
+			list.add(VCMetaDataDataType.DataType_EFO);
+			list.add(VCMetaDataDataType.DataType_Doid);
+
 		} else if(entity instanceof Species || entity instanceof MolecularType || entity instanceof RbmObservable) {
 			list.add(VCMetaDataDataType.DataType_Chebi);
 			list.add(VCMetaDataDataType.DataType_KEGGCOMPOUND);
 			list.add(VCMetaDataDataType.DataType_UNIPROT);
 			list.add(VCMetaDataDataType.DataType_ECCODE);
-			list.add(VCMetaDataDataType.DataType_GO);
 			list.add(VCMetaDataDataType.DataType_REACTOME);
+			list.add(VCMetaDataDataType.DataType_CL);
+			list.add(VCMetaDataDataType.DataType_EFO);
+			list.add(VCMetaDataDataType.DataType_BTO);
+			list.add(VCMetaDataDataType.DataType_TAXONOMY);
+			list.add(VCMetaDataDataType.DataType_Pato);
+			list.add(VCMetaDataDataType.DataType_Pr);
+			
 		} else if(entity instanceof ReactionRule || entity instanceof ReactionStep) {
-			list.add(VCMetaDataDataType.DataType_GO);
 			list.add(VCMetaDataDataType.DataType_KEGGPATHWAY);
 			list.add(VCMetaDataDataType.DataType_KEGGREACTION);
 			list.add(VCMetaDataDataType.DataType_REACTOME);
 			list.add(VCMetaDataDataType.DataType_Brenda);
 			list.add(VCMetaDataDataType.DataType_IntAct);
+			list.add(VCMetaDataDataType.DataType_SBO);
+			
 		} else if(entity instanceof Structure) {
 			list.add(VCMetaDataDataType.DataType_Brenda);
-			list.add(VCMetaDataDataType.DataType_GO);
+			list.add(VCMetaDataDataType.DataType_BTO);
+			list.add(VCMetaDataDataType.DataType_EFO);
+			
 		} else if(entity instanceof BioPaxObject) {
 			;
 		}
