@@ -65,6 +65,8 @@ public class MIRIAMRef extends KeyOfTwo<String, String> {
 					pathParts[1] = "omim";
 				} else if(pathParts[1].contains("biomodels.sbo")) {
 					pathParts[1] = "sbo";
+				} else if(pathParts[1].contains("uniprot.isoform")) {
+					pathParts[1] = "uniprot";
 				} else if(pathParts[1].equalsIgnoreCase("obo.psi-mod")) {
 					pathParts[1] = "mod";
 				}
@@ -98,7 +100,7 @@ public class MIRIAMRef extends KeyOfTwo<String, String> {
 			id += decode(split[3]);
 		} else if(split.length == 5) {
 			id += decode(split[3]);
-			if(id != null && (id.equalsIgnoreCase("GO") || id.equalsIgnoreCase("CHEBI"))) {
+			if(id != null && (id.equalsIgnoreCase("GO") || id.equalsIgnoreCase("CHEBI") || id.equalsIgnoreCase("PR"))) {
 				id += ":";
 				id += decode(split[4]);
 			} else {
