@@ -49,6 +49,7 @@ import org.vcell.util.gui.DialogUtils;
 import cbit.vcell.client.desktop.biomodel.BioModelsNetPanel;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
+import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.xml.ExternalDocInfo;
 import uk.ac.ebi.www.biomodels_main.services.BioModelsWebServices.BioModelsWebServices;
 import uk.ac.ebi.www.biomodels_main.services.BioModelsWebServices.BioModelsWebServicesServiceLocator;
@@ -56,7 +57,6 @@ import uk.ac.ebi.www.biomodels_main.services.BioModelsWebServices.BioModelsWebSe
 @SuppressWarnings("serial")
 public class BioModelsNetJPanel extends JPanel {
 	private DocumentWindow documentWindow;
-	private static final String BIOMODELS_DATABASE_URL = "http://www.ebi.ac.uk/biomodels/";
 	private JTextField modelNameTextField;
 	private JTextField publicationTextField;
 	private JTextField modelEntryIDTextField;
@@ -105,10 +105,10 @@ public class BioModelsNetJPanel extends JPanel {
 		final JButton httpbiomodelsnetLabel = new JButton();
 		httpbiomodelsnetLabel.addActionListener(new ActionListener() {
 			public void actionPerformed(final ActionEvent e) {
-				DialogUtils.browserLauncher(BioModelsNetJPanel.this, BIOMODELS_DATABASE_URL,BIOMODELS_DATABASE_URL);
+				DialogUtils.browserLauncher(BioModelsNetJPanel.this, BeanUtils.getDynamicClientProperties().getProperty(PropertyLoader.BMDB_URL),BeanUtils.getDynamicClientProperties().getProperty(PropertyLoader.BMDB_URL));
 			}
 		});
-		httpbiomodelsnetLabel.setText(BIOMODELS_DATABASE_URL);
+		httpbiomodelsnetLabel.setText(BeanUtils.getDynamicClientProperties().getProperty(PropertyLoader.BMDB_URL));
 		final GridBagConstraints gridBagConstraints = new GridBagConstraints();
 		gridBagConstraints.insets = new Insets(4, 4, 5, 4);
 		gridBagConstraints.gridy = 4;

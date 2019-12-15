@@ -202,6 +202,13 @@ public static void main(java.lang.String[] args) {
 	};
 	Toolkit.getDefaultToolkit().addAWTEventListener(awtEventListener,AWTEvent.MOUSE_EVENT_MASK);
 
+	new Thread(new Runnable() {
+		@Override
+		public void run() {
+			BeanUtils.updateDynamicClientProperties();
+		}
+	}).start();
+
 	//check synchronize Proxy prefs, Proxy Properties
 	Preferences prefs = Preferences.userNodeForPackage(RemoteProxyVCellConnectionFactory.class);
 	Boolean bHttp =

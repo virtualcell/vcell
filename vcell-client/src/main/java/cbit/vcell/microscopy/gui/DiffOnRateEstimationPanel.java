@@ -33,6 +33,7 @@ import org.vcell.util.gui.DialogUtils;
 import cbit.vcell.microscopy.gui.estparamwizard.FRAPReacDiffEstimationGuidePanel;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Model.ReservedSymbolRole;
+import cbit.vcell.resource.PropertyLoader;
 
 @SuppressWarnings("serial")
 public class DiffOnRateEstimationPanel extends JPanel 
@@ -309,7 +310,7 @@ public class DiffOnRateEstimationPanel extends JPanel
 		searchWebButton.addActionListener(new ActionListener() {
 			public void actionPerformed(final ActionEvent e) 
 			{
-				final String url ="http://bionumbers.hms.harvard.edu/search.aspx?log=y&task=searchbytrmorg&trm=second+order+rate+constants%2c+diffusion+limited&org=%25";
+				final String url =BeanUtils.getDynamicClientProperties().getProperty(PropertyLoader.BIONUMBERS_SRCH1_URL);
 				DialogUtils.browserLauncher(DiffOnRateEstimationPanel.this, url, null); 
 			}
 		});

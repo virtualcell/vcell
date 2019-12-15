@@ -28,10 +28,13 @@ import javax.swing.event.HyperlinkListener;
 import javax.swing.event.UndoableEditEvent;
 import javax.swing.event.UndoableEditListener;
 
+import org.vcell.util.BeanUtils;
 import org.vcell.util.Hex;
 import org.vcell.util.document.User;
 import org.vcell.util.document.UserLoginInfo;
 import org.vcell.util.gui.DialogUtils;
+
+import cbit.vcell.resource.PropertyLoader;
 
 /**
  * Insert the type's description here.
@@ -453,7 +456,7 @@ private void updateFields() {
 			dtrpnUseThisLink.setContentType("text/html");
 			String s =
 					"<html><body bgcolor=\"#"+Hex.toString(new byte[] {(byte)(getBackground().getRed()&0xFF),(byte)(getBackground().getGreen()&0xFF),(byte)(getBackground().getBlue()&0xFF)})+
-					"\"><center><font size=5 face=Arial>Use <a href=\"http://vcell.org/vcell_models/how_submit_publication.html\">this link</a> for details on how to<br>acknowledge Virtual Cell in your<br>publication and how to share your<br>published research through<br>the VCell database.</font></center></body></html>";
+					"\"><center><font size=5 face=Arial>Use <a href=\""+BeanUtils.getDynamicClientProperties().getProperty(PropertyLoader.ACKNOWLEGE_PUB__WEB_URL)+"\">this link</a> for details on how to<br>acknowledge Virtual Cell in your<br>publication and how to share your<br>published research through<br>the VCell database.</font></center></body></html>";
 //			System.out.println(s);
 			dtrpnUseThisLink.setText(s);
 			dtrpnUseThisLink.setEditable(false);
@@ -461,7 +464,7 @@ private void updateFields() {
 		        @Override
 		        public void hyperlinkUpdate(HyperlinkEvent e) {
 		            if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
-		            	DialogUtils.browserLauncher(LoginPanel.this, e.getURL().toString(), "Please visit "+"http://vcell.org"+" for Online Help");
+		            	DialogUtils.browserLauncher(LoginPanel.this, e.getURL().toString(), "Please visit "+BeanUtils.getDynamicClientProperties().getProperty(PropertyLoader.VCELL_URL)+" for Online Help");
 		            }
 		        }
 		    });

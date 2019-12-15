@@ -24,6 +24,7 @@ import javax.swing.JSeparator;
 import javax.swing.JTree;
 import javax.swing.tree.TreePath;
 
+import org.vcell.util.BeanUtils;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.GroupAccessAll;
@@ -38,6 +39,7 @@ import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.clientdb.DatabaseEvent;
 import cbit.vcell.desktop.BioModelNode.PublicationInfoNode;
 import cbit.vcell.desktop.VCellBasicCellRenderer.VCDocumentInfoNode;
+import cbit.vcell.resource.PropertyLoader;
 /**
  * Insert the type's description here.
  * Creation date: (11/28/00 11:34:01 AM)
@@ -548,8 +550,8 @@ private void onlinePublish(java.awt.event.ActionEvent arg1) {
 }
 private void invokeOnlinePublish() {
 
-	PopupGenerator.browserLauncher(this, "http://vcell.org/publish-a-vcell-model",
-		"Please visit "+"http://vcell.org/publish-a-vcell-model"+" for instructions on how to Publish your Model");
+	PopupGenerator.browserLauncher(this, BeanUtils.getDynamicClientProperties().getProperty(PropertyLoader.ACKNOWLEGE_PUB__WEB_URL),
+		"Please visit "+BeanUtils.getDynamicClientProperties().getProperty(PropertyLoader.ACKNOWLEGE_PUB__WEB_URL)+" for instructions on how to Publish your Model");
 }
 
 /**

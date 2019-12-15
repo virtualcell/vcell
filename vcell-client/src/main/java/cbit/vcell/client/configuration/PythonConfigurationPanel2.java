@@ -31,6 +31,9 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.border.EtchedBorder;
 import javax.swing.border.TitledBorder;
 
+import org.vcell.util.BeanUtils;
+
+import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.resource.PythonSupport;
 import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.resource.PythonSupport.PythonPackage;
@@ -40,7 +43,6 @@ import cbit.vcell.resource.PythonSupport.PythonPackage;
 public class PythonConfigurationPanel2 extends JPanel {
 
 	private static String textContinuum = "<html><a href=\"\">Continuum web site</a></html>";
-	private static String urlContinuum = "https://www.continuum.io";
 
 	private JLabel websiteLabel = new JLabel();
 	private JButton testConfigurationButton;
@@ -76,7 +78,7 @@ public class PythonConfigurationPanel2 extends JPanel {
 		@Override
 		public void mouseClicked(MouseEvent e) {
 			try {
-                Desktop.getDesktop().browse(new URI(urlContinuum));
+                Desktop.getDesktop().browse(new URI(BeanUtils.getDynamicClientProperties().getProperty(PropertyLoader.CONTINUUM_URL)));
 			} catch (URISyntaxException | IOException ex) {
 				System.out.println("URL problem");
 			}

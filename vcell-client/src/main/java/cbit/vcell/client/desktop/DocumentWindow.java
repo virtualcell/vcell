@@ -2332,28 +2332,28 @@ private void initialize() {
  */
 private void invokeOnlineHelp() {
 
-	PopupGenerator.browserLauncher(this, "http://vcell.org",
-		"Please visit "+"http://vcell.org"+" for Online Help");
+	PopupGenerator.browserLauncher(this, BeanUtils.getDynamicClientProperties().getProperty(PropertyLoader.VCELL_URL),
+		"Please visit "+BeanUtils.getDynamicClientProperties().getProperty(PropertyLoader.VCELL_URL)+" for Online Help");
 }
 private void invokeOnlineSupport() {
 
-	PopupGenerator.browserLauncher(this, "http://vcell.org/support",
-		"Please visit "+"http://vcell.org/support"+" for Online Support");
+	PopupGenerator.browserLauncher(this, BeanUtils.getDynamicClientProperties().getProperty(PropertyLoader.VC_SUPPORT_URL),
+		"Please visit "+BeanUtils.getDynamicClientProperties().getProperty(PropertyLoader.VC_SUPPORT_URL)+" for Online Support");
 }
 private void invokeDiscussionGroup() {
 
-	PopupGenerator.browserLauncher(this, "https://groups.google.com/forum/#!forum/vcell-discuss",
-		"Please visit "+"https://groups.google.com/forum/#!forum/vcell-discuss"+" for Discussion Group");
+	PopupGenerator.browserLauncher(this, BeanUtils.getDynamicClientProperties().getProperty(PropertyLoader.VC_GOOGLE_DISCUSS_URL),
+		"Please visit "+BeanUtils.getDynamicClientProperties().getProperty(PropertyLoader.VC_GOOGLE_DISCUSS_URL)+" for Discussion Group");
 }
 private void invokeManagePermissions() {
 
-	PopupGenerator.browserLauncher(this, "http://vcell.org/webstart/VCell_Tutorials/VCell_Help/topics/ch_1/Introduction/Permissions.html",
-		"Please visit "+"http://vcell.org/webstart/VCell_Tutorials/VCell_Help/topics/ch_1/Introduction/Permissions.html"+" for instructions on how to change permissions to your Model");
+	PopupGenerator.browserLauncher(this, BeanUtils.getDynamicClientProperties().getProperty(PropertyLoader.VC_TUT_PERMISSION_URL),
+		"Please visit "+BeanUtils.getDynamicClientProperties().getProperty(PropertyLoader.VC_TUT_PERMISSION_URL)+" for instructions on how to change permissions to your Model");
 }
 private void invokeOnlinePublish() {
 
-	PopupGenerator.browserLauncher(this, "http://vcell.org/publish-a-vcell-model",
-		"Please visit "+"http://vcell.org/publish-a-vcell-model"+" for instructions on how to Publish your Model");
+	PopupGenerator.browserLauncher(this, BeanUtils.getDynamicClientProperties().getProperty(PropertyLoader.ACKNOWLEGE_PUB__WEB_URL),
+		"Please visit "+BeanUtils.getDynamicClientProperties().getProperty(PropertyLoader.ACKNOWLEGE_PUB__WEB_URL)+" for instructions on how to Publish your Model");
 }
 
 

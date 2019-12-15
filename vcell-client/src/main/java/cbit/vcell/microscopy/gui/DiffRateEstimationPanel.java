@@ -22,8 +22,11 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
+import org.vcell.util.BeanUtils;
 import org.vcell.util.NumberUtils;
 import org.vcell.util.gui.DialogUtils;
+
+import cbit.vcell.resource.PropertyLoader;
 
 @SuppressWarnings("serial")
 public class DiffRateEstimationPanel extends JPanel
@@ -124,7 +127,7 @@ public class DiffRateEstimationPanel extends JPanel
 		searchWebButton.addActionListener(new ActionListener() {
 			public void actionPerformed(final ActionEvent e) 
 			{
-				final String url = "http://bionumbers.hms.harvard.edu/search.aspx?log=y&task=searchbytrmorg&trm=diffusion+rate&org=%25";
+				final String url = BeanUtils.getDynamicClientProperties().getProperty(PropertyLoader.BIONUMBERS_SRCH2_URL);
 				DialogUtils.browserLauncher(DiffRateEstimationPanel.this, url, null);
 			}
 		});

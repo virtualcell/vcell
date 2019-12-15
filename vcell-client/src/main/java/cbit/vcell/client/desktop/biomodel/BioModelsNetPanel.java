@@ -78,6 +78,7 @@ import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.desktop.BioModelNode;
 import cbit.vcell.desktop.VCellBasicCellRenderer;
+import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.xml.ExternalDocInfo;
 import uk.ac.ebi.www.biomodels_main.services.BioModelsWebServices.BioModelsWebServices;
@@ -86,8 +87,6 @@ import uk.ac.ebi.www.biomodels_main.services.BioModelsWebServices.BioModelsWebSe
 @SuppressWarnings("serial")
 public class BioModelsNetPanel extends DocumentEditorSubPanel {
 	public static final String BIO_MODELS_NET = "BMDB";
-	private static final String defaultBaseURL = "https://www.ebi.ac.uk/biomodels/search/download?models=";	// used for downloads
-//	private static final String BIOMODELS_DATABASE_URL = "http://www.ebi.ac.uk/biomodels-main/";
 
 
 
@@ -255,7 +254,7 @@ public class BioModelsNetPanel extends DocumentEditorSubPanel {
 		Files.createDirectories(tempDirPath);	// temp may not be there, we make it
 		
 		byte[] responseContent = null;
-		URL url = new URL(defaultBaseURL + id);
+		URL url = new URL(BeanUtils.getDynamicClientProperties().getProperty(PropertyLoader.BMDB_DOWNLOAD_URL) + id);
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		InputStream is = null;
 		try {

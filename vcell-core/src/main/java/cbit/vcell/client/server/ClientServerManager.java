@@ -15,9 +15,11 @@ import java.io.IOException;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.HttpResponseException;
 import org.apache.http.conn.HttpHostConnectException;
+import org.vcell.api.client.examples.VCellApiClientTest;
 import org.vcell.service.VCellServiceHelper;
 import org.vcell.service.registration.RegistrationService;
 import org.vcell.util.AuthenticationException;
+import org.vcell.util.BeanUtils;
 import org.vcell.util.Compare;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.VCellThreadChecker;
@@ -392,6 +394,7 @@ public void connectAs(InteractiveContext requester, String user, DigestedPasswor
  * Creation date: (5/12/2004 4:48:13 PM)
  */
 private VCellConnection connectToServer(InteractiveContext requester,boolean bShowErrors) {
+	BeanUtils.updateDynamicClientProperties();
 	VCellThreadChecker.checkRemoteInvocation();
 
 	VCellConnection newVCellConnection = null;

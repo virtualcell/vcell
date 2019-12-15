@@ -35,6 +35,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.PrintWriter;
 import java.io.Serializable;
@@ -56,6 +57,7 @@ import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
+import java.util.TreeMap;
 import java.util.Vector;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
@@ -69,6 +71,7 @@ import javax.mail.Transport;
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
+import javax.net.ssl.HttpsURLConnection;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.InputMap;
@@ -78,6 +81,8 @@ import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.KeyStroke;
 
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVRecord;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jboss.netty.bootstrap.ClientBootstrap;
@@ -105,6 +110,54 @@ public final class BeanUtils {
 	 * newline used in email of Content-Type: text/plain
 	 */
 	public static final String PLAINTEXT_EMAIL_NEWLINE = "\r\n";
+
+	
+	
+	private static VCellDynamicProps vcellDynamicProps = new VCellDynamicProps(null);
+	public static class VCellDynamicProps {
+		private TreeMap<String, String> dynamicClientProperties = null;
+
+		private VCellDynamicProps(TreeMap<String, String> dynamicClientProperties) {
+			super();
+			this.dynamicClientProperties = dynamicClientProperties;
+		}
+		public String getProperty(String propertyName) {
+			return (dynamicClientProperties == null?null:dynamicClientProperties.get(propertyName));
+		}
+	}
+	public static synchronized VCellDynamicProps getDynamicClientProperties() {
+		return vcellDynamicProps;
+	}
+	public static synchronized void updateDynamicClientProperties() {
+		TreeMap<String, String> temp = new TreeMap<>();
+		//"https://vcell.org/webstart/dynamicClientProperties.txt"
+		BufferedReader br = null;
+		try{			
+			//HttpURLConnection conn = new HttpURLConnection(new GetMethod(), new URL("http://dockerbuild:8080"));
+			//https://vcell.org/webstart/vcell_dynamic_properties.csv
+//			HttpURLConnection conn = (HttpURLConnection)(new URL("http://dockerbuild:8080")).openConnection();
+			HttpsURLConnection conn = (HttpsURLConnection)(new URL("https://vcell.org/webstart/vcell_dynamic_properties.csv")).openConnection();
+			conn.setRequestMethod("GET");
+			conn.setConnectTimeout(5000);
+			conn.setReadTimeout(5000);
+			br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+	        Iterable<CSVRecord> records = CSVFormat.DEFAULT
+//	          .withHeader(HEADERS)
+//	          .withFirstRecordAsHeader()
+	        	.withIgnoreSurroundingSpaces()
+	        	.withQuote('"')
+	        	.parse(br);
+	        for (CSVRecord record : records) {
+	        	temp.put(record.get(0),record.get(1));
+	        }
+	        vcellDynamicProps = new VCellDynamicProps(temp);
+		} catch (Exception e) {
+			e.printStackTrace();
+			//re-read failed, just return what we have may have been successful previously
+		}finally {
+			if(br != null) {try{br.close();}catch(Exception e) {e.printStackTrace();}}
+		}
+	}
 
 	public static class XYZ {
 		public double x;
