@@ -122,7 +122,7 @@ public class DocumentWindowAboutBox extends JPanel {
 				appName.setForeground(Color.blue);
 				appName.addMouseListener(new MouseAdapter() {
 					public void mouseClicked(MouseEvent e) {
-						DialogUtils.browserLauncher(DocumentWindowAboutBox.this, BeanUtils.getDynamicClientProperties().getProperty(PropertyLoader.WWWVCELL_WEB_URL), "Failed to open VCell web page (" + System.getProperty(PropertyLoader.WWWVCELL_WEB_URL) + ")");
+						DialogUtils.browserLauncher(DocumentWindowAboutBox.this, BeanUtils.getDynamicClientProperties().getProperty(PropertyLoader.VCELL_URL), "Failed to open VCell web page (" + System.getProperty(PropertyLoader.VCELL_URL) + ")");
 					}
 				});
 			} catch (Throwable throwable) {

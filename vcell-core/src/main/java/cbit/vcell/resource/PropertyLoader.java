@@ -118,7 +118,6 @@ public class PropertyLoader {
 	public static final String BIONETGEN_WEB_URL			= record("vcell.BIONETGEN_WEB_URL",ValueType.URL);
 	public static final String NFSIM_WEB_URL				= record("vcell.NFSIM_WEB_URL",ValueType.URL);
 	public static final String ACKNOWLEGE_PUB__WEB_URL		= record("vcell.ACKNOWLEGE_PUB__WEB_URL",ValueType.URL);
-	public static final String WWWVCELL_WEB_URL				= record("vcell.WWWVCELL_WEB_URL",ValueType.URL);
 	public static final String VCELL_URL					= record("vcell.VCELL_URL",ValueType.URL);
 	public static final String VC_BNG_INDEX_URL				= record("vcell.VC_BNG_INDEX_URL",ValueType.URL);
 	public static final String VC_BNG_FAQ_URL				= record("vcell.VC_BNG_FAQ_URL",ValueType.URL);
