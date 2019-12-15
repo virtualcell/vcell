@@ -38,6 +38,7 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 
+import org.vcell.util.BeanUtils;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.KeyValue;
@@ -60,6 +61,7 @@ import cbit.vcell.desktop.MathModelMetaDataCellRenderer;
 import cbit.vcell.desktop.MathModelMetaDataTreeModel;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.mathmodel.MathModel;
+import cbit.vcell.resource.PropertyLoader;
 
 @SuppressWarnings("serial")
 public class MathModelPropertiesPanel extends DocumentEditorSubPanel {
@@ -409,7 +411,7 @@ private class LocalMetaDataPanel extends JPanel {
 							try {
 								if(node.getUserObject() instanceof PublicationInfo && "PublicationInfoDoi".equals(node.getRenderHint("type"))) {
 									PublicationInfo info = (PublicationInfo)node.getUserObject();
-									Desktop.getDesktop().browse(new URI("https://doi.org/" + info.getDoi()));
+									Desktop.getDesktop().browse(new URI(BeanUtils.getDynamicClientProperties().getProperty(PropertyLoader.DOI_URL) + info.getDoi()));
 								} else if (node.getUserObject() instanceof PublicationInfo && "PublicationInfoUrl".equals(node.getRenderHint("type"))) {
 									PublicationInfo info = (PublicationInfo)node.getUserObject();
 									Desktop.getDesktop().browse(new URI(info.getUrl()));

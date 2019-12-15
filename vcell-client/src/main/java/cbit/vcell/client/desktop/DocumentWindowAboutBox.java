@@ -21,6 +21,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
+import org.vcell.util.BeanUtils;
 import org.vcell.util.document.VCellSoftwareVersion;
 import org.vcell.util.gui.DialogUtils;
 
@@ -121,7 +122,7 @@ public class DocumentWindowAboutBox extends JPanel {
 				appName.setForeground(Color.blue);
 				appName.addMouseListener(new MouseAdapter() {
 					public void mouseClicked(MouseEvent e) {
-						DialogUtils.browserLauncher(DocumentWindowAboutBox.this, System.getProperty(PropertyLoader.VCELL_WEB_URL), "Failed to open VCell web page (" + System.getProperty(PropertyLoader.VCELL_WEB_URL) + ")");
+						DialogUtils.browserLauncher(DocumentWindowAboutBox.this, BeanUtils.getDynamicClientProperties().getProperty(PropertyLoader.WWWVCELL_WEB_URL), "Failed to open VCell web page (" + System.getProperty(PropertyLoader.WWWVCELL_WEB_URL) + ")");
 					}
 				});
 			} catch (Throwable throwable) {
@@ -188,7 +189,7 @@ public class DocumentWindowAboutBox extends JPanel {
 				copasiText.setText("<html>Featuring <font color=blue><u>COPASI</u></font> parameter estimation technology&nbsp;&nbsp;</html>");
 				copasiText.addMouseListener(new MouseAdapter() {
 					public void mouseClicked(MouseEvent e) {
-						DialogUtils.browserLauncher(DocumentWindowAboutBox.this, System.getProperty(PropertyLoader.COPASI_WEB_URL), "Failed to open COPASI webpage ("+System.getProperty(PropertyLoader.COPASI_WEB_URL)+")");
+						DialogUtils.browserLauncher(DocumentWindowAboutBox.this, BeanUtils.getDynamicClientProperties().getProperty(PropertyLoader.COPASI_WEB_URL), "Failed to open COPASI webpage ("+System.getProperty(PropertyLoader.COPASI_WEB_URL)+")");
 					}
 				});
 			} catch (Throwable throwable) {
@@ -206,7 +207,7 @@ public class DocumentWindowAboutBox extends JPanel {
 				smoldynText.setText("<html>Featuring spatial stochastic simulation powered by <font color=blue><u>SMOLDYN</u></font></html>");
 				smoldynText.addMouseListener(new MouseAdapter() {
 					public void mouseClicked(MouseEvent e) {
-						DialogUtils.browserLauncher(DocumentWindowAboutBox.this, System.getProperty(PropertyLoader.SMOLDYN_WEB_URL), "Failed to open SMOLDYN webpage ("+System.getProperty(PropertyLoader.SMOLDYN_WEB_URL)+")");
+						DialogUtils.browserLauncher(DocumentWindowAboutBox.this, BeanUtils.getDynamicClientProperties().getProperty(PropertyLoader.SMOLDYN_WEB_URL), "Failed to open SMOLDYN webpage ("+System.getProperty(PropertyLoader.SMOLDYN_WEB_URL)+")");
 					}
 				});
 			} catch (Throwable throwable) {
@@ -225,7 +226,7 @@ public class DocumentWindowAboutBox extends JPanel {
 				bioNetGenText.setText("<html>Featuring rule-based simulation powered by <font color=blue><u>BioNetGen</u></font></html>");
 				bioNetGenText.addMouseListener(new MouseAdapter() {
 					public void mouseClicked(MouseEvent e) {
-						DialogUtils.browserLauncher(DocumentWindowAboutBox.this, System.getProperty(PropertyLoader.BIONETGEN_WEB_URL), "Failed to open BioNetGen webpage ("+System.getProperty(PropertyLoader.BIONETGEN_WEB_URL)+")");
+						DialogUtils.browserLauncher(DocumentWindowAboutBox.this, BeanUtils.getDynamicClientProperties().getProperty(PropertyLoader.BIONETGEN_WEB_URL), "Failed to open BioNetGen webpage ("+System.getProperty(PropertyLoader.BIONETGEN_WEB_URL)+")");
 					}
 				});
 			} catch (Throwable throwable) {
@@ -243,7 +244,7 @@ public class DocumentWindowAboutBox extends JPanel {
 				bioNetGenText.setText("<html>Featuring network free stochastic simulation powered by <font color=blue><u>NFsim</u></font></html>");
 				bioNetGenText.addMouseListener(new MouseAdapter() {
 					public void mouseClicked(MouseEvent e) {
-						DialogUtils.browserLauncher(DocumentWindowAboutBox.this, System.getProperty(PropertyLoader.NFSIM_WEB_URL), "Failed to open NFsim webpage ("+System.getProperty(PropertyLoader.NFSIM_WEB_URL)+")");
+						DialogUtils.browserLauncher(DocumentWindowAboutBox.this, BeanUtils.getDynamicClientProperties().getProperty(PropertyLoader.NFSIM_WEB_URL), "Failed to open NFsim webpage ("+System.getProperty(PropertyLoader.NFSIM_WEB_URL)+")");
 					}
 				});
 			} catch (Throwable throwable) {
@@ -260,7 +261,7 @@ public class DocumentWindowAboutBox extends JPanel {
 				ackPubJlabel.setText("<html>Use <font color=blue><u>this link</u></font> for details on how to acknowledge Virtual Cell in your publication<br>and how to share your published research through the VCell database. </html>");
 				ackPubJlabel.addMouseListener(new MouseAdapter() {
 					public void mouseClicked(MouseEvent e) {
-						DialogUtils.browserLauncher(DocumentWindowAboutBox.this, System.getProperty(PropertyLoader.ACKNOWLEGE_PUB__WEB_URL), "Failed to open BioNetGen webpage ("+System.getProperty(PropertyLoader.ACKNOWLEGE_PUB__WEB_URL)+")");
+						DialogUtils.browserLauncher(DocumentWindowAboutBox.this, BeanUtils.getDynamicClientProperties().getProperty(PropertyLoader.ACKNOWLEGE_PUB__WEB_URL), "Failed to open Acknowlege webpage ("+System.getProperty(PropertyLoader.ACKNOWLEGE_PUB__WEB_URL)+")");
 					}
 				});
 			} catch (Throwable throwable) {

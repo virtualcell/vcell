@@ -19,7 +19,10 @@ import javax.swing.JLabel;
  */
 import javax.swing.JTree;
 
+import org.vcell.util.BeanUtils;
 import org.vcell.util.document.PublicationInfo;
+
+import cbit.vcell.resource.PropertyLoader;
  
 public class MathModelMetaDataCellRenderer extends VCellBasicCellRenderer {
 /**
@@ -128,7 +131,7 @@ public java.awt.Component getTreeCellRendererComponent(JTree tree, Object value,
 		}else if (node.getUserObject() instanceof PublicationInfo && "PublicationInfoDoi".equals(node.getRenderHint("type"))) {
 			PublicationInfo info = (PublicationInfo)node.getUserObject();
 			component.setToolTipText("DOI");
-			String text = "<a href=\"" + "https://doi.org/" + info.getDoi() + "\">" + "DOI: " + info.getDoi() + "</a>";
+			String text = "<a href=\"" + BeanUtils.getDynamicClientProperties().getProperty(PropertyLoader.DOI_URL) + info.getDoi() + "\">" + "DOI: " + info.getDoi() + "</a>";
 			component.setText("<html>" + text + "</html>");
 			setIcon(null);
 			

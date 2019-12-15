@@ -89,6 +89,7 @@ import cbit.vcell.opt.OptimizationSolverSpec;
 import cbit.vcell.opt.OptimizationSpec;
 import cbit.vcell.opt.ReferenceData;
 import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 
@@ -525,7 +526,7 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 			}else if (e.getSource() == helpButton) {
 				showCopasiMethodHelp();
 			} else if (e.getSource() == copasiLinkLabel){
-				final String url = "http://www.copasi.org/tiki-view_articles.php";
+				final String url = BeanUtils.getDynamicClientProperties().getProperty(PropertyLoader.COPASI_TIKI_URL);
 				DialogUtils.browserLauncher(ParameterEstimationRunTaskPanel.this, url,"COPASI web site is not able to be connected.");
 			}
 		};

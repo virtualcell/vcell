@@ -26,12 +26,14 @@ import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 
+import org.vcell.util.BeanUtils;
 import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.PublicationInfo;
 import org.vcell.util.gui.GuiUtils;
 
 import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
 import cbit.vcell.desktop.BioModelNode.PublicationInfoNode;
+import cbit.vcell.resource.PropertyLoader;
 /**
  * Insert the type's description here.
  * Creation date: (3/29/01 10:39:36 AM)
@@ -158,7 +160,7 @@ private JTree getJTree1() {
 						try {
 							if(node.getUserObject() instanceof PublicationInfo && "PublicationInfoDoi".equals(node.getRenderHint("type"))) {
 								PublicationInfo info = (PublicationInfo)node.getUserObject();
-								Desktop.getDesktop().browse(new URI("https://doi.org/" + info.getDoi()));
+								Desktop.getDesktop().browse(new URI(BeanUtils.getDynamicClientProperties().getProperty(PropertyLoader.DOI_URL) + info.getDoi()));
 							} else if (node.getUserObject() instanceof PublicationInfo && "PublicationInfoUrl".equals(node.getRenderHint("type"))) {
 								PublicationInfo info = (PublicationInfo)node.getUserObject();
 								Desktop.getDesktop().browse(new URI(info.getUrl()));

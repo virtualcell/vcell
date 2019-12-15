@@ -21,11 +21,13 @@ import java.util.Hashtable;
 
 import javax.swing.JLabel;
 
+import org.vcell.util.BeanUtils;
 import org.vcell.util.gui.DialogUtils;
 
 import cbit.vcell.client.DocumentWindowManager;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
+import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.xml.ExternalDocInfo;
 import uk.ac.ebi.www.biomodels_main.services.BioModelsWebServices.BioModelsWebServices;
 import uk.ac.ebi.www.biomodels_main.services.BioModelsWebServices.BioModelsWebServicesServiceLocator;
@@ -33,7 +35,6 @@ import uk.ac.ebi.www.biomodels_main.services.BioModelsWebServices.BioModelsWebSe
 @SuppressWarnings("serial")
 public class BioModelsNetPropertiesPanel extends DocumentEditorSubPanel {
 	
-	private static final String BIOMODELS_DATABASE_URL = "http://www.ebi.ac.uk/biomodels/";
 	private JLabel urlLabel;
 	private JLabel nameLabel;
 	private JLabel idLabel;
@@ -56,7 +57,7 @@ public class BioModelsNetPropertiesPanel extends DocumentEditorSubPanel {
 				if (e.getSource() == linkLabel) {
 					DialogUtils.browserLauncher(BioModelsNetPropertiesPanel.this, bioModelsNetModelInfo.getLink(), "Failed to open " + bioModelsNetModelInfo.getLink());
 				} else if (e.getSource() == urlLabel) {
-					DialogUtils.browserLauncher(BioModelsNetPropertiesPanel.this, BIOMODELS_DATABASE_URL, "Failed to open " + BIOMODELS_DATABASE_URL);
+					DialogUtils.browserLauncher(BioModelsNetPropertiesPanel.this, BeanUtils.getDynamicClientProperties().getProperty(PropertyLoader.BMDB_URL), "Failed to open " + BeanUtils.getDynamicClientProperties().getProperty(PropertyLoader.BMDB_URL));
 				}
 			}
 		}
@@ -109,7 +110,7 @@ public class BioModelsNetPropertiesPanel extends DocumentEditorSubPanel {
 	private void initialize() {
 		setBackground(Color.white);
 		nameLabel = new JLabel();		
-		urlLabel = new JLabel("<html><b><font color=blue><u>" + BIOMODELS_DATABASE_URL + "</u></font>" +
+		urlLabel = new JLabel("<html><b><font color=blue><u>" + BeanUtils.getDynamicClientProperties().getProperty(PropertyLoader.BMDB_URL) + "</u></font>" +
 				", a data resource that allows researchers to" +
 				" store, search and retrieve published mathematical models of biological interest.</b>" +
 				"</html>");

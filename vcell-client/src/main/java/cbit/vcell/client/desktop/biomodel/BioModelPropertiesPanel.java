@@ -45,6 +45,7 @@ import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 
 import org.vcell.sybil.models.miriam.MIRIAMQualifier;
+import org.vcell.util.BeanUtils;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.KeyValue;
@@ -64,6 +65,7 @@ import cbit.vcell.clientdb.DatabaseListener;
 import cbit.vcell.desktop.BioModelInfoCellRenderer;
 import cbit.vcell.desktop.BioModelInfoTreeModel;
 import cbit.vcell.desktop.BioModelNode;
+import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.xml.gui.MiriamTreeModel;
 import cbit.vcell.xml.gui.MiriamTreeModel.LinkNode;
 
@@ -455,7 +457,7 @@ private class LocalMetaDataPanel extends JPanel {
 							try {
 								if(node.getUserObject() instanceof PublicationInfo && "PublicationInfoDoi".equals(node.getRenderHint("type"))) {
 									PublicationInfo info = (PublicationInfo)node.getUserObject();
-									Desktop.getDesktop().browse(new URI("https://doi.org/" + info.getDoi()));
+									Desktop.getDesktop().browse(new URI(BeanUtils.getDynamicClientProperties().getProperty(PropertyLoader.DOI_URL) + info.getDoi()));
 								} else if (node.getUserObject() instanceof PublicationInfo && "PublicationInfoUrl".equals(node.getRenderHint("type"))) {
 									PublicationInfo info = (PublicationInfo)node.getUserObject();
 									Desktop.getDesktop().browse(new URI(info.getUrl()));

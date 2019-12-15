@@ -63,6 +63,7 @@ import cbit.util.xml.XmlUtil;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.desktop.BioModelNode;
+import cbit.vcell.resource.PropertyLoader;
 
 @SuppressWarnings("serial")
 public class BioModelEditorPathwayCommonsPanel extends DocumentEditorSubPanel {
@@ -76,7 +77,6 @@ public class BioModelEditorPathwayCommonsPanel extends DocumentEditorSubPanel {
 			return stringObject;
 		}
 	}
-	private static final String defaultBaseURL = "http://www.pathwaycommons.org/pc/webservice.do";
 	public static class PathwayData {
 		private PathwayModel pathwayModel;
 		private String topLevelPathwayName;
@@ -200,11 +200,10 @@ public class BioModelEditorPathwayCommonsPanel extends DocumentEditorSubPanel {
 		}
 	}
 	
-	private static final String PATHWAY_1_QUERY_URL = "http://www.pathwaycommons.org/pc/webservice.do" + 
-		"?version=3.0&snapshot_id=GLOBAL_FILTER_SETTINGS&record_type=PATHWAY&q=glycolysis&format=html&cmd=get_by_keyword";
-	private static final String PATHWAY_2_QUERY_URL = "http://www.pathwaycommons.org/pc/webservice.do?cmd=search&version=2.0" + 
-		"&q=insulin&maxHits=14&output=xml";
-	private static final String PATHWAY_QUERY_URL = "http://www.pathwaycommons.org/pc/record2.do?id=";
+//	private static final String PATHWAY_1_QUERY_URL = "http://www.pathwaycommons.org/pc/webservice.do" + 
+//		"?version=3.0&snapshot_id=GLOBAL_FILTER_SETTINGS&record_type=PATHWAY&q=glycolysis&format=html&cmd=get_by_keyword";
+//	private static final String PATHWAY_2_QUERY_URL = "http://www.pathwaycommons.org/pc/webservice.do?cmd=search&version=2.0" + 
+//		"&q=insulin&maxHits=14&output=xml";
 
 	
 	private class ResponseTreeCellRenderer extends DefaultTreeCellRenderer {
@@ -316,7 +315,7 @@ public class BioModelEditorPathwayCommonsPanel extends DocumentEditorSubPanel {
 	public void gotoPathway() {
 		Pathway pathway = computeSelectedPathway();
 		if (pathway != null) {
-			String url = PATHWAY_QUERY_URL + pathway.primaryId();
+			String url = BeanUtils.getDynamicClientProperties().getProperty(PropertyLoader.PATHWAY_QUERY_URL) + pathway.primaryId();
 			if (url != null) {
 				DialogUtils.browserLauncher(BioModelEditorPathwayCommonsPanel.this, url, "failed to open " + url);
 			}
@@ -331,7 +330,7 @@ public class BioModelEditorPathwayCommonsPanel extends DocumentEditorSubPanel {
 		AsynchClientTask task1 = new AsynchClientTask("Importing pathway '" + pathway.name() + "'", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 			@Override
 			public void run(final Hashtable<String, Object> hashTable) throws Exception {
-				final URL url = new URL(defaultBaseURL + "?" 
+				final URL url = new URL(BeanUtils.getDynamicClientProperties().getProperty(PropertyLoader.PATHWAY_WEB_DO_URL) + "?" 
 						+ PathwayCommonsKeyword.cmd + "=" + PathwayCommonsKeyword.get_record_by_cpath_id 
 						+ "&" + PathwayCommonsKeyword.version + "=" + PathwayCommonsVersion.v2.name 
 						+ "&" + PathwayCommonsKeyword.q + "=" + pathway.primaryId()
@@ -408,7 +407,7 @@ public class BioModelEditorPathwayCommonsPanel extends DocumentEditorSubPanel {
 			
 			@Override
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
-				URL url = new URL(defaultBaseURL + "?" 
+				URL url = new URL(BeanUtils.getDynamicClientProperties().getProperty(PropertyLoader.PATHWAY_WEB_DO_URL) + "?" 
 						+ PathwayCommonsKeyword.cmd + "=" + PathwayCommonsKeyword.search 
 						+ "&" + PathwayCommonsKeyword.version + "=" + PathwayCommonsVersion.v2.name 
 						+ "&" + PathwayCommonsKeyword.q + "=" + URLEncoder.encode(searchText, "UTF-8")

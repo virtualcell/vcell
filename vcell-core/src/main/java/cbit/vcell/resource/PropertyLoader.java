@@ -118,8 +118,33 @@ public class PropertyLoader {
 	public static final String BIONETGEN_WEB_URL			= record("vcell.BIONETGEN_WEB_URL",ValueType.URL);
 	public static final String NFSIM_WEB_URL				= record("vcell.NFSIM_WEB_URL",ValueType.URL);
 	public static final String ACKNOWLEGE_PUB__WEB_URL		= record("vcell.ACKNOWLEGE_PUB__WEB_URL",ValueType.URL);
-	public static final String VCELL_WEB_URL				= record("vcell.VCELL_WEB_URL",ValueType.URL);
-
+	public static final String WWWVCELL_WEB_URL				= record("vcell.WWWVCELL_WEB_URL",ValueType.URL);
+	public static final String VCELL_URL					= record("vcell.VCELL_URL",ValueType.URL);
+	public static final String VC_BNG_INDEX_URL				= record("vcell.VC_BNG_INDEX_URL",ValueType.URL);
+	public static final String VC_BNG_FAQ_URL				= record("vcell.VC_BNG_FAQ_URL",ValueType.URL);
+	public static final String VC_BNG_TUTORIAL_URL			= record("vcell.VC_BNG_TUTORIAL_URL",ValueType.URL);
+	public static final String VC_BNG_SAMPLES_URL			= record("vcell.VC_BNG_SAMPLES_URL",ValueType.URL);
+	public static final String VC_SUPPORT_URL				= record("vcell.VC_SUPPORT_URL",ValueType.URL);
+	public static final String VC_GOOGLE_DISCUSS_URL		= record("vcell.VC_GOOGLE_DISCUSS_URL",ValueType.URL);
+	public static final String VC_TUT_PERMISSION_URL		= record("vcell.VC_TUT_PERMISSION_URL",ValueType.URL);
+	public static final String BMDB_URL						= record("vcell.BMDB_URL",ValueType.URL);
+	public static final String CONTINUUM_URL				= record("vcell.CONTINUUM_URL",ValueType.URL);
+	public static final String DOI_URL						= record("vcell.DOI_URL",ValueType.URL);
+	public static final String BMDB_DOWNLOAD_URL			= record("vcell.BMDB_DOWNLOAD_URL",ValueType.URL);
+	public static final String PATHWAY_QUERY_URL			= record("vcell.PATHWAY_QUERY_URL",ValueType.URL);
+	public static final String PATHWAY_WEB_DO_URL			= record("vcell.PATHWAY_WEB_DO_URL",ValueType.URL);
+	public static final String SABIO_SRCH_KINETIC_URL		= record("vcell.SABIO_SRCH_KINETIC_URL",ValueType.URL);
+	public static final String SABIO_DIRECT_IFRAME_URL		= record("vcell.SABIO_DIRECT_IFRAME_URL",ValueType.URL);
+	public static final String COPASI_TIKI_URL				= record("vcell.COPASI_TIKI_URL",ValueType.URL);
+	public static final String BIONUMBERS_SRCH1_URL			= record("vcell.BIONUMBERS_SRCH1_URL",ValueType.URL);
+	public static final String BIONUMBERS_SRCH2_URL			= record("vcell.BIONUMBERS_SRCH2_URL",ValueType.URL);
+	public static final String SIGNALLING_QUERY_URL			= record("vcell.SIGNALLING_QUERY_URL",ValueType.URL);
+	public static final String BIOPAX_RSABIO12_URL			= record("vcell.BIOPAX_RSABIO12_URL",ValueType.URL);
+	public static final String BIOPAX_RSABIO11452_URL		= record("vcell.BIOPAX_RSABIO11452_URL",ValueType.URL);
+	public static final String BIOPAX_RSABIO65_URL			= record("vcell.BIOPAX_RSABIO65_URL",ValueType.URL);
+	public static final String BIOPAX_RKEGGR01026_URL		= record("vcell.BIOPAX_RKEGGR01026_URL",ValueType.URL);
+	public static final String COMSOL_URL					= record("vcell.COMSOL_URL",ValueType.URL);
+	
 	//
 	public static final String databaseThreadsProperty		= record("vcell.databaseThreads",ValueType.GEN);
 	public static final String exportdataThreadsProperty	= record("vcell.exportdataThreads",ValueType.GEN);

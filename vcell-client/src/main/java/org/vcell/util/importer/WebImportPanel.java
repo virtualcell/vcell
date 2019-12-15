@@ -12,10 +12,12 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.ListSelectionModel;
 
+import org.vcell.util.BeanUtils;
 import org.vcell.util.gui.ScrollTable;
 
 import cbit.vcell.client.desktop.biomodel.BioModelEditorRightSideTableModel;
 import cbit.vcell.client.desktop.biomodel.VCellSortTableModel;
+import cbit.vcell.resource.PropertyLoader;
 
 @SuppressWarnings("serial")
 public class WebImportPanel extends JPanel {
@@ -23,13 +25,13 @@ public class WebImportPanel extends JPanel {
 	public static String[] urlStringOptions = new String[]{
 //		"http://www.signaling-gateway.org/molecule/query?afcsid=A000037&type=sbPAXExport",
 //		"http://www.signaling-gateway.org/molecule/query?afcsid=A001778&type=sbPAXExport",
-		"http://www.signaling-gateway.org/molecule/query?afcsid=A001750&type=sbPAXExport",
+		BeanUtils.getDynamicClientProperties().getProperty(PropertyLoader.SIGNALLING_QUERY_URL),
 //		"http://www.signaling-gateway.org/molecule/query?afcsid=A001852&type=sbPAXExport",
 //		"http://www.signaling-gateway.org/molecule/query?afcsid=A001046&type=sbPAXExport",
-		"http://sabio.h-its.org/testSabioBioPax/sabioRestWebServices/searchKineticLaws/biopax?searchTerms=RSABIO=12",
-		"http://sabio.h-its.org/testSabioBioPax/sabioRestWebServices/searchKineticLaws/biopax?searchTerms=RSABIO=65",
-		"http://sabio.h-its.org/testSabioBioPax/sabioRestWebServices/searchKineticLaws/biopax?searchTerms=RSABIO=11452",
-		"http://sabio.h-its.org/testSabioBioPax/sabioRestWebServices/searchKineticLaws/biopax?searchTerms=RKEGG=R01026"};
+		BeanUtils.getDynamicClientProperties().getProperty(PropertyLoader.BIOPAX_RSABIO12_URL),
+		BeanUtils.getDynamicClientProperties().getProperty(PropertyLoader.BIOPAX_RSABIO65_URL),
+		BeanUtils.getDynamicClientProperties().getProperty(PropertyLoader.BIOPAX_RSABIO11452_URL),
+		BeanUtils.getDynamicClientProperties().getProperty(PropertyLoader.BIOPAX_RKEGGR01026_URL)};
 	
 	private List<String> urlList = new ArrayList<String>(Arrays.asList(urlStringOptions));
 	//protected final JComboBox urlInput = new JComboBox(urlStringOptions);
