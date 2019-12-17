@@ -27,7 +27,7 @@
 	  	</para>
 	  	<para><bold>Start</bold> the Fiji program.  From the Plugins menu within Fiji select <bold>New->Macro</bold> to bring up the scripting editor.  
 	  	</para>
-	  	<para><bold>Example files can be downloaded</bold> from http://vcell.org/webstart/packImageJExample.zip and extracted to a directory.
+	  	<para><bold>Example files can be downloaded</bold> from https://vcell.org/webstart/packImageJExample.zip and extracted to a directory.
 	  	</para>
 	  	<para>To use the example scripts choose <bold>Language->Groovy</bold> in the scripting editor  (the examples use Groovy which is very much like the Java programming language).
 	  	In the scripting editor choose <bold>File->Open</bold> and navigate to the 'examples' directory you extracted the downloaded examples to and open one of the example files.  At this writing there are 3 example files:

@@ -30,7 +30,7 @@
 	<para>
 	<bold>Create a NEW image based geometry</bold> by clicking the "Add/Replace Geometry" button, choose "New..." and select from the list that appears:
 	<list>
-	<item>Image based (import from file, zip or directory) - (Uses the <bold>BioFormats</bold> library (http://openmicroscopy.org/info/bio-formats) for importing image files to use as a template for compartment definition).</item>
+	<item>Image based (import from file, zip or directory) - (Uses the <bold>BioFormats</bold> library (https://openmicroscopy.org/info/bio-formats) for importing image files to use as a template for compartment definition).</item>
 	<item>From scratch - (Blank canvas for manual "painting" of compartment domains).</item>
 	<item>Mesh based - (import from .stl file).</item>
 	</list>
