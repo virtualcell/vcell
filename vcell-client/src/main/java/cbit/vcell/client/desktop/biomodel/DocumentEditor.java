@@ -591,7 +591,9 @@ private void treeSelectionChanged0(TreeSelectionEvent treeSelectionEvent) {
 			selectionManager.setActiveView(activeView);
 			if (/*selectedObject instanceof SimulationContext 
 					|| */ selectedObject instanceof BioModel
-					|| selectedObject instanceof MathModel) { 
+					|| selectedObject instanceof MathModel
+					|| selectedObject instanceof SimulationContext
+					) { 
 				selectionManager.setSelectedObjects(new Object[]{selectedObject});
 			}
 		}
