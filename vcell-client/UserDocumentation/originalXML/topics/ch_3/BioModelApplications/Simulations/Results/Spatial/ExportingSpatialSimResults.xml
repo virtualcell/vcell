@@ -49,17 +49,17 @@
 	</item>
 	<item><bold>QuickTime(QT,QTVR) files (*.mov) </bold> 
 	Used for 'Current Slice from "View Data"' or 'Full' to export values in Apple's ubiquitous movie file format.  
-	QTVR is a special version of QT formatted to allow the Apple QuickTime movie player (http://www.apple.com/quicktime/) to display an extra dimension of data (e.g multiple slices/variables over time).
+	QTVR is a special version of QT formatted to allow the Apple QuickTime movie player (https://www.apple.com/quicktime/) to display an extra dimension of data (e.g multiple slices/variables over time).
 	</item>
 	<item><bold>Gif89a, Animated Gif and JPEG image files (*.gif,*.jpg)</bold>
 	Used for 'Current Slice from "View Data"' to export multiple 2D images in these standard formats.
 	</item>
 	<item><bold>Nearly raw raster data (*.nrrd) </bold> 
-	Used for 'Full' to export data values in a multi-dimension format that can be read by programs such as 'ImageJ' (http://imagej.nih.gov/) for additional numerical analysis and display.
+	Used for 'Full' to export data values in a multi-dimension format that can be read by programs such as 'ImageJ' (https://imagej.nih.gov/) for additional numerical analysis and display.
 	</item>
-	<item><bold>VTK (http://www.vtk.org) and UCD (Unstructured Cell Data) files (*.vtk,*.ucd) </bold> 
+	<item><bold>VTK (https://www.vtk.org) and UCD (Unstructured Cell Data) files (*.vtk,*.ucd) </bold> 
 	Used for 'Full' to export data values in a polygon format (volume or surface) for each value based the simulation spatial geometry (mesh).  
-	Programs such as 'VisIt' (http://visit.llnl.gov/) and 'ParaView' (http://www.paraview.org/) offer additional visualization and analysis outside of VCell.
+	Programs such as 'VisIt' (https://visit.llnl.gov/) and 'ParaView' (https://www.paraview.org/) offer additional visualization and analysis outside of VCell.
 	</item>
 	</list>
 	</para>

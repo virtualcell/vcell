@@ -7,7 +7,7 @@
 	<bold>Integrator</bold> is NFsim biochemical reaction simulator 
 		designed to stochastically simulate systems that have a large or even infinite number of 
 		possible molecular interactions or states. A publication describing NFsim can be 
-		found at http://www.nature.com/nmeth/journal/v8/n2/full/nmeth.1546.html.
+		found at https://www.nature.com/nmeth/journal/v8/n2/full/nmeth.1546.html.
 		A user can set end simulation time, output interval N (simulations results are outputted every N seconds)
 		 and Advanced Solver Options.
 	</introduction>
