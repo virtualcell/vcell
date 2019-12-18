@@ -111,7 +111,8 @@ public class ListservMail {
 		    // connect to mail server using imaps protocol
 		    Properties properties = System.getProperties();
 		    Session session = Session.getDefaultInstance(properties);
-		    store = session.getStore("imaps");// Use this instead of pop3s to access non 'Inbox' folders
+		    store = session.getStore("imap");// Use this instead of pop3s to access non 'Inbox' folders
+//		    store = session.getStore("imaps");// Use this instead of pop3s to access non 'Inbox' folders (alternative?)
 //		    store = session.getStore("pop3s");// 
 		    store.connect(mailServer, mailUser, emailPassword);
 		    inboxs = new Folder[]  {(Folder) store.getFolder(mailFolder)};
