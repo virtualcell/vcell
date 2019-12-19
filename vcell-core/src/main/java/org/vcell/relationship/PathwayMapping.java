@@ -287,6 +287,9 @@ public class PathwayMapping {
 			System.out.println(xref.getDb() + ": " + xref.getId());
 			try {
 				HashSet<MiriamResource> miriamResources = new HashSet<MiriamResource>();
+				// http://www.ncbi.nlm.nih.gov/protein/NP_005429	unrecognized (not a valid DataType)
+				// http://www.uniprot.org/uniprot/P17275			good
+				// TODO: find a mechanism to store the unrecognized ones - they often do work
 				MiriamResource mr = miriamManager.createMiriamResource(url);
 				miriamResources.add(mr);
 				miriamManager.addMiriamRefGroup(mt, qualifier, miriamResources);
