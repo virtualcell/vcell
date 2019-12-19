@@ -19,12 +19,15 @@ import org.vcell.util.Matchable;
 import org.vcell.util.Issue.IssueCategory;
 import org.vcell.util.Issue.IssueSource;
 
+import cbit.vcell.mapping.SimulationContext.Kind;
 import cbit.vcell.model.Structure;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.SymbolTableEntry;
 
-public class AssignmentRule implements Matchable, Serializable, IssueSource, Displayable, VetoableChangeListener, PropertyChangeListener{
+public class AssignmentRule implements Matchable, Serializable, IssueSource, SimulationContextEntity,
+		Displayable, VetoableChangeListener, PropertyChangeListener {
+	
 	private String fieldName = null;
 	private SymbolTableEntry assignmentRuleVar = null;
 	private Expression assignmentRuleExpression = null;
@@ -238,6 +241,11 @@ public class AssignmentRule implements Matchable, Serializable, IssueSource, Dis
 	@Override
 	public String getDisplayType() {
 		return typeName;
+	}
+	
+	@Override
+	public Kind getSimulationContextKind() {
+		return SimulationContext.Kind.PROTOCOLS_KIND;
 	}
 
 }

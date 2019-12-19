@@ -19,6 +19,7 @@ import org.vcell.util.IssueContext.ContextType;
 import org.vcell.util.IssueContext;
 import org.vcell.util.Matchable;
 
+import cbit.vcell.mapping.SimulationContext.Kind;
 import cbit.vcell.model.Product;
 import cbit.vcell.model.Reactant;
 import cbit.vcell.model.ReactionParticipant;
@@ -29,7 +30,8 @@ import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.SymbolTableEntry;
 
-public class RateRule implements Matchable, Serializable, IssueSource, Displayable, VetoableChangeListener, PropertyChangeListener {
+public class RateRule implements Matchable, Serializable, IssueSource, SimulationContextEntity,
+			Displayable, VetoableChangeListener, PropertyChangeListener {
 	private String fieldName = null;
 	private SymbolTableEntry rateRuleVar = null;
 	private Expression rateRuleExpression = null;
@@ -274,6 +276,11 @@ public class RateRule implements Matchable, Serializable, IssueSource, Displayab
 	@Override
 	public String getDisplayType() {
 		return typeName;
+	}
+
+	@Override
+	public Kind getSimulationContextKind() {
+		return SimulationContext.Kind.PROTOCOLS_KIND;
 	}
 
 }

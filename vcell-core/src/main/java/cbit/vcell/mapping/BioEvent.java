@@ -36,6 +36,7 @@ import cbit.vcell.mapping.ParameterContext.GlobalParameterContext;
 import cbit.vcell.mapping.ParameterContext.LocalParameter;
 import cbit.vcell.mapping.ParameterContext.ParameterPolicy;
 import cbit.vcell.mapping.ParameterContext.ParameterRoleEnum;
+import cbit.vcell.mapping.SimulationContext.Kind;
 import cbit.vcell.math.Event;
 import cbit.vcell.math.MathUtilities;
 import cbit.vcell.model.BioNameScope;
@@ -57,7 +58,7 @@ import net.sourceforge.interval.ia_math.RealInterval;
 
 @SuppressWarnings("serial")
 public class BioEvent implements Matchable, Serializable, VetoableChangeListener, PropertyChangeListener, 
-	IssueSource, Displayable {
+		IssueSource, SimulationContextEntity, Displayable {
 	
 	private static final String PROPERTY_NAME_NAME = "name";
 
@@ -1143,6 +1144,11 @@ public class BioEvent implements Matchable, Serializable, VetoableChangeListener
 	@Override
 	public String getDisplayType() {
 		return typeName;
+	}
+
+	@Override
+	public Kind getSimulationContextKind() {
+		return SimulationContext.Kind.PROTOCOLS_KIND;
 	}
 
 }
