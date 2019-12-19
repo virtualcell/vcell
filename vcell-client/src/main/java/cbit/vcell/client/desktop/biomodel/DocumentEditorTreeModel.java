@@ -20,7 +20,11 @@ import org.vcell.util.gui.DialogUtils;
 
 import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveView;
 import cbit.vcell.desktop.BioModelNode;
+import cbit.vcell.mapping.AssignmentRule;
+import cbit.vcell.mapping.BioEvent;
+import cbit.vcell.mapping.RateRule;
 import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.mapping.SimulationContextEntity;
 
 @SuppressWarnings("serial")
 public abstract class DocumentEditorTreeModel extends DefaultTreeModel
@@ -118,13 +122,70 @@ public abstract class DocumentEditorTreeModel extends DefaultTreeModel
 		try {
 			Object source = evt.getSource();			
 			if (source == selectionManager) {
-				if (evt.getPropertyName().equals(SelectionManager.PROPERTY_NAME_ACTIVE_VIEW)) {					
+				if (evt.getPropertyName().equals(SelectionManager.PROPERTY_NAME_ACTIVE_VIEW)) {
 					onActiveViewChange(selectionManager.getActiveView());
+				} else if(evt.getPropertyName().equals(SelectionManager.PROPERTY_NAME_SELECTED_OBJECTS)) {
+					onSelectedObjectChange(selectionManager.getActiveView(), evt);		// TODO: uncomment here to use the hack
 				}
 			} 
 		} catch (Exception e){
 			e.printStackTrace(System.out);
 		}
+	}
+	
+	// hack to deselect the Application node and select the Protocols node when clicking in any table belonging to protocols
+	private void onSelectedObjectChange(ActiveView activeView, java.beans.PropertyChangeEvent evt) {
+		SimulationContext simulationContext = activeView.getSimulationContext();
+		if(simulationContext == null || selectionManager == null) {
+			return;
+		}
+		if(selectionManager.getSelectedObjects() == null || selectionManager.getSelectedObjects().length == 0) {
+			return;
+		}
+		if(selectionManager.getSelectedObjects()[0] instanceof SimulationContextEntity) {
+			
+			// Switch tree selection to the proper Application child node if necessary
+			// for example, select the Protocols node if the selected object is a BioEvent, a RateRule or an AssignmentRule
+			SimulationContextEntity sce = (SimulationContextEntity)selectionManager.getSelectedObjects()[0];
+			switch (sce.getSimulationContextKind()) {
+			case GEOMETRY_KIND:
+				navigateToSelectedObjectNode(DocumentEditorTreeFolderClass.GEOMETRY_NODE, simulationContext);
+				break;
+			case SPECIFICATIONS_KIND:
+				navigateToSelectedObjectNode(DocumentEditorTreeFolderClass.SPECIFICATIONS_NODE, simulationContext);
+				break;
+			case PROTOCOLS_KIND:
+				// Electrical and Microscope things don't fire a PROPERTY_NAME_SELECTED_OBJECTS property change event to here
+				// TODO: investigate why
+				// not important right now because they don't have a PropertiesPanel to show
+				navigateToSelectedObjectNode(DocumentEditorTreeFolderClass.PROTOCOLS_NODE, simulationContext);
+				break;
+			case SIMULATIONS_KIND:
+				navigateToSelectedObjectNode(DocumentEditorTreeFolderClass.SIMULATIONS_NODE, simulationContext);
+				break;
+			case PARAMETER_ESTIMATION_KIND:
+				navigateToSelectedObjectNode(DocumentEditorTreeFolderClass.PARAMETER_ESTIMATION_NODE, simulationContext);
+				break;
+			default:
+				System.err.println("Not a valid SimulationContextEntity Kind.");
+				break;
+			}
+		}
+	}
+	private void navigateToSelectedObjectNode(DocumentEditorTreeFolderClass nodeClass, SimulationContext simulationContext) {
+		Object userObject = selectedBioModelNode.getUserObject();
+		if (userObject instanceof DocumentEditorTreeFolderNode && nodeClass.equals(((DocumentEditorTreeFolderNode)userObject).getFolderClass())) {
+			return;		// we are already on Protocols, no need to select it again
+		}
+		BioModelNode startNode = rootNode;
+		if (simulationContext != null) {
+			startNode = rootNode.findNodeByUserObject(simulationContext);
+		}
+		BioModelNode node = findNodeByFolderClass(startNode, nodeClass);
+		if (node != null) {
+			selectedBioModelNode = node;				
+			restoreTreeSelection();
+		}		
 	}
 
 	public void treeCollapsed(TreeExpansionEvent e) {
