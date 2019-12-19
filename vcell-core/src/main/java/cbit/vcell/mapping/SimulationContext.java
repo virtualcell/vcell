@@ -144,6 +144,14 @@ public class SimulationContext implements SimulationOwner, Versionable, Matchabl
 	public static final String PROPERTY_NAME_RATE_RULE_CHANGE = "rateRuleChange";
 	public static final String PROPERTY_NAME_ASSIGNMENT_RULE_CHANGE = "assignmentRuleChange";
 	
+	public enum Kind {
+		GEOMETRY_KIND,
+		SPECIFICATIONS_KIND,
+		PROTOCOLS_KIND,
+		SIMULATIONS_KIND,
+		PARAMETER_ESTIMATION_KIND;
+	}
+	
 	public class SimulationContextNameScope extends BioNameScope {
 		private transient NameScope nameScopes[] = null;
 		public SimulationContextNameScope(){
