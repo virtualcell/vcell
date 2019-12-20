@@ -77,12 +77,14 @@ import cbit.vcell.biomodel.meta.MiriamManager.MiriamRefGroup;
 import cbit.vcell.biomodel.meta.MiriamManager.MiriamResource;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.desktop.BioModelCellRenderer;
+import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.model.RbmObservable;
 import cbit.vcell.model.ReactionRule;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.Species;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
+import cbit.vcell.solver.Simulation;
 import cbit.vcell.xml.gui.MiriamTreeModel;
 import cbit.vcell.xml.gui.MiriamTreeModel.LinkNode;
 /**
@@ -151,6 +153,7 @@ public class AnnotationsPanel extends DocumentEditorSubPanel {
 					|| evt.getSource() instanceof BioModel
 					|| evt.getSource() instanceof Structure
 					|| evt.getSource() instanceof BioPaxObject
+					|| evt.getSource() instanceof SimulationContext
 					) {
 				initializeComboBoxURI();
 				updateInterface();
@@ -823,6 +826,12 @@ public static Identifiable getIdentifiable(Identifiable selectedObject) {
 		return (Structure)selectedObject;
 	} else if(selectedObject instanceof BioPaxObject) {
 		return null;
+	} else if(selectedObject instanceof SimulationContext) {
+		return (SimulationContext)selectedObject;
+//	} else if(selectedObject instanceof Simulation) {	// TODO: Simulation must implement Identifiable, Displayable
+//		return (Simulation)selectedObject;
+//	} else if(selectedObject instanceof Structure) {
+//		return (Structure)selectedObject;
 	} else {
 		return null;
 	}
