@@ -149,6 +149,9 @@ public abstract class DocumentEditorTreeModel extends DefaultTreeModel
 			SimulationContextEntity sce = (SimulationContextEntity)selectionManager.getSelectedObjects()[0];
 			switch (sce.getSimulationContextKind()) {
 			case GEOMETRY_KIND:
+				// For Spatial, the Geometry Definition tab shows ImageSubvolume objects in the table
+				// and selecting one fires to here...
+				// but they don't have PropertiesPanel so, for consistency, we don't navigate to GEOMETRY_NODE
 				navigateToSelectedObjectNode(DocumentEditorTreeFolderClass.GEOMETRY_NODE, simulationContext);
 				break;
 			case SPECIFICATIONS_KIND:
@@ -164,6 +167,7 @@ public abstract class DocumentEditorTreeModel extends DefaultTreeModel
 				navigateToSelectedObjectNode(DocumentEditorTreeFolderClass.SIMULATIONS_NODE, simulationContext);
 				break;
 			case PARAMETER_ESTIMATION_KIND:
+				// nothing here has PropertiesPanel
 				navigateToSelectedObjectNode(DocumentEditorTreeFolderClass.PARAMETER_ESTIMATION_NODE, simulationContext);
 				break;
 			default:
@@ -175,7 +179,7 @@ public abstract class DocumentEditorTreeModel extends DefaultTreeModel
 	private void navigateToSelectedObjectNode(DocumentEditorTreeFolderClass nodeClass, SimulationContext simulationContext) {
 		Object userObject = selectedBioModelNode.getUserObject();
 		if (userObject instanceof DocumentEditorTreeFolderNode && nodeClass.equals(((DocumentEditorTreeFolderNode)userObject).getFolderClass())) {
-			return;		// we are already on Protocols, no need to select it again
+			return;				// the nodeClass we want is selected already, no need to select it again
 		}
 		BioModelNode startNode = rootNode;
 		if (simulationContext != null) {

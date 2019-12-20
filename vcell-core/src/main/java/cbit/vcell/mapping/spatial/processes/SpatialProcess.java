@@ -18,7 +18,9 @@ import cbit.vcell.mapping.ParameterContext.GlobalParameterContext;
 import cbit.vcell.mapping.ParameterContext.LocalParameter;
 import cbit.vcell.mapping.ParameterContext.ParameterPolicy;
 import cbit.vcell.mapping.ParameterContext.ParameterRoleEnum;
+import cbit.vcell.mapping.SimulationContext.Kind;
 import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.mapping.SimulationContextEntity;
 import cbit.vcell.mapping.spatial.SpatialObject;
 import cbit.vcell.mapping.spatial.SpatialObject.SpatialQuantity;
 import cbit.vcell.model.BioNameScope;
@@ -34,7 +36,7 @@ import cbit.vcell.units.VCUnitDefinition;
 import cbit.vcell.units.VCUnitSystem;
 import net.sourceforge.interval.ia_math.RealInterval;
 
-public abstract class SpatialProcess implements Serializable, IssueSource, PropertyChangeListener, Matchable {
+public abstract class SpatialProcess implements Serializable, IssueSource, PropertyChangeListener, Matchable, SimulationContextEntity {
 	private static final String PROPERTY_NAME_NAME = "name";
 	public static final String PROPERTY_NAME_PARAMETERS = "parameters";
 	
@@ -414,6 +416,11 @@ public abstract class SpatialProcess implements Serializable, IssueSource, Prope
 		LocalParameter[] oldValue = parameterContext.getLocalParameters();
 		parameterContext.setLocalParameters(parameters);
 		firePropertyChange(PROPERTY_NAME_PARAMETERS, oldValue, parameterContext.getLocalParameters());
+	}
+	
+	@Override
+	public Kind getSimulationContextKind() {
+		return SimulationContext.Kind.GEOMETRY_KIND;
 	}
 
 	public abstract String getDescription();

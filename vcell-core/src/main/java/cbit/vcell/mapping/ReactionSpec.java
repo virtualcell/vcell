@@ -20,6 +20,7 @@ import org.vcell.util.Issue.IssueSource;
 import org.vcell.util.IssueContext;
 import org.vcell.util.Matchable;
 
+import cbit.vcell.mapping.SimulationContext.Kind;
 import cbit.vcell.model.BioNameScope;
 import cbit.vcell.model.ExpressionContainer;
 import cbit.vcell.model.FluxReaction;
@@ -37,7 +38,7 @@ import cbit.vcell.parser.ScopedSymbolTable;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.units.VCUnitDefinition;
 
-public class ReactionSpec implements ModelProcessSpec, ScopedSymbolTable, VetoableChangeListener {
+public class ReactionSpec implements ModelProcessSpec, ScopedSymbolTable, VetoableChangeListener, SimulationContextEntity {
 	private ReactionStep reactionStep = null;
 
 	public final static int INCLUDED = 0;
@@ -771,5 +772,11 @@ public void vetoableChange(java.beans.PropertyChangeEvent evt) throws java.beans
 	@Override
 	public ReactionStep getModelProcess() {
 		return reactionStep;
+	}
+
+
+	@Override
+	public Kind getSimulationContextKind() {
+		return SimulationContext.Kind.SPECIFICATIONS_KIND;
 	}
 }

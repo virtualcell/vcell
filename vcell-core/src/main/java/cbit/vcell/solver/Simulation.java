@@ -30,6 +30,9 @@ import org.vcell.util.document.SimulationVersion;
 import org.vcell.util.document.Version;
 import org.vcell.util.document.Versionable;
 
+import cbit.vcell.mapping.SimulationContext.Kind;
+import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.mapping.SimulationContextEntity;
 import cbit.vcell.math.MathCompareResults;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathException;
@@ -42,8 +45,8 @@ import cbit.vcell.solver.SolverDescription.SolverFeature;
  * @author: John Wagner
  */
 @SuppressWarnings("serial")
-public class Simulation implements Versionable, Matchable, java.beans.VetoableChangeListener, java.io.Serializable,PropertyChangeListener,
-		IssueSource {
+public class Simulation implements Versionable, Matchable, java.beans.VetoableChangeListener, java.io.Serializable, PropertyChangeListener,
+		SimulationContextEntity, IssueSource {
 
 	public static final String PSF_FUNCTION_NAME = "__PSF__";
 	/**
@@ -967,5 +970,10 @@ public void vetoableChange(java.beans.PropertyChangeEvent evt) throws java.beans
 	 */
 	public void gatherIssues(IssueContext issueContext, List<Issue> issueList) {
 		SimulationWarning.gatherIssues(this, issueContext, issueList);
+	}
+	
+	@Override
+	public Kind getSimulationContextKind() {
+		return SimulationContext.Kind.SIMULATIONS_KIND;
 	}
 }

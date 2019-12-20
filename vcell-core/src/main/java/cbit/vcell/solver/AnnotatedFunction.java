@@ -11,6 +11,9 @@
 package cbit.vcell.solver;
 import org.vcell.util.Matchable;
 
+import cbit.vcell.mapping.SimulationContext.Kind;
+import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.mapping.SimulationContextEntity;
 import cbit.vcell.math.Function;
 import cbit.vcell.math.VariableType;
 import cbit.vcell.parser.Expression;
@@ -19,7 +22,7 @@ import cbit.vcell.parser.Expression;
  * Creation date: (1/29/2004 11:48:16 AM)
  * @author: Anuradha Lakshminarayana
  */
-public class AnnotatedFunction extends Function implements Matchable {
+public class AnnotatedFunction extends Function implements Matchable, SimulationContextEntity {
 	private java.lang.String fieldErrorString = null;
 	private VariableType fieldFunctionType = null;
 	private final FunctionCategory functionCategory;
@@ -111,6 +114,11 @@ public String getDisplayName() {
 
 public final FunctionCategory getFunctionCatogery() {
 	return functionCategory;
+}
+
+@Override
+public Kind getSimulationContextKind() {
+	return SimulationContext.Kind.SIMULATIONS_KIND;
 }
 
 }

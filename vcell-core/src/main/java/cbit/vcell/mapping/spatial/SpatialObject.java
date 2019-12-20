@@ -16,12 +16,14 @@ import org.vcell.util.Matchable;
 
 import cbit.vcell.mapping.ApplicationQuantity;
 import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.mapping.SimulationContextEntity;
+import cbit.vcell.mapping.SimulationContext.Kind;
 import cbit.vcell.mapping.spatial.processes.SpatialProcess;
 import cbit.vcell.model.ModelUnitSystem;
 import cbit.vcell.parser.NameScope;
 import cbit.vcell.units.VCUnitDefinition;
 
-public abstract class SpatialObject implements Serializable, IssueSource, Matchable {
+public abstract class SpatialObject implements Serializable, IssueSource, Matchable, SimulationContextEntity {
 	public static final String PROPERTY_NAME_NAME = "name";
 	public static final String PROPERTY_NAME_SPATIALQUANTITIES = "spatialQuantities";
 	public static final String PROPERTY_NAME_QUANTITYCATEGORIESENABLED = "quantityCategoriesEnabled";
@@ -334,5 +336,10 @@ public abstract class SpatialObject implements Serializable, IssueSource, Matcha
 			}
 		}
 		return spatialProcesses;
+	}
+	
+	@Override
+	public Kind getSimulationContextKind() {
+		return SimulationContext.Kind.GEOMETRY_KIND;
 	}
 }

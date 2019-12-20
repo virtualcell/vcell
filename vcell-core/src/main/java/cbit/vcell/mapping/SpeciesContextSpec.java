@@ -27,6 +27,7 @@ import org.vcell.util.Matchable;
 
 import cbit.vcell.geometry.GeometryClass;
 import cbit.vcell.geometry.surface.GeometricRegion;
+import cbit.vcell.mapping.SimulationContext.Kind;
 import cbit.vcell.mapping.spatial.SpatialObject;
 import cbit.vcell.mapping.spatial.SpatialObject.QuantityCategory;
 import cbit.vcell.mapping.spatial.SpatialObject.QuantityComponent;
@@ -62,7 +63,7 @@ import cbit.vcell.units.VCUnitDefinition;
 import net.sourceforge.interval.ia_math.RealInterval;
 
 @SuppressWarnings("serial")
-public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Serializable, IssueSource {
+public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Serializable, SimulationContextEntity, IssueSource {
 
 	public static final String PARAMETER_NAME_PROXY_PARAMETERS = "proxyParameters";
 	private static final String PROPERTY_NAME_WELL_MIXED = "wellMixed";
@@ -1691,6 +1692,12 @@ public SpatialQuantity[] getVelocityQuantities(QuantityComponent component) {
 		}
 	}
 	return velocityQuantities.toArray(new SpatialQuantity[0]);
+}
+
+
+@Override
+public Kind getSimulationContextKind() {
+	return SimulationContext.Kind.SPECIFICATIONS_KIND;
 }
 
 }
