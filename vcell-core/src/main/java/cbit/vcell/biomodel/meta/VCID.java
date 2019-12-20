@@ -19,10 +19,16 @@ public class VCID {
 	public static final String CLASS_BIOMODEL = "BioModel";
 	public static final String CLASS_REACTION_STEP = "ReactionStep";
 	public static final String CLASS_SPECIES = "Species";
+	public static final String CLASS_SPECIES_CONTEXT = "SpeciesContext";
+	public static final String CLASS_STRUCTURE = "Structure";
 	
 	public static final String CLASS_MOLECULE = "MolecularType";
 	public static final String CLASS_REACTION_RULE = "ReactionRule";
 	public static final String CLASS_OBSERVABLE = "RbmObservable";
+
+	public static final String CLASS_BIOPAX_OBJECT = "BioPaxObject";
+	public static final String CLASS_APPLICATION = "Application";
+
 
 	private String id;
 	private String className;
