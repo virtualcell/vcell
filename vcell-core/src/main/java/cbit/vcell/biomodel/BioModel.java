@@ -1107,38 +1107,37 @@ public VCID getVCID(Identifiable identifiable) {
 	}
 	String localName;
 	String className;
-	if (identifiable instanceof SpeciesContext){
+	if (identifiable instanceof SpeciesContext) {
 		localName = ((SpeciesContext)identifiable).getName();
-		className = "SpeciesContext";
-	}else if (identifiable instanceof Species){
+		className = VCID.CLASS_SPECIES_CONTEXT;
+	} else if (identifiable instanceof Species) {
 		localName = ((Species)identifiable).getCommonName();
 		className = VCID.CLASS_SPECIES;
-	}else if (identifiable instanceof Structure){
+	} else if (identifiable instanceof Structure) {
 		localName = ((Structure)identifiable).getName();
-		className = "Structure";
-	}else if (identifiable instanceof ReactionStep){
+		className = VCID.CLASS_STRUCTURE;
+	} else if (identifiable instanceof ReactionStep) {
 		localName = ((ReactionStep)identifiable).getName();
 		className = VCID.CLASS_REACTION_STEP;
-	}else if (identifiable instanceof BioModel){
+	} else if (identifiable instanceof BioModel){
 		localName = ((BioModel)identifiable).getName();
 		className = VCID.CLASS_BIOMODEL;
-//	}else if (identifiable instanceof SimulationContext){
-//		localName = ((SimulationContext)identifiable).getName();
-//		className = "Application";
-	}else if (identifiable instanceof BioPaxObject){
+	} else if (identifiable instanceof BioPaxObject) {
 		localName = ((BioPaxObject)identifiable).getID();
-		className = "BioPaxObject";
-
-	}else if (identifiable instanceof MolecularType){
+		className = VCID.CLASS_BIOPAX_OBJECT;
+	} else if (identifiable instanceof MolecularType) {
 		localName = ((MolecularType)identifiable).getName();
-		className = "MolecularType";
-	}else if (identifiable instanceof ReactionRule){
+		className = VCID.CLASS_MOLECULE;
+	} else if (identifiable instanceof ReactionRule) {
 		localName = ((ReactionRule)identifiable).getName();
-		className = "ReactionRule";
-	}else if (identifiable instanceof RbmObservable){
+		className = VCID.CLASS_REACTION_RULE;
+	} else if (identifiable instanceof RbmObservable) {
 		localName = ((RbmObservable)identifiable).getName();
-		className = "RbmObservable";
-	}else{
+		className = VCID.CLASS_OBSERVABLE;
+		}else if (identifiable instanceof SimulationContext) {
+		localName = ((SimulationContext)identifiable).getName();
+		className = VCID.CLASS_APPLICATION;
+	} else {
 		throw new RuntimeException("unsupported Identifiable class");
 	}
 	localName = TokenMangler.mangleVCId(localName);

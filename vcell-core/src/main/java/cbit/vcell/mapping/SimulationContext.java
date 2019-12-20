@@ -28,6 +28,7 @@ import java.util.Vector;
 import org.vcell.model.rbm.NetworkConstraints;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Compare;
+import org.vcell.util.Displayable;
 import org.vcell.util.Extent;
 import org.vcell.util.Issue;
 import org.vcell.util.Issue.IssueCategory;
@@ -43,6 +44,7 @@ import org.vcell.util.VCAssert;
 import org.vcell.util.document.BioModelChildSummary.MathType;
 import org.vcell.util.document.DocumentValidUtil;
 import org.vcell.util.document.ExternalDataIdentifier;
+import org.vcell.util.document.Identifiable;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.PropertyConstants;
 import org.vcell.util.document.Version;
@@ -121,7 +123,8 @@ import cbit.vcell.units.VCUnitDefinition;
  */
 @SuppressWarnings("serial")
 public class SimulationContext implements SimulationOwner, Versionable, Matchable, BioNetGenUpdaterCallback,
-	ScopedSymbolTable, PropertyChangeListener, VetoableChangeListener, Serializable, IssueSource {
+	ScopedSymbolTable, PropertyChangeListener, VetoableChangeListener, Serializable, IssueSource,
+	Displayable, Identifiable {
 	
 	public interface MathMappingCallback {
 		public void setMessage(String message);
@@ -3594,7 +3597,18 @@ public void setbIgnoreEvents(boolean bIgnoreEvents) {
 	this.bIgnoreEvents = bIgnoreEvents;
 }
 
-
+public static final String typeName = "Application";
+@Override
+public String getDisplayName() {
+	if(fieldName != null) {
+		return fieldName;
+	}
+	return "";
+}
+@Override
+public String getDisplayType() {
+	return typeName;
+}
 
 }
 
