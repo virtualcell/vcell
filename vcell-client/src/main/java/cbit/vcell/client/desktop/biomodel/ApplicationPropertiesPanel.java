@@ -148,7 +148,7 @@ private void initialize() {
 		gbc.gridy = gridy;
 		gbc.insets = new Insets(4, 4, 4, 4);
 		gbc.anchor = GridBagConstraints.FIRST_LINE_END;
-		add(new JLabel("Annotation"), gbc);
+		add(new JLabel("Description"), gbc);
 		
 		gbc = new java.awt.GridBagConstraints();
 		gbc.weightx = 1.0;
