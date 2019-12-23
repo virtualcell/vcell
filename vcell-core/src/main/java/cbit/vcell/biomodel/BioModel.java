@@ -1057,45 +1057,43 @@ public void populateVCMetadata(boolean bMetadataPopulated) {
 }
 
 public Identifiable getIdentifiableObject(VCID vcid) {
-	if (vcid.getClassName().equals("BioPaxObject")){
+	if (vcid.getClassName().equals(VCID.CLASS_BIOPAX_OBJECT)) {
 		String rdfId = vcid.getLocalName();
 		return getPathwayModel().findBioPaxObject(rdfId);
 	}
-	if (vcid.getClassName().equals("SpeciesContext")){
+	if (vcid.getClassName().equals(VCID.CLASS_SPECIES_CONTEXT)) {
 		String localName = vcid.getLocalName();
 		return getModel().getSpeciesContext(localName);
 	}
-	if (vcid.getClassName().equals(VCID.CLASS_SPECIES)){
+	if (vcid.getClassName().equals(VCID.CLASS_SPECIES)) {
 		String localName = vcid.getLocalName();
 		return getModel().getSpecies(localName);
 	}
-	if (vcid.getClassName().equals("Structure")){
+	if (vcid.getClassName().equals(VCID.CLASS_STRUCTURE)) {
 		String localName = vcid.getLocalName();
 		return getModel().getStructure(localName);
 	}
-	if (vcid.getClassName().equals(VCID.CLASS_REACTION_STEP)){
+	if (vcid.getClassName().equals(VCID.CLASS_REACTION_STEP)) {
 		String localName = vcid.getLocalName();
 		return getModel().getReactionStep(localName);
 	}
-
-	if (vcid.getClassName().equals(VCID.CLASS_MOLECULE)){
+	if (vcid.getClassName().equals(VCID.CLASS_MOLECULE)) {
 		String localName = vcid.getLocalName();
 		return getModel().getRbmModelContainer().getMolecularType(localName);
 	}
-	if (vcid.getClassName().equals(VCID.CLASS_REACTION_RULE)){
+	if (vcid.getClassName().equals(VCID.CLASS_REACTION_RULE)) {
 		String localName = vcid.getLocalName();
 		return getModel().getRbmModelContainer().getReactionRule(localName);
 	}
-	if (vcid.getClassName().equals(VCID.CLASS_OBSERVABLE)){
+	if (vcid.getClassName().equals(VCID.CLASS_OBSERVABLE)) {
 		String localName = vcid.getLocalName();
 		return getModel().getRbmModelContainer().getObservable(localName);
 	}
-
-//	if (vcid.getClassName().equals("Application")){
-//		String localName = vcid.getLocalName();
-//		return getSimulationContexts(localName);
-//	}
-	if (vcid.getClassName().equals(VCID.CLASS_BIOMODEL)){
+	if (vcid.getClassName().equals(VCID.CLASS_APPLICATION)) {
+		String localName = vcid.getLocalName();
+		return getSimulationContexts(localName);
+	}
+	if (vcid.getClassName().equals(VCID.CLASS_BIOMODEL)) {
 		return this;
 	}
 	return null;

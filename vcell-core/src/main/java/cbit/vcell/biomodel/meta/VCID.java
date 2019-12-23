@@ -27,7 +27,7 @@ public class VCID {
 	public static final String CLASS_OBSERVABLE = "RbmObservable";
 
 	public static final String CLASS_BIOPAX_OBJECT = "BioPaxObject";
-	public static final String CLASS_APPLICATION = "Application";
+	public static final String CLASS_APPLICATION = "SimulationContext";
 
 
 	private String id;
