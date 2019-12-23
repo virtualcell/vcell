@@ -1089,6 +1089,10 @@ public Identifiable getIdentifiableObject(VCID vcid) {
 		String localName = vcid.getLocalName();
 		return getModel().getRbmModelContainer().getObservable(localName);
 	}
+	if (vcid.getClassName().equals(VCID.CLASS_MODEL_PARAMETER)) {
+		String localName = vcid.getLocalName();
+		return getModel().getModelParameter(localName);
+	}
 	if (vcid.getClassName().equals(VCID.CLASS_APPLICATION)) {
 		String localName = vcid.getLocalName();
 		return getSimulationContexts(localName);
@@ -1132,7 +1136,10 @@ public VCID getVCID(Identifiable identifiable) {
 	} else if (identifiable instanceof RbmObservable) {
 		localName = ((RbmObservable)identifiable).getName();
 		className = VCID.CLASS_OBSERVABLE;
-		}else if (identifiable instanceof SimulationContext) {
+	} else if (identifiable instanceof Model.ModelParameter) {
+		localName = ((Model.ModelParameter)identifiable).getName();
+		className = VCID.CLASS_MODEL_PARAMETER;
+	} else if (identifiable instanceof SimulationContext) {
 		localName = ((SimulationContext)identifiable).getName();
 		className = VCID.CLASS_APPLICATION;
 	} else {

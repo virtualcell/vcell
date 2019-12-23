@@ -49,6 +49,7 @@ import org.vcell.util.IssueContext.ContextType;
 import org.vcell.util.Matchable;
 import org.vcell.util.Pair;
 import org.vcell.util.TokenMangler;
+import org.vcell.util.document.Identifiable;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.PropertyConstants;
 import org.vcell.util.document.Version;
@@ -848,7 +849,7 @@ public class Model implements Versionable, Matchable, PropertyChangeListener, Ve
 		return functionArgTypes;
 	}
 	
-	public class ModelParameter extends Parameter implements ExpressionContainer, IssueSource, Displayable,VCellSbmlName {
+	public class ModelParameter extends Parameter implements ExpressionContainer, IssueSource, Displayable, Identifiable, VCellSbmlName {
 		
 		private String fieldParameterName = null;
 		private String sbmlName = null;

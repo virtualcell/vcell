@@ -21,6 +21,7 @@ public class VCID {
 	public static final String CLASS_SPECIES = "Species";
 	public static final String CLASS_SPECIES_CONTEXT = "SpeciesContext";
 	public static final String CLASS_STRUCTURE = "Structure";
+	public static final String CLASS_MODEL_PARAMETER = "ModelParameter";
 	
 	public static final String CLASS_MOLECULE = "MolecularType";
 	public static final String CLASS_REACTION_RULE = "ReactionRule";

@@ -78,6 +78,7 @@ import cbit.vcell.biomodel.meta.MiriamManager.MiriamResource;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.desktop.BioModelCellRenderer;
 import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.model.Model;
 import cbit.vcell.model.RbmObservable;
 import cbit.vcell.model.ReactionRule;
 import cbit.vcell.model.ReactionStep;
@@ -152,6 +153,7 @@ public class AnnotationsPanel extends DocumentEditorSubPanel {
 					|| evt.getSource() instanceof RbmObservable
 					|| evt.getSource() instanceof BioModel
 					|| evt.getSource() instanceof Structure
+					|| evt.getSource() instanceof Model.ModelParameter
 					|| evt.getSource() instanceof BioPaxObject
 					|| evt.getSource() instanceof SimulationContext
 					) {
@@ -826,6 +828,8 @@ public static Identifiable getIdentifiable(Identifiable selectedObject) {
 		return (Structure)selectedObject;
 	} else if(selectedObject instanceof BioPaxObject) {
 		return null;
+	} else if(selectedObject instanceof Model.ModelParameter) {
+		return (Model.ModelParameter)selectedObject;
 	} else if(selectedObject instanceof SimulationContext) {
 		return (SimulationContext)selectedObject;
 //	} else if(selectedObject instanceof Simulation) {	// TODO: Simulation must implement Identifiable, Displayable

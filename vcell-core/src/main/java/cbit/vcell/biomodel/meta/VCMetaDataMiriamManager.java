@@ -50,6 +50,8 @@ import org.vcell.util.document.Identifiable;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.biomodel.meta.MiriamManager.MiriamResource;
 import cbit.vcell.biomodel.meta.registry.Registry.Entry;
+import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.model.Model;
 import cbit.vcell.model.RbmObservable;
 import cbit.vcell.model.ReactionRule;
 import cbit.vcell.model.ReactionStep;
@@ -482,7 +484,7 @@ public class VCMetaDataMiriamManager implements MiriamManager, Serializable {
 			list.add(VCMetaDataDataType.DataType_EFO);
 			list.add(VCMetaDataDataType.DataType_Doid);
 
-		} else if(entity instanceof Species || entity instanceof MolecularType || entity instanceof RbmObservable) {
+		} else if(entity instanceof Species || entity instanceof MolecularType || entity instanceof RbmObservable || entity instanceof Model.ModelParameter) {
 			list.add(VCMetaDataDataType.DataType_Chebi);
 			list.add(VCMetaDataDataType.DataType_KEGGCOMPOUND);
 			list.add(VCMetaDataDataType.DataType_UNIPROT);
@@ -508,6 +510,8 @@ public class VCMetaDataMiriamManager implements MiriamManager, Serializable {
 			list.add(VCMetaDataDataType.DataType_BTO);
 			list.add(VCMetaDataDataType.DataType_EFO);
 			
+		} else if(entity instanceof SimulationContext) {
+			;
 		} else if(entity instanceof BioPaxObject) {
 			;
 		}
