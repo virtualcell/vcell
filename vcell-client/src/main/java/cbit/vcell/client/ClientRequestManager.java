@@ -4187,6 +4187,9 @@ public class ClientRequestManager
 	}
 
 	public void runSimulations(final ClientSimManager clientSimManager, final Simulation[] simulations) {
+		runSimulations(clientSimManager, simulations, null);
+	}
+	public void runSimulations(final ClientSimManager clientSimManager, final Simulation[] simulations,AsynchClientTask[] endTasks) {
 		DocumentWindowManager documentWindowManager = clientSimManager.getDocumentWindowManager();
 		if (documentWindowManager.getUser() == null || User.isGuest(documentWindowManager.getUser().getName())) {
 			DialogUtils.showErrorDialog(documentWindowManager.getComponent(),
@@ -4312,6 +4315,11 @@ public class ClientRequestManager
 					CheckBeforeDelete.getLowPrecisionConstantsSaveTask(), deleteOldDocument, finishSave,
 //			lowPrecisionConstantsWaitSave,
 					runSims };
+			if(endTasks != null && endTasks.length > 0) {
+				AsynchClientTask[] temp = Arrays.copyOf(tasks, tasks.length+endTasks.length);
+				System.arraycopy(endTasks, 0, temp, tasks.length, endTasks.length);
+				tasks = temp;
+			}
 		}
 		/* run the tasks */
 		ClientTaskDispatcher.dispatch(currentDocumentWindow, hash, tasks, true);

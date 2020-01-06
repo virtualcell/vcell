@@ -84,6 +84,9 @@ import cbit.vcell.solvers.CartesianMesh;
 
 public class FieldDataGUIPanel extends JPanel{
 
+	private static final String FIELD_DATA_INFO = "Field Data Info";
+	public static final String FIELD_NAME = "fieldName";
+	public static final String USER_DEFINED_FDOS = "userDefinedFDOS";
 	final int modePslidExperimentalData = 0;
 	final int modePslidGeneratedModel = 1;
 	//
@@ -494,7 +497,7 @@ public void updateJTree(final RequestManager clientRequestManager){
 						sortedExtDataIDTreeMap.put(externalDataIdentifierArr[i],extDataAnnotArr[i]);
 					}
 					DefaultMutableTreeNode rootNode = new DefaultMutableTreeNode(new InitializedRootNode(
-								"Field Data Info"+(externalDataIdentifierArr.length==0?" (None Defined)":"")));
+								FIELD_DATA_INFO+(externalDataIdentifierArr.length==0?" (None Defined)":"")));
 					
 					Iterator<Entry<ExternalDataIdentifier, String>> sortIter = sortedExtDataIDTreeMap.entrySet().iterator();
 					while(sortIter.hasNext()){
@@ -599,7 +602,7 @@ private static final String FROM_SIM = "from Simulation";
 //private static final String FROM_IMAGEJ = "from ImageJ";
 private JComboBox<String> getCreateJComboBox(){
 	if(jComboBoxCreate == null){
-		jComboBoxCreate = new JComboBox<>(new String[] {FROM_FILE,FROM_SIM/*,FROM_IMAGEJ*/});
+		jComboBoxCreate = new JComboBox(new Object[] {FROM_FILE,FROM_SIM/*,FROM_IMAGEJ*/});
 	}
 	return jComboBoxCreate;
 }
@@ -1218,7 +1221,7 @@ private SelectedTimes selectTimeFromNode(DefaultMutableTreeNode mainNode){
 		JPanel jp = new JPanel();
 		BoxLayout bl = new BoxLayout(jp,BoxLayout.X_AXIS);
 		jp.setLayout(bl);
-		JComboBox<String> jcBeg = new JComboBox<String>(Arrays.asList(timesStr).toArray(new String[0]));
+		JComboBox<String> jcBeg = new JComboBox(Arrays.asList(timesStr).toArray(new Object[0]));
 		jp.add(jcBeg);
 		
 		if(PopupGenerator.showComponentOKCancelDialog(this, jp,"Select Field Data timepoint") ==JOptionPane.OK_OPTION){
@@ -1429,6 +1432,26 @@ public void setFieldDataWindowManager(FieldDataWindowManager fdwm){
 	fieldDataWindowManager = fdwm;
 }
 
+public void checkFieldDataName(String fieldDataName) throws Exception{
+	if(fieldDataName == null || fieldDataName.length() == 0 ||
+			!fieldDataName.equals(TokenMangler.fixTokenStrict(fieldDataName))){
+			throw new Exception("Field Data names can contain only letters,digits and underscores");
+		}
+		//Check to see if this name is already used
+		DefaultMutableTreeNode rootNode = (DefaultMutableTreeNode)this.getJTree1().getModel().getRoot();
+		if(!rootNode.getUserObject().toString().startsWith(FIELD_DATA_INFO)) {
+			updateJTree(fieldDataWindowManager.getLocalRequestManager());
+			rootNode = (DefaultMutableTreeNode)this.getJTree1().getModel().getRoot();
+		}
+		for(int i=0;i<rootNode.getChildCount();i+= 1){
+			ExternalDataIdentifier extDataID = 
+				((FieldDataMainList)((DefaultMutableTreeNode)rootNode.getChildAt(i)).getUserObject()).externalDataIdentifier;
+			if(fieldDataName.equals(extDataID.getName())){
+				throw new Exception("New Field Data name "+fieldDataName+" already used.");
+			}
+		}
+}
+
 public static AsynchClientTask[] addNewExternalData(final Component requester,final FieldDataGUIPanel fieldDataGUIPanel,final boolean isFromSimulation) {
 	
 	final RequestManager clientRequestManager = fieldDataGUIPanel.fieldDataWindowManager.getLocalRequestManager();
@@ -1437,6 +1460,11 @@ public static AsynchClientTask[] addNewExternalData(final Component requester,fi
 
 		@Override
 		public void run(Hashtable<String, Object> hashTable) throws Exception {
+			//Check if this is ImageJ op, if so, this task unnecessary
+			if(hashTable.get(USER_DEFINED_FDOS) != null && hashTable.get(FIELD_NAME) != null) {
+				return;
+			}
+			//Allow user to review/change info about fielddata
 			FieldDataFileOperationSpec fdos = (FieldDataFileOperationSpec)hashTable.get("fdos");
 			String initialExtDataName = (String)hashTable.get("initFDName");
 			
@@ -1477,25 +1505,13 @@ public static AsynchClientTask[] addNewExternalData(final Component requester,fi
 					userDefinedFDOS.annotation = fdip.getAnnotation();
 					userDefinedFDOS.times = fdip.getTimes();
 					try{
-						if(fdip.getFieldName() == null || fdip.getFieldName().length() == 0 ||
-							!fdip.getFieldName().equals(TokenMangler.fixTokenStrict(fdip.getFieldName()))){
-							throw new Exception("Field Data names can contain only letters,digits and underscores");
-						}
-						//Check to see if this name is already used
-						DefaultMutableTreeNode rootNode = (DefaultMutableTreeNode)fieldDataGUIPanel.getJTree1().getModel().getRoot();
-						for(int i=0;i<rootNode.getChildCount();i+= 1){
-							ExternalDataIdentifier extDataID = 
-								((FieldDataMainList)((DefaultMutableTreeNode)rootNode.getChildAt(i)).getUserObject()).externalDataIdentifier;
-							if(fdip.getFieldName().equals(extDataID.getName())){
-								throw new Exception("New Field Data name "+fdip.getFieldName()+" already used.");
-							}
-						}
+						fieldDataGUIPanel.checkFieldDataName(fdip.getFieldName());
 					}catch(Exception e){
 						PopupGenerator.showErrorDialog(requester, "Error saving Field Data Name to Database. Try again.\n"+e.getMessage(), e);
 						continue;
 					}
-					hashTable.put("userDefinedFDOS", userDefinedFDOS);
-					hashTable.put("fieldName", fdip.getFieldName());
+					hashTable.put(USER_DEFINED_FDOS, userDefinedFDOS);
+					hashTable.put(FIELD_NAME, fdip.getFieldName());
 					break;
 				} else {
 					throw UserCancelException.CANCEL_GENERIC;
@@ -1509,8 +1525,8 @@ public static AsynchClientTask[] addNewExternalData(final Component requester,fi
 		public void run(Hashtable<String, Object> hashTable) throws Exception {
 			//Add to Server Disk
 			//save Database
-			FieldDataFileOperationSpec tempFDOS = (FieldDataFileOperationSpec)hashTable.get("userDefinedFDOS");
-			String fieldName = (String)hashTable.get("fieldName");
+			FieldDataFileOperationSpec tempFDOS = (FieldDataFileOperationSpec)hashTable.get(USER_DEFINED_FDOS);
+			String fieldName = (String)hashTable.get(FIELD_NAME);
 			
 			FieldDataFileOperationSpec fdos = (FieldDataFileOperationSpec)hashTable.get("fdos");
 			DocumentManager documentManager = clientRequestManager.getDocumentManager();

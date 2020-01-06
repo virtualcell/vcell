@@ -263,6 +263,7 @@ SimulationStatus runSimulation(SimulationInfo simInfo, int numSimulationScanJobs
  */
 void runSimulations(ClientSimManager clientSimManager, Simulation[] simulations);
 
+void runSimulations(ClientSimManager clientSimManager, Simulation[] simulations,AsynchClientTask[] endTasks);
 
 /**
  * Insert the method's description here.

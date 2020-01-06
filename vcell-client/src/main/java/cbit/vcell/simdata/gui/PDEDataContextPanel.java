@@ -314,6 +314,9 @@ public static class RecodeDataForDomainInfo{
 	public boolean isIndexInDomain(int dataIndex){
 		return (notInDomainValue==null?true:recodedDataForDomain[dataIndex] != notInDomainValue);
 	}
+	public Double getNotInDomainValue() {
+		return notInDomainValue;
+	}
 }
 public RecodeDataForDomainInfo getRecodeDataForDomainInfo(){
 	return recodeDataForDomainInfo;
@@ -371,7 +374,6 @@ private void recodeDataForDomain0() {
 		}
 		illegalNumber-=1;//
 		notInDomainValue = new Double(illegalNumber);
-
 		final CartesianMesh cartesianMesh = getPdeDataContext().getCartesianMesh();
 		double minCurrTime = Double.POSITIVE_INFINITY;
 		double maxCurrTime = Double.NEGATIVE_INFINITY;

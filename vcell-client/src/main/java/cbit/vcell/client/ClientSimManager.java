@@ -227,7 +227,10 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
  * @param simulation cbit.vcell.solver.Simulation[]
  */
 public void runSimulations(Simulation[] simulations) {
-	getDocumentWindowManager().getRequestManager().runSimulations(this, simulations);
+	runSimulations(simulations, null);
+}
+public void runSimulations(Simulation[] simulations,AsynchClientTask[] endTasks) {
+	getDocumentWindowManager().getRequestManager().runSimulations(this, simulations,endTasks);
 }
 
 

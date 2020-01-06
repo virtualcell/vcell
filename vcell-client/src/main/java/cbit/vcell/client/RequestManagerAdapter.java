@@ -109,6 +109,8 @@ public class RequestManagerAdapter implements RequestManager {
 	@Override
 	public void runSimulations(ClientSimManager clientSimManager,Simulation[] simulations) { }
 	@Override
+	public void runSimulations(ClientSimManager clientSimManager,Simulation[] simulations,AsynchClientTask[] endTasks) { }
+	@Override
 	public void saveDocument(DocumentWindowManager documentWindowManager, boolean replace) {}
 	@Override
 	public void saveDocumentAsNew(DocumentWindowManager documentWindowManager) {}

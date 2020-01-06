@@ -33,6 +33,7 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlInlineBinaryData;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -63,7 +64,7 @@ public class VCellHelper extends AbstractService implements ImageJService
 	
 	public VCellHelper() {
 		try {
-			jaxbContext = JAXBContext.newInstance(new Class[] {IJSolverStatus.class,IJTimeSeriesJobResults.class,IJTimeSeriesJobSpec.class,IJFieldData.class,IJGeom.class,IJVarInfo.class,IJVarInfos.class});
+			jaxbContext = JAXBContext.newInstance(new Class[] {IJSimStatusJobs.class,IJFDid.class,IJSimStatus.class,IJTimeSeriesJobResults.class,IJTimeSeriesJobSpec.class,IJFieldData.class,IJGeom.class,IJVarInfo.class,IJVarInfos.class,IJData.class,IJDataList.class,BasicStackDimensions.class});
 		} catch (JAXBException e) {
 			e.printStackTrace();
 		}
@@ -158,11 +159,19 @@ public class VCellHelper extends AbstractService implements ImageJService
 		return getDocument(is);
 	}
 	public static class BasicStackDimensions implements Dimensions{
+		@XmlAttribute
 		public int xsize;
+		@XmlAttribute
 		public int ysize;
+		@XmlAttribute
 		public int zsize;
+		@XmlAttribute
 		public int csize;
+		@XmlAttribute
 		public int tsize;
+		public BasicStackDimensions(){
+			
+		}
 		public BasicStackDimensions(int xsize, int ysize, int zsize, int csize, int tsize) {
 			this.xsize = xsize;
 			this.ysize = ysize;
@@ -517,22 +526,22 @@ public class VCellHelper extends AbstractService implements ImageJService
 		}
 		throw new Exception("data not found");
 	}
-	public static class TimePointData{
-		private double[] timePointData;
-		private BasicStackDimensions basicStackDimensions;
-		public TimePointData(double[] timePointData, BasicStackDimensions basicStackDimensions) {
-			super();
-			this.timePointData = timePointData;
-			this.basicStackDimensions = basicStackDimensions;
-		}
-		public double[] getTimePointData() {
-			return timePointData;
-		}
-		public BasicStackDimensions getBasicStackDimensions() {
-			return basicStackDimensions;
-		}
-		
-	}
+//	public static class TimePointData{
+//		private double[] timePointData;
+//		private BasicStackDimensions basicStackDimensions;
+//		public TimePointData(double[] timePointData, BasicStackDimensions basicStackDimensions) {
+//			super();
+//			this.timePointData = timePointData;
+//			this.basicStackDimensions = basicStackDimensions;
+//		}
+//		public double[] getTimePointData() {
+//			return timePointData;
+//		}
+//		public BasicStackDimensions getBasicStackDimensions() {
+//			return basicStackDimensions;
+//		}
+//		
+//	}
 	public ColorTable getVCellColorTable(String name) throws Exception{
 		URL dataUrl = new URL("http://localhost:"+findVCellApiServerPort()+"/"+"getdata"+"?"+"colortable"+"="+name);
     	Document doc = VCellHelper.getDocument(dataUrl);
@@ -543,26 +552,31 @@ public class VCellHelper extends AbstractService implements ImageJService
     	return ct;
 	}
 	
-	public TimePointData getTimePointData(String simulationDataCacheKey,String variableName,int[] timePointIndexes,int simulationJobIndex) throws Exception{
+	enum VARTYPE_POSTPROC {DataProcessingOutputInfo,PostProcessDataPDEDataContext,NotPostProcess}
+
+	public IJDataList getTimePointData(String simulationDataCacheKey,String variableName,VARTYPE_POSTPROC varTypePostProcess,int[] timePointIndexes,int simulationJobIndex) throws Exception{
 		StringBuffer timeIndexParams = new StringBuffer();
 		if(timePointIndexes != null) {
 			for (int i = 0; i < timePointIndexes.length; i++) {
 				timeIndexParams.append("&"+"timeindex"+"="+timePointIndexes[i]);
 			}
 		}
-		URL dataUrl = new URL("http://localhost:"+findVCellApiServerPort()+"/"+"getdata"+"?"+"cachekey"+"="+simulationDataCacheKey+"&"+"varname"+"="+variableName+timeIndexParams.toString()+"&"+"jobid="+simulationJobIndex);
-    	Document doc = VCellHelper.getDocument(dataUrl);
-//		System.out.println(VCellHelper.documentToString(doc));
-		NodeList nodes = doc.getElementsByTagName("ijData");
-		BasicStackDimensions basicStackDimensions = VCellHelper.getDimensions(nodes.item(0));
-		if(nodes.getLength() != 1) {
-			throw new Exception("Expecting only 1 timepoint but got "+nodes.getLength());
-		}
-//		if(basicStackDimensions.xsize != xsize || basicStackDimensions.ysize != ysize || basicStackDimensions.zsize != zsize) {
-//		throw new Exception("One or more sim data xyz dimensions="+basicStackDimensions.xsize+","+basicStackDimensions.ysize+","+basicStackDimensions.zsize+" does not match expected xyz sizes="+xsize+","+ysize+","+zsize);
-//	}
-	double[] timePointData = (timePointIndexes!=null?VCellHelper.getData(nodes.item(0)):null);//VCellHelper.getData(nodes.item(0));
-	return new TimePointData(timePointData, basicStackDimensions);
+		URL dataUrl = new URL("http://localhost:"+findVCellApiServerPort()+"/"+"getdata"+"?"+"cachekey"+"="+simulationDataCacheKey+"&"+"varname"+"="+variableName+timeIndexParams.toString()+"&"+"jobindex="+simulationJobIndex+"&"+"varTypePostProcess="+varTypePostProcess.name());
+		HttpURLConnection con = (HttpURLConnection) dataUrl.openConnection();
+		return (IJDataList)unmarshallResponseFromConnection(con, jaxbContext);
+
+//    	Document doc = VCellHelper.getDocument(dataUrl);
+////		System.out.println(VCellHelper.documentToString(doc));
+//		NodeList nodes = doc.getElementsByTagName("ijData");
+//		BasicStackDimensions basicStackDimensions = VCellHelper.getDimensions(nodes.item(0));
+//		if(nodes.getLength() != 1) {
+//			throw new Exception("Expecting only 1 timepoint but got "+nodes.getLength());
+//		}
+////		if(basicStackDimensions.xsize != xsize || basicStackDimensions.ysize != ysize || basicStackDimensions.zsize != zsize) {
+////		throw new Exception("One or more sim data xyz dimensions="+basicStackDimensions.xsize+","+basicStackDimensions.ysize+","+basicStackDimensions.zsize+" does not match expected xyz sizes="+xsize+","+ysize+","+zsize);
+////	}
+//	double[] timePointData = (timePointIndexes!=null?VCellHelper.getData(nodes.item(0)):null);//VCellHelper.getData(nodes.item(0));
+//	return new TimePointData(timePointData, basicStackDimensions);
 }
 
 	
@@ -585,6 +599,69 @@ public class VCellHelper extends AbstractService implements ImageJService
     	}
     	return cachekey;
 	}
+	
+	
+	public static class IJData {
+		@XmlAttribute
+		public String varname;
+		@XmlAttribute
+		public Double timepoint;
+		@XmlAttribute
+		public Integer jobindex;
+		@XmlElement
+		public BasicStackDimensions stackInfo;
+		@XmlInlineBinaryData
+		private byte[] data;//double[] converted to byte[]
+		@XmlElement
+		public Double notInDomainValue;
+		private transient double[] doubleData;
+		@XmlElement
+		public Double min;
+		@XmlElement
+		public Double max;		
+		
+		public IJData() {
+			
+		}
+		public IJData(BasicStackDimensions stackInfo, byte[] data,String varname,Double timepoint,Integer jobindex,Double notInDomainValue,Double min,Double max) {
+			super();
+			this.stackInfo = stackInfo;
+			this.data = data;
+			this.varname = varname;
+			this.timepoint = timepoint;
+			this.jobindex = jobindex;
+			this.notInDomainValue = notInDomainValue;
+			this.min = min;
+			this.max = max;
+		}
+		public double[] getDoubleData() {
+			if(doubleData == null) {
+				doubleData = new double[stackInfo.getTotalSize()];
+				DoubleBuffer db = ByteBuffer.wrap(data).asDoubleBuffer();
+				db.get(doubleData);
+				data = null;
+			}
+			return doubleData;
+		}
+	}
+	
+	@XmlRootElement
+	public static class IJDataList {
+		@XmlElement
+		public IJData[] ijData;
+		public IJDataList() {
+			
+		}
+		public IJDataList(IJData[] ijData) {
+			super();
+			this.ijData = ijData;
+		}
+		
+	}
+
+	
+	
+	
 	
 	@XmlRootElement
 	public static class IJVarInfos {
@@ -833,10 +910,24 @@ public class VCellHelper extends AbstractService implements ImageJService
 		}
 	}
 
+	@XmlRootElement()
+	public static class IJFDid{
+		@XmlElement()
+		public String fdid;
+		public IJFDid() {
+		}
+		public IJFDid(String fdid) {
+			super();
+			this.fdid = fdid;
+		}
+	}
+
 	@XmlRootElement
 	public static class IJFieldData {
 		@XmlAttribute
-		public String varName;
+		public String fdName;
+		@XmlAttribute
+		public String[] varNames;
 		@XmlAttribute
 		public int xsize;
 		@XmlAttribute
@@ -844,19 +935,57 @@ public class VCellHelper extends AbstractService implements ImageJService
 		@XmlAttribute
 		public int zsize;
 		@XmlElement
-		double[] data;
-		public IJFieldData() {
-			
+		short[][][] data;
+		@XmlElement
+		double[] times;
+		@XmlAttribute
+		public double xExtent;
+		@XmlAttribute
+		public double yExtent;
+		@XmlAttribute
+		public double zExtent;
+		@XmlAttribute
+		public double xOrigin;
+		@XmlAttribute
+		public double yOrigin;
+		@XmlAttribute
+		public double zOrigin;
+		
+		public IJFieldData() {		
 		}
-		public IJFieldData(String varName,int xsize, int ysize, int zsize, double[] data) {
+
+		public IJFieldData(String fdName, String[] varNames, int xsize, int ysize, int zsize, short[][][] data, double[] times,
+				double xExtent, double yExtent, double zExtent, double xOrigin, double yOrigin, double zOrigin) {
 			super();
-			this.varName = varName;
+			if(data.length != times.length) {
+				throw new IllegalArgumentException("data length "+data.length+" not equal times length "+times.length);
+			}
+			for (int i = 0; i < data.length; i++) {
+				if(data[i].length != varNames.length){
+					throw new IllegalArgumentException("data length ["+i+"] "+data[i].length+" not equal varNames length "+varNames.length);
+				}
+				for (int j = 0; j < data[i].length; j++) {
+					if(data[i][j].length != xsize*ysize*zsize){
+						throw new IllegalArgumentException("data length ["+i+"]["+j+"] "+data[i][j].length+" not equal xyz length "+xsize*ysize*zsize);
+					}					
+				}
+			}
+			this.fdName = fdName;
+			this.varNames = varNames;
 			this.xsize = xsize;
 			this.ysize = ysize;
 			this.zsize = zsize;
 			this.data = data;
+			this.times = times;
+			this.xExtent = xExtent;
+			this.yExtent = yExtent;
+			this.zExtent = zExtent;
+			this.xOrigin = xOrigin;
+			this.yOrigin = yOrigin;
+			this.zOrigin = zOrigin;
 		}
 	}
+
 	@XmlRootElement
 	public static class IJGeom {
 		@XmlElement
@@ -901,7 +1030,19 @@ public class VCellHelper extends AbstractService implements ImageJService
 		}
 	}
 
-	public IJSolverStatus startVCellSolver(long cachekey,IJGeom ijGeom,HashMap<String, String> simulationParameterOverrides,HashMap<String,String> speciesContextInitialConditionsOverrides,Double endTime) throws Exception{
+	public IJFDid sendFieldData(IJFieldData ijFieldData) throws Exception{
+		URL url = new URL("http://localhost:"+findVCellApiServerPort()+"/solver/fielddata");
+		HttpURLConnection con = (HttpURLConnection) url.openConnection();
+		con.setDoOutput(true);    // indicates POST method
+		con.setDoInput(true);
+		con.setRequestMethod("POST");
+		con.setRequestProperty("Content-Type", "text/xml");
+		jaxbContext.createMarshaller().marshal(ijFieldData, con.getOutputStream());
+		con.getOutputStream().close();
+		return (IJFDid)unmarshallResponseFromConnection(con, jaxbContext);
+	}
+	
+	public IJSimStatus startVCellSolver(long cachekey,IJGeom ijGeom,HashMap<String, String> simulationParameterOverrides,HashMap<String,String> speciesContextInitialConditionsOverrides,Double endTime,boolean bSaveOnly) throws Exception{
 		StringBuffer overridesQueryParameters = new StringBuffer();
 		overridesQueryParameters.append("cachekey="+cachekey);
 		if(simulationParameterOverrides != null) {
@@ -917,6 +1058,9 @@ public class VCellHelper extends AbstractService implements ImageJService
 		if(endTime != null) {
 			overridesQueryParameters.append((overridesQueryParameters.length()>0?"&":"")+"newSimEndTime"+"="+endTime);
 		}
+		if(bSaveOnly) {
+			overridesQueryParameters.append((overridesQueryParameters.length()>0?"&":"")+"bSaveOnly"+"="+true);
+		}
 		URL url = new URL("http://localhost:"+findVCellApiServerPort()+"/solver/bycachekey/"+(overridesQueryParameters.length()>0?"?"+overridesQueryParameters.toString():""));
 		HttpURLConnection con = (HttpURLConnection) url.openConnection();
 		if(ijGeom != null) {
@@ -927,7 +1071,7 @@ public class VCellHelper extends AbstractService implements ImageJService
 			jaxbContext.createMarshaller().marshal(ijGeom, con.getOutputStream());
 			con.getOutputStream().close();
 		}
-		return (IJSolverStatus)unmarshallResponseFromConnection(con, jaxbContext);
+		return (IJSimStatus)unmarshallResponseFromConnection(con, jaxbContext);
 
 	}
 //	public IJSolverStatus startFrap(Double lasA,Double rDiffusionOverride,Double kForwardBindingOverride,Double kReversBindingOverride,IJGeom ijGeom,String laserCoverageAnalyticExpression,Double newEndTime) throws Exception{
@@ -962,40 +1106,72 @@ public class VCellHelper extends AbstractService implements ImageJService
 		}
 		throw new Exception(streamToStringWithClose(con.getErrorStream()));
 	}
-	
+
 	@XmlRootElement
-	public static class IJSolverStatus  {
+	public static class IJSimStatus  {
 		@XmlAttribute
-		public String simJobId;
+		int simulationStatusCode;
 		@XmlAttribute
-		public int statusCode;
+		String simulationStatusName;
 		@XmlAttribute
-		public String statusName;
-		@XmlAttribute
-		public String statusDetail;
-		@XmlAttribute
-		public String statusMessage;
-		public IJSolverStatus() {	
+		String statusID;
+		public IJSimStatus() {
+			
 		}
-		//SimulationJobStatus vs. SolverStatus
-		@Override
-		public String toString() {
-			return simJobId+" "+statusCode+" "+statusName+" "+statusDetail+" "+statusMessage;
-		}
-		public int getJobIndex() {
-			//Assumes simJobId = SimID_simkey_jobindex
-			StringTokenizer st = new StringTokenizer(simJobId, "_");
-			st.nextToken();
-			st.nextToken();
-			return Integer.parseInt(st.nextToken());
+		public IJSimStatus(int simulationStatusCode, String simulationStatusName,String statusID) {
+			super();
+			this.simulationStatusCode = simulationStatusCode;
+			this.simulationStatusName = simulationStatusName;
+			this.statusID = statusID;
 		}
 	}
 
+	@XmlRootElement
+	public static class IJSimStatusJobs{
+		@XmlElement
+		public IJSimStatus[] results;
+		public IJSimStatusJobs() {
+			
+		}
+		public IJSimStatusJobs(IJSimStatus[] results) {
+			super();
+			this.results = results;
+		}
+	}
 
-	public IJSolverStatus getSolverStatus(String simulationJobId) throws Exception{
-		URL url = new URL("http://localhost:"+findVCellApiServerPort()+"/solver/status/?vcSimId="+simulationJobId);
+//	@XmlRootElement
+//	public static class IJSolverStatus  {
+//		@XmlAttribute
+//		public String simJobId;
+//		@XmlAttribute
+//		public int statusCode;
+//		@XmlAttribute
+//		public String statusName;
+//		@XmlAttribute
+//		public String statusDetail;
+//		@XmlAttribute
+//		public String statusMessage;
+//		public IJSolverStatus() {	
+//		}
+//		//SimulationJobStatus vs. SolverStatus
+//		@Override
+//		public String toString() {
+//			return simJobId+" "+statusCode+" "+statusName+" "+statusDetail+" "+statusMessage;
+//		}
+//		public int getJobIndex() {
+//			//Assumes simJobId = SimID_simkey_jobindex
+//			StringTokenizer st = new StringTokenizer(simJobId, "_");
+//			st.nextToken();
+//			st.nextToken();
+//			return Integer.parseInt(st.nextToken());
+//		}
+//	}
+
+
+	public IJSimStatusJobs getSolverStatus(String simulationJobId) throws Exception{
+		URL url = new URL("http://localhost:"+findVCellApiServerPort()+"/solver/status/?vcSimId="+URLEncoder.encode(simulationJobId, Charset.forName("UTF-8").name()));
 		HttpURLConnection con = (HttpURLConnection) url.openConnection();
-		return (IJSolverStatus)unmarshallResponseFromConnection(con, jaxbContext);
+		return (IJSimStatusJobs)unmarshallResponseFromConnection(con, jaxbContext);
 	}
 	
 	public IJTimeSeriesJobResults getTimeSeries(String[] variableNames, int[] indices, double startTime, int step, double endTime,
