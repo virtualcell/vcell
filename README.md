@@ -41,6 +41,29 @@ mvn clean install dependency:copy-dependencies
 ./vcell.sh
 ```
 
+### Eclipse Setup for Windows
+
+  * Open CommandPrompt, navigate to the Eclipse workspace folder.
+  * Clone the VCell client using git:
+  
+   ```bash
+   git clone https://github.com/virtualcell/vcell
+   ```
+  * Open Eclipse, Import the project using Maven. Depending on the Eclipse version there'll be small differences with the importing steps.
+    * Important! Deselect the ojdbc6 and ucp subprojects, then Finish to start importing.
+    * Once importing is finished (it takes a while) there will be errors.
+  * Open CommandPrompt again, navigate to the ojdbc6 folder and execute the script in the text file. Do the same for the ucp folder.
+  * Rebuild the project in Eclipse, there should be no more errors.
+  * Create a Debug configuration as a Java Application.
+     * the Main Class is cbit.vcell.client.test.VCellClientTest
+     * the Program Arguments is vcellapi-beta.cam.uchc.edu:8080
+     * as VM argument there may be need to specify the installation directory with -Dvcell.installDir=<your install dir>
+
+
+
+
+
+
 ## Building and Running VCell Client/Server
 service has 1 image and configuration, manages 1 or more containers, container is a running image  
 All services defined in ./swarm/docker-compose.yml (collection of services,volumes, dependencies,...)  
