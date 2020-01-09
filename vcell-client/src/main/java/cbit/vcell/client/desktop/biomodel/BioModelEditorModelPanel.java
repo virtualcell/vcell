@@ -1970,9 +1970,22 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 		}
 	}
 	
+	private ChildWindowManager lastChildWindowManager = null;
 	private void floatDiagramView(boolean bFloating) {
 	
-		ChildWindowManager childWindowManager = ChildWindowManager.findChildWindowManager(this);
+		ChildWindowManager childWindowManager = null;
+		try {
+			childWindowManager = ChildWindowManager.findChildWindowManager(this);
+			if(childWindowManager != null) {
+				lastChildWindowManager = childWindowManager;
+			}
+		} catch(Exception e) {
+			if(childWindowManager == null && lastChildWindowManager != null) {
+				childWindowManager = lastChildWindowManager;
+			} else {
+				throw(e);
+			}
+		}
 		
 		if (bFloating) {
 			//
