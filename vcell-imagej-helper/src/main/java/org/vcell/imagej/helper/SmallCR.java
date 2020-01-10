@@ -16,7 +16,6 @@ import javax.swing.SwingUtilities;
 import org.vcell.imagej.helper.VCellHelper;
 import org.vcell.imagej.helper.VCellHelper.BasicStackDimensions;
 import org.vcell.imagej.helper.VCellHelper.IJGeom;
-import org.vcell.imagej.helper.VCellHelper.IJSolverStatus;
 import org.vcell.imagej.helper.VCellHelper.VCellModelSearchResults;
 
 import io.scif.img.SCIFIOImgPlus;
@@ -40,59 +39,59 @@ import net.imglib2.view.IterableRandomAccessibleInterval;
 
 public class SmallCR {
 
-	public static void main(String[] args) {
-    	try {
-			VCellHelper vh = new VCellHelper();
-			ImageJ ij = new ImageJ();
-			ij.ui().showUI();
-			
-			ExampleDatasets exampleDatasets = openExample(ij, new File("C:\\Users\\frm\\VCellTrunkGitWorkspace2\\vcell\\vcell-imagej-helper")/*new File(System.getProperty("user.dir", "."))*/);
-			int ANALYZE_BEGIN_TIMEINDEX = 3;
-			int ANALYZE_END_TIMEINDEX = 8;
-	    	int ANALYZE_COUNT = ANALYZE_END_TIMEINDEX - ANALYZE_BEGIN_TIMEINDEX +1;
-	    	int xIndex = exampleDatasets.experimentalData.dimensionIndex(Axes.X);
-	    	int xsize = (int)exampleDatasets.experimentalData.dimension(xIndex);
-	    	int yIndex = exampleDatasets.experimentalData.dimensionIndex(Axes.Y);
-	    	int ysize = (int)exampleDatasets.experimentalData.dimension(yIndex);
-			FinalInterval analyzeOrigInterval = FinalInterval.createMinSize(new long[] {0,0,ANALYZE_BEGIN_TIMEINDEX, xsize,ysize,ANALYZE_COUNT});//xyzt:origin and xyzt:size
-	    	int assumedZIndex = -1;
-	    	for (int i = 0; i < exampleDatasets.segmentedGeom.numDimensions(); i++) {
-				if(exampleDatasets.segmentedGeom.dimensionIndex(Axes.X)!=i && exampleDatasets.segmentedGeom.dimensionIndex(Axes.Y)!=i) {
-					assumedZIndex = i;
-					break;
-				}
-			}
-	    	int zsize = (assumedZIndex == -1?1:(int)exampleDatasets.segmentedGeom.dimension(assumedZIndex));
-	    	HashMap<Integer, String> segmentedGeomValuesMapSubvolumeName = new HashMap();
-	    	segmentedGeomValuesMapSubvolumeName.put(0, "cyt");
-	    	segmentedGeomValuesMapSubvolumeName.put(255, "Nuc");
-			VCellHelper.IJGeom overrideGeom = createGeometry(exampleDatasets.segmentedGeom, xIndex, yIndex, assumedZIndex, xsize, ysize, zsize, segmentedGeomValuesMapSubvolumeName);
-	    	double[] diffRates = new double[] {	    			
-			1.25,
-			1.3,
-			1.4,
-			1.45,
-			1.5,
-			1.55,
-			1.6
-			};
-	    	double[] mse = new double[diffRates.length];
-			for (int i = 0; i < diffRates.length; i++) {
-				String simulationCacheKey = getSimulationCacheKey(vh);
-				IJSolverStatus ijSolverStatus = runFrapSolver(vh, diffRates[i],simulationCacheKey,overrideGeom);
-				String simulationDataCacheKey = waitForSolverGetCacheForData(vh, ijSolverStatus);
-				SCIFIOImgPlus<DoubleType> annotatedZProjectedSimPostBleachData = zProjectNormalizeSimData(vh, "Sim Data "+diffRates[i], simulationDataCacheKey, "rf", 0, ijSolverStatus.getJobIndex(), ANALYZE_BEGIN_TIMEINDEX, ANALYZE_END_TIMEINDEX);
-				showAndZoom(ij, "Sim Data "+diffRates[i], annotatedZProjectedSimPostBleachData, 4);
-				mse[i] = calcMSE(ij, annotatedZProjectedSimPostBleachData,exampleDatasets,analyzeOrigInterval);
-			}
-	    	for(int i=0;i<mse.length;i++){
-	    		System.out.println("diffRate="+diffRates[i]+" MSE="+(mse[i]));
-	    	}
-
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
+//	public static void main(String[] args) {
+//    	try {
+//			VCellHelper vh = new VCellHelper();
+//			ImageJ ij = new ImageJ();
+//			ij.ui().showUI();
+//			
+//			ExampleDatasets exampleDatasets = openExample(ij, new File("C:\\Users\\frm\\VCellTrunkGitWorkspace2\\vcell\\vcell-imagej-helper")/*new File(System.getProperty("user.dir", "."))*/);
+//			int ANALYZE_BEGIN_TIMEINDEX = 3;
+//			int ANALYZE_END_TIMEINDEX = 8;
+//	    	int ANALYZE_COUNT = ANALYZE_END_TIMEINDEX - ANALYZE_BEGIN_TIMEINDEX +1;
+//	    	int xIndex = exampleDatasets.experimentalData.dimensionIndex(Axes.X);
+//	    	int xsize = (int)exampleDatasets.experimentalData.dimension(xIndex);
+//	    	int yIndex = exampleDatasets.experimentalData.dimensionIndex(Axes.Y);
+//	    	int ysize = (int)exampleDatasets.experimentalData.dimension(yIndex);
+//			FinalInterval analyzeOrigInterval = FinalInterval.createMinSize(new long[] {0,0,ANALYZE_BEGIN_TIMEINDEX, xsize,ysize,ANALYZE_COUNT});//xyzt:origin and xyzt:size
+//	    	int assumedZIndex = -1;
+//	    	for (int i = 0; i < exampleDatasets.segmentedGeom.numDimensions(); i++) {
+//				if(exampleDatasets.segmentedGeom.dimensionIndex(Axes.X)!=i && exampleDatasets.segmentedGeom.dimensionIndex(Axes.Y)!=i) {
+//					assumedZIndex = i;
+//					break;
+//				}
+//			}
+//	    	int zsize = (assumedZIndex == -1?1:(int)exampleDatasets.segmentedGeom.dimension(assumedZIndex));
+//	    	HashMap<Integer, String> segmentedGeomValuesMapSubvolumeName = new HashMap();
+//	    	segmentedGeomValuesMapSubvolumeName.put(0, "cyt");
+//	    	segmentedGeomValuesMapSubvolumeName.put(255, "Nuc");
+//			VCellHelper.IJGeom overrideGeom = createGeometry(exampleDatasets.segmentedGeom, xIndex, yIndex, assumedZIndex, xsize, ysize, zsize, segmentedGeomValuesMapSubvolumeName);
+//	    	double[] diffRates = new double[] {	    			
+//			1.25,
+//			1.3,
+//			1.4,
+//			1.45,
+//			1.5,
+//			1.55,
+//			1.6
+//			};
+//	    	double[] mse = new double[diffRates.length];
+//			for (int i = 0; i < diffRates.length; i++) {
+//				String simulationCacheKey = getSimulationCacheKey(vh);
+//				IJSolverStatus ijSolverStatus = runFrapSolver(vh, diffRates[i],simulationCacheKey,overrideGeom);
+//				String simulationDataCacheKey = waitForSolverGetCacheForData(vh, ijSolverStatus);
+//				SCIFIOImgPlus<DoubleType> annotatedZProjectedSimPostBleachData = zProjectNormalizeSimData(vh, "Sim Data "+diffRates[i], simulationDataCacheKey, "rf", 0, ijSolverStatus.getJobIndex(), ANALYZE_BEGIN_TIMEINDEX, ANALYZE_END_TIMEINDEX);
+//				showAndZoom(ij, "Sim Data "+diffRates[i], annotatedZProjectedSimPostBleachData, 4);
+//				mse[i] = calcMSE(ij, annotatedZProjectedSimPostBleachData,exampleDatasets,analyzeOrigInterval);
+//			}
+//	    	for(int i=0;i<mse.length;i++){
+//	    		System.out.println("diffRate="+diffRates[i]+" MSE="+(mse[i]));
+//	    	}
+//
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//		}
+//	}
 	public static String getSimulationCacheKey(VCellHelper vh) throws Exception{
     	// User can search (with simple wildcard *=any) for VCell Model by:
 		// model type {biomodel,mathmodel,quickrun}
@@ -112,80 +111,80 @@ public class SmallCR {
     	return cacheKey;
 
 	}
-	public static IJSolverStatus runFrapSolver(VCellHelper vh,double diffusionRate,String cacheKey,VCellHelper.IJGeom overrideGeom) throws Exception{
-    	//Override Model/Simulation parameter values (user must have knowledge of chosen model to know what parameter names to override)
-    	HashMap<String,String> simulationParameterOverrides = new HashMap<>();
-    	simulationParameterOverrides.put("rf_diffusionRate", ""+diffusionRate);
-    	HashMap<String, String> speciesContextInitialConditionsOverrides = new HashMap<>();
-    	String laserArea = "((x >=  "+43+") && (x <= "+47+") && (y >=  "+22+") && (y <= "+26+"))";
-    	speciesContextInitialConditionsOverrides.put("Laser", laserArea);
-    	double newEndTime = 10.0;
-    	//Start Frap simulation
-    	IJSolverStatus ijSolverStatus = vh.startVCellSolver(Long.parseLong(cacheKey), overrideGeom, simulationParameterOverrides, speciesContextInitialConditionsOverrides,newEndTime);
-		return ijSolverStatus;
-	}
-	public static String waitForSolverGetCacheForData(VCellHelper vh,IJSolverStatus ijSolverStatus) throws Exception{
-    	//Wait for solver to finish
-    	System.out.println(ijSolverStatus.toString());
-    	String simulationJobId = ijSolverStatus.simJobId;
-    	while(true) {
-    		Thread.sleep(5000);
-        	ijSolverStatus =  vh.getSolverStatus(simulationJobId);
-        	System.out.println(ijSolverStatus.toString());
-        	String statusName = ijSolverStatus.statusName.toLowerCase();
-        	if(statusName.equals("finished") || statusName.equals("stopped") || statusName.equals("aborted")) {
-        		break;
-        	}
-    	}
-    	return vh.getSimulationDataCacheKey(ijSolverStatus.simJobId);
-	}
-	public static SCIFIOImgPlus<DoubleType> zProjectNormalizeSimData(VCellHelper vh,
-		String newImgPlusName,String simulationDataCachekey,String varToAnalyze,int preBleachTimeIndex,int solverStatus_jobIndex,int ANALYZE_BEGIN_TIMEINDEX,int ANALYZE_END_TIMEINDEX) throws Exception{
-		
-		int ANALYZE_COUNT = ANALYZE_END_TIMEINDEX - ANALYZE_BEGIN_TIMEINDEX+1;
-	    // Get the SIMULATION pre-bleach timepoint data for normalizing
-	    VCellHelper.TimePointData timePointData = vh.getTimePointData(simulationDataCachekey, varToAnalyze, new int[] {preBleachTimeIndex}, solverStatus_jobIndex);
-	    int xysize = timePointData.getBasicStackDimensions().xsize*timePointData.getBasicStackDimensions().ysize;
-		double[] bleachedTimeStack = new double[ANALYZE_COUNT*xysize];
-//	    checkSizes(timePointData.getBasicStackDimensions(), xsize, xysize, zsize);
-//    	URL dataUrl = new URL("http://localhost:"+vh.findVCellApiServerPort()+"/"+"getdata"+"?"+"cachekey"+"="+cachekey+"&"+"varname"+"="+varToAnalyze+"&"+"timeindex"+"="+(int)(0)+"&"+"jobid="+ijSolverStatus.getJobIndex());
-	    double[] zProjectedSimNormalizer = getNormalizedZProjected(timePointData,null);
-//showAndZoom(ij, "Sim Data PreBleach", ArrayImgs.doubles(simNormalizer, xsize,ysize), 4);
-	    
-	    // Get the SIMULATION post-bleach data to analyze
-	    for(int timeIndex = ANALYZE_BEGIN_TIMEINDEX;timeIndex<=ANALYZE_END_TIMEINDEX;timeIndex++){
-	    	timePointData = vh.getTimePointData(simulationDataCachekey, varToAnalyze, new int[] {timeIndex}, solverStatus_jobIndex);
-//	    	checkSizes(timePointData.getBasicStackDimensions(), xsize, xysize, zsize);
-//	    	dataUrl = new URL("http://localhost:"+vh.findVCellApiServerPort()+"/"+"getdata"+"?"+"cachekey"+"="+cachekey+"&"+"varname"+"="+varToAnalyze+"&"+"timeindex"+"="+(int)timeIndex+"&"+"jobid="+ijSolverStatus.getJobIndex());
-	 		double[] data = getNormalizedZProjected(timePointData,zProjectedSimNormalizer);
-		    System.arraycopy(data, 0, bleachedTimeStack, (timeIndex-ANALYZE_BEGIN_TIMEINDEX)*xysize, data.length);
-    	}
-
-    	//Turn VCell data into iterableinterval
-//    	FinalInterval zProjectedSimDataSize = FinalInterval.createMinSize(new long[] {0,0,0, xsize,ysize,ANALYZE_COUNT});//xyzt:origin and xyzt:size
-		ArrayImg<DoubleType, DoubleArray> simImgs = ArrayImgs.doubles(bleachedTimeStack, new long[] {timePointData.getBasicStackDimensions().xsize,timePointData.getBasicStackDimensions().ysize,ANALYZE_COUNT});
-		SCIFIOImgPlus<DoubleType> annotatedZProjectedSimPostBleachData = new SCIFIOImgPlus<>(simImgs,newImgPlusName /*"Sim Data "+diffusionRate*/,new AxisType[] {Axes.X,Axes.Y,Axes.TIME});
-//    	RandomAccessibleInterval<DoubleType> simExtracted = ij.op().transform().crop(annotatedSimData, simExtractInterval);   	
-//showAndZoom(ij, "Sim Data "+diffusionRate, annotatedZProjectedSimPostBleachData, 4);
-		return annotatedZProjectedSimPostBleachData;
-	}
-    public static double[] getNormalizedZProjected(VCellHelper.TimePointData timePointData,double[] normalizer) throws Exception{
-		BasicStackDimensions basicStackDimensions = timePointData.getBasicStackDimensions();//VCellHelper.getDimensions(nodes.item(0));
- 		//Sum pixel values in Z direction to match experimental data (open pinhole confocal, essentially brightfield)
-		int xysize = basicStackDimensions.xsize*basicStackDimensions.ysize;
-		double[] normalizedData = new double[xysize];
-		for (int i = 0; i < timePointData.getTimePointData().length; i++) {
-			normalizedData[(i%xysize)]+= timePointData.getTimePointData()[i];
-		}
-		if(normalizer != null) {
-			for (int i = 0; i < normalizedData.length; i++) {
-				if(normalizedData[i] != 0) {
-					normalizedData[i] = (normalizedData[i]+Double.MIN_VALUE)/(normalizer[i]+Double.MIN_VALUE);
-				}
-			}
-		}
-		return normalizedData;
-    }
+//	public static IJSolverStatus runFrapSolver(VCellHelper vh,double diffusionRate,String cacheKey,VCellHelper.IJGeom overrideGeom) throws Exception{
+//    	//Override Model/Simulation parameter values (user must have knowledge of chosen model to know what parameter names to override)
+//    	HashMap<String,String> simulationParameterOverrides = new HashMap<>();
+//    	simulationParameterOverrides.put("rf_diffusionRate", ""+diffusionRate);
+//    	HashMap<String, String> speciesContextInitialConditionsOverrides = new HashMap<>();
+//    	String laserArea = "((x >=  "+43+") && (x <= "+47+") && (y >=  "+22+") && (y <= "+26+"))";
+//    	speciesContextInitialConditionsOverrides.put("Laser", laserArea);
+//    	double newEndTime = 10.0;
+//    	//Start Frap simulation
+//    	IJSolverStatus ijSolverStatus = vh.startVCellSolver(Long.parseLong(cacheKey), overrideGeom, simulationParameterOverrides, speciesContextInitialConditionsOverrides,newEndTime);
+//		return ijSolverStatus;
+//	}
+//	public static String waitForSolverGetCacheForData(VCellHelper vh,IJSolverStatus ijSolverStatus) throws Exception{
+//    	//Wait for solver to finish
+//    	System.out.println(ijSolverStatus.toString());
+//    	String simulationJobId = ijSolverStatus.simJobId;
+//    	while(true) {
+//    		Thread.sleep(5000);
+//        	ijSolverStatus =  vh.getSolverStatus(simulationJobId);
+//        	System.out.println(ijSolverStatus.toString());
+//        	String statusName = ijSolverStatus.statusName.toLowerCase();
+//        	if(statusName.equals("finished") || statusName.equals("stopped") || statusName.equals("aborted")) {
+//        		break;
+//        	}
+//    	}
+//    	return vh.getSimulationDataCacheKey(ijSolverStatus.simJobId);
+//	}
+//	public static SCIFIOImgPlus<DoubleType> zProjectNormalizeSimData(VCellHelper vh,
+//		String newImgPlusName,String simulationDataCachekey,String varToAnalyze,int preBleachTimeIndex,int solverStatus_jobIndex,int ANALYZE_BEGIN_TIMEINDEX,int ANALYZE_END_TIMEINDEX) throws Exception{
+//		
+//		int ANALYZE_COUNT = ANALYZE_END_TIMEINDEX - ANALYZE_BEGIN_TIMEINDEX+1;
+//	    // Get the SIMULATION pre-bleach timepoint data for normalizing
+//	    VCellHelper.TimePointData timePointData = vh.getTimePointData(simulationDataCachekey, varToAnalyze, new int[] {preBleachTimeIndex}, solverStatus_jobIndex);
+//	    int xysize = timePointData.getBasicStackDimensions().xsize*timePointData.getBasicStackDimensions().ysize;
+//		double[] bleachedTimeStack = new double[ANALYZE_COUNT*xysize];
+////	    checkSizes(timePointData.getBasicStackDimensions(), xsize, xysize, zsize);
+////    	URL dataUrl = new URL("http://localhost:"+vh.findVCellApiServerPort()+"/"+"getdata"+"?"+"cachekey"+"="+cachekey+"&"+"varname"+"="+varToAnalyze+"&"+"timeindex"+"="+(int)(0)+"&"+"jobid="+ijSolverStatus.getJobIndex());
+//	    double[] zProjectedSimNormalizer = getNormalizedZProjected(timePointData,null);
+////showAndZoom(ij, "Sim Data PreBleach", ArrayImgs.doubles(simNormalizer, xsize,ysize), 4);
+//	    
+//	    // Get the SIMULATION post-bleach data to analyze
+//	    for(int timeIndex = ANALYZE_BEGIN_TIMEINDEX;timeIndex<=ANALYZE_END_TIMEINDEX;timeIndex++){
+//	    	timePointData = vh.getTimePointData(simulationDataCachekey, varToAnalyze, new int[] {timeIndex}, solverStatus_jobIndex);
+////	    	checkSizes(timePointData.getBasicStackDimensions(), xsize, xysize, zsize);
+////	    	dataUrl = new URL("http://localhost:"+vh.findVCellApiServerPort()+"/"+"getdata"+"?"+"cachekey"+"="+cachekey+"&"+"varname"+"="+varToAnalyze+"&"+"timeindex"+"="+(int)timeIndex+"&"+"jobid="+ijSolverStatus.getJobIndex());
+//	 		double[] data = getNormalizedZProjected(timePointData,zProjectedSimNormalizer);
+//		    System.arraycopy(data, 0, bleachedTimeStack, (timeIndex-ANALYZE_BEGIN_TIMEINDEX)*xysize, data.length);
+//    	}
+//
+//    	//Turn VCell data into iterableinterval
+////    	FinalInterval zProjectedSimDataSize = FinalInterval.createMinSize(new long[] {0,0,0, xsize,ysize,ANALYZE_COUNT});//xyzt:origin and xyzt:size
+//		ArrayImg<DoubleType, DoubleArray> simImgs = ArrayImgs.doubles(bleachedTimeStack, new long[] {timePointData.getBasicStackDimensions().xsize,timePointData.getBasicStackDimensions().ysize,ANALYZE_COUNT});
+//		SCIFIOImgPlus<DoubleType> annotatedZProjectedSimPostBleachData = new SCIFIOImgPlus<>(simImgs,newImgPlusName /*"Sim Data "+diffusionRate*/,new AxisType[] {Axes.X,Axes.Y,Axes.TIME});
+////    	RandomAccessibleInterval<DoubleType> simExtracted = ij.op().transform().crop(annotatedSimData, simExtractInterval);   	
+////showAndZoom(ij, "Sim Data "+diffusionRate, annotatedZProjectedSimPostBleachData, 4);
+//		return annotatedZProjectedSimPostBleachData;
+//	}
+//    public static double[] getNormalizedZProjected(VCellHelper.TimePointData timePointData,double[] normalizer) throws Exception{
+//		BasicStackDimensions basicStackDimensions = timePointData.getBasicStackDimensions();//VCellHelper.getDimensions(nodes.item(0));
+// 		//Sum pixel values in Z direction to match experimental data (open pinhole confocal, essentially brightfield)
+//		int xysize = basicStackDimensions.xsize*basicStackDimensions.ysize;
+//		double[] normalizedData = new double[xysize];
+//		for (int i = 0; i < timePointData.getTimePointData().length; i++) {
+//			normalizedData[(i%xysize)]+= timePointData.getTimePointData()[i];
+//		}
+//		if(normalizer != null) {
+//			for (int i = 0; i < normalizedData.length; i++) {
+//				if(normalizedData[i] != 0) {
+//					normalizedData[i] = (normalizedData[i]+Double.MIN_VALUE)/(normalizer[i]+Double.MIN_VALUE);
+//				}
+//			}
+//		}
+//		return normalizedData;
+//    }
 //    public static void checkSizes(BasicStackDimensions basicStackDimensions,int xsize,int ysize,int zsize) throws Exception{
 //		if(basicStackDimensions.xsize != xsize || basicStackDimensions.ysize != ysize || basicStackDimensions.zsize != zsize) {
 //			throw new Exception("One or more sim data xyz dimensions="+basicStackDimensions.xsize+","+basicStackDimensions.ysize+","+basicStackDimensions.zsize+" does not match expected xyz sizes="+xsize+","+ysize+","+zsize);

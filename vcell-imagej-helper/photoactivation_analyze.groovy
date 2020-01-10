@@ -10,11 +10,13 @@ import org.vcell.imagej.helper.VCellHelper.IJDataList
 import org.vcell.imagej.helper.VCellHelper.IJData
 import org.vcell.imagej.helper.VCellHelper.IJVarInfos
 import org.vcell.imagej.helper.VCellHelper.IJVarInfo
-import io.scif.img.SCIFIOImgPlus;
+//import io.scif.img.SCIFIOImgPlus;
+import ij.process.ImageProcessor
+import ij.ImagePlus
 import net.imglib2.img.array.ArrayImg;
 import net.imglib2.img.array.ArrayImgs;
-import net.imglib2.img.basictypeaccess.array.DoubleArray;
-import net.imglib2.type.numeric.real.DoubleType;
+import net.imglib2.img.basictypeaccess.array.FloatArray;
+import net.imglib2.type.numeric.real.FloatType;
 import net.imagej.axis.Axes;
 import net.imagej.axis.AxisType;
 import org.jfree.chart.ChartFactory
@@ -28,11 +30,11 @@ import javax.swing.JFrame
 
 //public IJDataList getTimePointData(String simulationDataCacheKey,String variableName,int[] timePointIndexes,int simulationJobIndex) throws Exception{
 
-simID = 109808709
+simID = 171795930 //109808709
 //jobIndex = 0
 int t0Sim = 32;
 int t0Exp = 2
-int tCount = 26
+int tCount = 27
 int ANALYZE_END_TIMEINDEX = 2;
 simVar = "fluor"
 simVarDataType = VCellHelper.VARTYPE_POSTPROC.PostProcessDataPDEDataContext;// null for SimulationData, "DataProcessingOutputInfo" for postprocessStats
@@ -73,7 +75,14 @@ exp_frames = ij.IJ.getImage().getNFrames()
 //SOMETIMES fdStackArr.length != exp_frames, use exp_frames
 println("xsize="+exp_xsize+" ysize="+exp_ysize+" frames="+exp_frames+" scancount="+ijVarInfos.scancount)
 double[] Kr_Bind_OverrideIndexes = new double[ijVarInfos.scancount]
-SCIFIOImgPlus<DoubleType> fluorImage = null
+//new float[tCount*exp_xsize*exp_ysize], 
+			fluorImage = ArrayImgs.floats([exp_xsize,exp_ysize,tCount] as long[])//SCIFIOImgPlus<DoubleType> fluorImage = null
+			netij.ui().show("Sim fluor",fluorImage)
+			simImage = ij.IJ.getImage()
+			simImage.setRoi(roix,roiy,roixs,roiys)
+			ij.IJ.run("In [+]");
+			ij.IJ.run("In [+]");
+			ij.IJ.run("In [+]");
 double[][] diffSqrTimeAndJob = new double[tCount][Kr_Bind_OverrideIndexes.length]
 double[] jobSum = new double[Kr_Bind_OverrideIndexes.length]
 //Init Graph
@@ -99,7 +108,10 @@ for(int t = 0;t<tCount;t++){
 			job--;//try again
 			continue;
 		}
-		fluorData = fluorIJD.ijData[0].getDoubleData()
+		float[] fluorData = new float[fluorIJD.ijData[0].getDoubleData().length]
+		for(int i=0;i<fluorData.length;i++){
+			fluorData[i] = fluorIJD.ijData[0].getDoubleData()[i]
+		}
 		simStackInfo = fluorIJD.ijData[0].stackInfo
 		if(simStackInfo.xsize != exp_xsize || simStackInfo.ysize != exp_ysize){
 			throw new Exception("Expecting xy sizes to to be same for Sim and Exp timepoints")
@@ -108,22 +120,50 @@ for(int t = 0;t<tCount;t++){
 //			throw new Exception("Expecting Sim and Exp data arrays to be same length")
 //		}
 		//Thread.sleep(500)
-		ArrayImg<DoubleType, DoubleArray> simTimePointData = ArrayImgs.doubles(fluorData, [simStackInfo.xsize,simStackInfo.ysize,1] as long[]);
-		if(t == 0 && job == 0){
+		ArrayImg<FloatType, FloatArray> simTimePointData = ArrayImgs.floats(fluorData, [simStackInfo.xsize,simStackInfo.ysize,1] as long[])
+	//	if(t == 0 && job == 0){
 			//ArrayImg<DoubleType, DoubleArray> simAllTimes = ArrayImgs.doubles(fluorData, [simStackInfo.xsize,simStackInfo.ysize,tCount] as long[]);
-			fluorImage = new SCIFIOImgPlus<>(simTimePointData,"Sim fluor",[Axes.X,Axes.Y] as AxisType[]);
-			netij.ui().show("Sim fluor",fluorImage)
-			simImage = ij.IJ.getImage()
-			simImage.setRoi(roix,roiy,roixs,roiys)
-			ij.IJ.run("In [+]");
-			ij.IJ.run("In [+]");
-			ij.IJ.run("In [+]");
-			//ij.IJ.selectWindow("fluor t="+actualSimTime)
-			//println(fluorImage.dimension(0)+" "+fluorImage.dimension(1))
-			//return;
-		}else{
-			//simImage.getStack().addSlice(null,fluorData)
+			//fluorImage = new SCIFIOImgPlus<>(simTimePointData,"Sim fluor",[Axes.X,Axes.Y] as AxisType[]);
+			//netij.ui().show("Sim fluor",simTimePointData)
+			//simImage = ij.IJ.getImage()
+			//simImage.setRoi(roix,roiy,roixs,roiys)
+			//ij.IJ.run("In [+]");
+			//ij.IJ.run("In [+]");
+			//ij.IJ.run("In [+]");
+	//	}else 
+		if(job == 0){
+			ij.IJ.selectWindow("Sim fluor")
+			//println(ij.IJ.getImage().getProcessor().getPixels())
+			//if(true){return}
+			//ImageProcessor ip = ij.IJ.getImage().getStack().getProcessor(t+1)
+			//float[] tempf = simTimePointData.update(null).getCurrentStorageArray()
+			//println(simTimePointData.update(null).getCurrentStorageArray())
+			ij.IJ.getImage().setSlice(t+1)
+			float[] srcFloats = ij.IJ.getImage().getProcessor().getPixels()
+			cnt = 0
+			for(int y= 0;y<exp_ysize;y++){
+				for(int x = 0;x<exp_xsize;x++){
+					//ip.setf(x,y,fluorData[cnt])
+					srcFloats[cnt] = fluorData[cnt]
+					cnt++
+				}
+			}
+/*
+			srcFloats = ij.IJ.getImage().getProcessor().getPixels()
+			cnt=0
+			for(int y= 0;y<exp_ysize;y++){
+				for(int x = 0;x<exp_xsize;x++){
+					//print(ip.getf(x,y)+" ")
+					print(srcFloats[cnt])
+					cnt++
+				}
+				println()
+			}
+*/
 		}
+
+		//if(t==1 && job==0){return}
+		
 		simRA = simTimePointData.randomAccess()
 		simSum = 0.0;
 		expSum = 0;
