@@ -58,7 +58,13 @@ Requirements:  Git, Maven, Eclipse IDE for Java Developers and Java JDK 1.8 or l
   * Create a Debug configuration as a Java Application.
      * the Main Class is cbit.vcell.client.test.VCellClientTest
      * the Program Arguments is vcellapi-beta.cam.uchc.edu:8080
-     * as VM argument there may be need to specify the installation directory with -Dvcell.installDir=<your install dir>
+     * the VM needed arguments are:
+         * the installation directory: -Dvcell.installDir=<your install dir>
+         * the software version: -Dvcell.softwareVersion=...
+         
+           for example:
+           -Dvcell.installDir=G:\\dan\\jprojects\\git\\vcell
+           -Dvcell.softwareVersion=DanDev_Version_7.0_build_99
 
 
 
