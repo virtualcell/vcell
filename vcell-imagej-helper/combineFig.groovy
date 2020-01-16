@@ -1,5 +1,25 @@
-srcImage = "Sim fluor-1"
-ij.IJ.selectWindow(srcImage)
+import ij.WindowManager
+
+simImageTitle = "Sim fluor"
+expImageTitle = "abp"
+simDupTitle = "Sim fluor"+"-1"
+expDupTitle = "abp"+"-1"
+
+if(WindowManager.getImage(simDupTitle) != null){
+	WindowManager.getImage(simDupTitle).close()
+}
+WindowManager.getImage(simImageTitle).duplicate().show()
+ij.IJ.getImage().setTitle(simDupTitle)
+
+if(WindowManager.getImage(expDupTitle) != null){
+	WindowManager.getImage(expDupTitle).close()
+}
+WindowManager.getImage(expImageTitle).duplicate().show()
+ij.IJ.getImage().setTitle(expDupTitle)
+ij.IJ.run(WindowManager.getImage(expDupTitle), "32-bit", "");
+
+
+ij.IJ.selectWindow(simDupTitle)
 imp = ij.IJ.getImage()
 ij.IJ.resetMinAndMax(imp)
 ij.IJ.run(imp, "Select All", "");
@@ -9,8 +29,7 @@ ij.IJ.run(imp, "Paste", "");
 imp.setSlice(1);
 ij.IJ.run(imp, "Clear", "slice");
 
-expImage = "abp-1"
-ij.IJ.selectWindow(expImage)
+ij.IJ.selectWindow(expDupTitle)
 ij.IJ.run(imp, "32-bit", "");
 expimp = ij.IJ.getImage()
 ij.IJ.resetMinAndMax(expimp)
@@ -22,7 +41,7 @@ imp2.setTitle("rhs")
 imp2.show()
 ij.IJ.run(imp2, "RGB Color", "");
 
-ij.IJ.selectWindow(srcImage)
+ij.IJ.selectWindow(simDupTitle)
 ij.IJ.run(imp, "Make Inverse", "");
 imp3 = imp.crop("stack");
 imp3.setTitle("lhs")
@@ -44,14 +63,12 @@ ij.IJ.run(expimp, "RGB Color", "");
 //IJ.run(imp, "Flip Horizontally", "stack");
 
 //ij.IJ.run(expimp, "RGB Color", "");
-ij.IJ.selectWindow(srcImage)
+ij.IJ.selectWindow(simDupTitle)
 //ij.IJ.run(imp, "RGB Color", "");
 ij.IJ.run(imp, "Translate...", "x=0 y=-5 interpolation=None stack");
 ij.IJ.run("Combine...", "stack1='Sim fluor-1' stack2=abp-1");
 
-
 /*
-
 
 import ij.measure.ResultsTable
 import ij.plugin.frame.RoiManager
@@ -64,6 +81,7 @@ lhsRoi = new Roi(0,0,96,88)
 temp = roiManager.addRoi(lhsRoi)
 rhsRoi = new Roi(96,0,96,88)
 temp = roiManager.addRoi(rhsRoi)
+
 //ij.IJ.selectWindow("Combined Stacks")
 //roiManager.select(0);
 //ResultsTable rtlhs = roiManager.multiMeasure(ij.IJ.getImage());
@@ -81,27 +99,44 @@ ij.IJ.run(ij.IJ.getImage(), "Divide...", "value="+max+" stack");
 max = findMax(roiManager,1)
 ij.IJ.run(ij.IJ.getImage(), "Divide...", "value="+max+" stack");
 
-//roix = 55
-//roiy = 55
-//roixs = 8;
-//roiys = 8
-//roi1 = new Roi(roix,roiy,roixs,roiys)
-//temp = roiManager.addRoi(roi1)
-//roi2 = new Roi(roix+88,roiy,roixs,roiys)
-//temp = roiManager.addRoi(roi2)
+ij.IJ.resetMinAndMax(ij.IJ.getImage());
 
+//116,56,2,2
+roiManager.reset()
+roix = 147-96
+roiy = 25
+roixs = 16;
+roiys = 10
+//roix = 147-96
+//roiy = 25
+//roixs = 16;
+//roiys = 10
+roi1 = new Roi(roix,roiy,roixs,roiys)
+temp = roiManager.addRoi(roi1)
+roi2 = new Roi(roix+96,roiy,roixs,roiys)
+temp = roiManager.addRoi(roi2)
+
+ij.IJ.selectWindow("Combined Stacks")
+roiManager.select(0);
+ij.IJ.run(ij.IJ.getImage(), "Plot Z-axis Profile", "");
+
+ij.IJ.selectWindow("Combined Stacks")
+roiManager.select(1);
+ij.IJ.run(ij.IJ.getImage(), "Plot Z-axis Profile", "");
 
 def double findMax(RoiManager roiManager,int roiIndex){
-ij.IJ.selectWindow("Combined Stacks-1")
+ij.IJ.run("Clear Results", "");
+ij.IJ.selectWindow("Combined Stacks")
 roiManager.select(roiIndex);
-ResultsTable rt = roiManager.multiMeasure(ij.IJ.getImage());
+ij.IJ.run(ij.IJ.getImage(), "Measure Stack...", "");
+rt = ResultsTable.getResultsTable()
 rt.show("Results");
 ij.IJ.run("Summarize", "");
 rowLabels = rt.getRowLabels()
 for(int i=0;i<rowLabels.length;i++){
 	if(rowLabels[i] != null && rowLabels[i] instanceof String && rowLabels[i].equals("Max")){
-		println(rt.getValue("Max1",i))
-		return rt.getValue("Max1",i)
+		println(rt.getValue("Max",i))
+		return rt.getValue("Max",i)
 	}
 }
 }

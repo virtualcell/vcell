@@ -17,8 +17,10 @@ import javax.swing.SwingUtilities;
 
 import org.vcell.imagej.helper.VCellHelper;
 import org.vcell.imagej.helper.VCellHelper.BasicStackDimensions;
+import org.vcell.imagej.helper.VCellHelper.IJData
+import org.vcell.imagej.helper.VCellHelper.IJDataList
 import org.vcell.imagej.helper.VCellHelper.IJGeom;
-import org.vcell.imagej.helper.VCellHelper.IJSolverStatus;
+import org.vcell.imagej.helper.VCellHelper.IJSimStatus;
 import org.vcell.imagej.helper.VCellHelper.VCellModelSearchResults;
 
 import io.scif.img.SCIFIOImgPlus;
@@ -41,7 +43,8 @@ import net.imglib2.util.Intervals;
 import net.imglib2.view.IterableRandomAccessibleInterval;
 
 
-exampleFilesDir = new File("DownloadedExamplesDir");
+
+exampleFilesDir = new File("/home/vcell/Downloads/packImageJExample");
 	
     	try {
 	    	if(exampleFilesDir.getName().equals("DownloadedExamplesDir")){
@@ -94,9 +97,9 @@ exampleFilesDir = new File("DownloadedExamplesDir");
 			for (int i = 0; i < diffRates.length; i++) {
 				String simulationCacheKey = getSimulationCacheKey(vh);
 				println(simulationCacheKey)
-				IJSolverStatus ijSolverStatus = runFrapSolver(vh, diffRates[i],simulationCacheKey,overrideGeom);
-				String simulationDataCacheKey = waitForSolverGetCacheForData(vh, ijSolverStatus);
-				SCIFIOImgPlus<DoubleType> annotatedZProjectedSimPostBleachData = zProjectNormalizeSimData(vh, "Sim Data "+diffRates[i], simulationDataCacheKey, "rf", 0, ijSolverStatus.getJobIndex(), ANALYZE_BEGIN_TIMEINDEX, ANALYZE_END_TIMEINDEX);
+				IJSimStatus ijSimStatus = runFrapSolver(vh, diffRates[i],simulationCacheKey,overrideGeom);
+				String simulationDataCacheKey = waitForSolverGetCacheForData(vh, ijSimStatus);
+				SCIFIOImgPlus<DoubleType> annotatedZProjectedSimPostBleachData = zProjectNormalizeSimData(vh, "Sim Data "+diffRates[i], simulationDataCacheKey, "rf", 0, ijSimStatus.getJobIndex(), ANALYZE_BEGIN_TIMEINDEX, ANALYZE_END_TIMEINDEX);
 				showAndZoom(ij, "Sim Data "+diffRates[i], annotatedZProjectedSimPostBleachData, 4);
 				mse[i] = calcMSE(ij, annotatedZProjectedSimPostBleachData,exampleDatasets,analyzeOrigInterval);
 			}
@@ -128,14 +131,26 @@ exampleFilesDir = new File("DownloadedExamplesDir");
 		//This search should only find 1
     	if(vcellModelSearchResults.size() != 1) {
 			ij.IJ.showMessage("Expecting 1 search result for "+search.getModelName()+" but got "+vcellModelSearchResults.size()+", make sure model is open in VCell client");
-			return;
-    		//throw new Exception("Expecting only 1 model from search results");
+			throw new Exception("Expecting only 1 model from search results");
 		}
+
     	String cacheKey = vcellModelSearchResults.get(0).getCacheKey();
+    	try{
+    		//make sure original sim result is open
+    		//getTimePointData(String simulationDataCacheKey,String variableName,VARTYPE_POSTPROC varTypePostProcess,int[] timePointIndexes,int simulationJobIndex)
+    		tIndexes = [0] as int[]
+			VCellHelper.IJDataList ijDataList = vh.getTimePointData(cacheKey, null, VCellHelper.VARTYPE_POSTPROC.NotPostProcess,tIndexes, 0);
+    	}catch(Exception e){
+    		ij.IJ.showMessage("Make sure Application '"+search.getApplicationName()+"' -> Simulation '"+search.getSimulationName()+"' results viewer is open");
+    		e.printStackTrace()
+    		println(e.getMessage())
+    		throw e
+    	}
+
     	return cacheKey;
 
 	}
-	def IJSolverStatus runFrapSolver(VCellHelper vh,double diffusionRate,String cacheKey,VCellHelper.IJGeom overrideGeom) throws Exception{
+	def IJSimStatus runFrapSolver(VCellHelper vh,double diffusionRate,String cacheKey,VCellHelper.IJGeom overrideGeom) throws Exception{
     	//Override Model/Simulation parameter values (user must have knowledge of chosen model to know what parameter names to override)
     	HashMap<String,String> simulationParameterOverrides = new HashMap<>();
     	simulationParameterOverrides.put("rf_diffusionRate", ""+diffusionRate);
@@ -144,63 +159,63 @@ exampleFilesDir = new File("DownloadedExamplesDir");
     	speciesContextInitialConditionsOverrides.put("Laser", laserArea);
     	double newEndTime = 10.0;
     	//Start Frap simulation
-    	IJSolverStatus ijSolverStatus = vh.startVCellSolver(Long.parseLong(cacheKey), overrideGeom, simulationParameterOverrides, speciesContextInitialConditionsOverrides,newEndTime);
-		return ijSolverStatus;
+    	IJSimStatus iJSimStatus = vh.startVCellSolver(Long.parseLong(cacheKey), overrideGeom, simulationParameterOverrides, speciesContextInitialConditionsOverrides,newEndTime);
+		return iJSimStatus;
 	}
-	def String waitForSolverGetCacheForData(VCellHelper vh,IJSolverStatus ijSolverStatus) throws Exception{
+	def String waitForSolverGetCacheForData(VCellHelper vh,IJSimStatus iJSimStatus) throws Exception{
     	//Wait for solver to finish
-    	System.out.println(ijSolverStatus.toString());
-    	ij.IJ.log(ijSolverStatus.toString())
-    	String simulationJobId = ijSolverStatus.simJobId;
+    	System.out.println(iJSimStatus.toString());
+    	ij.IJ.log(iJSimStatus.toString())
+    	String simulationJobId = iJSimStatus.simJobId;
     	while(true) {
     		Thread.sleep(5000);
-        	ijSolverStatus =  vh.getSolverStatus(simulationJobId);
-        	System.out.println(ijSolverStatus.toString());
-        	ij.IJ.log(ijSolverStatus.toString())
-        	String statusName = ijSolverStatus.statusName.toLowerCase();
+        	iJSimStatus =  vh.getSolverStatus(simulationJobId);
+        	System.out.println(iJSimStatus.toString());
+        	ij.IJ.log(iJSimStatus.toString())
+        	String statusName = iJSimStatus.statusName.toLowerCase();
         	if(statusName.equals("finished") || statusName.equals("stopped") || statusName.equals("aborted")) {
         		break;
         	}
     	}
-    	return vh.getSimulationDataCacheKey(ijSolverStatus.simJobId);
+    	return vh.getSimulationDataCacheKey(iJSimStatus.simJobId);
 	}
 	def SCIFIOImgPlus<DoubleType> zProjectNormalizeSimData(VCellHelper vh,
 		String newImgPlusName,String simulationDataCachekey,String varToAnalyze,int preBleachTimeIndex,int solverStatus_jobIndex,int ANALYZE_BEGIN_TIMEINDEX,int ANALYZE_END_TIMEINDEX) throws Exception{
 		
 		int ANALYZE_COUNT = ANALYZE_END_TIMEINDEX - ANALYZE_BEGIN_TIMEINDEX+1;
 	    // Get the SIMULATION pre-bleach timepoint data for normalizing
-	    VCellHelper.TimePointData timePointData = vh.getTimePointData(simulationDataCachekey, varToAnalyze, [preBleachTimeIndex] as int[], solverStatus_jobIndex);
-	    int xysize = timePointData.getBasicStackDimensions().xsize*timePointData.getBasicStackDimensions().ysize;
+	    VCellHelper.IJDataList ijDataList = vh.getTimePointData(simulationDataCachekey, varToAnalyze, [preBleachTimeIndex] as int[], solverStatus_jobIndex);
+		int xysize = ijDataList.ijData[0].stackInfo.xsize*ijDataList.ijData[0].stackInfo.ysize;
 		double[] bleachedTimeStack = new double[ANALYZE_COUNT*xysize];
 //	    checkSizes(timePointData.getBasicStackDimensions(), xsize, xysize, zsize);
 //    	URL dataUrl = new URL("http://localhost:"+vh.findVCellApiServerPort()+"/"+"getdata"+"?"+"cachekey"+"="+cachekey+"&"+"varname"+"="+varToAnalyze+"&"+"timeindex"+"="+(int)(0)+"&"+"jobid="+ijSolverStatus.getJobIndex());
-	    double[] zProjectedSimNormalizer = getNormalizedZProjected(timePointData,null);
+	    double[] zProjectedSimNormalizer = getNormalizedZProjected(ijDataList,null);
 //showAndZoom(ij, "Sim Data PreBleach", ArrayImgs.doubles(simNormalizer, xsize,ysize), 4);
 	    
 	    // Get the SIMULATION post-bleach data to analyze
 	    for(int timeIndex = ANALYZE_BEGIN_TIMEINDEX;timeIndex<=ANALYZE_END_TIMEINDEX;timeIndex++){
-	    	timePointData = vh.getTimePointData(simulationDataCachekey, varToAnalyze, [timeIndex] as int[], solverStatus_jobIndex);
+	    	ijDataList = vh.getTimePointData(simulationDataCachekey, varToAnalyze, [timeIndex] as int[], solverStatus_jobIndex);
 //	    	checkSizes(timePointData.getBasicStackDimensions(), xsize, xysize, zsize);
 //	    	dataUrl = new URL("http://localhost:"+vh.findVCellApiServerPort()+"/"+"getdata"+"?"+"cachekey"+"="+cachekey+"&"+"varname"+"="+varToAnalyze+"&"+"timeindex"+"="+(int)timeIndex+"&"+"jobid="+ijSolverStatus.getJobIndex());
-	 		double[] data = getNormalizedZProjected(timePointData,zProjectedSimNormalizer);
+	 		double[] data = getNormalizedZProjected(ijDataList,zProjectedSimNormalizer);
 		    System.arraycopy(data, 0, bleachedTimeStack, (timeIndex-ANALYZE_BEGIN_TIMEINDEX)*xysize, data.length);
     	}
 
     	//Turn VCell data into iterableinterval
 //    	FinalInterval zProjectedSimDataSize = FinalInterval.createMinSize(new long[] {0,0,0, xsize,ysize,ANALYZE_COUNT});//xyzt:origin and xyzt:size
-		ArrayImg<DoubleType, DoubleArray> simImgs = ArrayImgs.doubles(bleachedTimeStack, [timePointData.getBasicStackDimensions().xsize,timePointData.getBasicStackDimensions().ysize,ANALYZE_COUNT] as long[]);
+		ArrayImg<DoubleType, DoubleArray> simImgs = ArrayImgs.doubles(bleachedTimeStack, [ijDataList.ijData[0].stackInfo.xsize,ijDataList.ijData[0].stackInfo.ysize,ANALYZE_COUNT] as long[]);
 		SCIFIOImgPlus<DoubleType> annotatedZProjectedSimPostBleachData = new SCIFIOImgPlus<>(simImgs,newImgPlusName,[Axes.X,Axes.Y,Axes.TIME] as AxisType[]);
 //    	RandomAccessibleInterval<DoubleType> simExtracted = ij.op().transform().crop(annotatedSimData, simExtractInterval);   	
 //showAndZoom(ij, "Sim Data "+diffusionRate, annotatedZProjectedSimPostBleachData, 4);
 		return annotatedZProjectedSimPostBleachData;
 	}
-    def double[] getNormalizedZProjected(VCellHelper.TimePointData timePointData,double[] normalizer) throws Exception{
-		BasicStackDimensions basicStackDimensions = timePointData.getBasicStackDimensions();//VCellHelper.getDimensions(nodes.item(0));
+    def double[] getNormalizedZProjected(VCellHelper.IJDataList ijDataList,double[] normalizer) throws Exception{
+		VCellHelper.BasicStackDimensions basicStackDimensions = ijDataList.ijData[0].stackInfo;//VCellHelper.getDimensions(nodes.item(0));
  		//Sum pixel values in Z direction to match experimental data (open pinhole confocal, essentially brightfield)
 		int xysize = basicStackDimensions.xsize*basicStackDimensions.ysize;
 		double[] normalizedData = new double[xysize];
-		for (int i = 0; i < timePointData.getTimePointData().length; i++) {
-			normalizedData[(i%xysize)]+= timePointData.getTimePointData()[i];
+		for (int i = 0; i < ijDataList.ijData[0].getDoubleData().length; i++) {
+			normalizedData[(i%xysize)]+= ijDataList.ijData[0].getDoubleData()[i];
 		}
 		if(normalizer != null) {
 			for (int i = 0; i < normalizedData.length; i++) {

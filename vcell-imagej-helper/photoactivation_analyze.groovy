@@ -30,7 +30,7 @@ import javax.swing.JFrame
 
 //public IJDataList getTimePointData(String simulationDataCacheKey,String variableName,int[] timePointIndexes,int simulationJobIndex) throws Exception{
 
-simID = 171795930 //109808709
+simID = 109811359 //109808709
 //jobIndex = 0
 int t0Sim = 32;
 int t0Exp = 2
@@ -131,7 +131,7 @@ for(int t = 0;t<tCount;t++){
 			//ij.IJ.run("In [+]");
 			//ij.IJ.run("In [+]");
 	//	}else 
-		if(job == 0){
+		if(job == 1){
 			ij.IJ.selectWindow("Sim fluor")
 			//println(ij.IJ.getImage().getProcessor().getPixels())
 			//if(true){return}
