@@ -39,12 +39,13 @@ import cbit.vcell.xml.XmlHelper;
 
 public class VCellSedMLSolver {
 
-	static String inString = "C:\\TEMP\\ddd\\sedml";
-	static String outRootString = "C:\\TEMP\\ddd\\sedml\\out";
+	static String inString = "/usr/local/app/sedml";
+	static String outRootString = "/usr/local/app/sedml/out";
 
 	public static void main(String[] args) {
 
 		// place the sedml file and the sbml file(s) in inDir directory
+		
 		File inDir = new File(inString);
 		File outRootDir = new File(outRootString);
 		
