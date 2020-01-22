@@ -120,7 +120,7 @@ public class VCellSedMLSolver {
 		
 		// create the work directory for this task, invoke the solver
 		String docName = doc.getName();
-		String outString = outRootString + "\\" + docName + "_" + sedmlTask.getId();
+		String outString = outRootString + "/" + docName + "_" + sedmlTask.getId();
 		File outDir = new File(outString);
 		if (!outDir.exists()) {
 			outDir.mkdirs();
@@ -130,7 +130,7 @@ public class VCellSedMLSolver {
 		SimulationContext simContext = bioModel.getSimulationContext(0);
 		MathDescription mathDesc = simContext.getMathDescription();
 		String vcml = mathDesc.getVCML();
-		try (PrintWriter pw = new PrintWriter(outString + "\\vcmlTrace.xml")) {
+		try (PrintWriter pw = new PrintWriter(outString + "/vcmlTrace.xml")) {
 			pw.println(vcml);
 		}
 		
@@ -286,7 +286,7 @@ public class VCellSedMLSolver {
 		}
 	}
 	private static String getBaseName(String outDir, String docName) {
-		String baseName = outDir + "\\" + docName;
+		String baseName = outDir + "/" + docName;
 		return baseName;
 	}
 

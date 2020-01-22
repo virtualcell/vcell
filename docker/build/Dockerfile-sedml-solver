@@ -3,7 +3,8 @@ FROM ubuntu:18.04
 RUN apt-get -y update && \
     apt-get install -y curl openjdk-8-jre dnsutils && \
     mkdir -p /usr/local/app/lib \
-    mkdir -p /usr/local/app/sedml 
+    mkdir -p /usr/local/app/sedml \
+    mkdir -p /usr/local/app/installDir
 	
 
 COPY ./vcell-client/target/vcell-client-0.0.1-SNAPSHOT.jar \
@@ -23,8 +24,11 @@ COPY ./vcell-client/target/vcell-client-0.0.1-SNAPSHOT.jar \
      ./vcell-admin/target/maven-jars/*.jar \
      /usr/local/app/lib/
 
+ADD ./localsolvers /usr/local/app/installDir/localsolvers
+
 
 
 ENTRYPOINT java \
+    -Dvcell.installDir=/usr/local/app/installDir \
 	-cp "/usr/local/app/lib/*" org.vcell.sbml.test.VCellSedMLSolver \
 
