@@ -110,6 +110,8 @@ public java.awt.Component getTreeCellRendererComponent(JTree tree, Object value,
 				setIcon(fieldFolderWarningIcon);
 			} else if(name.contains(" ")) {
 				setIcon(fieldFolderWarningIcon);
+			} else {
+				setIcon(fieldPublishedPublicationIcon);		// publications have their own icon
 			}
 		} else if(value instanceof UserNameNode) {
 			UserNameNode node = (UserNameNode) value;
