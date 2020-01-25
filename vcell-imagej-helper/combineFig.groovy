@@ -1,9 +1,9 @@
 import ij.WindowManager
 
-simImageTitle = "Sim fluor"
+simImageTitle = "Sim fluor_1"
 expImageTitle = "abp"
-simDupTitle = "Sim fluor"+"-1"
-expDupTitle = "abp"+"-1"
+simDupTitle = simImageTitle+"-1"
+expDupTitle = expImageTitle+"-1"
 
 if(WindowManager.getImage(simDupTitle) != null){
 	WindowManager.getImage(simDupTitle).close()
@@ -22,6 +22,8 @@ ij.IJ.run(WindowManager.getImage(expDupTitle), "32-bit", "");
 ij.IJ.selectWindow(simDupTitle)
 imp = ij.IJ.getImage()
 ij.IJ.resetMinAndMax(imp)
+imp.setSlice(1)
+ij.IJ.setBackgroundColor(0, 0, 0);
 ij.IJ.run(imp, "Select All", "");
 ij.IJ.run(imp, "Copy", "");
 ij.IJ.run(imp, "Add Slice", "");
@@ -66,7 +68,7 @@ ij.IJ.run(expimp, "RGB Color", "");
 ij.IJ.selectWindow(simDupTitle)
 //ij.IJ.run(imp, "RGB Color", "");
 ij.IJ.run(imp, "Translate...", "x=0 y=-5 interpolation=None stack");
-ij.IJ.run("Combine...", "stack1='Sim fluor-1' stack2=abp-1");
+ij.IJ.run("Combine...", "stack1='"+simDupTitle+"' stack2='"+expDupTitle+"'");
 
 /*
 
