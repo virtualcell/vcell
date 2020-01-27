@@ -1,6 +1,6 @@
 import ij.WindowManager
 
-simImageTitle = "Sim fluor_1"
+simImageTitle = "Sim fluor_0"
 expImageTitle = "abp"
 simDupTitle = simImageTitle+"-1"
 expDupTitle = expImageTitle+"-1"

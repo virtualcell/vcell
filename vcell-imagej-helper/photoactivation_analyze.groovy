@@ -27,14 +27,16 @@ import org.jfree.data.xy.XYSeriesCollection
 import org.jfree.data.xy.XYSeries
 import javax.swing.JFrame
 import java.awt.BasicStroke
+import ij.WindowManager
+import net.imglib2.img.ImagePlusAdapter
 
 //public IJDataList getTimePointData(String simulationDataCacheKey,String variableName,int[] timePointIndexes,int simulationJobIndex) throws Exception{
 
-simID = 171890707
+//simID = 171890707
 stroke = new BasicStroke(1, BasicStroke.CAP_SQUARE, BasicStroke.JOIN_MITER, 10,[5] as float[], 0)
 //jobIndex = 0
-int t0Sim = 16;
-int t0Exp = 2
+int t0Sim = 0;//15;
+int t0Exp = 2;//2
 int tCount = 27
 int ANALYZE_END_TIMEINDEX = 2;
 simVar = "fluor"
@@ -48,9 +50,9 @@ BOX_X = 0
 BOX_Y = 1
 BOX_XS = 2
 BOX_YS = 3
-boxes = [[73,33,4,5]/*,[55,26,8,8]*/,[25,33,8,8]] as int[][]
-
-if(false){waitForSolverGetCacheForData(simID,jobIndex);}
+//boxes = [[73,33,4,5]/*,[55,26,8,8]*/,[25,33,8,8]] as int[][]
+boxes = [[0,0,51,88]/*,[55,26,8,8]*/,[51,0,45,88]] as int[][]
+//if(false){waitForSolverGetCacheForData(simID,jobIndex);}
 
 simulationDataCacheKey = getSimulationCacheKey(vh)
 //IJDataList bpflDataList = vh.getTimePointData(simulationDataCacheKey, "BP_fl", null, [activateTimeIndex] as int[], simID);
@@ -83,15 +85,19 @@ println("xsize="+exp_xsize+" ysize="+exp_ysize+" frames="+exp_frames+" scancount
 double[] Kr_Bind_OverrideIndexes = new double[ijVarInfos.scancount]
 //new float[tCount*exp_xsize*exp_ysize],
 	SIM_WIN_NAME = "Sim fluor"
+	for(int job=0;job<ijVarInfos.scancount;job++){
+		simImage[job] = WindowManager.getImage(SIM_WIN_NAME+"_"+job)
+	}
+	/*
 	for(int i=0;i<ijVarInfos.scancount;i++){
 			fluorImage = ArrayImgs.floats([exp_xsize,exp_ysize,tCount] as long[])//SCIFIOImgPlus<DoubleType> fluorImage = null
 			netij.ui().show(SIM_WIN_NAME+"_"+i,fluorImage)
 			simImage[i] = ij.IJ.getImage()
-//			simImage.setRoi(roix,roiy,roixs,roiys)
 			ij.IJ.run("In [+]");
 			ij.IJ.run("In [+]");
 			ij.IJ.run("In [+]");
 	}
+	*/
 double[][][] diffSqrTimeAndJob = new double[tCount][Kr_Bind_OverrideIndexes.length][boxes.length]
 double[][] jobSum = new double[Kr_Bind_OverrideIndexes.length][boxes.length]
 ROI_EXP_INDEX = 0
@@ -124,6 +130,7 @@ for(int t = 0;t<tCount;t++){
 	//short[] expData = (short[])fdStackArr.getAt(actualExpTime)
 	for(int job=0;job<Kr_Bind_OverrideIndexes.length;job++){
 		println("t="+t+" "+" job="+job+" expTime="+(actualExpTime)+" simTime="+(actualSimTime))
+/*
 		//Get Sim Data - PostProcessing 'fluor'
 		IJDataList fluorIJD = null
 		println("Getting VCell data...")
@@ -143,12 +150,10 @@ for(int t = 0;t<tCount;t++){
 		if(simStackInfo.xsize != exp_xsize || simStackInfo.ysize != exp_ysize){
 			throw new Exception("Expecting xy sizes to to be same for Sim and Exp timepoints")
 		}
-//		if(expData.length != fluorData.length){
-//			throw new Exception("Expecting Sim and Exp data arrays to be same length")
-//		}
-		//Thread.sleep(500)
 		println("create Sim ArrayImg...")
 		ArrayImg<FloatType, FloatArray> simTimePointData = ArrayImgs.floats(fluorData, [simStackInfo.xsize,simStackInfo.ysize,1] as long[])
+*/
+
 	//	if(t == 0 && job == 0){
 			//ArrayImg<DoubleType, DoubleArray> simAllTimes = ArrayImgs.doubles(fluorData, [simStackInfo.xsize,simStackInfo.ysize,tCount] as long[]);
 			//fluorImage = new SCIFIOImgPlus<>(simTimePointData,"Sim fluor",[Axes.X,Axes.Y] as AxisType[]);
@@ -167,9 +172,9 @@ for(int t = 0;t<tCount;t++){
 			//float[] tempf = simTimePointData.update(null).getCurrentStorageArray()
 			//println(simTimePointData.update(null).getCurrentStorageArray())
 			//ij.IJ.getImage().setSlice(t+1)
+/*
 			println("Copy Sim double to float...")
 			simImage[job].setSlice(t+1)
-			//float[] srcFloats = ij.IJ.getImage().getProcessor().getPixels()
 			float[] srcFloats = simImage[job].getProcessor().getPixels()
 			cnt = 0
 			for(int y= 0;y<exp_ysize;y++){
@@ -179,6 +184,8 @@ for(int t = 0;t<tCount;t++){
 					cnt++
 				}
 			}
+*/
+
 /*
 			srcFloats = ij.IJ.getImage().getProcessor().getPixels()
 			cnt=0
@@ -197,6 +204,7 @@ for(int t = 0;t<tCount;t++){
 //BOX_XS = 2
 //BOX_YS = 3
 
+	simImage[job].setSlice(t+1)
 		for(int boxIndex=0;boxIndex<boxes.length;boxIndex++){
 			println("boxIndex="+boxIndex)
 			//if(t==1 && job==0){return}
@@ -207,16 +215,16 @@ for(int t = 0;t<tCount;t++){
 			simImage[job].setRoi(roix,roiy,roixs,roiys)
 			expImage.setRoi(roix,roiy,roixs,roiys)
 
-			simRA = simTimePointData.randomAccess()
+			float[] srcFloats = simImage[job].getProcessor().getPixels()
 			simSum = 0.0;
 			expSum = 0.0;
 			for(int y= 0;y<roiys;y++){
 				for(int x = 0;x<roixs;x++){
 					xp = x+roix
 					yp = y+roiy
-					simRA.setPosition(xp,0)
-					simRA.setPosition(yp,1)
-					simSum+= simRA.get().get()
+					//simRA.setPosition(xp,0)
+					//simRA.setPosition(yp,1)
+					simSum+= srcFloats[xp+(yp*simImage[job].getWidth())]//simRA.get().get()
 					expVal = expImage.getStack().getProcessor(actualExpTime).getPixel(xp,yp)
 					//print(expVal+":"+simRA.get());print(" ")
 					expSum+= expVal
@@ -225,9 +233,9 @@ for(int t = 0;t<tCount;t++){
 			}
 			println(" sums exp:sim="+expSum+":"+simSum)
 			if(job == 0){
-			roiDataset.getSeries(ROI_SERIES_PREFIX+ROI_EXP_NAME+"_"+boxIndex+"_"+job).add(t,expSum/(roixs*roiys))
+			roiDataset.getSeries(ROI_SERIES_PREFIX+ROI_EXP_NAME+"_"+boxIndex+"_"+job).add(t,expSum/*/(roixs*roiys)*/)
 			}
-			roiDataset.getSeries(ROI_SERIES_PREFIX+ROI_SIM_NAME+"_"+boxIndex+"_"+job).add(t,simSum/(roixs*roiys))
+			roiDataset.getSeries(ROI_SERIES_PREFIX+ROI_SIM_NAME+"_"+boxIndex+"_"+job).add(t,simSum/*/(roixs*roiys)*/)
 			//roiMean[t][job][boxIndex][ROI_EXP_INDEX] = expSum/(roixs*roiys)
 			//roiMean[t][job][boxIndex][ROI_SIM_INDEX] = simSum/(roixs*roiys)
 			diffSqrTimeAndJob[t][job][boxIndex] = Math.pow(simSum-expSum,2)/1e9
@@ -338,7 +346,7 @@ def String getSimulationCacheKey(VCellHelper vh) throws Exception{
 	// math type 'Deterministic' or 'Stochastic'
 	SimpleDateFormat easyDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 	//VCellHelper.VCellModelSearch search = new VCellHelper.VCellModelSearch(VCellHelper.ModelType.bm, "tutorial", "Tutorial_FRAPbinding", "Spatial", "FRAP binding",null,null);
-	VCellHelper.VCellModelSearch search = new VCellHelper.VCellModelSearch(VCellHelper.ModelType.bm, "frm", "Photoactivation and Binding 2", "3D Simulation", "Copy of Parameter Scan",3,"Deterministic");
+	VCellHelper.VCellModelSearch search = new VCellHelper.VCellModelSearch(VCellHelper.ModelType.bm, "frm", "Photoactivation and Binding 2", "3D Simulation", "Copy of tester",3,"Deterministic");
 	// version time range (all VCell Models saved on the VCell server have a last date 'saved')
 	VCellHelper.VCellModelVersionTimeRange vcellModelVersionTimeRange = new VCellHelper.VCellModelVersionTimeRange(easyDate.parse("2015-06-01 00:00:00"), easyDate.parse("2025-01-01 00:00:00"));
 	//Search VCell database for models matching search parameters
