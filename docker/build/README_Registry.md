@@ -45,8 +45,10 @@ openssl req -new -key ./registry_certs/domain.key -out ./registry_certs/new.csr
 	Locality Name (eg, city) [Default City]:.
 	Organization Name (eg, company) [Default Company Ltd]:UCHC
 	Organizational Unit Name (eg, section) []:CCAM
-	Common Name (eg, your name or your server's hostname) []:dockerregistry
+	Common Name (eg, your name or your server's hostname) []:vcell-docker.cam.uchc.edu
 	Email Address []:.
+	A challenge password[]:enter
+	An optional company name []:enter
 //check new.csr
 openssl req -in ./registry_certs/new.csr  -noout -text
 //create new certificate using csr and old key
@@ -72,7 +74,7 @@ trusting self signed certificate on Macos (https://github.com/docker/distributio
 
 ```bash
 export theRegistryHost=vcell-docker.cam.uchc.edu
-sudo scp vcell@{theRegistryHost}:/usr/local/deploy/registry_certs/domain.cert /etc/pki/ca-trust/source/anchors/{theRegistryHost}.crt
+sudo scp vcell@{theRegistryHost}:/usr/local/deploy/registry_certs/newer.crt /etc/pki/ca-trust/source/anchors/{theRegistryHost}.crt
 sudo update-ca-trust
 sudo service docker stop
 sudo service docker start
