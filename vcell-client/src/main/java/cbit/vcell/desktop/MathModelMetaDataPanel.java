@@ -45,6 +45,7 @@ public class MathModelMetaDataPanel extends DocumentEditorSubPanel {
 				getJTree1().setModel(getmathModelMetaDataTreeModel());
 				getJTree1().setCellRenderer(getmathModelMetaDataCellRenderer());
 
+				getmathModelMetaDataTreeModel().showDatabaseFileInfo(true);
 				getmathModelMetaDataTreeModel().setMathModelInfo(MathModelMetaDataPanel.this.getMathModelInfo());
 				GuiUtils.treeExpandAllRows(getJTree1());
 				// here we don't need to expand one lvl only, like we do for BioModels (different structure)

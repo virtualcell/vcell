@@ -10,16 +10,19 @@
 
 package cbit.vcell.desktop;
 
+import java.math.BigDecimal;
 import java.util.StringTokenizer;
 
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.BioModelChildSummary;
+import org.vcell.util.document.GroupAccess;
 import org.vcell.util.document.BioModelChildSummary.MathType;
 
 import cbit.vcell.solver.ode.ODESolverResultSet;
 
 import org.vcell.util.document.MathModelChildSummary;
 import org.vcell.util.document.MathModelInfo;
+import org.vcell.util.document.Version;
 /**
  * Insert the type's description here.
  * Creation date: (2/14/01 3:33:23 PM)
@@ -29,6 +32,8 @@ import org.vcell.util.document.MathModelInfo;
 public class MathModelMetaDataTreeModel extends javax.swing.tree.DefaultTreeModel {
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 	private MathModelInfo fieldMathModelInfo = null;
+	private boolean showGeneralInfoNode = false;
+
 /**
  * BioModelDbTreeModel constructor comment.
  * @param root javax.swing.tree.TreeNode
@@ -42,6 +47,9 @@ public MathModelMetaDataTreeModel() {
 public synchronized void addPropertyChangeListener(java.beans.PropertyChangeListener listener) {
 	getPropertyChange().addPropertyChangeListener(listener);
 }
+public void showDatabaseFileInfo(boolean bShow) {
+	showGeneralInfoNode = bShow;
+}
 /**
  * Insert the method's description here.
  * Creation date: (11/28/00 2:41:43 PM)
@@ -50,6 +58,55 @@ public synchronized void addPropertyChangeListener(java.beans.PropertyChangeList
  */
 private BioModelNode createVersionSubTree(MathModelInfo mathModelInfo) throws DataAccessException {
 	BioModelNode versionNode = new BioModelNode(mathModelInfo,true);
+
+	if(showGeneralInfoNode) {
+		String name = "Database File Info";
+		BioModelNode generalInfoNode = new BioModelNode(name, true);
+		generalInfoNode.setRenderHint("type","GeneralFileInfo");
+		
+		Version version = mathModelInfo.getVersion();
+		BigDecimal groupid = version.getGroupAccess().getGroupid();
+				
+		BioModelNode mNameNode = new BioModelNode(version.getName(), true);
+		mNameNode.setRenderHint("type","ModelName");
+		mNameNode.setRenderHint("category","MathModel");
+		generalInfoNode.add(mNameNode);
+	
+		BioModelNode mIdentifierNode = new BioModelNode(version.getVersionKey(), true);
+		mIdentifierNode.setRenderHint("type","VCellIdentifier");
+		mNameNode.add(mIdentifierNode);
+
+		BioModelNode mOwnerNode = new BioModelNode(version.getOwner(), true);
+		mOwnerNode.setRenderHint("type","ModelOwner");
+		mNameNode.add(mOwnerNode);
+		
+		BioModelNode mDateNode = new BioModelNode(version.getDate(), true);
+		mDateNode.setRenderHint("type","ModelDate");
+		mNameNode.add(mDateNode);
+		
+		String permissions;
+		if(groupid.equals(GroupAccess.GROUPACCESS_ALL)) {
+			permissions = "Public";
+		} else if(groupid.equals(GroupAccess.GROUPACCESS_NONE)) {
+			permissions = "Private";
+		} else {
+			permissions = (version.getGroupAccess().getDescription());
+		}
+		if(mathModelInfo.getPublicationInfos() != null && mathModelInfo.getPublicationInfos().length > 0) {
+			if(mathModelInfo.getVersion().getFlag().compareEqual(org.vcell.util.document.VersionFlag.Published)) {
+				permissions = "Published";		// must be Public
+			} else {
+				permissions = "Curated";
+			}
+		} else if(mathModelInfo.getVersion().getFlag().compareEqual(org.vcell.util.document.VersionFlag.Archived)) {
+			permissions += ", Archived";
+		}
+		BioModelNode mPermissionsNode = new BioModelNode(permissions, true);
+		mPermissionsNode.setRenderHint("type","Permissions");
+		mNameNode.add(mPermissionsNode);
+		
+		versionNode.add(generalInfoNode);
+	}
 
 	if(mathModelInfo.getPublicationInfos().length > 0) {
 		String name = mathModelInfo.getPublicationInfos().length > 1 ? "Publications" : "Publication";
