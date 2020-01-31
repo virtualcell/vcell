@@ -18,7 +18,13 @@ import javax.swing.tree.TreePath;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.BioModelChildSummary;
 import org.vcell.util.document.BioModelChildSummary.MathType;
+
+import cbit.vcell.geometry.GeometryInfo;
+
 import org.vcell.util.document.BioModelInfo;
+import org.vcell.util.document.MathModelInfo;
+import org.vcell.util.document.VCDocumentInfo;
+import org.vcell.util.document.Version;
 /**
  * Insert the type's description here.
  * Creation date: (2/14/01 3:33:23 PM)
@@ -28,8 +34,10 @@ import org.vcell.util.document.BioModelInfo;
 public class BioModelInfoTreeModel extends javax.swing.tree.DefaultTreeModel {
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 	private BioModelInfo fieldBioModelInfo = null;
+	private BioModelNode generalInfoNode = null;
 	private BioModelNode publicationsInfoNode = null;
 	private BioModelNode applicationsNode = null;
+	private boolean showGeneralInfoNode = false;
 /**
  * BioModelDbTreeModel constructor comment.
  * @param root javax.swing.tree.TreeNode
@@ -44,12 +52,19 @@ public synchronized void addPropertyChangeListener(java.beans.PropertyChangeList
 	getPropertyChange().addPropertyChangeListener(listener);
 }
 
+public BioModelNode getGeneralNode() {
+	return generalInfoNode;
+}
 public BioModelNode getPublicationsNode() {
 	return publicationsInfoNode;
 }
 public BioModelNode getApplicationsNode() {
 	return applicationsNode;
 }
+public void showDatabaseFileInfo(boolean bShow) {
+	showGeneralInfoNode = bShow;
+}
+
 /**
  * Insert the method's description here.
  * Creation date: (11/28/00 2:41:43 PM)
@@ -58,9 +73,41 @@ public BioModelNode getApplicationsNode() {
  */
 private BioModelNode createVersionSubTree(BioModelInfo bioModelInfo) throws DataAccessException {
 	BioModelNode versionNode = new BioModelNode(bioModelInfo, true);
+	generalInfoNode = null;
 	publicationsInfoNode = null;
 	applicationsNode = null;
+	
+	if(showGeneralInfoNode) {
+		String name = "Database File Info";
+		generalInfoNode = new BioModelNode(name, true);
+		generalInfoNode.setRenderHint("type","GeneralFileInfo");
+		
+		Version version = bioModelInfo.getVersion();
+				
+		BioModelNode mNameNode = new BioModelNode(version.getName(), true);
+		mNameNode.setRenderHint("type","ModelName");
+		mNameNode.setRenderHint("category","BioModel");
+		generalInfoNode.add(mNameNode);
+	
+		BioModelNode mIdentifierNode = new BioModelNode(version.getVersionKey(), true);
+		mIdentifierNode.setRenderHint("type","VCellIdentifier");
+		mNameNode.add(mIdentifierNode);
 
+		BioModelNode mOwnerNode = new BioModelNode(version.getOwner(), true);
+		mOwnerNode.setRenderHint("type","ModelOwner");
+		mNameNode.add(mOwnerNode);
+		
+		BioModelNode mDateNode = new BioModelNode(version.getDate(), true);
+		mDateNode.setRenderHint("type","ModelDate");
+		mNameNode.add(mDateNode);
+		
+		BioModelNode mPermissionsNode = new BioModelNode("Public", true);
+		mPermissionsNode.setRenderHint("type","Permissions");
+		mNameNode.add(mPermissionsNode);
+		
+		versionNode.add(generalInfoNode);
+	}
+	
 	if(bioModelInfo.getPublicationInfos().length > 0) {
 		String name = bioModelInfo.getPublicationInfos().length > 1 ? "Publications"  : "Publication";
 		publicationsInfoNode = new BioModelNode(name, true);

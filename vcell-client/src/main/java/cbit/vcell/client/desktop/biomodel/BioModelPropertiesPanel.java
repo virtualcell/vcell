@@ -421,6 +421,7 @@ private class LocalMetaDataPanel extends JPanel {
 			
 			KeyValue keyValue = bioModel.getVersion().getVersionKey();
 			fieldBioModelInfo = bioModelWindowManager.getRequestManager().getDocumentManager().getBioModelInfo(keyValue);
+			bioModelInfoTreeModel.showDatabaseFileInfo(false);
 			bioModelInfoTreeModel.setBioModelInfo(fieldBioModelInfo);
 			BioModelNode applicationsNode = bioModelInfoTreeModel.getApplicationsNode();
 			GuiUtils.treeExpandAllRows(getJTree());
