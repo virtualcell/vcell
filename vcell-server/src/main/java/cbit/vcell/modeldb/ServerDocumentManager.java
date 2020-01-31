@@ -1074,7 +1074,7 @@ long start = System.currentTimeMillis();
 						roundtripTimer += l2 - l1;
 					}
 				}
-				MathDescription.updateReservedSymbols(databaseMathDescription,origBioModel.getModel().getReservedSymbols());
+				MathDescription.updateReservedSymbols(databaseMathDescription,(origBioModel==null?bioModel:origBioModel).getModel().getReservedSymbols());
 				if (databaseMathDescription!=null && !databaseMathDescription.compareEqual(memoryMathDescription)){
 					bMustSaveMathDescription = true;
 				}
