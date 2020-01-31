@@ -110,13 +110,13 @@ private BioModelNode createVersionSubTree(BioModelInfo bioModelInfo) throws Data
 		} else if(groupid.equals(GroupAccess.GROUPACCESS_NONE)) {
 			permissions = "Private";
 		} else {
-			permissions = "Shared";
+			permissions = (version.getGroupAccess().getDescription());
 		}
 		if(bioModelInfo.getPublicationInfos() != null && bioModelInfo.getPublicationInfos().length > 0) {
 			if(bioModelInfo.getVersion().getFlag().compareEqual(org.vcell.util.document.VersionFlag.Published)) {
-				permissions += ", Published";
+				permissions = "Published";		// must be Public
 			} else {
-				permissions += ", Curated";
+				permissions = "Curated";
 			}
 		} else if(bioModelInfo.getVersion().getFlag().compareEqual(org.vcell.util.document.VersionFlag.Archived)) {
 			permissions += ", Archived";

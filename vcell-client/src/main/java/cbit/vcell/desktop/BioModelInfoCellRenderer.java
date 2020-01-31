@@ -238,13 +238,13 @@ public java.awt.Component getTreeCellRendererComponent(JTree tree, Object value,
 			KeyValue key = (KeyValue)node.getUserObject();
 			String text = "biomodel-" + key;
 			component.setText("<html>" + text + "</html>");
-			setIcon(VCellIcons.certificateIcon);
+			setIcon(fieldDatabaseModelKeyIcon);
 
 		} else if(node.getUserObject() instanceof User && "ModelOwner".equals(node.getRenderHint("type"))) {
 			String label = ((User)node.getUserObject()).getName();
 			component.setToolTipText("Model Owner");
 			component.setText("<html>" + label + "</html>");
-			setIcon(fieldUsersIcon);
+			setIcon(fieldUserIcon);
 
 		} else if(node.getUserObject() instanceof Date && "ModelDate".equals(node.getRenderHint("type"))) {
 			Date date = (Date)node.getUserObject();
