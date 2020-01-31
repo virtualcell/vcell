@@ -10,6 +10,7 @@
 
 package cbit.vcell.desktop;
 
+import java.math.BigDecimal;
 import java.util.StringTokenizer;
 
 import javax.swing.JTree;
@@ -22,6 +23,7 @@ import org.vcell.util.document.BioModelChildSummary.MathType;
 import cbit.vcell.geometry.GeometryInfo;
 
 import org.vcell.util.document.BioModelInfo;
+import org.vcell.util.document.GroupAccess;
 import org.vcell.util.document.MathModelInfo;
 import org.vcell.util.document.VCDocumentInfo;
 import org.vcell.util.document.Version;
@@ -83,6 +85,7 @@ private BioModelNode createVersionSubTree(BioModelInfo bioModelInfo) throws Data
 		generalInfoNode.setRenderHint("type","GeneralFileInfo");
 		
 		Version version = bioModelInfo.getVersion();
+		BigDecimal groupid = version.getGroupAccess().getGroupid();
 				
 		BioModelNode mNameNode = new BioModelNode(version.getName(), true);
 		mNameNode.setRenderHint("type","ModelName");
@@ -101,7 +104,24 @@ private BioModelNode createVersionSubTree(BioModelInfo bioModelInfo) throws Data
 		mDateNode.setRenderHint("type","ModelDate");
 		mNameNode.add(mDateNode);
 		
-		BioModelNode mPermissionsNode = new BioModelNode("Public", true);
+		String permissions;
+		if(groupid.equals(GroupAccess.GROUPACCESS_ALL)) {
+			permissions = "Public";
+		} else if(groupid.equals(GroupAccess.GROUPACCESS_NONE)) {
+			permissions = "Private";
+		} else {
+			permissions = "Shared";
+		}
+		if(bioModelInfo.getPublicationInfos() != null && bioModelInfo.getPublicationInfos().length > 0) {
+			if(bioModelInfo.getVersion().getFlag().compareEqual(org.vcell.util.document.VersionFlag.Published)) {
+				permissions += ", Published";
+			} else {
+				permissions += ", Curated";
+			}
+		} else if(bioModelInfo.getVersion().getFlag().compareEqual(org.vcell.util.document.VersionFlag.Archived)) {
+			permissions += ", Archived";
+		}
+		BioModelNode mPermissionsNode = new BioModelNode(permissions, true);
 		mPermissionsNode.setRenderHint("type","Permissions");
 		mNameNode.add(mPermissionsNode);
 		
