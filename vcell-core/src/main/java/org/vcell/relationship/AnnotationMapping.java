@@ -85,16 +85,22 @@ public class AnnotationMapping {
 					ArrayList<Xref> xRef = getXrefs(bioModel, refInfo);
 					ArrayList<String> refName = getNameRef(xRef, name);
 					BioPaxObject bpObject = bioModel.getPathwayModel().findFromNameAndType(refName.get(0), EntityImpl.TYPE_PHYSICALENTITY);
-					if(bpObject == null){
-						bpObject = createPhysicalEntity(xRef, refName, name);
-						bioModel.getPathwayModel().add(bpObject);
-					}
-					if(!isLinked(bioModel, bpObject, speciesContext)) {
-						// create linkage
-						RelationshipObject newRelationship = new RelationshipObject(speciesContext, bpObject);
-						bioModel.getRelationshipModel().addRelationshipObject(newRelationship);	
-						return info;
-					}
+					//
+					// Commenting out legacy code from the times when we didn't have proper annotation visualization
+					// What we were doing below was to create a bioPax object, link it to the species and create
+					// copies of the annotations in order to be able to navigate to external databases through XRef
+					// Commenting out this code since we can now navigate to external databases from the annotation panel
+					//
+//					if(bpObject == null){
+//						bpObject = createPhysicalEntity(xRef, refName, name);
+//						bioModel.getPathwayModel().add(bpObject);
+//					}
+//					if(bpObject != null && !isLinked(bioModel, bpObject, speciesContext)) {
+//						// create linkage
+//						RelationshipObject newRelationship = new RelationshipObject(speciesContext, bpObject);
+//						bioModel.getRelationshipModel().addRelationshipObject(newRelationship);	
+//						return info;
+//					}
 				}				
 			}
 		 }else if(type.equals(VCID.CLASS_BIOMODEL)){
@@ -110,16 +116,19 @@ public class AnnotationMapping {
 				ArrayList<String> refName = getNameRef(xRef, name);
 			 	if(bioModel.getRelationshipModel().getRelationshipObjects(reactionStep).size() == 0){
 					BioPaxObject bpObject = bioModel.getPathwayModel().findFromNameAndType(refName.get(0), EntityImpl.TYPE_INTERACTION);
-					if(bpObject == null){
-						bpObject = createInteraction(reactionStep, xRef, refName);
-						bioModel.getPathwayModel().add(bpObject);
-					}
-					if(!isLinked(bioModel, bpObject, reactionStep)) {
-						// create linkage
-						RelationshipObject newRelationship = new RelationshipObject(reactionStep, bpObject);
-						bioModel.getRelationshipModel().addRelationshipObject(newRelationship);	
-						return info;
-					}
+					//
+					// We are eliminating some obsolete code, see above the species context comment
+					//
+//					if(bpObject == null){
+//						bpObject = createInteraction(reactionStep, xRef, refName);
+//						bioModel.getPathwayModel().add(bpObject);
+//					}
+//					if(bpObject != null && !isLinked(bioModel, bpObject, reactionStep)) {
+//						// create linkage
+//						RelationshipObject newRelationship = new RelationshipObject(reactionStep, bpObject);
+//						bioModel.getRelationshipModel().addRelationshipObject(newRelationship);	
+//						return info;
+//					}
 			 	}
 		 }
 		 return null;
