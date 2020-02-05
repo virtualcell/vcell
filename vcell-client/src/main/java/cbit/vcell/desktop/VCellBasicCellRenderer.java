@@ -76,13 +76,13 @@ public class VCellBasicCellRenderer extends javax.swing.tree.DefaultTreeCellRend
 	protected javax.swing.Icon fieldSimulationContextErrorIcon = null;
 	protected javax.swing.Icon fieldSimulationContextWarningIcon = null;
 	protected javax.swing.Icon fieldTextIcon = null;
-	protected javax.swing.Icon fieldUserIcon = null;
+	public javax.swing.Icon fieldUserIcon = null;
 	protected javax.swing.Icon fieldUsersIcon = null;
-	protected javax.swing.Icon fieldCalendarIcon = null;
+	public javax.swing.Icon fieldCalendarIcon = null;
 	protected javax.swing.Icon fieldFolderOpenIcon = null;
 	protected javax.swing.Icon fieldFolderOpenErrorIcon = null;
 	protected javax.swing.Icon fieldFolderOpenWarningIcon = null;
-	protected javax.swing.Icon fieldFolderClosedIcon = null;
+	public javax.swing.Icon fieldFolderClosedIcon = null;
 	protected javax.swing.Icon fieldFolderSelfIcon = null;
 	protected javax.swing.Icon fieldFolderUserIcon = null;
 	protected javax.swing.Icon fieldFolderSharedIcon = null;
@@ -96,9 +96,9 @@ public class VCellBasicCellRenderer extends javax.swing.tree.DefaultTreeCellRend
 	protected javax.swing.Icon fieldFolderWarningIcon = null;
 	protected javax.swing.Icon fieldFolderClosedErrorIcon = null;
 	protected javax.swing.Icon fieldFolderClosedWarningIcon = null;
-	protected javax.swing.Icon fieldPermissionsIcon = null;
+	public javax.swing.Icon fieldPermissionsIcon = null;
 	protected javax.swing.Icon fieldDatabaseIcon = null;
-	protected javax.swing.Icon fieldDatabaseModelKeyIcon = null;
+	public javax.swing.Icon fieldDatabaseModelKeyIcon = null;
 	protected java.awt.Font selectedFont = null;
 	protected java.awt.Font unselectedFont = null;
 

@@ -65,6 +65,7 @@ import cbit.vcell.clientdb.DatabaseListener;
 import cbit.vcell.desktop.BioModelInfoCellRenderer;
 import cbit.vcell.desktop.BioModelInfoTreeModel;
 import cbit.vcell.desktop.BioModelNode;
+import cbit.vcell.desktop.VCellBasicCellRenderer;
 import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.xml.gui.MiriamTreeModel;
 import cbit.vcell.xml.gui.MiriamTreeModel.LinkNode;
@@ -74,7 +75,8 @@ public class BioModelPropertiesPanel extends JPanel {
 	
 	private BioModel bioModel = null;
 	private EventHandler eventHandler = new EventHandler();
-	private JLabelLikeTextField nameLabel, ownerLabel, idLabel, lastModifiedLabel, permissionLabel;
+//	private JLabelLikeTextField nameLabel, ownerLabel, idLabel, lastModifiedLabel, permissionLabel;
+	private JLabel nameLabel, ownerLabel, idLabel, lastModifiedLabel, permissionLabel;
 	private JButton changePermissionButton;
 	private BioModelWindowManager bioModelWindowManager;
 	private LocalMetaDataPanel applicationsPanel = null;
@@ -135,11 +137,16 @@ private void handleException(java.lang.Throwable exception) {
  */
 private void initialize() {
 	try {		
-		nameLabel = new JLabelLikeTextField();
-		idLabel = new JLabelLikeTextField();
-		ownerLabel = new JLabelLikeTextField();
-		lastModifiedLabel = new JLabelLikeTextField();
-		permissionLabel = new JLabelLikeTextField();
+//		nameLabel = new JLabelLikeTextField();
+//		idLabel = new JLabelLikeTextField();
+//		ownerLabel = new JLabelLikeTextField();
+//		lastModifiedLabel = new JLabelLikeTextField();
+//		permissionLabel = new JLabelLikeTextField();
+		nameLabel = new JLabel();
+		idLabel = new JLabel();
+		ownerLabel = new JLabel();
+		lastModifiedLabel = new JLabel();
+		permissionLabel = new JLabel();
 		changePermissionButton = new JButton("Change Permissions...");
 		changePermissionButton.setEnabled(false);
 		applicationsPanel = new LocalMetaDataPanel();
@@ -147,6 +154,8 @@ private void initialize() {
 //		applicationsPanel.setBackground(Color.white);
 		webLinksPanel = new JPanel();
 		webLinksPanel.setBackground(Color.white);
+		
+		VCellBasicCellRenderer tempRenderer = new VCellBasicCellRenderer();		// we need it for its icons
 		
 		JPanel mainPanel = new JPanel();
 		mainPanel.setLayout(new GridBagLayout());
@@ -169,7 +178,9 @@ private void initialize() {
 		gbc.gridy = gridy;
 		gbc.insets = new Insets(10, 10, 4, 4);
 		gbc.anchor = GridBagConstraints.LINE_END;		
-		label = new JLabel("BioModel Name:");
+		label = new JLabel();
+		label.setToolTipText("BioModel Name:");
+		label.setIcon(tempRenderer.fieldFolderClosedIcon);
 		mainPanel.add(label, gbc);
 		
 		gbc = new java.awt.GridBagConstraints();
@@ -178,7 +189,9 @@ private void initialize() {
 		gbc.weightx = 1.0;
 		gbc.fill = java.awt.GridBagConstraints.BOTH;
 		gbc.insets = new Insets(10, 4, 4, 4);
-		gbc.anchor = GridBagConstraints.LINE_START;		
+		gbc.anchor = GridBagConstraints.LINE_START;
+		nameLabel.setToolTipText("BioModel Name:");
+//		nameLabel.setIcon(tempRenderer.fieldFolderClosedIcon);
 		mainPanel.add(nameLabel, gbc);
 		
 		gridy ++;
@@ -187,7 +200,9 @@ private void initialize() {
 		gbc.gridy = gridy;
 		gbc.insets = new Insets(4, 4, 4, 4);
 		gbc.anchor = GridBagConstraints.LINE_END;		
-		label = new JLabel("VCell Identifier:");
+		label = new JLabel();
+		label.setToolTipText("VCell Identifier:");
+		label.setIcon(tempRenderer.fieldDatabaseModelKeyIcon);
 		mainPanel.add(label, gbc);
 		
 		gbc = new java.awt.GridBagConstraints();
@@ -196,6 +211,8 @@ private void initialize() {
 		gbc.fill = java.awt.GridBagConstraints.BOTH;
 		gbc.insets = new Insets(4, 4, 4, 4);
 		gbc.anchor = GridBagConstraints.LINE_START;		
+		idLabel.setToolTipText("VCell Identifier:");
+//		idLabel.setIcon(tempRenderer.fieldDatabaseModelKeyIcon);
 		mainPanel.add(idLabel, gbc);
 		
 		gridy ++;
@@ -204,7 +221,9 @@ private void initialize() {
 		gbc.gridy = gridy;
 		gbc.insets = new Insets(4, 4, 4, 4);
 		gbc.anchor = GridBagConstraints.LINE_END;		
-		label = new JLabel("Owner:");
+		label = new JLabel();
+		label.setIcon(tempRenderer.fieldUserIcon);
+		label.setToolTipText("Owner:");
 		mainPanel.add(label, gbc);
 		
 		gbc = new java.awt.GridBagConstraints();
@@ -213,6 +232,8 @@ private void initialize() {
 		gbc.fill = java.awt.GridBagConstraints.BOTH;
 		gbc.insets = new Insets(4, 4, 4, 4);
 		gbc.anchor = GridBagConstraints.LINE_START;		
+		ownerLabel.setToolTipText("Owner:");
+//		ownerLabel.setIcon(tempRenderer.fieldUserIcon);
 		mainPanel.add(ownerLabel, gbc);
 		
 		gridy ++;
@@ -221,7 +242,9 @@ private void initialize() {
 		gbc.gridy = gridy;
 		gbc.insets = new Insets(4, 4, 4, 4);
 		gbc.anchor = GridBagConstraints.LINE_END;		
-		label = new JLabel("Last Modified:");
+		label = new JLabel();
+		label.setIcon(tempRenderer.fieldCalendarIcon);
+		label.setToolTipText("Last Modified:");
 		mainPanel.add(label, gbc);
 		
 		gbc = new java.awt.GridBagConstraints();
@@ -230,6 +253,8 @@ private void initialize() {
 		gbc.fill = java.awt.GridBagConstraints.BOTH;
 		gbc.insets = new Insets(4, 4, 4, 4);
 		gbc.anchor = GridBagConstraints.LINE_START;		
+		lastModifiedLabel.setToolTipText("Last Modified:");
+//		lastModifiedLabel.setIcon(tempRenderer.fieldCalendarIcon);
 		mainPanel.add(lastModifiedLabel, gbc);
 		
 		gridy ++;
@@ -238,7 +263,9 @@ private void initialize() {
 		gbc.gridy = gridy;
 		gbc.insets = new Insets(4, 4, 4, 4);
 		gbc.anchor = GridBagConstraints.LINE_END;		
-		label = new JLabel("Permissions:");
+		label = new JLabel();
+		label.setIcon(tempRenderer.fieldPermissionsIcon);
+		label.setToolTipText("Permissions:");
 		mainPanel.add(label, gbc);
 		
 		gbc = new java.awt.GridBagConstraints();
@@ -247,6 +274,8 @@ private void initialize() {
 		gbc.fill = java.awt.GridBagConstraints.HORIZONTAL;
 		gbc.insets = new Insets(4, 4, 4, 4);
 		gbc.anchor = GridBagConstraints.LINE_START;
+		permissionLabel.setToolTipText("Permissions:");
+//		permissionLabel.setIcon(tempRenderer.fieldPermissionsIcon);
 		mainPanel.add(permissionLabel, gbc);
 		
 		gridy ++;
@@ -325,7 +354,7 @@ private void updateInterface() {
 	if (bioModel == null || bioModelWindowManager == null) {
 		return;
 	}
-	nameLabel.setText(bioModel.getName());
+	nameLabel.setText("<html><b>" + bioModel.getName() + "</b></html>");
 	
 	Version version = bioModel.getVersion();
 	if (version != null) {
@@ -334,8 +363,19 @@ private void updateInterface() {
 		idLabel.setText(text);
 		lastModifiedLabel.setText(version.getDate().toString());
 		try {
+			// permissions
 			BioModelInfo bioModelInfo = bioModelWindowManager.getRequestManager().getDocumentManager().getBioModelInfo(version.getVersionKey());
-			permissionLabel.setText(bioModelInfo.getVersion().getGroupAccess().getDescription());
+			String permissions = bioModelInfo.getVersion().getGroupAccess().getDescription();
+			if(bioModelInfo.getPublicationInfos() != null && bioModelInfo.getPublicationInfos().length > 0) {
+				if(bioModelInfo.getVersion().getFlag().compareEqual(org.vcell.util.document.VersionFlag.Published)) {
+					permissions = "Published";		// must be Public
+				} else {
+					permissions = "Curated";
+				}
+			} else if(bioModelInfo.getVersion().getFlag().compareEqual(org.vcell.util.document.VersionFlag.Archived)) {
+				permissions += "Archived";
+			}
+			permissionLabel.setText(permissions);
 		} catch (DataAccessException e) {
 			e.printStackTrace();
 		}
