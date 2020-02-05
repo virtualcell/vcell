@@ -8,7 +8,7 @@ sudo docker service update --force --detach=false vcellrel_data
 sudo docker service update --force --detach=false vcellrel_sched  
 sudo docker service update --force --detach=false vcellrel_submit  
 sudo docker service update --force --detach=false vcellrel_api  
-sudo docker service update --force --detach=false vcellrel_opt  
+(not used) sudo docker service update --force --detach=false vcellrel_opt  
 
 ### Restart Alpha Site (from development swarm cluster, e.g. vcellapi-beta.cam.uchc.edu or vcell-node3 or vcell-node4)  
 
@@ -20,4 +20,4 @@ sudo docker service update --force --detach=false vcellalpha_data
 sudo docker service update --force --detach=false vcellalpha_sched  
 sudo docker service update --force --detach=false vcellalpha_submit  
 sudo docker service update --force --detach=false vcellalpha_api  
-sudo docker service update --force --detach=false vcellalpha_opt  
+(not used) sudo docker service update --force --detach=false vcellalpha_opt  
