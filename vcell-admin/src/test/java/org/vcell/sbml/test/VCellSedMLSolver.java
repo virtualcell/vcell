@@ -39,8 +39,8 @@ import cbit.vcell.xml.XmlHelper;
 
 public class VCellSedMLSolver {
 
-	static String inString = "/usr/local/app/sedml";
-	static String outRootString = "/usr/local/app/sedml/out";
+	static String inString = "/usr/local/app/vcell/simulation";
+	static String outRootString = "/usr/local/app/vcell/simulation/out";
 
 	public static void main(String[] args) {
 
