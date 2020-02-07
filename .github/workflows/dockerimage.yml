@@ -6,7 +6,7 @@ jobs:
 
   build:
 
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
 
     steps:
     - uses: actions/checkout@v2
@@ -17,7 +17,7 @@ jobs:
     - name: Show mvn version
       run: mvn -version
     - name: Build with Maven
-      run: mvn -B package --file pom.xml #mvn clean install dependency:copy-dependencies 
+      run: mvn clean install dependency:copy-dependencies # mvn -B package --file pom.xml
     - uses: actions/checkout@v1
     - name: Build the Docker image
       run: docker build . --file ./docker/build/Dockerfile-sedml-solver --tag crbm/biosimulations_copasi_api:latest
