@@ -38,14 +38,14 @@ import cbit.vcell.xml.XmlHelper;
 import kong.unirest.HttpResponse;
 import kong.unirest.Unirest;
 
+
 public class VCellSedMLSolver {
 
 	static String SIMULATION_ID = System.getenv("SIMULATION_ID");
 	static String JOBHOOK_URL = System.getenv("JOBHOOK_URL");
 	static String AUTH0_CLIENT_ID = System.getenv("AUTH0_CLIENT_ID");
     static String AUTH0_CLIENT_SECRET = System.getenv("AUTH0_CLIENT_SECRET");
-	
-	
+
 	static String inString = "/usr/local/app/vcell/simulation";
 	static String outRootString = "/usr/local/app/vcell/simulation/out";
 
@@ -102,7 +102,7 @@ public class VCellSedMLSolver {
 		try {
 			SedML sedml = Libsedml.readDocument(sedmlFile).getSedMLModel();
 			if (sedml == null || sedml.getModels().isEmpty()) {
-				System.err.println("the sedml file "" + sedmlFile.getName() + ""does not contain a valid document");
+				System.err.println("the sedml file '" + sedmlFile.getName() + "'does not contain a valid document");
 				System.exit(99);
 			}
 			VCellSedMLSolver vCellSedMLSolver = new VCellSedMLSolver();
@@ -116,8 +116,6 @@ public class VCellSedMLSolver {
 		}
 		System.out.println("done");
 	}
-
-
 	public HttpResponse<String> setAccessToken() {
 
 		HttpResponse<String> response = Unirest.post("https://crbm.auth0.com/oauth/token")
@@ -167,13 +165,13 @@ public class VCellSedMLSolver {
 		String kisao = sd.getKisao();
 		if(SolverDescription.CVODE.getKisao().contentEquals(kisao)) {
 			ODESolverResultSet odeSolverResultSet = solveCvode(outDir, bioModel);
-			System.out.println("Finished: " + docName + ": - task "" + sedmlTask.getId() + "".");
+			System.out.println("Finished: " + docName + ": - task '" + sedmlTask.getId() + "'.");
 		} else if(SolverDescription.StochGibson.getKisao().contentEquals(kisao)) {
 			ODESolverResultSet odeSolverResultSet = solveGibson(outDir, bioModel);
-			System.out.println("Finished: " + docName + ": - task "" + sedmlTask.getId() + "".");
+			System.out.println("Finished: " + docName + ": - task '" + sedmlTask.getId() + "'.");
 		} else if(SolverDescription.IDA.getKisao().contentEquals(kisao)) {
 			ODESolverResultSet odeSolverResultSet = solveIDA(outDir, bioModel);
-			System.out.println("Finished: " + docName + ": - task "" + sedmlTask.getId() + "".");
+			System.out.println("Finished: " + docName + ": - task '" + sedmlTask.getId() + "'.");
 		} else {
 			System.out.println("Unsupported solver: " + kisao);
 		}
@@ -269,14 +267,14 @@ public class VCellSedMLSolver {
 			throw new RuntimeException("The name of the imported VCDocument is null or empty.");
 		}
 		if(!(doc instanceof BioModel)) {
-			throw new RuntimeException("The imported VCDocument "" + docName + "" is not a BioModel.");
+			throw new RuntimeException("The imported VCDocument '" + docName + "' is not a BioModel.");
 		}
 		BioModel bioModel = (BioModel)doc;
 		if(bioModel.getSimulationContext(0) == null) {
-			throw new RuntimeException("The imported VCDocument "" + docName + "" has no Application");
+			throw new RuntimeException("The imported VCDocument '" + docName + "' has no Application");
 		}
 		if(bioModel.getSimulation(0) == null) {
-			throw new RuntimeException("The imported VCDocument "" + docName + "" has no Simulation");
+			throw new RuntimeException("The imported VCDocument '" + docName + "' has no Simulation");
 		}
 	}
 	
@@ -309,7 +307,7 @@ public class VCellSedMLSolver {
 			return simTask.getSimulationJob().getSimulationSymbolTable().createAnnotatedFunctionsList(simTask.getSimulation().getMathDescription());
 		} catch(Exception e) {
 			e.printStackTrace();
-			throw new RuntimeException("Simulation ""+simTask.getSimulationInfo().getName()+"", error createFunctionList(): "+e.getMessage(),e);
+			throw new RuntimeException("Simulation '"+simTask.getSimulationInfo().getName()+"', error createFunctionList(): "+e.getMessage(),e);
 		}
 	}
 	private static String getBaseName(String outDir, String docName) {
