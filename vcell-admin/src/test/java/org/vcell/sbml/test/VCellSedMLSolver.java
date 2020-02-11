@@ -53,8 +53,8 @@ public class VCellSedMLSolver {
     static String AUTH0_CLIENT_SECRET = System.getenv("AUTH0_CLIENT_SECRET");
     static String ACCESS_TOKEN = null;
 
-	static String inString = "/Users/akhilteja/Downloads/Vilar_Vcell";
-	static String outRootString = "/Users/akhilteja/Downloads/Vilar_Vcell/out";
+	static String inString = "/usr/local/app/vcell/simulation";
+	static String outRootString = "/usr/local/app/vcell/simulation/out";
 
 	public static void main(String[] args) {
 		setAccessToken();
@@ -79,7 +79,7 @@ public class VCellSedMLSolver {
 		
 		File[] directoryListing = inDir.listFiles();
 		if (directoryListing == null) {
-			sendMessageToJobhook("inDir not a director", true);
+			sendMessageToJobhook("inDir not a directory", true);
 			System.exit(99);
 		}
 		
