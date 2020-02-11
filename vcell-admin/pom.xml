@@ -120,6 +120,11 @@
 			<scope>runtime</scope>
 			<optional>true</optional>
  		</dependency>
+		<dependency>
+			<groupId>com.konghq</groupId>
+			<artifactId>unirest-java</artifactId>
+			<version>3.4.03</version>
+		</dependency>
  	</dependencies>
 	
 	<build>
