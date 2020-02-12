@@ -155,17 +155,25 @@ public class VCellSedMLSolver {
 	public static void sendMessageToJobhook(String message, Boolean error) {
 		if (error) {
 			System.err.println(message);
-			HttpResponse<String> response = Unirest.post(JOBHOOK_URL)
+			try {
+				HttpResponse<String> response = Unirest.post(JOBHOOK_URL)
 					.header("Authorization", ACCESS_TOKEN)
 					.field("message", "E: " + message)
 					.asString();
+			} catch (Exception ex) {
+				System.err.println(ex.getMessage());
+			}
 		}
 		else {
 			System.out.println(message);
-			HttpResponse<String> response = Unirest.post(JOBHOOK_URL)
+			try {
+				HttpResponse<String> response = Unirest.post(JOBHOOK_URL)
 					.header("Authorization", ACCESS_TOKEN)
 					.field("message", "I: " + message)
 					.asString();
+			} catch (Exception ex) {
+				System.err.println(ex.getMessage());
+			}
 		}
 		
 		
