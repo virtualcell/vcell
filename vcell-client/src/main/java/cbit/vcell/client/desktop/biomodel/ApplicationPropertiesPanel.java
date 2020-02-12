@@ -233,8 +233,9 @@ private void changeAnnotation() {
 		if (simulationContext == null) {
 			return;
 		}
-		simulationContext.setDescription(annotationTextArea.getText());
-	} catch(Exception e){
+		String description = annotationTextArea.getText();
+		simulationContext.setDescription(description);
+	} catch(Exception e) {
 		e.printStackTrace(System.out);
 		PopupGenerator.showErrorDialog(this, e.getMessage(), e);
 	}
