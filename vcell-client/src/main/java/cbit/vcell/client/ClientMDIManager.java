@@ -220,7 +220,15 @@ public DocumentWindow createNewDocumentWindow(final DocumentWindowManager window
 
 	// keep track of things
 	String windowID = windowManager.getManagerID();
-
+	if(getWindowsHash().containsKey(windowID) || getManagersHash().containsKey(windowID)) {
+		if(getManagersHash().get(windowID) instanceof DocumentWindowManager) {
+			VCDocument vcDoc = ((DocumentWindowManager)getManagersHash().get(windowID)).getVCDocument();
+			throw new RuntimeException(vcDoc.getDocumentType().name()+" already open for documentID="+windowID+" '"+vcDoc.getName()+
+				"', This can happen when importing a model from a local .vcml file that was exported from a model that is currently open on the desktop (Can't have 2 models open with the same id).");			
+		}else {
+			throw new RuntimeException(getManagersHash().get(windowID).getClass().getName()+" window="+getWindowsHash().containsKey(windowID)+" manager="+getManagersHash().containsKey(windowID)+" already exists for ID="+windowID);
+		}
+	}
 	// make the window
 	DocumentWindow documentWindow = createDocumentWindow();
 	documentWindow.setWorkArea(windowManager.getComponent());
