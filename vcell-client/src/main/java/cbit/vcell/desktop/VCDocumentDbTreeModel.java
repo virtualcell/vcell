@@ -209,6 +209,10 @@ protected synchronized static void initFinalTree(VCDocumentDbTreeModel vcDocumen
 	if(bOther){vcDocumentDbTreeModel.otherModelsNode.removeAllChildren();}
 	
 	for (String username : treeMap.keySet()) {								// iterate through all users
+//		if(username.equals(USER_modelBricks)) {
+//			System.out.print(username);
+//			System.out.println();
+//		}
 		BioModelNode userNode = treeMap.get(username);
 		BioModelNode parentNode = vcDocumentDbTreeModel.sharedModelsNode;	// initialize to something
 		boolean bSpecificUser = true;
@@ -259,9 +263,24 @@ protected synchronized static void initFinalTree(VCDocumentDbTreeModel vcDocumen
 						added = true;
 					}
 				}
-			} else {		// anything belonging to users Education, Tutorial or modelBricks go to their own folders
-				BioModelNode clone = BioModelNode.deepClone(childNode);
-				parentNode.add(clone);
+			} else {	// anything belonging to users Education, Tutorial or modelBricks go to their own folders
+				if(username.equals(USER_modelBricks)) {
+					// revision feb 13, 2020 danv
+					// for modelBricks, only the public clones go the Model Bricks folder
+					// we'll enforce a single version policy so that we won't have to look into versions to see
+					// the individual flag of each
+					VCDocumentInfoNode vcdDocumentInfoNode = (VCDocumentInfoNode) childNode.getUserObject();
+					BigDecimal groupid = vcdDocumentInfoNode.getVCDocumentInfo().getVersion().getGroupAccess().getGroupid();
+//					VCDocumentInfo versionVCDocumentInfo = (VCDocumentInfo) childNode.getUserObject();
+//					BigDecimal groupid = versionVCDocumentInfo.getVersion().getGroupAccess().getGroupid();
+					if (groupid.equals(GroupAccess.GROUPACCESS_ALL)) {		// only the public bricks go here
+						BioModelNode clone = BioModelNode.deepClone(childNode);
+						parentNode.add(clone);
+					}
+				} else {	// for all the other special users we keep the old behavior
+					BioModelNode clone = BioModelNode.deepClone(childNode);
+					parentNode.add(clone);
+				}
 			}
 		}
 		
@@ -298,6 +317,27 @@ protected synchronized static void initFinalTree(VCDocumentDbTreeModel vcDocumen
 					if(added == false) {
 						parentNode.add(userNameNode);	// now that we know for sure that the user name node is populated, we add it to the shared node if it's not there already
 						added = true;
+					}
+				}
+			} else {
+				if(username.equals(USER_modelBricks)) {
+					// revision feb 13, 2020 danv
+					// for modelBricks, we make a user name node and we populate it with all the bricks shared with
+					// the login user
+					// we'll enforce a single version policy so that we won't have to look into versions to see
+					// the individual flag of each
+					parentNode = vcDocumentDbTreeModel.sharedModelsNode;
+					VCDocumentInfoNode vcdDocumentInfoNode = (VCDocumentInfoNode) childNode.getUserObject();
+					BigDecimal groupid = vcdDocumentInfoNode.getVCDocumentInfo().getVersion().getGroupAccess().getGroupid();
+					if(groupid.equals(GroupAccess.GROUPACCESS_ALL) || groupid.equals(GroupAccess.GROUPACCESS_NONE)) {
+						;			// nothing to do here with public or private bricks
+					} else {
+						BioModelNode cloneNode = BioModelNode.deepClone(childNode);
+						userNameNode.add(cloneNode);
+						if(added == false) {
+							parentNode.add(userNameNode);	// now that we know for sure that the user name node is populated, we add it to the shared node if it's not there already
+							added = true;
+						}
 					}
 				}
 			}
