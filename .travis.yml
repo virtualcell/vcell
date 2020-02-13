@@ -1,11 +1,14 @@
 language: java
-jdk: oraclejdk8
+jdk:
+  - openjdk8
+services:
+  - docker
 branches:
   only:
-  - master
+  - develop
   - "/.*-[0-9]+\\..*/"
-install: true
-script: ".travis/build.sh"
+script: 
+  - mvn clean install dependency:copy-dependencies
+  - docker build -f docker/build/Dockerfile-sedml-solver -t crbm/vcell_sedml_solver:test .
 env:
-  global:
-    secure: rn+NMW27eoVIPRMr56Ds8Bkaj53n5s6dZm+wbpjltmDusAI5Fh8rFZCa5KBE4EExOpOotBPeuYm4USCVYTju5yum3ybG9XXxGbUj/foQLodArTPggDWdL7iU+lge0nQFeuSqeyeqgeiSoE2Q4vB6HBCSRQnx3dTWrH0WzjuAHLxJRqrdGVcjhqQFe49MKsVUcF50DQl+Rcg6TpZ4YBBElxY/rkG5JcEXVTlCHK0gLKjNOojU/1Xq3uoyxJLAs2r2WlutsqboLnWqP0iYyOXa+TptR0CvTestO4M6TWNDokTy4HjviUvvIldCYBtwaUNlv7MQjUFs2Oeu+ohuNvnR2OFU+Gy67/f2kk8c3s130WD4RTTVIdBp7mASdIV7K6vi8chPLEbZKaVTPf3InsaUpHSVXf1abNUSU/dXZAxucl9JJ/9zf2ALToqgR4EcAsYCfsTaK3RP4Xk2Y3XwGNXXTi4dHMenS5zleetwCzszrsCNQ53ltwZsoqdS1EVg2ZSr0TKyKS51YJg3+cOtH2/V6u1/NuSvVbuAXpQeLlPaus13IH7TR2rtZp82UKofNLmlbc6isgy0SxV6xe/WT9S/G+IOADxhp8/dmhJ6g25c1d/YtxLtkjk5sTiJP+4rVKO5dkV/vltvc8V+Zw9KR2GwuMHDG8fBEuK9D209fQQJwtc=
+  global:rn+NMW27eoVIPRMr56Ds8Bkaj53n5s6dZm+wbpjltmDusAI5Fh8rFZCa5KBE4EExOpOotBPeuYm4USCVYTju5yum3ybG9XXxGbUj/foQLodArTPggDWdL7iU+lge0nQFeuSqeyeqgeiSoE2Q4vB6HBCSRQnx3dTWrH0WzjuAHLxJRqrdGVcjhqQFe49MKsVUcF50DQl+Rcg6TpZ4YBBElxY/rkG5JcEXVTlCHK0gLKjNOojU/1Xq3uoyxJLAs2r2WlutsqboLnWqP0iYyOXa+TptR0CvTestO4M6TWNDokTy4HjviUvvIldCYBtwaUNlv7MQjUFs2Oeu+ohuNvnR2OFU+Gy67/f2kk8c3s130WD4RTTVIdBp7mASdIV7K6vi8chPLEbZKaVTPf3InsaUpHSVXf1abNUSU/dXZAxucl9JJ/9zf2ALToqgR4EcAsYCfsTaK3RP4Xk2Y3XwGNXXTi4dHMenS5zleetwCzszrsCNQ53ltwZsoqdS1EVg2ZSr0TKyKS51YJg3+cOtH2/V6u1/NuSvVbuAXpQeLlPaus13IH7TR2rtZp82UKofNLmlbc6isgy0SxV6xe/WT9S/G+IOADxhp8/dmhJ6g25c1d/YtxLtkjk5sTiJP+4rVKO5dkV/vltvc8V+Zw9KR2GwuMHDG8fBEuK9D209fQQJwtc=
