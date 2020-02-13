@@ -13,7 +13,7 @@ jobs:
     - uses: actions/setup-java@v1
       with:
         java-version: openjdk@1.14 # '1.8'
-        # java-package: jdk
+        java-package: jdk
     - name: Show mvn version
       run: mvn -version
     - name: Build with Maven
