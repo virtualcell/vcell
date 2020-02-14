@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@latest
     - uses: olafurpg/setup-java@1
       with:
         java-version: '1.8'
