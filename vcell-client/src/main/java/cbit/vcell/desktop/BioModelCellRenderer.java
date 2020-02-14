@@ -259,7 +259,13 @@ public java.awt.Component getTreeCellRendererComponent(JTree tree, Object value,
 							component.setText(modelName);
 							component.setToolTipText(toolTip);
 						} else {
-							component.setText(modelName);				// keep it simple for anything else
+							String str = modelName;
+							if(node.getChildCount() > 1) {
+								String prefix = sel ? "" : "<span style=\"color:#8B0000\">";
+								String suffix = sel ? "" : "</span>";
+								str += prefix + " (" + node.getChildCount() + ")" + suffix;
+							}
+							component.setText("<html>" + str + "</html>");
 							component.setToolTipText(toolTip);
 						}
 					} else {
