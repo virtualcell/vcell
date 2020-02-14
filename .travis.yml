@@ -7,7 +7,8 @@ branches:
   only:
   - develop
   - "/.*-[0-9]+\\..*/"
-script: 
+script:
+  - mvn -version
   - mvn clean install dependency:copy-dependencies
   - docker build -f docker/build/Dockerfile-sedml-solver -t crbm/vcell_sedml_solver:test .
 env:
