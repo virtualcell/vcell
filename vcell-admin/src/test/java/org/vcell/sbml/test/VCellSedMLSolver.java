@@ -48,6 +48,7 @@ import kong.unirest.Unirest;
 public class VCellSedMLSolver {
 
 	static String SIMULATION_ID = System.getenv("SIMULATION_ID");
+	static String JOB_ID = System.getenv("JOB_ID");
 	static String JOBHOOK_URL = System.getenv("JOBHOOK_URL");
 	static String AUTH0_CLIENT_ID = System.getenv("AUTH0_CLIENT_ID");
     static String AUTH0_CLIENT_SECRET = System.getenv("AUTH0_CLIENT_SECRET");
@@ -157,8 +158,10 @@ public class VCellSedMLSolver {
 			System.err.println(message);
 			try {
 				HttpResponse<String> response = Unirest.post(JOBHOOK_URL)
-					.header("Authorization", ACCESS_TOKEN)
+					.header("Authorization", "Bearer " + ACCESS_TOKEN)
 					.field("message", "E: " + message)
+					.field("simId", SIMULATION_ID)
+					.field("jobId", JOB_ID)
 					.asString();
 			} catch (Exception ex) {
 				System.err.println(ex.getMessage());
@@ -168,8 +171,10 @@ public class VCellSedMLSolver {
 			System.out.println(message);
 			try {
 				HttpResponse<String> response = Unirest.post(JOBHOOK_URL)
-					.header("Authorization", ACCESS_TOKEN)
+					.header("Authorization", "Bearer " + ACCESS_TOKEN)
 					.field("message", "I: " + message)
+					.field("simId", SIMULATION_ID)
+					.field("jobId", JOB_ID)
 					.asString();
 			} catch (Exception ex) {
 				System.err.println(ex.getMessage());
