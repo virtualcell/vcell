@@ -1,10 +1,10 @@
 #!/bin/bash
 
-if $TRAVIS_TAG
+if tag_name
 then
 
-        docker build --file docker/build/Dockerfile-sedml-solver --tag crbm/biosimulations_vcell_api:$TRAVIS_TAG . 
-        docker push crbm/biosimulations_vcell_api:$TRAVIS_TAG
+        docker build --file docker/build/Dockerfile-sedml-solver --tag crbm/biosimulations_vcell_api:tag_name . 
+        docker push crbm/biosimulations_vcell_api:tag_name
 
 else
 
