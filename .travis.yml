@@ -3,6 +3,8 @@ jdk:
 - openjdk8
 services:
 - docker
+git:
+  depth: 2
 branches:
   only:
   - develop
