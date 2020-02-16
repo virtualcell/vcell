@@ -9,7 +9,7 @@ branches:
   - "/.*-[0-9]+\\..*/"
 
 before_install:
-  - './.travis/main.sh'
+  - .travis/main.sh
 
 
 script:
