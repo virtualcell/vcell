@@ -8,8 +8,8 @@ branches:
   - develop
   - "/.*-[0-9]+\\..*/"
 
-# before_install:
-#   - .travis/main.sh
+before_install:
+  - chmod +x .travis/main.sh
 
 
 script:
@@ -17,7 +17,7 @@ script:
   - echo $TRAVIS_BRANCH
   - mvn -version
   - mvn clean install dependency:copy-dependencies
-  - .travis/main.sh
+  # - .travis/main.sh
   - .travis/build.sh
 
 
