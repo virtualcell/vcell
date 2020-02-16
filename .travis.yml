@@ -8,6 +8,9 @@ branches:
   - develop
   - "/.*-[0-9]+\\..*/"
 
+before_install:
+  - './.travis/main.sh'
+
 
 script:
   - echo $TRAVIS_TAG
