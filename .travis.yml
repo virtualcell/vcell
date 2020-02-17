@@ -3,15 +3,10 @@ jdk:
 - openjdk8
 services:
 - docker
-git:
-  depth: 2
 branches:
   only:
   - develop
-  - "/.*-[0-9]+\\..*/"
-
-# before_install:
-#   - chmod +x .travis/main.sh
+  - /.*-[0-9]+\\..*/
 
 
 script:
@@ -19,8 +14,8 @@ script:
   - echo $TRAVIS_BRANCH
   - mvn -version
   - mvn clean install dependency:copy-dependencies
-  - .travis/main.sh
-  # - .travis/build.sh
+  - if [ $TRAVIS_TAG != '' ]; then; docker build -f docker/build/Dockerfile-sedml-solver -t crbm/biosimulations_vcell_api:$TRAVIS_TAG .; docker push crbm/biosimulations_vcell_api:$TRAVIS_TAG; else; docker build -f docker/build/Dockerfile-sedml-solver -t crbm/biosimulations_vcell_api:latest .;fi;
+
 
 
 
@@ -31,12 +26,3 @@ env:
   - secure: JydI60oea5INHAdfplDMACwCV8ZpgYNl+muLGdnufeD+A5WlGNkmc+Qr5dNWabS0vbCXCU1WXYz4b3u8K74NalAJzXWCL3i7wbE5j1bV6MP7bfw6EFSBnLmeaujGtppf6WpmJoC9HTRe3iZoIIZx+s4dnBjHVB+KzqU7q+WjAbG2yQisq/ia8qIrEFOGND3GLK17atSlXgbgb1o9U8Sf9sJA9rZmIGHePwzsWJDxCwOYfwf2Q9BrqWrPyYDfcb7xHqKGrJREmYyWHqPLt3svy+oa2FCQRzNVqishO/ygwAnBtSEzE4jA0U0LWL/AWHCmyJb4ThvaeGO5T1DIgzlKpWhxC1L59Fo7g58ZluxoYmAuKEEuTJcOdAM76ZaHk6/snzAc2xAmj6BXGYlJKw/XFMiPdf2+2oH2qry7oGrako70WjKY5Y7IF9AHBm5HUE9uqoUF1EakjOn4q66H7k9/PjD84r9kTmREtQlpCZzmn9VYJZi0S6lPwqoD9l7Q49I0yNkTZQYPXWVHxrgXWT9hWGdYzhlwTnihQ2E0RYoXVNyJcUkXSAyP27T/PrJGWbGUQBYDDFeEqFXH65XTW8BxMoz83jbkqRMe11U1gyvFyQ3AqyBaq9mNd7yzGogQcgPFOtiD0FFyr8t65MXj1nJ+7RIaT/1O4297emTKqMH7SpA=
   - secure: Ddmlgg91t6l+B9Piadl8DlbRm50xdvqnNuaKfpXT7UMzMu9IX26HhramBlXnNJZrlUNaiK4hwwYH0wgpb1yg+MUgRaf6sm435RL6OFxYnIOZL3VkPItsbQ6LvkGDgfUPeycUWC8fJP5G8gernKPJY+K9qyROu2EfVlvtPhoQsSZj20VqgIa4HI9guJNzD7HbnbKZquAWLMNmuE7+B3IKnuZlRVs80hABp5y65bAj34bN/xxiYUbyU0IVrgKvUMMHJQFNEaYwRQ0Jk2/KMRqHiY3v1qAmaUJVTWewjxufZ80UQv/fxoBs4QgXFnJRVCrbAbpWTD9hiDkRsCCEBmqsgH+DRmCE2dJKLOS7y202XjZRntjSCNc0/9E7B5VedE/rFOJvgz+lWhXVVIGQAPut6/RiWt9kq2QwKSXI8W9pbEsYZ8USeKWrQ/LYItomXMUMWVWIO6dYd17CfTm5GUgGNWfKGVTtAsBPdmT54amno7EL2qN4BOkfS5CbJkJWDeuMDKyMQgbgnLICtLHlCZwS3GeI0KFAOsDIYlB2Zd2mDmOcoc6QPE49LlGdOxUKdCMGMfqHFYHy2ZeSoe+6UAg7H/kWjsQQA0m0q5xPAf7wrEHsnjbPK/YtvP1vIYT9q6+BI7TLXoVK1kS/Q0/CwonGjFra4G7cb1CmoJRrVfGZZ9c=
   - secure: AtnXE+YeosNGDCAkMK8kwWmQ/4Q8r9AiJ79mKOGWJ+bQqmlxA3/gwKVhsg4J4zSN30mroBQTaceYbPQPD3xYh8mjUFAZGSi8KaQZsGxGVls4S0EUwtW3CNPNP2eyLmLygr8VSc6qbHQMZMIDPDaIS8OwWJ5yJoOqYZP6gk4v/nk2cu7Tl/I04ig2oB1bW9aSPtvcH1zx8+fk6PlkjxbgiJ/BxTycvhCcoqXJyjTygNSJm7mTDHT6S5oXikTAXJ8YRcWQJFqoBLyRh4BXKukcAI+xjkboV6vcKG+geS3pYo4bmtugvbYC6mIoA+Ko/VGuF1g9FX6ZC2FV40i/TgvePETDAxG3x/uiSDrlC1cUK4dqf/6DxgrpBtrMYF4/uPB252U7qrnhQTsOWJI6p8FLAbesuf6CEEjCXHCB9a8mvWJfp876zJH6/BszEXJiSOaz8Qlz7aMYN24urJpwFgk7mheTOJR/GiiVLPSG9/FnhkTj8sOxN1khaPhd8bLI41mtv2vKtytchaSbUHxjoXgC19zDchFs4YwBOYGC/icFpDJToKvhKJL6hxVeycI17bImoyTUsx3D50/cXCLTZctuGb5vZg3P86gTdio2487EMaIRNoNvxyFvkEvxHl8aD3NeA3LJE0QE5/WcNCs8gdiEGdaqTdOppKYxz0MUT8knRQU=
-
-deploy:
-  - provider: script
-    skip_cleanup: true
-    script: .travis/build.sh
-    on:
-      tags: true
-      all_branches: true
-
