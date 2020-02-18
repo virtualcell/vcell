@@ -7,8 +7,9 @@ git:
   depth: 2
 branches:
   only:
-  - develop
+  - master
   - "/.*-[0-9]+\\..*/"
+  - /^v\d+\.\d+\.\d+$/
 
 # before_install:
 #   - chmod +x .travis/main.sh
