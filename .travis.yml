@@ -1,13 +1,15 @@
 language: java
 jdk:
-- openjdk8
+  - oraclejdk8
+  - openjdk8
 services:
-- docker
+  - docker
 git:
   depth: 2
 branches:
   only:
   - master
+  - develop
   - "/.*-[0-9]+\\..*/"
   - /^v\d+\.\d+\.\d+$/
 
