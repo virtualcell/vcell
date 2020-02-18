@@ -4,6 +4,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Vector;
 
 import org.jlibsedml.AbstractTask;
@@ -13,6 +15,10 @@ import org.vcell.sbml.vcell.SBMLImportException;
 import org.vcell.sbml.vcell.SBMLImporter;
 import org.vcell.util.document.VCDocument;
 import org.vcell.util.exe.Executable;
+
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import cbit.util.xml.VCLogger;
 import cbit.vcell.biomodel.BioModel;
@@ -35,16 +41,27 @@ import cbit.vcell.solver.stoch.StochFileWriter;
 import cbit.vcell.solvers.FunctionFileGenerator;
 import cbit.vcell.xml.ExternalDocInfo;
 import cbit.vcell.xml.XmlHelper;
+import kong.unirest.HttpResponse;
+import kong.unirest.Unirest;
 
 
 public class VCellSedMLSolver {
 
-	static String inString = "C:\\TEMP\\ddd\\sedml";
-	static String outRootString = "C:\\TEMP\\ddd\\sedml\\out";
+	static String SIMULATION_ID = System.getenv("SIMULATION_ID");
+	static String JOB_ID = System.getenv("JOB_ID");
+	static String JOBHOOK_URL = System.getenv("JOBHOOK_URL");
+	static String AUTH0_CLIENT_ID = System.getenv("AUTH0_CLIENT_ID");
+    static String AUTH0_CLIENT_SECRET = System.getenv("AUTH0_CLIENT_SECRET");
+    static String ACCESS_TOKEN = null;
+
+	static String inString = "/usr/local/app/vcell/simulation";
+	static String outRootString = "/usr/local/app/vcell/simulation/out";
 
 	public static void main(String[] args) {
+		setAccessToken();
 
 		// place the sedml file and the sbml file(s) in inDir directory
+		
 		File inDir = new File(inString);
 		File outRootDir = new File(outRootString);
 		
@@ -53,7 +70,7 @@ public class VCellSedMLSolver {
 			try {
 				deleteRecursively(outRootDir);
 			} catch (IOException e) {
-				System.err.println("Failed to empty outRootDir.");
+				sendMessageToJobhook("Failed to empty outRootDir.", true);
 				System.exit(99);
 			}
 		}
@@ -63,7 +80,7 @@ public class VCellSedMLSolver {
 		
 		File[] directoryListing = inDir.listFiles();
 		if (directoryListing == null) {
-			System.err.println("inDir not a directory");
+			sendMessageToJobhook("inDir not a directory", true);
 			System.exit(99);
 		}
 		
@@ -87,14 +104,14 @@ public class VCellSedMLSolver {
 			}
 		}
 		if(sedmlFile == null) {
-			System.err.println("no sedml file found");
+			sendMessageToJobhook("no sedml file found", true);
 			System.exit(99);
 		}
 		
 		try {
 			SedML sedml = Libsedml.readDocument(sedmlFile).getSedMLModel();
 			if (sedml == null || sedml.getModels().isEmpty()) {
-				System.err.println("the sedml file '" + sedmlFile.getName() + "'does not contain a valid document");
+				sendMessageToJobhook("the sedml file '" + sedmlFile.getName() + "'does not contain a valid document", true);
 				System.exit(99);
 			}
 			VCellSedMLSolver vCellSedMLSolver = new VCellSedMLSolver();
@@ -103,12 +120,78 @@ public class VCellSedMLSolver {
 				vCellSedMLSolver.doWork(externalDocInfo, at, sedml);
 			}
 		} catch (Exception e) {
-			System.err.println(e.getMessage());
+			sendMessageToJobhook(e.getMessage(), true);
 		} finally {
 		}
-		System.out.println("done");
+		sendMessageToJobhook("done", false);
+	}
+	public static void setAccessToken() {
+
+		HttpResponse<String> response = Unirest.post("https://crbm.auth0.com/oauth/token")
+		.field("grant_type", "client_credentials")
+		.field("client_id", AUTH0_CLIENT_ID)
+		.field("client_secret", AUTH0_CLIENT_SECRET)
+		.field("audience", "api.biosimulations.org")
+		.asString();
+		
+		try {
+			@SuppressWarnings("unchecked")
+			Map<String, Object> res = new ObjectMapper().readValue(response.getBody(), HashMap.class);
+			ACCESS_TOKEN = (String) res.get("access_token");
+		} catch (JsonParseException e) {
+			// TODO Auto-generated catch block
+			System.out.println(e.getMessage());
+		} catch (JsonMappingException e) {
+			// TODO Auto-generated catch block
+			System.out.println(e.getMessage());
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			System.out.println(e.getMessage());
+		}
+
+
+		
+	}
+	
+	public static void sendMessageToJobhook(String message, Boolean error) {
+		if (error) {
+			System.err.println(message);
+			try {
+				HttpResponse<String> response = Unirest.post(JOBHOOK_URL)
+					.header("Authorization", "Bearer " + ACCESS_TOKEN)
+					.field("message", "E: " + message)
+					.field("simId", SIMULATION_ID)
+					.field("jobId", JOB_ID)
+					.asString();
+			} catch (Exception ex) {
+				System.err.println(ex.getMessage());
+			}
+		}
+		else {
+			System.out.println(message);
+			try {
+				HttpResponse<String> response = Unirest.post(JOBHOOK_URL)
+					.header("Authorization", "Bearer " + ACCESS_TOKEN)
+					.field("message", "I: " + message)
+					.field("simId", SIMULATION_ID)
+					.field("jobId", JOB_ID)
+					.asString();
+			} catch (Exception ex) {
+				System.err.println(ex.getMessage());
+			}
+		}
+		
+		
+		// TODO: Use the response
 	}
 
+	public void setHeadersForJobHook() {
+
+	}
+
+	public boolean jobhookRequest(String message) {
+		return true;
+	}
 	// everything is done here
 	public void doWork(ExternalDocInfo externalDocInfo, AbstractTask sedmlTask, SedML sedml) throws Exception {
 
@@ -119,7 +202,7 @@ public class VCellSedMLSolver {
 		
 		// create the work directory for this task, invoke the solver
 		String docName = doc.getName();
-		String outString = outRootString + "\\" + docName + "_" + sedmlTask.getId();
+		String outString = outRootString + "/" + docName + "_" + sedmlTask.getId();
 		File outDir = new File(outString);
 		if (!outDir.exists()) {
 			outDir.mkdirs();
@@ -129,7 +212,7 @@ public class VCellSedMLSolver {
 		SimulationContext simContext = bioModel.getSimulationContext(0);
 		MathDescription mathDesc = simContext.getMathDescription();
 		String vcml = mathDesc.getVCML();
-		try (PrintWriter pw = new PrintWriter(outString + "\\vcmlTrace.xml")) {
+		try (PrintWriter pw = new PrintWriter(outString + "/vcmlTrace.xml")) {
 			pw.println(vcml);
 		}
 		
@@ -139,17 +222,17 @@ public class VCellSedMLSolver {
 		String kisao = sd.getKisao();
 		if(SolverDescription.CVODE.getKisao().contentEquals(kisao)) {
 			ODESolverResultSet odeSolverResultSet = solveCvode(outDir, bioModel);
-			System.out.println("Finished: " + docName + ": - task '" + sedmlTask.getId() + "'.");
+			sendMessageToJobhook("Finished: " + docName + ": - task '" + sedmlTask.getId() + "'.", false);
 		} else if(SolverDescription.StochGibson.getKisao().contentEquals(kisao)) {
 			ODESolverResultSet odeSolverResultSet = solveGibson(outDir, bioModel);
-			System.out.println("Finished: " + docName + ": - task '" + sedmlTask.getId() + "'.");
+			sendMessageToJobhook("Finished: " + docName + ": - task '" + sedmlTask.getId() + "'.", false);
 		} else if(SolverDescription.IDA.getKisao().contentEquals(kisao)) {
 			ODESolverResultSet odeSolverResultSet = solveIDA(outDir, bioModel);
-			System.out.println("Finished: " + docName + ": - task '" + sedmlTask.getId() + "'.");
+			sendMessageToJobhook("Finished: " + docName + ": - task '" + sedmlTask.getId() + "'.", false);
 		} else {
-			System.out.println("Unsupported solver: " + kisao);
+			sendMessageToJobhook("Unsupported solver: " + kisao, false);
 		}
-		System.out.println("-------------------------------------------------------------------------");
+		sendMessageToJobhook("-------------------------------------------------------------------------", false);
 	}
 	
 	private static ODESolverResultSet solveCvode(File outDir, BioModel bioModel) throws Exception {
@@ -285,14 +368,14 @@ public class VCellSedMLSolver {
 		}
 	}
 	private static String getBaseName(String outDir, String docName) {
-		String baseName = outDir + "\\" + docName;
+		String baseName = outDir + "/" + docName;
 		return baseName;
 	}
 
 	private class LocalLogger extends VCLogger {
 		@Override
 		public void sendMessage(Priority p, ErrorType et, String message) throws Exception {
-			System.out.println("LOGGER: msgLevel="+p+", msgType="+et+", "+message);
+			sendMessageToJobhook("LOGGER: msgLevel="+p+", msgType="+et+", "+message, false);
 			if (p==VCLogger.Priority.HighPriority) {
 				SBMLImportException.Category cat = SBMLImportException.Category.UNSPECIFIED;
 				if (message.contains(SBMLImporter.RESERVED_SPATIAL) ) {

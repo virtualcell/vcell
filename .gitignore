@@ -1,5 +1,6 @@
 .classpath
 .project
+.factorypath
 .settings/
 /.pydevproject
 /listserv/
@@ -23,3 +24,6 @@ ziptool
 /update/
 /.checksums
 /.DS_Store
+vcell-client/UserDocumentation/originalXML/helpSearchConfig.txt
+*.iml
+.metadata/
