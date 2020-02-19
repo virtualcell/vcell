@@ -1557,7 +1557,7 @@ public Element getXML(SimulationContext param, BioModel bioModel) throws XmlPars
 
 	//simulationcontext.setAttribute(XMLTags.AnnotationAttrTag, this.mangle(param.getDescription()));
 	//add annotation
-	if (param.getDescription()!=null && param.getDescription().length()>0) {
+	if (param.getDescription()!=null /*&& param.getDescription().length()>0*/) {
 		Element annotationElem = new Element(XMLTags.AnnotationTag);
 		annotationElem.setText(mangle(param.getDescription()));
 		simulationcontext.addContent(annotationElem);

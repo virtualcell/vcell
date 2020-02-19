@@ -385,6 +385,7 @@ private class LocalMetaDataPanel extends JPanel {
 			
 			KeyValue keyValue = mathModel.getVersion().getVersionKey();
 			fieldMathModelInfo = mathModelWindowManager.getRequestManager().getDocumentManager().getMathModelInfo(keyValue);
+			mathModelInfoTreeModel.showDatabaseFileInfo(false);
 			mathModelInfoTreeModel.setMathModelInfo(fieldMathModelInfo);
 			GuiUtils.treeExpandAllRows(getJTree());
 		} catch(DataAccessException ex) {

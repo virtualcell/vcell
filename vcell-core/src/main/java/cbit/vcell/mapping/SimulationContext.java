@@ -2267,6 +2267,9 @@ public void setCharacteristicSize(Double size) throws java.beans.PropertyVetoExc
  */
 public void setDescription(java.lang.String description) throws java.beans.PropertyVetoException {
 	String oldValue = getFieldDescription();
+	if(description != null && description.contentEquals(oldValue)) {
+		return;
+	}
 	fireVetoableChange(PROPERTY_NAME_DESCRIPTION, oldValue, description);
 	setFieldDescription(description);
 	firePropertyChange(PROPERTY_NAME_DESCRIPTION, oldValue, description);
@@ -2278,7 +2281,8 @@ private java.lang.String getFieldDescription() {
 }
 
 private void setFieldDescription(java.lang.String newFieldDescription) {
-	this.fieldDescription = truncateForDB(newFieldDescription);
+	String ret = truncateForDB(newFieldDescription);
+	this.fieldDescription = ret;
 }
 
 private String truncateForDB(String s){
@@ -2292,7 +2296,6 @@ private String truncateForDB(String s){
 		}
 		return temp.toString();
 	}
-	
 	return s;
 }
 

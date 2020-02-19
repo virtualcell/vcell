@@ -84,6 +84,7 @@ public abstract class DocumentEditor extends JPanel {
 	private static final String TAB_TITLE_OBJECT_PROPERTIES = "Object Properties";
 	private static final String TAB_TITLE_ANNOTATIONS = "Annotations";
 	protected static final String generalTreeNodeDescription = "Select only one object (e.g. species, reaction, simulation) to view/edit properties.";
+	protected static final String generalTreeNodeDescription2 = "Select only one object (e.g. species, reaction, simulation) to view/edit annotations.";
 	protected static final Logger LG = LogManager.getLogger(DocumentEditor.class);
 	
 	protected enum DocumentEditorTabID {
@@ -135,6 +136,7 @@ public abstract class DocumentEditor extends JPanel {
 	private JSeparator popupMenuSeparator = null;
 	private DocumentEditorTreeCellEditor documentEditorTreeCellEditor;
 	protected JLabel treeNodeDescriptionLabel;
+	protected JLabel treeNodeDescriptionLabel2;
 	protected IssuePanel issuePanel;
 	
 	private JMenuItem menuItemNewBiomodelFromApp = null;
@@ -524,6 +526,7 @@ private void initialize() {
 		rightBottomEmptyAnnotationsPanel = new JPanel(new GridBagLayout());
 		rightBottomEmptyAnnotationsPanel.setBackground(Color.white);
 		rightBottomEmptyAnnotationsPanel.setName("Annotations");
+		treeNodeDescriptionLabel2 = new JLabel(generalTreeNodeDescription2);
 		gbc = new GridBagConstraints();
 		gbc.gridx = 0;
 		gbc.insets = new Insets(10,10,4,4);
@@ -532,7 +535,7 @@ private void initialize() {
 		gbc.weightx = 1.0;
 		gbc.fill = GridBagConstraints.HORIZONTAL;
 		gbc.anchor = GridBagConstraints.PAGE_START;
-		rightBottomEmptyAnnotationsPanel.add(treeNodeDescriptionLabel, gbc);
+		rightBottomEmptyAnnotationsPanel.add(treeNodeDescriptionLabel2, gbc);
 
 		issuePanel = new IssuePanel();		
 		rightBottomTabbedPane = new JTabbedPaneEnhanced();

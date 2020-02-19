@@ -2090,8 +2090,8 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 		BioModelEntityObject selectedBioModelEntityObject = getSelectedBioModelEntityObject();
 		if (relationshipPanel == null) {
 			relationshipPanel = new PhysiologyRelationshipPanel();
-			relationshipPanel.setBioModel(bioModel);
 		}
+		relationshipPanel.setBioModel(bioModel);
 		relationshipPanel.setBioModelEntityObject(selectedBioModelEntityObject);
 		DialogUtils.showComponentCloseDialog(BioModelEditorModelPanel.this, relationshipPanel, "Edit Pathway Links");
 		refreshButtons();

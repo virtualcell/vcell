@@ -94,7 +94,8 @@ private void initialize() {
 		gbc.gridy = 0;
 		gbc.insets = new Insets(4, 4, 4, 4);
 		gbc.anchor = GridBagConstraints.FIRST_LINE_END;
-		add(new JLabel("Notes:"), gbc);
+		add(new JLabel("Tip:"), gbc);
+//		add(new JLabel("Notes:"), gbc);
 
 		javax.swing.JScrollPane jsp = new javax.swing.JScrollPane(annotationTextArea);		
 		gbc = new java.awt.GridBagConstraints();
@@ -149,8 +150,8 @@ private void updateInterface() {
 	if (bioModel == null) {
 		return;
 	}
-	
-	annotationTextArea.setText(bioModel.getVCMetaData().getFreeTextAnnotation(bioModel));
+	annotationTextArea.setText(generalInfo);
+//	annotationTextArea.setText(bioModel.getVCMetaData().getFreeTextAnnotation(bioModel));
 }
 
 @Override
@@ -161,5 +162,16 @@ protected void onSelectedObjectsChange(Object[] selectedObjects) {
 //		}
 //	}
 }
+
+private static String generalInfo = "<html><b>Overview</b><br>" + 
+		"The Virtual Cell Software provides 2 environments for defining computational models. BioModels and MathModels "
+		+ "allow the user to create models using the tool that best suits their experience. A BioModel consists of a "
+		+ "model description (Physiology), and one or more Applications generated using a graphical interface to define "
+		+ "model elements. A MathModel is a document defined using the VCell Markup Language (VCML) and is created using "
+		+ "VCML 'code'.<br><br>" + 
+		"<b>BioModel</b><br>" + 
+		"The BioModel Physiology includes what is known about the biological system in terms of cellular structures, "
+		+ "species and biochemical reactions. Each BioModel Application allows the user to define the quantitative "
+		+ "conditions needed to define, run and visualize a Virtual Experiment, i.e. numerical simulation.</html>";
 
 }

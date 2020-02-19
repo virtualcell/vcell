@@ -225,9 +225,21 @@ protected boolean shouldDisablePopupMenu(TreePath treePath) {
 	Version version = getSelectedVersionInfo().getVersion();
 	boolean isOwner = version.getOwner().compareEqual(getDocumentManager().getUser());
 	if(!isOwner) {
+		// we don't care if the login user is not the owner
 		return false;
 	}
 	TreePath p1 = treePath.getParentPath();
+	if(p1 != null && p1.getLastPathComponent() instanceof BioModelNode) {
+		// return true if it's a model in the ModelBricks folder
+		BioModelNode n1 = (BioModelNode)p1.getLastPathComponent();
+		if(n1.getUserObject() instanceof String) {
+			String str = (String)n1.getUserObject();
+			if(str.equals(VCDocumentDbTreeModel.ModelBricks)) {
+				return true;
+			}
+		}
+	}
+	
 	TreePath p2 = null;
 	if(p1 != null && p1.getParentPath() != null) {
 		p2 = p1.getParentPath();
@@ -235,10 +247,12 @@ protected boolean shouldDisablePopupMenu(TreePath treePath) {
 	if(p2 != null && p2.getLastPathComponent() instanceof BioModelNode) {
 		BioModelNode n2 = (BioModelNode)p2.getLastPathComponent();
 		if(n2.getUserObject() instanceof String) {
+			// return true if it's a version of a model in the ModelBricks folder
 			String str = (String)n2.getUserObject();
 			if(str.equals(VCDocumentDbTreeModel.Other_MathModels) || 
 					str.equals(VCDocumentDbTreeModel.Other_BioModels) ||
-					str.equals(VCDocumentDbTreeModel.PUBLIC_GEOMETRIES)) {
+					str.equals(VCDocumentDbTreeModel.PUBLIC_GEOMETRIES) ||
+					str.equals(VCDocumentDbTreeModel.ModelBricks)) {
 				return true;
 			}
 		}

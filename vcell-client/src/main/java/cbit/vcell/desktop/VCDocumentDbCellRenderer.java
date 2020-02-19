@@ -14,6 +14,7 @@ import java.math.BigDecimal;
 import javax.swing.JLabel;
 import javax.swing.JTree;
 
+import org.omg.PortableInterceptor.USER_EXCEPTION;
 import org.vcell.util.document.GroupAccess;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCDocumentInfo;
@@ -200,6 +201,11 @@ public java.awt.Component getTreeCellRendererComponent(JTree tree, Object value,
 							setIcon(fieldFolderSharedIcon);
 						}
 					}
+				}
+			} else if(sessionUser != null && nodeUser != null && VCDocumentDbTreeModel.USER_modelBricks.equals(nodeUser.getName())) {
+				// we warn if any brick has more than one version
+				if(node.getChildCount() != 1) {
+					setIcon(fieldFolderWarningIcon);
 				}
 			}
 		}

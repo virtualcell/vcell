@@ -47,7 +47,7 @@ public class BioModelMetaDataPanel extends DocumentEditorSubPanel {
 			if (evt.getSource() == BioModelMetaDataPanel.this && (evt.getPropertyName().equals("bioModelInfo"))) {
 				getJTree1().setModel(getbioModelInfoTreeModel());
 				getJTree1().setCellRenderer(getbioModelInfoCellRenderer());
-
+				getbioModelInfoTreeModel().showDatabaseFileInfo(true);
 				getbioModelInfoTreeModel().setBioModelInfo(BioModelMetaDataPanel.this.getBioModelInfo());
 				BioModelNode applicationsNode = getbioModelInfoTreeModel().getApplicationsNode();
 				GuiUtils.treeExpandAllRows(tree);

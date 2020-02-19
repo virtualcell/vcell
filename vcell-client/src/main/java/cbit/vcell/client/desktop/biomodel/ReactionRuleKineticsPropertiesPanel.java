@@ -593,9 +593,9 @@ public class ReactionRuleKineticsPropertiesPanel extends DocumentEditorSubPanel 
 						setText(str);
 					} else if(value == RateLawType.MichaelisMenten) {
 						String str = "<html>";
-						if(reactionRule.getStructure() instanceof Feature) {
+						if(reactionRule != null && reactionRule.getStructure() instanceof Feature) {
 							str += "Henri-Michaelis-Menten (Irreversible) ["+MICROMOLAR+"/s]";
-						} else if (reactionRule.getStructure() instanceof Membrane) {
+						} else if (reactionRule != null && reactionRule.getStructure() instanceof Membrane) {
 							str += "Henri-Michaelis-Menten (Irreversible) [molecules/("+SQUAREMICRON+" s)]";
 						}
 						str += "</html>";

@@ -76,13 +76,13 @@ public class VCellBasicCellRenderer extends javax.swing.tree.DefaultTreeCellRend
 	protected javax.swing.Icon fieldSimulationContextErrorIcon = null;
 	protected javax.swing.Icon fieldSimulationContextWarningIcon = null;
 	protected javax.swing.Icon fieldTextIcon = null;
-	protected javax.swing.Icon fieldUserIcon = null;
+	public javax.swing.Icon fieldUserIcon = null;
 	protected javax.swing.Icon fieldUsersIcon = null;
-	protected javax.swing.Icon fieldCalendarIcon = null;
+	public javax.swing.Icon fieldCalendarIcon = null;
 	protected javax.swing.Icon fieldFolderOpenIcon = null;
 	protected javax.swing.Icon fieldFolderOpenErrorIcon = null;
 	protected javax.swing.Icon fieldFolderOpenWarningIcon = null;
-	protected javax.swing.Icon fieldFolderClosedIcon = null;
+	public javax.swing.Icon fieldFolderClosedIcon = null;
 	protected javax.swing.Icon fieldFolderSelfIcon = null;
 	protected javax.swing.Icon fieldFolderUserIcon = null;
 	protected javax.swing.Icon fieldFolderSharedIcon = null;
@@ -90,11 +90,15 @@ public class VCellBasicCellRenderer extends javax.swing.tree.DefaultTreeCellRend
 	protected javax.swing.Icon fieldFolderWeakPublicIcon = null;
 	protected javax.swing.Icon fieldFolderMediumPublicIcon = null;
 	protected javax.swing.Icon fieldFolderPublishedIcon = null;
+	protected javax.swing.Icon fieldPublishedPublicationIcon = null;
 	protected javax.swing.Icon fieldFolderCuratedIcon = null;
 	protected javax.swing.Icon fieldFolderBricksIcon = null;
 	protected javax.swing.Icon fieldFolderWarningIcon = null;
 	protected javax.swing.Icon fieldFolderClosedErrorIcon = null;
 	protected javax.swing.Icon fieldFolderClosedWarningIcon = null;
+	public javax.swing.Icon fieldPermissionsIcon = null;
+	protected javax.swing.Icon fieldDatabaseIcon = null;
+	public javax.swing.Icon fieldDatabaseModelKeyIcon = null;
 	protected java.awt.Font selectedFont = null;
 	protected java.awt.Font unselectedFont = null;
 
@@ -132,9 +136,13 @@ public VCellBasicCellRenderer() {
 	fieldFolderWeakPublicIcon = new ImageIcon(getClass().getResource("/icons/publicFolder.png"));
 	fieldFolderMediumPublicIcon = new ImageIcon(getClass().getResource("/icons/publicFolder3.png"));
 	fieldFolderPublishedIcon = new ImageIcon(getClass().getResource("/icons/publishedFolder.png"));
+	fieldPublishedPublicationIcon = new ImageIcon(getClass().getResource("/icons/publishedPublication.png"));
 	fieldFolderCuratedIcon = new ImageIcon(getClass().getResource("/icons/curatedFolder.png"));
 	fieldFolderBricksIcon = new ImageIcon(getClass().getResource("/icons/bricksFolder.png"));
 	fieldFolderWarningIcon = new ImageIcon(getClass().getResource("/icons/warningFolder.png"));
+	fieldPermissionsIcon = new ImageIcon(getClass().getResource("/icons/lock3.png"));
+	fieldDatabaseIcon = new ImageIcon(getClass().getResource("/icons/database.png"));
+	fieldDatabaseModelKeyIcon = new ImageIcon(getClass().getResource("/icons/databaseModelKey.png"));
 }
 
 

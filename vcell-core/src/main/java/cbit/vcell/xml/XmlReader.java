@@ -6122,7 +6122,7 @@ private SimulationContext getSimulationContext(Element param, BioModel biomodel)
 		newsimcontext.setName(name);
 		//Add annotation
 		String annotation = param.getChildText(XMLTags.AnnotationTag, vcNamespace);
-		if (annotation!=null && annotation.length()>0) {
+		if (annotation!=null/* && annotation.length()>0*/) {
 			newsimcontext.setDescription(unMangle(annotation));
 		}
 		//set if using concentration

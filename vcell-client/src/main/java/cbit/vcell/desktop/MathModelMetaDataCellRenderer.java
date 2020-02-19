@@ -10,6 +10,7 @@
 
 package cbit.vcell.desktop;
 import java.awt.Font;
+import java.util.Date;
 
 import javax.swing.JLabel;
 /**
@@ -20,7 +21,10 @@ import javax.swing.JLabel;
 import javax.swing.JTree;
 
 import org.vcell.util.BeanUtils;
+import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.PublicationInfo;
+import org.vcell.util.document.User;
+import org.vcell.util.gui.VCellIcons;
 
 import cbit.vcell.resource.PropertyLoader;
  
@@ -149,7 +153,50 @@ public java.awt.Component getTreeCellRendererComponent(JTree tree, Object value,
 			String text = "<a href=\"" + info.getUrl() + "\">" + "PubMed PMID: " + pmid + "</a>";
 			component.setText("<html>" + text + "</html>");
 			setIcon(null);
-						
+
+		} else if(node.getUserObject() instanceof String && "GeneralFileInfo".equals(node.getRenderHint("type"))) {
+			component.setToolTipText("Database File Info");
+			String text = "<b>" + (String)node.getUserObject() + "</b>";
+			component.setText("<html>" + text + "</html>");
+			setIcon(fieldDatabaseIcon);
+
+		} else if(node.getUserObject() instanceof String && "ModelName".equals(node.getRenderHint("type"))) {
+			component.setToolTipText("BioModel Name");
+			String text = "<b>" + (String)node.getUserObject() + "</b>";
+			component.setText("<html>" + text + "</html>");
+//			setIcon(fieldTextIcon);
+
+		} else if(node.getUserObject() instanceof KeyValue && "VCellIdentifier".equals(node.getRenderHint("type"))) {
+			component.setToolTipText("Virtual Cell Identifier");
+			KeyValue key = (KeyValue)node.getUserObject();
+			String text = "mathmodel-" + key;
+			component.setText("<html>" + text + "</html>");
+			setIcon(fieldDatabaseModelKeyIcon);
+
+		} else if(node.getUserObject() instanceof User && "ModelOwner".equals(node.getRenderHint("type"))) {
+			String label = ((User)node.getUserObject()).getName();
+			component.setToolTipText("Model Owner");
+			component.setText("<html>" + label + "</html>");
+			setIcon(fieldUserIcon);
+
+		} else if(node.getUserObject() instanceof Date && "ModelDate".equals(node.getRenderHint("type"))) {
+			Date date = (Date)node.getUserObject();
+			component.setToolTipText("Last Modified");
+			component.setText("<html>" + date + "</html>");
+			setIcon(fieldCalendarIcon);
+
+		} else if(node.getUserObject() instanceof String && "Permissions".equals(node.getRenderHint("type"))) {
+			component.setToolTipText("Permissions");
+			String text = (String)node.getUserObject();
+			component.setText("<html>" + text + "</html>");
+			setIcon(fieldPermissionsIcon);
+
+		} else if(node.getUserObject() instanceof String && "Annotations".equals(node.getRenderHint("type"))) {
+			component.setToolTipText("Text Annotation");
+			String text = (String)node.getUserObject();
+			component.setText("<html>" + text + "</html>");
+			setIcon(VCellIcons.noteIcon);
+			
 		}else {
 			setComponentProperties(component,node.getUserObject());
 		}

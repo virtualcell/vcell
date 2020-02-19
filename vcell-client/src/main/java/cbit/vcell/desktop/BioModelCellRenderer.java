@@ -110,6 +110,8 @@ public java.awt.Component getTreeCellRendererComponent(JTree tree, Object value,
 				setIcon(fieldFolderWarningIcon);
 			} else if(name.contains(" ")) {
 				setIcon(fieldFolderWarningIcon);
+			} else {
+				setIcon(fieldPublishedPublicationIcon);		// publications have their own icon
 			}
 		} else if(value instanceof UserNameNode) {
 			UserNameNode node = (UserNameNode) value;
@@ -158,15 +160,21 @@ public java.awt.Component getTreeCellRendererComponent(JTree tree, Object value,
 					pNode = ((BioModelNode)pNode).getParent();
 					if(pNode instanceof BioModelNode && ((BioModelNode)pNode).getUserObject() instanceof String) {
 						str = (String)((BioModelNode)pNode).getUserObject();
-						pNode = ((BioModelNode)pNode).getParent();
-						if(((BioModelNode)pNode).getUserObject() instanceof String 
-								&& str.equalsIgnoreCase(sessionUser.getName())) {
-							str = (String)((BioModelNode)pNode).getUserObject();
-							if(str.equals(VCDocumentDbTreeModel.Other_BioModels)) {
-								String prefix = sel ? "" : "<span style=\"color:#808080\">";	// GRAY
-								String suffix = sel ? "" : "</span>";
-								String str1 = prefix + component.getText() + suffix;
-								setText("<html>" + str1 + "</html>"); 
+						if(str.equals(VCDocumentDbTreeModel.ModelBricks) && sessionUser.getName().contentEquals(VCDocumentDbTreeModel.USER_modelBricks) ) {
+							String prefix = sel ? "" : "<span style=\"color:#808080\">";	// GRAY
+							String suffix = sel ? "" : "</span>";
+							String str1 = prefix + component.getText() + suffix;
+							setText("<html>" + str1 + "</html>"); 
+						} else {
+							pNode = ((BioModelNode)pNode).getParent();
+							if(((BioModelNode)pNode).getUserObject() instanceof String && str.equalsIgnoreCase(sessionUser.getName())) {
+								str = (String)((BioModelNode)pNode).getUserObject();
+								if(str.equals(VCDocumentDbTreeModel.Other_BioModels)) {
+									String prefix = sel ? "" : "<span style=\"color:#808080\">";	// GRAY
+									String suffix = sel ? "" : "</span>";
+									String str1 = prefix + component.getText() + suffix;
+									setText("<html>" + str1 + "</html>");
+								}
 							}
 						}
 					}
@@ -214,6 +222,20 @@ public java.awt.Component getTreeCellRendererComponent(JTree tree, Object value,
 				} else if (username.equals(VCDocumentDbTreeModel.USER_modelBricks)) {
 					if(node.getParent() instanceof UserNameNode && sessionUser.getName().contentEquals(VCDocumentDbTreeModel.USER_modelBricks)) {
 						// login user is ModelBrick, must gray everything in the Other (Uncurated) folder
+						// ATTANTION: the Uncurated folder is populated with bricks only in the versions of vCell where the ModelBricks
+						// folder is missing !!!
+						String toolTip = modelName;
+						String prefix = sel ? "" : "<span style=\"color:#808080\">";	// GRAY
+						String suffix = sel ? "" : "</span>";
+						String str1 = prefix + modelName + suffix;
+						component.setText("<html>" + str1 + "</html>");
+						component.setToolTipText(toolTip);
+						
+					} else if(node.getParent() instanceof BioModelNode && ((BioModelNode)node.getParent()).getUserObject() instanceof String 
+							&& sessionUser.getName().contentEquals(VCDocumentDbTreeModel.USER_modelBricks)
+							&& ((String)((BioModelNode)node.getParent()).getUserObject()).equals(VCDocumentDbTreeModel.ModelBricks) ) {
+						// login user is ModelBrick, and the model Bricks folder is present -> we must gray everything in it
+						// do exactly what we did for the "Other" folder, just above
 						String toolTip = modelName;
 						String prefix = sel ? "" : "<span style=\"color:#808080\">";	// GRAY
 						String suffix = sel ? "" : "</span>";
@@ -237,7 +259,13 @@ public java.awt.Component getTreeCellRendererComponent(JTree tree, Object value,
 							component.setText(modelName);
 							component.setToolTipText(toolTip);
 						} else {
-							component.setText(modelName);				// keep it simple for anything else
+							String str = modelName;
+							if(node.getChildCount() > 1) {
+								String prefix = sel ? "" : "<span style=\"color:#8B0000\">";
+								String suffix = sel ? "" : "</span>";
+								str += prefix + " (" + node.getChildCount() + ")" + suffix;
+							}
+							component.setText("<html>" + str + "</html>");
 							component.setToolTipText(toolTip);
 						}
 					} else {
