@@ -3871,7 +3871,7 @@ public class ClientRequestManager
 		}
 	for(Structure struct : vcBioModel.getModel().getStructures()) {
 		String id = struct.getName();
-		String name = struct.getFieldSbmlName();
+		String name = struct.getSbmlName();
 		if(name == null || name.isEmpty()) {
 			continue;
 		}

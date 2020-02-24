@@ -26,13 +26,17 @@ import cbit.vcell.model.ReactionParticipant;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
+import cbit.vcell.model.VCellSbmlName;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.SymbolTableEntry;
 
 public class RateRule implements Matchable, Serializable, IssueSource, SimulationContextEntity,
-			Displayable, VetoableChangeListener, PropertyChangeListener {
+			Displayable, VetoableChangeListener, PropertyChangeListener, VCellSbmlName {
+	
 	private String fieldName = null;
+	private String sbmlId = null;
+	private String sbmlName = null;
 	private SymbolTableEntry rateRuleVar = null;
 	private Expression rateRuleExpression = null;
 	
@@ -96,9 +100,26 @@ public class RateRule implements Matchable, Serializable, IssueSource, Simulatio
 	public String getName() {
 		return fieldName;
 	}
-	
+	public String getSbmlId() {
+		return sbmlId;
+	}
+	public String getSbmlName() {
+		return sbmlName;
+	}
+
 	public void setName(String name) {
 		this.fieldName = name;
+	}
+	public void setSbmlName(String newString) throws PropertyVetoException {
+		String oldValue = this.sbmlName;
+		String newValue = SpeciesContext.fixSbmlName(newString);
+		
+		fireVetoableChange("sbmlName", oldValue, newValue);
+		this.sbmlName = newValue;
+		firePropertyChange("sbmlName", oldValue, newValue);
+	}
+	public void setSbmlId(String newString) throws PropertyVetoException {	// setable only through SBML import
+		this.sbmlId = newString;
 	}
 	
 	public SymbolTableEntry getRateRuleVar() {
@@ -127,12 +148,18 @@ public class RateRule implements Matchable, Serializable, IssueSource, Simulatio
 		if (!(obj instanceof RateRule)) {
 			return false;
 		}
-		RateRule rateRule = (RateRule)obj;
+		RateRule rule = (RateRule)obj;
 		
-		if (!Compare.isEqual(rateRuleVar.getName(), rateRule.rateRuleVar.getName())) {
+		if (!Compare.isEqual(rateRuleVar.getName(), rule.rateRuleVar.getName())) {
 			return false;
 		}
-		if (!Compare.isEqual(rateRuleExpression, rateRule.rateRuleExpression)) {
+		if (!Compare.isEqualOrNull(getSbmlName(), rule.getSbmlName())) {
+			return false;
+		}
+		if (!Compare.isEqualOrNull(getSbmlId(), rule.getSbmlId())) {
+			return false;
+		}
+		if (!Compare.isEqual(rateRuleExpression, rule.rateRuleExpression)) {
 			return false;
 		}
 
@@ -151,6 +178,13 @@ public class RateRule implements Matchable, Serializable, IssueSource, Simulatio
 			}
 			if (simulationContext.getModel().getReservedSymbolByName(newName)!=null){
 				throw new PropertyVetoException("Cannot use reserved symbol '" + newName + "' as an rateRule name",evt);
+			}
+		} else if(evt.getSource() == this && evt.getPropertyName().equals("sbmlId")) {
+			;		// not editable, we use what we get from the importer
+		} else if(evt.getSource() == this && evt.getPropertyName().equals("sbmlName")) {
+			String newName = (String)evt.getNewValue();
+			if(newName == null) {
+				return;
 			}
 		}
 	}
@@ -262,6 +296,14 @@ public class RateRule implements Matchable, Serializable, IssueSource, Simulatio
 					}
 				}
 			}
+		}
+		if(sbmlName != null && sbmlName.isEmpty()) {
+			String message = "SbmlName cannot be an empty string.";
+			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, message, Issue.Severity.ERROR));
+		}
+		if(sbmlId != null && sbmlId.isEmpty()) {
+			String message = "SbmlId cannot be an empty string.";
+			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, message, Issue.Severity.ERROR));
 		}
 	}
 

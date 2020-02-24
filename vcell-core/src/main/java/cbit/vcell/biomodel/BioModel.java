@@ -32,6 +32,7 @@ import org.vcell.util.BeanUtils;
 import org.vcell.util.Compare;
 import org.vcell.util.Displayable;
 import org.vcell.util.Issue;
+import org.vcell.util.Issue.IssueCategory;
 import org.vcell.util.Issue.IssueSource;
 import org.vcell.util.IssueContext;
 import org.vcell.util.IssueContext.ContextType;
@@ -61,6 +62,7 @@ import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.Species;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
+import cbit.vcell.model.VCellSbmlName;
 import cbit.vcell.parser.NameScope;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.solver.Simulation;
@@ -71,13 +73,16 @@ import cbit.vcell.solver.Simulation;
  */
 @SuppressWarnings("serial")
 public class BioModel implements VCDocument, Matchable, VetoableChangeListener, PropertyChangeListener,
-Identifiable, IdentifiableProvider, IssueSource, Displayable
+Identifiable, IdentifiableProvider, IssueSource, Displayable, VCellSbmlName
 {
 	public static final String PROPERTY_NAME_SIMULATION_CONTEXTS = "simulationContexts";
 	public final static String SIMULATION_CONTEXT_DISPLAY_NAME = "Application";
 	public final static String SIMULATION_DISPLAY_NAME = "Simulation";
 	private Version fieldVersion = null;
 	private String fieldName = null;
+	private String sbmlId = null;
+	private String sbmlName = null;
+
 	protected transient VetoableChangeSupport vetoPropertyChange;
 	protected transient PropertyChangeSupport propertyChange;
 	private Model fieldModel = null;
@@ -199,6 +204,12 @@ public boolean compareEqual(Matchable obj) {
 	}
 	BioModel bioModel = (BioModel)obj;
 	if (!Compare.isEqualOrNull(getName(),bioModel.getName())){
+		return false;
+	}
+	if (!Compare.isEqualOrNull(getSbmlName(), bioModel.getSbmlName())) {
+		return false;
+	}
+	if (!Compare.isEqualOrNull(getSbmlId(), bioModel.getSbmlId())) {
 		return false;
 	}
 	if (!Compare.isEqualOrNull(getDescription(),bioModel.getDescription())){
@@ -351,6 +362,14 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueList) {
 		boolean bIgnoreMathDescription = false;
 		simulationContext.gatherIssues(issueContext, issueList, bIgnoreMathDescription);
 	}
+	if(sbmlName != null && sbmlName.isEmpty()) {
+		String message = "SbmlName cannot be an empty string.";
+		issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, message, Issue.Severity.ERROR));
+	}
+	if(sbmlId != null && sbmlId.isEmpty()) {
+		String message = "SbmlId cannot be an empty string.";
+		issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, message, Issue.Severity.ERROR));
+	}
 	if (lg.isInfoEnabled()) {
 		long end_time = System.currentTimeMillis();
 //		lg.info("Time spent on Issue detection: " + (end_time - start_time));
@@ -400,7 +419,12 @@ public cbit.vcell.model.Model getModel() {
 public java.lang.String getName() {
 	return fieldName;
 }
-
+public String getSbmlId() {
+	return sbmlId;
+}
+public String getSbmlName() {
+	return sbmlName;
+}
 
 /**
  * Insert the method's description here.
@@ -822,7 +846,17 @@ public void setName(java.lang.String name) throws java.beans.PropertyVetoExcepti
 	fieldName = name;
 	firePropertyChange("name", oldValue, name);
 }
-
+public void setSbmlName(String newString) throws PropertyVetoException {
+	String oldValue = this.sbmlName;
+	String newValue = SpeciesContext.fixSbmlName(newString);
+	
+	fireVetoableChange("sbmlName", oldValue, newValue);
+	this.sbmlName = newValue;
+	firePropertyChange("sbmlName", oldValue, newValue);
+}
+public void setSbmlId(String newString) throws PropertyVetoException {	// setable only through SBML import
+	this.sbmlId = newString;
+}
 
 /**
  * Sets the simulationContexts property (cbit.vcell.mapping.SimulationContext[]) value.
@@ -1019,6 +1053,13 @@ public void vetoableChange(java.beans.PropertyChangeEvent evt) throws java.beans
 			if (!bFound){
 				throw new PropertyVetoException("Setting SimulationContexts, Simulation \""+fieldSimulations[i].getName()+"\" has no corresponding MathDescription (so no Application)",evt);
 			}
+		}
+	} else if(evt.getSource() == this && evt.getPropertyName().equals("sbmlId")) {
+		;		// not editable, we use what we get from the importer
+	} else if(evt.getSource() == this && evt.getPropertyName().equals("sbmlName")) {
+		String newName = (String)evt.getNewValue();
+		if(newName == null) {
+			return;
 		}
 	}
 	if (evt.getSource() instanceof SimulationContext && evt.getPropertyName().equals("name") && evt.getNewValue()!=null){
