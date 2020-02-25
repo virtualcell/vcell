@@ -148,6 +148,10 @@ public class SBMLAnnotationUtil {
 				XMLNamespaces xmlnss = new XMLNamespaces();
 				xmlnss.add(DefaultNameSpaces.RDF.uri, DefaultNameSpaces.RDF.prefix);
 				strRdfAnnotations = XmlUtil.xmlToString(element);
+				// COPASI doesn't understand our metaid namespace, so we just replace it with a #
+				String olds = "http://sourceforge.net/projects/vcell/vcml/cbit.vcell.model.Species/metaid_";
+				String news = "#metaid_";
+				strRdfAnnotations = strRdfAnnotations.replace(olds, news);
 				// TODO: for some reason, converting strRdfAnnotations directly to rootRDF node through XMLNode.convertStringToXMLNode isn't working
 				// we need to use the trick below to create a temp root annotation and extract the rootRdf node from it
 				strRdfAnnotations = "<annotation>" + strRdfAnnotations;
