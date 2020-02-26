@@ -27,9 +27,11 @@ import cbit.vcell.model.Kinetics.KineticsProxyParameter;
 import cbit.vcell.model.Kinetics.UnresolvedParameter;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Model.ModelParameter;
+import cbit.vcell.model.ModelException;
 import cbit.vcell.model.ModelQuantity;
 import cbit.vcell.model.ModelUnitSystem;
 import cbit.vcell.model.Parameter;
+import cbit.vcell.model.ProxyParameter;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.parser.AutoCompleteSymbolFilter;
@@ -257,6 +259,43 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 		for (int i = 0; newParams!=null && i < newParams.length; i++){
 			newParams[i].removePropertyChangeListener(this);
 			newParams[i].addPropertyChangeListener(this);
+		}
+		
+		if(evt.getPropertyName().equals("proxyParameters")) {
+			List <Parameter> addedList = new ArrayList<>(Arrays.asList(newParams));
+			addedList.removeAll(Arrays.asList(oldParams));
+			List <Parameter> removedList = new ArrayList<>(Arrays.asList(oldParams));
+			removedList.removeAll(Arrays.asList(newParams));
+			if(reactionStep != null) {
+				for(Parameter removed : removedList) {
+					if(removed instanceof ProxyParameter && ((ProxyParameter)removed).getTarget() instanceof SpeciesContext) {
+						SpeciesContext sc = (SpeciesContext)((ProxyParameter)removed).getTarget();
+						if(reactionStep.getReactant(sc.getName()) == null &&
+								reactionStep.getProduct(sc.getName()) == null &&
+								reactionStep.getCatalyst(sc.getName()) != null) {
+							try {
+								reactionStep.removeReactionParticipant(reactionStep.getCatalyst(sc.getName()));
+							} catch (PropertyVetoException | ExpressionException | ModelException e) {
+								e.printStackTrace();	// we do nothing
+							}
+						}
+					}
+				}
+				for(Parameter added : addedList) {
+					if(added instanceof ProxyParameter && ((ProxyParameter)added).getTarget() instanceof SpeciesContext) {
+						SpeciesContext sc = (SpeciesContext)((ProxyParameter)added).getTarget();
+						if(reactionStep.getReactant(sc.getName()) == null && 
+								reactionStep.getProduct(sc.getName()) == null &&
+								reactionStep.getCatalyst(sc.getName()) == null) {
+							try {
+								reactionStep.addCatalyst(sc);
+							} catch (PropertyVetoException | ModelException e) {
+								e.printStackTrace();	// we do nothing
+							}
+						}
+					}
+				}
+			}
 		}
 		refreshData();
 	}

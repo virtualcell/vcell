@@ -67,7 +67,7 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 	private JToolBarToggleButton speciesButton = null;
 	private JToolBarToggleButton fluxReactionButton = null;
 	private JToolBarToggleButton lineDirectedButton = null;
-	private JToolBarToggleButton lineCatalystButton = null;
+//	private JToolBarToggleButton lineCatalystButton = null;
 	private JToolBarToggleButton selectButton = null;
 	protected List<JToolBarToggleButton> modeButtons = null;
 	protected List<JToolBarToggleButton> viewButtons = null;
@@ -327,7 +327,7 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 				toolBar.add(getStructureButton(), getStructureButton().getName());
 				toolBar.add(getSpeciesButton(), getSpeciesButton().getName());
 				toolBar.add(getLineDirectedButton(), getLineDirectedButton().getName());
-				toolBar.add(getLineCatalystButton(), getLineCatalystButton().getName());
+//				toolBar.add(getLineCatalystButton(), getLineCatalystButton().getName());
 				toolBar.add(getFluxReactionButton(), getFluxReactionButton().getName());
 				//toolBar.add(getStepButton(), getStepButton().getName());
 				//toolBar.add(getFluxButton(), getFluxButton().getName());
@@ -422,20 +422,20 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 		}
 		return lineDirectedButton;
 	}
-	private JToolBarToggleButton getLineCatalystButton() {
-		if (lineCatalystButton == null) {
-			try {
-//				JToolBarToggleButton button = new JToolBarToggleButton();
-//				ReactionToolShapeIcon.setCatalystToolMod(button);
-//				button.setActionCommand(Mode.LINECATALYST.getActionCommand());
-//				lineCatalystButton = button;
-				lineCatalystButton = createModeButton("LineCatalystButton", "Set a catalyst", Mode.LINECATALYST, loadIcon("/images/lineCatalyst.gif"));
-			} catch (Throwable throwable) {
-				handleException(throwable);
-			}
-		}
-		return lineCatalystButton;
-	}
+//	private JToolBarToggleButton getLineCatalystButton() {
+//		if (lineCatalystButton == null) {
+//			try {
+////				JToolBarToggleButton button = new JToolBarToggleButton();
+////				ReactionToolShapeIcon.setCatalystToolMod(button);
+////				button.setActionCommand(Mode.LINECATALYST.getActionCommand());
+////				lineCatalystButton = button;
+//				lineCatalystButton = createModeButton("LineCatalystButton", "Set a catalyst", Mode.LINECATALYST, loadIcon("/images/lineCatalyst.gif"));
+//			} catch (Throwable throwable) {
+//				handleException(throwable);
+//			}
+//		}
+//		return lineCatalystButton;
+//	}
 	private JToolBarToggleButton getFluxReactionButton() {
 		if (fluxReactionButton == null) {
 			try {
@@ -513,7 +513,7 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 			//modeButtons.add(getFluxButton());
 			//modeButtons.add(getLineButton());
 			modeButtons.add(getLineDirectedButton());
-			modeButtons.add(getLineCatalystButton());
+//			modeButtons.add(getLineCatalystButton());
 			modeButtons.add(getStructureButton());
 		}
 		return modeButtons;
@@ -752,7 +752,7 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 			//getModeButtonGroup().add(getFluxButton());
 			//getModeButtonGroup().add(getLineButton());
 			modeButtonGroup.add(getLineDirectedButton());
-			modeButtonGroup.add(getLineCatalystButton());
+//			modeButtonGroup.add(getLineCatalystButton());
 			modeButtonGroup.add(getSelectButton());
 			modeButtonGroup.add(getSpeciesButton());
 			modeButtonGroup.add(getFluxReactionButton());
