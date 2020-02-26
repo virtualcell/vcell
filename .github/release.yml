@@ -1,0 +1,44 @@
+name: Release
+
+on:
+    release:
+        types: [published]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          lfs: 'true'
+      - name: Login to DockerHub
+        run: echo ${{ secrets.DOCKERHUB_PASSWORD }} | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
+      - name: Get the version
+        id: vars
+        run: echo ::set-output name=tag::$(echo ${GITHUB_REF:10})
+      - name: Extract JDK Tarball
+        run: |
+          ls 
+          pwd
+          file jdk/jdk-8u241-linux-x64.tar.gz
+          tar -xvzf jdk/jdk-8u241-linux-x64.tar.gz
+          rm -rf jdk
+          mv jdk1.8.0_241 jdk
+      - name: Export Environment varialbles
+        run: |
+          export JAVA_HOME=`pwd`/jdk
+          export PATH=${JAVA_HOME}/bin:${PATH}
+          echo $JAVA_HOME
+          java -version
+          wget http://mirrors.advancedhosters.com/apache/maven/maven-3/3.6.3/binaries/apache-maven-3.6.3-bin.tar.gz
+          tar -xvzf apache-maven-3.6.3-bin.tar.gz
+          mv apache-maven-3.6.3 maven
+          export M2_HOME=`pwd`/maven
+          export PATH=${M2_HOME}/bin:${PATH}
+          mvn -version
+          java -version
+          mvn clean install dependency:copy-dependencies
+          echo docker build --file docker/build/Dockerfile-sedml-solver --tag crbm/biosimulations_vcell_api:latest .
+          echo ::set-output name=tag::$(echo ${GITHUB_REF:10})
+          docker build --file docker/build/Dockerfile-sedml-solver --tag crbm/biosimulations_vcell_api:${{steps.vars.outputs.tag}} .
