@@ -19,7 +19,7 @@ jobs:
           tar -xvzf jdk/jdk-8u241-linux-x64.tar.gz
           rm -rf jdk
           mv jdk1.8.0_241 jdk
-      - name: Export Environment varialbles
+      - name: Export Environment variables, mvn installation and build docker image
         run: |
           export JAVA_HOME=`pwd`/jdk
           export PATH=${JAVA_HOME}/bin:${PATH}
