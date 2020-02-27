@@ -21,6 +21,7 @@ import org.vcell.util.gui.ScrollTable;
 import cbit.gui.ScopedExpression;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.desktop.biomodel.VCellSortTableModel;
+import cbit.vcell.model.Catalyst;
 import cbit.vcell.model.Kinetics;
 import cbit.vcell.model.Kinetics.KineticsParameter;
 import cbit.vcell.model.Kinetics.KineticsProxyParameter;
@@ -32,6 +33,7 @@ import cbit.vcell.model.ModelQuantity;
 import cbit.vcell.model.ModelUnitSystem;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.model.ProxyParameter;
+import cbit.vcell.model.ReactionParticipant;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.parser.AutoCompleteSymbolFilter;
@@ -247,16 +249,31 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 				newValue.getProxyParameters()[i].addPropertyChangeListener(this);
 			}
 		}
+		
+		// get rid of all Catalysts when changing kynetic type
+		if(reactionStep != null && reactionStep.hasCatalyst() && newValue != null && newValue != oldValue) {
+			List <ReactionParticipant> rpList = new ArrayList<>(Arrays.asList(reactionStep.getReactionParticipants()));
+			for(ReactionParticipant rp : rpList) {
+				if(rp instanceof Catalyst) {
+					try {
+						reactionStep.removeReactionParticipant(rp);
+					} catch (PropertyVetoException | ExpressionException | ModelException e) {
+						e.printStackTrace();	// do nothing if it fails
+					}
+				}
+			}
+		}
+		
 		refreshData();
 	}
 	if (evt.getSource() instanceof Kinetics && 
 			(evt.getPropertyName().equals("kineticsParameters") ||  evt.getPropertyName().equals("proxyParameters"))) {
 		Parameter oldParams[] = (Parameter[])evt.getOldValue();
 		Parameter newParams[] = (Parameter[])evt.getNewValue();
-		for (int i = 0; oldParams!=null && i < oldParams.length; i++){
+		for (int i = 0; oldParams!=null && i < oldParams.length; i++) {
 			oldParams[i].removePropertyChangeListener(this);
 		}
-		for (int i = 0; newParams!=null && i < newParams.length; i++){
+		for (int i = 0; newParams!=null && i < newParams.length; i++) {
 			newParams[i].removePropertyChangeListener(this);
 			newParams[i].addPropertyChangeListener(this);
 		}
