@@ -1,0 +1,29 @@
+name: Build the Docker Image
+on: [push]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          lfs: 'true'
+      - name: Extract JDK Tarball
+        run: |
+          wget https://www.dropbox.com/s/h70d7erl2mkufbk/jdk-8u241-linux-x64.tar.gz?dl=1
+          tar -xvzf jdk-8u241-linux-x64.tar.gz?dl=1
+          mv jdk1.8.0_241 jdk
+      - name: Export Environment variables, mvn installation and build docker image
+        run: |
+          export JAVA_HOME=`pwd`/jdk
+          export PATH=${JAVA_HOME}/bin:${PATH}
+          echo $JAVA_HOME
+          java -version
+          wget http://mirrors.advancedhosters.com/apache/maven/maven-3/3.6.3/binaries/apache-maven-3.6.3-bin.tar.gz
+          tar -xvzf apache-maven-3.6.3-bin.tar.gz
+          mv apache-maven-3.6.3 maven
+          export M2_HOME=`pwd`/maven
+          export PATH=${M2_HOME}/bin:${PATH}
+          mvn -version
+          java -version
+          mvn clean install dependency:copy-dependencies
+          docker build --file docker/build/Dockerfile-sedml-solver --tag crbm/biosimulations_vcell_api:latest .
