@@ -606,6 +606,9 @@ public class ReactionCartoonTool extends BioCartoonTool implements BioCartoonToo
 							new String[] {RXSPECIES_DELETE,RXSPECIES_CANCEL}, RXSPECIES_CANCEL);
 					if(response != null && response.equals(RXSPECIES_DELETE)){
 						for (int i = 0; i < reactionParticipantArr.length; i++) {
+							if(reactionParticipantArr[i] instanceof Catalyst) {
+								continue;	// Catalysts may only be deleted by editing kynetic / proxy parameters
+							}
 							ReactionStep reactionStep = reactionParticipantArr[i].getReactionStep();
 							reactionStep.removeReactionParticipant(reactionParticipantArr[i]);						
 						}
