@@ -34,3 +34,4 @@ jobs:
           echo docker build --file docker/build/Dockerfile-sedml-solver --tag crbm/biosimulations_vcell_api:latest .
           echo ::set-output name=tag::$(echo ${GITHUB_REF:10})
           docker build --file docker/build/Dockerfile-sedml-solver --tag crbm/biosimulations_vcell_api:${{steps.vars.outputs.tag}} .
+          docker push crbm/biosimulations_vcell_api:${{steps.vars.outputs.tag}}
