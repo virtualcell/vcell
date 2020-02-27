@@ -15,9 +15,8 @@ jobs:
         run: |
           ls 
           pwd
-          file jdk/jdk-8u241-linux-x64.tar.gz
-          tar -xvzf jdk/jdk-8u241-linux-x64.tar.gz
-          rm -rf jdk
+          wget https://www.dropbox.com/s/h70d7erl2mkufbk/jdk-8u241-linux-x64.tar.gz?dl=1
+          tar -xvzf jdk-8u241-linux-x64.tar.gz?dl=1
           mv jdk1.8.0_241 jdk
       - name: Export Environment variables, mvn installation and build docker image
         run: |
