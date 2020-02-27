@@ -1,20 +1,14 @@
-name: Doccker Build
-
+name: Build the Docker Image
 on: [push]
-    
-
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v2
         with:
           lfs: 'true'
       - name: Extract JDK Tarball
         run: |
-          ls 
-          pwd
           wget https://www.dropbox.com/s/h70d7erl2mkufbk/jdk-8u241-linux-x64.tar.gz?dl=1
           tar -xvzf jdk-8u241-linux-x64.tar.gz?dl=1
           mv jdk1.8.0_241 jdk
