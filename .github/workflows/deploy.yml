@@ -1,17 +1,12 @@
-name: Release
-
+name: Publish Docker To Hub
 on:
     release:
         types: [published]
-
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v2
-        with:
-          lfs: 'true'
       - name: Login to DockerHub
         run: echo ${{ secrets.DOCKERHUB_PASSWORD }} | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
       - name: Get the version
@@ -19,13 +14,10 @@ jobs:
         run: echo ::set-output name=tag::$(echo ${GITHUB_REF:10})
       - name: Extract JDK Tarball
         run: |
-          ls 
-          pwd
-          file jdk/jdk-8u241-linux-x64.tar.gz
-          tar -xvzf jdk/jdk-8u241-linux-x64.tar.gz
-          rm -rf jdk
+          wget https://www.dropbox.com/s/h70d7erl2mkufbk/jdk-8u241-linux-x64.tar.gz?dl=1
+          tar -xvzf jdk-8u241-linux-x64.tar.gz?dl=1
           mv jdk1.8.0_241 jdk
-      - name: Export Environment varialbles
+      - name: Export Environment varialbles, mvn installation and build tagged docker image
         run: |
           export JAVA_HOME=`pwd`/jdk
           export PATH=${JAVA_HOME}/bin:${PATH}
