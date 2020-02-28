@@ -20,9 +20,9 @@ Create a new release tag version that pushes latest and version images to docker
 
 ### For Building and compiling VCELL Standalone application via SEDML Solver
 #### Steps to build the project
-    1. Requirements:  
+   * Requirements:  
         Git, Maven, Eclipse IDE and Java JDK 1.8
-    2. Clone the repo
+   * Clone the repo
         ```
         cd Biosimulations_vcell
         mvn clean install dependency:copy-dependencies
@@ -38,13 +38,15 @@ Create a new release tag version that pushes latest and version images to docker
   * Open Eclipse, Import the project using Maven. Depending on the Eclipse version there'll be small differences with the importing steps.
   * :heavy_exclamation_mark: Important! Deselect the ojdbc6 and ucp subprojects, then Finish to start importing.
   * Once importing is finished (it takes a while) there will be errors.
-  * Open terminal again, navigate to the `ojdbc6` folder and execute: `mvn install:install-file -Dfile=./src/ojdbc6.jar -DgroupId=com.oracle -DartifactId=ojdbc6 -Dversion=11.2.0.4 -Dpackaging=jar` 
-  * Go to `ucp` direcotry and execute: `mvn install:install-file -Dfile=./src/ucp.jar -DgroupId=com.oracle -DartifactId=ucp -Dversion=11.2.0.4 -Dpackaging=jar`
+  * Open terminal again, navigate to the `ojdbc6` folder and execute: 
+  `mvn install:install-file -Dfile=./src/ojdbc6.jar -DgroupId=com.oracle -DartifactId=ojdbc6 -Dversion=11.2.0.4 -Dpackaging=jar` 
+  * Go to `ucp` direcotry and execute: 
+  `mvn install:install-file -Dfile=./src/ucp.jar -DgroupId=com.oracle -DartifactId=ucp -Dversion=11.2.0.4 -Dpackaging=jar`
   * Rebuild the project in Eclipse, there should be no more errors.
   * Create a Debug configuration as a Java Application.
      * the Main Class is `org.vcell.sbml.test.VCellSedMLSolver.java`
      * Leave the 'Program Arguments' blank.
-     * the VM needed arguments are:
+     * The VM needed arguments are:
          * the installation directory: -Dvcell.installDir=<CLONED_REPO_PATH>
          * the software version: -Dvcell.softwareVersion=...
          
