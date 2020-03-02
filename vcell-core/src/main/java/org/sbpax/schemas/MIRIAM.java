@@ -53,7 +53,7 @@ public class MIRIAM {
 		}
 
 		public static final URI encodes = createProperty("encodes");
-		public static final URI hasPart = createProperty("hasPast");
+		public static final URI hasPart = createProperty("hasPart");
 		public static final URI hasProperty = createProperty("hasProperty");
 		public static final URI hasVersion = createProperty("hasVersion");
 		public static final URI is = createProperty("is");
