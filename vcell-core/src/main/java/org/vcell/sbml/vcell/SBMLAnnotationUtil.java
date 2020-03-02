@@ -190,17 +190,17 @@ public class SBMLAnnotationUtil {
 		}
 		
 		// Deal with the non-RDF (other tool-related?) annotation
-		Element[] elementsXML = metaData.getXmlAnnotations(identifiable);
-		if (elementsXML != null) {
-			for(Element elementXML : elementsXML) {
-				XMLTriple tripleXML = new XMLTriple(elementXML.getName(), elementXML.getNamespaceURI(),
-					elementXML.getNamespacePrefix());
-				XMLNode contentXML = elementToXMLNode(elementXML);
-				XMLNode rootXML = new XMLNode(tripleXML, new XMLAttributes());
-				rootXML.addChild(contentXML);
-				rootAnnotation.addChild(rootXML);
-			}
-		}
+//		Element[] elementsXML = metaData.getXmlAnnotations(identifiable);
+//		if (elementsXML != null) {
+//			for(Element elementXML : elementsXML) {
+//				XMLTriple tripleXML = new XMLTriple(elementXML.getName(), elementXML.getNamespaceURI(),
+//					elementXML.getNamespacePrefix());
+//				XMLNode contentXML = elementToXMLNode(elementXML);
+//				XMLNode rootXML = new XMLNode(tripleXML, new XMLAttributes());
+//				rootXML.addChild(contentXML);
+//				rootAnnotation.addChild(rootXML);
+//			}
+//		}
 		
 		if (rootAnnotation.getNumChildren() > 0) {
 			sBase.setAnnotation(rootAnnotation);
