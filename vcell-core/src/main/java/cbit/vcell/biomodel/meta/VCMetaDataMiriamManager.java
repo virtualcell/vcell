@@ -49,6 +49,7 @@ import org.vcell.util.document.Identifiable;
 
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.biomodel.meta.MiriamManager.MiriamResource;
+import cbit.vcell.biomodel.meta.registry.Registry;
 import cbit.vcell.biomodel.meta.registry.Registry.Entry;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.model.Model;
@@ -523,13 +524,14 @@ public class VCMetaDataMiriamManager implements MiriamManager, Serializable {
 	public synchronized TreeMap<Identifiable,Map<MiriamRefGroup,MIRIAMQualifier>> getMiriamTreeMap(){
 		if (miriamTreeMap==null){
 			final IdentifiableProvider identifiableProvider = vcMetaData.getIdentifiableProvider();
-			miriamTreeMap = new TreeMap<Identifiable,Map<MiriamRefGroup,MIRIAMQualifier>>(
-				new IdentifiableComparator(identifiableProvider)
-			);
-			Set<Entry> allEntries = vcMetaData.getRegistry().getAllEntries();
+			IdentifiableComparator ic = new IdentifiableComparator(identifiableProvider);
+			miriamTreeMap = new TreeMap<Identifiable,Map<MiriamRefGroup,MIRIAMQualifier>>(ic);
+			Registry registry = vcMetaData.getRegistry();
+			Set<Entry> allEntries = registry.getAllEntries();
 			for (Entry entry : allEntries){
 				if (entry.getResource() != null){
-					Map<MiriamRefGroup,MIRIAMQualifier> refGroupMap = queryAllMiriamRefGroups(entry.getIdentifiable());
+					Identifiable identifiable = entry.getIdentifiable();
+					Map<MiriamRefGroup,MIRIAMQualifier> refGroupMap = queryAllMiriamRefGroups(identifiable);
 					if (refGroupMap.size()>0){
 						miriamTreeMap.put(entry.getIdentifiable(), refGroupMap);
 					}
@@ -568,7 +570,9 @@ public class VCMetaDataMiriamManager implements MiriamManager, Serializable {
 			return null;
 		}
 		MIRIAMizer miriamizer = new MIRIAMizer();
-		Map<RefGroup, MIRIAMQualifier> allRefGroups = miriamizer.getAllRefGroups(vcMetaData.getRdfData(), entry.getResource());
+		Graph rdfData = vcMetaData.getRdfData();
+		Resource resource = entry.getResource();
+		Map<RefGroup, MIRIAMQualifier> allRefGroups = miriamizer.getAllRefGroups(rdfData, resource);
 		Map<MiriamRefGroup,MIRIAMQualifier> wrappedRefGroups = new HashMap<MiriamRefGroup,MIRIAMQualifier>();
 		for (RefGroup refGroup : allRefGroups.keySet()){
 			MiriamRefGroup miriamRefGroup = new VCMetaDataMiriamRefGroup(refGroup);

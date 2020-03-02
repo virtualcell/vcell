@@ -91,11 +91,12 @@ public class MIRIAMizer {
 	}
 
 	public Map<RefGroup, MIRIAMQualifier> getAllRefGroups(Graph graph, Resource resource) {
-		Map<RefGroup, MIRIAMQualifier> map = 
-			new HashMap<RefGroup, MIRIAMQualifier>();
+		Map<RefGroup, MIRIAMQualifier> map = new HashMap<RefGroup, MIRIAMQualifier>();
 		for(MIRIAMQualifier qualifier : AnnotationQualifiers.MIRIAM_all) {
 			Set<RefGroup> groups = getRefGroups(graph, resource, qualifier);
-			for(RefGroup group : groups) { map.put(group, qualifier); }
+			for(RefGroup group : groups) {
+				map.put(group, qualifier);
+			}
 		}
 		return map;
 	}
