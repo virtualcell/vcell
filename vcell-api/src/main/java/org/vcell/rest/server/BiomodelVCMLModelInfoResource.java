@@ -2,19 +2,12 @@ package org.vcell.rest.server;
 
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.List;
 import java.util.TreeMap;
 
 import org.apache.commons.lang.StringEscapeUtils;
 import org.restlet.data.MediaType;
 import org.restlet.data.Status;
-import org.restlet.ext.wadl.MethodInfo;
-import org.restlet.ext.wadl.ParameterInfo;
-import org.restlet.ext.wadl.ParameterStyle;
-import org.restlet.ext.wadl.RepresentationInfo;
-import org.restlet.ext.wadl.RequestInfo;
 import org.restlet.representation.StringRepresentation;
-import org.restlet.representation.Variant;
 import org.restlet.resource.Get;
 import org.restlet.resource.ResourceException;
 import org.vcell.rest.VCellApiApplication;
@@ -23,6 +16,7 @@ import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.PermissionException;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
+import org.vcell.util.document.VCInfoContainer;
 
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.dictionary.DBNonFormalUnboundSpecies;
@@ -42,46 +36,46 @@ import cbit.vcell.xml.XmlHelper;
 
 public class BiomodelVCMLModelInfoResource extends AbstractServerResource/* implements BiomodelVCMLResource*/ {
 
-	private String biomodelid;
+//	private String biomodelid;
 	
 	
-    @Override
-    protected RepresentationInfo describe(MethodInfo methodInfo,
-            Class<?> representationClass, Variant variant) {
-        RepresentationInfo result = new RepresentationInfo(variant);
-        result.setReference("biomodel");
-        return result;
-    }
+//    @Override
+//    protected RepresentationInfo describe(MethodInfo methodInfo,
+//            Class<?> representationClass, Variant variant) {
+//        RepresentationInfo result = new RepresentationInfo(variant);
+//        result.setReference("biomodel");
+//        return result;
+//    }
 
-    /**
-     * Retrieve the account identifier based on the URI path variable
-     * "accountId" declared in the URI template attached to the application
-     * router.
-     */
-    @Override
-    protected void doInit() throws ResourceException {
-        String simTaskIdAttribute = getAttribute(VCellApiApplication.BIOMODELID);
-
-        if (simTaskIdAttribute != null) {
-            this.biomodelid = simTaskIdAttribute;
-            setName("Resource for biomodel \"" + this.biomodelid + "\"");
-            setDescription("The resource describing the simulation task id \"" + this.biomodelid + "\"");
-        } else {
-            setName("simulation task resource");
-            setDescription("The resource describing a simulation task");
-        }
-    }
+//    /**
+//     * Retrieve the account identifier based on the URI path variable
+//     * "accountId" declared in the URI template attached to the application
+//     * router.
+//     */
+//    @Override
+//    protected void doInit() throws ResourceException {
+//        String simTaskIdAttribute = getAttribute(VCellApiApplication.BIOMODELID);
+//
+//        if (simTaskIdAttribute != null) {
+//            this.biomodelid = simTaskIdAttribute;
+//            setName("Resource for biomodel \"" + this.biomodelid + "\"");
+//            setDescription("The resource describing the simulation task id \"" + this.biomodelid + "\"");
+//        } else {
+//            setName("simulation task resource");
+//            setDescription("The resource describing a simulation task");
+//        }
+//    }
 	
 
-	@Override
-	protected void describeGet(MethodInfo info) {
-		super.describeGet(info);
-		RequestInfo requestInfo = new RequestInfo();
-        List<ParameterInfo> parameterInfos = new ArrayList<ParameterInfo>();
-        parameterInfos.add(new ParameterInfo("biomodelid",false,"string",ParameterStyle.TEMPLATE,"VCell biomodel id"));
- 		requestInfo.setParameters(parameterInfos);
-		info.setRequest(requestInfo);
-	}
+//	@Override
+//	protected void describeGet(MethodInfo info) {
+//		super.describeGet(info);
+//		RequestInfo requestInfo = new RequestInfo();
+//        List<ParameterInfo> parameterInfos = new ArrayList<ParameterInfo>();
+//        parameterInfos.add(new ParameterInfo("biomodelid",false,"string",ParameterStyle.TEMPLATE,"VCell biomodel id"));
+// 		requestInfo.setParameters(parameterInfos);
+//		info.setRequest(requestInfo);
+//	}
 	
 	private enum ITEM_NAMES {structure,species,reactions};
 	@Get("text/html")
@@ -89,9 +83,17 @@ public class BiomodelVCMLModelInfoResource extends AbstractServerResource/* impl
 		try {
 //			VCellApiApplication application = ((VCellApiApplication)getApplication());
 //			User vcellUser = application.getVCellUser(getChallengeResponse(),AuthenticationPolicy.ignoreInvalidCredentials);
-			
+			String biomodelid = getQueryValue(VCellApiApplication.BIOMODELID);
+			String modelName = getQueryValue(VCellApiApplication.MODELNAME);
 			User modelBrickUser = new User("ModelBrick", new KeyValue("101222366"));//Create User so we don't need authentication for ModelBricks
-			BioModel bm = getBiomodel(new KeyValue(biomodelid), modelBrickUser);
+			BioModel bm = null;
+			if (biomodelid != null) {
+				bm = getBiomodel(new KeyValue(biomodelid), modelBrickUser);
+			}else if (modelName != null){
+				bm = getBiomodel(modelName, modelBrickUser);
+			}else {
+				throw new Exception("expecting '"+VCellApiApplication.BIOMODELID+"' or '"+VCellApiApplication.MODELNAME+"' in query parameters, "+getRequest().getResourceRef().getQuery());
+			}
 			final SpeciesContext[] speciesContexts = bm.getModel().getSpeciesContexts();
 			final ReactionStep[] reactionSteps = bm.getModel().getReactionSteps();
 			TreeMap<String,ArrayList<Object>[]> structName_Species_Reactions_TS = new TreeMap();// This contains a structure name mapped to Species and ReactionSteps
@@ -142,7 +144,7 @@ public class BiomodelVCMLModelInfoResource extends AbstractServerResource/* impl
 		} catch (Exception e) {
 			e.printStackTrace();
 			if(e instanceof ResourceException) {
-				throw e;
+				throw (ResourceException)e;
 			}
 			throw new ResourceException(Status.SERVER_ERROR_INTERNAL, e.getMessage());
 		}
@@ -167,7 +169,30 @@ public class BiomodelVCMLModelInfoResource extends AbstractServerResource/* impl
 			throw new ResourceException(Status.SERVER_ERROR_INTERNAL, e.getMessage());
 		}
 	}
-	
+	private BioModel getBiomodel(String modelName,User vcellUser) {
+		RestDatabaseService restDatabaseService = ((VCellApiApplication)getApplication()).getRestDatabaseService();
+		try {
+//			VCellApiApplication application = ((VCellApiApplication)getApplication());
+			final VCInfoContainer vcInfoContainer = restDatabaseService.getVCInfoContainer(vcellUser);
+			for (int i = 0; i < vcInfoContainer.getBioModelInfos().length; i++) {
+				if(vcInfoContainer.getBioModelInfos()[i].getVersion().getName().equals(modelName)) {
+					BigString cachedVcml = restDatabaseService.getBioModelXML(vcInfoContainer.getBioModelInfos()[i].getVersion().getVersionKey(), vcellUser);
+					BioModel bioModel = XmlHelper.XMLToBioModel(new XMLSource(cachedVcml.toString()));
+					return bioModel;
+				}
+			}
+			throw new Exception("VCDocument named '"+modelName+"'"+" not found");
+		} catch (PermissionException e) {
+			e.printStackTrace();
+			throw new ResourceException(Status.CLIENT_ERROR_UNAUTHORIZED, "permission denied to requested resource");
+		} catch (ObjectNotFoundException e) {
+			e.printStackTrace();
+			throw new ResourceException(Status.CLIENT_ERROR_NOT_FOUND, "biomodel not found");
+		} catch (Exception e){
+			throw new ResourceException(Status.SERVER_ERROR_INTERNAL, e.getMessage());
+		}
+	}
+
 	//Copied from DBReactionWizrdPanel and altered to display speciescontext names in ReactionStep text representation
 	public static ReactionDescription createReactionDescription(ReactionStep rxStep,KeyValue bmid, KeyValue structRef) {
 		ReactionType rxType = null;

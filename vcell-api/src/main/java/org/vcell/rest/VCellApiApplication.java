@@ -120,7 +120,9 @@ public class VCellApiApplication extends WadlApplication {
 	public static final String PUBLICATIONID = "publicationid";
 	
 	public static final String BIOMODEL = "biomodel";
+	public static final String MODELBRICK = "modelbrick";
 	public static final String BIOMODELID = "biomodelid";
+	public static final String MODELNAME = "modelname";
 
 	public static final String SIMSTATUS = "simstatus";
 	
@@ -309,7 +311,7 @@ public class VCellApiApplication extends WadlApplication {
 		rootRouter.attach("/"+BIOMODEL, BiomodelsServerResource.class);  
 		rootRouter.attach("/"+BIOMODEL+"/{"+BIOMODELID+"}", BiomodelServerResource.class);  
 		rootRouter.attach("/"+BIOMODEL+"/{"+BIOMODELID+"}/"+VCML_DOWNLOAD, BiomodelVCMLServerResource.class);  
-		rootRouter.attach("/"+BIOMODEL+"/{"+BIOMODELID+"}/info", BiomodelVCMLModelInfoResource.class);
+		rootRouter.attach("/"+MODELBRICK, BiomodelVCMLModelInfoResource.class);//Expects queryparameters
 		rootRouter.attach("/"+BIOMODEL+"/{"+BIOMODELID+"}/"+DIAGRAM_DOWNLOAD, BiomodelDiagramServerResource.class);  
 		rootRouter.attach("/"+BIOMODEL+"/{"+BIOMODELID+"}/"+SIMULATION+"/{"+SIMULATIONID+"}", BiomodelSimulationServerResource.class);  
 		rootRouter.attach("/"+BIOMODEL+"/{"+BIOMODELID+"}/"+SIMULATION+"/{"+SIMULATIONID+"}/"+SAVESIMULATION, BiomodelSimulationSaveServerResource.class);  
