@@ -31,4 +31,3 @@ ADD ./localsolvers /usr/local/app/vcell/installDir/localsolvers
 ENTRYPOINT java \
     -Dvcell.installDir=/usr/local/app/vcell/installDir \
 	-cp "/usr/local/app/vcell/lib/*" org.vcell.sbml.test.VCellSedMLSolver \
-
