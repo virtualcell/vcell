@@ -1260,9 +1260,11 @@ protected void addEvents() {
 		for (BioEvent vcEvent : vcBioevents) {
 			Event sbmlEvent = sbmlModel.createEvent();
 			sbmlEvent.setId(vcEvent.getName());
+			sbmlEvent.setUseValuesFromTriggerTime(vcEvent.getUseValuesFromTriggerTime());
 
 			// create trigger
 			Trigger trigger = sbmlEvent.createTrigger();
+			trigger.setPersistent(true);
 			// NOTE: VCell solver behavior is to fire if trigger is true at timepoint 0
 			// solver does work correctly if there is a non-zero delay
 			// BUT - solver does not correctly simulate when the delay is 0 and when it also fires at 0
