@@ -1332,6 +1332,12 @@ protected void addAssignmentRules()  {
 	cbit.vcell.mapping.AssignmentRule[] vcAssignmentRules = getSelectedSimContext().getAssignmentRules();
 	if (vcAssignmentRules != null) {
 		for(cbit.vcell.mapping.AssignmentRule vcRule : vcAssignmentRules) {
+			SymbolTableEntry ste = vcRule.getAssignmentRuleVar();
+			if(ste instanceof ModelParameter) {
+				// for assignment rule variables that are model parameters 
+				// we already created the sbml assignment rule in addParameters()
+				continue;
+			}
 			org.sbml.jsbml.AssignmentRule sbmlRule = sbmlModel.createAssignmentRule();
 //			sbmlRule.setId(vcRule.getName());
 //			sbmlRule.setName(vcRule.getName());
@@ -2177,6 +2183,7 @@ public Map<Pair <String, String>, String> getLocalToGlobalTranslationMap() {
  */
 public void translateBioModel() throws SbmlException, XMLStreamException {
 	// 'Parse' the Virtual cell model into an SBML model
+	org.sbml.jsbml.Model temp = sbmlModel;
 	addUnitDefinitions();
 	// Add features/compartments
 	addCompartments();
