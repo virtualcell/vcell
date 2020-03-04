@@ -898,10 +898,13 @@ protected void addSpecies() throws XMLStreamException, SbmlException {
 					Expression initConcExpr = vcSpeciesContextsSpec.getInitialConditionParameter().getExpression();
 					if ((sbmlLevel == 2 && sbmlVersion >= 3) || (sbmlLevel > 2)) {
 						// L2V3 and above - add expression as init assignment
-						ASTNode initAssgnMathNode = getFormulaFromExpression(initConcExpr);
-						InitialAssignment initAssignment = sbmlModel.createInitialAssignment();
-						initAssignment.setSymbol(vcSpeciesContexts[i].getName());
-						initAssignment.setMath(initAssgnMathNode);
+						cbit.vcell.mapping.AssignmentRule vcellAs = getSelectedSimContext().getAssignmentRule(vcSpeciesContexts[i]);
+						if(vcellAs == null) {	// we don't create InitialAssignment for an AssignmentRule variable (Reference: L3V1 Section 4.8)
+							ASTNode initAssgnMathNode = getFormulaFromExpression(initConcExpr);
+							InitialAssignment initAssignment = sbmlModel.createInitialAssignment();
+							initAssignment.setSymbol(vcSpeciesContexts[i].getName());
+							initAssignment.setMath(initAssgnMathNode);
+						}
 					} else { 	// L2V1 (or L1V2 also??)
 						// L2V1 (and L1V2?) and species is 'fixed' (constant), and not fn of x,y,z, other sp, add expr as assgn rule 
 						ASTNode assgnRuleMathNode = getFormulaFromExpression(initConcExpr);
@@ -1351,7 +1354,8 @@ protected void addAssignmentRules()  {
 	}
 }
 protected void addInitialAssignments() throws ExpressionException, MappingException, MathException, MatrixException, ModelException  {
-	// used for overrides and parameter scan exports
+	// used for overrides and parameter scan exports only!
+	// for species, the initial assignments are done in addSpecies()
 	if(vcSelectedSimJob == null) {
 		return;
 	}
