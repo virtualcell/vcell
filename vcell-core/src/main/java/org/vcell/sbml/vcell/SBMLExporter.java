@@ -32,6 +32,8 @@ import org.sbml.jsbml.SBMLWriter;
 import org.sbml.jsbml.SimpleSpeciesReference;
 import org.sbml.jsbml.SpeciesReference;
 import org.sbml.jsbml.Trigger;
+import org.sbml.jsbml.Unit;
+import org.sbml.jsbml.Unit.Kind;
 import org.sbml.jsbml.UnitDefinition;
 import org.sbml.jsbml.ext.spatial.AdjacentDomains;
 import org.sbml.jsbml.ext.spatial.AdvectionCoefficient;
@@ -1246,7 +1248,11 @@ protected void addUnitDefinitions() throws SbmlException {
 //	ModelUnitSystem vcUnitSystem = vcModel.getUnitSystem();
 
 	sbmlModel.setSubstanceUnits(getOrCreateSBMLUnit(sbmlExportSpec.getSubstanceUnits()));
-	sbmlModel.setVolumeUnits(getOrCreateSBMLUnit(sbmlExportSpec.getVolumeUnits()));
+	
+	cbit.vcell.units.VCUnitDefinition vcud = sbmlExportSpec.getVolumeUnits();
+	org.sbml.jsbml.UnitDefinition ud = getOrCreateSBMLUnit(vcud);
+	sbmlModel.setVolumeUnits(ud);
+	
 	sbmlModel.setAreaUnits(getOrCreateSBMLUnit(sbmlExportSpec.getAreaUnits()));
 	sbmlModel.setLengthUnits(getOrCreateSBMLUnit(sbmlExportSpec.getLengthUnits()));
 	sbmlModel.setTimeUnits(getOrCreateSBMLUnit(sbmlExportSpec.getTimeUnits()));
