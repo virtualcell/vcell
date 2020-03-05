@@ -123,7 +123,7 @@ public class VCellSedMLSolver {
 			sendMessageToJobhook(e.getMessage(), true);
 		} finally {
 		}
-		sendMessageToJobhook("done", false);
+		sendMessageToJobhook("Success - Exit", false);
 	}
 	public static void setAccessToken() {
 
@@ -157,10 +157,9 @@ public class VCellSedMLSolver {
 		if (error) {
 			System.err.println(message);
 			try {
-				HttpResponse<String> response = Unirest.post(JOBHOOK_URL)
+				HttpResponse<String> response = Unirest.post(JOBHOOK_URL + '/' + SIMULATION_ID)
 					.header("Authorization", "Bearer " + ACCESS_TOKEN)
 					.field("message", "E: " + message)
-					.field("simId", SIMULATION_ID)
 					.field("jobId", JOB_ID)
 					.asString();
 			} catch (Exception ex) {
@@ -170,10 +169,9 @@ public class VCellSedMLSolver {
 		else {
 			System.out.println(message);
 			try {
-				HttpResponse<String> response = Unirest.post(JOBHOOK_URL)
+				HttpResponse<String> response = Unirest.post(JOBHOOK_URL + '/' + SIMULATION_ID)
 					.header("Authorization", "Bearer " + ACCESS_TOKEN)
 					.field("message", "I: " + message)
-					.field("simId", SIMULATION_ID)
 					.field("jobId", JOB_ID)
 					.asString();
 			} catch (Exception ex) {
