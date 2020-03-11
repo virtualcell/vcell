@@ -43,6 +43,7 @@ import cbit.vcell.xml.ExternalDocInfo;
 import cbit.vcell.xml.XmlHelper;
 import kong.unirest.HttpResponse;
 import kong.unirest.Unirest;
+import kong.unirest.json.JSONArray;
 
 
 public class VCellSedMLSolver {
@@ -157,10 +158,10 @@ public class VCellSedMLSolver {
 		if (error) {
 			System.err.println(message);
 			try {
-				HttpResponse<String> response = Unirest.post(JOBHOOK_URL + '/' + SIMULATION_ID)
+				HttpResponse<String> response = Unirest.jsonPatch(JOBHOOK_URL + '/' + SIMULATION_ID)
 					.header("Authorization", "Bearer " + ACCESS_TOKEN)
-					.field("message", "E: " + message)
-					.field("jobId", JOB_ID)
+					.add("/log", "E: " + message)
+					.replace("/jobId", JOB_ID)
 					.asString();
 			} catch (Exception ex) {
 				System.err.println(ex.getMessage());
@@ -169,10 +170,10 @@ public class VCellSedMLSolver {
 		else {
 			System.out.println(message);
 			try {
-				HttpResponse<String> response = Unirest.post(JOBHOOK_URL + '/' + SIMULATION_ID)
+				HttpResponse<String> response = Unirest.jsonPatch(JOBHOOK_URL + '/' + SIMULATION_ID)
 					.header("Authorization", "Bearer " + ACCESS_TOKEN)
-					.field("message", "I: " + message)
-					.field("jobId", JOB_ID)
+					.add("/log", "I: " + message)
+					.replace("/jobId", JOB_ID)
 					.asString();
 			} catch (Exception ex) {
 				System.err.println(ex.getMessage());
