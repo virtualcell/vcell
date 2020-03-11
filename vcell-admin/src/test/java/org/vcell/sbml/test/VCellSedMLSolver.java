@@ -173,7 +173,7 @@ public class VCellSedMLSolver {
 				HttpResponse<String> response = Unirest.jsonPatch(JOBHOOK_URL + '/' + SIMULATION_ID)
 					.header("Authorization", "Bearer " + ACCESS_TOKEN)
 					.add("/log", "I: " + message)
-					.replace("/jobId", JOB_ID)
+					.replace("/slurmJobId", JOB_ID)
 					.asString();
 			} catch (Exception ex) {
 				System.err.println(ex.getMessage());
