@@ -10,7 +10,7 @@ jobs:
           wget https://www.dropbox.com/s/h70d7erl2mkufbk/jdk-8u241-linux-x64.tar.gz?dl=1
           tar -xvzf jdk-8u241-linux-x64.tar.gz?dl=1
           mv jdk1.8.0_241 jdk
-      - name: Export Environment variables for compiling 
+      - name: Export Environment variables for compiling and install dependencies 
         run: |
           export JAVA_HOME=`pwd`/jdk
           export PATH=${JAVA_HOME}/bin:${PATH}
@@ -21,12 +21,6 @@ jobs:
           mv apache-maven-3.6.3 maven
           export M2_HOME=`pwd`/maven
           export PATH=${M2_HOME}/bin:${PATH}
-          mvn -version
-          java -version
-      - name: Install dependencies
-        run: |
-          echo `pwd`
-          echo $JAVA_HOME
           mvn -version
           java -version
           mvn clean install dependency:copy-dependencies
