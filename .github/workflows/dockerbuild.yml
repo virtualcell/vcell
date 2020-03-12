@@ -5,22 +5,21 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: Env variables
-      env:
-        JOB_ID: ${{secrets.JOB_ID}}
-        SIMULATION_ID: ${{secrets.SIMULATION_ID}}
-        AUTH0_CLIENT_ID: ${{secrets.AUTH0_CLIENT_ID}}
-        AUTH0_CLIENT_SECRET: ${{secrets.AUTH0_CLIENT_SECRET}}
-        AUTH0_BIOSIMULATIONS_AUDIENCE: ${{secrets.AUTH0_BIOSIMULATIONS_AUDIENCE}}
-        AUTH0_TOKEN_URL: ${{secrets.AUTH0_TOKEN_URL}}
-        AUTH0_GRANT_TYPE: ${{secrets.AUTH0_GRANT_TYPE}}
-        JOBHOOK_URL: ${{secrets.JOBHOOK_URL}}
       - name: Extract JDK Tarball
         run: |
           wget https://www.dropbox.com/s/h70d7erl2mkufbk/jdk-8u241-linux-x64.tar.gz?dl=1
           tar -xvzf jdk-8u241-linux-x64.tar.gz?dl=1
           mv jdk1.8.0_241 jdk
       - name: Export Environment variables, mvn installation and build docker image
+        env:
+          JOB_ID: ${{secrets.JOB_ID}}
+          SIMULATION_ID: ${{secrets.SIMULATION_ID}}
+          AUTH0_CLIENT_ID: ${{secrets.AUTH0_CLIENT_ID}}
+          AUTH0_CLIENT_SECRET: ${{secrets.AUTH0_CLIENT_SECRET}}
+          AUTH0_BIOSIMULATIONS_AUDIENCE: ${{secrets.AUTH0_BIOSIMULATIONS_AUDIENCE}}
+          AUTH0_TOKEN_URL: ${{secrets.AUTH0_TOKEN_URL}}
+          AUTH0_GRANT_TYPE: ${{secrets.AUTH0_GRANT_TYPE}}
+          JOBHOOK_URL: ${{secrets.JOBHOOK_URL}}
         run: |
           export JAVA_HOME=`pwd`/jdk
           export PATH=${JAVA_HOME}/bin:${PATH}
