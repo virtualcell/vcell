@@ -33,6 +33,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.StringTokenizer;
 
 import javax.swing.BorderFactory;
@@ -58,6 +59,7 @@ import javax.swing.tree.TreePath;
 
 import org.vcell.model.rbm.MolecularType;
 import org.vcell.pathway.BioPaxObject;
+import org.vcell.sybil.models.AnnotationQualifiers;
 import org.vcell.sybil.models.miriam.MIRIAMQualifier;
 import org.vcell.sybil.models.miriam.MIRIAMRef.URNParseFailureException;
 import org.vcell.util.Compare;
@@ -105,6 +107,10 @@ public class AnnotationsPanel extends DocumentEditorSubPanel {
 	public static final String ACTION_DELETE ="Delete";
 	public static final String ACTION_REMOVE_TEXT = "Delete";
 	public static final String ACTION_GOTO ="Go";
+	public static final int COMBO_QUALIFIER_WIDTH = 140;
+	public static final int MAX_DESCRIPTION_LENGTH = 145;
+	public static final int MAX_URI_LENGTH = 120;
+	
 	private EventHandler eventHandler = new EventHandler();
 	
 	private JTree jTreeMIRIAM = null;
@@ -117,7 +123,9 @@ public class AnnotationsPanel extends DocumentEditorSubPanel {
 	private JScrollPane jScrollPane = null;			// will show the MIRIAM JTree
 	
 	private JComboBox jComboBoxURI = null;			// identity provider combo
-	private DefaultComboBoxModel defaultComboBoxModel = null;
+	private DefaultComboBoxModel defaultComboBoxModelURI = null;
+	private JComboBox jComboBoxQualifier = null;	// annotation qualifier combo (isDescribedBy, etc)
+	private DefaultComboBoxModel defaultComboBoxModelQualifier = new DefaultComboBoxModel();
 	private JTextField jTextFieldFormalID = null;	// immortal ID text
 	private JButton jButtonAddRef = null;			// add a cross-reference
 	private JButton jButtonDeleteRef = null;		// delete selected cross-reference
@@ -198,9 +206,14 @@ public class AnnotationsPanel extends DocumentEditorSubPanel {
 			Component comp;
 			if(value == null) {
 				comp = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-			} else {
+			} else if(value instanceof DataType) {
 				DataType dt = (DataType)value;
 				comp = super.getListCellRendererComponent(list,dt.getDataTypeName(),index,isSelected,cellHasFocus);
+			} else if(value instanceof MIRIAMQualifier) {
+				MIRIAMQualifier mc = (MIRIAMQualifier)value;
+				comp = super.getListCellRendererComponent(list,mc.getDescription(),index,isSelected,cellHasFocus);
+			} else {
+				comp = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
 			}
 			if (-1 < index && null != value && null != tooltips) {
 				list.setToolTipText(tooltips.get(index));
@@ -246,8 +259,24 @@ private JPanel getJPanelNewIdentifier() {
 	gbc.gridy = gridy;
 	gbc.anchor = GridBagConstraints.WEST;
 	jPanelNewIdentifier.add(new JLabel("<html><b>" + mdt.getDataTypeName() + "</b></html>"), gbc);
-		
+
+	// ------------------------------------- Qualifier combobox  -----------------------------
+	
 	gridx++;
+	gbc = new GridBagConstraints();
+	gbc.insets = new Insets(3, 15, 3, 0);		// top left bottom right
+	gbc.gridx = gridx;
+	gbc.gridy = gridy;
+	jPanelNewIdentifier.add(new JLabel("Qualifier"), gbc);
+	
+	gridx++;
+	gbc = new GridBagConstraints();
+	gbc.insets = new Insets(3, 5, 3, 4);
+	gbc.gridx = gridx;
+	gbc.gridy = gridy;
+	jPanelNewIdentifier.add(getJComboBoxQualifier(), gbc);
+
+	// -------------------------------------------------------------------------------
 	gridx++;
 	gbc = new GridBagConstraints();
 	gbc.insets = new Insets(3, 15, 3, 0);
@@ -264,7 +293,7 @@ private JPanel getJPanelNewIdentifier() {
 	gbc.anchor = GridBagConstraints.WEST;
 	jPanelNewIdentifier.add(getJTextFieldFormalID(), gbc);
 	getJTextFieldFormalID().setText("NewID");
-		
+
 	gridx++;
 	gbc = new GridBagConstraints();
 	gbc.insets = new Insets(3, 15, 3, 0);
@@ -303,19 +332,18 @@ private JPanel getJPanelNewIdentifier() {
 	gbc.insets = new Insets(3, 15, 3, 0);
 	gbc.gridx = gridx;
 	gbc.gridy = gridy;
-	gbc.gridwidth = 6;
+	gbc.gridwidth = 8;
 	gbc.anchor = GridBagConstraints.WEST;
 	jPanelNewIdentifier.add(linkLabel, gbc);
 	
 	// ---------------------------------------------------------------------
-	final int MaxRowLength = 120;
 	List <String> rows = new ArrayList<> ();
 	String value = mdt.getDescription();
 	StringTokenizer tokenizer = new StringTokenizer(value, " ");
 	String row = "";
 	while(tokenizer.hasMoreTokens()) {
 		String word = tokenizer.nextToken();
-		if((row.length() + word.length()) > MaxRowLength) {
+		if((row.length() + word.length()) > MAX_DESCRIPTION_LENGTH) {
 			rows.add(row);
 			row = word + " ";
 		} else {
@@ -332,7 +360,7 @@ private JPanel getJPanelNewIdentifier() {
 		gbc.insets = new Insets(3, 15, 3, 0);
 		gbc.gridx = gridx;
 		gbc.gridy = gridy;
-		gbc.gridwidth = 6;
+		gbc.gridwidth = 8;
 		gbc.fill = GridBagConstraints.HORIZONTAL;
 		gbc.weightx = 1.0;
 		jPanelNewIdentifier.add(new JLabel(currentRow), gbc);
@@ -457,6 +485,20 @@ private JPanel getJPanelLowerLeft() {
 	}
 	return jPanelLowerLeft;
 }
+
+private JComboBox getJComboBoxQualifier() {
+	if (jComboBoxQualifier == null) {
+		jComboBoxQualifier = new JComboBox();
+//		defaultComboBoxModelQualifier = new DefaultComboBoxModel();	// already allocated
+		jComboBoxQualifier.setModel(defaultComboBoxModelQualifier);
+		Dimension d = jComboBoxQualifier.getPreferredSize();
+		jComboBoxQualifier.setMinimumSize(new Dimension(COMBO_QUALIFIER_WIDTH, d.height));
+		jComboBoxQualifier.setPreferredSize(new Dimension(COMBO_QUALIFIER_WIDTH, d.height));
+		ComboboxToolTipRenderer renderer = new ComboboxToolTipRenderer();
+		jComboBoxQualifier.setRenderer(renderer);
+	}
+	return jComboBoxQualifier;
+}
 private JTextField getJTextFieldFormalID() {
 	if (jTextFieldFormalID == null) {
 		jTextFieldFormalID = new JTextField();
@@ -472,11 +514,11 @@ private JTextField getJTextFieldFormalID() {
 private JComboBox getJComboBoxURI() {
 	if (jComboBoxURI == null) {
 		jComboBoxURI = new JComboBox();
-		defaultComboBoxModel = new DefaultComboBoxModel();
-		jComboBoxURI.setModel(defaultComboBoxModel);
+		defaultComboBoxModelURI = new DefaultComboBoxModel();
+		jComboBoxURI.setModel(defaultComboBoxModelURI);
 		Dimension d = jComboBoxURI.getPreferredSize();
-		jComboBoxURI.setMinimumSize(new Dimension(110, d.height));
-		jComboBoxURI.setPreferredSize(new Dimension(110, d.height));
+		jComboBoxURI.setMinimumSize(new Dimension(MAX_URI_LENGTH, d.height));
+		jComboBoxURI.setPreferredSize(new Dimension(MAX_URI_LENGTH, d.height));
 		ComboboxToolTipRenderer renderer = new ComboboxToolTipRenderer();
 		jComboBoxURI.setRenderer(renderer);
 //		jComboBoxURI.setRenderer(new DefaultListCellRenderer() {
@@ -707,6 +749,8 @@ private void initialize() {
 		tenpTextPane.setContentType("text/html");
 		tenpTextPane.setText(null);
 		emptyHtmlText = tenpTextPane.getText();
+		
+		initializeComboBoxQualifier();
 
         getJTreeMIRIAM().addTreeSelectionListener(new TreeSelectionListener() {
 			public void valueChanged(TreeSelectionEvent e) {
@@ -867,7 +911,7 @@ private void addIdentifier() {
 	if(PopupGenerator.showComponentOKCancelDialog(AnnotationsPanel.this, getJPanelNewIdentifier(), "Define New Formal Identifier") != JOptionPane.OK_OPTION) {
 		return;
 	}
-	MIRIAMQualifier qualifier = MIRIAMQualifier.MODEL_isDescribedBy;
+	MIRIAMQualifier qualifier = (MIRIAMQualifier)getJComboBoxQualifier().getSelectedItem();
 	MiriamManager.DataType objectNamespace = (MiriamManager.DataType)getJComboBoxURI().getSelectedItem();
 	String objectID = getJTextFieldFormalID().getText();
 	if(objectID.compareTo("NewID") == 0) {
@@ -901,9 +945,6 @@ private void removeIdentifier() {
 		boolean found = false;
 		for (MiriamRefGroup refGroup : refGroupsToRemove.keySet()){
 			MIRIAMQualifier qualifier = refGroupsToRemove.get(refGroup);
-			if(!qualifier.equals(MIRIAMQualifier.MODEL_isDescribedBy)) {
-//				continue;
-			}
 			for (MiriamResource miriamResource : refGroup.getMiriamRefs()) {
 				
 				if(!isEqual(miriamResource, resourceToDelete)) {
@@ -955,13 +996,13 @@ private boolean isEqual(MiriamResource aThis, MiriamResource aThat) {
 @SuppressWarnings("unchecked")
 private void initializeComboBoxURI() {
 	Identifiable entity = getIdentifiable(selectedObject);
-	defaultComboBoxModel.removeAllElements();
+	defaultComboBoxModelURI.removeAllElements();
 	List<String> tooltips = new ArrayList<String> ();
 	if(entity == null) {
 		for (DataType dataType : vcMetaData.getMiriamManager().getAllDataTypes().values()) {
 			String tooltipString = ((VCMetaDataDataType)dataType).getDescription();
 			tooltips.add(tooltipString);
-			defaultComboBoxModel.addElement(dataType);
+			defaultComboBoxModelURI.addElement(dataType);
 		}
 		((ComboboxToolTipRenderer)getJComboBoxURI().getRenderer()).setTooltips(tooltips);
 		return;
@@ -969,9 +1010,18 @@ private void initializeComboBoxURI() {
 	for (DataType dataType : VCMetaDataMiriamManager.getSpecificDataTypes(entity)) {
 		String tooltipString = ((VCMetaDataDataType)dataType).getDescription();
 		tooltips.add(tooltipString);
-		defaultComboBoxModel.addElement(dataType);
+		defaultComboBoxModelURI.addElement(dataType);
 	}
 	((ComboboxToolTipRenderer)getJComboBoxURI().getRenderer()).setTooltips(tooltips);
+}
+private void initializeComboBoxQualifier() {
+	//Set<MIRIAMQualifier> MIRIAM_all;
+	//AnnotationQualifiers.MIRIAM_all;
+	for(MIRIAMQualifier qualifier : AnnotationQualifiers.MIRIAM_all) {
+		
+		defaultComboBoxModelQualifier.addElement(qualifier);
+	}
+	
 }
 
 private JButton getJButtonAddRef() {
