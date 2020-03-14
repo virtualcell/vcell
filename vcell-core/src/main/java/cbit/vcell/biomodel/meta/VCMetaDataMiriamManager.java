@@ -192,7 +192,7 @@ public class VCMetaDataMiriamManager implements MiriamManager, Serializable {
 		public final static DataType DataType_SenseLab		= new VCMetaDataDataType("ModelDB at SenseLab",
 				"https://senselab.med.yale.edu/modeldb/",
 			    "http://senselab.med.yale.edu/ModelDB/ShowModel.asp?model=",
-			    "urn:miriam:neurondb",
+			    "urn:miriam:modeldb",
 			    "ModelDB is a curated, searchable database of published models in the computational neuroscience domain ",
 				"45539");
 //		public final static DataType DataType_CellML 			= new VCMetaDataDataType("Physiome Repository (CellML)",
@@ -395,6 +395,15 @@ public class VCMetaDataMiriamManager implements MiriamManager, Serializable {
 		}
 		public String getExample() {
 			return example;
+		}
+
+		@Override
+		public int compareTo(Object that) {
+			if(!(that instanceof VCMetaDataDataType)) {
+				return 0;
+			}
+			VCMetaDataDataType dt = (VCMetaDataDataType)that;
+			return name.compareTo(dt.getDataTypeName());
 		}
 	}
 	
