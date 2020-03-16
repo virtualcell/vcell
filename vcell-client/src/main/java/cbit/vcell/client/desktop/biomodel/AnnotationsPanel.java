@@ -30,6 +30,7 @@ import java.awt.event.MouseListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -109,7 +110,7 @@ public class AnnotationsPanel extends DocumentEditorSubPanel {
 	public static final String ACTION_GOTO ="Go";
 	public static final int COMBO_QUALIFIER_WIDTH = 140;
 	public static final int MAX_DESCRIPTION_LENGTH = 145;
-	public static final int MAX_URI_LENGTH = 120;
+	public static final int MAX_URI_LENGTH = 130;
 	
 	private EventHandler eventHandler = new EventHandler();
 	
@@ -126,6 +127,7 @@ public class AnnotationsPanel extends DocumentEditorSubPanel {
 	private DefaultComboBoxModel defaultComboBoxModelURI = null;
 	private JComboBox jComboBoxQualifier = null;	// annotation qualifier combo (isDescribedBy, etc)
 	private DefaultComboBoxModel defaultComboBoxModelQualifier = new DefaultComboBoxModel();
+	
 	private JTextField jTextFieldFormalID = null;	// immortal ID text
 	private JButton jButtonAddRef = null;			// add a cross-reference
 	private JButton jButtonDeleteRef = null;		// delete selected cross-reference
@@ -940,7 +942,6 @@ private void removeIdentifier() {
 		//Map<MiriamRefGroup, MIRIAMQualifier> refGroupsToRemove = vcMetaData.getMiriamManager().getAllMiriamRefGroups(entity);
 		MiriamManager mm = vcMetaData.getMiriamManager();
 		Map<MiriamRefGroup,MIRIAMQualifier> refGroupsToRemove = mm.getMiriamTreeMap().get(entity);
-
 		
 		boolean found = false;
 		for (MiriamRefGroup refGroup : refGroupsToRemove.keySet()){
@@ -998,30 +999,34 @@ private void initializeComboBoxURI() {
 	Identifiable entity = getIdentifiable(selectedObject);
 	defaultComboBoxModelURI.removeAllElements();
 	List<String> tooltips = new ArrayList<String> ();
+	List<DataType> dataTypeList = new ArrayList<>();
 	if(entity == null) {
-		for (DataType dataType : vcMetaData.getMiriamManager().getAllDataTypes().values()) {
-			String tooltipString = ((VCMetaDataDataType)dataType).getDescription();
-			tooltips.add(tooltipString);
-			defaultComboBoxModelURI.addElement(dataType);
+		for (DataType dt : vcMetaData.getMiriamManager().getAllDataTypes().values()) {
+			dataTypeList.add(dt);
 		}
-		((ComboboxToolTipRenderer)getJComboBoxURI().getRenderer()).setTooltips(tooltips);
-		return;
+	} else {	
+		for (DataType dt : VCMetaDataMiriamManager.getSpecificDataTypes(entity)) {
+			dataTypeList.add(dt);
+		}
 	}
-	for (DataType dataType : VCMetaDataMiriamManager.getSpecificDataTypes(entity)) {
-		String tooltipString = ((VCMetaDataDataType)dataType).getDescription();
-		tooltips.add(tooltipString);
-		defaultComboBoxModelURI.addElement(dataType);
+	Collections.sort(dataTypeList);
+	for(DataType dt : dataTypeList) {
+		tooltips.add(dt.getDescription());
+		defaultComboBoxModelURI.addElement(dt);
 	}
 	((ComboboxToolTipRenderer)getJComboBoxURI().getRenderer()).setTooltips(tooltips);
 }
 private void initializeComboBoxQualifier() {
 	//Set<MIRIAMQualifier> MIRIAM_all;
 	//AnnotationQualifiers.MIRIAM_all;
+	List<MIRIAMQualifier> qualifierList = new ArrayList<>();
 	for(MIRIAMQualifier qualifier : AnnotationQualifiers.MIRIAM_all) {
-		
+		qualifierList.add(qualifier);
+	}
+	Collections.sort(qualifierList);
+	for(MIRIAMQualifier qualifier : qualifierList) {
 		defaultComboBoxModelQualifier.addElement(qualifier);
 	}
-	
 }
 
 private JButton getJButtonAddRef() {
