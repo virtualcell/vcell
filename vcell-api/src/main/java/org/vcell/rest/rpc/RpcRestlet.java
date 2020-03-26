@@ -18,7 +18,7 @@ import org.restlet.data.Method;
 import org.restlet.data.Status;
 import org.restlet.engine.adapter.HttpRequest;
 import org.restlet.engine.adapter.HttpResponse;
-import org.restlet.engine.header.Header;
+import org.restlet.data.Header;
 import org.restlet.engine.header.HeaderConstants;
 import org.restlet.representation.ByteArrayRepresentation;
 import org.restlet.util.Series;
