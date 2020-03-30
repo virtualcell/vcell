@@ -601,6 +601,10 @@ public class ReactionCartoonTool extends BioCartoonTool implements BioCartoonToo
 				}
 				if (getSelectedReactionParticipantArray() != null && menuAction.equals(CartoonToolEditActions.Delete.MENU_ACTION)) {
 					ReactionParticipant[] reactionParticipantArr = getSelectedReactionParticipantArray();
+					if(ReactionCartoonTool.checkAllCatalyst(reactionParticipantArr)) {
+						DialogUtils.showWarningDialog(getGraphPane(), "Catalysts can only be deleted by editing kynetic / proxy parameters");
+						return;
+					}
 					String response = DialogUtils.showWarningDialog(getGraphPane(),
 							"Delete "+reactionParticipantArr.length+" Reaction Stoichiometries",
 							new String[] {RXSPECIES_DELETE,RXSPECIES_CANCEL}, RXSPECIES_CANCEL);
@@ -662,6 +666,18 @@ public class ReactionCartoonTool extends BioCartoonTool implements BioCartoonToo
 			// default action is to ignore
 		}
 
+	}
+
+	public static boolean checkAllCatalyst(Object[] reactionParticipantArr) {
+		if(reactionParticipantArr == null || reactionParticipantArr.length == 0) {
+			return false;
+		}
+		for (int i = 0; reactionParticipantArr!=null &&  i < reactionParticipantArr.length; i++) {
+			if(!(reactionParticipantArr[i] instanceof Catalyst)) {
+				return false;
+			}
+		}
+		return true;
 	}
 	
 	private void pasteReactionsAndSpecies(Component requester,Structure pasteToStructure){

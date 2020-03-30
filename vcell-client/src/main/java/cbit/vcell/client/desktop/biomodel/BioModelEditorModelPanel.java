@@ -19,8 +19,6 @@ import java.awt.Graphics;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
-import java.awt.Point;
-import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -62,7 +60,6 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import javax.swing.table.TableCellRenderer;
 
 import org.vcell.model.rbm.MolecularType;
 import org.vcell.model.rbm.RbmNetworkGenerator.CompartmentMode;
@@ -98,7 +95,6 @@ import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.UserMessage;
 import cbit.vcell.client.constants.GuiConstants;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorTreeModel.DocumentEditorTreeFolderClass;
-import cbit.vcell.client.desktop.biomodel.MolecularTypeTableModel.Column;
 import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveView;
 import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveViewID;
 import cbit.vcell.clientdb.DocumentManager;
@@ -521,8 +517,12 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 				selectedObjects = objectList.toArray(new Object[0]);
 			}
 		}
-		if (selectedObjects != null) {				
-			deleteButton.setEnabled(selectedObjects.length > 0);
+		if (selectedObjects != null) {
+			if(ReactionCartoonTool.checkAllCatalyst(selectedObjects)) {
+				deleteButton.setEnabled(false);
+			}else {
+				deleteButton.setEnabled(selectedObjects.length > 0);
+			}
 			if (selectedObjects.length == 1 && 
 					(selectedObjects[0] instanceof ReactionRule || selectedObjects[0] instanceof RbmObservable)) {
 				duplicateButton.setEnabled(true);
