@@ -229,12 +229,28 @@ private void checkLinuxSharedLibs() throws IOException, InterruptedException {
 					String libPath = libInfo.nextToken();
 					String aux = libInfo.nextToken();
 					if(libPath.equals("not") && aux.equals("found")) {
+						boolean bMatch = false;
 						for (int i = 0; i < libzipSolverFiles.length; i++) {
-							if(libzipSolverFiles[i].getName().startsWith(libName)) {
+							if(libzipSolverFiles[i].getName().startsWith(libName)  && libzipSolverFiles[i].length() != 0) {
 								//System.out.println(libName+" "+ptr+" "+libPath+" "+aux+" "+org.apache.commons.lang3.StringUtils.getJaroWinklerDistance("libhdf5.so",libName));						
 								System.out.println(libName+" "+ptr+" "+libPath+" "+aux+" match="+libzipSolverFiles[i]);
 								createSymbolicLink(mySolverLinkDir, libName,libzipSolverFiles[i]);
+								bMatch = true;
+								break;
 							}
+						}
+						if(!bMatch) {
+							for (int i = 0; i < libzipSolverFiles.length; i++) {
+								int index = libName.indexOf(".so");
+								if(index != -1) {
+									String matchName = libName.substring(0,index+3);
+									if(libzipSolverFiles[i].getName().startsWith(matchName) && libzipSolverFiles[i].length() != 0) {
+										System.out.println("ALTERNATE  "+libName+" "+ptr+" "+libPath+" "+aux+" match="+libzipSolverFiles[i]);
+										createSymbolicLink(mySolverLinkDir, libName,libzipSolverFiles[i]);
+										break;
+									}
+								}
+							}	
 						}
 					}
 				}
