@@ -32,7 +32,7 @@ services:
       timeout: 10s
       retries: 3
     secrets:
-      - keystorefile
+      - keystorefile_20200405
       - keystorepswd
       - dbpswd
       - jmspswd
@@ -338,7 +338,7 @@ secrets:
     file: ${VCELL_SECRETS_DIR}/jmspswd.txt
   keystorepswd:
     file: ${VCELL_SECRETS_DIR}/vcellapi-beta-keystorepswd.txt
-  keystorefile:
-    file: ${VCELL_SECRETS_DIR}/vcellapi-beta.jks
+  keystorefile_20200405:
+    file: ${VCELL_SECRETS_DIR}/vcellapi-beta_20200405.jks
   batchuserkeyfile:
     file: ${VCELL_SECRETS_DIR}/schaff_rsa
