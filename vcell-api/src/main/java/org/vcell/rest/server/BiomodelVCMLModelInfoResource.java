@@ -94,52 +94,7 @@ public class BiomodelVCMLModelInfoResource extends AbstractServerResource/* impl
 			}else {
 				throw new Exception("expecting '"+VCellApiApplication.BIOMODELID+"' or '"+VCellApiApplication.MODELNAME+"' in query parameters, "+getRequest().getResourceRef().getQuery());
 			}
-			final SpeciesContext[] speciesContexts = bm.getModel().getSpeciesContexts();
-			final ReactionStep[] reactionSteps = bm.getModel().getReactionSteps();
-			TreeMap<String,ArrayList<Object>[]> structName_Species_Reactions_TS = new TreeMap();// This contains a structure name mapped to Species and ReactionSteps
-			//Store SpeciesContexts belonging to each Structure
-			for (int i = 0; i < speciesContexts.length; i++) {
-				final String name = speciesContexts[i].getStructure().getName();
-				ArrayList<Object>[] items = structName_Species_Reactions_TS.get(name);
-				if( items == null) {
-					items = new ArrayList[] {new ArrayList<Structure>(), new ArrayList<SpeciesContext>(),new ArrayList<ReactionStep>()};
-					items[ITEM_NAMES.structure.ordinal()].add(speciesContexts[i].getStructure());
-					structName_Species_Reactions_TS.put(name, items);
-				}
-				items[ITEM_NAMES.species.ordinal()].add(speciesContexts[i]);
-			}
-			//Store ReactionStep belonging to each structure
-			for (int i = 0; i < reactionSteps.length; i++) {
-				final String name = reactionSteps[i].getStructure().getName();
-				ArrayList<Object>[] items = structName_Species_Reactions_TS.get(name);
-				if( items == null) {
-					items = new ArrayList[] {new ArrayList<Structure>(), new ArrayList<SpeciesContext>(),new ArrayList<ReactionStep>()};
-					items[ITEM_NAMES.structure.ordinal()].add(reactionSteps[i].getStructure());
-					structName_Species_Reactions_TS.put(name, items);
-				}
-				items[ITEM_NAMES.reactions.ordinal()].add(reactionSteps[i]);
-			}
-			//Create html
-			StringBuffer sb = new StringBuffer();
-			sb.append("<strong>Compartments, Species, Reactions</strong><br/>");
-			//iterate through all the structures and get the stored SpeciesContexts and ReactionSteps
-			final Iterator<String> iterator = structName_Species_Reactions_TS.keySet().iterator();
-			while(iterator.hasNext()) {
-				final String structName = iterator.next();//Get the structure name
-				final ArrayList<Object>[] items = structName_Species_Reactions_TS.get(structName);//Get the stored items for the structure
-				sb.append("<ul><li> Compartment <strong>\""+structName+"\"</strong>.  &nbsp; (type: "+((Structure)items[ITEM_NAMES.structure.ordinal()].get(0)).getTypeName()+")<ul>");
-				//Add html for SpeciesContexts
-				for (int i = 0; i < items[ITEM_NAMES.species.ordinal()].size(); i++) {
-					sb.append("<li>Species <strong>\""+StringEscapeUtils.escapeHtml(((SpeciesContext)items[ITEM_NAMES.species.ordinal()].get(i)).getName())+"\"</strong></li>");
-				}
-				//Add html for ReactionSteps
-				for (int i = 0; i < items[ITEM_NAMES.reactions.ordinal()].size(); i++) {
-					final ReactionStep rxStep = (ReactionStep)items[ITEM_NAMES.reactions.ordinal()].get(i);
-					ReactionDescription reactionDescription = createReactionDescription(rxStep, bm.getVersion().getVersionKey(), ((Structure)items[ITEM_NAMES.structure.ordinal()].get(0)).getKey());
-					sb.append("<li>Reaction <strong>\""+rxStep.getName()+"\"</strong> &nbsp; "+rxStep.getClass().getSimpleName()+" &nbsp; ("+StringEscapeUtils.escapeHtml(reactionDescription.toString())+")</li>");
-				}
-				sb.append("</ul></li></ul>");
-			}
+			StringBuffer sb = createHtml(bm);
 			return new StringRepresentation(sb.toString(), MediaType.TEXT_HTML);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -148,6 +103,56 @@ public class BiomodelVCMLModelInfoResource extends AbstractServerResource/* impl
 			}
 			throw new ResourceException(Status.SERVER_ERROR_INTERNAL, e.getMessage());
 		}
+	}
+
+	public static StringBuffer createHtml(BioModel bm) {
+		final SpeciesContext[] speciesContexts = bm.getModel().getSpeciesContexts();
+		final ReactionStep[] reactionSteps = bm.getModel().getReactionSteps();
+		TreeMap<String,ArrayList<Object>[]> structName_Species_Reactions_TS = new TreeMap<String, ArrayList<Object>[]>();// This contains a structure name mapped to Species and ReactionSteps
+		//Store SpeciesContexts belonging to each Structure
+		for (int i = 0; i < speciesContexts.length; i++) {
+			final String name = speciesContexts[i].getStructure().getName();
+			ArrayList<Object>[] items = structName_Species_Reactions_TS.get(name);
+			if( items == null) {
+				items = new ArrayList[] {new ArrayList<Structure>(), new ArrayList<SpeciesContext>(),new ArrayList<ReactionStep>()};
+				items[ITEM_NAMES.structure.ordinal()].add(speciesContexts[i].getStructure());
+				structName_Species_Reactions_TS.put(name, items);
+			}
+			items[ITEM_NAMES.species.ordinal()].add(speciesContexts[i]);
+		}
+		//Store ReactionStep belonging to each structure
+		for (int i = 0; i < reactionSteps.length; i++) {
+			final String name = reactionSteps[i].getStructure().getName();
+			ArrayList<Object>[] items = structName_Species_Reactions_TS.get(name);
+			if( items == null) {
+				items = new ArrayList[] {new ArrayList<Structure>(), new ArrayList<SpeciesContext>(),new ArrayList<ReactionStep>()};
+				items[ITEM_NAMES.structure.ordinal()].add(reactionSteps[i].getStructure());
+				structName_Species_Reactions_TS.put(name, items);
+			}
+			items[ITEM_NAMES.reactions.ordinal()].add(reactionSteps[i]);
+		}
+		//Create html
+		StringBuffer sb = new StringBuffer();
+		sb.append("<strong>Compartments, Species, Reactions</strong><br/>");
+		//iterate through all the structures and get the stored SpeciesContexts and ReactionSteps
+		final Iterator<String> iterator = structName_Species_Reactions_TS.keySet().iterator();
+		while(iterator.hasNext()) {
+			final String structName = iterator.next();//Get the structure name
+			final ArrayList<Object>[] items = structName_Species_Reactions_TS.get(structName);//Get the stored items for the structure
+			sb.append("<ul><li> Compartment <strong>\""+structName+"\"</strong>.  &nbsp; (type: "+((Structure)items[ITEM_NAMES.structure.ordinal()].get(0)).getTypeName()+")<ul>");
+			//Add html for SpeciesContexts
+			for (int i = 0; i < items[ITEM_NAMES.species.ordinal()].size(); i++) {
+				sb.append("<li>Species <strong>\""+StringEscapeUtils.escapeHtml(((SpeciesContext)items[ITEM_NAMES.species.ordinal()].get(i)).getName())+"\"</strong></li>");
+			}
+			//Add html for ReactionSteps
+			for (int i = 0; i < items[ITEM_NAMES.reactions.ordinal()].size(); i++) {
+				final ReactionStep rxStep = (ReactionStep)items[ITEM_NAMES.reactions.ordinal()].get(i);
+				ReactionDescription reactionDescription = createReactionDescription(rxStep, bm.getVersion().getVersionKey(), ((Structure)items[ITEM_NAMES.structure.ordinal()].get(0)).getKey());
+				sb.append("<li>Reaction <strong>\""+rxStep.getName()+"\"</strong> &nbsp; "+rxStep.getClass().getSimpleName()+" &nbsp; ("+StringEscapeUtils.escapeHtml(reactionDescription.toString())+")</li>");
+			}
+			sb.append("</ul></li></ul>");
+		}
+		return sb;
 	}
 
 	
