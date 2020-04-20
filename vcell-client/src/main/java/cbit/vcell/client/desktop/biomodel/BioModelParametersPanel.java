@@ -935,6 +935,13 @@ public class BioModelParametersPanel extends DocumentEditorSubPanel {
 	}
 	
 	@Override
+	protected void setSelectedObjects(Object[] selectedObjects) {
+		if (selectionManager != null && selectedObjects != null && selectedObjects.length > 0) {
+			selectionManager.setSelectedObjects(selectedObjects);
+		}
+	}
+	
+	@Override
 	protected void onActiveViewChange(ActiveView activeView) {
 		super.onActiveViewChange(activeView);
 		if (DocumentEditorTreeFolderClass.BIOMODEL_PARAMETERS_NODE == activeView.getDocumentEditorTreeFolderClass()) {
