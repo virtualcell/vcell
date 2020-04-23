@@ -8,6 +8,12 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Vector;
 
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.CommandLineParser;
+import org.apache.commons.cli.DefaultParser;
+import org.apache.commons.cli.Option;
+import org.apache.commons.cli.Options;
+import org.apache.commons.cli.OptionBuilder;
 import org.jlibsedml.AbstractTask;
 import org.jlibsedml.Libsedml;
 import org.jlibsedml.SedML;
@@ -55,16 +61,24 @@ public class VCellSedMLSolver {
     static String AUTH0_CLIENT_SECRET = System.getenv("AUTH0_CLIENT_SECRET");
     static String ACCESS_TOKEN = null;
 
-	static String inString = "/usr/local/app/vcell/simulation";
-	static String outRootString = "/usr/local/app/vcell/simulation/out";
+	// static String inString = "/usr/local/app/vcell/simulation";
+	// static String outRootString = "/usr/local/app/vcell/simulation/out";
 
 	public static void main(String[] args) {
-		setAccessToken();
+
+		CommandLineParser parser = new DefaultParser();
 
 		// place the sedml file and the sbml file(s) in inDir directory
+		Options options = getCommandLineOptions();
+
+		try {
+			CommandLine line = parser.parse(options, args);
+		} catch (Exception ex) {
+			
+		}
 		
-		File inDir = new File(inString);
-		File outRootDir = new File(outRootString);
+		File inDir = new File(argsMap.get('inputDir'));
+		File outRootDir = new File(argsMap.get('outputDir'));
 		
 		// delete the output directory and all its content recursively
 		if(outRootDir.exists()) {
@@ -126,6 +140,31 @@ public class VCellSedMLSolver {
 		}
 		sendMessageToJobhook("Success - Exit", false);
 	}
+	
+	private static Options getCommandLineOptions() {
+		Option input = OptionBuilder.withArgName("ci")
+						.hasArg()
+						.withDescription("Path to OMEX file which contains one or more SED-ML-encoded simulation experiments")
+						.create("input");
+
+		Option output = OptionBuilder.withArgName("o")
+						.hasArg()
+						.withDescription("Directory to save outputs")
+						.create("Input");
+
+		Option version = OptionBuilder.withArgName("v")
+						.hasArg()
+						.withDescription("Version")
+						.create("version");
+
+		Options options = new Options();
+		
+		options.addOption(input);
+		options.addOption(output);
+		options.addOption(version);
+		return options;
+	}
+
 	public static void setAccessToken() {
 
 		HttpResponse<String> response = Unirest.post("https://crbm.auth0.com/oauth/token")
@@ -371,6 +410,11 @@ public class VCellSedMLSolver {
 		return baseName;
 	}
 
+	private static HashMap<String, String> processArgs(String[] args) {
+		HashMap<String, String> argMap = new HashMap<>();
+		return argMap;
+	}
+
 	private class LocalLogger extends VCLogger {
 		@Override
 		public void sendMessage(Priority p, ErrorType et, String message) throws Exception {
@@ -389,5 +433,7 @@ public class VCellSedMLSolver {
 		return false;
 		}
 	};
+
+
 
 }
