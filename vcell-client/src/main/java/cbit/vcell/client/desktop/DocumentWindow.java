@@ -149,7 +149,8 @@ public class DocumentWindow extends LWTopFrame implements TopLevelWindow, Reconn
 	private JMenuItem ivjJMenuItemDiscussionGroup = null;
 	private JMenuItem ivjJMenuItemManagePermissions = null;
 	private JMenuItem ivjJMenuItemOnlinePublish = null;
-	
+	private JMenuItem jMenuItemGrantPermissionsToVCellSupport = null;
+
 	private JMenuItem ivjJMenuItemEmailSupport = null;
 	private JMenuItem newHelpMenuItem = null;
 //	private JMenuItem ivjRunBNGMenuItem = null;
@@ -257,6 +258,9 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.I
 				getWindowManager().getRequestManager().updateUserRegistration(getWindowManager(), false);
 			}
 			if (e.getSource() == DocumentWindow.this.getPermissionsMenuItem()) {
+				getWindowManager().getRequestManager().accessPermissions(DocumentWindow.this, getWindowManager().getVCDocument());
+			}
+			if (e.getSource() == DocumentWindow.this.getGrantPermissionsToVCellSupportMenuItem()) {
 				getWindowManager().getRequestManager().accessPermissions(DocumentWindow.this, getWindowManager().getVCDocument());
 			}
 
@@ -1195,8 +1199,9 @@ private javax.swing.JMenu getHelpMenu() {
 			ivjHelpMenu.add(getJMenuItemManagePermissions());
 			ivjHelpMenu.add(getJMenuItemOnlinePublish());
 			ivjHelpMenu.add(getJMenuItemEmailSupport());
+			ivjHelpMenu.add(getGrantPermissionsToVCellSupportMenuItem());
 			ivjHelpMenu.add(getJMenuItemPreferences());
-			
+
 //			ivjHelpMenu.add(getSeparator());
 //			ivjHelpMenu.add(getPermissionsMenuItem());
 
@@ -2031,6 +2036,18 @@ private javax.swing.JMenuItem getPermissionsMenuItem() {
 	}
 	return jMenuItemPermissions;
 }
+private javax.swing.JMenuItem getGrantPermissionsToVCellSupportMenuItem() {
+	if (jMenuItemGrantPermissionsToVCellSupport == null) {
+		try {
+			jMenuItemGrantPermissionsToVCellSupport = new javax.swing.JMenuItem();
+			jMenuItemGrantPermissionsToVCellSupport.setText("Grant Permissions To VCell Support...");
+			jMenuItemGrantPermissionsToVCellSupport.setEnabled(false);
+		} catch (java.lang.Throwable ivjExc) {
+			handleException(ivjExc);
+		}
+	}
+	return jMenuItemGrantPermissionsToVCellSupport;
+}
 
 /**
  * Return the ServerMenu property value.
@@ -2295,6 +2312,7 @@ private void initConnections() throws java.lang.Exception {
 	getJMenuItemDiscussionGroup().addActionListener(ivjEventHandler);
 	getJMenuItemManagePermissions().addActionListener(ivjEventHandler);
 	getJMenuItemOnlinePublish().addActionListener(ivjEventHandler);
+	getGrantPermissionsToVCellSupportMenuItem().addActionListener(ivjEventHandler);
 
 	getJMenuItemEmailSupport().addActionListener(ivjEventHandler);
 	getNewHelpMenuItem().addActionListener(ivjEventHandler);
@@ -2625,6 +2643,7 @@ public void updateConnectionStatus(ConnectionStatus connStatus) {
 			getTestingFrameworkMenuItem().setEnabled(false);
 			getJMenuItemFieldData().setEnabled(false);
 			getPermissionsMenuItem().setEnabled(false);
+			getGrantPermissionsToVCellSupportMenuItem().setEnabled(false);
 			checkForReconnecting(connStatus);
 			break;
 		}
@@ -2666,6 +2685,7 @@ public void updateConnectionStatus(ConnectionStatus connStatus) {
 			getViewJobsMenuItem().setEnabled(true);
 			//getJMenuImportPathway().setEnabled(getWindowManager().getVCDocument() instanceof BioModel);
 			getPermissionsMenuItem().setEnabled(bVersionedDocument && getWindowManager().getVCDocument().getVersion().getOwner().equals(getWindowManager().getUser()));
+			getGrantPermissionsToVCellSupportMenuItem().setEnabled(bVersionedDocument && getWindowManager().getVCDocument().getVersion().getOwner().equals(getWindowManager().getUser()));
 			break;
 		}
 		case ConnectionStatus.INITIALIZING: {
@@ -2690,6 +2710,7 @@ public void updateConnectionStatus(ConnectionStatus connStatus) {
 //			getJMenuItemMIRIAM().setEnabled(false);
 			getJMenuItemPreferences().setEnabled(false);
 			getPermissionsMenuItem().setEnabled(false);
+			getGrantPermissionsToVCellSupportMenuItem().setEnabled(false);
 			break;
 		}
 		case ConnectionStatus.DISCONNECTED: {
@@ -2713,6 +2734,7 @@ public void updateConnectionStatus(ConnectionStatus connStatus) {
 //			getJMenuItemMIRIAM().setEnabled(false);
 			getJMenuItemPreferences().setEnabled(false);
 			getPermissionsMenuItem().setEnabled(false);
+			getGrantPermissionsToVCellSupportMenuItem().setEnabled(false);
 			checkForReconnecting(connStatus);
 			break;
 		}
