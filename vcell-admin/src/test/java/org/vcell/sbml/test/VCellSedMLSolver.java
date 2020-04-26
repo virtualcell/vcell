@@ -11,6 +11,7 @@ import java.util.Vector;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
+import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.OptionBuilder;
@@ -59,7 +60,9 @@ public class VCellSedMLSolver {
 	static String JOBHOOK_URL = System.getenv("JOBHOOK_URL");
 	static String AUTH0_CLIENT_ID = System.getenv("AUTH0_CLIENT_ID");
     static String AUTH0_CLIENT_SECRET = System.getenv("AUTH0_CLIENT_SECRET");
-    static String ACCESS_TOKEN = null;
+	static String ACCESS_TOKEN = null;
+	static String OUT_ROOT_STRING = "";
+	static String IN_ROOT_STRING = "";
 
 	// static String inString = "/usr/local/app/vcell/simulation";
 	// static String outRootString = "/usr/local/app/vcell/simulation/out";
@@ -67,18 +70,31 @@ public class VCellSedMLSolver {
 	public static void main(String[] args) {
 
 		CommandLineParser parser = new DefaultParser();
+		HelpFormatter formatter = new HelpFormatter();
 
 		// place the sedml file and the sbml file(s) in inDir directory
 		Options options = getCommandLineOptions();
+		CommandLine cmd = null;
 
 		try {
-			CommandLine line = parser.parse(options, args);
+			cmd = parser.parse(options, args);
+			IN_ROOT_STRING = cmd.getOptionValue("input");
+			OUT_ROOT_STRING = cmd.getOptionValue("output");
 		} catch (Exception ex) {
-			
+			System.out.println(ex.getMessage());
+            formatter.printHelp("vcell", options);
+
+            System.exit(1);
+		}
+
+		if (IN_ROOT_STRING == null || OUT_ROOT_STRING == null) {
+			formatter.printHelp("vcell", options);
+			System.exit(1);
 		}
 		
-		File inDir = new File(argsMap.get('inputDir'));
-		File outRootDir = new File(argsMap.get('outputDir'));
+		
+		File inDir = new File(IN_ROOT_STRING);
+		File outRootDir = new File(OUT_ROOT_STRING);
 		
 		// delete the output directory and all its content recursively
 		if(outRootDir.exists()) {
@@ -142,20 +158,11 @@ public class VCellSedMLSolver {
 	}
 	
 	private static Options getCommandLineOptions() {
-		Option input = OptionBuilder.withArgName("ci")
-						.hasArg()
-						.withDescription("Path to OMEX file which contains one or more SED-ML-encoded simulation experiments")
-						.create("input");
+		Option input = new Option("i", "input", true, "Input filename");
 
-		Option output = OptionBuilder.withArgName("o")
-						.hasArg()
-						.withDescription("Directory to save outputs")
-						.create("Input");
+		Option output = new Option("o", "output", true, "Output directory");
 
-		Option version = OptionBuilder.withArgName("v")
-						.hasArg()
-						.withDescription("Version")
-						.create("version");
+		Option version = new Option("v", "version", false, "App Version");
 
 		Options options = new Options();
 		
@@ -240,7 +247,7 @@ public class VCellSedMLSolver {
 		
 		// create the work directory for this task, invoke the solver
 		String docName = doc.getName();
-		String outString = outRootString + "/" + docName + "_" + sedmlTask.getId();
+		String outString = VCellSedMLSolver.OUT_ROOT_STRING + "/" + docName + "_" + sedmlTask.getId();
 		File outDir = new File(outString);
 		if (!outDir.exists()) {
 			outDir.mkdirs();
