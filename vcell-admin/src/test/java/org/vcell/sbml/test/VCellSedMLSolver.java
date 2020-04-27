@@ -78,12 +78,22 @@ public class VCellSedMLSolver {
 
 		try {
 			cmd = parser.parse(options, args);
+			if (cmd.getOptions().length == 0) {
+				System.out.println("usage: vcell [-h] [-q] -i ARCHIVE [-o OUT_DIR] [-v]");
+				System.exit(1);
+			}
+			if (args[0].contains("-h") || args[0].contains("--help")) {
+				formatter.printHelp("vcell [-h] [-q] -i ARCHIVE [-o OUT_DIR] [-v]",
+						"\nBioSimulations-compliant command-line interface to the vcell simulation program <http://vcell.org>.\n\n" +
+								"optional arguments:\n\n",
+						options,
+						"");
+				System.exit(1);
+			}
 			IN_ROOT_STRING = cmd.getOptionValue("input");
 			OUT_ROOT_STRING = cmd.getOptionValue("output");
 		} catch (Exception ex) {
 			System.out.println(ex.getMessage());
-            formatter.printHelp("vcell", options);
-
             System.exit(1);
 		}
 
@@ -158,14 +168,35 @@ public class VCellSedMLSolver {
 	}
 	
 	private static Options getCommandLineOptions() {
-		Option input = new Option("i", "input", true, "Input filename");
+		Option help = new Option("h",
+				"help",
+				false,
+				"show this help message and exit");
 
-		Option output = new Option("o", "output", true, "Output directory");
+		Option quiet = new Option("q",
+				"quiet",
+				false,
+				"suppress all console output");
 
-		Option version = new Option("v", "version", false, "App Version");
+		Option input = new Option("i",
+				"archive",
+				true,
+				"Path to OMEX file which contains one or more SED-ML-encoded simulation experiments");
+
+		Option output = new Option("o",
+				"out-dir",
+				true,
+				"Directory to save outputs");
+
+		Option version = new Option("v",
+				"version",
+				false,
+				"show program's version number and exit");
 
 		Options options = new Options();
-		
+
+		options.addOption(help);
+		options.addOption(quiet);
 		options.addOption(input);
 		options.addOption(output);
 		options.addOption(version);
