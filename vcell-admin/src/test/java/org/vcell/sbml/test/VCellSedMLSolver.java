@@ -90,8 +90,8 @@ public class VCellSedMLSolver {
 						"");
 				System.exit(1);
 			}
-			IN_ROOT_STRING = cmd.getOptionValue("input");
-			OUT_ROOT_STRING = cmd.getOptionValue("output");
+			IN_ROOT_STRING = cmd.getOptionValue("archive");
+			OUT_ROOT_STRING = cmd.getOptionValue("out-dir");
 		} catch (Exception ex) {
 			System.out.println(ex.getMessage());
             System.exit(1);
