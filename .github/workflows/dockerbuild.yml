@@ -39,8 +39,4 @@ jobs:
           JOBHOOK_URL: ${{secrets.JOBHOOK_URL}}
         run: |  
           echo "===> Building docker image <==="
-          docker build --file docker/build/Dockerfile-sedml-solver --tag crbm/biosimulations_vcell_api:latest .
-          echo "===> Testing the docker image <==="
-          docker run -v `pwd`/sample_model:/usr/local/app/vcell/simulation -e JOB_ID -e SIMULATION_ID -e AUTH0_CLIENT_ID -e AUTH0_CLIENT_SECRET -e AUTH0_BIOSIMULATIONS_AUDIENCE -e AUTH0_TOKEN_URL -e AUTH0_GRANT_TYPE -e JOBHOOK_URL crbm/biosimulations_vcell_api:latest
-      - name: List all files from sample_model directory
-        run: ls `pwd`/sample_model/out/sample_tsk_0_0
+          docker build --file docker/build/Dockerfile-sedml-solver --tag crbm/biosimulations_vcell:latest .
