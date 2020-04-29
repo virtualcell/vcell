@@ -96,10 +96,7 @@ public class VCellSedMLSolver {
 			System.exit(1);
 		}
 		
-		// Create temp folder
-		// Extract omex archive
-		// Pass the path of temp folder to inDir variable
-		// Delete the temp directory once simulation is done
+
 		File tempDir = Files.createTempDir();
 		try {
 			unzip(IN_ROOT_STRING, tempDir);
@@ -113,6 +110,11 @@ public class VCellSedMLSolver {
 
 		File inDir = tempDir;
 		File outRootDir = new File(OUT_ROOT_STRING);
+
+		//Scan directory for SEDMl
+		// Run the current look with all tasks inside per SEDML
+		// Rename the direcotry with task name instead of prefix+taskname
+		//---
 		
 		// delete the output directory and all its content recursively
 		if(outRootDir.exists()) {
