@@ -1,13 +1,14 @@
 package org.vcell.sbml.test;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.*;
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Vector;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
+import com.google.common.io.Files;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
@@ -54,13 +55,6 @@ import kong.unirest.json.JSONArray;
 
 
 public class VCellSedMLSolver {
-
-	static String SIMULATION_ID = System.getenv("SIMULATION_ID");
-	static String JOB_ID = System.getenv("JOB_ID");
-	static String JOBHOOK_URL = System.getenv("JOBHOOK_URL");
-	static String AUTH0_CLIENT_ID = System.getenv("AUTH0_CLIENT_ID");
-    static String AUTH0_CLIENT_SECRET = System.getenv("AUTH0_CLIENT_SECRET");
-	static String ACCESS_TOKEN = null;
 	static String OUT_ROOT_STRING = "";
 	static String IN_ROOT_STRING = "";
 
@@ -102,8 +96,22 @@ public class VCellSedMLSolver {
 			System.exit(1);
 		}
 		
-		
-		File inDir = new File(IN_ROOT_STRING);
+		// Create temp folder
+		// Extract omex archive
+		// Pass the path of temp folder to inDir variable
+		// Delete the temp directory once simulation is done
+		File tempDir = Files.createTempDir();
+		try {
+			unzip(IN_ROOT_STRING, tempDir);
+		} catch(IOException ex) {
+			System.err.println("Cannot extract Omex");
+			System.exit(1);
+		}
+
+
+
+
+		File inDir = tempDir;
 		File outRootDir = new File(OUT_ROOT_STRING);
 		
 		// delete the output directory and all its content recursively
@@ -111,7 +119,7 @@ public class VCellSedMLSolver {
 			try {
 				deleteRecursively(outRootDir);
 			} catch (IOException e) {
-				sendMessageToJobhook("Failed to empty outRootDir.", true);
+				System.err.println("Failed to empty outRootDir.");
 				System.exit(99);
 			}
 		}
@@ -121,7 +129,7 @@ public class VCellSedMLSolver {
 		
 		File[] directoryListing = inDir.listFiles();
 		if (directoryListing == null) {
-			sendMessageToJobhook("inDir not a directory", true);
+			System.err.println("Error while accessing temp directory");
 			System.exit(99);
 		}
 		
@@ -145,14 +153,14 @@ public class VCellSedMLSolver {
 			}
 		}
 		if(sedmlFile == null) {
-			sendMessageToJobhook("no sedml file found", true);
+			System.err.println("no sedml file found");
 			System.exit(99);
 		}
 		
 		try {
 			SedML sedml = Libsedml.readDocument(sedmlFile).getSedMLModel();
 			if (sedml == null || sedml.getModels().isEmpty()) {
-				sendMessageToJobhook("the sedml file '" + sedmlFile.getName() + "'does not contain a valid document", true);
+				System.err.println("the sedml file '" + sedmlFile.getName() + "'does not contain a valid document");
 				System.exit(99);
 			}
 			VCellSedMLSolver vCellSedMLSolver = new VCellSedMLSolver();
@@ -161,10 +169,56 @@ public class VCellSedMLSolver {
 				vCellSedMLSolver.doWork(externalDocInfo, at, sedml);
 			}
 		} catch (Exception e) {
-			sendMessageToJobhook(e.getMessage(), true);
+			System.err.println(e.getMessage());
 		} finally {
+			deleteDirectory(tempDir);
 		}
-		sendMessageToJobhook("Success - Exit", false);
+
+	}
+
+	public static boolean deleteDirectory(File dir) {
+		if (dir.isDirectory()) {
+			File[] children = dir.listFiles();
+			for (int i = 0; i < children.length; i++) {
+				boolean success = deleteDirectory(children[i]);
+				if (!success) {
+					return false;
+				}
+			}
+		}
+		return dir.delete();
+	}
+
+
+	public static void unzip(String archivePath, File destDir) throws IOException{
+		byte[] buffer = new byte[1024];
+		ZipInputStream zis = new ZipInputStream(new FileInputStream(archivePath));
+		ZipEntry zipEntry = zis.getNextEntry();
+		while (zipEntry != null) {
+			File newFile = newFile(destDir, zipEntry);
+			FileOutputStream fos = new FileOutputStream(newFile);
+			int len;
+			while ((len = zis.read(buffer)) > 0) {
+				fos.write(buffer, 0, len);
+			}
+			fos.close();
+			zipEntry = zis.getNextEntry();
+		}
+		zis.closeEntry();
+		zis.close();
+	}
+
+	public static File newFile(File destinationDir, ZipEntry zipEntry) throws IOException {
+		File destFile = new File(destinationDir, zipEntry.getName());
+
+		String destDirPath = destinationDir.getCanonicalPath();
+		String destFilePath = destFile.getCanonicalPath();
+
+		if (!destFilePath.startsWith(destDirPath + File.separator)) {
+			throw new IOException("Entry is outside of the target dir: " + zipEntry.getName());
+		}
+
+		return destFile;
 	}
 	
 	private static Options getCommandLineOptions() {
@@ -203,71 +257,6 @@ public class VCellSedMLSolver {
 		return options;
 	}
 
-	public static void setAccessToken() {
-
-		HttpResponse<String> response = Unirest.post("https://crbm.auth0.com/oauth/token")
-		.field("grant_type", "client_credentials")
-		.field("client_id", AUTH0_CLIENT_ID)
-		.field("client_secret", AUTH0_CLIENT_SECRET)
-		.field("audience", "api.biosimulations.org")
-		.asString();
-		
-		try {
-			@SuppressWarnings("unchecked")
-			Map<String, Object> res = new ObjectMapper().readValue(response.getBody(), HashMap.class);
-			ACCESS_TOKEN = (String) res.get("access_token");
-		} catch (JsonParseException e) {
-			// TODO Auto-generated catch block
-			System.out.println(e.getMessage());
-		} catch (JsonMappingException e) {
-			// TODO Auto-generated catch block
-			System.out.println(e.getMessage());
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			System.out.println(e.getMessage());
-		}
-
-
-		
-	}
-	
-	public static void sendMessageToJobhook(String message, Boolean error) {
-		if (error) {
-			System.err.println(message);
-			try {
-				HttpResponse<String> response = Unirest.jsonPatch(JOBHOOK_URL + '/' + SIMULATION_ID)
-					.header("Authorization", "Bearer " + ACCESS_TOKEN)
-					.add("/log", "E: " + message)
-					.replace("/jobId", JOB_ID)
-					.asString();
-			} catch (Exception ex) {
-				System.err.println(ex.getMessage());
-			}
-		}
-		else {
-			System.out.println(message);
-			try {
-				HttpResponse<String> response = Unirest.jsonPatch(JOBHOOK_URL + '/' + SIMULATION_ID)
-					.header("Authorization", "Bearer " + ACCESS_TOKEN)
-					.add("/log", "I: " + message)
-					.replace("/slurmJobId", JOB_ID)
-					.asString();
-			} catch (Exception ex) {
-				System.err.println(ex.getMessage());
-			}
-		}
-		
-		
-		// TODO: Use the response
-	}
-
-	public void setHeadersForJobHook() {
-
-	}
-
-	public boolean jobhookRequest(String message) {
-		return true;
-	}
 	// everything is done here
 	public void doWork(ExternalDocInfo externalDocInfo, AbstractTask sedmlTask, SedML sedml) throws Exception {
 
@@ -298,17 +287,17 @@ public class VCellSedMLSolver {
 		String kisao = sd.getKisao();
 		if(SolverDescription.CVODE.getKisao().contentEquals(kisao)) {
 			ODESolverResultSet odeSolverResultSet = solveCvode(outDir, bioModel);
-			sendMessageToJobhook("Finished: " + docName + ": - task '" + sedmlTask.getId() + "'.", false);
+			System.out.println("Finished: " + docName + ": - task '" + sedmlTask.getId() + "'.");
 		} else if(SolverDescription.StochGibson.getKisao().contentEquals(kisao)) {
 			ODESolverResultSet odeSolverResultSet = solveGibson(outDir, bioModel);
-			sendMessageToJobhook("Finished: " + docName + ": - task '" + sedmlTask.getId() + "'.", false);
+			System.out.println("Finished: " + docName + ": - task '" + sedmlTask.getId() + "'.");
 		} else if(SolverDescription.IDA.getKisao().contentEquals(kisao)) {
 			ODESolverResultSet odeSolverResultSet = solveIDA(outDir, bioModel);
-			sendMessageToJobhook("Finished: " + docName + ": - task '" + sedmlTask.getId() + "'.", false);
+			System.out.println("Finished: " + docName + ": - task '" + sedmlTask.getId() + "'.");
 		} else {
-			sendMessageToJobhook("Unsupported solver: " + kisao, false);
+			System.out.println("Unsupported solver: " + kisao);
 		}
-		sendMessageToJobhook("-------------------------------------------------------------------------", false);
+		System.out.println("-------------------------------------------------------------------------");
 	}
 	
 	private static ODESolverResultSet solveCvode(File outDir, BioModel bioModel) throws Exception {
@@ -456,7 +445,7 @@ public class VCellSedMLSolver {
 	private class LocalLogger extends VCLogger {
 		@Override
 		public void sendMessage(Priority p, ErrorType et, String message) throws Exception {
-			sendMessageToJobhook("LOGGER: msgLevel="+p+", msgType="+et+", "+message, false);
+			System.out.println("LOGGER: msgLevel="+p+", msgType="+et+", "+message);
 			if (p==VCLogger.Priority.HighPriority) {
 				SBMLImportException.Category cat = SBMLImportException.Category.UNSPECIFIED;
 				if (message.contains(SBMLImporter.RESERVED_SPATIAL) ) {
