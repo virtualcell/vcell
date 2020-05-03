@@ -489,11 +489,9 @@ public class ReactionCartoonTool extends BioCartoonTool implements BioCartoonToo
 				Diagram[] autosortDiagramOrder = newDiagramOrderList.toArray(new Diagram[0]);
 				if(bWarn && autoSortedStructures.size() > 1) {	// no point in warning if there's just one structure
 					final String OK = "OK";
-					final String NOMOVE = "Keep Structure positions";
-					String response = DialogUtils.showWarningDialog(getGraphPane(), "Re-organizing species/reaction display positions...", new String[] {OK,NOMOVE,"Cancel"},OK);
+					String response = DialogUtils.showWarningDialog(getGraphPane(), "Re-organizing species/reaction display positions...", new String[] {OK,"Cancel"},OK);
 					if(response != null &&  response.equals(OK)) {
-						getModel().setDiagrams(autosortDiagramOrder);
-					} else if(response != null &&  response.equals(NOMOVE)) {
+						//getModel().setDiagrams(autosortDiagramOrder);
 						allStructureSuite.setModelStructureOrder(true);
 					} else {
 						allStructureSuite.setModelStructureOrder(true);
