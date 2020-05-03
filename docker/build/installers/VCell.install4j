@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<install4j version="8.0.4" transformSequenceNumber="8">
+<install4j version="8.0.5" transformSequenceNumber="8">
   <directoryPresets config="../target" />
-  <application name="The Virtual Cell ${compiler:Site}" applicationId="${compiler:applicationId}" mediaDir="${compiler:outputDir}" shortName="VCell_${compiler:Site}" publisher="University of Connecticut Health Center" publisherWeb="http://vcell.org" version="${compiler:vcellVersion}.${compiler:vcellBuild}" allPathsRelative="true" backupOnSave="true" autoSave="true" macVolumeId="dcbbe26700a89e7f" javaMinVersion="1.8.0_66" allowBetaVM="true">
+  <application name="The Virtual Cell ${compiler:Site}" applicationId="${compiler:applicationId}" mediaDir="${compiler:outputDir}" compression="9" lzmaCompression="true" shortName="VCell_${compiler:Site}" publisher="University of Connecticut Health Center" publisherWeb="http://vcell.org" version="${compiler:vcellVersion}.${compiler:vcellBuild}" allPathsRelative="true" backupOnSave="true" autoSave="true" macVolumeId="dcbbe26700a89e7f" javaMinVersion="1.8.0_66" allowBetaVM="true">
     <variables>
       <variable name="updateSiteBaseUrl" value="NO-UPDATE-SITE" />
       <variable name="vcellIcnsFile" value="NO-ICNS-FILE" />
@@ -100,15 +100,23 @@
       <dirEntry mountPoint="1376" file="${compiler:vcellNativeLibsDirSourcePath}/linux64" />
       <dirEntry mountPoint="1381" file="${compiler:vcellLocalSolversDirPath}/linux64" fileMode="755" overrideFileMode="true" />
     </entries>
+    <components>
+      <component name="Runtime Components" id="2378" changeable="false" downloadable="true">
+        <include all="true">
+          <entry defaultFileset="true" />
+          <entry filesetId="1113" />
+          <entry filesetId="1115" />
+          <entry filesetId="1117" />
+          <entry filesetId="1119" />
+          <entry filesetId="1121" />
+        </include>
+      </component>
+    </components>
   </files>
   <launchers>
     <launcher name="VCell-${compiler:Site}-MacOSX" id="102" icnsFile="${compiler:vcellIcnsFile}">
       <executable name="VCell-${compiler:Site}" iconSet="true" failOnStderrOutput="false" executableMode="gui" checkConsoleParameter="true" dpiAware="false" />
-      <splashScreen show="true" bitmapFile="${compiler:vcell5SplashScreenPngFilePath}" textOverlay="true">
-        <text>
-          <versionLine y="40" />
-        </text>
-      </splashScreen>
+      <splashScreen show="true" bitmapFile="${compiler:vcell5SplashScreenPngFilePath}" textOverlay="true" />
       <java mainClass="cbit.vcell.client.test.VCellClientTest" vmParameters="&quot;-Dvcell.installDir=${launcher:sys.launcherDirectory}&quot;">
         <classPath>
           <variable name="vcellClasspathColonSep" separator=":" useRelativePrefix="true" relativePrefix="lib" />
@@ -145,11 +153,7 @@
     </launcher>
     <launcher name="VCell-${compiler:Site}-Windows64" id="345" icnsFile="${compiler:vcellIcnsFile}">
       <executable name="VCell-${compiler:Site}" iconSet="true" failOnStderrOutput="false" executableMode="gui" checkConsoleParameter="true" dpiAware="false" />
-      <splashScreen show="true" bitmapFile="${compiler:vcell5SplashScreenPngFilePath}" textOverlay="true">
-        <text>
-          <versionLine y="40" />
-        </text>
-      </splashScreen>
+      <splashScreen show="true" bitmapFile="${compiler:vcell5SplashScreenPngFilePath}" textOverlay="true" />
       <java mainClass="cbit.vcell.client.test.VCellClientTest" vmParameters="&quot;-Dvcell.installDir=${launcher:sys.launcherDirectory}&quot;">
         <classPath>
           <variable name="vcellClasspathColonSep" separator=":" useRelativePrefix="true" relativePrefix="lib" />
@@ -180,11 +184,7 @@
     </launcher>
     <launcher name="VCell-${compiler:Site}-Windows32" id="447" icnsFile="${compiler:vcellIcnsFile}">
       <executable name="VCell-${compiler:Site}" iconSet="true" failOnStderrOutput="false" executableMode="gui" checkConsoleParameter="true" dpiAware="false" />
-      <splashScreen show="true" bitmapFile="${compiler:vcell5SplashScreenPngFilePath}" textOverlay="true">
-        <text>
-          <versionLine y="40" />
-        </text>
-      </splashScreen>
+      <splashScreen show="true" bitmapFile="${compiler:vcell5SplashScreenPngFilePath}" textOverlay="true" />
       <java mainClass="cbit.vcell.client.test.VCellClientTest" vmParameters="&quot;-Dvcell.installDir=${launcher:sys.launcherDirectory}&quot;">
         <classPath>
           <variable name="vcellClasspathColonSep" separator=":" useRelativePrefix="true" relativePrefix="lib" />
@@ -216,11 +216,7 @@
     </launcher>
     <launcher name="VCell-${compiler:Site}-Linux32" id="534" icnsFile="${compiler:vcellIcnsFile}">
       <executable name="VCell-${compiler:Site}" failOnStderrOutput="false" executableMode="gui" checkConsoleParameter="true" dpiAware="false" />
-      <splashScreen bitmapFile="${compiler:vcell5SplashScreenPngFilePath}">
-        <text>
-          <versionLine y="40" />
-        </text>
-      </splashScreen>
+      <splashScreen bitmapFile="${compiler:vcell5SplashScreenPngFilePath}" />
       <java mainClass="cbit.vcell.client.test.VCellClientTest" vmParameters="&quot;-Dvcell.installDir=${launcher:sys.launcherDirectory}&quot;">
         <classPath>
           <variable name="vcellClasspathColonSep" separator=":" useRelativePrefix="true" relativePrefix="lib" />
@@ -248,11 +244,7 @@
     </launcher>
     <launcher name="VCell-${compiler:Site}-Linux64" id="627" icnsFile="${compiler:vcellIcnsFile}">
       <executable name="VCell-${compiler:Site}" failOnStderrOutput="false" executableMode="gui" checkConsoleParameter="true" dpiAware="false" />
-      <splashScreen bitmapFile="${compiler:vcell5SplashScreenPngFilePath}">
-        <text>
-          <versionLine y="40" />
-        </text>
-      </splashScreen>
+      <splashScreen bitmapFile="${compiler:vcell5SplashScreenPngFilePath}" />
       <java mainClass="cbit.vcell.client.test.VCellClientTest" vmParameters="&quot;-Dvcell.installDir=${launcher:sys.launcherDirectory}&quot;">
         <classPath>
           <variable name="vcellClasspathColonSep" separator=":" useRelativePrefix="true" relativePrefix="lib" />
@@ -280,11 +272,7 @@
     </launcher>
     <launcher name="VCell-${compiler:Site}-Linux64-sbmltovcml" id="1880" excludeFromMenu="true">
       <executable name="VCell-${compiler:Site}-sbmltovcml" iconSet="true" redirectStderr="false" failOnStderrOutput="false" executableMode="console" checkConsoleParameter="true" dpiAware="false" />
-      <splashScreen bitmapFile="${compiler:vcell5SplashScreenPngFilePath}">
-        <text>
-          <versionLine y="40" />
-        </text>
-      </splashScreen>
+      <splashScreen bitmapFile="${compiler:vcell5SplashScreenPngFilePath}" />
       <java mainClass="org.vcell.sbml.SbmlVcmlConverter" vmParameters="&quot;-Dvcell.installDir=${launcher:sys.launcherDirectory}&quot;">
         <classPath>
           <variable name="vcellClasspathColonSep" separator=":" useRelativePrefix="true" relativePrefix="lib" />
@@ -1379,7 +1367,7 @@ if (context.isUnattended()) {
       </variables>
       <jreBundle jreBundleSource="preCreated" includedJre="${compiler:macJrePath}" manualJreEntry="true" />
     </macos>
-    <windows name="Windows ${compiler:vcellVersion} ${compiler:Site} 64 Bit" id="349" mediaFileName="${compiler:sys.shortName}_${compiler:sys.platform}_${compiler:sys.version}_64bit" installDir="VCell_${compiler:Site}">
+    <windows name="Windows ${compiler:vcellVersion} ${compiler:Site} 64 Bit" id="349" mediaFileName="${compiler:sys.shortName}_${compiler:sys.platform}_${compiler:sys.version}_64bit" installDir="VCell_${compiler:Site}" downloadURL="http://dockerbuild:8000" contentFilesType="downloadable">
       <excludedLaunchers>
         <launcher id="102" />
         <launcher id="447" />
