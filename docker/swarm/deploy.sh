@@ -202,6 +202,7 @@ if [ "$build_installers" == "true" ]; then
 		# version=7_0_0_19
 		version=$(echo "${vcell_version}_${vcell_build}" | tr '.' _)
 		cp ./generated_installers/VCell_${vcell_siteCamel}_windows-x64_${version}_64bit.exe \
+			./generated_installers/VCell_${vcell_siteCamel}_windows-x64_${version}_64bit.dat/* \
 			./generated_installers/VCell_${vcell_siteCamel}_unix_${version}_32bit.sh \
 			./generated_installers/VCell_${vcell_siteCamel}_macos_${version}_64bit.dmg \
 			./generated_installers/VCell_${vcell_siteCamel}_windows_${version}_32bit.exe \
