@@ -1367,7 +1367,7 @@ if (context.isUnattended()) {
       </variables>
       <jreBundle jreBundleSource="preCreated" includedJre="${compiler:macJrePath}" manualJreEntry="true" />
     </macos>
-    <windows name="Windows ${compiler:vcellVersion} ${compiler:Site} 64 Bit" id="349" mediaFileName="${compiler:sys.shortName}_${compiler:sys.platform}_${compiler:sys.version}_64bit" installDir="VCell_${compiler:Site}" downloadURL="http://dockerbuild:8000" contentFilesType="downloadable">
+    <windows name="Windows ${compiler:vcellVersion} ${compiler:Site} 64 Bit" id="349" mediaFileName="${compiler:sys.shortName}_${compiler:sys.platform}_${compiler:sys.version}_64bit" installDir="VCell_${compiler:Site}" downloadURL="${compiler:updateSiteBaseUrl}" contentFilesType="downloadable">
       <excludedLaunchers>
         <launcher id="102" />
         <launcher id="447" />
