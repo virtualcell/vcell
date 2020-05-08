@@ -2,9 +2,7 @@ package org.vcell.sbml.test;
 
 import java.io.*;
 import java.nio.file.Path;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Vector;
+import java.util.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -23,6 +21,8 @@ import org.vcell.sbml.vcell.SBMLImportException;
 import org.vcell.sbml.vcell.SBMLImporter;
 import org.vcell.util.document.VCDocument;
 import org.vcell.util.exe.Executable;
+
+import org.sbml.libcombine.*;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -95,12 +95,30 @@ public class VCellSedMLSolver {
 			formatter.printHelp("vcell", options);
 			System.exit(1);
 		}
-		
+
+//		CombineArchive omex = new CombineArchive();
+//		boolean isInitialized = omex.initializeFromArchive(IN_ROOT_STRING);
+//		boolean isExtracted = omex.extractTo(tempDir)
 
 		File tempDir = Files.createTempDir();
 		try {
-			unzip(IN_ROOT_STRING, tempDir);
-		} catch(IOException ex) {
+			ArrayList<String> sedmlLocations = new ArrayList<>();
+			System.loadLibrary("combinej");
+			CombineArchive omex = new CombineArchive();
+			boolean isInitialized = omex.initializeFromArchive(IN_ROOT_STRING);
+			boolean isExtracted = omex.extractTo(tempDir.getAbsolutePath());
+			CaOmexManifest manifest = omex.getManifest();
+			CaListOfContents contents = manifest.getListOfContents();
+			System.out.println("Contents fetched");
+			for (int contentIndex = 0; contentIndex < contents.getNumContents(); contentIndex++) {
+				CaContent content = (CaContent) contents.get(contentIndex);
+				if (content.isFormat("sedml")) {
+					sedmlLocations.add(content.getLocation());
+				}
+			}
+			System.out.println("All SEDML locations fetched");
+//			unzip(IN_ROOT_STRING, tempDir);
+		} catch(Exception ex) {
 			System.err.println("Cannot extract Omex");
 			System.exit(1);
 		}
