@@ -75,6 +75,7 @@ import cbit.vcell.client.ChildWindowManager;
 import cbit.vcell.client.ClientRequestManager;
 import cbit.vcell.client.DocumentWindowManager;
 import cbit.vcell.client.PopupGenerator;
+import cbit.vcell.client.RequestManager;
 import cbit.vcell.client.TopLevelWindowManager;
 import cbit.vcell.client.UserMessage;
 import cbit.vcell.client.constants.GuiConstants;
@@ -261,7 +262,13 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.I
 				getWindowManager().getRequestManager().accessPermissions(DocumentWindow.this, getWindowManager().getVCDocument());
 			}
 			if (e.getSource() == DocumentWindow.this.getGrantPermissionsToVCellSupportMenuItem()) {
-				getWindowManager().getRequestManager().accessPermissions(DocumentWindow.this, getWindowManager().getVCDocument());
+				RequestManager rm = getWindowManager().getRequestManager();
+				if(rm instanceof ClientRequestManager) {
+					ClientRequestManager crm = (ClientRequestManager)rm;
+					crm.accessPermissionsEx(DocumentWindow.this, getWindowManager().getVCDocument(), true);
+				} else {
+					rm.accessPermissions(DocumentWindow.this, getWindowManager().getVCDocument());
+				}
 			}
 
 		};

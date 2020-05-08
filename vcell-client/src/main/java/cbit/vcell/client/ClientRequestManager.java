@@ -4897,7 +4897,41 @@ public class ClientRequestManager
 			}
 			break;
 		}
-		getMdiManager().getDatabaseWindowManager().accessPermissions(requester, selectedVersionInfo);
+		getMdiManager().getDatabaseWindowManager().accessPermissions(requester, selectedVersionInfo, false);
+
+	}
+	public void accessPermissionsEx(Component requester, VCDocument vcDoc, boolean bGrantSupportPermissions) {
+		VersionInfo selectedVersionInfo = null;
+		switch (vcDoc.getDocumentType()) {
+		case BIOMODEL_DOC:
+			BioModelInfo[] bioModelInfos = getDocumentManager().getBioModelInfos();
+			for (BioModelInfo bioModelInfo : bioModelInfos) {
+				if (bioModelInfo.getVersion().getVersionKey().equals(vcDoc.getVersion().getVersionKey())) {
+					selectedVersionInfo = bioModelInfo;
+					break;
+				}
+			}
+			break;
+		case MATHMODEL_DOC:
+			MathModelInfo[] mathModelInfos = getDocumentManager().getMathModelInfos();
+			for (MathModelInfo mathModelInfo : mathModelInfos) {
+				if (mathModelInfo.getVersion().getVersionKey().equals(vcDoc.getVersion().getVersionKey())) {
+					selectedVersionInfo = mathModelInfo;
+					break;
+				}
+			}
+			break;
+		case GEOMETRY_DOC:
+			GeometryInfo[] geoInfos = getDocumentManager().getGeometryInfos();
+			for (GeometryInfo geoInfo : geoInfos) {
+				if (geoInfo.getVersion().getVersionKey().equals(vcDoc.getVersion().getVersionKey())) {
+					selectedVersionInfo = geoInfo;
+					break;
+				}
+			}
+			break;
+		}
+		getMdiManager().getDatabaseWindowManager().accessPermissions(requester, selectedVersionInfo, true);
 
 	}
 
