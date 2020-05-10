@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.vcell</groupId>
+        <artifactId>vcell-pom</artifactId>
+        <version>0.0.1-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>vcell-cli</artifactId>
+
+    <name>vcell-cli</name>
+    <!-- COMMON PROJECT DEFINITIONS AND PROPERTIES -->
+    <description>The Virtual Cell Command Line Interface</description>
+    <url>http://maven.apache.org</url>
+    <inceptionYear>1997</inceptionYear>
+    <organization>
+        <name>VCell</name>
+        <url>http://vcell.org</url>
+    </organization>
+    <licenses>
+        <license>
+            <name>MIT</name>
+            <url>https://opensource.org/licenses/MIT</url>
+        </license>
+    </licenses>
+
+    <developers>
+        <developer>
+            <id>jcschaff</id>
+            <name>Jim Schaff</name>
+            <roles>
+                <role>founder</role>
+                <role>lead</role>
+                <role>developer</role>
+                <role>debugger</role>
+                <role>reviewer</role>
+                <role>support</role>
+                <role>maintainer</role>
+            </roles>
+        </developer>
+    </developers>
+    <contributors>
+        <contributor>
+            <name>John Wagner</name>
+        </contributor>
+    </contributors>
+
+    <mailingLists>
+        <mailingList>
+            <name>VCell Open Discussion Forum</name>
+            <subscribe>https://groups.google.com/group/vcell-discuss</subscribe>
+            <unsubscribe>https://groups.google.com/group/vcell-discuss</unsubscribe>
+            <post>vcell-discuss@googlegroups.com</post>
+            <archive>https://groups.google.com/group/vcell-discuss</archive>
+        </mailingList>
+    </mailingLists>
+
+    <scm>
+        <connection>scm:git:git://github.com/virtualcell/vcell</connection>
+        <developerConnection>scm:git:git@github.com:virtualcell/vcell</developerConnection>
+        <tag>HEAD</tag>
+        <url>https://github.com/virtualcell/vcell</url>
+    </scm>
+    <issueManagement>
+        <system>Bugzilla</system>
+        <url>http://code3.cam.uchc.edu/bugzilla/</url>
+    </issueManagement>
+    <ciManagement>
+        <system>None</system>
+    </ciManagement>
+
+    <properties>
+        <license.licenseName>MIT</license.licenseName>
+        <license.copyrightOwners>UConn Health</license.copyrightOwners>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/com.miglayout/miglayout -->
+        <dependency>
+            <groupId>com.miglayout</groupId>
+            <artifactId>miglayout</artifactId>
+            <version>3.5.5</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.vcell</groupId>
+            <artifactId>vcell-client</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.vcell</groupId>
+            <artifactId>vcell-core</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.vcell</groupId>
+            <artifactId>vcell-server</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.vcell</groupId>
+            <artifactId>vcell-vmicro</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.vcell</groupId>
+            <artifactId>vcell-admin</artifactId>
+            <scope>${project.version}</scope>
+        </dependency>
+
+        <!-- NB: For testing via main methods in IDEs. -->
+        <!-- Don't comment this out, it'll break the standalone (local with oracle connection) version of vcell -->
+        <dependency>
+            <groupId>org.vcell</groupId>
+            <artifactId>vcell-oracle</artifactId>
+            <version>${project.version}</version>
+            <scope>runtime</scope>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>com.konghq</groupId>
+            <artifactId>unirest-java</artifactId>
+            <version>3.4.03</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>2.9.8</version>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <configuration>
+                    <!--                     <archive>
+                                            <manifest>
+                                                <mainClass>com.inventory.gui.InventoryApp</mainClass>
+                                            </manifest>
+                                        </archive>
+                     -->                    <descriptorRefs>
+                    <descriptorRef>jar-with-dependencies</descriptorRef>
+                </descriptorRefs>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>
