@@ -28,6 +28,9 @@ public class CLIHandler {
         if (args[0].contains("-h") || args[0].contains("--help")) {
             this.printHelp();
             System.exit(1);
+        } else {
+            System.out.println(usage);
+            System.exit(1);
         }
     }
 
