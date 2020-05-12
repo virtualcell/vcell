@@ -16,7 +16,7 @@ public class CLIHandler {
         try {
             cmd = parser.parse(this.getCommandLineOptions(), args);
         } catch (ParseException e) {
-            System.err.println("Unable to parse: "+e.getMessage());
+            System.out.println(this.usage);
             System.exit(1);
         }
 
@@ -25,13 +25,22 @@ public class CLIHandler {
             System.exit(1);
         }
 
-        if (args[0].contains("-h") || args[0].contains("--help")) {
+        if (cmd.hasOption("h")) {
             this.printHelp();
             System.exit(1);
-        } else {
-            System.out.println(usage);
-            System.exit(1);
         }
+//        else if (cmd.hasOption("q")) {
+//            // TODO: Implement "Suppress Console output"
+//        } else if (cmd.hasOption("i")) {
+//            // Do nothing
+//        } else if (cmd.hasOption("o")) {
+//            // Do nothing
+//        } else if (cmd.hasOption("v")) {
+//            // Do nothing
+//        } else {
+//            System.out.println(this.usage);
+//            System.exit(1);
+//        }
     }
 
 
