@@ -66,6 +66,7 @@ public class BioModelEditorTreeModel extends DocumentEditorTreeModel implements 
 //			dataNode,
 //			scriptingNode,
 	};
+	@Deprecated
 	List<BioModelNode> annotationNodes = new ArrayList<BioModelNode>();
 	List<BioModelNode> childApplicationsNodeList = new ArrayList<BioModelNode>();
 
@@ -187,6 +188,7 @@ public class BioModelEditorTreeModel extends DocumentEditorTreeModel implements 
 		}
 	}
 	
+	@Deprecated
 	private void populateAnnotationNode() {
 		for (BioModelNode node : annotationNodes) {
 			if (node.isNodeDescendant(selectedBioModelNode)) {

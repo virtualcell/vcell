@@ -290,18 +290,18 @@ public class BioModelsNetPanel extends DocumentEditorSubPanel {
 		
 		String unzippedPath = destDirectory + File.separator + id + ".xml";
 		String bioModelSBML = new String(Files.readAllBytes(Paths.get(unzippedPath)), StandardCharsets.UTF_8);
-		String prettyXML = tempDir + File.separator + "pretty.xml";
-		try {
-			// we don't want to modify the original xml because it may change the formatting of Notes
-			String prettyFormat = new String(bioModelSBML);
-			prettyFormat = prettyFormat.replace("\t", " ");
-			prettyFormat = prettyFormat.replace("  ", " ");
-			prettyFormat = prettyFormat.replace("\n ", "\n");
-			prettyFormat = XmlUtil.beautify(prettyFormat);
-			FileUtils.writeStringToFile(new File(prettyXML), prettyFormat, StandardCharsets.UTF_8);
-		
-		} catch(Exception e) {
-		}
+//		String prettyXML = tempDir + File.separator + "pretty.xml";
+//		try {
+//			// we don't want to modify the original xml because it may change the formatting of Notes
+//			String prettyFormat = new String(bioModelSBML);
+//			prettyFormat = prettyFormat.replace("\t", " ");
+//			prettyFormat = prettyFormat.replace("  ", " ");
+//			prettyFormat = prettyFormat.replace("\n ", "\n");
+//			prettyFormat = XmlUtil.beautify(prettyFormat);
+//			FileUtils.writeStringToFile(new File(prettyXML), prettyFormat, StandardCharsets.UTF_8);
+//		
+//		} catch(Exception e) {
+//		}
 		
 /*
 TODO:
@@ -328,7 +328,7 @@ TODO:
 			Files.deleteIfExists(Paths.get(zipFilePath));		// the original zip file
 			Files.deleteIfExists(Paths.get(unzippedPath));		// the unzipped SBML file
 			Files.deleteIfExists(Paths.get(destDirectory));		// its directory
-			Files.deleteIfExists(Paths.get(prettyXML));			// the pretty xml
+//			Files.deleteIfExists(Paths.get(prettyXML));			// the pretty xml
 		} catch(IOException e) {
 			e.printStackTrace();
 		}

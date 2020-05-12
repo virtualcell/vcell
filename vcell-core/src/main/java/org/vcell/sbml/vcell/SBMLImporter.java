@@ -426,7 +426,7 @@ public class SBMLImporter {
 					throw new SBMLImportException(msg);
 				}
 				if (compartment.isSetName()) {
-					structList.get(structIndx).setFieldSbmlName(compartment.getName());					
+					structList.get(structIndx).setSbmlName(compartment.getName());					
 				}
 		
 				structIndx++;

@@ -54,7 +54,7 @@ import cbit.vcell.units.VCUnitDefinition;
 
 @SuppressWarnings("serial")
 public class SpeciesContext implements Cacheable, Matchable, EditableSymbolTableEntry, VetoableChangeListener, BioModelEntityObject,
-	IssueSource, Displayable,VCellSbmlName
+	IssueSource, Displayable, VCellSbmlName
 {
 	private KeyValue key = null;
 
@@ -62,6 +62,7 @@ public class SpeciesContext implements Cacheable, Matchable, EditableSymbolTable
 	private Species species = null;
 	private Structure structure = null;
 	private String fieldName = null/*new String()*/;
+	private String sbmlId = null;
 	private String sbmlName = null;
 	private SpeciesPattern speciesPattern = null;
 	protected transient java.beans.VetoableChangeSupport vetoPropertyChange;
@@ -114,19 +115,22 @@ public boolean compareEqual(Matchable aThat) {
 		return false;
 	}
 	SpeciesContext sc = (SpeciesContext)aThat;
-	if (!Compare.isEqual(getSpecies(),sc.getSpecies())){
+	if (!Compare.isEqual(getSpecies(),sc.getSpecies())) {
 		return false;
 	}
-	if (!Compare.isEqual(getStructure(),sc.getStructure())){
+	if (!Compare.isEqual(getStructure(),sc.getStructure())) {
 		return false;
 	}
-	if (!Compare.isEqual(getName(),sc.getName())){
+	if (!Compare.isEqual(getName(),sc.getName())) {
 		return false;
 	}
-	if (!Compare.isEqualOrNull(getSbmlName(),sc.getSbmlName())){
-			return false;
+	if (!Compare.isEqualOrNull(getSbmlName(),sc.getSbmlName())) {
+		return false;
 	}
-	if (!Compare.isEqual(speciesPattern,sc.getSpeciesPattern())){
+	if (!Compare.isEqualOrNull(getSbmlId(),sc.getSbmlId())) {
+		return false;
+	}
+	if (!Compare.isEqual(speciesPattern,sc.getSpeciesPattern())) {
 		return false;
 	}
 	return true;
@@ -176,6 +180,9 @@ public String getName() {
 	return fieldName;
 }
 
+public String getSbmlId() {
+	return sbmlId;
+}
 public String getSbmlName() {
 	return sbmlName;
 }
@@ -275,6 +282,13 @@ public void setSbmlName(String newString) throws PropertyVetoException {
 	this.sbmlName = newValue;
 	firePropertyChange("sbmlName", oldValue, newValue);
 }
+// this is setable only through SBML import, no need to check on it
+public void setSbmlId(String newString) throws PropertyVetoException {
+//	String oldValue = this.sbmlId;
+//	fireVetoableChange("sbmlId", oldValue, newString);
+	this.sbmlId = newString;
+//	firePropertyChange("sbmlId", oldValue, newString);
+}
 
 public void setStructure(Structure structure) {
 	Structure oldValue = this.structure;
@@ -289,6 +303,7 @@ public String toString() {
 	if (species != null){ sb.append(", species='"+species.getCommonName()+"'"); }
 	if (structure != null){ sb.append(", structure='"+structure.getName()+"'"); }
 	if (speciesPattern != null){sb.append(", speciesPatterns='"+speciesPattern.getMolecularTypePatterns().size()); }
+	if (sbmlId != null){ sb.append(", sbmlId='"+sbmlId+"'"); }
 	if (sbmlName != null){ sb.append(", sbmlName='"+sbmlName+"'"); }
 	sb.append(")");
 	return sb.toString();
@@ -328,6 +343,8 @@ public void vetoableChange(PropertyChangeEvent e) throws PropertyVetoException {
 //					}
 //				}
 //			}	
+		} else if(e.getPropertyName().equals("sbmlId")) {
+			;
 		}
 	}
 }
@@ -336,11 +353,14 @@ public String getTypeLabel() {
 	return "Species";
 }
 
+// duplicate is only used for seed species (that have species pattern)
 public static SpeciesContext duplicate(SpeciesContext oldSpecies, Structure s, Model m) throws ExpressionBindingException, PropertyVetoException {
 	String newName = SpeciesContext.deriveSpeciesName(oldSpecies, m);
 	Species newSpecies = new Species(newName, null);
 	SpeciesContext newSpeciesContext = new SpeciesContext(null, newName, newSpecies, s);
-	newSpeciesContext.setSbmlName(oldSpecies.getSbmlName());	// sbmlName stays the same
+	// we don't export BNGL models to SBML, so we have no reason to enforce the unique Id rule
+	newSpeciesContext.setSbmlId(oldSpecies.getSbmlId());		// should be null
+	newSpeciesContext.setSbmlName(oldSpecies.getSbmlName());
 	SpeciesPattern newsp = new SpeciesPattern(m, oldSpecies.getSpeciesPattern());
 	newSpeciesContext.setSpeciesPattern(newsp);
 	m.addSpecies(newSpecies);
@@ -484,8 +504,7 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueList) {
 			}
 		}
 		if(sbmlName == null) {
-			String message = "SbmlName is null.";
-			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, message, Issue.Severity.INFO));
+			;
 		} else {
 			if(sbmlName.isEmpty()) {
 				String message = "SbmlName cannot be an empty string.";
@@ -502,6 +521,14 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueList) {
 //						issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, message, Issue.Severity.ERROR));
 //					}
 //				}	
+			}
+		}
+		if(sbmlId == null) {
+			;		// that's okay
+		} else {
+			if(sbmlId.isEmpty()) {
+				String message = "SbmlId cannot be an empty string.";
+				issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, message, Issue.Severity.ERROR));
 			}
 		}
 	}

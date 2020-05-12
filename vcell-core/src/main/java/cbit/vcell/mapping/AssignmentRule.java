@@ -20,15 +20,19 @@ import org.vcell.util.Issue.IssueCategory;
 import org.vcell.util.Issue.IssueSource;
 
 import cbit.vcell.mapping.SimulationContext.Kind;
+import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
+import cbit.vcell.model.VCellSbmlName;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.SymbolTableEntry;
 
 public class AssignmentRule implements Matchable, Serializable, IssueSource, SimulationContextEntity,
-		Displayable, VetoableChangeListener, PropertyChangeListener {
+		Displayable, VetoableChangeListener, PropertyChangeListener, VCellSbmlName {
 	
 	private String fieldName = null;
+	private String sbmlId = null;
+	private String sbmlName = null;
 	private SymbolTableEntry assignmentRuleVar = null;
 	private Expression assignmentRuleExpression = null;
 	
@@ -84,9 +88,27 @@ public class AssignmentRule implements Matchable, Serializable, IssueSource, Sim
 	public String getName() {
 		return fieldName;
 	}
+	public String getSbmlId() {
+		return sbmlId;
+	}
+	public String getSbmlName() {
+		return sbmlName;
+	}
 	public void setName(String name) {
 		this.fieldName = name;
 	}
+	public void setSbmlName(String newString) throws PropertyVetoException {
+		String oldValue = this.sbmlName;
+		String newValue = SpeciesContext.fixSbmlName(newString);
+		
+		fireVetoableChange("sbmlName", oldValue, newValue);
+		this.sbmlName = newValue;
+		firePropertyChange("sbmlName", oldValue, newValue);
+	}
+	public void setSbmlId(String newString) throws PropertyVetoException {	// setable only through SBML import
+		this.sbmlId = newString;
+	}
+
 	public SymbolTableEntry getAssignmentRuleVar() {
 		return assignmentRuleVar;
 	}
@@ -116,6 +138,12 @@ public class AssignmentRule implements Matchable, Serializable, IssueSource, Sim
 		if (!Compare.isEqual(assignmentRuleVar.getName(), rule.assignmentRuleVar.getName())) {
 			return false;
 		}
+		if (!Compare.isEqualOrNull(getSbmlName(), rule.getSbmlName())) {
+			return false;
+		}
+		if (!Compare.isEqualOrNull(getSbmlId(), rule.getSbmlId())) {
+			return false;
+		}
 		if (!Compare.isEqual(assignmentRuleExpression, rule.assignmentRuleExpression)) {
 			return false;
 		}
@@ -134,6 +162,13 @@ public class AssignmentRule implements Matchable, Serializable, IssueSource, Sim
 			}
 			if (simulationContext.getModel().getReservedSymbolByName(newName)!=null){
 				throw new PropertyVetoException("Cannot use reserved symbol '" + newName + "' as an AssignmentRule name", evt);
+			}
+		} else if(evt.getSource() == this && evt.getPropertyName().equals("sbmlId")) {
+			;		// not editable, we use what we get from the importer
+		} else if(evt.getSource() == this && evt.getPropertyName().equals("sbmlName")) {
+			String newName = (String)evt.getNewValue();
+			if(newName == null) {
+				return;
 			}
 		}
 	}
@@ -227,6 +262,14 @@ public class AssignmentRule implements Matchable, Serializable, IssueSource, Sim
 			String msg = typeName + " Variable is not a SymbolTableEntry";
 			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, Issue.Severity.ERROR));
 			return;
+		}
+		if(sbmlName != null && sbmlName.isEmpty()) {
+			String message = "SbmlName cannot be an empty string.";
+			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, message, Issue.Severity.ERROR));
+		}
+		if(sbmlId != null && sbmlId.isEmpty()) {
+			String message = "SbmlId cannot be an empty string.";
+			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, message, Issue.Severity.ERROR));
 		}
 	}
 

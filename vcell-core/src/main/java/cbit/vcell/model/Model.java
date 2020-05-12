@@ -852,6 +852,7 @@ public class Model implements Versionable, Matchable, PropertyChangeListener, Ve
 	public class ModelParameter extends Parameter implements ExpressionContainer, IssueSource, Displayable, Identifiable, VCellSbmlName {
 		
 		private String fieldParameterName = null;
+		private String sbmlId = null;
 		private String sbmlName = null;
 		private Expression fieldParameterExpression = null;
 		private int fieldParameterRole = -1;
@@ -898,6 +899,9 @@ public class Model implements Versionable, Matchable, PropertyChangeListener, Ve
 			if (fieldParameterRole != mp.fieldParameterRole){
 				return false;
 			}
+			if (!Compare.isEqualOrNull(getSbmlId(),mp.getSbmlId())) {
+				return false;
+			}
 			if (!Compare.isEqualOrNull(getSbmlName(),mp.getSbmlName())) {
 				return false;
 			}
@@ -936,6 +940,9 @@ public class Model implements Versionable, Matchable, PropertyChangeListener, Ve
 		public String getName(){ 
 			return this.fieldParameterName; 
 		}   
+		public String getSbmlId() {
+			return this.sbmlId;
+		}
 		public String getSbmlName() {
 			return this.sbmlName;
 		}
@@ -967,6 +974,12 @@ public class Model implements Versionable, Matchable, PropertyChangeListener, Ve
 			super.fireVetoableChange("name", oldValue, name);
 			fieldParameterName = name;
 			super.firePropertyChange("name", oldValue, name);
+		}
+		public void setSbmlId(String newValue) throws PropertyVetoException {
+			String oldValue = this.sbmlId;
+			fireVetoableChange("sbmlId", oldValue, newValue);
+			this.sbmlId = newValue;
+			firePropertyChange("sbmlId", oldValue, newValue);
 		}
 		public void setSbmlName(String newString) throws PropertyVetoException {
 			String oldValue = this.sbmlName;

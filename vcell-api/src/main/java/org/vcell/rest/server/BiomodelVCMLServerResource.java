@@ -9,6 +9,7 @@ import org.restlet.ext.wadl.ParameterInfo;
 import org.restlet.ext.wadl.ParameterStyle;
 import org.restlet.ext.wadl.RepresentationInfo;
 import org.restlet.ext.wadl.RequestInfo;
+import org.restlet.representation.StringRepresentation;
 import org.restlet.representation.Variant;
 import org.restlet.resource.Get;
 import org.restlet.resource.ResourceException;
@@ -67,17 +68,17 @@ public class BiomodelVCMLServerResource extends AbstractServerResource implement
 	}
 
 	@Override
-	@Get("application/vcml+xml")
-	public String get_xml() {
+	@Get(BiomodelVCMLResource.APPLICATION_VCML_XML)
+	public StringRepresentation get_xml() {
 		VCellApiApplication application = ((VCellApiApplication)getApplication());
 		User vcellUser = application.getVCellUser(getChallengeResponse(),AuthenticationPolicy.ignoreInvalidCredentials);
         String vcml = getBiomodelVCML(vcellUser);
         
         if (vcml != null){
         	String bioModelID = (String)getRequestAttributes().get(VCellApiApplication.BIOMODELID);
-        	setAttribute("Content-type", "application/vcml+xml");
+//        	setAttribute("Content-type", "application/vcml+xml");
         	setAttribute("Content-Disposition", "attachment; filename=\"VCBioModel_"+bioModelID+".vcml\"");
-        	return vcml;
+        	return new StringRepresentation(vcml, BiomodelVCMLResource.VCDOC_MEDIATYPE);
         }
         throw new RuntimeException("biomodel not found");
 	}

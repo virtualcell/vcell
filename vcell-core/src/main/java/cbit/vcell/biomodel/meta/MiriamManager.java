@@ -28,7 +28,7 @@ import cbit.vcell.biomodel.meta.MiriamManager.MiriamResource;
 public interface MiriamManager {
 	
 
-	public interface DataType {
+	public interface DataType extends Comparable {
 		public String getDataTypeName();  // provider name
 		public String getBaseURL();
 		public String getBaseURN();

@@ -38,6 +38,7 @@ import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -117,6 +118,7 @@ public class EventPanel extends DocumentEditorSubPanel {
 		private Set<String> autoCompleteList = null;
 		IvjEventHandler ivjEventHandler = new IvjEventHandler();
 		private JButton btnPlotTrigger;
+		private JCheckBox persistenceCheckBox;
 		private JRadioButton rdbtnTrigTime;
 		private JRadioButton rdbtnDelayTime;
 		private ButtonGroup buttonGroup = new ButtonGroup();
@@ -455,6 +457,14 @@ public class EventPanel extends DocumentEditorSubPanel {
 					gbc_btnPlotTrigger.gridx = 3;
 					gbc_btnPlotTrigger.gridy = 0;
 					labels_n_textfields_Panel.add(getBtnPlotTrigger(), gbc_btnPlotTrigger);
+					
+					GridBagConstraints gbc_persistence = new GridBagConstraints();
+					gbc_persistence.anchor = GridBagConstraints.EAST;
+					gbc_persistence.insets = new Insets(4, 4, 5, 5);
+					gbc_persistence.gridx = 4;
+					gbc_persistence.gridy = 0;
+					labels_n_textfields_Panel.add(getPersistenceCheckBox(), gbc_persistence);
+					
 
 					java.awt.GridBagConstraints constraintsDelayLabel = new java.awt.GridBagConstraints();
 					constraintsDelayLabel.anchor = GridBagConstraints.EAST;
@@ -723,6 +733,8 @@ public class EventPanel extends DocumentEditorSubPanel {
 				getRdbtnTrigTime().setSelected(true);
 				getRdbtnTrigTime().setEnabled(false);
 				getRdbtnDelayTime().setEnabled(false);
+				getPersistenceCheckBox().setEnabled(false);
+				getPersistenceCheckBox().setSelected(true);
 				
 				JPanel panel = new JPanel();
 				panel.setName("assignmentPanel");
@@ -949,6 +961,9 @@ public class EventPanel extends DocumentEditorSubPanel {
 					getDelayTextField().setText("");
 					enableTriggerRadioButtons(false);
 				}
+				getPersistenceCheckBox().setEnabled(false);
+				getPersistenceCheckBox().setSelected(true);
+				
 				getEventAssignmentsTableModel().setSimulationContext(fieldSimContext);
 				getEventAssignmentsTableModel().setBioEvent(fieldBioEvent);
 				// for some reason, when events are selected in the table, the delayTextField gains focus (this fires table update whenever
@@ -964,6 +979,12 @@ public class EventPanel extends DocumentEditorSubPanel {
 //					}
 //				});
 			}
+			if(getRdbtnTrigTime().isSelected()) {	// change the column title based on selected radiobutton
+				getEventTargetsScrollPaneTable().getColumnModel().getColumn(EventAssignmentsTableModel.COLUMN_EVENTASSIGN_EXPRESSION).setHeaderValue("Expression to evaluate at trigger time");
+			} else {
+				getEventTargetsScrollPaneTable().getColumnModel().getColumn(EventAssignmentsTableModel.COLUMN_EVENTASSIGN_EXPRESSION).setHeaderValue("Expression to evaluate at (trigger+delay) time");
+			}
+			getEventTargetsScrollPaneTable().getTableHeader().repaint();
 		}
 
 		private void enableTriggerRadioButtons(boolean isEnabled){
@@ -1043,15 +1064,33 @@ public class EventPanel extends DocumentEditorSubPanel {
 		}
 		return btnPlotTrigger;
 	}
+	
+	private JCheckBox getPersistenceCheckBox() {
+		if(persistenceCheckBox == null) {
+			persistenceCheckBox = new JCheckBox("Persistent Trigger");
+			persistenceCheckBox.setToolTipText("Trigger condition is checked at trigger time only");
+			persistenceCheckBox.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					updateEventPanel();
+				}
+			});
+
+		}
+		return persistenceCheckBox;
+	}
+	
 	private JRadioButton getRdbtnTrigTime() {
 		if (rdbtnTrigTime == null) {
-			rdbtnTrigTime = new JRadioButton("evaluate at trigger time");
+			rdbtnTrigTime = new JRadioButton("Evaluate at trigger time");
+			rdbtnTrigTime.setToolTipText("Action expression is evaluated at trigger time");
 		}
 		return rdbtnTrigTime;
 	}
 	private JRadioButton getRdbtnDelayTime() {
 		if (rdbtnDelayTime == null) {
-			rdbtnDelayTime = new JRadioButton("evaluate after delay");
+			rdbtnDelayTime = new JRadioButton("Evaluate after delay");
+			rdbtnDelayTime.setToolTipText("Action expression is evaluated at (trigger + delay) time");
 		}
 		return rdbtnDelayTime;
 	}

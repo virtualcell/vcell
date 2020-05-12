@@ -101,8 +101,13 @@ public class SBMLAnnotationUtil {
 			Resource mappedResource = namespaceAssimilator.map(resource);
 			if(mappedResource instanceof URI) {
 				String metaID = ((URI) mappedResource).getLocalName();
-				// TODO: old meta id is badly formatted (numeric only), it needs to start with a letter
+				// old meta id is badly formatted (numeric only), it needs to start with a letter
 				// the new format (set in generateFreeURI() in Registry.java) we have a "metaid_" prefix before the unique number
+				if(metaID != null && !metaID.isEmpty() && Character.isDigit(metaID.charAt(0))) {
+					// we attempt a correction here for the existing old metaid (if it starts with a number)
+					// and hope for the best, no guarantees that it will work in all cases
+					metaID = "metaid_" + metaID;
+				}
 				sBase.setMetaId(metaID);
 			}
 		}
@@ -114,7 +119,7 @@ public class SBMLAnnotationUtil {
 			if (metaID.startsWith("#")) {
 				metaID = metaID.substring(1);
 			}
-			// TODO this does not work - separator missing - fix
+			// TODO: this does not work - separator missing - fix
 			String uri = nsSBML + metaID;
 			metaData.getRegistry().getEntry(identifiable).setURI(metaData.getRdfData(), uri);
 		 } 
@@ -148,6 +153,10 @@ public class SBMLAnnotationUtil {
 				XMLNamespaces xmlnss = new XMLNamespaces();
 				xmlnss.add(DefaultNameSpaces.RDF.uri, DefaultNameSpaces.RDF.prefix);
 				strRdfAnnotations = XmlUtil.xmlToString(element);
+				// COPASI doesn't understand our metaid namespace, so we just replace it with a #
+				String olds = "http://sourceforge.net/projects/vcell/vcml/cbit.vcell.model.Species/metaid_";
+				String news = "#metaid_";
+				strRdfAnnotations = strRdfAnnotations.replace(olds, news);
 				// TODO: for some reason, converting strRdfAnnotations directly to rootRDF node through XMLNode.convertStringToXMLNode isn't working
 				// we need to use the trick below to create a temp root annotation and extract the rootRdf node from it
 				strRdfAnnotations = "<annotation>" + strRdfAnnotations;
@@ -186,17 +195,17 @@ public class SBMLAnnotationUtil {
 		}
 		
 		// Deal with the non-RDF (other tool-related?) annotation
-		Element[] elementsXML = metaData.getXmlAnnotations(identifiable);
-		if (elementsXML != null) {
-			for(Element elementXML : elementsXML) {
-				XMLTriple tripleXML = new XMLTriple(elementXML.getName(), elementXML.getNamespaceURI(),
-					elementXML.getNamespacePrefix());
-				XMLNode contentXML = elementToXMLNode(elementXML);
-				XMLNode rootXML = new XMLNode(tripleXML, new XMLAttributes());
-				rootXML.addChild(contentXML);
-				rootAnnotation.addChild(rootXML);
-			}
-		}
+//		Element[] elementsXML = metaData.getXmlAnnotations(identifiable);
+//		if (elementsXML != null) {
+//			for(Element elementXML : elementsXML) {
+//				XMLTriple tripleXML = new XMLTriple(elementXML.getName(), elementXML.getNamespaceURI(),
+//					elementXML.getNamespacePrefix());
+//				XMLNode contentXML = elementToXMLNode(elementXML);
+//				XMLNode rootXML = new XMLNode(tripleXML, new XMLAttributes());
+//				rootXML.addChild(contentXML);
+//				rootAnnotation.addChild(rootXML);
+//			}
+//		}
 		
 		if (rootAnnotation.getNumChildren() > 0) {
 			sBase.setAnnotation(rootAnnotation);

@@ -32,6 +32,8 @@ import org.sbml.jsbml.SBMLWriter;
 import org.sbml.jsbml.SimpleSpeciesReference;
 import org.sbml.jsbml.SpeciesReference;
 import org.sbml.jsbml.Trigger;
+import org.sbml.jsbml.Unit;
+import org.sbml.jsbml.Unit.Kind;
 import org.sbml.jsbml.UnitDefinition;
 import org.sbml.jsbml.ext.spatial.AdjacentDomains;
 import org.sbml.jsbml.ext.spatial.AdvectionCoefficient;
@@ -898,10 +900,13 @@ protected void addSpecies() throws XMLStreamException, SbmlException {
 					Expression initConcExpr = vcSpeciesContextsSpec.getInitialConditionParameter().getExpression();
 					if ((sbmlLevel == 2 && sbmlVersion >= 3) || (sbmlLevel > 2)) {
 						// L2V3 and above - add expression as init assignment
-						ASTNode initAssgnMathNode = getFormulaFromExpression(initConcExpr);
-						InitialAssignment initAssignment = sbmlModel.createInitialAssignment();
-						initAssignment.setSymbol(vcSpeciesContexts[i].getName());
-						initAssignment.setMath(initAssgnMathNode);
+						cbit.vcell.mapping.AssignmentRule vcellAs = getSelectedSimContext().getAssignmentRule(vcSpeciesContexts[i]);
+						if(vcellAs == null) {	// we don't create InitialAssignment for an AssignmentRule variable (Reference: L3V1 Section 4.8)
+							ASTNode initAssgnMathNode = getFormulaFromExpression(initConcExpr);
+							InitialAssignment initAssignment = sbmlModel.createInitialAssignment();
+							initAssignment.setSymbol(vcSpeciesContexts[i].getName());
+							initAssignment.setMath(initAssgnMathNode);
+						}
 					} else { 	// L2V1 (or L1V2 also??)
 						// L2V1 (and L1V2?) and species is 'fixed' (constant), and not fn of x,y,z, other sp, add expr as assgn rule 
 						ASTNode assgnRuleMathNode = getFormulaFromExpression(initConcExpr);
@@ -1243,7 +1248,11 @@ protected void addUnitDefinitions() throws SbmlException {
 //	ModelUnitSystem vcUnitSystem = vcModel.getUnitSystem();
 
 	sbmlModel.setSubstanceUnits(getOrCreateSBMLUnit(sbmlExportSpec.getSubstanceUnits()));
-	sbmlModel.setVolumeUnits(getOrCreateSBMLUnit(sbmlExportSpec.getVolumeUnits()));
+	
+	cbit.vcell.units.VCUnitDefinition vcud = sbmlExportSpec.getVolumeUnits();
+	org.sbml.jsbml.UnitDefinition ud = getOrCreateSBMLUnit(vcud);
+	sbmlModel.setVolumeUnits(ud);
+	
 	sbmlModel.setAreaUnits(getOrCreateSBMLUnit(sbmlExportSpec.getAreaUnits()));
 	sbmlModel.setLengthUnits(getOrCreateSBMLUnit(sbmlExportSpec.getLengthUnits()));
 	sbmlModel.setTimeUnits(getOrCreateSBMLUnit(sbmlExportSpec.getTimeUnits()));
@@ -1260,9 +1269,11 @@ protected void addEvents() {
 		for (BioEvent vcEvent : vcBioevents) {
 			Event sbmlEvent = sbmlModel.createEvent();
 			sbmlEvent.setId(vcEvent.getName());
+			sbmlEvent.setUseValuesFromTriggerTime(vcEvent.getUseValuesFromTriggerTime());
 
 			// create trigger
 			Trigger trigger = sbmlEvent.createTrigger();
+			trigger.setPersistent(true);
 			// NOTE: VCell solver behavior is to fire if trigger is true at timepoint 0
 			// solver does work correctly if there is a non-zero delay
 			// BUT - solver does not correctly simulate when the delay is 0 and when it also fires at 0
@@ -1332,6 +1343,12 @@ protected void addAssignmentRules()  {
 	cbit.vcell.mapping.AssignmentRule[] vcAssignmentRules = getSelectedSimContext().getAssignmentRules();
 	if (vcAssignmentRules != null) {
 		for(cbit.vcell.mapping.AssignmentRule vcRule : vcAssignmentRules) {
+			SymbolTableEntry ste = vcRule.getAssignmentRuleVar();
+			if(ste instanceof ModelParameter) {
+				// for assignment rule variables that are model parameters 
+				// we already created the sbml assignment rule in addParameters()
+				continue;
+			}
 			org.sbml.jsbml.AssignmentRule sbmlRule = sbmlModel.createAssignmentRule();
 //			sbmlRule.setId(vcRule.getName());
 //			sbmlRule.setName(vcRule.getName());
@@ -1343,7 +1360,8 @@ protected void addAssignmentRules()  {
 	}
 }
 protected void addInitialAssignments() throws ExpressionException, MappingException, MathException, MatrixException, ModelException  {
-	// used for overrides and parameter scan exports
+	// used for overrides and parameter scan exports only!
+	// for species, the initial assignments are done in addSpecies()
 	if(vcSelectedSimJob == null) {
 		return;
 	}
@@ -2177,6 +2195,7 @@ public Map<Pair <String, String>, String> getLocalToGlobalTranslationMap() {
  */
 public void translateBioModel() throws SbmlException, XMLStreamException {
 	// 'Parse' the Virtual cell model into an SBML model
+	org.sbml.jsbml.Model temp = sbmlModel;
 	addUnitDefinitions();
 	// Add features/compartments
 	addCompartments();

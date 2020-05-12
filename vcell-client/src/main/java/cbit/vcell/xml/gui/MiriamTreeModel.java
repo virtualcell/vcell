@@ -10,6 +10,9 @@
 
 package cbit.vcell.xml.gui;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
@@ -41,7 +44,7 @@ public class MiriamTreeModel extends DefaultTreeModel implements AnnotationEvent
 	private VCMetaData vcMetaData = null;
 	private boolean createTree;
 	
-	public static class LinkNode extends BioModelNode {
+	public static class LinkNode extends BioModelNode implements Comparable {
 		private MIRIAMQualifier miriamQualifier = null;
 		private MiriamResource miriamResource = null;
 		
@@ -73,6 +76,19 @@ public class MiriamTreeModel extends DefaultTreeModel implements AnnotationEvent
 		}
 		public MiriamResource getMiriamResource() {
 			return miriamResource;
+		}
+		@Override
+		public int compareTo(Object o) {
+			if(!(o instanceof LinkNode)) {
+				return 0;
+			}
+			LinkNode that = (LinkNode)o;
+			int result = getMiriamQualifier().getDescription().compareTo(that.getMiriamQualifier().getDescription());
+			if(result != 0) {
+				return result;
+			}
+			result = getText().compareTo(that.getText());
+			return result;
 		}
 	}
 	
@@ -133,13 +149,18 @@ public class MiriamTreeModel extends DefaultTreeModel implements AnnotationEvent
 //		Map<Identifiable, Map<DateQualifier, Set<DublinCoreDate>>> dateMapMap = miriamManager.getDublinCoreDateMap();
 //		Map<DateQualifier, Set<DublinCoreDate>> dateMap = dateMapMap.get(identifiable);
 		
-		if (refGroupMap!=null){
-			for (MiriamRefGroup refGroup : refGroupMap.keySet()){
+		List<LinkNode> nodeList = new ArrayList<>();
+		if (refGroupMap!=null) {
+			for (MiriamRefGroup refGroup : refGroupMap.keySet()) {
 				MIRIAMQualifier qualifier = refGroupMap.get(refGroup);
-				for (MiriamResource miriamResource : refGroup.getMiriamRefs()){
-					LinkNode linkNode = new LinkNode(qualifier, miriamResource);
-					((DefaultMutableTreeNode)getRoot()).add(linkNode);
+				for (MiriamResource miriamResource : refGroup.getMiriamRefs()) {
+					LinkNode ln = new LinkNode(qualifier, miriamResource);
+					nodeList.add(ln);
 				}
+			}
+			Collections.sort(nodeList);
+			for(LinkNode ln : nodeList) {
+				((DefaultMutableTreeNode)getRoot()).add(ln);
 			}
 		}
 //		if (dateMap!=null){
