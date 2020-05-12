@@ -199,6 +199,10 @@ public static UnitDefinition getSBMLUnitDefinition(VCUnitDefinition vcUnitDefn, 
 			if(kind == Kind.METER) {
 				kind = Kind.METRE;
 			}
+			if(kind == Kind.LITER) {
+				kind = Kind.LITRE;
+			}
+			
 			VCUnitDefinition kindVcUnit = vcUnitSystem.getInstance(kindSymbol);
 			if (kindVcUnit.isCompatible(vcUnit)){
 				if (kindVcUnit.isEquivalent(vcUnit)){

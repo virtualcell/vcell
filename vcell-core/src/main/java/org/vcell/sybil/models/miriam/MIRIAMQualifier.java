@@ -19,7 +19,7 @@ import org.sbpax.schemas.MIRIAM;
 import org.vcell.sybil.models.AnnotationQualifier;
 import org.vcell.sybil.util.keys.KeyOfOne;
 
-public class MIRIAMQualifier extends KeyOfOne<URI> implements AnnotationQualifier {
+public class MIRIAMQualifier extends KeyOfOne<URI> implements AnnotationQualifier, Comparable {
 	public static final MIRIAMQualifier BIO_encodes = new MIRIAMQualifier(MIRIAM.BioProperties.encodes,"(bio) encodes");
 	public static final MIRIAMQualifier BIO_hasPart = new MIRIAMQualifier(MIRIAM.BioProperties.hasPart,"(bio) hasPart");
 	public static final MIRIAMQualifier BIO_hasProperty = new MIRIAMQualifier(MIRIAM.BioProperties.hasProperty,"(bio) hasProperty");
@@ -45,16 +45,25 @@ public class MIRIAMQualifier extends KeyOfOne<URI> implements AnnotationQualifie
 	
 	public URI getProperty() { return a(); }
 	
-	public String getLocalName(){
+	public String getLocalName() {
 		return getProperty().getLocalName();
 	}
 
-	public String getNameSpace(){
+	public String getNameSpace() {
 		return getProperty().getNamespace();
 	}
 	
-	public String getDescription(){
+	public String getDescription() {
 		return description;
+	}
+
+	@Override
+	public int compareTo(Object o) {
+		if(!(o instanceof MIRIAMQualifier)) {
+			return 0;
+		}
+		MIRIAMQualifier that = (MIRIAMQualifier)o;
+		return -(getDescription().compareTo(that.getDescription()));
 	}
 
 }

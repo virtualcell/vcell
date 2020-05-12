@@ -80,7 +80,8 @@ public class BioModelPropertiesPanel extends JPanel {
 	private JButton changePermissionButton;
 	private BioModelWindowManager bioModelWindowManager;
 	private LocalMetaDataPanel applicationsPanel = null;
-	private JPanel webLinksPanel = null;
+	@Deprecated
+	private JPanel webLinksPanel = null;	// not in use anymore
 
 	private class EventHandler implements ActionListener, DatabaseListener {
 		public void actionPerformed(ActionEvent e) {
@@ -381,6 +382,7 @@ private void updateInterface() {
 		}
 		changePermissionButton.setEnabled(true);
 	}
+	// not in use anymore and unmaintained
 	webLinksPanel.removeAll();
 	webLinksPanel.setLayout(new GridLayout(0,1));
 	Set<MiriamRefGroup> resources = new HashSet<MiriamRefGroup>();

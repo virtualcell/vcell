@@ -489,9 +489,10 @@ public class ReactionCartoonTool extends BioCartoonTool implements BioCartoonToo
 				Diagram[] autosortDiagramOrder = newDiagramOrderList.toArray(new Diagram[0]);
 				if(bWarn && autoSortedStructures.size() > 1) {	// no point in warning if there's just one structure
 					final String OK = "OK";
-					String response = DialogUtils.showWarningDialog(getGraphPane(), "Existing 'Structure' order preference set by user may be reset, continue?", new String[] {OK,"Cancel"},OK);
+					String response = DialogUtils.showWarningDialog(getGraphPane(), "Re-organizing species/reaction display positions...", new String[] {OK,"Cancel"},OK);
 					if(response != null &&  response.equals(OK)) {
-						getModel().setDiagrams(autosortDiagramOrder);
+						//getModel().setDiagrams(autosortDiagramOrder);
+						allStructureSuite.setModelStructureOrder(true);
 					} else {
 						allStructureSuite.setModelStructureOrder(true);
 						return;
@@ -601,11 +602,18 @@ public class ReactionCartoonTool extends BioCartoonTool implements BioCartoonToo
 				}
 				if (getSelectedReactionParticipantArray() != null && menuAction.equals(CartoonToolEditActions.Delete.MENU_ACTION)) {
 					ReactionParticipant[] reactionParticipantArr = getSelectedReactionParticipantArray();
+					if(ReactionCartoonTool.checkAllCatalyst(reactionParticipantArr)) {
+						DialogUtils.showWarningDialog(getGraphPane(), "Catalysts can only be deleted by editing kynetic / proxy parameters");
+						return;
+					}
 					String response = DialogUtils.showWarningDialog(getGraphPane(),
 							"Delete "+reactionParticipantArr.length+" Reaction Stoichiometries",
 							new String[] {RXSPECIES_DELETE,RXSPECIES_CANCEL}, RXSPECIES_CANCEL);
 					if(response != null && response.equals(RXSPECIES_DELETE)){
 						for (int i = 0; i < reactionParticipantArr.length; i++) {
+							if(reactionParticipantArr[i] instanceof Catalyst) {
+								continue;	// Catalysts may only be deleted by editing kynetic / proxy parameters
+							}
 							ReactionStep reactionStep = reactionParticipantArr[i].getReactionStep();
 							reactionStep.removeReactionParticipant(reactionParticipantArr[i]);						
 						}
@@ -659,6 +667,18 @@ public class ReactionCartoonTool extends BioCartoonTool implements BioCartoonToo
 			// default action is to ignore
 		}
 
+	}
+
+	public static boolean checkAllCatalyst(Object[] reactionParticipantArr) {
+		if(reactionParticipantArr == null || reactionParticipantArr.length == 0) {
+			return false;
+		}
+		for (int i = 0; reactionParticipantArr!=null &&  i < reactionParticipantArr.length; i++) {
+			if(!(reactionParticipantArr[i] instanceof Catalyst)) {
+				return false;
+			}
+		}
+		return true;
 	}
 	
 	private void pasteReactionsAndSpecies(Component requester,Structure pasteToStructure){

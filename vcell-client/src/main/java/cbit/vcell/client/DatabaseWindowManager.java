@@ -120,13 +120,13 @@ public DatabaseWindowManager(DatabaseWindowPanel databaseWindowPanel, RequestMan
 
 public void accessPermissions()  {
 	VersionInfo selectedVersionInfo = getPanelSelection() == null ? null : getPanelSelection();
-	accessPermissions(getComponent(), selectedVersionInfo);
+	accessPermissions(getComponent(), selectedVersionInfo, false);
 }
 /**
  * Insert the method's description here.
  * Creation date: (5/14/2004 5:35:55 PM)
  */
-public void accessPermissions(final Component requester, final VersionInfo selectedVersionInfo)  {
+public void accessPermissions(final Component requester, final VersionInfo selectedVersionInfo, boolean bGrantSupportPermissions)  {
 	final GroupAccess groupAccess = selectedVersionInfo.getVersion().getGroupAccess();
 	final DocumentManager docManager = getRequestManager().getDocumentManager();
 	
@@ -136,6 +136,9 @@ public void accessPermissions(final Component requester, final VersionInfo selec
 		public void run(Hashtable<String, Object> hashTable) throws Exception {
 			getAclEditor().clearACLList();	
 			getAclEditor().setACLState(new ACLEditor.ACLState(groupAccess));
+			if(bGrantSupportPermissions) {
+				getAclEditor().grantVCellSupportPermissions();
+			}
 			Object choice = showAccessPermissionDialog(getAclEditor(), requester);
 			if (choice != null) {
 				hashTable.put("choice", choice);
@@ -245,7 +248,7 @@ public void accessPermissions(final Component requester, final VersionInfo selec
 							}else{
 								DialogUtils.showErrorDialog(requester, errorNames);
 							}
-							accessPermissions(requester, selectedVersionInfo);
+							accessPermissions(requester, selectedVersionInfo, false);
 						}
 					}
 		

@@ -18,6 +18,7 @@ import org.restlet.ext.wadl.ParameterStyle;
 import org.restlet.ext.wadl.RepresentationInfo;
 import org.restlet.ext.wadl.RequestInfo;
 import org.restlet.representation.Representation;
+import org.restlet.representation.StringRepresentation;
 import org.restlet.resource.ClientResource;
 import org.restlet.resource.ResourceException;
 import org.vcell.rest.VCellApiApplication;
@@ -149,6 +150,12 @@ public class SimDataValuesServerResource extends AbstractServerResource implemen
 //					"\"5,5,25\\n\"";
 			
 			dataModel.put("csvdata",csvdata);
+		}else {
+			return new StringRepresentation("<html>\n" + 
+					"<head>\n" + 
+					"No simulation data values found.\n" +
+					"</body>\n" + 
+					"</html>", MediaType.TEXT_HTML);
 		}
 		
 		Gson gson = new Gson();

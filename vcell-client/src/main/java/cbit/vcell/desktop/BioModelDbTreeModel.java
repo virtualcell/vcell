@@ -69,7 +69,7 @@ protected void createBaseTree() throws DataAccessException {
 	allPublicModelsNode.add(publishedModelsNode);
 	allPublicModelsNode.add(curatedModelsNode);
 	allPublicModelsNode.add(otherModelsNode);
-	allPublicModelsNode.add(modelBricksNode);
+//	allPublicModelsNode.add(modelBricksNode);
 	
 	rootNode.setUserObject("Biological Models");
 	sharedModelsNode.setUserObject(SHARED_BIO_MODELS);

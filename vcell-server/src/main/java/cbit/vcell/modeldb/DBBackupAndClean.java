@@ -143,7 +143,7 @@ public class DBBackupAndClean {
 		System.out.println(DBBackupAndClean.class.getName()+" "+OP_CLEAN+           " dbHostName vcellSchema password dbSrvcName workingDir exportDir {amplistorUser amplistorPasswd}");
 		System.out.println(DBBackupAndClean.class.getName()+" "+OP_CLEAN_AND_BACKUP+" dbHostName vcellSchema password dbSrvcName workingDir exportDir {amplistorUser amplistorPasswd}");
 		System.out.println(DBBackupAndClean.class.getName()+" "+OP_IMPORT+" importServerName dumpFileHostPrefix vcellSchema password importSrvcName workingDir exportDir");
-		System.out.println(DBBackupAndClean.class.getName()+" "+OP_DELSIMSDISK2+     " dbHostName vcellSchema password/pwdfile dbSrvcName tmpDir usersDir");
+		System.out.println(DBBackupAndClean.class.getName()+" "+OP_DELSIMSDISK2+     " dbHostName vcellSchema password/pwdfile dbSrvcName tmpDir usersDir {thisUserOnly}");
 		     System.out.println("     (exmpl: "+DBBackupAndClean.class.getName()+" "+OP_DELSIMSDISK2+" vcell-db vcell vcpassword/pwdfile vcelldborcl.cam.uchc.edu /tmp /share/apps/vcell3/users"+")");
 		System.exit(1);
 	}
@@ -385,6 +385,7 @@ public class DBBackupAndClean {
 		String dbSrvcName;
 		File workingDir;
 		File exportDir;
+		String thisUserOnly;
 //		AmplistorCredential amplistorCredential;
 		
 		File localDMPFile = null;
@@ -400,7 +401,7 @@ public class DBBackupAndClean {
 		ArrayList<Exception> errorList = new ArrayList<Exception>();
 		
 		public DBBackupHelper(String[] args){
-			if(args.length != 6/* && args.length != 8*/){
+			if(args.length != 6 && args.length != 7){
 				usageExit();
 			}
 			dbHostName = args[0];
@@ -409,6 +410,7 @@ public class DBBackupAndClean {
 			dbSrvcName = args[3];
 			workingDir = new File(args[4]);
 			exportDir = new File(args[5]);
+			thisUserOnly = (args.length == 7?args[6]:null);
 			
 			if((new File(password)).exists()) {//password file passed in
 				try {
@@ -1183,7 +1185,7 @@ public class DBBackupAndClean {
 				long filesRemoved = 0;
 				long bytesKept = 0;
 				long filesKept = 0;
-				if(userDirs[i].isDirectory()) {
+				if(userDirs[i].isDirectory() && (dbBackupHelper.thisUserOnly==null?true:dbBackupHelper.thisUserOnly.equals(userDirs[i].getName()))) {
 					StringBuffer logStringBuffer = new StringBuffer();
 					logStringBuffer.append("DB simcount="+orderedKeepTheseSims.size()+"\n");
 					logStringBuffer.append("DB fdat count="+orderedKeepTheseFdats.size());
@@ -1229,7 +1231,9 @@ public class DBBackupAndClean {
 										filesRemoved++;
 										bytesRemoved+= checkTheseFiles[j].length();
 										if(!deleteFileAndLink(checkTheseFiles[j], logStringBuffer)) {
-											throw new Exception("Failed to delete "+checkTheseFiles[j].getAbsolutePath());
+											if(!Files.getOwner(checkTheseFiles[j].toPath()).getName().equals("root")) {// skip root owned files for now e.g. simtask.xml
+												throw new Exception("Failed to delete "+checkTheseFiles[j].getAbsolutePath());
+											}	
 										}
 									}
 								}else {

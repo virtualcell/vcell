@@ -61,7 +61,7 @@ import cbit.vcell.parser.SymbolTableFunctionEntry;
 @SuppressWarnings("serial")
 public abstract class ReactionStep implements ModelProcess, Model.ElectricalTopologyListener,
 		Cacheable, Serializable, ScopedSymbolTable, Matchable, VetoableChangeListener, PropertyChangeListener, Identifiable, 
-		IssueSource, Displayable,VCellSbmlName
+		IssueSource, Displayable, VCellSbmlName
 {
 
 	public static final String PROPERTY_NAME_REACTION_PARTICIPANTS = "reactionParticipants";
@@ -92,6 +92,7 @@ public abstract class ReactionStep implements ModelProcess, Model.ElectricalTopo
    private Structure structure = null;
    
 	private String fieldName = null;
+	private String sbmlId = null;
 	private String sbmlName = null;
 	protected transient java.beans.VetoableChangeSupport vetoPropertyChange;
 	protected transient java.beans.PropertyChangeSupport propertyChange;
@@ -230,6 +231,9 @@ protected boolean compareEqual0(ReactionStep rs) {
 	if (!Compare.isEqualOrNull(getSbmlName(), rs.getSbmlName())){
 		return false;
 	}
+	if (!Compare.isEqualOrNull(getSbmlId(), rs.getSbmlId())){
+		return false;
+	}
 	
 	if (!getStructure().compareEqual(rs.getStructure())){
 		return false;
@@ -338,9 +342,16 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueList) {
 			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, tool, Issue.Severity.WARNING));
 		}
 	}
+	if(sbmlId == null) {
+		;
+	} else {
+		if(sbmlId.isEmpty()) {
+			String message = "SbmlId cannot be an empty string.";
+			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, message, Issue.Severity.ERROR));
+		}
+	}
 	if(sbmlName == null) {
-		String message = "SbmlName is null.";
-		issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, message, Issue.Severity.INFO));
+		;
 	} else {
 		if(sbmlName.isEmpty()) {
 			String message = "SbmlName cannot be an empty string.";
@@ -473,6 +484,9 @@ public SymbolTableEntry getLocalEntry(String identifier) {
  */
 public String getName() {
 	return fieldName;
+}
+public String getSbmlId() {
+	return sbmlId;
 }
 public String getSbmlName() {
 	return sbmlName;
@@ -921,6 +935,12 @@ public void setName(String name) throws java.beans.PropertyVetoException {
 	fieldName = name;
 	firePropertyChange("name", oldValue, name);
 }
+public void setSbmlId(String newValue) throws PropertyVetoException {
+	String oldValue = this.sbmlId;
+	fireVetoableChange("sbmlId", oldValue, newValue);
+	this.sbmlId = newValue;
+	firePropertyChange("sbmlId", oldValue, newValue);
+}
 public void setSbmlName(String newString) throws PropertyVetoException {
 	String oldValue = this.sbmlName;
 	String newValue = SpeciesContext.fixSbmlName(newString);
@@ -1046,6 +1066,9 @@ public void vetoableChange(PropertyChangeEvent e) throws PropertyVetoException {
 			}
 		}
 	}
+ 	if(e.getSource()==this && e.getPropertyName().equals("sbmlId")) {
+ 		;
+ 	}
  	if(e.getSource()==this && e.getPropertyName().equals("sbmlName")) {
  		String newName = (String)e.getNewValue();
  		if(newName == null) {

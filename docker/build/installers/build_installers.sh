@@ -11,7 +11,7 @@ compiler_vcellClasspathColonSep=`ls -m /vcellclient/vcell-client/target/maven-ja
 
 cd /config
 
-PATH=/installer/install4j7.0.8/bin:$PATH
+PATH=/installer/install4j8.0.5/bin:$PATH
 
 #
 # retrieve text secrets from file (docker-compose 'secrets' mounts these files in memory at runtime)
@@ -23,7 +23,7 @@ macCodeSignKeystore_pswd=`cat $macCodeSignKeystore_pswdfile`
 #
 # install Install4J product key (only really needed first time when running this Docker container)
 #
-/installer/install4j7.0.8/bin/install4jc -L $Install4J_product_key
+/installer/install4j8.0.5/bin/install4jc -L $Install4J_product_key
 
 #echo "jres found in /jres are `ls /jres`"
 #cp /jres/* /config
@@ -47,7 +47,7 @@ macCodeSignKeystore_pswd=`cat $macCodeSignKeystore_pswdfile`
 #
 # run install4jc to create installers for VCell Client on supported platforms.
 #
-/installer/install4j7.0.8/bin/install4jc \
+/installer/install4j8.0.5/bin/install4jc \
 	--win-keystore-password=$winCodeSignKeystore_pswd \
 	--mac-keystore-password=$macCodeSignKeystore_pswd \
 	-D \

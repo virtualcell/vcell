@@ -1,9 +1,9 @@
 FROM openjdk:8
 
 RUN mkdir /installer && cd /installer && \
-    wget --quiet -O install4j_unix_7_0_8.tar.gz \
-        http://download-keycdn.ej-technologies.com/install4j/install4j_unix_7_0_8.tar.gz && \
-    tar xzf install4j_unix_7_0_8.tar.gz
+    wget --quiet -O install4j_unix_8_0_5.tar.gz \
+        https://download-gcdn.ej-technologies.com/install4j/install4j_unix_8_0_5.tar.gz && \
+    tar xzf install4j_unix_8_0_5.tar.gz
 
 COPY ./license.txt \
     ./vcell-client/src/main/resources/thirdpartylicenses.txt \

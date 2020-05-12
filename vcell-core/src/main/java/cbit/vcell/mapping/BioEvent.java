@@ -44,6 +44,7 @@ import cbit.vcell.model.Model;
 import cbit.vcell.model.ModelUnitSystem;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.model.SpeciesContext;
+import cbit.vcell.model.VCellSbmlName;
 import cbit.vcell.model.Structure.StructureSize;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
@@ -58,7 +59,7 @@ import net.sourceforge.interval.ia_math.RealInterval;
 
 @SuppressWarnings("serial")
 public class BioEvent implements Matchable, Serializable, VetoableChangeListener, PropertyChangeListener, 
-		IssueSource, SimulationContextEntity, Displayable {
+		IssueSource, SimulationContextEntity, Displayable, VCellSbmlName {
 	
 	private static final String PROPERTY_NAME_NAME = "name";
 
@@ -301,6 +302,8 @@ public class BioEvent implements Matchable, Serializable, VetoableChangeListener
 	private BioEventNameScope nameScope = new BioEventNameScope();
 	private final ParameterContext parameterContext;
 	private String name;
+	private String sbmlId = null;
+	private String sbmlName = null;
 	private ArrayList<EventAssignment> eventAssignmentList = new ArrayList<EventAssignment>();
 
 	protected SimulationContext simulationContext = null;
@@ -366,7 +369,7 @@ public class BioEvent implements Matchable, Serializable, VetoableChangeListener
 		return simulationContext;
 	}
 
-	public ScopedSymbolTable getScopedSymbolTable(){
+	public ScopedSymbolTable getScopedSymbolTable() {
 		return parameterContext;
 	}
 
@@ -375,6 +378,17 @@ public class BioEvent implements Matchable, Serializable, VetoableChangeListener
 		fireVetoableChange(PROPERTY_NAME_NAME, oldValue, newValue);
 		this.name = newValue;
 		firePropertyChange(PROPERTY_NAME_NAME, oldValue, newValue);
+	}
+	public void setSbmlName(String newString) throws PropertyVetoException {
+		String oldValue = this.sbmlName;
+		String newValue = SpeciesContext.fixSbmlName(newString);
+		
+		fireVetoableChange("sbmlName", oldValue, newValue);
+		this.sbmlName = newValue;
+		firePropertyChange("sbmlName", oldValue, newValue);
+	}
+	public void setSbmlId(String newString) throws PropertyVetoException {	// setable only through SBML import
+		this.sbmlId = newString;
 	}
 
 	public ArrayList<EventAssignment> getEventAssignments() {
@@ -544,6 +558,14 @@ public class BioEvent implements Matchable, Serializable, VetoableChangeListener
 				}
 			}
 		}
+		if(sbmlName != null && sbmlName.isEmpty()) {
+			String message = "SbmlName cannot be an empty string.";
+			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, message, Issue.Severity.ERROR));
+		}
+		if(sbmlId != null && sbmlId.isEmpty()) {
+			String message = "SbmlId cannot be an empty string.";
+			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, message, Issue.Severity.ERROR));
+		}
 	}
 	
 	@Override
@@ -551,6 +573,12 @@ public class BioEvent implements Matchable, Serializable, VetoableChangeListener
 		if (obj instanceof BioEvent){
 			BioEvent other = (BioEvent)obj;
 			if (!Compare.isEqual(getName(),other.getName())){
+				return false;
+			}
+			if (!Compare.isEqualOrNull(getSbmlName(),other.getSbmlName())) {
+				return false;
+			}
+			if (!Compare.isEqualOrNull(getSbmlId(),other.getSbmlId())) {
 				return false;
 			}
 			if (getTriggerType() != other.getTriggerType()){
@@ -859,6 +887,12 @@ public class BioEvent implements Matchable, Serializable, VetoableChangeListener
 	public String getName() {
 		return name;
 	}
+	public String getSbmlId() {
+		return sbmlId;
+	}
+	public String getSbmlName() {
+		return sbmlName;
+	}
 
 	public BioNameScope getNameScope() {
 		return nameScope;
@@ -870,8 +904,15 @@ public class BioEvent implements Matchable, Serializable, VetoableChangeListener
 			if (simulationContext.getBioEvent(newName) != null) {
 				throw new PropertyVetoException("An event with name '" + newName + "' already exists!",evt);
 			}
-			if (simulationContext.getEntry(newName)!=null){
+			if (simulationContext.getEntry(newName)!=null) {
 				throw new PropertyVetoException("Cannot use existing symbol '" + newName + "' as an event name",evt);
+			}
+		} else if(evt.getSource() == this && evt.getPropertyName().equals("sbmlId")) {
+			;		// not editable, we use what we get from the importer
+		} else if(evt.getSource() == this && evt.getPropertyName().equals("sbmlName")) {
+			String newName = (String)evt.getNewValue();
+			if(newName == null) {
+				return;
 			}
 		}
 	}

@@ -241,8 +241,9 @@ public static void main(String[] args) {
 		}			// end second pass
 		
 		int i;		// index of some variable
-		for(i=0; i<2; i++) {
+		for(i=0; i<2; i++) {	// show results for the first 2 variables, time and AAAA_Count
 			System.out.println(columnDescriptions[i].getName());
+			// timepoints 0, 1, 2 ,3
 			System.out.println("  max: " + processedResults.allResultSets[i].maxValue[0] + ", " + processedResults.allResultSets[i].maxValue[1] + ", " + processedResults.allResultSets[i].maxValue[2] + ", " + processedResults.allResultSets[i].maxValue[3]);
 			System.out.println("  min: " + processedResults.allResultSets[i].minValue[0] + ", " + processedResults.allResultSets[i].minValue[1] + ", " + processedResults.allResultSets[i].minValue[2] + ", " + processedResults.allResultSets[i].minValue[3]);
 			System.out.println("  avg: " + processedResults.allResultSets[i].avgValue[0] + ", " + processedResults.allResultSets[i].avgValue[1] + ", " + processedResults.allResultSets[i].avgValue[2] + ", " + processedResults.allResultSets[i].avgValue[3]);

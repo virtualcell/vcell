@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.vcell.util.Cacheable;
+import org.vcell.util.Compare;
 import org.vcell.util.Displayable;
 import org.vcell.util.Issue;
 import org.vcell.util.Issue.IssueCategory;
@@ -35,20 +36,33 @@ import cbit.vcell.units.VCUnitDefinition;
 
 @SuppressWarnings("serial")
 public abstract class Structure implements Serializable, ScopedSymbolTable, Matchable, Cacheable, VetoableChangeListener,
-		Identifiable, IssueSource, Displayable
+		Identifiable, IssueSource, Displayable, VCellSbmlName
 {
 	public final static String TYPE_NAME_FEATURE = "Compartment";
 	public final static String TYPE_NAME_MEMBRANE = "Membrane";
 	
 	private String fieldName = new String();
-	private String fieldSbmlName = new String();
+	private String sbmlId = null;
+	private String sbmlName = null;
 	protected transient java.beans.VetoableChangeSupport vetoPropertyChange;
-	public String getFieldSbmlName() {
-		return fieldSbmlName;
+	
+	public String getSbmlId() {
+		return sbmlId;
 	}
-
-	public void setFieldSbmlName(String fieldSbmlName) {
-		this.fieldSbmlName = fieldSbmlName;
+	public void setSbmlId(String newValue) {
+		this.sbmlId = newValue;
+	}
+	
+	public String getSbmlName() {
+		return sbmlName;
+	}
+	public void setSbmlName(String newString) throws PropertyVetoException {
+		String oldValue = this.sbmlName;
+		String newValue = SpeciesContext.fixSbmlName(newString);
+		
+		fireVetoableChange("sbmlName", oldValue, newValue);
+		this.sbmlName = newValue;
+		firePropertyChange("sbmlName", oldValue, newValue);
 	}
 
 	protected transient java.beans.PropertyChangeSupport propertyChange;
@@ -196,9 +210,16 @@ protected boolean compareEqual0(Structure s) {
 		return false;
 	}
 
-	if (!getName().equals(s.getName())){
+	if (!getName().equals(s.getName())) {
 		return false;
 	}
+	if (!Compare.isEqualOrNull(getSbmlName(),s.getSbmlName())) {
+		return false;
+	}
+	if (!Compare.isEqualOrNull(getSbmlId(),s.getSbmlId())) {
+		return false;
+	}
+
 	return true;
 }
 /**
@@ -399,6 +420,15 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueList) {
 			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, Issue.Severity.ERROR));
 		}
 	}
+	if(sbmlId != null && sbmlId.isEmpty()) {
+		String message = "SbmlId cannot be an empty string.";
+		issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, message, Issue.Severity.ERROR));
+	}
+	if(sbmlName != null && sbmlName.isEmpty()) {
+		String message = "SbmlName cannot be an empty string.";
+		issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, message, Issue.Severity.ERROR));
+	}
+
 }
 
 public static final String typeName = "Structure";

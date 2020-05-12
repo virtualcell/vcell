@@ -177,7 +177,8 @@ public class SelectionManager {
 	public final void setSelectedObjects(Object[] newValue) {
 //		System.out.println("----- setSelectedObjects (enter) thread="+Thread.currentThread().getName());
 //		showStack();
-		followHyperlink(getActiveView(), newValue);
+		ActiveView av = getActiveView();
+		followHyperlink(av, newValue);
 //		System.out.println("----- setSelectedObjects (leave) thread="+Thread.currentThread().getName());
 //		show();
 	}

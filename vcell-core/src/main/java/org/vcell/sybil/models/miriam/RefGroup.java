@@ -58,16 +58,20 @@ public class RefGroup extends KeyOfOne<Resource> {
 	}
 
 	public Set<MIRIAMRef> refs(Graph graph) {
-		Iterator<Statement> stmtIter = graph.match(getResource(), null, null);
+		Resource resource = getResource();
+		Iterator<Statement> stmtIter = graph.match(resource, null, null);
 		Set<MIRIAMRef> refs = new HashSet<MIRIAMRef>();
 		while(stmtIter.hasNext()) {
 			Statement statement = stmtIter.next();
-			if(RDFBagUtil.isRDFContainerMembershipProperty(statement.getPredicate())) {
+			URI predicate = statement.getPredicate();
+			if(RDFBagUtil.isRDFContainerMembershipProperty(predicate)) {
 				Value object = statement.getObject();
 				if(object instanceof URI) {
 					URI resourceRef = (URI) object;
-					try { 
-						refs.add(MIRIAMRef.createFromURN(resourceRef.stringValue()));
+					try {
+						String value = resourceRef.stringValue();
+						MIRIAMRef ref = MIRIAMRef.createFromURN(value);
+						refs.add(ref);
 					} catch (URNParseFailureException e) { e.printStackTrace(); }
 				}
 			}			
