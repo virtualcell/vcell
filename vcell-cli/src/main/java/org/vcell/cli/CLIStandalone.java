@@ -1,5 +1,6 @@
 package org.vcell.cli;
 
+import java.io.File;
 import java.util.ArrayList;
 
 public class CLIStandalone {
@@ -13,6 +14,7 @@ public class CLIStandalone {
         ArrayList<String> sedmlLocations = omexHandler.getSedmlLocationsAbsolute();
         for(String location: sedmlLocations) {
             String outDirForCurrentSedml = omexHandler.getOutputPathFromSedml(location);
+            CLIUtils.makeDirs(new File(outDirForCurrentSedml));
             // Run solvers
             // dowWork(sedmlPath, outDir)
         }

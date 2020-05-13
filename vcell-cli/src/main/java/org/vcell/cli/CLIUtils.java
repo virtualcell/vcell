@@ -5,6 +5,7 @@ import com.google.common.io.Files;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.Objects;
 
 public class CLIUtils {
 //    private String tempDirPath = null;
@@ -16,31 +17,32 @@ public class CLIUtils {
 
     @SuppressWarnings("UnstableApiUsage")
     public String getTempDir() {
-//        this.tempDirPath = Files.createTempDir().getAbsolutePath();
-//        return this.tempDirPath;
         return Files.createTempDir().getAbsolutePath();
     }
 
-    public boolean setupOutputDir(String outDirPath) {
+
+    public static boolean removeDirs(File f) {
+        try {
+            deleteRecursively(f);
+        } catch(IOException ex) {
+            System.err.println("Failed to delete the file: " + f);
+            return false;
+        }
         return true;
     }
 
-
-    public void setExtractedOmexPath(String path) {
-        this.extractedOmexPath = path;
-    }
-
-    public boolean removeDirs(File f) {
-        return true;
-    }
-
-    public boolean makeDirs(File f) {
-        return true;
+    public static boolean makeDirs(File f) {
+        if(f.exists()) {
+            boolean isRemoved = removeDirs(f);
+            if(!isRemoved)
+                return false;
+        }
+        return f.mkdir();
     }
 
     private static void deleteRecursively(File f) throws IOException {
         if (f.isDirectory()) {
-            for (File c : f.listFiles()) {
+            for (File c : Objects.requireNonNull(f.listFiles())) {
                 deleteRecursively(c);
             }
         }

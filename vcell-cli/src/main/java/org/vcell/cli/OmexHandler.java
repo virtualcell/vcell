@@ -60,7 +60,7 @@ public class OmexHandler {
 
     public ArrayList<String> getSedmlLocationsAbsolute() {
         ArrayList<String> sedmlListAbsolute = new ArrayList<>();
-        String[] sedmlListRelative = (String[]) this.getSedmlLocationsRelative().toArray();
+        ArrayList<String> sedmlListRelative = this.getSedmlLocationsRelative();
 
         for (String sedmlFileRelative: sedmlListRelative) {
             sedmlListAbsolute.add(Paths.get(this.tempPath, sedmlFileRelative).toString());
@@ -77,7 +77,7 @@ public class OmexHandler {
                 outputPath =  Paths.get(
                             this.outDirPath,
                                 sedmlFileRelative.substring(
-                                    0, sedmlFileRelative.indexOf(sedmlName)
+                                    0, sedmlFileRelative.indexOf(".sedml")
                                 )).toString();
             }
         }
