@@ -73,7 +73,7 @@ public class OmexHandler {
         String sedmlName = absoluteSedmlPath.substring(absoluteSedmlPath.lastIndexOf("/") + 1);
         ArrayList<String> sedmlListRelative = this.getSedmlLocationsRelative();
         for (String sedmlFileRelative: sedmlListRelative) {
-            if(sedmlFileRelative.contains(sedmlName)) {
+            if(absoluteSedmlPath.contains(sedmlFileRelative)) {
                 outputPath =  Paths.get(
                             this.outDirPath,
                                 sedmlFileRelative.substring(
