@@ -3,6 +3,7 @@ jdk: openjdk8
 branches:
   only:
   - master
+  - /travis/
   - "/.*-[0-9]+\\..*/"
 install: true
 script: ".travis/build.sh"
