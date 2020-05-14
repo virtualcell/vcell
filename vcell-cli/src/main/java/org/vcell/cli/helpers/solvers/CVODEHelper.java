@@ -1,4 +1,4 @@
-package org.vcell.cli.solverhelpers;
+package org.vcell.cli.helpers.solvers;
 
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.messaging.server.SimulationTask;
@@ -9,6 +9,7 @@ import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solver.SolverUtilities;
 import cbit.vcell.solver.ode.CVodeFileWriter;
 import cbit.vcell.solver.ode.ODESolverResultSet;
+import org.vcell.cli.helpers.sbml.SBMLSolverHelper;
 import org.vcell.util.exe.Executable;
 import org.vcell.util.exe.ExecutableException;
 
@@ -16,7 +17,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.nio.file.Paths;
 
 public class CVODEHelper {
 
