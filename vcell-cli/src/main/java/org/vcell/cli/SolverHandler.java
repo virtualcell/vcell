@@ -1,10 +1,7 @@
-package org.vcell.cli.solverhelpers;
+package org.vcell.cli;
 
 import cbit.util.xml.VCLogger;
 import cbit.vcell.biomodel.BioModel;
-import cbit.vcell.mapping.SimulationContext;
-import cbit.vcell.math.MathDescription;
-import cbit.vcell.math.MathException;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solver.SolverTaskDescription;
@@ -13,15 +10,16 @@ import cbit.vcell.xml.ExternalDocInfo;
 import cbit.vcell.xml.XmlHelper;
 import org.jlibsedml.AbstractTask;
 import org.jlibsedml.SedML;
+import org.vcell.cli.helpers.solvers.CVODEHelper;
+import org.vcell.cli.helpers.solvers.IDAHelper;
+import org.vcell.cli.helpers.solvers.StockGibsonHelper;
 import org.vcell.sbml.vcell.SBMLImportException;
 import org.vcell.sbml.vcell.SBMLImporter;
 import org.vcell.util.document.VCDocument;
 
 import java.io.File;
-import java.io.PrintWriter;
-import java.nio.file.Paths;
 
-public class SolverHelper {
+public class SolverHandler {
 
     public void simulateTask(ExternalDocInfo externalDocInfo, AbstractTask sedmlTask, SedML sedml, File outputDir) {
         // create the VCDocument (bioModel + application + simulation), do sanity checks

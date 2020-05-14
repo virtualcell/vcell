@@ -37,7 +37,7 @@ public class CLIUtils {
             if(!isRemoved)
                 return false;
         }
-        return f.mkdir();
+        return f.mkdirs();
     }
 
     private static void deleteRecursively(File f) throws IOException {
