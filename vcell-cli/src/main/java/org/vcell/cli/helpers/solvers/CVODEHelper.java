@@ -9,6 +9,7 @@ import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solver.SolverUtilities;
 import cbit.vcell.solver.ode.CVodeFileWriter;
 import cbit.vcell.solver.ode.ODESolverResultSet;
+import org.vcell.cli.CLIUtils;
 import org.vcell.cli.helpers.sbml.SBMLSolverHelper;
 import org.vcell.util.exe.Executable;
 import org.vcell.util.exe.ExecutableException;
@@ -48,7 +49,7 @@ public class CVODEHelper {
 //        String task_name = outDirPath.substring(indexOfLastSlash + 1);
 //        String idaFilePath = outDirPath.substring(0, indexOfLastSlash);
 
-        File resultFile = new File(outDir, taskId + SimDataConstants.IDA_DATA_EXTENSION);
+        File resultFile = new File(outDir, taskId + ".csv");
         String executableName = null;
         try {
             // we need to specify the vCell install dir in the Eclipse Debug configuration, as VM argument
@@ -70,6 +71,7 @@ public class CVODEHelper {
         }
         ODESolverResultSet odeSolverResultSet = SBMLSolverHelper.getODESolverResultSet(simJob, resultFile.getPath());
         cvodeInputFile.delete();
+        CLIUtils.convertIDAtoCSV(resultFile);
         return odeSolverResultSet;
     }
 }
