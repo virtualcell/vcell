@@ -110,11 +110,11 @@
             <artifactId>vcell-vmicro</artifactId>
             <version>${project.version}</version>
         </dependency>
-        <dependency>
-            <groupId>org.vcell</groupId>
-            <artifactId>vcell-admin</artifactId>
-            <scope>${project.version}</scope>
-        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>org.vcell</groupId>-->
+<!--            <artifactId>vcell-admin</artifactId>-->
+<!--            <scope>${project.version}</scope>-->
+<!--        </dependency>-->
 
         <!-- NB: For testing via main methods in IDEs. -->
         <!-- Don't comment this out, it'll break the standalone (local with oracle connection) version of vcell -->
