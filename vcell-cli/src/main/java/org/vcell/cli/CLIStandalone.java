@@ -47,6 +47,5 @@ public class CLIStandalone {
 
         // At the end
         omexHandler.deleteExtractedOmex();
-        System.out.println("CLI works");
     }
 }

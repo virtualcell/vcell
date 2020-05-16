@@ -29,18 +29,12 @@ public class CLIHandler {
             this.printHelp();
             System.exit(1);
         }
-//        else if (cmd.hasOption("q")) {
-//            // TODO: Implement "Suppress Console output"
-//        } else if (cmd.hasOption("i")) {
-//            // Do nothing
-//        } else if (cmd.hasOption("o")) {
-//            // Do nothing
-//        } else if (cmd.hasOption("v")) {
-//            // Do nothing
-//        } else {
-//            System.out.println(this.usage);
-//            System.exit(1);
-//        }
+
+        if (cmd.hasOption("v")) {
+            //TODO: Properly implement version fetch for vcell (make it dynamic)
+            System.out.println("Vcell version 7.2");
+            System.exit(1);
+        }
     }
 
 
