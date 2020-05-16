@@ -27,4 +27,17 @@ jobs:
           echo "#### Installing dependencies ####"
           echo "#################################"
           mvn clean install dependency:copy-dependencies
-          docker build --file docker/build/Dockerfile-vcell-cli --tag crbm/biosimulations_vcell:latest .
+          docker build --file docker/build/Dockerfile-vcell-cli \
+                    	--tag crbm/biosimulations_vcell:7.2 \
+                    	--tag crbm/biosimulations_vcell:latest .
+      - name: Run the Docker image with test files
+        run: |
+          mkdir -p "$(pwd)"/tests/results
+          docker run \
+              --tty \
+              --rm \
+              --mount type=bind,source="$(pwd)"/tests/fixtures,target=/root/in,readonly \
+              --mount type=bind,source="$(pwd)"/tests/results,target=/root/out \
+              crbm/biosimulations_vcell:latest \
+                -i /root/in/BIOMD0000000297.omex \
+                -o /root/out

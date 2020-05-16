@@ -9,31 +9,26 @@ jobs:
       - uses: actions/checkout@v2
       - name: Login to DockerHub
         run: echo ${{ secrets.DOCKERHUB_PASSWORD }} | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
-      - name: Get the version
-        id: vars
-        run: echo ::set-output name=tag::$(echo ${GITHUB_REF:10})
-      - name: Extract JDK Tarball
+      - name: Extract JDK Tarball and setup Java
         run: |
           wget https://www.dropbox.com/s/h70d7erl2mkufbk/jdk-8u241-linux-x64.tar.gz?dl=1
           tar -xvzf jdk-8u241-linux-x64.tar.gz?dl=1
           mv jdk1.8.0_241 jdk
-      - name: Export Environment varialbles, mvn installation and build tagged docker image
+      - name: Maven installation and docker image building
         run: |
           export JAVA_HOME=`pwd`/jdk
           export PATH=${JAVA_HOME}/bin:${PATH}
           echo $JAVA_HOME
           java -version
-          wget http://mirrors.advancedhosters.com/apache/maven/maven-3/3.6.3/binaries/apache-maven-3.6.3-bin.tar.gz
-          tar -xvzf apache-maven-3.6.3-bin.tar.gz
-          mv apache-maven-3.6.3 maven
           export M2_HOME=`pwd`/maven
           export PATH=${M2_HOME}/bin:${PATH}
           mvn -version
           java -version
+          echo "#################################"
+          echo "#### Installing dependencies ####"
+          echo "#################################"
           mvn clean install dependency:copy-dependencies
-          echo docker build --file docker/build/Dockerfile-vcell-cli --tag crbm/biosimulations_vcell_api:latest .
-          echo ::set-output name=tag::$(echo ${GITHUB_REF:10})
-          docker build --file docker/build/Dockerfile-vcell-cli --tag crbm/biosimulations_vcell_api:latest .
-          docker build --file docker/build/Dockerfile-vcell-cli --tag crbm/biosimulations_vcell_api:${{steps.vars.outputs.tag}} .
-          docker push crbm/biosimulations_vcell_api:latest
-          docker push crbm/biosimulations_vcell_api:${{steps.vars.outputs.tag}}
+          docker build --file docker/build/Dockerfile-vcell-cli \
+                      --tag crbm/biosimulations_vcell:7.2 \
+                      --tag crbm/biosimulations_vcell:latest .
+          docker push crbm/biosimulations_vcell
