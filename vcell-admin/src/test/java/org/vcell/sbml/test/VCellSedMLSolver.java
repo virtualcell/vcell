@@ -2,9 +2,7 @@ package org.vcell.sbml.test;
 
 import java.io.*;
 import java.nio.file.Path;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Vector;
+import java.util.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -23,6 +21,8 @@ import org.vcell.sbml.vcell.SBMLImportException;
 import org.vcell.sbml.vcell.SBMLImporter;
 import org.vcell.util.document.VCDocument;
 import org.vcell.util.exe.Executable;
+
+import org.sbml.libcombine.*;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -95,12 +95,31 @@ public class VCellSedMLSolver {
 			formatter.printHelp("vcell", options);
 			System.exit(1);
 		}
-		
+
+//		CombineArchive omex = new CombineArchive();
+//		boolean isInitialized = omex.initializeFromArchive(IN_ROOT_STRING);
+//		boolean isExtracted = omex.extractTo(tempDir)
 
 		File tempDir = Files.createTempDir();
+		ArrayList<String> sedmlLocations = new ArrayList<>();
 		try {
-			unzip(IN_ROOT_STRING, tempDir);
-		} catch(IOException ex) {
+
+			System.loadLibrary("combinej");
+			CombineArchive omex = new CombineArchive();
+			boolean isInitialized = omex.initializeFromArchive(IN_ROOT_STRING);
+			boolean isExtracted = omex.extractTo(tempDir.getAbsolutePath());
+			CaOmexManifest manifest = omex.getManifest();
+			CaListOfContents contents = manifest.getListOfContents();
+			System.out.println("Contents fetched");
+			for (int contentIndex = 0; contentIndex < contents.getNumContents(); contentIndex++) {
+				CaContent content = (CaContent) contents.get(contentIndex);
+				if (content.isFormat("sedml")) {
+					sedmlLocations.add(content.getLocation());
+				}
+			}
+			System.out.println("All SEDML locations fetched");
+//			unzip(IN_ROOT_STRING, tempDir);
+		} catch(Exception ex) {
 			System.err.println("Cannot extract Omex");
 			System.exit(1);
 		}
@@ -129,52 +148,71 @@ public class VCellSedMLSolver {
 			outRootDir.mkdirs();
 		}
 		
-		File[] directoryListing = inDir.listFiles();
-		if (directoryListing == null) {
-			System.err.println("Error while accessing temp directory");
-			System.exit(99);
+//		File[] directoryListing = inDir.listFiles();
+//		if (directoryListing == null) {
+//			System.err.println("Error while accessing temp directory");
+//			System.exit(99);
+//		}
+//		
+//		File sedmlFile = null;
+//		for (File aFile : directoryListing) {		// look for a sedml file by extension
+//			if(aFile.isDirectory()) {
+//				continue;
+//			}
+//			String aFileName = aFile.getName();
+//			if(!aFileName.contains(".")) {
+//				continue;
+//			}
+//			int end = aFileName.indexOf(".");
+//			String aExtension = aFileName.substring(end);
+//			if(aExtension == null) {
+//				continue;
+//			}
+//			if(aExtension.toLowerCase().contentEquals(".sedml")) {
+//				sedmlFile = aFile;
+//				break;
+//			}
+//		}
+//		if(sedmlFile == null) {
+//			System.err.println("no sedml file found");
+//			System.exit(99);
+//		}
+		for (int sedmlIndex = 0; sedmlIndex < sedmlLocations.size(); sedmlIndex++) {
+			try {
+				String completeSedmlPath = tempDir.getAbsolutePath() + "/" + sedmlLocations.get(sedmlIndex);
+				File sedmlFile = new File(completeSedmlPath);
+				SedML sedml = Libsedml.readDocument(sedmlFile).getSedMLModel();
+				if (sedml == null || sedml.getModels().isEmpty()) {
+					System.err.println("the sedml file '" + sedmlFile.getName() + "'does not contain a valid document");
+					System.exit(99);
+				}
+				VCellSedMLSolver vCellSedMLSolver = new VCellSedMLSolver();
+				ExternalDocInfo externalDocInfo = new ExternalDocInfo(sedmlFile, true);
+				for(AbstractTask at : sedml.getTasks()) {
+					vCellSedMLSolver.doWork(externalDocInfo, at, sedml);
+				}
+			} catch (Exception e) {
+				System.err.println(e.getMessage());
+			}
 		}
+
 		
-		File sedmlFile = null;
-		for (File aFile : directoryListing) {		// look for a sedml file by extension
-			if(aFile.isDirectory()) {
-				continue;
-			}
-			String aFileName = aFile.getName();
-			if(!aFileName.contains(".")) {
-				continue;
-			}
-			int end = aFileName.indexOf(".");
-			String aExtension = aFileName.substring(end);
-			if(aExtension == null) {
-				continue;
-			}
-			if(aExtension.toLowerCase().contentEquals(".sedml")) {
-				sedmlFile = aFile;
-				break;
-			}
-		}
-		if(sedmlFile == null) {
-			System.err.println("no sedml file found");
-			System.exit(99);
-		}
-		
-		try {
-			SedML sedml = Libsedml.readDocument(sedmlFile).getSedMLModel();
-			if (sedml == null || sedml.getModels().isEmpty()) {
-				System.err.println("the sedml file '" + sedmlFile.getName() + "'does not contain a valid document");
-				System.exit(99);
-			}
-			VCellSedMLSolver vCellSedMLSolver = new VCellSedMLSolver();
-			ExternalDocInfo externalDocInfo = new ExternalDocInfo(sedmlFile, true);
-			for(AbstractTask at : sedml.getTasks()) {
-				vCellSedMLSolver.doWork(externalDocInfo, at, sedml);
-			}
-		} catch (Exception e) {
-			System.err.println(e.getMessage());
-		} finally {
+//		try {
+//			SedML sedml = Libsedml.readDocument(sedmlFile).getSedMLModel();
+//			if (sedml == null || sedml.getModels().isEmpty()) {
+//				System.err.println("the sedml file '" + sedmlFile.getName() + "'does not contain a valid document");
+//				System.exit(99);
+//			}
+//			VCellSedMLSolver vCellSedMLSolver = new VCellSedMLSolver();
+//			ExternalDocInfo externalDocInfo = new ExternalDocInfo(sedmlFile, true);
+//			for(AbstractTask at : sedml.getTasks()) {
+//				vCellSedMLSolver.doWork(externalDocInfo, at, sedml);
+//			}
+//		} catch (Exception e) {
+//			System.err.println(e.getMessage());
+//		} finally {
 			deleteDirectory(tempDir);
-		}
+//		}
 
 	}
 
@@ -269,7 +307,7 @@ public class VCellSedMLSolver {
 		
 		// create the work directory for this task, invoke the solver
 		String docName = doc.getName();
-		String outString = VCellSedMLSolver.OUT_ROOT_STRING + "/" + docName + "_" + sedmlTask.getId();
+		String outString = VCellSedMLSolver.OUT_ROOT_STRING + "/" + docName + "/" + sedmlTask.getId();
 		File outDir = new File(outString);
 		if (!outDir.exists()) {
 			outDir.mkdirs();
@@ -313,7 +351,11 @@ public class VCellSedMLSolver {
 		cvodeFileWriter.write();
 		cvodePW.close();
 		// use the cvodeStandalone solver
-		File cvodeOutputFile = new File(outDir, docName + SimDataConstants.IDA_DATA_EXTENSION);
+		String outDirPath = outDir.getAbsolutePath();
+		int indexOfLastSlash = outDirPath.lastIndexOf("/");
+		String task_name = outDirPath.substring(indexOfLastSlash + 1);
+		String idaFilePath = outDirPath.substring(0, indexOfLastSlash);
+		File cvodeOutputFile = new File(idaFilePath, task_name + SimDataConstants.IDA_DATA_EXTENSION);
 		String executableName = null;
 		try {
 			// we need to specify the vCell install dir in the Eclipse Debug configuration, as VM argument 
