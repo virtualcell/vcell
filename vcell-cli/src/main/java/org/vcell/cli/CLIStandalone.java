@@ -14,7 +14,7 @@ public class CLIStandalone {
         CLIHandler cliHandler = new CLIHandler(args);
         String inputFile = cliHandler.getInputFilePath();
         String outputDir = cliHandler.getOutputDirPath();
-        CLIUtils.makeDirs(new File(outputDir));
+//        CLIUtils.makeDirs(new File(outputDir));
         OmexHandler omexHandler = new OmexHandler(inputFile, outputDir);
         omexHandler.extractOmex();
 
