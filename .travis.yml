@@ -12,7 +12,7 @@ before_install:
   - export PATH=${JAVA_HOME}/bin:${PATH}
   - echo $JAVA_HOME
   - java -version
-  - wget http://mirrors.advancedhosters.com/apache/maven/maven-3/3.6.3/binaries/apache-maven-3.6.3-bin.tar.gz
+  - wget https://downloads.apache.org/maven/maven-3/3.6.3/binaries/apache-maven-3.6.3-bin.tar.gz
   - tar -xvzf apache-maven-3.6.3-bin.tar.gz
   - mv apache-maven-3.6.3 maven
   - export M2_HOME=`pwd`/maven
