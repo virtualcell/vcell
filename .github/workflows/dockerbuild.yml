@@ -7,10 +7,10 @@ jobs:
       - uses: actions/checkout@v2
       - name: Extract JDK and maven Tarball
         run: |
-          wget https://www.dropbox.com/s/h70d7erl2mkufbk/jdk-8u241-linux-x64.tar.gz?dl=1
-          tar -xvzf jdk-8u241-linux-x64.tar.gz?dl=1
+          wget https://vcell.org/webstart/pipeline_files/jdk-8u241-linux-x64.tar.gz
+          tar -xvzf jdk-8u241-linux-x64.tar.gz
           mv jdk1.8.0_241 jdk
-          wget http://mirrors.advancedhosters.com/apache/maven/maven-3/3.6.3/binaries/apache-maven-3.6.3-bin.tar.gz
+          wget https://vcell.org/webstart/pipeline_files/apache-maven-3.6.3-bin.tar.gz
           tar -xvzf apache-maven-3.6.3-bin.tar.gz
           mv apache-maven-3.6.3 maven
       - name: Install dependencies 
