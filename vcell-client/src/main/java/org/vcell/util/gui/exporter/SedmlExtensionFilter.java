@@ -1,6 +1,7 @@
 package org.vcell.util.gui.exporter;
 
 import java.io.File;
+import java.nio.file.Paths;
 
 import org.vcell.sedml.SEDMLExporter;
 import org.vcell.util.FileUtils;
@@ -37,7 +38,7 @@ public class SedmlExtensionFilter extends SelectorExtensionFilter {
 		}
 		if(sExt.equals("sedx")) {
 			sedmlExporter.createManifest(sPath, sFile);
-			String sedmlFileName = sPath + FileUtils.WINDOWS_SEPARATOR + sFile + ".sedml";
+			String sedmlFileName = Paths.get(sPath, sFile + ".sedml").toString();
 			XmlUtil.writeXMLStringToFile(resultString, sedmlFileName, true);
 			sedmlExporter.addSedmlFileToList(sFile + ".sedml");
 			sedmlExporter.addSedmlFileToList("manifest.xml");
