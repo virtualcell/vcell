@@ -1043,10 +1043,8 @@ public class SEDMLExporter {
 		}
 	}
 	
-	// we know exactly which files we need to archive: those in sbmlFilePathStrAbsoluteList
-	// each file is deleted after being added to archive
-	private final int BUFFER = 2048;
-    public boolean createZipArchiveOmex(String srcFolder, String sFileName) {
+
+    public boolean createOmexArchive(String srcFolder, String sFileName) {
     try {
 		System.loadLibrary("combinej");
 		CombineArchive archive = new CombineArchive();
@@ -1084,6 +1082,9 @@ public class SEDMLExporter {
     return true;
 }
 
+	// we know exactly which files we need to archive: those in sbmlFilePathStrAbsoluteList
+	// each file is deleted after being added to archive
+	private final int BUFFER = 2048;
 	public boolean createZipArchive(String srcFolder, String sFileName) {
 		try {
 			BufferedInputStream origin = null;
