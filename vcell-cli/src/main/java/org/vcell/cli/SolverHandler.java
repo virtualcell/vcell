@@ -5,6 +5,7 @@ import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solver.SolverTaskDescription;
+import cbit.vcell.solver.ode.ODESolver;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.xml.ExternalDocInfo;
 import cbit.vcell.xml.XmlHelper;
@@ -12,6 +13,7 @@ import org.jlibsedml.AbstractTask;
 import org.jlibsedml.SedML;
 import org.vcell.cli.helpers.solvers.CVODEHelper;
 import org.vcell.cli.helpers.solvers.IDAHelper;
+import org.vcell.cli.helpers.solvers.RungeKuttaFelhbergHelper;
 import org.vcell.cli.helpers.solvers.StockGibsonHelper;
 import org.vcell.sbml.vcell.SBMLImportException;
 import org.vcell.sbml.vcell.SBMLImporter;
@@ -63,6 +65,9 @@ public class SolverHandler {
             System.out.println("Finished: " + docName + ": - task '" + sedmlTask.getId() + "'.");
         } else if(SolverDescription.IDA.getKisao().contentEquals(kisao)) {
             ODESolverResultSet odeSolverResultSet = IDAHelper.solve(outputDir, sedmlTask.getId(), bioModel);
+            System.out.println("Finished: " + docName + ": - task '" + sedmlTask.getId() + "'.");
+        } else if (SolverDescription.RungeKuttaFehlberg.getKisao().contentEquals(kisao)){
+            ODESolverResultSet odeSolverResultSet = RungeKuttaFelhbergHelper.solve(outputDir, sedmlTask.getId(), bioModel);
             System.out.println("Finished: " + docName + ": - task '" + sedmlTask.getId() + "'.");
         } else {
             System.out.println("Unsupported solver: " + kisao);
