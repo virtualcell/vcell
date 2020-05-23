@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -1052,29 +1053,20 @@ public class SEDMLExporter {
     	
 		for (String sd : sbmlFilePathStrAbsoluteList) {
 			archive.addFile(
-					sd, // filename
+					Paths.get(srcFolder, sd).toString(),
 					sd, // target file name
 					KnownFormats.lookupFormat("xml")
 //					true // mark file as master
 			);
     	}
 
-		OmexDescription description = new OmexDescription();
-		description.setAbout("."); // about the archive itself
-		description.setDescription("Simple test archive including one SBML model");
-		description.setCreated(OmexDescription.getCurrentDateAndTime());
-
-		VCard creator = new VCard();
-		creator.setFamilyName("Bergmann");
-		creator.setGivenName("Frank");
-		creator.setEmail("fbergman@caltech.edu");
-		creator.setOrganization("Caltech");
-
-		description.addCreator(creator);
-
-		archive.addMetadata(".", description);
 
 		archive.writeToFile(Paths.get(srcFolder, sFileName + ".omex").toString());
+
+		// Removing files after archiving
+		for (String sd : sbmlFilePathStrAbsoluteList) {
+			Paths.get(srcFolder, sd).toFile().delete();
+		}
 
     } catch (Exception e) {
     	throw new RuntimeException("createZipArchive threw exception: " + e.getMessage());        
