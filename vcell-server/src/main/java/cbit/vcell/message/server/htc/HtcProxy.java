@@ -349,7 +349,7 @@ public abstract class HtcProxy {
 				}else if(perSolverMax != null) {
 					if(perSolverMax == 0) {//Use estimated size always if solver had 0 for memory limit
 						return new MemLimitResults(
-							Math.max((long)Math.ceil(estimatedMemSizeMB*1.5),
+							Math.min((long)Math.ceil(estimatedMemSizeMB*1.5),
 										(defaultSimMemoryLimitMbFromFile!=null?defaultSimMemoryLimitMbFromFile:MemLimitResults.FALLBACK_MEM_LIMIT_MB)),
 							"MemoryMax(FILE PerSolver ESTIMATED):'"+solverDescription.name()+"' from "+memLimitFile.getAbsolutePath());
 					}else {

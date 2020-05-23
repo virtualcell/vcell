@@ -739,6 +739,10 @@ public static String mathModelToXML(MathModel mathModel) throws XmlParseExceptio
 		// we identify the type of sedml simulation (uniform time course, etc) 
     	// and set the vCell simulation parameters accordingly
     	SolverTaskDescription simTaskDesc = newSimulation.getSolverTaskDescription();
+    	if(solverDescription != null) {
+    		simTaskDesc.setSolverDescription(solverDescription);
+    	}
+    	
 		TimeBounds timeBounds = new TimeBounds();
 		TimeStep timeStep = new TimeStep();
 		double outputTimeStep = 0.1;
