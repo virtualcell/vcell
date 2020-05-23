@@ -191,6 +191,8 @@ public void clearACLList() {
 	getPublicRadioButton().setEnabled(true);
 	getPrivateRadioButton().setEnabled(true);
 	getVCellSupportCheckBox().setSelected(false);
+	getJButtonAddACLUser().setEnabled(true);
+	getJButtonRemoveACLUser().setEnabled(true);
 }
 /**
  * connEtoC1:  (ACLEditor.initialize() --> ACLEditor.aCLEditor_Initialize()V)
@@ -313,6 +315,8 @@ public void grantVCellSupportPermissions() {
 	getPrivateRadioButton().setEnabled(false);
 	getACLRadioButton().setSelected(true);
 	getVCellSupportCheckBox().setSelected(true);
+	getJButtonAddACLUser().setEnabled(false);
+	getJButtonRemoveACLUser().setEnabled(false);
 }
 
 /**
