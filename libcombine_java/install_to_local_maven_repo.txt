@@ -1,0 +1,1 @@
+mvn install:install-file -Dfile=./linux64/libcombine.jar -DgroupId=com.libcombine -DartifactId=libcombine -Dversion=0.2.7 -Dpackaging=jar -DgeneratePom=true

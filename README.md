@@ -51,9 +51,9 @@ Requirements:  Git, Maven, Eclipse IDE for Java Developers and Java JDK 1.8 or l
    git clone https://github.com/virtualcell/vcell
    ```
   * Open Eclipse, Import the project using Maven. Depending on the Eclipse version there'll be small differences with the importing steps.
-    * Important! Deselect the ojdbc6 and ucp subprojects, then Finish to start importing.
+    * Important! Deselect the `ojdbc6` and `ucp` subprojects, then Finish to start importing.
     * Once importing is finished (it takes a while) there will be errors.
-  * Open CommandPrompt again, navigate to the ojdbc6 folder and execute the script in the text file. Do the same for the ucp folder.
+  * Open CommandPrompt again, navigate to the `ojdbc6` folder and execute the script in the text file. Do the same for the `ucp` folder and `libcombine_java`.
   * Rebuild the project in Eclipse, there should be no more errors.
   * Create a Debug configuration as a Java Application.
      * the Main Class is cbit.vcell.client.test.VCellClientTest
@@ -61,10 +61,12 @@ Requirements:  Git, Maven, Eclipse IDE for Java Developers and Java JDK 1.8 or l
      * the VM needed arguments are:
          * the installation directory: -Dvcell.installDir=<your install dir>
          * the software version: -Dvcell.softwareVersion=...
+         * the libCombine directory: -Djava.library.path=libcombine_java/<your-platform>
          
            for example:
            -Dvcell.installDir=G:\\dan\\jprojects\\git\\vcell
            -Dvcell.softwareVersion=DanDev_Version_7.0_build_99
+           -Djava.library.path=libcombine_java/win64
 
 
 
