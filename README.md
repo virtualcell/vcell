@@ -25,7 +25,8 @@ BioSimulations-compliant command-line interface to the [VCELL](http://vcell.org/
 5. Build `ojdbc6` and `ucp` by navigating into the respective directory and executing command inside `install_to_local_maven_repo.txt`.
 NOTE: The above command should install the jar files for `ojdbc6` and `ucp` in local m2 repo. In case Intellij IDEA doesn't recognise them, do the below step:
 Go to `File` > `Project Structure...` > `Libraries` > `+` and then browse the built jar file in `target` folder.
-6. For creating Run/Debug Configurations:
+6. Run `mvn clean install dependency:copy-dependencies`
+7. For creating Run/Debug Configurations:
 	* Go to `Run/Debug Configurations` > `+` > select `Application`
 	* Name it `VCell-CLI`
 	* Now setup the configuration
