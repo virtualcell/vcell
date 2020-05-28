@@ -30,6 +30,11 @@ public class OmexHandler {
         }
         this.omexPath = omexPath;
         this.outDirPath = outDir;
+
+        if (!new File(omexPath).exists()) {
+            System.err.println("Provided Omex is not present");
+            System.exit(1);
+        }
         int indexOfLastSlash = omexPath.lastIndexOf("/");
         this.omexName = omexPath.substring(indexOfLastSlash + 1);
 
@@ -38,6 +43,7 @@ public class OmexHandler {
 
         this.archive = new CombineArchive();
         boolean isInitialized = archive.initializeFromArchive(omexPath);
+
         if(!isInitialized) {
             System.err.println("Unable to initialise omex archive, archive maybe corrupted");
             System.exit(1);

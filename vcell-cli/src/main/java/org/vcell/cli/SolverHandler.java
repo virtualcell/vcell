@@ -67,7 +67,7 @@ public class SolverHandler {
             ODESolverResultSet odeSolverResultSet = IDAHelper.solve(outputDir, sedmlTask.getId(), bioModel);
             System.out.println("Finished: " + docName + ": - task '" + sedmlTask.getId() + "'.");
         } else if (SolverDescription.RungeKuttaFehlberg.getKisao().contentEquals(kisao)){
-            RungeKuttaFelhbergHelper.solve(outputDir, sedmlTask.getId(), bioModel);
+            ODESolverResultSet odeSolverResultSet = RungeKuttaFelhbergHelper.solve(outputDir, sedmlTask.getId(), bioModel);
             System.out.println("Finished: " + docName + ": - task '" + sedmlTask.getId() + "'.");
         } else {
             System.out.println("Unsupported solver: " + kisao);
