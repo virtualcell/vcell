@@ -110,6 +110,11 @@
             <artifactId>vcell-vmicro</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.vcell</groupId>
+            <artifactId>vcell-admin</artifactId>
+            <version>${project.version}</version>
+        </dependency>
 <!--        <dependency>-->
 <!--            <groupId>org.vcell</groupId>-->
 <!--            <artifactId>vcell-admin</artifactId>-->
@@ -134,6 +139,60 @@
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
             <version>2.9.8</version>
+        </dependency>
+        <dependency>
+            <groupId>org.vcell</groupId>
+            <artifactId>vcell-admin</artifactId>
+            <version>11.2.0.4</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.vcell</groupId>
+            <artifactId>vcell-admin</artifactId>
+            <version>11.2.0.4</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.vcell</groupId>
+            <artifactId>vcell-admin</artifactId>
+            <version>11.2.0.4</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.vcell</groupId>
+            <artifactId>vcell-admin</artifactId>
+            <version>11.2.0.4</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.vcell</groupId>
+            <artifactId>vcell-admin</artifactId>
+            <version>11.2.0.4</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.vcell</groupId>
+            <artifactId>vcell-admin</artifactId>
+            <version>11.2.0.4</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.vcell</groupId>
+            <artifactId>vcell-admin</artifactId>
+            <version>11.2.0.4</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.vcell</groupId>
+            <artifactId>vcell-admin</artifactId>
+            <version>11.2.0.4</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.vcell</groupId>
+            <artifactId>vcell-admin</artifactId>
+            <version>11.2.0.4</version>
+            <scope>compile</scope>
         </dependency>
     </dependencies>
 
