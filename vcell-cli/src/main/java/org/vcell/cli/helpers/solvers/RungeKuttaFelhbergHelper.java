@@ -213,13 +213,15 @@ public class RungeKuttaFelhbergHelper {
         }
 
         TimeSeriesMultitrialData sampleDataDeterministic = new TimeSeriesMultitrialData(taskId,varNames, sampleTimes, 1);
-//            timeSeriesMultitrialData.addDataSet(odeSimData,trialIndex);
-
         try {
-            StochtestFileUtils.writeData(sampleDataDeterministic, Paths.get(outDir.toString(), sampleDataDeterministic.datasetName+".json").toFile());
-        } catch (IOException e) {
+            sampleDataDeterministic.addDataSet(odeSimData, 0);
+        } catch (ExpressionException e) {
             e.printStackTrace();
         }
+//            timeSeriesMultitrialData.addDataSet(odeSimData,trialIndex);
+
+
+        CLIUtils.saveTimeSeriesMultitrialDataAsCSV(sampleDataDeterministic, outDir);
         return odeSimData;
     }
 }

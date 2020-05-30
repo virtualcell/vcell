@@ -1,8 +1,11 @@
 package org.vcell.cli;
 
 import com.google.common.io.Files;
+import org.vcell.stochtest.TimeSeriesMultitrialData;
 
 import java.io.*;
+import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Objects;
 
 public class CLIUtils {
@@ -47,6 +50,66 @@ public class CLIUtils {
         if (!f.delete()) {
             throw new FileNotFoundException("Failed to delete file: " + f);
         }
+    }
+
+    public static void saveTimeSeriesMultitrialDataAsCSV(TimeSeriesMultitrialData data, File outDir) {
+        File outFile = Paths.get(outDir.toString(), data.datasetName + ".csv").toFile();
+        int numberOfRows = data.times.length;
+        int numberOfVariables = data.varNames.length;
+        // Headers for CSV
+        ArrayList<String> headersList = new ArrayList<>();
+        headersList.add("times");
+        for(String varName: data.varNames) {
+            headersList.add(varName);
+        }
+
+        // Complete rows for CSV
+        ArrayList<ArrayList<Double>> allRows = new ArrayList<>();
+
+        for(int rowCounter = 0; rowCounter < numberOfRows; rowCounter++) {
+            ArrayList<Double> row = new ArrayList<>();
+            row.add(data.times[rowCounter]);
+
+            for(int varCounter = 0; varCounter < numberOfVariables; varCounter++) {
+                row.add(data.data[varCounter][rowCounter][0]);
+            }
+
+            allRows.add(row);
+
+        }
+
+        // Writing CSV in string buffer
+        StringBuilder headersBuilder = new StringBuilder();
+
+        for(String headerName: headersList) {
+            headersBuilder.append(headerName);
+            headersBuilder.append(",");
+        }
+
+
+        String headers = headersBuilder.replace(headersBuilder.length() - 1, headersBuilder.length(), "\n").toString();
+
+        StringBuilder allRowsBuilder = new StringBuilder(headers);
+
+        for(ArrayList<Double> rowValues: allRows) {
+            StringBuilder rowBuilder = new StringBuilder();
+            for(Double val: rowValues) {
+                rowBuilder.append(val);
+                rowBuilder.append(",");
+            }
+            allRowsBuilder.append(rowBuilder.replace(rowBuilder.length() - 1, rowBuilder.length(), "\n").toString());
+        }
+
+        String csvAsString = allRowsBuilder.toString();
+
+        try {
+            PrintWriter out = new PrintWriter(outFile);
+            out.print(csvAsString);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+
+
     }
 
     public static void convertIDAtoCSV(File f) {
