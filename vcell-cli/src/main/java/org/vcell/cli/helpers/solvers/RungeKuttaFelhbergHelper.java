@@ -16,6 +16,8 @@ import cbit.vcell.solver.ode.*;
 import cbit.vcell.solver.server.*;
 import org.vcell.cli.CLIUtils;
 import org.vcell.cli.helpers.sbml.SBMLSolverHelper;
+import org.vcell.stochtest.StochtestFileUtils;
+import org.vcell.stochtest.TimeSeriesMultitrialData;
 import org.vcell.util.ClientTaskStatusSupport;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ObjectNotFoundException;
@@ -27,6 +29,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -42,11 +45,7 @@ public class RungeKuttaFelhbergHelper {
 
         Simulation sim = new TempSimulation(bioModel.getSimulation(0), false);
         SimulationContext simContext = null;
-        try {
-            simContext = bioModel.getSimulationContext(sim);
-        } catch (ObjectNotFoundException e) {
-            e.printStackTrace();
-        }
+        simContext = bioModel.getSimulationContext(0);
 
         SimulationJob simJob = new SimulationJob(sim, 0, null);
         SimulationTask simTask = new SimulationTask(simJob, 0);
@@ -213,10 +212,14 @@ public class RungeKuttaFelhbergHelper {
             sampleTimes[i] = sampleTimeList.get(i);
         }
 
-        TimeSeriesMultitrialData sampleDataDeterministic = new TimeSeriesMultitrialData("determinstic",varNames, sampleTimes, 1);
+        TimeSeriesMultitrialData sampleDataDeterministic = new TimeSeriesMultitrialData(taskId,varNames, sampleTimes, 1);
 //            timeSeriesMultitrialData.addDataSet(odeSimData,trialIndex);
 
-
+        try {
+            StochtestFileUtils.writeData(sampleDataDeterministic, Paths.get(outDir.toString(), sampleDataDeterministic.datasetName+".json").toFile());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         return odeSimData;
     }
 }

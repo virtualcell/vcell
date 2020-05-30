@@ -110,11 +110,6 @@
             <artifactId>vcell-vmicro</artifactId>
             <version>${project.version}</version>
         </dependency>
-        <dependency>
-            <groupId>org.vcell</groupId>
-            <artifactId>vcell-admin</artifactId>
-            <version>${project.version}</version>
-        </dependency>
 <!--        <dependency>-->
 <!--            <groupId>org.vcell</groupId>-->
 <!--            <artifactId>vcell-admin</artifactId>-->
@@ -143,57 +138,10 @@
         <dependency>
             <groupId>org.vcell</groupId>
             <artifactId>vcell-admin</artifactId>
-            <version>11.2.0.4</version>
+            <version>${project.version}</version>
             <scope>compile</scope>
         </dependency>
-        <dependency>
-            <groupId>org.vcell</groupId>
-            <artifactId>vcell-admin</artifactId>
-            <version>11.2.0.4</version>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.vcell</groupId>
-            <artifactId>vcell-admin</artifactId>
-            <version>11.2.0.4</version>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.vcell</groupId>
-            <artifactId>vcell-admin</artifactId>
-            <version>11.2.0.4</version>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.vcell</groupId>
-            <artifactId>vcell-admin</artifactId>
-            <version>11.2.0.4</version>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.vcell</groupId>
-            <artifactId>vcell-admin</artifactId>
-            <version>11.2.0.4</version>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.vcell</groupId>
-            <artifactId>vcell-admin</artifactId>
-            <version>11.2.0.4</version>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.vcell</groupId>
-            <artifactId>vcell-admin</artifactId>
-            <version>11.2.0.4</version>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.vcell</groupId>
-            <artifactId>vcell-admin</artifactId>
-            <version>11.2.0.4</version>
-            <scope>compile</scope>
-        </dependency>
+
     </dependencies>
 
     <build>

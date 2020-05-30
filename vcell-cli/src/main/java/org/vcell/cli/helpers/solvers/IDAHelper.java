@@ -9,6 +9,7 @@ import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solver.SolverUtilities;
 import cbit.vcell.solver.ode.IDAFileWriter;
 import cbit.vcell.solver.ode.ODESolverResultSet;
+import org.vcell.cli.CLIUtils;
 import org.vcell.cli.helpers.sbml.SBMLSolverHelper;
 import org.vcell.util.exe.Executable;
 import org.vcell.util.exe.ExecutableException;
@@ -41,7 +42,7 @@ public class IDAHelper {
         }
 
         // use the idastandalone solver
-        File idaOutputFile = new File(outDir, taskId + SimDataConstants.IDA_DATA_EXTENSION);
+        File idaOutputFile = new File(outDir, taskId + ".csv");
         String executableName = null;
         try {
             executableName = SolverUtilities.getExes(SolverDescription.IDA)[0].getAbsolutePath();
@@ -55,6 +56,7 @@ public class IDAHelper {
             System.err.print("Unable to execute solver executable, failed with err: " + e.getMessage());
         }
         ODESolverResultSet odeSolverResultSet = SBMLSolverHelper.getODESolverResultSet(simJob, idaOutputFile.getPath());
+        CLIUtils.convertIDAtoCSV(idaOutputFile);
         return odeSolverResultSet;
     }
 }
