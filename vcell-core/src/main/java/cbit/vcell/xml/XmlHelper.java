@@ -28,6 +28,7 @@ import org.jdom.Element;
 import org.jdom.Namespace;
 import org.jdom.Text;
 import org.jlibsedml.AbstractTask;
+import org.jlibsedml.Algorithm;
 import org.jlibsedml.ArchiveComponents;
 import org.jlibsedml.DataGenerator;
 import org.jlibsedml.Libsedml;
@@ -607,7 +608,9 @@ public static String mathModelToXML(MathModel mathModel) throws XmlParseExceptio
         		throw new RuntimeException("Unexpected task " + selectedTask);
         	}
     		sedmlOriginalModelName = sedmlOriginalModel.getId();
-    		sedmlKisao = KisaoOntology.getInstance().getTermById(sedmlSimulation.getAlgorithm().getKisaoID());
+    		Algorithm algorithm = sedmlSimulation.getAlgorithm();
+    		String kisaoID = algorithm.getKisaoID();
+    		sedmlKisao = KisaoOntology.getInstance().getTermById(kisaoID);
         }
         
         // UniformTimeCourse [initialTime=0.0, numberOfPoints=1000, outputEndTime=1.0, outputStartTime=0.0, 
@@ -633,6 +636,21 @@ public static String mathModelToXML(MathModel mathModel) throws XmlParseExceptio
 				solverDescription = sd;
 				break;
 			}
+		}
+		
+		/* 
+		 * Kludge to fix the use of a very very old kisao ontology in jlibsedml
+		 * that is using kisao_rev28_vSat_Jan_24_18-58-35_2009_UTC-2.obo
+		 * (see KisaoTermParser in jlibsedml)
+		 * 
+		 * TODO: fix this in jlibsedml by using a more recent obo file
+		 * reference here: http://co.mbine.org/standards/kisao
+		 * 
+		 * TODO: a better last resort fix here is to make a search by KisaoID string if the solverDescription variable is null
+		 * and hope for an exact match; throw a meaningful exception if this also fails
+		 */
+		if(solverDescription == null && sedmlSimulation.getAlgorithm().getKisaoID().equalsIgnoreCase("KISAO:0000283")) {
+			solverDescription = SolverDescription.IDA;
 		}
 		
 		// find out everything else we need about the application we're going to use,
