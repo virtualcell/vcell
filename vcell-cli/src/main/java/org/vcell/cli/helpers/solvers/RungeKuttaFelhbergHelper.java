@@ -134,21 +134,21 @@ public class RungeKuttaFelhbergHelper {
 
         TimeSeriesMultitrialData sampleDataDeterministic = new TimeSeriesMultitrialData(taskId,varNames, sampleTimes, 1);
 
-        int numberOfDataPoints = sampleTimes.length;
-        int numberOfVariables = varNameList.size();
-
-        for (int varIndex = 0; varIndex < varNames.length; varIndex++) {
-
-            for(int timeIndex = 0; timeIndex < sampleTimes.length; timeIndex++) {
-                try {
-                    sampleDataDeterministic.data[varIndex][timeIndex][0] = simData.getSimDataBlock(null, varNames[varIndex], sampleTimes[timeIndex]).getData()[0];
-                } catch (DataAccessException e) {
-                    e.printStackTrace();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
+//        int numberOfDataPoints = sampleTimes.length;
+//        int numberOfVariables = varNameList.size();
+//
+//        for (int varIndex = 0; varIndex < varNames.length; varIndex++) {
+//
+//            for(int timeIndex = 0; timeIndex < sampleTimes.length; timeIndex++) {
+//                try {
+//                    sampleDataDeterministic.data[varIndex][timeIndex][0] = simData.getSimDataBlock(null, varNames[varIndex], sampleTimes[timeIndex]).getData()[0];
+//                } catch (DataAccessException e) {
+//                    e.printStackTrace();
+//                } catch (IOException e) {
+//                    e.printStackTrace();
+//                }
+//            }
+//        }
 //        try {
 //            sampleDataDeterministic.addDataSet(odeSimData, 0);
 //        } catch (ExpressionException e) {
