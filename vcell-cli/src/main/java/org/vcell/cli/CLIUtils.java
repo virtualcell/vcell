@@ -105,6 +105,7 @@ public class CLIUtils {
         try {
             PrintWriter out = new PrintWriter(outFile);
             out.print(csvAsString);
+            out.flush();
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }

@@ -58,100 +58,12 @@ public class RungeKuttaFelhbergHelper {
             e.printStackTrace();
         }
 
-//        ODESolverResultSet resultSet = null;
-        ClientTaskStatusSupport support = new ClientTaskStatusSupport() {
-            @Override
-            public void setMessage(String message) {
 
-            }
+        ODESimData odeSimData = null;
 
-            @Override
-            public void setProgress(int progress) {
-
-            }
-
-            @Override
-            public int getProgress() {
-                return 0;
-            }
-
-            @Override
-            public boolean isInterrupted() {
-                return false;
-            }
-
-            @Override
-            public void addProgressDialogListener(ProgressDialogListener progressDialogListener) {
-
-            }
-        };
-        ODESimData odeSimData;
-
-        //            Solver solver = new RungeKuttaFehlbergSolver(simTask, outDir);
-//
-//            solver.addSolverListener(new SolverListener() {
-//                public void solverStopped(SolverEvent event) {
-//                    support.setMessage(event.getSimulationMessage().getDisplayMessage());
-//                }
-//                public void solverStarting(SolverEvent event) {
-//                    String displayMessage = event.getSimulationMessage().getDisplayMessage();
-//                    System.out.println(displayMessage);
-//                    support.setMessage(displayMessage);
-//                    if(displayMessage.equals(SimulationMessage.MESSAGE_SOLVEREVENT_STARTING_INIT.getDisplayMessage())) {
-//                        support.setProgress(75);
-//                    } else if(displayMessage.equals(SimulationMessage.MESSAGE_SOLVER_RUNNING_INPUT_FILE.getDisplayMessage())) {
-//                        support.setProgress(90);
-//                    }
-//                }
-//                public void solverProgress(SolverEvent event) {
-//                    support.setMessage("Running...");
-//                    int progress = (int)(event.getProgress() * 100);
-//                    support.setProgress(progress);
-//                }
-//                public void solverPrinted(SolverEvent event) {
-//                    support.setMessage("Running...");
-//                }
-//                public void solverFinished(SolverEvent event) {
-//                    support.setMessage(event.getSimulationMessage().getDisplayMessage());
-//                }
-//                public void solverAborted(SolverEvent event) {
-//                    support.setMessage(event.getSimulationMessage().getDisplayMessage());
-//                }
-//            });
-//
-//            solver.startSolver();
-
-//                    newSolver.addSolverListener(new SolverListener() {
-//                public void solverStopped(SolverEvent event) {
-//                    support.setMessage(event.getSimulationMessage().getDisplayMessage());
-//                }
-//                public void solverStarting(SolverEvent event) {
-//                    String displayMessage = event.getSimulationMessage().getDisplayMessage();
-//                    System.out.println(displayMessage);
-//                    support.setMessage(displayMessage);
-//                    if(displayMessage.equals(SimulationMessage.MESSAGE_SOLVEREVENT_STARTING_INIT.getDisplayMessage())) {
-//                        support.setProgress(75);
-//                    } else if(displayMessage.equals(SimulationMessage.MESSAGE_SOLVER_RUNNING_INPUT_FILE.getDisplayMessage())) {
-//                        support.setProgress(90);
-//                    }
-//                }
-//                public void solverProgress(SolverEvent event) {
-//                    support.setMessage("Running...");
-//                    int progress = (int)(event.getProgress() * 100);
-//                    support.setProgress(progress);
-//                }
-//                public void solverPrinted(SolverEvent event) {
-//                    support.setMessage("Running...");
-//                }
-//                public void solverFinished(SolverEvent event) {
-//                    support.setMessage(event.getSimulationMessage().getDisplayMessage());
-//                }
-//                public void solverAborted(SolverEvent event) {
-//                    support.setMessage(event.getSimulationMessage().getDisplayMessage());
-//                }
-//            });
-
-        newSolver.startSolver();
+        if (newSolver != null) {
+            newSolver.startSolver();
+        }
         while (true){
             try {
                 Thread.sleep(250);
@@ -159,7 +71,10 @@ public class RungeKuttaFelhbergHelper {
                 e.printStackTrace();
             }
 
-            SolverStatus solverStatus = newSolver.getSolverStatus();
+            SolverStatus solverStatus = null;
+            if (newSolver != null) {
+                solverStatus = newSolver.getSolverStatus();
+            }
             if (solverStatus != null) {
                 if (solverStatus.getStatus() == SolverStatus.SOLVER_ABORTED) {
                     throw new RuntimeException(solverStatus.getSimulationMessage().getDisplayMessage());
@@ -174,20 +89,23 @@ public class RungeKuttaFelhbergHelper {
         SimulationData simData = null;
         try {
             simData = new SimulationData(simTask.getSimulationJob().getVCDataIdentifier(), outDir, null, null);
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (DataAccessException e) {
+        } catch (IOException | DataAccessException e) {
             e.printStackTrace();
         }
-        ODEDataBlock odeDataBlock = null;
-        try {
-            odeDataBlock = simData.getODEDataBlock();
-        } catch (DataAccessException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        odeSimData = odeDataBlock.getODESimData();
+//        ODEDataBlock odeDataBlock = null;
+//        try {
+//            if (simData != null) {
+//                odeDataBlock = simData.getODEDataBlock();
+//            }
+//        } catch (DataAccessException | IOException e) {
+//            e.printStackTrace();
+//        }
+//        if (odeDataBlock != null) {
+//            odeSimData = odeDataBlock.getODESimData();
+//        }
+
+
+
 
         ArrayList<String> varNameList = new ArrayList<String>();
         for (SpeciesContextSpec scs : simContext.getReactionContext().getSpeciesContextSpecs()){
@@ -212,12 +130,30 @@ public class RungeKuttaFelhbergHelper {
             sampleTimes[i] = sampleTimeList.get(i);
         }
 
+
+
         TimeSeriesMultitrialData sampleDataDeterministic = new TimeSeriesMultitrialData(taskId,varNames, sampleTimes, 1);
-        try {
-            sampleDataDeterministic.addDataSet(odeSimData, 0);
-        } catch (ExpressionException e) {
-            e.printStackTrace();
+
+        int numberOfDataPoints = sampleTimes.length;
+        int numberOfVariables = varNameList.size();
+
+        for (int varIndex = 0; varIndex < varNames.length; varIndex++) {
+
+            for(int timeIndex = 0; timeIndex < sampleTimes.length; timeIndex++) {
+                try {
+                    sampleDataDeterministic.data[varIndex][timeIndex][0] = simData.getSimDataBlock(null, varNames[varIndex], sampleTimes[timeIndex]).getData()[0];
+                } catch (DataAccessException e) {
+                    e.printStackTrace();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
         }
+//        try {
+//            sampleDataDeterministic.addDataSet(odeSimData, 0);
+//        } catch (ExpressionException e) {
+//            e.printStackTrace();
+//        }
 //            timeSeriesMultitrialData.addDataSet(odeSimData,trialIndex);
 
 
