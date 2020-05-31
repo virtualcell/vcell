@@ -10,6 +10,7 @@ branches:
   - develop
   - "/.*-[0-9]+\\..*/"
   - /^v\d+\.\d+\.\d+$/
+  - plugin_solvers
 before_install:
   - wget https://vcell.org/webstart/pipeline_files/jdk-8u241-linux-x64.tar.gz
   - wget https://vcell.org/webstart/pipeline_files/apache-maven-3.6.3-bin.tar.gz
