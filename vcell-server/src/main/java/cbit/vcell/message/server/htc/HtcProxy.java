@@ -249,6 +249,11 @@ public abstract class HtcProxy {
 	}
 	public static final boolean bDebugMemLimit = false;
 	public static MemLimitResults getMemoryLimit(String vcellUserid,KeyValue simID,SolverDescription solverDescription,double estimatedMemSizeMB) {
+		MemLimitResults memoryLimit0 = getMemoryLimit0(vcellUserid, simID, solverDescription, estimatedMemSizeMB);
+		memoryLimit0.memLimit = Math.max(memoryLimit0.memLimit,64); // Match 64M minimum in JavePreprocessor64 and JavaPostprocessor64 for slurm sbatch
+		return memoryLimit0;
+	}
+	private static MemLimitResults getMemoryLimit0(String vcellUserid,KeyValue simID,SolverDescription solverDescription,double estimatedMemSizeMB) {
 		//One of 5 limits are returned (ordered from highest to lowest priority):
 		//  MemoryMax:PerSimulation									Has PropertyLoader.simPerUserMemoryLimitFile, specific user AND simID MATCHED in file (userid MemLimitMb simID)
 		//  MemoryMax:PerUser										Has PropertyLoader.simPerUserMemoryLimitFile, specific user (but not simID) MATCHED in file (userid MemLimitMb '*')
