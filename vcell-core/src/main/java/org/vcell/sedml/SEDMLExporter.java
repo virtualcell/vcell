@@ -1047,7 +1047,7 @@ public class SEDMLExporter {
 
     public boolean createOmexArchive(String srcFolder, String sFileName) {
     try {
-		System.loadLibrary("combinej");
+		//System.loadLibrary("combinej");
 		CombineArchive archive = new CombineArchive();
 
     	
