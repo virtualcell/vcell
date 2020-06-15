@@ -19,7 +19,7 @@
 		<item> SBML format Level 1 Version 2 (.xml, .sbml) can be exported from a BioModel.</item>
 		<item> SBML format Level 2 Versions 1, 2, 3 4 (.xml, .sbml) can be exported from a BioModel.</item>
 		<item> SBML format Level 3 Version 1 (.xml, .sbml) can be exported from a BioModel.</item>
-		<item> SEDML format Level 1 Version 2 (.xml, .sedml, .sedx(archive) .omex(archive)) can be exported from a BioModel.</item>
+		<item> SEDML format Level 1 Version 2 (.xml, .sedml, .sedx(archive)) can be exported from a BioModel.</item>
 		<item> VCML format (.vcml) can be exported from a BioModel or MathModel.</item>
 		<item> MATLAB v5.0 ODE File (*.m) can be exported from a BioModel or MathModel.</item>
 		<item> MATLAB v6.0 ODE Function (*.m) can be exported from a BioModel or MathModel.</item>
