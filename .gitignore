@@ -22,5 +22,4 @@ ziptool
 .vagrant
 /update/
 /.checksums
-.DS_Store
-*.iml
+/.DS_Store
