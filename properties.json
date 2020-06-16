@@ -1,0 +1,279 @@
+{
+  "id": "VCell",
+  "name": "Virtual Cell",
+  "version": "7.2",
+  "description": "VCell (Virtual Cell) is a comprehensive platform for modeling cell biological systems that is built on a central database and disseminated as a standalone application",
+  "url": "http://vcell.org/",
+  "dockerHubImageId": "crbm/biosimulations_vcell:7.2",
+  "format": {
+    "name": "Docker Image",
+    "version": "1.2",
+    "spec_url": "https://github.com/moby/moby/blob/master/image/spec/v1.2.md"
+  },
+  "authors": [
+    {
+      "firstName": "Frank",
+      "lastName": "Morgan"
+    },
+    {
+      "firstName": "Dan",
+      "lastName": "Vasilescu"
+    },
+    {
+      "firstName": "Jim",
+      "lastName": "Scaff"
+    },
+    {
+      "firstName": "Ion",
+      "lastName": "Moraru"
+    },
+    {
+      "firstName": "Micheal",
+      "lastName": "Blinov"
+    },
+    {
+      "firstName": "Micheal",
+      "lastName": "Wilson"
+    },
+    {
+      "firstName": "Ann",
+      "lastName": "Cowan"
+    },
+    {
+      "firstName": "Leslie",
+      "lastName": "Loew"
+    }
+  ],
+  "references": [{
+    "title": "A general computational framework for modeling cellular structure and function",
+    "authors": "J Schaff, CC Fink, B Slepchenko, JH Carson, LM Leow",
+    "journal": "Biophysical journal",
+    "volume": "73",
+    "pages": "1135-1146",
+    "year": 1997,
+    "doi": "10.1016/S0006-3495(97)78146-3"
+  },
+  {
+    "title": "The Virtual Cell: A Software Environment for Computational Cell Biology",
+    "authors": "J Schaff, LM Leow",
+    "journal": "Trends Biotechnol.",
+    "volume": "19",
+    "pages": "401-406",
+    "year": 2001,
+    "doi": "10.1016/S0167-7799(01)01740-1"
+  },
+  {
+    "title": "Spatial Modeling of Cell Signaling Networks",
+    "authors": "Ann E. Cowan, Ion I. Moraru, James C. Scaff, Boris M. Slepchenko, Leslie M. Loew",
+    "journal": "Methods Cell Biol.",
+    "volume": "110",
+    "pages": "195-221",
+    "year": 2012,
+    "doi": "10.1016/B978-0-12-388403-9.00008-4"
+  },
+  {
+    "title": "The Virtual Cell Modeling and Simulation Software Environment",
+    "authors": "Ion I. Moraru, James C. Scaff, Boris M. Slepchenko, Micheal Blinov, Frank Morgan, Anuradha Lakshminaryana, Fei Gao, Ye Li, Leslie M. Loew",
+    "journal": "IET Syst Biol.",
+    "volume": "2",
+    "pages": "352-362",
+    "year": 2008,
+    "doi": "10.1049/iet-syb:20080102"
+  },
+  {
+    "title": "Compartmental and Spatial Rule-Based Modeling with Virtual Cell",
+    "authors": "Micheal L. Blinov, James C. Scaff, Dan Vasilescu, Ion I. Moraru, Judy E. Bloom, Leslie M. Loew",
+    "journal": "Biophys J.",
+    "volume": "113",
+    "pages": "1365-1372",
+    "year": 2017,
+    "doi": "10.1016/j.bpj.2017.08.022"
+  }
+  ],
+  "license": "MIT",
+  "algorithms": [
+    {
+      "id": "cvode",
+      "name": "C-language Variable-coefficient Ordinary Differential Equation solver",
+      "kisaoTerm": {
+        "ontology": "KISAO",
+        "id": "0000019",
+        "name": "CVODE",
+        "description": "The CVODE is a package written in C that solves ODE initial value problems, in real N-space, written as y'=f(t,y), y(t0)=y0. It is capable for stiff and non-stiff systems and uses two different linear multi-step methods, namely the Adam-Moulton [http://identifiers.org/biomodels.kisao/KISAO_0000280] method and the backward differentiation formula [http://identifiers.org/biomodels.kisao/KISAO_0000288]."
+      },
+      "ontologyTerms": [
+        {
+          "ontology": "KISAO",
+          "id": "0000433",
+          "name": "CVODE-like method",
+          "description": "Solves ODE initial value problems, in real N-space, written as y'=f(t,y), y(t0)=y0. It is capable for stiff and non-stiff systems and uses two different linear multi-step methods, namely the Adam-Moulton [http://identifiers.org/biomodels.kisao/KISAO_0000280] method and the backward differentiation formula [http://identifiers.org/biomodels.kisao/KISAO_0000288]."
+        }
+      ],
+      "modelingFrameworks": [
+        {
+          "ontology": "SBO",
+          "id": "0000293",
+          "name": "non-spatial continuous framework",
+          "description": "Modelling approach where the quantities of participants are considered continuous, and represented by real values. The associated simulation methods make use of differential equations. The models do not take into account the distribution of the entities and describe only the temporal fluxes.",
+          "iri": "http://biomodels.net/SBO/SBO_0000293"
+        }
+      ],
+      "modelFormats": [
+        {
+          "id": "SBML",
+          "name": "Systems Biology Markup Language",
+          "version": "L3V2",
+          "edamId": "format_2585",
+          "url": "http://sbml.org",
+          "specUrl": "http://identifiers.org/combine.specifications/sbml",
+          "mimeType": "application/sbml+xml",
+          "extension": "xml",
+          "sedUrn": "urn:sedml:language:sbml"
+        }
+      ],
+      "simulationFormats": [
+        {
+          "id": "SED-ML",
+          "name": "Simulation Experiment Description Markup Language",
+          "version": "L1V3",
+          "edamId": "format_3685",
+          "url": "https://sed-ml.org",
+          "specUrl": "http://identifiers.org/combine.specifications/sed-ml",
+          "mimeType": "application/xml",
+          "extension": "sedml"
+        }
+      ],
+      "archiveFormats": [
+        {
+          "id": "COMBINE",
+          "name": "COMBINE",
+          "version": "V1",
+          "edamId": "format_3686",
+          "url": "https://combinearchive.org/",
+          "specUrl": "http://identifiers.org/combine.specifications/omex",
+          "mimeType": "application/zip",
+          "extension": "omex"
+        }
+      ],
+      "references": [
+        {
+          "title": "CVODE, a stiff/nonstiff ODE solver in C",
+          "authors": "Scott D Cohen, Alan C Hindmarsh & and Paul F Dubois",
+          "journal": "Computers in Physics",
+          "volume": 10,
+          "issue": 2,
+          "pages": "138-143",
+          "year": 1996,
+          "doi": "10.1063/1.4822377"
+        }
+      ],
+      "parameters": [
+        {
+          "kisaoTerm": {
+            "ontology": "KISAO",
+            "id": "0000209",
+            "name": "relative tolerance",
+            "description": "This parameter is a numeric value specifying the desired relative tolerance the user wants to achieve. A smaller value means that the trajectory is calculated more accurately."
+          },
+          "id": "rel_tol",
+          "name": "Relative tolerance",
+          "type": "float",
+          "default": 0.000000001
+        }
+      ]
+    },
+    {
+      "id": "RungeKutta2",
+      "name": "Runge-Kutta (Second Order, Fixed Time Step)",
+      "kisaoTerm": {
+        "ontology": "KISAO",
+        "id": "0000064",
+        "name": "Runge-Kutta based method",
+        "description": "The Runge Kutta methods provide further systematic improvement in the spirit of the modified Euler method. Second order fixed time step method is also called the midpoint method."
+      },
+      "ontologyTerms": [
+        {
+          "ontology": "KISAO",
+          "id": "0000064",
+          "name": "Runge-Kutta based method",
+          "description": "A method of numerically integrating ordinary differential equations, which uses a sampling of slopes through an interval and takes a weighted average to determine the right end point. This averaging gives a very accurate approximation."
+        }
+      ],
+      "modelingFrameworks": [
+        {
+          "ontology": "SBO",
+          "id": "0000293",
+          "name": "non-spatial continuous framework",
+          "description": "Modelling approach where the quantities of participants are considered continuous, and represented by real values. The associated simulation methods make use of differential equations. The models do not take into account the distribution of the entities and describe only the temporal fluxes.",
+          "iri": "http://biomodels.net/SBO/SBO_0000293"
+        }
+      ],
+      "modelFormats": [
+        {
+          "id": "SBML",
+          "name": "Systems Biology Markup Language",
+          "version": "L3V2",
+          "edamId": "format_2585",
+          "url": "http://sbml.org",
+          "specUrl": "http://identifiers.org/combine.specifications/sbml",
+          "mimeType": "application/sbml+xml",
+          "extension": "xml",
+          "sedUrn": "urn:sedml:language:sbml"
+        }
+      ],
+      "simulationFormats": [
+        {
+          "id": "SED-ML",
+          "name": "Simulation Experiment Description Markup Language",
+          "version": "L1V3",
+          "edamId": "format_3685",
+          "url": "https://sed-ml.org",
+          "specUrl": "http://identifiers.org/combine.specifications/sed-ml",
+          "mimeType": "application/xml",
+          "extension": "sedml"
+        }
+      ],
+      "archiveFormats": [
+        {
+          "id": "COMBINE",
+          "name": "COMBINE",
+          "version": "V1",
+          "edamId": "format_3686",
+          "url": "https://combinearchive.org/",
+          "specUrl": "http://identifiers.org/combine.specifications/omex",
+          "mimeType": "application/zip",
+          "extension": "omex"
+        }
+      ],
+      "references": [
+        {
+          "title": "JOUR",
+          "authors": ".V, Parimala",
+          "journal": "International Journal of Science and Research (IJSR)",
+          "volume": 3,
+          "issue": 3,
+          "pages": "1-10",
+          "year": 1996,
+          "doi": ""
+        }
+      ],
+      "parameters": [
+        {
+          "kisaoTerm": {
+            "ontology": "KISAO",
+            "id": "0000064",
+            "name": "relative tolerance",
+            "description": "This parameter is a numeric value specifying the desired relative tolerance the user wants to achieve. A smaller value means that the trajectory is calculated more accurately."
+          },
+          "id": "rel_tol",
+          "name": "Relative tolerance",
+          "type": "float",
+          "default": 0.000000001
+        }
+      ]
+    },
+
+  ],
+  "created": "2020-06-16T12:00:00Z",
+  "updated": "2020-06-16T12:00:00Z"
+}
