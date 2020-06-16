@@ -247,14 +247,14 @@
       ],
       "references": [
         {
-          "title": "JOUR",
+          "title": "A Second Order Runge Kutta Method to Solve Fuzzy Differential Equations with Fuzzy Initial",
           "authors": ".V, Parimala",
           "journal": "International Journal of Science and Research (IJSR)",
           "volume": 3,
           "issue": 3,
           "pages": "1-10",
           "year": 1996,
-          "doi": ""
+          "doi": "2319-7064"
         }
       ],
       "parameters": [
@@ -262,6 +262,96 @@
           "kisaoTerm": {
             "ontology": "KISAO",
             "id": "0000064",
+            "name": "relative tolerance",
+            "description": "This parameter is a numeric value specifying the desired relative tolerance the user wants to achieve. A smaller value means that the trajectory is calculated more accurately."
+          },
+          "id": "rel_tol",
+          "name": "Relative tolerance",
+          "type": "float",
+          "default": 0.000000001
+        }
+      ]
+    },
+    {
+      "id": "ForwardEuler",
+      "name": "Forward Euler (First Order, Fixed Time Step)",
+      "kisaoTerm": {
+        "ontology": "KISAO",
+        "id": "0000030",
+        "name": "Runge-Kutta based method",
+        "description": "Forward Euler method is a fixed time step method to solve ordinary differential equations. "
+      },
+      "ontologyTerms": [
+        {
+          "ontology": "KISAO",
+          "id": "0000030",
+          "name": "Euler forward method",
+          "description": "The Euler method is an explicit one-step method for the numerical integration of ODES with a given initial value. The calculation of the next integration step at time t+1 is based on the state of the system at time point t."
+        }
+      ],
+      "modelingFrameworks": [
+        {
+          "ontology": "SBO",
+          "id": "0000293",
+          "name": "non-spatial continuous framework",
+          "description": "Modelling approach where the quantities of participants are considered continuous, and represented by real values. The associated simulation methods make use of differential equations. The models do not take into account the distribution of the entities and describe only the temporal fluxes.",
+          "iri": "http://biomodels.net/SBO/SBO_0000293"
+        }
+      ],
+      "modelFormats": [
+        {
+          "id": "SBML",
+          "name": "Systems Biology Markup Language",
+          "version": "L3V2",
+          "edamId": "format_2585",
+          "url": "http://sbml.org",
+          "specUrl": "http://identifiers.org/combine.specifications/sbml",
+          "mimeType": "application/sbml+xml",
+          "extension": "xml",
+          "sedUrn": "urn:sedml:language:sbml"
+        }
+      ],
+      "simulationFormats": [
+        {
+          "id": "SED-ML",
+          "name": "Simulation Experiment Description Markup Language",
+          "version": "L1V3",
+          "edamId": "format_3685",
+          "url": "https://sed-ml.org",
+          "specUrl": "http://identifiers.org/combine.specifications/sed-ml",
+          "mimeType": "application/xml",
+          "extension": "sedml"
+        }
+      ],
+      "archiveFormats": [
+        {
+          "id": "COMBINE",
+          "name": "COMBINE",
+          "version": "V1",
+          "edamId": "format_3686",
+          "url": "https://combinearchive.org/",
+          "specUrl": "http://identifiers.org/combine.specifications/omex",
+          "mimeType": "application/zip",
+          "extension": "omex"
+        }
+      ],
+      "references": [
+        {
+          "title": "Solving Reaction-Diffusion and Advection Problems with Richardon Extrapolation",
+          "authors": "Tamás Mona, István Lagzi, Ágnes Havasi",
+          "journal": "Journal of Chemistry",
+          "volume": 3,
+          "issue": 3,
+          "pages": "2-8",
+          "year": 2015,
+          "doi": "10.1155/2015/350362"
+        }
+      ],
+      "parameters": [
+        {
+          "kisaoTerm": {
+            "ontology": "KISAO",
+            "id": "0000030",
             "name": "relative tolerance",
             "description": "This parameter is a numeric value specifying the desired relative tolerance the user wants to achieve. A smaller value means that the trajectory is calculated more accurately."
           },

@@ -66,7 +66,7 @@ interface SolverLongDesc {
     static final String FORWARD_EULER = 
 		"<html>"
 	     + "<center><h3>DISPLAY_LABEL_TOKEN</h3></center>" +
-		"Forward Euler method is a fixed time step mehtod to solve ordinary differential equations. "+
+		"Forward Euler method is a fixed time step method to solve ordinary differential equations. "+
 		Description_PARAMETERS_TO_BE_SET +
 		"<ul>"+
 		"<li>" + Description_Start_Time + "</li>"+
