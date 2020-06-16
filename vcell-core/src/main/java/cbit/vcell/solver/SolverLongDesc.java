@@ -218,7 +218,7 @@ interface SolverLongDesc {
 	     + "<center><h3>DISPLAY_LABEL_TOKEN</h3></center>" +
 	     "Gibson-Bruck is an improved exact stochastic method based on Gllespie's SSA. It uses only a single random " +
 	     "number per simulation event and takes time proportional to the logarithm of the number of reactions. Better " +
-	     "performance is also acheived by utilizing a dependency graph and an indexed priority queue."+
+	     "performance is also achieved by utilizing a dependency graph and an indexed priority queue."+
 	     Description_PARAMETERS_TO_BE_SET +
 	     "<ul>" +
 		"<li>" + Description_Start_Time + "</li>"+
@@ -418,7 +418,7 @@ interface SolverLongDesc {
 	     + "represents partial differential equations as algebraic discretization equations which exactly preserves conservation laws. " 
 	     + "Similar to the finite difference method, values are calculated at discrete places on a meshed geometry.\n\n"
 	     + "This method employs Sundials stiff solver CVODE for time stepping (method of lines). " 
-	     + "Please note that relative and absolute tolerances affect the accuracy of time descritization only, therefore spatial discritization " 
+	     + "Please note that relative and absolute tolerances affect the accuracy of time discretization only, therefore spatial discritization "
 	     + "is the only significant source of solution error." +
 	     Description_PARAMETERS_TO_BE_SET +
 	     "<ul>" +

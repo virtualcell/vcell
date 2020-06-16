@@ -375,8 +375,8 @@
         {
           "ontology": "KISAO",
           "id": "0000032",
-          "name": "Euler forward method",
-          "description": "The Euler method is an explicit one-step method for the numerical integration of ODES with a given initial value. The calculation of the next integration step at time t+1 is based on the state of the system at time point t."
+          "name": "explicit fourth-order Runge-Kutta method",
+          "description": "The Runge-Kutta method is a method for the numerical integration of ODES with a given initial value. The calculation of the next integration step at time t+1 is based on the state of the system at time point t, plus the product of the size of the interval and an estimated slope. The slope is a weighted average of 4 single slope points (beginning of interval-midpoint-midpoint-end of interval)."
         }
       ],
       "modelingFrameworks": [
@@ -451,7 +451,936 @@
           "default": 0.000000001
         }
       ]
+    },
+    {
+      "id": "RungeKuttaFehlberg",
+      "name": "Runge-Kutta-Fehlberg (Fifth Order, Variable Time Step)",
+      "kisaoTerm": {
+        "ontology": "KISAO",
+        "id": "0000086",
+        "name": "Runge-Kutta based method",
+        "description": "The Runge-Kutta-Fehlberg integrator is primarily designed to solve non-stiff and mildly stiff differential equations when derivative evaluations are inexpensive. It should generally not be used when the user is demanding high accuracy. It is a variable time step method."
+      },
+      "ontologyTerms": [
+        {
+          "ontology": "KISAO",
+          "id": "0000086",
+          "name": "Fehlberg method",
+          "description": "The method was developed by the German mathematician Erwin Fehlberg and is based on the class of Runge-Kutta methods. The Runge-Kutta-Fehlberg method uses an O(h4) method together with an O(h5) method that uses all of the points of the O(h4) method, and hence is often referred to as an RKF45 method. Similar schemes with different orders have since been developed. By performing one extra calculation that would be required for an RK5 method, the error in the solution can be estimated and controlled and an appropriate step size can be determined automatically, making this method efficient for ordinary problems of automated numerical integration of ordinary differential equations."
+        }
+      ],
+      "modelingFrameworks": [
+        {
+          "ontology": "SBO",
+          "id": "0000293",
+          "name": "non-spatial continuous framework",
+          "description": "Modelling approach where the quantities of participants are considered continuous, and represented by real values. The associated simulation methods make use of differential equations. The models do not take into account the distribution of the entities and describe only the temporal fluxes.",
+          "iri": "http://biomodels.net/SBO/SBO_0000293"
+        }
+      ],
+      "modelFormats": [
+        {
+          "id": "SBML",
+          "name": "Systems Biology Markup Language",
+          "version": "L3V2",
+          "edamId": "format_2585",
+          "url": "http://sbml.org",
+          "specUrl": "http://identifiers.org/combine.specifications/sbml",
+          "mimeType": "application/sbml+xml",
+          "extension": "xml",
+          "sedUrn": "urn:sedml:language:sbml"
+        }
+      ],
+      "simulationFormats": [
+        {
+          "id": "SED-ML",
+          "name": "Simulation Experiment Description Markup Language",
+          "version": "L1V3",
+          "edamId": "format_3685",
+          "url": "https://sed-ml.org",
+          "specUrl": "http://identifiers.org/combine.specifications/sed-ml",
+          "mimeType": "application/xml",
+          "extension": "sedml"
+        }
+      ],
+      "archiveFormats": [
+        {
+          "id": "COMBINE",
+          "name": "COMBINE",
+          "version": "V1",
+          "edamId": "format_3686",
+          "url": "https://combinearchive.org/",
+          "specUrl": "http://identifiers.org/combine.specifications/omex",
+          "mimeType": "application/zip",
+          "extension": "omex"
+        }
+      ],
+      "references": [
+        {
+          "title": "Optimum Runge-Kutta Fehlberg Methods for First Order Differential Equations",
+          "authors": "R.K. Jain, M.K. Jain",
+          "journal": "IMA Journal of Applied Mathematics",
+          "volume": 8,
+          "issue": 3,
+          "pages": "386-396",
+          "year": 1971,
+          "doi": "10.1093/imamat/8.3.386"
+        }
+      ],
+      "parameters": [
+        {
+          "kisaoTerm": {
+            "ontology": "KISAO",
+            "id": "0000086",
+            "name": "relative tolerance",
+            "description": "This parameter is a numeric value specifying the desired relative tolerance the user wants to achieve. A smaller value means that the trajectory is calculated more accurately."
+          },
+          "id": "rel_tol",
+          "name": "Relative tolerance",
+          "type": "float",
+          "default": 0.000000001
+        }
+      ]
+    },
+    {
+      "id": "AdamsMoulton",
+      "name": "Adams-Moulton (Fifth Order, Fixed Time Step)",
+      "kisaoTerm": {
+        "ontology": "KISAO",
+        "id": "0000280",
+        "name": "Adams-Moulton 5th",
+        "description": "The methods such as Foward Euler, Runge-Kutta etc. are called single-step methods because they use only the information from one previous point to compute the successive point. Adams-Moulton methods are explicit linear multistep methods that depend on multiple previous solution points to generate a new approximate solution point. It is a fixed time step method."
+      },
+      "ontologyTerms": [
+        {
+          "ontology": "KISAO",
+          "id": "0000280",
+          "name": "Adams-Moulton method",
+          "description": "The (k-1)-step Adams-Moulton method is an implicit linear multistep method that iteratively approximates the solution, y(x) at x = x0+kh, of the initial value problem by yk = yk - 1 + h * ( b0 f(xk,yk) + b1 f(xk - 1,yk - 1) + . . . + bk - 1 f(x1,y1) ), where b1, . . . , bk - 1 are constants."
+        }
+      ],
+      "modelingFrameworks": [
+        {
+          "ontology": "SBO",
+          "id": "0000293",
+          "name": "non-spatial continuous framework",
+          "description": "Modelling approach where the quantities of participants are considered continuous, and represented by real values. The associated simulation methods make use of differential equations. The models do not take into account the distribution of the entities and describe only the temporal fluxes.",
+          "iri": "http://biomodels.net/SBO/SBO_0000293"
+        }
+      ],
+      "modelFormats": [
+        {
+          "id": "SBML",
+          "name": "Systems Biology Markup Language",
+          "version": "L3V2",
+          "edamId": "format_2585",
+          "url": "http://sbml.org",
+          "specUrl": "http://identifiers.org/combine.specifications/sbml",
+          "mimeType": "application/sbml+xml",
+          "extension": "xml",
+          "sedUrn": "urn:sedml:language:sbml"
+        }
+      ],
+      "simulationFormats": [
+        {
+          "id": "SED-ML",
+          "name": "Simulation Experiment Description Markup Language",
+          "version": "L1V3",
+          "edamId": "format_3685",
+          "url": "https://sed-ml.org",
+          "specUrl": "http://identifiers.org/combine.specifications/sed-ml",
+          "mimeType": "application/xml",
+          "extension": "sedml"
+        }
+      ],
+      "archiveFormats": [
+        {
+          "id": "COMBINE",
+          "name": "COMBINE",
+          "version": "V1",
+          "edamId": "format_3686",
+          "url": "https://combinearchive.org/",
+          "specUrl": "http://identifiers.org/combine.specifications/omex",
+          "mimeType": "application/zip",
+          "extension": "omex"
+        }
+      ],
+      "references": [
+        {
+          "title": "Solving Implicit Equations Arising from Adams-Moulton Methods",
+          "authors": "Tian Min Han, Yuhuan Han",
+          "journal": "BIT Numerical Mathematics volume",
+          "volume": 42,
+          "issue": 2,
+          "pages": "336-350",
+          "year": 2002,
+          "doi": "10.1023/A:1021951025649"
+        }
+      ],
+      "parameters": [
+        {
+          "kisaoTerm": {
+            "ontology": "KISAO",
+            "id": "0000280",
+            "name": "relative tolerance",
+            "description": "This parameter is a numeric value specifying the desired relative tolerance the user wants to achieve. A smaller value means that the trajectory is calculated more accurately."
+          },
+          "id": "rel_tol",
+          "name": "Relative tolerance",
+          "type": "float",
+          "default": 0.000000001
+        }
+      ]
+    },
+    {
+      "id": "IDA",
+      "name": "IDA (Variable Order, Variable Time Step, ODE/DAE)",
+      "kisaoTerm": {
+        "ontology": "KISAO",
+        "id": "0000283",
+        "name": "IDA",
+        "description": "IDA addresses systems of differential-algebraic equations (DAEs), and uses Backward Differentiation Formula methods. ODEs are a subset of DAEs, therefore IDA may be used for solving ODEs."
+      },
+      "ontologyTerms": [
+        {
+          "ontology": "KISAO",
+          "id": "0000280",
+          "name": "IDA",
+          "description": "IDA solves real differential-algebraic systems in N-space, in the general form F(t,y,y')=0, y(t0)=y0, y'(t0)=y'0. At each step, a Newton iteration [http://identifiers.org/biomodels.kisao/KISAO_0000408] leads to linear systems Jx=b, which are solved by one of five methods - two direct (dense or band; serial version only) and three Krylov [http://identifiers.org/biomodels.kisao/KISAO_0000354] (GMRES [http://identifiers.org/biomodels.kisao/KISAO_0000353], BiCGStab [http://identifiers.org/biomodels.kisao/KISAO_0000392], or TFQMR [http://identifiers.org/biomodels.kisao/KISAO_0000396]). IDA is written in C, but derived from the package DASPK [http://identifiers.org/biomodels.kisao/KISAO_0000355] which is written in Fortran."
+        }
+      ],
+      "modelingFrameworks": [
+        {
+          "ontology": "SBO",
+          "id": "0000293",
+          "name": "non-spatial continuous framework",
+          "description": "Modelling approach where the quantities of participants are considered continuous, and represented by real values. The associated simulation methods make use of differential equations. The models do not take into account the distribution of the entities and describe only the temporal fluxes.",
+          "iri": "http://biomodels.net/SBO/SBO_0000293"
+        }
+      ],
+      "modelFormats": [
+        {
+          "id": "SBML",
+          "name": "Systems Biology Markup Language",
+          "version": "L3V2",
+          "edamId": "format_2585",
+          "url": "http://sbml.org",
+          "specUrl": "http://identifiers.org/combine.specifications/sbml",
+          "mimeType": "application/sbml+xml",
+          "extension": "xml",
+          "sedUrn": "urn:sedml:language:sbml"
+        }
+      ],
+      "simulationFormats": [
+        {
+          "id": "SED-ML",
+          "name": "Simulation Experiment Description Markup Language",
+          "version": "L1V3",
+          "edamId": "format_3685",
+          "url": "https://sed-ml.org",
+          "specUrl": "http://identifiers.org/combine.specifications/sed-ml",
+          "mimeType": "application/xml",
+          "extension": "sedml"
+        }
+      ],
+      "archiveFormats": [
+        {
+          "id": "COMBINE",
+          "name": "COMBINE",
+          "version": "V1",
+          "edamId": "format_3686",
+          "url": "https://combinearchive.org/",
+          "specUrl": "http://identifiers.org/combine.specifications/omex",
+          "mimeType": "application/zip",
+          "extension": "omex"
+        }
+      ],
+      "references": [
+        {
+          "title": "Solving differential–algebraic equation systems by means of index reduction methodology",
+          "authors": "Kim Sørensen, Thomas Condra, Niels Houbak",
+          "journal": "Simulation Modelling Practice and Theory",
+          "volume": 14,
+          "issue": 3,
+          "pages": "224-236",
+          "year": 2006,
+          "doi": "10.1016/j.simpat.2005.05.002"
+        }
+      ],
+      "parameters": [
+        {
+          "kisaoTerm": {
+            "ontology": "KISAO",
+            "id": "0000283",
+            "name": "relative tolerance",
+            "description": "This parameter is a numeric value specifying the desired relative tolerance the user wants to achieve. A smaller value means that the trajectory is calculated more accurately."
+          },
+          "id": "rel_tol",
+          "name": "Relative tolerance",
+          "type": "float",
+          "default": 0.000000001
+        }
+      ]
+    },
+    {
+      "id": "StochGibson",
+      "name": "Gibson (Next Reaction Stochastic Method)",
+      "kisaoTerm": {
+        "ontology": "KISAO",
+        "id": "0000027",
+        "name": "Gibson",
+        "description": "Gibson-Bruck is an improved exact stochastic method based on Gllespie's SSA. It uses only a single random number per simulation event and takes time proportional to the logarithm of the number of reactions. Better performance is also achieved by utilizing a dependency graph and an indexed priority queue."
+      },
+      "ontologyTerms": [
+        {
+          "ontology": "KISAO",
+          "id": "0000027",
+          "name": "Gibson-Bruck next reaction algorithm",
+          "description": "As with the first reaction method [http://identifiers.org/biomodels.kisao/KISAO_0000015], a putative reaction time is calculated for each reaction, and the reaction with the shortest reaction time will be realized. However, the unused calculated reaction times are not wasted. The set of reactions is organized in a priority queue to allow for the efficient search for the fastest reaction. In addition, by using a so-called dependency graph only those reaction times are recalculated in each step, that are dependent on the reaction, which has been realized."
+        }
+      ],
+      "modelingFrameworks": [
+        {
+          "ontology": "SBO",
+          "id": "0000293",
+          "name": "non-spatial continuous framework",
+          "description": "Modelling approach where the quantities of participants are considered continuous, and represented by real values. The associated simulation methods make use of differential equations. The models do not take into account the distribution of the entities and describe only the temporal fluxes.",
+          "iri": "http://biomodels.net/SBO/SBO_0000293"
+        }
+      ],
+      "modelFormats": [
+        {
+          "id": "SBML",
+          "name": "Systems Biology Markup Language",
+          "version": "L3V2",
+          "edamId": "format_2585",
+          "url": "http://sbml.org",
+          "specUrl": "http://identifiers.org/combine.specifications/sbml",
+          "mimeType": "application/sbml+xml",
+          "extension": "xml",
+          "sedUrn": "urn:sedml:language:sbml"
+        }
+      ],
+      "simulationFormats": [
+        {
+          "id": "SED-ML",
+          "name": "Simulation Experiment Description Markup Language",
+          "version": "L1V3",
+          "edamId": "format_3685",
+          "url": "https://sed-ml.org",
+          "specUrl": "http://identifiers.org/combine.specifications/sed-ml",
+          "mimeType": "application/xml",
+          "extension": "sedml"
+        }
+      ],
+      "archiveFormats": [
+        {
+          "id": "COMBINE",
+          "name": "COMBINE",
+          "version": "V1",
+          "edamId": "format_3686",
+          "url": "https://combinearchive.org/",
+          "specUrl": "http://identifiers.org/combine.specifications/omex",
+          "mimeType": "application/zip",
+          "extension": "omex"
+        }
+      ],
+      "references": [
+        {
+          "title": "Efficient Exact Stochastic Simulation of Chemical Systems with Many Species and Many Channels",
+          "authors": "Micheal A. Gibson, Jehoshua Bruck",
+          "journal": "J. Phys. Chem. A",
+          "volume": 104,
+          "issue": 9,
+          "pages": "1876-1889",
+          "year": 2000,
+          "doi": "10.1021/jp993732q"
+        }
+      ],
+      "parameters": [
+        {
+          "kisaoTerm": {
+            "ontology": "KISAO",
+            "id": "0000027",
+            "name": "relative tolerance",
+            "description": "This parameter is a numeric value specifying the desired relative tolerance the user wants to achieve. A smaller value means that the trajectory is calculated more accurately."
+          },
+          "id": "rel_tol",
+          "name": "Relative tolerance",
+          "type": "float",
+          "default": 0.000000001
+        }
+      ]
+    },
+    {
+      "id": "HybridEuler",
+      "name": "Hybrid (Gibson + Euler-Maruyama Method)",
+      "kisaoTerm": {
+        "ontology": "KISAO",
+        "id": "0000352",
+        "name": "Gibson + Euler-Maruyama",
+        "description": "This is a hybrid stochastic method. It partitions the system into subsets of fast and slow reactions and approximates the fast reactions as a continuous Markov process, using a chemical Langevin equation, and accurately describes the slow dynamics using the Gibson algorithm. Fixed time step Euler-Maruyama is used for approximate numerical solution of CLE."
+      },
+      "ontologyTerms": [
+        {
+          "ontology": "KISAO",
+          "id": "0000352",
+          "name": "hybrid method",
+          "description": "A simulation methods which combines the advantages of complementary simulation approaches: the whole system is subdivided into appropriate parts and different simulation methods operate on these parts at the same time."
+        }
+      ],
+      "modelingFrameworks": [
+        {
+          "ontology": "SBO",
+          "id": "0000293",
+          "name": "non-spatial continuous framework",
+          "description": "Modelling approach where the quantities of participants are considered continuous, and represented by real values. The associated simulation methods make use of differential equations. The models do not take into account the distribution of the entities and describe only the temporal fluxes.",
+          "iri": "http://biomodels.net/SBO/SBO_0000293"
+        }
+      ],
+      "modelFormats": [
+        {
+          "id": "SBML",
+          "name": "Systems Biology Markup Language",
+          "version": "L3V2",
+          "edamId": "format_2585",
+          "url": "http://sbml.org",
+          "specUrl": "http://identifiers.org/combine.specifications/sbml",
+          "mimeType": "application/sbml+xml",
+          "extension": "xml",
+          "sedUrn": "urn:sedml:language:sbml"
+        }
+      ],
+      "simulationFormats": [
+        {
+          "id": "SED-ML",
+          "name": "Simulation Experiment Description Markup Language",
+          "version": "L1V3",
+          "edamId": "format_3685",
+          "url": "https://sed-ml.org",
+          "specUrl": "http://identifiers.org/combine.specifications/sed-ml",
+          "mimeType": "application/xml",
+          "extension": "sedml"
+        }
+      ],
+      "archiveFormats": [
+        {
+          "id": "COMBINE",
+          "name": "COMBINE",
+          "version": "V1",
+          "edamId": "format_3686",
+          "url": "https://combinearchive.org/",
+          "specUrl": "http://identifiers.org/combine.specifications/omex",
+          "mimeType": "application/zip",
+          "extension": "omex"
+        }
+      ],
+      "references": [
+        {
+          "title": "An Euler–Maruyama method for diffusion equations with discontinuous coefficients and a family of interface conditions",
+          "authors": "Bokil Vrushali, Gibson Nathan, Nguyen S.L., Thomann E.A., Waymire Edward",
+          "journal": "Journal of Computational and Applied Mathematics",
+          "volume": 368,
+          "issue": "NA",
+          "pages": "112545",
+          "year": 2019,
+          "doi": "10.1016/j.cam.2019.112545"
+        }
+      ],
+      "parameters": [
+        {
+          "kisaoTerm": {
+            "ontology": "KISAO",
+            "id": "0000352",
+            "name": "relative tolerance",
+            "description": "This parameter is a numeric value specifying the desired relative tolerance the user wants to achieve. A smaller value means that the trajectory is calculated more accurately."
+          },
+          "id": "rel_tol",
+          "name": "Relative tolerance",
+          "type": "float",
+          "default": 0.000000001
+        }
+      ]
+    },
+    {
+      "id": "HybridMilstein",
+      "name": "Hybrid (Gibson + Milstein Method)",
+      "kisaoTerm": {
+        "ontology": "KISAO",
+        "id": "0000352",
+        "name": "Gibson + Milstein",
+        "description": "This is a hybrid stochastic method. It partitions the system into subsets of fast and slow reactions and approximates the fast reactions as a continuous Markov process, using a chemical Langevin equation, and accurately describes the slow dynamics using the Gibson algorithm. Adaptive time step Milstein is used for approximate numerical solution of CLE."
+      },
+      "ontologyTerms": [
+        {
+          "ontology": "KISAO",
+          "id": "0000352",
+          "name": "hybrid method",
+          "description": "A simulation methods which combines the advantages of complementary simulation approaches: the whole system is subdivided into appropriate parts and different simulation methods operate on these parts at the same time."
+        }
+      ],
+      "modelingFrameworks": [
+        {
+          "ontology": "SBO",
+          "id": "0000293",
+          "name": "non-spatial continuous framework",
+          "description": "Modelling approach where the quantities of participants are considered continuous, and represented by real values. The associated simulation methods make use of differential equations. The models do not take into account the distribution of the entities and describe only the temporal fluxes.",
+          "iri": "http://biomodels.net/SBO/SBO_0000293"
+        }
+      ],
+      "modelFormats": [
+        {
+          "id": "SBML",
+          "name": "Systems Biology Markup Language",
+          "version": "L3V2",
+          "edamId": "format_2585",
+          "url": "http://sbml.org",
+          "specUrl": "http://identifiers.org/combine.specifications/sbml",
+          "mimeType": "application/sbml+xml",
+          "extension": "xml",
+          "sedUrn": "urn:sedml:language:sbml"
+        }
+      ],
+      "simulationFormats": [
+        {
+          "id": "SED-ML",
+          "name": "Simulation Experiment Description Markup Language",
+          "version": "L1V3",
+          "edamId": "format_3685",
+          "url": "https://sed-ml.org",
+          "specUrl": "http://identifiers.org/combine.specifications/sed-ml",
+          "mimeType": "application/xml",
+          "extension": "sedml"
+        }
+      ],
+      "archiveFormats": [
+        {
+          "id": "COMBINE",
+          "name": "COMBINE",
+          "version": "V1",
+          "edamId": "format_3686",
+          "url": "https://combinearchive.org/",
+          "specUrl": "http://identifiers.org/combine.specifications/omex",
+          "mimeType": "application/zip",
+          "extension": "omex"
+        }
+      ],
+      "references": [
+        {
+          "title": "A randomized Milstein method for stochastic differential equations with non-differentiable drift coefficients",
+          "authors": "Raphel Kruse, Yue Wu",
+          "journal": "Discrete & Continuous Dynamical Systems",
+          "volume": 24,
+          "issue": 8,
+          "pages": "3475-3502",
+          "year": 2010,
+          "doi": "10.3934/dcdsb.2018253"
+        }
+      ],
+      "parameters": [
+        {
+          "kisaoTerm": {
+            "ontology": "KISAO",
+            "id": "0000352",
+            "name": "relative tolerance",
+            "description": "This parameter is a numeric value specifying the desired relative tolerance the user wants to achieve. A smaller value means that the trajectory is calculated more accurately."
+          },
+          "id": "rel_tol",
+          "name": "Relative tolerance",
+          "type": "float",
+          "default": 0.000000001
+        }
+      ]
+    },
+    {
+      "id": "FiniteVolumeStandalone",
+      "name": "Semi-Implicit Finite Volume-Particle Hybrid, Regular Grid (Fixed Time Step)",
+      "kisaoTerm": {
+        "ontology": "KISAO",
+        "id": "0000285",
+        "name": "Semi-Implicit",
+        "description": "This is our interpreted standalone version of the finite volume method. It is a little slower but gives better error messages. The finite volume method is a method for representing and evaluating partial differential equations as algebraic discretization equations which exactly preserves conservation laws. Similar to the finite difference method, values are calculated at discrete places on a meshed geometry."
+      },
+      "ontologyTerms": [
+        {
+          "ontology": "KISAO",
+          "id": "0000285",
+          "name": "finite volume method",
+          "description": "The finite volume method is a method for representing and evaluating partial differential equations in the form of algebraic equations, which attempts to emulate continuous conservation laws of physics."
+        }
+      ],
+      "modelingFrameworks": [
+        {
+          "ontology": "SBO",
+          "id": "0000293",
+          "name": "non-spatial continuous framework",
+          "description": "Modelling approach where the quantities of participants are considered continuous, and represented by real values. The associated simulation methods make use of differential equations. The models do not take into account the distribution of the entities and describe only the temporal fluxes.",
+          "iri": "http://biomodels.net/SBO/SBO_0000293"
+        }
+      ],
+      "modelFormats": [
+        {
+          "id": "SBML",
+          "name": "Systems Biology Markup Language",
+          "version": "L3V2",
+          "edamId": "format_2585",
+          "url": "http://sbml.org",
+          "specUrl": "http://identifiers.org/combine.specifications/sbml",
+          "mimeType": "application/sbml+xml",
+          "extension": "xml",
+          "sedUrn": "urn:sedml:language:sbml"
+        }
+      ],
+      "simulationFormats": [
+        {
+          "id": "SED-ML",
+          "name": "Simulation Experiment Description Markup Language",
+          "version": "L1V3",
+          "edamId": "format_3685",
+          "url": "https://sed-ml.org",
+          "specUrl": "http://identifiers.org/combine.specifications/sed-ml",
+          "mimeType": "application/xml",
+          "extension": "sedml"
+        }
+      ],
+      "archiveFormats": [
+        {
+          "id": "COMBINE",
+          "name": "COMBINE",
+          "version": "V1",
+          "edamId": "format_3686",
+          "url": "https://combinearchive.org/",
+          "specUrl": "http://identifiers.org/combine.specifications/omex",
+          "mimeType": "application/zip",
+          "extension": "omex"
+        }
+      ],
+      "references": [
+        {
+          "title": "Handbook of Numerical Analysis",
+          "authors": "Robert Eymard, Gallouet Thierry, Raphaèle Herbin",
+          "journal": "Mathematisches Forschungsinstitut",
+          "volume": 7,
+          "issue": "NA",
+          "pages": "731-1018",
+          "year": 2000,
+          "doi": "NA"
+        }
+      ],
+      "parameters": [
+        {
+          "kisaoTerm": {
+            "ontology": "KISAO",
+            "id": "0000285",
+            "name": "relative tolerance",
+            "description": "This parameter is a numeric value specifying the desired relative tolerance the user wants to achieve. A smaller value means that the trajectory is calculated more accurately."
+          },
+          "id": "rel_tol",
+          "name": "Relative tolerance",
+          "type": "float",
+          "default": 0.000000001
+        }
+      ]
+    },
+    {
+      "id": "Combined IDA/CVODE",
+      "name": "Combined Stiff Solver (IDA/CVODE)",
+      "kisaoTerm": {
+        "ontology": "KISAO",
+        "id": "0000019",
+        "name": "Combined IDA/CVODE",
+        "description": "This chooses between IDA and CVODE depending on the problem to be solved. CVODE is used for ordinary differential equation (ODE) systems; IDA is used for differential-algebraic equation (DAE) systems. VCell models with fast reactions (i.e. fast systems) are DAE systems. "
+      },
+      "ontologyTerms": [
+        {
+          "ontology": "KISAO",
+          "id": "0000280",
+          "name": "IDA",
+          "description": "IDA solves real differential-algebraic systems in N-space, in the general form F(t,y,y')=0, y(t0)=y0, y'(t0)=y'0. At each step, a Newton iteration [http://identifiers.org/biomodels.kisao/KISAO_0000408] leads to linear systems Jx=b, which are solved by one of five methods - two direct (dense or band; serial version only) and three Krylov [http://identifiers.org/biomodels.kisao/KISAO_0000354] (GMRES [http://identifiers.org/biomodels.kisao/KISAO_0000353], BiCGStab [http://identifiers.org/biomodels.kisao/KISAO_0000392], or TFQMR [http://identifiers.org/biomodels.kisao/KISAO_0000396]). IDA is written in C, but derived from the package DASPK [http://identifiers.org/biomodels.kisao/KISAO_0000355] which is written in Fortran."
+        },
+        {
+          "ontology": "KISAO",
+          "id": "0000433",
+          "name": "CVODE-like method",
+          "description": "Solves ODE initial value problems, in real N-space, written as y'=f(t,y), y(t0)=y0. It is capable for stiff and non-stiff systems and uses two different linear multi-step methods, namely the Adam-Moulton [http://identifiers.org/biomodels.kisao/KISAO_0000280] method and the backward differentiation formula [http://identifiers.org/biomodels.kisao/KISAO_0000288]."
+        }
+      ],
+      "modelingFrameworks": [
+        {
+          "ontology": "SBO",
+          "id": "0000293",
+          "name": "non-spatial continuous framework",
+          "description": "Modelling approach where the quantities of participants are considered continuous, and represented by real values. The associated simulation methods make use of differential equations. The models do not take into account the distribution of the entities and describe only the temporal fluxes.",
+          "iri": "http://biomodels.net/SBO/SBO_0000293"
+        }
+      ],
+      "modelFormats": [
+        {
+          "id": "SBML",
+          "name": "Systems Biology Markup Language",
+          "version": "L3V2",
+          "edamId": "format_2585",
+          "url": "http://sbml.org",
+          "specUrl": "http://identifiers.org/combine.specifications/sbml",
+          "mimeType": "application/sbml+xml",
+          "extension": "xml",
+          "sedUrn": "urn:sedml:language:sbml"
+        }
+      ],
+      "simulationFormats": [
+        {
+          "id": "SED-ML",
+          "name": "Simulation Experiment Description Markup Language",
+          "version": "L1V3",
+          "edamId": "format_3685",
+          "url": "https://sed-ml.org",
+          "specUrl": "http://identifiers.org/combine.specifications/sed-ml",
+          "mimeType": "application/xml",
+          "extension": "sedml"
+        }
+      ],
+      "archiveFormats": [
+        {
+          "id": "COMBINE",
+          "name": "COMBINE",
+          "version": "V1",
+          "edamId": "format_3686",
+          "url": "https://combinearchive.org/",
+          "specUrl": "http://identifiers.org/combine.specifications/omex",
+          "mimeType": "application/zip",
+          "extension": "omex"
+        }
+      ],
+      "references": [
+        {
+          "title": "CVODE, a stiff/nonstiff ODE solver in C",
+          "authors": "Scott D Cohen, Alan C Hindmarsh & and Paul F Dubois",
+          "journal": "Computers in Physics",
+          "volume": 10,
+          "issue": 2,
+          "pages": "138-143",
+          "year": 1996,
+          "doi": "10.1063/1.4822377"
+        },
+        {
+          "title": "Solving differential–algebraic equation systems by means of index reduction methodology",
+          "authors": "Kim Sørensen, Thomas Condra, Niels Houbak",
+          "journal": "Simulation Modelling Practice and Theory",
+          "volume": 14,
+          "issue": 3,
+          "pages": "224-236",
+          "year": 2006,
+          "doi": "10.1016/j.simpat.2005.05.002"
+        }
+      ],
+      "parameters": [
+        {
+          "kisaoTerm": {
+            "ontology": "KISAO",
+            "id": "0000285",
+            "name": "relative tolerance",
+            "description": "This parameter is a numeric value specifying the desired relative tolerance the user wants to achieve. A smaller value means that the trajectory is calculated more accurately."
+          },
+          "id": "rel_tol",
+          "name": "Relative tolerance",
+          "type": "float",
+          "default": 0.000000001
+        }
+      ]
+    },
+    {
+      "id": "SundialsPDE",
+      "name": "Fully-Implicit Finite Volume, Regular Grid (Variable Time Step)",
+      "kisaoTerm": {
+        "ontology": "KISAO",
+        "id": "0000285",
+        "name": "Fully-Implicit",
+        "description": "This is our fully implicit, adaptive time step finite volume method. The finite volume method represents partial differential equations as algebraic discretization equations which exactly preserves conservation laws. Similar to the finite difference method, values are calculated at discrete places on a meshed geometry. This method employs Sundials stiff solver CVODE for time stepping (method of lines). Please note that relative and absolute tolerances affect the accuracy of time descritization only, therefore spatial discretization is the only significant source of solution error."
+      },
+      "ontologyTerms": [
+        {
+          "ontology": "KISAO",
+          "id": "0000285",
+          "name": "finite volume method",
+          "description": "The finite volume method is a method for representing and evaluating partial differential equations in the form of algebraic equations, which attempts to emulate continuous conservation laws of physics."
+        }
+      ],
+      "modelingFrameworks": [
+        {
+          "ontology": "SBO",
+          "id": "0000293",
+          "name": "non-spatial continuous framework",
+          "description": "Modelling approach where the quantities of participants are considered continuous, and represented by real values. The associated simulation methods make use of differential equations. The models do not take into account the distribution of the entities and describe only the temporal fluxes.",
+          "iri": "http://biomodels.net/SBO/SBO_0000293"
+        }
+      ],
+      "modelFormats": [
+        {
+          "id": "SBML",
+          "name": "Systems Biology Markup Language",
+          "version": "L3V2",
+          "edamId": "format_2585",
+          "url": "http://sbml.org",
+          "specUrl": "http://identifiers.org/combine.specifications/sbml",
+          "mimeType": "application/sbml+xml",
+          "extension": "xml",
+          "sedUrn": "urn:sedml:language:sbml"
+        }
+      ],
+      "simulationFormats": [
+        {
+          "id": "SED-ML",
+          "name": "Simulation Experiment Description Markup Language",
+          "version": "L1V3",
+          "edamId": "format_3685",
+          "url": "https://sed-ml.org",
+          "specUrl": "http://identifiers.org/combine.specifications/sed-ml",
+          "mimeType": "application/xml",
+          "extension": "sedml"
+        }
+      ],
+      "archiveFormats": [
+        {
+          "id": "COMBINE",
+          "name": "COMBINE",
+          "version": "V1",
+          "edamId": "format_3686",
+          "url": "https://combinearchive.org/",
+          "specUrl": "http://identifiers.org/combine.specifications/omex",
+          "mimeType": "application/zip",
+          "extension": "omex"
+        }
+      ],
+      "references": [
+        {
+          "title": "Handbook of Numerical Analysis",
+          "authors": "Robert Eymard, Gallouet Thierry, Raphaèle Herbin",
+          "journal": "Mathematisches Forschungsinstitut",
+          "volume": 7,
+          "issue": "NA",
+          "pages": "731-1018",
+          "year": 2000,
+          "doi": "NA"
+        }
+      ],
+      "parameters": [
+        {
+          "kisaoTerm": {
+            "ontology": "KISAO",
+            "id": "0000285",
+            "name": "relative tolerance",
+            "description": "This parameter is a numeric value specifying the desired relative tolerance the user wants to achieve. A smaller value means that the trajectory is calculated more accurately."
+          },
+          "id": "rel_tol",
+          "name": "Relative tolerance",
+          "type": "float",
+          "default": 0.000000001
+        }
+      ]
+    },
+    {
+      "id": "Smoldyn",
+      "name": "Smoldyn (Spatial Stochastic Simulator)",
+      "kisaoTerm": {
+        "ontology": "KISAO",
+        "id": "0000057",
+        "name": "Brownian diffusion Smoluchowski method",
+        "description": "Smoldyn is a computer program for cell-scale biochemical simulations. It simulates each molecule of interest individually to capture natural stochasticity and for nanometer-scale spatial resolution. It treats other molecules implicity, so it can simulate tens of thousands of molecules over several minutes of real time. Simulated molecules diffuse, react, are confined by surfaces, and bind to membranes much as they would in a real biological system."
+      },
+      "ontologyTerms": [
+        {
+          "ontology": "KISAO",
+          "id": "0000056",
+          "name": "Brownian diffusion Smoluchowski method",
+          "description": "In the Brownian diffusion Smoluchowski method, each molecule is treated as a point-like particle that diffuses freely in three-dimensional space. When a pair of reactive molecules collide, such as an enzyme and its substrate, a reaction occurs and the simulated reactants are replaced by products. [..] Analytic solutions are presented for some simulation parameters while others are calculated using look-up tables''. Supported chemical processes include molecular diffusion, treatment of surfaces, zeroth-order-, unimolecular-, and bimolecular reactions."
+        },
+        {
+          "ontology": "KISAO",
+          "id": "0000057",
+          "name": "Brownian diffusion Smoluchowski method",
+          "description": "In the Brownian diffusion Smoluchowski method, each molecule is treated as a point-like particle that diffuses freely in three-dimensional space. When a pair of reactive molecules collide, such as an enzyme and its substrate, a reaction occurs and the simulated reactants are replaced by products. [..] Analytic solutions are presented for some simulation parameters while others are calculated using look-up tables''. Supported chemical processes include molecular diffusion, treatment of surfaces, zeroth-order-, unimolecular-, and bimolecular reactions."
+        },
+        {
+          "ontology": "KISAO",
+          "id": "0000056",
+          "name": "Smoluchowski equation based method",
+          "description": "Method based on the Smoluchowski equation."
+        }
+      ],
+      "modelingFrameworks": [
+        {
+          "ontology": "SBO",
+          "id": "0000293",
+          "name": "non-spatial continuous framework",
+          "description": "Modelling approach where the quantities of participants are considered continuous, and represented by real values. The associated simulation methods make use of differential equations. The models do not take into account the distribution of the entities and describe only the temporal fluxes.",
+          "iri": "http://biomodels.net/SBO/SBO_0000293"
+        }
+      ],
+      "modelFormats": [
+        {
+          "id": "SBML",
+          "name": "Systems Biology Markup Language",
+          "version": "L3V2",
+          "edamId": "format_2585",
+          "url": "http://sbml.org",
+          "specUrl": "http://identifiers.org/combine.specifications/sbml",
+          "mimeType": "application/sbml+xml",
+          "extension": "xml",
+          "sedUrn": "urn:sedml:language:sbml"
+        }
+      ],
+      "simulationFormats": [
+        {
+          "id": "SED-ML",
+          "name": "Simulation Experiment Description Markup Language",
+          "version": "L1V3",
+          "edamId": "format_3685",
+          "url": "https://sed-ml.org",
+          "specUrl": "http://identifiers.org/combine.specifications/sed-ml",
+          "mimeType": "application/xml",
+          "extension": "sedml"
+        }
+      ],
+      "archiveFormats": [
+        {
+          "id": "COMBINE",
+          "name": "COMBINE",
+          "version": "V1",
+          "edamId": "format_3686",
+          "url": "https://combinearchive.org/",
+          "specUrl": "http://identifiers.org/combine.specifications/omex",
+          "mimeType": "application/zip",
+          "extension": "omex"
+        }
+      ],
+      "references": [
+        {
+          "title": "XXVII. A brief account of microscopical observations made in the months of June, July and August 1827, on the particles contained in the pollen of plants; and on the general existence of active molecules in organic and inorganic bodies",
+          "authors": "Robert Brown",
+          "journal": "The Philosophical Magazine",
+          "volume": 4,
+          "issue": 21,
+          "pages": "161-173",
+          "year": 1827,
+          "doi": "10.1080/14786442808674769"
+        }
+      ],
+      "parameters": [
+        {
+          "kisaoTerm": {
+            "ontology": "KISAO",
+            "id": "0000057",
+            "name": "relative tolerance",
+            "description": "This parameter is a numeric value specifying the desired relative tolerance the user wants to achieve. A smaller value means that the trajectory is calculated more accurately."
+          },
+          "id": "rel_tol",
+          "name": "Relative tolerance",
+          "type": "float",
+          "default": 0.000000001
+        }
+      ]
     }
+
   ],
   "created": "2020-06-16T12:00:00Z",
   "updated": "2020-06-16T12:00:00Z"
