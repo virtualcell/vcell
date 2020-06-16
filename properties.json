@@ -44,7 +44,8 @@
       "lastName": "Loew"
     }
   ],
-  "references": [{
+  "references": [
+  {
     "title": "A general computational framework for modeling cellular structure and function",
     "authors": "J Schaff, CC Fink, B Slepchenko, JH Carson, LM Leow",
     "journal": "Biophysical journal",
