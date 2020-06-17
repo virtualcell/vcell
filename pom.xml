@@ -61,8 +61,8 @@
 	</mailingLists>
 
 	<modules>
-		<module>ojdbc6</module>
-		<module>ucp</module>
+		<!--	<module>ojdbc6</module>  -->
+		<!--	<module>ucp</module>  -->
 		<module>vcell-admin</module>
 	<!--	<module>vcell-opt</module>  -->
 		<module>vcell-api</module>

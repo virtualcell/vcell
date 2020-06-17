@@ -1,1 +1,0 @@
-mvn install:install-file -Dfile=./src/ucp.jar -DgroupId=com.oracle -DartifactId=ucp -Dversion=11.2.0.4 -Dpackaging=jar
