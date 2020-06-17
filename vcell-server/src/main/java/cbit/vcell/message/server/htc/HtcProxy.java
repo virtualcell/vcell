@@ -234,25 +234,27 @@ public abstract class HtcProxy {
 	public static class MemLimitResults {
 		public static final long FALLBACK_MEM_LIMIT_MB=4096;//MAX memory allowed if not set in limitFile
 		private long memLimit;
+		private long minimumMem;
 		private String memLimitSource;
-		public MemLimitResults(long memLimit, String memLimitSource) {
+		public MemLimitResults(long memLimit, String memLimitSource,long minimumMem) {
 			super();
 			this.memLimit = memLimit;
 			this.memLimitSource = memLimitSource;
+			this.minimumMem = minimumMem;
 		}
 		public long getMemLimit() {
-			return memLimit;
+			return Math.max(memLimit, minimumMem);
 		}
 		public String getMemLimitSource() {
-			return memLimitSource;
+			return memLimitSource+(minimumMem>memLimit?"(minimumMem)":"");
 		}
 	}
 	public static final boolean bDebugMemLimit = false;
 	public static MemLimitResults getMemoryLimit(String vcellUserid,KeyValue simID,SolverDescription solverDescription,double estimatedMemSizeMB) {
 		MemLimitResults memoryLimit0 = getMemoryLimit0(vcellUserid, simID, solverDescription, estimatedMemSizeMB);
-		memoryLimit0.memLimit = Math.max(memoryLimit0.memLimit,64); // Match 64M minimum in JavePreprocessor64 and JavaPostprocessor64 for slurm sbatch
 		return memoryLimit0;
 	}
+	public static final long MINIMUM_MEM=128;
 	private static MemLimitResults getMemoryLimit0(String vcellUserid,KeyValue simID,SolverDescription solverDescription,double estimatedMemSizeMB) {
 		//One of 5 limits are returned (ordered from highest to lowest priority):
 		//  MemoryMax:PerSimulation									Has PropertyLoader.simPerUserMemoryLimitFile, specific user AND simID MATCHED in file (userid MemLimitMb simID)
@@ -266,6 +268,7 @@ public abstract class HtcProxy {
 		//																estimated < FALLBACK
 		
 		Long defaultSimMemoryLimitMbFromFile = null;
+		Long minimumSimMemoryLimitMBFromFile = null;
 		File memLimitFile = null;
 		try {
 			//${vcellroot}/docker/swarm/serverconfig-uch.sh->VCELL_SIMDATADIR_EXTERNAL=/share/apps/vcell3/users 
@@ -340,6 +343,16 @@ public abstract class HtcProxy {
 							//e.printStackTrace(System.out);
 							continue;
 						}
+					}else if(limitUserid.equals("minimumMemoryLimitMB")) {//Smallest allowed mem
+						try {
+							minimumSimMemoryLimitMBFromFile = Long.parseLong(st.nextToken());
+							if(bDebugMemLimit){System.out.println("-----"+"MATCH DEFAULT "+userAndLimit);}
+						} catch (Exception e) {
+							if(bDebugMemLimit){System.out.println("-----ERROR '"+userAndLimit+"' "+e.getClass().getName()+" "+e.getMessage());}
+							//bad line in limit file, continue processing other lines
+							//e.printStackTrace(System.out);
+							continue;
+						}
 					}else {
 						if(bDebugMemLimit){System.out.println("-----"+"NO MATCH "+userAndLimit);}
 					}
@@ -350,15 +363,19 @@ public abstract class HtcProxy {
 					return new MemLimitResults(finalMax,
 						(perSimMemMax!=null?
 							"MemoryMax(FILE PerSimulation):"+simID+",User='"+vcellUserid+"' from "+memLimitFile.getAbsolutePath():
-							"MemoryMax(FILE PerUser):'"+vcellUserid+"' from "+memLimitFile.getAbsolutePath()));
+							"MemoryMax(FILE PerUser):'"+vcellUserid+"' from "+memLimitFile.getAbsolutePath()),
+						(minimumSimMemoryLimitMBFromFile==null?MINIMUM_MEM:minimumSimMemoryLimitMBFromFile));
 				}else if(perSolverMax != null) {
 					if(perSolverMax == 0) {//Use estimated size always if solver had 0 for memory limit
 						return new MemLimitResults(
 							Math.min((long)Math.ceil(estimatedMemSizeMB*1.5),
 										(defaultSimMemoryLimitMbFromFile!=null?defaultSimMemoryLimitMbFromFile:MemLimitResults.FALLBACK_MEM_LIMIT_MB)),
-							"MemoryMax(FILE PerSolver ESTIMATED):'"+solverDescription.name()+"' from "+memLimitFile.getAbsolutePath());
+							"MemoryMax(FILE PerSolver ESTIMATED):'"+solverDescription.name()+"' from "+memLimitFile.getAbsolutePath(),
+							(minimumSimMemoryLimitMBFromFile==null?MINIMUM_MEM:minimumSimMemoryLimitMBFromFile));
 					}else {
-						return new MemLimitResults(perSolverMax, "MemoryMax(FILE PerSolver):'"+solverDescription.name()+"' from "+memLimitFile.getAbsolutePath());
+						return new MemLimitResults(perSolverMax,
+								"MemoryMax(FILE PerSolver):'"+solverDescription.name()+"' from "+memLimitFile.getAbsolutePath(),
+								(minimumSimMemoryLimitMBFromFile==null?MINIMUM_MEM:minimumSimMemoryLimitMBFromFile));
 					}
 				}
 			}else {
@@ -381,7 +398,8 @@ public abstract class HtcProxy {
 		return new MemLimitResults(maxAllowedMem,
 				(bHasMemLimitFile?
 				"MemoryMax(FILE AllUsers):AllUsersMemLimit(defaultSimMemoryLimitMb) from "+memLimitFile.getAbsolutePath():
-				"MemoryMax(HARDCODE):HtcProxy.MemLimitResults.FALLBACK_MEM_LIMIT_MB"));
+				"MemoryMax(HARDCODE):HtcProxy.MemLimitResults.FALLBACK_MEM_LIMIT_MB"),
+				(minimumSimMemoryLimitMBFromFile==null?MINIMUM_MEM:minimumSimMemoryLimitMBFromFile));
 	}
 
 }
