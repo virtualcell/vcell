@@ -53,51 +53,51 @@
     }
   ],
   "references": [
-  {
-    "title": "A general computational framework for modeling cellular structure and function",
-    "authors": "J Schaff, CC Fink, B Slepchenko, JH Carson, LM Leow",
-    "journal": "Biophysical journal",
-    "volume": "73",
-    "pages": "1135-1146",
-    "year": 1997,
-    "doi": "10.1016/S0006-3495(97)78146-3"
-  },
-  {
-    "title": "The Virtual Cell: A Software Environment for Computational Cell Biology",
-    "authors": "J Schaff, LM Leow",
-    "journal": "Trends Biotechnol.",
-    "volume": "19",
-    "pages": "401-406",
-    "year": 2001,
-    "doi": "10.1016/S0167-7799(01)01740-1"
-  },
-  {
-    "title": "Spatial Modeling of Cell Signaling Networks",
-    "authors": "Ann E. Cowan, Ion I. Moraru, James C. Scaff, Boris M. Slepchenko, Leslie M. Loew",
-    "journal": "Methods Cell Biol.",
-    "volume": "110",
-    "pages": "195-221",
-    "year": 2012,
-    "doi": "10.1016/B978-0-12-388403-9.00008-4"
-  },
-  {
-    "title": "The Virtual Cell Modeling and Simulation Software Environment",
-    "authors": "Ion I. Moraru, James C. Scaff, Boris M. Slepchenko, Micheal Blinov, Frank Morgan, Anuradha Lakshminaryana, Fei Gao, Ye Li, Leslie M. Loew",
-    "journal": "IET Syst Biol.",
-    "volume": "2",
-    "pages": "352-362",
-    "year": 2008,
-    "doi": "10.1049/iet-syb:20080102"
-  },
-  {
-    "title": "Compartmental and Spatial Rule-Based Modeling with Virtual Cell",
-    "authors": "Micheal L. Blinov, James C. Scaff, Dan Vasilescu, Ion I. Moraru, Judy E. Bloom, Leslie M. Loew",
-    "journal": "Biophys J.",
-    "volume": "113",
-    "pages": "1365-1372",
-    "year": 2017,
-    "doi": "10.1016/j.bpj.2017.08.022"
-  }
+    {
+      "title": "A general computational framework for modeling cellular structure and function",
+      "authors": "J Schaff, CC Fink, B Slepchenko, JH Carson, LM Leow",
+      "journal": "Biophysical journal",
+      "volume": "73",
+      "pages": "1135-1146",
+      "year": 1997,
+      "doi": "10.1016/S0006-3495(97)78146-3"
+    },
+    {
+      "title": "The Virtual Cell: A Software Environment for Computational Cell Biology",
+      "authors": "J Schaff, LM Leow",
+      "journal": "Trends Biotechnol.",
+      "volume": "19",
+      "pages": "401-406",
+      "year": 2001,
+      "doi": "10.1016/S0167-7799(01)01740-1"
+    },
+    {
+      "title": "Spatial Modeling of Cell Signaling Networks",
+      "authors": "Ann E. Cowan, Ion I. Moraru, James C. Scaff, Boris M. Slepchenko, Leslie M. Loew",
+      "journal": "Methods Cell Biol.",
+      "volume": "110",
+      "pages": "195-221",
+      "year": 2012,
+      "doi": "10.1016/B978-0-12-388403-9.00008-4"
+    },
+    {
+      "title": "The Virtual Cell Modeling and Simulation Software Environment",
+      "authors": "Ion I. Moraru, James C. Scaff, Boris M. Slepchenko, Micheal Blinov, Frank Morgan, Anuradha Lakshminaryana, Fei Gao, Ye Li, Leslie M. Loew",
+      "journal": "IET Syst Biol.",
+      "volume": "2",
+      "pages": "352-362",
+      "year": 2008,
+      "doi": "10.1049/iet-syb:20080102"
+    },
+    {
+      "title": "Compartmental and Spatial Rule-Based Modeling with Virtual Cell",
+      "authors": "Micheal L. Blinov, James C. Scaff, Dan Vasilescu, Ion I. Moraru, Judy E. Bloom, Leslie M. Loew",
+      "journal": "Biophys J.",
+      "volume": "113",
+      "pages": "1365-1372",
+      "year": 2017,
+      "doi": "10.1016/j.bpj.2017.08.022"
+    }
   ],
   "license": "MIT",
   "algorithms": [
@@ -187,7 +187,7 @@
           "id": "rel_tol",
           "name": "Relative tolerance",
           "type": "float",
-          "default": 0.000000001
+          "default": 1e-9
         }
       ]
     },
@@ -277,7 +277,7 @@
           "id": "rel_tol",
           "name": "Relative tolerance",
           "type": "float",
-          "default": 0.000000001
+          "default": 1e-9
         }
       ]
     },
@@ -367,7 +367,7 @@
           "id": "rel_tol",
           "name": "Relative tolerance",
           "type": "float",
-          "default": 0.000000001
+          "default": 1e-9
         }
       ]
     },
@@ -457,7 +457,7 @@
           "id": "rel_tol",
           "name": "Relative tolerance",
           "type": "float",
-          "default": 0.000000001
+          "default": 1e-9
         }
       ]
     },
@@ -547,7 +547,7 @@
           "id": "rel_tol",
           "name": "Relative tolerance",
           "type": "float",
-          "default": 0.000000001
+          "default": 1e-9
         }
       ]
     },
@@ -637,7 +637,7 @@
           "id": "rel_tol",
           "name": "Relative tolerance",
           "type": "float",
-          "default": 0.000000001
+          "default": 1e-9
         }
       ]
     },
@@ -727,7 +727,7 @@
           "id": "rel_tol",
           "name": "Relative tolerance",
           "type": "float",
-          "default": 0.000000001
+          "default": 1e-9
         }
       ]
     },
@@ -817,7 +817,7 @@
           "id": "rel_tol",
           "name": "Relative tolerance",
           "type": "float",
-          "default": 0.000000001
+          "default": 1e-9
         }
       ]
     },
@@ -907,7 +907,7 @@
           "id": "rel_tol",
           "name": "Relative tolerance",
           "type": "float",
-          "default": 0.000000001
+          "default": 1e-9
         }
       ]
     },
@@ -997,7 +997,7 @@
           "id": "rel_tol",
           "name": "Relative tolerance",
           "type": "float",
-          "default": 0.000000001
+          "default": 1e-9
         }
       ]
     },
@@ -1087,7 +1087,7 @@
           "id": "rel_tol",
           "name": "Relative tolerance",
           "type": "float",
-          "default": 0.000000001
+          "default": 1e-9
         }
       ]
     },
@@ -1193,7 +1193,7 @@
           "id": "rel_tol",
           "name": "Relative tolerance",
           "type": "float",
-          "default": 0.000000001
+          "default": 1e-9
         }
       ]
     },
@@ -1283,7 +1283,7 @@
           "id": "rel_tol",
           "name": "Relative tolerance",
           "type": "float",
-          "default": 0.000000001
+          "default": 1e-9
         }
       ]
     },
@@ -1385,11 +1385,10 @@
           "id": "rel_tol",
           "name": "Relative tolerance",
           "type": "float",
-          "default": 0.000000001
+          "default": 1e-9
         }
       ]
     }
-
   ],
   "created": "2020-06-16T12:00:00Z",
   "updated": "2020-06-16T12:00:00Z"
