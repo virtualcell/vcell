@@ -7,13 +7,25 @@ import org.jlibsedml.SedML;
 import org.jlibsedml.XMLException;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 
 public class CLIStandalone {
     public static void main(String[] args) {
-        CLIHandler cliHandler = new CLIHandler(args);
-        String inputFile = cliHandler.getInputFilePath();
-        String outputDir = cliHandler.getOutputDirPath();
+        CLIHandler cliHandler = null;
+        try {
+            cliHandler = new CLIHandler(args);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        String inputFile = null;
+        if (cliHandler != null) {
+            inputFile = cliHandler.getInputFilePath();
+        }
+        String outputDir = null;
+        if (cliHandler != null) {
+            outputDir = cliHandler.getOutputDirPath();
+        }
 //        CLIUtils.makeDirs(new File(outputDir));
         OmexHandler omexHandler = new OmexHandler(inputFile, outputDir);
         omexHandler.extractOmex();
