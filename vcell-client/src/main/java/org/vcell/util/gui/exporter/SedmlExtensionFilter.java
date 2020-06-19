@@ -1,6 +1,7 @@
 package org.vcell.util.gui.exporter;
 
 import java.io.File;
+import java.nio.file.Paths;
 
 import org.vcell.sedml.SEDMLExporter;
 import org.vcell.util.FileUtils;
@@ -12,10 +13,10 @@ import cbit.vcell.mapping.SimulationContext;
 
 @SuppressWarnings("serial")
 public class SedmlExtensionFilter extends SelectorExtensionFilter {
-	private static final String FNAMES[] = {".xml",".sedml",".sedx"};
+	private static final String FNAMES[] = {".xml",".sedml",".sedx", ".omex"};
 	
 	public SedmlExtensionFilter() {
-		super(FNAMES,"SEDML format <Level1,Version2>  (.xml .sedml .sedx(archive))",SelectorExtensionFilter.Selector.FULL_MODEL);
+		super(FNAMES,"SEDML format <Level1,Version2>  (.xml .sedml .sedx(archive) .omex(archive))",SelectorExtensionFilter.Selector.FULL_MODEL);
 	}
 
 	@Override
@@ -37,13 +38,22 @@ public class SedmlExtensionFilter extends SelectorExtensionFilter {
 		}
 		if(sExt.equals("sedx")) {
 			sedmlExporter.createManifest(sPath, sFile);
-			String sedmlFileName = sPath + FileUtils.WINDOWS_SEPARATOR + sFile + ".sedml";
+			String sedmlFileName = Paths.get(sPath, sFile + ".sedml").toString();
 			XmlUtil.writeXMLStringToFile(resultString, sedmlFileName, true);
 			sedmlExporter.addSedmlFileToList(sFile + ".sedml");
 			sedmlExporter.addSedmlFileToList("manifest.xml");
 			sedmlExporter.createZipArchive(sPath, sFile);
 			return;
-		} else {
+		} else if (sExt.equals("omex")) {
+			sedmlExporter.createManifest(sPath, sFile);
+			String sedmlFileName = Paths.get(sPath, sFile + ".sedml").toString();
+			XmlUtil.writeXMLStringToFile(resultString, sedmlFileName, true);
+			sedmlExporter.addSedmlFileToList(sFile + ".sedml");
+			sedmlExporter.addSedmlFileToList("manifest.xml");
+			sedmlExporter.createOmexArchive(sPath, sFile);
+			return;
+		}
+		else {
 			XmlUtil.writeXMLStringToFile(resultString, exportFile.getAbsolutePath(), true);
 		}
 	}

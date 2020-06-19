@@ -13,7 +13,7 @@ import cbit.vcell.util.NativeLoader;
  * @author gweatherby
  */
 public enum NativeLib {
-	HDF5("jhdf5",false);
+	combinej("combinej", true), HDF5("jhdf5",false);
 
 	private final String libName;
 	/**

@@ -76,10 +76,6 @@
 		<license.copyrightOwners>UConn Health</license.copyrightOwners>
 	</properties>
 
-	<repositories>
-	<repository> <id>project-repo</id> <url>file://${project.basedir}/../non-maven-java-libs</url> </repository>
-	</repositories>
-
 	<dependencies>
 		<dependency>
 			<groupId>junit</groupId>
