@@ -27,16 +27,3 @@ Edit {eclipse_workspace}/vcell/vcell-oracle/pom.xml, add:
 	</repositories>
 
 Then save the changes to github repository
-
-
-Example for VCell libCombine jars (different jars for same lib depending on OS (for JNI)):
-
-(Do this only if necessary) -> in eclipse, rt-click on 'vcell' and create folder named 'non-maven-java-libs'
-in linux terminal, cd to {eclipse_workspace}/vcell/non-maven-java-libs
-//get the source libs to install into the VCell project inline maven repo
-wget https://github.com/sbmlteam/libCombine/releases/download/0.2.7/libcombine_java.zip
-//Install the libs into a VCell inline maven repo (these libs are then referenced in the appropriate pom.xml)
-mvn deploy:deploy-file -Dfile=./libcombine_java/linux64/libcombine.jar -DgroupId=org.sbml.libcombine -DartifactId=libCombineLinux64 -Dversion=0.2.7 -Dpackaging=jar -Durl=file:./ -DrepositoryId=non-maven-java-libs -DupdateReleaseInfo=true
-mvn deploy:deploy-file -Dfile=./libcombine_java/osx/libcombine.jar -DgroupId=org.sbml.libcombine -DartifactId=libCombineOSX -Dversion=0.2.7 -Dpackaging=jar -Durl=file:./ -DrepositoryId=non-maven-java-libs -DupdateReleaseInfo=true
-mvn deploy:deploy-file -Dfile=./libcombine_java/win64/libcombine.jar -DgroupId=org.sbml.libcombine -DartifactId=libCombineWin64 -Dversion=0.2.7 -Dpackaging=jar -Durl=file:./ -DrepositoryId=non-maven-java-libs -DupdateReleaseInfo=true
-

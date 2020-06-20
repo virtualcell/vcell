@@ -21,13 +21,6 @@ COPY ./vcell-client/target/vcell-client-0.0.1-SNAPSHOT.jar \
     /vcellclient/vcell-client/target/maven-jars/
 
 COPY ./docker/build/installers /config/
-
-#libCombine stuff
-#Copy libCombine libs (for all OS from VCell project maven inline repo)
-COPY ./non-maven-java-libs     /vcellclient/non-maven-java-libs
-#Remove libCombine from client jars, will be re-added from 'non-maven-java-libs' by install4j for each OS
-RUN rm /vcellclient/vcell-client/target/maven-jars/libCombine*
-
 WORKDIR /config
 
 VOLUME /jres
