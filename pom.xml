@@ -103,7 +103,14 @@
 		<doclint>none</doclint>
 	</properties>
 
+
 	<repositories>
+		<!-- VCell inline maven repo for jar libs not available in public repository -->
+		<repository>
+			<id>project-repo</id>
+			<!-- <url>file:${vcell.basedir}${file.separator}non-maven-java-libs</url> -->
+			<url>file:${project.basedir}${file.separator}..${file.separator}non-maven-java-libs</url>
+		</repository>
 		<!-- needed for org.sbml.jsbml -->
 		<!-- <repository>
 			<id>JSBML-SNAPSHOT</id>
