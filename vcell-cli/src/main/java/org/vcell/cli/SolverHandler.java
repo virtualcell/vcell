@@ -72,6 +72,12 @@ public class SolverHandler {
         } else if (SolverDescription.ForwardEuler.getKisao().contentEquals(kisao)) {
             ODESolverResultSet odeSolverResultSet = ForwardEulerHelper.solve(outputDir, sedmlTask.getId(), bioModel);
             System.out.println("Finished: " + docName + ": - task '" + sedmlTask.getId() + "'.");
+        } else if (SolverDescription.RungeKutta2.getKisao().contentEquals(kisao)) {
+            ODESolverResultSet odeSolverResultSet = RungeKutta2Helper.solve(outputDir, sedmlTask.getId(), bioModel);
+            System.out.println("Finished: " + docName + ": - task '" + sedmlTask.getId() + "'.");
+        } else if (SolverDescription.RungeKutta4.getKisao().contentEquals(kisao)) {
+            ODESolverResultSet odeSolverResultSet = RungeKutta4Helper.solve(outputDir, sedmlTask.getId(), bioModel);
+            System.out.println("Finished: " + docName + ": - task '" + sedmlTask.getId() + "'.");
         } else {
             System.out.println("Unsupported solver: " + kisao);
         }
