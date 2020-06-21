@@ -69,6 +69,9 @@ public class SolverHandler {
         } else if (SolverDescription.AdamsMoulton.getKisao().contentEquals(kisao)) {
             ODESolverResultSet odeSolverResultSet = AdamsMoultonHelper.solve(outputDir, sedmlTask.getId(), bioModel);
             System.out.println("Finished: " + docName + ": - task '" + sedmlTask.getId() + "'.");
+        } else if (SolverDescription.ForwardEuler.getKisao().contentEquals(kisao)) {
+            ODESolverResultSet odeSolverResultSet = ForwardEulerHelper.solve(outputDir, sedmlTask.getId(), bioModel);
+            System.out.println("Finished: " + docName + ": - task '" + sedmlTask.getId() + "'.");
         } else {
             System.out.println("Unsupported solver: " + kisao);
         }
