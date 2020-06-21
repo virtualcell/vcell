@@ -11,10 +11,7 @@ import cbit.vcell.xml.ExternalDocInfo;
 import cbit.vcell.xml.XmlHelper;
 import org.jlibsedml.AbstractTask;
 import org.jlibsedml.SedML;
-import org.vcell.cli.helpers.solvers.CVODEHelper;
-import org.vcell.cli.helpers.solvers.IDAHelper;
-import org.vcell.cli.helpers.solvers.RungeKuttaFelhbergHelper;
-import org.vcell.cli.helpers.solvers.StockGibsonHelper;
+import org.vcell.cli.helpers.solvers.*;
 import org.vcell.sbml.vcell.SBMLImportException;
 import org.vcell.sbml.vcell.SBMLImporter;
 import org.vcell.util.document.VCDocument;
@@ -68,6 +65,9 @@ public class SolverHandler {
             System.out.println("Finished: " + docName + ": - task '" + sedmlTask.getId() + "'.");
         } else if (SolverDescription.RungeKuttaFehlberg.getKisao().contentEquals(kisao)){
             ODESolverResultSet odeSolverResultSet = RungeKuttaFelhbergHelper.solve(outputDir, sedmlTask.getId(), bioModel);
+            System.out.println("Finished: " + docName + ": - task '" + sedmlTask.getId() + "'.");
+        } else if (SolverDescription.AdamsMoulton.getKisao().contentEquals(kisao)) {
+            ODESolverResultSet odeSolverResultSet = AdamsMoultonHelper.solve(outputDir, sedmlTask.getId(), bioModel);
             System.out.println("Finished: " + docName + ": - task '" + sedmlTask.getId() + "'.");
         } else {
             System.out.println("Unsupported solver: " + kisao);
