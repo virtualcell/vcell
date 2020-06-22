@@ -12,7 +12,7 @@ jobs:
       - name: Get the version and install xmllint
         id: vars
         run: |
-            apt-get install libxml2-utils
+            sudo apt-get install libxml2-utils
             echo ::set-output name=tag::$(echo `curl --silent http://vcell.org/webstart/Rel/updates.xml | xmllint --xpath '//updateDescriptor/entry/@newVersion' - | awk -F '=' '{print $6;}'`)
       - name: Extract JDK Tarball and setup Java
         run: |
