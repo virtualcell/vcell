@@ -11,8 +11,8 @@ COPY ./vcell-server/target/vcell-server-0.0.1-SNAPSHOT.jar \
      ./vcell-server/target/maven-jars/*.jar \
      ./vcell-oracle/target/vcell-oracle-0.0.1-SNAPSHOT.jar \
      ./vcell-oracle/target/maven-jars/*.jar \
-     ./ojdbc6/src/ojdbc6.jar \
-     ./ucp/src/ucp.jar \
+     ./non-maven-java-libs/com/oracle/ojdbc6/11.2.0.4/ojdbc6-11.2.0.4.jar \
+     ./non-maven-java-libs/com/oracle/ucp/11.2.0.4/ucp-11.2.0.4.jar \
      ./lib/
 
 
