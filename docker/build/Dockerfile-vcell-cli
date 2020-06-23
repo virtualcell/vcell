@@ -1,0 +1,51 @@
+# Build image:
+#   docker build --file docker/build/Dockerfile-vcell-cli \
+#   	--tag crbm/biosimulations_vcell:7.2 \
+#   	--tag crbm/biosimulations_vcell:latest .
+#
+# Run image:
+#   docker run \
+#       --tty \
+#       --rm \
+#       --mount type=bind,source="$(pwd)"/tests/fixtures,target=/root/in,readonly \
+#       --mount type=bind,source="$(pwd)"/tests/results,target=/root/out \
+#       crbm/biosimulations_vcell:latest \
+#        -i /root/in/BIOMD0000000297.omex \
+#        -o /root/out
+
+# Base OS
+FROM ubuntu:18.04
+
+RUN apt-get -y update && \
+    apt-get install -y curl openjdk-8-jre dnsutils && \
+    mkdir -p /usr/local/app/vcell/lib \
+    mkdir -p /usr/local/app/vcell/simulation \
+    mkdir -p /usr/local/app/vcell/installDir
+	
+# Copy JAR files
+COPY ./vcell-client/target/vcell-client-0.0.1-SNAPSHOT.jar \
+     ./vcell-client/target/maven-jars/*.jar \
+ 	 ./vcell-core/target/vcell-core-0.0.1-SNAPSHOT.jar \
+     ./vcell-core/target/maven-jars/*.jar \
+ 	 ./vcell-server/target/vcell-server-0.0.1-SNAPSHOT.jar \
+     ./vcell-server/target/maven-jars/*.jar \
+ 	 ./vcell-vmicro/target/vcell-vmicro-0.0.1-SNAPSHOT.jar \
+     ./vcell-vmicro/target/maven-jars/*.jar \
+ 	 ./vcell-oracle/target/vcell-oracle-0.0.1-SNAPSHOT.jar \
+     ./vcell-oracle/target/maven-jars/*.jar \
+     ./ojdbc6/src/ojdbc6.jar \
+     ./ucp/src/ucp.jar \
+     ./vcell-admin/target/vcell-admin-0.0.1-SNAPSHOT.jar \
+     ./vcell-admin/target/vcell-admin-0.0.1-SNAPSHOT-tests.jar \
+     ./vcell-admin/target/maven-jars/*.jar \
+     ./vcell-cli/target/vcell-cli-0.0.1-SNAPSHOT.jar \
+     /usr/local/app/vcell/lib/
+
+# Add local solvers, libcombine_java
+ADD ./localsolvers /usr/local/app/vcell/installDir/localsolvers
+ADD ./libcombine_java /usr/local/app/vcell/installDir/libcombine_java
+COPY ./docker_run.sh /usr/local/app/vcell/installDir/
+
+# Entrypoint
+ENTRYPOINT ["/usr/local/app/vcell/installDir/docker_run.sh"]
+CMD []
