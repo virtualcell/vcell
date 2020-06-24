@@ -385,7 +385,7 @@
 		    <activation>
 				<os>
 					<family>mac</family>
-					<name>Darwin</name>
+					<name>Mac OS X</name>
 				</os>
 		    </activation>
 		    <dependencies>
