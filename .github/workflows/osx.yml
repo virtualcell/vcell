@@ -1,0 +1,30 @@
+#name: OSX mvn Installation
+#on: [push, pull_request]
+#jobs:
+#  build:
+#    runs-on: macos-latest
+#    steps:
+#      - uses: actions/checkout@v2
+#      # VCell project compiles on Oracle jdk only.
+#      - name: Extract JDK and maven Tarball
+#        run: |
+#          wget https://vcell.org/webstart/pipeline_files/jdk-8u241-linux-x64.tar.gz
+#          tar -xvzf jdk-8u241-linux-x64.tar.gz
+#          mv jdk1.8.0_241 jdk
+#          wget https://vcell.org/webstart/pipeline_files/apache-maven-3.6.3-bin.tar.gz
+#          tar -xvzf apache-maven-3.6.3-bin.tar.gz
+#          mv apache-maven-3.6.3 maven
+#      - name: Install dependencies
+#        run: |
+#          export JAVA_HOME=`pwd`/jdk
+#          export PATH=${JAVA_HOME}/bin:${PATH}
+#          echo $JAVA_HOME
+#          java -version
+#          export M2_HOME=`pwd`/maven
+#          export PATH=${M2_HOME}/bin:${PATH}
+#          mvn -version
+#          java -version
+#          echo "#################################"
+#          echo "#### Installing dependencies ####"
+#          echo "#################################"
+#          mvn clean install dependency:copy-dependencies
