@@ -6,8 +6,8 @@
 
 shopt -s -o nounset
 
-# gather classpath (filenames only), Install4J will add the correct separator
-compiler_vcellClasspathColonSep=`ls -m /vcellclient/vcell-client/target/maven-jars | tr -d '[:space:]' | tr ',' ':'`
+# NOT_USED (replace with install4j 'scan dir' functionality in I4j launcher config) gather classpath (filenames only), Install4J will add the correct separator
+#compiler_vcellClasspathColonSep=`ls -m /vcellclient/vcell-client/target/maven-jars | tr -d '[:space:]' | tr ',' ':'`
 
 cd /config
 
@@ -67,7 +67,6 @@ Site=$compiler_Site,\
 vcellVersion=$compiler_vcellVersion,\
 vcellBuild=$compiler_vcellBuild,\
 updateSiteBaseUrl=$compiler_updateSiteBaseUrl,\
-vcellClasspathColonSep=$compiler_vcellClasspathColonSep,\
 rmiHosts=$compiler_rmiHosts,\
 bioformatsJarFile=$compiler_bioformatsJarFile,\
 bioformatsJarDownloadURL=$compiler_bioformatsJarDownloadURL\

@@ -6,6 +6,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -56,6 +58,10 @@ import org.jlibsedml.modelsupport.SUPPORTED_LANGUAGE;
 import org.jmathml.ASTCi;
 import org.jmathml.ASTNode;
 import org.jmathml.MathMLReader;
+import org.sbml.libcombine.CombineArchive;
+import org.sbml.libcombine.KnownFormats;
+import org.sbml.libcombine.OmexDescription;
+import org.sbml.libcombine.VCard;
 import org.vcell.sbml.SbmlException;
 import org.vcell.sbml.SimSpec;
 import org.vcell.sbml.vcell.SBMLExporter;
@@ -239,8 +245,9 @@ public class SEDMLExporter {
 					} else {
 						throw new RuntimeException("unsupported Document Type "+vcBioModel.getClass().getName()+" for SBML export");
 					}
-					
-					String sbmlFilePathStrAbsolute = savePath + FileUtils.WINDOWS_SEPARATOR + bioModelName + "_" + TokenMangler.mangleToSName(simContextName) + ".xml";
+
+
+					String sbmlFilePathStrAbsolute = Paths.get(savePath, bioModelName + "_" + TokenMangler.mangleToSName(simContextName) + ".xml").toString();
 					String sbmlFilePathStrRelative = bioModelName + "_" +  TokenMangler.mangleToSName(simContextName) + ".xml";
 					XmlUtil.writeXMLStringToFile(sbmlString, sbmlFilePathStrAbsolute, true);
 					sbmlFilePathStrAbsoluteList.add(sbmlFilePathStrRelative);
@@ -963,7 +970,7 @@ public class SEDMLExporter {
 	public void createManifest(String savePath, String fileName) {
 		
 		final String xmlnsAttribute = "http://identifiers.org/combine.specifications/omex-manifest";	 
-		final String manifestFormat = "http://identifiers.org/combine.specifications/omex-manifest";	 
+		final String manifestFormat = "http://identifiers.org/combine.specifications/omex-manifest";
 		final String sbmlFormat = "http://identifiers.org/combine.specifications/sbml";	 
 		final String sedmlFormat = "http://identifiers.org/combine.specifications/sed-ml";	 
 			
@@ -996,31 +1003,32 @@ public class SEDMLExporter {
 			content.setAttribute("format", sedmlFormat);
 			content.setAttribute("master", "true");
 
-			
+
 //			Element staff = doc.createElement("staff");
 //			rootElement.appendChild(staff);
 //			// set attribute to staff element
 //			Attr attr = doc.createAttribute("id");
 //			attr.setValue("1");
 //			staff.setAttributeNode(attr);
-//	 
+//
 //			// firstname elements
 //			Element firstname = doc.createElement("firstname");
 //			firstname.appendChild(doc.createTextNode("yong"));
 //			staff.appendChild(firstname);
-//	 
+//
 //			// salary elements
 //			Element salary = doc.createElement("salary");
 //			salary.appendChild(doc.createTextNode("100000"));
 //			staff.appendChild(salary);
-	 
+
 			// write the content into xml file
 			TransformerFactory transformerFactory = TransformerFactory.newInstance();
 			Transformer transformer = transformerFactory.newTransformer();
 			DOMSource source = new DOMSource(doc);
-			String manifestAbsolutePathName = savePath + FileUtils.WINDOWS_SEPARATOR + "manifest.xml";
+
+			String manifestAbsolutePathName = Paths.get(savePath, "manifest.xml").toString();
 			StreamResult result = new StreamResult(new File(manifestAbsolutePathName));
-	 
+
 			// Output to console for testing
 			// StreamResult result = new StreamResult(System.out);
 			transformer.transform(source, result);
@@ -1036,42 +1044,74 @@ public class SEDMLExporter {
 		}
 	}
 	
-	// we know exactly which files we need to archive: those in sbmlFilePathStrAbsoluteList
-	// each file is deleted after being added to archive
-	private final int BUFFER = 2048;
-    public boolean createZipArchive(String srcFolder, String sFileName) {
+
+    public boolean createOmexArchive(String srcFolder, String sFileName) {
     try {
-    	BufferedInputStream origin = null;
-    	FileOutputStream    dest = new FileOutputStream(new File(srcFolder + FileUtils.WINDOWS_SEPARATOR + sFileName + ".sedx"));
-    	ZipOutputStream out = new ZipOutputStream(new BufferedOutputStream(dest));
-    	byte data[] = new byte[BUFFER];
+		//System.loadLibrary("combinej");
+		CombineArchive archive = new CombineArchive();
+
     	
 		for (String sd : sbmlFilePathStrAbsoluteList) {
-			if(sd.startsWith(FileUtils.UNIX_CURRENT_FOLDER_SEPARATOR)) {
-				int pos = sd.indexOf(FileUtils.UNIX_CURRENT_FOLDER_SEPARATOR) + FileUtils.UNIX_CURRENT_FOLDER_SEPARATOR.length();
-				sd = sd.substring(pos);
-			}
-    		File f = new File(srcFolder + FileUtils.WINDOWS_SEPARATOR + sd);
-   			FileInputStream fi = new FileInputStream(f);
-   			origin = new BufferedInputStream(fi, BUFFER);
-   			ZipEntry entry = new ZipEntry(sd);
-   			out.putNextEntry(entry);
-   			int count;
-   			while ((count = origin.read(data, 0, BUFFER)) != -1) {
-   				out.write(data, 0, count);
-   				out.flush();
-   			}
-   			fi.close();
-   			f.delete();
+			archive.addFile(
+					Paths.get(srcFolder, sd).toString(),
+					sd, // target file name
+					KnownFormats.lookupFormat("xml")
+//					true // mark file as master
+			);
     	}
-    	origin.close();
-    	out.flush();
-    	out.close();
+
+
+		archive.writeToFile(Paths.get(srcFolder, sFileName + ".omex").toString());
+
+		// Removing files after archiving
+		for (String sd : sbmlFilePathStrAbsoluteList) {
+			Paths.get(srcFolder, sd).toFile().delete();
+		}
+
     } catch (Exception e) {
     	throw new RuntimeException("createZipArchive threw exception: " + e.getMessage());        
     }
     return true;
 }
+
+	// we know exactly which files we need to archive: those in sbmlFilePathStrAbsoluteList
+	// each file is deleted after being added to archive
+	private final int BUFFER = 2048;
+	public boolean createZipArchive(String srcFolder, String sFileName) {
+		try {
+			BufferedInputStream origin = null;
+
+			FileOutputStream    dest = new FileOutputStream(Paths.get(srcFolder, sFileName + ".sedx").toFile());
+			ZipOutputStream out = new ZipOutputStream(new BufferedOutputStream(dest));
+			byte data[] = new byte[BUFFER];
+
+			for (String sd : sbmlFilePathStrAbsoluteList) {
+//				if(sd.startsWith(FileUtils.UNIX_CURRENT_FOLDER_SEPARATOR)) {
+//					int pos = sd.indexOf(FileUtils.UNIX_CURRENT_FOLDER_SEPARATOR) + FileUtils.UNIX_CURRENT_FOLDER_SEPARATOR.length();
+//					sd = sd.substring(pos);
+//				}
+
+				File f = Paths.get(srcFolder, sd).toFile();
+				FileInputStream fi = new FileInputStream(f);
+				origin = new BufferedInputStream(fi, BUFFER);
+				ZipEntry entry = new ZipEntry(sd);
+				out.putNextEntry(entry);
+				int count;
+				while ((count = origin.read(data, 0, BUFFER)) != -1) {
+					out.write(data, 0, count);
+					out.flush();
+				}
+				fi.close();
+				f.delete();
+			}
+			origin.close();
+			out.flush();
+			out.close();
+		} catch (Exception e) {
+			throw new RuntimeException("createZipArchive threw exception: " + e.getMessage());
+		}
+		return true;
+	}
 
 	private void dummy() {
 //		// ------ Functional Range

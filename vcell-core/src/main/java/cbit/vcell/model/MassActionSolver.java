@@ -344,69 +344,74 @@ public class MassActionSolver {
 		Expression constructedExp_withoutCatalyst = removeCatalystFromExp(constructedExp, rs);
 		if(! ExpressionUtils.functionallyEquivalent(orgExp_withoutCatalyst, constructedExp_withoutCatalyst, false, 1e-8, 1e-8))
 		{
+			//TODO: aici!!!
+			
+			
+			
 			throw new ModelException(VCellErrorMessages.getMassActionSolverMessage(rs.getName(), "Mathmatical form incompatible with mass action."));
-		}
-		//check if forward rate constant and reverse rate constant both can be evaluated to constants(numbers) after substituting all parameters.
-		if(forwardExp != null)
-		{
-			Expression forwardExpCopy = new Expression(forwardExp);
-			try{
-				substituteParameters(forwardExpCopy, true).evaluateConstant();
-			}catch(ExpressionException e)
+		} else {
+			//check if forward rate constant and reverse rate constant both can be evaluated to constants(numbers) after substituting all parameters.
+			if(forwardExp != null)
 			{
-				throw new ModelException(VCellErrorMessages.getMassActionSolverMessage(rs.getName(), "Problem in forward rate '" + forwardExp.infix() + "', " + e.getMessage()));
-			}
-			//
-			// if forwardExp is just flattened version of original Expression (orgExp), then keep orgExp so that Math Generation is readable.
-			//
-			if (optionalForwardRateParameter!=null){
-				Expression forwardRateParameterCopy = new Expression(optionalForwardRateParameter,optionalForwardRateParameter.getNameScope());
+				Expression forwardExpCopy = new Expression(forwardExp);
 				try{
-					substituteParameters(forwardRateParameterCopy, true).evaluateConstant();
-					if (forwardExpCopy.compareEqual(forwardRateParameterCopy)){
-						forwardExp = new Expression(optionalForwardRateParameter,optionalForwardRateParameter.getNameScope());
-					}
-				}catch(ExpressionException e){
-					// not expecting a problem because forwardExpCopy didn't have a problem, but in any case it is ok to swallow this exception
-					e.printStackTrace(System.out);
+					substituteParameters(forwardExpCopy, true).evaluateConstant();
+				}catch(ExpressionException e)
+				{
+					throw new ModelException(VCellErrorMessages.getMassActionSolverMessage(rs.getName(), "Problem in forward rate '" + forwardExp.infix() + "', " + e.getMessage()));
 				}
-			}
-			
-		}
-		if(reverseExp != null)
-		{
-			Expression reverseExpCopy = new Expression(reverseExp);
-			try{
-				substituteParameters(reverseExpCopy, true).evaluateConstant();
-			}catch(ExpressionException e)
-			{
-				throw new ModelException(VCellErrorMessages.getMassActionSolverMessage(rs.getName(), "Problem in reverse rate '" + reverseExp.infix() + "', " + e.getMessage()));
-			}
-			
-			//
-			// if reverseExp is just flattened version of original Expression (orgExp), then keep orgExp so that Math Generation is readable.
-			//
-			if (optionalReverseRateParameter!=null){
-				Expression reverseRateParameterCopy = new Expression(optionalReverseRateParameter,optionalReverseRateParameter.getNameScope());
-				try{
-					substituteParameters(reverseRateParameterCopy, true).evaluateConstant();
-					if (reverseExpCopy.compareEqual(reverseRateParameterCopy)){
-						reverseExp = new Expression(optionalReverseRateParameter,optionalReverseRateParameter.getNameScope());
+				//
+				// if forwardExp is just flattened version of original Expression (orgExp), then keep orgExp so that Math Generation is readable.
+				//
+				if (optionalForwardRateParameter!=null){
+					Expression forwardRateParameterCopy = new Expression(optionalForwardRateParameter,optionalForwardRateParameter.getNameScope());
+					try{
+						substituteParameters(forwardRateParameterCopy, true).evaluateConstant();
+						if (forwardExpCopy.compareEqual(forwardRateParameterCopy)){
+							forwardExp = new Expression(optionalForwardRateParameter,optionalForwardRateParameter.getNameScope());
+						}
+					}catch(ExpressionException e){
+						// not expecting a problem because forwardExpCopy didn't have a problem, but in any case it is ok to swallow this exception
+						e.printStackTrace(System.out);
 					}
-				}catch(ExpressionException e){
-					// not expecting a problem because reverseExpCopy didn't have a problem, but in any case it is ok to swallow this exception
-					e.printStackTrace(System.out);
 				}
-			}
-		}
-		maFunc.setForwardRate(forwardExp);
-		maFunc.setReverseRate(reverseExp);
-		maFunc.setReactants(reactants);
-		maFunc.setProducts(products);
-//		System.out.println("forward rate = "+maFunc.getForwardRate().infix());
-//		System.out.println("reverse rate = "+maFunc.getReverseRate().infix());
 				
-		return maFunc;
+			}
+			if(reverseExp != null)
+			{
+				Expression reverseExpCopy = new Expression(reverseExp);
+				try{
+					substituteParameters(reverseExpCopy, true).evaluateConstant();
+				}catch(ExpressionException e)
+				{
+					throw new ModelException(VCellErrorMessages.getMassActionSolverMessage(rs.getName(), "Problem in reverse rate '" + reverseExp.infix() + "', " + e.getMessage()));
+				}
+				
+				//
+				// if reverseExp is just flattened version of original Expression (orgExp), then keep orgExp so that Math Generation is readable.
+				//
+				if (optionalReverseRateParameter!=null){
+					Expression reverseRateParameterCopy = new Expression(optionalReverseRateParameter,optionalReverseRateParameter.getNameScope());
+					try{
+						substituteParameters(reverseRateParameterCopy, true).evaluateConstant();
+						if (reverseExpCopy.compareEqual(reverseRateParameterCopy)){
+							reverseExp = new Expression(optionalReverseRateParameter,optionalReverseRateParameter.getNameScope());
+						}
+					}catch(ExpressionException e){
+						// not expecting a problem because reverseExpCopy didn't have a problem, but in any case it is ok to swallow this exception
+						e.printStackTrace(System.out);
+					}
+				}
+			}
+			maFunc.setForwardRate(forwardExp);
+			maFunc.setReverseRate(reverseExp);
+			maFunc.setReactants(reactants);
+			maFunc.setProducts(products);
+//			System.out.println("forward rate = "+maFunc.getForwardRate().infix());
+//			System.out.println("reverse rate = "+maFunc.getReverseRate().infix());
+					
+			return maFunc;
+		}
 	}
 	
 	private static Expression removeCatalystFromExp(Expression orgExp, ReactionStep rs) throws ExpressionException{
