@@ -1,4 +1,4 @@
-name: Ubuntu mvn Installation
+name: Linux mvn Installation
 on: [push, pull_request]
 jobs:
   build:
