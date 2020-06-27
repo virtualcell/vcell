@@ -371,6 +371,24 @@ private static boolean checkSimulationParameters(Simulation simulation, Componen
 /**
  * Comment
  */
+int batchSimulations(Simulation[] sims, Component requester) throws java.beans.PropertyVetoException {
+	if (sims == null || sims.length == 0) {
+		return -1;
+	}
+	for (int i = 0; i < sims.length; i++){
+		String errorMessage = checkCompatibility(simulationOwner, sims[i]);
+		if(errorMessage != null){
+			PopupGenerator.showErrorDialog(requester, errorMessage+"\nUpdate Math before copying simulations");
+			return -1;
+		}
+	}
+	Simulation copiedSim = null;
+	for (int i = 0; i < sims.length; i++){
+		copiedSim = getSimulationOwner().batchSimulation(sims[i]);
+	}
+	return -1;	// unselect
+}
+
 int copySimulations(Simulation[] sims, Component requester) throws java.beans.PropertyVetoException {
 	if (sims == null || sims.length == 0) {
 		return -1;

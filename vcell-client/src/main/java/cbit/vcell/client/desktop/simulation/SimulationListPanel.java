@@ -105,6 +105,8 @@ public class SimulationListPanel extends DocumentEditorSubPanel {
 	private JButton copyButton = null;
 	private JButton ivjNewButton = null;
 	private JButton ivjNativeResultsButton = null;
+	private JButton batchButton = null;
+
 //	private JButton ivjPythonResultsButton = null;
 	private JButton ivjRunButton = null;
 	private JButton ivjDeleteButton = null;
@@ -139,6 +141,9 @@ public class SimulationListPanel extends DocumentEditorSubPanel {
 				runSimulations();
 			} else if (e.getSource() == stopButton) {
 				stopSimulations();
+			} else if (e.getSource() == batchButton) {
+				DialogUtils.showInfoDialog(SimulationListPanel.this, "Under Construction");
+				batchSimulations();
 			} else if (e.getSource() == getNativeResultsButton()) {
 				showSimulationResults(ViewerType.NativeViewer_only);
 //			} else if (e.getSource() == getPythonResultsButton()) {
@@ -234,6 +239,27 @@ private void showHelp() {
 /**
  * Comment
  */
+private void batchSimulations() {
+	int[] selections = getScrollPaneTable().getSelectedRows();
+	if(selections.length != 1) {
+		throw new RuntimeException("Exactly one template Simulation is required for Batch Creation");
+	}
+	
+	Vector<Simulation> v = new Vector<Simulation>();
+	v.add((Simulation)(ivjSimulationListTableModel1.getValueAt(selections[0])));
+	Simulation[] toCopy = (Simulation[])BeanUtils.getArray(v, Simulation.class);
+	int index = -1;
+	try {
+		index = getSimulationWorkspace().batchSimulations(toCopy, this);
+	} catch (Throwable exc) {
+		exc.printStackTrace(System.out);
+		PopupGenerator.showErrorDialog(this, exc.getMessage(), exc);
+	}
+	// set selection to the last copied one
+	getScrollPaneTable().getSelectionModel().setSelectionInterval(index, index);
+	getScrollPaneTable().scrollRectToVisible(getScrollPaneTable().getCellRect(index, 0, true));
+}
+
 private void copySimulations() {
 	int[] selections = getScrollPaneTable().getSelectedRows();
 	Vector<Simulation> v = new Vector<Simulation>();
@@ -320,6 +346,9 @@ private javax.swing.JToolBar getToolBar() {
 			copyButton = new JButton("", VCellIcons.copySimIcon);
 			copyButton.setToolTipText("Copy Simulation");
 			copyButton.addActionListener(ivjEventHandler);
+			batchButton = new JButton("", VCellIcons.copySimIcon);
+			batchButton.setToolTipText("Batch Simulation");
+			batchButton.addActionListener(ivjEventHandler);
 			stopButton = new JButton("", VCellIcons.stopSimIcon);
 			stopButton.setToolTipText("Stop Simulation");
 			stopButton.setEnabled(false);
@@ -346,6 +375,9 @@ private javax.swing.JToolBar getToolBar() {
 			toolBar.add(getEditButton());
 			toolBar.add(getDeleteButton());
 			toolBar.addSeparator();
+			toolBar.add(batchButton);
+			toolBar.addSeparator();
+			
 			toolBar.add(getMassConservationModelReductionPanel());
 			toolBar.add(Box.createHorizontalGlue());
 
@@ -361,6 +393,7 @@ private javax.swing.JToolBar getToolBar() {
 //			toolBar.add(particleViewButton);
 
 			ReactionCartoonEditorPanel.setToolBarButtonSizes(getNewButton());
+			ReactionCartoonEditorPanel.setToolBarButtonSizes(batchButton);
 			ReactionCartoonEditorPanel.setToolBarButtonSizes(copyButton);
 			ReactionCartoonEditorPanel.setToolBarButtonSizes(getEditButton());
 			ReactionCartoonEditorPanel.setToolBarButtonSizes(getDeleteButton());
@@ -945,6 +978,7 @@ private void refreshButtonsLax() {
 
 	int[] selections = getScrollPaneTable().getSelectedRows();
 
+	boolean bBatch = false;
 	boolean bCopy = false;
 	boolean bEditable = false;
 	boolean bDeletable = false;
@@ -966,6 +1000,7 @@ private void refreshButtonsLax() {
 			SimulationStatus simStatus = getSimulationWorkspace().getSimulationStatus(firstSelection);
 			if (!simStatus.isRunning()){
 				bEditable = true;
+				bBatch = true;
 			}
 			final boolean onlyOne = firstSelection.getScanCount() == 1;
 //			bParticleView = onlyOne;
@@ -983,6 +1018,7 @@ private void refreshButtonsLax() {
 			bHasData = bHasData || simStatus.getHasData();
 		}
 	}
+	batchButton.setEnabled(bBatch);
 	copyButton.setEnabled(bCopy);
 	getEditButton().setEnabled(bEditable);
 	getDeleteButton().setEnabled(bDeletable);

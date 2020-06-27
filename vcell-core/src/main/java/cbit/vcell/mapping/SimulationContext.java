@@ -85,6 +85,7 @@ import cbit.vcell.mapping.spatial.processes.PointLocation;
 import cbit.vcell.mapping.spatial.processes.SpatialProcess;
 import cbit.vcell.mapping.spatial.processes.SurfaceKinematics;
 import cbit.vcell.mapping.spatial.processes.VolumeKinematics;
+import cbit.vcell.math.Constant;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathException;
 import cbit.vcell.math.MathFunctionDefinitions;
@@ -114,6 +115,7 @@ import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.NameScope;
 import cbit.vcell.parser.ScopedSymbolTable;
 import cbit.vcell.parser.SymbolTableEntry;
+import cbit.vcell.solver.MathOverrides;
 import cbit.vcell.solver.OutputFunctionContext;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationOwner;
@@ -989,7 +991,60 @@ public AnalysisTask copyAnalysisTask(AnalysisTask analysisTask) throws java.bean
 	}
 }
 
+private final int MaxBatchSize = 199;
+public Simulation batchSimulation(Simulation simulation) throws java.beans.PropertyVetoException {
+	if (getMathDescription()==null){
+		throw new RuntimeException("Application "+getName()+" has no generated Math, cannot add simulation");
+	}
+	if (simulation.getMathDescription() != getMathDescription()){
+		throw new IllegalArgumentException("cannot copy simulation '"+simulation.getName()+"', has different MathDescription than Application");
+	}
+	if (bioModel==null){
+		throw new RuntimeException("cannot add simulation, bioModel not set yet");
+	}
 
+	int batchSize = 5;
+	if(batchSize >= MaxBatchSize) {
+		throw new RuntimeException("Batch size must be smaller than " + MaxBatchSize);
+	}
+	Simulation sims[] = bioModel.getSimulations();
+	for (int i = 0; i < batchSize; i++){
+		String insert = "";
+		if(i<10) {
+			insert = "00";
+		} else if(i<100) {
+			insert = "0";
+		}
+		String proposedName = simulation.getName() + "_bat_" + insert + i;
+		boolean bFound = false;
+		for (int j = 0; !bFound && j < sims.length; j++){
+			if (sims[j].getName().equals(proposedName)){
+				bFound = true;
+				throw new RuntimeException("Batch file name already in use: " + proposedName);
+			}
+		}
+		Simulation newSimulation = new Simulation(simulation);
+		newSimulation.setName(proposedName);
+		
+		MathOverrides mo = new MathOverrides(newSimulation);
+		
+		String name = "s0_init_uM";
+		String value = (i + 1) + "";
+		try {
+			Expression expression = new Expression(value);
+			Constant constant = new Constant(name, expression);
+			mo.putConstant(constant);
+			
+		} catch (ExpressionException e) {
+			e.printStackTrace();
+		}
+		
+		newSimulation.setMathOverrides(mo);
+		
+		bioModel.addSimulation(newSimulation);
+	}
+	return null;
+}
 /**
  * Sets the simulations property (cbit.vcell.solver.Simulation[]) value.
  * @param simulations The new value for the property.
