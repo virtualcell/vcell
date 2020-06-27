@@ -1,5 +1,7 @@
 package org.vcell.cli;
 
+import cbit.vcell.resource.NativeLib;
+import cbit.vcell.resource.ResourceUtil;
 import org.sbml.libcombine.CaContent;
 import org.sbml.libcombine.CaListOfContents;
 import org.sbml.libcombine.CaOmexManifest;
@@ -20,19 +22,21 @@ public class OmexHandler {
     // Assuming omexPath will always be absolute path
     public OmexHandler(String omexPath, String outDir) {
         try {
-            System.loadLibrary("combinej");
+            ResourceUtil.setNativeLibraryDirectory();
+            NativeLib.combinej.load();
+//            System.load("combinej");
         } catch (UnsatisfiedLinkError ex) {
-           System.err.println("Unable to link to native 'libcombine' lib, check native lib: " + ex.getMessage());
+           System.err.println("Unable to link to native 'libCombine' lib, check native lib: " + ex.getMessage());
            System.exit(1);
         } catch (Exception e) {
-            System.err.println("Error occured while importing libcombine: " + e.getMessage());
+            System.err.println("Error occurred while importing libCombine: " + e.getMessage());
             System.exit(1);
         }
         this.omexPath = omexPath;
         this.outDirPath = outDir;
 
         if (!new File(omexPath).exists()) {
-            System.err.println("Provided Omex is not present");
+            System.err.println("Provided OMEX is not present");
             System.exit(1);
         }
         int indexOfLastSlash = omexPath.lastIndexOf("/");
@@ -45,7 +49,7 @@ public class OmexHandler {
         boolean isInitialized = archive.initializeFromArchive(omexPath);
 
         if(!isInitialized) {
-            System.err.println("Unable to initialise omex archive, archive maybe corrupted");
+            System.err.println("Unable to initialise OMEX archive, archive maybe corrupted");
             System.exit(1);
         }
     }
@@ -94,7 +98,7 @@ public class OmexHandler {
     public void extractOmex() {
         boolean isExtracted = this.archive.extractTo(this.tempPath);
         if (!isExtracted) {
-            System.err.println("Unable to extract omex archive, archive maybe corrupted");
+            System.err.println("Unable to extract OMEX archive, archive maybe corrupted");
             System.exit(1);
         }
     }
