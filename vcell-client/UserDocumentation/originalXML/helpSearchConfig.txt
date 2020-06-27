@@ -1,1 +1,1 @@
-IndexRemove /Users/akhilteja/projects/vcell/vcell/vcell-client/target/classes/vcellDoc/
+IndexRemove /Users/akhilteja/projects/uconn/Biosimulations_VCell/vcell-client/target/classes/vcellDoc/

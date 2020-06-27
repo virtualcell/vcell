@@ -60,16 +60,16 @@
 		</mailingList>
 	</mailingLists>
 
-	<dependencies>
+<!--	<dependencies>-->
 
-		<dependency>
-			<groupId>libcombine</groupId>
-			<artifactId>libcombine</artifactId>
-			<scope>system</scope>
-			<version>0.0.1</version>
-			<systemPath>${user.dir}/libcombine_java/linux64/libcombine.jar</systemPath>
-		</dependency>
-	</dependencies>
+<!--		<dependency>-->
+<!--			<groupId>libcombine</groupId>-->
+<!--			<artifactId>libcombine</artifactId>-->
+<!--			<scope>system</scope>-->
+<!--			<version>0.0.1</version>-->
+<!--			<systemPath>${user.dir}/libcombine_java/linux64/libcombine.jar</systemPath>-->
+<!--		</dependency>-->
+<!--	</dependencies>-->
 
 	<modules>
 		<!--	<module>ojdbc6</module>  -->
