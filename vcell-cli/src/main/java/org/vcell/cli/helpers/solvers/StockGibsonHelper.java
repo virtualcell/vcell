@@ -9,6 +9,7 @@ import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solver.SolverUtilities;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.solver.stoch.StochFileWriter;
+import org.vcell.cli.CLIUtils;
 import org.vcell.cli.helpers.sbml.SBMLSolverHelper;
 import org.vcell.util.exe.Executable;
 import org.vcell.util.exe.ExecutableException;
@@ -40,7 +41,7 @@ public class StockGibsonHelper {
             System.err.print("Failed to write Stock Gibson solver input file, failed with err: " + e.getMessage());
         }
 
-        File gibsonOutputFile = new File(outDir, taskId + SimDataConstants.IDA_DATA_EXTENSION);
+        File gibsonOutputFile = new File(outDir, taskId + ".csv");
 
 //        writeFunctionFile(outDir, docName, SimDataConstants.FUNCTIONFILE_EXTENSION, simTask);
 
@@ -57,6 +58,7 @@ public class StockGibsonHelper {
             System.err.print("Unable to execute solver executable, failed with err: " + e.getMessage());
         }
         ODESolverResultSet odeSolverResultSet = SBMLSolverHelper.getODESolverResultSet(simJob, gibsonOutputFile.getPath());
+        CLIUtils.convertIDAtoCSV(gibsonOutputFile);
         return odeSolverResultSet;
     }
 }

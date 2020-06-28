@@ -1,16 +1,21 @@
 package org.vcell.cli;
 
 import org.apache.commons.cli.*;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.select.Elements;
+
+import java.io.IOException;
 
 public class CLIHandler {
-    private final String usage = "usage: vcell [-h] [-q] -i ARCHIVE [-o OUT_DIR] [-v]";
-    private final String syntax = "vcell [-h] [-q] -i ARCHIVE [-o OUT_DIR] [-v]";
-    private final String header = "\nBioSimulations-compliant command-line interface to the vcell simulation program <http://vcell.org>.\n\n" +
+    private final String usage = "usage: VCell [-h] [-q] -i ARCHIVE [-o OUT_DIR] [-v]";
+    private final String syntax = "VCell [-h] [-q] -i ARCHIVE [-o OUT_DIR] [-v]";
+    private final String header = "\nBioSimulations-compliant command-line interface to the VCell simulation program <http://vcell.org>.\n\n" +
             "optional arguments:\n\n";
     CommandLine cmd = null;
 
 
-    CLIHandler(String[] args) {
+    CLIHandler(String[] args) throws IOException {
         CommandLineParser parser = new DefaultParser();
 
         try {
@@ -32,7 +37,7 @@ public class CLIHandler {
 
         if (cmd.hasOption("v")) {
             //TODO: Properly implement version fetch for vcell (make it dynamic)
-            System.out.println("Vcell version 7.2");
+            System.out.println("VCell version " + getVersion());
             System.exit(1);
         }
     }
@@ -86,5 +91,16 @@ public class CLIHandler {
     public void printHelp() {
         HelpFormatter formatter = new HelpFormatter();
         formatter.printHelp(this.syntax, this.header, this.getCommandLineOptions(), "");
+    }
+
+    public String getVersion() throws IOException {
+        final String url = "http://vcell.org/webstart/Rel/updates.xml";
+        final Document document = Jsoup.connect(url).get();
+
+        Elements entryElements = document.select("entry");
+        String version;
+        version = entryElements.attr("newVersion");
+
+        return version;
     }
 }
