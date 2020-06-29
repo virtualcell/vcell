@@ -47,7 +47,65 @@ macCodeSignKeystore_pswd=`cat $macCodeSignKeystore_pswdfile`
 #
 # run install4jc to create installers for VCell Client on supported platforms.
 #
+#Separate build of win, linux and mac installers to avoid random failure due to threading
+
+#Generate Windows installers
 /installer/install4j8.0.5/bin/install4jc \
+	-m windows \
+	--win-keystore-password=$winCodeSignKeystore_pswd \
+	--mac-keystore-password=$macCodeSignKeystore_pswd \
+	-D \
+vcellIcnsFile=/config/icons/vcell.icns,\
+outputDir=/outputdir,\
+mavenRootDir=/vcellclient,\
+macJrePath=/jres/$macJre,\
+win64JrePath=/jres/$win64Jre,\
+win32JrePath=/jres/$win32Jre,\
+linux64JrePath=/jres/$linux64Jre,\
+linux32JrePath=/jres/$linux32Jre,\
+macKeystore=$macCodeSignKeystore_p12,\
+winKeystore=$winCodeSignKeystore_pfx,\
+applicationId=$compiler_applicationId,\
+SoftwareVersionString=$compiler_softwareVersionString,\
+Site=$compiler_Site,\
+vcellVersion=$compiler_vcellVersion,\
+vcellBuild=$compiler_vcellBuild,\
+updateSiteBaseUrl=$compiler_updateSiteBaseUrl,\
+rmiHosts=$compiler_rmiHosts,\
+bioformatsJarFile=$compiler_bioformatsJarFile,\
+bioformatsJarDownloadURL=$compiler_bioformatsJarDownloadURL\
+	VCell.install4j
+
+#Generate linux installers
+/installer/install4j8.0.5/bin/install4jc \
+	-m unixInstaller \
+	--win-keystore-password=$winCodeSignKeystore_pswd \
+	--mac-keystore-password=$macCodeSignKeystore_pswd \
+	-D \
+vcellIcnsFile=/config/icons/vcell.icns,\
+outputDir=/outputdir,\
+mavenRootDir=/vcellclient,\
+macJrePath=/jres/$macJre,\
+win64JrePath=/jres/$win64Jre,\
+win32JrePath=/jres/$win32Jre,\
+linux64JrePath=/jres/$linux64Jre,\
+linux32JrePath=/jres/$linux32Jre,\
+macKeystore=$macCodeSignKeystore_p12,\
+winKeystore=$winCodeSignKeystore_pfx,\
+applicationId=$compiler_applicationId,\
+SoftwareVersionString=$compiler_softwareVersionString,\
+Site=$compiler_Site,\
+vcellVersion=$compiler_vcellVersion,\
+vcellBuild=$compiler_vcellBuild,\
+updateSiteBaseUrl=$compiler_updateSiteBaseUrl,\
+rmiHosts=$compiler_rmiHosts,\
+bioformatsJarFile=$compiler_bioformatsJarFile,\
+bioformatsJarDownloadURL=$compiler_bioformatsJarDownloadURL\
+	VCell.install4j
+
+#Generate mac installer
+/installer/install4j8.0.5/bin/install4jc \
+	-m macos \
 	--win-keystore-password=$winCodeSignKeystore_pswd \
 	--mac-keystore-password=$macCodeSignKeystore_pswd \
 	-D \
