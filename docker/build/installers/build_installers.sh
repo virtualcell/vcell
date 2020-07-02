@@ -75,6 +75,8 @@ rmiHosts=$compiler_rmiHosts,\
 bioformatsJarFile=$compiler_bioformatsJarFile,\
 bioformatsJarDownloadURL=$compiler_bioformatsJarDownloadURL\
 	VCell.install4j
+	
+mv /outputdir/updates.xml /outputdir/updates_win.xml
 
 #Generate linux installers
 /installer/install4j8.0.5/bin/install4jc \
@@ -103,6 +105,9 @@ bioformatsJarFile=$compiler_bioformatsJarFile,\
 bioformatsJarDownloadURL=$compiler_bioformatsJarDownloadURL\
 	VCell.install4j
 
+mv /outputdir/updates.xml /outputdir/updates_linux.xml
+
+
 #Generate mac installer
 /installer/install4j8.0.5/bin/install4jc \
 	-m macos \
@@ -129,4 +134,16 @@ rmiHosts=$compiler_rmiHosts,\
 bioformatsJarFile=$compiler_bioformatsJarFile,\
 bioformatsJarDownloadURL=$compiler_bioformatsJarDownloadURL\
 	VCell.install4j
+
+mv /outputdir/updates.xml /outputdir/updates_mac.xml
+
+
+#reconstruct combined updates.xml from fragments (used by VCell client executable to detect if update needed)
+winc=$(wc -l < /outputdir/updates_win.xml)
+linuxc=$(wc -l < /outputdir/updates_linux.xml)
+macc=$(wc -l < /outputdir/updates_mac.xml)
+
+sed -n -e "1,$(($winc-1))p" /outputdir/updates_win.xml >/outputdir/updates.xml
+sed -n -e "3,$(($linuxc-1))p" /outputdir/updates_linux.xml >>/outputdir/updates.xml
+sed -n -e "3,$(($macc))p" /outputdir/updates_mac.xml >>/outputdir/updates.xml
 
