@@ -8,7 +8,6 @@ import jscl.math.function.Cubic;
 import jscl.math.function.Exp;
 import jscl.math.function.Function;
 import jscl.math.function.Log;
-import jscl.math.function.Sgn;
 import jscl.math.function.Sqrt;
 import jscl.math.function.hyperbolic.Acosh;
 import jscl.math.function.hyperbolic.Acoth;
@@ -26,6 +25,11 @@ import jscl.math.function.trigonometric.Cos;
 import jscl.math.function.trigonometric.Cot;
 import jscl.math.function.trigonometric.Sin;
 import jscl.math.function.trigonometric.Tan;
+import jscl.math.function.bool.And;
+import jscl.math.function.bool.Or;
+import jscl.math.function.bool.Xor;
+import jscl.math.function.bool.Not;
+import jscl.math.function.bool.Implies;
 
 public class FunctionParser extends Parser {
     public static final Parser parser=new FunctionParser();
@@ -98,9 +102,13 @@ class UsualFunctionParser extends Parser {
         else if(name.compareTo("atanh")==0) v=new Atanh(a[0]);
         else if(name.compareTo("acoth")==0) v=new Acoth(a[0]);
         else if(name.compareTo("abs")==0) v=new Abs(a[0]);
-        else if(name.compareTo("sgn")==0) v=new Sgn(a[0]);
         else if(name.compareTo("conjugate")==0) v=new Conjugate(a[0]);
-        else if(name.compareTo("eq")==0 || name.compareTo("le")==0 || name.compareTo("ge")==0 || name.compareTo("ne")==0 || name.compareTo("lt")==0 || name.compareTo("gt")==0 || name.compareTo("ap")==0) v=new Comparison(name,a[0],a[1]);
+        else if(name.compareTo("eq")==0 || name.compareTo("neq")==0 || name.compareTo("leq")==0 || name.compareTo("lt")==0 || name.compareTo("geq")==0 || name.compareTo("gt")==0 || name.compareTo("approx")==0) v=new Comparison(name,a[0],a[1]);
+        else if(name.compareTo("and")==0) v=new And(a[0],a[1]);
+        else if(name.compareTo("or")==0) v=new Or(a[0],a[1]);
+        else if(name.compareTo("xor")==0) v=new Xor(a[0],a[1]);
+        else if(name.compareTo("not")==0) v=new Not(a[0]);
+        else if(name.compareTo("implies")==0) v=new Implies(a[0],a[1]);
         return v;
     }
 
@@ -109,5 +117,5 @@ class UsualFunctionParser extends Parser {
         return false;
     }
 
-    private static String na[]={"sin","cos","tan","cot","asin","acos","atan","acot","log","exp","sqrt","cubic","sinh","cosh","tanh","coth","asinh","acosh","atanh","acoth","abs","sgn","conjugate","eq","le","ge","ne","lt","gt","ap"};
+    private static String na[]={"sin","cos","tan","cot","asin","acos","atan","acot","log","exp","sqrt","cubic","sinh","cosh","tanh","coth","asinh","acosh","atanh","acoth","abs","conjugate","eq","neq","leq","lt","geq","gt","approx","and","or","xor","not","implies"};
 }

@@ -11,9 +11,9 @@ public class Inv extends Frac {
     }
 
     public Generic evaluate() {
-        try {
+        if(JSCLInteger.valueOf(1).multiple(parameter())) {
             return JSCLInteger.valueOf(1).divide(parameter());
-        } catch (NotDivisibleException e) {}
+        }
         return expressionValue();
     }
 

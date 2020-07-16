@@ -1,7 +1,5 @@
 package jscl.math;
 
-import jscl.mathml.MathML;
-
 public abstract class GenericVariable extends Variable {
     Generic content;
 
@@ -11,17 +9,9 @@ public abstract class GenericVariable extends Variable {
     }
 
     public static Generic content(Generic generic) {
-        return content(generic,false);
-    }
-
-    public static Generic content(Generic generic, boolean expression) {
         try {
             Variable v=generic.variableValue();
-            if(expression) {
-                if(v instanceof ExpressionVariable) generic=((ExpressionVariable)v).content;
-            } else {
-                if(v instanceof GenericVariable) generic=((GenericVariable)v).content;
-            }
+            if(v instanceof GenericVariable) generic=((GenericVariable)v).content;
         } catch (NotVariableException e) {}
         return generic;
     }
@@ -63,6 +53,11 @@ public abstract class GenericVariable extends Variable {
         return v.expressionValue();
     }
 
+    public Generic function(Variable variable) {
+        if(isIdentity(variable)) return Function.identity;
+        else return content.function(variable);
+    }
+
     public Generic numeric() {
         return content.numeric();
     }
@@ -95,11 +90,7 @@ public abstract class GenericVariable extends Variable {
         return content.toString();
     }
 
-    public String toJava() {
-        return content.toJava();
-    }
-
-    public void toMathML(MathML element, Object data) {
-        content.toMathML(element,data);
+    public String toMathML() {
+        return content.toMathML();
     }
 }

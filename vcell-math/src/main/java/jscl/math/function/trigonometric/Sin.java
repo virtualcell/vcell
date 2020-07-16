@@ -72,6 +72,10 @@ public class Sin extends Trigonometric {
         );
     }
 
+    public Generic evalfunc() {
+        return ((jscl.math.Function)parameter[0]).sin();
+    }
+
     public Generic evalnum() {
         return ((NumericWrapper)parameter[0]).sin();
     }

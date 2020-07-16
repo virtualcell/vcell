@@ -2,7 +2,6 @@ package jscl.math.polynomial;
 
 import jscl.math.Generic;
 import jscl.math.JSCLInteger;
-import jscl.math.ModularInteger;
 
 class ArrayPolynomialModular extends ArrayPolynomialGeneric {
     final int modulo;

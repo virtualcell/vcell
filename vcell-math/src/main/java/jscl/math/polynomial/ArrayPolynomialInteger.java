@@ -1,7 +1,6 @@
 package jscl.math.polynomial;
 
 import java.math.BigInteger;
-
 import jscl.math.Generic;
 import jscl.math.JSCLInteger;
 

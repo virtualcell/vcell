@@ -7,7 +7,6 @@ import jscl.math.NotIntegrableException;
 import jscl.math.NotVariableException;
 import jscl.math.NumericWrapper;
 import jscl.math.Variable;
-import jscl.mathml.MathML;
 
 public class Abs extends Function {
     public Abs(Generic generic) {
@@ -19,7 +18,10 @@ public class Abs extends Function {
     }
 
     public Generic derivative(int n) {
-        return new Sgn(parameter[0]).evaluate();
+        return new Frac(
+            parameter[0],
+            expressionValue()
+        ).evaluate();
     }
 
     public Generic evaluate() {
@@ -50,43 +52,17 @@ public class Abs extends Function {
             if(v instanceof Abs) {
                 Function f=(Function)v;
                 return f.evalsimp();
-            } else if(v instanceof Sgn) {
-                return JSCLInteger.valueOf(1);
             }
         } catch (NotVariableException e) {}
         return expressionValue();
     }
 
+    public Generic evalfunc() {
+        return ((jscl.math.Function)parameter[0]).abs();
+    }
+
     public Generic evalnum() {
         return ((NumericWrapper)parameter[0]).abs();
-    }
-
-    public String toJava() {
-        StringBuffer buffer=new StringBuffer();
-        buffer.append(parameter[0].toJava());
-        buffer.append(".abs()");
-        return buffer.toString();
-    }
-
-    public void toMathML(MathML element, Object data) {
-        int exponent=data instanceof Integer?((Integer)data).intValue():1;
-        if(exponent==1) bodyToMathML(element);
-        else {
-            MathML e1=element.element("msup");
-            bodyToMathML(e1);
-            MathML e2=element.element("mn");
-            e2.appendChild(element.text(String.valueOf(exponent)));
-            e1.appendChild(e2);
-            element.appendChild(e1);
-        }
-    }
-
-    void bodyToMathML(MathML element) {
-        MathML e1=element.element("mfenced");
-        e1.setAttribute("open","|");
-        e1.setAttribute("close","|");
-        parameter[0].toMathML(e1,null);
-        element.appendChild(e1);
     }
 
     protected Variable newinstance() {

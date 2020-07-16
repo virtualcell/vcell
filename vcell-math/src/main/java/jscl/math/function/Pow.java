@@ -11,11 +11,10 @@ import jscl.math.NotVariableException;
 import jscl.math.NumericWrapper;
 import jscl.math.Power;
 import jscl.math.Variable;
-import jscl.mathml.MathML;
 
 public class Pow extends Algebraic {
     public Pow(Generic generic, Generic exponent) {
-        super("pow",new Generic[] {generic,exponent});
+        super("power",new Generic[] {generic,exponent});
     }
 
     public Root rootValue() throws NotRootException {
@@ -171,6 +170,10 @@ public class Pow extends Algebraic {
         }
     }
 
+    public Generic evalfunc() {
+        return ((jscl.math.Function)parameter[0]).pow((jscl.math.Function)parameter[1]);
+    }
+
     public Generic evalnum() {
         return ((NumericWrapper)parameter[0]).pow((NumericWrapper)parameter[1]);
     }
@@ -190,7 +193,7 @@ public class Pow extends Algebraic {
             } catch (NotVariableException e2) {
                 try {
                     Power o=parameter[0].powerValue();
-                    if(o.exponent()==1) buffer.append(o.value(true));
+                    if(o.exponent()==1) buffer.append(o.value());
                     else buffer.append(GenericVariable.valueOf(parameter[0]));
                 } catch (NotPowerException e3) {
                     buffer.append(GenericVariable.valueOf(parameter[0]));
@@ -217,45 +220,6 @@ public class Pow extends Algebraic {
             }
         }
         return buffer.toString();
-    }
-
-    public String toJava() {
-        StringBuffer buffer=new StringBuffer();
-        buffer.append(parameter[0].toJava());
-        buffer.append(".pow(");
-        buffer.append(parameter[1].toJava());
-        buffer.append(")");
-        return buffer.toString();
-    }
-
-    void bodyToMathML(MathML element, boolean fenced) {
-        if(fenced) {
-            MathML e1=element.element("mfenced");
-            bodyToMathML(e1);
-            element.appendChild(e1);
-        } else {
-            bodyToMathML(element);
-        }
-    }
-
-    void bodyToMathML(MathML element) {
-        MathML e1=element.element("msup");
-        try {
-            Variable v=parameter[0].variableValue();
-            if(v instanceof Frac || v instanceof Pow || v instanceof Exp) {
-                GenericVariable.valueOf(parameter[0]).toMathML(e1,null);
-            } else parameter[0].toMathML(e1,null);
-        } catch (NotVariableException e2) {
-            try {
-                Power o=parameter[0].powerValue();
-                if(o.exponent()==1) o.value(true).toMathML(e1,null);
-                else GenericVariable.valueOf(parameter[0]).toMathML(e1,null);
-            } catch (NotPowerException e3) {
-                GenericVariable.valueOf(parameter[0]).toMathML(e1,null);
-            }
-        }
-        parameter[1].toMathML(e1,null);
-        element.appendChild(e1);
     }
 
     protected Variable newinstance() {

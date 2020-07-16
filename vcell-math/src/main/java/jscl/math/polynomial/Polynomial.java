@@ -2,22 +2,19 @@ package jscl.math.polynomial;
 
 import java.util.Collection;
 import java.util.Iterator;
-
 import jscl.math.Arithmetic;
 import jscl.math.Expression;
 import jscl.math.Field;
 import jscl.math.Generic;
 import jscl.math.GenericVariable;
-import jscl.math.JSCLBoolean;
 import jscl.math.JSCLInteger;
 import jscl.math.Literal;
-import jscl.math.ModularInteger;
 import jscl.math.NotDivisibleException;
 import jscl.math.Rational;
 import jscl.math.Variable;
-import jscl.mathml.MathML;
+import jscl.editor.rendering.MathObject;
 
-public abstract class Polynomial implements Arithmetic, Comparable {
+public abstract class Polynomial implements Arithmetic, Comparable, MathObject {
     final Monomial monomialFactory;
     final Generic coefFactory;
     final Ordering ordering;
@@ -192,8 +189,19 @@ public abstract class Polynomial implements Arithmetic, Comparable {
     }
 
     public Polynomial pow(int exponent) {
-        Polynomial a=valueof(JSCLInteger.valueOf(1));
-        for(int i=0;i<exponent;i++) a=a.multiply(this);
+        final Polynomial a;
+        if (exponent < 0) {
+            throw new ArithmeticException();
+        } else if (exponent == 0) {
+            a = valueof(JSCLInteger.valueOf(1));
+        } else {
+            if (exponent % 2 == 0) {
+                final Polynomial c = pow(exponent / 2);
+                a = c.multiply(c);
+            } else {
+                a = multiply(pow(exponent - 1));
+            }
+        }
         return a;
     }
 
@@ -447,36 +455,19 @@ public abstract class Polynomial implements Arithmetic, Comparable {
         return buffer.toString();
     }
 
-    public void toMathML(MathML element, Object data) {
-        MathML e1=element.element("mrow");
-        if(signum()==0) {
-            MathML e2=element.element("mn");
-            e2.appendChild(element.text("0"));
-            e1.appendChild(e2);
-        }
-        int i=0;
-        for(Iterator it=iterator();it.hasNext();i++) {
-            Term t=(Term)it.next();
-            Monomial m=t.monomial();
-            Generic a=t.coef();
+    public String toMathML() {
+	String s = "<cn>" + "0" + "</cn>";
+        int n=0;
+        for(Iterator it=iterator();it.hasNext();) {
+            Term te=(Term)it.next();
+            Monomial m=te.monomial();
+            Generic a=te.coef();
             if(a instanceof Expression) a=a.signum()>0?GenericVariable.valueOf(a).expressionValue():GenericVariable.valueOf(a.negate()).expressionValue().negate();
-            if(a.signum()>0 && i>0) {
-                MathML e2=element.element("mo");
-                e2.appendChild(element.text("+"));
-                e1.appendChild(e2);
-            }
-            if(m.degree()==0) Expression.separateSign(e1,a);
-            else {
-                if(a.abs().compareTo(JSCLInteger.valueOf(1))==0) {
-                    if(a.signum()<0) {
-                        MathML e2=element.element("mo");
-                        e2.appendChild(element.text("-"));
-                        e1.appendChild(e2);
-                    }
-                } else Expression.separateSign(e1,a);
-                m.toMathML(e1,null);
-            }
-        }
-        element.appendChild(e1);
+	    Generic c = a.abs();
+	    String t = m.degree() == 0?c.toMathML():c.compareTo(JSCLInteger.valueOf(1)) == 0?m.toMathML():"<apply><times/>" + c.toMathML() + m.toMathML() + "</apply>";
+	    s = n == 0?a.signum() < 0?"<apply><minus/>" + t + "</apply>":t:a.signum() < 0?"<apply><minus/>" + s + t + "</apply>":"<apply><plus/>" + s + t + "</apply>";
+	    n++;
+	}
+	return s;
     }
 }

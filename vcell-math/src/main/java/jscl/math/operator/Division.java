@@ -5,7 +5,7 @@ import jscl.math.Variable;
 
 public class Division extends Operator {
     public Division(Generic expression1, Generic expression2) {
-        super("div",new Generic[] {expression1,expression2});
+        super("quotient",new Generic[] {expression1,expression2});
     }
 
     public Generic compute() {

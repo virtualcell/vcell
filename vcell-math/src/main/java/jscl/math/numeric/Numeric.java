@@ -1,8 +1,9 @@
 package jscl.math.numeric;
 
 import jscl.math.Arithmetic;
+import jscl.editor.rendering.MathObject;
 
-public abstract class Numeric implements Arithmetic, Comparable {
+public abstract class Numeric implements Arithmetic, Comparable, MathObject {
     public abstract Numeric add(Numeric numeric);
 
     public Numeric subtract(Numeric numeric) {
@@ -40,10 +41,6 @@ public abstract class Numeric implements Arithmetic, Comparable {
 
     public abstract Numeric negate();
     public abstract int signum();
-
-    public Numeric sgn() {
-        return divide(abs());
-    }
 
     public abstract Numeric log();
     public abstract Numeric exp();

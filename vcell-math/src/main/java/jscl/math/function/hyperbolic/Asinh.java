@@ -12,7 +12,7 @@ import jscl.math.function.Sqrt;
 
 public class Asinh extends ArcTrigonometric {
     public Asinh(Generic generic) {
-        super("asinh",new Generic[] {generic});
+        super("arcsinh",new Generic[] {generic});
     }
 
     public Generic derivative(int n) {
@@ -45,6 +45,10 @@ public class Asinh extends ArcTrigonometric {
                 0
             ).evalelem()
         ).evalelem();
+    }
+
+    public Generic evalfunc() {
+        return ((jscl.math.Function)parameter[0]).asinh();
     }
 
     public Generic evalnum() {

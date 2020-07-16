@@ -4,7 +4,6 @@ import jscl.math.Generic;
 import jscl.math.JSCLVector;
 import jscl.math.Variable;
 import jscl.math.operator.VectorOperator;
-import jscl.mathml.MathML;
 
 public class VectorProduct extends VectorOperator {
     public VectorProduct(Generic vector1, Generic vector2) {
@@ -20,12 +19,16 @@ public class VectorProduct extends VectorOperator {
         return expressionValue();
     }
 
-    protected void bodyToMathML(MathML element) {
-        parameter[0].toMathML(element,null);
-        MathML e1=element.element("mo");
-        e1.appendChild(element.text("\u2227"));
-        element.appendChild(e1);
-        parameter[1].toMathML(element,null);
+    @Override
+    public String toMathML() {
+        StringBuffer b = new StringBuffer();
+        b.append("<apply>");
+        b.append("<mo>" + "\u2227" + "</mo>");
+        for(int i=0;i<parameter.length;i++) {
+            b.append(parameter[i].toMathML());
+        }
+        b.append("</apply>");
+        return b.toString();
     }
 
     protected Variable newinstance() {

@@ -1,11 +1,13 @@
 package jscl.math.function;
 
 import jscl.math.Generic;
+import jscl.math.Expression;
 import jscl.math.JSCLInteger;
 import jscl.math.NotIntegrableException;
 import jscl.math.NumericWrapper;
+import jscl.math.numeric.Numeric;
+import jscl.math.numeric.JSCLDouble;
 import jscl.math.Variable;
-import jscl.mathml.MathML;
 import jscl.util.ArrayComparator;
 
 public class Constant extends Variable {
@@ -16,13 +18,17 @@ public class Constant extends Variable {
     public static final Generic third=new Inv(JSCLInteger.valueOf(3)).expressionValue();
     public static final Generic j=half.negate().multiply(JSCLInteger.valueOf(1).subtract(i.multiply(new Sqrt(JSCLInteger.valueOf(3)).expressionValue())));
     public static final Generic jbar=half.negate().multiply(JSCLInteger.valueOf(1).add(i.multiply(new Sqrt(JSCLInteger.valueOf(3)).expressionValue())));
-    public static final Generic infinity=new Constant("infin").expressionValue();
+    public static final Generic infinity=new Constant("oo").expressionValue();
     static final int PRIMECHARS=3;
     protected int prime;
     protected Generic subscript[];
 
     public Constant(String name) {
-        this(name,0,new Generic[0]);
+        this(name,0);
+    }
+
+    public Constant(String name, int prime) {
+        this(name,prime,new Generic[0]);
     }
 
     public Constant(String name, int prime, Generic subscript[]) {
@@ -89,8 +95,20 @@ public class Constant extends Variable {
         return v.expressionValue();
     }
 
+    public Generic function(Variable variable) {
+        if(isIdentity(variable)) return jscl.math.Function.identity;
+        else return numeric().function(variable);
+    }
+
     public Generic numeric() {
         return new NumericWrapper(this);
+    }
+
+    public Numeric numericValue() {
+        Expression expr = expressionValue();
+        if(expr.compareTo(pi)==0) return JSCLDouble.valueOf(Math.PI);
+        else if(expr.compareTo(infinity)==0) return JSCLDouble.valueOf(Double.POSITIVE_INFINITY);
+        else throw new ArithmeticException();
     }
 
     public boolean isConstant(Variable variable) {
@@ -138,89 +156,69 @@ public class Constant extends Variable {
         return buffer.toString();
     }
 
-    public String toJava() {
-        if(compareTo(new Constant("pi"))==0) return "JSCLDouble.valueOf(Math.PI)";
-        else if(compareTo(new Constant("infin"))==0) return "JSCLDouble.valueOf(Double.POSITIVE_INFINITY)";
-        StringBuffer buffer=new StringBuffer();
-        buffer.append(name);
-        if(prime==0);
-        else if(prime<=PRIMECHARS) buffer.append(underscores(prime));
-        else buffer.append("_").append(prime);
-        for(int i=0;i<subscript.length;i++) {
-            buffer.append("[").append(subscript[i].integerValue().intValue()).append("]");
-        }
-        return buffer.toString();
+    public String toMathML() {
+        if("pi".equals(name) && prime==0 && subscript.length==0) return "<pi/>";
+        else if("oo".equals(name)) return "<infinity/>";
+        else return "<ci>" + bodyToMathML() + "</ci>";
     }
 
-    static String underscores(int n) {
-        StringBuffer buffer=new StringBuffer();
-        for(int i=0;i<n;i++) buffer.append("_");
-        return buffer.toString();
-    }
-
-    public void toMathML(MathML element, Object data) {
-        int exponent=data instanceof Integer?((Integer)data).intValue():1;
-        if(exponent==1) bodyToMathML(element);
-        else {
-            MathML e1=element.element("msup");
-            bodyToMathML(e1);
-            MathML e2=element.element("mn");
-            e2.appendChild(element.text(String.valueOf(exponent)));
-            e1.appendChild(e2);
-            element.appendChild(e1);
-        }
-    }
-
-    public void bodyToMathML(MathML element) {
+    public String bodyToMathML() {
+        StringBuffer b = new StringBuffer();
         if(subscript.length==0) {
             if(prime==0) {
-                nameToMathML(element);
+                b.append(nameToMathML());
+            } else if(prime<=PRIMECHARS) {
+                b.append(nameToMathML() + primecharsToMathML(prime));
             } else {
-                MathML e1=element.element("msup");
-                nameToMathML(e1);
-                primeToMathML(e1);
-                element.appendChild(e1);
+                b.append("<msup>");
+                b.append("<mi>" + nameToMathML() + "</mi>");
+                b.append(primeToMathML());
+                b.append("</msup>");
             }
         } else {
             if(prime==0) {
-                MathML e1=element.element("msub");
-                nameToMathML(e1);
-                MathML e2=element.element("mrow");
-                for(int i=0;i<subscript.length;i++) {
-                    subscript[i].toMathML(e2,null);
-                }
-                e1.appendChild(e2);
-                element.appendChild(e1);
+                b.append("<msub>");
+                b.append("<mi>" + nameToMathML() + "</mi>");
+                b.append(subscriptToMathML());
+                b.append("</msub>");
+            } else if(prime<=PRIMECHARS) {
+                b.append("<msub>");
+                b.append("<mi>" + nameToMathML() + primecharsToMathML(prime) + "</mi>");
+                b.append(subscriptToMathML());
+                b.append("</msub>");
             } else {
-                MathML e1=element.element("msubsup");
-                nameToMathML(e1);
-                MathML e2=element.element("mrow");
-                for(int i=0;i<subscript.length;i++) {
-                    subscript[i].toMathML(e2,null);
-                }
-                e1.appendChild(e2);
-                primeToMathML(e1);
-                element.appendChild(e1);
+                b.append("<msubsup>");
+                b.append("<mi>" + nameToMathML() + "</mi>");
+                b.append(subscriptToMathML());
+                b.append(primeToMathML());
+                b.append("</msubsup>");
             }
         }
+        return b.toString();
     }
 
-    void primeToMathML(MathML element) {
-        if(prime<=PRIMECHARS) {
-            primecharsToMathML(element,prime);
-        } else {
-            MathML e1=element.element("mfenced");
-            MathML e2=element.element("mn");
-            e2.appendChild(element.text(String.valueOf(prime)));
-            e1.appendChild(e2);
-            element.appendChild(e1);
+    String subscriptToMathML() {
+        StringBuffer b = new StringBuffer();
+        b.append("<mrow>");
+        for(int i=0;i<subscript.length;i++) {
+            b.append(subscript[i].toMathML());
         }
+        b.append("</mrow>");
+        return b.toString();
     }
 
-    static void primecharsToMathML(MathML element, int n) {
-        MathML e1=element.element("mo");
-        for(int i=0;i<n;i++) e1.appendChild(element.text("\u2032"));
-        element.appendChild(e1);
+    String primeToMathML() {
+        StringBuffer b = new StringBuffer();
+        b.append("<mfenced>");
+        b.append("<mn>" + String.valueOf(prime) + "</mn>");
+        b.append("</mfenced>");
+        return b.toString();
+    }
+
+    static String primecharsToMathML(int n) {
+        StringBuffer b = new StringBuffer();
+        for(int i=0;i<n;i++) b.append("\u2032");
+        return b.toString();
     }
 
     protected Variable newinstance() {

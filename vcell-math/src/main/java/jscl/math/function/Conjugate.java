@@ -10,7 +10,6 @@ import jscl.math.NotVariableException;
 import jscl.math.NumericWrapper;
 import jscl.math.Power;
 import jscl.math.Variable;
-import jscl.mathml.MathML;
 
 public class Conjugate extends Function {
     public Conjugate(Generic generic) {
@@ -91,39 +90,12 @@ public class Conjugate extends Function {
         return expressionValue();
     }
 
+    public Generic evalfunc() {
+        return ((jscl.math.Function)parameter[0]).conjugate();
+    }
+
     public Generic evalnum() {
         return ((NumericWrapper)parameter[0]).conjugate();
-    }
-
-    public String toJava() {
-        StringBuffer buffer=new StringBuffer();
-        buffer.append(parameter[0].toJava());
-        buffer.append(".conjugate()");
-        return buffer.toString();
-    }
-
-    public void toMathML(MathML element, Object data) {
-        int exponent=data instanceof Integer?((Integer)data).intValue():1;
-        if(exponent==1) bodyToMathML(element);
-        else {
-            MathML e1=element.element("msup");
-            MathML e2=element.element("mfenced");
-            bodyToMathML(e2);
-            e1.appendChild(e2);
-            e2=element.element("mn");
-            e2.appendChild(element.text(String.valueOf(exponent)));
-            e1.appendChild(e2);
-            element.appendChild(e1);
-        }
-    }
-
-    void bodyToMathML(MathML element) {
-        MathML e1=element.element("mover");
-        parameter[0].toMathML(e1,null);
-        MathML e2=element.element("mo");
-        e2.appendChild(element.text("_"));
-        e1.appendChild(e2);
-        element.appendChild(e1);
     }
 
     protected Variable newinstance() {

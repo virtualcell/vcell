@@ -68,6 +68,10 @@ public class Sinh extends Trigonometric {
         );
     }
 
+    public Generic evalfunc() {
+        return ((jscl.math.Function)parameter[0]).sinh();
+    }
+
     public Generic evalnum() {
         return ((NumericWrapper)parameter[0]).sinh();
     }

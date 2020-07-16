@@ -4,7 +4,6 @@ import jscl.math.Generic;
 import jscl.math.JSCLInteger;
 import jscl.math.NotIntegerException;
 import jscl.math.Variable;
-import jscl.mathml.MathML;
 
 public class Derivative extends Operator {
     public Derivative(Generic expression, Generic variable, Generic value, Generic order) {
@@ -40,70 +39,30 @@ public class Derivative extends Operator {
         return buffer.toString();
     }
 
-    public void toMathML(MathML element, Object data) {
-        int exponent=data instanceof Integer?((Integer)data).intValue():1;
-        if(exponent==1) derivationToMathML(element,false);
-        else {
-            MathML e1=element.element("msup");
-            derivationToMathML(e1,true);
-            MathML e2=element.element("mn");
-            e2.appendChild(element.text(String.valueOf(exponent)));
-            e1.appendChild(e2);
-            element.appendChild(e1);
-        }
-        MathML e1=element.element("mfenced");
-        parameter[0].toMathML(e1,null);
-        if(parameter[2].compareTo(parameter[1])!=0) parameter[2].toMathML(e1,null);
-        element.appendChild(e1);
-    }
-
-    void derivationToMathML(MathML element, boolean fenced) {
-        if(fenced) {
-            MathML e1=element.element("mfenced");
-            derivationToMathML(e1);
-            element.appendChild(e1);
+    public String toMathML() {
+	StringBuffer b = new StringBuffer();
+        if(parameter[2].compareTo(parameter[1])!=0) {
+	    b.append("<apply>");
+            b.append(derivationToMathML());
+	    b.append(parameter[2].toMathML());
+	    b.append("</apply>");
         } else {
-            derivationToMathML(element);
+            b.append(derivationToMathML());
         }
-    }
+	return b.toString();
+     }
 
-    void derivationToMathML(MathML element) {
+    String derivationToMathML() {
         Variable v=parameter[1].variableValue();
-        int n=0;
-        try {
-            n=parameter[3].integerValue().intValue();
-        } catch (NotIntegerException e) {}
-        if(n==1) {
-            MathML e1=element.element("mfrac");
-            MathML e2=element.element("mo");
-            e2.appendChild(element.text(/*"\u2146"*/"d"));
-            e1.appendChild(e2);
-            e2=element.element("mrow");
-            MathML e3=element.element("mo");
-            e3.appendChild(element.text(/*"\u2146"*/"d"));
-            e2.appendChild(e3);
-            v.toMathML(e2,null);
-            e1.appendChild(e2);
-            element.appendChild(e1);
-        } else {
-            MathML e1=element.element("mfrac");
-            MathML e2=element.element("msup");
-            MathML e3=element.element("mo");
-            e3.appendChild(element.text(/*"\u2146"*/"d"));
-            e2.appendChild(e3);
-            parameter[3].toMathML(e2,null);
-            e1.appendChild(e2);
-            e2=element.element("mrow");
-            e3=element.element("mo");
-            e3.appendChild(element.text(/*"\u2146"*/"d"));
-            e2.appendChild(e3);
-            e3=element.element("msup");
-            parameter[1].toMathML(e3,null);
-            parameter[3].toMathML(e3,null);
-            e2.appendChild(e3);
-            e1.appendChild(e2);
-            element.appendChild(e1);
-        }
+	StringBuffer b = new StringBuffer();
+	b.append("<apply><diff/><bvar><degree>");
+        b.append(parameter[3].toMathML());
+        b.append("</degree>");
+        b.append(v.toMathML());
+        b.append("</bvar>");
+        b.append(parameter[0].toMathML());
+	b.append("</apply>");
+	return b.toString();
     }
 
     protected Variable newinstance() {

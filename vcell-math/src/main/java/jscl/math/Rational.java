@@ -1,10 +1,8 @@
 package jscl.math;
 
 import java.math.BigInteger;
-
 import jscl.math.function.Frac;
 import jscl.math.function.Inv;
-import jscl.mathml.MathML;
 
 public final class Rational extends Generic implements Field {
     public static final Rational factory=new Rational(BigInteger.valueOf(0),BigInteger.valueOf(1));
@@ -97,11 +95,18 @@ public final class Rational extends Generic implements Field {
     }
 
     public Generic gcd() {
-        return null;
+        return Rational.valueOf(signum(),1);
     }
 
+    @Override
     public Generic pow(int exponent) {
-        return null;
+        final Generic a;
+        if (exponent < 0) {
+            a = inverse().pow(-exponent);
+        } else {
+            a = super.pow(exponent);
+        }
+        return a;
     }
 
     public Generic negate() {
@@ -142,6 +147,10 @@ public final class Rational extends Generic implements Field {
 
     public Generic simplify() {
         return reduce();
+    }
+
+    public Generic function(Variable variable) {
+        return Function.valueOf(this);
     }
 
     public Generic numeric() {
@@ -234,6 +243,14 @@ public final class Rational extends Generic implements Field {
         }
     }
 
+    public static Rational valueOf(long n, long d) {
+	return new Rational(BigInteger.valueOf(n), BigInteger.valueOf(d));
+    }
+
+    public static Rational valueOf(String n, String d) {
+        return new Rational(new BigInteger(n), new BigInteger(d));
+    }
+
     public String toString() {
         StringBuffer buffer=new StringBuffer();
         try {
@@ -246,37 +263,7 @@ public final class Rational extends Generic implements Field {
         return buffer.toString();
     }
 
-    public String toJava() {
-        return "JSCLDouble.valueOf("+numerator+"/"+denominator+")";
-    }
-
-    public void toMathML(MathML element, Object data) {
-        int exponent=data instanceof Integer?((Integer)data).intValue():1;
-        if(exponent==1) bodyToMathML(element);
-        else {
-            MathML e1=element.element("msup");
-            bodyToMathML(e1);
-            MathML e2=element.element("mn");
-            e2.appendChild(element.text(String.valueOf(exponent)));
-            e1.appendChild(e2);
-            element.appendChild(e1);
-        }
-    }
-
-    void bodyToMathML(MathML element) {
-        try {
-            MathML e1=element.element("mn");
-            e1.appendChild(element.text(String.valueOf(integerValue())));
-            element.appendChild(e1);
-        } catch (NotIntegerException e) {
-            MathML e1=element.element("mfrac");
-            MathML e2=element.element("mn");
-            e2.appendChild(element.text(String.valueOf(numerator)));
-            e1.appendChild(e2);
-            e2=element.element("mn");
-            e2.appendChild(element.text(String.valueOf(denominator)));
-            e1.appendChild(e2);
-            element.appendChild(e1);
-        }
+    public String toMathML() {
+	return "<cn type=\"rational\">" + numerator + "<sep/>" + denominator + "</cn>";
     }
 }

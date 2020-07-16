@@ -12,7 +12,7 @@ import jscl.math.function.Root;
 
 public class Acot extends ArcTrigonometric {
     public Acot(Generic generic) {
-        super("acot",new Generic[] {generic});
+        super("arccot",new Generic[] {generic});
     }
 
     public Generic derivative(int n) {
@@ -41,6 +41,10 @@ public class Acot extends ArcTrigonometric {
                 ).evalelem()
             ).evalelem()
         );
+    }
+
+    public Generic evalfunc() {
+        return ((jscl.math.Function)parameter[0]).acot();
     }
 
     public Generic evalnum() {

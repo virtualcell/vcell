@@ -167,7 +167,7 @@ public final class Complex extends Numeric {
             else {
                 buffer.append(real);
                 if(imag<=0.);
-                                else buffer.append("+");
+                else buffer.append("+");
             }
             if(imag==1.);
             else if(imag==-1.) buffer.append("-");
@@ -178,5 +178,9 @@ public final class Complex extends Numeric {
             buffer.append("sqrt(-1)");
         }
         return buffer.toString();
+    }
+
+    public String toMathML() {
+	return "<cn type=\"complex-cartesian\">" + real + "<sep/>" + imag + "</cn>";
     }
 }

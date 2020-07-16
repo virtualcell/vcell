@@ -1,15 +1,24 @@
 package jscl.math;
 
 import jscl.math.function.Conjugate;
+import jscl.math.function.Constant;
 import jscl.math.function.Frac;
 import jscl.math.function.trigonometric.Cos;
 import jscl.math.function.trigonometric.Sin;
-import jscl.mathml.MathML;
 import jscl.util.ArrayComparator;
 
 public class Matrix extends Generic {
     protected final Generic element[][];
     protected final int n,p;
+
+    public Matrix(String name, int prime, int n, int p) {
+        this(new Generic[n][p]);
+        for(int i=0;i<n;i++) {
+            for(int j=0;j<p;j++) {
+                element[i][j]=new Constant(name, prime, new Generic[] {JSCLInteger.valueOf(i), JSCLInteger.valueOf(j)}).expressionValue();
+            }
+        }
+    }
 
     public Matrix(Generic element[][]) {
         this.element=element;
@@ -109,11 +118,7 @@ public class Matrix extends Generic {
             Matrix m=(Matrix)newinstance();
             for(int i=0;i<n;i++) {
                 for(int j=0;j<p;j++) {
-                    try {
-                        m.element[i][j]=element[i][j].divide(generic);
-                    } catch (NotDivisibleException e) {
-                        m.element[i][j]=new Frac(element[i][j],generic).evaluate();
-                    }
+                    m.element[i][j]=element[i][j].divide(generic);
                 }
             }
             return m;
@@ -218,6 +223,16 @@ public class Matrix extends Generic {
         for(int i=0;i<n;i++) {
             for(int j=0;j<p;j++) {
                 m.element[i][j]=element[i][j].simplify();
+            }
+        }
+        return m;
+    }
+
+    public Generic function(Variable variable) {
+        Matrix m=(Matrix)newinstance();
+        for(int i=0;i<n;i++) {
+            for(int j=0;j<p;j++) {
+                m.element[i][j]=element[i][j].function(variable);
             }
         }
         return m;
@@ -444,47 +459,18 @@ public class Matrix extends Generic {
         return buffer.toString();
     }
 
-    public String toJava() {
-        StringBuffer buffer=new StringBuffer();
-        buffer.append("new NumericMatrix(new Numeric[][] {");
+    public String toMathML() {
+	StringBuffer b = new StringBuffer();
+	b.append("<matrix>");
         for(int i=0;i<n;i++) {
-            buffer.append("{");
+	    b.append("<matrixrow>");
             for(int j=0;j<p;j++) {
-                buffer.append(element[i][j].toJava()).append(j<p-1?", ":"");
+                b.append(element[i][j].toMathML());
             }
-            buffer.append("}").append(i<n-1?", ":"");
+	    b.append("</matrixrow>");
         }
-        buffer.append("})");
-        return buffer.toString();
-    }
-
-    public void toMathML(MathML element, Object data) {
-        int exponent=data instanceof Integer?((Integer)data).intValue():1;
-        if(exponent==1) bodyToMathML(element);
-        else {
-            MathML e1=element.element("msup");
-            bodyToMathML(e1);
-            MathML e2=element.element("mn");
-            e2.appendChild(element.text(String.valueOf(exponent)));
-            e1.appendChild(e2);
-            element.appendChild(e1);
-        }
-    }
-
-    protected void bodyToMathML(MathML e0) {
-        MathML e1=e0.element("mfenced");
-        MathML e2=e0.element("mtable");
-        for(int i=0;i<n;i++) {
-            MathML e3=e0.element("mtr");
-            for(int j=0;j<p;j++) {
-                MathML e4=e0.element("mtd");
-                element[i][j].toMathML(e4,null);
-                e3.appendChild(e4);
-            }
-            e2.appendChild(e3);
-        }
-        e1.appendChild(e2);
-        e0.appendChild(e1);
+	b.append("</matrix>");
+	return b.toString();
     }
 
     protected Generic newinstance() {

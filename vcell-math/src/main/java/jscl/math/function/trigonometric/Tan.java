@@ -77,6 +77,10 @@ public class Tan extends Trigonometric {
         ).evalsimp();
     }
 
+    public Generic evalfunc() {
+        return ((jscl.math.Function)parameter[0]).tan();
+    }
+
     public Generic evalnum() {
         return ((NumericWrapper)parameter[0]).tan();
     }

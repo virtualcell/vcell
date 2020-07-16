@@ -2,10 +2,10 @@ package jscl.math.operator.vector;
 
 import jscl.math.Generic;
 import jscl.math.JSCLVector;
+import jscl.math.NotVectorException;
 import jscl.math.Variable;
 import jscl.math.operator.VectorOperator;
 import jscl.math.operator.product.GeometricProduct;
-import jscl.mathml.MathML;
 
 public class Del extends VectorOperator {
     public Del(Generic vector, Generic variable, Generic algebra) {
@@ -13,12 +13,12 @@ public class Del extends VectorOperator {
     }
 
     public Generic compute() {
-        Variable variable[]=variables(parameter[1]);
+        Variable variable[]=variables(parameter[1].vectorValue());
         int algebra[]=GeometricProduct.algebra(parameter[2]);
-        if(parameter[0] instanceof JSCLVector) {
-            JSCLVector vector=(JSCLVector)parameter[0];
+        try {
+            JSCLVector vector=parameter[0].vectorValue();
             return vector.del(variable,algebra);
-        }
+        } catch (final NotVectorException e) {}
         return expressionValue();
     }
 
@@ -35,9 +35,16 @@ public class Del extends VectorOperator {
         return buffer.toString();
     }
 
-    protected void bodyToMathML(MathML element) {
-        operator(element,"nabla");
-        parameter[0].toMathML(element,null);
+    @Override
+    public String toMathML() {
+        StringBuffer b = new StringBuffer();
+        b.append("<apply>");
+        b.append(operator("nabla").toMathML());
+        b.append(parameter[0].toMathML());
+        if(parameter[2].signum()==0);
+        else b.append(parameter[2].toMathML());
+        b.append("</apply>");
+        return b.toString();
     }
 
     protected Variable newinstance() {

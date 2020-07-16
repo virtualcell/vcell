@@ -4,11 +4,10 @@ import jscl.math.Generic;
 import jscl.math.JSCLInteger;
 import jscl.math.NotIntegrableException;
 import jscl.math.Variable;
-import jscl.mathml.MathML;
 import jscl.util.ArrayComparator;
 
 public abstract class Function extends Variable {
-    protected Generic parameter[];
+    protected final Generic parameter[];
 
     public Function(String name, Generic parameter[]) {
         super(name);
@@ -24,6 +23,8 @@ public abstract class Function extends Variable {
     public abstract Generic evalelem();
 
     public abstract Generic evalsimp();
+
+    public abstract Generic evalfunc();
 
     public abstract Generic evalnum();
 
@@ -97,6 +98,14 @@ public abstract class Function extends Variable {
         return v.evalsimp();
     }
 
+    public Generic function(Variable variable) {
+        Function v=(Function)newinstance();
+        for(int i=0;i<parameter.length;i++) {
+            v.parameter[i]=parameter[i].function(variable);
+        }
+        return v.evalfunc();
+    }
+
     public Generic numeric() {
         Function v=(Function)newinstance();
         for(int i=0;i<parameter.length;i++) {
@@ -138,29 +147,14 @@ public abstract class Function extends Variable {
         return buffer.toString();
     }
 
-    public String toJava() {
-        StringBuffer buffer=new StringBuffer();
-        buffer.append(parameter[0].toJava());
-        buffer.append(".").append(name).append("()");
-        return buffer.toString();
-    }
-
-    public void toMathML(MathML element, Object data) {
-        MathML e1;
-        int exponent=data instanceof Integer?((Integer)data).intValue():1;
-        if(exponent==1) nameToMathML(element);
-        else {
-            e1=element.element("msup");
-            nameToMathML(e1);
-            MathML e2=element.element("mn");
-            e2.appendChild(element.text(String.valueOf(exponent)));
-            e1.appendChild(e2);
-            element.appendChild(e1);
-        }
-        e1=element.element("mfenced");
+    public String toMathML() {
+	StringBuffer b = new StringBuffer();
+	b.append("<apply>");
+	b.append("<" + name + "/>");
         for(int i=0;i<parameter.length;i++) {
-            parameter[i].toMathML(e1,null);
+            b.append(parameter[i].toMathML());
         }
-        element.appendChild(e1);
+	b.append("</apply>");
+	return b.toString();
     }
 }

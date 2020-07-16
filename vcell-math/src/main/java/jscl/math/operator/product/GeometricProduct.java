@@ -6,9 +6,10 @@ import jscl.math.JSCLVector;
 import jscl.math.Variable;
 import jscl.math.function.ImplicitFunction;
 import jscl.math.operator.VectorOperator;
-import jscl.mathml.MathML;
 
 public class GeometricProduct extends VectorOperator {
+    public static final ImplicitFunction.Curried cl = ImplicitFunction.apply("cl", new int[2]);
+
     public GeometricProduct(Generic vector1, Generic vector2, Generic algebra) {
         super("geometric",new Generic[] {vector1,vector2,algebra});
     }
@@ -30,11 +31,12 @@ public class GeometricProduct extends VectorOperator {
             Generic g[]=((ImplicitFunction)v).parameters();
             int p=g[0].integerValue().intValue();
             int q=g[1].integerValue().intValue();
-            if(v.compareTo(new ImplicitFunction("cl",new Generic[] {JSCLInteger.valueOf(p),JSCLInteger.valueOf(q)},new int[] {0,0},new Generic[] {}))==0) return new int[] {p,q};
+            if(v.compareTo(cl.apply(new Generic[] {JSCLInteger.valueOf(p),JSCLInteger.valueOf(q)}).variableValue())==0) return new int[] {p,q};
         }
         throw new ArithmeticException();
     }
 
+    @Override
     public String toString() {
         StringBuffer buffer=new StringBuffer();
         int n=3;
@@ -48,9 +50,18 @@ public class GeometricProduct extends VectorOperator {
         return buffer.toString();
     }
 
-    protected void bodyToMathML(MathML element) {
-        parameter[0].toMathML(element,null);
-        parameter[1].toMathML(element,null);
+    @Override
+    public String toMathML() {
+        StringBuffer b = new StringBuffer();
+        int n=3;
+        if(parameter[2].signum()==0) n=2;
+        b.append("<apply>");
+        b.append("<ci>" + nameToMathML() + "</ci>");
+        for(int i=0;i<n;i++) {
+            b.append(parameter[i].toMathML());
+        }
+        b.append("</apply>");
+        return b.toString();
     }
 
     protected Variable newinstance() {

@@ -3,9 +3,7 @@ package jscl.math.polynomial;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.TreeMap;
-
 import jscl.math.Generic;
-import jscl.math.JSCLBoolean;
 import jscl.math.JSCLInteger;
 
 class ArrayPolynomialBoolean extends ArrayPolynomialModular {

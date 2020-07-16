@@ -5,7 +5,6 @@ import jscl.math.numeric.JSCLDouble;
 import jscl.math.numeric.Numeric;
 import jscl.math.numeric.NumericMatrix;
 import jscl.math.numeric.NumericVector;
-import jscl.mathml.MathML;
 
 public final class NumericWrapper extends Generic {
     final Numeric content;
@@ -35,9 +34,7 @@ public final class NumericWrapper extends Generic {
     }
 
     public NumericWrapper(Constant constant) {
-        if(constant.compareTo(new Constant("pi"))==0) content=JSCLDouble.valueOf(Math.PI);
-        else if(constant.compareTo(new Constant("infin"))==0) content=JSCLDouble.valueOf(Double.POSITIVE_INFINITY);
-        else throw new ArithmeticException();
+        content = constant.numericValue();
     }
 
     public NumericWrapper(Numeric numeric) {
@@ -148,6 +145,11 @@ public final class NumericWrapper extends Generic {
         return null;
     }
 
+    public Generic function(Variable variable) {
+        if(content instanceof JSCLDouble) return Function.valueOf(((JSCLDouble)content).doubleValue());
+        else throw new ArithmeticException();
+    }
+
     public Generic numeric() {
         return this;
     }
@@ -161,6 +163,12 @@ public final class NumericWrapper extends Generic {
             return valueof((NumericWrapper)generic);
         } else if(generic instanceof JSCLInteger) {
             return new NumericWrapper((JSCLInteger)generic);
+        } else if(generic instanceof Rational) {
+            return new NumericWrapper((Rational)generic);
+        } else if(generic instanceof JSCLVector) {
+            return new NumericWrapper((JSCLVector)generic);
+        } else if(generic instanceof Matrix) {
+            return new NumericWrapper((Matrix)generic);
         } else throw new ArithmeticException();
     }
 
@@ -199,10 +207,6 @@ public final class NumericWrapper extends Generic {
 
     public boolean isConstant(Variable variable) {
         return true;
-    }
-
-    public Generic sgn() {
-        return new NumericWrapper(content.sgn());
     }
 
     public Generic log() {
@@ -315,27 +319,8 @@ public final class NumericWrapper extends Generic {
         return content.toString();
     }
 
-    public String toJava() {
-        return "JSCLDouble.valueOf("+new Double(((JSCLDouble)content).doubleValue())+")";
-    }
-
-    public void toMathML(MathML element, Object data) {
-        int exponent=data instanceof Integer?((Integer)data).intValue():1;
-        if(exponent==1) bodyToMathML(element);
-        else {
-            MathML e1=element.element("msup");
-            bodyToMathML(e1);
-            MathML e2=element.element("mn");
-            e2.appendChild(element.text(String.valueOf(exponent)));
-            e1.appendChild(e2);
-            element.appendChild(e1);
-        }
-    }
-
-    void bodyToMathML(MathML element) {
-        MathML e1=element.element("mn");
-        e1.appendChild(element.text(String.valueOf(new Double(((JSCLDouble)content).doubleValue()))));
-        element.appendChild(e1);
+    public String toMathML() {
+        return content.toMathML();
     }
 
     protected Generic newinstance() {

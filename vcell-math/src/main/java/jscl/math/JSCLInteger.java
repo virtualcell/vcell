@@ -2,9 +2,7 @@ package jscl.math;
 
 import java.math.BigInteger;
 
-import jscl.mathml.MathML;
-
-public final class JSCLInteger extends Generic {
+public class JSCLInteger extends Generic {
     public static final JSCLInteger factory=new JSCLInteger(BigInteger.valueOf(0));
     final BigInteger content;
 
@@ -17,7 +15,7 @@ public final class JSCLInteger extends Generic {
     }
 
     public JSCLInteger add(JSCLInteger integer) {
-        return new JSCLInteger(content.add(integer.content));
+        return newinstance(content.add(integer.content));
     }
 
     public Generic add(Generic generic) {
@@ -29,7 +27,7 @@ public final class JSCLInteger extends Generic {
     }
 
     public JSCLInteger subtract(JSCLInteger integer) {
-        return new JSCLInteger(content.subtract(integer.content));
+        return newinstance(content.subtract(integer.content));
     }
 
     public Generic subtract(Generic generic) {
@@ -41,7 +39,7 @@ public final class JSCLInteger extends Generic {
     }
 
     public JSCLInteger multiply(JSCLInteger integer) {
-        return new JSCLInteger(content.multiply(integer.content));
+        return newinstance(content.multiply(integer.content));
     }
 
     public Generic multiply(Generic generic) {
@@ -52,7 +50,11 @@ public final class JSCLInteger extends Generic {
         }
     }
 
-    public JSCLInteger divide(JSCLInteger integer) throws ArithmeticException {
+    public boolean multiple(Generic generic) throws ArithmeticException {
+        return remainder(generic).signum()==0;
+    }
+
+    public JSCLInteger integerDivide(JSCLInteger integer) throws ArithmeticException {
         JSCLInteger e[]=divideAndRemainder(integer);
         if(e[1].signum()==0) return e[0];
         else throw new NotDivisibleException();
@@ -60,7 +62,9 @@ public final class JSCLInteger extends Generic {
 
     public Generic divide(Generic generic) throws ArithmeticException {
         if(generic instanceof JSCLInteger) {
-            return divide((JSCLInteger)generic);
+            JSCLInteger integer=(JSCLInteger)generic;
+            if(multiple(integer)) return integerDivide(integer);
+            else return new Rational(content(),integer.content());
         } else {
             return generic.valueof(this).divide(generic);
         }
@@ -68,7 +72,7 @@ public final class JSCLInteger extends Generic {
 
     public JSCLInteger[] divideAndRemainder(JSCLInteger integer) throws ArithmeticException {
         BigInteger b[]=content.divideAndRemainder(integer.content);
-        return new JSCLInteger[] {new JSCLInteger(b[0]),new JSCLInteger(b[1])};
+        return new JSCLInteger[] {newinstance(b[0]),newinstance(b[1])};
     }
 
     public Generic[] divideAndRemainder(Generic generic) throws ArithmeticException {
@@ -80,7 +84,7 @@ public final class JSCLInteger extends Generic {
     }
 
     public JSCLInteger remainder(JSCLInteger integer) throws ArithmeticException {
-        return new JSCLInteger(content.remainder(integer.content));
+        return newinstance(content.remainder(integer.content));
     }
 
     public Generic remainder(Generic generic) throws ArithmeticException {
@@ -92,7 +96,7 @@ public final class JSCLInteger extends Generic {
     }
 
     public JSCLInteger gcd(JSCLInteger integer) {
-        return new JSCLInteger(content.gcd(integer.content));
+        return newinstance(content.gcd(integer.content));
     }
 
     public Generic gcd(Generic generic) {
@@ -103,16 +107,17 @@ public final class JSCLInteger extends Generic {
         }
     }
 
-    public Generic gcd() {
-        return new JSCLInteger(BigInteger.valueOf(signum()));
+    public JSCLInteger gcd() {
+        return JSCLInteger.valueOf(signum());
     }
 
-    public Generic pow(int exponent) {
-        return new JSCLInteger(content.pow(exponent));
+    @Override
+    public JSCLInteger pow(int exponent) {
+        return newinstance(content.pow(exponent));
     }
 
-    public Generic negate() {
-        return new JSCLInteger(content.negate());
+    public JSCLInteger negate() {
+        return newinstance(content.negate());
     }
 
     public int signum() {
@@ -123,16 +128,29 @@ public final class JSCLInteger extends Generic {
         return 0;
     }
 
+    public JSCLInteger factorial() {
+        return factorial(1);
+    }
+
+    public JSCLInteger factorial(int k) {
+        int n=intValue();
+        JSCLInteger a=JSCLInteger.valueOf(1);
+        for(int i=n;i>1;i-=k) {
+            a=a.multiply(JSCLInteger.valueOf(i));
+        }
+        return a;
+    }
+
     public JSCLInteger mod(JSCLInteger integer) {
-        return new JSCLInteger(content.mod(integer.content));
+        return newinstance(content.mod(integer.content));
     }
 
     public JSCLInteger modPow(JSCLInteger exponent, JSCLInteger integer) {
-        return new JSCLInteger(content.modPow(exponent.content,integer.content));
+        return newinstance(content.modPow(exponent.content,integer.content));
     }
 
     public JSCLInteger modInverse(JSCLInteger integer) {
-        return new JSCLInteger(content.modInverse(integer.content));
+        return newinstance(content.modInverse(integer.content));
     }
 
     public JSCLInteger phi() {
@@ -142,7 +160,7 @@ public final class JSCLInteger extends Generic {
         Generic s=JSCLInteger.valueOf(1);
         for(int i=0;i<p.length;i++) {
             Power o=p[i].powerValue();
-            Generic q=o.value(true);
+            Generic q=o.value();
             int c=o.exponent();
             s=s.multiply(q.subtract(JSCLInteger.valueOf(1)).multiply(q.pow(c-1)));
         }
@@ -155,7 +173,7 @@ public final class JSCLInteger extends Generic {
         Generic p[]=a.productValue();
         JSCLInteger d[]=new JSCLInteger[p.length];
         for(int i=0;i<p.length;i++) {
-            d[i]=phi.divide(p[i].powerValue().value(true).integerValue());
+            d[i]=phi.integerDivide(p[i].powerValue().value().integerValue());
         }
         int k=0;
         JSCLInteger n=this;
@@ -221,12 +239,16 @@ public final class JSCLInteger extends Generic {
         return this;
     }
 
+    public Generic function(Variable variable) {
+        return Function.valueOf(this);
+    }
+
     public Generic numeric() {
         return new NumericWrapper(this);
     }
 
-    public Generic valueof(Generic generic) {
-        return new JSCLInteger(((JSCLInteger)generic).content);
+    public JSCLInteger valueof(Generic generic) {
+        return newinstance(((JSCLInteger)generic).content);
     }
 
     public Generic[] sumValue() {
@@ -306,26 +328,11 @@ public final class JSCLInteger extends Generic {
         return content.toString();
     }
 
-    public String toJava() {
-        return "JSCLDouble.valueOf("+content+")";
+    public String toMathML() {
+	return "<cn>" + content + "</cn>";
     }
 
-    public void toMathML(MathML element, Object data) {
-        int exponent=data instanceof Integer?((Integer)data).intValue():1;
-        if(exponent==1) bodyToMathML(element);
-        else {
-            MathML e1=element.element("msup");
-            bodyToMathML(e1);
-            MathML e2=element.element("mn");
-            e2.appendChild(element.text(String.valueOf(exponent)));
-            e1.appendChild(e2);
-            element.appendChild(e1);
-        }
-    }
-
-    void bodyToMathML(MathML element) {
-        MathML e1=element.element("mn");
-        e1.appendChild(element.text(String.valueOf(content)));
-        element.appendChild(e1);
+    protected JSCLInteger newinstance(BigInteger content) {
+        return new JSCLInteger(content);
     }
 }

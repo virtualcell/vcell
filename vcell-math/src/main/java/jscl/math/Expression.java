@@ -4,12 +4,10 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-
 import jscl.math.function.Frac;
 import jscl.math.function.Inv;
 import jscl.math.polynomial.Polynomial;
 import jscl.math.polynomial.UnivariatePolynomial;
-import jscl.mathml.MathML;
 import jscl.text.ExpressionParser;
 import jscl.text.ParseException;
 import jscl.text.Parser;
@@ -163,19 +161,21 @@ public class Expression extends Generic {
     public Generic multiply(Generic generic) {
         if(generic instanceof Expression) {
             return multiply((Expression)generic);
-        } else if(generic instanceof JSCLInteger) {
-            return multiply(valueof(generic));
-        } else if(generic instanceof Rational) {
+        } else if(generic instanceof JSCLInteger || generic instanceof Rational) {
             return multiply(valueof(generic));
         } else {
             return generic.multiply(this);
         }
     }
 
+    public boolean multiple(Generic generic) throws ArithmeticException {
+        return remainder(generic).signum()==0;
+    }
+
     public Generic divide(Generic generic) throws ArithmeticException {
         Generic a[]=divideAndRemainder(generic);
         if(a[1].signum()==0) return a[0];
-        else throw new NotDivisibleException();
+        else return new Frac(this,generic).evaluate();
     }
 
     public Generic[] divideAndRemainder(Generic generic) throws ArithmeticException {
@@ -198,14 +198,18 @@ public class Expression extends Generic {
                 return new Generic[] {p[0].genericValue(),p[1].genericValue()};
             }
         } else if(generic instanceof JSCLInteger) {
-            try {
-                Expression ex=newinstance(size);
-                for(int i=0;i<size;i++) {
+            JSCLInteger d=(JSCLInteger)generic;
+            boolean flag=true;
+            Expression ex=newinstance(size);
+            for(int i=0;i<size;i++) {
+                if(coef[i].multiple(d)) {
                     ex.literal[i]=literal[i];
-                    ex.coef[i]=coef[i].divide((JSCLInteger)generic);
-                }
+                    ex.coef[i]=coef[i].integerDivide(d);
+                } else flag=false;
+            }
+            if(flag) {
                 return new Generic[] {ex,JSCLInteger.valueOf(0)};
-            } catch (NotDivisibleException e) {
+            } else {
                 return new Generic[] {JSCLInteger.valueOf(0),this};
             }
         } else if(generic instanceof Rational) {
@@ -338,9 +342,9 @@ public class Expression extends Generic {
                 Generic b=(Generic)map.get(v);
                 b=b.pow(c);
                 if(Matrix.product(a,b)) throw new ArithmeticException();
-                a=a.multiply(b);
+                a=a.isOne()?b:a.multiply(b);
             }
-            s=s.add(a);
+            s=s.isZero()?a:s.add(a);
         }
         return s;
     }
@@ -381,6 +385,17 @@ public class Expression extends Generic {
 
     public Generic simplify() {
         return Simplification.compute(this);
+    }
+
+    public Generic function(Variable variable) {
+        Map m=literalScm().content();
+        Iterator it=m.entrySet().iterator();
+        while(it.hasNext()) {
+            Map.Entry e=(Map.Entry)it.next();
+            Variable v=(Variable)e.getKey();
+            e.setValue(v.function(variable));
+        }
+        return substitute(m);
     }
 
     public Generic numeric() {
@@ -437,7 +452,7 @@ public class Expression extends Generic {
         } else throw new NotPowerException();
     }
 
-    public Expression expressionValue() throws NotExpressionException {
+    public Expression expressionValue() {
         return this;
     }
 
@@ -618,6 +633,8 @@ public class Expression extends Generic {
             init((Expression)generic);
         } else if(generic instanceof JSCLInteger) {
             init((JSCLInteger)generic);
+        } else if(generic instanceof ModularInteger) {
+            init(generic.integerValue());
         } else if(generic instanceof Rational) {
             init((Rational)generic);
         } else throw new ArithmeticException();
@@ -641,67 +658,18 @@ public class Expression extends Generic {
         return buffer.toString();
     }
 
-    public String toJava() {
-        StringBuffer buffer=new StringBuffer();
-        if(signum()==0) buffer.append("JSCLDouble.valueOf(0)");
-        for(int i=0;i<size;i++) {
-            Literal l=literal[i];
-            JSCLInteger en=coef[i];
-            if(i>0) {
-                if(en.signum()<0) {
-                    buffer.append(".subtract(");
-                    en=(JSCLInteger)en.negate();
-                } else buffer.append(".add(");
-            }
-            if(l.degree()==0) buffer.append(en.toJava());
-            else {
-                if(en.abs().compareTo(JSCLInteger.valueOf(1))==0) {
-                    if(en.signum()>0) buffer.append(l.toJava());
-                    else if(en.signum()<0) buffer.append(l.toJava()).append(".negate()");
-                } else buffer.append(en.toJava()).append(".multiply(").append(l.toJava()).append(")");
-            }
-            if(i>0) buffer.append(")");
-        }
-        return buffer.toString();
-    }
-
-    public void toMathML(MathML element, Object data) {
-        MathML e1=element.element("mrow");
-        if(signum()==0) {
-            MathML e2=element.element("mn");
-            e2.appendChild(element.text("0"));
-            e1.appendChild(e2);
-        }
-        for(int i=0;i<size;i++) {
-            Literal l=literal[i];
-            JSCLInteger en=coef[i];
-            if(en.signum()>0 && i>0) {
-                MathML e2=element.element("mo");
-                e2.appendChild(element.text("+"));
-                e1.appendChild(e2);
-            }
-            if(l.degree()==0) separateSign(e1,en);
-            else {
-                if(en.abs().compareTo(JSCLInteger.valueOf(1))==0) {
-                    if(en.signum()<0) {
-                        MathML e2=element.element("mo");
-                        e2.appendChild(element.text("-"));
-                        e1.appendChild(e2);
-                    }
-                } else separateSign(e1,en);
-                l.toMathML(e1,null);
-            }
-        }
-        element.appendChild(e1);
-    }
-
-    public static void separateSign(MathML element, Generic generic) {
-        if(generic.signum()<0) {
-            MathML e1=element.element("mo");
-            e1.appendChild(element.text("-"));
-            element.appendChild(e1);
-            generic.negate().toMathML(element,null);
-        } else generic.toMathML(element,null);
+    public String toMathML() {
+	String s = "<cn>" + "0" + "</cn>";
+	int n = 0;
+	for(int i=0;i<size;i++) {
+	    Literal l=literal[i];
+	    JSCLInteger en=coef[i];
+	    Generic c = en.abs();
+	    String t = l.degree() == 0?c.toMathML():c.compareTo(JSCLInteger.valueOf(1)) == 0?l.toMathML():"<apply><times/>" + c.toMathML() + l.toMathML() + "</apply>";
+	    s = n == 0?en.signum() < 0?"<apply><minus/>" + t + "</apply>":t:en.signum() < 0?"<apply><minus/>" + s + t + "</apply>":"<apply><plus/>" + s + t + "</apply>";
+	    n++;
+	}
+	return s;
     }
 
     protected Expression newinstance(int n) {

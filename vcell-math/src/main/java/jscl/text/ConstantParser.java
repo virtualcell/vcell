@@ -2,7 +2,6 @@ package jscl.text;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import jscl.math.Generic;
 import jscl.math.function.Constant;
 import jscl.util.ArrayUtils;
@@ -21,6 +20,9 @@ public class ConstantParser extends Parser {
         } catch (ParseException e) {
             throw e;
         }
+        try {
+            prime=((Integer)Prime.parser.parse(str,pos)).intValue();
+        } catch (ParseException e) {}
         while(true) {
             try {
                 Generic s=(Generic)Subscript.parser.parse(str,pos);
@@ -29,9 +31,6 @@ public class ConstantParser extends Parser {
                 break;
             }
         }
-        try {
-            prime=((Integer)Prime.parser.parse(str,pos)).intValue();
-        } catch (ParseException e) {}
         Generic s[]=(Generic[])ArrayUtils.toArray(l,new Generic[l.size()]);
         Constant v=new Constant(name,prime,s);
         return v;

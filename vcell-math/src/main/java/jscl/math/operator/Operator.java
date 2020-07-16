@@ -6,7 +6,6 @@ import jscl.math.JSCLVector;
 import jscl.math.NotIntegrableException;
 import jscl.math.NotVariableException;
 import jscl.math.Variable;
-import jscl.mathml.MathML;
 import jscl.util.ArrayComparator;
 
 public abstract class Operator extends Variable {
@@ -73,6 +72,10 @@ public abstract class Operator extends Variable {
         return v.expressionValue();
     }
 
+    public Generic function(Variable variable) {
+        throw new ArithmeticException();
+    }
+
     public Generic numeric() {
         throw new ArithmeticException();
     }
@@ -95,8 +98,8 @@ public abstract class Operator extends Variable {
         }
     }
 
-    protected static Variable[] variables(Generic generic) throws NotVariableException {
-        Generic element[]=((JSCLVector)generic).elements();
+    protected static Variable[] variables(JSCLVector vector) throws NotVariableException {
+        Generic element[]=vector.elements();
         Variable variable[]=new Variable[element.length];
         for(int i=0;i<element.length;i++) {
             variable[i]=element[i].variableValue();
@@ -115,26 +118,14 @@ public abstract class Operator extends Variable {
         return buffer.toString();
     }
 
-    public String toJava() {
-        throw new ArithmeticException();
-    }
-
-    public void toMathML(MathML element, Object data) {
-        MathML e1;
-        int exponent=data instanceof Integer?((Integer)data).intValue():1;
-        if(exponent==1) nameToMathML(element);
-        else {
-            e1=element.element("msup");
-            nameToMathML(e1);
-            MathML e2=element.element("mn");
-            e2.appendChild(element.text(String.valueOf(exponent)));
-            e1.appendChild(e2);
-            element.appendChild(e1);
-        }
-        e1=element.element("mfenced");
+    public String toMathML() {
+        StringBuffer b = new StringBuffer();
+        b.append("<apply>");
+        b.append("<ci>" + nameToMathML() + "</ci>");
         for(int i=0;i<parameter.length;i++) {
-            parameter[i].toMathML(e1,null);
+            b.append(parameter[i].toMathML());
         }
-        element.appendChild(e1);
+        b.append("</apply>");
+        return b.toString();
     }
 }

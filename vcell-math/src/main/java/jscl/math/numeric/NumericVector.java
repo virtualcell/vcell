@@ -150,6 +150,16 @@ public class NumericVector extends Numeric {
         return buffer.toString();
     }
 
+    public String toMathML() {
+	StringBuffer b = new StringBuffer();
+	b.append("<vector>");
+        for(int i=0;i<n;i++) {
+		b.append(element[i].toMathML());
+        }
+	b.append("</vector>");
+	return b.toString();
+    }
+
     protected NumericVector newinstance() {
         return newinstance(new Numeric[n]);
     }

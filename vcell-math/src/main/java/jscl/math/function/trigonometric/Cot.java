@@ -66,6 +66,10 @@ public class Cot extends Trigonometric {
         ).evalsimp();
     }
 
+    public Generic evalfunc() {
+        return ((jscl.math.Function)parameter[0]).cot();
+    }
+
     public Generic evalnum() {
         return ((NumericWrapper)parameter[0]).cot();
     }

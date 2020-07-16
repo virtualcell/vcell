@@ -12,7 +12,6 @@ import jscl.math.NotPowerException;
 import jscl.math.NotVariableException;
 import jscl.math.NumericWrapper;
 import jscl.math.Variable;
-import jscl.mathml.MathML;
 
 public class Frac extends Algebraic {
     public Frac(Generic numerator, Generic denominator) {
@@ -56,9 +55,9 @@ public class Frac extends Algebraic {
         if(parameter[0].compareTo(JSCLInteger.valueOf(1))==0) {
             return new Inv(parameter[1]).evaluate();
         }
-        try {
+        if(parameter[0].multiple(parameter[1])) {
             return parameter[0].divide(parameter[1]);
-        } catch (NotDivisibleException e) {}
+        }
         return expressionValue();
     }
 
@@ -74,6 +73,10 @@ public class Frac extends Algebraic {
             return new Frac(parameter[0].negate(),parameter[1].negate()).evalsimp();
         }
         return evaluate();
+    }
+
+    public Generic evalfunc() {
+        return ((jscl.math.Function)parameter[0]).divide((jscl.math.Function)parameter[1]);
     }
 
     public Generic evalnum() {
@@ -130,30 +133,8 @@ public class Frac extends Algebraic {
         return buffer.toString();
     }
 
-    public String toJava() {
-        StringBuffer buffer=new StringBuffer();
-        buffer.append(parameter[0].toJava());
-        buffer.append(".divide(");
-        buffer.append(parameter[1].toJava());
-        buffer.append(")");
-        return buffer.toString();
-    }
-
-    void bodyToMathML(MathML element, boolean fenced) {
-        if(fenced) {
-            MathML e1=element.element("mfenced");
-            bodyToMathML(e1);
-            element.appendChild(e1);
-        } else {
-            bodyToMathML(element);
-        }
-    }
-
-    void bodyToMathML(MathML element) {
-        MathML e1=element.element("mfrac");
-        parameter[0].toMathML(e1,null);
-        parameter[1].toMathML(e1,null);
-        element.appendChild(e1);
+    public String toMathML() {
+	return "<apply><divide/>" + parameter[0].toMathML() + parameter[1].toMathML() + "</apply>";
     }
 
     protected Variable newinstance() {

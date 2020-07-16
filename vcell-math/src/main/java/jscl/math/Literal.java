@@ -3,11 +3,9 @@ package jscl.math;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.TreeMap;
-
 import jscl.math.function.Frac;
 import jscl.math.function.Pow;
 import jscl.math.polynomial.Monomial;
-import jscl.mathml.MathML;
 
 public class Literal implements Comparable {
     Variable variable[];
@@ -335,32 +333,17 @@ public class Literal implements Comparable {
         return buffer.toString();
     }
 
-    public String toJava() {
-        StringBuffer buffer=new StringBuffer();
-        if(degree==0) buffer.append("JSCLDouble.valueOf(1)");
-        for(int i=0;i<size;i++) {
-            if(i>0) buffer.append(".multiply(");
-            Variable v=variable[i];
-            int c=power[i];
-            buffer.append(v.toJava());
-            if(c==1);
-            else buffer.append(".pow(").append(c).append(")");
-            if(i>0) buffer.append(")");
-        }
-        return buffer.toString();
-    }
-
-    public void toMathML(MathML element, Object data) {
-        if(degree==0) {
-            MathML e1=element.element("mn");
-            e1.appendChild(element.text("1"));
-            element.appendChild(e1);
-        }
+    public String toMathML() {
+	String s = "<cn>" + "1" + "</cn>";
+	boolean first = true;
         for(int i=0;i<size;i++) {
             Variable v=variable[i];
             int c=power[i];
-            v.toMathML(element,new Integer(c));
-        }
+	    String t = c == 1?v.toMathML():"<apply><power/>" + v.toMathML() + "<cn>" + c + "</cn></apply>";
+	    s = first?t:"<apply><times/>" + s + t + "</apply>";
+	    first = false;
+	}
+	return s;
     }
 
     protected Literal newinstance(int n) {

@@ -3,7 +3,6 @@ package jscl.math;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-
 import jscl.math.polynomial.Basis;
 import jscl.math.polynomial.Monomial;
 import jscl.math.polynomial.Ordering;
@@ -157,7 +156,7 @@ public class Factorization {
     }
 
     Generic getValue() {
-        return GenericVariable.content(result,true);
+        return ExpressionVariable.content(result);
     }
 }
 

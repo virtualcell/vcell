@@ -1,19 +1,49 @@
 package jscl.math.function;
 
 import jscl.math.Generic;
+import jscl.math.JSCLInteger;
 import jscl.math.NotIntegrableException;
 import jscl.math.Variable;
-import jscl.mathml.MathML;
 import jscl.util.ArrayComparator;
 
 public class ImplicitFunction extends Function {
     protected int derivation[];
     protected Generic subscript[];
 
+    public static Curried apply(String name, int derivation[]) {
+        return new Curried(name, derivation, new Generic[0]);
+    }
+
+    public static Curried[] apply(String name, int derivation[], int n) {
+        Curried element[]=new Curried[n];
+        for(int i=0;i<n;i++) element[i]=new Curried(name, derivation, new Generic[] {JSCLInteger.valueOf(i)});
+        return element;
+    }
+
+    public static class Curried {
+        final String name;
+        final int derivation[];
+        final Generic subscript[];
+
+        public Curried(String name, int derivation[], Generic subscript[]) {
+            this.name=name;
+            this.derivation=derivation;
+            this.subscript=subscript;
+        }
+
+        public Generic apply(Generic parameter[]) {
+            return new ImplicitFunction(name, parameter, derivation, subscript).expressionValue();
+        }
+    }
+
     public ImplicitFunction(String name, Generic parameter[], int derivation[], Generic subscript[]) {
         super(name,parameter);
         this.derivation=derivation;
         this.subscript=subscript;
+    }
+
+    public ImplicitFunction(String name, Generic parameter[]) {
+        this(name, parameter, new int[parameter.length], new Generic[0]);
     }
 
     public int[] derivation() {
@@ -54,6 +84,10 @@ public class ImplicitFunction extends Function {
 
     public Generic evalsimp() {
         return expressionValue();
+    }
+
+    public Generic evalfunc() {
+        throw new ArithmeticException();
     }
 
     public Generic evalnum() {
@@ -122,99 +156,72 @@ public class ImplicitFunction extends Function {
         return buffer.toString();
     }
 
-    public String toJava() {
-        StringBuffer buffer=new StringBuffer();
-        int n=0;
-        for(int i=0;i<derivation.length;i++) n+=derivation[i];
-        buffer.append(name);
-        if(n==0);
-        else if(parameter.length==1?n<=Constant.PRIMECHARS:false) buffer.append(Constant.underscores(n));
-        else buffer.append(derivationToJava());
-        buffer.append("(");
+    public String toMathML() {
+        StringBuffer b = new StringBuffer();
+        b.append("<apply>");
+        b.append("<ci>" + bodyToMathML() + "</ci>");
         for(int i=0;i<parameter.length;i++) {
-            buffer.append(parameter[i].toJava()).append(i<parameter.length-1?", ":"");
+            b.append(parameter[i].toMathML());
         }
-        buffer.append(")");
-        for(int i=0;i<subscript.length;i++) {
-            buffer.append("[").append(subscript[i].integerValue().intValue()).append("]");
-        }
-        return buffer.toString();
+        b.append("</apply>");
+        return b.toString();
     }
 
-    String derivationToJava() {
-        StringBuffer buffer=new StringBuffer();
-        for(int i=0;i<derivation.length;i++) {
-            buffer.append("_").append(derivation[i]);
-        }
-        return buffer.toString();
-    }
-
-    public void toMathML(MathML element, Object data) {
-        MathML e1;
-        int exponent=data instanceof Integer?((Integer)data).intValue():1;
-        if(exponent==1) bodyToMathML(element);
-        else {
-            e1=element.element("msup");
-            bodyToMathML(e1);
-            MathML e2=element.element("mn");
-            e2.appendChild(element.text(String.valueOf(exponent)));
-            e1.appendChild(e2);
-            element.appendChild(e1);
-        }
-        e1=element.element("mfenced");
-        for(int i=0;i<parameter.length;i++) {
-            parameter[i].toMathML(e1,null);
-        }
-        element.appendChild(e1);
-    }
-
-    void bodyToMathML(MathML element) {
+    String bodyToMathML() {
+        StringBuffer b = new StringBuffer();
         int n=0;
         for(int i=0;i<derivation.length;i++) n+=derivation[i];
         if(subscript.length==0) {
             if(n==0) {
-                nameToMathML(element);
+                b.append(nameToMathML());
+            } else if(parameter.length==1?n<=Constant.PRIMECHARS:false) {
+                b.append(nameToMathML() + Constant.primecharsToMathML(n));
             } else {
-                MathML e1=element.element("msup");
-                nameToMathML(e1);
-                derivationToMathML(e1,n);
-                element.appendChild(e1);
+                b.append("<msup>");
+                b.append("<mi>" + nameToMathML() + "</mi>");
+                b.append(derivationToMathML(n));
+                b.append("</msup>");
             }
         } else {
             if(n==0) {
-                MathML e1=element.element("msub");
-                nameToMathML(e1);
-                MathML e2=element.element("mrow");
-                for(int i=0;i<subscript.length;i++) {
-                    subscript[i].toMathML(e2,null);
-                }
-                e1.appendChild(e2);
-                element.appendChild(e1);
+                b.append("<msub>");
+                b.append("<mi>" + nameToMathML() + "</mi>");
+                b.append(subscriptToMathML());
+                b.append("</msub>");
+            } else if(parameter.length==1?n<=Constant.PRIMECHARS:false) {
+                b.append("<msub>");
+                b.append("<mi>" + nameToMathML() + Constant.primecharsToMathML(n) + "</mi>");
+                b.append(subscriptToMathML());
+                b.append("</msub>");
             } else {
-                MathML e1=element.element("msubsup");
-                nameToMathML(e1);
-                MathML e2=element.element("mrow");
-                for(int i=0;i<subscript.length;i++) {
-                    subscript[i].toMathML(e2,null);
-                }
-                e1.appendChild(e2);
-                derivationToMathML(e1,n);
-                element.appendChild(e1);
+                b.append("<msubsup>");
+                b.append("<mi>" + nameToMathML() + "</mi>");
+                b.append(subscriptToMathML());
+                b.append(derivationToMathML(n));
+                b.append("</msubsup>");
             }
         }
+        return b.toString();
     }
 
-    void derivationToMathML(MathML element, int n) {
-        if(parameter.length==1?n<=Constant.PRIMECHARS:false) Constant.primecharsToMathML(element,n);
-        else {
-            MathML e1=element.element("mfenced");
-            for(int i=0;i<derivation.length;i++) {
-                MathML e2=element.element("mn");
-                e2.appendChild(element.text(String.valueOf(derivation[i])));
-                e1.appendChild(e2);
-            }
-            element.appendChild(e1);
+    String subscriptToMathML() {
+        StringBuffer b = new StringBuffer();
+        b.append("<mrow>");
+        for(int i=0;i<subscript.length;i++) {
+            b.append(subscript[i].toMathML());
         }
+        b.append("</mrow>");
+        return b.toString();
+    }
+
+    String derivationToMathML(int n) {
+        StringBuffer b = new StringBuffer();
+        b.append("<mfenced>");
+        for(int i=0;i<derivation.length;i++) {
+            b.append("<mn>" + String.valueOf(derivation[i]) + "</mn>");
+        }
+        b.append("</mfenced>");
+        return b.toString();
     }
 
     protected Variable newinstance() {

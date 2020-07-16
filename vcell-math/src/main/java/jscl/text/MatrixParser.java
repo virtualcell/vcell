@@ -2,7 +2,6 @@ package jscl.text;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import jscl.math.JSCLVector;
 import jscl.math.Matrix;
 import jscl.util.ArrayUtils;

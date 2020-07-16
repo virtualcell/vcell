@@ -4,7 +4,6 @@ import jscl.math.Expression;
 import jscl.math.Generic;
 import jscl.math.Variable;
 import jscl.math.operator.VectorOperator;
-import jscl.mathml.MathML;
 
 public class Grad extends VectorOperator {
     public Grad(Generic expression, Generic variable) {
@@ -12,14 +11,19 @@ public class Grad extends VectorOperator {
     }
 
     public Generic compute() {
-        Variable variable[]=variables(parameter[1]);
+        Variable variable[]=variables(parameter[1].vectorValue());
         Expression expression=parameter[0].expressionValue();
         return expression.grad(variable);
     }
 
-    protected void bodyToMathML(MathML element) {
-        operator(element,"nabla");
-        parameter[0].toMathML(element,null);
+    @Override
+    public String toMathML() {
+        StringBuffer b = new StringBuffer();
+        b.append("<apply><grad/>");
+        b.append(parameter[0].toMathML());
+        b.append(parameter[1].toMathML());
+        b.append("</apply>");
+        return b.toString();
     }
 
     protected Variable newinstance() {

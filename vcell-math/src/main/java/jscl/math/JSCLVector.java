@@ -1,13 +1,18 @@
 package jscl.math;
 
 import jscl.math.function.Conjugate;
+import jscl.math.function.Constant;
 import jscl.math.function.Frac;
-import jscl.mathml.MathML;
 import jscl.util.ArrayComparator;
 
 public class JSCLVector extends Generic {
     protected final Generic element[];
     protected final int n;
+
+    public JSCLVector(String name, int prime, int n) {
+        this(new Generic[n]);
+        for(int i=0;i<n;i++) element[i]=new Constant(name, prime, new Generic[] {JSCLInteger.valueOf(i)}).expressionValue();
+    }
 
     public JSCLVector(Generic element[]) {
         this.element=element;
@@ -66,11 +71,7 @@ public class JSCLVector extends Generic {
         } else {
             JSCLVector v=(JSCLVector)newinstance();
             for(int i=0;i<n;i++) {
-                try {
-                    v.element[i]=element[i].divide(generic);
-                } catch (NotDivisibleException e) {
-                    v.element[i]=new Frac(element[i],generic).evaluate();
-                }
+                v.element[i]=element[i].divide(generic);
             }
             return v;
         }
@@ -142,6 +143,12 @@ public class JSCLVector extends Generic {
     public Generic simplify() {
         JSCLVector v=(JSCLVector)newinstance();
         for(int i=0;i<n;i++) v.element[i]=element[i].simplify();
+        return v;
+    }
+
+    public Generic function(Variable variable) {
+        JSCLVector v=(JSCLVector)newinstance();
+        for(int i=0;i<n;i++) v.element[i]=element[i].function(variable);
         return v;
     }
 
@@ -325,41 +332,14 @@ public class JSCLVector extends Generic {
         return buffer.toString();
     }
 
-    public String toJava() {
-        StringBuffer buffer=new StringBuffer();
-        buffer.append("new NumericVector(new Numeric[] {");
+    public String toMathML() {
+        StringBuffer b = new StringBuffer();
+        b.append("<vector>");
         for(int i=0;i<n;i++) {
-            buffer.append(element[i].toJava()).append(i<n-1?", ":"");
+            b.append(element[i].toMathML());
         }
-        buffer.append("})");
-        return buffer.toString();
-    }
-
-    public void toMathML(MathML element, Object data) {
-        int exponent=data instanceof Integer?((Integer)data).intValue():1;
-        if(exponent==1) bodyToMathML(element);
-        else {
-            MathML e1=element.element("msup");
-            bodyToMathML(e1);
-            MathML e2=element.element("mn");
-            e2.appendChild(element.text(String.valueOf(exponent)));
-            e1.appendChild(e2);
-            element.appendChild(e1);
-        }
-    }
-
-    protected void bodyToMathML(MathML e0) {
-        MathML e1=e0.element("mfenced");
-        MathML e2=e0.element("mtable");
-        for(int i=0;i<n;i++) {
-            MathML e3=e0.element("mtr");
-            MathML e4=e0.element("mtd");
-            element[i].toMathML(e4,null);
-            e3.appendChild(e4);
-            e2.appendChild(e3);
-        }
-        e1.appendChild(e2);
-        e0.appendChild(e1);
+        b.append("</vector>");
+        return b.toString();
     }
 
     protected Generic newinstance() {

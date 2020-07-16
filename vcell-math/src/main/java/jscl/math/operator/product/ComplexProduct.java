@@ -4,7 +4,6 @@ import jscl.math.Generic;
 import jscl.math.JSCLVector;
 import jscl.math.Variable;
 import jscl.math.operator.VectorOperator;
-import jscl.mathml.MathML;
 
 public class ComplexProduct extends VectorOperator {
     public ComplexProduct(Generic vector1, Generic vector2) {
@@ -18,11 +17,6 @@ public class ComplexProduct extends VectorOperator {
             return v1.complexProduct(v2);
         }
         return expressionValue();
-    }
-
-    protected void bodyToMathML(MathML element) {
-        parameter[0].toMathML(element,null);
-        parameter[1].toMathML(element,null);
     }
 
     protected Variable newinstance() {

@@ -8,22 +8,21 @@ import jscl.math.NotVariableException;
 import jscl.math.Variable;
 import jscl.math.function.Frac;
 import jscl.math.function.Pow;
-import jscl.mathml.MathML;
 import jscl.util.ArrayComparator;
 
 public class Factorial extends Operator {
+    public Factorial(Generic expression, Generic order) {
+        super("",new Generic[] {expression, order});
+    }
+
     public Factorial(Generic expression) {
-        super("",new Generic[] {expression});
+        this(expression, JSCLInteger.valueOf(1));
     }
 
     public Generic compute() {
+        int k=parameter[1].integerValue().intValue();
         try {
-            int n=parameter[0].integerValue().intValue();
-            Generic a=JSCLInteger.valueOf(1);
-            for(int i=0;i<n;i++) {
-                a=a.multiply(JSCLInteger.valueOf(i+1));
-            }
-            return a;
+            return parameter[0].integerValue().factorial(k);
         } catch (NotIntegerException e) {}
         return expressionValue();
     }
@@ -40,6 +39,7 @@ public class Factorial extends Operator {
     }
 
     public String toString() {
+        int k=parameter[1].integerValue().intValue();
         StringBuffer buffer=new StringBuffer();
         try {
             JSCLInteger en=parameter[0].integerValue();
@@ -54,45 +54,23 @@ public class Factorial extends Operator {
                 buffer.append(GenericVariable.valueOf(parameter[0]));
             }
         }
-        buffer.append("!");
+        for(int i=0;i<k;i++) buffer.append("!");
         return buffer.toString();
     }
 
-    public void toMathML(MathML element, Object data) {
-        int exponent=data instanceof Integer?((Integer)data).intValue():1;
-        if(exponent==1) bodyToMathML(element);
-        else {
-            MathML e1=element.element("msup");
-            bodyToMathML(e1);
-            MathML e2=element.element("mn");
-            e2.appendChild(element.text(String.valueOf(exponent)));
-            e1.appendChild(e2);
-            element.appendChild(e1);
+    public String toMathML() {
+        int k=parameter[1].integerValue().intValue();
+        StringBuffer b = new StringBuffer();
+        b.append("<apply><factorial/>");
+        b.append(parameter[0].toMathML());
+        if(k>1) {
+            b.append(JSCLInteger.valueOf(k).toMathML());
         }
-    }
-
-    void bodyToMathML(MathML element) {
-        MathML e1=element.element("mrow");
-        try {
-            JSCLInteger en=parameter[0].integerValue();
-            en.toMathML(e1,null);
-        } catch (NotIntegerException e) {
-            try {
-                Variable v=parameter[0].variableValue();
-                if(v instanceof Pow) {
-                    GenericVariable.valueOf(parameter[0]).toMathML(e1,null);
-                } else v.toMathML(e1,null);
-            } catch (NotVariableException e2) {
-                GenericVariable.valueOf(parameter[0]).toMathML(e1,null);
-            }
-        }
-        MathML e2=element.element("mo");
-        e2.appendChild(element.text("!"));
-        e1.appendChild(e2);
-        element.appendChild(e1);
+        b.append("</apply>");
+        return b.toString();
     }
 
     protected Variable newinstance() {
-        return new Factorial(null);
+        return new Factorial(null,null);
     }
 }

@@ -8,7 +8,6 @@ import jscl.math.NotIntegrableException;
 import jscl.math.NumericWrapper;
 import jscl.math.Power;
 import jscl.math.Variable;
-import jscl.mathml.MathML;
 
 public class Sqrt extends Algebraic {
     public Sqrt(Generic generic) {
@@ -75,7 +74,7 @@ public class Sqrt extends Algebraic {
             Generic s=JSCLInteger.valueOf(1);
             for(int i=0;i<p.length;i++) {
                 Power o=p[i].powerValue();
-                Generic q=o.value(true);
+                Generic q=o.value();
                 int c=o.exponent();
                 s=s.multiply(q.pow(c/2).multiply(new Sqrt(q).expressionValue().pow(c%2)));
             }
@@ -93,27 +92,19 @@ public class Sqrt extends Algebraic {
         return expressionValue();
     }
 
+    public Generic evalfunc() {
+        return ((jscl.math.Function)parameter[0]).sqrt();
+    }
+
     public Generic evalnum() {
         return ((NumericWrapper)parameter[0]).sqrt();
     }
 
-    public String toJava() {
-        if(parameter[0].compareTo(JSCLInteger.valueOf(-1))==0) return "Complex.valueOf(0, 1)";
-        StringBuffer buffer=new StringBuffer();
-        buffer.append(parameter[0].toJava());
-        buffer.append(".").append(name).append("()");
-        return buffer.toString();
-    }
-
-    void bodyToMathML(MathML element, boolean fenced) {
+    public String toMathML() {
         if(parameter[0].compareTo(JSCLInteger.valueOf(-1))==0) {
-            MathML e1=element.element("mi");
-            e1.appendChild(element.text(/*"\u2148"*/"i"));
-            element.appendChild(e1);
+		return "<imaginaryi/>";
         } else {
-            MathML e1=element.element("msqrt");
-            parameter[0].toMathML(e1,null);
-            element.appendChild(e1);
+		return "<apply><root/>" + parameter[0].toMathML() + "</apply>";
         }
     }
 

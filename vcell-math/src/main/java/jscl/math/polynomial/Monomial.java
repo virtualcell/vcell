@@ -1,13 +1,11 @@
 package jscl.math.polynomial;
 
 import java.util.Iterator;
-
 import jscl.math.Literal;
 import jscl.math.NotDivisibleException;
 import jscl.math.Variable;
 import jscl.math.function.Frac;
 import jscl.math.function.Pow;
-import jscl.mathml.MathML;
 
 public class Monomial implements Comparable {
     public static final Ordering lexicographic=Lexicographic.ordering;
@@ -214,18 +212,18 @@ public class Monomial implements Comparable {
         return buffer.toString();
     }
 
-    public void toMathML(MathML element, Object data) {
-        if(degree==0) {
-            MathML e1=element.element("mn");
-            e1.appendChild(element.text("1"));
-            element.appendChild(e1);
-        }
+    public String toMathML() {
+	String s = "<cn>" + "1" + "</cn>";
+	boolean first = true;
         for(int i=0;i<unknown.length;i++) {
             int c=element(i);
-            if(c>0) {
-                unknown[i].toMathML(element,new Integer(c));
-            }
-        }
+            if(c > 0) {
+		String t = c == 1?unknown[i].toMathML():"<apply><power/>" + unknown[i].toMathML() + "<cn>" + c + "</cn></apply>";
+		s = first?t:"<apply><times/>" + s + t + "</apply>";
+		first = false;
+	    }
+	}
+	return s;
     }
 
     protected Monomial newinstance() {

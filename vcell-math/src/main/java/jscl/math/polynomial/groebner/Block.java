@@ -3,7 +3,6 @@ package jscl.math.polynomial.groebner;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-
 import jscl.math.Debug;
 import jscl.math.polynomial.Basis;
 import jscl.math.polynomial.DegreeOrdering;

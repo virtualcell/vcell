@@ -11,7 +11,7 @@ import jscl.math.function.Root;
 
 public class Acoth extends ArcTrigonometric {
     public Acoth(Generic generic) {
-        super("acoth",new Generic[] {generic});
+        super("arccoth",new Generic[] {generic});
     }
 
     public Generic derivative(int n) {
@@ -40,6 +40,10 @@ public class Acoth extends ArcTrigonometric {
                 0
             ).evalelem()
         ).evalelem();
+    }
+
+    public Generic evalfunc() {
+        return ((jscl.math.Function)parameter[0]).acoth();
     }
 
     public Generic evalnum() {

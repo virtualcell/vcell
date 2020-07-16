@@ -3,7 +3,6 @@ package jscl.math.operator;
 import jscl.math.Generic;
 import jscl.math.NotIntegrableException;
 import jscl.math.Variable;
-import jscl.mathml.MathML;
 
 public class Integral extends Operator {
     public Integral(Generic expression, Generic variable, Generic n1, Generic n2) {
@@ -19,37 +18,19 @@ public class Integral extends Operator {
         return expressionValue();
     }
 
-    public void toMathML(MathML element, Object data) {
-        int exponent=data instanceof Integer?((Integer)data).intValue():1;
-        if(exponent==1) bodyToMathML(element);
-        else {
-            MathML e1=element.element("msup");
-            MathML e2=element.element("mfenced");
-            bodyToMathML(e2);
-            e1.appendChild(e2);
-            e2=element.element("mn");
-            e2.appendChild(element.text(String.valueOf(exponent)));
-            e1.appendChild(e2);
-            element.appendChild(e1);
-        }
-    }
-
-    void bodyToMathML(MathML element) {
+    public String toMathML() {
         Variable v=parameter[1].variableValue();
-        MathML e1=element.element("mrow");
-        MathML e2=element.element("msubsup");
-        MathML e3=element.element("mo");
-        e3.appendChild(element.text("\u222B"));
-        e2.appendChild(e3);
-        parameter[2].toMathML(e2,null);
-        parameter[3].toMathML(e2,null);
-        e1.appendChild(e2);
-        parameter[0].toMathML(e1,null);
-        e2=element.element("mo");
-        e2.appendChild(element.text(/*"\u2146"*/"d"));
-        e1.appendChild(e2);
-        v.toMathML(e1,null);
-        element.appendChild(e1);
+	StringBuffer b = new StringBuffer();
+	b.append("<apply><int/><lowlimit>");
+        b.append(parameter[2].toMathML());
+        b.append("</lowlimit><uplimit>");
+        b.append(parameter[3].toMathML());
+        b.append("</uplimit><bvar>");
+        b.append(v.toMathML());
+        b.append("</bvar>");
+        b.append(parameter[0].toMathML());
+	b.append("</apply>");
+	return b.toString();
     }
 
     protected Variable newinstance() {

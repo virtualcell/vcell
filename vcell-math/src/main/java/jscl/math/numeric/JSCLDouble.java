@@ -171,4 +171,8 @@ public final class JSCLDouble extends Numeric {
     public String toString() {
         return new Double(content).toString();
     }
+
+    public String toMathML() {
+	return "<cn type=\"real\">" + content + "</cn>";
+    }
 }

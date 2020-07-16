@@ -8,13 +8,9 @@ public class Power {
         this.value=value;
         this.exponent=exponent;
     }
-    
+
     public Generic value() {
-        return value(false);
-    }
-    
-    public Generic value(boolean content) {
-        return content?GenericVariable.content(value):value;
+        return value;
     }
 
     public int exponent() {

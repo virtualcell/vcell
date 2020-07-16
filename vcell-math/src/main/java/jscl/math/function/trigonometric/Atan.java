@@ -12,7 +12,7 @@ import jscl.math.function.Root;
 
 public class Atan extends ArcTrigonometric {
     public Atan(Generic generic) {
-        super("atan",new Generic[] {generic});
+        super("arctan",new Generic[] {generic});
     }
 
     public Generic derivative(int n) {
@@ -43,6 +43,10 @@ public class Atan extends ArcTrigonometric {
                 ).evalelem()
             ).evalelem()
         );
+    }
+
+    public Generic evalfunc() {
+        return ((jscl.math.Function)parameter[0]).atan();
     }
 
     public Generic evalnum() {

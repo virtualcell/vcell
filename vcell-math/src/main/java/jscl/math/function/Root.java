@@ -10,11 +10,16 @@ import jscl.math.TechnicalVariable;
 import jscl.math.Variable;
 import jscl.math.polynomial.Polynomial;
 import jscl.math.polynomial.UnivariatePolynomial;
-import jscl.mathml.MathML;
 import jscl.util.ArrayComparator;
 
 public class Root extends Algebraic {
     protected Generic subscript;
+
+    public static Generic[] apply(Generic parameter[]) {
+        Generic element[]=new Generic[parameter.length-1];
+        for(int i=0;i<element.length;i++) element[i]=new Root(parameter, i).expressionValue();
+        return element;
+    }
 
     public Root(Generic parameter[], Generic subscript) {
         super("root",parameter);
@@ -285,6 +290,10 @@ public class Root extends Algebraic {
         return parameter.length-1;
     }
 
+    public Generic evalfunc() {
+        return jscl.math.Function.root(subscript.integerValue().intValue(),parameter);
+    }
+
     public Generic evalnum() {
         return NumericWrapper.root(subscript.integerValue().intValue(),parameter);
     }
@@ -321,43 +330,16 @@ public class Root extends Algebraic {
         return buffer.toString();
     }
 
-    public String toJava() {
-        StringBuffer buffer=new StringBuffer();
-        buffer.append("Numeric.").append(name).append("(");
-        buffer.append(subscript.integerValue().intValue());
-        buffer.append(", new Numeric[] {");
+    public String toMathML() {
+	StringBuffer b = new StringBuffer();
+	b.append("<apply>");
+        b.append(new Constant(name,0,new Generic[] {subscript}).toMathML());
         for(int i=0;i<parameter.length;i++) {
-            buffer.append(parameter[i].toJava()).append(i<parameter.length-1?", ":"");
+            b.append(parameter[i].toMathML());
         }
-        buffer.append("})");
-        return buffer.toString();
+	b.append("</apply>");
+	return b.toString();
     }
-
-    public void toMathML(MathML element, Object data) {
-        MathML e1;
-        int exponent=data instanceof Integer?((Integer)data).intValue():1;
-        if(exponent==1) {
-            e1=element.element("msub");
-            nameToMathML(e1);
-            subscript.toMathML(e1,null);
-            element.appendChild(e1);
-        } else {
-            e1=element.element("msubsup");
-            nameToMathML(e1);
-            subscript.toMathML(e1,null);
-            MathML e2=element.element("mn");
-            e2.appendChild(element.text(String.valueOf(exponent)));
-            e1.appendChild(e2);
-            element.appendChild(e1);
-        }
-        e1=element.element("mfenced");
-        for(int i=0;i<parameter.length;i++) {
-            parameter[i].toMathML(e1,null);
-        }
-        element.appendChild(e1);
-    }
-
-    void bodyToMathML(MathML element, boolean fenced) {}
 
     protected Variable newinstance() {
         return new Root(new Generic[parameter.length],null);

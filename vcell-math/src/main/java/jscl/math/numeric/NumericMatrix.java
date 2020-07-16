@@ -267,6 +267,20 @@ public class NumericMatrix extends Numeric {
         return buffer.toString();
     }
 
+    public String toMathML() {
+	StringBuffer b = new StringBuffer();
+	b.append("<matrix>");
+        for(int i=0;i<n;i++) {
+	    b.append("<matrixrow>");
+            for(int j=0;j<p;j++) {
+                b.append(element[i][j].toMathML());
+            }
+	    b.append("</matrixrow>");
+        }
+	b.append("</matrix>");
+	return b.toString();
+    }
+
     protected NumericMatrix newinstance() {
         return newinstance(new Numeric[n][p]);
     }

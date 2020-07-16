@@ -7,7 +7,6 @@ import jscl.math.NotVariableException;
 import jscl.math.NumericWrapper;
 import jscl.math.Variable;
 import jscl.math.polynomial.Polynomial;
-import jscl.mathml.MathML;
 
 public class Exp extends Function {
     public Exp(Generic generic) {
@@ -79,42 +78,22 @@ public class Exp extends Function {
         return expressionValue();
     }
 
+    public Generic evalfunc() {
+        return ((jscl.math.Function)parameter[0]).exp();
+    }
+
     public Generic evalnum() {
         return ((NumericWrapper)parameter[0]).exp();
     }
 
-    public void toMathML(MathML element, Object data) {
-        int exponent=data instanceof Integer?((Integer)data).intValue():1;
-        if(exponent==1) bodyToMathML(element,false);
-        else {
-            MathML e1=element.element("msup");
-            bodyToMathML(e1,true);
-            MathML e2=element.element("mn");
-            e2.appendChild(element.text(String.valueOf(exponent)));
-            e1.appendChild(e2);
-            element.appendChild(e1);
-        }
-    }
-
-    void bodyToMathML(MathML element, boolean fenced) {
-        if(fenced) {
-            MathML e1=element.element("mfenced");
-            bodyToMathML(e1);
-            element.appendChild(e1);
+    public String toMathML() {
+        if(parameter[0].compareTo(JSCLInteger.valueOf(1))==0) {
+		return "<exponentiale/>";
         } else {
-            bodyToMathML(element);
+		return super.toMathML();
         }
     }
 
-    void bodyToMathML(MathML element) {
-        MathML e1=element.element("msup");
-        MathML e2=element.element("mi");
-        e2.appendChild(element.text(/*"\u2147"*/"e"));
-        e1.appendChild(e2);
-        parameter[0].toMathML(e1,null);
-        element.appendChild(e1);
-    }
-    
     protected Variable newinstance() {
         return new Exp(null);
     }

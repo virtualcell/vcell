@@ -11,46 +11,39 @@ import jscl.math.polynomial.Basis;
 import jscl.math.polynomial.Monomial;
 import jscl.math.polynomial.Ordering;
 import jscl.math.polynomial.Polynomial;
-import jscl.mathml.MathML;
 
 public class Groebner extends Operator {
+    public static final Generic lex = new Constant("lex").expressionValue();
+    public static final Generic tdl = new Constant("tdl").expressionValue();
+    public static final Generic drl = new Constant("drl").expressionValue();
+    public static final ImplicitFunction.Curried elim = ImplicitFunction.apply("elim", new int[1]);
+
     public Groebner(Generic generic, Generic variable, Generic ordering, Generic modulo) {
         super("groebner",new Generic[] {generic,variable,ordering,modulo});
     }
 
     public Generic compute() {
-        Generic generic[]=((JSCLVector)parameter[0]).elements();
-        Variable variable[]=variables(parameter[1]);
+        Generic generic[]=parameter[0].vectorValue().elements();
+        Variable variable[]=variables(parameter[1].vectorValue());
         Ordering ord=ordering(parameter[2]);
         int m=parameter[3].integerValue().intValue();
         return new PolynomialVector(Basis.compute(generic,variable,ord,m));
     }
 
-    public Operator transmute() {
-        Generic p[]=new Generic[] {GenericVariable.content(parameter[0]),GenericVariable.content(parameter[1])};
-        if(p[0] instanceof JSCLVector && p[1] instanceof JSCLVector) {
-            Generic generic[]=((JSCLVector)p[0]).elements();
-            Variable variable[]=variables(p[1]);
-            Ordering ord=ordering(parameter[2]);
-            int m=parameter[3].integerValue().intValue();
-            return new Groebner(new PolynomialVector(new Basis(generic,Polynomial.factory(variable,ord,m))),p[1],parameter[2],parameter[3]);
-        }
-        return this;
-    }
-
     static Ordering ordering(Generic generic) {
         Variable v=generic.variableValue();
-        if(v.compareTo(new Constant("lex"))==0) return Monomial.lexicographic;
-        else if(v.compareTo(new Constant("tdl"))==0) return Monomial.totalDegreeLexicographic;
-        else if(v.compareTo(new Constant("drl"))==0) return Monomial.degreeReverseLexicographic;
+        if(v.compareTo(lex.variableValue())==0) return Monomial.lexicographic;
+        else if(v.compareTo(tdl.variableValue())==0) return Monomial.totalDegreeLexicographic;
+        else if(v.compareTo(drl.variableValue())==0) return Monomial.degreeReverseLexicographic;
         else if(v instanceof ImplicitFunction) {
             Generic g[]=((ImplicitFunction)v).parameters();
             int k=g[0].integerValue().intValue();
-            if(v.compareTo(new ImplicitFunction("elim",new Generic[] {JSCLInteger.valueOf(k)},new int[] {0},new Generic[] {}))==0) return Monomial.kthElimination(k);
+            if(v.compareTo(elim.apply(new Generic[] {JSCLInteger.valueOf(k)}).variableValue())==0) return Monomial.kthElimination(k);
         }
         throw new ArithmeticException();
     }
 
+    @Override
     public String toString() {
         StringBuffer buffer=new StringBuffer();
         int n=4;
@@ -67,28 +60,21 @@ public class Groebner extends Operator {
         return buffer.toString();
     }
 
-    public void toMathML(MathML element, Object data) {
-        MathML e1;
-        int exponent=data instanceof Integer?((Integer)data).intValue():1;
+    @Override
+    public String toMathML() {
+	StringBuffer b = new StringBuffer();
         int n=4;
         if(parameter[3].signum()==0) {
             n=3;
             if(ordering(parameter[2])==Monomial.lexicographic) n=2;
         }
-        if(exponent==1) nameToMathML(element);
-        else {
-            e1=element.element("msup");
-            nameToMathML(e1);
-            MathML e2=element.element("mn");
-            e2.appendChild(element.text(String.valueOf(exponent)));
-            e1.appendChild(e2);
-            element.appendChild(e1);
-        }
-        e1=element.element("mfenced");
+	b.append("<apply>");
+	b.append("<ci>" + nameToMathML() + "</ci>");
         for(int i=0;i<n;i++) {
-            parameter[i].toMathML(e1,null);
+            b.append(parameter[i].toMathML());
         }
-        element.appendChild(e1);
+	b.append("</apply>");
+	return b.toString();
     }
 
     protected Variable newinstance() {
@@ -108,6 +94,7 @@ class PolynomialVector extends JSCLVector {
         this.basis=basis;
     }
 
+    @Override
     public String toString() {
         StringBuffer buffer=new StringBuffer();
         buffer.append("{");
@@ -118,18 +105,15 @@ class PolynomialVector extends JSCLVector {
         return buffer.toString();
     }
 
-    protected void bodyToMathML(MathML e0) {
-        MathML e1=e0.element("mfenced");
-        MathML e2=e0.element("mtable");
+    @Override
+    public String toMathML() {
+	StringBuffer b = new StringBuffer();
+	b.append("<vector>");
         for(int i=0;i<n;i++) {
-            MathML e3=e0.element("mtr");
-            MathML e4=e0.element("mtd");
-            basis.polynomial(element[i]).toMathML(e4,null);
-            e3.appendChild(e4);
-            e2.appendChild(e3);
+            b.append(basis.polynomial(element[i]).toMathML());
         }
-        e1.appendChild(e2);
-        e0.appendChild(e1);
+	b.append("</vector>");
+	return b.toString();
     }
 
     protected Generic newinstance(Generic element[]) {

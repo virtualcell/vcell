@@ -1,8 +1,8 @@
 package jscl.math;
 
-import jscl.mathml.MathML;
+import jscl.editor.rendering.MathObject;
 
-public abstract class Generic implements Arithmetic, Comparable {
+public abstract class Generic implements Arithmetic, Comparable, MathObject {
     public abstract Generic add(Generic generic);
 
     public Generic subtract(Generic generic) {
@@ -12,7 +12,7 @@ public abstract class Generic implements Arithmetic, Comparable {
     public abstract Generic multiply(Generic generic);
 
     public boolean multiple(Generic generic) throws ArithmeticException {
-        return remainder(generic).signum()==0;
+        return true;
     }
 
     public abstract Generic divide(Generic generic) throws ArithmeticException;
@@ -34,11 +34,7 @@ public abstract class Generic implements Arithmetic, Comparable {
     }
 
     public Generic[] divideAndRemainder(Generic generic) throws ArithmeticException {
-        try {
-            return new Generic[] {divide(generic),JSCLInteger.valueOf(0)};
-        } catch (NotDivisibleException e) {
-            return new Generic[] {JSCLInteger.valueOf(0),this};
-        }
+        return new Generic[] {divide(generic),JSCLInteger.valueOf(0)};
     }
 
     public Generic remainder(Generic generic) throws ArithmeticException {
@@ -69,8 +65,24 @@ public abstract class Generic implements Arithmetic, Comparable {
     }
 
     public Generic pow(int exponent) {
-        Generic a=JSCLInteger.valueOf(1);
-        for(int i=0;i<exponent;i++) a=a.multiply(this);
+        return pow(JSCLInteger.valueOf(exponent));
+    }
+
+    public Generic pow(final JSCLInteger exponent) {
+        final Generic a;
+        if (exponent.signum() < 0) {
+            throw new ArithmeticException();
+        } else if (exponent.signum() == 0) {
+            a = JSCLInteger.valueOf(1);
+        } else {
+            final JSCLInteger e[] = exponent.divideAndRemainder(JSCLInteger.valueOf(2));
+            if (e[1].signum() == 0) {
+                final Generic c = pow(e[0]);
+                a = c.multiply(c);
+            } else {
+                a = multiply(pow(exponent.subtract(JSCLInteger.valueOf(1))));
+            }
+        }
         return a;
     }
 
@@ -89,6 +101,7 @@ public abstract class Generic implements Arithmetic, Comparable {
     public abstract Generic antiderivative(Variable variable) throws NotIntegrableException;
     public abstract Generic derivative(Variable variable);
     public abstract Generic substitute(Variable variable, Generic generic);
+    public abstract Generic function(Variable variable);
     public abstract Generic expand();
     public abstract Generic factorize();
     public abstract Generic elementary();
@@ -100,10 +113,31 @@ public abstract class Generic implements Arithmetic, Comparable {
     public abstract Power powerValue() throws NotPowerException;
     public abstract Expression expressionValue() throws NotExpressionException;
     public abstract JSCLInteger integerValue() throws NotIntegerException;
+    public JSCLBoolean booleanValue() throws NotBooleanException {
+        try {
+            return JSCLBoolean.valueOf(integerValue().signum() != 0);
+        } catch (final NotIntegerException e) {}
+        throw new NotBooleanException();
+    }
+    public JSCLVector vectorValue() throws NotVectorException {
+        final Generic p = GenericVariable.content(this);
+        if (p instanceof JSCLVector) {
+            return (JSCLVector) p;
+        }
+        throw new NotVectorException();
+    }
     public abstract Variable variableValue() throws NotVariableException;
     public abstract Variable[] variables();
     public abstract boolean isPolynomial(Variable variable);
     public abstract boolean isConstant(Variable variable);
+
+    public boolean isZero() {
+        return signum() == 0;
+    }
+
+    public boolean isOne() {
+        return equals(JSCLInteger.valueOf(1));
+    }
 
     public boolean isIdentity(Variable variable) {
         try {
@@ -125,14 +159,5 @@ public abstract class Generic implements Arithmetic, Comparable {
         } else return false;
     }
 
-    public abstract String toJava();
-
-    public String toMathML() {
-        MathML document=new MathML("math","-//W3C//DTD MathML 2.0//EN","http://www.w3.org/TR/MathML2/dtd/mathml2.dtd");
-        MathML e=document.element("math");
-        toMathML(e,null);
-        return e.toString();
-    }
-
-    public abstract void toMathML(MathML element, Object data);
+    public abstract String toMathML();
 }

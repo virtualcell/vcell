@@ -3,9 +3,8 @@ package jscl.text;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ListIterator;
-
+import jscl.math.ExpressionVariable;
 import jscl.math.Generic;
-import jscl.math.GenericVariable;
 import jscl.math.JSCLInteger;
 import jscl.math.NotIntegerException;
 import jscl.math.Variable;
@@ -109,8 +108,8 @@ class TermParser extends Parser {
             } catch (ParseException e) {
                 try {
                     Generic b=(Generic)MultiplyOrDivideFactor.divide.parse(str,pos);
-                    if(s.compareTo(JSCLInteger.valueOf(1))==0) s=new Inv(GenericVariable.content(b,true)).expressionValue();
-                    else s=new Frac(GenericVariable.content(s,true),GenericVariable.content(b,true)).expressionValue();
+                    if(s.compareTo(JSCLInteger.valueOf(1))==0) s=new Inv(ExpressionVariable.content(b)).expressionValue();
+                    else s=new Frac(ExpressionVariable.content(s),ExpressionVariable.content(b)).expressionValue();
                 } catch (ParseException e2) {
                     break;
                 }
@@ -199,10 +198,10 @@ class UnsignedFactor extends Parser {
             Generic b=(Generic)it.previous();
             try {
                 int c=a.integerValue().intValue();
-                if(c<0) a=new Pow(GenericVariable.content(b,true),JSCLInteger.valueOf(c)).expressionValue();
+                if(c<0) a=new Pow(ExpressionVariable.content(b),JSCLInteger.valueOf(c)).expressionValue();
                 else a=b.pow(c);
             } catch (NotIntegerException e) {
-                a=new Pow(GenericVariable.content(b,true),GenericVariable.content(a,true)).expressionValue();
+                a=new Pow(ExpressionVariable.content(b),ExpressionVariable.content(a)).expressionValue();
             }
         }
         return a;
@@ -287,17 +286,16 @@ class UnsignedExponent extends Parser {
     public Object parse(String str, int pos[]) throws ParseException {
         int pos0=pos[0];
         Generic a;
-        boolean factorial=false;
+        int d=0;
         try {
             a=(Generic)PrimaryExpression.parser.parse(str,pos);
         } catch (ParseException e) {
             throw e;
         }
         try {
-            FactorialParser.parser.parse(str,pos);
-            factorial=true;
+            d=((Integer)FactorialParser.parser.parse(str,pos)).intValue();
         } catch (ParseException e) {}
-        return factorial?new Factorial(GenericVariable.content(a,true)).expressionValue():a;
+        return d>0?new Factorial(ExpressionVariable.content(a), JSCLInteger.valueOf(d)).expressionValue():a;
     }
 }
 
@@ -306,16 +304,15 @@ class FactorialParser extends Parser {
 
     private FactorialParser() {}
 
-    public Object parse(String str, int pos[]) throws ParseException {
+    public Object parse(String str, int pos[]) {
         int pos0=pos[0];
+        int c=0;
         skipWhitespaces(str,pos);
-        if(pos[0]<str.length() && str.charAt(pos[0])=='!') {
+        while(pos[0]<str.length() && str.charAt(pos[0])=='!') {
             str.charAt(pos[0]++);
-        } else {
-            pos[0]=pos0;
-            throw new ParseException();
+            c++;
         }
-        return null;
+        return new Integer(c);
     }
 }
 

@@ -3,7 +3,6 @@ package jscl.math;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
-
 import jscl.math.function.Algebraic;
 import jscl.math.function.Constant;
 import jscl.math.function.Frac;
@@ -13,24 +12,21 @@ import jscl.math.function.Root;
 import jscl.math.function.Sqrt;
 import jscl.math.operator.Factorial;
 import jscl.math.operator.Operator;
-import jscl.mathml.MathML;
 import jscl.text.ParseException;
+import jscl.editor.rendering.MathObject;
 
-public abstract class Variable implements Comparable {
+public abstract class Variable implements Comparable, MathObject {
     public static final Comparator comparator=VariableComparator.comparator;
-    protected String name;
+    protected final String name;
 
-    public Variable(String name) {
-        this.name=name;
-    }
-
-    public String name() {
-        return name;
+    public Variable(final String name) {
+        this.name = name;
     }
 
     public abstract Generic antiderivative(Variable variable) throws NotIntegrableException;
     public abstract Generic derivative(Variable variable);
     public abstract Generic substitute(Variable variable, Generic generic);
+    public abstract Generic function(Variable variable);
     public abstract Generic expand();
     public abstract Generic factorize();
     public abstract Generic elementary();
@@ -59,42 +55,12 @@ public abstract class Variable implements Comparable {
         } else return false;
     }
 
-    public static Variable valueOf(String str) throws ParseException, NotVariableException {
-        return Expression.valueOf(str).variableValue();
-    }
-
-    public static Variable[] valueOf(String str[]) throws ParseException, NotVariableException {
-            int n=str.length;
-            Variable var[]=new Variable[n];
-            for(int i=0;i<n;i++) var[i]=valueOf(str[i]);
-            return var;
-    }
-
     public String toString() {
         return name;
     }
 
-    public String toJava() {
-        return name;
-    }
-
-    public void toMathML(MathML element, Object data) {
-        int exponent=data instanceof Integer?((Integer)data).intValue():1;
-        if(exponent==1) nameToMathML(element);
-        else {
-            MathML e1=element.element("msup");
-            nameToMathML(e1);
-            MathML e2=element.element("mn");
-            e2.appendChild(element.text(String.valueOf(exponent)));
-            e1.appendChild(e2);
-            element.appendChild(e1);
-        }
-    }
-
-    protected void nameToMathML(MathML element) {
-        MathML e1=element.element("mi");
-        e1.appendChild(element.text(special.containsKey(name)?(String)special.get(name):name));
-        element.appendChild(e1);
+    protected String nameToMathML() {
+	return special.containsKey(name)?(String)special.get(name):name;
     }
 
     protected abstract Variable newinstance();
@@ -147,7 +113,6 @@ public abstract class Variable implements Comparable {
             special.put("chi","\u03C7");
             special.put("psi","\u03C8");
             special.put("omega","\u03C9");
-            special.put("infin","\u221E");
             special.put("nabla","\u2207");
             special.put("aleph","\u2135");
             special.put("hbar","\u210F");

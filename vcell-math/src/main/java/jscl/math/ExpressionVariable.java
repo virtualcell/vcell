@@ -1,57 +1,38 @@
 package jscl.math;
 
-import jscl.mathml.MathML;
-
 public class ExpressionVariable extends GenericVariable {
-        public ExpressionVariable(Generic generic) {
-                super(generic);
-        }
-
-        public Generic substitute(Variable variable, Generic generic) {
-                if(isIdentity(variable)) return generic;
-                else return content.substitute(variable,generic);
-        }
-
-        public Generic elementary() {
-                return content.elementary();
-        }
-
-        public Generic simplify() {
-                return content.simplify();
-        }
-
-        public String toString() {
-                StringBuffer buffer=new StringBuffer();
-                buffer.append("(").append(content).append(")");
-                return buffer.toString();
-        }
-
-        public String toJava() {
-                StringBuffer buffer=new StringBuffer();
-                buffer.append("(").append(content.toJava()).append(")");
-                return buffer.toString();
-        }
-
-    public void toMathML(MathML element, Object data) {
-        int exponent=data instanceof Integer?((Integer)data).intValue():1;
-        if(exponent==1) bodyToMathML(element);
-        else {
-            MathML e1=element.element("msup");
-            bodyToMathML(e1);
-            MathML e2=element.element("mn");
-            e2.appendChild(element.text(String.valueOf(exponent)));
-            e1.appendChild(e2);
-            element.appendChild(e1);
-        }
+    public ExpressionVariable(Generic generic) {
+        super(generic);
     }
 
-    void bodyToMathML(MathML element) {
-        MathML e1=element.element("mfenced");
-        content.toMathML(e1,null);
-        element.appendChild(e1);
+    public static Generic content(Generic generic) {
+        try {
+            Variable v=generic.variableValue();
+            if(v instanceof ExpressionVariable) generic=((ExpressionVariable)v).content;
+        } catch (NotVariableException e) {}
+        return generic;
     }
 
-        protected Variable newinstance() {
-                return new ExpressionVariable(null);
-        }
+    public Generic substitute(Variable variable, Generic generic) {
+        if(isIdentity(variable)) return generic;
+        else return content.substitute(variable,generic);
+    }
+
+    public Generic elementary() {
+        return content.elementary();
+    }
+
+    public Generic simplify() {
+        return content.simplify();
+    }
+
+    public String toString() {
+        StringBuffer buffer=new StringBuffer();
+        buffer.append("(").append(content).append(")");
+        return buffer.toString();
+    }
+
+    protected Variable newinstance() {
+        return new ExpressionVariable(null);
+    }
 }

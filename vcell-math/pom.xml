@@ -83,6 +83,11 @@
 			<scope>test</scope>
 		</dependency>
 
+		<dependency>
+			<groupId>net.sourceforge.jscl-meditor</groupId>
+			<artifactId>rendering</artifactId>
+			<version>1.1</version>
+		</dependency>
 
 		<dependency>
 			<groupId>org.vcell</groupId>
