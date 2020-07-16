@@ -124,6 +124,9 @@ public class Expression extends Generic {
         Literal l1=i1>0?literal[--i1]:null;
         Literal l2=i2>0?expression.literal[--i2].multiply(lit):null;
         while(l1!=null || l2!=null) {
+        	if(ex.size > 100000) {
+        		throw new ArithmeticException("Failed to simplify expression.");
+        	}
             int c=l1==null?1:(l2==null?-1:-l1.compareTo(l2));
             if(c<0) {
                 JSCLInteger en=coef[i1];
