@@ -308,12 +308,18 @@ public class MassActionSolver {
 			matrix.set_elem(1, 0, RationalExpUtils.getRationalExp(R_2, true));
 			matrix.set_elem(1, 1, RationalExpUtils.getRationalExp(Expression.negate(P_2), true));
 			matrix.set_elem(1, 2, RationalExpUtils.getRationalExp(J_2, true));
-			RationalExp[] solution;
+			RationalExp[] solution = null;
+			RationalExp[] originalSolution = null;
 			try {
 				//matrix.show();
 				solution = matrix.solveLinearExpressions();
+				originalSolution = matrix.solveLinearExpressions();
 				solution[0] = solution[0].simplify(); //solution[0] is forward rate.
 				solution[1] = solution[1].simplify(); //solution[1] is reverse rate. 
+			} catch(ArithmeticException e) {
+				if(e.getMessage() == null || !e.getMessage().startsWith(jscl.math.Expression.FailedToSimplify)) {
+					throw(e);	// if failed to simplify, continue with what we have, otherwise rethrow
+				}
 			} catch (MatrixException e) {
 				e.printStackTrace();
 				throw new ModelException(VCellErrorMessages.getMassActionSolverMessage(rs.getName(), "MatrixException: " + e.getMessage()));
