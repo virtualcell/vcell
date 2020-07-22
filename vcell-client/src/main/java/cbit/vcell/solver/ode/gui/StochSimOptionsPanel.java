@@ -731,7 +731,7 @@ public class StochSimOptionsPanel extends CollapsiblePanel {
 		
 		// TODO: temporarily disable the button
 		// UNDO THIS WHEN DEVELOPMENT IS COMPLETE
-		getMultiRunButton().setEnabled(false);
+//		getMultiRunButton().setEnabled(false);
 
 		boolean isUseCustomSeed = sso.isUseCustomSeed();
 		int customSeed = sso.getCustomSeed();

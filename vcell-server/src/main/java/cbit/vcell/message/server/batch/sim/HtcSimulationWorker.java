@@ -11,6 +11,8 @@
 package cbit.vcell.message.server.batch.sim;
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileFilter;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -19,6 +21,8 @@ import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
@@ -73,6 +77,7 @@ import cbit.vcell.message.server.combined.VCellServices;
 import cbit.vcell.message.server.htc.HtcJobStatus;
 import cbit.vcell.message.server.htc.HtcProxy;
 import cbit.vcell.message.server.htc.HtcProxy.HtcJobInfo;
+import cbit.vcell.message.server.htc.slurm.SlurmJobStatus;
 import cbit.vcell.message.server.htc.slurm.SlurmProxy;
 import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.mongodb.VCMongoMessage;
@@ -83,18 +88,24 @@ import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.server.HtcJobID;
 import cbit.vcell.server.HtcJobID.BatchSystemType;
 import cbit.vcell.simdata.PortableCommand;
+import cbit.vcell.simdata.SimDataConstants;
 import cbit.vcell.simdata.SimulationData;
 import cbit.vcell.simdata.VtkMeshGenerator;
 import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solver.SolverException;
 import cbit.vcell.solver.SolverTaskDescription;
 import cbit.vcell.solver.VCSimulationIdentifier;
+import cbit.vcell.solver.ode.ODESolverResultSet;
+import cbit.vcell.solver.ode.SundialsSolver;
 import cbit.vcell.solver.server.SimulationMessage;
 import cbit.vcell.solver.server.Solver;
 import cbit.vcell.solver.server.SolverFactory;
+import cbit.vcell.solver.stoch.GibsonSolver;
+import cbit.vcell.solver.stoch.StochFileWriter;
 import cbit.vcell.solvers.AbstractCompiledSolver;
 import cbit.vcell.solvers.AbstractSolver;
 import cbit.vcell.solvers.ExecutableCommand;
+import cbit.vcell.util.ColumnDescription;
 import cbit.vcell.xml.XmlHelper;
 import cbit.vcell.xml.XmlParseException;
 /**
@@ -392,6 +403,7 @@ private static class PostProcessingChores {
 	 * will we need a VTK mesh?
 	 */
 	private boolean isVtk;
+	private boolean bStochMultiTrial;
 
 	/**
 	 * directories are same
@@ -412,6 +424,7 @@ private static class PostProcessingChores {
 		this.finalDataDirectoryInternal = finalDataDirectoryInternal;
 		this.finalDataDirectoryExternal = finalDataDirectoryExternal;
 		isVtk = false;
+		bStochMultiTrial = false;
 	}
 
 	boolean isCopyNeeded( ) {
@@ -429,6 +442,12 @@ private static class PostProcessingChores {
 		this.isVtk = isVtk;
 	}
 
+	public void setStochMultiTrial(boolean bStochMultiTrial) {
+		this.bStochMultiTrial = bStochMultiTrial;
+	}
+	public boolean isStochMultiTrial() {
+		return bStochMultiTrial;
+	}
 	@Override
 	public String toString() {
 		return "PostProcessorChores( " +runDirectoryExternal + ", "  + finalDataDirectoryExternal + ", isVtkUser " + isVtk + ")";
@@ -454,7 +473,7 @@ private PostProcessingChores choresFor(SimulationTask simTask) {
 		chores = new PostProcessingChores(runDirExternal + userDir , primaryExternal + userDir);
 	}
 	chores.setVtkUser( slvTaskDesc.isVtkUser() ) ;
-
+	chores.setStochMultiTrial(HtcProxy.isStochMultiTrial(simTask));
 	if (lg.isDebugEnabled( )) {
 		lg.debug("Simulation " + simTask.getSimulation().getDescription() + " task " + simTask.getTaskID()
 				+ " with " + slvTaskDesc.getNumProcessors() + " processors using " + chores);
@@ -847,7 +866,10 @@ private HtcJobID submit2PBS(SimulationTask simTask, HtcProxy clonedHtcProxy, Pos
 			VtkMeshGenerator vmg = new VtkMeshGenerator(simOwner, simKey, jobId);
 			postProcessingCommands.add(vmg);
 		}
-
+		if(chores.isStochMultiTrial()) {
+			final String logName = chores.finalDataDirectoryInternal + '/' + SimulationData.createCanonicalSimLogFileName(simKey, jobId, false);
+			postProcessingCommands.add(new AvgStochMultiTrial(primaryUserDirInternal.getAbsolutePath(), XmlHelper.simTaskToXML(simTask)));
+		}
 	} else {
 		ExecutableCommand ec = new ExecutableCommand(null, false,false,
 				PropertyLoader.getRequiredProperty(PropertyLoader.javaSimulationExecutable),
@@ -857,7 +879,7 @@ private HtcJobID submit2PBS(SimulationTask simTask, HtcProxy clonedHtcProxy, Pos
 		commandContainer.add(ec);
 	}
 
-	jobid = clonedHtcProxy.submitJob(jobname, subFileInternal, subFileExternal, commandContainer, ncpus, simTask.getEstimatedMemorySizeMB(), postProcessingCommands, simTask);
+	jobid = clonedHtcProxy.submitJob(jobname, subFileInternal, subFileExternal, commandContainer, ncpus, simTask.getEstimatedMemorySizeMB(), postProcessingCommands, simTask,primaryUserDirExternal);
 	if (jobid == null) {
 		throw new RuntimeException("Failed. (error message: submitting to job scheduler failed).");
 		}
@@ -972,6 +994,7 @@ private static final String REQUIRED_SERVICE_PROPERTIES[] = {
 		PropertyLoader.jmsSimRestPortExternal,
 		PropertyLoader.jmsUser,
 		PropertyLoader.jmsPasswordFile,
+		PropertyLoader.jmsRestPasswordFile,
 		PropertyLoader.htcUser,
 		PropertyLoader.htcLogDirExternal,
 		PropertyLoader.htcLogDirInternal,
