@@ -117,6 +117,7 @@ public class Expression extends Generic {
         }
     }
 
+    public static final String FailedToSimplify = "Failed to simplify expression.";
     Expression multiplyAndAdd(Literal lit, JSCLInteger integer, Expression expression) {
         if(integer.signum()==0) return this;
         Expression ex=newinstance(size+expression.size);
@@ -126,6 +127,10 @@ public class Expression extends Generic {
         Literal l1=i1>0?literal[--i1]:null;
         Literal l2=i2>0?expression.literal[--i2].multiply(lit):null;
         while(l1!=null || l2!=null) {
+           	if(ex.size > 80000) {	// arbitrary large number
+           		throw new ArithmeticException(FailedToSimplify);
+           	}
+
             int c=l1==null?1:(l2==null?-1:-l1.compareTo(l2));
             if(c<0) {
                 JSCLInteger en=coef[i1];

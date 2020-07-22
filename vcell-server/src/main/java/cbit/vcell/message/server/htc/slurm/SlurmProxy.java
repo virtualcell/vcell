@@ -1033,7 +1033,7 @@ public class SlurmProxy extends HtcProxy {
 			String simDataDirArchiveHost = PropertyLoader.getRequiredProperty(PropertyLoader.simDataDirArchiveHost);
 			File slurm_singularity_central_filepath = new File(slurm_central_singularity_dir,new File(slurm_singularity_local_image_filepath).getName());
 
-			HtcProxy.MemLimitResults memoryMBAllowed = new HtcProxy.MemLimitResults(HtcProxy.MINIMUM_MEM, "Optimization Default",HtcProxy.MINIMUM_MEM);
+			HtcProxy.MemLimitResults memoryMBAllowed = new HtcProxy.MemLimitResults(256, "Optimization Default");
 			String[] environmentVars = new String[] {
 					"java_mem_Xmx="+memoryMBAllowed.getMemLimit()+"M",
 					"datadir_external="+primaryDataDirExternal,
