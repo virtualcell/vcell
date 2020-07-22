@@ -358,6 +358,10 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueList) {
 	}
 	issueContext = issueContext.newChildContext(ContextType.BioModel, this);
 	getModel().gatherIssues(issueContext, issueList);
+	if(getNumSimulations() > 1000) {
+		String message = "VCell BioModels cannot have more than 1000 simulations in total across all applications";
+		issueList.add(new Issue(this, issueContext, IssueCategory.InternalError, message, Issue.Severity.ERROR));
+	}
 	for (SimulationContext simulationContext : fieldSimulationContexts) {
 		boolean bIgnoreMathDescription = false;
 		simulationContext.gatherIssues(issueContext, issueList, bIgnoreMathDescription);
