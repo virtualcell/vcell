@@ -153,7 +153,7 @@ public abstract class HtcProxy {
 	 * @throws ExecutableException
 	 */
 	public abstract HtcJobID submitJob(String jobName, File sub_file_internal, File sub_file_external, ExecutableCommand.Container commandSet,
-			int ncpus, double memSize, Collection<PortableCommand> postProcessingCommands, SimulationTask simTask) throws ExecutableException;
+			int ncpus, double memSize, Collection<PortableCommand> postProcessingCommands, SimulationTask simTask,File primaryUserDirExternal) throws ExecutableException;
 	public abstract HtcJobID submitOptimizationJob(String jobName, File sub_file_internal, File sub_file_external,File optProblemInput,File optProblemOutput)throws ExecutableException;
 	public abstract HtcProxy cloneThreadsafe();
 
@@ -402,6 +402,13 @@ public abstract class HtcProxy {
 				(minimumSimMemoryLimitMBFromFile==null?MINIMUM_MEM:minimumSimMemoryLimitMBFromFile));
 	}
 
+	public static boolean isStochMultiTrial(SimulationTask simTask) {
+		return 	simTask.getSimulationJob().getSimulation().getSolverTaskDescription().getSolverDescription() == SolverDescription.StochGibson &&
+				simTask.getSimulationJob().getSimulation().getSolverTaskDescription().getStochOpt() != null &&
+				!simTask.getSimulationJob().getSimulation().getSolverTaskDescription().getStochOpt().isHistogram() &&
+				simTask.getSimulationJob().getSimulation().getSolverTaskDescription().getStochOpt().getNumOfTrials() > 1;
+
+	}
 }
 
 
