@@ -204,7 +204,7 @@ linux32c=$(wc -l < /outputdir/updates_linux32.xml)
 mac64c=$(wc -l < /outputdir/updates_mac64.xml)
 
 sed -n -e "1,$(($win64c-1))p" /outputdir/updates_win64.xml >/outputdir/updates.xml
-sed -n -e "3,$(($win32c-1))p" /outputdir/updates_win32.xml >/outputdir/updates.xml
+sed -n -e "3,$(($win32c-1))p" /outputdir/updates_win32.xml >>/outputdir/updates.xml
 sed -n -e "3,$(($linux64c-1))p" /outputdir/updates_linux64.xml >>/outputdir/updates.xml
 sed -n -e "3,$(($linux32c-1))p" /outputdir/updates_linux32.xml >>/outputdir/updates.xml
 sed -n -e "3,$(($mac64c))p" /outputdir/updates_mac64.xml >>/outputdir/updates.xml
