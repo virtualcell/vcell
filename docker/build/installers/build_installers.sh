@@ -49,9 +49,9 @@ macCodeSignKeystore_pswd=`cat $macCodeSignKeystore_pswdfile`
 #
 #Separate build of win, linux and mac installers to avoid random failure due to threading
 
-#Generate Windows installers
+#Generate Windows 64bit installers
 /installer/install4j8.0.5/bin/install4jc \
-	-m windows \
+	-b 349 \
 	--win-keystore-password=$winCodeSignKeystore_pswd \
 	--mac-keystore-password=$macCodeSignKeystore_pswd \
 	-D \
@@ -76,11 +76,40 @@ bioformatsJarFile=$compiler_bioformatsJarFile,\
 bioformatsJarDownloadURL=$compiler_bioformatsJarDownloadURL\
 	VCell.install4j
 	
-mv /outputdir/updates.xml /outputdir/updates_win.xml
+mv /outputdir/updates.xml /outputdir/updates_win64.xml
 
-#Generate linux installers
+#Generate Windows 32bit installers
 /installer/install4j8.0.5/bin/install4jc \
-	-m unixInstaller \
+	-b 450 \
+	--win-keystore-password=$winCodeSignKeystore_pswd \
+	--mac-keystore-password=$macCodeSignKeystore_pswd \
+	-D \
+vcellIcnsFile=/config/icons/vcell.icns,\
+outputDir=/outputdir,\
+mavenRootDir=/vcellclient,\
+macJrePath=/jres/$macJre,\
+win64JrePath=/jres/$win64Jre,\
+win32JrePath=/jres/$win32Jre,\
+linux64JrePath=/jres/$linux64Jre,\
+linux32JrePath=/jres/$linux32Jre,\
+macKeystore=$macCodeSignKeystore_p12,\
+winKeystore=$winCodeSignKeystore_pfx,\
+applicationId=$compiler_applicationId,\
+SoftwareVersionString=$compiler_softwareVersionString,\
+Site=$compiler_Site,\
+vcellVersion=$compiler_vcellVersion,\
+vcellBuild=$compiler_vcellBuild,\
+updateSiteBaseUrl=$compiler_updateSiteBaseUrl,\
+rmiHosts=$compiler_rmiHosts,\
+bioformatsJarFile=$compiler_bioformatsJarFile,\
+bioformatsJarDownloadURL=$compiler_bioformatsJarDownloadURL\
+	VCell.install4j
+	
+mv /outputdir/updates.xml /outputdir/updates_win32.xml
+
+#Generate linux 64bit installers
+/installer/install4j8.0.5/bin/install4jc \
+	-b 652 \
 	--win-keystore-password=$winCodeSignKeystore_pswd \
 	--mac-keystore-password=$macCodeSignKeystore_pswd \
 	-D \
@@ -105,12 +134,11 @@ bioformatsJarFile=$compiler_bioformatsJarFile,\
 bioformatsJarDownloadURL=$compiler_bioformatsJarDownloadURL\
 	VCell.install4j
 
-mv /outputdir/updates.xml /outputdir/updates_linux.xml
+mv /outputdir/updates.xml /outputdir/updates_linux64.xml
 
-
-#Generate mac installer
+#Generate linux 32bit installers
 /installer/install4j8.0.5/bin/install4jc \
-	-m macos \
+	-b 547 \
 	--win-keystore-password=$winCodeSignKeystore_pswd \
 	--mac-keystore-password=$macCodeSignKeystore_pswd \
 	-D \
@@ -135,15 +163,49 @@ bioformatsJarFile=$compiler_bioformatsJarFile,\
 bioformatsJarDownloadURL=$compiler_bioformatsJarDownloadURL\
 	VCell.install4j
 
-mv /outputdir/updates.xml /outputdir/updates_mac.xml
+mv /outputdir/updates.xml /outputdir/updates_linux32.xml
+
+
+#Generate mac 64bit installer
+/installer/install4j8.0.5/bin/install4jc \
+	-b 105 \
+	--win-keystore-password=$winCodeSignKeystore_pswd \
+	--mac-keystore-password=$macCodeSignKeystore_pswd \
+	-D \
+vcellIcnsFile=/config/icons/vcell.icns,\
+outputDir=/outputdir,\
+mavenRootDir=/vcellclient,\
+macJrePath=/jres/$macJre,\
+win64JrePath=/jres/$win64Jre,\
+win32JrePath=/jres/$win32Jre,\
+linux64JrePath=/jres/$linux64Jre,\
+linux32JrePath=/jres/$linux32Jre,\
+macKeystore=$macCodeSignKeystore_p12,\
+winKeystore=$winCodeSignKeystore_pfx,\
+applicationId=$compiler_applicationId,\
+SoftwareVersionString=$compiler_softwareVersionString,\
+Site=$compiler_Site,\
+vcellVersion=$compiler_vcellVersion,\
+vcellBuild=$compiler_vcellBuild,\
+updateSiteBaseUrl=$compiler_updateSiteBaseUrl,\
+rmiHosts=$compiler_rmiHosts,\
+bioformatsJarFile=$compiler_bioformatsJarFile,\
+bioformatsJarDownloadURL=$compiler_bioformatsJarDownloadURL\
+	VCell.install4j
+
+mv /outputdir/updates.xml /outputdir/updates_mac64.xml
 
 
 #reconstruct combined updates.xml from fragments (used by VCell client executable to detect if update needed)
-winc=$(wc -l < /outputdir/updates_win.xml)
-linuxc=$(wc -l < /outputdir/updates_linux.xml)
-macc=$(wc -l < /outputdir/updates_mac.xml)
+win64c=$(wc -l < /outputdir/updates_win64.xml)
+win32c=$(wc -l < /outputdir/updates_win32.xml)
+linux64c=$(wc -l < /outputdir/updates_linux64.xml)
+linux32c=$(wc -l < /outputdir/updates_linux32.xml)
+mac64c=$(wc -l < /outputdir/updates_mac64.xml)
 
-sed -n -e "1,$(($winc-1))p" /outputdir/updates_win.xml >/outputdir/updates.xml
-sed -n -e "3,$(($linuxc-1))p" /outputdir/updates_linux.xml >>/outputdir/updates.xml
-sed -n -e "3,$(($macc))p" /outputdir/updates_mac.xml >>/outputdir/updates.xml
+sed -n -e "1,$(($win64c-1))p" /outputdir/updates_win64.xml >/outputdir/updates.xml
+sed -n -e "3,$(($win32c-1))p" /outputdir/updates_win32.xml >/outputdir/updates.xml
+sed -n -e "3,$(($linux64c-1))p" /outputdir/updates_linux64.xml >>/outputdir/updates.xml
+sed -n -e "3,$(($linux32c-1))p" /outputdir/updates_linux32.xml >>/outputdir/updates.xml
+sed -n -e "3,$(($mac64c))p" /outputdir/updates_mac64.xml >>/outputdir/updates.xml
 
