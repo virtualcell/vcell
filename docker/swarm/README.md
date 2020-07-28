@@ -275,6 +275,8 @@ Distributed by the University of Connecticut Health Center, Farmington, CT 06032
      ssh vcell@vcell-node1 rm /opt/build/vcell/docker/swarm/generated_installers/VCell_{Rel,Alpha}_macos_7_2_0_{buildnum}_64bit.dmg
 //Copy Notarized software back to deploy server (vcell-node1) and continue deployment
      scp /Users/vcellbuild/Downloads/VCell_{Rel,Alpha}_macos_7_2_0_{buildnum}_64bit.dmg vcell@vcell-node1:/opt/build/vcell/docker/swarm/generated_installers/VCell_{Rel,Alpha}_macos_7_2_0_{buildnum}_64bit.dmg
+// Change ownership  of file to root:root on vcell-node1 manually
+// change name of file from "VCell_{Rel,Alpha}_windows-x32_7_2_0_{buildnum}_32bit.exe" "VCell_{Rel,Alpha}_windows_7_2_0_{buildnum}_32bit.exe" on vcell-node1 manually (remove -x32)
 ```
 
 ```bash
