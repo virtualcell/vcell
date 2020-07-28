@@ -242,6 +242,8 @@ Distributed by the University of Connecticut Health Center, Farmington, CT 06032
 //MacOS installer only:
 //Installer App Notarizing
 //
+// These steps are only done once, not needed every time
+//-------------------------
 // Login apple-id (Apple ID account page)
      Signup for 2 factor authentication (do this only once)->
      Under ‘Security’ section Create app specific password called “altoolpw”  (only visible if you are using 2 fact auth)->
@@ -249,22 +251,30 @@ Distributed by the University of Connecticut Health Center, Farmington, CT 06032
      xcrun altool --list-providers -u "frm@uchc.edu" -p "@keychain:altoolpw"
 //Check ‘altoolpw’ 
      xcrun altool --list-providers -u "frm@uchc.edu" -p "@keychain:altoolpw"
+//---------------------------
+//
+//
+// Start Notarize task here
+// Delete old notarized app file
+     rm /Users/vcellbuild/Downloads/VCell_*.dmg
 //Copy MacOS installer built by install4j (to Mac with xcode and credentials installed)
-     scp vcell@vcell-node1:/opt/build/vcell/docker/swarm/generated_installers/VCell_Alpha_macos_7_2_0_51_64bit.dmg /Users/vcellbuild/Downloads
+     scp vcell@vcell-node1:/opt/build/vcell/docker/swarm/generated_installers/VCell_{Rel,Alpha}_macos_7_2_0_{buildnum}_64bit.dmg /Users/vcellbuild/Downloads
 //Notarize request for the VCell MacOS .dmg created by install4j
-     xcrun altool --notarize-app --primary-bundle-id "org.vcell.i4jmacos" --username "frm@uchc.edu" --password "@keychain:altoolpw" --file /Users/vcellbuild/Downloads/VCell_Alpha_macos_7_2_0_51_64bit.dmg
+     xcrun altool --notarize-app --primary-bundle-id "org.vcell.i4jmacos" --username "frm@uchc.edu" --password "@keychain:altoolpw" --file /Users/vcellbuild/Downloads/VCell_{Rel,Alpha}_macos_7_2_0_{buildnum}_64bit.dmg
 //Save the requestUUID if the process doesn’t fail
      RequestUUID = fad728cf-47f0-493b-b666-f11aa61932c1 (failed)
 			       e6397f48-38a9-4285-adea-9e2221fe74d0 (failed, but fewer errors)
 				7ff1cb03-ed6a-4572-8208-76cd59039db3 (success)
 //Check Notarization status (wait ~5 minutes)
      xcrun altool --notarization-history 0 -u "frm@uchc.edu" -p "@keychain:altoolpw"
-//Get full Notarization log url and view in web browser (if notarization status failed, will contain web address of error log)
+// If there is a problem/failure - Get full Notarization log url and view in web browser (if notarization status failed, will contain web address of error log)
      xcrun altool --notarization-info fad728cf-47f0-493b-b666-f11aa61932c1 -u "frm@uchc.edu" -p "@keychain:altoolpw"
 //Staple Ticket to Software (if notarization status has ‘success’)
-     xcrun stapler staple /Users/vcellbuild/Downloads/VCell_Alpha_macos_7_2_0_51_64bit.dmg
+     xcrun stapler staple /Users/vcellbuild/Downloads/VCell_{Rel,Alpha}_macos_7_2_0_{buildnum}_64bit.dmg
+// Remove unnotarized app from vcell-node1
+     ssh vcell@vcell-node1 rm /opt/build/vcell/docker/swarm/generated_installers/VCell_{Rel,Alpha}_macos_7_2_0_{buildnum}_64bit.dmg
 //Copy Notarized software back to deploy server (vcell-node1) and continue deployment
-     scp /Users/vcellbuild/Downloads/VCell_Alpha_macos_7_2_0_51_64bit.dmg vcell@vcell-node1:/opt/build/vcell/docker/swarm/generated_installers/VCell_Alpha_macos_7_2_0_51_64bit.dmg
+     scp /Users/vcellbuild/Downloads/VCell_{Rel,Alpha}_macos_7_2_0_{buildnum}_64bit.dmg vcell@vcell-node1:/opt/build/vcell/docker/swarm/generated_installers/VCell_{Rel,Alpha}_macos_7_2_0_{buildnum}_64bit.dmg
 ```
 
 ```bash
