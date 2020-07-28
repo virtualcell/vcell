@@ -77,7 +77,7 @@ See [vcell-solvers README.md](C:\users\frm\VCellTrunkGitWorkspaceSolvers\README_
 theBuildHost=vcell-node1.cam.uchc.edu
 ssh vcell@${theBuildHost}
 cd /opt/build
-rm -rf vcell (if necessary)
+sudo rm -rf vcell (if necessary)
 git clone https://github.com/virtualcell/vcell.git
 ---if want a branch or specific commit then do:  
       cd vcell; git checkout {commitHash#}  
@@ -222,9 +222,13 @@ rm -rf ./generated_installers
 //Windows installer only:
 //Symantec false-positve whitelist report
 //
-//from vcell-node1:/opt/build/vcell/docker/swarm/generated_installers
-cp VCell_Rel_windows-x64_7_2_0_40_64bit.exe /share/apps/vcell3/apache_webroot/htdocs/webstart/symantec_whitelist/
-//Open browser: https://submit.symantec.com/false_positive/
+//from vcell-node1:/opt/build/vcell/docker/swarm/
+rm /share/apps/vcell3/apache_webroot/htdocs/webstart/symantec_whitelist/*
+cp ./generated_installers/VCell_{Alpha,Rel}_windows-x64_7_2_0_${VCELL_BUILD}_64bit.exe /share/apps/vcell3/apache_webroot/htdocs/webstart/symantec_whitelist/
+// Use web browser and then goto http://vcell.org/webstart/symantec_whitelist/
+// Copy link location from web browser for use of semantic request
+//Open https://submit.symantec.com/false_positive/ in the browser
+// Choose "Incorrectly Detected by Symantic" Tab
 A1. downlaoding file
 B1. endpoint 14.x
 C1. Download/Reputation
