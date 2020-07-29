@@ -16,6 +16,19 @@
 # Base OS
 FROM ubuntu:18.04
 
+# metadata
+LABEL base_image="ubuntu:18.04"
+LABEL version="7.2.0.39"
+LABEL software="Virtual Cell"
+LABEL software.version="7.2.0.39"
+LABEL about.summary="Open-source software package for modeling cell biological systems that is built on a central database and disseminated as a standalone application."
+LABEL about.home="http://vcell.org/"
+LABEL about.documentation="http://vcell.org/"
+LABEL about.license_file="https://github.com/virtualcell/vcell/blob/master/license.txt"
+LABEL about.license="SPDX:MIT"
+LABEL about.tags="rule-based modeling,kinetic modeling,dynamical simulation,systems biology,BNGL,SED-ML,COMBINE,OMEX"
+LABEL maintainer="Gnaneswara Marupilla <marupilla@uchc.edu>"
+
 RUN apt-get -y update && \
     apt-get install -y curl openjdk-8-jre dnsutils && \
     mkdir -p /usr/local/app/vcell/lib \
@@ -44,7 +57,7 @@ COPY ./vcell-client/target/vcell-client-0.0.1-SNAPSHOT.jar \
      /usr/local/app/vcell/lib/
 
 
-# Add local solvers, libcombine_java
+# Add local solvers
 ADD ./localsolvers /usr/local/app/vcell/installDir/localsolvers
 ADD ./nativelibs /usr/local/app/vcell/installDir/nativelibs
 COPY ./docker_run.sh /usr/local/app/vcell/installDir/
