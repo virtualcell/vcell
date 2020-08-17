@@ -111,6 +111,7 @@ public final class BeanUtils {
 	 */
 	public static final String PLAINTEXT_EMAIL_NEWLINE = "\r\n";
 
+	public static final String FD_EXP_MESSG = "Didn't find field functions";
 	
 	
 	private static VCellDynamicProps vcellDynamicProps = new VCellDynamicProps(null);

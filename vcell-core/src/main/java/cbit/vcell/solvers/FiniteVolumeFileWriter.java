@@ -290,7 +290,7 @@ private Expression subsituteExpression(Expression exp, SymbolTable symbolTable, 
 				newExp.substituteInPlace(new Expression(fdn.getFieldFunction()), new Expression(fdn.getNumericsSubsitute()));
 			}
 		} else {
-			throw new RuntimeException("Didn't find field functions in simulation when preprocessing, but expression [" + exp.infix() + "] has field function " + newExp.infix() + " in it");
+			throw new RuntimeException(BeanUtils.FD_EXP_MESSG+" in simulation when preprocessing, but expression [" + exp.infix() + "] has field function " + newExp.infix() + " in it");
 		}
 	}
 	if (bChomboSolver)

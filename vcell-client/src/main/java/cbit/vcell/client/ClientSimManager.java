@@ -650,7 +650,11 @@ public void runQuickSimulation(final Simulation originalSimulation, ViewerType v
 					if (solverStatus.getStatus() == SolverStatus.SOLVER_ABORTED) {
 						String simulationMessage = solverStatus.getSimulationMessage().getDisplayMessage();
 						String translatedMessage = solver.translateSimulationMessage(simulationMessage);
-						throw new RuntimeException(translatedMessage);
+						if(translatedMessage.startsWith(BeanUtils.FD_EXP_MESSG)) {
+							throw new RuntimeException("Sims with FieldData can only be run remotely (cannot use QuickRun).\n"+translatedMessage);
+						}else {
+							throw new RuntimeException(translatedMessage);
+						}
 					}
 					if (solverStatus.getStatus() != SolverStatus.SOLVER_STARTING &&
 						solverStatus.getStatus() != SolverStatus.SOLVER_READY &&
