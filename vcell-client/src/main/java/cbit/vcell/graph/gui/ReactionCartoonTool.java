@@ -2286,16 +2286,37 @@ public class ReactionCartoonTool extends BioCartoonTool implements BioCartoonToo
 			{
 				Feature startFeature = (Feature)startStructure;
 				Feature endFeature = (Feature)endStructure;
-				SpeciesContext speciesContext1 = getReactionCartoon().getModel().createSpeciesContext(startStructure);
-				SpeciesContext speciesContext2 = getReactionCartoon().getModel().createSpeciesContext(endStructure);
-				SimpleReaction reaction = getReactionCartoon().getModel().createSimpleReaction(startStructure);
-				reaction.addReactant(speciesContext1, 1);
-				reaction.addProduct(speciesContext2, 1);
-				reaction.setKinetics(new GeneralLumpedKinetics(reaction));
+				Model model = getReactionCartoon().getModel();
+				SpeciesContext speciesContext1 = model.createSpeciesContext(startStructure);
+				SpeciesContext speciesContext2 = model.createSpeciesContext(endStructure);
+				
+				// if we have one single membrane, we position the reaction on that membrane
+				// if we have zero or more than one membranes we position the reaction in the start structure
+				List<Membrane> membranes = new ArrayList<> ();
+				for(Structure struct : model.getStructures()) {
+					if(struct instanceof Membrane) {
+						membranes.add((Membrane)struct);
+					}
+				}
+				SimpleReaction reaction;
+				Structure reactionStructure = startStructure;
+				if(membranes.size() == 1) {
+					reactionStructure = membranes.get(0);
+					reaction = model.createSimpleReaction(reactionStructure);
+					reaction.addReactant(speciesContext1, 1);
+					reaction.addProduct(speciesContext2, 1);
+					// TODO: lumped or mass action??
+//					reaction.setKinetics(new GeneralLumpedKinetics(reaction));
+				} else {
+					reaction = model.createSimpleReaction(reactionStructure);
+					reaction.addReactant(speciesContext1, 1);
+					reaction.addProduct(speciesContext2, 1);
+					reaction.setKinetics(new GeneralLumpedKinetics(reaction));
+				}
 				getReactionCartoon().notifyChangeEvent();
 				positionShapeForObject(startStructure, speciesContext1, startPos);
 				positionShapeForObject(endStructure, speciesContext2, endPos);
-				positionShapeForObject(startStructure, reaction, new Point((startPos.x + endPos.x)/2, (startPos.y + endPos.y)/2));
+				positionShapeForObject(reactionStructure, reaction, new Point((startPos.x + endPos.x)/2, (startPos.y + endPos.y)/2));
 				getGraphModel().clearSelection();
 				getGraphModel().select(reaction);
 			}
