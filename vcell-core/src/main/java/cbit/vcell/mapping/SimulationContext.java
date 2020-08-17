@@ -93,6 +93,7 @@ import cbit.vcell.matrix.MatrixException;
 import cbit.vcell.model.BioNameScope;
 import cbit.vcell.model.ExpressionContainer;
 import cbit.vcell.model.Feature;
+import cbit.vcell.model.Membrane;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Model.ReservedSymbol;
 import cbit.vcell.model.Model.ReservedSymbolRole;
@@ -1266,6 +1267,41 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueVector, boo
 		}
 		if(isInsufficientMaxMolecules()) {
 			issueVector.add(new Issue(this, issueContext, IssueCategory.RbmNetworkConstraintsBad, IssueInsufficientMolecules, Issue.Severity.WARNING));
+		}
+	}
+	
+	Geometry geo = getGeometryContext().getGeometry();
+	int dimension = geo.getDimension();
+	if (dimension != 0) {
+		for(ReactionSpec rrs : getReactionContext().getReactionSpecs()) {
+			if(rrs.isExcluded()) {
+				continue;
+			}
+			ReactionStep rs = rrs.getReactionStep();
+			if(rs.getStructure() instanceof Membrane) {
+				continue;
+			}
+			// for spatial applications
+			// we look for reactions where reactants and products are in more than one compartments
+			// if such reactions are not on a membrane, we issue a warning
+			Set<Structure> features = new HashSet<> ();
+			for(Reactant r : rs.getReactants()) {
+				Structure struct = r.getStructure();
+				if(struct instanceof Feature) {
+					features.add(struct);
+				}
+			}
+			for(Product p : rs.getProducts()) {
+				Structure struct = p.getStructure();
+				if(struct instanceof Feature) {
+					features.add(struct);
+				}
+			}
+			if(features.size() > 1) {
+				String message = "Reaction must be situated on a membrane (spatial application present)";
+				String tooltip = "Spatial application '" + getName() + "' requires that reactions between compartments must be situated on a membrane.";
+				issueVector.add(new Issue(rs, issueContext, IssueCategory.Identifiers, message, tooltip, Issue.Severity.WARNING));
+			}
 		}
 	}
 	
