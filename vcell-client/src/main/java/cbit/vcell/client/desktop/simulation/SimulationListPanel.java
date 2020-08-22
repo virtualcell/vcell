@@ -20,13 +20,19 @@ import java.awt.Insets;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.beans.PropertyVetoException;
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Hashtable;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Objects;
+import java.util.StringTokenizer;
 import java.util.Vector;
 
 import javax.swing.BorderFactory;
@@ -59,6 +65,7 @@ import org.vcell.util.gui.VCellIcons;
 import org.vcell.util.gui.sorttable.JSortTable;
 
 import cbit.vcell.client.ClientSimManager.ViewerType;
+import cbit.vcell.bionetgen.BNGOutputSpec;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.UserMessage;
 import cbit.vcell.client.desktop.biomodel.BioModelEditor;
@@ -260,6 +267,69 @@ private void batchSimulations() {
 	getScrollPaneTable().scrollRectToVisible(getScrollPaneTable().getCellRect(index, 0, true));
 }
 
+private static Map<Integer, Map<String, String>> parseBatchInputFile() {
+	
+	StringBuffer stringBuffer = new StringBuffer();
+	long batchInputFileLength = 0;
+	
+	try {
+		File batchInputFile = new java.io.File("C:\\TEMP\\ddd\\batchSimulations.dat");
+		if (!batchInputFile.exists()) {
+			throw new java.io.FileNotFoundException("Batch input file " + batchInputFile.getPath() + " not found");
+		}
+		batchInputFileLength = batchInputFile.length();
+	
+		BufferedReader br = new BufferedReader(new FileReader(batchInputFile));
+		char charArray[] = new char[100000];
+		while (true) {
+			int numRead = br.read(charArray, 0, charArray.length);
+			if (numRead > 0) {
+				stringBuffer.append(charArray,0,numRead);
+			} else if (numRead == -1) {
+				break;
+			}
+		}
+	} catch (java.io.FileNotFoundException e1) {
+		throw new RuntimeException("could not read BNG .net file : "+e1.getMessage());
+	} catch (java.io.IOException e2) {
+		throw new RuntimeException("could not read BNG .net file : "+e2.getMessage());
+	}
+		
+	if (stringBuffer.length() != batchInputFileLength){
+		System.err.println("BNGOutputFile, read "+stringBuffer.length()+" of "+batchInputFileLength+" bytes of input file");
+	}
+	String inputString = stringBuffer.toString();
+	Map<Integer, Map<String, String>> batchInputDataMap = new LinkedHashMap<>();
+	
+	String newLineDelimiters = "\n\r";
+	StringTokenizer lineTokenizer = new StringTokenizer(inputString, newLineDelimiters);
+	String line = new String("");
+	String entry = new String("");
+	String commaDelimiter = ",";
+	String blancDelimiter = " ";
+	Integer lineIndex = 0;
+
+	while (lineTokenizer.hasMoreTokens()) {
+		line = lineTokenizer.nextToken();
+
+		Map<String, String> simOverridesMap = new LinkedHashMap<>();
+		StringTokenizer nextLine = new StringTokenizer(line, commaDelimiter);
+		while (nextLine.hasMoreTokens()) {
+			entry = nextLine.nextToken();
+		
+			StringTokenizer entryTokenizer = new StringTokenizer(entry, blancDelimiter);
+
+			String param = entryTokenizer.nextToken();
+			String value = entryTokenizer.nextToken();
+			simOverridesMap.put(param, value);
+		}
+		batchInputDataMap.put(lineIndex, simOverridesMap);
+		lineIndex++;
+	}
+	return batchInputDataMap;
+}
+
+
 private void copySimulations() {
 	int[] selections = getScrollPaneTable().getSelectedRows();
 	Vector<Simulation> v = new Vector<Simulation>();
@@ -278,7 +348,6 @@ private void copySimulations() {
 	getScrollPaneTable().getSelectionModel().setSelectionInterval(index, index);
 	getScrollPaneTable().scrollRectToVisible(getScrollPaneTable().getCellRect(index, 0, true));
 }
-
 
 /**
  * Comment
