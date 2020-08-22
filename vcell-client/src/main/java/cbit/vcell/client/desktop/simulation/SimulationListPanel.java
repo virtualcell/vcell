@@ -290,13 +290,13 @@ private static Map<Integer, Map<String, String>> parseBatchInputFile() {
 			}
 		}
 	} catch (java.io.FileNotFoundException e1) {
-		throw new RuntimeException("could not read BNG .net file : "+e1.getMessage());
+		throw new RuntimeException("could not read batch simulation input .dat file : "+e1.getMessage());
 	} catch (java.io.IOException e2) {
-		throw new RuntimeException("could not read BNG .net file : "+e2.getMessage());
+		throw new RuntimeException("could not read batch simulation input .dat file : "+e2.getMessage());
 	}
 		
 	if (stringBuffer.length() != batchInputFileLength){
-		System.err.println("BNGOutputFile, read "+stringBuffer.length()+" of "+batchInputFileLength+" bytes of input file");
+		System.err.println("SimulationListPanel, read "+stringBuffer.length()+" of "+batchInputFileLength+" bytes of input file");
 	}
 	String inputString = stringBuffer.toString();
 	Map<Integer, Map<String, String>> batchInputDataMap = new LinkedHashMap<>();
@@ -318,7 +318,6 @@ private static Map<Integer, Map<String, String>> parseBatchInputFile() {
 			entry = nextLine.nextToken();
 		
 			StringTokenizer entryTokenizer = new StringTokenizer(entry, blancDelimiter);
-
 			String param = entryTokenizer.nextToken();
 			String value = entryTokenizer.nextToken();
 			simOverridesMap.put(param, value);
