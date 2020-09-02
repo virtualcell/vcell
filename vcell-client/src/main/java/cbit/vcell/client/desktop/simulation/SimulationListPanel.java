@@ -305,22 +305,22 @@ private static Map<Integer, Map<String, String>> parseBatchInputFile() {
 	StringTokenizer lineTokenizer = new StringTokenizer(inputString, newLineDelimiters);
 	String line = new String("");
 	String entry = new String("");
-	String commaDelimiter = ",";
-	String blancDelimiter = " ";
+	final String EntitiesDelimiter = " ,";
+	final String EntityValueDelimiter = "=";
 	Integer lineIndex = 0;
 
 	while (lineTokenizer.hasMoreTokens()) {
 		line = lineTokenizer.nextToken();
 
 		Map<String, String> simOverridesMap = new LinkedHashMap<>();
-		StringTokenizer nextLine = new StringTokenizer(line, commaDelimiter);
+		StringTokenizer nextLine = new StringTokenizer(line, EntitiesDelimiter);	// overrides for this simulation
 		while (nextLine.hasMoreTokens()) {
 			entry = nextLine.nextToken();
 		
-			StringTokenizer entryTokenizer = new StringTokenizer(entry, blancDelimiter);
-			String param = entryTokenizer.nextToken();
+			StringTokenizer entryTokenizer = new StringTokenizer(entry, EntityValueDelimiter);	// one pair entity=value, ex: s1_init=21.17
+			String entity = entryTokenizer.nextToken();
 			String value = entryTokenizer.nextToken();
-			simOverridesMap.put(param, value);
+			simOverridesMap.put(entity, value);
 		}
 		batchInputDataMap.put(lineIndex, simOverridesMap);
 		lineIndex++;
