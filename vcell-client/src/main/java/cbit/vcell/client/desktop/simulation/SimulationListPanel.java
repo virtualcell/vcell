@@ -31,6 +31,7 @@ import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.StringTokenizer;
 import java.util.Vector;
@@ -93,6 +94,7 @@ import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solver.SolverDescription.SolverFeature;
 import cbit.vcell.solver.SolverTaskDescription;
 import cbit.vcell.solver.SolverUtilities;
+import thredds.wcs.GetCoverageRequest;
 /**
  * Insert the type's description here.
  * Creation date: (5/7/2004 3:41:07 PM)
@@ -256,8 +258,15 @@ private void batchSimulations() {
 	v.add((Simulation)(ivjSimulationListTableModel1.getValueAt(selections[0])));
 	Simulation[] toCopy = (Simulation[])BeanUtils.getArray(v, Simulation.class);
 	int index = -1;
+	
+	Map<Integer, Map<String, String>> batchInputDataMap = new LinkedHashMap<>();
+	parseBatchInputFile(batchInputDataMap);
+	if(batchInputDataMap.isEmpty()) {
+		throw new RuntimeException("Failed to read batch input data file");
+	}
+	
 	try {
-		index = getSimulationWorkspace().batchSimulations(toCopy, this);
+		index = getSimulationWorkspace().batchSimulations(toCopy, batchInputDataMap, this);
 	} catch (Throwable exc) {
 		exc.printStackTrace(System.out);
 		PopupGenerator.showErrorDialog(this, exc.getMessage(), exc);
@@ -267,7 +276,7 @@ private void batchSimulations() {
 	getScrollPaneTable().scrollRectToVisible(getScrollPaneTable().getCellRect(index, 0, true));
 }
 
-private static Map<Integer, Map<String, String>> parseBatchInputFile() {
+private static void parseBatchInputFile(Map<Integer, Map<String, String>> batchInputDataMap) {
 	
 	StringBuffer stringBuffer = new StringBuffer();
 	long batchInputFileLength = 0;
@@ -289,6 +298,7 @@ private static Map<Integer, Map<String, String>> parseBatchInputFile() {
 				break;
 			}
 		}
+		br.close();
 	} catch (java.io.FileNotFoundException e1) {
 		throw new RuntimeException("could not read batch simulation input .dat file : "+e1.getMessage());
 	} catch (java.io.IOException e2) {
@@ -299,7 +309,6 @@ private static Map<Integer, Map<String, String>> parseBatchInputFile() {
 		System.err.println("SimulationListPanel, read "+stringBuffer.length()+" of "+batchInputFileLength+" bytes of input file");
 	}
 	String inputString = stringBuffer.toString();
-	Map<Integer, Map<String, String>> batchInputDataMap = new LinkedHashMap<>();
 	
 	String newLineDelimiters = "\n\r";
 	StringTokenizer lineTokenizer = new StringTokenizer(inputString, newLineDelimiters);
@@ -310,6 +319,7 @@ private static Map<Integer, Map<String, String>> parseBatchInputFile() {
 	Integer lineIndex = 0;
 
 	while (lineTokenizer.hasMoreTokens()) {
+		boolean badTokenFound = false;
 		line = lineTokenizer.nextToken();
 
 		Map<String, String> simOverridesMap = new LinkedHashMap<>();
@@ -318,14 +328,21 @@ private static Map<Integer, Map<String, String>> parseBatchInputFile() {
 			entry = nextLine.nextToken();
 		
 			StringTokenizer entryTokenizer = new StringTokenizer(entry, EntityValueDelimiter);	// one pair entity=value, ex: s1_init=21.17
-			String entity = entryTokenizer.nextToken();
-			String value = entryTokenizer.nextToken();
-			simOverridesMap.put(entity, value);
+			try {
+				String entity = entryTokenizer.nextToken();
+				String value = entryTokenizer.nextToken();
+				simOverridesMap.put(entity, value);
+			} catch(NoSuchElementException e) {
+				badTokenFound = true;
+				break;
+			}
 		}
-		batchInputDataMap.put(lineIndex, simOverridesMap);
+		if(badTokenFound == false) {
+			// we skip the simulations that have errors
+			batchInputDataMap.put(lineIndex, simOverridesMap);
+		}
 		lineIndex++;
 	}
-	return batchInputDataMap;
 }
 
 

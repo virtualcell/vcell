@@ -14,6 +14,7 @@ import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Compare;
@@ -228,7 +229,7 @@ public boolean contains(Simulation simulation) {
 	return bFound;
 }
 
-public Simulation batchSimulation(Simulation simulation) throws java.beans.PropertyVetoException {
+public Simulation batchSimulation(Simulation simulation, Map<Integer, Map<String, String>> batchInputDataMap) throws java.beans.PropertyVetoException {
 	
 		throw new RuntimeException("This feature is not supported for MathModels.");
 

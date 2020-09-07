@@ -10,6 +10,7 @@
 
 package cbit.vcell.solver;
 import java.beans.PropertyVetoException;
+import java.util.Map;
 
 import org.vcell.util.Issue;
 import org.vcell.util.IssueContext;
@@ -23,9 +24,9 @@ import cbit.vcell.math.MathDescription;
  */
 public interface SimulationOwner extends GeometryOwner {
 	public static String DEFAULT_SIM_NAME_PREFIX = "Simulation";
-	public interface FieldDataSimOwner extends SimulationOwner{}// Typed simulationOwner for FieldData
+	public interface FieldDataSimOwner extends SimulationOwner{}	// Typed simulationOwner for FieldData
 	
-	Simulation batchSimulation(Simulation simulation) throws PropertyVetoException;
+	Simulation batchSimulation(Simulation simulation, Map<Integer, Map<String, String>> batchInputDataMap) throws PropertyVetoException;
 	Simulation copySimulation(Simulation simulation) throws PropertyVetoException;
 	Simulation[] getSimulations();
 	void removeSimulation(Simulation simulation) throws PropertyVetoException;

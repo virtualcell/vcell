@@ -20,6 +20,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -47,6 +48,7 @@ import org.vcell.util.document.ExternalDataIdentifier;
 import org.vcell.util.document.Identifiable;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.PropertyConstants;
+import org.vcell.util.document.PublicationInfo;
 import org.vcell.util.document.Version;
 import org.vcell.util.document.Versionable;
 
@@ -993,23 +995,36 @@ public AnalysisTask copyAnalysisTask(AnalysisTask analysisTask) throws java.bean
 }
 
 private final int MaxBatchSize = 199;
-public Simulation batchSimulation(Simulation simulation) throws java.beans.PropertyVetoException {
-	if (getMathDescription()==null){
-		throw new RuntimeException("Application "+getName()+" has no generated Math, cannot add simulation");
+public Simulation batchSimulation(Simulation simulation, Map<Integer, Map<String, String>> batchInputDataMap) throws java.beans.PropertyVetoException {
+	if (getMathDescription()==null) {
+		throw new RuntimeException("Application " + getName() + " has no generated Math, cannot add simulation");
 	}
 	if (simulation.getMathDescription() != getMathDescription()){
-		throw new IllegalArgumentException("cannot copy simulation '"+simulation.getName()+"', has different MathDescription than Application");
+		throw new IllegalArgumentException("cannot copy simulation '" + simulation.getName() + "', has different MathDescription than Application");
 	}
-	if (bioModel==null){
+	if (bioModel==null) {
 		throw new RuntimeException("cannot add simulation, bioModel not set yet");
 	}
-
-	int batchSize = 5;
+	
+	int batchSize = batchInputDataMap.size();
 	if(batchSize >= MaxBatchSize) {
 		throw new RuntimeException("Batch size must be smaller than " + MaxBatchSize);
 	}
 	Simulation sims[] = bioModel.getSimulations();
-	for (int i = 0; i < batchSize; i++){
+	
+	
+	for (int k = 0; k < batchSize; k++) {
+		if(batchInputDataMap.get(k) == null) {
+		// entry missing, perhaps parsing error
+		System.out.println("List of overrides missing for batch simulation " + k + ". Check input data file.");
+		}
+	}
+	
+	// now we go through all those we have
+	LinkedHashMap<Integer, Map<String, String>> batchInputLinkedMap = (LinkedHashMap<Integer, Map<String, String>>)batchInputDataMap;
+	for(Integer i : batchInputLinkedMap.keySet()) {
+		LinkedHashMap<String, String> overrideMap = (LinkedHashMap<String, String>)batchInputLinkedMap.get(i);
+
 		String insert = "";
 		if(i<10) {
 			insert = "00";
@@ -1018,8 +1033,9 @@ public Simulation batchSimulation(Simulation simulation) throws java.beans.Prope
 		}
 		String proposedName = simulation.getName() + "_bat_" + insert + i;
 		boolean bFound = false;
-		for (int j = 0; !bFound && j < sims.length; j++){
-			if (sims[j].getName().equals(proposedName)){
+		for (int j = 0; !bFound && j < sims.length; j++) {
+			// go through all existing simulations to make sure the name we want to use is not already taken
+			if (sims[j].getName().equals(proposedName)) {
 				bFound = true;
 				throw new RuntimeException("Batch file name already in use: " + proposedName);
 			}
@@ -1028,20 +1044,18 @@ public Simulation batchSimulation(Simulation simulation) throws java.beans.Prope
 		newSimulation.setName(proposedName);
 		
 		MathOverrides mo = new MathOverrides(newSimulation);
-		
-		String name = "s0_init_uM";
-		String value = (i + 1) + "";
-		try {
-			Expression expression = new Expression(value);
-			Constant constant = new Constant(name, expression);
-			mo.putConstant(constant);
-			
-		} catch (ExpressionException e) {
-			e.printStackTrace();
+		for(String name : overrideMap.keySet()) {
+			String value = overrideMap.get(name);
+			try {
+				Expression expression = new Expression(value);
+				Constant constant = new Constant(name, expression);
+				mo.putConstant(constant);
+			} catch (ExpressionException e) {
+				e.printStackTrace();
+			}
 		}
 		
 		newSimulation.setMathOverrides(mo);
-		
 		bioModel.addSimulation(newSimulation);
 	}
 	return null;

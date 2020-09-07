@@ -19,6 +19,7 @@ import java.beans.PropertyVetoException;
 import java.lang.reflect.Field;
 import java.util.Hashtable;
 import java.util.List;
+import java.util.Map;
 import java.util.Vector;
 
 import javax.swing.JPanel;
@@ -380,7 +381,7 @@ private static class OutputFunctionViewer extends JPanel{
 				return null;
 			}
 			@Override
-			public Simulation batchSimulation(Simulation simulation) throws PropertyVetoException {
+			public Simulation batchSimulation(Simulation simulation, Map<Integer, Map<String, String>> batchInputDataMap) throws PropertyVetoException {
 				return null;
 			}
 
