@@ -25,10 +25,13 @@ import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
+import java.util.Map;
+import java.util.TreeMap;
 
 import javax.swing.BoxLayout;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
+import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
@@ -44,14 +47,19 @@ import org.vcell.pathway.Entity;
 import org.vcell.relationship.RelationshipEvent;
 import org.vcell.relationship.RelationshipListener;
 import org.vcell.relationship.RelationshipObject;
+import org.vcell.sybil.models.miriam.MIRIAMQualifier;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Compare;
+import org.vcell.util.document.Identifiable;
 import org.vcell.util.gui.CollapsiblePanel;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.ScrollTable;
+import org.vcell.util.gui.VCellIcons;
 
 import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.biomodel.meta.MiriamManager;
 import cbit.vcell.biomodel.meta.VCMetaData;
+import cbit.vcell.biomodel.meta.MiriamManager.MiriamRefGroup;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorTreeModel.DocumentEditorTreeFolderClass;
 import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveView;
@@ -91,7 +99,8 @@ public class ReactionPropertiesPanel extends DocumentEditorSubPanel {
 	private ReactionElectricalPropertiesPanel reactionElectricalPropertiesPanel;
 	private JTextField nameTextField = null;
 	private JTextField sbmlNameTextField = null;
-
+	
+	private JLabel annotationIconLabel = null;
 	private JLabel electricalPropertiesLabel;
 	private JCheckBox isReversibleCheckBox;
 	private JLabel reversibleLabel;
@@ -238,7 +247,10 @@ private void initialize() {
 		electricalPropertiesLabel.setVisible(false);
 		reactionElectricalPropertiesPanel = new ReactionElectricalPropertiesPanel();
 		reactionElectricalPropertiesPanel.setVisible(false);
-
+		annotationIconLabel = new JLabel("");
+		annotationIconLabel.setToolTipText("Annotations");
+		annotationIconLabel.setVisible(true);
+		
 		reversibleLabel = new JLabel("Reversible");
 		reversibleLabel.setVisible(false);
 		
@@ -271,6 +283,7 @@ private void initialize() {
 		gbc.gridy = gridy;
 		gbc.insets = new java.awt.Insets(2, 4, 4, 4);
 		gbc.weightx = 1;
+		gbc.gridwidth = 2;
 		gbc.fill = GridBagConstraints.HORIZONTAL;
 //		gbc.anchor = GridBagConstraints.LINE_START;		
 		add(sbmlNameTextField, gbc);
@@ -338,11 +351,19 @@ private void initialize() {
 		gbc = new GridBagConstraints();
 		gbc.gridx = 3;
 		gbc.gridy = gridy;
-		gbc.fill = java.awt.GridBagConstraints.HORIZONTAL;
+		gbc.fill = java.awt.GridBagConstraints.REMAINDER;
 		gbc.gridwidth = 2;
-		gbc.insets = new java.awt.Insets(0, 4, 4, 3);
+		gbc.insets = new java.awt.Insets(0, 4, 4, 2);
 		add(getJToggleButton(), gbc);
-		
+				
+		gbc = new GridBagConstraints();
+		gbc.gridx = 5;
+		gbc.gridy = gridy;
+		gbc.weightx = 0.0;
+		gbc.insets = new java.awt.Insets(0, 2, 2, 4);
+		gbc.anchor = GridBagConstraints.LINE_END;
+		add(annotationIconLabel, gbc);		// actually it's an icon
+			
 		gridy ++;
 		gbc = new java.awt.GridBagConstraints();
 		gbc.gridx = 0; 
@@ -350,7 +371,7 @@ private void initialize() {
 		gbc.fill = java.awt.GridBagConstraints.BOTH;
 		gbc.weightx = 1.0;
 		gbc.weighty = 1.0;
-		gbc.gridwidth = 5;
+		gbc.gridwidth = 6;
 		gbc.insets = new java.awt.Insets(0, 4, 0, 4);
 		add(getScrollPaneTable().getEnclosingScrollPane(), gbc);
 		
@@ -773,6 +794,7 @@ protected void updateInterface() {
 			isReversibleCheckBox.setSelected(reversible);
 			isReversibleCheckBox.setEnabled(true);
 		}
+		updateAnnotationIconLabel();
 	} else {
 		nameTextField.setText(null);
 		sbmlNameTextField.setText(null);
@@ -781,8 +803,34 @@ protected void updateInterface() {
 		reactionElectricalPropertiesPanel.setVisible(false);
 		isReversibleCheckBox.setSelected(false);
 		isReversibleCheckBox.setEnabled(true);
+		annotationIconLabel.setIcon(null);
 	}
 	listLinkedPathwayObjects();
+}
+
+private void updateAnnotationIconLabel() {
+	Identifiable identifiable = AnnotationsPanel.getIdentifiable(reactionStep);
+	String freeText = bioModel.getVCMetaData().getFreeTextAnnotation(identifiable);
+	MiriamManager miriamManager = bioModel.getVCMetaData().getMiriamManager();
+	TreeMap<Identifiable, Map<MiriamRefGroup, MIRIAMQualifier>> miriamDescrHeir = miriamManager.getMiriamTreeMap();
+	Map<MiriamRefGroup, MIRIAMQualifier> refGroupMap = miriamDescrHeir.get(identifiable);
+	Icon icon1 = null;
+	Icon icon2 = null;
+	Icon icon = null;
+	if(freeText != null && !freeText.isEmpty()) {
+		icon2 = VCellIcons.noteIcon;
+	} 
+	if(refGroupMap != null && !refGroupMap.isEmpty()) {
+		icon1 = VCellIcons.linkIcon;
+	}
+	if(icon1 != null && icon2 != null) {
+		icon = VCellIcons.addIcon(icon1, icon2);
+	} else if(icon1 == null) {
+		icon = icon2;			// icon2 mai be also null, no prob
+	} else if(icon2 == null) {
+		icon = icon1;
+	}
+	annotationIconLabel.setIcon(icon);
 }
 
 private void changeSbmlName() {
