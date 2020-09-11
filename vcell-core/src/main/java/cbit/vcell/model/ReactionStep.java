@@ -337,7 +337,7 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueList) {
 	}
 	if(fieldKinetics instanceof MassActionKinetics) {
 		if(getNumReactants() == 0) {
-			String msg = "With Mass Action kinetics this reaction will be interpreted as a degradation of the product.";
+			String msg = "With Mass Action kinetics, reaction '" + getDisplayName() + "' will be interpreted as a degradation of the product.";
 			String tool = "Use General Kinetics if you want the product to be generated. As is now this reaction is interpreted as a degradation.";
 			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, tool, Issue.Severity.WARNING));
 		}
