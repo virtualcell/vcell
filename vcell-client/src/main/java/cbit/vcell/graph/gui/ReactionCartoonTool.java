@@ -15,6 +15,9 @@ import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
@@ -30,6 +33,7 @@ import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -41,11 +45,17 @@ import java.util.Vector;
 
 import javax.swing.AbstractAction;
 import javax.swing.ActionMap;
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.DefaultListCellRenderer;
 import javax.swing.InputMap;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
+import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JTextField;
 import javax.swing.JViewport;
@@ -56,6 +66,7 @@ import javax.swing.Timer;
 import org.vcell.model.rbm.MolecularType;
 import org.vcell.model.rbm.MolecularTypePattern;
 import org.vcell.model.rbm.SpeciesPattern;
+import org.vcell.sybil.models.miriam.MIRIAMQualifier;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Compare;
 import org.vcell.util.Matchable;
@@ -87,11 +98,16 @@ import cbit.gui.graph.gui.GraphPane;
 import cbit.gui.graph.visualstate.VisualState.PaintLayer;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.biomodel.meta.VCMetaData;
+import cbit.vcell.biomodel.meta.MiriamManager.DataType;
+import cbit.vcell.biomodel.meta.VCMetaDataMiriamManager.VCMetaDataDataType;
 import cbit.vcell.client.BioModelWindowManager;
 import cbit.vcell.client.ChildWindowManager;
+import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.ChildWindowManager.ChildWindow;
 import cbit.vcell.client.desktop.DocumentWindow;
+import cbit.vcell.client.desktop.biomodel.AnnotationsPanel;
 import cbit.vcell.client.desktop.biomodel.BioModelEditor;
+import cbit.vcell.client.desktop.biomodel.AnnotationsPanel.ComboboxToolTipRenderer;
 import cbit.vcell.client.server.ClientServerManager;
 import cbit.vcell.client.server.UserPreferences;
 import cbit.vcell.desktop.VCellTransferable;
@@ -144,7 +160,8 @@ import cbit.vcell.publish.ITextWriter;
 public class ReactionCartoonTool extends BioCartoonTool implements BioCartoonTool.RXPasteInterface{
 
 	public static final int MIN_DRAG_DISTANCE_TO_CREATE_NEW_ELEMENTS_SQUARED = 114;
-	
+	private static final int COMBO_MEMBRANES_WIDTH = 120;
+
 	private ReactionCartoon reactionCartoon = null;
 	// for dragging speciesContext's around
 	private boolean bMoving = false;
@@ -161,6 +178,10 @@ public class ReactionCartoonTool extends BioCartoonTool implements BioCartoonToo
 	private Point endPointWorld = null;
 	private RubberBandEdgeShape edgeShape = null;
 	private Mode mode = null;
+	
+	private JPanel jPanelMembraneChooser = null;			// choose a membrane dialog
+	private JComboBox<String> jComboBoxMembranes = null;	// membranes, to use with RX connection tool (reaction drawing button)
+	private DefaultComboBoxModel<String> defaultComboBoxModelMembranes = new DefaultComboBoxModel<>();
 
 	private final static String SEARCHABLE_REACTIONS_CONTEXT_OBJECT = "SearchableReactionsContextObject";
 	
@@ -2298,21 +2319,32 @@ public class ReactionCartoonTool extends BioCartoonTool implements BioCartoonToo
 						membranes.add((Membrane)struct);
 					}
 				}
+				boolean lumpedKinetics = false;
 				SimpleReaction reaction;
 				Structure reactionStructure = startStructure;
-				if(membranes.size() == 1) {
+				if(membranes.size() == 0) {
+					lumpedKinetics = true;
+				} else if(membranes.size() == 1) {
 					reactionStructure = membranes.get(0);
-					reaction = model.createSimpleReaction(reactionStructure);
-					reaction.addReactant(speciesContext1, 1);
-					reaction.addProduct(speciesContext2, 1);
-					// TODO: lumped or mass action??
-//					reaction.setKinetics(new GeneralLumpedKinetics(reaction));
 				} else {
-					reaction = model.createSimpleReaction(reactionStructure);
-					reaction.addReactant(speciesContext1, 1);
-					reaction.addProduct(speciesContext2, 1);
-					reaction.setKinetics(new GeneralLumpedKinetics(reaction));
+					GraphPane gp = this.getGraphPane();
+//					ChildWindowManager childWindowManager = ChildWindowManager.findChildWindowManager(gp);
+					initializeComboBoxModelMembranes(membranes);
+					if(PopupGenerator.showComponentOKCancelDialog(gp, getJPanelMembraneChooser(),
+							"Choose the reaction location") == JOptionPane.OK_OPTION) {
+						String membraneName = (String)getJComboBoxMembranes().getSelectedItem();
+						reactionStructure = model.getStructure(membraneName);
+					} else {	// on Cancel we choose the compartment of the Reactant
+						lumpedKinetics = true;
+					}
 				}
+				reaction = model.createSimpleReaction(reactionStructure);
+				reaction.addReactant(speciesContext1, 1);
+				reaction.addProduct(speciesContext2, 1);
+				if(lumpedKinetics == true) {
+					lumpedKinetics = true;
+				}
+				
 				getReactionCartoon().notifyChangeEvent();
 				positionShapeForObject(startStructure, speciesContext1, startPos);
 				positionShapeForObject(endStructure, speciesContext2, endPos);
@@ -2490,16 +2522,39 @@ public class ReactionCartoonTool extends BioCartoonTool implements BioCartoonToo
 		{
 			if (startStructure instanceof Feature && endStructure instanceof Feature) 
 			{
-				// Feature-speciesContext ==> Feature-speciesContext 
-				Membrane membraneBetween = model.getStructureTopology().getMembrane((Feature)startStructure, (Feature)endStructure);
-				// Feature-speciesContext ==> Feature-speciesContext with membrane in between : add reaction in Membrane (scStart : reactant; scEnd : pdt)
-				if(membraneBetween != null)
-				{
-					reactionStructure = membraneBetween;
-				} else {
-					// Feature-speciesContext ==> Feature-speciesContext with no membrane between : create a lumped reaction in startFeature
-					reactionStructure = startStructure;
+//			!!! Old way: we used to place the reaction in the startStructure !!!
+//				// Feature-speciesContext ==> Feature-speciesContext 
+//				Membrane membraneBetween = model.getStructureTopology().getMembrane((Feature)startStructure, (Feature)endStructure);
+//				// Feature-speciesContext ==> Feature-speciesContext with membrane in between : add reaction in Membrane (scStart : reactant; scEnd : pdt)
+//				if(membraneBetween != null)
+//				{
+//					reactionStructure = membraneBetween;
+//				} else {
+//					// Feature-speciesContext ==> Feature-speciesContext with no membrane between : create a lumped reaction in startFeature
+//					reactionStructure = startStructure;
+//					bLumpedKinetics = true;
+//				}
+				List<Membrane> membranes = new ArrayList<> ();
+				for(Structure struct : model.getStructures()) {
+					if(struct instanceof Membrane) {
+						membranes.add((Membrane)struct);
+					}
+				}
+				reactionStructure = startStructure;
+				if(membranes.size() == 0) {
 					bLumpedKinetics = true;
+				} else if(membranes.size() == 1) {
+					reactionStructure = membranes.get(0);
+				} else {
+					GraphPane gp = this.getGraphPane();
+					initializeComboBoxModelMembranes(membranes);
+					if(PopupGenerator.showComponentOKCancelDialog(gp, getJPanelMembraneChooser(),
+							"Choose the reaction location") == JOptionPane.OK_OPTION) {
+						String membraneName = (String)getJComboBoxMembranes().getSelectedItem();
+						reactionStructure = model.getStructure(membraneName);
+					} else {
+						bLumpedKinetics = true;
+					}
 				}
 			}
 			else if (startStructure instanceof Feature && endStructure instanceof Membrane) 
@@ -2948,6 +3003,95 @@ public class ReactionCartoonTool extends BioCartoonTool implements BioCartoonToo
 		} 
 	}
 
+	// When drawing a reaction between compartments and multiple membranes are present (more than 1),
+	// we ask the user to choose the membrane where the reaction will be placed
+	private JPanel getJPanelMembraneChooser() {
+		jPanelMembraneChooser = new JPanel();
+		jPanelMembraneChooser.setLayout(new GridBagLayout());
+//		jPanelNewIdentifier.setPreferredSize(new Dimension(725, 37));
+//		jPanelNewIdentifier.setBorder(BorderFactory.createLineBorder(SystemColor.windowBorder, 2));
+			
+		int gridy = 0;		
+		GridBagConstraints gbc = new GridBagConstraints();
+		gbc.insets = new Insets(3, 15, 3, 0);		// top left bottom right
+		gbc.gridx = 0;
+		gbc.gridy = gridy;
+		gbc.anchor = GridBagConstraints.WEST;
+		gbc.gridwidth = 2;
+		jPanelMembraneChooser.add(new JLabel("Reactions between different compartments should be placed on a Membrane."), gbc);
+
+		gridy++;
+		gbc = new GridBagConstraints();
+		gbc.insets = new Insets(3, 15, 3, 0);
+		gbc.gridx = 0;
+		gbc.gridy = gridy;
+		gbc.anchor = GridBagConstraints.WEST;
+		gbc.gridwidth = 2;
+		jPanelMembraneChooser.add(new JLabel("Choose a Membrane and press OK, Cancel will place the Reaction in the Reactant compartment"), gbc);
+
+		gridy++;
+		gbc = new GridBagConstraints();
+		gbc.insets = new Insets(3, 15, 3, 0);
+		gbc.gridx = 0;
+		gbc.gridy = gridy;
+		gbc.anchor = GridBagConstraints.WEST;
+		jPanelMembraneChooser.add(new JLabel("Provider: "), gbc);
+		
+		gbc = new GridBagConstraints();
+		gbc.insets = new Insets(3, 5, 3, 4);
+		gbc.gridx = 1;
+		gbc.gridy = gridy;
+		gbc.anchor = GridBagConstraints.WEST;
+		jPanelMembraneChooser.add(getJComboBoxMembranes(), gbc);
+		
+		return jPanelMembraneChooser;
+	}
+	private JComboBox getJComboBoxMembranes() {
+		if (jComboBoxMembranes == null) {
+			jComboBoxMembranes = new JComboBox();
+//			defaultComboBoxModelQualifier = new DefaultComboBoxModel();	// already allocated
+			jComboBoxMembranes.setModel(defaultComboBoxModelMembranes);
+			Dimension d = jComboBoxMembranes.getPreferredSize();
+			jComboBoxMembranes.setMinimumSize(new Dimension(COMBO_MEMBRANES_WIDTH, d.height));
+			jComboBoxMembranes.setPreferredSize(new Dimension(COMBO_MEMBRANES_WIDTH, d.height));
+//			ComboboxToolTipRenderer renderer = new ComboboxToolTipRenderer();
+//			jComboBoxMembranes.setRenderer(renderer);
+		}
+		return jComboBoxMembranes;
+	}
+	private void initializeComboBoxModelMembranes(List<Membrane> membranes) {
+		defaultComboBoxModelMembranes.removeAllElements();
+		for(Membrane membrane : membranes) {
+			defaultComboBoxModelMembranes.addElement(membrane.getName());
+		}
+	}
+//	public class ComboboxToolTipRenderer extends DefaultListCellRenderer {
+//		List<String> tooltips;
+//		@SuppressWarnings("rawtypes")
+//		@Override
+//		public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+//			Component comp;
+//			if(value == null) {
+//				comp = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+//			} else if(value instanceof DataType) {
+//				DataType dt = (DataType)value;
+//				comp = super.getListCellRendererComponent(list,dt.getDataTypeName(),index,isSelected,cellHasFocus);
+//			} else if(value instanceof MIRIAMQualifier) {
+//				MIRIAMQualifier mc = (MIRIAMQualifier)value;
+//				comp = super.getListCellRendererComponent(list,mc.getDescription(),index,isSelected,cellHasFocus);
+//			} else {
+//				comp = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+//			}
+//			if (-1 < index && null != value && null != tooltips) {
+//				list.setToolTipText(tooltips.get(index));
+//			}
+//		return comp;
+//		}
+//		public void setTooltips(List<String> tooltips) {
+//			this.tooltips = tooltips;
+//		}
+//	}
+	
 	public void showSimpleReactionPropertiesDialog(SimpleReactionShape simpleReactionShape) {
 //		JFrame parent = (JFrame) BeanUtils.findTypeParentOfComponent(
 //				getGraphPane(), JFrame.class);
