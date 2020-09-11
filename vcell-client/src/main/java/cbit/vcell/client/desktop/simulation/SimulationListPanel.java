@@ -42,6 +42,7 @@ import javax.swing.DefaultCellEditor;
 import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -53,6 +54,7 @@ import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.TableCellEditor;
 
 import org.vcell.util.BeanUtils;
@@ -62,6 +64,7 @@ import org.vcell.util.gui.DefaultScrollTableCellRenderer;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.DownArrowIcon;
 import org.vcell.util.gui.SimpleUserMessage;
+import org.vcell.util.gui.VCFileChooser;
 import org.vcell.util.gui.VCellIcons;
 import org.vcell.util.gui.sorttable.JSortTable;
 
@@ -73,6 +76,7 @@ import cbit.vcell.client.desktop.biomodel.BioModelEditor;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
 import cbit.vcell.client.desktop.biomodel.IssueManager;
 import cbit.vcell.client.desktop.biomodel.SimulationConsolePanel;
+import cbit.vcell.client.server.UserPreferences;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.geometry.GeometryOwner;
@@ -259,10 +263,12 @@ private void batchSimulations() {
 	Simulation[] toCopy = (Simulation[])BeanUtils.getArray(v, Simulation.class);
 	int index = -1;
 	
+	UserPreferences up = getSimulationWorkspace().getClientSimManager().getUserPreferences();
 	Map<Integer, Map<String, String>> batchInputDataMap = new LinkedHashMap<>();
-	parseBatchInputFile(batchInputDataMap);
+	parseBatchInputFile(up, batchInputDataMap);
 	if(batchInputDataMap.isEmpty()) {
-		throw new RuntimeException("Failed to read batch input data file");
+		System.out.println("Failed to read batch input data file or user canceled");
+		return;
 	}
 	
 	try {
@@ -276,13 +282,24 @@ private void batchSimulations() {
 	getScrollPaneTable().scrollRectToVisible(getScrollPaneTable().getCellRect(index, 0, true));
 }
 
-private static void parseBatchInputFile(Map<Integer, Map<String, String>> batchInputDataMap) {
+private void parseBatchInputFile(UserPreferences userPreferences, Map<Integer, Map<String, String>> batchInputDataMap) {
 	
 	StringBuffer stringBuffer = new StringBuffer();
 	long batchInputFileLength = 0;
 	
 	try {
-		File batchInputFile = new java.io.File("C:\\TEMP\\ddd\\batchSimulations.dat");
+		File defaultPath = userPreferences.getCurrentDialogPath();
+		JFileChooser fileChooser = new JFileChooser(defaultPath);
+		FileNameExtensionFilter filter = new FileNameExtensionFilter("Batch processing input data", "dat");
+		fileChooser.setFileFilter(filter);
+		fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+		fileChooser.setMultiSelectionEnabled(false);
+		int returnVal = fileChooser.showOpenDialog(SimulationListPanel.this);
+		if(returnVal != JFileChooser.APPROVE_OPTION) {
+			return;
+		}
+		File batchInputFile = fileChooser.getSelectedFile();
+//		File batchInputFile = new java.io.File("C:\\TEMP\\ddd\\batchSimulations.dat");
 		if (!batchInputFile.exists()) {
 			throw new java.io.FileNotFoundException("Batch input file " + batchInputFile.getPath() + " not found");
 		}
@@ -339,6 +356,7 @@ private static void parseBatchInputFile(Map<Integer, Map<String, String>> batchI
 		}
 		if(badTokenFound == false) {
 			// we skip the simulations that have errors
+			// TODO: at this point it may be better to put an empty simOverridesMap rather than skip it altogether, we skip later
 			batchInputDataMap.put(lineIndex, simOverridesMap);
 		}
 		lineIndex++;
