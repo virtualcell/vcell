@@ -118,7 +118,8 @@ public class SimulationListPanel extends DocumentEditorSubPanel {
 	private JButton copyButton = null;
 	private JButton ivjNewButton = null;
 	private JButton ivjNativeResultsButton = null;
-	private JButton batchButton = null;
+	private JButton importBatchButton = null;
+	private JButton exportBatchButton = null;
 
 //	private JButton ivjPythonResultsButton = null;
 	private JButton ivjRunButton = null;
@@ -154,8 +155,9 @@ public class SimulationListPanel extends DocumentEditorSubPanel {
 				runSimulations();
 			} else if (e.getSource() == stopButton) {
 				stopSimulations();
-			} else if (e.getSource() == batchButton) {
+			} else if (e.getSource() == exportBatchButton) {
 				DialogUtils.showInfoDialog(SimulationListPanel.this, "Under Construction");
+			} else if (e.getSource() == importBatchButton) {
 				batchSimulations();
 			} else if (e.getSource() == getNativeResultsButton()) {
 				showSimulationResults(ViewerType.NativeViewer_only);
@@ -449,9 +451,12 @@ private javax.swing.JToolBar getToolBar() {
 			copyButton = new JButton("", VCellIcons.copySimIcon);
 			copyButton.setToolTipText("Copy Simulation");
 			copyButton.addActionListener(ivjEventHandler);
-			batchButton = new JButton("", VCellIcons.copySimIcon);
-			batchButton.setToolTipText("Batch Simulation");
-			batchButton.addActionListener(ivjEventHandler);
+			importBatchButton = new JButton("", VCellIcons.importBatchSimIcon);
+			importBatchButton.setToolTipText("Import Batch Simulation Data");
+			importBatchButton.addActionListener(ivjEventHandler);
+			exportBatchButton = new JButton("", VCellIcons.exportBatchSimIcon);
+			exportBatchButton.setToolTipText("Export Batch Simulation Results");
+			exportBatchButton.addActionListener(ivjEventHandler);
 			stopButton = new JButton("", VCellIcons.stopSimIcon);
 			stopButton.setToolTipText("Stop Simulation");
 			stopButton.setEnabled(false);
@@ -478,7 +483,8 @@ private javax.swing.JToolBar getToolBar() {
 			toolBar.add(getEditButton());
 			toolBar.add(getDeleteButton());
 			toolBar.addSeparator();
-			toolBar.add(batchButton);
+			toolBar.add(importBatchButton);
+			toolBar.add(exportBatchButton);
 			toolBar.addSeparator();
 			
 			toolBar.add(getMassConservationModelReductionPanel());
@@ -496,7 +502,8 @@ private javax.swing.JToolBar getToolBar() {
 //			toolBar.add(particleViewButton);
 
 			ReactionCartoonEditorPanel.setToolBarButtonSizes(getNewButton());
-			ReactionCartoonEditorPanel.setToolBarButtonSizes(batchButton);
+			ReactionCartoonEditorPanel.setToolBarButtonSizes(importBatchButton);
+			ReactionCartoonEditorPanel.setToolBarButtonSizes(exportBatchButton);
 			ReactionCartoonEditorPanel.setToolBarButtonSizes(copyButton);
 			ReactionCartoonEditorPanel.setToolBarButtonSizes(getEditButton());
 			ReactionCartoonEditorPanel.setToolBarButtonSizes(getDeleteButton());
@@ -1121,7 +1128,8 @@ private void refreshButtonsLax() {
 			bHasData = bHasData || simStatus.getHasData();
 		}
 	}
-	batchButton.setEnabled(bBatch);
+	importBatchButton.setEnabled(bBatch);
+	exportBatchButton.setEnabled(bBatch);
 	copyButton.setEnabled(bCopy);
 	getEditButton().setEnabled(bEditable);
 	getDeleteButton().setEnabled(bDeletable);

@@ -212,6 +212,9 @@ public abstract class VCellIcons {
 	public final static Icon copySimIcon = makeIcon("/icons/sim_copy.gif");
 	public final static Icon delSimIcon = makeIcon("/icons/sim_del.gif");
 	public final static Icon editSimIcon = makeIcon("/icons/sim_edit.gif");
+	public final static Icon importBatchSimIcon = makeIcon("/icons/sim_batch_import.png");
+	public final static Icon exportBatchSimIcon = makeIcon("/icons/sim_batch_export.png");
+	
 	public final static Icon runSimIcon = makeIcon("/icons/sim_run.gif");
 	public final static Icon particleRunSimIcon = makeIcon("/icons/particle_run.gif");
 	public final static Icon stopSimIcon = makeIcon("/icons/sim_stop.gif");
