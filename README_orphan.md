@@ -9,7 +9,7 @@ sudo docker service update --force --detach=false vcellrel_data
 sudo docker service update --force --detach=false vcellrel_sched  
 sudo docker service update --force --detach=false vcellrel_submit  
 sudo docker service update --force --detach=false vcellrel_api  
-sudo docker service update --force --detach=false vcellrel_opt  
+(not used) sudo docker service update --force --detach=false vcellrel_opt  
 
 
 **Alpha restart, login vcellapi-beta**  
@@ -20,8 +20,8 @@ sudo docker service update --force --detach=false vcellalpha_db
 sudo docker service update --force --detach=false vcellalpha_data  
 sudo docker service update --force --detach=false vcellalpha_sched  
 sudo docker service update --force --detach=false vcellalpha_submit  
-sudo docker service update --force --detach=false vcellalpha_api  
-sudo docker service update --force --detach=false vcellalpha_opt  
+sudo docker service update --force --detach=false vcellalpha_api
+(not used) sudo docker service update --force --detach=false vcellalpha_opt  
 
 **Build quickrun linux solvers**  
 do this in a pristine checkout (cloned).  
@@ -32,7 +32,55 @@ sudo docker build --tag=frm/vcell-solvers:latest -f Dockerfile-local .
 sudo docker run -it --rm -v /Users/schaff/.vcell/simdata/temp:/vcelldata frm/vcell-solvers:latest SundialsSolverStandalone_x64 /vcelldata/SimID_1460763637_0_.cvodeInput /vcelldata/SimID_1460763637_0_.ida  
 -----where /Users/schaff/.vcell/simdata/temp is the simulation data directory (input file) mapped to /vcelldata inside the Docker container.  
 
- 
+**Remove Broken Swarm**  
+On each docker node that is part of broken swarm:  
+  260  sudo systemctl stop docker.service  
+  261  sudo rm -rf /var/lib/docker/swarm  
+  264  sudo systemctl start docker.service  
+Recreate swarm  
+  273  hostname -i (on vcellapi or vcellapi-beta)  
+  274  sudo docker swarm init --advertise-addr {155.37.255.68 or 155.37.255.90}  
+  276  sudo docker swarm join-token manager (to create join token command)  
+  	//On other nodes run following command to add them as managers  
+  278  Example: sudo docker swarm join --token SWMTKN-1-18b6etsn3yn562xxxxxirf6uqnlmlmlbcvc4m5nxh-05d2jflrf5ox1z0w9y0nt1f7l 155.37.255.68:2377  
+  //On vcellapi redeploy  
+   sudo env $(cat  /usr/local/deploy/config/server_rel_7.2.0_39_0b71a4d.config | xargs) docker stack deploy --prune -c /usr/local/deploy/config/docker-compose_0b71a4d.yml vcellrel  
+  286  sudo docker stack ps vcellalpha | grep -i running  
+  287  exit  
+  288  sudo docker node update --label-add zone=INTERNAL 8yfu0lrwfkoil8k038rkm3edj  
+  289  sudo docker node inspect | grep -i label  
+  290  sudo docker node inspect self | grep -i label  
+
+
+**vcellNagios monitoring**  
+Nagios monitor calls Nagios plugin manager at vcellapi.cam.uchc.edu which executes script:  
+   vcell@vcellapi:/usr/lib64/nagios/plugins/vcellNagios.sh (returns status info to Nagios monitor)  
+vcellNagios.sh source code located in github project https://github.com/virtualcell/vcell.git at location /vcell/docker/swarm/vcellNagios.sh  
+vcellNagios.sh calls Rel web service https://vcellapi/health?check={login,sim}  
+  web service defined by org.vcell.rest.VCellApiApplication->  
+      org.vcell.rest.health.HealthRestlet.HealthRestlet->  
+        org.vcell.rest.health.HealthService(started as thread in org.vcell.rest.VCellApiMain)->  
+          cbit.vcell.server.VCellConnection->{login,runsims}  
+
+
+**DBBackupAndClean**  
+vcell-node1:/opt/build/frm/dbbackupclean  
+//Normal, without debug  
+java -cp ./maven-jars/*:./vcell-server-0.0.1-SNAPSHOT.jar:./ojdbc6-11.2.0.4.jar:./ucp-11.2.0.4.jar:./vcell-oracle-0.0.1-SNAPSHOT.jar -Dvcell.server.dbDriverName=oracle.jdbc.driver.OracleDriver cbit.vcell.modeldb.DBBackupAndClean delsimsdisk vcell-db vcell /opt/build/frm/dbpw.txt  vcelldborcl.cam.uchc.edu /tmp /share/apps/vcell3/users  
+
+//Normal, without debug, single user only  
+java -Xms200m -Xmx1500m -cp ./maven-jars/*:./vcell-server-0.0.1-SNAPSHOT.jar:./ojdbc6-11.2.0.4.jar:./ucp-11.2.0.4.jar:./vcell-oracle-0.0.1-SNAPSHOT.jar -Dvcell.server.dbDriverName=oracle.jdbc.driver.OracleDriver cbit.vcell.modeldb.DBBackupAndClean delsimsdisk2 vcell-db vcell /opt/build/frm/dbpw.txt  vcelldborcl.cam.uchc.edu /tmp /share/apps/vcell3/users Juliajessica  
+
+//With debug  (note: eclipse debug config: vcell-server,vcell-node1,30301)  
+java  -agentlib:jdwp=transport=dt_socket,server=y,address=30301,suspend=y  -cp ./maven-jars/*:./vcell-server-0.0.1-SNAPSHOT.jar:./ojdbc6-11.2.0.4.jar:./ucp-11.2.0.4.jar:./vcell-oracle-0.0.1-SNAPSHOT.jar -Dvcell.server.dbDriverName=oracle.jdbc.driver.OracleDriver cbit.vcell.modeldb.DBBackupAndClean delsimsdisk vcell-db vcell /opt/build/frm/dbpw.txt  vcelldborcl.cam.uchc.edu /tmp /share/apps/vcell3/users  
+
+//DBBackupAndClean Scheduled Task (vcell-db.cam.uchc.edu->'scheduled task'->'Task Scheduler Library'->cleanAndBackupDB->properties->Actions->'Edit...')
+Program/script: "C:\Program Files (x86)\Java\jre1.8.0_121\bin\java.exe"
+Add arguments: -jar DBBackupAndClean_Ampli.jar cleanandbackup vcell-db vcell cbittech vcelldborcl.cam.uchc.edu \\cfs05\vcell\temp \\cfs03\shared\archive\vcell\VCDBdumps
+Start in: C:\fromDBS3
+
+
+
 
 
 ## useful commands
