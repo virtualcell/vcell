@@ -85,6 +85,7 @@ import cbit.vcell.model.Model;
 import cbit.vcell.model.RbmObservable;
 import cbit.vcell.model.ReactionRule;
 import cbit.vcell.model.ReactionStep;
+import cbit.vcell.model.SimpleReaction;
 import cbit.vcell.model.Species;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
@@ -782,10 +783,18 @@ private void changeTextAnnotation() {
 
 		if(textAreaStr == null || textAreaStr.isEmpty() || emptyHtmlText.equals(textAreaStr)) {	// no annotation now, the field is empty
 			bioModel.getVCMetaData().deleteFreeTextAnnotation(entity);	// delete, if there's something previously saved
+			if(selectedObject instanceof SimpleReaction) {
+				// we tell ReactionPropertiesPanel to refresh the annotation icon
+				((SimpleReaction) selectedObject).firePropertyChange("addIdentifier", false, true);
+			}
 		} else if(!Compare.isEqualOrNull(oldText,textAreaStr)) {		// some text annotation different from what's already saved
 			bioModel.getVCMetaData().setFreeTextAnnotation(entity, textAreaStr);	// overwrite
+			if(selectedObject instanceof SimpleReaction) {
+				// we tell ReactionPropertiesPanel to refresh the text annotation icon
+				((SimpleReaction) selectedObject).firePropertyChange("addIdentifier", false, true);
+			}
 		}
-	} catch(Exception e){
+	} catch(Exception e) {
 		e.printStackTrace(System.out);
 		PopupGenerator.showErrorDialog(this,"Annotation Error\n"+e.getMessage(), e);
 	}
@@ -797,6 +806,9 @@ private void removeText() {
 	Identifiable entity = getIdentifiable(selectedObject);
 	annotationTextArea.setText(null);
 	bioModel.getVCMetaData().deleteFreeTextAnnotation(entity);	// delete, if there's something previously saved
+	if(selectedObject instanceof SimpleReaction) {
+		((SimpleReaction) selectedObject).firePropertyChange("addIdentifier", false, true);
+	}
 }
 
 public void setBioModel(BioModel newValue) {
@@ -928,6 +940,10 @@ private void addIdentifier() {
 		miriamManager.addMiriamRefGroup(entity, qualifier, miriamResources);
 //		System.out.println(vcMetaData.printRdfStatements());
 		updateInterface();
+		if(selectedObject instanceof SimpleReaction) {
+			// we tell ReactionPropertiesPanel to refresh the annotation icon
+			((SimpleReaction) selectedObject).firePropertyChange("addIdentifier", false, true);
+		}
 	} catch (Exception e) {
 		e.printStackTrace();
 		DialogUtils.showErrorDialog(this,"Add Identifier failed:\n"+e.getMessage(), e);
@@ -963,6 +979,9 @@ private void removeIdentifier() {
 			}
 			if(found == true) {
 				updateInterface();
+				if(selectedObject instanceof SimpleReaction) {
+					((SimpleReaction) selectedObject).firePropertyChange("addIdentifier", true, false);
+				}
 				break;
 			}
 		}
