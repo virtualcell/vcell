@@ -229,9 +229,10 @@ cp ./generated_installers/VCell_{Alpha,Rel}_windows-x64_7_2_0_${VCELL_BUILD}_64b
 // Copy link location from web browser for use of semantic request
 //Open https://submit.symantec.com/false_positive/ in the browser
 // Choose "Incorrectly Detected by Symantic" Tab
-A1. downlaoding file
-B1. endpoint 14.x
-C1. Download/Reputation
+Submission Type -> Provide Direct Download URL
+A1. When downloading or uploading a file
+B2. Symantec Endpoint Protection 14.x
+C1. Download/File Insight (Reputation Based Detection) e.g. WS.Reputation.1,Suspicious.Insight, WS.Malware.*
 name of detection: WS.Reputation.1
 Provide direct download URL (e.g. http://vcell.org/webstart/symantec_whitelist/VCell_Rel_windows-x64_7_2_0_40_64bit.exe)
 name of software: VCell
