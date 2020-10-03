@@ -1119,18 +1119,24 @@ public AutoCompleteSymbolFilter getAutoCompleteSymbolFilter() {
 					if (ste instanceof SpeciesContext) {	
 						Structure entryStructure = ((SpeciesContext)ste).getStructure();
 						if (entryStructure != membrane && entryStructure != structTopology.getInsideFeature(membrane) && entryStructure != structTopology.getOutsideFeature(membrane)) {
-							return false;
+							// return true if we want all species regardless of location
+							// return false if we only want to filter out all the species that match the if clause
+//							return false;
+							return true;
 						}
 					} else if (ste instanceof MembraneVoltage) {
 						if (((MembraneVoltage)ste).getMembrane() != membrane) {
 							return false;
 						}
 					}					
-				} else {
+				} else {	// structure is a compartment
 					if (ste instanceof SpeciesContext) {
 						Structure entryStructure = ((SpeciesContext)ste).getStructure();
 						if (entryStructure != structure) {
-							return false;
+							// return true if we want all species regardless of location
+							// return false if we only want the species present in the reaction compartment
+//							return false;
+							return true;
 						}
 					} else if (ste instanceof MembraneVoltage) {
 						return false;
