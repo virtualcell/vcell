@@ -26,6 +26,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
 
+import javax.swing.SwingUtilities;
+
 import org.vcell.model.rbm.NetworkConstraints;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Compare;
@@ -995,14 +997,15 @@ public AnalysisTask copyAnalysisTask(AnalysisTask analysisTask) throws java.bean
 }
 
 private final int MaxBatchSize = 199;
-public Simulation batchSimulation(Simulation simulation, Map<Integer, Map<String, String>> batchInputDataMap) throws java.beans.PropertyVetoException {
-	if (getMathDescription()==null) {
+private final String ReservedBatchExtensionString = "_bat_";
+public Simulation createBatchSimulations(Simulation simulation, Map<Integer, Map<String, String>> batchInputDataMap) throws java.beans.PropertyVetoException {
+	if(getMathDescription() == null) {
 		throw new RuntimeException("Application " + getName() + " has no generated Math, cannot add simulation");
 	}
-	if (simulation.getMathDescription() != getMathDescription()){
+	if(simulation.getMathDescription() != getMathDescription()){
 		throw new IllegalArgumentException("cannot copy simulation '" + simulation.getName() + "', has different MathDescription than Application");
 	}
-	if (bioModel==null) {
+	if(bioModel==null) {
 		throw new RuntimeException("cannot add simulation, bioModel not set yet");
 	}
 	
@@ -1010,8 +1013,7 @@ public Simulation batchSimulation(Simulation simulation, Map<Integer, Map<String
 	if(batchSize >= MaxBatchSize) {
 		throw new RuntimeException("Batch size must be smaller than " + MaxBatchSize);
 	}
-	Simulation sims[] = bioModel.getSimulations();
-	
+	Simulation allSims[] = bioModel.getSimulations();
 	
 	for (int k = 0; k < batchSize; k++) {
 		if(batchInputDataMap.get(k) == null) {
@@ -1031,11 +1033,11 @@ public Simulation batchSimulation(Simulation simulation, Map<Integer, Map<String
 		} else if(i<100) {
 			insert = "0";
 		}
-		String proposedName = simulation.getName() + "_bat_" + insert + i;
+		String proposedName = simulation.getName() + ReservedBatchExtensionString + insert + i;
 		boolean bFound = false;
-		for (int j = 0; !bFound && j < sims.length; j++) {
+		for (int j = 0; !bFound && j < allSims.length; j++) {
 			// go through all existing simulations to make sure the name we want to use is not already taken
-			if (sims[j].getName().equals(proposedName)) {
+			if (allSims[j].getName().equals(proposedName)) {
 				bFound = true;
 				throw new RuntimeException("Batch file name already in use: " + proposedName);
 			}
@@ -1060,6 +1062,38 @@ public Simulation batchSimulation(Simulation simulation, Map<Integer, Map<String
 	}
 	return null;
 }
+public void importBatchSimulations(Simulation simulation) throws java.beans.PropertyVetoException {
+
+	if(bioModel==null) {
+		throw new RuntimeException("cannot add simulation, bioModel not set yet");
+	}
+	if(simulation.getName().contains(ReservedBatchExtensionString)) {
+		throw new RuntimeException("Not a valid name for a batch template Simulation: '" + simulation.getName() + "'.");
+	}
+	Simulation allSims[] = bioModel.getSimulations();
+	LinkedHashMap<String, String> importsMap = new LinkedHashMap<>();
+	
+	String namePrefix = simulation.getName() + ReservedBatchExtensionString;
+	for(Simulation simCandidate : allSims) {
+		if(simCandidate.getName().startsWith(namePrefix)) {
+			importsMap.put(simCandidate.getName(), simCandidate.getSimulationID());
+			System.out.println(simCandidate.getName() + ": " + simCandidate.getSimulationID());
+		}
+	}
+	for(String name : importsMap.keySet()) {
+		String value = importsMap.get(name);
+		
+		SwingUtilities.invokeLater(new Runnable() {
+			public void run() {
+				importBatchSimulation(name, value);
+			}
+		});	
+	}
+}
+private void importBatchSimulation(String name, String value) {
+	
+}
+
 /**
  * Sets the simulations property (cbit.vcell.solver.Simulation[]) value.
  * @param simulations The new value for the property.

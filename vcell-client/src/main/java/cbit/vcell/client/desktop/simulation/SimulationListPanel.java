@@ -156,9 +156,10 @@ public class SimulationListPanel extends DocumentEditorSubPanel {
 			} else if (e.getSource() == stopButton) {
 				stopSimulations();
 			} else if (e.getSource() == exportBatchButton) {
-				DialogUtils.showInfoDialog(SimulationListPanel.this, "Under Construction");
+//				DialogUtils.showInfoDialog(SimulationListPanel.this, "Under Construction");
+				importBatchSimulations();
 			} else if (e.getSource() == importBatchButton) {
-				batchSimulations();
+				createBatchSimulations();
 			} else if (e.getSource() == getNativeResultsButton()) {
 				showSimulationResults(ViewerType.NativeViewer_only);
 //			} else if (e.getSource() == getPythonResultsButton()) {
@@ -254,7 +255,7 @@ private void showHelp() {
 /**
  * Comment
  */
-private void batchSimulations() {
+private void createBatchSimulations() {
 	int[] selections = getScrollPaneTable().getSelectedRows();
 	if(selections.length != 1) {
 		throw new RuntimeException("Exactly one template Simulation is required for Batch Creation");
@@ -274,12 +275,34 @@ private void batchSimulations() {
 	}
 	
 	try {
-		index = getSimulationWorkspace().batchSimulations(toCopy, batchInputDataMap, this);
+		index = getSimulationWorkspace().createBatchSimulations(toCopy, batchInputDataMap, this);
 	} catch (Throwable exc) {
 		exc.printStackTrace(System.out);
 		PopupGenerator.showErrorDialog(this, exc.getMessage(), exc);
 	}
-	// set selection to the last copied one
+	// set selection back to the template simulation
+	getScrollPaneTable().getSelectionModel().setSelectionInterval(index, index);
+	getScrollPaneTable().scrollRectToVisible(getScrollPaneTable().getCellRect(index, 0, true));
+}
+
+private void importBatchSimulations() {
+	int[] selections = getScrollPaneTable().getSelectedRows();
+	if(selections.length != 1) {
+		throw new RuntimeException("Exactly one template Simulation is required for Batch results Import");
+	}
+	
+	Vector<Simulation> v = new Vector<Simulation>();
+	v.add((Simulation)(ivjSimulationListTableModel1.getValueAt(selections[0])));
+	Simulation[] toImport = (Simulation[])BeanUtils.getArray(v, Simulation.class);
+	int index = -1;
+	
+	try {
+		index = getSimulationWorkspace().importBatchSimulations(toImport, this);
+	} catch (Throwable exc) {
+		exc.printStackTrace(System.out);
+		PopupGenerator.showErrorDialog(this, exc.getMessage(), exc);
+	}
+	// set selection back to the template simulation
 	getScrollPaneTable().getSelectionModel().setSelectionInterval(index, index);
 	getScrollPaneTable().scrollRectToVisible(getScrollPaneTable().getCellRect(index, 0, true));
 }

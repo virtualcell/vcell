@@ -372,7 +372,7 @@ private static boolean checkSimulationParameters(Simulation simulation, Componen
 /**
  * Comment
  */
-int batchSimulations(Simulation[] sims, Map<Integer, Map<String, String>> batchInputDataMap, Component requester) throws java.beans.PropertyVetoException {
+int createBatchSimulations(Simulation[] sims, Map<Integer, Map<String, String>> batchInputDataMap, Component requester) throws java.beans.PropertyVetoException {
 	if (sims == null || sims.length == 0) {
 		return -1;
 	}
@@ -385,9 +385,17 @@ int batchSimulations(Simulation[] sims, Map<Integer, Map<String, String>> batchI
 	}
 	Simulation copiedSim = null;
 	for (int i = 0; i < sims.length; i++) {
-		copiedSim = getSimulationOwner().batchSimulation(sims[i], batchInputDataMap);
+		copiedSim = getSimulationOwner().createBatchSimulations(sims[i], batchInputDataMap);
 	}
-	return -1;	// unselect
+	return -1;
+}
+int importBatchSimulations(Simulation[] sims, Component requester) throws java.beans.PropertyVetoException {
+	if (sims == null || sims.length == 0) {
+		return -1;
+	}
+
+	getSimulationOwner().importBatchSimulations(sims[0]);
+	return -1;
 }
 
 int copySimulations(Simulation[] sims, Component requester) throws java.beans.PropertyVetoException {

@@ -229,11 +229,14 @@ public boolean contains(Simulation simulation) {
 	return bFound;
 }
 
-public Simulation batchSimulation(Simulation simulation, Map<Integer, Map<String, String>> batchInputDataMap) throws java.beans.PropertyVetoException {
-	
-		throw new RuntimeException("This feature is not supported for MathModels.");
-
+public Simulation createBatchSimulations(Simulation simulation, Map<Integer, Map<String, String>> batchInputDataMap) throws java.beans.PropertyVetoException {
+	throw new RuntimeException("This feature is not supported for MathModels.");
 }
+public void importBatchSimulations(Simulation simulation) throws java.beans.PropertyVetoException {
+	throw new RuntimeException("This feature is not supported for MathModels.");
+}
+
+
 /**
  * Sets the simulations property (cbit.vcell.solver.Simulation[]) value.
  * @param simulations The new value for the property.
