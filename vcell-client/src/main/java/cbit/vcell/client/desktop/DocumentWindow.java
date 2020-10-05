@@ -21,6 +21,8 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
@@ -162,13 +164,14 @@ public class DocumentWindow extends LWTopFrame implements TopLevelWindow, Reconn
 	private JMenuItem viewJobsMenuItem = null;
 	private JMenuItem jMenuItemPermissions  = null;
 	private JLabel warningText = null;
+	private JLabel iconText = null;
 	private JDialog viewSpeciesDialog = null;
 
 	private JMenuItem menuItemImportPathwayWebLocation = null;
 	private JMenuItem menuItemImportPathwayFile = null;
 	private JMenuItem menuItemImportPathwayExample = null;
 
-class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.ItemListener {
+class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.ItemListener, java.awt.event.MouseListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
 			if (e.getSource() == DocumentWindow.this.getAbout_BoxMenuItem())
 				connEtoC3(e);
@@ -276,6 +279,25 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.I
 		public void itemStateChanged(java.awt.event.ItemEvent e) {
 			if (e.getSource() == DocumentWindow.this.getStatusbarMenuItem())
 				connEtoC2(e);
+		}
+
+		@Override
+		public void mouseClicked(MouseEvent e) {
+		}
+		@Override
+		public void mouseEntered(MouseEvent e) {
+		}
+		@Override
+		public void mouseExited(MouseEvent e) {
+		}
+		@Override
+		public void mousePressed(MouseEvent e) {
+		}
+		@Override
+		public void mouseReleased(MouseEvent e) {
+			if(e.getSource() == DocumentWindow.this.getIconBar()) {
+				PopupGenerator.showInfoDialog(DocumentWindow.this, "VCell admin notification message");
+			}
 		};
 	};
 	private JMenuItem ivjJMenuItemFieldData = null;
@@ -2166,37 +2188,37 @@ private javax.swing.JPanel getStatusBarPane() {
 		try {
 			ivjStatusBarPane = new javax.swing.JPanel();
 			ivjStatusBarPane.setName("StatusBarPane");
-			ivjStatusBarPane.setLayout(new BorderLayout());
+			ivjStatusBarPane.setLayout(new GridBagLayout());
 
-			JPanel panel = new JPanel(new GridBagLayout());
 			GridBagConstraints gbc = new GridBagConstraints();
 			gbc.gridx = 0;
 			gbc.gridy = 0;
 			gbc.weighty = 1;
 			gbc.fill = GridBagConstraints.VERTICAL;
 			gbc.insets = new Insets(4, 4, 4, 4);
-			panel.add(getJProgressBarConnection(), gbc);
-			ivjStatusBarPane.add(panel, BorderLayout.WEST);
+			ivjStatusBarPane.add(getJProgressBarConnection(), gbc);
 
-			panel = new JPanel(new GridBagLayout());
 			gbc = new GridBagConstraints();
-			gbc.gridx = 0;
+			gbc.gridx = 1;
+			gbc.gridy = 0;
+			gbc.weightx = 1;
+			gbc.fill = GridBagConstraints.HORIZONTAL;
+			gbc.insets = new Insets(4, 4, 4, 4);
+			ivjStatusBarPane.add(getWarningBar(), gbc);
+
+			gbc = new GridBagConstraints();
+			gbc.gridx = 2;
+			gbc.gridy = 0;
+			gbc.insets = new Insets(2, 2, 2, 2);
+			ivjStatusBarPane.add(getIconBar(), gbc);
+
+			gbc = new GridBagConstraints();
+			gbc.gridx = 3;
 			gbc.gridy = 0;
 			gbc.weighty = 1;
 			gbc.fill = GridBagConstraints.VERTICAL;
 			gbc.insets = new Insets(4, 4, 4, 4);
-			panel.add(getWarningBar(), gbc);
-			ivjStatusBarPane.add(panel, BorderLayout.CENTER);
-
-			panel = new JPanel(new GridBagLayout());
-			gbc = new GridBagConstraints();
-			gbc.gridx = 0;
-			gbc.gridy = 0;
-			gbc.weighty = 1;
-			gbc.fill = GridBagConstraints.VERTICAL;
-			gbc.insets = new Insets(4, 4, 4, 4);
-			panel.add(getJProgressBarMemory(), gbc);
-			ivjStatusBarPane.add(panel, BorderLayout.EAST);
+			ivjStatusBarPane.add(getJProgressBarMemory(), gbc);
 
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);
@@ -2215,6 +2237,19 @@ public JLabel getWarningBar() {
 		}
 	}
 	return warningText;
+}
+public JLabel getIconBar() {
+	if (iconText == null) {
+		try {
+			iconText = new JLabel();
+			iconText.setName("");
+			iconText.setIcon(VCellIcons.noteRedIcon);
+			iconText.setToolTipText("Admin Notification");
+		} catch (java.lang.Throwable ivjExc) {
+			handleException(ivjExc);
+		}
+	}
+	return iconText;
 }
 
 
@@ -2329,6 +2364,8 @@ private void initConnections() throws java.lang.Exception {
 	getViewJobsMenuItem().addActionListener(ivjEventHandler);
 	getJMenuItemFieldData().addActionListener(ivjEventHandler);
 	getPermissionsMenuItem().addActionListener(ivjEventHandler);
+	
+	getIconBar().addMouseListener(ivjEventHandler);
 }
 
 /**

@@ -78,6 +78,7 @@ public abstract class VCellIcons {
 	public final static Icon certificateIcon = makeIcon("/icons/certificate2.png");
 	public final static Icon linkIcon = makeIcon("/icons/link2.png");
 	public final static Icon noteIcon = makeIcon("/icons/note3.png");
+	public final static Icon noteRedIcon = makeIcon("/icons/noteRed.png");
 
 	// Rule Based Modeling
 	public final static Icon rbmIcon = makeIcon("/icons/rbm.png");
