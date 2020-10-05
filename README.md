@@ -1,8 +1,10 @@
-![Build the Docker Image](https://github.com/reproducible-biomedical-modeling/Biosimulations_vcell/workflows/Build%20the%20Docker%20Image/badge.svg)  ![Publish Docker To Hub](https://github.com/reproducible-biomedical-modeling/Biosimulations_vcell/workflows/Publish%20Docker%20To%20Hub/badge.svg)   [![GitHub issues](https://img.shields.io/github/issues/reproducible-biomedical-modeling/Biosimulations_vcell?logo=GitHub)](https://github.com/reproducible-biomedical-modeling/Biosimulations_vcell/issues)
+![Build the Docker Image](https://github.com/biosimulators/Biosimulators_vcell/workflows/Build%20the%20Docker%20Image/badge.svg)  
+![Publish Docker To Hub](https://github.com/biosimulators/Biosimulators_vcell/workflows/Publish%20Docker%20To%20Hub/badge.svg)   
+[![GitHub issues](https://img.shields.io/github/issues/biosimulators/Biosimulators_vcell?logo=GitHub)](https://github.com/biosimulators/Biosimulators_vcell/issues)
 
 ---
-# Biosimulations_vcell
-BioSimulations-compliant command-line interface to the [VCell](http://vcell.org/) simulation program.
+# Biosimulators_vcell
+BioSimulators-compliant command-line interface to the [VCell](http://vcell.org/) simulation program.
 
 ## Contents
 * [Installation](#installation)
@@ -33,7 +35,7 @@ BioSimulations-compliant command-line interface to the [VCell](http://vcell.org/
 			-Dvcell.installDir=<Your-Project-Directory-Path>
 			-Dvcell.softwareVersion="frm_VCell_7.2"
 			```
-		* eg for `<Your-Project-Directory-Path>`: `/Users/akhil/projects/Biosimulations_vcell`
+		* eg for `<Your-Project-Directory-Path>`: `/Users/akhil/projects/Biosimulators_vcell`
 		* Add `-h` for `Program arguments:` (refer [Local Usage](#local-usage) for more options)
 		* `Working Directory:` is `<Your-Project-Directory-Path>`
 		* Select `vcell-cli` as `Use classpath of module:`
@@ -64,14 +66,14 @@ BioSimulations-compliant command-line interface to the [VCell](http://vcell.org/
 
 ### Install Docker image
 ```
-docker pull crbm/biosimulations_vcell
+docker pull biosimulators/vcell
 ```
 
 ## Local usage
 ```
 usage: vcell [-h] [-d] [-q] -i ARCHIVE [-o OUT_DIR] [-v]
 
-BioSimulations-compliant command-line interface to the VCELL simulation program <http://vcell.org>.
+BioSimulators-compliant command-line interface to the VCELL simulation program <http://vcell.org>.
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -92,7 +94,7 @@ docker run \
   --rm \
   --mount type=bind,source="$(pwd)"/tests/fixtures,target=/root/in,readonly \
   --mount type=bind,source="$(pwd)"/tests/results,target=/root/out \
-  crbm/biosimulations_vcell:latest \
+  biosimulators/vcell:latest \
     -i /root/in/BIOMD0000000297.omex \
     -o /root/out
 ```
@@ -101,8 +103,8 @@ docker run \
 This package is released under the [MIT license](LICENSE).
 
 ## Development team
-This package was developed by the [Center for Reproducible Biomedical Modeling](http://reproduciblebiomodels.org).
+This package was developed by the BioSimulators Team of the [Center for Reproducible Biomedical Modeling](https://reproduciblebiomodels.org).
 
 ## Questions and comments
-Please contact the [Center for Reproducible Biomedical Modeling](mailto:info@reproduciblebiomodels.org) with any questions or comments.
+Please contact the [BioSimulators Team](mailto:info@biosimulators.org) with any questions or comments.
  
