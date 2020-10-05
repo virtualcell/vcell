@@ -10,7 +10,7 @@ import java.io.IOException;
 public class CLIHandler {
     private final String usage = "usage: VCell [-h] [-q] -i ARCHIVE [-o OUT_DIR] [-v]";
     private final String syntax = "VCell [-h] [-q] -i ARCHIVE [-o OUT_DIR] [-v]";
-    private final String header = "\nBioSimulations-compliant command-line interface to the VCell simulation program <http://vcell.org>.\n\n" +
+    private final String header = "\nBioSimulators-compliant command-line interface to the VCell simulation program <http://vcell.org>.\n\n" +
             "optional arguments:\n\n";
     CommandLine cmd = null;
 
