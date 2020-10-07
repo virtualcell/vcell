@@ -90,7 +90,7 @@ public class StochSimOptionsPanel extends CollapsiblePanel {
 				setNewOptions();
 			} else if(e.getSource() == getMultiRunHelpButton()) {
 				DialogUtils.showInfoDialogAndResize(StochSimOptionsPanel.this, "Multiple runs of a Non-Spatial stochastic simulation", 
-						"<html><b>Multiple runs of a Non-Spatial stochastic simulation:</b> not implemented yet." +
+						"<html><b>Multiple runs of a Non-Spatial stochastic simulation:</b>" +
 						"<br> In order to obtain smooth curves, we run multiple instances of the same stochastic simulation "
 						+ "using a different <b>random seed</b> for each run and then average the results."
 						+ "</html>");
@@ -161,7 +161,7 @@ public class StochSimOptionsPanel extends CollapsiblePanel {
 			
 			gbc = new GridBagConstraints();
 			gbc.gridx = 1;
-			gbc.gridy = 2;
+			gbc.gridy = 1;
 			gbc.anchor = GridBagConstraints.EAST;
 			gbc.insets = new Insets(1,1,1,3);
 			trialPanel.add(getMultiRunHelpButton(), gbc);		// ===============================================
