@@ -2190,30 +2190,34 @@ private javax.swing.JPanel getStatusBarPane() {
 			ivjStatusBarPane.setName("StatusBarPane");
 			ivjStatusBarPane.setLayout(new GridBagLayout());
 
+			int gridx = 0;
 			GridBagConstraints gbc = new GridBagConstraints();
-			gbc.gridx = 0;
+			gbc.gridx = gridx;
 			gbc.gridy = 0;
 			gbc.weighty = 1;
 			gbc.fill = GridBagConstraints.VERTICAL;
 			gbc.insets = new Insets(4, 4, 4, 4);
 			ivjStatusBarPane.add(getJProgressBarConnection(), gbc);
 
+			gridx++;
 			gbc = new GridBagConstraints();
-			gbc.gridx = 1;
+			gbc.gridx = gridx;
 			gbc.gridy = 0;
 			gbc.weightx = 1;
 			gbc.fill = GridBagConstraints.HORIZONTAL;
 			gbc.insets = new Insets(4, 4, 4, 4);
 			ivjStatusBarPane.add(getWarningBar(), gbc);
 
-			gbc = new GridBagConstraints();
-			gbc.gridx = 2;
-			gbc.gridy = 0;
-			gbc.insets = new Insets(2, 2, 2, 2);
-			ivjStatusBarPane.add(getIconBar(), gbc);
+//			gridx++;
+//			gbc = new GridBagConstraints();
+//			gbc.gridx = gridx;
+//			gbc.gridy = 0;
+//			gbc.insets = new Insets(2, 2, 2, 2);
+//			ivjStatusBarPane.add(getIconBar(), gbc);
 
+			gridx++;
 			gbc = new GridBagConstraints();
-			gbc.gridx = 3;
+			gbc.gridx = gridx;
 			gbc.gridy = 0;
 			gbc.weighty = 1;
 			gbc.fill = GridBagConstraints.VERTICAL;
