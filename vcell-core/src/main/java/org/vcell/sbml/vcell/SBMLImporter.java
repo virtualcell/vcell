@@ -2740,9 +2740,8 @@ public class SBMLImporter {
 			}
 			if (modelSubstanceUnit == null) {
 				modelSubstanceUnit = sbmlUnitDefinition;
-			} else if (!sbmlUnitDefinition.isEquivalent(modelSubstanceUnit)) {
-				localIssueList
-						.add(new Issue(
+			} else if (sbmlUnitDefinition != null && !sbmlUnitDefinition.isEquivalent(modelSubstanceUnit)) {
+				localIssueList.add(new Issue(
 								new SBMLIssueSource(sbmlSpecies),
 								issueContext,
 								IssueCategory.Units,
@@ -2784,10 +2783,8 @@ public class SBMLImporter {
 					}
 					if (modelSubstanceUnit == null) {
 						modelSubstanceUnit = sbmlUnitDefinition;
-					} else if (!sbmlUnitDefinition
-							.isEquivalent(modelSubstanceUnit)) {
-						localIssueList
-								.add(new Issue(
+					} else if (sbmlUnitDefinition != null && !sbmlUnitDefinition.isEquivalent(modelSubstanceUnit)) {
+						localIssueList.add(new Issue(
 										new SBMLIssueSource(sbmlReaction),
 										issueContext,
 										IssueCategory.Units,
