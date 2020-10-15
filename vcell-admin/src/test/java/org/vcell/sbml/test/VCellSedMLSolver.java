@@ -78,7 +78,7 @@ public class VCellSedMLSolver {
 			}
 			if (args[0].contains("-h") || args[0].contains("--help")) {
 				formatter.printHelp("vcell [-h] [-q] -i ARCHIVE [-o OUT_DIR] [-v]",
-						"\nBioSimulations-compliant command-line interface to the vcell simulation program <http://vcell.org>.\n\n" +
+						"\nBioSimulators-compliant command-line interface to the VCell simulation program <http://vcell.org>.\n\n" +
 								"optional arguments:\n\n",
 						options,
 						"");
