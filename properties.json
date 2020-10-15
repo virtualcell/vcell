@@ -61,7 +61,7 @@
         "volume": "73",
         "pages": "1135-1146",
         "year": 1997,
-        "doi": "10.1016/S0006-3495(97)78146-3"
+        "identifiers": [{"namespace": "doi", "id": "10.1016/S0006-3495(97)78146-3"}]
       },
       {
         "title": "The Virtual Cell: A Software Environment for Computational Cell Biology",
@@ -70,7 +70,7 @@
         "volume": "19",
         "pages": "401-406",
         "year": 2001,
-        "doi": "10.1016/S0167-7799(01)01740-1"
+        "identifiers": [{"namespace": "doi", "id": "10.1016/S0167-7799(01)01740-1"}]
       },
       {
         "title": "Spatial Modeling of Cell Signaling Networks",
@@ -79,7 +79,7 @@
         "volume": "110",
         "pages": "195-221",
         "year": 2012,
-        "doi": "10.1016/B978-0-12-388403-9.00008-4"
+        "identifiers": [{"namespace": "doi", "id": "10.1016/B978-0-12-388403-9.00008-4"}]
       },
       {
         "title": "The Virtual Cell Modeling and Simulation Software Environment",
@@ -88,7 +88,7 @@
         "volume": "2",
         "pages": "352-362",
         "year": 2008,
-        "doi": "10.1049/iet-syb:20080102"
+        "identifiers": [{"namespace": "doi", "id": "10.1049/iet-syb:20080102"}]
       },
       {
         "title": "Compartmental and Spatial Rule-Based Modeling with Virtual Cell",
@@ -97,7 +97,7 @@
         "volume": "113",
         "pages": "1365-1372",
         "year": 2017,
-        "doi": "10.1016/j.bpj.2017.08.022"
+        "identifiers": [{"namespace": "doi", "id": "10.1016/j.bpj.2017.08.022"}]
       }
     ]
   },
@@ -144,7 +144,7 @@
           "issue": 2,
           "pages": "138-143",
           "year": 1996,
-          "doi": "10.1063/1.4822377"
+          "identifiers": [{"namespace": "doi", "id": "10.1063/1.4822377"}]
         }
       ],
       "parameters": [
@@ -193,14 +193,14 @@
       ],
       "citations": [
         {
-          "title": "A Second Order Runge Kutta Method to Solve Fuzzy Differential Equations with Fuzzy Initial",
-          "authors": ".V, Parimala",
+          "title": "A Second Order Runge Kutta Method to Solve Fuzzy Differential Equations with Fuzzy Initial Condition",
+          "authors": "V, Parimala",
           "journal": "International Journal of Science and Research (IJSR)",
           "volume": 3,
           "issue": 3,
-          "pages": "1-10",
-          "year": 1996,
-          "doi": "2319-7064"
+          "pages": "428-431",
+          "year": 2014,
+          "identifiers": [{"namespace": "ijsr", "id": "20131137", "url": "https://www.ijsr.net/get_abstract.php?paper_id=20131137"}]
         }
       ],
       "parameters": [
@@ -257,7 +257,7 @@
           "issue": 3,
           "pages": "2-8",
           "year": 2015,
-          "doi": "10.1155/2015/350362"
+          "identifiers": [{"namespace": "doi", "id": "10.1155/2015/350362"}]
         }
       ],
       "parameters": [
@@ -314,7 +314,7 @@
           "issue": 3,
           "pages": "383-411",
           "year": 2007,
-          "doi": "10.1080/00207169908804817"
+          "identifiers": [{"namespace": "doi", "id": "10.1080/00207169908804817"}]
         }
       ],
       "parameters": [
@@ -371,7 +371,7 @@
           "issue": 3,
           "pages": "386-396",
           "year": 1971,
-          "doi": "10.1093/imamat/8.3.386"
+          "identifiers": [{"namespace": "doi", "id": "10.1093/imamat/8.3.386"}]
         }
       ],
       "parameters": [
@@ -428,7 +428,7 @@
           "issue": 2,
           "pages": "336-350",
           "year": 2002,
-          "doi": "10.1023/A:1021951025649"
+          "identifiers": [{"namespace": "doi", "id": "10.1023/A:1021951025649"}]
         }
       ],
       "parameters": [
@@ -485,7 +485,7 @@
           "issue": 3,
           "pages": "224-236",
           "year": 2006,
-          "doi": "10.1016/j.simpat.2005.05.002"
+          "identifiers": [{"namespace": "doi", "id": "10.1016/j.simpat.2005.05.002"}]
         }
       ],
       "parameters": [
@@ -542,7 +542,7 @@
           "issue": 9,
           "pages": "1876-1889",
           "year": 2000,
-          "doi": "10.1021/jp993732q"
+          "identifiers": [{"namespace": "doi", "id": "10.1021/jp993732q"}]
         }
       ],
       "parameters": [
@@ -598,7 +598,7 @@
           "issue": "NA",
           "pages": "112545",
           "year": 2019,
-          "doi": "10.1016/j.cam.2019.112545"
+          "identifiers": [{"namespace": "doi", "id": "10.1016/j.cam.2019.112545"}]
         }
       ],
       "parameters": [
@@ -655,7 +655,7 @@
           "issue": 8,
           "pages": "3475-3502",
           "year": 2010,
-          "doi": "10.3934/dcdsb.2018253"
+          "identifiers": [{"namespace": "doi", "id": "10.3934/dcdsb.2018253"}]
         }
       ],
       "parameters": [
@@ -705,13 +705,14 @@
       ],
       "citations": [
         {
-          "title": "Handbook of Numerical Analysis",
+          "title": "Finite volume methods",
           "authors": "Robert Eymard, Gallouet Thierry, Raphaèle Herbin",
-          "journal": "Mathematisches Forschungsinstitut",
+          "journal": "Handbook of Numerical Analysis",
           "volume": 7,
           "issue": "",
-          "pages": "731-1018",
-          "year": 2000
+          "pages": "731-1020",
+          "year": 2000,
+          "identifiers": [{"namespace": "doi", "id": "10.1016/S1570-8659(00)07005-8"}]
         }
       ],
       "parameters": [
@@ -768,7 +769,7 @@
           "issue": 2,
           "pages": "138-143",
           "year": 1996,
-          "doi": "10.1063/1.4822377"
+          "identifiers": [{"namespace": "doi", "id": "10.1063/1.4822377"}]
         },
         {
           "title": "Solving differential–algebraic equation systems by means of index reduction methodology",
@@ -778,7 +779,7 @@
           "issue": 3,
           "pages": "224-236",
           "year": 2006,
-          "doi": "10.1016/j.simpat.2005.05.002"
+          "identifiers": [{"namespace": "doi", "id": "10.1016/j.simpat.2005.05.002"}]
         }
       ],
       "parameters": [
@@ -828,14 +829,14 @@
       ],
       "citations": [
         {
-          "title": "Handbook of Numerical Analysis",
+          "title": "Finite volume methods",
           "authors": "Robert Eymard, Gallouet Thierry, Raphaèle Herbin",
-          "journal": "Mathematisches Forschungsinstitut",
+          "journal": "Handbook of Numerical Analysis",
           "volume": 7,
-          "issue": "NA",
-          "pages": "731-1018",
+          "issue": "",
+          "pages": "731-1020",
           "year": 2000,
-          "doi": "NA"
+          "identifiers": [{"namespace": "doi", "id": "10.1016/S1570-8659(00)07005-8"}]
         }
       ],
       "parameters": [
@@ -892,7 +893,7 @@
           "issue": 21,
           "pages": "161-173",
           "year": 1827,
-          "doi": "10.1080/14786442808674769"
+          "identifiers": [{"namespace": "doi", "id": "10.1080/14786442808674769"}]
         }
       ],
       "parameters": [
