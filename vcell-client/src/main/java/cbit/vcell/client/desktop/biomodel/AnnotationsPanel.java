@@ -34,7 +34,6 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.StringTokenizer;
 
 import javax.swing.BorderFactory;
@@ -85,11 +84,9 @@ import cbit.vcell.model.Model;
 import cbit.vcell.model.RbmObservable;
 import cbit.vcell.model.ReactionRule;
 import cbit.vcell.model.ReactionStep;
-import cbit.vcell.model.SimpleReaction;
 import cbit.vcell.model.Species;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
-import cbit.vcell.solver.Simulation;
 import cbit.vcell.xml.gui.MiriamTreeModel;
 import cbit.vcell.xml.gui.MiriamTreeModel.LinkNode;
 /**
@@ -783,15 +780,15 @@ private void changeTextAnnotation() {
 
 		if(textAreaStr == null || textAreaStr.isEmpty() || emptyHtmlText.equals(textAreaStr)) {	// no annotation now, the field is empty
 			bioModel.getVCMetaData().deleteFreeTextAnnotation(entity);	// delete, if there's something previously saved
-			if(selectedObject instanceof SimpleReaction) {
+			if(selectedObject instanceof ReactionStep) {
 				// we tell ReactionPropertiesPanel to refresh the annotation icon
-				((SimpleReaction) selectedObject).firePropertyChange("addIdentifier", false, true);
+				((ReactionStep) selectedObject).firePropertyChange("addIdentifier", false, true);
 			}
 		} else if(!Compare.isEqualOrNull(oldText,textAreaStr)) {		// some text annotation different from what's already saved
 			bioModel.getVCMetaData().setFreeTextAnnotation(entity, textAreaStr);	// overwrite
-			if(selectedObject instanceof SimpleReaction) {
+			if(selectedObject instanceof ReactionStep) {
 				// we tell ReactionPropertiesPanel to refresh the text annotation icon
-				((SimpleReaction) selectedObject).firePropertyChange("addIdentifier", false, true);
+				((ReactionStep) selectedObject).firePropertyChange("addIdentifier", false, true);
 			}
 		}
 	} catch(Exception e) {
@@ -806,8 +803,8 @@ private void removeText() {
 	Identifiable entity = getIdentifiable(selectedObject);
 	annotationTextArea.setText(null);
 	bioModel.getVCMetaData().deleteFreeTextAnnotation(entity);	// delete, if there's something previously saved
-	if(selectedObject instanceof SimpleReaction) {
-		((SimpleReaction) selectedObject).firePropertyChange("addIdentifier", false, true);
+	if(selectedObject instanceof ReactionStep) {
+		((ReactionStep) selectedObject).firePropertyChange("addIdentifier", false, true);
 	}
 }
 
@@ -940,9 +937,9 @@ private void addIdentifier() {
 		miriamManager.addMiriamRefGroup(entity, qualifier, miriamResources);
 //		System.out.println(vcMetaData.printRdfStatements());
 		updateInterface();
-		if(selectedObject instanceof SimpleReaction) {
+		if(selectedObject instanceof ReactionStep) {
 			// we tell ReactionPropertiesPanel to refresh the annotation icon
-			((SimpleReaction) selectedObject).firePropertyChange("addIdentifier", false, true);
+			((ReactionStep) selectedObject).firePropertyChange("addIdentifier", false, true);
 		}
 	} catch (Exception e) {
 		e.printStackTrace();
@@ -979,8 +976,8 @@ private void removeIdentifier() {
 			}
 			if(found == true) {
 				updateInterface();
-				if(selectedObject instanceof SimpleReaction) {
-					((SimpleReaction) selectedObject).firePropertyChange("addIdentifier", true, false);
+				if(selectedObject instanceof ReactionStep) {
+					((ReactionStep) selectedObject).firePropertyChange("addIdentifier", true, false);
 				}
 				break;
 			}

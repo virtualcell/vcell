@@ -262,6 +262,26 @@ private void initialize() {
 		gbc.anchor = GridBagConstraints.LINE_END;
 		add(new JLabel("Reaction Name"), gbc);
 		
+		JPanel jp = new JPanel();
+		jp.setLayout(new java.awt.GridBagLayout());
+		jp.setBackground(Color.white);
+		
+		GridBagConstraints gb = new java.awt.GridBagConstraints();
+		gb.gridx = 0; 
+		gb.gridy = 0;
+		gb.insets = new java.awt.Insets(0, 0, 0, 4);
+		gb.weightx = 1;
+		gb.fill = GridBagConstraints.HORIZONTAL;
+		jp.add(nameTextField, gb);
+		
+		gb = new GridBagConstraints();
+		gb.gridx = 1;
+		gb.gridy = 0;
+		gb.weightx = 0.0;
+		gb.insets = new java.awt.Insets(0, 4, 0, 4);
+		gb.anchor = GridBagConstraints.LINE_END;
+		jp.add(annotationIconLabel, gb);		// actually it's an icon
+		
 		gbc = new java.awt.GridBagConstraints();
 		gbc.gridx = 1; 
 		gbc.gridy = gridy;
@@ -269,7 +289,7 @@ private void initialize() {
 		gbc.weightx = 0.7;
 		gbc.gridwidth = 2;
 		gbc.fill = GridBagConstraints.HORIZONTAL;
-		add(nameTextField, gbc);
+		add(jp, gbc);
 		
 		gbc = new java.awt.GridBagConstraints();
 		gbc.gridx = 3; 
@@ -287,9 +307,8 @@ private void initialize() {
 		gbc.fill = GridBagConstraints.HORIZONTAL;
 //		gbc.anchor = GridBagConstraints.LINE_START;		
 		add(sbmlNameTextField, gbc);
-		// ---------------------------------------------
 		
-		gridy ++;
+		gridy ++;		// -------------------------------- optional row ---------------------
 		gbc = new java.awt.GridBagConstraints();
 		gbc.gridx = 0; 
 		gbc.gridy = gridy;
@@ -306,24 +325,22 @@ private void initialize() {
 		gbc.insets = new java.awt.Insets(0, 4, 0, 4);
 		add(reactionElectricalPropertiesPanel, gbc);
 		
-		// ----------------------------------------------------------------
+		gridy ++;	// ----------------------------- next row (usually second) -----------------
 		JPanel p = new JPanel();
 		p.setLayout(new GridBagLayout());
 		p.setBackground(Color.white);
-		int gridyy = 0;
 		gbc = new java.awt.GridBagConstraints();
 		gbc.gridx = 0; 
-		gbc.gridy = gridyy;
+		gbc.gridy = 0;
 		gbc.anchor = GridBagConstraints.LINE_END;
 		p.add(reversibleLabel, gbc);
 		
 		gbc = new java.awt.GridBagConstraints();
 		gbc.gridx = 1; 
-		gbc.gridy = gridyy;
+		gbc.gridy = 0;
 		gbc.fill = GridBagConstraints.HORIZONTAL;
 		p.add(isReversibleCheckBox, gbc);
 		
-		gridy ++;
 		gbc = new GridBagConstraints();
 		gbc.gridx = 0;
 		gbc.gridy = gridy;
@@ -355,16 +372,8 @@ private void initialize() {
 		gbc.gridwidth = 2;
 		gbc.insets = new java.awt.Insets(0, 4, 4, 2);
 		add(getJToggleButton(), gbc);
-				
-		gbc = new GridBagConstraints();
-		gbc.gridx = 5;
-		gbc.gridy = gridy;
-		gbc.weightx = 0.0;
-		gbc.insets = new java.awt.Insets(0, 2, 2, 4);
-		gbc.anchor = GridBagConstraints.LINE_END;
-		add(annotationIconLabel, gbc);		// actually it's an icon
-			
-		gridy ++;
+
+		gridy ++;	// ------------------------------------ the table -------------------
 		gbc = new java.awt.GridBagConstraints();
 		gbc.gridx = 0; 
 		gbc.gridy = gridy;
