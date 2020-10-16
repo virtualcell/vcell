@@ -10,6 +10,8 @@ import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.beans.PropertyChangeListener;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -19,6 +21,11 @@ import javax.swing.border.Border;
 import javax.swing.border.EtchedBorder;
 import javax.swing.border.TitledBorder;
 
+import org.vcell.model.rbm.ComponentStateDefinition;
+import org.vcell.model.rbm.MolecularComponent;
+import org.vcell.model.rbm.MolecularType;
+import org.vcell.model.rbm.MolecularTypePattern;
+import org.vcell.model.rbm.SpeciesPattern;
 import org.vcell.util.BeanUtils;
 
 import cbit.vcell.client.BioModelWindowManager;
@@ -31,9 +38,14 @@ import cbit.vcell.client.desktop.biomodel.SelectionManager;
 import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveViewID;
 import cbit.vcell.client.desktop.biomodel.SimulationConsolePanel;
 import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.mapping.SimulationContext.SimulationContextParameter;
+import cbit.vcell.mapping.SpeciesContextSpec;
+import cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecParameter;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Model.RbmModelContainer;
 import cbit.vcell.model.SpeciesContext;
+import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.solvers.ApplicationMessage;
 
 // we should use WindowBuilder Plugin (add it to Eclipse IDE) to speed up panel design
@@ -56,6 +68,7 @@ public class NetworkFreePanel extends JPanel implements ApplicationSpecification
 	private JLabel futureMolecularTypesLabel;		
 	private JLabel observablesLabel;
 	private JLabel futureObservablesLabel;
+	private JLabel estimatedMemoryLabel;
 	private JLabel rateWarningLabel;
 
 	private static String infoText = "<html>"
@@ -151,6 +164,7 @@ public class NetworkFreePanel extends JPanel implements ApplicationSpecification
 		observablesLabel = new JLabel("");
 		futureObservablesLabel = new JLabel("");
 		rateWarningLabel = new JLabel("");
+		estimatedMemoryLabel =  new JLabel("");
 
 		Border loweredEtchedBorder = BorderFactory.createEtchedBorder(EtchedBorder.LOWERED);
 		Border loweredBevelBorder = BorderFactory.createLoweredBevelBorder();
@@ -426,7 +440,25 @@ public class NetworkFreePanel extends JPanel implements ApplicationSpecification
 		gbc.weightx = 0;
 		gbc.anchor = GridBagConstraints.WEST;
 		gbc.insets = new Insets(4, 14, 10, 10);
-		right.add(futureObservablesLabel, gbc);		
+		right.add(futureObservablesLabel, gbc);
+		
+		gridy++;	// ---------------------------------
+		gbc = new GridBagConstraints();
+		gbc.gridx = 0;
+		gbc.gridy = gridy;
+		gbc.weightx = 0;
+		gbc.anchor = GridBagConstraints.WEST;
+		gbc.insets = new Insets(4, 4, 4, 10);
+		right.add(new JLabel("Estimated Memory: "), gbc);
+
+		gbc = new GridBagConstraints();
+		gbc.gridx = 1;
+		gbc.gridy = gridy;
+		gbc.weightx = 0;
+		gbc.anchor = GridBagConstraints.WEST;
+		gbc.insets = new Insets(4, 14, 4, 10);
+		right.add(estimatedMemoryLabel, gbc);
+
 		
 		getCreateModelButton().addActionListener(eventHandler);
 		addFocusListener(eventHandler);
@@ -482,6 +514,103 @@ public class NetworkFreePanel extends JPanel implements ApplicationSpecification
 		int m1 = fieldSimulationContext.getModel().getRbmModelContainer().getMolecularTypeList().size();
 		int o1 = fieldSimulationContext.getModel().getRbmModelContainer().getObservableList().size();
 		
+		Map <String, Integer >moleculesSites = new LinkedHashMap<>();	// key = molecular type name, value = adjusted number of states
+		for(MolecularType mt : fieldSimulationContext.getModel().getRbmModelContainer().getMolecularTypeList()) {
+			int em = 1;		// we assume size one for molecules with no sites
+			if(mt.getComponentList().size() > 0) {
+				em = mt.getComponentList().size();	// each site has by default size one, even if there are no states defined
+				for(MolecularComponent mc : mt.getComponentList()) {
+					int numCSD = 0;
+					if(mc.getComponentStateDefinitions().size() > 0) {
+						numCSD = mc.getComponentStateDefinitions().size();
+					}
+					em += numCSD;
+				}
+			}
+			// molecule size = 1 + #sites + sum(#states for each site)
+			moleculesSites.put(mt.getName(),  em);
+		}
+		
+		Map <String, Double >totals = new LinkedHashMap<>();	// key = molecular type name, value = total number of states
+		SpeciesContextSpec[] scsList = fieldSimulationContext.getReactionContext().getSpeciesContextSpecs();
+		boolean usingConcentration = true;
+		boolean evaluatesToNumber = true;
+		for(SpeciesContextSpec scs : scsList) {
+			SpeciesContext sc = scs.getSpeciesContext();
+			String scName = sc.getName();
+			double count = 0;		// number of molecules of this species
+			SpeciesContextSpecParameter countParameter = scs.getInitialCountParameter();
+			SpeciesContextSpecParameter concentParameter = scs.getInitialConcentrationParameter();
+			if(countParameter != null && countParameter.getExpression() != null) {
+				try {
+//					Expression exp = countParameter.getExpression().flatten();
+					count = countParameter.getConstantValue();
+//					count = exp.evaluateConstant();
+				} catch (ExpressionException e) {
+//					e.printStackTrace();
+					System.out.println("NetworkFreePanel: Count parameter for species '" + scName + "' is not a constant, defaulting to '1'!");
+					evaluatesToNumber = false;
+					count = 1;		// we just put something in there
+					break;
+				}
+			} else if(concentParameter != null && concentParameter.getExpression() != null) {
+				// TODO: compute num molecules starting from concentration
+				// we compute count from concentration
+				System.out.println("NetworkFreePanel: Using concentration for species '" + scName + "' is not implemented yet, defaulting to '1'!");
+				usingConcentration = false;
+				count = 1;
+				break;
+			} else {
+				// don't know what to do, we just initialize to one
+				System.out.println("NetworkFreePanel: Unable to compute Count for species '" + scName + "', defaulting to '1'!");
+				usingConcentration = false;
+				count = 1;
+				break;
+			}
+			
+			// for each molecular type, we multiply the number of states with the number of species it's present in
+			// note that different species may contain the same molecular type in their species pattern, more than once
+			if(!sc.hasSpeciesPattern()) {
+				// plain molecular type, with no sites or states, name of the species is the name of the molecule
+				int numStates = 1;
+				// if we don't have a molecule for this species we just assume a size of 1
+				if(moleculesSites.containsKey(scName)) {
+					numStates = moleculesSites.get(scName);
+				} else {
+					System.out.println("NetworkFreePanel: Plain species '" + scName + "' not found in the MolecularTypes map!");
+				}
+				double totalCount = count * numStates;
+				if(totals.containsKey(scName)) {
+					totalCount += totals.get(scName);
+				}
+				totals.put(scName, totalCount);
+			} else {	// we have a species pattern, we update the number of states for each molecular type
+				SpeciesPattern sp = sc.getSpeciesPattern();
+				for(MolecularTypePattern mtp : sp.getMolecularTypePatterns()) {
+					int numStates = 1;
+					String key = mtp.getMolecularType().getName();
+					if(moleculesSites.containsKey(key)) {
+						numStates = moleculesSites.get(key);
+					} else {
+						System.out.println("NetworkFreePanel: MolecularType '" + key + "' not found in the MolecularTypes map!");
+					}
+					double totalCount = count * numStates;
+					if(totals.containsKey(key)) {
+						totalCount += totals.get(key);
+					}
+					totals.put(key, totalCount);
+				}
+			}
+		}
+		double totalCount = 0;
+		for(Map.Entry<String,Double> entry : totals.entrySet()) {
+			String name = entry.getKey();
+			Double count = entry.getValue();
+			System.out.println(name + ", " + count);
+			totalCount += count;
+		}
+		
+		
 		speciesLabel.setText(s2 + "");
 		speciesMoleculesLabel.setText(s1 + "");
 		futureSpeciesLabel.setText(s1+s2 + "");
@@ -492,6 +621,21 @@ public class NetworkFreePanel extends JPanel implements ApplicationSpecification
 		observablesLabel.setText(o1 + "");
 		futureMolecularTypesLabel.setText((m1+s2) + "");
 		futureObservablesLabel.setText((o1+s2) +"");
+		long rounded = Math.round(180 * totalCount / new Double(1e6));
+		String strRounded = "";
+		if(rounded > 1) {
+			strRounded = rounded + "";
+		} else {
+			strRounded = (180 * totalCount / new Double(1e6)) + "";
+		}
+		if(usingConcentration == false) {
+			estimatedMemoryLabel.setText("'Count' units must be used.");
+		} else if(evaluatesToNumber == false) {
+			estimatedMemoryLabel.setText("The number of molecules must be a constant.");
+		} else {
+			estimatedMemoryLabel.setText(strRounded + " MB, (180 * " + totalCount + " / 1e6)");
+		}
+		
 //		if(s1 > 0) {
 			rateWarningLabel.setText("<html><font color=#8C001A>" + SimulationContext.rateWarning + "</font></html>");
 //		} else {
