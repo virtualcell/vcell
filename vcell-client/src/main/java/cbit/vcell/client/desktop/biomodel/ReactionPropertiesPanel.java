@@ -22,6 +22,7 @@ import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
@@ -171,6 +172,12 @@ public class ReactionPropertiesPanel extends DocumentEditorSubPanel {
 				listLinkedPathwayObjects();
 			}
 		}
+		@Override
+		public void mouseReleased(MouseEvent e) {
+			if(e.getSource() == ReactionPropertiesPanel.this.annotationIconLabel) {
+				selectionManager.firePropertyChange(SelectionManager.PROPERTY_NAME_SELECTED_PANEL, null, selectionManager.getAnnotationNavigator());
+			}
+		}
 	}
 	
 public ReactionPropertiesPanel() {
@@ -226,6 +233,10 @@ private void initConnections() throws java.lang.Exception {
 	nameTextField.addActionListener(eventHandler);
 	sbmlNameTextField.addActionListener(eventHandler);
 	sbmlNameTextField.addFocusListener(eventHandler);
+	
+	isReversibleCheckBox.addActionListener(eventHandler);
+	getKineticsTypeComboBox().addActionListener(eventHandler);
+	annotationIconLabel.addMouseListener(eventHandler);
 }
 
 private void initialize() {
@@ -239,7 +250,6 @@ private void initialize() {
 		sbmlNameTextField.setEditable(true);
 
 		isReversibleCheckBox = new JCheckBox("");
-		isReversibleCheckBox.addActionListener(eventHandler);
 		isReversibleCheckBox.setBackground(Color.white);
 //		isReversibleCheckBox.setHorizontalTextPosition(SwingConstants.LEFT);
 		
@@ -422,7 +432,6 @@ private void initialize() {
 				
 		setBackground(Color.white);
 		
-		getKineticsTypeComboBox().addActionListener(eventHandler);
 		getKineticsTypeComboBox().setEnabled(false);
 		initKineticChoices();
 		initConnections();
