@@ -26,6 +26,8 @@ import java.awt.event.MouseListener;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -296,7 +298,7 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.I
 		@Override
 		public void mouseReleased(MouseEvent e) {
 			if(e.getSource() == DocumentWindow.this.getIconBar()) {
-				PopupGenerator.showInfoDialog(DocumentWindow.this, "VCell admin notification message");
+				onNotificationsIconClick();
 			}
 		};
 	};
@@ -2208,12 +2210,12 @@ private javax.swing.JPanel getStatusBarPane() {
 			gbc.insets = new Insets(4, 4, 4, 4);
 			ivjStatusBarPane.add(getWarningBar(), gbc);
 
-//			gridx++;
-//			gbc = new GridBagConstraints();
-//			gbc.gridx = gridx;
-//			gbc.gridy = 0;
-//			gbc.insets = new Insets(2, 2, 2, 2);
-//			ivjStatusBarPane.add(getIconBar(), gbc);
+			gridx++;
+			gbc = new GridBagConstraints();
+			gbc.gridx = gridx;
+			gbc.gridy = 0;
+			gbc.insets = new Insets(2, 2, 2, 2);
+			ivjStatusBarPane.add(getIconBar(), gbc);
 
 			gridx++;
 			gbc = new GridBagConstraints();
@@ -2255,7 +2257,39 @@ public JLabel getIconBar() {
 	}
 	return iconText;
 }
+private static final String notificationsUrl = "https://vcell.org/webstart/VCell_Tutorials/VCell_Help/topics/ch_1/Introduction/Permissions1.html";
+private void checkForNotifications() {
+	int code = HttpURLConnection.HTTP_BAD_REQUEST;
+	try {
+		URL u = new URL(notificationsUrl);
+		HttpURLConnection huc = (HttpURLConnection)u.openConnection (); 
+		huc.setRequestMethod("HEAD");  // probably cheaper than  huc.setRequestMethod ("GET"); 
+		huc.connect(); 
+		code = huc.getResponseCode();
+	} catch (IOException e) {
+		// we just eat the exception
+//		e.printStackTrace();
+		code = HttpURLConnection.HTTP_INTERNAL_ERROR;
+	}
+	if(code != HttpURLConnection.HTTP_OK) {
+		getIconBar().setEnabled(false);
+		getIconBar().setVisible(false);
+	} else {
+		getIconBar().setEnabled(true);
+		getIconBar().setVisible(true);
+	}
+}
+private void onNotificationsIconClick() {
+//	PopupGenerator.showInfoDialog(DocumentWindow.this, "VCell admin notification message");
+	invokeShowNotifications();
+}
+private void invokeShowNotifications() {
+	
+	DialogUtils.browserLauncher(this, notificationsUrl, "Please visit '" + notificationsUrl + "' for server administrator notifications.");
 
+//	PopupGenerator.browserLauncher(this, BeanUtils.getDynamicClientProperties().getProperty(PropertyLoader.VC_TUT_PERMISSION_URL),
+//		"Please visit "+BeanUtils.getDynamicClientProperties().getProperty(PropertyLoader.VC_TUT_PERMISSION_URL)+" for instructions on how to change permissions to your Model");
+}
 
 /**
  * Return the TestingFrameworkMenuItem property value.
@@ -2386,6 +2420,7 @@ private void initialize() {
 		setTitle("DocumentWindow");
 		getContentPane().add(getStatusBarPane(), BorderLayout.SOUTH);
 		initConnections();
+		checkForNotifications();
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
 	}
