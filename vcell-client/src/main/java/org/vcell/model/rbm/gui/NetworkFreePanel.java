@@ -68,7 +68,7 @@ public class NetworkFreePanel extends JPanel implements ApplicationSpecification
 	private JLabel futureMolecularTypesLabel;		
 	private JLabel observablesLabel;
 	private JLabel futureObservablesLabel;
-	private JLabel estimatedMemoryLabel;
+	private JLabel estimatedMemoryLabel;		// keep it, at times we may want to bring back in use the mem estimator
 	private JLabel rateWarningLabel;
 
 	private static String infoText = "<html>"
@@ -442,22 +442,22 @@ public class NetworkFreePanel extends JPanel implements ApplicationSpecification
 		gbc.insets = new Insets(4, 14, 10, 10);
 		right.add(futureObservablesLabel, gbc);
 		
-		gridy++;	// ---------------------------------
-		gbc = new GridBagConstraints();
-		gbc.gridx = 0;
-		gbc.gridy = gridy;
-		gbc.weightx = 0;
-		gbc.anchor = GridBagConstraints.WEST;
-		gbc.insets = new Insets(4, 4, 4, 10);
-		right.add(new JLabel("Estimated Memory: "), gbc);
-
-		gbc = new GridBagConstraints();
-		gbc.gridx = 1;
-		gbc.gridy = gridy;
-		gbc.weightx = 0;
-		gbc.anchor = GridBagConstraints.WEST;
-		gbc.insets = new Insets(4, 14, 4, 10);
-		right.add(estimatedMemoryLabel, gbc);
+//		gridy++;	// ---------------------------------
+//		gbc = new GridBagConstraints();
+//		gbc.gridx = 0;
+//		gbc.gridy = gridy;
+//		gbc.weightx = 0;
+//		gbc.anchor = GridBagConstraints.WEST;
+//		gbc.insets = new Insets(4, 4, 4, 10);
+//		right.add(new JLabel("Estimated Memory: "), gbc);
+//
+//		gbc = new GridBagConstraints();
+//		gbc.gridx = 1;
+//		gbc.gridy = gridy;
+//		gbc.weightx = 0;
+//		gbc.anchor = GridBagConstraints.WEST;
+//		gbc.insets = new Insets(4, 14, 4, 10);
+//		right.add(estimatedMemoryLabel, gbc);
 
 		
 		getCreateModelButton().addActionListener(eventHandler);
@@ -513,7 +513,9 @@ public class NetworkFreePanel extends JPanel implements ApplicationSpecification
 		
 		int m1 = fieldSimulationContext.getModel().getRbmModelContainer().getMolecularTypeList().size();
 		int o1 = fieldSimulationContext.getModel().getRbmModelContainer().getObservableList().size();
-		
+
+
+		/*	
 		Map <String, Integer >moleculesSites = new LinkedHashMap<>();	// key = molecular type name, value = adjusted number of states
 		for(MolecularType mt : fieldSimulationContext.getModel().getRbmModelContainer().getMolecularTypeList()) {
 			int em = 1;		// we assume size one for molecules with no sites
@@ -609,7 +611,22 @@ public class NetworkFreePanel extends JPanel implements ApplicationSpecification
 			System.out.println(name + ", " + count);
 			totalCount += count;
 		}
-		
+		long rounded = Math.round(1800 * totalCount / new Double(1e6));
+		String strRounded = "";
+		if(rounded > 1) {
+			strRounded = rounded + "";
+		} else {
+			strRounded = (1800 * totalCount / new Double(1e6)) + "";
+		}
+		if(usingConcentration == false) {
+			estimatedMemoryLabel.setText("'Count' units must be used.");
+		} else if(evaluatesToNumber == false) {
+			estimatedMemoryLabel.setText("The number of molecules must be a constant.");
+		} else {
+			estimatedMemoryLabel.setText(strRounded + " MB, (1800 * " + totalCount + " / 1e6)");
+		}
+
+		*/
 		
 		speciesLabel.setText(s2 + "");
 		speciesMoleculesLabel.setText(s1 + "");
@@ -621,20 +638,6 @@ public class NetworkFreePanel extends JPanel implements ApplicationSpecification
 		observablesLabel.setText(o1 + "");
 		futureMolecularTypesLabel.setText((m1+s2) + "");
 		futureObservablesLabel.setText((o1+s2) +"");
-		long rounded = Math.round(180 * totalCount / new Double(1e6));
-		String strRounded = "";
-		if(rounded > 1) {
-			strRounded = rounded + "";
-		} else {
-			strRounded = (180 * totalCount / new Double(1e6)) + "";
-		}
-		if(usingConcentration == false) {
-			estimatedMemoryLabel.setText("'Count' units must be used.");
-		} else if(evaluatesToNumber == false) {
-			estimatedMemoryLabel.setText("The number of molecules must be a constant.");
-		} else {
-			estimatedMemoryLabel.setText(strRounded + " MB, (180 * " + totalCount + " / 1e6)");
-		}
 		
 //		if(s1 > 0) {
 			rateWarningLabel.setText("<html><font color=#8C001A>" + SimulationContext.rateWarning + "</font></html>");
