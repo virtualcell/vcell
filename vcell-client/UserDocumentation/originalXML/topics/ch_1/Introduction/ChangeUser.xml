@@ -6,7 +6,7 @@
 	</introduction>
 	
 	<appearance>
-		<imgReference target = "ChangeUser.PNG"/>
+		<imgReference target = "LoginDialog.PNG"/>
 	</appearance>
 	
 	<comments>  </comments>

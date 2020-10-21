@@ -11,8 +11,7 @@
   <para>
   The top of the table shows the Reaction Name,a combobox for Kinetic Type, and a button to convert the rate law either from molecules per 
   second to micromolar per second or vice versa. Below is a table of the kinetic terms used to define the reaction rate 
-  (J) that includes all mathematical terms referred to in the mathematical expression for J or other kinetic terms.  Concentrations 
-  of all species referred to in the kinetic terms (e.g.reactants, catalysts, products) are required. Items in brown cannot be edited.
+  (J) that includes all mathematical terms referred to in the mathematical expression for J or other kinetic terms.  Items in brown cannot be edited.
   </para>
   </appearance>
 	
@@ -31,7 +30,7 @@
     to molecules per second, the user-defined kinetic law will automatically be selected, and remain so even if converted back.
     </para>
     <para>
-    <bold> Edit Expressions and their units</bold> in the Expression column.  
+    <bold> Edit Expressions and their units</bold> in the Expression column. An autofill menu will dropdown as you type to easily find already defined parameters and species that can be included in the expression. Species entered in the rate expression will automatically be assigned as catalysts.  
     <list>
     <item>Predefined rate laws, species concentrations and universal constants cannot be edited.</item> 
     <item>Incompatible units will be silently rejected.</item> 

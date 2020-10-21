@@ -3,7 +3,7 @@
 <page title="Reactions Diagram" target="ReactDiagView">
 
 	<introduction> 
-	The reactions diagram shows a bipartite graph consisting of of 
+	The reactions diagram shows a bipartite graph consisting of 
 	<def target = "def_species">species</def>
 	(<bold>green</bold> balls for species that do not have <link target = "Molecules">molecular details</link>, 
 	or <bold>blue</bold> balls for species with <link target = "Molecules">molecular details</link>) 
@@ -28,6 +28,8 @@
 	using the <link target = "PathwayOverview"> Pathways Commons</link> database, to select species and use the 
 	<link target = "PathLink"> Pathway Links</link> button.
 	</para>
+	<para> When a single object is in the graph is selected, properties of that object are diplayed in the bottom right pane of the window.  Details of reactions and fluxes can be edited in this pane, as described in the <link target = "PP_Reactions">reaction</link> and the  <link target = "PP_MemFlux">membrane flux</link>,
+	</para>
 	</appearance>
 	
 	<operations> 
@@ -44,28 +46,22 @@
 	    <bold>Move a structure</bold> using the 'Selection tool'.  Click and drag on a <bold>structure name</bold> to enable <bold>drag to move</bold>; releasing the mouse over any set of vertical dashed lines moves the structure and contents to the new location.
 	    </para>	    
 	  
-	    <imgReference target = "icon_species.png"/> <bold>'Species tool'</bold> enables adding new species enables adding new species by clicking within a structure. Names automatically generated for species can be edited in the <link target= "PP_Species">species property pane</link>. New species are created without molecular details and appear <bold>green</bold>; species change to <bold>blue</bold> if the molecular composition of the species is specified using the <link target = "PP_Species">species properties pane</link>.
+	    <imgReference target = "icon_species.png"/> <bold>'Species tool'</bold> enables adding new species by clicking within a structure. Names automatically generated for species can be edited in the <link target= "PP_Species">species property pane</link>. New species are created without molecular details and appear <bold>green</bold>; species change to <bold>blue</bold> if the molecular composition of the species is specified using the <link target = "PP_Species">species properties pane</link>.
 	  
 	   
-	    <imgReference target = "icon_rxsolid.png"/> <bold>'Reaction tool'</bold> enables one to create reactants/products of a reaction or membrane flux.  
+	    <imgReference target = "Icon_Rxntool.png"/> <bold>'Reaction tool'</bold> enables one to create reactants/products of a reaction or membrane flux.  
 	    For non-flux reactions, drag the mouse to assign reactant or product roles by connecting species or reactions. The direction of 
 	    the drag determines whether a reactant or product role is assigned (e.g. dragging from species to reaction 
-	    creates a reactant role, dragging from reaction to species creates a product role). No relationship is created 
-	    if VCell constraints would be violated, e.g. two reactants cannot be in different volume compartments. 
+	    creates a reactant role, dragging from reaction to species creates a product role). If a reaction is drawn from species in one volume compartment to a different volume compartment, the reaction is placed in the membrane.  Reactions between species in different volume compartments is allowed in nonspatial applications but act as source or sink reactions in spatial applications and invoke a warning when a spatial application is created.
 	    <bold>Create a reaction</bold> by dragging from species to species (or open space). <bold>Create an intermediary 
 	    species</bold> by dragging from reaction to reaction (or open space).  
 	    
-	    <imgReference target = "icon_rxflux.png"/> <bold>'Membrane flux tool'</bold> creates a membrane flux by clicking in a membrane structure.  Add flux participants by selecting 
+	    <imgReference target = "icon_flux.gif"/> <bold>'Membrane flux tool'</bold> creates a membrane flux by clicking in a membrane structure.  Add flux participants by selecting 
 	    the 'reaction tool' and dragging, first from an existing species to the newly created flux component then click and drag again from the flux component 
 	    to another existing species.
 	   
-	  
-	    <imgReference target = "icon_rxcatalyst.png"/> <bold>'Catalyst tool'</bold> creates a catalyst annotation by dragging from a species to a reaction or vice versa. The 'catalyst tool' creates a visual cue (dotted line) between a reaction and a species but does not change the model physiology.  
-	    (Note: for convenience, connecting a species with empty space creates a new reaction and connecting a reaction to empty space creates a new species.)
-	    
 	 
-
-	    
+		    
 	    <imgReference target = "icon_ImageEd_zooms.png"/> buttons vary the display magnification of the reaction diagram.
 	  
 	    <para>
@@ -74,8 +70,8 @@
 	    shorter and more similar to each other in lengths, and to place nodes more evenly across each structure.  For rule-based models, there are additional buttons to either have all participants in a reaction depicted separately (and therefore reactants/products may be duplicated in the view) or have the same reactant/product depiction connected to multiple reactions.
 	    </para>
 	    <para>Buttons to the right of the layout buttons alter the depiction of species and reactions in the diagram and are particularly useful for <bold>Rule-based models</bold>.
-	    <imgReference target="RxDiag_RulePartUngroup.png"/>  When selected depicts reaction rules individually; species are repeated for each rule in which they participate.
-	    <imgReference target="RxDiag_RulePartGroup.png"/>  When selected depicts each reaction rules organized by individual species.
+	    <imgReference target="RxDiag_RulePartUngroup.png"/>  When selected depicts reaction rules individually; species are repeated for each rule in which they participate.  Only appears when a rule-based model is opened.
+	    <imgReference target="RxDiag_RulePartGroup.png"/>  When selected depicts each reaction rules organized by individual species. Only appears when a rule-based model is opened.
 	    <imgReference target="RxDiag_HighlightCatalyst.png"/>  Toggles all catalysts to be colored distinct from reactant and product species 
 		<imgReference target="RxDiag_EqSpecies.png"/>  When selected depicts all species as the same size.
 		<imgReference target="RxDiag_RxSizeSpecies.png"/>  When selected depicts species as different sizes based on the number of reactions they are involved in.
@@ -86,11 +82,11 @@
 	<para>
 	The mouse popup menu provides several functions depending on the current selection (structures,reactions,species):
 	<list>
-	<item>Save snapshot image of whole reaction diagram to file (zooming reaction diagram view increases resolution).</item>
-	<item>Search for reactions in public models shared by other VCell users.</item>
-	<item>Copy, cut, delete, annotate and 'hide' selected reactions and species.</item>
-	<item>Paste copied reactions and species into selected structures.</item>
-	<item>Unhide (make visible) all 'hidden' reactions and species ('Hiding' temporarily removes selected reactions and species from view).</item>
+	<item><bold>Save snapshot image</bold> of whole reaction diagram to file (zooming reaction diagram view increases resolution).</item>
+	<item><bold>Search for reactions</bold> in public models shared by other VCell users.</item>
+	<item><bold>, cut, delete, annotate and 'hide'</bold> selected reactions and species.</item>
+	<item><bold>Paste</bold> copied reactions and species into selected structures.</item>
+	<item><bold>Unhide</bold> (make visible) all 'hidden' reactions and species ('Hiding' temporarily removes selected reactions and species from view).</item>
 	</list>
 	</para>
 	<para>
@@ -106,7 +102,7 @@
    <para>
     Depending on the type of object selected, the bottom pane of the window displays a 
     <link target = "PP_Reactions">reaction</link>, 
-    <link target = "PP_MemFlux">membrane structure</link>, 
+    <link target = "PP_MemFlux">membrane flux</link>, 
     <link target = "PP_Species">species</link>,
     <link target = "PP_Stoichiometries">stoichiometry</link> or 
     <link target = "PP_Structures">volume structure</link> properties pane. 

@@ -23,7 +23,9 @@
 	<imgReference target = "LoginForgotPswd.PNG"/>. 
  
  	<para>
- 	If the user is trying to use the Virtual Cell for the first time, he/she has to register. Clicking on the <link target = "NewUserRegistration">New User Registration</link> allows a user to register and use the Virtual Cell.
+ 	First time users should register with VCell to enable interaction with the VCell Database and access to VCell simulation servers. Clicking on the <link target = "NewUserRegistration">New User Registration</link> allows a user to register and use the Virtual Cell.
+ 	</para>
+ 	<para><bold>Login as Guest</bold>allows an individual to open public models and to build models and run simulations on their local machine.  Guests cannot save models to the database or use VCell simulation servers.
  	</para>
 	</operations>
 	<comments>  </comments>
