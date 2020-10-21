@@ -81,6 +81,7 @@ import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SpeciesContextSpec;
 import cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecParameter;
 import cbit.vcell.mapping.StructureMapping;
+import cbit.vcell.mapping.SimulationContext.Application;
 import cbit.vcell.mapping.StructureMapping.StructureMappingParameter;
 import cbit.vcell.math.Function;
 import cbit.vcell.model.Kinetics.KineticsParameter;
@@ -236,7 +237,15 @@ public class SEDMLExporter {
 							SBMLExporter sbmlExporter = new SBMLExporter(modifiedBiomodel, level, version, isSpatial);
 							sbmlExporter.setSelectedSimContext(simContextFromModifiedBioModel);
 							sbmlExporter.setSelectedSimulationJob(null);	// no sim job
-							sbmlString = sbmlExporter.getSBMLFile();
+							try {
+								sbmlString = sbmlExporter.getSBMLFile();
+							} catch (RuntimeException e) {
+								if (simContext.getGeometry().getDimension() > 0 && simContext.getApplicationType() == Application.NETWORK_DETERMINISTIC ) {
+									continue;	// we skip importing 3D deterministic applications if SBML exceptions
+								} else {
+									throw(e);
+								}
+							}
 							l2gMap = sbmlExporter.getLocalToGlobalTranslationMap();
 						} catch (ExpressionException | SbmlException e) {
 							e.printStackTrace(System.out);
