@@ -2258,9 +2258,7 @@ public JLabel getIconBar() {
 	return iconText;
 }
 
-//private static final String notificationsUrl = "//cfs05.cam.uchc.edu/vcell/apache_webroot/htdocs/webstart/VCell_alert/VCell_Alert.html";
 private static final String notificationsUrl = "https://vcell.org/webstart/VCell_alert/VCell_Alert.html";
-//private static final String notificationsUrl = "https://vcell.org/webstart/VCell_Tutorials/VCell_Help/topics/ch_1/Introduction/Permissions1.html";
 private void checkForNotifications() {
 	int code = HttpURLConnection.HTTP_BAD_REQUEST;
 	try {
