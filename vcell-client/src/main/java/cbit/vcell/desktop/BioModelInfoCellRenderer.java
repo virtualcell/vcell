@@ -259,6 +259,7 @@ public java.awt.Component getTreeCellRendererComponent(JTree tree, Object value,
 			setIcon(fieldPermissionsIcon);
 
 		} else if(node.getUserObject() instanceof String && "Annotations".equals(node.getRenderHint("type"))) {
+			// deprecated; we don't show annotation icon(s), neither for notes nor for links
 			component.setToolTipText("Text Annotation");
 			String text = (String)node.getUserObject();
 			component.setText("<html>" + text + "</html>");

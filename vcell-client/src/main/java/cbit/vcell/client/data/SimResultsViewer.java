@@ -31,6 +31,7 @@ import javax.swing.event.ListSelectionListener;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.DataAccessException;
+import org.vcell.util.UserCancelException;
 import org.vcell.util.document.VCDataIdentifier;
 
 import cbit.rmi.event.DataJobEvent;
@@ -394,14 +395,23 @@ private void updateScanParamChoices(final String message,ListReset listReset){
 		AsynchClientTask task1 = new AsynchClientTask("get ode results", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 			@Override
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
-				ODEDataManager odeDatamanager = ((ODEDataManager)dataManager).createNewODEDataManager(vcdid);
-				hashTable.put("odeDatamanager", odeDatamanager);
+				try {
+					ODEDataManager odeDatamanager = ((ODEDataManager)dataManager).createNewODEDataManager(vcdid);
+					hashTable.put("odeDatamanager", odeDatamanager);
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+					if(e.getMessage() != null && e.getMessage().contains("no results are available yet")) {
+						throw UserCancelException.CANCEL_GENERIC;
+					}
+					throw e;
+				}
 			}
 		};
 		AsynchClientTask task2 = new AsynchClientTask("show results", AsynchClientTask.TASKTYPE_SWING_BLOCKING, false, false) {
 			@Override
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
-				if (hashTable.get(ClientTaskDispatcher.TASK_ABORTED_BY_ERROR) == null) {
+				if (hashTable.get(ClientTaskDispatcher.TASK_ABORTED_BY_ERROR) == null && hashTable.get(ClientTaskDispatcher.TASK_ABORTED_BY_USER) == null) {
 					ODEDataManager odeDatamanager = (ODEDataManager)hashTable.get("odeDatamanager");
 					odeDataViewer.setOdeSolverResultSet(odeDatamanager.getODESolverResultSet());
 					odeDataViewer.setVcDataIdentifier(vcdid);

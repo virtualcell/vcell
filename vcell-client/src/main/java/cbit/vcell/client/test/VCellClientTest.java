@@ -93,114 +93,114 @@ public class VCellClientTest {
  * @param args an array of command-line arguments
  */
 public static void main(java.lang.String[] args) {
-	class ParseVCellUserEvents implements Runnable {
-		AWTEvent event;
-		public ParseVCellUserEvents(AWTEvent event){
-			this.event = event;
-		}
-		@Override
-		public void run() {
-			if(event instanceof MouseEvent){
-				MouseEvent mouseEvent = (MouseEvent)event;
-				Object details = null;
-				if(mouseEvent.getID() == MouseEvent.MOUSE_RELEASED){
-					if(mouseEvent.getComponent() instanceof JTable){
-						JTable comp = (JTable)mouseEvent.getComponent();
-						int[] selRows = comp.getSelectedRows();
-						if(selRows != null && selRows.length > 0){
-							StringBuffer sb = new StringBuffer();
-							for (int i = 0; i < selRows.length; i++) {
-								for (int j = 0; j < comp.getColumnCount(); j++) {
-									try{
-										sb.append((j==0?"":",")+comp.getColumnName(j)+"='"+comp.getModel().getValueAt(selRows[i], j)+"'");
-									}catch(Exception e){
-										e.printStackTrace();
-									}
-								}
-							}
-							details = sb.toString();
-						}
-					}else if(mouseEvent.getComponent() instanceof JTree){
-						JTree comp = (JTree)mouseEvent.getComponent();
-						TreePath treePath = comp.getSelectionPath();
-						if(treePath != null){
-							details = treePath.getLastPathComponent();
-							// BioModel, MathModel, Geometry document tree selections
-							if(details instanceof BioModelNode){
-								//VCellBasicCellRenderer.VCDocumentInfoNode
-								BioModelNode bioModelNode = (BioModelNode)details;
-								boolean isVCDocumentInfo = bioModelNode.getUserObject() instanceof VCDocumentInfo;
-								boolean isBioModelsNetModelInfo = bioModelNode.getUserObject() instanceof BioModelsNetModelInfo;
-								if(!isVCDocumentInfo && bioModelNode.getChildCount() > 0 && bioModelNode.getUserObject() instanceof VCellBasicCellRenderer.VCDocumentInfoNode){
-									TreeNode treeNode = bioModelNode.getFirstChild();
-									if(treeNode instanceof BioModelNode && ((BioModelNode)treeNode).getUserObject() instanceof VCDocumentInfo){
-										details = ((BioModelNode)treeNode).getUserObject();
-									}
-								}else if(isBioModelsNetModelInfo){
-									details = BioModelsNetModelInfo.class.getSimpleName()+" '"+((BioModelsNetModelInfo)bioModelNode.getUserObject()).getName()+"'";
-								}
-							}
-						}
-					}else if(mouseEvent.getComponent() instanceof JTabbedPane){
-						JTabbedPane comp = (JTabbedPane)mouseEvent.getComponent();
-						details = "'"+comp.getTitleAt(comp.getSelectedIndex())+"'";
-					}else if(mouseEvent.getComponent() instanceof JMenuItem){
-						JMenuItem comp = (JMenuItem)mouseEvent.getComponent();
-						details = "'"+comp.getText()+"'";
-					}else if(mouseEvent.getComponent() instanceof AbstractButton){
-						AbstractButton comp = (AbstractButton)mouseEvent.getComponent();
-						Boolean bSelected = (comp instanceof JToggleButton?((JToggleButton)comp).isSelected():null);
-						details = (bSelected != null?"("+(bSelected?"selected":"unselected")+")":"")+"'"+comp.getText()+"'";
-					}else if(mouseEvent.getComponent() instanceof JComboBox<?>){
-						JComboBox<?> comp = (JComboBox<?>)mouseEvent.getComponent();
-						details = "'"+comp.getSelectedItem().toString()+"'";
-					}else if(mouseEvent.getComponent() instanceof JList<?>){
-						JList<?> comp = (JList<?>)mouseEvent.getComponent();
-						details = "'"+comp.getSelectedValue()+"'";
-					}else{
-						details = "TBD "+mouseEvent.getComponent();
-					}
-					Component parentComponent = mouseEvent.getComponent();
-					StringBuffer parentInfo = new StringBuffer();
-					SimpleDateFormat simpleDateFormat = new SimpleDateFormat(BeanUtils.vcDateFormat, Locale.US);
-					do{
-						String title="";
-						if(parentComponent instanceof Dialog){
-							title = ((Dialog)parentComponent).getTitle();
-						}else if(parentComponent instanceof Frame){
-							title = ((Frame)parentComponent).getTitle();
-						}
-						parentInfo.append(parentComponent.getClass().getTypeName()+"("+parentComponent.getName()+(title!=null&& title.length()>0?",title='"+title+"'":"")+")");
-						if(parentComponent instanceof DocumentWindow && ((DocumentWindow)parentComponent).getTopLevelWindowManager() instanceof DocumentWindowManager){
-							VCDocument vcDocument = ((DocumentWindowManager)((DocumentWindow)parentComponent).getTopLevelWindowManager()).getVCDocument();
-							if(vcDocument != null){
-								String date = (vcDocument.getVersion() != null && vcDocument.getVersion().getDate()!=null?simpleDateFormat.format(vcDocument.getVersion().getDate()):"nodate");
-								parentInfo.append("doc="+vcDocument.getDocumentType()+" '"+vcDocument.getName()+"' "+date);
-							}
-						}
-						parentInfo.append(" -> ");
-					}while((parentComponent = parentComponent.getParent()) != null);
-					//try to add event, if full remove an event from the top
-					while(!recordedUserEvents.offer(mouseEvent.getClickCount()+" "+(details==null?"null":details.toString())+BeanUtils.PLAINTEXT_EMAIL_NEWLINE+parentInfo.toString())){
-						recordedUserEvents.poll();
-					}
-				}
-			}
-		}
-	};
-	
-	
-	AWTEventListener awtEventListener = new AWTEventListener() {
-		@Override
-		public void eventDispatched(final AWTEvent event) {
-			if(event instanceof MouseEvent){
-				if(((MouseEvent)event).getID() == MouseEvent.MOUSE_RELEASED){
-					new Thread(new ParseVCellUserEvents(event)).start();
-				}			
-			}
-		}
-	};
-	Toolkit.getDefaultToolkit().addAWTEventListener(awtEventListener,AWTEvent.MOUSE_EVENT_MASK);
+//	class ParseVCellUserEvents implements Runnable {
+//		AWTEvent event;
+//		public ParseVCellUserEvents(AWTEvent event){
+//			this.event = event;
+//		}
+//		@Override
+//		public void run() {
+//			if(event instanceof MouseEvent){
+//				MouseEvent mouseEvent = (MouseEvent)event;
+//				Object details = null;
+//				if(mouseEvent.getID() == MouseEvent.MOUSE_RELEASED){
+//					if(mouseEvent.getComponent() instanceof JTable){
+//						JTable comp = (JTable)mouseEvent.getComponent();
+//						int[] selRows = comp.getSelectedRows();
+//						if(selRows != null && selRows.length > 0){
+//							StringBuffer sb = new StringBuffer();
+//							for (int i = 0; i < selRows.length; i++) {
+//								for (int j = 0; j < comp.getColumnCount(); j++) {
+//									try{
+//										sb.append((j==0?"":",")+comp.getColumnName(j)+"='"+comp.getModel().getValueAt(selRows[i], j)+"'");
+//									}catch(Exception e){
+//										e.printStackTrace();
+//									}
+//								}
+//							}
+//							details = sb.toString();
+//						}
+//					}else if(mouseEvent.getComponent() instanceof JTree){
+//						JTree comp = (JTree)mouseEvent.getComponent();
+//						TreePath treePath = comp.getSelectionPath();
+//						if(treePath != null){
+//							details = treePath.getLastPathComponent();
+//							// BioModel, MathModel, Geometry document tree selections
+//							if(details instanceof BioModelNode){
+//								//VCellBasicCellRenderer.VCDocumentInfoNode
+//								BioModelNode bioModelNode = (BioModelNode)details;
+//								boolean isVCDocumentInfo = bioModelNode.getUserObject() instanceof VCDocumentInfo;
+//								boolean isBioModelsNetModelInfo = bioModelNode.getUserObject() instanceof BioModelsNetModelInfo;
+//								if(!isVCDocumentInfo && bioModelNode.getChildCount() > 0 && bioModelNode.getUserObject() instanceof VCellBasicCellRenderer.VCDocumentInfoNode){
+//									TreeNode treeNode = bioModelNode.getFirstChild();
+//									if(treeNode instanceof BioModelNode && ((BioModelNode)treeNode).getUserObject() instanceof VCDocumentInfo){
+//										details = ((BioModelNode)treeNode).getUserObject();
+//									}
+//								}else if(isBioModelsNetModelInfo){
+//									details = BioModelsNetModelInfo.class.getSimpleName()+" '"+((BioModelsNetModelInfo)bioModelNode.getUserObject()).getName()+"'";
+//								}
+//							}
+//						}
+//					}else if(mouseEvent.getComponent() instanceof JTabbedPane){
+//						JTabbedPane comp = (JTabbedPane)mouseEvent.getComponent();
+//						details = "'"+comp.getTitleAt(comp.getSelectedIndex())+"'";
+//					}else if(mouseEvent.getComponent() instanceof JMenuItem){
+//						JMenuItem comp = (JMenuItem)mouseEvent.getComponent();
+//						details = "'"+comp.getText()+"'";
+//					}else if(mouseEvent.getComponent() instanceof AbstractButton){
+//						AbstractButton comp = (AbstractButton)mouseEvent.getComponent();
+//						Boolean bSelected = (comp instanceof JToggleButton?((JToggleButton)comp).isSelected():null);
+//						details = (bSelected != null?"("+(bSelected?"selected":"unselected")+")":"")+"'"+comp.getText()+"'";
+//					}else if(mouseEvent.getComponent() instanceof JComboBox<?>){
+//						JComboBox<?> comp = (JComboBox<?>)mouseEvent.getComponent();
+//						details = "'"+comp.getSelectedItem().toString()+"'";
+//					}else if(mouseEvent.getComponent() instanceof JList<?>){
+//						JList<?> comp = (JList<?>)mouseEvent.getComponent();
+//						details = "'"+comp.getSelectedValue()+"'";
+//					}else{
+//						details = "TBD "+mouseEvent.getComponent();
+//					}
+//					Component parentComponent = mouseEvent.getComponent();
+//					StringBuffer parentInfo = new StringBuffer();
+//					SimpleDateFormat simpleDateFormat = new SimpleDateFormat(BeanUtils.vcDateFormat, Locale.US);
+//					do{
+//						String title="";
+//						if(parentComponent instanceof Dialog){
+//							title = ((Dialog)parentComponent).getTitle();
+//						}else if(parentComponent instanceof Frame){
+//							title = ((Frame)parentComponent).getTitle();
+//						}
+//						parentInfo.append(parentComponent.getClass().getTypeName()+"("+parentComponent.getName()+(title!=null&& title.length()>0?",title='"+title+"'":"")+")");
+//						if(parentComponent instanceof DocumentWindow && ((DocumentWindow)parentComponent).getTopLevelWindowManager() instanceof DocumentWindowManager){
+//							VCDocument vcDocument = ((DocumentWindowManager)((DocumentWindow)parentComponent).getTopLevelWindowManager()).getVCDocument();
+//							if(vcDocument != null){
+//								String date = (vcDocument.getVersion() != null && vcDocument.getVersion().getDate()!=null?simpleDateFormat.format(vcDocument.getVersion().getDate()):"nodate");
+//								parentInfo.append("doc="+vcDocument.getDocumentType()+" '"+vcDocument.getName()+"' "+date);
+//							}
+//						}
+//						parentInfo.append(" -> ");
+//					}while((parentComponent = parentComponent.getParent()) != null);
+//					//try to add event, if full remove an event from the top
+//					while(!recordedUserEvents.offer(mouseEvent.getClickCount()+" "+(details==null?"null":details.toString())+BeanUtils.PLAINTEXT_EMAIL_NEWLINE+parentInfo.toString())){
+//						recordedUserEvents.poll();
+//					}
+//				}
+//			}
+//		}
+//	};
+//	
+//	
+//	AWTEventListener awtEventListener = new AWTEventListener() {
+//		@Override
+//		public void eventDispatched(final AWTEvent event) {
+//			if(event instanceof MouseEvent){
+//				if(((MouseEvent)event).getID() == MouseEvent.MOUSE_RELEASED){
+//					new Thread(new ParseVCellUserEvents(event)).start();
+//				}			
+//			}
+//		}
+//	};
+//	Toolkit.getDefaultToolkit().addAWTEventListener(awtEventListener,AWTEvent.MOUSE_EVENT_MASK);
 
 	new Thread(new Runnable() {
 		@Override

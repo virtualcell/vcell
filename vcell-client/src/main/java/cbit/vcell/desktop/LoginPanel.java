@@ -250,7 +250,7 @@ private void setupLoginPanelContentPane() {
 private javax.swing.JLabel getJLabelPassword() {
 	if (ivjJLabelPassword == null) {
 			ivjJLabelPassword = new javax.swing.JLabel();
-			ivjJLabelPassword.setEnabled(false);
+//			ivjJLabelPassword.setEnabled(false);
 			ivjJLabelPassword.setName("JLabelPassword");
 			ivjJLabelPassword.setText("Password");
 			// user code begin {1}
@@ -319,7 +319,7 @@ private javax.swing.JPanel getJPanel1() {
 private javax.swing.JPasswordField getJPasswordFieldPassword() {
 	if (ivjJPasswordFieldPassword == null) {
 			ivjJPasswordFieldPassword = new javax.swing.JPasswordField();
-			ivjJPasswordFieldPassword.setEnabled(false);
+//			ivjJPasswordFieldPassword.setEnabled(false);
 			ivjJPasswordFieldPassword.setName("JPasswordFieldPassword");
 			// user code begin {1}
 			// user code end
@@ -371,17 +371,17 @@ private void initConnections() {
 	// user code begin {1}
 	// user code end
 	getJTextFieldUser().addActionListener(ivjEventHandler);
-	getJTextFieldUser().getDocument().addUndoableEditListener(new UndoableEditListener() {
-		
-		@Override
-		public void undoableEditHappened(UndoableEditEvent e) {
-			String useridText = getJTextFieldUser().getText();
-			boolean isValidNonGuest = (useridText != null) && (useridText.length()>0) && !User.VCELL_GUEST.equals(useridText);
-			getJLabelPassword().setEnabled(isValidNonGuest);
-			getJPasswordFieldPassword().setEnabled(getJLabelPassword().isEnabled());
-			getLostPasswordJButton().setEnabled(isValidNonGuest);
-		}
-	});
+//	getJTextFieldUser().getDocument().addUndoableEditListener(new UndoableEditListener() {
+//		
+//		@Override
+//		public void undoableEditHappened(UndoableEditEvent e) {
+//			String useridText = getJTextFieldUser().getText();
+//			boolean isValidNonGuest = (useridText != null) && (useridText.length()>0) && !User.VCELL_GUEST.equals(useridText);
+//			getJLabelPassword().setEnabled(isValidNonGuest);
+//			getJPasswordFieldPassword().setEnabled(getJLabelPassword().isEnabled());
+//			getLostPasswordJButton().setEnabled(isValidNonGuest);
+//		}
+//	});
 	getJPasswordFieldPassword().addActionListener(ivjEventHandler);
 	//ChildWindowManager.findChildWindowManager(this).getChildWindowFromContentPane(this).addChildWindowListener(ivjEventHandler);
 	getJButtonCancel().addActionListener(ivjEventHandler);
@@ -441,7 +441,7 @@ private void updateFields() {
 	protected JButton getLostPasswordJButton() {
 		if (lostPasswordJButton == null) {
 			lostPasswordJButton = new JButton();
-			lostPasswordJButton.setEnabled(false);
+//			lostPasswordJButton.setEnabled(false);
 			lostPasswordJButton.setText("Forgot Login Password...");
 		}
 		return lostPasswordJButton;

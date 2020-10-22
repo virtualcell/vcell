@@ -16,6 +16,7 @@ import java.util.Hashtable;
 
 import javax.swing.JComponent;
 
+import org.vcell.util.TokenMangler;
 import org.vcell.util.gui.DialogUtils;
 
 import cbit.vcell.biomodel.BioModel;
@@ -107,7 +108,20 @@ public class ClientTaskManager {
 					for (Simulation sim : simulationContext.getSimulations()) {
 						Simulation clonedSimulation = new Simulation(sim, false);
 						clonedSimulation.setMathDescription(newSimulationContext.getMathDescription());
-						clonedSimulation.setName(simulationContext.getBioModel().getFreeSimulationName());
+						String newName = sim.getName()+"_";
+						boolean bFound = false;
+						do {
+							bFound = false;
+							newName = TokenMangler.getNextEnumeratedToken(newName);
+							Simulation[] origSimulations = simulationContext.getBioModel().getSimulations();
+							for (int i = 0; i < origSimulations.length; i++) {
+								if(origSimulations[i].getName().equals(newName)) {
+									bFound = true;
+									break;
+								}
+							}
+						}while(bFound);
+						clonedSimulation.setName(newName/*simulationContext.getBioModel().getFreeSimulationName()*/);
 						newSimulationContext.addSimulation(clonedSimulation);
 					}
 					// copy output functions to new simContext

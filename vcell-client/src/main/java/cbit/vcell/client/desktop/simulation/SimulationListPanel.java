@@ -20,13 +20,20 @@ import java.awt.Insets;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.beans.PropertyVetoException;
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Hashtable;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Objects;
+import java.util.StringTokenizer;
 import java.util.Vector;
 
 import javax.swing.BorderFactory;
@@ -35,6 +42,7 @@ import javax.swing.DefaultCellEditor;
 import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -46,6 +54,7 @@ import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.TableCellEditor;
 
 import org.vcell.util.BeanUtils;
@@ -55,16 +64,19 @@ import org.vcell.util.gui.DefaultScrollTableCellRenderer;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.DownArrowIcon;
 import org.vcell.util.gui.SimpleUserMessage;
+import org.vcell.util.gui.VCFileChooser;
 import org.vcell.util.gui.VCellIcons;
 import org.vcell.util.gui.sorttable.JSortTable;
 
 import cbit.vcell.client.ClientSimManager.ViewerType;
+import cbit.vcell.bionetgen.BNGOutputSpec;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.UserMessage;
 import cbit.vcell.client.desktop.biomodel.BioModelEditor;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
 import cbit.vcell.client.desktop.biomodel.IssueManager;
 import cbit.vcell.client.desktop.biomodel.SimulationConsolePanel;
+import cbit.vcell.client.server.UserPreferences;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.geometry.GeometryOwner;
@@ -86,6 +98,7 @@ import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solver.SolverDescription.SolverFeature;
 import cbit.vcell.solver.SolverTaskDescription;
 import cbit.vcell.solver.SolverUtilities;
+import thredds.wcs.GetCoverageRequest;
 /**
  * Insert the type's description here.
  * Creation date: (5/7/2004 3:41:07 PM)
@@ -105,6 +118,9 @@ public class SimulationListPanel extends DocumentEditorSubPanel {
 	private JButton copyButton = null;
 	private JButton ivjNewButton = null;
 	private JButton ivjNativeResultsButton = null;
+//	private JButton importBatchButton = null;
+//	private JButton exportBatchButton = null;
+
 //	private JButton ivjPythonResultsButton = null;
 	private JButton ivjRunButton = null;
 	private JButton ivjDeleteButton = null;
@@ -139,6 +155,10 @@ public class SimulationListPanel extends DocumentEditorSubPanel {
 				runSimulations();
 			} else if (e.getSource() == stopButton) {
 				stopSimulations();
+//			} else if (e.getSource() == exportBatchButton) {
+//				importBatchSimulations();
+//			} else if (e.getSource() == importBatchButton) {
+//				createBatchSimulations();
 			} else if (e.getSource() == getNativeResultsButton()) {
 				showSimulationResults(ViewerType.NativeViewer_only);
 //			} else if (e.getSource() == getPythonResultsButton()) {
@@ -234,6 +254,140 @@ private void showHelp() {
 /**
  * Comment
  */
+private void createBatchSimulations() {
+	int[] selections = getScrollPaneTable().getSelectedRows();
+	if(selections.length != 1) {
+		throw new RuntimeException("Exactly one template Simulation is required for Batch Creation");
+	}
+	
+	Vector<Simulation> v = new Vector<Simulation>();
+	v.add((Simulation)(ivjSimulationListTableModel1.getValueAt(selections[0])));
+	Simulation[] toCopy = (Simulation[])BeanUtils.getArray(v, Simulation.class);
+	int index = -1;
+	
+	UserPreferences up = getSimulationWorkspace().getClientSimManager().getUserPreferences();
+	Map<Integer, Map<String, String>> batchInputDataMap = new LinkedHashMap<>();
+	parseBatchInputFile(up, batchInputDataMap);
+	if(batchInputDataMap.isEmpty()) {
+		System.out.println("Failed to read batch input data file or user canceled");
+		return;
+	}
+	
+	try {
+		index = getSimulationWorkspace().createBatchSimulations(toCopy, batchInputDataMap, this);
+	} catch (Throwable exc) {
+		exc.printStackTrace(System.out);
+		PopupGenerator.showErrorDialog(this, exc.getMessage(), exc);
+	}
+	// set selection back to the template simulation
+	getScrollPaneTable().getSelectionModel().setSelectionInterval(index, index);
+	getScrollPaneTable().scrollRectToVisible(getScrollPaneTable().getCellRect(index, 0, true));
+}
+
+private void importBatchSimulations() {
+	int[] selections = getScrollPaneTable().getSelectedRows();
+	if(selections.length != 1) {
+		throw new RuntimeException("Exactly one template Simulation is required for Batch results Import");
+	}
+	
+	Vector<Simulation> v = new Vector<Simulation>();
+	v.add((Simulation)(ivjSimulationListTableModel1.getValueAt(selections[0])));
+	Simulation[] toImport = (Simulation[])BeanUtils.getArray(v, Simulation.class);
+	int index = -1;
+	
+	try {
+		index = getSimulationWorkspace().importBatchSimulations(toImport, this);
+	} catch (Throwable exc) {
+		exc.printStackTrace(System.out);
+		PopupGenerator.showErrorDialog(this, exc.getMessage(), exc);
+	}
+	// set selection back to the template simulation
+	getScrollPaneTable().getSelectionModel().setSelectionInterval(index, index);
+	getScrollPaneTable().scrollRectToVisible(getScrollPaneTable().getCellRect(index, 0, true));
+}
+
+private void parseBatchInputFile(UserPreferences userPreferences, Map<Integer, Map<String, String>> batchInputDataMap) {
+	
+	StringBuffer stringBuffer = new StringBuffer();
+	long batchInputFileLength = 0;
+	
+	try {
+		File defaultPath = userPreferences.getCurrentDialogPath();
+		JFileChooser fileChooser = new JFileChooser(defaultPath);
+		FileNameExtensionFilter filter = new FileNameExtensionFilter("Batch processing input data", "dat");
+		fileChooser.setFileFilter(filter);
+		fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+		fileChooser.setMultiSelectionEnabled(false);
+		int returnVal = fileChooser.showOpenDialog(SimulationListPanel.this);
+		if(returnVal != JFileChooser.APPROVE_OPTION) {
+			return;
+		}
+		File batchInputFile = fileChooser.getSelectedFile();
+//		File batchInputFile = new java.io.File("C:\\TEMP\\ddd\\batchSimulations.dat");
+		if (!batchInputFile.exists()) {
+			throw new java.io.FileNotFoundException("Batch input file " + batchInputFile.getPath() + " not found");
+		}
+		batchInputFileLength = batchInputFile.length();
+	
+		BufferedReader br = new BufferedReader(new FileReader(batchInputFile));
+		char charArray[] = new char[100000];
+		while (true) {
+			int numRead = br.read(charArray, 0, charArray.length);
+			if (numRead > 0) {
+				stringBuffer.append(charArray,0,numRead);
+			} else if (numRead == -1) {
+				break;
+			}
+		}
+		br.close();
+	} catch (java.io.FileNotFoundException e1) {
+		throw new RuntimeException("could not read batch simulation input .dat file : "+e1.getMessage());
+	} catch (java.io.IOException e2) {
+		throw new RuntimeException("could not read batch simulation input .dat file : "+e2.getMessage());
+	}
+		
+	if (stringBuffer.length() != batchInputFileLength){
+		System.err.println("SimulationListPanel, read "+stringBuffer.length()+" of "+batchInputFileLength+" bytes of input file");
+	}
+	String inputString = stringBuffer.toString();
+	
+	String newLineDelimiters = "\n\r";
+	StringTokenizer lineTokenizer = new StringTokenizer(inputString, newLineDelimiters);
+	String line = new String("");
+	String entry = new String("");
+	final String EntitiesDelimiter = " ,";
+	final String EntityValueDelimiter = "=";
+	Integer lineIndex = 0;
+
+	while (lineTokenizer.hasMoreTokens()) {
+		boolean badTokenFound = false;
+		line = lineTokenizer.nextToken();
+
+		Map<String, String> simOverridesMap = new LinkedHashMap<>();
+		StringTokenizer nextLine = new StringTokenizer(line, EntitiesDelimiter);	// overrides for this simulation
+		while (nextLine.hasMoreTokens()) {
+			entry = nextLine.nextToken();
+		
+			StringTokenizer entryTokenizer = new StringTokenizer(entry, EntityValueDelimiter);	// one pair entity=value, ex: s1_init=21.17
+			try {
+				String entity = entryTokenizer.nextToken();
+				String value = entryTokenizer.nextToken();
+				simOverridesMap.put(entity, value);
+			} catch(NoSuchElementException e) {
+				badTokenFound = true;
+				break;
+			}
+		}
+		if(badTokenFound == false) {
+			// we skip the simulations that have errors
+			// TODO: at this point it may be better to put an empty simOverridesMap rather than skip it altogether, we skip later
+			batchInputDataMap.put(lineIndex, simOverridesMap);
+		}
+		lineIndex++;
+	}
+}
+
+
 private void copySimulations() {
 	int[] selections = getScrollPaneTable().getSelectedRows();
 	Vector<Simulation> v = new Vector<Simulation>();
@@ -252,7 +406,6 @@ private void copySimulations() {
 	getScrollPaneTable().getSelectionModel().setSelectionInterval(index, index);
 	getScrollPaneTable().scrollRectToVisible(getScrollPaneTable().getCellRect(index, 0, true));
 }
-
 
 /**
  * Comment
@@ -320,6 +473,12 @@ private javax.swing.JToolBar getToolBar() {
 			copyButton = new JButton("", VCellIcons.copySimIcon);
 			copyButton.setToolTipText("Copy Simulation");
 			copyButton.addActionListener(ivjEventHandler);
+//			importBatchButton = new JButton("", VCellIcons.importBatchSimIcon);
+//			importBatchButton.setToolTipText("Import Batch Simulation Data");
+//			importBatchButton.addActionListener(ivjEventHandler);
+//			exportBatchButton = new JButton("", VCellIcons.exportBatchSimIcon);
+//			exportBatchButton.setToolTipText("Export Batch Simulation Results");
+//			exportBatchButton.addActionListener(ivjEventHandler);
 			stopButton = new JButton("", VCellIcons.stopSimIcon);
 			stopButton.setToolTipText("Stop Simulation");
 			stopButton.setEnabled(false);
@@ -345,7 +504,11 @@ private javax.swing.JToolBar getToolBar() {
 			toolBar.add(copyButton);
 			toolBar.add(getEditButton());
 			toolBar.add(getDeleteButton());
-			toolBar.addSeparator();
+//			toolBar.addSeparator();
+//			toolBar.add(importBatchButton);
+//			toolBar.add(exportBatchButton);
+//			toolBar.addSeparator();
+			
 			toolBar.add(getMassConservationModelReductionPanel());
 			toolBar.add(Box.createHorizontalGlue());
 
@@ -361,6 +524,8 @@ private javax.swing.JToolBar getToolBar() {
 //			toolBar.add(particleViewButton);
 
 			ReactionCartoonEditorPanel.setToolBarButtonSizes(getNewButton());
+//			ReactionCartoonEditorPanel.setToolBarButtonSizes(importBatchButton);
+//			ReactionCartoonEditorPanel.setToolBarButtonSizes(exportBatchButton);
 			ReactionCartoonEditorPanel.setToolBarButtonSizes(copyButton);
 			ReactionCartoonEditorPanel.setToolBarButtonSizes(getEditButton());
 			ReactionCartoonEditorPanel.setToolBarButtonSizes(getDeleteButton());
@@ -945,6 +1110,7 @@ private void refreshButtonsLax() {
 
 	int[] selections = getScrollPaneTable().getSelectedRows();
 
+	boolean bBatch = false;
 	boolean bCopy = false;
 	boolean bEditable = false;
 	boolean bDeletable = false;
@@ -966,6 +1132,7 @@ private void refreshButtonsLax() {
 			SimulationStatus simStatus = getSimulationWorkspace().getSimulationStatus(firstSelection);
 			if (!simStatus.isRunning()){
 				bEditable = true;
+				bBatch = true;
 			}
 			final boolean onlyOne = firstSelection.getScanCount() == 1;
 //			bParticleView = onlyOne;
@@ -983,6 +1150,8 @@ private void refreshButtonsLax() {
 			bHasData = bHasData || simStatus.getHasData();
 		}
 	}
+//	importBatchButton.setEnabled(bBatch);
+//	exportBatchButton.setEnabled(bBatch);
 	copyButton.setEnabled(bCopy);
 	getEditButton().setEnabled(bEditable);
 	getDeleteButton().setEnabled(bDeletable);

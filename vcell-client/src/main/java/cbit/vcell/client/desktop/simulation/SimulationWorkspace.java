@@ -16,6 +16,7 @@ import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.Map;
 
 import javax.swing.JScrollPane;
 
@@ -371,6 +372,32 @@ private static boolean checkSimulationParameters(Simulation simulation, Componen
 /**
  * Comment
  */
+int createBatchSimulations(Simulation[] sims, Map<Integer, Map<String, String>> batchInputDataMap, Component requester) throws java.beans.PropertyVetoException {
+	if (sims == null || sims.length == 0) {
+		return -1;
+	}
+	for (int i = 0; i < sims.length; i++){
+		String errorMessage = checkCompatibility(simulationOwner, sims[i]);
+		if(errorMessage != null){
+			PopupGenerator.showErrorDialog(requester, errorMessage+"\nUpdate Math before copying simulations");
+			return -1;
+		}
+	}
+	Simulation copiedSim = null;
+	for (int i = 0; i < sims.length; i++) {
+		copiedSim = getSimulationOwner().createBatchSimulations(sims[i], batchInputDataMap);
+	}
+	return -1;
+}
+int importBatchSimulations(Simulation[] sims, Component requester) throws java.beans.PropertyVetoException {
+	if (sims == null || sims.length == 0) {
+		return -1;
+	}
+
+	getSimulationOwner().importBatchSimulations(sims[0]);
+	return -1;
+}
+
 int copySimulations(Simulation[] sims, Component requester) throws java.beans.PropertyVetoException {
 	if (sims == null || sims.length == 0) {
 		return -1;

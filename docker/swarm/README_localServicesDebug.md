@@ -18,7 +18,7 @@ edit local configuration (vi $VCELL_CONFIG_FILE_NAME) and redeploy (copies local
 ```
 
 ```bash
-sudo env ${cat server_alpha_7.0.0_10_a9a83bb-2.config | xargs) docker stack deploy -c docker-compose_a9a83bb-2.yml vcellalpha
+sudo env $(cat server_alpha_7.0.0_10_a9a83bb-2.config | xargs) docker stack deploy -c docker-compose_a9a83bb-2.yml vcellalpha
 ```
 
 ### Deploy local stack to Docker Swarm (with local mock SLURM/Docker simulations)

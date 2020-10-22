@@ -49,7 +49,7 @@
 		Reaction rate unit conversion factors can be seen in the <link target="PP_Reactions">Reactions Properties Pane</link> for a reaction. 
 		A factor <bold>sbmlRateFactor</bold> that represents the unit conversion for the entire reaction rate (from substance/time units to concentration/time) will be present in the list of reaction rates and defined parameters.
 		For reaction rate expressions that include a species, a corresponding concentration factor is also present.
-		For example, if a reaction rate expression contains species ‘s1’, ‘s1’ is multiplied by ‘s1_ConcFactor’ to appropriately convert the species units.		
+		For example, if a reaction rate expression contains species s1, s1 is multiplied by s1_ConcFactor to appropriately convert the species units.		
 		</para>
 		<para>
 		These conversion factors will also be visible under <link target="ParametersAndFunctions">Parameters and Functions</link> pane that can be accessed by navigating the tree structure in the top left pane of the VCell BioModel document.

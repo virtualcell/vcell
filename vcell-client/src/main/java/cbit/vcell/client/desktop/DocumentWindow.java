@@ -21,9 +21,13 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -162,13 +166,14 @@ public class DocumentWindow extends LWTopFrame implements TopLevelWindow, Reconn
 	private JMenuItem viewJobsMenuItem = null;
 	private JMenuItem jMenuItemPermissions  = null;
 	private JLabel warningText = null;
+	private JLabel iconText = null;
 	private JDialog viewSpeciesDialog = null;
 
 	private JMenuItem menuItemImportPathwayWebLocation = null;
 	private JMenuItem menuItemImportPathwayFile = null;
 	private JMenuItem menuItemImportPathwayExample = null;
 
-class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.ItemListener {
+class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.ItemListener, java.awt.event.MouseListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
 			if (e.getSource() == DocumentWindow.this.getAbout_BoxMenuItem())
 				connEtoC3(e);
@@ -276,6 +281,25 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.I
 		public void itemStateChanged(java.awt.event.ItemEvent e) {
 			if (e.getSource() == DocumentWindow.this.getStatusbarMenuItem())
 				connEtoC2(e);
+		}
+
+		@Override
+		public void mouseClicked(MouseEvent e) {
+		}
+		@Override
+		public void mouseEntered(MouseEvent e) {
+		}
+		@Override
+		public void mouseExited(MouseEvent e) {
+		}
+		@Override
+		public void mousePressed(MouseEvent e) {
+		}
+		@Override
+		public void mouseReleased(MouseEvent e) {
+			if(e.getSource() == DocumentWindow.this.getIconBar()) {
+				onNotificationsIconClick();
+			}
 		};
 	};
 	private JMenuItem ivjJMenuItemFieldData = null;
@@ -2166,37 +2190,41 @@ private javax.swing.JPanel getStatusBarPane() {
 		try {
 			ivjStatusBarPane = new javax.swing.JPanel();
 			ivjStatusBarPane.setName("StatusBarPane");
-			ivjStatusBarPane.setLayout(new BorderLayout());
+			ivjStatusBarPane.setLayout(new GridBagLayout());
 
-			JPanel panel = new JPanel(new GridBagLayout());
+			int gridx = 0;
 			GridBagConstraints gbc = new GridBagConstraints();
-			gbc.gridx = 0;
+			gbc.gridx = gridx;
 			gbc.gridy = 0;
 			gbc.weighty = 1;
 			gbc.fill = GridBagConstraints.VERTICAL;
 			gbc.insets = new Insets(4, 4, 4, 4);
-			panel.add(getJProgressBarConnection(), gbc);
-			ivjStatusBarPane.add(panel, BorderLayout.WEST);
+			ivjStatusBarPane.add(getJProgressBarConnection(), gbc);
 
-			panel = new JPanel(new GridBagLayout());
+			gridx++;
 			gbc = new GridBagConstraints();
-			gbc.gridx = 0;
+			gbc.gridx = gridx;
 			gbc.gridy = 0;
-			gbc.weighty = 1;
-			gbc.fill = GridBagConstraints.VERTICAL;
+			gbc.weightx = 1;
+			gbc.fill = GridBagConstraints.HORIZONTAL;
 			gbc.insets = new Insets(4, 4, 4, 4);
-			panel.add(getWarningBar(), gbc);
-			ivjStatusBarPane.add(panel, BorderLayout.CENTER);
+			ivjStatusBarPane.add(getWarningBar(), gbc);
 
-			panel = new JPanel(new GridBagLayout());
+			gridx++;
 			gbc = new GridBagConstraints();
-			gbc.gridx = 0;
+			gbc.gridx = gridx;
+			gbc.gridy = 0;
+			gbc.insets = new Insets(2, 2, 2, 2);
+			ivjStatusBarPane.add(getIconBar(), gbc);
+
+			gridx++;
+			gbc = new GridBagConstraints();
+			gbc.gridx = gridx;
 			gbc.gridy = 0;
 			gbc.weighty = 1;
 			gbc.fill = GridBagConstraints.VERTICAL;
 			gbc.insets = new Insets(4, 4, 4, 4);
-			panel.add(getJProgressBarMemory(), gbc);
-			ivjStatusBarPane.add(panel, BorderLayout.EAST);
+			ivjStatusBarPane.add(getJProgressBarMemory(), gbc);
 
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);
@@ -2216,7 +2244,53 @@ public JLabel getWarningBar() {
 	}
 	return warningText;
 }
+public JLabel getIconBar() {
+	if (iconText == null) {
+		try {
+			iconText = new JLabel();
+			iconText.setName("");
+			iconText.setIcon(VCellIcons.noteRedIcon);
+			iconText.setToolTipText("Admin Notification");
+		} catch (java.lang.Throwable ivjExc) {
+			handleException(ivjExc);
+		}
+	}
+	return iconText;
+}
 
+private static final String notificationsUrl = "https://vcell.org/webstart/VCell_alert/VCell_Alert.html";
+private void checkForNotifications() {
+	int code = HttpURLConnection.HTTP_BAD_REQUEST;
+	try {
+		URL u = new URL(notificationsUrl);
+		HttpURLConnection huc = (HttpURLConnection)u.openConnection (); 
+		huc.setRequestMethod("HEAD");  // probably cheaper than  huc.setRequestMethod ("GET"); 
+		huc.connect(); 
+		code = huc.getResponseCode();
+	} catch (IOException e) {
+		// we just eat the exception
+//		e.printStackTrace();
+		code = HttpURLConnection.HTTP_INTERNAL_ERROR;
+	}
+	if(code != HttpURLConnection.HTTP_OK) {
+		getIconBar().setEnabled(false);
+		getIconBar().setVisible(false);
+	} else {
+		getIconBar().setEnabled(true);
+		getIconBar().setVisible(true);
+	}
+}
+private void onNotificationsIconClick() {
+//	PopupGenerator.showInfoDialog(DocumentWindow.this, "VCell admin notification message");
+	invokeShowNotifications();
+}
+private void invokeShowNotifications() {
+	
+	DialogUtils.browserLauncher(this, notificationsUrl, "Please visit '" + notificationsUrl + "' for server administrator notifications.");
+
+//	PopupGenerator.browserLauncher(this, BeanUtils.getDynamicClientProperties().getProperty(PropertyLoader.VC_TUT_PERMISSION_URL),
+//		"Please visit "+BeanUtils.getDynamicClientProperties().getProperty(PropertyLoader.VC_TUT_PERMISSION_URL)+" for instructions on how to change permissions to your Model");
+}
 
 /**
  * Return the TestingFrameworkMenuItem property value.
@@ -2329,6 +2403,8 @@ private void initConnections() throws java.lang.Exception {
 	getViewJobsMenuItem().addActionListener(ivjEventHandler);
 	getJMenuItemFieldData().addActionListener(ivjEventHandler);
 	getPermissionsMenuItem().addActionListener(ivjEventHandler);
+	
+	getIconBar().addMouseListener(ivjEventHandler);
 }
 
 /**
@@ -2345,6 +2421,7 @@ private void initialize() {
 		setTitle("DocumentWindow");
 		getContentPane().add(getStatusBarPane(), BorderLayout.SOUTH);
 		initConnections();
+		checkForNotifications();
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
 	}

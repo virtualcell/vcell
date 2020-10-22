@@ -294,39 +294,8 @@ private ODESolverResultSet getStateVariableResultSet() {
 	FileInputStream inputStream = null;
 	try {
 		inputStream = new FileInputStream(getBaseName() + IDA_DATA_EXTENSION);
-		InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
-		BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
-		//  Read header
-		String line = bufferedReader.readLine();
-		if (line == null) {
-			//  throw exception
+		if(readIDA(odeSolverResultSet, inputStream) == null) {
 			return null;
-		}
-		while (line.indexOf(':') > 0) {
-			String name = line.substring(0, line.indexOf(':'));
-			odeSolverResultSet.addDataColumn(new ODESolverResultSetColumnDescription(name));
-			line = line.substring(line.indexOf(':') + 1);
-		}
-		//  Read data
-		while ((line = bufferedReader.readLine()) != null) {
-			line = line + "\t";
-			double[] values = new double[odeSolverResultSet.getDataColumnCount()];
-			boolean bCompleteRow = true;
-			for (int i = 0; i < odeSolverResultSet.getDataColumnCount(); i++) {
-				if (line.indexOf('\t')==-1){
-					bCompleteRow = false;
-					break;
-				}else{
-					String value = line.substring(0, line.indexOf('\t')).trim();
-					values[i] = Double.valueOf(value).doubleValue();
-					line = line.substring(line.indexOf('\t') + 1);
-				}
-			}
-			if (bCompleteRow){
-				odeSolverResultSet.addRow(values);
-			}else{
-				break;
-			}
 		}
 		//
 	} catch (Exception e) {
@@ -342,6 +311,44 @@ private ODESolverResultSet getStateVariableResultSet() {
 		}
 	}
 	return (odeSolverResultSet);
+}
+
+public static ODESolverResultSet readIDA(ODESolverResultSet odeSolverResultSet, FileInputStream inputStream) throws IOException {
+	InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
+	BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
+	//  Read header
+	String line = bufferedReader.readLine();
+	if (line == null) {
+		//  throw exception
+		return null;
+	}
+	while (line.indexOf(':') > 0) {
+		String name = line.substring(0, line.indexOf(':'));
+		odeSolverResultSet.addDataColumn(new ODESolverResultSetColumnDescription(name));
+		line = line.substring(line.indexOf(':') + 1);
+	}
+	//  Read data
+	while ((line = bufferedReader.readLine()) != null) {
+		line = line + "\t";
+		double[] values = new double[odeSolverResultSet.getDataColumnCount()];
+		boolean bCompleteRow = true;
+		for (int i = 0; i < odeSolverResultSet.getDataColumnCount(); i++) {
+			if (line.indexOf('\t')==-1){
+				bCompleteRow = false;
+				break;
+			}else{
+				String value = line.substring(0, line.indexOf('\t')).trim();
+				values[i] = Double.valueOf(value).doubleValue();
+				line = line.substring(line.indexOf('\t') + 1);
+			}
+		}
+		if (bCompleteRow){
+			odeSolverResultSet.addRow(values);
+		}else{
+			break;
+		}
+	}
+	return odeSolverResultSet;
 }
 
 

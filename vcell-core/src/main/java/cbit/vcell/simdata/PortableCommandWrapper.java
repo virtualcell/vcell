@@ -167,6 +167,7 @@ public class PortableCommandWrapper {
 			PortableCommandWrapper wrapper = new PortableCommandWrapper( );
 			//PrintWriter pw = new PrintWriter(sb);
 			for (PortableCommand cmd: commands) {
+				sb.append("#BEGIN---------SlurmProxy.generateScript():postProcessingCommands----------"+cmd.toString()+"\n");
 				final char NEWLINE = '\n';
 				wrapper.setCommand(cmd);
 				sb.append(SCRIPT_COMMENT);
@@ -183,6 +184,8 @@ public class PortableCommandWrapper {
 				sb.append(SCRIPT_COMMENT);
 				sb.append(POSTPROCESSOR_CMD_END_TOKEN);
 				sb.append(NEWLINE);
+				sb.append("#END---------SlurmProxy.generateScript():postProcessingCommands----------\n");
+
 			}
 		}
 	}

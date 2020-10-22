@@ -11,19 +11,23 @@
 package cbit.vcell.solver.ode.gui;
 
 import java.awt.FlowLayout;
+import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.awt.Insets;
 
+import javax.swing.BorderFactory;
 import javax.swing.InputVerifier;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
+import javax.swing.border.Border;
 import javax.swing.border.EtchedBorder;
 
+import org.vcell.solver.nfsim.gui.NFSimSimulationOptionsPanel;
 import org.vcell.util.gui.CollapsiblePanel;
 import org.vcell.util.gui.DialogUtils;
 
@@ -45,6 +49,8 @@ public class StochSimOptionsPanel extends CollapsiblePanel {
 	private javax.swing.ButtonGroup buttonGroupTrials = null;
 	private javax.swing.JLabel numOfTrialsLabel = null;
 	private javax.swing.JTextField ivjJTextFieldNumOfTrials = null;
+	private javax.swing.JButton multiRunHelpButton = null;
+	
 	private javax.swing.JRadioButton ivjCustomizedSeedRadioButton = null;
 	private javax.swing.JRadioButton ivjRandomSeedRadioButton = null;
 	private javax.swing.ButtonGroup ivjButtonGroupSeed = null;
@@ -82,6 +88,12 @@ public class StochSimOptionsPanel extends CollapsiblePanel {
 				setNewOptions();
 			}  else if (e.getSource() == getTrajectoryButton() || e.getSource() == getMultiRunButton() || e.getSource() == getHistogramButton()) {				
 				setNewOptions();
+			} else if(e.getSource() == getMultiRunHelpButton()) {
+				DialogUtils.showInfoDialogAndResize(StochSimOptionsPanel.this, "Multiple runs of a Non-Spatial stochastic simulation", 
+						"<html><b>Multiple runs of a Non-Spatial stochastic simulation:</b>" +
+						"<br> In order to obtain smooth curves, we run multiple instances of the same stochastic simulation "
+						+ "using a different <b>random seed</b> for each run and then average the results."
+						+ "</html>");
 			}
 		}
 		
@@ -142,10 +154,18 @@ public class StochSimOptionsPanel extends CollapsiblePanel {
 			gbc.gridx = 0;
 			gbc.gridy = 1;
 			gbc.anchor = GridBagConstraints.WEST;
+			gbc.weightx = 1.0;
 			gbc.fill = GridBagConstraints.HORIZONTAL;
 			gbc.insets = new Insets(1,1,1,1);
 			trialPanel.add(getMultiRunButton(), gbc);
 			
+			gbc = new GridBagConstraints();
+			gbc.gridx = 1;
+			gbc.gridy = 1;
+			gbc.anchor = GridBagConstraints.EAST;
+			gbc.insets = new Insets(1,1,1,3);
+			trialPanel.add(getMultiRunHelpButton(), gbc);		// ===============================================
+
 			gbc = new GridBagConstraints();
 			gbc.gridx = 0;
 			gbc.gridy = 2;
@@ -294,6 +314,7 @@ public class StochSimOptionsPanel extends CollapsiblePanel {
 		getRandomSeedRadioButton().addActionListener(ivjEventHandler);
 		getTrajectoryButton().addActionListener(ivjEventHandler);
 		getMultiRunButton().addActionListener(ivjEventHandler);
+		getMultiRunHelpButton().addActionListener(ivjEventHandler);
 		getHistogramButton().addActionListener(ivjEventHandler);
 		getJTextFieldCustomSeed().addFocusListener(ivjEventHandler);
 		getJTextFieldNumOfTrials().addFocusListener(ivjEventHandler);
@@ -560,6 +581,23 @@ public class StochSimOptionsPanel extends CollapsiblePanel {
 		}
 		return multiRunRadioButton;
 	}
+	private javax.swing.JButton getMultiRunHelpButton() {	// ============================================
+		if (multiRunHelpButton == null) {
+			try {
+				multiRunHelpButton = new javax.swing.JButton();
+				Font font = multiRunHelpButton.getFont().deriveFont(Font.BOLD);
+				Border border = BorderFactory.createEmptyBorder(1, 1, 1, 1);
+				multiRunHelpButton.setName("MultiRunHelp");
+				multiRunHelpButton.setText("  ?  ");
+				multiRunHelpButton.setFont(font);
+				multiRunHelpButton.setBorder(border);
+				multiRunHelpButton.setEnabled(true);
+			} catch (java.lang.Throwable ivjExc) {
+				handleException(ivjExc);
+			}
+		}
+		return multiRunHelpButton;
+	}
 
 	/**
 	 * Return the CustomizedSeed property value.
@@ -731,7 +769,7 @@ public class StochSimOptionsPanel extends CollapsiblePanel {
 		
 		// TODO: temporarily disable the button
 		// UNDO THIS WHEN DEVELOPMENT IS COMPLETE
-		getMultiRunButton().setEnabled(false);
+//		getMultiRunButton().setEnabled(false);
 
 		boolean isUseCustomSeed = sso.isUseCustomSeed();
 		int customSeed = sso.getCustomSeed();

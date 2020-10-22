@@ -164,6 +164,7 @@ services:
       - "${VCELL_HTCLOGS_HOST}:/htclogs"
     secrets:
       - jmspswd
+      - jmsrestpswd # "echo -ne  {activemq console user:passwd} | base64", this is hard-coded in some solvers
       - batchuserkeyfile
     networks:
       - vcellnet
@@ -336,6 +337,8 @@ secrets:
     file: ${VCELL_SECRETS_DIR}/dbpswd.txt
   jmspswd:
     file: ${VCELL_SECRETS_DIR}/jmspswd.txt
+  jmsrestpswd:
+    file: ${VCELL_SECRETS_DIR}/jmsrestpswd.txt
   keystorepswd:
     file: ${VCELL_SECRETS_DIR}/vcellapi-beta-keystorepswd.txt
   keystorefile_20200405:

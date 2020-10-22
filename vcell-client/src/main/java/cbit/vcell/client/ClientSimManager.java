@@ -46,6 +46,7 @@ import cbit.vcell.client.desktop.simulation.SimulationWindow;
 import cbit.vcell.client.desktop.simulation.SimulationWindow.LocalState;
 import cbit.vcell.client.desktop.simulation.SimulationWorkspace;
 import cbit.vcell.client.pyvcellproxy.SimulationDataSetRef;
+import cbit.vcell.client.server.UserPreferences;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.AsynchClientTaskFunction;
 import cbit.vcell.client.task.ClientTaskDispatcher;
@@ -140,6 +141,11 @@ public User getLoggedInUser() {
  */
 DocumentWindowManager getDocumentWindowManager() {
 	return documentWindowManager;
+}
+
+public UserPreferences getUserPreferences() {
+	UserPreferences up = documentWindowManager.getUserPreferences();
+	return up;
 }
 
 
@@ -650,7 +656,11 @@ public void runQuickSimulation(final Simulation originalSimulation, ViewerType v
 					if (solverStatus.getStatus() == SolverStatus.SOLVER_ABORTED) {
 						String simulationMessage = solverStatus.getSimulationMessage().getDisplayMessage();
 						String translatedMessage = solver.translateSimulationMessage(simulationMessage);
-						throw new RuntimeException(translatedMessage);
+						if(translatedMessage.startsWith(BeanUtils.FD_EXP_MESSG)) {
+							throw new RuntimeException("Sims with FieldData can only be run remotely (cannot use QuickRun).\n"+translatedMessage);
+						}else {
+							throw new RuntimeException(translatedMessage);
+						}
 					}
 					if (solverStatus.getStatus() != SolverStatus.SOLVER_STARTING &&
 						solverStatus.getStatus() != SolverStatus.SOLVER_READY &&

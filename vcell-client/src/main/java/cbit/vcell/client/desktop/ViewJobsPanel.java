@@ -43,6 +43,8 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 
+import org.vcell.service.VCellServiceHelper;
+import org.vcell.util.BigString;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ProgressDialogListener;
 import org.vcell.util.gui.ColorIcon;
@@ -59,7 +61,14 @@ import cbit.vcell.client.server.ClientServerManager;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.clientdb.ClientDocumentManager;
+import cbit.vcell.message.VCMessage;
+import cbit.vcell.message.VCMessageSession;
+import cbit.vcell.message.VCMessagingConstants;
+import cbit.vcell.message.VCMessagingService;
+import cbit.vcell.message.VCellTopic;
+import cbit.vcell.message.messages.MessageConstants;
 import cbit.vcell.message.server.bootstrap.client.RemoteProxyVCellConnectionFactory.RemoteProxyException;
+import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.server.SessionManager;
 import cbit.vcell.server.SimpleJobStatus;
 import cbit.vcell.server.SimpleJobStatusQuerySpec;
@@ -1131,6 +1140,76 @@ public class ViewJobsPanel extends DocumentEditorSubPanel {
 	}
 
 	
-	
+	/*
+	 * The following code was used in ServerManageConsole, see it in a version prior to git# 7e91dd9
+	 * Class (and other helper classes, interfaces) was deleted by Jim years ago, probably unusable 
+	 */
+	private VCMessagingService vcMessagingService = null;
+	private VCMessageSession vcMessaging_clientTopicProducerSession = null;
+	@Deprecated
+	public void broadcastMessage() {
+		
+		vcMessaging_clientTopicProducerSession = vcMessagingService.createProducerSession();
+		
+		try {
+			int n = javax.swing.JOptionPane.showConfirmDialog(this, "You are going to send message to " /*+ getBroadcastMessageToTextField().getText()*/ + ". Continue?", "Confirm", javax.swing.JOptionPane.YES_NO_OPTION);
+			if (n == javax.swing.JOptionPane.NO_OPTION) {
+				return;
+			}	
+			
+			VCMessage msg = vcMessaging_clientTopicProducerSession.createObjectMessage(new BigString(/*getBroadcastMessageTextArea().getText()*/ "Some long text"));
+			String username = /*getBroadcastMessageToTextField().getText()*/ "getBroadcastMessageToTextField";
 
+			if (username.equalsIgnoreCase(VCMessagingConstants.USERNAME_PROPERTY_VALUE_ALL)) {
+				username = VCMessagingConstants.USERNAME_PROPERTY_VALUE_ALL;
+			}
+				
+			msg.setStringProperty(VCMessagingConstants.MESSAGE_TYPE_PROPERTY, MessageConstants.MESSAGE_TYPE_BROADCASTMESSAGE_VALUE);
+			msg.setStringProperty(VCMessagingConstants.USERNAME_PROPERTY, username);
+			
+			vcMessaging_clientTopicProducerSession.sendTopicMessage(VCellTopic.ClientStatusTopic, msg);
+
+		} catch (Exception ex) {
+			System.err.println(ex.getMessage());
+		}
+	}
+	
+/*
+	public static void main(java.lang.String[] args) {
+		try {		
+			if (args.length == 2 && args[0].equals("-password")) {
+//				ServerManageConsole.commandLineAdminPassword = args[1];
+			}
+			PropertyLoader.loadProperties();
+			
+			javax.swing.UIManager.setLookAndFeel(javax.swing.UIManager.getSystemLookAndFeelClassName());
+
+			VCMessagingService vcMessagingService = VCellServiceHelper.getInstance().loadService(VCMessagingService.class);
+//			vcMessagingService.setDelegate(new ServerMessagingDelegate());
+//
+//			SessionLog log = new StdoutSessionLog("Console");
+//
+//			ConnectionFactory conFactory = DatabaseService.getInstance().createConnectionFactory(log);
+//			KeyFactory keyFactory = conFactory.getKeyFactory();
+//			DatabaseServerImpl databaseServerImpl = new DatabaseServerImpl(conFactory,keyFactory,log);
+//			AdminDBTopLevel adminDbTopLevel = new AdminDBTopLevel(conFactory,log);
+//
+//			ServerManageConsole aServerManageConsole = new ServerManageConsole(vcMessagingService, adminDbTopLevel, databaseServerImpl, log);
+//			aServerManageConsole.reconnect();
+//
+//			aServerManageConsole.addWindowListener(new java.awt.event.WindowAdapter() {
+//				public void windowClosing(java.awt.event.WindowEvent e) {
+//					System.exit(0);
+//				};
+//			});
+//			java.awt.Insets insets = aServerManageConsole.getInsets();
+//			aServerManageConsole.setSize(aServerManageConsole.getWidth() + insets.left + insets.right, aServerManageConsole.getHeight() + insets.top + insets.bottom);
+//			aServerManageConsole.setLocation(200, 200);		
+//			aServerManageConsole.setVisible(true);
+		} catch (Throwable exception) {
+			System.err.println("Exception occurred in main() of javax.swing.JFrame");
+			exception.printStackTrace(System.out);
+		}
+	}
+*/
 }

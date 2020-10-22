@@ -287,8 +287,9 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 	private InternalEventHandler eventHandler = new InternalEventHandler();
 	
 	LargeShapePanel shapePanel;
-	private JSplitPane splitPaneHorizontal = new JSplitPane(JSplitPane.VERTICAL_SPLIT);	// between shape and annotation
 	List<SpeciesPatternLargeShape> spsList = new ArrayList<SpeciesPatternLargeShape>();
+	@Deprecated
+	private JSplitPane splitPaneHorizontal = new JSplitPane(JSplitPane.VERTICAL_SPLIT);	// between shape and annotation
 	
 	private JButton zoomLargerButton = null;
 	private JButton zoomSmallerButton = null;
@@ -836,7 +837,8 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 		Dimension preferredSize = new Dimension(maxXOffset+200, maxYOffset);
 		shapePanel.setPreferredSize(preferredSize);
 
-		splitPaneHorizontal.repaint();
+		shapePanel.repaint();
+	//	splitPaneHorizontal.repaint();
 	}
 	
 	private JButton getZoomLargerButton() {

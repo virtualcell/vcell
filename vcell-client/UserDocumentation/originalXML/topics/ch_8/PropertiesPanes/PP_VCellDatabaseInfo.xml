@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <vcelldoc>
-<page title="Database Info Panel" target="PP_VCellDatabaseInfo">
+<page title="VCell Database Info Panel" target="PP_VCellDatabaseInfo">
 
 	<introduction>
 	Selecting a BioModel or MathModel from the tree list under the <bold>VCell DB tab</bold> (<bold>lower left</bold> of VCell document window) 
@@ -9,7 +9,7 @@
 	</introduction>
 	
 	<appearance>
-			<imgReference target = "VCDatabaseInfo.png"/>		
+			<imgReference target = "VCdatabaseInfo.png"/>		
 	</appearance>
 	
 	<operations>

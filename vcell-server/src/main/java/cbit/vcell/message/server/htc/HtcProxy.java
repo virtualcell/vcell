@@ -8,21 +8,18 @@ import java.nio.CharBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetEncoder;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.vcell.util.BeanUtils;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.exe.ExecutableException;
 
 import cbit.vcell.message.server.cmd.CommandService;
-import cbit.vcell.message.server.htc.HtcProxy.HtcJobInfo;
 import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.server.HtcJobID;
@@ -153,7 +150,7 @@ public abstract class HtcProxy {
 	 * @throws ExecutableException
 	 */
 	public abstract HtcJobID submitJob(String jobName, File sub_file_internal, File sub_file_external, ExecutableCommand.Container commandSet,
-			int ncpus, double memSize, Collection<PortableCommand> postProcessingCommands, SimulationTask simTask) throws ExecutableException;
+			int ncpus, double memSize, Collection<PortableCommand> postProcessingCommands, SimulationTask simTask,File primaryUserDirExternal) throws ExecutableException;
 	public abstract HtcJobID submitOptimizationJob(String jobName, File sub_file_internal, File sub_file_external,File optProblemInput,File optProblemOutput)throws ExecutableException;
 	public abstract HtcProxy cloneThreadsafe();
 
@@ -232,176 +229,179 @@ public abstract class HtcProxy {
 
 	public abstract String getSubmissionFileExtension();
 	public static class MemLimitResults {
-		public static final long FALLBACK_MEM_LIMIT_MB=4096;//MAX memory allowed if not set in limitFile
+		private static final long FALLBACK_MEM_LIMIT_MB=4096;//MAX memory allowed if not set in limitFile
+		private static long lastFallbackLimit = FALLBACK_MEM_LIMIT_MB;
+		private static long lastFallbackReadTime = 0;
 		private long memLimit;
-		private long minimumMem;
 		private String memLimitSource;
-		public MemLimitResults(long memLimit, String memLimitSource,long minimumMem) {
+		public MemLimitResults(long memLimit, String memLimitSource) {
 			super();
 			this.memLimit = memLimit;
 			this.memLimitSource = memLimitSource;
-			this.minimumMem = minimumMem;
 		}
 		public long getMemLimit() {
-			return Math.max(memLimit, minimumMem);
+			return memLimit;
 		}
 		public String getMemLimitSource() {
-			return memLimitSource+(minimumMem>memLimit?"(minimumMem)":"");
+			return memLimitSource;
+		}
+		public static long getFallbackMemLimitMB() {
+			if((System.currentTimeMillis()-lastFallbackReadTime) < (1000*60*5)) {
+				return lastFallbackLimit;
+			}
+			lastFallbackReadTime = System.currentTimeMillis();
+			try {
+				String s = BeanUtils.readBytesFromFile(new File("/htclogs/slurmMinMem.txt"), null);
+				lastFallbackLimit = Long.parseLong(s.trim());
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				lastFallbackLimit = FALLBACK_MEM_LIMIT_MB;
+			}
+			return lastFallbackLimit;
 		}
 	}
 	public static final boolean bDebugMemLimit = false;
 	public static MemLimitResults getMemoryLimit(String vcellUserid,KeyValue simID,SolverDescription solverDescription,double estimatedMemSizeMB) {
-		MemLimitResults memoryLimit0 = getMemoryLimit0(vcellUserid, simID, solverDescription, estimatedMemSizeMB);
-		return memoryLimit0;
-	}
-	public static final long MINIMUM_MEM=128;
-	private static MemLimitResults getMemoryLimit0(String vcellUserid,KeyValue simID,SolverDescription solverDescription,double estimatedMemSizeMB) {
-		//One of 5 limits are returned (ordered from highest to lowest priority):
-		//  MemoryMax:PerSimulation									Has PropertyLoader.simPerUserMemoryLimitFile, specific user AND simID MATCHED in file (userid MemLimitMb simID)
-		//  MemoryMax:PerUser										Has PropertyLoader.simPerUserMemoryLimitFile, specific user (but not simID) MATCHED in file (userid MemLimitMb '*')
-		//  MemoryMax:PerSolver										Has PropertyLoader.simPerUserMemoryLimitFile, specific solverDescription (but not simID or user) MATCHED in file (solverName MemLimitMb '*')
-		//  MemoryMax:SimulationTask.getEstimatedMemorySizeMB()		Has PropertyLoader.simPerUserMemoryLimitFile, no user or sim MATCHED in file ('defaultSimMemoryLimitMb' MemLimitMb '*')
-		//																estimated > MemoryMax:AllUsersMemLimit
-		//  MemoryMax:AllUsersMemLimit(defaultSimMemoryLimitMb)		Has PropertyLoader.simPerUserMemoryLimitFile, no user or sim MATCHED in file ('defaultSimMemoryLimitMb' MemLimitMb '*')
-		//																estimated < MemoryMax:AllUsersMemLimit
-		//  MemoryMax:HtcProxy.MemLimitResults.FALLBACK_MEM_LIMIT	No PropertyLoader.simPerUserMemoryLimitFile
-		//																estimated < FALLBACK
-		
-		Long defaultSimMemoryLimitMbFromFile = null;
-		Long minimumSimMemoryLimitMBFromFile = null;
-		File memLimitFile = null;
-		try {
-			//${vcellroot}/docker/swarm/serverconfig-uch.sh->VCELL_SIMDATADIR_EXTERNAL=/share/apps/vcell3/users 
-			//${vcellroot}/docker/swarm/serverconfig-uch.sh-> VCELL_SIMDATADIR_HOST=/opt/vcelldata/users 
-			//${vcellroot}/docker/swarm/docker-compose.yml-> Volume map "${VCELL_SIMDATADIR_HOST}:/simdata"
-			Long perUserMemMax = null;
-			Long perSimMemMax = null;
-			Long perSolverMax = null;
-			String memLimitFileDirVal = System.getProperty(PropertyLoader.primarySimDataDirInternalProperty);
-			String memLimitFileVal = System.getProperty(PropertyLoader.simPerUserMemoryLimitFile);
-			if(memLimitFileDirVal != null && memLimitFileVal != null) {
-				memLimitFile = new File(memLimitFileDirVal,memLimitFileVal);
-			}
-			if(memLimitFile != null && memLimitFile.exists()) {
-				List<String> perUserLimits = Files.readAllLines(Paths.get(memLimitFile.getAbsolutePath()));
-				for (Iterator<String> iterator = perUserLimits.iterator(); iterator.hasNext();) {
-					String userAndLimit = iterator.next().trim();
-					if(userAndLimit.length()==0 || userAndLimit.startsWith("//")) {
-						if(bDebugMemLimit){System.out.println("-----skipped '"+userAndLimit+"'");}
-						continue;
-					}
-//					System.out.println("-----"+userAndLimit);
-					
-					StringTokenizer st = new StringTokenizer(userAndLimit);
-					String limitUserid = st.nextToken();
-					if(limitUserid.equals(vcellUserid) || (solverDescription != null && limitUserid.equals(solverDescription.name()))) {//check user
-						long memLimit = 0;
-						try {
-							memLimit = Long.parseLong(st.nextToken());
-						} catch (Exception e) {
-							if(bDebugMemLimit){System.out.println("-----ERROR '"+userAndLimit+"' token memlimit not parsed");}
-							//bad line in limit file, continue processing other lines
-							//e.printStackTrace(System.out);
-							continue;
-						}
-						if(solverDescription != null && limitUserid.equals(solverDescription.name())) {
-							perSolverMax = memLimit;
-							if(bDebugMemLimit){System.out.println("-----"+"MATCH Solver "+userAndLimit);}
-							continue;
-						}
-						//get simid
-						String simSpecifier = null;
-						try {
-							simSpecifier = st.nextToken();
-							//check token is '*' or long
-							if(!simSpecifier.equals("*") && Long.valueOf(simSpecifier).longValue() < 0 ) {
-								throw new Exception(" token 'simSpecifier' expected to be '*' or simID");
-							}
-						} catch (Exception e) {
-							if(bDebugMemLimit){System.out.println("-----ERROR '"+userAndLimit+"' "+e.getClass().getName()+" "+e.getMessage());}
-							//bad line in limit file, continue processing other lines
-							//e.printStackTrace(System.out);
-							continue;
-						}
-						// * means all sims for that user, don't set if sim specific limit is already set
-						if(simSpecifier.equals("*") && perSimMemMax == null) {
-							perUserMemMax = memLimit;// use this unless overriden by specific simid
-							if(bDebugMemLimit){System.out.println("-----"+"MATCH USER "+userAndLimit);}
-						}
-						//Set sim specific limit, set even if * limit has been set
-						if(simID != null && simID.toString().equals(simSpecifier)) {
-							perSimMemMax = memLimit;// use sim limit
-							if(bDebugMemLimit){System.out.println("-----"+"MATCH SIM "+userAndLimit);}
-						}
-					}else if(limitUserid.equals("defaultSimMemoryLimitMb")) {//Master sim mem limit
-						try {
-							defaultSimMemoryLimitMbFromFile = Long.parseLong(st.nextToken());
-							if(bDebugMemLimit){System.out.println("-----"+"MATCH DEFAULT "+userAndLimit);}
-						} catch (Exception e) {
-							if(bDebugMemLimit){System.out.println("-----ERROR '"+userAndLimit+"' "+e.getClass().getName()+" "+e.getMessage());}
-							//bad line in limit file, continue processing other lines
-							//e.printStackTrace(System.out);
-							continue;
-						}
-					}else if(limitUserid.equals("minimumMemoryLimitMB")) {//Smallest allowed mem
-						try {
-							minimumSimMemoryLimitMBFromFile = Long.parseLong(st.nextToken());
-							if(bDebugMemLimit){System.out.println("-----"+"MATCH DEFAULT "+userAndLimit);}
-						} catch (Exception e) {
-							if(bDebugMemLimit){System.out.println("-----ERROR '"+userAndLimit+"' "+e.getClass().getName()+" "+e.getMessage());}
-							//bad line in limit file, continue processing other lines
-							//e.printStackTrace(System.out);
-							continue;
-						}
-					}else {
-						if(bDebugMemLimit){System.out.println("-----"+"NO MATCH "+userAndLimit);}
-					}
-				}
-				if(perUserMemMax != null || perSimMemMax != null) {
-					long finalMax = (perSimMemMax!=null?perSimMemMax:perUserMemMax);
-					if(bDebugMemLimit){System.out.println("Set memory limit for user '"+vcellUserid+"' to "+finalMax + (perSimMemMax!=null?" for simID="+simID:""));}
-					return new MemLimitResults(finalMax,
-						(perSimMemMax!=null?
-							"MemoryMax(FILE PerSimulation):"+simID+",User='"+vcellUserid+"' from "+memLimitFile.getAbsolutePath():
-							"MemoryMax(FILE PerUser):'"+vcellUserid+"' from "+memLimitFile.getAbsolutePath()),
-						(minimumSimMemoryLimitMBFromFile==null?MINIMUM_MEM:minimumSimMemoryLimitMBFromFile));
-				}else if(perSolverMax != null) {
-					if(perSolverMax == 0) {//Use estimated size always if solver had 0 for memory limit
-						return new MemLimitResults(
-							Math.min((long)Math.ceil(estimatedMemSizeMB*1.5),
-										(defaultSimMemoryLimitMbFromFile!=null?defaultSimMemoryLimitMbFromFile:MemLimitResults.FALLBACK_MEM_LIMIT_MB)),
-							"MemoryMax(FILE PerSolver ESTIMATED):'"+solverDescription.name()+"' from "+memLimitFile.getAbsolutePath(),
-							(minimumSimMemoryLimitMBFromFile==null?MINIMUM_MEM:minimumSimMemoryLimitMBFromFile));
-					}else {
-						return new MemLimitResults(perSolverMax,
-								"MemoryMax(FILE PerSolver):'"+solverDescription.name()+"' from "+memLimitFile.getAbsolutePath(),
-								(minimumSimMemoryLimitMBFromFile==null?MINIMUM_MEM:minimumSimMemoryLimitMBFromFile));
-					}
-				}
-			}else {
-				if(bDebugMemLimit){System.out.println("-----MemLimitFile "+(memLimitFile==null?"not defined":memLimitFile.getAbsolutePath()+" not exist"));}
-			}
-		} catch (Exception e) {
-			//ignore, try defaults
-			e.printStackTrace();
-		}
-//		long estimatedMemSizeMBL = (long)Math.ceil(estimatedMemSizeMB*1.5);
-		boolean bHasMemLimitFile = defaultSimMemoryLimitMbFromFile!=null;
-		long maxAllowedMem = (bHasMemLimitFile?defaultSimMemoryLimitMbFromFile:MemLimitResults.FALLBACK_MEM_LIMIT_MB);
-//		boolean bUseEstimated = (estimatedMemSizeMBL <= maxAllowedMem);
+		boolean bUseEstimate = estimatedMemSizeMB >= MemLimitResults.getFallbackMemLimitMB();
+		return new MemLimitResults((bUseEstimate?(long)estimatedMemSizeMB:MemLimitResults.getFallbackMemLimitMB()), (bUseEstimate?"used Estimated":"used FALLBACK_MEM_LIMIT"));
+//		//One of 5 limits are returned (ordered from highest to lowest priority):
+//		//  MemoryMax:PerSimulation									Has PropertyLoader.simPerUserMemoryLimitFile, specific user AND simID MATCHED in file (userid MemLimitMb simID)
+//		//  MemoryMax:PerUser										Has PropertyLoader.simPerUserMemoryLimitFile, specific user (but not simID) MATCHED in file (userid MemLimitMb '*')
+//		//  MemoryMax:PerSolver										Has PropertyLoader.simPerUserMemoryLimitFile, specific solverDescription (but not simID or user) MATCHED in file (solverName MemLimitMb '*')
+//		//  MemoryMax:SimulationTask.getEstimatedMemorySizeMB()		Has PropertyLoader.simPerUserMemoryLimitFile, no user or sim MATCHED in file ('defaultSimMemoryLimitMb' MemLimitMb '*')
+//		//																estimated > MemoryMax:AllUsersMemLimit
+//		//  MemoryMax:AllUsersMemLimit(defaultSimMemoryLimitMb)		Has PropertyLoader.simPerUserMemoryLimitFile, no user or sim MATCHED in file ('defaultSimMemoryLimitMb' MemLimitMb '*')
+//		//																estimated < MemoryMax:AllUsersMemLimit
+//		//  MemoryMax:HtcProxy.MemLimitResults.FALLBACK_MEM_LIMIT	No PropertyLoader.simPerUserMemoryLimitFile
+//		//																estimated < FALLBACK
+//		
+//		Long defaultSimMemoryLimitMbFromFile = null;
+//		File memLimitFile = null;
+//		try {
+//			//${vcellroot}/docker/swarm/serverconfig-uch.sh->VCELL_SIMDATADIR_EXTERNAL=/share/apps/vcell3/users 
+//			//${vcellroot}/docker/swarm/serverconfig-uch.sh-> VCELL_SIMDATADIR_HOST=/opt/vcelldata/users 
+//			//${vcellroot}/docker/swarm/docker-compose.yml-> Volume map "${VCELL_SIMDATADIR_HOST}:/simdata"
+//			Long perUserMemMax = null;
+//			Long perSimMemMax = null;
+//			Long perSolverMax = null;
+//			String memLimitFileDirVal = System.getProperty(PropertyLoader.primarySimDataDirInternalProperty);
+//			String memLimitFileVal = System.getProperty(PropertyLoader.simPerUserMemoryLimitFile);
+//			if(memLimitFileDirVal != null && memLimitFileVal != null) {
+//				memLimitFile = new File(memLimitFileDirVal,memLimitFileVal);
+//			}
+//			if(memLimitFile != null && memLimitFile.exists()) {
+//				List<String> perUserLimits = Files.readAllLines(Paths.get(memLimitFile.getAbsolutePath()));
+//				for (Iterator<String> iterator = perUserLimits.iterator(); iterator.hasNext();) {
+//					String userAndLimit = iterator.next().trim();
+//					if(userAndLimit.length()==0 || userAndLimit.startsWith("//")) {
+//						if(bDebugMemLimit){System.out.println("-----skipped '"+userAndLimit+"'");}
+//						continue;
+//					}
+////					System.out.println("-----"+userAndLimit);
+//					
+//					StringTokenizer st = new StringTokenizer(userAndLimit);
+//					String limitUserid = st.nextToken();
+//					if(limitUserid.equals(vcellUserid) || (solverDescription != null && limitUserid.equals(solverDescription.name()))) {//check user
+//						long memLimit = 0;
+//						try {
+//							memLimit = Long.parseLong(st.nextToken());
+//						} catch (Exception e) {
+//							if(bDebugMemLimit){System.out.println("-----ERROR '"+userAndLimit+"' token memlimit not parsed");}
+//							//bad line in limit file, continue processing other lines
+//							//e.printStackTrace(System.out);
+//							continue;
+//						}
+//						if(solverDescription != null && limitUserid.equals(solverDescription.name())) {
+//							perSolverMax = memLimit;
+//							if(bDebugMemLimit){System.out.println("-----"+"MATCH Solver "+userAndLimit);}
+//							continue;
+//						}
+//						//get simid
+//						String simSpecifier = null;
+//						try {
+//							simSpecifier = st.nextToken();
+//							//check token is '*' or long
+//							if(!simSpecifier.equals("*") && Long.valueOf(simSpecifier).longValue() < 0 ) {
+//								throw new Exception(" token 'simSpecifier' expected to be '*' or simID");
+//							}
+//						} catch (Exception e) {
+//							if(bDebugMemLimit){System.out.println("-----ERROR '"+userAndLimit+"' "+e.getClass().getName()+" "+e.getMessage());}
+//							//bad line in limit file, continue processing other lines
+//							//e.printStackTrace(System.out);
+//							continue;
+//						}
+//						// * means all sims for that user, don't set if sim specific limit is already set
+//						if(simSpecifier.equals("*") && perSimMemMax == null) {
+//							perUserMemMax = memLimit;// use this unless overriden by specific simid
+//							if(bDebugMemLimit){System.out.println("-----"+"MATCH USER "+userAndLimit);}
+//						}
+//						//Set sim specific limit, set even if * limit has been set
+//						if(simID != null && simID.toString().equals(simSpecifier)) {
+//							perSimMemMax = memLimit;// use sim limit
+//							if(bDebugMemLimit){System.out.println("-----"+"MATCH SIM "+userAndLimit);}
+//						}
+//					}else if(limitUserid.equals("defaultSimMemoryLimitMb")) {//Master sim mem limit
+//						try {
+//							defaultSimMemoryLimitMbFromFile = Long.parseLong(st.nextToken());
+//							if(bDebugMemLimit){System.out.println("-----"+"MATCH DEFAULT "+userAndLimit);}
+//						} catch (Exception e) {
+//							if(bDebugMemLimit){System.out.println("-----ERROR '"+userAndLimit+"' "+e.getClass().getName()+" "+e.getMessage());}
+//							//bad line in limit file, continue processing other lines
+//							//e.printStackTrace(System.out);
+//							continue;
+//						}
+//					}else {
+//						if(bDebugMemLimit){System.out.println("-----"+"NO MATCH "+userAndLimit);}
+//					}
+//				}
+//				if(perUserMemMax != null || perSimMemMax != null) {
+//					long finalMax = (perSimMemMax!=null?perSimMemMax:perUserMemMax);
+//					if(bDebugMemLimit){System.out.println("Set memory limit for user '"+vcellUserid+"' to "+finalMax + (perSimMemMax!=null?" for simID="+simID:""));}
+//					return new MemLimitResults(finalMax,
+//						(perSimMemMax!=null?
+//							"MemoryMax(FILE PerSimulation):"+simID+",User='"+vcellUserid+"' from "+memLimitFile.getAbsolutePath():
+//							"MemoryMax(FILE PerUser):'"+vcellUserid+"' from "+memLimitFile.getAbsolutePath()));
+//				}else if(perSolverMax != null) {
+//					if(perSolverMax == 0) {//Use estimated size always if solver had 0 for memory limit
+//						return new MemLimitResults(
+//							Math.max((long)Math.ceil(estimatedMemSizeMB*1.5),
+//										(defaultSimMemoryLimitMbFromFile!=null?defaultSimMemoryLimitMbFromFile:MemLimitResults.FALLBACK_MEM_LIMIT_MB)),
+//							"MemoryMax(FILE PerSolver ESTIMATED):'"+solverDescription.name()+"' from "+memLimitFile.getAbsolutePath());
+//					}else {
+//						return new MemLimitResults(perSolverMax, "MemoryMax(FILE PerSolver):'"+solverDescription.name()+"' from "+memLimitFile.getAbsolutePath());
+//					}
+//				}
+//			}else {
+//				if(bDebugMemLimit){System.out.println("-----MemLimitFile "+(memLimitFile==null?"not defined":memLimitFile.getAbsolutePath()+" not exist"));}
+//			}
+//		} catch (Exception e) {
+//			//ignore, try defaults
+//			e.printStackTrace();
+//		}
+////		long estimatedMemSizeMBL = (long)Math.ceil(estimatedMemSizeMB*1.5);
+//		boolean bHasMemLimitFile = defaultSimMemoryLimitMbFromFile!=null;
+//		long maxAllowedMem = (bHasMemLimitFile?defaultSimMemoryLimitMbFromFile:MemLimitResults.FALLBACK_MEM_LIMIT_MB);
+////		boolean bUseEstimated = (estimatedMemSizeMBL <= maxAllowedMem);
+////		return new MemLimitResults(maxAllowedMem,
+////			(bUseEstimated?
+////				"MemoryMax(ESTIMATED):SimulationTask.getEstimatedMemorySizeMB()="+estimatedMemSizeMBL:
+////					(bHasMemLimitFile?
+////						"MemoryMax(FILE AllUsers):AllUsersMemLimit(defaultSimMemoryLimitMb) from "+memLimitFile.getAbsolutePath():
+////						"MemoryMax(HARDCODE):HtcProxy.MemLimitResults.FALLBACK_MEM_LIMIT_MB")));
 //		return new MemLimitResults(maxAllowedMem,
-//			(bUseEstimated?
-//				"MemoryMax(ESTIMATED):SimulationTask.getEstimatedMemorySizeMB()="+estimatedMemSizeMBL:
-//					(bHasMemLimitFile?
-//						"MemoryMax(FILE AllUsers):AllUsersMemLimit(defaultSimMemoryLimitMb) from "+memLimitFile.getAbsolutePath():
-//						"MemoryMax(HARDCODE):HtcProxy.MemLimitResults.FALLBACK_MEM_LIMIT_MB")));
-		return new MemLimitResults(maxAllowedMem,
-				(bHasMemLimitFile?
-				"MemoryMax(FILE AllUsers):AllUsersMemLimit(defaultSimMemoryLimitMb) from "+memLimitFile.getAbsolutePath():
-				"MemoryMax(HARDCODE):HtcProxy.MemLimitResults.FALLBACK_MEM_LIMIT_MB"),
-				(minimumSimMemoryLimitMBFromFile==null?MINIMUM_MEM:minimumSimMemoryLimitMBFromFile));
+//				(bHasMemLimitFile?
+//				"MemoryMax(FILE AllUsers):AllUsersMemLimit(defaultSimMemoryLimitMb) from "+memLimitFile.getAbsolutePath():
+//				"MemoryMax(HARDCODE):HtcProxy.MemLimitResults.FALLBACK_MEM_LIMIT_MB"));
 	}
 
+	public static boolean isStochMultiTrial(SimulationTask simTask) {
+		return 	simTask.getSimulationJob().getSimulation().getSolverTaskDescription().getSolverDescription() == SolverDescription.StochGibson &&
+				simTask.getSimulationJob().getSimulation().getSolverTaskDescription().getStochOpt() != null &&
+				!simTask.getSimulationJob().getSimulation().getSolverTaskDescription().getStochOpt().isHistogram() &&
+				simTask.getSimulationJob().getSimulation().getSolverTaskDescription().getStochOpt().getNumOfTrials() > 1;
+
+	}
 }
 
 

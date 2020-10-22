@@ -20,10 +20,13 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
+
+import javax.swing.SwingUtilities;
 
 import org.vcell.model.rbm.NetworkConstraints;
 import org.vcell.util.BeanUtils;
@@ -47,6 +50,7 @@ import org.vcell.util.document.ExternalDataIdentifier;
 import org.vcell.util.document.Identifiable;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.PropertyConstants;
+import org.vcell.util.document.PublicationInfo;
 import org.vcell.util.document.Version;
 import org.vcell.util.document.Versionable;
 
@@ -85,6 +89,7 @@ import cbit.vcell.mapping.spatial.processes.PointLocation;
 import cbit.vcell.mapping.spatial.processes.SpatialProcess;
 import cbit.vcell.mapping.spatial.processes.SurfaceKinematics;
 import cbit.vcell.mapping.spatial.processes.VolumeKinematics;
+import cbit.vcell.math.Constant;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathException;
 import cbit.vcell.math.MathFunctionDefinitions;
@@ -92,6 +97,7 @@ import cbit.vcell.matrix.MatrixException;
 import cbit.vcell.model.BioNameScope;
 import cbit.vcell.model.ExpressionContainer;
 import cbit.vcell.model.Feature;
+import cbit.vcell.model.Membrane;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Model.ReservedSymbol;
 import cbit.vcell.model.Model.ReservedSymbolRole;
@@ -114,6 +120,7 @@ import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.NameScope;
 import cbit.vcell.parser.ScopedSymbolTable;
 import cbit.vcell.parser.SymbolTableEntry;
+import cbit.vcell.solver.MathOverrides;
 import cbit.vcell.solver.OutputFunctionContext;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationOwner;
@@ -989,6 +996,103 @@ public AnalysisTask copyAnalysisTask(AnalysisTask analysisTask) throws java.bean
 	}
 }
 
+private final int MaxBatchSize = 199;
+private final String ReservedBatchExtensionString = "_bat_";
+public Simulation createBatchSimulations(Simulation simulation, Map<Integer, Map<String, String>> batchInputDataMap) throws java.beans.PropertyVetoException {
+	if(getMathDescription() == null) {
+		throw new RuntimeException("Application " + getName() + " has no generated Math, cannot add simulation");
+	}
+	if(simulation.getMathDescription() != getMathDescription()){
+		throw new IllegalArgumentException("cannot copy simulation '" + simulation.getName() + "', has different MathDescription than Application");
+	}
+	if(bioModel==null) {
+		throw new RuntimeException("cannot add simulation, bioModel not set yet");
+	}
+	
+	int batchSize = batchInputDataMap.size();
+	if(batchSize >= MaxBatchSize) {
+		throw new RuntimeException("Batch size must be smaller than " + MaxBatchSize);
+	}
+	Simulation allSims[] = bioModel.getSimulations();
+	
+	for (int k = 0; k < batchSize; k++) {
+		if(batchInputDataMap.get(k) == null) {
+		// entry missing, perhaps parsing error
+		System.out.println("List of overrides missing for batch simulation " + k + ". Check input data file.");
+		}
+	}
+	
+	// now we go through all those we have
+	LinkedHashMap<Integer, Map<String, String>> batchInputLinkedMap = (LinkedHashMap<Integer, Map<String, String>>)batchInputDataMap;
+	for(Integer i : batchInputLinkedMap.keySet()) {
+		LinkedHashMap<String, String> overrideMap = (LinkedHashMap<String, String>)batchInputLinkedMap.get(i);
+
+		String insert = "";
+		if(i<10) {
+			insert = "00";
+		} else if(i<100) {
+			insert = "0";
+		}
+		String proposedName = simulation.getName() + ReservedBatchExtensionString + insert + i;
+		boolean bFound = false;
+		for (int j = 0; !bFound && j < allSims.length; j++) {
+			// go through all existing simulations to make sure the name we want to use is not already taken
+			if (allSims[j].getName().equals(proposedName)) {
+				bFound = true;
+				throw new RuntimeException("Batch file name already in use: " + proposedName);
+			}
+		}
+		Simulation newSimulation = new Simulation(simulation);
+		newSimulation.setName(proposedName);
+		
+		MathOverrides mo = new MathOverrides(newSimulation);
+		for(String name : overrideMap.keySet()) {
+			String value = overrideMap.get(name);
+			try {
+				Expression expression = new Expression(value);
+				Constant constant = new Constant(name, expression);
+				mo.putConstant(constant);
+			} catch (ExpressionException e) {
+				e.printStackTrace();
+			}
+		}
+		
+		newSimulation.setMathOverrides(mo);
+		bioModel.addSimulation(newSimulation);
+	}
+	return null;
+}
+public void importBatchSimulations(Simulation simulation) throws java.beans.PropertyVetoException {
+
+	if(bioModel==null) {
+		throw new RuntimeException("cannot add simulation, bioModel not set yet");
+	}
+	if(simulation.getName().contains(ReservedBatchExtensionString)) {
+		throw new RuntimeException("Not a valid name for a batch template Simulation: '" + simulation.getName() + "'.");
+	}
+	Simulation allSims[] = bioModel.getSimulations();
+	LinkedHashMap<String, String> importsMap = new LinkedHashMap<>();
+	
+	String namePrefix = simulation.getName() + ReservedBatchExtensionString;
+	for(Simulation simCandidate : allSims) {
+		if(simCandidate.getName().startsWith(namePrefix)) {
+			importsMap.put(simCandidate.getName(), simCandidate.getSimulationID());
+			System.out.println(simCandidate.getName() + ": " + simCandidate.getSimulationID());
+		}
+	}
+	for(String name : importsMap.keySet()) {
+		String value = importsMap.get(name);
+		
+		SwingUtilities.invokeLater(new Runnable() {
+			public void run() {
+				importBatchSimulation(name, value);
+			}
+		});	
+	}
+}
+private void importBatchSimulation(String name, String value) {
+	
+}
 
 /**
  * Sets the simulations property (cbit.vcell.solver.Simulation[]) value.
@@ -1211,6 +1315,41 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueVector, boo
 		}
 		if(isInsufficientMaxMolecules()) {
 			issueVector.add(new Issue(this, issueContext, IssueCategory.RbmNetworkConstraintsBad, IssueInsufficientMolecules, Issue.Severity.WARNING));
+		}
+	}
+	
+	Geometry geo = getGeometryContext().getGeometry();
+	int dimension = geo.getDimension();
+	if (dimension != 0) {
+		for(ReactionSpec rrs : getReactionContext().getReactionSpecs()) {
+			if(rrs.isExcluded()) {
+				continue;
+			}
+			ReactionStep rs = rrs.getReactionStep();
+			if(rs.getStructure() instanceof Membrane) {
+				continue;
+			}
+			// for spatial applications
+			// we look for reactions where reactants and products are in more than one compartments
+			// if such reactions are not on a membrane, we issue a warning
+			Set<Structure> features = new HashSet<> ();
+			for(Reactant r : rs.getReactants()) {
+				Structure struct = r.getStructure();
+				if(struct instanceof Feature) {
+					features.add(struct);
+				}
+			}
+			for(Product p : rs.getProducts()) {
+				Structure struct = p.getStructure();
+				if(struct instanceof Feature) {
+					features.add(struct);
+				}
+			}
+			if(features.size() > 1) {
+				String message = "Reaction must be situated on a membrane (spatial application present)";
+				String tooltip = "Spatial application '" + getName() + "' requires that reactions between compartments must be situated on a membrane.";
+				issueVector.add(new Issue(rs, issueContext, IssueCategory.Identifiers, message, tooltip, Issue.Severity.WARNING));
+			}
 		}
 	}
 	

@@ -108,7 +108,7 @@ public class DocumentWindowAboutBox extends JPanel {
 		add(getAcknowledgePubAttribution(), gbc);
 
 		gbc = attributionConstraints(10,++gridy);
-		add(new JLabel("<html>Virtual Cell is Supported by NIH Grant P41 GM103313 from the<br/> National Institute for General Medical Sciences.</html>"), gbc);
+		add(new JLabel("<html>Virtual Cell is Supported by NIH Grant R24 GM137787 from the<br/> National Institute for General Medical Sciences.</html>"), gbc);
 
 		setFocusable(true);
 	}
@@ -158,7 +158,7 @@ public class DocumentWindowAboutBox extends JPanel {
 			try {
 				copyright = new JLabel();
 				copyright.setName("Copyright");
-				copyright.setText("(c) Copyright 1998-2016 UConn Health");
+				copyright.setText("(c) Copyright 1998-2020 UConn Health");
 			} catch (Throwable throwable) {
 				handleException(throwable);
 			}

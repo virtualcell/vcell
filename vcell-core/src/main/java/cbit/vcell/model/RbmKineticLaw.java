@@ -217,6 +217,8 @@ public class RbmKineticLaw implements Serializable, ModelProcessDynamics, Matcha
 				if(expression != null) {
 					to.setParameterValue(toLocalParameter, new Expression(expression), true);
 				}
+				// the unit definition exists for sure in this model, no need for a copy constructor
+				toLocalParameter.setUnitDefinition(fromLocalParameter.getUnitDefinition());
 			}
 		}
 		for (LocalParameter fromLocalParameter : from.parameterContext.getLocalParameters()){
@@ -277,7 +279,9 @@ public class RbmKineticLaw implements Serializable, ModelProcessDynamics, Matcha
 					Expression toExpression = new Expression(fromExpression);
 					toKineticLaw.setParameterValue(toLocalParameter, toExpression, true);
 				}
-				// TODO: units are not updated!
+				// TODO: make copy constructor for VCUnitDefinition (because we are cloning the whole model)
+//				VCUnitDefinition toUnitDefinition = new VCUnitDefinition(fromLocalParameter.getUnitDefinition());
+//				toLocalParameter.setUnitDefinition(toUnitDefinition);
 			}
 		}
 		for (LocalParameter fromLocalParameter : fromKineticLaw.parameterContext.getLocalParameters()) {

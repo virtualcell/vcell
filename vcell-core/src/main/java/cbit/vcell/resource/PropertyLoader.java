@@ -175,6 +175,7 @@ public class PropertyLoader {
 	public static final String jmsUser						= record("vcell.jms.user",ValueType.GEN);
 	public static final String jmsPasswordValue				= record("vcell.jms.password",ValueType.GEN);
 	public static final String jmsPasswordFile				= record("vcell.jms.pswdfile",ValueType.GEN);
+	public static final String jmsRestPasswordFile			= record("vcell.jms.rest.pswdfile",ValueType.GEN);
 
 	public static final String jmsSimReqQueue			= record("vcell.jms.queue.simReq",ValueType.GEN);
 	public static final String jmsDataRequestQueue		= record("vcell.jms.queue.dataReq",ValueType.GEN);

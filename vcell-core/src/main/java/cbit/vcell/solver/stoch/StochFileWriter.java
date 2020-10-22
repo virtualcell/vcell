@@ -192,7 +192,10 @@ public void write(String[] parameterNames) throws Exception,ExpressionException
 	else if (outputTimeSpec.isUniform()){
 		printWriter.println("SAVE_PERIOD"+"\t"+((UniformOutputTimeSpec)outputTimeSpec).getOutputTimeStep());
 	}
-	printWriter.println("NUM_TRIAL"+"\t"+solverTaskDescription.getStochOpt().getNumOfTrials());
+	boolean isMultiTrial = !solverTaskDescription.getStochOpt().isHistogram() &&
+			solverTaskDescription.getStochOpt().getNumOfTrials() > 1;
+			//Multi-trial 'NUM_TRIAL' handled by slurm array within .slurm.sh script
+	printWriter.println("NUM_TRIAL"+"\t"+(isMultiTrial?1:solverTaskDescription.getStochOpt().getNumOfTrials()));
 
 	if(stochOpt.isUseCustomSeed()) {
   		printWriter.println("SEED"+"\t"+stochOpt.getCustomSeed());

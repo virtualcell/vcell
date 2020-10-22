@@ -55,6 +55,7 @@ ENV softwareVersion=SOFTWARE-VERSION-NOT-SET \
     simdatadir_archive_host="simdatadir_archive_host-not-set"
 
 ENV jmspswdfile=/run/secrets/jmspswd \
+	jmsrestpswdfile=/run/secrets/jmsrestpswd \
     batchuserkeyfile=/run/secrets/batchuserkeyfile
 
 VOLUME /simdata
@@ -109,6 +110,7 @@ ENTRYPOINT java \
 	-Dvcell.jms.blobMessageMinSize="${jmsblob_minsize}" \
 	-Dvcell.jms.user="${jmsuser}" \
 	-Dvcell.jms.pswdfile="${jmspswdfile}" \
+	-Dvcell.jms.rest.pswdfile="${jmsrestpswdfile}" \
 	-Dvcell.mongodb.host.internal=${mongodb_host_internal} \
 	-Dvcell.mongodb.port.internal=${mongodb_port_internal} \
 	-Dvcell.mongodb.host.external=${mongodb_host_external} \
