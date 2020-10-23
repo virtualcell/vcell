@@ -909,5 +909,9 @@
         }
       ]
     }
-  ]
+  ],
+  "biosimulators": {
+    "schemaVersion": "1.0.0",
+    "imageVersion": "1.0.0"
+  }
 }
