@@ -56,48 +56,48 @@
     "citations": [
       {
         "title": "A general computational framework for modeling cellular structure and function",
-        "authors": "J Schaff, CC Fink, B Slepchenko, JH Carson, LM Leow",
-        "journal": "Biophysical journal",
+        "authors": "James C. Schaff, Charles C. Fink, Boris M. Slepchenko, John H. Carson & Leslie M. Leow",
+        "journal": "Biophysical Journal",
         "volume": "73",
         "pages": "1135-1146",
         "year": 1997,
-        "identifiers": [{"namespace": "doi", "id": "10.1016/S0006-3495(97)78146-3"}]
+        "identifiers": [{"namespace": "doi", "id": "10.1016/S0006-3495(97)78146-3", "url": "https://doi.org/10.1016/S0006-3495(97)78146-3"}]
       },
       {
-        "title": "The Virtual Cell: A Software Environment for Computational Cell Biology",
-        "authors": "J Schaff, LM Leow",
-        "journal": "Trends Biotechnol.",
+        "title": "The Virtual Cell: A software environment for computational cell biology",
+        "authors": "James C. Schaff & Leslie M. Leow",
+        "journal": "Trends in Biotechnology",
         "volume": "19",
         "pages": "401-406",
         "year": 2001,
-        "identifiers": [{"namespace": "doi", "id": "10.1016/S0167-7799(01)01740-1"}]
+        "identifiers": [{"namespace": "doi", "id": "10.1016/S0167-7799(01)01740-1", "url": "https://doi.org/10.1016/S0167-7799(01)01740-1"}]
       },
       {
-        "title": "Spatial Modeling of Cell Signaling Networks",
-        "authors": "Ann E. Cowan, Ion I. Moraru, James C. Scaff, Boris M. Slepchenko, Leslie M. Loew",
-        "journal": "Methods Cell Biol.",
+        "title": "Spatial modeling of cell signaling networks",
+        "authors": "Ann E. Cowan, Ion I. Moraru, James C. Scaff, Boris M. Slepchenko & Leslie M. Loew",
+        "journal": "Methods in Cell Biology",
         "volume": "110",
         "pages": "195-221",
         "year": 2012,
-        "identifiers": [{"namespace": "doi", "id": "10.1016/B978-0-12-388403-9.00008-4"}]
+        "identifiers": [{"namespace": "doi", "id": "10.1016/B978-0-12-388403-9.00008-4", "url": "https://doi.org/10.1016/B978-0-12-388403-9.00008-4"}]
       },
       {
-        "title": "The Virtual Cell Modeling and Simulation Software Environment",
-        "authors": "Ion I. Moraru, James C. Scaff, Boris M. Slepchenko, Micheal Blinov, Frank Morgan, Anuradha Lakshminaryana, Fei Gao, Ye Li, Leslie M. Loew",
-        "journal": "IET Syst Biol.",
+        "title": "The Virtual Cell modeling and simulation software environment",
+        "authors": "Ion I. Moraru, James C. Scaff, Boris M. Slepchenko, Micheal L. Blinov, Frank Morgan, Anuradha Lakshminaryana, Fei Gao, Ye Li & Leslie M. Loew",
+        "journal": "IET Systems Biology",
         "volume": "2",
         "pages": "352-362",
         "year": 2008,
-        "identifiers": [{"namespace": "doi", "id": "10.1049/iet-syb:20080102"}]
+        "identifiers": [{"namespace": "doi", "id": "10.1049/iet-syb:20080102", "url": "https://doi.org/10.1049/iet-syb:20080102"}]
       },
       {
-        "title": "Compartmental and Spatial Rule-Based Modeling with Virtual Cell",
-        "authors": "Micheal L. Blinov, James C. Scaff, Dan Vasilescu, Ion I. Moraru, Judy E. Bloom, Leslie M. Loew",
-        "journal": "Biophys J.",
+        "title": "Compartmental and spatial rule-based modeling with Virtual Cell",
+        "authors": "Micheal L. Blinov, James C. Scaff, Dan Vasilescu, Ion I. Moraru, Judy E. Bloom & Leslie M. Loew",
+        "journal": "Biophysical Journal",
         "volume": "113",
         "pages": "1365-1372",
         "year": 2017,
-        "identifiers": [{"namespace": "doi", "id": "10.1016/j.bpj.2017.08.022"}]
+        "identifiers": [{"namespace": "doi", "id": "10.1016/j.bpj.2017.08.022", "url": "https://doi.org/10.1016/j.bpj.2017.08.022"}]
       }
     ]
   },
@@ -138,13 +138,13 @@
       "citations": [
         {
           "title": "CVODE, a stiff/nonstiff ODE solver in C",
-          "authors": "Scott D Cohen, Alan C Hindmarsh & and Paul F Dubois",
+          "authors": "Scott D. Cohen, Alan C. Hindmarsh & Paul F. Dubois",
           "journal": "Computers in Physics",
           "volume": 10,
           "issue": 2,
           "pages": "138-143",
           "year": 1996,
-          "identifiers": [{"namespace": "doi", "id": "10.1063/1.4822377"}]
+          "identifiers": [{"namespace": "doi", "id": "10.1063/1.4822377", "url": "https://doi.org/10.1063/1.4822377"}]
         }
       ],
       "parameters": [
@@ -193,9 +193,9 @@
       ],
       "citations": [
         {
-          "title": "A Second Order Runge Kutta Method to Solve Fuzzy Differential Equations with Fuzzy Initial Condition",
-          "authors": "V, Parimala",
-          "journal": "International Journal of Science and Research (IJSR)",
+          "title": "A second order Runge Kutta method to solve fuzzy differential equations with fuzzy initial condition",
+          "authors": "V. Parimala",
+          "journal": "International Journal of Science and Research",
           "volume": 3,
           "issue": 3,
           "pages": "428-431",
@@ -210,7 +210,7 @@
             "id": "KISAO_0000064"
           },
           "id": "rel_tol",
-          "name": "Relative tolerance",
+          "name": "relative tolerance",
           "type": "float",
           "default": 1e-9
         }
@@ -250,14 +250,14 @@
       ],
       "citations": [
         {
-          "title": "Solving Reaction-Diffusion and Advection Problems with Richardon Extrapolation",
-          "authors": "Tamás Mona, István Lagzi, Ágnes Havasi",
+          "title": "Solving reaction-diffusion and advection problems with Richardon Extrapolation",
+          "authors": "Tamás Mona, István Lagzi & Ágnes Havasi",
           "journal": "Journal of Chemistry",
           "volume": 3,
           "issue": 3,
           "pages": "2-8",
           "year": 2015,
-          "identifiers": [{"namespace": "doi", "id": "10.1155/2015/350362"}]
+          "identifiers": [{"namespace": "doi", "id": "10.1155/2015/350362", "url": "https://doi.org/10.1155/2015/350362"}]
         }
       ],
       "parameters": [
@@ -308,13 +308,13 @@
       "citations": [
         {
           "title": "A fourth order Runge–Kutta RK(4,4) method with error control",
-          "authors": "A. R. Yaakub, D. J. Evans ",
+          "authors": "A. R. Yaakub & David J. Evans",
           "journal": "International Journal of Computer Mathematics",
           "volume": 71,
           "issue": 3,
           "pages": "383-411",
           "year": 2007,
-          "identifiers": [{"namespace": "doi", "id": "10.1080/00207169908804817"}]
+          "identifiers": [{"namespace": "doi", "id": "10.1080/00207169908804817", "url": "https://doi.org/10.1080/00207169908804817"}]
         }
       ],
       "parameters": [
@@ -364,14 +364,14 @@
       ],
       "citations": [
         {
-          "title": "Optimum Runge-Kutta Fehlberg Methods for First Order Differential Equations",
-          "authors": "R.K. Jain, M.K. Jain",
+          "title": "Optimum Runge-Kutta Fehlberg methods for first order differential equations",
+          "authors": "R. K. Jain & M. K. Jain",
           "journal": "IMA Journal of Applied Mathematics",
           "volume": 8,
           "issue": 3,
           "pages": "386-396",
           "year": 1971,
-          "identifiers": [{"namespace": "doi", "id": "10.1093/imamat/8.3.386"}]
+          "identifiers": [{"namespace": "doi", "id": "10.1093/imamat/8.3.386", "url": "https://doi.org/10.1093/imamat/8.3.386"}]
         }
       ],
       "parameters": [
@@ -421,14 +421,14 @@
       ],
       "citations": [
         {
-          "title": "Solving Implicit Equations Arising from Adams-Moulton Methods",
-          "authors": "Tian Min Han, Yuhuan Han",
-          "journal": "BIT Numerical Mathematics volume",
+          "title": "Solving implicit equations arising from Adams-Moulton methods",
+          "authors": "Tian Min Han & Yuhuan Han",
+          "journal": "BIT Numerical Mathematics",
           "volume": 42,
           "issue": 2,
           "pages": "336-350",
           "year": 2002,
-          "identifiers": [{"namespace": "doi", "id": "10.1023/A:1021951025649"}]
+          "identifiers": [{"namespace": "doi", "id": "10.1023/A:1021951025649", "url": "https://doi.org/10.1023/A:1021951025649"}]
         }
       ],
       "parameters": [
@@ -479,13 +479,13 @@
       "citations": [
         {
           "title": "Solving differential–algebraic equation systems by means of index reduction methodology",
-          "authors": "Kim Sørensen, Thomas Condra, Niels Houbak",
+          "authors": "Kim Sørensen, Thomas Condra & Niels Houbak",
           "journal": "Simulation Modelling Practice and Theory",
           "volume": 14,
           "issue": 3,
           "pages": "224-236",
           "year": 2006,
-          "identifiers": [{"namespace": "doi", "id": "10.1016/j.simpat.2005.05.002"}]
+          "identifiers": [{"namespace": "doi", "id": "10.1016/j.simpat.2005.05.002", "url": "https://doi.org/10.1016/j.simpat.2005.05.002"}]
         }
       ],
       "parameters": [
@@ -535,14 +535,14 @@
       ],
       "citations": [
         {
-          "title": "Efficient Exact Stochastic Simulation of Chemical Systems with Many Species and Many Channels",
-          "authors": "Micheal A. Gibson, Jehoshua Bruck",
-          "journal": "J. Phys. Chem. A",
+          "title": "Efficient exact stochastic simulation of chemical systems with many species and many channels",
+          "authors": "Micheal A. Gibson & Jehoshua Bruck",
+          "journal": "Journal Physical Chemistry A",
           "volume": 104,
           "issue": 9,
           "pages": "1876-1889",
           "year": 2000,
-          "identifiers": [{"namespace": "doi", "id": "10.1021/jp993732q"}]
+          "identifiers": [{"namespace": "doi", "id": "10.1021/jp993732q", "url": "https://doi.org/10.1021/jp993732q"}]
         }
       ],
       "parameters": [
@@ -592,13 +592,13 @@
       "citations": [
         {
           "title": "An Euler–Maruyama method for diffusion equations with discontinuous coefficients and a family of interface conditions",
-          "authors": "Bokil Vrushali, Gibson Nathan, Nguyen S.L., Thomann E.A., Waymire Edward",
+          "authors": "Vrushali A. Bokil, Nathan L. Gibson, Son L. Nguyen, Enrique A. Thomann & Edward C. Waymire",
           "journal": "Journal of Computational and Applied Mathematics",
           "volume": 368,
           "issue": "NA",
           "pages": "112545",
           "year": 2019,
-          "identifiers": [{"namespace": "doi", "id": "10.1016/j.cam.2019.112545"}]
+          "identifiers": [{"namespace": "doi", "id": "10.1016/j.cam.2019.112545", "url": "https://doi.org/10.1016/j.cam.2019.112545"}]
         }
       ],
       "parameters": [
@@ -649,13 +649,13 @@
       "citations": [
         {
           "title": "A randomized Milstein method for stochastic differential equations with non-differentiable drift coefficients",
-          "authors": "Raphel Kruse, Yue Wu",
-          "journal": "Discrete & Continuous Dynamical Systems",
+          "authors": "Raphel Kruse & Yue Wu",
+          "journal": "Discrete and Continuous Dynamical Systems",
           "volume": 24,
           "issue": 8,
           "pages": "3475-3502",
           "year": 2010,
-          "identifiers": [{"namespace": "doi", "id": "10.3934/dcdsb.2018253"}]
+          "identifiers": [{"namespace": "doi", "id": "10.3934/dcdsb.2018253", "url": "https://doi.org/10.3934/dcdsb.2018253"}]
         }
       ],
       "parameters": [
@@ -706,13 +706,13 @@
       "citations": [
         {
           "title": "Finite volume methods",
-          "authors": "Robert Eymard, Gallouet Thierry, Raphaèle Herbin",
+          "authors": "Robert Eymard, Gallouet Thierry & Raphaèle Herbin",
           "journal": "Handbook of Numerical Analysis",
           "volume": 7,
           "issue": "",
           "pages": "731-1020",
           "year": 2000,
-          "identifiers": [{"namespace": "doi", "id": "10.1016/S1570-8659(00)07005-8"}]
+          "identifiers": [{"namespace": "doi", "id": "10.1016/S1570-8659(00)07005-8", "url": "https://doi.org/10.1016/S1570-8659(00)07005-8"}]
         }
       ],
       "parameters": [
@@ -763,23 +763,23 @@
       "citations": [
         {
           "title": "CVODE, a stiff/nonstiff ODE solver in C",
-          "authors": "Scott D Cohen, Alan C Hindmarsh & and Paul F Dubois",
+          "authors": "Scott D. Cohen, Alan C. Hindmarsh & Paul F. Dubois",
           "journal": "Computers in Physics",
           "volume": 10,
           "issue": 2,
           "pages": "138-143",
           "year": 1996,
-          "identifiers": [{"namespace": "doi", "id": "10.1063/1.4822377"}]
+          "identifiers": [{"namespace": "doi", "id": "10.1063/1.4822377", "url": "https://doi.org/10.1063/1.4822377"}]
         },
         {
           "title": "Solving differential–algebraic equation systems by means of index reduction methodology",
-          "authors": "Kim Sørensen, Thomas Condra, Niels Houbak",
+          "authors": "Kim Sørensen, Thomas Condra & Niels Houbak",
           "journal": "Simulation Modelling Practice and Theory",
           "volume": 14,
           "issue": 3,
           "pages": "224-236",
           "year": 2006,
-          "identifiers": [{"namespace": "doi", "id": "10.1016/j.simpat.2005.05.002"}]
+          "identifiers": [{"namespace": "doi", "id": "10.1016/j.simpat.2005.05.002", "url": "https://doi.org/10.1016/j.simpat.2005.05.002"}]
         }
       ],
       "parameters": [
@@ -830,13 +830,13 @@
       "citations": [
         {
           "title": "Finite volume methods",
-          "authors": "Robert Eymard, Gallouet Thierry, Raphaèle Herbin",
+          "authors": "Robert Eymard, Gallouet Thierry & Raphaèle Herbin",
           "journal": "Handbook of Numerical Analysis",
           "volume": 7,
           "issue": "",
           "pages": "731-1020",
           "year": 2000,
-          "identifiers": [{"namespace": "doi", "id": "10.1016/S1570-8659(00)07005-8"}]
+          "identifiers": [{"namespace": "doi", "id": "10.1016/S1570-8659(00)07005-8", "url": "https://doi.org/10.1016/S1570-8659(00)07005-8"}]
         }
       ],
       "parameters": [
@@ -886,14 +886,14 @@
       ],
       "citations": [
         {
-          "title": "XXVII. A brief account of microscopical observations made in the months of June, July and August 1827, on the particles contained in the pollen of plants; and on the general existence of active molecules in organic and inorganic bodies",
+          "title": "A brief account of microscopical observations made in the months of June, July and August 1827, on the particles contained in the pollen of plants; and on the general existence of active molecules in organic and inorganic bodies",
           "authors": "Robert Brown",
-          "journal": "The Philosophical Magazine",
+          "journal": "Philosophical Magazine",
           "volume": 4,
           "issue": 21,
           "pages": "161-173",
           "year": 1827,
-          "identifiers": [{"namespace": "doi", "id": "10.1080/14786442808674769"}]
+          "identifiers": [{"namespace": "doi", "id": "10.1080/14786442808674769", "url": "https://doi.org/10.1080/14786442808674769"}]
         }
       ],
       "parameters": [
