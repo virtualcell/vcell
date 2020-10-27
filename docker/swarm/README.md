@@ -2,7 +2,7 @@
 Email Sophan/Rich asking for Windows Code signing certificate  
 They send me 1st email  
 	"To generate your private key and create a certificate request for your InCommon Code Signing certificate:"  
-	with associated link I click (MUST USE Windows Internet Explorer), I choose 4096 for strength.    
+	with associated link I click (MUST USE Windows Internet Explorer), I choose 4096 for strength.   
 They send me 2nd email  
 	"The InCommon code signing certificate for Frank Morgan <frm@uchc.edu> has been issued"  
 	with associated link I click (MUST USE Windows Internet Explorer on same machine 1st email link was clicked on)
