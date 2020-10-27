@@ -156,7 +156,7 @@
           "id": "rel_tol",
           "name": "Relative tolerance",
           "type": "float",
-          "default": 1e-9
+          "value": 1e-9
         }
       ]
     },
@@ -212,7 +212,7 @@
           "id": "rel_tol",
           "name": "relative tolerance",
           "type": "float",
-          "default": 1e-9
+          "value": 1e-9
         }
       ]
     },
@@ -269,7 +269,7 @@
           "id": "rel_tol",
           "name": "Relative tolerance",
           "type": "float",
-          "default": 1e-9
+          "value": 1e-9
         }
       ]
     },
@@ -326,7 +326,7 @@
           "id": "rel_tol",
           "name": "Relative tolerance",
           "type": "float",
-          "default": 1e-9
+          "value": 1e-9
         }
       ]
     },
@@ -383,7 +383,7 @@
           "id": "rel_tol",
           "name": "Relative tolerance",
           "type": "float",
-          "default": 1e-9
+          "value": 1e-9
         }
       ]
     },
@@ -440,7 +440,7 @@
           "id": "rel_tol",
           "name": "Relative tolerance",
           "type": "float",
-          "default": 1e-9
+          "value": 1e-9
         }
       ]
     },
@@ -492,12 +492,12 @@
         {
           "kisaoId": {
             "namespace": "KISAO",
-            "id": "KISAO_0000283"
+            "id": "KISAO_0000209"
           },
           "id": "rel_tol",
           "name": "Relative tolerance",
           "type": "float",
-          "default": 1e-9
+          "value": 1e-9
         }
       ]
     },
@@ -554,7 +554,7 @@
           "id": "rel_tol",
           "name": "Relative tolerance",
           "type": "float",
-          "default": 1e-9
+          "value": 1e-9
         }
       ]
     },
@@ -610,7 +610,7 @@
           "id": "rel_tol",
           "name": "Relative tolerance",
           "type": "float",
-          "default": 1e-9
+          "value": 1e-9
         }
       ]
     },
@@ -667,7 +667,7 @@
           "id": "rel_tol",
           "name": "Relative tolerance",
           "type": "float",
-          "default": 1e-9
+          "value": 1e-9
         }
       ]
     },
@@ -724,7 +724,7 @@
           "id": "rel_tol",
           "name": "Relative tolerance",
           "type": "float",
-          "default": 1e-9
+          "value": 1e-9
         }
       ]
     },
@@ -791,7 +791,7 @@
           "id": "rel_tol",
           "name": "Relative tolerance",
           "type": "float",
-          "default": 1e-9
+          "value": 1e-9
         }
       ]
     },
@@ -848,7 +848,7 @@
           "id": "rel_tol",
           "name": "Relative tolerance",
           "type": "float",
-          "default": 1e-9
+          "value": 1e-9
         }
       ]
     },
@@ -905,7 +905,7 @@
           "id": "rel_tol",
           "name": "Relative tolerance",
           "type": "float",
-          "default": 1e-9
+          "value": 1e-9
         }
       ]
     }
