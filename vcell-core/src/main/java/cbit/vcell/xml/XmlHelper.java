@@ -645,10 +645,6 @@ public static String mathModelToXML(MathModel mathModel) throws XmlParseExceptio
 			solverDescription = SolverDescription.IDA;
 		}
 
-			if(solverDescription == null && sedmlSimulation.getAlgorithm().getKisaoID().equalsIgnoreCase("KISAO:0000086")) {
-				solverDescription = SolverDescription.RungeKuttaFehlberg;
-			}
-		
 		// find out everything else we need about the application we're going to use,
 		// some of the info will be needed when we parse the sbml file 
 		boolean bSpatial = false;
