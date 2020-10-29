@@ -66,7 +66,7 @@ BioSimulators-compliant command-line interface to the [VCell](http://vcell.org/)
 
 ### Install Docker image
 ```
-docker pull biosimulators/vcell
+docker pull ghcr.io/biosimulators/vcell
 ```
 
 ## Local usage
