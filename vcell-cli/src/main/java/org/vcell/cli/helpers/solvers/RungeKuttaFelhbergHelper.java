@@ -26,8 +26,6 @@ public class RungeKuttaFelhbergHelper {
     public static ODESolverResultSet solve(File outDir, String taskId, BioModel bioModel) {
         String docName = bioModel.getName();
 
-//        Simulation sim = bioModel.getSimulation(0);
-
         Simulation sim = new TempSimulation(bioModel.getSimulation(0), false);
         SimulationContext simContext = null;
         simContext = bioModel.getSimulationContext(0);
