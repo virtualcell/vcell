@@ -20,6 +20,7 @@ import java.util.Set;
 
 import javax.xml.stream.XMLStreamException;
 
+import cbit.vcell.solver.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jdom.Comment;
@@ -88,15 +89,6 @@ import cbit.vcell.model.Parameter;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.solver.MathOverrides;
-import cbit.vcell.solver.OutputTimeSpec;
-import cbit.vcell.solver.Simulation;
-import cbit.vcell.solver.SimulationJob;
-import cbit.vcell.solver.SolverDescription;
-import cbit.vcell.solver.SolverTaskDescription;
-import cbit.vcell.solver.TimeBounds;
-import cbit.vcell.solver.TimeStep;
-import cbit.vcell.solver.UniformOutputTimeSpec;
 import cbit.xml.merge.NodeInfo;
 import cbit.xml.merge.XmlTreeDiff;
 import cbit.xml.merge.XmlTreeDiff.DiffConfiguration;
@@ -780,8 +772,9 @@ public static String mathModelToXML(MathModel mathModel) throws XmlParseExceptio
 		OutputTimeSpec outputTimeSpec = new UniformOutputTimeSpec(outputTimeStep);
 		simTaskDesc.setTimeBounds(timeBounds);
 		simTaskDesc.setTimeStep(timeStep);
-		simTaskDesc.setOutputTimeSpec(outputTimeSpec);
-		
+//		simTaskDesc.setOutputTimeSpec(outputTimeSpec);
+
+			simTaskDesc.setOutputTimeSpec(new DefaultOutputTimeSpec(1, 1000));
 		newSimulation.setSolverTaskDescription(simTaskDesc);
     	bioModel.addSimulation(newSimulation);
     	newSimulation.refreshDependencies();

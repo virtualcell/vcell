@@ -8,9 +8,7 @@ import cbit.vcell.math.MathException;
 import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.parser.Discontinuity;
 import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.simdata.ODEDataBlock;
-import cbit.vcell.simdata.SimDataConstants;
-import cbit.vcell.simdata.SimulationData;
+import cbit.vcell.simdata.*;
 import cbit.vcell.solver.*;
 import cbit.vcell.solver.ode.*;
 import cbit.vcell.solver.server.*;
@@ -86,23 +84,27 @@ public class RungeKuttaFelhbergHelper {
                 }
             }
         }
+
+
         SimulationData simData = null;
         try {
             simData = new SimulationData(simTask.getSimulationJob().getVCDataIdentifier(), outDir, null, null);
         } catch (IOException | DataAccessException e) {
             e.printStackTrace();
         }
-//        ODEDataBlock odeDataBlock = null;
-//        try {
-//            if (simData != null) {
-//                odeDataBlock = simData.getODEDataBlock();
-//            }
-//        } catch (DataAccessException | IOException e) {
-//            e.printStackTrace();
-//        }
-//        if (odeDataBlock != null) {
-//            odeSimData = odeDataBlock.getODESimData();
-//        }
+
+
+        ODEDataBlock odeDataBlock = null;
+        try {
+            if (simData != null) {
+                odeDataBlock = simData.getODEDataBlock();
+            }
+        } catch (DataAccessException | IOException e) {
+            e.printStackTrace();
+        }
+        if (odeDataBlock != null) {
+            odeSimData = odeDataBlock.getODESimData();
+        }
 
 
 
@@ -113,30 +115,73 @@ public class RungeKuttaFelhbergHelper {
         }
         String[] varNames = varNameList.toArray(new String[0]);
 
-        OutputTimeSpec outputTimeSpec = sim.getSolverTaskDescription().getOutputTimeSpec();
+        Simulation solvedSim =newSolver.getSimulationJob().getSimulation();
+        OutputTimeSpec outputTimeSpec = solvedSim.getSolverTaskDescription().getOutputTimeSpec();
 
         ArrayList<Double> sampleTimeList = new ArrayList<Double>();
-        if (outputTimeSpec instanceof UniformOutputTimeSpec){
-            double endingTime = sim.getSolverTaskDescription().getTimeBounds().getEndingTime();
-            double dT = ((UniformOutputTimeSpec)outputTimeSpec).getOutputTimeStep();
+        if (outputTimeSpec != null){
+            double endingTime = solvedSim.getSolverTaskDescription().getTimeBounds().getEndingTime();
+            double initialTime  = solvedSim.getSolverTaskDescription().getTimeBounds().getStartingTime();
+            int rowCount = odeSimData.getRowCount();
+            //double dT = 1.1862396206;
+            double dT = (endingTime - initialTime)/rowCount;
             int currTimeIndex=0;
-            while (currTimeIndex*dT <= (endingTime+1e-8)){
+//            while (currTimeIndex*dT <= (endingTime+1e-8)){
+//                sampleTimeList.add(currTimeIndex*dT);
+//                currTimeIndex++;
+//            }
+
+            while (currTimeIndex < rowCount){
                 sampleTimeList.add(currTimeIndex*dT);
                 currTimeIndex++;
             }
+
         }
         double[] sampleTimes = new double[sampleTimeList.size()];
         for (int i=0;i<sampleTimes.length;i++){
             sampleTimes[i] = sampleTimeList.get(i);
         }
 
+        boolean[] wantThisTime = new boolean[sampleTimes.length];
+        for(int i=0; i<wantThisTime.length; i++) {
+            wantThisTime[i] = true;
+        }
 
+        double data[][][] = new double[0][][];
 
+        boolean[] wantTime = {true};
+//        try {
+//            data = simData.getSimDataTimeSeries(null, varNames, null, wantTime, new DataSetControllerImpl.ProgressListener() {
+//                @Override
+//                public void updateProgress(double progress) {
+//                    System.out.println(progress);
+//                }
+//
+//                @Override
+//                public void updateMessage(String message) {
+//                    System.out.println(message);
+//
+//                }
+//            });
+//        } catch (DataAccessException e) {
+//            e.printStackTrace();
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+
+        System.out.println(data);
+
+//        DataManager dataManager = null;
+//        if (sim.isSpatial()) {
+//            dataManager = new PDEDataManager(outputContext,vcDataManager, vcDataId);
+//        } else {
+//            dataManager = new ODEDataManager(outputContext,vcDataManager, vcDataId);
+//        }
         TimeSeriesMultitrialData sampleDataDeterministic = new TimeSeriesMultitrialData(taskId,varNames, sampleTimes, 1);
 
 //        int numberOfDataPoints = sampleTimes.length;
 //        int numberOfVariables = varNameList.size();
-//
+
 //        for (int varIndex = 0; varIndex < varNames.length; varIndex++) {
 //
 //            for(int timeIndex = 0; timeIndex < sampleTimes.length; timeIndex++) {
@@ -149,12 +194,12 @@ public class RungeKuttaFelhbergHelper {
 //                }
 //            }
 //        }
-//        try {
-//            sampleDataDeterministic.addDataSet(odeSimData, 0);
-//        } catch (ExpressionException e) {
-//            e.printStackTrace();
-//        }
-//            timeSeriesMultitrialData.addDataSet(odeSimData,trialIndex);
+        try {
+            sampleDataDeterministic.addDataSet(odeSimData, 0);
+        } catch (ExpressionException e) {
+            e.printStackTrace();
+        }
+     //       timeSeriesMultitrialData.addDataSet(odeSimData,trialIndex);
 
 
         CLIUtils.saveTimeSeriesMultitrialDataAsCSV(sampleDataDeterministic, outDir);
