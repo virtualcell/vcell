@@ -247,7 +247,8 @@ private void initialize() {
 		nameTextField = new JTextField();
 		nameTextField.setEditable(false);
 		sbmlNameTextField = new JTextField();
-		sbmlNameTextField.setEditable(true);
+		sbmlNameTextField.setEditable(false);
+		sbmlNameTextField.setEnabled(false);
 
 		isReversibleCheckBox = new JCheckBox("");
 		isReversibleCheckBox.setBackground(Color.white);
