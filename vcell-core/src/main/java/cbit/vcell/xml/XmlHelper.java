@@ -774,7 +774,7 @@ public static String mathModelToXML(MathModel mathModel) throws XmlParseExceptio
 		simTaskDesc.setTimeStep(timeStep);
 //		simTaskDesc.setOutputTimeSpec(outputTimeSpec);
 
-			simTaskDesc.setOutputTimeSpec(new DefaultOutputTimeSpec(1, 1000));
+			simTaskDesc.setOutputTimeSpec(new DefaultOutputTimeSpec());
 		newSimulation.setSolverTaskDescription(simTaskDesc);
     	bioModel.addSimulation(newSimulation);
     	newSimulation.refreshDependencies();
