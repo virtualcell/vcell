@@ -94,7 +94,7 @@ docker run \
   --rm \
   --mount type=bind,source="$(pwd)"/tests/fixtures,target=/root/in,readonly \
   --mount type=bind,source="$(pwd)"/tests/results,target=/root/out \
-  biosimulators/vcell:latest \
+  ghcr.io/biosimulators/vcell:latest \
     -i /root/in/BIOMD0000000297.omex \
     -o /root/out
 ```
