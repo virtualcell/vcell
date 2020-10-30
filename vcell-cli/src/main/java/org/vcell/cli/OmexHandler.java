@@ -26,8 +26,8 @@ public class OmexHandler {
             NativeLib.combinej.load();
 //            System.load("combinej");
         } catch (UnsatisfiedLinkError ex) {
-           System.err.println("Unable to link to native 'libCombine' lib, check native lib: " + ex.getMessage());
-           System.exit(1);
+            System.err.println("Unable to link to native 'libCombine' lib, check native lib: " + ex.getMessage());
+            System.exit(1);
         } catch (Exception e) {
             System.err.println("Error occurred while importing libCombine: " + e.getMessage());
             System.exit(1);
@@ -48,7 +48,7 @@ public class OmexHandler {
         this.archive = new CombineArchive();
         boolean isInitialized = archive.initializeFromArchive(omexPath);
 
-        if(!isInitialized) {
+        if (!isInitialized) {
             System.err.println("Unable to initialise OMEX archive, archive maybe corrupted");
             System.exit(1);
         }
@@ -72,7 +72,7 @@ public class OmexHandler {
         ArrayList<String> sedmlListAbsolute = new ArrayList<>();
         ArrayList<String> sedmlListRelative = this.getSedmlLocationsRelative();
 
-        for (String sedmlFileRelative: sedmlListRelative) {
+        for (String sedmlFileRelative : sedmlListRelative) {
             sedmlListAbsolute.add(Paths.get(this.tempPath, sedmlFileRelative).toString());
         }
         return sedmlListAbsolute;
@@ -82,13 +82,13 @@ public class OmexHandler {
         String outputPath = "";
         String sedmlName = absoluteSedmlPath.substring(absoluteSedmlPath.lastIndexOf("/") + 1);
         ArrayList<String> sedmlListRelative = this.getSedmlLocationsRelative();
-        for (String sedmlFileRelative: sedmlListRelative) {
-            if(absoluteSedmlPath.contains(sedmlFileRelative)) {
-                outputPath =  Paths.get(
-                            this.outDirPath,
-                                sedmlFileRelative.substring(
-                                    0, sedmlFileRelative.indexOf(".sedml")
-                                )).toString();
+        for (String sedmlFileRelative : sedmlListRelative) {
+            if (absoluteSedmlPath.contains(sedmlFileRelative)) {
+                outputPath = Paths.get(
+                        this.outDirPath,
+                        sedmlFileRelative.substring(
+                                0, sedmlFileRelative.indexOf(".sedml")
+                        )).toString();
             }
         }
 

@@ -9,23 +9,17 @@ import java.util.ArrayList;
 import java.util.Objects;
 
 public class CLIUtils {
-//    private String tempDirPath = null;
+    //    private String tempDirPath = null;
     private String extractedOmexPath = null;
 
     public CLIUtils() {
 
     }
 
-    @SuppressWarnings("UnstableApiUsage")
-    public String getTempDir() {
-        return Files.createTempDir().getAbsolutePath();
-    }
-
-
     public static boolean removeDirs(File f) {
         try {
             deleteRecursively(f);
-        } catch(IOException ex) {
+        } catch (IOException ex) {
             System.err.println("Failed to delete the file: " + f);
             return false;
         }
@@ -33,9 +27,9 @@ public class CLIUtils {
     }
 
     public static boolean makeDirs(File f) {
-        if(f.exists()) {
+        if (f.exists()) {
             boolean isRemoved = removeDirs(f);
-            if(!isRemoved)
+            if (!isRemoved)
                 return false;
         }
         return f.mkdirs();
@@ -59,18 +53,18 @@ public class CLIUtils {
         // Headers for CSV
         ArrayList<String> headersList = new ArrayList<>();
         headersList.add("times");
-        for(String varName: data.varNames) {
+        for (String varName : data.varNames) {
             headersList.add(varName);
         }
 
         // Complete rows for CSV
         ArrayList<ArrayList<Double>> allRows = new ArrayList<>();
 
-        for(int rowCounter = 0; rowCounter < numberOfRows; rowCounter++) {
+        for (int rowCounter = 0; rowCounter < numberOfRows; rowCounter++) {
             ArrayList<Double> row = new ArrayList<>();
             row.add(data.times[rowCounter]);
 
-            for(int varCounter = 0; varCounter < numberOfVariables; varCounter++) {
+            for (int varCounter = 0; varCounter < numberOfVariables; varCounter++) {
                 row.add(data.data[varCounter][rowCounter][0]);
             }
 
@@ -81,7 +75,7 @@ public class CLIUtils {
         // Writing CSV in string buffer
         StringBuilder headersBuilder = new StringBuilder();
 
-        for(String headerName: headersList) {
+        for (String headerName : headersList) {
             headersBuilder.append(headerName);
             headersBuilder.append(",");
         }
@@ -91,9 +85,9 @@ public class CLIUtils {
 
         StringBuilder allRowsBuilder = new StringBuilder(headers);
 
-        for(ArrayList<Double> rowValues: allRows) {
+        for (ArrayList<Double> rowValues : allRows) {
             StringBuilder rowBuilder = new StringBuilder();
-            for(Double val: rowValues) {
+            for (Double val : rowValues) {
                 rowBuilder.append(val);
                 rowBuilder.append(",");
             }
@@ -128,7 +122,7 @@ public class CLIUtils {
             System.err.println("Unable to read line, failed with err: " + e.getMessage());
         }
         StringBuilder sb = new StringBuilder();
-        while(line != null) {
+        while (line != null) {
             sb.append(line).append("\n");
             try {
                 line = buf.readLine();
@@ -146,7 +140,24 @@ public class CLIUtils {
             PrintWriter out = new PrintWriter(f);
             out.print(fileAsString);
         } catch (FileNotFoundException e) {
-            System.err.println("Unable to find path, failed with err: "+e.getMessage());
+            System.err.println("Unable to find path, failed with err: " + e.getMessage());
         }
+    }
+
+    public static void removeIntermediarySimFiles(File path) {
+        File[] files = path.listFiles();
+        for (File f : files) {
+            if (f.getName().endsWith(".csv")) {
+                // Do nothing
+                continue;
+            } else {
+                f.delete();
+            }
+        }
+    }
+
+    @SuppressWarnings("UnstableApiUsage")
+    public String getTempDir() {
+        return Files.createTempDir().getAbsolutePath();
     }
 }

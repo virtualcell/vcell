@@ -31,7 +31,7 @@ public class CLIStandalone {
         omexHandler.extractOmex();
 
         ArrayList<String> sedmlLocations = omexHandler.getSedmlLocationsAbsolute();
-        for(String sedmlLocation: sedmlLocations) {
+        for (String sedmlLocation : sedmlLocations) {
             File completeSedmlPath = new File(sedmlLocation);
             File outDirForCurrentSedml = new File(omexHandler.getOutputPathFromSedml(sedmlLocation));
             CLIUtils.makeDirs(outDirForCurrentSedml);
@@ -40,12 +40,12 @@ public class CLIStandalone {
             try {
                 sedml = Libsedml.readDocument(completeSedmlPath).getSedMLModel();
             } catch (XMLException xmlEx) {
-                System.err.println("Unable to parse SEDML file, failed with error: " + xmlEx.getMessage());
+                System.err.println("Unable to parse SED-ML file, failed with error: " + xmlEx.getMessage());
                 System.exit(1);
             }
 
             if (sedml == null || sedml.getModels().isEmpty()) {
-                System.err.println("the sedml file '" + completeSedmlPath.getName() + "'does not contain a valid document");
+                System.err.println("The SED-ML file '" + completeSedmlPath.getName() + "'does not contain a valid document");
                 System.exit(99);
             }
 
