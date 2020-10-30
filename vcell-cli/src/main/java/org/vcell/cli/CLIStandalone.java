@@ -31,7 +31,7 @@ public class CLIStandalone {
         omexHandler.extractOmex();
 
         ArrayList<String> sedmlLocations = omexHandler.getSedmlLocationsAbsolute();
-        for(String sedmlLocation: sedmlLocations) {
+        for (String sedmlLocation : sedmlLocations) {
             File completeSedmlPath = new File(sedmlLocation);
             File outDirForCurrentSedml = new File(omexHandler.getOutputPathFromSedml(sedmlLocation));
             CLIUtils.makeDirs(outDirForCurrentSedml);

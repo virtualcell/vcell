@@ -47,7 +47,7 @@ public class IDAHelper {
         try {
             executableName = SolverUtilities.getExes(SolverDescription.IDA)[0].getAbsolutePath();
         } catch (IOException e) {
-            throw new RuntimeException("failed to get executable for solver "+SolverDescription.IDA.getDisplayLabel()+": "+e.getMessage(),e);
+            throw new RuntimeException("failed to get executable for solver " + SolverDescription.IDA.getDisplayLabel() + ": " + e.getMessage(), e);
         }
         Executable executable = new Executable(new String[]{executableName, idaInputFile.getAbsolutePath(), idaOutputFile.getAbsolutePath()});
         try {

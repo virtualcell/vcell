@@ -49,7 +49,7 @@ public class StockGibsonHelper {
         try {
             executableName = SolverUtilities.getExes(SolverDescription.StochGibson)[0].getAbsolutePath();
         } catch (IOException e) {
-            throw new RuntimeException("failed to get executable for solver "+SolverDescription.StochGibson.getDisplayLabel()+": "+e.getMessage(),e);
+            throw new RuntimeException("failed to get executable for solver " + SolverDescription.StochGibson.getDisplayLabel() + ": " + e.getMessage(), e);
         }
         Executable executable = new Executable(new String[]{executableName, "gibson", gibsonInputFile.getAbsolutePath(), gibsonOutputFile.getAbsolutePath()});
         try {
