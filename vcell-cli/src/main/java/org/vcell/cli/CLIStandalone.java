@@ -40,12 +40,12 @@ public class CLIStandalone {
             try {
                 sedml = Libsedml.readDocument(completeSedmlPath).getSedMLModel();
             } catch (XMLException xmlEx) {
-                System.err.println("Unable to parse SEDML file, failed with error: " + xmlEx.getMessage());
+                System.err.println("Unable to parse SED-ML file, failed with error: " + xmlEx.getMessage());
                 System.exit(1);
             }
 
             if (sedml == null || sedml.getModels().isEmpty()) {
-                System.err.println("the sedml file '" + completeSedmlPath.getName() + "'does not contain a valid document");
+                System.err.println("The SED-ML file '" + completeSedmlPath.getName() + "'does not contain a valid document");
                 System.exit(99);
             }
 
