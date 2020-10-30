@@ -140,6 +140,7 @@ public class AdamsMoultonHelper {
 
 
         CLIUtils.saveTimeSeriesMultitrialDataAsCSV(sampleDataDeterministic, outDir);
+        CLIUtils.removeIntermediarySimFiles(outDir);
         return odeSimData;
     }
 }

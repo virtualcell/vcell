@@ -140,6 +140,7 @@ public class RungeKutta4Helper {
 
 
         CLIUtils.saveTimeSeriesMultitrialDataAsCSV(sampleDataDeterministic, outDir);
+        CLIUtils.removeIntermediarySimFiles(outDir);
         return odeSimData;
     }
 }

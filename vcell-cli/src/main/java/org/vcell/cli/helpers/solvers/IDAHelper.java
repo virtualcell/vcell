@@ -57,6 +57,7 @@ public class IDAHelper {
         }
         ODESolverResultSet odeSolverResultSet = SBMLSolverHelper.getODESolverResultSet(simJob, idaOutputFile.getPath());
         CLIUtils.convertIDAtoCSV(idaOutputFile);
+        CLIUtils.removeIntermediarySimFiles(outDir);
         return odeSolverResultSet;
     }
 }

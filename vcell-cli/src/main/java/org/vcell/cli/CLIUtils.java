@@ -149,4 +149,16 @@ public class CLIUtils {
             System.err.println("Unable to find path, failed with err: "+e.getMessage());
         }
     }
+
+    public static void removeIntermediarySimFiles(File path) {
+        File[] files = path.listFiles();
+        for(File f : files) {
+            if(f.getName().endsWith(".csv") ) {
+                // Do nothing
+                continue;
+            } else {
+                f.delete();
+            }
+        }
+    }
 }

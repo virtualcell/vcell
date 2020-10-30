@@ -140,6 +140,7 @@ public class ForwardEulerHelper {
 
 
         CLIUtils.saveTimeSeriesMultitrialDataAsCSV(sampleDataDeterministic, outDir);
+        CLIUtils.removeIntermediarySimFiles(outDir);
         return odeSimData;
     }
 }

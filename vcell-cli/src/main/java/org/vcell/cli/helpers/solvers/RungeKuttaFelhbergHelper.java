@@ -140,6 +140,7 @@ public class RungeKuttaFelhbergHelper {
 
 
         CLIUtils.saveTimeSeriesMultitrialDataAsCSV(sampleDataDeterministic, outDir);
+        CLIUtils.removeIntermediarySimFiles(outDir);
         return odeSimData;
     }
 }

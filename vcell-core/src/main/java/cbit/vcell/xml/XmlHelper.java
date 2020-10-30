@@ -611,14 +611,21 @@ public static String mathModelToXML(MathModel mathModel) throws XmlParseExceptio
         // identify the vCell solvers that would match best the sedml solver kisao id
         List<SolverDescription> solverDescriptions = new ArrayList<>();
 		for (SolverDescription sd : SolverDescription.values()) {
+			boolean isExactlySame = false;
 			KisaoTerm solverKisaoTerm = KisaoOntology.getInstance().getTermById(sd.getKisao());
-			if(solverKisaoTerm == null) {
-				continue;
+			if(!sd.name().equals("AdamsMoulton")) {
+				if(solverKisaoTerm == null) {
+					continue;
+				}
+				isExactlySame = solverKisaoTerm.equals(sedmlKisao);
+				if (isExactlySame && !solverKisaoTerm.isObsolete()) {
+					solverDescriptions.add(sd);		// we make a list with all the solvers that match the kisao
+				}
+			} else {
+				solverDescriptions.add(sd);
 			}
-			boolean isExactlySame = solverKisaoTerm.equals(sedmlKisao);
-			if (isExactlySame && !solverKisaoTerm.isObsolete()) {
-				solverDescriptions.add(sd);		// we make a list with all the solvers that match the kisao
-			}
+
+
 		}
 		
 		// from the list of vcell solvers that match the sedml kisao we select the ones that have a matching time step
