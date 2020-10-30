@@ -613,7 +613,7 @@ public static String mathModelToXML(MathModel mathModel) throws XmlParseExceptio
 		for (SolverDescription sd : SolverDescription.values()) {
 			boolean isExactlySame = false;
 			KisaoTerm solverKisaoTerm = KisaoOntology.getInstance().getTermById(sd.getKisao());
-			if(!sd.name().equals("AdamsMoulton")) {
+			if(!sd.name().equals("ADAMS_MOULTON")) {
 				if(solverKisaoTerm == null) {
 					continue;
 				}
