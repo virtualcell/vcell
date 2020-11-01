@@ -577,6 +577,7 @@ public static String mathModelToXML(MathModel mathModel) throws XmlParseExceptio
         }
 
 		KisaoTerm sedmlKisao = null;
+        String kisaoID = null;
 		org.jlibsedml.Simulation sedmlSimulation = null;	// this will become the vCell simulation
 
 		org.jlibsedml.Model sedmlOriginalModel = null;		// the "original" model referred to by the task
@@ -601,7 +602,7 @@ public static String mathModelToXML(MathModel mathModel) throws XmlParseExceptio
         	}
     		sedmlOriginalModelName = sedmlOriginalModel.getId();
     		Algorithm algorithm = sedmlSimulation.getAlgorithm();
-    		String kisaoID = algorithm.getKisaoID();
+    		kisaoID = algorithm.getKisaoID();
     		sedmlKisao = KisaoOntology.getInstance().getTermById(kisaoID);
         }
         
@@ -613,7 +614,7 @@ public static String mathModelToXML(MathModel mathModel) throws XmlParseExceptio
 		for (SolverDescription sd : SolverDescription.values()) {
 			boolean isExactlySame = false;
 			KisaoTerm solverKisaoTerm = KisaoOntology.getInstance().getTermById(sd.getKisao());
-			if(!sd.name().equals("ADAMS_MOULTON")) {
+			if(!sd.name().equals("AdamsMoulton")) {
 				if(solverKisaoTerm == null) {
 					continue;
 				}
@@ -622,7 +623,9 @@ public static String mathModelToXML(MathModel mathModel) throws XmlParseExceptio
 					solverDescriptions.add(sd);		// we make a list with all the solvers that match the kisao
 				}
 			} else {
-				solverDescriptions.add(sd);
+				if(kisaoID.equals(SolverDescription.AdamsMoulton.getKisao())) {
+					solverDescriptions.add(sd);
+				}
 			}
 
 
