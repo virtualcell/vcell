@@ -311,7 +311,8 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 					if(col == BioModelEditorReactionTableModel.COLUMN_LINK && tableSelection instanceof BioPaxObject) {
 						selectionManager.followHyperlink(new ActiveView(null,DocumentEditorTreeFolderClass.PATHWAY_DIAGRAM_NODE, ActiveViewID.pathway_diagram),new Object[]{tableSelection});
 					} else if(col == BioModelEditorReactionTableModel.COLUMN_NOTES) {
-						selectionManager.firePropertyChange(SelectionManager.PROPERTY_NAME_SELECTED_PANEL, null, selectionManager.getAnnotationNavigator());
+						Object entity = currentSelectedTableModel.getValueAt(row);
+						selectionManager.firePropertyChange(SelectionManager.PROPERTY_NAME_SELECTED_PANEL, null, selectionManager.getAnnotationNavigator(entity));
 					}
 				} else if(e.getSource() == speciesTable) {
 					EditorScrollTable table = speciesTable;
@@ -321,7 +322,8 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 					if(col == BioModelEditorSpeciesTableModel.COLUMN_LINK && tableSelection instanceof BioPaxObject) {
 						selectionManager.followHyperlink(new ActiveView(null, DocumentEditorTreeFolderClass.PATHWAY_DIAGRAM_NODE, ActiveViewID.pathway_diagram), new Object[]{tableSelection});
 					} else if(col == BioModelEditorSpeciesTableModel.COLUMN_NOTES) {
-						selectionManager.firePropertyChange(SelectionManager.PROPERTY_NAME_SELECTED_PANEL, null, selectionManager.getAnnotationNavigator());
+						Object entity = currentSelectedTableModel.getValueAt(row);
+						selectionManager.firePropertyChange(SelectionManager.PROPERTY_NAME_SELECTED_PANEL, null, selectionManager.getAnnotationNavigator(entity));
 					}
 				} else if(e.getSource() == molecularTypeTable) {
 					EditorScrollTable table = molecularTypeTable;
@@ -331,20 +333,25 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 					if(col == MolecularTypeTableModel.Column.link.ordinal() && tableSelection instanceof BioPaxObject) {
 						selectionManager.followHyperlink(new ActiveView(null,DocumentEditorTreeFolderClass.PATHWAY_DIAGRAM_NODE, ActiveViewID.pathway_diagram),new Object[]{tableSelection});
 					} else if(col == MolecularTypeTableModel.Column.notes.ordinal()) {
-						selectionManager.firePropertyChange(SelectionManager.PROPERTY_NAME_SELECTED_PANEL, null, selectionManager.getAnnotationNavigator());
+						Object entity = currentSelectedTableModel.getValueAt(row);
+						selectionManager.firePropertyChange(SelectionManager.PROPERTY_NAME_SELECTED_PANEL, null, selectionManager.getAnnotationNavigator(entity));
 					}
 				} else if(e.getSource() == observablesTable) {
 					EditorScrollTable table = observablesTable;
+					int row = table.getSelectedRow();
 					int col = table.getSelectedColumn();
 					if(col == ObservableTableModel.Column.notes.ordinal()) {
-						selectionManager.firePropertyChange(SelectionManager.PROPERTY_NAME_SELECTED_PANEL, null, selectionManager.getAnnotationNavigator());
+						Object entity = currentSelectedTableModel.getValueAt(row);
+						selectionManager.firePropertyChange(SelectionManager.PROPERTY_NAME_SELECTED_PANEL, null, selectionManager.getAnnotationNavigator(entity));
 					}
 					
 				} else if(e.getSource() == structuresTable) {
 					EditorScrollTable table = structuresTable;
+					int row = table.getSelectedRow();
 					int col = table.getSelectedColumn();
 					if(col == BioModelEditorStructureTableModel.COLUMN_NOTES) {
-						selectionManager.firePropertyChange(SelectionManager.PROPERTY_NAME_SELECTED_PANEL, null, selectionManager.getAnnotationNavigator());
+						Object entity = currentSelectedTableModel.getValueAt(row);
+						selectionManager.firePropertyChange(SelectionManager.PROPERTY_NAME_SELECTED_PANEL, null, selectionManager.getAnnotationNavigator(entity));
 					}
 				}
 /*				

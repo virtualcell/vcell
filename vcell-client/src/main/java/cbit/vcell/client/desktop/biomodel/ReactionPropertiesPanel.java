@@ -175,7 +175,7 @@ public class ReactionPropertiesPanel extends DocumentEditorSubPanel {
 		@Override
 		public void mouseReleased(MouseEvent e) {
 			if(e.getSource() == ReactionPropertiesPanel.this.annotationIconLabel) {
-				selectionManager.firePropertyChange(SelectionManager.PROPERTY_NAME_SELECTED_PANEL, null, selectionManager.getAnnotationNavigator());
+				selectionManager.firePropertyChange(SelectionManager.PROPERTY_NAME_SELECTED_PANEL, null, selectionManager.getAnnotationNavigator(reactionStep));
 			}
 		}
 	}
