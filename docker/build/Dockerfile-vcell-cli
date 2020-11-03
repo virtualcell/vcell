@@ -57,7 +57,7 @@ COPY ./vcell-client/target/vcell-client-0.0.1-SNAPSHOT.jar \
      /usr/local/app/vcell/lib/
 
 
-# Add local solvers
+# Add linux local solvers only
 ADD ./localsolvers /usr/local/app/vcell/installDir/localsolvers
 ADD ./nativelibs /usr/local/app/vcell/installDir/nativelibs
 COPY ./docker_run.sh /usr/local/app/vcell/installDir/
