@@ -30,9 +30,9 @@ LABEL about.tags="rule-based modeling,kinetic modeling,dynamical simulation,syst
 LABEL maintainer="BioSimulators Team <info@biosimulators.org>"
 
 RUN apt-get -y update && \
-    apt-get install -y curl openjdk-8-jre dnsutils && \
-    mkdir -p /usr/local/app/vcell/lib \
-    mkdir -p /usr/local/app/vcell/simulation \
+    apt-get install -y --no-install-recommends curl openjdk-8-jre dnsutils && \
+    mkdir -p /usr/local/app/vcell/lib && \
+    mkdir -p /usr/local/app/vcell/simulation && \
     mkdir -p /usr/local/app/vcell/installDir
 	
 # Copy JAR files
@@ -55,7 +55,6 @@ COPY ./vcell-client/target/vcell-client-0.0.1-SNAPSHOT.jar \
      ./non-maven-java-libs/com/oracle/ucp/11.2.0.4/ucp-11.2.0.4.jar \
      ./non-maven-java-libs/org/sbml/libcombine/libCombineLinux64/0.2.7/libCombineLinux64-0.2.7.jar \
      /usr/local/app/vcell/lib/
-
 
 # Add linux local solvers only
 ADD ./localsolvers /usr/local/app/vcell/installDir/localsolvers
