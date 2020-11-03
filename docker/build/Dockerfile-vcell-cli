@@ -1,7 +1,7 @@
 # Build image:
 #   docker build --file docker/build/Dockerfile-vcell-cli \
-#   	--tag crbm/biosimulations_vcell:7.2 \
-#   	--tag crbm/biosimulations_vcell:latest .
+#   	--tag biosimulators/vcell:7.2 \
+#   	--tag biosimulators/vcell:latest .
 #
 # Run image:
 #   docker run \
@@ -9,7 +9,7 @@
 #       --rm \
 #       --mount type=bind,source="$(pwd)"/tests/fixtures,target=/root/in,readonly \
 #       --mount type=bind,source="$(pwd)"/tests/results,target=/root/out \
-#       crbm/biosimulations_vcell:latest \
+#       ghcr.io/biosimulators/vcell:latest \
 #        -i /root/in/BIOMD0000000297.omex \
 #        -o /root/out
 
@@ -27,7 +27,7 @@ LABEL about.documentation="http://vcell.org/"
 LABEL about.license_file="https://github.com/virtualcell/vcell/blob/master/license.txt"
 LABEL about.license="SPDX:MIT"
 LABEL about.tags="rule-based modeling,kinetic modeling,dynamical simulation,systems biology,BNGL,SED-ML,COMBINE,OMEX"
-LABEL maintainer="Gnaneswara Marupilla <marupilla@uchc.edu>"
+LABEL maintainer="BioSimulators Team <info@biosimulators.org>"
 
 RUN apt-get -y update && \
     apt-get install -y curl openjdk-8-jre dnsutils && \
@@ -57,7 +57,7 @@ COPY ./vcell-client/target/vcell-client-0.0.1-SNAPSHOT.jar \
      /usr/local/app/vcell/lib/
 
 
-# Add local solvers
+# Add linux local solvers only
 ADD ./localsolvers /usr/local/app/vcell/installDir/localsolvers
 ADD ./nativelibs /usr/local/app/vcell/installDir/nativelibs
 COPY ./docker_run.sh /usr/local/app/vcell/installDir/

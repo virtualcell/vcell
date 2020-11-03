@@ -19,6 +19,7 @@ import java.io.IOException;
 
 // Copied from vcell-admin/src/test/java/org/vcell/sbml/
 public interface SBMLSolver {
-	public File solve(String filePrefix, File outDir, String sbmlText, SimSpec testSpec) throws IOException, SolverException, SbmlException;
-	public String getResultsFileColumnDelimiter();
+    public File solve(String filePrefix, File outDir, String sbmlText, SimSpec testSpec) throws IOException, SolverException, SbmlException;
+
+    public String getResultsFileColumnDelimiter();
 }

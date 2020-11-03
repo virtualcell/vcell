@@ -61,7 +61,7 @@ public class CVODEHelper {
             // provide a .properties file in the working directory
             executableName = SolverUtilities.getExes(SolverDescription.CVODE)[0].getAbsolutePath();
         } catch (IOException e) {
-            throw new RuntimeException("failed to get executable for solver "+SolverDescription.CVODE.getDisplayLabel()+": "+e.getMessage(),e);
+            throw new RuntimeException("failed to get executable for solver " + SolverDescription.CVODE.getDisplayLabel() + ": " + e.getMessage(), e);
         }
         Executable executable = new Executable(new String[]{executableName, cvodeInputFile.getAbsolutePath(), resultFile.getAbsolutePath()});
         try {
@@ -72,6 +72,7 @@ public class CVODEHelper {
         ODESolverResultSet odeSolverResultSet = SBMLSolverHelper.getODESolverResultSet(simJob, resultFile.getPath());
         cvodeInputFile.delete();
         CLIUtils.convertIDAtoCSV(resultFile);
+        CLIUtils.removeIntermediarySimFiles(outDir);
         return odeSolverResultSet;
     }
 }

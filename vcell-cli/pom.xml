@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
@@ -110,11 +111,11 @@
             <artifactId>vcell-vmicro</artifactId>
             <version>${project.version}</version>
         </dependency>
-<!--        <dependency>-->
-<!--            <groupId>org.vcell</groupId>-->
-<!--            <artifactId>vcell-admin</artifactId>-->
-<!--            <scope>${project.version}</scope>-->
-<!--        </dependency>-->
+        <!--        <dependency>-->
+        <!--            <groupId>org.vcell</groupId>-->
+        <!--            <artifactId>vcell-admin</artifactId>-->
+        <!--            <scope>${project.version}</scope>-->
+        <!--        </dependency>-->
 
         <!-- NB: For testing via main methods in IDEs. -->
         <!-- Don't comment this out, it'll break the standalone (local with oracle connection) version of vcell -->
@@ -207,9 +208,10 @@
                                                 <mainClass>com.inventory.gui.InventoryApp</mainClass>
                                             </manifest>
                                         </archive>
-                     -->                    <descriptorRefs>
-                    <descriptorRef>jar-with-dependencies</descriptorRef>
-                </descriptorRefs>
+                     -->
+                    <descriptorRefs>
+                        <descriptorRef>jar-with-dependencies</descriptorRef>
+                    </descriptorRefs>
                 </configuration>
             </plugin>
         </plugins>

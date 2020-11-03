@@ -36,7 +36,6 @@ public class CLIHandler {
         }
 
         if (cmd.hasOption("v")) {
-            //TODO: Properly implement version fetch for vcell (make it dynamic)
             System.out.println("VCell version " + getVersion());
             System.exit(1);
         }
@@ -58,7 +57,7 @@ public class CLIHandler {
         Option input = new Option("i",
                 "archive",
                 true,
-                "Path to OMEX file which contains one or more SED-ML-encoded simulation experiments");
+                "Path to OMEX/COMBINE Archive file which contains one or more SED-ML encoded simulation experiments");
 
         Option output = new Option("o",
                 "out-dir",
