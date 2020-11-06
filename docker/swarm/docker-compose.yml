@@ -93,6 +93,7 @@ services:
     volumes:
       - "${VCELL_SIMDATADIR_HOST}:/simdata"
       - "${VCELL_SIMDATADIR_ARCHIVE_HOST}:${VCELL_SIMDATADIR_ARCHIVE_HOST}"
+      - "${VCELL_HTCLOGS_HOST}:/htclogs"
     secrets:
       - dbpswd
       - jmspswd
@@ -111,6 +112,9 @@ services:
           memory: 1000M
         reservations:
           memory: 500M
+      placement:
+        constraints:
+          - node.labels.zone == INTERNAL
   submit:
     image: "${VCELL_REPO_NAMESPACE}/vcell-submit:${VCELL_TAG}"
     environment:

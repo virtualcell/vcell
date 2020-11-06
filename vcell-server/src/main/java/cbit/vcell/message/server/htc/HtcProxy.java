@@ -8,7 +8,10 @@ import java.nio.CharBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetEncoder;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
@@ -230,8 +233,6 @@ public abstract class HtcProxy {
 	public abstract String getSubmissionFileExtension();
 	public static class MemLimitResults {
 		private static final long FALLBACK_MEM_LIMIT_MB=4096;//MAX memory allowed if not set in limitFile
-		private static long lastFallbackLimit = FALLBACK_MEM_LIMIT_MB;
-		private static long lastFallbackReadTime = 0;
 		private long memLimit;
 		private String memLimitSource;
 		public MemLimitResults(long memLimit, String memLimitSource) {
@@ -245,26 +246,48 @@ public abstract class HtcProxy {
 		public String getMemLimitSource() {
 			return memLimitSource;
 		}
-		public static long getFallbackMemLimitMB() {
-			if((System.currentTimeMillis()-lastFallbackReadTime) < (1000*60*5)) {
-				return lastFallbackLimit;
-			}
-			lastFallbackReadTime = System.currentTimeMillis();
+		public static MemLimitResults getFallbackMemLimitMB(SolverDescription solverDescription,double estimatedMemSizeMB) {
+			Long result = null;
+			String source = null;
 			try {
-				String s = BeanUtils.readBytesFromFile(new File("/htclogs/slurmMinMem.txt"), null);
-				lastFallbackLimit = Long.parseLong(s.trim());
+				List<String> solverMemLimits = Files.readAllLines(Paths.get(new File("/"+System.getProperty(PropertyLoader.htcLogDirInternal)+"/slurmMinMem.txt").getAbsolutePath()));
+				for (Iterator<String> iterator = solverMemLimits.iterator(); iterator.hasNext();) {
+					String solverAndLimit = iterator.next().trim();
+					if(solverAndLimit.length()==0 || solverAndLimit.startsWith("//")) {
+						continue;
+					}
+					StringTokenizer st = new StringTokenizer(solverAndLimit,":");
+					String limitSolver = st.nextToken();
+					if(limitSolver.equalsIgnoreCase("all") && result == null) {//use all if there is not solver matching name in slurmMinMem.txt
+						result = Long.parseLong(st.nextToken());
+						source = "used slurmMinMem.txt all";
+					}else if(solverDescription != null && limitSolver.equals(solverDescription.name())) {//use matching solver mem limit from file
+						result = Long.parseLong(st.nextToken());
+						source = "used slurmMinMem.txt "+solverDescription.name();
+						break;
+					}
+				}
+				if(result == null) {//empty slurmMinMem.txt
+					result = FALLBACK_MEM_LIMIT_MB;
+					source = "Empty used FALLBACK_MEM_LIMIT_MB";
+				}
 			} catch (Exception e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
-				lastFallbackLimit = FALLBACK_MEM_LIMIT_MB;
+				result = FALLBACK_MEM_LIMIT_MB;
+				source = "Exception "+e.getClass().getSimpleName()+" used FALLBACK_MEM_LIMIT_MB";
 			}
-			return lastFallbackLimit;
+			if(estimatedMemSizeMB > result) {//Use estimated if bigger
+				result = (long)estimatedMemSizeMB;
+				source = "used Estimated";
+			}
+			return new MemLimitResults(result, source);
 		}
 	}
 	public static final boolean bDebugMemLimit = false;
 	public static MemLimitResults getMemoryLimit(String vcellUserid,KeyValue simID,SolverDescription solverDescription,double estimatedMemSizeMB) {
-		boolean bUseEstimate = estimatedMemSizeMB >= MemLimitResults.getFallbackMemLimitMB();
-		return new MemLimitResults((bUseEstimate?(long)estimatedMemSizeMB:MemLimitResults.getFallbackMemLimitMB()), (bUseEstimate?"used Estimated":"used FALLBACK_MEM_LIMIT"));
+		return MemLimitResults.getFallbackMemLimitMB(solverDescription, estimatedMemSizeMB);
+//		boolean bUseEstimate = estimatedMemSizeMB >= MemLimitResults.getFallbackMemLimitMB(solverDescription);
+//		return new MemLimitResults((bUseEstimate?(long)estimatedMemSizeMB:MemLimitResults.getFallbackMemLimitMB(solverDescription)), (bUseEstimate?"used Estimated":"used FALLBACK_MEM_LIMIT"));
 //		//One of 5 limits are returned (ordered from highest to lowest priority):
 //		//  MemoryMax:PerSimulation									Has PropertyLoader.simPerUserMemoryLimitFile, specific user AND simID MATCHED in file (userid MemLimitMb simID)
 //		//  MemoryMax:PerUser										Has PropertyLoader.simPerUserMemoryLimitFile, specific user (but not simID) MATCHED in file (userid MemLimitMb '*')
