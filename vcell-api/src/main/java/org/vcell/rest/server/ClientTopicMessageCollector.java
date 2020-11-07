@@ -11,6 +11,7 @@
 package org.vcell.rest.server;
 import javax.swing.event.EventListenerList;
 
+import org.apache.activemq.command.ActiveMQTextMessage;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.vcell.util.BigString;
@@ -33,6 +34,7 @@ import cbit.vcell.message.VCMessagingService;
 import cbit.vcell.message.VCTopicConsumer;
 import cbit.vcell.message.VCTopicConsumer.TopicListener;
 import cbit.vcell.message.VCellTopic;
+import cbit.vcell.message.jms.VCMessageJms;
 import cbit.vcell.message.messages.MessageConstants;
 import cbit.vcell.message.messages.StatusMessage;
 import cbit.vcell.server.SimulationJobStatus;
@@ -135,6 +137,19 @@ public void onTopicMessage(VCMessage message, VCMessageSession session) {
 		return;
 	}
 	try {
+		//Check if it's a broadcast message
+		if(message instanceof VCMessageJms) {
+			VCMessageJms vcMessageJms = (VCMessageJms)message;
+			javax.jms.Message myMessage = vcMessageJms.getJmsMessage();
+			if(myMessage instanceof ActiveMQTextMessage) {
+				ActiveMQTextMessage myAMQ = (ActiveMQTextMessage)myMessage;
+				if(myAMQ.getType().equalsIgnoreCase(MessageConstants.MESSAGE_TYPE_BROADCASTMESSAGE_VALUE)) {	
+					fireMessageEvent(new VCellMessageEvent(this, System.currentTimeMillis() + "", new MessageData(myAMQ.getText()), VCellMessageEvent.VCELL_MESSAGEEVENT_TYPE_BROADCAST,null/*VCMessagingConstants.USERNAME_PROPERTY_VALUE_ALL*/));
+					return;
+				}
+			}		
+		}
+		
 		if (message.getObjectContent()==null){
 			throw new Exception(this.getClass().getName()+".onTopicMessage: unimplemented message class "+message.show());
 		}

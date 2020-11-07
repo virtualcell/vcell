@@ -3243,7 +3243,7 @@ public class ClientRequestManager
 	 */
 	public void onVCellMessageEvent(final VCellMessageEvent event) {
 		if (event.getEventTypeID() == VCellMessageEvent.VCELL_MESSAGEEVENT_TYPE_BROADCAST) {
-			PopupGenerator.showInfoDialog(getMdiManager().getFocusedWindowManager(),
+			DialogUtils.showInfoDialog(getMdiManager().getFocusedWindowManager().getComponent(),"Message for All VCell Users",
 					event.getMessageData().getData().toString());
 		}
 	}
