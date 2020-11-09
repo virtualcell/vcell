@@ -49,6 +49,8 @@ import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.JSeparator;
 import javax.swing.JTextArea;
+import javax.swing.SwingUtilities;
+import javax.swing.Timer;
 import javax.swing.event.MenuEvent;
 import javax.swing.event.MenuListener;
 
@@ -2258,6 +2260,7 @@ public JLabel getIconBar() {
 	return iconText;
 }
 
+//private static final String notificationsUrl = "//cfs05.cam.uchc.edu/vcell/apache_webroot/htdocs/webstart/VCell_alert/VCell_Alert.html";
 private static final String notificationsUrl = "https://vcell.org/webstart/VCell_alert/VCell_Alert.html";
 private void checkForNotifications() {
 	int code = HttpURLConnection.HTTP_BAD_REQUEST;
@@ -2278,6 +2281,28 @@ private void checkForNotifications() {
 	} else {
 		getIconBar().setEnabled(true);
 		getIconBar().setVisible(true);
+		
+		Timer blinkTimer = new Timer(500, new ActionListener() {
+			private int count = 0;
+			private int maxCount = 10;
+			public void actionPerformed(ActionEvent e) {
+				if (count >= maxCount) {
+					getIconBar().setEnabled(true);
+					getIconBar().setVisible(true);
+					((Timer) e.getSource()).stop();
+				} else {
+					if(count %2 == 0) {
+						getIconBar().setEnabled(true);
+						getIconBar().setVisible(true);
+					} else {
+						getIconBar().setEnabled(false);
+						getIconBar().setVisible(false);
+					}
+					count++;
+				}
+			}
+		});
+		blinkTimer.start();
 	}
 }
 private void onNotificationsIconClick() {
