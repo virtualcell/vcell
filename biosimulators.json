@@ -825,6 +825,7 @@
   ],
   "biosimulators": {
     "specificationsVersion": "1.0.0",
-    "imageVersion": "1.0.0"
+    "imageVersion": "1.0.0",
+    "validated": false
   }
 }
