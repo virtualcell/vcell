@@ -17,17 +17,28 @@
 FROM ubuntu:18.04
 
 # metadata
-LABEL base_image="ubuntu:18.04"
-LABEL version="7.2.0.39"
-LABEL software="Virtual Cell"
-LABEL software.version="7.2.0.39"
-LABEL about.summary="Open-source software package for modeling cell biological systems that is built on a central database and disseminated as a standalone application."
-LABEL about.home="http://vcell.org/"
-LABEL about.documentation="http://vcell.org/"
-LABEL about.license_file="https://github.com/virtualcell/vcell/blob/master/license.txt"
-LABEL about.license="SPDX:MIT"
-LABEL about.tags="rule-based modeling,kinetic modeling,dynamical simulation,systems biology,BNGL,SED-ML,COMBINE,OMEX"
-LABEL maintainer="BioSimulators Team <info@biosimulators.org>"
+LABEL \
+    org.opencontainers.image.title="VCell" \
+    org.opencontainers.image.version="7.2.0.39" \
+    org.opencontainers.image.description="Open-source software package for modeling cell biological systems that is built on a central database and disseminated as a standalone application." \
+    org.opencontainers.image.url="http://vcell.org/" \
+    org.opencontainers.image.documentation="https://vcell.org/support" \
+    org.opencontainers.image.source="https://github.com/biosimulators/Biosimulators_VCell" \
+    org.opencontainers.image.authors="BioSimulators Team <info@biosimulators.org>" \
+    org.opencontainers.image.vendor="BioSimulators Team" \
+    org.opencontainers.image.licenses="MIT" \
+    \
+    base_image="ubuntu:18.04" \
+    version="7.2.0.39" \
+    software="Virtual Cell" \
+    software.version="7.2.0.39" \
+    about.summary="Open-source software package for modeling cell biological systems that is built on a central database and disseminated as a standalone application." \
+    about.home="http://vcell.org/" \
+    about.documentation="https://vcell.org/support" \
+    about.license_file="https://github.com/virtualcell/vcell/blob/master/license.txt" \
+    about.license="SPDX:MIT" \
+    about.tags="rule-based modeling,kinetic modeling,dynamical simulation,systems biology,BNGL,SED-ML,COMBINE,OMEX" \
+    maintainer="BioSimulators Team <info@biosimulators.org>"
 
 RUN apt-get -y update && \
     apt-get install -y --no-install-recommends curl openjdk-8-jre dnsutils && \
