@@ -2252,7 +2252,7 @@ public JLabel getIconBar() {
 			iconText = new JLabel();
 			iconText.setName("");
 			iconText.setIcon(VCellIcons.noteRedIcon);
-			iconText.setToolTipText("Admin Notification");
+			iconText.setToolTipText("View VCell Administrator Notification");
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);
 		}
@@ -2284,19 +2284,16 @@ private void checkForNotifications() {
 		
 		Timer blinkTimer = new Timer(500, new ActionListener() {
 			private int count = 0;
-			private int maxCount = 10;
+			private int maxCount = 50;								// 25 seconds
 			public void actionPerformed(ActionEvent e) {
 				if (count >= maxCount) {
-					getIconBar().setEnabled(true);
-					getIconBar().setVisible(true);
+					getIconBar().setIcon(VCellIcons.noteRedIcon);	// must remain on the noteRedIcon
 					((Timer) e.getSource()).stop();
 				} else {
 					if(count %2 == 0) {
-						getIconBar().setEnabled(true);
-						getIconBar().setVisible(true);
+						getIconBar().setIcon(VCellIcons.noteRedIcon);
 					} else {
-						getIconBar().setEnabled(false);
-						getIconBar().setVisible(false);
+						getIconBar().setIcon(VCellIcons.issueGoodIcon);
 					}
 					count++;
 				}
