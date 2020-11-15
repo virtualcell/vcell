@@ -2186,7 +2186,6 @@ private javax.swing.JCheckBoxMenuItem getStatusbarMenuItem() {
  * Return the StatusBarPane property value.
  * @return javax.swing.JPanel
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private javax.swing.JPanel getStatusBarPane() {
 	if (ivjStatusBarPane == null) {
 		try {
@@ -2207,17 +2206,17 @@ private javax.swing.JPanel getStatusBarPane() {
 			gbc = new GridBagConstraints();
 			gbc.gridx = gridx;
 			gbc.gridy = 0;
-			gbc.weightx = 1;
-			gbc.fill = GridBagConstraints.HORIZONTAL;
-			gbc.insets = new Insets(4, 4, 4, 4);
-			ivjStatusBarPane.add(getWarningBar(), gbc);
+			gbc.insets = new Insets(2, 5, 2, 2);
+			ivjStatusBarPane.add(getIconBar(), gbc);
 
 			gridx++;
 			gbc = new GridBagConstraints();
 			gbc.gridx = gridx;
 			gbc.gridy = 0;
-			gbc.insets = new Insets(2, 2, 2, 2);
-			ivjStatusBarPane.add(getIconBar(), gbc);
+			gbc.weightx = 1;
+			gbc.fill = GridBagConstraints.HORIZONTAL;
+			gbc.insets = new Insets(4, 4, 4, 4);
+			ivjStatusBarPane.add(getWarningBar(), gbc);
 
 			gridx++;
 			gbc = new GridBagConstraints();
@@ -2284,7 +2283,7 @@ private void checkForNotifications() {
 		
 		Timer blinkTimer = new Timer(500, new ActionListener() {
 			private int count = 0;
-			private int maxCount = 50;								// 25 seconds
+			private int maxCount = 110;								// 55 seconds
 			public void actionPerformed(ActionEvent e) {
 				if (count >= maxCount) {
 					getIconBar().setIcon(VCellIcons.noteRedIcon);	// must remain on the noteRedIcon
