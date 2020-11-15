@@ -2292,7 +2292,7 @@ private void checkForNotifications() {
 					if(count %2 == 0) {
 						getIconBar().setIcon(VCellIcons.noteRedIcon);
 					} else {
-						getIconBar().setIcon(VCellIcons.issueGoodIcon);
+						getIconBar().setIcon(VCellIcons.noteWhiteIcon);
 					}
 					count++;
 				}
