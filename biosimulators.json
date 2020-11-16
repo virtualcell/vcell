@@ -169,7 +169,7 @@
         "id": "rel_tol",
         "name": "Relative tolerance",
         "type": "float",
-        "value": 1e-9
+        "value": "1e-9"
       }]
     },
     {
@@ -217,7 +217,7 @@
         "id": "rel_tol",
         "name": "relative tolerance",
         "type": "float",
-        "value": 1e-9
+        "value": "1e-9"
       }]
     },
     {
@@ -266,7 +266,7 @@
         "id": "rel_tol",
         "name": "Relative tolerance",
         "type": "float",
-        "value": 1e-9
+        "value": "1e-9"
       }]
     },
     {
@@ -315,7 +315,7 @@
         "id": "rel_tol",
         "name": "Relative tolerance",
         "type": "float",
-        "value": 1e-9
+        "value": "1e-9"
       }]
     },
     {
@@ -364,7 +364,7 @@
         "id": "rel_tol",
         "name": "Relative tolerance",
         "type": "float",
-        "value": 1e-9
+        "value": "1e-9"
       }]
     },
     {
@@ -413,7 +413,7 @@
         "id": "rel_tol",
         "name": "Relative tolerance",
         "type": "float",
-        "value": 1e-9
+        "value": "1e-9"
       }]
     },
     {
@@ -462,7 +462,7 @@
         "id": "rel_tol",
         "name": "Relative tolerance",
         "type": "float",
-        "value": 1e-9
+        "value": "1e-9"
       }]
     },
     {
@@ -511,7 +511,7 @@
         "id": "rel_tol",
         "name": "Relative tolerance",
         "type": "float",
-        "value": 1e-9
+        "value": "1e-9"
       }]
     },
     {
@@ -559,7 +559,7 @@
         "id": "rel_tol",
         "name": "Relative tolerance",
         "type": "float",
-        "value": 1e-9
+        "value": "1e-9"
       }]
     },
     {
@@ -608,7 +608,7 @@
         "id": "rel_tol",
         "name": "Relative tolerance",
         "type": "float",
-        "value": 1e-9
+        "value": "1e-9"
       }]
     },
     {
@@ -657,7 +657,7 @@
         "id": "rel_tol",
         "name": "Relative tolerance",
         "type": "float",
-        "value": 1e-9
+        "value": "1e-9"
       }]
     },
     {
@@ -721,7 +721,7 @@
         "id": "rel_tol",
         "name": "Relative tolerance",
         "type": "float",
-        "value": 1e-9
+        "value": "1e-9"
       }]
     },
     {
@@ -770,7 +770,7 @@
         "id": "rel_tol",
         "name": "Relative tolerance",
         "type": "float",
-        "value": 1e-9
+        "value": "1e-9"
       }]
     },
     {
@@ -819,7 +819,7 @@
         "id": "rel_tol",
         "name": "Relative tolerance",
         "type": "float",
-        "value": 1e-9
+        "value": "1e-9"
       }]
     }
   ],
