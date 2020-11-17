@@ -161,16 +161,7 @@
           "url": "https://doi.org/10.1063/1.4822377"
         }]
       }],
-      "parameters": [{
-        "kisaoId": {
-          "namespace": "KISAO",
-          "id": "KISAO_0000209"
-        },
-        "id": "rel_tol",
-        "name": "Relative tolerance",
-        "type": "float",
-        "value": "1e-9"
-      }]
+      "parameters": null
     },
     {
       "id": "RungeKutta2",
@@ -209,16 +200,7 @@
           "url": "https://www.ijsr.net/get_abstract.php?paper_id=20131137"
         }]
       }],
-      "parameters": [{
-        "kisaoId": {
-          "namespace": "KISAO",
-          "id": "KISAO_0000064"
-        },
-        "id": "rel_tol",
-        "name": "relative tolerance",
-        "type": "float",
-        "value": "1e-9"
-      }]
+      "parameters": null
     },
     {
       "id": "ForwardEuler",
@@ -258,16 +240,7 @@
           "url": "https://doi.org/10.1155/2015/350362"
         }]
       }],
-      "parameters": [{
-        "kisaoId": {
-          "namespace": "KISAO",
-          "id": "KISAO_0000030"
-        },
-        "id": "rel_tol",
-        "name": "Relative tolerance",
-        "type": "float",
-        "value": "1e-9"
-      }]
+      "parameters": null
     },
     {
       "id": "RungeKutta4",
@@ -307,16 +280,7 @@
           "url": "https://doi.org/10.1080/00207169908804817"
         }]
       }],
-      "parameters": [{
-        "kisaoId": {
-          "namespace": "KISAO",
-          "id": "KISAO_0000032"
-        },
-        "id": "rel_tol",
-        "name": "Relative tolerance",
-        "type": "float",
-        "value": "1e-9"
-      }]
+      "parameters": null
     },
     {
       "id": "RungeKuttaFehlberg",
@@ -356,16 +320,7 @@
           "url": "https://doi.org/10.1093/imamat/8.3.386"
         }]
       }],
-      "parameters": [{
-        "kisaoId": {
-          "namespace": "KISAO",
-          "id": "KISAO_0000086"
-        },
-        "id": "rel_tol",
-        "name": "Relative tolerance",
-        "type": "float",
-        "value": "1e-9"
-      }]
+      "parameters": null
     },
     {
       "id": "AdamsMoulton",
@@ -405,16 +360,7 @@
           "url": "https://doi.org/10.1023/A:1021951025649"
         }]
       }],
-      "parameters": [{
-        "kisaoId": {
-          "namespace": "KISAO",
-          "id": "KISAO_0000280"
-        },
-        "id": "rel_tol",
-        "name": "Relative tolerance",
-        "type": "float",
-        "value": "1e-9"
-      }]
+      "parameters": null
     },
     {
       "id": "IDA",
@@ -454,16 +400,7 @@
           "url": "https://doi.org/10.1016/j.simpat.2005.05.002"
         }]
       }],
-      "parameters": [{
-        "kisaoId": {
-          "namespace": "KISAO",
-          "id": "KISAO_0000209"
-        },
-        "id": "rel_tol",
-        "name": "Relative tolerance",
-        "type": "float",
-        "value": "1e-9"
-      }]
+      "parameters": null
     },
     {
       "id": "StochGibson",
@@ -503,16 +440,7 @@
           "url": "https://doi.org/10.1021/jp993732q"
         }]
       }],
-      "parameters": [{
-        "kisaoId": {
-          "namespace": "KISAO",
-          "id": "KISAO_0000027"
-        },
-        "id": "rel_tol",
-        "name": "Relative tolerance",
-        "type": "float",
-        "value": "1e-9"
-      }]
+      "parameters": null
     },
     {
       "id": "HybridEuler",
@@ -551,16 +479,7 @@
           "url": "https://doi.org/10.1016/j.cam.2019.112545"
         }]
       }],
-      "parameters": [{
-        "kisaoId": {
-          "namespace": "KISAO",
-          "id": "KISAO_0000352"
-        },
-        "id": "rel_tol",
-        "name": "Relative tolerance",
-        "type": "float",
-        "value": "1e-9"
-      }]
+      "parameters": null
     },
     {
       "id": "HybridMilstein",
@@ -600,16 +519,7 @@
           "url": "https://doi.org/10.3934/dcdsb.2018253"
         }]
       }],
-      "parameters": [{
-        "kisaoId": {
-          "namespace": "KISAO",
-          "id": "KISAO_0000352"
-        },
-        "id": "rel_tol",
-        "name": "Relative tolerance",
-        "type": "float",
-        "value": "1e-9"
-      }]
+      "parameters": null
     },
     {
       "id": "FiniteVolumeStandalone",
@@ -649,16 +559,7 @@
           "url": "https://doi.org/10.1016/S1570-8659(00)07005-8"
         }]
       }],
-      "parameters": [{
-        "kisaoId": {
-          "namespace": "KISAO",
-          "id": "KISAO_0000285"
-        },
-        "id": "rel_tol",
-        "name": "Relative tolerance",
-        "type": "float",
-        "value": "1e-9"
-      }]
+      "parameters": null
     },
     {
       "id": "Combined IDA/CVODE",
@@ -713,16 +614,7 @@
           }]
         }
       ],
-      "parameters": [{
-        "kisaoId": {
-          "namespace": "KISAO",
-          "id": "KISAO_0000285"
-        },
-        "id": "rel_tol",
-        "name": "Relative tolerance",
-        "type": "float",
-        "value": "1e-9"
-      }]
+      "parameters": null
     },
     {
       "id": "SundialsPDE",
@@ -762,16 +654,7 @@
           "url": "https://doi.org/10.1016/S1570-8659(00)07005-8"
         }]
       }],
-      "parameters": [{
-        "kisaoId": {
-          "namespace": "KISAO",
-          "id": "KISAO_0000285"
-        },
-        "id": "rel_tol",
-        "name": "Relative tolerance",
-        "type": "float",
-        "value": "1e-9"
-      }]
+      "parameters": null
     },
     {
       "id": "Smoldyn",
@@ -811,16 +694,7 @@
           "url": "https://doi.org/10.1080/14786442808674769"
         }]
       }],
-      "parameters": [{
-        "kisaoId": {
-          "namespace": "KISAO",
-          "id": "KISAO_0000057"
-        },
-        "id": "rel_tol",
-        "name": "Relative tolerance",
-        "type": "float",
-        "value": "1e-9"
-      }]
+      "parameters": null
     }
   ],
   "biosimulators": {
