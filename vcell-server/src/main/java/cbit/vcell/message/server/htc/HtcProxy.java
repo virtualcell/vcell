@@ -246,7 +246,7 @@ public abstract class HtcProxy {
 		public String getMemLimitSource() {
 			return memLimitSource;
 		}
-		public static MemLimitResults getFallbackMemLimitMB(SolverDescription solverDescription,double estimatedMemSizeMB) {
+		private static MemLimitResults getFallbackMemLimitMB(SolverDescription solverDescription,double estimatedMemSizeMB) {
 			Long result = null;
 			String source = null;
 			try {
@@ -285,7 +285,7 @@ public abstract class HtcProxy {
 	}
 	public static final boolean bDebugMemLimit = false;
 	public static MemLimitResults getMemoryLimit(String vcellUserid,KeyValue simID,SolverDescription solverDescription,double estimatedMemSizeMB) {
-		return MemLimitResults.getFallbackMemLimitMB(solverDescription, estimatedMemSizeMB);
+		return MemLimitResults.getFallbackMemLimitMB(solverDescription, estimatedMemSizeMB*1.5);
 //		boolean bUseEstimate = estimatedMemSizeMB >= MemLimitResults.getFallbackMemLimitMB(solverDescription);
 //		return new MemLimitResults((bUseEstimate?(long)estimatedMemSizeMB:MemLimitResults.getFallbackMemLimitMB(solverDescription)), (bUseEstimate?"used Estimated":"used FALLBACK_MEM_LIMIT"));
 //		//One of 5 limits are returned (ordered from highest to lowest priority):
