@@ -258,7 +258,16 @@ public class BioModelsNetPanel extends DocumentEditorSubPanel {
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		InputStream is = null;
 		try {
-		  is = url.openStream ();
+			try {
+				is = url.openStream ();
+			}catch (Exception e) {
+				e.printStackTrace();
+				if (is != null) { is.close(); }
+				//Try with http instead of https
+				String newUrlString = url.toString().replaceFirst("^https", "http");
+				url = new URL(newUrlString);
+				is = url.openStream ();
+			}
 		  byte[] byteChunk = new byte[4096]; // Or whatever size you want to read in at a time.
 		  int n;
 
