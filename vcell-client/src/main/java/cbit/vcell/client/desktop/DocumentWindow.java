@@ -11,6 +11,7 @@
 package cbit.vcell.client.desktop;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Desktop;
 import java.awt.Dimension;
@@ -26,11 +27,13 @@ import java.awt.event.MouseListener;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -47,14 +50,17 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
+import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JTextArea;
+import javax.swing.JTextPane;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.event.MenuEvent;
 import javax.swing.event.MenuListener;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.vcell.client.logicalwindow.LWTopFrame;
 import org.vcell.documentation.VcellHelpViewer;
 import org.vcell.imagej.ImageJHelper;
@@ -2305,6 +2311,70 @@ private void onNotificationsIconClick() {
 //	PopupGenerator.showInfoDialog(DocumentWindow.this, "VCell admin notification message");
 	invokeShowNotifications();
 }
+
+// version display in a dialog box - not working for complicated html files
+//private void invokeShowNotifications() {
+//
+//	URL u = null;
+//	try {
+//		u = new URL(notificationsUrl);
+//	} catch (MalformedURLException e1) {
+//		e1.printStackTrace();
+//	}
+//	if(u == null) {
+//		return;
+//	}
+//	
+//	// the proper way to deal with closing the stream is by using a try-with-resources statement like below
+//	try (InputStream inputStream = u.openStream(); ) {
+//
+//		String theString = IOUtils.toString(inputStream, StandardCharsets.UTF_8);
+//		if(theString != null && !theString.isEmpty()) {
+////			theString = "<html><header></header><body>aaaaaa<br>bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb<br><br>ccc<br>ddd</body></html>";
+//			JPanel notificationPanel = getNotificationPanel(theString);
+//			
+//			JOptionPane pane = new JOptionPane(notificationPanel, JOptionPane.PLAIN_MESSAGE, 0, null, new Object[] {"Close"});
+//			JDialog viewNotificationDialog = pane.createDialog(DocumentWindow.this, "VCell Notification");
+//			viewNotificationDialog.setModal(false);
+//			viewNotificationDialog.setResizable(true);
+//			viewNotificationDialog.setVisible(true);
+//
+//		}
+//
+//	} catch (IOException e) {
+//		e.printStackTrace();
+//	}
+//}
+//
+//private JPanel getNotificationPanel(String notification) {
+//	
+//	JPanel notificationPanel = new JPanel();
+//	notificationPanel.setLayout(new GridBagLayout());
+//	notificationPanel.setBackground(Color.white);
+//	
+//	JTextPane annotationTextArea = new JTextPane();
+//	annotationTextArea.setContentType("text/html");
+//	annotationTextArea.setEditable(false);
+//	annotationTextArea.setText(notification);
+//
+//	JScrollPane annotationPane = new JScrollPane(annotationTextArea);
+//
+//	int gridy = 0;
+//	GridBagConstraints gbc = new java.awt.GridBagConstraints();
+//	gbc = new java.awt.GridBagConstraints();
+//	gbc.gridx = 0; 
+//	gbc.gridy = gridy;
+//	gbc.weightx = 1.0;
+//	gbc.weighty = 1.0;
+//	gbc.insets = new Insets(1, 3, 1, 2);
+//	gbc.fill = java.awt.GridBagConstraints.BOTH;
+//	gbc.anchor = GridBagConstraints.NORTHWEST;
+//	notificationPanel.add(annotationPane, gbc);
+//
+//	return notificationPanel;
+//}
+
+// version using the browser
 private void invokeShowNotifications() {
 	
 	DialogUtils.browserLauncher(this, notificationsUrl, "Please visit '" + notificationsUrl + "' for server administrator notifications.");
@@ -2317,7 +2387,6 @@ private void invokeShowNotifications() {
  * Return the TestingFrameworkMenuItem property value.
  * @return javax.swing.JMenuItem
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private javax.swing.JMenuItem getTestingFrameworkMenuItem() {
 	if (ivjTestingFrameworkMenuItem == null) {
 		try {
