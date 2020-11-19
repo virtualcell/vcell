@@ -2,6 +2,7 @@ package org.vcell.util.gui.exporter;
 
 import java.io.File;
 import java.nio.file.Paths;
+import java.util.Objects;
 
 import org.vcell.sedml.SEDMLExporter;
 import org.vcell.util.FileUtils;
@@ -12,11 +13,11 @@ import cbit.vcell.clientdb.DocumentManager;
 import cbit.vcell.mapping.SimulationContext;
 
 @SuppressWarnings("serial")
-public class SedmlExtensionFilter extends SelectorExtensionFilter {
-	private static final String FNAMES[] = {".xml",".sedml",".sedx", ".omex"};
+public class OmexExtensionFilter extends SelectorExtensionFilter {
+	private static final String FNAMES = ".omex";
 	
-	public SedmlExtensionFilter() {
-		super(FNAMES,"SEDML format <Level1,Version2>  (.xml .sedml .sedx(archive) .omex(archive))",SelectorExtensionFilter.Selector.FULL_MODEL);
+	public OmexExtensionFilter() {
+		super(FNAMES,"OMEX Format (.omex(archive))",SelectorExtensionFilter.Selector.FULL_MODEL);
 	}
 
 	@Override
@@ -30,21 +31,13 @@ public class SedmlExtensionFilter extends SelectorExtensionFilter {
 		String sExt = FileUtils.getExtension(exportFile.getAbsolutePath());
 		
 		SEDMLExporter sedmlExporter = null;
-		if (bioModel instanceof BioModel) {
+		if (bioModel != null) {
 			sedmlExporter = new SEDMLExporter(bioModel, sedmlLevel, sedmlVersion);
 			resultString = sedmlExporter.getSEDMLFile(sPath);
 		} else {
-			throw new RuntimeException("unsupported Document Type " + bioModel.getClass().getName() + " for SedML export");
+			throw new RuntimeException("unsupported Document Type " + Objects.requireNonNull(bioModel).getClass().getName() + " for SedML export");
 		}
-		if(sExt.equals("sedx")) {
-			sedmlExporter.createManifest(sPath, sFile);
-			String sedmlFileName = Paths.get(sPath, sFile + ".sedml").toString();
-			XmlUtil.writeXMLStringToFile(resultString, sedmlFileName, true);
-			sedmlExporter.addSedmlFileToList(sFile + ".sedml");
-			sedmlExporter.addSedmlFileToList("manifest.xml");
-			sedmlExporter.createZipArchive(sPath, sFile);
-			return;
-		} else if (sExt.equals("omex")) {
+		if (sExt.equals("omex")) {
 			sedmlExporter.createManifest(sPath, sFile);
 			String sedmlFileName = Paths.get(sPath, sFile + ".sedml").toString();
 			XmlUtil.writeXMLStringToFile(resultString, sedmlFileName, true);
