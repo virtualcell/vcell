@@ -7,6 +7,7 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.vcell.api.common.events.BroadcastEventRepresentation;
 import org.vcell.api.common.events.DataJobEventRepresentation;
 import org.vcell.api.common.events.EventWrapper;
 import org.vcell.api.common.events.EventWrapper.EventType;
@@ -88,7 +89,27 @@ public class RestEventService {
 			}
 		}else if (event instanceof VCellMessageEvent) {
 			VCellMessageEvent vcellMessageEvent = (VCellMessageEvent)event;
-			lg.error("event of type VCellMessageEvent not supported");
+			if(vcellMessageEvent.getEventTypeID() == VCellMessageEvent.VCELL_MESSAGEEVENT_TYPE_BROADCAST) {
+				//Remove any existing broadcast message
+				Iterator<EventWrapper> iter = events.iterator();
+				while (iter.hasNext()) {
+					EventWrapper eventWrapper = iter.next();
+					if(eventWrapper.eventType.equals(EventWrapper.EventType.Broadcast)) {
+						iter.remove();
+					}
+				}
+				BroadcastEventRepresentation broadcastEventRepresentation = new BroadcastEventRepresentation(vcellMessageEvent.getMessageData().getData().toString());
+				// If 'clear' then don't add new broadcast message
+				if(broadcastEventRepresentation.message.trim().equalsIgnoreCase("clear")) {
+					return;
+				}
+				//Add new broadcast message
+				Gson gson = new Gson();
+				String eventJSON = gson.toJson(broadcastEventRepresentation);
+				insert(null,EventType.Broadcast,eventJSON);
+			}else {
+				lg.error("event of type VCellMessageEvent:"+vcellMessageEvent.getEventTypeID()+" not supported");
+			}
 		}else if (event instanceof WorkerEvent) {
 			lg.error("event of type WorkerEvent not supported");
 			WorkerEvent workerEvent = (WorkerEvent)event;

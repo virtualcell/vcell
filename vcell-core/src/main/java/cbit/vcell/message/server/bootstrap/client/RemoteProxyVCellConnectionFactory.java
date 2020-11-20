@@ -27,6 +27,7 @@ import org.vcell.api.client.VCellApiClient;
 import org.vcell.api.client.VCellApiClient.RpcDestination;
 import org.vcell.api.client.VCellApiRpcRequest;
 import org.vcell.api.common.AccessTokenRepresentation;
+import org.vcell.api.common.events.BroadcastEventRepresentation;
 import org.vcell.api.common.events.DataJobEventRepresentation;
 import org.vcell.api.common.events.EventWrapper;
 import org.vcell.api.common.events.ExportEventRepresentation;
@@ -40,8 +41,10 @@ import com.google.gson.Gson;
 
 import cbit.rmi.event.DataJobEvent;
 import cbit.rmi.event.ExportEvent;
+import cbit.rmi.event.MessageData;
 import cbit.rmi.event.MessageEvent;
 import cbit.rmi.event.SimulationJobStatusEvent;
+import cbit.rmi.event.VCellMessageEvent;
 import cbit.vcell.message.VCRpcRequest;
 import cbit.vcell.message.VCellQueue;
 import cbit.vcell.server.ConnectionException;
@@ -124,6 +127,12 @@ public class RemoteProxyVCellConnectionFactory implements VCellConnectionFactory
 			for (EventWrapper eventWrapper : eventWrappers) {
 				if (lg.isTraceEnabled()) lg.trace("received event: ("+eventWrapper.id+", "+eventWrapper.timestamp+", "+eventWrapper.userid+", "+eventWrapper.eventJSON+")");
 				switch (eventWrapper.eventType) {
+				case Broadcast:{
+					BroadcastEventRepresentation broadcastEventRepresentation = gson.fromJson(eventWrapper.eventJSON, BroadcastEventRepresentation.class);
+					VCellMessageEvent vcMessageEvent = new VCellMessageEvent(new Object(), System.currentTimeMillis()+"", new MessageData(broadcastEventRepresentation.message),VCellMessageEvent.VCELL_MESSAGEEVENT_TYPE_BROADCAST , null);
+					messageEvents.add(vcMessageEvent);
+					break;
+				}
 				case SimJob:{
 					SimulationJobStatusEventRepresentation simJobStatusEventRep = 
 							gson.fromJson(eventWrapper.eventJSON, SimulationJobStatusEventRepresentation.class);

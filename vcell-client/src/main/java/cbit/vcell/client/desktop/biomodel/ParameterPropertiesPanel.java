@@ -126,7 +126,8 @@ private void initialize() {
 		nameTextField = new JTextField();
 		nameTextField.setEditable(false);
 		sbmlNameTextField = new JTextField();
-		sbmlNameTextField.setEditable(true);
+		sbmlNameTextField.setEditable(false);
+		sbmlNameTextField.setEnabled(false);
 
 		unitTextField = new JTextField();
 		unitTextField.setEditable(false);

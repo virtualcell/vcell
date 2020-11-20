@@ -80,6 +80,19 @@ Add arguments: -jar DBBackupAndClean_Ampli.jar cleanandbackup vcell-db vcell cbi
 Start in: C:\fromDBS3
 
 
+**Delete large listener.log file**  
+log in to vcell-db (a windows host) as admin user using 'Remote Desktop Connection'  
+start 'cmd' window as system administrator (start->'command prompt->'rt-click, 'run as administrator')  
+//make sure of path to listener log  
+dir C:\Oracle\diag\tnslsnr\VCELL-DB\listener\trace\listener.log  
+//Start database listener control app and turn off logging (so log file can be deleted)  
+lsnrctl  
+   show log_staus  
+   set log_status off  
+   exit  
+//Delete database listener log file  
+del C:\Oracle\diag\tnslsnr\VCELL-DB\listener\trace\listener.log  
+//Log off from vcell-db DO NOT SHUTDOWN (or just quit/close the 'Remote Desktop Connection')  
 
 
 

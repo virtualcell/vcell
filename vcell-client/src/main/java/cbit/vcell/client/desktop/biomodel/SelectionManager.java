@@ -144,7 +144,13 @@ public class SelectionManager {
 	}
 	
 	public class AnnotationNavigator {
-		
+		private Object entity;
+		public AnnotationNavigator(Object entity) {
+			this.entity = entity;
+		}
+		public Object getEntity() {
+			return entity;
+		}
 	}
 	
 	public static final String PROPERTY_NAME_ACTIVE_VIEW = "activeView";
@@ -238,8 +244,8 @@ public class SelectionManager {
 		return bBusy;
 	}
 	
-	public AnnotationNavigator getAnnotationNavigator() {
-		return new AnnotationNavigator();
+	public AnnotationNavigator getAnnotationNavigator(Object entity) {
+		return new AnnotationNavigator(entity);
 	}
 
 //	private void show() {
