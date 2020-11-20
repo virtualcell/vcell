@@ -1,11 +1,57 @@
 language: java
-jdk: oraclejdk8
+dist: bionic
+services:
+  - docker
+git:
+  depth: 2
 branches:
   only:
   - master
+  - develop
   - "/.*-[0-9]+\\..*/"
-install: true
-script: ".travis/build.sh"
+  - /^v\d+\.\d+\.\d+$/
+  - plugin_solvers
+before_install:
+  - wget https://vcell.org/webstart/pipeline_files/jdk-8u241-linux-x64.tar.gz
+  - wget https://vcell.org/webstart/pipeline_files/apache-maven-3.6.3-bin.tar.gz
+  - tar -xvzf jdk-8u241-linux-x64.tar.gz
+  - mv jdk1.8.0_241 jdk
+  - tar -xvzf apache-maven-3.6.3-bin.tar.gz
+  - mv apache-maven-3.6.3 maven
+  - export JAVA_HOME=`pwd`/jdk
+  - export PATH=${JAVA_HOME}/bin:${PATH}
+  - echo $JAVA_HOME
+  - java -version
+  - export M2_HOME=`pwd`/maven
+  - export PATH=${M2_HOME}/bin:${PATH}
+install:
+  - mvn clean install dependency:copy-dependencies
+jobs:
+  include:
+    - stage: Build Docker image
+      script: docker build --file `pwd`/docker/build/Dockerfile-vcell-cli --tag crbm/biosimulations_vcell:7.2 --tag crbm/biosimulations_vcell:latest .
+    - stage: Run the docker image
+      script:
+        - mkdir -p `pwd`/tests/results
+        - docker run -v `pwd`/tests/fixtures:/root/in -v `pwd`/tests/results:/root/out crbm/biosimulations_vcell:latest -i /root/in/BIOMD0000000297.omex -o /root/out
 env:
   global:
-    secure: rn+NMW27eoVIPRMr56Ds8Bkaj53n5s6dZm+wbpjltmDusAI5Fh8rFZCa5KBE4EExOpOotBPeuYm4USCVYTju5yum3ybG9XXxGbUj/foQLodArTPggDWdL7iU+lge0nQFeuSqeyeqgeiSoE2Q4vB6HBCSRQnx3dTWrH0WzjuAHLxJRqrdGVcjhqQFe49MKsVUcF50DQl+Rcg6TpZ4YBBElxY/rkG5JcEXVTlCHK0gLKjNOojU/1Xq3uoyxJLAs2r2WlutsqboLnWqP0iYyOXa+TptR0CvTestO4M6TWNDokTy4HjviUvvIldCYBtwaUNlv7MQjUFs2Oeu+ohuNvnR2OFU+Gy67/f2kk8c3s130WD4RTTVIdBp7mASdIV7K6vi8chPLEbZKaVTPf3InsaUpHSVXf1abNUSU/dXZAxucl9JJ/9zf2ALToqgR4EcAsYCfsTaK3RP4Xk2Y3XwGNXXTi4dHMenS5zleetwCzszrsCNQ53ltwZsoqdS1EVg2ZSr0TKyKS51YJg3+cOtH2/V6u1/NuSvVbuAXpQeLlPaus13IH7TR2rtZp82UKofNLmlbc6isgy0SxV6xe/WT9S/G+IOADxhp8/dmhJ6g25c1d/YtxLtkjk5sTiJP+4rVKO5dkV/vltvc8V+Zw9KR2GwuMHDG8fBEuK9D209fQQJwtc=
+    - secure: jAqBVHdsSAflWShXexe4OqX7zDJAtEJUGGuh1spGrb/FkPVmqpandJIPFDkR9bJlJUELZ7T3afa0XTI5YV45Yyw3whiVgkZ0w/c84kSQBbJjdk1EwP05i4tvNj2livNoMCDgj1JXqmBUQUzSWDxpJYaj7Z5Gom7ODG/SBJCf7z2yUsGkvYDMpEGCg5OK0wIPjCvuLMdSNqTPj3kocX9Xn0+rEQLDZDxUJhj4a8/0cjFD2wrL8zMrJzeEKIfVi82tp/9ySed8Jr1QVRGn3Dz5MNJRvSLMp1HH9uH5vaCtMjanDlLiBDrr2zHxVZYBrI+N7WzFm8PrMiOFICsSddRek7uCUJOcPDDjChowVp//wWRN36sQXaVrXV/ToOdHUJw6t4KFUa4nndRFpF0mzx59jX820H4d9RmC6ixHEeddhakxo4dyTVf5zEDJZg7DT3OqCEZUlK0n5ISmV4AGB/tlKBMB9R2QtZiepX1p0y25r5U2SK3qZ+PLJlYZ1JGHee2FwHxl/Rs0sZPDtoI15tNg/a2ODZ5ZTaHyrWdfbgVmYRo2sD2bPx8zKSqBa1Xywk0cmXQai72LPwg7kPIHJuJBWl4XVmJgTonCWCRFXuAyKFV35MZm4DgFkaRQuoaUPigpoaM5rfy8K2MrWajHg6zZgbvFBKKlcCBRrWsfhDELYfs=
+    - secure: LM20Pa7DHPj8A1ChCIa61vLxEgfbNhko6wA2lRgYQ7FKNYyz9s2UbVu7lqtJid1hyXgu42aBWCGVh5yr7rSo4YVbAWtOak75lxOnHtpUqjWokV9ebSUPEPmz+3sFjtBYQ8A2ogsB3ZOZLTPwuzHz/yVl5+f7QNupEhgIsLx+FXnpy0Kj9AWZGggvOrEDj65wRITE9LUJimYD928rtmiYJtJZzVAn7ZAjOoDNtRBEDnUuof+8ik/3mnzSe5oS8T6ARncHzuxQL0gr9TzVudX8XeG71sqBfATk2vWw7Yx5IZWWyfCRGtyP8/j1jhMec7D4hQntNCMgiYx3ltMMlSF5uAeqJ8Ufti3icrGn+qiPMJJ3AGQD3z/pPZCNKxkZfcDfWV144FPKMjIQBO9nDt9SBJcYSxl5+1Je4oiCqdTlVf0qlj9KzuXd1ZjYDQD0U0V5eus746CoHVrFCjR0iN9XphAW5ej9Suahqhbh3+mcMMcof1+ih3w9GJ4Hw8t9YS/La6bBdAJFoe2/NqmXnB9ORYIN4sxNMe2Qr79WBmEZ3VedifVaO9+FE8R8njnFYhbNqQRBOkw2n1tFoxXgRXoy5SnBAZbP4XWgar1mBW6odxvwKxPnXaJri+oAfK8Jyar9NG8rKlefe0b1wO4RDeUnt2BjPakbo2soscVZDjmIvCo=
+  email:
+    - secure: m5n9pXMl7mdtHwTaf+ISar/J/KlJgCU5yXo9A+ea7MjqR1F544alp/Y1yz3dT8ttKcKb4HdtUu69sxMY22EN7rolHt164X8K1lWUxQKpXeywdsBg+Guh+yWZ6Qs6yxggquyI0EieqMAWQCLUM5tpuP7RB0mXKJy86fI9XEM4jeUy8RBEdFGJa2hhpnEgOpYN5EmgizMJn0YZI+Ads9i79CdQXlDpJExu+Vsh95ZP6cM+FQi8htgToIuG25WqNC9kAIbP14VDxh/61P8PzAW8ordOeD45E1R163z26wp4FsYK8aZ2bTQypiTsh4ijgQAbdNbEaSVRHjKFmMcIsscPqqWdrKbgz78rhnT+bI/cy2UqN+iG6si9Ev77RRsaGC1RhKqscwPVAUtgc48MhOFUYidBMA3m2VKwib550C507oroIncSVucx0L3DJDLREABkPGK+q4+0kmFj0siTwH0tNFqWQpcx1QUAc4bP4GShTvgnADr7cW4WjNHL86ABcEGlkNFJ21cHvxsOD9bbRdGdsc2TvDrlEwyGCMLPx3NJp4FbggLG/rl5+nXlqN1kPjLt4ni3cd6LkjAzQXv3xn/TN1t8RI8gR4gKjpjfUfhkQqyRrCIEyBZHBgQFG4Vd57+WIyBB+YPdhonGaT/2LI28wyfCfWrMuOLyHb/GQZFbwho=
+notifications:
+  email:
+    - env.email.secure
+    on_success: never
+    on_failure: always
+
+
+deploy:
+  - provider: script
+    skip_cleanup: true
+    script: .travis/build.sh
+    on:
+      tags: true
+      all_branches: true
+

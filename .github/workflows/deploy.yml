@@ -1,0 +1,42 @@
+name: Publish Docker To Hub
+#on:
+#    release:
+#        types: [published]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Login to DockerHub
+        run: echo ${{ secrets.DOCKERHUB_PASSWORD }} | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
+      - name: Install xmllint
+        run: sudo apt-get install libxml2-utils
+      - name: Get the version
+        id: vars
+        run: echo ::set-output name=tag::$(echo `curl --silent http://vcell.org/webstart/Rel/updates.xml | xmllint --xpath '//updateDescriptor/entry/@newVersion' - | awk -F '=' '{print $6;}'`)
+      - name: Extract JDK Tarball and setup Java
+        run: |
+          wget https://vcell.org/webstart/pipeline_files/jdk-8u241-linux-x64.tar.gz
+          tar -xvzf jdk-8u241-linux-x64.tar.gz
+          mv jdk1.8.0_241 jdk
+          wget https://vcell.org/webstart/pipeline_files/apache-maven-3.6.3-bin.tar.gz
+          tar -xvzf apache-maven-3.6.3-bin.tar.gz
+          mv apache-maven-3.6.3 maven
+      - name: Maven installation and docker image building
+        run: |
+          export JAVA_HOME=`pwd`/jdk
+          export PATH=${JAVA_HOME}/bin:${PATH}
+          echo $JAVA_HOME
+          java -version
+          export M2_HOME=`pwd`/maven
+          export PATH=${M2_HOME}/bin:${PATH}
+          mvn -version
+          java -version
+          echo "#################################"
+          echo "#### Installing dependencies ####"
+          echo "#################################"
+          mvn clean install dependency:copy-dependencies
+          docker build --file docker/build/Dockerfile-vcell-cli \
+                      --tag crbm/biosimulations_vcell:${{steps.vars.outputs.tag}} \
+                      --tag crbm/biosimulations_vcell:latest .
+          docker push crbm/biosimulations_vcell

@@ -60,6 +60,17 @@
 		</mailingList>
 	</mailingLists>
 
+<!--	<dependencies>-->
+
+<!--		<dependency>-->
+<!--			<groupId>libcombine</groupId>-->
+<!--			<artifactId>libcombine</artifactId>-->
+<!--			<scope>system</scope>-->
+<!--			<version>0.0.1</version>-->
+<!--			<systemPath>${user.dir}/libcombine_java/linux64/libcombine.jar</systemPath>-->
+<!--		</dependency>-->
+<!--	</dependencies>-->
+
 	<modules>
 		<!--	<module>ojdbc6</module>  -->
 		<!--	<module>ucp</module>  -->
@@ -75,9 +86,10 @@
 		<module>vcell-server</module>
 		<module>vcell-util</module>
 		<module>vcell-vmicro</module>
-    <module>vcell-sbmlsim</module>
-    <module>vcell-sbmlsim-api</module>
-    <module>vcell-imagej-helper</module>
+		<module>vcell-cli</module>
+		<module>vcell-sbmlsim</module>
+		<module>vcell-sbmlsim-api</module>
+		<module>vcell-imagej-helper</module>
 	</modules>
 
 	<scm>
@@ -150,6 +162,8 @@
 			</snapshots>
 		</repository>
 	</repositories>
+
+
 
 	<build>
 		<plugins>
