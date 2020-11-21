@@ -58,10 +58,7 @@ import org.jlibsedml.modelsupport.SUPPORTED_LANGUAGE;
 import org.jmathml.ASTCi;
 import org.jmathml.ASTNode;
 import org.jmathml.MathMLReader;
-import org.sbml.libcombine.CombineArchive;
-import org.sbml.libcombine.KnownFormats;
-import org.sbml.libcombine.OmexDescription;
-import org.sbml.libcombine.VCard;
+import org.sbml.libcombine.*;
 import org.vcell.sbml.SbmlException;
 import org.vcell.sbml.SimSpec;
 import org.vcell.sbml.vcell.SBMLExporter;
@@ -1064,8 +1061,8 @@ public class SEDMLExporter {
 			archive.addFile(
 					Paths.get(srcFolder, sd).toString(),
 					sd, // target file name
-					KnownFormats.lookupFormat("xml")
-//					true // mark file as master
+					KnownFormats.lookupFormat("xml"),
+					true // mark file as master
 			);
     	}
 
