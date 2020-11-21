@@ -10,6 +10,7 @@
 
 package org.vcell.sbml.vcell;
 
+import java.beans.PropertyVetoException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -272,7 +273,8 @@ public class SBMLExporter {
 			sbmlAnnotationUtil = new SBMLAnnotationUtil(vcBioModel.getVCMetaData(), vcBioModel, SBMLHelper.getNamespaceFromLevelAndVersion(sbmlLevel, sbmlVersion));
 		}
 		ModelUnitSystem vcModelUnitSystem = vcBioModel.getModel().getUnitSystem();
-		this.sbmlExportSpec = new SBMLExportSpec(vcModelUnitSystem.getLumpedReactionSubstanceUnit(), vcModelUnitSystem.getVolumeUnit(), vcModelUnitSystem.getAreaUnit(), vcModelUnitSystem.getLengthUnit(), vcModelUnitSystem.getTimeUnit());
+//		this.sbmlExportSpec = new SBMLExportSpec(vcModelUnitSystem.getLumpedReactionSubstanceUnit(), vcModelUnitSystem.getVolumeUnit(), vcModelUnitSystem.getAreaUnit(), vcModelUnitSystem.getLengthUnit(), vcModelUnitSystem.getTimeUnit());
+		this.sbmlExportSpec = new SBMLExportSpec(vcModelUnitSystem.getVolumeSubstanceUnit(), vcModelUnitSystem.getVolumeUnit(), vcModelUnitSystem.getAreaUnit(), vcModelUnitSystem.getLengthUnit(), vcModelUnitSystem.getTimeUnit());
 	}
 	
 	public SBMLExporter(SimulationContext ctx, int argSbmlLevel, int argSbmlVersion, boolean isSpatial) {
@@ -887,8 +889,20 @@ protected void addSpecies() throws XMLStreamException, SbmlException {
 
 		// Get the speciesContextSpec in the simContext corresponding to the 'speciesContext'; and extract its initial concentration value.
 		SpeciesContextSpec vcSpeciesContextsSpec = getSelectedSimContext().getReactionContext().getSpeciesContextSpec(vcSpeciesContexts[i]);
-		// since we are setting the substance units for species to 'molecule' or 'item', a unit that is originally in uM (or molecules/um2),
-		// we need to convert concentration from uM -> molecules/um3; this can be achieved by dividing by KMOLE.
+		if (vcSpeciesContextsSpec.getInitialConcentrationParameter().getExpression() == null) {
+			try {
+				getSelectedSimContext().convertSpeciesIniCondition(true);
+			} catch (MappingException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				throw new SbmlException("convert to concentration failed", e);
+			} catch (PropertyVetoException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				throw new SbmlException("convert to concentration failed", e);
+			}
+		}
+
 		try {
 			sbmlSpecies.setInitialConcentration(vcSpeciesContextsSpec.getInitialConditionParameter().getExpression().evaluateConstant());
 		} catch (cbit.vcell.parser.ExpressionException e) {
