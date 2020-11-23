@@ -191,6 +191,9 @@ public void write(String[] parameterNames) throws Exception,ExpressionException
 	}
 	else if (outputTimeSpec.isUniform()){
 		printWriter.println("SAVE_PERIOD"+"\t"+((UniformOutputTimeSpec)outputTimeSpec).getOutputTimeStep());
+		// need to overwrite limit hardcoded in C++
+		double savePoints = (timeBounds.getEndingTime() - timeBounds.getStartingTime())/((UniformOutputTimeSpec)outputTimeSpec).getOutputTimeStep();
+		printWriter.println("MAX_SAVE_POINTS" +"\t"+(Math.ceil(savePoints)+1));
 	}
 	boolean isMultiTrial = !solverTaskDescription.getStochOpt().isHistogram() &&
 			solverTaskDescription.getStochOpt().getNumOfTrials() > 1;
@@ -249,7 +252,7 @@ public void write(String[] parameterNames) throws Exception,ExpressionException
 			  		long varCount = 0;
 			  		if(varIniCondition instanceof VarIniCount)
 			  		{
-			  			varCount = (long)expectedCount;
+			  			varCount = (long)Math.round(expectedCount);
 			  		}
 			  		else
 			  		{
