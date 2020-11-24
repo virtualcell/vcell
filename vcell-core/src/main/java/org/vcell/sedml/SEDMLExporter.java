@@ -1082,6 +1082,9 @@ public class SEDMLExporter {
 		for (String sd : sbmlFilePathStrAbsoluteList) {
 			Paths.get(srcFolder, sd).toFile().delete();
 		}
+		for (String sd : sedmlFilePathStrAbsoluteList) {
+			Paths.get(srcFolder, sd).toFile().delete();
+		}
 
     } catch (Exception e) {
     	throw new RuntimeException("createZipArchive threw exception: " + e.getMessage());        
