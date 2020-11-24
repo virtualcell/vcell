@@ -17,7 +17,7 @@ public class SedmlExtensionFilter extends SelectorExtensionFilter {
 	private static final String FNAMES = ".sedml";
 	
 	public SedmlExtensionFilter() {
-		super(FNAMES,"SedML Format (.sedml)",SelectorExtensionFilter.Selector.FULL_MODEL);
+		super(FNAMES,"SedML format<Level1,Version2> (.sedml)",SelectorExtensionFilter.Selector.FULL_MODEL);
 	}
 
 	@Override
@@ -37,7 +37,18 @@ public class SedmlExtensionFilter extends SelectorExtensionFilter {
 		} else {
 			throw new RuntimeException("unsupported Document Type " + Objects.requireNonNull(bioModel).getClass().getName() + " for SedML export");
 		}
-		XmlUtil.writeXMLStringToFile(resultString, exportFile.getAbsolutePath(), true);
+		if (sExt.equals("sedml")) {
+			//sedmlExporter.createManifest(sPath, sFile);
+			String sedmlFileName = Paths.get(sPath, sFile + ".sedml").toString();
+			XmlUtil.writeXMLStringToFile(resultString, sedmlFileName, true);
+			sedmlExporter.addSedmlFileToList(sFile + ".sedml");
+			// sedmlExporter.addSedmlFileToList("manifest.xml");
+			//sedmlExporter.createOmexArchive(sPath, sFile);
+			return;
+		}
+		else {
+			XmlUtil.writeXMLStringToFile(resultString, exportFile.getAbsolutePath(), true);
+		}
 	}
 	
 

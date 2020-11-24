@@ -74,7 +74,8 @@ public class FileFilters {
 //	public static final FileFilter FILE_FILTER_SBML_24	= new SbmlExtensionFilter(2, 4, false);
 	public static final FileFilter FILE_FILTER_SBML_31_CORE = new SbmlExtensionFilter(3, 1, false);
 	public static final FileFilter FILE_FILTER_SBML_31_SPATIAL = new SbmlExtensionFilter(3, 1, true);
-	public static final FileFilter FILE_FILTER_OMEX    = new OmexExtensionFilter();
+	public static final FileFilter FILE_FILTER_SEDML    = new SedmlExtensionFilter(); 
+	public static final FileFilter FILE_FILTER_OMEX     = new OmexExtensionFilter();
 	public static final FileFilter FILE_FILTER_CELLML	= new CellMLExtensionFilter(); 
 	public static final FileFilter FILE_FILTER_SMOLDYN_INPUT = new SmoldynExtensionFilter(); 
 	public static final FileFilter FILE_FILTER_NFSIM = new NfsimExtensionFilter(); 
