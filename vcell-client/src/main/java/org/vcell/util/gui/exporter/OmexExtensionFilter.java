@@ -17,7 +17,7 @@ public class OmexExtensionFilter extends SelectorExtensionFilter {
 	private static final String FNAMES = ".omex";
 	
 	public OmexExtensionFilter() {
-		super(FNAMES,"OMEX Format (.omex(archive))",SelectorExtensionFilter.Selector.FULL_MODEL);
+		super(FNAMES,"COMBINE archive (.omex)",SelectorExtensionFilter.Selector.FULL_MODEL);
 	}
 
 	@Override
