@@ -13,7 +13,7 @@ import cbit.vcell.clientdb.DocumentManager;
 import cbit.vcell.mapping.SimulationContext;
 
 @SuppressWarnings("serial")
-public class OmexExtensionFilter extends SelectorExtensionFilter {
+public class OmexExtensionFilter extends SedmlExtensionFilter {
 	private static final String FNAMES = ".omex";
 	
 	public OmexExtensionFilter() {
@@ -38,12 +38,7 @@ public class OmexExtensionFilter extends SelectorExtensionFilter {
 			throw new RuntimeException("unsupported Document Type " + Objects.requireNonNull(bioModel).getClass().getName() + " for SedML export");
 		}
 		if (sExt.equals("omex")) {
-			//sedmlExporter.createManifest(sPath, sFile);
-			String sedmlFileName = Paths.get(sPath, sFile + ".sedml").toString();
-			XmlUtil.writeXMLStringToFile(resultString, sedmlFileName, true);
-			sedmlExporter.addSedmlFileToList(sFile + ".sedml");
-			// sedmlExporter.addSedmlFileToList("manifest.xml");
-			sedmlExporter.createOmexArchive(sPath, sFile);
+			doSpecificWork(sedmlExporter, resultString, sPath, sFile);
 			return;
 		}
 		else {
@@ -51,5 +46,10 @@ public class OmexExtensionFilter extends SelectorExtensionFilter {
 		}
 	}
 	
+	@Override
+	public void doSpecificWork(SEDMLExporter sedmlExporter, String resultString, String sPath, String sFile) throws Exception {
+		super.doSpecificWork(sedmlExporter, resultString, sPath, sFile);
+		sedmlExporter.createOmexArchive(sPath, sFile);
+	}
 
 }
