@@ -894,10 +894,9 @@ protected void addSpecies() throws XMLStreamException, SbmlException {
 		// for now we don't do this here and defer to the mechanisms built into the SimContext to convert and set amount instead of concentration
 		// TO-DO: change to export either concentrations or amounts depending on the type of SimContext and setting
 		SpeciesContextSpecParameter initCount = vcSpeciesContextsSpec.getInitialCountParameter();
-		if (initCount == null) {
+		if (initCount.getExpression() == null) {
 			try {
 				getSelectedSimContext().convertSpeciesIniCondition(false);
-				initCount = vcSpeciesContextsSpec.getInitialCountParameter();
 			} catch (MappingException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
