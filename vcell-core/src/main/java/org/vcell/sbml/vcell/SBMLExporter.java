@@ -809,11 +809,12 @@ protected void addReactions() throws SbmlException, XMLStreamException {
 				sr.setId(TokenMangler.mangleToSName(modelUniqueName));
 				sr.setConstant(true); //SBML-REVIEW
 				//int rcode = sr.appendNotes("<
-				try {
-					SBMLHelper.addNote(sr, "VCELL guess: how do we know if reaction is constant?");
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
+				// we know that in VCell we can't override stoichiometry anywhere, below is no longer questionable
+//				try {
+//					SBMLHelper.addNote(sr, "VCELL guess: how do we know if reaction is constant?");
+//				} catch (Exception e) {
+//					e.printStackTrace();
+//				}
 			}
 		}
 
