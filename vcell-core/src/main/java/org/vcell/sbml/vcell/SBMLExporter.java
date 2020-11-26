@@ -890,40 +890,45 @@ protected void addSpecies() throws XMLStreamException, SbmlException {
 		SpeciesContextSpec vcSpeciesContextsSpec = getSelectedSimContext().getReactionContext().getSpeciesContextSpec(vcSpeciesContexts[i]);
 		// since we are setting the substance units for species to 'molecule' or 'item', a unit that is originally in uM (or molecules/um2),
 		// we need to convert concentration from uM -> molecules/um3; this can be achieved by dividing by KMOLE.
-//		if (vcSpeciesContextsSpec.getInitialConcentrationParameter() == null) {
-//			try {
-//				getSelectedSimContext().convertSpeciesIniCondition(true);
-//			} catch (MappingException e) {
-//				// TODO Auto-generated catch block
-//				e.printStackTrace();
-//				throw new RuntimeException(e.getMessage());
-//			} catch (PropertyVetoException e) {
-//				// TODO Auto-generated catch block
-//				e.printStackTrace();
-//				throw new RuntimeException(e.getMessage());
-//			}
-//		}
+		
+		// for now we don't do this here and defer to the mechanisms built into the SimContext to convert and set amount instead of concentration
+		// TO-DO: change to export either concentrations or amounts depending on the type of SimContext and setting
+		SpeciesContextSpecParameter initCount = vcSpeciesContextsSpec.getInitialCountParameter();
+		if (initCount == null) {
+			try {
+				getSelectedSimContext().convertSpeciesIniCondition(false);
+				initCount = vcSpeciesContextsSpec.getInitialCountParameter();
+			} catch (MappingException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				throw new RuntimeException(e.getMessage());
+			} catch (PropertyVetoException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				throw new RuntimeException(e.getMessage());
+			}
+		}
+		Expression initCountExpr = initCount.getExpression();
 		try {
-			sbmlSpecies.setInitialConcentration(vcSpeciesContextsSpec.getInitialConditionParameter().getExpression().evaluateConstant());
+			sbmlSpecies.setInitialAmount(initCountExpr.evaluateConstant());
 		} catch (cbit.vcell.parser.ExpressionException e) {
 			// If it is in the catch block, it means that the initial concentration of the species was not a double, but an expression, probably.
 			// Check if the expression for the species is not null. If exporting to L2V1, and species is 'fixed', and if expr is not in terms of
 			// x, y, z, or other species then create an assignment rule for species concentration; else throw exception.
 			// If exporting to L2V3, if species concentration is not an expr with x, y, z or other species, add as InitialAssignment, else complain.
-			if (vcSpeciesContextsSpec.getInitialConditionParameter().getExpression() != null) {
-					Expression initConcExpr = vcSpeciesContextsSpec.getInitialConditionParameter().getExpression();
+			if (initCountExpr != null) {
 					if ((sbmlLevel == 2 && sbmlVersion >= 3) || (sbmlLevel > 2)) {
 						// L2V3 and above - add expression as init assignment
 						cbit.vcell.mapping.AssignmentRule vcellAs = getSelectedSimContext().getAssignmentRule(vcSpeciesContexts[i]);
 						if(vcellAs == null) {	// we don't create InitialAssignment for an AssignmentRule variable (Reference: L3V1 Section 4.8)
-							ASTNode initAssgnMathNode = getFormulaFromExpression(initConcExpr);
+							ASTNode initAssgnMathNode = getFormulaFromExpression(initCountExpr);
 							InitialAssignment initAssignment = sbmlModel.createInitialAssignment();
 							initAssignment.setSymbol(vcSpeciesContexts[i].getName());
 							initAssignment.setMath(initAssgnMathNode);
 						}
 					} else { 	// L2V1 (or L1V2 also??)
 						// L2V1 (and L1V2?) and species is 'fixed' (constant), and not fn of x,y,z, other sp, add expr as assgn rule 
-						ASTNode assgnRuleMathNode = getFormulaFromExpression(initConcExpr);
+						ASTNode assgnRuleMathNode = getFormulaFromExpression(initCountExpr);
 						AssignmentRule assgnRule = sbmlModel.createAssignmentRule();
 						assgnRule.setVariable(vcSpeciesContexts[i].getName());
 						assgnRule.setMath(assgnRuleMathNode);
