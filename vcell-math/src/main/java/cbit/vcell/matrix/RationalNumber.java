@@ -243,7 +243,9 @@ private static BigDecimal floor(BigDecimal value) {
 }
 
 public static RationalNumber getApproximateFraction(double value) {
-	return getApproximateFraction(value,1e-5,64);
+//	return getApproximateFraction(value,1e-5,64);
+// BOOOOOH
+	return getApproximateFraction(value,1e-16,64);
 }
 
 private static RationalNumber getApproximateFraction(double value,double tolerance,int bigDecimalPrecision) {
