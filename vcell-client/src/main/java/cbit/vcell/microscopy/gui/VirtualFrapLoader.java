@@ -83,13 +83,15 @@ public class VirtualFrapLoader {
 			    { 
 			    	System.out.println("!!!WARNING: Swing must be run with a 1.1.2 or higher version JVM!!!"); 
 			    } 
-			    /* Set Look and Feel */ 
-			    try{
-			    	UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
-			    }catch(Exception e){
-			    	throw new RuntimeException(e.getMessage(),e);
-			    }
-			    //set up file choosers 
+			    if (bStandalone) {
+					/* Set Look and Feel */
+					try {
+						UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
+					} catch (Exception e) {
+						throw new RuntimeException(e.getMessage(), e);
+					} 
+				}
+				//set up file choosers 
 			    openVFRAPFileChooser = new LWFileChooser(); 
 			    openVFRAPFileChooser.setDialogTitle("Open Virtual FRAP document (.vfrap)");
 			    openVFRAPFileChooser.setCurrentDirectory(new File(localWorkspace.getDefaultWorkspaceDirectory())); 
