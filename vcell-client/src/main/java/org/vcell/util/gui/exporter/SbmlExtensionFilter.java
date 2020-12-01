@@ -65,13 +65,14 @@ public class SbmlExtensionFilter extends SelectorExtensionFilter {
 	}
 	
 	private static Selector[]  selectors(boolean spatial) {
-		Selector selectors[] = new Selector[2];
+		Selector selectors[] = new Selector[3];
 		selectors[0] = Selector.DETERMINISTIC;
+		selectors[1] = Selector.STOCHASTIC;
 		if (spatial) {
-			selectors[1] = Selector.SPATIAL;
+			selectors[2] = Selector.SPATIAL;
 		}
 		else {
-			selectors[1] = Selector.NONSPATIAL;
+			selectors[2] = Selector.NONSPATIAL;
 		}
 		return selectors;
 	}

@@ -175,7 +175,7 @@ public class ReactionPropertiesPanel extends DocumentEditorSubPanel {
 		@Override
 		public void mouseReleased(MouseEvent e) {
 			if(e.getSource() == ReactionPropertiesPanel.this.annotationIconLabel) {
-				selectionManager.firePropertyChange(SelectionManager.PROPERTY_NAME_SELECTED_PANEL, null, selectionManager.getAnnotationNavigator());
+				selectionManager.firePropertyChange(SelectionManager.PROPERTY_NAME_SELECTED_PANEL, null, selectionManager.getAnnotationNavigator(reactionStep));
 			}
 		}
 	}
@@ -247,7 +247,8 @@ private void initialize() {
 		nameTextField = new JTextField();
 		nameTextField.setEditable(false);
 		sbmlNameTextField = new JTextField();
-		sbmlNameTextField.setEditable(true);
+		sbmlNameTextField.setEditable(false);
+		sbmlNameTextField.setEnabled(false);
 
 		isReversibleCheckBox = new JCheckBox("");
 		isReversibleCheckBox.setBackground(Color.white);

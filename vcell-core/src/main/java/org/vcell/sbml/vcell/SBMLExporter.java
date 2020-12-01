@@ -10,6 +10,7 @@
 
 package org.vcell.sbml.vcell;
 
+import java.beans.PropertyVetoException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -889,6 +890,19 @@ protected void addSpecies() throws XMLStreamException, SbmlException {
 		SpeciesContextSpec vcSpeciesContextsSpec = getSelectedSimContext().getReactionContext().getSpeciesContextSpec(vcSpeciesContexts[i]);
 		// since we are setting the substance units for species to 'molecule' or 'item', a unit that is originally in uM (or molecules/um2),
 		// we need to convert concentration from uM -> molecules/um3; this can be achieved by dividing by KMOLE.
+//		if (vcSpeciesContextsSpec.getInitialConcentrationParameter() == null) {
+//			try {
+//				getSelectedSimContext().convertSpeciesIniCondition(true);
+//			} catch (MappingException e) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//				throw new RuntimeException(e.getMessage());
+//			} catch (PropertyVetoException e) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//				throw new RuntimeException(e.getMessage());
+//			}
+//		}
 		try {
 			sbmlSpecies.setInitialConcentration(vcSpeciesContextsSpec.getInitialConditionParameter().getExpression().evaluateConstant());
 		} catch (cbit.vcell.parser.ExpressionException e) {
@@ -1256,7 +1270,7 @@ protected void addUnitDefinitions() throws SbmlException {
 	sbmlModel.setAreaUnits(getOrCreateSBMLUnit(sbmlExportSpec.getAreaUnits()));
 	sbmlModel.setLengthUnits(getOrCreateSBMLUnit(sbmlExportSpec.getLengthUnits()));
 	sbmlModel.setTimeUnits(getOrCreateSBMLUnit(sbmlExportSpec.getTimeUnits()));
-	//sbmlModel.setExtentUnits(getOrCreateSBMLUnit(???);
+	sbmlModel.setExtentUnits(getOrCreateSBMLUnit(sbmlExportSpec.getSubstanceUnits()));
 
 	//addKineticAndGlobalParameterUnits();
 }

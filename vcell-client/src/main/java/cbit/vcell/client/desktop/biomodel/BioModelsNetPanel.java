@@ -258,7 +258,16 @@ public class BioModelsNetPanel extends DocumentEditorSubPanel {
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		InputStream is = null;
 		try {
-		  is = url.openStream ();
+			try {
+				is = url.openStream ();
+			}catch (Exception e) {
+				e.printStackTrace();
+				if (is != null) { is.close(); }
+				//Try with http instead of https
+				String newUrlString = url.toString().replaceFirst("^https", "http");
+				url = new URL(newUrlString);
+				is = url.openStream ();
+			}
 		  byte[] byteChunk = new byte[4096]; // Or whatever size you want to read in at a time.
 		  int n;
 
@@ -512,10 +521,16 @@ TODO:
 	private List<BioModelsNetModelInfo> readVCellCompatibleBioModels_ID_Name_Hash() throws IOException, DataConversionException {
 		List<BioModelsNetModelInfo> vcellCompatibleBioModelsList = new ArrayList<BioModelsNetModelInfo>();
 
-		final String BIOMODELSNET_INFO_FILENAME = "/bioModelsNetInfo.xml";
-		InputStream tableInputStream = getClass().getResourceAsStream(BIOMODELSNET_INFO_FILENAME);
+		final String BIOMODELSNET_INFO_FILENAME_ALT = "/bioModelsNetInfo.xml";
+		final String BIOMODELSNET_INFO_FILENAME = "https://vcell.org/webstart/VCellBMDBInfo/bioModelsNetInfo.xml";
+		URL u = new URL(BIOMODELSNET_INFO_FILENAME);
+		InputStream tableInputStream = u.openStream();
+		
 		if (tableInputStream==null){
-			throw new FileNotFoundException(BIOMODELSNET_INFO_FILENAME + " not found");
+			tableInputStream = getClass().getResourceAsStream(BIOMODELSNET_INFO_FILENAME_ALT);
+		}
+		if (tableInputStream==null){
+			throw new FileNotFoundException(BIOMODELSNET_INFO_FILENAME_ALT + " not found");
 		}
 		//Process the Info files
 		org.jdom.input.SAXBuilder saxparser = new org.jdom.input.SAXBuilder(false);

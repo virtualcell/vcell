@@ -58,10 +58,7 @@ import org.jlibsedml.modelsupport.SUPPORTED_LANGUAGE;
 import org.jmathml.ASTCi;
 import org.jmathml.ASTNode;
 import org.jmathml.MathMLReader;
-import org.sbml.libcombine.CombineArchive;
-import org.sbml.libcombine.KnownFormats;
-import org.sbml.libcombine.OmexDescription;
-import org.sbml.libcombine.VCard;
+import org.sbml.libcombine.*;
 import org.vcell.sbml.SbmlException;
 import org.vcell.sbml.SimSpec;
 import org.vcell.sbml.vcell.SBMLExporter;
@@ -115,6 +112,7 @@ public class SEDMLExporter {
 	private  SedML sedmlModel = null;
 	private cbit.vcell.biomodel.BioModel vcBioModel = null;
 	private ArrayList<String> sbmlFilePathStrAbsoluteList = new ArrayList<String>();
+	private ArrayList<String> sedmlFilePathStrAbsoluteList = new ArrayList<String>();
 
 	private static String DATAGENERATOR_TIME_NAME = "time";
 	private static String DATAGENERATOR_TIME_SYMBOL = "t";
@@ -1049,7 +1047,7 @@ public class SEDMLExporter {
 	}
 	public void addSedmlFileToList(String sedmlFileName) {
 		if(sedmlFileName != null && !sedmlFileName.isEmpty()) {
-			sbmlFilePathStrAbsoluteList.add(sedmlFileName);
+			sedmlFilePathStrAbsoluteList.add(sedmlFileName);
 		}
 	}
 	
@@ -1060,12 +1058,20 @@ public class SEDMLExporter {
 		CombineArchive archive = new CombineArchive();
 
     	
+		for (String sd : sedmlFilePathStrAbsoluteList) {
+			archive.addFile(
+					Paths.get(srcFolder, sd).toString(),
+					sd, // target file name
+					KnownFormats.lookupFormat("sedml"),
+					true // mark file as master
+			);
+    	}
 		for (String sd : sbmlFilePathStrAbsoluteList) {
 			archive.addFile(
 					Paths.get(srcFolder, sd).toString(),
 					sd, // target file name
-					KnownFormats.lookupFormat("xml")
-//					true // mark file as master
+					KnownFormats.lookupFormat("sbml"),
+					false // mark file as master
 			);
     	}
 
@@ -1074,6 +1080,9 @@ public class SEDMLExporter {
 
 		// Removing files after archiving
 		for (String sd : sbmlFilePathStrAbsoluteList) {
+			Paths.get(srcFolder, sd).toFile().delete();
+		}
+		for (String sd : sedmlFilePathStrAbsoluteList) {
 			Paths.get(srcFolder, sd).toFile().delete();
 		}
 

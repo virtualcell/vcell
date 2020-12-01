@@ -1,5 +1,4 @@
 ![Build the Docker Image](https://github.com/biosimulators/Biosimulators_vcell/workflows/Build%20the%20Docker%20Image/badge.svg)  
-![Publish Docker To Hub](https://github.com/biosimulators/Biosimulators_vcell/workflows/Publish%20Docker%20To%20Hub/badge.svg)   
 [![GitHub issues](https://img.shields.io/github/issues/biosimulators/Biosimulators_vcell?logo=GitHub)](https://github.com/biosimulators/Biosimulators_vcell/issues)
 
 ---
@@ -54,7 +53,7 @@ BioSimulators-compliant command-line interface to the [VCell](http://vcell.org/)
      * The VM needed arguments are:
          ```
         -Dvcell.installDir=<Your-Project-Directory-Path>
-        -Dvcell.softwareVersion="frm_VCell_7.2"
+        -Dvcell.softwareVersion="VCell_7.3.0.0"
         ```
            
            

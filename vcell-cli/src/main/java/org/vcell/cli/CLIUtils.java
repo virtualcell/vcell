@@ -139,6 +139,7 @@ public class CLIUtils {
         try {
             PrintWriter out = new PrintWriter(f);
             out.print(fileAsString);
+            out.flush();
         } catch (FileNotFoundException e) {
             System.err.println("Unable to find path, failed with err: " + e.getMessage());
         }

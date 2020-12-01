@@ -23,7 +23,6 @@ ziptool
 .vagrant
 /update/
 /.checksums
-/.DS_Store
 vcell-client/UserDocumentation/originalXML/helpSearchConfig.txt
 *.iml
 .metadata/
@@ -191,4 +190,6 @@ $RECYCLE.BIN/
 
 # Windows shortcuts
 *.lnk
-/tests/results/
+
+/tests/results/*
+!/tests/results/.gitkeep

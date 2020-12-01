@@ -283,7 +283,7 @@ public void run(Hashtable<String, Object> hashTable) throws java.lang.Exception 
 						String applicationName = bioModel.getSimulationContext(chosenSimContextIndex.intValue()).getName();
 						resultString = XmlHelper.exportCellML(bioModel, applicationName);
 						// cellml still uses default character encoding for now ... maybe UTF-8 in the future
-					} else if (fileFilter.equals(FileFilters.FILE_FILTER_SEDML)) {
+					} else if (fileFilter.equals(FileFilters.FILE_FILTER_OMEX)) {
 						// export the entire biomodel to a SEDML file (for now, only non-spatial,non-stochastic applns)
 						int sedmlLevel = 1;
 						int sedmlVersion = 1;

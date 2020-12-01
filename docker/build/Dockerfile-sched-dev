@@ -32,6 +32,7 @@ ENV softwareVersion=SOFTWARE-VERSION-NOT-SET \
 	mongodb_host_internal=mongodb \
 	mongodb_port_internal=27017 \
     mongodb_database=test \
+    htclogdir_internal=/path/to/internal/htclogs/ \
     batchhost="batch-host-not-set" \
     batchuser="batch-user-not-set" \
     slurm_partition="slurm-partition-not-set" \
@@ -50,6 +51,7 @@ EXPOSE 8000
 
 VOLUME /simdata
 VOLUME /share/apps/vcell10/users
+VOLUME /htclogs
 
 ENTRYPOINT java \
 	-Xdebug -Xrunjdwp:transport=dt_socket,address=8000,server=y,suspend=n \
@@ -60,6 +62,7 @@ ENTRYPOINT java \
 	-Dlog4j.configurationFile=/usr/local/app/vcell-sched.log4j.xml \
 	-Dvcell.primarySimdatadir.internal=/simdata \
 	-Dvcell.htc.simPerUserMemLimitFile=sim_mem_per_user_limits.txt \
+	-Dvcell.htc.logdir.internal=/htclogs \
 	-Dvcell.server.id="${serverid}" \
 	-Dvcell.htc.user="${batchuser}" \
 	-Dvcell.htc.nodelist="${htcnodelist}" \

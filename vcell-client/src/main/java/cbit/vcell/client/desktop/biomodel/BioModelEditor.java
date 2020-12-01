@@ -819,7 +819,20 @@ protected void setRightBottomPanelOnSelection(Object[] selections) {
 				bottomComponent = parameterEstimationTaskPropertiesPanel;
 			}
 		} else if(singleSelection instanceof SelectionManager.AnnotationNavigator) {
-			bottomComponent = bioModelEditorAnnotationPanel;
+			Object entity = ((SelectionManager.AnnotationNavigator)singleSelection).getEntity();
+			if(entity instanceof ReactionStep) {
+				bottomComponent = getReactionPropertiesPanel();
+			} else if(entity instanceof SpeciesContext) {
+				bottomComponent = getSpeciesPropertiesPanel();
+			} else if(entity instanceof Structure) {		// Observables. MolecularType, Structures
+				bottomComponent = getStructurePropertiesPanel();
+			} else if(entity instanceof MolecularType) {
+				bottomComponent = getMolecularTypePropertiesPanel();
+			} else if(entity instanceof RbmObservable) {
+				bottomComponent = getObservablePropertiesPanel();
+			} else {
+				bottomComponent = bioModelEditorAnnotationPanel;
+			}
 		}
 	}
 	if (bShowPathway) {
@@ -859,9 +872,12 @@ protected void setRightBottomPanelOnSelection(Object[] selections) {
 	if(selections.length == 1 && selections[0] instanceof BioModel && bottomComponent instanceof BioModelEditorAnnotationPanel) {
 		// if the biomodel name is selected in the upper left tree, we select the Annotations tab
 		rightBottomTabbedPane.setSelectedComponent(annotationComponent);
-	} else if(selections.length == 1 && selections[0] instanceof SelectionManager.AnnotationNavigator && bottomComponent instanceof BioModelEditorAnnotationPanel) {
+	} else if(selections.length == 1 && selections[0] instanceof SelectionManager.AnnotationNavigator && selections[0] instanceof SelectionManager.AnnotationNavigator) {
 		// we want to navigate to the AnnotationPanel
 		rightBottomTabbedPane.setSelectedComponent(annotationComponent);
+//	} else if(selections.length == 1 && selections[0] instanceof SelectionManager.AnnotationNavigator && bottomComponent instanceof BioModelEditorAnnotationPanel) {
+//		// we want to navigate to the AnnotationPanel (old way)
+//		rightBottomTabbedPane.setSelectedComponent(annotationComponent);
 	} else if(selectedComponent != bottomComponent /* && rightBottomTabbedPane.getSelectedComponent() != annotationComponent */ ) {
 		rightBottomTabbedPane.setSelectedComponent(bottomComponent);
 	}

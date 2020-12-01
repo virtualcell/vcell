@@ -11,6 +11,7 @@
 package cbit.vcell.client.desktop;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Desktop;
 import java.awt.Dimension;
@@ -26,11 +27,13 @@ import java.awt.event.MouseListener;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -47,12 +50,17 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
+import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JTextArea;
+import javax.swing.JTextPane;
+import javax.swing.SwingUtilities;
+import javax.swing.Timer;
 import javax.swing.event.MenuEvent;
 import javax.swing.event.MenuListener;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.vcell.client.logicalwindow.LWTopFrame;
 import org.vcell.documentation.VcellHelpViewer;
 import org.vcell.imagej.ImageJHelper;
@@ -2184,7 +2192,6 @@ private javax.swing.JCheckBoxMenuItem getStatusbarMenuItem() {
  * Return the StatusBarPane property value.
  * @return javax.swing.JPanel
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private javax.swing.JPanel getStatusBarPane() {
 	if (ivjStatusBarPane == null) {
 		try {
@@ -2205,17 +2212,17 @@ private javax.swing.JPanel getStatusBarPane() {
 			gbc = new GridBagConstraints();
 			gbc.gridx = gridx;
 			gbc.gridy = 0;
-			gbc.weightx = 1;
-			gbc.fill = GridBagConstraints.HORIZONTAL;
-			gbc.insets = new Insets(4, 4, 4, 4);
-			ivjStatusBarPane.add(getWarningBar(), gbc);
+			gbc.insets = new Insets(2, 5, 2, 2);
+			ivjStatusBarPane.add(getIconBar(), gbc);
 
 			gridx++;
 			gbc = new GridBagConstraints();
 			gbc.gridx = gridx;
 			gbc.gridy = 0;
-			gbc.insets = new Insets(2, 2, 2, 2);
-			ivjStatusBarPane.add(getIconBar(), gbc);
+			gbc.weightx = 1;
+			gbc.fill = GridBagConstraints.HORIZONTAL;
+			gbc.insets = new Insets(4, 4, 4, 4);
+			ivjStatusBarPane.add(getWarningBar(), gbc);
 
 			gridx++;
 			gbc = new GridBagConstraints();
@@ -2250,7 +2257,7 @@ public JLabel getIconBar() {
 			iconText = new JLabel();
 			iconText.setName("");
 			iconText.setIcon(VCellIcons.noteRedIcon);
-			iconText.setToolTipText("Admin Notification");
+			iconText.setToolTipText("View VCell Administrator Notification");
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);
 		}
@@ -2258,6 +2265,7 @@ public JLabel getIconBar() {
 	return iconText;
 }
 
+//private static final String notificationsUrl = "//cfs05.cam.uchc.edu/vcell/apache_webroot/htdocs/webstart/VCell_alert/VCell_Alert.html";
 private static final String notificationsUrl = "https://vcell.org/webstart/VCell_alert/VCell_Alert.html";
 private void checkForNotifications() {
 	int code = HttpURLConnection.HTTP_BAD_REQUEST;
@@ -2278,12 +2286,95 @@ private void checkForNotifications() {
 	} else {
 		getIconBar().setEnabled(true);
 		getIconBar().setVisible(true);
+		
+		Timer blinkTimer = new Timer(500, new ActionListener() {
+			private int count = 0;
+			private int maxCount = 110;								// 55 seconds
+			public void actionPerformed(ActionEvent e) {
+				if (count >= maxCount) {
+					getIconBar().setIcon(VCellIcons.noteRedIcon);	// must remain on the noteRedIcon
+					((Timer) e.getSource()).stop();
+				} else {
+					if(count %2 == 0) {
+						getIconBar().setIcon(VCellIcons.noteRedIcon);
+					} else {
+						getIconBar().setIcon(VCellIcons.noteWhiteIcon);
+					}
+					count++;
+				}
+			}
+		});
+		blinkTimer.start();
 	}
 }
 private void onNotificationsIconClick() {
 //	PopupGenerator.showInfoDialog(DocumentWindow.this, "VCell admin notification message");
 	invokeShowNotifications();
 }
+
+// version display in a dialog box - not working for complicated html files
+//private void invokeShowNotifications() {
+//
+//	URL u = null;
+//	try {
+//		u = new URL(notificationsUrl);
+//	} catch (MalformedURLException e1) {
+//		e1.printStackTrace();
+//	}
+//	if(u == null) {
+//		return;
+//	}
+//	
+//	// the proper way to deal with closing the stream is by using a try-with-resources statement like below
+//	try (InputStream inputStream = u.openStream(); ) {
+//
+//		String theString = IOUtils.toString(inputStream, StandardCharsets.UTF_8);
+//		if(theString != null && !theString.isEmpty()) {
+////			theString = "<html><header></header><body>aaaaaa<br>bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb<br><br>ccc<br>ddd</body></html>";
+//			JPanel notificationPanel = getNotificationPanel(theString);
+//			
+//			JOptionPane pane = new JOptionPane(notificationPanel, JOptionPane.PLAIN_MESSAGE, 0, null, new Object[] {"Close"});
+//			JDialog viewNotificationDialog = pane.createDialog(DocumentWindow.this, "VCell Notification");
+//			viewNotificationDialog.setModal(false);
+//			viewNotificationDialog.setResizable(true);
+//			viewNotificationDialog.setVisible(true);
+//
+//		}
+//
+//	} catch (IOException e) {
+//		e.printStackTrace();
+//	}
+//}
+//
+//private JPanel getNotificationPanel(String notification) {
+//	
+//	JPanel notificationPanel = new JPanel();
+//	notificationPanel.setLayout(new GridBagLayout());
+//	notificationPanel.setBackground(Color.white);
+//	
+//	JTextPane annotationTextArea = new JTextPane();
+//	annotationTextArea.setContentType("text/html");
+//	annotationTextArea.setEditable(false);
+//	annotationTextArea.setText(notification);
+//
+//	JScrollPane annotationPane = new JScrollPane(annotationTextArea);
+//
+//	int gridy = 0;
+//	GridBagConstraints gbc = new java.awt.GridBagConstraints();
+//	gbc = new java.awt.GridBagConstraints();
+//	gbc.gridx = 0; 
+//	gbc.gridy = gridy;
+//	gbc.weightx = 1.0;
+//	gbc.weighty = 1.0;
+//	gbc.insets = new Insets(1, 3, 1, 2);
+//	gbc.fill = java.awt.GridBagConstraints.BOTH;
+//	gbc.anchor = GridBagConstraints.NORTHWEST;
+//	notificationPanel.add(annotationPane, gbc);
+//
+//	return notificationPanel;
+//}
+
+// version using the browser
 private void invokeShowNotifications() {
 	
 	DialogUtils.browserLauncher(this, notificationsUrl, "Please visit '" + notificationsUrl + "' for server administrator notifications.");
@@ -2296,7 +2387,6 @@ private void invokeShowNotifications() {
  * Return the TestingFrameworkMenuItem property value.
  * @return javax.swing.JMenuItem
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private javax.swing.JMenuItem getTestingFrameworkMenuItem() {
 	if (ivjTestingFrameworkMenuItem == null) {
 		try {

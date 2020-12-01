@@ -13,14 +13,11 @@ import cbit.vcell.clientdb.DocumentManager;
 import cbit.vcell.mapping.SimulationContext;
 
 @SuppressWarnings("serial")
-public class SedmlExtensionFilter extends SelectorExtensionFilter {
-	private static final String FNAMES = ".sedml";
+public class OmexExtensionFilter extends SedmlExtensionFilter {
+	private static final String FNAMES = ".omex";
 	
-	public SedmlExtensionFilter() {
-		this(FNAMES, "SedML format<Level1,Version1> (.sedml)", SelectorExtensionFilter.Selector.FULL_MODEL);
-	}
-	public SedmlExtensionFilter(String fNames, String name, Selector selector) {
-		super(fNames, name, selector);
+	public OmexExtensionFilter() {
+		super(FNAMES,"COMBINE archive (.omex)",SelectorExtensionFilter.Selector.FULL_MODEL);
 	}
 
 	@Override
@@ -40,7 +37,7 @@ public class SedmlExtensionFilter extends SelectorExtensionFilter {
 		} else {
 			throw new RuntimeException("unsupported Document Type " + Objects.requireNonNull(bioModel).getClass().getName() + " for SedML export");
 		}
-		if (sExt.equals("sedml")) {
+		if (sExt.equals("omex")) {
 			doSpecificWork(sedmlExporter, resultString, sPath, sFile);
 			return;
 		}
@@ -49,11 +46,10 @@ public class SedmlExtensionFilter extends SelectorExtensionFilter {
 		}
 	}
 	
+	@Override
 	public void doSpecificWork(SEDMLExporter sedmlExporter, String resultString, String sPath, String sFile) throws Exception {
-		String sedmlFileName = Paths.get(sPath, sFile + ".sedml").toString();
-		XmlUtil.writeXMLStringToFile(resultString, sedmlFileName, true);
-		sedmlExporter.addSedmlFileToList(sFile + ".sedml");
+		super.doSpecificWork(sedmlExporter, resultString, sPath, sFile);
+		sedmlExporter.createOmexArchive(sPath, sFile);
 	}
-	
 
 }

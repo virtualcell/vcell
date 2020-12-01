@@ -782,9 +782,7 @@ public static String mathModelToXML(MathModel mathModel) throws XmlParseExceptio
 		OutputTimeSpec outputTimeSpec = new UniformOutputTimeSpec(outputTimeStep);
 		simTaskDesc.setTimeBounds(timeBounds);
 		simTaskDesc.setTimeStep(timeStep);
-//		simTaskDesc.setOutputTimeSpec(outputTimeSpec);
-
-			simTaskDesc.setOutputTimeSpec(new DefaultOutputTimeSpec());
+		simTaskDesc.setOutputTimeSpec(outputTimeSpec);
 		newSimulation.setSolverTaskDescription(simTaskDesc);
     	bioModel.addSimulation(newSimulation);
     	newSimulation.refreshDependencies();

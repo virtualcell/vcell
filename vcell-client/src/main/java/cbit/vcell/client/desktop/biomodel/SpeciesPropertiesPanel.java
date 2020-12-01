@@ -548,7 +548,8 @@ private void initialize() {
 		generalPanel.add(nameTextField, gbc);
 		
 		sbmlNameTextField = new JTextField();
-		sbmlNameTextField.setEditable(true);
+		sbmlNameTextField.setEditable(false);
+		sbmlNameTextField.setEnabled(false);
 
 		gbc = new java.awt.GridBagConstraints();
 		gbc.gridx = 2; 

@@ -13,7 +13,7 @@ jobs:
           wget https://vcell.org/webstart/pipeline_files/apache-maven-3.6.3-bin.tar.gz
           tar -xvzf apache-maven-3.6.3-bin.tar.gz
           mv apache-maven-3.6.3 maven
-      - name: Install dependencies 
+      - name: Install dependencies
         run: |
           export JAVA_HOME=`pwd`/jdk
           export PATH=${JAVA_HOME}/bin:${PATH}
@@ -28,16 +28,14 @@ jobs:
           echo "#################################"
           mvn clean install dependency:copy-dependencies
           docker build --file docker/build/Dockerfile-vcell-cli \
-                    	--tag crbm/biosimulations_vcell:7.2 \
-                    	--tag crbm/biosimulations_vcell:latest .
+                    	--tag biosimulators_vcell:7.3.0.0 .
       - name: Run the Docker image with test files
         run: |
-          mkdir -p "$(pwd)"/tests/results
           docker run \
               --tty \
               --rm \
               --mount type=bind,source="$(pwd)"/tests/fixtures,target=/root/in,readonly \
               --mount type=bind,source="$(pwd)"/tests/results,target=/root/out \
-              crbm/biosimulations_vcell:latest \
-                -i /root/in/BIOMD0000000297.omex \
+              biosimulators_vcell:7.3.0.0 \
+                -i /root/in/BIOMD0000000823.omex \
                 -o /root/out

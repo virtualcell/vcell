@@ -11,14 +11,16 @@
   <para>
   The top of the table shows the Reaction Name,a combobox for Kinetic Type, and a button to convert the rate law either from molecules per 
   second to micromolar per second or vice versa. Below is a table of the kinetic terms used to define the reaction rate 
-  (J) that includes all mathematical terms referred to in the mathematical expression for J or other kinetic terms.  Items in brown cannot be edited.
+  (J) that includes all mathematical terms referred to in the mathematical expression for J or other kinetic terms.  A link or text bubble icon next to the name indicates that either a link or text annotation is associated with the reaction.  Clicking on the icon will navigate to the Annotations Pane.  Items in brown cannot be edited.
   </para>
   </appearance>
 	
   <operations>
     <para>
     <bold>Edit the reaction name</bold> using the text field. A name already given to another reaction will be rejected.
-    </para>
+   </para>
+   <para><bold>Make reaction reversible</bold> using the check box underneath the reaction name. The check box is only visible when the appropriate kinetic type is selected.
+   </para>
     <para>
     <bold>Select a rate law</bold> using the combobox to select one of a few predefined rate laws 
     (mass action, Michaelis-Menten reversible and irreversible) in micromolar per second or to enter a user-defined 
