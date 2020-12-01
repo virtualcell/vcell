@@ -1,9 +1,11 @@
 package org.vcell.util.gui.exporter;
 
 import java.io.File;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Objects;
 
+import cbit.vcell.xml.XmlHelper;
 import org.vcell.sedml.SEDMLExporter;
 import org.vcell.util.FileUtils;
 
@@ -34,6 +36,12 @@ public class OmexExtensionFilter extends SedmlExtensionFilter {
 		if (bioModel != null) {
 			sedmlExporter = new SEDMLExporter(bioModel, sedmlLevel, sedmlVersion);
 			resultString = sedmlExporter.getSEDMLFile(sPath);
+
+			// convert biomodel to vcml and save to file.
+			String vcmlString = XmlHelper.bioModelToXML(bioModel);
+			String vcmlFileName = Paths.get(sPath, sFile + ".vcml").toString();
+			File vcmlFile = new File(vcmlFileName);
+			XmlUtil.writeXMLStringToFile(vcmlString, vcmlFile.getAbsolutePath(), true);
 		} else {
 			throw new RuntimeException("unsupported Document Type " + Objects.requireNonNull(bioModel).getClass().getName() + " for SedML export");
 		}
