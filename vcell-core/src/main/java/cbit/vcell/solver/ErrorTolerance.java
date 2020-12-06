@@ -20,6 +20,28 @@ import cbit.vcell.math.VCML;
  * @author: 
  */
 public class ErrorTolerance implements java.io.Serializable, org.vcell.util.Matchable {
+	
+	public enum ErrorToleranceDescription {
+		Absolute("KISAO:0000211", "Absolute Tolerance"),
+		Relative("KISAO:0000209", "Relative Tolerance"),
+		;
+		
+		private final String kisao;
+		private final String description;
+		
+		private ErrorToleranceDescription(String kisao, String description) {
+			this.kisao = kisao;
+			this.description = description;
+		}
+		public String getKisao() {
+			return kisao;
+		}
+		public String getDescription() {
+			return description;
+		}
+	}
+	
+	
 	private double fieldAbsoluteErrorTolerance = 1.0E-09;
 	private double fieldRelativeErrorTolerance = 1.0E-09;
 /**
