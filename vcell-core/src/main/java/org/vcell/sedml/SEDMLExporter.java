@@ -28,6 +28,7 @@ import javax.xml.transform.stream.StreamResult;
 import org.jdom.Namespace;
 //import org.jdom.Element;
 import org.jlibsedml.Algorithm;
+import org.jlibsedml.AlgorithmParameter;
 import org.jlibsedml.ChangeAttribute;
 import org.jlibsedml.ComputeChange;
 import org.jlibsedml.Curve;
@@ -96,6 +97,7 @@ import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.solver.AnnotatedFunction;
 import cbit.vcell.solver.ConstantArraySpec;
+import cbit.vcell.solver.ErrorTolerance;
 import cbit.vcell.solver.MathOverrides;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationJob;
@@ -294,6 +296,18 @@ public class SEDMLExporter {
 						String simName = vcSimulation.getName();
 						UniformTimeCourse utcSim = new UniformTimeCourse(TokenMangler.mangleToSName(simName), simName, startingTime, startingTime, 
 								vcSimTimeBounds.getEndingTime(), (int) simTaskDesc.getExpectedNumTimePoints(), sedmlAlgorithm);
+						
+						if(vcSolverDesc.hasErrorTolerance()) {
+							ErrorTolerance et = simTaskDesc.getErrorTolerance();
+							String kisao = ErrorTolerance.ErrorToleranceDescription.Absolute.getKisao();
+							AlgorithmParameter sedmlAlgorithmParameter = new AlgorithmParameter(kisao, et.getAbsoluteErrorTolerance()+"");
+							sedmlAlgorithm.addAlgorithmParameter(sedmlAlgorithmParameter);
+							kisao = ErrorTolerance.ErrorToleranceDescription.Relative.getKisao();
+							sedmlAlgorithmParameter = new AlgorithmParameter(kisao, et.getRelativeErrorTolerance()+"");
+							sedmlAlgorithm.addAlgorithmParameter(sedmlAlgorithmParameter);
+						}
+						
+						// SolverDescription.SupportedTimeSpec
 						
 						// if solver is not CVODE, add a note to utcSim to indicate actual solver name
 						if (!vcSolverDesc.equals(SolverDescription.CVODE)) {
