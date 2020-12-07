@@ -13,6 +13,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -51,6 +52,8 @@ import org.jlibsedml.UniformTimeCourse;
 import org.jlibsedml.VariableSymbol;
 import org.jlibsedml.VectorRange;
 import org.jlibsedml.XPathTarget;
+import org.jlibsedml.modelsupport.KisaoOntology;
+import org.jlibsedml.modelsupport.KisaoTerm;
 import org.jlibsedml.modelsupport.SBMLSupport;
 import org.jlibsedml.modelsupport.SBMLSupport.CompartmentAttribute;
 import org.jlibsedml.modelsupport.SBMLSupport.ParameterAttribute;
@@ -99,11 +102,13 @@ import cbit.vcell.solver.AnnotatedFunction;
 import cbit.vcell.solver.ConstantArraySpec;
 import cbit.vcell.solver.ErrorTolerance;
 import cbit.vcell.solver.MathOverrides;
+import cbit.vcell.solver.NonspatialStochSimOptions;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationJob;
 import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solver.SolverTaskDescription;
 import cbit.vcell.solver.TimeBounds;
+import cbit.vcell.solver.TimeStep;
 import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XmlHelper;
 import cbit.vcell.xml.XmlParseException;
@@ -297,17 +302,48 @@ public class SEDMLExporter {
 						UniformTimeCourse utcSim = new UniformTimeCourse(TokenMangler.mangleToSName(simName), simName, startingTime, startingTime, 
 								vcSimTimeBounds.getEndingTime(), (int) simTaskDesc.getExpectedNumTimePoints(), sedmlAlgorithm);
 						
-						if(vcSolverDesc.hasErrorTolerance()) {
+//						String algorithmNotesStr = "";
+						if(vcSolverDesc.hasErrorTolerance()) {			// deal with error tolerance
 							ErrorTolerance et = simTaskDesc.getErrorTolerance();
-							String kisao = ErrorTolerance.ErrorToleranceDescription.Absolute.getKisao();
-							AlgorithmParameter sedmlAlgorithmParameter = new AlgorithmParameter(kisao, et.getAbsoluteErrorTolerance()+"");
+							String kisaoStr = ErrorTolerance.ErrorToleranceDescription.Absolute.getKisao();
+							AlgorithmParameter sedmlAlgorithmParameter = new AlgorithmParameter(kisaoStr, et.getAbsoluteErrorTolerance()+"");
 							sedmlAlgorithm.addAlgorithmParameter(sedmlAlgorithmParameter);
-							kisao = ErrorTolerance.ErrorToleranceDescription.Relative.getKisao();
-							sedmlAlgorithmParameter = new AlgorithmParameter(kisao, et.getRelativeErrorTolerance()+"");
+//							String str = ErrorTolerance.ErrorToleranceDescription.Absolute.getDescription() + " : " + kisaoStr;
+//							algorithmNotesStr += str;
+							kisaoStr = ErrorTolerance.ErrorToleranceDescription.Relative.getKisao();
+							sedmlAlgorithmParameter = new AlgorithmParameter(kisaoStr, et.getRelativeErrorTolerance()+"");
 							sedmlAlgorithm.addAlgorithmParameter(sedmlAlgorithmParameter);
 						}
+
+						TimeStep ts = simTaskDesc.getTimeStep();		// deal with time step
+						String kisaoStr = TimeStep.TimeStepDescription.Default.getKisao();
+						AlgorithmParameter sedmlAlgorithmParameter = new AlgorithmParameter(kisaoStr, ts.getDefaultTimeStep()+"");
+						sedmlAlgorithm.addAlgorithmParameter(sedmlAlgorithmParameter);
+						kisaoStr = TimeStep.TimeStepDescription.Minimum.getKisao();
+						sedmlAlgorithmParameter = new AlgorithmParameter(kisaoStr, ts.getMinimumTimeStep()+"");
+						sedmlAlgorithm.addAlgorithmParameter(sedmlAlgorithmParameter);
+						kisaoStr = TimeStep.TimeStepDescription.Maximum.getKisao();
+						sedmlAlgorithmParameter = new AlgorithmParameter(kisaoStr, ts.getMaximumTimeStep()+"");
+						sedmlAlgorithm.addAlgorithmParameter(sedmlAlgorithmParameter);
 						
-						// SolverDescription.SupportedTimeSpec
+						
+						if(simTaskDesc.getSimulation().getMathDescription().isNonSpatialStoch()) {	// deal with seed
+							NonspatialStochSimOptions nssso = simTaskDesc.getStochOpt();
+							if(nssso.isUseCustomSeed()) {
+								// TODO: don't know where the kisao belongs, maybe we should consolidate all in one single ontology file
+//								// TODO: our jlibsedml has an old subset of the kisao ontology (below KISAO:0000100), we need a complete one
+//								KisaoOntology ko = KisaoOntology.getInstance();		// usage example
+//								KisaoTerm kt = ko.getTermById("KISAO:0000064");
+								sedmlAlgorithmParameter = new AlgorithmParameter("KISAO:0000488", nssso.getCustomSeed()+"");
+								sedmlAlgorithm.addAlgorithmParameter(sedmlAlgorithmParameter);
+							}
+						} else {
+							;	// (... isRuleBased(), isSpatial(), isMovingMembrane(), isSpatialHybrid() ...
+						}
+
+						// TODO: consider adding notes for the algorithm parameters, to provide human-readable description of kisao terms
+//						sedmlAlgorithm.addNote(createNotesElement(algorithmNotesStr));
+						// TODO: even better, AlgorithmParameter in sed-ml should also have a human readable "name" field
 						
 						// if solver is not CVODE, add a note to utcSim to indicate actual solver name
 						if (!vcSolverDesc.equals(SolverDescription.CVODE)) {
