@@ -19,6 +19,7 @@ import javax.xml.stream.XMLStreamException;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.bouncycastle.crypto.RuntimeCryptoException;
 import org.jdom.Element;
 import org.jdom.Namespace;
 import org.sbml.jsbml.ASTNode;
@@ -66,6 +67,7 @@ import org.sbml.jsbml.ext.spatial.SpatialModelPlugin;
 import org.sbml.jsbml.ext.spatial.SpatialParameterPlugin;
 import org.sbml.jsbml.ext.spatial.SpatialReactionPlugin;
 import org.sbml.jsbml.ext.spatial.SpatialSymbolReference;
+import org.sbml.jsbml.text.parser.ParseException;
 import org.vcell.sbml.SBMLHelper;
 import org.vcell.sbml.SBMLUtils;
 import org.vcell.sbml.SbmlException;
@@ -1520,7 +1522,18 @@ public static ASTNode getFormulaFromExpression(Expression expression) {
  *		returns the new formula string.
  *  
  */
-public static ASTNode getFormulaFromExpression(Expression expression, MathType desiredType) { 
+public static ASTNode getFormulaFromExpression(Expression expression, MathType desiredType) {
+	// switch to libSBML for non-boolean
+	if (!desiredType.equals(MathType.BOOLEAN)) {
+		try {
+			return ASTNode.parseFormula(expression.infix());
+		} catch (ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			throw new RuntimeException(e.toString());
+		}
+	}
+	
 	// Convert expression into MathML string
 	String expMathMLStr = null;
 
