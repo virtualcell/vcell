@@ -219,6 +219,16 @@ public static String exportSBML(VCDocument vcDoc, int level, int version, int pk
 			ModelUnitSystem forcedModelUnitSystem = simContext.getModel().getUnitSystem();
 			if (level < 3 && !ModelUnitSystem.isCompatibleWithDefaultSBMLLevel2Units(forcedModelUnitSystem)) {
 				forcedModelUnitSystem = ModelUnitSystem.createDefaultSBMLLevel2Units();
+			} else if (forcedModelUnitSystem.getVolumeSubstanceUnit().getSymbol() != "molecules"){
+				// need to replace volumeSubstanceUnit; molecules is the only one that allows the exporter to create valid unit conversions of parameters
+				String volumeSubstanceSymbol = "molecules";
+				String membraneSubstanceSymbol = forcedModelUnitSystem.getMembraneSubstanceUnit().getSymbol();
+				String lumpedReactionSubstanceSymbol = forcedModelUnitSystem.getLumpedReactionSubstanceUnit().getSymbol();
+				String lengthSymbol = forcedModelUnitSystem.getLengthUnit().getSymbol();		
+				String areaSymbol = forcedModelUnitSystem.getAreaUnit().getSymbol();
+				String volumeSymbol = forcedModelUnitSystem.getVolumeUnit().getSymbol();
+				String timeSymbol = forcedModelUnitSystem.getTimeUnit().getSymbol();
+				forcedModelUnitSystem = ModelUnitSystem.createVCModelUnitSystem(volumeSubstanceSymbol, membraneSubstanceSymbol, lumpedReactionSubstanceSymbol, volumeSymbol, areaSymbol, lengthSymbol, timeSymbol);
 			}
 			// create new Biomodel with new (SBML compatible)  unit system
 			BioModel modifiedBiomodel = ModelUnitConverter.createBioModelWithNewUnitSystem(simContext.getBioModel(), forcedModelUnitSystem);
