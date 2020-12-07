@@ -47,21 +47,20 @@ public class ModelUnitConverter {
 			for (Parameter p : reactionStep.getKinetics().getKineticsParameters()){
 				convertVarsWithUnitFactors(oldSymbolTable, newSymbolTable, p);
 			}
-//			Expression rateExpression = reactionStep.getKinetics().getKineticsParameterFromRole(Kinetics.ROLE_ReactionRate).getExpression();
-//			jscl.math.Expression jsclExpression = null;
-//			String jsclExpressionString = rateExpression.infix_JSCL();
-//			try {
-//				jsclExpression = jscl.math.Expression.valueOf(jsclExpressionString);
-//			}catch (jscl.text.ParseException e){
-//				e.printStackTrace(System.out);
-//				System.out.println("JSCL couldn't parse \""+jsclExpressionString+"\"");
-//				return null;
-//			}
-//			jscl.math.Generic g1=jsclExpression.expand();
-//			Expression newRate=new Expression(g1.toString().replaceAll("underscore", "_"));
-//			newRate.bindExpression(reactionStep);
-//			reactionStep.getKinetics().getKineticsParameterFromRole(Kinetics.ROLE_ReactionRate).setExpression(newRate.flatten());
-//			jsclExpression.toString();
+			Expression rateExpression = reactionStep.getKinetics().getKineticsParameterFromRole(Kinetics.ROLE_ReactionRate).getExpression();
+			jscl.math.Expression jsclExpression = null;
+			String jsclExpressionString = rateExpression.infix_JSCL();
+			try {
+				jsclExpression = jscl.math.Expression.valueOf(jsclExpressionString);
+			}catch (jscl.text.ParseException e){
+				e.printStackTrace(System.out);
+				System.out.println("JSCL couldn't parse \""+jsclExpressionString+"\"");
+				return null;
+			}
+			jscl.math.Generic g1=jsclExpression.expand();
+			Expression newRate=new Expression(g1.toString().replaceAll("underscore", "_"));
+			newRate.bindExpression(reactionStep);
+			reactionStep.getKinetics().getKineticsParameterFromRole(Kinetics.ROLE_ReactionRate).setExpression(newRate.flatten());
 		}
 		for (ReactionRule reactionRule : newBioModel.getModel().getRbmModelContainer().getReactionRuleList()) {
 			SymbolTable oldSymbolTable = oldBioModel.getModel().getRbmModelContainer().getReactionRule(reactionRule.getName()).getKineticLaw().getScopedSymbolTable();
