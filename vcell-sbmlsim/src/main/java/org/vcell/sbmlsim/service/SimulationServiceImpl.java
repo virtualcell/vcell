@@ -482,13 +482,12 @@ public class SimulationServiceImpl extends AbstractService implements Simulation
 		try {
 			BioModel bioModel = XmlHelper.XMLToBioModel(new XMLSource(vcmlFile));
 			SimulationContext simContext = bioModel.getSimulationContext(applicationName);
-			SBMLExporter exporter = new SBMLExporter(simContext,3,1,simContext.getGeometry().getDimension()>0);
-			VCellSBMLDoc sbmlDoc = exporter.convertToSBML();
-			FileUtils.write(outputFile, sbmlDoc.xmlString);
+			String sbml = XmlHelper.exportSBML(bioModel, 3, 1, 0, simContext.getGeometry().getDimension()>0, simContext, null);
+			FileUtils.write(outputFile, sbml);
 			VcmlToSbmlResults results = new VcmlToSbmlResults();
 			results.setSbmlFilePath(outputFile);
 			return results;
-		} catch (SBMLException | XmlParseException | SbmlException | XMLStreamException e) {
+		} catch (XmlParseException e) {
 			e.printStackTrace();
 			throw new Exception("failed to generate SBML document: "+e.getMessage());
 		}

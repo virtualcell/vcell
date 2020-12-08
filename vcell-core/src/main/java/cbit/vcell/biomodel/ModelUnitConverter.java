@@ -23,6 +23,7 @@ import cbit.vcell.parser.ScopedSymbolTable;
 import cbit.vcell.parser.SymbolTable;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.units.VCUnitDefinition;
+import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XmlHelper;
 import cbit.vcell.xml.XmlParseException;
 
@@ -30,7 +31,9 @@ public class ModelUnitConverter {
 
 	public static BioModel createBioModelWithNewUnitSystem(BioModel oldBioModel, ModelUnitSystem newUnitSystem) throws ExpressionException, XmlParseException {
 		// new BioModel has new unit system applied to all built-in units ... but expressions still need to be corrected (see below).
-		BioModel newBioModel = XmlHelper.cloneBioModelWithNewUnitSystem(oldBioModel, newUnitSystem);
+		String biomodelXMLString = XmlHelper.bioModelToXML(oldBioModel);
+		XMLSource newXMLSource = new XMLSource(biomodelXMLString);
+		BioModel newBioModel = XmlHelper.XMLToBioModel(newXMLSource, true, newUnitSystem);
 		Model newModel = newBioModel.getModel();
 		Model oldModel = oldBioModel.getModel();
 
