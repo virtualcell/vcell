@@ -230,20 +230,11 @@ public class SEDMLExporter {
 					Map<Pair <String, String>, String> l2gMap = null;		// local to global translation map
 					if (vcBioModel instanceof BioModel) {
 						try {
-							// check if model to be exported to SBML has units compatible with SBML default units (default units in SBML can be assumed only until SBML Level2)
-							ModelUnitSystem forcedModelUnitSystem = simContext.getModel().getUnitSystem();
-							if (level < 4 && !ModelUnitSystem.isCompatibleWithDefaultSBMLLevel2Units(forcedModelUnitSystem)) {
-								forcedModelUnitSystem = ModelUnitSystem.createDefaultSBMLLevel2Units();
-							}
-							// create new Biomodel with new (SBML compatible)  unit system
-							BioModel modifiedBiomodel = ModelUnitConverter.createBioModelWithNewUnitSystem(simContext.getBioModel(), forcedModelUnitSystem);
-							// extract the simContext from new Biomodel. Apply overrides to *this* modified simContext
-							SimulationContext simContextFromModifiedBioModel = modifiedBiomodel.getSimulationContext(simContext.getName());
-							SBMLExporter sbmlExporter = new SBMLExporter(modifiedBiomodel, level, version, isSpatial);
-							sbmlExporter.setSelectedSimContext(simContextFromModifiedBioModel);
+							SBMLExporter sbmlExporter = new SBMLExporter(vcBioModel, level, version, isSpatial);
+							sbmlExporter.setSelectedSimContext(simContext);
 							sbmlExporter.setSelectedSimulationJob(null);	// no sim job
 							try {
-								sbmlString = sbmlExporter.getSBMLFile();
+								sbmlString = sbmlExporter.getSBMLString();
 							} catch (RuntimeException e) {
 								if (simContext.getGeometry().getDimension() > 0 && simContext.getApplicationType() == Application.NETWORK_DETERMINISTIC ) {
 									continue;	// we skip importing 3D deterministic applications if SBML exceptions
@@ -252,7 +243,7 @@ public class SEDMLExporter {
 								}
 							}
 							l2gMap = sbmlExporter.getLocalToGlobalTranslationMap();
-						} catch (ExpressionException | SbmlException e) {
+						} catch (SbmlException e) {
 							e.printStackTrace(System.out);
 							throw new XmlParseException(e);
 						}
