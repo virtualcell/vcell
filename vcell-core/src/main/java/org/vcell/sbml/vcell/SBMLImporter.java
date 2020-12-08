@@ -132,6 +132,7 @@ import cbit.image.VCImageUncompressed;
 import cbit.image.VCPixelClass;
 import cbit.util.xml.VCLogger;
 import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.biomodel.ModelUnitConverter;
 import cbit.vcell.biomodel.meta.VCMetaData;
 import cbit.vcell.geometry.AnalyticSubVolume;
 import cbit.vcell.geometry.CSGObject;
@@ -203,6 +204,7 @@ import cbit.vcell.render.Vect3d;
 import cbit.vcell.units.VCUnitDefinition;
 import cbit.vcell.units.VCUnitSystem;
 import cbit.vcell.xml.XMLTags;
+import cbit.vcell.xml.XmlParseException;
 
 public class SBMLImporter {
 	public static class SBMLIssueSource implements Issue.IssueSource {
@@ -751,7 +753,14 @@ public class SBMLImporter {
 				SpeciesContextSpec scs = vcBioModel.getSimulationContext(0).getReactionContext().getSpeciesContextSpec(sc);
 				ModelParameter mp = vcBioModel.getSimulationContext(0).getModel().getModelParameter(vcInitAssgnSymbolName);
 				if (scs != null) {
-					scs.getInitialConditionParameter().setExpression(initAssignMathExpr);
+					org.sbml.jsbml.Species sbmlSpecies = sbmlModel.getSpecies(sbmlInitAssgnSymbolName);
+					Compartment sbmlCompartment = sbmlSpecies.getCompartmentInstance();
+					if (sbmlSpecies.hasOnlySubstanceUnits() || sbmlSpecies.isSetInitialAmount()) {
+						Expression initConc = Expression.div(initAssignMathExpr, new Expression(sbmlCompartment.getSize())).flatten();
+						scs.getInitialConditionParameter().setExpression(initConc);
+					} else {
+						scs.getInitialConditionParameter().setExpression(initAssignMathExpr);
+					}
 				} else if (mp != null) {
 					mp.setExpression(initAssignMathExpr);
 //				} else if(entryMap.get(initAssgnSymbol) != null) {
@@ -2513,7 +2522,16 @@ public class SBMLImporter {
 				}
 			}
 		}
-		return vcBioModel;
+		// finally try to convert to vcell unit system
+		ModelUnitSystem vcUnitSystem = ModelUnitSystem.createDefaultVCModelUnitSystem();
+		try {
+			BioModel convertedBioModel = ModelUnitConverter.createBioModelWithNewUnitSystem(vcBioModel, vcUnitSystem);
+			return convertedBioModel;
+		} catch (ExpressionException | XmlParseException e) {
+			// TODO maybe alert user? for now fail silently...
+			e.printStackTrace();
+			return vcBioModel;
+		}
 	}
 	
 	private ModelUnitSystem createSBMLUnitSystemForVCModel() throws Exception {
