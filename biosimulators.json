@@ -3,51 +3,64 @@
   "name": "Virtual Cell",
   "version": "7.2",
   "description": "VCell (Virtual Cell) is a comprehensive platform for modeling cell biological systems that is built on a central database and disseminated as a standalone application",
-  "url": "http://vcell.org/",
-  "image": "ghcr.io/biosimulators/biosimulators_vcell/vcell:7.2",
-  "format": {
-    "namespace": "EDAM",
-    "id": "format_3973"
+  "urls": [{"type": "Home page", "url": "http://vcell.org/"}],
+  "image": {
+    "url": "ghcr.io/biosimulators/biosimulators_vcell/vcell:7.2",
+    "format": {
+      "namespace": "EDAM",
+      "id": "format_3973", "version": null, "supportedFeatures": []
+    },
+    "operatingSystemType": "Linux"
   },
   "authors": [{
       "firstName": "Frank",
-      "lastName": "Morgan"
+      "lastName": "Morgan",
+            "identifiers": []
     },
     {
       "firstName": "Dan",
-      "lastName": "Vasilescu"
+      "lastName": "Vasilescu",
+            "identifiers": []
     },
     {
       "firstName": "Jim",
-      "lastName": "Scaff"
+      "lastName": "Scaff",
+            "identifiers": []
     },
     {
       "firstName": "Ion",
-      "lastName": "Moraru"
+      "lastName": "Moraru",
+            "identifiers": []
     },
     {
       "firstName": "Micheal",
-      "lastName": "Blinov"
+      "lastName": "Blinov",
+            "identifiers": []
     },
     {
       "firstName": "Micheal",
-      "lastName": "Wilson"
+      "lastName": "Wilson",
+            "identifiers": []
     },
     {
       "firstName": "Ann",
-      "lastName": "Cowan"
+      "lastName": "Cowan",
+            "identifiers": []
     },
     {
       "firstName": "Leslie",
-      "lastName": "Loew"
+      "lastName": "Loew",
+            "identifiers": []
     },
     {
       "firstName": "Fei",
-      "lastName": "Gao"
+      "lastName": "Gao",
+            "identifiers": []
     },
     {
       "firstName": "Ye",
-      "lastName": "Li"
+      "lastName": "Li",
+            "identifiers": []
     }
   ],
   "references": {
@@ -137,15 +150,15 @@
       }],
       "modelFormats": [{
         "namespace": "EDAM",
-        "id": "format_2585"
+        "id": "format_2585", "version": null, "supportedFeatures": []
       }],
       "simulationFormats": [{
         "namespace": "EDAM",
-        "id": "format_3685"
+        "id": "format_3685", "version": null, "supportedFeatures": []
       }],
       "archiveFormats": [{
         "namespace": "EDAM",
-        "id": "format_3686"
+        "id": "format_3686", "version": null, "supportedFeatures": []
       }],
       "citations": [{
         "title": "CVODE, a stiff/nonstiff ODE solver in C",
@@ -161,7 +174,9 @@
           "url": "https://doi.org/10.1063/1.4822377"
         }]
       }],
-      "parameters": null
+      "parameters": null,
+      "availableSoftwareInterfaceTypes": ["desktop application", "command-line application", "BioSimulators Docker image"],
+      "dependencies": null
     },
     {
       "id": "RungeKutta2",
@@ -176,15 +191,15 @@
       }],
       "modelFormats": [{
         "namespace": "EDAM",
-        "id": "format_2585"
+        "id": "format_2585", "version": null, "supportedFeatures": []
       }],
       "simulationFormats": [{
         "namespace": "EDAM",
-        "id": "format_3685"
+        "id": "format_3685", "version": null, "supportedFeatures": []
       }],
       "archiveFormats": [{
         "namespace": "EDAM",
-        "id": "format_3686"
+        "id": "format_3686", "version": null, "supportedFeatures": []
       }],
       "citations": [{
         "title": "A second order Runge Kutta method to solve fuzzy differential equations with fuzzy initial condition",
@@ -200,7 +215,9 @@
           "url": "https://www.ijsr.net/get_abstract.php?paper_id=20131137"
         }]
       }],
-      "parameters": null
+      "parameters": null,
+      "availableSoftwareInterfaceTypes": ["desktop application", "command-line application", "BioSimulators Docker image"],
+      "dependencies": null
     },
     {
       "id": "ForwardEuler",
@@ -216,15 +233,15 @@
       }],
       "modelFormats": [{
         "namespace": "EDAM",
-        "id": "format_2585"
+        "id": "format_2585", "version": null, "supportedFeatures": []
       }],
       "simulationFormats": [{
         "namespace": "EDAM",
-        "id": "format_3685"
+        "id": "format_3685", "version": null, "supportedFeatures": []
       }],
       "archiveFormats": [{
         "namespace": "EDAM",
-        "id": "format_3686"
+        "id": "format_3686", "version": null, "supportedFeatures": []
       }],
       "citations": [{
         "title": "Solving reaction-diffusion and advection problems with Richardon Extrapolation",
@@ -240,7 +257,9 @@
           "url": "https://doi.org/10.1155/2015/350362"
         }]
       }],
-      "parameters": null
+      "parameters": null,
+      "availableSoftwareInterfaceTypes": ["desktop application", "command-line application", "BioSimulators Docker image"],
+      "dependencies": null
     },
     {
       "id": "RungeKutta4",
@@ -256,15 +275,15 @@
       }],
       "modelFormats": [{
         "namespace": "EDAM",
-        "id": "format_2585"
+        "id": "format_2585", "version": null, "supportedFeatures": []
       }],
       "simulationFormats": [{
         "namespace": "EDAM",
-        "id": "format_3685"
+        "id": "format_3685", "version": null, "supportedFeatures": []
       }],
       "archiveFormats": [{
         "namespace": "EDAM",
-        "id": "format_3686"
+        "id": "format_3686", "version": null, "supportedFeatures": []
       }],
       "citations": [{
         "title": "A fourth order Runge–Kutta RK(4,4) method with error control",
@@ -280,7 +299,9 @@
           "url": "https://doi.org/10.1080/00207169908804817"
         }]
       }],
-      "parameters": null
+      "parameters": null,
+      "availableSoftwareInterfaceTypes": ["desktop application", "command-line application", "BioSimulators Docker image"],
+      "dependencies": null
     },
     {
       "id": "RungeKuttaFehlberg",
@@ -296,15 +317,15 @@
       }],
       "modelFormats": [{
         "namespace": "EDAM",
-        "id": "format_2585"
+        "id": "format_2585", "version": null, "supportedFeatures": []
       }],
       "simulationFormats": [{
         "namespace": "EDAM",
-        "id": "format_3685"
+        "id": "format_3685", "version": null, "supportedFeatures": []
       }],
       "archiveFormats": [{
         "namespace": "EDAM",
-        "id": "format_3686"
+        "id": "format_3686", "version": null, "supportedFeatures": []
       }],
       "citations": [{
         "title": "Optimum Runge-Kutta Fehlberg methods for first order differential equations",
@@ -320,7 +341,9 @@
           "url": "https://doi.org/10.1093/imamat/8.3.386"
         }]
       }],
-      "parameters": null
+      "parameters": null,
+      "availableSoftwareInterfaceTypes": ["desktop application", "command-line application", "BioSimulators Docker image"],
+      "dependencies": null
     },
     {
       "id": "AdamsMoulton",
@@ -336,15 +359,15 @@
       }],
       "modelFormats": [{
         "namespace": "EDAM",
-        "id": "format_2585"
+        "id": "format_2585", "version": null, "supportedFeatures": []
       }],
       "simulationFormats": [{
         "namespace": "EDAM",
-        "id": "format_3685"
+        "id": "format_3685", "version": null, "supportedFeatures": []
       }],
       "archiveFormats": [{
         "namespace": "EDAM",
-        "id": "format_3686"
+        "id": "format_3686", "version": null, "supportedFeatures": []
       }],
       "citations": [{
         "title": "Solving implicit equations arising from Adams-Moulton methods",
@@ -360,7 +383,9 @@
           "url": "https://doi.org/10.1023/A:1021951025649"
         }]
       }],
-      "parameters": null
+      "parameters": null,
+      "availableSoftwareInterfaceTypes": ["desktop application", "command-line application", "BioSimulators Docker image"],
+      "dependencies": null
     },
     {
       "id": "IDA",
@@ -376,15 +401,15 @@
       }],
       "modelFormats": [{
         "namespace": "EDAM",
-        "id": "format_2585"
+        "id": "format_2585", "version": null, "supportedFeatures": []
       }],
       "simulationFormats": [{
         "namespace": "EDAM",
-        "id": "format_3685"
+        "id": "format_3685", "version": null, "supportedFeatures": []
       }],
       "archiveFormats": [{
         "namespace": "EDAM",
-        "id": "format_3686"
+        "id": "format_3686", "version": null, "supportedFeatures": []
       }],
       "citations": [{
         "title": "Solving differential–algebraic equation systems by means of index reduction methodology",
@@ -400,7 +425,9 @@
           "url": "https://doi.org/10.1016/j.simpat.2005.05.002"
         }]
       }],
-      "parameters": null
+      "parameters": null,
+      "availableSoftwareInterfaceTypes": ["desktop application", "command-line application", "BioSimulators Docker image"],
+      "dependencies": null
     },
     {
       "id": "StochGibson",
@@ -416,15 +443,15 @@
       }],
       "modelFormats": [{
         "namespace": "EDAM",
-        "id": "format_2585"
+        "id": "format_2585", "version": null, "supportedFeatures": []
       }],
       "simulationFormats": [{
         "namespace": "EDAM",
-        "id": "format_3685"
+        "id": "format_3685", "version": null, "supportedFeatures": []
       }],
       "archiveFormats": [{
         "namespace": "EDAM",
-        "id": "format_3686"
+        "id": "format_3686", "version": null, "supportedFeatures": []
       }],
       "citations": [{
         "title": "Efficient exact stochastic simulation of chemical systems with many species and many channels",
@@ -440,7 +467,9 @@
           "url": "https://doi.org/10.1021/jp993732q"
         }]
       }],
-      "parameters": null
+      "parameters": null,
+      "availableSoftwareInterfaceTypes": ["desktop application", "command-line application", "BioSimulators Docker image"],
+      "dependencies": null
     },
     {
       "id": "HybridEuler",
@@ -455,15 +484,15 @@
       }],
       "modelFormats": [{
         "namespace": "EDAM",
-        "id": "format_2585"
+        "id": "format_2585", "version": null, "supportedFeatures": []
       }],
       "simulationFormats": [{
         "namespace": "EDAM",
-        "id": "format_3685"
+        "id": "format_3685", "version": null, "supportedFeatures": []
       }],
       "archiveFormats": [{
         "namespace": "EDAM",
-        "id": "format_3686"
+        "id": "format_3686", "version": null, "supportedFeatures": []
       }],
       "citations": [{
         "title": "An Euler–Maruyama method for diffusion equations with discontinuous coefficients and a family of interface conditions",
@@ -479,7 +508,9 @@
           "url": "https://doi.org/10.1016/j.cam.2019.112545"
         }]
       }],
-      "parameters": null
+      "parameters": null,
+      "availableSoftwareInterfaceTypes": ["desktop application", "command-line application", "BioSimulators Docker image"],
+      "dependencies": null
     },
     {
       "id": "HybridMilstein",
@@ -495,15 +526,15 @@
       }],
       "modelFormats": [{
         "namespace": "EDAM",
-        "id": "format_2585"
+        "id": "format_2585", "version": null, "supportedFeatures": []
       }],
       "simulationFormats": [{
         "namespace": "EDAM",
-        "id": "format_3685"
+        "id": "format_3685", "version": null, "supportedFeatures": []
       }],
       "archiveFormats": [{
         "namespace": "EDAM",
-        "id": "format_3686"
+        "id": "format_3686", "version": null, "supportedFeatures": []
       }],
       "citations": [{
         "title": "A randomized Milstein method for stochastic differential equations with non-differentiable drift coefficients",
@@ -519,7 +550,9 @@
           "url": "https://doi.org/10.3934/dcdsb.2018253"
         }]
       }],
-      "parameters": null
+      "parameters": null,
+      "availableSoftwareInterfaceTypes": ["desktop application", "command-line application", "BioSimulators Docker image"],
+      "dependencies": null
     },
     {
       "id": "FiniteVolumeStandalone",
@@ -535,15 +568,15 @@
       }],
       "modelFormats": [{
         "namespace": "EDAM",
-        "id": "format_2585"
+        "id": "format_2585", "version": null, "supportedFeatures": []
       }],
       "simulationFormats": [{
         "namespace": "EDAM",
-        "id": "format_3685"
+        "id": "format_3685", "version": null, "supportedFeatures": []
       }],
       "archiveFormats": [{
         "namespace": "EDAM",
-        "id": "format_3686"
+        "id": "format_3686", "version": null, "supportedFeatures": []
       }],
       "citations": [{
         "title": "Finite volume methods",
@@ -559,7 +592,9 @@
           "url": "https://doi.org/10.1016/S1570-8659(00)07005-8"
         }]
       }],
-      "parameters": null
+      "parameters": null,
+      "availableSoftwareInterfaceTypes": ["desktop application", "command-line application", "BioSimulators Docker image"],
+      "dependencies": null
     },
     {
       "id": "Combined IDA/CVODE",
@@ -575,15 +610,15 @@
       }],
       "modelFormats": [{
         "namespace": "EDAM",
-        "id": "format_2585"
+        "id": "format_2585", "version": null, "supportedFeatures": []
       }],
       "simulationFormats": [{
         "namespace": "EDAM",
-        "id": "format_3685"
+        "id": "format_3685", "version": null, "supportedFeatures": []
       }],
       "archiveFormats": [{
         "namespace": "EDAM",
-        "id": "format_3686"
+        "id": "format_3686", "version": null, "supportedFeatures": []
       }],
       "citations": [{
           "title": "CVODE, a stiff/nonstiff ODE solver in C",
@@ -614,7 +649,9 @@
           }]
         }
       ],
-      "parameters": null
+      "parameters": null,
+      "availableSoftwareInterfaceTypes": ["desktop application", "command-line application", "BioSimulators Docker image"],
+      "dependencies": null
     },
     {
       "id": "SundialsPDE",
@@ -630,15 +667,15 @@
       }],
       "modelFormats": [{
         "namespace": "EDAM",
-        "id": "format_2585"
+        "id": "format_2585", "version": null, "supportedFeatures": []
       }],
       "simulationFormats": [{
         "namespace": "EDAM",
-        "id": "format_3685"
+        "id": "format_3685", "version": null, "supportedFeatures": []
       }],
       "archiveFormats": [{
         "namespace": "EDAM",
-        "id": "format_3686"
+        "id": "format_3686", "version": null, "supportedFeatures": []
       }],
       "citations": [{
         "title": "Finite volume methods",
@@ -654,7 +691,9 @@
           "url": "https://doi.org/10.1016/S1570-8659(00)07005-8"
         }]
       }],
-      "parameters": null
+      "parameters": null,
+      "availableSoftwareInterfaceTypes": ["desktop application", "command-line application", "BioSimulators Docker image"],
+      "dependencies": null
     },
     {
       "id": "Smoldyn",
@@ -670,15 +709,15 @@
       }],
       "modelFormats": [{
         "namespace": "EDAM",
-        "id": "format_2585"
+        "id": "format_2585", "version": null, "supportedFeatures": []
       }],
       "simulationFormats": [{
         "namespace": "EDAM",
-        "id": "format_3685"
+        "id": "format_3685", "version": null, "supportedFeatures": []
       }],
       "archiveFormats": [{
         "namespace": "EDAM",
-        "id": "format_3686"
+        "id": "format_3686", "version": null, "supportedFeatures": []
       }],
       "citations": [{
         "title": "A brief account of microscopical observations made in the months of June, July and August 1827, on the particles contained in the pollen of plants; and on the general existence of active molecules in organic and inorganic bodies",
@@ -694,11 +733,17 @@
           "url": "https://doi.org/10.1080/14786442808674769"
         }]
       }],
-      "parameters": null
+      "parameters": null,
+      "availableSoftwareInterfaceTypes": ["desktop application", "command-line application", "BioSimulators Docker image"],
+      "dependencies": null
     }
   ],
+  "interfaceTypes": ["desktop application", "command-line application", "BioSimulators Docker image"],
+  "supportedOperatingSystemTypes": ["Linux", "Mac OS", "Windows"],
+  "supportedProgrammingLanguages": [],
+  "funding": [],
   "biosimulators": {
-    "specificationsVersion": "1.0.0",
+    "specificationVersion": "1.0.0",
     "imageVersion": "1.0.0",
     "validated": false
   }
