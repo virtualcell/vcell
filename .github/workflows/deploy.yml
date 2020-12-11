@@ -36,7 +36,7 @@ jobs:
         run: |
           echo $GHCR_TOKEN | docker login ghcr.io -u $GHCR_USERNAME --password-stdin
           docker build --file docker/build/Dockerfile-vcell-cli \
-                      --tag ghcr.io/biosimulators/vcell:$GITHUB_SHA \
+                      --tag ghcr.io/biosimulators/vcell:7.3.0.0 \
                       --tag ghcr.io/biosimulators/vcell:latest .
           docker push ghcr.io/biosimulators/vcell:latest
-          docker push ghcr.io/biosimulators/vcell:$GITHUB_SHA
+          docker push ghcr.io/biosimulators/vcell:7.3.0.0
