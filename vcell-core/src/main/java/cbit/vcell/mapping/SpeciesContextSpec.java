@@ -1531,7 +1531,7 @@ public Expression convertConcentrationToParticles(Expression iniConcentration) t
 		VCUnitDefinition volSubstanceToStochastic = modelUnitSystem.getStochasticSubstanceUnit().divideBy(modelUnitSystem.getVolumeSubstanceUnit());
 		double volSubstanceToStochasticScale = volSubstanceToStochastic.getDimensionlessScale().doubleValue();
 		try {
-			iniParticlesExpr = new Expression((Math.round(iniConcentration.evaluateConstant() * structSize * volSubstanceToStochasticScale)));
+			iniParticlesExpr = new Expression(iniConcentration.evaluateConstant() * structSize * volSubstanceToStochasticScale);
 		} catch (ExpressionException e) {
 			Expression numeratorExpr = Expression.mult(iniConcentration, new Expression(structSize));
 			Expression exp = new Expression(volSubstanceToStochasticScale);

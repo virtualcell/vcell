@@ -215,31 +215,26 @@ public static String exportSBML(VCDocument vcDoc, int level, int version, int pk
     } 
 	if (vcDoc instanceof BioModel) {
 		try {
-			// check if model to be exported to SBML has units compatible with SBML default units (default units in SBML can be assumed only until SBML Level2)
-			ModelUnitSystem forcedModelUnitSystem = simContext.getModel().getUnitSystem();
-			if (level < 3 && !ModelUnitSystem.isCompatibleWithDefaultSBMLLevel2Units(forcedModelUnitSystem)) {
-				forcedModelUnitSystem = ModelUnitSystem.createDefaultSBMLLevel2Units();
-			}
-			// create new Biomodel with new (SBML compatible)  unit system
-			BioModel modifiedBiomodel = ModelUnitConverter.createBioModelWithNewUnitSystem(simContext.getBioModel(), forcedModelUnitSystem);
+			// clone BioModel
+			BioModel clonedBioModel = cloneBioModel(simContext.getBioModel());
 			// extract the simContext from new Biomodel. Apply overrides to *this* modified simContext
-			SimulationContext simContextFromModifiedBioModel = modifiedBiomodel.getSimulationContext(simContext.getName());
-			SimulationContext clonedSimContext = applyOverridesForSBML(modifiedBiomodel, simContextFromModifiedBioModel, simJob);
+			SimulationContext simContextFromClonedBioModel = clonedBioModel.getSimulationContext(simContext.getName());
+			SimulationContext clonedSimContext = applyOverridesForSBML(clonedBioModel, simContextFromClonedBioModel, simJob);
 			// extract sim (in simJob) from modified Biomodel, if not null
 			SimulationJob modifiedSimJob = null;
 			if (simJob != null) {
-				Simulation simFromModifiedBiomodel = clonedSimContext.getSimulation(simJob.getSimulation().getName());
-				modifiedSimJob = new SimulationJob(simFromModifiedBiomodel, simJob.getJobIndex(), null);
+				Simulation simFromClonedBiomodel = clonedSimContext.getSimulation(simJob.getSimulation().getName());
+				modifiedSimJob = new SimulationJob(simFromClonedBiomodel, simJob.getJobIndex(), null);
 			}
-			SBMLExporter sbmlExporter = new SBMLExporter(modifiedBiomodel, level, version, isSpatial);
-			sbmlExporter.setSelectedSimContext(simContextFromModifiedBioModel);
+			SBMLExporter sbmlExporter = new SBMLExporter(clonedBioModel, level, version, isSpatial);
+			sbmlExporter.setSelectedSimContext(clonedSimContext);
 			sbmlExporter.setSelectedSimulationJob(modifiedSimJob);
-			String ret  = sbmlExporter.getSBMLFile();
+			String sbmlSTring  = sbmlExporter.getSBMLString();
 			
 			// cleanup the string of all the "sameAs" statements
-			ret = SBMLAnnotationUtil.postProcessCleanup(ret);
-			return ret;
-		} catch (ExpressionException | SbmlException | SBMLException | XMLStreamException e) {
+			sbmlSTring = SBMLAnnotationUtil.postProcessCleanup(sbmlSTring);
+			return sbmlSTring;
+		} catch (SbmlException | SBMLException | XMLStreamException e) {
 			e.printStackTrace(System.out);
 			throw new XmlParseException(e);
 		}
@@ -798,15 +793,14 @@ public static BioModel XMLToBioModel(XMLSource xmlSource) throws XmlParseExcepti
 	return XMLToBioModel(xmlSource, true, null);
 }
 
-/** @deprecated */
-public static BioModel cloneBioModelWithNewUnitSystem(BioModel origBiomodel, ModelUnitSystem forcedModelUnitSystem) throws XmlParseException {
+public static BioModel cloneBioModel(BioModel origBiomodel) throws XmlParseException {
 	String biomodelXMLString = bioModelToXML(origBiomodel);
 	XMLSource newXMLSource = new XMLSource(biomodelXMLString);
-	return XMLToBioModel(newXMLSource, true, forcedModelUnitSystem);
+	return XMLToBioModel(newXMLSource);
 }
 
 
-	static BioModel XMLToBioModel(XMLSource xmlSource, boolean printkeys, ModelUnitSystem forcedModelUnitSystem) throws XmlParseException {
+public static BioModel XMLToBioModel(XMLSource xmlSource, boolean printkeys, ModelUnitSystem forcedModelUnitSystem) throws XmlParseException {
 
 		//long l0 = System.currentTimeMillis();
 		BioModel bioModel = null;

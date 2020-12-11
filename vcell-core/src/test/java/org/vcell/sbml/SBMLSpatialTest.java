@@ -49,28 +49,8 @@ public class SBMLSpatialTest {
 			boolean isSpatial = sc1.getGeometry().getDimension()>0;
 			SBMLExporter exporter = new SBMLExporter(bioModel1,3,1,isSpatial);
 			sc1.refreshMathDescription(null, NetworkGenerationRequirements.ComputeFullNoTimeout);
-	//		sc1.setMathDescription(sc1.createNewMathMapping(null, NetworkGenerationRequirements.ComputeFullNoTimeout).getMathDescription());
 			exporter.setSelectedSimContext(sc1);
-			VCellSBMLDoc sbmlDoc = exporter.convertToSBML();
-			for (UnitDefinition unitDefn : sbmlDoc.model.getListOfUnitDefinitions()){
-				for (Unit unit : unitDefn.getListOfUnits()){
-					System.out.println(unit.getKind());
-					if (!unit.isSetKind()){
-						throw new RuntimeException("kind of unit "+unit.printUnit()+" of UnitDefn "+UnitDefinition.printUnits(unitDefn)+" is not set");
-					}
-				}
-			}
-//			sbmlDoc.document.setConsistencyChecks(CHECK_CATEGORY.UNITS_CONSISTENCY, false);
-//			int numErrors = sbmlDoc.document.checkConsistency();
-//			System.out.println("consistency check, num errors = "+numErrors);
-//			if (numErrors>0){
-//				SBMLErrorLog errorLog = sbmlDoc.document.getListOfErrors();
-//				for (int err=0; err<errorLog.getErrorCount(); err++){
-//					System.err.println("ERROR IN EXPORTED SBML: "+errorLog.getError(err).getMessage());
-//				}
-//				//Assert.fail("generated SBML document was found to be inconsistent");
-//			}
-			String sbmlString = sbmlDoc.xmlString;
+			String sbmlString = exporter.getSBMLString();
 			File tempFile = File.createTempFile("sbmlSpatialTest_SBML_", ".sbml.xml");
 			FileUtils.write(tempFile, sbmlString);
 			System.out.println(tempFile);

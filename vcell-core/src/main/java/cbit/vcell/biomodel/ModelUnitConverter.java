@@ -1,5 +1,6 @@
 package cbit.vcell.biomodel;
 
+import cbit.vcell.mapping.AssignmentRule;
 import cbit.vcell.mapping.BioEvent;
 import cbit.vcell.mapping.BioEvent.EventAssignment;
 import cbit.vcell.mapping.ElectricalStimulus;
@@ -7,7 +8,9 @@ import cbit.vcell.mapping.RateRule;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SpeciesContextSpec;
 import cbit.vcell.mapping.StructureMapping;
+import cbit.vcell.math.MathUtilities;
 import cbit.vcell.matrix.RationalNumber;
+import cbit.vcell.model.Kinetics;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.ModelUnitSystem;
 import cbit.vcell.model.Parameter;
@@ -20,7 +23,9 @@ import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.ScopedSymbolTable;
 import cbit.vcell.parser.SymbolTable;
 import cbit.vcell.parser.SymbolTableEntry;
+import cbit.vcell.parser.SymbolUtils;
 import cbit.vcell.units.VCUnitDefinition;
+import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XmlHelper;
 import cbit.vcell.xml.XmlParseException;
 
@@ -28,7 +33,9 @@ public class ModelUnitConverter {
 
 	public static BioModel createBioModelWithNewUnitSystem(BioModel oldBioModel, ModelUnitSystem newUnitSystem) throws ExpressionException, XmlParseException {
 		// new BioModel has new unit system applied to all built-in units ... but expressions still need to be corrected (see below).
-		BioModel newBioModel = XmlHelper.cloneBioModelWithNewUnitSystem(oldBioModel, newUnitSystem);
+		String biomodelXMLString = XmlHelper.bioModelToXML(oldBioModel);
+		XMLSource newXMLSource = new XMLSource(biomodelXMLString);
+		BioModel newBioModel = XmlHelper.XMLToBioModel(newXMLSource, true, newUnitSystem);
 		Model newModel = newBioModel.getModel();
 		Model oldModel = oldBioModel.getModel();
 
@@ -45,6 +52,20 @@ public class ModelUnitConverter {
 			for (Parameter p : reactionStep.getKinetics().getKineticsParameters()){
 				convertVarsWithUnitFactors(oldSymbolTable, newSymbolTable, p);
 			}
+			Expression rateExpression = reactionStep.getKinetics().getKineticsParameterFromRole(Kinetics.ROLE_ReactionRate).getExpression();
+			jscl.math.Expression jsclExpression = null;
+			String jsclExpressionString = rateExpression.infix_JSCL();
+			try {
+				jsclExpression = jscl.math.Expression.valueOf(jsclExpressionString);
+			}catch (jscl.text.ParseException e){
+				e.printStackTrace(System.out);
+				System.out.println("JSCL couldn't parse \""+jsclExpressionString+"\"");
+				return null;
+			}
+			jscl.math.Generic g1=jsclExpression.expand().simplify();
+			Expression newRate=new Expression(SymbolUtils.getRestoredStringJSCL(g1.toString()));
+			newRate.bindExpression(reactionStep);
+			reactionStep.getKinetics().getKineticsParameterFromRole(Kinetics.ROLE_ReactionRate).setExpression(newRate.flatten());
 		}
 		for (ReactionRule reactionRule : newBioModel.getModel().getRbmModelContainer().getReactionRuleList()) {
 			SymbolTable oldSymbolTable = oldBioModel.getModel().getRbmModelContainer().getReactionRule(reactionRule.getName()).getKineticLaw().getScopedSymbolTable();
@@ -117,7 +138,19 @@ public class ModelUnitConverter {
 					convertExprWithUnitFactors(oldSymbolTable, newSymbolTable, oldTargetUnit, newTargetUnit, rateRuleExpr);
 				}
 			}
-
+			AssignmentRule[] assignmentRules = simContext.getAssignmentRules();
+			if (assignmentRules != null && assignmentRules.length > 0) { 
+				for (AssignmentRule assignmentRule : assignmentRules) {
+					AssignmentRule oldAssignRule = oldSimContext.getAssignmentRule(assignmentRule.getName());
+					ScopedSymbolTable oldSymbolTable = oldAssignRule.getSimulationContext();
+					ScopedSymbolTable newSymbolTable = assignmentRule.getSimulationContext();
+	
+					VCUnitDefinition oldTargetUnit = oldAssignRule.getAssignmentRuleVar().getUnitDefinition();
+					VCUnitDefinition newTargetUnit = assignmentRule.getAssignmentRuleVar().getUnitDefinition();
+					Expression assignmentRuleExpr = assignmentRule.getAssignmentRuleExpression();
+					convertExprWithUnitFactors(oldSymbolTable, newSymbolTable, oldTargetUnit, newTargetUnit, assignmentRuleExpr);
+				}
+			}
 		}	// end  for - simulationContext
 		return newBioModel;
 	}

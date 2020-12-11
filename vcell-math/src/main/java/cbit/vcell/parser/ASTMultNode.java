@@ -326,6 +326,12 @@ public Node flatten() throws ExpressionException {
 	//
 	// if float value is not 1.0 or if no other numerators, then insert this number
 	//
+	
+	// need to first remove drift from repeated divisions/multiplications
+	if (Math.abs(1.0-floatValue)<1e-12) {
+		floatValue=1.0;
+	}
+	
 	if ((floatValue != 1.0) || (numerators.size() < 1)){
 		numerators.insertElementAt(new ASTFloatNode(floatValue),0);
 	}

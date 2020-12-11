@@ -21,6 +21,30 @@ import cbit.vcell.math.VCML;
  */
 @SuppressWarnings("serial")
 public class TimeStep implements java.io.Serializable, org.vcell.util.Matchable {
+		
+	public enum TimeStepDescription {
+		Minimum("KISAO:0000485", "Minimum Time Step"),
+		Default("KISAO:0000483", "Default Time Step"),
+		Maximum("KISAO:0000467", "Maximum Time Step"),
+		;
+		
+		private final String kisao;
+		private final String description;
+		
+		private TimeStepDescription(String kisao, String description) {
+			this.kisao = kisao;
+			this.description = description;
+		}
+		public String getKisao() {
+			return kisao;
+		}
+		public String getDescription() {
+			return description;
+		}
+	}
+
+	
+	
 	private double fieldMinimumTimeStep = 1.0E-8;
 	private double fieldDefaultTimeStep = 0.1;
 	private double fieldMaximumTimeStep = 1.0;

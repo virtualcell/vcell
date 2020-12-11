@@ -19,6 +19,7 @@ import javax.xml.stream.XMLStreamException;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.bouncycastle.crypto.RuntimeCryptoException;
 import org.jdom.Element;
 import org.jdom.Namespace;
 import org.sbml.jsbml.ASTNode;
@@ -66,6 +67,7 @@ import org.sbml.jsbml.ext.spatial.SpatialModelPlugin;
 import org.sbml.jsbml.ext.spatial.SpatialParameterPlugin;
 import org.sbml.jsbml.ext.spatial.SpatialReactionPlugin;
 import org.sbml.jsbml.ext.spatial.SpatialSymbolReference;
+import org.sbml.jsbml.text.parser.ParseException;
 import org.vcell.sbml.SBMLHelper;
 import org.vcell.sbml.SBMLUtils;
 import org.vcell.sbml.SbmlException;
@@ -79,6 +81,7 @@ import org.vcell.util.TokenMangler;
 import cbit.image.ImageException;
 import cbit.image.VCImage;
 import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.biomodel.ModelUnitConverter;
 import cbit.vcell.geometry.AnalyticSubVolume;
 import cbit.vcell.geometry.CSGObject;
 import cbit.vcell.geometry.Geometry;
@@ -148,6 +151,8 @@ import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationJob;
 import cbit.vcell.units.VCUnitDefinition;
 import cbit.vcell.xml.XMLTags;
+import cbit.vcell.xml.XmlParseException;
+import scala.collection.mutable.SetBuilder;
 
 /**
  * Insert the type's description here.
@@ -809,11 +814,12 @@ protected void addReactions() throws SbmlException, XMLStreamException {
 				sr.setId(TokenMangler.mangleToSName(modelUniqueName));
 				sr.setConstant(true); //SBML-REVIEW
 				//int rcode = sr.appendNotes("<
-				try {
-					SBMLHelper.addNote(sr, "VCELL guess: how do we know if reaction is constant?");
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
+				// we know that in VCell we can't override stoichiometry anywhere, below is no longer questionable
+//				try {
+//					SBMLHelper.addNote(sr, "VCELL guess: how do we know if reaction is constant?");
+//				} catch (Exception e) {
+//					e.printStackTrace();
+//				}
 			}
 		}
 
@@ -878,8 +884,8 @@ protected void addSpecies() throws XMLStreamException, SbmlException {
 			sbmlSpecies.setCompartment(compartment.getId());
 		}
 
-		// 'hasSubstanceOnly' field will be 'false', since VC deals only with initial concentrations and not initial amounts.
-		sbmlSpecies.setHasOnlySubstanceUnits(false);
+		// 'hasSubstanceOnly' field will be 'true', since export to SBML is done by converting to initial amounts.
+		sbmlSpecies.setHasOnlySubstanceUnits(true);
 
 		// Get (and set) the initial concentration value
 		if (getSelectedSimContext() == null) {
@@ -890,43 +896,48 @@ protected void addSpecies() throws XMLStreamException, SbmlException {
 		SpeciesContextSpec vcSpeciesContextsSpec = getSelectedSimContext().getReactionContext().getSpeciesContextSpec(vcSpeciesContexts[i]);
 		// since we are setting the substance units for species to 'molecule' or 'item', a unit that is originally in uM (or molecules/um2),
 		// we need to convert concentration from uM -> molecules/um3; this can be achieved by dividing by KMOLE.
-//		if (vcSpeciesContextsSpec.getInitialConcentrationParameter() == null) {
-//			try {
-//				getSelectedSimContext().convertSpeciesIniCondition(true);
-//			} catch (MappingException e) {
-//				// TODO Auto-generated catch block
-//				e.printStackTrace();
-//				throw new RuntimeException(e.getMessage());
-//			} catch (PropertyVetoException e) {
-//				// TODO Auto-generated catch block
-//				e.printStackTrace();
-//				throw new RuntimeException(e.getMessage());
-//			}
-//		}
+		
+		// for now we don't do this here and defer to the mechanisms built into the SimContext to convert and set amount instead of concentration
+		// TO-DO: change to export either concentrations or amounts depending on the type of SimContext and setting
+		SpeciesContextSpecParameter initCount = vcSpeciesContextsSpec.getInitialCountParameter();
+		if (initCount.getExpression() == null) {
+			try {
+				getSelectedSimContext().convertSpeciesIniCondition(false);
+			} catch (MappingException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				throw new RuntimeException(e.getMessage());
+			} catch (PropertyVetoException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				throw new RuntimeException(e.getMessage());
+			}
+		}
+		Expression initCountExpr = initCount.getExpression();
 		try {
-			sbmlSpecies.setInitialConcentration(vcSpeciesContextsSpec.getInitialConditionParameter().getExpression().evaluateConstant());
+			sbmlSpecies.setInitialAmount(initCountExpr.evaluateConstant());
 		} catch (cbit.vcell.parser.ExpressionException e) {
 			// If it is in the catch block, it means that the initial concentration of the species was not a double, but an expression, probably.
 			// Check if the expression for the species is not null. If exporting to L2V1, and species is 'fixed', and if expr is not in terms of
 			// x, y, z, or other species then create an assignment rule for species concentration; else throw exception.
 			// If exporting to L2V3, if species concentration is not an expr with x, y, z or other species, add as InitialAssignment, else complain.
-			if (vcSpeciesContextsSpec.getInitialConditionParameter().getExpression() != null) {
-					Expression initConcExpr = vcSpeciesContextsSpec.getInitialConditionParameter().getExpression();
+			if (initCountExpr != null) {
 					if ((sbmlLevel == 2 && sbmlVersion >= 3) || (sbmlLevel > 2)) {
 						// L2V3 and above - add expression as init assignment
 						cbit.vcell.mapping.AssignmentRule vcellAs = getSelectedSimContext().getAssignmentRule(vcSpeciesContexts[i]);
 						if(vcellAs == null) {	// we don't create InitialAssignment for an AssignmentRule variable (Reference: L3V1 Section 4.8)
-							ASTNode initAssgnMathNode = getFormulaFromExpression(initConcExpr);
+							ASTNode initAssgnMathNode = getFormulaFromExpression(initCountExpr);
 							InitialAssignment initAssignment = sbmlModel.createInitialAssignment();
 							initAssignment.setSymbol(vcSpeciesContexts[i].getName());
 							initAssignment.setMath(initAssgnMathNode);
 						}
 					} else { 	// L2V1 (or L1V2 also??)
-						// L2V1 (and L1V2?) and species is 'fixed' (constant), and not fn of x,y,z, other sp, add expr as assgn rule 
-						ASTNode assgnRuleMathNode = getFormulaFromExpression(initConcExpr);
-						AssignmentRule assgnRule = sbmlModel.createAssignmentRule();
-						assgnRule.setVariable(vcSpeciesContexts[i].getName());
-						assgnRule.setMath(assgnRuleMathNode);
+						// do nothing - we no longer support export to level <3
+//						// L2V1 (and L1V2?) and species is 'fixed' (constant), and not fn of x,y,z, other sp, add expr as assgn rule 
+//						ASTNode assgnRuleMathNode = getFormulaFromExpression(initCountExpr);
+//						AssignmentRule assgnRule = sbmlModel.createAssignmentRule();
+//						assgnRule.setVariable(vcSpeciesContexts[i].getName());
+//						assgnRule.setMath(assgnRuleMathNode);
 					}
 			}
 		}
@@ -1515,7 +1526,18 @@ public static ASTNode getFormulaFromExpression(Expression expression) {
  *		returns the new formula string.
  *  
  */
-public static ASTNode getFormulaFromExpression(Expression expression, MathType desiredType) { 
+public static ASTNode getFormulaFromExpression(Expression expression, MathType desiredType) {
+	// switch to libSBML for non-boolean
+	if (!desiredType.equals(MathType.BOOLEAN)) {
+		try {
+			return ASTNode.parseFormula(expression.infix());
+		} catch (ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			throw new RuntimeException(e.toString());
+		}
+	}
+	
 	// Convert expression into MathML string
 	String expMathMLStr = null;
 
@@ -1545,14 +1567,14 @@ private Simulation getSelectedSimulation() {
 	return vcSelectedSimJob.getSimulation();
 }
 
-public String getSBMLFile() throws SbmlException, SBMLException, XMLStreamException {
+public String getSBMLString() throws SbmlException, SBMLException, XMLStreamException {
 	String rval = null;
 	VCellSBMLDoc vdoc = convertToSBML();
 	rval = vdoc.xmlString;
 	return rval;
 }
 
-public VCellSBMLDoc convertToSBML() throws SbmlException, SBMLException, XMLStreamException {
+private VCellSBMLDoc convertToSBML() throws SbmlException, SBMLException, XMLStreamException {
 
 	SBMLDocument sbmlDocument = new SBMLDocument(sbmlLevel,sbmlVersion);
 		
@@ -1568,6 +1590,8 @@ public VCellSBMLDoc convertToSBML() throws SbmlException, SBMLException, XMLStre
 	sbmlLevel = (int)sbmlModel.getLevel();
 	sbmlVersion = (int)sbmlModel.getVersion();
 
+	checkUnistSystem();
+	
 	translateBioModel();
 
 	// include specific vcellInfo annotations
@@ -1622,6 +1646,37 @@ public VCellSBMLDoc convertToSBML() throws SbmlException, SBMLException, XMLStre
 	*/
 
 	return new VCellSBMLDoc(sbmlDocument, sbmlModel, sbmlStr);
+}
+
+private void checkUnistSystem() {
+	// check if model to be exported to SBML has units compatible with SBML default units (default units in SBML can be assumed only until SBML Level2)
+	ModelUnitSystem forcedModelUnitSystem = getSelectedSimContext().getModel().getUnitSystem();
+	if (sbmlLevel < 3 && !ModelUnitSystem.isCompatibleWithDefaultSBMLLevel2Units(forcedModelUnitSystem)) {
+		forcedModelUnitSystem = ModelUnitSystem.createDefaultSBMLLevel2Units();
+	} else if (forcedModelUnitSystem.getVolumeSubstanceUnit().getSymbol() != "molecules"){
+		// need to replace volumeSubstanceUnit; molecules is the only one that allows the exporter to create valid unit conversions of parameters
+		String volumeSubstanceSymbol = "molecules";
+		String membraneSubstanceSymbol = forcedModelUnitSystem.getMembraneSubstanceUnit().getSymbol();
+		String lumpedReactionSubstanceSymbol = forcedModelUnitSystem.getLumpedReactionSubstanceUnit().getSymbol();
+		String lengthSymbol = forcedModelUnitSystem.getLengthUnit().getSymbol();		
+		String areaSymbol = forcedModelUnitSystem.getAreaUnit().getSymbol();
+		String volumeSymbol = forcedModelUnitSystem.getVolumeUnit().getSymbol();
+		String timeSymbol = forcedModelUnitSystem.getTimeUnit().getSymbol();
+		forcedModelUnitSystem = ModelUnitSystem.createVCModelUnitSystem(volumeSubstanceSymbol, membraneSubstanceSymbol, lumpedReactionSubstanceSymbol, volumeSymbol, areaSymbol, lengthSymbol, timeSymbol);
+	}
+	// create new Biomodel with new (SBML compatible)  unit system
+	BioModel modifiedBiomodel = null;
+	try {
+		modifiedBiomodel = ModelUnitConverter.createBioModelWithNewUnitSystem(getSelectedSimContext().getBioModel(), forcedModelUnitSystem);
+	} catch (ExpressionException | XmlParseException e) {
+		// TODO Auto-generated catch block
+		e.printStackTrace();
+		throw new RuntimeException("could not convert units to SBML compatible", e);
+	}
+	vcBioModel = modifiedBiomodel;
+	// extract the simContext from new Biomodel
+	SimulationContext simContextFromModifiedBioModel = modifiedBiomodel.getSimulationContext(getSelectedSimContext().getName());
+	setSelectedSimContext(simContextFromModifiedBioModel);
 }
 
 private void addGeometry() throws SbmlException {
@@ -2207,7 +2262,7 @@ public Map<Pair <String, String>, String> getLocalToGlobalTranslationMap() {
  * @throws SbmlException 
  * @throws XMLStreamException 
  */
-public void translateBioModel() throws SbmlException, XMLStreamException {
+private void translateBioModel() throws SbmlException, XMLStreamException {
 	// 'Parse' the Virtual cell model into an SBML model
 	org.sbml.jsbml.Model temp = sbmlModel;
 	addUnitDefinitions();

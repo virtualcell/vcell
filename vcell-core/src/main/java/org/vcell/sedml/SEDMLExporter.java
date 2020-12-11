@@ -13,6 +13,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -28,6 +29,7 @@ import javax.xml.transform.stream.StreamResult;
 import org.jdom.Namespace;
 //import org.jdom.Element;
 import org.jlibsedml.Algorithm;
+import org.jlibsedml.AlgorithmParameter;
 import org.jlibsedml.ChangeAttribute;
 import org.jlibsedml.ComputeChange;
 import org.jlibsedml.Curve;
@@ -50,6 +52,8 @@ import org.jlibsedml.UniformTimeCourse;
 import org.jlibsedml.VariableSymbol;
 import org.jlibsedml.VectorRange;
 import org.jlibsedml.XPathTarget;
+import org.jlibsedml.modelsupport.KisaoOntology;
+import org.jlibsedml.modelsupport.KisaoTerm;
 import org.jlibsedml.modelsupport.SBMLSupport;
 import org.jlibsedml.modelsupport.SBMLSupport.CompartmentAttribute;
 import org.jlibsedml.modelsupport.SBMLSupport.ParameterAttribute;
@@ -96,12 +100,15 @@ import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.solver.AnnotatedFunction;
 import cbit.vcell.solver.ConstantArraySpec;
+import cbit.vcell.solver.ErrorTolerance;
 import cbit.vcell.solver.MathOverrides;
+import cbit.vcell.solver.NonspatialStochSimOptions;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationJob;
 import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solver.SolverTaskDescription;
 import cbit.vcell.solver.TimeBounds;
+import cbit.vcell.solver.TimeStep;
 import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XmlHelper;
 import cbit.vcell.xml.XmlParseException;
@@ -223,20 +230,11 @@ public class SEDMLExporter {
 					Map<Pair <String, String>, String> l2gMap = null;		// local to global translation map
 					if (vcBioModel instanceof BioModel) {
 						try {
-							// check if model to be exported to SBML has units compatible with SBML default units (default units in SBML can be assumed only until SBML Level2)
-							ModelUnitSystem forcedModelUnitSystem = simContext.getModel().getUnitSystem();
-							if (level < 4 && !ModelUnitSystem.isCompatibleWithDefaultSBMLLevel2Units(forcedModelUnitSystem)) {
-								forcedModelUnitSystem = ModelUnitSystem.createDefaultSBMLLevel2Units();
-							}
-							// create new Biomodel with new (SBML compatible)  unit system
-							BioModel modifiedBiomodel = ModelUnitConverter.createBioModelWithNewUnitSystem(simContext.getBioModel(), forcedModelUnitSystem);
-							// extract the simContext from new Biomodel. Apply overrides to *this* modified simContext
-							SimulationContext simContextFromModifiedBioModel = modifiedBiomodel.getSimulationContext(simContext.getName());
-							SBMLExporter sbmlExporter = new SBMLExporter(modifiedBiomodel, level, version, isSpatial);
-							sbmlExporter.setSelectedSimContext(simContextFromModifiedBioModel);
+							SBMLExporter sbmlExporter = new SBMLExporter(vcBioModel, level, version, isSpatial);
+							sbmlExporter.setSelectedSimContext(simContext);
 							sbmlExporter.setSelectedSimulationJob(null);	// no sim job
 							try {
-								sbmlString = sbmlExporter.getSBMLFile();
+								sbmlString = sbmlExporter.getSBMLString();
 							} catch (RuntimeException e) {
 								if (simContext.getGeometry().getDimension() > 0 && simContext.getApplicationType() == Application.NETWORK_DETERMINISTIC ) {
 									continue;	// we skip importing 3D deterministic applications if SBML exceptions
@@ -245,7 +243,7 @@ public class SEDMLExporter {
 								}
 							}
 							l2gMap = sbmlExporter.getLocalToGlobalTranslationMap();
-						} catch (ExpressionException | SbmlException e) {
+						} catch (SbmlException e) {
 							e.printStackTrace(System.out);
 							throw new XmlParseException(e);
 						}
@@ -294,6 +292,49 @@ public class SEDMLExporter {
 						String simName = vcSimulation.getName();
 						UniformTimeCourse utcSim = new UniformTimeCourse(TokenMangler.mangleToSName(simName), simName, startingTime, startingTime, 
 								vcSimTimeBounds.getEndingTime(), (int) simTaskDesc.getExpectedNumTimePoints(), sedmlAlgorithm);
+						
+//						String algorithmNotesStr = "";
+						if(vcSolverDesc.hasErrorTolerance()) {			// deal with error tolerance
+							ErrorTolerance et = simTaskDesc.getErrorTolerance();
+							String kisaoStr = ErrorTolerance.ErrorToleranceDescription.Absolute.getKisao();
+							AlgorithmParameter sedmlAlgorithmParameter = new AlgorithmParameter(kisaoStr, et.getAbsoluteErrorTolerance()+"");
+							sedmlAlgorithm.addAlgorithmParameter(sedmlAlgorithmParameter);
+//							String str = ErrorTolerance.ErrorToleranceDescription.Absolute.getDescription() + " : " + kisaoStr;
+//							algorithmNotesStr += str;
+							kisaoStr = ErrorTolerance.ErrorToleranceDescription.Relative.getKisao();
+							sedmlAlgorithmParameter = new AlgorithmParameter(kisaoStr, et.getRelativeErrorTolerance()+"");
+							sedmlAlgorithm.addAlgorithmParameter(sedmlAlgorithmParameter);
+						}
+
+						TimeStep ts = simTaskDesc.getTimeStep();		// deal with time step
+						String kisaoStr = TimeStep.TimeStepDescription.Default.getKisao();
+						AlgorithmParameter sedmlAlgorithmParameter = new AlgorithmParameter(kisaoStr, ts.getDefaultTimeStep()+"");
+						sedmlAlgorithm.addAlgorithmParameter(sedmlAlgorithmParameter);
+						kisaoStr = TimeStep.TimeStepDescription.Minimum.getKisao();
+						sedmlAlgorithmParameter = new AlgorithmParameter(kisaoStr, ts.getMinimumTimeStep()+"");
+						sedmlAlgorithm.addAlgorithmParameter(sedmlAlgorithmParameter);
+						kisaoStr = TimeStep.TimeStepDescription.Maximum.getKisao();
+						sedmlAlgorithmParameter = new AlgorithmParameter(kisaoStr, ts.getMaximumTimeStep()+"");
+						sedmlAlgorithm.addAlgorithmParameter(sedmlAlgorithmParameter);
+						
+						
+						if(simTaskDesc.getSimulation().getMathDescription().isNonSpatialStoch()) {	// deal with seed
+							NonspatialStochSimOptions nssso = simTaskDesc.getStochOpt();
+							if(nssso.isUseCustomSeed()) {
+								// TODO: don't know where the kisao belongs, maybe we should consolidate all in one single ontology file
+//								// TODO: our jlibsedml has an old subset of the kisao ontology (below KISAO:0000100), we need a complete one
+//								KisaoOntology ko = KisaoOntology.getInstance();		// usage example
+//								KisaoTerm kt = ko.getTermById("KISAO:0000064");
+								sedmlAlgorithmParameter = new AlgorithmParameter("KISAO:0000488", nssso.getCustomSeed()+"");
+								sedmlAlgorithm.addAlgorithmParameter(sedmlAlgorithmParameter);
+							}
+						} else {
+							;	// (... isRuleBased(), isSpatial(), isMovingMembrane(), isSpatialHybrid() ...
+						}
+
+						// TODO: consider adding notes for the algorithm parameters, to provide human-readable description of kisao terms
+//						sedmlAlgorithm.addNote(createNotesElement(algorithmNotesStr));
+						// TODO: even better, AlgorithmParameter in sed-ml should also have a human readable "name" field
 						
 						// if solver is not CVODE, add a note to utcSim to indicate actual solver name
 						if (!vcSolverDesc.equals(SolverDescription.CVODE)) {
@@ -1074,6 +1115,13 @@ public class SEDMLExporter {
 					false // mark file as master
 			);
     	}
+
+		archive.addFile(
+				Paths.get(srcFolder, sFileName + ".vcml").toString(),
+				sFileName + ".vcml",
+				KnownFormats.lookupFormat("vcml"),
+				false
+		);
 
 
 		archive.writeToFile(Paths.get(srcFolder, sFileName + ".omex").toString());
