@@ -1,5 +1,6 @@
 package cbit.vcell.biomodel;
 
+import cbit.vcell.mapping.AssignmentRule;
 import cbit.vcell.mapping.BioEvent;
 import cbit.vcell.mapping.BioEvent.EventAssignment;
 import cbit.vcell.mapping.ElectricalStimulus;
@@ -22,6 +23,7 @@ import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.ScopedSymbolTable;
 import cbit.vcell.parser.SymbolTable;
 import cbit.vcell.parser.SymbolTableEntry;
+import cbit.vcell.parser.SymbolUtils;
 import cbit.vcell.units.VCUnitDefinition;
 import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XmlHelper;
@@ -60,8 +62,8 @@ public class ModelUnitConverter {
 				System.out.println("JSCL couldn't parse \""+jsclExpressionString+"\"");
 				return null;
 			}
-			jscl.math.Generic g1=jsclExpression.expand();
-			Expression newRate=new Expression(g1.toString().replaceAll("underscore", "_"));
+			jscl.math.Generic g1=jsclExpression.expand().simplify();
+			Expression newRate=new Expression(SymbolUtils.getRestoredStringJSCL(g1.toString()));
 			newRate.bindExpression(reactionStep);
 			reactionStep.getKinetics().getKineticsParameterFromRole(Kinetics.ROLE_ReactionRate).setExpression(newRate.flatten());
 		}
@@ -136,7 +138,19 @@ public class ModelUnitConverter {
 					convertExprWithUnitFactors(oldSymbolTable, newSymbolTable, oldTargetUnit, newTargetUnit, rateRuleExpr);
 				}
 			}
-
+			AssignmentRule[] assignmentRules = simContext.getAssignmentRules();
+			if (assignmentRules != null && assignmentRules.length > 0) { 
+				for (AssignmentRule assignmentRule : assignmentRules) {
+					AssignmentRule oldAssignRule = oldSimContext.getAssignmentRule(assignmentRule.getName());
+					ScopedSymbolTable oldSymbolTable = oldAssignRule.getSimulationContext();
+					ScopedSymbolTable newSymbolTable = assignmentRule.getSimulationContext();
+	
+					VCUnitDefinition oldTargetUnit = oldAssignRule.getAssignmentRuleVar().getUnitDefinition();
+					VCUnitDefinition newTargetUnit = assignmentRule.getAssignmentRuleVar().getUnitDefinition();
+					Expression assignmentRuleExpr = assignmentRule.getAssignmentRuleExpression();
+					convertExprWithUnitFactors(oldSymbolTable, newSymbolTable, oldTargetUnit, newTargetUnit, assignmentRuleExpr);
+				}
+			}
 		}	// end  for - simulationContext
 		return newBioModel;
 	}
