@@ -3193,7 +3193,7 @@ public class SBMLImporter {
 	 * translateSBMLModel:
 	 *
 	 */
-	public void translateSBMLModel() {
+	private void translateSBMLModel() {
 		// Add Function Definitions (Lambda functions).
 		addFunctionDefinitions();
 		// Check for SBML features not supported in VCell; stop import process if present.
