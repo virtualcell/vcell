@@ -654,25 +654,31 @@ public static String mathModelToXML(MathModel mathModel) throws XmlParseExceptio
 		// some of the info will be needed when we parse the sbml file 
 		boolean bSpatial = false;
 		Application appType = Application.NETWORK_DETERMINISTIC;
-		Set<SolverDescription.SolverFeature> sfList = solverDescription.getSupportedFeatures();
-		for(SolverDescription.SolverFeature sf : sfList) {
-			switch(sf) {
-			case Feature_Rulebased:
-				appType = Application.RULE_BASED_STOCHASTIC;
-				break;
-			case Feature_Stochastic:
-				appType = Application.NETWORK_STOCHASTIC;
-				break;
-			case Feature_Deterministic:
-				appType = Application.NETWORK_DETERMINISTIC;
-				break;
-			case Feature_Spatial:
-				bSpatial = true;
-				break;
-			default:
-				break;
+			try {
+				Set<SolverDescription.SolverFeature> sfList = solverDescription.getSupportedFeatures();
+				for(SolverDescription.SolverFeature sf : sfList) {
+					switch(sf) {
+						case Feature_Rulebased:
+							appType = Application.RULE_BASED_STOCHASTIC;
+							break;
+						case Feature_Stochastic:
+							appType = Application.NETWORK_STOCHASTIC;
+							break;
+						case Feature_Deterministic:
+							appType = Application.NETWORK_DETERMINISTIC;
+							break;
+						case Feature_Spatial:
+							bSpatial = true;
+							break;
+						default:
+							break;
+					}
+				}
+			} catch (Exception ex) {
+				System.err.println("Failed to set 'appType' with message, " + ex.getMessage());
 			}
-		}
+
+
         
         // -------------------------------------------------------------------------------------------
 

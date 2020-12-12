@@ -51,9 +51,22 @@ public class CLIStandalone {
 
             SolverHandler solverHandler = new SolverHandler();
             ExternalDocInfo externalDocInfo = new ExternalDocInfo(completeSedmlPath, true);
+            int count = 0;
+            int failCount = 0;
             for (AbstractTask abstractTask : sedml.getTasks()) {
-                solverHandler.simulateTask(externalDocInfo, abstractTask, sedml, outDirForCurrentSedml);
+                count++;
+                try {
+                    solverHandler.simulateTask(externalDocInfo, abstractTask, sedml, outDirForCurrentSedml);
+                } catch (Exception ex){
+                    failCount++;
+                    System.err.println("Task with ID: " + abstractTask.getId() + ", failed with message: " + ex.getMessage());
+                }
+
             }
+
+            System.out.println("Number of reports tried: " + count);
+            System.out.println("Number of reports failed: " + failCount);
+
         }
 
 
