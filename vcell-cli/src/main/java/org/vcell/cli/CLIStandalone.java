@@ -29,6 +29,8 @@ public class CLIStandalone {
 //        CLIUtils.makeDirs(new File(outputDir));
         OmexHandler omexHandler = new OmexHandler(inputFile, outputDir);
         omexHandler.extractOmex();
+        int count = 0;
+        int failCount = 0;
 
         ArrayList<String> sedmlLocations = omexHandler.getSedmlLocationsAbsolute();
         for (String sedmlLocation : sedmlLocations) {
@@ -51,8 +53,7 @@ public class CLIStandalone {
 
             SolverHandler solverHandler = new SolverHandler();
             ExternalDocInfo externalDocInfo = new ExternalDocInfo(completeSedmlPath, true);
-            int count = 0;
-            int failCount = 0;
+
             for (AbstractTask abstractTask : sedml.getTasks()) {
                 count++;
                 try {
