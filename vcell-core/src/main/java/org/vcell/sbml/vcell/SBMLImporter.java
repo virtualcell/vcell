@@ -266,6 +266,8 @@ public class SBMLImporter {
 	// annotations from a Biomodel VCMetaData
 	private SBMLAnnotationUtil sbmlAnnotationUtil = null;
 
+	private boolean isFromVCell = false;
+
 	/*
 	 * A lightweight nested class to contain the SBML and VC concentration units
 	 * for species. Needed when running the Semantics test suite. When SBML
@@ -2348,6 +2350,11 @@ public class SBMLImporter {
 				}
 				SBMLReader reader = new SBMLReader();
 				document = reader.readSBMLFromString(sb.toString());
+				// check for VCell origin
+				String topNotes = document.getNotesString();
+				if (topNotes != null && topNotes.contains("VCell")) {
+					isFromVCell  = true;
+				}
 	//		document.checkConsistencyOffline();
 	//		long numProblems = document.getNumErrors();
 	//
@@ -2522,16 +2529,23 @@ public class SBMLImporter {
 				}
 			}
 		}
-		// finally try to convert to vcell unit system
-		ModelUnitSystem vcUnitSystem = ModelUnitSystem.createDefaultVCModelUnitSystem();
-		try {
-			BioModel convertedBioModel = ModelUnitConverter.createBioModelWithNewUnitSystem(vcBioModel, vcUnitSystem);
-			return convertedBioModel;
-		} catch (ExpressionException | XmlParseException e) {
-			// TODO maybe alert user? for now fail silently...
-			e.printStackTrace();
-			return vcBioModel;
+		// finally convert back to VCell unit system if it originated from VCell
+		// TO DO need to expand options here:
+		// do not convert if called from CLI or other automated conversion routines
+		// if called from GUI application convert if VCell origin, otherwise ask user
+		if (isFromVCell) {
+			ModelUnitSystem vcUnitSystem = ModelUnitSystem.createDefaultVCModelUnitSystem();
+			try {
+				BioModel convertedBioModel = ModelUnitConverter.createBioModelWithNewUnitSystem(vcBioModel,
+						vcUnitSystem);
+				return convertedBioModel;
+			} catch (ExpressionException | XmlParseException e) {
+				// TODO maybe alert user? for now fail silently...
+				e.printStackTrace();
+				return vcBioModel;
+			} 
 		}
+		return vcBioModel;
 	}
 	
 	private ModelUnitSystem createSBMLUnitSystemForVCModel() throws Exception {
