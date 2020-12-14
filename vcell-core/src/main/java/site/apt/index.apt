@@ -1,0 +1,20 @@
+				---------
+				JLibsedml
+				---------
+				Richard Adams
+				------------
+				2012-02-13
+				----------
+				
+Jlibsedml
+
+	Welcome to the project website for jlibsedml. jlibsedml is a native Java library for
+	 working with {{{http://sed-ml.org}SED-ML}} documents. 
+	 
+	 A {{{userguide.html}User Guide}}
+	 provides details of getting started with the library, and the Javadoc available from 
+	  this site provides more detailed information.
+	  
+	 The user guide is also available as a {{{./jlibsedml-pdf.pdf} PDF download}}
+	  
+	 
