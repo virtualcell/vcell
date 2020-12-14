@@ -34,7 +34,8 @@ class SchemaValidatorImpl {
     Logger log = LoggerFactory.getLogger(SchemaValidatorImpl.class);
     static final String SEDML_L1_V1_SCHEMA = "schema.xsd";
     static final String SEDML_L1_V2_SCHEMA = "sed-ml-L1-V2.xsd";
-
+    static final String SEDML_L1_V3_SCHEMA = "sed-ml-L1-V3.xsd";
+    
     static final String SBML_MATHML_SCHEMA = "sedml-mathml.xsd";
 
     public void validateSedMLString(final List<SedMLError> errors,
@@ -91,9 +92,12 @@ class SchemaValidatorImpl {
         } else if (level.equals("1") && version.equals("2")) {
             return SEDML_L1_V2_SCHEMA;
         } else {
-            throw new IllegalArgumentException(
-                    "Invalid level/version combingation - must be 1-1 or 1-2 but was "
-                            + level + "," + version);
+        	// probably level 3, but trying anyway to interpret with level 2
+        	System.out.println("SED-ML version level not supported, import may fail");
+        	return SEDML_L1_V3_SCHEMA;
+//            throw new IllegalArgumentException(
+//                    "Invalid level/version combingation - must be 1-1 or 1-2 but was "
+//                            + level + "," + version);
         }
     }
 

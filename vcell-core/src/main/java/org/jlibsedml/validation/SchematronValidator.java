@@ -115,9 +115,11 @@ public class SchematronValidator extends AbstractDocumentValidator {
         } else if (sedml.isL1V2()) {
             return "validatorl1v2.xsl";
         } else {
-            throw new UnsupportedOperationException(MessageFormat.format(
-                    "Invalid level and version -  {0}-{1}", sedml.getLevel(),
-                    sedml.getVersion()));
+        	System.out.println("Unsupported version, import may fail");
+        	return "validatorl1v2.xsl";
+//            throw new UnsupportedOperationException(MessageFormat.format(
+//                    "Invalid level and version -  {0}-{1}", sedml.getLevel(),
+//                    sedml.getVersion()));
         }
     }
 
