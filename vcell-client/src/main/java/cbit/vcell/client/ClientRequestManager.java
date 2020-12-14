@@ -3482,6 +3482,7 @@ public class ClientRequestManager
 						TranslationLogger transLogger = new TranslationLogger(requester);
 						doc = XmlHelper.sedmlToBioModel(transLogger, externalDocInfo,
 								(SedML) hashTable.get(SEDML_MODEL), (AbstractTask) hashTable.get(SEDML_TASK));
+						isSEDML = true; // treat the same since OMEX is just and archive with SED-ML file(s)
 					} else if (!externalDocInfo.isXML()) {
 						if (hashTable.containsKey(BNG_UNIT_SYSTEM)) { // not XML, look for BNGL etc.
 							// we use the BngUnitSystem already created during the 1st pass
