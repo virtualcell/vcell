@@ -624,25 +624,16 @@ public static String mathModelToXML(MathModel mathModel) throws XmlParseExceptio
         
 	        // identify the vCell solvers that would match best the sedml solver kisao id
 			
-			// try to find an exact match first
-			SolverDescription solverDescription = null;
-			boolean foundExactMatch = false;
-	        List<SolverDescription> solverDescriptions = new ArrayList<>();
-			for (SolverDescription sd : SolverDescription.values()) {
-				KisaoTerm solverKisaoTerm = KisaoOntology.getInstance().getTermById(sd.getKisao());
-				if(solverKisaoTerm == null) {
-					continue;
-				}
-				foundExactMatch = solverKisaoTerm.equals(sedmlKisao);
-				if (foundExactMatch) {
-					solverDescription = sd;
-					break;
-				}
-			}
-			if (!foundExactMatch) {
-				// we punt to CVODE for now
-				// TODO add smart match by ontology method
-				solverDescription = SolverDescription.CVODE;
+			// try to find a match in the ontology tree
+			SolverDescription solverDescription = SolverUtilities.matchSolverWithKisaoId(kisaoID);
+			if (solverDescription != null) {
+				System.out.println("++> Solver match found in ontology");
+				System.out.println("++> KiSAO "+kisaoID+" matched to "+solverDescription);
+			} else {
+				// give it a try anyway with our deterministic default solver
+				solverDescription = SolverDescription.CombinedSundials;
+				System.out.println("--> Could not find a supoorted ontology match for solver algorithm "+kisaoID);
+				System.out.println("--> Trying with deterministic default solver "+solverDescription);
 			}
 		
 			// find out everything else we need about the application we're going to use,
