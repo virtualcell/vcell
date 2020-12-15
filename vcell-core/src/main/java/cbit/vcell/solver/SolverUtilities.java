@@ -2,9 +2,13 @@ package cbit.vcell.solver;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
+import cbit.util.kisao.KisaoOntology;
+import cbit.util.kisao.KisaoTerm;
 import cbit.vcell.math.MathFunctionDefinitions;
 import cbit.vcell.math.VariableType.VariableDomain;
 import cbit.vcell.parser.ASTFuncNode.FunctionType;
@@ -103,6 +107,41 @@ public class SolverUtilities {
 		if (solverDescription.getSolverExecutable() != null) {
 			getExes(solverDescription);
 		}
+	}
+	
+	public static SolverDescription matchSolverWithKisaoId(String originalKisaoId) {
+		
+		 KisaoTerm originalKisaoTerm = KisaoOntology.getInstance().getTermById(originalKisaoId);
+		 if(originalKisaoTerm == null) {
+			 return null;		// kisao id not found in ontology
+		 }
+		 
+		 // ----- cross fingers and hope that the original kisao is a match
+		 List<SolverDescription> matchingSolverDescriptions = new ArrayList<>();
+		 matchingSolverDescriptions = matchByKisaoId(originalKisaoTerm);
+		 if(!matchingSolverDescriptions.isEmpty()) {
+			 return matchingSolverDescriptions.get(0);		// exact match
+		 }
+		 
+		 // ----- make descendant list and check them all until a match is found
+		 List<KisaoTerm> descendantList = KisaoOntology.makeDescendantList(originalKisaoTerm);
+		 for(KisaoTerm descendant : descendantList) {
+			 matchingSolverDescriptions = matchByKisaoId(descendant);
+			 if(!matchingSolverDescriptions.isEmpty()) {
+				 return matchingSolverDescriptions.get(0);
+			 }
+		 }
+		return null;		// nothing found
+	}
+	private static List<SolverDescription> matchByKisaoId(KisaoTerm candidate) {
+        List<SolverDescription> solverDescriptions = new ArrayList<>();
+		for (SolverDescription sd : SolverDescription.values()) {
+			System.out.println(sd.getKisao());
+			if(candidate.getId().equalsIgnoreCase(sd.getKisao())) {
+				solverDescriptions.add(sd);
+			}
+		}
+		return solverDescriptions;
 	}
 
 }

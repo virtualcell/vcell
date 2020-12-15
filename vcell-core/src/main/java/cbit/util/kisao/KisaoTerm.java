@@ -75,7 +75,7 @@ public class KisaoTerm {
 		return isaRef;
 	}
 
-public boolean is_a(KisaoTerm otherTerm) {
+	public boolean is_a(KisaoTerm otherTerm) {
 		if (this.equals(otherTerm)) {
 			return true;
 		}
@@ -89,6 +89,16 @@ public boolean is_a(KisaoTerm otherTerm) {
 		}
 		return false;
 	}
+
+	public static void main(String[] args) {
+	
+		KisaoTerm sedmlSolverKisaoTerm = KisaoOntology.getInstance().getTermById("KISAO_0000000");
+//		KisaoTerm sedmlSolverKisaoTerm = KisaoOntology.getInstance().getTermById("KISAO_0000027");
+		List<KisaoTerm> isaTerms = sedmlSolverKisaoTerm.getIsa();
+		System.out.println(sedmlSolverKisaoTerm);
+		System.out.println("Done");
+	}
+
 	
 }
 
