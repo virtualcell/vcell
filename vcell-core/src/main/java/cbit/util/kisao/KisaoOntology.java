@@ -59,13 +59,16 @@ public class KisaoOntology {
 		while(true) {
 			List<KisaoTerm> tmpList = root.getIsa();
 			if(tmpList.size() > 1) {
-				throw new RuntimeException("Each kisao term must have no more than 1 descendant");
+				System.err.println("Each kisao term must have no more than 1 descendant");
 			}
-			if(tmpList.size() == 0) {	// we should never get here
+			if(tmpList.size() == 0) {	// we seldom get here
 				if(root.getId().equals("KISAO_0000000")) {
 					throw new RuntimeException("Error reaching KISAO_0000000");
 				} else {
-					throw new RuntimeException("Malformed entry for " + root.getId() + ", is_a term missing");
+					// descendant list may be empty if some kisao term directly points to is_a = KISAO_0000000
+					// like for example KISAO_0000097
+					// we just put out what we've got, which may be very little
+					return descendantList;
 				}
 			}
 			KisaoTerm kt = tmpList.get(0);
