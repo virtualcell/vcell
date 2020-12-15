@@ -3411,11 +3411,11 @@ public class ClientRequestManager
 					if (sedml == null || sedml.getModels().isEmpty()) {
 						return;
 					}
-					AbstractTask chosenTask = SEDMLChooserPanel.chooseTask(sedml, requester.getComponent(),
-							file.getName());
+//					AbstractTask chosenTask = SEDMLChooserPanel.chooseTask(sedml, requester.getComponent(),
+//							file.getName());
 
 					hashTable.put(SEDML_MODEL, sedml);
-					hashTable.put(SEDML_TASK, chosenTask);
+//					hashTable.put(SEDML_TASK, chosenTask);
 
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -3435,11 +3435,11 @@ public class ClientRequestManager
 					if (sedml.getModels().isEmpty()) {
 						throw new RuntimeException("Unable to find any model in " + file.getName());
 					}
-					AbstractTask chosenTask = SEDMLChooserPanel.chooseTask(sedml, requester.getComponent(),
-							file.getName());
+//					AbstractTask chosenTask = SEDMLChooserPanel.chooseTask(sedml, requester.getComponent(),
+//							file.getName());
 
 					hashTable.put(SEDML_MODEL, sedml);
-					hashTable.put(SEDML_TASK, chosenTask);
+//					hashTable.put(SEDML_TASK, chosenTask);
 
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -3462,6 +3462,7 @@ public class ClientRequestManager
 			@Override
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
 				VCDocument doc = null;
+				List<VCDocument> docs = null;
 				boolean isBMDB = false;
 				boolean isSEDML = false;
 				VCDocumentInfo documentInfo = (VCDocumentInfo) hashTable.get(DOCUMENT_INFO);
@@ -3480,8 +3481,9 @@ public class ClientRequestManager
 					if (file != null && !file.getName().isEmpty() && (file.getName().toLowerCase().endsWith(".sedx")
 							|| file.getName().toLowerCase().endsWith(".omex"))) {
 						TranslationLogger transLogger = new TranslationLogger(requester);
-						doc = XmlHelper.sedmlToBioModel(transLogger, externalDocInfo,
-								(SedML) hashTable.get(SEDML_MODEL), (AbstractTask) hashTable.get(SEDML_TASK));
+						// default to import all tasks
+						docs = XmlHelper.sedmlToBioModel(transLogger, externalDocInfo,
+								(SedML) hashTable.get(SEDML_MODEL), null);
 						isSEDML = true; // treat the same since OMEX is just and archive with SED-ML file(s)
 					} else if (!externalDocInfo.isXML()) {
 						if (hashTable.containsKey(BNG_UNIT_SYSTEM)) { // not XML, look for BNGL etc.
@@ -3607,8 +3609,9 @@ public class ClientRequestManager
 								doc = VFrapXmlHelper.VFRAPToBioModel(hashTable, xmlSource, getDocumentManager(),
 										requester);
 							} else if (xmlType.equals(XMLTags.SedMLTypeTag)) {
-								doc = XmlHelper.sedmlToBioModel(transLogger, externalDocInfo,
-										(SedML) hashTable.get(SEDML_MODEL), (AbstractTask) hashTable.get(SEDML_TASK));
+								// default to import all tasks
+								docs = XmlHelper.sedmlToBioModel(transLogger, externalDocInfo,
+										(SedML) hashTable.get(SEDML_MODEL), null);
 								isSEDML = true;
 							} else { // unknown XML format
 								throw new RuntimeException(
@@ -3619,7 +3622,7 @@ public class ClientRequestManager
 							}
 						}
 					}
-					if (doc == null) {
+					if (doc == null && docs == null) {
 						File f = externalDocInfo.getFile();
 						if (f != null) {
 							throw new RuntimeException("Unable to determine type of file " + f.getCanonicalPath());
@@ -3639,44 +3642,13 @@ public class ClientRequestManager
 				requester.prepareDocumentToLoad(doc, inNewWindow);
 				hashTable.put("isBMDB", isBMDB);
 				hashTable.put("isSEDML", isSEDML);
-				hashTable.put("doc", doc);
+				if (!isSEDML) {
+					hashTable.put("doc", doc);
+				} else {
+					hashTable.put("docs", docs);
+				}
 			}
 		};
-//	AsynchClientTask task5 = new AsynchClientTask("Consistency", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING, true, true) {
-//		@Override
-//		public void run(Hashtable<String, Object> hashTable) throws Exception {
-//			VCDocument doc = (VCDocument)hashTable.get("doc");
-//			boolean isBMDB = (boolean)hashTable.get("isBMDB");
-//			if (isBMDB && doc instanceof BioModel) {
-//				BioModel bioModel = (BioModel) doc;
-//				SimulationContext simulationContext = bioModel.getSimulationContext(0);
-//				MathMappingCallback callback = new MathMappingCallback() {
-//					@Override
-//					public void setProgressFraction(float fractionDone) { }
-//					@Override
-//					public void setMessage(String message) { }
-//					@Override
-//					public boolean isInterrupted() { return false; }
-//				};
-//				MathMapping mathMapping = simulationContext.createNewMathMapping(callback, NetworkGenerationRequirements.ComputeFullNoTimeout);
-//				MathDescription mathDesc = null;
-//				try {
-//					mathDesc = mathMapping.getMathDescription(callback);
-//					simulationContext.setMathDescription(mathDesc);
-//					
-//					Simulation sim = new Simulation(mathDesc);
-//					sim.setName(simulationContext.getBioModel().getFreeSimulationName());
-//					simulationContext.addSimulation(sim);
-//					bioModel.refreshDependencies();
-//					
-//					
-//				} catch (MappingException | MathException | MatrixException | ExpressionException | ModelException e1) {
-//					e1.printStackTrace();
-//				}
-//			}
-//			hashTable.put("doc", doc);
-//		}
-//	};
 
 		AsynchClientTask task2 = new AsynchClientTask("Showing document", AsynchClientTask.TASKTYPE_SWING_BLOCKING,
 				false, false) {
@@ -3685,26 +3657,34 @@ public class ClientRequestManager
 				try {
 					Throwable exc = (Throwable) hashTable.get(ClientTaskDispatcher.TASK_ABORTED_BY_ERROR);
 					if (exc == null) {
-						VCDocument doc = (VCDocument) hashTable.get("doc");
-//					boolean isBMDB = (boolean)hashTable.get("isBMDB");
-						DocumentWindowManager windowManager = null;
-						if (inNewWindow) {
-							windowManager = createDocumentWindowManager(doc);
-							// request was to create a new top-level window with this doc
-							getMdiManager().createNewDocumentWindow(windowManager);
-
-//						if (windowManager instanceof BioModelWindowManager) {
-//							((BioModelWindowManager)windowManager).preloadApps();
-//						}
-
+						boolean isSEDML = (boolean) hashTable.get("isSEDML");
+						if (isSEDML) {
+							List<VCDocument> docs = (List<VCDocument>) hashTable.get("docs");
+							List<DocumentWindowManager> windowManagers = new ArrayList<DocumentWindowManager>();
+							for (VCDocument doc : docs) {
+								DocumentWindowManager windowManager = createDocumentWindowManager(doc);
+								getMdiManager().createNewDocumentWindow(windowManager);
+								windowManagers.add(windowManager);
+							}
+							hashTable.put("managers", windowManagers);
+							hashTable.put("docs", docs);							
 						} else {
-							// request was to replace the document in an existing window
-							windowManager = (DocumentWindowManager) requester;
-							getMdiManager().setCanonicalTitle(requester.getManagerID());
-							windowManager.resetDocument(doc);
+							VCDocument doc = (VCDocument) hashTable.get("doc");
+							DocumentWindowManager windowManager = null;
+							if (inNewWindow) {
+								windowManager = createDocumentWindowManager(doc);
+								// request was to create a new top-level window with this doc
+								getMdiManager().createNewDocumentWindow(windowManager);
+
+							} else {
+								// request was to replace the document in an existing window
+								windowManager = (DocumentWindowManager) requester;
+								getMdiManager().setCanonicalTitle(requester.getManagerID());
+								windowManager.resetDocument(doc);
+							}
+							hashTable.put(WIN_MGR_KEY, windowManager);
+							hashTable.put("doc", doc);
 						}
-						hashTable.put(WIN_MGR_KEY, windowManager);
-						hashTable.put("doc", doc);
 					}
 				} finally {
 					if (!inNewWindow) {
@@ -3721,18 +3701,18 @@ public class ClientRequestManager
 				if (documentInfo instanceof ExternalDocInfo) {
 					ExternalDocInfo externalDocInfo = (ExternalDocInfo) documentInfo;
 					boolean isSEDML = (boolean) hashTable.get("isSEDML");
-					DocumentWindowManager windowManager = (DocumentWindowManager) hashTable.get(WIN_MGR_KEY);
-					if (externalDocInfo.isBioModelsNet() || externalDocInfo.isFromXmlFile() || isSEDML) {
+					if (externalDocInfo.isBioModelsNet() || externalDocInfo.isFromXmlFile() || !isSEDML) {
+						DocumentWindowManager windowManager = (DocumentWindowManager) hashTable.get(WIN_MGR_KEY);
 						if (windowManager instanceof BioModelWindowManager) {
 							((BioModelWindowManager) windowManager).specialLayout();
 						}
 					}
-//					if (externalDocInfo.isBioModelsNet() || isSEDML) {
-//						if (windowManager instanceof BioModelWindowManager) {
-//							
-//							((BioModelWindowManager) windowManager).;
-//						}
-//					}
+					if (isSEDML) {
+						List<DocumentWindowManager> windowManagers = (List<DocumentWindowManager>) hashTable.get("managers");
+						for (DocumentWindowManager manager : windowManagers) {
+							((BioModelWindowManager) manager).specialLayout();
+						}
+					}
 				}
 			}
 		};

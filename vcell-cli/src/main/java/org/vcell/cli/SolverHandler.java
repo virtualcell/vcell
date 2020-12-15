@@ -16,6 +16,8 @@ import org.vcell.sbml.vcell.SBMLImporter;
 import org.vcell.util.document.VCDocument;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 public class SolverHandler {
 
@@ -43,8 +45,11 @@ public class SolverHandler {
         // create the VCDocument (bioModel + application + simulation), do sanity checks
         cbit.util.xml.VCLogger sedmlImportLogger = new LocalLogger();
         VCDocument doc = null;
+        List<AbstractTask> tasks = new ArrayList<AbstractTask>();
+        tasks.add(sedmlTask);
         try {
-            doc = XmlHelper.sedmlToBioModel(sedmlImportLogger, externalDocInfo, sedml, sedmlTask);
+            List<VCDocument> docs = XmlHelper.sedmlToBioModel(sedmlImportLogger, externalDocInfo, sedml, tasks);
+            doc = docs.get(0);
         } catch (Exception e) {
             System.err.println("Unable to Parse SEDML into biomodel, failed with err: " + e.getMessage());
         }
