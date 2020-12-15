@@ -159,24 +159,25 @@ public class SolverUtilities {
 	private static SolverDescription attemptLastResortMatch(KisaoTerm last) {
 		SolverDescription sd = null;
 		switch(last.getId()) {
+		case "KISAO_0000433":
 		case "KISAO_0000094":
-			return SolverDescription.CVODE;
+		case "KISAO_0000284":
+			return SolverDescription.CombinedSundials;
 		case "KISAO_0000319":
 			return SolverDescription.StochGibson;
 		case "KISAO_0000408":
 			return SolverDescription.IDA;
-		case "KISAO_0000284":
-			return SolverDescription.CVODE;
 		case "KISAO_0000056":
 			return SolverDescription.Smoldyn;
 		case "KISAO_0000352":
 			return SolverDescription.HybridMilstein;
 		case "KISAO_0000398":
-			return SolverDescription.FiniteVolumeStandalone;	// or sundials??
+		case "KISAO_0000369":
+			return SolverDescription.SundialsPDE;
 		case "KISAO_0000281":
 			return SolverDescription.AdamsMoulton;
 		case "KISAO_0000377":
-			return SolverDescription.RungeKuttaFehlberg;		// is this 5
+			return SolverDescription.RungeKuttaFehlberg;
 		default:
 			return null;
 		}
