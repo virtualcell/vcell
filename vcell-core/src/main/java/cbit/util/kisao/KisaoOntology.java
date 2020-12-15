@@ -45,5 +45,12 @@ public class KisaoOntology {
 			}
 		}
 	}
+	
+	public static void main(String[] args) {
+		
+		KisaoTerm sedmlSolverKisaoTerm = KisaoOntology.getInstance().getTermById("KISAO_0000027");
+		System.out.println(sedmlSolverKisaoTerm);
+		System.out.println("Done");
+	}
 
 }

@@ -6,7 +6,7 @@ import java.util.List;
 
 public class KisaoTerm {
 	
-	private String id, name, def;
+	private String id, name;
 	private List<KisaoTerm> isaList = new ArrayList<KisaoTerm>();
 	private List<String> isaRef = new ArrayList<String>();	// used only during parsing, as proxy for still unknown terms
 	
@@ -15,7 +15,7 @@ public class KisaoTerm {
 
 	@Override
 	public String toString() {
-		return "KisaoTerm [id=" + id + ", name=" + name + ", def=" + def + "]";
+		return "KisaoTerm [id=" + id + ", name=" + name + "]";
 	}
 	@Override
 	public int hashCode() {
@@ -59,13 +59,6 @@ public class KisaoTerm {
 	}
 	void setName(String name) {
 		this.name = name;
-	}
-	
-	public String getDefinition() {
-		return def;
-	}
-	void setDef(String def) {
-		this.def = def;
 	}
 	
 	public List<KisaoTerm> getIsa() {
