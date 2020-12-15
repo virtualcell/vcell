@@ -135,7 +135,7 @@ public class SolverUtilities {
 			 }
 		 }
 		 KisaoTerm last = descendantList.get(descendantList.size()-1);
-		 System.out.println("No direct match with any descendant, trying last resort match for " + last.getId());
+		 System.out.println("No direct match with any descendant, trying last resort match for descendant " + last.getId());
 		 return attemptLastResortMatch(last);
 	}
 	private static List<SolverDescription> matchByKisaoId(KisaoTerm candidate) {

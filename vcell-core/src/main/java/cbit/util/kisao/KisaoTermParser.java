@@ -9,7 +9,8 @@ import java.util.regex.Pattern;
 
 public class KisaoTermParser {
 	
-	final String Kisao_OBO = "kisao_2020_12_13.obo";
+//	final String Kisao_OBO = "kisao_2020_12_13.obo";
+	final String Kisao_OBO = "kisao_algs.obo";
 	
 	final String TERM_PATTERN = "\\[Term\\]";
 	final Pattern ID_PATTERN = Pattern.compile("id:\\s*(.+)");
