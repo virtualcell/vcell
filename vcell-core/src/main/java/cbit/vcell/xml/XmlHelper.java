@@ -583,7 +583,6 @@ public static String mathModelToXML(MathModel mathModel) throws XmlParseExceptio
         
 		List<VCDocument> docs = new ArrayList<VCDocument>();
         String bioModelBaseName = FileUtils.getBaseName(externalDocInfo.getFile().getAbsolutePath());		// extract bioModel name from sedx (or sedml) file        
-        KisaoTerm sedmlKisao = null;
         String kisaoID = null;
 		org.jlibsedml.Simulation sedmlSimulation = null;	// this will become the vCell simulation
 		org.jlibsedml.Model sedmlOriginalModel = null;		// the "original" model referred to by the task
@@ -620,7 +619,6 @@ public static String mathModelToXML(MathModel mathModel) throws XmlParseExceptio
     		sedmlOriginalModelName = sedmlOriginalModel.getId();
     		Algorithm algorithm = sedmlSimulation.getAlgorithm();
     		kisaoID = algorithm.getKisaoID();
-    		sedmlKisao = KisaoOntology.getInstance().getTermById(kisaoID);
         
 	        // identify the vCell solvers that would match best the sedml solver kisao id
 			
