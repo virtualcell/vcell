@@ -51,9 +51,7 @@ public class CLIStandalone {
 
             SolverHandler solverHandler = new SolverHandler();
             ExternalDocInfo externalDocInfo = new ExternalDocInfo(completeSedmlPath, true);
-            for (AbstractTask abstractTask : sedml.getTasks()) {
-                solverHandler.simulateTask(externalDocInfo, abstractTask, sedml, outDirForCurrentSedml);
-            }
+            solverHandler.simulateAllTasks(externalDocInfo, sedml, outDirForCurrentSedml);
         }
 
 

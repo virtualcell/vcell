@@ -702,11 +702,13 @@ public static String mathModelToXML(MathModel mathModel) throws XmlParseExceptio
         		}
         	}
         	if (matchingSimulationContext == null) {
-	        	matchingSimulationContext = SimulationContext.copySimulationContext(existingSimulationContexts[0], sedmlOriginalModelName+"_"+existingSimulationContexts.length, bSpatial, appType);
-	        	bioModel.addSimulationContext(matchingSimulationContext);
 	        	if (justMade) {
+		        	matchingSimulationContext = SimulationContext.copySimulationContext(existingSimulationContexts[0], sedmlOriginalModelName, bSpatial, appType);
 	        		bioModel.removeSimulationContext(existingSimulationContexts[0]);
+	        	} else {
+		        	matchingSimulationContext = SimulationContext.copySimulationContext(existingSimulationContexts[0], sedmlOriginalModelName+"_"+existingSimulationContexts.length, bSpatial, appType);
 	        	}
+	        	bioModel.addSimulationContext(matchingSimulationContext);
 			}
 	
 	        // making the new vCell simulation based on the sedml simulation
@@ -747,6 +749,7 @@ public static String mathModelToXML(MathModel mathModel) throws XmlParseExceptio
 			simTaskDesc.setTimeStep(timeStep);
 			simTaskDesc.setOutputTimeSpec(outputTimeSpec);
 			newSimulation.setSolverTaskDescription(simTaskDesc);
+			newSimulation.setDescription(SEDMLUtil.getName(selectedTask));
 	    	bioModel.addSimulation(newSimulation);
 	    	newSimulation.refreshDependencies();
 		}
