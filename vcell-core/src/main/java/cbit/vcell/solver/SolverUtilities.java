@@ -125,23 +125,60 @@ public class SolverUtilities {
 		 
 		 // ----- make descendant list and check them all until a match is found
 		 List<KisaoTerm> descendantList = KisaoOntology.makeDescendantList(originalKisaoTerm);
+		 if(descendantList.isEmpty()) {
+			 return null;		// for KISAO_0000000 or some malformed entry
+		 }
 		 for(KisaoTerm descendant : descendantList) {
 			 matchingSolverDescriptions = matchByKisaoId(descendant);
 			 if(!matchingSolverDescriptions.isEmpty()) {
 				 return matchingSolverDescriptions.get(0);
 			 }
 		 }
-		return null;		// nothing found
+		 KisaoTerm last = descendantList.get(descendantList.size()-1);
+		 System.out.println("No direct match with any descendant, trying last resort match for " + last.getId());
+		 return attemptLastResortMatch(last);
 	}
 	private static List<SolverDescription> matchByKisaoId(KisaoTerm candidate) {
         List<SolverDescription> solverDescriptions = new ArrayList<>();
 		for (SolverDescription sd : SolverDescription.values()) {
-			System.out.println(sd.getKisao());
-			if(candidate.getId().equalsIgnoreCase(sd.getKisao())) {
+			if(sd.getKisao().contains(":") || sd.getKisao().contains("_")) {
+				System.out.println(sd.getKisao());
+			} else {
+				System.out.println(sd.getKisao() + " - bad format, skipping");
+				continue;
+			}
+			String s1 = candidate.getId();
+			String s2 = sd.getKisao();
+			s2 = s2.replace(":", "_");
+			if(s1.equalsIgnoreCase(s2)) {
 				solverDescriptions.add(sd);
 			}
 		}
 		return solverDescriptions;
 	}
-
+	private static SolverDescription attemptLastResortMatch(KisaoTerm last) {
+		SolverDescription sd = null;
+		switch(last.getId()) {
+		case "KISAO_0000094":
+			return SolverDescription.CVODE;
+		case "KISAO_0000319":
+			return SolverDescription.StochGibson;
+		case "KISAO_0000408":
+			return SolverDescription.IDA;
+		case "KISAO_0000284":
+			return SolverDescription.CVODE;
+		case "KISAO_0000056":
+			return SolverDescription.Smoldyn;
+		case "KISAO_0000352":
+			return SolverDescription.HybridMilstein;
+		case "KISAO_0000398":
+			return SolverDescription.FiniteVolumeStandalone;	// or sundials??
+		case "KISAO_0000281":
+			return SolverDescription.AdamsMoulton;
+		case "KISAO_0000377":
+			return SolverDescription.RungeKuttaFehlberg;		// is this 5
+		default:
+			return null;
+		}
+	}
 }
