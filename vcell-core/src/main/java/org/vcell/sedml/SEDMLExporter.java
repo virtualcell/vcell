@@ -306,16 +306,50 @@ public class SEDMLExporter {
 							sedmlAlgorithm.addAlgorithmParameter(sedmlAlgorithmParameter);
 						}
 
-						TimeStep ts = simTaskDesc.getTimeStep();		// deal with time step
-						String kisaoStr = TimeStep.TimeStepDescription.Default.getKisao();
-						AlgorithmParameter sedmlAlgorithmParameter = new AlgorithmParameter(kisaoStr, ts.getDefaultTimeStep()+"");
-						sedmlAlgorithm.addAlgorithmParameter(sedmlAlgorithmParameter);
-						kisaoStr = TimeStep.TimeStepDescription.Minimum.getKisao();
-						sedmlAlgorithmParameter = new AlgorithmParameter(kisaoStr, ts.getMinimumTimeStep()+"");
-						sedmlAlgorithm.addAlgorithmParameter(sedmlAlgorithmParameter);
-						kisaoStr = TimeStep.TimeStepDescription.Maximum.getKisao();
-						sedmlAlgorithmParameter = new AlgorithmParameter(kisaoStr, ts.getMaximumTimeStep()+"");
-						sedmlAlgorithm.addAlgorithmParameter(sedmlAlgorithmParameter);
+						
+						boolean enableDefaultTimeStep;		// deal with time step (code adapted from TimeSpecPanel.refresh()
+						boolean enableMinTimeStep;
+						boolean enableMaxTimeStep;
+						if (vcSolverDesc.compareEqual(SolverDescription.StochGibson)) { // stochastic time
+							enableDefaultTimeStep = false;
+							enableMinTimeStep = false;
+							enableMaxTimeStep = false;
+						} else if(vcSolverDesc.compareEqual(SolverDescription.NFSim)) {
+							enableDefaultTimeStep = false;
+							enableMinTimeStep = false;
+							enableMaxTimeStep = false;
+						} else {
+							// fixed time step solvers and non spatial stochastic solvers only show default time step.
+							if (!vcSolverDesc.hasVariableTimestep() || vcSolverDesc.isNonSpatialStochasticSolver()) {
+								enableDefaultTimeStep = true;
+								enableMinTimeStep = false;
+								enableMaxTimeStep = false;
+							} else {
+								// variable time step solvers shows min and max, but sundials solvers don't show min
+								enableDefaultTimeStep = false;
+								enableMinTimeStep = true;
+								enableMaxTimeStep = true;			
+								if (vcSolverDesc.hasSundialsTimeStepping()) {
+									enableMinTimeStep = false;
+								}
+							}
+						}
+						TimeStep ts = simTaskDesc.getTimeStep();
+						if(enableDefaultTimeStep) {
+							String kisaoStr = TimeStep.TimeStepDescription.Default.getKisao();
+							AlgorithmParameter sedmlAlgorithmParameter = new AlgorithmParameter(kisaoStr, ts.getDefaultTimeStep()+"");
+							sedmlAlgorithm.addAlgorithmParameter(sedmlAlgorithmParameter);
+						}
+						if(enableMinTimeStep) {
+							String kisaoStr = TimeStep.TimeStepDescription.Minimum.getKisao();
+							AlgorithmParameter sedmlAlgorithmParameter = new AlgorithmParameter(kisaoStr, ts.getMinimumTimeStep()+"");
+							sedmlAlgorithm.addAlgorithmParameter(sedmlAlgorithmParameter);
+						}
+						if(enableMaxTimeStep) {
+							String kisaoStr = TimeStep.TimeStepDescription.Maximum.getKisao();
+							AlgorithmParameter sedmlAlgorithmParameter = new AlgorithmParameter(kisaoStr, ts.getMaximumTimeStep()+"");
+							sedmlAlgorithm.addAlgorithmParameter(sedmlAlgorithmParameter);
+						}
 						
 						
 						if(simTaskDesc.getSimulation().getMathDescription().isNonSpatialStoch()) {	// deal with seed
@@ -325,7 +359,7 @@ public class SEDMLExporter {
 //								// TODO: our jlibsedml has an old subset of the kisao ontology (below KISAO:0000100), we need a complete one
 //								KisaoOntology ko = KisaoOntology.getInstance();		// usage example
 //								KisaoTerm kt = ko.getTermById("KISAO:0000064");
-								sedmlAlgorithmParameter = new AlgorithmParameter("KISAO:0000488", nssso.getCustomSeed()+"");
+								AlgorithmParameter sedmlAlgorithmParameter = new AlgorithmParameter("KISAO:0000488", nssso.getCustomSeed()+"");
 								sedmlAlgorithm.addAlgorithmParameter(sedmlAlgorithmParameter);
 							}
 						} else {
