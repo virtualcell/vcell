@@ -61,33 +61,33 @@ public class SolverHandler {
 				SolverDescription sd = std.getSolverDescription();
 				String kisao = sd.getKisao();
 				if (SolverDescription.CVODE.getKisao().contentEquals(kisao)) {
-					ODESolverResultSet odeSolverResultSet = CVODEHelper.solve(outputDir, sims[i].getDescription(), bioModel);
+					ODESolverResultSet odeSolverResultSet = CVODEHelper.solve(outputDir, sims[i].getDescription().replaceAll("[:\\\\/*?|<>]", "_"), bioModel);
 					System.out.println("Finished: " + docName + ": - task '" + sims[i].getDescription() + "'.");
 				} else if (SolverDescription.StochGibson.getKisao().contentEquals(kisao)) {
-					ODESolverResultSet odeSolverResultSet = StockGibsonHelper.solve(outputDir, sims[i].getDescription(),
+					ODESolverResultSet odeSolverResultSet = StockGibsonHelper.solve(outputDir, sims[i].getDescription().replaceAll("[:\\\\/*?|<>]", "_"),
 							bioModel);
 					System.out.println("Finished: " + docName + ": - task '" + sims[i].getDescription() + "'.");
 				} else if (SolverDescription.IDA.getKisao().contentEquals(kisao)) {
-					ODESolverResultSet odeSolverResultSet = IDAHelper.solve(outputDir, sims[i].getDescription(), bioModel);
+					ODESolverResultSet odeSolverResultSet = IDAHelper.solve(outputDir, sims[i].getDescription().replaceAll("[:\\\\/*?|<>]", "_"), bioModel);
 					System.out.println("Finished: " + docName + ": - task '" + sims[i].getDescription() + "'.");
 				} else if (SolverDescription.RungeKuttaFehlberg.getKisao().contentEquals(kisao)) {
-					ODESolverResultSet odeSolverResultSet = RungeKuttaFelhbergHelper.solve(outputDir, sims[i].getDescription(),
+					ODESolverResultSet odeSolverResultSet = RungeKuttaFelhbergHelper.solve(outputDir, sims[i].getDescription().replaceAll("[:\\\\/*?|<>]", "_"),
 							bioModel);
 					System.out.println("Finished: " + docName + ": - task '" + sims[i].getDescription() + "'.");
 				} else if (SolverDescription.AdamsMoulton.getKisao().contentEquals(kisao)) {
-					ODESolverResultSet odeSolverResultSet = AdamsMoultonHelper.solve(outputDir, sims[i].getDescription(),
+					ODESolverResultSet odeSolverResultSet = AdamsMoultonHelper.solve(outputDir, sims[i].getDescription().replaceAll("[:\\\\/*?|<>]", "_"),
 							bioModel);
 					System.out.println("Finished: " + docName + ": - task '" + sims[i].getDescription() + "'.");
 				} else if (SolverDescription.ForwardEuler.getKisao().contentEquals(kisao)) {
-					ODESolverResultSet odeSolverResultSet = ForwardEulerHelper.solve(outputDir, sims[i].getDescription(),
+					ODESolverResultSet odeSolverResultSet = ForwardEulerHelper.solve(outputDir, sims[i].getDescription().replaceAll("[:\\\\/*?|<>]", "_"),
 							bioModel);
 					System.out.println("Finished: " + docName + ": - task '" + sims[i].getDescription() + "'.");
 				} else if (SolverDescription.RungeKutta2.getKisao().contentEquals(kisao)) {
-					ODESolverResultSet odeSolverResultSet = RungeKutta2Helper.solve(outputDir, sims[i].getDescription(),
+					ODESolverResultSet odeSolverResultSet = RungeKutta2Helper.solve(outputDir, sims[i].getDescription().replaceAll("[:\\\\/*?|<>]", "_"),
 							bioModel);
 					System.out.println("Finished: " + docName + ": - task '" + sims[i].getDescription() + "'.");
 				} else if (SolverDescription.RungeKutta4.getKisao().contentEquals(kisao)) {
-					ODESolverResultSet odeSolverResultSet = RungeKutta4Helper.solve(outputDir, sims[i].getDescription(),
+					ODESolverResultSet odeSolverResultSet = RungeKutta4Helper.solve(outputDir, sims[i].getDescription().replaceAll("[:\\\\/*?|<>]", "_"),
 							bioModel);
 					System.out.println("Finished: " + docName + ": - task '" + sims[i].getDescription() + "'.");
 				} else {

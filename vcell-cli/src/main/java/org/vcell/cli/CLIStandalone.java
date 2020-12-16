@@ -67,7 +67,8 @@ public class CLIStandalone {
 				SedML sedml = null;
 				sedml = Libsedml.readDocument(completeSedmlPath).getSedMLModel();
 				SolverHandler solverHandler = new SolverHandler();
-				ExternalDocInfo externalDocInfo = new ExternalDocInfo(completeSedmlPath, true);
+				// send the omex file since we do better handling of malformed model URIs in XMLHelper code
+				ExternalDocInfo externalDocInfo = new ExternalDocInfo(new File(inputFile), true);
 				solverHandler.simulateAllTasks(externalDocInfo, sedml, outDirForCurrentSedml);
 			} 
 			// At the end
