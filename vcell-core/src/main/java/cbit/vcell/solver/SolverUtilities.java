@@ -109,9 +109,13 @@ public class SolverUtilities {
 		}
 	}
 	
-	public static SolverDescription matchSolverWithKisaoId(String originalKisaoId) {
+	public static SolverDescription matchSolverWithKisaoId(String originalId) {
 		
-		 KisaoTerm originalKisaoTerm = KisaoOntology.getInstance().getTermById(originalKisaoId);
+		// if originating from SED-ML it will likely come in a wrong format using colon
+		
+		String fixedId = originalId.replace(":","_");
+		
+		 KisaoTerm originalKisaoTerm = KisaoOntology.getInstance().getTermById(fixedId);
 		 if(originalKisaoTerm == null) {
 			 return null;		// kisao id not found in ontology
 		 }
@@ -160,7 +164,9 @@ public class SolverUtilities {
 		SolverDescription sd = null;
 		switch(last.getId()) {
 		case "KISAO_0000433":
+			return SolverDescription.CombinedSundials;
 		case "KISAO_0000094":
+			return SolverDescription.CombinedSundials;
 		case "KISAO_0000284":
 			return SolverDescription.CombinedSundials;
 		case "KISAO_0000319":
@@ -172,6 +178,7 @@ public class SolverUtilities {
 		case "KISAO_0000352":
 			return SolverDescription.HybridMilstein;
 		case "KISAO_0000398":
+			return SolverDescription.SundialsPDE;
 		case "KISAO_0000369":
 			return SolverDescription.SundialsPDE;
 		case "KISAO_0000281":
