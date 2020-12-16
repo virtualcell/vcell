@@ -148,7 +148,8 @@ public class Libsedml {
         }
         return SEDMLTags.SEDML_L1V1_NS.equalsIgnoreCase(doc.getRootElement()
                 .getNamespaceURI()) || SEDMLTags.SEDML_L1V2_NS.equalsIgnoreCase(doc.getRootElement()
-                        .getNamespaceURI()) ;
+                        .getNamespaceURI()) || SEDMLTags.SEDML_L1V3_NS.equalsIgnoreCase(doc.getRootElement()
+                                .getNamespaceURI());
 
     }
 

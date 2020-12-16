@@ -9,6 +9,7 @@ public class SEDMLTags {
 	// SBML, MathML, SEDML namespaces
 	public static final String SEDML_L1V1_NS = "http://sed-ml.org/";
 	public static final String SEDML_L1V2_NS = "http://sed-ml.org/sed-ml/level1/version2";
+	public static final String SEDML_L1V3_NS = "http://sed-ml.org/sed-ml/level1/version3";
 	public static final String SBML_NS = "http://www.sbml.org/sbml/level2";
 	public static final String SBML_NS_L2V4 = "http://www.sbml.org/sbml/level2/version4";
 	public static final String MATHML_NS = "http://www.w3.org/1998/Math/MathML";
