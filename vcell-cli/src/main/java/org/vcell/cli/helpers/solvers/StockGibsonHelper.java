@@ -59,6 +59,7 @@ public class StockGibsonHelper {
         }
         ODESolverResultSet odeSolverResultSet = SBMLSolverHelper.getODESolverResultSet(simJob, gibsonOutputFile.getPath());
         CLIUtils.convertIDAtoCSV(gibsonOutputFile);
+        CLIUtils.removeIntermediarySimFiles(outDir);
         return odeSolverResultSet;
     }
 }
