@@ -1,0 +1,15 @@
+<project name="Jlibsedml">
+	<version position="left"/>
+    <bannerLeft>
+        <name>Sonatype</name>
+        <src>images/logoSedml.png</src>
+        <href>http://sed-ml.org</href>
+    </bannerLeft>
+    <body>
+        <menu name="Jlibsedml">
+            <item name="Overview" href="index.html"/>
+            <item name="User guide" href="userguide.html"/>
+        </menu>
+        <menu ref="reports"/>
+    </body>
+</project>

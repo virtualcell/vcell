@@ -1577,6 +1577,9 @@ public String getSBMLString() throws SbmlException, SBMLException, XMLStreamExce
 private VCellSBMLDoc convertToSBML() throws SbmlException, SBMLException, XMLStreamException {
 
 	SBMLDocument sbmlDocument = new SBMLDocument(sbmlLevel,sbmlVersion);
+	// mark it as originating from VCell
+	// TO DO expand to formally label version and build
+	sbmlDocument.setNotes("Exported by VCell 7.3");
 		
 	// If the chosen simulation is not null, the exported model's name should reflect it
 	String modelName = vcBioModel.getName() + "_" + getSelectedSimContext().getName();  

@@ -115,7 +115,7 @@ import cbit.vcell.xml.XmlParseException;
 
 public class SEDMLExporter {
 	private int sedmlLevel = 1;
-	private int sedmlVersion = 1;
+	private int sedmlVersion = 2;
 	private  SedML sedmlModel = null;
 	private cbit.vcell.biomodel.BioModel vcBioModel = null;
 	private ArrayList<String> sbmlFilePathStrAbsoluteList = new ArrayList<String>();
@@ -162,13 +162,14 @@ public class SEDMLExporter {
 	public String getSEDMLFile(String sPath) {
 
 		// Create an SEDMLDocument and create the SEDMLModel from the document, so that other details can be added to it in translateBioModel()
-		SEDMLDocument sedmlDocument = new SEDMLDocument();
-		sedmlDocument.getSedMLModel().setAdditionalNamespaces(Arrays.asList(new Namespace[] { 
-                Namespace.getNamespace(SEDMLTags.SBML_NS_PREFIX, SEDMLTags.SBML_NS_L2V4)
-        }));
+		SEDMLDocument sedmlDocument = new SEDMLDocument(this.sedmlLevel, this.sedmlVersion);
+//		sedmlDocument.getSedMLModel().setAdditionalNamespaces(Arrays.asList(new Namespace[] { 
+//                Namespace.getNamespace(SEDMLTags.SBML_NS_PREFIX, SEDMLTags.SBML_NS_L2V4)
+//        }));
 
 		sedmlModel = sedmlDocument.getSedMLModel();
 
+		
 		translateBioModelToSedML(sPath);
 
 		// write SEDML document into SEDML writer, so that the SEDML str can be retrieved
@@ -293,39 +294,80 @@ public class SEDMLExporter {
 						UniformTimeCourse utcSim = new UniformTimeCourse(TokenMangler.mangleToSName(simName), simName, startingTime, startingTime, 
 								vcSimTimeBounds.getEndingTime(), (int) simTaskDesc.getExpectedNumTimePoints(), sedmlAlgorithm);
 						
-//						String algorithmNotesStr = "";
-						if(vcSolverDesc.hasErrorTolerance()) {			// deal with error tolerance
+						boolean enableAbsoluteErrorTolerance;		// --------- deal with error tolerance
+						boolean enableRelativeErrorTolerance;
+						if (vcSolverDesc.isSemiImplicitPdeSolver() || vcSolverDesc.isChomboSolver()) {
+							enableAbsoluteErrorTolerance = false;
+							enableRelativeErrorTolerance = true;
+						} else if (vcSolverDesc.hasErrorTolerance()) {
+							enableAbsoluteErrorTolerance = true;
+							enableRelativeErrorTolerance = true;
+						} else {
+							enableAbsoluteErrorTolerance = false;
+							enableRelativeErrorTolerance = false;
+						}	
+						if(enableAbsoluteErrorTolerance) {
 							ErrorTolerance et = simTaskDesc.getErrorTolerance();
 							String kisaoStr = ErrorTolerance.ErrorToleranceDescription.Absolute.getKisao();
 							AlgorithmParameter sedmlAlgorithmParameter = new AlgorithmParameter(kisaoStr, et.getAbsoluteErrorTolerance()+"");
 							sedmlAlgorithm.addAlgorithmParameter(sedmlAlgorithmParameter);
-//							String str = ErrorTolerance.ErrorToleranceDescription.Absolute.getDescription() + " : " + kisaoStr;
-//							algorithmNotesStr += str;
-							kisaoStr = ErrorTolerance.ErrorToleranceDescription.Relative.getKisao();
-							sedmlAlgorithmParameter = new AlgorithmParameter(kisaoStr, et.getRelativeErrorTolerance()+"");
+						}
+						if(enableRelativeErrorTolerance) {
+							ErrorTolerance et = simTaskDesc.getErrorTolerance();
+							String kisaoStr = ErrorTolerance.ErrorToleranceDescription.Relative.getKisao();
+							AlgorithmParameter sedmlAlgorithmParameter = new AlgorithmParameter(kisaoStr, et.getRelativeErrorTolerance()+"");
 							sedmlAlgorithm.addAlgorithmParameter(sedmlAlgorithmParameter);
 						}
-
-						TimeStep ts = simTaskDesc.getTimeStep();		// deal with time step
-						String kisaoStr = TimeStep.TimeStepDescription.Default.getKisao();
-						AlgorithmParameter sedmlAlgorithmParameter = new AlgorithmParameter(kisaoStr, ts.getDefaultTimeStep()+"");
-						sedmlAlgorithm.addAlgorithmParameter(sedmlAlgorithmParameter);
-						kisaoStr = TimeStep.TimeStepDescription.Minimum.getKisao();
-						sedmlAlgorithmParameter = new AlgorithmParameter(kisaoStr, ts.getMinimumTimeStep()+"");
-						sedmlAlgorithm.addAlgorithmParameter(sedmlAlgorithmParameter);
-						kisaoStr = TimeStep.TimeStepDescription.Maximum.getKisao();
-						sedmlAlgorithmParameter = new AlgorithmParameter(kisaoStr, ts.getMaximumTimeStep()+"");
-						sedmlAlgorithm.addAlgorithmParameter(sedmlAlgorithmParameter);
 						
+						boolean enableDefaultTimeStep;		// ---------- deal with time step (code adapted from TimeSpecPanel.refresh()
+						boolean enableMinTimeStep;
+						boolean enableMaxTimeStep;
+						if (vcSolverDesc.compareEqual(SolverDescription.StochGibson)) { // stochastic time
+							enableDefaultTimeStep = false;
+							enableMinTimeStep = false;
+							enableMaxTimeStep = false;
+						} else if(vcSolverDesc.compareEqual(SolverDescription.NFSim)) {
+							enableDefaultTimeStep = false;
+							enableMinTimeStep = false;
+							enableMaxTimeStep = false;
+						} else {
+							// fixed time step solvers and non spatial stochastic solvers only show default time step.
+							if (!vcSolverDesc.hasVariableTimestep() || vcSolverDesc.isNonSpatialStochasticSolver()) {
+								enableDefaultTimeStep = true;
+								enableMinTimeStep = false;
+								enableMaxTimeStep = false;
+							} else {
+								// variable time step solvers shows min and max, but sundials solvers don't show min
+								enableDefaultTimeStep = false;
+								enableMinTimeStep = true;
+								enableMaxTimeStep = true;			
+								if (vcSolverDesc.hasSundialsTimeStepping()) {
+									enableMinTimeStep = false;
+								}
+							}
+						}
+						TimeStep ts = simTaskDesc.getTimeStep();
+						if(enableDefaultTimeStep) {
+							String kisaoStr = TimeStep.TimeStepDescription.Default.getKisao();
+							AlgorithmParameter sedmlAlgorithmParameter = new AlgorithmParameter(kisaoStr, ts.getDefaultTimeStep()+"");
+							sedmlAlgorithm.addAlgorithmParameter(sedmlAlgorithmParameter);
+						}
+						if(enableMinTimeStep) {
+							String kisaoStr = TimeStep.TimeStepDescription.Minimum.getKisao();
+							AlgorithmParameter sedmlAlgorithmParameter = new AlgorithmParameter(kisaoStr, ts.getMinimumTimeStep()+"");
+							sedmlAlgorithm.addAlgorithmParameter(sedmlAlgorithmParameter);
+						}
+						if(enableMaxTimeStep) {
+							String kisaoStr = TimeStep.TimeStepDescription.Maximum.getKisao();
+							AlgorithmParameter sedmlAlgorithmParameter = new AlgorithmParameter(kisaoStr, ts.getMaximumTimeStep()+"");
+							sedmlAlgorithm.addAlgorithmParameter(sedmlAlgorithmParameter);
+						}
 						
-						if(simTaskDesc.getSimulation().getMathDescription().isNonSpatialStoch()) {	// deal with seed
+						if(simTaskDesc.getSimulation().getMathDescription().isNonSpatialStoch()) {	// ------- deal with seed
 							NonspatialStochSimOptions nssso = simTaskDesc.getStochOpt();
 							if(nssso.isUseCustomSeed()) {
 								// TODO: don't know where the kisao belongs, maybe we should consolidate all in one single ontology file
-//								// TODO: our jlibsedml has an old subset of the kisao ontology (below KISAO:0000100), we need a complete one
-//								KisaoOntology ko = KisaoOntology.getInstance();		// usage example
-//								KisaoTerm kt = ko.getTermById("KISAO:0000064");
-								sedmlAlgorithmParameter = new AlgorithmParameter("KISAO:0000488", nssso.getCustomSeed()+"");
+								AlgorithmParameter sedmlAlgorithmParameter = new AlgorithmParameter("KISAO:0000488", nssso.getCustomSeed()+"");
 								sedmlAlgorithm.addAlgorithmParameter(sedmlAlgorithmParameter);
 							}
 						} else {
@@ -408,13 +450,13 @@ public class SEDMLExporter {
 								sedmlModel.addModel(sedModel);
 
 								String taskId = "tsk_" + simContextCnt + "_" + simCount;
-								Task sedmlTask = new Task(taskId, taskId, sedModel.getId(), utcSim.getId());
+								Task sedmlTask = new Task(taskId, vcSimulation.getName(), sedModel.getId(), utcSim.getId());
 								sedmlModel.addTask(sedmlTask);
 								taskRef = taskId;		// to be used later to add dataGenerators : one set of DGs per model (simContext).
 							} else if (!scannedParamHash.isEmpty() && unscannedParamHash.isEmpty()) {
 								// only parameters with scans : only add 1 Task and 1 RepeatedTask
 								String taskId = "tsk_" + simContextCnt + "_" + simCount;
-								Task sedmlTask = new Task(taskId, taskId, simContextId, utcSim.getId());
+								Task sedmlTask = new Task(taskId, vcSimulation.getName(), simContextId, utcSim.getId());
 								sedmlModel.addTask(sedmlTask);
 
 								String repeatedTaskId = "repTsk_" + simContextCnt + "_" + simCount;
@@ -476,7 +518,7 @@ public class SEDMLExporter {
 								overrideCount++;
 
 								String taskId = "tsk_" + simContextCnt + "_" + simCount;
-								Task sedmlTask = new Task(taskId, taskId, overriddenSimContextId, utcSim.getId());
+								Task sedmlTask = new Task(taskId, vcSimulation.getName(), overriddenSimContextId, utcSim.getId());
 								sedmlModel.addTask(sedmlTask);
 
 								// scanned parameters
@@ -609,7 +651,7 @@ public class SEDMLExporter {
 							}
 						} else {						// no math overrides, add basic task.
 							String taskId = "tsk_" + simContextCnt + "_" + simCount;
-							Task sedmlTask = new Task(taskId, taskId, simContextId, utcSim.getId());
+							Task sedmlTask = new Task(taskId, vcSimulation.getName(), simContextId, utcSim.getId());
 							sedmlModel.addTask(sedmlTask);
 							taskRef = taskId;		// to be used later to add dataGenerators : one set of DGs per model (simContext).
 						}
@@ -1133,6 +1175,7 @@ public class SEDMLExporter {
 		for (String sd : sedmlFilePathStrAbsoluteList) {
 			Paths.get(srcFolder, sd).toFile().delete();
 		}
+		Paths.get(srcFolder, sFileName + ".vcml").toFile().delete();
 
     } catch (Exception e) {
     	throw new RuntimeException("createZipArchive threw exception: " + e.getMessage());        

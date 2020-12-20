@@ -41,6 +41,7 @@ import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.SymbolTable;
 import cbit.vcell.parser.SymbolTableEntry;
+import cbit.vcell.units.VCUnitDefinition;
 
 @SuppressWarnings("serial")
 public class RateRulesSummaryTableModel extends BioModelEditorApplicationRightSideTableModel<RateRule> implements PropertyChangeListener {
@@ -51,8 +52,9 @@ public class RateRulesSummaryTableModel extends BioModelEditorApplicationRightSi
 	public final static int COLUMN_RATERULE_VAR = 1;
 	public final static int COLUMN_RATERULE_TYPE = 2;
 	public final static int COLUMN_RATERULE_EXPR = 3;
-	
-	private static String[] columnNames = new String[] {"Name", "Variable", "Type", "Rate Expression"};
+	public static final int COLUMN_UNIT = 4;
+
+	private static String[] columnNames = new String[] {"Name", "Variable", "Type", "Rate Expression", "Units"};
 
 	public RateRulesSummaryTableModel(ScrollTable table) {
 		super(table, columnNames);
@@ -72,6 +74,8 @@ public class RateRulesSummaryTableModel extends BioModelEditorApplicationRightSi
 			case COLUMN_RATERULE_TYPE:{
 				return String.class;
 			}
+			case COLUMN_UNIT:
+				return VCUnitDefinition.class;
 			default:{
 				return Object.class;
 			}
@@ -220,6 +224,12 @@ public class RateRulesSummaryTableModel extends BioModelEditorApplicationRightSi
 							return "Unknown";
 						}
 					}
+					case COLUMN_UNIT:{
+						SymbolTableEntry ste = rateRule.getRateRuleVar();
+						if(ste != null) {
+							return ste.getUnitDefinition();
+						}
+					}			
 				}
 			}
 		} catch(Exception e){

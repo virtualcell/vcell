@@ -106,7 +106,7 @@ public class ForwardEulerHelper {
             double endingTime = solvedSim.getSolverTaskDescription().getTimeBounds().getEndingTime();
             double initialTime = solvedSim.getSolverTaskDescription().getTimeBounds().getStartingTime();
             int rowCount = odeSimData.getRowCount();
-            double dT = (endingTime - initialTime) / rowCount;
+            double dT = (endingTime - initialTime) / (rowCount - 1);
             int currTimeIndex = 0;
 
             while (currTimeIndex < rowCount) {

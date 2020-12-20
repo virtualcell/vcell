@@ -2,9 +2,13 @@ package cbit.vcell.solver;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
+import cbit.util.kisao.KisaoOntology;
+import cbit.util.kisao.KisaoTerm;
 import cbit.vcell.math.MathFunctionDefinitions;
 import cbit.vcell.math.VariableType.VariableDomain;
 import cbit.vcell.parser.ASTFuncNode.FunctionType;
@@ -104,5 +108,85 @@ public class SolverUtilities {
 			getExes(solverDescription);
 		}
 	}
-
+	
+	public static SolverDescription matchSolverWithKisaoId(String originalId) {
+		
+		// if originating from SED-ML it will likely come in a wrong format using colon
+		
+		String fixedId = originalId.replace(":","_");
+		
+		 KisaoTerm originalKisaoTerm = KisaoOntology.getInstance().getTermById(fixedId);
+		 if(originalKisaoTerm == null) {
+			 return null;		// kisao id not found in ontology
+		 }
+		 
+		 // ----- cross fingers and hope that the original kisao is a match
+		 List<SolverDescription> matchingSolverDescriptions = new ArrayList<>();
+		 matchingSolverDescriptions = matchByKisaoId(originalKisaoTerm);
+		 if(!matchingSolverDescriptions.isEmpty()) {
+			 return matchingSolverDescriptions.get(0);		// exact match
+		 }
+		 
+		 // ----- make descendant list and check them all until a match is found
+		 List<KisaoTerm> descendantList = KisaoOntology.makeDescendantList(originalKisaoTerm);
+		 if(descendantList.isEmpty()) {
+			 return null;		// for KISAO_0000000 or some malformed entry
+		 }
+		 for(KisaoTerm descendant : descendantList) {
+			 matchingSolverDescriptions = matchByKisaoId(descendant);
+			 if(!matchingSolverDescriptions.isEmpty()) {
+				 return matchingSolverDescriptions.get(0);
+			 }
+		 }
+		 KisaoTerm last = descendantList.get(descendantList.size()-1);
+		 System.out.println("No direct match with any descendant, trying last resort match for descendant " + last.getId());
+		 return attemptLastResortMatch(last);
+	}
+	private static List<SolverDescription> matchByKisaoId(KisaoTerm candidate) {
+        List<SolverDescription> solverDescriptions = new ArrayList<>();
+		for (SolverDescription sd : SolverDescription.values()) {
+			if(sd.getKisao().contains(":") || sd.getKisao().contains("_")) {
+				System.out.println(sd.getKisao());
+			} else {
+				System.out.println(sd.getKisao() + " - bad format, skipping");
+				continue;
+			}
+			String s1 = candidate.getId();
+			String s2 = sd.getKisao();
+			s2 = s2.replace(":", "_");
+			if(s1.equalsIgnoreCase(s2)) {
+				solverDescriptions.add(sd);
+			}
+		}
+		return solverDescriptions;
+	}
+	private static SolverDescription attemptLastResortMatch(KisaoTerm last) {
+		SolverDescription sd = null;
+		switch(last.getId()) {
+		case "KISAO_0000433":
+			return SolverDescription.CombinedSundials;
+		case "KISAO_0000094":
+			return SolverDescription.CombinedSundials;
+		case "KISAO_0000284":
+			return SolverDescription.CombinedSundials;
+		case "KISAO_0000319":
+			return SolverDescription.StochGibson;
+		case "KISAO_0000408":
+			return SolverDescription.IDA;
+		case "KISAO_0000056":
+			return SolverDescription.Smoldyn;
+		case "KISAO_0000352":
+			return SolverDescription.HybridMilstein;
+		case "KISAO_0000398":
+			return SolverDescription.SundialsPDE;
+		case "KISAO_0000369":
+			return SolverDescription.SundialsPDE;
+		case "KISAO_0000281":
+			return SolverDescription.AdamsMoulton;
+		case "KISAO_0000377":
+			return SolverDescription.RungeKuttaFehlberg;
+		default:
+			return null;
+		}
+	}
 }

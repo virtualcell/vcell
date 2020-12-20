@@ -35,6 +35,7 @@ import cbit.vcell.mapping.BioEvent;
 import cbit.vcell.mapping.BioEvent.EventAssignment;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.model.SpeciesContext;
+import cbit.vcell.model.EditableSymbolTableEntry;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Model.ModelParameter;
 import cbit.vcell.parser.AutoCompleteSymbolFilter;
@@ -43,6 +44,7 @@ import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.SymbolTable;
 import cbit.vcell.parser.SymbolTableEntry;
+import cbit.vcell.units.VCUnitDefinition;
 
 @SuppressWarnings("serial")
 public class AssignmentRulesSummaryTableModel extends BioModelEditorApplicationRightSideTableModel<AssignmentRule> implements PropertyChangeListener{
@@ -53,8 +55,9 @@ public class AssignmentRulesSummaryTableModel extends BioModelEditorApplicationR
 	public final static int COLUMN_ASSIGNMENTRULE_VAR = 1;
 	public final static int COLUMN_ASSIGNMENTRULE_TYPE = 2;
 	public final static int COLUMN_ASSIGNMENTRULE_EXPR = 3;
+	public static final int COLUMN_UNIT = 4;
 	
-	private static String[] columnNames = new String[] {"Name", "Variable", "Type", "Assignment Function Expression"};
+	private static String[] columnNames = new String[] {"Name", "Variable", "Type", "Assignment Function Expression", "Units"};
 
 	public AssignmentRulesSummaryTableModel(ScrollTable table) {
 		super(table, columnNames);
@@ -74,6 +77,8 @@ public class AssignmentRulesSummaryTableModel extends BioModelEditorApplicationR
 			case COLUMN_ASSIGNMENTRULE_TYPE:{
 				return String.class;
 			}
+			case COLUMN_UNIT:
+				return VCUnitDefinition.class;
 			default:{
 				return Object.class;
 			}
@@ -235,6 +240,12 @@ public class AssignmentRulesSummaryTableModel extends BioModelEditorApplicationR
 							return "Unknown";
 						}
 					}
+					case COLUMN_UNIT:{
+						SymbolTableEntry ste = assignmentRule.getAssignmentRuleVar();
+						if(ste != null) {
+							return ste.getUnitDefinition();
+						}
+					}			
 				}
 			}
 		} catch(Exception e){

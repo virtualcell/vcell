@@ -302,7 +302,10 @@ public class VCellSedMLSolver {
 
 		// create the VCDocument (bioModel + application + simulation), do sanity checks
 		cbit.util.xml.VCLogger sedmlImportLogger = new LocalLogger();
-		VCDocument doc = XmlHelper.sedmlToBioModel(sedmlImportLogger, externalDocInfo, sedml, sedmlTask);
+		List<AbstractTask> tasks = new ArrayList<AbstractTask>();
+		tasks.add(sedmlTask);
+		List<VCDocument> docs = XmlHelper.sedmlToBioModel(sedmlImportLogger, externalDocInfo, sedml, tasks);
+		VCDocument doc = docs.get(0);
 		sanityCheck(doc);
 		
 		// create the work directory for this task, invoke the solver
