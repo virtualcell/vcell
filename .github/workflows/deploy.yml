@@ -37,7 +37,12 @@ jobs:
         run: |
           echo $GHCR_TOKEN | docker login ghcr.io -u $GHCR_USERNAME --password-stdin
           docker build --file docker/build/Dockerfile-vcell-cli \
-                      --tag ghcr.io/biosimulators/vcell:7.3.0.06 \
                       --tag ghcr.io/biosimulators/vcell:latest .
           docker push ghcr.io/biosimulators/vcell:latest
-          docker push ghcr.io/biosimulators/vcell:7.3.0.06
+      - name: Fetch the current version
+        id: version
+        run: echo ::set-output name=tag::$(docker run ghcr.io/biosimulators/vcell:latest -v | awk -F ' ' '{print $3;}')
+      - name: Retag the docker version and push
+        run: |
+          docker tag ghcr.io/biosimulators/vcell:latest ghcr.io/biosimulators/vcell:${{steps.version.outputs.tag}}
+          docker push ghcr.io/biosimulators/vcell:${{steps.version.outputs.tag}}
