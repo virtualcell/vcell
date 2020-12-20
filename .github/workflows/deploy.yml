@@ -25,7 +25,6 @@ jobs:
           export PATH=${M2_HOME}/bin:${PATH}
           mvn -version
           java -version
-          mvn install:install-file -Dfile=`pwd`/vcell-core/jlibsedml-2.2.3-vcell.jar -DgroupId=jlibsedmlvcell  -DartifactId=jlibsedmlvcell -Dversion=2.2.3.1 -Dpackaging=jar
           echo "#################################"
           echo "#### Installing dependencies ####"
           echo "#################################"
