@@ -25,9 +25,9 @@ public class OmexExtensionFilter extends SedmlExtensionFilter {
 	@Override
 	public void writeBioModel(DocumentManager documentManager, BioModel bioModel, File exportFile, SimulationContext ignored) throws Exception {
 		String resultString;
-		// export the entire biomodel to a SEDML file (for now, only non-spatial,non-stochastic applns)
+		// export the entire biomodel to a SEDML file (all supported applications)
 		int sedmlLevel = 1;
-		int sedmlVersion = 1;
+		int sedmlVersion = 2;
 		String sPath = FileUtils.getFullPathNoEndSeparator(exportFile.getAbsolutePath());
 		String sFile = FileUtils.getBaseName(exportFile.getAbsolutePath());
 		String sExt = FileUtils.getExtension(exportFile.getAbsolutePath());

@@ -36,7 +36,7 @@ public class CLIHandler {
         }
 
         if (cmd.hasOption("v")) {
-            System.out.println("VCell version " + getVersion());
+            System.out.println("VCell version: " + getVersion());
             System.exit(1);
         }
     }
