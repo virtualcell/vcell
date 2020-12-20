@@ -16,11 +16,17 @@ public class CLIStandalone {
     public static void main(String[] args) {
 
 //        CLIUtils.makeDirs(new File(outputDir));
-        
-        File input = new File(args[1]);
+
+		File input = null;
+        try {
+			input = new File(args[1]);
+		} catch (ArrayIndexOutOfBoundsException e ) {
+//        	e.printStackTrace();
+		}
+
         
         OmexHandler omexHandler;
-        if (input.isDirectory()) {
+        if (input != null && input.isDirectory()) {
         	FilenameFilter filter = new FilenameFilter() {
                 @Override
                 public boolean accept(File f, String name) {
