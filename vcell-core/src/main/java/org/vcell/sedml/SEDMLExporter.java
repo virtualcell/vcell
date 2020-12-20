@@ -115,7 +115,7 @@ import cbit.vcell.xml.XmlParseException;
 
 public class SEDMLExporter {
 	private int sedmlLevel = 1;
-	private int sedmlVersion = 1;
+	private int sedmlVersion = 2;
 	private  SedML sedmlModel = null;
 	private cbit.vcell.biomodel.BioModel vcBioModel = null;
 	private ArrayList<String> sbmlFilePathStrAbsoluteList = new ArrayList<String>();
@@ -162,13 +162,14 @@ public class SEDMLExporter {
 	public String getSEDMLFile(String sPath) {
 
 		// Create an SEDMLDocument and create the SEDMLModel from the document, so that other details can be added to it in translateBioModel()
-		SEDMLDocument sedmlDocument = new SEDMLDocument();
-		sedmlDocument.getSedMLModel().setAdditionalNamespaces(Arrays.asList(new Namespace[] { 
-                Namespace.getNamespace(SEDMLTags.SBML_NS_PREFIX, SEDMLTags.SBML_NS_L2V4)
-        }));
+		SEDMLDocument sedmlDocument = new SEDMLDocument(this.sedmlLevel, this.sedmlVersion);
+//		sedmlDocument.getSedMLModel().setAdditionalNamespaces(Arrays.asList(new Namespace[] { 
+//                Namespace.getNamespace(SEDMLTags.SBML_NS_PREFIX, SEDMLTags.SBML_NS_L2V4)
+//        }));
 
 		sedmlModel = sedmlDocument.getSedMLModel();
 
+		
 		translateBioModelToSedML(sPath);
 
 		// write SEDML document into SEDML writer, so that the SEDML str can be retrieved
@@ -449,13 +450,13 @@ public class SEDMLExporter {
 								sedmlModel.addModel(sedModel);
 
 								String taskId = "tsk_" + simContextCnt + "_" + simCount;
-								Task sedmlTask = new Task(taskId, taskId, sedModel.getId(), utcSim.getId());
+								Task sedmlTask = new Task(taskId, vcSimulation.getName(), sedModel.getId(), utcSim.getId());
 								sedmlModel.addTask(sedmlTask);
 								taskRef = taskId;		// to be used later to add dataGenerators : one set of DGs per model (simContext).
 							} else if (!scannedParamHash.isEmpty() && unscannedParamHash.isEmpty()) {
 								// only parameters with scans : only add 1 Task and 1 RepeatedTask
 								String taskId = "tsk_" + simContextCnt + "_" + simCount;
-								Task sedmlTask = new Task(taskId, taskId, simContextId, utcSim.getId());
+								Task sedmlTask = new Task(taskId, vcSimulation.getName(), simContextId, utcSim.getId());
 								sedmlModel.addTask(sedmlTask);
 
 								String repeatedTaskId = "repTsk_" + simContextCnt + "_" + simCount;
@@ -517,7 +518,7 @@ public class SEDMLExporter {
 								overrideCount++;
 
 								String taskId = "tsk_" + simContextCnt + "_" + simCount;
-								Task sedmlTask = new Task(taskId, taskId, overriddenSimContextId, utcSim.getId());
+								Task sedmlTask = new Task(taskId, vcSimulation.getName(), overriddenSimContextId, utcSim.getId());
 								sedmlModel.addTask(sedmlTask);
 
 								// scanned parameters
@@ -650,7 +651,7 @@ public class SEDMLExporter {
 							}
 						} else {						// no math overrides, add basic task.
 							String taskId = "tsk_" + simContextCnt + "_" + simCount;
-							Task sedmlTask = new Task(taskId, taskId, simContextId, utcSim.getId());
+							Task sedmlTask = new Task(taskId, vcSimulation.getName(), simContextId, utcSim.getId());
 							sedmlModel.addTask(sedmlTask);
 							taskRef = taskId;		// to be used later to add dataGenerators : one set of DGs per model (simContext).
 						}
