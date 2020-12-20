@@ -14,7 +14,13 @@ import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Hashtable;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.Vector;
 
 import javax.swing.JComponent;
@@ -35,6 +41,7 @@ import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.CurateSpec;
 import org.vcell.util.document.GroupAccess;
 import org.vcell.util.document.GroupAccessSome;
+import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.MathModelInfo;
 import org.vcell.util.document.ReferenceQueryResult;
 import org.vcell.util.document.ReferenceQuerySpec;
@@ -51,6 +58,7 @@ import org.vcell.util.gui.VCFileChooser;
 import org.vcell.util.gui.exporter.FileFilters;
 
 import cbit.image.VCImageInfo;
+import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.desktop.ACLEditor;
 import cbit.vcell.client.desktop.DatabaseWindowPanel;
 import cbit.vcell.client.server.UserPreferences;
@@ -60,6 +68,7 @@ import cbit.vcell.clientdb.DocumentManager;
 import cbit.vcell.desktop.BioModelDbTreePanel;
 import cbit.vcell.desktop.GeometryTreePanel;
 import cbit.vcell.desktop.MathModelDbTreePanel;
+import cbit.vcell.desktop.VCellBasicCellRenderer.VCDocumentInfoNode;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometryInfo;
 import cbit.vcell.xml.ExternalDocInfo;
@@ -270,7 +279,37 @@ public void archive() {
 	getRequestManager().curateDocument(getPanelSelection(),CurateSpec.ARCHIVE,this);
 }
 
+//public void compareAnotherEdition1() {
 
+public void batchOmexPublished() {
+
+	Map <KeyValue, BioModelInfo> publishedModelMap = new LinkedHashMap<> ();
+	BioModelDbTreePanel bmdbtp = getBioModelDbTreePanel();
+	BioModelInfo[] bmInfos = bmdbtp.getDocumentManager().getBioModelInfos();
+	for(BioModelInfo bmi : bmInfos) {
+		if(bmi instanceof VCDocumentInfo) {
+			VCDocumentInfo versionVCDocumentInfo = (VCDocumentInfo) bmi;
+			if(	versionVCDocumentInfo.getPublicationInfos() != null && 
+					versionVCDocumentInfo.getPublicationInfos().length > 0) {
+				publishedModelMap.put(bmi.getModelKey(), bmi);
+			}
+		}
+	}
+	for (Map.Entry<KeyValue, BioModelInfo> entry : publishedModelMap.entrySet()) {
+		KeyValue key = entry.getKey();
+		BioModelInfo bmi = entry.getValue();
+		System.out.println(bmi.getPublicationInfos()[0].getTitle());
+		
+// must make array of tasks here, or something... anyway, can't call from swing thread
+//		try {
+//			BioModel bm = bmdbtp.getDocumentManager().getBioModel(bmi);
+//			doSomeOmexThing();
+//		} catch (DataAccessException e) {
+//			e.printStackTrace();
+//		}
+
+	}
+}
 /**
  * Comment
  */
