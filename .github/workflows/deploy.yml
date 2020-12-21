@@ -9,7 +9,7 @@ jobs:
       # Checkout out
       - uses: actions/checkout@v2
 
-      # Install dependencies
+      # Extract mvn and jdk
       - name: Extract JDK Tarball and setup Java
         run: |
           wget https://vcell.org/webstart/pipeline_files/jdk-8u241-linux-x64.tar.gz
@@ -19,6 +19,7 @@ jobs:
           tar -xvzf apache-maven-3.6.3-bin.tar.gz
           mv apache-maven-3.6.3 maven
 
+      # Install dependencies
       - name: Maven installation
         run: |
           export JAVA_HOME=`pwd`/jdk
@@ -44,7 +45,7 @@ jobs:
 
       - name: Fetch the current version
         id: version
-        run: echo ::set-output name=tag::$(docker run ghcr.io/biosimulators/vcell:latest -v | awk -F ' ' '{print $3;}')
+        run: echo ::set-output name=tag::$(docker run ghcr.io/biosimulators/biosimulators_vcell/vcell:latest -v | awk -F ' ' '{print $3;}')
 
       - name: Tag the Docker image with the current version and push
         run: |
