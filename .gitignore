@@ -190,6 +190,5 @@ $RECYCLE.BIN/
 
 # Windows shortcuts
 *.lnk
-
-/tests/results/*
-!/tests/results/.gitkeep
+results/*
+!results/.gitkeep
