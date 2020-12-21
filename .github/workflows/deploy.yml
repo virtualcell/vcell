@@ -1,4 +1,4 @@
-name: Publish Docker To GHCR
+name: Publish simulator to GHCR and BioSimulators
 on:
   release:
     types: [published]
@@ -6,7 +6,10 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
+      # Checkout out
       - uses: actions/checkout@v2
+
+      # Install dependencies
       - name: Extract JDK Tarball and setup Java
         run: |
           wget https://vcell.org/webstart/pipeline_files/jdk-8u241-linux-x64.tar.gz
@@ -15,6 +18,7 @@ jobs:
           wget https://vcell.org/webstart/pipeline_files/apache-maven-3.6.3-bin.tar.gz
           tar -xvzf apache-maven-3.6.3-bin.tar.gz
           mv apache-maven-3.6.3 maven
+
       - name: Maven installation
         run: |
           export JAVA_HOME=`pwd`/jdk
@@ -29,19 +33,31 @@ jobs:
           echo "#### Installing dependencies ####"
           echo "#################################"
           mvn clean install dependency:copy-dependencies
-      - name: Build and push docker images
-        env:
-          GHCR_USERNAME: "${{ secrets.GHCR_USERNAME }}"
-          GHCR_TOKEN: "${{ secrets.GHCR_TOKEN }}"
+
+      # Build and push Docker image
+      - name: Build Docker image and push with latest tag
         run: |
-          echo $GHCR_TOKEN | docker login ghcr.io -u $GHCR_USERNAME --password-stdin
+          echo ${{ secrets.DOCKER_REGISTRY_TOKEN }} | docker login ghcr.io -u ${{ secrets.DOCKER_REGISTRY_USERNAME }} --password-stdin
           docker build --file docker/build/Dockerfile-vcell-cli \
                       --tag ghcr.io/biosimulators/biosimulators_vcell/vcell:latest .
           docker push ghcr.io/biosimulators/biosimulators_vcell/vcell:latest
+
       - name: Fetch the current version
         id: version
         run: echo ::set-output name=tag::$(docker run ghcr.io/biosimulators/vcell:latest -v | awk -F ' ' '{print $3;}')
-      - name: Retag the docker version and push
+
+      - name: Tag the Docker image with the current version and push
         run: |
           docker tag ghcr.io/biosimulators/biosimulators_vcell/vcell:latest ghcr.io/biosimulators/vcell:${{steps.version.outputs.tag}}
-          docker push ghcr.io/biosimulators/biosimulators_vcell/vcell:${{steps.version.outputs.tag}}
+          docker push ghcr.io/biosimulators/biosimulators_vcell/vcell:${{ steps.version.outputs.tag }}
+
+      # Submit to BioSimulators registry
+      - name: Submit to BioSimulators registry
+        run: |
+          REVISION=$(git rev-parse HEAD)
+          curl \
+            -X POST \
+            -u ${{ secrets.GH_ISSUE_USERNAME }}:${{ secrets.GH_ISSUE_TOKEN }} \
+            -H "Accept: application/vnd.github.v3+json" \
+            https://api.github.com/repos/biosimulators/Biosimulators/issues \
+            -d "{\"labels\": [\"Validate/submit simulator\"], \"title\": \"Submit VCell ${{ steps.version.outputs.tag }}\", \"body\": \"---\nid: vcell\nversion: ${{ steps.version.outputs.tag }}\nspecificationsUrl: https://raw.githubusercontent.com/${{ github.repository }}/${REVISION}/biosimulators.json\nvalidateImage: true\ncommitSimulator: true\n\n---\"}"
