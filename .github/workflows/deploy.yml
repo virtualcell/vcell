@@ -49,8 +49,15 @@ jobs:
 
       - name: Tag the Docker image with the current version and push
         run: |
-          docker tag ghcr.io/biosimulators/biosimulators_vcell/vcell:latest ghcr.io/biosimulators/vcell:${{steps.version.outputs.tag}}
+          docker tag ghcr.io/biosimulators/biosimulators_vcell/vcell:latest ghcr.io/biosimulators/biosimulators_vcell/vcell:${{steps.version.outputs.tag}}
           docker push ghcr.io/biosimulators/biosimulators_vcell/vcell:${{ steps.version.outputs.tag }}
+
+      - name: Tag Docker image to top-level container namespace # TODO: remove when validation work flow below running
+        run: |
+          docker tag ghcr.io/biosimulators/biosimulators_vcell/vcell:latest ghcr.io/biosimulators/vcell:latest
+          docker tag ghcr.io/biosimulators/biosimulators_vcell/vcell:latest ghcr.io/biosimulators/vcell:${{steps.version.outputs.tag}}
+          docker push ghcr.io/biosimulators/vcell:latest
+          docker push ghcr.io/biosimulators/vcell:${{ steps.version.outputs.tag }}
 
       # Submit to BioSimulators registry
       - name: Submit to BioSimulators registry
