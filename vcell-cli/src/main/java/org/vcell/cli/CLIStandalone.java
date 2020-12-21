@@ -13,51 +13,44 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 
 public class CLIStandalone {
-    public static void main(String[] args) {
+	public static void main(String[] args) {
 
-//        CLIUtils.makeDirs(new File(outputDir));
-        
-        File input = null;
+		File input = null;
+
+		// Arguments may not always be files, trying for other scenarios
 		try {
 			input = new File(args[1]);
 		} catch (Exception e1) {
-			System.err.println("==== FAILED input file not provided "+e1.getMessage());
-			System.exit(1);
+			// Non file or invalid argument received, let it pass, CLIHandler will handle the invalid (or non file) arguments
 		}
-		if (!input.exists()) {
-			System.err.println("==== FAILED input file does not exist "+input.getAbsolutePath());
-			System.exit(1);
-		}
-		
-        OmexHandler omexHandler;
-        if (input.isDirectory()) {
-        	FilenameFilter filter = new FilenameFilter() {
-                @Override
-                public boolean accept(File f, String name) {
-                    return name.endsWith(".omex");
-                }
-            };
-            String[] omexFiles = input.list(filter);
-        	for (String omexFile : omexFiles) {
-        		File file = new File(input, omexFile);
-        		System.out.println(file);
-        		args[1]=file.toString();
-        		try {
+
+		if (input != null && input.isDirectory()) {
+			FilenameFilter filter = new FilenameFilter() {
+				@Override
+				public boolean accept(File f, String name) {
+					return name.endsWith(".omex");
+				}
+			};
+			String[] omexFiles = input.list(filter);
+			for (String omexFile : omexFiles) {
+				File file = new File(input, omexFile);
+				System.out.println(file);
+				args[1]=file.toString();
+				try {
 					singleExec(args);
 				} catch (Exception e) {
 					e.printStackTrace(System.err);
-					continue;
 				}
-        	}
-        } else {
-            try {
+			}
+		} else {
+			try {
 				singleExec(args);
 			} catch (Exception e) {
 				e.printStackTrace(System.err);
 				System.exit(1);
 			}
 		}
-    }
+	}
 
 	private static void singleExec(String[] args) throws Exception {
 		OmexHandler omexHandler = null;
@@ -66,16 +59,16 @@ public class CLIStandalone {
 		String outputDir = null;
 		ArrayList<String> sedmlLocations = null;
 		try {
-		    cliHandler = new CLIHandler(args);
-		    inputFile = cliHandler.getInputFilePath();
-		    outputDir = cliHandler.getOutputDirPath();
+			cliHandler = new CLIHandler(args);
+			inputFile = cliHandler.getInputFilePath();
+			outputDir = cliHandler.getOutputDirPath();
 			omexHandler = new OmexHandler(inputFile, outputDir);
 			omexHandler.extractOmex();
 			sedmlLocations = omexHandler.getSedmlLocationsAbsolute();
 			// any error up to now is fatal (unlikely, but still...)
 		} catch (Throwable exc) {
 			omexHandler.deleteExtractedOmex();
-			String error = "======> FAILED omex handling for archive "+args[1];
+			String error = "======> FAILED OMEX handling for archive "+args[1];
 			exc.printStackTrace(System.err);
 			throw new Exception(error);
 		}
@@ -95,9 +88,8 @@ public class CLIStandalone {
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace(System.err);
-				continue;
 			}
-		} 
+		}
 		omexHandler.deleteExtractedOmex();
 		if (!somethingWorked) {
 			String error = "======> Could not execute any task from archive "+args[1];
