@@ -1,4 +1,4 @@
-name: mvn install
+name: CI
 
 on: [push]
 
@@ -56,8 +56,8 @@ jobs:
         shell: powershell
         working-directory: ${{runner.workspace}}
         run: |
-          Invoke-Webrequest https://vcell.org/webstart/pipeline_files/jdk-8u251-windows-x64.exe -O ${{runner.workspace}}\jdk.exe
-          Invoke-Webrequest https://vcell.org/webstart/pipeline_files/apache-maven-3.6.3-bin.zip -O ${{runner.workspace}}\mvn.zip
+          Invoke-WebRequest https://vcell.org/webstart/pipeline_files/jdk-8u251-windows-x64.exe -O ${{runner.workspace}}\jdk.exe
+          Invoke-WebRequest https://vcell.org/webstart/pipeline_files/apache-maven-3.6.3-bin.zip -O ${{runner.workspace}}\mvn.zip
           md "${{runner.workspace}}\java-jdk"
           Start-Process -FilePath ${{runner.workspace}}\jdk.exe -WorkingDirectory "${{runner.workspace}}\java-jdk"
           tar -xf ${{runner.workspace}}\mvn.zip

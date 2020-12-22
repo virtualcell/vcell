@@ -1,8 +1,7 @@
+![mvn install](https://github.com/virtualcell/vcell/workflows/mvn%20install/badge.svg)
 # VCell - a modeling and simulation framework for computational cell biology
 The vcell documentation in Markdown format (*.md) is edited in eclipse using the WikiText plugin
 
-
-[![Join the chat at https://gitter.im/virtualcell/vcell](https://badges.gitter.im/virtualcell/vcell.svg)](https://gitter.im/virtualcell/vcell?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 The VCell is a comprehensive framework for modeling and simulation of cell biology from biological pathways down to 
 cell biophysics. VCell supports biochemical network and rule-based modeling and electrophysiology in compartmental 
@@ -23,11 +22,11 @@ Prebuilt installers for vcell-client are available for Windows, Mac and Linux.
 **http://vcell.org/webstart** Location of VCell clients web page links to   
 -----**Public installers** path naming scheme= {Alpha,Beta,Rel,Test,...}/VCell_{Alpha,Beta,Rel}_{macos,unix,windows-x64,windows}_latest_{64,32}bit.{dmg,sh.exe}  
 -----**Install4J updates.xml** (read remotely by VCell client when starting to determine if a newer version of VCell has been deployed)  
------**BioFormats jar** (used by running VCell clients when importing image data, can't be shiiped directly with VCell, license issue)
+-----**BioFormats jar** (used by running VCell clients when importing image data, can't be shipped directly with VCell, license issue)
 
 ## Building VCell
 This VCell github project includes all Java/Python source code required to build both the VCell client and the VCell Server.  
-The simulation solver source code is available as a separate project (http://github.com/jcschaff/vcell-solvers).
+The simulation solver source code is available as a separate project (https://github.com/virtualcell/vcell-solvers).
 
 ### Building and Running VCell Client as a standalone tool
 Requirements:  Git, Maven, and Java JDK 1.8 or later
