@@ -9,12 +9,7 @@ import org.sbml.libcombine.CombineArchive;
 
 import java.io.File;
 import java.net.URI;
-import java.nio.file.FileSystem;
-import java.nio.file.FileSystems;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
+import java.nio.file.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -61,28 +56,30 @@ public class OmexHandler {
             System.exit(1);
         }
     }
+
     public static void rename(String zipFileName, String entryOldName, String entryNewName) throws Exception {
-        
-        /* Define ZIP File System Properies in HashMap */    
-        Map<String, String> zip_properties = new HashMap<>(); 
+
+        /* Define ZIP File System Properies in HashMap */
+        Map<String, String> zip_properties = new HashMap<>();
         /* We want to read an existing ZIP File, so we set this to False */
-        zip_properties.put("create", "false"); 
-        
+        zip_properties.put("create", "false");
+
         /* Specify the path to the ZIP File that you want to read as a File System */
-        URI zip_disk = URI.create("jar:file:/"+zipFileName);
-        
+        URI zip_disk = URI.create("jar:file:/" + zipFileName);
+
         /* Create ZIP file System */
         try (FileSystem zipfs = FileSystems.newFileSystem(zip_disk, zip_properties)) {
             /* Access file that needs to be renamed */
             Path pathInZipfile = zipfs.getPath(entryOldName);
             /* Specify new file name */
             Path renamedZipEntry = zipfs.getPath(entryNewName);
-            System.out.println("About to rename an entry from ZIP File" + pathInZipfile.toUri() ); 
+            System.out.println("About to rename an entry from ZIP File" + pathInZipfile.toUri());
             /* Execute rename */
-            Files.move(pathInZipfile,renamedZipEntry,StandardCopyOption.ATOMIC_MOVE);
-            System.out.println("File successfully renamed");   
-        } 
+            Files.move(pathInZipfile, renamedZipEntry, StandardCopyOption.ATOMIC_MOVE);
+            System.out.println("File successfully renamed");
+        }
     }
+
     public ArrayList<String> getSedmlLocationsRelative() {
         ArrayList<String> sedmlList = new ArrayList<>();
         CaOmexManifest manifest = this.archive.getManifest();
@@ -112,7 +109,7 @@ public class OmexHandler {
         String sedmlName = absoluteSedmlPath.substring(absoluteSedmlPath.lastIndexOf(File.separator) + 1);
         ArrayList<String> sedmlListRelative = this.getSedmlLocationsRelative();
         for (String sedmlFileRelative : sedmlListRelative) {
-        	boolean check = absoluteSedmlPath.contains(Paths.get(sedmlFileRelative).normalize().toString());
+            boolean check = absoluteSedmlPath.contains(Paths.get(sedmlFileRelative).normalize().toString());
             if (check) {
                 outputPath = Paths.get(
                         this.outDirPath,
@@ -134,7 +131,7 @@ public class OmexHandler {
     }
 
     public void deleteExtractedOmex() {
-        boolean isRemoved = this.utils.removeDirs(new File(this.tempPath));
+        boolean isRemoved = CLIUtils.removeDirs(new File(this.tempPath));
         if (!isRemoved) {
             System.err.println("Unable to remove temp directory: " + this.tempPath);
         }
