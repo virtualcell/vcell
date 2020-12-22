@@ -1,0 +1,68 @@
+name: Build mvn dependencies
+
+on: [push]
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Checkout submodules
+        run: git submodule update --init --recursive
+      - name: Add Linux dependencies
+        if: matrix.os == 'ubuntu-latest'
+        shell: bash
+        run: |
+          wget https://vcell.org/webstart/pipeline_files/jdk-8u241-linux-x64.tar.gz
+          tar -xvzf jdk-8u241-linux-x64.tar.gz
+          mv jdk1.8.0_241 jdk
+          wget https://vcell.org/webstart/pipeline_files/apache-maven-3.6.3-bin.tar.gz
+          tar -xvzf apache-maven-3.6.3-bin.tar.gz
+          mv apache-maven-3.6.3 maven
+          export JAVA_HOME=`pwd`/jdk
+          export PATH=${JAVA_HOME}/bin:${PATH}
+          echo $JAVA_HOME
+          export M2_HOME=`pwd`/maven
+          export PATH=${M2_HOME}/bin:${PATH}
+          mvn -version
+          java -version
+          mvn clean install dependency:copy-dependencies
+
+      - name: Install MacOS dependencies
+        if: matrix.os == 'macos-latest'
+        shell: bash
+        run: |
+          wget https://vcell.org/webstart/pipeline_files/jdk-8u251-macosx-x64.dmg
+          wget https://vcell.org/webstart/pipeline_files/apache-maven-3.6.3-bin.tar.gz
+          tar -xvzf apache-maven-3.6.3-bin.tar.gz
+          mv apache-maven-3.6.3 maven
+          hdiutil attach jdk-8u251-macosx-x64.dmg
+          sudo installer -pkg /Volumes/JDK\ 8\ Update\ 251/JDK\ 8\ Update\ 251.pkg -target /
+          diskutil umount /Volumes/JDK\ 8\ Update\ 251
+          export JAVA_HOME="/Library/Java/JavaVirtualMachines/jdk1.8.0_251.jdk/Contents/Home"
+          export M2_HOME=`pwd`/maven
+          export PATH=${M2_HOME}/bin:${PATH}
+          java -version
+          mvn -version
+          mvn clean install dependency:copy-dependencies
+
+      - name: Setup Windows dev environment
+        if: matrix.os == 'windows-latest'
+        shell: powershell
+        working-directory: ${{runner.workspace}}
+        run: |
+          Invoke-Webrequest https://vcell.org/webstart/pipeline_files/jdk-8u251-windows-x64.exe -O ${{runner.workspace}}\jdk.exe
+          Invoke-Webrequest https://vcell.org/webstart/pipeline_files/apache-maven-3.6.3-bin.zip -O ${{runner.workspace}}\mvn.zip
+          md "${{runner.workspace}}\java-jdk"
+          Start-Process -FilePath ${{runner.workspace}}\jdk.exe -WorkingDirectory "${{runner.workspace}}\java-jdk"
+          tar -xf ${{runner.workspace}}\mvn.zip
+          $env:Path += ";${{runner.workspace}}\apache-maven-3.6.3\bin;${{runner.workspace}}\java-jdk\Java\jdk1.8.0_241\bin"
+          java -version
+          mvn -version
+          cd ${{runner.workspace}}\vcell
+          mvn clean install dependency:copy-dependencies
