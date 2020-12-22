@@ -35,7 +35,7 @@ jobs:
 
           - name: Install MacOS dependencies
             if: matrix.os == 'macos-latest'
-              shell: bash
+              shell: sh
               run: |
                 wget https://vcell.org/webstart/pipeline_files/jdk-8u251-macosx-x64.dmg
                 wget https://vcell.org/webstart/pipeline_files/apache-maven-3.6.3-bin.tar.gz
