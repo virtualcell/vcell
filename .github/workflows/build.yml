@@ -53,13 +53,12 @@ jobs:
 
       - name: Setup Windows dev environment
         if: matrix.os == 'windows-latest'
-        working-directory: ${{runner.workspace}}
         shell: powershell
         run: |
           Invoke-Webrequest https://vcell.org/webstart/pipeline_files/jdk-8u251-windows-x64.exe -O jdk.exe
           Invoke-Webrequest https://vcell.org/webstart/pipeline_files/apache-maven-3.6.3-bin.zip -O mvn.zip
-          start %GITHUB_WORKSPACE%\jdk.exe
-          tar -xf %GITHUB_WORKSPACE%\mvn.zip
+          start jdk.exe
+          tar -xf mvn.zip
           set PATH=%PATH%;%GITHUB_WORKSPACE%\apache-maven-3.6.3\bin
           java -version
           mvn -version
