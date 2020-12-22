@@ -60,7 +60,7 @@ jobs:
           Invoke-Webrequest https://vcell.org/webstart/pipeline_files/apache-maven-3.6.3-bin.zip -O ${{runner.workspace}}\mvn.zip
           start ${{runner.workspace}}\jdk.exe
           tar -xf ${{runner.workspace}}\mvn.zip
-          set PATH=%PATH%;${{runner.workspace}}\apache-maven-3.6.3\bin
+          $env:Path += ";${{runner.workspace}}\apache-maven-3.6.3\bin"
           java -version
           mvn -version
 
