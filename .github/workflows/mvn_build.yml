@@ -7,7 +7,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-latest, ubuntu-latest, windows-latest]
+        os: [Ubuntu-20.04, macos-latest, windows-latest]
     runs-on: ${{ matrix.os }}
 
     steps:
@@ -15,7 +15,7 @@ jobs:
       - name: Checkout submodules
         run: git submodule update --init --recursive
       - name: Add Linux dependencies
-        if: matrix.os == 'ubuntu-latest'
+        if: matrix.os == 'Ubuntu-20.04'
         shell: bash
         run: |
           wget https://vcell.org/webstart/pipeline_files/jdk-8u241-linux-x64.tar.gz

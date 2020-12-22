@@ -23,7 +23,7 @@ Simulation capabilities include ODEs, Reaction-Diffusion equations within cellul
 
 ### Building VCell
 This VCell github project includes all Java/Python source code required to build both the VCell client and the VCell Server.  
-The simulation solver source code is available as a separate project (https://github.com/virtualcell/vcell-solvers).
+The simulation solver source code is available as a separate project as [vcell-solvers](https://github.com/virtualcell/vcell-solvers).
 
 ### Building and Running VCell Client as a standalone tool
 Requirements:  Git, Maven, and Java JDK 1.8 or later
