@@ -58,14 +58,9 @@ jobs:
         run: |
           Invoke-Webrequest https://vcell.org/webstart/pipeline_files/jdk-8u251-windows-x64.exe -O ${{runner.workspace}}\jdk.exe
           Invoke-Webrequest https://vcell.org/webstart/pipeline_files/apache-maven-3.6.3-bin.zip -O ${{runner.workspace}}\mvn.zip
-          start ${{runner.workspace}}\jdk.exe
+          start /D C:\Program Files ${{runner.workspace}}\jdk.exe
           tar -xf ${{runner.workspace}}\mvn.zip
-          $env:Path += ";${{runner.workspace}}\apache-maven-3.6.3\bin"
+          $env:Path += ";${{runner.workspace}}\apache-maven-3.6.3\bin;C:\Program Files\Java\jdk1.8.0_241\bin"
           java -version
           mvn -version
-
-      - name: Install Windows dependencies
-        if: matrix.os == 'windows-latest'
-        working-directory: ${{runner.workspace}}
-        shell: cmd
-        run: mvn clean install dependency:copy-dependencies
+          mvn clean install dependency:copy-dependencies
