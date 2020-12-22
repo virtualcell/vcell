@@ -1,27 +1,34 @@
-# Contributing to `VCell`
+# Guide to contributing to the Virtual Cell
 
-We enthusiastically welcome contributions to VCell!
+We believe - and we hope you do too - that learning how to code, how to think, and how to contribute to open source can delegate the next generation of coders and creators. We exuberantly welcome contributions to Virtual Cell! This document describes how developers can contribute to the Virtual Cell. Modelers can contribute new models to VCell via multi-platform standalone application downloading from http://vcell.org.
 
-## Coordinating contributions
+If you have never contributed to an open-source project before and you’re just getting started, consider exploring these resources.
 
-Before getting started, please contact the lead developers to coordinate your planned contributions with other ongoing efforts. Please also use GitHub issues to announce your plans to the community so that other developers can provide input into your plans and coordinate their own work.
+[A Step by Step Guide to Making Your First GitHub Contribution](https://codeburst.io/a-step-by-step-guide-to-making-your-first-github-contribution-5302260a2940)
 
-## Testing and continuous integration
+[How to Contribute to Open Source](https://opensource.guide/how-to-contribute/)
 
-We strive to have complete test coverage for VCell.
 
-## Submitting changes   
+To get some insights about Github terminologies, consider exploring these resources.
 
-Please use GitHub pull requests to submit changes. Each request should include a brief description of the new and/or modified features.
+[Collaborating With Issues And Pull Requests](https://help.github.com/categories/collaborating-with-issues-and-pull-requests/)
 
-## Releasing and deploying new versions
 
-Contact the lead developers to request release and deployment of new changes. 
+If you are still facing some issues while contributing to the repository, please reach us on [VCell Support](mailto:vcell_support@uchc.edu).
 
-## Reporting issues
+**Note** : Project maintainers have the right and responsibility to remove, edit, or reject comments, commits, code, wiki edits, issues, and other contributions that are not aligned to this Code of Conduct, or to ban temporarily or permanently any contributor for other behaviors that they deem inappropriate, threatening, offensive, or harmful.
 
-Please use [GitHub issues](https://github.com/biosimulators/Biosimulators_VCell/issues) to report any issues to the development community.
-    
-## Getting help
 
-Please use [GitHub issues](https://github.com/biosimulators/Biosimulators_VCell/issues) to post questions or contact the lead developers.
+## Coordinating contributions, Issues, and bugs
+
+Before getting started, please contact the lead developers at [vcell_support@uchc.edu](mailto:vcell_support@uchc.edu) to coordinate your planned contributions with other ongoing efforts. VCell Support is open at all junctures, emails about issues, bugs, and enhancements. 
+
+## Setting up your development environment
+
+To contribute to Virtual Cell, please follow README.MD file instructions to the setup development environment. 
+
+## Submitting changes
+
+Please use GitHub pull requests to submit changes. Each submission should include a brief description of the new and/or modified features upon each pull request. Pull requests will be approved after the review by one of the developers.
+
+
