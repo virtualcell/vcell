@@ -58,7 +58,7 @@ jobs:
         run: |
           Invoke-Webrequest https://vcell.org/webstart/pipeline_files/jdk-8u251-windows-x64.exe -O ${{runner.workspace}}\jdk.exe
           Invoke-Webrequest https://vcell.org/webstart/pipeline_files/apache-maven-3.6.3-bin.zip -O ${{runner.workspace}}\mvn.zip
-          start /D C:\Program Files ${{runner.workspace}}\jdk.exe
+          start ${{runner.workspace}}\jdk.exe -wo C:\Program Files
           tar -xf ${{runner.workspace}}\mvn.zip
           $env:Path += ";${{runner.workspace}}\apache-maven-3.6.3\bin;C:\Program Files\Java\jdk1.8.0_241\bin"
           java -version
