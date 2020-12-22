@@ -1,4 +1,9 @@
-![logo](https://github.com/biosimulations/Biosimulations/blob/dev/biosimulations/libs/shared/assets/src/assets/images/about/partners/vcell.svg)
+<p align="center" width="100%">
+ <a href="https://vcell.org">
+    <img width="10%" src="https://github.com/biosimulations/Biosimulations/blob/dev/biosimulations/libs/shared/assets/src/assets/images/about/partners/vcell.svg">
+ </a>
+</p>
+
 ---
 ![CI](https://github.com/virtualcell/vcell/workflows/CI/badge.svg)
 # Virtual Cell
