@@ -1,4 +1,4 @@
-name: Build mvn dependencies
+name: mvn install
 
 on: [push]
 
@@ -51,7 +51,7 @@ jobs:
           mvn -version
           mvn clean install dependency:copy-dependencies
 
-      - name: Setup Windows dev environment
+      - name: Install Windows dependencies
         if: matrix.os == 'windows-latest'
         shell: powershell
         working-directory: ${{runner.workspace}}
@@ -66,3 +66,4 @@ jobs:
           mvn -version
           cd ${{runner.workspace}}\vcell
           mvn clean install dependency:copy-dependencies
+
