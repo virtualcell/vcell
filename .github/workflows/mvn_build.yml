@@ -1,4 +1,4 @@
-name: Build dependencies
+name: Build mvn dependencies
 
 on: [push]
 
