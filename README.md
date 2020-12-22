@@ -13,7 +13,17 @@ The VCell is a comprehensive framework for modeling and simulating cell biology 
 
 Simulation capabilities include ODEs, Reaction-Diffusion equations within cellular geometry, Gillespie and Hybrid stochastic solvers, Particle-based spatial simulations, network free simulations, and cell kinematics (moving boundary problems).  
 
-### The VCell software consists of:
+## Contents
+* [VCell software](#vcell-software-consists-of)
+* [Download Vcell](#download-vcell)
+* [Building VCell](#building-vcell)
+* [Building and Running VCell Client as a standalone tool](#building-and-running-vcell-client-as-a-standalone-tool)
+* [Eclipse Setup for Windows](#eclipse-setup-for-windows)
+* [Building and Running VCell Client or Server](#building-and-running-vcell-client-or-server)
+* [Other Details](#other-details)
+* [License](#license)
+
+### VCell software consists of
 1) a standalone modeling and simulation tool (vcell-client)
 2) a shared server providing a centralized model database, cluster computing and shared storage (vcell-server, vcell-api)
 3) simulation solvers written in C++/Fortran/Python and developed as part of the project as well as third party solvers and analysis. 
@@ -62,7 +72,7 @@ Requirements:  Git, Maven, Eclipse IDE for Java Developers and Java JDK 1.8 or l
                ```
 
 
-### Building and Running VCell Client/Server
+### Building and Running VCell Client or Server
 1. Service has 1 image and configuration, manages 1 or more containers, container is a running image  
 2. All services defined in ./swarm/docker-compose.yml (collection of services,volumes, dependencies,...)  
 
