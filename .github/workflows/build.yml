@@ -12,8 +12,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-        with:
-          ref: level1-version4
       - name: Checkout submodules
         run: git submodule update --init --recursive
       - name: Add Linux dependencies
