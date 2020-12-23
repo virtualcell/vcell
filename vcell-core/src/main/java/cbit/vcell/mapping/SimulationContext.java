@@ -14,6 +14,8 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
 import java.beans.VetoableChangeSupport;
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -49,8 +51,10 @@ import org.vcell.util.document.DocumentValidUtil;
 import org.vcell.util.document.ExternalDataIdentifier;
 import org.vcell.util.document.Identifiable;
 import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.LocalVCDataIdentifier;
 import org.vcell.util.document.PropertyConstants;
 import org.vcell.util.document.PublicationInfo;
+import org.vcell.util.document.User;
 import org.vcell.util.document.Version;
 import org.vcell.util.document.Versionable;
 
@@ -58,7 +62,9 @@ import cbit.image.ImageException;
 import cbit.image.VCImage;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.bionetgen.BNGOutputSpec;
+import cbit.vcell.client.server.UserPreferences;
 import cbit.vcell.data.DataContext;
+import cbit.vcell.export.server.ExportServiceImpl;
 import cbit.vcell.field.FieldFunctionArguments;
 import cbit.vcell.field.FieldUtilities;
 import cbit.vcell.geometry.Geometry;
@@ -120,10 +126,18 @@ import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.NameScope;
 import cbit.vcell.parser.ScopedSymbolTable;
 import cbit.vcell.parser.SymbolTableEntry;
+import cbit.vcell.resource.ResourceUtil;
+import cbit.vcell.simdata.DataManager;
+import cbit.vcell.simdata.DataSetControllerImpl;
+import cbit.vcell.simdata.ODEDataManager;
+import cbit.vcell.simdata.PDEDataManager;
+import cbit.vcell.simdata.VCDataManager;
 import cbit.vcell.solver.MathOverrides;
 import cbit.vcell.solver.OutputFunctionContext;
 import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.SimulationInfo;
 import cbit.vcell.solver.SimulationOwner;
+import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.vcell.units.VCUnitDefinition;
 /**
  * This type was created in VisualAge.
@@ -997,7 +1011,7 @@ public AnalysisTask copyAnalysisTask(AnalysisTask analysisTask) throws java.bean
 }
 
 private final int MaxBatchSize = 199;
-private final String ReservedBatchExtensionString = "_bat_";
+public static final String ReservedBatchExtensionString = "_bat_";
 public Simulation createBatchSimulations(Simulation simulation, Map<Integer, Map<String, String>> batchInputDataMap) throws java.beans.PropertyVetoException {
 	if(getMathDescription() == null) {
 		throw new RuntimeException("Application " + getName() + " has no generated Math, cannot add simulation");
@@ -1061,37 +1075,6 @@ public Simulation createBatchSimulations(Simulation simulation, Map<Integer, Map
 		bioModel.addSimulation(newSimulation);
 	}
 	return null;
-}
-public void importBatchSimulations(Simulation simulation) throws java.beans.PropertyVetoException {
-
-	if(bioModel==null) {
-		throw new RuntimeException("cannot add simulation, bioModel not set yet");
-	}
-	if(simulation.getName().contains(ReservedBatchExtensionString)) {
-		throw new RuntimeException("Not a valid name for a batch template Simulation: '" + simulation.getName() + "'.");
-	}
-	Simulation allSims[] = bioModel.getSimulations();
-	LinkedHashMap<String, String> importsMap = new LinkedHashMap<>();
-	
-	String namePrefix = simulation.getName() + ReservedBatchExtensionString;
-	for(Simulation simCandidate : allSims) {
-		if(simCandidate.getName().startsWith(namePrefix)) {
-			importsMap.put(simCandidate.getName(), simCandidate.getSimulationID());
-			System.out.println(simCandidate.getName() + ": " + simCandidate.getSimulationID());
-		}
-	}
-	for(String name : importsMap.keySet()) {
-		String value = importsMap.get(name);
-		
-		SwingUtilities.invokeLater(new Runnable() {
-			public void run() {
-				importBatchSimulation(name, value);
-			}
-		});	
-	}
-}
-private void importBatchSimulation(String name, String value) {
-	
 }
 
 /**

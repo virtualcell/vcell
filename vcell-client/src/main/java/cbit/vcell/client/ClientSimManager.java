@@ -12,6 +12,7 @@ package cbit.vcell.client;
 
 import java.awt.Dimension;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -21,23 +22,30 @@ import java.util.Collection;
 import java.util.Enumeration;
 import java.util.EventObject;
 import java.util.Hashtable;
+import java.util.LinkedHashMap;
 import java.util.Vector;
+
+import javax.swing.SwingUtilities;
 
 import org.vcell.solver.smoldyn.SmoldynFileWriter;
 import org.vcell.solver.smoldyn.SmoldynSolver;
 import org.vcell.util.BeanUtils;
+import org.vcell.util.DataAccessException;
 import org.vcell.util.ProgressDialogListener;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.document.LocalVCDataIdentifier;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCDocument;
+import org.vcell.util.document.Version;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.vis.io.VtuVarInfo;
 
+import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.ChildWindowManager.ChildWindow;
 import cbit.vcell.client.data.DataViewer;
 import cbit.vcell.client.data.DataViewerController;
+import cbit.vcell.client.data.SimResultsViewer;
 import cbit.vcell.client.data.SimulationWorkspaceModelInfo;
 import cbit.vcell.client.data.VCellClientDataServiceImpl;
 import cbit.vcell.client.desktop.simulation.SimulationStatusDetails;
@@ -70,6 +78,7 @@ import cbit.vcell.simdata.VtkManager;
 import cbit.vcell.solver.AnnotatedFunction;
 import cbit.vcell.solver.DataProcessingInstructions;
 import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.SimulationInfo;
 import cbit.vcell.solver.SimulationJob;
 import cbit.vcell.solver.SimulationOwner;
 import cbit.vcell.solver.SolverDescription;
@@ -275,6 +284,104 @@ private static void saveFailure(Hashtable<String, Object>hashTable,Simulation si
 		hashTable.put(H_FAILURES, failures);
 	}
 	failures.put(sim, throwable);
+}
+
+public void importBatchSimulations(OutputContext outputContext, Simulation simulation) throws java.beans.PropertyVetoException {
+
+	if(simulation.getName().contains(SimulationContext.ReservedBatchExtensionString)) {
+		throw new RuntimeException("Not a valid name for a batch template Simulation: '" + simulation.getName() + "'.");
+	}
+
+	SimulationOwner simOwner = getSimWorkspace().getSimulationOwner();
+	if(!(simOwner instanceof SimulationContext)) {
+		throw new RuntimeException("Template Simulation Owner must be a SimulationContext");
+	}
+	SimulationContext simContext = (SimulationContext)simOwner;
+	BioModel bioModel = simContext.getBioModel();
+	if(bioModel==null) {
+		throw new RuntimeException("Cannot add simulation, bioModel not set");
+	}
+	
+	Simulation allSims[] = bioModel.getSimulations();
+	LinkedHashMap<String, String> importsMap = new LinkedHashMap<>();
+	String namePrefix = simulation.getName() + SimulationContext.ReservedBatchExtensionString;
+	for(Simulation simCandidate : allSims) {
+		if(simCandidate.getName().startsWith(namePrefix)) {
+			importsMap.put(simCandidate.getName(), simCandidate.getSimulationID());
+			System.out.println(simCandidate.getName() + ": " + simCandidate.getSimulationID());
+			SwingUtilities.invokeLater(new Runnable() {
+				public void run() {
+//					importBatchSimulation(outputContext, simCandidate);
+				}
+			});	
+		}
+	}
+//	for(String name : importsMap.keySet()) {
+//		String value = importsMap.get(name);
+//		SwingUtilities.invokeLater(new Runnable() {
+//			public void run() {
+//				// write manifest
+//			}
+//		});	
+//	}
+}
+private void importBatchSimulation(OutputContext outputContext, Simulation sim) {
+
+	File localBatchDir = ResourceUtil.getLocalBatchDir();
+	File localSimDir = ResourceUtil.getLocalSimDir(User.tempUser.getName());
+	
+	if(sim.getVersion() == null) {
+		throw new RuntimeException("Missing Version.");
+	}
+	SimulationInfo simInfo = sim.getSimulationInfo();
+	if(simInfo == null) {
+		throw new RuntimeException("Missing Simulation Info.");
+	}
+	
+	User usr = sim.getVersion().getOwner();
+	
+	/*
+	
+	final VCSimulationIdentifier vcSimulationIdentifier = simInfo.getAuthoritativeVCSimulationIdentifier();
+	DataManager dataManager = null;
+
+	try {
+//		DataSetControllerImpl dataSetControllerImpl = new DataSetControllerImpl(null,localBatchDir,null);
+		ExportServiceImpl localExportServiceImpl = new ExportServiceImpl();
+	
+//		LocalDataSetControllerProvider localDSCProvider = new LocalDataSetControllerProvider(usr, dataSetControllerImpl, localExportServiceImpl);
+//		VCDataManager vcDataManager = new VCDataManager(localDSCProvider);
+//		LocalVCDataIdentifier vcDataId = new LocalVCSimulationDataIdentifier(vcSimulationIdentifier, 0, localSimDir);
+//		if (sim.isSpatial()) {
+//			dataManager = new PDEDataManager(outputContext,vcDataManager, vcDataId);
+//		} else {
+//			dataManager = new ODEDataManager(outputContext,vcDataManager, vcDataId);
+//		}	
+		System.out.println("start!");
+		DataViewerController dataViewerController = documentWindowManager.getRequestManager().getDataViewerController(outputContext,sim, 0);
+		
+//		if(!(dataViewerController instanceof SimResultsViewerController)) {
+//			throw new RuntimeException("Unable to initialize the SimResultsViewerController");
+//		}
+//		SimResultsViewerController rvc = (SimResultsViewerController)dataViewerController;
+		DataViewer dw = dataViewerController.createViewer();
+//		DataViewerManager dwm = dw.getDataViewerManager();
+		if(!(dw instanceof SimResultsViewer)) {
+			throw new RuntimeException("Wrong data viewer type, must be SimResultsViewer.");
+		}
+		SimResultsViewer srw = (SimResultsViewer)dw;
+
+		// I need DataViewer.ODEDataManager.ODESimData (Ode Solver Result Set !!!!)
+		
+		
+		System.out.println("done!");
+//	} catch (FileNotFoundException e) {
+//		e.printStackTrace();
+	} catch (DataAccessException e) {
+		e.printStackTrace();
+	}
+	
+	*/
 }
 
 private AsynchClientTask[] showSimulationResults0(final boolean isLocal, final ViewerType viewerType) {

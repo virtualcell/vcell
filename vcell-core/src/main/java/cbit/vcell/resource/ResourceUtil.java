@@ -66,6 +66,7 @@ public class ResourceUtil {
 	private static File localSimDir = null;
 	private static File localVisDataDir = null;
 	private static File localRootDir = null;
+	private static File localBatchDir = null;
 	private static File logDir = null;
 	private static File optimizationRootDir = null;
 
@@ -272,10 +273,21 @@ public class ResourceUtil {
 				localRootDir.mkdirs();
 			}
 		}
-
 		return localRootDir;
 	}
-
+	
+	public static File getLocalBatchDir()
+	{
+		if(localBatchDir == null)
+		{
+			localBatchDir = new File(getVcellHome(), "batchdata");
+			if (!localBatchDir.exists()) {
+				localBatchDir.mkdirs();
+			}
+		}
+		return localBatchDir;
+	}
+	
 	public static File getLocalVisDataDir(){
 		if(localVisDataDir == null)
 		{
@@ -284,7 +296,6 @@ public class ResourceUtil {
 				localVisDataDir.mkdirs();
 			}
 		}
-
 		return localVisDataDir;
 	}
 
