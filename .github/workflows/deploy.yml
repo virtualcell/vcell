@@ -60,12 +60,12 @@ jobs:
           docker push ghcr.io/biosimulators/vcell:${{ steps.version.outputs.tag }}
 
       # Submit to BioSimulators registry
-      - name: Submit to BioSimulators registry
-        run: |
-          REVISION=$(git rev-parse HEAD)
-          curl \
-            -X POST \
-            -u ${{ secrets.GH_ISSUE_USERNAME }}:${{ secrets.GH_ISSUE_TOKEN }} \
-            -H "Accept: application/vnd.github.v3+json" \
-            https://api.github.com/repos/biosimulators/Biosimulators/issues \
-            -d "{\"labels\": [\"Validate/submit simulator\"], \"title\": \"Submit VCell ${{ steps.version.outputs.tag }}\", \"body\": \"---\nid: vcell\nversion: ${{ steps.version.outputs.tag }}\nspecificationsUrl: https://raw.githubusercontent.com/${{ github.repository }}/${REVISION}/biosimulators.json\nvalidateImage: true\ncommitSimulator: true\n\n---\"}"
+      # - name: Submit to BioSimulators registry
+      #   run: |
+      #     REVISION=$(git rev-parse HEAD)
+      #     curl \
+      #       -X POST \
+      #       -u ${{ secrets.GH_ISSUE_USERNAME }}:${{ secrets.GH_ISSUE_TOKEN }} \
+      #       -H "Accept: application/vnd.github.v3+json" \
+      #       https://api.github.com/repos/biosimulators/Biosimulators/issues \
+      #       -d "{\"labels\": [\"Validate/submit simulator\"], \"title\": \"Submit VCell ${{ steps.version.outputs.tag }}\", \"body\": \"---\nid: vcell\nversion: ${{ steps.version.outputs.tag }}\nspecificationsUrl: https://raw.githubusercontent.com/${{ github.repository }}/${REVISION}/biosimulators.json\nvalidateImage: true\ncommitSimulator: true\n\n---\"}"
