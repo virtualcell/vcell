@@ -54,7 +54,7 @@ jobs:
       - name: Install Windows dependencies
         if: matrix.os == 'windows-latest'
         shell: powershell
-        working-directory: ${{runner.workspace}}
+        working-directory: ${{runner.workspace}}\vcell
         run: |
           Invoke-WebRequest https://vcell.org/webstart/pipeline_files/jdk-8u251-windows-x64.exe -O ${{runner.workspace}}\jdk.exe
           Invoke-WebRequest https://vcell.org/webstart/pipeline_files/apache-maven-3.6.3-bin.zip -O ${{runner.workspace}}\mvn.zip
@@ -64,6 +64,5 @@ jobs:
           $env:Path += ";${{runner.workspace}}\apache-maven-3.6.3\bin;${{runner.workspace}}\java-jdk\Java\jdk1.8.0_241\bin"
           java -version
           mvn -version
-          cd ${{runner.workspace}}\vcell
           mvn clean install dependency:copy-dependencies
 
