@@ -73,7 +73,7 @@ ADD ./nativelibs /usr/local/app/vcell/installDir/nativelibs
 COPY ./docker_run.sh /usr/local/app/vcell/installDir/
 
 # Declare supported environment variables
-ENV ALGORITHM_SUBSTITUTION_POLICY=SAME_FRAMEWORK
+ENV ALGORITHM_SUBSTITUTION_POLICY=SIMILAR_VARIABLES
 
 # Entrypoint
 ENTRYPOINT ["/usr/local/app/vcell/installDir/docker_run.sh"]
