@@ -28,9 +28,9 @@ services:
       - "8000" # java remote debugging
     healthcheck:
       test: ["CMD", "curl", "-f", "--insecure", "https://localhost:8080/health?check=login"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
+      interval: 600s
+      timeout: 30s
+      retries: 2
     secrets:
       - keystorefile_20200405
       - keystorepswd
