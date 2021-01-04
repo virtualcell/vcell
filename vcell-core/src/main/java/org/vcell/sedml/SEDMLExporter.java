@@ -34,6 +34,7 @@ import org.jlibsedml.ChangeAttribute;
 import org.jlibsedml.ComputeChange;
 import org.jlibsedml.Curve;
 import org.jlibsedml.DataGenerator;
+import org.jlibsedml.DataSet;
 import org.jlibsedml.Libsedml;
 import org.jlibsedml.Model;
 import org.jlibsedml.Notes;
@@ -41,6 +42,7 @@ import org.jlibsedml.Parameter;
 import org.jlibsedml.Plot2D;
 import org.jlibsedml.Range;
 import org.jlibsedml.RepeatedTask;
+import org.jlibsedml.Report;
 import org.jlibsedml.SEDMLDocument;
 import org.jlibsedml.SEDMLTags;
 import org.jlibsedml.SedML;
@@ -739,10 +741,18 @@ public class SEDMLExporter {
 							
 							if (!bSimHasHistogram) {
 								String plot2dId = "plot2d_" + TokenMangler.mangleToSName(vcSimulation.getName());
+								String reportId = "report_" + TokenMangler.mangleToSName(vcSimulation.getName());
 								Plot2D sedmlPlot2d = new Plot2D(plot2dId, simContext.getName() + "plots");
+								Report sedmlReport = new Report(reportId, simContext.getName() + "report");
+								
 								sedmlPlot2d.addNote(createNotesElement("Plot of all variables and output functions from application '" + simContext.getName() + "' ; simulation '" + vcSimulation.getName() + "' in VCell model"));
-								List<DataGenerator> dataGenerators = sedmlModel.getDataGenerators();
+								sedmlReport.addNote(createNotesElement("Report of all variables and output functions from application '" + simContext.getName() + "' ; simulation '" + vcSimulation.getName() + "' in VCell model"));
+//								List<DataGenerator> dataGenerators = sedmlModel.getDataGenerators();
 								String xDataRef = sedmlModel.getDataGeneratorWithId(DATAGENERATOR_TIME_NAME + "_" + taskRef).getId();
+								String xDatasetXId = "datasetX_" + DATAGENERATOR_TIME_NAME;
+								DataSet dataSet = new DataSet(xDatasetXId, xDatasetXId, xDataRef, xDataRef);
+								sedmlReport.addDataSet(dataSet);
+
 								// add a curve for each dataGenerator in SEDML model
 								int curveCnt = 0;
 								for (DataGenerator dataGenerator : dataGeneratorsOfSim) {
@@ -750,11 +760,16 @@ public class SEDMLExporter {
 									if (dataGenerator.getId().equals(xDataRef)) {
 										continue;
 									}
-									String curveId = "curve_" + curveCnt++; 
+									String curveId = "curve_" + curveCnt;
+									String datasetYId = "datasetY_" + curveCnt;
 									Curve curve = new Curve(curveId, curveId, false, false, xDataRef, dataGenerator.getId());
 									sedmlPlot2d.addCurve(curve);
+									DataSet yDataSet = new DataSet(datasetYId, datasetYId, dataGenerator.getId(), dataGenerator.getId());
+									sedmlReport.addDataSet(yDataSet);
+									curveCnt++;
 								}
 								sedmlModel.addOutput(sedmlPlot2d);
+								sedmlModel.addOutput(sedmlReport);
 							}
 						}
 					} // end - for 'sims'
