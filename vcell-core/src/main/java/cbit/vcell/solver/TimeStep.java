@@ -98,6 +98,19 @@ public boolean compareEqual(org.vcell.util.Matchable object) {
 	}
 	return false;
 }
+
+// the setters should only be used during sedml importing
+// once we are sure that the algorithm parameters match the solver
+public void setDefaultTimeStep(double value) {
+	fieldDefaultTimeStep = value;
+}
+public void setMaximumTimeStep(double value) {
+	fieldMaximumTimeStep = value;
+}
+public void setMinimumTimeStep(double value) {
+	fieldMinimumTimeStep = value;
+}
+
 /**
  * Gets the defaultTimeStep property (double) value.
  * @return The defaultTimeStep property value.

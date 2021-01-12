@@ -96,6 +96,16 @@ public boolean compareEqual(org.vcell.util.Matchable object) {
 	}
 	return (false);
 }
+
+// use this only when the value is appropriate for the solver
+// during sedml import
+public void setAbsoluteErrorTolerance(double value) {
+	fieldAbsoluteErrorTolerance = value;
+}
+public void setRelativeErrorTolerance(double value) {
+	fieldRelativeErrorTolerance = value;
+}
+
 /**
  * Gets the absoluteErrorTolerance property (double) value.
  * @return The absoluteErrorTolerance property value.
