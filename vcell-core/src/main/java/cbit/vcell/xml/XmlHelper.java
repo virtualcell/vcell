@@ -732,52 +732,52 @@ public static String mathModelToXML(MathModel mathModel) throws XmlParseExceptio
 				double outputNumberOfPoints = ((UniformTimeCourse) sedmlSimulation).getNumberOfPoints();
 				outputTimeStep = (outputEndTime - outputStartTime) / outputNumberOfPoints;
 				timeBounds = new TimeBounds(0, outputEndTime - initialTime);
-//				ErrorTolerance errorTolerance = new ErrorTolerance();
-//				
-//				// we look for explicit algorithm parameters
-//	    		List<AlgorithmParameter> sedmlAlgorithmParameters = algorithm.getListOfAlgorithmParameters();
-//	    		for(AlgorithmParameter sedmlAlgorithmParameter : sedmlAlgorithmParameters) {
-//
-//	    			String apKisaoID = sedmlAlgorithmParameter.getKisaoID();
-//	    			String apValue = sedmlAlgorithmParameter.getValue();
-//	    			if(apKisaoID == null || apKisaoID.isEmpty()) {
-//	    				System.err.println("Undefined KisaoID algorithm parameter for algorithm '" + kisaoID + "'");
-//	    			}
-//	    			
-//	    			// we don't check if the recognized algorithm parameters are valid for our algorithm
-//	    			// we just use any parameter we find for the solver task description we have, assuming the exporting code did all the checks
-//	    			// WARNING: if our algorithm is the result of a guess, this may be wrong
-//	    			// TODO: use the proper ontology for the algorithm parameters kisao id
-//	    			if(apKisaoID.contentEquals(ErrorTolerance.ErrorToleranceDescription.Absolute.getKisao())) {
-//	    				double value = Double.parseDouble(apValue);
-//	    				errorTolerance.setAbsoluteErrorTolerance(value);
-//	    			} else if(apKisaoID.contentEquals(ErrorTolerance.ErrorToleranceDescription.Relative.getKisao())) {
-//	    				double value = Double.parseDouble(apValue);
-//	    				errorTolerance.setRelativeErrorTolerance(value);
-//	    				
-//	    			} else if(apKisaoID.contentEquals(TimeStep.TimeStepDescription.Default.getKisao())) {
-//	    				double value = Double.parseDouble(apValue);
-//	    				timeStep.setDefaultTimeStep(value);
-//	    			} else if(apKisaoID.contentEquals(TimeStep.TimeStepDescription.Maximum.getKisao())) {
-//	    				double value = Double.parseDouble(apValue);
-//	    				timeStep.setMaximumTimeStep(value);
-//	    			} else if(apKisaoID.contentEquals(TimeStep.TimeStepDescription.Minimum.getKisao())) {
-//	    				double value = Double.parseDouble(apValue);
-//	    				timeStep.setMinimumTimeStep(value);
-//	    				
-//	    			} else if(apKisaoID.contentEquals("KISAO:0000488")) {		// custom seed
-//						if(simTaskDesc.getSimulation().getMathDescription().isNonSpatialStoch()) {
-//							NonspatialStochSimOptions nssso = simTaskDesc.getStochOpt();
-//							int value = Integer.parseInt(apValue);
-//							nssso.setCustomSeed(value);
-//						} else {
-//							System.err.println("Algorithm parameter with kisao id 'KISAO:0000488' (custom seed) is only supported for nonspatial stochastic simulations");
-//						}
-//	    			} else {
-//	    				System.err.println("Algorithm parameter with kisao id '" + apKisaoID + "' not supported at this time, skipping.");
-//	    			}
-//	    		}
-//				simTaskDesc.setErrorTolerance(errorTolerance);
+				ErrorTolerance errorTolerance = new ErrorTolerance();
+				
+				// we look for explicit algorithm parameters
+	    		List<AlgorithmParameter> sedmlAlgorithmParameters = algorithm.getListOfAlgorithmParameters();
+	    		for(AlgorithmParameter sedmlAlgorithmParameter : sedmlAlgorithmParameters) {
+
+	    			String apKisaoID = sedmlAlgorithmParameter.getKisaoID();
+	    			String apValue = sedmlAlgorithmParameter.getValue();
+	    			if(apKisaoID == null || apKisaoID.isEmpty()) {
+	    				System.err.println("Undefined KisaoID algorithm parameter for algorithm '" + kisaoID + "'");
+	    			}
+	    			
+	    			// we don't check if the recognized algorithm parameters are valid for our algorithm
+	    			// we just use any parameter we find for the solver task description we have, assuming the exporting code did all the checks
+	    			// WARNING: if our algorithm is the result of a guess, this may be wrong
+	    			// TODO: use the proper ontology for the algorithm parameters kisao id
+	    			if(apKisaoID.contentEquals(ErrorTolerance.ErrorToleranceDescription.Absolute.getKisao())) {
+	    				double value = Double.parseDouble(apValue);
+	    				errorTolerance.setAbsoluteErrorTolerance(value);
+	    			} else if(apKisaoID.contentEquals(ErrorTolerance.ErrorToleranceDescription.Relative.getKisao())) {
+	    				double value = Double.parseDouble(apValue);
+	    				errorTolerance.setRelativeErrorTolerance(value);
+	    				
+	    			} else if(apKisaoID.contentEquals(TimeStep.TimeStepDescription.Default.getKisao())) {
+	    				double value = Double.parseDouble(apValue);
+	    				timeStep.setDefaultTimeStep(value);
+	    			} else if(apKisaoID.contentEquals(TimeStep.TimeStepDescription.Maximum.getKisao())) {
+	    				double value = Double.parseDouble(apValue);
+	    				timeStep.setMaximumTimeStep(value);
+	    			} else if(apKisaoID.contentEquals(TimeStep.TimeStepDescription.Minimum.getKisao())) {
+	    				double value = Double.parseDouble(apValue);
+	    				timeStep.setMinimumTimeStep(value);
+	    				
+	    			} else if(apKisaoID.contentEquals("KISAO:0000488")) {		// custom seed
+						if(simTaskDesc.getSimulation().getMathDescription().isNonSpatialStoch()) {
+							NonspatialStochSimOptions nssso = simTaskDesc.getStochOpt();
+							int value = Integer.parseInt(apValue);
+							nssso.setCustomSeed(value);
+						} else {
+							System.err.println("Algorithm parameter with kisao id 'KISAO:0000488' (custom seed) is only supported for nonspatial stochastic simulations");
+						}
+	    			} else {
+	    				System.err.println("Algorithm parameter with kisao id '" + apKisaoID + "' not supported at this time, skipping.");
+	    			}
+	    		}
+				simTaskDesc.setErrorTolerance(errorTolerance);
 			} else if(sedmlSimulation instanceof OneStep) {		// for anything other than UniformTimeCourse we just ignore
 			} else if(sedmlSimulation instanceof SteadyState) {
 			} else {
