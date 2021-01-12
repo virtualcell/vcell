@@ -477,7 +477,7 @@ public class SEDMLExporter {
 									// list of Ranges, if sim is parameter scan.
 									if(constantArraySpec != null) {
 										Range r = null;
-										System.out.println("     " + constantArraySpec.toString());
+//										System.out.println("     " + constantArraySpec.toString());
 										if(constantArraySpec.getType() == ConstantArraySpec.TYPE_INTERVAL) {
 											// ------ Uniform Range
 											r = new UniformRange(rangeId, constantArraySpec.getMinValue(), 
@@ -539,7 +539,7 @@ public class SEDMLExporter {
 									// list of Ranges, if sim is parameter scan.
 									if(constantArraySpec != null) {
 										Range r = null;
-										System.out.println("     " + constantArraySpec.toString());
+//										System.out.println("     " + constantArraySpec.toString());
 										if(constantArraySpec.getType() == ConstantArraySpec.TYPE_INTERVAL) {
 											// ------ Uniform Range
 											r = new UniformRange(rangeId, constantArraySpec.getMinValue(), 

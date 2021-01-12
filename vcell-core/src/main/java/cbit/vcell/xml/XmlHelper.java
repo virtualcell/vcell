@@ -567,11 +567,11 @@ public static String mathModelToXML(MathModel mathModel) throws XmlParseExceptio
         }
         List<DataGenerator> ddd = sedml.getDataGenerators();
         for(DataGenerator dd : ddd) {
-            System.out.println(dd.toString());
+//            System.out.println(dd.toString());
         }
         List<Output> ooo = sedml.getOutputs();
         for(Output oo : ooo) {
-            System.out.println(oo.toString());
+//            System.out.println(oo.toString());
         }
 
         if (tasks == null || tasks.isEmpty()) {
@@ -604,7 +604,7 @@ public static String mathModelToXML(MathModel mathModel) throws XmlParseExceptio
         		sedmlOriginalModel = sedml.getModelWithId(selectedTask.getModelReference());
         		sedmlSimulation = sedml.getSimulation(selectedTask.getSimulationReference());
         	} else if(selectedTask instanceof RepeatedTask) {
-        		System.out.println("RepeatedTask not supported yet, task "+SEDMLUtil.getName(selectedTask)+" is being skipped");
+        		System.err.println("RepeatedTask not supported yet, task "+SEDMLUtil.getName(selectedTask)+" is being skipped");
         		continue;
         		// TODO the below is unfinished code
 //				RepeatedTask rt = (RepeatedTask)selectedTask;
@@ -628,13 +628,11 @@ public static String mathModelToXML(MathModel mathModel) throws XmlParseExceptio
 			// try to find a match in the ontology tree
 			SolverDescription solverDescription = SolverUtilities.matchSolverWithKisaoId(kisaoID);
 			if (solverDescription != null) {
-				System.out.println("++> Solver match found in ontology");
-				System.out.println("++> KiSAO "+kisaoID+" matched to "+solverDescription);
+				System.out.println("++> Solver match found in ontology: " + kisaoID + " matched to " + solverDescription);
 			} else {
 				// give it a try anyway with our deterministic default solver
 				solverDescription = SolverDescription.CombinedSundials;
-				System.out.println("--> Could not find a supoorted ontology match for solver algorithm "+kisaoID);
-				System.out.println("--> Trying with deterministic default solver "+solverDescription);
+				System.err.println("--> Could not find a supoorted ontology match for solver algorithm "+kisaoID + "' trying with deterministic default solver "+solverDescription);
 			}
 		
 			// find out everything else we need about the application we're going to use,
