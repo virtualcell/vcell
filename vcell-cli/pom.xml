@@ -180,9 +180,9 @@
             </activation>
             <dependencies>
                 <dependency>
-                    <groupId>org.sedml.libsedml</groupId>
-                    <artifactId>libSedmlOSX</artifactId>
-                    <version>2.0.14</version>
+                    <groupId>org.sbml.libcombine</groupId>
+                    <artifactId>libCombineOSX</artifactId>
+                    <version>0.2.7</version>
                 </dependency>
                 <dependency>
                     <groupId>org.sedml.libsedml</groupId>
