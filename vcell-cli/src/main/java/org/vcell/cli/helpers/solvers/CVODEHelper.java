@@ -2,6 +2,7 @@ package org.vcell.cli.helpers.solvers;
 
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.messaging.server.SimulationTask;
+import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.simdata.SimDataConstants;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationJob;
@@ -9,6 +10,7 @@ import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solver.SolverUtilities;
 import cbit.vcell.solver.ode.CVodeFileWriter;
 import cbit.vcell.solver.ode.ODESolverResultSet;
+import cbit.vcell.util.ColumnDescription;
 import org.vcell.cli.CLIUtils;
 import org.vcell.cli.helpers.sbml.SBMLSolverHelper;
 import org.vcell.util.exe.Executable;
@@ -18,10 +20,11 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.List;
 
 public class CVODEHelper {
 
-    public static ODESolverResultSet solve(File outDir, String taskId, BioModel bioModel) {
+    public static ODESolverResultSet solve(File outDir, String taskId, BioModel bioModel) throws ExpressionException {
         String docName = bioModel.getName();
         Simulation sim = bioModel.getSimulation(0);
 
@@ -71,8 +74,9 @@ public class CVODEHelper {
         }
         ODESolverResultSet odeSolverResultSet = SBMLSolverHelper.getODESolverResultSet(simJob, resultFile.getPath());
         cvodeInputFile.delete();
-        CLIUtils.convertIDAtoCSV(resultFile);
-        CLIUtils.removeIntermediarySimFiles(outDir);
+//        CLIUtils.convertIDAtoCSV(resultFile);
+        CLIUtils.createCSVFromODEResultSet(odeSolverResultSet, resultFile);
+        //  CLIUtils.removeIntermediarySimFiles(outDir);
         return odeSolverResultSet;
     }
 }

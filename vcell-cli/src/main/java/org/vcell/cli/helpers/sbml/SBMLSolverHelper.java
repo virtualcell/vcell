@@ -42,7 +42,7 @@ public class SBMLSolverHelper implements SBMLSolver {
     private static SBMLStandaloneImporter standaloneImporter = null;
     private boolean bRoundTrip = false;
 
-    public static ODESolverResultSet getODESolverResultSet(SimulationJob argSimJob, String idaFileName) {
+    public static ODESolverResultSet getODESolverResultSet(SimulationJob argSimJob, String idaFileName)  {
         // read .ida file
         ODESolverResultSet odeSolverResultSet = new ODESolverResultSet();
         FileInputStream inputStream = null;
@@ -66,18 +66,18 @@ public class SBMLSolverHelper implements SBMLSolver {
                 double[] values = new double[odeSolverResultSet.getDataColumnCount()];
                 boolean bCompleteRow = true;
                 for (int i = 0; i < odeSolverResultSet.getDataColumnCount(); i++) {
-                    if (line.indexOf('\t') == -1) {
+                    if (line.indexOf('\t')==-1){
                         bCompleteRow = false;
                         break;
-                    } else {
+                    }else{
                         String value = line.substring(0, line.indexOf('\t')).trim();
                         values[i] = Double.valueOf(value).doubleValue();
                         line = line.substring(line.indexOf('\t') + 1);
                     }
                 }
-                if (bCompleteRow) {
+                if (bCompleteRow){
                     odeSolverResultSet.addRow(values);
-                } else {
+                }else{
                     break;
                 }
             }
@@ -96,23 +96,23 @@ public class SBMLSolverHelper implements SBMLSolver {
 
         // add appropriate Function columns to result set
         cbit.vcell.math.Function functions[] = argSimJob.getSimulationSymbolTable().getFunctions();
-        for (int i = 0; i < functions.length; i++) {
-            if (SimulationSymbolTable.isFunctionSaved(functions[i])) {
+        for (int i = 0; i < functions.length; i++){
+            if (SimulationSymbolTable.isFunctionSaved(functions[i])){
                 Expression exp1 = new Expression(functions[i].getExpression());
                 try {
                     exp1 = argSimJob.getSimulationSymbolTable().substituteFunctions(exp1);
                 } catch (cbit.vcell.math.MathException e) {
                     e.printStackTrace(System.out);
-                    throw new RuntimeException("Substitute function failed on function " + functions[i].getName() + " " + e.getMessage());
+                    throw new RuntimeException("Substitute function failed on function "+functions[i].getName()+" "+e.getMessage());
                 } catch (cbit.vcell.parser.ExpressionException e) {
                     e.printStackTrace(System.out);
-                    throw new RuntimeException("Substitute function failed on function " + functions[i].getName() + " " + e.getMessage());
+                    throw new RuntimeException("Substitute function failed on function "+functions[i].getName()+" "+e.getMessage());
                 }
 
                 try {
-                    FunctionColumnDescription cd = new FunctionColumnDescription(exp1.flatten(), functions[i].getName(), null, functions[i].getName(), false);
+                    FunctionColumnDescription cd = new FunctionColumnDescription(exp1.flatten(),functions[i].getName(), null, functions[i].getName(), false);
                     odeSolverResultSet.addFunctionColumn(cd);
-                } catch (cbit.vcell.parser.ExpressionException e) {
+                }catch (cbit.vcell.parser.ExpressionException e){
                     e.printStackTrace(System.out);
                 }
             }

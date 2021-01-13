@@ -1,5 +1,8 @@
 package org.vcell.cli;
 
+import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.solver.ode.ODESolverResultSet;
+import cbit.vcell.util.ColumnDescription;
 import com.google.common.io.Files;
 import org.vcell.stochtest.TimeSeriesMultitrialData;
 
@@ -143,6 +146,49 @@ public class CLIUtils {
         } catch (FileNotFoundException e) {
             System.err.println("Unable to find path, failed with err: " + e.getMessage());
         }
+    }
+
+    public static void createCSVFromODEResultSet(ODESolverResultSet resultSet, File f) throws ExpressionException {
+        ColumnDescription[] descriptions =  resultSet.getColumnDescriptions();
+        StringBuilder sb = new StringBuilder();
+
+
+        int numberOfColumns = descriptions.length;
+        int numberOfRows = resultSet.getRowCount();
+
+        double[][] dataPoints = new double[numberOfColumns][];
+        // Write headers
+        for (ColumnDescription description : descriptions) {
+            sb.append(description.getDisplayName());
+            sb.append(",");
+        }
+        sb.append("\n");
+
+
+        // Write rows
+        for (int i = 0; i<numberOfColumns; i++) {
+            dataPoints[i] = resultSet.extractColumn(i);
+        }
+
+        for (int rowNum = 0; rowNum < numberOfRows; rowNum++) {
+            for (int colNum = 0; colNum < numberOfColumns; colNum++) {
+                sb.append(dataPoints[colNum][rowNum]);
+                sb.append(",");
+            }
+
+            sb.deleteCharAt(sb.lastIndexOf(","));
+            sb.append("\n");
+        }
+
+
+        try {
+            PrintWriter out = new PrintWriter(f);
+            out.print(sb.toString());
+            out.flush();
+        } catch (FileNotFoundException e) {
+            System.err.println("Unable to find path, failed with err: " + e.getMessage());
+        }
+
     }
 
     public static void removeIntermediarySimFiles(File path) {
