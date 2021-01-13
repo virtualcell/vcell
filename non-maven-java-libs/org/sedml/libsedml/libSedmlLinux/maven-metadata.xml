@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<metadata>
+  <groupId>org.sedml.libsedml</groupId>
+  <artifactId>libSedmlLinux</artifactId>
+  <versioning>
+    <release>2.0.14</release>
+    <versions>
+      <version>2.0.14</version>
+    </versions>
+    <lastUpdated>20210113211540</lastUpdated>
+  </versioning>
+</metadata>

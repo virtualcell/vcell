@@ -163,6 +163,11 @@
                     <artifactId>libCombineWin64</artifactId>
                     <version>0.2.7</version>
                 </dependency>
+                <dependency>
+                    <groupId>org.sedml.libsedml</groupId>
+                    <artifactId>libSedmlWin64</artifactId>
+                    <version>2.0.14</version>
+                </dependency>
             </dependencies>
         </profile>
         <profile>
@@ -175,9 +180,14 @@
             </activation>
             <dependencies>
                 <dependency>
-                    <groupId>org.sbml.libcombine</groupId>
-                    <artifactId>libCombineOSX</artifactId>
-                    <version>0.2.7</version>
+                    <groupId>org.sedml.libsedml</groupId>
+                    <artifactId>libSedmlOSX</artifactId>
+                    <version>2.0.14</version>
+                </dependency>
+                <dependency>
+                    <groupId>org.sedml.libsedml</groupId>
+                    <artifactId>libSedmlOSX</artifactId>
+                    <version>2.0.14</version>
                 </dependency>
             </dependencies>
         </profile>
@@ -195,6 +205,11 @@
                     <artifactId>libCombineLinux64</artifactId>
                     <version>0.2.7</version>
                 </dependency>
+                <dependency>
+                    <groupId>org.sedml.libsedml</groupId>
+                    <artifactId>libSedmlLinux</artifactId>
+                    <version>2.0.14</version>
+                </dependency>
             </dependencies>
         </profile>
     </profiles>
@@ -203,12 +218,6 @@
             <plugin>
                 <artifactId>maven-assembly-plugin</artifactId>
                 <configuration>
-                    <!--                     <archive>
-                                            <manifest>
-                                                <mainClass>com.inventory.gui.InventoryApp</mainClass>
-                                            </manifest>
-                                        </archive>
-                     -->
                     <descriptorRefs>
                         <descriptorRef>jar-with-dependencies</descriptorRef>
                     </descriptorRefs>

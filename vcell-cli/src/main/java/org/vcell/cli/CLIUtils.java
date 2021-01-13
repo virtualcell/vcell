@@ -10,6 +10,7 @@ import java.io.*;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Objects;
+import org.sedml.libsedml.*;
 
 public class CLIUtils {
     //    private String tempDirPath = null;
@@ -47,6 +48,11 @@ public class CLIUtils {
         if (!f.delete()) {
             throw new FileNotFoundException("Failed to delete file: " + f);
         }
+    }
+
+
+    public static void getSpeciesFromSedml() {
+        System.loadLibrary("sedmlj");
     }
 
     public static void saveTimeSeriesMultitrialDataAsCSV(TimeSeriesMultitrialData data, File outDir) {
