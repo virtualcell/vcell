@@ -126,7 +126,7 @@ public int getSaveToFileInterval() {
  * Creation date: (8/15/2006 11:36:43 AM)
  * @return cbit.vcell.solver.stoch.StochSolverResultSet
  */
-private ODESolverResultSet getHybridSolverResultSet()
+public ODESolverResultSet getHybridSolverResultSet()
 {
 	//read .stoch file, this funciton here equals to getODESolverRestultSet()+getStateVariableResultSet()  in ODE.
 	ODESolverResultSet stSolverResultSet = new ODESolverResultSet();

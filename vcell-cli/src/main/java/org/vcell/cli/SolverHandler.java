@@ -2,10 +2,22 @@ package org.vcell.cli;
 
 import cbit.util.xml.VCLogger;
 import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.SimulationJob;
 import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solver.SolverTaskDescription;
+import cbit.vcell.solver.ode.AbstractJavaSolver;
+import cbit.vcell.solver.ode.CVodeSolverStandalone;
+import cbit.vcell.solver.ode.ODESolver;
 import cbit.vcell.solver.ode.ODESolverResultSet;
+import cbit.vcell.solver.server.Solver;
+import cbit.vcell.solver.server.SolverFactory;
+import cbit.vcell.solver.stoch.GibsonSolver;
+import cbit.vcell.solver.stoch.HybridSolver;
+import cbit.vcell.solvers.AbstractCompiledSolver;
+import cbit.vcell.solvers.AbstractSolver;
+import cbit.vcell.solvers.SimpleCompiledSolver;
 import cbit.vcell.xml.ExternalDocInfo;
 import cbit.vcell.xml.XmlHelper;
 import org.jlibsedml.SedML;
@@ -71,49 +83,35 @@ public class SolverHandler {
 				SolverTaskDescription std = sim.getSolverTaskDescription();
 				SolverDescription sd = std.getSolverDescription();
 				String kisao = sd.getKisao();
+		        SimulationJob simJob = new SimulationJob(sim, 0, null);
+		        SimulationTask simTask = new SimulationTask(simJob, 0);
+		        Solver solver = SolverFactory.createSolver(outputDir, simTask, false);
+		        ODESolverResultSet odeSolverResultSet = null;
 				try {
-					if (SolverDescription.CVODE.getKisao().contentEquals(kisao)) {
-						ODESolverResultSet odeSolverResultSet = CVODEHelper.solve(outputDir, sim.getDescription().replaceAll("[:\\\\/*?|<>]", "_"), bioModel);
-						System.out.println("Finished: " + docName + ": - task '" + sim.getDescription() + "'.");
+			        if (solver instanceof AbstractCompiledSolver) {
+			        	((AbstractCompiledSolver)solver).runSolver();
+			        	if (solver instanceof ODESolver) {
+			        		odeSolverResultSet = ((ODESolver)solver).getODESolverResultSet();
+			        	} else if (solver instanceof GibsonSolver){
+			        		odeSolverResultSet = ((GibsonSolver)solver).getStochSolverResultSet();			        		
+			        	} else if (solver instanceof HybridSolver) {
+			        		odeSolverResultSet = ((HybridSolver)solver).getHybridSolverResultSet();			        		
+			        	} else {
+			        		System.err.println("Solver results are not compatible with CSV format");
+			        	}
+						System.out.println("Succesfully Finished: " + docName + ": - task '" + sim.getDescription() + "'.");
 						resultsHash.put(sim.getImportedTaskID(), odeSolverResultSet);
-					} else if (SolverDescription.StochGibson.getKisao().contentEquals(kisao)) {
-						ODESolverResultSet odeSolverResultSet = StockGibsonHelper.solve(outputDir, sim.getDescription().replaceAll("[:\\\\/*?|<>]", "_"),
-								bioModel);
-						System.out.println("Finished: " + docName + ": - task '" + sim.getDescription() + "'.");
-						resultsHash.put(sim.getImportedTaskID(), odeSolverResultSet);
-					} else if (SolverDescription.IDA.getKisao().contentEquals(kisao)) {
-						ODESolverResultSet odeSolverResultSet = IDAHelper.solve(outputDir, sim.getDescription().replaceAll("[:\\\\/*?|<>]", "_"), bioModel);
-						System.out.println("Finished: " + docName + ": - task '" + sim.getDescription() + "'.");
-						resultsHash.put(sim.getImportedTaskID(), odeSolverResultSet);
-					} else if (SolverDescription.RungeKuttaFehlberg.getKisao().contentEquals(kisao)) {
-						ODESolverResultSet odeSolverResultSet = RungeKuttaFelhbergHelper.solve(outputDir, sim.getDescription().replaceAll("[:\\\\/*?|<>]", "_"),
-								bioModel);
-						System.out.println("Finished: " + docName + ": - task '" + sim.getDescription() + "'.");
-						resultsHash.put(sim.getImportedTaskID(), odeSolverResultSet);
-					} else if (SolverDescription.AdamsMoulton.getKisao().contentEquals(kisao)) {
-						ODESolverResultSet odeSolverResultSet = AdamsMoultonHelper.solve(outputDir, sim.getDescription().replaceAll("[:\\\\/*?|<>]", "_"),
-								bioModel);
-						System.out.println("Finished: " + docName + ": - task '" + sim.getDescription() + "'.");
-						resultsHash.put(sim.getImportedTaskID(), odeSolverResultSet);
-					} else if (SolverDescription.ForwardEuler.getKisao().contentEquals(kisao)) {
-						ODESolverResultSet odeSolverResultSet = ForwardEulerHelper.solve(outputDir, sim.getDescription().replaceAll("[:\\\\/*?|<>]", "_"),
-								bioModel);
-						System.out.println("Finished: " + docName + ": - task '" + sim.getDescription() + "'.");
-						resultsHash.put(sim.getImportedTaskID(), odeSolverResultSet);
-					} else if (SolverDescription.RungeKutta2.getKisao().contentEquals(kisao)) {
-						ODESolverResultSet odeSolverResultSet = RungeKutta2Helper.solve(outputDir, sim.getDescription().replaceAll("[:\\\\/*?|<>]", "_"),
-								bioModel);
-						System.out.println("Finished: " + docName + ": - task '" + sim.getDescription() + "'.");
-						resultsHash.put(sim.getImportedTaskID(), odeSolverResultSet);
-					} else if (SolverDescription.RungeKutta4.getKisao().contentEquals(kisao)) {
-						ODESolverResultSet odeSolverResultSet = RungeKutta4Helper.solve(outputDir, sim.getDescription().replaceAll("[:\\\\/*?|<>]", "_"),
-								bioModel);
-						System.out.println("Finished: " + docName + ": - task '" + sim.getDescription() + "'.");
-						resultsHash.put(sim.getImportedTaskID(), odeSolverResultSet);
-					} else {
-						throw new Exception("Unsupported solver: " + kisao);
-					}
+			        } else if (solver instanceof AbstractJavaSolver) {
+			        	((AbstractJavaSolver)solver).runSolver();
+			        	odeSolverResultSet = ((ODESolver)solver).getODESolverResultSet();
+			        	// TODO
+			        	// must interpolate data according to sed-ml task timespec 
+			        } else {
+			        	// this should actually never happen...
+			        	throw new Exception("Unexpected solver: " + kisao + " "+solver);
+			        }					
 				} catch (Exception e) {
+					System.err.println(solver.getSolverStatus().getSimulationMessage());
 					resultsHash.put(sim.getImportedTaskID(), null);
 					e.printStackTrace(System.err);
 				}

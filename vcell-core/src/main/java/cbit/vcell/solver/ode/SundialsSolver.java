@@ -357,13 +357,16 @@ public static ODESolverResultSet readIDA(ODESolverResultSet odeSolverResultSet, 
  * Creation date: (6/27/2001 12:17:36 PM)
  */
 private final void printODEFile() throws IOException {
+	
+	// no longer used
+	
 	// executable writes .ida file, now we write things in .ode format
-	ODESolverResultSet odeSolverResultSet = getODESolverResultSet();
-	if (odeSolverResultSet == null) {
-		return;
-	}
-	// fire event
-	fireSolverPrinted(getCurrentTime());
+//	ODESolverResultSet odeSolverResultSet = getODESolverResultSet();
+//	if (odeSolverResultSet == null) {
+//		return;
+//	}
+//	// fire event
+//	fireSolverPrinted(getCurrentTime());
 }
 
 
