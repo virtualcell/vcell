@@ -58,7 +58,6 @@ public class StockGibsonHelper {
             System.err.print("Unable to execute solver executable, failed with err: " + e.getMessage());
         }
         ODESolverResultSet odeSolverResultSet = SBMLSolverHelper.getODESolverResultSet(simJob, gibsonOutputFile.getPath());
-        CLIUtils.convertIDAtoCSV(gibsonOutputFile);
         CLIUtils.removeIntermediarySimFiles(outDir);
         return odeSolverResultSet;
     }

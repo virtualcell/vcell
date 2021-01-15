@@ -9,12 +9,15 @@ import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.xml.ExternalDocInfo;
 import cbit.vcell.xml.XmlHelper;
 import org.jlibsedml.SedML;
+import org.jlibsedml.Task;
 import org.vcell.cli.helpers.solvers.*;
 import org.vcell.sbml.vcell.SBMLImportException;
 import org.vcell.sbml.vcell.SBMLImporter;
 import org.vcell.util.document.VCDocument;
 
 import java.io.File;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 
 public class SolverHandler {
@@ -39,14 +42,15 @@ public class SolverHandler {
         }
     }
 
-    public boolean simulateAllTasks(ExternalDocInfo externalDocInfo, SedML sedml, File outputDir) throws Exception {
+    public HashMap<String, ODESolverResultSet> simulateAllTasks(ExternalDocInfo externalDocInfo, SedML sedml, File outputDir) throws Exception {
         // create the VCDocument(s) (bioModel(s) + application(s) + simulation(s)), do sanity checks
         cbit.util.xml.VCLogger sedmlImportLogger = new LocalLogger();
         List<VCDocument> docs = null;
+        // Key String is SEDML Task ID
+        HashMap<String, ODESolverResultSet> resultsHash = new LinkedHashMap<String, ODESolverResultSet>();
         String docName = null;
         BioModel bioModel = null;
         Simulation[] sims = null;
-        boolean somethingSucceeded = false;
         try {
             docs = XmlHelper.sedmlToBioModel(sedmlImportLogger, externalDocInfo, sedml, null);
         } catch (Exception e) {
@@ -71,51 +75,52 @@ public class SolverHandler {
 					if (SolverDescription.CVODE.getKisao().contentEquals(kisao)) {
 						ODESolverResultSet odeSolverResultSet = CVODEHelper.solve(outputDir, sim.getDescription().replaceAll("[:\\\\/*?|<>]", "_"), bioModel);
 						System.out.println("Finished: " + docName + ": - task '" + sim.getDescription() + "'.");
-						somethingSucceeded = true;
+						resultsHash.put(sim.getImportedTaskID(), odeSolverResultSet);
 					} else if (SolverDescription.StochGibson.getKisao().contentEquals(kisao)) {
 						ODESolverResultSet odeSolverResultSet = StockGibsonHelper.solve(outputDir, sim.getDescription().replaceAll("[:\\\\/*?|<>]", "_"),
 								bioModel);
 						System.out.println("Finished: " + docName + ": - task '" + sim.getDescription() + "'.");
-						somethingSucceeded = true;
+						resultsHash.put(sim.getImportedTaskID(), odeSolverResultSet);
 					} else if (SolverDescription.IDA.getKisao().contentEquals(kisao)) {
 						ODESolverResultSet odeSolverResultSet = IDAHelper.solve(outputDir, sim.getDescription().replaceAll("[:\\\\/*?|<>]", "_"), bioModel);
 						System.out.println("Finished: " + docName + ": - task '" + sim.getDescription() + "'.");
-						somethingSucceeded = true;
+						resultsHash.put(sim.getImportedTaskID(), odeSolverResultSet);
 					} else if (SolverDescription.RungeKuttaFehlberg.getKisao().contentEquals(kisao)) {
 						ODESolverResultSet odeSolverResultSet = RungeKuttaFelhbergHelper.solve(outputDir, sim.getDescription().replaceAll("[:\\\\/*?|<>]", "_"),
 								bioModel);
 						System.out.println("Finished: " + docName + ": - task '" + sim.getDescription() + "'.");
-						somethingSucceeded = true;
+						resultsHash.put(sim.getImportedTaskID(), odeSolverResultSet);
 					} else if (SolverDescription.AdamsMoulton.getKisao().contentEquals(kisao)) {
 						ODESolverResultSet odeSolverResultSet = AdamsMoultonHelper.solve(outputDir, sim.getDescription().replaceAll("[:\\\\/*?|<>]", "_"),
 								bioModel);
 						System.out.println("Finished: " + docName + ": - task '" + sim.getDescription() + "'.");
-						somethingSucceeded = true;
+						resultsHash.put(sim.getImportedTaskID(), odeSolverResultSet);
 					} else if (SolverDescription.ForwardEuler.getKisao().contentEquals(kisao)) {
 						ODESolverResultSet odeSolverResultSet = ForwardEulerHelper.solve(outputDir, sim.getDescription().replaceAll("[:\\\\/*?|<>]", "_"),
 								bioModel);
 						System.out.println("Finished: " + docName + ": - task '" + sim.getDescription() + "'.");
-						somethingSucceeded = true;
+						resultsHash.put(sim.getImportedTaskID(), odeSolverResultSet);
 					} else if (SolverDescription.RungeKutta2.getKisao().contentEquals(kisao)) {
 						ODESolverResultSet odeSolverResultSet = RungeKutta2Helper.solve(outputDir, sim.getDescription().replaceAll("[:\\\\/*?|<>]", "_"),
 								bioModel);
 						System.out.println("Finished: " + docName + ": - task '" + sim.getDescription() + "'.");
-						somethingSucceeded = true;
+						resultsHash.put(sim.getImportedTaskID(), odeSolverResultSet);
 					} else if (SolverDescription.RungeKutta4.getKisao().contentEquals(kisao)) {
 						ODESolverResultSet odeSolverResultSet = RungeKutta4Helper.solve(outputDir, sim.getDescription().replaceAll("[:\\\\/*?|<>]", "_"),
 								bioModel);
 						System.out.println("Finished: " + docName + ": - task '" + sim.getDescription() + "'.");
-						somethingSucceeded = true;
+						resultsHash.put(sim.getImportedTaskID(), odeSolverResultSet);
 					} else {
-						System.err.println("Unsupported solver: " + kisao);
+						throw new Exception("Unsupported solver: " + kisao);
 					}
 				} catch (Exception e) {
+					resultsHash.put(sim.getImportedTaskID(), null);
 					e.printStackTrace(System.err);
 				}
 			}
             System.out.println("-------------------------------------------------------------------------");
         }
-        return somethingSucceeded;
+        return resultsHash;
     }
 
     ;

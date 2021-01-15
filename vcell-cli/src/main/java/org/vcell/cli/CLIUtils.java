@@ -4,11 +4,22 @@ import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.util.ColumnDescription;
 import com.google.common.io.Files;
+
+import org.jlibsedml.DataGenerator;
+import org.jlibsedml.DataSet;
+import org.jlibsedml.Output;
+import org.jlibsedml.Report;
+import org.jlibsedml.SedML;
+import org.jlibsedml.Task;
+import org.jlibsedml.Variable;
 import org.vcell.stochtest.TimeSeriesMultitrialData;
 
 import java.io.*;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Objects;
 
 public class CLIUtils {
@@ -110,44 +121,6 @@ public class CLIUtils {
 
     }
 
-    public static void convertIDAtoCSV(File f) {
-        InputStream is = null;
-        try {
-            is = new FileInputStream(f);
-        } catch (FileNotFoundException e) {
-            System.err.println("Unable to find IDA file, failed with err: " + e.getMessage());
-        }
-        BufferedReader buf = new BufferedReader(new InputStreamReader(is));
-        String line = null;
-        try {
-            line = buf.readLine();
-        } catch (IOException e) {
-            System.err.println("Unable to read line, failed with err: " + e.getMessage());
-        }
-        StringBuilder sb = new StringBuilder();
-        while (line != null) {
-            sb.append(line).append("\n");
-            try {
-                line = buf.readLine();
-            } catch (IOException e) {
-                System.err.println("Unable to read line, failed with err: " + e.getMessage());
-            }
-        }
-        String fileAsString = sb.toString();
-        fileAsString = fileAsString.replace("\t", ",");
-        fileAsString = fileAsString.replace(":\n", "\n");
-        fileAsString = fileAsString.replace(":", ",");
-
-        f.delete();
-        try {
-            PrintWriter out = new PrintWriter(f);
-            out.print(fileAsString);
-            out.flush();
-        } catch (FileNotFoundException e) {
-            System.err.println("Unable to find path, failed with err: " + e.getMessage());
-        }
-    }
-
     public static void createCSVFromODEResultSet(ODESolverResultSet resultSet, File f) throws ExpressionException {
         ColumnDescription[] descriptions =  resultSet.getColumnDescriptions();
         StringBuilder sb = new StringBuilder();
@@ -206,5 +179,46 @@ public class CLIUtils {
     @SuppressWarnings("UnstableApiUsage")
     public String getTempDir() {
         return Files.createTempDir().getAbsolutePath();
+    }
+    public static HashMap<String, File> generateReportsAsCSV(SedML sedml, HashMap<String, ODESolverResultSet> resultsHash, File outDir) {
+    	// finally, the real work
+    	HashMap<String, File> reportsHash = new HashMap<String, File>();
+        List<Output> ooo = sedml.getOutputs();
+        for(Output oo : ooo) {
+        	if (!(oo instanceof Report)) {
+        		System.out.println("Ignoring unsupported output "+oo.getId());
+        	} else {
+        		System.out.println("Generating report "+oo.getId());
+        		try {
+        	        StringBuilder sb = new StringBuilder();
+					List<DataSet> datasets = ((Report)oo).getListOfDataSets();
+					for (DataSet dataset : datasets) {
+						DataGenerator datagen = sedml.getDataGeneratorWithId(dataset.getDataReference());
+						List<Variable> vars = datagen.getListOfVariables();
+						for (Variable var : vars) {
+							Task task = (Task)sedml.getTaskWithId(var.getReference());
+							ODESolverResultSet results = resultsHash.get(task.getId());
+							int column = results.findColumn(var.getName());
+							double[] data = results.extractColumn(column);
+							sb.append(var.getName()+",");
+							for (int i = 0; i < data.length; i++) {
+								sb.append(data[i]+",");
+							}
+				            sb.deleteCharAt(sb.lastIndexOf(","));
+				            sb.append("\n");							
+						}
+					}
+					File f = new File(outDir, oo.getId()+".csv");
+		            PrintWriter out = new PrintWriter(f);
+		            out.print(sb.toString());
+		            out.flush();
+		            reportsHash.put(oo.getId(), f);
+				} catch (Exception e) {
+					e.printStackTrace(System.err);
+					reportsHash.put(oo.getId(), null);
+				}
+        	}
+        }
+        return reportsHash;
     }
 }

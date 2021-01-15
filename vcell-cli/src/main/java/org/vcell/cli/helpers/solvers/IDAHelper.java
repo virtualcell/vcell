@@ -56,7 +56,6 @@ public class IDAHelper {
             System.err.print("Unable to execute solver executable, failed with err: " + e.getMessage());
         }
         ODESolverResultSet odeSolverResultSet = SBMLSolverHelper.getODESolverResultSet(simJob, idaOutputFile.getPath());
-        CLIUtils.convertIDAtoCSV(idaOutputFile);
         CLIUtils.removeIntermediarySimFiles(outDir);
         return odeSolverResultSet;
     }

@@ -1,5 +1,6 @@
 package org.vcell.cli;
 
+import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.xml.ExternalDocInfo;
 import org.jlibsedml.Libsedml;
 import org.jlibsedml.SedML;
@@ -7,6 +8,8 @@ import org.jlibsedml.SedML;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 
 public class CLIStandalone {
     public static void main(String[] args) {
@@ -42,7 +45,7 @@ public class CLIStandalone {
             try {
                 singleExec(args);
             } catch (Exception e) {
-                e.printStackTrace(System.err);
+            	System.err.print(e.getMessage());
                 System.exit(1);
             }
         }
@@ -66,30 +69,38 @@ public class CLIStandalone {
             assert omexHandler != null;
             omexHandler.deleteExtractedOmex();
             String error = "======> FAILED OMEX handling for archive " + args[1];
-            exc.printStackTrace(System.err);
             throw new Exception(error);
         }
         // from here on, we need to collect errors, since some subtasks may succeed while other do not
-        boolean somethingWorked = false;
+        boolean somethingFailed = false;
         for (String sedmlLocation : sedmlLocations) {
+            HashMap<String, ODESolverResultSet> resultsHash = null;
+            HashMap<String, File> reportsHash = null;
+            File completeSedmlPath = new File(sedmlLocation);
+            File outDirForCurrentSedml = new File(omexHandler.getOutputPathFromSedml(sedmlLocation));
+            SedML sedml = null;
             try {
-                File completeSedmlPath = new File(sedmlLocation);
-                File outDirForCurrentSedml = new File(omexHandler.getOutputPathFromSedml(sedmlLocation));
                 CLIUtils.makeDirs(outDirForCurrentSedml);
-                // Run solvers
-                SedML sedml = Libsedml.readDocument(completeSedmlPath).getSedMLModel();
-                SolverHandler solverHandler = new SolverHandler();
-                // send the the whole omex file since we do better handling of malformed model URIs in XMLHelper code
-                ExternalDocInfo externalDocInfo = new ExternalDocInfo(new File(inputFile), true);
-                somethingWorked = solverHandler.simulateAllTasks(externalDocInfo, sedml, outDirForCurrentSedml);
+                sedml = Libsedml.readDocument(completeSedmlPath).getSedMLModel();
             } catch (Exception e) {
-                // TODO Auto-generated catch block
+                System.err.println("SedML processing for "+sedmlLocation+" failed with error: "+e.getMessage());
                 e.printStackTrace(System.err);
+                somethingFailed = true;
+                continue;
             }
+            // Run solvers and make reports; all failures/exceptions are being caught
+            SolverHandler solverHandler = new SolverHandler();
+            // send the the whole omex file since we do better handling of malformed model URIs in XMLHelper code
+            ExternalDocInfo externalDocInfo = new ExternalDocInfo(new File(inputFile), true);
+            resultsHash = solverHandler.simulateAllTasks(externalDocInfo, sedml, outDirForCurrentSedml);
+            reportsHash = CLIUtils.generateReportsAsCSV(sedml, resultsHash, outDirForCurrentSedml);
+            if (resultsHash.containsValue(null) || reportsHash.containsValue(null)) {
+				somethingFailed = true;
+			}
         }
         omexHandler.deleteExtractedOmex();
-        if (!somethingWorked) {
-            String error = "======> Could not execute any task from archive " + args[1];
+        if (somethingFailed) {
+            String error = "======> One or more errors encountered while executing archive " + args[1];
             throw new Exception(error);
         }
     }

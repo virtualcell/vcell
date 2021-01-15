@@ -13,9 +13,11 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Set;
 
+import org.jlibsedml.SedML;
 import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.Compare;
 import org.vcell.util.DataAccessException;
@@ -38,6 +40,7 @@ import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathException;
 import cbit.vcell.math.VCML;
 import cbit.vcell.solver.SolverDescription.SolverFeature;
+import cbit.vcell.solver.ode.ODESolverResultSet;
 /**
  * Specifies the problem to be solved by a solver.
  * It is subclassed for each type of problem/solver.
@@ -99,6 +102,7 @@ public class Simulation implements Versionable, Matchable, java.beans.VetoableCh
 	private java.lang.String fieldSimulationIdentifier = null;
 	private MeshSpecification fieldMeshSpecification = null;
 	private boolean fieldIsDirty = false;
+	private String fieldImportedTaskID;
 
 private Simulation( ) {
 }
@@ -975,5 +979,12 @@ public void vetoableChange(java.beans.PropertyChangeEvent evt) throws java.beans
 	@Override
 	public Kind getSimulationContextKind() {
 		return SimulationContext.Kind.SIMULATIONS_KIND;
+	}
+	public void setImportedTaskID(String id) {
+		// TODO Auto-generated method stub
+		fieldImportedTaskID = id;
+	}
+	public String getImportedTaskID() {
+		return fieldImportedTaskID;
 	}
 }

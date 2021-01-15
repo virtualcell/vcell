@@ -74,8 +74,6 @@ public class CVODEHelper {
         }
         ODESolverResultSet odeSolverResultSet = SBMLSolverHelper.getODESolverResultSet(simJob, resultFile.getPath());
         cvodeInputFile.delete();
-        CLIUtils.convertIDAtoCSV(resultFile);
-//        CLIUtils.createCSVFromODEResultSet(odeSolverResultSet, resultFile);
         CLIUtils.removeIntermediarySimFiles(outDir);
         return odeSolverResultSet;
     }

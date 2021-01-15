@@ -707,7 +707,8 @@ public static String mathModelToXML(MathModel mathModel) throws XmlParseExceptio
 	        matchingSimulationContext.refreshMathDescription(callback, NetworkGenerationRequirements.ComputeFullStandardTimeout);
 	    	Simulation newSimulation = new Simulation(matchingSimulationContext.getMathDescription());
 	    	if (selectedTask instanceof Task) {
-	    		newSimulation.setName(SEDMLUtil.getName(sedmlSimulation));		
+	    		newSimulation.setName(SEDMLUtil.getName(sedmlSimulation));
+	    		newSimulation.setImportedTaskID(selectedTask.getId());
 	    	} else {
 	    		newSimulation.setName(SEDMLUtil.getName(sedmlSimulation)+"_"+SEDMLUtil.getName(selectedTask));
 	    	}
