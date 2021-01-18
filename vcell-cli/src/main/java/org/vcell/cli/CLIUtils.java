@@ -10,7 +10,9 @@ import org.jlibsedml.DataSet;
 import org.jlibsedml.Output;
 import org.jlibsedml.Report;
 import org.jlibsedml.SedML;
+import org.jlibsedml.Simulation;
 import org.jlibsedml.Task;
+import org.jlibsedml.UniformTimeCourse;
 import org.jlibsedml.Variable;
 import org.vcell.stochtest.TimeSeriesMultitrialData;
 
@@ -221,4 +223,16 @@ public class CLIUtils {
         }
         return reportsHash;
     }
+
+	public static ODESolverResultSet interpolate(ODESolverResultSet odeSolverResultSet, UniformTimeCourse sedmlSim) {
+		// TODO Auto-generated method stub
+		double outputStart = sedmlSim.getOutputStartTime();
+		double outputEnd = sedmlSim.getOutputEndTime();
+		int numPoints = sedmlSim.getNumberOfPoints();
+		// need to construct a new RowColumnResultSet instance
+		// use same column descriptions
+		// add a numPoints number of rows one by one as double[]
+		// each row uses the time index based on the params above and for each column descriptions interpolate the value from the original result set
+		return odeSolverResultSet;
+	}
 }

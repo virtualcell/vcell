@@ -22,6 +22,7 @@ import cbit.vcell.xml.ExternalDocInfo;
 import cbit.vcell.xml.XmlHelper;
 import org.jlibsedml.SedML;
 import org.jlibsedml.Task;
+import org.jlibsedml.UniformTimeCourse;
 import org.vcell.cli.helpers.solvers.*;
 import org.vcell.sbml.vcell.SBMLImportException;
 import org.vcell.sbml.vcell.SBMLImporter;
@@ -99,22 +100,29 @@ public class SolverHandler {
 			        	} else {
 			        		System.err.println("Solver results are not compatible with CSV format");
 			        	}
-						System.out.println("Succesfully Finished: " + docName + ": - task '" + sim.getDescription() + "'.");
-						resultsHash.put(sim.getImportedTaskID(), odeSolverResultSet);
 			        } else if (solver instanceof AbstractJavaSolver) {
 			        	((AbstractJavaSolver)solver).runSolver();
 			        	odeSolverResultSet = ((ODESolver)solver).getODESolverResultSet();
-			        	// TODO
-			        	// must interpolate data according to sed-ml task timespec 
+			        	// must interpolate data for uniform time course which is not supported natively by the Java solvers
+			        	Task task = (Task)sedml.getTaskWithId(sim.getImportedTaskID());
+			        	org.jlibsedml.Simulation sedmlSim = sedml.getSimulation(task.getSimulationReference());
+			        	if (sedmlSim instanceof UniformTimeCourse) {
+				        	odeSolverResultSet = CLIUtils.interpolate(odeSolverResultSet, (UniformTimeCourse)sedmlSim);
+			        	}
 			        } else {
 			        	// this should actually never happen...
 			        	throw new Exception("Unexpected solver: " + kisao + " "+solver);
 			        }					
+					System.out.println("Succesfully Finished: " + docName + ": - task '" + sim.getDescription() + "'.");
 				} catch (Exception e) {
+					System.err.println("Failed Completion: " + docName + ": - task '" + sim.getDescription() + "'.");
 					System.err.println(solver.getSolverStatus().getSimulationMessage());
-					resultsHash.put(sim.getImportedTaskID(), null);
 					e.printStackTrace(System.err);
 				}
+				resultsHash.put(sim.getImportedTaskID(), odeSolverResultSet);
+				// TODO Akhil
+				// uncomment after finishing testing all solvers
+//				CLIUtils.removeIntermediarySimFiles(outputDir);
 			}
             System.out.println("-------------------------------------------------------------------------");
         }
