@@ -23,7 +23,6 @@ import cbit.vcell.xml.XmlHelper;
 import org.jlibsedml.SedML;
 import org.jlibsedml.Task;
 import org.jlibsedml.UniformTimeCourse;
-import org.vcell.cli.helpers.solvers.*;
 import org.vcell.sbml.vcell.SBMLImportException;
 import org.vcell.sbml.vcell.SBMLImporter;
 import org.vcell.util.document.VCDocument;
@@ -120,9 +119,8 @@ public class SolverHandler {
 					e.printStackTrace(System.err);
 				}
 				resultsHash.put(sim.getImportedTaskID(), odeSolverResultSet);
-				// TODO Akhil
-				// uncomment after finishing testing all solvers
-//				CLIUtils.removeIntermediarySimFiles(outputDir);
+				// removing intermediate files
+				CLIUtils.removeIntermediarySimFiles(outputDir);
 			}
             System.out.println("-------------------------------------------------------------------------");
         }

@@ -111,11 +111,7 @@ public class OmexHandler {
         for (String sedmlFileRelative : sedmlListRelative) {
             boolean check = absoluteSedmlPath.contains(Paths.get(sedmlFileRelative).normalize().toString());
             if (check) {
-                outputPath = Paths.get(
-                        this.outDirPath,
-                        sedmlFileRelative.substring(
-                                0, sedmlFileRelative.indexOf(".sedml")
-                        )).normalize().toString();
+                outputPath = Paths.get(this.outDirPath, sedmlFileRelative).normalize().toString();
             }
         }
 

@@ -1,5 +1,6 @@
 package org.vcell.cli;
 
+import cbit.vcell.math.RowColumnResultSet;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.ExpressionMathMLParser;
@@ -242,7 +243,7 @@ public class CLIUtils {
 							} catch (Exception e) {
 								// do nothing, we leave NaN and don't warn/log since it could flood
 							}
-							sb.append(computed+",");
+							sb.append(computed).append(",");
 						}
 			            sb.deleteCharAt(sb.lastIndexOf(","));
 			            sb.append("\n");							
@@ -266,6 +267,26 @@ public class CLIUtils {
 		double outputStart = sedmlSim.getOutputStartTime();
 		double outputEnd = sedmlSim.getOutputEndTime();
 		int numPoints = sedmlSim.getNumberOfPoints();
+
+		ColumnDescription[] columnDescriptions = odeSolverResultSet.getColumnDescriptions();
+		String[] columnNames = new String[columnDescriptions.length];
+
+		for (int i = 0; i < columnDescriptions.length; i++) {
+		    columnNames[i] = columnDescriptions[i].getDisplayName();
+        }
+
+        RowColumnResultSet rowColumnResultSet = new RowColumnResultSet(columnNames);
+
+		double deltaTime = ((outputEnd - outputStart)/numPoints);
+		double[] timepoints = new double[numPoints];
+
+		timepoints[0] = outputStart;
+		for(int i = 1; i<numPoints;i++) {
+		    timepoints[i] = timepoints[i-1] + deltaTime;
+        }
+
+        // TODO: @gmarupilla Complete interpolation here
+
 		// need to construct a new RowColumnResultSet instance
 		// use same column descriptions
 		// add a numPoints number of rows one by one as double[]
