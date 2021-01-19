@@ -41,9 +41,6 @@ public class MembraneMapping extends StructureMapping implements java.beans.Veto
 	//private cbit.vcell.parser.Expression fieldInitialVoltage = new Expression(0.0);
 	private boolean fieldCalculateVoltage = false;
 
-	static {
-		System.out.println("MembraneMapping.getTotalVolumeCorrection(): volume correction for a resolved membrane is meaningless, but maybe a 1.0 would be harmless");
-	};
 /**
  * MembraneMapping constructor comment.
  * @param membrane cbit.vcell.model.Membrane

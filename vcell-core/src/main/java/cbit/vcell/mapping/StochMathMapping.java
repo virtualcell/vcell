@@ -14,6 +14,8 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.Vector;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.util.TokenMangler;
 
 import cbit.vcell.geometry.GeometryClass;
@@ -72,6 +74,7 @@ import cbit.vcell.units.VCUnitDefinition;
  * @author Tracy LI
  */
 public class StochMathMapping extends AbstractStochMathMapping {
+	private static Logger lg = LogManager.getLogger(StochMathMapping.class);
 
 	/**
 	 * The constructor, which pass the simulationContext pointer.
@@ -132,10 +135,10 @@ private Expression getProbabilityRate(ReactionStep reactionStep, Expression rate
 	List<ReactionParticipant> reacPart;
 	if(isForwardDirection) {
 		reacPart = maFunc.getReactants();
-		System.out.println("forward reaction rate (coefficient?) is "+maFunc.getForwardRate().infix());
+		lg.debug("forward reaction rate (coefficient?) is "+maFunc.getForwardRate().infix());
 	} else {
 		reacPart = maFunc.getProducts();
-		System.out.println("reverse reaction rate (coefficient?) is "+maFunc.getReverseRate().infix());
+		lg.debug("reverse reaction rate (coefficient?) is "+maFunc.getReverseRate().infix());
 	}
 	
 	Expression rxnProbabilityExpr = null;
@@ -538,7 +541,7 @@ private Expression getProbabilityRate(ReactionStep reactionStep, Expression rate
 		}
 
 		if (!mathDesc.isValid()){
-			System.out.println(mathDesc.getVCML_database());
+			lg.error(mathDesc.getVCML_database());
 			throw new MappingException("generated an invalid mathDescription: "+mathDesc.getWarning());
 		}
 	}

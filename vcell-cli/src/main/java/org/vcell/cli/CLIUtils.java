@@ -9,9 +9,11 @@ import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.util.ColumnDescription;
 import com.google.common.io.Files;
 
+import org.jlibsedml.AbstractTask;
 import org.jlibsedml.DataGenerator;
 import org.jlibsedml.DataSet;
 import org.jlibsedml.Output;
+import org.jlibsedml.RepeatedTask;
 import org.jlibsedml.Report;
 import org.jlibsedml.SedML;
 import org.jlibsedml.Simulation;
@@ -21,6 +23,7 @@ import org.jlibsedml.Variable;
 import org.jmathml.ASTNode;
 import org.sbml.jsbml.JSBML;
 import org.vcell.sbml.vcell.SBMLImportException;
+import org.vcell.sedml.SEDMLUtil;
 import org.vcell.stochtest.TimeSeriesMultitrialData;
 
 import java.io.*;
@@ -208,16 +211,25 @@ public class CLIUtils {
 						ArrayList<String> varIDs = new ArrayList<String>();
 						vars.addAll(datagen.getListOfVariables());
 						int mxlen = 0;
+						boolean supportedDataset = true;
 						// get target values
 						HashMap values = new HashMap<Variable, double[]>();
 						for (Variable var : vars) {
-							varIDs.add(var.getId());
-							Task task = (Task)sedml.getTaskWithId(var.getReference());
-							ODESolverResultSet results = resultsHash.get(task.getId());
-							int column = results.findColumn(var.getName());
-							double[] data = results.extractColumn(column);
-							mxlen = Integer.max(mxlen, data.length);
-							values.put(var, data);
+							AbstractTask task = sedml.getTaskWithId(var.getReference());
+							if (task instanceof RepeatedTask) {
+								supportedDataset = false;
+							} else {
+								varIDs.add(var.getId());
+								ODESolverResultSet results = resultsHash.get(task.getId());
+								int column = results.findColumn(var.getName());
+								double[] data = results.extractColumn(column);
+								mxlen = Integer.max(mxlen, data.length);
+								values.put(var, data);
+							}
+						}
+						if (!supportedDataset) {
+			        		System.err.println("Dataset "+dataset.getId()+" references unsupported RepeatedTask and is being skipped");
+			        		continue;
 						}
 						//get math
 						String mathMLStr = datagen.getMathAsString();

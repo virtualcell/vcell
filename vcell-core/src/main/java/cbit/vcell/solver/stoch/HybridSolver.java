@@ -17,6 +17,9 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.StringTokenizer;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import cbit.vcell.math.Function;
 import cbit.vcell.math.FunctionColumnDescription;
 import cbit.vcell.math.MathException;
@@ -51,6 +54,7 @@ import ucar.ma2.ArrayDouble;
  * @version 1.0
  */
 public class HybridSolver extends SimpleCompiledSolver {
+	private static Logger lg = LogManager.getLogger(HybridSolver.class);
 	public static final int EMIntegrator = 1;
 	public static final int MilsteinIntegrator = 2;
 	public static final int AdaptiveMilsteinIntegrator = 3;
@@ -464,7 +468,7 @@ protected final void printToFile(double progress) throws IOException
 		}
 		if (shouldSave) {
 			// write out Stoch file
-			System.out.println("<<>><<>><<>><<>><<>>    printing at progress = "+progress);
+			lg.debug("<<>><<>><<>><<>><<>>    printing at progress = "+progress);
 			printStochFile();
 			lastSavedMS = System.currentTimeMillis();
 		}

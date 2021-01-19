@@ -19,6 +19,8 @@ import java.io.PrintWriter;
 import java.util.Enumeration;
 import java.util.Vector;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.util.BeanUtils;
 
 import cbit.vcell.math.Constant;
@@ -52,6 +54,7 @@ import cbit.vcell.solvers.SimpleCompiledSolver;
  * @author: John Wagner
  */
 public abstract class SundialsSolver extends SimpleCompiledSolver implements ODESolver {
+	private static Logger lg = LogManager.getLogger(SundialsSolver.class);
 	private int saveToFileInterval = 6;	// seconds
 	private long lastSavedMS = 0; // milliseconds since last save
 	private transient RateSensitivity rateSensitivity = null;
@@ -392,7 +395,7 @@ protected final void printToFile(double progress) throws IOException {
 		}
 		if (shouldSave) {
 			// write out ODE file
-			System.out.println("<<>><<>><<>><<>><<>>    printing at progress = "+progress);
+			lg.debug("<<>><<>><<>><<>><<>>    printing at progress = "+progress);
 			printODEFile();
 			lastSavedMS = System.currentTimeMillis();
 		}

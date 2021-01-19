@@ -455,7 +455,8 @@ public static VCDocument importSBML(VCLogger vcLogger, XMLSource xmlSource, bool
 //    }
 
 	vcDoc.refreshDependencies();
-	System.out.println("Succesfully translated SBML file "+sbmlFile+" into BioModel");
+	System.out.println("Succesful model import: SBML file "+sbmlFile);
+	System.out.println("-------------------------------------------------------------------------");
     return vcDoc;
 }
 
@@ -629,13 +630,12 @@ public static String mathModelToXML(MathModel mathModel) throws XmlParseExceptio
 			// try to find a match in the ontology tree
 			SolverDescription solverDescription = SolverUtilities.matchSolverWithKisaoId(kisaoID);
 			if (solverDescription != null) {
-				System.out.println("++> Solver match found in ontology: " + kisaoID + " matched to " + solverDescription);
+				System.out.println("Task '"+selectedTask.getName()+"' is compatible, solver match found in ontology: '" + kisaoID + "' matched to " + solverDescription);
 			} else {
 				// give it a try anyway with our deterministic default solver
 				solverDescription = SolverDescription.CombinedSundials;
-				System.err.println("--> Could not find a supoorted ontology match for solver algorithm "+kisaoID + "' trying with deterministic default solver "+solverDescription);
+				System.err.println("Task '"+selectedTask.getName()+"' is not compatible, no equivalent solver found in ontology for requested algorithm '"+kisaoID + "'; trying with deterministic default solver "+solverDescription);
 			}
-		
 			// find out everything else we need about the application we're going to use,
 			// some of the info will be needed when we parse the sbml file 
 			boolean bSpatial = false;
