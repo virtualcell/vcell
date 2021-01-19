@@ -360,7 +360,7 @@ public static UnitDefinition getSBMLUnitDefinition(VCUnitDefinition vcUnitDefn, 
 			unitScale = 0;
 		}
 		if (unit.isItem()){
-			System.out.println("SBML 'item' unit found, interpreted as 'molecule'");
+//			System.out.println("SBML 'item' unit found, interpreted as 'molecule'");
 			unitKindSymbol = "molecules";
 		}
 
@@ -395,7 +395,7 @@ public static UnitDefinition getSBMLUnitDefinition(VCUnitDefinition vcUnitDefn, 
 			}
 			String vcScaleStr = Double.toString(unitMultiplier*Math.pow((Math.pow(10, unitScale)), unitExponent));
 			String symbol = vcScaleStr + " " + prefix+unitKindSymbol + unitExponent;
-			System.out.println("symbol: " + symbol);
+//			System.out.println("symbol: " + symbol);
 			VCUnitDefinition vcUnit = vcUnitSystem.getInstance(symbol);
 			return vcUnit;
 		}

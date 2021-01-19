@@ -148,7 +148,7 @@ public class SolverUtilities {
 			if(sd.getKisao().contains(":") || sd.getKisao().contains("_")) {
 //				System.out.println(sd.getKisao());
 			} else {
-				System.err.println(sd.getKisao() + " - bad format, skipping");
+//				System.err.println(sd.getKisao() + " - bad format, skipping");
 				continue;
 			}
 			String s1 = candidate.getId();

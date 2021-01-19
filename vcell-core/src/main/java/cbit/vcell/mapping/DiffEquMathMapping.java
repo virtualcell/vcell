@@ -233,7 +233,7 @@ private VolumeStructureAnalyzer getVolumeStructureAnalyzer(SubVolume subVolume) 
  */
 @Override
 protected void refresh(MathMappingCallback callback) throws MappingException, ExpressionException, MatrixException, MathException, ModelException {
-	System.out.println("MathMapping.refresh Start");
+//	System.out.println("MathMapping.refresh Start");
 	VCellThreadChecker.checkCpuIntensiveInvocation();
 	
 	localIssueList.clear();
@@ -248,7 +248,7 @@ protected void refresh(MathMappingCallback callback) throws MappingException, Ex
 	refreshLocalNameCount();
 	refreshMathDescription();		// we create math based on the transformed sim context
 	reconcileWithOriginalModel();	// we relate the symbols in the math to the symbols in the original sim context
-	System.out.println("MathMapping.refresh End");
+//	System.out.println("MathMapping.refresh End");
 }
 
 /**

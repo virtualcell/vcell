@@ -361,7 +361,7 @@ private void refreshTotalDependancies() throws Exception {
 	}
 
 	if (totalNullSpaceMatrix == null){
-		System.out.println("the matrix has full rank, there are no dependencies");
+//		System.out.println("the matrix has full rank, there are no dependencies");
 		return;
 	}
 		

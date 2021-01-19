@@ -101,7 +101,7 @@ public class PotentialMapping {
 	public static boolean bSilent = true;
 
 	static {
-		System.out.println("PotentialMapping.getTotalMembraneCurrent(): ASSUMING NO MEMBRANE CURRENTS IF 'CALCULATE_VOLTAGE' == false");
+//		System.out.println("PotentialMapping.getTotalMembraneCurrent(): ASSUMING NO MEMBRANE CURRENTS IF 'CALCULATE_VOLTAGE' == false");
 	};
 
 /**

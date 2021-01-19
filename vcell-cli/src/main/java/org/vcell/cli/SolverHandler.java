@@ -113,9 +113,9 @@ public class SolverHandler {
 			        	// this should actually never happen...
 			        	throw new Exception("Unexpected solver: " + kisao + " "+solver);
 			        }					
-					System.out.println("Succesfully Finished: " + docName + ": - task '" + sim.getDescription() + "'.");
+					System.out.println("Succesful execution: " + docName + ": - task '" + sim.getDescription() + "'.");
 				} catch (Exception e) {
-					System.err.println("Failed Completion: " + docName + ": - task '" + sim.getDescription() + "'.");
+					System.err.println("Failed execution: " + docName + ": - task '" + sim.getDescription() + "'.");
 					System.err.println(solver.getSolverStatus().getSimulationMessage());
 					e.printStackTrace(System.err);
 				}
