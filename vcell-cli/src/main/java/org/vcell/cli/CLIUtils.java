@@ -1,6 +1,10 @@
 package org.vcell.cli;
 
+import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.parser.ExpressionMathMLParser;
+import cbit.vcell.parser.SimpleSymbolTable;
+import cbit.vcell.parser.SymbolTable;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.util.ColumnDescription;
 import com.google.common.io.Files;
@@ -14,11 +18,15 @@ import org.jlibsedml.Simulation;
 import org.jlibsedml.Task;
 import org.jlibsedml.UniformTimeCourse;
 import org.jlibsedml.Variable;
+import org.jmathml.ASTNode;
+import org.sbml.jsbml.JSBML;
+import org.vcell.sbml.vcell.SBMLImportException;
 import org.vcell.stochtest.TimeSeriesMultitrialData;
 
 import java.io.*;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -196,19 +204,48 @@ public class CLIUtils {
 					List<DataSet> datasets = ((Report)oo).getListOfDataSets();
 					for (DataSet dataset : datasets) {
 						DataGenerator datagen = sedml.getDataGeneratorWithId(dataset.getDataReference());
-						List<Variable> vars = datagen.getListOfVariables();
+						ArrayList<Variable> vars = new ArrayList<Variable>();
+						ArrayList<String> varIDs = new ArrayList<String>();
+						vars.addAll(datagen.getListOfVariables());
+						int mxlen = 0;
+						// get target values
+						HashMap values = new HashMap<Variable, double[]>();
 						for (Variable var : vars) {
+							varIDs.add(var.getId());
 							Task task = (Task)sedml.getTaskWithId(var.getReference());
 							ODESolverResultSet results = resultsHash.get(task.getId());
 							int column = results.findColumn(var.getName());
 							double[] data = results.extractColumn(column);
-							sb.append(var.getName()+",");
-							for (int i = 0; i < data.length; i++) {
-								sb.append(data[i]+",");
-							}
-				            sb.deleteCharAt(sb.lastIndexOf(","));
-				            sb.append("\n");							
+							mxlen = Integer.max(mxlen, data.length);
+							values.put(var, data);
 						}
+						//get math
+						String mathMLStr = datagen.getMathAsString();
+						Expression expr = new Expression(mathMLStr);
+						SymbolTable st = new SimpleSymbolTable(varIDs.toArray(new String[vars.size()]));
+						expr.bindExpression(st);
+						//compute and write result, padding with NaN if unequal length or errors
+						double[] row = new double[vars.size()];
+						sb.append(dataset.getLabel()+",");
+						for (int i = 0; i < mxlen; i++) {
+							for (int j = 0; j < vars.size(); j++) {
+								double[] varVals = ((double[])values.get(vars.get(j)));
+								if (i < varVals.length) {
+									row[j] = varVals[i];
+								} else {
+									row[j] = Double.NaN;
+								}
+							}
+							double computed = Double.NaN;
+							try {
+								computed = expr.evaluateVector(row);
+							} catch (Exception e) {
+								// do nothing, we leave NaN and don't warn/log since it could flood
+							}
+							sb.append(computed+",");
+						}
+			            sb.deleteCharAt(sb.lastIndexOf(","));
+			            sb.append("\n");							
 					}
 					File f = new File(outDir, oo.getId()+".csv");
 		            PrintWriter out = new PrintWriter(f);
