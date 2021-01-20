@@ -53,7 +53,7 @@ public class UserMessage {
 	public final static UserMessage warn_closeWithoutSave = new UserMessage("You will lose any changes since last save - close document anyway?",
 				new String[] {OPTION_CLOSE, OPTION_CANCEL},						OPTION_CLOSE,			-1); // UserPreferences.WARN_FOR_CLOSE_WITHOUT_SAVE
 
-	public final static UserMessage warn_close = new UserMessage("Do you want to save the changes you made?",
+	public final static UserMessage warn_close = new UserMessage("Your model may have changed, do you want to save?",
 			new String[] {OPTION_YES, OPTION_NO, OPTION_CANCEL},						OPTION_YES,			-1); // UserPreferences.WARN_FOR_CLOSE_WITHOUT_SAVE
 	
 	public final static UserMessage warn_UnchangedDocument = new UserMessage("Document has not changed - do you want to save it as a new document?",
