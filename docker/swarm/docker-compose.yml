@@ -90,6 +90,11 @@ services:
       - mongodb_database=test
     ports:
       - "8000" # java remote debugging
+    healthcheck:
+      test: ["CMD", "curl", "-f", "--insecure", "https://api:8080/health?check=sim"]
+      interval: 600s
+      timeout: 30s
+      retries: 2
     volumes:
       - "${VCELL_SIMDATADIR_HOST}:/simdata"
       - "${VCELL_SIMDATADIR_ARCHIVE_HOST}:${VCELL_SIMDATADIR_ARCHIVE_HOST}"
