@@ -61,6 +61,8 @@ public class CLIStandalone {
             cliHandler = new CLIHandler(args);
             inputFile = cliHandler.getInputFilePath();
             outputDir = cliHandler.getOutputDirPath();
+            System.out.println("VCell CLI input archive "+inputFile);
+            System.out.println("-------------------------------------------------------------------------");
             omexHandler = new OmexHandler(inputFile, outputDir);
             omexHandler.extractOmex();
             sedmlLocations = omexHandler.getSedmlLocationsAbsolute();
@@ -82,8 +84,10 @@ public class CLIStandalone {
             try {
                 CLIUtils.makeDirs(outDirForCurrentSedml);
                 sedml = Libsedml.readDocument(completeSedmlPath).getSedMLModel();
+                System.out.println("Succesful translation: SED-ML file "+sedmlLocation);
+                System.out.println("-------------------------------------------------------------------------");
             } catch (Exception e) {
-                System.err.println("SedML processing for "+sedmlLocation+" failed with error: "+e.getMessage());
+                System.err.println("SED-ML processing for "+sedmlLocation+" failed with error: "+e.getMessage());
                 e.printStackTrace(System.err);
                 somethingFailed = true;
                 continue;
