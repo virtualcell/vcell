@@ -199,7 +199,7 @@ public class CLIUtils {
         List<Output> ooo = sedml.getOutputs();
         for(Output oo : ooo) {
         	if (!(oo instanceof Report)) {
-        		System.out.println("Ignoring unsupported output "+oo.getId());
+        		System.err.println("Ignoring unsupported output "+oo.getId());
         	} else {
         		System.out.println("Generating report "+oo.getId());
         		try {

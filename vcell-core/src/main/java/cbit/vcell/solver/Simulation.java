@@ -214,6 +214,7 @@ public Simulation(Simulation simulation, boolean bCloneMath) {
 	this( );
 	addVetoableChangeListener(this);
 
+	fieldImportedTaskID = simulation.getImportedTaskID();
 	fieldSimulationVersion = null;
 	fieldName = simulation.getName();
 	fieldDescription = simulation.getDescription();

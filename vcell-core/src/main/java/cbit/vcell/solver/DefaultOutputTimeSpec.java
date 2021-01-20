@@ -19,6 +19,7 @@ import cbit.vcell.solver.SimulationOwner.UnitInfo;
  */
 @SuppressWarnings("serial")
 public class DefaultOutputTimeSpec extends OutputTimeSpec {
+	public static final int DEFAULT_KEEP_AT_MOST = 1000;
 	private int fieldKeepEvery;
 	private int fieldKeepAtMost;	
 
@@ -26,7 +27,7 @@ public class DefaultOutputTimeSpec extends OutputTimeSpec {
  * DefaultOutputTimeSpec constructor comment.
  */
 public DefaultOutputTimeSpec() {
-	this(1,1000);
+	this(1,DEFAULT_KEEP_AT_MOST);
 }
 
 
@@ -34,7 +35,7 @@ public DefaultOutputTimeSpec() {
  * DefaultOutputTimeSpec constructor comment.
  */
 public DefaultOutputTimeSpec(int arg_keepEvery) {
-	this(arg_keepEvery,1000);
+	this(arg_keepEvery,DEFAULT_KEEP_AT_MOST);
 }
 
 

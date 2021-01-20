@@ -456,7 +456,6 @@ public static VCDocument importSBML(VCLogger vcLogger, XMLSource xmlSource, bool
 
 	vcDoc.refreshDependencies();
 	System.out.println("Succesful model import: SBML file "+sbmlFile);
-	System.out.println("-------------------------------------------------------------------------");
     return vcDoc;
 }
 
@@ -723,13 +722,14 @@ public static String mathModelToXML(MathModel mathModel) throws XmlParseExceptio
 			TimeBounds timeBounds = new TimeBounds();
 			TimeStep timeStep = new TimeStep();
 			double outputTimeStep = 0.1;
+			int outputNumberOfPoints = 1;
 			if(sedmlSimulation instanceof UniformTimeCourse) {
 				// we translate initial time to zero, we provide output for the duration of the simulation
 				// because we can't select just an interval the way the SEDML simulation can
 				double initialTime = ((UniformTimeCourse) sedmlSimulation).getInitialTime();
 				double outputStartTime = ((UniformTimeCourse) sedmlSimulation).getOutputStartTime();
 				double outputEndTime = ((UniformTimeCourse) sedmlSimulation).getOutputEndTime();
-				double outputNumberOfPoints = ((UniformTimeCourse) sedmlSimulation).getNumberOfPoints();
+				outputNumberOfPoints = ((UniformTimeCourse) sedmlSimulation).getNumberOfPoints();
 				outputTimeStep = (outputEndTime - outputStartTime) / outputNumberOfPoints;
 				timeBounds = new TimeBounds(0, outputEndTime - initialTime);
 				ErrorTolerance errorTolerance = new ErrorTolerance();
@@ -779,14 +779,21 @@ public static String mathModelToXML(MathModel mathModel) throws XmlParseExceptio
 	    		}
 				simTaskDesc.setErrorTolerance(errorTolerance);
 			} else if(sedmlSimulation instanceof OneStep) {		// for anything other than UniformTimeCourse we just ignore
+				System.err.println("OneStep Simulation not supported");
+				continue;
 			} else if(sedmlSimulation instanceof SteadyState) {
-			} else {
+				System.err.println("SteadyState Simulation not supported");
+				continue;
 			}
 			
 			OutputTimeSpec outputTimeSpec = new UniformOutputTimeSpec(outputTimeStep);
 			simTaskDesc.setTimeBounds(timeBounds);
 			simTaskDesc.setTimeStep(timeStep);
-			simTaskDesc.setOutputTimeSpec(outputTimeSpec);
+			if (simTaskDesc.getSolverDescription().supports(outputTimeSpec)) {
+				simTaskDesc.setOutputTimeSpec(outputTimeSpec);
+			} else {
+				simTaskDesc.setOutputTimeSpec(new DefaultOutputTimeSpec(1,Integer.max(DefaultOutputTimeSpec.DEFAULT_KEEP_AT_MOST, outputNumberOfPoints)));
+			}
 			newSimulation.setSolverTaskDescription(simTaskDesc);
 			newSimulation.setDescription(SEDMLUtil.getName(selectedTask));
 	    	bioModel.addSimulation(newSimulation);
