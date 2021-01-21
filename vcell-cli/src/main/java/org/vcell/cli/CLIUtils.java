@@ -277,7 +277,7 @@ public class CLIUtils {
         return reportsHash;
     }
 
-	public static RowColumnResultSet interpolate(ODESolverResultSet odeSolverResultSet, UniformTimeCourse sedmlSim) throws ExpressionException {
+	public static ODESolverResultSet interpolate(ODESolverResultSet odeSolverResultSet, UniformTimeCourse sedmlSim) throws ExpressionException {
 		// TODO Auto-generated method stub
 		double outputStart = sedmlSim.getOutputStartTime();
 		double outputEnd = sedmlSim.getOutputEndTime();
@@ -292,6 +292,7 @@ public class CLIUtils {
         }
 
         RowColumnResultSet rowColumnResultSet = new RowColumnResultSet(columnNames);
+
 
 		double deltaTime = ((outputEnd - outputStart)/numPoints);
 		double[] timepoints = new double[numPoints];
@@ -312,7 +313,7 @@ public class CLIUtils {
         }
 
        // double[] interpSpecie1 = interpLinear(originalTimepoints, specie1Values, timepoints);
-        double[][] rowValues = new double[numPoints][];
+        double[][] rowValues = new double[numPoints][columnDescriptions.length];
 
         for(int rowCount = 0; rowCount < numPoints; rowCount++) {
             for(int colCount = 0; colCount < columnDescriptions.length; colCount++) {
@@ -329,7 +330,7 @@ public class CLIUtils {
 		// use same column descriptions
 		// add a numPoints number of rows one by one as double[]
 		// each row uses the time index based on the params above and for each column descriptions interpolate the value from the original result set
-		return rowColumnResultSet;
+		return (ODESolverResultSet) rowColumnResultSet;
 	}
 
     public static  double[] interpLinear(double[] x, double[] y, double[] xi) throws IllegalArgumentException {
