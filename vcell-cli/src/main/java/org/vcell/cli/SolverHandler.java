@@ -7,12 +7,14 @@ import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationJob;
 import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solver.SolverTaskDescription;
+import cbit.vcell.solver.TempSimulation;
 import cbit.vcell.solver.ode.AbstractJavaSolver;
 import cbit.vcell.solver.ode.CVodeSolverStandalone;
 import cbit.vcell.solver.ode.ODESolver;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.solver.server.Solver;
 import cbit.vcell.solver.server.SolverFactory;
+import cbit.vcell.solver.server.SolverStatus;
 import cbit.vcell.solver.stoch.GibsonSolver;
 import cbit.vcell.solver.stoch.HybridSolver;
 import cbit.vcell.solvers.AbstractCompiledSolver;
@@ -80,6 +82,7 @@ public class SolverHandler {
             bioModel = (BioModel) doc;
             sims = bioModel.getSimulations();
 			for (Simulation sim : sims) {
+				sim = new TempSimulation(sim, false);
 				SolverTaskDescription std = sim.getSolverTaskDescription();
 				SolverDescription sd = std.getSolverDescription();
 				String kisao = sd.getKisao();
@@ -111,18 +114,27 @@ public class SolverHandler {
 			        } else {
 			        	// this should actually never happen...
 			        	throw new Exception("Unexpected solver: " + kisao + " "+solver);
-			        }					
-					System.out.println("Succesful execution: Model '" + docName + "' Task '" + sim.getDescription() + "'.");
+			        }
+			        if (solver.getSolverStatus().getStatus() == SolverStatus.SOLVER_FINISHED) {
+						System.out.println("Succesful execution: Model '" + docName + "' Task '" + sim.getDescription() + "'.");
+			            System.out.println("-------------------------------------------------------------------------");
+			        } else {
+				        System.err.println("Solver status: "+solver.getSolverStatus().getStatus());
+				        System.err.println("Solver message: "+solver.getSolverStatus().getSimulationMessage().getDisplayMessage());
+				        throw new Exception();
+			        }
 				} catch (Exception e) {
 					System.err.println("Failed execution: Model '" + docName + "' Task '" + sim.getDescription() + "'.");
-					System.err.println(solver.getSolverStatus().getSimulationMessage());
-					e.printStackTrace(System.err);
+					if (e.getMessage() != null) {
+						// something else than failure caught by solver instance during execution
+						System.err.println(e.getMessage());
+					}
+					System.out.println("-------------------------------------------------------------------------");
 				}
 				resultsHash.put(sim.getImportedTaskID(), odeSolverResultSet);
 				// removing intermediate files
 				CLIUtils.removeIntermediarySimFiles(outputDir);
 			}
-            System.out.println("-------------------------------------------------------------------------");
         }
         return resultsHash;
     }
