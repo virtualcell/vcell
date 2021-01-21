@@ -6,6 +6,7 @@ import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.ExpressionMathMLParser;
 import cbit.vcell.parser.SimpleSymbolTable;
 import cbit.vcell.parser.SymbolTable;
+import cbit.vcell.solver.ode.ODESolver;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.util.ColumnDescription;
 import com.google.common.io.Files;
@@ -28,6 +29,8 @@ import org.vcell.sedml.SEDMLUtil;
 import org.vcell.stochtest.TimeSeriesMultitrialData;
 
 import java.io.*;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -258,7 +261,7 @@ public class CLIUtils {
 							sb.append(computed).append(",");
 						}
 			            sb.deleteCharAt(sb.lastIndexOf(","));
-			            sb.append("\n");							
+			            sb.append("\n");
 					}
 					File f = new File(outDir, oo.getId()+".csv");
 		            PrintWriter out = new PrintWriter(f);
@@ -274,11 +277,12 @@ public class CLIUtils {
         return reportsHash;
     }
 
-	public static ODESolverResultSet interpolate(ODESolverResultSet odeSolverResultSet, UniformTimeCourse sedmlSim) {
+	public static RowColumnResultSet interpolate(ODESolverResultSet odeSolverResultSet, UniformTimeCourse sedmlSim) throws ExpressionException {
 		// TODO Auto-generated method stub
 		double outputStart = sedmlSim.getOutputStartTime();
 		double outputEnd = sedmlSim.getOutputEndTime();
 		int numPoints = sedmlSim.getNumberOfPoints();
+		//int numRows = odeSolverResultSet.getRowCount();
 
 		ColumnDescription[] columnDescriptions = odeSolverResultSet.getColumnDescriptions();
 		String[] columnNames = new String[columnDescriptions.length];
@@ -297,12 +301,82 @@ public class CLIUtils {
 		    timepoints[i] = timepoints[i-1] + deltaTime;
         }
 
+		double[] originalTimepoints = odeSolverResultSet.extractColumn(0);
+		//double[] specie1Values = odeSolverResultSet.extractColumn(2);
+
         // TODO: @gmarupilla Complete interpolation here
+        double[][] columnValues = new double[columnDescriptions.length][];
+        columnValues[0] = timepoints;
+        for (int i = 1; i < columnDescriptions.length; i++) {
+           columnValues[i] = interpLinear(originalTimepoints, odeSolverResultSet.extractColumn(i), timepoints);
+        }
+
+       // double[] interpSpecie1 = interpLinear(originalTimepoints, specie1Values, timepoints);
+        double[][] rowValues = new double[numPoints][];
+
+        for(int rowCount = 0; rowCount < numPoints; rowCount++) {
+            for(int colCount = 0; colCount < columnDescriptions.length; colCount++) {
+                rowValues[rowCount][colCount] = columnValues[colCount][rowCount];
+            }
+        }
+
+        for(int rowCount = 0; rowCount < numPoints; rowCount++) {
+            rowColumnResultSet.addRow(rowValues[rowCount]);
+        }
+
 
 		// need to construct a new RowColumnResultSet instance
 		// use same column descriptions
 		// add a numPoints number of rows one by one as double[]
 		// each row uses the time index based on the params above and for each column descriptions interpolate the value from the original result set
-		return odeSolverResultSet;
+		return rowColumnResultSet;
 	}
+
+    public static  double[] interpLinear(double[] x, double[] y, double[] xi) throws IllegalArgumentException {
+
+        if (x.length != y.length) {
+            throw new IllegalArgumentException("X and Y must be the same length");
+        }
+        if (x.length == 1) {
+            throw new IllegalArgumentException("X must contain more than one value");
+        }
+        double[] dx = new double[x.length - 1];
+        double[] dy = new double[x.length - 1];
+        double[] slope = new double[x.length - 1];
+        double[] intercept = new double[x.length - 1];
+
+        // Calculate the line equation (i.e. slope and intercept) between each point
+        for (int i = 0; i < x.length - 1; i++) {
+            dx[i] = x[i + 1] - x[i];
+            if (dx[i] == 0) {
+                throw new IllegalArgumentException("X must be montotonic. A duplicate " + "x-value was found");
+            }
+            if (dx[i] < 0) {
+                throw new IllegalArgumentException("X must be sorted");
+            }
+            dy[i] = y[i + 1] - y[i];
+            slope[i] = dy[i] / dx[i];
+            intercept[i] = y[i] - x[i] * slope[i];
+        }
+
+        // Perform the interpolation here
+        double[] yi = new double[xi.length];
+        for (int i = 0; i < xi.length; i++) {
+            if ((xi[i] > x[x.length - 1]) || (xi[i] < x[0])) {
+                yi[i] = Double.NaN;
+            }
+            else {
+                int loc = Arrays.binarySearch(x, xi[i]);
+                if (loc < -1) {
+                    loc = -loc - 2;
+                    yi[i] = slope[loc] * xi[i] + intercept[loc];
+                }
+                else {
+                    yi[i] = y[loc];
+                }
+            }
+        }
+
+        return yi;
+    }
 }

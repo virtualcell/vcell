@@ -106,7 +106,7 @@ public class SolverHandler {
 			        	Task task = (Task)sedml.getTaskWithId(sim.getImportedTaskID());
 			        	org.jlibsedml.Simulation sedmlSim = sedml.getSimulation(task.getSimulationReference());
 			        	if (sedmlSim instanceof UniformTimeCourse) {
-				        	odeSolverResultSet = CLIUtils.interpolate(odeSolverResultSet, (UniformTimeCourse)sedmlSim);
+				        	odeSolverResultSet = (ODESolverResultSet) CLIUtils.interpolate(odeSolverResultSet, (UniformTimeCourse)sedmlSim);
 			        	}
 			        } else {
 			        	// this should actually never happen...
