@@ -82,17 +82,17 @@ public enum SolverDescription {
 	   HybridEuler(TimeStep.CONSTANT, ErrorTol.NO, TimeSpecCreated.UNIFORM, "Gibson + Euler-Maruyama","Hybrid (Gibson + Euler-Maruyama Method)","Hybrid (Gibson + Euler-Maruyama Method)",
 	      SolverLongDesc.HYBRID_EULER, 1,SupportedTimeSpec.UNIFORM,
 	      new SolverFeature[]{SolverFeature.Feature_NonSpatial, SolverFeature.Feature_Stochastic},
-	      SolverExecutable.Hybrid_EM, "KISAO:0000352", false),
+	      SolverExecutable.Hybrid_EM, "KISAO:0000599", false),				// was 352
 
 	   HybridMilstein(TimeStep.CONSTANT, ErrorTol.NO, TimeSpecCreated.UNIFORM, "Gibson + Milstein","Hybrid (Gibson + Milstein Method)","Hybrid (Gibson + Milstein Method)",
 	      SolverLongDesc.HYBRID_MILSTEIN, 1,SupportedTimeSpec.UNIFORM,
 	      new SolverFeature[]{SolverFeature.Feature_NonSpatial, SolverFeature.Feature_Stochastic},
-	      SolverExecutable.Hybrid_Mil, "KISAO:0000352", false),
+	      SolverExecutable.Hybrid_Mil, "KISAO:0000598", false),				// was 352
 
 	   HybridMilAdaptive(TimeStep.VARIABLE, ErrorTol.NO, TimeSpecCreated.UNIFORM, "Adaptive Gibson + Milstein","Hybrid (Adaptive Gibson + Milstein Method)","Hybrid (Adaptive Gibson + Milstein Method)",
 	      SolverLongDesc.HYBRID_MIL_ADAPTIVE, 1,SupportedTimeSpec.UNIFORM,
 	      new SolverFeature[]{SolverFeature.Feature_NonSpatial, SolverFeature.Feature_Stochastic},
-	      SolverExecutable.Hybrid_Mil_Adaptive, "KISAO:0000352", false),
+	      SolverExecutable.Hybrid_Mil_Adaptive, "KISAO:0000600", false),	// was 352
 
 	   CVODE(TimeStep.VARIABLE, ErrorTol.YES, TimeSpecCreated.DEFAULT, "CVODE","CVODE (Variable Order, Variable Time Step)","CVODE (Variable Order, Variable Time Step)",
 	      SolverLongDesc.CVODE, 3,SupportedTimeSpec.DEFAULT_EXPLICIT_UNIFORM,
