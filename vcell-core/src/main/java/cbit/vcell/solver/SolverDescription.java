@@ -689,4 +689,27 @@ public enum SolverDescription {
 	{
 		return isChomboSolver() || isMovingBoundarySolver();
 	}
+	
+	public enum AlgorithmParameterDescription {
+		Seed("KISAO:0000488", "Custom Seed"),
+		Epsilon("KISAO:0000602", "Minimum Species Threshold for continuous approximation"),
+		Lambda("KISAO:0000603", "Minimum Reaction Rate for continuous approximation"),
+		MSRTolerance("KISAO:0000604", "Multiple Slow Reactions Tolerance"),
+		SDETolerance("KISAO:0000605", "Stochastic Differential Equation Tolerance"),
+		;
+		
+		private final String kisao;
+		private final String description;
+		
+		private AlgorithmParameterDescription(String kisao, String description) {
+			this.kisao = kisao;
+			this.description = description;
+		}
+		public String getKisao() {
+			return kisao;
+		}
+		public String getDescription() {
+			return description;
+		}
+	}
 }

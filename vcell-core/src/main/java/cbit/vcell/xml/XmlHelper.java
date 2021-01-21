@@ -22,6 +22,8 @@ import javax.print.Doc;
 import javax.xml.stream.XMLStreamException;
 
 import cbit.vcell.solver.*;
+import cbit.vcell.solver.SolverDescription.AlgorithmParameterDescription;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jdom.Comment;
@@ -765,14 +767,27 @@ public static String mathModelToXML(MathModel mathModel) throws XmlParseExceptio
 	    				double value = Double.parseDouble(apValue);
 	    				timeStep.setMinimumTimeStep(value);
 	    				
-	    			} else if(apKisaoID.contentEquals("KISAO:0000488")) {		// custom seed
+	    			} else if(apKisaoID.contentEquals(AlgorithmParameterDescription.Seed.getKisao())) {		// custom seed
 						if(simTaskDesc.getSimulation().getMathDescription().isNonSpatialStoch()) {
 							NonspatialStochSimOptions nssso = simTaskDesc.getStochOpt();
 							int value = Integer.parseInt(apValue);
 							nssso.setCustomSeed(value);
 						} else {
-							System.err.println("Algorithm parameter with kisao id 'KISAO:0000488' (custom seed) is only supported for nonspatial stochastic simulations");
+							System.err.println("Algorithm parameter '" + AlgorithmParameterDescription.Seed.getDescription() +"' is only supported for nonspatial stochastic simulations");
 						}
+					// some arguments used only for non-spatial hybrid solvers
+	    			} else if(apKisaoID.contentEquals(AlgorithmParameterDescription.Epsilon.getKisao())) {
+	    				NonspatialStochHybridOptions nssho = simTaskDesc.getStochHybridOpt();
+	    				nssho.setEpsilon(Double.parseDouble(apValue));
+	    			} else if(apKisaoID.contentEquals(AlgorithmParameterDescription.Lambda.getKisao())) {
+	    				NonspatialStochHybridOptions nssho = simTaskDesc.getStochHybridOpt();
+	    				nssho.setLambda(Double.parseDouble(apValue));
+	    			} else if(apKisaoID.contentEquals(AlgorithmParameterDescription.MSRTolerance.getKisao())) {
+	    				NonspatialStochHybridOptions nssho = simTaskDesc.getStochHybridOpt();
+	    				nssho.setMSRTolerance(Double.parseDouble(apValue));
+	    			} else if(apKisaoID.contentEquals(AlgorithmParameterDescription.SDETolerance.getKisao())) {
+	    				NonspatialStochHybridOptions nssho = simTaskDesc.getStochHybridOpt();
+	    				nssho.setSDETolerance(Double.parseDouble(apValue));
 	    			} else {
 	    				System.err.println("Algorithm parameter with kisao id '" + apKisaoID + "' not supported at this time, skipping.");
 	    			}

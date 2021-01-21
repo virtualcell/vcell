@@ -47,19 +47,30 @@ public class NonspatialStochHybridOptions implements Serializable, Matchable {
 	public double getEpsilon() {
 		return epsilon;
 	}
-
 	public double getLambda() {
 		return lambda;
 	}
-
 	public double getMSRTolerance() {
 		return MSRTolerance;
 	}
-
 	public double getSDETolerance() {
 		return SDETolerance;
 	}
 	
+	// careful with using the setters, use only when importing
+	public void setEpsilon(double value) {
+		epsilon = value;
+	}
+	public void setLambda(double value) {
+		lambda = value;
+	}
+	public void setMSRTolerance(double value) {
+		MSRTolerance = value;
+	}
+	public void setSDETolerance(double value) {
+		SDETolerance = value;
+	}
+
 	/**
 	 * get VCML string for stochHybridOption
 	 */
