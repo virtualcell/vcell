@@ -9,7 +9,6 @@ import java.io.File;
 import java.io.FilenameFilter;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 
 public class CLIStandalone {
     public static void main(String[] args) {
@@ -45,7 +44,7 @@ public class CLIStandalone {
             try {
                 singleExec(args);
             } catch (Exception e) {
-            	System.err.print(e.getMessage());
+                System.err.print(e.getMessage());
                 System.exit(1);
             }
         }
@@ -61,7 +60,7 @@ public class CLIStandalone {
             cliHandler = new CLIHandler(args);
             inputFile = cliHandler.getInputFilePath();
             outputDir = cliHandler.getOutputDirPath();
-            System.out.println("VCell CLI input archive "+inputFile);
+            System.out.println("VCell CLI input archive " + inputFile);
             System.out.println("-------------------------------------------------------------------------");
             omexHandler = new OmexHandler(inputFile, outputDir);
             omexHandler.extractOmex();
@@ -86,10 +85,10 @@ public class CLIStandalone {
                 sedml = Libsedml.readDocument(completeSedmlPath).getSedMLModel();
                 String[] sedmlNameSplit = sedmlLocation.split("/", -2);
                 String sedmlName = sedmlNameSplit[sedmlNameSplit.length - 1];
-                System.out.println("Successful translation: SED-ML file "+ sedmlName);
+                System.out.println("Successful translation: SED-ML file " + sedmlName);
                 System.out.println("-------------------------------------------------------------------------");
             } catch (Exception e) {
-                System.err.println("SED-ML processing for "+sedmlLocation+" failed with error: "+e.getMessage());
+                System.err.println("SED-ML processing for " + sedmlLocation + " failed with error: " + e.getMessage());
                 e.printStackTrace(System.err);
                 somethingFailed = true;
                 continue;
@@ -101,8 +100,8 @@ public class CLIStandalone {
             resultsHash = solverHandler.simulateAllTasks(externalDocInfo, sedml, outDirForCurrentSedml);
             reportsHash = CLIUtils.generateReportsAsCSV(sedml, resultsHash, outDirForCurrentSedml);
             if (resultsHash.containsValue(null) || reportsHash.containsValue(null)) {
-				somethingFailed = true;
-			}
+                somethingFailed = true;
+            }
         }
         omexHandler.deleteExtractedOmex();
         if (somethingFailed) {

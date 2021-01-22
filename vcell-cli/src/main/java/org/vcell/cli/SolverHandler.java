@@ -3,13 +3,8 @@ package org.vcell.cli;
 import cbit.util.xml.VCLogger;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.messaging.server.SimulationTask;
-import cbit.vcell.solver.Simulation;
-import cbit.vcell.solver.SimulationJob;
-import cbit.vcell.solver.SolverDescription;
-import cbit.vcell.solver.SolverTaskDescription;
-import cbit.vcell.solver.TempSimulation;
+import cbit.vcell.solver.*;
 import cbit.vcell.solver.ode.AbstractJavaSolver;
-import cbit.vcell.solver.ode.CVodeSolverStandalone;
 import cbit.vcell.solver.ode.ODESolver;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.solver.server.Solver;
@@ -18,8 +13,6 @@ import cbit.vcell.solver.server.SolverStatus;
 import cbit.vcell.solver.stoch.GibsonSolver;
 import cbit.vcell.solver.stoch.HybridSolver;
 import cbit.vcell.solvers.AbstractCompiledSolver;
-import cbit.vcell.solvers.AbstractSolver;
-import cbit.vcell.solvers.SimpleCompiledSolver;
 import cbit.vcell.xml.ExternalDocInfo;
 import cbit.vcell.xml.XmlHelper;
 import org.jlibsedml.SedML;
@@ -81,60 +74,61 @@ public class SolverHandler {
             docName = doc.getName();
             bioModel = (BioModel) doc;
             sims = bioModel.getSimulations();
-			for (Simulation sim : sims) {
-				sim = new TempSimulation(sim, false);
-				SolverTaskDescription std = sim.getSolverTaskDescription();
-				SolverDescription sd = std.getSolverDescription();
-				String kisao = sd.getKisao();
-		        SimulationJob simJob = new SimulationJob(sim, 0, null);
-		        SimulationTask simTask = new SimulationTask(simJob, 0);
-		        Solver solver = SolverFactory.createSolver(outputDir, simTask, false);
-		        ODESolverResultSet odeSolverResultSet = null;
-				try {
-			        if (solver instanceof AbstractCompiledSolver) {
-			        	((AbstractCompiledSolver)solver).runSolver();
-			        	if (solver instanceof ODESolver) {
-			        		odeSolverResultSet = ((ODESolver)solver).getODESolverResultSet();
-			        	} else if (solver instanceof GibsonSolver){
-			        		odeSolverResultSet = ((GibsonSolver)solver).getStochSolverResultSet();			        		
-			        	} else if (solver instanceof HybridSolver) {
-			        		odeSolverResultSet = ((HybridSolver)solver).getHybridSolverResultSet();			        		
-			        	} else {
-			        		System.err.println("Solver results are not compatible with CSV format");
-			        	}
-			        } else if (solver instanceof AbstractJavaSolver) {
-			        	((AbstractJavaSolver)solver).runSolver();
-			        	odeSolverResultSet = ((ODESolver)solver).getODESolverResultSet();
-			        	// must interpolate data for uniform time course which is not supported natively by the Java solvers
-			        	Task task = (Task)sedml.getTaskWithId(sim.getImportedTaskID());
-			        	org.jlibsedml.Simulation sedmlSim = sedml.getSimulation(task.getSimulationReference());
-			        	if (sedmlSim instanceof UniformTimeCourse) {
-				        	odeSolverResultSet =  CLIUtils.interpolate(odeSolverResultSet, (UniformTimeCourse)sedmlSim);
-			        	}
-			        } else {
-			        	// this should actually never happen...
-			        	throw new Exception("Unexpected solver: " + kisao + " "+solver);
-			        }
-			        if (solver.getSolverStatus().getStatus() == SolverStatus.SOLVER_FINISHED) {
-						System.out.println("Succesful execution: Model '" + docName + "' Task '" + sim.getDescription() + "'.");
-			            System.out.println("-------------------------------------------------------------------------");
-			        } else {
-				        System.err.println("Solver status: "+solver.getSolverStatus().getStatus());
-				        System.err.println("Solver message: "+solver.getSolverStatus().getSimulationMessage().getDisplayMessage());
-				        throw new Exception();
-			        }
-				} catch (Exception e) {
-					System.err.println("Failed execution: Model '" + docName + "' Task '" + sim.getDescription() + "'.");
-					if (e.getMessage() != null) {
-						// something else than failure caught by solver instance during execution
-						System.err.println(e.getMessage());
-					}
-					System.out.println("-------------------------------------------------------------------------");
-				}
-				resultsHash.put(sim.getImportedTaskID(), odeSolverResultSet);
-				// removing intermediate files
-				CLIUtils.removeIntermediarySimFiles(outputDir);
-			}
+            for (Simulation sim : sims) {
+                sim = new TempSimulation(sim, false);
+                SolverTaskDescription std = sim.getSolverTaskDescription();
+                SolverDescription sd = std.getSolverDescription();
+                String kisao = sd.getKisao();
+                SimulationJob simJob = new SimulationJob(sim, 0, null);
+                SimulationTask simTask = new SimulationTask(simJob, 0);
+                Solver solver = SolverFactory.createSolver(outputDir, simTask, false);
+                ODESolverResultSet odeSolverResultSet = null;
+                try {
+                    if (solver instanceof AbstractCompiledSolver) {
+                        ((AbstractCompiledSolver) solver).runSolver();
+                        if (solver instanceof ODESolver) {
+                            odeSolverResultSet = ((ODESolver) solver).getODESolverResultSet();
+                        } else if (solver instanceof GibsonSolver) {
+                            odeSolverResultSet = ((GibsonSolver) solver).getStochSolverResultSet();
+                        } else if (solver instanceof HybridSolver) {
+                            odeSolverResultSet = ((HybridSolver) solver).getHybridSolverResultSet();
+                        } else {
+                            System.err.println("Solver results are not compatible with CSV format");
+                        }
+                    } else if (solver instanceof AbstractJavaSolver) {
+                        ((AbstractJavaSolver) solver).runSolver();
+                        odeSolverResultSet = ((ODESolver) solver).getODESolverResultSet();
+                        // must interpolate data for uniform time course which is not supported natively by the Java solvers
+                        Task task = (Task) sedml.getTaskWithId(sim.getImportedTaskID());
+                        assert task != null;
+                        org.jlibsedml.Simulation sedmlSim = sedml.getSimulation(task.getSimulationReference());
+                        if (sedmlSim instanceof UniformTimeCourse) {
+                            odeSolverResultSet = CLIUtils.interpolate(odeSolverResultSet, (UniformTimeCourse) sedmlSim);
+                        }
+                    } else {
+                        // this should actually never happen...
+                        throw new Exception("Unexpected solver: " + kisao + " " + solver);
+                    }
+                    if (solver.getSolverStatus().getStatus() == SolverStatus.SOLVER_FINISHED) {
+                        System.out.println("Succesful execution: Model '" + docName + "' Task '" + sim.getDescription() + "'.");
+                        System.out.println("-------------------------------------------------------------------------");
+                    } else {
+                        System.err.println("Solver status: " + solver.getSolverStatus().getStatus());
+                        System.err.println("Solver message: " + solver.getSolverStatus().getSimulationMessage().getDisplayMessage());
+                        throw new Exception();
+                    }
+                } catch (Exception e) {
+                    System.err.println("Failed execution: Model '" + docName + "' Task '" + sim.getDescription() + "'.");
+                    if (e.getMessage() != null) {
+                        // something else than failure caught by solver instance during execution
+                        System.err.println(e.getMessage());
+                    }
+                    System.out.println("-------------------------------------------------------------------------");
+                }
+                resultsHash.put(sim.getImportedTaskID(), odeSolverResultSet);
+                // removing intermediate files
+                CLIUtils.removeIntermediarySimFiles(outputDir);
+            }
         }
         return resultsHash;
     }

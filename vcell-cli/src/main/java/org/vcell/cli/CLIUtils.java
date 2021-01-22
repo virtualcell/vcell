@@ -19,7 +19,7 @@ import java.util.*;
 
 public class CLIUtils {
     //    private String tempDirPath = null;
-    private String extractedOmexPath = null;
+    private final String extractedOmexPath = null;
 
     public CLIUtils() {
 
@@ -62,9 +62,7 @@ public class CLIUtils {
         // Headers for CSV
         ArrayList<String> headersList = new ArrayList<>();
         headersList.add("times");
-        for (String varName : data.varNames) {
-            headersList.add(varName);
-        }
+        Collections.addAll(headersList, data.varNames);
 
         // Complete rows for CSV
         ArrayList<ArrayList<Double>> allRows = new ArrayList<>();
@@ -171,11 +169,6 @@ public class CLIUtils {
         }
     }
 
-    @SuppressWarnings("UnstableApiUsage")
-    public String getTempDir() {
-        return Files.createTempDir().getAbsolutePath();
-    }
-
     public static HashMap<String, File> generateReportsAsCSV(SedML sedml, HashMap<String, ODESolverResultSet> resultsHash, File outDir) {
         // finally, the real work
         HashMap<String, File> reportsHash = new HashMap<String, File>();
@@ -190,9 +183,9 @@ public class CLIUtils {
                     List<DataSet> datasets = ((Report) oo).getListOfDataSets();
                     for (DataSet dataset : datasets) {
                         DataGenerator datagen = sedml.getDataGeneratorWithId(dataset.getDataReference());
-                        ArrayList<Variable> vars = new ArrayList<Variable>();
                         ArrayList<String> varIDs = new ArrayList<String>();
-                        vars.addAll(datagen.getListOfVariables());
+                        assert datagen != null;
+                        ArrayList<Variable> vars = new ArrayList<Variable>(datagen.getListOfVariables());
                         int mxlen = 0;
                         boolean supportedDataset = true;
                         // get target values
@@ -203,6 +196,7 @@ public class CLIUtils {
                                 supportedDataset = false;
                             } else {
                                 varIDs.add(var.getId());
+                                assert task != null;
                                 ODESolverResultSet results = resultsHash.get(task.getId());
                                 int column = results.findColumn(var.getName());
                                 double[] data = results.extractColumn(column);
@@ -361,5 +355,10 @@ public class CLIUtils {
         }
 
         return yi;
+    }
+
+    @SuppressWarnings("UnstableApiUsage")
+    public String getTempDir() {
+        return Files.createTempDir().getAbsolutePath();
     }
 }
