@@ -462,7 +462,7 @@ public static VCDocument importSBML(VCLogger vcLogger, XMLSource xmlSource, bool
 }
 
 public static VCDocument importBioCellML(VCLogger vcLogger, XMLSource xmlSource) throws Exception {
-	throw new Exception("CellML import to a Biomodel has been disabled.");
+	throw new Exception("CellML import to a Bio-Model has been disabled.");
 }
 
 public static VCDocument importMathCellML(VCLogger vcLogger, XMLSource xmlSource) throws Exception {

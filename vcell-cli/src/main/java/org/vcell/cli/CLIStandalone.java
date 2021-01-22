@@ -84,7 +84,9 @@ public class CLIStandalone {
             try {
                 CLIUtils.makeDirs(outDirForCurrentSedml);
                 sedml = Libsedml.readDocument(completeSedmlPath).getSedMLModel();
-                System.out.println("Succesful translation: SED-ML file "+sedmlLocation);
+                String[] sedmlNameSplit = sedmlLocation.split("/", -2);
+                String sedmlName = sedmlNameSplit[sedmlNameSplit.length - 1];
+                System.out.println("Successful translation: SED-ML file "+ sedmlName);
                 System.out.println("-------------------------------------------------------------------------");
             } catch (Exception e) {
                 System.err.println("SED-ML processing for "+sedmlLocation+" failed with error: "+e.getMessage());

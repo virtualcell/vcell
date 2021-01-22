@@ -25,7 +25,6 @@ import cbit.vcell.xml.XmlHelper;
 import org.jlibsedml.SedML;
 import org.jlibsedml.Task;
 import org.jlibsedml.UniformTimeCourse;
-import org.vcell.cli.helpers.solvers.*;
 import org.vcell.sbml.vcell.SBMLImportException;
 import org.vcell.sbml.vcell.SBMLImporter;
 import org.vcell.util.document.VCDocument;
@@ -110,7 +109,7 @@ public class SolverHandler {
 			        	Task task = (Task)sedml.getTaskWithId(sim.getImportedTaskID());
 			        	org.jlibsedml.Simulation sedmlSim = sedml.getSimulation(task.getSimulationReference());
 			        	if (sedmlSim instanceof UniformTimeCourse) {
-				        	odeSolverResultSet = CLIUtils.interpolate(odeSolverResultSet, (UniformTimeCourse)sedmlSim);
+				        	odeSolverResultSet =  CLIUtils.interpolate(odeSolverResultSet, (UniformTimeCourse)sedmlSim);
 			        	}
 			        } else {
 			        	// this should actually never happen...
@@ -133,9 +132,8 @@ public class SolverHandler {
 					System.out.println("-------------------------------------------------------------------------");
 				}
 				resultsHash.put(sim.getImportedTaskID(), odeSolverResultSet);
-				// TODO Akhil
-				// uncomment after finishing testing all solvers
-//				CLIUtils.removeIntermediarySimFiles(outputDir);
+				// removing intermediate files
+				CLIUtils.removeIntermediarySimFiles(outputDir);
 			}
         }
         return resultsHash;
