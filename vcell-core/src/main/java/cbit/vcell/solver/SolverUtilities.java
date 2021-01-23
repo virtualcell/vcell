@@ -130,7 +130,11 @@ public class SolverUtilities {
 		 // ----- make descendant list and check them all until a match is found
 		 List<KisaoTerm> descendantList = KisaoOntology.makeDescendantList(originalKisaoTerm);
 		 if(descendantList.isEmpty()) {
-			 return null;		// for KISAO_0000000 or some malformed entry
+			 if(!originalKisaoTerm.getId().equals("KISAO_0000000")) {
+				 return attemptLastResortMatch(originalKisaoTerm);
+			 } else {
+				 return null;		// for KISAO_0000000
+			 }
 		 }
 		 for(KisaoTerm descendant : descendantList) {
 			 matchingSolverDescriptions = matchByKisaoId(descendant);
