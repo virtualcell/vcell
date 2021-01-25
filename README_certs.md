@@ -7,7 +7,7 @@ Look in Dockerfile-api-dev under ENV block (key-value pairs defining TLA keystor
 ```
 ENV dbpswdfile=/run/secrets/dbpswd \  
     jmspswdfile=/run/secrets/jmspswd \  
-    keystore=/run/secrets/keystorefile_20200405 \  
+    keystore=/run/secrets/keystorefile_20210125 \  
     keystorepswdfile=/run/secrets/keystorepswd  
 ```
 
@@ -17,7 +17,7 @@ Look in [docker\swarm\docker-compose.yml](./docker/swarm/docker-compose.yml)
 ```
   keystorepswd:
     file: ${VCELL_SECRETS_DIR}/vcellapi-beta-keystorepswd.txt
-  keystorefile_20200405:
+  keystorefile_20210125:
     file: ${VCELL_SECRETS_DIR}/vcellapi-beta.jks
 ```
 
