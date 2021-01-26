@@ -459,6 +459,15 @@ protected synchronized static void initFinalTree(VCDocumentDbTreeModel vcDocumen
 //	}
 //	vcDocumentDbTreeModel.publishedModelsNode = shallowSortByPublication(vcDocumentDbTreeModel.publishedModelsNode);
 //	vcDocumentDbTreeModel.curatedModelsNode = shallowSortByPublication(vcDocumentDbTreeModel.curatedModelsNode);
+	
+//	for (int c = 0; c < vcDocumentDbTreeModel.modelBricksNode.getChildCount(); c++) {
+	if(bModelBricks) {
+		for (int i = 0; i < vcDocumentDbTreeModel.modelBricksNode.getChildCount(); ) {
+			BioModelNode childNode = (BioModelNode) vcDocumentDbTreeModel.modelBricksNode.getChildAt(0);
+			vcDocumentDbTreeModel.curatedModelsNode.add(childNode);
+		}
+	}
+	
 }
 
 private static void shallowOrderByPublication(LinkedHashMap<KeyValue, LinkedList<BioModelNode>> m, LinkedHashMap<KeyValue, PublicationInfo> p) {
