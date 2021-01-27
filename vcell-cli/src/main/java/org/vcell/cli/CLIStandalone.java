@@ -101,8 +101,7 @@ public class CLIStandalone {
             ExternalDocInfo externalDocInfo = new ExternalDocInfo(new File(inputFile), true);
             resultsHash = solverHandler.simulateAllTasks(externalDocInfo, sedml, outDirForCurrentSedml);
             reportsHash = CLIUtils.generateReportsAsCSV(sedml, resultsHash, outDirForCurrentSedml);
-//           CLIUtils.convertCSVtoHDF(Paths.get(outputDir, sedmlName).toString(),sedmlLocation,Paths.get(outputDir, sedmlName).toString());
-            CLIUtils.convertCSVtoHDF(Paths.get(outputDir, sedmlName).toString(),"/Users/akhilteja/projects/virtualCell/vcell/results/_00_omex_test_cvode.sedml",Paths.get(outputDir, sedmlName).toString());
+            CLIUtils.convertCSVtoHDF(Paths.get(outputDir, sedmlName).toString(), sedmlLocation, Paths.get(outputDir, sedmlName).toString());
             if (resultsHash.containsValue(null) || reportsHash.containsValue(null)) {
                 somethingFailed = true;
             }

@@ -9,18 +9,23 @@ import cbit.vcell.util.ColumnDescription;
 import com.google.common.io.Files;
 import org.jlibsedml.*;
 import org.vcell.stochtest.TimeSeriesMultitrialData;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 
 public class CLIUtils {
     //    private String tempDirPath = null;
     private final String extractedOmexPath = null;
+
+    private static final Path workingDirectory = Paths.get(System.getProperty("user.dir"));
+    // Submodule path for VCell_CLI_UTILS
+    private static final Path utilPath = Paths.get(workingDirectory.toString(), "submodules", "vcell_cli_utils");
+    private static final Path cliPath = Paths.get(utilPath.toString(), "cli_util", "cli.py");
+    private static final Path requirementFilePath = Paths.get(utilPath.toString(), "requirements.txt");
 
     public CLIUtils() {
 
@@ -358,36 +363,49 @@ public class CLIUtils {
         return yi;
     }
 
-    public static void convertCSVtoHDF(String csvDir, String sedmlFilePathStr, String outDir) throws IOException {
-        // NOTE: Need working directory as well for CLI arg, calculate here
-        Path workingDirectory = Paths.get(System.getProperty("user.dir"));
+    private static void runCommand(String[] args) {
+        try {
+            System.out.println("Running the command " + Arrays.toString(args));
+            ProcessBuilder builder = new ProcessBuilder(args);
+            builder.redirectOutput(ProcessBuilder.Redirect.INHERIT);
+            builder.redirectError(ProcessBuilder.Redirect.INHERIT);
+            Process proc = builder.start();
+            int exitCode = proc.waitFor();
+            System.out.println("Program exited with code: " + exitCode + "\n");
+        } catch (IOException | InterruptedException I) {
+            System.err.println("Failed executing the command " + Arrays.toString(args)+ "\n");
+        }
+    }
 
-        Path utilPath = Paths.get(workingDirectory.toString(), "submodules","vcell_cli_utils");
-        Path cliPath = Paths.get(utilPath.toString(), "cli_util","cli.py");
-        Path requirementFilePath = Paths.get(utilPath.toString(),"requirements.txt");
+    private static void pipInstallReqPackage() {
+        // PIP install the requirements
+        String[] args = new String[]{"pip3", "install", "-r", String.valueOf(requirementFilePath)};
+        CLIUtils.runCommand(args);
+    }
+
+    private static void givePermissions(String sedmlFilePathStr) {
+        // Give permissions to SED-ML file in the temp directory
+        Path sedmlFilePath = Paths.get(sedmlFilePathStr);
+        String[] permissionArgs = new String[]{"chmod", "777", sedmlFilePath.toString()};
+        CLIUtils.runCommand(permissionArgs);
+    }
+
+    public static void convertCSVtoHDF(String csvDir, String sedmlFilePathStr, String outDir) {
         Path csvDirPath = Paths.get(csvDir);
         Path sedmlFilePath = Paths.get(sedmlFilePathStr);
         Path outDirPath = Paths.get(outDir);
 
-        // Install all requirements
-//        String[] args = new String[]{"pip3","install","-r",requirementFilePath.toString()};
-//        ProcessBuilder builder = new ProcessBuilder(args);
-//        builder.redirectOutput(ProcessBuilder.Redirect.INHERIT);
-//        builder.redirectError(ProcessBuilder.Redirect.INHERIT);
-//        Process proc = builder.start();
+        CLIUtils.pipInstallReqPackage();
+        CLIUtils.givePermissions(sedmlFilePathStr);
 
+        // Convert CSV to HDF5
         /*
         Usage: cli.py SEDML_FILE_PATH WORKING_DIR BASE_OUT_PATH CSV_DIR <flags>
                     optional flags:        --rel_out_path | --apply_xml_model_changes |
                          --report_formats | --plot_formats | --log | --indent
         * */
-
-        // Convert CSV to HDF
-        String[] cliArgs = new String[]{"python3", cliPath.toString(),sedmlFilePath.toString(), workingDirectory.toString(), outDirPath.toString(), csvDirPath.toString()};
-        ProcessBuilder cliProcessBuilder = new ProcessBuilder(cliArgs);
-        cliProcessBuilder.redirectOutput(ProcessBuilder.Redirect.INHERIT);
-        cliProcessBuilder.redirectError(ProcessBuilder.Redirect.INHERIT);
-        Process cliProcess = cliProcessBuilder.start();
+        String[] cliArgs = new String[]{"python3", cliPath.toString(), sedmlFilePath.toString(), workingDirectory.toString(), outDirPath.toString(), csvDirPath.toString()};
+        CLIUtils.runCommand(cliArgs);
 
     }
 

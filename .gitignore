@@ -192,3 +192,7 @@ $RECYCLE.BIN/
 *.lnk
 !results/.gitkeep
 results/*
+/sample_omex_files/_00_omex_test_cvode.omex
+/sample_omex_files/_00_omex_test_cvode1.omex
+/sample_omex_files/_00_omex_test_cvode_IDA.omex
+/sample_omex_files/__bm35_test_stochastic.omex
