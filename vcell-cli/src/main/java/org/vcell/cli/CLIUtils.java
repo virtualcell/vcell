@@ -9,7 +9,8 @@ import cbit.vcell.util.ColumnDescription;
 import com.google.common.io.Files;
 import org.jlibsedml.*;
 import org.vcell.stochtest.TimeSeriesMultitrialData;
-
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -355,6 +356,39 @@ public class CLIUtils {
         }
 
         return yi;
+    }
+
+    public static void convertCSVtoHDF(String csvDir, String sedmlFilePathStr, String outDir) throws IOException {
+        // NOTE: Need working directory as well for CLI arg, calculate here
+        Path workingDirectory = Paths.get(System.getProperty("user.dir"));
+
+        Path utilPath = Paths.get(workingDirectory.toString(), "submodules","vcell_cli_utils");
+        Path cliPath = Paths.get(utilPath.toString(), "cli_util","cli.py");
+        Path requirementFilePath = Paths.get(utilPath.toString(),"requirements.txt");
+        Path csvDirPath = Paths.get(csvDir);
+        Path sedmlFilePath = Paths.get(sedmlFilePathStr);
+        Path outDirPath = Paths.get(outDir);
+
+        // Install all requirements
+//        String[] args = new String[]{"pip3","install","-r",requirementFilePath.toString()};
+//        ProcessBuilder builder = new ProcessBuilder(args);
+//        builder.redirectOutput(ProcessBuilder.Redirect.INHERIT);
+//        builder.redirectError(ProcessBuilder.Redirect.INHERIT);
+//        Process proc = builder.start();
+
+        /*
+        Usage: cli.py SEDML_FILE_PATH WORKING_DIR BASE_OUT_PATH CSV_DIR <flags>
+                    optional flags:        --rel_out_path | --apply_xml_model_changes |
+                         --report_formats | --plot_formats | --log | --indent
+        * */
+
+        // Convert CSV to HDF
+        String[] cliArgs = new String[]{"python3", cliPath.toString(),sedmlFilePath.toString(), workingDirectory.toString(), outDirPath.toString(), csvDirPath.toString()};
+        ProcessBuilder cliProcessBuilder = new ProcessBuilder(cliArgs);
+        cliProcessBuilder.redirectOutput(ProcessBuilder.Redirect.INHERIT);
+        cliProcessBuilder.redirectError(ProcessBuilder.Redirect.INHERIT);
+        Process cliProcess = cliProcessBuilder.start();
+
     }
 
     @SuppressWarnings("UnstableApiUsage")

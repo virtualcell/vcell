@@ -7,6 +7,7 @@ import org.jlibsedml.SedML;
 
 import java.io.File;
 import java.io.FilenameFilter;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -77,6 +78,7 @@ public class CLIStandalone {
         for (String sedmlLocation : sedmlLocations) {
             HashMap<String, ODESolverResultSet> resultsHash = null;
             HashMap<String, File> reportsHash = null;
+            String sedmlName = null;
             File completeSedmlPath = new File(sedmlLocation);
             File outDirForCurrentSedml = new File(omexHandler.getOutputPathFromSedml(sedmlLocation));
             SedML sedml = null;
@@ -84,7 +86,7 @@ public class CLIStandalone {
                 CLIUtils.makeDirs(outDirForCurrentSedml);
                 sedml = Libsedml.readDocument(completeSedmlPath).getSedMLModel();
                 String[] sedmlNameSplit = sedmlLocation.split("/", -2);
-                String sedmlName = sedmlNameSplit[sedmlNameSplit.length - 1];
+                sedmlName = sedmlNameSplit[sedmlNameSplit.length - 1];
                 System.out.println("Successful translation: SED-ML file " + sedmlName);
                 System.out.println("-------------------------------------------------------------------------");
             } catch (Exception e) {
@@ -99,6 +101,8 @@ public class CLIStandalone {
             ExternalDocInfo externalDocInfo = new ExternalDocInfo(new File(inputFile), true);
             resultsHash = solverHandler.simulateAllTasks(externalDocInfo, sedml, outDirForCurrentSedml);
             reportsHash = CLIUtils.generateReportsAsCSV(sedml, resultsHash, outDirForCurrentSedml);
+//           CLIUtils.convertCSVtoHDF(Paths.get(outputDir, sedmlName).toString(),sedmlLocation,Paths.get(outputDir, sedmlName).toString());
+            CLIUtils.convertCSVtoHDF(Paths.get(outputDir, sedmlName).toString(),"/Users/akhilteja/projects/virtualCell/vcell/results/_00_omex_test_cvode.sedml",Paths.get(outputDir, sedmlName).toString());
             if (resultsHash.containsValue(null) || reportsHash.containsValue(null)) {
                 somethingFailed = true;
             }

@@ -126,8 +126,9 @@ public class SolverHandler {
                     System.out.println("-------------------------------------------------------------------------");
                 }
                 resultsHash.put(sim.getImportedTaskID(), odeSolverResultSet);
-                // removing intermediate files
+
                 CLIUtils.removeIntermediarySimFiles(outputDir);
+
             }
         }
         return resultsHash;

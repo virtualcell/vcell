@@ -1,0 +1,3 @@
+[submodule "submodules/vcell_cli_utils"]
+	path = submodules/vcell_cli_utils
+	url = https://github.com/virtualcell/vcell_cli_utils.git
