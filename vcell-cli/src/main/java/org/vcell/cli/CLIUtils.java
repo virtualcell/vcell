@@ -363,7 +363,7 @@ public class CLIUtils {
         return yi;
     }
 
-    private static void runCommand(String[] args) {
+    private static void execShellCommand(String[] args) {
         try {
             System.out.println("Running the command " + Arrays.toString(args));
             ProcessBuilder builder = new ProcessBuilder(args);
@@ -377,17 +377,18 @@ public class CLIUtils {
         }
     }
 
-    private static void pipInstallReqPackage() {
+    private static void pipInstallRequirements() {
         // PIP install the requirements
         String[] args = new String[]{"pip3", "install", "-r", String.valueOf(requirementFilePath)};
-        CLIUtils.runCommand(args);
+        CLIUtils.execShellCommand(args);
     }
 
-    private static void givePermissions(String sedmlFilePathStr) {
-        // Give permissions to SED-ML file in the temp directory
-        Path sedmlFilePath = Paths.get(sedmlFilePathStr);
-        String[] permissionArgs = new String[]{"chmod", "777", sedmlFilePath.toString()};
-        CLIUtils.runCommand(permissionArgs);
+    public static void giveOpenPermissions(String PathStr) {
+        // Give permissions to the file in the temp directory
+        Path filePath = Paths.get(PathStr);
+        // TODO: Make it work on Windows platform
+        String[] permissionArgs = new String[]{"chmod", "777", filePath.toString()};
+        CLIUtils.execShellCommand(permissionArgs);
     }
 
     public static void convertCSVtoHDF(String csvDir, String sedmlFilePathStr, String outDir) {
@@ -395,8 +396,8 @@ public class CLIUtils {
         Path sedmlFilePath = Paths.get(sedmlFilePathStr);
         Path outDirPath = Paths.get(outDir);
 
-        CLIUtils.pipInstallReqPackage();
-        CLIUtils.givePermissions(sedmlFilePathStr);
+        CLIUtils.pipInstallRequirements();
+        CLIUtils.giveOpenPermissions(sedmlFilePathStr);
 
         // Convert CSV to HDF5
         /*
@@ -405,7 +406,7 @@ public class CLIUtils {
                          --report_formats | --plot_formats | --log | --indent
         * */
         String[] cliArgs = new String[]{"python3", cliPath.toString(), sedmlFilePath.toString(), workingDirectory.toString(), outDirPath.toString(), csvDirPath.toString()};
-        CLIUtils.runCommand(cliArgs);
+        CLIUtils.execShellCommand(cliArgs);
 
     }
 
