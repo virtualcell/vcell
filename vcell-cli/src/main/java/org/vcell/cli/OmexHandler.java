@@ -8,6 +8,7 @@ import org.sbml.libcombine.CaOmexManifest;
 import org.sbml.libcombine.CombineArchive;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.URI;
 import java.nio.file.*;
 import java.util.ArrayList;
@@ -104,7 +105,7 @@ public class OmexHandler {
         return sedmlListAbsolute;
     }
 
-    public String getOutputPathFromSedml(String absoluteSedmlPath) {
+    public String getOutputPathFromSedml(String absoluteSedmlPath) throws IOException {
         String outputPath = "";
         String sedmlName = absoluteSedmlPath.substring(absoluteSedmlPath.lastIndexOf(File.separator) + 1);
         ArrayList<String> sedmlListRelative = this.getSedmlLocationsRelative();
