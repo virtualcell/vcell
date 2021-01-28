@@ -93,7 +93,7 @@ public class CLIHandler {
     }
 
     public String getVersion() throws IOException {
-        final String url = "http://vcell.org/webstart/Rel/updates.xml";
+        final String url = "http://vcell.org/webstart/Alpha/updates.xml";
         final Document document = Jsoup.connect(url).get();
 
         Elements entryElements = document.select("entry");
