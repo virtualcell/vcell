@@ -4,15 +4,13 @@ import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.SimpleSymbolTable;
 import cbit.vcell.parser.SymbolTable;
+import cbit.vcell.resource.OperatingSystemInfo;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.util.ColumnDescription;
 import com.google.common.io.Files;
 import org.jlibsedml.*;
 import org.vcell.stochtest.TimeSeriesMultitrialData;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.*;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
@@ -21,7 +19,9 @@ public class CLIUtils {
     //    private String tempDirPath = null;
     private final String extractedOmexPath = null;
 
-    private static final Path workingDirectory = Paths.get(System.getProperty("user.dir"));
+//    private static final Path workingDirectory = Paths.get(Paths.get(".").toAbsolutePath().normalize().toString());
+    // TODO: Hardcoded for docker image working directory(remove it soon) @gmarupilla
+    private static final Path workingDirectory = Paths.get(System.getProperty("user.dir").equals("/") ? "/usr/local/app/vcell/installDir" : System.getProperty("user.dir"));
     // Submodule path for VCell_CLI_UTILS
     private static final Path utilPath = Paths.get(workingDirectory.toString(), "submodules", "vcell_cli_utils");
     private static final Path cliPath = Paths.get(utilPath.toString(), "cli_util", "cli.py");
@@ -363,24 +363,46 @@ public class CLIUtils {
         return yi;
     }
 
-    private static void execShellCommand(String[] args) {
+    private static int execShellCommand(String[] args) {
+        // NOTE: Magic number -10, simply means unassigned exit code
+        int output = -10;
         try {
             System.out.println("Running the command " + Arrays.toString(args));
             ProcessBuilder builder = new ProcessBuilder(args);
             builder.redirectOutput(ProcessBuilder.Redirect.INHERIT);
             builder.redirectError(ProcessBuilder.Redirect.INHERIT);
             Process proc = builder.start();
-            int exitCode = proc.waitFor();
-            System.out.println("Program exited with code: " + exitCode + "\n");
+            output = proc.waitFor();
+            if (output == 0) {
+                System.out.println("Program exited with code: " + proc.waitFor() + "\n");
+            }
+            return output;
         } catch (IOException | InterruptedException I) {
             System.err.println("Failed executing the command " + Arrays.toString(args)+ "\n");
         }
+        return output;
     }
 
     private static void pipInstallRequirements() {
-        // PIP install the requirements
-        String[] args = new String[]{"pip3", "install", "-r", String.valueOf(requirementFilePath)};
+        // pip install the requirements
+        String[] args;
+        if (OperatingSystemInfo.getInstance().isWindows()) {
+            args = new String[]{"pip", "install", "-r", String.valueOf(requirementFilePath)};
+        } else {
+            args = new String[]{"pip3", "install", "-r", String.valueOf(requirementFilePath)};
+        }
         CLIUtils.execShellCommand(args);
+    }
+
+    public static int checkPythonInstallation() {
+        // NOTE: Magic number -10, simply means unassigned exit code
+        int pyCheckIns = -10;
+        if (OperatingSystemInfo.getInstance().isWindows()) {
+            pyCheckIns = execShellCommand(new String[]{"python", "--version"});
+        } else {
+            pyCheckIns = execShellCommand(new String[]{"python3", "--version"});
+        }
+        return pyCheckIns;
     }
 
     public static void giveOpenPermissions(String PathStr) {
@@ -395,11 +417,11 @@ public class CLIUtils {
         Path csvDirPath = Paths.get(csvDir);
         Path sedmlFilePath = Paths.get(sedmlFilePathStr);
         Path outDirPath = Paths.get(outDir);
-
         CLIUtils.pipInstallRequirements();
-        CLIUtils.giveOpenPermissions(sedmlFilePathStr);
+//        CLIUtils.giveOpenPermissions(sedmlFilePathStr);
 
         // Convert CSV to HDF5
+        // TODO: Add Metadata Directory to wrap H5(Simulation_1.sedml)
         /*
         Usage: cli.py SEDML_FILE_PATH WORKING_DIR BASE_OUT_PATH CSV_DIR <flags>
                     optional flags:        --rel_out_path | --apply_xml_model_changes |
@@ -407,6 +429,7 @@ public class CLIUtils {
         * */
         String[] cliArgs = new String[]{"python3", cliPath.toString(), sedmlFilePath.toString(), workingDirectory.toString(), outDirPath.toString(), csvDirPath.toString()};
         CLIUtils.execShellCommand(cliArgs);
+        System.out.println("HDF conversion completed in '" + outDir + "'");
 
     }
 
