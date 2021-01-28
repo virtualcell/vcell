@@ -60,13 +60,23 @@ openssl s_server -key ./registry_certs/domain.key -cert ./registry_certs/newer.c
 //on vcellapi-beta, vcell-node3, vcell-node4, vcellapi, vcell-node1, vcell-node2 check new cert is trusted (new one won't be)
 wget https://vcell-docker.cam.uchc.edu:4567
 
-//Follow directions under "install self-signed cert as trusted CA to enable use of Docker registry by Singularity" to enable new cert on each server
+//First follow directions lower down under "install self-signed cert as trusted CA to enable use of Docker registry by Singularity" to enable new cert on each server
 
-//Restart docker registry with new certificate
+//Then restart docker registry with new certificate
 sudo docker ps -> get registryContainerID of image "registry:2"
 sudo docker container stop {registryContainerID}
 sudo docker container rm {registryContainerID}
 sudo docker run -d -p 5000:5000 -v /usr/local/deploy/registry_certs:/certs -e REGISTRY_HTTP_TLS_CERTIFICATE=/certs/newer.crt -e REGISTRY_HTTP_TLS_KEY=/certs/domain.key --restart=always --name registry registry:2
+
+//OPTIONAL Restart vcell-docker web-ui server frontend on vcell-docker (OPTIONAL, not necessary for VCell, used to view repo from web browser)
+sudo docker ps -> look for container name containing 'frontend:v2'
+sudo docker container restart {frontend:v2_ContainerID}
+NOTE: if you did not find an 'frontend:v2' container you can start one with the command:
+sudo docker run -d --restart=always --name registry-ui -e ENV_DOCKER_REGISTRY_HOST=vcell-docker.cam.uchc.edu -e ENV_DOCKER_REGISTRY_PORT=5000 -e ENV_DOCKER_REGISTRY_USE_SSL=1 -p 5001:80 konradkleine/docker-registry-frontend:v2
+Test web-ui server, try to view the repository from a web browser with 'http://vcell-docker.cam.uchc.edu:5001', (yes it's http not https and 5001 not 5000)
+example_Repo_Image_Tag_Format=schaff/vcell-submit:6a3c83f (find an old image:tag from one of the vcell nodes with 'sudo docker images')
+Test push an image to repo using 'sudo docker image push vcell-docker.cam.uchc.edu:5000/example_Repo_Image_Tag_Format' (do not include https://, yes it's 5000 not 50001)
+Test pull an image from repo 'sudo docker pull vcell-docker.cam.uchc.edu:5000/example_Repo_Image_Tag_Format' (do not include https://, yes it's 5000 not 50001)
 ```
 
 ## install self-signed cert as trusted CA to enable use of Docker registry by Singularity
