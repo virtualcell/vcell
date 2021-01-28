@@ -8,6 +8,9 @@ jobs:
     steps:
       # Checkout out
       - uses: actions/checkout@v2
+      # Checkout submodules
+      - name: Checkout submodules
+        run: git submodule update --init --recursive
 
       # Extract mvn and jdk
       - name: Extract JDK Tarball and setup Java
