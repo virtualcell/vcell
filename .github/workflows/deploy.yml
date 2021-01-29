@@ -55,20 +55,13 @@ jobs:
           docker tag ghcr.io/biosimulators/biosimulators_vcell/vcell:latest ghcr.io/biosimulators/biosimulators_vcell/vcell:${{steps.version.outputs.tag}}
           docker push ghcr.io/biosimulators/biosimulators_vcell/vcell:${{ steps.version.outputs.tag }}
 
-      # - name: Tag Docker image to top-level container namespace # TODO: remove when validation work flow below running
-      # run: |
-      #    docker tag ghcr.io/biosimulators/biosimulators_vcell/vcell:latest ghcr.io/biosimulators/vcell:latest
-      #    docker tag ghcr.io/biosimulators/biosimulators_vcell/vcell:latest ghcr.io/biosimulators/vcell:${{steps.version.outputs.tag}}
-      #    docker push ghcr.io/biosimulators/vcell:latest
-      #    docker push ghcr.io/biosimulators/vcell:${{ steps.version.outputs.tag }}
-
-       # Submit to BioSimulators registry
-       - name: Submit to BioSimulators registry
-         run: |
-           REVISION=$(git rev-parse HEAD)
-           curl \
-             -X POST \
-             -u ${{ secrets.GH_ISSUE_USERNAME }}:${{ secrets.GH_ISSUE_TOKEN }} \
-             -H "Accept: application/vnd.github.v3+json" \
-             https://api.github.com/repos/biosimulators/Biosimulators/issues \
-             -d "{\"labels\": [\"Validate/submit simulator\"], \"title\": \"Submit VCell ${{ steps.version.outputs.tag }}\", \"body\": \"---\nid: vcell\nversion: ${{ steps.version.outputs.tag }}\nspecificationsUrl: https://raw.githubusercontent.com/${{ github.repository }}/${REVISION}/biosimulators.json\nspecificationsPatch:\n  version: ${{ steps.version.outputs.tag }}\n  image:\n    url: ghcr.io/biosimulators/biosimulators_vcell/vcell:${{ steps.version.outputs.tag }}\nvalidateImage: true\ncommitSimulator: true\n\n---\"}"
+      # Submit to BioSimulators registry
+      - name: Submit to BioSimulators registry
+        run: |
+          REVISION=$(git rev-parse HEAD)
+          curl \
+            -X POST \
+            -u ${{ secrets.GH_ISSUE_USERNAME }}:${{ secrets.GH_ISSUE_TOKEN }} \
+            -H "Accept: application/vnd.github.v3+json" \
+            https://api.github.com/repos/biosimulators/Biosimulators/issues \
+            -d "{\"labels\": [\"Validate/submit simulator\"], \"title\": \"Submit VCell ${{ steps.version.outputs.tag }}\", \"body\": \"---\nid: vcell\nversion: ${{ steps.version.outputs.tag }}\nspecificationsUrl: https://raw.githubusercontent.com/${{ github.repository }}/${REVISION}/biosimulators.json\nspecificationsPatch:\n  version: ${{ steps.version.outputs.tag }}\n  image:\n    url: ghcr.io/biosimulators/biosimulators_vcell/vcell:${{ steps.version.outputs.tag }}\nvalidateImage: true\ncommitSimulator: true\n\n---\"}"
