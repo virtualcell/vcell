@@ -1,5 +1,6 @@
 package org.vcell.cli;
 
+import cbit.vcell.resource.OperatingSystemInfo;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.xml.ExternalDocInfo;
 import org.jlibsedml.Libsedml;
@@ -85,7 +86,12 @@ public class CLIStandalone {
             try {
                 CLIUtils.makeDirs(outDirForCurrentSedml);
                 sedml = Libsedml.readDocument(completeSedmlPath).getSedMLModel();
-                String[] sedmlNameSplit = sedmlLocation.split("/", -2);
+                String[] sedmlNameSplit = null;
+                if (OperatingSystemInfo.getInstance().isWindows()) {
+                    sedmlNameSplit = sedmlLocation.split("\\\\", -2);
+                } else {
+                    sedmlNameSplit = sedmlLocation.split("/", -2);
+                }
                 sedmlName = sedmlNameSplit[sedmlNameSplit.length - 1];
                 System.out.println("Successful translation: SED-ML file " + sedmlName);
                 System.out.println("-------------------------------------------------------------------------");
@@ -101,10 +107,17 @@ public class CLIStandalone {
             ExternalDocInfo externalDocInfo = new ExternalDocInfo(new File(inputFile), true);
             resultsHash = solverHandler.simulateAllTasks(externalDocInfo, sedml, outDirForCurrentSedml);
             reportsHash = CLIUtils.generateReportsAsCSV(sedml, resultsHash, outDirForCurrentSedml);
-            if(CLIUtils.checkPythonInstallation() == 0 ) {
-                CLIUtils.convertCSVtoHDF(Paths.get(outputDir, sedmlName).toString(), sedmlLocation, Paths.get(outputDir, sedmlName).toString());
-            } else {
-                System.err.println("Converting to HDF failed (Check local Python installation)");
+            /*
+            Note:
+            Internally biosimulators_utils python package uses a capturer package, which is developed for UNIX based systems.
+            Either way we need to find an alternate capturer for windows in biosimulators_utils
+            */
+            if (!OperatingSystemInfo.getInstance().isWindows()) {
+                if(CLIUtils.checkPythonInstallation() == 0 ) {
+                    CLIUtils.convertCSVtoHDF(Paths.get(outputDir, sedmlName).toString(), sedmlLocation, Paths.get(outputDir, sedmlName).toString());
+                } else {
+                    System.err.println("Converting to HDF failed (Check local Python installation)");
+                }
             }
             if (resultsHash.containsValue(null) || reportsHash.containsValue(null)) {
                 somethingFailed = true;

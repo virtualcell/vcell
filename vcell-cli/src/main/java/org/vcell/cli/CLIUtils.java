@@ -398,6 +398,7 @@ public class CLIUtils {
         // NOTE: Magic number -10, simply means unassigned exit code
         int pyCheckIns = -10;
         if (OperatingSystemInfo.getInstance().isWindows()) {
+            System.out.println();
             pyCheckIns = execShellCommand(new String[]{"python", "--version"});
         } else {
             pyCheckIns = execShellCommand(new String[]{"python3", "--version"});
@@ -414,6 +415,7 @@ public class CLIUtils {
     }
 
     public static void convertCSVtoHDF(String csvDir, String sedmlFilePathStr, String outDir) {
+        String[] cliArgs;
         Path csvDirPath = Paths.get(csvDir);
         Path sedmlFilePath = Paths.get(sedmlFilePathStr);
         Path outDirPath = Paths.get(outDir);
@@ -427,7 +429,13 @@ public class CLIUtils {
                     optional flags:        --rel_out_path | --apply_xml_model_changes |
                          --report_formats | --plot_formats | --log | --indent
         * */
-        String[] cliArgs = new String[]{"python3", cliPath.toString(), sedmlFilePath.toString(), workingDirectory.toString(), outDirPath.toString(), csvDirPath.toString()};
+        if (OperatingSystemInfo.getInstance().isWindows()) {
+            cliArgs = new String[]{"python", cliPath.toString(), sedmlFilePath.toString(), workingDirectory.toString(), outDirPath.toString(), csvDirPath.toString()};
+            System.out.println("cliArgs"+ Arrays.toString(cliArgs));
+        } else {
+            cliArgs = new String[]{"python3", cliPath.toString(), sedmlFilePath.toString(), workingDirectory.toString(), outDirPath.toString(), csvDirPath.toString()};
+        }
+
         CLIUtils.execShellCommand(cliArgs);
         System.out.println("HDF conversion completed in '" + outDir + "'");
 
