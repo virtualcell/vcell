@@ -130,7 +130,11 @@ public class SolverUtilities {
 		 // ----- make descendant list and check them all until a match is found
 		 List<KisaoTerm> descendantList = KisaoOntology.makeDescendantList(originalKisaoTerm);
 		 if(descendantList.isEmpty()) {
-			 return null;		// for KISAO_0000000 or some malformed entry
+			 if(!originalKisaoTerm.getId().equals("KISAO_0000000")) {
+				 return attemptLastResortMatch(originalKisaoTerm);
+			 } else {
+				 return null;		// for KISAO_0000000
+			 }
 		 }
 		 for(KisaoTerm descendant : descendantList) {
 			 matchingSolverDescriptions = matchByKisaoId(descendant);
@@ -139,16 +143,16 @@ public class SolverUtilities {
 			 }
 		 }
 		 KisaoTerm last = descendantList.get(descendantList.size()-1);
-		 System.out.println("No direct match with any descendant, trying last resort match for descendant " + last.getId());
+//		 System.out.println("No direct match with any descendant, trying last resort match for descendant " + last.getId());
 		 return attemptLastResortMatch(last);
 	}
 	private static List<SolverDescription> matchByKisaoId(KisaoTerm candidate) {
         List<SolverDescription> solverDescriptions = new ArrayList<>();
 		for (SolverDescription sd : SolverDescription.values()) {
 			if(sd.getKisao().contains(":") || sd.getKisao().contains("_")) {
-				System.out.println(sd.getKisao());
+//				System.out.println(sd.getKisao());
 			} else {
-				System.out.println(sd.getKisao() + " - bad format, skipping");
+//				System.err.println(sd.getKisao() + " - bad format, skipping");
 				continue;
 			}
 			String s1 = candidate.getId();
@@ -186,6 +190,7 @@ public class SolverUtilities {
 		case "KISAO_0000377":
 			return SolverDescription.RungeKuttaFehlberg;
 		default:
+			System.err.println("Failed last resort match for descendant " + last.getId());
 			return null;
 		}
 	}

@@ -394,7 +394,10 @@ int importBatchSimulations(Simulation[] sims, Component requester) throws java.b
 		return -1;
 	}
 
-	getSimulationOwner().importBatchSimulations(sims[0]);
+	ArrayList<AnnotatedFunction> outputFunctionsList = getSimulationOwner().getOutputFunctionContext().getOutputFunctionsList();
+	OutputContext outputContext = new OutputContext(outputFunctionsList.toArray(new AnnotatedFunction[outputFunctionsList.size()]));
+	getClientSimManager().importBatchSimulations(outputContext, sims[0]);
+//	getSimulationOwner().importBatchSimulations(sims[0]);	// was in simContext initially
 	return -1;
 }
 

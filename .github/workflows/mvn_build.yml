@@ -1,0 +1,68 @@
+name: CI
+
+on: [push]
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [Ubuntu-20.04, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v2
+
+        # Checkout Submodule
+      - name: Checkout submodules
+        run: git submodule update --init --recursive
+
+        # get clone directory name to avoid discrepancy between VCell and BioSim_VCell
+      - name: Get directory name
+        id: directory
+        run: echo ::set-output name=dirname::$(basename "`pwd`")
+
+      - name: Install Linux dependencies
+        if: matrix.os == 'Ubuntu-20.04'
+        shell: bash
+        run: |
+          wget https://vcell.org/webstart/pipeline_files/jdk-8u241-linux-x64.tar.gz
+          tar -xvzf jdk-8u241-linux-x64.tar.gz
+          mv jdk1.8.0_241 jdk
+          wget https://vcell.org/webstart/pipeline_files/apache-maven-3.6.3-bin.tar.gz
+          tar -xvzf apache-maven-3.6.3-bin.tar.gz
+          mv apache-maven-3.6.3 maven
+          export JAVA_HOME=`pwd`/jdk
+          export PATH=${JAVA_HOME}/bin:${PATH}
+          echo $JAVA_HOME
+          export M2_HOME=`pwd`/maven
+          export PATH=${M2_HOME}/bin:${PATH}
+          mvn -version
+          java -version
+          mvn clean install dependency:copy-dependencies
+
+      - name: Install MacOS dependencies
+        if: matrix.os == 'macos-latest'
+        shell: bash
+        run: |
+          wget https://vcell.org/webstart/pipeline_files/jdk-8u251-macosx-x64.dmg
+          wget https://vcell.org/webstart/pipeline_files/apache-maven-3.6.3-bin.tar.gz
+          tar -xvzf apache-maven-3.6.3-bin.tar.gz
+          mv apache-maven-3.6.3 maven
+          hdiutil attach jdk-8u251-macosx-x64.dmg
+          sudo installer -pkg /Volumes/JDK\ 8\ Update\ 251/JDK\ 8\ Update\ 251.pkg -target /
+          diskutil umount /Volumes/JDK\ 8\ Update\ 251
+          export JAVA_HOME="/Library/Java/JavaVirtualMachines/jdk1.8.0_251.jdk/Contents/Home"
+          export M2_HOME=`pwd`/maven
+          export PATH=${M2_HOME}/bin:${PATH}
+          java -version
+          mvn -version
+          mvn clean install dependency:copy-dependencies
+        # TODO: Fix discrepancy
+      - name: Install Windows dependencies
+        if: matrix.os == 'windows-latest'
+        shell: powershell
+        working-directory: ${{runner.workspace}}/${{steps.directory.outputs.dirname}}
+        run: |
+          pwd
+          Get-ChildItem

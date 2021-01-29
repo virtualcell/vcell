@@ -670,8 +670,12 @@ public class RulebasedTransformer implements SimContextTransformer {
 				String component_id_str = componentElement.getAttributeValue("id");
 				String component_name_str = componentElement.getAttributeValue("name");
 				MolecularComponentPattern mcp = mtp.getMolecularComponentPattern(component_name_str);
-				if(mcp == null) System.out.println("!!! Missing component " + component_name_str);
-				System.out.println("        component  id=" + component_id_str + ", name=" + component_name_str);
+				if(mcp == null) {
+					if(!(component_name_str.contentEquals("AAA") || component_name_str.contentEquals("AAB"))) {
+						System.err.println("!!! Missing component " + component_name_str);
+					}
+				}
+//				System.out.println("        component  id=" + component_id_str + ", name=" + component_name_str);
 				keyMap.put(component_id_str, mcp);
 			
 			}
@@ -784,9 +788,9 @@ public class RulebasedTransformer implements SimContextTransformer {
 			s = s.replace("xmlns=\"http://www.sbml.org/sbml/level3\"", "");
 			s = s.replaceAll("\\s+","");
 			if(theirOperations.add(s) == false) {
-				System.out.println("Duplicate their operation: " + s);
+//				System.out.println("Duplicate their operation: " + s);
 			}
-			System.out.println(s);
+//			System.out.println(s);
 		}
 		le = eOurs.getChild("ListOfOperations");
 		children = le.getChildren();
@@ -795,9 +799,9 @@ public class RulebasedTransformer implements SimContextTransformer {
 			s = s.replace(".0", "");
 			s = s.replaceAll("\\s+","");
 			if(ourOperations.add(s) == false) {
-				System.out.println("Duplicate our operation: " + s);
+//				System.out.println("Duplicate our operation: " + s);
 			}
-			System.out.println(s);
+//			System.out.println(s);
 		}
 		
 		List<String> theirUnmatched = new ArrayList<String>();
@@ -889,7 +893,7 @@ public class RulebasedTransformer implements SimContextTransformer {
 				
 				ReactionRuleParticipant p = bForward ? rr.getReactantPattern(i) : rr.getProductPattern(i);
 				SpeciesPattern sp = p.getSpeciesPattern();
-				System.out.println("  reactant id=" + pattern_id_str + ", name=" + sp.toString());
+//				System.out.println("  reactant id=" + pattern_id_str + ", name=" + sp.toString());
 				keyMap.put(pattern_id_str, sp);
 				
 				extractMolecules(sp, model, reactantPatternElement);	// list of molecules
@@ -905,7 +909,7 @@ public class RulebasedTransformer implements SimContextTransformer {
 				
 				ReactionRuleParticipant p = bForward ? rr.getProductPattern(i) : rr.getReactantPattern(i);
 				SpeciesPattern sp = p.getSpeciesPattern();
-				System.out.println("  product  id=" + pattern_id_str + ", name=" + sp.toString());
+//				System.out.println("  product  id=" + pattern_id_str + ", name=" + sp.toString());
 				keyMap.put(pattern_id_str, sp);
 
 				extractMolecules(sp, model, productPatternElement);
@@ -920,11 +924,11 @@ public class RulebasedTransformer implements SimContextTransformer {
 				String target_id_str = mapElement.getAttributeValue("targetID");
 				String source_id_str = mapElement.getAttributeValue("sourceID");
 				
-				System.out.println("Map: target=" + target_id_str + " source=" + source_id_str);
+//				System.out.println("Map: target=" + target_id_str + " source=" + source_id_str);
 				RbmObject target_object = keyMap.get(target_id_str);
 				RbmObject source_object = keyMap.get(source_id_str);
-				if(target_object == null) System.out.println("!!! Missing map target  " + target_id_str);
-				if(source_object == null) System.out.println("!!! Missing map source " + source_id_str);
+//				if(target_object == null) System.out.println("!!! Missing map target  " + target_id_str);
+//				if(source_object == null) System.out.println("!!! Missing map source " + source_id_str);
 				
 				if(source_object != null) {		//  target_object may be null
 					System.out.println("      target=" + target_object + " source=" + source_object);
@@ -938,29 +942,30 @@ public class RulebasedTransformer implements SimContextTransformer {
 			// ListOfOperations
 			Element listOfOperationsElement = reactionRuleElement.getChild("ListOfOperations", Namespace.getNamespace("http://www.sbml.org/sbml/level3"));
 			List<Element> operationsChildren = new ArrayList<Element>();
-			operationsChildren = listOfOperationsElement.getChildren("StateChange", Namespace.getNamespace("http://www.sbml.org/sbml/level3"));
 			System.out.println("ListOfOperations");
+			operationsChildren = listOfOperationsElement.getChildren("StateChange", Namespace.getNamespace("http://www.sbml.org/sbml/level3"));
 			for (Element operationsElement : operationsChildren) {
 				String finalState_str = operationsElement.getAttributeValue("finalState");
 				String site_str = operationsElement.getAttributeValue("site");
 				RbmObject site_object = keyMap.get(site_str);
-				if(site_object == null) System.out.println("!!! Missing map object " + site_str);
+//				if(site_object == null) System.out.println("!!! Missing map object " + site_str);
 				if(site_object != null) {
-					System.out.println("   finalState=" + finalState_str + " site=" + site_object);
+//					System.out.println("   finalState=" + finalState_str + " site=" + site_object);
 					StateChangeOperation sco = new StateChangeOperation(finalState_str, site_str, site_object);
 					rar.operationsList.add(sco);
 				}
 			}
+			System.out.println("AddBond, DeleteBond");
 			operationsChildren = listOfOperationsElement.getChildren("AddBond", Namespace.getNamespace("http://www.sbml.org/sbml/level3"));
 			for (Element operationsElement : operationsChildren) {
 				String site1_str = operationsElement.getAttributeValue("site1");
 				String site2_str = operationsElement.getAttributeValue("site2");
 				RbmObject site1_object = keyMap.get(site1_str);
 				RbmObject site2_object = keyMap.get(site2_str);
-				if(site1_object == null) System.out.println("!!! Missing map object " + site1_str);
-				if(site2_object == null) System.out.println("!!! Missing map object " + site2_str);
+//				if(site1_object == null) System.out.println("!!! Missing map object " + site1_str);
+//				if(site2_object == null) System.out.println("!!! Missing map object " + site2_str);
 				if(site1_object != null && site2_object != null) {
-					System.out.println("   site1=" + site1_object + " site2=" + site2_object);
+//					System.out.println("   site1=" + site1_object + " site2=" + site2_object);
 					AddBondOperation abo = new AddBondOperation(site1_str,site2_str,site1_object,site2_object);
 					rar.operationsList.add(abo);
 				}
@@ -971,37 +976,39 @@ public class RulebasedTransformer implements SimContextTransformer {
 				String site2_str = operationsElement.getAttributeValue("site2");
 				RbmObject site1_object = keyMap.get(site1_str);
 				RbmObject site2_object = keyMap.get(site2_str);
-				if(site1_object == null) System.out.println("!!! Missing map object " + site1_str);
-				if(site2_object == null) System.out.println("!!! Missing map object " + site2_str);
+//				if(site1_object == null) System.out.println("!!! Missing map object " + site1_str);
+//				if(site2_object == null) System.out.println("!!! Missing map object " + site2_str);
 				if(site1_object != null && site2_object != null) {
-					System.out.println("   site1=" + site1_object + " site2=" + site2_object);
+//					System.out.println("   site1=" + site1_object + " site2=" + site2_object);
 					DeleteBondOperation dbo = new DeleteBondOperation(site1_str,site2_str,site1_object,site2_object);
 					rar.operationsList.add(dbo);
 				}
 			}
+			System.out.println("AddOperation");
 			operationsChildren = listOfOperationsElement.getChildren("Add", Namespace.getNamespace("http://www.sbml.org/sbml/level3"));
 			for (Element operationsElement : operationsChildren) {
 				String id_str = operationsElement.getAttributeValue("id");
 				RbmObject id_object = keyMap.get(id_str);
-				if(id_object == null) System.out.println("!!! Missing map object " + id_str);
+//				if(id_object == null) System.out.println("!!! Missing map object " + id_str);
 				if(id_object != null) {
-					System.out.println("   id=" + id_str);
+//					System.out.println("   id=" + id_str);
 					AddOperation ao = new AddOperation(id_str,id_object);
 					rar.operationsList.add(ao);
 				}
 			}
+			System.out.println("DeleteMolecules");
 			operationsChildren = listOfOperationsElement.getChildren("Delete", Namespace.getNamespace("http://www.sbml.org/sbml/level3"));
 			for (Element operationsElement : operationsChildren) {
 				String id_str = operationsElement.getAttributeValue("id");
 				String delete_molecules_str = operationsElement.getAttributeValue("DeleteMolecules");
 				RbmObject id_object = keyMap.get(id_str);
-				if(id_object == null) System.out.println("!!! Missing map object " + id_str);
+//				if(id_object == null) System.out.println("!!! Missing map object " + id_str);
 				int delete_molecules_int = 0;
 				if(delete_molecules_str != null) {
 					delete_molecules_int = Integer.parseInt(delete_molecules_str);
 				}
 				if(id_object != null) {
-					System.out.println("   id=" + id_str + ", DeleteMolecules=" + delete_molecules_str);
+//					System.out.println("   id=" + id_str + ", DeleteMolecules=" + delete_molecules_str);
 					DeleteOperation dop = new DeleteOperation(id_str,id_object, delete_molecules_int);
 					rar.operationsList.add(dop);
 				}

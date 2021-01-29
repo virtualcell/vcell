@@ -96,6 +96,11 @@ public boolean compareEqual(Matchable obj)
 public int getCustomSeed() {
 	return customSeed;
 }
+// use this only during sedml import
+public void setCustomSeed(int value) {
+	useCustomSeed = true;
+	customSeed = value;
+}
 
 
 /**

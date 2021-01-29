@@ -701,7 +701,7 @@ public class SBMLImporter {
 		}
 		ListOf listofInitialAssgns = sbmlModel.getListOfInitialAssignments();
 		if (listofInitialAssgns == null || listofInitialAssgns.isEmpty()) {
-			System.out.println("No Initial Assignments specified");
+//			System.out.println("No Initial Assignments specified");
 			return;
 		}
 		SimulationContext simContext = vcBioModel.getSimulationContext(0);
@@ -1715,7 +1715,7 @@ public class SBMLImporter {
 	// if yes, we replace the reaction name with the expression of the reaction rate
 	private void processRateRules() throws ExpressionException, PropertyVetoException {
 		if (rateRulesHash == null || rateRulesHash.isEmpty()) {
-			System.out.println("SBML Import: no rate rules.");
+//			System.out.println("SBML Import: no rate rules.");
 			return;
 		}
 		SimulationContext simContext = vcBioModel.getSimulationContext(0);
@@ -2659,7 +2659,7 @@ public class SBMLImporter {
 		for (int i = 0; i < sbmlModel.getNumUnitDefinitions(); i++) {
 			UnitDefinition ud = (org.sbml.jsbml.UnitDefinition) listofUnitDefns.get(i);
 			String unitName = ud.getId();
-			System.out.println("sbml id: " + unitName);
+//			System.out.println("sbml id: " + unitName);
 			VCUnitDefinition vcUnitDef = SBMLUnitTranslator.getVCUnitDefinition(ud, tempVCUnitSystem);
 			sbmlUnitIdentifierHash.put(unitName, vcUnitDef);
 		}

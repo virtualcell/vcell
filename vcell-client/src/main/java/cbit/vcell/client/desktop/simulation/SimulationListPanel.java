@@ -268,8 +268,8 @@ private void createBatchSimulations() {
 	
 	UserPreferences up = getSimulationWorkspace().getClientSimManager().getUserPreferences();
 	Map<Integer, Map<String, String>> batchInputDataMap = new LinkedHashMap<>();
-	parseBatchInputFile(up, batchInputDataMap);
-	if(batchInputDataMap.isEmpty()) {
+	File batchInputFile = parseBatchInputFile(up, batchInputDataMap);
+	if(batchInputFile == null || batchInputDataMap.isEmpty()) {
 		System.out.println("Failed to read batch input data file or user canceled");
 		return;
 	}
@@ -307,23 +307,26 @@ private void importBatchSimulations() {
 	getScrollPaneTable().scrollRectToVisible(getScrollPaneTable().getCellRect(index, 0, true));
 }
 
-private void parseBatchInputFile(UserPreferences userPreferences, Map<Integer, Map<String, String>> batchInputDataMap) {
+private File parseBatchInputFile(UserPreferences userPreferences, Map<Integer, Map<String, String>> batchInputDataMap) {
 	
 	StringBuffer stringBuffer = new StringBuffer();
 	long batchInputFileLength = 0;
+	File batchInputFile = null;
 	
+	// TODO: for path use something else rather than getCurrentDialogPath, for example a combination of
+	// biomodelName + application name + simulation template name, located in the username/.vcell/batchdata folder
 	try {
-		File defaultPath = userPreferences.getCurrentDialogPath();
-		JFileChooser fileChooser = new JFileChooser(defaultPath);
+		File path = userPreferences.getCurrentDialogPath();
+		JFileChooser fileChooser = new JFileChooser(path);
 		FileNameExtensionFilter filter = new FileNameExtensionFilter("Batch processing input data", "dat");
 		fileChooser.setFileFilter(filter);
 		fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
 		fileChooser.setMultiSelectionEnabled(false);
 		int returnVal = fileChooser.showOpenDialog(SimulationListPanel.this);
 		if(returnVal != JFileChooser.APPROVE_OPTION) {
-			return;
+			return null;
 		}
-		File batchInputFile = fileChooser.getSelectedFile();
+		batchInputFile = fileChooser.getSelectedFile();
 //		File batchInputFile = new java.io.File("C:\\TEMP\\ddd\\batchSimulations.dat");
 		if (!batchInputFile.exists()) {
 			throw new java.io.FileNotFoundException("Batch input file " + batchInputFile.getPath() + " not found");
@@ -386,6 +389,7 @@ private void parseBatchInputFile(UserPreferences userPreferences, Map<Integer, M
 		}
 		lineIndex++;
 	}
+	return batchInputFile;
 }
 
 

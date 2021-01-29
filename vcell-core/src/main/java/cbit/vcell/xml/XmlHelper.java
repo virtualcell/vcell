@@ -22,6 +22,8 @@ import javax.print.Doc;
 import javax.xml.stream.XMLStreamException;
 
 import cbit.vcell.solver.*;
+import cbit.vcell.solver.SolverDescription.AlgorithmParameterDescription;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jdom.Comment;
@@ -31,6 +33,7 @@ import org.jdom.Namespace;
 import org.jdom.Text;
 import org.jlibsedml.AbstractTask;
 import org.jlibsedml.Algorithm;
+import org.jlibsedml.AlgorithmParameter;
 import org.jlibsedml.ArchiveComponents;
 import org.jlibsedml.DataGenerator;
 import org.jlibsedml.Libsedml;
@@ -454,11 +457,12 @@ public class XmlHelper {
 //    }
 
 		vcDoc.refreshDependencies();
+		System.out.println("Succesful model import: SBML file "+sbmlFile);
 		return vcDoc;
 	}
 
 	public static VCDocument importBioCellML(VCLogger vcLogger, XMLSource xmlSource) throws Exception {
-		throw new Exception("CellML import to a Biomodel has been disabled.");
+		throw new Exception("CellML import to a Bio-Model has been disabled.");
 	}
 
 	public static VCDocument importMathCellML(VCLogger vcLogger, XMLSource xmlSource) throws Exception {
@@ -548,34 +552,34 @@ public class XmlHelper {
 		try {
 			String fullPath = FileUtils.getFullPath(externalDocInfo.getFile().getAbsolutePath());	// extract the path only from the sedml file
 
-			// iterate through all the elements and show them at the console
-			List<org.jlibsedml.Model> mmm = sedml.getModels();
-			for(Model mm : mmm) {
-				System.out.println(mm.toString());
-			}
-			List<org.jlibsedml.Simulation> sss = sedml.getSimulations();
-			for(org.jlibsedml.Simulation ss : sss) {
-				System.out.println(ss.toString());
-			}
-			List<AbstractTask> ttt = sedml.getTasks();
-			if (ttt.isEmpty()) {
-				throw new Exception("No tasks found in SED-ML document");
-			}
-			for(AbstractTask tt : ttt) {
-				System.out.println(tt.toString());
-			}
-			List<DataGenerator> ddd = sedml.getDataGenerators();
-			for(DataGenerator dd : ddd) {
-				System.out.println(dd.toString());
-			}
-			List<Output> ooo = sedml.getOutputs();
-			for(Output oo : ooo) {
-				System.out.println(oo.toString());
-			}
-
+//        // iterate through all the elements and show them at the console
+//        List<org.jlibsedml.Model> mmm = sedml.getModels();
+//        for(Model mm : mmm) {
+//            System.out.println(mm.toString());
+//        }
+//        List<org.jlibsedml.Simulation> sss = sedml.getSimulations();
+//        for(org.jlibsedml.Simulation ss : sss) {
+//            System.out.println(ss.toString());
+//        }
+//        List<AbstractTask> ttt = sedml.getTasks();
+//        if (ttt.isEmpty()) {
+//        	throw new Exception("No tasks found in SED-ML document");
+//        }
+//        for(AbstractTask tt : ttt) {
+//            System.out.println(tt.toString());
+//        }
+//        List<DataGenerator> ddd = sedml.getDataGenerators();
+//        for(DataGenerator dd : ddd) {
+////            System.out.println(dd.toString());
+//        }
+//        List<Output> ooo = sedml.getOutputs();
+//        for(Output oo : ooo) {
+////            System.out.println(oo.toString());
+//        }
+//
 			if (tasks == null || tasks.isEmpty()) {
 				// no task selection, we'll import all that we find in the SED-ML
-				tasks = ttt;
+				tasks = sedml.getTasks();
 			}
 
 			// We need to make a separate BioModel for each SED-ML model
@@ -603,7 +607,7 @@ public class XmlHelper {
 					sedmlOriginalModel = sedml.getModelWithId(selectedTask.getModelReference());
 					sedmlSimulation = sedml.getSimulation(selectedTask.getSimulationReference());
 				} else if(selectedTask instanceof RepeatedTask) {
-					System.out.println("RepeatedTask not supported yet, task "+SEDMLUtil.getName(selectedTask)+" is being skipped");
+					System.err.println("RepeatedTask not supported yet, task "+SEDMLUtil.getName(selectedTask)+" is being skipped");
 					continue;
 					// TODO the below is unfinished code
 //				RepeatedTask rt = (RepeatedTask)selectedTask;
@@ -617,6 +621,8 @@ public class XmlHelper {
 					throw new RuntimeException("Unexpected task " + selectedTask);
 				}
 				sedmlOriginalModelName = sedmlOriginalModel.getId();
+
+				// at this point we assume that the sedml simulation, algorithm and kisaoID are all valid
 				Algorithm algorithm = sedmlSimulation.getAlgorithm();
 				kisaoID = algorithm.getKisaoID();
 
@@ -625,15 +631,12 @@ public class XmlHelper {
 				// try to find a match in the ontology tree
 				SolverDescription solverDescription = SolverUtilities.matchSolverWithKisaoId(kisaoID);
 				if (solverDescription != null) {
-					System.out.println("++> Solver match found in ontology");
-					System.out.println("++> KiSAO "+kisaoID+" matched to "+solverDescription);
+					System.out.println("Task '"+selectedTask.getName()+"' is compatible, solver match found in ontology: '" + kisaoID + "' matched to " + solverDescription);
 				} else {
 					// give it a try anyway with our deterministic default solver
 					solverDescription = SolverDescription.CombinedSundials;
-					System.out.println("--> Could not find a supoorted ontology match for solver algorithm "+kisaoID);
-					System.out.println("--> Trying with deterministic default solver "+solverDescription);
+					System.err.println("Task '"+selectedTask.getName()+"' is not compatible, no equivalent solver found in ontology for requested algorithm '"+kisaoID + "'; trying with deterministic default solver "+solverDescription);
 				}
-
 				// find out everything else we need about the application we're going to use,
 				// some of the info will be needed when we parse the sbml file
 				boolean bSpatial = false;
@@ -707,6 +710,7 @@ public class XmlHelper {
 				Simulation newSimulation = new Simulation(matchingSimulationContext.getMathDescription());
 				if (selectedTask instanceof Task) {
 					newSimulation.setName(SEDMLUtil.getName(sedmlSimulation));
+					newSimulation.setImportedTaskID(selectedTask.getId());
 				} else {
 					newSimulation.setName(SEDMLUtil.getName(sedmlSimulation)+"_"+SEDMLUtil.getName(selectedTask));
 				}
@@ -720,23 +724,91 @@ public class XmlHelper {
 				TimeBounds timeBounds = new TimeBounds();
 				TimeStep timeStep = new TimeStep();
 				double outputTimeStep = 0.1;
+				int outputNumberOfPoints = 1;
 				if(sedmlSimulation instanceof UniformTimeCourse) {
 					// we translate initial time to zero, we provide output for the duration of the simulation
 					// because we can't select just an interval the way the SEDML simulation can
 					double initialTime = ((UniformTimeCourse) sedmlSimulation).getInitialTime();
 					double outputStartTime = ((UniformTimeCourse) sedmlSimulation).getOutputStartTime();
 					double outputEndTime = ((UniformTimeCourse) sedmlSimulation).getOutputEndTime();
-					double outputNumberOfPoints = ((UniformTimeCourse) sedmlSimulation).getNumberOfPoints();
+					outputNumberOfPoints = ((UniformTimeCourse) sedmlSimulation).getNumberOfPoints();
 					outputTimeStep = (outputEndTime - outputStartTime) / outputNumberOfPoints;
 					timeBounds = new TimeBounds(0, outputEndTime - initialTime);
+					ErrorTolerance errorTolerance = new ErrorTolerance();
+
+					// we look for explicit algorithm parameters
+					List<AlgorithmParameter> sedmlAlgorithmParameters = algorithm.getListOfAlgorithmParameters();
+					for(AlgorithmParameter sedmlAlgorithmParameter : sedmlAlgorithmParameters) {
+
+						String apKisaoID = sedmlAlgorithmParameter.getKisaoID();
+						String apValue = sedmlAlgorithmParameter.getValue();
+						if(apKisaoID == null || apKisaoID.isEmpty()) {
+							System.err.println("Undefined KisaoID algorithm parameter for algorithm '" + kisaoID + "'");
+						}
+
+						// we don't check if the recognized algorithm parameters are valid for our algorithm
+						// we just use any parameter we find for the solver task description we have, assuming the exporting code did all the checks
+						// WARNING: if our algorithm is the result of a guess, this may be wrong
+						// TODO: use the proper ontology for the algorithm parameters kisao id
+						if(apKisaoID.contentEquals(ErrorTolerance.ErrorToleranceDescription.Absolute.getKisao())) {
+							double value = Double.parseDouble(apValue);
+							errorTolerance.setAbsoluteErrorTolerance(value);
+						} else if(apKisaoID.contentEquals(ErrorTolerance.ErrorToleranceDescription.Relative.getKisao())) {
+							double value = Double.parseDouble(apValue);
+							errorTolerance.setRelativeErrorTolerance(value);
+
+						} else if(apKisaoID.contentEquals(TimeStep.TimeStepDescription.Default.getKisao())) {
+							double value = Double.parseDouble(apValue);
+							timeStep.setDefaultTimeStep(value);
+						} else if(apKisaoID.contentEquals(TimeStep.TimeStepDescription.Maximum.getKisao())) {
+							double value = Double.parseDouble(apValue);
+							timeStep.setMaximumTimeStep(value);
+						} else if(apKisaoID.contentEquals(TimeStep.TimeStepDescription.Minimum.getKisao())) {
+							double value = Double.parseDouble(apValue);
+							timeStep.setMinimumTimeStep(value);
+
+						} else if(apKisaoID.contentEquals(AlgorithmParameterDescription.Seed.getKisao())) {		// custom seed
+							if(simTaskDesc.getSimulation().getMathDescription().isNonSpatialStoch()) {
+								NonspatialStochSimOptions nssso = simTaskDesc.getStochOpt();
+								int value = Integer.parseInt(apValue);
+								nssso.setCustomSeed(value);
+							} else {
+								System.err.println("Algorithm parameter '" + AlgorithmParameterDescription.Seed.getDescription() +"' is only supported for nonspatial stochastic simulations");
+							}
+							// some arguments used only for non-spatial hybrid solvers
+						} else if(apKisaoID.contentEquals(AlgorithmParameterDescription.Epsilon.getKisao())) {
+							NonspatialStochHybridOptions nssho = simTaskDesc.getStochHybridOpt();
+							nssho.setEpsilon(Double.parseDouble(apValue));
+						} else if(apKisaoID.contentEquals(AlgorithmParameterDescription.Lambda.getKisao())) {
+							NonspatialStochHybridOptions nssho = simTaskDesc.getStochHybridOpt();
+							nssho.setLambda(Double.parseDouble(apValue));
+						} else if(apKisaoID.contentEquals(AlgorithmParameterDescription.MSRTolerance.getKisao())) {
+							NonspatialStochHybridOptions nssho = simTaskDesc.getStochHybridOpt();
+							nssho.setMSRTolerance(Double.parseDouble(apValue));
+						} else if(apKisaoID.contentEquals(AlgorithmParameterDescription.SDETolerance.getKisao())) {
+							NonspatialStochHybridOptions nssho = simTaskDesc.getStochHybridOpt();
+							nssho.setSDETolerance(Double.parseDouble(apValue));
+						} else {
+							System.err.println("Algorithm parameter with kisao id '" + apKisaoID + "' not supported at this time, skipping.");
+						}
+					}
+					simTaskDesc.setErrorTolerance(errorTolerance);
 				} else if(sedmlSimulation instanceof OneStep) {		// for anything other than UniformTimeCourse we just ignore
+					System.err.println("OneStep Simulation not supported");
+					continue;
 				} else if(sedmlSimulation instanceof SteadyState) {
-				} else {
+					System.err.println("SteadyState Simulation not supported");
+					continue;
 				}
+
 				OutputTimeSpec outputTimeSpec = new UniformOutputTimeSpec(outputTimeStep);
 				simTaskDesc.setTimeBounds(timeBounds);
 				simTaskDesc.setTimeStep(timeStep);
-				simTaskDesc.setOutputTimeSpec(outputTimeSpec);
+				if (simTaskDesc.getSolverDescription().supports(outputTimeSpec)) {
+					simTaskDesc.setOutputTimeSpec(outputTimeSpec);
+				} else {
+					simTaskDesc.setOutputTimeSpec(new DefaultOutputTimeSpec(1,Integer.max(DefaultOutputTimeSpec.DEFAULT_KEEP_AT_MOST, outputNumberOfPoints)));
+				}
 				newSimulation.setSolverTaskDescription(simTaskDesc);
 				newSimulation.setDescription(SEDMLUtil.getName(selectedTask));
 				bioModel.addSimulation(newSimulation);

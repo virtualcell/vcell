@@ -2,21 +2,29 @@ package org.vcell.cli;
 
 import cbit.util.xml.VCLogger;
 import cbit.vcell.biomodel.BioModel;
-import cbit.vcell.solver.Simulation;
-import cbit.vcell.solver.SolverDescription;
-import cbit.vcell.solver.SolverTaskDescription;
+import cbit.vcell.messaging.server.SimulationTask;
+import cbit.vcell.solver.*;
+import cbit.vcell.solver.ode.AbstractJavaSolver;
+import cbit.vcell.solver.ode.ODESolver;
 import cbit.vcell.solver.ode.ODESolverResultSet;
+import cbit.vcell.solver.server.Solver;
+import cbit.vcell.solver.server.SolverFactory;
+import cbit.vcell.solver.server.SolverStatus;
+import cbit.vcell.solver.stoch.GibsonSolver;
+import cbit.vcell.solver.stoch.HybridSolver;
+import cbit.vcell.solvers.AbstractCompiledSolver;
 import cbit.vcell.xml.ExternalDocInfo;
 import cbit.vcell.xml.XmlHelper;
-import org.jlibsedml.AbstractTask;
 import org.jlibsedml.SedML;
-import org.vcell.cli.helpers.solvers.*;
+import org.jlibsedml.Task;
+import org.jlibsedml.UniformTimeCourse;
 import org.vcell.sbml.vcell.SBMLImportException;
 import org.vcell.sbml.vcell.SBMLImporter;
 import org.vcell.util.document.VCDocument;
 
 import java.io.File;
-import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 
 public class SolverHandler {
@@ -41,14 +49,15 @@ public class SolverHandler {
         }
     }
 
-    public boolean simulateAllTasks(ExternalDocInfo externalDocInfo, SedML sedml, File outputDir) throws Exception {
+    public HashMap<String, ODESolverResultSet> simulateAllTasks(ExternalDocInfo externalDocInfo, SedML sedml, File outputDir) throws Exception {
         // create the VCDocument(s) (bioModel(s) + application(s) + simulation(s)), do sanity checks
         cbit.util.xml.VCLogger sedmlImportLogger = new LocalLogger();
         List<VCDocument> docs = null;
-		String docName = null;
-		BioModel bioModel = null;
-		Simulation[] sims = null;
-		boolean somethingSucceeded = false;
+        // Key String is SEDML Task ID
+        HashMap<String, ODESolverResultSet> resultsHash = new LinkedHashMap<String, ODESolverResultSet>();
+        String docName = null;
+        BioModel bioModel = null;
+        Simulation[] sims = null;
         try {
             docs = XmlHelper.sedmlToBioModel(sedmlImportLogger, externalDocInfo, sedml, null);
         } catch (Exception e) {
@@ -56,75 +65,79 @@ public class SolverHandler {
             throw e;
         }
         for (VCDocument doc : docs) {
-			try {
-				sanityCheck(doc);
-			} catch (Exception e) {
-				e.printStackTrace(System.err);
-				continue;
-			}
-			docName = doc.getName();
-			bioModel = (BioModel) doc;
-			sims = bioModel.getSimulations();
-			for (int i = 0; i < sims.length; i++) {
-				SolverTaskDescription std = sims[i].getSolverTaskDescription();
-				SolverDescription sd = std.getSolverDescription();
-				String kisao = sd.getKisao();
-				try {
-					if (SolverDescription.CVODE.getKisao().contentEquals(kisao)) {
-						ODESolverResultSet odeSolverResultSet = CVODEHelper.solve(outputDir, sims[i].getDescription().replaceAll("[:\\\\/*?|<>]", "_"), bioModel);
-						System.out.println("Finished: " + docName + ": - task '" + sims[i].getDescription() + "'.");
-						somethingSucceeded = true;
-					} else if (SolverDescription.StochGibson.getKisao().contentEquals(kisao)) {
-						ODESolverResultSet odeSolverResultSet = StockGibsonHelper.solve(outputDir, sims[i].getDescription().replaceAll("[:\\\\/*?|<>]", "_"),
-								bioModel);
-						System.out.println("Finished: " + docName + ": - task '" + sims[i].getDescription() + "'.");
-						somethingSucceeded = true;
-					} else if (SolverDescription.IDA.getKisao().contentEquals(kisao)) {
-						ODESolverResultSet odeSolverResultSet = IDAHelper.solve(outputDir, sims[i].getDescription().replaceAll("[:\\\\/*?|<>]", "_"), bioModel);
-						System.out.println("Finished: " + docName + ": - task '" + sims[i].getDescription() + "'.");
-						somethingSucceeded = true;
-					} else if (SolverDescription.RungeKuttaFehlberg.getKisao().contentEquals(kisao)) {
-						ODESolverResultSet odeSolverResultSet = RungeKuttaFelhbergHelper.solve(outputDir, sims[i].getDescription().replaceAll("[:\\\\/*?|<>]", "_"),
-								bioModel);
-						System.out.println("Finished: " + docName + ": - task '" + sims[i].getDescription() + "'.");
-						somethingSucceeded = true;
-					} else if (SolverDescription.AdamsMoulton.getKisao().contentEquals(kisao)) {
-						ODESolverResultSet odeSolverResultSet = AdamsMoultonHelper.solve(outputDir, sims[i].getDescription().replaceAll("[:\\\\/*?|<>]", "_"),
-								bioModel);
-						System.out.println("Finished: " + docName + ": - task '" + sims[i].getDescription() + "'.");
-						somethingSucceeded = true;
-					} else if (SolverDescription.ForwardEuler.getKisao().contentEquals(kisao)) {
-						ODESolverResultSet odeSolverResultSet = ForwardEulerHelper.solve(outputDir, sims[i].getDescription().replaceAll("[:\\\\/*?|<>]", "_"),
-								bioModel);
-						System.out.println("Finished: " + docName + ": - task '" + sims[i].getDescription() + "'.");
-						somethingSucceeded = true;
-					} else if (SolverDescription.RungeKutta2.getKisao().contentEquals(kisao)) {
-						ODESolverResultSet odeSolverResultSet = RungeKutta2Helper.solve(outputDir, sims[i].getDescription().replaceAll("[:\\\\/*?|<>]", "_"),
-								bioModel);
-						System.out.println("Finished: " + docName + ": - task '" + sims[i].getDescription() + "'.");
-						somethingSucceeded = true;
-					} else if (SolverDescription.RungeKutta4.getKisao().contentEquals(kisao)) {
-						ODESolverResultSet odeSolverResultSet = RungeKutta4Helper.solve(outputDir, sims[i].getDescription().replaceAll("[:\\\\/*?|<>]", "_"),
-								bioModel);
-						System.out.println("Finished: " + docName + ": - task '" + sims[i].getDescription() + "'.");
-						somethingSucceeded = true;
-					} else {
-						System.err.println("Unsupported solver: " + kisao);
-					}
-				} catch (Exception e) {
-					e.printStackTrace(System.err);
-					continue;
-				} 
-			}
-			System.out.println("-------------------------------------------------------------------------");
-		}
-		return somethingSucceeded;
+            try {
+                sanityCheck(doc);
+            } catch (Exception e) {
+                e.printStackTrace(System.err);
+                continue;
+            }
+            docName = doc.getName();
+            bioModel = (BioModel) doc;
+            sims = bioModel.getSimulations();
+            for (Simulation sim : sims) {
+                sim = new TempSimulation(sim, false);
+                SolverTaskDescription std = sim.getSolverTaskDescription();
+                SolverDescription sd = std.getSolverDescription();
+                String kisao = sd.getKisao();
+                SimulationJob simJob = new SimulationJob(sim, 0, null);
+                SimulationTask simTask = new SimulationTask(simJob, 0);
+                Solver solver = SolverFactory.createSolver(outputDir, simTask, false);
+                ODESolverResultSet odeSolverResultSet = null;
+                try {
+                    if (solver instanceof AbstractCompiledSolver) {
+                        ((AbstractCompiledSolver) solver).runSolver();
+                        if (solver instanceof ODESolver) {
+                            odeSolverResultSet = ((ODESolver) solver).getODESolverResultSet();
+                        } else if (solver instanceof GibsonSolver) {
+                            odeSolverResultSet = ((GibsonSolver) solver).getStochSolverResultSet();
+                        } else if (solver instanceof HybridSolver) {
+                            odeSolverResultSet = ((HybridSolver) solver).getHybridSolverResultSet();
+                        } else {
+                            System.err.println("Solver results are not compatible with CSV format");
+                        }
+                    } else if (solver instanceof AbstractJavaSolver) {
+                        ((AbstractJavaSolver) solver).runSolver();
+                        odeSolverResultSet = ((ODESolver) solver).getODESolverResultSet();
+                        // must interpolate data for uniform time course which is not supported natively by the Java solvers
+                        Task task = (Task) sedml.getTaskWithId(sim.getImportedTaskID());
+                        assert task != null;
+                        org.jlibsedml.Simulation sedmlSim = sedml.getSimulation(task.getSimulationReference());
+                        if (sedmlSim instanceof UniformTimeCourse) {
+                            odeSolverResultSet = CLIUtils.interpolate(odeSolverResultSet, (UniformTimeCourse) sedmlSim);
+                        }
+                    } else {
+                        // this should actually never happen...
+                        throw new Exception("Unexpected solver: " + kisao + " " + solver);
+                    }
+                    if (solver.getSolverStatus().getStatus() == SolverStatus.SOLVER_FINISHED) {
+                        System.out.println("Succesful execution: Model '" + docName + "' Task '" + sim.getDescription() + "'.");
+                        System.out.println("-------------------------------------------------------------------------");
+                    } else {
+                        System.err.println("Solver status: " + solver.getSolverStatus().getStatus());
+                        System.err.println("Solver message: " + solver.getSolverStatus().getSimulationMessage().getDisplayMessage());
+                        throw new Exception();
+                    }
+                } catch (Exception e) {
+                    System.err.println("Failed execution: Model '" + docName + "' Task '" + sim.getDescription() + "'.");
+                    if (e.getMessage() != null) {
+                        // something else than failure caught by solver instance during execution
+                        System.err.println(e.getMessage());
+                    }
+                    System.out.println("-------------------------------------------------------------------------");
+                }
+                resultsHash.put(sim.getImportedTaskID(), odeSolverResultSet);
+
+                CLIUtils.removeIntermediarySimFiles(outputDir);
+
+            }
+        }
+        return resultsHash;
     }
 
     ;
 
     // TODO: Complete this logger and use it for whole CLI
-    private class LocalLogger extends VCLogger {
+    private static class LocalLogger extends VCLogger {
         @Override
         public void sendMessage(Priority p, ErrorType et, String message) throws Exception {
             System.out.println("LOGGER: msgLevel=" + p + ", msgType=" + et + ", " + message);

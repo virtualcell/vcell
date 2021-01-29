@@ -42,6 +42,8 @@ LABEL \
 
 RUN apt-get -y update && \
     apt-get install -y --no-install-recommends curl openjdk-8-jre dnsutils && \
+    apt-get install -y python3 && \
+    apt install -y python3-pip && \
     mkdir -p /usr/local/app/vcell/lib && \
     mkdir -p /usr/local/app/vcell/simulation && \
     mkdir -p /usr/local/app/vcell/installDir
@@ -70,6 +72,7 @@ COPY ./vcell-client/target/vcell-client-0.0.1-SNAPSHOT.jar \
 # Add linux local solvers only
 ADD ./localsolvers /usr/local/app/vcell/installDir/localsolvers
 ADD ./nativelibs /usr/local/app/vcell/installDir/nativelibs
+ADD ./submodules /usr/local/app/vcell/installDir/submodules
 COPY ./docker_run.sh /usr/local/app/vcell/installDir/
 
 # Declare supported environment variables

@@ -34,6 +34,7 @@ import org.jlibsedml.ChangeAttribute;
 import org.jlibsedml.ComputeChange;
 import org.jlibsedml.Curve;
 import org.jlibsedml.DataGenerator;
+import org.jlibsedml.DataSet;
 import org.jlibsedml.Libsedml;
 import org.jlibsedml.Model;
 import org.jlibsedml.Notes;
@@ -41,6 +42,7 @@ import org.jlibsedml.Parameter;
 import org.jlibsedml.Plot2D;
 import org.jlibsedml.Range;
 import org.jlibsedml.RepeatedTask;
+import org.jlibsedml.Report;
 import org.jlibsedml.SEDMLDocument;
 import org.jlibsedml.SEDMLTags;
 import org.jlibsedml.SedML;
@@ -102,6 +104,7 @@ import cbit.vcell.solver.AnnotatedFunction;
 import cbit.vcell.solver.ConstantArraySpec;
 import cbit.vcell.solver.ErrorTolerance;
 import cbit.vcell.solver.MathOverrides;
+import cbit.vcell.solver.NonspatialStochHybridOptions;
 import cbit.vcell.solver.NonspatialStochSimOptions;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationJob;
@@ -366,12 +369,37 @@ public class SEDMLExporter {
 						if(simTaskDesc.getSimulation().getMathDescription().isNonSpatialStoch()) {	// ------- deal with seed
 							NonspatialStochSimOptions nssso = simTaskDesc.getStochOpt();
 							if(nssso.isUseCustomSeed()) {
-								// TODO: don't know where the kisao belongs, maybe we should consolidate all in one single ontology file
-								AlgorithmParameter sedmlAlgorithmParameter = new AlgorithmParameter("KISAO:0000488", nssso.getCustomSeed()+"");
+								String kisaoStr = SolverDescription.AlgorithmParameterDescription.Seed.getKisao();	// 488
+								AlgorithmParameter sedmlAlgorithmParameter = new AlgorithmParameter(kisaoStr, nssso.getCustomSeed()+"");
 								sedmlAlgorithm.addAlgorithmParameter(sedmlAlgorithmParameter);
 							}
 						} else {
 							;	// (... isRuleBased(), isSpatial(), isMovingMembrane(), isSpatialHybrid() ...
+						}
+						
+						if(vcSolverDesc == SolverDescription.HybridEuler || 						// -------- deal with hybrid solvers (non-spatial)
+								vcSolverDesc == SolverDescription.HybridMilAdaptive ||
+								vcSolverDesc == SolverDescription.HybridMilstein) {
+							NonspatialStochHybridOptions nssho = simTaskDesc.getStochHybridOpt();
+							
+							String kisaoStr = SolverDescription.AlgorithmParameterDescription.Epsilon.getKisao();
+							AlgorithmParameter sedmlAlgorithmParameter = new AlgorithmParameter(kisaoStr, nssho.getEpsilon()+"");
+							sedmlAlgorithm.addAlgorithmParameter(sedmlAlgorithmParameter);
+
+							kisaoStr = SolverDescription.AlgorithmParameterDescription.Lambda.getKisao();
+							sedmlAlgorithmParameter = new AlgorithmParameter(kisaoStr, nssho.getLambda()+"");
+							sedmlAlgorithm.addAlgorithmParameter(sedmlAlgorithmParameter);
+
+							kisaoStr = SolverDescription.AlgorithmParameterDescription.MSRTolerance.getKisao();
+							sedmlAlgorithmParameter = new AlgorithmParameter(kisaoStr, nssho.getMSRTolerance()+"");
+							sedmlAlgorithm.addAlgorithmParameter(sedmlAlgorithmParameter);
+						}
+						if(vcSolverDesc == SolverDescription.HybridMilAdaptive) {					// --------- one more param for hybrid-adaptive
+							NonspatialStochHybridOptions nssho = simTaskDesc.getStochHybridOpt();
+							
+							String kisaoStr = SolverDescription.AlgorithmParameterDescription.SDETolerance.getKisao();
+							AlgorithmParameter sedmlAlgorithmParameter = new AlgorithmParameter(kisaoStr, nssho.getSDETolerance()+"");
+							sedmlAlgorithm.addAlgorithmParameter(sedmlAlgorithmParameter);
 						}
 
 						// TODO: consider adding notes for the algorithm parameters, to provide human-readable description of kisao terms
@@ -475,7 +503,7 @@ public class SEDMLExporter {
 									// list of Ranges, if sim is parameter scan.
 									if(constantArraySpec != null) {
 										Range r = null;
-										System.out.println("     " + constantArraySpec.toString());
+//										System.out.println("     " + constantArraySpec.toString());
 										if(constantArraySpec.getType() == ConstantArraySpec.TYPE_INTERVAL) {
 											// ------ Uniform Range
 											r = new UniformRange(rangeId, constantArraySpec.getMinValue(), 
@@ -537,7 +565,7 @@ public class SEDMLExporter {
 									// list of Ranges, if sim is parameter scan.
 									if(constantArraySpec != null) {
 										Range r = null;
-										System.out.println("     " + constantArraySpec.toString());
+//										System.out.println("     " + constantArraySpec.toString());
 										if(constantArraySpec.getType() == ConstantArraySpec.TYPE_INTERVAL) {
 											// ------ Uniform Range
 											r = new UniformRange(rangeId, constantArraySpec.getMinValue(), 
@@ -739,10 +767,18 @@ public class SEDMLExporter {
 							
 							if (!bSimHasHistogram) {
 								String plot2dId = "plot2d_" + TokenMangler.mangleToSName(vcSimulation.getName());
+								String reportId = "report_" + TokenMangler.mangleToSName(vcSimulation.getName());
 								Plot2D sedmlPlot2d = new Plot2D(plot2dId, simContext.getName() + "plots");
+								Report sedmlReport = new Report(reportId, simContext.getName() + "report");
+								
 								sedmlPlot2d.addNote(createNotesElement("Plot of all variables and output functions from application '" + simContext.getName() + "' ; simulation '" + vcSimulation.getName() + "' in VCell model"));
-								List<DataGenerator> dataGenerators = sedmlModel.getDataGenerators();
+								sedmlReport.addNote(createNotesElement("Report of all variables and output functions from application '" + simContext.getName() + "' ; simulation '" + vcSimulation.getName() + "' in VCell model"));
+//								List<DataGenerator> dataGenerators = sedmlModel.getDataGenerators();
 								String xDataRef = sedmlModel.getDataGeneratorWithId(DATAGENERATOR_TIME_NAME + "_" + taskRef).getId();
+								String xDatasetXId = "datasetX_" + DATAGENERATOR_TIME_NAME;
+								DataSet dataSet = new DataSet(xDatasetXId, xDatasetXId, xDataRef, xDataRef);
+								sedmlReport.addDataSet(dataSet);
+
 								// add a curve for each dataGenerator in SEDML model
 								int curveCnt = 0;
 								for (DataGenerator dataGenerator : dataGeneratorsOfSim) {
@@ -750,11 +786,16 @@ public class SEDMLExporter {
 									if (dataGenerator.getId().equals(xDataRef)) {
 										continue;
 									}
-									String curveId = "curve_" + curveCnt++; 
+									String curveId = "curve_" + curveCnt;
+									String datasetYId = "datasetY_" + curveCnt;
 									Curve curve = new Curve(curveId, curveId, false, false, xDataRef, dataGenerator.getId());
 									sedmlPlot2d.addCurve(curve);
+									DataSet yDataSet = new DataSet(datasetYId, datasetYId, dataGenerator.getId(), dataGenerator.getId());
+									sedmlReport.addDataSet(yDataSet);
+									curveCnt++;
 								}
 								sedmlModel.addOutput(sedmlPlot2d);
+								sedmlModel.addOutput(sedmlReport);
 							}
 						}
 					} // end - for 'sims'

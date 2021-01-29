@@ -71,7 +71,12 @@ public int getJobIndex() {
  * @return java.lang.String
  */
 public String getSimulationJobID() {
-	return createSimulationJobID(sim.getSimulationID(),jobIndex);
+	String simid = sim.getSimulationID();
+	if (simid == null) {
+		// try to see if a sed-ml task
+		simid = sim.getImportedTaskID();
+	}
+	return createSimulationJobID(simid,jobIndex);
 }
 
 

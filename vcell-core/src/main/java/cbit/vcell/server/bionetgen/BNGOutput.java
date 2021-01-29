@@ -110,7 +110,7 @@ public Document getNFSimXMLDocument() {
 	}
 	if (netFileIndices.size()==1){
 		String nfsimXMLString = bng_fileContents[netFileIndices.iterator().next()].toString();
-System.out.println("BNGOutput.getNFSimXMLDocument(): +++++++++++ \n"+nfsimXMLString);
+// System.out.println("BNGOutput.getNFSimXMLDocument(): +++++++++++ \n"+nfsimXMLString);
 		Document nfsimXMLDocument = XmlUtil.stringToXML(nfsimXMLString,null);
 		return nfsimXMLDocument;
 	}

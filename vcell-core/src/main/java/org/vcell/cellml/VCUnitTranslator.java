@@ -184,7 +184,7 @@ private VCUnitTranslator() { super(); }
 			if (kind.equals(CELLMLTags.noDimUnit)) {             
 				unit = DerivedUnitImpl.DIMENSIONLESS;
 			} else if (kind.equals(CELLMLTags.ITEM)) {
-				System.out.println("CellML 'item' unit found, interpreted as 'molecule'");
+//				System.out.println("CellML 'item' unit found, interpreted as 'molecule'");
 				unit = unitDB.get("molecules");
 			} else {
 				unit = unitDB.get(kind);

@@ -385,11 +385,6 @@ private static class OutputFunctionViewer extends JPanel{
 				return null;
 			}
 			@Override
-			public void importBatchSimulations(Simulation simulation) throws PropertyVetoException {
-				return;
-			}
-
-			@Override
 			public Issue gatherIssueForMathOverride(IssueContext issueContext, Simulation simulation, String name) {
 				// TODO Auto-generated method stub
 				return null;

@@ -13,6 +13,9 @@ package cbit.vcell.parser;
 import java.util.Random;
 import java.util.Vector;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import cbit.vcell.parser.ASTFuncNode.FunctionType;
 /**
  * Insert the type's description here.
@@ -20,6 +23,7 @@ import cbit.vcell.parser.ASTFuncNode.FunctionType;
  * @author: Jim Schaff
  */
 public class ExpressionUtils {
+	private static Logger lg = LogManager.getLogger(ExpressionUtils.class);
 	public static String value_molecules_per_uM_um3_NUMERATOR = "6.02214179E8";
 /**
  * Insert the method's description here.
@@ -304,7 +308,7 @@ public static boolean derivativeFunctionallyEquivalent(Expression exp, String di
 				double absdiff = Math.abs(resultDiff-resultCentralDifference);
 				if (scale > absoluteTolerance){ // if scale < absoluteTolerance, they are both close enough to zero.
 					if (absdiff > relativeTolerance*10*scale){
-						System.out.println("ExpressionUtils.derivativeFunctionallyEquivalent() 'exact' = "+resultDiff+", approx = "+resultCentralDifference+", absDiff = "+absdiff+", f_low = "+result_low+", f_high = "+result_high+", "+diffSymbol+" = "+nominalSymbolValue+" +/- "+deltaP);
+						lg.debug("ExpressionUtils.derivativeFunctionallyEquivalent() 'exact' = "+resultDiff+", approx = "+resultCentralDifference+", absDiff = "+absdiff+", f_low = "+result_low+", f_high = "+result_high+", "+diffSymbol+" = "+nominalSymbolValue+" +/- "+deltaP);
 						return false;
 					}
 				}
@@ -374,7 +378,7 @@ public static boolean functionallyEquivalent(Expression exp1, Expression exp2, b
 				double absdiff = Math.abs(result1-result2);
 				if (scale > absoluteTolerance){
 					if (absdiff > relativeTolerance*scale){
-						System.out.println("EXPRESSIONS DIFFERENT: no symbols, delta eval: "+(result2-result1));
+						lg.debug("EXPRESSIONS DIFFERENT: no symbols, delta eval: "+(result2-result1));
 						return false;
 					}
 					else {
@@ -390,11 +394,11 @@ public static boolean functionallyEquivalent(Expression exp1, Expression exp2, b
 		String symbols[] = null;
 		if (verifySameSymbols){
 			if (symbols1==null || symbols2==null){
-				System.out.println("EXPRESSIONS DIFFERENT: symbols null");
+				lg.debug("EXPRESSIONS DIFFERENT: symbols null");
 				return false;
 			}
 			if (symbols1.length!=symbols2.length){
-				System.out.println("EXPRESSIONS DIFFERENT: symbols different number");
+				lg.debug("EXPRESSIONS DIFFERENT: symbols different number");
 				return false;
 			}
 			//
@@ -409,7 +413,7 @@ public static boolean functionallyEquivalent(Expression exp1, Expression exp2, b
 					}
 				}
 				if (!bFound){
-					System.out.println("EXPRESSIONS DIFFERENT: symbols don't match");
+					lg.debug("EXPRESSIONS DIFFERENT: symbols don't match");
 					return false;
 				}
 			}
@@ -425,7 +429,7 @@ public static boolean functionallyEquivalent(Expression exp1, Expression exp2, b
 					}
 				}
 				if (!bFound){
-					System.out.println("EXPRESSIONS DIFFERENT: symbols don't match");
+					lg.debug("EXPRESSIONS DIFFERENT: symbols don't match");
 					return false;
 				}
 			}
@@ -479,7 +483,7 @@ public static boolean functionallyEquivalent(Expression exp1, Expression exp2, b
 				double absdiff = Math.abs(result1-result2);
 				if (scale > absoluteTolerance){
 					if (absdiff > relativeTolerance*scale){
-						System.out.println("EXPRESSIONS DIFFERENT: numerical test "+numEvaluations+", tolerance exceeded by "+(int)Math.log(absdiff/(relativeTolerance*scale))+"digits");
+						lg.debug("EXPRESSIONS DIFFERENT: numerical test "+numEvaluations+", tolerance exceeded by "+(int)Math.log(absdiff/(relativeTolerance*scale))+"digits");
 						return false;
 					}
 				}
@@ -518,7 +522,7 @@ public static boolean functionallyEquivalent(Expression exp1, Expression exp2, b
 		return true;
 	}catch (cbit.vcell.parser.ExpressionException e){
 		e.printStackTrace(System.out);
-		System.out.println("EXPRESSIONS DIFFERENT: "+e);
+		lg.debug("EXPRESSIONS DIFFERENT: "+e);
 		return false;
 	}
 }
