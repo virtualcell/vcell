@@ -21,8 +21,6 @@ import java.nio.file.Paths;
 import java.util.*;
 
 public class CLIUtils {
-    // Breakline
-    public static final String breakLine = "-" + StringUtils.repeat("-", 100);
     //    private static final Path workingDirectory = Paths.get(Paths.get(".").toAbsolutePath().normalize().toString());
     // TODO: Hardcoded for docker image working directory(remove it soon) @gmarupilla
     private static final Path workingDirectory = Paths.get(System.getProperty("user.dir").equals("/") ? "/usr/local/app/vcell/installDir" : System.getProperty("user.dir"));
@@ -37,6 +35,11 @@ public class CLIUtils {
     public static boolean linuxPlatform = OperatingSystemInfo.getInstance().isLinux();
     //    private String tempDirPath = null;
     private final String extractedOmexPath = null;
+
+    // Breakline
+    public static void drawBreakLine(String breakString, int times){
+        System.out.println(breakString + StringUtils.repeat(breakString, times));
+    }
 
     public CLIUtils() {
 
@@ -406,7 +409,6 @@ public class CLIUtils {
     }
 
     public static int checkPythonInstallation() {
-        // NOTE: Magic number -10, simply means unassigned exit code
         int pyCheckIns;
         if (windowsPlatform) {
             pyCheckIns = execShellCommand(new String[]{"python", "--version"});

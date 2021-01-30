@@ -9,7 +9,7 @@ import java.io.IOException;
 
 public class CLIHandler {
     CommandLine cmd = null;
-
+    String fetchFailed = "Failed fetching VCell version";
 
     CLIHandler(String[] args) throws IOException {
         CommandLineParser parser = new DefaultParser();
@@ -33,7 +33,11 @@ public class CLIHandler {
         }
 
         if (cmd.hasOption("v")) {
-            System.out.println("VCell version: " + getVersion());
+            if (getVersion().startsWith("Fail")){
+                System.out.println(fetchFailed);
+            } else {
+                System.out.println("VCell version: " + getVersion());
+            }
             System.exit(1);
         }
     }
@@ -92,14 +96,17 @@ public class CLIHandler {
         formatter.printHelp(syntax, header, this.getCommandLineOptions(), "");
     }
 
-    public String getVersion() throws IOException {
+    public String getVersion() {
         final String url = "http://vcell.org/webstart/Alpha/updates.xml";
-        final Document document = Jsoup.connect(url).get();
-
-        Elements entryElements = document.select("entry");
+        Document document;
         String version;
-        version = entryElements.attr("newVersion");
-
-        return version;
+        try {
+            document = Jsoup.connect(url).get();
+            Elements entryElements = document.select("entry");
+            version = entryElements.attr("newVersion");
+            return version;
+        } catch (IOException ignored) {
+            return fetchFailed;
+        }
     }
 }
