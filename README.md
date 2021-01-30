@@ -20,7 +20,7 @@ Simulation capabilities include ODEs, Reaction-Diffusion equations within cellul
 * [Building and Running VCell Client as a standalone tool](#building-and-running-vcell-client-as-a-standalone-tool)
 * [Eclipse Setup for Windows](#eclipse-setup-for-windows)
 * [Building and Running VCell Client or Server](#building-and-running-vcell-client-or-server)
-* [CLI Requirements](#cli-requirements)
+* [CLI Requirements](#vcell-cli-requirements)
 * [Other Details](#other-details)
 * [License](#license)
 
