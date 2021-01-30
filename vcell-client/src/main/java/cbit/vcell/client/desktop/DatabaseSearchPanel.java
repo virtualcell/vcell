@@ -48,9 +48,11 @@ import org.vcell.util.gui.CollapsiblePanel;
 import org.vcell.util.gui.generic.DatePanel;
 
 import cbit.gui.TextFieldAutoCompletion;
+import cbit.vcell.client.desktop.DatabaseSearchPanel.SearchCriterion;
 import cbit.vcell.clientdb.DocumentManager;
 import cbit.vcell.model.DBFormalSpecies;
 import cbit.vcell.model.FormalSpeciesType;
+import javax.swing.JCheckBox;
 
 @SuppressWarnings("serial")
 public class DatabaseSearchPanel extends CollapsiblePanel {
@@ -206,6 +208,7 @@ public class DatabaseSearchPanel extends CollapsiblePanel {
 	private JTextField textFieldSpeciesName;
 	private JLabel lblSpeciesName;
 	private boolean bEnableSpeciesSearch = false;
+	private JCheckBox chckbxHasSpatial;
 
 	class SearchEventHandler extends MouseAdapter implements java.awt.event.ActionListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {	
@@ -282,6 +285,28 @@ public class DatabaseSearchPanel extends CollapsiblePanel {
 				searchCriterionList.add(searchBySpeciesName);
 			}
 		}
+		if(chckbxHasSpatial.isSelected()) {
+			SearchCriterion sc = new SearchCriterion() {
+				@Override
+				public boolean meetCriterion(VCDocumentInfo docInfo) {
+					if(docInfo instanceof BioModelInfo) {
+						BioModelChildSummary bmcs = ((BioModelInfo)docInfo).getBioModelChildSummary();
+						for(int i=0;bmcs != null && bmcs.getGeometryDimensions() != null && i<bmcs.getGeometryDimensions().length;i++) {
+							if(bmcs.getGeometryDimensions()[i] > 0){
+								return true;
+							}
+						}
+					}else if(docInfo instanceof MathModelInfo) {
+						MathModelChildSummary mmcs = ((MathModelInfo)docInfo).getMathModelChildSummary();
+						if(mmcs != null && mmcs.getGeometryDimension()>0) {
+							return true;
+						}
+					}
+					return false;
+				}};
+			searchCriterionList.add(sc);
+		}
+		
 		return searchCriterionList;
 	}
 	
@@ -398,9 +423,16 @@ public class DatabaseSearchPanel extends CollapsiblePanel {
 		gbc_textFieldSpeciesName.gridy = 4;
 		mainPanel.add(textFieldSpeciesName, gbc_textFieldSpeciesName);
 		textFieldSpeciesName.setColumns(10);
+		
+		chckbxHasSpatial = new JCheckBox("Has Spatial");
+		GridBagConstraints gbc_chckbxHasSpatial = new GridBagConstraints();
+		gbc_chckbxHasSpatial.insets = new Insets(0, 0, 5, 5);
+		gbc_chckbxHasSpatial.gridx = 0;
+		gbc_chckbxHasSpatial.gridy = 5;
+		mainPanel.add(chckbxHasSpatial, gbc_chckbxHasSpatial);
 		gbc = new GridBagConstraints();
 		gbc.gridx = 0;
-		gbc.gridy = 5;
+		gbc.gridy = 6;
 		gbc.insets = new Insets(10, 5, 0, 5);
 		mainPanel.add(searchButton, gbc);
 		advancedOptions.add(textFieldSpeciesName);
@@ -408,7 +440,7 @@ public class DatabaseSearchPanel extends CollapsiblePanel {
 		
 		gbc = new GridBagConstraints();
 		gbc.gridx = 1;
-		gbc.gridy = 5;
+		gbc.gridy = 6;
 		gbc.insets = new Insets(10, 5, 0, 0);
 		gbc.anchor = GridBagConstraints.LINE_START;
 		mainPanel.add(cancelButton, gbc);
