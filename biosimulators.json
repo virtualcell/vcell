@@ -240,7 +240,7 @@
       "name": "Runge-Kutta (Second Order, Fixed Time Step)",
       "kisaoId": {
         "namespace": "KISAO",
-        "id": "KISAO_0000064"
+        "id": "KISAO_0000381"
       },
       "modelingFrameworks": [{
         "namespace": "SBO",
@@ -691,7 +691,7 @@
       "name": "Combined Stiff Solver (IDA/CVODE)",
       "kisaoId": {
         "namespace": "KISAO",
-        "id": "KISAO_0000019"
+        "id": "KISAO_0000617"
       },
 
       "modelingFrameworks": [{
@@ -852,7 +852,7 @@
       "name": "Hybrid (Gibson + Euler-Maruyama Method)",
       "kisaoId": {
         "namespace": "KISAO",
-        "id": "KISAO_0000286"
+        "id": "KISAO_0000599"
       },
       "modelingFrameworks": [{
         "namespace": "SBO",
@@ -919,7 +919,7 @@
       "name": "Hybrid (Gibson + Milstein Method)",
       "kisaoId": {
         "namespace": "KISAO",
-        "id": "KISAO_0000287"
+        "id": "KISAO_0000598"
       },
 
       "modelingFrameworks": [{
@@ -987,7 +987,7 @@
       "name": "Hybrid (Adaptive Gibson + Milstein Method)",
       "kisaoId": {
         "namespace": "KISAO",
-        "id": "KISAO_0000287"
+        "id": "KISAO_0000600"
       },
 
       "modelingFrameworks": [{
@@ -1055,7 +1055,7 @@
       "name": "Semi-Implicit Finite Volume-Particle Hybrid, Regular Grid (Fixed Time Step)",
       "kisaoId": {
         "namespace": "KISAO",
-        "id": "KISAO_0000285"
+        "id": "KISAO_0000616"
       },
 
       "modelingFrameworks": [{
@@ -1149,7 +1149,7 @@
       "name": "Fully-Implicit Finite Volume, Regular Grid (Variable Time Step)",
       "kisaoId": {
         "namespace": "KISAO",
-        "id": "KISAO_0000285"
+        "id": "KISAO_0000615"
       },
 
       "modelingFrameworks": [{
