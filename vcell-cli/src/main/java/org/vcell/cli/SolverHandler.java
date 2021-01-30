@@ -111,7 +111,7 @@ public class SolverHandler {
                     }
                     if (solver.getSolverStatus().getStatus() == SolverStatus.SOLVER_FINISHED) {
                         System.out.println("Succesful execution: Model '" + docName + "' Task '" + sim.getDescription() + "'.");
-                        System.out.println("-------------------------------------------------------------------------");
+                        System.out.println(CLIUtils.breakLine);
                     } else {
                         System.err.println("Solver status: " + solver.getSolverStatus().getStatus());
                         System.err.println("Solver message: " + solver.getSolverStatus().getSimulationMessage().getDisplayMessage());
@@ -123,7 +123,7 @@ public class SolverHandler {
                         // something else than failure caught by solver instance during execution
                         System.err.println(e.getMessage());
                     }
-                    System.out.println("-------------------------------------------------------------------------");
+                    System.out.println(CLIUtils.breakLine);
                 }
                 resultsHash.put(sim.getImportedTaskID(), odeSolverResultSet);
 

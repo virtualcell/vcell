@@ -1,6 +1,5 @@
 package org.vcell.cli;
 
-import cbit.vcell.resource.OperatingSystemInfo;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.xml.ExternalDocInfo;
 import org.jlibsedml.Libsedml;
@@ -63,7 +62,7 @@ public class CLIStandalone {
             inputFile = cliHandler.getInputFilePath();
             outputDir = cliHandler.getOutputDirPath();
             System.out.println("VCell CLI input archive " + inputFile);
-            System.out.println("-------------------------------------------------------------------------");
+            System.out.println(CLIUtils.breakLine);
             omexHandler = new OmexHandler(inputFile, outputDir);
             omexHandler.extractOmex();
             sedmlLocations = omexHandler.getSedmlLocationsAbsolute();
@@ -86,15 +85,15 @@ public class CLIStandalone {
             try {
                 CLIUtils.makeDirs(outDirForCurrentSedml);
                 sedml = Libsedml.readDocument(completeSedmlPath).getSedMLModel();
-                String[] sedmlNameSplit = null;
-                if (OperatingSystemInfo.getInstance().isWindows()) {
+                String[] sedmlNameSplit;
+                if (CLIUtils.windowsPlatform) {
                     sedmlNameSplit = sedmlLocation.split("\\\\", -2);
                 } else {
                     sedmlNameSplit = sedmlLocation.split("/", -2);
                 }
                 sedmlName = sedmlNameSplit[sedmlNameSplit.length - 1];
                 System.out.println("Successful translation: SED-ML file " + sedmlName);
-                System.out.println("-------------------------------------------------------------------------");
+                System.out.println(CLIUtils.breakLine);
             } catch (Exception e) {
                 System.err.println("SED-ML processing for " + sedmlLocation + " failed with error: " + e.getMessage());
                 e.printStackTrace(System.err);
@@ -103,20 +102,24 @@ public class CLIStandalone {
             }
             // Run solvers and make reports; all failures/exceptions are being caught
             SolverHandler solverHandler = new SolverHandler();
-            // send the the whole omex file since we do better handling of malformed model URIs in XMLHelper code
+            // send the the whole OMEX file since we do better handling of malformed model URIs in XMLHelper code
             ExternalDocInfo externalDocInfo = new ExternalDocInfo(new File(inputFile), true);
             resultsHash = solverHandler.simulateAllTasks(externalDocInfo, sedml, outDirForCurrentSedml);
             reportsHash = CLIUtils.generateReportsAsCSV(sedml, resultsHash, outDirForCurrentSedml);
             /*
             Note:
             Internally biosimulators_utils python package uses a capturer package, which is developed for UNIX based systems.
-            Either way we need to find an alternate capturer for windows in biosimulators_utils
+            Either way we need to find an alternate for capturer on windows in biosimulators_utils
             */
-            if (!OperatingSystemInfo.getInstance().isWindows()) {
-                if(CLIUtils.checkPythonInstallation() == 0 ) {
+            if (!CLIUtils.windowsPlatform) {
+                if (CLIUtils.checkPythonInstallation() == 0) {
                     CLIUtils.convertCSVtoHDF(Paths.get(outputDir, sedmlName).toString(), sedmlLocation, Paths.get(outputDir, sedmlName).toString());
                 } else {
-                    System.err.println("Converting to HDF failed (Check local Python installation)");
+                    if (CLIUtils.checkPythonInstallation() != 0) {
+                        System.err.println("Python installation required");
+                        System.err.println("Update submodule codebase");
+                    }
+                    System.err.println("HDF5 conversion failed...");
                 }
             }
             if (resultsHash.containsValue(null) || reportsHash.containsValue(null)) {

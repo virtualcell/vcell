@@ -8,20 +8,17 @@ import org.jsoup.select.Elements;
 import java.io.IOException;
 
 public class CLIHandler {
-    private final String usage = "usage: VCell [-h] [-q] -i ARCHIVE [-o OUT_DIR] [-v]";
-    private final String syntax = "VCell [-h] [-q] -i ARCHIVE [-o OUT_DIR] [-v]";
-    private final String header = "\nBioSimulators-compliant command-line interface to the VCell simulation program <http://vcell.org>.\n\n" +
-            "optional arguments:\n\n";
     CommandLine cmd = null;
 
 
     CLIHandler(String[] args) throws IOException {
         CommandLineParser parser = new DefaultParser();
 
+        String usage = "usage: VCell [-h] [-q] -i ARCHIVE [-o OUT_DIR] [-v]";
         try {
             cmd = parser.parse(this.getCommandLineOptions(), args);
         } catch (ParseException e) {
-            System.out.println(this.usage);
+            System.out.println(usage);
             System.exit(1);
         }
 
@@ -89,7 +86,10 @@ public class CLIHandler {
 
     public void printHelp() {
         HelpFormatter formatter = new HelpFormatter();
-        formatter.printHelp(this.syntax, this.header, this.getCommandLineOptions(), "");
+        String syntax = "VCell [-h] [-q] -i ARCHIVE [-o OUT_DIR] [-v]";
+        String header = "\nBioSimulators-compliant command-line interface to the VCell simulation program <http://vcell.org>.\n\n" +
+                "optional arguments:\n\n";
+        formatter.printHelp(syntax, header, this.getCommandLineOptions(), "");
     }
 
     public String getVersion() throws IOException {

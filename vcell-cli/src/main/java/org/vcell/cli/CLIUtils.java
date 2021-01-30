@@ -8,24 +8,35 @@ import cbit.vcell.resource.OperatingSystemInfo;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.util.ColumnDescription;
 import com.google.common.io.Files;
+import org.apache.commons.lang.StringUtils;
 import org.jlibsedml.*;
 import org.vcell.stochtest.TimeSeriesMultitrialData;
-import java.io.*;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 
 public class CLIUtils {
-    //    private String tempDirPath = null;
-    private final String extractedOmexPath = null;
-
-//    private static final Path workingDirectory = Paths.get(Paths.get(".").toAbsolutePath().normalize().toString());
+    // Breakline
+    public static final String breakLine = "-" + StringUtils.repeat("-", 100);
+    //    private static final Path workingDirectory = Paths.get(Paths.get(".").toAbsolutePath().normalize().toString());
     // TODO: Hardcoded for docker image working directory(remove it soon) @gmarupilla
     private static final Path workingDirectory = Paths.get(System.getProperty("user.dir").equals("/") ? "/usr/local/app/vcell/installDir" : System.getProperty("user.dir"));
     // Submodule path for VCell_CLI_UTILS
     private static final Path utilPath = Paths.get(workingDirectory.toString(), "submodules", "vcell_cli_utils");
     private static final Path cliPath = Paths.get(utilPath.toString(), "cli_util", "cli.py");
     private static final Path requirementFilePath = Paths.get(utilPath.toString(), "requirements.txt");
+
+    // Supported platforms
+    public static boolean windowsPlatform = OperatingSystemInfo.getInstance().isWindows();
+    public static boolean macPlatform = OperatingSystemInfo.getInstance().isMac();
+    public static boolean linuxPlatform = OperatingSystemInfo.getInstance().isLinux();
+    //    private String tempDirPath = null;
+    private final String extractedOmexPath = null;
 
     public CLIUtils() {
 
@@ -378,7 +389,7 @@ public class CLIUtils {
             }
             return output;
         } catch (IOException | InterruptedException I) {
-            System.err.println("Failed executing the command " + Arrays.toString(args)+ "\n");
+            System.err.println("Failed executing the command " + Arrays.toString(args) + "\n");
         }
         return output;
     }
@@ -386,7 +397,7 @@ public class CLIUtils {
     private static void pipInstallRequirements() {
         // pip install the requirements
         String[] args;
-        if (OperatingSystemInfo.getInstance().isWindows()) {
+        if (windowsPlatform) {
             args = new String[]{"pip", "install", "-r", String.valueOf(requirementFilePath)};
         } else {
             args = new String[]{"pip3", "install", "-r", String.valueOf(requirementFilePath)};
@@ -396,9 +407,8 @@ public class CLIUtils {
 
     public static int checkPythonInstallation() {
         // NOTE: Magic number -10, simply means unassigned exit code
-        int pyCheckIns = -10;
-        if (OperatingSystemInfo.getInstance().isWindows()) {
-            System.out.println();
+        int pyCheckIns;
+        if (windowsPlatform) {
             pyCheckIns = execShellCommand(new String[]{"python", "--version"});
         } else {
             pyCheckIns = execShellCommand(new String[]{"python3", "--version"});
@@ -429,9 +439,9 @@ public class CLIUtils {
                     optional flags:        --rel_out_path | --apply_xml_model_changes |
                          --report_formats | --plot_formats | --log | --indent
         * */
-        if (OperatingSystemInfo.getInstance().isWindows()) {
+        if (windowsPlatform) {
             cliArgs = new String[]{"python", cliPath.toString(), sedmlFilePath.toString(), workingDirectory.toString(), outDirPath.toString(), csvDirPath.toString()};
-            System.out.println("cliArgs"+ Arrays.toString(cliArgs));
+            System.out.println("cliArgs" + Arrays.toString(cliArgs));
         } else {
             cliArgs = new String[]{"python3", cliPath.toString(), sedmlFilePath.toString(), workingDirectory.toString(), outDirPath.toString(), csvDirPath.toString()};
         }

@@ -42,7 +42,7 @@ public class OmexHandler {
         if (!new File(omexPath).exists()) {
             String[] omexNameArray = omexPath.split("/", -2);
             String omexName = omexNameArray[omexNameArray.length - 1];
-            System.err.println("Provided OMEX "+ omexName +" is not present");
+            System.err.println("Provided OMEX " + omexName + " is not present");
             System.exit(1);
         }
         int indexOfLastSlash = omexPath.lastIndexOf("/");
