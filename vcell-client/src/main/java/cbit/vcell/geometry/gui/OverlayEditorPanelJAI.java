@@ -10,6 +10,7 @@
 
 package cbit.vcell.geometry.gui;
 
+import java.awt.AWTEvent;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
@@ -23,6 +24,7 @@ import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Ellipse2D;
@@ -75,6 +77,7 @@ import org.vcell.util.BeanUtils;
 import org.vcell.util.CoordinateIndex;
 import org.vcell.util.ISize;
 import org.vcell.util.NumberUtils;
+import org.vcell.util.Range;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.UtilCancelException;
 import org.vcell.util.gui.ColorIcon;
@@ -392,6 +395,8 @@ public class OverlayEditorPanelJAI extends JPanel{
 	public static final String FRAP_DATA_CONVERTDOMAIN_PROPERTY = "FRAP_DATA_CONVERTDOMAIN_PROPERTY";
 	public static final String FRAP_DATA_SEPARATE_PROPERTY = "FRAP_DATA_SEPARATE_PROPERTY";
 
+	public static final String FRAP_DATA_FIELDDATA_PROPERTY = "FRAP_DATA_FIELDDATA_PROPERTY";
+
 	//scale factors
 	public static final double DEFAULT_SCALE_FACTOR = 1.0;
 	public static final double DEFAULT_OFFSET_FACTOR = 0.0;
@@ -432,6 +437,8 @@ public class OverlayEditorPanelJAI extends JPanel{
 	private JButton mergeButton;
 	private JButton borderToolButton;
 	private JButton extrudeToolButton;
+	public JToggleButton translateToolButton;
+	public JToggleButton scaleToolButton;
 	private JLabel blendPercentImageLabel;
 	private JLabel blendPercentROILabel;
 	private JToggleButton selectButton;
@@ -949,6 +956,8 @@ public class OverlayEditorPanelJAI extends JPanel{
 		roiDrawButtonGroup.add(eraseButton);
 		roiDrawButtonGroup.add(fillButton);
 		roiDrawButtonGroup.add(cropButton);
+		roiDrawButtonGroup.add(translateToolButton);
+		roiDrawButtonGroup.add(scaleToolButton);
 		
 		BeanUtils.enableComponents(getToolButtonPanel(), false);
 		BeanUtils.enableComponents(editROIPanel, false);
@@ -1218,6 +1227,10 @@ public class OverlayEditorPanelJAI extends JPanel{
 	private CalcCoords calcCoords;
 	public void setCalcCoords(CalcCoords calcCoords){
 		this.calcCoords = calcCoords;
+	}
+	private double[] fdScale = new double[] {1.0,0,0};//scale,inMin,outMin
+	public void setFDScale(double[] fdScale) {
+		this.fdScale = fdScale;
 	}
 	/** Sets the viewer to display the given images. * @param argImageDataset ImageDataset
 	 */
@@ -1493,12 +1506,45 @@ public class OverlayEditorPanelJAI extends JPanel{
 		Rectangle selectRectangle = new Rectangle((int)(mouseEvent.getPoint().x/imagePane.getZoom()), (int)(mouseEvent.getPoint().y/imagePane.getZoom()), 0, 0);
 		firePropertyChange(FRAP_DATA_SELECTIMGROI_PROPERTY, null, new  ROIMultiPaintManager.SelectImgInfo(mouseEvent,/*imagePane.getZoom(),*/resolvedList,selectRectangle,bIgnoreIfSelected));
 	}
+	
+	public static class GUIHelperFD{
+		public AWTEvent awtEvent;
+		public String action;
+		public Object data;
+		public GUIHelperFD(AWTEvent awtEvent, String action,Object data) {
+			super();
+			this.awtEvent = awtEvent;
+			this.action = action;
+			this.data = data;
+		}
+	}
+	private static Point initFDMousePoint = null;
 	/**
 	 * Method getImagePane.
 	 * @return OverlayImageDisplayJAI
 	 */
 	private OverlayImageDisplayJAI getImagePane(){
 		if (imagePane == null){
+			this.addKeyListener(new KeyListener() {
+
+				@Override
+				public void keyTyped(KeyEvent e) {
+					System.out.println(e);
+					
+				}
+
+				@Override
+				public void keyPressed(KeyEvent e) {
+					System.out.println(e);
+					
+				}
+
+				@Override
+				public void keyReleased(KeyEvent e) {
+					System.out.println(e);
+					
+				}});
+
 			imagePane = new OverlayImageDisplayJAI();
 			//imagePane = new ZoomableOverlayImagePane();
 			imagePane.addMouseListener(new java.awt.event.MouseAdapter() {
@@ -1512,6 +1558,10 @@ public class OverlayEditorPanelJAI extends JPanel{
 					}
 				}
 				public void mousePressed(MouseEvent e){
+					initFDMousePoint = e.getPoint();
+					if (SwingUtilities.isLeftMouseButton(e)&& (/* translateToolButton.isSelected() || */ scaleToolButton.isSelected())) {
+						firePropertyChange(FRAP_DATA_FIELDDATA_PROPERTY, null,new GUIHelperFD(e,"scaleStart",new Range(0,0)));
+					}
 					if(!bAllowAddROI){
 						return;
 					}
@@ -1531,8 +1581,19 @@ public class OverlayEditorPanelJAI extends JPanel{
 					}else if(SwingUtilities.isLeftMouseButton(e) && (paintButton.isSelected() || eraseButton.isSelected()) && brushToolHelper.isBrushSizeClickDragMode()){
 						brushToolHelper.startBrushSizeClickDragMode(e);
 					}
+//					else if(SwingUtilities.isLeftMouseButton(e) && (translateToolButton.isSelected())){
+//						firePropertyChange(FRAP_DATA_FIELDDATA_PROPERTY, null,null);
+//					}
 				}
 				public void mouseReleased(MouseEvent e){
+					if(SwingUtilities.isLeftMouseButton(e) && (translateToolButton.isSelected())){
+						firePropertyChange(FRAP_DATA_FIELDDATA_PROPERTY, null,new GUIHelperFD(e,"translateEnd",null));
+						return;
+					}
+					if(SwingUtilities.isLeftMouseButton(e) && (scaleToolButton.isSelected())){
+						firePropertyChange(FRAP_DATA_FIELDDATA_PROPERTY, null,new GUIHelperFD(e,"scaleEnd",null));
+						return;
+					}
 					if(!bAllowAddROI){
 						return;
 					}
@@ -1615,6 +1676,19 @@ public class OverlayEditorPanelJAI extends JPanel{
 			imagePane.addMouseMotionListener(new java.awt.event.MouseMotionAdapter() {   
 				@Override
 				public void mouseDragged(java.awt.event.MouseEvent e) {
+					if(SwingUtilities.isLeftMouseButton(e) && (translateToolButton.isSelected() || scaleToolButton.isSelected())) {
+						Point diffPoint = new Point((int)((e.getX()-initFDMousePoint.x)/getImagePane().getZoom()),(int)((e.getY()-initFDMousePoint.y)/getImagePane().getZoom()));
+						Point diffPointLast = new Point((int)((lastMousePoint.getX()-initFDMousePoint.x)/getImagePane().getZoom()),(int)((lastMousePoint.getY()-initFDMousePoint.y)/getImagePane().getZoom()));
+						int diffx = (int)Math.signum(diffPointLast.x-diffPoint.getX());
+						int diffy = (int)Math.signum(diffPointLast.y-diffPoint.getY());
+						if(diffPointLast.x == diffPoint.x && diffPointLast.y == diffPoint.y) {
+							return;
+						}
+						lastMousePoint = e.getPoint();
+//						System.out.println(diffx+" "+diffy);
+						firePropertyChange(FRAP_DATA_FIELDDATA_PROPERTY, null,new GUIHelperFD(e,(translateToolButton.isSelected()?"translateDelta":"scaleDelta"),diffPoint));
+						return;
+					}
 					updateLabel(e.getX(), e.getY());
 					if(!bAllowAddROI){
 						return;
@@ -1864,17 +1938,24 @@ public class OverlayEditorPanelJAI extends JPanel{
 				}else{
 					sb.append(" error");
 				}
-				if(isOriginalValueScaled()){
+				if(isOriginalValueScaled() || fdScale != null){
 					sb.append("; value(img)(orig)");
 					if(pix != null){
 						sb.append(pix.length > 1 ? "s=(" : "=");
 						for (int i=0; i<pix.length; i++) {
 							if (i > 0) sb.append(", ");
-							sb.append(
-								NumberUtils.formatNumber(
-								(((int)(pix[i]&0x0000FFFF))-originalOffsetFactor)/
-								originalScaleFactor
-								, 6));
+							if(fdScale != null) {
+								sb.append(
+										NumberUtils.formatNumber(
+										((((int)(pix[i]&0x0000FFFF))-fdScale[2])/fdScale[0])+fdScale[1]
+										, 6));								
+							}else {
+								sb.append(
+									NumberUtils.formatNumber(
+									(((int)(pix[i]&0x0000FFFF))-originalOffsetFactor)/
+									originalScaleFactor
+									, 6));
+							}
 						}
 						if (pix.length > 1) sb.append(")");
 					}else{
@@ -2290,6 +2371,38 @@ public class OverlayEditorPanelJAI extends JPanel{
 			gbc_extrudeToolButton.gridy = 6;
 			toolButtonPanel.add(extrudeToolButton, gbc_extrudeToolButton);
 			
+			translateToolButton = new JToggleButton(new ImageIcon(getClass().getResource("/images/translate.gif")));
+			translateToolButton.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					firePropertyChange(FRAP_DATA_FIELDDATA_PROPERTY, null, new GUIHelperFD(e,"translatePressed",null));
+				}
+			});
+			translateToolButton.setToolTipText("Translate underlay");
+			translateToolButton.setPreferredSize(new Dimension(32, 32));
+			translateToolButton.setMinimumSize(new Dimension(32, 32));
+			translateToolButton.setMaximumSize(new Dimension(32, 32));
+			GridBagConstraints gbc_translateToolButton = new GridBagConstraints();
+			gbc_translateToolButton.insets = new Insets(10, 0, 0, 0);
+			gbc_translateToolButton.gridx = 0;
+			gbc_translateToolButton.gridy = 7;
+			toolButtonPanel.add(translateToolButton, gbc_translateToolButton);
+
+			scaleToolButton = new JToggleButton(new ImageIcon(getClass().getResource("/images/scale.gif")));
+			scaleToolButton.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					firePropertyChange(FRAP_DATA_FIELDDATA_PROPERTY, null, new GUIHelperFD(e,"scalePressed",null));
+				}
+			});
+			scaleToolButton.setToolTipText("Scale underlay");
+			scaleToolButton.setPreferredSize(new Dimension(32, 32));
+			scaleToolButton.setMinimumSize(new Dimension(32, 32));
+			translateToolButton.setMaximumSize(new Dimension(32, 32));
+			GridBagConstraints gbc_scaleToolButton = new GridBagConstraints();
+			gbc_scaleToolButton.insets = new Insets(10, 0, 0, 0);
+			gbc_scaleToolButton.gridx = 1;
+			gbc_scaleToolButton.gridy = 7;
+			toolButtonPanel.add(scaleToolButton, gbc_scaleToolButton);
+
 		}
 		return toolButtonPanel;
 	}

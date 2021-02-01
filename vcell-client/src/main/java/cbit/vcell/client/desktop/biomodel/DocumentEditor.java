@@ -608,7 +608,7 @@ private void treeSelectionChanged0(TreeSelectionEvent treeSelectionEvent) {
 protected abstract void setRightBottomPanelOnSelection(Object[] selections);
 protected abstract void treeSelectionChanged();
 
-protected SimulationContext getSelectedSimulationContext() {
+public SimulationContext getSelectedSimulationContext() {
 	if (this instanceof MathModelEditor) {
 		return null;
 	}

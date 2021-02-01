@@ -46,7 +46,6 @@ import java.util.BitSet;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Enumeration;
-import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -78,7 +77,6 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.jdom.Element;
 import org.jdom.Namespace;
-import org.jlibsedml.AbstractTask;
 import org.jlibsedml.ArchiveComponents;
 import org.jlibsedml.Libsedml;
 import org.jlibsedml.SEDMLDocument;
@@ -90,7 +88,6 @@ import org.vcell.model.bngl.gui.BNGLDebuggerPanel;
 import org.vcell.model.bngl.gui.BNGLUnitsPanel;
 import org.vcell.model.rbm.RbmUtils;
 import org.vcell.model.rbm.RbmUtils.BnglObjectConstructionVisitor;
-import org.vcell.sedml.gui.SEDMLChooserPanel;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.Compare;
@@ -175,8 +172,6 @@ import cbit.vcell.client.task.NewName;
 import cbit.vcell.client.task.RunSims;
 import cbit.vcell.client.task.SaveDocument;
 import cbit.vcell.client.task.SetMathDescription;
-import cbit.vcell.client.task.CheckBeforeDelete.LOW_PRECISION_SAVE;
-import cbit.vcell.client.task.CheckBeforeDelete.LostFlag;
 import cbit.vcell.clientdb.DocumentManager;
 import cbit.vcell.desktop.ImageDbTreePanel;
 import cbit.vcell.desktop.LoginManager;
@@ -217,10 +212,10 @@ import cbit.vcell.math.VariableType;
 import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.matrix.MatrixException;
 import cbit.vcell.model.Model;
-import cbit.vcell.model.ModelException;
 import cbit.vcell.model.Model.ModelParameter;
 import cbit.vcell.model.Model.RbmModelContainer;
 import cbit.vcell.model.Model.ReservedSymbol;
+import cbit.vcell.model.ModelException;
 import cbit.vcell.model.RbmObservable;
 import cbit.vcell.model.ReactionRule;
 import cbit.vcell.model.ReactionStep;
@@ -246,6 +241,7 @@ import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationInfo;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.VCSimulationIdentifier;
+import cbit.vcell.solver.test.MathTestingUtilities;
 import cbit.vcell.solvers.CartesianMesh;
 import cbit.vcell.xml.ExternalDocInfo;
 import cbit.vcell.xml.XMLSource;
@@ -1466,61 +1462,41 @@ public class ClientRequestManager
 		RAW, GZIP
 	};
 
-	public AsynchClientTask[] createNewGeometryTasks(final TopLevelWindowManager requester,
-			final VCDocument.DocumentCreationInfo documentCreationInfo, final AsynchClientTask[] afterTasks,
-			final String okButtonText) {
+	public static final String IMPORT_SOURCE_NAME = "IMPORT_SOURCE_NAME";
+	private static final String DIR_FILES = "DIR_FILES";
+	public static final String ORIG_IMAGE_SIZE_INFO = "ORIG_IMAGE_SIZE_INFO";
+	public static final String NEW_IMAGE_SIZE_INFO = "NEW_IMAGE_SIZE_INFO";
+	private static final String INITIAL_ANNOTATION = "INITIAL_ANNOTATION";
+	private static final String FD_MESH = "FD_MESH";
+	private static final String FD_MESHISIZE = "FD_MESHISIZE";
+	public static final String FDFOS = "FDFOS";
+	private static final String IMAGE_FILE = "IMAGE_FILE";
 
-		if (!isImportGeometryType(documentCreationInfo)) {
-			throw new IllegalArgumentException("Analytic geometry not implemented.");
-
-		}
-		final String IMPORT_SOURCE_NAME = "IMPORT_SOURCE_NAME";
-
-		// Get image from file
-		AsynchClientTask selectImageFileTask = new AsynchClientTask("select image file",
-				AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
-			@Override
-			public void run(Hashtable<String, Object> hashTable) throws Exception {
-				File imageFile = DatabaseWindowManager.showFileChooserDialog(requester, null, getUserPreferences(),
-						JFileChooser.FILES_AND_DIRECTORIES);
-				hashTable.put("imageFile", imageFile);
-				hashTable.put(IMPORT_SOURCE_NAME, "File: " + imageFile.getName());
-			}
-		};
-
-		final String FDFOS = "FDFOS";
-		final String INITIAL_ANNOTATION = "INITIAL_ANNOTATION";
-		final String ORIG_IMAGE_SIZE_INFO = "ORIG_IMAGE_SIZE_INFO";
-		final String NEW_IMAGE_SIZE_INFO = "NEW_IMAGE_SIZE_INFO";
-		final String DIR_FILES = "DIR_FILES";
-		final String FD_MESH = "FD_MESH";
-		final String FD_MESHISIZE = "FD_MESHISIZE";
-		final String FD_TIMEPOINTS = "FD_TIMEPOINTS";
-		AsynchClientTask parseImageTask = new AsynchClientTask("read and parse image file",
-				AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
-			@Override
-			public void run(final Hashtable<String, Object> hashTable) throws Exception {
-
+	public static AsynchClientTask getParseImageTask(final Component requesterComp,final VCDocument.DocumentCreationInfo documentCreationInfo,final MDIManager mdiManager) {
+		AsynchClientTask parseImageTask = new AsynchClientTask("read and parse image file",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+		@Override
+		public void run(final Hashtable<String, Object> hashTable) throws Exception {
+	
 				final Component guiParent = (Component) hashTable.get(ClientRequestManager.GUI_PARENT);
 				try {
 					FieldDataFileOperationSpec fdfos = null;
-//				if(documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FIJI_IMAGEJ){
-//					hashTable.put("imageFile",ImageJHelper.vcellWantImage(getClientTaskStatusSupport(),"Image for new VCell geometry"));
-//				}
-//				if(documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_BLENDER){
-//					hashTable.put("imageFile",ImageJHelper.vcellWantSurface(getClientTaskStatusSupport(),"Image for new VCell geometry"));
-//				}
+	//			if(documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FIJI_IMAGEJ){
+	//				hashTable.put("imageFile",ImageJHelper.vcellWantImage(getClientTaskStatusSupport(),"Image for new VCell geometry"));
+	//			}
+	//			if(documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_BLENDER){
+	//				hashTable.put("imageFile",ImageJHelper.vcellWantSurface(getClientTaskStatusSupport(),"Image for new VCell geometry"));
+	//			}
 					if (documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FILE
-//					|| documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FIJI_IMAGEJ ||
-//					documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_BLENDER
+	//				|| documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FIJI_IMAGEJ ||
+	//				documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_BLENDER
 					) {
-
-						File imageFile = (File) hashTable.get("imageFile");
+	
+						File imageFile = (File) hashTable.get(IMAGE_FILE);
 						if (imageFile == null) {
 							throw new Exception("No file selected");
 						}
 						if (ExtensionFilter.isMatchingExtension(imageFile, ".nrrd")) {
-
+	
 							DataInputStream dis = null;
 							try {
 								dis = new DataInputStream(new BufferedInputStream(new FileInputStream(imageFile)));
@@ -1542,7 +1518,7 @@ public class ClientRequestManager
 									}
 									StringTokenizer stringTokenizer = new StringTokenizer(line, ": ");
 									String headerParam = stringTokenizer.nextToken();
-//								System.out.println(headerParam);
+	//							System.out.println(headerParam);
 									if (headerParam.equals("sizes")) {
 										if (dimension != -1) {
 											xsize = Integer.parseInt(stringTokenizer.nextToken());
@@ -1637,7 +1613,7 @@ public class ClientRequestManager
 									} else {
 										throw new Exception("Unexpected data type=" + type.toString());
 									}
-
+	
 									minValue = Math.min(minValue, data[i]);
 									maxValue = Math.max(maxValue, data[i]);
 								}
@@ -1646,7 +1622,7 @@ public class ClientRequestManager
 									getClientTaskStatusSupport()
 											.setMessage("Scaling " + encoding + " " + type + " NRRD data.");
 								}
-
+	
 								short[] dataToSegment = new short[data.length];
 								double scaleShort = Math.pow(2, Short.SIZE) - 1;
 								for (int i = 0; i < data.length; i++) {
@@ -1696,7 +1672,7 @@ public class ClientRequestManager
 									if (i == 0) {
 										fileExt0 = fileExt;
 									} else if (!Compare.isEqualOrNull(fileExt, fileExt0)) {
-										String result = DialogUtils.showWarningDialog(requester.getComponent(),
+										String result = DialogUtils.showWarningDialog(requesterComp,
 												"Files in '" + imageFile.getAbsolutePath()
 														+ "' have different name extensions, continue?",
 												new String[] { "OK", "Cancel" }, "Cancel");
@@ -1705,7 +1681,7 @@ public class ClientRequestManager
 										}
 										break;
 									}
-
+	
 								}
 								hashTable.put(IMPORT_SOURCE_NAME, "Directory: " + imageFile.getAbsolutePath());
 								origImageSizeInfo = imageDatasetReader
@@ -1733,7 +1709,7 @@ public class ClientRequestManager
 					} else if (documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FIELDDATA) {
 						getClientTaskStatusSupport().setMessage("Reading data from VCell server.");
 						VCDocument.GeomFromFieldDataCreationInfo docInfo = (VCDocument.GeomFromFieldDataCreationInfo) documentCreationInfo;
-						PDEDataContext pdeDataContext = getMdiManager().getFieldDataWindowManager()
+						PDEDataContext pdeDataContext = mdiManager.getFieldDataWindowManager()
 								.getPDEDataContext(docInfo.getExternalDataID(), null);
 						ImageSizeInfo newImageSizeInfo = (ImageSizeInfo) hashTable.get(NEW_IMAGE_SIZE_INFO);
 						pdeDataContext.setVariableNameAndTime(docInfo.getVarName(),
@@ -1758,7 +1734,7 @@ public class ClientRequestManager
 						fdfos.extent = mesh.getExtent();
 						fdfos.isize = meshISize;
 						fdfos.shortSpecData = new short[][][] { { dataToSegment } };
-
+	
 					} else if (documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FROM_SCRATCH) {
 						ISize isize = getISizeFromUser(guiParent, new ISize(256, 256, 8),
 								"Enter # of pixels for  x,y,z (e.g. 3D{256,256,8}, 2D{256,256,1}, 1D{256,1,1})");
@@ -1767,10 +1743,10 @@ public class ClientRequestManager
 						fdfos.extent = new Extent(1, 1, 1);
 						fdfos.isize = isize;
 						hashTable.put(IMPORT_SOURCE_NAME, "Scratch: New Geometry");
-//					final int SCRATCH_SIZE_LIMIT = 512*512*20;
-//					if(isize.getXYZ() > (SCRATCH_SIZE_LIMIT)){
-//						throw new Exception("Total pixels (x*y*z) cannot be >"+SCRATCH_SIZE_LIMIT+".");
-//					}
+	//				final int SCRATCH_SIZE_LIMIT = 512*512*20;
+	//				if(isize.getXYZ() > (SCRATCH_SIZE_LIMIT)){
+	//					throw new Exception("Total pixels (x*y*z) cannot be >"+SCRATCH_SIZE_LIMIT+".");
+	//				}
 					} else if (documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FROM_WORKSPACE_ANALYTIC) {
 						if (hashTable.get(ClientRequestManager.GEOM_FROM_WORKSPACE) != null) {
 							Geometry workspaceGeom = (Geometry) hashTable.get(ClientRequestManager.GEOM_FROM_WORKSPACE);
@@ -1790,7 +1766,7 @@ public class ClientRequestManager
 										.add(new VCPixelClass(null, subVolume.getName(), subVolume.getHandle()));
 							}
 							if (vcPixelClassArrList.size() > img.getPixelClasses().length) {
-								String result = DialogUtils.showOKCancelWarningDialog(requester.getComponent(), null,
+								String result = DialogUtils.showOKCancelWarningDialog(requesterComp, null,
 										"Warning: sampling size is too small to include all subvolumes.");
 								if (result == null || !result.equals(SimpleUserMessage.OPTION_OK)) {
 									throw UserCancelException.CANCEL_GENERIC;
@@ -1835,56 +1811,32 @@ public class ClientRequestManager
 				}
 			}
 		};
-		AsynchClientTask getFieldDataImageParams = new AsynchClientTask("Getting DB Image parameters...",
-				AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
-			@Override
-			public void run(Hashtable<String, Object> hashTable) throws Exception {
-				VCDocument.GeomFromFieldDataCreationInfo docInfo = (VCDocument.GeomFromFieldDataCreationInfo) documentCreationInfo;
-				PDEDataContext pdeDataContext = getMdiManager().getFieldDataWindowManager()
-						.getPDEDataContext(docInfo.getExternalDataID(), null);
-				CartesianMesh mesh = pdeDataContext.getCartesianMesh();
-				ISize meshISize = new ISize(mesh.getSizeX(), mesh.getSizeY(), mesh.getSizeZ());
-				double[] timePoints = pdeDataContext.getTimePoints();
-				hashTable.put(FD_MESH, mesh);
-				hashTable.put(FD_MESHISIZE, meshISize);
-				hashTable.put(FD_TIMEPOINTS, timePoints);
-			}
-		};
-		AsynchClientTask queryImageResizeTask = new AsynchClientTask("Query File Image Resize...",
+		return parseImageTask;
+	}
+
+	// Get image from file
+	public static AsynchClientTask getSelectImageFileTask(final Component requesterComp,final UserPreferences userPreferences) {
+		AsynchClientTask selectImageFileTask = new AsynchClientTask("select image file",
 				AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
 			@Override
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
-				String importSourceName = (String) hashTable.get(IMPORT_SOURCE_NAME);
-				if ((ImageSizeInfo) hashTable.get(ORIG_IMAGE_SIZE_INFO) != null) {// from file
-					ImageSizeInfo newImagesiSizeInfo = queryImageResize(requester.getComponent(),
-							(ImageSizeInfo) hashTable.get(ORIG_IMAGE_SIZE_INFO), true);
-					hashTable.put(NEW_IMAGE_SIZE_INFO, newImagesiSizeInfo);
-				} else if (documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FIELDDATA) {// from fielddata
-					VCDocument.GeomFromFieldDataCreationInfo docInfo = (VCDocument.GeomFromFieldDataCreationInfo) documentCreationInfo;
-					double[] fieldDataTimes = (double[]) hashTable.get(FD_TIMEPOINTS);
-					hashTable.remove(FD_TIMEPOINTS);
-					ISize fieldDataISize = (ISize) hashTable.get(FD_MESHISIZE);
-					ImageSizeInfo origImageSizeInfo = new ImageSizeInfo(importSourceName, fieldDataISize, 1,
-							fieldDataTimes, null);
-					ImageSizeInfo newImagesiSizeInfo = queryImageResize(requester.getComponent(), origImageSizeInfo,
-							true);
-					hashTable.put(NEW_IMAGE_SIZE_INFO, newImagesiSizeInfo);
-					hashTable.put(IMPORT_SOURCE_NAME,
-							"FieldData: " + docInfo.getExternalDataID().getName() + " varName=" + docInfo.getVarName()
-									+ " timeIndex="
-									+ newImagesiSizeInfo.getTimePoints()[newImagesiSizeInfo.getSelectedTimeIndex()]);
-				}
+				File imageFile = DatabaseWindowManager.showFileChooserDialog(requesterComp, null, userPreferences,JFileChooser.FILES_AND_DIRECTORIES);
+				hashTable.put(IMAGE_FILE, imageFile);
+				hashTable.put(IMPORT_SOURCE_NAME, "File: " + imageFile.getName());
 			}
 		};
-		AsynchClientTask importFileImageTask = new AsynchClientTask("Importing Image from File...",
-				AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+		return selectImageFileTask;
+	}
+	
+	public static AsynchClientTask getImportFileImageTask(final VCDocument.DocumentCreationInfo documentCreationInfo) {
+		AsynchClientTask importFileImageTask = new AsynchClientTask("Importing Image from File...",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 			@Override
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
 				if (documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FILE && hashTable.get(FDFOS) == null) {
 					ImageSizeInfo origImageSizeInfo = (ImageSizeInfo) hashTable.get(ORIG_IMAGE_SIZE_INFO);
 					ImageSizeInfo newImageSizeInfo = (ImageSizeInfo) hashTable.get(NEW_IMAGE_SIZE_INFO);
 					File[] dirFiles = (File[]) hashTable.get(DIR_FILES);
-					File imageFile = (File) hashTable.get("imageFile");
+					File imageFile = (File) hashTable.get(IMAGE_FILE);
 					FieldDataFileOperationSpec fdfos = null;
 					boolean bMergeChannels = origImageSizeInfo.getNumChannels() != newImageSizeInfo.getNumChannels();
 					ISize resize = (origImageSizeInfo.getiSize().compareEqual(newImageSizeInfo.getiSize()) ? null
@@ -1948,7 +1900,9 @@ public class ClientRequestManager
 						if (origImageSizeInfo.getTimePoints().length > 1) {
 							userPreferredTimeIndex = newImageSizeInfo.getSelectedTimeIndex();
 						}
-						getClientTaskStatusSupport().setMessage("Reading file...");
+						if(getClientTaskStatusSupport() != null) {
+							getClientTaskStatusSupport().setMessage("Reading file...");
+						}
 						ImageDataset[] imageDatasets = ImageDatasetReaderService.getInstance().getImageDatasetReader()
 								.readImageDatasetChannels(imageFile.getAbsolutePath(), getClientTaskStatusSupport(),
 										bMergeChannels, userPreferredTimeIndex, resize);
@@ -1961,7 +1915,10 @@ public class ClientRequestManager
 				}
 			}
 		};
-
+		return importFileImageTask;
+	}
+	
+	public static AsynchClientTask getResizeImageTask(final VCDocument.DocumentCreationInfo documentCreationInfo) {
 		AsynchClientTask resizeImageTask = new AsynchClientTask("Resizing Image...",
 				AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 			@Override
@@ -1970,18 +1927,134 @@ public class ClientRequestManager
 				FieldDataFileOperationSpec fdfos = (FieldDataFileOperationSpec) hashTable.get(FDFOS);
 				if (newImageSizeInfo != null && fdfos != null
 						&& !fdfos.isize.compareEqual(newImageSizeInfo.getiSize())) {
-					resizeImage((FieldDataFileOperationSpec) hashTable.get(FDFOS), newImageSizeInfo.getiSize(),
-							documentCreationInfo.getOption());
+//					resizeImage((FieldDataFileOperationSpec) hashTable.get(FDFOS), newImageSizeInfo.getiSize(),
+//							documentCreationInfo.getOption());
+					resize0(hashTable);
 				}
 			}
 		};
+		return resizeImageTask;
+	}
+	
+	private static void resize0(Hashtable hashTable/*ImageSizeInfo sourceSize,ImageSizeInfo newSize*/) {
+//		OrigOrigin = new Origin
+//		CartesianMesh origMesh = CartesianMesh.createSimpleCartesianMesh(orig, extent, size, regionImage);
+//		ISize varISize = dataProcessingOutputInfo.getVariableISize(varName);
+//		Extent varExtent = dataProcessingOutputInfo.getVariableExtent(varName);
+//		Origin varOrigin = dataProcessingOutputInfo.getVariableOrigin(varName);
+//		VCImage vcImage = new VCImageUncompressed(null,
+//			new byte[varISize.getXYZ()],
+//			varExtent,
+//			varISize.getX(),
+//			varISize.getY(),
+//			varISize.getZ());
+//		RegionImage regionImage = new RegionImage(vcImage,
+//			1+(varISize.getY()>0?1:0)+(varISize.getZ()>0?1:0),
+//			varExtent,
+//			varOrigin,
+//			RegionImage.NO_SMOOTHING);
+//		return CartesianMesh.createSimpleCartesianMesh(
+//			dataProcessingOutputInfo.getVariableOrigin(varName),
+//			varExtent,
+//			varISize, regionImage);
+
+		CartesianMesh origMesh = (CartesianMesh) hashTable.get("sourceMesh");
+		CartesianMesh resampleMesh = (CartesianMesh) hashTable.get("newMesh");
+		FieldDataFileOperationSpec fdfos = (FieldDataFileOperationSpec) hashTable.get(FDFOS);
+		double[] origData = new double[fdfos.isize.getXYZ()];
+		for(int i=0;i<origData.length;i++) {
+			origData[i] = fdfos.shortSpecData[0][0][i];
+		}
+		double[] newData = null;
+		if(origMesh.getSizeY() == 1 && origMesh.getSizeZ() == 1){
+			newData = MathTestingUtilities.resample1DSpatialSimple(origData, origMesh, resampleMesh);						
+		}else if(origMesh.getSizeZ() == 1){
+			newData = MathTestingUtilities.resample2DSpatialSimple(origData, origMesh, resampleMesh);						
+		}else{
+			newData = MathTestingUtilities.resample3DSpatialSimple(origData, origMesh, resampleMesh);						
+		}
+		short[][][] newShort = new short[1][1][resampleMesh.getISize().getXYZ()];
+		for(int i=0;i<newShort[0][0].length;i++) {
+			newShort[0][0][i] = (short)newData[i];
+		}
+		fdfos.isize = resampleMesh.getISize();
+		fdfos.extent = resampleMesh.getExtent();
+		fdfos.origin = resampleMesh.getOrigin();
+		fdfos.shortSpecData = newShort;
+//		hashTable.put(VCPIXELCLASSES, newPixelClasses);
+	}
+	
+	public AsynchClientTask[] createNewGeometryTasks(final TopLevelWindowManager requester,
+			final VCDocument.DocumentCreationInfo documentCreationInfo, final AsynchClientTask[] afterTasks,
+			final String okButtonText) {
+
+		if (!isImportGeometryType(documentCreationInfo)) {
+			throw new IllegalArgumentException("Analytic geometry not implemented.");
+
+		}
+
+		AsynchClientTask selectImageFileTask = getSelectImageFileTask(requester.getComponent(),getUserPreferences());
+		
+		final String INITIAL_ANNOTATION = "INITIAL_ANNOTATION";
+		final String NEW_IMAGE_SIZE_INFO = "NEW_IMAGE_SIZE_INFO";
+		final String FD_TIMEPOINTS = "FD_TIMEPOINTS";
+		
+		AsynchClientTask parseImageTask = getParseImageTask(requester.getComponent(),documentCreationInfo,getMdiManager());
+		
+		AsynchClientTask getFieldDataImageParams = new AsynchClientTask("Getting DB Image parameters...",
+				AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+			@Override
+			public void run(Hashtable<String, Object> hashTable) throws Exception {
+				VCDocument.GeomFromFieldDataCreationInfo docInfo = (VCDocument.GeomFromFieldDataCreationInfo) documentCreationInfo;
+				PDEDataContext pdeDataContext = getMdiManager().getFieldDataWindowManager()
+						.getPDEDataContext(docInfo.getExternalDataID(), null);
+				CartesianMesh mesh = pdeDataContext.getCartesianMesh();
+				ISize meshISize = new ISize(mesh.getSizeX(), mesh.getSizeY(), mesh.getSizeZ());
+				double[] timePoints = pdeDataContext.getTimePoints();
+				hashTable.put(FD_MESH, mesh);
+				hashTable.put(FD_MESHISIZE, meshISize);
+				hashTable.put(FD_TIMEPOINTS, timePoints);
+			}
+		};
+		AsynchClientTask queryImageResizeTask = new AsynchClientTask("Query File Image Resize...",
+				AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+			@Override
+			public void run(Hashtable<String, Object> hashTable) throws Exception {
+				String importSourceName = (String) hashTable.get(IMPORT_SOURCE_NAME);
+				if ((ImageSizeInfo) hashTable.get(ORIG_IMAGE_SIZE_INFO) != null) {// from file
+					ImageSizeInfo newImagesiSizeInfo = queryImageResize(requester.getComponent(),
+							(ImageSizeInfo) hashTable.get(ORIG_IMAGE_SIZE_INFO), true);
+					hashTable.put(NEW_IMAGE_SIZE_INFO, newImagesiSizeInfo);
+				} else if (documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FIELDDATA) {// from fielddata
+					VCDocument.GeomFromFieldDataCreationInfo docInfo = (VCDocument.GeomFromFieldDataCreationInfo) documentCreationInfo;
+					double[] fieldDataTimes = (double[]) hashTable.get(FD_TIMEPOINTS);
+					hashTable.remove(FD_TIMEPOINTS);
+					ISize fieldDataISize = (ISize) hashTable.get(FD_MESHISIZE);
+					ImageSizeInfo origImageSizeInfo = new ImageSizeInfo(importSourceName, fieldDataISize, 1,
+							fieldDataTimes, null);
+					ImageSizeInfo newImagesiSizeInfo = queryImageResize(requester.getComponent(), origImageSizeInfo,
+							true);
+					hashTable.put(NEW_IMAGE_SIZE_INFO, newImagesiSizeInfo);
+					hashTable.put(IMPORT_SOURCE_NAME,
+							"FieldData: " + docInfo.getExternalDataID().getName() + " varName=" + docInfo.getVarName()
+									+ " timeIndex="
+									+ newImagesiSizeInfo.getTimePoints()[newImagesiSizeInfo.getSelectedTimeIndex()]);
+				}
+			}
+		};
+		
+		AsynchClientTask importFileImageTask = getImportFileImageTask(documentCreationInfo);
+		
+		AsynchClientTask resizeImageTask = getResizeImageTask(documentCreationInfo);
+		
 		AsynchClientTask finishTask = new AsynchClientTask("Finishing...",
 				AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 			@Override
 			public void run(final Hashtable<String, Object> hashTable) throws Exception {
 				getClientTaskStatusSupport().setMessage("Initializing...");
 				final ROIMultiPaintManager roiMultiPaintManager = new ROIMultiPaintManager();
-				roiMultiPaintManager.initROIData((FieldDataFileOperationSpec) hashTable.get(FDFOS));
+				roiMultiPaintManager.setDocumentManager(ClientRequestManager.this.getDocumentManager());
+				roiMultiPaintManager.initROIAndUnderlay((FieldDataFileOperationSpec) hashTable.get(FDFOS));
 				final Geometry[] geomHolder = new Geometry[1];
 				final VCPixelClass[] postProcessPixelClasses = (VCPixelClass[]) hashTable.get(VCPIXELCLASSES);
 				AsynchClientTask task1 = new AsynchClientTask("edit geometry", AsynchClientTask.TASKTYPE_SWING_BLOCKING,
@@ -1992,7 +2065,8 @@ public class ClientRequestManager
 						geomHolder[0] = roiMultiPaintManager.showGUI(okButtonText,
 								(String) hashTable.get(IMPORT_SOURCE_NAME), (Component) hashTable.get(GUI_PARENT),
 								(String) hashTable.get(INITIAL_ANNOTATION), postProcessPixelClasses,
-								getUserPreferences());
+								getUserPreferences(),
+								(hashTable.get(BioModelWindowManager.FIELD_DATA_FLAG)==null?false:((Boolean)hashTable.get(BioModelWindowManager.FIELD_DATA_FLAG)).booleanValue()));
 					}
 				};
 				AsynchClientTask task2 = new AsynchClientTask("update geometry",
@@ -2028,7 +2102,7 @@ public class ClientRequestManager
 		} else if (documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FROM_WORKSPACE_ANALYTIC) {
 			tasksV.addAll(Arrays.asList(new AsynchClientTask[] { parseImageTask, finishTask }));
 		} else if (documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FROM_WORKSPACE_IMAGE) {
-			tasksV.addAll(Arrays.asList(new AsynchClientTask[] { parseImageTask, finishTask }));
+			tasksV.addAll(Arrays.asList(new AsynchClientTask[] { parseImageTask, resizeImageTask, finishTask }));
 		} else if (documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FILE) {
 			tasksV.addAll(Arrays.asList(new AsynchClientTask[] { selectImageFileTask, parseImageTask,
 					queryImageResizeTask, importFileImageTask/* resizes */, finishTask }));

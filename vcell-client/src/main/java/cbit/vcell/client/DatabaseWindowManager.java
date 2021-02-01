@@ -14,13 +14,9 @@ import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
-import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.Vector;
 
 import javax.swing.JComponent;
@@ -58,7 +54,6 @@ import org.vcell.util.gui.VCFileChooser;
 import org.vcell.util.gui.exporter.FileFilters;
 
 import cbit.image.VCImageInfo;
-import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.desktop.ACLEditor;
 import cbit.vcell.client.desktop.DatabaseWindowPanel;
 import cbit.vcell.client.server.UserPreferences;
@@ -68,7 +63,6 @@ import cbit.vcell.clientdb.DocumentManager;
 import cbit.vcell.desktop.BioModelDbTreePanel;
 import cbit.vcell.desktop.GeometryTreePanel;
 import cbit.vcell.desktop.MathModelDbTreePanel;
-import cbit.vcell.desktop.VCellBasicCellRenderer.VCDocumentInfoNode;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometryInfo;
 import cbit.vcell.xml.ExternalDocInfo;
@@ -1058,28 +1052,33 @@ private Object showAccessPermissionDialog(final JComponent aclEditor,final Compo
  */
 private File showFileChooserDialog(TopLevelWindowManager requester, FileFilter fileFilter) throws Exception {
 
-	return showFileChooserDialog(requester, fileFilter,getUserPreferences(),JFileChooser.FILES_ONLY);
+	return showFileChooserDialog(requester.getComponent(), fileFilter,getUserPreferences(),JFileChooser.FILES_ONLY);
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (5/14/2004 6:11:35 PM)
- */
-public static File showFileChooserDialog(TopLevelWindowManager requester, final FileFilter fileFilter,
+///**
+// * Insert the method's description here.
+// * Creation date: (5/14/2004 6:11:35 PM)
+// */
+//public static File showFileChooserDialog(TopLevelWindowManager requester, final FileFilter fileFilter,
+//		final UserPreferences currentUserPreferences,int fileSelectMode) throws Exception{
+//
+//	return showFileChooserDialog0(requester.getComponent(),fileFilter,currentUserPreferences,fileSelectMode);
+//}
+public static File showFileChooserDialog(Component requesterComp, final FileFilter fileFilter,
 		final UserPreferences currentUserPreferences,int fileSelectMode) throws Exception{
 	// the boolean isXMLNotImage is true if we are trying to choose an XML file
 	// It is false if we are trying to choose an image file
 	// This is used to set the appropriate File filters.
 
-	File defaultPath = (File) (currentUserPreferences != null?currentUserPreferences.getCurrentDialogPath():"");
+	File defaultPath = (File) (currentUserPreferences != null?currentUserPreferences.getCurrentDialogPath():new File("."));
 	VCFileChooser fileChooser = new VCFileChooser(defaultPath);
 	fileChooser.setFileSelectionMode(fileSelectMode);
 
 	// setting fileFilter for xml files
 	fileChooser.setFileFilter(fileFilter);
 	
-    int returnval = fileChooser.showOpenDialog(requester.getComponent());
+    int returnval = fileChooser.showOpenDialog(requesterComp);
     if (returnval == JFileChooser.APPROVE_OPTION) {
         File selectedFile = fileChooser.getSelectedFile();
         //reset the user preference for the default path, if needed.
