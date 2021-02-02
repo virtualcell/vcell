@@ -364,10 +364,19 @@ public class DatabaseSearchPanel extends CollapsiblePanel {
 		gbc = new GridBagConstraints();
 		gbc.gridx = 0;
 		gbc.gridy = gridy;
-		gbc.gridwidth = 2;
+		gbc.gridwidth = 1;
 		gbc.insets = new Insets(0, 5, 5, 0);
 		gbc.anchor = GridBagConstraints.LINE_START;
 		mainPanel.add(advancedButton, gbc);
+
+		chckbxHasSpatial = new JCheckBox("Has Spatial");
+		GridBagConstraints gbc_chckbxHasSpatial = new GridBagConstraints();
+		gbc_chckbxHasSpatial.anchor = GridBagConstraints.WEST;
+		gbc_chckbxHasSpatial.insets = new Insets(0, 5,5,0);
+		gbc_chckbxHasSpatial.gridx = 1;
+		gbc_chckbxHasSpatial.gridy = gridy;
+		gbc.anchor = GridBagConstraints.WEST;
+		mainPanel.add(chckbxHasSpatial, gbc_chckbxHasSpatial);
 
 		gridy ++;		
 		gbc = new GridBagConstraints();
@@ -424,15 +433,9 @@ public class DatabaseSearchPanel extends CollapsiblePanel {
 		mainPanel.add(textFieldSpeciesName, gbc_textFieldSpeciesName);
 		textFieldSpeciesName.setColumns(10);
 		
-		chckbxHasSpatial = new JCheckBox("Has Spatial");
-		GridBagConstraints gbc_chckbxHasSpatial = new GridBagConstraints();
-		gbc_chckbxHasSpatial.insets = new Insets(0, 0, 5, 5);
-		gbc_chckbxHasSpatial.gridx = 0;
-		gbc_chckbxHasSpatial.gridy = 5;
-		mainPanel.add(chckbxHasSpatial, gbc_chckbxHasSpatial);
 		gbc = new GridBagConstraints();
 		gbc.gridx = 0;
-		gbc.gridy = 6;
+		gbc.gridy = 5;
 		gbc.insets = new Insets(10, 5, 0, 5);
 		mainPanel.add(searchButton, gbc);
 		advancedOptions.add(textFieldSpeciesName);
@@ -440,7 +443,7 @@ public class DatabaseSearchPanel extends CollapsiblePanel {
 		
 		gbc = new GridBagConstraints();
 		gbc.gridx = 1;
-		gbc.gridy = 6;
+		gbc.gridy = 5;
 		gbc.insets = new Insets(10, 5, 0, 0);
 		gbc.anchor = GridBagConstraints.LINE_START;
 		mainPanel.add(cancelButton, gbc);
