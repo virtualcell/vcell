@@ -453,6 +453,12 @@ public class CLIUtils {
 
     }
 
+    public static void getSimulationSummary() {
+    }
+
+    public static void generateStatusYml() {
+    }
+
     @SuppressWarnings("UnstableApiUsage")
     public String getTempDir() {
         return Files.createTempDir().getAbsolutePath();

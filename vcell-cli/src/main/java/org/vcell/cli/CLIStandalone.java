@@ -24,12 +24,7 @@ public class CLIStandalone {
         }
 
         if (input != null && input.isDirectory()) {
-            FilenameFilter filter = new FilenameFilter() {
-                @Override
-                public boolean accept(File f, String name) {
-                    return name.endsWith(".omex");
-                }
-            };
+            FilenameFilter filter = (f, name) -> name.endsWith(".omex");
             String[] omexFiles = input.list(filter);
             for (String omexFile : omexFiles) {
                 File file = new File(input, omexFile);
@@ -53,10 +48,10 @@ public class CLIStandalone {
 
     private static void singleExec(String[] args) throws Exception {
         OmexHandler omexHandler = null;
-        CLIHandler cliHandler = null;
-        String inputFile = null;
-        String outputDir = null;
-        ArrayList<String> sedmlLocations = null;
+        CLIHandler cliHandler;
+        String inputFile;
+        String outputDir;
+        ArrayList<String> sedmlLocations;
         try {
             cliHandler = new CLIHandler(args);
             inputFile = cliHandler.getInputFilePath();
@@ -76,12 +71,12 @@ public class CLIStandalone {
         // from here on, we need to collect errors, since some subtasks may succeed while other do not
         boolean somethingFailed = false;
         for (String sedmlLocation : sedmlLocations) {
-            HashMap<String, ODESolverResultSet> resultsHash = null;
-            HashMap<String, File> reportsHash = null;
-            String sedmlName = null;
+            HashMap<String, ODESolverResultSet> resultsHash;
+            HashMap<String, File> reportsHash;
+            String sedmlName;
             File completeSedmlPath = new File(sedmlLocation);
             File outDirForCurrentSedml = new File(omexHandler.getOutputPathFromSedml(sedmlLocation));
-            SedML sedml = null;
+            SedML sedml;
             try {
                 CLIUtils.makeDirs(outDirForCurrentSedml);
                 sedml = Libsedml.readDocument(completeSedmlPath).getSedMLModel();

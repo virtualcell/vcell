@@ -6,42 +6,46 @@ import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
 
 import java.io.IOException;
+import static java.lang.System.*;
 
 public class CLIHandler {
     CommandLine cmd = null;
     String fetchFailed = "Failed fetching VCell version";
+    String osName = getProperty("os.name");
+    String osVersion = getProperty("os.version");
+    String javaVersion = getProperty("java.version");
+    String javaVendor = getProperty("java.vendor");
+    String machineArch = getProperty("os.arch");
 
-    CLIHandler(String[] args) throws IOException {
+    CLIHandler(String[] args) {
         CommandLineParser parser = new DefaultParser();
 
         String usage = "usage: VCell [-h] [-q] -i ARCHIVE [-o OUT_DIR] [-v]";
         try {
             cmd = parser.parse(this.getCommandLineOptions(), args);
         } catch (ParseException e) {
-            System.out.println(usage);
-            System.exit(1);
+            out.println(usage);
+            exit(1);
         }
 
         if (cmd.getOptions().length == 0) {
-            System.out.println(usage);
-            System.exit(1);
+            out.println(usage);
+            exit(1);
         }
 
         if (cmd.hasOption("h")) {
             this.printHelp();
-            System.exit(1);
+            exit(1);
         }
 
         if (cmd.hasOption("v")) {
             if (getVersion().startsWith("Fail")){
-                System.out.println(fetchFailed);
-            } else {
-                System.out.println("VCell version: " + getVersion());
-            }
-            System.exit(1);
+                out.println(fetchFailed);
+            } else
+                out.println("VCell: " + getVersion() + ", OS: " + osName + " " + osVersion + ", Java Version: " + javaVersion + ", Java Vendor: " + javaVendor + ", Machine: " + machineArch);
+            exit(1);
         }
     }
-
 
     public Options getCommandLineOptions() {
 
