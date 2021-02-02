@@ -16,10 +16,12 @@
 # Base OS
 FROM ubuntu:18.04
 
+ARG SIMULATOR_VERSION="7.3.0.11"
+
 # metadata
 LABEL \
     org.opencontainers.image.title="VCell" \
-    org.opencontainers.image.version="7.2.0.39" \
+    org.opencontainers.image.version="${SIMULATOR_VERSION}" \
     org.opencontainers.image.description="Open-source software package for modeling cell biological systems that is built on a central database and disseminated as a standalone application." \
     org.opencontainers.image.url="http://vcell.org/" \
     org.opencontainers.image.documentation="https://vcell.org/support" \
@@ -29,9 +31,9 @@ LABEL \
     org.opencontainers.image.licenses="MIT" \
     \
     base_image="ubuntu:18.04" \
-    version="7.2.0.39" \
+    version="${SIMULATOR_VERSION}" \
     software="Virtual Cell" \
-    software.version="7.2.0.39" \
+    software.version="${SIMULATOR_VERSION}" \
     about.summary="Open-source software package for modeling cell biological systems that is built on a central database and disseminated as a standalone application." \
     about.home="http://vcell.org/" \
     about.documentation="https://vcell.org/support" \
