@@ -758,7 +758,9 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 				if (((parameters[i].getRole() == Kinetics.ROLE_CurrentDensity)||(parameters[i].getRole() == Kinetics.ROLE_LumpedCurrent)) && (parameters[i].getExpression()==null || parameters[i].getExpression().isZero())){
 					continue;
 				}
-				varHash.addVariable(newFunctionOrConstant(getMathSymbol(parameters[i],geometryClass), getIdentifierSubstitutions(parameters[i].getExpression(),parameters[i].getUnitDefinition(),geometryClass),geometryClass));
+				String mathSymbol = getMathSymbol(parameters[i],geometryClass);
+				Expression expr = getIdentifierSubstitutions(parameters[i].getExpression(),parameters[i].getUnitDefinition(),geometryClass);
+				varHash.addVariable(newFunctionOrConstant(mathSymbol, expr,geometryClass));
 			}
 		}
 	}
