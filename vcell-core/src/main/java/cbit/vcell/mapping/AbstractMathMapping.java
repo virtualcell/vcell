@@ -1106,6 +1106,18 @@ public String getMathSymbol(SymbolTableEntry ste, GeometryClass geometryClass) t
 
 	String mathSymbol = getMathSymbol0(ste,geometryClass);
 	
+	// check for ptential conflict with existing global parameter (which carries over the name from bio side to math side)
+	ModelParameter[] modelParams = simContext.getModel().getModelParameters();
+	
+	if (!(ste instanceof ModelParameter)) {
+		for (int i = 0; i < modelParams.length; i++) {
+			if (modelParams[i].getName().equals(mathSymbol)) {
+				throw new MappingException("Local parameter '" + ste.getName() + "' math namescope name is '"
+						+ mathSymbol + "' and conflicts with existing global parameter named '" + mathSymbol
+						+ "'.  Please rename either the local or the global parameter.");
+			}
+		} 
+	}
 	mathSymbolMapping.put(ste,mathSymbol);
 
 	return mathSymbol;
@@ -1126,24 +1138,14 @@ protected final String getMathSymbol0(SymbolTableEntry ste, GeometryClass geomet
 				if (count == null) {
 					throw new MappingException("KineticsParameter " + steName + " not found in local name count");
 				}
-				if (count>1 || steName.equals("J")){
-					return steName+"_"+ste.getNameScope().getName();
-					//return getNameScope().getSymbolName(ste);
-				}else{
-					return steName;
-				}
+				return steName+"_"+ste.getNameScope().getName();
 			}
 			if (ste instanceof LocalParameter && ((LocalParameter)ste).getNameScope() instanceof ReactionRule.ReactionRuleNameScope){
 				Integer count = localNameCountHash.get(steName);
 				if (count == null) {
 					throw new MappingException("Reaction Rule Parameter " + steName + " not found in local name count");
 				}
-				if (count>1 || steName.equals("J")){
-					return steName+"_"+ste.getNameScope().getName();
-					//return getNameScope().getSymbolName(ste);
-				}else{
-					return steName;
-				}
+				return steName+"_"+ste.getNameScope().getName();
 			}
 			if (ste instanceof ProbabilityParameter){ //be careful here, to see if we need mangle the reaction name
 				ProbabilityParameter probParm = (ProbabilityParameter)ste;
