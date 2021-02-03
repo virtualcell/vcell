@@ -67,6 +67,7 @@ public class SolverHandler {
         for (VCDocument doc : docs) {
             try {
                 sanityCheck(doc);
+                CLIStandalone.nModels++;
             } catch (Exception e) {
                 e.printStackTrace(System.err);
                 continue;
@@ -74,6 +75,7 @@ public class SolverHandler {
             docName = doc.getName();
             bioModel = (BioModel) doc;
             sims = bioModel.getSimulations();
+            CLIStandalone.nSimulations += sims.length;
             for (Simulation sim : sims) {
                 sim = new TempSimulation(sim, false);
                 SolverTaskDescription std = sim.getSolverTaskDescription();

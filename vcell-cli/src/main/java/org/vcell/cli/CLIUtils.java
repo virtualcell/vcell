@@ -30,9 +30,9 @@ public class CLIUtils {
     private static final Path requirementFilePath = Paths.get(utilPath.toString(), "requirements.txt");
 
     // Supported platforms
-    public static boolean windowsPlatform = OperatingSystemInfo.getInstance().isWindows();
-    public static boolean macPlatform = OperatingSystemInfo.getInstance().isMac();
-    public static boolean linuxPlatform = OperatingSystemInfo.getInstance().isLinux();
+    public static boolean isWindowsPlatform = OperatingSystemInfo.getInstance().isWindows();
+    public static boolean isMacPlatform = OperatingSystemInfo.getInstance().isMac();
+    public static boolean isLinuxPlatform = OperatingSystemInfo.getInstance().isLinux();
     //    private String tempDirPath = null;
     private final String extractedOmexPath = null;
 
@@ -196,7 +196,9 @@ public class CLIUtils {
         for (Output oo : ooo) {
             if (!(oo instanceof Report)) {
                 System.err.println("Ignoring unsupported output " + oo.getId());
+                CLIStandalone.nPlots ++;
             } else {
+                CLIStandalone.nReports++;
                 System.out.println("Generating report " + oo.getId());
                 try {
                     StringBuilder sb = new StringBuilder();
@@ -400,7 +402,7 @@ public class CLIUtils {
     private static void pipInstallRequirements() {
         // pip install the requirements
         String[] args;
-        if (windowsPlatform) {
+        if (isWindowsPlatform) {
             args = new String[]{"pip", "install", "-r", String.valueOf(requirementFilePath)};
         } else {
             args = new String[]{"pip3", "install", "-r", String.valueOf(requirementFilePath)};
@@ -410,7 +412,7 @@ public class CLIUtils {
 
     public static int checkPythonInstallation() {
         int pyCheckIns;
-        if (windowsPlatform) {
+        if (isWindowsPlatform) {
             pyCheckIns = execShellCommand(new String[]{"python", "--version"});
         } else {
             pyCheckIns = execShellCommand(new String[]{"python3", "--version"});
@@ -441,7 +443,7 @@ public class CLIUtils {
                     optional flags:        --rel_out_path | --apply_xml_model_changes |
                          --report_formats | --plot_formats | --log | --indent
         * */
-        if (windowsPlatform) {
+        if (isWindowsPlatform) {
             cliArgs = new String[]{"python", cliPath.toString(), sedmlFilePath.toString(), workingDirectory.toString(), outDirPath.toString(), csvDirPath.toString()};
             System.out.println("cliArgs" + Arrays.toString(cliArgs));
         } else {
