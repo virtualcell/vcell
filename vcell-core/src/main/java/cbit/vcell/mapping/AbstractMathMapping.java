@@ -1109,7 +1109,7 @@ public String getMathSymbol(SymbolTableEntry ste, GeometryClass geometryClass) t
 	// check for ptential conflict with existing global parameter (which carries over the name from bio side to math side)
 	ModelParameter[] modelParams = simContext.getModel().getModelParameters();
 	
-	if (!(ste instanceof ModelParameter)) {
+	if (!(ste instanceof ModelParameter) && !(ste instanceof ProxyParameter && ((ProxyParameter)ste).getTarget() instanceof ModelParameter)) {
 		for (int i = 0; i < modelParams.length; i++) {
 			if (modelParams[i].getName().equals(mathSymbol)) {
 				throw new MappingException("Local parameter '" + ste.getName() + "' math namescope name is '"
