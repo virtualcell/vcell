@@ -212,13 +212,14 @@ public class DatabaseSearchPanel extends CollapsiblePanel {
 
 	class SearchEventHandler extends MouseAdapter implements java.awt.event.ActionListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {	
-			if (e.getSource() == searchButton || e.getSource() == nameSearchTextField) {		
+			if (e.getSource() == searchButton || e.getSource() == nameSearchTextField || e.getSource() == chckbxHasSpatial) {		
 				String name = nameSearchTextField.getText();
 				if (name != null && name.trim().length() >= 0) {
 					addSearchWord(name.trim());
 				}
 			} else if (e.getSource() == cancelButton) {
 				nameSearchTextField.setText(null);
+				chckbxHasSpatial.setSelected(false);
 			}
 			fireActionPerformed(e);
 		}
@@ -467,6 +468,7 @@ public class DatabaseSearchPanel extends CollapsiblePanel {
 		searchButton.addActionListener(searchEventHandler);
 		advancedButton.addMouseListener(searchEventHandler);
 		nameSearchTextField.addActionListener(searchEventHandler);
+		chckbxHasSpatial.addActionListener(searchEventHandler);
 	}
 	
 	private void addSearchWord(String newWord) {
