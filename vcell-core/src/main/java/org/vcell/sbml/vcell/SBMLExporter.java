@@ -852,11 +852,11 @@ private UnitDefinition getOrCreateSBMLUnit(VCUnitDefinition vcUnit) throws SbmlE
 }
 
 private BoundaryConditionKind getBoundaryConditionKind(BoundaryConditionType vcellBoundaryConditionType){
-	if (vcellBoundaryConditionType == BoundaryConditionType.DIRICHLET){
-		return BoundaryConditionKind.Dirichlet;
-	}else if (vcellBoundaryConditionType == BoundaryConditionType.NEUMANN){
+	if (vcellBoundaryConditionType.equals(BoundaryConditionType.DIRICHLET)){	// argument is vcell.math BoundaryConditionType
+		return BoundaryConditionKind.Dirichlet;									// ret value is sbml.jsbml BoundaryConditionKind
+	}else if (vcellBoundaryConditionType.equals(BoundaryConditionType.NEUMANN)){
 		return BoundaryConditionKind.Neumann;
-	}else if (vcellBoundaryConditionType == BoundaryConditionType.PERIODIC){
+	}else if (vcellBoundaryConditionType.equals(BoundaryConditionType.PERIODIC)){
 		throw new RuntimeException("periodic boundary conditions not yet supported for SBML Spatial export");
 	}else{
 		throw new RuntimeException("unexpected boundary conditions type "+vcellBoundaryConditionType.boundaryTypeStringValue());
@@ -1083,7 +1083,7 @@ protected void addSpecies() throws XMLStreamException, SbmlException {
 								spplugin.setParamType(sbmlBCXp);
 								sbmlBCXp.setType(getBoundaryConditionKind(vcBCType_Xp));
 								sbmlBCXp.setVariable(vcSpeciesContexts[i].getName());
-								sbmlBCXp.setType(sm.getBoundaryConditionTypeXp().boundaryTypeStringValue());
+//								sbmlBCXp.setType(sm.getBoundaryConditionTypeXp().boundaryTypeStringValue());
 								sbmlBCXp.setCoordinateBoundary(ccX.getBoundaryMaximum().getId());
 							} 
 							if ((role == SpeciesContextSpec.ROLE_BoundaryValueYm)  && (ccY != null)) {
@@ -1092,7 +1092,7 @@ protected void addSpecies() throws XMLStreamException, SbmlException {
 								spplugin.setParamType(sbmlBCYm);
 								sbmlBCYm.setType(getBoundaryConditionKind(vcBCType_Yp));
 								sbmlBCYm.setVariable(vcSpeciesContexts[i].getName());
-								sbmlBCYm.setType(sm.getBoundaryConditionTypeYm().boundaryTypeStringValue());
+//								sbmlBCYm.setType(sm.getBoundaryConditionTypeYm().boundaryTypeStringValue());
 								sbmlBCYm.setCoordinateBoundary(ccY.getBoundaryMinimum().getId());
 							} 
 							if ((role == SpeciesContextSpec.ROLE_BoundaryValueYp) && (ccY != null)){
@@ -1101,7 +1101,7 @@ protected void addSpecies() throws XMLStreamException, SbmlException {
 								spplugin.setParamType(sbmlBCYp);
 								sbmlBCYp.setType(getBoundaryConditionKind(vcBCType_Yp));
 								sbmlBCYp.setVariable(vcSpeciesContexts[i].getName());
-								sbmlBCYp.setType(sm.getBoundaryConditionTypeYp().boundaryTypeStringValue());
+//								sbmlBCYp.setType(sm.getBoundaryConditionTypeYp().boundaryTypeStringValue());
 								sbmlBCYp.setCoordinateBoundary(ccY.getBoundaryMaximum().getId());
 							} 
 							if ((role == SpeciesContextSpec.ROLE_BoundaryValueZm)  && (ccZ != null)) {
@@ -1110,7 +1110,7 @@ protected void addSpecies() throws XMLStreamException, SbmlException {
 								spplugin.setParamType(sbmlBCZm);
 								sbmlBCZm.setType(getBoundaryConditionKind(vcBCType_Zm));
 								sbmlBCZm.setVariable(vcSpeciesContexts[i].getName());
-								sbmlBCZm.setType(sm.getBoundaryConditionTypeZm().boundaryTypeStringValue());
+//								sbmlBCZm.setType(sm.getBoundaryConditionTypeZm().boundaryTypeStringValue());
 								sbmlBCZm.setCoordinateBoundary(ccZ.getBoundaryMinimum().getId());
 							} 
 							if ((role == SpeciesContextSpec.ROLE_BoundaryValueZp)  && (ccZ != null)) {
@@ -1119,7 +1119,7 @@ protected void addSpecies() throws XMLStreamException, SbmlException {
 								spplugin.setParamType(sbmlBCZp);
 								sbmlBCZp.setType(getBoundaryConditionKind(vcBCType_Zp));
 								sbmlBCZp.setVariable(vcSpeciesContexts[i].getName());
-								sbmlBCZp.setType(sm.getBoundaryConditionTypeZp().boundaryTypeStringValue());
+//								sbmlBCZp.setType(sm.getBoundaryConditionTypeZp().boundaryTypeStringValue());
 								sbmlBCZp.setCoordinateBoundary(ccZ.getBoundaryMaximum().getId());
 							} 
 							if (role == SpeciesContextSpec.ROLE_VelocityX) {
