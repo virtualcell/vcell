@@ -301,7 +301,16 @@ public class ClientRequestManager
 					vcVersionInfo = DialogUtils.getDBTreePanelSelection(requester.getComponent(), imageDbTreePanel,
 							"OK", "Select Image:");
 				} else {
-					vcVersionInfo = selectDocumentFromType(sourceDocumentType, requester);
+					if(hashTable.get(BioModelWindowManager.SELECT_GEOM_POPUP) != null && ((Boolean)hashTable.get(BioModelWindowManager.SELECT_GEOM_POPUP)).booleanValue()) {
+						Object obj = getMdiManager().getDatabaseWindowManager().selectDocument2(sourceDocumentType, requester);
+						if(obj instanceof Geometry) {//user selected geometry directly using popup
+							hashTable.put(GEOMETRY_KEY, ((Geometry)obj));
+							return;
+						}
+						vcVersionInfo = (VersionInfo)obj;//user selected VCDocument, list will be shown to select from
+					}else {
+						vcVersionInfo = selectDocumentFromType(sourceDocumentType, requester);
+					}
 				}
 				hashTable.put(VERSIONINFO_KEY, vcVersionInfo);
 			}
@@ -314,6 +323,10 @@ public class ClientRequestManager
 				AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 			@Override
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
+				if(hashTable.get(GEOMETRY_KEY) != null) {//Already loaded from selection of BioModelDBTree from previous task
+					((Geometry)hashTable.get(GEOMETRY_KEY)).precomputeAll(new GeometryThumbnailImageFactoryAWT());
+					return;
+				}
 				VersionInfo vcVersionInfo = (VersionInfo) hashTable.get(VERSIONINFO_KEY);
 				Geometry geom = null;
 				if (vcVersionInfo instanceof VCDocumentInfo) {
@@ -332,7 +345,7 @@ public class ClientRequestManager
 		return selectLoadGeomTask;
 	}
 
-	private void changeGeometry0(final TopLevelWindowManager requester, final SimulationContext simContext) {
+	private void changeGeometry0(final TopLevelWindowManager requester, final SimulationContext simContext,Hashtable<String, Object> hashTable) {
 
 		AsynchClientTask selectDocumentTypeTask = createSelectDocTask(requester);
 
@@ -369,14 +382,13 @@ public class ClientRequestManager
 			}
 		};
 
-		Hashtable<String, Object> hashTable = new Hashtable<String, Object>();
 		ClientTaskDispatcher.dispatch(requester.getComponent(), hashTable, new AsynchClientTask[] {
 				selectDocumentTypeTask, selectLoadGeomTask, processGeometryTask, setNewGeometryTask }, false);
 
 	}
 
-	public void changeGeometry(DocumentWindowManager requester, SimulationContext simContext) {
-		changeGeometry0(requester, simContext);
+	public void changeGeometry(DocumentWindowManager requester, SimulationContext simContext,Hashtable<String, Object> hashTable) {
+		changeGeometry0(requester, simContext,hashTable);
 	}
 
 	public static void continueAfterMathModelGeomChangeWarning(MathModelWindowManager mathModelWindowManager,

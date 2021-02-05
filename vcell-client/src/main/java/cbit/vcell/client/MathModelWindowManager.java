@@ -113,7 +113,8 @@ public void actionPerformed(java.awt.event.ActionEvent e) {
 	}
 
 	if (source instanceof GeometryViewer && actionCommand.equals(GuiConstants.ACTIONCMD_CHANGE_GEOMETRY)) {
-		getRequestManager().changeGeometry(this, null);
+		Hashtable<String, Object> hashTable = new Hashtable<String, Object>();
+		getRequestManager().changeGeometry(this, null,hashTable);
 	}	
 }
 

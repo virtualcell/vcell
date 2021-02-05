@@ -10,6 +10,7 @@
 
 package cbit.vcell.client;
 import java.awt.Component;
+import java.util.Hashtable;
 
 import javax.swing.filechooser.FileFilter;
 
@@ -53,7 +54,7 @@ public interface RequestManager {
  * Creation date: (5/27/2004 2:12:25 AM)
  * @param clientServerInfo cbit.vcell.client.server.ClientServerInfo
  */
-void changeGeometry(DocumentWindowManager requester, SimulationContext simContext);
+void changeGeometry(DocumentWindowManager requester, SimulationContext simContext,Hashtable<String, Object> hashTable);
 
 /**
  * Insert the method's description here.

@@ -181,7 +181,7 @@ public void addActionListener(ActionListener newListener) {
  * @return javax.swing.JTree
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-protected javax.swing.JTree getJTree1() {
+public javax.swing.JTree getJTree1() {
 	if (ivjJTree1 == null) {
 		try {
 			javax.swing.tree.DefaultTreeSelectionModel ivjLocalSelectionModel;
