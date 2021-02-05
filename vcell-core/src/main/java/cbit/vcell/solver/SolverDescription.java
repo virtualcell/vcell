@@ -102,7 +102,7 @@ public enum SolverDescription {
 	   FiniteVolumeStandalone(TimeStep.CONSTANT, ErrorTol.NO, TimeSpecCreated.DEFAULT, "Semi-Implicit","Semi-Implicit Finite Volume-Particle Hybrid, Regular Grid (Fixed Time Step)","Finite Volume Standalone, Regular Grid",
 	      SolverLongDesc.FINITE_VOLUME_STANDALONE, 1,SupportedTimeSpec.DEFAULT_UNIFORM,
 	      new SolverFeature[]{SolverFeature.Feature_Spatial, SolverFeature.Feature_Deterministic, SolverFeature.Feature_Hybrid, SolverFeature.Feature_FastSystem, SolverFeature.Feature_PeriodicBoundaryCondition, SolverFeature.Feature_RandomVariables, SolverFeature.Feature_StopAtSpatiallyUniform, SolverFeature.Feature_DataProcessingInstructions, SolverFeature.Feature_PSF, SolverFeature.Feature_SerialParameterScans, SolverFeature.Feature_VolumeRegionEquations, SolverFeature.Feature_RegionSizeFunctions, SolverFeature.Feature_PostProcessingBlock},
-	      SolverExecutable.FiniteVolume, "KISAO:0000285", false),
+	      SolverExecutable.FiniteVolume, "KISAO:0000616", false),
 
 	   CombinedSundials(TimeStep.VARIABLE, ErrorTol.YES, TimeSpecCreated.DEFAULT, "Combined IDA/CVODE","Combined Stiff Solver (IDA/CVODE)","Combined Stiff Solver (IDA/CVODE)",
 	      SolverLongDesc.COMBINED_SUNDIALS, 3,SupportedTimeSpec.DEFAULT_EXPLICIT_UNIFORM,
@@ -112,7 +112,7 @@ public enum SolverDescription {
        SundialsPDE(TimeStep.VARIABLE, ErrorTol.YES, TimeSpecCreated.UNIFORM, "Fully-Implicit","Fully-Implicit Finite Volume, Regular Grid (Variable Time Step)","Sundials Stiff PDE Solver (Variable Time Step)",
 	      SolverLongDesc.SUNDIALS_PDE, 3,SupportedTimeSpec.DEFAULT_UNIFORM,
 	      new SolverFeature[]{SolverFeature.Feature_Spatial, SolverFeature.Feature_Deterministic, SolverFeature.Feature_StopAtTimeDiscontinuities, SolverFeature.Feature_RandomVariables, SolverFeature.Feature_StopAtSpatiallyUniform, SolverFeature.Feature_DataProcessingInstructions, SolverFeature.Feature_PSF, SolverFeature.Feature_SerialParameterScans, SolverFeature.Feature_VolumeRegionEquations, SolverFeature.Feature_RegionSizeFunctions, SolverFeature.Feature_GradientSourceTerm, SolverFeature.Feature_PostProcessingBlock},
-	      SolverExecutable.FiniteVolume, "KISAO:0000285", false),
+	      SolverExecutable.FiniteVolume, "KISAO:0000615", false),
 
 	   Smoldyn(TimeStep.CONSTANT, ErrorTol.NO, TimeSpecCreated.UNIFORM, "Smoldyn","Smoldyn (Spatial Stochastic Simulator)","Smoldyn (Spatial Stochastic Simulator)",
 	      SolverLongDesc.SMOLDYN, 1,SupportedTimeSpec.UNIFORM,
