@@ -25,14 +25,15 @@ import cbit.vcell.simdata.SimulationData;
 public class IonItems {
 
 	public static void main(String[] args) {
-		if(args.length != 2) {
-			System.out.println("cbit.vcell.tools.IonItems jdbc:oracle:thin:@VCELL_DB_HOST:1521:VCEL_DB_NAME vcellUsersRootDir");
+		if(args.length != 3) {
+			System.out.println("cbit.vcell.tools.IonItems jdbc:oracle:thin:@VCELL_DB_HOST:1521:VCEL_DB_NAME vcellUsersRootDir {true,false print more info}");
 			System.exit(1);
 		}
 		//"jdbc:oracle:thin:@VCELL_DB_HOST:1521:VCEL_DB_NAME"
 		String connectionStr = args[0];
 		// /share/apps/vcell3/users
 		File vcellUsersRootDir = new File(args[1]);
+		boolean bMoreInfo = new Boolean(args[2]).booleanValue();
 		//String password = new String(System.console().readPassword("Enter VCell Password: "));
 //		select vc_biomodelsim.simref from vc_biomodel,vc_biomodelsim where vc_biomodel.privacy=0 and vc_biomodelsim.biomodelref=vc_biomodel.id  order by vc_biomodelsim.simref;
 //		select vc_mathmodelsim.simref from vc_mathmodel,vc_mathmodelsim where vc_mathmodel.privacy=0 and vc_mathmodelsim.mathmodelref=vc_mathmodel.id  order by vc_mathmodelsim.simref;
@@ -65,16 +66,22 @@ public class IonItems {
 			if(stmt != null){try{stmt.close();}catch(Exception e){e.printStackTrace();}}
 			if(con != null){try{con.close();}catch(Exception e){e.printStackTrace();}}
 		}
-		System.out.println("'VCDocumentType','SimPath','jobIndex','logExists?','oldStyle?','lastTaskID'");
-		checkSimData(foundBMSims,vcellUsersRootDir,VCDocumentType.BIOMODEL_DOC);
-		checkSimData(foundMMSims,vcellUsersRootDir,VCDocumentType.MATHMODEL_DOC);
+		if(bMoreInfo) {
+			System.out.println("'SimID','VCDocumentType','simLogFile','jobIndex','logExists?','oldStyle?','lastTaskID'");
+		}
+		checkSimData(foundBMSims,vcellUsersRootDir,VCDocumentType.BIOMODEL_DOC,bMoreInfo);
+		checkSimData(foundMMSims,vcellUsersRootDir,VCDocumentType.MATHMODEL_DOC,bMoreInfo);
 
 	}
 
-	public static void checkSimData(ArrayList<ArrayList<FoundSimDataInfo>> foundBMSims,File vcellUsersRootDir,VCDocumentType docType) {
+	public static void checkSimData(ArrayList<ArrayList<FoundSimDataInfo>> foundBMSims,File vcellUsersRootDir,VCDocumentType docType,boolean bMoreInfo) {
 		for(ArrayList<FoundSimDataInfo> arrForSim : foundBMSims) {
 			for(FoundSimDataInfo foundSimInfo:arrForSim) {
 				try {
+					if(!bMoreInfo) {
+						System.out.println(foundSimInfo.simID);
+						break;
+					}
 					File userDir = new File(vcellUsersRootDir,foundSimInfo.userid);
 					String newStyleSimLogFileName = SimulationData.createCanonicalSimLogFileName(new KeyValue(foundSimInfo.simID+""), foundSimInfo.jobIndex, false);
 					File newStyleLogFile = new File(userDir,newStyleSimLogFileName);
@@ -82,13 +89,17 @@ public class IonItems {
 					boolean isOldStyle = false;
 					if(!newStyleLogFile.exists()) {
 						if(foundSimInfo.jobIndex != 0) {//OldStyle can only have 0 as jobindex so don't have to check
-							System.out.println("'"+docType.name()+"',"+"'"+"couldn't find "+newStyleLogFile.getAbsolutePath()+" (no oldStyle for jobIndex>0)'"+","+foundSimInfo.jobIndex+",'false','false'"+","+foundSimInfo.lastTaskID);
+							if(bMoreInfo) {
+								System.out.println(foundSimInfo.simID+","+"'"+docType.name()+"',"+"'"+"couldn't find "+newStyleLogFile.getAbsolutePath()+" (no oldStyle for jobIndex>0)'"+","+foundSimInfo.jobIndex+",'false','false'"+","+foundSimInfo.lastTaskID);
+							}
 							continue;
 						}
 						String oldStyleSimLogFileName = SimulationData.createCanonicalSimLogFileName(new KeyValue(foundSimInfo.simID+""), foundSimInfo.jobIndex, true);
 						File oldStyleLogFile = new File(userDir,oldStyleSimLogFileName);
 						if(!oldStyleLogFile.exists()) {
-							System.out.println("'"+docType.name()+"',"+"'"+"couldn't find "+oldStyleLogFile.getAbsolutePath()+" or "+newStyleLogFile.getAbsolutePath()+"'"+","+foundSimInfo.jobIndex+",'false','false'"+","+foundSimInfo.lastTaskID);
+							if(bMoreInfo) {
+								System.out.println(foundSimInfo.simID+","+"'"+docType.name()+"',"+"'"+"couldn't find "+oldStyleLogFile.getAbsolutePath()+" or "+newStyleLogFile.getAbsolutePath()+"'"+","+foundSimInfo.jobIndex+",'false','false'"+","+foundSimInfo.lastTaskID);
+							}
 							continue;
 						}else {
 							foundLogFile = oldStyleLogFile;
@@ -99,9 +110,13 @@ public class IonItems {
 						foundLogFile = newStyleLogFile;
 						isOldStyle = false;
 					}
-					System.out.println("'"+docType.name()+"',"+"'"+foundLogFile.getAbsolutePath()+"'"+","+foundSimInfo.jobIndex+",'true','"+isOldStyle+"',"+foundSimInfo.lastTaskID);
+					if(bMoreInfo) {
+						System.out.println(foundSimInfo.simID+","+"'"+docType.name()+"',"+"'"+foundLogFile.getAbsolutePath()+"'"+","+foundSimInfo.jobIndex+",'true','"+isOldStyle+"',"+foundSimInfo.lastTaskID);
+					}
 				} catch (Exception e) {
-					System.out.println("'"+docType.name()+"',"+"'"+foundSimInfo.toString()+" "+e.getMessage()+"'"+","+foundSimInfo.jobIndex+",'unknown','unknown',"+foundSimInfo.lastTaskID);
+					if(bMoreInfo) {
+						System.out.println(foundSimInfo.simID+","+"'"+docType.name()+"',"+"'"+foundSimInfo.toString()+" "+e.getMessage()+"'"+","+foundSimInfo.jobIndex+",'unknown','unknown',"+foundSimInfo.lastTaskID);
+					}
 				}
 			}
 //			System.out.println();
