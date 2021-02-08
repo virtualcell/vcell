@@ -1,7 +1,9 @@
 package org.vcell.cli.simstatus;
 
+import java.util.HashMap;
+
 public class StatusYaml {
-    SedDocument[] sedDocuemtns;
+    HashMap<String, SedDocument> sedDocuments;
     String status;
 }
 

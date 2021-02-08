@@ -1,7 +1,9 @@
 package org.vcell.cli.simstatus;
 
+import java.util.HashMap;
+
 public class SedDocumentContent {
     SedDocumentOutput output;
     String status;
-    SedDocumentTask[] tasks;
+    HashMap<String, SedDocumentTask> tasks;
 }

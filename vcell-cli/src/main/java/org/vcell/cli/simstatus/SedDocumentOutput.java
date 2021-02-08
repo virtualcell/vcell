@@ -1,6 +1,8 @@
 package org.vcell.cli.simstatus;
 
+import java.util.HashMap;
+
 public class SedDocumentOutput {
-    SedDocumentDataGen[] sedDocumentDataGens;
-    SedDocumentPlots[] sedDocumentPlots;
+    HashMap<String, SedDocumentDataGen> sedDocumentDataGens;
+    HashMap<String, SedDocumentPlot> sedDocumentPlots;
 }
