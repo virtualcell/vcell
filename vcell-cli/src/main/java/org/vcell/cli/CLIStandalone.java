@@ -139,7 +139,7 @@ public class CLIStandalone {
                     System.err.println("HDF5 conversion failed...\n");
                 }
             }
-            CLIUtils.generateStatusYml(inputFile);
+            CLIUtils.generateStatusYaml(inputFile);
             if (resultsHash.containsValue(null) || reportsHash.containsValue(null)) {
                 somethingFailed = true;
             }
