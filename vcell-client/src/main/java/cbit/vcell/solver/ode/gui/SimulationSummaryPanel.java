@@ -295,7 +295,7 @@ private void displayTask() {
 			if(stochOpt.isHistogram()) {
 				getJLabelOutput().setText("Histogram with "+stochOpt.getNumOfTrials()+" Trials(@last time point)");
 			}else {
-				getJLabelOutput().setText("Average of "+stochOpt.getNumOfTrials()+" trajectories, "+solverTaskDescription.getOutputTimeSpec().getDescription());
+				getJLabelOutput().setText("Average of "+stochOpt.getNumOfTrials()+" trajectories; "+solverTaskDescription.getOutputTimeSpec().getDescription());
 			}
 		}
 		else
