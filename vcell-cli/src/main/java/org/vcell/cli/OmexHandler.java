@@ -16,12 +16,12 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class OmexHandler {
-    CLIUtils utils = null;
-    String tempPath = null;
-    String omexPath = null;
-    String omexName = null;
-    String outDirPath = null;
-    CombineArchive archive = null;
+    CLIUtils utils;
+    String tempPath;
+    String omexPath;
+    String omexName;
+    String outDirPath;
+    CombineArchive archive;
 
     // Assuming omexPath will always be absolute path
     public OmexHandler(String omexPath, String outDir) {

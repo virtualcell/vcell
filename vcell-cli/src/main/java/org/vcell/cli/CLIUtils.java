@@ -26,7 +26,9 @@ public class CLIUtils {
     private static final Path workingDirectory = Paths.get(System.getProperty("user.dir").equals("/") ? "/usr/local/app/vcell/installDir" : System.getProperty("user.dir"));
     // Submodule path for VCell_CLI_UTILS
     private static final Path utilPath = Paths.get(workingDirectory.toString(), "submodules", "vcell_cli_utils");
-    private static final Path cliPath = Paths.get(utilPath.toString(), "cli_util", "cli.py");
+    private static final Path cliUtilPath = Paths.get(utilPath.toString(), "cli_util");
+    private static final Path cliPath = Paths.get(cliUtilPath.toString(), "cli.py");
+    private static final Path statusPath = Paths.get(cliUtilPath.toString(), "status.py");
     private static final Path requirementFilePath = Paths.get(utilPath.toString(), "requirements.txt");
 
     // Supported platforms
@@ -451,14 +453,18 @@ public class CLIUtils {
         }
 
         CLIUtils.execShellCommand(cliArgs);
-        System.out.println("HDF conversion completed in '" + outDir + "'");
+        System.out.println("HDF conversion completed in '" + outDir + "'\n");
 
     }
 
-    public static void getSimulationSummary() {
-    }
-
-    public static void generateStatusYml() {
+    public static void generateStatusYml(String omexPath) {
+        Path omexFilePath = Paths.get(omexPath);
+        System.out.println("Generating Simulation Status....");
+        if (isWindowsPlatform) {
+            execShellCommand(new String[]{"python", statusPath.toString(), omexFilePath.toString()});
+        } else {
+            execShellCommand(new String[]{"python3", statusPath.toString(), omexFilePath.toString()});
+        }
     }
 
     @SuppressWarnings("UnstableApiUsage")

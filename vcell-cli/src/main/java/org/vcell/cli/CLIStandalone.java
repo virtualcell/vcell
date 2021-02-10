@@ -61,8 +61,6 @@ public class CLIStandalone {
         String outputDir;
         ArrayList<String> sedmlLocations;
 
-
-
         try {
             cliHandler = new CLIHandler(args);
             inputFile = cliHandler.getInputFilePath();
@@ -138,9 +136,10 @@ public class CLIStandalone {
                         System.err.println("Python installation required");
                         System.err.println("Update submodule codebase");
                     }
-                    System.err.println("HDF5 conversion failed...");
+                    System.err.println("HDF5 conversion failed...\n");
                 }
             }
+            CLIUtils.generateStatusYml(inputFile);
             if (resultsHash.containsValue(null) || reportsHash.containsValue(null)) {
                 somethingFailed = true;
             }
