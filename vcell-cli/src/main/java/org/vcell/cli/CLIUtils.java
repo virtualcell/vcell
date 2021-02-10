@@ -33,8 +33,8 @@ public class CLIUtils {
 
     // Supported platforms
     public static boolean isWindowsPlatform = OperatingSystemInfo.getInstance().isWindows();
-    public static boolean isMacPlatform = OperatingSystemInfo.getInstance().isMac();
-    public static boolean isLinuxPlatform = OperatingSystemInfo.getInstance().isLinux();
+    public static boolean ismacPlatform = OperatingSystemInfo.getInstance().isMac();
+    public static boolean islinuxPlatform = OperatingSystemInfo.getInstance().isLinux();
     //    private String tempDirPath = null;
     private final String extractedOmexPath = null;
 
@@ -198,9 +198,7 @@ public class CLIUtils {
         for (Output oo : ooo) {
             if (!(oo instanceof Report)) {
                 System.err.println("Ignoring unsupported output " + oo.getId());
-                CLIStandalone.nPlots ++;
             } else {
-                CLIStandalone.nReports++;
                 System.out.println("Generating report " + oo.getId());
                 try {
                     StringBuilder sb = new StringBuilder();

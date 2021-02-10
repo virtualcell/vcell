@@ -2,7 +2,6 @@ package org.vcell.cli;
 
 import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.xml.ExternalDocInfo;
-import com.mongodb.gridfs.CLI;
 import org.jlibsedml.Libsedml;
 import org.jlibsedml.SedML;
 
@@ -13,13 +12,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 public class CLIStandalone {
-    static int nDocs = 0;
-    static int nModels = 0;
-    static int nSimulations = 0;
-    static int nTasks = 0;
-    static int nReports = 0;
-    static int nPlots = 0;
-
     public static void main(String[] args) {
 
         File input = null;
@@ -79,9 +71,7 @@ public class CLIStandalone {
         }
         // from here on, we need to collect errors, since some subtasks may succeed while other do not
         boolean somethingFailed = false;
-        CLIStandalone.nDocs += sedmlLocations.size();
         for (String sedmlLocation : sedmlLocations) {
-            CLIStandalone.nDocs++;
             HashMap<String, ODESolverResultSet> resultsHash;
             HashMap<String, File> reportsHash;
             String sedmlName;
@@ -91,9 +81,6 @@ public class CLIStandalone {
             try {
                 CLIUtils.makeDirs(outDirForCurrentSedml);
                 sedml = Libsedml.readDocument(completeSedmlPath).getSedMLModel();
-                CLIStandalone.nModels += sedml.getModels().size();
-                CLIStandalone.nTasks += sedml.getTasks().size();
-
                 String[] sedmlNameSplit;
                 if (CLIUtils.isWindowsPlatform) {
                     sedmlNameSplit = sedmlLocation.split("\\\\", -2);
@@ -114,15 +101,7 @@ public class CLIStandalone {
             // send the the whole OMEX file since we do better handling of malformed model URIs in XMLHelper code
             ExternalDocInfo externalDocInfo = new ExternalDocInfo(new File(inputFile), true);
             resultsHash = solverHandler.simulateAllTasks(externalDocInfo, sedml, outDirForCurrentSedml);
-
             reportsHash = CLIUtils.generateReportsAsCSV(sedml, resultsHash, outDirForCurrentSedml);
-            CLIUtils.drawBreakLine("+", 100);
-            System.out.println(CLIStandalone.nDocs);
-            System.out.println(CLIStandalone.nModels);
-            System.out.println(CLIStandalone.nReports);
-            System.out.println(CLIStandalone.nSimulations);
-            System.out.println(CLIStandalone.nPlots);
-            System.out.println(CLIStandalone.nTasks);
             /*
             Note:
             Internally biosimulators_utils python package uses a capturer package, which is developed for UNIX based systems.
