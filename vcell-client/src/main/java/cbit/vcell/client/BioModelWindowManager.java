@@ -58,6 +58,7 @@ import cbit.vcell.xml.gui.MIRIAMAnnotationViewer;
  * @author: Ion Moraru
  */
 public class BioModelWindowManager extends DocumentWindowManager implements java.beans.PropertyChangeListener, java.awt.event.ActionListener {	
+	public static final String SELECT_GEOM_POPUP = "SelectGeomPopup";
 	public static final String FIELD_DATA_FLAG = "FieldData";
 	/**
 	 * context for ChildWindowManager
@@ -161,7 +162,9 @@ public void actionPerformed(java.awt.event.ActionEvent e) {
 
 	if (source instanceof GeometryViewer && actionCommand.equals(GuiConstants.ACTIONCMD_CHANGE_GEOMETRY)) {
 		final GeometryViewer geometryViewer = (GeometryViewer)source;
-		getRequestManager().changeGeometry(this,(SimulationContext)geometryViewer.getGeometryOwner());
+		Hashtable<String, Object> hashTable = new Hashtable<String, Object>();
+		hashTable.put(SELECT_GEOM_POPUP, new Boolean(true));
+		getRequestManager().changeGeometry(this,(SimulationContext)geometryViewer.getGeometryOwner(),hashTable);
 	}
 }
 

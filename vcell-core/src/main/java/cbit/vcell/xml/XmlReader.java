@@ -7912,18 +7912,20 @@ private VolumeParticleObservable getVolumeParticleObservable(Element param, Vari
 	}
 	
 	Element volumeParticleSpeciesPatternsElement = param.getChild(XMLTags.VolumeParticleSpeciesPatternsTag, vcNamespace);
-	List<Element> volumeParticleSpeciesPatternList = volumeParticleSpeciesPatternsElement.getChildren(XMLTags.VolumeParticleSpeciesPatternTag, vcNamespace);
-	for (Element volumeParticleSpeciesPattern : volumeParticleSpeciesPatternList) {
-		String volumeParticleSpeciesPatternName = unMangle( volumeParticleSpeciesPattern.getAttributeValue(XMLTags.NameAttrTag));
-		
-		Variable v = varHash.getVariable(volumeParticleSpeciesPatternName);
-		if(v == null) {
-			throw new XmlParseException("failed to find VolumeParticleSpeciesPattern named " + volumeParticleSpeciesPatternName);
-		}
-		if(v instanceof ParticleSpeciesPattern) {
-			var.addParticleSpeciesPattern((ParticleSpeciesPattern)v);
-		} else {
-			throw new XmlParseException("Variable " + volumeParticleSpeciesPatternName + " is not a ParticleSpeciesPattern");
+	if(volumeParticleSpeciesPatternsElement != null) {
+		List<Element> volumeParticleSpeciesPatternList = volumeParticleSpeciesPatternsElement.getChildren(XMLTags.VolumeParticleSpeciesPatternTag, vcNamespace);
+		for (Element volumeParticleSpeciesPattern : volumeParticleSpeciesPatternList) {
+			String volumeParticleSpeciesPatternName = unMangle( volumeParticleSpeciesPattern.getAttributeValue(XMLTags.NameAttrTag));
+			
+			Variable v = varHash.getVariable(volumeParticleSpeciesPatternName);
+			if(v == null) {
+				throw new XmlParseException("failed to find VolumeParticleSpeciesPattern named " + volumeParticleSpeciesPatternName);
+			}
+			if(v instanceof ParticleSpeciesPattern) {
+				var.addParticleSpeciesPattern((ParticleSpeciesPattern)v);
+			} else {
+				throw new XmlParseException("Variable " + volumeParticleSpeciesPatternName + " is not a ParticleSpeciesPattern");
+			}
 		}
 	}
 	return var;

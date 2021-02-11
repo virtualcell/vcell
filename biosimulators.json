@@ -526,7 +526,7 @@
       "name": "Semi-Implicit Finite Volume-Particle Hybrid, Regular Grid (Fixed Time Step)",
       "kisaoId": {
         "namespace": "KISAO",
-        "id": "KISAO_0000285"
+        "id": "KISAO_0000616"
       },
 
       "modelingFrameworks": [{
@@ -621,7 +621,7 @@
       "name": "Fully-Implicit Finite Volume, Regular Grid (Variable Time Step)",
       "kisaoId": {
         "namespace": "KISAO",
-        "id": "KISAO_0000285"
+        "id": "KISAO_0000615"
       },
 
       "modelingFrameworks": [{

@@ -10,29 +10,44 @@
 
 package cbit.vcell.client;
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
+import java.awt.Container;
+import java.awt.Dimension;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseMotionAdapter;
 import java.io.File;
 import java.util.Hashtable;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Vector;
 
+import javax.swing.BorderFactory;
+import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
+import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
+import javax.swing.JScrollPane;
+import javax.swing.SwingUtilities;
 import javax.swing.Timer;
+import javax.swing.ToolTipManager;
 import javax.swing.filechooser.FileFilter;
+import javax.swing.tree.TreePath;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Compare;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.UserCancelException;
+import org.vcell.util.document.BioModelChildSummary;
 import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.CurateSpec;
 import org.vcell.util.document.GroupAccess;
@@ -53,7 +68,12 @@ import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.VCFileChooser;
 import org.vcell.util.gui.exporter.FileFilters;
 
+import cbit.image.BrowseImage;
+import cbit.image.GIFImage;
 import cbit.image.VCImageInfo;
+import cbit.image.VCImageUncompressed;
+import cbit.image.VCPixelClass;
+import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.desktop.ACLEditor;
 import cbit.vcell.client.desktop.DatabaseWindowPanel;
 import cbit.vcell.client.server.UserPreferences;
@@ -61,10 +81,14 @@ import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.clientdb.DocumentManager;
 import cbit.vcell.desktop.BioModelDbTreePanel;
+import cbit.vcell.desktop.BioModelNode;
+import cbit.vcell.desktop.BioModelNode.PublicationInfoNode;
 import cbit.vcell.desktop.GeometryTreePanel;
 import cbit.vcell.desktop.MathModelDbTreePanel;
+import cbit.vcell.desktop.VCellBasicCellRenderer.VCDocumentInfoNode;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometryInfo;
+import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.xml.ExternalDocInfo;
 import cbit.xml.merge.XmlTreeDiff;
 /**
@@ -981,6 +1005,181 @@ public void publish() {
 }
 
 
+private class SelectGeomHover extends MouseMotionAdapter {
+	public final BioModelChildSummary[] bioModelChildInfoHolder = new BioModelChildSummary[] {null};
+	public Geometry selection;
+	private JPopupMenu jpop;
+	@Override
+	public void mouseMoved(MouseEvent e) {
+		super.mouseMoved(e);
+		TreePath pathForLocation = getBioModelDbTreePanel().getJTree1().getPathForLocation(e.getX(), e.getY());
+		if(pathForLocation != null &&
+			((pathForLocation.getLastPathComponent() instanceof BioModelNode && ((BioModelNode)pathForLocation.getLastPathComponent()).getUserObject() instanceof VCDocumentInfoNode) ||
+			pathForLocation.getLastPathComponent() instanceof PublicationInfoNode)) {
+			if(jpop != null && jpop.isShowing()) {
+				jpop.setVisible(false);
+			}
+			getBioModelDbTreePanel().getJTree1().expandPath(pathForLocation);
+		}else if(pathForLocation != null && pathForLocation.getLastPathComponent() instanceof BioModelNode) {
+			BioModelNode lastPathComponent = (BioModelNode)pathForLocation.getLastPathComponent();
+			if(lastPathComponent.getUserObject() instanceof BioModelInfo) {
+				BioModelInfo bioModelInfo = (BioModelInfo)lastPathComponent.getUserObject();
+				BioModelChildSummary bioModelChildSummary = bioModelInfo.getBioModelChildSummary();
+				if(bioModelChildSummary != null && bioModelChildSummary.getSimulationContextNames() != null && bioModelChildSummary.getSimulationContextNames().length>0) {
+					if(jpop != null && jpop.isShowing()) {
+						boolean equals = bioModelChildInfoHolder[0] == bioModelChildSummary;//((JMenuItem)jpop.getComponent(0)).getText().equals(bioModelChildSummary.toString());
+						if(equals) {
+							return;
+						}
+					}
+					bioModelChildInfoHolder[0] = bioModelChildSummary;
+					if(jpop == null) {
+						jpop = new JPopupMenu();
+						jpop.setBorder(BorderFactory.createLineBorder(Color.BLACK, 2));
+					}
+					jpop.removeAll();
+					for(int i=0;i<bioModelChildSummary.getSimulationContextNames().length;i++) {
+						if(bioModelChildSummary.getGeometryDimensions()[i]>0) {
+							JMenuItem menuItem = new JMenuItem("App("+bioModelChildSummary.getGeometryDimensions()[i]+"):"+bioModelChildSummary.getSimulationContextNames()[i]+"");
+							menuItem.addActionListener(new ActionListener() {
+								@Override
+								public void actionPerformed(ActionEvent e) {
+									new Thread(new Runnable() {
+										@Override
+										public void run() {
+											String substring = menuItem.getText().substring(7);
+											substring = new String(substring.getBytes(java.nio.charset.Charset.forName("ISO-8859-1")));
+//											System.out.println(substring+" "+bioModelInfo.getVersion().getName()+" "+menuItem.getText());
+											try {
+												BioModel bioModel = DatabaseWindowManager.this.getRequestManager().getDocumentManager().getBioModel(bioModelInfo);
+												SimulationContext simulationContext = bioModel.getSimulationContext(substring);
+												VCImageUncompressed currentValue =
+													(VCImageUncompressed) simulationContext.getGeometry().getGeometrySpec().createSampledImage(
+															simulationContext.getGeometry().getGeometrySpec().getDefaultSampledImageSize());
+												//scale For viewing
+												if (currentValue.getNumPixelClasses() > 1) {
+													VCPixelClass[] newPC = new VCPixelClass[currentValue.getNumPixelClasses()];
+													for (int i = 0; i < newPC.length; i++) {
+														//						       (outMax-outMin)(inVal - inMin)
+														//						       ------------------------------ + outMin
+														//						                 inMax - inMin
+														newPC[i] = new VCPixelClass(
+																currentValue.getPixelClasses(i).getKey(),
+																currentValue.getPixelClasses(i).getPixelClassName(),
+																((127 - 0) * (currentValue.getPixelClasses(i).getPixel() - 0)) / (newPC.length - 1) + 0);
+														for(int j=0;j<currentValue.getPixels().length;j++) {
+															if((int)(currentValue.getPixels()[j]&0x000000FF) == currentValue.getPixelClasses(i).getPixel()) {
+																currentValue.getPixels()[j] = (byte)(newPC[i].getPixel()&0x000000FF);
+															}
+														}
+													}
+													currentValue.setPixelClasses(newPC);
+												}
+												GIFImage makeBrowseGIFImage = BrowseImage.makeBrowseGIFImage2(currentValue);
+												ImageIcon ii = new ImageIcon(makeBrowseGIFImage.getGifEncodedData());
+//												System.out.println(ii.getImage()+"\n"+ii.getImage().getSource());
+//												byte[] bytes = ((DataBufferByte)(((sun.awt.image.ToolkitImage)ii.getImage()).getBufferedImage().getData().getDataBuffer())).getData();
+//												for(int j=0;j<bytes.length;j++) {
+//													if(bytes[j] != 0) {
+//														System.out.println("final="+j+" "+bytes[j]);
+//														break;
+//													}
+//												}
+
+												SwingUtilities.invokeLater(new Runnable() {
+													@Override
+													public void run() {
+														JScrollPane jsp = new JScrollPane(new JLabel(ii));
+														jsp.setPreferredSize(new Dimension(300,400));
+														String SEL = "Select";
+														String select = DialogUtils.showOptionsDialog(
+															getBioModelDbTreePanel().getJTree1(), jsp, JOptionPane.QUESTION_MESSAGE, new String[] {"Back",SEL}, "Back", null,
+															"View Geometry (x="+currentValue.getNumX()+" y="+currentValue.getNumY()+" z="+currentValue.getNumZ()+")");
+														if(select != null &&  select.equals(SEL)) {
+															//Save geom selection, Close Dialog
+															selection = simulationContext.getGeometry();
+															Container myWindow = BeanUtils.findTypeParentOfComponent(getBioModelDbTreePanel(), Window.class);
+															((Window)myWindow).dispose();
+//															ArrayList<Component> comps = new ArrayList<Component>();
+//															BeanUtils.findComponent(myWindow, JButton.class, comps);
+//															System.out.println(comps);
+//															for(int i=0;i<comps.size();i++) {
+//																if(((JButton)comps.get(i)).getText().equals("Cancel")) {
+//																	((JButton)comps.get(i)).doClick();
+//																}
+//															}
+														}else {
+															//keep trying to select
+															return;
+														}
+													}});
+//												ModelGeometryOPResults modelGeometryOPResults = (ModelGeometryOPResults) DatabaseWindowManager.this.getRequestManager().getDocumentManager()
+//														.getSessionManager().getUserMetaDbServer().doTestSuiteOP(
+//																new ModelGeometryOP(bioModelInfo, substring));
+//												System.out.println(modelGeometryOPResults.getGeometryKey()+" "+modelGeometryOPResults.getTestSuiteKey());
+//												GeometryInfo geoInfo = DatabaseWindowManager.this.getRequestManager().getDocumentManager().getGeometryInfo(modelGeometryOPResults.getGeometryKey());
+//												Geometry geometry = DatabaseWindowManager.this.getRequestManager().getDocumentManager().getGeometry(geoInfo);
+//												VCImage currentValue = geometry.getGeometrySpec().getSampledImage().getCurrentValue();
+//												System.out.println(currentValue);
+////												VCImageInfo[] imageInfos = DatabaseWindowManager.this.getRequestManager().getDocumentManager().getImageInfos();
+////												for(int j=0;j<imageInfos.length;j++) {
+////													if(imageInfos[j].getVersion().getVersionKey().equals(geoInfo.getImageRef())) {
+////														System.out.println(imageInfos[j].getVersion());
+////														//System.out.println(imageInfos[j].getBrowseGif().getSize());
+////														ImageIcon ii = new ImageIcon(imageInfos[j].getBrowseGif().getGifEncodedData());
+////														DialogUtils.showComponentCloseDialog(getBioModelDbTreePanel().getJTree1(), new JLabel(ii), "Geometry Image");
+////														break;
+////													}
+////												}
+											} catch (Exception e1) {
+												e1.printStackTrace();
+											}											
+										}}).start();
+								}});
+							jpop.add(menuItem);
+						}
+					}
+					jpop.show(getBioModelDbTreePanel().getJTree1(),e.getX(),e.getY());
+				}
+			}else {
+				if(jpop != null && jpop.isShowing()) {
+					jpop.setVisible(false);
+				}
+			}
+		}else {
+			if(jpop != null && jpop.isShowing()) {
+				jpop.setVisible(false);
+			}
+		}
+	}
+	
+};
+private SelectGeomHover selectGeomHover = new SelectGeomHover();
+
+public Object selectDocument2(VCDocumentType documentType, TopLevelWindowManager requester) throws Exception {
+	switch (documentType) {
+	case BIOMODEL_DOC: {
+		try {
+			ToolTipManager.sharedInstance().unregisterComponent(getBioModelDbTreePanel().getJTree1());
+			getBioModelDbTreePanel().getJTree1().addMouseMotionListener(selectGeomHover);
+			try {
+				return DialogUtils.getDBTreePanelSelection(requester.getComponent(), getBioModelDbTreePanel(),"Open","Select BioModel:Geometry");
+			}catch(UserCancelException uce) {
+				if(selectGeomHover.selection != null) {
+					return selectGeomHover.selection;
+				}
+			}
+		}finally {
+			getBioModelDbTreePanel().getJTree1().removeMouseMotionListener(selectGeomHover);
+			ToolTipManager.sharedInstance().registerComponent(getBioModelDbTreePanel().getJTree1());
+		}
+	} 
+	default: {
+		throw new RuntimeException("ERROR: Unknown document type: " + documentType);
+	}
+}
+
+}
 /**
  * Insert the method's description here.
  * Creation date: (5/14/2004 5:35:55 PM)

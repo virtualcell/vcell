@@ -292,7 +292,11 @@ private void displayTask() {
 		NonspatialStochSimOptions stochOpt = solverTaskDescription.getStochOpt();
 		if(stochOpt != null && stochOpt.getNumOfTrials() > 1 )
 		{
-			getJLabelOutput().setText("Histogram with "+stochOpt.getNumOfTrials()+" Trials(@last time point)");
+			if(stochOpt.isHistogram()) {
+				getJLabelOutput().setText("Histogram with "+stochOpt.getNumOfTrials()+" Trials(@last time point)");
+			}else {
+				getJLabelOutput().setText("Average of "+stochOpt.getNumOfTrials()+" trajectories; "+solverTaskDescription.getOutputTimeSpec().getDescription());
+			}
 		}
 		else
 		{
