@@ -27,6 +27,8 @@ public class CLIUtils {
     private static final Path workingDirectory = Paths.get(System.getProperty("user.dir").equals("/") ? "/usr/local/app/vcell/installDir" : System.getProperty("user.dir"));
     // Submodule path for VCell_CLI_UTILS
     private static final Path utilPath = Paths.get(workingDirectory.toString(), "submodules", "vcell_cli_utils");
+    private static final Path stdOutPath = Paths.get(workingDirectory.toString(), "stdOut.txt");
+    private static final File stdOutFile = new File(String.valueOf(stdOutPath));
     private static final Path cliUtilPath = Paths.get(utilPath.toString(), "cli_util");
     private static final Path cliPath = Paths.get(cliUtilPath.toString(), "cli.py");
     private static final Path statusPath = Paths.get(cliUtilPath.toString(), "status.py");
@@ -392,24 +394,24 @@ public class CLIUtils {
 
     private static int execShellCommand(String[] args) {
         // NOTE: Magic number -10, simply means unassigned exit code
-        int output = -10;
+        int exitCode = -10;
+        String joinArg = Joiner.on(" ").join(args);
+//            System.out.println("Executing the command: `" + joinArg + "`");
         try {
-            String joinArg = Joiner.on(" ").join(args);
-            CLIUtils.drawBreakLine("-", 100);
-            System.out.println("Executing the command: `" + joinArg + "`");
+            // TODO: delay while executing commands
             ProcessBuilder builder = new ProcessBuilder(args);
-            builder.redirectOutput(ProcessBuilder.Redirect.INHERIT);
+            // subprocess I/O will be connected to the current Java process over a pipe
+            // Any stdout logs while executing command will be redirected to stdOutFile
+            builder.redirectOutput(ProcessBuilder.Redirect.to(stdOutFile));
+            // subprocess I/O source or destination will be the same as those of the current process.
             builder.redirectError(ProcessBuilder.Redirect.INHERIT);
             Process proc = builder.start();
-            output = proc.waitFor();
-            if (output == 0) {
-                //System.out.println("Program exited with code: " + proc.waitFor() + "\n");
-            }
-            return output;
+            exitCode = proc.waitFor();
+            return exitCode;
         } catch (IOException | InterruptedException I) {
-            System.err.println("Failed executing the command " + Arrays.toString(args) + "\n");
+            System.err.println("Failed executing the command " + joinArg + "\n");
         }
-        return output;
+        return exitCode;
     }
 
     private static void pipInstallRequirements() {
@@ -521,6 +523,7 @@ public class CLIUtils {
     }
 
     public static void finalStatusUpdate(Status simStatus) {
+        System.out.println("Generating Status YAML...");
         if (isWindowsPlatform)
             execShellCommand(new String[]{"python", statusPath.toString(), "simStatus", simStatus.toString()});
         else

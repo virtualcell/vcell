@@ -39,7 +39,7 @@ local.properties
 .settings/
 .loadpath
 .recommenders
-
+stdOut.txt
 # External tool builders
 .externalToolBuilders/
 
