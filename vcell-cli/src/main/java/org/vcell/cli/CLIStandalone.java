@@ -110,17 +110,20 @@ public class CLIStandalone {
             Internally biosimulators_utils python package uses a capturer package, which is developed for UNIX based systems.
             Either way we need to find an alternate for capturer on windows in biosimulators_utils
             */
-            if (!CLIUtils.isWindowsPlatform) {
-                if (CLIUtils.checkPythonInstallation() == 0) {
-                    CLIUtils.convertCSVtoHDF(Paths.get(outputDir, sedmlName).toString(), sedmlLocation, Paths.get(outputDir, sedmlName).toString());
-                } else {
-                    if (CLIUtils.checkPythonInstallation() != 0) {
-                        System.err.println("Python installation required");
-                        System.err.println("Update submodule codebase");
-                    }
-                    System.err.println("HDF5 conversion failed...\n");
+//            if (!CLIUtils.isWindowsPlatform) {
+//
+//            }
+            if (CLIUtils.checkPythonInstallation() == 0) {
+                CLIUtils.convertCSVtoHDF(Paths.get(outputDir, sedmlName).toString(), sedmlLocation, Paths.get(outputDir, sedmlName).toString());
+            } else {
+                if (CLIUtils.checkPythonInstallation() != 0) {
+                    System.err.println("Python installation required");
+                    System.err.println("Update submodule codebase");
                 }
+                System.err.println("HDF5 conversion failed...\n");
             }
+
+            System.out.println("Generating Simulation Status....");
             for (Map.Entry<String, CLIUtils.Status> status : CLIUtils.statusReportMap.entrySet()) {
                 // TODO: remove this discrepancy for running simStatus
                 CLIUtils.generateStatusYaml(inputFile, status.getValue().toString(), status.getValue().toString());

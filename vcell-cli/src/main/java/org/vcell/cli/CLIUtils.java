@@ -497,7 +497,6 @@ public class CLIUtils {
     public static void generateStatusYaml(String omexPath, String taskStatus, String simStatus) {
         // Note: by default every status is being skipped
         Path omexFilePath = Paths.get(omexPath);
-        System.out.println("Generating Simulation Status....");
         /*
          USAGE:
 
