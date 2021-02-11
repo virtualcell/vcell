@@ -7,6 +7,7 @@ import cbit.vcell.parser.SymbolTable;
 import cbit.vcell.resource.OperatingSystemInfo;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.util.ColumnDescription;
+import com.google.common.base.Joiner;
 import com.google.common.io.Files;
 import org.apache.commons.lang.StringUtils;
 import org.jlibsedml.*;
@@ -398,14 +399,16 @@ public class CLIUtils {
         // NOTE: Magic number -10, simply means unassigned exit code
         int output = -10;
         try {
-            System.out.println("Running the command " + Arrays.toString(args));
+            String joinArg = Joiner.on(" ").join(args);
+            CLIUtils.drawBreakLine("-", 100);
+            System.out.println("Executing the command: `" + joinArg + "`");
             ProcessBuilder builder = new ProcessBuilder(args);
             builder.redirectOutput(ProcessBuilder.Redirect.INHERIT);
             builder.redirectError(ProcessBuilder.Redirect.INHERIT);
             Process proc = builder.start();
             output = proc.waitFor();
             if (output == 0) {
-                System.out.println("Program exited with code: " + proc.waitFor() + "\n");
+                //System.out.println("Program exited with code: " + proc.waitFor() + "\n");
             }
             return output;
         } catch (IOException | InterruptedException I) {
@@ -427,11 +430,9 @@ public class CLIUtils {
 
     public static int checkPythonInstallation() {
         int pyCheckIns;
-        if (isWindowsPlatform) {
-            pyCheckIns = execShellCommand(new String[]{"python", "--version"});
-        } else {
-            pyCheckIns = execShellCommand(new String[]{"python3", "--version"});
-        }
+        if (isWindowsPlatform) pyCheckIns = execShellCommand(new String[]{"python", "--version"});
+        else pyCheckIns = execShellCommand(new String[]{"python3", "--version"});
+        if (pyCheckIns != 0) System.out.println("Check Python installation...");
         return pyCheckIns;
     }
 
@@ -511,11 +512,10 @@ public class CLIUtils {
 
          status_yml
         */
-        if (isWindowsPlatform) {
+        if (isWindowsPlatform)
             execShellCommand(new String[]{"python", statusPath.toString(), "status_yml", omexFilePath.toString(), taskStatus, simStatus});
-        } else {
+        else
             execShellCommand(new String[]{"python3", statusPath.toString(), "status_yml", omexFilePath.toString(), taskStatus, simStatus});
-        }
     }
 
     @SuppressWarnings("UnstableApiUsage")

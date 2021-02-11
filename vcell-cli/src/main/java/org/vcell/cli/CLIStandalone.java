@@ -2,7 +2,6 @@ package org.vcell.cli;
 
 import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.xml.ExternalDocInfo;
-import com.mongodb.gridfs.CLI;
 import org.jlibsedml.Libsedml;
 import org.jlibsedml.SedML;
 
@@ -12,7 +11,6 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 
 public class CLIStandalone {
     public static void main(String[] args) {
@@ -105,30 +103,18 @@ public class CLIStandalone {
             ExternalDocInfo externalDocInfo = new ExternalDocInfo(new File(inputFile), true);
             resultsHash = solverHandler.simulateAllTasks(externalDocInfo, sedml, outDirForCurrentSedml);
             reportsHash = CLIUtils.generateReportsAsCSV(sedml, resultsHash, outDirForCurrentSedml);
-            /*
-            Note:
-            Internally biosimulators_utils python package uses a capturer package, which is developed for UNIX based systems.
-            Either way we need to find an alternate for capturer on windows in biosimulators_utils
-            */
-//            if (!CLIUtils.isWindowsPlatform) {
-//
-//            }
-            if (CLIUtils.checkPythonInstallation() == 0) {
-                CLIUtils.convertCSVtoHDF(Paths.get(outputDir, sedmlName).toString(), sedmlLocation, Paths.get(outputDir, sedmlName).toString());
-            } else {
-                if (CLIUtils.checkPythonInstallation() != 0) {
-                    System.err.println("Python installation required");
-                    System.err.println("Update submodule codebase");
-                }
-                System.err.println("HDF5 conversion failed...\n");
-            }
 
+            // HDF5 conversion
+            if (CLIUtils.checkPythonInstallation() == 0)
+                CLIUtils.convertCSVtoHDF(Paths.get(outputDir, sedmlName).toString(), sedmlLocation, Paths.get(outputDir, sedmlName).toString());
+            else System.err.println("HDF5 conversion failed...\n");
+
+            // generating status YAML
             System.out.println("Generating Simulation Status....");
             for (Map.Entry<String, CLIUtils.Status> status : CLIUtils.statusReportMap.entrySet()) {
                 // TODO: remove this discrepancy for running simStatus
                 CLIUtils.generateStatusYaml(inputFile, status.getValue().toString(), status.getValue().toString());
             }
-            System.out.println();
             if (resultsHash.containsValue(null) || reportsHash.containsValue(null)) {
                 somethingFailed = true;
             }
