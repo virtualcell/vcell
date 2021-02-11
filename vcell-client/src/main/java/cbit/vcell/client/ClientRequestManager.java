@@ -2959,7 +2959,14 @@ public class ClientRequestManager
 		if (forceFilefilter != null) {
 			hash.put(ChooseFile.FORCE_FILE_FILTER, forceFilefilter);
 		}
+		
+		hash.put(CommonTask.DOCUMENT_WINDOW_MANAGER.name, manager);
+		hash.put("currentDocumentWindow", currentWindow);
+
 		/* create tasks */
+		AsynchClientTask documentValid = new DocumentValidTask();
+		AsynchClientTask setMathDescription = new SetMathDescription();
+
 		// get document to be exported
 		AsynchClientTask documentToExport = new DocumentToExport();
 		// get file
@@ -2970,7 +2977,7 @@ public class ClientRequestManager
 		AsynchClientTask finishExport = new FinishExport();
 		// assemble array
 		AsynchClientTask[] tasks = null;
-		tasks = new AsynchClientTask[] { documentToExport, chooseFile, exportDocument, finishExport };
+		tasks = new AsynchClientTask[] { documentValid, setMathDescription, documentToExport, chooseFile, exportDocument, finishExport };
 		/* run tasks */
 		ClientTaskDispatcher.dispatch(currentWindow, hash, tasks, false);
 	}
