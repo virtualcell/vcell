@@ -119,6 +119,7 @@ import org.vcell.util.document.VersionInfo;
 import org.vcell.util.document.VersionableType;
 import org.vcell.util.document.VersionableTypeVersion;
 import org.vcell.util.gui.AsynchGuiUpdater;
+import org.vcell.util.gui.AsynchProgressPopup;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.SimpleUserMessage;
 import org.vcell.util.gui.VCFileChooser;
@@ -302,12 +303,22 @@ public class ClientRequestManager
 							"OK", "Select Image:");
 				} else {
 					if(hashTable.get(BioModelWindowManager.SELECT_GEOM_POPUP) != null && ((Boolean)hashTable.get(BioModelWindowManager.SELECT_GEOM_POPUP)).booleanValue()) {
-						Object obj = getMdiManager().getDatabaseWindowManager().selectDocument2(sourceDocumentType, requester);
-						if(obj instanceof Geometry) {//user selected geometry directly using popup
-							hashTable.put(GEOMETRY_KEY, ((Geometry)obj));
-							return;
+						if(getClientTaskStatusSupport() instanceof AsynchProgressPopup) {
+							((AsynchProgressPopup)getClientTaskStatusSupport()).setVisible(false);
 						}
-						vcVersionInfo = (VersionInfo)obj;//user selected VCDocument, list will be shown to select from
+						try {
+							Object obj = getMdiManager().getDatabaseWindowManager().selectDocument2(sourceDocumentType,
+									requester);
+							if (obj instanceof Geometry) {//user selected geometry directly using popup
+								hashTable.put(GEOMETRY_KEY, ((Geometry) obj));
+								return;
+							}
+							vcVersionInfo = (VersionInfo) obj;//user selected VCDocument, list will be shown to select from
+						} finally {
+							if(getClientTaskStatusSupport() instanceof AsynchProgressPopup) {
+								((AsynchProgressPopup)getClientTaskStatusSupport()).setVisible(true);
+							}
+						}
 					}else {
 						vcVersionInfo = selectDocumentFromType(sourceDocumentType, requester);
 					}

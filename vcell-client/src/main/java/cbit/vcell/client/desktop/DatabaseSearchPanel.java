@@ -250,6 +250,16 @@ public class DatabaseSearchPanel extends CollapsiblePanel {
 		 listenerList.add(ActionListener.class, l);
 	}
 	
+	private boolean bSpatialMode = false;
+	public void setSpatialGeomMode(boolean bSpatialGeomMode) {
+		if(bSpatialGeomMode) {
+			if(getBorder() instanceof CollapsiblePanel.ComponentTitledBorder) {
+				((CollapsiblePanel.ComponentTitledBorder)getBorder()).setTitle("Search Models with spatial Geometries");
+			}
+			chckbxHasSpatial.setVisible(false);
+			bSpatialMode = true;
+		}
+	}
 	private void setAdvancedOptionsVisible(boolean bVisible) {
 		for (JComponent comp : advancedOptions) {
 			if(comp == lblSpeciesName || comp == textFieldSpeciesName){
@@ -286,29 +296,34 @@ public class DatabaseSearchPanel extends CollapsiblePanel {
 				searchCriterionList.add(searchBySpeciesName);
 			}
 		}
-		if(chckbxHasSpatial.isSelected()) {
-			SearchCriterion sc = new SearchCriterion() {
-				@Override
-				public boolean meetCriterion(VCDocumentInfo docInfo) {
-					if(docInfo instanceof BioModelInfo) {
-						BioModelChildSummary bmcs = ((BioModelInfo)docInfo).getBioModelChildSummary();
-						for(int i=0;bmcs != null && bmcs.getGeometryDimensions() != null && i<bmcs.getGeometryDimensions().length;i++) {
-							if(bmcs.getGeometryDimensions()[i] > 0){
-								return true;
-							}
-						}
-					}else if(docInfo instanceof MathModelInfo) {
-						MathModelChildSummary mmcs = ((MathModelInfo)docInfo).getMathModelChildSummary();
-						if(mmcs != null && mmcs.getGeometryDimension()>0) {
-							return true;
-						}
-					}
-					return false;
-				}};
+		if(chckbxHasSpatial.isSelected() || bSpatialMode) {
+			SearchCriterion sc = getSpatialOnlyCriteria();
 			searchCriterionList.add(sc);
 		}
 		
 		return searchCriterionList;
+	}
+
+	public static SearchCriterion getSpatialOnlyCriteria() {
+		SearchCriterion sc = new SearchCriterion() {
+			@Override
+			public boolean meetCriterion(VCDocumentInfo docInfo) {
+				if(docInfo instanceof BioModelInfo) {
+					BioModelChildSummary bmcs = ((BioModelInfo)docInfo).getBioModelChildSummary();
+					for(int i=0;bmcs != null && bmcs.getGeometryDimensions() != null && i<bmcs.getGeometryDimensions().length;i++) {
+						if(bmcs.getGeometryDimensions()[i] > 0){
+							return true;
+						}
+					}
+				}else if(docInfo instanceof MathModelInfo) {
+					MathModelChildSummary mmcs = ((MathModelInfo)docInfo).getMathModelChildSummary();
+					if(mmcs != null && mmcs.getGeometryDimension()>0) {
+						return true;
+					}
+				}
+				return false;
+			}};
+		return sc;
 	}
 	
 	public boolean hasRemoteDatabaseSearchDefined(){
