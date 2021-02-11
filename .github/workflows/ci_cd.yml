@@ -1,7 +1,11 @@
 name: CI
 
 on:
-  - push
+  push:
+    branches:
+      - '*'
+      - '*/*'
+      - '**'
   release:
     types: [published, edited]
 
