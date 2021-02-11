@@ -58,7 +58,6 @@ import cbit.vcell.xml.gui.MIRIAMAnnotationViewer;
  * @author: Ion Moraru
  */
 public class BioModelWindowManager extends DocumentWindowManager implements java.beans.PropertyChangeListener, java.awt.event.ActionListener {	
-	public static final String SELECT_GEOM_POPUP = "SelectGeomPopup";
 	public static final String FIELD_DATA_FLAG = "FieldData";
 	/**
 	 * context for ChildWindowManager

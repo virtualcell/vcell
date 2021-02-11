@@ -40,7 +40,7 @@ public class CollapsiblePanel extends JPanel {
 
 	public static final String SEARCHPPANEL_EXPANDED = "SEARCHPPANEL_EXPANDED";
 
-	private class ComponentTitledBorder implements Border, MouseListener {
+	public class ComponentTitledBorder implements Border, MouseListener {
 		int offset = 7;
 
 		Component comp;
@@ -57,6 +57,12 @@ public class CollapsiblePanel extends JPanel {
 			container.addMouseListener(this);
 		}
 
+		public void setTitle(String title) {
+			if(comp instanceof JLabel) {
+				((JLabel)comp).setText(title);
+				((JLabel)comp).setPreferredSize(null);
+			}
+		}
 		public boolean isBorderOpaque() {
 			return true;
 		}
