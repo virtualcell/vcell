@@ -48,10 +48,6 @@ public class CLIUtils {
         RUNNING, SKIPPED, PASSED, SUCCEEDED, FAILED
     }
 
-    // return hashmaps to query
-//    public static Map<String, Status> hashStatusMap() {
-//        return statusReportMap;
-//    }
 
     // Breakline
     public static void drawBreakLine(String breakString, int times){
