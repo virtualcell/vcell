@@ -33,10 +33,25 @@ public class CLIUtils {
 
     // Supported platforms
     public static boolean isWindowsPlatform = OperatingSystemInfo.getInstance().isWindows();
-    public static boolean ismacPlatform = OperatingSystemInfo.getInstance().isMac();
-    public static boolean islinuxPlatform = OperatingSystemInfo.getInstance().isLinux();
-    //    private String tempDirPath = null;
-    private final String extractedOmexPath = null;
+    public static boolean isMacPlatform = OperatingSystemInfo.getInstance().isMac();
+    public static boolean isLinuxPlatform = OperatingSystemInfo.getInstance().isLinux();
+
+    // private String tempDirPath = null;
+    // private final String extractedOmexPath = null;
+
+    // Status HashMaps
+    public static HashMap<String, Status> statusReportMap = new HashMap<>();
+    public static HashMap<String, Status> statusPlotMap = new HashMap<>();
+
+    // Simulation Status enum
+    public enum Status {
+        RUNNING, SKIPPED, PASSED, SUCCEEDED, FAILED
+    }
+
+    // return hashmaps to query
+//    public static Map<String, Status> hashStatusMap() {
+//        return statusReportMap;
+//    }
 
     // Breakline
     public static void drawBreakLine(String breakString, int times){
@@ -193,11 +208,12 @@ public class CLIUtils {
 
     public static HashMap<String, File> generateReportsAsCSV(SedML sedml, HashMap<String, ODESolverResultSet> resultsHash, File outDir) {
         // finally, the real work
-        HashMap<String, File> reportsHash = new HashMap<String, File>();
+        HashMap<String, File> reportsHash = new HashMap<>();
         List<Output> ooo = sedml.getOutputs();
         for (Output oo : ooo) {
             if (!(oo instanceof Report)) {
                 System.err.println("Ignoring unsupported output " + oo.getId());
+                statusPlotMap.put(oo.getId(), Status.SKIPPED);
             } else {
                 System.out.println("Generating report " + oo.getId());
                 try {
@@ -205,9 +221,9 @@ public class CLIUtils {
                     List<DataSet> datasets = ((Report) oo).getListOfDataSets();
                     for (DataSet dataset : datasets) {
                         DataGenerator datagen = sedml.getDataGeneratorWithId(dataset.getDataReference());
-                        ArrayList<String> varIDs = new ArrayList<String>();
+                        ArrayList<String> varIDs = new ArrayList<>();
                         assert datagen != null;
-                        ArrayList<Variable> vars = new ArrayList<Variable>(datagen.getListOfVariables());
+                        ArrayList<Variable> vars = new ArrayList<>(datagen.getListOfVariables());
                         int mxlen = 0;
                         boolean supportedDataset = true;
                         // get target values
@@ -263,7 +279,10 @@ public class CLIUtils {
                     out.print(sb.toString());
                     out.flush();
                     reportsHash.put(oo.getId(), f);
+                    statusReportMap.put(oo.getId(), Status.SUCCEEDED);
+                    statusReportMap.put("simStatus", Status.SUCCEEDED);
                 } catch (Exception e) {
+                    statusReportMap.put(oo.getId(), Status.FAILED);
                     e.printStackTrace(System.err);
                     reportsHash.put(oo.getId(), null);
                 }
@@ -479,14 +498,28 @@ public class CLIUtils {
             status: SKIPPED
     status: SUCCEEDED
     * */
-    public static void generateStatusYaml(String omexPath) {
+    public static void generateStatusYaml(String omexPath, String taskStatus, String simStatus) {
         // Note: by default every status is being skipped
         Path omexFilePath = Paths.get(omexPath);
         System.out.println("Generating Simulation Status....");
+        /*
+         USAGE:
+
+         NAME
+         status.py
+
+         SYNOPSIS
+         status.py COMMAND
+
+         COMMANDS
+         COMMAND is one of the following:
+
+         status_yml
+        */
         if (isWindowsPlatform) {
-            execShellCommand(new String[]{"python", statusPath.toString(), omexFilePath.toString()});
+            execShellCommand(new String[]{"python", statusPath.toString(), "status_yml", omexFilePath.toString(), taskStatus, simStatus});
         } else {
-            execShellCommand(new String[]{"python3", statusPath.toString(), omexFilePath.toString()});
+            execShellCommand(new String[]{"python3", statusPath.toString(), "status_yml", omexFilePath.toString(), taskStatus, simStatus});
         }
     }
 

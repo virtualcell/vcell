@@ -61,7 +61,7 @@ public class SolverHandler {
         try {
             docs = XmlHelper.sedmlToBioModel(sedmlImportLogger, externalDocInfo, sedml, null);
         } catch (Exception e) {
-            System.err.println("Unable to Parse SEDML into biomodel, failed with err: " + e.getMessage());
+            System.err.println("Unable to Parse SED-ML into Bio-Model, failed with err: " + e.getMessage());
             throw e;
         }
         for (VCDocument doc : docs) {

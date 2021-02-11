@@ -2,6 +2,7 @@ package org.vcell.cli;
 
 import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.xml.ExternalDocInfo;
+import com.mongodb.gridfs.CLI;
 import org.jlibsedml.Libsedml;
 import org.jlibsedml.SedML;
 
@@ -10,6 +11,8 @@ import java.io.FilenameFilter;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
 
 public class CLIStandalone {
     public static void main(String[] args) {
@@ -118,7 +121,10 @@ public class CLIStandalone {
                     System.err.println("HDF5 conversion failed...\n");
                 }
             }
-            CLIUtils.generateStatusYaml(inputFile);
+            for (Map.Entry<String, CLIUtils.Status> status : CLIUtils.statusReportMap.entrySet()) {
+                CLIUtils.generateStatusYaml(inputFile, status.getValue().toString(), status.getValue().toString());
+            }
+            System.out.println();
             if (resultsHash.containsValue(null) || reportsHash.containsValue(null)) {
                 somethingFailed = true;
             }
