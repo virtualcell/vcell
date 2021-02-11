@@ -58,6 +58,7 @@ import cbit.vcell.client.server.UserPreferences;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.AsynchClientTaskFunction;
 import cbit.vcell.client.task.ClientTaskDispatcher;
+import cbit.vcell.client.test.VCellClientTest;
 import cbit.vcell.export.server.ExportServiceImpl;
 import cbit.vcell.field.FieldDataIdentifierSpec;
 import cbit.vcell.mapping.SimulationContext;
@@ -341,6 +342,11 @@ private void importBatchSimulation(OutputContext outputContext, Simulation sim) 
 	}
 	
 	User usr = sim.getVersion().getOwner();
+	
+//	VCSimulationIdentifier authoritativeVCSimulationIdentifier = simInfo.getAuthoritativeVCSimulationIdentifier();
+//	// sim.getScanCount()  number of jobs  - is 0
+//	VCSimulationDataIdentifier vcSimulationDataIdentifier = new VCSimulationDataIdentifier(authoritativeVCSimulationIdentifier, 0);
+//	VCellClientTest.getVCellClient().getClientServerManager().getDataSetController().getODEData(vcSimulationDataIdentifier);
 	
 	/*
 	
