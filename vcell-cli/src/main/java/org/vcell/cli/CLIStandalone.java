@@ -102,26 +102,24 @@ public class CLIStandalone {
             // send the the whole OMEX file since we do better handling of malformed model URIs in XMLHelper code
             ExternalDocInfo externalDocInfo = new ExternalDocInfo(new File(inputFile), true);
             resultsHash = solverHandler.simulateAllTasks(externalDocInfo, sedml, outDirForCurrentSedml);
-            reportsHash = CLIUtils.generateReportsAsCSV(sedml, resultsHash, outDirForCurrentSedml);
+            CLIUtils.generateStatusYaml(inputFile);
+            reportsHash = CLIUtils.generateReportsAsCSV(sedml, resultsHash, outDirForCurrentSedml, sedmlName);
+
 
             // HDF5 conversion
             if (CLIUtils.checkPythonInstallation() == 0)
                 CLIUtils.convertCSVtoHDF(Paths.get(outputDir, sedmlName).toString(), sedmlLocation, Paths.get(outputDir, sedmlName).toString());
             else System.err.println("HDF5 conversion failed...\n");
 
-            // generating status YAML
-            System.out.println("Generating Simulation Status....");
-            for (Map.Entry<String, CLIUtils.Status> status : CLIUtils.statusReportMap.entrySet()) {
-                // TODO: remove this discrepancy for running simStatus
-                CLIUtils.generateStatusYaml(inputFile, status.getValue().toString(), status.getValue().toString());
-            }
             if (resultsHash.containsValue(null) || reportsHash.containsValue(null)) {
                 somethingFailed = true;
             }
         }
+        CLIUtils.finalStatusUpdate(CLIUtils.Status.SUCCEEDED);
         omexHandler.deleteExtractedOmex();
         if (somethingFailed) {
             String error = "======> One or more errors encountered while executing archive " + args[1];
+            CLIUtils.finalStatusUpdate(CLIUtils.Status.FAILED);
             throw new Exception(error);
         }
     }

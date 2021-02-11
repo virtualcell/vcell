@@ -203,7 +203,7 @@ public class CLIUtils {
         }
     }
 
-    public static HashMap<String, File> generateReportsAsCSV(SedML sedml, HashMap<String, ODESolverResultSet> resultsHash, File outDir) {
+    public static HashMap<String, File> generateReportsAsCSV(SedML sedml, HashMap<String, ODESolverResultSet> resultsHash, File outDir, String sedmlName) {
         // finally, the real work
         HashMap<String, File> reportsHash = new HashMap<>();
         List<Output> ooo = sedml.getOutputs();
@@ -238,6 +238,7 @@ public class CLIUtils {
                                 mxlen = Integer.max(mxlen, data.length);
                                 values.put(var, data);
                             }
+                            CLIUtils.updateTaskStatusYml(sedmlName, task.getId(), Status.SUCCEEDED);
                         }
                         if (!supportedDataset) {
                             System.err.println("Dataset " + dataset.getId() + " references unsupported RepeatedTask and is being skipped");
@@ -495,7 +496,7 @@ public class CLIUtils {
             status: SKIPPED
     status: SUCCEEDED
     * */
-    public static void generateStatusYaml(String omexPath, String taskStatus, String simStatus) {
+    public static void generateStatusYaml(String omexPath) {
         // Note: by default every status is being skipped
         Path omexFilePath = Paths.get(omexPath);
         /*
@@ -513,9 +514,23 @@ public class CLIUtils {
          status_yml
         */
         if (isWindowsPlatform)
-            execShellCommand(new String[]{"python", statusPath.toString(), "status_yml", omexFilePath.toString(), taskStatus, simStatus});
+            execShellCommand(new String[]{"python", statusPath.toString(), "genStatusYaml", String.valueOf(omexFilePath)});
         else
-            execShellCommand(new String[]{"python3", statusPath.toString(), "status_yml", omexFilePath.toString(), taskStatus, simStatus});
+            execShellCommand(new String[]{"python3", statusPath.toString(), "genStatusYaml", String.valueOf(omexFilePath)});
+    }
+
+    public static void updateTaskStatusYml(String sedmlName, String taskName, Status taskStatus) {
+        if (isWindowsPlatform)
+            execShellCommand(new String[]{"python", statusPath.toString(), "updateTaskStatus", sedmlName, taskName, taskStatus.toString()});
+        else
+            execShellCommand(new String[]{"python3", statusPath.toString(), "updateTaskStatus", sedmlName, taskName, taskStatus.toString()});
+    }
+
+    public static void finalStatusUpdate(Status simStatus) {
+        if (isWindowsPlatform)
+            execShellCommand(new String[]{"python", statusPath.toString(), "simStatus", simStatus.toString()});
+        else
+            execShellCommand(new String[]{"python3", statusPath.toString(), "simStatus", simStatus.toString()});
     }
 
     @SuppressWarnings("UnstableApiUsage")
