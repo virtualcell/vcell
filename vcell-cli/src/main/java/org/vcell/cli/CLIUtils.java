@@ -40,9 +40,6 @@ public class CLIUtils {
     // private String tempDirPath = null;
     // private final String extractedOmexPath = null;
 
-    // Status HashMaps
-    public static HashMap<String, Status> statusReportMap = new HashMap<>();
-    public static HashMap<String, Status> statusPlotMap = new HashMap<>();
 
     // Simulation Status enum
     public enum Status {
@@ -210,7 +207,6 @@ public class CLIUtils {
         for (Output oo : ooo) {
             if (!(oo instanceof Report)) {
                 System.err.println("Ignoring unsupported output " + oo.getId());
-                statusPlotMap.put(oo.getId(), Status.SKIPPED);
             } else {
                 System.out.println("Generating report " + oo.getId());
                 try {
@@ -238,6 +234,7 @@ public class CLIUtils {
                                 mxlen = Integer.max(mxlen, data.length);
                                 values.put(var, data);
                             }
+                            CLIUtils.updateDatasetStatusYml(sedmlName, oo.getId() , dataset.getId(), Status.SUCCEEDED);
                             CLIUtils.updateTaskStatusYml(sedmlName, task.getId(), Status.SUCCEEDED);
                         }
                         if (!supportedDataset) {
@@ -277,10 +274,7 @@ public class CLIUtils {
                     out.print(sb.toString());
                     out.flush();
                     reportsHash.put(oo.getId(), f);
-                    statusReportMap.put(oo.getId(), Status.SUCCEEDED);
-                    statusReportMap.put("simStatus", Status.SUCCEEDED);
                 } catch (Exception e) {
-                    statusReportMap.put(oo.getId(), Status.FAILED);
                     e.printStackTrace(System.err);
                     reportsHash.put(oo.getId(), null);
                 }
@@ -531,6 +525,13 @@ public class CLIUtils {
             execShellCommand(new String[]{"python", statusPath.toString(), "simStatus", simStatus.toString()});
         else
             execShellCommand(new String[]{"python3", statusPath.toString(), "simStatus", simStatus.toString()});
+    }
+
+    public static void updateDatasetStatusYml(String sedmlName, String dataSet, String var, Status simStatus) {
+        if (isWindowsPlatform)
+            execShellCommand(new String[]{"python", statusPath.toString(), "updateDataSetStatus", sedmlName, dataSet, var, simStatus.toString()});
+        else
+            execShellCommand(new String[]{"python3", statusPath.toString(), "updateDataSetStatus", sedmlName, dataSet, var, simStatus.toString()});
     }
 
     @SuppressWarnings("UnstableApiUsage")
