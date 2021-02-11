@@ -122,6 +122,7 @@ public class CLIStandalone {
                 }
             }
             for (Map.Entry<String, CLIUtils.Status> status : CLIUtils.statusReportMap.entrySet()) {
+                // TODO: remove this discrepancy for running simStatus
                 CLIUtils.generateStatusYaml(inputFile, status.getValue().toString(), status.getValue().toString());
             }
             System.out.println();
