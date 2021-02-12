@@ -16,12 +16,12 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class OmexHandler {
-    CLIUtils utils = null;
-    String tempPath = null;
-    String omexPath = null;
-    String omexName = null;
-    String outDirPath = null;
-    CombineArchive archive = null;
+    CLIUtils utils;
+    String tempPath;
+    String omexPath;
+    String omexName;
+    String outDirPath;
+    CombineArchive archive;
 
     // Assuming omexPath will always be absolute path
     public OmexHandler(String omexPath, String outDir) {
@@ -42,7 +42,7 @@ public class OmexHandler {
         if (!new File(omexPath).exists()) {
             String[] omexNameArray = omexPath.split("/", -2);
             String omexName = omexNameArray[omexNameArray.length - 1];
-            System.err.println("Provided OMEX "+ omexName +" is not present");
+            System.err.println("Provided OMEX " + omexName + " is not present");
             System.exit(1);
         }
         int indexOfLastSlash = omexPath.lastIndexOf("/");

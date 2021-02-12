@@ -658,7 +658,7 @@ public class DialogUtils {
 		}
 	}
 
-	private static String showOptionsDialog(final Component requester,Component showComponent,final int JOptionPaneMessageType,String[] options,String initOption,OKEnabler okEnabler,String title) {
+	public static String showOptionsDialog(final Component requester,Component showComponent,final int JOptionPaneMessageType,String[] options,String initOption,OKEnabler okEnabler,String title) {
 		VCellThreadChecker.checkSwingInvocation();
 		checkForNull(requester);
 		LWContainerHandle lwParent = LWNamespace.findLWOwner(requester);

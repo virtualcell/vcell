@@ -61,7 +61,7 @@ public class SolverHandler {
         try {
             docs = XmlHelper.sedmlToBioModel(sedmlImportLogger, externalDocInfo, sedml, null);
         } catch (Exception e) {
-            System.err.println("Unable to Parse SEDML into biomodel, failed with err: " + e.getMessage());
+            System.err.println("Unable to Parse SED-ML into Bio-Model, failed with err: " + e.getMessage());
             throw e;
         }
         for (VCDocument doc : docs) {
@@ -111,7 +111,7 @@ public class SolverHandler {
                     }
                     if (solver.getSolverStatus().getStatus() == SolverStatus.SOLVER_FINISHED) {
                         System.out.println("Succesful execution: Model '" + docName + "' Task '" + sim.getDescription() + "'.");
-                        System.out.println("-------------------------------------------------------------------------");
+                        CLIUtils.drawBreakLine("-", 100);
                     } else {
                         System.err.println("Solver status: " + solver.getSolverStatus().getStatus());
                         System.err.println("Solver message: " + solver.getSolverStatus().getSimulationMessage().getDisplayMessage());
@@ -123,7 +123,7 @@ public class SolverHandler {
                         // something else than failure caught by solver instance during execution
                         System.err.println(e.getMessage());
                     }
-                    System.out.println("-------------------------------------------------------------------------");
+                    CLIUtils.drawBreakLine("-", 100);
                 }
                 resultsHash.put(sim.getImportedTaskID(), odeSolverResultSet);
 

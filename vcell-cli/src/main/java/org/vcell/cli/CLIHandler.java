@@ -6,41 +6,46 @@ import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
 
 import java.io.IOException;
+import static java.lang.System.*;
 
 public class CLIHandler {
-    private final String usage = "usage: VCell [-h] [-q] -i ARCHIVE [-o OUT_DIR] [-v]";
-    private final String syntax = "VCell [-h] [-q] -i ARCHIVE [-o OUT_DIR] [-v]";
-    private final String header = "\nBioSimulators-compliant command-line interface to the VCell simulation program <http://vcell.org>.\n\n" +
-            "optional arguments:\n\n";
     CommandLine cmd = null;
+    String fetchFailed = "Failed fetching VCell version";
+    String osName = getProperty("os.name");
+    String osVersion = getProperty("os.version");
+    String javaVersion = getProperty("java.version");
+    String javaVendor = getProperty("java.vendor");
+    String machineArch = getProperty("os.arch");
 
-
-    CLIHandler(String[] args) throws IOException {
+    CLIHandler(String[] args) {
         CommandLineParser parser = new DefaultParser();
 
+        String usage = "usage: VCell [-h] [-q] -i ARCHIVE [-o OUT_DIR] [-v]";
         try {
             cmd = parser.parse(this.getCommandLineOptions(), args);
         } catch (ParseException e) {
-            System.out.println(this.usage);
-            System.exit(1);
+            out.println(usage);
+            exit(1);
         }
 
         if (cmd.getOptions().length == 0) {
-            System.out.println(usage);
-            System.exit(1);
+            out.println(usage);
+            exit(1);
         }
 
         if (cmd.hasOption("h")) {
             this.printHelp();
-            System.exit(1);
+            exit(1);
         }
 
         if (cmd.hasOption("v")) {
-            System.out.println("VCell version: " + getVersion());
-            System.exit(1);
+            if (getVersion().startsWith("Fail")){
+                out.println(fetchFailed);
+            } else
+                out.println("VCell: " + getVersion() + ", OS: " + osName + " " + osVersion + ", Java Version: " + javaVersion + ", Java Vendor: " + javaVendor + ", Machine: " + machineArch);
+            exit(1);
         }
     }
-
 
     public Options getCommandLineOptions() {
 
@@ -89,17 +94,23 @@ public class CLIHandler {
 
     public void printHelp() {
         HelpFormatter formatter = new HelpFormatter();
-        formatter.printHelp(this.syntax, this.header, this.getCommandLineOptions(), "");
+        String syntax = "VCell [-h] [-q] -i ARCHIVE [-o OUT_DIR] [-v]";
+        String header = "\nBioSimulators-compliant command-line interface to the VCell simulation program <http://vcell.org>.\n\n" +
+                "optional arguments:\n\n";
+        formatter.printHelp(syntax, header, this.getCommandLineOptions(), "");
     }
 
-    public String getVersion() throws IOException {
+    public String getVersion() {
         final String url = "http://vcell.org/webstart/Alpha/updates.xml";
-        final Document document = Jsoup.connect(url).get();
-
-        Elements entryElements = document.select("entry");
+        Document document;
         String version;
-        version = entryElements.attr("newVersion");
-
-        return version;
+        try {
+            document = Jsoup.connect(url).get();
+            Elements entryElements = document.select("entry");
+            version = entryElements.attr("newVersion");
+            return version;
+        } catch (IOException ignored) {
+            return fetchFailed;
+        }
     }
 }

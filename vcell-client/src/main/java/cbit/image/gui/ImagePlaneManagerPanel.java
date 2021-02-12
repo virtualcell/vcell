@@ -16,8 +16,17 @@ import java.awt.FontMetrics;
 import java.awt.GridBagConstraints;
 import java.awt.Point;
 import java.awt.Toolkit;
+import java.awt.datatransfer.StringSelection;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
+import java.io.DataOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 
+import javax.swing.JMenuItem;
+import javax.swing.JPopupMenu;
 import javax.swing.SwingConstants;
 import javax.swing.ToolTipManager;
 
@@ -36,6 +45,7 @@ import cbit.vcell.geometry.gui.CurveEditorTool;
 import cbit.vcell.geometry.gui.CurveEditorToolPanel;
 import cbit.vcell.simdata.DataInfoProvider;
 import cbit.vcell.simdata.VolumeDataInfo;
+import cbit.vcell.simdata.gui.PDEDataContextPanel;
 import cbit.vcell.solvers.CartesianMeshChombo;
 import cbit.vcell.solvers.CartesianMeshChombo.StructureMetricsEntry;
 
@@ -98,10 +108,45 @@ class IvjEventHandler implements java.awt.event.MouseListener, java.awt.event.Mo
 		public void mousePressed(java.awt.event.MouseEvent e) {
 			if (e.getSource() == ImagePlaneManagerPanel.this.getimagePaneView1()) 
 				connEtoC15(e);
+			if(e.isPopupTrigger()) {
+				System.out.println("Trigger on press");
+				JPopupMenu jp = new JPopupMenu();
+				JMenuItem jmi = new JMenuItem("Copy FieldData");
+				jmi.addActionListener(new ActionListener() {
+					@Override
+					public void actionPerformed(ActionEvent e) {
+						SourceDataInfo mySDI = getImagePlaneManager().getSourceDataInfo();
+						PDEDataContextPanel pdedcp = (PDEDataContextPanel)getCurveValueProvider();
+						System.out.println(pdedcp.getPdeDataContext().getDataIdentifier().getName()+" "+pdedcp.getPdeDataContext().getTimePoint()+" "+getImagePlaneManager().getSlice()+" "+mySDI);
+						try {
+							File tempFile = File.createTempFile("fdTemp", ".fd");
+							DataOutputStream dos = new DataOutputStream(new FileOutputStream(tempFile));
+//							SourceDataInfo outSDI = getImagePlaneManager().getImagePlaneData();
+							double[] outData = (double[])mySDI.getData();
+							for(int i=0;i<outData.length;i++) {
+								dos.writeDouble(outData[i]);
+							}
+							dos.close();
+							StringSelection ss = new StringSelection(pdedcp.getPdeDataContext().getDataIdentifier().getName()+","+
+									pdedcp.getPdeDataContext().getVCDataIdentifier().getID()+","+pdedcp.getPdeDataContext().getTimePoint()+","+
+									mySDI.getXSize()+","+mySDI.getYSize()+","+mySDI.getZSize()+","+
+									mySDI.getMinMax().getMin()+","+mySDI.getMinMax().getMax()+","+tempFile.getAbsolutePath());
+							Toolkit.getDefaultToolkit().getSystemClipboard().setContents(ss, ss);
+						} catch (IOException e1) {
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
+						}
+					}});
+				jp.add(jmi);
+				jp.show(e.getComponent(), e.getPoint().x, e.getPoint().y);
+			}
 		};
 		public void mouseReleased(java.awt.event.MouseEvent e) {
 			if (e.getSource() == ImagePlaneManagerPanel.this.getimagePaneView1()) 
 				connEtoC6(e);
+			if(e.isPopupTrigger()) {
+				System.out.println("Trigger on release");
+			}
 		};
 		public void propertyChange(final java.beans.PropertyChangeEvent evt) {
 			if (evt.getSource() == ImagePlaneManagerPanel.this) 

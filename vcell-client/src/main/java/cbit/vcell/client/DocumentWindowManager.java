@@ -48,7 +48,8 @@ public abstract class DocumentWindowManager extends TopLevelWindowManager implem
 	 * identifying string, for hashtable passing, et. al
 	 */
 	public final static String IDENT = "DocumentWindowManager";
-	
+	public static final String SELECT_GEOM_POPUP = "SelectGeomPopup";
+
 	private JPanel jPanel = null;
 	private String documentID = null;
 	

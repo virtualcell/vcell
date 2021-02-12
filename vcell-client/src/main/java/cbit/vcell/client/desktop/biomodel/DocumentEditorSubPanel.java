@@ -10,16 +10,29 @@
 
 package cbit.vcell.client.desktop.biomodel;
 
+import java.awt.Component;
+import java.awt.Container;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 
+import javax.swing.JMenuItem;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JTable;
 
+import org.vcell.util.BeanUtils;
+
+import cbit.vcell.client.BioModelWindowManager;
+import cbit.vcell.client.TopLevelWindowManager;
+import cbit.vcell.client.constants.GuiConstants;
+import cbit.vcell.client.desktop.TopLevelWindow;
 import cbit.vcell.client.desktop.biomodel.IssueManager.IssueEvent;
 import cbit.vcell.client.desktop.biomodel.IssueManager.IssueEventListener;
 import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveView;
+import cbit.vcell.geometry.gui.GeometryViewer;
 
 @SuppressWarnings("serial")
 public abstract class DocumentEditorSubPanel extends JPanel implements PropertyChangeListener, IssueEventListener {
@@ -103,5 +116,34 @@ public abstract class DocumentEditorSubPanel extends JPanel implements PropertyC
 	}
 
 	public void issueChange(IssueEvent issueEvent) {
+	}
+	
+	public static void addFieldDataMenuItem(Component parent/*JTable*/,JPopupMenu addToThisPopup,int position) {
+		do {
+			System.out.println(parent.getClass().getName());
+			if(parent instanceof TopLevelWindow) {
+				ArrayList<Component> comps = new ArrayList<Component>();
+				BeanUtils.findComponent((Container)parent, GeometryViewer.class, comps);
+				TopLevelWindowManager topLevelWindowManager = ((TopLevelWindow)parent).getTopLevelWindowManager();
+				if(topLevelWindowManager instanceof BioModelWindowManager) {
+					final BioModelWindowManager bmwm = ((BioModelWindowManager)topLevelWindowManager);
+					JMenuItem fdJMenuItem = new JMenuItem("Add FieldData...");
+					fdJMenuItem.addActionListener(new ActionListener() {
+						@Override
+						public void actionPerformed(ActionEvent e) {
+							bmwm.actionPerformed(new ActionEvent(comps.get(0), 0, GuiConstants.ACTIONCMD_EDITCURRENTSPATIAL_GEOMETRY) {
+								@Override
+								public String toString() {
+									return BioModelWindowManager.FIELD_DATA_FLAG;
+								}});							
+						}
+					});
+					addToThisPopup.insert(fdJMenuItem, position);
+					break;
+				}
+			}
+			parent = parent.getParent();
+		}while(parent != null);
+
 	}
 }

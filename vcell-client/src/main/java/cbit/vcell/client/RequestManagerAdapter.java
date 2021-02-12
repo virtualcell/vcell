@@ -1,6 +1,7 @@
 package cbit.vcell.client;
 
 import java.awt.Component;
+import java.util.Hashtable;
 
 import javax.swing.filechooser.FileFilter;
 
@@ -37,7 +38,7 @@ import cbit.xml.merge.gui.TMLPanel;
 
 public class RequestManagerAdapter implements RequestManager {
 	@Override
-	public void changeGeometry(DocumentWindowManager requester,	SimulationContext simContext) {}
+	public void changeGeometry(DocumentWindowManager requester,	SimulationContext simContext,Hashtable<String,Object> hashTable) {}
 	@Override
 	public boolean closeWindow(String managerID, boolean exitIfLast) { return false; }
 	@Override

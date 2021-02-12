@@ -10,7 +10,6 @@
 
 package cbit.vcell.client.desktop.simulation;
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Font;
@@ -27,7 +26,6 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -39,7 +37,6 @@ import java.util.Vector;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.DefaultCellEditor;
-import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JFileChooser;
@@ -60,16 +57,15 @@ import javax.swing.table.TableCellEditor;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.NumberUtils;
 import org.vcell.util.document.User;
+import org.vcell.util.gui.DefaultScrollTableActionManager;
 import org.vcell.util.gui.DefaultScrollTableCellRenderer;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.DownArrowIcon;
 import org.vcell.util.gui.SimpleUserMessage;
-import org.vcell.util.gui.VCFileChooser;
 import org.vcell.util.gui.VCellIcons;
 import org.vcell.util.gui.sorttable.JSortTable;
 
 import cbit.vcell.client.ClientSimManager.ViewerType;
-import cbit.vcell.bionetgen.BNGOutputSpec;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.UserMessage;
 import cbit.vcell.client.desktop.biomodel.BioModelEditor;
@@ -81,8 +77,6 @@ import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.geometry.GeometryOwner;
 import cbit.vcell.graph.gui.ReactionCartoonEditorPanel;
-import cbit.vcell.graph.gui.VisItShapeIcon;
-import cbit.vcell.graph.gui.VisItShapeIcon.State;
 import cbit.vcell.mapping.MathMappingCallbackTaskAdapter;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SimulationContext.MathMappingCallback;
@@ -98,7 +92,6 @@ import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solver.SolverDescription.SolverFeature;
 import cbit.vcell.solver.SolverTaskDescription;
 import cbit.vcell.solver.SolverUtilities;
-import thredds.wcs.GetCoverageRequest;
 /**
  * Insert the type's description here.
  * Creation date: (5/7/2004 3:41:07 PM)
@@ -118,8 +111,8 @@ public class SimulationListPanel extends DocumentEditorSubPanel {
 	private JButton copyButton = null;
 	private JButton ivjNewButton = null;
 	private JButton ivjNativeResultsButton = null;
-	private JButton importBatchButton = null;
-	private JButton exportBatchButton = null;
+//	private JButton importBatchButton = null;
+//	private JButton exportBatchButton = null;
 
 //	private JButton ivjPythonResultsButton = null;
 	private JButton ivjRunButton = null;
@@ -155,11 +148,11 @@ public class SimulationListPanel extends DocumentEditorSubPanel {
 				runSimulations();
 			} else if (e.getSource() == stopButton) {
 				stopSimulations();
-			} else if (e.getSource() == exportBatchButton) {
-//				DialogUtils.showInfoDialog(SimulationListPanel.this, "Under Construction");
-				importBatchSimulations();
-			} else if (e.getSource() == importBatchButton) {
-				createBatchSimulations();
+//			} else if (e.getSource() == exportBatchButton) {
+////				DialogUtils.showInfoDialog(SimulationListPanel.this, "Under Construction");
+//				importBatchSimulations();
+//			} else if (e.getSource() == importBatchButton) {
+//				createBatchSimulations();
 			} else if (e.getSource() == getNativeResultsButton()) {
 				showSimulationResults(ViewerType.NativeViewer_only);
 //			} else if (e.getSource() == getPythonResultsButton()) {
@@ -478,12 +471,12 @@ private javax.swing.JToolBar getToolBar() {
 			copyButton = new JButton("", VCellIcons.copySimIcon);
 			copyButton.setToolTipText("Copy Simulation");
 			copyButton.addActionListener(ivjEventHandler);
-			importBatchButton = new JButton("", VCellIcons.importBatchSimIcon);
-			importBatchButton.setToolTipText("Import Batch Simulation Data");
-			importBatchButton.addActionListener(ivjEventHandler);
-			exportBatchButton = new JButton("", VCellIcons.exportBatchSimIcon);
-			exportBatchButton.setToolTipText("Export Batch Simulation Results");
-			exportBatchButton.addActionListener(ivjEventHandler);
+//			importBatchButton = new JButton("", VCellIcons.importBatchSimIcon);
+//			importBatchButton.setToolTipText("Import Batch Simulation Data");
+//			importBatchButton.addActionListener(ivjEventHandler);
+//			exportBatchButton = new JButton("", VCellIcons.exportBatchSimIcon);
+//			exportBatchButton.setToolTipText("Export Batch Simulation Results");
+//			exportBatchButton.addActionListener(ivjEventHandler);
 			stopButton = new JButton("", VCellIcons.stopSimIcon);
 			stopButton.setToolTipText("Stop Simulation");
 			stopButton.setEnabled(false);
@@ -509,10 +502,10 @@ private javax.swing.JToolBar getToolBar() {
 			toolBar.add(copyButton);
 			toolBar.add(getEditButton());
 			toolBar.add(getDeleteButton());
-			toolBar.addSeparator();
-			toolBar.add(importBatchButton);
-			toolBar.add(exportBatchButton);
-			toolBar.addSeparator();
+//			toolBar.addSeparator();
+//			toolBar.add(importBatchButton);
+//			toolBar.add(exportBatchButton);
+//			toolBar.addSeparator();
 			
 			toolBar.add(getMassConservationModelReductionPanel());
 			toolBar.add(Box.createHorizontalGlue());
@@ -529,8 +522,8 @@ private javax.swing.JToolBar getToolBar() {
 //			toolBar.add(particleViewButton);
 
 			ReactionCartoonEditorPanel.setToolBarButtonSizes(getNewButton());
-			ReactionCartoonEditorPanel.setToolBarButtonSizes(importBatchButton);
-			ReactionCartoonEditorPanel.setToolBarButtonSizes(exportBatchButton);
+//			ReactionCartoonEditorPanel.setToolBarButtonSizes(importBatchButton);
+//			ReactionCartoonEditorPanel.setToolBarButtonSizes(exportBatchButton);
 			ReactionCartoonEditorPanel.setToolBarButtonSizes(copyButton);
 			ReactionCartoonEditorPanel.setToolBarButtonSizes(getEditButton());
 			ReactionCartoonEditorPanel.setToolBarButtonSizes(getDeleteButton());
@@ -777,6 +770,14 @@ private JSortTable getScrollPaneTable() {
 			ivjScrollPaneTable.setName("ScrollPaneTable");
 			ivjScrollPaneTable.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_NEXT_COLUMN);
 			ivjScrollPaneTable.setModel(getSimulationListTableModel1());
+			ivjScrollPaneTable.setScrollTableActionManager(new DefaultScrollTableActionManager(ivjScrollPaneTable) {
+				@Override
+				protected void constructPopupMenu() {
+					super.constructPopupMenu();
+					DocumentEditorSubPanel.addFieldDataMenuItem(getOwnerTable(), popupMenu,0);
+				}
+				
+			});
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);
 		}
@@ -1155,8 +1156,8 @@ private void refreshButtonsLax() {
 			bHasData = bHasData || simStatus.getHasData();
 		}
 	}
-	importBatchButton.setEnabled(bBatch);
-	exportBatchButton.setEnabled(bBatch);
+//	importBatchButton.setEnabled(bBatch);
+//	exportBatchButton.setEnabled(bBatch);
 	copyButton.setEnabled(bCopy);
 	getEditButton().setEnabled(bEditable);
 	getDeleteButton().setEnabled(bDeletable);

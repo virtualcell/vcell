@@ -755,6 +755,23 @@ public final class BeanUtils {
 		}
 	}
 
+	public static void findComponent(Container start,Class findThis,ArrayList<Component> comps) {
+		Component[] components;
+		if (start instanceof JMenu) {
+			components = ((JMenu)start).getMenuComponents();
+		} else {
+			components = start.getComponents();
+		}
+		for (int i=0;i<components.length;i++) {
+			if(components[i].getClass() == findThis) {
+				comps.add(components[i]);
+			}
+			if (components[i] instanceof Container) {
+				BeanUtils.findComponent((Container)components[i],findThis,comps);
+			}
+		}
+	}
+
 
 	public static <T> T[] removeElement(T[] array, T o) {
 		int index = Arrays.asList(array).indexOf(o);

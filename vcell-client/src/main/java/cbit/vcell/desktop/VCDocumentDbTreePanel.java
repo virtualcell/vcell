@@ -11,6 +11,7 @@
 package cbit.vcell.desktop;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -23,17 +24,20 @@ import java.util.EventObject;
 import java.util.Hashtable;
 
 import javax.swing.JComponent;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTree;
 import javax.swing.ToolTipManager;
+import javax.swing.border.TitledBorder;
 import javax.swing.event.TreeModelListener;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 
+import org.vcell.util.BeanUtils;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ProgressDialogListener;
 import org.vcell.util.UserCancelException;
@@ -140,6 +144,21 @@ public VCDocumentDbTreePanel(boolean bMetadata) {
 	super();
 	this.bShowMetadata = bMetadata;
 }
+
+private boolean bSpatialMode = false;
+public void setSpatialGeomMode(boolean bSpatialGeomMode) {
+	if(bSpatialGeomMode) {
+		bSpatialMode = true;
+		if(getBottomPanel() != null) {
+			ArrayList<Component> comps = new ArrayList<Component>();
+			BeanUtils.findComponent(getBottomPanel(), JLabel.class, comps);
+			((JLabel)comps.get(0)).setText((this instanceof BioModelDbTreePanel?"Summary":"Summary")+" (click popup menu to show geom preview)");
+		}
+		setPopupMenuDisabled(true);
+		getDatabaseSearchPanel().setSpatialGeomMode(true);
+		search(true);
+	}
+}
 protected void ifNeedsDoubleClickEvent(MouseEvent mouseEvent,Class<? extends VersionInfo> versionInfoClass){
 	//do this because MouseEvent.MOUSE_CLICKED not genereated on some MacOS
 	if(mouseEvent.getID() == MouseEvent.MOUSE_PRESSED &&
@@ -181,7 +200,7 @@ public void addActionListener(ActionListener newListener) {
  * @return javax.swing.JTree
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-protected javax.swing.JTree getJTree1() {
+public javax.swing.JTree getJTree1() {
 	if (ivjJTree1 == null) {
 		try {
 			javax.swing.tree.DefaultTreeSelectionModel ivjLocalSelectionModel;
@@ -457,7 +476,7 @@ protected void setSelectedPublicationInfo(BioModelNode selectedModelNode) {
  */
 protected abstract void treeSelection();
 
-private DatabaseSearchPanel getDatabaseSearchPanel() {
+public DatabaseSearchPanel getDatabaseSearchPanel() {
 	if (dbSearchPanel == null) {
 		dbSearchPanel = new DatabaseSearchPanel();
 		if(this instanceof BioModelDbTreePanel){
@@ -525,7 +544,13 @@ public void search(final boolean bShowAll) {
 			if(searchCriterionListFinal.size() > 0){
 				refresh(searchCriterionListFinal);//show with search criteria
 			}else{
-				refresh(null);//show all
+				if(bSpatialMode) {
+					ArrayList searchCrit = new ArrayList();
+					searchCrit.add(getDatabaseSearchPanel().getSpatialOnlyCriteria());
+					refresh(searchCrit);//show all
+				}else {
+					refresh(null);//show all
+				}
 			}
 		}
 	};

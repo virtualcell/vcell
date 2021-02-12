@@ -58,6 +58,7 @@ import cbit.vcell.client.server.UserPreferences;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.AsynchClientTaskFunction;
 import cbit.vcell.client.task.ClientTaskDispatcher;
+import cbit.vcell.client.test.VCellClientTest;
 import cbit.vcell.export.server.ExportServiceImpl;
 import cbit.vcell.field.FieldDataIdentifierSpec;
 import cbit.vcell.mapping.SimulationContext;
@@ -288,6 +289,8 @@ private static void saveFailure(Hashtable<String, Object>hashTable,Simulation si
 
 public void importBatchSimulations(OutputContext outputContext, Simulation simulation) throws java.beans.PropertyVetoException {
 
+
+	// simulation should be a template simulation
 	if(simulation.getName().contains(SimulationContext.ReservedBatchExtensionString)) {
 		throw new RuntimeException("Not a valid name for a batch template Simulation: '" + simulation.getName() + "'.");
 	}
@@ -302,6 +305,8 @@ public void importBatchSimulations(OutputContext outputContext, Simulation simul
 		throw new RuntimeException("Cannot add simulation, bioModel not set");
 	}
 	
+
+	// recover the list of batch simulations that belong to this template
 	Simulation allSims[] = bioModel.getSimulations();
 	LinkedHashMap<String, String> importsMap = new LinkedHashMap<>();
 	String namePrefix = simulation.getName() + SimulationContext.ReservedBatchExtensionString;
@@ -339,6 +344,12 @@ private void importBatchSimulation(OutputContext outputContext, Simulation sim) 
 	}
 	
 	User usr = sim.getVersion().getOwner();
+	
+
+//	VCSimulationIdentifier authoritativeVCSimulationIdentifier = simInfo.getAuthoritativeVCSimulationIdentifier();
+//	// sim.getScanCount()  number of jobs  - is 0
+//	VCSimulationDataIdentifier vcSimulationDataIdentifier = new VCSimulationDataIdentifier(authoritativeVCSimulationIdentifier, 0);
+//	VCellClientTest.getVCellClient().getClientServerManager().getDataSetController().getODEData(vcSimulationDataIdentifier);
 	
 	/*
 	
