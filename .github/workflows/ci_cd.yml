@@ -87,7 +87,6 @@ jobs:
         run: echo ::set-output name=tag::$(echo ${GITHUB_REF:10})
 
       - name: Add Linux dependencies
-        if: matrix.os == 'Ubuntu-20.04'
         shell: bash
         run: |
           wget https://vcell.org/webstart/pipeline_files/jdk-8u241-linux-x64.tar.gz
