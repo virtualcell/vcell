@@ -82,12 +82,7 @@ public class CLIStandalone {
             try {
                 CLIUtils.makeDirs(outDirForCurrentSedml);
                 sedml = Libsedml.readDocument(completeSedmlPath).getSedMLModel();
-                String[] sedmlNameSplit;
-                if (CLIUtils.isWindowsPlatform) {
-                    sedmlNameSplit = sedmlLocation.split("\\\\", -2);
-                } else {
-                    sedmlNameSplit = sedmlLocation.split("/", -2);
-                }
+                String[]  sedmlNameSplit = sedmlLocation.split(System.getProperty("file.separator"), -2);
                 sedmlName = sedmlNameSplit[sedmlNameSplit.length - 1];
                 System.out.println("Successful translation: SED-ML file " + sedmlName);
                 CLIUtils.drawBreakLine("-", 100);
@@ -106,7 +101,7 @@ public class CLIStandalone {
             CLIUtils.checkPythonInstallation();
             // pip install requirements before status generation
             CLIUtils.pipInstallRequirements();
-            CLIUtils.generateStatusYaml(inputFile);
+            CLIUtils.generateStatusYaml(inputFile, outputDir);
             reportsHash = CLIUtils.generateReportsAsCSV(sedml, resultsHash, outDirForCurrentSedml, sedmlName);
 
 
@@ -119,11 +114,11 @@ public class CLIStandalone {
                 somethingFailed = true;
             }
         }
-        CLIUtils.finalStatusUpdate(CLIUtils.Status.SUCCEEDED);
+        CLIUtils.finalStatusUpdate(CLIUtils.Status.SUCCEEDED, outputDir);
         omexHandler.deleteExtractedOmex();
         if (somethingFailed) {
             String error = "======> One or more errors encountered while executing archive " + args[1];
-            CLIUtils.finalStatusUpdate(CLIUtils.Status.FAILED);
+            CLIUtils.finalStatusUpdate(CLIUtils.Status.FAILED, outputDir);
             throw new Exception(error);
         }
     }

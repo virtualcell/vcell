@@ -233,8 +233,9 @@ public class CLIUtils {
                                 mxlen = Integer.max(mxlen, data.length);
                                 values.put(var, data);
                             }
-                            CLIUtils.updateDatasetStatusYml(sedmlName, oo.getId() , dataset.getId(), Status.SUCCEEDED);
-                            CLIUtils.updateTaskStatusYml(sedmlName, task.getId(), Status.SUCCEEDED);
+                            String outDirRoot = outDir.toString().substring(0, outDir.toString().lastIndexOf(System.getProperty("file.separator")));
+                            CLIUtils.updateDatasetStatusYml(sedmlName, oo.getId() , dataset.getId(), Status.SUCCEEDED, outDirRoot);
+                            CLIUtils.updateTaskStatusYml(sedmlName, task.getId(), Status.SUCCEEDED, outDirRoot);
                         }
                         if (!supportedDataset) {
                             System.err.println("Dataset " + dataset.getId() + " references unsupported RepeatedTask and is being skipped");
@@ -490,7 +491,7 @@ public class CLIUtils {
             status: SKIPPED
     status: SUCCEEDED
     * */
-    public static void generateStatusYaml(String omexPath) {
+    public static void generateStatusYaml(String omexPath, String outDir) {
         // Note: by default every status is being skipped
         Path omexFilePath = Paths.get(omexPath);
         /*
@@ -508,31 +509,31 @@ public class CLIUtils {
          status_yml
         */
         if (isWindowsPlatform)
-            execShellCommand(new String[]{"python", statusPath.toString(), "genStatusYaml", String.valueOf(omexFilePath)});
+            execShellCommand(new String[]{"python", statusPath.toString(), "genStatusYaml", String.valueOf(omexFilePath), outDir});
         else
-            execShellCommand(new String[]{"python3", statusPath.toString(), "genStatusYaml", String.valueOf(omexFilePath)});
+            execShellCommand(new String[]{"python3", statusPath.toString(), "genStatusYaml", String.valueOf(omexFilePath), outDir});
     }
 
-    public static void updateTaskStatusYml(String sedmlName, String taskName, Status taskStatus) {
+    public static void updateTaskStatusYml(String sedmlName, String taskName, Status taskStatus, String outDir) {
         if (isWindowsPlatform)
-            execShellCommand(new String[]{"python", statusPath.toString(), "updateTaskStatus", sedmlName, taskName, taskStatus.toString()});
+            execShellCommand(new String[]{"python", statusPath.toString(), "updateTaskStatus", sedmlName, taskName, taskStatus.toString(), outDir});
         else
-            execShellCommand(new String[]{"python3", statusPath.toString(), "updateTaskStatus", sedmlName, taskName, taskStatus.toString()});
+            execShellCommand(new String[]{"python3", statusPath.toString(), "updateTaskStatus", sedmlName, taskName, taskStatus.toString(), outDir});
     }
 
-    public static void finalStatusUpdate(Status simStatus) {
+    public static void finalStatusUpdate(Status simStatus, String outDir) {
         System.out.println("Generating Status YAML...");
         if (isWindowsPlatform)
-            execShellCommand(new String[]{"python", statusPath.toString(), "simStatus", simStatus.toString()});
+            execShellCommand(new String[]{"python", statusPath.toString(), "simStatus", simStatus.toString(), outDir});
         else
-            execShellCommand(new String[]{"python3", statusPath.toString(), "simStatus", simStatus.toString()});
+            execShellCommand(new String[]{"python3", statusPath.toString(), "simStatus", simStatus.toString(), outDir});
     }
 
-    public static void updateDatasetStatusYml(String sedmlName, String dataSet, String var, Status simStatus) {
+    public static void updateDatasetStatusYml(String sedmlName, String dataSet, String var, Status simStatus, String outDir) {
         if (isWindowsPlatform)
-            execShellCommand(new String[]{"python", statusPath.toString(), "updateDataSetStatus", sedmlName, dataSet, var, simStatus.toString()});
+            execShellCommand(new String[]{"python", statusPath.toString(), "updateDataSetStatus", sedmlName, dataSet, var, simStatus.toString(), outDir});
         else
-            execShellCommand(new String[]{"python3", statusPath.toString(), "updateDataSetStatus", sedmlName, dataSet, var, simStatus.toString()});
+            execShellCommand(new String[]{"python3", statusPath.toString(), "updateDataSetStatus", sedmlName, dataSet, var, simStatus.toString(), outDir});
     }
 
     @SuppressWarnings("UnstableApiUsage")
