@@ -10,6 +10,7 @@ import java.io.FilenameFilter;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 
 public class CLIStandalone {
     public static void main(String[] args) {
@@ -52,6 +53,7 @@ public class CLIStandalone {
         String inputFile;
         String outputDir;
         ArrayList<String> sedmlLocations;
+
         try {
             cliHandler = new CLIHandler(args);
             inputFile = cliHandler.getInputFilePath();
@@ -80,12 +82,7 @@ public class CLIStandalone {
             try {
                 CLIUtils.makeDirs(outDirForCurrentSedml);
                 sedml = Libsedml.readDocument(completeSedmlPath).getSedMLModel();
-                String[] sedmlNameSplit;
-                if (CLIUtils.windowsPlatform) {
-                    sedmlNameSplit = sedmlLocation.split("\\\\", -2);
-                } else {
-                    sedmlNameSplit = sedmlLocation.split("/", -2);
-                }
+                String[]  sedmlNameSplit = sedmlLocation.split(System.getProperty("file.separator"), -2);
                 sedmlName = sedmlNameSplit[sedmlNameSplit.length - 1];
                 System.out.println("Successful translation: SED-ML file " + sedmlName);
                 CLIUtils.drawBreakLine("-", 100);
@@ -100,30 +97,28 @@ public class CLIStandalone {
             // send the the whole OMEX file since we do better handling of malformed model URIs in XMLHelper code
             ExternalDocInfo externalDocInfo = new ExternalDocInfo(new File(inputFile), true);
             resultsHash = solverHandler.simulateAllTasks(externalDocInfo, sedml, outDirForCurrentSedml);
-            reportsHash = CLIUtils.generateReportsAsCSV(sedml, resultsHash, outDirForCurrentSedml);
-            /*
-            Note:
-            Internally biosimulators_utils python package uses a capturer package, which is developed for UNIX based systems.
-            Either way we need to find an alternate for capturer on windows in biosimulators_utils
-            */
-            if (!CLIUtils.windowsPlatform) {
-                if (CLIUtils.checkPythonInstallation() == 0) {
-                    CLIUtils.convertCSVtoHDF(Paths.get(outputDir, sedmlName).toString(), sedmlLocation, Paths.get(outputDir, sedmlName).toString());
-                } else {
-                    if (CLIUtils.checkPythonInstallation() != 0) {
-                        System.err.println("Python installation required");
-                        System.err.println("Update submodule codebase");
-                    }
-                    System.err.println("HDF5 conversion failed...");
-                }
-            }
+            // python installation
+            CLIUtils.checkPythonInstallation();
+            // pip install requirements before status generation
+            CLIUtils.pipInstallRequirements();
+            CLIUtils.generateStatusYaml(inputFile, outputDir);
+            reportsHash = CLIUtils.generateReportsAsCSV(sedml, resultsHash, outDirForCurrentSedml, sedmlName);
+
+
+            // HDF5 conversion
+            if (CLIUtils.checkPythonInstallation() == 0)
+                CLIUtils.convertCSVtoHDF(Paths.get(outputDir, sedmlName).toString(), sedmlLocation, Paths.get(outputDir, sedmlName).toString());
+            else System.err.println("HDF5 conversion failed...\n");
+
             if (resultsHash.containsValue(null) || reportsHash.containsValue(null)) {
                 somethingFailed = true;
             }
         }
+        CLIUtils.finalStatusUpdate(CLIUtils.Status.SUCCEEDED, outputDir);
         omexHandler.deleteExtractedOmex();
         if (somethingFailed) {
             String error = "======> One or more errors encountered while executing archive " + args[1];
+            CLIUtils.finalStatusUpdate(CLIUtils.Status.FAILED, outputDir);
             throw new Exception(error);
         }
     }
