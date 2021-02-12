@@ -102,6 +102,10 @@ public class CLIStandalone {
             // send the the whole OMEX file since we do better handling of malformed model URIs in XMLHelper code
             ExternalDocInfo externalDocInfo = new ExternalDocInfo(new File(inputFile), true);
             resultsHash = solverHandler.simulateAllTasks(externalDocInfo, sedml, outDirForCurrentSedml);
+            // python installation
+            CLIUtils.checkPythonInstallation();
+            // pip install requirements before status generation
+            CLIUtils.pipInstallRequirements();
             CLIUtils.generateStatusYaml(inputFile);
             reportsHash = CLIUtils.generateReportsAsCSV(sedml, resultsHash, outDirForCurrentSedml, sedmlName);
 

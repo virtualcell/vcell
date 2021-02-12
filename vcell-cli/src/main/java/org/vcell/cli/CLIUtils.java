@@ -13,10 +13,7 @@ import org.apache.commons.lang.StringUtils;
 import org.jlibsedml.*;
 import org.vcell.stochtest.TimeSeriesMultitrialData;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.*;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
@@ -397,16 +394,17 @@ public class CLIUtils {
         int exitCode = -10;
         String joinArg = Joiner.on(" ").join(args);
 //            System.out.println("Executing the command: `" + joinArg + "`");
+        File log = stdOutFile;
         try {
-            // TODO: delay while executing commands
             ProcessBuilder builder = new ProcessBuilder(args);
-            // subprocess I/O will be connected to the current Java process over a pipe
-            // Any stdout logs while executing command will be redirected to stdOutFile
-            builder.redirectOutput(ProcessBuilder.Redirect.to(stdOutFile));
-            // subprocess I/O source or destination will be the same as those of the current process.
-            builder.redirectError(ProcessBuilder.Redirect.INHERIT);
-            Process proc = builder.start();
-            exitCode = proc.waitFor();
+            builder.redirectErrorStream(true);
+            // STDOUT redirected to stdOut.txt file
+            builder.redirectOutput(ProcessBuilder.Redirect.appendTo(log));
+            Process p = builder.start();
+            assert builder.redirectInput() == ProcessBuilder.Redirect.PIPE;
+            assert builder.redirectOutput().file() == log;
+            assert p.getInputStream().read() == -1;
+            exitCode = p.waitFor();
             return exitCode;
         } catch (IOException | InterruptedException I) {
             System.err.println("Failed executing the command " + joinArg + "\n");
@@ -414,9 +412,10 @@ public class CLIUtils {
         return exitCode;
     }
 
-    private static void pipInstallRequirements() {
+    public static void pipInstallRequirements() {
         // pip install the requirements
         String[] args;
+        System.out.println("Installing the required PIP packages..");
         if (isWindowsPlatform) {
             args = new String[]{"pip", "install", "-r", String.valueOf(requirementFilePath)};
         } else {
@@ -446,7 +445,6 @@ public class CLIUtils {
         Path csvDirPath = Paths.get(csvDir);
         Path sedmlFilePath = Paths.get(sedmlFilePathStr);
         Path outDirPath = Paths.get(outDir);
-        CLIUtils.pipInstallRequirements();
 //        CLIUtils.giveOpenPermissions(sedmlFilePathStr);
 
         // Convert CSV to HDF5
