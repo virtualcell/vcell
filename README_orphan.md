@@ -95,6 +95,41 @@ del C:\Oracle\diag\tnslsnr\VCELL-DB\listener\trace\listener.log
 //Log off from vcell-db DO NOT SHUTDOWN (or just quit/close the 'Remote Desktop Connection')  
 
 
+  
+***Info pub models with results, published models vcml with sims removed, IonItems----------------------------***  
+
+Committed class vcell-server:cbit.vcell.tools.IonItems.java to generate info in .csv format  
+
+1. Create debug configuration for IonItems, Export from eclipse as runnable jar, choose 'extract required libs into jar'  
+
+2. transfer runnable jar to vcell-node1 (already done):  
+
+    example: scp /c/temp/cbit_vcell_tools_IonItems.jar vcell@vcell-node1:/opt/build/frm  
+
+3. make sure 'natlibs' dir exist (for hdf5), copy libs from VCellGitProjectRoot\vcell\nativelibs\linux64 to 'natlibs' dir  
+   make sure oracle,ojdbc,ucp libs are present, copy jars from  
+       VCellGitProjectRoot/vcell\vcell-oracle\target\vcell-oracle-0.0.1-SNAPSHOT-sources.jar  
+       VCellGitProjectRoot/vcell\vcell-oracle\target\maven-jars\ojdbc6-11.2.0.4.jar  
+       VCellGitProjectRoot/vcell\vcell-oracle\target\maven-jars\ucp-11.2.0.4.jar  
+
+NOTE: enter following after 'java' for debug (-agentlib:jdwp=transport=dt_socket,server=y,address=30301,suspend=y)  
+
+4a. Run to generate .csv report, expects vcellDB password to be enetered on console  
+
+    java -cp ./dbbackupclean/ojdbc6-11.2.0.4.jar:./dbbackupclean/ucp-11.2.0.4.jar:./dbbackupclean/vcell-oracle-0.0.1-SNAPSHOT.jar:./cbit_vcell_tools_IonItems.jar  
+       cbit.vcell.tools.IonItems 'jdbc:oracle:thin:@vcell-db.cam.uchc.edu:1521:vcelldborcl' '/share/apps/vcell3/users' publicmodelwithsims false | tee ./pubModelsSimIdOnly.txt  
+
+4b. Run to save vcml of published modesl with sims that have no data or exceptions removed from vcml  
+
+    java -cp ./dbbackupclean/ojdbc6-11.2.0.4.jar:./dbbackupclean/ucp-11.2.0.4.jar:./dbbackupclean/vcell-oracle-0.0.1-SNAPSHOT.jar:./cbit_vcell_tools_IonItems.jar:./maven-  jars/jhdf5_2.10-2.9.jar  
+      -Djava.library.path="./natlibs"  cbit.vcell.tools.IonItems "jdbc:oracle:thin:@vcell-db.cam.uchc.edu:1521:vcelldborcl" "/share/apps/vcell3/users" publishedmodelvcml   /tmp/ionvcml 0 0  
+
+4c. Run to read vcml saved from 4b and compare to vcml from db and print the sims that had to be removed  
+
+    java -cp ./dbbackupclean/ojdbc6-11.2.0.4.jar:./dbbackupclean/ucp-11.2.0.4.jar:./dbbackupclean/vcell-oracle-0.0.1-SNAPSHOT.jar:./cbit_vcell_tools_IonItems.jar:./maven-jars/jhdf5_2.10-2.9.jar  
+      -Djava.library.path="./natlibs"  cbit.vcell.tools.IonItems "jdbc:oracle:thin:@vcell-db.cam.uchc.edu:1521:vcelldborcl" /tmp/ionvcml publishedmodelvcmldiff  
+
+***----------------------------------------------------------------------------------------------------------***
 
 ## useful commands
 
