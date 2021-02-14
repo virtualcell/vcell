@@ -82,7 +82,12 @@ public class CLIStandalone {
             try {
                 CLIUtils.makeDirs(outDirForCurrentSedml);
                 sedml = Libsedml.readDocument(completeSedmlPath).getSedMLModel();
-                String[]  sedmlNameSplit = sedmlLocation.split(System.getProperty("file.separator"), -2);
+                String[] sedmlNameSplit;
+                if (CLIUtils.isWindowsPlatform) {
+                    sedmlNameSplit = sedmlLocation.split("\\\\", -2);
+                } else {
+                    sedmlNameSplit = sedmlLocation.split("/", -2);
+                }
                 sedmlName = sedmlNameSplit[sedmlNameSplit.length - 1];
                 System.out.println("Successful translation: SED-ML file " + sedmlName);
                 CLIUtils.drawBreakLine("-", 100);
