@@ -111,9 +111,7 @@ public class CLIStandalone {
 
 
             // HDF5 conversion
-            if (CLIUtils.checkPythonInstallation() == 0)
-                CLIUtils.convertCSVtoHDF(Paths.get(outputDir, sedmlName).toString(), sedmlLocation, Paths.get(outputDir, sedmlName).toString());
-            else System.err.println("HDF5 conversion failed...\n");
+            CLIUtils.convertCSVtoHDF(Paths.get(outputDir, sedmlName).toString(), sedmlLocation, Paths.get(outputDir, sedmlName).toString());
 
             if (resultsHash.containsValue(null) || reportsHash.containsValue(null)) {
                 somethingFailed = true;

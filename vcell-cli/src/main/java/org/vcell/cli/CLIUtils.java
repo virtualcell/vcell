@@ -42,7 +42,13 @@ public class CLIUtils {
 
     // Simulation Status enum
     public enum Status {
-        RUNNING, SKIPPED, PASSED, SUCCEEDED, FAILED
+        RUNNING("Simulation still running"),
+        SKIPPED("Simulation skipped"),
+        SUCCEEDED("Simulation succeeded"),
+        FAILED("Simulation failed");
+
+        Status(String desc) {
+        }
     }
 
 
@@ -408,7 +414,7 @@ public class CLIUtils {
             exitCode = p.waitFor();
             return exitCode;
         } catch (IOException | InterruptedException I) {
-            System.err.println("Failed executing the command " + joinArg + "\n");
+            System.err.println("Failed executing the command: `" + joinArg + "`\n");
         }
         return exitCode;
     }
@@ -416,20 +422,26 @@ public class CLIUtils {
     public static void pipInstallRequirements() {
         // pip install the requirements
         String[] args;
-        System.out.println("Installing the required PIP packages..");
-        if (isWindowsPlatform) {
-            args = new String[]{"pip", "install", "-r", String.valueOf(requirementFilePath)};
+
+        if (checkPythonInstallation() == 0) {
+            System.out.println("Installing the required PIP packages..");
+            if (isWindowsPlatform) {
+                args = new String[]{"pip", "install", "-r", String.valueOf(requirementFilePath)};
+            } else {
+                args = new String[]{"pip3", "install", "-r", String.valueOf(requirementFilePath)};
+            }
+            execShellCommand(args);
         } else {
-            args = new String[]{"pip3", "install", "-r", String.valueOf(requirementFilePath)};
+            System.err.println("Failed installing PIP packages.");
         }
-        CLIUtils.execShellCommand(args);
+
     }
 
     public static int checkPythonInstallation() {
         int pyCheckIns;
         if (isWindowsPlatform) pyCheckIns = execShellCommand(new String[]{"python", "--version"});
         else pyCheckIns = execShellCommand(new String[]{"python3", "--version"});
-        if (pyCheckIns != 0) System.out.println("Check Python installation...");
+        if (pyCheckIns != 0) System.err.println("Check Python installation...");
         return pyCheckIns;
     }
 
@@ -455,15 +467,15 @@ public class CLIUtils {
                     optional flags:        --rel_out_path | --apply_xml_model_changes |
                          --report_formats | --plot_formats | --log | --indent
         * */
-        if (isWindowsPlatform) {
-            cliArgs = new String[]{"python", cliPath.toString(), sedmlFilePath.toString(), workingDirectory.toString(), outDirPath.toString(), csvDirPath.toString()};
-            System.out.println("cliArgs" + Arrays.toString(cliArgs));
-        } else {
-            cliArgs = new String[]{"python3", cliPath.toString(), sedmlFilePath.toString(), workingDirectory.toString(), outDirPath.toString(), csvDirPath.toString()};
-        }
-
-        CLIUtils.execShellCommand(cliArgs);
-        System.out.println("HDF conversion completed in '" + outDir + "'\n");
+        if (checkPythonInstallation() == 0) {
+            if (isWindowsPlatform) {
+                cliArgs = new String[]{"python", cliPath.toString(), sedmlFilePath.toString(), workingDirectory.toString(), outDirPath.toString(), csvDirPath.toString()};
+            } else {
+                cliArgs = new String[]{"python3", cliPath.toString(), sedmlFilePath.toString(), workingDirectory.toString(), outDirPath.toString(), csvDirPath.toString()};
+            }
+            execShellCommand(cliArgs);
+            System.out.println("HDF conversion completed in '" + outDir + "'\n");
+        } else System.err.println("HDF5 conversion failed...");
 
     }
 
@@ -508,32 +520,40 @@ public class CLIUtils {
 
          status_yml
         */
-        if (isWindowsPlatform)
-            execShellCommand(new String[]{"python", statusPath.toString(), "genStatusYaml", String.valueOf(omexFilePath), outDir});
-        else
-            execShellCommand(new String[]{"python3", statusPath.toString(), "genStatusYaml", String.valueOf(omexFilePath), outDir});
+        if (checkPythonInstallation() == 0) {
+            if (isWindowsPlatform)
+                execShellCommand(new String[]{"python", statusPath.toString(), "genStatusYaml", String.valueOf(omexFilePath), outDir});
+            else
+                execShellCommand(new String[]{"python3", statusPath.toString(), "genStatusYaml", String.valueOf(omexFilePath), outDir});
+        }
     }
 
     public static void updateTaskStatusYml(String sedmlName, String taskName, Status taskStatus, String outDir) {
-        if (isWindowsPlatform)
-            execShellCommand(new String[]{"python", statusPath.toString(), "updateTaskStatus", sedmlName, taskName, taskStatus.toString(), outDir});
-        else
-            execShellCommand(new String[]{"python3", statusPath.toString(), "updateTaskStatus", sedmlName, taskName, taskStatus.toString(), outDir});
+        if (checkPythonInstallation() == 0) {
+            if (isWindowsPlatform)
+                execShellCommand(new String[]{"python", statusPath.toString(), "updateTaskStatus", sedmlName, taskName, taskStatus.toString(), outDir});
+            else
+                execShellCommand(new String[]{"python3", statusPath.toString(), "updateTaskStatus", sedmlName, taskName, taskStatus.toString(), outDir});
+        }
     }
 
     public static void finalStatusUpdate(Status simStatus, String outDir) {
-        System.out.println("Generating Status YAML...");
-        if (isWindowsPlatform)
-            execShellCommand(new String[]{"python", statusPath.toString(), "simStatus", simStatus.toString(), outDir});
-        else
-            execShellCommand(new String[]{"python3", statusPath.toString(), "simStatus", simStatus.toString(), outDir});
+        if (checkPythonInstallation() == 0) {
+            System.out.println("Generating Status YAML...");
+            if (isWindowsPlatform)
+                execShellCommand(new String[]{"python", statusPath.toString(), "simStatus", simStatus.toString(), outDir});
+            else
+                execShellCommand(new String[]{"python3", statusPath.toString(), "simStatus", simStatus.toString(), outDir});
+        } else System.err.println("Failed generating status YAML...");
     }
 
     public static void updateDatasetStatusYml(String sedmlName, String dataSet, String var, Status simStatus, String outDir) {
-        if (isWindowsPlatform)
-            execShellCommand(new String[]{"python", statusPath.toString(), "updateDataSetStatus", sedmlName, dataSet, var, simStatus.toString(), outDir});
-        else
-            execShellCommand(new String[]{"python3", statusPath.toString(), "updateDataSetStatus", sedmlName, dataSet, var, simStatus.toString(), outDir});
+        if (checkPythonInstallation() == 0) {
+            if (isWindowsPlatform)
+                execShellCommand(new String[]{"python", statusPath.toString(), "updateDataSetStatus", sedmlName, dataSet, var, simStatus.toString(), outDir});
+            else
+                execShellCommand(new String[]{"python3", statusPath.toString(), "updateDataSetStatus", sedmlName, dataSet, var, simStatus.toString(), outDir});
+        }
     }
 
     @SuppressWarnings("UnstableApiUsage")
