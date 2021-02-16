@@ -49,6 +49,9 @@ RUN apt-get -y update && \
     mkdir -p /usr/local/app/vcell/lib && \
     mkdir -p /usr/local/app/vcell/simulation && \
     mkdir -p /usr/local/app/vcell/installDir
+
+# PIP install Biosimulators_utils
+RUN pip3 install biosimulators-utils
 	
 # Copy JAR files
 COPY ./vcell-client/target/vcell-client-0.0.1-SNAPSHOT.jar \
