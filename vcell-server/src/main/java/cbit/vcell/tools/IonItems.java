@@ -35,6 +35,7 @@ import cbit.vcell.geometry.GeometryThumbnailImageFactory;
 import cbit.vcell.geometry.GeometryThumbnailImageFactoryAWT;
 import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.messaging.db.SimulationJobTable;
+import cbit.vcell.modeldb.BioModelSimContextLinkTable;
 import cbit.vcell.modeldb.BioModelSimulationLinkTable;
 import cbit.vcell.modeldb.BioModelTable;
 import cbit.vcell.modeldb.DBTopLevel;
@@ -44,6 +45,8 @@ import cbit.vcell.modeldb.MathModelSimulationLinkTable;
 import cbit.vcell.modeldb.MathModelTable;
 import cbit.vcell.modeldb.PublicationModelLinkTable;
 import cbit.vcell.modeldb.ServerDocumentManager;
+import cbit.vcell.modeldb.TFTestCaseTable;
+import cbit.vcell.modeldb.TFTestSuiteTable;
 import cbit.vcell.modeldb.UserTable;
 import cbit.vcell.modeldb.VersionTable;
 import cbit.vcell.simdata.Cachetable;
@@ -64,6 +67,7 @@ import cbit.vcell.xml.XmlHelper;
 public class IonItems {
 	//See vcell-node1:/opt/build/frm/cbit_vcell_tools_IonItems.info
 	private static final String PUBLISHEDMODELVCML = "publishedmodelvcml";
+	private static final String TESTSUITEMODELVCML = "testsuitemodelvcml";
 	private static final String PUBLICMODELWITHSIMS = "publicmodelwithsims";
 	private static final String PUBLISHEDMODELVCMLDIFF = "publishedmodelvcmldiff";
 
@@ -119,6 +123,9 @@ public class IonItems {
 			}else if(command.toLowerCase().equals(PUBLISHEDMODELVCMLDIFF)) {
 				File dirWithSavedVCML = new File(args[1]);
 				readVCMLWithSimsRemoved(con, dirWithSavedVCML);
+			}else if (command.toLowerCase().equals(TESTSUITEMODELVCML)) {
+				File dirToSaveVCML = new File(args[1]);
+				saveVCMLTestSuite(dirToSaveVCML,0,0);				
 			}
 
 		} catch (Exception e) {
@@ -140,10 +147,120 @@ public class IonItems {
 
 	}
 
+	private static void saveVCMLTestSuite(File dirToSaveVCML,long startSimKey,long endSimKey) throws Exception{
+//		select distinct vc_biomodelsimcontext.biomodelref modelkey
+//		from vc_tftestsuite,vc_tftestcase,vc_biomodelsimcontext
+//		where vc_tftestsuite.tsversion='88_alpha_from_87_alpha'
+//		and vc_tftestcase.testsuiteref=vc_tftestsuite.id
+//		and vc_tftestcase.bmappref is not null
+//		and vc_tftestcase.bmappref=vc_biomodelsimcontext.id
+//		union
+//		select distinct vc_mathmodel.id modelkey
+//		from vc_tftestsuite,vc_tftestcase,vc_mathmodel
+//		where vc_tftestsuite.tsversion='88_alpha_from_87_alpha'
+//		and vc_tftestcase.testsuiteref=vc_tftestsuite.id
+//		and vc_tftestcase.mathmodelref is not null
+//		and vc_tftestcase.mathmodelref=vc_mathmodel.id;
+		String modelKeyStr = "modelkey";
+		String userKeyStr = "userkey";
+		String useridStr = "userid";
+		String modelUserKeyStr = modelKeyStr+","+UserTable.table.id.getQualifiedColName()+" "+userKeyStr+","+UserTable.table.userid.getQualifiedColName()+" "+useridStr;
+		String testSuitTestCaseLink =
+				TFTestSuiteTable.table.tsVersion.getQualifiedColName()+"="+"'88_alpha_from_87_alpha'"+
+				" AND "+TFTestCaseTable.table.testSuiteRef.getQualifiedColName()+"="+TFTestSuiteTable.table.id.getQualifiedColName();
+		String testSuitAndUserStr = TFTestSuiteTable.table.getTableName()+","+TFTestCaseTable.table.getTableName()+","+UserTable.table.getTableName();
+		String bioModelTypeStr = "biomodel";
+		String mathModelTypeStr = "mathmodel";
+		String modelTypeKeyStr = "modeltype";
+		String sql = 
+			"SELECT distinct "+"'"+bioModelTypeStr+"' "+modelTypeKeyStr+","+BioModelTable.table.id.getQualifiedColName()+" "+modelUserKeyStr+
+			" FROM "+testSuitAndUserStr+","+BioModelSimContextLinkTable.table.getTableName()+","+BioModelTable.table.getTableName()+
+			" WHERE "+testSuitTestCaseLink+" AND "+TFTestCaseTable.table.bmAppRef.getQualifiedColName()+" IS NOT NULL"+
+				" AND "+TFTestCaseTable.table.bmAppRef.getQualifiedColName()+"="+BioModelSimContextLinkTable.table.id.getQualifiedColName()+
+				" AND "+BioModelSimContextLinkTable.table.bioModelRef.getQualifiedColName()+"="+BioModelTable.table.id.getQualifiedColName()+
+				" AND "+BioModelTable.table.ownerRef.getQualifiedColName()+"="+UserTable.table.id.getQualifiedColName()+
+			" UNION "+
+			"SELECT distinct "+"'"+mathModelTypeStr+"' "+modelTypeKeyStr+","+MathModelTable.table.id.getQualifiedColName()+" "+modelUserKeyStr+
+			" FROM "+testSuitAndUserStr+","+MathModelTable.table.getTableName()+
+			" WHERE "+testSuitTestCaseLink+" AND "+TFTestCaseTable.table.mathModelRef.getQualifiedColName()+" IS NOT NULL"+
+				" AND "+TFTestCaseTable.table.mathModelRef.getQualifiedColName()+"="+MathModelTable.table.id.getQualifiedColName()+
+				" AND "+MathModelTable.table.ownerRef.getQualifiedColName()+"="+UserTable.table.id.getQualifiedColName();
+		
+		Statement stmt = null;
+		try {
+			stmt = con.createStatement();
+			//ArrayList<VCDocument> successDocs = new ArrayList<VCDocument>();
+			DatabaseServerImpl databaseServerImpl = new DatabaseServerImpl(connFac,null);
+			ArrayList<Object[]> modeKeyAndUser = new ArrayList<Object[]>();
+			
+			ResultSet rset = stmt.executeQuery(sql);
+			while(rset.next()) {
+				BigDecimal modelKeyBigDecimal = rset.getBigDecimal(modelKeyStr);
+				KeyValue modelKey = new KeyValue(modelKeyBigDecimal);
+				String modelType = rset.getString(modelTypeKeyStr);
+				if(startSimKey == 0 || (modelKeyBigDecimal.longValue() >= startSimKey && modelKeyBigDecimal.longValue() <= endSimKey)) {
+					User user = new User(rset.getString(useridStr), new KeyValue(rset.getBigDecimal(userKeyStr)));
+					modeKeyAndUser.add(new Object[] {(modelType.equals(bioModelTypeStr)?VCDocumentType.BIOMODEL_DOC:VCDocumentType.MATHMODEL_DOC),modelKey,user});
+				}
+			}
+			rset.close();
+			stmt.close();
+			
+			VCDocument vcDoc = null;
+			for(int ii=0;ii<modeKeyAndUser.size();ii++) {
+				try {
+				VCDocumentType vcDocType = (VCDocumentType)modeKeyAndUser.get(ii)[0];
+				KeyValue modelKey = (KeyValue)modeKeyAndUser.get(ii)[1];
+				User user = (User)modeKeyAndUser.get(ii)[2];
+				//-----NOTE: (privacy, versionflag) may not match between xml and database (because privacy and versionflag can be set without saving model)
+				//some models regenerated from xml will not have same privacy and versionflag matched in query from database (the database values are correct, ignore the xml values)
+					BigString modelXML = (vcDocType == VCDocumentType.BIOMODEL_DOC?databaseServerImpl.getBioModelXML(user, modelKey):databaseServerImpl.getMathModelXML(user, modelKey));
+					vcDoc = null;
+					if(vcDocType == VCDocumentType.BIOMODEL_DOC) {
+						BioModel bm = cbit.vcell.xml.XmlHelper.XMLToBioModel(new XMLSource(modelXML.toString()));
+						bm.refreshDependencies();
+						vcDoc = bm;
+					}else {
+						MathModel mm = cbit.vcell.xml.XmlHelper.XMLToMathModel(new XMLSource(modelXML.toString()));
+						mm.refreshDependencies();
+						vcDoc = mm;
+					}
+//if(true) {
+//	System.out.println(modelKey+" "+user+" "+vcDoc);
+//	continue;
+//}
+
+					String docXml = null;
+					if(vcDoc.getDocumentType() == VCDocument.VCDocumentType.BIOMODEL_DOC) {
+						docXml = XmlHelper.bioModelToXML(((BioModel)vcDoc));
+					}else {
+						docXml = XmlHelper.mathModelToXML(((MathModel)vcDoc));
+					}
+					PrintWriter pw = new PrintWriter(new File(dirToSaveVCML,vcDoc.getVersion().getVersionKey().toString()+".xml"));
+					pw.write(docXml);
+					pw.close();
+//				}
+			} catch (Exception e) {
+				System.out.println("----------GENERALERROR "+vcDoc.getVersion().getVersionKey());
+				e.printStackTrace();
+				if(vcDoc != null) {
+					PrintWriter pw = new PrintWriter(new File(dirToSaveVCML,vcDoc.getVersion().getVersionKey().toString()+"_exception.xml"));
+					pw.write("");
+					pw.close();				
+				}
+			}
+			}
+		} finally{
+			if(stmt != null){try{stmt.close();}catch(Exception e){e.printStackTrace();}}
+		}
+
+	}
+
 	public static void usage() {
 		System.out.println("cbit.vcell.tools.IonItems jdbc:oracle:thin:@VCELL_DB_HOST:1521:VCEL_DB_NAME vcellUsersRootDir "+PUBLICMODELWITHSIMS+" {true,false print more info}}");
 		System.out.println("cbit.vcell.tools.IonItems jdbc:oracle:thin:@VCELL_DB_HOST:1521:VCEL_DB_NAME vcellUsersRootDir "+PUBLISHEDMODELVCML+" dirToSaveVCML, startSimKey endSimKey");
 		System.out.println("cbit.vcell.tools.IonItems jdbc:oracle:thin:@VCELL_DB_HOST:1521:VCEL_DB_NAME dirWithSavedVCML "+PUBLISHEDMODELVCMLDIFF);
+		System.out.println("cbit.vcell.tools.IonItems jdbc:oracle:thin:@VCELL_DB_HOST:1521:VCEL_DB_NAME dirToSaveVCML "+TESTSUITEMODELVCML);
 		System.exit(1);
 	}
 

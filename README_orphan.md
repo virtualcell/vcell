@@ -122,12 +122,17 @@ NOTE: enter following after 'java' for debug (-agentlib:jdwp=transport=dt_socket
 4b. Run to save vcml of published modesl with sims that have no data or exceptions removed from vcml  
 
     java -cp ./dbbackupclean/ojdbc6-11.2.0.4.jar:./dbbackupclean/ucp-11.2.0.4.jar:./dbbackupclean/vcell-oracle-0.0.1-SNAPSHOT.jar:./cbit_vcell_tools_IonItems.jar:./maven-  jars/jhdf5_2.10-2.9.jar  
-      -Djava.library.path="./natlibs"  cbit.vcell.tools.IonItems "jdbc:oracle:thin:@vcell-db.cam.uchc.edu:1521:vcelldborcl" "/share/apps/vcell3/users" publishedmodelvcml   /tmp/ionvcml 0 0  
+      -Djava.library.path="./natlibs"  cbit.vcell.tools.IonItems "jdbc:oracle:thin:@vcell-db.cam.uchc.edu:1521:vcelldborcl" "/share/apps/vcell3/users" publishedmodelvcml   /share/apps/vcell3/users/ionvcml 0 0  
 
 4c. Run to read vcml saved from 4b and compare to vcml from db and print the sims that had to be removed  
 
     java -cp ./dbbackupclean/ojdbc6-11.2.0.4.jar:./dbbackupclean/ucp-11.2.0.4.jar:./dbbackupclean/vcell-oracle-0.0.1-SNAPSHOT.jar:./cbit_vcell_tools_IonItems.jar:./maven-jars/jhdf5_2.10-2.9.jar  
-      -Djava.library.path="./natlibs"  cbit.vcell.tools.IonItems "jdbc:oracle:thin:@vcell-db.cam.uchc.edu:1521:vcelldborcl" /tmp/ionvcml publishedmodelvcmldiff  
+      -Djava.library.path="./natlibs"  cbit.vcell.tools.IonItems "jdbc:oracle:thin:@vcell-db.cam.uchc.edu:1521:vcelldborcl" /share/apps/vcell3/users/ionvcml publishedmodelvcmldiff  
+      
+4d.  Run to save vcml from TestSuit
+
+    java  -cp ./dbbackupclean/ojdbc6-11.2.0.4.jar:./dbbackupclean/ucp-11.2.0.4.jar:./dbbackupclean/vcell-oracle-0.0.1-SNAPSHOT.jar:./cbit_vcell_tools_IonItems.jar:./maven-jars/jhdf5_2.10-2.9.jar  
+    -Djava.library.path="./natlibs"  cbit.vcell.tools.IonItems "jdbc:oracle:thin:@vcell-db.cam.uchc.edu:1521:vcelldborcl"  /share/apps/vcell3/users/ionts testsuitemodelvcml
 
 ***----------------------------------------------------------------------------------------------------------***
 
