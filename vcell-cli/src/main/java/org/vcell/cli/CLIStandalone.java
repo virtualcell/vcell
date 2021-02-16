@@ -82,7 +82,12 @@ public class CLIStandalone {
             try {
                 CLIUtils.makeDirs(outDirForCurrentSedml);
                 sedml = Libsedml.readDocument(completeSedmlPath).getSedMLModel();
-                String[]  sedmlNameSplit = sedmlLocation.split(System.getProperty("file.separator"), -2);
+                String[] sedmlNameSplit;
+                if (CLIUtils.isWindowsPlatform) {
+                    sedmlNameSplit = sedmlLocation.split("\\\\", -2);
+                } else {
+                    sedmlNameSplit = sedmlLocation.split("/", -2);
+                }
                 sedmlName = sedmlNameSplit[sedmlNameSplit.length - 1];
                 System.out.println("Successful translation: SED-ML file " + sedmlName);
                 CLIUtils.drawBreakLine("-", 100);
@@ -106,9 +111,7 @@ public class CLIStandalone {
 
 
             // HDF5 conversion
-            if (CLIUtils.checkPythonInstallation() == 0)
-                CLIUtils.convertCSVtoHDF(Paths.get(outputDir, sedmlName).toString(), sedmlLocation, Paths.get(outputDir, sedmlName).toString());
-            else System.err.println("HDF5 conversion failed...\n");
+            CLIUtils.convertCSVtoHDF(Paths.get(outputDir, sedmlName).toString(), sedmlLocation, Paths.get(outputDir, sedmlName).toString());
 
             if (resultsHash.containsValue(null) || reportsHash.containsValue(null)) {
                 somethingFailed = true;

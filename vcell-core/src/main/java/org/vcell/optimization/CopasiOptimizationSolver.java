@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.attribute.FileAttribute;
 import java.util.Base64;
+import java.util.Iterator;
 import java.util.Random;
 import java.util.StringTokenizer;
 
@@ -41,11 +42,13 @@ import cbit.vcell.math.MathException;
 import cbit.vcell.math.ODESolverResultSetColumnDescription;
 import cbit.vcell.math.RowColumnResultSet;
 import cbit.vcell.modelopt.ParameterEstimationTask;
+import cbit.vcell.opt.CopasiOptimizationParameter;
 import cbit.vcell.opt.OptSolverResultSet;
 import cbit.vcell.opt.OptSolverResultSet.OptRunResultSet;
 import cbit.vcell.opt.OptimizationException;
 import cbit.vcell.opt.OptimizationResultSet;
 import cbit.vcell.opt.OptimizationStatus;
+import cbit.vcell.opt.CopasiOptimizationParameter.CopasiOptimizationParameterType;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.resource.PropertyLoader;
@@ -189,7 +192,7 @@ public class CopasiOptimizationSolver {
 						}
 					});		
 					if(clientTaskStatusSupport != null) {
-						clientTaskStatusSupport.setMessage(optRunJson);
+						clientTaskStatusSupport.setMessage("Queued...");
 					}
 
 				}else if(optRunJson.startsWith("Failed:") || optRunJson.startsWith("exception:") || optRunJson.startsWith("Exception:")) {
@@ -220,7 +223,7 @@ public class CopasiOptimizationSolver {
 								SwingUtilities.invokeLater(new Runnable() {
 									@Override
 									public void run() {
-										optSolverCallbacks.setEvaluation(numObjFuncEvals, objFunctionValue, objFunctionValue, optSolverCallbacks.getEndValue(), runNum);								
+										optSolverCallbacks.setEvaluation(numObjFuncEvals, objFunctionValue, 1.0, null, runNum);								
 									}
 								});
 							} catch (Exception e) {
@@ -230,7 +233,7 @@ public class CopasiOptimizationSolver {
 						}
 					});
 					if(clientTaskStatusSupport != null) {
-						clientTaskStatusSupport.setMessage(optRunJson);
+						clientTaskStatusSupport.setMessage("Running...");
 					}
 
 				}else {
@@ -250,23 +253,31 @@ public class CopasiOptimizationSolver {
 					deserializer.deserialize(optRun, jsonbytes);
 					OptRunStatus status = optRun.status;
 					String statusMessage = optRun.getStatusMessage();
-					if(statusMessage != null && (statusMessage.startsWith(OptRunStatus.Running.name()) || statusMessage.startsWith(OptRunStatus.Complete.name()))) {
-						StringTokenizer st = new StringTokenizer(statusMessage," :\t\r\n");
-						if(st.countTokens() == 4) {
-							st.nextToken();//OptRunStatus mesg
-							int runNum = Integer.parseInt(st.nextToken());
-							double objFunctionValue = Double.parseDouble(st.nextToken());
-							int numObjFuncEvals = Integer.parseInt(st.nextToken());
-							SwingUtilities.invokeLater(new Runnable() {
-								@Override
-								public void run() {
-									optSolverCallbacks.setEvaluation(numObjFuncEvals, objFunctionValue, objFunctionValue, optSolverCallbacks.getEndValue(), runNum);								
-								}
-							});
-						}
+					if (statusMessage != null && (statusMessage.toLowerCase().startsWith(OptRunStatus.Complete.name().toLowerCase()))) {
+						final OptRun or2 = optRun;
+						SwingUtilities.invokeLater(new Runnable() {
+							@Override
+							public void run() {
+//								Double endValue = null;
+//								for (org.vcell.optimization.thrift.CopasiOptimizationParameter cop : or2.getOptProblem().getOptimizationMethod().getOptimizationParameterList()) {
+//									if (cop.getParamType().name().equals(CopasiOptimizationParameterType.Number_of_Generations.name())
+//											|| cop.getParamType().name().equals(CopasiOptimizationParameterType.IterationLimit.name())){
+//										endValue = cop.getValue();
+//										break;
+//									}
+//								}
+								optSolverCallbacks.setEvaluation((int)or2.getOptResultSet().getNumFunctionEvaluations(), or2.getOptResultSet().objectiveFunction,
+										1.0, null, or2.getOptProblem().numberOfOptimizationRuns);								
+							}
+						});
+
+//						}
 					}
 					if (status==OptRunStatus.Complete){
 						System.out.println("job "+optIdHolder[0]+": status "+status+" "+optRun.getOptResultSet().toString());
+						if(clientTaskStatusSupport != null) {
+							clientTaskStatusSupport.setProgress(100);
+						}
 						break;
 					}
 					if (status==OptRunStatus.Failed){
@@ -289,6 +300,10 @@ public class CopasiOptimizationSolver {
 			if(optResultSet != null && optResultSet.getOptParameterValues() == null) {
 				throw new RuntimeException("getOptParameterValues is null, status is " + optRun.getStatusMessage());
 			}
+			if(clientTaskStatusSupport != null) {
+				clientTaskStatusSupport.setMessage("Done, getting results...");
+			}
+
 			int numFittedParameters = optResultSet.getOptParameterValues().size();
 			String[] paramNames = new String[numFittedParameters];
 			double[] paramValues = new double[numFittedParameters];
