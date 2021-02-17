@@ -199,3 +199,5 @@ results/*
 /status.yml
 
 Makefile
+
+run_sim.sh
