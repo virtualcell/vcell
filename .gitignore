@@ -199,3 +199,6 @@ results/*
 /sample_omex_files/__bm35_test_stochastic.omex
 /status.yml
 
+
+Makefile
+
