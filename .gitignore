@@ -197,3 +197,5 @@ results/*
 /sample_omex_files/_00_omex_test_cvode_IDA.omex
 /sample_omex_files/__bm35_test_stochastic.omex
 /status.yml
+
+Makefile

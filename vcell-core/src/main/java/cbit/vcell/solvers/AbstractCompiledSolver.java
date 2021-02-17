@@ -14,6 +14,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Vector;
@@ -133,7 +134,7 @@ public void propertyChange(java.beans.PropertyChangeEvent event) {
 private static Path createSymbolicLink(File mySolverLinkDir,String linkName,File localSolverPath) throws IOException{
 	Path path0 = new File(mySolverLinkDir,linkName).toPath();
 	Path path1 = localSolverPath.toPath();
-	System.out.println("linking "+path0+" "+path1);
+//	System.out.println("linking "+path0+" "+path1);
 	return Files.createSymbolicLink(path0,path1);
 }
 /**
@@ -197,7 +198,7 @@ private void checkLinuxSharedLibs() throws IOException, InterruptedException {
 		final String LD_LIB_PATH = "LD_LIBRARY_PATH";
 		String newLD_LIB_PATH = mySolverLinkDir.getAbsolutePath();
 		File solversDir = ResourceUtil.getLocalSolversDirectory();
-		System.out.println("-----reading solverdir libs "+solversDir.getAbsolutePath());
+//		System.out.println("-----reading solverdir libs "+solversDir.getAbsolutePath());
 		ArrayList<File> tempAL = new ArrayList<File>();
 			 File[] temp = solversDir.listFiles();
 			 for (int i = 0; i < temp.length; i++) {
@@ -207,21 +208,26 @@ private void checkLinuxSharedLibs() throws IOException, InterruptedException {
 					}		
 			}
 		File[] libzipSolverFiles = (File[])tempAL.toArray(new File[0]);
+			 File stdOutFile = new File(String.valueOf(Paths.get(System.getProperty("user.dir"))), "stdOut.txt");
 			ProcessBuilder pb = new ProcessBuilder("ldd",linkSolver.toString());
 			pb.redirectErrorStream(true);
+			pb.redirectOutput(ProcessBuilder.Redirect.appendTo(stdOutFile));
 			Process p = pb.start();
+			assert pb.redirectInput() == ProcessBuilder.Redirect.PIPE;
+			assert pb.redirectOutput().file().equals(stdOutFile);
+			assert p.getInputStream().read() == -1;
 			int ioByte = -1;
 			StringBuffer sb = new StringBuffer();
 			while((ioByte = p.getInputStream().read()) != -1) {
 				sb.append((char)ioByte);
 			}
 			p.waitFor();
-			System.out.println("-----ldd output:\n"+sb.toString());
+//			System.out.println("-----ldd output:\n"+sb.toString());
 			java.io.BufferedReader br = new java.io.BufferedReader(new java.io.StringReader(sb.toString()));
 			String line = null;
-			System.out.println("-----reading ldd:");
+//			System.out.println("-----reading ldd:");
 			while((line = br.readLine()) != null) {
-				System.out.println(line);
+//				System.out.println(line);
 				java.util.StringTokenizer libInfo = new java.util.StringTokenizer(line," \t");	
 				if(libInfo.countTokens() == 4) {// "libname => libpath offset"  -or- "libname => not found"
 					String libName = libInfo.nextToken();
@@ -233,7 +239,7 @@ private void checkLinuxSharedLibs() throws IOException, InterruptedException {
 						for (int i = 0; i < libzipSolverFiles.length; i++) {
 							if(libzipSolverFiles[i].getName().startsWith(libName)  && libzipSolverFiles[i].length() != 0) {
 								//System.out.println(libName+" "+ptr+" "+libPath+" "+aux+" "+org.apache.commons.lang3.StringUtils.getJaroWinklerDistance("libhdf5.so",libName));						
-								System.out.println(libName+" "+ptr+" "+libPath+" "+aux+" match="+libzipSolverFiles[i]);
+//								System.out.println(libName+" "+ptr+" "+libPath+" "+aux+" match="+libzipSolverFiles[i]);
 								createSymbolicLink(mySolverLinkDir, libName,libzipSolverFiles[i]);
 								bMatch = true;
 								break;
@@ -245,7 +251,7 @@ private void checkLinuxSharedLibs() throws IOException, InterruptedException {
 								if(index != -1) {
 									String matchName = libName.substring(0,index+3);
 									if(libzipSolverFiles[i].getName().startsWith(matchName) && libzipSolverFiles[i].length() != 0) {
-										System.out.println("ALTERNATE  "+libName+" "+ptr+" "+libPath+" "+aux+" match="+libzipSolverFiles[i]);
+//										System.out.println("ALTERNATE  "+libName+" "+ptr+" "+libPath+" "+aux+" match="+libzipSolverFiles[i]);
 										createSymbolicLink(mySolverLinkDir, libName,libzipSolverFiles[i]);
 										break;
 									}
@@ -256,7 +262,7 @@ private void checkLinuxSharedLibs() throws IOException, InterruptedException {
 				}
 			}
 
-		System.out.println("-----Setting executable "+LD_LIB_PATH+" to "+newLD_LIB_PATH);
+//		System.out.println("-----Setting executable "+LD_LIB_PATH+" to "+newLD_LIB_PATH);
 		getMathExecutable().addEnvironmentVariable(LD_LIB_PATH, newLD_LIB_PATH);			
 	}
 }
