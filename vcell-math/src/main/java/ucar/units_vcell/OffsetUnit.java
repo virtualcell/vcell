@@ -107,7 +107,7 @@ public OffsetUnit(Unit unit, double offset, UnitName id) {
      * Converts values in the convertible derived unit to the equivalent
      * values in this unit.
      * @param input		The values in the convertible derived unit.
-     * @param ouput		The equivalent values in this unit.
+     * @param output		The equivalent values in this unit.
      *				May be the same array as <code>input</code>.
      * @return			<code>output</code>.
      * @throws ConversionException	Can't convert between units.
@@ -130,7 +130,7 @@ public OffsetUnit(Unit unit, double offset, UnitName id) {
      * Converts values in the convertible derived unit to the equivalent
      * values in this unit.
      * @param input		The values in the convertible derived unit.
-     * @param ouput		The equivalent values in this unit.
+     * @param output		The equivalent values in this unit.
      *				May be the same array as <code>input</code>.
      * @return			<code>output</code>.
      * @throws ConversionException	Can't convert between units.
@@ -364,7 +364,7 @@ public OffsetUnit(Unit unit, double offset, UnitName id) {
      * Converts values in this unit to the equivalent values in the 
      * convertible derived unit.
      * @param input		The values in this unit.
-     * @param ouput		The equivalent values in the convertible
+     * @param output		The equivalent values in the convertible
      *				derived unit.  May be the same array as
      *				<code>input</code>.
      * @return			<code>output</code>.
@@ -387,7 +387,7 @@ public OffsetUnit(Unit unit, double offset, UnitName id) {
      * Converts values in this unit to the equivalent values in the 
      * convertible derived unit.
      * @param input		The values in this unit.
-     * @param ouput		The equivalent values in the convertible
+     * @param output		The equivalent values in the convertible
      *				derived unit.  May be the same array as
      *				<code>input</code>.
      * @return			<code>output</code>.
