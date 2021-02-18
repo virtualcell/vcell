@@ -48,7 +48,7 @@ jobs:
 
       - name: Fetch the current version
         id: version
-        run: echo ::set-output name=tag::$(docker run ghcr.io/biosimulators/biosimulators_vcell/vcell:latest -v | awk -F ' ' '{print $3;}')
+        run: echo ::set-output name=tag::$(docker run ghcr.io/virtualcell/vcell-cli:latest -v | awk -F ':' '{print $2;}' | awk -F ',' '{print $1;}')
 
       - name: Tag the Docker image with the current version and push
         run: |

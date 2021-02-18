@@ -13,10 +13,14 @@ package cbit.vcell.geometry.gui;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.Toolkit;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
@@ -28,7 +32,9 @@ import java.awt.image.DataBufferUShort;
 import java.awt.image.IndexColorModel;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.DataInputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -56,10 +62,12 @@ import javax.swing.JFileChooser;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
 
 import org.apache.commons.io.FilenameUtils;
+import org.vcell.util.BeanUtils;
 import org.vcell.util.ClientTaskStatusSupport;
 import org.vcell.util.Coordinate;
 import org.vcell.util.CoordinateIndex;
@@ -67,12 +75,17 @@ import org.vcell.util.Extent;
 import org.vcell.util.ISize;
 import org.vcell.util.Origin;
 import org.vcell.util.ProgressDialogListener;
+import org.vcell.util.Range;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.UtilCancelException;
+import org.vcell.util.document.ExternalDataIdentifier;
+import org.vcell.util.document.VCDocument;
+import org.vcell.util.document.VCDocument.VCDocumentType;
 import org.vcell.util.gui.AsynchProgressPopup;
 import org.vcell.util.gui.DialogUtils;
 
+import cbit.image.ImageException;
 import cbit.image.ImageSizeInfo;
 import cbit.image.VCImage;
 import cbit.image.VCImageUncompressed;
@@ -83,9 +96,15 @@ import cbit.vcell.VirtualMicroscopy.ROI;
 import cbit.vcell.VirtualMicroscopy.UShortImage;
 import cbit.vcell.client.ClientRequestManager;
 import cbit.vcell.client.PopupGenerator;
+import cbit.vcell.client.desktop.DocumentWindow;
 import cbit.vcell.client.server.UserPreferences;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
+import cbit.vcell.client.test.VCellClientTest;
+import cbit.vcell.clientdb.DocumentManager;
+import cbit.vcell.field.FieldDataDBOperationResults;
+import cbit.vcell.field.FieldDataDBOperationSpec;
+import cbit.vcell.field.io.FieldDataFileOperationResults;
 import cbit.vcell.field.io.FieldDataFileOperationSpec;
 import cbit.vcell.geometry.AnalyticSubVolume;
 import cbit.vcell.geometry.Geometry;
@@ -97,8 +116,13 @@ import cbit.vcell.geometry.surface.OrigSurface;
 import cbit.vcell.geometry.surface.Polygon;
 import cbit.vcell.geometry.surface.Surface;
 import cbit.vcell.geometry.surface.SurfaceCollection;
+import cbit.vcell.mapping.SpeciesContextSpec;
+import cbit.vcell.mapping.gui.InitialConditionsPanel;
+import cbit.vcell.math.VariableType;
 import cbit.vcell.render.Vect3d;
 import cbit.vcell.resource.OperatingSystemInfo;
+import cbit.vcell.simdata.SimDataBlock;
+import cbit.vcell.solvers.CartesianMesh;
 
 public class ROIMultiPaintManager implements PropertyChangeListener{
 
@@ -485,6 +509,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 		}
 		return initImageDataSetChannels;
 	}
+
 	private static OverlayEditorPanelJAI.AllPixelValuesRange[] calculateAllPixelValuesRangeChannels0(ImageDataset[] sourceImageDatasetChannels){
 		OverlayEditorPanelJAI.AllPixelValuesRange[] pixelValuesRangeChannels =
 			new OverlayEditorPanelJAI.AllPixelValuesRange[sourceImageDatasetChannels.length];
@@ -501,7 +526,11 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 		}
 		return pixelValuesRangeChannels;
 	}
-	public void initROIData(FieldDataFileOperationSpec importedDataContainer) throws Exception{
+	public void initROIAndUnderlay(FieldDataFileOperationSpec importedDataContainer) throws Exception{
+		initUnderlayData(importedDataContainer);
+		initROIComposite();
+	}
+	public void initUnderlayData(FieldDataFileOperationSpec importedDataContainer) throws Exception{
 
 		originalExtent = importedDataContainer.extent;
 		originalOrigin = importedDataContainer.origin;
@@ -515,7 +544,6 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 		//has been called in an editing session. 
 		//
 		initImageDataSet((!bHasOriginalData?null:importedDataContainer.shortSpecData[0]),originalISize);
-		initROIComposite();
 
 		allPixelValuesRangeChannels = calculateAllPixelValuesRangeChannels0(getImageDataset());
 	}
@@ -724,7 +752,8 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 			final Component parentComponent,
 			String initalAnnotation,
 			final VCPixelClass[] vcPixelClasses,
-			UserPreferences userPreferences){
+			UserPreferences userPreferences,
+			boolean bFieldData){
 
 		originalAnnotation = initalAnnotation;
 		final Geometry[] finalGeometryHolder = new Geometry[1];
@@ -831,6 +860,85 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 //			}
 //		});
 		
+		JButton fieldDataJButton = null;
+		if(bFieldData) {
+			fieldDataJButton = new JButton("FieldData...");
+			fieldDataJButton.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					try {
+						Component c = overlayEditorPanelJAI;
+						do {
+							System.out.println(c.getClass().getName());
+							if(c instanceof DocumentWindow) {
+								//BeanUtils.printComponentInfo((Container)c);
+								ArrayList<Component> comps = new ArrayList<Component>();
+								BeanUtils.findComponent((Container)c, InitialConditionsPanel.class,comps);
+								InitialConditionsPanel initialConditionsPanel = (InitialConditionsPanel)comps.get(0);
+								SpeciesContextSpec[] speciesContextSpecs = initialConditionsPanel.getInitConditionVars();
+								Object[][] objs = new Object[speciesContextSpecs.length][1];
+								for(int i=0;i<speciesContextSpecs.length;i++) {
+									if(speciesContextSpecs[i].getSimulationContext() == initialConditionsPanel.getSimulationContext()) {
+										objs[i][0] = speciesContextSpecs[i].getSpeciesContext().getName();
+									}
+								}
+								int[] select = DialogUtils.showComponentOKCancelTableList(overlayEditorPanelJAI,
+									"Select species to add InitialCondition Field Data, App:'"+initialConditionsPanel.getSimulationContext().getName()+"'", new String[] {"speciesContext"}, objs, ListSelectionModel.SINGLE_SELECTION);
+								if(select != null && select.length>0) {
+	//								try {
+									String scName = speciesContextSpecs[select[0]].getSpeciesContext().getName();
+									Origin orig = (editedGeometryAttributes!=null?editedGeometryAttributes.origin:originalOrigin);
+									Extent extent = (editedGeometryAttributes!=null?editedGeometryAttributes.extent:originalExtent);
+									String fieldDataName = null;
+									boolean bDone = false;
+									do{
+										try {
+											fieldDataName = DialogUtils.showInputDialog0(ROIMultiPaintManager.this.overlayEditorPanelJAI, "Enter FieldData name",
+													(fieldDataName==null?ROIMultiPaintManager.this.importSourceName:fieldDataName));
+											createFD(false, fieldDataName, ROIMultiPaintManager.this.importSourceName, extent, orig, new String[] {scName}, new double[] {0.0},initImageDataSetChannels[0].getISize());
+											bDone = true;
+										} catch (UtilCancelException uce) {
+											return;
+										}catch (Exception e1) {
+											e1.printStackTrace();
+											if(e1.getMessage().toUpperCase().contains("ORA-00001")) {
+												DialogUtils.showWarningDialog(ROIMultiPaintManager.this.overlayEditorPanelJAI, fieldDataName+" already used, enter a different name");
+												continue;
+											}
+											throw e1;
+										}
+										
+									}while(!bDone);
+										initialConditionsPanel.setGeneratedFieldData(scName,"vcField('"+fieldDataName+"','"+scName+"',0.0,'Volume')");
+		//								if(true) {
+		//									return;
+		//								}
+										//ISize iSize = initImageDataSetChannels[0].getISize();
+										//Extent extent = initImageDataSetChannels[0].getExtent();
+	//									Origin orig = (editedGeometryAttributes!=null?editedGeometryAttributes.origin:originalOrigin);
+	//									Extent extent = (editedGeometryAttributes!=null?editedGeometryAttributes.extent:originalExtent);
+	//									createFD(false, fieldDataName, ROIMultiPaintManager.this.importSourceName, extent, orig, new String[] {scName}, new double[] {0.0},initImageDataSetChannels[0].getISize());
+										//export();
+										//ORA-00001
+	//								} catch (Exception e1) {
+	//									if(e1 instanceof UserCancelException) {
+	//										return;
+	//									}
+	//									e1.printStackTrace();
+	//									DialogUtils.showErrorDialog(overlayEditorPanelJAI, e1.getMessage());
+	//								}
+								}
+							}
+						}while((c = c.getParent()) != null);
+					}catch(Exception e2) {
+						e2.printStackTrace();
+						if(e2 instanceof UserCancelException || e2 instanceof UtilCancelException) {
+							return;
+						}
+						DialogUtils.showErrorDialog(ROIMultiPaintManager.this.overlayEditorPanelJAI, e2.getMessage());
+					}
+			}});
+		}
 		
 		JButton exportJButton = new JButton("Export...");
 		exportJButton.addActionListener(new ActionListener() {
@@ -865,6 +973,12 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 		okCancelJPanel.add(exportJButton);
 		okCancelJPanel.add(importJButton);
 //		okCancelJPanel.add(surfaceButton);
+		if(bFieldData) {
+			okCancelJPanel.add(fieldDataJButton);
+		}
+		this.overlayEditorPanelJAI.translateToolButton.setVisible(bFieldData);
+		this.overlayEditorPanelJAI.scaleToolButton.setVisible(bFieldData);
+
 		okCancelJPanel.add(cancelJButton);
 		
 		jDialog.getContentPane().add(overlayEditorPanelJAI,BorderLayout.CENTER);
@@ -1715,6 +1829,80 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 		return statsHelper;
 	}
 
+	private DocumentManager documentManager;
+	public void setDocumentManager(DocumentManager documentManager) {
+		this.documentManager = documentManager;
+	}
+	private void createFD(boolean isFromSimulation,String fieldName,String annotation,Extent extent,Origin origin, String[] varNames,double[] times,ISize isize) throws Exception{
+		FieldDataFileOperationSpec fdos = null;
+		try{
+			//temp-------
+			FieldDataDBOperationSpec listExtDataIDSpec = FieldDataDBOperationSpec.createGetExtDataIDsSpec(documentManager.getUser());
+			FieldDataDBOperationResults fdDBOperation = documentManager.fieldDataDBOperation(listExtDataIDSpec);
+			for(int i=0;i<fdDBOperation.extDataIDArr.length;i++) {
+				if(fdDBOperation.extDataIDArr[i].getName().equals("fd")){
+					FieldDataDBOperationSpec createDeleteExtDataIDSpec = FieldDataDBOperationSpec.createDeleteExtDataIDSpec(fdDBOperation.extDataIDArr[i]);
+					documentManager.fieldDataDBOperation(createDeleteExtDataIDSpec);
+					break;
+				}
+			}
+			//
+			//-----------
+			FieldDataDBOperationSpec newExtDataIDSpec = FieldDataDBOperationSpec.createSaveNewExtDataIDSpec(documentManager.getUser(),fieldName,annotation);
+			FieldDataDBOperationResults fieldDataDBOperation = documentManager.fieldDataDBOperation(newExtDataIDSpec);
+			fdos = new FieldDataFileOperationSpec();
+			fdos.opType = FieldDataFileOperationSpec.FDOS_ADD;
+			fdos.variableTypes = new VariableType[] {VariableType.VOLUME};
+			fdos.owner = documentManager.getUser();
+			fdos.isize = isize;
+			fdos.shortSpecData = new short[1][1][fdos.isize.getXYZ()];
+			UShortImage[] allImages = initImageDataSetChannels[0].getAllImages();
+			for(int i=0;i<allImages.length;i++) {
+				allImages[i].getPixels();
+				System.arraycopy(allImages[i].getPixels(), 0, fdos.shortSpecData[0][0], i*allImages[i].getPixels().length, allImages[i].getPixels().length);
+			}
+			fdos.specEDI = fieldDataDBOperation.extDataID;
+			fdos.annotation = annotation;
+
+			if(!isFromSimulation){
+				fdos.extent = extent;
+				fdos.origin = origin;
+				fdos.varNames = varNames;
+				fdos.times = times;
+				//
+				//Subvolumes and Regions NOT implemented now
+				//
+				fdos.cartesianMesh = CartesianMesh.createSimpleCartesianMesh(fdos.origin, fdos.extent, fdos.isize,
+					new RegionImage(new VCImageUncompressed(null, new byte[fdos.isize.getXYZ()],//empty regions
+						fdos.extent, fdos.isize.getX(),fdos.isize.getY(),fdos.isize.getZ()),
+						0,null,null,RegionImage.NO_SMOOTHING));
+			}
+			
+			//Add to Server Disk
+			documentManager.fieldDataFileOperation(fdos);
+			
+//			//Update FieldData window
+//			Window[] windows = Window.getWindows();
+//			for(int i=0;i<windows.length;i++) {
+//				if(windows[i] instanceof FieldDataWindow) {
+//					((FieldDataWindow)windows[i]).getFieldDataWindowManger().fieldDataDBEvent(new FieldDataDBEvent(ROIMultiPaintManager.this));
+//					break;
+//				}
+//			}
+		} catch (Exception e) {
+			try{
+				//try to cleanup new ExtDataID
+				if(fdos != null && fdos.specEDI != null) {
+					documentManager.fieldDataDBOperation(FieldDataDBOperationSpec.createDeleteExtDataIDSpec(fdos.specEDI));
+				}
+			}catch(Exception e2){
+				e2.printStackTrace();
+			} 
+			throw e;
+		}
+
+	}
+	
 	
 	private void export(){
 		final String PNG_FILETYPE = "png";
@@ -2027,6 +2215,8 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 			}catch(UserCancelException e){
 				updateUndoAfter(null);
 			}
+		}else if(evt.getPropertyName().equals(OverlayEditorPanelJAI.FRAP_DATA_FIELDDATA_PROPERTY)){
+			fdTSR(evt);
 		}else if(evt.getPropertyName().equals(OverlayEditorPanelJAI.FRAP_DATA_CURRENTROI_PROPERTY)){
 			
 		}else if(evt.getPropertyName().equals(OverlayEditorPanelJAI.FRAP_DATA_DELETEROI_PROPERTY)){
@@ -2144,6 +2334,469 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 			separateDomains();
 			updateUndoAfter(true);
 		}
+	}
+	
+	private FieldDataFileOperationSpec fdShort;
+	private double[] fdDelta = new double[] {0,0,0};
+	private double[] fdDeltaLast = new double[] {0,0,0};
+	private double currScale = 1.0;
+	private double currScaleLast = 1.0;
+	private Range currScalePoint = new Range(0,0);
+	private void xlt() throws ImageException{
+		final int importedX = fdShort.isize.getX();
+		final int importedY = fdShort.isize.getY();
+		final int importedZ = fdShort.isize.getZ();
+		final int underlayDispX = initImageDataSetChannels[0].getISize().getX();
+		double xd,yd,zd;
+		boolean bx,by,bz;
+		int index;
+		for(int c=0;c<initImageDataSetChannels.length;c++) {
+			zd = (int)fdDelta[2];
+			for(int z=0;z<initImageDataSetChannels[0].getISize().getZ();z++) {
+				UShortImage underlayZImage = initImageDataSetChannels[c].getImage(z, /*c*/ 0, 0/*t*/);
+				Arrays.fill(underlayZImage.getPixels(), (short)0);
+				yd = (int) (fdDelta[1]) * currScale;
+				bz = zd >=0 && zd<importedZ;
+				if(bz) {
+					for(int y=0;y<initImageDataSetChannels[0].getISize().getY();y++) {
+						xd = (int) (fdDelta[0]) * currScale;
+						by = yd >=0 && yd<importedY;
+						if(by) {
+							for(int x=0;x<underlayDispX;x++) {
+								bx = xd >=0 && xd<importedX;
+								if(bx) {
+//									index = xd + (yd*importedX) + (zd*importedX*importedY);
+									index = (int)((int)xd + importedX * ((int)yd + zd*importedY));//(yd*importedX) + (zd*importedX*importedY);
+//									System.out.println("x="+x+" y="+y+" z="+z+" val="+initImageDataSetChannels[c].getImage(z, /*c*/ 0, 0/*t*/).getPixel(x, y, 0)+" xd="+xd+" yd="+yd+" zd="+zd+" "+index+" val="+fdShort.shortSpecData[/*t*/0][/*v*/0][/*data*/index]);
+									underlayZImage.setPixel(x, y, 0, fdShort.shortSpecData[/*t*/0][/*v*/0][/*data*/index] );//(short)(fdShort.shortSpecData[/*t*/0][/*v*/0][/*data*/index]==0?0:10000)
+									xd+= currScale;
+								}else {
+//									underlayZImage.setPixel(x, y, 0, (short)0);
+									xd+= currScale;
+									continue;
+								}
+							}//x
+							yd+= currScale;
+						}else{
+							yd+= currScale;
+							continue;
+						}
+					}//y
+					zd++;
+				}else {
+					zd++;
+					continue;
+				}
+			}
+		}//z
+	}
+	
+	
+//	private static short[] myshorts = new short[20*1000*1000];
+//	static {
+//		try {
+//			fdShort = new UShortImage(myshorts,new Origin(0,0,0),new Extent(1,1,1),1000,1000,20);
+//			for(int i = 0;i<myshorts.length;i++) {
+//				myshorts[i] = (short)(i%16000);
+//			}
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//		}
+//	}
+
+//	private static final PropertyChangeEvent[] fdBusy = new PropertyChangeEvent[] {null};
+//	private synchronized void fdTSR(PropertyChangeEvent evt2) {
+//		boolean bFDBusy = fdBusy[0] != null;
+//		fdBusy[0] = evt2;
+//		if(bFDBusy) {
+//			return;
+//		}
+//		new Thread(new Runnable() {
+//			@Override
+//			public void run() {
+//				try {
+//					PropertyChangeEvent evt = fdBusy[0];
+//					
+//					if(evt.getNewValue() instanceof Boolean) {
+//						fdDeltaLast = fdDelta.clone();
+//					}else if(evt.getOldValue() instanceof MouseEvent) {
+//						double[] oldFD = fdDelta.clone();
+//						MouseEvent mouseEvt = (MouseEvent)evt.getOldValue();
+//						Point p = (Point)evt.getNewValue();
+//						if(mouseEvt.isShiftDown()) {
+//							fdDelta[2]+= Math.signum(p.x)*1;
+//						}else {
+//							fdDelta[0]= fdDeltaLast[0]-p.x;
+//							fdDelta[1]= fdDeltaLast[1]-p.y;
+//						}
+////					if((int)oldFD[0] == (int)fdDelta[0] && (int)oldFD[1] == (int)fdDelta[1] && (int)oldFD[2] == (int)fdDelta[2]) {
+////						throw UserCancelException.CANCEL_GENERIC;
+////					}					
+//					}else if(evt.getNewValue() == null) {
+//						if(fdShort == null) {
+//							VCDocument.DocumentCreationInfo documentCreationInfo = new VCDocument.DocumentCreationInfo(VCDocumentType.GEOMETRY_DOC, VCDocument.GEOM_OPTION_FILE);
+//							final AsynchClientTask selectImageFile = ClientRequestManager.getSelectImageFileTask(overlayEditorPanelJAI, null);
+//							final AsynchClientTask parseImageTask = ClientRequestManager.getParseImageTask(overlayEditorPanelJAI, documentCreationInfo, null);
+//							final AsynchClientTask importFileImage = ClientRequestManager.getImportFileImageTask(documentCreationInfo);
+//							Hashtable hashTable = new Hashtable();
+//							hashTable.put(ClientRequestManager.GUI_PARENT,ROIMultiPaintManager.this.overlayEditorPanelJAI);
+//							selectImageFile.run(hashTable);
+//							parseImageTask.run(hashTable);
+//							hashTable.put(ClientRequestManager.NEW_IMAGE_SIZE_INFO, hashTable.get(ClientRequestManager.ORIG_IMAGE_SIZE_INFO));
+//							importFileImage.run(hashTable);
+//							ROIMultiPaintManager.this.fdShort = (FieldDataFileOperationSpec)hashTable.get(ClientRequestManager.FDFOS);
+//						}
+//					}
+//					ROIMultiPaintManager.this.xlt();
+//					SwingUtilities.invokeLater(new Runnable() {
+//						@Override
+//						public void run() {
+//							updateUnderlayHistogramDisplay();
+//							overlayEditorPanelJAI.setDisplayContrastFactor(overlayEditorPanelJAI.getDisplayContrastFactor());
+//					}});
+//					PropertyChangeEvent currentPCE = fdBusy[0];
+//					if(currentPCE != evt) {//got new mouseevent while processing
+//						fdTSR(currentPCE);
+//					}else {
+//						fdBusy[0] = null;
+//					}
+//				} catch (Exception e) {
+//					e.printStackTrace();
+//				}
+//
+//			}}).start();
+//	}
+	private String importSourceName;
+	private void fdTSR(PropertyChangeEvent evt) {
+		if(!(evt.getNewValue() instanceof OverlayEditorPanelJAI.GUIHelperFD)) {
+			return;
+		}
+		OverlayEditorPanelJAI.GUIHelperFD guiHelperFD = (OverlayEditorPanelJAI.GUIHelperFD)evt.getNewValue();
+//		if(ClientTaskDispatcher.isBusy()) {
+//			return;
+//		}
+		AsynchClientTask tsrTask = new AsynchClientTask("TSR",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+			@Override
+			public void run(Hashtable<String, Object> hashTable) throws Exception {
+				if(guiHelperFD.action.equals("translateEnd")) {
+					fdDeltaLast = fdDelta.clone();
+					currScalePoint = null;
+				}else if(guiHelperFD.action.equals("scaleEnd")) {
+					currScaleLast = currScale;
+					currScalePoint = null;
+				}else if(guiHelperFD.action.equals("translateDelta")) {
+					MouseEvent mouseEvt = (MouseEvent)guiHelperFD.awtEvent;
+					Point p = (Point)guiHelperFD.data;
+					if(mouseEvt.isShiftDown()) {
+						fdDelta[2]= fdDeltaLast[2]-p.x;
+					}else {
+						fdDelta[0]= fdDeltaLast[0]-p.x;
+						fdDelta[1]= fdDeltaLast[1]-p.y;
+					}
+//					if((int)oldFD[0] == (int)fdDelta[0] && (int)oldFD[1] == (int)fdDelta[1] && (int)oldFD[2] == (int)fdDelta[2]) {
+//						throw UserCancelException.CANCEL_GENERIC;
+//					}					
+				}else if(guiHelperFD.action.equals("scaleDelta")) {
+					MouseEvent mouseEvt = (MouseEvent)guiHelperFD.awtEvent;
+					Point p = (Point)guiHelperFD.data;
+//					if(currScalePoint == null) {
+//						currScalePoint = new Point(0,0);
+//					}
+					if(mouseEvt.isShiftDown()) {
+//						fdDelta[2]= fdDeltaLast[2]-p.x;
+					}else {
+						currScale = Math.pow(2.0, 1.0-currScaleLast-((double)p.x/20));
+						currScalePoint = new Range(((p.x/20.0)),((p.x/20.0)));
+//						fdDelta[0]-=currScale*(currScalePoint.getX()-p.x)/10;
+//						fdDelta[1]-=currScale*(currScalePoint.getX()-p.x)/10;
+
+						//fdDelta[1]= fdDeltaLast[1]-p.y;
+					}
+				}else if(guiHelperFD.action.equals("scaleStart")) {
+					currScalePoint = (Range)guiHelperFD.data;
+				}else if(guiHelperFD.action.equals("scalePressed")) {
+					if(fdShort == null || (((ActionEvent)guiHelperFD.awtEvent).getModifiers() & ActionEvent.SHIFT_MASK) != 0) {
+						loadFD(hashTable);
+					}
+				}else if(guiHelperFD.action.equals("translatePressed")) {
+					if(fdShort == null || (((ActionEvent)guiHelperFD.awtEvent).getModifiers() & ActionEvent.SHIFT_MASK) != 0) {
+						loadFD(hashTable);
+					}else {
+//						DataBufferUShort dataBuffer = new DataBufferUShort(fdShort.shortSpecData[0][0], fdShort.shortSpecData[0][0].length);
+//						WritableRaster myRaster = Raster.createPackedRaster(dataBuffer, fdShort.isize.getX(), fdShort.isize.getY()*fdShort.isize.getZ(), 16,new Point(0,15*fdShort.isize.getX()*fdShort.isize.getY()));
+//						
+//						UShortImage myImage = initImageDataSetChannels[0].getImage(15, /*c*/ 0, 0/*t*/);
+//						DataBufferUShort dataBuffer2 = new DataBufferUShort(myImage.getPixels(),myImage.getPixels().length);
+//						WritableRaster myRaster2 = Raster.createPackedRaster(dataBuffer2, myImage.getNumX(), myImage.getNumY(), 16,null);
+//
+//						final AffineTransform at = AffineTransform.getScaleInstance(1.5, 1.5);
+//						final AffineTransformOp ato = new AffineTransformOp(at, AffineTransformOp.TYPE_BICUBIC);
+//						ato.filter(myRaster, myRaster2);
+//						
+////						final int w = image.getWidth();
+////						final int h = image.getHeight();
+////						BufferedImage scaledImage = new BufferedImage((w * 2),(h * 2), BufferedImage.TYPE_INT_ARGB);
+////						final AffineTransform at = AffineTransform.getScaleInstance(2.0, 2.0);
+////						final AffineTransformOp ato = new AffineTransformOp(at, AffineTransformOp.TYPE_BICUBIC);
+////						scaledImage = ato.filter(image, scaledImage);
+					}
+				}
+				ROIMultiPaintManager.this.xlt();
+//				if(bRecalc) {
+////					updateAuxiliaryInfo(originalISize,null);
+//					ImageDataset[] idsa = new ImageDataset[1];
+//					UShortImage[] argImages = new UShortImage[fdShort.isize.getZ()];
+//					for(int i=0;i<argImages.length;i++) {
+//						argImages[i] = new UShortImage(new short[fdShort.isize.getX()*fdShort.isize.getY()], null,null, fdShort.isize.getX(),fdShort.isize.getY(),1);
+//						System.arraycopy(fdShort.shortSpecData[0][i], i*argImages[i].getPixels().length, argImages[i].getPixels(), 0, argImages[i].getPixels().length);
+//					}
+//					idsa[0] = new ImageDataset(argImages, /*time*/new double[] {0.0}, fdShort.isize.getZ());
+//					condensedBinsMapChannels = calculateCondensedBinsChannels0(idsa);
+//					allPixelValuesRangeChannels = calculateAllPixelValuesRangeChannels0(idsa);
+//				}
+			}
+
+		};
+		AsynchClientTask tsrUpdateTask = new AsynchClientTask("TSR",AsynchClientTask.TASKTYPE_SWING_NONBLOCKING) {
+			@Override
+			public void run(Hashtable<String, Object> hashTable) throws Exception {
+//				long starttime = System.currentTimeMillis();
+//				overlayEditorPanelJAI.setHistogram(condensedBinsMapChannels[imageDatasetChannel]);
+//				overlayEditorPanelJAI.showHistogram();
+				updateUnderlayHistogramDisplay();
+				//overlayEditorPanelJAI.setDisplayContrastFactor(overlayEditorPanelJAI.getDisplayContrastFactor());
+//				System.out.println("update="+((System.currentTimeMillis()-starttime)/1000.0));
+			}
+		};
+		
+		ClientTaskDispatcher.dispatch(overlayEditorPanelJAI, new Hashtable(), new AsynchClientTask[] {tsrTask,tsrUpdateTask});
+	}
+	
+	
+	private void loadFD(Hashtable<String, Object> hashTable) throws Exception{
+		final Exception[] excHolder = new Exception[] {null};
+		final JDialog jDialog = new JDialog(JOptionPane.getFrameForComponent(this.overlayEditorPanelJAI));
+		jDialog.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
+		jDialog.setTitle("Import Type");
+		jDialog.setModal(true);
+
+		final JPanel okCancelJPanel = new JPanel(new FlowLayout());
+		JButton okJButton = new JButton("from File...");
+		okJButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				try {
+					fdDelta = new double[] {0,0,0};
+					fdDeltaLast = new double[] {0,0,0};
+					currScale = 1.0;
+					currScaleLast = 1.0;
+					VCDocument.DocumentCreationInfo documentCreationInfo = new VCDocument.DocumentCreationInfo(VCDocumentType.GEOMETRY_DOC, VCDocument.GEOM_OPTION_FILE);
+					final AsynchClientTask selectImageFile = ClientRequestManager.getSelectImageFileTask(overlayEditorPanelJAI, null);
+					final AsynchClientTask parseImageTask = ClientRequestManager.getParseImageTask(overlayEditorPanelJAI, documentCreationInfo, null);
+					final AsynchClientTask importFileImage = ClientRequestManager.getImportFileImageTask(documentCreationInfo);
+//						final AsynchClientTask resizeImageTask = ClientRequestManager.getResizeImageTask(documentCreationInfo);
+					hashTable.put(ClientRequestManager.GUI_PARENT,ROIMultiPaintManager.this.overlayEditorPanelJAI);
+					selectImageFile.run(hashTable);
+					parseImageTask.run(hashTable);
+					hashTable.put(ClientRequestManager.NEW_IMAGE_SIZE_INFO, hashTable.get(ClientRequestManager.ORIG_IMAGE_SIZE_INFO));
+					importFileImage.run(hashTable);
+//						resizeImageTask.run(hashTable);
+					saveFDUnderlay(hashTable);
+				} catch (Exception e1) {
+					excHolder[0] = e1;
+//					e1.printStackTrace();
+//					DialogUtils.showErrorDialog(ROIMultiPaintManager.this.overlayEditorPanelJAI, e1.getMessage());
+				}finally {
+					jDialog.dispose();
+				}
+			}
+
+});
+		
+		JButton fdJButton = new JButton("from FieldData...");
+		fdJButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				try {
+					ArrayList<Object[]> allRows = new ArrayList<Object[]>();
+					ArrayList<ISize> iSizes = new ArrayList<ISize>();
+					ArrayList<CartesianMesh> meshes = new ArrayList<CartesianMesh>();
+
+					//DocumentManager documentManager = documentManager.getSessionManager()..getRequestManager().getDocumentManager();
+					FieldDataDBOperationSpec fdos = FieldDataDBOperationSpec.createGetExtDataIDsSpec(documentManager.getUser());
+					FieldDataDBOperationResults fieldDataDBOperationResults = documentManager.fieldDataDBOperation(fdos);
+					ExternalDataIdentifier[] externalDataIdentifierArr = fieldDataDBOperationResults.extDataIDArr;
+					Arrays.sort(externalDataIdentifierArr, new Comparator<ExternalDataIdentifier>() {
+						@Override
+						public int compare(ExternalDataIdentifier o1, ExternalDataIdentifier o2) {
+							// TODO Auto-generated method stub
+							return o1.getName().compareToIgnoreCase(o2.getName());
+						}});
+					ArrayList<ExternalDataIdentifier> okEDI = new ArrayList<ExternalDataIdentifier>();
+					for(int i=0;externalDataIdentifierArr != null && i<externalDataIdentifierArr.length;i++) {
+						try {
+							FieldDataFileOperationSpec fieldDataFileOperationSpec = FieldDataFileOperationSpec.createInfoFieldDataFileOperationSpec(externalDataIdentifierArr[i].getSimulationKey(), externalDataIdentifierArr[i].getOwner(), externalDataIdentifierArr[i].getJobIndex());
+							FieldDataFileOperationResults fieldDataFileOperationResults = documentManager.fieldDataFileOperation(fieldDataFileOperationSpec);
+//						System.out.println(externalDataIdentifierArr[i].getName()+" "+fieldDataFileOperationResults.iSize);
+							ISize iSize = fieldDataFileOperationResults.iSize;
+							iSizes.add(iSize);
+							//isizes.add(iSize);
+							okEDI.add(externalDataIdentifierArr[i]);
+							allRows.add(new Object[] {iSize.getX(),iSize.getY(),iSize.getZ(),"FieldData='"+externalDataIdentifierArr[i].getName()+"'"});
+							VCImageUncompressed vcImageUnc = new VCImageUncompressed(null, new byte[iSize.getXYZ()], fieldDataFileOperationResults.extent,iSize.getX(),iSize.getY(),iSize.getZ());
+							int dimension = 1 + (iSize.getY()>1?1:0) + (iSize.getZ()>1?1:0);
+							CartesianMesh simpleMesh = CartesianMesh.createSimpleCartesianMesh(
+								fieldDataFileOperationResults.origin, 
+								fieldDataFileOperationResults.extent,
+								iSize,
+								new RegionImage(vcImageUnc, dimension, fieldDataFileOperationResults.extent, fieldDataFileOperationResults.origin, RegionImage.NO_SMOOTHING));
+							meshes.add(simpleMesh);
+						} catch (Exception e2) {
+							e2.printStackTrace();
+						}			
+					}
+					if(allRows.size() > 0) {
+						Object[][] rowData = allRows.toArray(new Object[0][]);
+						int[] selections = DialogUtils.showComponentOKCancelTableList(ROIMultiPaintManager.this.overlayEditorPanelJAI, "Select Simulation for Geom Size",
+								new String[] {"X","Y","Z","Name"}, rowData, ListSelectionModel.SINGLE_SELECTION);
+//					Object[][] rowData = allRows.toArray(new Object[0][]);
+//					int[] selections = DialogUtils.showComponentOKCancelTableList(TopLevelWindowManager.this.getComponent(), "Select Simulation for Geom Size",
+//							new String[] {"X","Y","Z","SourceType"}, rowData, ListSelectionModel.SINGLE_SELECTION);
+
+						if(selections != null && selections.length == 1) {
+							FieldDataFileOperationResults fdfor =  documentManager.fieldDataFileOperation(FieldDataFileOperationSpec.createInfoFieldDataFileOperationSpec(okEDI.get(selections[0]).getSimulationKey(), okEDI.get(selections[0]).getOwner(), okEDI.get(selections[0]).getJobIndex()));
+							SimDataBlock simDataBlock = VCellClientTest.getVCellClient().getClientServerManager().getDataSetController().getSimDataBlock(null, okEDI.get(selections[0]), fdfor.dataIdentifierArr[0].getName(), 0.0);
+							FieldDataFileOperationSpec fieldDataFileOperationSpec = new FieldDataFileOperationSpec();
+							fieldDataFileOperationSpec.isize = meshes.get(selections[0]).getISize();
+							fieldDataFileOperationSpec.shortSpecData = new short[][][] {{new short[fieldDataFileOperationSpec.isize.getXYZ()]}};
+							for(int i=0;i<simDataBlock.getData().length;i++) {
+								fieldDataFileOperationSpec.shortSpecData[0][0][i] = (short)simDataBlock.getData()[i];
+//								if(simDataBlock.getData()[i] != 0) {
+//									System.out.println(simDataBlock.getData()[i]);
+//								}
+							}
+							hashTable.put(ClientRequestManager.FDFOS,fieldDataFileOperationSpec);
+							hashTable.put(ClientRequestManager.IMPORT_SOURCE_NAME, "FieldData="+okEDI.get(selections[0]).getName());
+							saveFDUnderlay(hashTable);
+//							ROIMultiPaintManager.this.fdShort = (FieldDataFileOperationSpec)hashTable.get(ClientRequestManager.FDFOS);
+//							ROIMultiPaintManager.this.importSourceName = (String)hashTable.get(ClientRequestManager.IMPORT_SOURCE_NAME);
+
+//						       (outMax-outMin)(inVal - inMin)
+//						       ------------------------------ + outMin
+//						                 inMax - inMin
+							
+							//externalDataIdentifierArr[selections[0]].
+////						ImageSizeInfo imagesizeInfo = new ImageSizeInfo("internal",meshes.get(selections[0]).getISize(),1,new double[] {0},0);
+//						ImageSizeInfo imagesizeInfo = new ImageSizeInfo("internal",iSizes.get(selections[0]),1,new double[] {0},0);
+//						hashTable.put(ClientRequestManager.NEW_IMAGE_SIZE_INFO, imagesizeInfo);
+//						
+//						VCImage image = sourceGeom.getGeometrySpec().getImage();
+//						ISize samplingSize = new ISize(image.getNumX(),image.getNumY(),image.getNumZ());//
+//						VCImageUncompressed vcImageUnc = new VCImageUncompressed(null, new byte[samplingSize.getXYZ()], sourceGeom.getExtent(), samplingSize.getX(), samplingSize.getY(), samplingSize.getZ());
+//						CartesianMesh sourceMesh = CartesianMesh.createSimpleCartesianMesh(
+//							sourceGeom.getOrigin(), 
+//							sourceGeom.getExtent(),
+//							samplingSize,
+//							new RegionImage(vcImageUnc, sourceGeom.getDimension(), sourceGeom.getExtent(), sourceGeom.getOrigin(), RegionImage.NO_SMOOTHING));
+//
+//						hashTable.put("newMesh", meshes.get(selections[0]));
+//						hashTable.put("sourceMesh", sourceMesh);
+						}
+					}
+
+				} catch (Exception e1) {
+					excHolder[0] = e1;
+//					e1.printStackTrace();
+//					DialogUtils.showErrorDialog(ROIMultiPaintManager.this.overlayEditorPanelJAI, e1.getMessage());
+				}finally {
+					jDialog.dispose();
+				}
+
+			}});
+		
+		JButton clipbboardJButton = new JButton("from Clipboard");
+		clipbboardJButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				Transferable contents = Toolkit.getDefaultToolkit().getSystemClipboard().getContents(null);
+					try {
+						Object transferData = contents.getTransferData(DataFlavor.stringFlavor);
+						if(transferData instanceof String) {
+							StringTokenizer st = new StringTokenizer(((String)transferData).toString(),",");
+							String varName = st.nextToken();
+							String vcDataIdentifer = st.nextToken();
+							double timePoint = Double.parseDouble(st.nextToken());
+							ISize isize = new ISize(Integer.parseInt(st.nextToken()),Integer.parseInt(st.nextToken()),Integer.parseInt(st.nextToken()));
+							Range inRange = new Range(Double.parseDouble(st.nextToken()),Double.parseDouble(st.nextToken()));
+							String simDataFile = st.nextToken();
+							DataInputStream dis = new DataInputStream(new FileInputStream(simDataFile));
+							FieldDataFileOperationSpec fieldDataFileOperationSpec = new FieldDataFileOperationSpec();
+							fieldDataFileOperationSpec.isize = isize;
+							fieldDataFileOperationSpec.shortSpecData = new short[][][] {{new short[fieldDataFileOperationSpec.isize.getXYZ()]}};
+							double outMax = 65535;
+							double outMin = 0;
+							double scale = (outMax-outMin)/(inRange.getMax()-inRange.getMin());
+							for(int i=0;i<isize.getXYZ();i++) {
+								double val = dis.readDouble();
+								fieldDataFileOperationSpec.shortSpecData[0][0][i] = (short)(scale*(val-inRange.getMin()) + outMin);
+							}
+							hashTable.put(ClientRequestManager.FDFOS,fieldDataFileOperationSpec);
+							hashTable.put(ClientRequestManager.IMPORT_SOURCE_NAME, "SimData="+vcDataIdentifer+" varName="+varName+" time="+timePoint);
+							saveFDUnderlay(hashTable);
+							ROIMultiPaintManager.this.overlayEditorPanelJAI.setFDScale(new double[] {scale,inRange.getMin(),outMin});
+						}
+					} catch (Exception e1) {
+						excHolder[0] = e1;
+//						e1.printStackTrace();
+//						DialogUtils.showErrorDialog(ROIMultiPaintManager.this.overlayEditorPanelJAI, e1.getMessage());
+					}finally {
+						jDialog.dispose();
+					}
+			}});
+		
+		final boolean[] bCanelHolder = new boolean[] {false};
+		JButton cancelJButton = new JButton("Cancel");
+		cancelJButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				jDialog.dispose();
+				bCanelHolder[0] = true;
+			}});
+		
+		okCancelJPanel.add(okJButton);
+		okCancelJPanel.add(fdJButton);
+		okCancelJPanel.add(clipbboardJButton);
+		okCancelJPanel.add(cancelJButton);
+		
+
+		jDialog.getContentPane().add(okCancelJPanel,BorderLayout.SOUTH);
+		jDialog.pack();
+		//jDialog.setSize(300,250);
+		DialogUtils.showModalJDialogOnTop(jDialog,overlayEditorPanelJAI);
+
+		if(bCanelHolder[0]) {
+			throw UserCancelException.CANCEL_GENERIC;
+		}
+		if(excHolder[0] != null) {
+			throw excHolder[0];
+		}
+	}
+
+	
+	private void saveFDUnderlay(Hashtable<String, Object> hashTable) throws ImageException {
+		ROIMultiPaintManager.this.fdShort = (FieldDataFileOperationSpec)hashTable.get(ClientRequestManager.FDFOS);
+		ROIMultiPaintManager.this.importSourceName = (String)hashTable.get(ClientRequestManager.IMPORT_SOURCE_NAME);
+		
+		//Calculate Info for large underlay
+		ImageDataset[] idsa = new ImageDataset[1];
+		UShortImage[] argImages = new UShortImage[fdShort.isize.getZ()];
+		for(int i=0;i<argImages.length;i++) {
+			argImages[i] = new UShortImage(new short[fdShort.isize.getX()*fdShort.isize.getY()], null,null, fdShort.isize.getX(),fdShort.isize.getY(),1);
+			System.arraycopy(fdShort.shortSpecData[0][0], i*argImages[i].getPixels().length, argImages[i].getPixels(), 0, argImages[i].getPixels().length);
+		}
+		idsa[0] = new ImageDataset(argImages, /*time*/new double[] {0.0}, fdShort.isize.getZ());
+		condensedBinsMapChannels = calculateCondensedBinsChannels0(idsa);
+		allPixelValuesRangeChannels = calculateAllPixelValuesRangeChannels0(idsa);
 	}
 	
 	private void sampleAnalyticIntoImage(OverlayEditorPanelJAI.ImgSubVolHelper imgSubVolHelper) {
@@ -4218,6 +4871,46 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 		return bHadAnyInternalVoids;
 	}
 
+//	private static TreeMap<Integer, Integer>[] calculateCondensedBinsChannels0(ImageDataset[] sourceImageDatasetChannels){
+//		short[][][] sourceImageDatasetChannelsPix = new short[sourceImageDatasetChannels.length][sourceImageDatasetChannels[0].getSizeZ()][];
+//		for (int c = 0; c < sourceImageDatasetChannels.length; c++) {
+//			for (int z = 0; z < sourceImageDatasetChannels[c].getSizeZ(); z++) {
+//				sourceImageDatasetChannelsPix[c][z] = sourceImageDatasetChannels[c].getAllImages()[z].getPixels();
+//			}
+//		}
+//		return calculateCondensedBinsChannels00(sourceImageDatasetChannelsPix);
+//	}
+//	private static TreeMap<Integer, Integer>[] calculateCondensedBinsChannels00(short[][][] sourceImageDatasetChannels){
+//		final int MAX_SCALE = 0x0000FFFF;
+//		int[] tempLookup = new int[MAX_SCALE+1];
+//		for (int i = 0; i < tempLookup.length; i++) {
+//			tempLookup[i] = i;
+//		}
+//		TreeMap<Integer, Integer>[] condensedBinsMapChannels = new TreeMap[sourceImageDatasetChannels.length];
+//		for (int c = 0; c < sourceImageDatasetChannels.length; c++) {
+//			int[] bins = new int[MAX_SCALE+1];
+//			int binTotal = 0;
+//			for (int z = 0; z < sourceImageDatasetChannels[c].length; z++) {
+//				short[] zPixels = sourceImageDatasetChannels[c][z];
+//				for (int xy = 0; xy < zPixels.length; xy++) {
+//					int index = (int)(zPixels[xy]&0x0000FFFF);
+//					boolean bSet = isSet(zPixels[xy], MAX_SCALE, tempLookup,true,false);
+//					bins[index]+= (bSet?1:0);
+//					binTotal+= (bSet?1:0);
+//	
+//				}
+//			}
+//			TreeMap<Integer, Integer> condensedBinsMap = new TreeMap<Integer, Integer>();
+//			for (int i = 0; i < bins.length; i++) {
+//				if(bins[i] != 0){
+//					condensedBinsMap.put(i, bins[i]);
+//				}
+//			}
+//			condensedBinsMapChannels[c] = condensedBinsMap;
+//		}
+//
+//		return condensedBinsMapChannels;
+//	}
 	private static TreeMap<Integer, Integer>[] calculateCondensedBinsChannels0(ImageDataset[] sourceImageDatasetChannels){
 		final int MAX_SCALE = 0x0000FFFF;
 		int[] tempLookup = new int[MAX_SCALE+1];
@@ -4229,9 +4922,10 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 			int[] bins = new int[MAX_SCALE+1];
 			int binTotal = 0;
 			for (int z = 0; z < sourceImageDatasetChannels[c].getSizeZ(); z++) {
-				for (int xy = 0; xy < sourceImageDatasetChannels[c].getAllImages()[z].getPixels().length; xy++) {
-					int index = (int)(sourceImageDatasetChannels[c].getAllImages()[z].getPixels()[xy]&0x0000FFFF);
-					boolean bSet = isSet(sourceImageDatasetChannels[c].getAllImages()[z].getPixels()[xy], MAX_SCALE, tempLookup,true,false);
+				short[] zPixels = sourceImageDatasetChannels[c].getAllImages()[z].getPixels();
+				for (int xy = 0; xy < zPixels.length; xy++) {
+					int index = (int)(zPixels[xy]&0x0000FFFF);
+					boolean bSet = isSet(zPixels[xy], MAX_SCALE, tempLookup,true,false);
 					bins[index]+= (bSet?1:0);
 					binTotal+= (bSet?1:0);
 	

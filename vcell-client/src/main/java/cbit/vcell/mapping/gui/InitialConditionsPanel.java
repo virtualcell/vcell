@@ -15,8 +15,6 @@ import java.awt.Component;
 import java.awt.FlowLayout;
 import java.awt.Graphics;
 import java.util.Hashtable;
-import java.util.Map;
-import java.util.TreeMap;
 import java.util.Vector;
 
 import javax.swing.ButtonGroup;
@@ -32,28 +30,21 @@ import javax.swing.table.TableModel;
 
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.vcell.model.rbm.SpeciesPattern;
-import org.vcell.sybil.models.miriam.MIRIAMQualifier;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.TokenMangler;
-import org.vcell.util.document.Identifiable;
 import org.vcell.util.gui.DefaultScrollTableActionManager;
 import org.vcell.util.gui.DefaultScrollTableCellRenderer;
 import org.vcell.util.gui.DialogUtils;
-import org.vcell.util.gui.VCellIcons;
 import org.vcell.util.gui.ScrollTable.ScrollTableBooleanCellRenderer;
+import org.vcell.util.gui.VCellIcons;
 import org.vcell.util.gui.sorttable.JSortTable;
 import org.vcell.util.gui.sorttable.SortTableModel;
 
 import cbit.gui.ScopedExpression;
-import cbit.vcell.biomodel.meta.MiriamManager;
-import cbit.vcell.biomodel.meta.MiriamManager.MiriamRefGroup;
 import cbit.vcell.client.PopupGenerator;
-import cbit.vcell.client.desktop.biomodel.AnnotationsPanel;
 import cbit.vcell.client.desktop.biomodel.ApplicationSpecificationsPanel;
-import cbit.vcell.client.desktop.biomodel.BioModelEditorReactionTableModel;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
 import cbit.vcell.client.desktop.biomodel.IssueManager;
-import cbit.vcell.client.desktop.biomodel.ObservableTableModel;
 import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveViewID;
 import cbit.vcell.client.desktop.biomodel.VCellSortTableModel;
 import cbit.vcell.client.task.AsynchClientTask;
@@ -72,11 +63,12 @@ import cbit.vcell.mapping.SpeciesContextSpec;
 import cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecParameter;
 import cbit.vcell.mapping.gui.StructureMappingTableRenderer.TextIcon;
 import cbit.vcell.math.Variable;
-import cbit.vcell.model.BioModelEntityObject;
 import cbit.vcell.model.Species;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
 import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionBindingException;
+import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.units.VCUnitDefinition;
 
@@ -117,6 +109,7 @@ public class InitialConditionsPanel extends DocumentEditorSubPanel implements Ap
 				popupMenu.insert(getJMenuItemCopyAll(), pos ++);
 				popupMenu.insert(getJMenuItemPaste(), pos ++);
 				popupMenu.insert(getJMenuItemPasteAll(), pos ++);
+				DocumentEditorSubPanel.addFieldDataMenuItem(getOwnerTable(), popupMenu, pos++);
 				popupMenu.insert(new JSeparator(), pos++);
 			}
 			Object obj = VCellTransferable.getFromClipboard(VCellTransferable.OBJECT_FLAVOR);	
@@ -410,6 +403,25 @@ private void updateTopScrollPanel()
 	}
 }
 
+public SpeciesContextSpec[] getInitConditionVars() {
+	SpeciesContextSpec[] speciesContextSpecs = getSimulationContext().getReactionContext().getSpeciesContextSpecs();
+//	for(int i=0;i<speciesContextSpecs.length;i++) {
+//		System.out.println(i+" "+speciesContextSpecs[i]+" "+speciesContextSpecs[i].getInitialConditionParameter());
+//	}
+	return speciesContextSpecs;
+	//Object[] initSpecies = new Object[tableModel.getRowCount()];
+}
+public void setGeneratedFieldData(String speciesContextName,String newValue) throws ExpressionBindingException, ExpressionException {
+	//this.getSimulationContext().getReactionContext().getSpeciesContextSpec(speciesContext);
+	SpeciesContextSpec[] speciesContextSpecs = this.getInitConditionVars();
+	for(int i=0;i<speciesContextSpecs.length;i++) {
+		if(speciesContextSpecs[i].getSpeciesContext().getName().equals(speciesContextName)) {
+			speciesContextSpecs[i].getInitialConditionParameter().setExpression(new Expression(newValue));
+			break;
+		}
+	}
+//	tableModel.setValueAt("5.0", 3, 5);
+}
 /**
  * Return the ScrollPaneTable property value.
  * @return javax.swing.JTable

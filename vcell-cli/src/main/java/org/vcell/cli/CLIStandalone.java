@@ -10,6 +10,7 @@ import java.io.FilenameFilter;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 
 public class CLIStandalone {
     public static void main(String[] args) {
@@ -24,12 +25,7 @@ public class CLIStandalone {
         }
 
         if (input != null && input.isDirectory()) {
-            FilenameFilter filter = new FilenameFilter() {
-                @Override
-                public boolean accept(File f, String name) {
-                    return name.endsWith(".omex");
-                }
-            };
+            FilenameFilter filter = (f, name) -> name.endsWith(".omex");
             String[] omexFiles = input.list(filter);
             for (String omexFile : omexFiles) {
                 File file = new File(input, omexFile);
@@ -53,16 +49,17 @@ public class CLIStandalone {
 
     private static void singleExec(String[] args) throws Exception {
         OmexHandler omexHandler = null;
-        CLIHandler cliHandler = null;
-        String inputFile = null;
-        String outputDir = null;
-        ArrayList<String> sedmlLocations = null;
+        CLIHandler cliHandler;
+        String inputFile;
+        String outputDir;
+        ArrayList<String> sedmlLocations;
+
         try {
             cliHandler = new CLIHandler(args);
             inputFile = cliHandler.getInputFilePath();
             outputDir = cliHandler.getOutputDirPath();
             System.out.println("VCell CLI input archive " + inputFile);
-            System.out.println("-------------------------------------------------------------------------");
+            CLIUtils.drawBreakLine("-", 100);
             omexHandler = new OmexHandler(inputFile, outputDir);
             omexHandler.extractOmex();
             sedmlLocations = omexHandler.getSedmlLocationsAbsolute();
@@ -76,19 +73,24 @@ public class CLIStandalone {
         // from here on, we need to collect errors, since some subtasks may succeed while other do not
         boolean somethingFailed = false;
         for (String sedmlLocation : sedmlLocations) {
-            HashMap<String, ODESolverResultSet> resultsHash = null;
-            HashMap<String, File> reportsHash = null;
-            String sedmlName = null;
+            HashMap<String, ODESolverResultSet> resultsHash;
+            HashMap<String, File> reportsHash;
+            String sedmlName;
             File completeSedmlPath = new File(sedmlLocation);
             File outDirForCurrentSedml = new File(omexHandler.getOutputPathFromSedml(sedmlLocation));
-            SedML sedml = null;
+            SedML sedml;
             try {
                 CLIUtils.makeDirs(outDirForCurrentSedml);
                 sedml = Libsedml.readDocument(completeSedmlPath).getSedMLModel();
-                String[] sedmlNameSplit = sedmlLocation.split("/", -2);
+                String[] sedmlNameSplit;
+                if (CLIUtils.isWindowsPlatform) {
+                    sedmlNameSplit = sedmlLocation.split("\\\\", -2);
+                } else {
+                    sedmlNameSplit = sedmlLocation.split("/", -2);
+                }
                 sedmlName = sedmlNameSplit[sedmlNameSplit.length - 1];
                 System.out.println("Successful translation: SED-ML file " + sedmlName);
-                System.out.println("-------------------------------------------------------------------------");
+                CLIUtils.drawBreakLine("-", 100);
             } catch (Exception e) {
                 System.err.println("SED-ML processing for " + sedmlLocation + " failed with error: " + e.getMessage());
                 e.printStackTrace(System.err);
@@ -97,24 +99,30 @@ public class CLIStandalone {
             }
             // Run solvers and make reports; all failures/exceptions are being caught
             SolverHandler solverHandler = new SolverHandler();
-            // send the the whole omex file since we do better handling of malformed model URIs in XMLHelper code
+            // send the the whole OMEX file since we do better handling of malformed model URIs in XMLHelper code
             ExternalDocInfo externalDocInfo = new ExternalDocInfo(new File(inputFile), true);
             resultsHash = solverHandler.simulateAllTasks(externalDocInfo, sedml, outDirForCurrentSedml);
-            reportsHash = CLIUtils.generateReportsAsCSV(sedml, resultsHash, outDirForCurrentSedml);
-            if(CLIUtils.checkPythonInstallation() == 0 ) {
-                CLIUtils.convertCSVtoHDF(Paths.get(outputDir, sedmlName).toString(), sedmlLocation, Paths.get(outputDir, sedmlName).toString());
-            } else {
-                System.err.println("Converting to HDF failed (Check local Python installation)");
-            }
+            // python installation
+            CLIUtils.checkPythonInstallation();
+            // pip install requirements before status generation
+            CLIUtils.pipInstallRequirements();
+            CLIUtils.generateStatusYaml(inputFile, outputDir);
+            reportsHash = CLIUtils.generateReportsAsCSV(sedml, resultsHash, outDirForCurrentSedml, sedmlName);
+
+
+            // HDF5 conversion
+            CLIUtils.convertCSVtoHDF(Paths.get(outputDir, sedmlName).toString(), sedmlLocation, Paths.get(outputDir, sedmlName).toString());
+
             if (resultsHash.containsValue(null) || reportsHash.containsValue(null)) {
                 somethingFailed = true;
             }
         }
+        CLIUtils.finalStatusUpdate(CLIUtils.Status.SUCCEEDED, outputDir);
         omexHandler.deleteExtractedOmex();
         if (somethingFailed) {
             String error = "======> One or more errors encountered while executing archive " + args[1];
+            CLIUtils.finalStatusUpdate(CLIUtils.Status.FAILED, outputDir);
             throw new Exception(error);
         }
     }
 }
-

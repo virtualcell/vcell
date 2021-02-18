@@ -97,7 +97,7 @@ import cbit.vcell.solver.ode.ODESolverResultSet;
 public class ParameterEstimationRunTaskPanel extends JPanel {
 
 	private JTextArea optimizeResultsTextArea = null;
-	private JComboBox optimizationMethodComboBox = null;
+	private JComboBox<CopasiOptimizationMethodType> optimizationMethodComboBox = null;
 	private JButton plotButton = null;
 	private JButton saveSolutionAsNewSimButton = null;
 	private JPanel solutionPanel = null;
@@ -112,7 +112,7 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 	private OptimizationMethodParameterTableModel optimizationMethodParameterTableModel;
 	private InternalEventHandler eventHandler = new InternalEventHandler();
 	private CopasiOptSolverCallbacks optSolverCallbacks = new CopasiOptSolverCallbacks();
-	private JComboBox numberOfRunComboBox = null;
+	private JComboBox<String> numberOfRunComboBox = null;
 	private JLabel numberOfRunLabel = new JLabel("Number of Runs: ");
 	
 	private RunStatusProgressDialog runStatusDialog;
@@ -130,7 +130,7 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 		private JTextField objectiveFunctionValueTextField = null;
 		private JTextField currentValueTextField = null;
 		private JLabel progressLabel;
-		private JLabel numRunsLabel;
+//		private JLabel numRunsLabel;
 		RunStatusProgressDialog(LWContainerHandle owner) {
 			super(owner);
 			initialize();
@@ -154,13 +154,13 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 			currentValueTextField.setEditable(false);
 			
 			int gridy = 0;	//number of runs label
-			numRunsLabel = new JLabel("");
+//			numRunsLabel = new JLabel("");
 			java.awt.GridBagConstraints gbc = new java.awt.GridBagConstraints();
-			gbc.gridx = 0; gbc.gridy = gridy;
-			gbc.gridwidth=2;
-			gbc.insets = new java.awt.Insets(10, 4, 4, 4);
-			gbc.anchor = GridBagConstraints.WEST;
-			runStatusPanel.add(numRunsLabel, gbc);
+//			gbc.gridx = 0; gbc.gridy = gridy;
+//			gbc.gridwidth=2;
+//			gbc.insets = new java.awt.Insets(10, 4, 4, 4);
+//			gbc.anchor = GridBagConstraints.WEST;
+//			runStatusPanel.add(numRunsLabel, gbc);
 			
 			gridy++;
 			gbc = new java.awt.GridBagConstraints();
@@ -266,7 +266,8 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 
 		@Override
 		public void setMessageImpl(String message) {
-			numRunsLabel.setText(message);
+//			numRunsLabel.setText(message);
+			getProgressBar().setString(message);
 		}
 		@Override
 		public void setProgress(int progress) {
@@ -281,31 +282,32 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 		public void setObjectFunctionValue(double d) {
 			objectiveFunctionValueTextField.setText("" + d);
 		}	
-		public void setNumRunMessage(int currentRun, int totalRun)
-		{
-			numRunsLabel.setVisible(true);
-			numRunsLabel.setText("Running No." + (currentRun+1)  + " of total " + totalRun + " runs.");
-		}
+//		public void setNumRunMessage(int currentRun, int totalRun)
+//		{
+//			numRunsLabel.setVisible(true);
+//			numRunsLabel.setText("Running No." + (currentRun+1)  + " of total " + totalRun + " runs.");
+//		}
 		public void showProgressBar(CopasiOptimizationMethod com) {
 			progressBar.setValue(0);
-			progressLabel.setText(com.getType().getProgressLabel() + ": ");
+//			progressLabel.setText(com.getType().getProgressLabel() + ": ");
 			currentValueTextField.setText(null);
 			switch(com.getType().getProgressType()) {
 			case NO_Progress:
-				progressLabel.setVisible(false);
-				progressBar.setVisible(false);
-				currentValueTextField.setVisible(false);
-				break;
+//				progressLabel.setVisible(false);
+//				progressBar.setVisible(false);
+//				currentValueTextField.setVisible(false);
+//				break;
+			case Current_Value:
 			case Progress:
 				progressLabel.setVisible(true);
 				progressBar.setVisible(true);
 				currentValueTextField.setVisible(false);
 				break;
-			case Current_Value:
-				progressLabel.setVisible(true);
-				progressBar.setVisible(false);
-				currentValueTextField.setVisible(true);
-				break;
+//			case Current_Value:
+//				progressLabel.setVisible(true);
+//				progressBar.setVisible(false);
+//				currentValueTextField.setVisible(true);
+//				break;
 			}
 		}
 	}
@@ -517,9 +519,11 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 				plot();
 			if (e.getSource() == getSaveSolutionAsNewSimButton()) 
 				saveSolutionAsNewSimulation();
-			if (e.getSource() == getSolveButton()) 
+			if (e.getSource() == getSolveButton()) {
+				ParameterEstimationRunTaskPanel.this.getRunStatusDialog().setProgress(0);
+				ParameterEstimationRunTaskPanel.this.getRunStatusDialog().setMessage("Starting...");
 				solve();
-			else if (e.getSource() == getOptimizationMethodComboBox()) { 
+			}else if (e.getSource() == getOptimizationMethodComboBox()) { 
 				optimizationMethodComboBox_ActionPerformed();	
 			}else if (e.getSource() == getNumberOfRunComboBox()) {
 				saveNumberOfRuns();
@@ -536,13 +540,13 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 			if (evt.getSource() == optSolverCallbacks && (evt.getPropertyName().equals(CopasiOptSolverCallbacks.COPASI_EVALUATION_HOLDER))) { 
 				getRunStatusDialog().setNumEvaluations(optSolverCallbacks.getEvaluationCount());
 				getRunStatusDialog().setObjectFunctionValue(optSolverCallbacks.getObjectiveFunctionValue());
-				getRunStatusDialog().setNumRunMessage(optSolverCallbacks.getRunNumber(), parameterEstimationTask.getOptimizationSolverSpec().getNumOfRuns());
-				if (optimizationMethodParameterTableModel.copasiOptimizationMethod.getType().getProgressType() == CopasiOptSettings.CopasiOptProgressType.Progress) {
+//				getRunStatusDialog().setNumRunMessage(optSolverCallbacks.getRunNumber(), parameterEstimationTask.getOptimizationSolverSpec().getNumOfRuns());
+//				if (optimizationMethodParameterTableModel.copasiOptimizationMethod.getType().getProgressType() == CopasiOptSettings.CopasiOptProgressType.Progress) {
 					getRunStatusDialog().setProgress((int) (optSolverCallbacks.getRunNumber() * 100.0 /parameterEstimationTask.getOptimizationSolverSpec().getNumOfRuns()));
-				}
-				else if (optimizationMethodParameterTableModel.copasiOptimizationMethod.getType().getProgressType() == CopasiOptSettings.CopasiOptProgressType.Current_Value) {
-					getRunStatusDialog().setCurrentValue(optSolverCallbacks.getCurrentValue());
-				}
+//				}
+//				if (optimizationMethodParameterTableModel.copasiOptimizationMethod.getType().getProgressType() == CopasiOptSettings.CopasiOptProgressType.Current_Value) {
+//					getRunStatusDialog().setCurrentValue(optSolverCallbacks.getCurrentValue());
+//				}
 			}
 		}
 	}
@@ -600,7 +604,7 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 		gbc.insets = new Insets(0, 8, 4, 0);
 		add(panel, gbc);
 		
-		DefaultComboBoxModel model = new DefaultComboBoxModel();
+		DefaultComboBoxModel<CopasiOptimizationMethodType> model = new DefaultComboBoxModel<CopasiOptimizationMethodType>();
 		for (CopasiOptimizationMethodType com : CopasiOptimizationMethodType.values()){
 			model.addElement(com);
 		}
@@ -610,7 +614,7 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 		getOptimizationMethodComboBox().setRenderer(new DefaultListCellRenderer() {
 			
 			@Override
-			public Component getListCellRendererComponent(JList list, Object value,	int index, boolean isSelected, boolean cellHasFocus) {
+			public Component getListCellRendererComponent(JList<?> list, Object value,	int index, boolean isSelected, boolean cellHasFocus) {
 				super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
 				if (value instanceof CopasiOptimizationMethodType) {
 					setText(((CopasiOptimizationMethodType) value).getDisplayName());
@@ -852,17 +856,17 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 		return plotButton;
 	}
 
-	private JButton getEvaluateConfidenceIntervalButton() {
-		if ( evaluateConfidenceIntervalButton == null) {
-			try {
-				evaluateConfidenceIntervalButton = new javax.swing.JButton("Confidence Interval");
-				evaluateConfidenceIntervalButton.setEnabled(false);
-			} catch (Throwable ivjExc) {
-				handleException(ivjExc);
-			}
-		}
-		return evaluateConfidenceIntervalButton;
-	}
+//	private JButton getEvaluateConfidenceIntervalButton() {
+//		if ( evaluateConfidenceIntervalButton == null) {
+//			try {
+//				evaluateConfidenceIntervalButton = new javax.swing.JButton("Confidence Interval");
+//				evaluateConfidenceIntervalButton.setEnabled(false);
+//			} catch (Throwable ivjExc) {
+//				handleException(ivjExc);
+//			}
+//		}
+//		return evaluateConfidenceIntervalButton;
+//	}
 
 	/**
 	 * Return the SaveAsNewSimulationButton property value.
@@ -913,10 +917,10 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 	 * Return the SolverTypeComboBox property value.
 	 * @return javax.swing.JComboBox
 	 */
-	private JComboBox getOptimizationMethodComboBox() {
+	private JComboBox<CopasiOptimizationMethodType> getOptimizationMethodComboBox() {
 		if (optimizationMethodComboBox == null) {
 			try {
-				optimizationMethodComboBox = new JComboBox();
+				optimizationMethodComboBox = new JComboBox<CopasiOptimizationMethodType>();
 				optimizationMethodComboBox.setName("SolverTypeComboBox");
 			} catch (Throwable ivjExc) {
 				handleException(ivjExc);
@@ -925,11 +929,11 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 		return optimizationMethodComboBox;
 	}
 	
-	private JComboBox getNumberOfRunComboBox()
+	private JComboBox<String> getNumberOfRunComboBox()
 	{
 		if(numberOfRunComboBox == null)
 		{
-			numberOfRunComboBox = new JComboBox();
+			numberOfRunComboBox = new JComboBox<String>();
 			for(int i = 1; i <= 25; i++) //add 1..25
 			{
 				numberOfRunComboBox.addItem(i+"");

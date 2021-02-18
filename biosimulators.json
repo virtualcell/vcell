@@ -987,7 +987,7 @@
       "name": "Hybrid (Adaptive Gibson + Milstein Method)",
       "kisaoId": {
         "namespace": "KISAO",
-        "id": "KISAO_0000600"
+        "id": "KISAO_0000616"
       },
 
       "modelingFrameworks": [{

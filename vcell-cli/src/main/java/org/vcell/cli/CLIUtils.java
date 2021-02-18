@@ -7,25 +7,55 @@ import cbit.vcell.parser.SymbolTable;
 import cbit.vcell.resource.OperatingSystemInfo;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.util.ColumnDescription;
+import com.google.common.base.Joiner;
 import com.google.common.io.Files;
+import org.apache.commons.lang.StringUtils;
 import org.jlibsedml.*;
 import org.vcell.stochtest.TimeSeriesMultitrialData;
+
 import java.io.*;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 
 public class CLIUtils {
-    //    private String tempDirPath = null;
-    private final String extractedOmexPath = null;
-
-//    private static final Path workingDirectory = Paths.get(Paths.get(".").toAbsolutePath().normalize().toString());
+    //    private static final Path workingDirectory = Paths.get(Paths.get(".").toAbsolutePath().normalize().toString());
     // TODO: Hardcoded for docker image working directory(remove it soon) @gmarupilla
     private static final Path workingDirectory = Paths.get(System.getProperty("user.dir").equals("/") ? "/usr/local/app/vcell/installDir" : System.getProperty("user.dir"));
     // Submodule path for VCell_CLI_UTILS
     private static final Path utilPath = Paths.get(workingDirectory.toString(), "submodules", "vcell_cli_utils");
-    private static final Path cliPath = Paths.get(utilPath.toString(), "cli_util", "cli.py");
+    private static final Path stdOutPath = Paths.get(workingDirectory.toString(), "stdOut.txt");
+    private static final File stdOutFile = new File(String.valueOf(stdOutPath));
+    private static final Path cliUtilPath = Paths.get(utilPath.toString(), "cli_util");
+    private static final Path cliPath = Paths.get(cliUtilPath.toString(), "cli.py");
+    private static final Path statusPath = Paths.get(cliUtilPath.toString(), "status.py");
     private static final Path requirementFilePath = Paths.get(utilPath.toString(), "requirements.txt");
+
+    // Supported platforms
+    public static boolean isWindowsPlatform = OperatingSystemInfo.getInstance().isWindows();
+    public static boolean isMacPlatform = OperatingSystemInfo.getInstance().isMac();
+    public static boolean isLinuxPlatform = OperatingSystemInfo.getInstance().isLinux();
+
+    // private String tempDirPath = null;
+    // private final String extractedOmexPath = null;
+
+
+    // Simulation Status enum
+    public enum Status {
+        RUNNING("Simulation still running"),
+        SKIPPED("Simulation skipped"),
+        SUCCEEDED("Simulation succeeded"),
+        FAILED("Simulation failed");
+
+        Status(String desc) {
+        }
+    }
+
+
+    // Breakline
+    public static void drawBreakLine(String breakString, int times){
+        System.out.println(breakString + StringUtils.repeat(breakString, times));
+    }
 
     public CLIUtils() {
 
@@ -175,9 +205,9 @@ public class CLIUtils {
         }
     }
 
-    public static HashMap<String, File> generateReportsAsCSV(SedML sedml, HashMap<String, ODESolverResultSet> resultsHash, File outDir) {
+    public static HashMap<String, File> generateReportsAsCSV(SedML sedml, HashMap<String, ODESolverResultSet> resultsHash, File outDir, String sedmlName) {
         // finally, the real work
-        HashMap<String, File> reportsHash = new HashMap<String, File>();
+        HashMap<String, File> reportsHash = new HashMap<>();
         List<Output> ooo = sedml.getOutputs();
         for (Output oo : ooo) {
             if (!(oo instanceof Report)) {
@@ -189,9 +219,9 @@ public class CLIUtils {
                     List<DataSet> datasets = ((Report) oo).getListOfDataSets();
                     for (DataSet dataset : datasets) {
                         DataGenerator datagen = sedml.getDataGeneratorWithId(dataset.getDataReference());
-                        ArrayList<String> varIDs = new ArrayList<String>();
+                        ArrayList<String> varIDs = new ArrayList<>();
                         assert datagen != null;
-                        ArrayList<Variable> vars = new ArrayList<Variable>(datagen.getListOfVariables());
+                        ArrayList<Variable> vars = new ArrayList<>(datagen.getListOfVariables());
                         int mxlen = 0;
                         boolean supportedDataset = true;
                         // get target values
@@ -209,6 +239,9 @@ public class CLIUtils {
                                 mxlen = Integer.max(mxlen, data.length);
                                 values.put(var, data);
                             }
+                            String outDirRoot = outDir.toString().substring(0, outDir.toString().lastIndexOf(System.getProperty("file.separator")));
+                            CLIUtils.updateDatasetStatusYml(sedmlName, oo.getId() , dataset.getId(), Status.SUCCEEDED, outDirRoot);
+                            CLIUtils.updateTaskStatusYml(sedmlName, task.getId(), Status.SUCCEEDED, outDirRoot);
                         }
                         if (!supportedDataset) {
                             System.err.println("Dataset " + dataset.getId() + " references unsupported RepeatedTask and is being skipped");
@@ -365,44 +398,59 @@ public class CLIUtils {
 
     private static int execShellCommand(String[] args) {
         // NOTE: Magic number -10, simply means unassigned exit code
-        int output = -10;
+        int exitCode = -10;
+        String joinArg = Joiner.on(" ").join(args);
+//            System.out.println("Executing the command: `" + joinArg + "`");
+        File log = stdOutFile;
         try {
-            System.out.println("Running the command " + Arrays.toString(args));
             ProcessBuilder builder = new ProcessBuilder(args);
-            builder.redirectOutput(ProcessBuilder.Redirect.INHERIT);
-            builder.redirectError(ProcessBuilder.Redirect.INHERIT);
-            Process proc = builder.start();
-            output = proc.waitFor();
-            if (output == 0) {
-                System.out.println("Program exited with code: " + proc.waitFor() + "\n");
-            }
-            return output;
+            builder.redirectErrorStream(true);
+            // STDOUT redirected to stdOut.txt file
+            builder.redirectOutput(ProcessBuilder.Redirect.appendTo(log));
+            Process p = builder.start();
+            assert builder.redirectInput() == ProcessBuilder.Redirect.PIPE;
+            assert builder.redirectOutput().file() == log;
+            assert p.getInputStream().read() == -1;
+            exitCode = p.waitFor();
+            return exitCode;
         } catch (IOException | InterruptedException I) {
-            System.err.println("Failed executing the command " + Arrays.toString(args)+ "\n");
+            System.err.println("Failed executing the command: `" + joinArg + "`\n");
         }
-        return output;
+        return exitCode;
     }
 
-    private static void pipInstallRequirements() {
+    public static void pipInstallRequirements() {
         // pip install the requirements
         String[] args;
-        if (OperatingSystemInfo.getInstance().isWindows()) {
-            args = new String[]{"pip", "install", "-r", String.valueOf(requirementFilePath)};
+
+        if (checkPythonInstallation() == 0 && checkPipInstallation() == 0) {
+            System.out.println("Installing the required PIP packages..");
+            if (isWindowsPlatform) {
+                args = new String[]{"pip", "install", "-r", String.valueOf(requirementFilePath)};
+            } else {
+                args = new String[]{"pip3", "install", "-r", String.valueOf(requirementFilePath)};
+            }
+            execShellCommand(args);
         } else {
-            args = new String[]{"pip3", "install", "-r", String.valueOf(requirementFilePath)};
+            System.err.println("Failed installing PIP packages.");
         }
-        CLIUtils.execShellCommand(args);
+
     }
 
     public static int checkPythonInstallation() {
-        // NOTE: Magic number -10, simply means unassigned exit code
-        int pyCheckIns = -10;
-        if (OperatingSystemInfo.getInstance().isWindows()) {
-            pyCheckIns = execShellCommand(new String[]{"python", "--version"});
-        } else {
-            pyCheckIns = execShellCommand(new String[]{"python3", "--version"});
-        }
+        int pyCheckIns;
+        if (isWindowsPlatform) pyCheckIns = execShellCommand(new String[]{"python", "--version"});
+        else pyCheckIns = execShellCommand(new String[]{"python3", "--version"});
+        if (pyCheckIns != 0) System.err.println("Check Python installation...");
         return pyCheckIns;
+    }
+
+    public static int checkPipInstallation() {
+        int pipCheckIns;
+        if (isWindowsPlatform) pipCheckIns = execShellCommand(new String[]{"pip", "--version"});
+        else pipCheckIns = execShellCommand(new String[]{"pip3", "--version"});
+        if (pipCheckIns != 0) System.err.println("Check PIP installation...");
+        return pipCheckIns;
     }
 
     public static void giveOpenPermissions(String PathStr) {
@@ -414,10 +462,10 @@ public class CLIUtils {
     }
 
     public static void convertCSVtoHDF(String csvDir, String sedmlFilePathStr, String outDir) {
+        String[] cliArgs;
         Path csvDirPath = Paths.get(csvDir);
         Path sedmlFilePath = Paths.get(sedmlFilePathStr);
         Path outDirPath = Paths.get(outDir);
-        CLIUtils.pipInstallRequirements();
 //        CLIUtils.giveOpenPermissions(sedmlFilePathStr);
 
         // Convert CSV to HDF5
@@ -427,10 +475,93 @@ public class CLIUtils {
                     optional flags:        --rel_out_path | --apply_xml_model_changes |
                          --report_formats | --plot_formats | --log | --indent
         * */
-        String[] cliArgs = new String[]{"python3", cliPath.toString(), sedmlFilePath.toString(), workingDirectory.toString(), outDirPath.toString(), csvDirPath.toString()};
-        CLIUtils.execShellCommand(cliArgs);
-        System.out.println("HDF conversion completed in '" + outDir + "'");
+        if (checkPythonInstallation() == 0) {
+            if (isWindowsPlatform) {
+                cliArgs = new String[]{"python", cliPath.toString(), sedmlFilePath.toString(), workingDirectory.toString(), outDirPath.toString(), csvDirPath.toString()};
+            } else {
+                cliArgs = new String[]{"python3", cliPath.toString(), sedmlFilePath.toString(), workingDirectory.toString(), outDirPath.toString(), csvDirPath.toString()};
+            }
+            execShellCommand(cliArgs);
+            System.out.println("HDF conversion completed in '" + outDir + "'\n");
+        } else System.err.println("HDF5 conversion failed...");
 
+    }
+
+    // Sample STATUS YML
+    /*
+    sedDocuments:
+      BIOMD0000000912_sim.sedml:
+        outputs:
+          BIOMD0000000912_sim:
+            dataSets:
+              data_set_E: SKIPPED
+              data_set_I: PASSED
+              data_set_T: SKIPPED
+              data_set_time: SKIPPED
+            status: SKIPPED
+          plot_1:
+            curves:
+              plot_1_E_time: SKIPPED
+              plot_1_I_time: SKIPPED
+              plot_1_T_time: SKIPPED
+            status: SKIPPED
+        status: SUCCEEDED
+        tasks:
+          BIOMD0000000912_sim:
+            status: SKIPPED
+    status: SUCCEEDED
+    * */
+    public static void generateStatusYaml(String omexPath, String outDir) {
+        // Note: by default every status is being skipped
+        Path omexFilePath = Paths.get(omexPath);
+        /*
+         USAGE:
+
+         NAME
+         status.py
+
+         SYNOPSIS
+         status.py COMMAND
+
+         COMMANDS
+         COMMAND is one of the following:
+
+         status_yml
+        */
+        if (checkPythonInstallation() == 0) {
+            if (isWindowsPlatform)
+                execShellCommand(new String[]{"python", statusPath.toString(), "genStatusYaml", String.valueOf(omexFilePath), outDir});
+            else
+                execShellCommand(new String[]{"python3", statusPath.toString(), "genStatusYaml", String.valueOf(omexFilePath), outDir});
+        }
+    }
+
+    public static void updateTaskStatusYml(String sedmlName, String taskName, Status taskStatus, String outDir) {
+        if (checkPythonInstallation() == 0) {
+            if (isWindowsPlatform)
+                execShellCommand(new String[]{"python", statusPath.toString(), "updateTaskStatus", sedmlName, taskName, taskStatus.toString(), outDir});
+            else
+                execShellCommand(new String[]{"python3", statusPath.toString(), "updateTaskStatus", sedmlName, taskName, taskStatus.toString(), outDir});
+        }
+    }
+
+    public static void finalStatusUpdate(Status simStatus, String outDir) {
+        if (checkPythonInstallation() == 0) {
+            System.out.println("Generating Status YAML...");
+            if (isWindowsPlatform)
+                execShellCommand(new String[]{"python", statusPath.toString(), "simStatus", simStatus.toString(), outDir});
+            else
+                execShellCommand(new String[]{"python3", statusPath.toString(), "simStatus", simStatus.toString(), outDir});
+        } else System.err.println("Failed generating status YAML...");
+    }
+
+    public static void updateDatasetStatusYml(String sedmlName, String dataSet, String var, Status simStatus, String outDir) {
+        if (checkPythonInstallation() == 0) {
+            if (isWindowsPlatform)
+                execShellCommand(new String[]{"python", statusPath.toString(), "updateDataSetStatus", sedmlName, dataSet, var, simStatus.toString(), outDir});
+            else
+                execShellCommand(new String[]{"python3", statusPath.toString(), "updateDataSetStatus", sedmlName, dataSet, var, simStatus.toString(), outDir});
+        }
     }
 
     @SuppressWarnings("UnstableApiUsage")

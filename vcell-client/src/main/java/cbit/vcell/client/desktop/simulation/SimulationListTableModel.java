@@ -247,6 +247,9 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 				}
 				break;
 			case COLUMN_ENDTIME:
+				if(aValue instanceof String) {
+					aValue = Double.parseDouble((String)aValue);
+				}
 				if (aValue instanceof Double){
 					SolverTaskDescription solverTaskDescription = simulation.getSolverTaskDescription();
 					double newEndTime = (Double) aValue;

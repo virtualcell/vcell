@@ -31,6 +31,7 @@ import org.apache.logging.log4j.Logger;
 import org.vcell.client.logicalwindow.LWTopFrame;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.DataAccessException;
+import org.vcell.util.ISize;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.VCAssert;
 import org.vcell.util.document.BioModelInfo;
@@ -40,6 +41,9 @@ import org.vcell.util.document.VCDocument.VCDocumentType;
 import org.vcell.util.document.Version;
 import org.vcell.util.gui.DialogUtils;
 
+import cbit.image.ImageSizeInfo;
+import cbit.image.VCImage;
+import cbit.image.VCImageUncompressed;
 import cbit.rmi.event.DataJobEvent;
 import cbit.rmi.event.DataJobListener;
 import cbit.rmi.event.DataJobListenerHolder;
@@ -54,6 +58,7 @@ import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometryThumbnailImageFactoryAWT;
+import cbit.vcell.geometry.RegionImage;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.mathmodel.MathModel;
@@ -62,12 +67,14 @@ import cbit.vcell.simdata.DataListener;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationInfo;
 import cbit.vcell.solver.VCSimulationIdentifier;
+import cbit.vcell.solvers.CartesianMesh;
 /**
  * Insert the type's description here.
  * Creation date: (5/24/2004 12:53:14 AM)
  * @author: Ion Moraru
  */
 public abstract class TopLevelWindowManager implements DataJobListenerHolder {
+	public static final String WORK_SPACE_SAMPLESIZE = "WORK_SPACE_SAMPLESIZE";
 	private RequestManager requestManager = null;
 	protected transient Vector<DataListener> aDataListener = null;
 	protected transient Vector<ExportListener> aExportListener = null;
@@ -475,6 +482,10 @@ void createGeometry(final Geometry currentGeometry,final AsynchClientTask[] afte
 			createGeomTaskV.add(new AsynchClientTask("loading Geometry", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 				@Override
 				public void run(Hashtable<String, Object> hashTable) throws Exception {
+					if(selectDialogTitle.equals(BioModelWindowManager.FIELD_DATA_FLAG)) {
+						addWorkspaceGeomSizeSelection(hash,currentGeometry);
+						hash.put(BioModelWindowManager.FIELD_DATA_FLAG, new Boolean(true));
+					}
 					final Vector<AsynchClientTask> runtimeTasksV = new Vector<AsynchClientTask>();
 					VCDocument.DocumentCreationInfo workspaceDocCreateInfo = null;
 					if(currentGeometry.getGeometrySpec().getNumAnalyticOrCSGSubVolumes() > 0 && currentGeometry.getGeometrySpec().getImage() == null){
@@ -499,6 +510,7 @@ void createGeometry(final Geometry currentGeometry,final AsynchClientTask[] afte
 						}
 					).start();
 				}
+
 			});
 		}
 		ClientTaskDispatcher.dispatch(getComponent(), hash, createGeomTaskV.toArray(new AsynchClientTask[0]), false,bCancellable,null,true);
@@ -510,6 +522,171 @@ void createGeometry(final Geometry currentGeometry,final AsynchClientTask[] afte
 		DialogUtils.showErrorDialog(getComponent(), e1.getMessage(), e1);
 	}
 
+}
+
+private void addWorkspaceGeomSizeSelection(final Hashtable<String, Object> hash,Geometry sourceGeom) throws Exception{
+	if(TopLevelWindowManager.this instanceof DocumentWindowManager) {
+		Simulation[] simulations = null;
+		SimulationContext[] simContexts = null;
+		SimulationContext selectedSC = null;
+		
+	
+		ArrayList<Object[]> allRows = new ArrayList<Object[]>();
+		ArrayList<ISize> iSizes = new ArrayList<ISize>();
+
+		if(this instanceof BioModelWindowManager) {
+			BioModelWindowManager bmwm = ((BioModelWindowManager)this);
+			//System.out.println(bmwm);
+			if(bmwm.getDocumentEditor() instanceof cbit.vcell.client.desktop.biomodel.BioModelEditor) {
+				cbit.vcell.client.desktop.biomodel.BioModelEditor bme = (cbit.vcell.client.desktop.biomodel.BioModelEditor)bmwm.getDocumentEditor();
+				//System.out.println(bme);
+				selectedSC = bme.getSelectedSimulationContext();
+//				System.out.println(selectedSC);
+			}
+		}
+		if(((DocumentWindowManager)TopLevelWindowManager.this).getVCDocument() instanceof BioModel) {
+			simContexts = ((BioModel)((DocumentWindowManager)TopLevelWindowManager.this).getVCDocument()).getSimulationContexts();
+		}else if (((DocumentWindowManager)TopLevelWindowManager.this).getVCDocument() instanceof MathModel) {
+			simulations = ((MathModel)((DocumentWindowManager)TopLevelWindowManager.this).getVCDocument()).getSimulations();
+		}
+		String[] simColumnNames = null;
+		if(simContexts != null) {
+			simColumnNames = new String[] {"x","y","z","appName","simName"};	
+		}else {
+			simColumnNames = new String[] {"x","y","z","simName"};
+		}
+		ArrayList<Object[]> simRows = new ArrayList<Object[]>();
+		ArrayList<CartesianMesh> meshes = new ArrayList<CartesianMesh>();
+		for (int j=0;j<(simContexts==null?1:simContexts.length);j++) {
+			Geometry geom = null;
+			if(simContexts != null) {
+				if(simContexts[j] != selectedSC) {
+					continue;
+				}
+				simulations = simContexts[j].getSimulations();
+				geom = simContexts[j].getGeometry();
+			}else {
+				geom = ((MathModel)((DocumentWindowManager)TopLevelWindowManager.this).getVCDocument()).getGeometry();
+			}
+//			ISize defaultSamplesize = geom.getGeometrySpec().getDefaultSampledImageSize();
+			if(simulations != null && simulations.length > 0) {
+				for(int i=0;i<simulations.length;i++) {
+					Object[] row = new Object[simColumnNames.length];
+//					if(i==0) {
+//						row[0] = defaultSamplesize.getX();
+//						row[1] = defaultSamplesize.getY();
+//						row[2] = defaultSamplesize.getZ();
+//						row[3] = (simContexts!=null?simContexts[j].getName():"default");
+//						if(simContexts!=null) {
+//							row[4] = "default";
+//						}
+//						simRows.add(row);						
+//						VCImageUncompressed vcImageUnc = new VCImageUncompressed(null, new byte[defaultSamplesize.getXYZ()], geom.getExtent(), defaultSamplesize.getX(), defaultSamplesize.getY(), defaultSamplesize.getZ());
+//						CartesianMesh simpleMesh = CartesianMesh.createSimpleCartesianMesh(
+//							geom.getOrigin(), 
+//							geom.getExtent(),
+//							defaultSamplesize,
+//							new RegionImage(vcImageUnc, geom.getDimension(), geom.getExtent(), geom.getOrigin(), RegionImage.NO_SMOOTHING));
+//						meshes.add(simpleMesh);
+//					}
+					if(simulations[i].getMeshSpecification() != null &&
+						simulations[i].getMeshSpecification() != null) {
+						row = new Object[simColumnNames.length];
+						ISize samplingSize = simulations[i].getMeshSpecification().getSamplingSize();
+						row[0] = samplingSize.getX();
+						row[1] = samplingSize.getY();
+						row[2] = samplingSize.getZ();
+						row[3] = (simContexts!=null?simContexts[j].getName():simulations[i].getName());
+						if(simContexts!=null) {
+							row[4] = simulations[i].getName();
+						}
+						simRows.add(row);
+						
+						VCImageUncompressed vcImageUnc = new VCImageUncompressed(null, new byte[samplingSize.getXYZ()], geom.getExtent(), samplingSize.getX(), samplingSize.getY(), samplingSize.getZ());
+						CartesianMesh simpleMesh = CartesianMesh.createSimpleCartesianMesh(
+							geom.getOrigin(), 
+							geom.getExtent(),
+							samplingSize,
+							new RegionImage(vcImageUnc, geom.getDimension(), geom.getExtent(), geom.getOrigin(), RegionImage.NO_SMOOTHING));
+						meshes.add(simpleMesh);
+					}
+				}
+			}
+		}
+		
+		for(int i=0;i<simRows.size();i++) {
+			ISize iSize = meshes.get(i).getISize();
+			iSizes.add(iSize);
+			allRows.add(new Object[] {iSize.getX(),iSize.getY(),iSize.getZ(),"Simulation="+(simColumnNames.length==4?simRows.get(i)[3]:simRows.get(i)[3]+":"+simRows.get(i)[4])});
+		}
+
+//		DocumentManager documentManager = this.getRequestManager().getDocumentManager();
+//		FieldDataDBOperationSpec fdos = FieldDataDBOperationSpec.createGetExtDataIDsSpec(documentManager.getUser());
+//		FieldDataDBOperationResults fieldDataDBOperationResults = documentManager.fieldDataDBOperation(fdos);
+//		ExternalDataIdentifier[] externalDataIdentifierArr = fieldDataDBOperationResults.extDataIDArr;
+//		Arrays.sort(externalDataIdentifierArr, new Comparator<ExternalDataIdentifier>() {
+//			@Override
+//			public int compare(ExternalDataIdentifier o1, ExternalDataIdentifier o2) {
+//				// TODO Auto-generated method stub
+//				return o1.getName().compareToIgnoreCase(o2.getName());
+//			}});
+//		for(int i=0;externalDataIdentifierArr != null && i<externalDataIdentifierArr.length;i++) {
+//			try {
+//				FieldDataFileOperationSpec fieldDataFileOperationSpec = FieldDataFileOperationSpec.createInfoFieldDataFileOperationSpec(externalDataIdentifierArr[i].getSimulationKey(), externalDataIdentifierArr[i].getOwner(), externalDataIdentifierArr[i].getJobIndex());
+//				FieldDataFileOperationResults fieldDataFileOperationResults = documentManager.fieldDataFileOperation(fieldDataFileOperationSpec);
+////				System.out.println(externalDataIdentifierArr[i].getName()+" "+fieldDataFileOperationResults.iSize);
+//				ISize iSize = fieldDataFileOperationResults.iSize;
+//				iSizes.add(iSize);
+//				//isizes.add(iSize);
+//				allRows.add(new Object[] {iSize.getX(),iSize.getY(),iSize.getZ(),"FieldData='"+externalDataIdentifierArr[i].getName()+"'"});
+//				VCImageUncompressed vcImageUnc = new VCImageUncompressed(null, new byte[iSize.getXYZ()], fieldDataFileOperationResults.extent,iSize.getX(),iSize.getY(),iSize.getZ());
+//				int dimension = 1 + (iSize.getY()>1?1:0) + (iSize.getZ()>1?1:0);
+//				CartesianMesh simpleMesh = CartesianMesh.createSimpleCartesianMesh(
+//					fieldDataFileOperationResults.origin, 
+//					fieldDataFileOperationResults.extent,
+//					iSize,
+//					new RegionImage(vcImageUnc, dimension, fieldDataFileOperationResults.extent, fieldDataFileOperationResults.origin, RegionImage.NO_SMOOTHING));
+//				meshes.add(simpleMesh);
+//
+//			} catch (Exception e) {
+//				// TODO Auto-generated catch block
+//				//e.printStackTrace();
+//			}			
+//		}
+//
+//		if(allRows.size() > 0) {
+		if(simRows.size() > 0) {
+			Object[][] rowData = simRows.toArray(new Object[0][]);
+			int[] selections = DialogUtils.showComponentOKCancelTableList(TopLevelWindowManager.this.getComponent(), "Select Simulation for Geom Size",
+					simColumnNames, rowData, ListSelectionModel.SINGLE_SELECTION);
+//			Object[][] rowData = allRows.toArray(new Object[0][]);
+//			int[] selections = DialogUtils.showComponentOKCancelTableList(TopLevelWindowManager.this.getComponent(), "Select Simulation for Geom Size",
+//					new String[] {"X","Y","Z","SourceType"}, rowData, ListSelectionModel.SINGLE_SELECTION);
+
+			if(selections != null && selections.length == 1) {
+//				ImageSizeInfo imagesizeInfo = new ImageSizeInfo("internal",meshes.get(selections[0]).getISize(),1,new double[] {0},0);
+				ImageSizeInfo imagesizeInfo = new ImageSizeInfo("internal",iSizes.get(selections[0]),1,new double[] {0},0);
+				hash.put(ClientRequestManager.NEW_IMAGE_SIZE_INFO, imagesizeInfo);
+				
+				VCImage image = null;
+				if(sourceGeom.getGeometrySpec().getImage() == null) {
+					image = sourceGeom.getGeometrySpec().createSampledImage(iSizes.get(selections[0]));
+				}else {
+					image = sourceGeom.getGeometrySpec().getImage();
+				}
+				ISize samplingSize = new ISize(image.getNumX(),image.getNumY(),image.getNumZ());//
+				VCImageUncompressed vcImageUnc = new VCImageUncompressed(null, new byte[samplingSize.getXYZ()], sourceGeom.getExtent(), samplingSize.getX(), samplingSize.getY(), samplingSize.getZ());
+				CartesianMesh sourceMesh = CartesianMesh.createSimpleCartesianMesh(
+					sourceGeom.getOrigin(), 
+					sourceGeom.getExtent(),
+					samplingSize,
+					new RegionImage(vcImageUnc, sourceGeom.getDimension(), sourceGeom.getExtent(), sourceGeom.getOrigin(), RegionImage.NO_SMOOTHING));
+
+				hash.put("newMesh", meshes.get(selections[0]));
+				hash.put("sourceMesh", sourceMesh);
+			}
+		}
+	}
 }
 
 public static abstract class OpenModelInfoHolder{

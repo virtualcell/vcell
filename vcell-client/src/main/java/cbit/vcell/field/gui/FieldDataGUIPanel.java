@@ -41,7 +41,6 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 
-import org.vcell.imagej.ImageJHelper;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Extent;
 import org.vcell.util.ISize;
@@ -1071,7 +1070,7 @@ private AsynchClientTask[] fdFromFile() {
 			FieldDataFileOperationSpec argfdos = (FieldDataFileOperationSpec)hashTable.get("argfdos");
 			if (argfdos == null && hashTable.get(IMAGE_FILE_KEY) == null) {
 				File imageFile = DatabaseWindowManager.showFileChooserDialog(
-						fieldDataWindowManager, FileFilters.FILE_FILTER_FIELDIMAGES,
+						fieldDataWindowManager.getComponent(), FileFilters.FILE_FILTER_FIELDIMAGES,
 						clientRequestManager.getUserPreferences(),JFileChooser.FILES_AND_DIRECTORIES);
 				hashTable.put(IMAGE_FILE_KEY, imageFile);
 			}

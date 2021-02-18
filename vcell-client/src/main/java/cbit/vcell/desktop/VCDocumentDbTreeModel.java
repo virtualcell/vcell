@@ -623,6 +623,7 @@ protected synchronized static TreeMap<String, BioModelNode> initOwners(VCDocumen
 				throw new Exception("Unimplemented VCDocumentInfo type="+vcDocumentInfos.getClass().getName());
 			}
 		}catch(Exception e){
+			e.printStackTrace();
 			ownerNode = new BioModelNode("Error"+e.getMessage());
 		}
 		if(owner.equals(loginUser) || ownerNode.getChildCount() > 0){
