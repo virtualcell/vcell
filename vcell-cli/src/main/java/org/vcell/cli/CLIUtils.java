@@ -423,7 +423,7 @@ public class CLIUtils {
         // pip install the requirements
         String[] args;
 
-        if (checkPythonInstallation() == 0) {
+        if (checkPythonInstallation() == 0 && checkPipInstallation() == 0) {
             System.out.println("Installing the required PIP packages..");
             if (isWindowsPlatform) {
                 args = new String[]{"pip", "install", "-r", String.valueOf(requirementFilePath)};
@@ -443,6 +443,14 @@ public class CLIUtils {
         else pyCheckIns = execShellCommand(new String[]{"python3", "--version"});
         if (pyCheckIns != 0) System.err.println("Check Python installation...");
         return pyCheckIns;
+    }
+
+    public static int checkPipInstallation() {
+        int pipCheckIns;
+        if (isWindowsPlatform) pipCheckIns = execShellCommand(new String[]{"pip", "--version"});
+        else pipCheckIns = execShellCommand(new String[]{"pip3", "--version"});
+        if (pipCheckIns != 0) System.err.println("Check PIP installation...");
+        return pipCheckIns;
     }
 
     public static void giveOpenPermissions(String PathStr) {
