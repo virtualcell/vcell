@@ -3,6 +3,8 @@ package org.vcell.cli;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.xml.ExternalDocInfo;
 import org.jlibsedml.Libsedml;
+import org.jlibsedml.Output;
+import org.jlibsedml.Report;
 import org.jlibsedml.SedML;
 
 import java.io.File;
@@ -10,7 +12,7 @@ import java.io.FilenameFilter;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
 
 public class CLIStandalone {
     public static void main(String[] args) {
@@ -53,6 +55,13 @@ public class CLIStandalone {
         String inputFile;
         String outputDir;
         ArrayList<String> sedmlLocations;
+        int nModels;
+        int nSimulations;
+        int nSedml;
+        int nTasks;
+        List<Output> PlotsReports;
+        int nReportsCount = 0;
+        int nPlotsCount = 0;
 
         try {
             cliHandler = new CLIHandler(args);
@@ -63,6 +72,7 @@ public class CLIStandalone {
             omexHandler = new OmexHandler(inputFile, outputDir);
             omexHandler.extractOmex();
             sedmlLocations = omexHandler.getSedmlLocationsAbsolute();
+            nSedml = sedmlLocations.size();
             // any error up to now is fatal (unlikely, but still...)
         } catch (Throwable exc) {
             assert omexHandler != null;
@@ -89,6 +99,21 @@ public class CLIStandalone {
                     sedmlNameSplit = sedmlLocation.split("/", -2);
                 }
                 sedmlName = sedmlNameSplit[sedmlNameSplit.length - 1];
+                nModels = sedml.getModels().size();
+                nTasks = sedml.getTasks().size();
+                PlotsReports = sedml.getOutputs();
+                for (Output data : PlotsReports) {
+                    if (!(data instanceof Report)) nPlotsCount++;
+                    else nReportsCount++;
+                }
+                nSimulations = sedml.getSimulations().size();
+                String summarySedmlContentString = "Found " + nSedml + " SED-ML document(s) with "
+                        + nModels + " model(s), "
+                        + nSimulations + " simulation(s), "
+                        + nTasks + " task(s), "
+                        + nReportsCount + "  report(s), and "
+                        + nPlotsCount + " plot(s)\n";
+                System.out.println(summarySedmlContentString);
                 System.out.println("Successful translation: SED-ML file " + sedmlName);
                 CLIUtils.drawBreakLine("-", 100);
             } catch (Exception e) {
@@ -120,7 +145,7 @@ public class CLIStandalone {
         CLIUtils.finalStatusUpdate(CLIUtils.Status.SUCCEEDED, outputDir);
         omexHandler.deleteExtractedOmex();
         if (somethingFailed) {
-            String error = "======> One or more errors encountered while executing archive " + args[1];
+            String error = "One or more errors encountered while executing archive " + args[1];
             CLIUtils.finalStatusUpdate(CLIUtils.Status.FAILED, outputDir);
             throw new Exception(error);
         }
