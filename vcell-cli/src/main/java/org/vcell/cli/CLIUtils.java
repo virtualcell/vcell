@@ -241,7 +241,7 @@ public class CLIUtils {
                             }
                             String outDirRoot = outDir.toString().substring(0, outDir.toString().lastIndexOf(System.getProperty("file.separator")));
                             CLIUtils.updateDatasetStatusYml(sedmlName, oo.getId() , dataset.getId(), Status.SUCCEEDED, outDirRoot);
-                            CLIUtils.updateTaskStatusYml(sedmlName, task.getId(), Status.SUCCEEDED, outDirRoot);
+//                            CLIUtils.updateTaskStatusYml(sedmlName, task.getId(), Status.SUCCEEDED, outDirRoot);
                         }
                         if (!supportedDataset) {
                             System.err.println("Dataset " + dataset.getId() + " references unsupported RepeatedTask and is being skipped");
@@ -400,6 +400,7 @@ public class CLIUtils {
         // NOTE: Magic number -10, simply means unassigned exit code
         int exitCode = -10;
         String joinArg = Joiner.on(" ").join(args);
+        // Uncomment to debug the command execution
 //            System.out.println("Executing the command: `" + joinArg + "`");
         File log = stdOutFile;
         try {
@@ -547,7 +548,7 @@ public class CLIUtils {
 
     public static void finalStatusUpdate(Status simStatus, String outDir) {
         if (checkPythonInstallation() == 0) {
-            System.out.println("Generating Status YAML...");
+//            System.out.println("Generating Status YAML...");
             if (isWindowsPlatform)
                 execShellCommand(new String[]{"python", statusPath.toString(), "simStatus", simStatus.toString(), outDir});
             else

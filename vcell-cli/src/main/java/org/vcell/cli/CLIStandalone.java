@@ -84,7 +84,7 @@ public class CLIStandalone {
         boolean somethingFailed = false;
         for (String sedmlLocation : sedmlLocations) {
             HashMap<String, ODESolverResultSet> resultsHash;
-            HashMap<String, File> reportsHash;
+            HashMap<String, File> reportsHash = null;
             String sedmlName;
             File completeSedmlPath = new File(sedmlLocation);
             File outDirForCurrentSedml = new File(omexHandler.getOutputPathFromSedml(sedmlLocation));
@@ -126,28 +126,33 @@ public class CLIStandalone {
             SolverHandler solverHandler = new SolverHandler();
             // send the the whole OMEX file since we do better handling of malformed model URIs in XMLHelper code
             ExternalDocInfo externalDocInfo = new ExternalDocInfo(new File(inputFile), true);
-            resultsHash = solverHandler.simulateAllTasks(externalDocInfo, sedml, outDirForCurrentSedml);
             // python installation
             CLIUtils.checkPythonInstallation();
             // pip install requirements before status generation
             CLIUtils.pipInstallRequirements();
             CLIUtils.generateStatusYaml(inputFile, outputDir);
-            reportsHash = CLIUtils.generateReportsAsCSV(sedml, resultsHash, outDirForCurrentSedml, sedmlName);
+            resultsHash = solverHandler.simulateAllTasks(externalDocInfo, sedml, outDirForCurrentSedml, sedmlName);
+
+
+            if (resultsHash.size() != 0) {
+                reportsHash = CLIUtils.generateReportsAsCSV(sedml, resultsHash, outDirForCurrentSedml, sedmlName);
+            }
 
 
             // HDF5 conversion
-            CLIUtils.convertCSVtoHDF(Paths.get(outputDir, sedmlName).toString(), sedmlLocation, Paths.get(outputDir, sedmlName).toString());
+            if (nReportsCount != 0) CLIUtils.convertCSVtoHDF(Paths.get(outputDir, sedmlName).toString(), sedmlLocation, Paths.get(outputDir, sedmlName).toString());
 
-            if (resultsHash.containsValue(null) || reportsHash.containsValue(null)) {
+            if (resultsHash.containsValue(null) || reportsHash == null) {
                 somethingFailed = true;
             }
         }
-        CLIUtils.finalStatusUpdate(CLIUtils.Status.SUCCEEDED, outputDir);
+//        CLIUtils.finalStatusUpdate(CLIUtils.Status.SUCCEEDED, outputDir);
         omexHandler.deleteExtractedOmex();
         if (somethingFailed) {
             String error = "One or more errors encountered while executing archive " + args[1];
             CLIUtils.finalStatusUpdate(CLIUtils.Status.FAILED, outputDir);
-            throw new Exception(error);
+//            throw new Exception(error);
+            System.err.println(error);
         }
     }
 }
