@@ -139,6 +139,22 @@ NOTE: enter following after 'java' for debug (-agentlib:jdwp=transport=dt_socket
 ## useful commands
 
 ```bash
+//Cleanup docker log files, disk space problem
+//ssh to each of Alpha(vcellapi-beta,vcell-node3,vcell-node4) and Rel(vcellapi,vcell-node1,vcell-node2)
+
+//find log file for specific container
+sudo docker ps
+sudo docker inspect --format='{{.LogPath}}' DOCKER_CONTAINER_ID
+
+//Find all docker container logs larger than 100 megabytes
+sudo find /var/lib/docker -name '*.log' -size +100M -print | sudo xargs -L 1 ls -la
+
+//Clear data from docker log file
+sudo su
+cat /dev/null >DOCKER_LOG_FILE_PATH
+```
+
+```bash
 docker stack services local
 ID                  NAME                MODE                REPLICAS            IMAGE                               PORTS
 5hrlf3u1kdgr        local_visualizer    replicated          1/1                 dockersamples/visualizer:stable     *:30013->8080/tcp
