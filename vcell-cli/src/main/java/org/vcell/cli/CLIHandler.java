@@ -62,7 +62,7 @@ public class CLIHandler {
         Option input = new Option("i",
                 "archive",
                 true,
-                "Path to OMEX/COMBINE Archive file which contains one or more SED-ML encoded simulation experiments");
+                "Path to OMEX/COMBINE Archive which contains one or more SED-ML encoded simulation experiments, or VCML file");
 
         Option output = new Option("o",
                 "out-dir",
