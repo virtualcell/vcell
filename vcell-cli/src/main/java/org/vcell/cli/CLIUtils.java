@@ -478,9 +478,9 @@ public class CLIUtils {
         * */
         if (checkPythonInstallation() == 0) {
             if (isWindowsPlatform) {
-                cliArgs = new String[]{"python", cliPath.toString(), sedmlFilePath.toString(), workingDirectory.toString(), outDirPath.toString(), csvDirPath.toString()};
+                cliArgs = new String[]{"python", cliPath.toString(), "execSedDoc", sedmlFilePath.toString(), workingDirectory.toString(), outDirPath.toString(), csvDirPath.toString()};
             } else {
-                cliArgs = new String[]{"python3", cliPath.toString(), sedmlFilePath.toString(), workingDirectory.toString(), outDirPath.toString(), csvDirPath.toString()};
+                cliArgs = new String[]{"python3", cliPath.toString(), "execSedDoc", sedmlFilePath.toString(), workingDirectory.toString(), outDirPath.toString(), csvDirPath.toString()};
             }
             execShellCommand(cliArgs);
             System.out.println("HDF conversion completed in '" + outDir + "'\n");
@@ -534,7 +534,7 @@ public class CLIUtils {
                 execShellCommand(new String[]{"python", statusPath.toString(), "genStatusYaml", String.valueOf(omexFilePath), outDir});
             else
                 execShellCommand(new String[]{"python3", statusPath.toString(), "genStatusYaml", String.valueOf(omexFilePath), outDir});
-        }
+        } else System.err.println("Failed generating status YAML...");
     }
 
     public static void updateTaskStatusYml(String sedmlName, String taskName, Status taskStatus, String outDir) {
@@ -543,7 +543,7 @@ public class CLIUtils {
                 execShellCommand(new String[]{"python", statusPath.toString(), "updateTaskStatus", sedmlName, taskName, taskStatus.toString(), outDir});
             else
                 execShellCommand(new String[]{"python3", statusPath.toString(), "updateTaskStatus", sedmlName, taskName, taskStatus.toString(), outDir});
-        }
+        } else System.err.println("Failed updating status YAML...");
     }
 
     public static void finalStatusUpdate(Status simStatus, String outDir) {
@@ -562,7 +562,14 @@ public class CLIUtils {
                 execShellCommand(new String[]{"python", statusPath.toString(), "updateDataSetStatus", sedmlName, dataSet, var, simStatus.toString(), outDir});
             else
                 execShellCommand(new String[]{"python3", statusPath.toString(), "updateDataSetStatus", sedmlName, dataSet, var, simStatus.toString(), outDir});
-        }
+        } else System.err.println("Failed updating DataSet to status YAML...");
+    }
+
+    public static void transposeVcmlCsv(String csvFilePath) {
+        if (checkPythonInstallation() == 0) {
+            if (isWindowsPlatform) execShellCommand(new String[]{"python", cliPath.toString(), "transposeVcmlCsv", csvFilePath});
+            else execShellCommand(new String[]{"python3", cliPath.toString(), "transposeVcmlCsv", csvFilePath});
+        } else System.err.println("Failed transposing VCML resultant CSV...");
     }
 
     @SuppressWarnings("UnstableApiUsage")

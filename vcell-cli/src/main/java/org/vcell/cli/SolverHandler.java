@@ -231,7 +231,7 @@ public class SolverHandler {
 
                     //CLIUtils.updateTaskStatusYml(sedmlName, sim.getDescription(), CLIUtils.Status.SUCCEEDED, outDirRoot);
 
-                    CLIUtils.drawBreakLine("-", 100);
+//                    CLIUtils.drawBreakLine("-", 100);
                 } else {
                     System.err.println("Solver status: " + solver.getSolverStatus().getStatus());
                     System.err.println("Solver message: " + solver.getSolverStatus().getSimulationMessage().getDisplayMessage());
@@ -246,7 +246,7 @@ public class SolverHandler {
                     // something else than failure caught by solver instance during execution
                     System.err.println(e.getMessage());
                 }
-                CLIUtils.drawBreakLine("-", 100);
+//                CLIUtils.drawBreakLine("-", 100);
             }
             if(odeSolverResultSet != null) {
                 resultsHash.put(vcmlName, odeSolverResultSet);

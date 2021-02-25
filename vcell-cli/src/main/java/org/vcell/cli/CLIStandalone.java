@@ -251,11 +251,13 @@ public class CLIStandalone {
             // python installation
             CLIUtils.checkPythonInstallation();
             // pip install requirements before status generation
-            CLIUtils.pipInstallRequirements();
+//            CLIUtils.pipInstallRequirements();
 //            CLIUtils.generateStatusYaml(inputFile, outputDir);
 
             resultsHash = solverHandler.simulateAllVcmlTasks(new File(inputFile), outDirForCurrentVcml, vcmlName);
-            CLIUtils.createCSVFromODEResultSet(resultsHash.get(vcmlName), new File(Paths.get(outDirForCurrentVcml.toString(), "task.csv").toString()));
+            String CSVFilePath = Paths.get(outDirForCurrentVcml.toString(), "task.csv").toString();
+            CLIUtils.createCSVFromODEResultSet(resultsHash.get(vcmlName), new File(CSVFilePath));
+            CLIUtils.transposeVcmlCsv(CSVFilePath);
 
 //
 //            if (resultsHash.size() != 0) {
