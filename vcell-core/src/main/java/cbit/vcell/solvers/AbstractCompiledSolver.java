@@ -225,7 +225,6 @@ public abstract class AbstractCompiledSolver extends AbstractSolver implements j
             Process p = pb.start();
             assert pb.redirectInput() == ProcessBuilder.Redirect.PIPE;
             assert pb.redirectOutput().file().equals(stdOutFile);
-            assert p.getInputStream().read() == -1;
             int ioByte = -1;
             StringBuffer sb = new StringBuffer();
             while ((ioByte = p.getInputStream().read()) != -1) {
