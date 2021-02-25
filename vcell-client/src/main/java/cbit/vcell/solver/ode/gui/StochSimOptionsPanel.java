@@ -766,7 +766,9 @@ public class StochSimOptionsPanel extends CollapsiblePanel {
 				getMultiRunButton().setSelected(true);
 			}
 		}
-		
+		getMultiRunButton().setEnabled(true);
+		getMultiRunButton().setSelected(getMultiRunButton().isSelected() && getSolverTaskDescription().getSolverDescription().equals(SolverDescription.StochGibson));
+		getMultiRunButton().setEnabled(getSolverTaskDescription().getSolverDescription().equals(SolverDescription.StochGibson));
 		// TODO: temporarily disable the button
 		// UNDO THIS WHEN DEVELOPMENT IS COMPLETE
 //		getMultiRunButton().setEnabled(false);

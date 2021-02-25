@@ -789,187 +789,188 @@ public class SlurmProxy extends HtcProxy {
 			Files.append(sbatchSolverComponents.getSendFailureMsgCommands(),intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
 			Files.append(sbatchSolverComponents.getCallExitCommands(),intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
 //			Files.append(sbatchSolverComponents.getPreProcessCommands(),intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
-			String STARTFLAG_SNIP = "_arrstartflag_";
-			File dataSaveFile = null;
-			File stochInputFile = null;
-			File startFlagFile = null;
-			long numOfTrials = 1;
-			if(HtcProxy.isStochMultiTrial(simTask)) {//Find Gibson solver outputfile name from command arguments 
-				numOfTrials = simTask.getSimulationJob().getSimulation().getSolverTaskDescription().getStochOpt().getNumOfTrials();
-				Files.append("#simTask.getSimulationJob().getSimulation().getSolverTaskDescription().getStochOpt().isHistogram()="+simTask.getSimulationJob().getSimulation().getSolverTaskDescription().getStochOpt().isHistogram()+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
-				Files.append("#simTask.getSimulationJob().getSimulation().getSolverTaskDescription().getStochOpt().getNumOfTrials()="+numOfTrials+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
-				Files.append("#simTask.getSimulationJob().getSimulation().getSolverTaskDescription().getStochOpt().getCustomSeed()="+simTask.getSimulationJob().getSimulation().getSolverTaskDescription().getStochOpt().getCustomSeed()+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
-				Files.append("#isMultiTrial="+HtcProxy.isStochMultiTrial(simTask)+"\n" ,intSolverScriptFile, Charset.forName(StandardCharsets.UTF_8.name()));
-				List<ExecutableCommand> execCommands = commandSet.getExecCommands();
-//				outerloop:
-				for (Iterator<ExecutableCommand> iterator = execCommands.iterator(); iterator.hasNext();) {
-					ExecutableCommand executableCommand = (ExecutableCommand) iterator.next();
-					List<String> commands = executableCommand.getCommands();
-					for (Iterator<String> iterator2 = commands.iterator(); iterator2.hasNext();) {
-						String cmdParam = (String) iterator2.next();
-						if(cmdParam.contains("SimID_") && cmdParam.endsWith(SimDataConstants.IDA_DATA_EXTENSION)) {
-							dataSaveFile = new File(primaryUserDirExternal,new File(cmdParam).getName());
-							int rand = new Random().nextInt(1000000);
-							String idaname=new File(cmdParam).getName();
-							idaname=idaname.substring(0, idaname.length()-SimDataConstants.IDA_DATA_EXTENSION.length());
-							startFlagFile = new File(primaryUserDirExternal,idaname+STARTFLAG_SNIP+rand);
-							Files.append("#dataSaveFile="+dataSaveFile+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
-							Files.append("#startFlagFile="+startFlagFile+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
-							
-//							break outerloop;
-						}else if(cmdParam.contains("SimID_") && cmdParam.endsWith(SimDataConstants.STOCHINPUT_DATA_EXTENSION)) {
-							stochInputFile = new File(primaryUserDirExternal,new File(cmdParam).getName());
-							Files.append("#stochInputFile="+stochInputFile+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
-						}
-					}
-				}
-			}
-			long TRIALS_PER_ARR_MAX = 100;
-			long slurmArrayCount = (numOfTrials+TRIALS_PER_ARR_MAX-1)/TRIALS_PER_ARR_MAX;
-			boolean isCompleteMultiTrialArray = /*(slurmArrayCount > 1) && */HtcProxy.isStochMultiTrial(simTask) && dataSaveFile != null && stochInputFile != null;
-			if(isCompleteMultiTrialArray) {
-				String jmsrestpswd=PropertyLoader.getSecretValue(null,PropertyLoader.jmsRestPasswordFile);
-				String jmshost_sim_external = System.getProperty("vcell.jms.sim.host.external");
-				String jmsrestport_sim_external = System.getProperty("vcell.jms.sim.restport.external");
-				if(jmshost_sim_external == null || jmsrestport_sim_external == null) {
-					throw new ExecutableException("Array job expects vcell.jms.sim.host.external and vcell.jms.sim.restport.external to be non-null");
-				}
-				Files.append("getprogcnt() {"+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
-					Files.append("progcnt=`find "+primaryUserDirExternal.getAbsolutePath()+" -name '"+dataSaveFile.getName()+"_*' | wc -l`"+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
-					Files.append("echo $progcnt"+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
-				Files.append("}"+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
-				//Create progress function
-				Files.append("sendprogressevent() {"+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
-					Files.append("local progcnt=$1"+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
-					Files.append("if [ $SLURM_ARRAY_TASK_ID -ne 1 ]"+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
-					Files.append("then"+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
-						Files.append("return"+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
-					Files.append("fi"+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
-					//Send progress_worker_event
-					Files.append("nexttime=$(date +%s)"+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
-					Files.append("let \"diff = $nexttime-$starttime\""+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
-					Files.append("if [ $diff -ge 10 ]"+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
-					Files.append("then"+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
-						Files.append("starttime=$nexttime"+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
-//						Files.append("local progcnt=$(getprogcnt)"+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
-						Files.append("arrprog=$(echo \"scale=2; $progcnt/"+numOfTrials+"\" | bc)"+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
-						Files.append("     echo -en \"POST /api/message/workerEvent?type=queue&JMSPriority=5&JMSTimeToLive=60000&JMSDeliveryMode=nonpersistent&MessageType=WorkerEvent&UserName="+simTask.getUserName()+"&HostName=${HOSTNAME}&SimKey="+simTask.getSimKey().toString()+"&TaskID="+simTask.getTaskID()+"&JobIndex="+simTask.getSimulationJob().getJobIndex()+"&WorkerEvent_Status="+WorkerEvent.JOB_PROGRESS+"&WorkerEvent_Progress=${arrprog}&WorkerEvent_TimePoint=${progcnt} HTTP/1.1\\r\\nHost: "+jmshost_sim_external+"\\r\\nAuthorization: Basic "+jmsrestpswd+"\\r\\nAccept: */*\\r\\nContent-Length: 0\\r\\nContent-Type: application/x-www-form-urlencoded\\r\\n\\r\\n\" | nc "+jmshost_sim_external+" "+jmsrestport_sim_external+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
-					Files.append("fi"+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
-				Files.append("}"+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
-				
-				//If we'r the first task in slurm array job Remove old data, create startFlagFile to signal other tasks to begin creating new data
-				Files.append("starttime=$(date +%s)"+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));				
-				//slurm array 1 creates array progress file (created with random number name so other slurm arrays wait until it exists
-				Files.append("if [ \"$SLURM_ARRAY_TASK_ID\" -eq \""+"1"+"\" ]"+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
-				Files.append("then"+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
-//					Files.append("     echo -en \"POST /api/message/workerEvent?type=queue&JMSPriority=5&JMSTimeToLive=60000&JMSDeliveryMode=nonpersistent&MessageType=WorkerEvent&UserName="+simTask.getUserName()+"&HostName=${HOSTNAME}&SimKey="+simTask.getSimKey().toString()+"&TaskID="+simTask.getTaskID()+"&JobIndex="+simTask.getSimulationJob().getJobIndex()+"&WorkerEvent_Status="+WorkerEvent.JOB_STARTING+"&WorkerEvent_Progress=0&WorkerEvent_TimePoint=0 HTTP/1.1\\r\\nHost: "+jmshost_sim_external+"\\r\\nAuthorization: Basic "+jmsrestpswd+"\\r\\nAccept: */*\\r\\nContent-Length: 0\\r\\nContent-Type: application/x-www-form-urlencoded\\r\\n\\r\\n\" | nc "+jmshost_sim_external+" "+jmsrestport_sim_external+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
-					Files.append(sbatchSolverComponents.getPreProcessCommands(),intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
-					Files.append("rm -f "+dataSaveFile.getAbsolutePath()+"*"+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
-					Files.append("echo -n \"0\" >"+startFlagFile.getAbsolutePath()+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
-				Files.append("fi"+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
-				
-				//Wait for startFlagFile file to be created (other array tasks wait to start for this file)
-				Files.append("until [ -f "+startFlagFile.getAbsolutePath()+" ]"+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
-				Files.append("do"+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
-					Files.append("\tsleep 2"+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
-				Files.append("done"+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
-
-				String s = "if [ $stat -ne 0 ]; then\n" + 
-						"	callExitProcessor $stat\n" + 
-						"	echo returning $stat to Slurm\n" + 
-						"	exit $stat\n" + 
-						"fi";
-				String s2 = "if [ $stat -ne 0 ]; then\n" + 
-						"	let \"run=$run-1\"\n" + 
-						"	continue\n" + 
-						"#	callExitProcessor $stat\n" + 
-						"#	echo returning $stat to Slurm\n" + 
-						"#	exit $stat\n" + 
-						"fi";
-
-				String substituedCmd = sbatchSolverComponents.getSolverCommands();
-				int lastIndex = substituedCmd.lastIndexOf(s);
-				substituedCmd = substituedCmd.substring(0, lastIndex)+s2+substituedCmd.substring(lastIndex+s.length());
-				//if \[ \$stat \-ne 0 \]\; then\n	callExitProcessor \$stat\n	echo returning \$stat to Slurm\n	exit \$stat\nfi
-				Files.append("for (( run=1; run<="+TRIALS_PER_ARR_MAX+"; run++ )); do"+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
-				Files.append("let \"currcnt = ((${SLURM_ARRAY_TASK_ID}-1)*"+TRIALS_PER_ARR_MAX+")+$run\""+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
-				//exit run loop if we're in last arraytask and there are fewer jobs than full TRIALS_PER_ARR_MAX
-				Files.append("if [ $currcnt -gt "+numOfTrials+" ]"+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
-				Files.append("then"+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
-					Files.append("break"+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
-				Files.append("fi"+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
-				//cp .stochInput for each run and change seed
-				substituedCmd = substituedCmd.replace(".stochInput", ".stochInput_${SLURM_ARRAY_TASK_ID}");
-				//change output file name based on  task and run
-				String arrRunDataFile = dataSaveFile.getName()+"_"+"${SLURM_ARRAY_TASK_ID}"+"_"+"${run}";
-				substituedCmd = substituedCmd.replace(dataSaveFile.getName(), arrRunDataFile);
-//				//Prevent solver c++ from sending progress updates (will be handled in this script)
-				substituedCmd = substituedCmd.replace("-tid "+simTask.getTaskID(),"");
-				String taskStochInput = stochInputFile.getAbsolutePath()+"_${SLURM_ARRAY_TASK_ID}";
-				Files.append("cp "+stochInputFile.getAbsolutePath()+" "+taskStochInput+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
-
-				Files.append("origseed=`grep -oP  'SEED\\s\\K\\w+' "+taskStochInput+"`"+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
-				//grep -oP  'SEED\s\K\w+'
-				Files.append("let \"newseed = ${origseed}+${currcnt}\""+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
-				Files.append("origline=`grep \"SEED.*\" "+taskStochInput+"`"+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
-				//update seed
-				Files.append("sed -i \"s/${origline}/SEED\t${newseed}/g\" "+taskStochInput+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
-				//change output file name
-				//Files.append("sed -i 's/"+dataSaveFile.getName()+"/"+dataSaveFile.getAbsolutePath()+"_"+"${SLURM_ARRAY_TASK_ID}"+"_"+"${run}"+"/g' "+taskStochInput+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
-				Files.append(substituedCmd,intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
-				//Send progress
-				Files.append("progcnt=$(getprogcnt)"+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
-				Files.append("sendprogressevent $progcnt"+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
-				Files.append("done"+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
-				
-				//Loop waiting for all array jobs to create sim results (if array task 1)
-				Files.append("if [ $SLURM_ARRAY_TASK_ID -eq 1 ]"+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
-				Files.append("then"+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
-					Files.append("lastprogcnt=\"0\""+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
-					Files.append("maxlooptime=\"300\""+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));//5 minutes
-					Files.append("slptime=5"+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
-					Files.append("slpvar=0"+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
-					Files.append("while : ; do"+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
-						Files.append("sleep $slptime"+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
-						Files.append("progcnt=$(getprogcnt)"+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
-
-						Files.append("if [ $progcnt -ne  $lastprogcnt ]"+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
-						Files.append("then"+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
-						Files.append("lastprogcnt=$progcnt"+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
-						Files.append("slpvar=0"+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
-						Files.append("fi"+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
-						
-						Files.append("if [ $progcnt -eq "+numOfTrials+" ]"+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
-						Files.append("then"+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
-							Files.append(sbatchSolverComponents.getExitCommands(),intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
-							Files.append("echo -en \"POST /api/message/workerEvent?type=queue&JMSPriority=5&JMSTimeToLive=600000&JMSDeliveryMode=persistent&MessageType=WorkerEvent&UserName="+simTask.getUserName()+"&HostName=${HOSTNAME}&SimKey="+simTask.getSimKey().toString()+"&TaskID="+simTask.getTaskID()+"&JobIndex="+simTask.getSimulationJob().getJobIndex()+"&WorkerEvent_Status="+WorkerEvent.JOB_COMPLETED+"&WorkerEvent_Progress=1&WorkerEvent_TimePoint=${progcnt} HTTP/1.1\\r\\nHost: "+jmshost_sim_external+"\\r\\nAuthorization: Basic "+jmsrestpswd+"\\r\\nAccept: */*\\r\\nContent-Length: 0\\r\\nContent-Type: application/x-www-form-urlencoded\\r\\n\\r\\n\" | nc "+jmshost_sim_external+" "+jmsrestport_sim_external+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
-							Files.append("exit 0"+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));//fail
-						Files.append("fi"+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
-						Files.append("let slpvar=$slpvar+$slptime"+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
-						Files.append("if [ $slpvar -gt $maxlooptime ]"+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
-						Files.append("then"+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
-							Files.append("callExitProcessor 1"+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));//fail
-							Files.append("exit 1"+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));//fail
-						Files.append("fi"+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
-						Files.append("sendprogressevent $progcnt"+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
-					Files.append("done"+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
-				Files.append("fi"+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
-			}else {
+			
+//			String STARTFLAG_SNIP = "_arrstartflag_";
+//			File dataSaveFile = null;
+//			File stochInputFile = null;
+//			File startFlagFile = null;
+//			long numOfTrials = 1;
+//			if(HtcProxy.isStochMultiTrial(simTask)) {//Find Gibson solver outputfile name from command arguments 
+//				numOfTrials = simTask.getSimulationJob().getSimulation().getSolverTaskDescription().getStochOpt().getNumOfTrials();
+//				Files.append("#simTask.getSimulationJob().getSimulation().getSolverTaskDescription().getStochOpt().isHistogram()="+simTask.getSimulationJob().getSimulation().getSolverTaskDescription().getStochOpt().isHistogram()+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
+//				Files.append("#simTask.getSimulationJob().getSimulation().getSolverTaskDescription().getStochOpt().getNumOfTrials()="+numOfTrials+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
+//				Files.append("#simTask.getSimulationJob().getSimulation().getSolverTaskDescription().getStochOpt().getCustomSeed()="+simTask.getSimulationJob().getSimulation().getSolverTaskDescription().getStochOpt().getCustomSeed()+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
+//				Files.append("#isMultiTrial="+HtcProxy.isStochMultiTrial(simTask)+"\n" ,intSolverScriptFile, Charset.forName(StandardCharsets.UTF_8.name()));
+//				List<ExecutableCommand> execCommands = commandSet.getExecCommands();
+////				outerloop:
+//				for (Iterator<ExecutableCommand> iterator = execCommands.iterator(); iterator.hasNext();) {
+//					ExecutableCommand executableCommand = (ExecutableCommand) iterator.next();
+//					List<String> commands = executableCommand.getCommands();
+//					for (Iterator<String> iterator2 = commands.iterator(); iterator2.hasNext();) {
+//						String cmdParam = (String) iterator2.next();
+//						if(cmdParam.contains("SimID_") && cmdParam.endsWith(SimDataConstants.IDA_DATA_EXTENSION)) {
+//							dataSaveFile = new File(primaryUserDirExternal,new File(cmdParam).getName());
+//							int rand = new Random().nextInt(1000000);
+//							String idaname=new File(cmdParam).getName();
+//							idaname=idaname.substring(0, idaname.length()-SimDataConstants.IDA_DATA_EXTENSION.length());
+//							startFlagFile = new File(primaryUserDirExternal,idaname+STARTFLAG_SNIP+rand);
+//							Files.append("#dataSaveFile="+dataSaveFile+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
+//							Files.append("#startFlagFile="+startFlagFile+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
+//							
+////							break outerloop;
+//						}else if(cmdParam.contains("SimID_") && cmdParam.endsWith(SimDataConstants.STOCHINPUT_DATA_EXTENSION)) {
+//							stochInputFile = new File(primaryUserDirExternal,new File(cmdParam).getName());
+//							Files.append("#stochInputFile="+stochInputFile+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
+//						}
+//					}
+//				}
+//			}
+//			long TRIALS_PER_ARR_MAX = 100;
+//			long slurmArrayCount = (numOfTrials+TRIALS_PER_ARR_MAX-1)/TRIALS_PER_ARR_MAX;
+//			boolean isCompleteMultiTrialArray = /*(slurmArrayCount > 1) && */HtcProxy.isStochMultiTrial(simTask) && dataSaveFile != null && stochInputFile != null;
+//			if(isCompleteMultiTrialArray) {
+//				String jmsrestpswd=PropertyLoader.getSecretValue(null,PropertyLoader.jmsRestPasswordFile);
+//				String jmshost_sim_external = System.getProperty("vcell.jms.sim.host.external");
+//				String jmsrestport_sim_external = System.getProperty("vcell.jms.sim.restport.external");
+//				if(jmshost_sim_external == null || jmsrestport_sim_external == null) {
+//					throw new ExecutableException("Array job expects vcell.jms.sim.host.external and vcell.jms.sim.restport.external to be non-null");
+//				}
+//				Files.append("getprogcnt() {"+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
+//					Files.append("progcnt=`find "+primaryUserDirExternal.getAbsolutePath()+" -name '"+dataSaveFile.getName()+"_*' | wc -l`"+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
+//					Files.append("echo $progcnt"+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
+//				Files.append("}"+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
+//				//Create progress function
+//				Files.append("sendprogressevent() {"+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
+//					Files.append("local progcnt=$1"+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
+//					Files.append("if [ $SLURM_ARRAY_TASK_ID -ne 1 ]"+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
+//					Files.append("then"+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
+//						Files.append("return"+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
+//					Files.append("fi"+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
+//					//Send progress_worker_event
+//					Files.append("nexttime=$(date +%s)"+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
+//					Files.append("let \"diff = $nexttime-$starttime\""+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
+//					Files.append("if [ $diff -ge 10 ]"+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
+//					Files.append("then"+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
+//						Files.append("starttime=$nexttime"+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
+////						Files.append("local progcnt=$(getprogcnt)"+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
+//						Files.append("arrprog=$(echo \"scale=2; $progcnt/"+numOfTrials+"\" | bc)"+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
+//						Files.append("     echo -en \"POST /api/message/workerEvent?type=queue&JMSPriority=5&JMSTimeToLive=60000&JMSDeliveryMode=nonpersistent&MessageType=WorkerEvent&UserName="+simTask.getUserName()+"&HostName=${HOSTNAME}&SimKey="+simTask.getSimKey().toString()+"&TaskID="+simTask.getTaskID()+"&JobIndex="+simTask.getSimulationJob().getJobIndex()+"&WorkerEvent_Status="+WorkerEvent.JOB_PROGRESS+"&WorkerEvent_Progress=${arrprog}&WorkerEvent_TimePoint=${progcnt} HTTP/1.1\\r\\nHost: "+jmshost_sim_external+"\\r\\nAuthorization: Basic "+jmsrestpswd+"\\r\\nAccept: */*\\r\\nContent-Length: 0\\r\\nContent-Type: application/x-www-form-urlencoded\\r\\n\\r\\n\" | nc "+jmshost_sim_external+" "+jmsrestport_sim_external+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
+//					Files.append("fi"+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
+//				Files.append("}"+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
+//				
+//				//If we'r the first task in slurm array job Remove old data, create startFlagFile to signal other tasks to begin creating new data
+//				Files.append("starttime=$(date +%s)"+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));				
+//				//slurm array 1 creates array progress file (created with random number name so other slurm arrays wait until it exists
+//				Files.append("if [ \"$SLURM_ARRAY_TASK_ID\" -eq \""+"1"+"\" ]"+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
+//				Files.append("then"+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
+////					Files.append("     echo -en \"POST /api/message/workerEvent?type=queue&JMSPriority=5&JMSTimeToLive=60000&JMSDeliveryMode=nonpersistent&MessageType=WorkerEvent&UserName="+simTask.getUserName()+"&HostName=${HOSTNAME}&SimKey="+simTask.getSimKey().toString()+"&TaskID="+simTask.getTaskID()+"&JobIndex="+simTask.getSimulationJob().getJobIndex()+"&WorkerEvent_Status="+WorkerEvent.JOB_STARTING+"&WorkerEvent_Progress=0&WorkerEvent_TimePoint=0 HTTP/1.1\\r\\nHost: "+jmshost_sim_external+"\\r\\nAuthorization: Basic "+jmsrestpswd+"\\r\\nAccept: */*\\r\\nContent-Length: 0\\r\\nContent-Type: application/x-www-form-urlencoded\\r\\n\\r\\n\" | nc "+jmshost_sim_external+" "+jmsrestport_sim_external+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
+//					Files.append(sbatchSolverComponents.getPreProcessCommands(),intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
+//					Files.append("rm -f "+dataSaveFile.getAbsolutePath()+"*"+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
+//					Files.append("echo -n \"0\" >"+startFlagFile.getAbsolutePath()+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
+//				Files.append("fi"+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
+//				
+//				//Wait for startFlagFile file to be created (other array tasks wait to start for this file)
+//				Files.append("until [ -f "+startFlagFile.getAbsolutePath()+" ]"+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
+//				Files.append("do"+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
+//					Files.append("\tsleep 2"+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
+//				Files.append("done"+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
+//
+//				String s = "if [ $stat -ne 0 ]; then\n" + 
+//						"	callExitProcessor $stat\n" + 
+//						"	echo returning $stat to Slurm\n" + 
+//						"	exit $stat\n" + 
+//						"fi";
+//				String s2 = "if [ $stat -ne 0 ]; then\n" + 
+//						"	let \"run=$run-1\"\n" + 
+//						"	continue\n" + 
+//						"#	callExitProcessor $stat\n" + 
+//						"#	echo returning $stat to Slurm\n" + 
+//						"#	exit $stat\n" + 
+//						"fi";
+//
+//				String substituedCmd = sbatchSolverComponents.getSolverCommands();
+//				int lastIndex = substituedCmd.lastIndexOf(s);
+//				substituedCmd = substituedCmd.substring(0, lastIndex)+s2+substituedCmd.substring(lastIndex+s.length());
+//				//if \[ \$stat \-ne 0 \]\; then\n	callExitProcessor \$stat\n	echo returning \$stat to Slurm\n	exit \$stat\nfi
+//				Files.append("for (( run=1; run<="+TRIALS_PER_ARR_MAX+"; run++ )); do"+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
+//				Files.append("let \"currcnt = ((${SLURM_ARRAY_TASK_ID}-1)*"+TRIALS_PER_ARR_MAX+")+$run\""+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
+//				//exit run loop if we're in last arraytask and there are fewer jobs than full TRIALS_PER_ARR_MAX
+//				Files.append("if [ $currcnt -gt "+numOfTrials+" ]"+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
+//				Files.append("then"+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
+//					Files.append("break"+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
+//				Files.append("fi"+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
+//				//cp .stochInput for each run and change seed
+//				substituedCmd = substituedCmd.replace(".stochInput", ".stochInput_${SLURM_ARRAY_TASK_ID}");
+//				//change output file name based on  task and run
+//				String arrRunDataFile = dataSaveFile.getName()+"_"+"${SLURM_ARRAY_TASK_ID}"+"_"+"${run}";
+//				substituedCmd = substituedCmd.replace(dataSaveFile.getName(), arrRunDataFile);
+////				//Prevent solver c++ from sending progress updates (will be handled in this script)
+//				substituedCmd = substituedCmd.replace("-tid "+simTask.getTaskID(),"");
+//				String taskStochInput = stochInputFile.getAbsolutePath()+"_${SLURM_ARRAY_TASK_ID}";
+//				Files.append("cp "+stochInputFile.getAbsolutePath()+" "+taskStochInput+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
+//
+//				Files.append("origseed=`grep -oP  'SEED\\s\\K\\w+' "+taskStochInput+"`"+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
+//				//grep -oP  'SEED\s\K\w+'
+//				Files.append("let \"newseed = ${origseed}+${currcnt}\""+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
+//				Files.append("origline=`grep \"SEED.*\" "+taskStochInput+"`"+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
+//				//update seed
+//				Files.append("sed -i \"s/${origline}/SEED\t${newseed}/g\" "+taskStochInput+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
+//				//change output file name
+//				//Files.append("sed -i 's/"+dataSaveFile.getName()+"/"+dataSaveFile.getAbsolutePath()+"_"+"${SLURM_ARRAY_TASK_ID}"+"_"+"${run}"+"/g' "+taskStochInput+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
+//				Files.append(substituedCmd,intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
+//				//Send progress
+//				Files.append("progcnt=$(getprogcnt)"+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
+//				Files.append("sendprogressevent $progcnt"+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
+//				Files.append("done"+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
+//				
+//				//Loop waiting for all array jobs to create sim results (if array task 1)
+//				Files.append("if [ $SLURM_ARRAY_TASK_ID -eq 1 ]"+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
+//				Files.append("then"+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
+//					Files.append("lastprogcnt=\"0\""+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
+//					Files.append("maxlooptime=\"300\""+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));//5 minutes
+//					Files.append("slptime=5"+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
+//					Files.append("slpvar=0"+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
+//					Files.append("while : ; do"+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
+//						Files.append("sleep $slptime"+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
+//						Files.append("progcnt=$(getprogcnt)"+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
+//
+//						Files.append("if [ $progcnt -ne  $lastprogcnt ]"+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
+//						Files.append("then"+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
+//						Files.append("lastprogcnt=$progcnt"+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
+//						Files.append("slpvar=0"+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
+//						Files.append("fi"+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
+//						
+//						Files.append("if [ $progcnt -eq "+numOfTrials+" ]"+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
+//						Files.append("then"+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
+//							Files.append(sbatchSolverComponents.getExitCommands(),intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
+//							Files.append("echo -en \"POST /api/message/workerEvent?type=queue&JMSPriority=5&JMSTimeToLive=600000&JMSDeliveryMode=persistent&MessageType=WorkerEvent&UserName="+simTask.getUserName()+"&HostName=${HOSTNAME}&SimKey="+simTask.getSimKey().toString()+"&TaskID="+simTask.getTaskID()+"&JobIndex="+simTask.getSimulationJob().getJobIndex()+"&WorkerEvent_Status="+WorkerEvent.JOB_COMPLETED+"&WorkerEvent_Progress=1&WorkerEvent_TimePoint=${progcnt} HTTP/1.1\\r\\nHost: "+jmshost_sim_external+"\\r\\nAuthorization: Basic "+jmsrestpswd+"\\r\\nAccept: */*\\r\\nContent-Length: 0\\r\\nContent-Type: application/x-www-form-urlencoded\\r\\n\\r\\n\" | nc "+jmshost_sim_external+" "+jmsrestport_sim_external+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
+//							Files.append("exit 0"+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));//fail
+//						Files.append("fi"+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
+//						Files.append("let slpvar=$slpvar+$slptime"+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
+//						Files.append("if [ $slpvar -gt $maxlooptime ]"+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
+//						Files.append("then"+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
+//							Files.append("callExitProcessor 1"+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));//fail
+//							Files.append("exit 1"+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));//fail
+//						Files.append("fi"+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
+//						Files.append("sendprogressevent $progcnt"+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
+//					Files.append("done"+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
+//				Files.append("fi"+"\n",intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
+//			}else {
 				Files.append(sbatchSolverComponents.getPreProcessCommands(),intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
 				Files.append(sbatchSolverComponents.solverCommands,intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
 				Files.append(sbatchSolverComponents.getExitCommands(),intSolverScriptFile , Charset.forName(StandardCharsets.UTF_8.name()));
-			}
+//			}
 			Set<PosixFilePermission> ownerRWX = PosixFilePermissions.fromString("rwxr-xr-x");
 //			FileAttribute<?> permissions = PosixFilePermissions.asFileAttribute(ownerWritable);
 			java.nio.file.Files.setPosixFilePermissions(intSolverScriptFile.toPath(), ownerRWX);
 			
 			//----------Add solver script path to sbatch file, write the .slurm.sub file
 			String substitutedSbatchCommands = sbatchSolverComponents.getSbatchCommands();
-			if(isCompleteMultiTrialArray) {
-				substitutedSbatchCommands = substitutedSbatchCommands.replaceAll("#SBATCH -o.*", "#SBATCH -o "+new File(sub_file_external.getParent(),slurmRootName+".log").getAbsolutePath()+"_%a");
-				substitutedSbatchCommands = substitutedSbatchCommands.replaceAll("#SBATCH -e.*", "#SBATCH -e "+new File(sub_file_external.getParent(),slurmRootName+".log").getAbsolutePath()+"_%a");
-				substitutedSbatchCommands+= "#SBATCH --array=1-"+slurmArrayCount;
-			}
+//			if(isCompleteMultiTrialArray) {
+//				substitutedSbatchCommands = substitutedSbatchCommands.replaceAll("#SBATCH -o.*", "#SBATCH -o "+new File(sub_file_external.getParent(),slurmRootName+".log").getAbsolutePath()+"_%a");
+//				substitutedSbatchCommands = substitutedSbatchCommands.replaceAll("#SBATCH -e.*", "#SBATCH -e "+new File(sub_file_external.getParent(),slurmRootName+".log").getAbsolutePath()+"_%a");
+//				substitutedSbatchCommands+= "#SBATCH --array=1-"+slurmArrayCount;
+//			}
 			File tempFile = File.createTempFile("tempSubFile", SUB);
 			writeUnixStyleTextFile(tempFile, substitutedSbatchCommands+"\n\n"+extSolverScriptFile.getAbsolutePath()+"\n\n"+
 			"#Following commands (if any) are read by JavaPostProcessor64\n"+sbatchSolverComponents.postProcessCommands+"\n");
