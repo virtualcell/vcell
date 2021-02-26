@@ -249,7 +249,7 @@ public class SolverHandler {
 //                CLIUtils.drawBreakLine("-", 100);
             }
             if(odeSolverResultSet != null) {
-                resultsHash.put(vcmlName, odeSolverResultSet);
+                resultsHash.put(sim.getName(), odeSolverResultSet);
             }
 
             CLIUtils.removeIntermediarySimFiles(outputDir);

@@ -255,9 +255,14 @@ public class CLIStandalone {
 //            CLIUtils.generateStatusYaml(inputFile, outputDir);
 
             resultsHash = solverHandler.simulateAllVcmlTasks(new File(inputFile), outDirForCurrentVcml, vcmlName);
-            String CSVFilePath = Paths.get(outDirForCurrentVcml.toString(), "task.csv").toString();
-            CLIUtils.createCSVFromODEResultSet(resultsHash.get(vcmlName), new File(CSVFilePath));
-            CLIUtils.transposeVcmlCsv(CSVFilePath);
+
+
+            for(String simName: resultsHash.keySet()) {
+                String CSVFilePath = Paths.get(outDirForCurrentVcml.toString(), simName + ".csv").toString();
+                CLIUtils.createCSVFromODEResultSet(resultsHash.get(simName), new File(CSVFilePath));
+                CLIUtils.transposeVcmlCsv(CSVFilePath);
+            }
+
 
 //
 //            if (resultsHash.size() != 0) {

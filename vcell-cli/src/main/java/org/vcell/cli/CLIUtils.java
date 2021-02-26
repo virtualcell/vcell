@@ -164,6 +164,7 @@ public class CLIUtils {
             sb.append(description.getDisplayName());
             sb.append(",");
         }
+        sb.deleteCharAt(sb.lastIndexOf(","));
         sb.append("\n");
 
 
