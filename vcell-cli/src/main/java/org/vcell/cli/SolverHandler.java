@@ -15,7 +15,6 @@ import cbit.vcell.solver.stoch.HybridSolver;
 import cbit.vcell.solvers.AbstractCompiledSolver;
 import cbit.vcell.xml.ExternalDocInfo;
 import cbit.vcell.xml.XmlHelper;
-import org.jlibsedml.Libsedml;
 import org.jlibsedml.SedML;
 import org.jlibsedml.Task;
 import org.jlibsedml.UniformTimeCourse;
@@ -155,37 +154,25 @@ public class SolverHandler {
         return resultsHash;
     }
 
-    public HashMap<String, ODESolverResultSet> simulateAllVcmlTasks(File vcmlPath, File outputDir, String vcmlName) throws Exception {
+    public HashMap<String, ODESolverResultSet> simulateAllVcmlTasks(File vcmlPath, File outputDir) throws Exception {
         // create the VCDocument(s) (bioModel(s) + application(s) + simulation(s)), do sanity checks
-        cbit.util.xml.VCLogger sedmlImportLogger = new LocalLogger();
         List<VCDocument> docs = null;
         // Key String is SEDML Task ID
         HashMap<String, ODESolverResultSet> resultsHash = new LinkedHashMap<String, ODESolverResultSet>();
         String docName = null;
         BioModel bioModel = null;
         Simulation[] sims = null;
-        String outDirRoot = outputDir.toString().substring(0, outputDir.toString().lastIndexOf(System.getProperty("file.separator")));
         VCDocument singleDoc = null;
-//        try {
-//            docs = XmlHelper.sedmlToBioModel(sedmlImportLogger, externalDocInfo, sedml, null);
-//        } catch (Exception e) {
-//            System.err.println("Unable to Parse SED-ML into Bio-Model, failed with err: " + e.getMessage());
-//            throw e;
-//        }
         try {
-            //File vcmlPath = new File("/Users/akhilteja/projects/virtualCell/vcell/sample_omex_files/_00_omex_test_cvode.vcml");
             singleDoc = VCMLHandler.convertVcmlToVcDocument(vcmlPath);
         } catch (Exception e) {
             System.err.println("Unable to Parse SED-ML into Bio-Model, failed with err: " + e.getMessage());
             throw e;
         }
-
-//        for (VCDocument doc : docs) {
         try {
             sanityCheck(singleDoc);
         } catch (Exception e) {
             e.printStackTrace(System.err);
-//                continue;
         }
         assert singleDoc != null;
         docName = singleDoc.getName();
@@ -212,16 +199,10 @@ public class SolverHandler {
                     } else {
                         System.err.println("Solver results are not compatible with CSV format");
                     }
-//                } else if (solver instanceof AbstractJavaSolver) {
-//                    ((AbstractJavaSolver) solver).runSolver();
-//                    odeSolverResultSet = ((ODESolver) solver).getODESolverResultSet();
-//                    // must interpolate data for uniform time course which is not supported natively by the Java solvers
-//                    Task task = (Task) sedml.getTaskWithId(sim.getImportedTaskID());
-//                    assert task != null;
-//                    org.jlibsedml.Simulation sedmlSim = sedml.getSimulation(task.getSimulationReference());
-//                    if (sedmlSim instanceof UniformTimeCourse) {
+                    //TODO: Add support for JAVA solvers and implement interpolation
+
 //                        odeSolverResultSet = CLIUtils.interpolate(odeSolverResultSet, (UniformTimeCourse) sedmlSim);
-//                    }
+
                 } else {
                     // this should actually never happen...
                     throw new Exception("Unexpected solver: " + kisao + " " + solver);
@@ -229,24 +210,19 @@ public class SolverHandler {
                 if (solver.getSolverStatus().getStatus() == SolverStatus.SOLVER_FINISHED) {
                     System.out.println("Succesful execution: Model '" + docName + "' Task '" + sim.getDescription() + "'.");
 
-                    //CLIUtils.updateTaskStatusYml(sedmlName, sim.getDescription(), CLIUtils.Status.SUCCEEDED, outDirRoot);
-
-//                    CLIUtils.drawBreakLine("-", 100);
                 } else {
                     System.err.println("Solver status: " + solver.getSolverStatus().getStatus());
                     System.err.println("Solver message: " + solver.getSolverStatus().getSimulationMessage().getDisplayMessage());
                     throw new Exception();
                 }
-                //CLIUtils.finalStatusUpdate( CLIUtils.Status.SUCCEEDED, outDirRoot);
+
             } catch (Exception e) {
                 System.err.println("Failed execution: Model '" + docName + "' Task '" + sim.getDescription() + "'.");
-                //CLIUtils.updateTaskStatusYml(sedmlName, sim.getDescription(), CLIUtils.Status.FAILED, outDirRoot);
-                //CLIUtils.finalStatusUpdate( CLIUtils.Status.FAILED, outDirRoot);
+
                 if (e.getMessage() != null) {
                     // something else than failure caught by solver instance during execution
                     System.err.println(e.getMessage());
                 }
-//                CLIUtils.drawBreakLine("-", 100);
             }
             if(odeSolverResultSet != null) {
                 resultsHash.put(sim.getName(), odeSolverResultSet);
@@ -255,7 +231,6 @@ public class SolverHandler {
             CLIUtils.removeIntermediarySimFiles(outputDir);
 
         }
-//        }
         return resultsHash;
     }
 

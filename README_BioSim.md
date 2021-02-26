@@ -80,7 +80,7 @@ optional arguments:
   -q, --quiet           suppress all console output
   -i ARCHIVE, --archive ARCHIVE
                         Path to OMEX file which contains one or more SED-ML-
-                        encoded simulation experiments
+                        encoded simulation experiments or VCML file
   -o OUT_DIR, --out-dir OUT_DIR
                         Directory to save outputs
   -v, --version         show program's version number and exit
