@@ -13,7 +13,10 @@ import org.apache.commons.lang.StringUtils;
 import org.jlibsedml.*;
 import org.vcell.stochtest.TimeSeriesMultitrialData;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
@@ -21,10 +24,10 @@ import java.util.*;
 public class CLIUtils {
     //    private static final Path workingDirectory = Paths.get(Paths.get(".").toAbsolutePath().normalize().toString());
     // TODO: Hardcoded for docker image working directory(remove it soon) @gmarupilla
-    private static final Path workingDirectory = Paths.get(System.getProperty("user.dir").equals("/") ? "/usr/local/app/vcell/installDir" : System.getProperty("user.dir"));
+//    private static final Path workingDirectory = Paths.get(System.getProperty("user.dir").equals("/") ? "/usr/local/app/vcell/installDir" : System.getProperty("user.dir"));
     // Submodule path for VCell_CLI_UTILS
-    private static final Path utilPath = Paths.get(workingDirectory.toString(), "submodules", "vcell_cli_utils");
-    private static final Path stdOutPath = Paths.get(workingDirectory.toString(), "stdOut.txt");
+    private static final Path utilPath = Paths.get(workHomeDir().toString(), "submodules", "vcell_cli_utils");
+    private static final Path stdOutPath = Paths.get(workHomeDir().toString(), "stdOut.txt");
     private static final File stdOutFile = new File(String.valueOf(stdOutPath));
     private static final Path cliUtilPath = Paths.get(utilPath.toString(), "cli_util");
     private static final Path cliPath = Paths.get(cliUtilPath.toString(), "cli.py");
@@ -39,6 +42,23 @@ public class CLIUtils {
     // private String tempDirPath = null;
     // private final String extractedOmexPath = null;
 
+    private static Path workHomeDir() {
+        String userRootDir = System.getProperty("user.dir");
+        Path workingDirectory = Paths.get(userRootDir);
+        // Docker hardcode path
+        // Note: Docker Working Directory and Singularity working directory works in different way.
+        // Those paths are hardcoded because to run python code from a submodule path
+        String dockerPath = "/usr/local/app/vcell/installDir";
+        if (workingDirectory.toString().equals("/")) workingDirectory = Paths.get(dockerPath);
+
+            // Assuming Singularity image runs on HPC CRBMAPI service user
+        else if (workingDirectory.toString().startsWith("/home/FCAM/crbmapi/"))
+            workingDirectory = Paths.get(dockerPath);
+
+        else System.getProperty("user.dir");
+
+        return workingDirectory;
+    }
 
     // Simulation Status enum
     public enum Status {
@@ -53,7 +73,7 @@ public class CLIUtils {
 
 
     // Breakline
-    public static void drawBreakLine(String breakString, int times){
+    public static void drawBreakLine(String breakString, int times) {
         System.out.println(breakString + StringUtils.repeat(breakString, times));
     }
 
@@ -164,6 +184,7 @@ public class CLIUtils {
             sb.append(description.getDisplayName());
             sb.append(",");
         }
+        sb.deleteCharAt(sb.lastIndexOf(","));
         sb.append("\n");
 
 
@@ -240,7 +261,7 @@ public class CLIUtils {
                                 values.put(var, data);
                             }
                             String outDirRoot = outDir.toString().substring(0, outDir.toString().lastIndexOf(System.getProperty("file.separator")));
-                            CLIUtils.updateDatasetStatusYml(sedmlName, oo.getId() , dataset.getId(), Status.SUCCEEDED, outDirRoot);
+                            CLIUtils.updateDatasetStatusYml(sedmlName, oo.getId(), dataset.getId(), Status.SUCCEEDED, outDirRoot);
                             CLIUtils.updateTaskStatusYml(sedmlName, task.getId(), Status.SUCCEEDED, outDirRoot);
                         }
                         if (!supportedDataset) {
@@ -400,6 +421,7 @@ public class CLIUtils {
         // NOTE: Magic number -10, simply means unassigned exit code
         int exitCode = -10;
         String joinArg = Joiner.on(" ").join(args);
+        // Uncomment to debug the command execution
 //            System.out.println("Executing the command: `" + joinArg + "`");
         File log = stdOutFile;
         try {
@@ -477,9 +499,9 @@ public class CLIUtils {
         * */
         if (checkPythonInstallation() == 0) {
             if (isWindowsPlatform) {
-                cliArgs = new String[]{"python", cliPath.toString(), sedmlFilePath.toString(), workingDirectory.toString(), outDirPath.toString(), csvDirPath.toString()};
+                cliArgs = new String[]{"python", cliPath.toString(), "execSedDoc", sedmlFilePath.toString(), workHomeDir().toString(), outDirPath.toString(), csvDirPath.toString()};
             } else {
-                cliArgs = new String[]{"python3", cliPath.toString(), sedmlFilePath.toString(), workingDirectory.toString(), outDirPath.toString(), csvDirPath.toString()};
+                cliArgs = new String[]{"python3", cliPath.toString(), "execSedDoc", sedmlFilePath.toString(), workHomeDir().toString(), outDirPath.toString(), csvDirPath.toString()};
             }
             execShellCommand(cliArgs);
             System.out.println("HDF conversion completed in '" + outDir + "'\n");
@@ -533,7 +555,7 @@ public class CLIUtils {
                 execShellCommand(new String[]{"python", statusPath.toString(), "genStatusYaml", String.valueOf(omexFilePath), outDir});
             else
                 execShellCommand(new String[]{"python3", statusPath.toString(), "genStatusYaml", String.valueOf(omexFilePath), outDir});
-        }
+        } else System.err.println("Failed generating status YAML...");
     }
 
     public static void updateTaskStatusYml(String sedmlName, String taskName, Status taskStatus, String outDir) {
@@ -542,12 +564,12 @@ public class CLIUtils {
                 execShellCommand(new String[]{"python", statusPath.toString(), "updateTaskStatus", sedmlName, taskName, taskStatus.toString(), outDir});
             else
                 execShellCommand(new String[]{"python3", statusPath.toString(), "updateTaskStatus", sedmlName, taskName, taskStatus.toString(), outDir});
-        }
+        } else System.err.println("Failed updating status YAML...");
     }
 
     public static void finalStatusUpdate(Status simStatus, String outDir) {
         if (checkPythonInstallation() == 0) {
-            System.out.println("Generating Status YAML...");
+//            System.out.println("Generating Status YAML...");
             if (isWindowsPlatform)
                 execShellCommand(new String[]{"python", statusPath.toString(), "simStatus", simStatus.toString(), outDir});
             else
@@ -561,7 +583,15 @@ public class CLIUtils {
                 execShellCommand(new String[]{"python", statusPath.toString(), "updateDataSetStatus", sedmlName, dataSet, var, simStatus.toString(), outDir});
             else
                 execShellCommand(new String[]{"python3", statusPath.toString(), "updateDataSetStatus", sedmlName, dataSet, var, simStatus.toString(), outDir});
-        }
+        } else System.err.println("Failed updating DataSet to status YAML...");
+    }
+
+    public static void transposeVcmlCsv(String csvFilePath) {
+        if (checkPythonInstallation() == 0) {
+            if (isWindowsPlatform)
+                execShellCommand(new String[]{"python", cliPath.toString(), "transposeVcmlCsv", csvFilePath});
+            else execShellCommand(new String[]{"python3", cliPath.toString(), "transposeVcmlCsv", csvFilePath});
+        } else System.err.println("Failed transposing VCML resultant CSV...");
     }
 
     @SuppressWarnings("UnstableApiUsage")
