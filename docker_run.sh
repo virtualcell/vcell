@@ -20,4 +20,12 @@ if [[ $# -lt 1 ]]; then
     show_help
 fi
 
-java -classpath '/usr/local/app/vcell/lib/*' -Dvcell.installDir=/usr/local/app/vcell/installDir org.vcell.cli.CLIStandalone "$1" "$2" "$3" "$4" "$5" "$6"
+java \
+  -classpath '/usr/local/app/vcell/lib/*' \
+  -Dvcell.installDir=/usr/local/app/vcell/installDir \
+  -Dvcell.server.id="server_id" \
+  -Dvcell.python.executable=/usr/bin/python3 \
+  -Dvcell.mongodb.database="localhost" \
+  -Dvcell.mongodb.host.internal="localhost" \
+  -Dvcell.mongodb.port.internal=27017 \
+  org.vcell.cli.CLIStandalone "$1" "$2" "$3" "$4" "$5" "$6"

@@ -418,13 +418,13 @@ public abstract class HtcProxy {
 //				"MemoryMax(HARDCODE):HtcProxy.MemLimitResults.FALLBACK_MEM_LIMIT_MB"));
 	}
 
-	public static boolean isStochMultiTrial(SimulationTask simTask) {
-		return 	simTask.getSimulationJob().getSimulation().getSolverTaskDescription().getSolverDescription() == SolverDescription.StochGibson &&
-				simTask.getSimulationJob().getSimulation().getSolverTaskDescription().getStochOpt() != null &&
-				!simTask.getSimulationJob().getSimulation().getSolverTaskDescription().getStochOpt().isHistogram() &&
-				simTask.getSimulationJob().getSimulation().getSolverTaskDescription().getStochOpt().getNumOfTrials() > 1;
-
-	}
+//	public static boolean isStochMultiTrial(SimulationTask simTask) {
+//		return 	simTask.getSimulationJob().getSimulation().getSolverTaskDescription().getSolverDescription() == SolverDescription.StochGibson &&
+//				simTask.getSimulationJob().getSimulation().getSolverTaskDescription().getStochOpt() != null &&
+//				!simTask.getSimulationJob().getSimulation().getSolverTaskDescription().getStochOpt().isHistogram() &&
+//				simTask.getSimulationJob().getSimulation().getSolverTaskDescription().getStochOpt().getNumOfTrials() > 1;
+//
+//	}
 }
 
 
