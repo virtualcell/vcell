@@ -769,7 +769,18 @@
           "url": "https://doi.org/10.1021/jp993732q"
         }]
       }],
-      "parameters": [],
+      "parameters": [{
+        "id": "custom_seed",
+        "name": "custom seed",
+        "type": "integer",
+        "value": "0",
+        "recommendedRange": null,
+        "kisaoId": {
+          "namespace": "KISAO",
+          "id": "KISAO_0000488"
+        },
+        "availableSoftwareInterfaceTypes": ["web service", "desktop application", "library", "command-line application", "BioSimulators Docker image"]
+      }],
       "dependentDimensions": [{
         "namespace": "SIO",
         "id": "SIO_000418"
@@ -830,14 +841,50 @@
         }]
       }],
       "parameters": [{
-        "id": "initial_step_size",
-        "name": "initial step size",
+        "id": "default_time_step",
+        "name": "default time step",
         "type": "float",
         "value": "0.1",
         "recommendedRange": null,
         "kisaoId": {
           "namespace": "KISAO",
-          "id": "KISAO_0000559"
+          "id": "KISAO_0000483"
+        },
+        "availableSoftwareInterfaceTypes": ["web service", "desktop application", "library", "command-line application", "BioSimulators Docker image"]
+      },
+      {
+        "id": "epsilon",
+        "name": "epsilon",
+        "type": "float",
+        "value": "100.0",
+        "recommendedRange": null,
+        "kisaoId": {
+          "namespace": "KISAO",
+          "id": "KISAO:0000602"
+        },
+        "availableSoftwareInterfaceTypes": ["web service", "desktop application", "library", "command-line application", "BioSimulators Docker image"]
+      },
+      {
+        "id": "lambda",
+        "name": "lambda",
+        "type": "float",
+        "value": "10.0",
+        "recommendedRange": null,
+        "kisaoId": {
+          "namespace": "KISAO",
+          "id": "KISAO:0000603"
+        },
+        "availableSoftwareInterfaceTypes": ["web service", "desktop application", "library", "command-line application", "BioSimulators Docker image"]
+      },
+      {
+        "id": "MSR_Tolerance",
+        "name": "MSR Tolerance",
+        "type": "float",
+        "value": "0.01",
+        "recommendedRange": null,
+        "kisaoId": {
+          "namespace": "KISAO",
+          "id": "KISAO:0000604"
         },
         "availableSoftwareInterfaceTypes": ["web service", "desktop application", "library", "command-line application", "BioSimulators Docker image"]
       }],
@@ -902,14 +949,50 @@
         }]
       }],
       "parameters": [{
-        "id": "initial_step_size",
-        "name": "initial step size",
+        "id": "default_time_step",
+        "name": "default time step",
         "type": "float",
         "value": "0.1",
         "recommendedRange": null,
         "kisaoId": {
           "namespace": "KISAO",
-          "id": "KISAO_0000559"
+          "id": "KISAO_0000483"
+        },
+        "availableSoftwareInterfaceTypes": ["web service", "desktop application", "library", "command-line application", "BioSimulators Docker image"]
+      },
+      {
+        "id": "epsilon",
+        "name": "epsilon",
+        "type": "float",
+        "value": "100.0",
+        "recommendedRange": null,
+        "kisaoId": {
+          "namespace": "KISAO",
+          "id": "KISAO:0000602"
+        },
+        "availableSoftwareInterfaceTypes": ["web service", "desktop application", "library", "command-line application", "BioSimulators Docker image"]
+      },
+      {
+        "id": "lambda",
+        "name": "lambda",
+        "type": "float",
+        "value": "10.0",
+        "recommendedRange": null,
+        "kisaoId": {
+          "namespace": "KISAO",
+          "id": "KISAO:0000603"
+        },
+        "availableSoftwareInterfaceTypes": ["web service", "desktop application", "library", "command-line application", "BioSimulators Docker image"]
+      },
+      {
+        "id": "MSR_Tolerance",
+        "name": "MSR Tolerance",
+        "type": "float",
+        "value": "0.01",
+        "recommendedRange": null,
+        "kisaoId": {
+          "namespace": "KISAO",
+          "id": "KISAO:0000604"
         },
         "availableSoftwareInterfaceTypes": ["web service", "desktop application", "library", "command-line application", "BioSimulators Docker image"]
       }],
@@ -974,14 +1057,62 @@
         }]
       }],
       "parameters": [{
-        "id": "initial_step_size",
-        "name": "initial step size",
+        "id": "default_time_step",
+        "name": "default time step",
         "type": "float",
         "value": "0.1",
         "recommendedRange": null,
         "kisaoId": {
           "namespace": "KISAO",
-          "id": "KISAO_0000559"
+          "id": "KISAO_0000483"
+        },
+        "availableSoftwareInterfaceTypes": ["web service", "desktop application", "library", "command-line application", "BioSimulators Docker image"]
+      },
+      {
+        "id": "epsilon",
+        "name": "epsilon",
+        "type": "float",
+        "value": "100.0",
+        "recommendedRange": null,
+        "kisaoId": {
+          "namespace": "KISAO",
+          "id": "KISAO:0000602"
+        },
+        "availableSoftwareInterfaceTypes": ["web service", "desktop application", "library", "command-line application", "BioSimulators Docker image"]
+      },
+      {
+        "id": "lambda",
+        "name": "lambda",
+        "type": "float",
+        "value": "10.0",
+        "recommendedRange": null,
+        "kisaoId": {
+          "namespace": "KISAO",
+          "id": "KISAO:0000603"
+        },
+        "availableSoftwareInterfaceTypes": ["web service", "desktop application", "library", "command-line application", "BioSimulators Docker image"]
+      },
+      {
+        "id": "MSR_Tolerance",
+        "name": "MSR Tolerance",
+        "type": "float",
+        "value": "0.01",
+        "recommendedRange": null,
+        "kisaoId": {
+          "namespace": "KISAO",
+          "id": "KISAO:0000604"
+        },
+        "availableSoftwareInterfaceTypes": ["web service", "desktop application", "library", "command-line application", "BioSimulators Docker image"]
+      },
+      {
+        "id": "SDE_Tolerance",
+        "name": "SDE Tolerance",
+        "type": "float",
+        "value": "0.0001",
+        "recommendedRange": null,
+        "kisaoId": {
+          "namespace": "KISAO",
+          "id": "KISAO:0000605"
         },
         "availableSoftwareInterfaceTypes": ["web service", "desktop application", "library", "command-line application", "BioSimulators Docker image"]
       }],
