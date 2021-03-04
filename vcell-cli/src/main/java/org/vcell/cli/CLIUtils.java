@@ -410,7 +410,7 @@ public class CLIUtils {
         int exitCode = -10;
         String joinArg = Joiner.on(" ").join(args);
         // Uncomment to debug the command execution
-//            System.out.println("Executing the command: `" + joinArg + "`");
+            System.out.println("Executing the command: `" + joinArg + "`");
         File log = stdOutFile;
         try {
             ProcessBuilder builder = new ProcessBuilder(args);
@@ -522,6 +522,7 @@ public class CLIUtils {
     status: SUCCEEDED
     * */
     public static void generateStatusYaml(String omexPath, String outDir) {
+        System.out.println("Working Directory: " + workingDirectory);
         // Note: by default every status is being skipped
         Path omexFilePath = Paths.get(omexPath);
         /*
