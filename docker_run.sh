@@ -23,6 +23,7 @@ fi
 java \
   -classpath '/usr/local/app/vcell/lib/*' \
   -Dvcell.installDir=/usr/local/app/vcell/installDir \
+  -Dvcell.cli="true" \
   -Dvcell.server.id="server_id" \
   -Dvcell.python.executable=/usr/bin/python3 \
   -Dvcell.mongodb.database="localhost" \

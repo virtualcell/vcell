@@ -5,10 +5,12 @@ import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.SimpleSymbolTable;
 import cbit.vcell.parser.SymbolTable;
 import cbit.vcell.resource.OperatingSystemInfo;
+import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.util.ColumnDescription;
 import com.google.common.base.Joiner;
 import com.google.common.io.Files;
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jlibsedml.*;
 import org.vcell.stochtest.TimeSeriesMultitrialData;
@@ -46,6 +48,33 @@ public class CLIUtils {
 
     // private String tempDirPath = null;
     // private final String extractedOmexPath = null;
+
+
+    // TODO: Implement this to remove System properties dynamically from Run time, Remove hardcoded from docker_run.sh
+    private static void removeCliSystemProperties() throws IOException {
+        if (System.getProperty("vcell.cli").equals("true")) {
+            PropertyLoader.loadProperties(REQUIRED_CLIENT_PROPERTIES);
+            for (int i = 0; i <= NOT_REQUIRED_LOCAL_CLI_PROPERTIES.length; i++)
+            PropertyLoader.loadProperties((String[]) ArrayUtils.remove(NOT_REQUIRED_LOCAL_CLI_PROPERTIES, i));
+        }
+    }
+    private static final String[] REQUIRED_CLIENT_PROPERTIES = {
+            PropertyLoader.installationRoot
+    };
+
+    private static final String[] NOT_REQUIRED_LOCAL_CLI_PROPERTIES = {
+            PropertyLoader.primarySimDataDirInternalProperty,
+            PropertyLoader.secondarySimDataDirInternalProperty,
+            PropertyLoader.dbPasswordValue,
+            PropertyLoader.dbUserid,
+            PropertyLoader.dbDriverName,
+            PropertyLoader.dbConnectURL,
+            PropertyLoader.vcellServerIDProperty,
+            PropertyLoader.mongodbDatabase,
+            PropertyLoader.mongodbHostInternal,
+            PropertyLoader.mongodbPortInternal
+
+    };
 
 
     // Simulation Status enum
@@ -410,20 +439,21 @@ public class CLIUtils {
         int exitCode = -10;
         String joinArg = Joiner.on(" ").join(args);
         // Uncomment to debug the command execution
-            System.out.println("Executing the command: `" + joinArg + "`");
+//            System.out.println("Executing the command: `" + joinArg + "`");
         File log = stdOutFile;
         try {
             ProcessBuilder builder = new ProcessBuilder(args);
-            builder.redirectErrorStream(true);
+//            builder.redirectErrorStream(true);
             // STDOUT redirected to stdOut.txt file
-            builder.redirectOutput(ProcessBuilder.Redirect.appendTo(log));
+//            builder.redirectOutput(ProcessBuilder.Redirect.appendTo(log));
             Process p = builder.start();
-            assert builder.redirectInput() == ProcessBuilder.Redirect.PIPE;
-            assert builder.redirectOutput().file() == log;
-            assert p.getInputStream().read() == -1;
+//            assert builder.redirectInput() == ProcessBuilder.Redirect.PIPE;
+//            assert builder.redirectOutput().file() == log;
+//            assert p.getInputStream().read() == -1;
             exitCode = p.waitFor();
             return exitCode;
         } catch (IOException | InterruptedException I) {
+            I.printStackTrace();
             System.err.println("Failed executing the command: `" + joinArg + "`\n");
         }
         return exitCode;
@@ -522,7 +552,6 @@ public class CLIUtils {
     status: SUCCEEDED
     * */
     public static void generateStatusYaml(String omexPath, String outDir) {
-        System.out.println("Working Directory: " + workingDirectory);
         // Note: by default every status is being skipped
         Path omexFilePath = Paths.get(omexPath);
         /*
