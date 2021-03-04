@@ -22,12 +22,17 @@ import java.nio.file.Paths;
 import java.util.*;
 
 public class CLIUtils {
-    //    private static final Path workingDirectory = Paths.get(Paths.get(".").toAbsolutePath().normalize().toString());
-    // TODO: Hardcoded for docker image working directory(remove it soon) @gmarupilla
-//    private static final Path workingDirectory = Paths.get(System.getProperty("user.dir").equals("/") ? "/usr/local/app/vcell/installDir" : System.getProperty("user.dir"));
+    // Docker hardcode path
+    // Note: Docker Working Directory and Singularity working directory works in different way.
+    // Those paths are hardcoded because to run python code from a submodule path
+    // Assuming Singularity image runs on HPC CRBMAPI service user
+    private static final Path homeDir = Paths.get(String.valueOf(System.getProperty("user.dir")));
+    private static final Path workingDirectory = Paths.get((Paths.get(String.valueOf(homeDir)).toString().equals("/")
+            || Paths.get(String.valueOf(homeDir)).toString().startsWith("/home/FCAM/crbmapi/"))
+            ? "/usr/local/app/vcell/installDir" : System.getProperty("user.dir"));
     // Submodule path for VCell_CLI_UTILS
-    private static final Path utilPath = Paths.get(workHomeDir().toString(), "submodules", "vcell_cli_utils");
-    private static final Path stdOutPath = Paths.get(workHomeDir().toString(), "stdOut.txt");
+    private static final Path utilPath = Paths.get(workingDirectory.toString(), "submodules", "vcell_cli_utils");
+    private static final Path stdOutPath = Paths.get(workingDirectory.toString(), "stdOut.txt");
     private static final File stdOutFile = new File(String.valueOf(stdOutPath));
     private static final Path cliUtilPath = Paths.get(utilPath.toString(), "cli_util");
     private static final Path cliPath = Paths.get(cliUtilPath.toString(), "cli.py");
@@ -42,23 +47,6 @@ public class CLIUtils {
     // private String tempDirPath = null;
     // private final String extractedOmexPath = null;
 
-    private static Path workHomeDir() {
-        String userRootDir = System.getProperty("user.dir");
-        Path workingDirectory = Paths.get(userRootDir);
-        // Docker hardcode path
-        // Note: Docker Working Directory and Singularity working directory works in different way.
-        // Those paths are hardcoded because to run python code from a submodule path
-        String dockerPath = "/usr/local/app/vcell/installDir";
-        if (workingDirectory.toString().equals("/")) workingDirectory = Paths.get(dockerPath);
-
-            // Assuming Singularity image runs on HPC CRBMAPI service user
-        else if (workingDirectory.toString().startsWith("/home/FCAM/crbmapi/"))
-            workingDirectory = Paths.get(dockerPath);
-
-        else System.getProperty("user.dir");
-
-        return workingDirectory;
-    }
 
     // Simulation Status enum
     public enum Status {
@@ -499,9 +487,9 @@ public class CLIUtils {
         * */
         if (checkPythonInstallation() == 0) {
             if (isWindowsPlatform) {
-                cliArgs = new String[]{"python", cliPath.toString(), "execSedDoc", sedmlFilePath.toString(), workHomeDir().toString(), outDirPath.toString(), csvDirPath.toString()};
+                cliArgs = new String[]{"python", cliPath.toString(), "execSedDoc", sedmlFilePath.toString(), workingDirectory.toString(), outDirPath.toString(), csvDirPath.toString()};
             } else {
-                cliArgs = new String[]{"python3", cliPath.toString(), "execSedDoc", sedmlFilePath.toString(), workHomeDir().toString(), outDirPath.toString(), csvDirPath.toString()};
+                cliArgs = new String[]{"python3", cliPath.toString(), "execSedDoc", sedmlFilePath.toString(), workingDirectory.toString(), outDirPath.toString(), csvDirPath.toString()};
             }
             execShellCommand(cliArgs);
             System.out.println("HDF conversion completed in '" + outDir + "'\n");
