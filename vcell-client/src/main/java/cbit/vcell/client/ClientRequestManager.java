@@ -457,6 +457,10 @@ public class ClientRequestManager
 	enum CloseOption {
 		SAVE_AND_CLOSE, CLOSE_IN_ANY_CASE, CANCEL_CLOSE,
 	}
+	
+	public enum CallAction {
+		EXPORT, RUN, SAVE, SAVEASNEW,
+	}
 
 	/**
 	 * Insert the method's description here. Creation date: (5/21/2004 4:20:47 AM)
@@ -2971,6 +2975,7 @@ public class ClientRequestManager
 			hash.put(ChooseFile.FORCE_FILE_FILTER, forceFilefilter);
 		}
 		
+		hash.put("CallAction", CallAction.EXPORT);
 		hash.put(CommonTask.DOCUMENT_WINDOW_MANAGER.name, manager);
 		hash.put("currentDocumentWindow", currentWindow);
 
@@ -2988,7 +2993,7 @@ public class ClientRequestManager
 		AsynchClientTask finishExport = new FinishExport();
 		// assemble array
 		AsynchClientTask[] tasks = null;
-		tasks = new AsynchClientTask[] { documentValid, setMathDescription, documentToExport, chooseFile, exportDocument, finishExport };
+		tasks = new AsynchClientTask[] { documentToExport, chooseFile, documentValid, setMathDescription, exportDocument, finishExport };
 		/* run tasks */
 		ClientTaskDispatcher.dispatch(currentWindow, hash, tasks, false);
 	}
@@ -4360,6 +4365,7 @@ public class ClientRequestManager
 		hash.put("simulations", simulations);
 		hash.put("jobManager", getClientServerManager().getJobManager());
 		hash.put("requestManager", this);
+		hash.put("CallAction", CallAction.RUN);
 
 		/* create tasks */
 		AsynchClientTask[] tasks = null;
@@ -4475,6 +4481,7 @@ public class ClientRequestManager
 		hash.put(CommonTask.DOCUMENT_WINDOW_MANAGER.name, documentWindowManager);
 		hash.put("currentDocumentWindow", currentDocumentWindow);
 		hash.put("requestManager", this);
+		hash.put("CallAction", CallAction.RUN);
 
 		/* create tasks */
 		// check document consistency first
@@ -4535,6 +4542,8 @@ public class ClientRequestManager
 		hash.put(CommonTask.DOCUMENT_WINDOW_MANAGER.name, documentWindowManager);
 		hash.put("currentDocumentWindow", currentDocumentWindow);
 		hash.put("requestManager", this);
+		hash.put("CallAction", CallAction.SAVEASNEW);
+
 
 		/* create tasks */
 		// check document consistency first

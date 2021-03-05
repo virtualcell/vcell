@@ -403,7 +403,7 @@ private static class PostProcessingChores {
 	 * will we need a VTK mesh?
 	 */
 	private boolean isVtk;
-	private boolean bStochMultiTrial;
+//	private boolean bStochMultiTrial;
 
 	/**
 	 * directories are same
@@ -424,7 +424,7 @@ private static class PostProcessingChores {
 		this.finalDataDirectoryInternal = finalDataDirectoryInternal;
 		this.finalDataDirectoryExternal = finalDataDirectoryExternal;
 		isVtk = false;
-		bStochMultiTrial = false;
+//		bStochMultiTrial = false;
 	}
 
 	boolean isCopyNeeded( ) {
@@ -442,12 +442,12 @@ private static class PostProcessingChores {
 		this.isVtk = isVtk;
 	}
 
-	public void setStochMultiTrial(boolean bStochMultiTrial) {
-		this.bStochMultiTrial = bStochMultiTrial;
-	}
-	public boolean isStochMultiTrial() {
-		return bStochMultiTrial;
-	}
+//	public void setStochMultiTrial(boolean bStochMultiTrial) {
+//		this.bStochMultiTrial = bStochMultiTrial;
+//	}
+//	public boolean isStochMultiTrial() {
+//		return bStochMultiTrial;
+//	}
 	@Override
 	public String toString() {
 		return "PostProcessorChores( " +runDirectoryExternal + ", "  + finalDataDirectoryExternal + ", isVtkUser " + isVtk + ")";
@@ -473,7 +473,7 @@ private PostProcessingChores choresFor(SimulationTask simTask) {
 		chores = new PostProcessingChores(runDirExternal + userDir , primaryExternal + userDir);
 	}
 	chores.setVtkUser( slvTaskDesc.isVtkUser() ) ;
-	chores.setStochMultiTrial(HtcProxy.isStochMultiTrial(simTask));
+//	chores.setStochMultiTrial(HtcProxy.isStochMultiTrial(simTask));
 	if (lg.isDebugEnabled( )) {
 		lg.debug("Simulation " + simTask.getSimulation().getDescription() + " task " + simTask.getTaskID()
 				+ " with " + slvTaskDesc.getNumProcessors() + " processors using " + chores);
@@ -866,10 +866,10 @@ private HtcJobID submit2PBS(SimulationTask simTask, HtcProxy clonedHtcProxy, Pos
 			VtkMeshGenerator vmg = new VtkMeshGenerator(simOwner, simKey, jobId);
 			postProcessingCommands.add(vmg);
 		}
-		if(chores.isStochMultiTrial()) {
-			final String logName = chores.finalDataDirectoryInternal + '/' + SimulationData.createCanonicalSimLogFileName(simKey, jobId, false);
-			postProcessingCommands.add(new AvgStochMultiTrial(primaryUserDirInternal.getAbsolutePath(), XmlHelper.simTaskToXML(simTask)));
-		}
+//		if(chores.isStochMultiTrial()) {
+//			final String logName = chores.finalDataDirectoryInternal + '/' + SimulationData.createCanonicalSimLogFileName(simKey, jobId, false);
+//			postProcessingCommands.add(new AvgStochMultiTrial(primaryUserDirInternal.getAbsolutePath(), XmlHelper.simTaskToXML(simTask)));
+//		}
 	} else {
 		ExecutableCommand ec = new ExecutableCommand(null, false,false,
 				PropertyLoader.getRequiredProperty(PropertyLoader.javaSimulationExecutable),

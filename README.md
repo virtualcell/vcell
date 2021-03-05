@@ -106,4 +106,3 @@ This package was developed by the BioSimulators Team of the [Center for Reproduc
 
 ## Questions and comments
 Please contact the [BioSimulators Team](mailto:info@biosimulators.org) with any questions or comments.
-

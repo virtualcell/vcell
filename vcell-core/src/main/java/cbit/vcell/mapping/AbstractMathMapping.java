@@ -1138,14 +1138,30 @@ protected final String getMathSymbol0(SymbolTableEntry ste, GeometryClass geomet
 				if (count == null) {
 					throw new MappingException("KineticsParameter " + steName + " not found in local name count");
 				}
-				return steName+"_"+ste.getNameScope().getName();
+				// for now keep old style
+				if (count>1 || steName.equals("J")){
+					return steName+"_"+ste.getNameScope().getName();
+					//return getNameScope().getSymbolName(ste);
+				}else{
+					return steName;
+				}
+				// will revert to this in the future
+				// return steName+"_"+ste.getNameScope().getName();
 			}
 			if (ste instanceof LocalParameter && ((LocalParameter)ste).getNameScope() instanceof ReactionRule.ReactionRuleNameScope){
 				Integer count = localNameCountHash.get(steName);
 				if (count == null) {
 					throw new MappingException("Reaction Rule Parameter " + steName + " not found in local name count");
 				}
-				return steName+"_"+ste.getNameScope().getName();
+				// for now keep old style
+				if (count>1 || steName.equals("J")){
+					return steName+"_"+ste.getNameScope().getName();
+					//return getNameScope().getSymbolName(ste);
+				}else{
+					return steName;
+				}
+				// will revert to this in the future
+				// return steName+"_"+ste.getNameScope().getName();
 			}
 			if (ste instanceof ProbabilityParameter){ //be careful here, to see if we need mangle the reaction name
 				ProbabilityParameter probParm = (ProbabilityParameter)ste;

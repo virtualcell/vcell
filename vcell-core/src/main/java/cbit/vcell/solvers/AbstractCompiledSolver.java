@@ -18,7 +18,9 @@ import cbit.vcell.solver.server.SimulationMessage;
 import cbit.vcell.solver.server.SolverStatus;
 import org.vcell.util.document.User;
 
+import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -218,14 +220,9 @@ public abstract class AbstractCompiledSolver extends AbstractSolver implements j
                 }
             }
             File[] libzipSolverFiles = (File[]) tempAL.toArray(new File[0]);
-            File stdOutFile = new File(String.valueOf(Paths.get(System.getProperty("user.dir"))), "stdOut.txt");
             ProcessBuilder pb = new ProcessBuilder("ldd", linkSolver.toString());
             pb.redirectErrorStream(true);
-            pb.redirectOutput(ProcessBuilder.Redirect.appendTo(stdOutFile));
             Process p = pb.start();
-            assert pb.redirectInput() == ProcessBuilder.Redirect.PIPE;
-            assert pb.redirectOutput().file().equals(stdOutFile);
-            assert p.getInputStream().read() == -1;
             int ioByte = -1;
             StringBuffer sb = new StringBuffer();
             while ((ioByte = p.getInputStream().read()) != -1) {
@@ -233,6 +230,15 @@ public abstract class AbstractCompiledSolver extends AbstractSolver implements j
             }
             p.waitFor();
 //			System.out.println("-----ldd output:\n"+sb.toString());
+            
+            //Try to save output to file for cli without interfering with further processing
+            File stdOutFile = new File(String.valueOf(Paths.get(System.getProperty("user.dir"))), "stdOut.txt");
+            try (BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(stdOutFile))){
+            	bos.write(sb.toString().getBytes());
+            }catch(Exception e) {
+            	e.printStackTrace();
+            }
+            
             java.io.BufferedReader br = new java.io.BufferedReader(new java.io.StringReader(sb.toString()));
             String line = null;
 //			System.out.println("-----reading ldd:");

@@ -32,6 +32,7 @@ import cbit.vcell.solver.ErrorTolerance;
 import cbit.vcell.solver.NonspatialStochSimOptions;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationSymbolTable;
+import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solver.UniformOutputTimeSpec;
 import cbit.vcell.solver.server.SolverFileWriter;
 
@@ -44,12 +45,22 @@ import cbit.vcell.solver.server.SolverFileWriter;
 public class StochFileWriter extends SolverFileWriter 
 {
 
+	private boolean isMultiTrialNonHisto = false;
 /**
  * StochFileWriter constructor comment.
  */
 public StochFileWriter(PrintWriter pw, SimulationTask simTask, boolean bMessaging) 
 {
 	super(pw, simTask, bMessaging);
+	isMultiTrialNonHisto = StochFileWriter.isStochMultiTrial(simTask);
+}
+
+public static boolean isStochMultiTrial(SimulationTask simTask) {
+	return 	simTask.getSimulationJob().getSimulation().getSolverTaskDescription().getSolverDescription() == SolverDescription.StochGibson &&
+			simTask.getSimulationJob().getSimulation().getSolverTaskDescription().getStochOpt() != null &&
+			!simTask.getSimulationJob().getSimulation().getSolverTaskDescription().getStochOpt().isHistogram() &&
+			simTask.getSimulationJob().getSimulation().getSolverTaskDescription().getStochOpt().getNumOfTrials() > 1;
+
 }
 
 
@@ -195,10 +206,11 @@ public void write(String[] parameterNames) throws Exception,ExpressionException
 		double savePoints = (timeBounds.getEndingTime() - timeBounds.getStartingTime())/((UniformOutputTimeSpec)outputTimeSpec).getOutputTimeStep();
 		printWriter.println("MAX_SAVE_POINTS" +"\t"+(Math.ceil(savePoints)+1));
 	}
-	boolean isMultiTrial = !solverTaskDescription.getStochOpt().isHistogram() &&
-			solverTaskDescription.getStochOpt().getNumOfTrials() > 1;
-			//Multi-trial 'NUM_TRIAL' handled by slurm array within .slurm.sh script
-	printWriter.println("NUM_TRIAL"+"\t"+(isMultiTrial?1:solverTaskDescription.getStochOpt().getNumOfTrials()));
+//	boolean isMultiTrial = !solverTaskDescription.getStochOpt().isHistogram() &&
+//			solverTaskDescription.getStochOpt().getNumOfTrials() > 1;
+//			//Multi-trial 'NUM_TRIAL' handled by slurm array within .slurm.sh script
+//	printWriter.println("NUM_TRIAL"+"\t"+(isMultiTrial?1:solverTaskDescription.getStochOpt().getNumOfTrials()));
+	printWriter.println("NUM_TRIAL"+"\t"+solverTaskDescription.getStochOpt().getNumOfTrials());
 
 	if(stochOpt.isUseCustomSeed()) {
   		printWriter.println("SEED"+"\t"+stochOpt.getCustomSeed());
@@ -206,6 +218,9 @@ public void write(String[] parameterNames) throws Exception,ExpressionException
 		RandomDataGenerator rdg = new RandomDataGenerator();
 		int randomSeed = rdg.nextInt(1, Integer.MAX_VALUE);
 		printWriter.println("SEED"+"\t"+randomSeed);
+	}
+	if(isMultiTrialNonHisto) {
+		printWriter.println("BMULTIBUTNOTHISTO"+"\t"+"1");
 	}
   	printWriter.println("</control>");
   	printWriter.println();
