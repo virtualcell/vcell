@@ -85,6 +85,31 @@ public class ImagePlaneManagerPanel extends javax.swing.JPanel {
 	private ImagePlanePanel ivjImagePlanePanel1 = null;
 	private Boolean ivjBZeroView = null;
 
+	private ActionListener copyFDActionListener = new ActionListener() {
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			SourceDataInfo mySDI = getImagePlaneManager().getSourceDataInfo();
+			PDEDataContextPanel pdedcp = (PDEDataContextPanel)getCurveValueProvider();
+			System.out.println(pdedcp.getPdeDataContext().getDataIdentifier().getName()+" "+pdedcp.getPdeDataContext().getTimePoint()+" "+getImagePlaneManager().getSlice()+" "+mySDI);
+			try {
+				File tempFile = File.createTempFile("fdTemp", ".fd");
+				DataOutputStream dos = new DataOutputStream(new FileOutputStream(tempFile));
+//				SourceDataInfo outSDI = getImagePlaneManager().getImagePlaneData();
+				double[] outData = (double[])mySDI.getData();
+				for(int i=0;i<outData.length;i++) {
+					dos.writeDouble(outData[i]);
+				}
+				dos.close();
+				StringSelection ss = new StringSelection(pdedcp.getPdeDataContext().getDataIdentifier().getName()+","+
+						pdedcp.getPdeDataContext().getVCDataIdentifier().getID()+","+pdedcp.getPdeDataContext().getTimePoint()+","+
+						mySDI.getXSize()+","+mySDI.getYSize()+","+mySDI.getZSize()+","+
+						mySDI.getMinMax().getMin()+","+mySDI.getMinMax().getMax()+","+tempFile.getAbsolutePath());
+				Toolkit.getDefaultToolkit().getSystemClipboard().setContents(ss, ss);
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+		}};
 class IvjEventHandler implements java.awt.event.MouseListener, java.awt.event.MouseMotionListener, java.beans.PropertyChangeListener {
 		public void mouseClicked(java.awt.event.MouseEvent e) {};
 		public void mouseDragged(java.awt.event.MouseEvent e) {
@@ -110,42 +135,22 @@ class IvjEventHandler implements java.awt.event.MouseListener, java.awt.event.Mo
 				connEtoC15(e);
 			if(e.isPopupTrigger()) {
 				System.out.println("Trigger on press");
-				JPopupMenu jp = new JPopupMenu();
-				JMenuItem jmi = new JMenuItem("Copy FieldData");
-				jmi.addActionListener(new ActionListener() {
-					@Override
-					public void actionPerformed(ActionEvent e) {
-						SourceDataInfo mySDI = getImagePlaneManager().getSourceDataInfo();
-						PDEDataContextPanel pdedcp = (PDEDataContextPanel)getCurveValueProvider();
-						System.out.println(pdedcp.getPdeDataContext().getDataIdentifier().getName()+" "+pdedcp.getPdeDataContext().getTimePoint()+" "+getImagePlaneManager().getSlice()+" "+mySDI);
-						try {
-							File tempFile = File.createTempFile("fdTemp", ".fd");
-							DataOutputStream dos = new DataOutputStream(new FileOutputStream(tempFile));
-//							SourceDataInfo outSDI = getImagePlaneManager().getImagePlaneData();
-							double[] outData = (double[])mySDI.getData();
-							for(int i=0;i<outData.length;i++) {
-								dos.writeDouble(outData[i]);
-							}
-							dos.close();
-							StringSelection ss = new StringSelection(pdedcp.getPdeDataContext().getDataIdentifier().getName()+","+
-									pdedcp.getPdeDataContext().getVCDataIdentifier().getID()+","+pdedcp.getPdeDataContext().getTimePoint()+","+
-									mySDI.getXSize()+","+mySDI.getYSize()+","+mySDI.getZSize()+","+
-									mySDI.getMinMax().getMin()+","+mySDI.getMinMax().getMax()+","+tempFile.getAbsolutePath());
-							Toolkit.getDefaultToolkit().getSystemClipboard().setContents(ss, ss);
-						} catch (IOException e1) {
-							// TODO Auto-generated catch block
-							e1.printStackTrace();
-						}
-					}});
-				jp.add(jmi);
-				jp.show(e.getComponent(), e.getPoint().x, e.getPoint().y);
+				copyFDAction(e);
 			}
+		}
+		private void copyFDAction(java.awt.event.MouseEvent e) {
+			JPopupMenu jp = new JPopupMenu();
+			JMenuItem jmi = new JMenuItem("Copy FieldData");
+			jmi.addActionListener(copyFDActionListener);
+			jp.add(jmi);
+			jp.show(e.getComponent(), e.getPoint().x, e.getPoint().y);
 		};
 		public void mouseReleased(java.awt.event.MouseEvent e) {
 			if (e.getSource() == ImagePlaneManagerPanel.this.getimagePaneView1()) 
 				connEtoC6(e);
 			if(e.isPopupTrigger()) {
 				System.out.println("Trigger on release");
+				copyFDAction(e);
 			}
 		};
 		public void propertyChange(final java.beans.PropertyChangeEvent evt) {

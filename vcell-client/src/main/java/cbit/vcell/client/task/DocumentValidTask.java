@@ -13,8 +13,10 @@ package cbit.vcell.client.task;
 import java.util.Hashtable;
 
 import org.vcell.util.document.DocumentValidUtil;
+import org.vcell.util.gui.exporter.FileFilters;
 
 import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.client.ClientRequestManager.CallAction;
 import cbit.vcell.client.DocumentWindowManager;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.math.MathDescription;
@@ -36,6 +38,11 @@ public class DocumentValidTask extends AsynchClientTask {
  */
 public void run(Hashtable<String, Object> hashTable) throws java.lang.Exception {
 	DocumentWindowManager documentWindowManager = (DocumentWindowManager)hashTable.get(CommonTask.DOCUMENT_WINDOW_MANAGER.name);
+	if(hashTable.get("CallAction") != null && hashTable.get("CallAction") == CallAction.EXPORT) {
+		if(hashTable.get("fileFilter") == FileFilters.FILE_FILTER_VCML) {
+			return;
+		}
+	}
 	if (documentWindowManager.getVCDocument() instanceof BioModel) {
 		// try to successfully generate math and geometry region info
 		BioModel bioModel = (BioModel)documentWindowManager.getVCDocument();

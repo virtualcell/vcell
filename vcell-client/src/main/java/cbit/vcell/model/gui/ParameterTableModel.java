@@ -211,7 +211,7 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 			}
 		}
 		ReactionStep newValue = (ReactionStep)evt.getNewValue();
-		if (newValue != null){
+		if (newValue != null) {
 			newValue.addPropertyChangeListener(this);
 			newValue.getKinetics().addPropertyChangeListener(this);
 			for (int i = 0; i < newValue.getKinetics().getKineticsParameters().length; i++){
@@ -222,6 +222,7 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 				newValue.getKinetics().getProxyParameters()[i].removePropertyChangeListener(this);
 				newValue.getKinetics().getProxyParameters()[i].addPropertyChangeListener(this);
 			}
+			
 			autoCompleteSymbolFilter = reactionStep.getAutoCompleteSymbolFilter();
 		}
 		refreshData();

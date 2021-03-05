@@ -817,6 +817,46 @@ public void refreshDependencies() {
 	addPropertyChangeListener(this);
 	removeVetoableChangeListener(this);
 	addVetoableChangeListener(this);
+	
+	updateCatalysts();
+	
+}
+
+private void updateCatalysts() {
+	
+	// remove all catalysts first
+	// TODO: uncomment when sufficient testing is possible
+//	List<ReactionParticipant> catalystList = new ArrayList<>();
+//	for(ReactionParticipant rp : fieldReactionParticipants)
+//	{
+//		if(rp instanceof Catalyst)
+//		{
+//			catalystList.add(rp);	// build catalyst list
+//		}
+//	}
+//	for(ReactionParticipant rp : catalystList) {
+//		try {
+//			removeReactionParticipant(rp);	// remove all catalysts
+//		} catch (PropertyVetoException | ExpressionException | ModelException e) {
+//			e.printStackTrace();
+//		}
+//	}
+	
+	// add all catalysts based on updated proxy parameter list
+	for (ProxyParameter added : getKinetics().getProxyParameters()) {
+		if(((ProxyParameter)added).getTarget() instanceof SpeciesContext) {
+			SpeciesContext sc = (SpeciesContext)((ProxyParameter)added).getTarget();
+			if(getReactant(sc.getName()) == null && 
+					getProduct(sc.getName()) == null &&
+					getCatalyst(sc.getName()) == null) {
+				try {
+					addCatalyst(sc);
+				} catch (PropertyVetoException | ModelException e) {
+					e.printStackTrace();	// we do nothing
+				}
+			}
+		}
+	}
 }
 /**
  * The removePropertyChangeListener method was generated to support the propertyChange field.

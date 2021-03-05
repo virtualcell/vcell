@@ -1,66 +1,71 @@
 {
   "id": "VCell",
   "name": "Virtual Cell",
-  "version": "7.3.0.07",
+  "version": "7.3.0.13",
   "description": "VCell (Virtual Cell) is a comprehensive platform for modeling cell biological systems that is built on a central database and disseminated as a standalone application",
-  "urls": [{"type": "Home page", "url": "http://vcell.org/"}],
+  "urls": [{
+    "type": "Home page",
+    "url": "http://vcell.org/"
+  }],
   "image": {
-    "url": "ghcr.io/biosimulators/biosimulators_vell/vcell:7.3.0.07",
+    "url": "ghcr.io/biosimulators/biosimulators_vell/vcell:7.3.0.13",
     "format": {
       "namespace": "EDAM",
-      "id": "format_3973", "version": null, "supportedFeatures": []
+      "id": "format_3973",
+      "version": null,
+      "supportedFeatures": []
     },
     "operatingSystemType": "Linux"
   },
   "authors": [{
       "firstName": "Frank",
       "lastName": "Morgan",
-            "identifiers": []
+      "identifiers": []
     },
     {
       "firstName": "Dan",
       "lastName": "Vasilescu",
-            "identifiers": []
+      "identifiers": []
     },
     {
       "firstName": "Jim",
       "lastName": "Scaff",
-            "identifiers": []
+      "identifiers": []
     },
     {
       "firstName": "Ion",
       "lastName": "Moraru",
-            "identifiers": []
+      "identifiers": []
     },
     {
       "firstName": "Michael",
       "lastName": "Blinov",
-            "identifiers": []
+      "identifiers": []
     },
     {
       "firstName": "Michael",
       "lastName": "Wilson",
-            "identifiers": []
+      "identifiers": []
     },
     {
       "firstName": "Ann",
       "lastName": "Cowan",
-            "identifiers": []
+      "identifiers": []
     },
     {
       "firstName": "Leslie",
       "lastName": "Loew",
-            "identifiers": []
+      "identifiers": []
     },
     {
       "firstName": "Fei",
       "lastName": "Gao",
-            "identifiers": []
+      "identifiers": []
     },
     {
       "firstName": "Ye",
       "lastName": "Li",
-            "identifiers": []
+      "identifiers": []
     }
   ],
   "references": {
@@ -150,15 +155,21 @@
       }],
       "modelFormats": [{
         "namespace": "EDAM",
-        "id": "format_2585", "version": null, "supportedFeatures": []
+        "id": "format_2585",
+        "version": null,
+        "supportedFeatures": []
       }],
       "simulationFormats": [{
         "namespace": "EDAM",
-        "id": "format_3685", "version": "L1V3", "supportedFeatures": []
+        "id": "format_3685",
+        "version": "L1V3",
+        "supportedFeatures": []
       }],
       "archiveFormats": [{
         "namespace": "EDAM",
-        "id": "format_3686", "version": null, "supportedFeatures": []
+        "id": "format_3686",
+        "version": null,
+        "supportedFeatures": []
       }],
       "citations": [{
         "title": "CVODE, a stiff/nonstiff ODE solver in C",
@@ -174,8 +185,7 @@
           "url": "https://doi.org/10.1063/1.4822377"
         }]
       }],
-      "parameters": [
-        {
+      "parameters": [{
           "id": "rtol",
           "name": "Relative tolerance",
           "type": "float",
@@ -185,7 +195,7 @@
             "namespace": "KISAO",
             "id": "KISAO_0000209"
           },
-                    "availableSoftwareInterfaceTypes": ["desktop application", "command-line application", "BioSimulators Docker image"]
+          "availableSoftwareInterfaceTypes": ["desktop application", "command-line application", "BioSimulators Docker image"]
         },
         {
           "id": "atol",
@@ -197,7 +207,7 @@
             "namespace": "KISAO",
             "id": "KISAO_0000211"
           },
-                    "availableSoftwareInterfaceTypes": ["desktop application", "command-line application", "BioSimulators Docker image"]
+          "availableSoftwareInterfaceTypes": ["desktop application", "command-line application", "BioSimulators Docker image"]
         },
         {
           "id": "maxtimestep",
@@ -209,15 +219,14 @@
             "namespace": "KISAO",
             "id": "KISAO_0000467"
           },
-                    "availableSoftwareInterfaceTypes": ["web service", "desktop application", "library", "command-line application", "BioSimulators Docker image"]
+          "availableSoftwareInterfaceTypes": ["web service", "desktop application", "library", "command-line application", "BioSimulators Docker image"]
         }
       ],
       "dependentDimensions": [{
         "namespace": "SIO",
         "id": "SIO_000418"
       }],
-      "dependentVariableTargetPatterns": [
-        {
+      "dependentVariableTargetPatterns": [{
           "variables": "species concentrations",
           "targetPattern": "/sbml:sbml/sbml:model/sbml:listOfSpecies/sbml:species"
         },
@@ -248,15 +257,21 @@
       }],
       "modelFormats": [{
         "namespace": "EDAM",
-        "id": "format_2585", "version": null, "supportedFeatures": []
+        "id": "format_2585",
+        "version": null,
+        "supportedFeatures": []
       }],
       "simulationFormats": [{
         "namespace": "EDAM",
-        "id": "format_3685", "version": "L1V3", "supportedFeatures": []
+        "id": "format_3685",
+        "version": "L1V3",
+        "supportedFeatures": []
       }],
       "archiveFormats": [{
         "namespace": "EDAM",
-        "id": "format_3686", "version": null, "supportedFeatures": []
+        "id": "format_3686",
+        "version": null,
+        "supportedFeatures": []
       }],
       "citations": [{
         "title": "A second order Runge Kutta method to solve fuzzy differential equations with fuzzy initial condition",
@@ -273,23 +288,22 @@
         }]
       }],
       "parameters": [{
-          "id": "initial_step_size",
-          "name": "initial step size",
-          "type": "float",
-          "value": "0.1",
-          "recommendedRange": null,
-          "kisaoId": {
-            "namespace": "KISAO",
-            "id": "KISAO_0000559"
-          },
-                    "availableSoftwareInterfaceTypes": ["web service", "desktop application", "library", "command-line application", "BioSimulators Docker image"]
-        }],
+        "id": "initial_step_size",
+        "name": "initial step size",
+        "type": "float",
+        "value": "0.1",
+        "recommendedRange": null,
+        "kisaoId": {
+          "namespace": "KISAO",
+          "id": "KISAO_0000559"
+        },
+        "availableSoftwareInterfaceTypes": ["web service", "desktop application", "library", "command-line application", "BioSimulators Docker image"]
+      }],
       "dependentDimensions": [{
         "namespace": "SIO",
         "id": "SIO_000418"
       }],
-      "dependentVariableTargetPatterns": [
-        {
+      "dependentVariableTargetPatterns": [{
           "variables": "species concentrations",
           "targetPattern": "/sbml:sbml/sbml:model/sbml:listOfSpecies/sbml:species"
         },
@@ -315,15 +329,21 @@
       }],
       "modelFormats": [{
         "namespace": "EDAM",
-        "id": "format_2585", "version": null, "supportedFeatures": []
+        "id": "format_2585",
+        "version": null,
+        "supportedFeatures": []
       }],
       "simulationFormats": [{
         "namespace": "EDAM",
-        "id": "format_3685", "version": "L1V3", "supportedFeatures": []
+        "id": "format_3685",
+        "version": "L1V3",
+        "supportedFeatures": []
       }],
       "archiveFormats": [{
         "namespace": "EDAM",
-        "id": "format_3686", "version": null, "supportedFeatures": []
+        "id": "format_3686",
+        "version": null,
+        "supportedFeatures": []
       }],
       "citations": [{
         "title": "Solving reaction-diffusion and advection problems with Richardon Extrapolation",
@@ -340,23 +360,22 @@
         }]
       }],
       "parameters": [{
-          "id": "initial_step_size",
-          "name": "initial step size",
-          "type": "float",
-          "value": "0.1",
-          "recommendedRange": null,
-          "kisaoId": {
-            "namespace": "KISAO",
-            "id": "KISAO_0000559"
-          },
-                    "availableSoftwareInterfaceTypes": ["web service", "desktop application", "library", "command-line application", "BioSimulators Docker image"]
-        }],
+        "id": "initial_step_size",
+        "name": "initial step size",
+        "type": "float",
+        "value": "0.1",
+        "recommendedRange": null,
+        "kisaoId": {
+          "namespace": "KISAO",
+          "id": "KISAO_0000559"
+        },
+        "availableSoftwareInterfaceTypes": ["web service", "desktop application", "library", "command-line application", "BioSimulators Docker image"]
+      }],
       "dependentDimensions": [{
         "namespace": "SIO",
         "id": "SIO_000418"
       }],
-      "dependentVariableTargetPatterns": [
-        {
+      "dependentVariableTargetPatterns": [{
           "variables": "species concentrations",
           "targetPattern": "/sbml:sbml/sbml:model/sbml:listOfSpecies/sbml:species"
         },
@@ -382,15 +401,21 @@
       }],
       "modelFormats": [{
         "namespace": "EDAM",
-        "id": "format_2585", "version": null, "supportedFeatures": []
+        "id": "format_2585",
+        "version": null,
+        "supportedFeatures": []
       }],
       "simulationFormats": [{
         "namespace": "EDAM",
-        "id": "format_3685", "version": "L1V3", "supportedFeatures": []
+        "id": "format_3685",
+        "version": "L1V3",
+        "supportedFeatures": []
       }],
       "archiveFormats": [{
         "namespace": "EDAM",
-        "id": "format_3686", "version": null, "supportedFeatures": []
+        "id": "format_3686",
+        "version": null,
+        "supportedFeatures": []
       }],
       "citations": [{
         "title": "A fourth order Runge–Kutta RK(4,4) method with error control",
@@ -406,24 +431,23 @@
           "url": "https://doi.org/10.1080/00207169908804817"
         }]
       }],
-        "parameters": [{
-          "id": "initial_step_size",
-          "name": "initial step size",
-          "type": "float",
-          "value": "0.1",
-          "recommendedRange": null,
-          "kisaoId": {
-            "namespace": "KISAO",
-            "id": "KISAO_0000559"
-          },
-                    "availableSoftwareInterfaceTypes": ["web service", "desktop application", "library", "command-line application", "BioSimulators Docker image"]
-        }],
-        "dependentDimensions": [{
+      "parameters": [{
+        "id": "initial_step_size",
+        "name": "initial step size",
+        "type": "float",
+        "value": "0.1",
+        "recommendedRange": null,
+        "kisaoId": {
+          "namespace": "KISAO",
+          "id": "KISAO_0000559"
+        },
+        "availableSoftwareInterfaceTypes": ["web service", "desktop application", "library", "command-line application", "BioSimulators Docker image"]
+      }],
+      "dependentDimensions": [{
         "namespace": "SIO",
         "id": "SIO_000418"
       }],
-      "dependentVariableTargetPatterns": [
-        {
+      "dependentVariableTargetPatterns": [{
           "variables": "species concentrations",
           "targetPattern": "/sbml:sbml/sbml:model/sbml:listOfSpecies/sbml:species"
         },
@@ -449,15 +473,21 @@
       }],
       "modelFormats": [{
         "namespace": "EDAM",
-        "id": "format_2585", "version": null, "supportedFeatures": []
+        "id": "format_2585",
+        "version": null,
+        "supportedFeatures": []
       }],
       "simulationFormats": [{
         "namespace": "EDAM",
-        "id": "format_3685", "version": "L1V3", "supportedFeatures": []
+        "id": "format_3685",
+        "version": "L1V3",
+        "supportedFeatures": []
       }],
       "archiveFormats": [{
         "namespace": "EDAM",
-        "id": "format_3686", "version": null, "supportedFeatures": []
+        "id": "format_3686",
+        "version": null,
+        "supportedFeatures": []
       }],
       "citations": [{
         "title": "Optimum Runge-Kutta Fehlberg methods for first order differential equations",
@@ -473,8 +503,7 @@
           "url": "https://doi.org/10.1093/imamat/8.3.386"
         }]
       }],
-      "parameters": [
-        {
+      "parameters": [{
           "id": "rtol",
           "name": "Relative tolerance",
           "type": "float",
@@ -484,7 +513,7 @@
             "namespace": "KISAO",
             "id": "KISAO_0000209"
           },
-                    "availableSoftwareInterfaceTypes": ["desktop application", "command-line application", "BioSimulators Docker image"]
+          "availableSoftwareInterfaceTypes": ["desktop application", "command-line application", "BioSimulators Docker image"]
         },
         {
           "id": "atol",
@@ -496,7 +525,7 @@
             "namespace": "KISAO",
             "id": "KISAO_0000211"
           },
-                    "availableSoftwareInterfaceTypes": ["desktop application", "command-line application", "BioSimulators Docker image"]
+          "availableSoftwareInterfaceTypes": ["desktop application", "command-line application", "BioSimulators Docker image"]
         },
         {
           "id": "maxtimestep",
@@ -508,14 +537,14 @@
             "namespace": "KISAO",
             "id": "KISAO_0000467"
           },
-                    "availableSoftwareInterfaceTypes": ["web service", "desktop application", "library", "command-line application", "BioSimulators Docker image"]
-        }],
+          "availableSoftwareInterfaceTypes": ["web service", "desktop application", "library", "command-line application", "BioSimulators Docker image"]
+        }
+      ],
       "dependentDimensions": [{
         "namespace": "SIO",
         "id": "SIO_000418"
       }],
-      "dependentVariableTargetPatterns": [
-        {
+      "dependentVariableTargetPatterns": [{
           "variables": "species concentrations",
           "targetPattern": "/sbml:sbml/sbml:model/sbml:listOfSpecies/sbml:species"
         },
@@ -541,15 +570,21 @@
       }],
       "modelFormats": [{
         "namespace": "EDAM",
-        "id": "format_2585", "version": null, "supportedFeatures": []
+        "id": "format_2585",
+        "version": null,
+        "supportedFeatures": []
       }],
       "simulationFormats": [{
         "namespace": "EDAM",
-        "id": "format_3685", "version": "L1V3", "supportedFeatures": []
+        "id": "format_3685",
+        "version": "L1V3",
+        "supportedFeatures": []
       }],
       "archiveFormats": [{
         "namespace": "EDAM",
-        "id": "format_3686", "version": null, "supportedFeatures": []
+        "id": "format_3686",
+        "version": null,
+        "supportedFeatures": []
       }],
       "citations": [{
         "title": "Solving implicit equations arising from Adams-Moulton methods",
@@ -565,24 +600,23 @@
           "url": "https://doi.org/10.1023/A:1021951025649"
         }]
       }],
-        "parameters": [{
-          "id": "initial_step_size",
-          "name": "initial step size",
-          "type": "float",
-          "value": "0.1",
-          "recommendedRange": null,
-          "kisaoId": {
-            "namespace": "KISAO",
-            "id": "KISAO_0000559"
-          },
-                    "availableSoftwareInterfaceTypes": ["web service", "desktop application", "library", "command-line application", "BioSimulators Docker image"]
-        }],
+      "parameters": [{
+        "id": "initial_step_size",
+        "name": "initial step size",
+        "type": "float",
+        "value": "0.1",
+        "recommendedRange": null,
+        "kisaoId": {
+          "namespace": "KISAO",
+          "id": "KISAO_0000559"
+        },
+        "availableSoftwareInterfaceTypes": ["web service", "desktop application", "library", "command-line application", "BioSimulators Docker image"]
+      }],
       "dependentDimensions": [{
         "namespace": "SIO",
         "id": "SIO_000418"
       }],
-      "dependentVariableTargetPatterns": [
-        {
+      "dependentVariableTargetPatterns": [{
           "variables": "species concentrations",
           "targetPattern": "/sbml:sbml/sbml:model/sbml:listOfSpecies/sbml:species"
         },
@@ -608,15 +642,21 @@
       }],
       "modelFormats": [{
         "namespace": "EDAM",
-        "id": "format_2585", "version": null, "supportedFeatures": []
+        "id": "format_2585",
+        "version": null,
+        "supportedFeatures": []
       }],
       "simulationFormats": [{
         "namespace": "EDAM",
-        "id": "format_3685", "version": "L1V3", "supportedFeatures": []
+        "id": "format_3685",
+        "version": "L1V3",
+        "supportedFeatures": []
       }],
       "archiveFormats": [{
         "namespace": "EDAM",
-        "id": "format_3686", "version": null, "supportedFeatures": []
+        "id": "format_3686",
+        "version": null,
+        "supportedFeatures": []
       }],
       "citations": [{
         "title": "Solving differential–algebraic equation systems by means of index reduction methodology",
@@ -632,8 +672,7 @@
           "url": "https://doi.org/10.1016/j.simpat.2005.05.002"
         }]
       }],
-         "parameters": [
-        {
+      "parameters": [{
           "id": "rtol",
           "name": "Relative tolerance",
           "type": "float",
@@ -643,7 +682,7 @@
             "namespace": "KISAO",
             "id": "KISAO_0000209"
           },
-                    "availableSoftwareInterfaceTypes": ["desktop application", "command-line application", "BioSimulators Docker image"]
+          "availableSoftwareInterfaceTypes": ["desktop application", "command-line application", "BioSimulators Docker image"]
         },
         {
           "id": "atol",
@@ -655,7 +694,7 @@
             "namespace": "KISAO",
             "id": "KISAO_0000211"
           },
-                    "availableSoftwareInterfaceTypes": ["desktop application", "command-line application", "BioSimulators Docker image"]
+          "availableSoftwareInterfaceTypes": ["desktop application", "command-line application", "BioSimulators Docker image"]
         },
         {
           "id": "maxtimestep",
@@ -667,119 +706,14 @@
             "namespace": "KISAO",
             "id": "KISAO_0000467"
           },
-                    "availableSoftwareInterfaceTypes": ["web service", "desktop application", "library", "command-line application", "BioSimulators Docker image"]
-        }],
-       "dependentDimensions": [{
-        "namespace": "SIO",
-        "id": "SIO_000418"
-      }],
-      "dependentVariableTargetPatterns": [
-        {
-          "variables": "species concentrations",
-          "targetPattern": "/sbml:sbml/sbml:model/sbml:listOfSpecies/sbml:species"
-        },
-        {
-          "variables": "parameter values",
-          "targetPattern": "/sbml:sbml/sbml:model/sbml:listOfParameters/sbml:parameter/@value"
+          "availableSoftwareInterfaceTypes": ["web service", "desktop application", "library", "command-line application", "BioSimulators Docker image"]
         }
       ],
-      "availableSoftwareInterfaceTypes": ["desktop application", "command-line application", "BioSimulators Docker image"],
-      "dependencies": null
-    },
-    {
-      "id": "Combined_IDA_CVODE",
-      "name": "Combined Stiff Solver (IDA/CVODE)",
-      "kisaoId": {
-        "namespace": "KISAO",
-        "id": "KISAO_0000617"
-      },
-
-      "modelingFrameworks": [{
-        "namespace": "SBO",
-        "id": "SBO_0000293"
-      }],
-      "modelFormats": [{
-        "namespace": "EDAM",
-        "id": "format_2585", "version": null, "supportedFeatures": []
-      }],
-      "simulationFormats": [{
-        "namespace": "EDAM",
-        "id": "format_3685", "version": "L1V3", "supportedFeatures": []
-      }],
-      "archiveFormats": [{
-        "namespace": "EDAM",
-        "id": "format_3686", "version": null, "supportedFeatures": []
-      }],
-      "citations": [{
-          "title": "CVODE, a stiff/nonstiff ODE solver in C",
-          "authors": "Scott D. Cohen, Alan C. Hindmarsh & Paul F. Dubois",
-          "journal": "Computers in Physics",
-          "volume": 10,
-          "issue": 2,
-          "pages": "138-143",
-          "year": 1996,
-          "identifiers": [{
-            "namespace": "doi",
-            "id": "10.1063/1.4822377",
-            "url": "https://doi.org/10.1063/1.4822377"
-          }]
-        },
-        {
-          "title": "Solving differential–algebraic equation systems by means of index reduction methodology",
-          "authors": "Kim Sørensen, Thomas Condra & Niels Houbak",
-          "journal": "Simulation Modelling Practice and Theory",
-          "volume": 14,
-          "issue": 3,
-          "pages": "224-236",
-          "year": 2006,
-          "identifiers": [{
-            "namespace": "doi",
-            "id": "10.1016/j.simpat.2005.05.002",
-            "url": "https://doi.org/10.1016/j.simpat.2005.05.002"
-          }]
-        }],
-       "parameters": [{
-          "id": "rtol",
-          "name": "Relative tolerance",
-          "type": "float",
-          "value": "1e-9",
-          "recommendedRange": null,
-          "kisaoId": {
-            "namespace": "KISAO",
-            "id": "KISAO_0000209"
-          },
-                    "availableSoftwareInterfaceTypes": ["desktop application", "command-line application", "BioSimulators Docker image"]
-        },
-        {
-          "id": "atol",
-          "name": "Absolute tolerance",
-          "type": "float",
-          "value": "1e-9",
-          "recommendedRange": null,
-          "kisaoId": {
-            "namespace": "KISAO",
-            "id": "KISAO_0000211"
-          },
-                    "availableSoftwareInterfaceTypes": ["desktop application", "command-line application", "BioSimulators Docker image"]
-        },
-        {
-          "id": "maxtimestep",
-          "name": "Maximum time step",
-          "type": "float",
-          "value": "1.0",
-          "recommendedRange": null,
-          "kisaoId": {
-            "namespace": "KISAO",
-            "id": "KISAO_0000467"
-          },
-                    "availableSoftwareInterfaceTypes": ["web service", "desktop application", "library", "command-line application", "BioSimulators Docker image"]
-        }],
       "dependentDimensions": [{
         "namespace": "SIO",
         "id": "SIO_000418"
       }],
-      "dependentVariableTargetPatterns": [
-        {
+      "dependentVariableTargetPatterns": [{
           "variables": "species concentrations",
           "targetPattern": "/sbml:sbml/sbml:model/sbml:listOfSpecies/sbml:species"
         },
@@ -805,15 +739,21 @@
       }],
       "modelFormats": [{
         "namespace": "EDAM",
-        "id": "format_2585", "version": null, "supportedFeatures": []
+        "id": "format_2585",
+        "version": null,
+        "supportedFeatures": []
       }],
       "simulationFormats": [{
         "namespace": "EDAM",
-        "id": "format_3685", "version": "L1V3", "supportedFeatures": []
+        "id": "format_3685",
+        "version": "L1V3",
+        "supportedFeatures": []
       }],
       "archiveFormats": [{
         "namespace": "EDAM",
-        "id": "format_3686", "version": null, "supportedFeatures": []
+        "id": "format_3686",
+        "version": null,
+        "supportedFeatures": []
       }],
       "citations": [{
         "title": "Efficient exact stochastic simulation of chemical systems with many species and many channels",
@@ -829,13 +769,23 @@
           "url": "https://doi.org/10.1021/jp993732q"
         }]
       }],
-      "parameters": [],
+      "parameters": [{
+        "id": "custom_seed",
+        "name": "custom seed",
+        "type": "integer",
+        "value": "0",
+        "recommendedRange": null,
+        "kisaoId": {
+          "namespace": "KISAO",
+          "id": "KISAO_0000488"
+        },
+        "availableSoftwareInterfaceTypes": ["web service", "desktop application", "library", "command-line application", "BioSimulators Docker image"]
+      }],
       "dependentDimensions": [{
         "namespace": "SIO",
         "id": "SIO_000418"
       }],
-      "dependentVariableTargetPatterns": [
-        {
+      "dependentVariableTargetPatterns": [{
           "variables": "species counts",
           "targetPattern": "/sbml:sbml/sbml:model/sbml:listOfSpecies/sbml:species"
         },
@@ -860,15 +810,21 @@
       }],
       "modelFormats": [{
         "namespace": "EDAM",
-        "id": "format_2585", "version": null, "supportedFeatures": []
+        "id": "format_2585",
+        "version": null,
+        "supportedFeatures": []
       }],
       "simulationFormats": [{
         "namespace": "EDAM",
-        "id": "format_3685", "version": "L1V3", "supportedFeatures": []
+        "id": "format_3685",
+        "version": "L1V3",
+        "supportedFeatures": []
       }],
       "archiveFormats": [{
         "namespace": "EDAM",
-        "id": "format_3686", "version": null, "supportedFeatures": []
+        "id": "format_3686",
+        "version": null,
+        "supportedFeatures": []
       }],
       "citations": [{
         "title": "An Euler–Maruyama method for diffusion equations with discontinuous coefficients and a family of interface conditions",
@@ -884,25 +840,59 @@
           "url": "https://doi.org/10.1016/j.cam.2019.112545"
         }]
       }],
-        "parameters": [{
-          "id": "initial_step_size",
-          "name": "initial step size",
-          "type": "float",
-          "value": "0.1",
-          "recommendedRange": null,
-          "kisaoId": {
-            "namespace": "KISAO",
-            "id": "KISAO_0000559"
-          },
-                    "availableSoftwareInterfaceTypes": ["web service", "desktop application", "library", "command-line application", "BioSimulators Docker image"]
-        }],
-      "parameters": [],
+      "parameters": [{
+        "id": "default_time_step",
+        "name": "default time step",
+        "type": "float",
+        "value": "0.1",
+        "recommendedRange": null,
+        "kisaoId": {
+          "namespace": "KISAO",
+          "id": "KISAO_0000483"
+        },
+        "availableSoftwareInterfaceTypes": ["web service", "desktop application", "library", "command-line application", "BioSimulators Docker image"]
+      },
+      {
+        "id": "epsilon",
+        "name": "epsilon",
+        "type": "float",
+        "value": "100.0",
+        "recommendedRange": null,
+        "kisaoId": {
+          "namespace": "KISAO",
+          "id": "KISAO_0000602"
+        },
+        "availableSoftwareInterfaceTypes": ["web service", "desktop application", "library", "command-line application", "BioSimulators Docker image"]
+      },
+      {
+        "id": "lambda",
+        "name": "lambda",
+        "type": "float",
+        "value": "10.0",
+        "recommendedRange": null,
+        "kisaoId": {
+          "namespace": "KISAO",
+          "id": "KISAO_0000603"
+        },
+        "availableSoftwareInterfaceTypes": ["web service", "desktop application", "library", "command-line application", "BioSimulators Docker image"]
+      },
+      {
+        "id": "MSR_Tolerance",
+        "name": "MSR Tolerance",
+        "type": "float",
+        "value": "0.01",
+        "recommendedRange": null,
+        "kisaoId": {
+          "namespace": "KISAO",
+          "id": "KISAO_0000604"
+        },
+        "availableSoftwareInterfaceTypes": ["web service", "desktop application", "library", "command-line application", "BioSimulators Docker image"]
+      }],
       "dependentDimensions": [{
         "namespace": "SIO",
         "id": "SIO_000418"
       }],
-      "dependentVariableTargetPatterns": [
-        {
+      "dependentVariableTargetPatterns": [{
           "variables": "species counts",
           "targetPattern": "/sbml:sbml/sbml:model/sbml:listOfSpecies/sbml:species"
         },
@@ -928,15 +918,21 @@
       }],
       "modelFormats": [{
         "namespace": "EDAM",
-        "id": "format_2585", "version": null, "supportedFeatures": []
+        "id": "format_2585",
+        "version": null,
+        "supportedFeatures": []
       }],
       "simulationFormats": [{
         "namespace": "EDAM",
-        "id": "format_3685", "version": "L1V3", "supportedFeatures": []
+        "id": "format_3685",
+        "version": "L1V3",
+        "supportedFeatures": []
       }],
       "archiveFormats": [{
         "namespace": "EDAM",
-        "id": "format_3686", "version": null, "supportedFeatures": []
+        "id": "format_3686",
+        "version": null,
+        "supportedFeatures": []
       }],
       "citations": [{
         "title": "A randomized Milstein method for stochastic differential equations with non-differentiable drift coefficients",
@@ -953,24 +949,58 @@
         }]
       }],
       "parameters": [{
-          "id": "initial_step_size",
-          "name": "initial step size",
-          "type": "float",
-          "value": "0.1",
-          "recommendedRange": null,
-          "kisaoId": {
-            "namespace": "KISAO",
-            "id": "KISAO_0000559"
-          },
-                    "availableSoftwareInterfaceTypes": ["web service", "desktop application", "library", "command-line application", "BioSimulators Docker image"]
-        }],
-      "parameters": [],
+        "id": "default_time_step",
+        "name": "default time step",
+        "type": "float",
+        "value": "0.1",
+        "recommendedRange": null,
+        "kisaoId": {
+          "namespace": "KISAO",
+          "id": "KISAO_0000483"
+        },
+        "availableSoftwareInterfaceTypes": ["web service", "desktop application", "library", "command-line application", "BioSimulators Docker image"]
+      },
+      {
+        "id": "epsilon",
+        "name": "epsilon",
+        "type": "float",
+        "value": "100.0",
+        "recommendedRange": null,
+        "kisaoId": {
+          "namespace": "KISAO",
+          "id": "KISAO_0000602"
+        },
+        "availableSoftwareInterfaceTypes": ["web service", "desktop application", "library", "command-line application", "BioSimulators Docker image"]
+      },
+      {
+        "id": "lambda",
+        "name": "lambda",
+        "type": "float",
+        "value": "10.0",
+        "recommendedRange": null,
+        "kisaoId": {
+          "namespace": "KISAO",
+          "id": "KISAO_0000603"
+        },
+        "availableSoftwareInterfaceTypes": ["web service", "desktop application", "library", "command-line application", "BioSimulators Docker image"]
+      },
+      {
+        "id": "MSR_Tolerance",
+        "name": "MSR Tolerance",
+        "type": "float",
+        "value": "0.01",
+        "recommendedRange": null,
+        "kisaoId": {
+          "namespace": "KISAO",
+          "id": "KISAO_0000604"
+        },
+        "availableSoftwareInterfaceTypes": ["web service", "desktop application", "library", "command-line application", "BioSimulators Docker image"]
+      }],
       "dependentDimensions": [{
         "namespace": "SIO",
         "id": "SIO_000418"
       }],
-      "dependentVariableTargetPatterns": [
-        {
+      "dependentVariableTargetPatterns": [{
           "variables": "species counts",
           "targetPattern": "/sbml:sbml/sbml:model/sbml:listOfSpecies/sbml:species"
         },
@@ -982,7 +1012,7 @@
       "availableSoftwareInterfaceTypes": ["desktop application", "command-line application", "BioSimulators Docker image"],
       "dependencies": null
     },
-{
+    {
       "id": "Hybrid_AdaptiveGibson_Milstein",
       "name": "Hybrid (Adaptive Gibson + Milstein Method)",
       "kisaoId": {
@@ -996,15 +1026,21 @@
       }],
       "modelFormats": [{
         "namespace": "EDAM",
-        "id": "format_2585", "version": null, "supportedFeatures": []
+        "id": "format_2585",
+        "version": null,
+        "supportedFeatures": []
       }],
       "simulationFormats": [{
         "namespace": "EDAM",
-        "id": "format_3685", "version": "L1V3", "supportedFeatures": []
+        "id": "format_3685",
+        "version": "L1V3",
+        "supportedFeatures": []
       }],
       "archiveFormats": [{
         "namespace": "EDAM",
-        "id": "format_3686", "version": null, "supportedFeatures": []
+        "id": "format_3686",
+        "version": null,
+        "supportedFeatures": []
       }],
       "citations": [{
         "title": "A randomized Milstein method for stochastic differential equations with non-differentiable drift coefficients",
@@ -1021,24 +1057,70 @@
         }]
       }],
       "parameters": [{
-          "id": "initial_step_size",
-          "name": "initial step size",
-          "type": "float",
-          "value": "0.1",
-          "recommendedRange": null,
-          "kisaoId": {
-            "namespace": "KISAO",
-            "id": "KISAO_0000559"
-          },
-                    "availableSoftwareInterfaceTypes": ["web service", "desktop application", "library", "command-line application", "BioSimulators Docker image"]
-        }],
-      "parameters": [],
+        "id": "default_time_step",
+        "name": "default time step",
+        "type": "float",
+        "value": "0.1",
+        "recommendedRange": null,
+        "kisaoId": {
+          "namespace": "KISAO",
+          "id": "KISAO_0000483"
+        },
+        "availableSoftwareInterfaceTypes": ["web service", "desktop application", "library", "command-line application", "BioSimulators Docker image"]
+      },
+      {
+        "id": "epsilon",
+        "name": "epsilon",
+        "type": "float",
+        "value": "100.0",
+        "recommendedRange": null,
+        "kisaoId": {
+          "namespace": "KISAO",
+          "id": "KISAO_0000602"
+        },
+        "availableSoftwareInterfaceTypes": ["web service", "desktop application", "library", "command-line application", "BioSimulators Docker image"]
+      },
+      {
+        "id": "lambda",
+        "name": "lambda",
+        "type": "float",
+        "value": "10.0",
+        "recommendedRange": null,
+        "kisaoId": {
+          "namespace": "KISAO",
+          "id": "KISAO_0000603"
+        },
+        "availableSoftwareInterfaceTypes": ["web service", "desktop application", "library", "command-line application", "BioSimulators Docker image"]
+      },
+      {
+        "id": "MSR_Tolerance",
+        "name": "MSR Tolerance",
+        "type": "float",
+        "value": "0.01",
+        "recommendedRange": null,
+        "kisaoId": {
+          "namespace": "KISAO",
+          "id": "KISAO_0000604"
+        },
+        "availableSoftwareInterfaceTypes": ["web service", "desktop application", "library", "command-line application", "BioSimulators Docker image"]
+      },
+      {
+        "id": "SDE_Tolerance",
+        "name": "SDE Tolerance",
+        "type": "float",
+        "value": "0.0001",
+        "recommendedRange": null,
+        "kisaoId": {
+          "namespace": "KISAO",
+          "id": "KISAO_0000605"
+        },
+        "availableSoftwareInterfaceTypes": ["web service", "desktop application", "library", "command-line application", "BioSimulators Docker image"]
+      }],
       "dependentDimensions": [{
         "namespace": "SIO",
         "id": "SIO_000418"
       }],
-      "dependentVariableTargetPatterns": [
-        {
+      "dependentVariableTargetPatterns": [{
           "variables": "species counts",
           "targetPattern": "/sbml:sbml/sbml:model/sbml:listOfSpecies/sbml:species"
         },
@@ -1064,15 +1146,21 @@
       }],
       "modelFormats": [{
         "namespace": "EDAM",
-        "id": "format_2585", "version": null, "supportedFeatures": []
+        "id": "format_2585",
+        "version": null,
+        "supportedFeatures": []
       }],
       "simulationFormats": [{
         "namespace": "EDAM",
-        "id": "format_3685", "version": "L1V3", "supportedFeatures": []
+        "id": "format_3685",
+        "version": "L1V3",
+        "supportedFeatures": []
       }],
       "archiveFormats": [{
         "namespace": "EDAM",
-        "id": "format_3686", "version": null, "supportedFeatures": []
+        "id": "format_3686",
+        "version": null,
+        "supportedFeatures": []
       }],
       "citations": [{
         "title": "Finite volume methods",
@@ -1088,8 +1176,7 @@
           "url": "https://doi.org/10.1016/S1570-8659(00)07005-8"
         }]
       }],
-       "parameters": [
-        {
+      "parameters": [{
           "id": "rtol",
           "name": "Relative tolerance",
           "type": "float",
@@ -1099,7 +1186,7 @@
             "namespace": "KISAO",
             "id": "KISAO_0000209"
           },
-                    "availableSoftwareInterfaceTypes": ["desktop application", "command-line application", "BioSimulators Docker image"]
+          "availableSoftwareInterfaceTypes": ["desktop application", "command-line application", "BioSimulators Docker image"]
         },
         {
           "id": "initial_step_size",
@@ -1111,28 +1198,27 @@
             "namespace": "KISAO",
             "id": "KISAO_0000559"
           },
-                    "availableSoftwareInterfaceTypes": ["web service", "desktop application", "library", "command-line application", "BioSimulators Docker image"]
-        }],
-      "parameters": [],
+          "availableSoftwareInterfaceTypes": ["web service", "desktop application", "library", "command-line application", "BioSimulators Docker image"]
+        }
+      ],
       "dependentDimensions": [{
-        "namespace": "SIO",
-        "id": "SIO_000418"
-      },
-      {
-        "namespace": "SIO",
-        "id": "SIO_000452"
-      },
-      {
-        "namespace": "SIO",
-        "id": "SIO_000453"
-      },
-      {
-        "namespace": "SIO",
-        "id": "SIO_000454"
-      }
-    ],
-      "dependentVariableTargetPatterns": [
+          "namespace": "SIO",
+          "id": "SIO_000418"
+        },
         {
+          "namespace": "SIO",
+          "id": "SIO_000452"
+        },
+        {
+          "namespace": "SIO",
+          "id": "SIO_000453"
+        },
+        {
+          "namespace": "SIO",
+          "id": "SIO_000454"
+        }
+      ],
+      "dependentVariableTargetPatterns": [{
           "variables": "species concentrations",
           "targetPattern": "/sbml:sbml/sbml:model/sbml:listOfSpecies/sbml:species"
         },
@@ -1158,15 +1244,21 @@
       }],
       "modelFormats": [{
         "namespace": "EDAM",
-        "id": "format_2585", "version": null, "supportedFeatures": []
+        "id": "format_2585",
+        "version": null,
+        "supportedFeatures": []
       }],
       "simulationFormats": [{
         "namespace": "EDAM",
-        "id": "format_3685", "version": "L1V3", "supportedFeatures": []
+        "id": "format_3685",
+        "version": "L1V3",
+        "supportedFeatures": []
       }],
       "archiveFormats": [{
         "namespace": "EDAM",
-        "id": "format_3686", "version": null, "supportedFeatures": []
+        "id": "format_3686",
+        "version": null,
+        "supportedFeatures": []
       }],
       "citations": [{
         "title": "Finite volume methods",
@@ -1182,8 +1274,7 @@
           "url": "https://doi.org/10.1016/S1570-8659(00)07005-8"
         }]
       }],
-       "parameters": [
-        {
+      "parameters": [{
           "id": "rtol",
           "name": "Relative tolerance",
           "type": "float",
@@ -1193,7 +1284,7 @@
             "namespace": "KISAO",
             "id": "KISAO_0000209"
           },
-                    "availableSoftwareInterfaceTypes": ["desktop application", "command-line application", "BioSimulators Docker image"]
+          "availableSoftwareInterfaceTypes": ["desktop application", "command-line application", "BioSimulators Docker image"]
         },
         {
           "id": "atol",
@@ -1205,7 +1296,7 @@
             "namespace": "KISAO",
             "id": "KISAO_0000211"
           },
-                    "availableSoftwareInterfaceTypes": ["desktop application", "command-line application", "BioSimulators Docker image"]
+          "availableSoftwareInterfaceTypes": ["desktop application", "command-line application", "BioSimulators Docker image"]
         },
         {
           "id": "maxtimestep",
@@ -1217,27 +1308,27 @@
             "namespace": "KISAO",
             "id": "KISAO_0000467"
           },
-                    "availableSoftwareInterfaceTypes": ["web service", "desktop application", "library", "command-line application", "BioSimulators Docker image"]
-        }],
-       "dependentDimensions": [{
-        "namespace": "SIO",
-        "id": "SIO_000418"
-      },
-      {
-        "namespace": "SIO",
-        "id": "SIO_000452"
-      },
-      {
-        "namespace": "SIO",
-        "id": "SIO_000453"
-      },
-      {
-        "namespace": "SIO",
-        "id": "SIO_000454"
-      }
-    ],
-      "dependentVariableTargetPatterns": [
+          "availableSoftwareInterfaceTypes": ["web service", "desktop application", "library", "command-line application", "BioSimulators Docker image"]
+        }
+      ],
+      "dependentDimensions": [{
+          "namespace": "SIO",
+          "id": "SIO_000418"
+        },
         {
+          "namespace": "SIO",
+          "id": "SIO_000452"
+        },
+        {
+          "namespace": "SIO",
+          "id": "SIO_000453"
+        },
+        {
+          "namespace": "SIO",
+          "id": "SIO_000454"
+        }
+      ],
+      "dependentVariableTargetPatterns": [{
           "variables": "species concentrations",
           "targetPattern": "/sbml:sbml/sbml:model/sbml:listOfSpecies/sbml:species"
         },
@@ -1263,15 +1354,21 @@
       }],
       "modelFormats": [{
         "namespace": "EDAM",
-        "id": "format_2585", "version": null, "supportedFeatures": []
+        "id": "format_2585",
+        "version": null,
+        "supportedFeatures": []
       }],
       "simulationFormats": [{
         "namespace": "EDAM",
-        "id": "format_3685", "version": "L1V3", "supportedFeatures": []
+        "id": "format_3685",
+        "version": "L1V3",
+        "supportedFeatures": []
       }],
       "archiveFormats": [{
         "namespace": "EDAM",
-        "id": "format_3686", "version": null, "supportedFeatures": []
+        "id": "format_3686",
+        "version": null,
+        "supportedFeatures": []
       }],
       "citations": [{
         "title": "A brief account of microscopical observations made in the months of June, July and August 1827, on the particles contained in the pollen of plants; and on the general existence of active molecules in organic and inorganic bodies",
@@ -1288,36 +1385,35 @@
         }]
       }],
       "parameters": [{
-          "id": "initial_step_size",
-          "name": "initial step size",
-          "type": "float",
-          "value": "0.1",
-          "recommendedRange": null,
-          "kisaoId": {
-            "namespace": "KISAO",
-            "id": "KISAO_0000559"
-          },
-                    "availableSoftwareInterfaceTypes": ["web service", "desktop application", "library", "command-line application", "BioSimulators Docker image"]
-        }],
+        "id": "initial_step_size",
+        "name": "initial step size",
+        "type": "float",
+        "value": "0.1",
+        "recommendedRange": null,
+        "kisaoId": {
+          "namespace": "KISAO",
+          "id": "KISAO_0000559"
+        },
+        "availableSoftwareInterfaceTypes": ["web service", "desktop application", "library", "command-line application", "BioSimulators Docker image"]
+      }],
       "dependentDimensions": [{
-        "namespace": "SIO",
-        "id": "SIO_000418"
-      },
-      {
-        "namespace": "SIO",
-        "id": "SIO_000452"
-      },
-      {
-        "namespace": "SIO",
-        "id": "SIO_000453"
-      },
-      {
-        "namespace": "SIO",
-        "id": "SIO_000454"
-      }
-    ],
-      "dependentVariableTargetPatterns": [
+          "namespace": "SIO",
+          "id": "SIO_000418"
+        },
         {
+          "namespace": "SIO",
+          "id": "SIO_000452"
+        },
+        {
+          "namespace": "SIO",
+          "id": "SIO_000453"
+        },
+        {
+          "namespace": "SIO",
+          "id": "SIO_000454"
+        }
+      ],
+      "dependentVariableTargetPatterns": [{
           "variables": "species counts",
           "targetPattern": "/sbml:sbml/sbml:model/sbml:listOfSpecies/sbml:species"
         },
