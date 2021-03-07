@@ -277,6 +277,13 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
 			if (!Compare.isEqual(getSolverDescription(),solverTaskDescription.getSolverDescription())) {
 				return false;
 			}
+			if(getSolverDescription() == SolverDescription.HybridEuler || 				// -------- deal with hybrid solvers (non-spatial)
+					getSolverDescription() == SolverDescription.HybridMilAdaptive ||
+					getSolverDescription() == SolverDescription.HybridMilstein) {
+				if (!getStochHybridOpt().compareEqual(solverTaskDescription.getStochHybridOpt())) {
+					return false;
+				}
+			}
 			if (getTaskType() != solverTaskDescription.getTaskType()) {
 				return false;
 			}
