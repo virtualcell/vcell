@@ -82,7 +82,6 @@ public class SolverHandler {
                 e.printStackTrace(System.err);
 //                continue;
             }
-        assert singleDoc != null;
         docName = singleDoc.getName();
             bioModel = (BioModel) singleDoc;
             sims = bioModel.getSimulations();
