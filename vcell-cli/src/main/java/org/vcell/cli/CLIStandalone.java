@@ -21,7 +21,7 @@ public class CLIStandalone {
     public static void main(String[] args) {
 
 
-        if(args[0].equals("convert")) {
+        if(args[0].toLowerCase().equals("convert")) {
             // VCML to OMex conversion
 
             VcmlOmexConversion.parseArgsAndConvert(ArrayUtils.remove(args, 0));
