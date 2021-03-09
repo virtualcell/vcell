@@ -17,7 +17,7 @@ public class CLIHandler {
     String javaVendor = getProperty("java.vendor");
     String machineArch = getProperty("os.arch");
 
-    CLIHandler(String[] args) {
+    public CLIHandler(String[] args) {
         CommandLineParser parser = new DefaultParser();
 
         String usage = "usage: VCell [-h] [-q] -i ARCHIVE [-o OUT_DIR] [-v]";
@@ -67,7 +67,7 @@ public class CLIHandler {
         Option output = new Option("o",
                 "out-dir",
                 true,
-                "Directory to save outputs");
+                "Directory to save outputs or the converted OMEX Archive from VCML file");
 
         Option version = new Option("v",
                 "version",

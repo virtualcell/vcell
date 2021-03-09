@@ -6,50 +6,99 @@ import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.util.NativeLoader;
 import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XmlHelper;
+import cbit.vcell.xml.XmlParseException;
 import org.sbml.libcombine.CombineArchive;
 import org.sbml.libcombine.KnownFormats;
+import org.vcell.cli.CLIHandler;
 import org.vcell.sedml.SEDMLExporter;
 
 import java.io.File;
+import java.io.FilenameFilter;
+import java.io.IOException;
 import java.nio.file.Paths;
 
-public class VcmlOmexConversion {
+class vcmlOmexConversion {
+    public static void main(String[] args)  {
+        File input = null;
+        try {
+            // TODO: handle if it's not valid PATH
+            input = new File(args[1]);
+        } catch (Exception e1) {
+            e1.printStackTrace();
+        }
 
-    public static void vcmlToSedmlSbml(String vcmlPath, String xmlPath) throws Exception {
-        File vcmlFilePath = new File(vcmlPath);
+        if (input != null && input.isDirectory()) {
+            FilenameFilter filter = (f, name) -> name.endsWith(".vcml");
+            String[] inputFiles = input.list(filter);
+            if (inputFiles == null) System.out.println("No VCML files found in the directory");
+            assert inputFiles != null;
+            for (String inputFile : inputFiles) {
+                File file = new File(input, inputFile);
+                System.out.println(file);
+                args[1] = file.toString();
+                try {
+                    if (inputFile.endsWith(".vcml")) {
+                        boolean isCreated = vcmlToOmexConversion(args);
+                        System.out.println("Combine archive created.");
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace(System.err);
+                }
+            }
+        }
+
+    }
+
+    public static boolean vcmlToOmexConversion(String[] args) throws XmlParseException, IOException{
+        CLIHandler cliHandler = new CLIHandler(args);
+
+        // Get VCML file path from -i flag
+        String inputVcmlFile = cliHandler.getInputFilePath();
+
+        // Get directory file path from -o flag
+        String outputDir = cliHandler.getOutputDirPath();
+
+        // get VCML name from VCML path
+        String vcmlName = inputVcmlFile.split(File.separator, 10)[inputVcmlFile.split(File.separator, 10).length - 1].split("\\.", 5)[0];
+
+
+        File vcmlFilePath = new File(inputVcmlFile);
+
+        // Create biomodel
         BioModel bioModel = XmlHelper.XMLToBioModel(new XMLSource(vcmlFilePath));
         bioModel.refreshDependencies();
 
         // NOTE: SEDML exporter exports both SEDML as well as required SBML
         SEDMLExporter sedmlExporter = new SEDMLExporter(bioModel, 1, 1);
-        String sedmlString = sedmlExporter.getSEDMLFile(String.valueOf(Paths.get(System.getProperty("user.dir"), xmlPath)));
-        XmlUtil.writeXMLStringToFile(sedmlString, String.valueOf(Paths.get(System.getProperty("user.dir"), xmlPath, xmlPath + ".sedml")), true);
-        createCliOmexArchive(String.valueOf(Paths.get(System.getProperty("user.dir"), xmlPath)), "try", vcmlPath);
+        String sedmlString = sedmlExporter.getSEDMLFile(outputDir);
+        XmlUtil.writeXMLStringToFile(sedmlString, String.valueOf(Paths.get(outputDir , vcmlName + ".sedml")), true);
 
-    }
-
-    public static void createCliOmexArchive(String srcFolder, String sFileName, String vcmlPath) {
+        // libCombine needs native lib
         ResourceUtil.setNativeLibraryDirectory();
         NativeLoader.load("combinej");
+
+        boolean isDeleted = false;
+
         try {
-            CombineArchive archive = new CombineArchive();
+            CombineArchive combineArchive = new CombineArchive();
 
             String[] files;
 
-            File dir = new File(srcFolder);
+            // TODO: try-catch if no files
+            File dir = new File(outputDir);
             files = dir.list();
 
             for (String sd : files) {
                 if (sd.endsWith(".sedml")) {
-                    archive.addFile(
-                            Paths.get(srcFolder, sd).toString(),
+                    combineArchive.addFile(
+                            Paths.get(outputDir, sd).toString(),
                             sd, // target file name
                             KnownFormats.lookupFormat("sedml"),
                             true // mark file as master
                     );
-                } else {
-                    archive.addFile(
-                            Paths.get(srcFolder, sd).toString(),
+                } else if (sd.endsWith(".sbml") || sd.endsWith(".xml")) {
+                    combineArchive.addFile(
+                            Paths.get(outputDir, sd).toString(),
                             sd, // target file name
                             KnownFormats.lookupFormat("sbml"),
                             false // mark file as master
@@ -57,30 +106,29 @@ public class VcmlOmexConversion {
                 }
             }
 
-            archive.addFile(
-                    Paths.get(vcmlPath).toString(),
-                    sFileName + ".vcml",
+            combineArchive.addFile(
+                    Paths.get(String.valueOf(vcmlFilePath)).toString(),
+                    vcmlName + ".vcml",
                     KnownFormats.lookupFormat("vcml"),
                     false
             );
 
 
-            archive.writeToFile(Paths.get(srcFolder, sFileName + ".omex").toString());
+            // writing into combine archive
+            combineArchive.writeToFile(Paths.get(outputDir, vcmlName +".omex").toString());
 
             // Removing files after archiving
-            boolean isDeleted = false;
+
             for (String sd : files) {
-                isDeleted = Paths.get(srcFolder, sd).toFile().delete();
+                // removing
+                if (sd.endsWith(".sedml") || sd.endsWith(".sbml") || sd.endsWith("xml") || sd.endsWith("vcml")) {
+                    isDeleted = Paths.get(outputDir, sd).toFile().delete();
+                }
             }
 
         } catch (Exception e) {
             throw new RuntimeException("createZipArchive threw exception: " + e.getMessage());
         }
+        return isDeleted;
     }
-
-    public static void main(String[] args) throws Exception {
-        vcmlToSedmlSbml("/Users/akhilteja/projects/virtualCell/vcell/sample_omex_files/_00_omex_test_cvode.vcml", "model");
-    }
-
-
 }

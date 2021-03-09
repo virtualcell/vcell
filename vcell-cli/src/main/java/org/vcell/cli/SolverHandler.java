@@ -67,13 +67,6 @@ public class SolverHandler {
             System.err.println("Unable to Parse SED-ML into Bio-Model, failed with err: " + e.getMessage());
             throw e;
         }
-//        try {
-//            File vcmlPath = new File("/Users/akhilteja/projects/virtualCell/vcell/sample_omex_files/_00_omex_test_cvode.vcml");
-//            singleDoc = VCMLHandler.convertVcmlToVcDocument(vcmlPath);
-//        } catch (Exception e) {
-//            System.err.println("Unable to Parse SED-ML into Bio-Model, failed with err: " + e.getMessage());
-//            throw e;
-//        }
 
         for (VCDocument doc : docs) {
             try {
