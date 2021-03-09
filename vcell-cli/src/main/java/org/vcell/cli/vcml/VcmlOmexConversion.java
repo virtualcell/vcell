@@ -7,6 +7,7 @@ import cbit.vcell.util.NativeLoader;
 import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XmlHelper;
 import cbit.vcell.xml.XmlParseException;
+import org.apache.logging.log4j.core.util.JsonUtils;
 import org.sbml.libcombine.CombineArchive;
 import org.sbml.libcombine.KnownFormats;
 import org.vcell.cli.CLIHandler;
@@ -15,7 +16,11 @@ import org.vcell.sedml.SEDMLExporter;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 
 class vcmlOmexConversion {
     public static void main(String[] args)  {
@@ -28,10 +33,12 @@ class vcmlOmexConversion {
         }
 
         if (input != null && input.isDirectory()) {
-            FilenameFilter filter = (f, name) -> name.endsWith(".vcml");
-            String[] inputFiles = input.list(filter);
-            if (inputFiles == null) System.out.println("No VCML files found in the directory");
-            assert inputFiles != null;
+            FilenameFilter filterVcmlFiles = (f, name) -> name.endsWith(".vcml");
+            String[] inputFiles = input.list(filterVcmlFiles);
+            if (inputFiles == null) {
+                System.err.println("No VCML files found in the directory `" + input + "`");
+            }
+//            assert inputFiles != null;
             for (String inputFile : inputFiles) {
                 File file = new File(input, inputFile);
                 System.out.println(file);
@@ -39,14 +46,27 @@ class vcmlOmexConversion {
                 try {
                     if (inputFile.endsWith(".vcml")) {
                         boolean isCreated = vcmlToOmexConversion(args);
-                        System.out.println("Combine archive created.");
-                    }
+                        if (isCreated) System.out.println("Combine archive created for `" + input + "`");
+                        else System.err.println("Failed converting VCML to OMEX archive for `" + input + "`");
+                    } else System.err.println("No VCML files found in the directory `" + input + "`");
                 } catch (Exception e) {
                     e.printStackTrace(System.err);
+                    System.exit(1);
                 }
             }
+        } else {
+            try {
+                assert input != null;
+                if (input.toString().endsWith(".vcml")) {
+                    boolean isCreated = vcmlToOmexConversion(args);
+                    if (isCreated) System.out.println("Combine archive created for `" + input + "`");
+                    else System.err.println("Failed converting VCML to OMEX archive for `" + input + "`");
+                } else System.err.println("No input files found in the directory `"+ input+ "`");
+            } catch (IOException | XmlParseException e) {
+                e.printStackTrace();
+                System.exit(1);
+            }
         }
-
     }
 
     public static boolean vcmlToOmexConversion(String[] args) throws XmlParseException, IOException{
@@ -78,6 +98,7 @@ class vcmlOmexConversion {
         NativeLoader.load("combinej");
 
         boolean isDeleted = false;
+        boolean isCreated;
 
         try {
             CombineArchive combineArchive = new CombineArchive();
@@ -115,10 +136,9 @@ class vcmlOmexConversion {
 
 
             // writing into combine archive
-            combineArchive.writeToFile(Paths.get(outputDir, vcmlName +".omex").toString());
+            isCreated = combineArchive.writeToFile(Paths.get(outputDir, vcmlName +".omex").toString());
 
-            // Removing files after archiving
-
+            // Removing all other files(like SEDML, XML, SBML) after archiving
             for (String sd : files) {
                 // removing
                 if (sd.endsWith(".sedml") || sd.endsWith(".sbml") || sd.endsWith("xml") || sd.endsWith("vcml")) {
@@ -126,9 +146,11 @@ class vcmlOmexConversion {
                 }
             }
 
+            if (isDeleted) System.out.println("Removed intermediary files");
+
         } catch (Exception e) {
             throw new RuntimeException("createZipArchive threw exception: " + e.getMessage());
         }
-        return isDeleted;
+        return isCreated;
     }
 }
