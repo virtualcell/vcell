@@ -7,7 +7,6 @@ import cbit.vcell.util.NativeLoader;
 import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XmlHelper;
 import cbit.vcell.xml.XmlParseException;
-import org.apache.logging.log4j.core.util.JsonUtils;
 import org.sbml.libcombine.CombineArchive;
 import org.sbml.libcombine.KnownFormats;
 import org.vcell.cli.CLIHandler;
@@ -16,14 +15,11 @@ import org.vcell.sedml.SEDMLExporter;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
-import java.lang.reflect.Array;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
 
-class vcmlOmexConversion {
-    public static void main(String[] args)  {
+public class VcmlOmexConversion {
+
+    public static void parseArgsAndConvert(String[] args) {
         File input = null;
         try {
             // TODO: handle if it's not valid PATH
@@ -46,7 +42,7 @@ class vcmlOmexConversion {
                 try {
                     if (inputFile.endsWith(".vcml")) {
                         boolean isCreated = vcmlToOmexConversion(args);
-                        if (isCreated) System.out.println("Combine archive created for `" + input + "`");
+                        if (isCreated) System.out.println("Combine archive created for file(s) `" + input + "`");
                         else System.err.println("Failed converting VCML to OMEX archive for `" + input + "`");
                     } else System.err.println("No VCML files found in the directory `" + input + "`");
                 } catch (Exception e) {
@@ -61,7 +57,7 @@ class vcmlOmexConversion {
                     boolean isCreated = vcmlToOmexConversion(args);
                     if (isCreated) System.out.println("Combine archive created for `" + input + "`");
                     else System.err.println("Failed converting VCML to OMEX archive for `" + input + "`");
-                } else System.err.println("No input files found in the directory `"+ input+ "`");
+                } else System.err.println("No input files found in the directory `" + input + "`");
             } catch (IOException | XmlParseException e) {
                 e.printStackTrace();
                 System.exit(1);
@@ -69,7 +65,7 @@ class vcmlOmexConversion {
         }
     }
 
-    public static boolean vcmlToOmexConversion(String[] args) throws XmlParseException, IOException{
+    public static boolean vcmlToOmexConversion(String[] args) throws XmlParseException, IOException {
         CLIHandler cliHandler = new CLIHandler(args);
 
         // Get VCML file path from -i flag
@@ -91,7 +87,7 @@ class vcmlOmexConversion {
         // NOTE: SEDML exporter exports both SEDML as well as required SBML
         SEDMLExporter sedmlExporter = new SEDMLExporter(bioModel, 1, 1);
         String sedmlString = sedmlExporter.getSEDMLFile(outputDir);
-        XmlUtil.writeXMLStringToFile(sedmlString, String.valueOf(Paths.get(outputDir , vcmlName + ".sedml")), true);
+        XmlUtil.writeXMLStringToFile(sedmlString, String.valueOf(Paths.get(outputDir, vcmlName + ".sedml")), true);
 
         // libCombine needs native lib
         ResourceUtil.setNativeLibraryDirectory();
@@ -136,7 +132,14 @@ class vcmlOmexConversion {
 
 
             // writing into combine archive
-            isCreated = combineArchive.writeToFile(Paths.get(outputDir, vcmlName +".omex").toString());
+            String omexPath = Paths.get(outputDir, vcmlName + ".omex").toString();
+            File omexFile = new File(omexPath);
+
+            // Deleting file if already exists with same name
+            if(omexFile.exists()) {
+                omexFile.delete();
+            }
+            isCreated = combineArchive.writeToFile(omexPath);
 
             // Removing all other files(like SEDML, XML, SBML) after archiving
             for (String sd : files) {

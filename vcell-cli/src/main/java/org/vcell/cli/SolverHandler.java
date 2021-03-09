@@ -60,7 +60,7 @@ public class SolverHandler {
         BioModel bioModel = null;
         Simulation[] sims = null;
         String outDirRoot = outputDir.toString().substring(0, outputDir.toString().lastIndexOf(System.getProperty("file.separator")));
-        VCDocument singleDoc = null;
+        //VCDocument singleDoc = null;
         try {
             docs = XmlHelper.sedmlToBioModel(sedmlImportLogger, externalDocInfo, sedml, null);
         } catch (Exception e) {
@@ -70,13 +70,13 @@ public class SolverHandler {
 
         for (VCDocument doc : docs) {
             try {
-                sanityCheck(singleDoc);
+                sanityCheck(doc);
             } catch (Exception e) {
                 e.printStackTrace(System.err);
 //                continue;
             }
-        docName = singleDoc.getName();
-            bioModel = (BioModel) singleDoc;
+        docName = doc.getName();
+            bioModel = (BioModel) doc;
             sims = bioModel.getSimulations();
             for (Simulation sim : sims) {
                 sim = new TempSimulation(sim, false);
@@ -115,8 +115,6 @@ public class SolverHandler {
                     }
                     if (solver.getSolverStatus().getStatus() == SolverStatus.SOLVER_FINISHED) {
                         System.out.println("Succesful execution: Model '" + docName + "' Task '" + sim.getDescription() + "'.");
-
-                        CLIUtils.updateTaskStatusYml(sedmlName, sim.getDescription(), CLIUtils.Status.SUCCEEDED, outDirRoot);
 
                         CLIUtils.drawBreakLine("-", 100);
                     } else {

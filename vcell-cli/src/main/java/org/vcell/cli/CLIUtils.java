@@ -279,7 +279,7 @@ public class CLIUtils {
                             }
                             String outDirRoot = outDir.toString().substring(0, outDir.toString().lastIndexOf(System.getProperty("file.separator")));
                             CLIUtils.updateDatasetStatusYml(sedmlName, oo.getId(), dataset.getId(), Status.SUCCEEDED, outDirRoot);
-//                            CLIUtils.updateTaskStatusYml(sedmlName, task.getId(), Status.SUCCEEDED, outDirRoot);
+                            CLIUtils.updateTaskStatusYml(sedmlName, task.getId(), Status.SUCCEEDED, outDirRoot);
                         }
                         if (!supportedDataset) {
                             System.err.println("Dataset " + dataset.getId() + " references unsupported RepeatedTask and is being skipped");

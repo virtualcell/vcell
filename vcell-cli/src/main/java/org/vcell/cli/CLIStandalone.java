@@ -2,11 +2,13 @@ package org.vcell.cli;
 
 import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.xml.ExternalDocInfo;
+import org.apache.commons.lang3.ArrayUtils;
 import org.jlibsedml.Libsedml;
 import org.jlibsedml.Output;
 import org.jlibsedml.Report;
 import org.jlibsedml.SedML;
 import org.vcell.cli.vcml.VCMLHandler;
+import org.vcell.cli.vcml.VcmlOmexConversion;
 
 import java.io.File;
 import java.io.FilenameFilter;
@@ -18,46 +20,55 @@ import java.util.List;
 public class CLIStandalone {
     public static void main(String[] args) {
 
-        File input = null;
 
-        // Arguments may not always be files, trying for other scenarios
-        try {
-            input = new File(args[1]);
-        } catch (Exception e1) {
-            // Non file or invalid argument received, let it pass, CLIHandler will handle the invalid (or non file) arguments
+        if(args[0].equals("convert")) {
+            // VCML to OMex conversion
+
+            VcmlOmexConversion.parseArgsAndConvert(ArrayUtils.remove(args, 0));
         }
 
-        if (input != null && input.isDirectory()) {
-            FilenameFilter filter = (f, name) -> name.endsWith(".omex") || name.endsWith(".vcml");
-            String[] inputFiles = input.list(filter);
-            if (inputFiles == null) System.out.println("No input files found in the directory");
-            assert inputFiles != null;
-            for (String inputFile : inputFiles) {
-                File file = new File(input, inputFile);
-                System.out.println(file);
-                args[1] = file.toString();
+        else {
+            File input = null;
+
+            // Arguments may not always be files, trying for other scenarios
+            try {
+                input = new File(args[1]);
+            } catch (Exception e1) {
+                // Non file or invalid argument received, let it pass, CLIHandler will handle the invalid (or non file) arguments
+            }
+
+            if (input != null && input.isDirectory()) {
+                FilenameFilter filter = (f, name) -> name.endsWith(".omex") || name.endsWith(".vcml");
+                String[] inputFiles = input.list(filter);
+                if (inputFiles == null) System.out.println("No input files found in the directory");
+                assert inputFiles != null;
+                for (String inputFile : inputFiles) {
+                    File file = new File(input, inputFile);
+                    System.out.println(file);
+                    args[1] = file.toString();
+                    try {
+                        if (inputFile.endsWith("omex")) {
+                            singleExecOmex(args);
+                        }
+                        if (inputFile.endsWith("vcml")) {
+                            singleExecVcml(args);
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace(System.err);
+                    }
+                }
+            } else {
                 try {
-                    if (inputFile.endsWith("omex")) {
+                    if (input.toString().endsWith("omex")) {
                         singleExecOmex(args);
                     }
-                    if (inputFile.endsWith("vcml")) {
+                    if (input.toString().endsWith("vcml")) {
                         singleExecVcml(args);
                     }
                 } catch (Exception e) {
-                    e.printStackTrace(System.err);
+                    System.err.print(e.getMessage());
+                    System.exit(1);
                 }
-            }
-        } else {
-            try {
-                if (input.toString().endsWith("omex")) {
-                    singleExecOmex(args);
-                }
-                if (input.toString().endsWith("vcml")) {
-                    singleExecVcml(args);
-                }
-            } catch (Exception e) {
-                System.err.print(e.getMessage());
-                System.exit(1);
             }
         }
     }
