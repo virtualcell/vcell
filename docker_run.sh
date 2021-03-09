@@ -24,6 +24,7 @@ java \
   -classpath '/usr/local/app/vcell/lib/*' \
   -Dvcell.installDir=/usr/local/app/vcell/installDir \
   -Dvcell.server.id="7.3.0.16" \
+  -Dvcell.cli="true" \
   -Dvcell.python.executable=/usr/bin/python3 \
   -Dvcell.mongodb.database="localhost" \
   -Dvcell.mongodb.host.internal="localhost" \

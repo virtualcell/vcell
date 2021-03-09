@@ -624,7 +624,7 @@ public class ReactionCartoonTool extends BioCartoonTool implements BioCartoonToo
 				if (getSelectedReactionParticipantArray() != null && menuAction.equals(CartoonToolEditActions.Delete.MENU_ACTION)) {
 					ReactionParticipant[] reactionParticipantArr = getSelectedReactionParticipantArray();
 					if(ReactionCartoonTool.checkAllCatalyst(reactionParticipantArr)) {
-						DialogUtils.showWarningDialog(getGraphPane(), "Catalysts can only be deleted by editing kynetic / proxy parameters");
+						DialogUtils.showWarningDialog(getGraphPane(), "Catalysts are determined automatically from the reaction kinetic expression.");
 						return;
 					}
 					String response = DialogUtils.showWarningDialog(getGraphPane(),
