@@ -140,7 +140,7 @@ public class CLIStandalone {
 
 
             // HDF5 conversion
-            if (nReportsCount != 0) CLIUtils.convertCSVtoHDF(Paths.get(outputDir, sedmlName).toString(), sedmlLocation, Paths.get(outputDir, sedmlName).toString());
+            if (nReportsCount != 0) CLIUtils.convertCSVtoHDF(inputFile, outputDir);
 
             if (resultsHash.containsValue(null) || reportsHash == null) {
                 somethingFailed = true;

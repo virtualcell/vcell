@@ -439,7 +439,7 @@ public class CLIUtils {
         int exitCode = -10;
         String joinArg = Joiner.on(" ").join(args);
         // Uncomment to debug the command execution
-//            System.out.println("Executing the command: `" + joinArg + "`");
+//        System.out.println("Executing the command: `" + joinArg + "`");
         File log = stdOutFile;
         try {
             ProcessBuilder builder = new ProcessBuilder(args);
@@ -501,11 +501,11 @@ public class CLIUtils {
         CLIUtils.execShellCommand(permissionArgs);
     }
 
-    public static void convertCSVtoHDF(String csvDir, String sedmlFilePathStr, String outDir) {
+    public static void convertCSVtoHDF(String omexFilePath, String outputDir) {
         String[] cliArgs;
-        Path csvDirPath = Paths.get(csvDir);
-        Path sedmlFilePath = Paths.get(sedmlFilePathStr);
-        Path outDirPath = Paths.get(outDir);
+//        Path csvDirPath = Paths.get(csvDir);
+//        Path sedmlFilePath = Paths.get(sedmlFilePathStr);
+//        Path outDirPath = Paths.get(outDir);
 //        CLIUtils.giveOpenPermissions(sedmlFilePathStr);
 
         // Convert CSV to HDF5
@@ -517,12 +517,12 @@ public class CLIUtils {
         * */
         if (checkPythonInstallation() == 0) {
             if (isWindowsPlatform) {
-                cliArgs = new String[]{"python", cliPath.toString(), "execSedDoc", sedmlFilePath.toString(), workingDirectory.toString(), outDirPath.toString(), csvDirPath.toString()};
+                cliArgs = new String[]{"python", cliPath.toString(), "execSedDoc", omexFilePath, outputDir};
             } else {
-                cliArgs = new String[]{"python3", cliPath.toString(), "execSedDoc", sedmlFilePath.toString(), workingDirectory.toString(), outDirPath.toString(), csvDirPath.toString()};
+                cliArgs = new String[]{"python3", cliPath.toString(), "execSedDoc", omexFilePath, outputDir};
             }
             execShellCommand(cliArgs);
-            System.out.println("HDF conversion completed in '" + outDir + "'\n");
+            System.out.println("HDF conversion completed in '" + outputDir + "'\n");
         } else System.err.println("HDF5 conversion failed...");
 
     }
