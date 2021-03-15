@@ -71,13 +71,14 @@ public class CLIStandalone {
             CLIUtils.drawBreakLine("-", 100);
             omexHandler = new OmexHandler(inputFile, outputDir);
             omexHandler.extractOmex();
+//            String[] masterFiles = omexHandler.getMasterFiles();
             sedmlLocations = omexHandler.getSedmlLocationsAbsolute();
             nSedml = sedmlLocations.size();
             // any error up to now is fatal (unlikely, but still...)
         } catch (Throwable exc) {
             assert omexHandler != null;
             omexHandler.deleteExtractedOmex();
-            String error = "======> FAILED OMEX handling for archive " + args[1];
+            String error = exc.getMessage() + ", error for archive " + args[1];
             throw new Exception(error);
         }
         // from here on, we need to collect errors, since some subtasks may succeed while other do not
