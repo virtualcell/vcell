@@ -243,7 +243,7 @@ public class CLIUtils {
         }
     }
 
-    public static HashMap<String, File> generateReportsAsCSV(SedML sedml, HashMap<String, ODESolverResultSet> resultsHash, File outDir, String sedmlName) {
+    public static HashMap<String, File> generateReportsAsCSV(SedML sedml, HashMap<String, ODESolverResultSet> resultsHash, File outDirForCurrentSedml, String outDir, String sedmlLocation) {
         // finally, the real work
         HashMap<String, File> reportsHash = new HashMap<>();
         List<Output> ooo = sedml.getOutputs();
@@ -277,9 +277,9 @@ public class CLIUtils {
                                 mxlen = Integer.max(mxlen, data.length);
                                 values.put(var, data);
                             }
-                            String outDirRoot = outDir.toString().substring(0, outDir.toString().lastIndexOf(System.getProperty("file.separator")));
-                            CLIUtils.updateDatasetStatusYml(sedmlName, oo.getId(), dataset.getId(), Status.SUCCEEDED, outDirRoot);
-                            CLIUtils.updateTaskStatusYml(sedmlName, task.getId(), Status.SUCCEEDED, outDirRoot);
+                            //String outDirRoot = outDirForCurrentSedml.toString().substring(0, outDirForCurrentSedml.toString().lastIndexOf(System.getProperty("file.separator")));
+                            CLIUtils.updateDatasetStatusYml(sedmlLocation, oo.getId(), dataset.getId(), Status.SUCCEEDED, outDir);
+                            CLIUtils.updateTaskStatusYml(sedmlLocation, task.getId(), Status.SUCCEEDED, outDir);
                         }
                         if (!supportedDataset) {
                             System.err.println("Dataset " + dataset.getId() + " references unsupported RepeatedTask and is being skipped");
@@ -313,7 +313,7 @@ public class CLIUtils {
                         sb.deleteCharAt(sb.lastIndexOf(","));
                         sb.append("\n");
                     }
-                    File f = new File(outDir, oo.getId() + ".csv");
+                    File f = new File(outDirForCurrentSedml, oo.getId() + ".csv");
                     PrintWriter out = new PrintWriter(f);
                     out.print(sb.toString());
                     out.flush();
@@ -443,6 +443,8 @@ public class CLIUtils {
         File log = stdOutFile;
         try {
             ProcessBuilder builder = new ProcessBuilder(args);
+            // For debugging
+//            builder.redirectOutput(ProcessBuilder.Redirect.INHERIT);
 //            builder.redirectErrorStream(true);
             // STDOUT redirected to stdOut.txt file
 //            builder.redirectOutput(ProcessBuilder.Redirect.appendTo(log));

@@ -82,6 +82,7 @@ public class CLIStandalone {
         }
         // from here on, we need to collect errors, since some subtasks may succeed while other do not
         boolean somethingFailed = false;
+        CLIUtils.generateStatusYaml(inputFile, outputDir);
         for (String sedmlLocation : sedmlLocations) {
             HashMap<String, ODESolverResultSet> resultsHash;
             HashMap<String, File> reportsHash = null;
@@ -130,12 +131,12 @@ public class CLIStandalone {
             CLIUtils.checkPythonInstallation();
             // pip install requirements before status generation
             CLIUtils.pipInstallRequirements();
-            CLIUtils.generateStatusYaml(inputFile, outputDir);
-            resultsHash = solverHandler.simulateAllTasks(externalDocInfo, sedml, outDirForCurrentSedml, sedmlName);
+
+            resultsHash = solverHandler.simulateAllTasks(externalDocInfo, sedml, outDirForCurrentSedml, outputDir,  sedmlLocation);
 
 
             if (resultsHash.size() != 0) {
-                reportsHash = CLIUtils.generateReportsAsCSV(sedml, resultsHash, outDirForCurrentSedml, sedmlName);
+                reportsHash = CLIUtils.generateReportsAsCSV(sedml, resultsHash, outDirForCurrentSedml, outputDir, sedmlLocation);
             }
 
 
