@@ -243,7 +243,7 @@ public class CLIUtils {
         }
     }
 
-    public static HashMap<String, File> generateReportsAsCSV(SedML sedml, HashMap<String, ODESolverResultSet> resultsHash, File outDir, String sedmlName) {
+    public static HashMap<String, File> generateReportsAsCSV(SedML sedml, HashMap<String, ODESolverResultSet> resultsHash, File outDirForCurrentSedml, String outDir, String sedmlLocation) {
         // finally, the real work
         HashMap<String, File> reportsHash = new HashMap<>();
         List<Output> ooo = sedml.getOutputs();
@@ -277,9 +277,9 @@ public class CLIUtils {
                                 mxlen = Integer.max(mxlen, data.length);
                                 values.put(var, data);
                             }
-                            String outDirRoot = outDir.toString().substring(0, outDir.toString().lastIndexOf(System.getProperty("file.separator")));
-                            CLIUtils.updateDatasetStatusYml(sedmlName, oo.getId(), dataset.getId(), Status.SUCCEEDED, outDirRoot);
-                            CLIUtils.updateTaskStatusYml(sedmlName, task.getId(), Status.SUCCEEDED, outDirRoot);
+                            //String outDirRoot = outDirForCurrentSedml.toString().substring(0, outDirForCurrentSedml.toString().lastIndexOf(System.getProperty("file.separator")));
+                            CLIUtils.updateDatasetStatusYml(sedmlLocation, oo.getId(), dataset.getId(), Status.SUCCEEDED, outDir);
+                            CLIUtils.updateTaskStatusYml(sedmlLocation, task.getId(), Status.SUCCEEDED, outDir);
                         }
                         if (!supportedDataset) {
                             System.err.println("Dataset " + dataset.getId() + " references unsupported RepeatedTask and is being skipped");
@@ -313,7 +313,7 @@ public class CLIUtils {
                         sb.deleteCharAt(sb.lastIndexOf(","));
                         sb.append("\n");
                     }
-                    File f = new File(outDir, oo.getId() + ".csv");
+                    File f = new File(outDirForCurrentSedml, oo.getId() + ".csv");
                     PrintWriter out = new PrintWriter(f);
                     out.print(sb.toString());
                     out.flush();
@@ -439,10 +439,12 @@ public class CLIUtils {
         int exitCode = -10;
         String joinArg = Joiner.on(" ").join(args);
         // Uncomment to debug the command execution
-//            System.out.println("Executing the command: `" + joinArg + "`");
+//        System.out.println("Executing the command: `" + joinArg + "`");
         File log = stdOutFile;
         try {
             ProcessBuilder builder = new ProcessBuilder(args);
+            // For debugging
+//            builder.redirectOutput(ProcessBuilder.Redirect.INHERIT);
 //            builder.redirectErrorStream(true);
             // STDOUT redirected to stdOut.txt file
 //            builder.redirectOutput(ProcessBuilder.Redirect.appendTo(log));
@@ -501,11 +503,11 @@ public class CLIUtils {
         CLIUtils.execShellCommand(permissionArgs);
     }
 
-    public static void convertCSVtoHDF(String csvDir, String sedmlFilePathStr, String outDir) {
+    public static void convertCSVtoHDF(String omexFilePath, String outputDir) {
         String[] cliArgs;
-        Path csvDirPath = Paths.get(csvDir);
-        Path sedmlFilePath = Paths.get(sedmlFilePathStr);
-        Path outDirPath = Paths.get(outDir);
+//        Path csvDirPath = Paths.get(csvDir);
+//        Path sedmlFilePath = Paths.get(sedmlFilePathStr);
+//        Path outDirPath = Paths.get(outDir);
 //        CLIUtils.giveOpenPermissions(sedmlFilePathStr);
 
         // Convert CSV to HDF5
@@ -517,12 +519,12 @@ public class CLIUtils {
         * */
         if (checkPythonInstallation() == 0) {
             if (isWindowsPlatform) {
-                cliArgs = new String[]{"python", cliPath.toString(), "execSedDoc", sedmlFilePath.toString(), workingDirectory.toString(), outDirPath.toString(), csvDirPath.toString()};
+                cliArgs = new String[]{"python", cliPath.toString(), "execSedDoc", omexFilePath, outputDir};
             } else {
-                cliArgs = new String[]{"python3", cliPath.toString(), "execSedDoc", sedmlFilePath.toString(), workingDirectory.toString(), outDirPath.toString(), csvDirPath.toString()};
+                cliArgs = new String[]{"python3", cliPath.toString(), "execSedDoc", omexFilePath, outputDir};
             }
             execShellCommand(cliArgs);
-            System.out.println("HDF conversion completed in '" + outDir + "'\n");
+            System.out.println("HDF conversion completed in '" + outputDir + "'\n");
         } else System.err.println("HDF5 conversion failed...");
 
     }
