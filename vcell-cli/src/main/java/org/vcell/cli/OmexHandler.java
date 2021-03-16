@@ -98,7 +98,7 @@ public class OmexHandler {
             }
 
             if(!contentFile.isFormat("sedml") && contentFile.getMaster()) {
-                throw new Exception("No SED-ML's are intended to be executed (non SEDML file is set to be master)");
+                throw new Exception("No SED-ML's are intended to be executed (non SED-ML file is set to be master)");
             }
         }
 
@@ -118,8 +118,6 @@ public class OmexHandler {
                     sedmlList.add(contentFile.getLocation());
                 }
             }
-
-
         }
 
         return sedmlList;
