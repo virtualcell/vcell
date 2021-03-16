@@ -168,11 +168,11 @@ public class SolverUtilities {
 		SolverDescription sd = null;
 		switch(last.getId()) {
 		case "KISAO_0000433":
-			return SolverDescription.CombinedSundials;
+			return SolverDescription.CVODE;
 		case "KISAO_0000094":
-			return SolverDescription.CombinedSundials;
+			return SolverDescription.CVODE;
 		case "KISAO_0000284":
-			return SolverDescription.CombinedSundials;
+			return SolverDescription.CVODE;
 		case "KISAO_0000319":
 			return SolverDescription.StochGibson;
 		case "KISAO_0000408":
