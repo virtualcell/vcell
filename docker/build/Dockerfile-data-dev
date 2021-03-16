@@ -64,6 +64,10 @@ WORKDIR /usr/local/app
 
 COPY ./vcell-server/target/vcell-server-0.0.1-SNAPSHOT.jar \
      ./vcell-server/target/maven-jars/*.jar \
+     ./vcell-oracle/target/vcell-oracle-0.0.1-SNAPSHOT.jar \
+     ./vcell-oracle/target/maven-jars/*.jar \
+     ./non-maven-java-libs/com/oracle/ojdbc6/11.2.0.4/ojdbc6-11.2.0.4.jar \
+     ./non-maven-java-libs/com/oracle/ucp/11.2.0.4/ucp-11.2.0.4.jar \
      ./lib/
 
 
@@ -73,6 +77,9 @@ COPY ./docker/build/vcell-data.log4j.xml .
 
 ENV softwareVersion=SOFTWARE-VERSION-NOT-SET \
 	serverid=SITE \
+	dburl="db-url-not-set" \
+    dbdriver="db-driver-not-set" \
+    dbuser="db-user-not-set" \
     jmshost_int_internal=activemqint \
     jmsport_int_internal=61616 \
     jmsuser=clientUser \
@@ -85,7 +92,8 @@ ENV softwareVersion=SOFTWARE-VERSION-NOT-SET \
     simdataCacheSize="simdataCacheSize-not-set" \
     servertype="servertype-not-set"
 
-ENV jmspswdfile=/run/secrets/jmspswd
+ENV dbpswdfile=/run/secrets/dbpswd \
+    jmspswdfile=/run/secrets/jmspswd
 
 VOLUME /simdata
 VOLUME /share/apps/vcell10/users
@@ -101,6 +109,10 @@ ENTRYPOINT java \
 	-Djava.util.logging.manager=org.apache.logging.log4j.jul.LogManager \
 	-Dlog4j.configurationFile=/usr/local/app/vcell-data.log4j.xml \
 	-Dvcell.server.id="${serverid}" \
+	-Dvcell.server.dbConnectURL="${dburl}" \
+	-Dvcell.server.dbDriverName="${dbdriver}" \
+	-Dvcell.server.dbUserid="${dbuser}" \
+	-Dvcell.db.pswdfile="${dbpswdfile}" \
 	-Dvcell.python.executable=/usr/bin/python \
 	-Dvcell.primarySimdatadir.internal=/simdata \
 	-Dvcell.primarySimdatadir.external="${simdatadir_external}" \
