@@ -266,13 +266,38 @@ public class CLIUtils {
                         HashMap values = new HashMap<Variable, double[]>();
                         for (Variable var : vars) {
                             AbstractTask task = sedml.getTaskWithId(var.getReference());
+                            Model model = sedml.getModelWithId(task.getModelReference());
+                        	// must get variable ID from SBML model
+                        	String sbmlVarId = "";
+                        	if (var.getSymbol() != null) {
+                        		// it is a predefined symbol
+                        		sbmlVarId = var.getSymbol().name();
+                        		// translate official symbols
+                        		// TIME is time, etc.
+                        		switch (sbmlVarId) {
+								case "TIME":
+									sbmlVarId = "time";
+									break;
+								}
+                        		// TODO
+                        		// check spec for other symbols
+                        	} else {
+                        		// it is an XPATH target in model
+                        		String target = var.getTarget();
+                        		// look for XPATH target element in model
+                        		// use the Elements' attribute of SId
+                        		// TODO
+                        		// sbmlVarId = model.getsourcexml.getxpathelement.getsid
+                        		// look for utils in jlibsedml
+                        	}
+                        		
                             if (task instanceof RepeatedTask) {
                                 supportedDataset = false;
                             } else {
                                 varIDs.add(var.getId());
                                 assert task != null;
                                 ODESolverResultSet results = resultsHash.get(task.getId());
-                                int column = results.findColumn(var.getName());
+                                int column = results.findColumn(sbmlVarId);
                                 double[] data = results.extractColumn(column);
                                 mxlen = Integer.max(mxlen, data.length);
                                 values.put(var, data);
