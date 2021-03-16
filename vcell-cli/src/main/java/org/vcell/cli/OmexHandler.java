@@ -2,6 +2,7 @@ package org.vcell.cli;
 
 import cbit.vcell.resource.NativeLib;
 import cbit.vcell.resource.ResourceUtil;
+import org.apache.commons.lang3.ArrayUtils;
 import org.sbml.libcombine.CaContent;
 import org.sbml.libcombine.CaListOfContents;
 import org.sbml.libcombine.CaOmexManifest;
@@ -83,21 +84,47 @@ public class OmexHandler {
         }
     }
 
-    public ArrayList<String> getSedmlLocationsRelative() {
+    public ArrayList<String> getSedmlLocationsRelative() throws Exception {
         ArrayList<String> sedmlList = new ArrayList<>();
         CaOmexManifest manifest = this.archive.getManifest();
         CaListOfContents contents = manifest.getListOfContents();
+
+        int masterCount = 0;
         for (int contentIndex = 0; contentIndex < contents.getNumContents(); contentIndex++) {
             CaContent contentFile = (CaContent) contents.get(contentIndex);
-            if (contentFile.isFormat("sedml")) {
-                sedmlList.add(contentFile.getLocation());
+
+            if (contentFile.isFormat("sedml") && contentFile.getMaster()) {
+                masterCount++;
+            }
+
+            if(!contentFile.isFormat("sedml") && contentFile.getMaster()) {
+                throw new Exception("No SED-ML's are intended to be executed (non SED-ML file is set to be master)");
             }
         }
+
+        if( masterCount > 1) {
+            throw new Exception("More than two master SED-ML's found");
+        }
+
+        for (int contentIndex = 0; contentIndex < contents.getNumContents(); contentIndex++) {
+            CaContent contentFile = (CaContent) contents.get(contentIndex);
+
+            if(masterCount == 0 ) {
+                if (contentFile.isFormat("sedml")) {
+                    sedmlList.add(contentFile.getLocation());
+                }
+            } else {
+                if (contentFile.isFormat("sedml") && contentFile.getMaster()) {
+                    sedmlList.add(contentFile.getLocation());
+                }
+            }
+        }
+
         return sedmlList;
     }
 
 
-    public ArrayList<String> getSedmlLocationsAbsolute() {
+    public ArrayList<String> getSedmlLocationsAbsolute() throws Exception {
         ArrayList<String> sedmlListAbsolute = new ArrayList<>();
         ArrayList<String> sedmlListRelative = this.getSedmlLocationsRelative();
 
@@ -107,7 +134,7 @@ public class OmexHandler {
         return sedmlListAbsolute;
     }
 
-    public String getOutputPathFromSedml(String absoluteSedmlPath) throws IOException {
+    public String getOutputPathFromSedml(String absoluteSedmlPath) throws Exception {
         String outputPath = "";
         String sedmlName = absoluteSedmlPath.substring(absoluteSedmlPath.lastIndexOf(File.separator) + 1);
         ArrayList<String> sedmlListRelative = this.getSedmlLocationsRelative();

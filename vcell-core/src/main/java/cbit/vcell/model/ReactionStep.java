@@ -825,22 +825,21 @@ public void refreshDependencies() {
 private void updateCatalysts() {
 	
 	// remove all catalysts first
-	// TODO: uncomment when sufficient testing is possible
-//	List<ReactionParticipant> catalystList = new ArrayList<>();
-//	for(ReactionParticipant rp : fieldReactionParticipants)
-//	{
-//		if(rp instanceof Catalyst)
-//		{
-//			catalystList.add(rp);	// build catalyst list
-//		}
-//	}
-//	for(ReactionParticipant rp : catalystList) {
-//		try {
-//			removeReactionParticipant(rp);	// remove all catalysts
-//		} catch (PropertyVetoException | ExpressionException | ModelException e) {
-//			e.printStackTrace();
-//		}
-//	}
+	List<ReactionParticipant> catalystList = new ArrayList<>();
+	for(ReactionParticipant rp : fieldReactionParticipants)
+	{
+		if(rp instanceof Catalyst)
+		{
+			catalystList.add(rp);	// build catalyst list
+		}
+	}
+	for(ReactionParticipant rp : catalystList) {
+		try {
+			removeReactionParticipant(rp);	// remove all catalysts
+		} catch (PropertyVetoException | ExpressionException | ModelException e) {
+			e.printStackTrace();
+		}
+	}
 	
 	// add all catalysts based on updated proxy parameter list
 	for (ProxyParameter added : getKinetics().getProxyParameters()) {
