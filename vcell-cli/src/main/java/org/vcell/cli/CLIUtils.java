@@ -10,18 +10,18 @@ import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.util.ColumnDescription;
 import com.google.common.base.Joiner;
 import com.google.common.io.Files;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jlibsedml.*;
 import org.vcell.stochtest.TimeSeriesMultitrialData;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.*;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 public class CLIUtils {
     // Docker hardcode path
@@ -638,6 +638,45 @@ public class CLIUtils {
             else execShellCommand(new String[]{"python3", cliPath.toString(), "transposeVcmlCsv", csvFilePath});
         } else System.err.println("Failed transposing VCML resultant CSV...");
     }
+
+
+    private static ArrayList<File> listFilesForFolder(File dirPath) {
+        File dir = new File(String.valueOf(dirPath));
+        String[] extensions = new String[] { "csv" };
+        ArrayList<File> csvFilesList = new ArrayList<>();
+        List<File> files = (List<File>) FileUtils.listFiles(dir, extensions, true);
+        for (File file : files) {
+            csvFilesList.add(file);
+        }
+        return csvFilesList;
+    }
+
+    public static void zipResFile(File dirPath) throws IOException {
+        System.out.println("Generating zip Archive for reports");
+        ArrayList<File> srcFiles = listFilesForFolder(dirPath);
+        FileOutputStream fos = new FileOutputStream(Paths.get(dirPath.toString(), "reports.zip").toFile());
+        ZipOutputStream zipOut = new ZipOutputStream(fos);
+        for (File srcFile : srcFiles) {
+            FileInputStream fis = new FileInputStream(srcFile);
+
+            // get relative path
+            String relativePath = dirPath.toURI().relativize(srcFile.toURI()).toString();
+            ZipEntry zipEntry = new ZipEntry(relativePath);
+            zipOut.putNextEntry(zipEntry);
+
+            byte[] bytes = new byte[1024];
+            int length;
+            while((length = fis.read(bytes)) >= 0) {
+                zipOut.write(bytes, 0, length);
+            }
+            fis.close();
+        }
+        zipOut.close();
+        fos.close();
+
+
+    }
+
 
     @SuppressWarnings("UnstableApiUsage")
     public String getTempDir() {

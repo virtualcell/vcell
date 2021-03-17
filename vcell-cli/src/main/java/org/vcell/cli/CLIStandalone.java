@@ -141,6 +141,9 @@ public class CLIStandalone {
             // HDF5 conversion
             if (nReportsCount != 0) CLIUtils.convertCSVtoHDF(inputFile, outputDir);
 
+            // archiving res files
+            CLIUtils.zipResFile(new File(outputDir));
+
             if (resultsHash.containsValue(null) || reportsHash == null) {
                 somethingFailed = true;
             }
