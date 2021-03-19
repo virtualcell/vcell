@@ -254,6 +254,14 @@ public class CLIUtils {
                 System.out.println("Generating report " + oo.getId());
                 try {
                     StringBuilder sb = new StringBuilder();
+                    
+                    // we go through each entry (dataset) in the list of datasets
+                    // for each dataset, we use the data reference to obtain the data generator
+                    // ve get the list of variables associated with the data reference
+                    //   each variable has an id (which is the data reference above, the task and the sbml symbol urn
+                    //   for each variable we recover the task, from the task we get the sbml model
+                    //   we search the sbml model to find the vcell variable name associated with the urn
+                    
                     List<DataSet> datasets = ((Report) oo).getListOfDataSets();
                     for (DataSet dataset : datasets) {
                         DataGenerator datagen = sedml.getDataGeneratorWithId(dataset.getDataReference());
