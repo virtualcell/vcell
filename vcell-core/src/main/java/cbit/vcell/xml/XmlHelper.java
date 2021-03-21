@@ -635,7 +635,7 @@ public class XmlHelper {
 				} else {
 					// give it a try anyway with our deterministic default solver
 					solverDescription = SolverDescription.CombinedSundials;
-					System.err.println("Task '"+selectedTask.getName()+"' is not compatible, no equivalent solver found in ontology for requested algorithm '"+kisaoID + "'; trying with deterministic default solver "+solverDescription);
+					System.err.println("Task (id='"+selectedTask.getId()+")' is not compatible, no equivalent solver found in ontology for requested algorithm '"+kisaoID + "'; trying with deterministic default solver "+solverDescription);
 				}
 				// find out everything else we need about the application we're going to use,
 				// some of the info will be needed when we parse the sbml file
