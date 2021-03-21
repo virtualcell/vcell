@@ -10,18 +10,20 @@ import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.util.ColumnDescription;
 import com.google.common.base.Joiner;
 import com.google.common.io.Files;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jlibsedml.*;
+import org.jlibsedml.execution.IXPathToVariableIDResolver;
+import org.jlibsedml.modelsupport.SBMLSupport;
 import org.vcell.stochtest.TimeSeriesMultitrialData;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.*;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 public class CLIUtils {
     // Docker hardcode path
@@ -254,6 +256,14 @@ public class CLIUtils {
                 System.out.println("Generating report " + oo.getId());
                 try {
                     StringBuilder sb = new StringBuilder();
+                    
+                    // we go through each entry (dataset) in the list of datasets
+                    // for each dataset, we use the data reference to obtain the data generator
+                    // ve get the list of variables associated with the data reference
+                    //   each variable has an id (which is the data reference above, the task and the sbml symbol urn
+                    //   for each variable we recover the task, from the task we get the sbml model
+                    //   we search the sbml model to find the vcell variable name associated with the urn
+                    
                     List<DataSet> datasets = ((Report) oo).getListOfDataSets();
                     for (DataSet dataset : datasets) {
                         DataGenerator datagen = sedml.getDataGeneratorWithId(dataset.getDataReference());
@@ -266,13 +276,36 @@ public class CLIUtils {
                         HashMap values = new HashMap<Variable, double[]>();
                         for (Variable var : vars) {
                             AbstractTask task = sedml.getTaskWithId(var.getReference());
+                            Model model = sedml.getModelWithId(task.getModelReference());
+                            IXPathToVariableIDResolver variable2IDResolver = new SBMLSupport();
+                        	// must get variable ID from SBML model
+                        	String sbmlVarId = "";
+                        	if (var.getSymbol() != null) {
+                        		// it is a predefined symbol
+                        		sbmlVarId = var.getSymbol().name();
+                        		// translate SBML official symbols
+                        		// TIME is t, etc.
+                        		switch (sbmlVarId) {
+								case "TIME":
+									// this is VCell reserved symbold for time
+									sbmlVarId = "t";
+									break;
+								}
+                        		// TODO
+                        		// check spec for other symbols
+                        	} else {
+                        		// it is an XPATH target in model
+                        		String target = var.getTarget();
+                        		sbmlVarId = variable2IDResolver.getIdFromXPathIdentifer(target);
+                        	}
+                        		
                             if (task instanceof RepeatedTask) {
                                 supportedDataset = false;
                             } else {
                                 varIDs.add(var.getId());
                                 assert task != null;
                                 ODESolverResultSet results = resultsHash.get(task.getId());
-                                int column = results.findColumn(var.getName());
+                                int column = results.findColumn(sbmlVarId);
                                 double[] data = results.extractColumn(column);
                                 mxlen = Integer.max(mxlen, data.length);
                                 values.put(var, data);
@@ -613,6 +646,45 @@ public class CLIUtils {
             else execShellCommand(new String[]{"python3", cliPath.toString(), "transposeVcmlCsv", csvFilePath});
         } else System.err.println("Failed transposing VCML resultant CSV...");
     }
+
+
+    private static ArrayList<File> listFilesForFolder(File dirPath) {
+        File dir = new File(String.valueOf(dirPath));
+        String[] extensions = new String[] { "csv" };
+        ArrayList<File> csvFilesList = new ArrayList<>();
+        List<File> files = (List<File>) FileUtils.listFiles(dir, extensions, true);
+        for (File file : files) {
+            csvFilesList.add(file);
+        }
+        return csvFilesList;
+    }
+
+    public static void zipResFile(File dirPath) throws IOException {
+        System.out.println("Generating zip Archive for reports");
+        ArrayList<File> srcFiles = listFilesForFolder(dirPath);
+        FileOutputStream fos = new FileOutputStream(Paths.get(dirPath.toString(), "reports.zip").toFile());
+        ZipOutputStream zipOut = new ZipOutputStream(fos);
+        for (File srcFile : srcFiles) {
+            FileInputStream fis = new FileInputStream(srcFile);
+
+            // get relative path
+            String relativePath = dirPath.toURI().relativize(srcFile.toURI()).toString();
+            ZipEntry zipEntry = new ZipEntry(relativePath);
+            zipOut.putNextEntry(zipEntry);
+
+            byte[] bytes = new byte[1024];
+            int length;
+            while((length = fis.read(bytes)) >= 0) {
+                zipOut.write(bytes, 0, length);
+            }
+            fis.close();
+        }
+        zipOut.close();
+        fos.close();
+
+
+    }
+
 
     @SuppressWarnings("UnstableApiUsage")
     public String getTempDir() {
