@@ -631,7 +631,7 @@ public class XmlHelper {
 				// try to find a match in the ontology tree
 				SolverDescription solverDescription = SolverUtilities.matchSolverWithKisaoId(kisaoID);
 				if (solverDescription != null) {
-					System.out.println("Task '"+selectedTask.getName()+"' is compatible, solver match found in ontology: '" + kisaoID + "' matched to " + solverDescription);
+					System.out.println("Task (id='"+selectedTask.getId()+"') is compatible, solver match found in ontology: '" + kisaoID + "' matched to " + solverDescription);
 				} else {
 					// give it a try anyway with our deterministic default solver
 					solverDescription = SolverDescription.CombinedSundials;
