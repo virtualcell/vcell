@@ -1,0 +1,695 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<sbml xmlns="http://www.sbml.org/sbml/level3/version1/core" level="3" version="1">
+  <notes>
+    <body xmlns="http://www.w3.org/1999/xhtml">
+     <p>Exported by VCell 7.3</p>
+  </body>
+  </notes>
+  <model areaUnits="um2" extentUnits="molecules" id="_zero_0_omex_test_cvode_ODE_deterministic" lengthUnits="um" name="00-omex-test-cvode_ODE deterministic" substanceUnits="molecules" timeUnits="s" volumeUnits="um3">
+    <listOfUnitDefinitions>
+      <unitDefinition id="molecules">
+        <listOfUnits>
+          <unit exponent="1" kind="item" multiplier="1" scale="0"/>
+        </listOfUnits>
+      </unitDefinition>
+      <unitDefinition id="um3">
+        <listOfUnits>
+          <unit exponent="3" kind="metre" multiplier="1" scale="-6"/>
+        </listOfUnits>
+      </unitDefinition>
+      <unitDefinition id="um2">
+        <listOfUnits>
+          <unit exponent="2" kind="metre" multiplier="1" scale="-6"/>
+        </listOfUnits>
+      </unitDefinition>
+      <unitDefinition id="um">
+        <listOfUnits>
+          <unit exponent="1" kind="metre" multiplier="1" scale="-6"/>
+        </listOfUnits>
+      </unitDefinition>
+      <unitDefinition id="s">
+        <listOfUnits>
+          <unit exponent="1" kind="second" multiplier="1" scale="0"/>
+        </listOfUnits>
+      </unitDefinition>
+      <unitDefinition id="s_1">
+        <listOfUnits>
+          <unit exponent="-1" kind="second" multiplier="1" scale="0"/>
+        </listOfUnits>
+      </unitDefinition>
+      <unitDefinition id="K">
+        <listOfUnits>
+          <unit exponent="1" kind="kelvin" multiplier="1" scale="0"/>
+        </listOfUnits>
+      </unitDefinition>
+      <unitDefinition id="_one_">
+        <listOfUnits>
+          <unit exponent="1" kind="dimensionless" multiplier="1" scale="0"/>
+        </listOfUnits>
+      </unitDefinition>
+      <unitDefinition id="C_mol_1">
+        <listOfUnits>
+          <unit exponent="1" kind="coulomb" multiplier="1" scale="0"/>
+          <unit exponent="-1" kind="mole" multiplier="1" scale="0"/>
+        </listOfUnits>
+      </unitDefinition>
+      <unitDefinition id="C_nmol_1">
+        <listOfUnits>
+          <unit exponent="1" kind="coulomb" multiplier="1" scale="0"/>
+          <unit exponent="-1" kind="mole" multiplier="1" scale="-9"/>
+        </listOfUnits>
+      </unitDefinition>
+      <unitDefinition id="molecules_pmol_1">
+        <listOfUnits>
+          <unit exponent="1" kind="item" multiplier="1" scale="0"/>
+          <unit exponent="-1" kind="mole" multiplier="1" scale="-12"/>
+        </listOfUnits>
+      </unitDefinition>
+      <unitDefinition id="_one_000000000">
+        <listOfUnits>
+          <unit exponent="1" kind="dimensionless" multiplier="1000000000" scale="0"/>
+        </listOfUnits>
+      </unitDefinition>
+      <unitDefinition id="mV_C_K_1_mol_1">
+        <listOfUnits>
+          <unit exponent="1" kind="volt" multiplier="1" scale="-3"/>
+          <unit exponent="1" kind="coulomb" multiplier="1" scale="0"/>
+          <unit exponent="-1" kind="kelvin" multiplier="1" scale="0"/>
+          <unit exponent="-1" kind="mole" multiplier="1" scale="0"/>
+        </listOfUnits>
+      </unitDefinition>
+      <unitDefinition id="mV_V_1">
+        <listOfUnits>
+          <unit exponent="1" kind="dimensionless" multiplier="1" scale="0"/>
+        </listOfUnits>
+      </unitDefinition>
+      <unitDefinition id="uM_um3_molecules_1">
+        <listOfUnits>
+          <unit exponent="1" kind="mole" multiplier="1" scale="-6"/>
+          <unit exponent="-1" kind="litre" multiplier="1" scale="0"/>
+          <unit exponent="3" kind="metre" multiplier="1" scale="-6"/>
+          <unit exponent="-1" kind="item" multiplier="1" scale="0"/>
+        </listOfUnits>
+      </unitDefinition>
+      <unitDefinition id="molecules_um_3_s_1">
+        <listOfUnits>
+          <unit exponent="1" kind="item" multiplier="1" scale="0"/>
+          <unit exponent="-3" kind="metre" multiplier="1" scale="-6"/>
+          <unit exponent="-1" kind="second" multiplier="1" scale="0"/>
+        </listOfUnits>
+      </unitDefinition>
+      <unitDefinition id="um3_s_1_molecules_1">
+        <listOfUnits>
+          <unit exponent="3" kind="metre" multiplier="1" scale="-6"/>
+          <unit exponent="-1" kind="second" multiplier="1" scale="0"/>
+          <unit exponent="-1" kind="item" multiplier="1" scale="0"/>
+        </listOfUnits>
+      </unitDefinition>
+    </listOfUnitDefinitions>
+    <listOfCompartments>
+      <compartment constant="true" id="cell" name="cell" size="4.1887902047863905" spatialDimensions="3" units="um3"/>
+      <compartment constant="true" id="EC" name="EC" size="8" spatialDimensions="3" units="um3"/>
+      <compartment constant="true" id="PM" name="PM" size="12.566370614359172" spatialDimensions="2" units="um2"/>
+    </listOfCompartments>
+    <listOfSpecies>
+      <species boundaryCondition="false" compartment="cell" constant="false" hasOnlySubstanceUnits="true" id="mRNA_R" initialAmount="0" substanceUnits="molecules"/>
+      <species boundaryCondition="false" compartment="cell" constant="false" hasOnlySubstanceUnits="true" id="A" initialAmount="0" substanceUnits="molecules"/>
+      <species boundaryCondition="false" compartment="cell" constant="false" hasOnlySubstanceUnits="true" id="R" initialAmount="0" substanceUnits="molecules"/>
+      <species boundaryCondition="false" compartment="cell" constant="false" hasOnlySubstanceUnits="true" id="PrmA" substanceUnits="molecules"/>
+      <species boundaryCondition="false" compartment="cell" constant="false" hasOnlySubstanceUnits="true" id="PrmR" substanceUnits="molecules"/>
+      <species boundaryCondition="false" compartment="cell" constant="false" hasOnlySubstanceUnits="true" id="C" initialAmount="0" substanceUnits="molecules"/>
+      <species boundaryCondition="false" compartment="cell" constant="false" hasOnlySubstanceUnits="true" id="PrmA_bound" initialAmount="0" substanceUnits="molecules"/>
+      <species boundaryCondition="false" compartment="cell" constant="false" hasOnlySubstanceUnits="true" id="PrmR_bound" initialAmount="0" substanceUnits="molecules"/>
+      <species boundaryCondition="false" compartment="cell" constant="false" hasOnlySubstanceUnits="true" id="mRNA_A_" initialAmount="0" substanceUnits="molecules"/>
+    </listOfSpecies>
+    <listOfParameters>
+      <parameter constant="true" id="common_delta_A" units="s_1" value="1"/>
+      <parameter constant="true" id="_T_" units="K" value="300"/>
+      <parameter constant="true" id="_PI_" units="_one_" value="3.141592653589793"/>
+      <parameter constant="true" id="_F_" units="C_mol_1" value="9.64853321E4"/>
+      <parameter constant="true" id="_F_nmol_" units="C_nmol_1" value="9.64853321E-5"/>
+      <parameter constant="true" id="_N_pmol_" units="molecules_pmol_1" value="6.02214179E11"/>
+      <parameter constant="true" id="_K_GHK_" units="_one_000000000" value="1E-9"/>
+      <parameter constant="true" id="_R_" units="mV_C_K_1_mol_1" value="8314.46261815"/>
+      <parameter constant="true" id="K_millivolts_per_volt" units="mV_V_1" value="1000"/>
+      <parameter constant="true" id="KMOLE" units="uM_um3_molecules_1" value="0.001660538783162726"/>
+      <parameter constant="true" id="Kr_C_decay" units="s_1" value="0"/>
+      <parameter constant="false" id="Kf_C_decay" units="s_1"/>
+      <parameter constant="false" id="Kf_A_decay" units="s_1"/>
+      <parameter constant="true" id="Kf_mRNA_A_decay" units="s_1" value="10"/>
+      <parameter constant="true" id="Kf_mRNA_R_decay" units="s_1" value="0.5"/>
+      <parameter constant="true" id="Kr_AR_binding" units="s_1" value="0"/>
+      <parameter constant="false" id="Kf_AR_binding" units="um3_s_1_molecules_1"/>
+      <parameter constant="true" id="delta_R_R_decay" units="s_1" value="0.2"/>
+      <parameter constant="false" id="Kf_R_decay" units="s_1"/>
+      <parameter constant="true" id="Kr_A_trnscr" units="um3_s_1_molecules_1" value="0"/>
+      <parameter constant="true" id="alphaA_A_trnscr" units="s_1" value="50"/>
+      <parameter constant="false" id="Kf_A_trnscr" units="s_1"/>
+      <parameter constant="true" id="Kr_active_A_trnscr" units="um3_s_1_molecules_1" value="0"/>
+      <parameter constant="true" id="alphaA_prmbound_active_A_trnscr" units="s_1" value="500"/>
+      <parameter constant="false" id="Kf_active_A_trnscr" units="s_1"/>
+      <parameter constant="true" id="Kr_R_trnsc" units="um3_s_1_molecules_1" value="0"/>
+      <parameter constant="true" id="alphaR_R_trnsc" units="s_1" value="0.01"/>
+      <parameter constant="false" id="Kf_R_trnsc" units="s_1"/>
+      <parameter constant="true" id="Kr_active_R_trnsc" units="um3_s_1_molecules_1" value="0"/>
+      <parameter constant="true" id="alphaR_prmbound_active_R_trnsc" units="s_1" value="50"/>
+      <parameter constant="false" id="Kf_active_R_trnsc" units="s_1"/>
+      <parameter constant="true" id="Kr_PrmA_activation" units="s_1" value="50"/>
+      <parameter constant="false" id="Kf_PrmA_activation" units="um3_s_1_molecules_1"/>
+      <parameter constant="true" id="Kr_PrmR_activation" units="s_1" value="100"/>
+      <parameter constant="false" id="Kf_PrmR_activation" units="um3_s_1_molecules_1"/>
+      <parameter constant="true" id="Kr_R_trnsl" units="um3_s_1_molecules_1" value="0"/>
+      <parameter constant="true" id="betaR_R_trnsl" units="s_1" value="5"/>
+      <parameter constant="false" id="Kf_R_trnsl" units="s_1"/>
+      <parameter constant="true" id="Kr_A_trnsl" units="um3_s_1_molecules_1" value="0"/>
+      <parameter constant="true" id="betaA_A_trnsl" units="s_1" value="50"/>
+      <parameter constant="false" id="Kf_A_trnsl" units="s_1"/>
+    </listOfParameters>
+    <listOfInitialAssignments>
+      <initialAssignment symbol="PrmA">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">        
+          <apply>
+            <divide/>
+            <apply>
+              <times/>
+              <cn> 2522.5488541786776 </cn>
+              <ci> KMOLE </ci>
+            </apply>
+            <ci> cell </ci>
+          </apply>
+        </math>
+            </initialAssignment>
+      <initialAssignment symbol="PrmR">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">        
+          <apply>
+            <divide/>
+            <apply>
+              <times/>
+              <cn> 2522.5488541786776 </cn>
+              <ci> KMOLE </ci>
+            </apply>
+            <ci> cell </ci>
+          </apply>
+        </math>
+            </initialAssignment>
+    </listOfInitialAssignments>
+    <listOfRules>
+      <assignmentRule variable="Kf_C_decay">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">        
+          <ci> common_delta_A </ci>
+        </math>
+            </assignmentRule>
+      <assignmentRule variable="Kf_A_decay">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">        
+          <ci> common_delta_A </ci>
+        </math>
+            </assignmentRule>
+      <assignmentRule variable="Kf_AR_binding">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">        
+          <apply>
+            <divide/>
+            <cn> 0.0033210775663254518 </cn>
+            <ci> KMOLE </ci>
+          </apply>
+        </math>
+            </assignmentRule>
+      <assignmentRule variable="Kf_R_decay">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">        
+          <ci> delta_R_R_decay </ci>
+        </math>
+            </assignmentRule>
+      <assignmentRule variable="Kf_A_trnscr">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">        
+          <ci> alphaA_A_trnscr </ci>
+        </math>
+            </assignmentRule>
+      <assignmentRule variable="Kf_active_A_trnscr">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">        
+          <ci> alphaA_prmbound_active_A_trnscr </ci>
+        </math>
+            </assignmentRule>
+      <assignmentRule variable="Kf_R_trnsc">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">        
+          <ci> alphaR_R_trnsc </ci>
+        </math>
+            </assignmentRule>
+      <assignmentRule variable="Kf_active_R_trnsc">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">        
+          <ci> alphaR_prmbound_active_R_trnsc </ci>
+        </math>
+            </assignmentRule>
+      <assignmentRule variable="Kf_PrmA_activation">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">        
+          <apply>
+            <divide/>
+            <cn> 0.0016605387831627259 </cn>
+            <ci> KMOLE </ci>
+          </apply>
+        </math>
+            </assignmentRule>
+      <assignmentRule variable="Kf_PrmR_activation">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">        
+          <apply>
+            <divide/>
+            <cn> 0.0016605387831627259 </cn>
+            <ci> KMOLE </ci>
+          </apply>
+        </math>
+            </assignmentRule>
+      <assignmentRule variable="Kf_R_trnsl">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">        
+          <ci> betaR_R_trnsl </ci>
+        </math>
+            </assignmentRule>
+      <assignmentRule variable="Kf_A_trnsl">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">        
+          <ci> betaA_A_trnsl </ci>
+        </math>
+            </assignmentRule>
+    </listOfRules>
+    <listOfReactions>
+      <reaction fast="false" id="C_decay" name="C_decay" reversible="true">
+        <listOfReactants>
+          <speciesReference constant="true" id="C_decay_Cr" species="C" stoichiometry="1"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference constant="true" id="C_decay_Rp" species="R" stoichiometry="1"/>
+        </listOfProducts>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <apply>
+                <minus/>
+                <apply>
+                  <times/>
+                  <ci> C </ci>
+                  <ci> Kf_C_decay </ci>
+                </apply>
+                <apply>
+                  <times/>
+                  <ci> Kr_C_decay </ci>
+                  <ci> R </ci>
+                </apply>
+              </apply>
+              <ci> cell </ci>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction fast="false" id="A_decay" name="A_decay" reversible="true">
+        <listOfReactants>
+          <speciesReference constant="true" id="A_decay_Ar" species="A" stoichiometry="1"/>
+        </listOfReactants>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <apply>
+                <times/>
+                <ci> A </ci>
+                <ci> Kf_A_decay </ci>
+              </apply>
+              <ci> cell </ci>
+            </apply>
+          </math>
+                  <listOfLocalParameters>
+            <localParameter id="Kr" units="molecules_um_3_s_1" value="0"/>
+          </listOfLocalParameters>
+        </kineticLaw>
+      </reaction>
+      <reaction fast="false" id="mRNA_A_decay" name="mRNA_A_decay" reversible="true">
+        <listOfReactants>
+          <speciesReference constant="true" id="mRNA_A_decay_mRNA_A_r" species="mRNA_A_" stoichiometry="1"/>
+        </listOfReactants>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <apply>
+                <times/>
+                <ci> Kf_mRNA_A_decay </ci>
+                <ci> mRNA_A_ </ci>
+              </apply>
+              <ci> cell </ci>
+            </apply>
+          </math>
+                  <listOfLocalParameters>
+            <localParameter id="Kr" units="molecules_um_3_s_1" value="0"/>
+          </listOfLocalParameters>
+        </kineticLaw>
+      </reaction>
+      <reaction fast="false" id="mRNA_R_decay" name="mRNA_R_decay" reversible="true">
+        <listOfReactants>
+          <speciesReference constant="true" id="mRNA_R_decay_mRNA_Rr" species="mRNA_R" stoichiometry="1"/>
+        </listOfReactants>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <apply>
+                <times/>
+                <ci> Kf_mRNA_R_decay </ci>
+                <ci> mRNA_R </ci>
+              </apply>
+              <ci> cell </ci>
+            </apply>
+          </math>
+                  <listOfLocalParameters>
+            <localParameter id="Kr" units="molecules_um_3_s_1" value="0"/>
+          </listOfLocalParameters>
+        </kineticLaw>
+      </reaction>
+      <reaction fast="false" id="AR_binding" name="AR_binding" reversible="true">
+        <listOfReactants>
+          <speciesReference constant="true" id="AR_binding_Ar" species="A" stoichiometry="1"/>
+          <speciesReference constant="true" id="AR_binding_Rr" species="R" stoichiometry="1"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference constant="true" id="AR_binding_Cp" species="C" stoichiometry="1"/>
+        </listOfProducts>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <apply>
+                <plus/>
+                <apply>
+                  <minus/>
+                  <apply>
+                    <times/>
+                    <ci> C </ci>
+                    <ci> Kr_AR_binding </ci>
+                  </apply>
+                </apply>
+                <apply>
+                  <times/>
+                  <apply>
+                    <times/>
+                    <ci> A </ci>
+                    <ci> Kf_AR_binding </ci>
+                  </apply>
+                  <ci> R </ci>
+                </apply>
+              </apply>
+              <ci> cell </ci>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction fast="false" id="R_decay" name="R_decay" reversible="true">
+        <listOfReactants>
+          <speciesReference constant="true" id="R_decay_Rr" species="R" stoichiometry="1"/>
+        </listOfReactants>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <apply>
+                <times/>
+                <ci> Kf_R_decay </ci>
+                <ci> R </ci>
+              </apply>
+              <ci> cell </ci>
+            </apply>
+          </math>
+                  <listOfLocalParameters>
+            <localParameter id="Kr" units="molecules_um_3_s_1" value="0"/>
+          </listOfLocalParameters>
+        </kineticLaw>
+      </reaction>
+      <reaction fast="false" id="A_trnscr" name="A_trnscr" reversible="true">
+        <listOfReactants>
+          <speciesReference constant="true" id="A_trnscr_PrmAr" species="PrmA" stoichiometry="1"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference constant="true" id="A_trnscr_mRNA_A_p" species="mRNA_A_" stoichiometry="1"/>
+          <speciesReference constant="true" id="A_trnscr_PrmAp" species="PrmA" stoichiometry="1"/>
+        </listOfProducts>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <apply>
+                <minus/>
+                <apply>
+                  <times/>
+                  <ci> Kf_A_trnscr </ci>
+                  <ci> PrmA </ci>
+                </apply>
+                <apply>
+                  <times/>
+                  <apply>
+                    <times/>
+                    <ci> Kr_A_trnscr </ci>
+                    <ci> PrmA </ci>
+                  </apply>
+                  <ci> mRNA_A_ </ci>
+                </apply>
+              </apply>
+              <ci> cell </ci>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction fast="false" id="active_A_trnscr" name="active_A_trnscr" reversible="true">
+        <listOfReactants>
+          <speciesReference constant="true" id="active_A_trnscr_PrmA_boundr" species="PrmA_bound" stoichiometry="1"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference constant="true" id="active_A_trnscr_mRNA_A_p" species="mRNA_A_" stoichiometry="1"/>
+          <speciesReference constant="true" id="active_A_trnscr_PrmA_boundp" species="PrmA_bound" stoichiometry="1"/>
+        </listOfProducts>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <apply>
+                <minus/>
+                <apply>
+                  <times/>
+                  <ci> Kf_active_A_trnscr </ci>
+                  <ci> PrmA_bound </ci>
+                </apply>
+                <apply>
+                  <times/>
+                  <apply>
+                    <times/>
+                    <ci> Kr_active_A_trnscr </ci>
+                    <ci> PrmA_bound </ci>
+                  </apply>
+                  <ci> mRNA_A_ </ci>
+                </apply>
+              </apply>
+              <ci> cell </ci>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction fast="false" id="R_trnsc" name="R_trnsc" reversible="true">
+        <listOfReactants>
+          <speciesReference constant="true" id="R_trnsc_PrmRr" species="PrmR" stoichiometry="1"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference constant="true" id="R_trnsc_mRNA_Rp" species="mRNA_R" stoichiometry="1"/>
+          <speciesReference constant="true" id="R_trnsc_PrmRp" species="PrmR" stoichiometry="1"/>
+        </listOfProducts>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <apply>
+                <minus/>
+                <apply>
+                  <times/>
+                  <ci> Kf_R_trnsc </ci>
+                  <ci> PrmR </ci>
+                </apply>
+                <apply>
+                  <times/>
+                  <apply>
+                    <times/>
+                    <ci> Kr_R_trnsc </ci>
+                    <ci> PrmR </ci>
+                  </apply>
+                  <ci> mRNA_R </ci>
+                </apply>
+              </apply>
+              <ci> cell </ci>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction fast="false" id="active_R_trnsc" name="active_R_trnsc" reversible="true">
+        <listOfReactants>
+          <speciesReference constant="true" id="active_R_trnsc_PrmR_boundr" species="PrmR_bound" stoichiometry="1"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference constant="true" id="active_R_trnsc_mRNA_Rp" species="mRNA_R" stoichiometry="1"/>
+          <speciesReference constant="true" id="active_R_trnsc_PrmR_boundp" species="PrmR_bound" stoichiometry="1"/>
+        </listOfProducts>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <apply>
+                <minus/>
+                <apply>
+                  <times/>
+                  <ci> Kf_active_R_trnsc </ci>
+                  <ci> PrmR_bound </ci>
+                </apply>
+                <apply>
+                  <times/>
+                  <apply>
+                    <times/>
+                    <ci> Kr_active_R_trnsc </ci>
+                    <ci> PrmR_bound </ci>
+                  </apply>
+                  <ci> mRNA_R </ci>
+                </apply>
+              </apply>
+              <ci> cell </ci>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction fast="false" id="PrmA_activation" name="PrmA_activation" reversible="true">
+        <listOfReactants>
+          <speciesReference constant="true" id="PrmA_activation_PrmAr" species="PrmA" stoichiometry="1"/>
+          <speciesReference constant="true" id="PrmA_activation_Ar" species="A" stoichiometry="1"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference constant="true" id="PrmA_activation_PrmA_boundp" species="PrmA_bound" stoichiometry="1"/>
+        </listOfProducts>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <apply>
+                <minus/>
+                <apply>
+                  <times/>
+                  <apply>
+                    <times/>
+                    <ci> A </ci>
+                    <ci> Kf_PrmA_activation </ci>
+                  </apply>
+                  <ci> PrmA </ci>
+                </apply>
+                <apply>
+                  <times/>
+                  <ci> Kr_PrmA_activation </ci>
+                  <ci> PrmA_bound </ci>
+                </apply>
+              </apply>
+              <ci> cell </ci>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction fast="false" id="PrmR_activation" name="PrmR_activation" reversible="true">
+        <listOfReactants>
+          <speciesReference constant="true" id="PrmR_activation_PrmRr" species="PrmR" stoichiometry="1"/>
+          <speciesReference constant="true" id="PrmR_activation_Ar" species="A" stoichiometry="1"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference constant="true" id="PrmR_activation_PrmR_boundp" species="PrmR_bound" stoichiometry="1"/>
+        </listOfProducts>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <apply>
+                <minus/>
+                <apply>
+                  <times/>
+                  <apply>
+                    <times/>
+                    <ci> A </ci>
+                    <ci> Kf_PrmR_activation </ci>
+                  </apply>
+                  <ci> PrmR </ci>
+                </apply>
+                <apply>
+                  <times/>
+                  <ci> Kr_PrmR_activation </ci>
+                  <ci> PrmR_bound </ci>
+                </apply>
+              </apply>
+              <ci> cell </ci>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction fast="false" id="R_trnsl" name="R_trnsl" reversible="true">
+        <listOfReactants>
+          <speciesReference constant="true" id="R_trnsl_mRNA_Rr" species="mRNA_R" stoichiometry="1"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference constant="true" id="R_trnsl_mRNA_Rp" species="mRNA_R" stoichiometry="1"/>
+          <speciesReference constant="true" id="R_trnsl_Rp" species="R" stoichiometry="1"/>
+        </listOfProducts>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <apply>
+                <minus/>
+                <apply>
+                  <times/>
+                  <ci> Kf_R_trnsl </ci>
+                  <ci> mRNA_R </ci>
+                </apply>
+                <apply>
+                  <times/>
+                  <apply>
+                    <times/>
+                    <ci> Kr_R_trnsl </ci>
+                    <ci> R </ci>
+                  </apply>
+                  <ci> mRNA_R </ci>
+                </apply>
+              </apply>
+              <ci> cell </ci>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction fast="false" id="A_trnsl" name="A_trnsl" reversible="true">
+        <listOfReactants>
+          <speciesReference constant="true" id="A_trnsl_mRNA_A_r" species="mRNA_A_" stoichiometry="1"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference constant="true" id="A_trnsl_Ap" species="A" stoichiometry="1"/>
+          <speciesReference constant="true" id="A_trnsl_mRNA_A_p" species="mRNA_A_" stoichiometry="1"/>
+        </listOfProducts>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <apply>
+                <minus/>
+                <apply>
+                  <times/>
+                  <ci> Kf_A_trnsl </ci>
+                  <ci> mRNA_A_ </ci>
+                </apply>
+                <apply>
+                  <times/>
+                  <apply>
+                    <times/>
+                    <ci> A </ci>
+                    <ci> Kr_A_trnsl </ci>
+                  </apply>
+                  <ci> mRNA_A_ </ci>
+                </apply>
+              </apply>
+              <ci> cell </ci>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+    </listOfReactions>
+  </model>
+</sbml>

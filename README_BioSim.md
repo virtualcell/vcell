@@ -40,7 +40,7 @@ BioSimulators-compliant command-line interface to the [VCell](http://vcell.org/)
 		* Select `vcell-cli` as `Use classpath of module:`
 8. Click `apply` and `build`
 
-### To setup the project in eclipse
+### To setup the project in Eclipse
   * Requirements:  
         Git, Maven, Eclipse IDE and Java JDK 1.8
   1. Open terminal, navigate to the Eclipse workspace folder.
@@ -55,7 +55,14 @@ BioSimulators-compliant command-line interface to the [VCell](http://vcell.org/)
         -Dvcell.installDir=<Your-Project-Directory-Path>
         -Dvcell.softwareVersion="VCell_7.3.0.0"
         ```
-           
+
+### Program arguments for both Eclipse and IntelliJ
+
+1. For running a simulation from OMEX and VCML files as an input:
+    `-i "/PATH/TO/OMEX/OR/VCML" -o "/PATH/TO/SAVE"`
+2. For converting a VCML to OMEX file:
+    `convert -i "/PATH/TO/VCML" -o "/PATH/TO/SAVE/OMEX"`
+ 
            
 ### Maven installation package
 
@@ -80,7 +87,7 @@ optional arguments:
   -q, --quiet           suppress all console output
   -i ARCHIVE, --archive ARCHIVE
                         Path to OMEX file which contains one or more SED-ML-
-                        encoded simulation experiments
+                        encoded simulation experiments or VCML file
   -o OUT_DIR, --out-dir OUT_DIR
                         Directory to save outputs
   -v, --version         show program's version number and exit

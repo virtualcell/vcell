@@ -15,7 +15,7 @@ Simulation capabilities include ODEs, Reaction-Diffusion equations within cellul
 
 ## Contents
 * [VCell software](#vcell-software-consists-of)
-* [Download Vcell](#download-vcell)
+* [Download VCell](#download-vcell)
 * [Building VCell](#building-vcell)
 * [Building and Running VCell Client as a standalone tool](#building-and-running-vcell-client-as-a-standalone-tool)
 * [Eclipse Setup for Windows](#eclipse-setup-for-windows)
@@ -30,9 +30,9 @@ Simulation capabilities include ODEs, Reaction-Diffusion equations within cellul
 3) simulation solvers written in C++/Fortran/Python and developed as part of the project as well as third party solvers and analysis. 
 
 ### Download VCell
-- [vcell](http://vcell.org) which hosts a free VCell Server for cluster computing and shared database.  
+- [VCell](http://vcell.org) which hosts a free VCell Server for cluster computing and shared database.  
 - Prebuilt installers for vcell-client are available for [Windows](https://vcell.org/webstart/Rel/VCell_Rel_windows-x64_latest_64bit.exe), [Mac](https://vcell.org/webstart/Rel/VCell_Rel_macos_latest_64bit.dmg) and [Linux](https://vcell.org/webstart/Rel/VCell_Rel_unix_latest_64bit.sh).  
-- [Webstart](http://vcell.org/webstart) location of VCell clients web page links to   
+- [WebStart](http://vcell.org/webstart) location of VCell clients web page links to   
 - Public installers path naming scheme= {Alpha,Beta,Rel}/VCell_{Alpha,Beta,Rel}_{macos,unix,windows-x64,windows}_latest_{64,32}bit.{dmg,sh.exe}  
 - Install4J updates.xml (read remotely by VCell client when starting to determine if a newer version of VCell has been deployed)  
 - BioFormats jar (used by running VCell clients when importing image data, can't be shipped directly with VCell, license issue)
