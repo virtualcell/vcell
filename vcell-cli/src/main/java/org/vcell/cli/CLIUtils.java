@@ -310,6 +310,7 @@ public class CLIUtils {
                                 mxlen = Integer.max(mxlen, data.length);
                                 values.put(var, data);
                             }
+
                             //String outDirRoot = outDirForCurrentSedml.toString().substring(0, outDirForCurrentSedml.toString().lastIndexOf(System.getProperty("file.separator")));
                             CLIUtils.updateDatasetStatusYml(sedmlLocation, oo.getId(), dataset.getId(), Status.SUCCEEDED, outDir);
                             CLIUtils.updateTaskStatusYml(sedmlLocation, task.getId(), Status.SUCCEEDED, outDir);
@@ -536,7 +537,7 @@ public class CLIUtils {
         CLIUtils.execShellCommand(permissionArgs);
     }
 
-    public static void convertCSVtoHDF(String omexFilePath, String outputDir) {
+    public static void convertCSVtoHDF(String filePath, String omexFilePath, String outputDir) {
         String[] cliArgs;
 //        Path csvDirPath = Paths.get(csvDir);
 //        Path sedmlFilePath = Paths.get(sedmlFilePathStr);

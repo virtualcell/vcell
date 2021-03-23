@@ -17,7 +17,7 @@ public class CLIHandler {
     String javaVendor = getProperty("java.vendor");
     String machineArch = getProperty("os.arch");
 
-    CLIHandler(String[] args) {
+    public CLIHandler(String[] args) {
         CommandLineParser parser = new DefaultParser();
 
         String usage = "usage: VCell [-h] [-q] -i ARCHIVE [-o OUT_DIR] [-v]";
@@ -62,12 +62,12 @@ public class CLIHandler {
         Option input = new Option("i",
                 "archive",
                 true,
-                "Path to OMEX/COMBINE Archive file which contains one or more SED-ML encoded simulation experiments");
+                "Path to OMEX/COMBINE Archive which contains one or more SED-ML encoded simulation experiments, or VCML file");
 
         Option output = new Option("o",
                 "out-dir",
                 true,
-                "Directory to save outputs");
+                "Directory to save outputs or the converted OMEX Archive from VCML file");
 
         Option version = new Option("v",
                 "version",
