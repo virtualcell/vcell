@@ -1,1 +1,1 @@
-### The jar file was unpacked and repacked to append the logs to instead redirecting to `jsbml.log`
+### The jar file was unpacked and repacked to append the logs to console instead redirecting to `jsbml.log`
