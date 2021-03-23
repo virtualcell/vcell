@@ -70,12 +70,12 @@ public class BioModelWindowManager extends DocumentWindowManager implements java
 	private PropertyChangeListener miriamPropertyChangeListener =
 		new PropertyChangeListener(){
 			public void propertyChange(PropertyChangeEvent evt) {
-				closeMIRIAMWindow();
+//				closeMIRIAMWindow();
 			}};
 	private VetoableChangeListener miriamVetoableChangeListener =
 		new VetoableChangeListener(){
 			public void vetoableChange(PropertyChangeEvent evt) throws PropertyVetoException {
-				closeMIRIAMWindow();
+//				closeMIRIAMWindow();
 			}};
 			
 	private PathwayImporter pathwayImporter = new PathwayImporter();

@@ -236,6 +236,10 @@ services:
 
       - simdataCacheSize=${VCELL_SIMDATA_CACHE_SIZE:-10000000}
 
+      - dburl=${VCELL_DB_URL}
+      - dbdriver=${VCELL_DB_DRIVER}
+      - dbuser=${VCELL_DB_USER}
+
       - jmsuser=clientUser
       - jmshost_int_internal=activemqint
       - jmsport_int_internal=61616
@@ -251,6 +255,7 @@ services:
       - "${VCELL_SIMDATADIR_ARCHIVE_HOST}:${VCELL_SIMDATADIR_ARCHIVE_HOST}"
       - "${VCELL_EXPORTDIR_HOST}:/exportdir"
     secrets:
+      - dbpswd
       - jmspswd
     networks:
       - vcellnet

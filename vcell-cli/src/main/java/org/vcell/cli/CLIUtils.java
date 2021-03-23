@@ -10,18 +10,20 @@ import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.util.ColumnDescription;
 import com.google.common.base.Joiner;
 import com.google.common.io.Files;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jlibsedml.*;
+import org.jlibsedml.execution.IXPathToVariableIDResolver;
+import org.jlibsedml.modelsupport.SBMLSupport;
 import org.vcell.stochtest.TimeSeriesMultitrialData;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.*;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 public class CLIUtils {
     // Docker hardcode path
@@ -243,7 +245,7 @@ public class CLIUtils {
         }
     }
 
-    public static HashMap<String, File> generateReportsAsCSV(SedML sedml, HashMap<String, ODESolverResultSet> resultsHash, File outDir, String sedmlName) {
+    public static HashMap<String, File> generateReportsAsCSV(SedML sedml, HashMap<String, ODESolverResultSet> resultsHash, File outDirForCurrentSedml, String outDir, String sedmlLocation) {
         // finally, the real work
         HashMap<String, File> reportsHash = new HashMap<>();
         List<Output> ooo = sedml.getOutputs();
@@ -254,6 +256,14 @@ public class CLIUtils {
                 System.out.println("Generating report " + oo.getId());
                 try {
                     StringBuilder sb = new StringBuilder();
+                    
+                    // we go through each entry (dataset) in the list of datasets
+                    // for each dataset, we use the data reference to obtain the data generator
+                    // ve get the list of variables associated with the data reference
+                    //   each variable has an id (which is the data reference above, the task and the sbml symbol urn
+                    //   for each variable we recover the task, from the task we get the sbml model
+                    //   we search the sbml model to find the vcell variable name associated with the urn
+                    
                     List<DataSet> datasets = ((Report) oo).getListOfDataSets();
                     for (DataSet dataset : datasets) {
                         DataGenerator datagen = sedml.getDataGeneratorWithId(dataset.getDataReference());
@@ -266,20 +276,44 @@ public class CLIUtils {
                         HashMap values = new HashMap<Variable, double[]>();
                         for (Variable var : vars) {
                             AbstractTask task = sedml.getTaskWithId(var.getReference());
+                            Model model = sedml.getModelWithId(task.getModelReference());
+                            IXPathToVariableIDResolver variable2IDResolver = new SBMLSupport();
+                        	// must get variable ID from SBML model
+                        	String sbmlVarId = "";
+                        	if (var.getSymbol() != null) {
+                        		// it is a predefined symbol
+                        		sbmlVarId = var.getSymbol().name();
+                        		// translate SBML official symbols
+                        		// TIME is t, etc.
+                        		switch (sbmlVarId) {
+								case "TIME":
+									// this is VCell reserved symbold for time
+									sbmlVarId = "t";
+									break;
+								}
+                        		// TODO
+                        		// check spec for other symbols
+                        	} else {
+                        		// it is an XPATH target in model
+                        		String target = var.getTarget();
+                        		sbmlVarId = variable2IDResolver.getIdFromXPathIdentifer(target);
+                        	}
+                        		
                             if (task instanceof RepeatedTask) {
                                 supportedDataset = false;
                             } else {
                                 varIDs.add(var.getId());
                                 assert task != null;
                                 ODESolverResultSet results = resultsHash.get(task.getId());
-                                int column = results.findColumn(var.getName());
+                                int column = results.findColumn(sbmlVarId);
                                 double[] data = results.extractColumn(column);
                                 mxlen = Integer.max(mxlen, data.length);
                                 values.put(var, data);
                             }
-                            String outDirRoot = outDir.toString().substring(0, outDir.toString().lastIndexOf(System.getProperty("file.separator")));
-                            CLIUtils.updateDatasetStatusYml(sedmlName, oo.getId(), dataset.getId(), Status.SUCCEEDED, outDirRoot);
-                            CLIUtils.updateTaskStatusYml(sedmlName, task.getId(), Status.SUCCEEDED, outDirRoot);
+
+                            //String outDirRoot = outDirForCurrentSedml.toString().substring(0, outDirForCurrentSedml.toString().lastIndexOf(System.getProperty("file.separator")));
+                            CLIUtils.updateDatasetStatusYml(sedmlLocation, oo.getId(), dataset.getId(), Status.SUCCEEDED, outDir);
+                            CLIUtils.updateTaskStatusYml(sedmlLocation, task.getId(), Status.SUCCEEDED, outDir);
                         }
                         if (!supportedDataset) {
                             System.err.println("Dataset " + dataset.getId() + " references unsupported RepeatedTask and is being skipped");
@@ -313,7 +347,7 @@ public class CLIUtils {
                         sb.deleteCharAt(sb.lastIndexOf(","));
                         sb.append("\n");
                     }
-                    File f = new File(outDir, oo.getId() + ".csv");
+                    File f = new File(outDirForCurrentSedml, oo.getId() + ".csv");
                     PrintWriter out = new PrintWriter(f);
                     out.print(sb.toString());
                     out.flush();
@@ -439,10 +473,12 @@ public class CLIUtils {
         int exitCode = -10;
         String joinArg = Joiner.on(" ").join(args);
         // Uncomment to debug the command execution
-//            System.out.println("Executing the command: `" + joinArg + "`");
+//        System.out.println("Executing the command: `" + joinArg + "`");
         File log = stdOutFile;
         try {
             ProcessBuilder builder = new ProcessBuilder(args);
+            // For debugging
+//            builder.redirectOutput(ProcessBuilder.Redirect.INHERIT);
 //            builder.redirectErrorStream(true);
             // STDOUT redirected to stdOut.txt file
 //            builder.redirectOutput(ProcessBuilder.Redirect.appendTo(log));
@@ -501,11 +537,11 @@ public class CLIUtils {
         CLIUtils.execShellCommand(permissionArgs);
     }
 
-    public static void convertCSVtoHDF(String csvDir, String sedmlFilePathStr, String outDir) {
+    public static void convertCSVtoHDF(String filePath, String omexFilePath, String outputDir) {
         String[] cliArgs;
-        Path csvDirPath = Paths.get(csvDir);
-        Path sedmlFilePath = Paths.get(sedmlFilePathStr);
-        Path outDirPath = Paths.get(outDir);
+//        Path csvDirPath = Paths.get(csvDir);
+//        Path sedmlFilePath = Paths.get(sedmlFilePathStr);
+//        Path outDirPath = Paths.get(outDir);
 //        CLIUtils.giveOpenPermissions(sedmlFilePathStr);
 
         // Convert CSV to HDF5
@@ -517,12 +553,12 @@ public class CLIUtils {
         * */
         if (checkPythonInstallation() == 0) {
             if (isWindowsPlatform) {
-                cliArgs = new String[]{"python", cliPath.toString(), "execSedDoc", sedmlFilePath.toString(), workingDirectory.toString(), outDirPath.toString(), csvDirPath.toString()};
+                cliArgs = new String[]{"python", cliPath.toString(), "execSedDoc", omexFilePath, outputDir};
             } else {
-                cliArgs = new String[]{"python3", cliPath.toString(), "execSedDoc", sedmlFilePath.toString(), workingDirectory.toString(), outDirPath.toString(), csvDirPath.toString()};
+                cliArgs = new String[]{"python3", cliPath.toString(), "execSedDoc", omexFilePath, outputDir};
             }
             execShellCommand(cliArgs);
-            System.out.println("HDF conversion completed in '" + outDir + "'\n");
+            System.out.println("HDF conversion completed in '" + outputDir + "'\n");
         } else System.err.println("HDF5 conversion failed...");
 
     }
@@ -611,6 +647,45 @@ public class CLIUtils {
             else execShellCommand(new String[]{"python3", cliPath.toString(), "transposeVcmlCsv", csvFilePath});
         } else System.err.println("Failed transposing VCML resultant CSV...");
     }
+
+
+    private static ArrayList<File> listFilesForFolder(File dirPath) {
+        File dir = new File(String.valueOf(dirPath));
+        String[] extensions = new String[] { "csv" };
+        ArrayList<File> csvFilesList = new ArrayList<>();
+        List<File> files = (List<File>) FileUtils.listFiles(dir, extensions, true);
+        for (File file : files) {
+            csvFilesList.add(file);
+        }
+        return csvFilesList;
+    }
+
+    public static void zipResFile(File dirPath) throws IOException {
+        System.out.println("Generating zip Archive for reports");
+        ArrayList<File> srcFiles = listFilesForFolder(dirPath);
+        FileOutputStream fos = new FileOutputStream(Paths.get(dirPath.toString(), "reports.zip").toFile());
+        ZipOutputStream zipOut = new ZipOutputStream(fos);
+        for (File srcFile : srcFiles) {
+            FileInputStream fis = new FileInputStream(srcFile);
+
+            // get relative path
+            String relativePath = dirPath.toURI().relativize(srcFile.toURI()).toString();
+            ZipEntry zipEntry = new ZipEntry(relativePath);
+            zipOut.putNextEntry(zipEntry);
+
+            byte[] bytes = new byte[1024];
+            int length;
+            while((length = fis.read(bytes)) >= 0) {
+                zipOut.write(bytes, 0, length);
+            }
+            fis.close();
+        }
+        zipOut.close();
+        fos.close();
+
+
+    }
+
 
     @SuppressWarnings("UnstableApiUsage")
     public String getTempDir() {

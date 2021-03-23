@@ -101,11 +101,20 @@ public class CLIStandalone {
         } catch (Throwable exc) {
             assert omexHandler != null;
             omexHandler.deleteExtractedOmex();
-            String error = "======> FAILED OMEX handling for archive " + args[1];
+            String error = exc.getMessage() + ", error for archive " + args[1];
             throw new Exception(error);
         }
         // from here on, we need to collect errors, since some subtasks may succeed while other do not
         boolean somethingFailed = false;
+
+        // python installation
+        CLIUtils.checkPythonInstallation();
+
+        // pip install requirements before status generation
+        CLIUtils.pipInstallRequirements();
+
+        // Generate Status YAML
+        CLIUtils.generateStatusYaml(inputFile, outputDir);
         for (String sedmlLocation : sedmlLocations) {
             HashMap<String, ODESolverResultSet> resultsHash;
             HashMap<String, File> reportsHash = null;
@@ -117,11 +126,8 @@ public class CLIStandalone {
                 CLIUtils.makeDirs(outDirForCurrentSedml);
                 sedml = Libsedml.readDocument(completeSedmlPath).getSedMLModel();
                 String[] sedmlNameSplit;
-                if (CLIUtils.isWindowsPlatform) {
-                    sedmlNameSplit = sedmlLocation.split("\\\\", -2);
-                } else {
-                    sedmlNameSplit = sedmlLocation.split("/", -2);
-                }
+                if (CLIUtils.isWindowsPlatform) sedmlNameSplit = sedmlLocation.split("\\\\", -2);
+                else sedmlNameSplit = sedmlLocation.split("/", -2);
                 sedmlName = sedmlNameSplit[sedmlNameSplit.length - 1];
                 nModels = sedml.getModels().size();
                 nTasks = sedml.getTasks().size();
@@ -150,33 +156,28 @@ public class CLIStandalone {
             SolverHandler solverHandler = new SolverHandler();
             // send the the whole OMEX file since we do better handling of malformed model URIs in XMLHelper code
             ExternalDocInfo externalDocInfo = new ExternalDocInfo(new File(inputFile), true);
-            // python installation
-            CLIUtils.checkPythonInstallation();
-            // pip install requirements before status generation
-            CLIUtils.pipInstallRequirements();
-            CLIUtils.generateStatusYaml(inputFile, outputDir);
-            resultsHash = solverHandler.simulateAllSedmlTasks(externalDocInfo, sedml, outDirForCurrentSedml, sedmlName);
 
+            resultsHash = solverHandler.simulateAllTasks(externalDocInfo, sedml, outDirForCurrentSedml, outputDir, sedmlLocation);
 
             if (resultsHash.size() != 0) {
-                reportsHash = CLIUtils.generateReportsAsCSV(sedml, resultsHash, outDirForCurrentSedml, sedmlName);
+                reportsHash = CLIUtils.generateReportsAsCSV(sedml, resultsHash, outDirForCurrentSedml, outputDir, sedmlLocation);
             }
-
 
             // HDF5 conversion
             if (nReportsCount != 0)
                 CLIUtils.convertCSVtoHDF(Paths.get(outputDir, sedmlName).toString(), sedmlLocation, Paths.get(outputDir, sedmlName).toString());
 
+            // archiving res files
+            CLIUtils.zipResFile(new File(outputDir));
+
             if (resultsHash.containsValue(null) || reportsHash == null) {
                 somethingFailed = true;
             }
         }
-//        CLIUtils.finalStatusUpdate(CLIUtils.Status.SUCCEEDED, outputDir);
         omexHandler.deleteExtractedOmex();
         if (somethingFailed) {
             String error = "One or more errors encountered while executing archive " + args[1];
             CLIUtils.finalStatusUpdate(CLIUtils.Status.FAILED, outputDir);
-//            throw new Exception(error);
             System.err.println(error);
         }
     }
