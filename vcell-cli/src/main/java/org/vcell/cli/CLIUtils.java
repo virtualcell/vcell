@@ -537,12 +537,8 @@ public class CLIUtils {
         CLIUtils.execShellCommand(permissionArgs);
     }
 
-    public static void convertCSVtoHDF(String filePath, String omexFilePath, String outputDir) {
+    public static void convertCSVtoHDF(String omexFilePath, String outputDir) {
         String[] cliArgs;
-//        Path csvDirPath = Paths.get(csvDir);
-//        Path sedmlFilePath = Paths.get(sedmlFilePathStr);
-//        Path outDirPath = Paths.get(outDir);
-//        CLIUtils.giveOpenPermissions(sedmlFilePathStr);
 
         // Convert CSV to HDF5
         // TODO: Add Metadata Directory to wrap H5(Simulation_1.sedml)
