@@ -169,16 +169,19 @@ public abstract class AbstractCompiledSolver extends AbstractSolver implements j
                 fireSolverFinished();
             }
         } catch (SolverException integratorException) {
+        	integratorException.printStackTrace(System.out);
             lg.error(integratorException.getMessage(), integratorException);
             cleanup();
             setSolverStatus(new SolverStatus(SolverStatus.SOLVER_ABORTED, SimulationMessage.solverAborted(integratorException.getMessage())));
             fireSolverAborted(SimulationMessage.solverAborted(integratorException.getMessage()));
         } catch (org.vcell.util.exe.ExecutableException executableException) {
+        	executableException.printStackTrace(System.out);
             lg.error(executableException.getMessage(), executableException);
             cleanup();
             setSolverStatus(new SolverStatus(SolverStatus.SOLVER_ABORTED, SimulationMessage.solverAborted("Could not execute code: " + executableException.getMessage())));
             fireSolverAborted(SimulationMessage.solverAborted(executableException.getMessage()));
         } catch (Exception exception) {
+        	exception.printStackTrace(System.out);
             if (lg.isWarnEnabled())
                 lg.warn("AbstractODESolver.start() : Caught Throwable instead of SolverException -- THIS EXCEPTION SHOULD NOT HAPPEN!");
             lg.error(exception.getMessage(), exception);
