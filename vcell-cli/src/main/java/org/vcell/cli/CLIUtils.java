@@ -9,7 +9,6 @@ import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.util.ColumnDescription;
 import com.google.common.base.Joiner;
-import com.google.common.io.Files;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
@@ -682,9 +681,7 @@ public class CLIUtils {
 
     }
 
-
-    @SuppressWarnings("UnstableApiUsage")
-    public String getTempDir() {
-        return Files.createTempDir().getAbsolutePath();
+    public String getTempDir() throws IOException {
+        return String.valueOf(java.nio.file.Files.createTempDirectory("vcell_temp_" + UUID.randomUUID().toString()).toAbsolutePath());
     }
 }
