@@ -44,16 +44,18 @@ jobs:
           echo ${{ secrets.DOCKER_REGISTRY_TOKEN }} | docker login ghcr.io -u ${{ secrets.DOCKER_REGISTRY_USERNAME }} --password-stdin
           docker build --file docker/build/Dockerfile-vcell-cli \
                       --tag ghcr.io/biosimulators/biosimulators_vcell/vcell:latest .
-          docker push ghcr.io/biosimulators/biosimulators_vcell/vcell:latest
-
-      - name: Fetch the current version
-        id: version
-        run: echo ::set-output name=tag::$(docker run ghcr.io/virtualcell/vcell-cli:latest -v | awk -F ':' '{print $2;}' | awk -F ',' '{print $1;}' | awk -F ' ' '{print $1;}')
-
-      - name: Tag the Docker image with the current version and push
-        run: |
-          docker tag ghcr.io/biosimulators/biosimulators_vcell/vcell:latest ghcr.io/biosimulators/biosimulators_vcell/vcell:${{steps.version.outputs.tag}}
+          docker tag ghcr.io/biosimulators/biosimulators_vcell/vcell:latest ghcr.io/biosimulators/biosimulators_vcell/vcell:7.4.0.00
           docker push --all-tags ghcr.io/biosimulators/biosimulators_vcell/vcell
+
+      # TODO: Remove above hard-coded version
+      # - name: Fetch the current version
+      #  id: version
+      #  run: echo ::set-output name=tag::$(docker run ghcr.io/virtualcell/vcell-cli:latest -v | awk -F ':' '{print $2;}' | awk -F ',' '{print $1;}' | awk -F ' ' '{print $1;}')
+
+      # - name: Tag the Docker image with the current version and push
+      #  run: |
+      #    docker tag ghcr.io/biosimulators/biosimulators_vcell/vcell:latest ghcr.io/biosimulators/biosimulators_vcell/vcell:${{steps.version.outputs.tag}}
+      #   docker push --all-tags ghcr.io/biosimulators/biosimulators_vcell/vcell
 
       # Submit to BioSimulators registry
       - name: Submit to BioSimulators registry
