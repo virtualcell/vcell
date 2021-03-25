@@ -36,8 +36,10 @@ import cbit.vcell.math.ODESolverResultSetColumnDescription;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.simdata.Cachetable;
 import cbit.vcell.simdata.SimDataConstants;
 import cbit.vcell.solver.AnnotatedFunction;
+import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.stoch.NetCDFEvaluator;
 import cbit.vcell.solver.stoch.NetCDFReader;
 import cbit.vcell.solvers.FunctionFileGenerator;
@@ -51,6 +53,7 @@ import ucar.ma2.ArrayDouble;
 public class ODESimData extends ODESolverResultSet implements SimDataConstants, Serializable {
 	private String formatID = null;
 	private String mathName = null;
+	private byte[] hdf5FileBytes;
 
 /**
  * SimpleODEData constructor comment.
@@ -81,6 +84,9 @@ public ODESimData(VCDataIdentifier vcdId, ODESolverResultSet odeSolverResultSet)
 			throw new RuntimeException(e.getMessage());
 		}
 	}
+	if(odeSolverResultSet instanceof ODESimData) {
+		setHdf5FileBytes(((ODESimData)odeSolverResultSet).getHdf5FileBytes());
+	}
 }
 
 
@@ -92,6 +98,12 @@ public ODESimData(DataInputStream input) throws IOException {
 	input.close();
 }
 
+public void setHdf5FileBytes(byte[] hdf5FileBytes) {
+	this.hdf5FileBytes = hdf5FileBytes;
+}
+public byte[] getHdf5FileBytes() {
+	return hdf5FileBytes;
+}
 
 /**
  * getVariableNames method comment.

@@ -14,8 +14,10 @@ import java.awt.BorderLayout;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
 import java.util.Arrays;
 import java.util.Hashtable;
+import java.util.List;
 
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
@@ -34,6 +36,8 @@ import org.vcell.util.DataAccessException;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.document.VCDataIdentifier;
 
+import com.google.common.io.Files;
+
 import cbit.rmi.event.DataJobEvent;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
@@ -49,6 +53,11 @@ import cbit.vcell.simdata.PDEDataContext;
 import cbit.vcell.simdata.PDEDataManager;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
+import cbit.vcell.solver.ode.ODESimData;
+import ncsa.hdf.object.FileFormat;
+import ncsa.hdf.object.Group;
+import ncsa.hdf.object.HObject;
+import ncsa.hdf.object.h5.H5ScalarDS;
 /**
  * Insert the type's description here.
  * Creation date: (10/17/2005 11:22:58 PM)
@@ -91,6 +100,64 @@ private DataViewer createODEDataViewer() throws DataAccessException {
 	odeDataViewer.setOdeSolverResultSet(((ODEDataManager)dataManager).getODESolverResultSet());
 	odeDataViewer.setNFSimMolecularConfigurations(((ODEDataManager)dataManager).getNFSimMolecularConfigurations());
 	odeDataViewer.setVcDataIdentifier(dataManager.getVCDataIdentifier());
+	
+	//
+	//Example code for reading stats data from Stochastic multitrial non-histogram
+	//
+	FileFormat hdf5FileFormat = null;
+	File to = null;
+	try {
+		if(odeDataViewer.getOdeSolverResultSet() instanceof ODESimData) {
+			byte[] hdf5FileBytes = ((ODESimData)odeDataViewer.getOdeSolverResultSet()).getHdf5FileBytes();
+			if(hdf5FileBytes != null) {
+				to = File.createTempFile("odeStats_"+getSimulation().getSimulationInfo().getAuthoritativeVCSimulationIdentifier(), ".hdf5");
+				Files.write(hdf5FileBytes, to);
+				FileFormat fileFormat = FileFormat.getFileFormat(FileFormat.FILE_TYPE_HDF5);
+				if (fileFormat == null){
+					throw new Exception("Cannot find HDF5 FileFormat.");
+				}
+				// open the file with read-only access	
+				hdf5FileFormat = fileFormat.createInstance(to.getAbsolutePath(), FileFormat.READ);
+				// open the file and retrieve the file structure
+				hdf5FileFormat.open();
+				Group root = (Group)((javax.swing.tree.DefaultMutableTreeNode)hdf5FileFormat.getRootNode()).getUserObject();
+				List<HObject> postProcessMembers = ((Group)root).getMemberList();
+				for(HObject nextHObject:postProcessMembers){
+					//System.out.println(nextHObject.getName()+"\n"+nextHObject.getClass().getName());
+					H5ScalarDS h5ScalarDS = (H5ScalarDS)nextHObject;
+					h5ScalarDS.init();
+					try {
+						long[] dims = h5ScalarDS.getDims();
+						System.out.println("---"+nextHObject.getName()+" "+nextHObject.getClass().getName()+" Dimensions="+Arrays.toString(dims));
+						Object obj = h5ScalarDS.read();
+						if(dims.length == 2) {
+							//dims[0]=numTimes (will be the same as 'SimTimes' data length)
+							//dims[1]=numVars (will be the same as 'VarNames' data length)
+							//if name='StatMean' this is the same as the default data saved in the odeSolverresultSet
+							double[] columns = new double[(int)dims[1]];
+							for(int row=0;row<dims[0];row++) {
+								System.arraycopy(obj, row*columns.length, columns, 0, columns.length);
+								System.out.println(Arrays.toString(columns));
+							}
+						}else {
+							if(obj instanceof double[]) {
+								System.out.println(Arrays.toString((double[])obj));
+							}else {
+								System.out.println(Arrays.toString((String[])obj));
+							}
+						}
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+				}
+			}
+		}
+	} catch (Exception e) {
+		e.printStackTrace();
+	}finally {
+		if(hdf5FileFormat != null) {try{hdf5FileFormat.close();}catch(Exception e2) {e2.printStackTrace();}}
+		if(to != null){try{to.delete();}catch(Exception e2) {e2.printStackTrace();}}
+	}
 	return odeDataViewer;
 }
 
