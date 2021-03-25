@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.nio.file.Files;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -939,6 +940,12 @@ public synchronized ODEDataBlock getODEDataBlock() throws DataAccessException, I
 	}
 	ODEDataInfo odeDataInfo = new ODEDataInfo(vcDataId.getOwner(), vcDataId.getID(), lastModified);
 	VCAssert.assertFalse(odeSimData == null, "should have returned null already");
+	byte[] hdf5FileBytes = null;
+	File hdf5File = new File(file.getParent(),file.getName()+"_hdf5");
+	if(hdf5File.exists()) {
+		hdf5FileBytes = Files.readAllBytes(hdf5File.toPath());
+		odeSimData.setHdf5FileBytes(hdf5FileBytes);
+	}
 	return new ODEDataBlock(odeDataInfo, odeSimData);
 }
 
