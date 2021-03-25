@@ -25,7 +25,7 @@ public class OmexHandler {
     CombineArchive archive;
 
     // Assuming omexPath will always be absolute path
-    public OmexHandler(String omexPath, String outDir) {
+    public OmexHandler(String omexPath, String outDir) throws IOException {
         try {
             ResourceUtil.setNativeLibraryDirectory();
             NativeLib.combinej.load();
