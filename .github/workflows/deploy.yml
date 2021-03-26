@@ -1,13 +1,7 @@
 name: Publish simulator to GHCR and BioSimulators
 on:
-  push:
-    branches:
-      - '*'
-      - '*/*'
-      - '**'
-  # TODO: Remove after this commit
-  # release:
-  #   types: [published, edited]
+   release:
+     types: [published, edited]
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -18,40 +12,40 @@ jobs:
       - name: Checkout submodules
         run: git submodule update --init --recursive
 
-      # Extract mvn and jdk
-      # - name: Extract JDK Tarball and setup Java
-      # run: |
-      #    wget https://vcell.org/webstart/pipeline_files/jdk-8u241-linux-x64.tar.gz
-      #    tar -xvzf jdk-8u241-linux-x64.tar.gz
-      #    mv jdk1.8.0_241 jdk
-      #    wget https://vcell.org/webstart/pipeline_files/apache-maven-3.6.3-bin.tar.gz
-      #    tar -xvzf apache-maven-3.6.3-bin.tar.gz
-      #    mv apache-maven-3.6.3 maven
+       Extract mvn and jdk
+       - name: Extract JDK Tarball and setup Java
+       run: |
+          wget https://vcell.org/webstart/pipeline_files/jdk-8u241-linux-x64.tar.gz
+          tar -xvzf jdk-8u241-linux-x64.tar.gz
+          mv jdk1.8.0_241 jdk
+          wget https://vcell.org/webstart/pipeline_files/apache-maven-3.6.3-bin.tar.gz
+          tar -xvzf apache-maven-3.6.3-bin.tar.gz
+          mv apache-maven-3.6.3 maven
 
-      # Install dependencies
-      # - name: Maven installation
-      #  run: |
-      #    export JAVA_HOME=`pwd`/jdk
-      #    export PATH=${JAVA_HOME}/bin:${PATH}
-      #    echo $JAVA_HOME
-      #    java -version
-      #    export M2_HOME=`pwd`/maven
-      #    export PATH=${M2_HOME}/bin:${PATH}
-      #    mvn -version
-      #    java -version
-      #    echo "#################################"
-      #    echo "#### Installing dependencies ####"
-      #    echo "#################################"
-      #    mvn clean install dependency:copy-dependencies
+       Install dependencies
+       - name: Maven installation
+        run: |
+          export JAVA_HOME=`pwd`/jdk
+          export PATH=${JAVA_HOME}/bin:${PATH}
+          echo $JAVA_HOME
+          java -version
+          export M2_HOME=`pwd`/maven
+          export PATH=${M2_HOME}/bin:${PATH}
+          mvn -version
+          java -version
+          echo "#################################"
+          echo "#### Installing dependencies ####"
+          echo "#################################"
+          mvn clean install dependency:copy-dependencies
 
-      # Build and push Docker image
-      # - name: Build Docker image and push with latest tag
-      #  run: |
-      #    echo ${{ secrets.DOCKER_REGISTRY_TOKEN }} | docker login ghcr.io -u ${{ secrets.DOCKER_REGISTRY_USERNAME }} --password-stdin
-      #    docker build --file docker/build/Dockerfile-vcell-cli \
-      #                --tag ghcr.io/biosimulators/biosimulators_vcell/vcell:latest .
-      #    docker tag ghcr.io/biosimulators/biosimulators_vcell/vcell:latest ghcr.io/biosimulators/biosimulators_vcell/vcell:7.4.0.00
-      #    docker push --all-tags ghcr.io/biosimulators/biosimulators_vcell/vcell
+       Build and push Docker image
+       - name: Build Docker image and push with latest tag
+        run: |
+          echo ${{ secrets.DOCKER_REGISTRY_TOKEN }} | docker login ghcr.io -u ${{ secrets.DOCKER_REGISTRY_USERNAME }} --password-stdin
+          docker build --file docker/build/Dockerfile-vcell-cli \
+                      --tag ghcr.io/biosimulators/biosimulators_vcell/vcell:latest .
+          docker tag ghcr.io/biosimulators/biosimulators_vcell/vcell:latest ghcr.io/biosimulators/biosimulators_vcell/vcell:7.4.0.00
+          docker push --all-tags ghcr.io/biosimulators/biosimulators_vcell/vcell
 
       # TODO: Remove above hard-coded version
       # - name: Fetch the current version
@@ -64,7 +58,7 @@ jobs:
       #   docker push --all-tags ghcr.io/biosimulators/biosimulators_vcell/vcell
 
       # Submit to BioSimulators registry
-      # TODO: Remove after submission
+      # TODO: Remove Hardcoded version after submission
       - name: Submit to BioSimulators registry
         run: |
           REVISION=$(git rev-parse HEAD)
