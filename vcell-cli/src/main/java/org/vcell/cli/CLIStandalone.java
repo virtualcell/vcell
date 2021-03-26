@@ -158,6 +158,7 @@ public class CLIStandalone {
 
             if (resultsHash.size() != 0) {
                 reportsHash = CLIUtils.generateReportsAsCSV(sedml, resultsHash, outDirForCurrentSedml, outputDir, sedmlLocation);
+                CLIUtils.genPlots(sedmlLocation, outDirForCurrentSedml.toString());
             }
 
             // HDF5 conversion

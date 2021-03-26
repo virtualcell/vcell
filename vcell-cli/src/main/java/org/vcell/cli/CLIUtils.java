@@ -252,9 +252,9 @@ public class CLIUtils {
         List<Output> ooo = sedml.getOutputs();
         for (Output oo : ooo) {
             if (!(oo instanceof Report)) {
-                System.err.println("Ignoring unsupported output " + oo.getId());
+                System.out.println("Ignoring unsupported output `" + oo.getId() + "` while CSV generation.");
             } else {
-                System.out.println("Generating report " + oo.getId());
+                System.out.println("Generating report `" + oo.getId() +"`.");
                 try {
                     StringBuilder sb = new StringBuilder();
 
@@ -579,6 +579,11 @@ public class CLIUtils {
 
     public static void transposeVcmlCsv(String csvFilePath) throws IOException, InterruptedException {
         execShellCommand(new String[]{python, cliPath.toString(), "transposeVcmlCsv", csvFilePath}).start().waitFor();
+    }
+
+    public static void genPlots(String sedmlPath, String resultOutDir) throws IOException, InterruptedException {
+        // TODO: Update status for curves to status YAML
+        execShellCommand(new String[]{python, cliPath.toString(), "genPlotPdfs", sedmlPath, resultOutDir}).start().waitFor();
     }
 
 
