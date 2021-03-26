@@ -5,6 +5,7 @@ import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.solver.*;
 import cbit.vcell.solver.ode.AbstractJavaSolver;
+import cbit.vcell.solver.ode.CVodeSolverStandalone;
 import cbit.vcell.solver.ode.ODESolver;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.solver.server.Solver;
@@ -90,7 +91,9 @@ public class SolverHandler {
                 try {
                     if (solver instanceof AbstractCompiledSolver) {
                         ((AbstractCompiledSolver) solver).runSolver();
-                        if (solver instanceof ODESolver) {
+                        System.out.println(solver);
+                        System.out.println(solver.getSolverStatus());
+						if (solver instanceof ODESolver) {
                             odeSolverResultSet = ((ODESolver) solver).getODESolverResultSet();
                         } else if (solver instanceof GibsonSolver) {
                             odeSolverResultSet = ((GibsonSolver) solver).getStochSolverResultSet();

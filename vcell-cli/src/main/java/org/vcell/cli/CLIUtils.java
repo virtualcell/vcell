@@ -638,6 +638,8 @@ public class CLIUtils {
     }
 
     public String getTempDir() throws IOException {
-        return String.valueOf(java.nio.file.Files.createTempDirectory("vcell_temp_" + UUID.randomUUID().toString()).toAbsolutePath());
+        String tempPath = String.valueOf(java.nio.file.Files.createTempDirectory("vcell_temp_" + UUID.randomUUID().toString()).toAbsolutePath());
+        System.out.println("TempPath Created: " + tempPath);
+        return tempPath;
     }
 }
