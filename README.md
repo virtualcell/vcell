@@ -19,7 +19,7 @@ BioSimulators-compliant command-line interface to the [VCell](http://vcell.org/)
 
 ### To set up the project in IntelliJ IDEA
 
-1. Requirements: Git, Maven, Jetbrains IntelliJ IDEA and Oracle Java JDK 1.8
+1. Requirements: Git, Maven, Jetbrains IntelliJ IDEA, Oracle Java JDK 1.8, Python, pip
 2. Clone the repo
 3. Open the project as new project in IntelliJ
 4. Go to `Files` > `Project Structure...` > `Modules` and select all modules and then click apply.
@@ -39,10 +39,11 @@ BioSimulators-compliant command-line interface to the [VCell](http://vcell.org/)
 		* `Working Directory:` is `<Your-Project-Directory-Path>`
 		* Select `vcell-cli` as `Use classpath of module:`
 8. Click `apply` and `build`
+9. Install all required pip packages from [Python submodule project](https://github.com/virtualcell/vcell_cli_utils)
 
 ### To setup the project in eclipse
   * Requirements:  
-        Git, Maven, Eclipse IDE and Java JDK 1.8
+        Git, Maven, Eclipse IDE and Java JDK 1.8, Python, pip
   1. Open terminal, navigate to the Eclipse workspace folder.
   2. Clone the repo
   3. ``` mvn clean install dependency:copy-dependencies ```
@@ -55,6 +56,7 @@ BioSimulators-compliant command-line interface to the [VCell](http://vcell.org/)
         -Dvcell.installDir=<Your-Project-Directory-Path>
         -Dvcell.softwareVersion="VCell_7.3.0.0"
         ```
+  6. Install all required pip packages from [Python submodule project](https://github.com/virtualcell/vcell_cli_utils)
            
            
 ### Maven installation package
