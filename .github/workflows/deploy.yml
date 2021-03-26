@@ -12,7 +12,7 @@ jobs:
       - name: Checkout submodules
         run: git submodule update --init --recursive
 
-       Extract mvn and jdk
+       # Extract mvn and jdk
        - name: Extract JDK Tarball and setup Java
        run: |
           wget https://vcell.org/webstart/pipeline_files/jdk-8u241-linux-x64.tar.gz
@@ -22,7 +22,7 @@ jobs:
           tar -xvzf apache-maven-3.6.3-bin.tar.gz
           mv apache-maven-3.6.3 maven
 
-       Install dependencies
+       # Install dependencies
        - name: Maven installation
         run: |
           export JAVA_HOME=`pwd`/jdk
@@ -38,7 +38,7 @@ jobs:
           echo "#################################"
           mvn clean install dependency:copy-dependencies
 
-       Build and push Docker image
+       # Build and push Docker image
        - name: Build Docker image and push with latest tag
         run: |
           echo ${{ secrets.DOCKER_REGISTRY_TOKEN }} | docker login ghcr.io -u ${{ secrets.DOCKER_REGISTRY_USERNAME }} --password-stdin
