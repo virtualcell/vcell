@@ -111,4 +111,3 @@ jobs:
           docker tag ghcr.io/virtualcell/vcell-cli:latest ghcr.io/virtualcell/vcell-cli:${{steps.version.outputs.tag}}
           docker push --all-tags ghcr.io/virtualcell/vcell-cli
 
-

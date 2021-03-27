@@ -8,8 +8,6 @@ import cbit.vcell.resource.OperatingSystemInfo;
 import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.util.ColumnDescription;
-import com.google.common.base.Joiner;
-import com.google.common.io.Files;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
@@ -24,6 +22,8 @@ import java.nio.file.Paths;
 import java.util.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
+
+//import java.nio.file.Files;
 
 public class CLIUtils {
     // Docker hardcode path
@@ -48,8 +48,8 @@ public class CLIUtils {
     public static boolean isMacPlatform = OperatingSystemInfo.getInstance().isMac();
     public static boolean isLinuxPlatform = OperatingSystemInfo.getInstance().isLinux();
 
-    // private String tempDirPath = null;
-    // private final String extractedOmexPath = null;
+    public static final String python = isWindowsPlatform ? "python" : "python3";
+    public static final String pip = isWindowsPlatform ? "pip" : "pip3";
 
 
     // TODO: Implement this to remove System properties dynamically from Run time, Remove hardcoded from docker_run.sh
@@ -57,9 +57,10 @@ public class CLIUtils {
         if (System.getProperty("vcell.cli").equals("true")) {
             PropertyLoader.loadProperties(REQUIRED_CLIENT_PROPERTIES);
             for (int i = 0; i <= NOT_REQUIRED_LOCAL_CLI_PROPERTIES.length; i++)
-            PropertyLoader.loadProperties((String[]) ArrayUtils.remove(NOT_REQUIRED_LOCAL_CLI_PROPERTIES, i));
+                PropertyLoader.loadProperties((String[]) ArrayUtils.remove(NOT_REQUIRED_LOCAL_CLI_PROPERTIES, i));
         }
     }
+
     private static final String[] REQUIRED_CLIENT_PROPERTIES = {
             PropertyLoader.installationRoot
     };
@@ -251,19 +252,19 @@ public class CLIUtils {
         List<Output> ooo = sedml.getOutputs();
         for (Output oo : ooo) {
             if (!(oo instanceof Report)) {
-                System.err.println("Ignoring unsupported output " + oo.getId());
+                System.out.println("Ignoring unsupported output `" + oo.getId() + "` while CSV generation.");
             } else {
-                System.out.println("Generating report " + oo.getId());
+                System.out.println("Generating report `" + oo.getId() +"`.");
                 try {
                     StringBuilder sb = new StringBuilder();
-                    
+
                     // we go through each entry (dataset) in the list of datasets
                     // for each dataset, we use the data reference to obtain the data generator
                     // ve get the list of variables associated with the data reference
                     //   each variable has an id (which is the data reference above, the task and the sbml symbol urn
                     //   for each variable we recover the task, from the task we get the sbml model
                     //   we search the sbml model to find the vcell variable name associated with the urn
-                    
+
                     List<DataSet> datasets = ((Report) oo).getListOfDataSets();
                     for (DataSet dataset : datasets) {
                         DataGenerator datagen = sedml.getDataGeneratorWithId(dataset.getDataReference());
@@ -278,27 +279,27 @@ public class CLIUtils {
                             AbstractTask task = sedml.getTaskWithId(var.getReference());
                             Model model = sedml.getModelWithId(task.getModelReference());
                             IXPathToVariableIDResolver variable2IDResolver = new SBMLSupport();
-                        	// must get variable ID from SBML model
-                        	String sbmlVarId = "";
-                        	if (var.getSymbol() != null) {
-                        		// it is a predefined symbol
-                        		sbmlVarId = var.getSymbol().name();
-                        		// translate SBML official symbols
-                        		// TIME is t, etc.
-                        		switch (sbmlVarId) {
-								case "TIME":
-									// this is VCell reserved symbold for time
-									sbmlVarId = "t";
-									break;
-								}
-                        		// TODO
-                        		// check spec for other symbols
-                        	} else {
-                        		// it is an XPATH target in model
-                        		String target = var.getTarget();
-                        		sbmlVarId = variable2IDResolver.getIdFromXPathIdentifer(target);
-                        	}
-                        		
+                            // must get variable ID from SBML model
+                            String sbmlVarId = "";
+                            if (var.getSymbol() != null) {
+                                // it is a predefined symbol
+                                sbmlVarId = var.getSymbol().name();
+                                // translate SBML official symbols
+                                // TIME is t, etc.
+                                switch (sbmlVarId) {
+                                    case "TIME":
+                                        // this is VCell reserved symbold for time
+                                        sbmlVarId = "t";
+                                        break;
+                                }
+                                // TODO
+                                // check spec for other symbols
+                            } else {
+                                // it is an XPATH target in model
+                                String target = var.getTarget();
+                                sbmlVarId = variable2IDResolver.getIdFromXPathIdentifer(target);
+                            }
+
                             if (task instanceof RepeatedTask) {
                                 supportedDataset = false;
                             } else {
@@ -311,7 +312,6 @@ public class CLIUtils {
                                 values.put(var, data);
                             }
 
-                            //String outDirRoot = outDirForCurrentSedml.toString().substring(0, outDirForCurrentSedml.toString().lastIndexOf(System.getProperty("file.separator")));
                             CLIUtils.updateDatasetStatusYml(sedmlLocation, oo.getId(), dataset.getId(), Status.SUCCEEDED, outDir);
                             CLIUtils.updateTaskStatusYml(sedmlLocation, task.getId(), Status.SUCCEEDED, outDir);
                         }
@@ -468,92 +468,53 @@ public class CLIUtils {
         return yi;
     }
 
-    private static int execShellCommand(String[] args) {
-        // NOTE: Magic number -10, simply means unassigned exit code
+    public static ProcessBuilder execShellCommand(String[] args) {
+        return new ProcessBuilder(args);
+    }
+
+    public static int checkInstallationError() {
+        String version = "--version";
+        ProcessBuilder processBuilder;
+        Process process;
         int exitCode = -10;
-        String joinArg = Joiner.on(" ").join(args);
-        // Uncomment to debug the command execution
-//        System.out.println("Executing the command: `" + joinArg + "`");
-        File log = stdOutFile;
+        BufferedReader bufferedReader;
+        StringBuilder stringBuilder;
+        String stdOutLog;
+
         try {
-            ProcessBuilder builder = new ProcessBuilder(args);
-            // For debugging
-//            builder.redirectOutput(ProcessBuilder.Redirect.INHERIT);
-//            builder.redirectErrorStream(true);
-            // STDOUT redirected to stdOut.txt file
-//            builder.redirectOutput(ProcessBuilder.Redirect.appendTo(log));
-            Process p = builder.start();
-//            assert builder.redirectInput() == ProcessBuilder.Redirect.PIPE;
-//            assert builder.redirectOutput().file() == log;
-//            assert p.getInputStream().read() == -1;
-            exitCode = p.waitFor();
-            return exitCode;
-        } catch (IOException | InterruptedException I) {
-            I.printStackTrace();
-            System.err.println("Failed executing the command: `" + joinArg + "`\n");
+            processBuilder = execShellCommand(new String[]{python, version});
+            process = processBuilder.start();
+            exitCode = process.waitFor();
+            if (exitCode == 0) {
+                bufferedReader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+                stringBuilder = new StringBuilder();
+                while ((stdOutLog = bufferedReader.readLine()) != null) {
+                    stringBuilder.append(stdOutLog);
+                    // search string can be one or more...
+                        if (!stringBuilder.toString().toLowerCase().startsWith("python")) System.err.println("Please check your local Python and PIP Installation, install requirements.txt");
+                }
+            }
+
+        } catch (IOException | InterruptedException e) {
+            e.printStackTrace();
         }
+
         return exitCode;
     }
 
-    public static void pipInstallRequirements() {
-        // pip install the requirements
-        String[] args;
 
-        if (checkPythonInstallation() == 0 && checkPipInstallation() == 0) {
-            System.out.println("Installing the required PIP packages..");
-            if (isWindowsPlatform) {
-                args = new String[]{"pip", "install", "-r", String.valueOf(requirementFilePath)};
-            } else {
-                args = new String[]{"pip3", "install", "-r", String.valueOf(requirementFilePath)};
-            }
-            execShellCommand(args);
-        } else {
-            System.err.println("Failed installing PIP packages.");
-        }
 
-    }
-
-    public static int checkPythonInstallation() {
-        int pyCheckIns;
-        if (isWindowsPlatform) pyCheckIns = execShellCommand(new String[]{"python", "--version"});
-        else pyCheckIns = execShellCommand(new String[]{"python3", "--version"});
-        if (pyCheckIns != 0) System.err.println("Check Python installation...");
-        return pyCheckIns;
-    }
-
-    public static int checkPipInstallation() {
-        int pipCheckIns;
-        if (isWindowsPlatform) pipCheckIns = execShellCommand(new String[]{"pip", "--version"});
-        else pipCheckIns = execShellCommand(new String[]{"pip3", "--version"});
-        if (pipCheckIns != 0) System.err.println("Check PIP installation...");
-        return pipCheckIns;
-    }
-
-    public static void giveOpenPermissions(String PathStr) {
-        // Give permissions to the file in the temp directory
-        Path filePath = Paths.get(PathStr);
-        // TODO: Make it work on Windows platform
-        String[] permissionArgs = new String[]{"chmod", "777", filePath.toString()};
-        CLIUtils.execShellCommand(permissionArgs);
-    }
-
-    public static void convertCSVtoHDF(String omexFilePath, String outputDir) {
-        String[] cliArgs;
+    public static void convertCSVtoHDF(String omexFilePath, String outputDir) throws IOException, InterruptedException {
 
         // Convert CSV to HDF5
-        // TODO: Add Metadata Directory to wrap H5(Simulation_1.sedml)
         /*
         Usage: cli.py SEDML_FILE_PATH WORKING_DIR BASE_OUT_PATH CSV_DIR <flags>
                     optional flags:        --rel_out_path | --apply_xml_model_changes |
                          --report_formats | --plot_formats | --log | --indent
         * */
-        if (checkPythonInstallation() == 0) {
-            if (isWindowsPlatform) {
-                cliArgs = new String[]{"python", cliPath.toString(), "execSedDoc", omexFilePath, outputDir};
-            } else {
-                cliArgs = new String[]{"python3", cliPath.toString(), "execSedDoc", omexFilePath, outputDir};
-            }
-            execShellCommand(cliArgs);
+
+        if (checkInstallationError() == 0) {
+            execShellCommand(new String[]{python, cliPath.toString(), "execSedDoc", omexFilePath, outputDir}).start().waitFor();
             System.out.println("HDF conversion completed in '" + outputDir + "'\n");
         } else System.err.println("HDF5 conversion failed...");
 
@@ -583,7 +544,7 @@ public class CLIUtils {
             status: SKIPPED
     status: SUCCEEDED
     * */
-    public static void generateStatusYaml(String omexPath, String outDir) {
+    public static void generateStatusYaml(String omexPath, String outDir) throws IOException, InterruptedException {
         // Note: by default every status is being skipped
         Path omexFilePath = Paths.get(omexPath);
         /*
@@ -600,91 +561,90 @@ public class CLIUtils {
 
          status_yml
         */
-        if (checkPythonInstallation() == 0) {
-            if (isWindowsPlatform)
-                execShellCommand(new String[]{"python", statusPath.toString(), "genStatusYaml", String.valueOf(omexFilePath), outDir});
-            else
-                execShellCommand(new String[]{"python3", statusPath.toString(), "genStatusYaml", String.valueOf(omexFilePath), outDir});
-        } else System.err.println("Failed generating status YAML...");
+        execShellCommand(new String[]{python, statusPath.toString(), "genStatusYaml", String.valueOf(omexFilePath), outDir}).start().waitFor();
     }
 
-    public static void updateTaskStatusYml(String sedmlName, String taskName, Status taskStatus, String outDir) {
-        if (checkPythonInstallation() == 0) {
-            if (isWindowsPlatform)
-                execShellCommand(new String[]{"python", statusPath.toString(), "updateTaskStatus", sedmlName, taskName, taskStatus.toString(), outDir});
-            else
-                execShellCommand(new String[]{"python3", statusPath.toString(), "updateTaskStatus", sedmlName, taskName, taskStatus.toString(), outDir});
-        } else System.err.println("Failed updating status YAML...");
+    public static void updateTaskStatusYml(String sedmlName, String taskName, Status taskStatus, String outDir) throws IOException, InterruptedException {
+        execShellCommand(new String[]{python, statusPath.toString(), "updateTaskStatus", sedmlName, taskName, taskStatus.toString(), outDir}).start().waitFor();
+
     }
 
-    public static void finalStatusUpdate(Status simStatus, String outDir) {
-        if (checkPythonInstallation() == 0) {
-//            System.out.println("Generating Status YAML...");
-            if (isWindowsPlatform)
-                execShellCommand(new String[]{"python", statusPath.toString(), "simStatus", simStatus.toString(), outDir});
-            else
-                execShellCommand(new String[]{"python3", statusPath.toString(), "simStatus", simStatus.toString(), outDir});
-        } else System.err.println("Failed generating status YAML...");
+    public static void finalStatusUpdate(Status simStatus, String outDir) throws IOException, InterruptedException {
+        execShellCommand(new String[]{python, statusPath.toString(), "simStatus", simStatus.toString(), outDir}).start().waitFor();
     }
 
-    public static void updateDatasetStatusYml(String sedmlName, String dataSet, String var, Status simStatus, String outDir) {
-        if (checkPythonInstallation() == 0) {
-            if (isWindowsPlatform)
-                execShellCommand(new String[]{"python", statusPath.toString(), "updateDataSetStatus", sedmlName, dataSet, var, simStatus.toString(), outDir});
-            else
-                execShellCommand(new String[]{"python3", statusPath.toString(), "updateDataSetStatus", sedmlName, dataSet, var, simStatus.toString(), outDir});
-        } else System.err.println("Failed updating DataSet to status YAML...");
+    public static void updateDatasetStatusYml(String sedmlName, String dataSet, String var, Status simStatus, String outDir) throws IOException, InterruptedException {
+        execShellCommand(new String[]{python, statusPath.toString(), "updateDataSetStatus", sedmlName, dataSet, var, simStatus.toString(), outDir}).start().waitFor();
     }
 
-    public static void transposeVcmlCsv(String csvFilePath) {
-        if (checkPythonInstallation() == 0) {
-            if (isWindowsPlatform)
-                execShellCommand(new String[]{"python", cliPath.toString(), "transposeVcmlCsv", csvFilePath});
-            else execShellCommand(new String[]{"python3", cliPath.toString(), "transposeVcmlCsv", csvFilePath});
-        } else System.err.println("Failed transposing VCML resultant CSV...");
+    public static void transposeVcmlCsv(String csvFilePath) throws IOException, InterruptedException {
+        execShellCommand(new String[]{python, cliPath.toString(), "transposeVcmlCsv", csvFilePath}).start().waitFor();
+    }
+
+    public static void genPlots(String sedmlPath, String resultOutDir) throws IOException, InterruptedException {
+        // TODO: Update status for curves to status YAML
+        execShellCommand(new String[]{python, cliPath.toString(), "genPlotPdfs", sedmlPath, resultOutDir}).start().waitFor();
     }
 
 
-    private static ArrayList<File> listFilesForFolder(File dirPath) {
+    private static ArrayList<File> listFilesForFolder(File dirPath, String extensionType) {
         File dir = new File(String.valueOf(dirPath));
-        String[] extensions = new String[] { "csv" };
-        ArrayList<File> csvFilesList = new ArrayList<>();
+        String[] extensions = new String[]{extensionType};
         List<File> files = (List<File>) FileUtils.listFiles(dir, extensions, true);
-        for (File file : files) {
-            csvFilesList.add(file);
-        }
-        return csvFilesList;
+        return new ArrayList<>(files);
     }
 
-    public static void zipResFile(File dirPath) throws IOException {
-        System.out.println("Generating zip Archive for reports");
-        ArrayList<File> srcFiles = listFilesForFolder(dirPath);
-        FileOutputStream fos = new FileOutputStream(Paths.get(dirPath.toString(), "reports.zip").toFile());
-        ZipOutputStream zipOut = new ZipOutputStream(fos);
-        for (File srcFile : srcFiles) {
-            FileInputStream fis = new FileInputStream(srcFile);
+    public static void zipResFiles(File dirPath) throws IOException {
 
-            // get relative path
-            String relativePath = dirPath.toURI().relativize(srcFile.toURI()).toString();
-            ZipEntry zipEntry = new ZipEntry(relativePath);
-            zipOut.putNextEntry(zipEntry);
+        FileInputStream fileInputstream;
+        FileOutputStream fileOutputStream;
+        ZipOutputStream zipOutputStream;
+        ArrayList<File> srcFiles;
+        String relativePath;
+        ZipEntry zipEntry;
 
-            byte[] bytes = new byte[1024];
-            int length;
-            while((length = fis.read(bytes)) >= 0) {
-                zipOut.write(bytes, 0, length);
+        // TODO: Add SED-ML name as base dirPath to avoid zipping all available CSV, PDF
+        // Map for naming to extension
+        Map<String, String> extensionListMap = new HashMap<String, String>() {{
+            put("csv", "reports.zip");
+            put("pdf", "plots.zip");
+        }};
+
+        for (String ext : extensionListMap.keySet()) {
+            srcFiles = listFilesForFolder(dirPath, ext);
+
+            if (srcFiles.size() == 0) {
+                System.err.println("No " + ext.toUpperCase() + " files found, skipping archiving `" + extensionListMap.get(ext) + "` files");
+            } else {
+                fileOutputStream = new FileOutputStream(Paths.get(dirPath.toString(), extensionListMap.get(ext)).toFile());
+                zipOutputStream = new ZipOutputStream(fileOutputStream);
+                for (File srcFile : srcFiles) {
+
+                    fileInputstream = new FileInputStream(srcFile);
+
+                    // get relative path
+                    relativePath = dirPath.toURI().relativize(srcFile.toURI()).toString();
+                    zipEntry = new ZipEntry(relativePath);
+                    zipOutputStream.putNextEntry(zipEntry);
+
+                    System.out.println("Archiving resultant " + ext.toUpperCase() + " files to `" + extensionListMap.get(ext) + "`.");
+
+                    byte[] bytes = new byte[1024];
+                    int length;
+                    while ((length = fileInputstream.read(bytes)) >= 0) {
+                        zipOutputStream.write(bytes, 0, length);
+                    }
+                    fileInputstream.close();
+                }
+                zipOutputStream.close();
+                fileOutputStream.close();
             }
-            fis.close();
         }
-        zipOut.close();
-        fos.close();
-
-
     }
 
-
-    @SuppressWarnings("UnstableApiUsage")
-    public String getTempDir() {
-        return Files.createTempDir().getAbsolutePath();
+    public String getTempDir() throws IOException {
+        String tempPath = String.valueOf(java.nio.file.Files.createTempDirectory("vcell_temp_" + UUID.randomUUID().toString()).toAbsolutePath());
+        System.out.println("TempPath Created: " + tempPath);
+        return tempPath;
     }
 }

@@ -59,7 +59,7 @@ public class CLIStandalone {
                 }
             } else {
                 try {
-                    if (input.toString().endsWith("omex")) {
+                    if (input == null || input.toString().endsWith("omex")) {
                         singleExecOmex(args);
                     }
                     if (input.toString().endsWith("vcml")) {
@@ -108,10 +108,7 @@ public class CLIStandalone {
         boolean somethingFailed = false;
 
         // python installation
-        CLIUtils.checkPythonInstallation();
-
-        // pip install requirements before status generation
-        CLIUtils.pipInstallRequirements();
+        CLIUtils.checkInstallationError();
 
         // Generate Status YAML
         CLIUtils.generateStatusYaml(inputFile, outputDir);
@@ -161,6 +158,7 @@ public class CLIStandalone {
 
             if (resultsHash.size() != 0) {
                 reportsHash = CLIUtils.generateReportsAsCSV(sedml, resultsHash, outDirForCurrentSedml, outputDir, sedmlLocation);
+                CLIUtils.genPlots(sedmlLocation, outDirForCurrentSedml.toString());
             }
 
             // HDF5 conversion
@@ -168,7 +166,7 @@ public class CLIStandalone {
                 CLIUtils.convertCSVtoHDF(inputFile, outputDir);
 
             // archiving res files
-            CLIUtils.zipResFile(new File(outputDir));
+            CLIUtils.zipResFiles(new File(outputDir));
 
             if (resultsHash.containsValue(null) || reportsHash == null) {
                 somethingFailed = true;
@@ -216,11 +214,6 @@ public class CLIStandalone {
 
         // Run solvers and make reports; all failures/exceptions are being caught
         SolverHandler solverHandler = new SolverHandler();
-
-        // python installation
-        CLIUtils.checkPythonInstallation();
-        // pip install requirements before status generation
-        CLIUtils.pipInstallRequirements();
 
         resultsHash = solverHandler.simulateAllVcmlTasks(new File(inputFile), outDirForCurrentVcml);
 

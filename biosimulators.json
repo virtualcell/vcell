@@ -8,7 +8,7 @@
     "url": "http://vcell.org/"
   }],
   "image": {
-    "url": "ghcr.io/biosimulators/biosimulators_vell/vcell:7.3.0.13",
+    "url": "ghcr.io/biosimulators/biosimulators_vcell/vcell:7.3.0.13",
     "format": {
       "namespace": "EDAM",
       "id": "format_3973",
