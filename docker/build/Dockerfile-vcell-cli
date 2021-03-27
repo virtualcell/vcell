@@ -16,9 +16,9 @@
 # Base OS
 FROM ghcr.io/virtualcell/vcell_cli_base:latest
 
-# PIP install Biosimulators_utils
-RUN pip3 install biosimulators-utils
-	
+# Install required python-packages
+RUN pip3 install vcell-cli-util
+
 # Copy JAR files
 COPY ./vcell-client/target/vcell-client-0.0.1-SNAPSHOT.jar \
      ./vcell-client/target/maven-jars/*.jar \
@@ -38,11 +38,7 @@ COPY ./vcell-client/target/vcell-client-0.0.1-SNAPSHOT.jar \
      ./non-maven-java-libs/com/oracle/ojdbc6/11.2.0.4/ojdbc6-11.2.0.4.jar \
      ./non-maven-java-libs/com/oracle/ucp/11.2.0.4/ucp-11.2.0.4.jar \
      ./non-maven-java-libs/org/sbml/libcombine/libCombineLinux64/0.2.7/libCombineLinux64-0.2.7.jar \
-     ./non-maven-java-libs/bioSimJars/jsbml-core-1.4.jar \
      /usr/local/app/vcell/lib/
-
-# Copy the log4J XML config file
-COPY ./non-maven-java-libs/bioSimJars/vcell-cli.log4j.xml /usr/local/app/vcell/installDir/
 
 # Add linux local solvers only
 ADD ./localsolvers /usr/local/app/vcell/installDir/localsolvers
