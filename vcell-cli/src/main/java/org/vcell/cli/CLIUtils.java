@@ -365,8 +365,7 @@ public class CLIUtils {
         double outputStart = sedmlSim.getOutputStartTime();
         double outputEnd = sedmlSim.getOutputEndTime();
 
-        // NOTE: In other plaecs we're adding 1 timepoint to numRows, not doing that here
-        int numPoints = sedmlSim.getNumberOfPoints();
+        int numPoints = sedmlSim.getNumberOfPoints() + 1;
 
 
         ColumnDescription[] columnDescriptions = odeSolverResultSet.getColumnDescriptions();
@@ -386,7 +385,7 @@ public class CLIUtils {
         }
 
 
-        double deltaTime = ((outputEnd - outputStart) / numPoints);
+        double deltaTime = ((outputEnd - outputStart) / (numPoints - 1));
         double[] timepoints = new double[numPoints];
 
         timepoints[0] = outputStart;
@@ -618,6 +617,7 @@ public class CLIUtils {
             } else {
                 fileOutputStream = new FileOutputStream(Paths.get(dirPath.toString(), extensionListMap.get(ext)).toFile());
                 zipOutputStream = new ZipOutputStream(fileOutputStream);
+                if (srcFiles.size() != 0) System.out.println("Archiving resultant " + ext.toUpperCase() + " files to `" + extensionListMap.get(ext) + "`.");
                 for (File srcFile : srcFiles) {
 
                     fileInputstream = new FileInputStream(srcFile);
@@ -626,8 +626,6 @@ public class CLIUtils {
                     relativePath = dirPath.toURI().relativize(srcFile.toURI()).toString();
                     zipEntry = new ZipEntry(relativePath);
                     zipOutputStream.putNextEntry(zipEntry);
-
-                    System.out.println("Archiving resultant " + ext.toUpperCase() + " files to `" + extensionListMap.get(ext) + "`.");
 
                     byte[] bytes = new byte[1024];
                     int length;

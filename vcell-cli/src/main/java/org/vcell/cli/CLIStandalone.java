@@ -155,7 +155,6 @@ public class CLIStandalone {
             ExternalDocInfo externalDocInfo = new ExternalDocInfo(new File(inputFile), true);
 
             resultsHash = solverHandler.simulateAllTasks(externalDocInfo, sedml, outDirForCurrentSedml, outputDir, sedmlLocation);
-
             if (resultsHash.size() != 0) {
                 reportsHash = CLIUtils.generateReportsAsCSV(sedml, resultsHash, outDirForCurrentSedml, outputDir, sedmlLocation);
                 CLIUtils.genPlots(sedmlLocation, outDirForCurrentSedml.toString());
