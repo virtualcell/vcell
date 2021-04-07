@@ -6,7 +6,6 @@ on:
       - '*'
       - '*/*'
       - '**'
-      - validate
   release:
     types: [published, edited]
 
