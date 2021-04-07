@@ -1002,9 +1002,7 @@ public void vetoableChange(java.beans.PropertyChangeEvent evt) throws java.beans
 		for (int i=0;i<simulations.length-1;i++){
 			for (int j=i+1;j<simulations.length;j++){
 				if (simulations[i].getName().equals(simulations[j].getName())){
-					// Note: Exception is not being handled to support multiple tasks with same simulation(in SED-ML)
-					// throw new PropertyVetoException(VCellNames.getName(simulations[i])+" with name "+simulations[i].getName()+" already exists",evt);
-					System.err.println(VCellNames.getName(simulations[i])+" with name `"+simulations[i].getName()+"` already exists");
+					throw new PropertyVetoException(VCellNames.getName(simulations[i])+" with name "+simulations[i].getName()+" already exists",evt);
 				}
 			}
 		}
