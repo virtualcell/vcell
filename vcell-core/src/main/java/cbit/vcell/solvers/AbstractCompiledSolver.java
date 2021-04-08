@@ -283,7 +283,9 @@ public abstract class AbstractCompiledSolver extends AbstractSolver implements j
 
 //		System.out.println("-----Setting executable "+LD_LIB_PATH+" to "+newLD_LIB_PATH);
             getMathExecutable().addEnvironmentVariable(LD_LIB_PATH, newLD_LIB_PATH);
-        }
+        }else if (OperatingSystemInfo.getInstance().isMac()) {
+    		getMathExecutable().addEnvironmentVariable("HDF5_DISABLE_VERSION_CHECK", "1");
+    	}
     }
 
     /**
