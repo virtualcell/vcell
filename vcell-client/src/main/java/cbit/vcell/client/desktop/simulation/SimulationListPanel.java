@@ -150,7 +150,7 @@ public class SimulationListPanel extends DocumentEditorSubPanel {
 				stopSimulations();
 			} else if (e.getSource() == exportBatchButton) {
 //				DialogUtils.showInfoDialog(SimulationListPanel.this, "Under Construction");
-				importBatchSimulations();
+				getBatchSimulationsResults();
 			} else if (e.getSource() == importBatchButton) {
 				createBatchSimulations();
 			} else if (e.getSource() == getNativeResultsButton()) {
@@ -278,7 +278,7 @@ private void createBatchSimulations() {
 	getScrollPaneTable().scrollRectToVisible(getScrollPaneTable().getCellRect(index, 0, true));
 }
 
-private void importBatchSimulations() {
+private void getBatchSimulationsResults() {
 	int[] selections = getScrollPaneTable().getSelectedRows();
 	if(selections.length != 1) {
 		throw new RuntimeException("Exactly one template Simulation is required for Batch results Import");
@@ -289,8 +289,17 @@ private void importBatchSimulations() {
 	Simulation[] toImport = (Simulation[])BeanUtils.getArray(v, Simulation.class);
 	int index = -1;
 	
+	// one way to choose dir for results
+	// other way in ClientSimManager.getBatchSimulationResults()
+//	UserPreferences up = getSimulationWorkspace().getClientSimManager().getUserPreferences();
+//	File batchOutputDir = chooseBatchOutputDirectory(up);
+//	if(batchOutputDir == null) {
+//		System.out.println("Failed to create batch output directory or user canceled");
+//		return;
+//	}
+
 	try {
-		index = getSimulationWorkspace().importBatchSimulations(toImport, this);
+		index = getSimulationWorkspace().getBatchSimulationsResults(toImport, this);
 	} catch (Throwable exc) {
 		exc.printStackTrace(System.out);
 		PopupGenerator.showErrorDialog(this, exc.getMessage(), exc);
@@ -300,6 +309,11 @@ private void importBatchSimulations() {
 	getScrollPaneTable().scrollRectToVisible(getScrollPaneTable().getCellRect(index, 0, true));
 }
 
+private File chooseBatchOutputDirectory(UserPreferences userPreferences) {
+	File batchOutputDirectory = null;
+	
+	return batchOutputDirectory;
+}
 private File parseBatchInputFile(UserPreferences userPreferences, Map<Integer, Map<String, String>> batchInputDataMap) {
 	
 	StringBuffer stringBuffer = new StringBuffer();

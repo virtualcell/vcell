@@ -276,15 +276,30 @@ public class ResourceUtil {
 		return localRootDir;
 	}
 	
-	public static File getLocalBatchDir()
-	{
-		if(localBatchDir == null)
-		{
-			localBatchDir = new File(getVcellHome(), "batchdata");
-			if (!localBatchDir.exists()) {
-				localBatchDir.mkdirs();
+	private static void deleteRecursively(File f) throws IOException {
+		if (f.isDirectory()) {
+			for (File c : f.listFiles()) {
+				deleteRecursively(c);
 			}
 		}
+		if (!f.delete()) {
+			throw new FileNotFoundException("Failed to delete file: " + f);
+		}
+	}
+	public static File getLocalBatchDir()
+	{
+		File adir = new File(getVcellHome(), "batchResults");
+		if(adir.exists()) {
+			try {
+				deleteRecursively(adir);	// delete the output directory and all its content recursively
+			} catch (IOException e) {
+				System.err.println("Failed to empty " + adir.getName());
+			}
+		}
+		if(!adir.exists()) {
+			adir.mkdirs();
+		}
+		localBatchDir = adir;
 		return localBatchDir;
 	}
 	
