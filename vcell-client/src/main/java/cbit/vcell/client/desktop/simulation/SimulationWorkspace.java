@@ -389,7 +389,7 @@ int createBatchSimulations(Simulation[] sims, Map<Integer, Map<String, String>> 
 	}
 	return -1;
 }
-int importBatchSimulations(Simulation[] sims, Component requester) throws java.beans.PropertyVetoException {
+int getBatchSimulationsResults(Simulation[] sims, Component requester) throws java.beans.PropertyVetoException {
 	if (sims == null || sims.length == 0) {
 		return -1;
 	}
@@ -397,7 +397,7 @@ int importBatchSimulations(Simulation[] sims, Component requester) throws java.b
 	// sims contains exactly one template simulation
 	ArrayList<AnnotatedFunction> outputFunctionsList = getSimulationOwner().getOutputFunctionContext().getOutputFunctionsList();
 	OutputContext outputContext = new OutputContext(outputFunctionsList.toArray(new AnnotatedFunction[outputFunctionsList.size()]));
-	getClientSimManager().importBatchSimulations(outputContext, sims[0]);
+	getClientSimManager().getBatchSimulationsResults(outputContext, sims[0]);
 //	getSimulationOwner().importBatchSimulations(sims[0]);	// was in simContext initially
 	return -1;
 }

@@ -11,8 +11,10 @@
 package cbit.vcell.client;
 
 import java.awt.Dimension;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -23,6 +25,7 @@ import java.util.Enumeration;
 import java.util.EventObject;
 import java.util.Hashtable;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Vector;
 
 import javax.swing.SwingUtilities;
@@ -54,6 +57,7 @@ import cbit.vcell.client.desktop.simulation.SimulationWindow;
 import cbit.vcell.client.desktop.simulation.SimulationWindow.LocalState;
 import cbit.vcell.client.desktop.simulation.SimulationWorkspace;
 import cbit.vcell.client.pyvcellproxy.SimulationDataSetRef;
+import cbit.vcell.client.server.ClientServerManager;
 import cbit.vcell.client.server.UserPreferences;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.AsynchClientTaskFunction;
@@ -63,10 +67,13 @@ import cbit.vcell.export.server.ExportServiceImpl;
 import cbit.vcell.field.FieldDataIdentifierSpec;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SimulationContext.NetworkGenerationRequirements;
+import cbit.vcell.message.server.bootstrap.client.RemoteProxyVCellConnectionFactory.RemoteProxyException;
 import cbit.vcell.messaging.server.SimulationTask;
+import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.resource.VCellConfiguration;
+import cbit.vcell.server.DataSetController;
 import cbit.vcell.server.SimulationStatus;
 import cbit.vcell.simdata.DataManager;
 import cbit.vcell.simdata.DataSetControllerImpl;
@@ -88,12 +95,15 @@ import cbit.vcell.solver.SolverUtilities;
 import cbit.vcell.solver.TempSimulation;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.VCSimulationIdentifier;
+import cbit.vcell.solver.ode.ODESimData;
+import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.solver.server.SimulationMessage;
 import cbit.vcell.solver.server.Solver;
 import cbit.vcell.solver.server.SolverEvent;
 import cbit.vcell.solver.server.SolverFactory;
 import cbit.vcell.solver.server.SolverListener;
 import cbit.vcell.solver.server.SolverStatus;
+import cbit.vcell.util.ColumnDescription;
 
 /**
  * Insert the type's description here.
@@ -287,8 +297,9 @@ private static void saveFailure(Hashtable<String, Object>hashTable,Simulation si
 	failures.put(sim, throwable);
 }
 
-public void importBatchSimulations(OutputContext outputContext, Simulation simulation) throws java.beans.PropertyVetoException {
+public void getBatchSimulationsResults(OutputContext outputContext, Simulation simulation) throws java.beans.PropertyVetoException {
 
+	
 
 	// simulation should be a template simulation
 	if(simulation.getName().contains(SimulationContext.ReservedBatchExtensionString)) {
@@ -305,35 +316,82 @@ public void importBatchSimulations(OutputContext outputContext, Simulation simul
 		throw new RuntimeException("Cannot add simulation, bioModel not set");
 	}
 	
+	File batchResultsDir = ResourceUtil.getLocalBatchDir();
+//	File localSimDir = ResourceUtil.getLocalSimDir(User.tempUser.getName());
+	
+	ArrayList<AsynchClientTask> taskList = new ArrayList<AsynchClientTask>();
+	AsynchClientTask retrieveResultsTask = new AsynchClientTask("Retrieving results", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING)  {
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
 
-	// recover the list of batch simulations that belong to this template
-	Simulation allSims[] = bioModel.getSimulations();
-	LinkedHashMap<String, String> importsMap = new LinkedHashMap<>();
-	String namePrefix = simulation.getName() + SimulationContext.ReservedBatchExtensionString;
-	for(Simulation simCandidate : allSims) {
-		if(simCandidate.getName().startsWith(namePrefix)) {
-			importsMap.put(simCandidate.getName(), simCandidate.getSimulationID());
-			System.out.println(simCandidate.getName() + ": " + simCandidate.getSimulationID());
-			SwingUtilities.invokeLater(new Runnable() {
-				public void run() {
-//					importBatchSimulation(outputContext, simCandidate);
+			// recover the list of batch simulations that belong to this template
+			Simulation allSims[] = bioModel.getSimulations();
+			LinkedHashMap<String, String> importsMap = new LinkedHashMap<>();
+			LinkedHashMap <String, Boolean> successMap = new LinkedHashMap<>();
+			String namePrefix = simulation.getName() + SimulationContext.ReservedBatchExtensionString;
+			
+			for(Simulation simCandidate : allSims) {
+				if(simCandidate.getName().startsWith(namePrefix) && simCandidate.getName().contains("_bat_")) {
+					
+					int pos = simCandidate.getName().lastIndexOf("_");
+					String indexName = simCandidate.getName().substring(pos+1);
+					File currentSimulation = new File(batchResultsDir, indexName + ".txt");
+					
+					ODESimData simData = null;
+					importsMap.put(simCandidate.getName(), simCandidate.getSimulationID());
+					successMap.put(simCandidate.getName(), true);	// on failure we'll change to false
+
+					try {
+						simData = importBatchSimulation(outputContext, simCandidate);
+					} catch(Exception e) {		// whatever fails, we keep going, this is a batch run
+						System.out.println(simCandidate.getName() + ": failed to recover simulation results");
+
+						// TODO: also make a report with detailed exception text
+//						e.printStackTrace();
+						successMap.put(simCandidate.getName(), false);
+					}
+					if(simData != null) {		// write the file
+//						double[] res = osrs.extractColumn(4);
+
+						StringBuilder sb = new StringBuilder();
+						for(ColumnDescription cd : simData.getDataColumnDescriptions()) {
+							 sb.append(cd.getName() + " ");
+						}
+						sb.append("\r\n");
+						
+						for(double[] row : simData.getRows()) {
+							for(double entry : row) {
+								sb.append(entry);
+								sb.append(" ");
+							}
+							sb.append("\r\n");
+						}
+						PrintWriter out = new PrintWriter(currentSimulation);
+						out.print(sb.toString());
+						out.flush();
+						out.close();
+					}
 				}
-			});	
-		}
-	}
-//	for(String name : importsMap.keySet()) {
-//		String value = importsMap.get(name);
-//		SwingUtilities.invokeLater(new Runnable() {
-//			public void run() {
-//				// write manifest
+			}
+			
+//			for(String name : importsMap.keySet()) {
+//			String value = importsMap.get(name);
+//				write some manifest?
+//				// at least some basic info like the name of the simulation / biomodel / dat file
 //			}
-//		});	
-//	}
+			System.out.println("Done !!!");
+		}										// --- end run()
+	};
+	taskList.add(retrieveResultsTask);
+	AsynchClientTask[] taskArray = new AsynchClientTask[taskList.size()];
+	taskList.toArray(taskArray);
+	// knowProgress, cancelable, progressDialogListener
+	ClientTaskDispatcher.dispatch(documentWindowManager.getComponent(), new Hashtable<String, Object>(), taskArray, false, false, null);
 }
-private void importBatchSimulation(OutputContext outputContext, Simulation sim) {
 
-	File localBatchDir = ResourceUtil.getLocalBatchDir();
-	File localSimDir = ResourceUtil.getLocalSimDir(User.tempUser.getName());
+private ODESimData importBatchSimulation(OutputContext outputContext, Simulation sim) throws DataAccessException, RemoteProxyException, ExpressionException {
+
+	boolean success = false;
+	ODESimData simData = null;
 	
 	if(sim.getVersion() == null) {
 		throw new RuntimeException("Missing Version.");
@@ -346,10 +404,18 @@ private void importBatchSimulation(OutputContext outputContext, Simulation sim) 
 	User usr = sim.getVersion().getOwner();
 	
 
-//	VCSimulationIdentifier authoritativeVCSimulationIdentifier = simInfo.getAuthoritativeVCSimulationIdentifier();
-//	// sim.getScanCount()  number of jobs  - is 0
-//	VCSimulationDataIdentifier vcSimulationDataIdentifier = new VCSimulationDataIdentifier(authoritativeVCSimulationIdentifier, 0);
-//	VCellClientTest.getVCellClient().getClientServerManager().getDataSetController().getODEData(vcSimulationDataIdentifier);
+	VCSimulationIdentifier asi = simInfo.getAuthoritativeVCSimulationIdentifier();
+	// sim.getScanCount()  number of jobs must be one, so job index is 0
+	VCSimulationDataIdentifier vcSimulationDataIdentifier = new VCSimulationDataIdentifier(asi, 0);
+
+	ClientServerManager csm = VCellClientTest.getVCellClient().getClientServerManager();
+	DataSetController dsc = csm.getDataSetController();
+	simData = dsc.getODEData(vcSimulationDataIdentifier);
+	
+	System.out.println(sim.getName() + ": simulation results recovered");
+	return simData;
+	
+	
 	
 	/*
 	
@@ -393,6 +459,7 @@ private void importBatchSimulation(OutputContext outputContext, Simulation sim) 
 	}
 	
 	*/
+
 }
 
 private AsynchClientTask[] showSimulationResults0(final boolean isLocal, final ViewerType viewerType) {
