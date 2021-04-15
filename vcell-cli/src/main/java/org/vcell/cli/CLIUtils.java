@@ -286,11 +286,9 @@ public class CLIUtils {
                                 sbmlVarId = var.getSymbol().name();
                                 // translate SBML official symbols
                                 // TIME is t, etc.
-                                switch (sbmlVarId) {
-                                    case "TIME":
-                                        // this is VCell reserved symbold for time
-                                        sbmlVarId = "t";
-                                        break;
+                                if ("TIME".equals(sbmlVarId)) {
+                                    // this is VCell reserved symbold for time
+                                    sbmlVarId = "t";
                                 }
                                 // TODO
                                 // check spec for other symbols
@@ -326,7 +324,9 @@ public class CLIUtils {
                         expr.bindExpression(st);
                         //compute and write result, padding with NaN if unequal length or errors
                         double[] row = new double[vars.size()];
-                        sb.append(dataset.getLabel() + ",");
+                        // Handling row labels that contains ","
+                        if (dataset.getLabel().contains(",")) sb.append("\"" + dataset.getLabel() + "\"").append(",");
+                        else sb.append(dataset.getLabel()).append(",");
                         for (int i = 0; i < mxlen; i++) {
                             for (int j = 0; j < vars.size(); j++) {
                                 double[] varVals = ((double[]) values.get(vars.get(j)));
@@ -511,7 +511,7 @@ public class CLIUtils {
                     optional flags:        --rel_out_path | --apply_xml_model_changes |
                          --report_formats | --plot_formats | --log | --indent
         * */
-
+        // handle exceptions here
         if (checkInstallationError() == 0) {
             execShellCommand(new String[]{python, cliPath.toString(), "execSedDoc", omexFilePath, outputDir}).start().waitFor();
             System.out.println("HDF conversion completed in '" + outputDir + "'\n");
