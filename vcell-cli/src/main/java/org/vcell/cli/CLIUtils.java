@@ -471,6 +471,19 @@ public class CLIUtils {
         return new ProcessBuilder(args);
     }
 
+    public static void printProcessErrors(Process process, String outString, String errString) throws InterruptedException, IOException {
+        // Process printing code goes here
+        process.waitFor();
+        if (process.exitValue() != 0) {
+            System.err.print(errString);
+            InputStream errorStream = process.getErrorStream();
+            int c;
+            while ((c = errorStream.read()) != -1) {
+                System.err.print((char)c);
+            }
+        } else System.out.print(outString);
+    }
+
     public static int checkInstallationError() {
         String version = "--version";
         ProcessBuilder processBuilder;
@@ -490,10 +503,9 @@ public class CLIUtils {
                 while ((stdOutLog = bufferedReader.readLine()) != null) {
                     stringBuilder.append(stdOutLog);
                     // search string can be one or more...
-                        if (!stringBuilder.toString().toLowerCase().startsWith("python")) System.err.println("Please check your local Python and PIP Installation, install requirements.txt");
+                        if (!stringBuilder.toString().toLowerCase().startsWith("python")) System.err.println("Please check your local Python and PIP Installation, install required packages");
                 }
             }
-
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }
@@ -513,10 +525,9 @@ public class CLIUtils {
         * */
         // handle exceptions here
         if (checkInstallationError() == 0) {
-            execShellCommand(new String[]{python, cliPath.toString(), "execSedDoc", omexFilePath, outputDir}).start().waitFor();
-            System.out.println("HDF conversion completed in '" + outputDir + "'\n");
-        } else System.err.println("HDF5 conversion failed...");
-
+            Process process = execShellCommand(new String[]{python, cliPath.toString(), "execSedDoc", omexFilePath, outputDir}).start();
+            printProcessErrors(process, "HDF conversion successful\n","HDF conversion failed\n");
+        }
     }
 
     // Sample STATUS YML
@@ -560,29 +571,35 @@ public class CLIUtils {
 
          status_yml
         */
-        execShellCommand(new String[]{python, statusPath.toString(), "genStatusYaml", String.valueOf(omexFilePath), outDir}).start().waitFor();
+        Process process = execShellCommand(new String[]{python, statusPath.toString(), "genStatusYaml", String.valueOf(omexFilePath), outDir}).start();
+        printProcessErrors(process, "","Failed generating status YAML\n");
     }
 
     public static void updateTaskStatusYml(String sedmlName, String taskName, Status taskStatus, String outDir) throws IOException, InterruptedException {
-        execShellCommand(new String[]{python, statusPath.toString(), "updateTaskStatus", sedmlName, taskName, taskStatus.toString(), outDir}).start().waitFor();
+        Process process = execShellCommand(new String[]{python, statusPath.toString(), "updateTaskStatus", sedmlName, taskName, taskStatus.toString(), outDir}).start();
+        printProcessErrors(process, "","Failed updating task status YAML\n");
 
     }
 
     public static void finalStatusUpdate(Status simStatus, String outDir) throws IOException, InterruptedException {
-        execShellCommand(new String[]{python, statusPath.toString(), "simStatus", simStatus.toString(), outDir}).start().waitFor();
+        Process process = execShellCommand(new String[]{python, statusPath.toString(), "simStatus", simStatus.toString(), outDir}).start();
+        printProcessErrors(process, "","");
     }
 
     public static void updateDatasetStatusYml(String sedmlName, String dataSet, String var, Status simStatus, String outDir) throws IOException, InterruptedException {
-        execShellCommand(new String[]{python, statusPath.toString(), "updateDataSetStatus", sedmlName, dataSet, var, simStatus.toString(), outDir}).start().waitFor();
+        Process process = execShellCommand(new String[]{python, statusPath.toString(), "updateDataSetStatus", sedmlName, dataSet, var, simStatus.toString(), outDir}).start();
+        printProcessErrors(process, "","");
     }
 
     public static void transposeVcmlCsv(String csvFilePath) throws IOException, InterruptedException {
-        execShellCommand(new String[]{python, cliPath.toString(), "transposeVcmlCsv", csvFilePath}).start().waitFor();
+        Process process = execShellCommand(new String[]{python, cliPath.toString(), "transposeVcmlCsv", csvFilePath}).start();
+        printProcessErrors(process, "","");
     }
 
     public static void genPlots(String sedmlPath, String resultOutDir) throws IOException, InterruptedException {
         // TODO: Update status for curves to status YAML
-        execShellCommand(new String[]{python, cliPath.toString(), "genPlotPdfs", sedmlPath, resultOutDir}).start().waitFor();
+        Process process = execShellCommand(new String[]{python, cliPath.toString(), "genPlotPdfs", sedmlPath, resultOutDir}).start();
+        printProcessErrors(process, "","");
     }
 
 
