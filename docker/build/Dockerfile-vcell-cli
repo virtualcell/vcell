@@ -17,7 +17,7 @@
 FROM ghcr.io/virtualcell/vcell_cli_base:latest
 
 # Install required python-packages
-RUN pip3 install vcell-cli-util
+RUN pip3 install vcell-cli-utils
 
 # Copy JAR files
 COPY ./vcell-client/target/vcell-client-0.0.1-SNAPSHOT.jar \
