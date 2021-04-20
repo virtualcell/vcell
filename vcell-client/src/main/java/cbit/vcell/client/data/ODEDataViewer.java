@@ -32,9 +32,7 @@ import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.client.task.ClientTaskDispatcher.BlockingTimer;
 import cbit.vcell.export.gui.ExportMonitorPanel;
-import cbit.vcell.math.VariableType;
 import cbit.vcell.simdata.DataManager;
-import cbit.vcell.simdata.SpatialSelection;
 import cbit.vcell.solver.DataSymbolMetadata;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationModelInfo;
@@ -394,6 +392,9 @@ public void setSimulation(Simulation simulation) {
 		(simulation != null?simulation.getMathDescription():null));
 }
 
+public void setHDF5DescriptionText(String descr) {
+	getPlotPane1().setHDF5DescriptionText(descr);
+}
 
 /**
  * Sets the vcDataIdentifier property (cbit.vcell.server.VCDataIdentifier) value.

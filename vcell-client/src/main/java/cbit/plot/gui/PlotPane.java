@@ -1206,6 +1206,9 @@ public void setBCompact(boolean bCompact) {
 	firePropertyChange("bCompact", new Boolean(oldValue), new Boolean(bCompact));
 }
 
+public void setHDF5DescriptionText(String descr) {
+	getPlot2DDataPanel1().setHDF5DescriptionText( descr);
+}
 
 /**
  * Set the CardLayout1 to a new value.

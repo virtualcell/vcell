@@ -44,7 +44,9 @@ import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.client.task.ClientTaskDispatcher.BlockingTimer;
 import cbit.vcell.export.gui.ExportMonitorPanel;
 import cbit.vcell.export.server.ExportSpecs;
+import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.math.Constant;
+import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.simdata.ClientPDEDataContext;
 import cbit.vcell.simdata.DataIdentifier;
 import cbit.vcell.simdata.DataManager;
@@ -100,7 +102,14 @@ private DataViewer createODEDataViewer() throws DataAccessException {
 	odeDataViewer.setOdeSolverResultSet(((ODEDataManager)dataManager).getODESolverResultSet());
 	odeDataViewer.setNFSimMolecularConfigurations(((ODEDataManager)dataManager).getNFSimMolecularConfigurations());
 	odeDataViewer.setVcDataIdentifier(dataManager.getVCDataIdentifier());
-	
+	if(getSimulation() != null) {
+		odeDataViewer.setHDF5DescriptionText(
+				(simulation.getSimulationOwner() instanceof SimulationContext
+						?((SimulationContext)simulation.getSimulationOwner()).getBioModel().toString()
+						:"")+"\n"+
+				simulation.getSimulationOwner()+"\n"+
+				"Simulation:"+simulation.getSimulationVersion().toString());
+	}
 	//
 	//Example code for reading stats data from Stochastic multitrial non-histogram
 	//
