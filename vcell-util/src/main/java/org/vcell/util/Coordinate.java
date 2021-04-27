@@ -21,7 +21,7 @@ public class Coordinate implements java.io.Serializable,Cloneable,org.vcell.util
 	public final static int X_AXIS = 0;
 	public final static int Y_AXIS = 1;
 	public final static int Z_AXIS = 2;
-	private static final String[] PLANENAMES = {"YZ","XZ","XY"};
+	public static final String[] PLANENAMES = {"YZ","XZ","XY"};
 	//Plane name represents which is horizontal(1st letter) and vertical(2nd letter) axis when looking down the normal axis
 /**
  * This method was created in VisualAge.

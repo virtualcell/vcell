@@ -243,7 +243,7 @@ protected void fireJButtonOKAction_actionPerformed(java.util.EventObject newEven
 public ASCIISpecs getAsciiSpecs() {
 	return new ASCIISpecs(ExportFormat.CSV, getExportDataType(), getSwitchRowsColumns(),
 			(simulationSelector==null?null:simulationSelector.getSelectedSimDataInfo()),(simulationSelector==null?null:simulationSelector.getselectedParamScanIndexes()),
-			(isCSVExport && getTimeSimVarChkBox().isSelected()?ASCIISpecs.csvRoiLayout.time_sim_var:ASCIISpecs.csvRoiLayout.var_time_val));
+			(isCSVExport && getTimeSimVarChkBox().isSelected()?ASCIISpecs.csvRoiLayout.time_sim_var:ASCIISpecs.csvRoiLayout.var_time_val),ivjJCheckBoxHDF5.isSelected());
 }
 /**
  * Return the ButtonGroup1 property value.
@@ -537,9 +537,15 @@ private void initialize() {
 		constraintsJLabelAdditional.weightx = 1.0;
 		constraintsJLabelAdditional.insets = new Insets(0, 5, 5, 0);
 		add(getJLabelAdditional(), constraintsJLabelAdditional);
+		GridBagConstraints gbc_ivjJCheckBoxHDF5 = new GridBagConstraints();
+		gbc_ivjJCheckBoxHDF5.anchor = GridBagConstraints.WEST;
+		gbc_ivjJCheckBoxHDF5.insets = new Insets(0, 5, 5, 0);
+		gbc_ivjJCheckBoxHDF5.gridx = 0;
+		gbc_ivjJCheckBoxHDF5.gridy = 4;
+		add(getIvjJCheckBoxHDF5(), gbc_ivjJCheckBoxHDF5);
 
 		java.awt.GridBagConstraints constraintsJCheckBoxSwitch = new java.awt.GridBagConstraints();
-		constraintsJCheckBoxSwitch.gridx = 0; constraintsJCheckBoxSwitch.gridy = 4;
+		constraintsJCheckBoxSwitch.gridx = 0; constraintsJCheckBoxSwitch.gridy = 5;
 		constraintsJCheckBoxSwitch.fill = java.awt.GridBagConstraints.HORIZONTAL;
 		constraintsJCheckBoxSwitch.insets = new Insets(0, 5, 5, 0);
 		add(getJCheckBoxSwitch(), constraintsJCheckBoxSwitch);
@@ -547,33 +553,33 @@ private void initialize() {
 		gbc_chckbxExportMultipleSimulations.fill = GridBagConstraints.HORIZONTAL;
 		gbc_chckbxExportMultipleSimulations.insets = new Insets(0, 5, 5, 0);
 		gbc_chckbxExportMultipleSimulations.gridx = 0;
-		gbc_chckbxExportMultipleSimulations.gridy = 5;
+		gbc_chckbxExportMultipleSimulations.gridy = 6;
 		add(getChckbxExportMultipleSimulations(), gbc_chckbxExportMultipleSimulations);
 		GridBagConstraints gbc_simSelectorButton = new GridBagConstraints();
 		gbc_simSelectorButton.insets = new Insets(0, 0, 5, 0);
 		gbc_simSelectorButton.gridx = 0;
-		gbc_simSelectorButton.gridy = 6;
+		gbc_simSelectorButton.gridy = 7;
 		add(getSimSelectorButton(), gbc_simSelectorButton);
 		GridBagConstraints gbc_timeSimVarChkBox = new GridBagConstraints();
 		gbc_timeSimVarChkBox.insets = new Insets(0, 0, 5, 0);
 		gbc_timeSimVarChkBox.gridx = 0;
-		gbc_timeSimVarChkBox.gridy = 7;
+		gbc_timeSimVarChkBox.gridy = 8;
 		add(getTimeSimVarChkBox(), gbc_timeSimVarChkBox);
 		GridBagConstraints gbc_chckbxExportMultiParamScan = new GridBagConstraints();
 		gbc_chckbxExportMultiParamScan.anchor = GridBagConstraints.WEST;
 		gbc_chckbxExportMultiParamScan.insets = new Insets(0, 5, 5, 0);
 		gbc_chckbxExportMultiParamScan.gridx = 0;
-		gbc_chckbxExportMultiParamScan.gridy = 8;
+		gbc_chckbxExportMultiParamScan.gridy = 9;
 		add(getChckbxExportMultiParamScan(), gbc_chckbxExportMultiParamScan);
 		GridBagConstraints gbc_paramScanSelectorButton = new GridBagConstraints();
 		gbc_paramScanSelectorButton.insets = new Insets(0, 0, 5, 0);
 		gbc_paramScanSelectorButton.gridx = 0;
-		gbc_paramScanSelectorButton.gridy = 9;
+		gbc_paramScanSelectorButton.gridy = 10;
 		add(getParamScanSelectorButton(), gbc_paramScanSelectorButton);
 
 		java.awt.GridBagConstraints constraintsJPanel1 = new java.awt.GridBagConstraints();
 		constraintsJPanel1.weighty = 1.0;
-		constraintsJPanel1.gridx = 0; constraintsJPanel1.gridy = 10;
+		constraintsJPanel1.gridx = 0; constraintsJPanel1.gridy = 11;
 		constraintsJPanel1.fill = java.awt.GridBagConstraints.HORIZONTAL;
 		constraintsJPanel1.weightx = 1.0;
 		constraintsJPanel1.insets = new java.awt.Insets(4, 4, 4, 4);
@@ -709,6 +715,7 @@ private void updateExportDataType() {
 	private JCheckBox chckbxExportMultiParamScan;
 	private JButton paramScanSelectorButton;
 	private JCheckBox timeSimVarChkBox;
+	private JCheckBox ivjJCheckBoxHDF5;
 	public void setSimulationSelector(ExportSpecs.SimulationSelector simulationSelector){
 		this.simulationSelector = simulationSelector;
 		getChckbxExportMultipleSimulations().setEnabled(simulationSelector != null && simulationSelector.getNumAvailableSimulations()>1);
@@ -779,5 +786,11 @@ private void updateExportDataType() {
 			timeSimVarChkBox.setEnabled(false);
 		}
 		return timeSimVarChkBox;
+	}
+	private JCheckBox getIvjJCheckBoxHDF5() {
+		if (ivjJCheckBoxHDF5 == null) {
+			ivjJCheckBoxHDF5 = new JCheckBox("HDF5 Format");
+		}
+		return ivjJCheckBoxHDF5;
 	}
 }

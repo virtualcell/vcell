@@ -25,16 +25,22 @@ public class ASCIISpecs extends FormatSpecificSpecs implements Serializable {
 	private int[] exportMultipleParamScans;
 	public static enum csvRoiLayout {var_time_val,time_sim_var}
 	private csvRoiLayout csvLayout;
+	private boolean isHDF5;
 /**
  * TextSpecs constructor comment.
  */
-public ASCIISpecs(ExportFormat format, ExportConstants.DataType dataType2, boolean switchRowsColumns,ExportSpecs.SimNameSimDataID[] simNameSimDataIDs,int[] exportMultipleParamScans,csvRoiLayout csvLayout) {
+public ASCIISpecs(ExportFormat format, ExportConstants.DataType dataType2, boolean switchRowsColumns,ExportSpecs.SimNameSimDataID[] simNameSimDataIDs,int[] exportMultipleParamScans,csvRoiLayout csvLayout,boolean isHDF5) {
 	this.format = format;
 	this.dataType = dataType2;
 	this.switchRowsColumns = switchRowsColumns;
 	this.simNameSimDataIDs = simNameSimDataIDs;
 	this.exportMultipleParamScans = exportMultipleParamScans;
 	this.csvLayout = csvLayout;
+	this.isHDF5 = isHDF5;
+}
+
+public boolean isHDF5() {
+	return isHDF5;
 }
 public csvRoiLayout getCSVRoiLayout(){
 	return csvLayout;

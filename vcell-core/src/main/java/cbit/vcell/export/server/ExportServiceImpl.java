@@ -10,6 +10,7 @@
 
 package cbit.vcell.export.server;
 import java.io.BufferedOutputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -31,6 +32,8 @@ import org.vcell.util.document.ExternalDataIdentifier;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCDataIdentifier;
+
+import com.google.common.io.Files;
 
 import cbit.rmi.event.ExportEvent;
 import cbit.rmi.event.ExportListener;
@@ -261,6 +264,17 @@ public ExportEvent makeRemoteFile(OutputContext outputContext,User user, DataSer
 				case CSV:
 					Collection<ExportOutput> asciiOut = asciiExporter.makeASCIIData(outputContext,newExportJob, user, dataServerImpl, exportSpecs,fileDataContainerManager);
 					exportOutputs = asciiOut.toArray(new ExportOutput[asciiOut.size()]);
+					if(((ASCIISpecs)exportSpecs.getFormatSpecificSpecs()).isHDF5()) {
+						ByteArrayOutputStream baos = new ByteArrayOutputStream();
+						exportOutputs[0].writeDataToOutputStream(baos, fileDataContainerManager);//Get location of temp HDF5 file
+						File tempHDF5File = new File(baos.toString());
+//						File downloadableHDF5File = new File(exportBaseDir +exportOutputs[0].getSimID() + exportOutputs[0].getDataID() + ".hdf5");
+						File downloadableHDF5File = new File(exportBaseDir + newExportJob.getJobID() + ".hdf5");
+						Files.copy(tempHDF5File, downloadableHDF5File);
+						tempHDF5File.delete();
+						URL url = new URL(exportBaseURL + downloadableHDF5File.getName());
+						return fireExportCompleted(newExportJob.getJobID(), exportSpecs.getVCDataIdentifier(), fileFormat, url.toString(),exportSpecs);
+					}
 					return makeRemoteFile(fileFormat, exportBaseDir, exportBaseURL, exportOutputs, exportSpecs, newExportJob,fileDataContainerManager);
 				case QUICKTIME:
 				case GIF:

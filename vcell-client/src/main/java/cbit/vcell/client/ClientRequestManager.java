@@ -2836,6 +2836,11 @@ public class ClientRequestManager
 					fileChooser.setFileFilter(FileFilters.FILE_FILTER_JPEG);
 
 					suffix = "_exported.jpeg";
+				} else if (evt.getLocation().toLowerCase().endsWith(".hdf5")) {
+					fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_HDF5);
+					fileChooser.setFileFilter(FileFilters.FILE_FILTER_HDF5);
+
+					suffix = "_exported.hdf5";
 				} else {
 					fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_ZIP);
 					fileChooser.setFileFilter(FileFilters.FILE_FILTER_ZIP);

@@ -9,15 +9,22 @@
  */
 
 package cbit.vcell.export.server;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.Vector;
+import java.util.function.IntFunction;
 
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.vcell.solver.smoldyn.SmoldynVCellMapper;
 import org.vcell.solver.smoldyn.SmoldynVCellMapper.SmoldynKeyword;
@@ -35,16 +42,28 @@ import org.vcell.util.document.VCDataJobID;
 import cbit.vcell.export.server.FileDataContainerManager.FileDataContainerID;
 import cbit.vcell.geometry.SinglePoint;
 import cbit.vcell.math.VariableType;
+import cbit.vcell.math.Variable.Domain;
+import cbit.vcell.parser.Expression;
+import cbit.vcell.simdata.DataInfoProvider;
 import cbit.vcell.simdata.DataServerImpl;
 import cbit.vcell.simdata.OutputContext;
 import cbit.vcell.simdata.ParticleDataBlock;
 import cbit.vcell.simdata.SimDataBlock;
+import cbit.vcell.simdata.SimulationData;
 import cbit.vcell.simdata.SpatialSelection;
 import cbit.vcell.simdata.SpatialSelectionMembrane;
 import cbit.vcell.simdata.SpatialSelectionVolume;
 import cbit.vcell.solver.ode.ODESimData;
 import cbit.vcell.solvers.CartesianMesh;
 import edu.uchc.connjur.wb.ExecutionTrace;
+import ncsa.hdf.hdf5lib.H5;
+import ncsa.hdf.hdf5lib.HDF5Constants;
+import ncsa.hdf.hdf5lib.HDFArray;
+import ncsa.hdf.hdf5lib.HDFNativeData;
+import ncsa.hdf.hdf5lib.exceptions.HDF5Exception;
+import ncsa.hdf.hdf5lib.exceptions.HDF5LibraryException;
+import ncsa.hdf.hdf5lib.structs.H5G_info_t;
+import ncsa.hdf.hdf5lib.structs.H5L_info_t;
 /**
  * Insert the type's description here.
  * Creation date: (4/27/2004 1:38:59 PM)
@@ -424,6 +443,14 @@ private ExportOutput sofyaFormat(OutputContext outputContext,long jobID, User us
 	}
 	return exportOutput1;
 }
+
+public enum PCS {VCDID,VARNAME,POINTINFO,POINTVALS,TIMES,TIMEBOUNDS,CURVES,CURVEVALS,CURVEINDEXES,CURVEDISTANCES,CURVECROSSMEMBRINDEX};
+private class PointsCurvesSlices {
+	public TreeMap<PCS,Object> data = new TreeMap<PCS,Object>();
+	public PointsCurvesSlices() {
+		
+	};
+}
 /**
  * This method was created in VisualAge.
  * @throws IOException 
@@ -452,9 +479,23 @@ private List<ExportOutput> exportPDEData(OutputContext outputContext,long jobID,
 			TOTAL_EXPORTS_OPS = SIM_COUNT*PARAMSCAN_COUNT*variableSpecs.getVariableNames().length*TIME_COUNT;
 			break;
 	}
+	File hdf5TempFile = null;
 	if(asciiSpecs.getCSVRoiLayout() == ASCIISpecs.csvRoiLayout.time_sim_var){
 		exportOutputV.add(new ExportOutput[] {sofyaFormat(outputContext, jobID, user, dataServerImpl, orig_vcdID, variableSpecs, timeSpecs, geometrySpecs, asciiSpecs, contextName, fileDataContainerManager)});
 	}else{
+		try {
+		int hdf5FileID = -1;//Used if HDF5 format
+		if(asciiSpecs.isHDF5()) {
+			hdf5TempFile = File.createTempFile("pde", ".hdf5");
+			hdf5FileID = H5.H5Fcreate(hdf5TempFile.getAbsolutePath(), HDF5Constants.H5F_ACC_TRUNC,HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT);
+		}
+//		TreeMap<VCDataIdentifier,TreeMap<String,PointsCurvesSlices>> simsVarnamesDataMap = new TreeMap<VCDataIdentifier,TreeMap<String,PointsCurvesSlices>>();
+		PointsCurvesSlices[][] pointsCurvesSlices = new PointsCurvesSlices[SIM_COUNT][variableSpecs.getVariableNames().length];
+		for(int i=0;i< pointsCurvesSlices.length;i++) {
+			for(int j=0;j< pointsCurvesSlices[i].length;j++) {
+				pointsCurvesSlices[i][j] = new PointsCurvesSlices();
+			}
+		}
 		for (int v = 0; v < SIM_COUNT; v++) {
 			int simJobIndex = simNameSimDataIDs[v].getDefaultJobIndex();
 			VCDataIdentifier vcdID = simNameSimDataIDs[v].getVCDataIdentifier(simJobIndex);
@@ -480,16 +521,30 @@ private List<ExportOutput> exportPDEData(OutputContext outputContext,long jobID,
 						" '"+psName+"'="+simNameSimDataIDs[v].getExportParamScanInfo().getParamScanConstantValues()[simJobIndex][i];					
 					}
 				}
-				String simID = vcdID.getID();							
+				int hdf5GroupID = -1;//Used if HDF5 format
+				if(asciiSpecs.isHDF5()) {
+					hdf5GroupID = H5.H5Gcreate(hdf5FileID, vcdID.toString(),HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT);
+				}
+				String simID = vcdID.getID();						
 				String dataType = ".csv";
 				FileDataContainerID fileDataContainerID_header = fileDataContainerManager.getNewFileDataContainerID();
 				SimulationDescription simulationDescription = new SimulationDescription(outputContext,user, dataServerImpl,vcdID,false, null);
 				fileDataContainerManager.append(fileDataContainerID_header,"\""+"Model: '"+contextName+"'\"\n\"Simulation: '"+simNameSimDataIDs[v].getSimulationName()+"' ("+paramScanInfo+")\"\n"+simulationDescription.getHeader(dataType));
+				CartesianMesh mesh = dataServerImpl.getMesh(user, vcdID);
+
+				if(hdf5GroupID != -1) {
+					double[] subTimes = new double[endTimeIndex-beginTimeIndex+1];
+					for(int st=beginTimeIndex;st<=endTimeIndex;st++) {
+						subTimes[st-beginTimeIndex] = allTimes[st];
+					}
+					writeHDF5Dataset(hdf5GroupID, PCS.TIMES.name(), new long[] {subTimes.length}, subTimes);
+					writeHDF5Dataset(hdf5GroupID, PCS.TIMEBOUNDS.name(), new long[] {2}, new int[] {beginTimeIndex,endTimeIndex});
+				}
+
 				switch (geometrySpecs.getModeID()) {
 					case GEOMETRY_SELECTIONS: {
 						// Set mesh on SpatialSelection because mesh is transient field because it's too big for messaging
 						SpatialSelection[] spatialSelections = geometrySpecs.getSelections();
-						CartesianMesh mesh = dataServerImpl.getMesh(user, vcdID);
 						for (int i = 0; i < spatialSelections.length; i ++) {
 							if(spatialSelections[i].getMesh() == null){
 								spatialSelections[i].setMesh(mesh);
@@ -498,39 +553,86 @@ private List<ExportOutput> exportPDEData(OutputContext outputContext,long jobID,
 								//This will throw fail message
 								spatialSelections[i].setMesh(mesh);
 							}
+//							int hdf5DatasetID = -1;
+//							int hdf5DataspaceID = -1;
+//							if(hdf5GroupID != -1) {
+//								long[] dims = new long[spatialSelections[i].getMesh().getGeometryDimension()];
+//								String s = "";
+//								for(int j=0; j<dims.length;j++) {
+//									if(j!=0) {
+//										s+="x";
+//									}
+//									dims[j] = (j==0?spatialSelections[j].getMesh().getISize().getX():(j==1?spatialSelections[j].getMesh().getISize().getY():spatialSelections[j].getMesh().getISize().getZ()));
+//									s+=dims[j];
+//								}
+//								hdf5DataspaceID = H5.H5Screate_simple(dims.length, dims, null);
+//								hdf5DataspaceIDs.add(H5.H5Dcreate(hdf5GroupID, dims.length+"D java double "+s,HDF5Constants.H5T_NATIVE_DOUBLE, hdf5DataspaceID,HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT));
+//							}
 						}
+
 						Vector<ExportOutput> outputV = new Vector<ExportOutput>();
 						if (geometrySpecs.getPointCount() > 0) {//assemble single point data together (uses more compact formatting)
 							String dataID = "_Points_vars("+geometrySpecs.getPointCount()+")_times("+( endTimeIndex-beginTimeIndex+1)+")";
 							//StringBuilder data1 = new StringBuilder(data.toString());
 							ExportOutput exportOutput1 = new ExportOutput(true, dataType, simID, dataID/* + variableSpecs.getVariableNames()[i]*/, fileDataContainerManager);
 							fileDataContainerManager.append(exportOutput1.getFileDataContainerID(), fileDataContainerID_header);
-							
-							for (int i=0;i<variableSpecs.getVariableNames().length;i++) {
+							int hdf5GroupPointID = -1;//Used if HDF5 format
+							if(asciiSpecs.isHDF5()) {
+								hdf5GroupPointID = H5.H5Gcreate(hdf5GroupID, "Points",HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT);
+							}
+							for (int varNameIndx=0;varNameIndx<variableSpecs.getVariableNames().length;varNameIndx++) {
+								int hdf5GroupVarID = -1;//Used if HDF5 format
+								if(asciiSpecs.isHDF5()) {
+									hdf5GroupVarID = H5.H5Gcreate(hdf5GroupPointID, variableSpecs.getVariableNames()[varNameIndx],HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT);
+								}
 								fileDataContainerManager.append(exportOutput1.getFileDataContainerID(),
-									getPointsTimeSeries(outputContext,user, dataServerImpl, vcdID, variableSpecs.getVariableNames()[i], geometrySpecs, allTimes, beginTimeIndex, endTimeIndex, asciiSpecs.getSwitchRowsColumns(),fileDataContainerManager));
+									getPointsTimeSeries(pointsCurvesSlices[v][varNameIndx],hdf5GroupVarID,outputContext,user, dataServerImpl, vcdID, variableSpecs.getVariableNames()[varNameIndx], geometrySpecs, allTimes, beginTimeIndex, endTimeIndex, asciiSpecs.getSwitchRowsColumns(),fileDataContainerManager));
 								fileDataContainerManager.append(exportOutput1.getFileDataContainerID(),"\n");
 								progressCounter++;
 								exportServiceImpl.fireExportProgress(jobID, orig_vcdID, "CSV", progressCounter/TOTAL_EXPORTS_OPS);
+								if(hdf5GroupVarID != -1) {
+									H5.H5Gclose(hdf5GroupVarID);
+								}
 							}
 							outputV.add(exportOutput1);
+							if(hdf5GroupPointID != -1) {
+								H5.H5Gclose(hdf5GroupPointID);
+							}
+
 						}
 						if(geometrySpecs.getCurves().length != 0){//assemble curve (non-single point) data together
 							String dataID = "_Curves_vars("+(geometrySpecs.getCurves().length)+")_times("+( endTimeIndex-beginTimeIndex+1)+")";
 							//StringBuilder data1 = new StringBuilder(data.toString());
 							ExportOutput exportOutput1 = new ExportOutput(true, dataType, simID, dataID/* + variableSpecs.getVariableNames()[i]*/, fileDataContainerManager);
 							fileDataContainerManager.append(exportOutput1.getFileDataContainerID(), fileDataContainerID_header);
-							for (int i=0;i<variableSpecs.getVariableNames().length;i++) {
+							int hdf5GroupPointID = -1;//Used if HDF5 format
+							if(asciiSpecs.isHDF5()) {
+								hdf5GroupPointID = H5.H5Gcreate(hdf5GroupID, "Curves",HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT);
+								
+							}
+							for (int varNameIndx=0;varNameIndx<variableSpecs.getVariableNames().length;varNameIndx++) {
+								int hdf5GroupVarID = -1;//Used if HDF5 format
+								if(asciiSpecs.isHDF5()) {
+									hdf5GroupVarID = H5.H5Gcreate(hdf5GroupPointID, variableSpecs.getVariableNames()[varNameIndx],HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT);
+								}
+								pointsCurvesSlices[v][varNameIndx].data.put(PCS.CURVES, new TreeMap<String,TreeMap<PCS,Object>>());
 								for (int s = 0; s < geometrySpecs.getCurves().length; s++) {
 									if(!GeometrySpecs.isSinglePoint(geometrySpecs.getCurves()[s])){
-										fileDataContainerManager.append(exportOutput1.getFileDataContainerID(),getCurveTimeSeries(outputContext,user, dataServerImpl, vcdID, variableSpecs.getVariableNames()[i], geometrySpecs.getCurves()[s], allTimes, beginTimeIndex, endTimeIndex, asciiSpecs.getSwitchRowsColumns(),fileDataContainerManager));
+										fileDataContainerManager.append(exportOutput1.getFileDataContainerID(),getCurveTimeSeries(hdf5GroupVarID,pointsCurvesSlices[v][varNameIndx],outputContext,user, dataServerImpl, vcdID, variableSpecs.getVariableNames()[varNameIndx], geometrySpecs.getCurves()[s], allTimes, beginTimeIndex, endTimeIndex, asciiSpecs.getSwitchRowsColumns(),fileDataContainerManager));
 										fileDataContainerManager.append(exportOutput1.getFileDataContainerID(),"\n");
 										progressCounter++;
 										exportServiceImpl.fireExportProgress(jobID, orig_vcdID, "CSV", progressCounter/TOTAL_EXPORTS_OPS);
 									}
 								}
+								if(hdf5GroupVarID != -1) {
+									H5.H5Gclose(hdf5GroupVarID);
+								}
 							}
 							outputV.add(exportOutput1);
+							if(hdf5GroupPointID != -1) {
+								H5.H5Gclose(hdf5GroupPointID);
+							}
+
 						}
 						exportOutputV.add(outputV.toArray(new ExportOutput[0]));
 						break;
@@ -538,7 +640,9 @@ private List<ExportOutput> exportPDEData(OutputContext outputContext,long jobID,
 					case GEOMETRY_SLICE: {
 						String dataID = "_Slice_" + Coordinate.getNormalAxisPlaneName(geometrySpecs.getAxis()) + "_" + geometrySpecs.getSliceNumber() + "_";
 						ExportOutput[] output = new ExportOutput[variableSpecs.getVariableNames().length * TIME_COUNT];
+						SliceHelper sliceHelper = new SliceHelper(TIME_COUNT,(hdf5GroupID != -1),Coordinate.getNormalAxisPlaneName(geometrySpecs.getAxis()), geometrySpecs.getSliceNumber(), asciiSpecs.getSwitchRowsColumns(), mesh);
 						for (int j=0;j<variableSpecs.getVariableNames().length;j++) {
+							sliceHelper.setHDF5GroupVarID(hdf5GroupID,variableSpecs.getVariableNames()[j]);
 							for (int i=0;i<TIME_COUNT;i++) {
 								StringBuilder inset = new StringBuilder(Integer.toString(i + beginTimeIndex));
 									inset.reverse();
@@ -550,16 +654,27 @@ private List<ExportOutput> exportPDEData(OutputContext outputContext,long jobID,
 								ExportOutput exportOutput1 = new ExportOutput(true, dataType, simID, dataID1/* + variableSpecs.getVariableNames()[i]*/, fileDataContainerManager);
 								fileDataContainerManager.append(exportOutput1.getFileDataContainerID(), fileDataContainerID_header);
 								fileDataContainerManager.append(exportOutput1.getFileDataContainerID(),
-									getSlice(outputContext,user, dataServerImpl, vcdID, variableSpecs.getVariableNames()[j], i + beginTimeIndex, Coordinate.getNormalAxisPlaneName(geometrySpecs.getAxis()), geometrySpecs.getSliceNumber(), asciiSpecs.getSwitchRowsColumns(),fileDataContainerManager));
+									getSlice(sliceHelper,mesh,allTimes,outputContext,user, dataServerImpl, vcdID, variableSpecs.getVariableNames()[j], i + beginTimeIndex, Coordinate.getNormalAxisPlaneName(geometrySpecs.getAxis()), geometrySpecs.getSliceNumber(), asciiSpecs.getSwitchRowsColumns(),fileDataContainerManager));
 								output[j * TIME_COUNT + i] = exportOutput1;
-								
+//								if(sliceHelper.hdf5GroupVarID != -1) {
+//									if(sliceHelper.isMembrane) {
+//										
+//									}else {
+//										//Select next section of destination to copy-to
+//										H5.H5Sselect_hyperslab(sliceHelper.hdf5DataspaceIDValues, HDF5Constants.H5S_SELECT_SET, new long[] {0,0,i}, null, new long[] {sliceHelper.sizeXYZ[sliceHelper.outerSizeIndex],sliceHelper.sizeXYZ[sliceHelper.innerSizeIndex],1},null);
+//										//Copy from extracted sliceData to hdf5 file dataset
+//										H5.H5Dwrite_double(sliceHelper.hdf5DatasetIDValues, HDF5Constants.H5T_NATIVE_DOUBLE, sliceHelper.hdf5DataspaceIDSlice, sliceHelper.hdf5DataspaceIDValues, HDF5Constants.H5P_DEFAULT, sliceHelper.sliceData);
+//										H5.H5Sselect_none(sliceHelper.hdf5DataspaceIDValues);
+//									}
+//								}
 								progressCounter++;
 								exportServiceImpl.fireExportProgress(jobID, orig_vcdID, "CSV", progressCounter/TOTAL_EXPORTS_OPS);
-								//data1.cleanup();
-							//data2.cleanup();
 							}
+							sliceHelper.closeHDF5GroupAndValues();
 						}
-						
+						if(hdf5GroupID != -1) {
+							H5.H5Sclose(sliceHelper.hdf5DataspaceIDSlice);
+						}
 						exportOutputV.add(output);
 						break;
 					}
@@ -567,8 +682,25 @@ private List<ExportOutput> exportPDEData(OutputContext outputContext,long jobID,
 						throw new DataAccessException("Unexpected geometry modeID");
 					}
 				}
+				if(hdf5GroupID != -1) {
+					H5.H5Gclose(hdf5GroupID);
+				}
 			}
 		}
+		if(hdf5FileID != -1) {
+			H5.H5Fclose(hdf5FileID);
+		}
+		}catch(HDF5Exception e) {
+			e.printStackTrace();
+			throw new DataAccessException("HDF5 error:"+e.getMessage(),e);
+		}
+	}
+	
+	if(asciiSpecs.isHDF5()) {
+		VCDataIdentifier vcdID = simNameSimDataIDs[0].getVCDataIdentifier(0);
+		final ExportOutput exportOutput = new ExportOutput(true, ".hdf5", vcdID.getID(), ""+jobID, fileDataContainerManager);
+		fileDataContainerManager.append(exportOutput.getFileDataContainerID(), hdf5TempFile.getAbsolutePath());
+		return Arrays.asList(new ExportOutput[] {exportOutput});
 	}
 	
 	if(exportOutputV.size() == 1){//geometry_slice
@@ -592,13 +724,12 @@ private List<ExportOutput> exportPDEData(OutputContext outputContext,long jobID,
 
 }
 
-
 /**
  * This method was created in VisualAge.
  * @return java.lang.String
  * @throws IOException 
  */
-private FileDataContainerID getCurveTimeSeries(OutputContext outputContext,User user, DataServerImpl dataServerImpl, VCDataIdentifier vcdID, String variableName, SpatialSelection curve, double[] allTimes, int beginIndex, int endIndex, boolean switchRowsColumns,FileDataContainerManager fileDataContainerManager) throws DataAccessException, IOException {
+private FileDataContainerID getCurveTimeSeries(int hdf5GroupVarID,PointsCurvesSlices pointsCurvesSlices,OutputContext outputContext,User user, DataServerImpl dataServerImpl, VCDataIdentifier vcdID, String variableName, SpatialSelection curve, double[] allTimes, int beginIndex, int endIndex, boolean switchRowsColumns,FileDataContainerManager fileDataContainerManager) throws DataAccessException, IOException {
 	int[] pointIndexes = null;
 	double[] distances = null;
 	int[] crossingMembraneIndexes = null;
@@ -619,6 +750,15 @@ private FileDataContainerID getCurveTimeSeries(OutputContext outputContext,User 
 		}
 	}
 
+	pointsCurvesSlices.data.put(PCS.TIMES, new ArrayList<Double>());
+	pointsCurvesSlices.data.put(PCS.TIMEBOUNDS, new int[] {beginIndex,endIndex});
+	final TreeMap<PCS, Object> treePCS = new TreeMap<PCS,Object>();
+	((TreeMap<String,TreeMap<PCS,Object>>)pointsCurvesSlices.data.get(PCS.CURVES)).put(getSpatialSelectionDescription(curve), treePCS);
+	treePCS.put(PCS.CURVEINDEXES, pointIndexes);
+	treePCS.put(PCS.CURVEDISTANCES, distances);
+	if(crossingMembraneIndexes != null) {treePCS.put(PCS.CURVECROSSMEMBRINDEX, crossingMembraneIndexes);}
+	treePCS.put(PCS.CURVEVALS, new ArrayList<Double>());
+	
 	org.vcell.util.document.TimeSeriesJobSpec timeSeriesJobSpec =
 		new org.vcell.util.document.TimeSeriesJobSpec(
 				new String[]{variableName},new int[][]{pointIndexes},new int[][]{crossingMembraneIndexes},allTimes[beginIndex],1,allTimes[endIndex],
@@ -644,12 +784,14 @@ private FileDataContainerID getCurveTimeSeries(OutputContext outputContext,User 
 		fileDataContainerManager.append(fileDataContainerID,"Times,");
 		for (int i = beginIndex;i <= endIndex;i ++) {
 			fileDataContainerManager.append(fileDataContainerID,"," + allTimes[i]);
+			((ArrayList<Double>)pointsCurvesSlices.data.get(PCS.TIMES)).add(allTimes[i]);
 		}
 		fileDataContainerManager.append(fileDataContainerID,"\n");
 		for (int j = 0;j < distances.length;j ++) {
 			fileDataContainerManager.append(fileDataContainerID,"," + distances[j]);
 			for (int i = beginIndex;i <= endIndex; i ++) {
 				fileDataContainerManager.append(fileDataContainerID,"," + variableValues[j + 1][i - beginIndex]);
+				((ArrayList<Double>)treePCS.get(PCS.CURVEVALS)).add(variableValues[j + 1][i - beginIndex]);
 			}
 			fileDataContainerManager.append(fileDataContainerID,"\n");
 		}
@@ -662,18 +804,20 @@ private FileDataContainerID getCurveTimeSeries(OutputContext outputContext,User 
 		fileDataContainerManager.append(fileDataContainerID,"\n");
 		for (int i = beginIndex;i <= endIndex;i ++) {
 			fileDataContainerManager.append(fileDataContainerID,"," + allTimes[i]);
+			((ArrayList<Double>)pointsCurvesSlices.data.get(PCS.TIMES)).add(allTimes[i]);
 			for (int j = 0;j < distances.length;j ++) {
 				fileDataContainerManager.append(fileDataContainerID,"," + variableValues[j + 1][i - beginIndex]);
+				((ArrayList<Double>)treePCS.get(PCS.CURVEVALS)).add(variableValues[j + 1][i - beginIndex]);
 			}
 			fileDataContainerManager.append(fileDataContainerID,"\n");
 		}
 	}
-
 	if(curve instanceof SpatialSelectionMembrane){
 		fileDataContainerManager.append(fileDataContainerID,"\n");
 		fileDataContainerManager.append(fileDataContainerID,"\"Centroid(XYZ):Times:Values[Times,Centroid]\",X,Y,Z,distance");
 		for (int i = 0; i < variableValues[0].length; i++) {
 			fileDataContainerManager.append(fileDataContainerID,","+variableValues[0][i]);
+			((ArrayList<Double>)pointsCurvesSlices.data.get(PCS.TIMES)).add(variableValues[0][i]);
 		}
 		fileDataContainerManager.append(fileDataContainerID,"\n");
 		double distance = 0;
@@ -691,12 +835,85 @@ private FileDataContainerID getCurveTimeSeries(OutputContext outputContext,User 
 			fileDataContainerManager.append(fileDataContainerID,"," + distance);
 			for (int t = 0; t < variableValues[t].length; t++) {
 				fileDataContainerManager.append(fileDataContainerID,","+variableValues[i+1][t]);
+				((ArrayList<Double>)treePCS.get(PCS.CURVEVALS)).add(variableValues[i+1][t]);
 			}
 	
 			fileDataContainerManager.append(fileDataContainerID,"\n");
 		}
 	}
+	
+	if(hdf5GroupVarID != -1) {		
+		try {
+			int hdf5GroupCurveID = H5.H5Gcreate(hdf5GroupVarID, getSpatialSelectionDescription(curve),HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT);
+			writeHDF5Dataset(hdf5GroupCurveID, PCS.CURVEINDEXES.name(), new long[] {((int[])treePCS.get(PCS.CURVEINDEXES)).length}, (int[])treePCS.get(PCS.CURVEINDEXES));
+			writeHDF5Dataset(hdf5GroupCurveID, PCS.CURVEDISTANCES.name(), new long[] {((double[])treePCS.get(PCS.CURVEDISTANCES)).length}, (double[])treePCS.get(PCS.CURVEDISTANCES));
+			if(treePCS.get(PCS.CURVECROSSMEMBRINDEX) != null) {
+				writeHDF5Dataset(hdf5GroupCurveID, PCS.CURVECROSSMEMBRINDEX.name(), new long[] {((int[])treePCS.get(PCS.CURVECROSSMEMBRINDEX)).length}, (int[])treePCS.get(PCS.CURVECROSSMEMBRINDEX));
+				ArrayList<Integer> crossPoints = new ArrayList<Integer>();
+				for(int i=0;i<crossingMembraneIndexes.length;i++) {
+					if(crossingMembraneIndexes[i] != -1) {
+						crossPoints.add(i);
+					}
+				}
+				String attrText = PCS.CURVEVALS.name()+" columns "+crossPoints.get(0)+" and "+crossPoints.get(1)+" are added points of interpolation near membrane";
+				writeHDF5Dataset(hdf5GroupCurveID, PCS.CURVECROSSMEMBRINDEX.name()+" Info", null, attrText);
+			}
+			writeHDF5Dataset(hdf5GroupCurveID, PCS.CURVEVALS.name(), new long[] {endIndex-beginIndex+1,((int[])treePCS.get(PCS.CURVEINDEXES)).length}, (ArrayList<Double>)treePCS.get(PCS.CURVEVALS));
+			H5.H5Gclose(hdf5GroupCurveID);
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new DataAccessException(e.getMessage(),e);
+		}
+
+	}
 	return fileDataContainerID;   
+}
+
+private void writeHDF5Dataset(int hdf5GroupID,String dataspaceName,long[] dims,Object data) throws NullPointerException, HDF5Exception {
+	if(dims == null) {//Attribute
+		int h5attrcs1 = H5.H5Tcopy(HDF5Constants.H5T_C_S1);
+		H5.H5Tset_size(h5attrcs1, ((String)data).length());
+		int dataspace_id = H5.H5Screate (HDF5Constants.H5S_SCALAR);
+		int attribute_id = H5.H5Acreate (hdf5GroupID, dataspaceName, h5attrcs1, dataspace_id, HDF5Constants.H5P_DEFAULT,HDF5Constants.H5P_DEFAULT);
+		H5.H5Awrite (attribute_id, h5attrcs1, ((String)data).getBytes());
+		H5.H5Sclose(dataspace_id);
+		H5.H5Aclose(attribute_id);
+		H5.H5Tclose(h5attrcs1);
+		return;
+	}
+	int hdf5DataspaceID = H5.H5Screate_simple(dims.length, dims, null);
+	int hdf5DatasetID = -1;
+	if(data instanceof ArrayList && ((ArrayList<?>)data).get(0) instanceof Double) {
+		double[] hdfData = ArrayUtils.toPrimitive(((ArrayList<Double>)data).toArray(new Double[0]));
+		hdf5DatasetID = H5.H5Dcreate(hdf5GroupID, dataspaceName,HDF5Constants.H5T_NATIVE_DOUBLE, hdf5DataspaceID,HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT);
+		H5.H5Dwrite_double(hdf5DatasetID, HDF5Constants.H5T_NATIVE_DOUBLE, HDF5Constants.H5S_ALL, HDF5Constants.H5S_ALL, HDF5Constants.H5P_DEFAULT, hdfData);
+	}else if(data instanceof double[]) {
+		hdf5DatasetID = H5.H5Dcreate(hdf5GroupID, dataspaceName,HDF5Constants.H5T_NATIVE_DOUBLE, hdf5DataspaceID,HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT);
+		H5.H5Dwrite_double(hdf5DatasetID, HDF5Constants.H5T_NATIVE_DOUBLE, HDF5Constants.H5S_ALL, HDF5Constants.H5S_ALL, HDF5Constants.H5P_DEFAULT, (double[])data);
+	}else if(data instanceof int[]) {
+		hdf5DatasetID = H5.H5Dcreate(hdf5GroupID, dataspaceName,HDF5Constants.H5T_NATIVE_INT, hdf5DataspaceID,HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT);
+		H5.H5Dwrite_int(hdf5DatasetID, HDF5Constants.H5T_NATIVE_INT, HDF5Constants.H5S_ALL, HDF5Constants.H5S_ALL, HDF5Constants.H5P_DEFAULT, (int[])data);
+	}else if(data instanceof ArrayList && ((ArrayList<?>)data).get(0) instanceof String) {
+		int largestStrLen = 0;
+		for(int i=0;i<((ArrayList<String>)data).size();i++) {
+			largestStrLen = Math.max(largestStrLen, ((ArrayList<String>)data).get(i).length());
+		}
+		StringBuffer allStringSB = new StringBuffer();
+		for(int i=0;i<((ArrayList<String>)data).size();i++) {
+			allStringSB.append(StringUtils.rightPad(((ArrayList<String>)data).get(i), largestStrLen-((ArrayList<String>)data).get(i).length()));
+		}
+		int h5tcs1 = H5.H5Tcopy(HDF5Constants.H5T_C_S1);
+		H5.H5Tset_size(h5tcs1, largestStrLen);
+		hdf5DatasetID = H5.H5Dcreate(hdf5GroupID, dataspaceName,h5tcs1, hdf5DataspaceID,HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT);
+		final byte[] bytes = allStringSB.toString().getBytes();
+		H5.H5Dwrite(hdf5DatasetID, h5tcs1, HDF5Constants.H5S_ALL, HDF5Constants.H5S_ALL, HDF5Constants.H5P_DEFAULT, bytes);
+		H5.H5Tclose(h5tcs1);
+
+	}else {
+		throw new IllegalArgumentException("Unexpected data object "+data.toString());
+	}
+	H5.H5Dclose(hdf5DatasetID);
+	H5.H5Sclose(hdf5DataspaceID);
 }
 
 private String getSpatialSelectionName(SpatialSelection spatialSelection){
@@ -816,7 +1033,9 @@ private FileDataContainerID getODEDataValues(long jobID, User user, DataServerIm
  * @return java.lang.String
  * @throws IOException 
  */
-private FileDataContainerID getPointsTimeSeries(OutputContext outputContext,User user, DataServerImpl dataServerImpl, VCDataIdentifier vcdID, String variableName, GeometrySpecs geometrySpecs, double[] allTimes, int beginIndex, int endIndex, boolean switchRowsColumns,FileDataContainerManager fileDataContainerManager) throws DataAccessException, IOException {
+private FileDataContainerID getPointsTimeSeries(PointsCurvesSlices pcs,int hdf5GroupID, OutputContext outputContext,User user,
+		DataServerImpl dataServerImpl, VCDataIdentifier vcdID, String variableName, GeometrySpecs geometrySpecs,
+		double[] allTimes, int beginIndex, int endIndex, boolean switchRowsColumns,FileDataContainerManager fileDataContainerManager) throws DataAccessException, IOException, HDF5Exception {
 	
 	org.vcell.util.document.TimeSeriesJobSpec timeSeriesJobSpec =
 		new org.vcell.util.document.TimeSeriesJobSpec(
@@ -831,7 +1050,12 @@ private FileDataContainerID getPointsTimeSeries(OutputContext outputContext,User
 	// the length of variableValues should always be 1 + pointIndexes.length
 	// the length of variableValues[n] is allTimes.length
 	final double[][] variableValues = timeSeriesJobResults.getTimesAndValuesForVariable(variableName);
-	
+
+	pcs.data.put(PCS.POINTINFO, new ArrayList<String>());
+	pcs.data.put(PCS.POINTVALS, new ArrayList<Double>());
+	pcs.data.put(PCS.TIMES, new ArrayList<Double>());
+	pcs.data.put(PCS.TIMEBOUNDS, new int[] {beginIndex,endIndex});
+
 	//
 	// put data in csv format
 	//
@@ -846,28 +1070,52 @@ private FileDataContainerID getPointsTimeSeries(OutputContext outputContext,User
 		fileDataContainerManager.append(fileDataContainerID,"Time,");
 		for (int i=beginIndex;i<=endIndex;i++) {
 			fileDataContainerManager.append(fileDataContainerID,"," + allTimes[i]);
+			((ArrayList<Double>)pcs.data.get(PCS.TIMES)).add(allTimes[i]);
 		}
 		fileDataContainerManager.append(fileDataContainerID,"\n");	
 		for (int k=0;k<pointSpatialSelections.length;k++) {
-			fileDataContainerManager.append(fileDataContainerID,"," + getSpatialSelectionDescription(pointSpatialSelections[k]));
+			final String spatialSelectionDescription = getSpatialSelectionDescription(pointSpatialSelections[k]);
+			fileDataContainerManager.append(fileDataContainerID,"," + spatialSelectionDescription);
+			((ArrayList<String>)pcs.data.get(PCS.POINTINFO)).add(spatialSelectionDescription);
 			for (int i=beginIndex;i<=endIndex;i++) {
 				fileDataContainerManager.append(fileDataContainerID,"," + variableValues[k+1][i - beginIndex]);
+				((ArrayList<Double>)pcs.data.get(PCS.POINTVALS)).add(variableValues[k+1][i - beginIndex]);
 			}
 			fileDataContainerManager.append(fileDataContainerID,"\n");
 		}
 	} else {
+		double[] hdfTimes = null;
+		double[] hdfValues = null;
+		if(hdf5GroupID != -1) {
+			hdfTimes = new double[endIndex-beginIndex+1];
+			hdfValues = new double[hdfTimes.length*pointSpatialSelections.length];
+		}
 		fileDataContainerManager.append(fileDataContainerID,",Time\n");
 		fileDataContainerManager.append(fileDataContainerID,"Coordinates,");
 		for (int k=0;k<pointSpatialSelections.length;k++) {
-			fileDataContainerManager.append(fileDataContainerID,"," + getSpatialSelectionDescription(pointSpatialSelections[k]));
+			final String spatialSelectionDescription = getSpatialSelectionDescription(pointSpatialSelections[k]);
+			fileDataContainerManager.append(fileDataContainerID,"," + spatialSelectionDescription);
+			((ArrayList<String>)pcs.data.get(PCS.POINTINFO)).add(spatialSelectionDescription);
 		}
-		fileDataContainerManager.append(fileDataContainerID,"\n");	
+		fileDataContainerManager.append(fileDataContainerID,"\n");
+		int c=0;
 		for (int i=beginIndex;i<=endIndex;i++) {
 			fileDataContainerManager.append(fileDataContainerID,"," + allTimes[i]);
+			((ArrayList<Double>)pcs.data.get(PCS.TIMES)).add(allTimes[i]);
+			hdfTimes[i-beginIndex] = allTimes[i];
 			for (int k=0;k<pointSpatialSelections.length;k++) {
 				fileDataContainerManager.append(fileDataContainerID,"," + variableValues[k+1][i - beginIndex]);
+				((ArrayList<Double>)pcs.data.get(PCS.POINTVALS)).add(variableValues[k+1][i - beginIndex]);
+				hdfValues[c] = variableValues[k+1][i - beginIndex];
+				c++;
 			}
 			fileDataContainerManager.append(fileDataContainerID,"\n");
+		}
+		if(hdf5GroupID != -1) {			
+			long[] dimsCoord = new long[] {1,pointSpatialSelections.length};
+			writeHDF5Dataset(hdf5GroupID, PCS.POINTINFO.name(), dimsCoord, pcs.data.get(PCS.POINTINFO));
+			long[] dimsValues = new long[] {hdfTimes.length,pointSpatialSelections.length};
+			writeHDF5Dataset(hdf5GroupID, PCS.POINTVALS.name(), dimsValues, hdfValues);
 		}
 	}
 
@@ -875,6 +1123,151 @@ private FileDataContainerID getPointsTimeSeries(OutputContext outputContext,User
 }
 
 
+private class SliceHelper {
+	public int hdf5DataspaceIDSlice = -1;
+	public int hdf5GroupVarID = -1;
+	int hdf5DataspaceIDValues = -1;
+	int hdf5DatasetIDValues = -1;
+
+	public final String[] SLICE_PLANE_AXIS = {"X","Y","Z"};
+	private final int[][][] loopIndexes = new int[][][] {{{1,2},{2,1}},{{0,2},{2,0}},{{0,1},{1,0}}};
+	public String slicePlaneText;
+	public String strideText;
+	private int slicePlaneIndex;
+	private int sliceNumber;
+	public int[] sizeXYZ;
+//	public double[] sliceData;
+	boolean switchRowsColumns;
+	public int outerSizeIndex;
+	public int innerSizeIndex;
+	public boolean isHDF5 = false;
+	private Boolean isMembrane = null;
+	private CartesianMesh mesh;
+	private int timeCount;
+	private int currentTimeIndex = 0;
+	public SliceHelper (int timeCount,boolean isHDF5,String slicePlane,int sliceNumber,boolean switchRowsColumns,CartesianMesh mesh) {
+		this.timeCount = timeCount;
+		this.isHDF5 = isHDF5;
+		this.sliceNumber = sliceNumber;
+		this.switchRowsColumns = switchRowsColumns;
+		this.sizeXYZ = new int[] {mesh.getSizeX(), mesh.getSizeY(), mesh.getSizeZ()};
+		this.slicePlaneIndex = Arrays.asList(Coordinate.PLANENAMES).indexOf(slicePlane);
+		if(slicePlaneIndex == -1) {
+			throw new IllegalArgumentException("Unknown slicePlane '"+slicePlane+"'");
+		}
+		this.mesh = mesh;
+		this.slicePlaneText = " in plane "+slicePlane+" at "+SLICE_PLANE_AXIS[slicePlaneIndex]+" = "+sliceNumber;
+		this.strideText = slicePlane.substring(0, 1)+" in rows, "+slicePlane.substring(1,2)+" in columns";
+		outerSizeIndex = loopIndexes[slicePlaneIndex][(switchRowsColumns?0:1)][0];
+		innerSizeIndex = loopIndexes[slicePlaneIndex][(switchRowsColumns?0:1)][1];
+	}
+	public void setHDF5GroupVarID(int hdf5GroupID,String varName) throws HDF5LibraryException {
+		if(isHDF5) {
+			hdf5GroupVarID = H5.H5Gcreate(hdf5GroupID, varName,HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT);
+			currentTimeIndex = 0;
+			isMembrane = null;
+			hdf5DataspaceIDSlice = -1;
+		}
+	}
+	public void closeHDF5GroupAndValues() throws HDF5LibraryException {
+		if(hdf5GroupVarID != -1) {
+			H5.H5Dclose(hdf5DatasetIDValues);
+			H5.H5Sclose(hdf5DataspaceIDValues);
+			H5.H5Gclose(hdf5GroupVarID);
+			hdf5DatasetIDValues = -1;
+			hdf5DataspaceIDValues = -1;
+			hdf5GroupVarID = -1;
+		}
+	}
+	public void populate(FileDataContainerManager fileDataContainerManager,FileDataContainerID fileDataContainerID,double[] origData) throws IOException, HDF5Exception{
+		if(isMembrane != null && SimulationData.getVariableTypeFromLength(mesh, origData.length).equals(VariableType.MEMBRANE) != isMembrane.booleanValue()) {
+			throw new IllegalArgumentException("'isMembrane' conflict");
+		}
+		isMembrane = SimulationData.getVariableTypeFromLength(mesh, origData.length).equals(VariableType.MEMBRANE);
+
+		if(isMembrane) {
+			for	(int i = 0; i < origData.length; i ++) {
+				fileDataContainerManager.append(fileDataContainerID,origData[i] + "\n");
+			}
+			if(isHDF5) {
+				if(hdf5DataspaceIDSlice == -1) {							
+					long[] dimsValues2 = new long[] {origData.length};
+					hdf5DataspaceIDSlice = H5.H5Screate_simple(dimsValues2.length, dimsValues2, null);
+					//Select the generated sliceData to copy-from
+					H5.H5Sselect_hyperslab(hdf5DataspaceIDSlice, HDF5Constants.H5S_SELECT_SET, new long[] {0}, null, dimsValues2, null);
+				}
+				if(hdf5DataspaceIDValues == -1) {
+					//Create dataset
+					long[] dimsValues = new long[] {origData.length,timeCount};
+					hdf5DataspaceIDValues = H5.H5Screate_simple(dimsValues.length, dimsValues, null);
+					hdf5DatasetIDValues = H5.H5Dcreate(hdf5GroupVarID, "DataValues (M"+"T)",HDF5Constants.H5T_NATIVE_DOUBLE, hdf5DataspaceIDValues,HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT);
+				}
+				//Select next section of destination to copy-to
+				H5.H5Sselect_hyperslab(hdf5DataspaceIDValues, HDF5Constants.H5S_SELECT_SET, new long[] {0,currentTimeIndex}, null, new long[] {origData.length,1},null);
+				//Copy from extracted sliceData to hdf5 file dataset
+				H5.H5Dwrite_double(hdf5DatasetIDValues, HDF5Constants.H5T_NATIVE_DOUBLE, hdf5DataspaceIDSlice, hdf5DataspaceIDValues, HDF5Constants.H5P_DEFAULT, origData);
+				H5.H5Sselect_none(hdf5DataspaceIDValues);
+				currentTimeIndex++;
+			}
+		}else {
+			int start = -1;
+			switch (slicePlaneIndex) {
+				case Coordinate.Z_AXIS:
+					start = sliceNumber*sizeXYZ[0]*sizeXYZ[1];
+				break;
+				case Coordinate.Y_AXIS:
+					start = sliceNumber*sizeXYZ[0];
+				break;
+				case Coordinate.X_AXIS:
+					start = sliceNumber;
+				break;
+			}
+			fileDataContainerManager.append(fileDataContainerID,slicePlaneText+"\n\n");
+			fileDataContainerManager.append(fileDataContainerID,strideText+"\n");
+			double[] sliceData = new double[sizeXYZ[outerSizeIndex]*sizeXYZ[innerSizeIndex]];
+			int cnt=0;
+			for (int outer=0;outer<sizeXYZ[outerSizeIndex];outer++) {
+				for (int inner=0;inner<sizeXYZ[innerSizeIndex];inner++) {
+					switch (slicePlaneIndex) {
+						case Coordinate.Z_AXIS:
+							sliceData[cnt] = (switchRowsColumns?origData[start + inner*sizeXYZ[0] + outer]:origData[start + outer*sizeXYZ[0] + inner]);
+						break;
+						case Coordinate.Y_AXIS:
+							sliceData[cnt] = (switchRowsColumns?origData[start +inner*sizeXYZ[0]*sizeXYZ[1] + outer]:origData[start +outer*sizeXYZ[0]*sizeXYZ[1] + inner]);
+						break;
+						case Coordinate.X_AXIS:
+							sliceData[cnt] = (switchRowsColumns?origData[start +inner*sizeXYZ[0]*sizeXYZ[1] + outer*sizeXYZ[0]]:origData[start +outer*sizeXYZ[0]*sizeXYZ[1] + inner*sizeXYZ[0]]);
+						break;
+					}
+					fileDataContainerManager.append(fileDataContainerID,sliceData[cnt] + ",");
+					cnt++;
+				}
+				fileDataContainerManager.append(fileDataContainerID,"\n");
+			}
+			if(isHDF5) {
+				if(hdf5DataspaceIDSlice == -1) {							
+					long[] dimsValues2 = new long[] {sizeXYZ[outerSizeIndex],sizeXYZ[innerSizeIndex]};
+					hdf5DataspaceIDSlice = H5.H5Screate_simple(dimsValues2.length, dimsValues2, null);
+					//Select the generated sliceData to copy-from
+					H5.H5Sselect_hyperslab(hdf5DataspaceIDSlice, HDF5Constants.H5S_SELECT_SET, new long[] {0,0}, null, dimsValues2, null);
+				}
+				if(hdf5DataspaceIDValues == -1) {
+					//Create dataset
+					long[] dimsValues = new long[] {sizeXYZ[outerSizeIndex],sizeXYZ[innerSizeIndex],timeCount};
+					hdf5DataspaceIDValues = H5.H5Screate_simple(dimsValues.length, dimsValues, null);
+					hdf5DatasetIDValues = H5.H5Dcreate(hdf5GroupVarID, "DataValues ("+SLICE_PLANE_AXIS[innerSizeIndex]+SLICE_PLANE_AXIS[outerSizeIndex]+"T)",HDF5Constants.H5T_NATIVE_DOUBLE, hdf5DataspaceIDValues,HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT);
+				}
+				//Select next section of destination to copy-to
+				H5.H5Sselect_hyperslab(hdf5DataspaceIDValues, HDF5Constants.H5S_SELECT_SET, new long[] {0,0,currentTimeIndex}, null, new long[] {sizeXYZ[outerSizeIndex],sizeXYZ[innerSizeIndex],1},null);
+				//Copy from extracted sliceData to hdf5 file dataset
+				H5.H5Dwrite_double(hdf5DatasetIDValues, HDF5Constants.H5T_NATIVE_DOUBLE, hdf5DataspaceIDSlice, hdf5DataspaceIDValues, HDF5Constants.H5P_DEFAULT, sliceData);
+				H5.H5Sselect_none(hdf5DataspaceIDValues);
+				currentTimeIndex++;
+			}
+
+		}
+	}
+}
 /**
  * This method was created in VisualAge.
  * @return java.io.File
@@ -883,103 +1276,25 @@ private FileDataContainerID getPointsTimeSeries(OutputContext outputContext,User
  * @throws IOException 
 
  */
-private FileDataContainerID getSlice(OutputContext outputContext,User user, DataServerImpl dataServerImpl, VCDataIdentifier vcdID, String variable, int timeIndex, String slicePlane, int sliceNumber, boolean switchRowsColumns,FileDataContainerManager fileDataContainerManager) throws DataAccessException, IOException {
+private FileDataContainerID getSlice(SliceHelper sliceHelper, CartesianMesh mesh,double[] allTimes,OutputContext outputContext,User user, DataServerImpl dataServerImpl, VCDataIdentifier vcdID, String variable, int timeIndex, String slicePlane, int sliceNumber, boolean switchRowsColumns,FileDataContainerManager fileDataContainerManager) throws HDF5Exception, DataAccessException, IOException {
 	
-	double[] allTimes = dataServerImpl.getDataSetTimes(user, vcdID);
 	double timepoint = allTimes[timeIndex];
 	SimDataBlock simDataBlock = dataServerImpl.getSimDataBlock(outputContext,user, vcdID,variable,timepoint);
 	double[] data = simDataBlock.getData();
 	
-	cbit.vcell.solvers.CartesianMesh mesh = dataServerImpl.getMesh(user, vcdID);
-	int[] sizeXYZ = {mesh.getSizeX(), mesh.getSizeY(), mesh.getSizeZ()};
 	FileDataContainerID fileDataContainerID = fileDataContainerManager.getNewFileDataContainerID();
-
-	
-//	StringBuilder buffer = new StringBuilder();
 
 	if (simDataBlock.getVariableType().equals(VariableType.VOLUME) || simDataBlock.getVariableType().equals(VariableType.POSTPROCESSING)) {
 		//
 		// put data in csv format
 		//
 		fileDataContainerManager.append(fileDataContainerID,"2D Slice for variable "+variable+" at time "+timepoint);
-
-		if (slicePlane.equals(Coordinate.getNormalAxisPlaneName(Coordinate.Z_AXIS))) {
-			fileDataContainerManager.append(fileDataContainerID," in plane XY at Z = "+sliceNumber+"\n\n");
-			int start = sliceNumber*sizeXYZ[0]*sizeXYZ[1];
-			if (switchRowsColumns) {
-				fileDataContainerManager.append(fileDataContainerID,"X in rows, Y in columns\n");
-				for (int j=0;j<sizeXYZ[0];j++) {
-					for (int i=0;i<sizeXYZ[1];i++) {
-						fileDataContainerManager.append(fileDataContainerID,data[start + i*sizeXYZ[0] + j] + ",");
-					}
-					fileDataContainerManager.append(fileDataContainerID,"\n");
-				}		
-			} else {
-				fileDataContainerManager.append(fileDataContainerID,"X in columns, Y in rows\n");
-				for (int i=0;i<sizeXYZ[1];i++) {
-					for (int j=0;j<sizeXYZ[0];j++) {
-						fileDataContainerManager.append(fileDataContainerID,data[start + i*sizeXYZ[0] + j] + ",");
-					}
-					fileDataContainerManager.append(fileDataContainerID,"\n");
-				}
-			}
-		}
-		
-		if (slicePlane.equals(Coordinate.getNormalAxisPlaneName(Coordinate.Y_AXIS))) {
-			fileDataContainerManager.append(fileDataContainerID," in plane XZ at Y = "+sliceNumber+"\n\n");
-			int start = sliceNumber*sizeXYZ[0];
-			if (switchRowsColumns) {
-				fileDataContainerManager.append(fileDataContainerID,"X in rows, Z in columns\n");
-				for (int i=0;i<sizeXYZ[0];i++) {
-					for (int j=0;j<sizeXYZ[2];j++) {
-						fileDataContainerManager.append(fileDataContainerID,data[start +j*sizeXYZ[0]*sizeXYZ[1] + i] + ",");
-					}
-					fileDataContainerManager.append(fileDataContainerID,"\n");
-				}
-			} else {
-				fileDataContainerManager.append(fileDataContainerID,"X in columns, Z in rows\n");
-				for (int j=0;j<sizeXYZ[2];j++) {
-					for (int i=0;i<sizeXYZ[0];i++) {
-						fileDataContainerManager.append(fileDataContainerID,data[start +j*sizeXYZ[0]*sizeXYZ[1] + i] + ",");
-					}
-					fileDataContainerManager.append(fileDataContainerID,"\n");
-				}
-			}
-		}
-
-		if (slicePlane.equals(Coordinate.getNormalAxisPlaneName(Coordinate.X_AXIS))) {
-			fileDataContainerManager.append(fileDataContainerID," in plane YZ at X = "+sliceNumber+"\n\n");
-			int start = sliceNumber;
-			if (switchRowsColumns) {
-				fileDataContainerManager.append(fileDataContainerID,"Y in rows, Z in columns\n");
-				for (int j=0;j<sizeXYZ[1];j++) {
-					for (int i=0;i<sizeXYZ[2];i++) {
-						fileDataContainerManager.append(fileDataContainerID,data[start +i*sizeXYZ[0]*sizeXYZ[1] + j*sizeXYZ[0]] + ",");
-					}
-					fileDataContainerManager.append(fileDataContainerID,"\n");
-				}
-			} else {
-				fileDataContainerManager.append(fileDataContainerID,"Y in columns, Z in rows\n");
-				for (int i=0;i<sizeXYZ[2];i++) {
-					for (int j=0;j<sizeXYZ[1];j++) {
-						fileDataContainerManager.append(fileDataContainerID,data[start +i*sizeXYZ[0]*sizeXYZ[1] + j*sizeXYZ[0]] + ",");
-					}
-					fileDataContainerManager.append(fileDataContainerID,"\n");
-				}
-			}
-		}
-//	} else if (mesh.getGeometryDimension() < 3) {
 	} else {
 		// membrane variable; we export the data by index
 		// for 3D one gets the whole dataset for now... warning at the client level... will get more sophisticated later...
 		fileDataContainerManager.append(fileDataContainerID,"Data for membrane variable "+variable+" at time "+timepoint+"\nEntire datablock by index\n\n");
-		for	(int i = 0; i < data.length; i ++) {
-			fileDataContainerManager.append(fileDataContainerID,data[i] + "\n");
-		}
-//		buffer.append("\n");
-//	} else {
-//		throw new RuntimeException("3D export for membrane or region variables not supported yet");
 	}
+	sliceHelper.populate(fileDataContainerManager, fileDataContainerID,data);
 
 
 	return fileDataContainerID;
