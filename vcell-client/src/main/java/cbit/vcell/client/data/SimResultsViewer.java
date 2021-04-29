@@ -108,7 +108,7 @@ private DataViewer createODEDataViewer() throws DataAccessException {
 						?((SimulationContext)simulation.getSimulationOwner()).getBioModel().toString()
 						:"")+"\n"+
 				simulation.getSimulationOwner()+"\n"+
-				"Simulation:"+simulation.getSimulationVersion().toString());
+				"Simulation:"+(simulation.getSimulationVersion() != null?simulation.getSimulationVersion().toString():simulation.getName()+" (unversioned)"));
 	}
 	//
 	//Example code for reading stats data from Stochastic multitrial non-histogram
