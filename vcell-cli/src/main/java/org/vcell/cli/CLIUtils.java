@@ -597,7 +597,6 @@ public class CLIUtils {
     }
 
     public static void genPlots(String sedmlPath, String resultOutDir) throws IOException, InterruptedException {
-        // TODO: Update status for curves to status YAML
         Process process = execShellCommand(new String[]{python, cliPath.toString(), "genPlotPdfs", sedmlPath, resultOutDir}).start();
         printProcessErrors(process, "","");
     }
