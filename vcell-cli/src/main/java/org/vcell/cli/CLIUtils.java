@@ -38,7 +38,7 @@ public class CLIUtils {
     private static final Path utilPath = Paths.get(workingDirectory.toString(), "submodules", "vcell_cli_utils");
     private static final Path stdOutPath = Paths.get(workingDirectory.toString(), "stdOut.txt");
     private static final File stdOutFile = new File(String.valueOf(stdOutPath));
-    private static final Path cliUtilPath = Paths.get(utilPath.toString(), "cli_util");
+    private static final Path cliUtilPath = Paths.get(utilPath.toString(), "vcell_cli_utils");
     private static final Path cliPath = Paths.get(cliUtilPath.toString(), "cli.py");
     private static final Path statusPath = Paths.get(cliUtilPath.toString(), "status.py");
     private static final Path requirementFilePath = Paths.get(utilPath.toString(), "requirements.txt");
