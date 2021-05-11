@@ -11,9 +11,14 @@
 package cbit.vcell.client.data;
 
 import java.awt.BorderLayout;
+import java.awt.Container;
 import java.awt.FlowLayout;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowStateListener;
 import java.io.File;
 import java.util.Arrays;
 import java.util.Hashtable;
@@ -29,6 +34,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ListSelectionListener;
 
 import org.vcell.util.BeanUtils;
@@ -47,12 +53,14 @@ import cbit.vcell.export.server.ExportSpecs;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.math.Constant;
 import cbit.vcell.mathmodel.MathModel;
+import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.simdata.ClientPDEDataContext;
 import cbit.vcell.simdata.DataIdentifier;
 import cbit.vcell.simdata.DataManager;
 import cbit.vcell.simdata.ODEDataManager;
 import cbit.vcell.simdata.PDEDataContext;
 import cbit.vcell.simdata.PDEDataManager;
+import cbit.vcell.simdata.SimulationData;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.ode.ODESimData;
@@ -224,6 +232,19 @@ private Simulation getSimulation() {
 	return simulation;
 }
 
+private JLabel label = new JLabel("<html><b>Choose Parameter Values</b></html>");
+private int localScanProgress;
+public void setLocalScanProgress(int localScanProgress) {
+	this.localScanProgress = localScanProgress;
+	SwingUtilities.invokeLater(new Runnable() {
+	@Override
+	public void run() {
+		label.setText("<html><b>Choose Parameter Values progress:("+(localScanProgress)+"/"+getSimulation().getScanCount()+")</b></html>");
+	}});
+}
+public int getLocalScanProgress() {
+	return localScanProgress;
+}
 /**
  * Insert the method's description here.
  * Creation date: (10/17/2005 11:37:52 PM)
@@ -259,12 +280,10 @@ private void initialize() throws DataAccessException {
 		JPanel panel = new JPanel();
 		panel.setLayout(new BorderLayout(5, 0));
 		panel.setBorder(BorderFactory.createEtchedBorder());
-		
-		JLabel label = new JLabel("<html><b>Choose Parameter Values</b></html>");
 		label.setHorizontalAlignment(SwingConstants.CENTER);
 		label.setBorder(BorderFactory.createEmptyBorder(2, 2, 0, 2));
 		panel.add(label, BorderLayout.NORTH);
-		
+
 		String[] scanParams = getSimulation().getMathOverrides().getScannedConstantNames();
 		Arrays.sort(scanParams);
 		JPanel tablePanel = new JPanel();

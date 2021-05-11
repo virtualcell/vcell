@@ -162,7 +162,7 @@ public static String checkCompatibility(SimulationOwner simOwner, Simulation sim
  * @return boolean
  * @param simulation cbit.vcell.solver.Simulation
  */
-private static boolean checkSimulationParameters(Simulation simulation, Component parent) {
+private static boolean checkSimulationParameters(Simulation simulation, Component parent,boolean bCheckLimits) {
 	SimulationSymbolTable simSymbolTable = new SimulationSymbolTable(simulation, 0);
 	
 	String errorMessage = null;
@@ -196,7 +196,7 @@ private static boolean checkSimulationParameters(Simulation simulation, Componen
 	//
 	SolverTaskDescription solverTaskDescription = simulation.getSolverTaskDescription();
 	SolverDescription solverDescription = solverTaskDescription.getSolverDescription();
-	if (expectedNumTimePoints>maxTimepoints){
+	if (bCheckLimits && expectedNumTimePoints>maxTimepoints){
 		errorMessage =  "Errors in Simulation: '" + simulation.getName() + "'!\n" +
 				        "The simulation has too many timepoints ("+expectedNumTimePoints+") to be saved, which has exceeded our limit.\n\n"+
 						"maximum saving timepoints limits are:\n" + 
@@ -212,7 +212,7 @@ private static boolean checkSimulationParameters(Simulation simulation, Componen
 		{
 			errorMessage = null;
 		}
-	} else if (expectedSizeBytes>maxSizeBytes){
+	} else if (bCheckLimits && expectedSizeBytes>maxSizeBytes){
 		errorMessage =  "Errors in Simulation: '" + simulation.getName() + "'!\n" +
 				        "The simulation's result dataset ("+ CodeUtil.humanBytePrint(expectedSizeBytes) + ") is too large, which has exceeded our limit.\n\n"+
 						"maximum size limits are:\n" + 
@@ -230,7 +230,7 @@ private static boolean checkSimulationParameters(Simulation simulation, Componen
 		{
 			errorMessage = null;
 		}
-	} else if (simulation.getScanCount() > Simulation.MAX_LIMIT_SCAN_JOBS) {
+	} else if (bCheckLimits && simulation.getScanCount() > Simulation.MAX_LIMIT_SCAN_JOBS) {
 		errorMessage =  "Errors in Simulation: '" + simulation.getName() + "'!\n" +
 				        "The simulation generates too many simulations (" + simulation.getScanCount() + ") required for parameter scan, which has exceeded our limit.\n\n" +
 						"maximum number of parameter sets is: " + Simulation.MAX_LIMIT_SCAN_JOBS + " \n" + 
@@ -468,7 +468,7 @@ public static void editSimulation(Component parent, SimulationOwner simOwner, Si
 			if (ok != javax.swing.JOptionPane.OK_OPTION) {
 				return; // user cancels, we discard
 			} else {
-				acceptable = checkSimulationParameters(simEditor.getClonedSimulation(), parent);
+				acceptable = checkSimulationParameters(simEditor.getClonedSimulation(), parent,false);
 			}
 		} while (! acceptable);
 		Simulation clonedSimulation = simEditor.getClonedSimulation();
@@ -773,7 +773,7 @@ void runSimulations(Simulation[] sims, Component parent) {
 	for(Simulation sim : sims)
 	{
 		//check if every sim in the sim list is ok to run
-		if(!checkSimulationParameters(sim, parent)){
+		if(!checkSimulationParameters(sim, parent,true)){
 			bOkToRun = false;
 			break;
 		}

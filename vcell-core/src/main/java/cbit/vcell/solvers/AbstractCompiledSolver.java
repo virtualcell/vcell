@@ -141,6 +141,9 @@ public abstract class AbstractCompiledSolver extends AbstractSolver implements j
     }
 
     private static Path createSymbolicLink(File mySolverLinkDir, String linkName, File localSolverPath) throws IOException {
+    	if((new File(mySolverLinkDir,linkName)).exists()) {
+    		return new File(mySolverLinkDir,linkName).toPath();
+    	}
         Path path0 = new File(mySolverLinkDir, linkName).toPath();
         Path path1 = localSolverPath.toPath();
 //	System.out.println("linking "+path0+" "+path1);

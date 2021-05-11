@@ -10,7 +10,11 @@
 
 package cbit.vcell.client;
 
+import java.awt.Container;
 import java.awt.Dimension;
+import java.awt.Window;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -37,6 +41,7 @@ import org.vcell.util.DataAccessException;
 import org.vcell.util.ProgressDialogListener;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.UserCancelException;
+import org.vcell.util.UtilCancelException;
 import org.vcell.util.document.LocalVCDataIdentifier;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCDocument;
@@ -771,8 +776,17 @@ public void runQuickSimulation(final Simulation originalSimulation, ViewerType v
 	if (simulationOwner instanceof SimulationContext) {
 		Collection<AsynchClientTask> ut = ClientRequestManager.updateMath(documentWindowManager.getComponent(), ((SimulationContext)simulationOwner), false, NetworkGenerationRequirements.ComputeFullStandardTimeout);
 		taskList.addAll(ut);
-	}	
-	
+	}
+	//Let user tell how many simultaneous processes to run if this is local paramscan
+	final int[] simultaneousSimsSetting = new int[] {1};
+	if(originalSimulation.getScanCount() > 1) {
+		try {
+			String simultaneousSims = DialogUtils.showInputDialog0(getDocumentWindowManager().getComponent(), "Local multi-scan simulation, enter maximum simulataneous sims to run at once", "1");
+			simultaneousSimsSetting[0] = Integer.parseInt(simultaneousSims);
+		} catch (UtilCancelException e) {
+			return;
+		}
+	}
 	// ----------- run simulation(s)
 	final File localSimDataDir = ResourceUtil.getLocalSimDir(User.tempUser.getName());	
 	AsynchClientTask runSimTask = new AsynchClientTask("running simulation", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
@@ -870,6 +884,112 @@ public void runQuickSimulation(final Simulation originalSimulation, ViewerType v
 		taskList.add(task);
 	}
 
+	AsynchClientTask runOthers = new AsynchClientTask("running scans", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+		@Override
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
+			if (getClientTaskStatusSupport().isInterrupted()) {
+				throw UserCancelException.CANCEL_GENERIC;
+			}			
+			Simulation[] sims = (Simulation[])hashTable.get("simsArray");
+			Simulation simulation = sims[0];
+			//Run param scans to generate data for scansnum > 0
+			if(simulation.getScanCount() > 1) {
+				//Start master thread so clientdispatcher modal dialog can end
+				new Thread(new Runnable() {
+					@Override
+					public void run() {
+						//Flag (set by dataviewer being closed) so sim scan threads know if they should stop
+						final boolean[] bWinCloseHolder = new boolean[] {false};
+						//Add close listener to dataviewer to end all scans and exit
+						final SimulationWindow haveSimulationWindow = getDocumentWindowManager().haveSimulationWindow(simulation.getSimulationInfo().getAuthoritativeVCSimulationIdentifier());
+						final Window window = (Window)BeanUtils.findTypeParentOfComponent(haveSimulationWindow.getDataViewer(), Window.class);
+						window.addWindowListener(new WindowAdapter() {
+							@Override
+							public void windowClosing(WindowEvent e) {
+								// TODO Auto-generated method stub
+								super.windowClosing(e);
+								bWinCloseHolder[0] = true;
+							}});
+						//First sim scan (0) is done already before viewer is shown
+						((SimResultsViewer)haveSimulationWindow.getDataViewer()).setLocalScanProgress(1);
+						//Counter of how many simultaneous param scan threads are running (decremented when scan thread finishes)
+						final int[] currentlyRunningCountHolder = new int[] {0};
+						//Run other scans starting at 1 (scan 0 is already done if we got here)
+						for (int i = 1; i < simulation.getScanCount(); i++) {
+							//Check if we can start another new param scan thread
+							while(currentlyRunningCountHolder[0] >= simultaneousSimsSetting[0]) {
+								try {
+									Thread.sleep(50);
+									//Check if user closed the viewer window, no need to continue
+									if(bWinCloseHolder[0]) {
+										return;
+									}
+								} catch (InterruptedException e) {
+									e.printStackTrace();
+								}
+							}
+							final int scanNum = i;
+							//increment the concurrent running counter
+							currentlyRunningCountHolder[0]+= 1;
+							//Start new param scan thread
+							new Thread(new Runnable() {
+								@Override
+								public void run() {
+									try {
+										SimulationTask simTask = new SimulationTask(new SimulationJob(simulation, scanNum, null), 0);
+										Solver solver = createQuickRunSolver(localSimDataDir, simTask);
+										solver.startSolver();
+										while(true) {
+											SolverStatus solverStatus = solver.getSolverStatus();
+//											System.out.println("ScanNum="+scanNum+" "+solverStatus);
+											try { 
+												Thread.sleep(100); 
+											} catch (InterruptedException e) {
+											}
+											//Stop if user closed the dataviewer window
+											if (bWinCloseHolder[0]) {
+												solver.stopSolver();
+												break;
+											}
+
+											if (solverStatus != null) {
+												if (solverStatus.getStatus() == SolverStatus.SOLVER_ABORTED) {
+													String simulationMessage = solverStatus.getSimulationMessage().getDisplayMessage();
+													String translatedMessage = solver.translateSimulationMessage(simulationMessage);
+													if(translatedMessage.startsWith(BeanUtils.FD_EXP_MESSG)) {
+														throw new RuntimeException("Sims with FieldData can only be run remotely (cannot use QuickRun).\n"+translatedMessage);
+													}else {
+														throw new RuntimeException(translatedMessage);
+													}
+												}
+												if (solverStatus.getStatus() != SolverStatus.SOLVER_STARTING &&
+													solverStatus.getStatus() != SolverStatus.SOLVER_READY &&
+													solverStatus.getStatus() != SolverStatus.SOLVER_RUNNING){
+													break;
+												}
+											}		
+
+										}
+//										SolverStatus solverStatus = solver.getSolverStatus();
+//										System.out.println("ScanNum="+scanNum+" "+"FinalStatus="+solverStatus);
+									} catch (Exception e) {
+										e.printStackTrace();
+									}finally {
+										//decrement the concurrent running counter
+										currentlyRunningCountHolder[0]-= 1;
+										//Set progress on dataviewer
+										if(((SimResultsViewer)haveSimulationWindow.getDataViewer()).getLocalScanProgress() < (scanNum+1)) {
+											((SimResultsViewer)haveSimulationWindow.getDataViewer()).setLocalScanProgress(scanNum+1);
+										}
+									}
+								}}).start();
+						}						
+					}}).start();
+			}		
+		}
+		
+	};
+	taskList.add(runOthers);
 	// ------- dispatch
 	AsynchClientTask[] taskArray = new AsynchClientTask[taskList.size()];
 	taskList.toArray(taskArray);

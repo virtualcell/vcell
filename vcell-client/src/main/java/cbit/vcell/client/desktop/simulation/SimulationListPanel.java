@@ -1076,10 +1076,10 @@ private boolean canQuickRun(SolverTaskDescription taskDesc) {
 		quickNativeRunButton.setToolTipText("Not supported by selected solver");
 		return false;
 	}else if(taskDesc.getSimulation().getScanCount() > 1){
-		System.err.println("SimulationListPanel.canQuickRun(): parameter scan, local solver not supported");
-//		quickPythonRunButton.setToolTipText("Not supported for parameter scans");
-		quickNativeRunButton.setToolTipText("Not supported for parameter scans");
-		return false;
+//		System.err.println("SimulationListPanel.canQuickRun(): parameter scan, local solver not supported");
+////		quickPythonRunButton.setToolTipText("Not supported for parameter scans");
+//		quickNativeRunButton.setToolTipText("Not supported for parameter scans");
+//		return false;
 	}
 	if (!taskDesc.getSolverDescription().isJavaSolver()){
 		try {
@@ -1157,7 +1157,7 @@ private void refreshButtonsLax() {
 			final boolean onlyOne = firstSelection.getScanCount() == 1;
 //			bParticleView = onlyOne;
 			bRunnable = onlyOne && simStatus.isRunnable() && canServerRun(firstSelection.getSolverTaskDescription());
-			bQuickRun = onlyOne && canQuickRun( firstSelection.getSolverTaskDescription() );
+			bQuickRun = canQuickRun( firstSelection.getSolverTaskDescription() );
 		}
 
 		// we make'em true if at least one sim satisfies criterion (lax policy)
