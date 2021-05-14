@@ -43,7 +43,7 @@ public class OmexHandler {
         if (!new File(omexPath).exists()) {
             String[] omexNameArray = omexPath.split("/", -2);
             String omexName = omexNameArray[omexNameArray.length - 1];
-            System.err.println("Provided OMEX " + omexName + " is not present");
+            System.err.println("Provided OMEX `" + omexName + "` is not present");
             System.exit(1);
         }
         int indexOfLastSlash = omexPath.lastIndexOf("/");
@@ -63,7 +63,7 @@ public class OmexHandler {
 
     public static void rename(String zipFileName, String entryOldName, String entryNewName) throws Exception {
 
-        /* Define ZIP File System Properies in HashMap */
+        /* Define ZIP File System Properties in HashMap */
         Map<String, String> zip_properties = new HashMap<>();
         /* We want to read an existing ZIP File, so we set this to False */
         zip_properties.put("create", "false");

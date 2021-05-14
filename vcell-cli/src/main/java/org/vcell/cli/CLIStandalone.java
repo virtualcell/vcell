@@ -3,15 +3,13 @@ package org.vcell.cli;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.xml.ExternalDocInfo;
 import org.apache.commons.lang3.ArrayUtils;
-import org.jlibsedml.Libsedml;
-import org.jlibsedml.Output;
-import org.jlibsedml.Report;
-import org.jlibsedml.SedML;
+import org.jlibsedml.*;
 import org.vcell.cli.vcml.VCMLHandler;
 import org.vcell.cli.vcml.VcmlOmexConversion;
-
+import org.apache.commons.io.FileUtils;
 import java.io.File;
 import java.io.FilenameFilter;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -83,16 +81,21 @@ public class CLIStandalone {
         int nSimulations;
         int nSedml;
         int nTasks;
-        List<Output> PlotsReports;
+        List<Output> outputs;
         int nReportsCount = 0;
-        int nPlotsCount = 0;
+        int nPlots2DCount = 0;
+        int nPlots3DCount = 0;
+        SedML sedml;
+        Path sedmlPath2d3d = null;
 
         try {
             cliHandler = new CLIHandler(args);
             inputFile = cliHandler.getInputFilePath();
             outputDir = cliHandler.getOutputDirPath();
+            sedmlPath2d3d = Paths.get(outputDir, "temp");
             System.out.println("VCell CLI input archive " + inputFile);
             CLIUtils.drawBreakLine("-", 100);
+            CLIUtils.genSedmlForSed2DAnd3D(inputFile, outputDir);
             omexHandler = new OmexHandler(inputFile, outputDir);
             omexHandler.extractOmex();
             sedmlLocations = omexHandler.getSedmlLocationsAbsolute();
@@ -118,31 +121,44 @@ public class CLIStandalone {
             String sedmlName;
             File completeSedmlPath = new File(sedmlLocation);
             File outDirForCurrentSedml = new File(omexHandler.getOutputPathFromSedml(sedmlLocation));
-            SedML sedml;
+
+            // For appending data for SED Plot2D and Plot3d to HDF5 files following a temp convention
+
+            File sedmlPathwith2dand3d = new File(String.valueOf(sedmlPath2d3d), "simulation.sedml");
             try {
                 CLIUtils.makeDirs(outDirForCurrentSedml);
-                sedml = Libsedml.readDocument(completeSedmlPath).getSedMLModel();
+
+                SedML sSedml = Libsedml.readDocument(completeSedmlPath).getSedMLModel();
+                SedML oSedml = Libsedml.readDocument(sedmlPathwith2dand3d).getSedMLModel();
                 String[] sedmlNameSplit;
                 if (CLIUtils.isWindowsPlatform) sedmlNameSplit = sedmlLocation.split("\\\\", -2);
                 else sedmlNameSplit = sedmlLocation.split("/", -2);
                 sedmlName = sedmlNameSplit[sedmlNameSplit.length - 1];
-                nModels = sedml.getModels().size();
-                nTasks = sedml.getTasks().size();
-                PlotsReports = sedml.getOutputs();
-                for (Output data : PlotsReports) {
-                    if (!(data instanceof Report)) nPlotsCount++;
-                    else nReportsCount++;
+                nModels = sSedml.getModels().size();
+                nTasks = sSedml.getTasks().size();
+                outputs = sSedml.getOutputs();
+                for (Output output : outputs) {
+                    if (output instanceof Report) nReportsCount++;
+                    if (output instanceof Plot2D) nPlots2DCount++;
+                    if (output instanceof Plot3D) nPlots3DCount++;
                 }
-                nSimulations = sedml.getSimulations().size();
+                nSimulations = sSedml.getSimulations().size();
                 String summarySedmlContentString = "Found " + nSedml + " SED-ML document(s) with "
                         + nModels + " model(s), "
                         + nSimulations + " simulation(s), "
                         + nTasks + " task(s), "
-                        + nReportsCount + "  report(s), and "
-                        + nPlotsCount + " plot(s)\n";
+                        + nReportsCount + "  report(s),  "
+                        + nPlots2DCount + " plot2D(s), and "
+                        + nPlots3DCount + " plot3D(s)\n";
                 System.out.println(summarySedmlContentString);
                 System.out.println("Successful translation: SED-ML file " + sedmlName);
                 CLIUtils.drawBreakLine("-", 100);
+
+                /* If SED-ML has only plots as an output, we will use SED-ML that got generated from vcell_cli_util python code
+                * As of now, we are going to create a resultant dataSet for Plot output, using their respective data generators */
+                if (nReportsCount==0 & (nPlots2DCount!=0 || nPlots3DCount!=0)) sedml = oSedml;
+                else sedml = sSedml;
+
             } catch (Exception e) {
                 System.err.println("SED-ML processing for " + sedmlLocation + " failed with error: " + e.getMessage());
                 e.printStackTrace(System.err);
@@ -177,6 +193,8 @@ public class CLIStandalone {
             CLIUtils.finalStatusUpdate(CLIUtils.Status.FAILED, outputDir);
             System.err.println(error);
         }
+
+        FileUtils.deleteDirectory(new File(String.valueOf(sedmlPath2d3d)));
     }
 
     private static void singleExecVcml(String[] args) throws Exception {
