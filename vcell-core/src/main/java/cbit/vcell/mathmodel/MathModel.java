@@ -13,6 +13,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
 import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -34,8 +35,12 @@ import cbit.vcell.biomodel.VCellNames;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometryOwner;
 import cbit.vcell.geometry.GeometrySpec;
+import cbit.vcell.math.Constant;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.model.VCMODL;
+import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.solver.MathOverrides;
 import cbit.vcell.solver.OutputFunctionContext;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationOwner;
@@ -229,8 +234,70 @@ public boolean contains(Simulation simulation) {
 	return bFound;
 }
 
+private final int MaxBatchSize = 199;
+public static final String ReservedBatchExtensionString = "_bat_";
 public Simulation createBatchSimulations(Simulation simulation, Map<Integer, Map<String, String>> batchInputDataMap) throws java.beans.PropertyVetoException {
-	throw new RuntimeException("This feature is not supported for MathModels.");
+//	throw new RuntimeException("This feature is not supported for MathModels.");
+	if(getMathDescription() == null) {
+		throw new RuntimeException("Application " + getName() + " has no generated Math, cannot add simulation");
+	}
+	if(simulation.getMathDescription() != getMathDescription()){
+		throw new IllegalArgumentException("cannot copy simulation '" + simulation.getName() + "', has different MathDescription than Application");
+	}
+
+// mathModel == this
+	int batchSize = batchInputDataMap.size();
+	if(batchSize >= MaxBatchSize) {
+		throw new RuntimeException("Batch size must be smaller than " + MaxBatchSize);
+	}
+	Simulation allSims[] = getSimulations();
+	for (int k = 0; k < batchSize; k++) {
+		if(batchInputDataMap.get(k) == null) {
+		// entry missing, perhaps parsing error
+		System.out.println("List of overrides missing for batch simulation " + k + ". Check input data file.");
+		}
+	}
+
+	// now we go through all those we have
+	LinkedHashMap<Integer, Map<String, String>> batchInputLinkedMap = (LinkedHashMap<Integer, Map<String, String>>)batchInputDataMap;
+	for(Integer i : batchInputLinkedMap.keySet()) {
+		LinkedHashMap<String, String> overrideMap = (LinkedHashMap<String, String>)batchInputLinkedMap.get(i);
+
+		String insert = "";
+		if(i<10) {
+			insert = "00";
+		} else if(i<100) {
+			insert = "0";
+		}
+		String proposedName = simulation.getName() + ReservedBatchExtensionString + insert + i;
+		boolean bFound = false;
+		for (int j = 0; !bFound && j < allSims.length; j++) {
+			// go through all existing simulations to make sure the name we want to use is not already taken
+			if (allSims[j].getName().equals(proposedName)) {
+				bFound = true;
+				throw new RuntimeException("Batch file name already in use: " + proposedName);
+			}
+		}
+		Simulation newSimulation = new Simulation(simulation);
+		newSimulation.setName(proposedName);
+		
+		MathOverrides mo = new MathOverrides(newSimulation);
+		for(String name : overrideMap.keySet()) {
+			String value = overrideMap.get(name);
+			try {
+				Expression expression = new Expression(value);
+				Constant constant = new Constant(name, expression);
+				mo.putConstant(constant);
+			} catch (ExpressionException e) {
+				e.printStackTrace();
+			}
+		}
+		
+		newSimulation.setMathOverrides(mo);
+		addSimulation(newSimulation);
+	}
+	return null;
+
 }
 public void importBatchSimulations(Simulation simulation) throws java.beans.PropertyVetoException {
 	throw new RuntimeException("This feature is not supported for MathModels.");

@@ -112,7 +112,7 @@ public class SimulationListPanel extends DocumentEditorSubPanel {
 	private JButton ivjNewButton = null;
 	private JButton ivjNativeResultsButton = null;
 	private JButton importBatchButton = null;
-	private JButton exportBatchButton = null;
+	private JButton getBatchResultsButton = null;
 
 //	private JButton ivjPythonResultsButton = null;
 	private JButton ivjRunButton = null;
@@ -148,7 +148,7 @@ public class SimulationListPanel extends DocumentEditorSubPanel {
 				runSimulations();
 			} else if (e.getSource() == stopButton) {
 				stopSimulations();
-			} else if (e.getSource() == exportBatchButton) {
+			} else if (e.getSource() == getBatchResultsButton) {
 //				DialogUtils.showInfoDialog(SimulationListPanel.this, "Under Construction");
 				getBatchSimulationsResults();
 			} else if (e.getSource() == importBatchButton) {
@@ -488,9 +488,9 @@ private javax.swing.JToolBar getToolBar() {
 			importBatchButton = new JButton("", VCellIcons.importBatchSimIcon);
 			importBatchButton.setToolTipText("Import Batch Simulation Data");
 			importBatchButton.addActionListener(ivjEventHandler);
-			exportBatchButton = new JButton("", VCellIcons.exportBatchSimIcon);
-			exportBatchButton.setToolTipText("Export Batch Simulation Results");
-			exportBatchButton.addActionListener(ivjEventHandler);
+			getBatchResultsButton = new JButton("", VCellIcons.exportBatchSimIcon);
+			getBatchResultsButton.setToolTipText("Export Batch Simulation Results");
+			getBatchResultsButton.addActionListener(ivjEventHandler);
 			stopButton = new JButton("", VCellIcons.stopSimIcon);
 			stopButton.setToolTipText("Stop Simulation");
 			stopButton.setEnabled(false);
@@ -518,7 +518,7 @@ private javax.swing.JToolBar getToolBar() {
 			toolBar.add(getDeleteButton());
 			toolBar.addSeparator();
 			toolBar.add(importBatchButton);
-			toolBar.add(exportBatchButton);
+			toolBar.add(getBatchResultsButton);
 			toolBar.addSeparator();
 			
 			toolBar.add(getMassConservationModelReductionPanel());
@@ -537,7 +537,7 @@ private javax.swing.JToolBar getToolBar() {
 
 			ReactionCartoonEditorPanel.setToolBarButtonSizes(getNewButton());
 			ReactionCartoonEditorPanel.setToolBarButtonSizes(importBatchButton);
-			ReactionCartoonEditorPanel.setToolBarButtonSizes(exportBatchButton);
+			ReactionCartoonEditorPanel.setToolBarButtonSizes(getBatchResultsButton);
 			ReactionCartoonEditorPanel.setToolBarButtonSizes(copyButton);
 			ReactionCartoonEditorPanel.setToolBarButtonSizes(getEditButton());
 			ReactionCartoonEditorPanel.setToolBarButtonSizes(getDeleteButton());
@@ -1171,7 +1171,7 @@ private void refreshButtonsLax() {
 		}
 	}
 	importBatchButton.setEnabled(bBatch);
-	exportBatchButton.setEnabled(bBatch);
+	getBatchResultsButton.setEnabled(bBatch);
 	copyButton.setEnabled(bCopy);
 	getEditButton().setEnabled(bEditable);
 	getDeleteButton().setEnabled(bDeletable);
