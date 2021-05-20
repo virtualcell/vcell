@@ -304,22 +304,20 @@ private static void saveFailure(Hashtable<String, Object>hashTable,Simulation si
 
 public void getBatchSimulationsResults(OutputContext outputContext, Simulation simulation) throws java.beans.PropertyVetoException {
 
-	
-
 	// simulation should be a template simulation
 	if(simulation.getName().contains(SimulationContext.ReservedBatchExtensionString)) {
 		throw new RuntimeException("Not a valid name for a batch template Simulation: '" + simulation.getName() + "'.");
 	}
 
 	SimulationOwner simOwner = getSimWorkspace().getSimulationOwner();
-	if(!(simOwner instanceof SimulationContext)) {
-		throw new RuntimeException("Template Simulation Owner must be a SimulationContext");
-	}
-	SimulationContext simContext = (SimulationContext)simOwner;
-	BioModel bioModel = simContext.getBioModel();
-	if(bioModel==null) {
-		throw new RuntimeException("Cannot add simulation, bioModel not set");
-	}
+//	if(!(simOwner instanceof SimulationContext)) {
+//		throw new RuntimeException("Template Simulation Owner must be a SimulationContext");
+//	}
+//	SimulationContext simContext = (SimulationContext)simOwner;
+//	BioModel bioModel = simContext.getBioModel();
+//	if(bioModel==null) {
+//		throw new RuntimeException("Cannot add simulation, bioModel not set");
+//	}
 	
 	File batchResultsDir = ResourceUtil.getLocalBatchDir();
 //	File localSimDir = ResourceUtil.getLocalSimDir(User.tempUser.getName());
@@ -329,7 +327,7 @@ public void getBatchSimulationsResults(OutputContext outputContext, Simulation s
 		public void run(Hashtable<String, Object> hashTable) throws Exception {
 
 			// recover the list of batch simulations that belong to this template
-			Simulation allSims[] = bioModel.getSimulations();
+			Simulation allSims[] = simOwner.getSimulations();
 			LinkedHashMap<String, String> importsMap = new LinkedHashMap<>();
 			LinkedHashMap <String, Boolean> successMap = new LinkedHashMap<>();
 			String namePrefix = simulation.getName() + SimulationContext.ReservedBatchExtensionString;
