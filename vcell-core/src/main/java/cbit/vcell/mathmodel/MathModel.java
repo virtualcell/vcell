@@ -234,7 +234,7 @@ public boolean contains(Simulation simulation) {
 	return bFound;
 }
 
-private final int MaxBatchSize = 199;
+private final int MaxBatchSize = 999;
 public static final String ReservedBatchExtensionString = "_bat_";
 public Simulation createBatchSimulations(Simulation simulation, Map<Integer, Map<String, String>> batchInputDataMap) throws java.beans.PropertyVetoException {
 //	throw new RuntimeException("This feature is not supported for MathModels.");

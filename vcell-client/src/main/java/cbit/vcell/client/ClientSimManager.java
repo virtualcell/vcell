@@ -310,15 +310,6 @@ public void getBatchSimulationsResults(OutputContext outputContext, Simulation s
 	}
 
 	SimulationOwner simOwner = getSimWorkspace().getSimulationOwner();
-//	if(!(simOwner instanceof SimulationContext)) {
-//		throw new RuntimeException("Template Simulation Owner must be a SimulationContext");
-//	}
-//	SimulationContext simContext = (SimulationContext)simOwner;
-//	BioModel bioModel = simContext.getBioModel();
-//	if(bioModel==null) {
-//		throw new RuntimeException("Cannot add simulation, bioModel not set");
-//	}
-	
 	File batchResultsDir = ResourceUtil.getLocalBatchDir();
 //	File localSimDir = ResourceUtil.getLocalSimDir(User.tempUser.getName());
 	
