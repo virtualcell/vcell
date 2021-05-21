@@ -11,6 +11,7 @@ import org.vcell.imagej.helper.VCellHelper.IJDataList
 import org.vcell.imagej.helper.VCellHelper.IJVarInfo
 import org.vcell.imagej.helper.VCellHelper.IJVarInfos
 import org.vcell.imagej.helper.VCellHelper.VCellModelVersionTimeRange
+import org.vcell.imagej.helper.VCellHelper.VARTYPE_POSTPROC
 import net.imagej.display.DefaultDatasetView
 import net.imglib2.display.ColorTable
 
@@ -43,7 +44,7 @@ VCellHelper.VCellModelSearch searchCriteria = new VCellHelper.VCellModelSearch(
 	null/*Geom Dimension 0,1,2,3*/,null/*MathType {"Determinsitc","Stochastic"}*/);
 
 SimpleDateFormat easyDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-searchFrom = easyDate.parse("2018-11-13 00:00:00")
+searchFrom = easyDate.parse("2018-01-01 00:00:00")
 searchTo = easyDate.parse("2100-01-01 00:00:00")
 searchTimeRange = new VCellModelVersionTimeRange(searchFrom,searchTo)
 ArrayList<VCellHelper.VCellModelSearchResults> vcellModelSearchResults = vcHelper.getSearchedModelSimCacheKey(false/*Only Open Models*/, searchCriteria,searchTimeRange);
@@ -58,7 +59,7 @@ timeIndex = [50] as int[] //Time index (not actual time) found by looking at num
 try{
 	//Get data at single time for a single variable
 	//TimePointData getTimePointData(String simulationDataCacheKey,String variableName,int[] timePointIndexes,int simulationJobIndex)
-	ijDataList = vcHelper.getTimePointData(theCacheKey as String,var,timeIndex,0)
+	ijDataList = vcHelper.getTimePointData(theCacheKey as String,var,VARTYPE_POSTPROC.NotPostProcess,timeIndex,0)
 	bsd = ijDataList.ijData[0].stackInfo
 	println(bsd.xsize+" "+bsd.ysize+" "+bsd.zsize)
 	data = ijDataList.ijData[0].getDoubleData()
