@@ -482,7 +482,10 @@ public class CLIUtils {
             while ((c = errorStream.read()) != -1) {
                 System.err.print((char)c);
             }
-        } else System.out.print(outString);
+        } else {
+            System.out.print(outString);
+        }
+
     }
 
     public static int checkInstallationError() {

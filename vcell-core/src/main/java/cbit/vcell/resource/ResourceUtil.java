@@ -282,13 +282,18 @@ public class ResourceUtil {
 				deleteRecursively(c);
 			}
 		}
+		String fName = f.getName();
+		if(batchResultsDirName.contentEquals(fName)) {
+			return;			// don't delete the batch results directory
+		}
 		if (!f.delete()) {
 			throw new FileNotFoundException("Failed to delete file: " + f);
 		}
 	}
+	public static final String batchResultsDirName = "batchResults";
 	public static File getLocalBatchDir()
 	{
-		File adir = new File(getVcellHome(), "batchResults");
+		File adir = new File(getVcellHome(), batchResultsDirName);
 		if(adir.exists()) {
 			try {
 				deleteRecursively(adir);	// delete the output directory and all its content recursively
@@ -296,8 +301,9 @@ public class ResourceUtil {
 				System.err.println("Failed to empty " + adir.getName());
 			}
 		}
+		boolean ret = false;
 		if(!adir.exists()) {
-			adir.mkdirs();
+			ret = adir.mkdirs();
 		}
 		localBatchDir = adir;
 		return localBatchDir;
