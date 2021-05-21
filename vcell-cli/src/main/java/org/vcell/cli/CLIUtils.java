@@ -17,9 +17,10 @@ import org.jlibsedml.modelsupport.SBMLSupport;
 import org.vcell.stochtest.TimeSeriesMultitrialData;
 
 import java.io.*;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.nio.file.*;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.*;
+import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -516,7 +517,15 @@ public class CLIUtils {
         return exitCode;
     }
 
+    public static void genSedmlForSed2DAnd3D(String omexFilePath, String outputDir) throws IOException, InterruptedException {
+        Process process = execShellCommand(new String[]{python, cliPath.toString(), "genSedml2d3d", omexFilePath, outputDir}).start();
+        printProcessErrors(process, "","Failed generating SED-ML for plot2d and 3D ");
+    }
 
+    public static void execPlotOutputSedDoc(String omexFilePath, String outputDir)  throws IOException, InterruptedException {
+        Process process = execShellCommand(new String[]{python, cliPath.toString(), "execPlotOutputSedDoc", omexFilePath, outputDir}).start();
+        printProcessErrors(process, "HDF conversion successful\n","HDF conversion failed\n");
+    }
 
     public static void convertCSVtoHDF(String omexFilePath, String outputDir) throws IOException, InterruptedException {
 
@@ -531,6 +540,11 @@ public class CLIUtils {
             Process process = execShellCommand(new String[]{python, cliPath.toString(), "execSedDoc", omexFilePath, outputDir}).start();
             printProcessErrors(process, "HDF conversion successful\n","HDF conversion failed\n");
         }
+    }
+
+    public static void genPlotsPseudoSedml(String sedmlPath, String resultOutDir) throws IOException, InterruptedException {
+        Process process = execShellCommand(new String[]{python, cliPath.toString(), "genPlotsPseudoSedml", sedmlPath, resultOutDir}).start();
+        printProcessErrors(process, "","");
     }
 
     // Sample STATUS YML
