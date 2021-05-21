@@ -522,6 +522,11 @@ public class CLIUtils {
         printProcessErrors(process, "","Failed generating SED-ML for plot2d and 3D ");
     }
 
+    public static void execPlotOutputSedDoc(String omexFilePath, String outputDir)  throws IOException, InterruptedException {
+        Process process = execShellCommand(new String[]{python, cliPath.toString(), "execPlotOutputSedDoc", omexFilePath, outputDir}).start();
+        printProcessErrors(process, "HDF conversion successful\n","HDF conversion failed\n");
+    }
+
     public static void convertCSVtoHDF(String omexFilePath, String outputDir) throws IOException, InterruptedException {
 
         // Convert CSV to HDF5
@@ -535,6 +540,11 @@ public class CLIUtils {
             Process process = execShellCommand(new String[]{python, cliPath.toString(), "execSedDoc", omexFilePath, outputDir}).start();
             printProcessErrors(process, "HDF conversion successful\n","HDF conversion failed\n");
         }
+    }
+
+    public static void genPlotsPseudoSedml(String sedmlPath, String resultOutDir) throws IOException, InterruptedException {
+        Process process = execShellCommand(new String[]{python, cliPath.toString(), "genPlotsPseudoSedml", sedmlPath, resultOutDir}).start();
+        printProcessErrors(process, "","");
     }
 
     // Sample STATUS YML

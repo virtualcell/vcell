@@ -128,21 +128,21 @@ public class CLIStandalone {
             try {
                 CLIUtils.makeDirs(outDirForCurrentSedml);
 
-                SedML sSedml = Libsedml.readDocument(completeSedmlPath).getSedMLModel();
-                SedML oSedml = Libsedml.readDocument(sedmlPathwith2dand3d).getSedMLModel();
+                SedML sedmlFromOmex = Libsedml.readDocument(completeSedmlPath).getSedMLModel();
+                SedML sedmlFromPsuedo = Libsedml.readDocument(sedmlPathwith2dand3d).getSedMLModel();
                 String[] sedmlNameSplit;
                 if (CLIUtils.isWindowsPlatform) sedmlNameSplit = sedmlLocation.split("\\\\", -2);
                 else sedmlNameSplit = sedmlLocation.split("/", -2);
                 sedmlName = sedmlNameSplit[sedmlNameSplit.length - 1];
-                nModels = sSedml.getModels().size();
-                nTasks = sSedml.getTasks().size();
-                outputs = sSedml.getOutputs();
+                nModels = sedmlFromOmex.getModels().size();
+                nTasks = sedmlFromOmex.getTasks().size();
+                outputs = sedmlFromOmex.getOutputs();
                 for (Output output : outputs) {
                     if (output instanceof Report) nReportsCount++;
                     if (output instanceof Plot2D) nPlots2DCount++;
                     if (output instanceof Plot3D) nPlots3DCount++;
                 }
-                nSimulations = sSedml.getSimulations().size();
+                nSimulations = sedmlFromOmex.getSimulations().size();
                 String summarySedmlContentString = "Found " + nSedml + " SED-ML document(s) with "
                         + nModels + " model(s), "
                         + nSimulations + " simulation(s), "
@@ -156,8 +156,8 @@ public class CLIStandalone {
 
                 /* If SED-ML has only plots as an output, we will use SED-ML that got generated from vcell_cli_util python code
                 * As of now, we are going to create a resultant dataSet for Plot output, using their respective data generators */
-                if (nReportsCount==0 & (nPlots2DCount!=0 || nPlots3DCount!=0)) sedml = oSedml;
-                else sedml = sSedml;
+                if ((nReportsCount==0) && (nPlots2DCount!=0 || nPlots3DCount!=0)) sedml = sedmlFromPsuedo;
+                else sedml = sedmlFromOmex;
 
             } catch (Exception e) {
                 System.err.println("SED-ML processing for " + sedmlLocation + " failed with error: " + e.getMessage());
@@ -173,12 +173,17 @@ public class CLIStandalone {
             resultsHash = solverHandler.simulateAllTasks(externalDocInfo, sedml, outDirForCurrentSedml, outputDir, sedmlLocation);
             if (resultsHash.size() != 0) {
                 reportsHash = CLIUtils.generateReportsAsCSV(sedml, resultsHash, outDirForCurrentSedml, outputDir, sedmlLocation);
-                CLIUtils.genPlots(sedmlLocation, outDirForCurrentSedml.toString());
-            }
 
-            // HDF5 conversion
-            if (nReportsCount != 0)
-                CLIUtils.convertCSVtoHDF(inputFile, outputDir);
+                // HDF5 conversion
+                if ((nReportsCount==0) && (nPlots2DCount!=0 || nPlots3DCount!=0)) {
+                    CLIUtils.execPlotOutputSedDoc(inputFile, outputDir);
+                    CLIUtils.genPlotsPseudoSedml(sedmlLocation, outDirForCurrentSedml.toString());
+                }
+                else {
+                    CLIUtils.genPlots(sedmlLocation, outDirForCurrentSedml.toString());
+                    CLIUtils.convertCSVtoHDF(inputFile, outputDir);
+                }
+            }
 
             // archiving res files
             CLIUtils.zipResFiles(new File(outputDir));
