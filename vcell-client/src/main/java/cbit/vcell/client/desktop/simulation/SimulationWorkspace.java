@@ -134,9 +134,6 @@ private static String applyChanges(Simulation clonedSimulation, Simulation simul
  * Creation date: (10/4/2004 6:36:12 AM)
  */
 public static String checkCompatibility(SimulationOwner simOwner, Simulation simulation) {
-	if (simOwner instanceof MathModel){
-		return null;
-	}
 	if (simOwner instanceof SimulationContext){
 		SimulationContext simContext = (SimulationContext)simOwner;
 		if(simulation == null){
