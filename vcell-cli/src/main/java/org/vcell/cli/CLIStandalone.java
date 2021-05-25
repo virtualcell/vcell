@@ -185,6 +185,9 @@ public class CLIStandalone {
                 }
             }
 
+            // removing temp path generated from python
+            FileUtils.deleteDirectory(new File(String.valueOf(sedmlPath2d3d)));
+
             // archiving res files
             CLIUtils.zipResFiles(new File(outputDir));
 
@@ -198,8 +201,6 @@ public class CLIStandalone {
             CLIUtils.finalStatusUpdate(CLIUtils.Status.FAILED, outputDir);
             System.err.println(error);
         }
-
-        FileUtils.deleteDirectory(new File(String.valueOf(sedmlPath2d3d)));
     }
 
     private static void singleExecVcml(String[] args) throws Exception {

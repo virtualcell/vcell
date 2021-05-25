@@ -469,7 +469,8 @@ public class CLIUtils {
     }
 
     public static ProcessBuilder execShellCommand(String[] args) {
-        return new ProcessBuilder(args);
+        // Setting the source and destination for subprocess standard I/O to be the same as those of the current Java process
+        return new ProcessBuilder(args).inheritIO();
     }
 
     public static void printProcessErrors(Process process, String outString, String errString) throws InterruptedException, IOException {
@@ -517,13 +518,16 @@ public class CLIUtils {
         return exitCode;
     }
 
+
+    // Ignoring biosimulator_utils warnings with -W ignore flag
+
     public static void genSedmlForSed2DAnd3D(String omexFilePath, String outputDir) throws IOException, InterruptedException {
-        Process process = execShellCommand(new String[]{python, cliPath.toString(), "genSedml2d3d", omexFilePath, outputDir}).start();
+        Process process = execShellCommand(new String[]{python, "-W", "ignore", cliPath.toString(), "genSedml2d3d", omexFilePath, outputDir}).start();
         printProcessErrors(process, "","Failed generating SED-ML for plot2d and 3D ");
     }
 
     public static void execPlotOutputSedDoc(String omexFilePath, String outputDir)  throws IOException, InterruptedException {
-        Process process = execShellCommand(new String[]{python, cliPath.toString(), "execPlotOutputSedDoc", omexFilePath, outputDir}).start();
+        Process process = execShellCommand(new String[]{python, "-W", "ignore", cliPath.toString(), "execPlotOutputSedDoc", omexFilePath, outputDir}).start();
         printProcessErrors(process, "HDF conversion successful\n","HDF conversion failed\n");
     }
 
@@ -537,7 +541,7 @@ public class CLIUtils {
         * */
         // handle exceptions here
         if (checkInstallationError() == 0) {
-            Process process = execShellCommand(new String[]{python, cliPath.toString(), "execSedDoc", omexFilePath, outputDir}).start();
+            Process process = execShellCommand(new String[]{python, "-W", "ignore", cliPath.toString(), "execSedDoc", omexFilePath, outputDir}).start();
             printProcessErrors(process, "HDF conversion successful\n","HDF conversion failed\n");
         }
     }
