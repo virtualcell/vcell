@@ -522,6 +522,14 @@ public SimulationContext getSimulationContexts(String name) {
 	return null;
 }
 
+public boolean hasSimulation(String simName) {
+	for(Simulation candidate : getSimulations()) {
+		if(candidate.getName().contentEquals(simName)) {
+			return true;
+		}
+	}
+	return false;
+}
 
 /**
  * Gets the simulations property (cbit.vcell.solver.Simulation[]) value.
