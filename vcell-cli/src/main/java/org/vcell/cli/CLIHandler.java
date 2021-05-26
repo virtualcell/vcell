@@ -42,7 +42,7 @@ public class CLIHandler {
             if (getVersion().startsWith("Fail")){
                 out.println(fetchFailed);
             } else
-                out.println("VCell: " + getVersion() + ", OS: " + osName + " " + osVersion + ", Java Version: " + javaVersion + ", Java Vendor: " + javaVendor + ", Machine: " + machineArch);
+                out.println("VCell: " + getVersion() + "\nOS: " + osName + " " + osVersion + "\nJava Version: " + javaVersion + "\nJava Vendor: " + javaVendor + "\nMachine: " + machineArch);
             exit(1);
         }
     }
