@@ -31,7 +31,10 @@ public class CLIUtils {
     // Note: Docker Working Directory and Singularity working directory works in different way.
     // Those paths are hardcoded because to run python code from a submodule path
     // Assuming Singularity image runs on HPC CRBMAPI service user
-    private static final Path homeDir = Paths.get(String.valueOf(System.getProperty("user.dir")));
+    private static final Path currentWorkingDir = Paths.get("").toAbsolutePath();
+    private static final Path homeDir = Paths.get(currentWorkingDir.normalize().toString());
+    // user.dir is not working for windows
+//    private static final Path homeDir = Paths.get(String.valueOf(System.getProperty("user.dir")));
     private static final Path workingDirectory = Paths.get((Paths.get(String.valueOf(homeDir)).toString().equals("/")
             || Paths.get(String.valueOf(homeDir)).toString().startsWith("/home/FCAM/crbmapi/"))
             ? "/usr/local/app/vcell/installDir" : System.getProperty("user.dir"));
@@ -98,7 +101,7 @@ public class CLIUtils {
         System.out.println(breakString + StringUtils.repeat(breakString, times));
     }
 
-    public CLIUtils() {
+    public CLIUtils() throws IOException {
 
     }
 
