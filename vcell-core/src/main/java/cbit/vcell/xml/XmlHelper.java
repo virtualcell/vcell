@@ -709,9 +709,9 @@ public class XmlHelper {
 				matchingSimulationContext.refreshMathDescription(callback, NetworkGenerationRequirements.ComputeFullStandardTimeout);
 				Simulation newSimulation = new Simulation(matchingSimulationContext.getMathDescription());
 				if (selectedTask instanceof Task) {
-					String newSimName = SEDMLUtil.getName(sedmlSimulation);
-					if(bioModel != null && bioModel.hasSimulation(newSimName)) {
-						newSimName = sedmlSimulation.getId();
+					String newSimName = selectedTask.getId();
+					if(SEDMLUtil.getName(selectedTask) != null) {
+						newSimName += "_" + SEDMLUtil.getName(selectedTask);
 					}
 					newSimulation.setName(newSimName);
 					newSimulation.setImportedTaskID(selectedTask.getId());
