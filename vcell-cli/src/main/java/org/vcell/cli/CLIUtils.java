@@ -282,6 +282,7 @@ public class CLIUtils {
                         for (Variable var : vars) {
                             AbstractTask task = sedml.getTaskWithId(var.getReference());
                             Model model = sedml.getModelWithId(task.getModelReference());
+                            Simulation sim = sedml.getSimulation(task.getSimulationReference());
                             IXPathToVariableIDResolver variable2IDResolver = new SBMLSupport();
                             // must get variable ID from SBML model
                             String sbmlVarId = "";
@@ -307,11 +308,35 @@ public class CLIUtils {
                             } else {
                                 varIDs.add(var.getId());
                                 assert task != null;
-                                ODESolverResultSet results = resultsHash.get(task.getId());
-                                int column = results.findColumn(sbmlVarId);
-                                double[] data = results.extractColumn(column);
-                                mxlen = Integer.max(mxlen, data.length);
-                                values.put(var, data);
+            					if(sim instanceof UniformTimeCourse) {
+            						// we want to keep the last outputNumberOfPoints only
+            						int outputNumberOfPoints = ((UniformTimeCourse) sim).getNumberOfPoints();
+            						double outputStartTime = ((UniformTimeCourse) sim).getOutputStartTime();
+            						if(outputStartTime > 0) {
+            							
+                                        ODESolverResultSet results = resultsHash.get(task.getId());
+                                        int column = results.findColumn(sbmlVarId);
+                                        double[] tmpData = results.extractColumn(column);
+                                        double[] data = new double[outputNumberOfPoints+1];
+                                        for(int i=tmpData.length-outputNumberOfPoints-1, j=0; i<tmpData.length; i++, j++) {
+                                        	data[j] = tmpData[i];
+                                        }
+                                        
+                                        mxlen = Integer.max(mxlen, data.length);
+                                        values.put(var, data);
+                                        
+            						} else {
+                                        ODESolverResultSet results = resultsHash.get(task.getId());
+                                        int column = results.findColumn(sbmlVarId);
+                                        double[] data = results.extractColumn(column);
+                                        mxlen = Integer.max(mxlen, data.length);
+                                        values.put(var, data);
+            						}
+
+            					} else {
+            						System.err.println("only uniform time course simulations are supported");
+            					}
+
                             }
 
                             CLIUtils.updateDatasetStatusYml(sedmlLocation, oo.getId(), dataset.getId(), Status.SUCCEEDED, outDir);
