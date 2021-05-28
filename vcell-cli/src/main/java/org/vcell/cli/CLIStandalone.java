@@ -200,7 +200,7 @@ public class CLIStandalone {
             FileUtils.deleteDirectory(new File(String.valueOf(sedmlPath2d3d)));
 
             // archiving res files
-            CLIUtils.zipResFiles(new File(outputDir));
+            CLIUtils.zipResFiles(new File(outputDir), Paths.get(sedmlName));
 
             if (resultsHash.containsValue(null) || reportsHash == null) {
                 somethingFailed = true;
