@@ -352,13 +352,6 @@ private synchronized void copyCells0(CopyAction copyAction,boolean isHDF5) {
 		if(!firstColName.equals((xVarColumnName==null?ReservedVariable.TIME.getName():xVarColumnName)))
 		{
 			bHistogram = true;
-			//showInputDialog0(final Component requester,final  String message,final  String initialValue)
-			try {
-				String result = DialogUtils.showInputDialog0(this, "Enter value to use if histogram bin has no values", blankCellValue);
-				blankCellValue = result;
-			} catch (UtilCancelException e) {
-				return;
-			}
 		}
 
 		StringBuffer buffer = new StringBuffer();
@@ -366,6 +359,14 @@ private synchronized void copyCells0(CopyAction copyAction,boolean isHDF5) {
 		boolean bHasTimeColumn = false;
 		
 		if(isHDF5) {
+			if(bHistogram) {
+				try {
+					String result = DialogUtils.showInputDialog0(this, "Enter value to use if histogram bin has no values", blankCellValue);
+					blankCellValue = result;
+				} catch (UtilCancelException e) {
+					return;
+				}
+			}
 			int hdf5FileID = -1;//Used if HDF5 format
 			File hdf5TempFile = null;
 //			Hdf5Utils.HDF5WriteHelper help0 = null;
@@ -418,20 +419,43 @@ private synchronized void copyCells0(CopyAction copyAction,boolean isHDF5) {
 						}
 					}
 				}
-				//Remove any paramscanjob arraylist that had no user selections
-//				int selectedColCount = 0;
-				final ListIterator<ArrayList<Integer>> listIterator = paramScanJobs.listIterator();
-				while(listIterator.hasNext()) {
-					final ArrayList<Integer> next = listIterator.next();
-					if(next.size() == 0) {
-						listIterator.remove();
+				//Remove unselected indexes from set lists
+				for(int k=0;k<paramScanJobs.size();k++) {
+					final ListIterator<Integer> listIterator = paramScanJobs.get(k).listIterator();
+					if(paramScanJobs.get(k).size() > 1) {// keep x val is there more selections for this set
+						listIterator.next();
 					}
-//					selectedColCount+= next.size();
+					while(listIterator.hasNext()) {
+						final Integer columIndex = listIterator.next();
+						boolean bFound = false;
+						for(int j=0;j<columns.length;j++) {
+							if(columIndex == columns[j]) {
+								bFound = true;
+								break;
+							}
+						}
+						if(!bFound) {
+							listIterator.remove();
+						}
+					}
 				}
+//				//Remove any paramscanjob set list that had no user selections
+////				int selectedColCount = 0;
+//				final ListIterator<ArrayList<Integer>> listIterator = paramScanJobs.listIterator();
+//				while(listIterator.hasNext()) {
+//					final ArrayList<Integer> next = listIterator.next();
+//					if(next.size() == 0) {
+//						listIterator.remove();
+//					}
+////					selectedColCount+= next.size();
+//				}
 				//Write out the data to HDF5 file
 				for(int k=0;k<paramScanJobs.size();k++) {
 					int selectedColCount = paramScanJobs.get(k).size();
-					int jobGroupID = (int) Hdf5Utils.writeHDF5Dataset(hdf5FileID, k+"", null, null, false);
+					if(selectedColCount == 0) {
+						continue;
+					}
+					int jobGroupID = (int) Hdf5Utils.writeHDF5Dataset(hdf5FileID, "Set "+k, null, null, false);
 					Hdf5Utils.HDF5WriteHelper help0 =  (HDF5WriteHelper) Hdf5Utils.writeHDF5Dataset(jobGroupID, "data", new long[] {selectedColCount,rows.length}, new Object[] {}, false);
 					//((DefaultTableModel)getScrollPaneTable().getModel()).getDataVector()
 					double[] fromData = new double[rows.length*selectedColCount];
