@@ -58,6 +58,7 @@ public class ODETimePlotMultipleScansPanel extends JPanel {
 	private JTable scanChoiceTable = null;
 	private PlotPane plotPane = null;
 	private String[] variableNames = null;
+	private String xVarColumnName;
 
 /**
  * Insert the method's description here.
@@ -65,10 +66,11 @@ public class ODETimePlotMultipleScansPanel extends JPanel {
  * @param simulation cbit.vcell.solver.Simulation
  * @param vcDataManager cbit.vcell.client.server.VCDataManager
  */
-public ODETimePlotMultipleScansPanel(String[] varnames, Simulation arg_simulation, DataManager arg_dataManager) {
+public ODETimePlotMultipleScansPanel(String[] varnames, Simulation arg_simulation, DataManager arg_dataManager,String xVarColumnName) {
 	variableNames = varnames;
 	simulation = arg_simulation;
 	this.dataManager = arg_dataManager;
+	this.xVarColumnName = xVarColumnName;
 	initialize();
 }
 
@@ -83,6 +85,7 @@ private void initialize()  {
 	int scanCount = simulation.getScanCount();
 	
 	plotPane = new PlotPane();
+	plotPane.getPlot2DDataPanel1().setXVarName(xVarColumnName);
 	add(plotPane, BorderLayout.CENTER);
 	
 	JPanel parameterPanel = new JPanel();
@@ -204,7 +207,7 @@ private void updateScanParamChoices(){
 				}
 				double[] tdata = null;
 				if(!odeSolverResultSet.isMultiTrialData()){
-					int tcol = odeSolverResultSet.findColumn(ReservedVariable.TIME.getName());
+					int tcol = odeSolverResultSet.findColumn(xVarColumnName/*ReservedVariable.TIME.getName()*/);
 					tdata = odeSolverResultSet.extractColumn(tcol);
 					if (dataValues[0] == null) {
 						dataValues[0] = tdata;
@@ -258,15 +261,15 @@ private void updateScanParamChoices(){
 			
 			if(hashTable.get("bMultiTrial") instanceof Boolean && (Boolean)hashTable.get("bMultiTrial")){
 				plot2D = new Plot2D(symbolTableEntries, null, plotNames, plotDatas, new String[] {"Probability Distribution of Species", "Number of Particles", ""});
-			}else if(simulation.getSolverTaskDescription().getOutputTimeSpec() instanceof DefaultOutputTimeSpec)
-			{
-				plot2D = new Plot2D(symbolTableEntries, null, plotNames, plotDatas, 
-						new String[] {"Time Plot", ReservedVariable.TIME.getName(), ""});
 			}
-			else
-			{
-				plot2D = new SingleXPlot2D(symbolTableEntries, null, ReservedVariable.TIME.getName(), plotNames, dataValues);
-			}
+//			else if(simulation.getSolverTaskDescription().getOutputTimeSpec() instanceof DefaultOutputTimeSpec)
+//			{
+				plot2D = new Plot2D(symbolTableEntries, null, plotNames, plotDatas,new String[] {"Plot", xVarColumnName/*ReservedVariable.TIME.getName()*/, ""});
+//			}
+//			else
+//			{
+//				plot2D = new SingleXPlot2D(symbolTableEntries, null, ReservedVariable.TIME.getName(), plotNames, dataValues);
+//			}
 			plotPane.setPlot2D(plot2D);
 		}
 	};

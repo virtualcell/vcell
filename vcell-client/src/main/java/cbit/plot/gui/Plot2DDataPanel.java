@@ -14,6 +14,8 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.ListIterator;
 import java.util.Vector;
 
 import javax.swing.ButtonGroup;
@@ -25,6 +27,7 @@ import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JRadioButton;
 import javax.swing.KeyStroke;
+import javax.swing.table.DefaultTableModel;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
@@ -43,6 +46,8 @@ import cbit.vcell.desktop.VCellTransferable;
 import cbit.vcell.math.ReservedVariable;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.SymbolTableEntry;
+import cbit.vcell.simdata.Hdf5Utils;
+import cbit.vcell.simdata.Hdf5Utils.HDF5WriteHelper;
 import ncsa.hdf.hdf5lib.H5;
 import ncsa.hdf.hdf5lib.HDF5Constants;
 /**
@@ -341,7 +346,7 @@ private synchronized void copyCells0(CopyAction copyAction,boolean isHDF5) {
 		//check if it is histogram (check name of the table first column name)
 		boolean bHistogram = false;
 		String firstColName = getScrollPaneTable().getColumnName(0);
-		if(!firstColName.equals(ReservedVariable.TIME.getName()))
+		if(!firstColName.equals((xVarColumnName==null?ReservedVariable.TIME.getName():xVarColumnName)))
 		{
 			bHistogram = true;
 		}
@@ -349,151 +354,356 @@ private synchronized void copyCells0(CopyAction copyAction,boolean isHDF5) {
 		StringBuffer buffer = new StringBuffer();
 		//check if selected first column is time.
 		boolean bHasTimeColumn = false;
-		double[] hdf5Times = null;
-		int hdf5FileID = -1;//Used if HDF5 format
-		File hdf5TempFile = null;
 		
 		if(isHDF5) {
+			int hdf5FileID = -1;//Used if HDF5 format
+			File hdf5TempFile = null;
+//			Hdf5Utils.HDF5WriteHelper help0 = null;
 			try {
-				//Check if multiple columns with time (happens when viewing 'Time Plot with Multiple Parameter Value-sets')
-				ArrayList<Integer> nonTColumns = new ArrayList<Integer>();
-				for(int i=0;i<columns.length;i++) {
-					String selectedColName = getScrollPaneTable().getColumnName(columns[i]);
-					if(selectedColName.equals(ReservedVariable.TIME.getName())){
-						bHasTimeColumn = true;
-						if(hdf5Times == null) {
-							hdf5Times = new double[rows.length];
-							for(int j=0;j<rows.length;j++) {
-								hdf5Times[j] = new Double(getScrollPaneTable().getValueAt(rows[j], columns[i]).toString()).doubleValue();	
-							}
+				hdf5TempFile = File.createTempFile("plot2D", ".hdf");
+				//System.out.println("/home/vcell/Downloads/hdf5/HDFView/bin/HDFView "+hdf5TempFile.getAbsolutePath());
+				hdf5FileID = H5.H5Fcreate(hdf5TempFile.getAbsolutePath(), HDF5Constants.H5F_ACC_TRUNC,HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT);				
+				ArrayList<ArrayList<Integer>> paramScanJobs = new ArrayList<ArrayList<Integer>>();
+				if(!getScrollPaneTable().getColumnName(0).equals((xVarColumnName==null?ReservedVariable.TIME.getName():xVarColumnName))) {
+					throw new Exception("Expecting first column in table to have name '"+xVarColumnName+"'");
+				}
+				//Add arraylist for the parameter scan job, add the index of the xval column
+				for(int i=0;i<getScrollPaneTable().getColumnCount();i++) {
+					if(getScrollPaneTable().getColumnName(i).equals((xVarColumnName==null?ReservedVariable.TIME.getName():xVarColumnName))){
+						if(i==0) {
+							ArrayList<Integer> tempAL = new ArrayList<Integer>();
+							tempAL.add(i);
+							paramScanJobs.add(tempAL);							
 						}else {
-							for(int j=0;j<rows.length;j++) {
-								Double val = new Double(getScrollPaneTable().getValueAt(rows[j], columns[i]).toString());
-								if(val != hdf5Times[j]) {
-									DialogUtils.showErrorDialog(this, "Found multiple time column selections with non-matching values");
-									return;
-								}
-							}						
-						}
-					}else {
-						nonTColumns.add(i);
-					}
-				}
-				double[] hdfValues = null;
-				if(nonTColumns.size() > 0) {
-					hdfValues = new double[rows.length*nonTColumns.size()];
-					int cnt=0;
-					for(int j=0;j<rows.length;j++) {
-						for(int i=0;i<nonTColumns.size();i++) {
-							Double val = null;
-							final Object varValObj = getScrollPaneTable().getValueAt(rows[j], columns[nonTColumns.get(i)]);
-							if(varValObj == null) {
-								if(bHistogram) {
-									val = new Double(-1);
-								}else {
-									DialogUtils.showErrorDialog(this, "Missing values only allowed for 'histogram' datasets");
-									return;
-								}
+							String str1 = getScrollPaneTable().getColumnName(i-1);
+							int str1Index = str1.lastIndexOf("Set ");
+							String str2 = getScrollPaneTable().getColumnName(i+1);
+							int str2Index = str2.lastIndexOf("Set ");
+							if(!str1.substring(str1Index).equals(str2.substring(str2Index))) {
+								ArrayList<Integer> tempAL = new ArrayList<Integer>();
+								tempAL.add(i);
+								paramScanJobs.add(tempAL);							
 							}else {
-								val = new Double(varValObj.toString());	
+								continue;
 							}
-							
-							hdfValues[cnt] = val;
-							cnt++;
 						}
 					}
 				}
-				if(hdf5Times == null && hdfValues == null) {
-					DialogUtils.showWarningDialog(this, "Select cells to export in HDF5 format.");
-					return;
+				//Add selected columns to the proper paramscan arraylist
+				for(int j=0;j<columns.length;j++) {
+					if(getScrollPaneTable().getColumnName(columns[j]).equals((xVarColumnName==null?ReservedVariable.TIME.getName():xVarColumnName))){
+						continue;//skip xcolumns
+					}
+					for(int k=0;k<paramScanJobs.size();k++) {
+						if(columns[j] >= paramScanJobs.get(k).get(0) && ((k+1) == paramScanJobs.size() || columns[j] < paramScanJobs.get(k+1).get(0))) {
+							paramScanJobs.get(k).add(columns[j]);
+						}
+					}
 				}
-				hdf5TempFile = File.createTempFile("pde", ".hdf5");
-//				System.out.println("/home/vcell/Downloads/hdf5/HDFView/bin/HDFView "+hdf5TempFile.getAbsolutePath());
-				hdf5FileID = H5.H5Fcreate(hdf5TempFile.getAbsolutePath(), HDF5Constants.H5F_ACC_TRUNC,HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT);
-				if( hdf5Times != null) {
-					long[] dimsTime = new long[] {hdf5Times.length};
-					int hdf5DataspaceIDTime = H5.H5Screate_simple(dimsTime.length, dimsTime, null);
-					int hdf5DatasetIDTime = H5.H5Dcreate(hdf5FileID, "Times (rows)",HDF5Constants.H5T_NATIVE_DOUBLE, hdf5DataspaceIDTime,HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT);
-					H5.H5Dwrite_double(hdf5DatasetIDTime, HDF5Constants.H5T_NATIVE_DOUBLE, HDF5Constants.H5S_ALL, HDF5Constants.H5S_ALL, HDF5Constants.H5P_DEFAULT, hdf5Times);
-					H5.H5Dclose(hdf5DatasetIDTime);
-					H5.H5Sclose(hdf5DataspaceIDTime);
+				//Remove any paramscanjob arraylist that had no user selections
+//				int selectedColCount = 0;
+				final ListIterator<ArrayList<Integer>> listIterator = paramScanJobs.listIterator();
+				while(listIterator.hasNext()) {
+					final ArrayList<Integer> next = listIterator.next();
+					if(next.size() == 0) {
+						listIterator.remove();
+					}
+//					selectedColCount+= next.size();
 				}
-				if( hdfValues != null) {
-					long[] dimsValues = new long[] {rows.length,nonTColumns.size()};
-					int hdf5DataspaceIDValues = H5.H5Screate_simple(dimsValues.length, dimsValues, null);
-					int hdf5DatasetIDValues = H5.H5Dcreate(hdf5FileID, "DataValues",HDF5Constants.H5T_NATIVE_DOUBLE, hdf5DataspaceIDValues,HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT);
-					H5.H5Dwrite_double(hdf5DatasetIDValues, HDF5Constants.H5T_NATIVE_DOUBLE, HDF5Constants.H5S_ALL, HDF5Constants.H5S_ALL, HDF5Constants.H5P_DEFAULT, hdfValues);
-					H5.H5Dclose(hdf5DatasetIDValues);
-					H5.H5Sclose(hdf5DataspaceIDValues);
+				//Write out the data to HDF5 file
+				for(int k=0;k<paramScanJobs.size();k++) {
+					int selectedColCount = paramScanJobs.get(k).size();
+					int jobGroupID = (int) Hdf5Utils.writeHDF5Dataset(hdf5FileID, k+"", null, null, false);
+					Hdf5Utils.HDF5WriteHelper help0 =  (HDF5WriteHelper) Hdf5Utils.writeHDF5Dataset(jobGroupID, "data", new long[] {selectedColCount,rows.length}, new Object[] {}, false);
+					//((DefaultTableModel)getScrollPaneTable().getModel()).getDataVector()
+					double[] fromData = new double[rows.length*selectedColCount];
+					int index = 0;
+					ArrayList<String> dataTypes = new ArrayList<String>();
+					ArrayList<String> dataIDs = new ArrayList<String>();
+					ArrayList<String> dataShapes = new ArrayList<String>();
+					ArrayList<String> dataLabels = new ArrayList<String>();
+					ArrayList<String> dataNames = new ArrayList<String>();
+					for(int cols=0;cols<paramScanJobs.get(k).size();cols++) {
+						final Integer column = paramScanJobs.get(k).get(cols);
+						dataTypes.add("float64");
+						dataIDs.add("data_set_"+getScrollPaneTable().getColumnName(column));
+						dataShapes.add(rows.length+"");
+						dataLabels.add(getScrollPaneTable().getColumnName(column));
+						String name = "--";
+						if(getScrollPaneTable().getColumnName(column).equals((xVarColumnName==null?ReservedVariable.TIME.getName():xVarColumnName))) {
+							name = getScrollPaneTable().getColumnName(column);
+						}else {
+							int indx = getScrollPaneTable().getColumnName(column).lastIndexOf("-- Set ");
+							if(indx != -1) {
+								name = getScrollPaneTable().getColumnName(column).substring(0, indx);
+							}
+						}
+						dataNames.add(name);
+						for(int myrows=0;myrows<rows.length;myrows++) {
+							final int row = rows[myrows];
+							final Object valueAt = getScrollPaneTable().getValueAt(row, column);
+//							System.out.println(row+" "+column+" "+valueAt);
+							fromData[index] = Double.parseDouble(valueAt.toString());
+							index++;
+						}
+					}
+					Object[] objArr = new Object[] {fromData,new long[] {0,0},new long[] {selectedColCount,rows.length},new long[] {selectedColCount,rows.length},new long[] {0,0},new long[] {selectedColCount,rows.length},help0.hdf5DataSpaceID};
+					//			double[] copyFromData = (double[])((Object[])data)[0];
+					//			long[] copyToStart = (long[])((Object[])data)[1];
+					//			long[] copyToLength = (long[])((Object[])data)[2];
+					//			long[] copyFromDims = (long[])((Object[])data)[3];
+					//			long[] copyFromStart = (long[])((Object[])data)[4];
+					//			long[] copyFromLength = (long[])((Object[])data)[5];
+					Hdf5Utils.writeHDF5Dataset(help0.hdf5DatasetValuesID, null, null, objArr, false);
+					Hdf5Utils.writeHDF5Dataset(help0.hdf5DatasetValuesID, "_type", null, "ODE Data Export", true);
+					Hdf5Utils.writeHDF5Dataset(help0.hdf5DatasetValuesID, "dataSetDataTypes", null, dataTypes, true);
+					Hdf5Utils.writeHDF5Dataset(help0.hdf5DatasetValuesID, "dataSetIds", null,dataIDs , true);
+					Hdf5Utils.writeHDF5Dataset(help0.hdf5DatasetValuesID, "dataSetLabels", null,dataLabels , true);
+					Hdf5Utils.writeHDF5Dataset(help0.hdf5DatasetValuesID, "dataSetNames", null,dataNames , true);
+					Hdf5Utils.writeHDF5Dataset(help0.hdf5DatasetValuesID, "dataSetShapes", null,dataShapes , true);
+					Hdf5Utils.writeHDF5Dataset(help0.hdf5DatasetValuesID, "id", null,"report" , true);
+					help0.close();
+					H5.H5Gclose(jobGroupID);
 				}
 
-				int FIXED_STR_LEN = 100;
-				StringBuffer colNamesSB = new StringBuffer();
-				final int numColDescr = (hdf5Times != null?1:0)+nonTColumns.size();
-				for(int i=0;i<numColDescr;i++) {
-					String currColName = null;
-					if(i==0 && hdf5Times != null) {
-						currColName = "t";
-					}else {
-						final Integer realColIndex = nonTColumns.get(i-(hdf5Times != null?1:0));
-						SymbolTableEntry ste =  getPlot2D().getPlotDataSymbolTableEntry(columns[realColIndex]);
-						currColName = /*( ste != null?"(Var="+(ste.getNameScope() != null?ste.getNameScope().getName()+"_":"")+ste.getName()+") ":"")+*/
-								getScrollPaneTable().getColumnName(columns[realColIndex]);
-					}
-					colNamesSB.append(StringUtils.rightPad(currColName,FIXED_STR_LEN));
-				}
-				long[] dimsCoord = new long[] {numColDescr};
-				int h5tcs1 = H5.H5Tcopy(HDF5Constants.H5T_C_S1);
-				H5.H5Tset_size(h5tcs1, FIXED_STR_LEN);
-				int hdf5DataspaceIDCoord = H5.H5Screate_simple(dimsCoord.length, dimsCoord, null);
-				int hdf5DatasetIDCoord = H5.H5Dcreate(hdf5FileID, "DataName (columns)",h5tcs1, hdf5DataspaceIDCoord,HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT);
-				final byte[] bytes = colNamesSB.toString().getBytes();
-				H5.H5Dwrite(hdf5DatasetIDCoord, h5tcs1, HDF5Constants.H5S_ALL, HDF5Constants.H5S_ALL, HDF5Constants.H5P_DEFAULT, bytes);
-				H5.H5Dclose(hdf5DatasetIDCoord);
-				H5.H5Sclose(hdf5DataspaceIDCoord);
-				H5.H5Tclose(h5tcs1);
-	
-				if(hdf5DescriptionText != null) {
-					String attrText = hdf5DescriptionText;
-					int h5attrcs1 = H5.H5Tcopy(HDF5Constants.H5T_C_S1);
-					H5.H5Tset_size(h5attrcs1, attrText.length());
-					int dataspace_id = H5.H5Screate (HDF5Constants.H5S_SCALAR);
-					int attribute_id = H5.H5Acreate (hdf5FileID, "Model/App/Simulation Info", h5attrcs1, dataspace_id, HDF5Constants.H5P_DEFAULT,HDF5Constants.H5P_DEFAULT);
-					H5.H5Awrite (attribute_id, h5attrcs1, attrText.getBytes());
-					H5.H5Sclose(dataspace_id);
-					H5.H5Aclose(attribute_id);
-					H5.H5Tclose(h5attrcs1);
-				}
 				
-				if(hdf5FileID != -1) {
-					H5.H5Fclose(hdf5FileID);
-					hdf5FileID = -1;
-					while(true) {
-						JFileChooser jfc = new JFileChooser();
-						if (jfc.showSaveDialog(null) == JFileChooser.APPROVE_OPTION) {
-							File destinationFile = jfc.getSelectedFile();
-							try {
-								if(destinationFile.exists()) {
-									String retval = DialogUtils.showWarningDialog(this, "Overwrite exiting File...", destinationFile.getAbsolutePath()+"exists,\ndo you want to overwrite?",
-											new String[] {UserMessage.OPTION_YES, UserMessage.OPTION_NO, UserMessage.OPTION_CANCEL}, UserMessage.OPTION_CANCEL) ;
-									if(retval == null || retval.equals(UserMessage.OPTION_CANCEL)) {
-										break;
-									}else if(retval.equals(UserMessage.OPTION_NO)) {
-										continue;
-									}
+//				ArrayList<Integer> paramScanJobCols = null;
+//				for(int i=0;i<getScrollPaneTable().getColumnCount();i++) {
+//					if(getScrollPaneTable().getColumnName(i).equals((xVarColumnName==null?ReservedVariable.TIME.getName():xVarColumnName))){
+//						lastXCol = i;
+//						paramScanJobCols = new ArrayList<Integer>();
+//					}else {
+//						continue;
+//					}
+//					for(int j=0;j<columns.length;j++) {
+//						if(columns[j] >= lastXCol) {
+//							paramScanJobCols.add(columns[j]);
+//						}
+//					}
+//					if(paramScanJobCols.size() > 0) {
+//						paramScanJobs.add(paramScanJobCols);
+//					}
+//				}
+//
+//				for(int i=0;i<getScrollPaneTable().getColumnCount();i++) {
+//					String currentColName = getScrollPaneTable().getColumnName(i);
+//					int numSelInJob = 0;
+//					if(currentColName.equals((xVarColumnName==null?ReservedVariable.TIME.getName():xVarColumnName))){
+//						if(help0 != null) {
+//							help0.close();
+//						}
+//						lastXCol = i;
+//						bSavedX = false;
+//						datasetCount++;
+//						int lastSearchIndex = -1;
+//						for(int j=i+1;j<getScrollPaneTable().getColumnCount();j++) {
+//							String nextColName = getScrollPaneTable().getColumnName(j);
+//							if(nextColName.equals((xVarColumnName==null?ReservedVariable.TIME.getName():xVarColumnName))){
+//								if(numSelInJob != 0) {
+//									help0 = (HDF5WriteHelper) Hdf5Utils.writeHDF5Dataset(hdf5FileID, datasetCount+"", new long[] {rows.length,numSelInJob}, new Object[] {}, false);
+//								}else {
+//									lastSearchIndex = j-1;
+//								}
+//								break;
+//							}
+//							numSelInJob++;
+//						}
+//						if(lastSearchIndex == -1) {
+//							i = lastSearchIndex-1;
+//							continue;
+//						}
+//					}
+//					for(int j=0;j<columns.length;j++) {
+//						if(columns[j] == i) {//current column is selected
+//							double[] savedValues = null;
+//							if(!bSavedX/* && (bIncludeXAlways || j==lastXCol)*/) {
+//								if(hdf5JobGroup != -1) {
+//									H5.H5Gclose(hdf5JobGroup);
+//								}
+//								bSavedX = true;
+//								//Start new Group in HDF5 file
+//								if((bIncludeXAlways || j==lastXCol)) {
+//									//This column is X axis data (probably time) but may be other selected by user
+//									//Save as a row in the HDF5 file
+//									savedValues = new double[rows.length];
+//									for(int k=0;k<rows.length;k++) {
+//										savedValues[k] = new Double(getScrollPaneTable().getValueAt(rows[k], columns[j]).toString()).doubleValue();	
+//									}
+//									Hdf5Utils.writeHDF5Dataset(hdf5JobGroup, xVarColumnName, new long[] {savedValues.length}, savedValues, false);
+//								}
+//							}
+//							if(savedValues != null) {
+//								savedValues = new double[rows.length];
+//								for(int k=0;k<rows.length;k++) {
+//									savedValues[k] = new Double(getScrollPaneTable().getValueAt(rows[k], columns[j]).toString()).doubleValue();	
+//								}
+//								Hdf5Utils.writeHDF5Dataset(hdf5JobGroup, currentColName, new long[] {savedValues.length}, savedValues, false);								
+//							}
+//							break;
+//						}
+//					}
+//					
+//					
+//					
+//					
+//					
+//					
+//					
+//					
+//					
+////					long[] dimsTime = new long[] {hdf5Times.length};
+////					int hdf5DataspaceIDTime = H5.H5Screate_simple(dimsTime.length, dimsTime, null);
+////					int hdf5DatasetIDTime = H5.H5Dcreate(hdf5FileID, "Times (rows)",HDF5Constants.H5T_NATIVE_DOUBLE, hdf5DataspaceIDTime,HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT);
+////					H5.H5Dwrite_double(hdf5DatasetIDTime, HDF5Constants.H5T_NATIVE_DOUBLE, HDF5Constants.H5S_ALL, HDF5Constants.H5S_ALL, HDF5Constants.H5P_DEFAULT, hdf5Times);
+////					H5.H5Dclose(hdf5DatasetIDTime);
+////					H5.H5Sclose(hdf5DataspaceIDTime);
+//					//Hdf5Utils.writeHDF5Dataset(hdf5FileID, dataspaceName, dims, data, bAttribute);
+//
+//				}
+				
+				
+////				ArrayList<Integer> xColumns = new ArrayList<Integer>();
+//				//Check if multiple columns with time (happens when viewing 'Time Plot with Multiple Parameter Value-sets')
+////				ArrayList<Integer> nonTColumns = new ArrayList<Integer>();
+//				for(int i=0;i<columns.length;i++) {
+//					String selectedColName = getScrollPaneTable().getColumnName(columns[i]);
+//					if(selectedColName.equals((xVarColumnName==null?ReservedVariable.TIME.getName():xVarColumnName))){
+//						hdf5XColIndex.add(i);
+//						//-----((DefaultTableModel)(getScrollPaneTable().getModel())).getDataVector().get
+////						xColumns.add(i);
+////						bHasTimeColumn = true;
+////						if(hdf5Times == null) {
+////							hdf5Times = new double[rows.length];
+////							for(int j=0;j<rows.length;j++) {
+////								hdf5Times[j] = new Double(getScrollPaneTable().get.getValueAt(rows[j], columns[i]).toString()).doubleValue();	
+////							}
+////						}else {
+////							for(int j=0;j<rows.length;j++) {
+////								Double val = new Double(getScrollPaneTable().getValueAt(rows[j], columns[i]).toString());
+////								if(val != hdf5Times[j]) {
+////									DialogUtils.showErrorDialog(this, "Found multiple time column selections with non-matching values");
+////									return;
+////								}
+////							}						
+////						}
+//					}
+////					else {
+////						nonTColumns.add(i);
+////					}
+//				}
+////				double[] hdfValues = null;
+////				if(nonTColumns.size() > 0) {
+////					hdfValues = new double[rows.length*nonTColumns.size()];
+////					int cnt=0;
+////					for(int j=0;j<rows.length;j++) {
+////						for(int i=0;i<nonTColumns.size();i++) {
+////							Double val = null;
+////							final Object varValObj = getScrollPaneTable().getValueAt(rows[j], columns[nonTColumns.get(i)]);
+////							if(varValObj == null) {
+////								if(bHistogram) {
+////									val = new Double(-1);
+////								}else {
+////									DialogUtils.showErrorDialog(this, "Missing values only allowed for 'histogram' datasets");
+////									return;
+////								}
+////							}else {
+////								val = new Double(varValObj.toString());	
+////							}
+////							
+////							hdfValues[cnt] = val;
+////							cnt++;
+////						}
+////					}
+////				}
+//				if(hdf5Times == null && hdfValues == null) {
+//					DialogUtils.showWarningDialog(this, "Select cells to export in HDF5 format.");
+//					return;
+//				}
+//				hdf5TempFile = File.createTempFile("pde", ".hdf5");
+////				System.out.println("/home/vcell/Downloads/hdf5/HDFView/bin/HDFView "+hdf5TempFile.getAbsolutePath());
+//				hdf5FileID = H5.H5Fcreate(hdf5TempFile.getAbsolutePath(), HDF5Constants.H5F_ACC_TRUNC,HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT);
+//				if( hdf5Times != null) {
+//					long[] dimsTime = new long[] {hdf5Times.length};
+//					int hdf5DataspaceIDTime = H5.H5Screate_simple(dimsTime.length, dimsTime, null);
+//					int hdf5DatasetIDTime = H5.H5Dcreate(hdf5FileID, "Times (rows)",HDF5Constants.H5T_NATIVE_DOUBLE, hdf5DataspaceIDTime,HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT);
+//					H5.H5Dwrite_double(hdf5DatasetIDTime, HDF5Constants.H5T_NATIVE_DOUBLE, HDF5Constants.H5S_ALL, HDF5Constants.H5S_ALL, HDF5Constants.H5P_DEFAULT, hdf5Times);
+//					H5.H5Dclose(hdf5DatasetIDTime);
+//					H5.H5Sclose(hdf5DataspaceIDTime);
+//				}
+//				if( hdfValues != null) {
+//					long[] dimsValues = new long[] {rows.length,nonTColumns.size()};
+//					int hdf5DataspaceIDValues = H5.H5Screate_simple(dimsValues.length, dimsValues, null);
+//					int hdf5DatasetIDValues = H5.H5Dcreate(hdf5FileID, "DataValues",HDF5Constants.H5T_NATIVE_DOUBLE, hdf5DataspaceIDValues,HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT);
+//					H5.H5Dwrite_double(hdf5DatasetIDValues, HDF5Constants.H5T_NATIVE_DOUBLE, HDF5Constants.H5S_ALL, HDF5Constants.H5S_ALL, HDF5Constants.H5P_DEFAULT, hdfValues);
+//					H5.H5Dclose(hdf5DatasetIDValues);
+//					H5.H5Sclose(hdf5DataspaceIDValues);
+//				}
+//
+//				int FIXED_STR_LEN = 100;
+//				StringBuffer colNamesSB = new StringBuffer();
+//				final int numColDescr = (hdf5Times != null?1:0)+nonTColumns.size();
+//				for(int i=0;i<numColDescr;i++) {
+//					String currColName = null;
+//					if(i==0 && hdf5Times != null) {
+//						currColName = "t";
+//					}else {
+//						final Integer realColIndex = nonTColumns.get(i-(hdf5Times != null?1:0));
+//						SymbolTableEntry ste =  getPlot2D().getPlotDataSymbolTableEntry(columns[realColIndex]);
+//						currColName = /*( ste != null?"(Var="+(ste.getNameScope() != null?ste.getNameScope().getName()+"_":"")+ste.getName()+") ":"")+*/
+//								getScrollPaneTable().getColumnName(columns[realColIndex]);
+//					}
+//					colNamesSB.append(StringUtils.rightPad(currColName,FIXED_STR_LEN));
+//				}
+//				long[] dimsCoord = new long[] {numColDescr};
+//				int h5tcs1 = H5.H5Tcopy(HDF5Constants.H5T_C_S1);
+//				H5.H5Tset_size(h5tcs1, FIXED_STR_LEN);
+//				int hdf5DataspaceIDCoord = H5.H5Screate_simple(dimsCoord.length, dimsCoord, null);
+//				int hdf5DatasetIDCoord = H5.H5Dcreate(hdf5FileID, "DataName (columns)",h5tcs1, hdf5DataspaceIDCoord,HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT);
+//				final byte[] bytes = colNamesSB.toString().getBytes();
+//				H5.H5Dwrite(hdf5DatasetIDCoord, h5tcs1, HDF5Constants.H5S_ALL, HDF5Constants.H5S_ALL, HDF5Constants.H5P_DEFAULT, bytes);
+//				H5.H5Dclose(hdf5DatasetIDCoord);
+//				H5.H5Sclose(hdf5DataspaceIDCoord);
+//				H5.H5Tclose(h5tcs1);
+//	
+//				if(hdf5DescriptionText != null) {
+//					String attrText = hdf5DescriptionText;
+//					int h5attrcs1 = H5.H5Tcopy(HDF5Constants.H5T_C_S1);
+//					H5.H5Tset_size(h5attrcs1, attrText.length());
+//					int dataspace_id = H5.H5Screate (HDF5Constants.H5S_SCALAR);
+//					int attribute_id = H5.H5Acreate (hdf5FileID, "Model/App/Simulation Info", h5attrcs1, dataspace_id, HDF5Constants.H5P_DEFAULT,HDF5Constants.H5P_DEFAULT);
+//					H5.H5Awrite (attribute_id, h5attrcs1, attrText.getBytes());
+//					H5.H5Sclose(dataspace_id);
+//					H5.H5Aclose(attribute_id);
+//					H5.H5Tclose(h5attrcs1);
+//				}
+//				
+				H5.H5Fclose(hdf5FileID);
+				hdf5FileID = -1;
+				while(true) {
+					JFileChooser jfc = new JFileChooser();
+					if (jfc.showSaveDialog(null) == JFileChooser.APPROVE_OPTION) {
+						File destinationFile = jfc.getSelectedFile();
+						try {
+							if(destinationFile.exists()) {
+								String retval = DialogUtils.showWarningDialog(this, "Overwrite exiting File...", destinationFile.getAbsolutePath()+"exists,\ndo you want to overwrite?",
+										new String[] {UserMessage.OPTION_YES, UserMessage.OPTION_NO, UserMessage.OPTION_CANCEL}, UserMessage.OPTION_CANCEL) ;
+								if(retval == null || retval.equals(UserMessage.OPTION_CANCEL)) {
+									break;
+								}else if(retval.equals(UserMessage.OPTION_NO)) {
+									continue;
 								}
-								Files.copy(hdf5TempFile, destinationFile);
-//								System.out.println("/home/vcell/Downloads/hdf5/HDFView/bin/HDFView "+destinationFile.getAbsolutePath());
-								break;
-							} catch (Exception e) {
-								e.printStackTrace();
-								DialogUtils.showErrorDialog(this, "Error saving from "+hdf5TempFile.getAbsolutePath()+" to "+destinationFile.getAbsolutePath()+"\n"+e.getMessage());
-								break;
 							}
-					    }else {
-					    	break;
-					    }
-					}
+							Files.copy(hdf5TempFile, destinationFile);
+//							System.out.println("/home/vcell/Downloads/hdf5/HDFView/bin/HDFView "+destinationFile.getAbsolutePath());
+							break;
+						} catch (Exception e) {
+							e.printStackTrace();
+							DialogUtils.showErrorDialog(this, "Error saving from "+hdf5TempFile.getAbsolutePath()+" to "+destinationFile.getAbsolutePath()+"\n"+e.getMessage());
+							break;
+						}
+				    }else {
+				    	break;
+				    }
 				}
 				return;
 			}finally {
@@ -502,7 +712,7 @@ private synchronized void copyCells0(CopyAction copyAction,boolean isHDF5) {
 			}
 		}else {
 			String selectedFirstColName = getScrollPaneTable().getColumnName(columns[0]);
-			if(selectedFirstColName.equals(ReservedVariable.TIME.getName())){
+			if(selectedFirstColName.equals((xVarColumnName==null?ReservedVariable.TIME.getName():xVarColumnName))){
 				bHasTimeColumn = true;
 			}
 		}
@@ -873,5 +1083,10 @@ public void setSpecialityRenderer(SpecialtyTableRenderer str) {
 private String hdf5DescriptionText;
 public void setHDF5DescriptionText(String descr) {
 	this.hdf5DescriptionText = descr;
+}
+
+private String xVarColumnName;
+public void setXVarName(String xVarColumnName) {
+	this.xVarColumnName = xVarColumnName;
 }
 }

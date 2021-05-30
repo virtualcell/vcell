@@ -118,6 +118,7 @@ private DataViewer createODEDataViewer() throws DataAccessException {
 				simulation.getSimulationOwner()+"\n"+
 				"Simulation:"+(simulation.getSimulationVersion() != null?simulation.getSimulationVersion().toString():simulation.getName()+" (unversioned)"));
 	}
+//	odeDataViewer.setXVarName(odeDataViewer.getODESolverPlotSpecificationPanel1().getXAxisComboBox_frm().getSelectedItem().toString());
 	//
 	//Example code for reading stats data from Stochastic multitrial non-histogram
 	//

@@ -987,7 +987,7 @@ private Plot2D getplot2D1() {
  * @return cbit.plot.Plot2DDataPanel
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private Plot2DDataPanel getPlot2DDataPanel1() {
+public Plot2DDataPanel getPlot2DDataPanel1() {
 	if (ivjPlot2DDataPanel1 == null) {
 		try {
 			ivjPlot2DDataPanel1 = new Plot2DDataPanel();
@@ -1209,7 +1209,9 @@ public void setBCompact(boolean bCompact) {
 public void setHDF5DescriptionText(String descr) {
 	getPlot2DDataPanel1().setHDF5DescriptionText( descr);
 }
-
+public void setXVarName(String xVarName) {
+	getPlot2DDataPanel1().setXVarName(xVarName);
+}
 /**
  * Set the CardLayout1 to a new value.
  * @param newValue java.awt.CardLayout
