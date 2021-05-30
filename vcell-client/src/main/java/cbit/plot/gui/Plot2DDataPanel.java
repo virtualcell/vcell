@@ -1108,5 +1108,4 @@ public void setHDF5DescriptionText(String descr) {
 	this.hdf5DescriptionText = descr;
 }
 
-
 }
