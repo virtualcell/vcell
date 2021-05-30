@@ -11,6 +11,7 @@
 package cbit.vcell.client.data;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.Container;
 import java.awt.FlowLayout;
 import java.awt.Window;
@@ -41,6 +42,7 @@ import org.vcell.util.BeanUtils;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.document.VCDataIdentifier;
+import org.vcell.util.gui.DialogUtils;
 
 import com.google.common.io.Files;
 
@@ -118,6 +120,7 @@ private DataViewer createODEDataViewer() throws DataAccessException {
 				simulation.getSimulationOwner()+"\n"+
 				"Simulation:"+(simulation.getSimulationVersion() != null?simulation.getSimulationVersion().toString():simulation.getName()+" (unversioned)"));
 	}
+//	odeDataViewer.setXVarName(odeDataViewer.getODESolverPlotSpecificationPanel1().getXAxisComboBox_frm().getSelectedItem().toString());
 	//
 	//Example code for reading stats data from Stochastic multitrial non-histogram
 	//
@@ -363,6 +366,10 @@ private void initialize() throws DataAccessException {
 			button.addActionListener(new ActionListener() {
 				
 				public void actionPerformed(ActionEvent e) {
+					if(getSimulation().getMathDescription().isNonSpatialStoch()) {
+						DialogUtils.showInfoDialog(SimResultsViewer.this,"Information", "Time Plot with Multiple Parameter Value Sets\nnot yet implemented for non-spatial stochastic");
+						return;
+					}
 					mainViewer.showTimePlotMultipleScans(dataManager);
 				}
 			});

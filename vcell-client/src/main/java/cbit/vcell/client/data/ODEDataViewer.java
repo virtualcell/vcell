@@ -32,6 +32,7 @@ import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.client.task.ClientTaskDispatcher.BlockingTimer;
 import cbit.vcell.export.gui.ExportMonitorPanel;
+import cbit.vcell.math.ReservedVariable;
 import cbit.vcell.simdata.DataManager;
 import cbit.vcell.solver.DataSymbolMetadata;
 import cbit.vcell.solver.Simulation;
@@ -72,6 +73,12 @@ class IvjEventHandler implements java.beans.PropertyChangeListener {
 			}
 			if (evt.getSource() == ODEDataViewer.this.getODESolverPlotSpecificationPanel1() && (evt.getPropertyName().equals("Plot2D"))) 
 				connEtoM2(evt);
+			
+			if (evt.getSource() == ODEDataViewer.this.getODESolverPlotSpecificationPanel1() && (evt.getPropertyName().equals(ODESolverPlotSpecificationPanel.ODE_DATA_CHANGED))) {
+				//getODESolverPlotSpecificationPanel1().getXAxisComboBox_frm().getSelectedItem()
+				final Object selectedItem = ODEDataViewer.this.getODESolverPlotSpecificationPanel1().getXAxisComboBox_frm().getSelectedItem();
+				getPlotPane1().setXVarName((selectedItem==null?ReservedVariable.TIME.getName():selectedItem.toString()));
+			}
 		};
 	};
 	private Simulation fieldSimulation =null;
@@ -178,7 +185,7 @@ public ExportMonitorPanel getExportMonitorPanel() {
  * Return the ODESolverPlotSpecificationPanel1 property value.
  * @return cbit.vcell.solver.ode.gui.ODESolverPlotSpecificationPanel
  */
-private ODESolverPlotSpecificationPanel getODESolverPlotSpecificationPanel1() {
+public ODESolverPlotSpecificationPanel getODESolverPlotSpecificationPanel1() {
 	if (ivjODESolverPlotSpecificationPanel1 == null) {
 		try {
 			ivjODESolverPlotSpecificationPanel1 = new ODESolverPlotSpecificationPanel();
@@ -395,7 +402,9 @@ public void setSimulation(Simulation simulation) {
 public void setHDF5DescriptionText(String descr) {
 	getPlotPane1().setHDF5DescriptionText(descr);
 }
-
+public void setXVarName(String xVarName) {
+	getPlotPane1().setXVarName(xVarName);
+}
 /**
  * Sets the vcDataIdentifier property (cbit.vcell.server.VCDataIdentifier) value.
  * @param vcDataIdentifier The new value for the property.
@@ -444,14 +453,14 @@ public void showTimePlotMultipleScans(DataManager dataManager) {
 		DialogUtils.showErrorDialog(this, "Please choose one or more variables!");
 		return;
 	}
-	ODETimePlotMultipleScansPanel panel = new ODETimePlotMultipleScansPanel(selectedVariableNames, getSimulation(), dataManager);
+	ODETimePlotMultipleScansPanel panel = new ODETimePlotMultipleScansPanel(selectedVariableNames, getSimulation(), dataManager,getODESolverPlotSpecificationPanel1().getXAxisComboBox_frm().getSelectedItem().toString());
 	ChildWindowManager childWindowManager = ChildWindowManager.findChildWindowManager(this);
 	//ChildWindow childWindow = childWindowManager.getChildWindowFromContentPane(panel);
 	
 	ChildWindow childWindow = childWindowManager.addChildWindow(panel, panel, "");
 	String titleStr = childWindow.getParent().getTitle();
 	titleStr = titleStr.substring(0, titleStr.indexOf("("));
-	childWindow.setTitle("Parameter scan results time plot for " + titleStr);
+	childWindow.setTitle("Parameter scan results plot for " + titleStr);
 	
 	childWindow.setIsCenteredOnParent();
 	childWindow.setSize(600,600);
