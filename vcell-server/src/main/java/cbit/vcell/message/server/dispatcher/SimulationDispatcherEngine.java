@@ -11,6 +11,7 @@
 package cbit.vcell.message.server.dispatcher;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
@@ -93,6 +94,13 @@ public class SimulationDispatcherEngine {
 	public void onStartRequest(VCSimulationIdentifier vcSimID, User user, int simulationScanCount, SimulationDatabase simulationDatabase, VCMessageSession session, VCMessageSession dispatcherQueueSession) throws VCMessagingException, DataAccessException, SQLException {
 		KeyValue simKey = vcSimID.getSimulationKey();
 
+		boolean isAdmin = false;
+		User myUser = simulationDatabase.getUser(user.getName());
+		if(myUser instanceof User.SpecialUser) {
+			//'special0' assigned to users who are VCell project admins
+			isAdmin = Arrays.asList(((User.SpecialUser)myUser).getMySpecials()).contains(User.SPECIALS.special1);
+		}
+
 		SimulationInfo simulationInfo = null;
 		try {
 			simulationInfo = simulationDatabase.getSimulationInfo(user, simKey);
@@ -111,7 +119,7 @@ public class SimulationDispatcherEngine {
 			return;
 		}
 
-		if (simulationScanCount > Integer.parseInt(cbit.vcell.resource.PropertyLoader.getRequiredProperty(cbit.vcell.resource.PropertyLoader.maxJobsPerScan))) {
+		if (!isAdmin && simulationScanCount > Integer.parseInt(cbit.vcell.resource.PropertyLoader.getRequiredProperty(cbit.vcell.resource.PropertyLoader.maxJobsPerScan))) {
 			if (lg.isWarnEnabled()) lg.warn("Too many simulations (" + simulationScanCount + ") for parameter scan." + vcSimID);
 			StatusMessage message = new StatusMessage(new SimulationJobStatus(VCellServerID.getSystemServerID(), vcSimID, -1, null, 
 					SchedulerStatus.FAILED, 0, SimulationMessage.workerFailure("Too many simulations (" + simulationScanCount + ") for parameter scan."), null, null), user.getName(), null, null);

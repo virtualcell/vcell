@@ -11,6 +11,7 @@
 package cbit.vcell.message.server.dispatcher;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -219,7 +220,7 @@ public static final int getMaxPdeJobsPerUser() {
  * Insert the method's description here.
  * Creation date: (5/11/2006 9:32:58 AM)
  */
-public static SchedulerDecisions schedule(List<ActiveJob> activeJobsAllSites, PartitionStatistics partitionStatistics, int userQuotaOde, int userQuotaPde, VCellServerID systemID) {
+public static SchedulerDecisions schedule(List<ActiveJob> activeJobsAllSites, PartitionStatistics partitionStatistics, int userQuotaOde, int userQuotaPde, VCellServerID systemID,User[] quotaExemptUsers) {
 	Hashtable<User, UserQuotaInfo> userQuotaInfoMap = new Hashtable<User, UserQuotaInfo>();
 	//
 	// gather statistics about all currently active jobs across all sites (per user and aggregate).
@@ -334,14 +335,15 @@ public static SchedulerDecisions schedule(List<ActiveJob> activeJobsAllSites, Pa
 			ActiveJob waitingJob = prioritizedJobIter.next();
 			if (waitingJob.simulationOwner.equals(user)){
 				if (waitingJob.isPDE){
-					if (numDesiredRunningPDEsAllSites < userQuotaPde){
+					//(quotaExemptUsers==null?(userQuotaPde:Arrays.asList(quotaExemptUsers).contains(user)?Integer.MAX_VALUE:userQuotaPde)
+					if (numDesiredRunningPDEsAllSites < (quotaExemptUsers==null?userQuotaPde:(Arrays.asList(quotaExemptUsers).contains(user)?Integer.MAX_VALUE:userQuotaPde))){
 						numDesiredRunningPDEsAllSites++;
 					}else{
 						schedulerDecisions.setHeldUserQuotaPDE(waitingJob);
 						prioritizedJobIter.remove();
 					}
 				}else{
-					if (numDesiredRunningODEsAllSites < userQuotaOde){
+					if (numDesiredRunningODEsAllSites < (quotaExemptUsers==null?userQuotaOde:(Arrays.asList(quotaExemptUsers).contains(user)?Integer.MAX_VALUE:userQuotaOde))){
 						numDesiredRunningODEsAllSites++;
 					}else{
 						schedulerDecisions.setHeldUserQuotaODE(waitingJob);

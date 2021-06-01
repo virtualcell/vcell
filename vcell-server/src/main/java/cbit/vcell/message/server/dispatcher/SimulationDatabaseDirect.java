@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.Vector;
 import java.util.concurrent.TimeUnit;
 
@@ -342,6 +343,10 @@ public class SimulationDatabaseDirect implements SimulationDatabase {
 		return user;
 	}
 
+	public TreeMap<User.SPECIALS,TreeMap<User,String>>  getSpecialUsers() throws DataAccessException, SQLException{
+		return databaseServerImpl.getSpecialUsers(null);
+	}
+	
 	@Override
 	public SimulationInfo getSimulationInfo(User user, KeyValue simKey) throws ObjectNotFoundException, DataAccessException {
 		SimulationInfo simInfo = databaseServerImpl.getSimulationInfo(user, simKey);

@@ -17,9 +17,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.concurrent.RejectedExecutionHandler;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadFactory;
@@ -35,6 +37,7 @@ import org.vcell.util.DataAccessException;
 import org.vcell.util.PermissionException;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
+import org.vcell.util.document.User.SPECIALS;
 import org.vcell.util.document.VCellServerID;
 import org.vcell.util.exe.ExecutableException;
 
@@ -250,7 +253,29 @@ public class SimulationDispatcher extends ServiceProvider {
 		}
 	};
 
-
+	private User[] quotaExemptUsers;//TreeMap<User.SPECIALS,TreeMap<User,String>> specialUsers;
+	private long lastSpecialUserCheck;
+	private void reloadSpecialUsers() {
+		try {
+			ArrayList<User> adminUserList = new ArrayList<User>();
+			TreeMap<User.SPECIALS,TreeMap<User,String>> specialUsers = simulationDatabase.getSpecialUsers();
+			final Iterator<SPECIALS> iterator = specialUsers.keySet().iterator();
+			while(iterator.hasNext()) {
+				final SPECIALS next = iterator.next();
+				if(next == User.SPECIALS.special0) {//Admin Users
+					final Iterator<User> iter = specialUsers.get(next).keySet().iterator();
+					while(iter.hasNext()) {
+						adminUserList.add(iter.next());
+					}
+					break;
+				}
+			}
+			quotaExemptUsers = adminUserList.toArray(new User[0]);
+		} catch (Exception e1) {
+			e1.printStackTrace();
+		}
+		lastSpecialUserCheck = System.currentTimeMillis();
+	}
 	public class DispatchThread extends Thread {
 
 		Object notifyObject = new Object();
@@ -262,9 +287,11 @@ public class SimulationDispatcher extends ServiceProvider {
 		}
 
 		public void run() {
-
+			reloadSpecialUsers();
 			while (true) {
-
+				if((System.currentTimeMillis()-lastSpecialUserCheck) > (5*60*1000)) {
+					reloadSpecialUsers();
+				}
 				boolean bDispatchedAnyJobs = false;
 
 				try {
@@ -307,7 +334,7 @@ public class SimulationDispatcher extends ServiceProvider {
 							BatchScheduler.ActiveJob activeJob = new BatchScheduler.ActiveJob(simJobStatus, isPDE);
 							activeJobs.add(activeJob);
 						}
-						SchedulerDecisions schedulerDecisions = BatchScheduler.schedule(activeJobs, partitionStatistics, maxOdePerUser, maxPdePerUser, serverID);
+						SchedulerDecisions schedulerDecisions = BatchScheduler.schedule(activeJobs, partitionStatistics, maxOdePerUser, maxPdePerUser, serverID,quotaExemptUsers);
 						if (lg.isTraceEnabled()) {
 							lg.trace("Dispatcher limits: partitionStatistics="+partitionStatistics+", maxOdePerUser="+maxOdePerUser+", maxPdePerUser="+maxPdePerUser);
 							lg.trace(schedulerDecisions.getRunnableThisSite().size() + " runnable jobs to process");

@@ -4,6 +4,7 @@ import java.sql.SQLException;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ObjectNotFoundException;
@@ -52,6 +53,8 @@ public interface SimulationDatabase {
 	public Set<KeyValue> getUnreferencedSimulations() throws SQLException;
 
 	public User getUser(String username) throws DataAccessException, SQLException;
+
+	public TreeMap<User.SPECIALS,TreeMap<User,String>> getSpecialUsers() throws DataAccessException, SQLException;
 
 	public SimulationInfo getSimulationInfo(User user, KeyValue simKey) throws ObjectNotFoundException, DataAccessException;
 

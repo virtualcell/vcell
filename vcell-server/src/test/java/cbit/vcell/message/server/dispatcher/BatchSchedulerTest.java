@@ -62,7 +62,7 @@ public class BatchSchedulerTest {
 		VCellServerID systemID = relSite;
 		
 		
-		SchedulerDecisions schedulerDecisions = BatchScheduler.schedule(activeJobs, partitionStatistics, userQuotaOde, userQuotaPde, systemID);
+		SchedulerDecisions schedulerDecisions = BatchScheduler.schedule(activeJobs, partitionStatistics, userQuotaOde, userQuotaPde, systemID,null);
 		schedulerDecisions.show();
 		
 		//

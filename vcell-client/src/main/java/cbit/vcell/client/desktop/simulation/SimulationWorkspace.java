@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 
 import javax.swing.JScrollPane;
 
@@ -25,10 +26,12 @@ import org.vcell.chombo.ChomboMeshValidator.ChomboMeshRecommendation;
 import org.vcell.util.PropertyChangeListenerProxyVCell;
 import org.vcell.util.document.PropertyConstants;
 import org.vcell.util.document.User;
+import org.vcell.util.document.User.SPECIALS;
 import org.vcell.util.gui.DialogUtils;
 
 import cbit.vcell.client.ClientSimManager;
 import cbit.vcell.client.ClientSimManager.ViewerType;
+import cbit.vcell.client.test.VCellClientTest;
 import cbit.vcell.client.DocumentWindowManager;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.UserMessage;
@@ -767,10 +770,22 @@ public synchronized void removePropertyChangeListener(PropertyChangeListener lis
  */
 void runSimulations(Simulation[] sims, Component parent) {
 	boolean bOkToRun = true;
+	boolean bCheckLimits = true;
+	try {
+		User loginUser = VCellClientTest.getVCellClient().getClientServerManager().getUser();
+		TreeMap<SPECIALS, TreeMap<User, String>> specialUsers = VCellClientTest.getVCellClient().getClientServerManager().getUserMetaDbServer().getSpecialUsers();
+		TreeMap<User, String> powerUsers = specialUsers.get(User.SPECIALS.special0);
+		if(powerUsers != null && powerUsers.containsKey(loginUser)) {
+			bCheckLimits = false;
+		}
+	} catch (Exception e) {
+		e.printStackTrace();	// we don't want to make a fuss if it happens
+	}
 	for(Simulation sim : sims)
 	{
+
 		//check if every sim in the sim list is ok to run
-		if(!checkSimulationParameters(sim, parent,true)){
+		if(!checkSimulationParameters(sim, parent,bCheckLimits)){
 			bOkToRun = false;
 			break;
 		}
