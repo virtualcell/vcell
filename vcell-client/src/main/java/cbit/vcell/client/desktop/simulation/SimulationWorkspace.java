@@ -15,6 +15,7 @@ import java.awt.Dimension;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -35,6 +36,8 @@ import cbit.vcell.client.test.VCellClientTest;
 import cbit.vcell.client.DocumentWindowManager;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.UserMessage;
+import cbit.vcell.client.task.AsynchClientTask;
+import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.geometry.ChomboInvalidGeometryException;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.mapping.SimulationContext;
@@ -769,30 +772,49 @@ public synchronized void removePropertyChangeListener(PropertyChangeListener lis
  * Comment
  */
 void runSimulations(Simulation[] sims, Component parent) {
-	boolean bOkToRun = true;
-	boolean bCheckLimits = true;
-	try {
-		User loginUser = VCellClientTest.getVCellClient().getClientServerManager().getUser();
-		TreeMap<SPECIALS, TreeMap<User, String>> specialUsers = VCellClientTest.getVCellClient().getClientServerManager().getUserMetaDbServer().getSpecialUsers();
-		TreeMap<User, String> powerUsers = specialUsers.get(User.SPECIALS.special0);
-		if(powerUsers != null && powerUsers.containsKey(loginUser)) {
-			bCheckLimits = false;
+	AsynchClientTask specialUsersTask = new AsynchClientTask("Get SpecialUsers...", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+		@Override
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
+			boolean bCheckLimits = true;
+			try {
+				User loginUser = VCellClientTest.getVCellClient().getClientServerManager().getUser();
+				TreeMap<SPECIALS, TreeMap<User, String>> specialUsers = VCellClientTest.getVCellClient().getClientServerManager().getUserMetaDbServer().getSpecialUsers();
+				TreeMap<User, String> powerUsers = specialUsers.get(User.SPECIALS.special0);
+				if(powerUsers != null && powerUsers.containsKey(loginUser)) {
+					bCheckLimits = false;
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+				return;
+			}
+			hashTable.put("CHECKLIMITS", new Boolean(bCheckLimits));
 		}
-	} catch (Exception e) {
-		e.printStackTrace();	// we don't want to make a fuss if it happens
-	}
-	for(Simulation sim : sims)
-	{
+	};
+	
+	AsynchClientTask runSimsTask = new AsynchClientTask("Run Simulations...", AsynchClientTask.TASKTYPE_SWING_NONBLOCKING) {
+		@Override
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
+			boolean bCheckLimits = true;
+			if(hashTable.get("CHECKLIMITS") != null) {
+				bCheckLimits = (Boolean)hashTable.get("CHECKLIMITS");
+			}
+			boolean bOkToRun = true;
+			for(Simulation sim : sims)
+			{
 
-		//check if every sim in the sim list is ok to run
-		if(!checkSimulationParameters(sim, parent,bCheckLimits)){
-			bOkToRun = false;
-			break;
+				//check if every sim in the sim list is ok to run
+				if(!checkSimulationParameters(sim, parent,bCheckLimits)){
+					bOkToRun = false;
+					break;
+				}
+			}
+			if(bOkToRun){
+				getClientSimManager().runSimulations(sims);
+			}
 		}
-	}
-	if(bOkToRun){
-		getClientSimManager().runSimulations(sims);
-	}
+	};
+	
+	ClientTaskDispatcher.dispatch(parent, new Hashtable<String, Object>(), new AsynchClientTask[] {specialUsersTask,runSimsTask}, false, false, false, null, false);
 }
 
 
