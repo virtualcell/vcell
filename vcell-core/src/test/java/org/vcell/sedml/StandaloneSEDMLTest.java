@@ -39,7 +39,7 @@ import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XmlHelper;
-
+@Deprecated
 public class StandaloneSEDMLTest {
 	
 	static ClientTaskStatusSupport progressListener = new ClientTaskStatusSupport() {
@@ -97,7 +97,7 @@ public class StandaloneSEDMLTest {
 		ArchiveComponents ac = null;
 		ac = Libsedml.readSEDMLArchive(new FileInputStream(archiveFile));
 		
-		SEDMLDocument sedmlDoc = ac.getSedmlDocument();
+		SEDMLDocument sedmlDoc = ac.getSedmlDocuments().get(0);
 	
 		SedML sedml = sedmlDoc.getSedMLModel();
 		if(sedml == null || sedml.getModels().isEmpty()) {

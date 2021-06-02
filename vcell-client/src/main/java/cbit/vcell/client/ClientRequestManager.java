@@ -3393,7 +3393,7 @@ public class ClientRequestManager
 
 		final String DOCUMENT_INFO = "documentInfo";
 		final String SEDML_TASK = "SedMLTask";
-		final String SEDML_MODEL = "SedMLModel";
+		final String SEDML_MODELS = "SedMLModels";
 		final String BNG_UNIT_SYSTEM = "bngUnitSystem";
 		final String BMDB_DEFAULT_APPLICATION = "Deterministic";
 		/* asynchronous and not blocking any window */
@@ -3527,8 +3527,9 @@ public class ClientRequestManager
 					}
 //					AbstractTask chosenTask = SEDMLChooserPanel.chooseTask(sedml, requester.getComponent(),
 //							file.getName());
-
-					hashTable.put(SEDML_MODEL, sedml);
+					List<SedML> sedmls = new ArrayList<>();
+					sedmls.add(sedml);
+					hashTable.put(SEDML_MODELS, sedmls);
 //					hashTable.put(SEDML_TASK, chosenTask);
 
 				} catch (Exception e) {
@@ -3540,19 +3541,23 @@ public class ClientRequestManager
 				try {
 					ArchiveComponents ac = null;
 					ac = Libsedml.readSEDMLArchive(new FileInputStream(file));
-					SEDMLDocument doc = ac.getSedmlDocument();
+					List<SEDMLDocument> docs = ac.getSedmlDocuments();
 
-					SedML sedml = doc.getSedMLModel();
-					if (sedml == null) {
-						throw new RuntimeException("Failed importing " + file.getName());
-					}
-					if (sedml.getModels().isEmpty()) {
-						throw new RuntimeException("Unable to find any model in " + file.getName());
+					List<SedML> sedmls = new ArrayList<>();
+					for (SEDMLDocument doc : docs) {
+						SedML sedml =doc.getSedMLModel();						
+						if (sedml == null) {
+							throw new RuntimeException("Failed importing " + file.getName());
+						}
+						if (sedml.getModels().isEmpty()) {
+							throw new RuntimeException("Unable to find any model in " + file.getName());
+						}
+						sedmls.add(sedml);
 					}
 //					AbstractTask chosenTask = SEDMLChooserPanel.chooseTask(sedml, requester.getComponent(),
 //							file.getName());
 
-					hashTable.put(SEDML_MODEL, sedml);
+					hashTable.put(SEDML_MODELS, sedmls);
 //					hashTable.put(SEDML_TASK, chosenTask);
 
 				} catch (Exception e) {
@@ -3576,7 +3581,7 @@ public class ClientRequestManager
 			@Override
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
 				VCDocument doc = null;
-				List<VCDocument> docs = null;
+				List<VCDocument> docs = new ArrayList<>();
 				boolean isBMDB = false;
 				boolean isSEDML = false;
 				VCDocumentInfo documentInfo = (VCDocumentInfo) hashTable.get(DOCUMENT_INFO);
@@ -3595,9 +3600,16 @@ public class ClientRequestManager
 					if (file != null && !file.getName().isEmpty() && (file.getName().toLowerCase().endsWith(".sedx")
 							|| file.getName().toLowerCase().endsWith(".omex"))) {
 						TranslationLogger transLogger = new TranslationLogger(requester);
-						// default to import all tasks
-						docs = XmlHelper.sedmlToBioModel(transLogger, externalDocInfo,
-								(SedML) hashTable.get(SEDML_MODEL), null);
+						// iterate through one or more SEDML objects 
+						List<SedML> sedmls = (List<SedML>) hashTable.get(SEDML_MODELS);
+						for (SedML sedml : sedmls) {
+							// default to import all tasks
+							List<VCDocument> vcdocs = XmlHelper.sedmlToBioModel(transLogger, externalDocInfo,
+									sedml, null);
+							for (VCDocument vcdoc : vcdocs) {
+								docs.add(vcdoc);
+							}
+						}
 						isSEDML = true; // treat the same since OMEX is just and archive with SED-ML file(s)
 					} else if (!externalDocInfo.isXML()) {
 						if (hashTable.containsKey(BNG_UNIT_SYSTEM)) { // not XML, look for BNGL etc.
@@ -3723,9 +3735,12 @@ public class ClientRequestManager
 								doc = VFrapXmlHelper.VFRAPToBioModel(hashTable, xmlSource, getDocumentManager(),
 										requester);
 							} else if (xmlType.equals(XMLTags.SedMLTypeTag)) {
+								// we know it is a single SedML since it is an actual XML source
+								List<SedML> sedmls = (List<SedML>) hashTable.get(SEDML_MODELS);
+								SedML sedml = sedmls.get(0);						
 								// default to import all tasks
 								docs = XmlHelper.sedmlToBioModel(transLogger, externalDocInfo,
-										(SedML) hashTable.get(SEDML_MODEL), null);
+										sedml, null);
 								isSEDML = true;
 							} else { // unknown XML format
 								throw new RuntimeException(

@@ -42,6 +42,7 @@ import org.jlibsedml.OneStep;
 import org.jlibsedml.Output;
 import org.jlibsedml.RepeatedTask;
 import org.jlibsedml.SedML;
+import org.jlibsedml.SedMLValidationReport;
 import org.jlibsedml.SteadyState;
 import org.jlibsedml.SubTask;
 import org.jlibsedml.Task;
@@ -664,7 +665,7 @@ public class XmlHelper {
 				BioModel bioModel = null;
 				boolean justMade = false;
 				String newMdl = resolver.getModelString(sedmlOriginalModel);
-				String bioModelName = bioModelBaseName + "_" + sedmlOriginalModelName;
+				String bioModelName = bioModelBaseName + "_" + sedml.getFileName() + "_" + sedmlOriginalModelName;
 				// get it if we made it already
 				for (VCDocument existingDoc : docs) {
 					if (!docs.isEmpty()) {
