@@ -81,7 +81,11 @@ public final class SedML extends SEDBase {
     public String toString() {
         return "SedML [level=" + level + "]";
     }
-
+    
+    // added for import
+    private String pathForURI = "";
+    private String fileName = "";
+    
     private int level = 1;
     private int version = 2;
     private Namespace xmlns = null;
@@ -764,4 +768,20 @@ public final class SedML extends SEDBase {
         }
         return true;
     }
+
+	public String getPathForURI() {
+		return pathForURI;
+	}
+
+	public void setPathForURI(String pathForURI) {
+		this.pathForURI = pathForURI;
+	}
+
+	public String getFileName() {
+		return fileName;
+	}
+
+	public void setFileName(String fileName) {
+		this.fileName = fileName;
+	}
 }

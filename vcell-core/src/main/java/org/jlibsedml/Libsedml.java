@@ -238,43 +238,43 @@ public class Libsedml {
      * @deprecated - use OMEX /Combine archive format from now on - the sedx
      *             archive is obsolete.
      */
-    public static byte[] writeSEDMLArchive(final ArchiveComponents components,
-            final String sedmlName) throws XMLException {
-        ZipOutputStream out = null;
-        ByteArrayOutputStream baos = null;
-        try {
-            baos = new ByteArrayOutputStream();
-            out = new ZipOutputStream(baos);
-            for (IModelContent modelFile : components.getModelFiles()) {
-                out.putNextEntry(new ZipEntry(modelFile.getName()));
-                byte[] data = modelFile.getContents().getBytes();
-                out.write(data);
-            }
-            out.putNextEntry(new ZipEntry(sedmlName + ".xml"));
-            String sedmlString = components.getSedmlDocument()
-                    .writeDocumentToString();
-
-            byte[] array = sedmlString.getBytes("UTF-8");
-            ByteArrayInputStream bais = new ByteArrayInputStream(
-                    sedmlString.getBytes("UTF-8"));
-            int bytesRead;
-            while ((bytesRead = bais.read(array)) != -1) {
-                out.write(array, 0, bytesRead);
-            }
-            out.close();
-
-        } catch (Exception e) {
-            throw new XMLException("Error generating SED-ML archive file:", e);
-        } finally {
-            try {
-                if (out != null) {
-                    out.close();
-                }
-            } catch (IOException e) {// ignore
-            }
-        }
-        return baos.toByteArray();
-    }
+//    public static byte[] writeSEDMLArchive(final ArchiveComponents components,
+//            final String sedmlName) throws XMLException {
+//        ZipOutputStream out = null;
+//        ByteArrayOutputStream baos = null;
+//        try {
+//            baos = new ByteArrayOutputStream();
+//            out = new ZipOutputStream(baos);
+//            for (IModelContent modelFile : components.getModelFiles()) {
+//                out.putNextEntry(new ZipEntry(modelFile.getName()));
+//                byte[] data = modelFile.getContents().getBytes();
+//                out.write(data);
+//            }
+//            out.putNextEntry(new ZipEntry(sedmlName + ".xml"));
+//            String sedmlString = components.getSedmlDocument()
+//                    .writeDocumentToString();
+//
+//            byte[] array = sedmlString.getBytes("UTF-8");
+//            ByteArrayInputStream bais = new ByteArrayInputStream(
+//                    sedmlString.getBytes("UTF-8"));
+//            int bytesRead;
+//            while ((bytesRead = bais.read(array)) != -1) {
+//                out.write(array, 0, bytesRead);
+//            }
+//            out.close();
+//
+//        } catch (Exception e) {
+//            throw new XMLException("Error generating SED-ML archive file:", e);
+//        } finally {
+//            try {
+//                if (out != null) {
+//                    out.close();
+//                }
+//            } catch (IOException e) {// ignore
+//            }
+//        }
+//        return baos.toByteArray();
+//    }
 
     /**
      * Reads an archive, which should be in sedx format - i.e., a zip archive
@@ -301,7 +301,7 @@ public class Libsedml {
 
         int read;
         List<IModelContent> contents = new ArrayList<IModelContent>();
-        SEDMLDocument doc = null;
+        List<SEDMLDocument> docs = new ArrayList<SEDMLDocument>();
         try {
             while ((entry = zis.getNextEntry()) != null) {
                 ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -310,15 +310,21 @@ public class Libsedml {
                     baos.write(buf, 0, read);
                 }
                 if (isSEDML(new ByteArrayInputStream(baos.toByteArray()))) {
-                    doc = readDocumentFromString(baos.toString());
-
+                    SEDMLDocument doc = readDocumentFromString(baos.toString());
+                    String fullPath = entry.getName();
+                    int lastSeparator = Math.max(fullPath.lastIndexOf("\\"), fullPath.lastIndexOf("/")) + 1;
+                    String path = fullPath.substring(0, lastSeparator);
+                    String name = fullPath.substring(lastSeparator);
+                    doc.getSedMLModel().setPathForURI(path);
+                    doc.getSedMLModel().setFileName(name);
+                    docs.add(doc);
                 } else {
                     IModelContent imc = new BaseModelContent(baos.toString(),
                             entry.getName());
                     contents.add(imc);
                 }
             }
-            return new ArchiveComponents(contents, doc);
+            return new ArchiveComponents(contents, docs);
         } catch (Exception e) {
             throw new XMLException("Error reading archive", e);
         } finally {

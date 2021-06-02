@@ -28,7 +28,7 @@ public class ModelResolver {
     static final String MODEL_SRC_NOT_VALID_URI = "The model 'source' attribute  is not a valid URI.";
 
     private SedML sedml;
-    private String message = "";
+	private String message = "";
     private List<IModelResolver> resolvers = new ArrayList<IModelResolver>();
 
     /**
@@ -121,10 +121,20 @@ public class ModelResolver {
 
             String baseModelAsStr = getBaseModel(srcURI);
             if (baseModelAsStr == null) {
-                message = MODEL_CANNOT_BE_RESOLVED_MSG + "(Using uri: "
-                        + srcURI + ")";
-                return null;
-            }
+            	// try again with relative path to sedml
+            	try {
+					srcURI = new URI(sedml.getPathForURI()+srcURI.toString());
+				} catch (URISyntaxException e) {
+		            message = MODEL_SRC_NOT_VALID_URI;
+		            return null;
+				}
+            	baseModelAsStr = getBaseModel(srcURI);
+	            if (baseModelAsStr == null) {
+	                message = MODEL_CANNOT_BE_RESOLVED_MSG + "(Using uri: "
+	                        + srcURI + ")";
+	                return null;
+	            }
+	        }
             modelID2ModelStr.put(srcURI.toString(), baseModelAsStr);
         }
 
