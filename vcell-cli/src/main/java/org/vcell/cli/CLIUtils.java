@@ -651,14 +651,14 @@ public class CLIUtils {
     }
 
 
-    private static ArrayList<File> listFilesForFolder(File dirPath, Path sedmlName,  String extensionType) {
-        File dir = new File(String.valueOf(dirPath), String.valueOf(sedmlName));
+    private static ArrayList<File> listFilesForFolder(File dirPath, String extensionType) {
+        File dir = new File(String.valueOf(dirPath));
         String[] extensions = new String[]{extensionType};
         List<File> files = (List<File>) FileUtils.listFiles(dir, extensions, true);
         return new ArrayList<>(files);
     }
 
-    public static void zipResFiles(File dirPath, Path sedmlName) throws IOException {
+    public static void zipResFiles(File dirPath) throws IOException {
 
         FileInputStream fileInputstream;
         FileOutputStream fileOutputStream;
@@ -667,6 +667,7 @@ public class CLIUtils {
         String relativePath;
         ZipEntry zipEntry;
 
+        // TODO: Add SED-ML name as base dirPath to avoid zipping all available CSV, PDF
         // Map for naming to extension
         Map<String, String> extensionListMap = new HashMap<String, String>() {{
             put("csv", "reports.zip");
@@ -674,7 +675,7 @@ public class CLIUtils {
         }};
 
         for (String ext : extensionListMap.keySet()) {
-            srcFiles = listFilesForFolder(dirPath, Paths.get(String.valueOf(sedmlName)), ext);
+            srcFiles = listFilesForFolder(dirPath, ext);
 
             if (srcFiles.size() == 0) {
                 System.err.println("No " + ext.toUpperCase() + " files found, skipping archiving `" + extensionListMap.get(ext) + "` files");
@@ -703,7 +704,6 @@ public class CLIUtils {
             }
         }
     }
-
 
     public String getTempDir() throws IOException {
         String tempPath = String.valueOf(java.nio.file.Files.createTempDirectory("vcell_temp_" + UUID.randomUUID().toString()).toAbsolutePath());
