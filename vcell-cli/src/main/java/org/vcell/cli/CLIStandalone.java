@@ -6,6 +6,9 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.jlibsedml.*;
 import org.vcell.cli.vcml.VCMLHandler;
 import org.vcell.cli.vcml.VcmlOmexConversion;
+
+import com.lowagie.text.pdf.crypto.RuntimeCryptoException;
+
 import org.apache.commons.io.FileUtils;
 import java.io.File;
 import java.io.FilenameFilter;
@@ -60,9 +63,10 @@ public class CLIStandalone {
                 try {
                     if (input == null || input.toString().endsWith("omex")) {
                         singleExecOmex(args);
-                    }
-                    if (input.toString().endsWith("vcml")) {
+                    } else if (input.toString().endsWith("vcml")) {
                         singleExecVcml(args);
+                    } else {
+                    	throw new RuntimeException("Invalid arguments: " + Arrays.toString(args));
                     }
                 } catch (Exception e) {
                     System.err.print(e.getMessage());
@@ -178,9 +182,9 @@ public class CLIStandalone {
             }
             // Run solvers and make reports; all failures/exceptions are being caught
             SolverHandler solverHandler = new SolverHandler();
-            // send the the whole OMEX file since we do better handling of malformed model URIs in XMLHelper code
+            // we send both the whole OMEX file and the extracted SEDML file path
+            // XmlHelper code uses two types of resolvers to handle absolute or relative paths
             ExternalDocInfo externalDocInfo = new ExternalDocInfo(new File(inputFile), true);
-
             resultsHash = solverHandler.simulateAllTasks(externalDocInfo, sedml, outDirForCurrentSedml, outputDir, sedmlLocation);
             if (resultsHash.size() != 0) {
                 reportsHash = CLIUtils.generateReportsAsCSV(sedml, resultsHash, outDirForCurrentSedml, outputDir, sedmlLocation);

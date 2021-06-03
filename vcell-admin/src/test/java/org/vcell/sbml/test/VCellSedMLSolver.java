@@ -53,7 +53,7 @@ import kong.unirest.HttpResponse;
 import kong.unirest.Unirest;
 import kong.unirest.json.JSONArray;
 
-
+@Deprecated
 public class VCellSedMLSolver {
 	static String OUT_ROOT_STRING = "";
 	static String IN_ROOT_STRING = "";
@@ -304,7 +304,7 @@ public class VCellSedMLSolver {
 		cbit.util.xml.VCLogger sedmlImportLogger = new LocalLogger();
 		List<AbstractTask> tasks = new ArrayList<AbstractTask>();
 		tasks.add(sedmlTask);
-		List<VCDocument> docs = XmlHelper.sedmlToBioModel(sedmlImportLogger, externalDocInfo, sedml, tasks);
+		List<VCDocument> docs = XmlHelper.sedmlToBioModel(sedmlImportLogger, externalDocInfo, sedml, tasks, null);
 		VCDocument doc = docs.get(0);
 		sanityCheck(doc);
 		

@@ -63,7 +63,7 @@ public class SolverHandler {
         Simulation[] sims = null;
         String outDirRoot = outputDirForSedml.toString().substring(0, outputDirForSedml.toString().lastIndexOf(System.getProperty("file.separator")));
         try {
-            docs = XmlHelper.sedmlToBioModel(sedmlImportLogger, externalDocInfo, sedml, null);
+            docs = XmlHelper.sedmlToBioModel(sedmlImportLogger, externalDocInfo, sedml, null, sedmlLocation);
         } catch (Exception e) {
             System.err.println("Unable to Parse SED-ML into Bio-Model, failed with err: " + e.getMessage());
             throw e;

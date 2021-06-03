@@ -546,12 +546,11 @@ public class XmlHelper {
 	}
 
 	public static List<VCDocument> sedmlToBioModel(VCLogger transLogger, ExternalDocInfo externalDocInfo,
-												   SedML sedml, List<AbstractTask> tasks) throws Exception {
+												   SedML sedml, List<AbstractTask> tasks, String sedmlFileLocation) throws Exception {
 		if(sedml.getModels().isEmpty()) {
 			throw new Exception("No models found in SED-ML document");
 		}
 		try {
-			String fullPath = FileUtils.getFullPath(externalDocInfo.getFile().getAbsolutePath());	// extract the path only from the sedml file
 
 //        // iterate through all the elements and show them at the console
 //        List<org.jlibsedml.Model> mmm = sedml.getModels();
@@ -601,8 +600,13 @@ public class XmlHelper {
 				resolver.add(new ArchiveModelResolver(ac));
 			}
 			resolver.add(new FileModelResolver());
-			resolver.add(new RelativeFileModelResolver(fullPath));
-
+			if (sedmlFileLocation != null) {
+				File sedmlFile = new File(sedmlFileLocation);
+				String sedmlRelativePrefix = sedmlFile.getParent() + File.separator;
+				if (sedmlRelativePrefix != null) {
+					resolver.add(new RelativeFileModelResolver(sedmlRelativePrefix));
+				} 
+			}
 			for (AbstractTask selectedTask : tasks) {
 				if(selectedTask instanceof Task) {
 					sedmlOriginalModel = sedml.getModelWithId(selectedTask.getModelReference());

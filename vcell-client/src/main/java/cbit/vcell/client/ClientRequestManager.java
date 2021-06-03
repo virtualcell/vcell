@@ -3605,7 +3605,7 @@ public class ClientRequestManager
 						for (SedML sedml : sedmls) {
 							// default to import all tasks
 							List<VCDocument> vcdocs = XmlHelper.sedmlToBioModel(transLogger, externalDocInfo,
-									sedml, null);
+									sedml, null, null);
 							for (VCDocument vcdoc : vcdocs) {
 								docs.add(vcdoc);
 							}
@@ -3740,7 +3740,7 @@ public class ClientRequestManager
 								SedML sedml = sedmls.get(0);						
 								// default to import all tasks
 								docs = XmlHelper.sedmlToBioModel(transLogger, externalDocInfo,
-										sedml, null);
+										sedml, null, externalDocInfo.getFile().getAbsolutePath());
 								isSEDML = true;
 							} else { // unknown XML format
 								throw new RuntimeException(
