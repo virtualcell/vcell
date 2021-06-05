@@ -27,6 +27,7 @@ import java.util.zip.ZipOutputStream;
 //import java.nio.file.Files;
 
 public class CLIUtils {
+
     // Docker hardcode path
     // Note: Docker Working Directory and Singularity working directory works in different way.
     // Those paths are hardcoded because to run python code from a submodule path
@@ -36,16 +37,21 @@ public class CLIUtils {
     // user.dir is not working for windows
 //    private static final Path homeDir = Paths.get(String.valueOf(System.getProperty("user.dir")));
     private static final Path workingDirectory = Paths.get((Paths.get(String.valueOf(homeDir)).toString().equals("/")
-            || Paths.get(String.valueOf(homeDir)).toString().startsWith("/home/FCAM/crbmapi/"))
+            || Paths.get(String.valueOf(homeDir)).toString().startsWith("/home/FCAM/crbmapi/")
+            || Paths.get(String.valueOf(homeDir)).toString().contains("projects/CRBM/biosimulations/dev/simulations"))
             ? "/usr/local/app/vcell/installDir" : System.getProperty("user.dir"));
     // Submodule path for VCell_CLI_UTILS
     private static final Path utilPath = Paths.get(workingDirectory.toString(), "submodules", "vcell_cli_utils");
-    private static final Path stdOutPath = Paths.get(workingDirectory.toString(), "stdOut.txt");
-    private static final File stdOutFile = new File(String.valueOf(stdOutPath));
     private static final Path cliUtilPath = Paths.get(utilPath.toString(), "vcell_cli_utils");
     private static final Path cliPath = Paths.get(cliUtilPath.toString(), "cli.py");
     private static final Path statusPath = Paths.get(cliUtilPath.toString(), "status.py");
-    private static final Path requirementFilePath = Paths.get(utilPath.toString(), "requirements.txt");
+
+
+    // Absolute Submodule path for VCell_CLI_UTILS
+//    private static final Path utilPath = Paths.get(new File("submodules", "vcell_cli_utils").getAbsolutePath());
+//    private static final Path cliUtilPath = Paths.get(utilPath.toString(), "vcell_cli_utils");
+//    private static final Path cliPath = Paths.get(cliUtilPath.toString(), "cli.py");
+//    private static final Path statusPath = Paths.get(cliUtilPath.toString(), "status.py");
 
     // Supported platforms
     public static boolean isWindowsPlatform = OperatingSystemInfo.getInstance().isWindows();
@@ -604,6 +610,10 @@ public class CLIUtils {
     status: SUCCEEDED
     * */
     public static void generateStatusYaml(String omexPath, String outDir) throws IOException, InterruptedException {
+        System.out.println("utilPath: " + utilPath);
+        System.out.println("cliUtilPath: " + cliUtilPath);
+        System.out.println("cliPath: " + cliPath);
+        System.out.println("statusPath: " + statusPath);
         // Note: by default every status is being skipped
         Path omexFilePath = Paths.get(omexPath);
         /*
