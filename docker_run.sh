@@ -29,4 +29,4 @@ java \
   -Dvcell.mongodb.database="localhost" \
   -Dvcell.mongodb.host.internal="localhost" \
   -Dvcell.mongodb.port.internal=27017 \
-  org.vcell.cli.CLIStandalone "$1" "$2" "$3" "$4" "$5" "$6"
+  org.vcell.cli.CLIStandalone "$@"
