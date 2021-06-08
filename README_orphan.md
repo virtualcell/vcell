@@ -35,7 +35,7 @@ sudo docker run -it --rm -v /Users/schaff/.vcell/simdata/temp:/vcelldata frm/vce
 **Docker Change number of service tasks running, increase tasks for a service in a swarm**  
 
 sudo docker service ls  
-docker service scale <SERVICE-ID>=<NUMBER-OF-TASKS>  
+docker service scale SERVICE-ID=NUMBER-OF-TASKS  
 Example:  
 ----sudo docker service scale vcellrel_data=2  
 ----sudo docker service ps vcellrel_data  
