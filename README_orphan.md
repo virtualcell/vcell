@@ -32,6 +32,16 @@ sudo docker build --tag=frm/vcell-solvers:latest -f Dockerfile-local .
 sudo docker run -it --rm -v /Users/schaff/.vcell/simdata/temp:/vcelldata frm/vcell-solvers:latest SundialsSolverStandalone_x64 /vcelldata/SimID_1460763637_0_.cvodeInput /vcelldata/SimID_1460763637_0_.ida  
 -----where /Users/schaff/.vcell/simdata/temp is the simulation data directory (input file) mapped to /vcelldata inside the Docker container.  
 
+**Docker Change number of service tasks running, increase tasks for a service in a swarm**  
+
+sudo docker service ls  
+docker service scale <SERVICE-ID>=<NUMBER-OF-TASKS>  
+Example:  
+----sudo docker service scale vcellrel_data=2  
+----sudo docker service ps vcellrel_data  
+
+
+
 **Remove Broken Swarm**  
 On each docker node that is part of broken swarm:  
   260  sudo systemctl stop docker.service  
@@ -152,6 +162,24 @@ sudo find /var/lib/docker -name '*.log' -size +100M -print | sudo xargs -L 1 ls 
 //Clear data from docker log file
 sudo su
 cat /dev/null >DOCKER_LOG_FILE_PATH
+
+//create/edit docker config to limit log size
+sudo nano /etc/docker/daemon.json
+{
+  "log-driver": "json-file",
+  "log-opts": {
+    "max-size": "100m",
+    "max-file": "3",
+    "labels": "vcell-node3",
+    "env": "os,customer"
+  }
+}
+sudo systemctl restart docker //restart docker to read in new configuration
+sudo journalctl -r -u docker //view systemd logs for docker to check for problems during start
+systemctl status docker //make sure docker started
+
+//print size of root filesystem on all VCell nodes
+ssh vcell@vcellapi df -H | grep ".*/$" ; ssh vcell@vcell-node1 df -H | grep ".*/$" ; ssh vcell@vcell-node2 df -H | grep ".*/$" ; ssh vcell@vcellapi-beta df -H | grep ".*/$" ; ssh vcell@vcell-node3 df -H | grep ".*/$" ; ssh vcell@vcell-node4 df -H | grep ".*/$"
 ```
 
 ```bash
