@@ -552,7 +552,7 @@ public class VCellHelper extends AbstractService implements ImageJService
     	return ct;
 	}
 	
-	enum VARTYPE_POSTPROC {DataProcessingOutputInfo,PostProcessDataPDEDataContext,NotPostProcess}
+	public enum VARTYPE_POSTPROC {DataProcessingOutputInfo,PostProcessDataPDEDataContext,NotPostProcess}
 
 	public IJDataList getTimePointData(String simulationDataCacheKey,String variableName,VARTYPE_POSTPROC varTypePostProcess,int[] timePointIndexes,int simulationJobIndex) throws Exception{
 		StringBuffer timeIndexParams = new StringBuffer();
