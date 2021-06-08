@@ -15,3 +15,5 @@ markComment: >
   for your contributions.
 # Comment to post when closing a stale issue. Set to `false` to disable
 closeComment: false
+# If an issue already exists and is closed, reopen it. Note: if set to false, no new issue will be created.
+reopenClosed: false
