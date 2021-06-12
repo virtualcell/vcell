@@ -34,6 +34,7 @@ import cbit.vcell.modeldb.BioModelRep;
 import cbit.vcell.modeldb.DatabaseServerImpl;
 import cbit.vcell.modeldb.SimContextRep;
 import cbit.vcell.modeldb.SimulationRep;
+import cbit.vcell.solver.MathOverrides;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XmlHelper;
@@ -90,7 +91,7 @@ public class TestRestServerBlinov extends Restlet{
 //						}
 						sreps[j] = new SimulationRep(srepKeys[j], simulations[j].getVersion().getBranchID(),
 								simulations[j].getName(), simulations[j].getVersion().getOwner(), simulations[j].getMathDescription().getKey(),
-								simulations[j].getSolverTaskDescription(), null);
+								simulations[j].getSolverTaskDescription(), new MathOverrides.Element[] {});
 					}
 					//KeyValue bmKey, String name, int privacy, User[] groupUsers, Date date, String annot, BigDecimal branchID, KeyValue modelRef, User owner, KeyValue[] simKeyList, KeyValue[] simContextKeyList)
 					BioModelRep bmrep =
