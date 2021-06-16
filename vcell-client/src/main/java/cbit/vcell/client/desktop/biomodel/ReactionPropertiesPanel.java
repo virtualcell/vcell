@@ -595,6 +595,14 @@ private void updateKineticChoice() {
 	if (reactionStep == null || reactionStep.getKinetics().getKineticsDescription().equals(newKineticChoice)){
 		return;
 	}
+	
+	boolean bLumpedToGeneral = false;
+	boolean bGeneralToLumped = false;
+	if(newKineticChoice.equals(KineticsDescription.General) && reactionStep.getKinetics().getKineticsDescription().equals(KineticsDescription.GeneralLumped)) {
+		bLumpedToGeneral = true;
+	} else if (newKineticChoice.equals(KineticsDescription.GeneralLumped) && reactionStep.getKinetics().getKineticsDescription().equals(KineticsDescription.General)) {
+		bGeneralToLumped = true;
+	}
 	boolean bFoundKineticType = false;
 	KineticsDescription[] kineticTypes = reactionStep instanceof SimpleReaction ? Simple_Reaction_Kinetic_Types : Flux_Reaction_KineticTypes;
 	for (int i=0;i<kineticTypes.length;i++){
@@ -608,7 +616,15 @@ private void updateKineticChoice() {
 	}
 	
 	try {
-		reactionStep.setKinetics(newKineticChoice.createKinetics(reactionStep));
+		Kinetics newKinetics = null;
+		if (bLumpedToGeneral) {
+			newKinetics = DistributedKinetics.toDistributedKinetics((LumpedKinetics)reactionStep.getKinetics());
+		} else if (bGeneralToLumped) {
+			newKinetics = LumpedKinetics.toLumpedKinetics((DistributedKinetics)reactionStep.getKinetics());
+		} else {
+			newKinetics = newKineticChoice.createKinetics(reactionStep);
+		}
+		reactionStep.setKinetics(newKinetics);
 	} catch (Exception exc) {
 		handleException(exc);
 	}
