@@ -76,7 +76,7 @@ public class ModelUnitConverter {
 			jscl.math.Generic g1=jsclExpression.expand().simplify();
 			Expression newRate=new Expression(SymbolUtils.getRestoredStringJSCL(g1.toString()));
 			newRate.bindExpression(reactionStep);
-			reactionStep.getKinetics().getKineticsParameterFromRole(kineticsParameter.getRole()).setExpression(newRate.flatten());
+			reactionStep.getKinetics().getKineticsParameterFromRole(Kinetics.ROLE_ReactionRate).setExpression(newRate.flatten());
 		}
 		for (ReactionRule reactionRule : newBioModel.getModel().getRbmModelContainer().getReactionRuleList()) {
 			SymbolTable oldSymbolTable = oldBioModel.getModel().getRbmModelContainer().getReactionRule(reactionRule.getName()).getKineticLaw().getScopedSymbolTable();
