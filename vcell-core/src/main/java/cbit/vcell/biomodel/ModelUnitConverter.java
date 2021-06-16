@@ -11,6 +11,7 @@ import cbit.vcell.mapping.StructureMapping;
 import cbit.vcell.math.MathUtilities;
 import cbit.vcell.matrix.RationalNumber;
 import cbit.vcell.model.Kinetics;
+import cbit.vcell.model.Kinetics.KineticsParameter;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.ModelUnitSystem;
 import cbit.vcell.model.Parameter;
@@ -52,7 +53,17 @@ public class ModelUnitConverter {
 			for (Parameter p : reactionStep.getKinetics().getKineticsParameters()){
 				convertVarsWithUnitFactors(oldSymbolTable, newSymbolTable, p);
 			}
-			Expression rateExpression = reactionStep.getKinetics().getKineticsParameterFromRole(Kinetics.ROLE_ReactionRate).getExpression();
+			Kinetics kinetics = reactionStep.getKinetics();
+			KineticsParameter kineticsParameter = null;
+			if(kinetics.getKineticsParameterFromRole(Kinetics.ROLE_ReactionRate) != null) {
+				kineticsParameter = kinetics.getKineticsParameterFromRole(Kinetics.ROLE_ReactionRate);
+			} else if(kinetics.getKineticsParameterFromRole(Kinetics.ROLE_LumpedReactionRate) != null) {
+				kineticsParameter = kinetics.getKineticsParameterFromRole(Kinetics.ROLE_LumpedReactionRate);
+			} else {
+				throw new RuntimeException("Role 'reaction rate' or role 'lumped reaction rate' expected");
+			}
+			
+			Expression rateExpression = kineticsParameter.getExpression();
 			jscl.math.Expression jsclExpression = null;
 			String jsclExpressionString = rateExpression.infix_JSCL();
 			try {
@@ -65,7 +76,7 @@ public class ModelUnitConverter {
 			jscl.math.Generic g1=jsclExpression.expand().simplify();
 			Expression newRate=new Expression(SymbolUtils.getRestoredStringJSCL(g1.toString()));
 			newRate.bindExpression(reactionStep);
-			reactionStep.getKinetics().getKineticsParameterFromRole(Kinetics.ROLE_ReactionRate).setExpression(newRate.flatten());
+			reactionStep.getKinetics().getKineticsParameterFromRole(kineticsParameter.getRole()).setExpression(newRate.flatten());
 		}
 		for (ReactionRule reactionRule : newBioModel.getModel().getRbmModelContainer().getReactionRuleList()) {
 			SymbolTable oldSymbolTable = oldBioModel.getModel().getRbmModelContainer().getReactionRule(reactionRule.getName()).getKineticLaw().getScopedSymbolTable();
