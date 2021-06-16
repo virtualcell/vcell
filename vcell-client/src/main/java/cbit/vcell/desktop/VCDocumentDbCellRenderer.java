@@ -14,7 +14,6 @@ import java.math.BigDecimal;
 import javax.swing.JLabel;
 import javax.swing.JTree;
 
-import org.omg.PortableInterceptor.USER_EXCEPTION;
 import org.vcell.util.document.GroupAccess;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCDocumentInfo;
