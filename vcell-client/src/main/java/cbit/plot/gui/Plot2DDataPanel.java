@@ -174,7 +174,7 @@ private void connEtoM1(Plot2D value) {
 		if (getplot2D1() != null) {
 			getNonEditableDefaultTableModel1().setDataVector(getplot2D1().getVisiblePlotDataValuesByRow(), getplot2D1().getVisiblePlotColumnTitles());
 		}else{
-			getNonEditableDefaultTableModel1().setDataVector((Vector<Object>)null,(Vector<Object>)null);			
+			getNonEditableDefaultTableModel1().setDataVector((Object [][])null,(Object [])null);			
 		}
 		// user code begin {2}
 		// user code end
