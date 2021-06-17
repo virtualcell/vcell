@@ -35,7 +35,7 @@ public class OmexExtensionFilter extends SedmlExtensionFilter {
 		SEDMLExporter sedmlExporter = null;
 		if (bioModel != null) {
 			sedmlExporter = new SEDMLExporter(bioModel, sedmlLevel, sedmlVersion);
-			resultString = sedmlExporter.getSEDMLFile(sPath);
+			resultString = sedmlExporter.getSEDMLFile(sPath, true);
 
 			// convert biomodel to vcml and save to file.
 			String vcmlString = XmlHelper.bioModelToXML(bioModel);

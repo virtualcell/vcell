@@ -149,7 +149,7 @@ public class SEDMLExporter {
 			// invoke the SEDMLEXporter
 			SEDMLExporter sedmlExporter = new SEDMLExporter(bioModel, 1, 1);
 			String absolutePath = "c:\\dan\\SEDML";
-			String sedmlStr = sedmlExporter.getSEDMLFile(absolutePath);
+			String sedmlStr = sedmlExporter.getSEDMLFile(absolutePath, false);
 //			String absolutePath = ResourceUtil.getUserHomeDir().getAbsolutePath();
 			String outputName = absolutePath+ "\\" + TokenMangler.mangleToSName(bioModel.getName()) + ".sedml";
 			XmlUtil.writeXMLStringToFile(sedmlStr, outputName, true);
@@ -162,7 +162,7 @@ public class SEDMLExporter {
 		}
 	}
 	
-	public String getSEDMLFile(String sPath) {
+	public String getSEDMLFile(String sPath, boolean bFromOmex) {
 
 		// Create an SEDMLDocument and create the SEDMLModel from the document, so that other details can be added to it in translateBioModel()
 		SEDMLDocument sedmlDocument = new SEDMLDocument(this.sedmlLevel, this.sedmlVersion);
@@ -173,14 +173,14 @@ public class SEDMLExporter {
 		sedmlModel = sedmlDocument.getSedMLModel();
 
 		
-		translateBioModelToSedML(sPath);
+		translateBioModelToSedML(sPath, bFromOmex);
 
 		// write SEDML document into SEDML writer, so that the SEDML str can be retrieved
 		return sedmlDocument.writeDocumentToString();
 	}
 
 
-	private void translateBioModelToSedML(String savePath) {
+	private void translateBioModelToSedML(String savePath, boolean bFromOmex) {		// true if invoked for omex export, false if for sedml
 		sbmlFilePathStrAbsoluteList.clear();
 		// models
 		try {
@@ -267,16 +267,19 @@ public class SEDMLExporter {
 					if(sbmlExportFailed) {
 						filePathStrAbsolute = Paths.get(savePath, bioModelName + ".vcml").toString();
 						filePathStrRelative = bioModelName + ".vcml";
-						String vcmlString = XmlHelper.bioModelToXML(vcBioModel);
-						XmlUtil.writeXMLStringToFile(vcmlString, filePathStrAbsolute, true);
+						if(!bFromOmex) {	// the vcml file is managed elsewhere when called for omex
+							String vcmlString = XmlHelper.bioModelToXML(vcBioModel);
+							XmlUtil.writeXMLStringToFile(vcmlString, filePathStrAbsolute, true);
+							sbmlFilePathStrAbsoluteList.add(filePathStrRelative);
+						}
 						urn = vcmlLanguageURN;
 					} else {
 						filePathStrAbsolute = Paths.get(savePath, bioModelName + "_" + TokenMangler.mangleToSName(simContextName) + ".xml").toString();
 						filePathStrRelative = bioModelName + "_" +  TokenMangler.mangleToSName(simContextName) + ".xml";
 						XmlUtil.writeXMLStringToFile(sbmlString, filePathStrAbsolute, true);
 						urn = sbmlLanguageURN;
+						sbmlFilePathStrAbsoluteList.add(filePathStrRelative);
 					}
-					sbmlFilePathStrAbsoluteList.add(filePathStrRelative);
 			        String simContextId = TokenMangler.mangleToSName(simContextName);
 					sedmlModel.addModel(new Model(simContextId, simContextName, urn, filePathStrRelative));
 		

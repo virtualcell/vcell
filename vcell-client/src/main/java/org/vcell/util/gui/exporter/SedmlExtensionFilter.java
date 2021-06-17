@@ -36,7 +36,7 @@ public class SedmlExtensionFilter extends SelectorExtensionFilter {
 		SEDMLExporter sedmlExporter = null;
 		if (bioModel != null) {
 			sedmlExporter = new SEDMLExporter(bioModel, sedmlLevel, sedmlVersion);
-			resultString = sedmlExporter.getSEDMLFile(sPath);
+			resultString = sedmlExporter.getSEDMLFile(sPath, false);
 		} else {
 			throw new RuntimeException("unsupported Document Type " + Objects.requireNonNull(bioModel).getClass().getName() + " for SedML export");
 		}
