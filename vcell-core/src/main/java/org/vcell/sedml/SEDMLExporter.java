@@ -187,6 +187,7 @@ public class SEDMLExporter {
 			SimulationContext[] simContexts = vcBioModel.getSimulationContexts();
 			cbit.vcell.model.Model vcModel = vcBioModel.getModel();
 			String sbmlLanguageURN = SUPPORTED_LANGUAGE.SBML_GENERIC.getURN();	// "urn:sedml:language:sbml";
+			String vcmlLanguageURN = SUPPORTED_LANGUAGE.VCELL_GENERIC.getURN();	// "urn:sedml:language:vcml";
 			String bioModelName = TokenMangler.mangleToSName(vcBioModel.getName());
 			//String usrHomeDirPath = ResourceUtil.getUserHomeDir().getAbsolutePath();
 			SBMLSupport sbmlSupport = new SBMLSupport();		// to get Xpath string for variables.
@@ -260,24 +261,24 @@ public class SEDMLExporter {
 						throw new RuntimeException("unsupported Document Type "+vcBioModel.getClass().getName()+" for SBML export");
 					}
 
-
 					String filePathStrAbsolute = null;
 					String filePathStrRelative = null;
-
+					String urn = null;
 					if(sbmlExportFailed) {
 						filePathStrAbsolute = Paths.get(savePath, bioModelName + ".vcml").toString();
 						filePathStrRelative = bioModelName + ".vcml";
 						String vcmlString = XmlHelper.bioModelToXML(vcBioModel);
 						XmlUtil.writeXMLStringToFile(vcmlString, filePathStrAbsolute, true);
+						urn = vcmlLanguageURN;
 					} else {
 						filePathStrAbsolute = Paths.get(savePath, bioModelName + "_" + TokenMangler.mangleToSName(simContextName) + ".xml").toString();
 						filePathStrRelative = bioModelName + "_" +  TokenMangler.mangleToSName(simContextName) + ".xml";
 						XmlUtil.writeXMLStringToFile(sbmlString, filePathStrAbsolute, true);
+						urn = sbmlLanguageURN;
 					}
-					
 					sbmlFilePathStrAbsoluteList.add(filePathStrRelative);
 			        String simContextId = TokenMangler.mangleToSName(simContextName);
-					sedmlModel.addModel(new Model(simContextId, simContextName, sbmlLanguageURN, filePathStrRelative));
+					sedmlModel.addModel(new Model(simContextId, simContextName, urn, filePathStrRelative));
 		
 					// required for mathOverrides, if any
 					//
