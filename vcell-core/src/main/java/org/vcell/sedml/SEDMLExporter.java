@@ -198,7 +198,8 @@ public class SEDMLExporter {
 			for (SimulationContext simContext : simContexts) {
 				String simContextName = simContext.getName();
 				// export all applications that are not spatial stochastic
-				if (!(simContext.getGeometry().getDimension() > 0 && simContext.isStoch())) {
+//				if (!(simContext.getGeometry().getDimension() > 0 && simContext.isStoch())) {
+				if (true) {
 					// check if structure sizes are set. If not, get a structure from the model, and set its size 
 					// (thro' the structureMappings in the geometry of the simContext); invoke the structureSizeEvaluator 
 					// to compute and set the sizes of the remaining structures.
@@ -232,6 +233,8 @@ public class SEDMLExporter {
 					// Set<Pair <String reaction, String param>>	(if needed?)	- if local stays local
 					// 
 					Map<Pair <String, String>, String> l2gMap = null;		// local to global translation map
+					
+					boolean sbmlExportFailed = false;
 					if (vcBioModel instanceof BioModel) {
 						try {
 							SBMLExporter sbmlExporter = new SBMLExporter(vcBioModel, level, version, isSpatial);
@@ -240,28 +243,41 @@ public class SEDMLExporter {
 							try {
 								sbmlString = sbmlExporter.getSBMLString();
 							} catch (RuntimeException e) {
-								if (simContext.getGeometry().getDimension() > 0 && simContext.getApplicationType() == Application.NETWORK_DETERMINISTIC ) {
-									continue;	// we skip importing 3D deterministic applications if SBML exceptions
-								} else {
-									throw(e);
-								}
+								sbmlExportFailed = true;
+//								if (simContext.getGeometry().getDimension() > 0 && simContext.getApplicationType() == Application.NETWORK_DETERMINISTIC ) {
+//									continue;	// we skip importing 3D deterministic applications if SBML exceptions
+//								} else {
+//									throw(e);
+//								}
 							}
 							l2gMap = sbmlExporter.getLocalToGlobalTranslationMap();
 						} catch (SbmlException e) {
-							e.printStackTrace(System.out);
-							throw new XmlParseException(e);
+							sbmlExportFailed = true;
+//							e.printStackTrace(System.out);
+//							throw new XmlParseException(e);
 						}
 					} else {
 						throw new RuntimeException("unsupported Document Type "+vcBioModel.getClass().getName()+" for SBML export");
 					}
 
 
-					String sbmlFilePathStrAbsolute = Paths.get(savePath, bioModelName + "_" + TokenMangler.mangleToSName(simContextName) + ".xml").toString();
-					String sbmlFilePathStrRelative = bioModelName + "_" +  TokenMangler.mangleToSName(simContextName) + ".xml";
-					XmlUtil.writeXMLStringToFile(sbmlString, sbmlFilePathStrAbsolute, true);
-					sbmlFilePathStrAbsoluteList.add(sbmlFilePathStrRelative);
+					String filePathStrAbsolute = null;
+					String filePathStrRelative = null;
+
+					if(sbmlExportFailed) {
+						filePathStrAbsolute = Paths.get(savePath, bioModelName + ".vcml").toString();
+						filePathStrRelative = bioModelName + ".vcml";
+						String vcmlString = XmlHelper.bioModelToXML(vcBioModel);
+						XmlUtil.writeXMLStringToFile(vcmlString, filePathStrAbsolute, true);
+					} else {
+						filePathStrAbsolute = Paths.get(savePath, bioModelName + "_" + TokenMangler.mangleToSName(simContextName) + ".xml").toString();
+						filePathStrRelative = bioModelName + "_" +  TokenMangler.mangleToSName(simContextName) + ".xml";
+						XmlUtil.writeXMLStringToFile(sbmlString, filePathStrAbsolute, true);
+					}
+					
+					sbmlFilePathStrAbsoluteList.add(filePathStrRelative);
 			        String simContextId = TokenMangler.mangleToSName(simContextName);
-					sedmlModel.addModel(new Model(simContextId, simContextName, sbmlLanguageURN, sbmlFilePathStrRelative));
+					sedmlModel.addModel(new Model(simContextId, simContextName, sbmlLanguageURN, filePathStrRelative));
 		
 					// required for mathOverrides, if any
 					//
@@ -701,16 +717,29 @@ public class SEDMLExporter {
 						// add dataGenerators for species
 						// get species list from SBML model.
 						String dataGenIdPrefix = "dataGen_" + taskRef;
-						String[] varNamesList = SimSpec.fromSBML(sbmlString).getVarsList();
-						for (String varName : varNamesList) {
-							org.jlibsedml.Variable sedmlVar = new org.jlibsedml.Variable(varName, varName, taskRef, sbmlSupport.getXPathForSpecies(varName));
-							ASTNode varMath = Libsedml.parseFormulaString(varName);
-							String dataGenId = dataGenIdPrefix + "_" + TokenMangler.mangleToSName(varName);			//"dataGen_" + varCount; - old code
-							DataGenerator dataGen = new DataGenerator(dataGenId, dataGenId, varMath);
-							dataGen.addVariable(sedmlVar);
-							sedmlModel.addDataGenerator(dataGen);
-							dataGeneratorsOfSim.add(dataGen);
-							varCount++;
+						if(sbmlExportFailed) {
+							for(SpeciesContext sc : vcModel.getSpeciesContexts()) {
+								String varName = sc.getName();
+								ASTNode varMath = Libsedml.parseFormulaString(varName);
+								String dataGenId = dataGenIdPrefix + "_" + TokenMangler.mangleToSName(varName);
+								DataGenerator dataGen = new DataGenerator(dataGenId, dataGenId, varMath);
+//								dataGen.addVariable(varName);
+								sedmlModel.addDataGenerator(dataGen);
+								dataGeneratorsOfSim.add(dataGen);
+								varCount++;
+							}
+						} else {
+							String[] varNamesList = SimSpec.fromSBML(sbmlString).getVarsList();
+							for (String varName : varNamesList) {
+								org.jlibsedml.Variable sedmlVar = new org.jlibsedml.Variable(varName, varName, taskRef, sbmlSupport.getXPathForSpecies(varName));
+								ASTNode varMath = Libsedml.parseFormulaString(varName);
+								String dataGenId = dataGenIdPrefix + "_" + TokenMangler.mangleToSName(varName);			//"dataGen_" + varCount; - old code
+								DataGenerator dataGen = new DataGenerator(dataGenId, dataGenId, varMath);
+								dataGen.addVariable(sedmlVar);
+								sedmlModel.addDataGenerator(dataGen);
+								dataGeneratorsOfSim.add(dataGen);
+								varCount++;
+							}
 						}
 						
 						// add DataGenerators for output functions here
