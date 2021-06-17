@@ -260,6 +260,14 @@ public class SEDMLExporter {
 					} else {
 						throw new RuntimeException("unsupported Document Type "+vcBioModel.getClass().getName()+" for SBML export");
 					}
+					
+					// applications that don't produce a proper sbml (for example NFSim or Smoldyn) are 
+					// marked as failed, even when exporting to sbml didn't throw any exception
+					if (simContext.getGeometry().getDimension() > 0 && simContext.getApplicationType() == Application.NETWORK_STOCHASTIC) {
+						sbmlExportFailed = true;
+					} else if(simContext.getApplicationType() == Application.RULE_BASED_STOCHASTIC) {
+						sbmlExportFailed = true;
+					}
 
 					String filePathStrAbsolute = null;
 					String filePathStrRelative = null;
