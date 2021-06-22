@@ -1156,9 +1156,11 @@ private void refreshButtonsLax() {
 				bEditable = true;
 			}
 			
-			bCreateBatch = true;
 			Geometry geo = firstSelection.getMathDescription().getGeometry();
 			int dim = geo.getDimension();
+			if(!firstSelection.getMathDescription().isRuleBased()) {
+				bCreateBatch = true;	// cannot use math for overriding species in rule-based models
+			}
 			if(dim == 0 && !firstSelection.getMathDescription().isRuleBased()) {
 				bGetResultsBatch = true;
 			}
