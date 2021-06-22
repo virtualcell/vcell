@@ -1159,7 +1159,7 @@ private void refreshButtonsLax() {
 			bCreateBatch = true;
 			Geometry geo = firstSelection.getMathDescription().getGeometry();
 			int dim = geo.getDimension();
-			if(dim == 0) {
+			if(dim == 0 && !firstSelection.getMathDescription().isRuleBased()) {
 				bGetResultsBatch = true;
 			}
 			
