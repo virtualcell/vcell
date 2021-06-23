@@ -147,5 +147,12 @@
   <artifactId>jaxb-impl</artifactId>
   <version>2.3.0</version>
 </dependency>
+<!-- https://mvnrepository.com/artifact/jfree/jfreechart -->
+<dependency>
+    <groupId>jfree</groupId>
+    <artifactId>jfreechart</artifactId>
+    <version>1.0.13</version>
+</dependency>
+
 	</dependencies>
 </project>
