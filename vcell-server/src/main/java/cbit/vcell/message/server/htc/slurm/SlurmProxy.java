@@ -747,15 +747,17 @@ public class SlurmProxy extends HtcProxy {
 		if(bPowerUser) {
 			String partition_pu = PropertyLoader.getRequiredProperty(PropertyLoader.slurm_partition_pu);
 			String reservation_pu = PropertyLoader.getRequiredProperty(PropertyLoader.slurm_reservation_pu);
+			String qos_pu = PropertyLoader.getRequiredProperty(PropertyLoader.slurm_qos_pu);
 			lsb.write("#SBATCH --partition=" + partition_pu);
 //			lsb.write("#SBATCH --reservation=" + reservation_pu);		
-			lsb.write("#SBATCH --qos=" + reservation_pu);			
+			lsb.write("#SBATCH --qos=" + qos_pu);			
 		}else {
 			String partition = PropertyLoader.getRequiredProperty(PropertyLoader.slurm_partition);
 			String reservation = PropertyLoader.getRequiredProperty(PropertyLoader.slurm_reservation);
+			String qos = PropertyLoader.getRequiredProperty(PropertyLoader.slurm_qos);
 			lsb.write("#SBATCH --partition=" + partition);
 			lsb.write("#SBATCH --reservation=" +reservation);
-			lsb.write("#SBATCH --qos=" +reservation);
+			lsb.write("#SBATCH --qos=" +qos);
 		}
 		lsb.write("#SBATCH -J " + jobName);
 		lsb.write("#SBATCH -o " + new File(htcLogDirExternal, jobName+".slurm.log").getAbsolutePath());
