@@ -55,7 +55,7 @@ import net.imglib2.type.numeric.real.DoubleType;
  * External File Dialog->{EclipseVCellWorkspaceRootDir}/vcell/vcell-imagej-helper/target/vcell-imagej-helper-0.0.1-SNAPSHOT-sources.jar.
  * </p>
   */
-@Plugin(type = ContextCommand.class, menuPath = "Plugins>VCellPlugin")
+@Plugin(type = ContextCommand.class, menuPath = "Plugins>VCellPluginTest")
 public class VCellPluginTest extends ContextCommand {
     //
     // Feel free to add more parameters here...
