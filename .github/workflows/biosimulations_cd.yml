@@ -11,7 +11,7 @@ jobs:
       - uses: actions/checkout@v2
       # Build and push Docker image
 
-      -name: Build and Push Image
+      - name: Build and Push Image
         uses: whoan/docker-build-with-cache-action@v5
         with:
           username: ${{ secrets.DOCKER_REGISTRY_USERNAME }}
@@ -22,7 +22,6 @@ jobs:
           registry: ghcr.io
           context: .
           dockerfile: Dockerfile
-          
 
       - name: Tag the docker image with the latest tag
         if: ${{steps.tagLatest.outputs.tagLatest=='True'}}
@@ -35,7 +34,7 @@ jobs:
           REVISION=$(git rev-parse HEAD)
           curl \
             -X POST \
-            -u $${{ secrets.DOCKER_REGISTRY_USERNAME }}:${{ secrets.DOCKER_REGISTRY_TOKEN }} \
+            -u $${{ secrets.DOCKER_REGISTRY_USERNAME }}:$${{ secrets.DOCKER_REGISTRY_TOKEN }} \
             -H "Accept: application/vnd.github.v3+json" \
             https://api.github.com/repos/biosimulators/Biosimulators/issues \
             -d "{\"labels\": [\"Validate/submit simulator\"], \"title\": \"Submit VCell ${{ github.event.release.tag_name}}\", \"body\": \"---\nid: vcell\nversion: ${{ github.event.release.tag_name }}\nspecificationsUrl: https://raw.githubusercontent.com/${{ github.repository }}/${REVISION}/biosimulators.json\nspecificationsPatch:\n  version: ${{ github.event.release.tag_name }}\n  image:\n    url: ghcr.io/biosimulators/biosimulators_vcell/vcell:${{ github.event.release.tag_name }}\nvalidateImage: true\ncommitSimulator: true\n\n---\"}"
