@@ -1,0 +1,81 @@
+name: Publish simulator to GHCR and BioSimulators
+on:
+  release:
+    types: [published, edited]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      # Checkout out
+      - uses: actions/checkout@v2
+      # Checkout submodules
+      - name: Checkout submodules
+        run: git submodule update --init --recursive
+
+      # Extract mvn and jdk
+      - name: Extract JDK Tarball and setup Java
+
+        run: |
+          wget https://vcell.org/webstart/pipeline_files/jdk-8u241-linux-x64.tar.gz
+          tar -xvzf jdk-8u241-linux-x64.tar.gz
+          mv jdk1.8.0_241 jdk
+          wget https://vcell.org/webstart/pipeline_files/apache-maven-3.6.3-bin.tar.gz
+          tar -xvzf apache-maven-3.6.3-bin.tar.gz
+          mv apache-maven-3.6.3 maven
+      # Install dependencies
+      - name: Maven installation
+
+        run: |
+          export JAVA_HOME=`pwd`/jdk
+          export PATH=${JAVA_HOME}/bin:${PATH}
+          echo $JAVA_HOME
+          java -version
+          export M2_HOME=`pwd`/maven
+          export PATH=${M2_HOME}/bin:${PATH}
+          mvn -version
+          java -version
+          echo "#################################"
+          echo "#### Installing dependencies ####"
+          echo "#################################"
+          mvn clean install dependency:copy-dependencies
+      # Setup python dependencies
+      - uses: actions/setup-python@v2
+        with:
+          python-version: "3.x" # Version range or exact version of a Python version to use, using SemVer's version range syntax
+
+      - uses: BSFishy/pip-action@v1
+        with:
+          packages: |
+            fire
+            semver
+      # Build and push Docker image
+      - name: Build Docker image and push with current version tag
+
+        run: |
+          echo ${{ secrets.DOCKER_REGISTRY_TOKEN }} | docker login ghcr.io -u ${{ secrets.DOCKER_REGISTRY_USERNAME }} --password-stdin
+          docker build --file Dockerfile \
+                      --tag ghcr.io/biosimulators/biosimulators_vcell/vcell:${{ github.event.release.tag_name }} .
+          docker push --all-tags ghcr.io/biosimulators/biosimulators_vcell/vcell
+      - name: Fetch the current version
+        id: version
+        run: echo ::set-output name=current::$(docker run ghcr.io/virtualcell/vcell-cli:latest --version | awk -F 'VCell:' '{print $2;}' | xargs)
+
+      - id: tagLatest
+        run: echo ::set-output name=tagLatest::$(python tagLatest.py ${{steps.version.outputs.current}} ${{ github.event.release.tag_name }} )
+
+      - name: Tag the docker image with the latest tag
+        if: ${{steps.tagLatest.outputs.tagLatest=='True'}}
+        run: |
+          docker tag ghcr.io/biosimulators/biosimulators_vcell/vcell::${{ github.event.release.tag_name }} ghcr.io/biosimulators/biosimulators_vcell/vcell:latest 
+          docker push --all-tags ghcr.io/biosimulators/biosimulators_vcell/vcell
+      # Submit to BioSimulators registry
+      - name: Submit to BioSimulators registry
+        run: |
+          REVISION=$(git rev-parse HEAD)
+          curl \
+            -X POST \
+            -u ${{ secrets.GH_ISSUE_USERNAME }}:${{ secrets.GH_ISSUE_TOKEN }} \
+            -H "Accept: application/vnd.github.v3+json" \
+            https://api.github.com/repos/biosimulators/Biosimulators/issues \
+            -d "{\"labels\": [\"Validate/submit simulator\"], \"title\": \"Submit VCell ${{ github.event.release.tag_name}}\", \"body\": \"---\nid: vcell\nversion: ${{ github.event.release.tag_name }}\nspecificationsUrl: https://raw.githubusercontent.com/${{ github.repository }}/${REVISION}/biosimulators.json\nspecificationsPatch:\n  version: ${{ github.event.release.tag_name }}\n  image:\n    url: ghcr.io/biosimulators/biosimulators_vcell/vcell:${{ github.event.release.tag_name }}\nvalidateImage: true\ncommitSimulator: true\n\n---\"}"

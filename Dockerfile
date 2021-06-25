@@ -1,3 +1,9 @@
+FROM maven:3.5-jdk-8-alpine as build
+COPY . /app/
+WORKDIR /app
+RUN mvn clean install dependency:copy-dependencies
+
+
 # Base OS
 FROM ubuntu:latest
 
@@ -42,24 +48,24 @@ RUN pip3 install -r /usr/local/app/vcell/installDir/python/requirements.txt
 RUN pip3 install /usr/local/app/vcell/installDir/python
 
 # Copy JAR files
-COPY ./vcell-client/target/vcell-client-0.0.1-SNAPSHOT.jar \
-     ./vcell-client/target/maven-jars/*.jar \
- 	 ./vcell-core/target/vcell-core-0.0.1-SNAPSHOT.jar \
-     ./vcell-core/target/maven-jars/*.jar \
- 	 ./vcell-server/target/vcell-server-0.0.1-SNAPSHOT.jar \
-     ./vcell-server/target/maven-jars/*.jar \
- 	 ./vcell-vmicro/target/vcell-vmicro-0.0.1-SNAPSHOT.jar \
-     ./vcell-vmicro/target/maven-jars/*.jar \
- 	 ./vcell-oracle/target/vcell-oracle-0.0.1-SNAPSHOT.jar \
-     ./vcell-oracle/target/maven-jars/*.jar \
-     ./vcell-admin/target/vcell-admin-0.0.1-SNAPSHOT.jar \
-     ./vcell-admin/target/vcell-admin-0.0.1-SNAPSHOT-tests.jar \
-     ./vcell-admin/target/maven-jars/*.jar \
-     ./vcell-cli/target/vcell-cli-0.0.1-SNAPSHOT.jar \
-     ./vcell-cli/target/maven-jars/*.jar \
-     ./non-maven-java-libs/com/oracle/ojdbc6/11.2.0.4/ojdbc6-11.2.0.4.jar \
-     ./non-maven-java-libs/com/oracle/ucp/11.2.0.4/ucp-11.2.0.4.jar \
-     ./non-maven-java-libs/org/sbml/libcombine/libCombineLinux64/0.2.7/libCombineLinux64-0.2.7.jar \
+COPY --from=build /app/vcell-client/target/vcell-client-0.0.1-SNAPSHOT.jar \
+     /app/vcell-client/target/maven-jars/*.jar \
+ 	 /app/vcell-core/target/vcell-core-0.0.1-SNAPSHOT.jar \
+     /app/vcell-core/target/maven-jars/*.jar \
+ 	 /app/vcell-server/target/vcell-server-0.0.1-SNAPSHOT.jar \
+     /app/vcell-server/target/maven-jars/*.jar \
+ 	 /app/vcell-vmicro/target/vcell-vmicro-0.0.1-SNAPSHOT.jar \
+     /app/vcell-vmicro/target/maven-jars/*.jar \
+ 	 /app/vcell-oracle/target/vcell-oracle-0.0.1-SNAPSHOT.jar \
+     /app/vcell-oracle/target/maven-jars/*.jar \
+     /app/vcell-admin/target/vcell-admin-0.0.1-SNAPSHOT.jar \
+     /app/vcell-admin/target/vcell-admin-0.0.1-SNAPSHOT-tests.jar \
+     /app/vcell-admin/target/maven-jars/*.jar \
+     /appvcell-cli/target/vcell-cli-0.0.1-SNAPSHOT.jar \
+     /app/vcell-cli/target/maven-jars/*.jar \
+     /app/non-maven-java-libs/com/oracle/ojdbc6/11.2.0.4/ojdbc6-11.2.0.4.jar \
+     /appnon-maven-java-libs/com/oracle/ucp/11.2.0.4/ucp-11.2.0.4.jar \
+     /app/non-maven-java-libs/org/sbml/libcombine/libCombineLinux64/0.2.7/libCombineLinux64-0.2.7.jar \
      /usr/local/app/vcell/lib/
 
 # Add linux local solvers only
