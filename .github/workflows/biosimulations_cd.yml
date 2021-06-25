@@ -23,11 +23,26 @@ jobs:
           context: .
           dockerfile: Dockerfile
 
+      # Setup python dependencies
+      - uses: actions/setup-python@v2
+        with:
+          python-version: "3.x" # Version range or exact version of a Python version to use, using SemVer's version range syntax
+
+      - uses: BSFishy/pip-action@v1
+        with:
+          packages: |
+            fire
+            semver
+
+      - id: tagLatest
+        run: echo ::set-output name=tagLatest::$(python tagLatest.py ${{steps.version.outputs.current}} ${{ github.event.release.tag_name }} )
+
       - name: Tag the docker image with the latest tag
         if: ${{steps.tagLatest.outputs.tagLatest=='True'}}
         run: |
           docker tag  ghcr.io/virtualcell/biosimulators_vcell::${{ github.event.release.tag_name }}  ghcr.io/virtualcell/biosimulators_vcell:latest 
           docker push --all-tags ghcr.io/virtualcell/biosimulators_vcell
+
       # Submit to BioSimulators registry
       - name: Submit to BioSimulators registry
         run: |
