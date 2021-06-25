@@ -55,7 +55,7 @@ ENV ALGORITHM_SUBSTITUTION_POLICY=SIMILAR_VARIABLES
 # Install required python-packages
 COPY ./vcell-cli-utils/* /usr/local/app/vcell/installDir/python
 RUN pip3 install -r /usr/local/app/vcell/installDir/python/requirements.txt
-RUN pip3 install /usr/local/app/vcell/installDir/python
+RUN pip3 install /usr/local/app/vcell/installDir/python/
 
 # Copy JAR files
 COPY --from=build /app/vcell-client/target/vcell-client-0.0.1-SNAPSHOT.jar \
