@@ -40,7 +40,7 @@ RUN apt-get -y update && \
     mkdir -p /usr/local/app/vcell/lib && \
     mkdir -p /usr/local/app/vcell/simulation && \
     mkdir -p /usr/local/app/vcell/installDir && \
-    mkdir -p /usr/local/app/vcell/installDir/python
+    mkdir -p /usr/local/app/vcell/installDir/python/
 
 
 
