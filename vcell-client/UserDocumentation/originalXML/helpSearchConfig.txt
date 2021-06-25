@@ -1,1 +1,0 @@
-IndexRemove /Users/akhilteja/projects/virtualCell/vcell/vcell-client/target/classes/vcellDoc/
