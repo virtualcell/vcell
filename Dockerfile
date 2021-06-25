@@ -42,6 +42,16 @@ RUN apt-get -y update && \
     mkdir -p /usr/local/app/vcell/installDir && \
     mkdir -p /usr/local/app/vcell/installDir/python
 
+
+
+# Add linux local solvers only
+ADD ./localsolvers /usr/local/app/vcell/installDir/localsolvers
+ADD ./nativelibs /usr/local/app/vcell/installDir/nativelibs
+COPY ./docker_run.sh /usr/local/app/vcell/installDir/
+
+# Declare supported environment variables
+ENV ALGORITHM_SUBSTITUTION_POLICY=SIMILAR_VARIABLES
+
 # Install required python-packages
 COPY ./vcell-cli-utils/* /usr/local/app/vcell/installDir/python
 RUN pip3 install -r /usr/local/app/vcell/installDir/python/requirements.txt
@@ -61,21 +71,12 @@ COPY --from=build /app/vcell-client/target/vcell-client-0.0.1-SNAPSHOT.jar \
      /app/vcell-admin/target/vcell-admin-0.0.1-SNAPSHOT.jar \
      /app/vcell-admin/target/vcell-admin-0.0.1-SNAPSHOT-tests.jar \
      /app/vcell-admin/target/maven-jars/*.jar \
-     /appvcell-cli/target/vcell-cli-0.0.1-SNAPSHOT.jar \
+     /app/vcell-cli/target/vcell-cli-0.0.1-SNAPSHOT.jar \
      /app/vcell-cli/target/maven-jars/*.jar \
      /app/non-maven-java-libs/com/oracle/ojdbc6/11.2.0.4/ojdbc6-11.2.0.4.jar \
-     /appnon-maven-java-libs/com/oracle/ucp/11.2.0.4/ucp-11.2.0.4.jar \
+     /app/non-maven-java-libs/com/oracle/ucp/11.2.0.4/ucp-11.2.0.4.jar \
      /app/non-maven-java-libs/org/sbml/libcombine/libCombineLinux64/0.2.7/libCombineLinux64-0.2.7.jar \
      /usr/local/app/vcell/lib/
-
-# Add linux local solvers only
-ADD ./localsolvers /usr/local/app/vcell/installDir/localsolvers
-ADD ./nativelibs /usr/local/app/vcell/installDir/nativelibs
-ADD ./submodules /usr/local/app/vcell/installDir/submodules
-COPY ./docker_run.sh /usr/local/app/vcell/installDir/
-
-# Declare supported environment variables
-ENV ALGORITHM_SUBSTITUTION_POLICY=SIMILAR_VARIABLES
 
 # Entrypoint
 ENTRYPOINT ["/usr/local/app/vcell/installDir/docker_run.sh"]

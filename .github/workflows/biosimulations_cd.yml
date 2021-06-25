@@ -59,7 +59,7 @@ jobs:
           docker push --all-tags ghcr.io/biosimulators/biosimulators_vcell/vcell
       - name: Fetch the current version
         id: version
-        run: echo ::set-output name=current::$(docker run ghcr.io/virtualcell/vcell-cli:latest --version | awk -F 'VCell:' '{print $2;}' | xargs)
+        run: echo ::set-output name=current::$(docker run  ghcr.io/virtualcell/biosimulators_vcell:latest --version | awk -F 'VCell:' '{print $2;}' | xargs)
 
       - id: tagLatest
         run: echo ::set-output name=tagLatest::$(python tagLatest.py ${{steps.version.outputs.current}} ${{ github.event.release.tag_name }} )
@@ -67,8 +67,8 @@ jobs:
       - name: Tag the docker image with the latest tag
         if: ${{steps.tagLatest.outputs.tagLatest=='True'}}
         run: |
-          docker tag ghcr.io/biosimulators/biosimulators_vcell/vcell::${{ github.event.release.tag_name }} ghcr.io/biosimulators/biosimulators_vcell/vcell:latest 
-          docker push --all-tags ghcr.io/biosimulators/biosimulators_vcell/vcell
+          docker tag  ghcr.io/virtualcell/biosimulators_vcell::${{ github.event.release.tag_name }}  ghcr.io/virtualcell/biosimulators_vcell:latest 
+          docker push --all-tags ghcr.io/virtualcell/biosimulators_vcell
       # Submit to BioSimulators registry
       - name: Submit to BioSimulators registry
         run: |
