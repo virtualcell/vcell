@@ -17,7 +17,7 @@ jobs:
           username: ${{ secrets.DOCKER_REGISTRY_USERNAME }}
           password: ${{ secrets.DOCKER_REGISTRY_TOKEN }}
           image_name: vcell/biosimulators_vcell
-          image_tag: ${{ github.event.release.tag_name }} )
+          image_tag: ${{ github.event.release.tag_name }}
           push_git_tag: false
           registry: ghcr.io
           context: .

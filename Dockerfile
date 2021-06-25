@@ -1,7 +1,7 @@
 FROM maven:3.5-jdk-8-alpine as build
 COPY . /app/
 WORKDIR /app
-RUN mvn clean install --quiet dependency:copy-dependencies
+RUN mvn clean install -DskipTests -Dmaven.test.skip=true --quiet dependency:copy-dependencies
 
 
 # Base OS
@@ -67,7 +67,6 @@ COPY --from=build /app/vcell-client/target/vcell-client-0.0.1-SNAPSHOT.jar \
  	 /app/vcell-oracle/target/vcell-oracle-0.0.1-SNAPSHOT.jar \
      /app/vcell-oracle/target/maven-jars/*.jar \
      /app/vcell-admin/target/vcell-admin-0.0.1-SNAPSHOT.jar \
-     /app/vcell-admin/target/vcell-admin-0.0.1-SNAPSHOT-tests.jar \
      /app/vcell-admin/target/maven-jars/*.jar \
      /app/vcell-cli/target/vcell-cli-0.0.1-SNAPSHOT.jar \
      /app/vcell-cli/target/maven-jars/*.jar \
