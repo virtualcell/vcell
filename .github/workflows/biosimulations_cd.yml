@@ -15,9 +15,10 @@ jobs:
         uses: whoan/docker-build-with-cache-action@v5
         with:
           username: ${{ secrets.DOCKER_REGISTRY_USERNAME }}
-          password: ${{ secrets.DOCKER_REGISTRY_TOKEN }}
+          password: ${{ secrets.GITHUB_TOKEN }}
           image_name: vcell/biosimulators_vcell
           image_tag: ${{ github.event.release.tag_name }}
+          build_extra_args: --build-arg SIMULATOR_VERSION=${{ github.event.release.tag_name }}
           push_git_tag: false
           registry: ghcr.io
           context: .
