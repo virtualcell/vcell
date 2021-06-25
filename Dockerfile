@@ -42,8 +42,6 @@ RUN apt-get -y update && \
     mkdir -p /usr/local/app/vcell/installDir && \
     mkdir -p /usr/local/app/vcell/installDir/python/
 
-
-
 # Add linux local solvers only
 ADD ./localsolvers /usr/local/app/vcell/installDir/localsolvers
 ADD ./nativelibs /usr/local/app/vcell/installDir/nativelibs
@@ -53,7 +51,7 @@ COPY ./docker_run.sh /usr/local/app/vcell/installDir/
 ENV ALGORITHM_SUBSTITUTION_POLICY=SIMILAR_VARIABLES
 
 # Install required python-packages
-COPY ./vcell-cli-utils/* /usr/local/app/vcell/installDir/python
+COPY ./vcell-cli-utils/ /usr/local/app/vcell/installDir/python/
 RUN pip3 install -r /usr/local/app/vcell/installDir/python/requirements.txt
 RUN pip3 install /usr/local/app/vcell/installDir/python/
 
