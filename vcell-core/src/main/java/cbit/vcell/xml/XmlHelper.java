@@ -52,6 +52,7 @@ import org.jlibsedml.execution.FileModelResolver;
 import org.jlibsedml.execution.ModelResolver;
 import org.jlibsedml.modelsupport.KisaoOntology;
 import org.jlibsedml.modelsupport.KisaoTerm;
+import org.jlibsedml.modelsupport.SUPPORTED_LANGUAGE;
 import org.sbml.jsbml.SBMLException;
 import org.vcell.cellml.CellQuanVCTranslator;
 import org.vcell.sbml.SbmlException;
@@ -591,6 +592,7 @@ public class XmlHelper {
 			org.jlibsedml.Simulation sedmlSimulation = null;	// this will become the vCell simulation
 			org.jlibsedml.Model sedmlOriginalModel = null;		// the "original" model referred to by the task
 			String sedmlOriginalModelName = null;				// this will be used in the BioModel name
+			String sedmlOriginalModelLanguage = null;			// can be sbml or vcml
 			ArchiveComponents ac = null;
 			if(externalDocInfo.getFile().getPath().toLowerCase().endsWith("sedx") || externalDocInfo.getFile().getPath().toLowerCase().endsWith("omex")) {
 				ac = Libsedml.readSEDMLArchive(new FileInputStream(externalDocInfo.getFile().getPath()));
@@ -626,6 +628,7 @@ public class XmlHelper {
 					throw new RuntimeException("Unexpected task " + selectedTask);
 				}
 				sedmlOriginalModelName = sedmlOriginalModel.getId();
+				sedmlOriginalModelLanguage = sedmlOriginalModel.getLanguage();
 
 				// at this point we assume that the sedml simulation, algorithm and kisaoID are all valid
 				Algorithm algorithm = sedmlSimulation.getAlgorithm();
@@ -681,11 +684,24 @@ public class XmlHelper {
 				}
 				// make it if we didn't and mark it as fresh
 				if (bioModel == null) {
-					XMLSource sbmlSource = new XMLSource(newMdl);		// sbmlSource with all the changes applied
-					bioModel = (BioModel)XmlHelper.importSBML(transLogger, sbmlSource, bSpatial);
-					bioModel.setName(bioModelName);
-					docs.add(bioModel);
-					justMade = true;
+					if(sedmlOriginalModelLanguage.contentEquals(SUPPORTED_LANGUAGE.VCELL_GENERIC.getURN())) {	// vcml
+						XMLSource vcmlSource = new XMLSource(newMdl);
+						bioModel = (BioModel)XmlHelper.XMLToBioModel(vcmlSource);
+						bioModel.setName(bioModelName);
+						docs.add(bioModel);
+						justMade = true;
+						try {
+							bioModel.getVCMetaData().createBioPaxObjects(bioModel);
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
+					} else {				// we assume it's sbml, if it's neither import will fail
+						XMLSource sbmlSource = new XMLSource(newMdl);		// sbmlSource with all the changes applied
+						bioModel = (BioModel)XmlHelper.importSBML(transLogger, sbmlSource, bSpatial);
+						bioModel.setName(bioModelName);
+						docs.add(bioModel);
+						justMade = true;
+					}
 				}
 				// even if we just created the biomodel from the sbml file we have at least one application with initial conditions and stuff
 				// see if there is a suitable application type for the sedml kisao
