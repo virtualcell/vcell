@@ -1,7 +1,7 @@
 FROM maven:3.5-jdk-8-alpine as build
 COPY . /app/
 WORKDIR /app
-RUN mvn clean install dependency:copy-dependencies
+RUN mvn clean install --quiet dependency:copy-dependencies
 
 
 # Base OS
