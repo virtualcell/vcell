@@ -51,9 +51,9 @@ COPY ./docker_run.sh /usr/local/app/vcell/installDir/
 ENV ALGORITHM_SUBSTITUTION_POLICY=SIMILAR_VARIABLES
 
 # Install required python-packages
-COPY ./vcell-cli-utils/ /usr/local/app/vcell/installDir/python/
-RUN pip3 install -r /usr/local/app/vcell/installDir/python/requirements.txt
-RUN pip3 install /usr/local/app/vcell/installDir/python/vcell_cli_utils/vcell_cli_utils/
+COPY ./vcell-cli-utils/ /usr/local/app/vcell/installDir/python/vcell_cli_utils/
+RUN pip3 install -r /usr/local/app/vcell/installDir/python/vcell_cli_utils/requirements.txt
+RUN pip3 install /usr/local/app/vcell/installDir/python/vcell_cli_utils/
 
 # Copy JAR files
 COPY --from=build /app/vcell-client/target/vcell-client-0.0.1-SNAPSHOT.jar \
