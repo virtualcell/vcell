@@ -16,11 +16,10 @@ LABEL \
     org.opencontainers.image.description="Open-source software package for modeling cell biological systems that is built on a central database and disseminated as a standalone application." \
     org.opencontainers.image.url="http://vcell.org/" \
     org.opencontainers.image.documentation="https://vcell.org/support" \
-    org.opencontainers.image.source="https://github.com/biosimulators/Biosimulators_VCell" \
+    org.opencontainers.image.source="https://github.com/virtualcell/vcell" \
     org.opencontainers.image.authors="BioSimulators Team <info@biosimulators.org>" \
     org.opencontainers.image.vendor="BioSimulators Team" \
     org.opencontainers.image.licenses="MIT" \
-    \
     base_image="ubuntu:latest" \
     version="${SIMULATOR_VERSION}" \
     software="Virtual Cell" \
@@ -40,12 +39,13 @@ RUN apt-get -y update && \
     mkdir -p /usr/local/app/vcell/lib && \
     mkdir -p /usr/local/app/vcell/simulation && \
     mkdir -p /usr/local/app/vcell/installDir && \
-    mkdir -p /usr/local/app/vcell/installDir/python/vcell_cli_utils/
+    mkdir -p /usr/local/app/vcell/installDir/python/vcell_cli_utils
 
 # Add linux local solvers only
 ADD ./localsolvers /usr/local/app/vcell/installDir/localsolvers
 ADD ./nativelibs /usr/local/app/vcell/installDir/nativelibs
 COPY ./docker_run.sh /usr/local/app/vcell/installDir/
+
 
 # Declare supported environment variables
 ENV ALGORITHM_SUBSTITUTION_POLICY=SIMILAR_VARIABLES
@@ -74,6 +74,7 @@ COPY --from=build /app/vcell-client/target/vcell-client-0.0.1-SNAPSHOT.jar \
      /app/non-maven-java-libs/com/oracle/ucp/11.2.0.4/ucp-11.2.0.4.jar \
      /app/non-maven-java-libs/org/sbml/libcombine/libCombineLinux64/0.2.7/libCombineLinux64-0.2.7.jar \
      /usr/local/app/vcell/lib/
+RUN  chmod -R 755 /usr/local/app/vcell && chmod +x /usr/local/app/vcell/installDir/docker_run.sh
 
 # Entrypoint
 ENTRYPOINT ["/usr/local/app/vcell/installDir/docker_run.sh"]
