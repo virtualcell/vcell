@@ -36,10 +36,7 @@ public class CLIUtils {
     private static final Path homeDir = Paths.get(currentWorkingDir.normalize().toString());
     // user.dir is not working for windows
 //    private static final Path homeDir = Paths.get(String.valueOf(System.getProperty("user.dir")));
-    private static final Path workingDirectory = Paths.get((Paths.get(String.valueOf(homeDir)).toString().equals("/")
-            || Paths.get(String.valueOf(homeDir)).toString().startsWith("/home/FCAM/crbmapi/")
-            || Paths.get(String.valueOf(homeDir)).toString().contains("projects/CRBM/biosimulations/dev/simulations"))
-            ? "/usr/local/app/vcell/installDir" : System.getProperty("user.dir"));
+    private static final Path workingDirectory = Paths.get("/usr/local/app/vcell/installDir");
     // Submodule path for VCell_CLI_UTILS
     private static final Path utilPath = Paths.get(workingDirectory.toString(), "python", "vcell_cli_utils");
     private static final Path cliUtilPath = Paths.get(utilPath.toString(), "vcell_cli_utils");
