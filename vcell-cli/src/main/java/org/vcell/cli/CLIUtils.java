@@ -41,7 +41,7 @@ public class CLIUtils {
             || Paths.get(String.valueOf(homeDir)).toString().contains("projects/CRBM/biosimulations/dev/simulations"))
             ? "/usr/local/app/vcell/installDir" : System.getProperty("user.dir"));
     // Submodule path for VCell_CLI_UTILS
-    private static final Path utilPath = Paths.get(workingDirectory.toString(), "submodules", "vcell_cli_utils");
+    private static final Path utilPath = Paths.get(workingDirectory.toString(), "python", "vcell_cli_utils");
     private static final Path cliUtilPath = Paths.get(utilPath.toString(), "vcell_cli_utils");
     private static final Path cliPath = Paths.get(cliUtilPath.toString(), "cli.py");
     private static final Path statusPath = Paths.get(cliUtilPath.toString(), "status.py");
