@@ -397,6 +397,9 @@ public class VCellHelper extends AbstractService implements ImageJService
 			Node node = si.item(i);
 			String currentUser = (node.getAttributes().getNamedItem("user")==null?null:node.getAttributes().getNamedItem("user").getNodeValue());
 			boolean bUserMatch = vcCellModelSearch.getUserId() == null || vcCellModelSearch.getUserId().equals(currentUser);
+			if(node.getAttributes().getNamedItem("name")==null) {
+				continue;
+			}
 			String currentModel = node.getAttributes().getNamedItem("name").getNodeValue();
 			Long longDate = (node.getAttributes().getNamedItem("date")==null?null:Long.parseLong(node.getAttributes().getNamedItem("date").getNodeValue()));
 			if(longDate != null && vcellModelVersionTimeRange != null && (longDate < vcellModelVersionTimeRange.getEarliest().getTime() || longDate > vcellModelVersionTimeRange.getLatest().getTime())) {

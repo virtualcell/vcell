@@ -21,11 +21,12 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Hashtable;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.StringTokenizer;
 
-import javax.print.attribute.standard.Finishings;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -46,7 +47,6 @@ import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.handler.AbstractHandler;
 import org.eclipse.jetty.server.handler.ContextHandler;
 import org.eclipse.jetty.server.handler.ContextHandlerCollection;
-import org.eclipse.jetty.server.handler.DebugHandler;
 import org.jdom.Namespace;
 import org.vcell.imagej.ImageJHelper.ApiSolverHandler.IJGeom;
 import org.vcell.util.BeanUtils;
@@ -140,6 +140,7 @@ import cbit.vcell.solver.SimulationModelInfo;
 import cbit.vcell.solver.SimulationOwner;
 import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solver.SolverUtilities;
+import cbit.vcell.solver.TempSimulation;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.vcell.solver.ode.ODESimData;
@@ -1400,6 +1401,14 @@ public class ImageJHelper {
 		ArrayList<IJSimInfo> ijSimInfos = new ArrayList<>();
 		for(Simulation sim:sims) {
 			ijSimInfos.add(new IJSimInfo(true, false, sim.getSimulationID(), sim.getName()));
+			final Iterator<Entry<String, String>> iterator = TempSimulation.mapTempSimIDToModelAppSim.entrySet().iterator();
+			String modelAppSim = TempSimulation.createModelAppSimName(sim);
+			while(iterator.hasNext()) {
+				final Entry<String, String> next = iterator.next();
+				if(next.getValue().equals(modelAppSim)) {
+					ijSimInfos.add(new IJSimInfo(true, false, next.getKey().toString(), sim.getName()+" (quickrun_"+next.getKey().toString()+")"));
+				}
+			}
 		}
 		ijContextInfos.add(new IJContextInfo(contextName,mathType,geomDim,geomName, ijSimInfos));	
 	}
@@ -1421,11 +1430,11 @@ public class ImageJHelper {
 		    				for(SimulationContext simulationContext:((BioModelWindowManager)documentWindowManager).getBioModel().getSimulationContexts()) {
 			    				addSimToIJContextInfo(ijContextInfos, simulationContext.getName(), simulationContext.getMathType(),simulationContext.getGeometryContext().getGeometry().getDimension(),simulationContext.getGeometry().getName(),simulationContext.getSimulations());
 		    				}
-		    				modelInfos.add(new IJModelInfo(documentWindowManager.getVCDocument().getName(), null, IJDocType.bm, true,documentWindowManager.getUser().getName(),null, ijContextInfos));
+		    				modelInfos.add(new IJModelInfo(documentWindowManager.getVCDocument().getName(), null, IJDocType.bm, true,(documentWindowManager.getUser()==null?null:documentWindowManager.getUser().getName()),null, ijContextInfos));
 		    			}else if(documentWindowManager instanceof MathModelWindowManager) {
 		    				MathModel mathModel = ((MathModelWindowManager)documentWindowManager).getMathModel();
 		    				addSimToIJContextInfo(ijContextInfos, null,mathModel.getMathDescription().getMathType(),mathModel.getGeometry().getDimension(),mathModel.getGeometry().getName(),((MathModelWindowManager)documentWindowManager).getSimulationWorkspace().getSimulations());
-		    				modelInfos.add(new IJModelInfo(documentWindowManager.getVCDocument().getName(), null, IJDocType.mm, true,documentWindowManager.getUser().getName(),null, ijContextInfos));
+		    				modelInfos.add(new IJModelInfo(documentWindowManager.getVCDocument().getName(), null, IJDocType.mm, true,(documentWindowManager.getUser()==null?null:documentWindowManager.getUser().getName()),null, ijContextInfos));
 		    			}
 		    		}
 	    		}
@@ -1629,7 +1638,7 @@ public class ImageJHelper {
 				    		if(bOpenOnly == null || bOpenOnly.booleanValue() == false || (bOpenOnly.booleanValue() == true && bOpenOnDesktop == true)){
 								ArrayList<IJContextInfo> contInfos = new ArrayList<>();
 								ArrayList<IJSimInfo> ijsimfos= new ArrayList<>();
-								ijsimfos.add(new IJSimInfo(bOpenOnDesktop, false,Simulation.createSimulationID(new KeyValue(quickrunKey)), parentSimName));
+								ijsimfos.add(new IJSimInfo(bOpenOnDesktop, false,quickrunKey/*Simulation.createSimulationID(new KeyValue(quickrunKey))*/, parentSimName));
 //									ijsimfos.add(new IJSimInfo(quickrunKey, parentSimName));
 								contInfos.add(new IJContextInfo(parentContextName, parentMathType, parentGeomDim, parentGeomName, ijsimfos));
 								modelInfos.add(new IJModelInfo(parentModelName, parentDate, docType, (docType != IJDocType.quick?true:false), parentUser,parentModelKey,contInfos));
@@ -2430,7 +2439,9 @@ public class ImageJHelper {
 				        												StringTokenizer st = new StringTokenizer(file.getName(), "_");
 				        												st.nextToken();
 				        												String quickrunKey = st.nextToken();
-				        												if(Simulation.createSimulationID(new KeyValue(quickrunKey)).equals(ijSimInfo.simId)) {
+//				        												if(TempSimulation.mapTempSimIDToOriginalSimID.get(quickrunKey) != null && TempSimulation.mapTempSimIDToOriginalSimID.get(quickrunKey).equals(ijSimInfo.simId)) {
+//				        												if(Simulation.createSimulationID(new KeyValue(quickrunKey)).equals(ijSimInfo.simId)) {
+				        												if(quickrunKey.equals(ijSimInfo.simId)) {
 				        													ijDataResponder = IJDataResponder.create(new KeyValue(quickrunKey),file.getParentFile().getParentFile(), jobIndex);
 				        													break fileloop;
 				        												}	
@@ -2494,6 +2505,7 @@ public class ImageJHelper {
     		response.setContentType("text/plain; charset=utf-8");
     		response.setStatus(HttpServletResponse.SC_OK);
     		response.getWriter().write("VCellApi");
+    		//response.getWriter().write("VCellApi:"+VCellClientTest.getVCellClient().getRequestManager().getDocumentManager().getUser().getName());
     		baseRequest.setHandled(true);
 
 		}
