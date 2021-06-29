@@ -95,7 +95,7 @@ public class VCellHelper extends AbstractService implements ImageJService
 				socket.connect(new InetSocketAddress("localhost", i), 100);
 				socket.close();
 				String response = getRawContent(new URL("http://localhost:"+i+"/hello"));
-				if(response.contains("VCellApi")) {
+				if(response.startsWith("VCellApi")) {
 					lastVCellApiPort = i;
 					break;
 				}
@@ -376,7 +376,7 @@ public class VCellHelper extends AbstractService implements ImageJService
 			this.date = date;
 			this.cacheKey = cacheKey;
 		}
-		public long getDate() {
+		public Long getDate() {
 			return date;
 		}
 		public String getCacheKey() {
@@ -395,8 +395,11 @@ public class VCellHelper extends AbstractService implements ImageJService
 		NodeList si = (NodeList)doc.getElementsByTagName("modelInfo");
 		for(int i=0;i<si.getLength();i++){
 			Node node = si.item(i);
-			String currentUser = node.getAttributes().getNamedItem("user").getNodeValue();
+			String currentUser = (node.getAttributes().getNamedItem("user")==null?null:node.getAttributes().getNamedItem("user").getNodeValue());
 			boolean bUserMatch = vcCellModelSearch.getUserId() == null || vcCellModelSearch.getUserId().equals(currentUser);
+			if(node.getAttributes().getNamedItem("name")==null) {
+				continue;
+			}
 			String currentModel = node.getAttributes().getNamedItem("name").getNodeValue();
 			Long longDate = (node.getAttributes().getNamedItem("date")==null?null:Long.parseLong(node.getAttributes().getNamedItem("date").getNodeValue()));
 			if(longDate != null && vcellModelVersionTimeRange != null && (longDate < vcellModelVersionTimeRange.getEarliest().getTime() || longDate > vcellModelVersionTimeRange.getLatest().getTime())) {
@@ -553,6 +556,12 @@ public class VCellHelper extends AbstractService implements ImageJService
 	}
 	
 	public enum VARTYPE_POSTPROC {DataProcessingOutputInfo,PostProcessDataPDEDataContext,NotPostProcess}
+
+	public IJVarInfos getVarInfos(String simulationDataCacheKey) throws Exception{
+		URL dataUrl = new URL("http://localhost:"+findVCellApiServerPort()+"/"+"getdata"+"?"+"cachekey"+"="+simulationDataCacheKey+"&"+"varname"+"=null"+"&"+"jobindex=0"+"&"+"varTypePostProcess="+VARTYPE_POSTPROC.NotPostProcess);
+		HttpURLConnection con = (HttpURLConnection) dataUrl.openConnection();
+		return (IJVarInfos)unmarshallResponseFromConnection(con, jaxbContext);
+}
 
 	public IJDataList getTimePointData(String simulationDataCacheKey,String variableName,VARTYPE_POSTPROC varTypePostProcess,int[] timePointIndexes,int simulationJobIndex) throws Exception{
 		StringBuffer timeIndexParams = new StringBuffer();

@@ -72,7 +72,7 @@ public class NetworkTransformer implements SimContextTransformer {
 	private Map<FakeReactionRuleRateParameter, LocalParameter> kineticsParameterMap = new LinkedHashMap<FakeReactionRuleRateParameter, LocalParameter>();
 	public final static int defaultSpeciesLimit = 800;			// 1000
 	public final static int defaultReactionsLimit = 2500;		// 3000
-	public final static int defaultMaxIteration = 3;
+	public final static int defaultMaxIteration = 1;
 	public final static int defaultMaxMoleculesPerSpecies = 10;
 	public final static String endMessage = "\nPlease go to the Specifications / Network panel and adjust the number of Iterations.";
 	public final static String endMessage2 = "\nPlease go to the Specifications / Network panel and adjust the Max number of Molecules / Species if necessary.";
