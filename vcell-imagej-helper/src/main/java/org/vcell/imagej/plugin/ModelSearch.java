@@ -83,7 +83,7 @@ import net.imglib2.type.numeric.real.DoubleType;
  * </p>
   */
 @Plugin(type = ContextCommand.class, menuPath = "Plugins>VCellPluginSearch")
-public class VCellPluginSearch extends ContextCommand {
+public class ModelSearch extends ContextCommand {
 	
 	
 	
