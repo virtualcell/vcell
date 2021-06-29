@@ -11,7 +11,6 @@ package org.vcell.imagej.plugin;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
-import java.awt.FlowLayout;
 import java.awt.Frame;
 import java.awt.GridLayout;
 import java.awt.Rectangle;
@@ -51,9 +50,10 @@ import javax.swing.plaf.basic.ComboPopup;
 import javax.swing.table.DefaultTableModel;
 
 import org.scijava.command.ContextCommand;
-import org.scijava.display.DefaultDisplayService;
 import org.scijava.display.Display;
 import org.scijava.display.DisplayService;
+import org.scijava.display.event.DisplayUpdatedEvent;
+import org.scijava.event.EventService;
 import org.scijava.module.Module;
 import org.scijava.module.ModuleItem;
 import org.scijava.module.process.AbstractPreprocessorPlugin;
@@ -61,9 +61,10 @@ import org.scijava.module.process.PreprocessorPlugin;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 import org.scijava.plugin.PluginInfo;
-import org.scijava.ui.ApplicationFrame;
+import org.scijava.run.RunService;
 import org.scijava.ui.DialogPrompt.MessageType;
 import org.scijava.ui.UIService;
+import org.scijava.widget.UIComponent;
 import org.vcell.imagej.helper.VCellHelper;
 import org.vcell.imagej.helper.VCellHelper.BasicStackDimensions;
 import org.vcell.imagej.helper.VCellHelper.IJDataList;
@@ -73,11 +74,32 @@ import org.vcell.imagej.helper.VCellHelper.ModelType;
 import org.vcell.imagej.helper.VCellHelper.VCellModelSearchResults;
 
 import ij.IJ;
+import ij.ImagePlus;
+import ij.ImageStack;
+import ij.WindowManager;
+import ij.gui.NewImage;
 import net.imagej.ImageJ;
+import net.imagej.ImgPlus;
+import net.imagej.axis.Axes;
+import net.imagej.axis.AxisType;
+import net.imagej.axis.CalibratedAxis;
+import net.imagej.axis.DefaultAxisType;
+import net.imagej.axis.DefaultLinearAxis;
+import net.imagej.display.DefaultDatasetView;
+import net.imagej.display.DefaultImageDisplay;
+import net.imagej.display.ImageDisplay;
+import net.imagej.display.ImageDisplayService;
+import net.imagej.display.WindowService;
+import net.imagej.display.ZoomService;
+import net.imagej.display.event.PanZoomEvent;
+import net.imagej.ops.Op;
+import net.imagej.ops.OpService;
+import net.imagej.ops.Ops.Map;
 import net.imglib2.img.array.ArrayImg;
 import net.imglib2.img.array.ArrayImgs;
 import net.imglib2.img.basictypeaccess.array.DoubleArray;
 import net.imglib2.type.numeric.real.DoubleType;
+import net.imglib2.util.Pair;
 
 
 /**
@@ -105,7 +127,10 @@ import net.imglib2.type.numeric.real.DoubleType;
 @Plugin(type = ContextCommand.class, menuPath = "Plugins>VCellPlugin")
 public class VCellPlugin extends ContextCommand {
 	
-	
+//	final UIService service = getContext().getService(UIService.class);
+//	System.out.println(service.getDefaultUI().getApplicationFrame().getClass().getName()+" "+(service.getDefaultUI().getApplicationFrame() instanceof Frame));
+
+		private static Frame mainApplicationFrame;
 	
 	public static class StyledComboBoxUI extends BasicComboBoxUI {
 		  protected ComboPopup createPopup() {
@@ -212,6 +237,15 @@ public class VCellPlugin extends ContextCommand {
 			return modelName+" "+(appName==null?modelName:appName);
 		}
 		private void searchVCell() throws Exception{
+			final UIService service = getContext().getService(UIService.class);
+			Object obj = service.getDefaultUI().getApplicationFrame();
+			if(obj instanceof UIComponent && ((UIComponent)obj).getComponent() instanceof Frame) {
+				mainApplicationFrame = (Frame)((UIComponent)obj).getComponent();
+			}else if(obj instanceof Frame) {
+				mainApplicationFrame = (Frame)obj;
+			}
+			//System.out.println(service.getDefaultUI().getApplicationFrame().getClass().getName()+" "+(service.getDefaultUI().getApplicationFrame() instanceof Frame));
+
 			displayProgressBar(true, "Searching Database...", "VCell Model Loader", 25,uiService);
 			VCellHelper.VCellModelSearch vcms = new VCellHelper.VCellModelSearch(ModelType.valueOf(jcbModelType.getSelectedItem().toString()),null,null,null,null,null,null);
 			displayProgressBar(true, "Creating GUI...", "VCell Model Loader", 100,uiService);
@@ -650,8 +684,8 @@ public class VCellPlugin extends ContextCommand {
 
 			
 			displayProgressBar(false, "Creating GUI...", "VCell Model Loader", 100,uiService);
-			int response = JOptionPane.showConfirmDialog(
-					(Component)IJ.getInstance()/* uiService.getDefaultUI().getApplicationFrame() */, jp,"Select User Model App Sim",JOptionPane.OK_CANCEL_OPTION);
+			int response = JOptionPane.showConfirmDialog(VCellPlugin.mainApplicationFrame
+			/* (Component)IJ.getInstance() *//* uiService.getDefaultUI().getApplicationFrame() */, jp,"Select User Model App Sim",JOptionPane.OK_CANCEL_OPTION);
 			if(response != JOptionPane.OK_OPTION) {
 				vcellModelsInput.setValue(module, new VCellSelection(new Exception(CANCELLED)));//return VCellSelection with 'cancel' exception
 				module.resolveInput(vcellModelsInput.getName());
@@ -840,6 +874,12 @@ public class VCellPlugin extends ContextCommand {
 	@Parameter
 	private DisplayService displayService;
 
+	@Parameter
+	EventService eventService;
+	
+	@Parameter
+	ZoomService zoomService;
+	
   	@Parameter
 	private VCellHelper vcellHelper;
   	
@@ -875,10 +915,11 @@ public class VCellPlugin extends ContextCommand {
 			return dim;
 		}
 	};
+	
     private static void displayProgressBar(boolean bShow,String message,String title,int progress,UIService uiService) {
     	if(progressDialog == null) {
-			Frame applicationFrame = IJ.getInstance();//(Frame)uiService.getDefaultUI().getApplicationFrame();
-			progressDialog = new JDialog(applicationFrame,"Checking for VCell Client",false);
+			//Frame applicationFrame = VCellPlugin.mainApplicationFrame;//IJ.getInstance();//(Frame)uiService.getDefaultUI().getApplicationFrame();
+			progressDialog = new JDialog(VCellPlugin.mainApplicationFrame,"Checking for VCell Client",false);
 			progressDialog.addWindowListener(new WindowAdapter() {
 				@Override
 				public void windowClosing(WindowEvent e) {
@@ -976,14 +1017,66 @@ public class VCellPlugin extends ContextCommand {
 //		progressThread.start();
 //    }
     
+//    public void showAndZoom(String displayName,Object thingToDisplay,double zoomFactor) throws Exception{   	
+//    	final ImageDisplayService ids = getContext().getService(ImageDisplayService.class);
+//    	final DisplayService ds = getContext().getService(DisplayService.class);
+//    	new Thread(new Runnable() {
+//			
+//			@Override
+//			public void run() {
+//				// TODO Auto-generated method stub
+//				uiService.show(displayName,thingToDisplay);
+//		    	//Find display and set zoom, resize window
+//		    	List<ImageDisplay> knownImageDisplays = ids.getImageDisplays();
+//		    	boolean bvisible = false;
+//				while (!bvisible) {
+//					for (ImageDisplay imageDisplay : knownImageDisplays) {
+//						if (imageDisplay.getName().equals(displayName)) {
+//							if (imageDisplay.isVisible(imageDisplay.getActiveView())) {
+//								bvisible = true;
+//								break;
+//							}
+//						}
+//					}
+//					try {
+//						Thread.sleep(1000);
+//					} catch (InterruptedException e) {
+//						e.printStackTrace();
+//					}
+//				}
+////		    	int vw = ij.imageDisplay().getActiveImageDisplay().getCanvas().getViewportWidth();
+////		    	int vh = ij.imageDisplay().getActiveImageDisplay().getCanvas().getViewportHeight();
+////		    	System.out.println(" -----byname="+ij.display().getDisplay(displayName));
+//				SwingUtilities.invokeLater(new Runnable() {
+//					@Override
+//					public void run() {
+//				    	try {
+//				    		ids.getActiveImageDisplay().getCanvas().setZoom(zoomFactor);
+//							if(ds.getDisplay(displayName) != null && uiService.getDisplayViewer(ds.getDisplay(displayName)) instanceof JFrame) {
+//								double vw = ids.getActiveImageDisplay().dimension(ids.getActiveImageDisplay().dimensionIndex(Axes.X))*zoomFactor;
+//								double vh = ids.getActiveImageDisplay().dimension(ids.getActiveImageDisplay().dimensionIndex(Axes.Y))*zoomFactor;
+//								((JFrame)uiService.getDisplayViewer(ds.getDisplay(displayName)).getWindow()).setSize(new Dimension((int)vw+50, (int)vh+150));
+//							}
+//						} catch (Exception e) {
+//							e.printStackTrace();
+//						}				
+//					}
+//				});
+//
+////		    	ij.ui().getDisplayViewer(ij.display().getDisplay(displayName)).getPanel().redoLayout();
+////		    	List<Display<?>> displays = ij.display().getDisplays();
+////		    	for (Display<?> display : displays) {
+////					System.out.println(display+" -----byname="+ij.display().getDisplay(displayName));
+////				}
+//				
+//			}
+//		}).start();
+//
+//    }
+
 	@Override
 	public void run() {
-		try {
-//			final List<PluginInfo<Display<?>>> displayPlugins = ((DefaultDisplayService)displayService).getDisplayPlugins();
-//			for(PluginInfo<Display<?>> pi:displayPlugins) {
-//				System.out.println(pi);
-//			}
-			
+		try {			
 			if(vcellSelection != null && vcellSelection.exception != null) {
 				if(!vcellSelection.exception.getMessage().equals(MyPreProcessor.CANCELLED)) {
 					uiService.showDialog("Model search failed\n"+vcellSelection.exception.getClass().getName()+"\n"+vcellSelection.exception.getMessage(), MessageType.ERROR_MESSAGE);
@@ -993,24 +1086,318 @@ public class VCellPlugin extends ContextCommand {
 			if(vcellSelection == null || vcellSelection.theCacheKey==null) {
 				return;
 			}
-			String var = vcellSelection.varName[0];
-			int[] time = vcellSelection.timePointIndexes;
-			displayProgressBar(true, "loading Image...", "VCell Model Loader", 50,uiService);
-			IJDataList tpd = vcellHelper.getTimePointData(vcellSelection.theCacheKey,var,VCellHelper.VARTYPE_POSTPROC.NotPostProcess,time,0);
-			displayProgressBar(true, "displaying Image...", "VCell Model Loader", 100,uiService);
-			double[] data = tpd.ijData[0].getDoubleData();
-			BasicStackDimensions bsd = tpd.ijData[0].stackInfo;
-			System.out.println(bsd.xsize+" "+bsd.ysize);
-			ArrayImg<DoubleType, DoubleArray> testimg = ArrayImgs.doubles( data, bsd.xsize,bsd.ysize,bsd.zsize);
-//			final Display<?> createDisplay = displayService.createDisplay(testimg);
-//			((DefaultImageDisplay)createDisplay)
-//			System.out.println(createDisplay);
-			uiService.show(testimg);
+			//Create ImageJ datasets and display separate hyperstack for each variable
+			for(int varIndex=0;varIndex<vcellSelection.varName.length;varIndex++) {
+				int[] time = vcellSelection.timePointIndexes;
+				displayProgressBar(true, "loading Image...", "VCell Model Loader", (varIndex+1)*100/vcellSelection.varName.length,uiService);
+				final IJDataList tpd = vcellHelper.getTimePointData(vcellSelection.theCacheKey,vcellSelection.varName[varIndex],VCellHelper.VARTYPE_POSTPROC.NotPostProcess,time,0);
+				BasicStackDimensions bsd = tpd.ijData[0].stackInfo;
+				double[] data = new double[bsd.getTotalSize()*tpd.ijData.length];
+				double min = Double.MAX_VALUE;
+				double max = Double.MIN_VALUE;
+				ArrayImg<DoubleType, DoubleArray> testimg = ArrayImgs.doubles( data, bsd.xsize,bsd.ysize,bsd.zsize,tpd.ijData.length);
+				for(int i=0;i<tpd.ijData.length;i++) {
+					System.arraycopy(tpd.ijData[i].getDoubleData(), 0, data, i*bsd.getTotalSize(), bsd.getTotalSize());
+					//calc minmax only for pixel values that are in domain of this variable
+					for(int j=0;j<tpd.ijData[i].getDoubleData().length;j++){
+						if(tpd.ijData[i].getDoubleData()[j] != tpd.ijData[i].notInDomainValue) {
+							min = Math.min(min, tpd.ijData[i].getDoubleData()[j]);
+							max = Math.max(max, tpd.ijData[i].getDoubleData()[j]);
+						}
+					}
+				}
+				ImgPlus<DoubleType> imgPlus = new ImgPlus<DoubleType>(testimg);
+				imgPlus.setChannelMinimum(0, min);
+				imgPlus.setChannelMaximum(0, max);
+				imgPlus.setAxis(new DefaultLinearAxis(Axes.Z), 2);
+				imgPlus.setAxis(new DefaultLinearAxis(Axes.TIME), 3);
+				
+				uiService.show(vcellSelection.varName[varIndex],imgPlus);
+				DefaultImageDisplay createDisplayQuietly = (DefaultImageDisplay)displayService/* getContext().getService(DisplayService.class) */.getDisplay(vcellSelection.varName[varIndex]);
+				while(displayService.getActiveDisplay() == null) {
+					Thread.sleep(100);
+				}
+				WindowManager.getActiveWindow().setSize(400, 400);
+				IJ.run("Scale to Fit", "");
+				WindowManager.getActiveWindow().setSize(400, 400);//refresh the sliders
+				
+				//final ZoomService zoomService = getContext().getService(ZoomService.class);
+//				zoomService.zoomSet(createDisplayQuietly, 300, 0, 0);
+//				eventService.publish(new PanZoomEvent(createDisplayQuietly.getCanvas()));
+
+//				IJ.run("Set... ", "zoom=300 x="+(bsd.xsize/2)+" y="+(bsd.ysize/2));
+//				IJ.run("Set... ", "zoom=300");
+//				IJ.run("In");
+//				IJ.run("In");
+//				IJ.run("In");
+				
+//				RunService runService = getContext().getService(RunService.class);
+//				runService.run("In", (Map)null);
+//				final Iterator<PluginInfo<Op>> iterator = opService.getPlugins().iterator();
+//				while(iterator.hasNext()) {
+//					System.out.println(iterator.next());
+//				}
+//				opService.run("In", "");
+//				final ZoomService zoomService = getContext().getService(ZoomService.class);
+//				zoomService.zoomSet(createDisplayQuietly, 300, 0, 0);	
+//				createDisplayQuietly.update();
+				
+				//final Display<?> createDisplayQuietly = getContext().getService(DisplayService.class).createDisplayQuietly(testimg);
+				final DefaultDatasetView defaultDatasetView = (DefaultDatasetView)((DefaultImageDisplay)createDisplayQuietly).getActiveView();
+//				defaultDatasetView.getData().setAxis(createDisplayQuietly.axis(2), 2);
+//				defaultDatasetView.getData().setAxis(createDisplayQuietly.axis(3), 3);
+//				defaultDatasetView.update();
+				System.out.println(min+" "+max);
+//				displayService.setActiveDisplay(createDisplayQuietly);
+//				IJ.setMinAndMax(min, max);
+//				defaultDatasetView.getData().setChannelMinimum(0, min);
+//				defaultDatasetView.getData().setChannelMaximum(0, max);
+				
+//				defaultDatasetView.setChannelRanges(min,max);
+				
+				//IJ.getImage().updateAndDraw();
+//				while(displayService.getActiveDisplay() == null) {
+//					Thread.sleep(100);
+//				}
+//				IJ.setMinAndMax(min, max);
+				//WindowManager.getCurrentImage().setDisplayRange(min, max)
+				
+				//WindowManager.getCurrentImage().setDisplayRange(min,max);
+				//ImageStack.create(varIndex, varIndex, varIndex, varIndex)
+				//ImagePlus ip = new ImagePlus();
+
+				//uiService.showUI();
+//				EventService es = null;
+				//getContext().getService(EventService.class).publish(new DisplayUpdatedEvent(createDisplayQuietly,DisplayUpdatedEvent.DisplayUpdateLevel.UPDATE));
+				//uiService.get
+//				uiService.show(createDisplayQuietly);
+//				getContext().getService(DisplayService.class).
+//				showAndZoom(vcellSelection.varName[varIndex],createDisplayQuietly, 3);
+			}
 		} catch (Exception e) {
-			displayProgressBar(false, "displaying Image...", "VCell Model Loader", 100,uiService);
+			displayProgressBar(false, "Error", "VCell Model Loader", 100,uiService);
 			uiService.showDialog("theCacheKey,var,VCellHelper.VARTYPE_POSTPROC.NotPostProcess,time,0\n"+e.getMessage(), "getTimePoint(...) failed", MessageType.ERROR_MESSAGE);
 		}finally {
 			displayProgressBar(false, "displaying Image...", "VCell Model Loader", 100,uiService);
 		}
 	}
 }
+
+//final long timePointSize = tpd.ijData[0].stackInfo.getTotalSize();
+//final long totalSize = tpd.ijData.length*timePointSize;
+//class MyAI extends AbstractImg<DoubleType> {
+//
+//	class MyCursor extends AbstractCursor<DoubleType> {
+//
+//		private long position = 0;
+//		
+//		RandomAccess<DoubleType> myRandomAccess = new RandomAccess<DoubleType>() {
+//
+//			@Override
+//			public long getLongPosition(int d) {
+//				// TODO Auto-generated method stub
+//				return 0;
+//			}
+//
+//			@Override
+//			public int numDimensions() {
+//				// TODO Auto-generated method stub
+//				return 0;
+//			}
+//
+//			@Override
+//			public void fwd(int d) {
+//				// TODO Auto-generated method stub
+//				
+//			}
+//
+//			@Override
+//			public void bck(int d) {
+//				// TODO Auto-generated method stub
+//				
+//			}
+//
+//			@Override
+//			public void move(int distance, int d) {
+//				// TODO Auto-generated method stub
+//				
+//			}
+//
+//			@Override
+//			public void move(long distance, int d) {
+//				// TODO Auto-generated method stub
+//				
+//			}
+//
+//			@Override
+//			public void move(Localizable distance) {
+//				// TODO Auto-generated method stub
+//				
+//			}
+//
+//			@Override
+//			public void move(int[] distance) {
+//				// TODO Auto-generated method stub
+//				
+//			}
+//
+//			@Override
+//			public void move(long[] distance) {
+//				// TODO Auto-generated method stub
+//				
+//			}
+//
+//			@Override
+//			public void setPosition(Localizable position) {
+//				// TODO Auto-generated method stub
+//				
+//			}
+//
+//			@Override
+//			public void setPosition(int[] position) {
+//				// TODO Auto-generated method stub
+//				
+//			}
+//
+//			@Override
+//			public void setPosition(long[] position) {
+//				// TODO Auto-generated method stub
+//				
+//			}
+//
+//			@Override
+//			public void setPosition(int position, int d) {
+//				// TODO Auto-generated method stub
+//				
+//			}
+//
+//			@Override
+//			public void setPosition(long position, int d) {
+//				// TODO Auto-generated method stub
+//				
+//			}
+//
+//			@Override
+//			public DoubleType get() {
+//				// TODO Auto-generated method stub
+//				return null;
+//			}
+//
+//			@Override
+//			public Sampler<DoubleType> copy() {
+//				// TODO Auto-generated method stub
+//				return null;
+//			}
+//
+//			@Override
+//			public RandomAccess<DoubleType> copyRandomAccess() {
+//				// TODO Auto-generated method stub
+//				return null;
+//			}
+//			
+//		};
+//		final DoubleType myDoubleType = new DoubleType() {
+//
+//			@Override
+//			public double get() {
+//				// TODO Auto-generated method stub
+//				return tpd.ijData[(int) (position/timePointSize)].getDoubleData()[(int) (position%timePointSize)];
+//			}
+//			
+//		};
+//
+//		public MyCursor(int n) {
+//			super(n);
+//			// TODO Auto-generated constructor stub
+//		}
+//
+//		@Override
+//		public DoubleType get() {
+//			// TODO Auto-generated method stub
+//			return myDoubleType;
+//		}
+//
+//		@Override
+//		public void fwd() {
+//			// TODO Auto-generated method stub
+//			position++;
+//		}
+//
+//		@Override
+//		public void reset() {
+//			// TODO Auto-generated method stub
+//			position = 0;
+//		}
+//
+//		@Override
+//		public boolean hasNext() {
+//			// TODO Auto-generated method stub
+//			return position < (totalSize-1);
+//		}
+//
+//		@Override
+//		public long getLongPosition(int d) {
+//			// TODO Auto-generated method stub
+//			return 0;
+//		}
+//
+//		@Override
+//		public AbstractCursor<DoubleType> copy() {
+//			// TODO Auto-generated method stub
+//			return null;
+//		}
+//
+//		@Override
+//		public AbstractCursor<DoubleType> copyCursor() {
+//			// TODO Auto-generated method stub
+//			return null;
+//		}
+//		
+//	};
+//	
+//	Cursor<DoubleType> myCursor;
+//	public MyAI(long[] size) {
+//		super(size);
+//		myCursor = new MyCursor(size.length);
+//	}
+//
+//	@Override
+//	public ImgFactory<DoubleType> factory() {
+//		// TODO Auto-generated method stub
+//		return null;
+//	}
+//
+//	@Override
+//	public Img<DoubleType> copy() {
+//		// TODO Auto-generated method stub
+//		return null;
+//	}
+//
+//	@Override
+//	public RandomAccess<DoubleType> randomAccess() {
+//		// TODO Auto-generated method stub
+//		return null;
+//	}
+//
+//	@Override
+//	public Cursor<DoubleType> cursor() {
+//		// TODO Auto-generated method stub
+//		return myCursor;
+//	}
+//
+//	@Override
+//	public Cursor<DoubleType> localizingCursor() {
+//		// TODO Auto-generated method stub
+//		return null;
+//	}
+//
+//	@Override
+//	public Object iterationOrder() {
+//		// TODO Auto-generated method stub
+//		return null;
+//	}
+//	
+//};
+//
+//uiService.show(new MyAI(new long[] {tpd.ijData[0].stackInfo.xsize,tpd.ijData[0].stackInfo.ysize,tpd.ijData[0].stackInfo.zsize,tpd.ijData.length}));
+
