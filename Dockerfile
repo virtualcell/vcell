@@ -42,7 +42,7 @@ RUN apt-get -y update && \
     mkdir -p /usr/local/app/vcell/installDir/python/vcell_cli_utils
 
 # Add linux local solvers only
-ADD ./localsolvers /usr/local/app/vcell/installDir/localsolvers
+
 ADD ./nativelibs /usr/local/app/vcell/installDir/nativelibs
 COPY ./docker_run.sh /usr/local/app/vcell/installDir/
 
@@ -55,6 +55,7 @@ COPY ./vcell-cli-utils/ /usr/local/app/vcell/installDir/python/vcell_cli_utils/
 RUN pip3 install -r /usr/local/app/vcell/installDir/python/vcell_cli_utils/requirements.txt
 RUN pip3 install /usr/local/app/vcell/installDir/python/vcell_cli_utils/
 
+ADD --from=build /app/localsolvers /usr/local/app/vcell/installDir/localsolvers
 # Copy JAR files
 COPY --from=build /app/vcell-client/target/vcell-client-0.0.1-SNAPSHOT.jar \
      /app/vcell-client/target/maven-jars/*.jar \
