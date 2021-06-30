@@ -8,7 +8,10 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
 
@@ -190,7 +193,11 @@ public class VCellSimStatus {
 //	    		String commandStr = "sacct --jobs 281425,304556 --format=\"JobID,JobName%30,State,Submit,Start,User,ExitCode\"";
 //	    		String commandStr = "sacct --user=vcell --name "+sb.toString()+" --format=\"JobID,JobName%30,State,Submit,Start,User,ExitCode\"";
 //	    		String commandStr = "sacct --user=vcell --format=\"JobID%20,JobName%30,State%20,Submit,Start,User,ExitCode\" -S 2020-06-01 -E 2020-06-06 -s R,PD,CA";//-s R,PD
-	    		String commandStr = "sacct --user=vcell --name "+slurmJobNames.toString()+" --format=\"JobID%20,JobName%30,State%20,Submit,Start,User,NodeList,ExitCode\" -S 2020-06-01";
+	    		Calendar instance = GregorianCalendar.getInstance();
+	    		instance.add(Calendar.DAY_OF_YEAR, -14);//Set 2 weeks before current date
+	    		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+	    		String sacctDate = sdf.format(instance.getTime());
+	    		String commandStr = "sacct --user=vcell --name "+slurmJobNames.toString()+" --format=\"JobID%20,JobName%30,State%20,Submit,Start,User,NodeList,ExitCode\" -S "+sacctDate;
 	    		session = sshClient.startSession();
 				command = session.exec(commandStr);
 				command.join();
