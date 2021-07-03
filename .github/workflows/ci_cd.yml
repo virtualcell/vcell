@@ -106,7 +106,7 @@ jobs:
 
       - name: Build Docker image and push with latest tag
         run: |
-          echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ secrets.DOCKER_REGISTRY_USERNAME }} --password-stdin
+          echo ${{ secrets.DOCKER_REGISTRY_TOKEN }} | docker login ghcr.io -u ${{ secrets.DOCKER_REGISTRY_USERNAME }} --password-stdin
           docker build --no-cache --file docker/build/Dockerfile --tag ghcr.io/virtualcell/biosimulators_vcell:latest .
           docker tag ghcr.io/virtualcell/biosimulators_vcell:latest ghcr.io/virtualcell/biosimulators_vcell:${{steps.version.outputs.tag}}
           docker push --all-tags ghcr.io/virtualcell/biosimulators_vcell
