@@ -10,7 +10,6 @@
 
 package cbit.vcell.client.desktop.biomodel;
 
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
@@ -20,16 +19,12 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.net.URLEncoder;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -41,11 +36,8 @@ import java.util.Comparator;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
-import java.util.zip.GZIPInputStream;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
 
-import javax.swing.ImageIcon;
+import javax.net.ssl.HttpsURLConnection;
 import javax.swing.JButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
@@ -56,11 +48,8 @@ import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
-import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import org.jdom.DataConversionException;
 import org.jdom.Element;
 import org.vcell.util.BeanUtils;
@@ -69,20 +58,14 @@ import org.vcell.util.document.VCDocumentInfo;
 import org.vcell.util.gui.CollapsiblePanel;
 import org.vcell.util.gui.VCellIcons;
 
-import cbit.util.xml.XmlUtil;
 import cbit.vcell.biomodel.meta.VCMetaDataMiriamManager;
 import cbit.vcell.client.DocumentWindowManager;
-import cbit.vcell.client.desktop.biomodel.BioModelEditorPathwayCommonsPanel.PathwayCommonsKeyword;
-import cbit.vcell.client.desktop.biomodel.BioModelEditorPathwayCommonsPanel.PathwayCommonsVersion;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.desktop.BioModelNode;
-import cbit.vcell.desktop.VCellBasicCellRenderer;
 import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.xml.ExternalDocInfo;
-import uk.ac.ebi.www.biomodels_main.services.BioModelsWebServices.BioModelsWebServices;
-import uk.ac.ebi.www.biomodels_main.services.BioModelsWebServices.BioModelsWebServicesServiceLocator;
 
 @SuppressWarnings("serial")
 public class BioModelsNetPanel extends DocumentEditorSubPanel {
@@ -524,7 +507,12 @@ TODO:
 		final String BIOMODELSNET_INFO_FILENAME_ALT = "/bioModelsNetInfo.xml";
 		final String BIOMODELSNET_INFO_FILENAME = "https://vcell.org/webstart/VCellBMDBInfo/bioModelsNetInfo.xml";
 		URL u = new URL(BIOMODELSNET_INFO_FILENAME);
-		InputStream tableInputStream = u.openStream();
+		HttpsURLConnection conn = (HttpsURLConnection)(u).openConnection();
+		conn.setRequestMethod("GET");
+		conn.setConnectTimeout(5000);
+		conn.setReadTimeout(5000);
+		InputStream tableInputStream = conn.getInputStream();
+
 		
 		if (tableInputStream==null){
 			tableInputStream = getClass().getResourceAsStream(BIOMODELSNET_INFO_FILENAME_ALT);
