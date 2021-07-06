@@ -19,7 +19,6 @@ jobs:
       - name: Checkout submodules
         run: git submodule update --init --recursive
       - name: Add Linux dependencies
-        if: matrix.os == 'Ubuntu-20.04'
         shell: bash
         run: |
           wget https://vcell.org/webstart/pipeline_files/jdk-8u241-linux-x64.tar.gz
