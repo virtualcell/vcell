@@ -251,15 +251,18 @@ private void showHelp() {
  */
 private void createBatchSimulations() {
 	int[] selections = getScrollPaneTable().getSelectedRows();
-	if(selections.length != 1) {
+	if(selections == null || selections.length != 1) {
 		throw new RuntimeException("Exactly one template Simulation is required for Batch Creation");
 	}
 	
 	Vector<Simulation> v = new Vector<Simulation>();
 	v.add((Simulation)(ivjSimulationListTableModel1.getValueAt(selections[0])));
 	Simulation[] toCopy = (Simulation[])BeanUtils.getArray(v, Simulation.class);
+	if(toCopy == null || toCopy.length != 1) {
+		throw new RuntimeException("Exactly one template Simulation is required for Batch Creation");
+	}
+
 	int index = -1;
-	
 	UserPreferences up = getSimulationWorkspace().getClientSimManager().getUserPreferences();
 	Map<Integer, Map<String, String>> batchInputDataMap = new LinkedHashMap<>();
 	File batchInputFile = parseBatchInputFile(up, batchInputDataMap);

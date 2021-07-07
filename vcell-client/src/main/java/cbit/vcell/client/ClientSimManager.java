@@ -30,6 +30,7 @@ import java.util.EventObject;
 import java.util.Hashtable;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Vector;
 
 import javax.swing.SwingUtilities;
@@ -303,9 +304,8 @@ private static void saveFailure(Hashtable<String, Object>hashTable,Simulation si
 }
 
 public void getBatchSimulationsResults(OutputContext outputContext, Simulation simulation) throws java.beans.PropertyVetoException {
-
 	// simulation should be a template simulation
-	if(simulation.getName().contains(SimulationContext.ReservedBatchExtensionString)) {
+	if(simulation.getName().contains(SimulationWorkspace.ReservedBatchExtensionString)) {
 		throw new RuntimeException("Not a valid name for a batch template Simulation: '" + simulation.getName() + "'.");
 	}
 
@@ -321,7 +321,7 @@ public void getBatchSimulationsResults(OutputContext outputContext, Simulation s
 			Simulation allSims[] = simOwner.getSimulations();
 			LinkedHashMap<String, String> importsMap = new LinkedHashMap<>();
 			LinkedHashMap <String, Boolean> successMap = new LinkedHashMap<>();
-			String namePrefix = simulation.getName() + SimulationContext.ReservedBatchExtensionString;
+			String namePrefix = simulation.getName() + SimulationWorkspace.ReservedBatchExtensionString;
 			
 			for(Simulation simCandidate : allSims) {
 				if(simCandidate.getName().startsWith(namePrefix) && simCandidate.getName().contains("_bat_")) {

@@ -16,6 +16,7 @@ import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Hashtable;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -30,6 +31,7 @@ import org.vcell.util.document.User;
 import org.vcell.util.document.User.SPECIALS;
 import org.vcell.util.gui.DialogUtils;
 
+import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.ClientSimManager;
 import cbit.vcell.client.ClientSimManager.ViewerType;
 import cbit.vcell.client.test.VCellClientTest;
@@ -43,6 +45,7 @@ import cbit.vcell.geometry.Geometry;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SimulationContext.MathMappingCallback;
 import cbit.vcell.mapping.SimulationContext.NetworkGenerationRequirements;
+import cbit.vcell.math.Constant;
 import cbit.vcell.math.Function;
 import cbit.vcell.math.JumpProcess;
 import cbit.vcell.math.MathException;
@@ -375,28 +378,100 @@ private static boolean checkSimulationParameters(Simulation simulation, Componen
 /**
  * Comment
  */
+private final int MaxBatchSize = 999;
+public static final String ReservedBatchExtensionString = "_bat_";
+
 int createBatchSimulations(Simulation[] sims, Map<Integer, Map<String, String>> batchInputDataMap, Component requester) throws java.beans.PropertyVetoException {
-	if (sims == null || sims.length == 0) {
-		return -1;
+	
+	if(!(getSimulationOwner() instanceof SimulationContext)) {
+		throw new RuntimeException("The simulation owner must be a BioModel");
 	}
+	SimulationContext simContext = (SimulationContext)getSimulationOwner();
+	
+	Simulation simTemplate = sims[0];		// we already know that we have exactly one simulation template
 	for (int i = 0; i < sims.length; i++){
 		String errorMessage = checkCompatibility(simulationOwner, sims[i]);
-		if(errorMessage != null){
+		if(errorMessage != null) {
 			PopupGenerator.showErrorDialog(requester, errorMessage+"\nUpdate Math before copying simulations");
 			return -1;
 		}
 	}
-	Simulation copiedSim = null;
-	for (int i = 0; i < sims.length; i++) {
-		copiedSim = getSimulationOwner().createBatchSimulations(sims[i], batchInputDataMap);
+	
+	if(simContext.getMathDescription() == null) {
+		throw new RuntimeException("Application " + simTemplate.   getName() + " has no generated Math, cannot add simulation");
 	}
+	if(simTemplate.getMathDescription() != simContext.getMathDescription()) {
+		throw new IllegalArgumentException("cannot copy simulation '" + simTemplate.getName() + "', has different MathDescription than Application");
+	}
+	int batchSize = batchInputDataMap.size();
+	if(batchSize >= MaxBatchSize) {
+		throw new RuntimeException("Batch size must be smaller than " + MaxBatchSize);
+	}
+	for (int k = 0; k < batchSize; k++) {
+		if(batchInputDataMap.get(k) == null) {
+		// entry missing, perhaps parsing error
+		System.out.println("List of overrides missing for batch simulation " + k + ". Check input data file.");
+		}
+	}
+
+	Simulation allSims[] = simContext.getSimulations();
+	
+	ArrayList<AsynchClientTask> taskList = new ArrayList<AsynchClientTask>();
+	AsynchClientTask retrieveResultsTask = new AsynchClientTask("Creating Batch Simulations", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING)  {
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
+
+			for(Integer i : batchInputDataMap.keySet()) {
+				LinkedHashMap<String, String> overrideMap = (LinkedHashMap<String, String>)batchInputDataMap.get(i);
+
+				String insert = "";
+				if(i<10) {
+					insert = "00";
+				} else if(i<100) {
+					insert = "0";
+				}
+				String proposedName = simTemplate.getName() + ReservedBatchExtensionString + insert + i;
+				boolean bFound = false;
+				for (int j = 0; !bFound && j < allSims.length; j++) {
+					// go through all existing simulations to make sure the name we want to use is not already taken
+					if (allSims[j].getName().equals(proposedName)) {
+						bFound = true;
+						throw new RuntimeException("Batch file name already in use: " + proposedName);
+					}
+				}
+				Simulation newSimulation = new Simulation(simTemplate);
+				newSimulation.setName(proposedName);
+				
+				MathOverrides mo = new MathOverrides(newSimulation);
+				for(String name : overrideMap.keySet()) {
+					String value = overrideMap.get(name);
+					try {
+						Expression expression = new Expression(value);
+						Constant constant = new Constant(name, expression);
+						mo.putConstant(constant);
+					} catch (ExpressionException e) {
+						e.printStackTrace();
+					}
+				}
+				
+				newSimulation.setMathOverrides(mo);
+				simContext.addSimulation(newSimulation);
+			}
+
+			System.out.println("Done !!!");
+		}										// --- end run()
+	};
+	taskList.add(retrieveResultsTask);
+	AsynchClientTask[] taskArray = new AsynchClientTask[taskList.size()];
+	taskList.toArray(taskArray);
+	// knowProgress, cancelable, progressDialogListener
+	ClientTaskDispatcher.dispatch(requester, new Hashtable<String, Object>(), taskArray, false, false, null);
 	return -1;
 }
+
 int getBatchSimulationsResults(Simulation[] sims, Component requester) throws java.beans.PropertyVetoException {
 	if (sims == null || sims.length == 0) {
 		return -1;
 	}
-
 	// sims contains exactly one template simulation
 	ArrayList<AnnotatedFunction> outputFunctionsList = getSimulationOwner().getOutputFunctionContext().getOutputFunctionsList();
 	OutputContext outputContext = new OutputContext(outputFunctionsList.toArray(new AnnotatedFunction[outputFunctionsList.size()]));

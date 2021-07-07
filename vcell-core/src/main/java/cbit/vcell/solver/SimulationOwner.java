@@ -26,8 +26,6 @@ public interface SimulationOwner extends GeometryOwner {
 	public static String DEFAULT_SIM_NAME_PREFIX = "Simulation";
 	public interface FieldDataSimOwner extends SimulationOwner{}	// Typed simulationOwner for FieldData
 	
-	Simulation createBatchSimulations(Simulation simulation, Map<Integer, Map<String, String>> batchInputDataMap) throws PropertyVetoException;
-//	void importBatchSimulations(Simulation simulation) throws PropertyVetoException;	// move to ClientSimManager??
 	Simulation copySimulation(Simulation simulation) throws PropertyVetoException;
 	Simulation[] getSimulations();
 	void removeSimulation(Simulation simulation) throws PropertyVetoException;
