@@ -383,11 +383,6 @@ public static final String ReservedBatchExtensionString = "_bat_";
 
 int createBatchSimulations(Simulation[] sims, Map<Integer, Map<String, String>> batchInputDataMap, Component requester) throws java.beans.PropertyVetoException {
 	
-	if(!(getSimulationOwner() instanceof SimulationContext)) {
-		throw new RuntimeException("The simulation owner must be a BioModel");
-	}
-	SimulationContext simContext = (SimulationContext)getSimulationOwner();
-	
 	Simulation simTemplate = sims[0];		// we already know that we have exactly one simulation template
 	for (int i = 0; i < sims.length; i++){
 		String errorMessage = checkCompatibility(simulationOwner, sims[i]);
@@ -397,10 +392,10 @@ int createBatchSimulations(Simulation[] sims, Map<Integer, Map<String, String>> 
 		}
 	}
 	
-	if(simContext.getMathDescription() == null) {
+	if(getSimulationOwner().getMathDescription() == null) {
 		throw new RuntimeException("Application " + simTemplate.   getName() + " has no generated Math, cannot add simulation");
 	}
-	if(simTemplate.getMathDescription() != simContext.getMathDescription()) {
+	if(simTemplate.getMathDescription() != getSimulationOwner().getMathDescription()) {
 		throw new IllegalArgumentException("cannot copy simulation '" + simTemplate.getName() + "', has different MathDescription than Application");
 	}
 	int batchSize = batchInputDataMap.size();
@@ -414,7 +409,7 @@ int createBatchSimulations(Simulation[] sims, Map<Integer, Map<String, String>> 
 		}
 	}
 
-	Simulation allSims[] = simContext.getSimulations();
+	Simulation allSims[] = getSimulations();
 	
 	ArrayList<AsynchClientTask> taskList = new ArrayList<AsynchClientTask>();
 	AsynchClientTask retrieveResultsTask = new AsynchClientTask("Creating Batch Simulations", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING)  {
@@ -454,7 +449,13 @@ int createBatchSimulations(Simulation[] sims, Map<Integer, Map<String, String>> 
 				}
 				
 				newSimulation.setMathOverrides(mo);
-				simContext.addSimulation(newSimulation);
+				if(getSimulationOwner() instanceof SimulationContext) {
+					((SimulationContext)getSimulationOwner()).addSimulation(newSimulation);
+				} else if(getSimulationOwner() instanceof MathModel) {
+					((MathModel)getSimulationOwner()).addSimulation(newSimulation);
+				} else {
+					throw new RuntimeException("The simulation owner must be a SimulationContext or a Math Model");
+				}
 			}
 
 			System.out.println("Done !!!");
