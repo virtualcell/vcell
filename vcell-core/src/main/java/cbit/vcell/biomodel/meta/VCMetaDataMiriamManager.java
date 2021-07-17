@@ -494,7 +494,7 @@ public class VCMetaDataMiriamManager implements MiriamManager, Serializable {
 			list.add(VCMetaDataDataType.DataType_EFO);
 			list.add(VCMetaDataDataType.DataType_Doid);
 
-		} else if(entity instanceof Species || entity instanceof MolecularType || entity instanceof RbmObservable || entity instanceof Model.ModelParameter) {
+		} else if(entity instanceof Species || entity instanceof MolecularType || entity instanceof RbmObservable) {
 			list.add(VCMetaDataDataType.DataType_Chebi);
 			list.add(VCMetaDataDataType.DataType_KEGGCOMPOUND);
 			list.add(VCMetaDataDataType.DataType_UNIPROT);
@@ -506,6 +506,20 @@ public class VCMetaDataMiriamManager implements MiriamManager, Serializable {
 			list.add(VCMetaDataDataType.DataType_TAXONOMY);
 			list.add(VCMetaDataDataType.DataType_Pato);
 			list.add(VCMetaDataDataType.DataType_Pr);
+			
+		} else if(entity instanceof Model.ModelParameter) {
+			list.add(VCMetaDataDataType.DataType_Chebi);
+			list.add(VCMetaDataDataType.DataType_KEGGCOMPOUND);
+			list.add(VCMetaDataDataType.DataType_UNIPROT);
+			list.add(VCMetaDataDataType.DataType_ECCODE);
+			list.add(VCMetaDataDataType.DataType_REACTOME);
+			list.add(VCMetaDataDataType.DataType_CL);
+			list.add(VCMetaDataDataType.DataType_EFO);
+			list.add(VCMetaDataDataType.DataType_BTO);
+			list.add(VCMetaDataDataType.DataType_TAXONOMY);
+			list.add(VCMetaDataDataType.DataType_Pato);
+			list.add(VCMetaDataDataType.DataType_Pr);
+			list.add(VCMetaDataDataType.DataType_SBO);
 			
 		} else if(entity instanceof ReactionRule || entity instanceof ReactionStep) {
 			list.add(VCMetaDataDataType.DataType_KEGGPATHWAY);
