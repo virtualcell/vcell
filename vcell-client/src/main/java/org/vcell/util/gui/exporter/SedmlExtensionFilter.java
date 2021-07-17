@@ -4,6 +4,8 @@ import java.io.File;
 import java.nio.file.Paths;
 import java.util.Objects;
 
+import javax.swing.JOptionPane;
+
 import org.vcell.sedml.SEDMLExporter;
 import org.vcell.util.FileUtils;
 
@@ -35,8 +37,19 @@ public class SedmlExtensionFilter extends SelectorExtensionFilter {
 		
 		SEDMLExporter sedmlExporter = null;
 		if (bioModel != null) {
+			Object[] options = {"VCML","SBML"};
+			int choice = JOptionPane.showOptionDialog(null,	// parent component
+					"VCML or SBML?",			// message,
+					"Choose an option",			// title
+					JOptionPane.YES_NO_OPTION,	// optionType
+					JOptionPane.QUESTION_MESSAGE,	// messageType
+					null,						// Icon
+					options,
+					"VCML");					// initialValue 
+			boolean bForceVCML = choice == 0 ? true : false;
+
 			sedmlExporter = new SEDMLExporter(bioModel, sedmlLevel, sedmlVersion);
-			resultString = sedmlExporter.getSEDMLFile(sPath, false);
+			resultString = sedmlExporter.getSEDMLFile(sPath, bForceVCML, false);
 		} else {
 			throw new RuntimeException("unsupported Document Type " + Objects.requireNonNull(bioModel).getClass().getName() + " for SedML export");
 		}

@@ -5,6 +5,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Objects;
 
+import javax.swing.JOptionPane;
+
 import cbit.vcell.xml.XmlHelper;
 import org.vcell.sedml.SEDMLExporter;
 import org.vcell.util.FileUtils;
@@ -34,8 +36,20 @@ public class OmexExtensionFilter extends SedmlExtensionFilter {
 		
 		SEDMLExporter sedmlExporter = null;
 		if (bioModel != null) {
+			
+			Object[] options = {"VCML","SBML"};
+			int choice = JOptionPane.showOptionDialog(null,	// parent component
+					"VCML or SBML?",			// message,
+					"Choose an option",			// title
+					JOptionPane.YES_NO_OPTION,	// optionType
+					JOptionPane.QUESTION_MESSAGE,	// messageType
+					null,						// Icon
+					options,
+					"VCML");					// initialValue 
+			boolean bForceVCML = choice == 0 ? true : false;
+			
 			sedmlExporter = new SEDMLExporter(bioModel, sedmlLevel, sedmlVersion);
-			resultString = sedmlExporter.getSEDMLFile(sPath, true);
+			resultString = sedmlExporter.getSEDMLFile(sPath, bForceVCML, true);
 
 			// convert biomodel to vcml and save to file.
 			String vcmlString = XmlHelper.bioModelToXML(bioModel);

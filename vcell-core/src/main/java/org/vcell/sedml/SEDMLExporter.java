@@ -149,7 +149,7 @@ public class SEDMLExporter {
 			// invoke the SEDMLEXporter
 			SEDMLExporter sedmlExporter = new SEDMLExporter(bioModel, 1, 1);
 			String absolutePath = "c:\\dan\\SEDML";
-			String sedmlStr = sedmlExporter.getSEDMLFile(absolutePath, false);
+			String sedmlStr = sedmlExporter.getSEDMLFile(absolutePath, false, false);
 //			String absolutePath = ResourceUtil.getUserHomeDir().getAbsolutePath();
 			String outputName = absolutePath+ "\\" + TokenMangler.mangleToSName(bioModel.getName()) + ".sedml";
 			XmlUtil.writeXMLStringToFile(sedmlStr, outputName, true);
@@ -162,7 +162,7 @@ public class SEDMLExporter {
 		}
 	}
 	
-	public String getSEDMLFile(String sPath, boolean bFromOmex) {
+	public String getSEDMLFile(String sPath, boolean bForceVCML, boolean bFromOmex) {
 
 		// Create an SEDMLDocument and create the SEDMLModel from the document, so that other details can be added to it in translateBioModel()
 		SEDMLDocument sedmlDocument = new SEDMLDocument(this.sedmlLevel, this.sedmlVersion);
@@ -173,14 +173,14 @@ public class SEDMLExporter {
 		sedmlModel = sedmlDocument.getSedMLModel();
 
 		
-		translateBioModelToSedML(sPath, bFromOmex);
+		translateBioModelToSedML(sPath, bForceVCML, bFromOmex);
 
 		// write SEDML document into SEDML writer, so that the SEDML str can be retrieved
 		return sedmlDocument.writeDocumentToString();
 	}
 
 
-	private void translateBioModelToSedML(String savePath, boolean bFromOmex) {		// true if invoked for omex export, false if for sedml
+	private void translateBioModelToSedML(String savePath, boolean bForceVCML, boolean bFromOmex) {		// true if invoked for omex export, false if for sedml
 		sbmlFilePathStrAbsoluteList.clear();
 		// models
 		try {
@@ -237,25 +237,35 @@ public class SEDMLExporter {
 					
 					boolean sbmlExportFailed = false;
 					if (vcBioModel instanceof BioModel) {
-						try {
+						
+						if(!bForceVCML) {	// we try to save to SBML
+							try {
+								SBMLExporter sbmlExporter = new SBMLExporter(vcBioModel, level, version, isSpatial);
+								sbmlExporter.setSelectedSimContext(simContext);
+								sbmlExporter.setSelectedSimulationJob(null);	// no sim job
+								try {
+									sbmlString = sbmlExporter.getSBMLString();
+								} catch (RuntimeException e) {
+									sbmlExportFailed = true;
+//									if (simContext.getGeometry().getDimension() > 0 && simContext.getApplicationType() == Application.NETWORK_DETERMINISTIC ) {
+//										continue;	// we skip importing 3D deterministic applications if SBML exceptions
+//									} else {
+//										throw(e);
+//									}
+								}
+								l2gMap = sbmlExporter.getLocalToGlobalTranslationMap();
+							} catch (SbmlException e) {
+								sbmlExportFailed = true;
+//								e.printStackTrace(System.out);
+//								throw new XmlParseException(e);
+							}
+						} else {	// we want to force VCML, we act as if saving to SBML failed
+							sbmlExportFailed = true;
+
 							SBMLExporter sbmlExporter = new SBMLExporter(vcBioModel, level, version, isSpatial);
 							sbmlExporter.setSelectedSimContext(simContext);
 							sbmlExporter.setSelectedSimulationJob(null);	// no sim job
-							try {
-								sbmlString = sbmlExporter.getSBMLString();
-							} catch (RuntimeException e) {
-								sbmlExportFailed = true;
-//								if (simContext.getGeometry().getDimension() > 0 && simContext.getApplicationType() == Application.NETWORK_DETERMINISTIC ) {
-//									continue;	// we skip importing 3D deterministic applications if SBML exceptions
-//								} else {
-//									throw(e);
-//								}
-							}
 							l2gMap = sbmlExporter.getLocalToGlobalTranslationMap();
-						} catch (SbmlException e) {
-							sbmlExportFailed = true;
-//							e.printStackTrace(System.out);
-//							throw new XmlParseException(e);
 						}
 					} else {
 						throw new RuntimeException("unsupported Document Type "+vcBioModel.getClass().getName()+" for SBML export");
@@ -845,6 +855,9 @@ public class SEDMLExporter {
 					sedmlNotesStr += msg;
 				} // end : if-else simContext is not spatial stochastic
 				simContextCnt++;
+//				if(bForceVCML == true) {	// TODO: should we just go through it just once
+//					break;					// since VCML has all it needs?
+//				}
 			}	// end - for 'simContexts'
 			
         	
