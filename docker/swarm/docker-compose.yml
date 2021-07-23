@@ -251,7 +251,7 @@ services:
       - mongodb_port_internal=27017
       - mongodb_database=test
 
-      - webDataPort=${WEB_DATA_PORT}
+      - webDataPort=${VCELL_WEB_DATA_PORT}
 
       - servertype=CombinedData
     ports:
