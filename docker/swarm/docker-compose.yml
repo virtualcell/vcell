@@ -19,6 +19,8 @@ services:
       - mongodb_port_internal=27017
       - mongodb_database=test
 
+      - webDataPort=${VCELL_WEB_DATA_PORT}
+
       - smtp_hostname=${VCELL_SMTP_HOSTNAME}
       - smtp_port=${VCELL_SMTP_PORT}
       - smtp_emailaddress=${VCELL_SMTP_EMAILADDRESS}
@@ -249,6 +251,8 @@ services:
       - mongodb_port_internal=27017
       - mongodb_database=test
 
+      - webDataPort=${WEB_DATA_PORT}
+
       - servertype=CombinedData
     ports:
       - "8000" # java remote debugging
@@ -259,6 +263,8 @@ services:
     secrets:
       - dbpswd
       - jmspswd
+      - keystorefile_20210125
+      - keystorepswd
     networks:
       - vcellnet
     depends_on:
