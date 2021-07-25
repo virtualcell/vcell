@@ -43,6 +43,8 @@ ENV softwareVersion=SOFTWARE-VERSION-NOT-SET \
     slurm_reservation_pu="slurm_reservation_pu-not-set" \
     maxJobsPerScan=max-jobs-per-scan-not-set \
 	maxOdeJobsPerUser=max-ode-jobs-per-user-not-set \
+	vcell_ssh_cmd_cmdtimeout="cmdSrvcSshCmdTimeoutMS-not-set" \
+    vcell_ssh_cmd_restoretimeout="cmdSrvcSshCmdRestoreTimeoutFactor-not-set" \
 	maxPdeJobsPerUser=max-pde-jobs-per-user-not-set
 
 ENV dbpswdfile=/run/secrets/dbpswd \
@@ -91,5 +93,7 @@ ENTRYPOINT java \
 	-Dvcell.server.maxJobsPerScan=${maxJobsPerScan} \
 	-Dvcell.server.maxOdeJobsPerUser=${maxOdeJobsPerUser} \
 	-Dvcell.server.maxPdeJobsPerUser=${maxPdeJobsPerUser} \
+	-Dvcell.ssh.cmd.cmdtimeout=${vcell_ssh_cmd_cmdtimeout} \
+	-Dvcell.ssh.cmd.restoretimeout=${vcell_ssh_cmd_restoretimeout} \
 	-cp "./lib/*" cbit.vcell.message.server.dispatcher.SimulationDispatcher \
 	"${batchhost}" "${batchuser}" "${batchuserkeyfile}"

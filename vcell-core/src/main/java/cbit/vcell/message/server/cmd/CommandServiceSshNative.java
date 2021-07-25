@@ -15,6 +15,8 @@ import java.util.TreeSet;
 import org.vcell.util.TimeWrapper;
 import org.vcell.util.exe.ExecutableException;
 
+import cbit.vcell.resource.PropertyLoader;
+
 
 public class CommandServiceSshNative extends CommandService {
 	private class HostNameAgeTuple {
@@ -64,8 +66,6 @@ public class CommandServiceSshNative extends CommandService {
 		this.installedKeyFile = installedKeyFile;
 	}
 	
-	private static int CMD_TIMEOUT_MS = 5000;
-	private static double RESTORE_MINUTES_AGE_FACTOR = 5;
 	@Override
 	public CommandOutput command(String[] commandStrings, int[] allowableReturnCodes) throws ExecutableException {
 		if (allowableReturnCodes == null){
@@ -81,7 +81,7 @@ public class CommandServiceSshNative extends CommandService {
 		while(iterator.hasNext()) {
 			HostNameAgeTuple hostNameAgeTuple = iterator.next();
 			synchronized (this) {
-				if((System.currentTimeMillis()-hostNameAgeTuple.age) > RESTORE_MINUTES_AGE_FACTOR*60*1000) {
+				if((System.currentTimeMillis()-hostNameAgeTuple.age) > Double.parseDouble(System.getProperty(PropertyLoader.cmdSrvcSshCmdRestoreTimeoutFactor, 5.0+""))*60*1000) {
 					iterator.remove();//Remove from problemHosts penalty box
 				}else {
 					tryTheseHosts.remove(hostNameAgeTuple.hostName);//Remove from available while in problemHosts penalty box
@@ -110,7 +110,7 @@ public class CommandServiceSshNative extends CommandService {
 			cmdList.add(String.join(" ", Arrays.asList(commandStrings)));
 			String[] cmd = cmdList.toArray(new String[0]);
 			try {
-				CommandOutput tempCommandOutput = cmdServiceLocal.commandWithTimeout(cmd, allowableReturnCodes,CMD_TIMEOUT_MS);
+				CommandOutput tempCommandOutput = cmdServiceLocal.commandWithTimeout(cmd, allowableReturnCodes,Integer.parseInt(System.getProperty(PropertyLoader.cmdSrvcSshCmdTimeoutMS, 10000+"")));
 				synchronized (this) {
 					commandOutputHolder.put(tryThisHost,tempCommandOutput);
 				}

@@ -82,6 +82,9 @@ services:
       - maxPdeJobsPerUser=${VCELL_MAX_PDE_JOBS_PER_USER:-50}
       - simdataCacheSize=${VCELL_SIMDATA_CACHE_SIZE:-10000000}
 
+      - vcell_ssh_cmd_cmdtimeout=${VCELL_SSH_CMD_TIMEOUT:-10000}
+      - vcell_ssh_cmd_restoretimeout=${VCELL_SSH_CMD_RESTORE_TIMEOUT:-5}
+
       - jmsuser=clientUser
       - jmshost_int_internal=activemqint
       - jmsport_int_internal=61616
@@ -160,6 +163,9 @@ services:
       - slurm_local_singularity_dir=${VCELL_SLURM_LOCAL_SINGULARITY_DIR}
       - slurm_central_singularity_dir=${VCELL_SLURM_CENTRAL_SINGULARITY_DIR}
       - simdatadir_archive_host=${VCELL_SIMDATADIR_ARCHIVE_HOST}
+
+      - vcell_ssh_cmd_cmdtimeout=${VCELL_SSH_CMD_TIMEOUT:-10000}
+      - vcell_ssh_cmd_restoretimeout=${VCELL_SSH_CMD_RESTORE_TIMEOUT:-5}
 
       - jmsuser=clientUser
       - jmshost_int_internal=activemqint
