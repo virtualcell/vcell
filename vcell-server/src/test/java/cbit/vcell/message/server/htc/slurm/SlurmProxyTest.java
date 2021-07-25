@@ -46,7 +46,7 @@ public class SlurmProxyTest {
 			System.setProperty(PropertyLoader.slurm_partition, partitions[1]);
 			
 			
-			cmd = new CommandServiceSshNative("vcell-service.cam.uchc.edu", "vcell", new File("/Users/schaff/.ssh/schaff_rsa"));
+			cmd = new CommandServiceSshNative(new String[] {"vcell-service.cam.uchc.edu"}, "vcell", new File("/Users/schaff/.ssh/schaff_rsa"));
 			SlurmProxy slurmProxy = new SlurmProxy(cmd, "vcell");
 
 			String jobName = "V_TEST2_999999999_0_"+r.nextInt(10000);
@@ -129,7 +129,7 @@ public class SlurmProxyTest {
 		
 		CommandServiceSshNative cmd = null;
 		try {
-			cmd = new CommandServiceSshNative("vcell-service.cam.uchc.edu", "vcell", new File("/Users/schaff/.ssh/schaff_rsa"));
+			cmd = new CommandServiceSshNative(new String[] {"vcell-service.cam.uchc.edu"}, "vcell", new File("/Users/schaff/.ssh/schaff_rsa"));
 			SlurmProxy slurmProxy = new SlurmProxy(cmd, "vcell");
 			Map<HtcJobInfo, HtcJobStatus> runningJobs = slurmProxy.getRunningJobs();
 			for (HtcJobInfo jobInfo : runningJobs.keySet()) {

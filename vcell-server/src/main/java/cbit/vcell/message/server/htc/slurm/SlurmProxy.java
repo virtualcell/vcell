@@ -18,6 +18,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Random;
 import java.util.Set;
+import java.util.StringTokenizer;
 
 import org.vcell.util.FileUtils;
 import org.vcell.util.document.KeyValue;
@@ -27,6 +28,8 @@ import com.google.common.io.Files;
 
 import cbit.rmi.event.WorkerEvent;
 import cbit.vcell.message.server.cmd.CommandService;
+import cbit.vcell.message.server.cmd.CommandServiceLocal;
+import cbit.vcell.message.server.cmd.CommandServiceSshNative;
 import cbit.vcell.message.server.cmd.CommandService.CommandOutput;
 import cbit.vcell.message.server.htc.HtcException;
 import cbit.vcell.message.server.htc.HtcJobNotFoundException;
@@ -41,6 +44,7 @@ import cbit.vcell.simdata.PortableCommand;
 import cbit.vcell.simdata.PortableCommandWrapper;
 import cbit.vcell.simdata.SimDataConstants;
 import cbit.vcell.solver.SolverDescription;
+import cbit.vcell.solvers.AbstractSolver;
 import cbit.vcell.solvers.ExecutableCommand;
 import edu.uchc.connjur.wb.LineStringBuilder;
 
@@ -54,6 +58,49 @@ public class SlurmProxy extends HtcProxy {
 		super(commandService, htcUser);
 	}
 
+	public static HtcProxy creatCommandService(java.lang.String[] sshHostUserKeyfile) throws IOException {
+		CommandService commandService = null;
+		if (sshHostUserKeyfile != null && sshHostUserKeyfile.length==3){
+			ArrayList<String> htcDispatchHostNames = new ArrayList<String>();
+			StringTokenizer st = new StringTokenizer(sshHostUserKeyfile[0],", ");
+			while(st.hasMoreElements()) {
+				htcDispatchHostNames.add(st.nextToken());
+			}
+			//String sshHost = sshHostUserKeyfile[0];
+			String sshUser = sshHostUserKeyfile[1];
+			File sshKeyFile = new File(sshHostUserKeyfile[2]);
+			try {
+				commandService = new CommandServiceSshNative(htcDispatchHostNames.toArray(new String[0]),sshUser,sshKeyFile);
+				commandService.command(new String[] { "/usr/bin/env bash -c ls | head -5" });
+//				lg.trace("SSH Connection test passed with installed keyfile, running ls as user "+sshUser+" on "+sshHost);
+			} catch (Exception e) {
+				e.printStackTrace();
+				try {
+					commandService = new CommandServiceSshNative(htcDispatchHostNames.toArray(new String[0]),sshUser,sshKeyFile,new File("/root"));
+					CommandOutput commandOutput = commandService.command(new String[] { "/usr/bin/env bash -c ls | head -5" });
+//					lg.trace("SSH Connection test passed after installing keyfile, running ls as user "+sshUser+" on "+sshHost);
+				} catch (Exception e2) {
+					e.printStackTrace();
+					throw new RuntimeException("failed to establish an ssh command connection to "+sshHostUserKeyfile[0]+" as user '"+sshUser+"' using key '"+sshKeyFile+"'",e);
+				}
+			}
+			AbstractSolver.bMakeUserDirs = false; // can't make user directories, they are remote.
+		}else{
+			commandService = new CommandServiceLocal();
+		}
+		BatchSystemType batchSystemType = BatchSystemType.SLURM;
+		HtcProxy htcProxy = null;
+		switch(batchSystemType){
+			case SLURM:{
+				htcProxy = new SlurmProxy(commandService, PropertyLoader.getRequiredProperty(PropertyLoader.htcUser));
+				break;
+			}
+			default: {
+				throw new RuntimeException("unrecognized batch scheduling option :"+batchSystemType);
+			}
+		}
+		return htcProxy;
+	}
 
 	@Override
 	public void killJobSafe(HtcJobInfo htcJobInfo) throws ExecutableException, HtcException {

@@ -690,42 +690,7 @@ public class SimulationDispatcher extends ServiceProvider {
 
 		try {
 			PropertyLoader.loadProperties(REQUIRED_SERVICE_PROPERTIES);
-
-			CommandService commandService = null;
-			if (args.length==3){
-				String sshHost = args[0];
-				String sshUser = args[1];
-				File sshKeyFile = new File(args[2]);
-				try {
-					commandService = new CommandServiceSshNative(sshHost,sshUser,sshKeyFile);
-					commandService.command(new String[] { "/usr/bin/env bash -c ls | head -5" });
-					lg.trace("SSH Connection test passed with installed keyfile, running ls as user "+sshUser+" on "+sshHost);
-				} catch (Exception e) {
-					if (lg.isDebugEnabled()) lg.debug("SSH Connection test failed with installed keyfile, trying again with installed keyfile", e);
-					try {
-						commandService = new CommandServiceSshNative(sshHost,sshUser,sshKeyFile,new File("/root"));
-						commandService.command(new String[] { "/usr/bin/env bash -c ls | head -5" });
-						lg.trace("SSH Connection test passed after installing keyfile, running ls as user "+sshUser+" on "+sshHost);
-					} catch (Exception e2) {
-						lg.error("SSH Connection test failed even after installing keyfile, running ls as user \"+sshUser+\" on \"+sshHost",e2);
-						throw new RuntimeException("failed to establish an ssh command connection to "+sshHost+" as user '"+sshUser+"' using key '"+sshKeyFile+"'",e);
-					}
-				}
-				AbstractSolver.bMakeUserDirs = false; // can't make user directories, they are remote.
-			}else{
-				commandService = new CommandServiceLocal();
-			}
-			BatchSystemType batchSystemType = BatchSystemType.SLURM;
-			HtcProxy htcProxy = null;
-			switch(batchSystemType){
-				case SLURM:{
-					htcProxy = new SlurmProxy(commandService, PropertyLoader.getRequiredProperty(PropertyLoader.htcUser));
-					break;
-				}
-				default: {
-					throw new RuntimeException("unrecognized batch scheduling option :"+batchSystemType);
-				}
-			}
+			HtcProxy htcProxy = SlurmProxy.creatCommandService(args);
 
 			int serviceOrdinal = 99;
 			VCMongoMessage.serviceStartup(ServiceName.dispatch, new Integer(serviceOrdinal), args);

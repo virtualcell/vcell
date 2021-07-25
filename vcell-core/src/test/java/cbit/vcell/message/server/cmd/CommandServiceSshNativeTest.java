@@ -30,7 +30,7 @@ public class CommandServiceSshNativeTest {
 	public void test_install_secret_keyfile() throws IOException, ExecutableException {
 		CommandServiceSshNative cmd = null;
 		try {
-			cmd = new CommandServiceSshNative("vcell-service.cam.uchc.edu", "vcell", new File("/Users/schaff/.ssh/schaff_rsa"), new File("/Users/schaff"));
+			cmd = new CommandServiceSshNative(new String[] {"vcell-service.cam.uchc.edu"}, "vcell", new File("/Users/schaff/.ssh/schaff_rsa"), new File("/Users/schaff"));
 			System.out.println("after created cmdService");
 			CommandOutput output = cmd.command(new String[] { "ls -al | head -4" });
 			System.out.println("ls output is: "+output.getStandardOutput());
@@ -52,7 +52,7 @@ public class CommandServiceSshNativeTest {
 	public void test() throws IOException, ExecutableException {
 		CommandServiceSshNative cmd = null;
 		try {
-			cmd = new CommandServiceSshNative("vcell-service.cam.uchc.edu", "vcell", new File("/Users/schaff/.ssh/schaff_rsa"));
+			cmd = new CommandServiceSshNative(new String[] {"vcell-service.cam.uchc.edu"}, "vcell", new File("/Users/schaff/.ssh/schaff_rsa"));
 			System.out.println("after created cmdService");
 			CommandOutput output = cmd.command(new String[] { "ls -al | head -4" });
 			System.out.println("ls output is: "+output.getStandardOutput());
