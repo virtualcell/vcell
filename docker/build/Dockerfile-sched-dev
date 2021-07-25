@@ -36,6 +36,7 @@ ENV softwareVersion=SOFTWARE-VERSION-NOT-SET \
     htclogdir_internal=/path/to/internal/htclogs/ \
     batchhost="batch-host-not-set" \
     batchuser="batch-user-not-set" \
+    htcnodelist="batch-host-not-set" \
     slurm_partition="slurm-partition-not-set" \
     slurm_reservation="slurm_reservation-not-set" \
     slurm_partition_pu="slurm_partition_pu-not-set" \
