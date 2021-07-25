@@ -237,6 +237,9 @@ public class PropertyLoader {
 	
 	public static final String imageJVcellPluginURL = record("vcell.imagej.plugin.url", ValueType.GEN);
 
+	public static final String webDataServerPort = record("vcelldata.web.server.port", ValueType.GEN);
+	public static final String cmdSrvcSshCmdTimeoutMS = record("vcell.ssh.cmd.cmdtimeout", ValueType.GEN);
+	public static final String cmdSrvcSshCmdRestoreTimeoutFactor = record("vcell.ssh.cmd.restoretimeout", ValueType.GEN);
 	/**
 	 * native library directory, server side
 	 */
