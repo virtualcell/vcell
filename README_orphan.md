@@ -23,6 +23,9 @@ sudo docker service update --force --detach=false vcellalpha_submit
 sudo docker service update --force --detach=false vcellalpha_api
 (not used) sudo docker service update --force --detach=false vcellalpha_opt  
 
+//from submit container
+ssh, -i, /root/.ssh/vcell_rsa, -o, StrictHostKeyChecking=No, vcell@vcell-service.cam.uchc.edu, sbatch /share/apps/vcell3/htclogs/V_REL_210503489_0_0.slurm.sub]
+
 **Build quickrun linux solvers**  
 do this in a pristine checkout (cloned).  
 git clone https://github.com/virtualcell/vcell-solvers.git  
@@ -149,6 +152,10 @@ NOTE: enter following after 'java' for debug (-agentlib:jdwp=transport=dt_socket
 ## useful commands
 
 ```bash
+
+//Cleanup all files in singularity cache older than the given date on vcell-node1 (vcell build/deploy machine
+sudo find /root/.singularity/docker -type f -not -newermt "2021-01-01" -delete
+
 //Cleanup docker log files, disk space problem
 //ssh to each of Alpha(vcellapi-beta,vcell-node3,vcell-node4) and Rel(vcellapi,vcell-node1,vcell-node2)
 
