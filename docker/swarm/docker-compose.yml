@@ -105,7 +105,8 @@ services:
     secrets:
       - dbpswd
       - jmspswd
-      - batchuserkeyfile
+      - source: batchuserkeyfile
+        mode: 0400
     networks:
       - vcellnet
     depends_on:
@@ -182,7 +183,8 @@ services:
     secrets:
       - jmspswd
       - jmsrestpswd # "echo -ne  {activemq console user:passwd} | base64", this is hard-coded in some solvers
-      - batchuserkeyfile
+      - source: batchuserkeyfile
+        mode: 0400
     networks:
       - vcellnet
     depends_on:
