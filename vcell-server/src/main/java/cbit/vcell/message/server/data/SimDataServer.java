@@ -220,8 +220,8 @@ private File createHdf5(VCSimulationIdentifier vcsid,Integer[] scanJobs,double b
 		String exportBaseDir = PropertyLoader.getRequiredProperty(PropertyLoader.exportBaseDirInternalProperty);
 		hdf5TempFile = File.createTempFile("webexport_"+vcsid.getSimulationKey()+"_", ".hdf", new File(exportBaseDir));
 		hdf5FileID = H5.H5Fcreate(hdf5TempFile.getAbsolutePath(), HDF5Constants.H5F_ACC_TRUNC,HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT);				
-		Hdf5Utils.writeHDF5Dataset(hdf5FileID, "simID", null,vcsid.getSimulationKey().toString() , true);
-		Hdf5Utils.writeHDF5Dataset(hdf5FileID, "exportUser", null,vcsid.getOwner().getName() , true);
+		Hdf5Utils.insertAttribute(hdf5FileID, "simID",vcsid.getSimulationKey().toString());//Hdf5Utils.writeHDF5Dataset(hdf5FileID, "simID", null,vcsid.getSimulationKey().toString() , true);
+		Hdf5Utils.insertAttribute(hdf5FileID,"exportUser",vcsid.getOwner().getName()) ;//Hdf5Utils.writeHDF5Dataset(hdf5FileID, "exportUser", null,vcsid.getOwner().getName() , true);
 		
 		for(int scan=0;scan<scanJobs.length;scan++) {
 			VCDataIdentifier vcdid = new VCSimulationDataIdentifier(vcsid, scanJobs[scan]);
@@ -241,8 +241,10 @@ private File createHdf5(VCSimulationIdentifier vcsid,Integer[] scanJobs,double b
 					return o1.getName().compareToIgnoreCase(o2.getName());
 				}});
 			orderedColumnNames.addAll(Arrays.asList(odeSimData.getColumnDescriptions()));
-			jobGroupID = (int) Hdf5Utils.writeHDF5Dataset(hdf5FileID, "Set "+scan, null, null, false);
-			Hdf5Utils.HDF5WriteHelper help0 =  (HDF5WriteHelper) Hdf5Utils.writeHDF5Dataset(jobGroupID, "data", new long[] {allColumnsCount,allRowsCount}, new Object[] {}, false);
+			jobGroupID = (int) Hdf5Utils.createGroup(hdf5FileID, "Set "+scan);
+					//writeHDF5Dataset(hdf5FileID, "Set "+scan, null, null, false);
+			Hdf5Utils.HDF5WriteHelper help0 =  Hdf5Utils.createDataset(jobGroupID, "data", new long[] {allColumnsCount,allRowsCount});
+					//(HDF5WriteHelper) Hdf5Utils.writeHDF5Dataset(jobGroupID, "data", new long[] {allColumnsCount,allRowsCount}, new Object[] {}, false);
 			double[] fromData = new double[allColumnsCount*allRowsCount];
 			int index = 0;
 			ArrayList<String> dataTypes = new ArrayList<String>();
@@ -267,24 +269,27 @@ private File createHdf5(VCSimulationIdentifier vcsid,Integer[] scanJobs,double b
 					index++;
 				}
 			}
-			Object[] objArr = new Object[] {fromData,new long[] {0,0},
-					new long[] {allColumnsCount,allRowsCount},new long[] {allColumnsCount,
-							allRowsCount},new long[] {0,0},new long[] {allColumnsCount,allRowsCount},help0.hdf5DataSpaceID};
+//			Object[] objArr = new Object[] {fromData,new long[] {0,0},
+//					new long[] {allColumnsCount,allRowsCount},new long[] {allColumnsCount,
+//							allRowsCount},new long[] {0,0},new long[] {allColumnsCount,allRowsCount},help0.hdf5DataSpaceID};
 			//			double[] copyFromData = (double[])((Object[])data)[0];
 			//			long[] copyToStart = (long[])((Object[])data)[1];
 			//			long[] copyToLength = (long[])((Object[])data)[2];
 			//			long[] copyFromDims = (long[])((Object[])data)[3];
 			//			long[] copyFromStart = (long[])((Object[])data)[4];
 			//			long[] copyFromLength = (long[])((Object[])data)[5];
-			Hdf5Utils.writeHDF5Dataset(help0.hdf5DatasetValuesID, null, null, objArr, false);
-			Hdf5Utils.writeHDF5Dataset(help0.hdf5DatasetValuesID, "_type", null, "ODE Data Export", true);
-			Hdf5Utils.writeHDF5Dataset(help0.hdf5DatasetValuesID, "dataSetDataTypes", null, dataTypes, true);
-			Hdf5Utils.writeHDF5Dataset(help0.hdf5DatasetValuesID, "dataSetIds", null,dataIDs , true);
-			Hdf5Utils.writeHDF5Dataset(help0.hdf5DatasetValuesID, "dataSetLabels", null,dataLabels , true);
-			Hdf5Utils.writeHDF5Dataset(help0.hdf5DatasetValuesID, "dataSetNames", null,dataNames , true);
-			Hdf5Utils.writeHDF5Dataset(help0.hdf5DatasetValuesID, "dataSetShapes", null,dataShapes , true);
-			Hdf5Utils.writeHDF5Dataset(help0.hdf5DatasetValuesID, "id", null,"report" , true);
-			Hdf5Utils.writeHDF5Dataset(help0.hdf5DatasetValuesID, "scanJobID", null,""+scanJobs[scan] , true);
+			Hdf5Utils.copySlice(help0.hdf5DatasetValuesID,fromData,new long[] {0,0},
+					new long[] {allColumnsCount,allRowsCount},new long[] {allColumnsCount,
+							allRowsCount},new long[] {0,0},new long[] {allColumnsCount,allRowsCount},help0.hdf5DataSpaceID);
+			//writeHDF5Dataset(help0.hdf5DatasetValuesID, null, null, objArr, false);
+			Hdf5Utils.insertAttribute(help0.hdf5DatasetValuesID, "_type", "ODE Data Export");//Hdf5Utils.writeHDF5Dataset(help0.hdf5DatasetValuesID, "_type", null, "ODE Data Export", true);
+			Hdf5Utils.insertAttributes(help0.hdf5DatasetValuesID, "dataSetDataTypes", dataTypes);//Hdf5Utils.writeHDF5Dataset(help0.hdf5DatasetValuesID, "dataSetDataTypes", null, dataTypes, true);
+			Hdf5Utils.insertAttributes(help0.hdf5DatasetValuesID,"dataSetIds",dataIDs);//Hdf5Utils.writeHDF5Dataset(help0.hdf5DatasetValuesID, "dataSetIds", null,dataIDs , true);
+			Hdf5Utils.insertAttributes(help0.hdf5DatasetValuesID,"dataSetLabels",dataLabels);//Hdf5Utils.writeHDF5Dataset(help0.hdf5DatasetValuesID, "dataSetLabels", null,dataLabels , true);
+			Hdf5Utils.insertAttributes(help0.hdf5DatasetValuesID, "dataSetNames",dataNames);//Hdf5Utils.writeHDF5Dataset(help0.hdf5DatasetValuesID, "dataSetNames", null,dataNames , true);
+			Hdf5Utils.insertAttributes(help0.hdf5DatasetValuesID, "dataSetShapes",dataShapes);//Hdf5Utils.writeHDF5Dataset(help0.hdf5DatasetValuesID, "dataSetShapes", null,dataShapes , true);
+			Hdf5Utils.insertAttribute(help0.hdf5DatasetValuesID, "id","report");//Hdf5Utils.writeHDF5Dataset(help0.hdf5DatasetValuesID, "id", null,"report" , true);
+			Hdf5Utils.insertAttribute(help0.hdf5DatasetValuesID, "scanJobID",""+scanJobs[scan]);//Hdf5Utils.writeHDF5Dataset(help0.hdf5DatasetValuesID, "scanJobID", null,""+scanJobs[scan] , true);
 			help0.close();
 			H5.H5Gclose(jobGroupID);
 			jobGroupID = -1;

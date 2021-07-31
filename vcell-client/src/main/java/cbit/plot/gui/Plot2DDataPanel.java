@@ -455,8 +455,10 @@ private synchronized void copyCells0(CopyAction copyAction,boolean isHDF5) {
 					if(selectedColCount == 0) {
 						continue;
 					}
-					int jobGroupID = (int) Hdf5Utils.writeHDF5Dataset(hdf5FileID, "Set "+k, null, null, false);
-					Hdf5Utils.HDF5WriteHelper help0 =  (HDF5WriteHelper) Hdf5Utils.writeHDF5Dataset(jobGroupID, "data", new long[] {selectedColCount,rows.length}, new Object[] {}, false);
+					int jobGroupID = (int) Hdf5Utils.createGroup(hdf5FileID, "Set "+k);
+							//writeHDF5Dataset(hdf5FileID, "Set "+k, null, null, false);
+					Hdf5Utils.HDF5WriteHelper help0 = Hdf5Utils.createDataset(jobGroupID, "data", new long[] {selectedColCount,rows.length});
+							//(HDF5WriteHelper) Hdf5Utils.writeHDF5Dataset(jobGroupID, "data", new long[] {selectedColCount,rows.length}, new Object[] {}, false);
 					//((DefaultTableModel)getScrollPaneTable().getModel()).getDataVector()
 					double[] fromData = new double[rows.length*selectedColCount];
 					int index = 0;
@@ -489,21 +491,22 @@ private synchronized void copyCells0(CopyAction copyAction,boolean isHDF5) {
 							index++;
 						}
 					}
-					Object[] objArr = new Object[] {fromData,new long[] {0,0},new long[] {selectedColCount,rows.length},new long[] {selectedColCount,rows.length},new long[] {0,0},new long[] {selectedColCount,rows.length},help0.hdf5DataSpaceID};
+//					Object[] objArr = new Object[] {fromData,new long[] {0,0},new long[] {selectedColCount,rows.length},new long[] {selectedColCount,rows.length},new long[] {0,0},new long[] {selectedColCount,rows.length},help0.hdf5DataSpaceID};
 					//			double[] copyFromData = (double[])((Object[])data)[0];
 					//			long[] copyToStart = (long[])((Object[])data)[1];
 					//			long[] copyToLength = (long[])((Object[])data)[2];
 					//			long[] copyFromDims = (long[])((Object[])data)[3];
 					//			long[] copyFromStart = (long[])((Object[])data)[4];
 					//			long[] copyFromLength = (long[])((Object[])data)[5];
-					Hdf5Utils.writeHDF5Dataset(help0.hdf5DatasetValuesID, null, null, objArr, false);
-					Hdf5Utils.writeHDF5Dataset(help0.hdf5DatasetValuesID, "_type", null, "ODE Data Export", true);
-					Hdf5Utils.writeHDF5Dataset(help0.hdf5DatasetValuesID, "dataSetDataTypes", null, dataTypes, true);
-					Hdf5Utils.writeHDF5Dataset(help0.hdf5DatasetValuesID, "dataSetIds", null,dataIDs , true);
-					Hdf5Utils.writeHDF5Dataset(help0.hdf5DatasetValuesID, "dataSetLabels", null,dataLabels , true);
-					Hdf5Utils.writeHDF5Dataset(help0.hdf5DatasetValuesID, "dataSetNames", null,dataNames , true);
-					Hdf5Utils.writeHDF5Dataset(help0.hdf5DatasetValuesID, "dataSetShapes", null,dataShapes , true);
-					Hdf5Utils.writeHDF5Dataset(help0.hdf5DatasetValuesID, "id", null,"report" , true);
+					Hdf5Utils.copySlice(help0.hdf5DatasetValuesID,fromData,new long[] {0,0},new long[] {selectedColCount,rows.length},new long[] {selectedColCount,rows.length},new long[] {0,0},new long[] {selectedColCount,rows.length},help0.hdf5DataSpaceID);
+						//writeHDF5Dataset(help0.hdf5DatasetValuesID, null, null, objArr, false);
+					Hdf5Utils.insertAttribute(help0.hdf5DatasetValuesID, "_type", "ODE Data Export");//.writeHDF5Dataset(help0.hdf5DatasetValuesID, "_type", null, "ODE Data Export", true);
+					Hdf5Utils.insertAttributes(help0.hdf5DatasetValuesID,"dataSetDataTypes", dataTypes);//.writeHDF5Dataset(help0.hdf5DatasetValuesID, "dataSetDataTypes", null, dataTypes, true);
+					Hdf5Utils.insertAttributes(help0.hdf5DatasetValuesID,"dataSetIds",dataIDs);//Hdf5Utils.writeHDF5Dataset(help0.hdf5DatasetValuesID, "dataSetIds", null,dataIDs , true);
+					Hdf5Utils.insertAttributes(help0.hdf5DatasetValuesID,"dataSetLabels",dataLabels);//Hdf5Utils.writeHDF5Dataset(help0.hdf5DatasetValuesID, "dataSetLabels", null,dataLabels , true);
+					Hdf5Utils.insertAttributes(help0.hdf5DatasetValuesID,"dataSetNames",dataNames);//Hdf5Utils.writeHDF5Dataset(help0.hdf5DatasetValuesID, "dataSetNames", null,dataNames , true);
+					Hdf5Utils.insertAttributes(help0.hdf5DatasetValuesID,"dataSetShapes",dataShapes);//Hdf5Utils.writeHDF5Dataset(help0.hdf5DatasetValuesID, "dataSetShapes", null,dataShapes , true);
+					Hdf5Utils.insertAttribute(help0.hdf5DatasetValuesID,"id","report");//Hdf5Utils.writeHDF5Dataset(help0.hdf5DatasetValuesID, "id", null,"report" , true);
 					help0.close();
 					H5.H5Gclose(jobGroupID);
 				}

@@ -526,8 +526,8 @@ private List<ExportOutput> exportPDEData(OutputContext outputContext,long jobID,
 					for(int st=beginTimeIndex;st<=endTimeIndex;st++) {
 						subTimes[st-beginTimeIndex] = allTimes[st];
 					}
-					Hdf5Utils.writeHDF5Dataset(hdf5GroupID, PCS.TIMES.name(), new long[] {subTimes.length}, subTimes,false);
-					Hdf5Utils.writeHDF5Dataset(hdf5GroupID, PCS.TIMEBOUNDS.name(), new long[] {2}, new int[] {beginTimeIndex,endTimeIndex},false);
+					Hdf5Utils.insertDoubles(hdf5GroupID, PCS.TIMES.name(), new long[] {subTimes.length}, subTimes);//Hdf5Utils.writeHDF5Dataset(hdf5GroupID, PCS.TIMES.name(), new long[] {subTimes.length}, subTimes,false);
+					Hdf5Utils.insertInts(hdf5GroupID, PCS.TIMEBOUNDS.name(), new long[] {2}, new int[] {beginTimeIndex,endTimeIndex});//Hdf5Utils.writeHDF5Dataset(hdf5GroupID, PCS.TIMEBOUNDS.name(), new long[] {2}, new int[] {beginTimeIndex,endTimeIndex},false);
 				}
 
 				switch (geometrySpecs.getModeID()) {
@@ -834,10 +834,10 @@ private FileDataContainerID getCurveTimeSeries(int hdf5GroupVarID,PointsCurvesSl
 	if(hdf5GroupVarID != -1) {		
 		try {
 			int hdf5GroupCurveID = H5.H5Gcreate(hdf5GroupVarID, getSpatialSelectionDescription(curve),HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT);
-			Hdf5Utils.writeHDF5Dataset(hdf5GroupCurveID, PCS.CURVEINDEXES.name(), new long[] {((int[])treePCS.get(PCS.CURVEINDEXES)).length}, (int[])treePCS.get(PCS.CURVEINDEXES),false);
-			Hdf5Utils.writeHDF5Dataset(hdf5GroupCurveID, PCS.CURVEDISTANCES.name(), new long[] {((double[])treePCS.get(PCS.CURVEDISTANCES)).length}, (double[])treePCS.get(PCS.CURVEDISTANCES),false);
+			Hdf5Utils.insertInts(hdf5GroupCurveID, PCS.CURVEINDEXES.name(), new long[] {((int[])treePCS.get(PCS.CURVEINDEXES)).length}, (int[])treePCS.get(PCS.CURVEINDEXES));//Hdf5Utils.writeHDF5Dataset(hdf5GroupCurveID, PCS.CURVEINDEXES.name(), new long[] {((int[])treePCS.get(PCS.CURVEINDEXES)).length}, (int[])treePCS.get(PCS.CURVEINDEXES),false);
+			Hdf5Utils.insertDoubles(hdf5GroupCurveID, PCS.CURVEDISTANCES.name(), new long[] {((double[])treePCS.get(PCS.CURVEDISTANCES)).length}, (double[])treePCS.get(PCS.CURVEDISTANCES));//Hdf5Utils.writeHDF5Dataset(hdf5GroupCurveID, PCS.CURVEDISTANCES.name(), new long[] {((double[])treePCS.get(PCS.CURVEDISTANCES)).length}, (double[])treePCS.get(PCS.CURVEDISTANCES),false);
 			if(treePCS.get(PCS.CURVECROSSMEMBRINDEX) != null) {
-				Hdf5Utils.writeHDF5Dataset(hdf5GroupCurveID, PCS.CURVECROSSMEMBRINDEX.name(), new long[] {((int[])treePCS.get(PCS.CURVECROSSMEMBRINDEX)).length}, (int[])treePCS.get(PCS.CURVECROSSMEMBRINDEX),false);
+				Hdf5Utils.insertInts(hdf5GroupCurveID, PCS.CURVECROSSMEMBRINDEX.name(), new long[] {((int[])treePCS.get(PCS.CURVECROSSMEMBRINDEX)).length}, (int[])treePCS.get(PCS.CURVECROSSMEMBRINDEX));//Hdf5Utils.writeHDF5Dataset(hdf5GroupCurveID, PCS.CURVECROSSMEMBRINDEX.name(), new long[] {((int[])treePCS.get(PCS.CURVECROSSMEMBRINDEX)).length}, (int[])treePCS.get(PCS.CURVECROSSMEMBRINDEX),false);
 				ArrayList<Integer> crossPoints = new ArrayList<Integer>();
 				for(int i=0;i<crossingMembraneIndexes.length;i++) {
 					if(crossingMembraneIndexes[i] != -1) {
@@ -845,9 +845,9 @@ private FileDataContainerID getCurveTimeSeries(int hdf5GroupVarID,PointsCurvesSl
 					}
 				}
 				String attrText = PCS.CURVEVALS.name()+" columns "+crossPoints.get(0)+" and "+crossPoints.get(1)+" are added points of interpolation near membrane";
-				Hdf5Utils.writeHDF5Dataset(hdf5GroupCurveID, PCS.CURVECROSSMEMBRINDEX.name()+" Info", null, attrText,true);
+				Hdf5Utils.insertAttribute(hdf5GroupCurveID, PCS.CURVECROSSMEMBRINDEX.name()+" Info",attrText); //Hdf5Utils.writeHDF5Dataset(hdf5GroupCurveID, PCS.CURVECROSSMEMBRINDEX.name()+" Info", null, attrText,true);
 			}
-			Hdf5Utils.writeHDF5Dataset(hdf5GroupCurveID, PCS.CURVEVALS.name(), new long[] {endIndex-beginIndex+1,((int[])treePCS.get(PCS.CURVEINDEXES)).length}, (ArrayList<Double>)treePCS.get(PCS.CURVEVALS),false);
+			Hdf5Utils.insertDoubles(hdf5GroupCurveID, PCS.CURVEVALS.name(), new long[] {endIndex-beginIndex+1,((int[])treePCS.get(PCS.CURVEINDEXES)).length}, (ArrayList<Double>)treePCS.get(PCS.CURVEVALS));//Hdf5Utils.writeHDF5Dataset(hdf5GroupCurveID, PCS.CURVEVALS.name(), new long[] {endIndex-beginIndex+1,((int[])treePCS.get(PCS.CURVEINDEXES)).length}, (ArrayList<Double>)treePCS.get(PCS.CURVEVALS),false);
 			H5.H5Gclose(hdf5GroupCurveID);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -1055,9 +1055,9 @@ private FileDataContainerID getPointsTimeSeries(PointsCurvesSlices pcs,int hdf5G
 		}
 		if(hdf5GroupID != -1) {			
 			long[] dimsCoord = new long[] {1,pointSpatialSelections.length};
-			Hdf5Utils.writeHDF5Dataset(hdf5GroupID, PCS.POINTINFO.name(), dimsCoord, pcs.data.get(PCS.POINTINFO),false);
+			Hdf5Utils.insertStrings(hdf5GroupID, PCS.POINTINFO.name(), dimsCoord, (ArrayList<String>)pcs.data.get(PCS.POINTINFO));//Hdf5Utils.writeHDF5Dataset(hdf5GroupID, PCS.POINTINFO.name(), dimsCoord, pcs.data.get(PCS.POINTINFO),false);
 			long[] dimsValues = new long[] {hdfTimes.length,pointSpatialSelections.length};
-			Hdf5Utils.writeHDF5Dataset(hdf5GroupID, PCS.POINTVALS.name(), dimsValues, hdfValues,false);
+			Hdf5Utils.insertDoubles(hdf5GroupID, PCS.POINTVALS.name(), dimsValues, hdfValues);//Hdf5Utils.writeHDF5Dataset(hdf5GroupID, PCS.POINTVALS.name(), dimsValues, hdfValues,false);
 		}
 	}
 
