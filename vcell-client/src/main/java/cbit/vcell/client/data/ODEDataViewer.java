@@ -127,10 +127,10 @@ private void updateMetadata() {
 			auxDataSymbolMap.put(columnDescription.getName(), dataSymbolMetadata);
 		}
 	}
-	//check if clienttaskdispatcher is busy, if so schedule this method to run later (workaround spurious threading problem)
-	if((odeDataViewersetupTimer = ClientTaskDispatcher.getBlockingTimer(ODEDataViewer.this, null, null, odeDataViewersetupTimer, new ActionListener() {@Override public void actionPerformed(ActionEvent e2){updateMetadata();}},"ODEDataViewer Setup...")) != null){
-		return;
-	}
+//	//check if clienttaskdispatcher is busy, if so schedule this method to run later (workaround spurious threading problem)
+//	if((odeDataViewersetupTimer = ClientTaskDispatcher.getBlockingTimer(ODEDataViewer.this, null, null, odeDataViewersetupTimer, new ActionListener() {@Override public void actionPerformed(ActionEvent e2){updateMetadata();}},"ODEDataViewer Setup...")) != null){
+//		return;
+//	}
 
 	try {
 		AsynchClientTask filterCategoriesTask = new AsynchClientTask("Calculating Filter...",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
@@ -164,6 +164,7 @@ private void updateMetadata() {
 //				}).start();
 			}
 		};
+		
 		ClientTaskDispatcher.dispatch(ODEDataViewer.this, new Hashtable<String, Object>(),
 				new AsynchClientTask[] {filterCategoriesTask,firePropertyChangeTask},
 				false, false, false, null, true);
