@@ -443,6 +443,26 @@ public class RbmObservable implements Serializable, Matchable, EditableSymbolTab
 				}
 			}
 		}
+		for(SpeciesPattern sp : speciesPatternList) {
+			boolean anchorConflictFound = false;
+			// check if all molecules can exist in the observable Structure
+			for(MolecularTypePattern mtp : sp.getMolecularTypePatterns()) {
+				MolecularType mt = mtp.getMolecularType();
+				if(mt.isAnchorAll()) {
+					continue;
+				}
+				Set<Structure> anchors = mt.getAnchors();
+				if(!anchors.contains(structure)) {
+					String message = "Molecule " + mt.getDisplayName() + " cannot be present in the structure due to anchoring.";
+					issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, message, Issue.Severity.WARNING));
+					anchorConflictFound = true;
+					break;
+				}
+			}
+			if(anchorConflictFound == true) {
+				break;		// if one conflict found we stop looking
+			}
+		}
 		// ---------------------------------------- polymer notation restrictions
 		boolean polymerAllowedSingle = true;	// polymer notation may only contain one species pattern and one type of molecule
 		boolean polymerAllowedSimple = true;	// ---------------,,---------------- molecules in trivial state (question marks for bonds and states)
@@ -501,6 +521,7 @@ public class RbmObservable implements Serializable, Matchable, EditableSymbolTab
 			}
 		}
 	}
+	
 	public void checkComponentStateConsistency(IssueContext issueContext, List<Issue> issueList, MolecularTypePattern mtpThis) {
 		if(issueList == null) {
 			return;		// this may be called during parsing before the model is consistent 
