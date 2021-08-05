@@ -1,16 +1,11 @@
 package org.vcell.rest.rpc;
 
 import java.io.Serializable;
-import java.net.URLEncoder;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.Collections;
 import java.util.List;
 
-import org.apache.commons.httpclient.HostConfiguration;
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.HttpMethod;
-import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.restlet.Context;
@@ -20,7 +15,6 @@ import org.restlet.Restlet;
 import org.restlet.data.Form;
 import org.restlet.data.MediaType;
 import org.restlet.data.Method;
-import org.restlet.data.Protocol;
 import org.restlet.data.Status;
 import org.restlet.engine.adapter.HttpRequest;
 import org.restlet.engine.adapter.HttpResponse;
@@ -42,7 +36,6 @@ import cbit.vcell.clientdb.ServerRejectedSaveException;
 import cbit.vcell.message.VCRpcRequest;
 import cbit.vcell.message.VCRpcRequest.RpcServiceType;
 import cbit.vcell.message.VCellQueue;
-import cbit.vcell.resource.PropertyLoader;
 
 public final class RpcRestlet extends Restlet {
 	private static Logger lg = LogManager.getLogger(RpcRestlet.class);
@@ -134,25 +127,6 @@ public final class RpcRestlet extends Restlet {
 							return;
 						} 								
 
-				}else if(form.getValues("route") != null && form.getValues("type") != null && form.getValues("simid") != null && form.getValues("jobid") != null) {
-					HttpClient httpClient = new HttpClient();
-//					HostConfiguration hostConfig = new HostConfiguration();
-//					hostConfig.setHost("vcelltest_data", 55555, Protocol.HTTPS.toString());
-//					String identifier = req.getResourceRef().getIdentifier();
-//					identifier+= "&userkey="+authuser.getID().toString()+"&userid="+authuser.getName();
-					int webDataPort = Integer.parseInt(System.getProperty(PropertyLoader.webDataServerPort));
-					String identifier = "https://data:"+webDataPort+"/"+
-							form.getValues("route")+"/"+form.getValues("type")+
-							"?simid="+form.getValues("simid")+"&jobid="+URLEncoder.encode(form.getValues("jobid"), "UTF-8")+
-							"&userkey="+authuser.getID().toString()+"&userid="+URLEncoder.encode(authuser.getName(), "UTF-8");
-					GetMethod httpMethod = new GetMethod(identifier);
-					//Don't download the file here, let the browser do it
-					httpMethod.setFollowRedirects(false);
-					//Call data webserver, it will create the hdf5 file and save it to the 'export' dir
-					//and return url location which we pass on to the original caller
-					httpClient.executeMethod(httpMethod);
-					//Pass the redirect to the original caller
-					response.redirectSeeOther(httpMethod.getResponseHeader("Location").getValue());
 				}
 			} catch (Exception e) {
 				String errMesg = "<html><body>Error RpcRestlet.handle(...) req='"+req.toString()+"' <br>err='"+e.getMessage()+"'</br>"+"</body></html>";
