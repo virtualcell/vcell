@@ -1,0 +1,128 @@
+<?xml version="1.0"?>
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>org.vcell</groupId>
+    <artifactId>vcell-pom</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+  </parent>
+
+  <artifactId>vcell-web</artifactId>
+  
+  	<name>Virtual Cell Project</name>
+	<description>The Virtual Cell client and server</description>
+	<url>http://vcell.org/</url>
+	<inceptionYear>1997</inceptionYear>
+	<organization>
+		<name>VCell</name>
+		<url>http://vcell.org</url>
+	</organization>
+	<licenses>
+		<license>
+			<name>MIT</name>
+			<url>https://opensource.org/licenses/MIT</url>
+		</license>
+	</licenses>
+		<developers>
+		<developer>
+			<id>frm</id>
+			<name>JFrank Morgan</name>
+			<roles>
+				<role>founder</role>
+				<role>lead</role>
+				<role>developer</role>
+				<role>debugger</role>
+				<role>reviewer</role>
+				<role>support</role>
+				<role>maintainer</role>
+			</roles>
+		</developer>
+	</developers>
+	<contributors>
+		<contributor>
+			<name>Various</name>
+		</contributor>
+	</contributors>
+	
+	<mailingLists>
+		<mailingList>
+			<name>VCell Open Discussion Forum</name>
+			<subscribe>https://groups.google.com/group/vcell-discuss</subscribe>
+			<unsubscribe>https://groups.google.com/group/vcell-discuss</unsubscribe>
+			<post>vcell-discuss@googlegroups.com</post>
+			<archive>https://groups.google.com/group/vcell-discuss</archive>
+		</mailingList>
+	</mailingLists>
+	
+	<scm>
+		<connection>scm:git:git://github.com/virtualcell/vcell</connection>
+		<developerConnection>scm:git:git@github.com:virtualcell/vcell</developerConnection>
+		<tag>HEAD</tag>
+		<url>https://github.com/virtualcell/vcell</url>
+	</scm>
+	<issueManagement>
+		<system>Bugzilla</system>
+		<url>http://code3.cam.uchc.edu/bugzilla/</url>
+	</issueManagement>
+	<ciManagement>
+		<system>Travis CI</system>
+		<url>https://travis-ci.org/virtualcell/vcell</url>
+	</ciManagement>
+
+	<properties>
+		<license.licenseName>MIT</license.licenseName>
+		<license.copyrightOwners>UConn Health</license.copyrightOwners>
+
+		<!-- NB: Disable javadoc doclint -->
+		<doclint>none</doclint>
+	</properties>
+	
+  
+<!--   <name>vcell-web</name>
+  <url>http://maven.apache.org</url>
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+  </properties>
+ -->  
+  
+<!-- * description: element is missing
+* inceptionYear: element is missing
+* organization: element is missing
+* licenses: element is missing
+* developers: element is missing
+* contributors: element is missing
+* mailingLists: element is missing
+* scm: element is missing
+* issueManagement: element is missing
+* ciManagement: element is missing
+* properties//license.licenseName: element is missing
+* properties//license.copyrightOwners: element is missing -->
+  
+  <dependencies>
+  		<dependency>
+			<groupId>org.vcell</groupId>
+			<artifactId>vcell-core</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+   		<dependency>
+			<groupId>org.vcell</groupId>
+			<artifactId>vcell-server</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+  
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>3.8.1</version>
+      <scope>test</scope>
+    </dependency>
+    
+    <!-- https://mvnrepository.com/artifact/org.hdfgroup/hdf-java -->
+<dependency>
+    <groupId>org.hdfgroup</groupId>
+    <artifactId>hdf-java</artifactId>
+    <version>2.6.1</version>
+</dependency>
+  </dependencies>
+</project>

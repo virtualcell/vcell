@@ -90,6 +90,7 @@
 		<module>vcell-sbmlsim</module>
 		<module>vcell-sbmlsim-api</module>
 		<module>vcell-imagej-helper</module>
+		<module>vcell-web</module>
 	</modules>
 
 	<scm>
