@@ -9,13 +9,9 @@ import java.net.URL;
 import java.net.URLDecoder;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.security.KeyStore;
 import java.security.SecureRandom;
-import java.sql.Connection;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -42,7 +38,6 @@ import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URLEncodedUtils;
-import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.bootstrap.HttpServer;
@@ -52,7 +47,6 @@ import org.apache.http.protocol.HttpRequestHandler;
 import org.apache.http.ssl.SSLContexts;
 import org.vcell.db.ConnectionFactory;
 import org.vcell.db.DatabaseService;
-import org.vcell.db.DatabaseSyntax;
 import org.vcell.db.KeyFactory;
 import org.vcell.util.ConfigurationException;
 import org.vcell.util.DataAccessException;
@@ -71,8 +65,6 @@ import cbit.vcell.export.server.ExportServiceImpl;
 import cbit.vcell.message.messages.MessageConstants;
 import cbit.vcell.modeldb.AdminDBTopLevel;
 import cbit.vcell.modeldb.DatabaseServerImpl;
-import cbit.vcell.modeldb.DbDriver;
-import cbit.vcell.modeldb.LocalAdminDbServer;
 import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.simdata.Cachetable;
@@ -351,15 +343,17 @@ public class MainService {
 					if(bioModelContextName != null) {
 						//dataspaceName.replace("/", "fwdslsh");
 		    			int bmContextID = Hdf5Utils.createGroup(bioModelGroupID, bioModelContextName.replace("/", "fwdslsh"));
-//    			        				ArrayList<IJSimInfo> ijSimInfos = new ArrayList<>();
+		    			Hdf5Utils.insertAttribute(bmContextID, "type", bioModelInfo.getBioModelChildSummary().getAppTypes()[i].toString());
+		    			Hdf5Utils.insertAttribute(bmContextID, "dim", bioModelInfo.getBioModelChildSummary().getGeometryDimensions()[i]+"");
+		    			Hdf5Utils.insertAttribute(bmContextID, "geoName", bioModelInfo.getBioModelChildSummary().getGeometryNames()[i]);
 		    			if(bioModelInfo.getBioModelChildSummary().getSimulationNames(bioModelContextName) != null &&
 		    					bioModelInfo.getBioModelChildSummary().getSimulationNames(bioModelContextName).length > 0) {
 		    				ArrayList<String> simNameArr = new ArrayList<String>();
 		    				for(String simName:bioModelInfo.getBioModelChildSummary().getSimulationNames(bioModelContextName)) {
 		    					simNameArr.add(simName);
-//    				        					simNameArr.add((bioModelInfo.getSimID(simName)==null?"null":bioModelInfo.getSimID(simName).toString()));
+//    				        	simNameArr.add((bioModelInfo.getSimID(simName)==null?"null":bioModelInfo.getSimID(simName).toString()));
 		    				}
-							Hdf5Utils.insertStrings(bmContextID, "sims", new long[] {2,bioModelInfo.getBioModelChildSummary().getSimulationNames(bioModelContextName).length},simNameArr);
+							Hdf5Utils.insertStrings(bmContextID, "sims", new long[] {bioModelInfo.getBioModelChildSummary().getSimulationNames(bioModelContextName).length,1},simNameArr);
 		    			}
 		    			H5.H5Gclose(bmContextID);
 //    			    					IJContextInfo ijContextInfo = new IJContextInfo(bioModelContextName,bioModelInfo.getBioModelChildSummary().getAppTypes()[i],bioModelInfo.getBioModelChildSummary().getGeometryDimensions()[i],bioModelInfo.getBioModelChildSummary().getGeometryNames()[i],ijSimInfos);
