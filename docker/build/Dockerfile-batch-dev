@@ -76,7 +76,7 @@
 #WORKDIR /vcellbin
 #ENV PATH=/vcellbin:$PATH
 
-FROM virtualcell/vcell-solvers:v0.0.35
+FROM virtualcell/vcell-solvers:v0.0.36
 
 RUN apt-get -y update && \
     apt-get install -y openjdk-8-jre-headless curl && \
