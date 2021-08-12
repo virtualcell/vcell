@@ -40,6 +40,7 @@ import org.jlibsedml.Model;
 import org.jlibsedml.Notes;
 import org.jlibsedml.Parameter;
 import org.jlibsedml.Plot2D;
+import org.jlibsedml.Plot3D;
 import org.jlibsedml.Range;
 import org.jlibsedml.RepeatedTask;
 import org.jlibsedml.Report;
@@ -48,6 +49,7 @@ import org.jlibsedml.SEDMLTags;
 import org.jlibsedml.SedML;
 import org.jlibsedml.SetValue;
 import org.jlibsedml.SubTask;
+import org.jlibsedml.Surface;
 import org.jlibsedml.Task;
 import org.jlibsedml.UniformRange;
 import org.jlibsedml.UniformTimeCourse;
@@ -72,6 +74,7 @@ import org.vcell.sbml.vcell.StructureSizeSolver;
 import org.vcell.util.FileUtils;
 import org.vcell.util.Pair;
 import org.vcell.util.TokenMangler;
+import org.vcell.util.document.BioModelChildSummary.MathType;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -739,13 +742,14 @@ public class SEDMLExporter {
 						// add dataGenerators for species
 						// get species list from SBML model.
 						String dataGenIdPrefix = "dataGen_" + taskRef;
-						if(sbmlExportFailed) {
+						if(sbmlExportFailed) {		// we try vcml export
 							for(SpeciesContext sc : vcModel.getSpeciesContexts()) {
 								String varName = sc.getName();
 								ASTNode varMath = Libsedml.parseFormulaString(varName);
 								String dataGenId = dataGenIdPrefix + "_" + TokenMangler.mangleToSName(varName);
 								DataGenerator dataGen = new DataGenerator(dataGenId, dataGenId, varMath);
-//								dataGen.addVariable(varName);
+								org.jlibsedml.Variable variable = new org.jlibsedml.Variable(varName, varName, taskRef, XmlHelper.getXPathForSpecies(varName));
+								dataGen.addVariable(variable);
 								sedmlModel.addDataGenerator(dataGen);
 								dataGeneratorsOfSim.add(dataGen);
 								varCount++;
@@ -847,6 +851,30 @@ public class SEDMLExporter {
 								}
 								sedmlModel.addOutput(sedmlPlot2d);
 								sedmlModel.addOutput(sedmlReport);
+							}
+						} else {		// spatial deterministic
+							if(simContext.getApplicationType().equals(Application.NETWORK_DETERMINISTIC)) {	// we ignore spatial stochastic (Smoldyn)
+								if(bForceVCML) {
+									String reportId = "report_" + TokenMangler.mangleToSName(vcSimulation.getName());
+									Report sedmlReport = new Report(reportId, simContext.getName() + "report");
+									String xDataRef = sedmlModel.getDataGeneratorWithId(DATAGENERATOR_TIME_NAME + "_" + taskRef).getId();
+									String xDatasetXId = "datasetX_" + DATAGENERATOR_TIME_NAME;
+									DataSet dataSetTime = new DataSet(xDatasetXId, xDatasetXId, xDataRef, xDataRef);
+									sedmlReport.addDataSet(dataSetTime);
+									int surfaceCnt = 0;
+									for (DataGenerator dataGenerator : dataGeneratorsOfSim) {
+										// we dealt with time above
+										if (dataGenerator.getId().equals(xDataRef)) {
+											continue;
+										}
+										String datasetYId = "datasetY_" + surfaceCnt;
+										DataSet yDataSet = new DataSet(datasetYId, datasetYId, dataGenerator.getId(), dataGenerator.getId());
+										sedmlReport.addDataSet(yDataSet);
+
+										surfaceCnt++;
+									}
+									sedmlModel.addOutput(sedmlReport);
+								}
 							}
 						}
 					} // end - for 'sims'

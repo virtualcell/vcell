@@ -1245,6 +1245,13 @@ public class XmlHelper {
 		}
 	}
 
+	public static String getXPathForListOfSpecies() {
+		return "/vcml:vcml/vcml:model/vcml:listOfSpecies";
+	}
+	
+	public static String getXPathForSpecies(String speciesID) {
+		return getXPathForListOfSpecies() + "/vcml:species[@id='" + speciesID + "']";
+	}
 
 //public static String exportSedML(VCDocument vcDoc, int level, int version, String file) throws XmlParseException {
 //	if (vcDoc == null) {
