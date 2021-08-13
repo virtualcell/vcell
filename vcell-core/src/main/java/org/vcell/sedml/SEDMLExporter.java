@@ -828,24 +828,26 @@ public class SEDMLExporter {
 								
 								sedmlPlot2d.addNote(createNotesElement("Plot of all variables and output functions from application '" + simContext.getName() + "' ; simulation '" + vcSimulation.getName() + "' in VCell model"));
 								sedmlReport.addNote(createNotesElement("Report of all variables and output functions from application '" + simContext.getName() + "' ; simulation '" + vcSimulation.getName() + "' in VCell model"));
-//								List<DataGenerator> dataGenerators = sedmlModel.getDataGenerators();
-								String xDataRef = sedmlModel.getDataGeneratorWithId(DATAGENERATOR_TIME_NAME + "_" + taskRef).getId();
-								String xDatasetXId = "datasetX_" + DATAGENERATOR_TIME_NAME;
-								DataSet dataSet = new DataSet(xDatasetXId, xDatasetXId, xDataRef, xDataRef);
+								DataGenerator dgx = sedmlModel.getDataGeneratorWithId(DATAGENERATOR_TIME_NAME + "_" + taskRef);
+								DataSet dataSet = new DataSet(dgx.getId(), dgx.getName(), dgx.getId(), dgx.getId());
 								sedmlReport.addDataSet(dataSet);
 
 								// add a curve for each dataGenerator in SEDML model
 								int curveCnt = 0;
-								for (DataGenerator dataGenerator : dataGeneratorsOfSim) {
+								// String id, String name, ASTNode math
+								for (DataGenerator dg : dataGeneratorsOfSim) {
 									// no curve for time, since time is xDateReference
-									if (dataGenerator.getId().equals(xDataRef)) {
+									if (dg.getId().equals(dgx.getId())) {
 										continue;
 									}
 									String curveId = "curve_" + curveCnt;
-									String datasetYId = "datasetY_" + curveCnt;
-									Curve curve = new Curve(curveId, curveId, false, false, xDataRef, dataGenerator.getId());
+									Curve curve = new Curve(curveId, curveId, false, false, dgx.getId(), dg.getId());
 									sedmlPlot2d.addCurve(curve);
-									DataSet yDataSet = new DataSet(datasetYId, datasetYId, dataGenerator.getId(), dataGenerator.getId());
+									// id, name, label, dataRef
+									// dataset id    <- data generator id
+									// dataset label <- dataset id
+									// dataset name  <- data generator name
+									DataSet yDataSet = new DataSet(dg.getId(), dg.getName(), dg.getId(), dg.getId());
 									sedmlReport.addDataSet(yDataSet);
 									curveCnt++;
 								}
@@ -857,18 +859,16 @@ public class SEDMLExporter {
 								if(bForceVCML) {
 									String reportId = "report_" + TokenMangler.mangleToSName(vcSimulation.getName());
 									Report sedmlReport = new Report(reportId, simContext.getName() + "report");
-									String xDataRef = sedmlModel.getDataGeneratorWithId(DATAGENERATOR_TIME_NAME + "_" + taskRef).getId();
-									String xDatasetXId = "datasetX_" + DATAGENERATOR_TIME_NAME;
-									DataSet dataSetTime = new DataSet(xDatasetXId, xDatasetXId, xDataRef, xDataRef);
-									sedmlReport.addDataSet(dataSetTime);
+									DataGenerator dgx = sedmlModel.getDataGeneratorWithId(DATAGENERATOR_TIME_NAME + "_" + taskRef);
+									DataSet dataSet = new DataSet(dgx.getId(), dgx.getName(), dgx.getId(), dgx.getId());
+									sedmlReport.addDataSet(dataSet);
 									int surfaceCnt = 0;
-									for (DataGenerator dataGenerator : dataGeneratorsOfSim) {
+									for (DataGenerator dg : dataGeneratorsOfSim) {
 										// we dealt with time above
-										if (dataGenerator.getId().equals(xDataRef)) {
+										if (dg.getId().equals(dgx.getId())) {
 											continue;
 										}
-										String datasetYId = "datasetY_" + surfaceCnt;
-										DataSet yDataSet = new DataSet(datasetYId, datasetYId, dataGenerator.getId(), dataGenerator.getId());
+										DataSet yDataSet = new DataSet(dg.getId(), dg.getName(), dg.getId(), dg.getId());
 										sedmlReport.addDataSet(yDataSet);
 
 										surfaceCnt++;
