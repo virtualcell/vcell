@@ -336,7 +336,7 @@ public static void login(final RequestManager requestManager, final ClientServer
 		public void userCancel(){
 			loginManager.close();
 			PopupGenerator.showInfoDialog(currWindowManager, 
-					"Note:  The Login dialog can be accessed any time under the 'Server' main menu as 'Change User...'");
+					"Note:  The Login dialog can be accessed any time under the 'Account' main menu as 'Change User...'");
 		}
 	};
 	

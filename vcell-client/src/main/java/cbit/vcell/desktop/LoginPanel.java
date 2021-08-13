@@ -121,7 +121,7 @@ private javax.swing.JButton getJButtonCancel() {
 	if (ivjJButtonCancel == null) {
 			ivjJButtonCancel = new javax.swing.JButton();
 			ivjJButtonCancel.setName("JButtonCancel");
-			ivjJButtonCancel.setText("Cancel");
+			ivjJButtonCancel.setText("Cancel login, return to VCell");
 			// user code begin {1}
 			// user code end
 	}
