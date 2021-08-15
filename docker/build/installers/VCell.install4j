@@ -726,7 +726,7 @@ return console.askYesNo(message, true);
           </screen>
         </screens>
       </application>
-      <application name="Updater with silent version check" id="127" beanClass="com.install4j.runtime.beans.applications.CustomApplication" customIcnsFile="${compiler:sys.install4jHome}/resource/macos/updater.icns" customIcoFile="${compiler:sys.install4jHome}/resource/updater.ico" automaticLauncherIntegration="true" launchMode="startupAsync" launchInNewProcess="false" launchSchedule="always">
+      <application name="Updater with silent version check" id="127" beanClass="com.install4j.runtime.beans.applications.CustomApplication" customIcnsFile="${compiler:sys.install4jHome}/resource/macos/updater.icns" customIcoFile="${compiler:sys.install4jHome}/resource/updater.ico" automaticLauncherIntegration="true" launchMode="startupSync" launchInNewProcess="false" launchSchedule="always">
         <serializedBean>
           <property name="customIconImageFiles">
             <add>
@@ -752,9 +752,8 @@ return console.askYesNo(message, true);
         <startup>
           <screen id="128" beanClass="com.install4j.runtime.beans.screens.StartupScreen" rollbackBarrierExitCode="0">
             <actions>
-              <action id="154" beanClass="com.install4j.runtime.beans.actions.update.CheckForUpdateAction" actionElevationType="none" failureStrategy="askQuit" errorMessage="Couldn't check for VCell Software Update, server may be unavailable.\nIf you can't log in VCell can still be used in 'local' mode.">
+              <action id="154" beanClass="com.install4j.runtime.beans.actions.update.CheckForUpdateAction" actionElevationType="none">
                 <serializedBean>
-                  <property name="askForProxy" type="boolean" value="false" />
                   <property name="showError" type="boolean" value="false" />
                   <property name="url" type="string">${compiler:sys.updatesUrl}</property>
                   <property name="variable" type="string">updateDescriptor</property>

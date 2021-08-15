@@ -1929,7 +1929,6 @@ private void startStopImageJService() {
 		}
 		try {
 			ImageJHelper.startService(null);
-			//reconnect();//Update VCInfoContainer to include 'extra' info for ImageJ Plugin
 		} catch (Exception e) {
 			e.printStackTrace();
 			DialogUtils.showErrorDialog(this, "error starting ImageJ Service: "+e.getMessage());
@@ -2747,7 +2746,7 @@ private void showLoginDialog() {
 		public void userCancel() {
 			loginManager.close();
 			PopupGenerator.showInfoDialog(DocumentWindow.this,
-					"Note:  The Login dialog can be accessed any time under the 'Account' main menu as 'Change User...'");
+					"Note:  The Login dialog can be accessed any time under the 'Server' main menu as 'Change User...'");
 		}
 		public void registerRequest() {
 			loginManager.close();
