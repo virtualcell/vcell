@@ -703,6 +703,12 @@ public class XmlHelper {
 						justMade = true;
 					}
 				}
+				
+				if(sedmlOriginalModelLanguage.contentEquals(SUPPORTED_LANGUAGE.VCELL_GENERIC.getURN())) {
+					// we don't need to make a simulation from sedml if we're coming from vcml, we already got all we need
+					// we basically ignore the sedml simulation altogether
+					continue;
+				}
 				// even if we just created the biomodel from the sbml file we have at least one application with initial conditions and stuff
 				// see if there is a suitable application type for the sedml kisao
 				// if not, we add one by doing a "copy as" to the right type
