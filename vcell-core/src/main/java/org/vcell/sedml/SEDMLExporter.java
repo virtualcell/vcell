@@ -719,10 +719,13 @@ public class SEDMLExporter {
 								sedmlModel.addTask(rt);
 							}
 						} else {						// no math overrides, add basic task.
-							String taskId = "tsk_" + simContextCnt + "_" + simCount;
-							Task sedmlTask = new Task(taskId, vcSimulation.getName(), simContextId, utcSim.getId());
+							// Simulations have unique names in vCell, we can use the sim name as id
+							// actually we must, because we want the imported task id to be the same with the simulation name 
+							// when we export to omex as vcml and then import in CLI
+//							String taskId = "tsk_" + simContextCnt + "_" + simCount;
+							Task sedmlTask = new Task(vcSimulation.getName(), vcSimulation.getName(), simContextId, utcSim.getId());
 							sedmlModel.addTask(sedmlTask);
-							taskRef = taskId;		// to be used later to add dataGenerators : one set of DGs per model (simContext).
+							taskRef = vcSimulation.getName();		// to be used later to add dataGenerators : one set of DGs per model (simContext).
 						}
 
 						// add one dataGenerator for 'time' for entire SEDML model.
