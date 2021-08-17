@@ -1287,7 +1287,7 @@ public class SEDMLExporter {
 		archive.addFile(
 				Paths.get(srcFolder, sFileName + ".vcml").toString(),
 				sFileName + ".vcml",
-				KnownFormats.lookupFormat("vcml"),
+				KnownFormats.lookupFormat("xml"),	// vcml format doesn't exist!
 				false
 		);
 
