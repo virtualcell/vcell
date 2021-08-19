@@ -1287,7 +1287,7 @@ public class SEDMLExporter {
 		archive.addFile(
 				Paths.get(srcFolder, sFileName + ".vcml").toString(),
 				sFileName + ".vcml",
-				KnownFormats.lookupFormat("xml"),	// vcml format doesn't exist!
+				"http://purl.org/NET/mediatypes/application/vcml+xml",
 				false
 		);
 
