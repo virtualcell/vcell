@@ -552,32 +552,34 @@ public class XmlHelper {
 			throw new Exception("No models found in SED-ML document");
 		}
 		try {
+	        // iterate through all the elements and show them at the console
+	        List<org.jlibsedml.Model> mmm = sedml.getModels();
+	        for(Model mm : mmm) {
+	            System.out.println(mm.toString());
+	        }
+	        List<org.jlibsedml.Simulation> sss = sedml.getSimulations();
+	        for(org.jlibsedml.Simulation ss : sss) {
+	            System.out.println(ss.toString());
+	        }
+	        List<AbstractTask> ttt = sedml.getTasks();
+	        if (ttt.isEmpty()) {
+	        	throw new Exception("No tasks found in SED-ML document");
+	        }
+	        for(AbstractTask tt : ttt) {
+	            System.out.println(tt.toString());
+	        }
+	        List<DataGenerator> ddd = sedml.getDataGenerators();
+	        for(DataGenerator dd : ddd) {
+	            System.out.println(dd.toString());
+	        }
+	        List<Output> ooo = sedml.getOutputs();
+	        for(Output oo : ooo) {
+	            System.out.println(oo.toString());
+	        }
+	        if(ooo.isEmpty()) {
+	        	System.err.println("List of outputs cannot be empty!");
+	        }
 
-//        // iterate through all the elements and show them at the console
-//        List<org.jlibsedml.Model> mmm = sedml.getModels();
-//        for(Model mm : mmm) {
-//            System.out.println(mm.toString());
-//        }
-//        List<org.jlibsedml.Simulation> sss = sedml.getSimulations();
-//        for(org.jlibsedml.Simulation ss : sss) {
-//            System.out.println(ss.toString());
-//        }
-//        List<AbstractTask> ttt = sedml.getTasks();
-//        if (ttt.isEmpty()) {
-//        	throw new Exception("No tasks found in SED-ML document");
-//        }
-//        for(AbstractTask tt : ttt) {
-//            System.out.println(tt.toString());
-//        }
-//        List<DataGenerator> ddd = sedml.getDataGenerators();
-//        for(DataGenerator dd : ddd) {
-////            System.out.println(dd.toString());
-//        }
-//        List<Output> ooo = sedml.getOutputs();
-//        for(Output oo : ooo) {
-////            System.out.println(oo.toString());
-//        }
-//
 			if (tasks == null || tasks.isEmpty()) {
 				// no task selection, we'll import all that we find in the SED-ML
 				tasks = sedml.getTasks();
