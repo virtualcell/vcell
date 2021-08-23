@@ -942,17 +942,17 @@ TreeMap<User.SPECIALS,TreeMap<User,String>>  getSpecialUsers(User user,boolean b
 	}
 }
 
-VCInfoContainer getVCInfoContainer(User user, boolean bEnableRetry) throws DataAccessException, java.sql.SQLException{
+VCInfoContainer getVCInfoContainer(User user, boolean bEnableRetry,boolean bIncludeExtraInfo) throws DataAccessException, java.sql.SQLException{
 	
 	Object lock = new Object();
 	Connection con = conFactory.getConnection(lock);
 	try {
-		return DbDriver.getVCInfoContainer(user,con,conFactory.getDatabaseSyntax());
+		return DbDriver.getVCInfoContainer(user,con,conFactory.getDatabaseSyntax(),bIncludeExtraInfo);
 	} catch (Throwable e) {
 		lg.error(e.getMessage(),e);
 		if (bEnableRetry && isBadConnection(con)) {
 			conFactory.failed(con,lock);
-			return getVCInfoContainer(user,false);
+			return getVCInfoContainer(user,false,bIncludeExtraInfo);
 		}else{
 			handle_DataAccessException_SQLException(e);
 			return null; // never gets here;

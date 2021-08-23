@@ -24,6 +24,7 @@ import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Hashtable;
+import java.util.List;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -36,6 +37,7 @@ import org.vcell.db.DatabaseSyntax;
 import org.vcell.db.KeyFactory;
 import org.vcell.pub.Publication;
 import org.vcell.util.BeanUtils;
+import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.DependencyException;
 import org.vcell.util.ObjectNotFoundException;
@@ -118,7 +120,9 @@ import cbit.vcell.numericstest.TestSuiteInfoNew;
 import cbit.vcell.numericstest.TestSuiteNew;
 import cbit.vcell.numericstest.TestSuiteOP;
 import cbit.vcell.numericstest.TestSuiteOPResults;
+import cbit.vcell.solver.MathOverrides;
 import cbit.vcell.solver.SimulationInfo;
+import cbit.vcell.solver.MathOverrides.Element;
 import cbit.vcell.solver.test.VariableComparisonSummary;
 
 /**
@@ -1325,12 +1329,21 @@ public static TreeMap<User.SPECIALS,TreeMap<User,String>>  getSpecialUsers(User 
 	}
 	return result;
 }
+
+public static final int EXTRAINFO_ALL = 0xFF;
+public static final int EXTRAINFO_ANNOTFUNC = 0x02;
+public static final int EXTRAINFO_MATHOVERRIDES = 0x04;
+public static final int EXTRAINFO_SUBVOLUMES = 0x08;
+public static VCInfoContainer getVCInfoContainer(User user,Connection con, DatabaseSyntax dbSyntax,boolean bIncludeExtraInfo) throws SQLException,DataAccessException{
+	return getVCInfoContainer(user, con, dbSyntax,(bIncludeExtraInfo?EXTRAINFO_ALL:0));
+}
+
 /**
  * Insert the method's description here.
  * Creation date: (9/24/2003 12:54:32 PM)
  * @return cbit.vcell.modeldb.VCInfoContainer
  */
-public static VCInfoContainer getVCInfoContainer(User user,Connection con, DatabaseSyntax dbSyntax) throws SQLException,DataAccessException{
+public static VCInfoContainer getVCInfoContainer(User user,Connection con, DatabaseSyntax dbSyntax,int whichExtraInfo) throws SQLException,DataAccessException{
 
 	VCInfoContainer results = null;
 	//
@@ -1347,7 +1360,13 @@ public static VCInfoContainer getVCInfoContainer(User user,Connection con, Datab
 	boolean enableSpecial = true;
 	boolean enableDistinct = true;
 	Statement stmt = con.createStatement();
+	stmt.setFetchSize(500);
 	try{
+		String aliasSimName = "aliasSimName";
+		String aliasSimID = "aliasSimID";
+		String aliasSCName = "aliasSCName";
+		String aliasSVName = "aliasSVName";
+
 		//
 		//BioModelInfos
 		//
@@ -1360,20 +1379,136 @@ public static VCInfoContainer getVCInfoContainer(User user,Connection con, Datab
 			sql = new StringBuffer(BioModelTable.table.getInfoSQL(user,null,(enableSpecial?special:null),dbSyntax));
 			sql.insert(7,Table.SQL_GLOBAL_HINT);
 			rset = stmt.executeQuery(sql.toString());
-			ArrayList<BioModelInfo> tempInfos = new ArrayList<BioModelInfo>();
-			Set<String> distinctV = new HashSet<String>();
+			TreeMap<BigDecimal,BioModelInfo> mapBmToBioModelInfo = new TreeMap<BigDecimal,BioModelInfo>();
 			while(rset.next()){
-				BioModelInfo versionInfo = (BioModelInfo)BioModelTable.table.getInfo(rset,con,dbSyntax);
-				if(!distinctV.contains(versionInfo.getVersion().getVersionKey().toString())){
-					tempInfos.add(versionInfo);
-					distinctV.add(versionInfo.getVersion().getVersionKey().toString());
+				BigDecimal bmID = rset.getBigDecimal(VersionTable.id_ColumnName);
+				if(!mapBmToBioModelInfo.containsKey(bmID)){
+					BioModelInfo versionInfo = (BioModelInfo)BioModelTable.table.getInfo(rset,con,dbSyntax);
+					mapBmToBioModelInfo.put(bmID, versionInfo);
 				}
 			}
 			rset.close();
-			if(tempInfos.size() > 0){
-				bioModelInfos = new BioModelInfo[tempInfos.size()];
-				tempInfos.toArray(bioModelInfos);
+			
+			if(whichExtraInfo != 0) {
+				//Add info for AnnotatedFunctions for use on client in OutputContext
+				//Add mapping simName->SimID
+				try {
+					//String aliasUserKey = "aliasUserKey";
+					sql = new StringBuffer(
+							"SELECT "+SimContextTable.table.id.getQualifiedColName()+","+
+								SimContextTable.table.name.getQualifiedColName()+" "+aliasSCName+","+
+								BioModelSimContextLinkTable.table.bioModelRef.getQualifiedColName() +","+
+								SimulationTable.table.name.getQualifiedColName()+" "+aliasSimName+","+
+								SimulationTable.table.id.getQualifiedColName()+" "+aliasSimID+
+								(whichExtraInfo == 0xFF?","+
+									ApplicationMathTable.table.outputFuncLarge.getQualifiedColName()+","+
+									ApplicationMathTable.table.outputFuncSmall.getQualifiedColName() + "," +
+									SimulationTable.table.mathOverridesSmall+","+
+									SimulationTable.table.mathOverridesLarge+","+
+									SubVolumeTable.table.handle.getQualifiedColName()+","+
+									SubVolumeTable.table.name.getQualifiedColName()+" "+aliasSVName
+		//							SubVolumeTable.table.ordinal.getQualifiedColName()+
+								:"")+
+							" FROM "+
+								SimContextTable.table.getTableName()+","+
+								BioModelSimContextLinkTable.table.getTableName()+","+
+								BioModelSimulationLinkTable.table.getTableName()+","+
+								SimulationTable.table.getTableName()+
+								(whichExtraInfo == 0xFF?","+
+									ApplicationMathTable.table.getTableName()+","+
+		//							GeometricRegionTable.table.getTableName()+","+
+									SubVolumeTable.table.getTableName()
+								:"")+
+							" WHERE "+
+								BioModelSimContextLinkTable.table.simContextRef.getQualifiedColName()+ " = " +SimContextTable.table.id.getQualifiedColName()+
+								" AND "+SimulationTable.table.id.getQualifiedColName()+" = "+BioModelSimulationLinkTable.table.simRef.getQualifiedColName()+
+								" AND "+BioModelSimulationLinkTable.table.bioModelRef.getQualifiedColName()+" = "+BioModelSimContextLinkTable.table.bioModelRef.getQualifiedColName()+
+								" AND "+SimContextTable.table.mathRef.getQualifiedColName()+" = "+SimulationTable.table.mathRef.getQualifiedColName()+
+								(whichExtraInfo == 0xFF?
+									" AND "+SimContextTable.table.id.getQualifiedColName()+" = "+ApplicationMathTable.table.simContextRef.getQualifiedColName() +" (+)"+
+		//							" AND "+GeometricRegionTable.table.geometryRef.getQualifiedColName()+" = "+SimContextTable.table.geometryRef.getQualifiedColName()+
+		//							" AND "+SubVolumeTable.table.geometryRef.getQualifiedColName()+" = "+GeometricRegionTable.table.geometryRef.getQualifiedColName()
+									" AND "+SimContextTable.table.geometryRef.getQualifiedColName()+" = "+SubVolumeTable.table.geometryRef.getQualifiedColName()+" (+)"
+								:"")
+						);
+					
+					final BigDecimal[] array = mapBmToBioModelInfo.keySet().toArray(new BigDecimal[0]);
+					final int MAX_LIST = 500;
+					for(int i=0;i<array.length;i+=MAX_LIST) {
+						StringBuffer bmListStr = new StringBuffer();
+						for(int j=0;(i+j)<array.length && j<MAX_LIST;j++) {
+							bmListStr.append((j!=0?",":"")+array[i+j].toString());
+						}
+						final String sql2 = sql.toString()+" AND "+BioModelSimulationLinkTable.table.bioModelRef.getQualifiedColName()+" IN ("+bmListStr.toString()+")"+
+									" ORDER BY "+BioModelSimulationLinkTable.table.bioModelRef.getQualifiedColName()+","+SimContextTable.table.id.getQualifiedColName()+","+SimulationTable.table.id.getQualifiedColName();
+						rset = stmt.executeQuery(sql2);
+						BioModelInfo bmInfo = null;
+						while(rset.next()) {
+							final BigDecimal bmID = rset.getBigDecimal(BioModelSimContextLinkTable.table.bioModelRef.toString());
+							bmInfo = mapBmToBioModelInfo.get(bmID);
+							if(bmInfo != null) {
+								final BigDecimal scID = rset.getBigDecimal(SimContextTable.table.id.toString());
+								final String scName = rset.getString(aliasSCName);
+								bmInfo.addSCID(scName, scID);
+								if((whichExtraInfo & EXTRAINFO_ANNOTFUNC) != 0) {
+									if(!bmInfo.hasSCIDForAnnotFunc(scID)) {
+										String outputFunctionsXML =
+												DbDriver.varchar2_CLOB_get(rset, ApplicationMathTable.table.outputFuncSmall, ApplicationMathTable.table.outputFuncLarge,dbSyntax);
+										if(outputFunctionsXML != null) {
+											bmInfo.addAnnotatedFunctionsStr(scName,scID, outputFunctionsXML);
+										}
+									}
+								}
+								final String simName = rset.getString(aliasSimName);
+								if(bmInfo.getSimID(simName) == null) {
+									final BigDecimal simID = rset.getBigDecimal(aliasSimID);
+									bmInfo.addSimID(simName, simID);
+									if((whichExtraInfo & EXTRAINFO_MATHOVERRIDES) != 0) {
+										CommentStringTokenizer mathOverridesTokenizer = SimulationTable.getMathOverridesTokenizer(rset,dbSyntax);
+										List<Element> mathOverrideElements = MathOverrides.parseOverrideElementsFromVCML(mathOverridesTokenizer);
+	//									int scanCount=1;
+	//									for(Element ele:mathOverrideElements) {
+	//										if(ele.getSpec() != null) {
+	//											scanCount*=ele.getSpec().getNumValues();
+	//	//										if(scanCount==0) {
+	//	//											scanCount=ele.getSpec().getNumValues();
+	//	//										}else {
+	//	//											scanCount*=ele.getSpec().getNumValues();
+	//	//										}
+	//										}
+	//									}
+	//		//							if(scanCount > 1) {
+	//		//								System.out.println("bmid="+bmID+" simid="+simID+" scans="+scanCount+" "+simName);
+	//		//							}
+										bmInfo.addMathOverrides(simName, mathOverrideElements);
+									}
+								}
+								if((whichExtraInfo & EXTRAINFO_SUBVOLUMES) != 0) {
+									final int subVolumeID = rset.getInt(SubVolumeTable.table.handle.toString());
+									if(bmInfo.getSubVolumeName(subVolumeID) == null) {
+										bmInfo.addSubVolume(subVolumeID, rset.getString(aliasSVName));
+									}
+								}
+							}
+						}
+						rset.close();
+					}
+					
+				}catch(Exception e) {
+					e.printStackTrace();
+					//ignore
+				}
 			}
+			
+			if(mapBmToBioModelInfo.size() > 0){
+				bioModelInfos = new BioModelInfo[mapBmToBioModelInfo.size()];
+				mapBmToBioModelInfo.values().toArray(bioModelInfos);
+			}
+
+//			if(tempInfos.size() > 0){
+//				bioModelInfos = new BioModelInfo[tempInfos.size()];
+//				tempInfos.toArray(bioModelInfos);
+//			}
 			if (lg.isInfoEnabled()) {
 				lg.info("BioModelInfo Time="+(((double)System.currentTimeMillis()-beginTime)/(double)1000));
 			}
@@ -1390,6 +1525,7 @@ public static VCInfoContainer getVCInfoContainer(User user,Connection con, Datab
 						MathModelTable.table.versionDate.getQualifiedColName();
 			sql = new StringBuffer(MathModelTable.table.getInfoSQL(user,null,(enableSpecial?special:null),dbSyntax));
 			sql.insert(7,Table.SQL_GLOBAL_HINT);
+			TreeMap<BigDecimal,MathModelInfo> mapMmToMathModelInfo = new TreeMap<BigDecimal,MathModelInfo>();
 			rset = stmt.executeQuery(sql.toString());
 			ArrayList<MathModelInfo> tempInfos = new ArrayList<MathModelInfo>();
 			Set<String> distinctV = new HashSet<String>();
@@ -1398,9 +1534,90 @@ public static VCInfoContainer getVCInfoContainer(User user,Connection con, Datab
 				if(!distinctV.contains(versionInfo.getVersion().getVersionKey().toString())){
 					tempInfos.add(versionInfo);
 					distinctV.add(versionInfo.getVersion().getVersionKey().toString());
+					mapMmToMathModelInfo.put(BigDecimal.valueOf(Long.parseLong(versionInfo.getVersion().getVersionKey().toString())), versionInfo);
 				}
 			}
 			rset.close();
+			
+			if(whichExtraInfo != 0) {
+				//Add info for AnnotatedFunctions for use on client in OutputContext
+				//Add mapping simName->SimID
+				try {
+					//String aliasUserKey = "aliasUserKey";
+					sql = new StringBuffer(
+							"SELECT "+MathModelSimulationLinkTable.table.mathModelRef.getQualifiedColName() +","+
+								ApplicationMathTable.table.outputFuncLarge.getQualifiedColName()+","+
+								ApplicationMathTable.table.outputFuncSmall.getQualifiedColName() +","+
+								SimulationTable.table.name.getQualifiedColName()+" "+aliasSimName+","+
+								SimulationTable.table.id.getQualifiedColName()+" "+aliasSimID+","+
+								SimulationTable.table.mathOverridesSmall+","+
+								SimulationTable.table.mathOverridesLarge+","+
+								SubVolumeTable.table.handle.getQualifiedColName()+","+
+								SubVolumeTable.table.name.getQualifiedColName()+" "+aliasSVName+
+							" FROM "+
+								MathModelTable.table.getTableName()+","+
+								MathDescTable.table.getTableName()+","+
+								MathModelSimulationLinkTable.table.getTableName()+","+
+								ApplicationMathTable.table.getTableName()+","+
+								SimulationTable.table.getTableName()+","+
+								SubVolumeTable.table.getTableName()+
+							" WHERE "+
+								MathModelSimulationLinkTable.table.mathModelRef.getQualifiedColName()+" = "+ApplicationMathTable.table.mathModelRef.getQualifiedColName() +" (+)"+
+								" AND "+MathModelTable.table.id.getQualifiedColName()+" = "+MathModelSimulationLinkTable.table.mathModelRef.getQualifiedColName()+
+								" AND "+SimulationTable.table.id.getQualifiedColName()+" = "+MathModelSimulationLinkTable.table.simRef.getQualifiedColName()+
+								" AND "+MathDescTable.table.id.getQualifiedColName()+" = "+MathModelTable.table.mathRef.getQualifiedColName()+
+								" AND "+MathDescTable.table.geometryRef.getQualifiedColName()+" = "+SubVolumeTable.table.geometryRef.getQualifiedColName()+" (+)"
+						);
+					
+					final BigDecimal[] array = mapMmToMathModelInfo.keySet().toArray(new BigDecimal[0]);
+					final int MAX_LIST = 500;
+					for(int i=0;i<array.length;i+=MAX_LIST) {
+						StringBuffer mmListStr = new StringBuffer();
+						for(int j=0;(i+j)<array.length && j<MAX_LIST;j++) {
+							mmListStr.append((j!=0?",":"")+array[i+j].toString());
+						}
+						final String sql2 = sql.toString()+" AND "+MathModelSimulationLinkTable.table.mathModelRef.getQualifiedColName()+" IN ("+mmListStr.toString()+")"+
+									" ORDER BY "+MathModelSimulationLinkTable.table.mathModelRef.getQualifiedColName()+","+SimulationTable.table.id.getQualifiedColName();
+						rset = stmt.executeQuery(sql2);
+						MathModelInfo mmInfo = null;
+						while(rset.next()) {
+							final BigDecimal mmID = rset.getBigDecimal(MathModelSimulationLinkTable.table.mathModelRef.toString());
+							mmInfo = mapMmToMathModelInfo.get(mmID);
+							if(mmInfo != null) {
+								if(mmInfo.getAnnotatedFunctionsStr()==null) {
+									String outputFunctionsXML =
+											DbDriver.varchar2_CLOB_get(rset, ApplicationMathTable.table.outputFuncSmall, ApplicationMathTable.table.outputFuncLarge,dbSyntax);
+									if(outputFunctionsXML != null) {
+										mmInfo.setAnnotatedFunctionsStr(outputFunctionsXML);
+									}
+								}
+								final String simName = rset.getString(aliasSimName);
+								if(mmInfo.getSimID(simName) == null) {
+									final BigDecimal simID = rset.getBigDecimal(aliasSimID);
+									CommentStringTokenizer mathOverridesTokenizer = SimulationTable.getMathOverridesTokenizer(rset,dbSyntax);
+									List<Element> mathOverrideElements = MathOverrides.parseOverrideElementsFromVCML(mathOverridesTokenizer);
+//									int scanCount=1;
+//									for(Element ele:mathOverrideElements) {
+//										if(ele.getSpec() != null) {
+//											scanCount*=ele.getSpec().getNumValues();
+//										}
+//									}
+									mmInfo.addSimID(simName, simID,mathOverrideElements);
+								}
+								final int subVolumeID = rset.getInt(SubVolumeTable.table.handle.toString());
+								if(mmInfo.getSubVolumeName(subVolumeID) == null) {
+									mmInfo.addSubVolume(subVolumeID, rset.getString(aliasSVName));
+								}
+							}
+						}
+						rset.close();
+					}
+				}catch(Exception e) {
+					e.printStackTrace();
+					//ignore
+				}
+			}
+			
 			if(tempInfos.size() > 0){
 				mathModelInfos = new MathModelInfo[tempInfos.size()];
 				tempInfos.toArray(mathModelInfos);

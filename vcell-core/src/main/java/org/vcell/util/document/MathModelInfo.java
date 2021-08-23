@@ -10,10 +10,16 @@
 
 package org.vcell.util.document;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.TreeMap;
 
 import org.vcell.util.BigString;
 import org.vcell.util.document.VCDocument.VCDocumentType;
+
+import cbit.vcell.solver.MathOverrides;
+import cbit.vcell.solver.MathOverrides.Element;
 
 
 /**
@@ -29,6 +35,11 @@ public class MathModelInfo implements VCDocumentInfo {
 	private BigString mathModelChildSummaryString = null;
 	private VCellSoftwareVersion softwareVersion = null;
 	private ArrayList<PublicationInfo> publicationInfos = new ArrayList<>();
+	private String annotatedFunctionsStr = null;
+	private TreeMap<String,BigDecimal> mapSimNameToSimD;
+	private TreeMap<String,List<MathOverrides.Element>> mapSimNameToMathOverrideElements;
+	private TreeMap<Integer,String> mapSubVolumeNameToSubVolumeID;
+
 /**
  * BioModelInfo constructor comment.
  */
@@ -47,7 +58,55 @@ public MathModelInfo(Version argVersion, KeyValue argMathKey, String argMathMode
 	}
 	this.softwareVersion = softwareVersion;
 }
+
+public void setAnnotatedFunctionsStr(String outputFunctionsXML) {
+	annotatedFunctionsStr = outputFunctionsXML;
+}
+public String getAnnotatedFunctionsStr(){
+	return annotatedFunctionsStr;
+}
+
+public void addSimID(String simName,BigDecimal simID,List<MathOverrides.Element> mathOverrideElements) {
+	if(mapSimNameToSimD == null) {
+		mapSimNameToSimD = new TreeMap<String, BigDecimal>();
+		mapSimNameToMathOverrideElements = new TreeMap<String, List<MathOverrides.Element>>();
+	}
+	mapSimNameToSimD.put(simName, simID);
+	mapSimNameToMathOverrideElements.put(simName,mathOverrideElements);
+}
+
+public int getScanCount(String simName) {
+	if(mapSimNameToMathOverrideElements == null || mapSimNameToMathOverrideElements.get(simName) == null) {
+		return 1;
+	}
+	int scanCount=1;
+	for(Element ele:mapSimNameToMathOverrideElements.get(simName) ) {
+		if(ele.getSpec() != null) {
+			scanCount*=ele.getSpec().getNumValues();
+		}
+	}
+	return scanCount;
+}
+public List<MathOverrides.Element> getMathOverrides(String simName){
+	return (mapSimNameToMathOverrideElements==null?null:mapSimNameToMathOverrideElements.get(simName));
+}
+
+public BigDecimal getSimID(String simName) {
+	return (mapSimNameToSimD == null?null:mapSimNameToSimD.get(simName));
+}
+
+public void addSubVolume(int subVolumeID,String subVolumeName) {
+	if(mapSubVolumeNameToSubVolumeID == null) {
+		mapSubVolumeNameToSubVolumeID = new TreeMap<Integer,String>();
+	}
+	mapSubVolumeNameToSubVolumeID.put(subVolumeID, subVolumeName);
+}
+public String getSubVolumeName(int subVolumeID) {
+	return (mapSubVolumeNameToSubVolumeID==null?null:mapSubVolumeNameToSubVolumeID.get(subVolumeID));
+}
 /**
+ * 
+ * 
  * Insert the method's description here.
  * Creation date: (1/25/01 12:24:41 PM)
  * @return boolean

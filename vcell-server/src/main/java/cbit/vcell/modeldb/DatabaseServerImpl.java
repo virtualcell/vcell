@@ -883,7 +883,7 @@ public BigString getVCImageXML(User user, KeyValue key) throws DataAccessExcepti
 public VCInfoContainer getVCInfoContainer(User user) throws DataAccessException {
 	try {
 		if (lg.isTraceEnabled()) lg.trace("DatabaseServerImpl.getVCInfoContainer()");
-		VCInfoContainer vcInfoContainer = dbTop.getVCInfoContainer(user,true);
+		VCInfoContainer vcInfoContainer = dbTop.getVCInfoContainer(user,true,false);
 		return vcInfoContainer;
 	} catch (SQLException e) {
 		lg.error(e.getMessage(),e);

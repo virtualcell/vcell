@@ -10,10 +10,18 @@
 
 package org.vcell.util.document;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.TreeMap;
 
 import org.vcell.util.BigString;
 import org.vcell.util.document.VCDocument.VCDocumentType;
+
+import cbit.vcell.solver.AnnotatedFunction;
+import cbit.vcell.solver.MathOverrides;
+import cbit.vcell.solver.MathOverrides.Element;
 
 
 /**
@@ -29,6 +37,15 @@ public class BioModelInfo implements org.vcell.util.document.VCDocumentInfo {
 	private BigString bioModelChildSummaryString = null;
 	private VCellSoftwareVersion softwareVersion = null;
 	private ArrayList<PublicationInfo> publicationInfos = new ArrayList<>();
+//	private TreeMap<BigDecimal,ArrayList<AnnotatedFunction>> mapSimContextRefToAnnotatedFunctions;
+	private TreeMap<BigDecimal,String> mapSimContextRefToAnnotatedFunctionsStr;
+	private TreeMap<String,BigDecimal> mapSimContextNameToSimContextID;
+	private TreeMap<String,BigDecimal> mapSimNameToSimD;
+//	private TreeMap<String,Integer> mapSimNameToScanCount;
+	private TreeMap<String,List<MathOverrides.Element>> mapSimNameToMathOverrideElements;
+	private TreeMap<Integer,String> mapSubVolumeNameToSubVolumeID;
+
+//	private TreeMap<String,BigDecimal> mapSimNameToSimID;
 /**
  * BioModelInfo constructor comment.
  */
@@ -60,6 +77,100 @@ public boolean equals(Object object) {
 		return true;
 	}
 	return false;
+}
+
+//public void addAnnotatedFunctions(BigDecimal simContextRef,ArrayList<AnnotatedFunction> annotatedFunctions) {
+//	if(mapSimContextRefToAnnotatedFunctions == null) {
+//		mapSimContextRefToAnnotatedFunctions = new TreeMap<BigDecimal,ArrayList<AnnotatedFunction>>();
+//	}
+//	if(mapSimContextRefToAnnotatedFunctions.containsKey(simContextRef)) {
+//		throw new IllegalArgumentException("simcontextRef "+simContextRef+" already has entry.");
+//	}
+//	mapSimContextRefToAnnotatedFunctions.put(simContextRef, annotatedFunctions);
+//}
+//public ArrayList<AnnotatedFunction> getAnnotatedFunctions(BigDecimal simContextRef){
+//	return (mapSimContextRefToAnnotatedFunctions==null?null:mapSimContextRefToAnnotatedFunctions.get(simContextRef));
+//}
+public boolean hasSCIDForAnnotFunc(BigDecimal simContextRef) {
+	return mapSimContextRefToAnnotatedFunctionsStr != null && mapSimContextRefToAnnotatedFunctionsStr.containsKey(simContextRef);
+}
+public void addSCID(String simContextName,BigDecimal simContextRef) {
+	if(mapSimContextNameToSimContextID == null) {
+		mapSimContextNameToSimContextID = new TreeMap<String,BigDecimal>();
+	}
+	mapSimContextNameToSimContextID.put(simContextName,simContextRef);
+
+}
+public void addAnnotatedFunctionsStr(String simContextName,BigDecimal simContextRef,String annotatedFunctionsXML) {
+	if(mapSimContextRefToAnnotatedFunctionsStr == null) {
+		mapSimContextRefToAnnotatedFunctionsStr = new TreeMap<BigDecimal,String>();
+	}
+	if(mapSimContextRefToAnnotatedFunctionsStr.containsKey(simContextRef)) {
+		return;//throw new IllegalArgumentException("simcontextRef "+simContextRef+" already has entry.");
+	}
+	mapSimContextRefToAnnotatedFunctionsStr.put(simContextRef, annotatedFunctionsXML);
+}
+public String getAnnotatedFunctionsStr(String scName){
+	if(mapSimContextRefToAnnotatedFunctionsStr == null ||
+		mapSimContextNameToSimContextID == null ||
+		mapSimContextNameToSimContextID.get(scName) == null) {
+		return null;
+	}
+	return (mapSimContextRefToAnnotatedFunctionsStr==null?null:mapSimContextRefToAnnotatedFunctionsStr.get(mapSimContextNameToSimContextID.get(scName)));
+}
+
+//public void addSimNameSimID(String simName,BigDecimal simID) {
+//	if(mapSimNameToSimID ==null) {
+//		mapSimNameToSimID = new TreeMap<String,BigDecimal>();
+//	}
+//	mapSimNameToSimID.put(simName, simID);
+//}
+//public BigDecimal getSimName(String simName) {
+//	return (mapSimNameToSimID==null?null:mapSimNameToSimID.get(simName));
+//}
+
+public void addMathOverrides(String simName,List<MathOverrides.Element> mathOverrideElements) {
+	if(mapSimNameToMathOverrideElements == null) {
+		mapSimNameToMathOverrideElements = new TreeMap<String, List<MathOverrides.Element>>();
+	}
+	mapSimNameToMathOverrideElements.put(simName, mathOverrideElements);
+}
+
+
+public void addSimID(String simName,BigDecimal simID) {
+	if(mapSimNameToSimD == null) {
+		mapSimNameToSimD = new TreeMap<String, BigDecimal>();
+	}
+	mapSimNameToSimD.put(simName, simID);
+}
+
+public BigDecimal getSimID(String simName) {
+	return (mapSimNameToSimD == null?null:mapSimNameToSimD.get(simName));
+}
+public int getScanCount(String simName) {
+	if(mapSimNameToMathOverrideElements == null || mapSimNameToMathOverrideElements.get(simName) == null) {
+		return 1;
+	}
+	int scanCount=1;
+	for(Element ele:mapSimNameToMathOverrideElements.get(simName) ) {
+		if(ele.getSpec() != null) {
+			scanCount*=ele.getSpec().getNumValues();
+		}
+	}
+	return scanCount;
+}
+public List<MathOverrides.Element> getMathOverrides(String simName){
+	return (mapSimNameToMathOverrideElements==null?null:mapSimNameToMathOverrideElements.get(simName));
+}
+
+public void addSubVolume(int subVolumeID,String subVolumeName) {
+	if(mapSubVolumeNameToSubVolumeID == null) {
+		mapSubVolumeNameToSubVolumeID = new TreeMap<Integer,String>();
+	}
+	mapSubVolumeNameToSubVolumeID.put(subVolumeID, subVolumeName);
+}
+public String getSubVolumeName(int subVolumeID) {
+	return (mapSubVolumeNameToSubVolumeID==null?null:mapSubVolumeNameToSubVolumeID.get(subVolumeID));
 }
 
 @Override
