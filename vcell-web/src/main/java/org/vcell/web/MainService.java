@@ -7,10 +7,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.security.KeyStore;
 import java.security.SecureRandom;
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.text.DateFormat;
 import java.util.ArrayList;
@@ -47,6 +49,7 @@ import org.apache.http.protocol.HttpRequestHandler;
 import org.apache.http.ssl.SSLContexts;
 import org.vcell.db.ConnectionFactory;
 import org.vcell.db.DatabaseService;
+import org.vcell.db.DatabaseSyntax;
 import org.vcell.db.KeyFactory;
 import org.vcell.util.ConfigurationException;
 import org.vcell.util.DataAccessException;
@@ -65,6 +68,7 @@ import cbit.vcell.export.server.ExportServiceImpl;
 import cbit.vcell.message.messages.MessageConstants;
 import cbit.vcell.modeldb.AdminDBTopLevel;
 import cbit.vcell.modeldb.DatabaseServerImpl;
+import cbit.vcell.modeldb.DbDriver;
 import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.simdata.Cachetable;
@@ -87,7 +91,8 @@ public class MainService {
 //	private DataServerImpl dataServerImpl = null;
 	private HttpServer server;
 	private static HashMap<String,AuthenticationInfo> useridMap = new HashMap<String,AuthenticationInfo>();
-
+	private static ConnectionFactory conFactory;
+	
 	private static class AuthenticationInfo {
 		final User user;
 		final DigestedPassword digestedPassword;
@@ -106,9 +111,9 @@ public class MainService {
 	}
 	
 	public MainService() throws SQLException, DataAccessException, FileNotFoundException, ConfigurationException {
-		
+
 		ResourceUtil.setNativeLibraryDirectory();
-		ConnectionFactory conFactory = DatabaseService.getInstance().createConnectionFactory();
+		MainService.conFactory = DatabaseService.getInstance().createConnectionFactory();
 		KeyFactory keyFactory = conFactory.getKeyFactory();
 		DatabaseServerImpl databaseServerImpl = new DatabaseServerImpl(conFactory, keyFactory);
 		AdminDBTopLevel adminDbTopLevel = new AdminDBTopLevel(conFactory);
@@ -312,18 +317,31 @@ public class MainService {
 	private static File createInfosHdf5(User authuser,DatabaseServerImpl databaseServerImpl) throws IOException, HDF5LibraryException, HDF5Exception, DataAccessException {
 		String exportBaseDir = PropertyLoader.getRequiredProperty(PropertyLoader.exportBaseDirInternalProperty);
 		File hdf5TempFile = File.createTempFile("webexport_Infos_"+TokenMangler.fixTokenStrict(authuser.getName())+"_", ".hdf", new File(exportBaseDir));
-		System.out.println("/home/vcell/Downloads/hdf5/HDFView/bin/HDFView "+hdf5TempFile.getAbsolutePath()+" &");
+//		System.out.println("/home/vcell/Downloads/hdf5/HDFView/bin/HDFView "+hdf5TempFile.getAbsolutePath()+" &");
 		int hdf5FileID = H5.H5Fcreate(hdf5TempFile.getAbsolutePath(), HDF5Constants.H5F_ACC_TRUNC,HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT);
 		int bioModelsGroup = Hdf5Utils.createGroup(hdf5FileID, "BioModels");
-		VCInfoContainer vcInfoContainer = databaseServerImpl.getVCInfoContainer(authuser);//dbDriver.getVCInfoContainer(authuser, con, DatabaseSyntax.ORACLE);
+		VCInfoContainer vcInfoContainer = null;
+		try (Connection con = conFactory.getConnection(null)) {
+			vcInfoContainer = DbDriver.getVCInfoContainer(authuser, con, DatabaseSyntax.ORACLE,DbDriver.EXTRAINFO_ALL);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
 		BioModelInfo[] bioModelInfos = vcInfoContainer.getBioModelInfos();
 		Arrays.sort(bioModelInfos, new Comparator<BioModelInfo> () {
 			@Override
 			public int compare(BioModelInfo o1, BioModelInfo o2) {
+				if(o1.getVersion().getOwner().getName().equals(o2.getVersion().getOwner().getName())) {
+					if(o1.getVersion().getName().equals(o2.getVersion().getName())) {
+						return o1.getVersion().getDate().compareTo(o2.getVersion().getDate());
+					}
+					return o1.getVersion().getName().compareToIgnoreCase(o2.getVersion().getName());
+				}
 				return o1.getVersion().getOwner().getName().compareToIgnoreCase(o2.getVersion().getOwner().getName());
 			}});
 		String lastUser = null;
+		String lastModel = null;
 		int lastUserGroupID = -1;
+		int lastModelGroupID = -1;
 		final DateFormat dateTimeInstance = DateFormat.getDateTimeInstance();
 		for(BioModelInfo bioModelInfo:bioModelInfos) {
 			if(lastUser == null || !lastUser.equals(bioModelInfo.getVersion().getOwner().getName())) {
@@ -333,8 +351,21 @@ public class MainService {
 				lastUser = bioModelInfo.getVersion().getOwner().getName();
 				lastUserGroupID = Hdf5Utils.createGroup(bioModelsGroup, lastUser);
 			}
-			int bioModelGroupID = Hdf5Utils.createGroup(lastUserGroupID, (bioModelInfo.getVersion().getName()+"_"+dateTimeInstance.format(bioModelInfo.getVersion().getDate())).replace("/", "fwdslsh"));
-			Hdf5Utils.insertAttribute(bioModelGroupID, "versionKey", bioModelInfo.getVersion().getVersionKey().toString());
+//			System.out.println("'"+lastModel+"'"+" "+"'"+bioModelInfo.getVersion().getName()+"'"+" "+(bioModelInfo.getVersion().getName().equals(lastModel)));
+			if(lastModel == null || !lastModel.equals(bioModelInfo.getVersion().getName())) {
+				if(lastModelGroupID != -1) {
+					H5.H5Gclose(lastModelGroupID);
+				}
+				lastModel = bioModelInfo.getVersion().getName();
+				lastModelGroupID = Hdf5Utils.createGroup(lastUserGroupID, lastModel.replace("/", "fwdslsh"));
+				
+			}
+//			int bioModelGroupID = Hdf5Utils.createGroup(lastUserGroupID, (bioModelInfo.getVersion().getName()).replace("/", "fwdslsh"));
+			final String format = dateTimeInstance.format(bioModelInfo.getVersion().getDate());
+//			System.out.println(lastUser+" "+lastModel.replace("/", "fwdslsh")+" "+format);
+			int dateGroupID = Hdf5Utils.createGroup(lastModelGroupID,format);
+			//+"_"+dateTimeInstance.format(bioModelInfo.getVersion().getDate())
+			Hdf5Utils.insertAttribute(dateGroupID, "versionKey", bioModelInfo.getVersion().getVersionKey().toString());
 //    				        ArrayList<IJContextInfo> ijContextInfos = new ArrayList<>();
 			BioModelChildSummary bioModelChildSummary = bioModelInfo.getBioModelChildSummary();
 			if(bioModelChildSummary != null && bioModelChildSummary.getSimulationContextNames() != null && bioModelInfo.getBioModelChildSummary().getSimulationContextNames().length > 0) {
@@ -342,18 +373,30 @@ public class MainService {
 					String bioModelContextName = bioModelInfo.getBioModelChildSummary().getSimulationContextNames()[i];
 					if(bioModelContextName != null) {
 						//dataspaceName.replace("/", "fwdslsh");
-		    			int bmContextID = Hdf5Utils.createGroup(bioModelGroupID, bioModelContextName.replace("/", "fwdslsh"));
+		    			int bmContextID = Hdf5Utils.createGroup(dateGroupID, bioModelContextName.replace("/", "fwdslsh"));
+//		    			String annotatedFunctionXml = bioModelInfo.getAnnotatedFunctionsStr(bioModelContextName);
+//		    			Hdf5Utils.insertAttribute(bmContextID,"annotfuncxml",(annotatedFunctionXml==null?"null":annotatedFunctionXml));
 		    			Hdf5Utils.insertAttribute(bmContextID, "type", bioModelInfo.getBioModelChildSummary().getAppTypes()[i].toString());
 		    			Hdf5Utils.insertAttribute(bmContextID, "dim", bioModelInfo.getBioModelChildSummary().getGeometryDimensions()[i]+"");
 		    			Hdf5Utils.insertAttribute(bmContextID, "geoName", bioModelInfo.getBioModelChildSummary().getGeometryNames()[i]);
-		    			if(bioModelInfo.getBioModelChildSummary().getSimulationNames(bioModelContextName) != null &&
-		    					bioModelInfo.getBioModelChildSummary().getSimulationNames(bioModelContextName).length > 0) {
+		    			if(bioModelInfo.getBioModelChildSummary().getSimulationNames(bioModelContextName) != null && bioModelInfo.getBioModelChildSummary().getSimulationNames(bioModelContextName).length > 0) {
 		    				ArrayList<String> simNameArr = new ArrayList<String>();
 		    				for(String simName:bioModelInfo.getBioModelChildSummary().getSimulationNames(bioModelContextName)) {
-		    					simNameArr.add(simName);
+		    					int bmSimID = -1;
+		    					if(simName.contains("/")) {//handle "/" forbidden in object names
+		    						bmSimID = Hdf5Utils.createGroup(bmContextID, URLEncoder.encode(simName,"UTF-8"));
+		    						Hdf5Utils.insertAttribute(bmSimID,"urlencoded","true");
+		    					}else {
+		    						bmSimID = Hdf5Utils.createGroup(bmContextID, simName);
+		    					}
+		    					Hdf5Utils.insertAttribute(bmSimID,"simid",(bioModelInfo.getSimID(simName)==null?"null":bioModelInfo.getSimID(simName).toString()));
+		    					Hdf5Utils.insertAttribute(bmSimID,"scancount",bioModelInfo.getScanCount(simName)+"");
+//		    					simNameArr.add(simName);
 //    				        	simNameArr.add((bioModelInfo.getSimID(simName)==null?"null":bioModelInfo.getSimID(simName).toString()));
+//    				        	simNameArr.add(bioModelInfo.getScanCount(simName)+"");
+    				        	H5.H5Gclose(bmSimID);
 		    				}
-							Hdf5Utils.insertStrings(bmContextID, "sims", new long[] {bioModelInfo.getBioModelChildSummary().getSimulationNames(bioModelContextName).length,1},simNameArr);
+//							Hdf5Utils.insertStrings(bmContextID, "sims", new long[] {bioModelInfo.getBioModelChildSummary().getSimulationNames(bioModelContextName).length,3},simNameArr);
 		    			}
 		    			H5.H5Gclose(bmContextID);
 //    			    					IJContextInfo ijContextInfo = new IJContextInfo(bioModelContextName,bioModelInfo.getBioModelChildSummary().getAppTypes()[i],bioModelInfo.getBioModelChildSummary().getGeometryDimensions()[i],bioModelInfo.getBioModelChildSummary().getGeometryNames()[i],ijSimInfos);
@@ -361,10 +404,11 @@ public class MainService {
 					}
 				}
 			}
-			H5.H5Gclose(bioModelGroupID);
+			H5.H5Gclose(dateGroupID);
 
 //    			        	modelInfos.add(new IJModelInfo(bioModelInfo.getVersion().getName(), bioModelInfo.getVersion().getDate(), IJDocType.bm, openVCDocumentVersionKeys.contains(bioModelInfo.getVersion().getVersionKey()),bioModelInfo.getVersion().getOwner().getName(),bioModelInfo.getVersion().getVersionKey(), ijContextInfos));
 		}
+		H5.H5Gclose(lastModelGroupID);
 		H5.H5Gclose(lastUserGroupID);
 		H5.H5Gclose(bioModelsGroup);
 		H5.H5Fclose(hdf5FileID);

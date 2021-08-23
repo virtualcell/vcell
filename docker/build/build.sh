@@ -12,7 +12,7 @@ mvn_repo=$HOME/.m2
 show_help() {
 	echo "usage: build.sh [OPTIONS] target repo tag"
 	echo "  ARGUMENTS"
-	echo "    target                ( batch | api | db | sched | submit | data | mongo | clientgen | all)"
+	echo "    target                ( batch | api | db | sched | submit | data | mongo | clientgen | web | all)"
 	echo ""
 	echo "    repo                  ( schaff | localhost:5000 | vcell-docker.cam.uchc.edu:5000 )"
 	echo ""
@@ -155,6 +155,16 @@ build_data() {
 	if [[ $? -ne 0 ]]; then echo "docker build failed"; exit 1; fi
 	if [ "$skip_push" == "false" ]; then
 		sudo docker push $repo/vcell-data:$tag
+	fi
+}
+
+build_web() {
+	echo "building $repo/vcell-web:$tag"
+	echo "sudo docker build -f Dockerfile-web-dev --tag $repo/vcell-web:$tag ../.."
+	sudo docker build -f Dockerfile-web-dev --tag $repo/vcell-web:$tag ../..
+	if [[ $? -ne 0 ]]; then echo "docker build failed"; exit 1; fi
+	if [ "$skip_push" == "false" ]; then
+		sudo docker push $repo/vcell-web:$tag
 	fi
 }
 
@@ -353,6 +363,10 @@ case $target in
 		build_data
 		exit $?
 		;;
+	web)
+		build_web
+		exit $?
+		;;
 	mongo)
 		build_mongo
 		exit $?
@@ -362,8 +376,8 @@ case $target in
 		exit $?
 		;;
 	all)
-		# build_batch && build_api && build_master && build_db && build_sched && build_submit && build_data && build_clientgen && build_mongo && build_singularity
-		build_batch && build_api && build_db && build_sched && build_submit && build_data && build_clientgen && build_mongo && build_singularity
+		# build_batch && build_api && build_master && build_db && build_sched && build_submit && build_data && build_web && build_clientgen && build_mongo && build_singularity
+		build_batch && build_api && build_db && build_sched && build_submit && build_data && build_web && build_clientgen && build_mongo && build_singularity
 		exit $?
 		;;
 	*)
