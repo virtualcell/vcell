@@ -383,6 +383,7 @@ public class CLIUtils {
                     PrintWriter out = new PrintWriter(f);
                     out.print(sb.toString());
                     out.flush();
+                    out.close();
                     reportsHash.put(oo.getId(), f);
                 } catch (Exception e) {
                     e.printStackTrace(System.err);
