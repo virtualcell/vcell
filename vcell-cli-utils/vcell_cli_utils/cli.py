@@ -1,5 +1,5 @@
 from biosimulators_utils.log.data_model import Status, CombineArchiveLog, SedDocumentLog  # noqa: F401
-from biosimulators_utils.plot.data_model import PlotFormat  # noqa: F401
+#from biosimulators_utils.plot.data_model import PlotFormat  # noqa: F401
 from biosimulators_utils.report.data_model import DataSetResults, ReportResults, ReportFormat  # noqa: F401
 from biosimulators_utils.report.io import ReportWriter, ReportReader
 from biosimulators_utils.sedml.io import SedmlSimulationReader, SedmlSimulationWriter
@@ -126,6 +126,8 @@ def exec_plot_output_sed_doc(omex_file_path, base_out_path):
                     content.location, report.id)
                 if len(rel_path.split("./")) > 1:
                     rel_path = rel_path.split("./")[1]
+                # print("base: ", base_out_path, file=sys.stdout)              
+                # print("rel: ", rel_path, file=sys.stdout)              
                 ReportWriter().run(report,
                                    data_set_results,
                                    base_out_path,
@@ -134,6 +136,34 @@ def exec_plot_output_sed_doc(omex_file_path, base_out_path):
                 os.rename(report_filename,
                           report_filename.replace('__plot__', ''))
 
+            else:
+                print("report   : ", report_filename, file=sys.stdout)
+                report_id = os.path.splitext(os.path.basename(report_filename))[0]
+                data_set_df = pd.read_csv(report_filename, header=None).T
+                data_set_df.columns = data_set_df.iloc[0]
+                data_set_df.drop(0, inplace=True)
+                data_set_df.reset_index(inplace=True)
+                data_set_df.drop('index', axis=1, inplace=True)
+
+                datasets = []
+                for col in list(data_set_df.columns):
+                    datasets.append(DataSet(id=col, label=col, name=col))
+                report = Report(id=report_id, name=report_id, data_sets=datasets)
+
+                data_set_results = DataSetResults()
+                for col in list(data_set_df.columns):
+                    data_set_results[col] = data_set_df[col].values
+                
+                rel_path = os.path.join(content.location, report.id)
+                if len(rel_path.split("./")) > 1:
+                    rel_path = rel_path.split("./")[1]
+                ReportWriter().run(report,
+                                   data_set_results,
+                                   base_out_path,
+                                   rel_path,
+                                   format='h5')
+                
+                
 
 def exec_sed_doc(omex_file_path, base_out_path):
     # defining archive

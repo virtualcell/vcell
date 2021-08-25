@@ -356,9 +356,14 @@ public class CLIUtils {
                         expr.bindExpression(st);
                         //compute and write result, padding with NaN if unequal length or errors
                         double[] row = new double[vars.size()];
+                        
                         // Handling row labels that contains ","
+//                        if (dataset.getId().contains(",")) sb.append("\"" + dataset.getId() + "\"").append(",");
+//                        else sb.append(dataset.getId()).append(",");
                         if (dataset.getLabel().contains(",")) sb.append("\"" + dataset.getLabel() + "\"").append(",");
                         else sb.append(dataset.getLabel()).append(",");
+//                        sb.append("").append(",");	// no name
+                        
                         for (int i = 0; i < mxlen; i++) {
                             for (int j = 0; j < vars.size(); j++) {
                                 double[] varVals = ((double[]) values.get(vars.get(j)));
@@ -380,6 +385,7 @@ public class CLIUtils {
                         sb.append("\n");
                     }
                     File f = new File(outDirForCurrentSedml, oo.getId() + ".csv");
+                    System.out.println(" --- Writing file: " + oo.getId() + ".csv");
                     PrintWriter out = new PrintWriter(f);
                     out.print(sb.toString());
                     out.flush();
