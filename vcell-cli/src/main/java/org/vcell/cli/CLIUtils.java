@@ -358,11 +358,11 @@ public class CLIUtils {
                         double[] row = new double[vars.size()];
                         
                         // Handling row labels that contains ","
-//                        if (dataset.getId().contains(",")) sb.append("\"" + dataset.getId() + "\"").append(",");
-//                        else sb.append(dataset.getId()).append(",");
+                        if (dataset.getId().contains(",")) sb.append("\"" + dataset.getId() + "\"").append(",");
+                        else sb.append(dataset.getId()).append(",");
                         if (dataset.getLabel().contains(",")) sb.append("\"" + dataset.getLabel() + "\"").append(",");
                         else sb.append(dataset.getLabel()).append(",");
-//                        sb.append("").append(",");	// no name
+                        sb.append("").append(",");	// no name
                         
                         for (int i = 0; i < mxlen; i++) {
                             for (int j = 0; j < vars.size(); j++) {

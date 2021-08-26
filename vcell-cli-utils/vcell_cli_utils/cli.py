@@ -99,18 +99,20 @@ def exec_plot_output_sed_doc(omex_file_path, base_out_path):
                 # data_set_df = pd.read_csv(report_filename).transpose()
 
                 data_set_df = pd.read_csv(report_filename, header=None).T
+ 
+                datasets = []
+                for col in data_set_df.columns:
+                    datasets.append(DataSet(id=data_set_df.loc[0,col], label=data_set_df.loc[1,col], name=data_set_df.loc[2,col]))
+                report = Report(id=report_id, name=report_id, data_sets=datasets)
+ 
                 data_set_df.columns = data_set_df.iloc[0]
                 data_set_df.drop(0, inplace=True)
+                data_set_df.drop(1, inplace=True)
+                data_set_df.drop(2, inplace=True)
                 data_set_df.reset_index(inplace=True)
                 data_set_df.drop('index', axis=1, inplace=True)
 
                 # create pseudo-report for ReportWriter
-                datasets = []
-                for col in list(data_set_df.columns):
-                    datasets.append(DataSet(id=col, label=col, name=col))
-                #report.data_sets = datasets
-                report = Report(id=report_id, name=report_id,
-                                data_sets=datasets)
 
                 data_set_results = DataSetResults()
 
@@ -140,15 +142,18 @@ def exec_plot_output_sed_doc(omex_file_path, base_out_path):
                 print("report   : ", report_filename, file=sys.stdout)
                 report_id = os.path.splitext(os.path.basename(report_filename))[0]
                 data_set_df = pd.read_csv(report_filename, header=None).T
-                data_set_df.columns = data_set_df.iloc[0]
-                data_set_df.drop(0, inplace=True)
-                data_set_df.reset_index(inplace=True)
-                data_set_df.drop('index', axis=1, inplace=True)
 
                 datasets = []
-                for col in list(data_set_df.columns):
-                    datasets.append(DataSet(id=col, label=col, name=col))
+                for col in data_set_df.columns:
+                    datasets.append(DataSet(id=data_set_df.loc[0,col], label=data_set_df.loc[1,col], name=""))
                 report = Report(id=report_id, name=report_id, data_sets=datasets)
+
+                data_set_df.columns = data_set_df.iloc[0]		# use ids
+                data_set_df.drop(0, inplace=True)
+                data_set_df.drop(1, inplace=True)
+                data_set_df.drop(2, inplace=True)
+                data_set_df.reset_index(inplace=True)
+                data_set_df.drop('index', axis=1, inplace=True)
 
                 data_set_results = DataSetResults()
                 for col in list(data_set_df.columns):
@@ -386,8 +391,10 @@ def gen_plots_for_sed2d_only(sedml_path, result_out_dir):
         for curve, data in curve_dat.items():
             df = pd.read_csv(os.path.join(
                 result_out_dir, plot + '.csv'), header=None).T
-            df.columns = df.iloc[0]
+            df.columns = df.iloc[1]		# use labels
             df.drop(0, inplace=True)
+            df.drop(1, inplace=True)
+            df.drop(2, inplace=True)
             df.reset_index(inplace=True)
             df.drop('index', axis=1, inplace=True)
 
