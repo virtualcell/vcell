@@ -10,7 +10,11 @@
     }
   ],
   "image": {
+<<<<<<< HEAD
     "url": "ghcr.io/virtualcell/biosimulators_vcell:7.4.0.14",
+=======
+    "url": "ghcr.io/virtualcell/biosimulators_vcell:7.4.0.11",
+>>>>>>> refs/remotes/origin/biosimulators_integration
     "format": {
       "namespace": "EDAM",
       "id": "format_3973",
