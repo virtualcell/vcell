@@ -835,15 +835,18 @@ public class SEDMLExporter {
 							}
 							if (!bSimHasHistogram) {
 								String plot2dId = "plot2d_" + TokenMangler.mangleToSName(vcSimulation.getName());
-								String reportId = "report_" + TokenMangler.mangleToSName(vcSimulation.getName());
-								Plot2D sedmlPlot2d = new Plot2D(plot2dId, simContext.getName() + "plots");
-								Report sedmlReport = new Report(reportId, simContext.getName() + "report");
+// old way								String reportId = "report_" + TokenMangler.mangleToSName(vcSimulation.getName());
+								String reportId = "__ plot__" + plot2dId;
+								String plotName = simContext.getName() + "plots";
+								Plot2D sedmlPlot2d = new Plot2D(plot2dId, plotName);
+								Report sedmlReport = new Report(reportId, plotName);
 								
 								sedmlPlot2d.addNote(createNotesElement("Plot of all variables and output functions from application '" + simContext.getName() + "' ; simulation '" + vcSimulation.getName() + "' in VCell model"));
 								sedmlReport.addNote(createNotesElement("Report of all variables and output functions from application '" + simContext.getName() + "' ; simulation '" + vcSimulation.getName() + "' in VCell model"));
-								String xDataRef = sedmlModel.getDataGeneratorWithId(DATAGENERATOR_TIME_NAME + "_" + taskRef).getId();
-								String xDatasetXId = "datasetX_" + DATAGENERATOR_TIME_NAME;
-								DataSet dataSet = new DataSet(xDatasetXId, xDataRef, xDatasetXId, xDataRef);	// id, name, label, data generator reference
+								DataGenerator dgtime = sedmlModel.getDataGeneratorWithId(DATAGENERATOR_TIME_NAME + "_" + taskRef);
+								String xDataRef = dgtime.getId();
+								String xDatasetXId = "__data_set__" + plot2dId + dgtime.getId();
+								DataSet dataSet = new DataSet(xDatasetXId, DATAGENERATOR_TIME_NAME, xDataRef, xDataRef);	// id, name, label, data generator reference
 								sedmlReport.addDataSet(dataSet);
 
 								// add a curve for each dataGenerator in SEDML model
@@ -854,15 +857,15 @@ public class SEDMLExporter {
 									if (dg.getId().equals(xDataRef)) {
 										continue;
 									}
-									String curveId = "curve_" + curveCnt;
-									String datasetYId = "datasetY_" + curveCnt;
-									Curve curve = new Curve(curveId, curveId, false, false, xDataRef, dg.getId());
+									String curveId = "curve_" + plot2dId + "_" + dg.getName();
+									String datasetYId = "__data_set__" + plot2dId + dg.getName();
+									Curve curve = new Curve(curveId, dg.getName(), false, false, xDataRef, dg.getId());
 									sedmlPlot2d.addCurve(curve);
 //									// id, name, label, dataRef
 //									// dataset id    <- unique id
 //									// dataset name  <- data generator name
 //									// dataset label <- dataset id
-									DataSet yDataSet = new DataSet(datasetYId, dg.getName(), datasetYId, dg.getId());
+									DataSet yDataSet = new DataSet(datasetYId, dg.getName(), dg.getId(), dg.getId());
 									sedmlReport.addDataSet(yDataSet);
 									curveCnt++;
 								}
@@ -872,8 +875,8 @@ public class SEDMLExporter {
 						} else {		// spatial deterministic
 							if(simContext.getApplicationType().equals(Application.NETWORK_DETERMINISTIC)) {	// we ignore spatial stochastic (Smoldyn)
 								if(bForceVCML) {
-									String reportId = "report_" + TokenMangler.mangleToSName(vcSimulation.getName());
-									Report sedmlReport = new Report(reportId, simContext.getName() + "report");
+									String reportId = "__plot__" + TokenMangler.mangleToSName(vcSimulation.getName());
+									Report sedmlReport = new Report(reportId, simContext.getName() + "plots");
 									String xDataRef = sedmlModel.getDataGeneratorWithId(DATAGENERATOR_TIME_NAME + "_" + taskRef).getId();
 									String xDatasetXId = "datasetX_" + DATAGENERATOR_TIME_NAME;
 									DataSet dataSetTime = new DataSet(xDatasetXId, xDataRef, xDatasetXId, xDataRef);
