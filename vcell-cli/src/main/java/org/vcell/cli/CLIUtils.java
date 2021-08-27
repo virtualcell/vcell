@@ -14,6 +14,7 @@ import org.apache.commons.lang.StringUtils;
 import org.jlibsedml.*;
 import org.jlibsedml.execution.IXPathToVariableIDResolver;
 import org.jlibsedml.modelsupport.SBMLSupport;
+import org.vcell.sedml.SEDMLUtil;
 import org.vcell.stochtest.TimeSeriesMultitrialData;
 
 import java.io.*;
@@ -362,7 +363,14 @@ public class CLIUtils {
                         else sb.append(dataset.getId()).append(",");
                         if (dataset.getLabel().contains(",")) sb.append("\"" + dataset.getLabel() + "\"").append(",");
                         else sb.append(dataset.getLabel()).append(",");
-                        sb.append("").append(",");	// no name
+                        
+                        DataGenerator dg = sedml.getDataGeneratorWithId(dataset.getDataReference());
+                        if(dg != null && dg.getName() != null && !dg.getName().isEmpty()) {
+                        	// name may contain spaces or other things
+                        	sb.append("\"" + dg.getName() + "\"").append(",");
+                        } else {			// dg may be null, name may be null
+                        	sb.append("").append(",");
+                        }
                         
                         for (int i = 0; i < mxlen; i++) {
                             for (int j = 0; j < vars.size(); j++) {
@@ -385,7 +393,6 @@ public class CLIUtils {
                         sb.append("\n");
                     }
                     File f = new File(outDirForCurrentSedml, oo.getId() + ".csv");
-                    System.out.println(" --- Writing file: " + oo.getId() + ".csv");
                     PrintWriter out = new PrintWriter(f);
                     out.print(sb.toString());
                     out.flush();
