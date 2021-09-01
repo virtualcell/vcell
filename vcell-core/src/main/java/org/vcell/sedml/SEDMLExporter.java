@@ -835,8 +835,8 @@ public class SEDMLExporter {
 							}
 							if (!bSimHasHistogram) {
 								String plot2dId = "plot2d_" + TokenMangler.mangleToSName(vcSimulation.getName());
-// old way								String reportId = "report_" + TokenMangler.mangleToSName(vcSimulation.getName());
-								String reportId = "__plot__" + plot2dId;
+								String reportId = "report_" + TokenMangler.mangleToSName(vcSimulation.getName());
+//								String reportId = "__plot__" + plot2dId;
 								String plotName = simContext.getName() + "plots";
 								Plot2D sedmlPlot2d = new Plot2D(plot2dId, plotName);
 								Report sedmlReport = new Report(reportId, plotName);
@@ -1284,9 +1284,10 @@ public class SEDMLExporter {
 
     	
 		for (String sd : sedmlFilePathStrAbsoluteList) {
+			String s = Paths.get(srcFolder, sd).toString();
 			archive.addFile(
-					Paths.get(srcFolder, sd).toString(),
-					sd, // target file name
+					s,
+					"./" + sd, // target file name
 					KnownFormats.lookupFormat("sedml"),
 					true // mark file as master
 			);
@@ -1294,7 +1295,7 @@ public class SEDMLExporter {
 		for (String sd : sbmlFilePathStrAbsoluteList) {
 			archive.addFile(
 					Paths.get(srcFolder, sd).toString(),
-					sd, // target file name
+					"./" + sd, // target file name
 					KnownFormats.lookupFormat("sbml"),
 					false // mark file as master
 			);
@@ -1302,7 +1303,7 @@ public class SEDMLExporter {
 
 		archive.addFile(
 				Paths.get(srcFolder, sFileName + ".vcml").toString(),
-				sFileName + ".vcml",
+				"./" + sFileName + ".vcml",
 				"http://purl.org/NET/mediatypes/application/vcml+xml",
 				false
 		);
