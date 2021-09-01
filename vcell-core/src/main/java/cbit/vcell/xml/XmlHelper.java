@@ -1259,11 +1259,12 @@ public class XmlHelper {
 	}
 
 	public static String getXPathForListOfSpecies() {
-		return "/vcml:vcml/vcml:model/vcml:listOfSpecies";
+//		return "/vcml:vcml/vcml:model/vcml:listOfSpecies";
+		return "/vcml:vcml/vcml:BioModel/vcml:Model";
 	}
 	
 	public static String getXPathForSpecies(String speciesID) {
-		return getXPathForListOfSpecies() + "/vcml:species[@id='" + speciesID + "']";
+		return getXPathForListOfSpecies() + "/vcml:LocalizedCompound[@Name='" + speciesID + "']";
 	}
 
 //public static String exportSedML(VCDocument vcDoc, int level, int version, String file) throws XmlParseException {
