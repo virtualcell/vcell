@@ -836,7 +836,7 @@ public class SEDMLExporter {
 							if (!bSimHasHistogram) {
 								String plot2dId = "plot2d_" + TokenMangler.mangleToSName(vcSimulation.getName());
 // old way								String reportId = "report_" + TokenMangler.mangleToSName(vcSimulation.getName());
-								String reportId = "__ plot__" + plot2dId;
+								String reportId = "__plot__" + plot2dId;
 								String plotName = simContext.getName() + "plots";
 								Plot2D sedmlPlot2d = new Plot2D(plot2dId, plotName);
 								Report sedmlReport = new Report(reportId, plotName);
