@@ -19,6 +19,7 @@
     },
     "operatingSystemType": "Linux"
   },
+  "pythonApi": null,
   "authors": [
     {
       "firstName": "Frank",
