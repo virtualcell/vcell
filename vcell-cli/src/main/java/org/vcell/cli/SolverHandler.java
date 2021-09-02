@@ -83,9 +83,9 @@ public class SolverHandler {
                 sim = new TempSimulation(sim, false);
                 SolverTaskDescription std = sim.getSolverTaskDescription();
                 SolverDescription sd = std.getSolverDescription();
-                if(sim.getImportedTaskID() == null) {
-                	sim.setImportedTaskID(sim.getName());
-                }
+//                if(sim.getImportedTaskID() == null) {
+//                	sim.setImportedTaskID(sim.getName());
+//                }
                 String kisao = sd.getKisao();
                 SimulationJob simJob = new SimulationJob(sim, 0, null);
                 SimulationTask simTask = new SimulationTask(simJob, 0);

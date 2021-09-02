@@ -709,6 +709,11 @@ public class XmlHelper {
 				if(sedmlOriginalModelLanguage.contentEquals(SUPPORTED_LANGUAGE.VCELL_GENERIC.getURN())) {
 					// we don't need to make a simulation from sedml if we're coming from vcml, we already got all we need
 					// we basically ignore the sedml simulation altogether
+					for (Simulation sim : bioModel.getSimulations()) {
+						if (sim.getName().equals(selectedTask.getSimulationReference())) {
+							sim.setImportedTaskID(selectedTask.getId());
+						}
+					}
 					continue;
 				}
 				// even if we just created the biomodel from the sbml file we have at least one application with initial conditions and stuff
@@ -1254,11 +1259,12 @@ public class XmlHelper {
 	}
 
 	public static String getXPathForListOfSpecies() {
-		return "/vcml:vcml/vcml:model/vcml:listOfSpecies";
+//		return "/vcml:vcml/vcml:model/vcml:listOfSpecies";
+		return "/vcml:vcml/vcml:BioModel/vcml:Model";
 	}
 	
 	public static String getXPathForSpecies(String speciesID) {
-		return getXPathForListOfSpecies() + "/vcml:species[@id='" + speciesID + "']";
+		return getXPathForListOfSpecies() + "/vcml:LocalizedCompound[@Name='" + speciesID + "']";
 	}
 
 //public static String exportSedML(VCDocument vcDoc, int level, int version, String file) throws XmlParseException {
