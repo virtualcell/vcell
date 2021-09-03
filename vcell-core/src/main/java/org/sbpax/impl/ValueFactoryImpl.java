@@ -10,6 +10,8 @@
 
 package org.sbpax.impl;
 
+import java.util.Date;
+
 import javax.xml.datatype.XMLGregorianCalendar;
 
 import org.openrdf.model.BNode;
@@ -53,5 +55,10 @@ public class ValueFactoryImpl implements ValueFactory {
 
 	public URI createURI(String uri) { return new URIImpl(uri); }
 	public URI createURI(String nameSpace, String localName) { return new URIImpl(nameSpace + localName); }
+	@Override
+	public Literal createLiteral(Date date) {
+		// TODO Auto-generated method stub
+		return null;
+	}
 
 }
