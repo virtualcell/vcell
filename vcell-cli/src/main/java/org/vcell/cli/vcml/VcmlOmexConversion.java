@@ -7,6 +7,8 @@ import cbit.vcell.util.NativeLoader;
 import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XmlHelper;
 import cbit.vcell.xml.XmlParseException;
+
+import org.apache.commons.io.FilenameUtils;
 import org.sbml.libcombine.CombineArchive;
 import org.sbml.libcombine.KnownFormats;
 import org.vcell.cli.CLIHandler;
@@ -75,8 +77,9 @@ public class VcmlOmexConversion {
         String outputDir = cliHandler.getOutputDirPath();
 
         // get VCML name from VCML path
-        String vcmlName = inputVcmlFile.split(File.separator, 10)[inputVcmlFile.split(File.separator, 10).length - 1].split("\\.", 5)[0];
-
+        //String vcmlName = inputVcmlFile.split(File.separator, 10)[inputVcmlFile.split(File.separator, 10).length - 1].split("\\.", 5)[0];
+        String vcmlName = FilenameUtils.getBaseName(inputVcmlFile);		// platform independent, strips extension too
+        
 
         File vcmlFilePath = new File(inputVcmlFile);
 
