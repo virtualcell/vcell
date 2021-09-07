@@ -20,7 +20,7 @@ public class CLIHandler {
     public CLIHandler(String[] args) {
         CommandLineParser parser = new DefaultParser();
 
-        String usage = "usage: VCell [-h] [-q] -i ARCHIVE [-o OUT_DIR] [-v]";
+        String usage = "usage: VCell [-h] [-q] -i ARCHIVE [-o OUT_DIR] [-v] [-vcml]";
         try {
             cmd = parser.parse(this.getCommandLineOptions(), args);
         } catch (ParseException e) {

@@ -9,6 +9,7 @@ import cbit.vcell.xml.XmlHelper;
 import cbit.vcell.xml.XmlParseException;
 
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.sbml.libcombine.CombineArchive;
 import org.sbml.libcombine.KnownFormats;
 import org.vcell.cli.CLIHandler;
@@ -68,8 +69,21 @@ public class VcmlOmexConversion {
     }
 
     public static boolean vcmlToOmexConversion(String[] args) throws XmlParseException, IOException {
+    	
+    	boolean bForceVCML = false;
+    	int position = 0;
+    	for(String s : args) {
+    		if("-vcml".equalsIgnoreCase(s)) {
+    			bForceVCML = true;
+    			args = ArrayUtils.remove(args, position);
+    			break;
+    		}
+    		position++;
+    	}
+		int sedmlLevel = 1;
+		int sedmlVersion = 2;
+    	
         CLIHandler cliHandler = new CLIHandler(args);
-
         // Get VCML file path from -i flag
         String inputVcmlFile = cliHandler.getInputFilePath();
 
@@ -88,8 +102,8 @@ public class VcmlOmexConversion {
         bioModel.refreshDependencies();
 
         // NOTE: SEDML exporter exports both SEDML as well as required SBML
-        SEDMLExporter sedmlExporter = new SEDMLExporter(bioModel, 1, 1);
-        String sedmlString = sedmlExporter.getSEDMLFile(outputDir, false, true);
+        SEDMLExporter sedmlExporter = new SEDMLExporter(bioModel, sedmlLevel, sedmlVersion);
+        String sedmlString = sedmlExporter.getSEDMLFile(outputDir, bForceVCML, true);
         XmlUtil.writeXMLStringToFile(sedmlString, String.valueOf(Paths.get(outputDir, vcmlName + ".sedml")), true);
 
         // libCombine needs native lib
@@ -100,7 +114,7 @@ public class VcmlOmexConversion {
         boolean isCreated;
 
         try {
-            CombineArchive combineArchive = new CombineArchive();
+            CombineArchive archive = new CombineArchive();
 
             String[] files;
 
@@ -110,26 +124,26 @@ public class VcmlOmexConversion {
 
             for (String sd : files) {
                 if (sd.endsWith(".sedml")) {
-                    combineArchive.addFile(
+                    archive.addFile(
                             Paths.get(outputDir, sd).toString(),
-                            sd, // target file name
+                            "./" + sd, // target file name
                             KnownFormats.lookupFormat("sedml"),
                             true // mark file as master
                     );
                 } else if (sd.endsWith(".sbml") || sd.endsWith(".xml")) {
-                    combineArchive.addFile(
+                    archive.addFile(
                             Paths.get(outputDir, sd).toString(),
-                            sd, // target file name
+                            "./" + sd, // target file name
                             KnownFormats.lookupFormat("sbml"),
                             false // mark file as master
                     );
                 }
             }
 
-            combineArchive.addFile(
+            archive.addFile(
                     Paths.get(String.valueOf(vcmlFilePath)).toString(),
-                    vcmlName + ".vcml",
-                    KnownFormats.lookupFormat("vcml"),
+                    "./" + vcmlName + ".vcml",
+                    "http://purl.org/NET/mediatypes/application/vcml+xml",
                     false
             );
 
@@ -142,7 +156,7 @@ public class VcmlOmexConversion {
             if(omexFile.exists()) {
                 omexFile.delete();
             }
-            isCreated = combineArchive.writeToFile(omexPath);
+            isCreated = archive.writeToFile(omexPath);
 
             // Removing all other files(like SEDML, XML, SBML) after archiving
             for (String sd : files) {
