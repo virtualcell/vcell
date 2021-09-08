@@ -1,56 +1,22 @@
-name: Publish simulator to GHCR and BioSimulators
+name: Submit simulator version from GHCR to BioSimulators
 on:
-  release:
-    types: [published, edited]
+  workflow_dispatch:
+    inputs:
+      tag_name:
+        description: 'version tag'
+        required: true
+        default: 7.4.0.18
 
 jobs:
-  build:
+  submit:
     runs-on: ubuntu-latest
     steps:
-      # Checkout out
-      - uses: actions/checkout@v2
-      # Build and push Docker image
-
-      - name: Build and Push Image
-        uses: whoan/docker-build-with-cache-action@v5
-        with:
-          username: ${{ secrets.DOCKER_REGISTRY_USERNAME }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-          image_name: virtualcell/biosimulators_vcell
-          image_tag: ${{ github.event.release.tag_name }}
-          build_extra_args: --build-arg SIMULATOR_VERSION=${{ github.event.release.tag_name }}
-          push_git_tag: false
-          registry: ghcr.io
-          context: .
-          dockerfile: Dockerfile
-
-      # Setup python dependencies
-      - uses: actions/setup-python@v2
-        with:
-          python-version: "3.x" # Version range or exact version of a Python version to use, using SemVer's version range syntax
-
-      - uses: BSFishy/pip-action@v1
-        with:
-          packages: |
-            fire
-            semver
-
-      - id: tagLatest
-        run: echo ::set-output name=tagLatest::$(python tagLatest.py ${{steps.version.outputs.current}} ${{ github.event.release.tag_name }} )
-
-      - name: Tag the docker image with the latest tag
-        if: ${{steps.tagLatest.outputs.tagLatest=='True'}}
-        run: |
-          docker tag  ghcr.io/virtualcell/biosimulators_vcell::${{ github.event.release.tag_name }}  ghcr.io/virtualcell/biosimulators_vcell:latest 
-          docker push --all-tags ghcr.io/virtualcell/biosimulators_vcell
-
       # Submit to BioSimulators registry
       - name: Submit to BioSimulators registry
         run: |
-          REVISION=$(git rev-parse HEAD)
           curl \
             -X POST \
             -u $${{ secrets.DOCKER_REGISTRY_USERNAME }}:$${{ secrets.DOCKER_REGISTRY_TOKEN }} \
             -H "Accept: application/vnd.github.v3+json" \
             https://api.github.com/repos/biosimulators/Biosimulators/issues \
-            -d "{\"labels\": [\"Validate/submit simulator\"], \"title\": \"Submit VCell ${{ github.event.release.tag_name}}\", \"body\": \"---\nid: vcell\nversion: ${{ github.event.release.tag_name }}\nspecificationsUrl: https://raw.githubusercontent.com/${{ github.repository }}/${REVISION}/biosimulators.json\nspecificationsPatch:\n  version: ${{ github.event.release.tag_name }}\n  image:\n    url: ghcr.io/virtualcell/biosimulators_vcell:${{ github.event.release.tag_name }}\nvalidateImage: true\ncommitSimulator: true\n\n---\"}"
+            -d "{\"labels\": [\"Validate/submit simulator\"], \"title\": \"Submit VCell ${{ github.event.inputs.tag_name}}\", \"body\": \"---\nid: vcell\nversion: ${{ github.event.inputs.tag_name }}\nspecificationsUrl: https://raw.githubusercontent.com/${{ github.repository }}/${{ github.event.inputs.tag_name}}/biosimulators.json\nspecificationsPatch:\n  version: ${{ github.event.inputs.tag_name }}\n  image:\n    url: ghcr.io/virtualcell/biosimulators_vcell:${{ github.event.inputs.tag_name }}\nvalidateImage: true\ncommitSimulator: true\n\n---\"}"
