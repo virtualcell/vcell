@@ -6,16 +6,18 @@ on:
       debug_enabled:
         description: 'Run the build with tmate debugging enabled (https://github.com/marketplace/actions/debugging-with-tmate)'     
         required: false
-        default: false
+        default: 'false'
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
     - name: Set up file
       env:
-        GHCR_USER: ${{ secrets.DOCKER_REGISTRY_USERNAME }}
+        GHCR_USER: ${{ secrets.GHCR_USERNAME }}
+        DOCKER_USER: ${{ secrets.DOCKER_REGISTRY_USERNAME }}
       run: |
         echo $GHCR_USER >> ghcr_user.txt
+        echo $DOCKER_USER >> ghcr_user.txt
       # Enable tmate debugging of manually-triggered workflows if the input option was provided
     - name: Setup tmate session
       uses: mxschmitt/action-tmate@v3
