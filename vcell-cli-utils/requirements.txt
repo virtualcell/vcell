@@ -4,5 +4,5 @@ pyyaml
 pandas
 matplotlib
 seaborn
-python_libsedml
-python_libsbml
+python-libsedml
+python-libsbml
