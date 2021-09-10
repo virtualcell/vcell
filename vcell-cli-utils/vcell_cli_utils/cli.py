@@ -40,7 +40,10 @@ def gen_sedml_2d_3d(omex_file_path, base_out_path):
 
     for i_content, content in enumerate(sedml_contents):
         content_filename = os.path.join(temp_path, content.location)
-        sedml_name = content.location.split('/')[1].split('.')[0]
+        if '/' in content.location:
+            sedml_name = content.location.split('/')[1].split('.')[0]
+        else:
+            sedml_name = content.location.split('.')[0]
 
         doc = SedmlSimulationReader().run(content_filename)
         for output in doc.outputs:
