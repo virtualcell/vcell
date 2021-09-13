@@ -471,7 +471,7 @@ public class SEDMLExporter {
 						// add SEDML tasks (map simulation to model:simContext)
 						// repeated tasks
 						MathOverrides mathOverrides = vcSimulation.getMathOverrides();
-						if(mathOverrides != null && mathOverrides.hasOverrides()) {
+						if((sbmlExportFailed == false) && mathOverrides != null && mathOverrides.hasOverrides()) {
 							String[] overridenConstantNames = mathOverrides.getOverridenConstantNames();
 							String[] scannedConstantsNames = mathOverrides.getScannedConstantNames();
 							HashMap<String, String> scannedParamHash = new HashMap<String, String>();
@@ -507,6 +507,9 @@ public class SEDMLExporter {
 										XPathTarget targetXpath = getTargetXPath(ste, l2gMap);
 										ComputeChange computeChange = new ComputeChange(targetXpath, math);
 										String[] exprSymbols = unscannedParamExpr.getSymbols();
+//										if(exprSymbols == null) {
+//											continue;
+//										}
 										for (String symbol : exprSymbols) {
 											String symbolName = TokenMangler.mangleToSName(symbol);
 											SymbolTableEntry ste1 = vcModel.getEntry(symbol);
@@ -745,8 +748,8 @@ public class SEDMLExporter {
 						DataGenerator timeDataGen = sedmlModel.getDataGeneratorWithId(timeDataGenPrefix);
 		        		if (timeDataGen == null) {
 //							org.jlibsedml.Variable timeVar = new org.jlibsedml.Variable(DATAGENERATOR_TIME_SYMBOL, DATAGENERATOR_TIME_SYMBOL, sedmlModel.getTasks().get(0).getId(), VariableSymbol.TIME);
-							org.jlibsedml.Variable timeVar = new org.jlibsedml.Variable(DATAGENERATOR_TIME_SYMBOL, DATAGENERATOR_TIME_SYMBOL, taskRef, VariableSymbol.TIME);
-							ASTNode math = Libsedml.parseFormulaString(DATAGENERATOR_TIME_SYMBOL);
+							org.jlibsedml.Variable timeVar = new org.jlibsedml.Variable(DATAGENERATOR_TIME_SYMBOL+taskRef, DATAGENERATOR_TIME_SYMBOL, taskRef, VariableSymbol.TIME);
+							ASTNode math = Libsedml.parseFormulaString(DATAGENERATOR_TIME_SYMBOL+taskRef);
 							timeDataGen = new DataGenerator(timeDataGenPrefix, timeDataGenPrefix, math);
 							timeDataGen.addVariable(timeVar);
 							sedmlModel.addDataGenerator(timeDataGen);
@@ -759,10 +762,11 @@ public class SEDMLExporter {
 						if(sbmlExportFailed) {		// we try vcml export
 							for(SpeciesContext sc : vcModel.getSpeciesContexts()) {
 								String varName = sc.getName();
-								ASTNode varMath = Libsedml.parseFormulaString(varName);
+								String varId = varName + "_" + taskRef;
+								ASTNode varMath = Libsedml.parseFormulaString(varId);
 								String dataGenId = dataGenIdPrefix + "_" + TokenMangler.mangleToSName(varName);
 								DataGenerator dataGen = new DataGenerator(dataGenId, dataGenId, varMath);
-								org.jlibsedml.Variable variable = new org.jlibsedml.Variable(varName, varName, taskRef, XmlHelper.getXPathForSpecies(varName));
+								org.jlibsedml.Variable variable = new org.jlibsedml.Variable(varId, varName, taskRef, XmlHelper.getXPathForSpecies(varName));
 								dataGen.addVariable(variable);
 								sedmlModel.addDataGenerator(dataGen);
 								dataGeneratorsOfSim.add(dataGen);
@@ -878,7 +882,7 @@ public class SEDMLExporter {
 									String reportId = "__plot__" + TokenMangler.mangleToSName(vcSimulation.getName());
 									Report sedmlReport = new Report(reportId, simContext.getName() + "plots");
 									String xDataRef = sedmlModel.getDataGeneratorWithId(DATAGENERATOR_TIME_NAME + "_" + taskRef).getId();
-									String xDatasetXId = "datasetX_" + DATAGENERATOR_TIME_NAME;
+									String xDatasetXId = "datasetX_" + DATAGENERATOR_TIME_NAME + "_" + timeDataGen.getId();
 									DataSet dataSetTime = new DataSet(xDatasetXId, xDataRef, xDatasetXId, xDataRef);
 									sedmlReport.addDataSet(dataSetTime);
 									int surfaceCnt = 0;
@@ -886,7 +890,8 @@ public class SEDMLExporter {
 										if (dg.getId().equals(xDataRef)) {
 											continue;
 										}
-										String datasetYId = "datasetY_" + surfaceCnt;
+//										String datasetYId = "datasetY_" + surfaceCnt;
+										String datasetYId = "__data_set__" + surfaceCnt + "_" + dg.getName();
 										DataSet yDataSet = new DataSet(datasetYId, dg.getName(), datasetYId, dg.getId());
 										sedmlReport.addDataSet(yDataSet);
 

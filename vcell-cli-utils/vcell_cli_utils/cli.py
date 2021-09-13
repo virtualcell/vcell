@@ -19,6 +19,7 @@ import libsedml as lsed
 from libsedml import SedReport, SedPlot2D
 import sys
 import stat
+from pathlib import Path
 
 # Move status PY code here
 # Create temp directory
@@ -44,6 +45,8 @@ def gen_sedml_2d_3d(omex_file_path, base_out_path):
             sedml_name = content.location.split('/')[1].split('.')[0]
         else:
             sedml_name = content.location.split('.')[0]
+#        sedml_name = Path(content.location).stem
+        print("name: ", sedml_name, file=sys.stdout)
 
         doc = SedmlSimulationReader().run(content_filename)
         for output in doc.outputs:
