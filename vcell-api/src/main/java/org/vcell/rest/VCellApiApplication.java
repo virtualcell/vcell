@@ -32,6 +32,7 @@ import org.vcell.rest.rpc.RpcRestlet;
 import org.vcell.rest.rpc.RpcService;
 import org.vcell.rest.server.BiomodelDiagramServerResource;
 import org.vcell.rest.server.BiomodelSBMLServerResource;
+import org.vcell.rest.server.BiomodelBNGLServerResource;
 import org.vcell.rest.server.BiomodelServerResource;
 import org.vcell.rest.server.BiomodelSimulationSaveServerResource;
 import org.vcell.rest.server.BiomodelSimulationServerResource;
@@ -132,6 +133,7 @@ public class VCellApiApplication extends WadlApplication {
 	
 	public static final String VCML_DOWNLOAD = "biomodel.vcml";
 	public static final String SBML_DOWNLOAD = "biomodel.sbml";
+	public static final String BNGL_DOWNLOAD = "biomodel.bngl";
 	public static final String DIAGRAM_DOWNLOAD = "diagram";
 	public static final String SIMULATION = "simulation";
 	public static final String SIMULATIONID = "simulationid";
@@ -313,7 +315,8 @@ public class VCellApiApplication extends WadlApplication {
 		rootRouter.attach("/"+BIOMODEL, BiomodelsServerResource.class);  
 		rootRouter.attach("/"+BIOMODEL+"/{"+BIOMODELID+"}", BiomodelServerResource.class);  
 		rootRouter.attach("/"+BIOMODEL+"/{"+BIOMODELID+"}/"+VCML_DOWNLOAD, BiomodelVCMLServerResource.class);  
-		rootRouter.attach("/"+BIOMODEL+"/{"+BIOMODELID+"}/"+SBML_DOWNLOAD, BiomodelSBMLServerResource.class);  
+		rootRouter.attach("/"+BIOMODEL+"/{"+BIOMODELID+"}/"+SBML_DOWNLOAD, BiomodelSBMLServerResource.class); 
+		rootRouter.attach("/"+BIOMODEL+"/{"+BIOMODELID+"}/"+BNGL_DOWNLOAD, BiomodelBNGLServerResource.class);  
 		rootRouter.attach("/"+MODELBRICK, BiomodelVCMLModelInfoResource.class);//Expects queryparameters
 		rootRouter.attach("/"+BIOMODEL+"/{"+BIOMODELID+"}/"+DIAGRAM_DOWNLOAD, BiomodelDiagramServerResource.class);  
 		rootRouter.attach("/"+BIOMODEL+"/{"+BIOMODELID+"}/"+SIMULATION+"/{"+SIMULATIONID+"}", BiomodelSimulationServerResource.class);  
