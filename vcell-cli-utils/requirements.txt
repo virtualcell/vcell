@@ -1,4 +1,4 @@
-biosimulators_utils>=0.1.85
+biosimulators_utils>=0.1.121
 fire
 pyyaml
 pandas
