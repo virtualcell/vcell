@@ -20,6 +20,7 @@ from libsedml import SedReport, SedPlot2D
 import sys
 import stat
 from pathlib import Path
+from deprecated import deprecated
 
 # Move status PY code here
 # Create temp directory
@@ -121,9 +122,9 @@ def exec_plot_output_sed_doc(omex_file_path, base_out_path):
                 # create pseudo-report for ReportWriter
 
                 data_set_results = DataSetResults()
-
+                
                 for col in list(data_set_df.columns):
-                    data_set_results[col] = data_set_df[col].values
+                    data_set_results[col] = data_set_df[col].to_numpy(dtype='float64')
 
                 # append to data structure of report results
 
@@ -163,7 +164,7 @@ def exec_plot_output_sed_doc(omex_file_path, base_out_path):
 
                 data_set_results = DataSetResults()
                 for col in list(data_set_df.columns):
-                    data_set_results[col] = data_set_df[col].values
+                    data_set_results[col] = data_set_df[col].to_numpy(dtype='float64')
                 
                 rel_path = os.path.join(content.location, report.id)
                 if len(rel_path.split("./")) > 1:
@@ -175,7 +176,7 @@ def exec_plot_output_sed_doc(omex_file_path, base_out_path):
                                    format='h5')
                 
                 
-
+@deprecated("This method is no longer used")
 def exec_sed_doc(omex_file_path, base_out_path):
     # defining archive
     archive = CombineArchiveReader().run(in_file=omex_file_path, out_dir=tmp_dir,
