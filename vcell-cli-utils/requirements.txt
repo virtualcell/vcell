@@ -6,3 +6,4 @@ matplotlib
 seaborn
 python-libsedml
 python-libsbml
+deprecated
