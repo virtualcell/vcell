@@ -696,11 +696,11 @@ public class CLIUtils {
             put("pdf", "plots.zip");
         }};
         
-        Set<String> filesToSkip = new HashSet<>();
+        Set<String> filesToSkip = new LinkedHashSet<>();
         srcFiles = listFilesForFolder(dirPath, "pdf");
         for(File file : srcFiles) {
         	String baseName = FilenameUtils.getBaseName(file.getName());
-        	filesToSkip.add(baseName);
+        	filesToSkip.add(baseName);		// collect all the reports (csv files) belonging to plots
         }
 
         for (String ext : extensionListMap.keySet()) {
@@ -717,7 +717,7 @@ public class CLIUtils {
                 	if("csv".equalsIgnoreCase(ext)) {
                 		String candidate = FilenameUtils.getBaseName(srcFile.getName());
                 		if(filesToSkip.contains(candidate)) {
-                			continue;	// skip reports with a corresponding (same name) image
+                			continue;	// skip reports with a corresponding (same name) image (plot)
                 		}
                 	}
 
@@ -738,6 +738,16 @@ public class CLIUtils {
                 zipOutputStream.close();
                 fileOutputStream.close();
             }
+        }
+        
+        srcFiles = listFilesForFolder(dirPath, "csv");		// move one lvl up all the reports (csv files) belonging to plots
+        for (File srcFile : srcFiles) {
+    		String candidate = FilenameUtils.getBaseName(srcFile.getName());
+    		if(filesToSkip.contains(candidate)) {
+    			Path source = Paths.get(srcFile.getAbsolutePath());
+    			Path target = Paths.get(dirPath.toString() + System.getProperty("file.separator") + FilenameUtils.getName(srcFile.getName()));
+    			Files.move(source, target);
+    		}
         }
     }
 
