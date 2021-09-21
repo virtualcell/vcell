@@ -2,12 +2,13 @@ import os
 from os.path import basename
 import fire
 from biosimulators_utils.archive.io import ArchiveReader
+from biosimulators_utils.log.data_model import TaskLog
 import libsedml
 import yaml
 import tempfile
 import zipfile
 import shutil
-
+import json
 
 # Create temp directory
 tmp_dir = tempfile.mkdtemp()
@@ -31,11 +32,10 @@ def extract_omex_archive(omex_file):
 
 
 def status_yml(omex_file: str, out_dir: str):
-    yaml_dict = {}
-
+    yaml_dict = []
     for sedml in extract_omex_archive(omex_file):
-        outputs_dict = {"outputs": {}}
-        tasks_dict = {"tasks": {}}
+        outputs_dict = {"outputs": []}
+        tasks_dict = {"tasks": []}
         # add temp dir path
         sedml_path = os.path.join(tmp_dir, sedml)
         sedml_doc = libsedml.readSedMLFromFile(sedml_path)
@@ -46,7 +46,6 @@ def status_yml(omex_file: str, out_dir: str):
 
         # Convert into the list
         task_list = [task.getId() for task in tasks]
-
         plots_dict = {}
         reports_dict = {}
         other_list = []
@@ -60,30 +59,36 @@ def status_yml(omex_file: str, out_dir: str):
                 other_list.append(plot.getId())
 
         for plot in list(plots_dict.keys()):
-            curves_dict = {}
+            curves_list = []
             for curve in plots_dict[plot]:
-                curves_dict[curve] = 'SUCCEEDED'
-            outputs_dict["outputs"].update({plot: {"curves": curves_dict}})
-            outputs_dict["outputs"][plot].update({"status": "SUCCEEDED"})
+                curves_list.append({"id":curve, "status":"SUCCEEDED"})
+            outputs_dict["outputs"].append({"id":plot,"status": "SUCCEEDED","exception": None,"skipReason": None,"output": None,"duration": None,"curves": curves_list})
+           
 
         for report in list(reports_dict.keys()):
-            dataset_dict = {}
+            dataset_list = []
+            #dataset_dict = {}
             for dataset in reports_dict[report]:
-                dataset_dict[dataset] = 'QUEUED'
-            outputs_dict["outputs"].update({report: {"dataSets": dataset_dict}})
-            outputs_dict["outputs"][report].update({"status": "QUEUED"})
+                dataset_list.append({"id":dataset , "status" :"QUEUED"})
+            outputs_dict["outputs"].append({"id":report,"status": "QUEUED","exception": None,"skipReason": None,"output": None,"duration": None, "dataSets": dataset_list})
+            #outputs_dict["outputs"][report].update({"status": "QUEUED"})
 
         for task in task_list:
-            tasks_dict["tasks"].update({task: {"status": "QUEUED"}})
+            tasks_dict["tasks"].append({"id":task ,"status": "QUEUED","exception": None,"skipReason": None, "output": None, "duration": None,"algorithm": None,"simulatorDetails":None})
 
-        sed_doc_dict = {sedml: {}}
-        sed_doc_dict[sedml].update(outputs_dict)
-        sed_doc_dict[sedml].update(tasks_dict)
-        sed_doc_dict[sedml].update({"status": "QUEUED"})
-        yaml_dict[sedml] = sed_doc_dict[sedml]
+        sed_doc_dict = {"location":sedml,"status": "QUEUED", "exception": None,"skipReason": None,"output":None,"duration":None}
+        sed_doc_dict.update(outputs_dict)
+        sed_doc_dict.update(tasks_dict)
+        #sed_doc_dict.update({"status": "QUEUED"})
+        yaml_dict.append(sed_doc_dict)
     final_dict = {}
-    final_dict['sedDocuments'] = dict(yaml_dict)
+    final_dict['sedDocuments'] = yaml_dict
     final_dict['status'] = "QUEUED"
+    final_dict['exception'] = None
+    final_dict['skipReason'] = None
+    final_dict['duration'] = None
+    final_dict['output'] = None
+
 
     status_yaml_path = os.path.join(out_dir, "status.yml")
 
@@ -100,47 +105,63 @@ def get_yaml_as_str(yaml_path: str):
 
     # Convert yaml to json
     yaml_dict = yaml.load(yaml_str, yaml.SafeLoader)
-
     return yaml_dict
 
-def dump_yaml_dict(yaml_path: str, yaml_dict: str):
+def dump_yaml_dict(yaml_path: str, yaml_dict: str, out_dir: str):
+    json_path = os.path.join(out_dir, "status.json")
     with open(yaml_path, 'w' , encoding="utf-8") as sy:
         sy.write(yaml.dump(yaml_dict))
+        dump_json_dict(json_path,yaml_dict)
+
+def dump_json_dict(json_path: str,yaml_dict: str):
+    with open(json_path, 'w' , encoding="utf-8") as json_out:
+        json.dump(yaml_dict,json_out,sort_keys=True,indent=4)
 
 
 def update_status(sedml: str, task: str, status: str, out_dir: str):
 
     # Hardcoded because name is static
     yaml_dict = get_yaml_as_str(os.path.join(out_dir, "status.yml"))
-
-    sedml_name_nested = [i for i in list(yaml_dict['sedDocuments'].keys()) if sedml.endswith(i)][0]
-
-    # Update task status
-    yaml_dict['sedDocuments'][sedml_name_nested]['tasks'][task]['status'] = status
-
-    # update individual SED-ML status
-    for key in yaml_dict['sedDocuments'][sedml_name_nested]['tasks'].keys():
-        if yaml_dict['sedDocuments'][sedml_name_nested]['tasks'][key]['status'] == 'QUEUED' or yaml_dict['sedDocuments'][sedml_name_nested]['tasks'][key]['status']== 'SUCCEEDED':
-            yaml_dict['sedDocuments'][sedml_name_nested]['status'] = 'SUCCEEDED'
-        else:
-            yaml_dict['sedDocuments'][sedml_name_nested]['status'] = 'FAILED'
+    for sedml_list in yaml_dict['sedDocuments']:
+        if sedml.endswith(sedml_list["location"]):
+            sedml_name_nested = sedml_list["location"]
+            # Update task status
+            for taskList in sedml_list['tasks']:
+                if taskList['id'] == task:
+                    taskList['status'] = status
+                    # update individual SED-ML status
+                    if taskList['status'] == 'QUEUED' or taskList['status']== 'SUCCEEDED':
+                        sedml_list['status'] = 'SUCCEEDED'
+                    else:
+                        sedml_list['status'] = 'FAILED'
 
     status_yaml_path = os.path.join(out_dir, "status.yml")
 
     # Convert json to yaml # Save new yaml
-    dump_yaml_dict(status_yaml_path, yaml_dict=yaml_dict)
+    dump_yaml_dict(status_yaml_path, yaml_dict=yaml_dict, out_dir=out_dir)
 
 
 def update_dataset_status(sedml: str, report: str, dataset: str, status: str, out_dir: str):
     yaml_dict = get_yaml_as_str(os.path.join(out_dir, "status.yml"))
-    sedml_name_nested = [i for i in list(yaml_dict['sedDocuments'].keys()) if sedml.endswith(i)][0]
-    # Update task status
-    try:
-        yaml_dict['sedDocuments'][sedml_name_nested]['outputs'][report]['dataSets'][dataset] = status
-    except KeyError:
-        pass
+    for sedml_list in yaml_dict['sedDocuments']:
+        if sedml.endswith(sedml_list["location"]):
+            sedml_name_nested = sedml_list["location"]
+            # Update task status
+            try:
+                for outputList in sedml_list['outputs']:
+                    if outputList['id'] == report:
+                        for dataset_list in outputList['dataSets']:
+                            if dataset_list['id'] == dataset:
+                                dataset_list['status'] = status
+                                if status == 'QUEUED' or status == 'SUCCEEDED':
+                                    outputList['status']= 'SUCCEEDED'
+                                else:
+                                    outputList['status'] = 'FAILED'
+            except KeyError:
+                pass
 
     # update individual dataSets status
+    '''
     for key in yaml_dict['sedDocuments'][sedml_name_nested]['outputs'].keys():
         try:
             for dataset_key in yaml_dict['sedDocuments'][sedml_name_nested]['outputs'][key]['dataSets'].keys():
@@ -150,12 +171,12 @@ def update_dataset_status(sedml: str, report: str, dataset: str, status: str, ou
                     yaml_dict['sedDocuments'][sedml_name_nested]['outputs'][key]['status'] = 'FAILED'
         except KeyError:
             continue
-
+    '''
 
     status_yaml_path = os.path.join(out_dir, "status.yml")
 
     # Convert json to yaml # Save new yaml
-    dump_yaml_dict(status_yaml_path, yaml_dict=yaml_dict)
+    dump_yaml_dict(status_yaml_path, yaml_dict=yaml_dict, out_dir=out_dir)
 
 
 def sim_status(status: str, out_dir: str):
@@ -168,7 +189,7 @@ def sim_status(status: str, out_dir: str):
     status_yaml_path = os.path.join(out_dir, "status.yml")
 
     # Convert json to yaml # Save new yaml
-    dump_yaml_dict(status_yaml_path, yaml_dict=yaml_dict)
+    dump_yaml_dict(status_yaml_path, yaml_dict=yaml_dict, out_dir=out_dir)
 
 
 if __name__ == "__main__":
