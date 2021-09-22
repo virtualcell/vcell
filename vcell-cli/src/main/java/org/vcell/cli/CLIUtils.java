@@ -9,7 +9,6 @@ import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.util.ColumnDescription;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jlibsedml.*;
@@ -695,13 +694,6 @@ public class CLIUtils {
             put("csv", "reports.zip");
             put("pdf", "plots.zip");
         }};
-        
-        Set<String> filesToSkip = new HashSet<>();
-        srcFiles = listFilesForFolder(dirPath, "pdf");
-        for(File file : srcFiles) {
-        	String baseName = FilenameUtils.getBaseName(file.getName());
-        	filesToSkip.add(baseName);
-        }
 
         for (String ext : extensionListMap.keySet()) {
             srcFiles = listFilesForFolder(dirPath, ext);
@@ -713,13 +705,6 @@ public class CLIUtils {
                 zipOutputStream = new ZipOutputStream(fileOutputStream);
                 if (srcFiles.size() != 0) System.out.println("Archiving resultant " + ext.toUpperCase() + " files to `" + extensionListMap.get(ext) + "`.");
                 for (File srcFile : srcFiles) {
-                	
-                	if("csv".equalsIgnoreCase(ext)) {
-                		String candidate = FilenameUtils.getBaseName(srcFile.getName());
-                		if(filesToSkip.contains(candidate)) {
-                			continue;	// skip reports with a corresponding (same name) image
-                		}
-                	}
 
                     fileInputstream = new FileInputStream(srcFile);
 
