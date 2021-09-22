@@ -90,7 +90,7 @@ def status_yml(omex_file: str, out_dir: str):
     final_dict['output'] = None
 
 
-    status_yaml_path = os.path.join(out_dir, "status.yml")
+    status_yaml_path = os.path.join(out_dir, "log.yml")
 
     with open(status_yaml_path, 'w' , encoding="utf-8") as sy:
         sy.write(yaml.dump(final_dict))
@@ -108,7 +108,7 @@ def get_yaml_as_str(yaml_path: str):
     return yaml_dict
 
 def dump_yaml_dict(yaml_path: str, yaml_dict: str, out_dir: str):
-    json_path = os.path.join(out_dir, "status.json")
+    json_path = os.path.join(out_dir, "log.json")
     with open(yaml_path, 'w' , encoding="utf-8") as sy:
         sy.write(yaml.dump(yaml_dict))
         dump_json_dict(json_path,yaml_dict)
@@ -121,7 +121,7 @@ def dump_json_dict(json_path: str,yaml_dict: str):
 def update_status(sedml: str, task: str, status: str, out_dir: str):
 
     # Hardcoded because name is static
-    yaml_dict = get_yaml_as_str(os.path.join(out_dir, "status.yml"))
+    yaml_dict = get_yaml_as_str(os.path.join(out_dir, "log.yml"))
     for sedml_list in yaml_dict['sedDocuments']:
         if sedml.endswith(sedml_list["location"]):
             sedml_name_nested = sedml_list["location"]
@@ -135,14 +135,14 @@ def update_status(sedml: str, task: str, status: str, out_dir: str):
                     else:
                         sedml_list['status'] = 'FAILED'
 
-    status_yaml_path = os.path.join(out_dir, "status.yml")
+    status_yaml_path = os.path.join(out_dir, "log.yml")
 
     # Convert json to yaml # Save new yaml
     dump_yaml_dict(status_yaml_path, yaml_dict=yaml_dict, out_dir=out_dir)
 
 
 def update_dataset_status(sedml: str, report: str, dataset: str, status: str, out_dir: str):
-    yaml_dict = get_yaml_as_str(os.path.join(out_dir, "status.yml"))
+    yaml_dict = get_yaml_as_str(os.path.join(out_dir, "log.yml"))
     for sedml_list in yaml_dict['sedDocuments']:
         if sedml.endswith(sedml_list["location"]):
             sedml_name_nested = sedml_list["location"]
@@ -173,7 +173,7 @@ def update_dataset_status(sedml: str, report: str, dataset: str, status: str, ou
             continue
     '''
 
-    status_yaml_path = os.path.join(out_dir, "status.yml")
+    status_yaml_path = os.path.join(out_dir, "log.yml")
 
     # Convert json to yaml # Save new yaml
     dump_yaml_dict(status_yaml_path, yaml_dict=yaml_dict, out_dir=out_dir)
@@ -181,12 +181,12 @@ def update_dataset_status(sedml: str, report: str, dataset: str, status: str, ou
 
 def sim_status(status: str, out_dir: str):
 
-    yaml_dict = get_yaml_as_str(os.path.join(out_dir, "status.yml"))
+    yaml_dict = get_yaml_as_str(os.path.join(out_dir, "log.yml"))
 
     # Update simulation status
     yaml_dict['status'] = status
 
-    status_yaml_path = os.path.join(out_dir, "status.yml")
+    status_yaml_path = os.path.join(out_dir, "log.yml")
 
     # Convert json to yaml # Save new yaml
     dump_yaml_dict(status_yaml_path, yaml_dict=yaml_dict, out_dir=out_dir)
