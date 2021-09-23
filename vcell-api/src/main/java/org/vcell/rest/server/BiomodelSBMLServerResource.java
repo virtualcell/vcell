@@ -108,7 +108,12 @@ public class BiomodelSBMLServerResource extends AbstractServerResource implement
 			String biomodelVCML = restDatabaseService.query(bmsr,vcellUser);
 			BioModel bioModel = XmlHelper.XMLToBioModel(new XMLSource(biomodelVCML));
 			//public SBMLExporter(BioModel argBioModel, int argSbmlLevel, int argSbmlVersion, boolean isSpatial) {
-			SimulationContext simulationContext = bioModel.getSimulationContext(appName);
+			SimulationContext simulationContext = null;
+			if(appName != null) {
+				simulationContext = bioModel.getSimulationContext(appName);
+			}else {
+				simulationContext = bioModel.getSimulationContext(0);
+			}
 			SBMLExporter sbmlExporter = new SBMLExporter(simulationContext, 3, 1, simulationContext.getGeometryContext().getGeometry().getDimension()>0);
 			return sbmlExporter.getSBMLString();			
 		} catch (PermissionException e) {
