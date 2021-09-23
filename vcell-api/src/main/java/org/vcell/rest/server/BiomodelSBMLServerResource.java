@@ -25,12 +25,14 @@ import org.vcell.util.PermissionException;
 import org.vcell.util.document.User;
 
 import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XmlHelper;
 
 public class BiomodelSBMLServerResource extends AbstractServerResource implements BiomodelSBMLResource {
 
 	private String biomodelid;
+	private String appName;
 	
     @Override
     protected RepresentationInfo describe(MethodInfo methodInfo,
@@ -48,7 +50,7 @@ public class BiomodelSBMLServerResource extends AbstractServerResource implement
     @Override
     protected void doInit() throws ResourceException {
         String simTaskIdAttribute = getAttribute(VCellApiApplication.BIOMODELID);
-
+        appName = getRequest().getOriginalRef().getQueryAsForm(true).getFirstValue("appname");
         if (simTaskIdAttribute != null) {
             this.biomodelid = simTaskIdAttribute;
             setName("Resource for biomodel \"" + this.biomodelid + "\"");
@@ -106,7 +108,8 @@ public class BiomodelSBMLServerResource extends AbstractServerResource implement
 			String biomodelVCML = restDatabaseService.query(bmsr,vcellUser);
 			BioModel bioModel = XmlHelper.XMLToBioModel(new XMLSource(biomodelVCML));
 			//public SBMLExporter(BioModel argBioModel, int argSbmlLevel, int argSbmlVersion, boolean isSpatial) {
-			SBMLExporter sbmlExporter = new SBMLExporter(bioModel.getSimulationContext(0), 3, 1, bioModel.getSimulationContext(0).getGeometryContext().getGeometry().getDimension()>0);
+			SimulationContext simulationContext = bioModel.getSimulationContext(appName);
+			SBMLExporter sbmlExporter = new SBMLExporter(simulationContext, 3, 1, simulationContext.getGeometryContext().getGeometry().getDimension()>0);
 			return sbmlExporter.getSBMLString();			
 		} catch (PermissionException e) {
 			e.printStackTrace();
