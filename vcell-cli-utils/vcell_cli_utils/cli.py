@@ -141,7 +141,8 @@ def exec_plot_output_sed_doc(omex_file_path, base_out_path):
                                    data_set_results,
                                    base_out_path,
                                    rel_path,
-                                   format='h5')
+                                   format='h5',
+                                   type=Plot2D)
                 os.rename(report_filename,
                           report_filename.replace('__plot__', ''))
 
@@ -173,7 +174,8 @@ def exec_plot_output_sed_doc(omex_file_path, base_out_path):
                                    data_set_results,
                                    base_out_path,
                                    rel_path,
-                                   format='h5')
+                                   format='h5',
+                                   type=Report)
                 
                 
 @deprecated("This method is no longer used")

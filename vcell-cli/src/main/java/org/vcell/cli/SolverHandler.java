@@ -86,6 +86,9 @@ public class SolverHandler {
 //                if(sim.getImportedTaskID() == null) {
 //                	sim.setImportedTaskID(sim.getName());
 //                }
+                
+                long startTime = System.currentTimeMillis();
+                
                 String kisao = sd.getKisao();
                 SimulationJob simJob = new SimulationJob(sim, 0, null);
                 SimulationTask simTask = new SimulationTask(simJob, 0);
@@ -122,6 +125,11 @@ public class SolverHandler {
                     if (solver.getSolverStatus().getStatus() == SolverStatus.SOLVER_FINISHED) {
                         System.out.println("Succesful execution: Model '" + docName + "' Task '" + sim.getDescription() + "'.");
 
+                        long endTime = System.currentTimeMillis();
+                		long elapsedTime = endTime - startTime;
+                		String msg = "Running simulation " + simTask.getSimulation().getName() + ", " + elapsedTime + " ms";
+                		System.out.println(msg);
+                        
                         CLIUtils.updateTaskStatusYml(sedmlLocation, sim.getImportedTaskID(), CLIUtils.Status.SUCCEEDED, outDir);
 
                         CLIUtils.drawBreakLine("-", 100);
@@ -133,6 +141,13 @@ public class SolverHandler {
                     CLIUtils.finalStatusUpdate( CLIUtils.Status.SUCCEEDED, outDir);
                 } catch (Exception e) {
                     System.err.println("Failed execution: Model '" + docName + "' Task '" + sim.getDescription() + "'.");
+                    
+                    long endTime = System.currentTimeMillis();
+            		long elapsedTime = endTime - startTime;
+            		String msg = "Running simulation " + simTask.getSimulation().getName() + ", " + elapsedTime + " ms";
+            		System.out.println(msg);
+                    
+                  
                     CLIUtils.updateTaskStatusYml(sedmlLocation, sim.getImportedTaskID(), CLIUtils.Status.FAILED, outDir);
                     CLIUtils.finalStatusUpdate( CLIUtils.Status.FAILED, outDir);
                     if (e.getMessage() != null) {

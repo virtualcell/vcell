@@ -392,6 +392,12 @@ protected synchronized static void initFinalTree(VCDocumentDbTreeModel vcDocumen
 							if(foundPublished) {
 								continue;
 							}
+							
+//							String vn = versionVCDocumentInfo.getVersion().getName();
+//							String vo = versionVCDocumentInfo.getVersion().getOwner().getName();
+//							String vk = versionVCDocumentInfo.getVersion().getVersionKey().toString();
+//							System.out.println(vk);
+							
 							LinkedList<BioModelNode> modelsList;
 							if(publishedModelsMap.containsKey(key)) {
 								modelsList = publishedModelsMap.get(key);

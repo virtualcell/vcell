@@ -100,7 +100,8 @@ public class MIRIAMRef extends KeyOfTwo<String, String> {
 			id += decode(split[3]);
 		} else if(split.length == 5) {
 			id += decode(split[3]);
-			if(id != null && (id.equalsIgnoreCase("GO") || id.equalsIgnoreCase("CHEBI") || id.equalsIgnoreCase("PR") || id.equalsIgnoreCase("SBO"))) {
+			if(id != null && (id.equalsIgnoreCase("GO") || id.equalsIgnoreCase("CHEBI") || id.equalsIgnoreCase("PR") || id.equalsIgnoreCase("SBO") ||
+					id.equalsIgnoreCase("CL"))) {
 				id += ":";
 				id += decode(split[4]);
 			} else {
