@@ -898,6 +898,38 @@ public class SEDMLExporter {
 										surfaceCnt++;
 									}
 									sedmlModel.addOutput(sedmlReport);
+								} else {	// spatial deterministic SBML
+											// TODO: add surfaces to the plots
+									String plot3dId = "plot3d_" + TokenMangler.mangleToSName(vcSimulation.getName());
+									String reportId = "report_" + TokenMangler.mangleToSName(vcSimulation.getName());
+									String plotName = simContext.getName() + "plots";
+									Plot3D sedmlPlot3d = new Plot3D(plot3dId, plotName);
+									Report sedmlReport = new Report(reportId, plotName);
+									
+									sedmlPlot3d.addNote(createNotesElement("Plot of all variables and output functions from application '" + simContext.getName() + "' ; simulation '" + vcSimulation.getName() + "' in VCell model"));
+									sedmlReport.addNote(createNotesElement("Report of all variables and output functions from application '" + simContext.getName() + "' ; simulation '" + vcSimulation.getName() + "' in VCell model"));
+									DataGenerator dgtime = sedmlModel.getDataGeneratorWithId(DATAGENERATOR_TIME_NAME + "_" + taskRef);
+									String xDataRef = dgtime.getId();
+									String xDatasetXId = "__data_set__" + plot3dId + dgtime.getId();
+									DataSet dataSet = new DataSet(xDatasetXId, DATAGENERATOR_TIME_NAME, xDataRef, xDataRef);	// id, name, label, data generator reference
+									sedmlReport.addDataSet(dataSet);
+									
+									// add a curve for each dataGenerator in SEDML model
+									int curveCnt = 0;
+									// String id, String name, ASTNode math
+									for (DataGenerator dg : dataGeneratorsOfSim) {
+										// no curve for time, since time is xDateReference
+										if (dg.getId().equals(xDataRef)) {
+											continue;
+										}
+										String curveId = "curve_" + plot3dId + "_" + dg.getName();
+										String datasetYId = "__data_set__" + plot3dId + dg.getName();
+
+										DataSet yDataSet = new DataSet(datasetYId, dg.getName(), dg.getId(), dg.getId());
+										sedmlReport.addDataSet(yDataSet);
+										curveCnt++;
+									}
+									sedmlModel.addOutput(sedmlReport);
 								}
 							}
 						}
