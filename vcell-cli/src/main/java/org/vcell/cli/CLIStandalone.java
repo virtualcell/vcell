@@ -12,6 +12,7 @@ import com.lowagie.text.pdf.crypto.RuntimeCryptoException;
 import org.apache.commons.io.FileUtils;
 import java.io.File;
 import java.io.FilenameFilter;
+import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -25,8 +26,11 @@ public class CLIStandalone {
 
         if(args[0].toLowerCase().equals("convert")) {
             // VCML to OMex conversion
-
-            VcmlOmexConversion.parseArgsAndConvert(ArrayUtils.remove(args, 0));
+        	try {
+        		VcmlOmexConversion.parseArgsAndConvert(ArrayUtils.remove(args, 0));
+        	} catch(IOException e) {
+        		e.printStackTrace(System.err);
+        	}
         }
 
         else {

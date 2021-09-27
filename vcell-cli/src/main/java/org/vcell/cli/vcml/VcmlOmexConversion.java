@@ -15,14 +15,18 @@ import org.sbml.libcombine.KnownFormats;
 import org.vcell.cli.CLIHandler;
 import org.vcell.sedml.SEDMLExporter;
 
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.nio.file.Paths;
 
 public class VcmlOmexConversion {
 
-    public static void parseArgsAndConvert(String[] args) {
+    public static void parseArgsAndConvert(String[] args) throws IOException {
         File input = null;
         try {
             // TODO: handle if it's not valid PATH
@@ -37,22 +41,39 @@ public class VcmlOmexConversion {
             if (inputFiles == null) {
                 System.err.println("No VCML files found in the directory `" + input + "`");
             }
+            
+//            File fout = new File("G:\\dan\\jprojects\\git\\vcdb\\published\\biomodel\\omex\\sbml\\errorLog.txt");
+//            FileOutputStream fos = new FileOutputStream(fout);
+//            BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(fos));
+            
 //            assert inputFiles != null;
             for (String inputFile : inputFiles) {
                 File file = new File(input, inputFile);
-                System.out.println(file);
+                System.out.println(" ============== start: " + inputFile);
                 args[1] = file.toString();
                 try {
                     if (inputFile.endsWith(".vcml")) {
                         boolean isCreated = vcmlToOmexConversion(args);
-                        if (isCreated) System.out.println("Combine archive created for file(s) `" + input + "`");
-                        else System.err.println("Failed converting VCML to OMEX archive for `" + input + "`");
-                    } else System.err.println("No VCML files found in the directory `" + input + "`");
+                        if (isCreated) {
+                        	System.out.println("Combine archive created for file(s) `" + input + "`");
+                        }
+                        else {
+                        	System.err.println("Failed converting VCML to OMEX archive for `" + input + "`");
+                        }
+                    } else {
+                    	System.err.println("No VCML files found in the directory `" + input + "`");
+                    }
                 } catch (Exception e) {
-                    e.printStackTrace(System.err);
-                    System.exit(1);
+//					e.printStackTrace(System.err);
+                    
+                	System.out.println("\n\n\n=====>>>>EXPORT FAILED: " +inputFile+"\n\n\n");
+//                	bw.write(inputFile);
+//                	bw.newLine();
+                	
+                    //                   System.exit(1);
                 }
             }
+//            bw.close();
         } else {
             try {
                 assert input != null;
@@ -62,8 +83,9 @@ public class VcmlOmexConversion {
                     else System.err.println("Failed converting VCML to OMEX archive for `" + input + "`");
                 } else System.err.println("No input files found in the directory `" + input + "`");
             } catch (IOException | XmlParseException e) {
-                e.printStackTrace();
-                System.exit(1);
+//                e.printStackTrace();
+                System.out.println("\n\n\n=====>>>>EXPORT FAILED: " +input+"\n\n\n");   
+//                System.exit(1);
             }
         }
     }
