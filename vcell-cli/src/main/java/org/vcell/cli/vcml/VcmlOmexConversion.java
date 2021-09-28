@@ -125,7 +125,7 @@ public class VcmlOmexConversion {
 
         // NOTE: SEDML exporter exports both SEDML as well as required SBML
         SEDMLExporter sedmlExporter = new SEDMLExporter(bioModel, sedmlLevel, sedmlVersion);
-        String sedmlString = sedmlExporter.getSEDMLFile(outputDir, bForceVCML, true);
+        String sedmlString = sedmlExporter.getSEDMLFile(outputDir, vcmlName, bForceVCML, true);
         XmlUtil.writeXMLStringToFile(sedmlString, String.valueOf(Paths.get(outputDir, vcmlName + ".sedml")), true);
 
         // libCombine needs native lib
