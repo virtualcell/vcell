@@ -300,8 +300,10 @@ public class SEDMLExporter {
 					String filePathStrRelative = null;
 					String urn = null;
 					if(sbmlExportFailed) {
-						filePathStrAbsolute = Paths.get(savePath, bioModelName + ".vcml").toString();
-						filePathStrRelative = bioModelName + ".vcml";
+//						filePathStrAbsolute = Paths.get(savePath, bioModelName + ".vcml").toString();
+						filePathStrAbsolute = Paths.get(savePath, sBaseFileName + ".vcml").toString();
+//						filePathStrRelative = bioModelName + ".vcml";
+						filePathStrRelative = sBaseFileName + ".vcml";
 						if(!bFromOmex) {	// the vcml file is managed elsewhere when called for omex
 							String vcmlString = XmlHelper.bioModelToXML(vcBioModel);
 							XmlUtil.writeXMLStringToFile(vcmlString, filePathStrAbsolute, true);
@@ -309,8 +311,10 @@ public class SEDMLExporter {
 						}
 						urn = vcmlLanguageURN;
 					} else {
-						filePathStrAbsolute = Paths.get(savePath, bioModelName + "_" + TokenMangler.mangleToSName(simContextName) + ".xml").toString();
-						filePathStrRelative = bioModelName + "_" +  TokenMangler.mangleToSName(simContextName) + ".xml";
+//						filePathStrAbsolute = Paths.get(savePath, bioModelName + "_" + TokenMangler.mangleToSName(simContextName) + ".xml").toString();
+						filePathStrAbsolute = Paths.get(savePath, sBaseFileName + "_" + TokenMangler.mangleToSName(simContextName) + ".xml").toString();
+//						filePathStrRelative = bioModelName + "_" +  TokenMangler.mangleToSName(simContextName) + ".xml";
+						filePathStrRelative = sBaseFileName + "_" +  TokenMangler.mangleToSName(simContextName) + ".xml";
 						XmlUtil.writeXMLStringToFile(sbmlString, filePathStrAbsolute, true);
 						urn = sbmlLanguageURN;
 						sbmlFilePathStrAbsoluteList.add(filePathStrRelative);
