@@ -779,8 +779,9 @@ public class SEDMLExporter {
 						} else {
 							String[] varNamesList = SimSpec.fromSBML(sbmlString).getVarsList();
 							for (String varName : varNamesList) {
-								org.jlibsedml.Variable sedmlVar = new org.jlibsedml.Variable(varName, varName, taskRef, sbmlSupport.getXPathForSpecies(varName));
-								ASTNode varMath = Libsedml.parseFormulaString(varName);
+								String varId = varName + "_" + taskRef;
+								org.jlibsedml.Variable sedmlVar = new org.jlibsedml.Variable(varId, varName, taskRef, sbmlSupport.getXPathForSpecies(varName));
+								ASTNode varMath = Libsedml.parseFormulaString(varId);
 								String dataGenId = dataGenIdPrefix + "_" + TokenMangler.mangleToSName(varName);			//"dataGen_" + varCount; - old code
 								DataGenerator dataGen = new DataGenerator(dataGenId, dataGenId, varMath);
 								dataGen.addVariable(sedmlVar);
