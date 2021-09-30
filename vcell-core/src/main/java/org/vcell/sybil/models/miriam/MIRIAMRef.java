@@ -101,7 +101,7 @@ public class MIRIAMRef extends KeyOfTwo<String, String> {
 		} else if(split.length == 5) {
 			id += decode(split[3]);
 			if(id != null && (id.equalsIgnoreCase("GO") || id.equalsIgnoreCase("CHEBI") || id.equalsIgnoreCase("PR") || id.equalsIgnoreCase("SBO") ||
-					id.equalsIgnoreCase("CL"))) {
+					id.equalsIgnoreCase("CL") || id.equalsIgnoreCase("BTO"))) {
 				id += ":";
 				id += decode(split[4]);
 			} else {
