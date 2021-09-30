@@ -117,8 +117,7 @@ def dump_json_dict(json_path: str,yaml_dict: str):
         json.dump(yaml_dict,json_out,sort_keys=True,indent=4)
 
 
-def update_status(sedml: str, task: str, status: str, out_dir: str):
-
+def update_status(sedml: str, task: str, status: str, out_dir: str ,duration: str, algorithm: str):
     # Hardcoded because name is static
     yaml_dict = get_yaml_as_str(os.path.join(out_dir, "log.yml"))
     for sedml_list in yaml_dict['sedDocuments']:
@@ -128,6 +127,8 @@ def update_status(sedml: str, task: str, status: str, out_dir: str):
             for taskList in sedml_list['tasks']:
                 if taskList['id'] == task:
                     taskList['status'] = status
+                    taskList['duration'] = duration
+                    taskList['algorithm'] = algorithm
                     # update individual SED-ML status
                     if taskList['status'] == 'QUEUED' or taskList['status']== 'SUCCEEDED':
                         sedml_list['status'] = 'SUCCEEDED'

@@ -344,7 +344,7 @@ public class CLIUtils {
                             }
 
                             CLIUtils.updateDatasetStatusYml(sedmlLocation, oo.getId(), dataset.getId(), Status.SUCCEEDED, outDir);
-                            CLIUtils.updateTaskStatusYml(sedmlLocation, task.getId(), Status.SUCCEEDED, outDir);
+                           // CLIUtils.updateTaskStatusYml(sedmlLocation, task.getId(), Status.SUCCEEDED, outDir);
                         }
                         if (!supportedDataset) {
                             System.err.println("Dataset " + dataset.getId() + " references unsupported RepeatedTask and is being skipped");
@@ -650,8 +650,8 @@ public class CLIUtils {
         printProcessErrors(process, "","Failed generating status YAML\n");
     }
 
-    public static void updateTaskStatusYml(String sedmlName, String taskName, Status taskStatus, String outDir) throws IOException, InterruptedException {
-        Process process = execShellCommand(new String[]{python, statusPath.toString(), "updateTaskStatus", sedmlName, taskName, taskStatus.toString(), outDir}).start();
+    public static void updateTaskStatusYml(String sedmlName, String taskName, Status taskStatus, String outDir ,String duration , String algorithm) throws IOException, InterruptedException {
+        Process process = execShellCommand(new String[]{python, statusPath.toString(), "updateTaskStatus", sedmlName, taskName, taskStatus.toString(), outDir,duration,algorithm}).start();
         printProcessErrors(process, "","Failed updating task status YAML\n");
 
     }

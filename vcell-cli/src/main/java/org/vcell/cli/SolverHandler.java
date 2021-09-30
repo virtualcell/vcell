@@ -127,10 +127,10 @@ public class SolverHandler {
 
                         long endTime = System.currentTimeMillis();
                 		long elapsedTime = endTime - startTime;
+                		long duration = Math.round((elapsedTime /1000) % 60);
                 		String msg = "Running simulation " + simTask.getSimulation().getName() + ", " + elapsedTime + " ms";
                 		System.out.println(msg);
-                        
-                        CLIUtils.updateTaskStatusYml(sedmlLocation, sim.getImportedTaskID(), CLIUtils.Status.SUCCEEDED, outDir);
+                        CLIUtils.updateTaskStatusYml(sedmlLocation, sim.getImportedTaskID(), CLIUtils.Status.SUCCEEDED, outDir , Long.toString(duration) ,kisao);
 
                         CLIUtils.drawBreakLine("-", 100);
                     } else {
@@ -144,11 +144,12 @@ public class SolverHandler {
                     
                     long endTime = System.currentTimeMillis();
             		long elapsedTime = endTime - startTime;
+            		long duration = Math.round((elapsedTime /1000) % 60);
             		String msg = "Running simulation " + simTask.getSimulation().getName() + ", " + elapsedTime + " ms";
             		System.out.println(msg);
                     
                   
-                    CLIUtils.updateTaskStatusYml(sedmlLocation, sim.getImportedTaskID(), CLIUtils.Status.FAILED, outDir);
+                    CLIUtils.updateTaskStatusYml(sedmlLocation, sim.getImportedTaskID(), CLIUtils.Status.FAILED, outDir ,  Long.toString(duration),kisao);
                     CLIUtils.finalStatusUpdate( CLIUtils.Status.FAILED, outDir);
                     if (e.getMessage() != null) {
                         // something else than failure caught by solver instance during execution
