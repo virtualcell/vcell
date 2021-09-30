@@ -69,6 +69,8 @@ public class SolverHandler {
             throw e;
         }
 
+        int simulationCount = 0;
+        int bioModelCount = 0;
         for (VCDocument doc : docs) {
             try {
                 sanityCheck(doc);
@@ -76,10 +78,14 @@ public class SolverHandler {
                 e.printStackTrace(System.err);
 //                continue;
             }
-        docName = doc.getName();
+            docName = doc.getName();
             bioModel = (BioModel) doc;
             sims = bioModel.getSimulations();
             for (Simulation sim : sims) {
+            	if(sim.getImportedTaskID() == null) {
+            		// this is a simulation not matching the imported task, so we skip it
+            		continue;
+            	}
                 sim = new TempSimulation(sim, false);
                 SolverTaskDescription std = sim.getSolverTaskDescription();
                 SolverDescription sd = std.getSolverDescription();
@@ -149,8 +155,11 @@ public class SolverHandler {
             		String msg = "Running simulation " + simTask.getSimulation().getName() + ", " + elapsedTime + " ms";
             		System.out.println(msg);
                     
-                  
-                    CLIUtils.updateTaskStatusYml(sedmlLocation, sim.getImportedTaskID(), CLIUtils.Status.FAILED, outDir ,  Long.toString(duration),kisao);
+            		if(sim.getImportedTaskID() == null) {
+            			System.err.println("null imported task id, this should never happen");
+            		} else {
+            			CLIUtils.updateTaskStatusYml(sedmlLocation, sim.getImportedTaskID(), CLIUtils.Status.FAILED, outDir ,  Long.toString(duration),kisao);
+            		}
                     CLIUtils.finalStatusUpdate( CLIUtils.Status.FAILED, outDir);
                     if (e.getMessage() != null) {
                         // something else than failure caught by solver instance during execution
@@ -163,9 +172,11 @@ public class SolverHandler {
                 }
 
                 CLIUtils.removeIntermediarySimFiles(outputDirForSedml);
-
+                simulationCount++;
             }
+            bioModelCount++;
         }
+        System.out.println("Ran " + simulationCount + " simulations for " + bioModelCount + " biomodels.");
         return resultsHash;
     }
 

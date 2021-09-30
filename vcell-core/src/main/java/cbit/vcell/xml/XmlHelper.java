@@ -671,6 +671,8 @@ public class XmlHelper {
 					}
 				}
 
+				// we make a biomodel for each task; if there are many simulations, probably 
+				// only one will match the selected task id, the others are parasites and must not be run
 				BioModel bioModel = null;
 				boolean justMade = false;
 				String newMdl = resolver.getModelString(sedmlOriginalModel);
@@ -711,6 +713,7 @@ public class XmlHelper {
 					// we basically ignore the sedml simulation altogether
 					for (Simulation sim : bioModel.getSimulations()) {
 						if (sim.getName().equals(selectedTask.getName())) {
+							System.out.println(" --- selected task - name: " + selectedTask.getName() + ", id: " + selectedTask.getId());
 							sim.setImportedTaskID(selectedTask.getId());
 						}
 					}
