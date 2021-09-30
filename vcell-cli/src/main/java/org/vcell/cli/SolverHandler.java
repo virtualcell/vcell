@@ -96,6 +96,7 @@ public class SolverHandler {
                 ODESolverResultSet odeSolverResultSet = null;
                 try {
                     if (solver instanceof AbstractCompiledSolver) {
+                    	((AbstractCompiledSolver) solver).getMathExecutable().setTimeoutMS(CLIUtils.EXECUTABLE_MAX_WALLCLOK_MILLIS);
                         ((AbstractCompiledSolver) solver).runSolver();
                         System.out.println(solver);
                         System.out.println(solver.getSolverStatus());

@@ -506,4 +506,12 @@ public void addEnvironmentVariable(String varName,String varValue){
 	}
 	addedEnvironmentVariables.put(varName,varValue);
 }
+
+public long getTimeoutMS() {
+	return timeoutMS;
+}
+
+public void setTimeoutMS(long timeoutMS) {
+	this.timeoutMS = timeoutMS;
+}
 }
