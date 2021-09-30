@@ -11,6 +11,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -762,11 +763,13 @@ public class SEDMLExporter {
 						
 						// add dataGenerators for species
 						// get species list from SBML model.
+//		        		Map<String, String> name2IdMap = new LinkedHashMap<> ();
 						String dataGenIdPrefix = "dataGen_" + taskRef;
 						if(sbmlExportFailed) {		// we try vcml export
 							for(SpeciesContext sc : vcModel.getSpeciesContexts()) {
 								String varName = sc.getName();
 								String varId = varName + "_" + taskRef;
+//								name2IdMap.put(varName, varId);
 								ASTNode varMath = Libsedml.parseFormulaString(varId);
 								String dataGenId = dataGenIdPrefix + "_" + TokenMangler.mangleToSName(varName);
 								DataGenerator dataGen = new DataGenerator(dataGenId, dataGenId, varMath);
@@ -780,6 +783,7 @@ public class SEDMLExporter {
 							String[] varNamesList = SimSpec.fromSBML(sbmlString).getVarsList();
 							for (String varName : varNamesList) {
 								String varId = varName + "_" + taskRef;
+//								name2IdMap.put(varName, varId);
 								org.jlibsedml.Variable sedmlVar = new org.jlibsedml.Variable(varId, varName, taskRef, sbmlSupport.getXPathForSpecies(varName));
 								ASTNode varMath = Libsedml.parseFormulaString(varId);
 								String dataGenId = dataGenIdPrefix + "_" + TokenMangler.mangleToSName(varName);			//"dataGen_" + varCount; - old code
@@ -794,40 +798,78 @@ public class SEDMLExporter {
 						// add DataGenerators for output functions here
 						ArrayList<AnnotatedFunction> outputFunctions = simContext.getOutputFunctionContext().getOutputFunctionsList();
 						for (AnnotatedFunction annotatedFunction : outputFunctions) {
-							Expression functionExpr = annotatedFunction.getExpression();
-							ASTNode funcMath = Libsedml.parseFormulaString(functionExpr.infix());
+//							Expression originalFunctionExpression = annotatedFunction.getExpression();
+//							Expression modifiedFunctionExpr = new Expression(annotatedFunction.getExpression());
+//							System.out.println("Before: " + originalFunctionExpression);
+//							String[] symbols = modifiedFunctionExpr.getSymbols();
+//							for(String symbol : symbols) {
+//								String id = name2IdMap.get(symbol);
+//								if(id == null) {
+//									System.err.println("Could not find id for " + symbol);
+//								} else {
+//									modifiedFunctionExpr.substituteInPlace(new Expression(symbol), new Expression(id));
+//								}
+//							}
+//							System.out.println("After:  " + modifiedFunctionExpr);
+//							ASTNode funcMath = Libsedml.parseFormulaString(modifiedFunctionExpr.infix());
 							String dataGenId = dataGenIdPrefix + "_" + TokenMangler.mangleToSName(annotatedFunction.getName());		//"dataGen_" + varCount; - old code
-							DataGenerator dataGen = new DataGenerator(dataGenId, dataGenId, funcMath);
-							String[] functionSymbols = functionExpr.getSymbols();
-							for (String symbol : functionSymbols) {
-								String symbolName = TokenMangler.mangleToSName(symbol);
-								// try to get symbol from model, if null, try simContext.mathDesc
-								SymbolTableEntry ste = vcModel.getEntry(symbol);
-								if (ste == null) {
-									ste = simContext.getMathDescription().getEntry(symbol);
-								}
-								if (ste instanceof SpeciesContext || ste instanceof Structure || ste instanceof ModelParameter) {
-									XPathTarget targetXPath = getTargetXPath(ste, l2gMap);
-									org.jlibsedml.Variable sedmlVar = new org.jlibsedml.Variable(symbolName, symbolName, taskRef, targetXPath.getTargetAsString());
-									dataGen.addVariable(sedmlVar);
-								} else {
-									double value = 0.0;
-									if (ste instanceof Function) {
-										try {
-											value = ste.getExpression().evaluateConstant();
-										} catch (Exception e) {
-											e.printStackTrace(System.out);
-											throw new RuntimeException("Unable to evaluate function '" + ste.getName() + "' for output function '" + annotatedFunction.getName() + "'.", e);
-										}
-									} else {
-										value = ste.getConstantValue();
-									}
-									Parameter sedmlParameter = new Parameter(symbolName, symbolName, value);
-									dataGen.addParameter(sedmlParameter);
-								}
+							String varId = TokenMangler.mangleToSName(annotatedFunction.getName()) + taskRef;
+							
+							if(sbmlExportFailed) {		// VCML
+								Expression exp = new Expression(varId);
+								ASTNode funcMath = Libsedml.parseFormulaString(exp.infix());
+								DataGenerator dataGen = new DataGenerator(dataGenId, dataGenId, funcMath);
+								org.jlibsedml.Variable sedmlVar = new org.jlibsedml.Variable(varId, annotatedFunction.getName(), taskRef, 
+										XmlHelper.getXPathForOutputFunction(simContextName, annotatedFunction.getName()));
+								dataGen.addVariable(sedmlVar);
+								sedmlModel.addDataGenerator(dataGen);
+								dataGeneratorsOfSim.add(dataGen);
+							} else {					// SBML
+								
 							}
-							sedmlModel.addDataGenerator(dataGen);
-							dataGeneratorsOfSim.add(dataGen);
+							
+							
+
+							
+//							String[] functionSymbols = originalFunctionExpression.getSymbols();
+//							for (String symbol : functionSymbols) {
+//								String symbolName = TokenMangler.mangleToSName(symbol);
+//								// try to get symbol from model, if null, try simContext.mathDesc
+//								SymbolTableEntry ste = vcModel.getEntry(symbol);
+//								if (ste == null) {
+//									ste = simContext.getMathDescription().getEntry(symbol);
+//								}
+//								if (ste instanceof SpeciesContext || ste instanceof Structure || ste instanceof ModelParameter) {
+//									XPathTarget targetXPath = getTargetXPath(ste, l2gMap);
+//									if(sbmlExportFailed) {		// VCML
+//										if(ste instanceof SpeciesContext) {
+////											String varId = symbolName + "_" + taskRef;
+////											org.jlibsedml.Variable sedmlVar = new org.jlibsedml.Variable(varId, symbolName, taskRef, XmlHelper.getXPathForSpecies(symbolName));
+////											dataGen.addVariable(sedmlVar);
+//										} else {
+//											System.err.println("Not a species");
+//										}
+//									} else {					// SBML
+////										String varId = symbolName + "_" + taskRef;
+////										org.jlibsedml.Variable sedmlVar = new org.jlibsedml.Variable(varId, symbolName, taskRef, targetXPath.getTargetAsString());
+////										dataGen.addVariable(sedmlVar);
+//									}
+//								} else {
+//									double value = 0.0;
+//									if (ste instanceof Function) {
+//										try {
+//											value = ste.getExpression().evaluateConstant();
+//										} catch (Exception e) {
+//											e.printStackTrace(System.out);
+//											throw new RuntimeException("Unable to evaluate function '" + ste.getName() + "' for output function '" + annotatedFunction.getName() + "'.", e);
+//										}
+//									} else {
+//										value = ste.getConstantValue();
+//									}
+//									Parameter sedmlParameter = new Parameter(symbolName, symbolName, value);
+//									dataGen.addParameter(sedmlParameter);
+//								}
+//							}
 							varCount++;
 						}
 						simCount++;
@@ -884,7 +926,7 @@ public class SEDMLExporter {
 						} else {		// spatial deterministic
 							if(simContext.getApplicationType().equals(Application.NETWORK_DETERMINISTIC)) {	// we ignore spatial stochastic (Smoldyn)
 								if(bForceVCML) {
-									String reportId = "__plot__" + TokenMangler.mangleToSName(vcSimulation.getName());
+									String reportId = "_report_" + TokenMangler.mangleToSName(vcSimulation.getName());
 									Report sedmlReport = new Report(reportId, simContext.getName() + "plots");
 									String xDataRef = sedmlModel.getDataGeneratorWithId(DATAGENERATOR_TIME_NAME + "_" + taskRef).getId();
 									String xDatasetXId = "datasetX_" + DATAGENERATOR_TIME_NAME + "_" + timeDataGen.getId();
