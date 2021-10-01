@@ -5,14 +5,15 @@ import cbit.vcell.xml.ExternalDocInfo;
 import org.apache.commons.lang3.ArrayUtils;
 import org.jlibsedml.*;
 import org.vcell.cli.vcml.VCMLHandler;
+//import org.vcell.util.FileUtils;
 import org.vcell.cli.vcml.VcmlOmexConversion;
-
 import com.lowagie.text.pdf.crypto.RuntimeCryptoException;
 
-import org.apache.commons.io.FileUtils;
+//import org.apache.commons.io.FileUtils;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -44,6 +45,8 @@ public class CLIStandalone {
             }
 
             if (input != null && input.isDirectory()) {
+            	String outputDir = args[3];
+            	
                 FilenameFilter filter = (f, name) -> name.endsWith(".omex") || name.endsWith(".vcml");
                 String[] inputFiles = input.list(filter);
                 if (inputFiles == null) System.out.println("No input files found in the directory");
@@ -54,6 +57,9 @@ public class CLIStandalone {
                     args[1] = file.toString();
                     try {
                         if (inputFile.endsWith("omex")) {
+                			String bioModelBaseName = org.vcell.util.FileUtils.getBaseName(inputFile);
+                			args[3] = outputDir + File.separator + bioModelBaseName;
+                			Files.createDirectories(Paths.get(args[3]));
                             singleExecOmex(args);
                         }
                         if (inputFile.endsWith("vcml")) {
@@ -202,7 +208,7 @@ public class CLIStandalone {
             }
 
             // removing temp path generated from python
-            FileUtils.deleteDirectory(new File(String.valueOf(sedmlPath2d3d)));
+            org.apache.commons.io.FileUtils.deleteDirectory(new File(String.valueOf(sedmlPath2d3d)));
 
             // archiving res files
             CLIUtils.zipResFiles(new File(outputDir));
