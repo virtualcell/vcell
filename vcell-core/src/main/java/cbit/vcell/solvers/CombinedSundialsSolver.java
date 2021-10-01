@@ -18,6 +18,8 @@ import cbit.vcell.solver.AnnotatedFunction;
 import cbit.vcell.solver.SolverException;
 import cbit.vcell.solver.ode.CVodeSolverStandalone;
 import cbit.vcell.solver.ode.IDASolverStandalone;
+import cbit.vcell.solver.ode.ODESolver;
+import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.solver.server.SolverEvent;
 import cbit.vcell.solver.server.SolverListener;
 
@@ -26,7 +28,7 @@ import cbit.vcell.solver.server.SolverListener;
  * Creation date: (9/26/2003 2:08:08 PM)
  * @author: Fei Gao
  */
-public class CombinedSundialsSolver extends SimpleCompiledSolver {
+public class CombinedSundialsSolver extends SimpleCompiledSolver implements ODESolver {
 	private SimpleCompiledSolver realSolver = null;
 
 /**
@@ -110,5 +112,10 @@ public Vector<AnnotatedFunction> createFunctionList() {
 @Override
 protected String[] getMathExecutableCommand() {
 	return realSolver.getMathExecutableCommand();
+}
+
+@Override
+public ODESolverResultSet getODESolverResultSet() {
+	return ((ODESolver) realSolver).getODESolverResultSet();
 }
 }
