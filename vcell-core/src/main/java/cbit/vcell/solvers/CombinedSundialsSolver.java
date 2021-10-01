@@ -43,6 +43,11 @@ public CombinedSundialsSolver(SimulationTask simTask, File directory, boolean bM
 	} else {
 		realSolver = new CVodeSolverStandalone(simTask, directory, bMessaging);
 	}
+	if(realSolver.getMathExecutable() == null) {
+		String[] mec = getMathExecutableCommand();
+		File sd = getSaveDirectory();
+		realSolver.setMathExecutable(new MathExecutable(mec, sd));
+	}
 	realSolver.addSolverListener(new SolverListener() {
 		public final void solverAborted(SolverEvent event) {		
 			fireSolverAborted(event.getSimulationMessage());
