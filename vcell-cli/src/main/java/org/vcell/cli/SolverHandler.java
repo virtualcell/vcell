@@ -131,6 +131,7 @@ public class SolverHandler {
                         // this should actually never happen...
                         throw new Exception("Unexpected solver: " + kisao + " " + solver);
                     }
+                   
                     if (solver.getSolverStatus().getStatus() == SolverStatus.SOLVER_FINISHED) {
                         System.out.println("Succesful execution: Model '" + docName + "' Task '" + sim.getDescription() + "'.");
 
@@ -140,11 +141,12 @@ public class SolverHandler {
                 		String msg = "Running simulation " + simTask.getSimulation().getName() + ", " + elapsedTime + " ms";
                 		System.out.println(msg);
                         CLIUtils.updateTaskStatusYml(sedmlLocation, sim.getImportedTaskID(), CLIUtils.Status.SUCCEEDED, outDir , Long.toString(duration) ,kisao);
-
+                        CLIUtils.updateErrorMessage(sedmlLocation, sim.getImportedTaskID(),outDir,"task", msg, "");
                         CLIUtils.drawBreakLine("-", 100);
                     } else {
                         System.err.println("Solver status: " + solver.getSolverStatus().getStatus());
                         System.err.println("Solver message: " + solver.getSolverStatus().getSimulationMessage().getDisplayMessage());
+                        CLIUtils.updateErrorMessage(sedmlLocation, sim.getImportedTaskID(),outDir, "task","", solver.getSolverStatus().getSimulationMessage().getDisplayMessage());
                         throw new Exception();
                     }
                     CLIUtils.finalStatusUpdate( CLIUtils.Status.SUCCEEDED, outDir);
