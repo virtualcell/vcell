@@ -39,7 +39,7 @@ public class Executable implements IExecutable {
 	private String errorString = "";
 	private Integer exitValue = null;
 	private ExecutableStatus status = null;
-	private long timeoutMS = 0;
+	private static long timeoutMS = 0;
 	private File workingDir = null;
 	private Thread runThread = null;
 	private CountDownLatch stoppingLatch = null;
@@ -507,11 +507,11 @@ public void addEnvironmentVariable(String varName,String varValue){
 	addedEnvironmentVariables.put(varName,varValue);
 }
 
-public long getTimeoutMS() {
-	return timeoutMS;
+public static long getTimeoutMS() {
+	return Executable.timeoutMS;
 }
 
-public void setTimeoutMS(long timeoutMS) {
-	this.timeoutMS = timeoutMS;
+public static void setTimeoutMS(long timeoutMS) {
+	Executable.timeoutMS = timeoutMS;
 }
 }

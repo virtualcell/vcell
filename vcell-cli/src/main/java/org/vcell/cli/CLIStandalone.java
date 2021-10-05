@@ -7,6 +7,8 @@ import org.jlibsedml.*;
 import org.vcell.cli.vcml.VCMLHandler;
 //import org.vcell.util.FileUtils;
 import org.vcell.cli.vcml.VcmlOmexConversion;
+import org.vcell.util.exe.Executable;
+
 import com.lowagie.text.pdf.crypto.RuntimeCryptoException;
 
 //import org.apache.commons.io.FileUtils;
@@ -49,6 +51,8 @@ public class CLIStandalone {
             } catch (Exception e1) {
                 // Non file or invalid argument received, let it pass, CLIHandler will handle the invalid (or non file) arguments
             }
+            
+            Executable.setTimeoutMS(CLIUtils.EXECUTABLE_MAX_WALLCLOK_MILLIS);
 
             if (input != null && input.isDirectory()) {
             	String outputDir = args[3];

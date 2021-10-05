@@ -23,6 +23,7 @@ import org.vcell.cli.vcml.VCMLHandler;
 import org.vcell.sbml.vcell.SBMLImportException;
 import org.vcell.sbml.vcell.SBMLImporter;
 import org.vcell.util.document.VCDocument;
+import org.vcell.util.exe.Executable;
 
 import java.io.File;
 import java.util.HashMap;
@@ -102,9 +103,6 @@ public class SolverHandler {
                 ODESolverResultSet odeSolverResultSet = null;
                 try {
                     if (solver instanceof AbstractCompiledSolver) {
-                    	if(((AbstractCompiledSolver) solver).getMathExecutable() != null) {
-                    		((AbstractCompiledSolver) solver).getMathExecutable().setTimeoutMS(CLIUtils.EXECUTABLE_MAX_WALLCLOK_MILLIS);
-                    	}
                         ((AbstractCompiledSolver) solver).runSolver();
                         System.out.println(solver);
                         System.out.println(solver.getSolverStatus());
