@@ -34,8 +34,9 @@ def gen_sedml_2d_3d(omex_file_path, base_out_path):
         os.mkdir(temp_path, stat.S_IRWXU | stat.S_IRWXG | stat.S_IRWXO)
 
     # defining archive
+    config = Config(VALIDATE_OMEX_MANIFESTS=True)
     archive = CombineArchiveReader().run(in_file=omex_file_path, out_dir=temp_path,
-                                         try_reading_as_plain_zip_archive=False)
+                                         config=config)
 
     # determine files to execute
     sedml_contents = get_sedml_contents(archive)
@@ -87,8 +88,9 @@ def gen_sedml_2d_3d(omex_file_path, base_out_path):
 
 
 def exec_plot_output_sed_doc(omex_file_path, base_out_path):
+    config = Config(VALIDATE_OMEX_MANIFESTS=False)
     archive = CombineArchiveReader().run(in_file=omex_file_path, out_dir=tmp_dir,
-                                         try_reading_as_plain_zip_archive=True)
+                                         config=config)
 
     # determine files to execute
     sedml_contents = get_sedml_contents(archive)
@@ -181,8 +183,9 @@ def exec_plot_output_sed_doc(omex_file_path, base_out_path):
 @deprecated("This method is no longer used")
 def exec_sed_doc(omex_file_path, base_out_path):
     # defining archive
+    config = Config(VALIDATE_OMEX_MANIFESTS=False)
     archive = CombineArchiveReader().run(in_file=omex_file_path, out_dir=tmp_dir,
-                                         try_reading_as_plain_zip_archive=True)
+                                         config=config)
 
     # determine files to execute
     sedml_contents = get_sedml_contents(archive)
