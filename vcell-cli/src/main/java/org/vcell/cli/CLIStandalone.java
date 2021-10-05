@@ -16,14 +16,20 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 
 public class CLIStandalone {
     public static void main(String[] args) {
 
+    	if(args == null || args.length < 4) {		// -i <input> -o <output>
+    		System.err.println(CLIHandler.usage);
+    		System.exit(1);
+    	}
 
         if(args[0].toLowerCase().equals("convert")) {
             // VCML to OMex conversion
@@ -60,7 +66,7 @@ public class CLIStandalone {
                 			String bioModelBaseName = org.vcell.util.FileUtils.getBaseName(inputFile);
                 			args[3] = outputDir + File.separator + bioModelBaseName;
                 			Files.createDirectories(Paths.get(args[3]));
-                            singleExecOmex(args);
+                            singleExecOmex(outputDir, args);
                         }
                         if (inputFile.endsWith("vcml")) {
                             singleExecVcml(args);
@@ -72,7 +78,7 @@ public class CLIStandalone {
             } else {
                 try {
                     if (input == null || input.toString().endsWith("omex")) {
-                        singleExecOmex(args);
+                        singleExecOmex(args[3], args);
                     } else if (input.toString().endsWith("vcml")) {
                         singleExecVcml(args);
                     } else {
@@ -86,11 +92,28 @@ public class CLIStandalone {
         }
     }
 
+    private static boolean isBatchExecution(String[] args) {
+    	if(args[1] == null) {
+    		return false;
+    	}
+    	Path path = Paths.get(args[1]);
+    	boolean isDirectory = Files.isDirectory(path);
+    	return isDirectory;
+    }
+    
+    // we just make a list with the omex files that failed
+    private static void writeErrorList(String[] args, String s) throws IOException {
+    	if(isBatchExecution(args)) {
+    		Files.write(Paths.get("errorLog.txt"), (s + "\n").getBytes(), 
+    			StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+    	}
+   	}
 
-    private static void singleExecOmex(String[] args) throws Exception {
+    private static void singleExecOmex(String outputBaseDir, String[] args) throws Exception {
         OmexHandler omexHandler = null;
         CLIHandler cliHandler;
         String inputFile;
+        String bioModelBaseName = "";		// input file without the path
         String outputDir;
         ArrayList<String> sedmlLocations;
         int nModels;
@@ -109,6 +132,7 @@ public class CLIStandalone {
         try {
             cliHandler = new CLIHandler(args);
             inputFile = cliHandler.getInputFilePath();
+            bioModelBaseName = org.vcell.util.FileUtils.getBaseName(inputFile);
             outputDir = cliHandler.getOutputDirPath();
             sedmlPath2d3d = Paths.get(outputDir, "temp");
             System.out.println("VCell CLI input archive " + inputFile);
@@ -122,6 +146,7 @@ public class CLIStandalone {
             assert omexHandler != null;
             omexHandler.deleteExtractedOmex();
             String error = exc.getMessage() + ", error for archive " + args[1];
+            writeErrorList(args, bioModelBaseName);
             throw new Exception(error);
         }
         // from here on, we need to collect errors, since some subtasks may succeed while other do not
@@ -192,7 +217,12 @@ public class CLIStandalone {
             // we send both the whole OMEX file and the extracted SEDML file path
             // XmlHelper code uses two types of resolvers to handle absolute or relative paths
             ExternalDocInfo externalDocInfo = new ExternalDocInfo(new File(inputFile), true);
-            resultsHash = solverHandler.simulateAllTasks(externalDocInfo, sedml, outDirForCurrentSedml, outputDir, sedmlLocation);
+            resultsHash = new LinkedHashMap<String, ODESolverResultSet>();
+            try {
+            	resultsHash = solverHandler.simulateAllTasks(externalDocInfo, sedml, outDirForCurrentSedml, outputDir, sedmlLocation);
+            } catch(Exception e) {
+            	somethingFailed = true;
+            }
             if (resultsHash.size() != 0) {
                 reportsHash = CLIUtils.generateReportsAsCSV(sedml, resultsHash, outDirForCurrentSedml, outputDir, sedmlLocation);
 
@@ -222,6 +252,7 @@ public class CLIStandalone {
             String error = "One or more errors encountered while executing archive " + args[1];
             CLIUtils.finalStatusUpdate(CLIUtils.Status.FAILED, outputDir);
             System.err.println(error);
+            writeErrorList(args, bioModelBaseName);
         }
     }
 
