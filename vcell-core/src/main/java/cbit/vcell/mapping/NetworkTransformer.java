@@ -565,12 +565,19 @@ public class NetworkTransformer implements SimContextTransformer {
 			BNGReaction bngReaction = outputSpec.getBNGReactions()[i];
 //			System.out.println(i+1 + ":\t\t"+ r.writeReaction());
 			String baseName = bngReaction.getRuleName();
+			// Hack to correct a corrupted bng reaction name, until we fix the root cause
+			// which may never happen since we encountered this problem only one time in many years
+			if(baseName.contains(",") && (baseName.length() > 192)) {
+				int pos = baseName.indexOf(",");
+				baseName = baseName.substring(0, pos);
+			}
+//			System.out.println(i + ": " + baseName);
 			String reactionName = null;
 			HashSet<String> keySetsForThisRule = ruleKeyMap.get(bngReaction.getRuleName());
 			if (keySetsForThisRule.size()==1 && model.getReactionStep(bngReaction.getRuleName()) == null && !reactionStepMap.containsKey(bngReaction.getRuleName())) {	// we can reuse the reaction rule labels
-				reactionName = bngReaction.getRuleName();
+				reactionName = baseName;
 			}else{
-				reactionName = bngReaction.getRuleName()+"_0";
+				reactionName = baseName + "_0";
 				while (true) {
 					if (model.getReactionStep(reactionName) == null && !reactionStepMap.containsKey(reactionName)) {	// we can reuse the reaction rule labels
 						break;
