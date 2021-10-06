@@ -96,19 +96,17 @@ public class CLIStandalone {
         }
     }
 
-    private static boolean isBatchExecution(String[] args) {
-    	if(args[1] == null) {
-    		return false;
-    	}
-    	Path path = Paths.get(args[1]);
+    private static boolean isBatchExecution(String outputBaseDir) {
+    	Path path = Paths.get(outputBaseDir);
     	boolean isDirectory = Files.isDirectory(path);
     	return isDirectory;
     }
     
     // we just make a list with the omex files that failed
-    private static void writeErrorList(String[] args, String s) throws IOException {
-    	if(isBatchExecution(args)) {
-    		Files.write(Paths.get("errorLog.txt"), (s + "\n").getBytes(), 
+    private static void writeErrorList(String outputBaseDir, String s) throws IOException {
+    	if(isBatchExecution(outputBaseDir)) {
+    		String dest = outputBaseDir + File.separator + "errorLog.txt";
+    		Files.write(Paths.get(dest), (s + "\n").getBytes(), 
     			StandardOpenOption.CREATE, StandardOpenOption.APPEND);
     	}
    	}
@@ -150,7 +148,7 @@ public class CLIStandalone {
             assert omexHandler != null;
             omexHandler.deleteExtractedOmex();
             String error = exc.getMessage() + ", error for archive " + args[1];
-            writeErrorList(args, bioModelBaseName);
+            writeErrorList(outputBaseDir, bioModelBaseName);
             throw new Exception(error);
         }
         // from here on, we need to collect errors, since some subtasks may succeed while other do not
@@ -256,7 +254,7 @@ public class CLIStandalone {
             String error = "One or more errors encountered while executing archive " + args[1];
             CLIUtils.finalStatusUpdate(CLIUtils.Status.FAILED, outputDir);
             System.err.println(error);
-            writeErrorList(args, bioModelBaseName);
+            writeErrorList(outputBaseDir, bioModelBaseName);
         }
     }
 
