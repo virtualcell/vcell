@@ -6,6 +6,7 @@ from biosimulators_utils.sedml.io import SedmlSimulationReader, SedmlSimulationW
 from biosimulators_utils.combine.utils import get_sedml_contents
 from biosimulators_utils.combine.io import CombineArchiveReader
 from biosimulators_utils.sedml.data_model import Output, Report, Plot2D, Plot3D, DataSet
+from biosimulators_utils.config import Config
 import fire
 import glob
 import os
