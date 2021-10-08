@@ -11,13 +11,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - name: Set up file
-      env:
-        GHCR_USER: ${{ secrets.GHCR_USERNAME }}
-        DOCKER_USER: ${{ secrets.DOCKER_REGISTRY_USERNAME }}
-      run: |
-        echo $GHCR_USER >> ghcr_user.txt
-        echo $DOCKER_USER >> ghcr_user.txt
+    - uses: actions/checkout@v2
       # Enable tmate debugging of manually-triggered workflows if the input option was provided
     - name: Setup tmate session
       uses: mxschmitt/action-tmate@v3
