@@ -23,7 +23,7 @@ jobs:
         cd docker/build
         export VCELL_TAG=`git rev-parse HEAD | cut -c -7`
         export VCELL_REPO_NAMESPACE=virtuallcell
-        sudo docker login -u ${{ DOCKERHUB_USER }} -p ${{ DOCKERHUB_PASS }}
+        sudo docker login -u ${{ secrets.DOCKERHUB_USER }} -p ${{ secrets.DOCKERHUB_PASS }}
         ./build.sh --skip-singularity all $VCELL_REPO_NAMESPACE $VCELL_TAG
       # Enable tmate debugging of manually-triggered workflows if the input option was provided
     - name: Setup tmate session
