@@ -17,10 +17,10 @@ jobs:
       with:
         java-version: '8'
         distribution: 'adopt'
-      - name: Install Singularity # to make singularity image for cluster
-        uses: eWaterCycle/setup-singularity@v6
-        with:
-          singularity-version: 3.7.1
+    - name: Install Singularity # to make singularity image for cluster
+      uses: eWaterCycle/setup-singularity@v6
+      with:
+        singularity-version: 3.7.1
     - name: build and publish all docker images
       shell: bash
       run: |
