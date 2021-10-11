@@ -231,10 +231,17 @@ EOF
 	# build the singularity image and place in singularity-vm directory
 	#
 	echo ""
-	remote_cmd="sudo singularity build $_singularity_image_file $_singularity_file"
-	echo "$remote_cmd"
-	($remote_cmd)
-	if [[ $? -ne 0 ]]; then echo "failed to build singularity image" && exit 1; fi
+	remote_cmd1="sudo singularity build $_singularity_image_file $_singularity_file"
+	remote_cmd2="singularity--fakeroot build $_singularity_image_file $_singularity_file"
+	echo "$remote_cmd1"
+	($remote_cmd1)
+	if [[ $? -ne 0 ]]
+	then
+		echo "failed to build singularity image with sudo, will try fakeroot"
+		echo "$remote_cmd2"
+		($remote_cmd2)
+		if [[ $? -ne 0 ]]; then echo "failed to build singularity image with fakeroot"; exit 1; fi		
+	fi
 
 	echo ""
 	echo "created Singularity image for vcell-bash ./$_singularity_image_file locally (in ./singularity-vm folder), can be pushed to remote server during deploy"
