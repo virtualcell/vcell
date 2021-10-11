@@ -202,6 +202,7 @@ def get_exception_message(sedml: str, task: str,out_dir:str, name:str , message:
                 for taskList in sedml_list['tasks']:
                     if taskList['id'] == task:
                         taskList['exception'] = error
+                        taskList['output'] = message
     status_yaml_path = os.path.join(out_dir, "log.yml")
 
     # Convert json to yaml # Save new yaml
