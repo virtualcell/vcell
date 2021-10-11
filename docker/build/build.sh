@@ -232,7 +232,7 @@ EOF
 	#
 	echo ""
 	remote_cmd1="sudo singularity build $_singularity_image_file $_singularity_file"
-	remote_cmd2="singularity --fakeroot build $_singularity_image_file $_singularity_file"
+	remote_cmd2="singularity build --fakeroot $_singularity_image_file $_singularity_file"
 	echo "$remote_cmd1"
 	($remote_cmd1)
 	if [[ $? -ne 0 ]]
