@@ -37,11 +37,10 @@ jobs:
     - name: tag as latest and push to registry
       shell: bash
       run: |
-        for CONTAINER in vcell-api vcell-batch vcell-clientgen vcell-data vcell-db vcell-mongo vcell-sched vcell-submit vcell-web
-        do 
-          docker tag ${{ env.VCELL_REPO_NAMESPACE }}/$CONTAINER:${{ env.VCELL_TAG }} ${{ env.VCELL_REPO_NAMESPACE }}/$CONTAINER:latest
+        for CONTAINER in vcell-api vcell-batch vcell-clientgen vcell-data vcell-db vcell-mongo vcell-sched vcell-submit vcell-web;\
+        do docker tag ${{ env.VCELL_REPO_NAMESPACE }}/$CONTAINER:${{ env.VCELL_TAG }} ${{ env.VCELL_REPO_NAMESPACE }}/$CONTAINER:latest;\
         done
-        docker push --all-tags ${{ env.VCELL_REPO_NAMESPACE }}
+        echo docker push --all-tags ${{ env.VCELL_REPO_NAMESPACE }}
         cd docker/build/singularity-vm
         echo singularity push -U $(ls *img) ${{ env.VCELL_REPO_NAMESPACE }}/vcell-batch-singularity:${{ env.VCELL_TAG }}
         
