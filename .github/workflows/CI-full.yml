@@ -31,7 +31,7 @@ jobs:
         docker login -u moraru -p ${{ secrets.TEST }} ghcr.io
         ./build.sh all $VCELL_REPO_NAMESPACE $VCELL_TAG
         cd singularity-vm
-        singularity remote login -u moraru -p ${{ secrets.TEST }} ghcr.io
+        # singularity remote login -u moraru -p ${{ secrets.TEST }} ghcr.io
     - name: tag as latest
       shell: bash
       run: |
