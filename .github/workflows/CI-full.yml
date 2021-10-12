@@ -16,6 +16,9 @@ jobs:
       run: |
         echo "VCELL_TAG=`git rev-parse HEAD | cut -c -7`" >> $GITHUB_ENV
         echo "VCELL_REPO_NAMESPACE=ghcr.io/virtualcell" >> $GITHUB_ENV
+    - name: Setup tmate session 1
+      uses: mxschmitt/action-tmate@v3
+      if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.debug_enabled }}
     - name: setup java 8
       uses: actions/setup-java@v2
       with:
@@ -40,11 +43,11 @@ jobs:
         for CONTAINER in vcell-api vcell-batch vcell-clientgen vcell-data vcell-db vcell-mongo vcell-sched vcell-submit vcell-web;\
         do docker tag ${{ env.VCELL_REPO_NAMESPACE }}/$CONTAINER:${{ env.VCELL_TAG }} ${{ env.VCELL_REPO_NAMESPACE }}/$CONTAINER:latest;\
         done
-        echo docker push --all-tags ${{ env.VCELL_REPO_NAMESPACE }}
+        env | grep VCdocker push --all-tags ${{ env.VCELL_REPO_NAMESPACE }}
         cd docker/build/singularity-vm
         echo singularity push -U $(ls *img) ${{ env.VCELL_REPO_NAMESPACE }}/vcell-batch-singularity:${{ env.VCELL_TAG }}
         
       # Enable tmate debugging of manually-triggered workflows if the input option was provided
-    - name: Setup tmate session
+    - name: Setup tmate session 2
       uses: mxschmitt/action-tmate@v3
       if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.debug_enabled }}
