@@ -20,7 +20,7 @@ jobs:
     - name: Install Singularity # to make singularity image for cluster
       uses: eWaterCycle/setup-singularity@v6
       with:
-        singularity-version: 3.7.1$VCELL_REPO_NAMESPACE/vcel
+        singularity-version: 3.7.1
     - name: build and publish all images
       shell: bash
       run: |
