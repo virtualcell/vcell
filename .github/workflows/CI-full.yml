@@ -35,8 +35,8 @@ jobs:
     - name: tag as latest
       shell: bash
       run: |
-        docker tag $VCELL_REPO_NAMESPACE/vcell-web:$VCELL_TAG $VCELL_REPO_NAMESPACE/vcell-web:latest
-        docker push --all-tags $VCELL_REPO_NAMESPACE/vcell
+        echo docker tag $VCELL_REPO_NAMESPACE/vcell-web:$VCELL_TAG $VCELL_REPO_NAMESPACE/vcell-web:latest
+        echo docker push --all-tags $VCELL_REPO_NAMESPACE/vcell
       # Enable tmate debugging of manually-triggered workflows if the input option was provided
     - name: Setup tmate session
       uses: mxschmitt/action-tmate@v3
