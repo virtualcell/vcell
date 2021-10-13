@@ -92,19 +92,22 @@ public class SolverHandler {
             	String logTaskError = "";
                 long startTime = System.currentTimeMillis();
 
-                sim = new TempSimulation(sim, false);
-                SolverTaskDescription std = sim.getSolverTaskDescription();
-                
-                SolverDescription sd = std.getSolverDescription();
-                String kisao = sd.getKisao();
-                SimulationJob simJob = new SimulationJob(sim, 0, null);
-                SimulationTask simTask = new SimulationTask(simJob, 0);
-                Solver solver = SolverFactory.createSolver(outputDirForSedml, simTask, false);
-                ODESolverResultSet odeSolverResultSet = null;
-                logTaskMessage += "done. Starting simulation... ";
+                SimulationTask simTask;
+                String kisao = "null";
+            	ODESolverResultSet odeSolverResultSet = null;
                 try {
+                	sim = new TempSimulation(sim, false);
+                	SolverTaskDescription std = sim.getSolverTaskDescription();
+                
+                	SolverDescription sd = std.getSolverDescription();
+                	kisao = sd.getKisao();
+                	SimulationJob simJob = new SimulationJob(sim, 0, null);
+                	simTask = new SimulationTask(simJob, 0);
+                	Solver solver = SolverFactory.createSolver(outputDirForSedml, simTask, false);
+                	logTaskMessage += "done. Starting simulation... ";
+
                 	if(solver instanceof FVSolverStandalone) {
-                		throw new RuntimeException("The FVSolverStandalone won't timeout.");
+                		throw new RuntimeException("FVSolverStandalone timeout failure.");
                 	} else if (solver instanceof AbstractCompiledSolver) {
                         ((AbstractCompiledSolver) solver).runSolver();
                         System.out.println(solver);
@@ -164,11 +167,13 @@ public class SolverHandler {
                     long endTime = System.currentTimeMillis();
             		long elapsedTime = endTime - startTime;
             		long duration = Math.round((elapsedTime /1000) % 60);
-            		String msg = "Running simulation " + simTask.getSimulation().getName() + ", " + elapsedTime + " ms";
+            		String msg = "Running simulation for " + elapsedTime + " ms";
             		System.out.println(msg);
                     
             		if(sim.getImportedTaskID() == null) {
-            			System.err.println("null imported task id, this should never happen");
+            			String str = "'null' imported task id, this should never happen. ";
+            			System.err.println();
+            			logTaskError += str;
             		} else {
             			CLIUtils.updateTaskStatusYml(sedmlLocation, sim.getImportedTaskID(), CLIUtils.Status.FAILED, outDir ,Long.toString(duration), kisao);
             		}
@@ -180,8 +185,9 @@ public class SolverHandler {
                     } else {
                     	logTaskError += error;
                     }
+                    String category = e.getClass().getSimpleName();
                     CLIUtils.setOutputMessage(sedmlLocation, sim.getImportedTaskID(), outDir, "task", logTaskMessage);
-                    CLIUtils.setExceptionMessage(sedmlLocation, sim.getImportedTaskID(),outDir, "task", "RuntimeException", logTaskError);
+                    CLIUtils.setExceptionMessage(sedmlLocation, sim.getImportedTaskID(),outDir, "task", category, logTaskError);
                     CLIUtils.drawBreakLine("-", 100);
                 }
                 if(odeSolverResultSet != null) {
