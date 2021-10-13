@@ -16,9 +16,6 @@ jobs:
       run: |
         echo "VCELL_TAG=`git rev-parse HEAD | cut -c -7`" >> $GITHUB_ENV
         echo "VCELL_REPO_NAMESPACE=ghcr.io/virtualcell" >> $GITHUB_ENV
-    - name: Setup tmate session 1
-      uses: mxschmitt/action-tmate@v3
-      if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.debug_enabled }}
     - name: get installer secrets
       run: |
         sudo mkdir /usr/local/deploy
@@ -28,7 +25,7 @@ jobs:
         echo "UserKnownHostsFile=/dev/null" >> ssh_prepend
         cat /etc/ssh/ssh_config >> ssh_prepend
         sudo cp -f ssh_prepend /etc/ssh/ssh_config
-        sshpass -p {{ secrets.CD_FULL_PASS }} {{ secrets.CD_FULL_USER }}@biosim-submit-ext.cam.uchc.edu:/share/apps/vcell3/deployed_docker/deploy_dir.tar .
+        sshpass -p {{ secrets.CD_FULL_PASS }} scp {{ secrets.CD_FULL_USER }}@biosim-submit-ext.cam.uchc.edu:/share/apps/vcell3/deployed_docker/deploy_dir.tar .
         cd ..
         sudo tar -xvf deploy/deploy_dir.tar
         sudo chmod 777 -R deploy
