@@ -16,11 +16,8 @@ jobs:
       run: |
         echo "VCELL_TAG=`git rev-parse HEAD | cut -c -7`" >> $GITHUB_ENV
         echo "VCELL_REPO_NAMESPACE=ghcr.io/virtualcell" >> $GITHUB_ENV
-      # Enable tmate debugging of manually-triggered workflows if the input option was provided
-    - name: Setup tmate session 1
-      uses: mxschmitt/action-tmate@v3
-      if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.debug_enabled }}
     - name: get installer secrets
+      shell: bash
       run: |
         sudo mkdir /usr/local/deploy
         sudo chmod 777 /usr/local/deploy
