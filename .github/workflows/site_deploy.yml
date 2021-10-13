@@ -1,0 +1,51 @@
+# This is a basic workflow to help you get started with Actions
+
+name: CD-sites
+
+# Controls when the workflow will run
+on:
+  workflow_dispatch:
+    inputs:
+      debug_enabled:
+        description: 'Run the build with tmate debugging enabled (https://github.com/marketplace/actions/debugging-with-tmate)'     
+        required: false
+        default: 'false'
+      vcell_version:
+        description: 'version.major.minor' 
+        required: true
+        default: '7.4.0'
+      vcell_build:
+        description: 'build number'
+        required: true
+        default: '23'
+      vcell_site:
+        description: 'rel or alpha'
+        required: true
+        default: 'alpha'
+      server_only:
+        description: 'whether to deploy only the server components'
+        required: true
+        default: 'false'
+      commit_hash:
+        required: true
+        default: '01234567'
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        ref: ${{ github.event.inputs.commit_hash }}
+    - name: set global environment variables
+      shell: bash
+      run: |
+        echo "VCELL_VERSION=${{ github.event.inputs.vcell_version }}" >> $GITHUB_ENV
+        echo "VCELL_BUILD=${{ github.event.inputs.vcell_build }}" >> $GITHUB_ENV
+        echo "VCELL_SITE=${{ github.event.inputs.vcell_site }}" >> $GITHUB_ENV
+        echo "VCELL_TAG=${{ github.event.inputs.commit_hash" >> $GITHUB_ENV
+        echo "VCELL_REPO_NAMESPACE=ghcr.io/virtualcell" >> $GITHUB_ENV
+
+    # Enable tmate debugging of manually-triggered workflows if the input option was provided
+    - name: Setup tmate session 2
+      uses: mxschmitt/action-tmate@v3
+      if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.debug_enabled }}
