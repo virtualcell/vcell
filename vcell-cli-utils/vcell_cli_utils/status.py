@@ -1,5 +1,6 @@
 import os
 from os.path import basename
+import sys
 import fire
 from biosimulators_utils.archive.io import ArchiveReader
 from biosimulators_utils.log.data_model import TaskLog
@@ -77,7 +78,8 @@ def status_yml(omex_file: str, out_dir: str):
             exception = {"category":None, "message":None}
             tasks_dict["tasks"].append({"id":task ,"status": "QUEUED", "exception": exception, "skipReason": None, "output": None, "duration": None, "algorithm": None,"simulatorDetails":None})
 
-        sed_doc_dict = {"location":sedml,"status": "QUEUED", "exception": None,"skipReason": None,"output":None,"duration":None}
+        exception = {"category":None, "message":None}
+        sed_doc_dict = {"location":sedml, "status":"QUEUED", "exception":exception, "skipReason":None, "output":None, "duration":None}
         sed_doc_dict.update(outputs_dict)
         sed_doc_dict.update(tasks_dict)
         yaml_dict.append(sed_doc_dict)
@@ -192,12 +194,17 @@ def sim_status(status: str, out_dir: str):
     # Convert json to yaml # Save new yaml
     dump_yaml_dict(status_yaml_path, yaml_dict=yaml_dict, out_dir=out_dir)
 
-def set_output_message(sedml: str, task: str,out_dir:str, name:str , message: str):
+def set_output_message(sedml: str, task: str, out_dir:str, name:str , message: str):
 
     yaml_dict = get_yaml_as_str(os.path.join(out_dir, "log.yml"))
     for sedml_list in yaml_dict['sedDocuments']:
         if sedml.endswith(sedml_list["location"]):
             sedml_name_nested = sedml_list["location"]
+            # Update sedml document status
+            if name == 'sedml':
+                if sedml_name_nested == task:
+                    sedml_list['output'] = message
+            
             # Update task status
             if name == 'task':
                 for taskList in sedml_list['tasks']:
@@ -214,13 +221,22 @@ def set_exception_message(sedml: str, task: str,out_dir:str, name:str , category
     for sedml_list in yaml_dict['sedDocuments']:
         if sedml.endswith(sedml_list["location"]):
             sedml_name_nested = sedml_list["location"]
+            # Update sedml document status
+            # print(" --- sedml: ", sedml_name_nested, file=sys.stdout)
+            # print(" --- name: ", name, file=sys.stdout)
+            if name == 'sedml':
+                if sedml_name_nested == task:
+                    exc = sedml_list['exception']
+                    exc['category'] = category
+                    exc['message'] = message
+            
             # Update task status
             if name == 'task':
                 for taskList in sedml_list['tasks']:
                     if taskList['id'] == task:
-                        aaa = taskList['exception']
-                        aaa['category'] = category
-                        aaa['message'] = message
+                        exc = taskList['exception']
+                        exc['category'] = category
+                        exc['message'] = message
     status_yaml_path = os.path.join(out_dir, "log.yml")
 
     # Convert json to yaml # Save new yaml
