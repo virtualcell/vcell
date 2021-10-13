@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
     inputs:
       debug_enabled:
-        description: 'Run the build with tmate debugging enabled (https://github.com/marketplace/actions/debugging-with-tmate)'     
+        description: 'Run the build with tmate debugging enabled?'     
         required: false
         default: 'false'
       vcell_version:
@@ -23,12 +23,13 @@ on:
         required: true
         default: 'alpha'
       server_only:
-        description: 'whether to deploy only the server components'
+        description: 'Deploy only the server components?'
         required: true
         default: 'false'
       commit_hash:
+        description: sha hash of commit to be deployed
         required: true
-        default: '01234567'
+        default: 'bdea85b98a40035e05c1d1531f689a4f167ad93c'
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -36,15 +37,25 @@ jobs:
     - uses: actions/checkout@v2
       with:
         ref: ${{ github.event.inputs.commit_hash }}
-    - name: set global environment variables
+        fetch-depth: 0
+    - name: setup global environment variables and config file
       shell: bash
       run: |
+      	cd build/vcell/docker/swarm
         echo "VCELL_VERSION=${{ github.event.inputs.vcell_version }}" >> $GITHUB_ENV
         echo "VCELL_BUILD=${{ github.event.inputs.vcell_build }}" >> $GITHUB_ENV
         echo "VCELL_SITE=${{ github.event.inputs.vcell_site }}" >> $GITHUB_ENV
-        echo "VCELL_TAG=${{ github.event.inputs.commit_hash }}" >> $GITHUB_ENV
+        echo "VCELL_TAG=`echo ${{ github.event.inputs.commit_hash }} | cut -c 7`" >> $GITHUB_ENV
         echo "VCELL_REPO_NAMESPACE=ghcr.io/virtualcell" >> $GITHUB_ENV
-
+        if [ "${VCELL_SITE}" == "rel" ]; then\
+        	echo "MANAGER_NODE=vcellapi.cam.uchc.edu" >> $GITHUB_ENV;\
+        	echo "VCELL_INSTALLER_REMOTE_DIR="/share/apps/vcell3/apache_webroot/htdocs/webstart/Rel"" >> $GITHUB_ENV;\
+        else if [ "${VCELL_SITE}" == "alpha" ]; then\
+         	echo "MANAGER_NODE=vcellapi-beta.cam.uchc.edu" >> $GITHUB_ENV;\
+        	echo "VCELL_INSTALLER_REMOTE_DIR="/share/apps/vcell3/apache_webroot/htdocs/webstart/Alpha"" >> $GITHUB_ENV;\
+        else echo "Uknown site name ${VCELL_SITE}"; exit 1; fi; fi
+        echo "VCELL_CONFIG_FILE_NAME=server_${VCELL_SITE}_${VCELL_VERSION}_${VCELL_BUILD}_${VCELL_TAG}.config" >> $GITHUB_ENV
+        ./serverconfig-uch.sh $VCELL_SITE $VCELL_REPO_NAMESPACE $VCELL_TAG $VCELL_VERSION $VCELL_BUILD $VCELL_CONFIG_FILE_NAME
     # Enable tmate debugging of manually-triggered workflows if the input option was provided
     - name: Setup tmate session 2
       uses: mxschmitt/action-tmate@v3
