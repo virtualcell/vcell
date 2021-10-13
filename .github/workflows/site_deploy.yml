@@ -42,7 +42,7 @@ jobs:
         echo "VCELL_VERSION=${{ github.event.inputs.vcell_version }}" >> $GITHUB_ENV
         echo "VCELL_BUILD=${{ github.event.inputs.vcell_build }}" >> $GITHUB_ENV
         echo "VCELL_SITE=${{ github.event.inputs.vcell_site }}" >> $GITHUB_ENV
-        echo "VCELL_TAG=${{ github.event.inputs.commit_hash" >> $GITHUB_ENV
+        echo "VCELL_TAG=${{ github.event.inputs.commit_hash }}" >> $GITHUB_ENV
         echo "VCELL_REPO_NAMESPACE=ghcr.io/virtualcell" >> $GITHUB_ENV
 
     # Enable tmate debugging of manually-triggered workflows if the input option was provided
