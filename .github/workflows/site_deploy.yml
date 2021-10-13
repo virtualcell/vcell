@@ -38,28 +38,23 @@ jobs:
       with:
         ref: ${{ github.event.inputs.commit_hash }}
         fetch-depth: 0
-    - name: setup global environment variables
+    - name: setup global environment variables and config file
       shell: bash
       run: |
       	cd build/vcell/docker/swarm
         echo "VCELL_VERSION=${{ github.event.inputs.vcell_version }}" >> $GITHUB_ENV
         echo "VCELL_BUILD=${{ github.event.inputs.vcell_build }}" >> $GITHUB_ENV
         echo "VCELL_SITE=${{ github.event.inputs.vcell_site }}" >> $GITHUB_ENV
-        echo "VCELL_TAG=`git rev-parse HEAD | cut -c 7`" >> $GITHUB_ENV
+        echo "VCELL_TAG=`echo ${{ github.event.inputs.commit_hash }} | cut -c 7`" >> $GITHUB_ENV
         echo "VCELL_REPO_NAMESPACE=ghcr.io/virtualcell" >> $GITHUB_ENV
-        if [ "${{ github.event.inputs.vcell_site }}" == "rel" ]; then\
+        if [ "${VCELL_SITE}" == "rel" ]; then\
         	echo "MANAGER_NODE=vcellapi.cam.uchc.edu" >> $GITHUB_ENV;\
         	echo "VCELL_INSTALLER_REMOTE_DIR="/share/apps/vcell3/apache_webroot/htdocs/webstart/Rel"" >> $GITHUB_ENV;\
-        else if [ "${{ github.event.inputs.vcell_site }}" == "alpha" ]; then\
+        else if [ "${VCELL_SITE}" == "alpha" ]; then\
          	echo "MANAGER_NODE=vcellapi-beta.cam.uchc.edu" >> $GITHUB_ENV;\
         	echo "VCELL_INSTALLER_REMOTE_DIR="/share/apps/vcell3/apache_webroot/htdocs/webstart/Alpha"" >> $GITHUB_ENV;\
-        else echo "Uknown site name ${{ github.event.inputs.vcell_site }}"; exit 1; fi; fi
-    - name: setup config and build
-      shell: bash
-      run: |
-        env
-        cd docker/swarm
-        export "VCELL_CONFIG_FILE_NAME=server_${VCELL_SITE}_${VCELL_VERSION}_${VCELL_BUILD}_${VCELL_TAG}.config"
+        else echo "Uknown site name ${VCELL_SITE}"; exit 1; fi; fi
+        echo "VCELL_CONFIG_FILE_NAME=server_${VCELL_SITE}_${VCELL_VERSION}_${VCELL_BUILD}_${VCELL_TAG}.config" >> $GITHUB_ENV
         ./serverconfig-uch.sh $VCELL_SITE $VCELL_REPO_NAMESPACE $VCELL_TAG $VCELL_VERSION $VCELL_BUILD $VCELL_CONFIG_FILE_NAME
     # Enable tmate debugging of manually-triggered workflows if the input option was provided
     - name: Setup tmate session 2
