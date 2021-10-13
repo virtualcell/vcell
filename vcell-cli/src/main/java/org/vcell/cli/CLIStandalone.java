@@ -103,9 +103,17 @@ public class CLIStandalone {
     }
     
     // we just make a list with the omex files that failed
-    private static void writeErrorList(String outputBaseDir, String s) throws IOException {
+    static void writeErrorList(String outputBaseDir, String s) throws IOException {
     	if(isBatchExecution(outputBaseDir)) {
     		String dest = outputBaseDir + File.separator + "errorLog.txt";
+    		Files.write(Paths.get(dest), (s + "\n").getBytes(), 
+    			StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+    	}
+   	}
+    // we make a list with the omex files that contain (some) spatial simulations (FVSolverStandalone solver)
+    static void writeSpatialList(String outputBaseDir, String s) throws IOException {
+    	if(isBatchExecution(outputBaseDir)) {
+    		String dest = outputBaseDir + File.separator + "hasSpatialLog.txt";
     		Files.write(Paths.get(dest), (s + "\n").getBytes(), 
     			StandardOpenOption.CREATE, StandardOpenOption.APPEND);
     	}
@@ -221,7 +229,7 @@ public class CLIStandalone {
             ExternalDocInfo externalDocInfo = new ExternalDocInfo(new File(inputFile), true);
             resultsHash = new LinkedHashMap<String, ODESolverResultSet>();
             try {
-            	resultsHash = solverHandler.simulateAllTasks(externalDocInfo, sedml, outDirForCurrentSedml, outputDir, sedmlLocation);
+            	resultsHash = solverHandler.simulateAllTasks(externalDocInfo, sedml, outDirForCurrentSedml, outputDir, outputBaseDir, sedmlLocation);
             } catch(Exception e) {
             	somethingFailed = true;
             }

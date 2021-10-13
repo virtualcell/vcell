@@ -54,9 +54,12 @@ public class SolverHandler {
     }
 
 
-    public HashMap<String, ODESolverResultSet> simulateAllTasks(ExternalDocInfo externalDocInfo, SedML sedml, File outputDirForSedml, String outDir, String sedmlLocation) throws Exception {
+    public HashMap<String, ODESolverResultSet> simulateAllTasks(ExternalDocInfo externalDocInfo, SedML sedml, File outputDirForSedml, String outDir, String outputBaseDir, String sedmlLocation) throws Exception {
         // create the VCDocument(s) (bioModel(s) + application(s) + simulation(s)), do sanity checks
         cbit.util.xml.VCLogger sedmlImportLogger = new LocalLogger();
+        String inputFile = externalDocInfo.getFile().getAbsolutePath();
+        String bioModelBaseName = org.vcell.util.FileUtils.getBaseName(inputFile);
+        
         List<VCDocument> docs = null;
         // Key String is SEDML Task ID
         HashMap<String, ODESolverResultSet> resultsHash = new LinkedHashMap<String, ODESolverResultSet>();
@@ -73,6 +76,8 @@ public class SolverHandler {
 
         int simulationCount = 0;
         int bioModelCount = 0;
+        boolean hasSomeSpatial = false;
+        
         for (VCDocument doc : docs) {
             try {
                 sanityCheck(doc);
@@ -107,6 +112,7 @@ public class SolverHandler {
                 	logTaskMessage += "done. Starting simulation... ";
 
                 	if(solver instanceof FVSolverStandalone) {
+                		hasSomeSpatial = true;
                 		throw new RuntimeException("FVSolverStandalone timeout failure.");
                 	} else if (solver instanceof AbstractCompiledSolver) {
                         ((AbstractCompiledSolver) solver).runSolver();
@@ -200,6 +206,9 @@ public class SolverHandler {
             bioModelCount++;
         }
         System.out.println("Ran " + simulationCount + " simulations for " + bioModelCount + " biomodels.");
+        if(hasSomeSpatial) {
+        	CLIStandalone.writeSpatialList(outputBaseDir, bioModelBaseName);
+        }
         return resultsHash;
     }
 
