@@ -56,7 +56,7 @@ jobs:
         docker push --all-tags ${{ env.VCELL_REPO_NAMESPACE }}/$CONTAINER;\
         done
         cd docker/build/singularity-vm
-        echo singularity push -U $(ls *img) ${{ env.VCELL_REPO_NAMESPACE }}/vcell-batch-singularity:${{ env.VCELL_TAG }}
+        singularity push -U $(ls *img) oras://${{ env.VCELL_REPO_NAMESPACE }}/vcell-batch-singularity:${{ env.VCELL_TAG }}
         
       # Enable tmate debugging of manually-triggered workflows if the input option was provided
     - name: Setup tmate session 2
