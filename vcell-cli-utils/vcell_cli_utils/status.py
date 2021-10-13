@@ -74,7 +74,8 @@ def status_yml(omex_file: str, out_dir: str):
             #outputs_dict["outputs"][report].update({"status": "QUEUED"})
 
         for task in task_list:
-            tasks_dict["tasks"].append({"id":task ,"status": "QUEUED","exception": None,"skipReason": None, "output": None, "duration": None,"algorithm": None,"simulatorDetails":None})
+            exception = {"category":None, "message":None}
+            tasks_dict["tasks"].append({"id":task ,"status": "QUEUED", "exception": exception, "skipReason": None, "output": None, "duration": None, "algorithm": None,"simulatorDetails":None})
 
         sed_doc_dict = {"location":sedml,"status": "QUEUED", "exception": None,"skipReason": None,"output":None,"duration":None}
         sed_doc_dict.update(outputs_dict)
@@ -217,7 +218,9 @@ def set_exception_message(sedml: str, task: str,out_dir:str, name:str , category
             if name == 'task':
                 for taskList in sedml_list['tasks']:
                     if taskList['id'] == task:
-                        taskList['exception'] = message
+                        aaa = taskList['exception']
+                        aaa['category'] = category
+                        aaa['message'] = message
     status_yaml_path = os.path.join(out_dir, "log.yml")
 
     # Convert json to yaml # Save new yaml
