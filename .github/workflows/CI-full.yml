@@ -16,9 +16,19 @@ jobs:
       run: |
         echo "VCELL_TAG=`git rev-parse HEAD | cut -c -7`" >> $GITHUB_ENV
         echo "VCELL_REPO_NAMESPACE=ghcr.io/virtualcell" >> $GITHUB_ENV
-    - name: Setup tmate session 1
-      uses: mxschmitt/action-tmate@v3
-      if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.debug_enabled }}
+    - name: get installer secrets
+      run: |
+        sudo mkdir /usr/local/deploy
+        sudo chmod 777 /usr/local/deploy
+        cd /usr/local/deploy
+        echo "StrictHostKeyChecking no" >> ssh_prepend
+        echo "UserKnownHostsFile=/dev/null" >> ssh_prepend
+        cat /etc/ssh/ssh_config >> ssh_prepend
+        sudo cp -f ssh_prepend /etc/ssh/ssh_config
+        sshpass -p {{ secrets.CD_FULL_PASS }} {{ secrets.CD_FULL_USER }}@biosim-submit-ext.cam.uchc.edu:/share/apps/vcell3/deployed_docker/deploy_dir.tar .
+        cd ..
+        sudo tar -xvf deploy/deploy_dir.tar
+        sudo chmod 777 -R deploy
     - name: setup java 8
       uses: actions/setup-java@v2
       with:
@@ -32,18 +42,18 @@ jobs:
       shell: bash
       run: |
         cd docker/build
-        sudo docker login -u moraru -p ${{ secrets.TEST }} ghcr.io
-        docker login -u moraru -p ${{ secrets.TEST }} ghcr.io
+        sudo docker login -u ${{ secrets.ACTION_USER }} -p ${{ secrets.ACTION_TOKEN }} ghcr.io
+        docker login -u ${{ secrets.ACTION_USER }} -p ${{ secrets.ACTION_TOKEN }} ghcr.io
         ./build.sh all ${{ env.VCELL_REPO_NAMESPACE }} ${{ env.VCELL_TAG }}
         cd singularity-vm
-        singularity remote login -u moraru -p ${{ secrets.TEST }} oras://ghcr.io
+        singularity remote login -u ${{ secrets.ACTION_USER }} -p ${{ secrets.ACTION_TOKEN }} oras://ghcr.io
     - name: tag as latest and push to registry
       shell: bash
       run: |
         for CONTAINER in vcell-api vcell-batch vcell-clientgen vcell-data vcell-db vcell-mongo vcell-sched vcell-submit vcell-web;\
         do docker tag ${{ env.VCELL_REPO_NAMESPACE }}/$CONTAINER:${{ env.VCELL_TAG }} ${{ env.VCELL_REPO_NAMESPACE }}/$CONTAINER:latest;\
         done
-        env | grep VCdocker push --all-tags ${{ env.VCELL_REPO_NAMESPACE }}
+        docker push --all-tags ${{ env.VCELL_REPO_NAMESPACE }}
         cd docker/build/singularity-vm
         echo singularity push -U $(ls *img) ${{ env.VCELL_REPO_NAMESPACE }}/vcell-batch-singularity:${{ env.VCELL_TAG }}
         
