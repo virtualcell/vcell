@@ -26,7 +26,7 @@ jobs:
         echo "UserKnownHostsFile=/dev/null" >> ssh_prepend
         cat /etc/ssh/ssh_config >> ssh_prepend
         sudo cp -f ssh_prepend /etc/ssh/ssh_config
-        sshpass -p {{ secrets.CD_FULL_PASS }} scp {{ secrets.CD_FULL_USER }}@biosim-submit-ext.cam.uchc.edu:/share/apps/vcell3/deployed_docker/deploy_dir.tar .
+        sshpass -p ${{ secrets.CD_FULL_PASS }} scp ${{ secrets.CD_FULL_USER }}@biosim-submit-ext.cam.uchc.edu:/share/apps/vcell3/deployed_docker/deploy_dir.tar .
         cd ..
         sudo tar -xvf deploy/deploy_dir.tar
         sudo chmod 777 -R deploy
