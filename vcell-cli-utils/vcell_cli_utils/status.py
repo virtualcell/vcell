@@ -191,7 +191,7 @@ def sim_status(status: str, out_dir: str):
     # Convert json to yaml # Save new yaml
     dump_yaml_dict(status_yaml_path, yaml_dict=yaml_dict, out_dir=out_dir)
 
-def get_exception_message(sedml: str, task: str,out_dir:str, name:str , message: str, error: str):
+def set_output_message(sedml: str, task: str,out_dir:str, name:str , message: str):
 
     yaml_dict = get_yaml_as_str(os.path.join(out_dir, "log.yml"))
     for sedml_list in yaml_dict['sedDocuments']:
@@ -201,8 +201,23 @@ def get_exception_message(sedml: str, task: str,out_dir:str, name:str , message:
             if name == 'task':
                 for taskList in sedml_list['tasks']:
                     if taskList['id'] == task:
-                        taskList['exception'] = error
                         taskList['output'] = message
+    status_yaml_path = os.path.join(out_dir, "log.yml")
+
+    # Convert json to yaml # Save new yaml
+    dump_yaml_dict(status_yaml_path, yaml_dict=yaml_dict, out_dir=out_dir)
+
+def set_exception_message(sedml: str, task: str,out_dir:str, name:str , category: str, message: str):
+
+    yaml_dict = get_yaml_as_str(os.path.join(out_dir, "log.yml"))
+    for sedml_list in yaml_dict['sedDocuments']:
+        if sedml.endswith(sedml_list["location"]):
+            sedml_name_nested = sedml_list["location"]
+            # Update task status
+            if name == 'task':
+                for taskList in sedml_list['tasks']:
+                    if taskList['id'] == task:
+                        taskList['exception'] = message
     status_yaml_path = os.path.join(out_dir, "log.yml")
 
     # Convert json to yaml # Save new yaml
@@ -214,5 +229,6 @@ if __name__ == "__main__":
         'updateTaskStatus': update_status,
         'simStatus': sim_status,
         'updateDataSetStatus': update_dataset_status,
-        'updateErrorMessage' : get_exception_message,
+        'setOutputMessage' : set_output_message,
+        'setExceptionMessage' : set_exception_message,
     })

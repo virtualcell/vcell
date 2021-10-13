@@ -678,10 +678,13 @@ public class CLIUtils {
         printProcessErrors(process, "","");
     }
 
-    public static void updateErrorMessage(String sedmlName, String id, String outDir, String name, String stdOut , String stdErr) throws IOException, InterruptedException {
-        Process process = execShellCommand(new String[]{python, statusPath.toString(), "updateErrorMessage", sedmlName,id,outDir,name,stdOut,stdErr}).start();
+    public static void setOutputMessage(String sedmlName, String id, String outDir, String name, String output) throws IOException, InterruptedException {
+        Process process = execShellCommand(new String[]{python, statusPath.toString(), "setOutputMessage", sedmlName, id, outDir, name, output}).start();
         printProcessErrors(process, "","Failed updating task status YAML\n");
-
+    }
+    public static void setExceptionMessage(String sedmlName, String id, String outDir, String name, String category , String message) throws IOException, InterruptedException {
+        Process process = execShellCommand(new String[]{python, statusPath.toString(), "setExceptionMessage", sedmlName, id, outDir, name, category, message}).start();
+        printProcessErrors(process, "","Failed updating task status YAML\n");
     }
 
     private static ArrayList<File> listFilesForFolder(File dirPath, String extensionType) {
