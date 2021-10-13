@@ -41,7 +41,6 @@ jobs:
     - name: setup global environment variables
       shell: bash
       run: |
-      	cd build/vcell/docker/swarm
         echo "VCELL_VERSION=${{ github.event.inputs.vcell_version }}" >> $GITHUB_ENV
         echo "VCELL_BUILD=${{ github.event.inputs.vcell_build }}" >> $GITHUB_ENV
         echo "VCELL_SITE=${{ github.event.inputs.vcell_site }}" >> $GITHUB_ENV
