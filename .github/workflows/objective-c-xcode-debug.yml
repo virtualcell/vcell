@@ -32,4 +32,4 @@ jobs:
 
       - name: Setup tmate session 2
         uses: mxschmitt/action-tmate@v3
-        if: ${{ failed() || github.event.inputs.debug_enabled }}
+        if: ${{ failure() || github.event.inputs.debug_enabled }}
