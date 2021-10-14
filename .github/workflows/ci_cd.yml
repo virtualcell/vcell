@@ -69,7 +69,15 @@ jobs:
 
       - name: Build Docker image and push with latest tag
         run: |
+          REVISION=$(git rev-parse HEAD)
+          CREATED=$(date --rfc-3339=seconds | sed 's/ /T/')
           echo ${{ secrets.DOCKER_REGISTRY_TOKEN }} | docker login ghcr.io -u ${{ secrets.DOCKER_REGISTRY_USERNAME }} --password-stdin
-          docker build --no-cache --file Dockerfile --tag ghcr.io/virtualcell/biosimulators_vcell:latest .
+          docker build \
+            --no-cache \
+            --file Dockerfile \
+            --tag ghcr.io/virtualcell/biosimulators_vcell:latest \
+            --label org.opencontainers.image.revision=${REVISION} \
+            --label org.opencontainers.image.created=${CREATED} \
+            .
           docker tag ghcr.io/virtualcell/biosimulators_vcell:latest ghcr.io/virtualcell/biosimulators_vcell:${{steps.version.outputs.tag}}
           docker push --all-tags ghcr.io/virtualcell/biosimulators_vcell
