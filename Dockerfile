@@ -7,7 +7,7 @@
 ## Base OS
 #FROM ubuntu:latest
 #
-#ARG SIMULATOR_VERSION="7.4.0.10"
+#ARG SIMULATOR_VERSION="7.4.0.23"
 #
 ## metadata
 #LABEL \

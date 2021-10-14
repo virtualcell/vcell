@@ -1,7 +1,7 @@
 # Base OS
 FROM ubuntu:18.04
 
-ARG SIMULATOR_VERSION="7.4.0.00"
+ARG SIMULATOR_VERSION="7.4.0.23"
 
 # metadata
 LABEL \
