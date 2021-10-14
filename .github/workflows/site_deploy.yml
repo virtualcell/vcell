@@ -39,7 +39,6 @@ jobs:
         ref: ${{ github.event.inputs.commit_hash }}
         fetch-depth: 0
     - name: setup global environment variables
-      shell: bash 
       run: |
         echo "VCELL_VERSION=${{ github.event.inputs.vcell_version }}" >> $GITHUB_ENV
         echo "VCELL_BUILD=${{ github.event.inputs.vcell_build }}" >> $GITHUB_ENV
@@ -53,8 +52,20 @@ jobs:
          	echo "MANAGER_NODE=vcellapi-beta.cam.uchc.edu" >> $GITHUB_ENV;\
         	echo "VCELL_INSTALLER_REMOTE_DIR="/share/apps/vcell3/apache_webroot/htdocs/webstart/Alpha"" >> $GITHUB_ENV;\
         else echo "Uknown site name ${{ github.event.inputs.vcell_site }}"; exit 1; fi; fi
+    - name: get installer secrets
+      run: |
+        sudo mkdir /usr/local/deploy
+        sudo chmod 777 /usr/local/deploy
+        cd /usr/local/deploy
+        echo "StrictHostKeyChecking no" >> ssh_prepend
+        echo "UserKnownHostsFile=/dev/null" >> ssh_prepend
+        cat /etc/ssh/ssh_config >> ssh_prepend
+        sudo cp -f ssh_prepend /etc/ssh/ssh_config
+        sshpass -p ${{ secrets.CD_FULL_PASS }} scp ${{ secrets.CD_FULL_USER }}@biosim-submit-ext.cam.uchc.edu:/share/apps/vcell3/deployed_docker/deploy_dir.tar .
+        cd ..
+        sudo tar -xvf deploy/deploy_dir.tar
+        sudo chmod 777 -R deploy
     - name: setup config and build
-      shell: bash
       run: |
         env
         cd docker/swarm
@@ -63,7 +74,8 @@ jobs:
         ./serverconfig-uch.sh $VCELL_SITE $VCELL_REPO_NAMESPACE $VCELL_TAG $VCELL_VERSION $VCELL_BUILD $VCELL_CONFIG_FILE_NAME
         sudo docker login -u ${{ secrets.ACTION_USER }} -p ${{ secrets.ACTION_TOKEN }} ghcr.io
         sudo docker pull $VCELL_REPO_NAMESPACE/vcell-clientgen:$VCELL_TAG
+        ./generate_installers.sh ./${VCELL_CONFIG_FILE_NAME}
     # Enable tmate debugging of manually-triggered workflows if the input option was provided
     - name: Setup tmate session 2
       uses: mxschmitt/action-tmate@v3
-      if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.debug_enabled }}
+      if: ${{ failure() || github.event.inputs.debug_enabled }}
