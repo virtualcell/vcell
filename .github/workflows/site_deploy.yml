@@ -101,8 +101,9 @@ jobs:
       uses: actions/download-artifact@v2
     - name: notarize mac installer
       run: |
+        cd installers
         MAC_INSTALLER=`ls generated_installers/*dmg`
-        xcrun altool --notarize-app --primary-bundle-id "org.vcell.i4jmacos" --username "${{ secrets.MACID }}" --password "${{ secrets.MACPW }}" --file $MAC_INSTALLER > altool_output
+        xcrun altool --notarize-app --primary-bundle-id "org.vcell.i4jmacos" --username "${{ secrets.MACID }}" --password "${{ secrets.MACPW }}" --file grenerated_installers/$MAC_INSTALLER > altool_output
         cat altool_output | grep UUID | cut -d " " -f3 > UUID
         sleep 1m
         xcrun altool --notarization-info `cat UUID` --username "${{ secrets.MACID }}" --password "${{ secrets.MACPW }}" > status
@@ -114,7 +115,7 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
         name: installers
-        path: docker/swarm/generated_installers
+        path: installers
         retention-days: 1
         
   deploy:
@@ -122,11 +123,18 @@ jobs:
     runs-on: ubuntu-latest
     needs: notarize
     steps:
+    - name: checkout commit
+      uses: actions/checkout@v2
+      with:
+        ref: ${{ github.event.inputs.commit_hash }}
+        fetch-depth: 0 
     - name: retrieve installers and variables
       uses: actions/download-artifact@v2
     - name: setenv
       run: |
-        for line in $(cat docker/swarm/variables); do echo line >> GITHUB_ENV
+        cd installers
+        for line in $(cat variables); do echo line >> $GITHUB_ENV
+        mv * ../docker/swarm/generated_installers
     - name: retrieve config file
       run: |
         echo "StrictHostKeyChecking no" >> ssh_prepend
