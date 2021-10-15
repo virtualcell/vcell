@@ -80,7 +80,7 @@ jobs:
         env | grep VCELL > variables
     - name: send home config file
       run: |
-        sshpass -p ${{ secrets.CD_FULL_PASS }} scp docker/swarm/${VCELL_CONFIG_FILE_NAME} ${{ secrets.CD_FULL_USER }}@biosim-submit-ext.cam.uchc.edu:/share/apps/vcell3/deployed_docker/${VCELL_CONFIG_FILE_NAME}
+        sshpass -p ${{ secrets.CD_FULL_PASS }} scp docker/swarm/$VCELL_CONFIG_FILE_NAME ${{ secrets.CD_FULL_USER }}@biosim-submit-ext.cam.uchc.edu:/share/apps/vcell3/deployed_docker/$VCELL_CONFIG_FILE_NAME
     - name: upload generated installers and variables
       uses: actions/upload-artifact@v2
       with:
