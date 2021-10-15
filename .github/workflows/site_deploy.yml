@@ -105,9 +105,9 @@ jobs:
         export MAC_INSTALLER=`ls generated_installers/*dmg`
         xcrun altool --notarize-app --primary-bundle-id "org.vcell.i4jmacos" --username "${{ secrets.MACID }}" --password "${{ secrets.MACPW }}" --file $MAC_INSTALLER > altool_output
         cat altool_output | grep UUID | cut -d " " -f3 > UUID
-        sleep 1m
+        sleep 5m
         xcrun altool --notarization-info `cat UUID` --username "${{ secrets.MACID }}" --password "${{ secrets.MACPW }}" > status
-        # xcrun stapler staple
+        xcrun stapler staple $MAC_INSTALLER
     - name: Setup tmate session 2
       uses: mxschmitt/action-tmate@v3
       if: ${{ failure() || github.event.inputs.debug_enabled }}
@@ -133,8 +133,9 @@ jobs:
     - name: setenv
       run: |
         cd installers
-        for line in $(cat variables); do echo line >> $GITHUB_ENV
-        mv * ../docker/swarm/generated_installers
+        for line in $(cat variables); do echo line >> $GITHUB_ENV; done
+        mkdir ../docker/swarm/generated_installers
+        mv generated_installers/* ../docker/swarm/generated_installers
     - name: retrieve config file
       run: |
         echo "StrictHostKeyChecking no" >> ssh_prepend
