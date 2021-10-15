@@ -71,8 +71,7 @@ jobs:
       run: |
         cd docker/swarm
         export "VCELL_CONFIG_FILE_NAME=server_${VCELL_SITE}_${VCELL_VERSION}_${VCELL_BUILD}_${VCELL_TAG}.config"
-        echo $VCELL_CONFIG_FILE_NAME > configfile
-        echo "VCELL_CONFIG_FILE_NAME=`cat configfile`" >> GITHUB_ENV
+        echo "VCELL_CONFIG_FILE_NAME=$VCELL_CONFIG_FILE_NAME" >> $GITHUB_ENV
         ./serverconfig-uch.sh $VCELL_SITE $VCELL_REPO_NAMESPACE $VCELL_TAG $VCELL_VERSION $VCELL_BUILD $VCELL_CONFIG_FILE_NAME
         sudo docker login -u ${{ secrets.ACTION_USER }} -p ${{ secrets.ACTION_TOKEN }} ghcr.io
         sudo docker pull $VCELL_REPO_NAMESPACE/vcell-clientgen:$VCELL_TAG
