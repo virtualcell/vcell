@@ -7,6 +7,7 @@ import org.jlibsedml.*;
 import org.vcell.cli.vcml.VCMLHandler;
 //import org.vcell.util.FileUtils;
 import org.vcell.cli.vcml.VcmlOmexConversion;
+import org.vcell.util.GenericExtensionFilter;
 import org.vcell.util.exe.Executable;
 
 import com.lowagie.text.pdf.crypto.RuntimeCryptoException;
@@ -26,6 +27,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 
 public class CLIStandalone {
+	
     public static void main(String[] args) {
 
     	if(args == null || args.length < 4) {		// -i <input> -o <output>
@@ -118,6 +120,20 @@ public class CLIStandalone {
     			StandardOpenOption.CREATE, StandardOpenOption.APPEND);
     	}
    	}
+    
+    private static boolean containsExtension(String folder, String ext) {
+    	GenericExtensionFilter filter = new GenericExtensionFilter(ext);
+    	File dir = new File(folder);
+    	if(dir.isDirectory() == false) {
+    		return false;
+    	}
+    	String[] list = dir.list(filter);
+    	if (list.length > 0) {
+    		return true;
+    	}
+    	return false;
+    }
+
 
     private static void singleExecOmex(String outputBaseDir, String[] args) throws Exception {
         OmexHandler omexHandler = null;
@@ -205,9 +221,10 @@ public class CLIStandalone {
                         + nPlots3DCount + " plot3D(s)\n";
                 System.out.println(summarySedmlContentString);
 
-                String str = "Successful translation: SED-ML file " + sedmlName;
-                logDocumentMessage += str;
-                System.out.println(str);
+                logDocumentMessage += "done. ";
+                String str = "Successful translation of SED-ML file";
+                logDocumentMessage += str + ". ";
+                System.out.println(str + " : "+ sedmlName);
                 CLIUtils.drawBreakLine("-", 100);
 
                 // For appending data for SED Plot2D and Plot3d to HDF5 files following a temp convention
@@ -245,33 +262,69 @@ public class CLIStandalone {
             ExternalDocInfo externalDocInfo = new ExternalDocInfo(new File(inputFile), true);
             resultsHash = new LinkedHashMap<String, ODESolverResultSet>();
             try {
+            	String str = "Starting simulate all tasks... ";
+            	System.out.println(str);
+            	logDocumentMessage += str;
             	resultsHash = solverHandler.simulateAllTasks(externalDocInfo, sedml, outDirForCurrentSedml, outputDir, outputBaseDir, sedmlLocation);
             } catch(Exception e) {
             	somethingFailed = true;
+            	// still possible to have some data in the hash, from some task that was successful - that would be partial success
             }
             if (resultsHash.size() != 0) {
-                reportsHash = CLIUtils.generateReportsAsCSV(sedml, resultsHash, outDirForCurrentSedml, outputDir, sedmlLocation);
+            	logDocumentMessage += "done. ";
+            	try {
+            		if(resultsHash.containsValue(null)) {		// some tasks failed, but not all
+            			logDocumentMessage += "Failed to execute one or more tasks. ";
+            		}
+            		logDocumentMessage += "Generating outputs... ";
+            		reportsHash = CLIUtils.generateReportsAsCSV(sedml, resultsHash, outDirForCurrentSedml, outputDir, sedmlLocation);
+            		if(reportsHash == null || reportsHash.size() == 0) {
+            			throw new RuntimeException("failed to generate any reports. ");
+            		}
+            		if(reportsHash.containsValue(null)) {
+            			logDocumentMessage += "failed to create one or more reports. ";
+            		} else {
+                    	logDocumentMessage += "done. ";
+            		}
 
-                // HDF5 conversion
-//                if ((nReportsCount==0) && (nPlots2DCount!=0 || nPlots3DCount!=0)) {
-                CLIUtils.execPlotOutputSedDoc(inputFile, outputDir);
-                CLIUtils.genPlotsPseudoSedml(sedmlLocation, outDirForCurrentSedml.toString());
-//                }
-//                else {
-//                    CLIUtils.genPlots(sedmlLocation, outDirForCurrentSedml.toString());
-//                    CLIUtils.convertCSVtoHDF(inputFile, outputDir);
-//                }
+            		CLIUtils.execPlotOutputSedDoc(inputFile, outputDir);							// create the HDF5 file
+            		if(!containsExtension(outputDir, "h5")) {
+            			throw new RuntimeException("failed to generate the .h5 output file. ");
+            		}
+            		CLIUtils.genPlotsPseudoSedml(sedmlLocation, outDirForCurrentSedml.toString());	// generate the plots
+                	org.apache.commons.io.FileUtils.deleteDirectory(new File(String.valueOf(sedmlPath2d3d)));	// removing temp path generated from python
+            	} catch (Exception e) {
+                    somethingFailed = true;
+                	logDocumentError = e.getMessage();
+                	String category = e.getClass().getSimpleName();
+                    CLIUtils.setOutputMessage(sedmlLocation, sedmlName, outputDir, "sedml", logDocumentMessage);
+                    CLIUtils.setExceptionMessage(sedmlLocation, sedmlName, outputDir, "sedml", category, logDocumentError);
+                    org.apache.commons.io.FileUtils.deleteDirectory(new File(String.valueOf(sedmlPath2d3d)));	// removing temp path generated from python
+                    continue;
+            	}
+            } else {           	// no data in the hash -> no results to show
+            	Exception e = new RuntimeException("Failure executing the tasks within the sed document. ");
+            	logDocumentError = e.getMessage();
+            	String category = e.getClass().getSimpleName();
+                CLIUtils.setOutputMessage(sedmlLocation, sedmlName, outputDir, "sedml", logDocumentMessage);
+                CLIUtils.setExceptionMessage(sedmlLocation, sedmlName, outputDir, "sedml", category, logDocumentError);
+                org.apache.commons.io.FileUtils.deleteDirectory(new File(String.valueOf(sedmlPath2d3d)));	// removing temp path generated from python
+                continue;		// no point to create h5 or zip files with no data
             }
-
-            // removing temp path generated from python
-            org.apache.commons.io.FileUtils.deleteDirectory(new File(String.valueOf(sedmlPath2d3d)));
 
             // archiving res files
             CLIUtils.zipResFiles(new File(outputDir));
 
-            if (resultsHash.containsValue(null) || reportsHash == null) {
-                somethingFailed = true;
-            }
+//            if (resultsHash.containsValue(null) || reportsHash == null) {
+//            	// something went wrong but we didn't catch any exception
+//                somethingFailed = true;
+//            	Exception e = new RuntimeException("One or more errors encountered while executing the sed document. ");
+//            	// no data in the hash -> no results to show
+//            	logDocumentError = e.getMessage();
+//            	String category = e.getClass().getSimpleName();
+//                CLIUtils.setExceptionMessage(sedmlLocation, sedmlName, outputDir, "sedml", category, logDocumentError);
+//            }
+            CLIUtils.setOutputMessage(sedmlLocation, sedmlName, outputDir, "sedml", logDocumentMessage);
         }
         omexHandler.deleteExtractedOmex();
         if (somethingFailed) {
@@ -280,6 +333,8 @@ public class CLIStandalone {
             System.err.println(error);
             writeErrorList(outputBaseDir, bioModelBaseName);
         }
+    	// TODO: write a CLIUtils.setOutputMessage for the omex document
+
     }
 
     private static void singleExecVcml(String[] args) throws Exception {
