@@ -194,46 +194,52 @@ def sim_status(status: str, out_dir: str):
     # Convert json to yaml # Save new yaml
     dump_yaml_dict(status_yaml_path, yaml_dict=yaml_dict, out_dir=out_dir)
 
-def set_output_message(sedml: str, task: str, out_dir:str, name:str , message: str):
+#
+# sedmlAbsolutePath - full path to location of the actual sedml file (document) used as input
+# entityId          - (actually, the name) ex: task_0_0 for task, or biomodel_20754836.sedml for a sedml document
+# outDir            - path to directory where the log files will be placed
+# entityType        - string describing the entity type ex "task" for a task, or "sedml" for sedml document
+#
+def set_output_message(sedmlAbsolutePath:str, entityId:str, out_dir:str, entityType:str , message:str):
 
     yaml_dict = get_yaml_as_str(os.path.join(out_dir, "log.yml"))
     for sedml_list in yaml_dict['sedDocuments']:
-        if sedml.endswith(sedml_list["location"]):
+        if sedmlAbsolutePath.endswith(sedml_list["location"]):
             sedml_name_nested = sedml_list["location"]
             # Update sedml document status
-            if name == 'sedml':
-                if sedml_name_nested == task:
+            if entityType == 'sedml':
+                if sedml_name_nested == entityId:
                     sedml_list['output'] = message
             
             # Update task status
-            if name == 'task':
+            if entityType == 'task':
                 for taskList in sedml_list['tasks']:
-                    if taskList['id'] == task:
+                    if taskList['id'] == entityId:
                         taskList['output'] = message
     status_yaml_path = os.path.join(out_dir, "log.yml")
 
     # Convert json to yaml # Save new yaml
     dump_yaml_dict(status_yaml_path, yaml_dict=yaml_dict, out_dir=out_dir)
 
-def set_exception_message(sedml: str, task: str,out_dir:str, name:str , category: str, message: str):
+def set_exception_message(sedmlAbsolutePath:str, entityId:str, out_dir:str, entityType:str, category:str, message:str):
 
     yaml_dict = get_yaml_as_str(os.path.join(out_dir, "log.yml"))
     for sedml_list in yaml_dict['sedDocuments']:
-        if sedml.endswith(sedml_list["location"]):
+        if sedmlAbsolutePath.endswith(sedml_list["location"]):
             sedml_name_nested = sedml_list["location"]
             # Update sedml document status
             # print(" --- sedml: ", sedml_name_nested, file=sys.stdout)
             # print(" --- name: ", name, file=sys.stdout)
-            if name == 'sedml':
-                if sedml_name_nested == task:
+            if entityType == 'sedml':
+                if sedml_name_nested == entityId:
                     exc = sedml_list['exception']
                     exc['category'] = category
                     exc['message'] = message
             
             # Update task status
-            if name == 'task':
+            if entityType == 'task':
                 for taskList in sedml_list['tasks']:
-                    if taskList['id'] == task:
+                    if taskList['id'] == entityId:
                         exc = taskList['exception']
                         exc['category'] = category
                         exc['message'] = message

@@ -678,12 +678,19 @@ public class CLIUtils {
         printProcessErrors(process, "","");
     }
 
-    public static void setOutputMessage(String sedmlName, String id, String outDir, String name, String output) throws IOException, InterruptedException {
-        Process process = execShellCommand(new String[]{python, statusPath.toString(), "setOutputMessage", sedmlName, id, outDir, name, output}).start();
+    // sedmlAbsolutePath - full path to location of the actual sedml file (document) used as input
+    // entityId          - ex: task_0_0 for task, or biomodel_20754836.sedml for a sedml document
+    // outDir            - path to directory where the log files will be placed
+    // entityType        - string describing the entity type ex "task" for a task, or "sedml" for sedml document
+    // message           - useful info about the execution of the entity (ex: task), could be human readable or concatenation of stdout and stderr
+    public static void setOutputMessage(String sedmlAbsolutePath, String entityId, String outDir, String entityType, String message) throws IOException, InterruptedException {
+        Process process = execShellCommand(new String[]{python, statusPath.toString(), "setOutputMessage", sedmlAbsolutePath, entityId, outDir, entityType, message}).start();
         printProcessErrors(process, "","Failed updating task status YAML\n");
     }
-    public static void setExceptionMessage(String sedmlName, String id, String outDir, String name, String category , String message) throws IOException, InterruptedException {
-        Process process = execShellCommand(new String[]{python, statusPath.toString(), "setExceptionMessage", sedmlName, id, outDir, name, category, message}).start();
+    // category - exception class, ex RuntimeException
+    // message  - exception message
+    public static void setExceptionMessage(String sedmlAbsolutePath, String entityId, String outDir, String entityType, String category , String message) throws IOException, InterruptedException {
+        Process process = execShellCommand(new String[]{python, statusPath.toString(), "setExceptionMessage", sedmlAbsolutePath, entityId, outDir, entityType, category, message}).start();
         printProcessErrors(process, "","Failed updating task status YAML\n");
     }
 
