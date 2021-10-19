@@ -10,7 +10,9 @@
 
 package cbit.vcell.client;
 
+import java.awt.Window;
 import java.util.Hashtable;
+import java.util.Map;
 
 import javax.swing.JComponent;
 import javax.swing.JPanel;
@@ -22,6 +24,11 @@ import org.vcell.util.document.UserLoginInfo;
 import org.vcell.util.document.UserLoginInfo.DigestedPassword;
 import org.vcell.util.document.VCDocument;
 import org.vcell.util.document.VCDocument.VCDocumentType;
+import org.vcell.util.gui.DialogUtils;
+
+import com.install4j.api.launcher.ApplicationLauncher;
+import com.install4j.api.launcher.ApplicationLauncher.Callback;
+import com.install4j.api.launcher.Variables;
 
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.desktop.DocumentWindowAboutBox;
@@ -254,12 +261,53 @@ public static VCellClient startClient(final VCDocument startupDoc, final ClientS
 		    if (currWindowManager != null) {
 		    	hashTable.put("currWindowManager", currWindowManager);
 		    }
+		    
+		}
+	};
+	
+	AsynchClientTask task2a  = new AsynchClientTask("Checking for Updates", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+
+		@Override
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
+			try {
+//				final JComponent component = ((DocumentWindowManager)hashTable.get("currWindowManager")).getComponent();
+//				final Window windowForComponent = SwingUtilities.windowForComponent(component);
+//				final Map<String, Object> installerVariables = Variables.getInstallerVariables();
+//				System.out.println(installerVariables);
+				
+				//-----use following in BreakPoint conditional before ApplicationLauncher.launchApplication in eclipse
+//				System.setProperty("install4j.runtimeDir","/home/vcell/VCell_Test/.install4j");
+//				return false;
+				ApplicationLauncher.launchApplication("127", null, false, null/*new ApplicationLauncher.Callback() {
+			        public void exited(int exitValue) {
+			        	DialogUtils.showInfoDialog(windowForComponent, "ApplicationLauncher.launchApplication.exited(), exitValue="+exitValue);
+			        }
+			        
+			        public void prepareShutdown() {
+			        	DialogUtils.showInfoDialog(windowForComponent, "ApplicationLauncher.launchApplication.prepareShutdown()");
+			        }
+			    }*/
+			);
+
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			
+		}
+		
+	};
+	
+	AsynchClientTask task2b  = new AsynchClientTask("Login...", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+
+		@Override
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
 		    if (clientServerInfo.getUsername() == null) {
 			    // we were not supplied login credentials; pop-up dialog
-		    	VCellClient.login(vcellClient.getRequestManager(), clientServerInfo, currWindowManager);
+		    	VCellClient.login(vcellClient.getRequestManager(), clientServerInfo, ((DocumentWindowManager)hashTable.get("currWindowManager")));
 		    }
 		}
 	};
+	
 	AsynchClientTask task3  = new AsynchClientTask("Connecting to Server", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 		public void run(Hashtable<String, Object> hashTable) throws Exception {
 		    // try server connection
@@ -271,7 +319,7 @@ public static VCellClient startClient(final VCDocument startupDoc, final ClientS
 		}
 	}; 	
 
-	AsynchClientTask[] taskArray = new AsynchClientTask[]{task1, task2, task3};
+	AsynchClientTask[] taskArray = new AsynchClientTask[] { task1, task2,  task2a, task2b, task3};
 	ClientTaskDispatcher.dispatch(null, hash, taskArray);
 	return vcellClient;
 }
