@@ -90,7 +90,8 @@ public class Executable implements IExecutable {
  */
 
 public Executable(String[] command) {
-	this(command, 0);
+	// Do NOT arbitrarily set a static value to a number!!
+	this(command, Executable.getTimeoutMS());
 }
 
 /**
