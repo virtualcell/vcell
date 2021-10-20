@@ -95,7 +95,7 @@ public class SolverHandler {
             	}
             	String logTaskMessage = "Initializing simulation... ";
             	String logTaskError = "";
-                long startTime = System.currentTimeMillis();
+                long startTimeTask = System.currentTimeMillis();
 
                 SimulationTask simTask;
                 String kisao = "null";
@@ -153,12 +153,13 @@ public class SolverHandler {
                     	logTaskMessage += "done. ";
                         System.out.println("Succesful execution: Model '" + docName + "' Task '" + sim.getDescription() + "'.");
 
-                        long endTime = System.currentTimeMillis();
-                		long elapsedTime = endTime - startTime;
-                		long duration = Math.round((elapsedTime /1000) % 60);
+                        long endTimeTask = System.currentTimeMillis();
+                		long elapsedTime = endTimeTask - startTimeTask;
+                		int duration = (int)Math.ceil(elapsedTime /1000.0);
+
                 		String msg = "Running simulation " + simTask.getSimulation().getName() + ", " + elapsedTime + " ms";
                 		System.out.println(msg);
-                        CLIUtils.updateTaskStatusYml(sedmlLocation, sim.getImportedTaskID(), CLIUtils.Status.SUCCEEDED, outDir , Long.toString(duration) ,kisao);
+                        CLIUtils.updateTaskStatusYml(sedmlLocation, sim.getImportedTaskID(), CLIUtils.Status.SUCCEEDED, outDir ,duration + "", kisao);
                         CLIUtils.setOutputMessage(sedmlLocation, sim.getImportedTaskID(), outDir, "task", logTaskMessage);
                         CLIUtils.drawBreakLine("-", 100);
                     } else {
@@ -173,8 +174,8 @@ public class SolverHandler {
                     System.err.println(error);
                     
                     long endTime = System.currentTimeMillis();
-            		long elapsedTime = endTime - startTime;
-            		long duration = Math.round((elapsedTime /1000) % 60);
+            		long elapsedTime = endTime - startTimeTask;
+            		int duration = (int)Math.ceil(elapsedTime /1000.0);
             		String msg = "Running simulation for " + elapsedTime + " ms";
             		System.out.println(msg);
                     
@@ -183,7 +184,7 @@ public class SolverHandler {
             			System.err.println();
             			logTaskError += str;
             		} else {
-            			CLIUtils.updateTaskStatusYml(sedmlLocation, sim.getImportedTaskID(), CLIUtils.Status.FAILED, outDir ,Long.toString(duration), kisao);
+            			CLIUtils.updateTaskStatusYml(sedmlLocation, sim.getImportedTaskID(), CLIUtils.Status.FAILED, outDir ,duration + "", kisao);
             		}
 //                    CLIUtils.finalStatusUpdate(CLIUtils.Status.FAILED, outDir);
                     if (e.getMessage() != null) {

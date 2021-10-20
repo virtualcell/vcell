@@ -156,6 +156,8 @@ public class CLIStandalone {
         File sedmlPathwith2dand3d = null;
         SedML sedmlFromPseudo = null;
 
+        long startTimeOmex = System.currentTimeMillis();
+
         try {
             cliHandler = new CLIHandler(args);
             inputFile = cliHandler.getInputFilePath();
@@ -345,6 +347,11 @@ public class CLIStandalone {
             CLIUtils.setOutputMessage(sedmlLocation, sedmlName, outputDir, "sedml", logDocumentMessage);
         }
         omexHandler.deleteExtractedOmex();
+        
+        long endTimeOmex = System.currentTimeMillis();
+		long elapsedTime = endTimeOmex - startTimeOmex;
+		int duration = (int)Math.ceil(elapsedTime / 1000.0);
+     
 //        if (somethingFailed) {
 //            String error = "One or more errors encountered while executing archive " + args[1];
 //            CLIUtils.updateOmexStatusYml(CLIUtils.Status.FAILED, outputDir);
@@ -357,10 +364,10 @@ public class CLIStandalone {
         // success if at least one of the documents in the omex archive is successful
         //
         if(oneSedmlDocumentSucceeded) {
-        	CLIUtils.updateOmexStatusYml(CLIUtils.Status.SUCCEEDED, outputDir);
+        	CLIUtils.updateOmexStatusYml(CLIUtils.Status.SUCCEEDED, outputDir, duration + "");
         } else {
         	String error = "All sedml documents in this archive failed to execute";
-        	CLIUtils.updateOmexStatusYml(CLIUtils.Status.FAILED, outputDir);
+        	CLIUtils.updateOmexStatusYml(CLIUtils.Status.FAILED, outputDir, duration + "");
         	System.err.println(error);
         	writeErrorList(outputBaseDir, bioModelBaseName);
         }

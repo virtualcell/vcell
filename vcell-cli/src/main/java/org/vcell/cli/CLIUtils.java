@@ -662,8 +662,8 @@ public class CLIUtils {
         Process process = execShellCommand(new String[]{python, statusPath.toString(), "updateSedmlDocStatus", sedmlName, sedmlDocStatus.toString(), outDir}).start();
         printProcessErrors(process, "", "Failed updating sedml document status YAML\n");
     }
-    public static void updateOmexStatusYml(Status simStatus, String outDir) throws IOException, InterruptedException {
-        Process process = execShellCommand(new String[]{python, statusPath.toString(), "updateOmexStatus", simStatus.toString(), outDir}).start();
+    public static void updateOmexStatusYml(Status simStatus, String outDir, String duration) throws IOException, InterruptedException {
+        Process process = execShellCommand(new String[]{python, statusPath.toString(), "updateOmexStatus", simStatus.toString(), outDir, duration}).start();
         printProcessErrors(process, "","");
     }
 
