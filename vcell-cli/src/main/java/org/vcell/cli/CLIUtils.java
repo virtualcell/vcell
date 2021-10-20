@@ -652,14 +652,13 @@ public class CLIUtils {
         printProcessErrors(process, "","Failed generating status YAML\n");
     }
 
-    public static void updateTaskStatusYml(String sedmlName, String taskName, Status taskStatus, String outDir ,String duration , String algorithm) throws IOException, InterruptedException {
-        Process process = execShellCommand(new String[]{python, statusPath.toString(), "updateTaskStatus", sedmlName, taskName, taskStatus.toString(), outDir,duration,algorithm}).start();
-        printProcessErrors(process, "","Failed updating task status YAML\n");
-
+    public static void updateTaskStatusYml(String sedmlName, String taskName, Status taskStatus, String outDir, String duration, String algorithm) throws IOException, InterruptedException {
+        Process process = execShellCommand(new String[]{python, statusPath.toString(), "updateTaskStatus", sedmlName, taskName, taskStatus.toString(), outDir, duration, algorithm}).start();
+        printProcessErrors(process, "", "Failed updating task status YAML\n");
     }
 
-    public static void finalStatusUpdate(Status simStatus, String outDir) throws IOException, InterruptedException {
-        Process process = execShellCommand(new String[]{python, statusPath.toString(), "simStatus", simStatus.toString(), outDir}).start();
+    public static void updateOmexStatusYml(Status simStatus, String outDir) throws IOException, InterruptedException {
+        Process process = execShellCommand(new String[]{python, statusPath.toString(), "updateOmexStatus", simStatus.toString(), outDir}).start();
         printProcessErrors(process, "","");
     }
 

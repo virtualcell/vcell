@@ -165,7 +165,7 @@ public class SolverHandler {
                         String error = solver.getSolverStatus().getSimulationMessage().getDisplayMessage() + " ";
                         throw new RuntimeException(error);
                     }
-                    CLIUtils.finalStatusUpdate( CLIUtils.Status.SUCCEEDED, outDir);
+//                    CLIUtils.finalStatusUpdate( CLIUtils.Status.SUCCEEDED, outDir);
                 } catch (Exception e) {
                 	String error = "Failed execution: Model '" + docName + "' Task '" + sim.getDescription() + "'. ";
                     System.err.println(error);
@@ -183,7 +183,7 @@ public class SolverHandler {
             		} else {
             			CLIUtils.updateTaskStatusYml(sedmlLocation, sim.getImportedTaskID(), CLIUtils.Status.FAILED, outDir ,Long.toString(duration), kisao);
             		}
-                    CLIUtils.finalStatusUpdate(CLIUtils.Status.FAILED, outDir);
+//                    CLIUtils.finalStatusUpdate(CLIUtils.Status.FAILED, outDir);
                     if (e.getMessage() != null) {
                         // something else than failure caught by solver instance during execution
                     	logTaskError += e.getMessage();

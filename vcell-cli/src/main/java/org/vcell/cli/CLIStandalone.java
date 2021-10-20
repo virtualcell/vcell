@@ -182,7 +182,7 @@ public class CLIStandalone {
         // we now have the log file created, so that we also have a place to put them
         boolean somethingFailed = false;
         
-        for (String sedmlLocation : sedmlLocations) {
+        for (String sedmlLocation : sedmlLocations) {		// for each sedml document
         	
         	String logDocumentMessage = "Initializing sedml document... ";
         	String logDocumentError = "";
@@ -329,12 +329,12 @@ public class CLIStandalone {
         omexHandler.deleteExtractedOmex();
         if (somethingFailed) {
             String error = "One or more errors encountered while executing archive " + args[1];
-            CLIUtils.finalStatusUpdate(CLIUtils.Status.FAILED, outputDir);
+            CLIUtils.updateOmexStatusYml(CLIUtils.Status.FAILED, outputDir);
             System.err.println(error);
             writeErrorList(outputBaseDir, bioModelBaseName);
+        } else {
+        	CLIUtils.updateOmexStatusYml(CLIUtils.Status.SUCCEEDED, outputDir);
         }
-    	// TODO: write a CLIUtils.setOutputMessage for the omex document
-
     }
 
     private static void singleExecVcml(String[] args) throws Exception {

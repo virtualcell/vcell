@@ -120,7 +120,7 @@ def dump_json_dict(json_path: str,yaml_dict: str):
         json.dump(yaml_dict,json_out,sort_keys=True,indent=4)
 
 
-def update_status(sedml: str, task: str, status: str, out_dir: str ,duration: str, algorithm: str):
+def update_task_status(sedml: str, task: str, status: str, out_dir: str ,duration: str, algorithm: str):
     # Hardcoded because name is static
     yaml_dict = get_yaml_as_str(os.path.join(out_dir, "log.yml"))
     for sedml_list in yaml_dict['sedDocuments']:
@@ -182,7 +182,7 @@ def update_dataset_status(sedml: str, report: str, dataset: str, status: str, ou
     dump_yaml_dict(status_yaml_path, yaml_dict=yaml_dict, out_dir=out_dir)
 
 
-def sim_status(status: str, out_dir: str):
+def update_omex_status(status: str, out_dir: str):
 
     yaml_dict = get_yaml_as_str(os.path.join(out_dir, "log.yml"))
 
@@ -251,8 +251,8 @@ def set_exception_message(sedmlAbsolutePath:str, entityId:str, out_dir:str, enti
 if __name__ == "__main__":
     fire.Fire({
         'genStatusYaml': status_yml,
-        'updateTaskStatus': update_status,
-        'simStatus': sim_status,
+        'updateTaskStatus': update_task_status,
+        'updateOmexStatus': update_omex_status,
         'updateDataSetStatus': update_dataset_status,
         'setOutputMessage' : set_output_message,
         'setExceptionMessage' : set_exception_message,
