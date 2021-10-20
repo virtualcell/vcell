@@ -113,8 +113,10 @@ public class SolverHandler {
 
                 	if(solver instanceof FVSolverStandalone) {
                 		hasSomeSpatial = true;
-                		throw new RuntimeException("FVSolverStandalone timeout failure.");
-                	} else if (solver instanceof AbstractCompiledSolver) {
+//                		throw new RuntimeException("FVSolverStandalone timeout failure.");
+                	} 
+//                	else 
+                	if (solver instanceof AbstractCompiledSolver) {
                         ((AbstractCompiledSolver) solver).runSolver();
                         System.out.println(solver);
                         System.out.println(solver.getSolverStatus());
@@ -127,7 +129,7 @@ public class SolverHandler {
                         } else {
                         	String str = "Solver results are not compatible with CSV format. ";
                             System.err.println(str);
-                        	throw new RuntimeException(str);
+//                        	throw new RuntimeException(str);
                         }
                     } else if (solver instanceof AbstractJavaSolver) {
                         ((AbstractJavaSolver) solver).runSolver();
