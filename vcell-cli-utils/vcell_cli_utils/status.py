@@ -211,21 +211,25 @@ def update_dataset_status(sedml: str, report: str, dataset: str, status: str, ou
 def set_output_message(sedmlAbsolutePath:str, entityId:str, out_dir:str, entityType:str , message:str):
 
     yaml_dict = get_yaml_as_str(os.path.join(out_dir, "log.yml"))
-    for sedml_list in yaml_dict['sedDocuments']:
-        if sedmlAbsolutePath.endswith(sedml_list["location"]):
-            sedml_name_nested = sedml_list["location"]
-            # Update sedml document status
-            if entityType == 'sedml':
-                if sedml_name_nested == entityId:
-                    sedml_list['output'] = message
+    if entityType == 'omex':
+        # update omex archive output message
+        yaml_dict['output'] = message
+    else:
+        for sedml_list in yaml_dict['sedDocuments']:
+            if sedmlAbsolutePath.endswith(sedml_list["location"]):
+                sedml_name_nested = sedml_list["location"]
+                # Update sedml document output message
+                if entityType == 'sedml':
+                    if sedml_name_nested == entityId:
+                        sedml_list['output'] = message
             
-            # Update task status
-            if entityType == 'task':
-                for taskList in sedml_list['tasks']:
-                    if taskList['id'] == entityId:
-                        taskList['output'] = message
+                # Update task output message
+                if entityType == 'task':
+                    for taskList in sedml_list['tasks']:
+                        if taskList['id'] == entityId:
+                            taskList['output'] = message
+                        
     status_yaml_path = os.path.join(out_dir, "log.yml")
-
     # Convert json to yaml # Save new yaml
     dump_yaml_dict(status_yaml_path, yaml_dict=yaml_dict, out_dir=out_dir)
 

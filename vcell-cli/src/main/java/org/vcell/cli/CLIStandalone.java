@@ -183,6 +183,8 @@ public class CLIStandalone {
         // we now have the log file created, so that we also have a place to put them
         boolean oneSedmlDocumentSucceeded = false;
         
+    	String logOmexMessage = "";
+    	String logOmexError = "";		// not used for now
         for (String sedmlLocation : sedmlLocations) {		// for each sedml document
 
         	// this variable is set correctly but it is not used!!! because the way we define success
@@ -206,6 +208,7 @@ public class CLIStandalone {
                 if (CLIUtils.isWindowsPlatform) sedmlNameSplit = sedmlLocation.split("\\\\", -2);
                 else sedmlNameSplit = sedmlLocation.split("/", -2);
                 sedmlName = sedmlNameSplit[sedmlNameSplit.length - 1];
+                logOmexMessage += "Processing " + sedmlName + ". ";
 
                 nModels = sedmlFromOmex.getModels().size();
                 nTasks = sedmlFromOmex.getTasks().size();
@@ -361,6 +364,7 @@ public class CLIStandalone {
         	System.err.println(error);
         	writeErrorList(outputBaseDir, bioModelBaseName);
         }
+        CLIUtils.setOutputMessage("", "", outputDir, "omex", logOmexMessage);
     }
 
     private static void singleExecVcml(String[] args) throws Exception {
