@@ -653,6 +653,8 @@ public class CLIUtils {
     }
 
     public static void updateTaskStatusYml(String sedmlName, String taskName, Status taskStatus, String outDir, String duration, String algorithm) throws IOException, InterruptedException {
+    	algorithm = algorithm.toUpperCase(Locale.ROOT);
+    	algorithm = algorithm.replace("KISAO:", "KISAO_");
         Process process = execShellCommand(new String[]{python, statusPath.toString(), "updateTaskStatus", sedmlName, taskName, taskStatus.toString(), outDir, duration, algorithm}).start();
         printProcessErrors(process, "", "Failed updating task status YAML\n");
     }
