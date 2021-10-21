@@ -411,8 +411,7 @@ def gen_plots_for_sed2d_only(sedml_path, result_out_dir):
             df.reset_index(inplace=True)
             df.drop('index', axis=1, inplace=True)
 
-            sns.lineplot(x=df[data['x']].astype(
-                np.float), y=df[data['y']].astype(np.float), ax=ax, label=curve)
+            sns.lineplot(x=df[data['x']].astype(float), y=df[data['y']].astype(float), ax=ax, label=curve)
             ax.set_ylabel('')
             #             plt.show()
             plt.savefig(os.path.join(result_out_dir, plot + '.pdf'), dpi=300)
