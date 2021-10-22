@@ -60,7 +60,7 @@ jobs:
         ssh-private-key: ${{ secrets.VC_KEY }}
     - name: get installer secrets
       run: |
-        ssh-keyscan $MANAGER_NODE >> /~/.ssh/known_hosts
+        ssh-keyscan $MANAGER_NODE >> ~/.ssh/known_hosts
         sudo mkdir /usr/local/deploy
         sudo chmod 777 /usr/local/deploy
         cd /usr/local/deploy
@@ -146,7 +146,7 @@ jobs:
         ssh-private-key: ${{ secrets.VC_KEY }}
     - name: retrieve config file
       run: |
-        ssh-keyscan $MANAGER_NODE >> /~/.ssh/known_hosts
+        ssh-keyscan $MANAGER_NODE >> ~/.ssh/known_hosts
         cd docker/swarm
         scp ${{ secrets.CD_FULL_USER }}@${MANAGER_NODE}:/usr/local/deploy/${VCELL_CONFIG_FILE_NAME} .
     - name: Setup tmate session 3
