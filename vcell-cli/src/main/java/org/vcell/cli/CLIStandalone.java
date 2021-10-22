@@ -334,16 +334,6 @@ public class CLIStandalone {
 
             // archiving res files
             CLIUtils.zipResFiles(new File(outputDir));
-
-//            if (resultsHash.containsValue(null) || reportsHash == null) {
-//            	// something went wrong but we didn't catch any exception
-//                somethingFailed = true;
-//            	Exception e = new RuntimeException("One or more errors encountered while executing the sed document. ");
-//            	// no data in the hash -> no results to show
-//            	logDocumentError = e.getMessage();
-//            	String category = e.getClass().getSimpleName();
-//                CLIUtils.setExceptionMessage(sedmlLocation, sedmlName, outputDir, "sedml", category, logDocumentError);
-//            }
             CLIUtils.setOutputMessage(sedmlLocation, sedmlName, outputDir, "sedml", logDocumentMessage);
         }
         omexHandler.deleteExtractedOmex();
@@ -352,14 +342,6 @@ public class CLIStandalone {
 		long elapsedTime = endTimeOmex - startTimeOmex;
 		int duration = (int)Math.ceil(elapsedTime / 1000.0);
      
-//        if (somethingFailed) {
-//            String error = "One or more errors encountered while executing archive " + args[1];
-//            CLIUtils.updateOmexStatusYml(CLIUtils.Status.FAILED, outputDir);
-//            System.err.println(error);
-//            writeErrorList(outputBaseDir, bioModelBaseName);
-//        } else {
-//        	CLIUtils.updateOmexStatusYml(CLIUtils.Status.SUCCEEDED, outputDir);
-//        }
         //
         // success if at least one of the documents in the omex archive is successful
         //
