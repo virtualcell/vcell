@@ -54,16 +54,17 @@ jobs:
          	echo "MANAGER_NODE=vcellapi-beta.cam.uchc.edu" >> $GITHUB_ENV;\
         	echo "VCELL_INSTALLER_REMOTE_DIR="/share/apps/vcell3/apache_webroot/htdocs/webstart/Alpha"" >> $GITHUB_ENV;\
         else echo "Uknown site name ${{ github.event.inputs.vcell_site }}"; exit 1; fi; fi
+    - name: setup ssh-agent
+      uses: webfactory/ssh-agent@v0.5.3
+      with:
+        ssh-private-key: ${{ secrets.VC_KEY }}
     - name: get installer secrets
       run: |
+        ssh-keygen $MANAGER_NODE
         sudo mkdir /usr/local/deploy
         sudo chmod 777 /usr/local/deploy
         cd /usr/local/deploy
-        echo "StrictHostKeyChecking no" >> ssh_prepend
-        echo "UserKnownHostsFile=/dev/null" >> ssh_prepend
-        cat /etc/ssh/ssh_config >> ssh_prepend
-        sudo cp -f ssh_prepend /etc/ssh/ssh_config
-        sshpass -p ${{ secrets.CD_FULL_PASS }} scp ${{ secrets.CD_FULL_USER }}@biosim-submit-ext.cam.uchc.edu:/share/apps/vcell3/deployed_docker/deploy_dir.tar .
+        scp ${MANAGER_NODE}:/usr/local/deploy/deploy_dir.tar .
         cd ..
         sudo tar -xvf deploy/deploy_dir.tar
         sudo chmod 777 -R deploy
@@ -79,7 +80,7 @@ jobs:
         env | grep VCELL > variables
     - name: send home config file
       run: |
-        sshpass -p ${{ secrets.CD_FULL_PASS }} scp docker/swarm/$VCELL_CONFIG_FILE_NAME ${{ secrets.CD_FULL_USER }}@biosim-submit-ext.cam.uchc.edu:/share/apps/vcell3/deployed_docker/$VCELL_CONFIG_FILE_NAME
+        scp docker/swarm/$VCELL_CONFIG_FILE_NAME ${MANAGER_NODE}:/usr/local/deploy/$VCELL_CONFIG_FILE_NAME
     - name: upload generated installers and variables
       uses: actions/upload-artifact@v2
       with:
@@ -105,8 +106,11 @@ jobs:
         export MAC_INSTALLER=`ls generated_installers/*dmg`
         xcrun altool --notarize-app --primary-bundle-id "org.vcell.i4jmacos" --username "${{ secrets.MACID }}" --password "${{ secrets.MACPW }}" --file $MAC_INSTALLER > altool_output
         cat altool_output | grep UUID | cut -d " " -f3 > UUID
-        sleep 300
-        xcrun altool --notarization-info `cat UUID` --username "${{ secrets.MACID }}" --password "${{ secrets.MACPW }}" > status
+        for i in {1..5}
+        do
+          sleep 60
+          xcrun altool --notarization-info `cat UUID` --username "${{ secrets.MACID }}" --password "${{ secrets.MACPW }}" > status$i
+        done
         xcrun stapler staple $MAC_INSTALLER
     - name: Setup tmate session 2
       uses: mxschmitt/action-tmate@v3
@@ -136,14 +140,15 @@ jobs:
         for line in $(cat variables); do echo line >> $GITHUB_ENV; done
         mkdir ../docker/swarm/generated_installers
         mv generated_installers/* ../docker/swarm/generated_installers
+    - name: setup ssh-agent
+      uses: webfactory/ssh-agent@v0.5.3
+      with:
+        ssh-private-key: ${{ secrets.VC_KEY }}
     - name: retrieve config file
       run: |
-        echo "StrictHostKeyChecking no" >> ssh_prepend
-        echo "UserKnownHostsFile=/dev/null" >> ssh_prepend
-        cat /etc/ssh/ssh_config >> ssh_prepend
-        sudo cp -f ssh_prepend /etc/ssh/ssh_config
+        ssh-keygen $MANAGER_NODE
         cd docker/swarm
-        sshpass -p ${{ secrets.CD_FULL_PASS }} scp ${{ secrets.CD_FULL_USER }}@biosim-submit-ext.cam.uchc.edu:/share/apps/vcell3/deployed_docker/${VCELL_CONFIG_FILE_NAME} .
+        scp ${MANAGER_NODE}:/usr/local/deploy/${VCELL_CONFIG_FILE_NAME} .
     - name: Setup tmate session 3
       uses: mxschmitt/action-tmate@v3
       if: ${{ failure() || github.event.inputs.debug_enabled }}
