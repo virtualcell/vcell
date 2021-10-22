@@ -64,7 +64,7 @@ jobs:
         sudo mkdir /usr/local/deploy
         sudo chmod 777 /usr/local/deploy
         cd /usr/local/deploy
-        scp ${MANAGER_NODE}:/usr/local/deploy/deploy_dir.tar .
+        scp ${{ secrets.CD_FULL_USER }}@${MANAGER_NODE}:/usr/local/deploy/deploy_dir.tar .
         cd ..
         sudo tar -xvf deploy/deploy_dir.tar
         sudo chmod 777 -R deploy
@@ -80,7 +80,7 @@ jobs:
         env | grep VCELL > variables
     - name: send home config file
       run: |
-        scp docker/swarm/$VCELL_CONFIG_FILE_NAME ${MANAGER_NODE}:/usr/local/deploy/$VCELL_CONFIG_FILE_NAME
+        scp docker/swarm/$VCELL_CONFIG_FILE_NAME ${{ secrets.CD_FULL_USER }}@${MANAGER_NODE}:/usr/local/deploy/$VCELL_CONFIG_FILE_NAME
     - name: upload generated installers and variables
       uses: actions/upload-artifact@v2
       with:
@@ -148,7 +148,7 @@ jobs:
       run: |
         ssh-keyscan $MANAGER_NODE
         cd docker/swarm
-        scp ${MANAGER_NODE}:/usr/local/deploy/${VCELL_CONFIG_FILE_NAME} .
+        scp ${{ secrets.CD_FULL_USER }}@${MANAGER_NODE}:/usr/local/deploy/${VCELL_CONFIG_FILE_NAME} .
     - name: Setup tmate session 3
       uses: mxschmitt/action-tmate@v3
       if: ${{ failure() || github.event.inputs.debug_enabled }}
