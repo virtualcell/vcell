@@ -35,7 +35,6 @@ jobs:
       uses: actions/checkout@v2
       with:
         ref: ${{ github.event.inputs.vcell_version }}.${{ github.event.inputs.vcell_build }}
-        fetch-depth: 0
     - name: setup global environment variables
       run: |
         echo "VCELL_VERSION=${{ github.event.inputs.vcell_version }}" >> $GITHUB_ENV
@@ -70,11 +69,11 @@ jobs:
         export "VCELL_CONFIG_FILE_NAME=server_${VCELL_SITE}_${VCELL_VERSION}_${VCELL_BUILD}_${VCELL_TAG}.config"
         echo "VCELL_CONFIG_FILE_NAME=$VCELL_CONFIG_FILE_NAME" >> $GITHUB_ENV
         ./serverconfig-uch.sh $VCELL_SITE $VCELL_REPO_NAMESPACE $VCELL_TAG $VCELL_VERSION $VCELL_BUILD $VCELL_CONFIG_FILE_NAME
-        env | grep VCELL > variables_$VCELL_TAG
+        env | grep VCELL > variables
     - name: send home config file and variables
       run: |
         scp docker/swarm/$VCELL_CONFIG_FILE_NAME ${{ secrets.CD_FULL_USER }}@${MANAGER_NODE}:/usr/local/deploy
-        scp docker/swarm/variables_$VCELL_TAG ${{ secrets.CD_FULL_USER }}@${MANAGER_NODE}:/usr/local/deploy
+        scp docker/swarm/variables ${{ secrets.CD_FULL_USER }}@${MANAGER_NODE}:/usr/local/deploy/variables_$VCELL_TAG
     - name: upload variables
       if: ${{ github.event.inputs.server_only }} != 'true'
       uses: actions/upload-artifact@v2
