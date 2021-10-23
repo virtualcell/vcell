@@ -153,7 +153,10 @@ jobs:
       uses: actions/download-artifact@v2
     - name: setenv
       run: |
-        for line in $(cat variables); do echo $line >> $GITHUB_ENV; done
+        for line in $(cat variables/variables); do echo $line >> $GITHUB_ENV; done
+    - name: stage installers
+      if: ${{ github.event.inputs.server_only != 'true' }}
+      run: |
         cd installers
         mkdir ../docker/swarm/generated_installers
         mv generated_installers/* ../docker/swarm/generated_installers
