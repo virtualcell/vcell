@@ -134,7 +134,7 @@ jobs:
           exit 1
         fi
     - name: update generated installers
-      if: ${{ github.event.inputs.server_only != 'true' ]]
+      if: ${{ github.event.inputs.server_only != 'true' }}
       uses: actions/upload-artifact@v2
       with:
         name: installers
