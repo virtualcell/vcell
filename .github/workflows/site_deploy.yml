@@ -75,28 +75,28 @@ jobs:
         scp docker/swarm/$VCELL_CONFIG_FILE_NAME ${{ secrets.CD_FULL_USER }}@${MANAGER_NODE}:/usr/local/deploy
         scp docker/swarm/variables ${{ secrets.CD_FULL_USER }}@${MANAGER_NODE}:/usr/local/deploy/variables_$VCELL_TAG
     - name: upload variables
-      if: ${{ github.event.inputs.server_only }} != 'true'
+      if: ${{ github.event.inputs.server_only != 'true' }}
       uses: actions/upload-artifact@v2
       with:
         name: variables
         path: docker/swarm/variables
         retention-days: 1
     - name: build client installers
-      if: ${{ github.event.inputs.server_only }} != 'true'
+      if: ${{ github.event.inputs.server_only != 'true' }}
       run: |
         cd docker/swarm
         sudo docker login -u ${{ secrets.ACTION_USER }} -p ${{ secrets.ACTION_TOKEN }} ghcr.io
         sudo docker pull $VCELL_REPO_NAMESPACE/vcell-clientgen:$VCELL_TAG
         ./generate_installers.sh ./${VCELL_CONFIG_FILE_NAME}
     - name: upload generated installers
-      if: ${{ github.event.inputs.server_only }} != 'true'
+      if: ${{ github.event.inputs.server_only != 'true' }}
       uses: actions/upload-artifact@v2
       with:
         name: installers
         path: docker/swarm/generated_installers
         retention-days: 1
     - name: Setup tmate session
-      if: ${{ failure() }} || ${{ github.event.inputs.debug_enabled }} == 'true'
+      if: ${{ failure() }} || ${{ github.event.inputs.debug_enabled == 'true' }}
       uses: mxschmitt/action-tmate@v3
       
   notarize:
@@ -105,10 +105,10 @@ jobs:
     needs: build
     steps:
     - name: download generated installers
-      if: ${{ github.event.inputs.server_only }} != 'true'
+      if: ${{ github.event.inputs.server_only != 'true' }}
       uses: actions/download-artifact@v2
     - name: notarize mac installer
-      if: ${{ github.event.inputs.server_only }} != 'true'
+      if: ${{ github.event.inputs.server_only != 'true' }}
       run: |
         cd installers
         export MAC_INSTALLER=`ls generated_installers/*dmg`
@@ -134,7 +134,7 @@ jobs:
           exit 1
         fi
     - name: update generated installers
-      if: ${{ github.event.inputs.server_only }} != 'true'
+      if: ${{ github.event.inputs.server_only != 'true' ]]
       uses: actions/upload-artifact@v2
       with:
         name: installers
@@ -142,7 +142,7 @@ jobs:
         retention-days: 1
     - name: Setup tmate session
       uses: mxschmitt/action-tmate@v3
-      if: ${{ failure() }} || ${{ github.event.inputs.debug_enabled }} == 'true'
+      if: ${{ failure() }} || ${{ github.event.inputs.debug_enabled == 'true' }}
         
   deploy:
     name: Deploy to site
@@ -152,7 +152,7 @@ jobs:
     - name: checkout commit
       uses: actions/checkout@v2
       with:
-        ref: ${{ github.event.inputs.commit_hash }}
+        ref: ${{ github.event.inputs.vcell_version }}.${{ github.event.inputs.vcell_build }}
         fetch-depth: 0 
     - name: retrieve installers and variables
       uses: actions/download-artifact@v2
@@ -173,5 +173,5 @@ jobs:
         scp ${{ secrets.CD_FULL_USER }}@${MANAGER_NODE}:/usr/local/deploy/${VCELL_CONFIG_FILE_NAME} .
     - name: Setup tmate session 3
       uses: mxschmitt/action-tmate@v3
-      if: ${{ failure() }} || ${{ github.event.inputs.debug_enabled }} == 'true'
+      if: ${{ failure() }} || ${{ github.event.inputs.debug_enabled == 'true' }}
       

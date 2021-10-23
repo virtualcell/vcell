@@ -58,7 +58,8 @@ jobs:
       shell: bash
       run: |
         for CONTAINER in vcell-api vcell-batch vcell-clientgen vcell-data vcell-db vcell-mongo vcell-sched vcell-submit vcell-web;\
-        do docker tag ${VCELL_REPO_NAMESPACE}/$CONTAINER:${VCELL_TAG} ${VCELL_REPO_NAMESPACE}/$CONTAINER:${{ github.event.inputs.tag_name }} ${VCELL_REPO_NAMESPACE}/$CONTAINER:latest;\
+        do docker tag ${VCELL_REPO_NAMESPACE}/$CONTAINER:${VCELL_TAG} ${VCELL_REPO_NAMESPACE}/$CONTAINER:latest;\
+        docker tag ${VCELL_REPO_NAMESPACE}/$CONTAINER:${VCELL_TAG} ${VCELL_REPO_NAMESPACE}/$CONTAINER:${{ github.event.inputs.tag_name }};\
         docker push --all-tags ${VCELL_REPO_NAMESPACE}/$CONTAINER;\
         done
         cd docker/build/singularity-vm
@@ -66,4 +67,4 @@ jobs:
         
     - name: Setup tmate session
       uses: mxschmitt/action-tmate@v3
-      if: ${{ failure() }} || ${{ github.event.inputs.debug_enabled }} == 'true'
+      if: ${{ failure() }} || ${{ github.event.inputs.debug_enabled == 'true' }}
