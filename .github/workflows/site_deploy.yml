@@ -39,10 +39,10 @@ jobs:
         echo "VCELL_TAG=`git rev-parse --short HEAD`" >> $GITHUB_ENV
         echo "VCELL_REPO_NAMESPACE=ghcr.io/virtualcell" >> $GITHUB_ENV
         if [ "${{ github.event.inputs.vcell_site }}" == "rel" ]; then\
-        	echo "MANAGER_NODE=vcellapi.cam.uchc.edu" >> $GITHUB_ENV;\
+        	echo "VCELL_MANAGER_NODE=vcellapi.cam.uchc.edu" >> $GITHUB_ENV;\
         	echo "VCELL_INSTALLER_REMOTE_DIR="/share/apps/vcell3/apache_webroot/htdocs/webstart/Rel"" >> $GITHUB_ENV;\
         else if [ "${{ github.event.inputs.vcell_site }}" == "alpha" ]; then\
-         	echo "MANAGER_NODE=vcellapi-beta.cam.uchc.edu" >> $GITHUB_ENV;\
+         	echo "VCELL_MANAGER_NODE=vcellapi-beta.cam.uchc.edu" >> $GITHUB_ENV;\
         	echo "VCELL_INSTALLER_REMOTE_DIR="/share/apps/vcell3/apache_webroot/htdocs/webstart/Alpha"" >> $GITHUB_ENV;\
         else echo "Unknown site name ${{ github.event.inputs.vcell_site }}"; exit 1; fi; fi
     - name: setup ssh-agent
@@ -51,11 +51,11 @@ jobs:
         ssh-private-key: ${{ secrets.VC_KEY }}
     - name: get installer secrets
       run: |
-        ssh-keyscan $MANAGER_NODE >> ~/.ssh/known_hosts
+        ssh-keyscan $VCELL_MANAGER_NODE >> ~/.ssh/known_hosts
         sudo mkdir /usr/local/deploy
         sudo chmod 777 /usr/local/deploy
         cd /usr/local/deploy
-        scp ${{ secrets.CD_FULL_USER }}@${MANAGER_NODE}:/usr/local/deploy/deploy_dir.tar .
+        scp ${{ secrets.CD_FULL_USER }}@${VCELL_MANAGER_NODE}:/usr/local/deploy/deploy_dir.tar .
         cd ..
         sudo tar -xvf deploy/deploy_dir.tar
         sudo chmod 777 -R deploy
@@ -68,8 +68,8 @@ jobs:
         env | grep VCELL > variables
     - name: send home config file and variables
       run: |
-        scp docker/swarm/$VCELL_CONFIG_FILE_NAME ${{ secrets.CD_FULL_USER }}@${MANAGER_NODE}:/usr/local/deploy
-        scp docker/swarm/variables ${{ secrets.CD_FULL_USER }}@${MANAGER_NODE}:/usr/local/deploy/variables_$VCELL_TAG
+        scp docker/swarm/$VCELL_CONFIG_FILE_NAME ${{ secrets.CD_FULL_USER }}@${VCELL_MANAGER_NODE}:/usr/local/deploy
+        scp docker/swarm/variables ${{ secrets.CD_FULL_USER }}@${VCELL_MANAGER_NODE}:/usr/local/deploy/variables_$VCELL_TAG
     - name: upload variables
       uses: actions/upload-artifact@v2
       with:
@@ -166,9 +166,9 @@ jobs:
         ssh-private-key: ${{ secrets.VC_KEY }}
     - name: retrieve config file
       run: |
-        ssh-keyscan $MANAGER_NODE >> ~/.ssh/known_hosts
+        ssh-keyscan $VCELL_MANAGER_NODE >> ~/.ssh/known_hosts
         cd docker/swarm
-        scp ${{ secrets.CD_FULL_USER }}@${MANAGER_NODE}:/usr/local/deploy/${VCELL_CONFIG_FILE_NAME} .
+        scp ${{ secrets.CD_FULL_USER }}@${VCELL_MANAGER_NODE}:/usr/local/deploy/${VCELL_CONFIG_FILE_NAME} .
     - name: Setup tmate session 3
       uses: mxschmitt/action-tmate@v3
       if: ${{ failure() }}
