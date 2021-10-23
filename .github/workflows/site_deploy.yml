@@ -6,10 +6,6 @@ name: CD-sites
 on:
   workflow_dispatch:
     inputs:
-      debug_enabled:
-        description: 'Run the build with tmate debugging enabled?'     
-        required: true
-        default: 'false'
       vcell_version:
         description: 'version.major.minor' 
         required: true
@@ -75,7 +71,6 @@ jobs:
         scp docker/swarm/$VCELL_CONFIG_FILE_NAME ${{ secrets.CD_FULL_USER }}@${MANAGER_NODE}:/usr/local/deploy
         scp docker/swarm/variables ${{ secrets.CD_FULL_USER }}@${MANAGER_NODE}:/usr/local/deploy/variables_$VCELL_TAG
     - name: upload variables
-      if: ${{ github.event.inputs.server_only != 'true' }}
       uses: actions/upload-artifact@v2
       with:
         name: variables
@@ -96,7 +91,7 @@ jobs:
         path: docker/swarm/generated_installers
         retention-days: 1
     - name: Setup tmate session
-      if: ${{ failure() }} || ${{ github.event.inputs.debug_enabled == 'true' }}
+      if: ${{ failure() }}
       uses: mxschmitt/action-tmate@v3
       
   notarize:
@@ -142,7 +137,7 @@ jobs:
         retention-days: 1
     - name: Setup tmate session
       uses: mxschmitt/action-tmate@v3
-      if: ${{ failure() }} || ${{ github.event.inputs.debug_enabled == 'true' }}
+      if: ${{ failure() }}
         
   deploy:
     name: Deploy to site
@@ -173,5 +168,5 @@ jobs:
         scp ${{ secrets.CD_FULL_USER }}@${MANAGER_NODE}:/usr/local/deploy/${VCELL_CONFIG_FILE_NAME} .
     - name: Setup tmate session 3
       uses: mxschmitt/action-tmate@v3
-      if: ${{ failure() }} || ${{ github.event.inputs.debug_enabled == 'true' }}
+      if: ${{ failure() }}
       

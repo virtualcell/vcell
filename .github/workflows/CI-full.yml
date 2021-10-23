@@ -3,11 +3,7 @@ name: CI-application-containers
 on:
   workflow_dispatch:
     inputs:
-      debug_enabled:
-        description: 'Run the build with tmate debugging enabled?'     
-        required: true
-        default: 'false'
-      tag_name:
+      version_number:
         description: 'version tag'
         required: true
         default: 7.4.0.23
@@ -17,7 +13,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
       with:
-        ref: ${{ github.event.inputs.tag_name }}
+        ref: ${{ github.event.inputs.version_number }}
     - name: set global environment variables
       run: |
         echo "VCELL_TAG=`git rev-parse --short HEAD`" >> $GITHUB_ENV
@@ -59,12 +55,12 @@ jobs:
       run: |
         for CONTAINER in vcell-api vcell-batch vcell-clientgen vcell-data vcell-db vcell-mongo vcell-sched vcell-submit vcell-web;\
         do docker tag ${VCELL_REPO_NAMESPACE}/$CONTAINER:${VCELL_TAG} ${VCELL_REPO_NAMESPACE}/$CONTAINER:latest;\
-        docker tag ${VCELL_REPO_NAMESPACE}/$CONTAINER:${VCELL_TAG} ${VCELL_REPO_NAMESPACE}/$CONTAINER:${{ github.event.inputs.tag_name }};\
+        docker tag ${VCELL_REPO_NAMESPACE}/$CONTAINER:${VCELL_TAG} ${VCELL_REPO_NAMESPACE}/$CONTAINER:${{ github.event.inputs.version_number }};\
         docker push --all-tags ${VCELL_REPO_NAMESPACE}/$CONTAINER;\
         done
         cd docker/build/singularity-vm
-        singularity push -U $(ls *img) oras://${VCELL_REPO_NAMESPACE}/vcell-batch-singularity:${{ github.event.inputs.tag_name }}
+        singularity push -U $(ls *img) oras://${VCELL_REPO_NAMESPACE}/vcell-batch-singularity:${{ github.event.inputs.version_number }}
         
     - name: Setup tmate session
       uses: mxschmitt/action-tmate@v3
-      if: ${{ failure() }} || ${{ github.event.inputs.debug_enabled == 'true' }}
+      if: ${{ failure() }}
