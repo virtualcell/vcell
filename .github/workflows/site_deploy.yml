@@ -110,33 +110,23 @@ jobs:
         export MAC_INSTALLER=`ls *dmg`
         xcrun altool --notarize-app --primary-bundle-id "org.vcell.i4jmacos" --username "${{ secrets.MACID }}" --password "${{ secrets.MACPW }}" --file $MAC_INSTALLER > altool_output
         cat altool_output | grep UUID | cut -d " " -f3 > UUID
-        echo "for minutes in {1..5}" >> cmds
         for minutes in {1..5}
         do
-          echo "sleep 60" >> cmds
           sleep 60
-          echo "xcrun altool" >> cmds
           xcrun altool --notarization-info `cat UUID` --username "${{ secrets.MACID }}" --password "${{ secrets.MACPW }}" > status
-          echo "grep" >> cmds
           grep -q success status
-          echo "if" >> cmds
           if [[ $? == 0 ]]; then
-            echo "notarized succesfully" >> echos
-            echo "break" >> cmds
+            echo "notarized succesfully"
             break
           else
-            echo "wait another minute and check again" >> echos
+            echo "wait another minute and check again"
           fi
         done
-        echo "grep after done" >> cmds
         grep -q success status
-        echo "if" >> cmds
         if [[ $? == 0 ]]; then
-          echo "stapler" >> cmds
           xcrun stapler staple $MAC_INSTALLER
         else
-          echo "notarization did not succeed in 5 minutes, giving up" >> echos
-          echo "exit 1" >> cmds
+          echo "notarization did not succeed in 5 minutes, giving up"
           exit 1
         fi
     - name: update generated installers
