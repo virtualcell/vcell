@@ -29,7 +29,8 @@ import java.util.zip.ZipOutputStream;
 
 public class CLIUtils {
 	// timeout for compiled solver running long jobs; default 12 hours
-	public static long EXECUTABLE_MAX_WALLCLOK_MILLIS = 60000;
+	// public static long EXECUTABLE_MAX_WALLCLOK_MILLIS = 40000;
+	public static long EXECUTABLE_MAX_WALLCLOK_MILLIS = 0;
 
     // Docker hardcode path
     // Note: Docker Working Directory and Singularity working directory works in different way.
@@ -345,7 +346,7 @@ public class CLIUtils {
 
                             }
 
-//                            CLIUtils.updateDatasetStatusYml(sedmlLocation, oo.getId(), dataset.getId(), Status.SUCCEEDED, outDir);
+                            CLIUtils.updateDatasetStatusYml(sedmlLocation, oo.getId(), dataset.getId(), Status.SUCCEEDED, outDir);
                         }
                         if (!supportedDataset) {
                             System.err.println("Dataset " + dataset.getId() + " references unsupported RepeatedTask and is being skipped");
