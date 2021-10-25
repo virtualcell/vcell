@@ -83,7 +83,7 @@
 
 FROM ubuntu
 
-ARG SIMULATOR_VERSION="7.4.0.22.1"
+ARG SIMULATOR_VERSION="7.4.0.23"
 
 # metadata
 LABEL \

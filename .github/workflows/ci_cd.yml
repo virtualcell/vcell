@@ -75,6 +75,7 @@ jobs:
           docker build \
             --no-cache \
             --file Dockerfile \
+            --build-arg SIMULATOR_VERSION=${{steps.version.outputs.tag}}\
             --tag ghcr.io/virtualcell/biosimulators_vcell:latest \
             --label org.opencontainers.image.revision=${REVISION} \
             --label org.opencontainers.image.created=${CREATED} \
