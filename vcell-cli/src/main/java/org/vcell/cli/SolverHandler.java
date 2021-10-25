@@ -77,6 +77,7 @@ public class SolverHandler {
         int simulationCount = 0;
         int bioModelCount = 0;
         boolean hasSomeSpatial = false;
+        boolean bTimeoutFound = false;
         
         for (VCDocument doc : docs) {
             try {
@@ -100,12 +101,17 @@ public class SolverHandler {
                 SimulationTask simTask;
                 String kisao = "null";
             	ODESolverResultSet odeSolverResultSet = null;
+            	SolverTaskDescription std = null;
+            	SolverDescription sd = null;
+            	
                 try {
                 	sim = new TempSimulation(sim, false);
-                	SolverTaskDescription std = sim.getSolverTaskDescription();
-                
-                	SolverDescription sd = std.getSolverDescription();
+                	std = sim.getSolverTaskDescription();
+                	sd = std.getSolverDescription();
                 	kisao = sd.getKisao();
+                	if(kisao == null) {
+                		throw new RuntimeException("KISAO is null.");
+                	}
                 	SimulationJob simJob = new SimulationJob(sim, 0, null);
                 	simTask = new SimulationTask(simJob, 0);
                 	Solver solver = SolverFactory.createSolver(outputDirForSedml, simTask, false);
@@ -189,14 +195,30 @@ public class SolverHandler {
 //                    CLIUtils.finalStatusUpdate(CLIUtils.Status.FAILED, outDir);
                     if (e.getMessage() != null) {
                         // something else than failure caught by solver instance during execution
-                    	logTaskError += e.getMessage();
+                    	logTaskError += (e.getMessage() + ". ");
                         System.err.println(e.getMessage());
                     } else {
-                    	logTaskError += error;
+                    	logTaskError += (error + ". ");
                     }
                     String category = e.getClass().getSimpleName();
                     CLIUtils.setOutputMessage(sedmlLocation, sim.getImportedTaskID(), outDir, "task", logTaskMessage);
-                    CLIUtils.setExceptionMessage(sedmlLocation, sim.getImportedTaskID(),outDir, "task", category, logTaskError);
+                    CLIUtils.setExceptionMessage(sedmlLocation, sim.getImportedTaskID(), outDir, "task", category, logTaskError);
+                    String sdl = "";
+                    if(sd != null && sd.getShortDisplayLabel() != null && !sd.getShortDisplayLabel().isEmpty()) {
+                    	sdl = sd.getShortDisplayLabel();
+                    } else {
+                    	sdl = kisao;
+                    }
+                    if(logTaskError.contains("Process timed out")) {
+                    	if(bTimeoutFound == false) {		// don't repeat this for each task
+                    		String str = logTaskError.substring(0, logTaskError.indexOf("Process timed out"));
+                    		str += "Process timed out";		// truncate the rest of the spam
+                        	CLIStandalone.writeDetailedErrorList(outputBaseDir, bioModelBaseName + ",  solver: " + sdl + ": " + category + ": " + str);
+                        	bTimeoutFound = true;
+                    	}
+                    } else {
+                    	CLIStandalone.writeDetailedErrorList(outputBaseDir, bioModelBaseName + ",  solver: " + sdl + ": " + category + ": " + logTaskError);
+                    }
                     CLIUtils.drawBreakLine("-", 100);
                 }
                 if(odeSolverResultSet != null) {

@@ -113,6 +113,13 @@ public class CLIStandalone {
     			StandardOpenOption.CREATE, StandardOpenOption.APPEND);
     	}
    	}
+    static void writeDetailedErrorList(String outputBaseDir, String s) throws IOException {
+    	if(isBatchExecution(outputBaseDir)) {
+    		String dest = outputBaseDir + File.separator + "detailedErrorLog.txt";
+    		Files.write(Paths.get(dest), (s + "\n").getBytes(), 
+    			StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+    	}
+   	}
     // we make a list with the omex files that contain (some) spatial simulations (FVSolverStandalone solver)
     static void writeSpatialList(String outputBaseDir, String s) throws IOException {
     	if(isBatchExecution(outputBaseDir)) {
@@ -258,6 +265,7 @@ public class CLIStandalone {
             	String category = e.getClass().getSimpleName();
                 CLIUtils.setOutputMessage(sedmlLocation, sedmlName, outputDir, "sedml", logDocumentMessage);
                 CLIUtils.setExceptionMessage(sedmlLocation, sedmlName, outputDir, "sedml", category, logDocumentError);
+                writeDetailedErrorList(outputBaseDir, bioModelBaseName + ",  doc:    " + category + ": " + logDocumentError);
             	
                 System.err.println(prefix + e.getMessage());
                 e.printStackTrace(System.err);
@@ -278,6 +286,7 @@ public class CLIStandalone {
             	resultsHash = solverHandler.simulateAllTasks(externalDocInfo, sedml, outDirForCurrentSedml, outputDir, outputBaseDir, sedmlLocation);
             } catch(Exception e) {
             	somethingFailed = true;
+            	logDocumentError = e.getMessage();		// probably the hash is empty
             	// still possible to have some data in the hash, from some task that was successful - that would be partial success
             }
             // resultHash contains only non-null values, so there must be at least some data in the result set
@@ -314,19 +323,21 @@ public class CLIStandalone {
                 	org.apache.commons.io.FileUtils.deleteDirectory(new File(String.valueOf(sedmlPath2d3d)));	// removing temp path generated from python
             	} catch (Exception e) {
                     somethingFailed = true;
-                	logDocumentError = e.getMessage();
+                	logDocumentError += e.getMessage();
                 	String category = e.getClass().getSimpleName();
                     CLIUtils.setOutputMessage(sedmlLocation, sedmlName, outputDir, "sedml", logDocumentMessage);
                     CLIUtils.setExceptionMessage(sedmlLocation, sedmlName, outputDir, "sedml", category, logDocumentError);
+                    writeDetailedErrorList(outputBaseDir, bioModelBaseName + ",  doc:    " + category + ": " + logDocumentError);
                     org.apache.commons.io.FileUtils.deleteDirectory(new File(String.valueOf(sedmlPath2d3d)));	// removing temp path generated from python
                     continue;
             	}
             } else {           	// no data in the hash -> no results to show
             	Exception e = new RuntimeException("Failure executing the tasks within the sed document. ");
-            	logDocumentError = e.getMessage();
+            	logDocumentError += e.getMessage();
             	String category = e.getClass().getSimpleName();
                 CLIUtils.setOutputMessage(sedmlLocation, sedmlName, outputDir, "sedml", logDocumentMessage);
                 CLIUtils.setExceptionMessage(sedmlLocation, sedmlName, outputDir, "sedml", category, logDocumentError);
+                writeDetailedErrorList(outputBaseDir, bioModelBaseName + ",  doc:    " + category + ": " + logDocumentError);
                 CLIUtils.updateSedmlDocStatusYml(sedmlLocation, Status.FAILED, outputDir);
                 org.apache.commons.io.FileUtils.deleteDirectory(new File(String.valueOf(sedmlPath2d3d)));	// removing temp path generated from python
                 continue;		// no point to create h5 or zip files with no data
