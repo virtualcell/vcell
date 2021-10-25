@@ -106,6 +106,8 @@ jobs:
     - name: notarize mac installer
       if: ${{ github.event.inputs.server_only != 'true' }}
       run: |
+        set -x
+        set +e
         cd installers
         export MAC_INSTALLER=`ls *dmg`
         xcrun altool --notarize-app --primary-bundle-id "org.vcell.i4jmacos" --username "${{ secrets.MACID }}" --password "${{ secrets.MACPW }}" --file $MAC_INSTALLER > altool_output
