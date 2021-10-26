@@ -149,9 +149,8 @@ jobs:
     steps:
     - name: checkout tag
       uses: actions/checkout@v2
-# temporary - need HEAD to get the latest scripts
-#      with:
-#        ref: ${{ github.event.inputs.vcell_version }}.${{ github.event.inputs.vcell_build }}
+      with:
+        ref: ${{ github.event.inputs.vcell_version }}.${{ github.event.inputs.vcell_build }}
     - name: retrieve installers and variables
       uses: actions/download-artifact@v2
     - name: setenv
@@ -189,6 +188,7 @@ jobs:
       run: |
         set -ux
         cd docker/swarm
+        ssh -t ${{ secrets.CD_FULL_USER }}@${VCELL_MANAGER_NODE} sudo docker login -u ${{ secrets.ACTION_USER }} -p ${{ secrets.ACTION_TOKEN }} ghcr.io
         if ${{ github.event.inputs.server_only != 'true' }}; then
           ./deploy-action.sh \
             --ssh-user ${{ secrets.CD_FULL_USER }} --install-singularity --build-installers --installer-deploy-dir $VCELL_INSTALLER_REMOTE_DIR \

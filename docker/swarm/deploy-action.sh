@@ -174,7 +174,7 @@ if [ "$localmachine" == "$manager_node" ]; then
 	env $(cat $remote_config_file | xargs) docker stack deploy -c $remote_compose_file $stack_name
 	if [[ $? -ne 0 ]]; then echo "failed to deploy stack" && exit 1; fi
 else
-	cmd="ssh $ssh_key -t $ssh_user@$manager_node sudo env \$(cat $remote_config_file | xargs) docker stack deploy -c $remote_compose_file $stack_name"
+	cmd="ssh $ssh_key -t $ssh_user@$manager_node sudo env \$(cat $remote_config_file | xargs) docker stack deploy -c $remote_compose_file $stack_name --with-registry-auth"
 	($cmd) || (echo "failed to deploy stack" && exit 1)
 fi
 
