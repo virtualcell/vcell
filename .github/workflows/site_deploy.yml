@@ -185,11 +185,12 @@ jobs:
         cd ../build/singularity-vm
         singularity remote login -u ${{ secrets.ACTION_USER }} -p ${{ secrets.ACTION_TOKEN }} oras://ghcr.io
         singularity pull $SINGULARITY_FILENAME oras://${VCELL_REPO_NAMESPACE}/vcell-batch-singularity:${{ github.event.inputs.vcell_version }}.${{ github.event.inputs.vcell_build }}
+        cat $VCELL_CONFIG_FILE_NAME
     - name: deploy to site
       run: |
         set -ux
         cd docker/swarm
-        if ${{ github.event.inputs.server_only != 'true' }}
+        if ${{ github.event.inputs.server_only != 'true' }}; then
           ./deploy-action.sh \
             --ssh-user ${{ secrets.CD_FULL_USER }} --install-singularity --build-installers --installer-deploy-dir $VCELL_INSTALLER_REMOTE_DIR \
             ${MANAGER_NODE} \
