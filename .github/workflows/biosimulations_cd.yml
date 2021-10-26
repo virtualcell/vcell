@@ -5,7 +5,7 @@ on:
       tag_name:
         description: 'version tag'
         required: true
-        default: 7.4.0.18
+        default: 7.4.0.23
 
 jobs:
   submit:

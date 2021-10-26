@@ -1,7 +1,7 @@
 {
   "id": "VCell",
   "name": "Virtual Cell",
-  "version": "7.4.0.23",
+  "version": "_VC_VERSION_TAG_",
   "description": "VCell (Virtual Cell) is a comprehensive platform for modeling cell biological systems that is built on a central database and disseminated as a standalone application",
   "urls": [
     {
@@ -10,7 +10,7 @@
     }
   ],
   "image": {
-    "url": "ghcr.io/virtualcell/biosimulators_vcell:7.4.0.23",
+    "url": "ghcr.io/virtualcell/biosimulators_vcell:_VC_VERSION_TAG_",
     "format": {
       "namespace": "EDAM",
       "id": "format_3973",
