@@ -185,7 +185,6 @@ jobs:
         cd ../build/singularity-vm
         singularity remote login -u ${{ secrets.ACTION_USER }} -p ${{ secrets.ACTION_TOKEN }} oras://ghcr.io
         singularity pull $SINGULARITY_FILENAME oras://${VCELL_REPO_NAMESPACE}/vcell-batch-singularity:${{ github.event.inputs.vcell_version }}.${{ github.event.inputs.vcell_build }}
-        cat $VCELL_CONFIG_FILE_NAME
     - name: deploy to site
       run: |
         set -ux
