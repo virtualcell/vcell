@@ -197,7 +197,7 @@ if [ "$build_installers" == "true" ]; then
 			./generated_installers/VCell_${vcell_siteCamel}_windows-x64_${version}_64bit.dat/* \
 			./generated_installers/VCell_${vcell_siteCamel}_unix_${version}_32bit.sh \
 			./generated_installers/VCell_${vcell_siteCamel}_macos_${version}_64bit.dmg \
-			./generated_installers/VCell_${vcell_siteCamel}_windows_${version}_32bit.exe \
+			./generated_installers/VCell_${vcell_siteCamel}_windows-x32_${version}_32bit.exe \
 			./generated_installers/VCell_${vcell_siteCamel}_unix_${version}_64bit.sh \
 			./generated_installers/updates.xml \
 			./generated_installers/output.txt \

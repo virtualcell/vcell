@@ -21,9 +21,9 @@ set -ux
 				  VCell_${vcell_siteCamel}_macos_latest_64bit.dmg
 			if [[ $? -ne 0 ]]; then echo "failed to create symbolic link for Macos installer"; exit 1; fi
 
-			rm VCell_${vcell_siteCamel}_windows_latest_32bit.exe && \
-			ln -s VCell_${vcell_siteCamel}_windows_${version}_32bit.exe \
-				  VCell_${vcell_siteCamel}_windows_latest_32bit.exe
+			rm VCell_${vcell_siteCamel}_windows-x32_latest_32bit.exe && \
+			ln -s VCell_${vcell_siteCamel}_windows-x32_${version}_32bit.exe \
+				  VCell_${vcell_siteCamel}_windows-x32_latest_32bit.exe
 			if [[ $? -ne 0 ]]; then echo "failed to create symbolic link for Win32 installer"; exit 1; fi
 
 			rm VCell_${vcell_siteCamel}_unix_latest_64bit.sh && \
