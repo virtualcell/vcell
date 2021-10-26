@@ -178,7 +178,7 @@ jobs:
       with:
         singularity-version: 3.7.1
     - name: retrieve singularity image
-      run:
+      run: |
         set -ux
         cd docker/swarm
         export SINGULARITY_FILENAME=`cat $VCELL_CONFIG_FILE_NAME | grep VCELL_SINGULARITY_FILENAME | cut -d"=" -f2`
@@ -193,7 +193,7 @@ jobs:
         if ${{ github.event.inputs.server_only != 'true' }}; then
           ./deploy-action.sh \
             --ssh-user ${{ secrets.CD_FULL_USER }} --install-singularity --build-installers --installer-deploy-dir $VCELL_INSTALLER_REMOTE_DIR \
-            ${MANAGER_NODE} \
+            ${VCELL_MANAGER_NODE} \
             ./${VCELL_CONFIG_FILE_NAME} ${VCELL_DEPLOY_REMOTE_DIR}/config/${VCELL_CONFIG_FILE_NAME} \
             ./docker-compose.yml        ${VCELL_DEPLOY_REMOTE_DIR}/config/docker-compose_${VCELL_TAG}.yml \
             vcell${VCELL_SITE}
@@ -204,7 +204,7 @@ jobs:
         else
           ./deploy-action.sh \
             --ssh-user ${{ secrets.CD_FULL_USER }} --install-singularity  \
-            ${MANAGER_NODE} \
+            ${VCELL_MANAGER_NODE} \
             ./${VCELL_CONFIG_FILE_NAME} ${VCELL_DEPLOY_REMOTE_DIR}/config/${VCELL_CONFIG_FILE_NAME} \
             ./docker-compose.yml        ${VCELL_DEPLOY_REMOTE_DIR}/config/docker-compose_${VCELL_TAG}.yml \
             vcell${VCELL_SITE}        
