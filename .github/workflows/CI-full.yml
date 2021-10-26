@@ -17,7 +17,7 @@ jobs:
         echo "VCELL_TAG=`git rev-parse --short HEAD`" >> $GITHUB_ENV
         echo "VCELL_REPO_NAMESPACE=ghcr.io/virtualcell" >> $GITHUB_ENV
         echo "VCELL_DEPLOY_REMOTE_DIR=/share/apps/vcell3/deployed_github" >> $GITHUB_ENV
-        echo "VCELL_MANAGER_NODE=vcellapi.cam.uchc.edu" >> $GITHUB_ENV
+        echo "VCELL_MANAGER_NODE=vcellapi-beta.cam.uchc.edu" >> $GITHUB_ENV
     - name: setup ssh-agent
       uses: webfactory/ssh-agent@v0.5.3
       with:

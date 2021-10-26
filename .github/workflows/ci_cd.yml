@@ -77,12 +77,16 @@ jobs:
           docker build \
             --no-cache \
             --file Dockerfile \
-            --build-arg SIMULATOR_VERSION=${{steps.version.outputs.tag}}\
+            --build-arg SIMULATOR_VERSION=${{steps.version.outputs.tag}} \
             --tag ghcr.io/virtualcell/biosimulators_vcell:latest \
             --label org.opencontainers.image.revision=${REVISION} \
             --label org.opencontainers.image.created=${CREATED} \
-            --label org.opencontainers.image.version=${{steps.version.outputs.tag}}\
-            --label org.opencontainers.image.license=MIT
+            --label org.opencontainers.image.version=${{steps.version.outputs.tag}} \
+            --label org.opencontainers.image.license=MIT \
             .
           docker tag ghcr.io/virtualcell/biosimulators_vcell:latest ghcr.io/virtualcell/biosimulators_vcell:${{steps.version.outputs.tag}}
           docker push --all-tags ghcr.io/virtualcell/biosimulators_vcell
+
+      - name: Setup tmate session
+        uses: mxschmitt/action-tmate@v3
+        if: ${{ failure() }}
