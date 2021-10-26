@@ -76,7 +76,7 @@ public class SlurmProxyTest {
 			subfileContent.append("exit $retcode\n");
 			//subfileContent.append("export MODULEPATH=/isg/shared/modulefiles:/tgcapps/modulefiles\n");
 			//subfileContent.append("source /usr/share/Modules/init/bash\n");
-//			subfileContent.append("module load singularity/2.4.2\n");
+//			subfileContent.append("module load singularity\n");
 //			subfileContent.append("if command -v singularity >/dev/null 2>&1; then\n");
 //			subfileContent.append("   echo 'singularity command exists'\n");
 //			subfileContent.append("   exit 0\n");
