@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-shopt -s -o nounset
+set -ux
 
 show_help() {
 	echo "Deploys or updates a deployment of VCell on remote Docker swarm cluster"
@@ -129,13 +129,11 @@ slurm_singularity_central_dir=`cat $local_config_file | grep VCELL_SLURM_CENTRAL
 echo ""
 echo "coping $local_config_file to $manager_node:$remote_config_file as user $ssh_user"
 cmd="scp $ssh_key $local_config_file $ssh_user@$manager_node:$remote_config_file"
-echo $cmd
 ($cmd) || (echo "failed to upload config file" && exit 1)
 
 echo ""
 echo "coping $local_compose_file to $manager_node:$remote_compose_file as user $ssh_user"
 cmd="scp $ssh_key $local_compose_file $ssh_user@$manager_node:$remote_compose_file"
-echo $cmd
 ($cmd) || (echo "failed to upload docker-compose file" && exit 1)
 
 
@@ -145,7 +143,6 @@ echo $cmd
 if [ "$install_singularity" == "true" ]; then
 
 	echo ""
-	cmd="pushd ../build/singularity-vm"
 	pushd ../build/singularity-vm
 	echo ""
 	echo "CURRENT DIRECTORY IS $PWD"
@@ -160,7 +157,6 @@ if [ "$install_singularity" == "true" ]; then
 		exit 1
 	fi
 
-	echo "scp ./${singularity_filename} $ssh_user@$manager_node:${slurm_singularity_central_dir}"
 	scp ./${singularity_filename} $ssh_user@$manager_node:${slurm_singularity_central_dir}
 
 	echo "popd"
@@ -175,12 +171,10 @@ echo ""
 echo "deploying stack $stack_name to $manager_node using config in $manager_node:$remote_config_file"
 localmachine=`hostname`
 if [ "$localmachine" == "$manager_node" ]; then
-	echo "env \$(cat $remote_config_file | xargs) docker stack deploy -c $remote_compose_file $stack_name"
 	env $(cat $remote_config_file | xargs) docker stack deploy -c $remote_compose_file $stack_name
 	if [[ $? -ne 0 ]]; then echo "failed to deploy stack" && exit 1; fi
 else
 	cmd="ssh $ssh_key -t $ssh_user@$manager_node sudo env \$(cat $remote_config_file | xargs) docker stack deploy -c $remote_compose_file $stack_name"
-	echo $cmd
 	($cmd) || (echo "failed to deploy stack" && exit 1)
 fi
 

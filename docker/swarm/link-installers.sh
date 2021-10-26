@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-shopt -s -o nounset
+set -ux
 	
 	version=$(echo "${vcell_version}_${vcell_build}" | tr '.' _)
 

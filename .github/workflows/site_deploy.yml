@@ -162,13 +162,14 @@ jobs:
       run: |
         cd installers
         mkdir ../docker/swarm/generated_installers
-        mv generated_installers/* ../docker/swarm/generated_installers
+        mv * ../docker/swarm/generated_installers
     - name: setup ssh-agent
       uses: webfactory/ssh-agent@v0.5.3
       with:
         ssh-private-key: ${{ secrets.VC_KEY }}
     - name: retrieve config file
       run: |
+        set -ux
         ssh-keyscan $VCELL_MANAGER_NODE >> ~/.ssh/known_hosts
         cd docker/swarm
         scp ${{ secrets.CD_FULL_USER }}@${VCELL_MANAGER_NODE}:${VCELL_DEPLOY_REMOTE_DIR}/${VCELL_CONFIG_FILE_NAME} .
@@ -178,6 +179,7 @@ jobs:
         singularity-version: 3.7.1
     - name: retrieve singularity image
       run:
+        set -ux
         cd docker/swarm
         export SINGULARITY_FILENAME=`cat $VCELL_CONFIG_FILE_NAME | grep VCELL_SINGULARITY_FILENAME | cut -d"=" -f2`
         cd ../build/singularity-vm
@@ -185,6 +187,7 @@ jobs:
         singularity pull $SINGULARITY_FILENAME oras://${VCELL_REPO_NAMESPACE}/vcell-batch-singularity:${{ github.event.inputs.vcell_version }}.${{ github.event.inputs.vcell_build }}
     - name: deploy to site
       run: |
+        set -ux
         cd docker/swarm
         if ${{ github.event.inputs.server_only != 'true' }}
           ./deploy-action.sh \
