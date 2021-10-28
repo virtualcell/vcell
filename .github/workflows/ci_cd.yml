@@ -86,6 +86,17 @@ jobs:
             .
           docker tag ghcr.io/virtualcell/biosimulators_vcell:latest ghcr.io/virtualcell/biosimulators_vcell:${{steps.version.outputs.tag}}
           docker push --all-tags ghcr.io/virtualcell/biosimulators_vcell
+      - name: Get release upload URL
+        id: get_url
+        uses: pdamianik/release-tag-to-upload-url-action@v1.0.1
+        with:
+          tag: ${{ github.event.inputs.tag_name }}
+          token: ${{ github.token }}
+      - name: Upload edited specifications file
+        uses: shogo82148/actions-upload-release-asset@v1
+        with:
+          upload_url: ${{ steps.get_url.outputs.uploadUrl }}
+          asset_path: biosimulators.json
 
       - name: Setup tmate session
         uses: mxschmitt/action-tmate@v3
