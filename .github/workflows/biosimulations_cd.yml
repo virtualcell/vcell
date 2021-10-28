@@ -14,7 +14,7 @@ jobs:
       # Submit to BioSimulators registry
       - name: Submit to BioSimulators registry
         run: |
-        set -ux
+          set -ux
           export SPEC_URL=https://github.com/${{ github.repository }}/releases/download/${{ github.event.inputs.tag_name }}/biosimulators.json
           docker pull ghcr.io/virtualcell/biosimulators_vcell:${{ github.event.inputs.tag_name }}
           IMAGE_DIGEST=$(docker image inspect ghcr.io/virtualcell/biosimulators_vcell:${{ github.event.inputs.tag_name }} | jq -r '.[0].RepoDigests[0]' | cut -d "@" -f 2-)
