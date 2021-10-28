@@ -17,9 +17,15 @@ jobs:
         set -ux
         sed -i 's/_VC_VERSION_TAG_/${{ github.event.inputs.tag_name }}/g' biosimulators.json
         cat biosimulators.json | head
+    - name: get url
+      id: get_url
+      uses: pdamianik/release-tag-to-upload-url-action@v1.0.1
+      with:
+        tag: ${{ github.event.inputs.tag_name }}
+        token: ${{ github.token }}
     - uses: shogo82148/actions-upload-release-asset@v1
       with:
-        upload_url: https://uploads.github.com/repos/virtualcell/vcell/releases/${{ github.event.inputs.tag_name }}/assets
+        upload_url: ${{ steps.get_url.outputs.uploadUrl }}
         asset_path: biosimulators.json
     - name: Setup tmate session
       uses: mxschmitt/action-tmate@v3
