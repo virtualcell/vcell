@@ -3,8 +3,8 @@ name: Debug test
 on:
   workflow_dispatch:
     inputs:
-      string:
-        description: 'variable to be used'     
+      tag_name:
+        description: 'version'     
         required: true
         default: '7.4.0.24'
 jobs:
