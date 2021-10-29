@@ -59,7 +59,9 @@ jobs:
         docker push --all-tags ${VCELL_REPO_NAMESPACE}/$CONTAINER;\
         done
         cd docker/build/singularity-vm
+        singularity push -U $(ls *img) oras://${VCELL_REPO_NAMESPACE}/vcell-batch-singularity:${VCELL_TAG}
         singularity push -U $(ls *img) oras://${VCELL_REPO_NAMESPACE}/vcell-batch-singularity:${{ steps.version.outputs.tag }}
+        singularity push -U $(ls *img) oras://${VCELL_REPO_NAMESPACE}/vcell-batch-singularity:latest
         
     - name: Setup tmate session
       uses: mxschmitt/action-tmate@v3
