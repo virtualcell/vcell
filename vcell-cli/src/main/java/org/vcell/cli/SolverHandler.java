@@ -76,6 +76,7 @@ public class SolverHandler {
 
         int simulationCount = 0;
         int bioModelCount = 0;
+        boolean keepTempFiles = false;
         boolean hasSomeSpatial = false;
         boolean bTimeoutFound = false;
         
@@ -135,6 +136,7 @@ public class SolverHandler {
                         } else {
                         	String str = "Solver results are not compatible with CSV format. ";
                             System.err.println(str);
+                            keepTempFiles = true;		// temp fix for Jasraj
 //                        	throw new RuntimeException(str);
                         }
                     } else if (solver instanceof AbstractJavaSolver) {
@@ -224,8 +226,10 @@ public class SolverHandler {
                 if(odeSolverResultSet != null) {
                     resultsHash.put(sim.getImportedTaskID(), odeSolverResultSet);
                 }
-
-                CLIUtils.removeIntermediarySimFiles(outputDirForSedml);
+                
+                if(keepTempFiles == false) {
+                	CLIUtils.removeIntermediarySimFiles(outputDirForSedml);
+                }
                 simulationCount++;
             }
             bioModelCount++;
