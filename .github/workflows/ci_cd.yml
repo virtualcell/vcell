@@ -16,8 +16,6 @@ jobs:
     if: ${{ github.event_name == 'push' }}
     steps:
       - uses: actions/checkout@v2
-      - name: Checkout submodules
-        run: git submodule update --init --recursive
       - name: Add Linux dependencies
         shell: bash
         run: |
@@ -42,8 +40,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-      - name: Checkout submodules
-        run: git submodule update --init --recursive
 
       - name: Get the VCell version from tags
         id: version
