@@ -94,7 +94,7 @@
 	</modules>
 
 	<scm>
-		<connection>scm:git:git://github.com/virtualcell/vcell</connection>
+		<connection>scm:git:https://github.com/virtualcell/vcell</connection>
 		<developerConnection>scm:git:git@github.com:virtualcell/vcell</developerConnection>
 		<tag>HEAD</tag>
 		<url>https://github.com/virtualcell/vcell</url>
