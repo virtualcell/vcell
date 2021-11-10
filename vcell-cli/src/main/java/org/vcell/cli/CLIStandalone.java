@@ -262,10 +262,10 @@ public class CLIStandalone {
             } catch (Exception e) {
             	String prefix = "SED-ML processing for " + sedmlLocation + " failed with error: ";
             	logDocumentError = prefix + e.getMessage();
-            	String category = e.getClass().getSimpleName();
+            	String type = e.getClass().getSimpleName();
                 CLIUtils.setOutputMessage(sedmlLocation, sedmlName, outputDir, "sedml", logDocumentMessage);
-                CLIUtils.setExceptionMessage(sedmlLocation, sedmlName, outputDir, "sedml", category, logDocumentError);
-                writeDetailedErrorList(outputBaseDir, bioModelBaseName + ",  doc:    " + category + ": " + logDocumentError);
+                CLIUtils.setExceptionMessage(sedmlLocation, sedmlName, outputDir, "sedml", type, logDocumentError);
+                writeDetailedErrorList(outputBaseDir, bioModelBaseName + ",  doc:    " + type + ": " + logDocumentError);
             	
                 System.err.println(prefix + e.getMessage());
                 e.printStackTrace(System.err);
@@ -324,20 +324,20 @@ public class CLIStandalone {
             	} catch (Exception e) {
                     somethingFailed = true;
                 	logDocumentError += e.getMessage();
-                	String category = e.getClass().getSimpleName();
+                	String type = e.getClass().getSimpleName();
                     CLIUtils.setOutputMessage(sedmlLocation, sedmlName, outputDir, "sedml", logDocumentMessage);
-                    CLIUtils.setExceptionMessage(sedmlLocation, sedmlName, outputDir, "sedml", category, logDocumentError);
-                    writeDetailedErrorList(outputBaseDir, bioModelBaseName + ",  doc:    " + category + ": " + logDocumentError);
+                    CLIUtils.setExceptionMessage(sedmlLocation, sedmlName, outputDir, "sedml", type, logDocumentError);
+                    writeDetailedErrorList(outputBaseDir, bioModelBaseName + ",  doc:    " + type + ": " + logDocumentError);
                     org.apache.commons.io.FileUtils.deleteDirectory(new File(String.valueOf(sedmlPath2d3d)));	// removing temp path generated from python
                     continue;
             	}
             } else {           	// no data in the hash -> no results to show
             	Exception e = new RuntimeException("Failure executing the tasks within the sed document. ");
             	logDocumentError += e.getMessage();
-            	String category = e.getClass().getSimpleName();
+            	String type = e.getClass().getSimpleName();
                 CLIUtils.setOutputMessage(sedmlLocation, sedmlName, outputDir, "sedml", logDocumentMessage);
-                CLIUtils.setExceptionMessage(sedmlLocation, sedmlName, outputDir, "sedml", category, logDocumentError);
-                writeDetailedErrorList(outputBaseDir, bioModelBaseName + ",  doc:    " + category + ": " + logDocumentError);
+                CLIUtils.setExceptionMessage(sedmlLocation, sedmlName, outputDir, "sedml", type, logDocumentError);
+                writeDetailedErrorList(outputBaseDir, bioModelBaseName + ",  doc:    " + type + ": " + logDocumentError);
                 CLIUtils.updateSedmlDocStatusYml(sedmlLocation, Status.FAILED, outputDir);
                 org.apache.commons.io.FileUtils.deleteDirectory(new File(String.valueOf(sedmlPath2d3d)));	// removing temp path generated from python
                 continue;		// no point to create h5 or zip files with no data

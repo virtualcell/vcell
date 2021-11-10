@@ -691,10 +691,10 @@ public class CLIUtils {
         Process process = execShellCommand(new String[]{python, statusPath.toString(), "setOutputMessage", sedmlAbsolutePath, entityId, outDir, entityType, message}).start();
         printProcessErrors(process, "","Failed updating task status YAML\n");
     }
-    // category - exception class, ex RuntimeException
+    // type - exception class, ex RuntimeException
     // message  - exception message
-    public static void setExceptionMessage(String sedmlAbsolutePath, String entityId, String outDir, String entityType, String category , String message) throws IOException, InterruptedException {
-        Process process = execShellCommand(new String[]{python, statusPath.toString(), "setExceptionMessage", sedmlAbsolutePath, entityId, outDir, entityType, category, message}).start();
+    public static void setExceptionMessage(String sedmlAbsolutePath, String entityId, String outDir, String entityType, String type , String message) throws IOException, InterruptedException {
+        Process process = execShellCommand(new String[]{python, statusPath.toString(), "setExceptionMessage", sedmlAbsolutePath, entityId, outDir, entityType, type, message}).start();
         printProcessErrors(process, "","Failed updating task status YAML\n");
     }
 

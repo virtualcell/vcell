@@ -202,9 +202,9 @@ public class SolverHandler {
                     } else {
                     	logTaskError += (error + ". ");
                     }
-                    String category = e.getClass().getSimpleName();
+                    String type = e.getClass().getSimpleName();
                     CLIUtils.setOutputMessage(sedmlLocation, sim.getImportedTaskID(), outDir, "task", logTaskMessage);
-                    CLIUtils.setExceptionMessage(sedmlLocation, sim.getImportedTaskID(), outDir, "task", category, logTaskError);
+                    CLIUtils.setExceptionMessage(sedmlLocation, sim.getImportedTaskID(), outDir, "task", type, logTaskError);
                     String sdl = "";
                     if(sd != null && sd.getShortDisplayLabel() != null && !sd.getShortDisplayLabel().isEmpty()) {
                     	sdl = sd.getShortDisplayLabel();
@@ -215,11 +215,11 @@ public class SolverHandler {
                     	if(bTimeoutFound == false) {		// don't repeat this for each task
                     		String str = logTaskError.substring(0, logTaskError.indexOf("Process timed out"));
                     		str += "Process timed out";		// truncate the rest of the spam
-                        	CLIStandalone.writeDetailedErrorList(outputBaseDir, bioModelBaseName + ",  solver: " + sdl + ": " + category + ": " + str);
+                        	CLIStandalone.writeDetailedErrorList(outputBaseDir, bioModelBaseName + ",  solver: " + sdl + ": " + type + ": " + str);
                         	bTimeoutFound = true;
                     	}
                     } else {
-                    	CLIStandalone.writeDetailedErrorList(outputBaseDir, bioModelBaseName + ",  solver: " + sdl + ": " + category + ": " + logTaskError);
+                    	CLIStandalone.writeDetailedErrorList(outputBaseDir, bioModelBaseName + ",  solver: " + sdl + ": " + type + ": " + logTaskError);
                     }
                     CLIUtils.drawBreakLine("-", 100);
                 }

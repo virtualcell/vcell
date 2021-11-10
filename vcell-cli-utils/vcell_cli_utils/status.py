@@ -75,10 +75,10 @@ def status_yml(omex_file: str, out_dir: str):
             #outputs_dict["outputs"][report].update({"status": "QUEUED"})
 
         for task in task_list:
-            exception = {"category":None, "message":None}
+            exception = {"type":None, "message":None}
             tasks_dict["tasks"].append({"id":task ,"status": "QUEUED", "exception": exception, "skipReason": None, "output": None, "duration": None, "algorithm": None,"simulatorDetails":None})
 
-        exception = {"category":None, "message":None}
+        exception = {"type":None, "message":None}
         sed_doc_dict = {"location":sedml, "status":"QUEUED", "exception":exception, "skipReason":None, "output":None, "duration":None}
         sed_doc_dict.update(outputs_dict)
         sed_doc_dict.update(tasks_dict)
@@ -234,7 +234,7 @@ def set_output_message(sedmlAbsolutePath:str, entityId:str, out_dir:str, entityT
     # Convert json to yaml # Save new yaml
     dump_yaml_dict(status_yaml_path, yaml_dict=yaml_dict, out_dir=out_dir)
 
-def set_exception_message(sedmlAbsolutePath:str, entityId:str, out_dir:str, entityType:str, category:str, message:str):
+def set_exception_message(sedmlAbsolutePath:str, entityId:str, out_dir:str, entityType:str, type:str, message:str):
 
     yaml_dict = get_yaml_as_str(os.path.join(out_dir, "log.yml"))
     for sedml_list in yaml_dict['sedDocuments']:
@@ -246,7 +246,7 @@ def set_exception_message(sedmlAbsolutePath:str, entityId:str, out_dir:str, enti
             if entityType == 'sedml':
                 if sedml_name_nested == entityId:
                     exc = sedml_list['exception']
-                    exc['category'] = category
+                    exc['type'] = type
                     exc['message'] = message
             
             # Update task status
@@ -254,7 +254,7 @@ def set_exception_message(sedmlAbsolutePath:str, entityId:str, out_dir:str, enti
                 for taskList in sedml_list['tasks']:
                     if taskList['id'] == entityId:
                         exc = taskList['exception']
-                        exc['category'] = category
+                        exc['type'] = type
                         exc['message'] = message
     status_yaml_path = os.path.join(out_dir, "log.yml")
 
