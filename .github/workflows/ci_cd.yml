@@ -86,7 +86,7 @@ jobs:
         id: get_url
         uses: pdamianik/release-tag-to-upload-url-action@v1.0.1
         with:
-          tag: ${{ github.event.inputs.tag_name }}
+          tag: ${{ steps.version.outputs.tag }}
           token: ${{ github.token }}
       - name: Upload edited specifications file
         uses: shogo82148/actions-upload-release-asset@v1
