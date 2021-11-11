@@ -75,11 +75,9 @@ def status_yml(omex_file: str, out_dir: str):
             #outputs_dict["outputs"][report].update({"status": "QUEUED"})
 
         for task in task_list:
-            exception = {"type":None, "message":None}
-            tasks_dict["tasks"].append({"id":task ,"status": "QUEUED", "exception": exception, "skipReason": None, "output": None, "duration": None, "algorithm": None,"simulatorDetails":None})
+            tasks_dict["tasks"].append({"id":task ,"status": "QUEUED", "exception": None, "skipReason": None, "output": None, "duration": None, "algorithm": None,"simulatorDetails":None})
 
-        exception = {"type":None, "message":None}
-        sed_doc_dict = {"location":sedml, "status":"QUEUED", "exception":exception, "skipReason":None, "output":None, "duration":None}
+        sed_doc_dict = {"location":sedml, "status":"QUEUED", "exception": None, "skipReason":None, "output":None, "duration":None}
         sed_doc_dict.update(outputs_dict)
         sed_doc_dict.update(tasks_dict)
         yaml_dict.append(sed_doc_dict)
