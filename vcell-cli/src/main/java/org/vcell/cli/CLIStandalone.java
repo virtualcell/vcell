@@ -364,7 +364,7 @@ public class CLIStandalone {
         	System.err.println(error);
         	writeErrorList(outputBaseDir, bioModelBaseName);
         }
-        CLIUtils.setOutputMessage("", "", outputDir, "omex", logOmexMessage);
+        CLIUtils.setOutputMessage("null", "null", outputDir, "omex", logOmexMessage);
     }
 
     private static void singleExecVcml(String[] args) throws Exception {
