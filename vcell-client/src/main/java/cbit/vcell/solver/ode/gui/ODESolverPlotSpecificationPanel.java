@@ -982,6 +982,7 @@ private void regeneratePlot2D() throws ExpressionException,ObjectNotFoundExcepti
 			String[] yNames = new String[((DefaultListModel)getYAxisChoice().getModel()).size()];
 			allData[0] = xData;
 			double[] yData = new double[xData.length];
+	//		double[] yDataMin = new double[xData.length];
 	
 			double currParamValue = 0.0;
 			double deltaParamValue = 0.0;
@@ -1010,6 +1011,7 @@ private void regeneratePlot2D() throws ExpressionException,ObjectNotFoundExcepti
 						ColumnDescription cd = getMyDataInterface().getColumnDescription((String)((DefaultListModel)getYAxisChoice().getModel()).elementAt(i));
 						double sens[] = getSensValues(cd);
 						yData = getMyDataInterface().extractColumn(cd.getName());
+	//					yDataMin = getMyDataInterface().extractColumnMin(cd.getName());
 						// sens array != null for non-sensitivity state vars and functions, so extrapolate
 						if (sens != null) {
 							for (int j = 0; j < sens.length; j++) {
@@ -1028,6 +1030,7 @@ private void regeneratePlot2D() throws ExpressionException,ObjectNotFoundExcepti
 					} else {
 						// No sensitivity analysis case, so do not alter the original values for any variable or function
 						allData[i+1] = getMyDataInterface().extractColumn((String)((DefaultListModel)getYAxisChoice().getModel()).elementAt(i));
+	//					yDataMin = getMyDataInterface().extractColumnMin((String)((DefaultListModel)getYAxisChoice().getModel()).elementAt(i));
 					}
 					yNames[i] = (String)((DefaultListModel)getYAxisChoice().getModel()).elementAt(i);
 				}
@@ -1125,6 +1128,7 @@ private void regeneratePlot2D() throws ExpressionException,ObjectNotFoundExcepti
 				
 			}
 			SingleXPlot2D plot2D = new SingleXPlot2D(symbolTableEntries,getMyDataInterface().getDataSymbolMetadataResolver(),xLabel, yNames, allData, new String[] {title, xLabel, yLabel});
+			// TODO: populate the extra plot2D fields (for min, max, stdev
 			refreshVisiblePlots(plot2D);
 			//here fire "singleXPlot2D" event, ODEDataViewer's event handler listens to it.
 			setPlot2D(plot2D);

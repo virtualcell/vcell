@@ -27,6 +27,9 @@ public interface ODEDataInterface {
 	FunctionColumnDescription[] getFunctionColumnDescriptions();
 
 	double[] extractColumn(String columnName) throws ExpressionException,ObjectNotFoundException;
+	double[] extractColumnMax(String columnName) throws ExpressionException,ObjectNotFoundException;
+	double[] extractColumnMin(String columnName) throws ExpressionException,ObjectNotFoundException;
+	double[] extractColumnStd(String columnName) throws ExpressionException,ObjectNotFoundException;
 
 	boolean isMultiTrialData();
 
