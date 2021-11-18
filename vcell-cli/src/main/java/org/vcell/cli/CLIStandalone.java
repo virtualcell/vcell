@@ -190,7 +190,8 @@ public class CLIStandalone {
         
         // from here on, we need to collect errors, since some subtasks may succeed while other do not
         // we now have the log file created, so that we also have a place to put them
-        boolean oneSedmlDocumentSucceeded = false;
+        boolean oneSedmlDocumentSucceeded = false;	// set to true if at least one sedml document run is successful
+        boolean oneSedmlDocumentFailed = false;		// set to true if at least one sedml document run fails (probably mirrors somethingFailed flag)
         
     	String logOmexMessage = "";
     	String logOmexError = "";		// not used for now
@@ -270,6 +271,7 @@ public class CLIStandalone {
                 System.err.println(prefix + e.getMessage());
                 e.printStackTrace(System.err);
                 somethingFailed = true;
+                oneSedmlDocumentFailed = true;
                 CLIUtils.updateSedmlDocStatusYml(sedmlLocation, Status.FAILED, outputDir);
                 continue;
             }
@@ -286,6 +288,7 @@ public class CLIStandalone {
             	resultsHash = solverHandler.simulateAllTasks(externalDocInfo, sedml, outDirForCurrentSedml, outputDir, outputBaseDir, sedmlLocation);
             } catch(Exception e) {
             	somethingFailed = true;
+            	oneSedmlDocumentFailed = true;
             	logDocumentError = e.getMessage();		// probably the hash is empty
             	// still possible to have some data in the hash, from some task that was successful - that would be partial success
             }
@@ -323,6 +326,7 @@ public class CLIStandalone {
                 	org.apache.commons.io.FileUtils.deleteDirectory(new File(String.valueOf(sedmlPath2d3d)));	// removing temp path generated from python
             	} catch (Exception e) {
                     somethingFailed = true;
+                    oneSedmlDocumentFailed = true;
                 	logDocumentError += e.getMessage();
                 	String type = e.getClass().getSimpleName();
                     CLIUtils.setOutputMessage(sedmlLocation, sedmlName, outputDir, "sedml", logDocumentMessage);
@@ -356,17 +360,32 @@ public class CLIStandalone {
         //
         // success if at least one of the documents in the omex archive is successful
         //
-        if(oneSedmlDocumentSucceeded) {
-        	CLIUtils.updateOmexStatusYml(CLIUtils.Status.SUCCEEDED, outputDir, duration + "");
-        } else {
+//        if(oneSedmlDocumentSucceeded) {
+//        	CLIUtils.updateOmexStatusYml(CLIUtils.Status.SUCCEEDED, outputDir, duration + "");
+//        } else {
+//        	String error = "All sedml documents in this archive failed to execute";
+//        	CLIUtils.updateOmexStatusYml(CLIUtils.Status.FAILED, outputDir, duration + "");
+//        	System.err.println(error);
+//        	writeErrorList(outputBaseDir, bioModelBaseName);
+//        }
+        //
+        // failure if at least one of the documents in the omex archive fails
+        //
+        if(oneSedmlDocumentFailed) {
         	String error = "All sedml documents in this archive failed to execute";
+        	if(oneSedmlDocumentSucceeded) {		// some succeeded, some failed
+        		error = "At least one document in this archive failed to execute";
+        	}
         	CLIUtils.updateOmexStatusYml(CLIUtils.Status.FAILED, outputDir, duration + "");
         	System.err.println(error);
         	writeErrorList(outputBaseDir, bioModelBaseName);
+        } else {
+        	CLIUtils.updateOmexStatusYml(CLIUtils.Status.SUCCEEDED, outputDir, duration + "");
         }
         CLIUtils.setOutputMessage("null", "null", outputDir, "omex", logOmexMessage);
     }
 
+    @Deprecated
     private static void singleExecVcml(String[] args) throws Exception {
         CLIHandler cliHandler;
         String inputFile;
