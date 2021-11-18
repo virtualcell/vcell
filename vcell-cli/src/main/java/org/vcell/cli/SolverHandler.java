@@ -225,6 +225,8 @@ public class SolverHandler {
                 }
                 if(odeSolverResultSet != null) {
                     resultsHash.put(sim.getImportedTaskID(), odeSolverResultSet);
+                } else {
+                	resultsHash.put(sim.getImportedTaskID(), null);	// if any task fails, we still put it in the hash with a null value
                 }
                 
                 if(keepTempFiles == false) {
@@ -241,6 +243,7 @@ public class SolverHandler {
         return resultsHash;
     }
 
+    @Deprecated
     public HashMap<String, ODESolverResultSet> simulateAllVcmlTasks(File vcmlPath, File outputDir) throws Exception {
         // create the VCDocument(s) (bioModel(s) + application(s) + simulation(s)), do sanity checks
         List<VCDocument> docs = null;

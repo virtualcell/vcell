@@ -191,13 +191,12 @@ public class CLIStandalone {
         // from here on, we need to collect errors, since some subtasks may succeed while other do not
         // we now have the log file created, so that we also have a place to put them
         boolean oneSedmlDocumentSucceeded = false;	// set to true if at least one sedml document run is successful
-        boolean oneSedmlDocumentFailed = false;		// set to true if at least one sedml document run fails (probably mirrors somethingFailed flag)
+        boolean oneSedmlDocumentFailed = false;		// set to true if at least one sedml document run fails
         
     	String logOmexMessage = "";
     	String logOmexError = "";		// not used for now
         for (String sedmlLocation : sedmlLocations) {		// for each sedml document
 
-        	// this variable is set correctly but it is not used!!! because the way we define success
             boolean somethingFailed = false;		// shows that the current document suffered a partial or total failuri
             
         	String logDocumentMessage = "Initializing sedml document... ";
@@ -292,51 +291,61 @@ public class CLIStandalone {
             	logDocumentError = e.getMessage();		// probably the hash is empty
             	// still possible to have some data in the hash, from some task that was successful - that would be partial success
             }
-            // resultHash contains only non-null values, so there must be at least some data in the result set
-            if (resultsHash.size() != 0) {
-            	logDocumentMessage += "done. ";
-            	//
-            	// WARNING!!! the logic here is that if at least one task produces some results we declare the sedml document status as successful
-            	// that will include spatial simulations for which we don't produce reports or plots!
-            	//
-            	oneSedmlDocumentSucceeded = true;
-            	CLIUtils.updateSedmlDocStatusYml(sedmlLocation, Status.SUCCEEDED, outputDir);
-            	try {
-            		if(resultsHash.containsValue(null)) {		// some tasks failed, but not all
-            			// in the current implementation this cannot happen! 
-            			// we don't put in the hash any null value
-            			logDocumentMessage += "Failed to execute one or more tasks. ";
-            		}
-            		logDocumentMessage += "Generating outputs... ";
-            		reportsHash = CLIUtils.generateReportsAsCSV(sedml, resultsHash, outDirForCurrentSedml, outputDir, sedmlLocation);
-            		if(reportsHash == null || reportsHash.size() == 0) {
-            			throw new RuntimeException("failed to generate any reports. ");
-            		}
-            		if(reportsHash.containsValue(null)) {
-            			logDocumentMessage += "failed to create one or more reports. ";
-            		} else {
-                    	logDocumentMessage += "done. ";
-            		}
 
-            		CLIUtils.execPlotOutputSedDoc(inputFile, outputDir);							// create the HDF5 file
-            		if(!containsExtension(outputDir, "h5")) {
-            			throw new RuntimeException("failed to generate the .h5 output file. ");
-            		}
-            		CLIUtils.genPlotsPseudoSedml(sedmlLocation, outDirForCurrentSedml.toString());	// generate the plots
-                	org.apache.commons.io.FileUtils.deleteDirectory(new File(String.valueOf(sedmlPath2d3d)));	// removing temp path generated from python
-            	} catch (Exception e) {
-                    somethingFailed = true;
-                    oneSedmlDocumentFailed = true;
-                	logDocumentError += e.getMessage();
-                	String type = e.getClass().getSimpleName();
-                    CLIUtils.setOutputMessage(sedmlLocation, sedmlName, outputDir, "sedml", logDocumentMessage);
-                    CLIUtils.setExceptionMessage(sedmlLocation, sedmlName, outputDir, "sedml", type, logDocumentError);
-                    writeDetailedErrorList(outputBaseDir, bioModelBaseName + ",  doc:    " + type + ": " + logDocumentError);
-                    org.apache.commons.io.FileUtils.deleteDirectory(new File(String.valueOf(sedmlPath2d3d)));	// removing temp path generated from python
-                    continue;
-            	}
-            } else {           	// no data in the hash -> no results to show
-            	Exception e = new RuntimeException("Failure executing the tasks within the sed document. ");
+        	//
+        	// WARNING!!! Current logic dictates that if any task fails we fail the sedml document
+        	// change implemented on Nov 11, 2021
+        	// Previous logic was that if at least one task produces some results we declare the sedml document status as successful
+        	// that will include spatial simulations for which we don't produce reports or plots!
+        	//
+        	try {
+        		if(resultsHash.containsValue(null)) {		// some tasks failed, but not all
+        			oneSedmlDocumentFailed = true;
+        			somethingFailed = true;
+        			logDocumentMessage += "Failed to execute one or more tasks. ";
+        		}
+        		logDocumentMessage += "Generating outputs... ";
+        		reportsHash = CLIUtils.generateReportsAsCSV(sedml, resultsHash, outDirForCurrentSedml, outputDir, sedmlLocation);
+        		if(reportsHash == null || reportsHash.size() == 0) {
+        			oneSedmlDocumentFailed = true;
+        			somethingFailed = true;
+        			String msg = "Failed to generate any reports. ";
+        			throw new RuntimeException(msg);
+        		}
+        		if(reportsHash.containsValue(null)) {
+        			oneSedmlDocumentFailed = true;
+        			somethingFailed = true;
+        			String msg = "Failed to generate one or more reports. ";
+        			logDocumentMessage += msg;
+        		} else {
+                	logDocumentMessage += "Done. ";
+        		}
+
+        		logDocumentMessage += "Generating HDF5 file... ";
+        		CLIUtils.execPlotOutputSedDoc(inputFile, outputDir);							// create the HDF5 file
+        		if(!containsExtension(outputDir, "h5")) {
+        			oneSedmlDocumentFailed = true;
+        			somethingFailed = true;
+        			throw new RuntimeException("Failed to generate the HDF5 output file. ");
+        		} else {
+        			logDocumentMessage += "Done. ";
+        		}
+        		CLIUtils.genPlotsPseudoSedml(sedmlLocation, outDirForCurrentSedml.toString());	// generate the plots
+    			oneSedmlDocumentSucceeded = true;
+        	} catch (Exception e) {
+                somethingFailed = true;
+                oneSedmlDocumentFailed = true;
+            	logDocumentError += e.getMessage();
+            	String type = e.getClass().getSimpleName();
+                CLIUtils.setOutputMessage(sedmlLocation, sedmlName, outputDir, "sedml", logDocumentMessage);
+                CLIUtils.setExceptionMessage(sedmlLocation, sedmlName, outputDir, "sedml", type, logDocumentError);
+                writeDetailedErrorList(outputBaseDir, bioModelBaseName + ",  doc:    " + type + ": " + logDocumentError);
+                org.apache.commons.io.FileUtils.deleteDirectory(new File(String.valueOf(sedmlPath2d3d)));	// removing temp path generated from python
+                continue;
+        	}
+
+            if(somethingFailed == true) {		// something went wrong but no exception was fired
+            	Exception e = new RuntimeException("Failure executing the sed document. ");
             	logDocumentError += e.getMessage();
             	String type = e.getClass().getSimpleName();
                 CLIUtils.setOutputMessage(sedmlLocation, sedmlName, outputDir, "sedml", logDocumentMessage);
@@ -344,8 +353,9 @@ public class CLIStandalone {
                 writeDetailedErrorList(outputBaseDir, bioModelBaseName + ",  doc:    " + type + ": " + logDocumentError);
                 CLIUtils.updateSedmlDocStatusYml(sedmlLocation, Status.FAILED, outputDir);
                 org.apache.commons.io.FileUtils.deleteDirectory(new File(String.valueOf(sedmlPath2d3d)));	// removing temp path generated from python
-                continue;		// no point to create h5 or zip files with no data
+                continue;
             }
+        	org.apache.commons.io.FileUtils.deleteDirectory(new File(String.valueOf(sedmlPath2d3d)));	// removing temp path generated from python
 
             // archiving res files
             CLIUtils.zipResFiles(new File(outputDir));
@@ -357,17 +367,6 @@ public class CLIStandalone {
 		long elapsedTime = endTimeOmex - startTimeOmex;
 		int duration = (int)Math.ceil(elapsedTime / 1000.0);
      
-        //
-        // success if at least one of the documents in the omex archive is successful
-        //
-//        if(oneSedmlDocumentSucceeded) {
-//        	CLIUtils.updateOmexStatusYml(CLIUtils.Status.SUCCEEDED, outputDir, duration + "");
-//        } else {
-//        	String error = "All sedml documents in this archive failed to execute";
-//        	CLIUtils.updateOmexStatusYml(CLIUtils.Status.FAILED, outputDir, duration + "");
-//        	System.err.println(error);
-//        	writeErrorList(outputBaseDir, bioModelBaseName);
-//        }
         //
         // failure if at least one of the documents in the omex archive fails
         //
