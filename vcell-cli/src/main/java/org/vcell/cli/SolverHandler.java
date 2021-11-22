@@ -118,10 +118,14 @@ public class SolverHandler {
                 	Solver solver = SolverFactory.createSolver(outputDirForSedml, simTask, false);
                 	logTaskMessage += "done. Starting simulation... ";
 
-                	if(solver instanceof FVSolverStandalone) {
+                	if(sd.isSpatial()) {
                 		hasSomeSpatial = true;
+                		keepTempFiles = true;
+                	}
+//                	if(solver instanceof FVSolverStandalone) {
+//                		hasSomeSpatial = true;
 //                		throw new RuntimeException("FVSolverStandalone timeout failure.");
-                	} 
+//                	} 
 //                	else 
                 	if (solver instanceof AbstractCompiledSolver) {
                         ((AbstractCompiledSolver) solver).runSolver();

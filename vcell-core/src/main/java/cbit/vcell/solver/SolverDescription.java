@@ -547,6 +547,10 @@ public enum SolverDescription {
 	public boolean isSpatialStochasticSolver() {
 		return supportedFeatures.containsAll(SpatialStochasticFeatureSet.getSolverFeatures());
 	}
+	
+	public boolean isSpatial() {
+		return supportedFeatures.contains(SolverFeature.Feature_Spatial);
+	}
 
 	public boolean supports(OutputTimeSpec outputTimeSpec) {
 		return supportedTimeSpec.supports(outputTimeSpec);
