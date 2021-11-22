@@ -71,20 +71,24 @@ def status_yml(omex_file: str, out_dir: str):
             #dataset_dict = {}
             for dataset in reports_dict[report]:
                 dataset_list.append({"id":dataset , "status" :"QUEUED"})
-            outputs_dict["outputs"].append({"id":report,"status": "QUEUED","exception": None,"skipReason": None,"output": None,"duration": None, "dataSets": dataset_list})
+            exc_dict = {'type': "", 'message': ""}
+            outputs_dict["outputs"].append({"id":report,"status": "QUEUED","exception": exc_dict,"skipReason": None,"output": None,"duration": None, "dataSets": dataset_list})
             #outputs_dict["outputs"][report].update({"status": "QUEUED"})
 
         for task in task_list:
-            tasks_dict["tasks"].append({"id":task ,"status": "QUEUED", "exception": None, "skipReason": None, "output": None, "duration": None, "algorithm": None,"simulatorDetails":None})
+            exc_dict = {'type': "", 'message': ""}
+            tasks_dict["tasks"].append({"id":task ,"status": "QUEUED", "exception": exc_dict, "skipReason": None, "output": None, "duration": None, "algorithm": None,"simulatorDetails":None})
 
-        sed_doc_dict = {"location":sedml, "status":"QUEUED", "exception": None, "skipReason":None, "output":None, "duration":None}
+        exc_dict = {'type': "", 'message': ""}
+        sed_doc_dict = {"location":sedml, "status":"QUEUED", "exception": exc_dict, "skipReason":None, "output":None, "duration":None}
         sed_doc_dict.update(outputs_dict)
         sed_doc_dict.update(tasks_dict)
         yaml_dict.append(sed_doc_dict)
+    exc_dict = {'type': "", 'message': ""}
     final_dict = {}
     final_dict['sedDocuments'] = yaml_dict
     final_dict['status'] = "QUEUED"
-    final_dict['exception'] = None
+    final_dict['exception'] = exc_dict
     final_dict['skipReason'] = None
     final_dict['duration'] = None
     final_dict['output'] = None

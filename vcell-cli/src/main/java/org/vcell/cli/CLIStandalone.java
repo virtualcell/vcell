@@ -371,15 +371,17 @@ public class CLIStandalone {
         // failure if at least one of the documents in the omex archive fails
         //
         if(oneSedmlDocumentFailed) {
-        	String error = "All sedml documents in this archive failed to execute";
+        	String error = " All sedml documents in this archive failed to execute";
         	if(oneSedmlDocumentSucceeded) {		// some succeeded, some failed
-        		error = "At least one document in this archive failed to execute";
+        		error = " At least one document in this archive failed to execute";
         	}
         	CLIUtils.updateOmexStatusYml(CLIUtils.Status.FAILED, outputDir, duration + "");
         	System.err.println(error);
+        	logOmexMessage += error;
         	writeErrorList(outputBaseDir, bioModelBaseName);
         } else {
         	CLIUtils.updateOmexStatusYml(CLIUtils.Status.SUCCEEDED, outputDir, duration + "");
+        	logOmexMessage += " Done";
         }
         CLIUtils.setOutputMessage("null", "null", outputDir, "omex", logOmexMessage);
     }
