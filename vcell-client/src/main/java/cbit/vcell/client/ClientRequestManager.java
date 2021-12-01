@@ -3815,6 +3815,9 @@ public class ClientRequestManager
 							hashTable.put("doc", doc);
 						}
 					}
+				} catch(Exception ex) {
+					ex.printStackTrace();
+					// TODO: check why getMdiManager().createNewDocumentWindow(windowManager) fails sometimes
 				} finally {
 					if (!inNewWindow) {
 						getMdiManager().unBlockWindow(requester.getManagerID());
@@ -3838,8 +3841,10 @@ public class ClientRequestManager
 					}
 					if (isSEDML) {
 						List<DocumentWindowManager> windowManagers = (List<DocumentWindowManager>) hashTable.get("managers");
-						for (DocumentWindowManager manager : windowManagers) {
-							((BioModelWindowManager) manager).specialLayout();
+						if(windowManagers != null) {
+							for (DocumentWindowManager manager : windowManagers) {
+								((BioModelWindowManager) manager).specialLayout();
+							}
 						}
 					}
 				}
