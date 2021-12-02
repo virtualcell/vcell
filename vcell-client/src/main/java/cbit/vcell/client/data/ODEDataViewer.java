@@ -37,6 +37,7 @@ import cbit.vcell.simdata.DataManager;
 import cbit.vcell.solver.DataSymbolMetadata;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationModelInfo;
+import cbit.vcell.solver.ode.ODESimData;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.solver.ode.gui.ODESolverPlotSpecificationPanel;
 import cbit.vcell.solver.ode.gui.OutputSpeciesResultsPanel;
@@ -146,7 +147,7 @@ private void updateMetadata() {
 			@Override
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
 				SimulationModelInfo simulationModelInfo = ODEDataViewer.this.getSimulationModelInfo();
-				ODEDataInterfaceImpl oDEDataInterfaceImpl = new ODEDataInterfaceImpl(getOdeSolverResultSet(),simulationModelInfo);
+				ODEDataInterfaceImpl oDEDataInterfaceImpl = new ODEDataInterfaceImpl(getVcDataIdentifier(), getOdeSolverResultSet(), simulationModelInfo);
 				getODESolverPlotSpecificationPanel1().setMyDataInterface(oDEDataInterfaceImpl);
 //				new Thread(new Runnable() {
 //					@Override

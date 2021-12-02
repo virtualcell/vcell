@@ -8,6 +8,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.vcell.util.ObjectNotFoundException;
+import org.vcell.util.document.VCDataIdentifier;
 
 import com.google.common.io.Files;
 
@@ -32,8 +33,12 @@ class ODEDataInterfaceImpl implements ODEDataInterface {
 	private final SimulationModelInfo simulationModelInfo;
 	private ODESolverResultSet odeSolverResultSet;
 	
-	ODEDataInterfaceImpl(ODESolverResultSet odeSolverResultSet, SimulationModelInfo simulationModelInfo){
-		this.odeSolverResultSet = new ODESolverResultSet(odeSolverResultSet);
+	ODEDataInterfaceImpl(VCDataIdentifier vcdi, ODESolverResultSet odeSolverResultSet, SimulationModelInfo simulationModelInfo){
+		if(odeSolverResultSet instanceof ODESimData) {
+			this.odeSolverResultSet = new ODESimData(vcdi, odeSolverResultSet);
+		} else {
+			this.odeSolverResultSet = new ODESolverResultSet(odeSolverResultSet);
+		}
 		this.simulationModelInfo = simulationModelInfo;
 	}
 	

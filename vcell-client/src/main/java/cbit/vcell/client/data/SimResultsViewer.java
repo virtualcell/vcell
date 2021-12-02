@@ -66,6 +66,7 @@ import cbit.vcell.simdata.SimulationData;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.ode.ODESimData;
+import cbit.vcell.solver.ode.ODESolverResultSet;
 import ncsa.hdf.object.FileFormat;
 import ncsa.hdf.object.Group;
 import ncsa.hdf.object.HObject;
@@ -109,7 +110,8 @@ public SimResultsViewer(Simulation simulation, DataManager arg_dataManager) thro
 private DataViewer createODEDataViewer() throws DataAccessException {
 	odeDataViewer = new ODEDataViewer();
 	odeDataViewer.setSimulation(getSimulation());
-	odeDataViewer.setOdeSolverResultSet(((ODEDataManager)dataManager).getODESolverResultSet());
+	ODESolverResultSet odesrs = ((ODEDataManager)dataManager).getODESolverResultSet();
+	odeDataViewer.setOdeSolverResultSet(odesrs);
 	odeDataViewer.setNFSimMolecularConfigurations(((ODEDataManager)dataManager).getNFSimMolecularConfigurations());
 	odeDataViewer.setVcDataIdentifier(dataManager.getVCDataIdentifier());
 	if(getSimulation() != null) {
