@@ -11,6 +11,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -82,6 +83,8 @@ import org.w3c.dom.Element;
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.biomodel.ModelUnitConverter;
+import cbit.vcell.clientdb.DocumentManager;
+import cbit.vcell.mapping.GeometryContext;
 import cbit.vcell.mapping.MathMapping;
 import cbit.vcell.mapping.MathSymbolMapping;
 import cbit.vcell.mapping.SimulationContext;
@@ -95,6 +98,7 @@ import cbit.vcell.model.Kinetics.KineticsParameter;
 import cbit.vcell.model.Model.ModelParameter;
 import cbit.vcell.model.Model.ReservedSymbol;
 import cbit.vcell.model.Model.ReservedSymbolRole;
+import cbit.vcell.model.ModelProcess;
 import cbit.vcell.model.ModelQuantity;
 import cbit.vcell.model.ModelUnitSystem;
 import cbit.vcell.model.ProxyParameter;
@@ -104,6 +108,7 @@ import cbit.vcell.model.Structure.StructureSize;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.SymbolTableEntry;
+import cbit.vcell.server.SimulationJobStatusPersistent;
 import cbit.vcell.solver.AnnotatedFunction;
 import cbit.vcell.solver.ConstantArraySpec;
 import cbit.vcell.solver.ErrorTolerance;
@@ -112,6 +117,7 @@ import cbit.vcell.solver.NonspatialStochHybridOptions;
 import cbit.vcell.solver.NonspatialStochSimOptions;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationJob;
+import cbit.vcell.solver.SimulationOwner;
 import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solver.SolverTaskDescription;
 import cbit.vcell.solver.TimeBounds;
@@ -213,7 +219,23 @@ public class SEDMLExporter {
 			int simContextCnt = 0;	// for model count, task subcount
 			boolean bSpeciesAddedAsDataGens = false;
 			String sedmlNotesStr = "";
-
+//			for (Simulation simulation : vcBioModel.getSimulations()) {
+//				if (true ) {
+//					// check server status
+//					ConnectionFactory conFactory = DatabaseService.getInstance().createConnectionFactory();
+//					AdminDBTopLevel adminDbTopLevel = new AdminDBTopLevel(conFactory);
+//					SimulationJobStatusPersistent[] statuses = adminDbTopLevel.getSimulationJobStatusArray(simulation.getKey(), false);
+//					if (statuses == null) continue;
+//					if (statuses.length == 0) continue;
+//					for (int i = 0; i < statuses.length; i++) {
+//						if (statuses[i].hasData()) {
+//							simThatRan.add(simulation);
+//							continue;
+//						}
+//					}
+//				}
+//			}
+//
 			for (SimulationContext simContext : simContexts) {
 				// check if structure sizes are set. If not, get a structure from the model, and set its size 
 				// (thro' the structureMappings in the geometry of the simContext); invoke the structureSizeEvaluator 
@@ -290,6 +312,7 @@ public class SEDMLExporter {
 				// -------
 				// create sedml objects (simulation, task, datagenerators, report, plot) for each simulation in simcontext 
 				// -------
+				
 
 				int simCount = 0;
 				String taskRef = null;
