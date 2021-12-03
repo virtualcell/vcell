@@ -2,6 +2,7 @@ package org.vcell.cli.vcml;
 
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.util.NativeLoader;
 import cbit.vcell.xml.XMLSource;
@@ -42,7 +43,7 @@ public class VcmlOmexConversion {
                 System.err.println("No VCML files found in the directory `" + input + "`");
             }
             
-//            File fout = new File("G:\\dan\\jprojects\\git\\vcdb\\published\\biomodel\\omex\\sbml\\errorLog.txt");
+//            File fout = new File("G:\\dan\\jprojects\\git\\vcdb\\published\\biomodel\\omex\\native\\errorLog.txt");
 //            FileOutputStream fos = new FileOutputStream(fout);
 //            BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(fos));
             
@@ -93,6 +94,8 @@ public class VcmlOmexConversion {
     public static boolean vcmlToOmexConversion(String[] args) throws XmlParseException, IOException {
     	
     	boolean bForceVCML = false;
+    	boolean bHasDataOnly = false;
+    	
     	int position = 0;
     	for(String s : args) {
     		if("-vcml".equalsIgnoreCase(s)) {
@@ -102,6 +105,16 @@ public class VcmlOmexConversion {
     		}
     		position++;
     	}
+    	position = 0;
+    	for(String s : args) {
+    		if("-hasDataOnly".equalsIgnoreCase(s)) {
+    			bHasDataOnly = true;
+    			args = ArrayUtils.remove(args, position);
+    			break;
+    		}
+    		position++;
+    	}
+    	
 		int sedmlLevel = 1;
 		int sedmlVersion = 2;
     	
@@ -125,7 +138,7 @@ public class VcmlOmexConversion {
 
         // NOTE: SEDML exporter exports both SEDML as well as required SBML
         SEDMLExporter sedmlExporter = new SEDMLExporter(bioModel, sedmlLevel, sedmlVersion);
-        String sedmlString = sedmlExporter.getSEDMLFile(outputDir, vcmlName, bForceVCML, true);
+        String sedmlString = sedmlExporter.getSEDMLFile(outputDir, vcmlName, bForceVCML, bHasDataOnly, true);
         XmlUtil.writeXMLStringToFile(sedmlString, String.valueOf(Paths.get(outputDir, vcmlName + ".sedml")), true);
 
         // libCombine needs native lib

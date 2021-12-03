@@ -30,7 +30,7 @@ import java.util.zip.ZipOutputStream;
 public class CLIUtils {
 	// timeout for compiled solver running long jobs; default 12 hours
 	// public static long EXECUTABLE_MAX_WALLCLOK_MILLIS = 40000;
-	public static long EXECUTABLE_MAX_WALLCLOK_MILLIS = 0;
+	public static long EXECUTABLE_MAX_WALLCLOK_MILLIS = 10000;
 
     // Docker hardcode path
     // Note: Docker Working Directory and Singularity working directory works in different way.
@@ -40,12 +40,13 @@ public class CLIUtils {
     private static final Path homeDir = Paths.get(currentWorkingDir.normalize().toString());
     // user.dir is not working for windows
 //    private static final Path homeDir = Paths.get(String.valueOf(System.getProperty("user.dir")));
-    private static final Path workingDirectory = Paths.get("/usr/local/app/vcell/installDir");
+    private static final String defaultWorkingDir = "c:/usr/local/app/vcell/installDir";
+    private Path workingDirectory = Paths.get(defaultWorkingDir);
     // Submodule path for VCell_CLI_UTILS
-    private static final Path utilPath = Paths.get(workingDirectory.toString(), "python", "vcell_cli_utils");
-    private static final Path cliUtilPath = Paths.get(utilPath.toString(), "vcell_cli_utils");
-    private static final Path cliPath = Paths.get(cliUtilPath.toString(), "cli.py");
-    private static final Path statusPath = Paths.get(cliUtilPath.toString(), "status.py");
+    private Path utilPath = Paths.get(workingDirectory.toString(), "python", "vcell_cli_utils");
+    private Path cliUtilPath = Paths.get(utilPath.toString(), "vcell_cli_utils");
+    private Path cliPath = Paths.get(cliUtilPath.toString(), "cli.py");
+    private Path statusPath = Paths.get(cliUtilPath.toString(), "status.py");
 
 
     // Absolute Submodule path for VCell_CLI_UTILS
@@ -102,7 +103,15 @@ public class CLIUtils {
         }
     }
 
-
+    public void recalculatePaths() {
+    	String wd = PropertyLoader.getProperty(PropertyLoader.cliWorkingDir, defaultWorkingDir);
+        workingDirectory = Paths.get(wd);
+        utilPath = Paths.get(workingDirectory.toString(), "python", "vcell_cli_utils");
+        cliUtilPath = Paths.get(utilPath.toString(), "vcell_cli_utils");
+        cliPath = Paths.get(cliUtilPath.toString(), "cli.py");
+        statusPath = Paths.get(cliUtilPath.toString(), "status.py");
+    }
+    
     // Breakline
     public static void drawBreakLine(String breakString, int times) {
         System.out.println(breakString + StringUtils.repeat(breakString, times));
@@ -257,7 +266,7 @@ public class CLIUtils {
         }
     }
 
-    public static HashMap<String, File> generateReportsAsCSV(SedML sedml, HashMap<String, ODESolverResultSet> resultsHash, File outDirForCurrentSedml, String outDir, String sedmlLocation) {
+    public HashMap<String, File> generateReportsAsCSV(SedML sedml, HashMap<String, ODESolverResultSet> resultsHash, File outDirForCurrentSedml, String outDir, String sedmlLocation) {
         // finally, the real work
         HashMap<String, File> reportsHash = new HashMap<>();
         List<Output> ooo = sedml.getOutputs();
@@ -346,7 +355,7 @@ public class CLIUtils {
 
                             }
 
-                            CLIUtils.updateDatasetStatusYml(sedmlLocation, oo.getId(), dataset.getId(), Status.SUCCEEDED, outDir);
+                            updateDatasetStatusYml(sedmlLocation, oo.getId(), dataset.getId(), Status.SUCCEEDED, outDir);
                         }
                         if (!supportedDataset) {
                             System.err.println("Dataset " + dataset.getId() + " references unsupported RepeatedTask and is being skipped");
@@ -573,17 +582,17 @@ public class CLIUtils {
 
     // Ignoring biosimulator_utils warnings with -W ignore flag
 
-    public static void genSedmlForSed2DAnd3D(String omexFilePath, String outputDir) throws IOException, InterruptedException {
+    public void genSedmlForSed2DAnd3D(String omexFilePath, String outputDir) throws IOException, InterruptedException {
         Process process = execShellCommand(new String[]{python, "-W", "ignore", cliPath.toString(), "genSedml2d3d", omexFilePath, outputDir}).start();
         printProcessErrors(process, "","Failed generating SED-ML for plot2d and 3D ");
     }
 
-    public static void execPlotOutputSedDoc(String omexFilePath, String outputDir)  throws IOException, InterruptedException {
+    public void execPlotOutputSedDoc(String omexFilePath, String outputDir)  throws IOException, InterruptedException {
         Process process = execShellCommand(new String[]{python, "-W", "ignore", cliPath.toString(), "execPlotOutputSedDoc", omexFilePath, outputDir}).start();
         printProcessErrors(process, "HDF conversion successful\n","HDF conversion failed\n");
     }
 
-    public static void convertCSVtoHDF(String omexFilePath, String outputDir) throws IOException, InterruptedException {
+    public void convertCSVtoHDF(String omexFilePath, String outputDir) throws IOException, InterruptedException {
 
         // Convert CSV to HDF5
         /*
@@ -598,7 +607,7 @@ public class CLIUtils {
         }
     }
 
-    public static void genPlotsPseudoSedml(String sedmlPath, String resultOutDir) throws IOException, InterruptedException {
+    public void genPlotsPseudoSedml(String sedmlPath, String resultOutDir) throws IOException, InterruptedException {
         Process process = execShellCommand(new String[]{python, cliPath.toString(), "genPlotsPseudoSedml", sedmlPath, resultOutDir}).start();
         printProcessErrors(process, "","");
     }
@@ -627,7 +636,7 @@ public class CLIUtils {
             status: SKIPPED
     status: SUCCEEDED
     * */
-    public static void generateStatusYaml(String omexPath, String outDir) throws IOException, InterruptedException {
+    public void generateStatusYaml(String omexPath, String outDir) throws IOException, InterruptedException {
         System.out.println("utilPath: " + utilPath);
         System.out.println("cliUtilPath: " + cliUtilPath);
         System.out.println("cliPath: " + cliPath);
@@ -652,32 +661,32 @@ public class CLIUtils {
         printProcessErrors(process, "","Failed generating status YAML\n");
     }
 
-    public static void updateTaskStatusYml(String sedmlName, String taskName, Status taskStatus, String outDir, String duration, String algorithm) throws IOException, InterruptedException {
+    public void updateTaskStatusYml(String sedmlName, String taskName, Status taskStatus, String outDir, String duration, String algorithm) throws IOException, InterruptedException {
     	algorithm = algorithm.toUpperCase(Locale.ROOT);
     	algorithm = algorithm.replace("KISAO:", "KISAO_");
         Process process = execShellCommand(new String[]{python, statusPath.toString(), "updateTaskStatus", sedmlName, taskName, taskStatus.toString(), outDir, duration, algorithm}).start();
         printProcessErrors(process, "", "Failed updating task status YAML\n");
     }
-    public static void updateSedmlDocStatusYml(String sedmlName, Status sedmlDocStatus, String outDir) throws IOException, InterruptedException {
+    public void updateSedmlDocStatusYml(String sedmlName, Status sedmlDocStatus, String outDir) throws IOException, InterruptedException {
         Process process = execShellCommand(new String[]{python, statusPath.toString(), "updateSedmlDocStatus", sedmlName, sedmlDocStatus.toString(), outDir}).start();
         printProcessErrors(process, "", "Failed updating sedml document status YAML\n");
     }
-    public static void updateOmexStatusYml(Status simStatus, String outDir, String duration) throws IOException, InterruptedException {
+    public void updateOmexStatusYml(Status simStatus, String outDir, String duration) throws IOException, InterruptedException {
         Process process = execShellCommand(new String[]{python, statusPath.toString(), "updateOmexStatus", simStatus.toString(), outDir, duration}).start();
         printProcessErrors(process, "","");
     }
 
-    public static void updateDatasetStatusYml(String sedmlName, String dataSet, String var, Status simStatus, String outDir) throws IOException, InterruptedException {
+    public void updateDatasetStatusYml(String sedmlName, String dataSet, String var, Status simStatus, String outDir) throws IOException, InterruptedException {
         Process process = execShellCommand(new String[]{python, statusPath.toString(), "updateDataSetStatus", sedmlName, dataSet, var, simStatus.toString(), outDir}).start();
         printProcessErrors(process, "","");
     }
 
-    public static void transposeVcmlCsv(String csvFilePath) throws IOException, InterruptedException {
+    public void transposeVcmlCsv(String csvFilePath) throws IOException, InterruptedException {
         Process process = execShellCommand(new String[]{python, cliPath.toString(), "transposeVcmlCsv", csvFilePath}).start();
         printProcessErrors(process, "","");
     }
 
-    public static void genPlots(String sedmlPath, String resultOutDir) throws IOException, InterruptedException {
+    public void genPlots(String sedmlPath, String resultOutDir) throws IOException, InterruptedException {
         Process process = execShellCommand(new String[]{python, cliPath.toString(), "genPlotPdfs", sedmlPath, resultOutDir}).start();
         printProcessErrors(process, "","");
     }
@@ -687,13 +696,13 @@ public class CLIUtils {
     // outDir            - path to directory where the log files will be placed
     // entityType        - string describing the entity type ex "task" for a task, or "sedml" for sedml document
     // message           - useful info about the execution of the entity (ex: task), could be human readable or concatenation of stdout and stderr
-    public static void setOutputMessage(String sedmlAbsolutePath, String entityId, String outDir, String entityType, String message) throws IOException, InterruptedException {
+    public void setOutputMessage(String sedmlAbsolutePath, String entityId, String outDir, String entityType, String message) throws IOException, InterruptedException {
         Process process = execShellCommand(new String[]{python, statusPath.toString(), "setOutputMessage", sedmlAbsolutePath, entityId, outDir, entityType, message}).start();
         printProcessErrors(process, "","Failed updating task status YAML\n");
     }
     // type - exception class, ex RuntimeException
     // message  - exception message
-    public static void setExceptionMessage(String sedmlAbsolutePath, String entityId, String outDir, String entityType, String type , String message) throws IOException, InterruptedException {
+    public void setExceptionMessage(String sedmlAbsolutePath, String entityId, String outDir, String entityType, String type , String message) throws IOException, InterruptedException {
         Process process = execShellCommand(new String[]{python, statusPath.toString(), "setExceptionMessage", sedmlAbsolutePath, entityId, outDir, entityType, type, message}).start();
         printProcessErrors(process, "","Failed updating task status YAML\n");
     }
