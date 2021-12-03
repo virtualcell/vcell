@@ -159,7 +159,7 @@ public class SEDMLExporter {
 			// invoke the SEDMLEXporter
 			SEDMLExporter sedmlExporter = new SEDMLExporter(bioModel, 1, 1);
 			String absolutePath = "c:\\dan\\SEDML";
-			String sedmlStr = sedmlExporter.getSEDMLFile(absolutePath, "SEDML2", false, false);
+			String sedmlStr = sedmlExporter.getSEDMLFile(absolutePath, "SEDML2", false, false, false);
 //			String absolutePath = ResourceUtil.getUserHomeDir().getAbsolutePath();
 			String outputName = absolutePath+ "\\" + TokenMangler.mangleToSName(bioModel.getName()) + ".sedml";
 			XmlUtil.writeXMLStringToFile(sedmlStr, outputName, true);
@@ -172,7 +172,7 @@ public class SEDMLExporter {
 		}
 	}
 	
-	public String getSEDMLFile(String sPath, String sBaseFileName, boolean bForceVCML, boolean bFromOmex) {
+	public String getSEDMLFile(String sPath, String sBaseFileName, boolean bForceVCML, boolean bHasDataOnly, boolean bFromOmex) {
 
 		// Create an SEDMLDocument and create the SEDMLModel from the document, so that other details can be added to it in translateBioModel()
 		SEDMLDocument sedmlDocument = new SEDMLDocument(this.sedmlLevel, this.sedmlVersion);
@@ -197,14 +197,14 @@ public class SEDMLExporter {
 		sedmlModel.setAdditionalNamespaces(nsList);
 
 		
-		translateBioModelToSedML(sPath, sBaseFileName, bForceVCML, bFromOmex);
+		translateBioModelToSedML(sPath, sBaseFileName, bForceVCML, bHasDataOnly, bFromOmex);
 
 		// write SEDML document into SEDML writer, so that the SEDML str can be retrieved
 		return sedmlDocument.writeDocumentToString();
 	}
 
 
-	private void translateBioModelToSedML(String savePath, String sBaseFileName, boolean bForceVCML, boolean bFromOmex) {		// true if invoked for omex export, false if for sedml
+	private void translateBioModelToSedML(String savePath, String sBaseFileName, boolean bForceVCML, boolean bHasDataOnly, boolean bFromOmex) {		// true if invoked for omex export, false if for sedml
 		sbmlFilePathStrAbsoluteList.clear();
 		// models
 		try {
