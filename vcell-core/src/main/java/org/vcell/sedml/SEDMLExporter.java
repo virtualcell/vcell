@@ -133,15 +133,17 @@ public class SEDMLExporter {
 	private cbit.vcell.biomodel.BioModel vcBioModel = null;
 	private ArrayList<String> sbmlFilePathStrAbsoluteList = new ArrayList<String>();
 	private ArrayList<String> sedmlFilePathStrAbsoluteList = new ArrayList<String>();
+	private List<Simulation> simsToExport = null;
 
 	private static String DATAGENERATOR_TIME_NAME = "time";
 	private static String DATAGENERATOR_TIME_SYMBOL = "t";
 	
-	public SEDMLExporter(BioModel argBiomodel, int argLevel, int argVersion) {
+	public SEDMLExporter(BioModel argBiomodel, int argLevel, int argVersion, List<Simulation> argSimsToExport) {
 		super();
 		this.vcBioModel = argBiomodel;
 		this.sedmlLevel = argLevel;
 		this.sedmlVersion = argVersion;
+		this.simsToExport = argSimsToExport;
 	}
 	
 	public static void main(String[] args) {
@@ -157,7 +159,7 @@ public class SEDMLExporter {
 			bioModel.refreshDependencies();
 			
 			// invoke the SEDMLEXporter
-			SEDMLExporter sedmlExporter = new SEDMLExporter(bioModel, 1, 1);
+			SEDMLExporter sedmlExporter = new SEDMLExporter(bioModel, 1, 1, null);
 			String absolutePath = "c:\\dan\\SEDML";
 			String sedmlStr = sedmlExporter.getSEDMLFile(absolutePath, "SEDML2", false, false, false);
 //			String absolutePath = ResourceUtil.getUserHomeDir().getAbsolutePath();
@@ -219,23 +221,7 @@ public class SEDMLExporter {
 			int simContextCnt = 0;	// for model count, task subcount
 			boolean bSpeciesAddedAsDataGens = false;
 			String sedmlNotesStr = "";
-//			for (Simulation simulation : vcBioModel.getSimulations()) {
-//				if (true ) {
-//					// check server status
-//					ConnectionFactory conFactory = DatabaseService.getInstance().createConnectionFactory();
-//					AdminDBTopLevel adminDbTopLevel = new AdminDBTopLevel(conFactory);
-//					SimulationJobStatusPersistent[] statuses = adminDbTopLevel.getSimulationJobStatusArray(simulation.getKey(), false);
-//					if (statuses == null) continue;
-//					if (statuses.length == 0) continue;
-//					for (int i = 0; i < statuses.length; i++) {
-//						if (statuses[i].hasData()) {
-//							simThatRan.add(simulation);
-//							continue;
-//						}
-//					}
-//				}
-//			}
-//
+
 			for (SimulationContext simContext : simContexts) {
 				// check if structure sizes are set. If not, get a structure from the model, and set its size 
 				// (thro' the structureMappings in the geometry of the simContext); invoke the structureSizeEvaluator 
@@ -318,6 +304,10 @@ public class SEDMLExporter {
 				String taskRef = null;
 				int overrideCount = 0;
 				for (Simulation vcSimulation : simContext.getSimulations()) {
+					if (bHasDataOnly) {
+						// skip simulations not present in hash
+						if (!simsToExport.contains(vcSimulation)) continue;
+					}
 
 					// 1 -------> check compatibility
 					// if simContext is non-spatial stochastic, check if sim is histogram; if so, skip it, it can't be encoded in sedml 1.x

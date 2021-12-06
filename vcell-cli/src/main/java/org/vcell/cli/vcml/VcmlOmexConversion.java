@@ -2,8 +2,11 @@ package org.vcell.cli.vcml;
 
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.modeldb.AdminDBTopLevel;
 import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.resource.ResourceUtil;
+import cbit.vcell.server.SimulationJobStatusPersistent;
+import cbit.vcell.solver.Simulation;
 import cbit.vcell.util.NativeLoader;
 import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XmlHelper;
@@ -14,7 +17,11 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.sbml.libcombine.CombineArchive;
 import org.sbml.libcombine.KnownFormats;
 import org.vcell.cli.CLIHandler;
+import org.vcell.db.ConnectionFactory;
+import org.vcell.db.DatabaseService;
 import org.vcell.sedml.SEDMLExporter;
+import org.vcell.util.DataAccessException;
+import org.vcell.util.document.KeyValue;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -24,6 +31,10 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.nio.file.Paths;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 
 public class VcmlOmexConversion {
 
@@ -83,7 +94,7 @@ public class VcmlOmexConversion {
                     if (isCreated) System.out.println("Combine archive created for `" + input + "`");
                     else System.err.println("Failed converting VCML to OMEX archive for `" + input + "`");
                 } else System.err.println("No input files found in the directory `" + input + "`");
-            } catch (IOException | XmlParseException e) {
+            } catch (IOException | XmlParseException | DataAccessException | SQLException e) {
 //                e.printStackTrace();
                 System.out.println("\n\n\n=====>>>>EXPORT FAILED: " +input+"\n\n\n");   
 //                System.exit(1);
@@ -91,7 +102,7 @@ public class VcmlOmexConversion {
         }
     }
 
-    public static boolean vcmlToOmexConversion(String[] args) throws XmlParseException, IOException {
+    public static boolean vcmlToOmexConversion(String[] args) throws XmlParseException, IOException, SQLException, DataAccessException {
     	
     	boolean bForceVCML = false;
     	boolean bHasDataOnly = false;
@@ -137,7 +148,29 @@ public class VcmlOmexConversion {
         bioModel.refreshDependencies();
 
         // NOTE: SEDML exporter exports both SEDML as well as required SBML
-        SEDMLExporter sedmlExporter = new SEDMLExporter(bioModel, sedmlLevel, sedmlVersion);
+        List<Simulation> simsToExport =null;
+        if (bHasDataOnly) {
+        	// make list of simulations to export with only sims that have data on the server
+        	simsToExport = new ArrayList<Simulation>();
+			ConnectionFactory conFactory = DatabaseService.getInstance().createConnectionFactory();
+			AdminDBTopLevel adminDbTopLevel = new AdminDBTopLevel(conFactory);
+			for (Simulation simulation : bioModel.getSimulations()) {
+				if (true ) {
+					// check server status
+					KeyValue parentKey = simulation.getSimulationVersion().getParentSimulationReference();
+					SimulationJobStatusPersistent[] statuses = adminDbTopLevel.getSimulationJobStatusArray(parentKey == null ? simulation.getKey() : parentKey, false);
+					if (statuses == null) continue;
+					if (statuses.length == 0) continue;
+					for (int i = 0; i < statuses.length; i++) {
+						if (statuses[i].hasData()) {
+							simsToExport.add(simulation);
+							continue;
+						}
+					}
+				}
+			}
+        }
+        SEDMLExporter sedmlExporter = new SEDMLExporter(bioModel, sedmlLevel, sedmlVersion, simsToExport);
         String sedmlString = sedmlExporter.getSEDMLFile(outputDir, vcmlName, bForceVCML, bHasDataOnly, true);
         XmlUtil.writeXMLStringToFile(sedmlString, String.valueOf(Paths.get(outputDir, vcmlName + ".sedml")), true);
 
