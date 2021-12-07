@@ -37,9 +37,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-public class VcmlOmexConversion {
+public class VcmlOmexConverter {
 
-    public static void parseArgsAndConvert(String[] args) throws IOException {
+    private static ConnectionFactory conFactory;
+	private static AdminDBTopLevel adminDbTopLevel;
+	private static boolean bForceVCML;
+	private static boolean bHasDataOnly;
+	private static CLIHandler cliHandler;
+
+	public static void parseArgsAndConvert(String[] args) throws IOException {
         File input = null;
         try {
             // TODO: handle if it's not valid PATH
@@ -48,6 +54,20 @@ public class VcmlOmexConversion {
             e1.printStackTrace();
         }
 
+        args = parseArgs(args);
+    	 
+    	if (bHasDataOnly) {
+			try {
+				conFactory = DatabaseService.getInstance().createConnectionFactory();
+				adminDbTopLevel = new AdminDBTopLevel(conFactory);
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				System.out.println("\n\n\n=====>>>>EXPORT FAILED: connection to database failed");
+				e.printStackTrace();
+			}
+    	}
+    	
+        
         if (input != null && input.isDirectory()) {
             FilenameFilter filterVcmlFiles = (f, name) -> name.endsWith(".vcml");
             String[] inputFiles = input.list(filterVcmlFiles);
@@ -61,9 +81,10 @@ public class VcmlOmexConversion {
                 File file = new File(input, inputFile);
                 System.out.println(" ============== start: " + inputFile);
                 args[1] = file.toString();
+                cliHandler = new CLIHandler(args);
                 try {
                     if (inputFile.endsWith(".vcml")) {
-                        boolean isCreated = vcmlToOmexConversion(args);
+                        boolean isCreated = vcmlToOmexConversion();
                         if (isCreated) {
                         	System.out.println("Combine archive created for file(s) `" + input + "`");
                         }
@@ -86,11 +107,12 @@ public class VcmlOmexConversion {
             try {
                 assert input != null;
                 if (input.toString().endsWith(".vcml")) {
-                    boolean isCreated = vcmlToOmexConversion(args);
+                    cliHandler = new CLIHandler(args);
+                    boolean isCreated = vcmlToOmexConversion();
                     if (isCreated) System.out.println("Combine archive created for `" + input + "`");
                     else System.err.println("Failed converting VCML to OMEX archive for `" + input + "`");
                 } else System.err.println("No input files found in the directory `" + input + "`");
-            } catch (IOException | XmlParseException | DataAccessException | SQLException e) {
+            } catch (Exception e) {
 //                e.printStackTrace();
                 System.out.println("\n\n\n=====>>>>EXPORT FAILED: " +input+"\n\n\n");   
 //                System.exit(1);
@@ -98,35 +120,14 @@ public class VcmlOmexConversion {
         }
     }
 
-    public static boolean vcmlToOmexConversion(String[] args) throws XmlParseException, IOException, SQLException, DataAccessException {
+    public static boolean vcmlToOmexConversion() throws XmlParseException, IOException, DataAccessException, SQLException {
     	
-    	boolean bForceVCML = false;
-    	boolean bHasDataOnly = false;
-    	
-    	int position = 0;
-    	for(String s : args) {
-    		if("-vcml".equalsIgnoreCase(s)) {
-    			bForceVCML = true;
-    			args = ArrayUtils.remove(args, position);
-    			break;
-    		}
-    		position++;
-    	}
-    	position = 0;
-    	for(String s : args) {
-    		if("-hasDataOnly".equalsIgnoreCase(s)) {
-    			bHasDataOnly = true;
-    			args = ArrayUtils.remove(args, position);
-    			break;
-    		}
-    		position++;
-    	}
-    	
+   	
+        // Get VCML file path from -i flag
 		int sedmlLevel = 1;
 		int sedmlVersion = 2;
-    	
-        CLIHandler cliHandler = new CLIHandler(args);
-        // Get VCML file path from -i flag
+
+        
         String inputVcmlFile = cliHandler.getInputFilePath();
 
         // Get directory file path from -o flag
@@ -148,8 +149,6 @@ public class VcmlOmexConversion {
         if (bHasDataOnly) {
         	// make list of simulations to export with only sims that have data on the server
         	simsToExport = new ArrayList<Simulation>();
-			ConnectionFactory conFactory = DatabaseService.getInstance().createConnectionFactory();
-			AdminDBTopLevel adminDbTopLevel = new AdminDBTopLevel(conFactory);
 			for (Simulation simulation : bioModel.getSimulations()) {
 				// check server status
 				KeyValue parentKey = simulation.getSimulationVersion().getParentSimulationReference();
@@ -235,4 +234,26 @@ public class VcmlOmexConversion {
         }
         return isCreated;
     }
+
+	private static String[] parseArgs(String[] args) {
+		int position = 0;
+    	for(String s : args) {
+    		if("-vcml".equalsIgnoreCase(s)) {
+    			bForceVCML = true;
+    			args = ArrayUtils.remove(args, position);
+    			break;
+    		}
+    		position++;
+    	}
+    	position = 0;
+    	for(String s : args) {
+    		if("-hasDataOnly".equalsIgnoreCase(s)) {
+    			bHasDataOnly = true;
+    			args = ArrayUtils.remove(args, position);
+    			break;
+    		}
+    		position++;
+    	}
+		return args;
+	}
 }
