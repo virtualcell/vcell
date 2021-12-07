@@ -77,6 +77,9 @@ public class DatabaseSearchPanel extends CollapsiblePanel {
 			if (docInfo.getVersion().getName().toLowerCase().contains(lowerCaseNamePattern)) {
 				return true;
 			}
+			if (docInfo.getVersion().getVersionKey().toString().toLowerCase().contains(lowerCaseNamePattern)) {
+				return true;
+			}
 			if (docInfo.getSoftwareVersion() != null && docInfo.getSoftwareVersion().getDescription() != null 
 					&& docInfo.getSoftwareVersion().getDescription().toLowerCase().contains(lowerCaseNamePattern)) {
 				return true;
