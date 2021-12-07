@@ -963,6 +963,9 @@ public class SEDMLExporter {
 	        	sedmlNotesStr = "\n\tThe following applications in the VCell model were not exported to VCell : " + sedmlNotesStr;
 	        	sedmlModel.addNote(createNotesElement(sedmlNotesStr));
         	}
+        	if(sedmlModel.getModels() != null && sedmlModel.getModels().size() > 1) {
+        		System.out.println("Number of models in the sedml is " + sedmlModel.getModels().size());
+        	}
 	
 
 		} catch (Exception e) {

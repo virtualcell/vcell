@@ -56,10 +56,6 @@ public class VcmlOmexConversion {
             }
             String outputDir = args[3];
             
-//            File fout = new File("G:\\dan\\jprojects\\git\\vcdb\\published\\biomodel\\omex\\native\\errorLog.txt");
-//            FileOutputStream fos = new FileOutputStream(fout);
-//            BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(fos));
-            
 //            assert inputFiles != null;
             for (String inputFile : inputFiles) {
                 File file = new File(input, inputFile);
@@ -83,13 +79,9 @@ public class VcmlOmexConversion {
                 	System.out.println("\n\n\n=====>>>>EXPORT FAILED: " +inputFile+"\n\n\n");
                 	CLIStandalone.writeDetailedErrorList(outputDir, inputFile + ",   " + e.getMessage());
 
-//                	bw.write(inputFile);
-//                	bw.newLine();
-                	
                     //                   System.exit(1);
                 }
             }
-//            bw.close();
         } else {
             try {
                 assert input != null;
@@ -159,17 +151,15 @@ public class VcmlOmexConversion {
 			ConnectionFactory conFactory = DatabaseService.getInstance().createConnectionFactory();
 			AdminDBTopLevel adminDbTopLevel = new AdminDBTopLevel(conFactory);
 			for (Simulation simulation : bioModel.getSimulations()) {
-				if (true ) {
-					// check server status
-					KeyValue parentKey = simulation.getSimulationVersion().getParentSimulationReference();
-					SimulationJobStatusPersistent[] statuses = adminDbTopLevel.getSimulationJobStatusArray(parentKey == null ? simulation.getKey() : parentKey, false);
-					if (statuses == null) continue;
-					if (statuses.length == 0) continue;
-					for (int i = 0; i < statuses.length; i++) {
-						if (statuses[i].hasData()) {
-							simsToExport.add(simulation);
-							continue;
-						}
+				// check server status
+				KeyValue parentKey = simulation.getSimulationVersion().getParentSimulationReference();
+				SimulationJobStatusPersistent[] statuses = adminDbTopLevel.getSimulationJobStatusArray(parentKey == null ? simulation.getKey() : parentKey, false);
+				if (statuses == null) continue;
+				if (statuses.length == 0) continue;
+				for (int i = 0; i < statuses.length; i++) {
+					if (statuses[i].hasData()) {
+						simsToExport.add(simulation);
+						continue;
 					}
 				}
 			}
