@@ -120,7 +120,7 @@ public class SolverHandler {
 
                 	if(sd.isSpatial()) {
                 		hasSomeSpatial = true;
-                		keepTempFiles = true;
+//                		keepTempFiles = true;
                 	}
 //                	if(solver instanceof FVSolverStandalone) {
 //                		hasSomeSpatial = true;
