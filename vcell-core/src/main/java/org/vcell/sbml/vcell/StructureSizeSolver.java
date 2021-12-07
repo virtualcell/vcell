@@ -120,6 +120,7 @@ public class StructureSizeSolver {
 			ArrayList<String> unknownVars = new ArrayList<String>();
 			
 			for (StructureMapping sm : structMappings){
+				System.out.println("Structure "+ sm.getStructure().getDisplayName() + " size " + sm.getStructure().getStructureSize().getExpression());
 				if (sm.getStructure() instanceof Membrane){
 					MembraneMapping mm = (MembraneMapping)sm;
 					StructureMappingParameter svRatioParam = mm.getSurfaceToVolumeParameter();
