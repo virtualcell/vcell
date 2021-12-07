@@ -17,6 +17,7 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.sbml.libcombine.CombineArchive;
 import org.sbml.libcombine.KnownFormats;
 import org.vcell.cli.CLIHandler;
+import org.vcell.cli.CLIStandalone;
 import org.vcell.db.ConnectionFactory;
 import org.vcell.db.DatabaseService;
 import org.vcell.sedml.SEDMLExporter;
@@ -53,6 +54,7 @@ public class VcmlOmexConversion {
             if (inputFiles == null) {
                 System.err.println("No VCML files found in the directory `" + input + "`");
             }
+            String outputDir = args[3];
             
 //            File fout = new File("G:\\dan\\jprojects\\git\\vcdb\\published\\biomodel\\omex\\native\\errorLog.txt");
 //            FileOutputStream fos = new FileOutputStream(fout);
@@ -79,6 +81,8 @@ public class VcmlOmexConversion {
 //					e.printStackTrace(System.err);
                     
                 	System.out.println("\n\n\n=====>>>>EXPORT FAILED: " +inputFile+"\n\n\n");
+                	CLIStandalone.writeDetailedErrorList(outputDir, inputFile + ",   " + e.getMessage());
+
 //                	bw.write(inputFile);
 //                	bw.newLine();
                 	

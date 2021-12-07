@@ -129,7 +129,7 @@ public class CLIStandalone {
     			StandardOpenOption.CREATE, StandardOpenOption.APPEND);
     	}
    	}
-    static void writeDetailedErrorList(String outputBaseDir, String s) throws IOException {
+    public static void writeDetailedErrorList(String outputBaseDir, String s) throws IOException {
     	if(isBatchExecution(outputBaseDir)) {
     		String dest = outputBaseDir + File.separator + "detailedErrorLog.txt";
     		Files.write(Paths.get(dest), (s + "\n").getBytes(), 
