@@ -441,7 +441,7 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueVector) {
 			} else {
 				try{
 					double val = sizeParam.getExpression().evaluateConstant();
-					if (val <= 0) {
+					if (val < 0) {
 						issueVector.add(new Issue(this, issueContext, IssueCategory.StructureMappingSizeParameterNotPositive, "Size parameter is not positive.",Issue.SEVERITY_ERROR));
 					}
 				} catch (ExpressionException e) {
