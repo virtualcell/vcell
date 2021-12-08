@@ -41,8 +41,8 @@ public class VcmlOmexConverter {
 
     private static ConnectionFactory conFactory;
 	private static AdminDBTopLevel adminDbTopLevel;
-	private static boolean bForceVCML;
-	private static boolean bHasDataOnly;
+	private static boolean bForceVCML;		// set by the -vcml CL argument, means we export to omex as vcml (if missing, default we try sbml first)
+	private static boolean bHasDataOnly;	// we only export those simulations that have at least some results; set by -hasDataOnly CL argument
 	private static CLIHandler cliHandler;
 
 	public static void parseArgsAndConvert(String[] args) throws IOException {

@@ -54,7 +54,7 @@ public class SolverHandler {
     }
 
 
-    public HashMap<String, ODESolverResultSet> simulateAllTasks(CLIUtils utils, ExternalDocInfo externalDocInfo, SedML sedml, File outputDirForSedml, String outDir, String outputBaseDir, String sedmlLocation) throws Exception {
+    public HashMap<String, ODESolverResultSet> simulateAllTasks(CLIUtils utils, ExternalDocInfo externalDocInfo, SedML sedml, File outputDirForSedml, String outDir, String outputBaseDir, String sedmlLocation, boolean keepTempFiles) throws Exception {
         // create the VCDocument(s) (bioModel(s) + application(s) + simulation(s)), do sanity checks
         cbit.util.xml.VCLogger sedmlImportLogger = new LocalLogger();
         String inputFile = externalDocInfo.getFile().getAbsolutePath();
@@ -76,7 +76,6 @@ public class SolverHandler {
 
         int simulationCount = 0;
         int bioModelCount = 0;
-        boolean keepTempFiles = false;
         boolean hasSomeSpatial = false;
         boolean bTimeoutFound = false;
         
@@ -120,7 +119,6 @@ public class SolverHandler {
 
                 	if(sd.isSpatial()) {
                 		hasSomeSpatial = true;
-//                		keepTempFiles = true;
                 	}
 //                	if(solver instanceof FVSolverStandalone) {
 //                		hasSomeSpatial = true;
@@ -140,7 +138,7 @@ public class SolverHandler {
                         } else {
                         	String str = "Solver results are not compatible with CSV format. ";
                             System.err.println(str);
-                            keepTempFiles = true;		// temp fix for Jasraj
+//                            keepTempFiles = true;		// temp fix for Jasraj
 //                        	throw new RuntimeException(str);
                         }
                     } else if (solver instanceof AbstractJavaSolver) {
