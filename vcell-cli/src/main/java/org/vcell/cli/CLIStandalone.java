@@ -8,7 +8,7 @@ import org.jlibsedml.*;
 import org.vcell.cli.CLIUtils.Status;
 import org.vcell.cli.vcml.VCMLHandler;
 //import org.vcell.util.FileUtils;
-import org.vcell.cli.vcml.VcmlOmexConversion;
+import org.vcell.cli.vcml.VcmlOmexConverter;
 import org.vcell.util.GenericExtensionFilter;
 import org.vcell.util.exe.Executable;
 
@@ -46,7 +46,7 @@ public class CLIStandalone {
         		PropertyLoader.loadProperties();
            		utils.recalculatePaths();
            		
-        		VcmlOmexConversion.parseArgsAndConvert(ArrayUtils.remove(args, 0));
+        		VcmlOmexConverter.parseArgsAndConvert(ArrayUtils.remove(args, 0));
         		
         	} catch(IOException e) {
         		e.printStackTrace(System.err);
