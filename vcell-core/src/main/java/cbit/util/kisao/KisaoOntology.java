@@ -93,7 +93,7 @@ public class KisaoOntology {
 			}
 			
 			System.out.println("Trying to match with VCell solver");
-			SolverDescription sd = SolverUtilities.matchSolverWithKisaoId(term.getId());
+			SolverDescription sd = SolverUtilities.matchSolverWithKisaoId(term.getId(), false);
 			if(sd != null) {
 				System.out.println("   - matched with vcell solver: " + sd.getKisao() + ", " + sd.getDisplayLabel());
 			} else {

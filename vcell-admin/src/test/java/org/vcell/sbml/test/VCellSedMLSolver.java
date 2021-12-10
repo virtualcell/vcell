@@ -304,7 +304,7 @@ public class VCellSedMLSolver {
 		cbit.util.xml.VCLogger sedmlImportLogger = new LocalLogger();
 		List<AbstractTask> tasks = new ArrayList<AbstractTask>();
 		tasks.add(sedmlTask);
-		List<VCDocument> docs = XmlHelper.sedmlToBioModel(sedmlImportLogger, externalDocInfo, sedml, tasks, null);
+		List<VCDocument> docs = XmlHelper.sedmlToBioModel(sedmlImportLogger, externalDocInfo, sedml, tasks, null, false);
 		VCDocument doc = docs.get(0);
 		sanityCheck(doc);
 		

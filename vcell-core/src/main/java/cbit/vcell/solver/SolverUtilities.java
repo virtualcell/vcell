@@ -109,7 +109,7 @@ public class SolverUtilities {
 		}
 	}
 	
-	public static SolverDescription matchSolverWithKisaoId(String originalId) {
+	public static SolverDescription matchSolverWithKisaoId(String originalId, boolean exactMatchOnly) {
 		
 		// if originating from SED-ML it will likely come in a wrong format using colon
 		
@@ -125,6 +125,9 @@ public class SolverUtilities {
 		 matchingSolverDescriptions = matchByKisaoId(originalKisaoTerm);
 		 if(!matchingSolverDescriptions.isEmpty()) {
 			 return matchingSolverDescriptions.get(0);		// exact match
+		 }
+		 if(exactMatchOnly) {
+			 return null;
 		 }
 		 
 		 // ----- make descendant list and check them all until a match is found

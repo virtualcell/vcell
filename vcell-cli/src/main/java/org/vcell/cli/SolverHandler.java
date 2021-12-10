@@ -54,7 +54,7 @@ public class SolverHandler {
     }
 
 
-    public HashMap<String, ODESolverResultSet> simulateAllTasks(CLIUtils utils, ExternalDocInfo externalDocInfo, SedML sedml, File outputDirForSedml, String outDir, String outputBaseDir, String sedmlLocation, boolean keepTempFiles) throws Exception {
+    public HashMap<String, ODESolverResultSet> simulateAllTasks(CLIUtils utils, ExternalDocInfo externalDocInfo, SedML sedml, File outputDirForSedml, String outDir, String outputBaseDir, String sedmlLocation, boolean keepTempFiles, boolean exactMatchOnly) throws Exception {
         // create the VCDocument(s) (bioModel(s) + application(s) + simulation(s)), do sanity checks
         cbit.util.xml.VCLogger sedmlImportLogger = new LocalLogger();
         String inputFile = externalDocInfo.getFile().getAbsolutePath();
@@ -68,7 +68,7 @@ public class SolverHandler {
         Simulation[] sims = null;
         String outDirRoot = outputDirForSedml.toString().substring(0, outputDirForSedml.toString().lastIndexOf(System.getProperty("file.separator")));
         try {
-            docs = XmlHelper.sedmlToBioModel(sedmlImportLogger, externalDocInfo, sedml, null, sedmlLocation);
+            docs = XmlHelper.sedmlToBioModel(sedmlImportLogger, externalDocInfo, sedml, null, sedmlLocation, exactMatchOnly);
         } catch (Exception e) {
             System.err.println("Unable to Parse SED-ML into Bio-Model, failed with err: " + e.getMessage());
             throw e;

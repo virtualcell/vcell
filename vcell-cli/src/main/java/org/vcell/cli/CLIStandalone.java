@@ -57,10 +57,20 @@ public class CLIStandalone {
 
             File input = null;
             boolean keepTempFiles = false;		// we keep simulation results for debugging, etc; set by -keepTempFiles CL argument
+            boolean exactMatchOnly = false;		// we run the solver only if it's an exact kisao match
     		int position = 0;
         	for(String s : args) {
         		if("-keepTempFiles".equalsIgnoreCase(s)) {
         			keepTempFiles = true;
+        			args = ArrayUtils.remove(args, position);
+        			break;
+        		}
+        		position++;
+        	}
+    		position = 0;
+        	for(String s : args) {
+        		if("-exactMatchOnly".equalsIgnoreCase(s)) {
+        			exactMatchOnly = true;
         			args = ArrayUtils.remove(args, position);
         			break;
         		}
@@ -99,7 +109,7 @@ public class CLIStandalone {
                 			String bioModelBaseName = org.vcell.util.FileUtils.getBaseName(inputFile);
                 			args[3] = outputDir + File.separator + bioModelBaseName;
                 			Files.createDirectories(Paths.get(args[3]));
-                            singleExecOmex(utils, outputDir, keepTempFiles, args);
+                            singleExecOmex(utils, outputDir, keepTempFiles, exactMatchOnly, args);
                         }
                         if (inputFile.endsWith("vcml")) {
                             singleExecVcml(utils, args);
@@ -111,7 +121,7 @@ public class CLIStandalone {
             } else {
                 try {
                     if (input == null || input.toString().endsWith("omex")) {
-                        singleExecOmex(utils, args[3], keepTempFiles, args);
+                        singleExecOmex(utils, args[3], keepTempFiles, exactMatchOnly,  args);
                     } else if (input.toString().endsWith("vcml")) {
                         singleExecVcml(utils, args);
                     } else {
@@ -169,7 +179,7 @@ public class CLIStandalone {
     }
 
 
-    private static void singleExecOmex(CLIUtils utils, String outputBaseDir, boolean keepTempFiles, String[] args) throws Exception {
+    private static void singleExecOmex(CLIUtils utils, String outputBaseDir, boolean keepTempFiles, boolean exactMatchOnly, String[] args) throws Exception {
         OmexHandler omexHandler = null;
         CLIHandler cliHandler;
         String inputFile;
@@ -310,7 +320,7 @@ public class CLIStandalone {
             	String str = "Starting simulate all tasks... ";
             	System.out.println(str);
             	logDocumentMessage += str;
-            	resultsHash = solverHandler.simulateAllTasks(utils, externalDocInfo, sedml, outDirForCurrentSedml, outputDir, outputBaseDir, sedmlLocation, keepTempFiles);
+            	resultsHash = solverHandler.simulateAllTasks(utils, externalDocInfo, sedml, outDirForCurrentSedml, outputDir, outputBaseDir, sedmlLocation, keepTempFiles, exactMatchOnly);
             } catch(Exception e) {
             	somethingFailed = true;
             	oneSedmlDocumentFailed = true;
