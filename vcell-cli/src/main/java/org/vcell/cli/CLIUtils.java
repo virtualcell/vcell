@@ -355,7 +355,7 @@ public class CLIUtils {
 
                             }
                         }
-//                        updateDatasetStatusYml(sedmlLocation, oo.getId(), dataset.getId(), Status.SUCCEEDED, outDir);
+                        updateDatasetStatusYml(sedmlLocation, oo.getId(), dataset.getId(), Status.SUCCEEDED, outDir);
                         if (!supportedDataset) {
                             System.err.println("Dataset " + dataset.getId() + " references unsupported RepeatedTask and is being skipped");
                             continue;
