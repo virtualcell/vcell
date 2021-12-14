@@ -140,8 +140,15 @@ public class CLIStandalone {
     	boolean isDirectory = Files.isDirectory(path);
     	return isDirectory;
     }
-    
-    // biomodels with no simulations and biomodels with no sim results
+    // omex files that were fully successful
+    public static void writeFullSuccessList(String outputBaseDir, String s) throws IOException {
+    	if(isBatchExecution(outputBaseDir)) {
+    		String dest = outputBaseDir + File.separator + "fullSuccessLog.txt";
+    		Files.write(Paths.get(dest), (s + "\n").getBytes(), 
+    			StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+    	}
+   	}
+    // biomodels with no simulations and biomodels with no sim results (fired when building the omex files)
     public static void writeSimErrorList(String outputBaseDir, String s) throws IOException {
     	if(isBatchExecution(outputBaseDir)) {
     		String dest = outputBaseDir + File.separator + "simsErrorLog.txt";
@@ -425,6 +432,7 @@ public class CLIStandalone {
         	writeErrorList(outputBaseDir, bioModelBaseName);
         } else {
         	utils.updateOmexStatusYml(CLIUtils.Status.SUCCEEDED, outputDir, duration + "");
+        	writeFullSuccessList(outputBaseDir, bioModelBaseName);
         	logOmexMessage += " Done";
         }
         utils.setOutputMessage("null", "null", outputDir, "omex", logOmexMessage);
