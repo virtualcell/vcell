@@ -669,7 +669,17 @@ public boolean showFormatSpecificDialog(Frame reference,boolean selectionHasVolu
 	VCAssert.assertTrue(format.requiresFollowOn(),"Follow on dialog required");
 	switch (format) {
 		case CSV:
+		case HDF5:
 			dialogToShow = getJDialogASCIISettings(reference);
+			if(format == ExportFormat.HDF5) {
+				dialogToShow.setTitle("HDF5 Settings");
+				getASCIISettingsPanel1().getIvjJCheckBoxHDF5().setVisible(false);
+				getASCIISettingsPanel1().getIvjJCheckBoxHDF5().setSelected(true);
+			}else {
+				dialogToShow.setTitle("Ascii Settings");
+				getASCIISettingsPanel1().getIvjJCheckBoxHDF5().setVisible(false);
+				getASCIISettingsPanel1().getIvjJCheckBoxHDF5().setSelected(false);
+			}
 			break;
 		case QUICKTIME:
 		case ANIMATED_GIF:

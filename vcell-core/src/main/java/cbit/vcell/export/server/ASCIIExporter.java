@@ -626,10 +626,15 @@ private List<ExportOutput> exportPDEData(OutputContext outputContext,long jobID,
 						exportOutputV.add(outputV.toArray(new ExportOutput[0]));
 						break;
 					}
-					case GEOMETRY_SLICE: {
-						String dataID = "_Slice_" + Coordinate.getNormalAxisPlaneName(geometrySpecs.getAxis()) + "_" + geometrySpecs.getSliceNumber() + "_";
+					case GEOMETRY_SLICE:
+					case GEOMETRY_FULL: {
+						int sliceNumber = geometrySpecs.getSliceNumber();
+						if(geometrySpecs.getModeID() == GEOMETRY_FULL) {
+							sliceNumber = -1;
+						}
+						String dataID = "_Slice_" + Coordinate.getNormalAxisPlaneName(geometrySpecs.getAxis()) + "_" + sliceNumber + "_";
 						ExportOutput[] output = new ExportOutput[variableSpecs.getVariableNames().length * TIME_COUNT];
-						SliceHelper sliceHelper = new SliceHelper(TIME_COUNT,(hdf5GroupID != -1),Coordinate.getNormalAxisPlaneName(geometrySpecs.getAxis()), geometrySpecs.getSliceNumber(), asciiSpecs.getSwitchRowsColumns(), mesh);
+						SliceHelper sliceHelper = new SliceHelper(TIME_COUNT,(hdf5GroupID != -1),Coordinate.getNormalAxisPlaneName(geometrySpecs.getAxis()), sliceNumber, asciiSpecs.getSwitchRowsColumns(), mesh);
 						for (int j=0;j<variableSpecs.getVariableNames().length;j++) {
 							sliceHelper.setHDF5GroupVarID(hdf5GroupID,variableSpecs.getVariableNames()[j]);
 							for (int i=0;i<TIME_COUNT;i++) {
@@ -643,7 +648,7 @@ private List<ExportOutput> exportPDEData(OutputContext outputContext,long jobID,
 								ExportOutput exportOutput1 = new ExportOutput(true, dataType, simID, dataID1/* + variableSpecs.getVariableNames()[i]*/, fileDataContainerManager);
 								fileDataContainerManager.append(exportOutput1.getFileDataContainerID(), fileDataContainerID_header);
 								fileDataContainerManager.append(exportOutput1.getFileDataContainerID(),
-									getSlice(sliceHelper,mesh,allTimes,outputContext,user, dataServerImpl, vcdID, variableSpecs.getVariableNames()[j], i + beginTimeIndex, Coordinate.getNormalAxisPlaneName(geometrySpecs.getAxis()), geometrySpecs.getSliceNumber(), asciiSpecs.getSwitchRowsColumns(),fileDataContainerManager));
+									getSlice(sliceHelper,mesh,allTimes,outputContext,user, dataServerImpl, vcdID, variableSpecs.getVariableNames()[j], i + beginTimeIndex, Coordinate.getNormalAxisPlaneName(geometrySpecs.getAxis()), sliceNumber, asciiSpecs.getSwitchRowsColumns(),fileDataContainerManager));
 								output[j * TIME_COUNT + i] = exportOutput1;
 //								if(sliceHelper.hdf5GroupVarID != -1) {
 //									if(sliceHelper.isMembrane) {
@@ -1153,60 +1158,78 @@ private class SliceHelper {
 			}
 		}else {
 			int start = -1;
+			int numSlices = -1;
 			switch (slicePlaneIndex) {
 				case Coordinate.Z_AXIS:
-					start = sliceNumber*sizeXYZ[0]*sizeXYZ[1];
+					start = (sliceNumber == -1?0:sliceNumber)*sizeXYZ[0]*sizeXYZ[1];
+					numSlices = (sliceNumber == -1?sizeXYZ[2]:1);
 				break;
 				case Coordinate.Y_AXIS:
-					start = sliceNumber*sizeXYZ[0];
+					start = (sliceNumber == -1?0:sliceNumber)*sizeXYZ[0];
+					numSlices = (sliceNumber == -1?sizeXYZ[1]:1);
 				break;
 				case Coordinate.X_AXIS:
-					start = sliceNumber;
+					start = (sliceNumber == -1?0:sliceNumber);
+					numSlices = (sliceNumber == -1?sizeXYZ[0]:1);
 				break;
 			}
 			fileDataContainerManager.append(fileDataContainerID,slicePlaneText+"\n\n");
 			fileDataContainerManager.append(fileDataContainerID,strideText+"\n");
 			double[] sliceData = new double[sizeXYZ[outerSizeIndex]*sizeXYZ[innerSizeIndex]];
-			int cnt=0;
-			for (int outer=0;outer<sizeXYZ[outerSizeIndex];outer++) {
-				for (int inner=0;inner<sizeXYZ[innerSizeIndex];inner++) {
-					switch (slicePlaneIndex) {
-						case Coordinate.Z_AXIS:
-							sliceData[cnt] = (switchRowsColumns?origData[start + inner*sizeXYZ[0] + outer]:origData[start + outer*sizeXYZ[0] + inner]);
-						break;
-						case Coordinate.Y_AXIS:
-							sliceData[cnt] = (switchRowsColumns?origData[start +inner*sizeXYZ[0]*sizeXYZ[1] + outer]:origData[start +outer*sizeXYZ[0]*sizeXYZ[1] + inner]);
-						break;
-						case Coordinate.X_AXIS:
-							sliceData[cnt] = (switchRowsColumns?origData[start +inner*sizeXYZ[0]*sizeXYZ[1] + outer*sizeXYZ[0]]:origData[start +outer*sizeXYZ[0]*sizeXYZ[1] + inner*sizeXYZ[0]]);
-						break;
+			
+			for(int nSlices = 0;nSlices<numSlices;nSlices++){
+				int cnt=0;
+				for (int outer=0;outer<sizeXYZ[outerSizeIndex];outer++) {
+					for (int inner=0;inner<sizeXYZ[innerSizeIndex];inner++) {
+						switch (slicePlaneIndex) {
+							case Coordinate.Z_AXIS:
+								int offsetSlice = sliceData.length*nSlices;
+								sliceData[cnt] = (switchRowsColumns?origData[start + offsetSlice + inner*sizeXYZ[0] + outer]:origData[start + offsetSlice + outer*sizeXYZ[0] + inner]);
+							break;
+							case Coordinate.Y_AXIS:
+								offsetSlice = nSlices*sizeXYZ[0];
+								sliceData[cnt] = (switchRowsColumns?origData[start + offsetSlice +inner*sizeXYZ[0]*sizeXYZ[1] + outer]:origData[start + offsetSlice +outer*sizeXYZ[0]*sizeXYZ[1] + inner]);
+							break;
+							case Coordinate.X_AXIS:
+								offsetSlice = nSlices;
+								sliceData[cnt] = (switchRowsColumns?origData[start + offsetSlice +inner*sizeXYZ[0]*sizeXYZ[1] + outer*sizeXYZ[0]]:origData[start + offsetSlice +outer*sizeXYZ[0]*sizeXYZ[1] + inner*sizeXYZ[0]]);
+							break;
+						}
+						if(!isHDF5) {
+							fileDataContainerManager.append(fileDataContainerID,sliceData[cnt] + ",");
+						}
+						cnt++;
 					}
-					fileDataContainerManager.append(fileDataContainerID,sliceData[cnt] + ",");
-					cnt++;
+					if(!isHDF5) {
+						fileDataContainerManager.append(fileDataContainerID,"\n");
+					}
 				}
-				fileDataContainerManager.append(fileDataContainerID,"\n");
+
+				if(isHDF5) {
+					if(hdf5DataspaceIDSlice == -1) {							
+						long[] dimsValues2 = new long[] {sizeXYZ[outerSizeIndex],sizeXYZ[innerSizeIndex]};
+						hdf5DataspaceIDSlice = H5.H5Screate_simple(dimsValues2.length, dimsValues2, null);
+						//Select the generated sliceData to copy-from
+						H5.H5Sselect_hyperslab(hdf5DataspaceIDSlice, HDF5Constants.H5S_SELECT_SET, new long[] {0,0}, null, dimsValues2, null);
+					}
+					if(hdf5DataspaceIDValues == -1) {
+						//Create dataset
+						long[] dimsValues = (numSlices==1?new long[] {sizeXYZ[outerSizeIndex],sizeXYZ[innerSizeIndex],timeCount}:new long[] {sizeXYZ[outerSizeIndex],sizeXYZ[innerSizeIndex],numSlices,timeCount});
+						hdf5DataspaceIDValues = H5.H5Screate_simple(dimsValues.length, dimsValues, null);
+						hdf5DatasetIDValues = H5.H5Dcreate(hdf5GroupVarID, "DataValues ("+SLICE_PLANE_AXIS[innerSizeIndex]+SLICE_PLANE_AXIS[outerSizeIndex]+(numSlices==1?"":"Z")+"T)",HDF5Constants.H5T_NATIVE_DOUBLE, hdf5DataspaceIDValues,HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT);
+					}
+					//Select next section of destination to copy-to
+					long[] copyToOrig = (numSlices==1?new long[] {0,0,currentTimeIndex}:new long[] {0,0,nSlices,currentTimeIndex});
+					long[] copyToLen = (numSlices==1?new long[] {sizeXYZ[outerSizeIndex],sizeXYZ[innerSizeIndex],1}:new long[] {sizeXYZ[outerSizeIndex],sizeXYZ[innerSizeIndex],1,1});
+					H5.H5Sselect_hyperslab(hdf5DataspaceIDValues, HDF5Constants.H5S_SELECT_SET, copyToOrig, null, copyToLen,null);
+					//Copy from extracted sliceData to hdf5 file dataset
+					H5.H5Dwrite_double(hdf5DatasetIDValues, HDF5Constants.H5T_NATIVE_DOUBLE, hdf5DataspaceIDSlice, hdf5DataspaceIDValues, HDF5Constants.H5P_DEFAULT, sliceData);
+					H5.H5Sselect_none(hdf5DataspaceIDValues);
+				}
 			}
 			if(isHDF5) {
-				if(hdf5DataspaceIDSlice == -1) {							
-					long[] dimsValues2 = new long[] {sizeXYZ[outerSizeIndex],sizeXYZ[innerSizeIndex]};
-					hdf5DataspaceIDSlice = H5.H5Screate_simple(dimsValues2.length, dimsValues2, null);
-					//Select the generated sliceData to copy-from
-					H5.H5Sselect_hyperslab(hdf5DataspaceIDSlice, HDF5Constants.H5S_SELECT_SET, new long[] {0,0}, null, dimsValues2, null);
-				}
-				if(hdf5DataspaceIDValues == -1) {
-					//Create dataset
-					long[] dimsValues = new long[] {sizeXYZ[outerSizeIndex],sizeXYZ[innerSizeIndex],timeCount};
-					hdf5DataspaceIDValues = H5.H5Screate_simple(dimsValues.length, dimsValues, null);
-					hdf5DatasetIDValues = H5.H5Dcreate(hdf5GroupVarID, "DataValues ("+SLICE_PLANE_AXIS[innerSizeIndex]+SLICE_PLANE_AXIS[outerSizeIndex]+"T)",HDF5Constants.H5T_NATIVE_DOUBLE, hdf5DataspaceIDValues,HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT);
-				}
-				//Select next section of destination to copy-to
-				H5.H5Sselect_hyperslab(hdf5DataspaceIDValues, HDF5Constants.H5S_SELECT_SET, new long[] {0,0,currentTimeIndex}, null, new long[] {sizeXYZ[outerSizeIndex],sizeXYZ[innerSizeIndex],1},null);
-				//Copy from extracted sliceData to hdf5 file dataset
-				H5.H5Dwrite_double(hdf5DatasetIDValues, HDF5Constants.H5T_NATIVE_DOUBLE, hdf5DataspaceIDSlice, hdf5DataspaceIDValues, HDF5Constants.H5P_DEFAULT, sliceData);
-				H5.H5Sselect_none(hdf5DataspaceIDValues);
 				currentTimeIndex++;
 			}
-
 		}
 	}
 }

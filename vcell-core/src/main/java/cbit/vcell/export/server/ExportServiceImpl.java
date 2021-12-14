@@ -207,6 +207,7 @@ public ExportEvent makeRemoteFile(OutputContext outputContext,User user, DataSer
 	String fileFormat = null;
 	switch (exportSpecs.getFormat()) {
 		case CSV:
+		case HDF5:
 			fileFormat = "CSV";
 			break;
 		case QUICKTIME:
@@ -262,6 +263,7 @@ public ExportEvent makeRemoteFile(OutputContext outputContext,User user, DataSer
 			ExportOutput[] exportOutputs = null;
 			switch (exportSpecs.getFormat()) {
 				case CSV:
+				case HDF5:
 					Collection<ExportOutput> asciiOut = asciiExporter.makeASCIIData(outputContext,newExportJob, user, dataServerImpl, exportSpecs,fileDataContainerManager);
 					exportOutputs = asciiOut.toArray(new ExportOutput[asciiOut.size()]);
 					if(((ASCIISpecs)exportSpecs.getFormatSpecificSpecs()).isHDF5()) {

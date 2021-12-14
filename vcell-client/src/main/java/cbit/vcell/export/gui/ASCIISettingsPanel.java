@@ -787,7 +787,7 @@ private void updateExportDataType() {
 		}
 		return timeSimVarChkBox;
 	}
-	private JCheckBox getIvjJCheckBoxHDF5() {
+	public JCheckBox getIvjJCheckBoxHDF5() {
 		if (ivjJCheckBoxHDF5 == null) {
 			ivjJCheckBoxHDF5 = new JCheckBox("HDF5 Format");
 		}

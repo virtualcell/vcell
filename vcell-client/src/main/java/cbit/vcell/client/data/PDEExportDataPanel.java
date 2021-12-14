@@ -2111,6 +2111,7 @@ private void setFormatChoices_0(/*boolean bMembrane*/){
 		Object currentSelection = cb.getSelectedItem();
 		cb.removeAllItems();
 		cb.addItem(ExportFormat.CSV);
+		cb.addItem(ExportFormat.HDF5);
 		cb.addItem(ExportFormat.QUICKTIME);
 		cb.addItem(ExportFormat.GIF);
 		cb.addItem(ExportFormat.ANIMATED_GIF);
@@ -2690,9 +2691,10 @@ private void updateChoiceVariableType(PDEDataContext pdeDataContext){
 private void updateExportFormat(ExportFormat exportFormat) {
 	getJRadioButtonSlice().setEnabled(true);
 	switch (exportFormat) {
-		case CSV: {
+		case CSV:
+		case HDF5: {
 			BeanUtils.enableComponents(getJPanelSelections(), true);
-			getJRadioButtonFull().setEnabled(false);
+			getJRadioButtonFull().setEnabled(exportFormat == ExportFormat.HDF5);
 			getJRadioButtonROI().setSelected(true);
 			break;
 		}
