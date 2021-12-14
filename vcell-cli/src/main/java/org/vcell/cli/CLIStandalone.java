@@ -141,6 +141,14 @@ public class CLIStandalone {
     	return isDirectory;
     }
     
+    // biomodels with no simulations and biomodels with no sim results
+    public static void writeSimErrorList(String outputBaseDir, String s) throws IOException {
+    	if(isBatchExecution(outputBaseDir)) {
+    		String dest = outputBaseDir + File.separator + "simsErrorLog.txt";
+    		Files.write(Paths.get(dest), (s + "\n").getBytes(), 
+    			StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+    	}
+   	}
     // we just make a list with the omex files that failed
     static void writeErrorList(String outputBaseDir, String s) throws IOException {
     	if(isBatchExecution(outputBaseDir)) {

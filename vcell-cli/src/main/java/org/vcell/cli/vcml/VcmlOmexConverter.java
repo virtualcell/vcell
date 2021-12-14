@@ -76,6 +76,8 @@ public class VcmlOmexConverter {
             }
             String outputDir = args[3];
             
+            CLIStandalone.writeSimErrorList(outputDir, "hasDataOnly is " + bHasDataOnly);
+            
 //            assert inputFiles != null;
             for (String inputFile : inputFiles) {
                 File file = new File(input, inputFile);
@@ -84,7 +86,7 @@ public class VcmlOmexConverter {
                 cliHandler = new CLIHandler(args);
                 try {
                     if (inputFile.endsWith(".vcml")) {
-                        boolean isCreated = vcmlToOmexConversion();
+                        boolean isCreated = vcmlToOmexConversion(outputDir);
                         if (isCreated) {
                         	System.out.println("Combine archive created for file(s) `" + input + "`");
                         }
@@ -108,7 +110,7 @@ public class VcmlOmexConverter {
                 assert input != null;
                 if (input.toString().endsWith(".vcml")) {
                     cliHandler = new CLIHandler(args);
-                    boolean isCreated = vcmlToOmexConversion();
+                    boolean isCreated = vcmlToOmexConversion(null);
                     if (isCreated) System.out.println("Combine archive created for `" + input + "`");
                     else System.err.println("Failed converting VCML to OMEX archive for `" + input + "`");
                 } else System.err.println("No input files found in the directory `" + input + "`");
@@ -120,7 +122,7 @@ public class VcmlOmexConverter {
         }
     }
 
-    public static boolean vcmlToOmexConversion() throws XmlParseException, IOException, DataAccessException, SQLException {
+    public static boolean vcmlToOmexConversion(String outputBaseDir) throws XmlParseException, IOException, DataAccessException, SQLException {
     	
    	
         // Get VCML file path from -i flag
@@ -143,6 +145,12 @@ public class VcmlOmexConverter {
         // Create biomodel
         BioModel bioModel = XmlHelper.XMLToBioModel(new XMLSource(vcmlFilePath));
         bioModel.refreshDependencies();
+        
+        int numSimulations = bioModel.getNumSimulations();
+        if(outputBaseDir != null && numSimulations == 0) {
+        	CLIStandalone.writeSimErrorList(outputBaseDir, vcmlName + " has no simulations.");
+        	return false;
+        }
 
         // NOTE: SEDML exporter exports both SEDML as well as required SBML
         List<Simulation> simsToExport =null;
@@ -163,6 +171,12 @@ public class VcmlOmexConverter {
 				}
 			}
         }
+        
+        if(outputBaseDir != null && bHasDataOnly == true && simsToExport.size() == 0) {
+        	CLIStandalone.writeSimErrorList(outputBaseDir, vcmlName + " has no simulations with any results.");
+        	return false;
+        }
+        
         SEDMLExporter sedmlExporter = new SEDMLExporter(bioModel, sedmlLevel, sedmlVersion, simsToExport);
         String sedmlString = sedmlExporter.getSEDMLFile(outputDir, vcmlName, bForceVCML, bHasDataOnly, true);
         XmlUtil.writeXMLStringToFile(sedmlString, String.valueOf(Paths.get(outputDir, vcmlName + ".sedml")), true);
