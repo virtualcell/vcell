@@ -386,6 +386,9 @@ private void dbTreePanelActionPerformed(java.awt.event.ActionEvent e) {
 		getDatabaseWindowManager().deleteSelected();
 	} else if (actionCommand.equals("Permission")) {
 		getDatabaseWindowManager().accessPermissions();
+	} else if(actionCommand.equals("Copy Name")) {
+		System.out.println("DatabaseWindowPanel: CopyName");
+		getDatabaseWindowManager().copyName();
 	} else if (actionCommand.equals("Export")) {
 		getDatabaseWindowManager().exportDocument();
 	} else if (actionCommand.equals("Latest Edition")) {

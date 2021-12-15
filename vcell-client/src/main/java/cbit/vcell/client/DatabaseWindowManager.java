@@ -14,7 +14,10 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
+import java.awt.Toolkit;
 import java.awt.Window;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
@@ -65,6 +68,7 @@ import org.vcell.util.document.VCDocument;
 import org.vcell.util.document.VCDocument.DocumentCreationInfo;
 import org.vcell.util.document.VCDocument.VCDocumentType;
 import org.vcell.util.document.VCDocumentInfo;
+import org.vcell.util.document.Version;
 import org.vcell.util.document.VersionInfo;
 import org.vcell.util.document.VersionableRelationship;
 import org.vcell.util.document.VersionableType;
@@ -162,6 +166,19 @@ public void accessPermissions()  {
 	VersionInfo selectedVersionInfo = getPanelSelection() == null ? null : getPanelSelection();
 	accessPermissions(getComponent(), selectedVersionInfo, false);
 }
+
+public void copyName()  {
+	VersionInfo selectedVersionInfo = getPanelSelection() == null ? null : getPanelSelection();
+	if(selectedVersionInfo != null) {
+		Version version = selectedVersionInfo.getVersion();
+		String name = version.getName();
+		StringSelection data = new StringSelection(name);
+		Clipboard c = Toolkit.getDefaultToolkit().getSystemClipboard();
+		c.setContents(data, data);
+
+	}
+}
+
 /**
  * Insert the method's description here.
  * Creation date: (5/14/2004 5:35:55 PM)

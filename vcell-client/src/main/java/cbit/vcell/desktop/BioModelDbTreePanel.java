@@ -49,6 +49,7 @@ import cbit.vcell.resource.PropertyLoader;
 public class BioModelDbTreePanel extends VCDocumentDbTreePanel {
 	private JMenuItem ivjJMenuItemDelete = null;
 	private JMenuItem ivjJMenuItemOpen = null;
+	private JMenuItem ivjJMenuItemCopy = null;
 	protected transient ActionListener aActionListener = null;
 	private IvjEventHandler ivjEventHandler = new IvjEventHandler();
 	private JPopupMenu ivjBioModelPopupMenu = null;
@@ -70,6 +71,8 @@ public class BioModelDbTreePanel extends VCDocumentDbTreePanel {
 			if (e.getSource() == BioModelDbTreePanel.this.getJMenuItemDelete())
 				refireActionPerformed(e);
 			if (e.getSource() == BioModelDbTreePanel.this.getJMenuItemOpen()) 
+				refireActionPerformed(e);
+			if (e.getSource() == BioModelDbTreePanel.this.getJMenuItemCopy()) 
 				refireActionPerformed(e);
 			if (e.getSource() == BioModelDbTreePanel.this.getJMenuItemPermission()) 
 				refireActionPerformed(e);
@@ -142,6 +145,7 @@ protected void actionsOnClick(MouseEvent mouseEvent) {
 							!version.getFlag().compareEqual(VersionFlag.Published));
 				}
 				compareWithMenuItemEnable(getSelectedVersionInfo());
+				getJMenuItemCopy().setEnabled(true);
 				getBioModelPopupMenu().show(getJTree1(), mouseEvent.getPoint().x, mouseEvent.getPoint().y);
 			}
 		}
@@ -321,6 +325,7 @@ private javax.swing.JPopupMenu getBioModelPopupMenu() {
 			ivjBioModelPopupMenu.add(getJMenuItemOpen());
 			ivjBioModelPopupMenu.add(getJMenuItemDelete());
 			ivjBioModelPopupMenu.add(getJMenuItemPermission());
+			ivjBioModelPopupMenu.add(getJMenuItemCopy());
 			ivjBioModelPopupMenu.add(getJMenuItemArchive());
 			ivjBioModelPopupMenu.add(getJMenuItemPublish());
 			ivjBioModelPopupMenu.add(getCompareWithMenu());
@@ -485,7 +490,6 @@ private javax.swing.JMenuItem getJMenuItemExport() {
  * Return the JMenuItem1 property value.
  * @return javax.swing.JMenuItem
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private javax.swing.JMenuItem getJMenuItemOpen() {
 	if (ivjJMenuItemOpen == null) {
 		try {
@@ -493,15 +497,24 @@ private javax.swing.JMenuItem getJMenuItemOpen() {
 			ivjJMenuItemOpen.setName("JMenuItemOpen");
 			ivjJMenuItemOpen.setMnemonic('o');
 			ivjJMenuItemOpen.setText("Open");
-			// user code begin {1}
-			// user code end
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	}
 	return ivjJMenuItemOpen;
+}
+private javax.swing.JMenuItem getJMenuItemCopy() {
+	if (ivjJMenuItemCopy == null) {
+		try {
+			ivjJMenuItemCopy = new javax.swing.JMenuItem();
+			ivjJMenuItemCopy.setName("JMenuItemCopy");
+			ivjJMenuItemCopy.setMnemonic('c');
+			ivjJMenuItemCopy.setText("Copy Name");
+		} catch (java.lang.Throwable ivjExc) {
+			handleException(ivjExc);
+		}
+	}
+	return ivjJMenuItemCopy;
 }
 
 /**
@@ -667,6 +680,7 @@ protected void initialize() {
 		addPropertyChangeListener(ivjEventHandler);
 		getJMenuItemDelete().addActionListener(ivjEventHandler);
 		getJMenuItemOpen().addActionListener(ivjEventHandler);
+		getJMenuItemCopy().addActionListener(ivjEventHandler);
 		getJMenuItemPermission().addActionListener(ivjEventHandler);
 		getLatestEditionMenuItem().addActionListener(ivjEventHandler);
 		getAnotherEditionMenuItem().addActionListener(ivjEventHandler);
