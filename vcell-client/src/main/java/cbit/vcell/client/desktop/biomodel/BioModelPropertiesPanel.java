@@ -38,6 +38,8 @@ import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JTextField;
+import javax.swing.JTextPane;
 import javax.swing.JTree;
 import javax.swing.SwingConstants;
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -76,7 +78,9 @@ public class BioModelPropertiesPanel extends JPanel {
 	private BioModel bioModel = null;
 	private EventHandler eventHandler = new EventHandler();
 //	private JLabelLikeTextField nameLabel, ownerLabel, idLabel, lastModifiedLabel, permissionLabel;
-	private JLabel nameLabel, ownerLabel, idLabel, lastModifiedLabel, permissionLabel;
+	private JLabel ownerLabel, idLabel, lastModifiedLabel, permissionLabel;
+//	private JTextPane nameLabel;
+	private JLabel nameLabel;
 	private JButton changePermissionButton;
 	private BioModelWindowManager bioModelWindowManager;
 	private LocalMetaDataPanel applicationsPanel = null;
@@ -143,6 +147,7 @@ private void initialize() {
 //		ownerLabel = new JLabelLikeTextField();
 //		lastModifiedLabel = new JLabelLikeTextField();
 //		permissionLabel = new JLabelLikeTextField();
+//		nameLabel = new JTextPane();
 		nameLabel = new JLabel();
 		idLabel = new JLabel();
 		ownerLabel = new JLabel();
@@ -192,7 +197,10 @@ private void initialize() {
 		gbc.insets = new Insets(10, 4, 4, 4);
 		gbc.anchor = GridBagConstraints.LINE_START;
 		nameLabel.setToolTipText("BioModel Name:");
-//		nameLabel.setIcon(tempRenderer.fieldFolderClosedIcon);
+//		nameLabel.setEditable(false);
+//		nameLabel.setContentType("text/html");
+//		nameLabel.setBackground(null);
+//		nameLabel.setBorder(null);
 		mainPanel.add(nameLabel, gbc);
 		
 		gridy ++;

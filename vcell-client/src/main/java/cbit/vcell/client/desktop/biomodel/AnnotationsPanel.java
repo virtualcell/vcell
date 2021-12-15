@@ -904,7 +904,7 @@ protected void onSelectedObjectsChange(Object[] selectedObjects) {
 		}
 		if(selectedObjects[0] instanceof Identifiable && selectedObjects[0] instanceof Displayable) {
 			selectedObject = (Identifiable)selectedObjects[0];
-			System.out.println("class: " + selectedObject.getClass().getSimpleName() + ", selected object: " + ((Displayable)selectedObject).getDisplayName());
+			System.out.println("AnnotationsPanel: class: " + selectedObject.getClass().getSimpleName() + ", selected object: " + ((Displayable)selectedObject).getDisplayName());
 		} else {
 			selectedObject = null;
 			System.out.println("Unsupported or null entity");
