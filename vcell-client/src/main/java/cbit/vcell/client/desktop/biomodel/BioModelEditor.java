@@ -11,6 +11,9 @@
 package cbit.vcell.client.desktop.biomodel;
 
 import java.awt.Component;
+import java.awt.Toolkit;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.StringSelection;
 import java.beans.PropertyVetoException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -251,6 +254,12 @@ protected void popupMenuActionPerformed(DocumentEditorPopupMenuAction action, St
 		newApplication(Application.RULE_BASED_STOCHASTIC);
 		break;
 	}
+	case copyName:
+		String name = bioModel.getName();
+		StringSelection data = new StringSelection(name);
+		Clipboard c = Toolkit.getDefaultToolkit().getSystemClipboard();
+		c.setContents(data, data);
+		break;
 	case copy_app:
 		ApplicationActionCommand acc = ApplicationActionCommand.lookup(actionCommand);
 		switch (acc.actionType()) {

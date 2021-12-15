@@ -102,6 +102,7 @@ public abstract class DocumentEditor extends JPanel {
 		delete,
 		app_new_biomodel,
 		deleteChoose,
+		copyName
 	}
 	protected static final String DATABASE_PROPERTIES_TAB_TITLE = "Database File Info";
 	protected IvjEventHandler eventHandler = new IvjEventHandler();
@@ -122,6 +123,7 @@ public abstract class DocumentEditor extends JPanel {
 	private JMenuItem addNewMenuItem;
 	private JMenuItem renameMenuItem;
 	private JMenuItem deleteMenuItem;
+	private JMenuItem copyNameMenuItem;
 	
 	protected DatabaseWindowPanel databaseWindowPanel = null;
 	protected JTabbedPane leftBottomTabbedPane = null;
@@ -243,6 +245,9 @@ public abstract class DocumentEditor extends JPanel {
 				documentEditorTree.startEditingAtPath(documentEditorTree.getSelectionPath());
 			} else if (e.getSource() == deleteMenuItem) {
 				popupMenuActionPerformed(DocumentEditorPopupMenuAction.delete, e.getActionCommand());
+			} else if (e.getSource() == copyNameMenuItem) {
+				String actionCommand = e.getActionCommand();
+				popupMenuActionPerformed(DocumentEditorPopupMenuAction.copyName, actionCommand);
 			} else if (e.getSource() == addNewAppDeterministicMenuItem) {
 				popupMenuActionPerformed(DocumentEditorPopupMenuAction.add_new_app_deterministic, e.getActionCommand());
 			} else if (e.getSource() == addNewAppStochasticMenuItem) {
@@ -653,6 +658,8 @@ private void construcutPopupMenu() {
 	boolean bDelete = false;
 	boolean bNewBiomodel = false;
 	boolean bRemoveApps = false;
+	boolean bCopyName = false;
+	
 	DocumentEditorTreeFolderClass folderClass = null;
 	for (TreePath tp : selectedPaths) {
 		Object obj = tp.getLastPathComponent();
@@ -682,11 +689,14 @@ private void construcutPopupMenu() {
 				bAddNew = (selectedPaths.length == 1);
 				bRename = false;
 			}
-		} else if (userObject instanceof SimulationContext) {			
+		} else if (userObject instanceof SimulationContext) {
 			bRename = true;
 			bCopyApp = true;
 			bDelete = true;
 			bNewBiomodel = true;
+		} else if(userObject instanceof BioModel) {
+			System.out.println("DocumentEditor: selected biomodel: " + ((BioModel) userObject).getDisplayName());
+			bCopyName = true;
 		}
 	}
 	if (selectedPaths.length != 1) {
@@ -746,6 +756,13 @@ private void construcutPopupMenu() {
 			deleteMenuItem.addActionListener(eventHandler);
 		}
 		popupMenu.add(deleteMenuItem);
+	}
+	if(bCopyName) {
+		if(copyNameMenuItem == null) {
+			copyNameMenuItem = new javax.swing.JMenuItem("Copy Name");
+			copyNameMenuItem.addActionListener(eventHandler);
+		}
+		popupMenu.add(copyNameMenuItem);
 	}
 	if (bCopyApp) {
 		if (menuItemAppCopy == null) {
