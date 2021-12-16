@@ -52,6 +52,8 @@ import cbit.vcell.simdata.Hdf5Utils;
 import cbit.vcell.simdata.Hdf5Utils.HDF5WriteHelper;
 import ncsa.hdf.hdf5lib.H5;
 import ncsa.hdf.hdf5lib.HDF5Constants;
+import javax.swing.JLabel;
+import java.awt.BorderLayout;
 /**
  * Insert the type's description here.
  * Creation date: (4/19/2001 12:33:58 PM)
@@ -1023,6 +1025,9 @@ private void initialize() {
 		setLayout(new java.awt.BorderLayout());
 		setSize(541, 348);
 		add(getScrollPaneTable().getEnclosingScrollPane(), "Center");
+		
+		JLabel lblNewLabel = new JLabel("<html>To <b>Copy</b> table data or <b>Export</b> as HDF5, select rows/cells and use the right mouse button menu.</html>");
+		add(lblNewLabel, BorderLayout.SOUTH);
 		initConnections();
 		connEtoC3();
 	} catch (java.lang.Throwable ivjExc) {
