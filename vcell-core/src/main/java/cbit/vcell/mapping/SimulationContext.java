@@ -3072,6 +3072,7 @@ public static class NetworkGenerationRequirements {
 
 	public final static NetworkGenerationRequirements ComputeFullNoTimeout = new NetworkGenerationRequirements(RequestType.ComputeFullNetwork, NoTimeoutMS);
 	public final static NetworkGenerationRequirements ComputeFullStandardTimeout = new NetworkGenerationRequirements(RequestType.ComputeFullNetwork, StandardTimeoutMS);
+	public final static NetworkGenerationRequirements ComputeLongTimeout = new NetworkGenerationRequirements(RequestType.ComputeFullNetwork, StandardTimeoutMS*5000);
 	public final static NetworkGenerationRequirements AllowTruncatedStandardTimeout = new NetworkGenerationRequirements(RequestType.AllowTruncatedNetwork, StandardTimeoutMS);
 
 	public static NetworkGenerationRequirements getComputeFull(long timeoutDurationMS) {
