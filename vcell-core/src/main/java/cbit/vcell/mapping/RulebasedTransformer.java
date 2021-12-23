@@ -561,7 +561,7 @@ public class RulebasedTransformer implements SimContextTransformer {
 		BNGOutputSpec outputSpec;
 		speciesEquivalenceMap.clear();
 		kineticsParameterMap.clear();
-		NetworkGenerationRequirements networkGenerationRequirements = NetworkGenerationRequirements.ComputeLongTimeout;
+		NetworkGenerationRequirements networkGenerationRequirements = NetworkGenerationRequirements.ComputeFullNoTimeout;
 
 		String input = convertToBngl(simContext, true, mathMappingCallback, networkGenerationRequirements);
 //		System.out.println(input);		// TODO: uncomment to see the xml string
