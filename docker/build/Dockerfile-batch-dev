@@ -81,7 +81,7 @@ FROM virtualcell/vcell-solvers:v0.0.40
 RUN apt-get -y update && \
     apt-get install -y openjdk-8-jre-headless curl && \
 	apt-get install -y python python-pip wget gdebi-core && \
-	pip install thrift python-libsbml==5.19.1 && \
+	pip install thrift python-libsbml==5.19.0 && \
 	wget --no-check-certificate https://download.opensuse.org/repositories/home:/fbergman:/COPASI/xUbuntu_17.10/amd64/python-copasi_4.22.170-1_amd64.deb && \
 	gdebi -n -q python-copasi_4.22.170-1_amd64.deb
 
