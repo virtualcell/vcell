@@ -1,11 +1,25 @@
 package org.vcell.cli;
 
+import cbit.vcell.export.server.ExportConstants;
+import cbit.vcell.export.server.ExportFormat;
+import cbit.vcell.export.server.ExportSpecs;
+import cbit.vcell.export.server.FormatSpecificSpecs;
+import cbit.vcell.export.server.GeometrySpecs;
+import cbit.vcell.export.server.TimeSpecs;
+import cbit.vcell.export.server.VariableSpecs;
+import cbit.vcell.message.server.bootstrap.client.RemoteProxyVCellConnectionFactory.RemoteProxyException;
+import cbit.vcell.client.server.ClientExportController;
+import cbit.vcell.client.server.ClientServerManager;
+import cbit.vcell.export.server.ASCIISpecs;
+import cbit.vcell.export.server.ASCIISpecs.csvRoiLayout;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.SimpleSymbolTable;
 import cbit.vcell.parser.SymbolTable;
 import cbit.vcell.resource.OperatingSystemInfo;
 import cbit.vcell.resource.PropertyLoader;
+import cbit.vcell.simdata.OutputContext;
+import cbit.vcell.simdata.SpatialSelection;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.util.ColumnDescription;
 import org.apache.commons.io.FileUtils;
@@ -16,6 +30,9 @@ import org.jlibsedml.execution.IXPathToVariableIDResolver;
 import org.jlibsedml.modelsupport.SBMLSupport;
 import org.vcell.sedml.SEDMLUtil;
 import org.vcell.stochtest.TimeSeriesMultitrialData;
+import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.User;
+import org.vcell.util.document.VCDataIdentifier;
 
 import java.io.*;
 import java.nio.file.*;
@@ -273,6 +290,50 @@ public class CLIUtils {
         for (Output oo : ooo) {
             if (!(oo instanceof Report)) {
                 System.out.println("Ignoring unsupported output `" + oo.getId() + "` while CSV generation.");
+                
+//        		VCDataIdentifier vcId = new VCDataIdentifier() {
+//        			public User getOwner() {	return new User("nouser", null);		}
+//        			public KeyValue getDataKey() { return null; }
+//        			public String getID()  {	return "mydata";					}
+//        		};
+//                ExportFormat format = ExportFormat.HDF5;
+//                
+//                Object[] variables = {"ala", "bala" };
+//                String[] variableNames = new String[variables.length];
+//            	VariableSpecs variableSpecs = new VariableSpecs(variableNames, ExportConstants.VARIABLE_MULTI);
+//            	
+//            	double[] timePoints = {0.0, 0.1, 0.2};
+//            	TimeSpecs timeSpecs = new TimeSpecs(0, 100, timePoints, ExportConstants.TIME_RANGE);
+//
+//            	int geoMode = ExportConstants.GEOMETRY_FULL;
+//            	SpatialSelection[] selections = new SpatialSelection[0];
+//            	int axis = 3;
+//            	int sliceNumber = 0;
+//                GeometrySpecs geometrySpecs = new GeometrySpecs(selections, axis, sliceNumber, geoMode);
+//                
+//                ExportConstants.DataType dataType = ExportConstants.DataType.PDE_VARIABLE_DATA;
+//                boolean switchRowsColumns = false;
+//                ExportSpecs.SimNameSimDataID[] simNameSimDataIDs = { null, null };
+//                int[] exportMultipleParamScans = { };
+//                csvRoiLayout csvLayout = null;
+//                boolean isHDF5 = true;
+//                FormatSpecificSpecs formatSpecificSpecs = new ASCIISpecs(format, dataType, switchRowsColumns, simNameSimDataIDs, exportMultipleParamScans, csvLayout, isHDF5);
+//                
+//                String simulationName = null;
+//                String contextName = null;
+//                ExportSpecs exportSpecs = new ExportSpecs(vcId, format, variableSpecs, timeSpecs, geometrySpecs, formatSpecificSpecs, simulationName, contextName);
+//                
+//                OutputContext outputContext = null;
+//                ClientServerManager csm = null;
+//                ClientExportController cec = new ClientExportController(csm);
+//                if(csm != null) {
+//                	try {
+//						cec.startExport(outputContext, exportSpecs);
+//					} catch (RemoteProxyException e) {
+//						e.printStackTrace();
+//					}
+//                }
+                
             } else {
                 System.out.println("Generating report `" + oo.getId() +"`.");
                 try {
