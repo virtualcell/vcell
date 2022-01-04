@@ -1,0 +1,16 @@
+In Eclipse: create tag, give build number, push to git
+In github:
+code / releases / draft a new release
+ex: Alpha 7.4.0.29... publish release
+there should be 2 actions already running from the push from eclipse
+when ready, vcell organization / vcell packages will contain the latest
+
+deploy container on biosimulations:
+vcell / actions / run workflow "submit simulation version to...
+
+deploy to alpha / release:
+actions / CD-sites / run workflow
+specify version ex 7.4.0
+specify build ex 29
+specify alpha or rel
+deploy only... false
