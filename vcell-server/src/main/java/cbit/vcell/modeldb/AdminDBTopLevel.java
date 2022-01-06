@@ -22,6 +22,7 @@ import java.util.TreeMap;
 import java.util.Vector;
 
 import org.vcell.db.ConnectionFactory;
+import org.vcell.db.DatabaseSyntax;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.UseridIDExistsException;
@@ -30,6 +31,7 @@ import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 import org.vcell.util.document.UserInfo;
 import org.vcell.util.document.UserLoginInfo;
+import org.vcell.util.document.VCInfoContainer;
 import org.vcell.util.document.VCellServerID;
 
 import cbit.vcell.field.FieldDataDBOperationSpec;
@@ -79,6 +81,25 @@ public ExternalDataIdentifier[] getExternalDataIdentifiers(User fieldDataOwner,b
 		if (bEnableRetry && isBadConnection(con)) {
 			conFactory.failed(con,lock);
 			return getExternalDataIdentifiers(fieldDataOwner,false);
+		}else{
+			handle_DataAccessException_SQLException(e);
+			return null; // never gets here;
+		}
+	} finally {
+		conFactory.release(con,lock);
+	}
+}
+public VCInfoContainer getVCInfoContainer(User user,boolean bEnableRetry) throws SQLException,DataAccessException {
+
+	Object lock = new Object();
+	Connection con = conFactory.getConnection(lock);
+	try {
+		return DbDriver.getVCInfoContainer(user, con, DatabaseSyntax.ORACLE, true);
+	} catch (Throwable e) {
+		lg.error("failure in getVCInfoContainer()",e);
+		if (bEnableRetry && isBadConnection(con)) {
+			conFactory.failed(con,lock);
+			return getVCInfoContainer(user, false);
 		}else{
 			handle_DataAccessException_SQLException(e);
 			return null; // never gets here;
