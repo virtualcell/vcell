@@ -62,20 +62,8 @@ jobs:
 
       - name: Test building of docker image
         run: |
-          set -ux
-          REVISION=$(git rev-parse HEAD)
-          CREATED=$(date --rfc-3339=seconds | sed 's/ /T/')
-          sed -i 's/_VC_VERSION_TAG_/${{steps.version.outputs.tag}}/g' biosimulators.json
-          echo ${{ secrets.ACTION_TOKEN }} | docker login ghcr.io -u ${{ secrets.ACTION_USER }} --password-stdin
           docker build \
-            --no-cache \
             --file Dockerfile \
-            --build-arg SIMULATOR_VERSION=${{steps.version.outputs.tag}} \
-            --tag ghcr.io/virtualcell/biosimulators_vcell:latest \
-            --label org.opencontainers.image.revision=${REVISION} \
-            --label org.opencontainers.image.created=${CREATED} \
-            --label org.opencontainers.image.version=${{steps.version.outputs.tag}} \
-            --label org.opencontainers.image.license=MIT \
             .
 
   CD:
