@@ -33,6 +33,51 @@ jobs:
           mvn -version
           java -version
           mvn clean install dependency:copy-dependencies
+  
+  Docker-CI:
+    name: Docker-CI
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'push' }}
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Add Linux dependencies
+        shell: bash
+        run: |
+          wget https://vcell.org/webstart/pipeline_files/jdk-8u241-linux-x64.tar.gz
+          tar -xvzf jdk-8u241-linux-x64.tar.gz
+          mv jdk1.8.0_241 jdk
+          wget https://vcell.org/webstart/pipeline_files/apache-maven-3.6.3-bin.tar.gz
+          tar -xvzf apache-maven-3.6.3-bin.tar.gz
+          mv apache-maven-3.6.3 maven
+          export JAVA_HOME=`pwd`/jdk
+          export PATH=${JAVA_HOME}/bin:${PATH}
+          echo $JAVA_HOME
+          export M2_HOME=`pwd`/maven
+          export PATH=${M2_HOME}/bin:${PATH}
+          mvn -version
+          java -version
+          mvn clean install dependency:copy-dependencies
+
+      - name: Test building of docker image
+        run: |
+          set -ux
+          REVISION=$(git rev-parse HEAD)
+          CREATED=$(date --rfc-3339=seconds | sed 's/ /T/')
+          sed -i 's/_VC_VERSION_TAG_/${{steps.version.outputs.tag}}/g' biosimulators.json
+          echo ${{ secrets.ACTION_TOKEN }} | docker login ghcr.io -u ${{ secrets.ACTION_USER }} --password-stdin
+          docker build \
+            --no-cache \
+            --file Dockerfile \
+            --build-arg SIMULATOR_VERSION=${{steps.version.outputs.tag}} \
+            --tag ghcr.io/virtualcell/biosimulators_vcell:latest \
+            --label org.opencontainers.image.revision=${REVISION} \
+            --label org.opencontainers.image.created=${CREATED} \
+            --label org.opencontainers.image.version=${{steps.version.outputs.tag}} \
+            --label org.opencontainers.image.license=MIT \
+            .
+
   CD:
     name: CD
     runs-on: ubuntu-latest
