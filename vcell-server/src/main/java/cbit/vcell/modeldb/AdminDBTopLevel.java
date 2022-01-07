@@ -89,17 +89,18 @@ public ExternalDataIdentifier[] getExternalDataIdentifiers(User fieldDataOwner,b
 		conFactory.release(con,lock);
 	}
 }
-public VCInfoContainer getVCInfoContainer(User user,boolean bEnableRetry) throws SQLException,DataAccessException {
+public VCInfoContainer getPublicOracleVCInfoContainer(boolean bEnableRetry) throws SQLException,DataAccessException {
 
 	Object lock = new Object();
 	Connection con = conFactory.getConnection(lock);
 	try {
-		return DbDriver.getVCInfoContainer(user, con, DatabaseSyntax.ORACLE, true);
+		User user = new User("empty",new KeyValue("223553217"));//temp user with no models so only public are returned
+		return DbDriver.getVCInfoContainer(user, con, DatabaseSyntax.ORACLE, false);
 	} catch (Throwable e) {
 		lg.error("failure in getVCInfoContainer()",e);
 		if (bEnableRetry && isBadConnection(con)) {
 			conFactory.failed(con,lock);
-			return getVCInfoContainer(user, false);
+			return getPublicOracleVCInfoContainer(false);
 		}else{
 			handle_DataAccessException_SQLException(e);
 			return null; // never gets here;
