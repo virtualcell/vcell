@@ -2468,7 +2468,7 @@ private void startExport() {
 			break;
 		}
 		
-		
+		case HDF5:
 		case CSV: {
 			// check for membrane variables... warn for 3D geometry...
 			// one gets the whole nine yards by index, not generally useful... except for a few people like Boris :)

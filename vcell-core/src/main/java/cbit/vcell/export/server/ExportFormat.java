@@ -7,7 +7,7 @@ public enum ExportFormat {
 	//refactored from ExportConstants
 	
 	CSV("Comma delimited ASCII files (*.csv)", true) ,
-	HDF5("HDF5 files (*.csv)", true) ,
+	HDF5("HDF5 files (*.hdf5)", true) ,
 	QUICKTIME("QuickTime movie files (*.mov)", true),
 	GIF("GIF89a image files (*.gif)", true),
 	ANIMATED_GIF("Animated GIF files (*.gif)", true),

@@ -55,6 +55,7 @@ public boolean equals(java.lang.Object object) {
 	if (object instanceof ASCIISpecs) {
 		ASCIISpecs asciiSpecs = (ASCIISpecs)object;
 		if (
+			isHDF5 == asciiSpecs.isHDF5() &&
 			format == asciiSpecs.getFormat() &&
 			dataType == asciiSpecs.getDataType() &&
 			switchRowsColumns == asciiSpecs.getSwitchRowsColumns() &&
