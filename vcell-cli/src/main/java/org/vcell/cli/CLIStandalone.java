@@ -100,6 +100,26 @@ public class CLIStandalone {
                 String[] inputFiles = input.list(filter);
                 if (inputFiles == null) System.out.println("No input files found in the directory");
                 assert inputFiles != null;
+                
+                // base name of the omex file
+                // -- if multiple sedml files in the omex, we display on multiple rows, one for each sedml
+                // current sed-ml file name
+                // error, if any
+                // number of models in sedml file
+                // number of sims in sedml file
+                // number of tasks in sedml file
+                // number of outputs in sedml file
+                // number of biomodels in sedml file
+                // number of succesful simulations that we managed to run
+                // -- we assume that the # of failures = # of tasks - # of successful simulations
+                String header = "BaseName,SedML,Error,Models,Sims,Tasks,Outputs,BioModels,NumSimsSuccessful";
+                try {
+					writeDetailedResultList(outputDir, header);
+				} catch (IOException e1) {
+					// not big deal, we just failed to make the header; we'll find out later what went wrong
+					e1.printStackTrace();
+				}
+                
                 for (String inputFile : inputFiles) {
                     File file = new File(input, inputFile);
                     System.out.println(file);
@@ -171,6 +191,13 @@ public class CLIStandalone {
     			StandardOpenOption.CREATE, StandardOpenOption.APPEND);
     	}
    	}
+    public static void writeDetailedResultList(String outputBaseDir, String s) throws IOException {
+    	if(isBatchExecution(outputBaseDir)) {
+    		String dest = outputBaseDir + File.separator + "detailedResultLog.txt";
+    		Files.write(Paths.get(dest), (s + "\n").getBytes(), 
+    			StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+    	}
+   	}
     // we make a list with the omex files that contain (some) spatial simulations (FVSolverStandalone solver)
     static void writeSpatialList(String outputBaseDir, String s) throws IOException {
     	if(isBatchExecution(outputBaseDir)) {
@@ -205,6 +232,7 @@ public class CLIStandalone {
         int nSimulations;
         int nSedml;
         int nTasks;
+        int nOutputs;
         List<Output> outputs;
         int nReportsCount = 0;
         int nPlots2DCount = 0;
@@ -234,6 +262,7 @@ public class CLIStandalone {
             omexHandler.deleteExtractedOmex();
             String error = exc.getMessage() + ", error for archive " + args[1];
             writeErrorList(outputBaseDir, bioModelBaseName);
+            writeDetailedResultList(outputBaseDir, bioModelBaseName + ", " + ",unknown error with the archive file");
             throw new Exception(error);
         }
         CLIUtils.checkInstallationError();					// check python installation
@@ -273,6 +302,7 @@ public class CLIStandalone {
                 nModels = sedmlFromOmex.getModels().size();
                 nTasks = sedmlFromOmex.getTasks().size();
                 outputs = sedmlFromOmex.getOutputs();
+                nOutputs = outputs.size();
                 for (Output output : outputs) {
                     if (output instanceof Report) nReportsCount++;
                     if (output instanceof Plot2D) nPlots2DCount++;
@@ -300,7 +330,9 @@ public class CLIStandalone {
                 sedmlPathwith2dand3d = new File(String.valueOf(sedmlPath2d3d), "simulation_" + sedmlName);
                 Path path = Paths.get(sedmlPathwith2dand3d.getAbsolutePath());
                 if(!Files.exists(path)) {
-                	throw new RuntimeException("Failed to create file " + sedmlPathwith2dand3d.getAbsolutePath());
+                	String message = "Failed to create file " + sedmlPathwith2dand3d.getAbsolutePath();
+                    writeDetailedResultList(outputBaseDir, bioModelBaseName + "," + sedmlName + "," + message);
+                	throw new RuntimeException(message);
                 }
                 
                 // Converting pseudo SED-ML to biomodel
@@ -317,7 +349,8 @@ public class CLIStandalone {
             	utils.setOutputMessage(sedmlLocation, sedmlName, outputDir, "sedml", logDocumentMessage);
             	utils.setExceptionMessage(sedmlLocation, sedmlName, outputDir, "sedml", type, logDocumentError);
                 writeDetailedErrorList(outputBaseDir, bioModelBaseName + ",  doc:    " + type + ": " + logDocumentError);
-            	
+                writeDetailedResultList(outputBaseDir, bioModelBaseName + "," + sedmlName + "," + logDocumentError);
+           	
                 System.err.println(prefix + e.getMessage());
                 e.printStackTrace(System.err);
                 somethingFailed = true;
@@ -342,6 +375,14 @@ public class CLIStandalone {
             	logDocumentError = e.getMessage();		// probably the hash is empty
             	// still possible to have some data in the hash, from some task that was successful - that would be partial success
             }
+            
+            String message  = nModels + ",";
+            message += nSimulations + ",";
+            message += nTasks + ",";
+            message += nOutputs + ",";
+            message += solverHandler.countBioModels + ",";
+            message += solverHandler.countSuccessfulSimulationRuns;
+            writeDetailedResultList(outputBaseDir, bioModelBaseName + "," + sedmlName + ", ," + message);
 
         	//
         	// WARNING!!! Current logic dictates that if any task fails we fail the sedml document

@@ -32,6 +32,9 @@ import java.util.LinkedHashMap;
 import java.util.List;
 
 public class SolverHandler {
+	
+	public int countBioModels = 0;		// number of biomodels in this sedml file
+	public int countSuccessfulSimulationRuns = 0;	// number of simulations that we ran successfully for this sedml file
 
     private static void sanityCheck(VCDocument doc) throws Exception {
         if (doc == null) {
@@ -72,6 +75,9 @@ public class SolverHandler {
         } catch (Exception e) {
             System.err.println("Unable to Parse SED-ML into Bio-Model, failed with err: " + e.getMessage());
             throw e;
+        }
+        if(docs != null) {
+        	countBioModels = docs.size();
         }
 
         int simulationCount = 0;
@@ -169,6 +175,7 @@ public class SolverHandler {
 
                 		String msg = "Running simulation " + simTask.getSimulation().getName() + ", " + elapsedTime + " ms";
                 		System.out.println(msg);
+                		countSuccessfulSimulationRuns++;	// we only count the number of simulations (tasks) that succeeded
                 		utils.updateTaskStatusYml(sedmlLocation, sim.getImportedTaskID(), CLIUtils.Status.SUCCEEDED, outDir ,duration + "", kisao);
                 		utils.setOutputMessage(sedmlLocation, sim.getImportedTaskID(), outDir, "task", logTaskMessage);
                         CLIUtils.drawBreakLine("-", 100);
