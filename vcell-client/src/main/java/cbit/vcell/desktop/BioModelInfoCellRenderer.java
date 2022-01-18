@@ -214,6 +214,11 @@ public java.awt.Component getTreeCellRendererComponent(JTree tree, Object value,
 				pmid = pmid.substring(pmid.lastIndexOf("list_uids=")+"list_uids=".length());
 			} else if(pmid.contains("pubmed/")) {	// ex: http://www.ncbi.nlm.nih.gov/pubmed/23093806
 				pmid = pmid.substring(pmid.lastIndexOf("/")+1);
+			} else if(pmid.contains("pubmed.ncbi")) {	// ex: https://pubmed.ncbi.nlm.nih.gov/34360784/
+				if(pmid.endsWith("/")) {
+					pmid = pmid.substring(0, pmid.length()-1);
+				}
+				pmid = pmid.substring(pmid.lastIndexOf("/")+1);
 			} else {
 				pmid = "?";		// something that we don't know how to parse
 			}
