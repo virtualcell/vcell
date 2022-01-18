@@ -745,6 +745,7 @@ public class XmlHelper {
 				MathMappingCallback callback = new MathMappingCallbackTaskAdapter(null);
 				matchingSimulationContext.refreshMathDescription(callback, NetworkGenerationRequirements.ComputeFullStandardTimeout);
 				Simulation newSimulation = new Simulation(matchingSimulationContext.getMathDescription());
+				newSimulation.setSimulationOwner(matchingSimulationContext);
 				if (selectedTask instanceof Task) {
 					String newSimName = selectedTask.getId();
 					if(SEDMLUtil.getName(selectedTask) != null) {
