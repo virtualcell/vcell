@@ -37,7 +37,7 @@ public class CLIStandalone {
     		System.exit(1);
     	}
     	
-        if(args[0].toLowerCase().equals("convert")) {	// convert -i <input> -o <output> [-vcml] [-hasDataOnly]
+        if(args[0].toLowerCase().equals("convert")) {	// convert -i <input> -o <output> [-vcml] [-hasDataOnly] [-makeLogsOnly]
             // VCML to OMex conversion
         	CLIUtils utils = null;
         	try {
@@ -86,6 +86,10 @@ public class CLIStandalone {
             CLIUtils utils = null;
            	try {
 				utils = new CLIUtils();
+				
+        		PropertyLoader.loadProperties();
+           		utils.recalculatePaths();
+
 			} catch (IOException e1) {
 				e1.printStackTrace();
                 System.exit(1);			// can't do anything without CLIUtils

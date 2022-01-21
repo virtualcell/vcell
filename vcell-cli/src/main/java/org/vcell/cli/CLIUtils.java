@@ -63,7 +63,7 @@ import java.util.zip.ZipOutputStream;
 public class CLIUtils {
 	// timeout for compiled solver running long jobs; default 12 hours
 	// public static long EXECUTABLE_MAX_WALLCLOK_MILLIS = 40000;
-	public static long EXECUTABLE_MAX_WALLCLOK_MILLIS = 20000;
+	public static long EXECUTABLE_MAX_WALLCLOK_MILLIS = 0;
 
     // Docker hardcode path
     // Note: Docker Working Directory and Singularity working directory works in different way.
@@ -73,7 +73,7 @@ public class CLIUtils {
     private static final Path homeDir = Paths.get(currentWorkingDir.normalize().toString());
     // user.dir is not working for windows
 //    private static final Path homeDir = Paths.get(String.valueOf(System.getProperty("user.dir")));
-    private static final String defaultWorkingDir = "c:/usr/local/app/vcell/installDir";
+    private static final String defaultWorkingDir = "/usr/local/app/vcell/installDir";
     private Path workingDirectory = Paths.get(defaultWorkingDir);
     // Submodule path for VCell_CLI_UTILS
     private Path utilPath = Paths.get(workingDirectory.toString(), "python", "vcell_cli_utils");
