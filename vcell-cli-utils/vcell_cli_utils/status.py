@@ -72,15 +72,15 @@ def status_yml(omex_file: str, out_dir: str):
             for dataset in reports_dict[report]:
                 dataset_list.append({"id":dataset , "status" :"QUEUED"})
             exc_dict = {'type': "", 'message': ""}
-            outputs_dict["outputs"].append({"id":report,"status": "QUEUED","exception": exc_dict,"skipReason": None,"output": None,"duration": None, "dataSets": dataset_list})
+            outputs_dict["outputs"].append({"id":report,"status": "QUEUED","exception": None,"skipReason": None,"output": None,"duration": None, "dataSets": dataset_list})
             #outputs_dict["outputs"][report].update({"status": "QUEUED"})
 
         for task in task_list:
             exc_dict = {'type': "", 'message': ""}
-            tasks_dict["tasks"].append({"id":task ,"status": "QUEUED", "exception": exc_dict, "skipReason": None, "output": None, "duration": None, "algorithm": None,"simulatorDetails":None})
+            tasks_dict["tasks"].append({"id":task ,"status": "QUEUED", "exception": None, "skipReason": None, "output": None, "duration": None, "algorithm": None,"simulatorDetails":None})
 
         exc_dict = {'type': "", 'message': ""}
-        sed_doc_dict = {"location":sedml, "status":"QUEUED", "exception": exc_dict, "skipReason":None, "output":None, "duration":None}
+        sed_doc_dict = {"location":sedml, "status":"QUEUED", "exception": None, "skipReason":None, "output":None, "duration":None}
         sed_doc_dict.update(outputs_dict)
         sed_doc_dict.update(tasks_dict)
         yaml_dict.append(sed_doc_dict)
@@ -88,7 +88,7 @@ def status_yml(omex_file: str, out_dir: str):
     final_dict = {}
     final_dict['sedDocuments'] = yaml_dict
     final_dict['status'] = "QUEUED"
-    final_dict['exception'] = exc_dict
+    final_dict['exception'] = None
     final_dict['skipReason'] = None
     final_dict['duration'] = None
     final_dict['output'] = None
@@ -247,17 +247,20 @@ def set_exception_message(sedmlAbsolutePath:str, entityId:str, out_dir:str, enti
             # print(" --- name: ", name, file=sys.stdout)
             if entityType == 'sedml':
                 if sedml_name_nested == entityId:
-                    exc = sedml_list['exception']
-                    exc['type'] = type
-                    exc['message'] = message
+                    exc_dict = {'type': type, 'message': message}
+                    sedml_list['exception'] = exc_dict
+                    #exc['type'] = type
+                    #exc['message'] = message
             
             # Update task status
             if entityType == 'task':
                 for taskList in sedml_list['tasks']:
                     if taskList['id'] == entityId:
-                        exc = taskList['exception']
-                        exc['type'] = type
-                        exc['message'] = message
+                        exc_dict = {'type': type, 'message': message}
+                        taskList['exception'] = exc_dict
+                        #exc = taskList['exception']
+                        #exc['type'] = type
+                        #exc['message'] = message
     status_yaml_path = os.path.join(out_dir, "log.yml")
 
     # Convert json to yaml # Save new yaml
