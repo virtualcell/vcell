@@ -436,6 +436,7 @@ public class CLIStandalone {
             	utils.setOutputMessage(sedmlLocation, sedmlName, outputDir, "sedml", logDocumentMessage);
             	utils.setExceptionMessage(sedmlLocation, sedmlName, outputDir, "sedml", type, logDocumentError);
                 writeDetailedErrorList(outputBaseDir, bioModelBaseName + ",  doc:    " + type + ": " + logDocumentError);
+                utils.updateSedmlDocStatusYml(sedmlLocation, Status.FAILED, outputDir);
                 org.apache.commons.io.FileUtils.deleteDirectory(new File(String.valueOf(sedmlPath2d3d)));	// removing temp path generated from python
                 continue;
         	}
@@ -456,6 +457,7 @@ public class CLIStandalone {
             // archiving res files
             CLIUtils.zipResFiles(new File(outputDir));
             utils.setOutputMessage(sedmlLocation, sedmlName, outputDir, "sedml", logDocumentMessage);
+            utils.updateSedmlDocStatusYml(sedmlLocation, Status.SUCCEEDED, outputDir);
         }
         omexHandler.deleteExtractedOmex();
         

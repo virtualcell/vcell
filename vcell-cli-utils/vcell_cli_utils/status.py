@@ -70,9 +70,9 @@ def status_yml(omex_file: str, out_dir: str):
             dataset_list = []
             #dataset_dict = {}
             for dataset in reports_dict[report]:
-                dataset_list.append({"id":dataset , "status" :"QUEUED"})
+                dataset_list.append({"id":dataset , "status" :"FAILED"})
             exc_dict = {'type': "", 'message': ""}
-            outputs_dict["outputs"].append({"id":report,"status": "QUEUED","exception": None,"skipReason": None,"output": None,"duration": None, "dataSets": dataset_list})
+            outputs_dict["outputs"].append({"id":report,"status": "FAILED","exception": None,"skipReason": None,"output": None,"duration": None, "dataSets": dataset_list})
             #outputs_dict["outputs"][report].update({"status": "QUEUED"})
 
         for task in task_list:
