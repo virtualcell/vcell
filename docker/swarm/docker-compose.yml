@@ -267,6 +267,8 @@ services:
     secrets:
       - dbpswd
       - jmspswd
+      - keystorefile_20220105
+      - keystorepswd
     networks:
       - vcellnet
     depends_on:
