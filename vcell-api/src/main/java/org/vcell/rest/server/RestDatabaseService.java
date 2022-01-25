@@ -2,10 +2,13 @@ package org.vcell.rest.server;
 
 import java.beans.PropertyVetoException;
 import java.sql.SQLException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Random;
 import java.util.TreeMap;
@@ -281,14 +284,14 @@ public class RestDatabaseService {
 		}
 	}
 
-	public BioModelRep[] query(BiomodelsServerResource resource, User vcellUser) throws SQLException, DataAccessException {			
+	public BioModelRep[] query(BiomodelsServerResource resource, User vcellUser) throws SQLException, DataAccessException, ParseException {			
 		if (vcellUser==null){
 			vcellUser = VCellApiApplication.DUMMY_USER;
 		}
 		String bioModelName = resource.getQueryValue(BiomodelsServerResource.PARAM_BM_NAME);
 		Long bioModelID = resource.getLongQueryValue(BiomodelsServerResource.PARAM_BM_ID);
-		Long savedLow = resource.getLongQueryValue(BiomodelsServerResource.PARAM_SAVED_LOW);
-		Long savedHigh = resource.getLongQueryValue(BiomodelsServerResource.PARAM_SAVED_HIGH);
+		String savedLow = resource.getQueryValue(BiomodelsServerResource.PARAM_SAVED_LOW);
+		String savedHigh = resource.getQueryValue(BiomodelsServerResource.PARAM_SAVED_HIGH);
 		Long startRowParam = resource.getLongQueryValue(BiomodelsServerResource.PARAM_START_ROW);
 		Long maxRowsParam = resource.getLongQueryValue(BiomodelsServerResource.PARAM_MAX_ROWS);
 		String categoryParam = resource.getQueryValue(BiomodelsServerResource.PARAM_CATEGORY); // it is ok if the category is null;
@@ -304,13 +307,16 @@ public class RestDatabaseService {
 		}
 		ArrayList<String> conditions = new ArrayList<String>();
 		
-		java.text.SimpleDateFormat df = new java.text.SimpleDateFormat("MM/dd/yyyy HH:mm:ss", java.util.Locale.US);
+		//java.text.SimpleDateFormat df = new java.text.SimpleDateFormat("MM/dd/yyyy HH:mm:ss", java.util.Locale.US);
+		SimpleDateFormat df = new SimpleDateFormat("yyyy/MM/dd",Locale.US);
 		
-		if (savedLow != null){
-			conditions.add("(" + BioModelTable.table.versionDate.getQualifiedColName() + " >= to_date('" + df.format(new Date(savedLow)) + "', 'mm/dd/yyyy HH24:MI:SS'))");		
+		if (savedLow != null && savedLow.length()>0){
+			df.parse(savedLow);
+			conditions.add("(" + BioModelTable.table.versionDate.getQualifiedColName() + " >= to_date('" + savedLow + "', 'yyyy/mm/dd'))");		
 		}
-		if (savedHigh != null){
-			conditions.add("(" + BioModelTable.table.versionDate.getQualifiedColName() + " <= to_date('" + df.format(new Date(savedHigh)) + "', 'mm/dd/yyyy HH24:MI:SS'))");		
+		if (savedHigh != null && savedHigh.length()>0){
+			df.parse(savedHigh);
+			conditions.add("(" + BioModelTable.table.versionDate.getQualifiedColName() + " <= to_date('" + savedHigh + "', 'yyyy/mm/dd'))");		
 		}
 		if (bioModelName != null && bioModelName.trim().length()>0){
 			String pattern = bioModelName.trim();

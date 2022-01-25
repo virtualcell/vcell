@@ -21,8 +21,8 @@
 						<input type='radio' name='category' value='education' <#if category?? && category == "education">checked=on</#if>>educational</input>
 						</td></tr>
 	<tr><td>Owner</td><td><input type='text' name='owner' value='${ownerName!""}'/></td></tr>
-	<tr><td>Begin Time</td><td><input type='text' name='savedLow' value='${savedLow!""}'/></td></tr>
-	<tr><td>End Timestamp</td><td><input type='text' name='savedHigh' value='${savedHigh!""}'/></td></tr>
+	<tr><td>Begin Date (yyyy/mm/dd)</td><td><input type='text' name='savedLow' value='${savedLow!""}'/></td></tr>
+	<tr><td>End   Date (yyyy/mm/dd)</td><td><input type='text' name='savedHigh' value='${savedHigh!""}'/></td></tr>
 	<tr><td>start row</td><td><input type='text' name='startRow' value='${startRow}'/></td></tr>
 	<tr><td>max num rows</td><td><input type='text' name='maxRows' value='${maxRows}'/></td></tr>
 	<tr><td>Order By</td><td>

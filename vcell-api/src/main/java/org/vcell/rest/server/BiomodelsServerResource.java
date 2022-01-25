@@ -1,6 +1,7 @@
 package org.vcell.rest.server;
 
 import java.sql.SQLException;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -103,7 +104,14 @@ public class BiomodelsServerResource extends AbstractServerResource implements B
 		VCellApiApplication application = ((VCellApiApplication)getApplication());
 		User vcellUser = application.getVCellUser(getChallengeResponse(),AuthenticationPolicy.prohibitInvalidCredentials);
 		
-        return getBiomodelRepresentations(vcellUser);
+		BiomodelRepresentation[] bmReps = new BiomodelRepresentation[0];
+		try {
+			getBiomodelRepresentations(vcellUser);
+		} catch (ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+        return bmReps;
     }
     
 	@Override
@@ -111,7 +119,15 @@ public class BiomodelsServerResource extends AbstractServerResource implements B
 		VCellApiApplication application = ((VCellApiApplication)getApplication());
 		User vcellUser = application.getVCellUser(getChallengeResponse(),AuthenticationPolicy.ignoreInvalidCredentials);
 		
-		BiomodelRepresentation[] biomodels = getBiomodelRepresentations(vcellUser);
+		BiomodelRepresentation[] biomodels = new BiomodelRepresentation[0];
+		boolean bFormatErr = false;
+		try {
+			biomodels = getBiomodelRepresentations(vcellUser);
+		} catch (ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			bFormatErr = true;
+		}
 		Map<String,Object> dataModel = new HashMap<String,Object>();
 		
 		dataModel.put("loginurl", "/"+VCellApiApplication.LOGINFORM);  // +"?"+VCellApiApplication.REDIRECTURL_FORMNAME+"="+getRequest().getResourceRef().toUrl());
@@ -123,8 +139,8 @@ public class BiomodelsServerResource extends AbstractServerResource implements B
 		dataModel.put("userId", getAttribute(PARAM_USER));
 		dataModel.put("bmName", getQueryValue(PARAM_BM_NAME));
 		dataModel.put("bmId", getQueryValue(PARAM_BM_ID));
-		dataModel.put("savedLow", getLongQueryValue(PARAM_SAVED_LOW));
-		dataModel.put("savedHigh", getLongQueryValue(PARAM_SAVED_HIGH));
+		dataModel.put("savedLow", (bFormatErr?"Error":getQueryValue(PARAM_SAVED_LOW)));
+		dataModel.put("savedHigh", (bFormatErr?"Error":getQueryValue(PARAM_SAVED_HIGH)));
 		dataModel.put("ownerName", getQueryValue(PARAM_BM_OWNER));
 		dataModel.put("category", getQueryValue(PARAM_CATEGORY));
 		dataModel.put("orderBy", getQueryValue(PARAM_ORDERBY));
@@ -155,7 +171,7 @@ public class BiomodelsServerResource extends AbstractServerResource implements B
 	}
 
 
-	private BiomodelRepresentation[] getBiomodelRepresentations(User vcellUser) {
+	private BiomodelRepresentation[] getBiomodelRepresentations(User vcellUser) throws ParseException{
 //		if (!application.authenticate(getRequest(), getResponse())){
 //			// not authenticated
 //			return new SimulationTaskRepresentation[0];
