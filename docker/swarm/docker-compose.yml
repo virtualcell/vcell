@@ -271,7 +271,7 @@ services:
     secrets:
       - dbpswd
       - jmspswd
-      - keystorefile_20210125
+      - keystorefile_20220105
       - keystorepswd
     networks:
       - vcellnet
@@ -378,7 +378,7 @@ services:
       - "${VCELL_EXPORTDIR_HOST}:/exportdir"
     secrets:
       - dbpswd
-      - keystorefile_20210125
+      - keystorefile_20220105
       - keystorepswd
     networks:
       - vcellnet
