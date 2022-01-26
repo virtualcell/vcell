@@ -1,0 +1,214 @@
+# This workflow will deploy the VCell full application (server +- client) to alpha or release
+
+name: CD-sites
+
+# Controls when the workflow will run
+on:
+  workflow_dispatch:
+    inputs:
+      vcell_version:
+        description: 'version.major.minor' 
+        required: true
+        default: '7.4.0'
+      vcell_build:
+        description: 'build number'
+        required: true
+        default: '23'
+      vcell_site:
+        description: 'rel or alpha'
+        required: true
+        default: 'alpha'
+      server_only:
+        description: 'Deploy only the server components?'
+        required: true
+        default: 'false'
+jobs:
+  build:
+    name: Build client installers
+    runs-on: ubuntu-latest
+    steps:
+    - name: checkout tag
+      uses: actions/checkout@v2
+      with:
+        ref: ${{ github.event.inputs.vcell_version }}.${{ github.event.inputs.vcell_build }}
+    - name: setup global environment variables
+      run: |
+        echo "VCELL_VERSION=${{ github.event.inputs.vcell_version }}" >> $GITHUB_ENV
+        echo "VCELL_BUILD=${{ github.event.inputs.vcell_build }}" >> $GITHUB_ENV
+        echo "VCELL_SITE=${{ github.event.inputs.vcell_site }}" >> $GITHUB_ENV
+        echo "VCELL_TAG=`git rev-parse --short HEAD`" >> $GITHUB_ENV
+        echo "VCELL_REPO_NAMESPACE=ghcr.io/virtualcell" >> $GITHUB_ENV
+        echo "VCELL_DEPLOY_REMOTE_DIR=/share/apps/vcell3/deployed_github" >> $GITHUB_ENV
+        if [ "${{ github.event.inputs.vcell_site }}" == "rel" ]; then\
+        	echo "VCELL_MANAGER_NODE=vcellapi.cam.uchc.edu" >> $GITHUB_ENV;\
+        	echo "VCELL_INSTALLER_REMOTE_DIR="/share/apps/vcell3/apache_webroot/htdocs/webstart/Rel"" >> $GITHUB_ENV;\
+        else if [ "${{ github.event.inputs.vcell_site }}" == "alpha" ]; then\
+         	echo "VCELL_MANAGER_NODE=vcellapi-beta.cam.uchc.edu" >> $GITHUB_ENV;\
+        	echo "VCELL_INSTALLER_REMOTE_DIR="/share/apps/vcell3/apache_webroot/htdocs/webstart/Alpha"" >> $GITHUB_ENV;\
+        else echo "Unknown site name ${{ github.event.inputs.vcell_site }}"; exit 1; fi; fi
+    - name: setup ssh-agent
+      uses: webfactory/ssh-agent@v0.5.3
+      with:
+        ssh-private-key: ${{ secrets.VC_KEY }}
+    - name: get installer secrets
+      run: |
+        ssh-keyscan $VCELL_MANAGER_NODE >> ~/.ssh/known_hosts
+        sudo mkdir /usr/local/deploy
+        sudo chmod 777 /usr/local/deploy
+        cd /usr/local/deploy
+        scp ${{ secrets.CD_FULL_USER }}@${VCELL_MANAGER_NODE}:${VCELL_DEPLOY_REMOTE_DIR}/deploy_dir.tar .
+        cd ..
+        sudo tar -xvf deploy/deploy_dir.tar
+        sudo chmod 777 -R deploy
+    - name: setup config
+      run: |
+        cd docker/swarm
+        export "VCELL_CONFIG_FILE_NAME=server_${VCELL_SITE}_${VCELL_VERSION}_${VCELL_BUILD}_${VCELL_TAG}.config"
+        echo "VCELL_CONFIG_FILE_NAME=$VCELL_CONFIG_FILE_NAME" >> $GITHUB_ENV
+        ./serverconfig-uch.sh $VCELL_SITE $VCELL_REPO_NAMESPACE $VCELL_TAG $VCELL_VERSION $VCELL_BUILD $VCELL_CONFIG_FILE_NAME
+        env | grep VCELL > variables
+    - name: send home config file and variables
+      run: |
+        scp docker/swarm/$VCELL_CONFIG_FILE_NAME ${{ secrets.CD_FULL_USER }}@${VCELL_MANAGER_NODE}:${VCELL_DEPLOY_REMOTE_DIR}
+        scp docker/swarm/variables ${{ secrets.CD_FULL_USER }}@${VCELL_MANAGER_NODE}:${VCELL_DEPLOY_REMOTE_DIR}/variables_$VCELL_TAG
+    - name: upload variables
+      uses: actions/upload-artifact@v2
+      with:
+        name: variables
+        path: docker/swarm/variables
+        retention-days: 1
+    - name: build client installers
+      if: ${{ github.event.inputs.server_only != 'true' }}
+      run: |
+        cd docker/swarm
+        sudo docker login -u ${{ secrets.ACTION_USER }} -p ${{ secrets.ACTION_TOKEN }} ghcr.io
+        sudo docker pull $VCELL_REPO_NAMESPACE/vcell-clientgen:$VCELL_TAG
+        ./generate_installers.sh ./${VCELL_CONFIG_FILE_NAME}
+    - name: upload generated installers
+      if: ${{ github.event.inputs.server_only != 'true' }}
+      uses: actions/upload-artifact@v2
+      with:
+        name: installers
+        path: docker/swarm/generated_installers
+        retention-days: 1
+    - name: Setup tmate session
+      if: ${{ failure() }}
+      uses: mxschmitt/action-tmate@v3
+      
+  notarize:
+    name: Notarize the MacOS client
+    runs-on: macos-latest
+    needs: build
+    steps:
+    - name: download generated installers
+      if: ${{ github.event.inputs.server_only != 'true' }}
+      uses: actions/download-artifact@v2
+    - name: notarize mac installer
+      if: ${{ github.event.inputs.server_only != 'true' }}
+      run: |
+        set -x
+        set +e
+        cd installers
+        export MAC_INSTALLER=`ls *dmg`
+        xcrun altool --notarize-app --primary-bundle-id "org.vcell.i4jmacos" --username "${{ secrets.MACID }}" --password "${{ secrets.MACPW }}" --file $MAC_INSTALLER > altool_output
+        cat altool_output | grep UUID | cut -d " " -f3 > UUID
+        for minutes in {1..5}
+        do
+          sleep 60
+          xcrun altool --notarization-info `cat UUID` --username "${{ secrets.MACID }}" --password "${{ secrets.MACPW }}" > status
+          grep -q success status
+          if [[ $? == 0 ]]; then
+            echo "notarized succesfully"
+            break
+          else
+            echo "wait another minute and check again"
+          fi
+        done
+        grep -q success status
+        if [[ $? == 0 ]]; then
+          xcrun stapler staple $MAC_INSTALLER
+        else
+          echo "notarization did not succeed in 5 minutes, giving up"
+          exit 1
+        fi
+    - name: update generated installers
+      if: ${{ github.event.inputs.server_only != 'true' }}
+      uses: actions/upload-artifact@v2
+      with:
+        name: installers
+        path: installers
+        retention-days: 1
+    - name: Setup tmate session
+      uses: mxschmitt/action-tmate@v3
+      if: ${{ failure() }}
+        
+  deploy:
+    name: Deploy to site
+    runs-on: ubuntu-latest
+    needs: notarize
+    steps:
+    - name: checkout tag
+      uses: actions/checkout@v2
+      with:
+        ref: ${{ github.event.inputs.vcell_version }}.${{ github.event.inputs.vcell_build }}
+    - name: retrieve installers and variables
+      uses: actions/download-artifact@v2
+    - name: setenv
+      run: |
+        for line in $(cat variables/variables); do echo $line >> $GITHUB_ENV; done
+    - name: stage installers
+      if: ${{ github.event.inputs.server_only != 'true' }}
+      run: |
+        cd installers
+        mkdir ../docker/swarm/generated_installers
+        mv * ../docker/swarm/generated_installers
+    - name: setup ssh-agent
+      uses: webfactory/ssh-agent@v0.5.3
+      with:
+        ssh-private-key: ${{ secrets.VC_KEY }}
+    - name: retrieve config file
+      run: |
+        set -ux
+        ssh-keyscan $VCELL_MANAGER_NODE >> ~/.ssh/known_hosts
+        cd docker/swarm
+        scp ${{ secrets.CD_FULL_USER }}@${VCELL_MANAGER_NODE}:${VCELL_DEPLOY_REMOTE_DIR}/${VCELL_CONFIG_FILE_NAME} .
+    - name: install singularity
+      uses: eWaterCycle/setup-singularity@v6
+      with:
+        singularity-version: 3.7.1
+    - name: retrieve singularity image
+      run: |
+        set -ux
+        cd docker/swarm
+        export SINGULARITY_FILENAME=`cat $VCELL_CONFIG_FILE_NAME | grep VCELL_SINGULARITY_FILENAME | cut -d"=" -f2`
+        cd ../build/singularity-vm
+        singularity remote login -u ${{ secrets.ACTION_USER }} -p ${{ secrets.ACTION_TOKEN }} oras://ghcr.io
+        singularity pull $SINGULARITY_FILENAME oras://${VCELL_REPO_NAMESPACE}/vcell-batch-singularity:${{ github.event.inputs.vcell_version }}.${{ github.event.inputs.vcell_build }}
+    - name: deploy to site
+      run: |
+        set -ux
+        cd docker/swarm
+        ssh -t ${{ secrets.CD_FULL_USER }}@${VCELL_MANAGER_NODE} sudo docker login -u ${{ secrets.ACTION_USER }} -p ${{ secrets.ACTION_TOKEN }} ghcr.io
+        if ${{ github.event.inputs.server_only != 'true' }}; then
+          ./deploy-action.sh \
+            --ssh-user ${{ secrets.CD_FULL_USER }} --install-singularity --build-installers --installer-deploy-dir $VCELL_INSTALLER_REMOTE_DIR \
+            ${VCELL_MANAGER_NODE} \
+            ./${VCELL_CONFIG_FILE_NAME} ${VCELL_DEPLOY_REMOTE_DIR}/config/${VCELL_CONFIG_FILE_NAME} \
+            ./docker-compose.yml        ${VCELL_DEPLOY_REMOTE_DIR}/config/docker-compose_${VCELL_TAG}.yml \
+            vcell${VCELL_SITE}
+          export VCELL_SITE_CAMEL=`cat $VCELL_CONFIG_FILE_NAME | grep VCELL_SITE_CAMEL | cut -d"=" -f2`
+          ssh ${{ secrets.CD_FULL_USER }}@${VCELL_MANAGER_NODE} \
+            installer_deploy_dir=$VCELL_INSTALLER_REMOTE_DIR vcell_siteCamel=$VCELL_SITE_CAMEL vcell_version=$VCELL_VERSION vcell_build=$VCELL_BUILD \
+            'bash -s' < link-installers.sh
+        else
+          ./deploy-action.sh \
+            --ssh-user ${{ secrets.CD_FULL_USER }} --install-singularity  \
+            ${VCELL_MANAGER_NODE} \
+            ./${VCELL_CONFIG_FILE_NAME} ${VCELL_DEPLOY_REMOTE_DIR}/config/${VCELL_CONFIG_FILE_NAME} \
+            ./docker-compose.yml        ${VCELL_DEPLOY_REMOTE_DIR}/config/docker-compose_${VCELL_TAG}.yml \
+            vcell${VCELL_SITE}        
+        fi
+    - name: Setup tmate session 3
+      uses: mxschmitt/action-tmate@v3
+      if: ${{ failure() }}
+      

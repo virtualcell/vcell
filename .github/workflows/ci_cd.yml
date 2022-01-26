@@ -1,4 +1,4 @@
-name: CI
+name: CI/CD
 
 on:
   push:
@@ -12,18 +12,37 @@ on:
 jobs:
   CI:
     name: CI
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [Ubuntu-20.04, macos-latest, windows-latest]
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
     if: ${{ github.event_name == 'push' }}
     steps:
       - uses: actions/checkout@v2
-      - name: Checkout submodules
-        run: git submodule update --init --recursive
       - name: Add Linux dependencies
-        if: matrix.os == 'Ubuntu-20.04'
+        shell: bash
+        run: |
+          wget https://vcell.org/webstart/pipeline_files/jdk-8u241-linux-x64.tar.gz
+          tar -xvzf jdk-8u241-linux-x64.tar.gz
+          mv jdk1.8.0_241 jdk
+          wget https://vcell.org/webstart/pipeline_files/apache-maven-3.6.3-bin.tar.gz
+          tar -xvzf apache-maven-3.6.3-bin.tar.gz
+          mv apache-maven-3.6.3 maven
+          export JAVA_HOME=`pwd`/jdk
+          export PATH=${JAVA_HOME}/bin:${PATH}
+          echo $JAVA_HOME
+          export M2_HOME=`pwd`/maven
+          export PATH=${M2_HOME}/bin:${PATH}
+          mvn -version
+          java -version
+          mvn clean install dependency:copy-dependencies
+  
+  Docker-CI:
+    name: Docker-CI
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'push' }}
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Add Linux dependencies
         shell: bash
         run: |
           wget https://vcell.org/webstart/pipeline_files/jdk-8u241-linux-x64.tar.gz
@@ -41,37 +60,12 @@ jobs:
           java -version
           mvn clean install dependency:copy-dependencies
 
-      - name: Install MacOS dependencies
-        if: matrix.os == 'macos-latest'
-        shell: bash
+      - name: Test building of docker image
         run: |
-          wget https://vcell.org/webstart/pipeline_files/jdk-8u251-macosx-x64.dmg
-          wget https://vcell.org/webstart/pipeline_files/apache-maven-3.6.3-bin.tar.gz
-          tar -xvzf apache-maven-3.6.3-bin.tar.gz
-          mv apache-maven-3.6.3 maven
-          hdiutil attach jdk-8u251-macosx-x64.dmg
-          sudo installer -pkg /Volumes/JDK\ 8\ Update\ 251/JDK\ 8\ Update\ 251.pkg -target /
-          diskutil umount /Volumes/JDK\ 8\ Update\ 251
-          export JAVA_HOME="/Library/Java/JavaVirtualMachines/jdk1.8.0_251.jdk/Contents/Home"
-          export M2_HOME=`pwd`/maven
-          export PATH=${M2_HOME}/bin:${PATH}
-          java -version
-          mvn -version
-          mvn clean install dependency:copy-dependencies
+          docker build \
+            --file Dockerfile \
+            .
 
-      - name: Install Windows dependencies
-        if: matrix.os == 'windows-latest'
-        shell: powershell
-        run: |
-          Invoke-WebRequest https://vcell.org/webstart/pipeline_files/jdk-8u251-windows-x64.exe -O ${{runner.workspace}}\jdk.exe
-          Invoke-WebRequest https://vcell.org/webstart/pipeline_files/apache-maven-3.6.3-bin.zip -O ${{runner.workspace}}\mvn.zip
-          md "${{runner.workspace}}\java-jdk"
-          Start-Process -FilePath ${{runner.workspace}}\jdk.exe -WorkingDirectory "${{runner.workspace}}\java-jdk"
-          tar -xf ${{runner.workspace}}\mvn.zip
-          $env:Path += ";${{runner.workspace}}\apache-maven-3.6.3\bin;${{runner.workspace}}\java-jdk\Java\jdk1.8.0_241\bin"
-          java -version
-          mvn -version
-          mvn clean install dependency:copy-dependencies
   CD:
     name: CD
     runs-on: ubuntu-latest
@@ -79,8 +73,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-      - name: Checkout submodules
-        run: git submodule update --init --recursive
 
       - name: Get the VCell version from tags
         id: version
@@ -106,9 +98,35 @@ jobs:
 
       - name: Build Docker image and push with latest tag
         run: |
-          echo ${{ secrets.DOCKER_REGISTRY_TOKEN }} | docker login ghcr.io -u ${{ secrets.DOCKER_REGISTRY_USERNAME }} --password-stdin
-          docker build --no-cache --file docker/build/Dockerfile-vcell-cli --tag ghcr.io/virtualcell/vcell-cli:latest .
-          docker tag ghcr.io/virtualcell/vcell-cli:latest ghcr.io/virtualcell/vcell-cli:${{steps.version.outputs.tag}}
-          docker push --all-tags ghcr.io/virtualcell/vcell-cli
+          set -ux
+          REVISION=$(git rev-parse HEAD)
+          CREATED=$(date --rfc-3339=seconds | sed 's/ /T/')
+          sed -i 's/_VC_VERSION_TAG_/${{steps.version.outputs.tag}}/g' biosimulators.json
+          echo ${{ secrets.ACTION_TOKEN }} | docker login ghcr.io -u ${{ secrets.ACTION_USER }} --password-stdin
+          docker build \
+            --no-cache \
+            --file Dockerfile \
+            --build-arg SIMULATOR_VERSION=${{steps.version.outputs.tag}} \
+            --tag ghcr.io/virtualcell/biosimulators_vcell:latest \
+            --label org.opencontainers.image.revision=${REVISION} \
+            --label org.opencontainers.image.created=${CREATED} \
+            --label org.opencontainers.image.version=${{steps.version.outputs.tag}} \
+            --label org.opencontainers.image.license=MIT \
+            .
+          docker tag ghcr.io/virtualcell/biosimulators_vcell:latest ghcr.io/virtualcell/biosimulators_vcell:${{steps.version.outputs.tag}}
+          docker push --all-tags ghcr.io/virtualcell/biosimulators_vcell
+      - name: Get release upload URL
+        id: get_url
+        uses: pdamianik/release-tag-to-upload-url-action@v1.0.1
+        with:
+          tag: ${{ steps.version.outputs.tag }}
+          token: ${{ github.token }}
+      - name: Upload edited specifications file
+        uses: shogo82148/actions-upload-release-asset@v1
+        with:
+          upload_url: ${{ steps.get_url.outputs.uploadUrl }}
+          asset_path: biosimulators.json
 
-
+      - name: Setup tmate session
+        uses: mxschmitt/action-tmate@v3
+        if: ${{ failure() }}

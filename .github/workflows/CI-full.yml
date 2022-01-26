@@ -1,0 +1,68 @@
+name: CI-application-containers
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Get the VCell version from tags
+      id: version
+      run: echo ::set-output name=tag::$(echo ${GITHUB_REF:10})
+    - name: set global environment variables
+      run: |
+        echo "VCELL_TAG=`git rev-parse --short HEAD`" >> $GITHUB_ENV
+        echo "VCELL_REPO_NAMESPACE=ghcr.io/virtualcell" >> $GITHUB_ENV
+        echo "VCELL_DEPLOY_REMOTE_DIR=/share/apps/vcell3/deployed_github" >> $GITHUB_ENV
+        echo "VCELL_MANAGER_NODE=vcellapi-beta.cam.uchc.edu" >> $GITHUB_ENV
+    - name: setup ssh-agent
+      uses: webfactory/ssh-agent@v0.5.3
+      with:
+        ssh-private-key: ${{ secrets.VC_KEY }}
+    - name: get installer secrets
+      run: |
+        ssh-keyscan vcellapi-beta.cam.uchc.edu >> ~/.ssh/known_hosts
+        sudo mkdir /usr/local/deploy
+        sudo chmod 777 /usr/local/deploy
+        cd /usr/local/deploy
+        scp ${{ secrets.CD_FULL_USER }}@${VCELL_MANAGER_NODE}:${VCELL_DEPLOY_REMOTE_DIR}/deploy_dir.tar .
+        cd ..
+        sudo tar -xvf deploy/deploy_dir.tar
+        sudo chmod 777 -R deploy
+    - name: setup java 8
+      uses: actions/setup-java@v2
+      with:
+        java-version: '8'
+        distribution: 'adopt'
+    - name: Install Singularity # to make singularity image for cluster
+      uses: eWaterCycle/setup-singularity@v6
+      with:
+        singularity-version: 3.7.1
+    - name: build and publish all images
+      shell: bash
+      run: |
+        cd docker/build
+        sudo docker login -u ${{ secrets.ACTION_USER }} -p ${{ secrets.ACTION_TOKEN }} ghcr.io
+        docker login -u ${{ secrets.ACTION_USER }} -p ${{ secrets.ACTION_TOKEN }} ghcr.io
+        ./build.sh all ${{ env.VCELL_REPO_NAMESPACE }} ${{ env.VCELL_TAG }}
+        cd singularity-vm
+        singularity remote login -u ${{ secrets.ACTION_USER }} -p ${{ secrets.ACTION_TOKEN }} oras://ghcr.io
+    - name: tag as latest and push to registry
+      shell: bash
+      run: |
+        for CONTAINER in vcell-api vcell-batch vcell-clientgen vcell-data vcell-db vcell-mongo vcell-sched vcell-submit vcell-web;\
+        do docker tag ${VCELL_REPO_NAMESPACE}/$CONTAINER:${VCELL_TAG} ${VCELL_REPO_NAMESPACE}/$CONTAINER:latest;\
+        docker tag ${VCELL_REPO_NAMESPACE}/$CONTAINER:${VCELL_TAG} ${VCELL_REPO_NAMESPACE}/$CONTAINER:${{ steps.version.outputs.tag }};\
+        docker push --all-tags ${VCELL_REPO_NAMESPACE}/$CONTAINER;\
+        done
+        cd docker/build/singularity-vm
+        singularity push -U $(ls *img) oras://${VCELL_REPO_NAMESPACE}/vcell-batch-singularity:${VCELL_TAG}
+        singularity push -U $(ls *img) oras://${VCELL_REPO_NAMESPACE}/vcell-batch-singularity:${{ steps.version.outputs.tag }}
+        singularity push -U $(ls *img) oras://${VCELL_REPO_NAMESPACE}/vcell-batch-singularity:latest
+        
+    - name: Setup tmate session
+      uses: mxschmitt/action-tmate@v3
+      if: ${{ failure() }}

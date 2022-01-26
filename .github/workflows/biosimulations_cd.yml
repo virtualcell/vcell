@@ -1,0 +1,26 @@
+name: Submit simulator version from GHCR to BioSimulators
+on:
+  workflow_dispatch:
+    inputs:
+      tag_name:
+        description: 'version tag'
+        required: true
+        default: 7.4.0.23
+
+jobs:
+  submit:
+    runs-on: ubuntu-latest
+    steps:
+      # Submit to BioSimulators registry
+      - name: Submit to BioSimulators registry
+        run: |
+          set -ux
+          export SPEC_URL=https://github.com/${{ github.repository }}/releases/download/${{ github.event.inputs.tag_name }}/biosimulators.json
+          docker pull ghcr.io/virtualcell/biosimulators_vcell:${{ github.event.inputs.tag_name }}
+          IMAGE_DIGEST=$(docker image inspect ghcr.io/virtualcell/biosimulators_vcell:${{ github.event.inputs.tag_name }} | jq -r '.[0].RepoDigests[0]' | cut -d "@" -f 2-)
+          curl \
+            -X POST \
+            -u ${{ secrets.ACTION_USER }}:${{ secrets.ACTION_TOKEN }} \
+            -H "Accept: application/vnd.github.v3+json" \
+            https://api.github.com/repos/biosimulators/Biosimulators/issues \
+            -d "{\"labels\": [\"Validate/submit simulator\"], \"title\": \"Submit VCell ${{ github.event.inputs.tag_name }}\", \"body\": \"---\nid: vcell\nversion: ${{ github.event.inputs.tag_name }}\nspecificationsUrl: $SPEC_URL\nspecificationsPatch:\n  version: ${{ github.event.inputs.tag_name }}\n  image:\n    url: ghcr.io/virtualcell/biosimulators_vcell:${{ github.event.inputs.tag_name }}\n    digest: \\\"${IMAGE_DIGEST}\\\"\nvalidateImage: true\ncommitSimulator: true\n\n---\"}"
