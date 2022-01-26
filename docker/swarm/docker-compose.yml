@@ -19,6 +19,8 @@ services:
       - mongodb_port_internal=27017
       - mongodb_database=test
 
+      - webDataPort=${VCELL_WEB_DATA_PORT}
+
       - smtp_hostname=${VCELL_SMTP_HOSTNAME}
       - smtp_port=${VCELL_SMTP_PORT}
       - smtp_emailaddress=${VCELL_SMTP_EMAILADDRESS}
@@ -257,6 +259,8 @@ services:
       - mongodb_port_internal=27017
       - mongodb_database=test
 
+      - webDataPort=${VCELL_WEB_DATA_PORT}
+
       - servertype=CombinedData
     ports:
       - "8000" # java remote debugging
@@ -355,6 +359,40 @@ services:
           memory: 1500M
         reservations:
           memory: 1000M
+
+  web:
+    image: "${VCELL_REPO_NAMESPACE}/vcell-web:${VCELL_TAG}"
+    environment:
+      - export_baseurl=${VCELL_EXPORT_BASEURL}
+      - simdataCacheSize=${VCELL_SIMDATA_CACHE_SIZE:-10000000}
+      - webDataPort=${VCELL_WEB_DATA_PORT}
+      - dburl=${VCELL_DB_URL}
+      - dbdriver=${VCELL_DB_DRIVER}
+      - dbuser=${VCELL_DB_USER}
+    ports:
+      - "8000" # java remote debugging
+      - "${VCELL_WEB_DATA_PORT}:${VCELL_WEB_DATA_PORT}"
+    volumes:
+      - "${VCELL_SIMDATADIR_HOST}:/simdata"
+      - "${VCELL_SIMDATADIR_ARCHIVE_HOST}:/altsimdata"
+      - "${VCELL_EXPORTDIR_HOST}:/exportdir"
+    secrets:
+      - dbpswd
+      - keystorefile_20220105
+      - keystorepswd
+    networks:
+      - vcellnet
+    deploy:
+      mode: replicated
+      replicas: 1
+      resources:
+        limits:
+          memory: 2000M
+        reservations:
+          memory: 1000M
+      placement:
+        constraints:
+          - node.labels.zone == INTERNAL
 
 networks:
   vcellnet:

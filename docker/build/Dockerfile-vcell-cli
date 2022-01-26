@@ -16,9 +16,9 @@
 # Base OS
 FROM ghcr.io/virtualcell/vcell_cli_base:latest
 
-# PIP install Biosimulators_utils
-RUN pip3 install biosimulators-utils
-	
+# Install required python-packages
+RUN pip3 install vcell-cli-utils
+
 # Copy JAR files
 COPY ./vcell-client/target/vcell-client-0.0.1-SNAPSHOT.jar \
      ./vcell-client/target/maven-jars/*.jar \

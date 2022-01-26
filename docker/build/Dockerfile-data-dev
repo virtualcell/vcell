@@ -90,16 +90,22 @@ ENV softwareVersion=SOFTWARE-VERSION-NOT-SET \
     simdatadir_external=/path/to/external/simdata/ \
     jmsblob_minsize=100000 \
     simdataCacheSize="simdataCacheSize-not-set" \
+    webDataPort="webDataPort-not-set" \
     servertype="servertype-not-set"
 
 ENV dbpswdfile=/run/secrets/dbpswd \
-    jmspswdfile=/run/secrets/jmspswd
+    jmspswdfile=/run/secrets/jmspswd \
+    keystore=/run/secrets/keystorefile_20210125 \
+    keystorepswdfile=/run/secrets/keystorepswd
+    
 
 VOLUME /simdata
 VOLUME /share/apps/vcell10/users
 VOLUME /exportdir
 
 EXPOSE 8000
+#webservice for hdf5 downloads
+#EXPOSE 55555
 
 ENTRYPOINT java \
 	-Xdebug -Xrunjdwp:transport=dt_socket,address=8000,server=y,suspend=n \
@@ -126,8 +132,11 @@ ENTRYPOINT java \
 	-Dvcell.jms.blobMessageMinSize="${jmsblob_minsize}" \
 	-Dvcell.jms.user="${jmsuser}" \
 	-Dvcell.jms.pswdfile="${jmspswdfile}" \
+	-Dvcellapi.keystore.file="${keystore}" \
+	-Dvcellapi.keystore.pswdfile="${keystorepswdfile}" \
 	-Dvcell.mongodb.host.internal=${mongodb_host_internal} \
 	-Dvcell.mongodb.port.internal=${mongodb_port_internal} \
 	-Dvcell.mongodb.database=${mongodb_database} \
+	-Dvcelldata.web.server.port=${webDataPort} \
 	-cp "./lib/*" cbit.vcell.message.server.data.SimDataServer \
 	"${servertype}"

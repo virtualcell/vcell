@@ -726,7 +726,7 @@ return console.askYesNo(message, true);
           </screen>
         </screens>
       </application>
-      <application name="Updater with silent version check" id="127" beanClass="com.install4j.runtime.beans.applications.CustomApplication" customIcnsFile="${compiler:sys.install4jHome}/resource/macos/updater.icns" customIcoFile="${compiler:sys.install4jHome}/resource/updater.ico" automaticLauncherIntegration="true" launchMode="startupSync" launchInNewProcess="false" launchSchedule="always">
+      <application name="Updater with silent version check" id="127" beanClass="com.install4j.runtime.beans.applications.CustomApplication" customIcnsFile="${compiler:sys.install4jHome}/resource/macos/updater.icns" customIcoFile="${compiler:sys.install4jHome}/resource/updater.ico" launchMode="startupSync" launchInNewProcess="false" launchSchedule="always">
         <serializedBean>
           <property name="customIconImageFiles">
             <add>
@@ -752,8 +752,14 @@ return console.askYesNo(message, true);
         <startup>
           <screen id="128" beanClass="com.install4j.runtime.beans.screens.StartupScreen" rollbackBarrierExitCode="0">
             <actions>
-              <action id="154" beanClass="com.install4j.runtime.beans.actions.update.CheckForUpdateAction" actionElevationType="none">
+              <action id="154" beanClass="com.install4j.runtime.beans.actions.update.CheckForUpdateAction" actionElevationType="none" failureStrategy="quit" errorMessage="Couldn't check for VCell update, using VCell current version ${compiler:SoftwareVersionString}.">
                 <serializedBean>
+                  <property name="askForProxy" type="boolean" value="false" />
+                  <property name="connectionFailureScript">
+                    <object class="com.install4j.api.beans.ScriptProperty">
+                      <property name="value" type="string" />
+                    </object>
+                  </property>
                   <property name="showError" type="boolean" value="false" />
                   <property name="url" type="string">${compiler:sys.updatesUrl}</property>
                   <property name="variable" type="string">updateDescriptor</property>
@@ -1011,8 +1017,10 @@ context.goForward(1, true, true);
                       <property name="variableName" type="string">updaterDownloadFile</property>
                     </serializedBean>
                   </action>
-                  <action id="142" beanClass="com.install4j.runtime.beans.actions.net.DownloadFileAction" actionElevationType="elevated">
+                  <action id="142" beanClass="com.install4j.runtime.beans.actions.net.DownloadFileAction" actionElevationType="elevated" failureStrategy="quit" errorMessage="Couldn't download client update ${installer:updaterDownloadUrl}./nUsing VCell current version ${compiler:SoftwareVersionString}.">
                     <serializedBean>
+                      <property name="askForProxy" type="boolean" value="false" />
+                      <property name="showError" type="boolean" value="false" />
                       <property name="targetFile">
                         <object class="java.io.File">
                           <string>${installer:updaterDownloadFile}</string>

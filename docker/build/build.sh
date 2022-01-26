@@ -12,7 +12,7 @@ mvn_repo=$HOME/.m2
 show_help() {
 	echo "usage: build.sh [OPTIONS] target repo tag"
 	echo "  ARGUMENTS"
-	echo "    target                ( batch | api | db | sched | submit | data | mongo | clientgen | all)"
+	echo "    target                ( batch | api | db | sched | submit | data | mongo | clientgen | web | all)"
 	echo ""
 	echo "    repo                  ( schaff | localhost:5000 | vcell-docker.cam.uchc.edu:5000 )"
 	echo ""
@@ -158,6 +158,16 @@ build_data() {
 	fi
 }
 
+build_web() {
+	echo "building $repo/vcell-web:$tag"
+	echo "sudo docker build -f Dockerfile-web-dev --tag $repo/vcell-web:$tag ../.."
+	sudo docker build -f Dockerfile-web-dev --tag $repo/vcell-web:$tag ../..
+	if [[ $? -ne 0 ]]; then echo "docker build failed"; exit 1; fi
+	if [ "$skip_push" == "false" ]; then
+		sudo docker push $repo/vcell-web:$tag
+	fi
+}
+
 build_mongo() {
 	echo "building $repo/vcell-mongo:$tag"
 	echo "sudo docker build -f mongo/Dockerfile --tag $repo/vcell-mongo:$tag mongo"
@@ -221,10 +231,17 @@ EOF
 	# build the singularity image and place in singularity-vm directory
 	#
 	echo ""
-	remote_cmd="sudo singularity build $_singularity_image_file $_singularity_file"
-	echo "$remote_cmd"
-	($remote_cmd)
-	if [[ $? -ne 0 ]]; then echo "failed to build singularity image" && exit 1; fi
+	remote_cmd1="sudo singularity build $_singularity_image_file $_singularity_file"
+	remote_cmd2="singularity build --fakeroot $_singularity_image_file $_singularity_file"
+	echo "$remote_cmd1"
+	($remote_cmd1)
+	if [[ $? -ne 0 ]]
+	then
+		echo "failed to build singularity image with sudo, will try fakeroot"
+		echo "$remote_cmd2"
+		($remote_cmd2)
+		if [[ $? -ne 0 ]]; then echo "failed to build singularity image with fakeroot"; exit 1; fi		
+	fi
 
 	echo ""
 	echo "created Singularity image for vcell-bash ./$_singularity_image_file locally (in ./singularity-vm folder), can be pushed to remote server during deploy"
@@ -353,6 +370,10 @@ case $target in
 		build_data
 		exit $?
 		;;
+	web)
+		build_web
+		exit $?
+		;;
 	mongo)
 		build_mongo
 		exit $?
@@ -362,8 +383,8 @@ case $target in
 		exit $?
 		;;
 	all)
-		# build_batch && build_api && build_master && build_db && build_sched && build_submit && build_data && build_clientgen && build_mongo && build_singularity
-		build_batch && build_api && build_db && build_sched && build_submit && build_data && build_clientgen && build_mongo && build_singularity
+		# build_batch && build_api && build_master && build_db && build_sched && build_submit && build_data && build_web && build_clientgen && build_mongo && build_singularity
+		build_batch && build_api && build_db && build_sched && build_submit && build_data && build_web && build_clientgen && build_mongo && build_singularity
 		exit $?
 		;;
 	*)
