@@ -1209,6 +1209,15 @@ public void setBCompact(boolean bCompact) {
 public void setHDF5DescriptionText(String descr) {
 	getPlot2DDataPanel1().setHDF5DescriptionText( descr);
 }
+public void setHDF5ParamScanParamNames(String[] paramScanParamNames) {
+	getPlot2DDataPanel1().setHDF5ParamScanParamNames(paramScanParamNames);
+	//this.paramScanParamNames = paramScanParamNames;
+}
+public void setHDF5ParamScanParamValues(Double[][] paramScanParamValues) {
+	getPlot2DDataPanel1().setHDF5ParamScanParamValues(paramScanParamValues);
+	//this.paramScanParamValues = paramScanParamValues;
+}
+
 public void setXVarName(String xVarName) {
 	getPlot2DDataPanel1().setXVarName(xVarName);
 }

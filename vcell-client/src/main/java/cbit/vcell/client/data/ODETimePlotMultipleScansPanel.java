@@ -79,6 +79,8 @@ public ODETimePlotMultipleScansPanel(String[] varnames, Simulation arg_simulatio
  * Creation date: (10/17/2005 11:37:52 PM)
  * @exception org.vcell.util.DataAccessException The exception description.
  */
+private String[] scanParams;
+Double[][] values;
 private void initialize()  {
 
 	setLayout(new BorderLayout());
@@ -98,7 +100,7 @@ private void initialize()  {
 	
 	parameterPanel.add(label, BorderLayout.NORTH);
 	
-	String[] scanParams = simulation.getMathOverrides().getScannedConstantNames();
+	scanParams = simulation.getMathOverrides().getScannedConstantNames();
 	Arrays.sort(scanParams);
 	
 	class ScanChoicesTableModel extends javax.swing.table.AbstractTableModel {
@@ -137,7 +139,7 @@ private void initialize()  {
 		}
 	};
 	
-	Double[][] values = new Double[scanCount][scanParams.length];
+	values = new Double[scanCount][scanParams.length];
 	for (int i = 0; i < scanCount; i ++) {
 		for (int j = 0; j < scanParams.length; j ++){
 		Expression scanConstantExp = simulation.getMathOverrides().getActualExpression(scanParams[j], i);
@@ -151,6 +153,7 @@ private void initialize()  {
 		}
 	}
 
+	System.out.println("HDF5frm"+scanParams+" "+values);
 	ScanChoicesTableModel tm = new ScanChoicesTableModel(values, scanParams);
 	scanChoiceTable = new JTable(tm);
 	
@@ -271,6 +274,8 @@ private void updateScanParamChoices(){
 //				plot2D = new SingleXPlot2D(symbolTableEntries, null, ReservedVariable.TIME.getName(), plotNames, dataValues);
 //			}
 			plotPane.setPlot2D(plot2D);
+			plotPane.setHDF5ParamScanParamNames(scanParams);
+			plotPane.setHDF5ParamScanParamValues(values);
 		}
 	};
 	ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), new AsynchClientTask[] {task1, task2});
