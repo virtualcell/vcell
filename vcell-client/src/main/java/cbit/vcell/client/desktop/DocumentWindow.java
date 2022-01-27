@@ -40,6 +40,7 @@ import java.util.Calendar;
 import java.util.Hashtable;
 import java.util.prefs.Preferences;
 
+import javax.swing.Box;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
@@ -1082,6 +1083,8 @@ private javax.swing.JMenuBar getDocumentWindowJMenuBar() {
 			ivjDocumentWindowJMenuBar.add(createWindowMenu(true));
 			ivjDocumentWindowJMenuBar.add(getToolMenu());
 			ivjDocumentWindowJMenuBar.add(getHelpMenu());
+			ivjDocumentWindowJMenuBar.add(Box.createHorizontalGlue());
+			ivjDocumentWindowJMenuBar.add(createWindowMenu(false));
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
