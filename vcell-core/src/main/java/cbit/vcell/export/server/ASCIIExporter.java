@@ -476,6 +476,7 @@ private List<ExportOutput> exportPDEData(OutputContext outputContext,long jobID,
 		int hdf5FileID = -1;//Used if HDF5 format
 		if(asciiSpecs.isHDF5()) {
 			hdf5TempFile = File.createTempFile("pde", ".hdf5");
+			System.out.println("======== hdf5 file location: " + hdf5TempFile.getAbsolutePath());
 			hdf5FileID = H5.H5Fcreate(hdf5TempFile.getAbsolutePath(), HDF5Constants.H5F_ACC_TRUNC,HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT);
 		}
 //		TreeMap<VCDataIdentifier,TreeMap<String,PointsCurvesSlices>> simsVarnamesDataMap = new TreeMap<VCDataIdentifier,TreeMap<String,PointsCurvesSlices>>();
