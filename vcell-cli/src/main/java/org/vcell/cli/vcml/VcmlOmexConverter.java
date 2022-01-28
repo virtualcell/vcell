@@ -2,11 +2,14 @@ package org.vcell.cli.vcml;
 
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.geometry.GeometryInfo;
 import cbit.vcell.modeldb.AdminDBTopLevel;
 import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.server.SimulationJobStatusPersistent;
 import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.SimulationInfo;
+import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.util.NativeLoader;
 import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XmlHelper;
@@ -22,7 +25,11 @@ import org.vcell.db.ConnectionFactory;
 import org.vcell.db.DatabaseService;
 import org.vcell.sedml.SEDMLExporter;
 import org.vcell.util.DataAccessException;
+import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.MathModelInfo;
+import org.vcell.util.document.User;
+import org.vcell.util.document.VCInfoContainer;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -34,6 +41,7 @@ import java.io.OutputStreamWriter;
 import java.nio.file.Paths;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -41,8 +49,9 @@ public class VcmlOmexConverter {
 
     private static ConnectionFactory conFactory;
 	private static AdminDBTopLevel adminDbTopLevel;
-	private static boolean bForceVCML;		// set by the -vcml CL argument, means we export to omex as vcml (if missing, default we try sbml first)
-	private static boolean bHasDataOnly;	// we only export those simulations that have at least some results; set by -hasDataOnly CL argument
+	private static boolean bForceVCML = false;		// set by the -vcml CL argument, means we export to omex as vcml (if missing, default we try sbml first)
+	private static boolean bHasDataOnly = false;	// we only export those simulations that have at least some results; set by -hasDataOnly CL argument
+	private static boolean bMakeLogsOnly = false;	// we do not build omex files, we just write the logs
 	private static CLIHandler cliHandler;
 
 	public static void parseArgsAndConvert(String[] args) throws IOException {
@@ -60,6 +69,7 @@ public class VcmlOmexConverter {
 			try {
 				conFactory = DatabaseService.getInstance().createConnectionFactory();
 				adminDbTopLevel = new AdminDBTopLevel(conFactory);
+//				adminDbTopLevel.getVCInfoContainer(user, true);
 			} catch (SQLException e) {
 				// TODO Auto-generated catch block
 				System.out.println("\n\n\n=====>>>>EXPORT FAILED: connection to database failed");
@@ -77,6 +87,7 @@ public class VcmlOmexConverter {
             String outputDir = args[3];
             
             CLIStandalone.writeSimErrorList(outputDir, "hasDataOnly is " + bHasDataOnly);
+            CLIStandalone.writeSimErrorList(outputDir, "makeLogsOnly is " + bMakeLogsOnly);
             
 //            assert inputFiles != null;
             for (String inputFile : inputFiles) {
@@ -124,6 +135,25 @@ public class VcmlOmexConverter {
 
     public static boolean vcmlToOmexConversion(String outputBaseDir) throws XmlParseException, IOException, DataAccessException, SQLException {
     	
+        VCInfoContainer vcic = adminDbTopLevel.getPublicOracleVCInfoContainer(false);
+        if(vcic != null) {
+            User user = vcic.getUser();
+            BioModelInfo[] bioModelInfos = vcic.getBioModelInfos();
+            GeometryInfo[] geometryInfos = vcic.getGeometryInfos();
+            MathModelInfo[] mathModelInfos = vcic.getMathModelInfos();
+            
+            int count = 0;
+            for(BioModelInfo bi : bioModelInfos) {
+            	if(bi.getPublicationInfos() != null && bi.getPublicationInfos().length > 0) {
+            		System.out.println(bi.getVersion().getName());
+            		count++;
+            	}
+            }
+            
+            System.out.println("User: " + user.getName() + "   count published biomodels: " + count);
+        }
+        System.out.println("Stop here");
+
    	
         // Get VCML file path from -i flag
 		int sedmlLevel = 1;
@@ -154,10 +184,14 @@ public class VcmlOmexConverter {
 
         // NOTE: SEDML exporter exports both SEDML as well as required SBML
         List<Simulation> simsToExport =null;
+        Set<String> solverNames = new LinkedHashSet<>();
         if (bHasDataOnly) {
         	// make list of simulations to export with only sims that have data on the server
         	simsToExport = new ArrayList<Simulation>();
 			for (Simulation simulation : bioModel.getSimulations()) {
+				SolverDescription solverDescription = simulation.getSolverTaskDescription().getSolverDescription();
+				String solverName = solverDescription.getShortDisplayLabel();
+				solverNames.add(solverName);
 				// check server status
 				KeyValue parentKey = simulation.getSimulationVersion().getParentSimulationReference();
 				SimulationJobStatusPersistent[] statuses = adminDbTopLevel.getSimulationJobStatusArray(parentKey == null ? simulation.getKey() : parentKey, false);
@@ -174,6 +208,12 @@ public class VcmlOmexConverter {
         
         if(outputBaseDir != null && bHasDataOnly == true && simsToExport.size() == 0) {
         	CLIStandalone.writeSimErrorList(outputBaseDir, vcmlName + " has no simulations with any results.");
+        	for(String solverName : solverNames) {
+            	CLIStandalone.writeSimErrorList(outputBaseDir, "   " + solverName);
+        	}
+        	return false;
+        }
+        if(bMakeLogsOnly) {
         	return false;
         }
         
@@ -221,8 +261,7 @@ public class VcmlOmexConverter {
                     "http://purl.org/NET/mediatypes/application/vcml+xml",
                     false
             );
-
-
+            
             // writing into combine archive
             String omexPath = Paths.get(outputDir, vcmlName + ".omex").toString();
             File omexFile = new File(omexPath);
@@ -259,6 +298,7 @@ public class VcmlOmexConverter {
     		}
     		position++;
     	}
+    	
     	position = 0;
     	for(String s : args) {
     		if("-hasDataOnly".equalsIgnoreCase(s)) {
@@ -268,6 +308,17 @@ public class VcmlOmexConverter {
     		}
     		position++;
     	}
+    	
+    	position = 0;
+    	for(String s : args) {
+    		if("-makeLogsOnly".equalsIgnoreCase(s)) {
+    			bMakeLogsOnly = true;
+    			args = ArrayUtils.remove(args, position);
+    			break;
+    		}
+    		position++;
+    	}
+
 		return args;
 	}
 }
