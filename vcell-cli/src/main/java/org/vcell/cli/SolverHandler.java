@@ -111,7 +111,10 @@ public class SolverHandler {
             	SolverDescription sd = null;
             	
                 try {
+                	SimulationOwner so = sim.getSimulationOwner();
                 	sim = new TempSimulation(sim, false);
+                	sim.setSimulationOwner(so);
+                	
                 	std = sim.getSolverTaskDescription();
                 	sd = std.getSolverDescription();
                 	kisao = sd.getKisao();
@@ -237,6 +240,11 @@ public class SolverHandler {
                 } else {
                 	resultsHash.put(sim.getImportedTaskID(), null);	// if any task fails, we still put it in the hash with a null value
                 }
+                
+                //
+                // CLIUtils.exportPDE2HDF5(sim, outputDirForSedml);
+                //
+
                 
                 if(keepTempFiles == false) {
                 	CLIUtils.removeIntermediarySimFiles(outputDirForSedml);
