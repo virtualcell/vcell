@@ -41,14 +41,18 @@ import java.io.OutputStreamWriter;
 import java.nio.file.Paths;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 public class VcmlOmexConverter {
 
     private static ConnectionFactory conFactory;
 	private static AdminDBTopLevel adminDbTopLevel;
+	private static Map <String, BioModelInfo> bioModelInfoMap = new LinkedHashMap<>();
+	
 	private static boolean bForceVCML = false;		// set by the -vcml CL argument, means we export to omex as vcml (if missing, default we try sbml first)
 	private static boolean bHasDataOnly = false;	// we only export those simulations that have at least some results; set by -hasDataOnly CL argument
 	private static boolean bMakeLogsOnly = false;	// we do not build omex files, we just write the logs
@@ -65,26 +69,53 @@ public class VcmlOmexConverter {
 
         args = parseArgs(args);
     	 
-    	if (bHasDataOnly) {
-			try {
-				conFactory = DatabaseService.getInstance().createConnectionFactory();
-				adminDbTopLevel = new AdminDBTopLevel(conFactory);
-//				adminDbTopLevel.getVCInfoContainer(user, true);
-			} catch (SQLException e) {
-				// TODO Auto-generated catch block
-				System.out.println("\n\n\n=====>>>>EXPORT FAILED: connection to database failed");
-				e.printStackTrace();
+//    	if (bHasDataOnly) {
+		try {
+			conFactory = DatabaseService.getInstance().createConnectionFactory();
+			adminDbTopLevel = new AdminDBTopLevel(conFactory);
+		} catch (SQLException e) {
+			System.err.println("\n\n\n=====>>>>EXPORT FAILED: connection to database failed");
+			e.printStackTrace();
+		}
+//    	}
+		
+		VCInfoContainer vcic;
+		try {
+			vcic = adminDbTopLevel.getPublicOracleVCInfoContainer(false);
+			if(vcic != null) {
+				User user = vcic.getUser();
+				BioModelInfo[] bioModelInfos = vcic.getBioModelInfos();
+//				GeometryInfo[] geometryInfos = vcic.getGeometryInfos();
+//				MathModelInfo[] mathModelInfos = vcic.getMathModelInfos();
+//				int count = 0;
+				for(BioModelInfo bi : bioModelInfos) {
+//					if(bi.getPublicationInfos() != null && bi.getPublicationInfos().length > 0) {
+//						// let's see what has PublicationInfo
+//						System.out.println(bi.getVersion().getName());
+//						count++;
+//					}
+					
+					// build the biomodel id / biomodel info map
+					String biomodelId1 = "biomodel-" + bi.getVersion().getVersionKey();
+					String biomodelId2 = "biomodel-" + bi.getModelKey();
+					bioModelInfoMap.put(biomodelId1, bi);
+				}
+//				System.out.println("User: " + user.getName() + "   count published biomodels: " + count);
 			}
-    	}
-    	
-        
+		} catch (SQLException | DataAccessException e1) {
+			System.err.println("\n\n\n=====>>>>EXPORT FAILED: failed to retrieve metadata");
+			e1.printStackTrace();
+		}
+		System.out.println("Found " + bioModelInfoMap.size() + "BioNodelInfo objects");
+
+
         if (input != null && input.isDirectory()) {
             FilenameFilter filterVcmlFiles = (f, name) -> name.endsWith(".vcml");
-            String[] inputFiles = input.list(filterVcmlFiles);
+            String[] inputFiles = input.list(filterVcmlFiles);		// jusr a list of vcml names, like biomodel-185577495.vcml, ...
             if (inputFiles == null) {
                 System.err.println("No VCML files found in the directory `" + input + "`");
             }
-            String outputDir = args[3];
+            String outputDir = args[3];			// full directory name, like C:\TEMP\biomodel\omex\native
             
             CLIStandalone.writeSimErrorList(outputDir, "hasDataOnly is " + bHasDataOnly);
             CLIStandalone.writeSimErrorList(outputDir, "makeLogsOnly is " + bMakeLogsOnly);
@@ -134,31 +165,10 @@ public class VcmlOmexConverter {
     }
 
     public static boolean vcmlToOmexConversion(String outputBaseDir) throws XmlParseException, IOException, DataAccessException, SQLException {
-    	
-        VCInfoContainer vcic = adminDbTopLevel.getPublicOracleVCInfoContainer(false);
-        if(vcic != null) {
-            User user = vcic.getUser();
-            BioModelInfo[] bioModelInfos = vcic.getBioModelInfos();
-            GeometryInfo[] geometryInfos = vcic.getGeometryInfos();
-            MathModelInfo[] mathModelInfos = vcic.getMathModelInfos();
-            
-            int count = 0;
-            for(BioModelInfo bi : bioModelInfos) {
-            	if(bi.getPublicationInfos() != null && bi.getPublicationInfos().length > 0) {
-            		System.out.println(bi.getVersion().getName());
-            		count++;
-            	}
-            }
-            
-            System.out.println("User: " + user.getName() + "   count published biomodels: " + count);
-        }
-        System.out.println("Stop here");
 
-   	
         // Get VCML file path from -i flag
 		int sedmlLevel = 1;
 		int sedmlVersion = 2;
-
         
         String inputVcmlFile = cliHandler.getInputFilePath();
 
@@ -169,9 +179,10 @@ public class VcmlOmexConverter {
         //String vcmlName = inputVcmlFile.split(File.separator, 10)[inputVcmlFile.split(File.separator, 10).length - 1].split("\\.", 5)[0];
         String vcmlName = FilenameUtils.getBaseName(inputVcmlFile);		// platform independent, strips extension too
         
+        // recover the bioModelInfo
+        BioModelInfo bioModelInfo = bioModelInfoMap.get(vcmlName);
 
         File vcmlFilePath = new File(inputVcmlFile);
-
         // Create biomodel
         BioModel bioModel = XmlHelper.XMLToBioModel(new XMLSource(vcmlFilePath));
         bioModel.refreshDependencies();
