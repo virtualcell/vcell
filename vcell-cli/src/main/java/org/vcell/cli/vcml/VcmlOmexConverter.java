@@ -2,11 +2,18 @@ package org.vcell.cli.vcml;
 
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.field.FieldDataIdentifierSpec;
+import cbit.vcell.field.FieldFunctionArguments;
+import cbit.vcell.field.FieldUtilities;
+import cbit.vcell.field.db.FieldDataDBOperationDriver;
 import cbit.vcell.geometry.GeometryInfo;
+import cbit.vcell.math.Variable;
 import cbit.vcell.modeldb.AdminDBTopLevel;
+import cbit.vcell.parser.Expression;
 import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.server.SimulationJobStatusPersistent;
+import cbit.vcell.simdata.DataSetControllerImpl;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationInfo;
 import cbit.vcell.solver.SolverDescription;
@@ -26,6 +33,7 @@ import org.vcell.db.DatabaseService;
 import org.vcell.sedml.SEDMLExporter;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.BioModelInfo;
+import org.vcell.util.document.ExternalDataIdentifier;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.MathModelInfo;
 import org.vcell.util.document.User;
@@ -41,11 +49,14 @@ import java.io.OutputStreamWriter;
 import java.nio.file.Paths;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Vector;
 
 public class VcmlOmexConverter {
 
@@ -192,11 +203,11 @@ public class VcmlOmexConverter {
         	CLIStandalone.writeSimErrorList(outputBaseDir, vcmlName + " has no simulations.");
         	return false;
         }
-
+        
         // NOTE: SEDML exporter exports both SEDML as well as required SBML
         List<Simulation> simsToExport =null;
         Set<String> solverNames = new LinkedHashSet<>();
-        if (bHasDataOnly) {
+//        if (bHasDataOnly) {
         	// make list of simulations to export with only sims that have data on the server
         	simsToExport = new ArrayList<Simulation>();
 			for (Simulation simulation : bioModel.getSimulations()) {
@@ -214,8 +225,43 @@ public class VcmlOmexConverter {
 						continue;
 					}
 				}
+				
+				String dbDriverName = PropertyLoader.getProperty(PropertyLoader.dbDriverName, null);
+				String dbConnectURL = PropertyLoader.getProperty(PropertyLoader.dbConnectURL, null);
+				String dbSchemaUser = PropertyLoader.getProperty(PropertyLoader.dbUserid, null);
+				String dbPassword = PropertyLoader.getSecretValue(PropertyLoader.dbPasswordValue, PropertyLoader.dbPasswordFile);
+
+				HashMap<User, Vector<ExternalDataIdentifier>> allExternalDataIdentifiers = FieldDataDBOperationDriver.getAllExternalDataIdentifiers();
+				
+//				File userDir = new File();
+//		        User user = new User(userDir.getName(), null);
+		        DataSetControllerImpl dsControllerImpl = new DataSetControllerImpl(null, new File(outputBaseDir), null);
+
+		        
+
+				
+				Enumeration<Variable> variables = simulation.getMathDescription().getVariables();
+				while(variables.hasMoreElements()) {
+					Variable var = variables.nextElement();
+					Expression exp = var.getExpression();
+					FieldFunctionArguments[] ffas = FieldUtilities.getFieldFunctionArguments( exp);
+					
+					if(ffas != null && ffas.length > 0) {
+						 FieldDataIdentifierSpec[] aaa = DataSetControllerImpl.getFieldDataIdentifierSpecs_private(
+								 ffas, simulation.getVersion().getOwner(), true, allExternalDataIdentifiers);
+
+							System.out.println((ffas == null) ? "null" : exp.infix() + ", not null:" + ffas.length);
+						
+					}
+					
+
+					System.out.println((ffas == null) ? "null" : exp.infix() + ", not null:" + ffas.length);
+
+				}
+
+				
 			}
-        }
+//        }
         
         if(outputBaseDir != null && bHasDataOnly == true && simsToExport.size() == 0) {
         	CLIStandalone.writeSimErrorList(outputBaseDir, vcmlName + " has no simulations with any results.");

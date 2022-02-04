@@ -2891,26 +2891,26 @@ private FieldDataIdentifierSpec[] getFieldDataIdentifierSpecs(
 	FieldDataIdentifierSpec[] fieldDataIdentifierSpecs = null;
 	try{//Try without refreshing from the database
 		fieldDataIdentifierSpecs =
-			getFieldDataIdentifierSpecs_private(fieldFuncArgumentsArr,user,false);
+			getFieldDataIdentifierSpecs_private(fieldFuncArgumentsArr,user,false, userExtDataIDH);
 	}catch(ObjectNotFoundException onfe){
 		//Refresh from database and try once more
 		fieldDataIdentifierSpecs =
-			getFieldDataIdentifierSpecs_private(fieldFuncArgumentsArr,user,true);
+			getFieldDataIdentifierSpecs_private(fieldFuncArgumentsArr,user,true, userExtDataIDH);
 	}
 	return fieldDataIdentifierSpecs;
 }
 
-private FieldDataIdentifierSpec[] getFieldDataIdentifierSpecs_private(
-FieldFunctionArguments[] fieldFuncArgumentsArr,User user,boolean bForceUpdate) throws DataAccessException{
+public static FieldDataIdentifierSpec[] getFieldDataIdentifierSpecs_private(
+FieldFunctionArguments[] fieldFuncArgumentsArr,User user,boolean bForceUpdate, HashMap<User, Vector<ExternalDataIdentifier>> userExtDataIDH2) throws DataAccessException{
 
-	Vector<ExternalDataIdentifier> userExtDataIdentifiersV = userExtDataIDH.get(user);
+	Vector<ExternalDataIdentifier> userExtDataIdentifiersV = userExtDataIDH2.get(user);
 	if(	userExtDataIdentifiersV == null  ||
 		userExtDataIdentifiersV.size() < fieldFuncArgumentsArr.length ||
 		bForceUpdate){
 		//must refresh
 		ExternalDataIdentifierService extDataIDService = VCellServiceHelper.getInstance().loadService(ExternalDataIdentifierService.class);
-		userExtDataIDH = extDataIDService.getAllExternalDataIdentifiers();
-		userExtDataIdentifiersV = userExtDataIDH.get(user);
+		userExtDataIDH2 = extDataIDService.getAllExternalDataIdentifiers();
+		userExtDataIdentifiersV = userExtDataIDH2.get(user);
 	}
 	FieldDataIdentifierSpec[] fieldDataIdentifierSpecs =
 	new FieldDataIdentifierSpec[fieldFuncArgumentsArr.length];
