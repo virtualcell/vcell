@@ -52,7 +52,10 @@ import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCDataIdentifier;
 
+import com.google.common.io.Files;
+
 import java.io.*;
+import java.net.URL;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.*;
@@ -301,10 +304,11 @@ public class CLIUtils {
         }
     }
 
-    public static void exportPDE2HDF5(cbit.vcell.solver.Simulation sim, File userDir) throws DataAccessException, IOException {
+    public static void exportPDE2HDF5(cbit.vcell.solver.Simulation sim, File userDir, File hdf5OutputFile) throws DataAccessException, IOException {
         
         SimulationContext sc = (SimulationContext)sim.getSimulationOwner();
         BioModel bm = sc.getBioModel();
+        
     	
 //        VCSimulationIdentifier vcSimID = new VCSimulationIdentifier(sim.getKey(), sim.getSimulationInfo().getVersion().getOwner());
         User user = new User(userDir.getName(), null);
@@ -362,6 +366,16 @@ public class CLIUtils {
         Collection<ExportOutput > eo = ae.makeASCIIData(outputContext, jobRequest, vcId.getOwner(), dataServerImpl, exportSpecs, fileDataContainerManager);
         Iterator<ExportOutput> iterator = eo.iterator();
         ExportOutput aaa = iterator.next();
+        
+
+		if(((ASCIISpecs)exportSpecs.getFormatSpecificSpecs()).isHDF5()) {
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			aaa.writeDataToOutputStream(baos, fileDataContainerManager);//Get location of temp HDF5 file
+			File tempHDF5File = new File(baos.toString());
+			Files.copy(tempHDF5File, hdf5OutputFile);
+			tempHDF5File.delete();
+		}
+
         
         
 
