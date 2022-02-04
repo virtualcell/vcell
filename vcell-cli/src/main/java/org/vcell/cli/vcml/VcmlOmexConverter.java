@@ -49,6 +49,7 @@ import java.io.OutputStreamWriter;
 import java.nio.file.Paths;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -204,13 +205,41 @@ public class VcmlOmexConverter {
         	return false;
         }
         
+        // we extract the simulations with field data from the list of simulations since they are not supported
+        // TODO: simplify the implementation since we don't continue at all once we find field data; we just need to detect
+        List<Simulation> simulations = new ArrayList<> ();
+        simulations.add((Simulation) Arrays.asList(bioModel.getSimulations()));
+		for (Simulation simulation : bioModel.getSimulations()) {
+	        boolean bFieldDataFound = false;
+			Enumeration<Variable> variables = simulation.getMathDescription().getVariables();
+			while(variables.hasMoreElements()) {
+				Variable var = variables.nextElement();
+				Expression exp = var.getExpression();
+				FieldFunctionArguments[] ffas = FieldUtilities.getFieldFunctionArguments( exp);
+				
+				if(ffas != null && ffas.length > 0) {
+					bFieldDataFound = true;
+					break;	// we are done with this simulation if we know it has at least one variable with a field data in its expression
+				}
+			}
+			if(bFieldDataFound) {
+				simulations.remove(simulation);
+	        	CLIStandalone.writeSimErrorList(outputBaseDir, vcmlName + " excluded: FieldData not supported at this time.");
+				SolverDescription solverDescription = simulation.getSolverTaskDescription().getSolverDescription();
+				String solverName = solverDescription.getShortDisplayLabel();
+				CLIStandalone.writeSimErrorList(outputBaseDir, "   " + solverName);
+	        	return false;
+			}
+		}
+        
+        
         // NOTE: SEDML exporter exports both SEDML as well as required SBML
         List<Simulation> simsToExport =null;
         Set<String> solverNames = new LinkedHashSet<>();
-//        if (bHasDataOnly) {
+        if (bHasDataOnly) {
         	// make list of simulations to export with only sims that have data on the server
         	simsToExport = new ArrayList<Simulation>();
-			for (Simulation simulation : bioModel.getSimulations()) {
+			for (Simulation simulation : simulations) {
 				SolverDescription solverDescription = simulation.getSolverTaskDescription().getSolverDescription();
 				String solverName = solverDescription.getShortDisplayLabel();
 				solverNames.add(solverName);
@@ -226,42 +255,29 @@ public class VcmlOmexConverter {
 					}
 				}
 				
-				String dbDriverName = PropertyLoader.getProperty(PropertyLoader.dbDriverName, null);
-				String dbConnectURL = PropertyLoader.getProperty(PropertyLoader.dbConnectURL, null);
-				String dbSchemaUser = PropertyLoader.getProperty(PropertyLoader.dbUserid, null);
-				String dbPassword = PropertyLoader.getSecretValue(PropertyLoader.dbPasswordValue, PropertyLoader.dbPasswordFile);
-
-				HashMap<User, Vector<ExternalDataIdentifier>> allExternalDataIdentifiers = FieldDataDBOperationDriver.getAllExternalDataIdentifiers();
-				
-//				File userDir = new File();
-//		        User user = new User(userDir.getName(), null);
-		        DataSetControllerImpl dsControllerImpl = new DataSetControllerImpl(null, new File(outputBaseDir), null);
-
-		        
-
-				
-				Enumeration<Variable> variables = simulation.getMathDescription().getVariables();
-				while(variables.hasMoreElements()) {
-					Variable var = variables.nextElement();
-					Expression exp = var.getExpression();
-					FieldFunctionArguments[] ffas = FieldUtilities.getFieldFunctionArguments( exp);
-					
-					if(ffas != null && ffas.length > 0) {
-						 FieldDataIdentifierSpec[] aaa = DataSetControllerImpl.getFieldDataIdentifierSpecs_private(
-								 ffas, simulation.getVersion().getOwner(), true, allExternalDataIdentifiers);
-
-							System.out.println((ffas == null) ? "null" : exp.infix() + ", not null:" + ffas.length);
-						
-					}
-					
-
-					System.out.println((ffas == null) ? "null" : exp.infix() + ", not null:" + ffas.length);
-
-				}
-
-				
+//				String dbDriverName = PropertyLoader.getProperty(PropertyLoader.dbDriverName, null);
+//				String dbConnectURL = PropertyLoader.getProperty(PropertyLoader.dbConnectURL, null);
+//				String dbSchemaUser = PropertyLoader.getProperty(PropertyLoader.dbUserid, null);
+//				String dbPassword = PropertyLoader.getSecretValue(PropertyLoader.dbPasswordValue, PropertyLoader.dbPasswordFile);
+//		        DataSetControllerImpl dsControllerImpl = new DataSetControllerImpl(null, new File(outputBaseDir), null);
+//				
+//				HashMap<User, Vector<ExternalDataIdentifier>> allExternalDataIdentifiers = FieldDataDBOperationDriver.getAllExternalDataIdentifiers();
+//				Enumeration<Variable> variables = simulation.getMathDescription().getVariables();
+//				while(variables.hasMoreElements()) {
+//					Variable var = variables.nextElement();
+//					Expression exp = var.getExpression();
+//					FieldFunctionArguments[] ffas = FieldUtilities.getFieldFunctionArguments( exp);
+//					
+//					if(ffas != null && ffas.length > 0) {
+//						 FieldDataIdentifierSpec[] aaa = DataSetControllerImpl.getFieldDataIdentifierSpecs_private(
+//								 ffas, simulation.getVersion().getOwner(), true, allExternalDataIdentifiers);
+//
+//							System.out.println((ffas == null) ? "null" : exp.infix() + ", not null:" + ffas.length);
+//					}
+//				}
 			}
-//        }
+			
+        }
         
         if(outputBaseDir != null && bHasDataOnly == true && simsToExport.size() == 0) {
         	CLIStandalone.writeSimErrorList(outputBaseDir, vcmlName + " has no simulations with any results.");
