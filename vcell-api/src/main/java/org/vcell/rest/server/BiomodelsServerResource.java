@@ -106,7 +106,7 @@ public class BiomodelsServerResource extends AbstractServerResource implements B
 		
 		BiomodelRepresentation[] bmReps = new BiomodelRepresentation[0];
 		try {
-			getBiomodelRepresentations(vcellUser);
+			bmReps = getBiomodelRepresentations(vcellUser);
 		} catch (ParseException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
