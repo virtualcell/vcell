@@ -207,34 +207,47 @@ public class VcmlOmexConverter {
         }
         
         // we extract the simulations with field data from the list of simulations since they are not supported
-        List<Simulation> simulations = new ArrayList<> ();
-        simulations.add((Simulation) Arrays.asList(bioModel.getSimulations()));
-		for (Simulation simulation : simulations) {
+        List<Simulation> simulationsToRemove = new ArrayList<> ();
+		for (Simulation simulation : bioModel.getSimulations()) {
 	        boolean bFieldDataFound = false;
 			Enumeration<Variable> variables = simulation.getMathDescription().getVariables();
 			while(variables.hasMoreElements()) {
 				Variable var = variables.nextElement();
 				Expression exp = var.getExpression();
 				FieldFunctionArguments[] ffas = FieldUtilities.getFieldFunctionArguments( exp);
-				
 				if(ffas != null && ffas.length > 0) {
 					bFieldDataFound = true;
 					break;	// we are done with this simulation if we know it has at least one variable with a field data in its expression
 				}
 			}
 			if(bFieldDataFound) {
-				try {
-					bioModel.removeSimulation(simulation);
-				} catch (PropertyVetoException e) {
-					e.printStackTrace();
-				}
+				simulationsToRemove.add(simulation);
 	        	CLIStandalone.writeSimErrorList(outputBaseDir, vcmlName + " excluded: FieldData not supported at this time.");
 				SolverDescription solverDescription = simulation.getSolverTaskDescription().getSolverDescription();
 				String solverName = solverDescription.getShortDisplayLabel();
 				CLIStandalone.writeSimErrorList(outputBaseDir, "   " + solverName);
 			}
 		}
-        
+		for(Simulation simulation : simulationsToRemove) {
+			try {
+				bioModel.removeSimulation(simulation);
+			} catch (PropertyVetoException e) {
+				System.out.println("Failed to remove simulation with field data");
+				e.printStackTrace();
+			}
+		}
+		
+		// we replace the obsolete solver with the fully supported equivalent
+		for (Simulation simulation : bioModel.getSimulations()) {
+			if (simulation.getSolverTaskDescription().getSolverDescription().equals(SolverDescription.FiniteVolume)) {
+				try {
+					simulation.getSolverTaskDescription().setSolverDescription(SolverDescription.SundialsPDE);
+				} catch (PropertyVetoException e) {
+					System.out.println("Failed to replace obsolete solver");
+					e.printStackTrace();
+				}
+			}
+		}
         
         // NOTE: SEDML exporter exports both SEDML as well as required SBML
         List<Simulation> simsToExport =null;
