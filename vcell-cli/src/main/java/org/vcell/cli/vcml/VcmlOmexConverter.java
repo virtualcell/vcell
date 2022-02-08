@@ -39,6 +39,7 @@ import org.vcell.util.document.MathModelInfo;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCInfoContainer;
 
+import java.beans.PropertyVetoException;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -206,10 +207,9 @@ public class VcmlOmexConverter {
         }
         
         // we extract the simulations with field data from the list of simulations since they are not supported
-        // TODO: simplify the implementation since we don't continue at all once we find field data; we just need to detect
         List<Simulation> simulations = new ArrayList<> ();
         simulations.add((Simulation) Arrays.asList(bioModel.getSimulations()));
-		for (Simulation simulation : bioModel.getSimulations()) {
+		for (Simulation simulation : simulations) {
 	        boolean bFieldDataFound = false;
 			Enumeration<Variable> variables = simulation.getMathDescription().getVariables();
 			while(variables.hasMoreElements()) {
@@ -223,12 +223,15 @@ public class VcmlOmexConverter {
 				}
 			}
 			if(bFieldDataFound) {
-				simulations.remove(simulation);
+				try {
+					bioModel.removeSimulation(simulation);
+				} catch (PropertyVetoException e) {
+					e.printStackTrace();
+				}
 	        	CLIStandalone.writeSimErrorList(outputBaseDir, vcmlName + " excluded: FieldData not supported at this time.");
 				SolverDescription solverDescription = simulation.getSolverTaskDescription().getSolverDescription();
 				String solverName = solverDescription.getShortDisplayLabel();
 				CLIStandalone.writeSimErrorList(outputBaseDir, "   " + solverName);
-	        	return false;
 			}
 		}
         
@@ -239,7 +242,7 @@ public class VcmlOmexConverter {
         if (bHasDataOnly) {
         	// make list of simulations to export with only sims that have data on the server
         	simsToExport = new ArrayList<Simulation>();
-			for (Simulation simulation : simulations) {
+			for (Simulation simulation : bioModel.getSimulations()) {
 				SolverDescription solverDescription = simulation.getSolverTaskDescription().getSolverDescription();
 				String solverName = solverDescription.getShortDisplayLabel();
 				solverNames.add(solverName);
@@ -260,6 +263,8 @@ public class VcmlOmexConverter {
 //				String dbSchemaUser = PropertyLoader.getProperty(PropertyLoader.dbUserid, null);
 //				String dbPassword = PropertyLoader.getSecretValue(PropertyLoader.dbPasswordValue, PropertyLoader.dbPasswordFile);
 //		        DataSetControllerImpl dsControllerImpl = new DataSetControllerImpl(null, new File(outputBaseDir), null);
+//				
+//				code used to recover field data
 //				
 //				HashMap<User, Vector<ExternalDataIdentifier>> allExternalDataIdentifiers = FieldDataDBOperationDriver.getAllExternalDataIdentifiers();
 //				Enumeration<Variable> variables = simulation.getMathDescription().getVariables();
