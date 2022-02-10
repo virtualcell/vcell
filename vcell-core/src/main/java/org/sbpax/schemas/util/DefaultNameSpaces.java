@@ -39,5 +39,7 @@ public class DefaultNameSpaces {
 	public static final NameSpace UOME_LIST = defaultMap.register("uome-list", "http://www.sbpax.org/uome/list.owl#");
 	public static final NameSpace SBO = defaultMap.register("sbo", SBOTerm.SBO_BASE_URI);
 	public static final NameSpace EX = defaultMap.register("ex", "http://example.org/");
+	public static final NameSpace COLLEX = defaultMap.register("collex", "http://www.collex.org/schema#");
+	public static final NameSpace PRISM = defaultMap.register("prism", "http://prismstandard.org/namespaces/basic/2.0/");
 
 }
