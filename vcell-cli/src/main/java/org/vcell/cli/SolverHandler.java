@@ -26,7 +26,12 @@ import org.vcell.sbml.vcell.SBMLImporter;
 import org.vcell.util.document.VCDocument;
 import org.vcell.util.exe.Executable;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -364,4 +369,136 @@ public class SolverHandler {
             return false;
         }
     }
+    
+    //
+    // Running python interactively from java code
+    // Proof of concept 
+    //
+    public static void main(String[] args) throws Exception {  
+    	
+    	ProcessBuilder processBuilder = new ProcessBuilder("cmd");
+    	processBuilder.redirectErrorStream(true);
+    	processBuilder.start();
+
+    	processBuilder.command("python","-i");
+    	Process pythonProcess = processBuilder.start();
+    	OutputStream outputStream = pythonProcess.getOutputStream();
+    	OutputStreamWriter osw = new OutputStreamWriter(outputStream);
+    	InputStream inputStream = pythonProcess.getInputStream();
+    	BufferedReader bufferedReader = new BufferedReader(
+    	                  new InputStreamReader(inputStream));
+
+    	String line = "";
+
+    	osw.write("2+2\r\n");
+//    	osw.write("2+2\r\nquit()\r\n");
+    	osw.flush();
+//    	osw.close();
+//    	InputStream inputStream = pythonProcess.getInputStream();
+//    	BufferedReader bufferedReader = new BufferedReader(
+//    	                  new InputStreamReader(inputStream));
+//    	String line;
+//    	while( (line=bufferedReader.readLine())!=null) {
+//    	    System.out.println(line);
+//    	}
+//	    System.out.println(line);
+	    
+    	osw.write("3+2\r\n");
+    	osw.flush();
+//    	InputStream inputStream = pythonProcess.getInputStream();
+//    	BufferedReader bufferedReader = new BufferedReader(
+//    	                  new InputStreamReader(inputStream));
+
+    	osw.write("4+2\r\n");
+    	osw.flush();
+    	
+    	osw.write("5+2\r\n");
+    	osw.flush();
+
+        Thread.sleep(1000);
+
+    	osw.write("6+2\r\n");
+    	osw.write("9\r\nquit()\r\n");
+    	osw.flush();
+    	osw.close();
+
+    	line = "";
+    	while( (line=bufferedReader.readLine())!=null) {
+    	    System.out.println(line);
+    	}
+    	System.out.println("done");
+        	
+    	
+    	/*
+    	
+    	
+        ProcessBuilder pb;
+                pb = new ProcessBuilder("C:/Users/Motan/AppData/Local/Programs/Python/Python39/python.exe", "-qi", "/dev/null");
+
+                Process p = pb.start();
+
+    	
+    	
+        char[] readBuffer = new char[1000];
+        InputStreamReader isr = new InputStreamReader(p.getInputStream());
+        BufferedReader br = new BufferedReader(isr);
+        int charCount;
+        boolean written = false;
+        while(true) {
+            if (!br.ready() && !written) {
+                // Ugly. Should be reading for '>>>' prompt then writing.
+                Thread.sleep(1000);
+                if (!written) {
+                    written = true;
+                    OutputStream os = p.getOutputStream();
+                    OutputStreamWriter osw = new OutputStreamWriter(os);
+                    BufferedWriter bw = new BufferedWriter(osw);
+                    bw.write("2+2");
+                    bw.newLine();
+                    //bw.write("quit()");
+                    bw.newLine();
+                    bw.flush();
+                    bw.close();
+                }
+                continue;
+            }
+            charCount = br.read(readBuffer);
+            if (charCount > 0)
+                System.out.print(new String(readBuffer, 0, charCount));
+            else
+                break;
+        }
+
+//        br = new BufferedReader(isr);
+        written = false;
+        while(true) {
+            if (!br.ready() && !written) {
+                // Ugly. Should be reading for '>>>' prompt then writing.
+                Thread.sleep(1000);
+                if (!written) {
+                    written = true;
+                    OutputStream os2 = p.getOutputStream();
+                    OutputStreamWriter osw2 = new OutputStreamWriter(os2);
+                    BufferedWriter bw2 = new BufferedWriter(osw2);
+                    bw2.write("3+3");
+                    bw2.newLine();
+                    bw2.write("quit()");
+                    bw2.newLine();
+                    bw2.flush();
+                    bw2.close();
+                }
+                continue;
+            }
+            charCount = br.read(readBuffer);
+            if (charCount > 0)
+                System.out.print(new String(readBuffer, 0, charCount));
+            else
+                break;
+        }
+
+*/
+    	
+
+    }
 }
+
