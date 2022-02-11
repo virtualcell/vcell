@@ -679,7 +679,11 @@ public enum SolverDescription {
 	{
 		return this == NFSim;
 	}
-
+	
+	public boolean isDeprecated() {
+		return this.deprecated;
+	}
+	
 	/**
 	 * backward compatiblity
 	 * @param other
