@@ -47,6 +47,7 @@ import org.vcell.util.gui.DialogUtils;
 import com.google.common.io.Files;
 
 import cbit.rmi.event.DataJobEvent;
+import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.client.task.ClientTaskDispatcher.BlockingTimer;
@@ -115,12 +116,8 @@ private DataViewer createODEDataViewer() throws DataAccessException {
 	odeDataViewer.setNFSimMolecularConfigurations(((ODEDataManager)dataManager).getNFSimMolecularConfigurations());
 	odeDataViewer.setVcDataIdentifier(dataManager.getVCDataIdentifier());
 	if(getSimulation() != null) {
-		odeDataViewer.setHDF5DescriptionText(
-				(simulation.getSimulationOwner() instanceof SimulationContext
-						?((SimulationContext)simulation.getSimulationOwner()).getBioModel().toString()
-						:"")+"\n"+
-				simulation.getSimulationOwner()+"\n"+
-				"Simulation:"+(simulation.getSimulationVersion() != null?simulation.getSimulationVersion().toString():simulation.getName()+" (unversioned)"));
+		String ownerName = generateHDF5DescrOwner(getSimulation());
+		odeDataViewer.setHDF5DescriptionText(ownerName+":"+simulation.getName());
 	}
 //	odeDataViewer.setXVarName(odeDataViewer.getODESolverPlotSpecificationPanel1().getXAxisComboBox_frm().getSelectedItem().toString());
 	//
@@ -181,6 +178,33 @@ private DataViewer createODEDataViewer() throws DataAccessException {
 		if(to != null){try{to.delete();}catch(Exception e2) {e2.printStackTrace();}}
 	}
 	return odeDataViewer;
+}
+
+
+public static String generateHDF5DescrOwner(Simulation simulation) {
+	String ownerName = "";
+	if(simulation.getSimulationOwner() != null) {
+		if(simulation.getSimulationOwner() instanceof SimulationContext) {
+			SimulationContext sc = (SimulationContext)simulation.getSimulationOwner();
+			BioModel bm = sc.getBioModel();
+			ownerName = sc.getBioModel().getName();
+			if(bm.getVersion() != null) {
+				ownerName+= " ("+bm.getVersion().getDate()+")";
+			}else {
+				ownerName+= " (unversioned)";
+			}
+			ownerName+=":"+sc.getName();
+		}else {//MathModel
+			MathModel mm = (MathModel) simulation.getSimulationOwner() ;
+			ownerName = mm.getName();
+			if(mm.getVersion() != null) {
+				ownerName+= mm.getVersion().getDate();
+			}else {
+				ownerName+= " (unversioned)";
+			}
+		}
+	}
+	return ownerName;
 }
 
 

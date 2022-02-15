@@ -464,6 +464,7 @@ private synchronized void copyCells0(CopyAction copyAction,boolean isHDF5) {
 							//(HDF5WriteHelper) Hdf5Utils.writeHDF5Dataset(jobGroupID, "data", new long[] {selectedColCount,rows.length}, new Object[] {}, false);
 					//((DefaultTableModel)getScrollPaneTable().getModel()).getDataVector()
 					double[] fromData = new double[rows.length*selectedColCount];
+					int actualLength = -1;
 					int index = 0;
 					ArrayList<String> dataTypes = new ArrayList<String>();
 					ArrayList<String> dataIDs = new ArrayList<String>();
@@ -475,22 +476,6 @@ private synchronized void copyCells0(CopyAction copyAction,boolean isHDF5) {
 					boolean bParamsDone = false;
 					for(int cols=0;cols<paramScanJobs.get(k).size();cols++) {
 						final Integer column = paramScanJobs.get(k).get(cols);
-						String colName = getScrollPaneTable().getColumnName(column);
-//						System.out.println("HDF5frm "+colName);
-						if(colName.lastIndexOf("Set ") != -1) {
-							if(!bParamsDone) {
-								bParamsDone = true;
-								int set = Integer.parseInt(colName.substring(colName.lastIndexOf("Set ")+4));
-								jobGroupID = (int) Hdf5Utils.createGroup(hdf5FileID, "Set "+set);
-								help0 = Hdf5Utils.createDataset(jobGroupID, "data", new long[] {selectedColCount,rows.length});
-								for(int z=0;z<paramScanParamNames.length;z++) {
-									paramNames.add(paramScanParamNames[z]);
-									paramValues.add(paramScanParamValues[set][z]+"");
-//									System.out.print(" "+paramScanParamValues[set][z]);
-								}
-//							System.out.println();
-							}
-						}
 						dataTypes.add("float64");
 						dataIDs.add("data_set_"+getScrollPaneTable().getColumnName(column));
 						dataShapes.add(rows.length+"");
@@ -510,10 +495,36 @@ private synchronized void copyCells0(CopyAction copyAction,boolean isHDF5) {
 						for(int myrows=0;myrows<rows.length;myrows++) {
 							final int row = rows[myrows];
 							final Object valueAt = getScrollPaneTable().getValueAt(row, column);
+							if(valueAt == null && actualLength == -1) {
+								actualLength = myrows;
+							}
 //							System.out.println(row+" "+column+" "+valueAt);
 							fromData[index] = Double.parseDouble((valueAt==null?blankCellValue:valueAt.toString()));
 							index++;
 						}
+						actualLength = (actualLength==-1?rows.length:actualLength);
+						String colName = getScrollPaneTable().getColumnName(column);
+//						System.out.println("HDF5frm "+colName);
+						if(colName.lastIndexOf("Set ") != -1) {
+							if(!bParamsDone) {
+								bParamsDone = true;
+								int set = Integer.parseInt(colName.substring(colName.lastIndexOf("Set ")+4));
+								jobGroupID = (int) Hdf5Utils.createGroup(hdf5FileID, "Set "+set);
+								help0 = Hdf5Utils.createDataset(jobGroupID, "data", new long[] {selectedColCount,actualLength});
+								for(int z=0;z<paramScanParamNames.length;z++) {
+									paramNames.add(paramScanParamNames[z]);
+									paramValues.add(paramScanParamValues[set][z]+"");
+//									System.out.print(" "+paramScanParamValues[set][z]);
+								}
+//							System.out.println();
+							}
+						}
+
+					}
+					
+					double[] fromData2 = new double[actualLength*selectedColCount];
+					for(int i=0;i<selectedColCount;i++) {
+						System.arraycopy(fromData, i*rows.length, fromData2, i*actualLength, actualLength);
 					}
 //					Object[] objArr = new Object[] {fromData,new long[] {0,0},new long[] {selectedColCount,rows.length},new long[] {selectedColCount,rows.length},new long[] {0,0},new long[] {selectedColCount,rows.length},help0.hdf5DataSpaceID};
 					//			double[] copyFromData = (double[])((Object[])data)[0];
@@ -524,9 +535,9 @@ private synchronized void copyCells0(CopyAction copyAction,boolean isHDF5) {
 					//			long[] copyFromLength = (long[])((Object[])data)[5];
 					if(help0 == null) {
 						jobGroupID = (int) Hdf5Utils.createGroup(hdf5FileID, "Set "+k);
-						help0 = Hdf5Utils.createDataset(jobGroupID, "data", new long[] {selectedColCount,rows.length});
+						help0 = Hdf5Utils.createDataset(jobGroupID, "data", new long[] {selectedColCount,actualLength});
 					}
-					Hdf5Utils.copySlice(help0.hdf5DatasetValuesID,fromData,new long[] {0,0},new long[] {selectedColCount,rows.length},new long[] {selectedColCount,rows.length},new long[] {0,0},new long[] {selectedColCount,rows.length},help0.hdf5DataSpaceID);
+					Hdf5Utils.copySlice(help0.hdf5DatasetValuesID,fromData2,new long[] {0,0},new long[] {selectedColCount,actualLength},new long[] {selectedColCount,actualLength},new long[] {0,0},new long[] {selectedColCount,actualLength},help0.hdf5DataSpaceID);
 						//writeHDF5Dataset(help0.hdf5DatasetValuesID, null, null, objArr, false);
 					Hdf5Utils.insertAttribute(help0.hdf5DatasetValuesID, "_type", "ODE Data Export");//.writeHDF5Dataset(help0.hdf5DatasetValuesID, "_type", null, "ODE Data Export", true);
 					Hdf5Utils.insertAttributes(help0.hdf5DatasetValuesID,"dataSetDataTypes", dataTypes);//.writeHDF5Dataset(help0.hdf5DatasetValuesID, "dataSetDataTypes", null, dataTypes, true);
@@ -754,6 +765,9 @@ private synchronized void copyCells0(CopyAction copyAction,boolean isHDF5) {
 //					H5.H5Tclose(h5attrcs1);
 //				}
 //				
+				if(hdf5DescriptionText != null) {
+					Hdf5Utils.insertAttributes(hdf5FileID,"dataSourceDescr",Arrays.asList(new String[] {hdf5DescriptionText}));
+				}
 				H5.H5Fclose(hdf5FileID);
 				hdf5FileID = -1;
 				while(true) {

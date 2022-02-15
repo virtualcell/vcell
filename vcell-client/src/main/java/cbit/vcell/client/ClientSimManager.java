@@ -783,6 +783,7 @@ public void runQuickSimulation(final Simulation originalSimulation, ViewerType v
 		public void run(Hashtable<String, Object> hashTable) throws Exception {
 						
 			Simulation simulation = new TempSimulation(originalSimulation, false);
+			simulation.setSimulationOwner(originalSimulation.getSimulationOwner());
 			SimulationTask simTask = new SimulationTask(new SimulationJob(simulation, 0, null),0);
 			Solver solver = createQuickRunSolver(localSimDataDir, simTask);
 			if (solver == null) {

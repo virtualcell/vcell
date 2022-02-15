@@ -74,6 +74,9 @@ public ODETimePlotMultipleScansPanel(String[] varnames, Simulation arg_simulatio
 	initialize();
 }
 
+public PlotPane getPlotPane() {
+	return plotPane;
+}
 /**
  * Insert the method's description here.
  * Creation date: (10/17/2005 11:37:52 PM)

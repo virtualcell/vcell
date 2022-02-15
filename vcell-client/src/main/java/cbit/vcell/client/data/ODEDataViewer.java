@@ -456,6 +456,11 @@ public void showTimePlotMultipleScans(DataManager dataManager) {
 		return;
 	}
 	ODETimePlotMultipleScansPanel panel = new ODETimePlotMultipleScansPanel(selectedVariableNames, getSimulation(), dataManager,getODESolverPlotSpecificationPanel1().getXAxisComboBox_frm().getSelectedItem().toString());
+	if(getSimulation() != null) {
+		String ownerName = SimResultsViewer.generateHDF5DescrOwner(getSimulation());
+		panel.getPlotPane().setHDF5DescriptionText(ownerName+":"+getSimulation().getName());
+	}
+
 	ChildWindowManager childWindowManager = ChildWindowManager.findChildWindowManager(this);
 	//ChildWindow childWindow = childWindowManager.getChildWindowFromContentPane(panel);
 	
