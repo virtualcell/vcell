@@ -24,8 +24,21 @@ import cbit.vcell.xml.XmlParseException;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.ArrayUtils;
+import org.eclipse.jetty.util.resource.Resource;
+import org.openrdf.model.Graph;
+import org.openrdf.model.Statement;
+import org.openrdf.model.URI;
+import org.openrdf.model.Value;
+import org.openrdf.model.vocabulary.RDF;
+import org.openrdf.rio.RDFFormat;
+import org.openrdf.rio.RDFHandlerException;
 import org.sbml.libcombine.CombineArchive;
 import org.sbml.libcombine.KnownFormats;
+import org.sbpax.impl.HashGraph;
+import org.sbpax.schemas.BioPAX3;
+import org.sbpax.schemas.util.DefaultNameSpaces;
+import org.sbpax.schemas.util.OntUtil;
+import org.sbpax.util.SesameRioUtil;
 import org.vcell.cli.CLIHandler;
 import org.vcell.cli.CLIStandalone;
 import org.vcell.db.ConnectionFactory;
@@ -36,6 +49,7 @@ import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.ExternalDataIdentifier;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.MathModelInfo;
+import org.vcell.util.document.PublicationInfo;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCInfoContainer;
 
@@ -109,9 +123,9 @@ public class VcmlOmexConverter {
 //					}
 					
 					// build the biomodel id / biomodel info map
-					String biomodelId1 = "biomodel-" + bi.getVersion().getVersionKey();
-					String biomodelId2 = "biomodel-" + bi.getModelKey();
-					bioModelInfoMap.put(biomodelId1, bi);
+					String biomodelId = "biomodel_" + bi.getVersion().getVersionKey();
+					//String biomodelId2 = "biomodel_" + bi.getModelKey();
+					bioModelInfoMap.put(biomodelId, bi);
 				}
 //				System.out.println("User: " + user.getName() + "   count published biomodels: " + count);
 			}
@@ -119,7 +133,7 @@ public class VcmlOmexConverter {
 			System.err.println("\n\n\n=====>>>>EXPORT FAILED: failed to retrieve metadata");
 			e1.printStackTrace();
 		}
-		System.out.println("Found " + bioModelInfoMap.size() + "BioNodelInfo objects");
+		System.out.println("Found " + bioModelInfoMap.size() + " BioNodelInfo objects");
 
 
         if (input != null && input.isDirectory()) {
@@ -192,9 +206,6 @@ public class VcmlOmexConverter {
         //String vcmlName = inputVcmlFile.split(File.separator, 10)[inputVcmlFile.split(File.separator, 10).length - 1].split("\\.", 5)[0];
         String vcmlName = FilenameUtils.getBaseName(inputVcmlFile);		// platform independent, strips extension too
         
-        // recover the bioModelInfo
-        BioModelInfo bioModelInfo = bioModelInfoMap.get(vcmlName);
-
         File vcmlFilePath = new File(inputVcmlFile);
         // Create biomodel
         BioModel bioModel = XmlHelper.XMLToBioModel(new XMLSource(vcmlFilePath));
@@ -304,6 +315,10 @@ public class VcmlOmexConverter {
         	}
         	return false;
         }
+        
+        String rdfString = getMetadata(vcmlName, bioModel);
+        XmlUtil.writeXMLStringToFile(rdfString, String.valueOf(Paths.get(outputDir, "metadata.rdf")), true);
+
         if(bMakeLogsOnly) {
         	return false;
         }
@@ -339,9 +354,17 @@ public class VcmlOmexConverter {
                 } else if (sd.endsWith(".sbml") || sd.endsWith(".xml")) {
                     archive.addFile(
                             Paths.get(outputDir, sd).toString(),
-                            "./" + sd, // target file name
+                            "./" + sd,
                             KnownFormats.lookupFormat("sbml"),
                             false // mark file as master
+                    );
+                } else if (sd.endsWith(".rdf")) {
+                    archive.addFile(
+                            Paths.get(outputDir, sd).toString(),
+                            "./" + sd,
+                            "http://identifiers.org/combine.specifications/omex-metadata",
+//                            KnownFormats.lookupFormat("xml"),
+                            false
                     );
                 }
             }
@@ -366,7 +389,7 @@ public class VcmlOmexConverter {
             // Removing all other files(like SEDML, XML, SBML) after archiving
             for (String sd : files) {
                 // removing
-                if (sd.endsWith(".sedml") || sd.endsWith(".sbml") || sd.endsWith("xml") || sd.endsWith("vcml")) {
+                if (sd.endsWith(".sedml") || sd.endsWith(".sbml") || sd.endsWith("xml") || sd.endsWith("vcml") || sd.endsWith("rdf")) {
                     isDeleted = Paths.get(outputDir, sd).toFile().delete();
                 }
             }
@@ -378,6 +401,10 @@ public class VcmlOmexConverter {
         }
         return isCreated;
     }
+    
+    
+    
+
 
 	private static String[] parseArgs(String[] args) {
 		int position = 0;
@@ -412,4 +439,133 @@ public class VcmlOmexConverter {
 
 		return args;
 	}
+	
+    private static String getMetadata(String vcmlName, BioModel bioModel) {
+    	String ret = "";
+ 
+        // recover the bioModelInfo
+        BioModelInfo bioModelInfo = bioModelInfoMap.get(vcmlName);
+        PublicationInfo[] publicationInfos = bioModelInfo.getPublicationInfos();
+/*        
+        <rdf:Description rdf:about='http://omex-library.org/Monkeyflower_pigmentation_v2.omex'>
+        <dc:title>Two MYB Proteins in a Self-Organizing Activator-Inhibitor System Produce Spotted Pigmentation Patterns.</dc:title>
+
+        </rdf:Description>
+        
+    <bp3:BiochemicalReaction rdf:about="http://example.org/r1">
+		<bp3:left rdf:resource="http://example.org/pe1"/>
+		<bp3:right rdf:resource="http://example.org/pe2"/>
+	</bp3:BiochemicalReaction>
+  */      
+        
+        
+		Graph graph = new HashGraph();
+		
+		String rdf = DefaultNameSpaces.DUBLIN_CORE.uri;						// http://example/org/
+		URI desc = graph.getValueFactory().createURI(rdf);
+		
+//		URI r1 = graph.getValueFactory().createURI(ns + "r1");		// http://example/org/r1
+//		URI pe2 = graph.getValueFactory().createURI(ns + "pe2");
+//		graph.add(pe2, RDF.TYPE, BioPAX3.Protein);
+//		graph.add(r1, RDF.TYPE, BioPAX3.BiochemicalReaction);
+//		graph.add(r1, BioPAX3.right, pe2);							// <bp3:right rdf:resource="http://example.org/pe2"/>
+	
+		
+		
+		
+		
+		
+		Statement statement;
+//		graph.add(statement);
+		
+		Resource subj;
+		URI pred;
+		Value obj;
+		Resource contexts;
+//		graph.add(subj, pred, obj, contexts);
+		
+/*		
+		Graph graph = new HashGraph();
+		
+		
+		String ns = DefaultNameSpaces.EX.uri;						// http://example/org/
+		URI r1 = graph.getValueFactory().createURI(ns + "r1");		// http://example/org/r1
+		URI pe1 = graph.getValueFactory().createURI(ns + "pe1");
+		URI pe2 = graph.getValueFactory().createURI(ns + "pe2");
+		graph.add(r1, RDF.TYPE, BioPAX3.BiochemicalReaction);		// add the reaction to the graph, it'll look like this:
+																	// <bp3:BiochemicalReaction rdf:about="http://example.org/r1">
+		graph.add(pe1, RDF.TYPE, BioPAX3.Protein);
+		graph.add(pe2, RDF.TYPE, BioPAX3.Protein);
+		graph.add(r1, BioPAX3.left, pe1);
+		graph.add(r1, BioPAX3.right, pe2);							// add to reaction a child named right, it'll look like this
+																	// <bp3:right rdf:resource="http://example.org/pe2"/>
+
+<?xml version="1.0" encoding="UTF-8"?>
+<rdf:RDF
+	xmlns:sbo="http://biomodels.net/SBO/"
+	xmlns:bp3="http://www.biopax.org/release/biopax-level3.owl#"
+	xmlns:xmls="http://www.w3.org/2001/XMLSchema#"
+	xmlns:owl="http://www.w3.org/2002/07/owl#"
+	xmlns:uome-core="http://www.sbpax.org/uome/core.owl#"
+	xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+	xmlns:sbx3="http://vcell.org/sbpax3#"
+	xmlns:dc="http://purl.org/dc/elements/1.1/">
+<bp3:Protein rdf:about="http://example.org/pe1"/>
+<bp3:Protein rdf:about="http://example.org/pe2"/>
+<bp3:BiochemicalReaction rdf:about="http://example.org/r1">
+	<bp3:left rdf:resource="http://example.org/pe1"/>
+	<bp3:right rdf:resource="http://example.org/pe2"/>
+</bp3:BiochemicalReaction>
+
+</rdf:RDF>
+
+
+ */
+		
+		try {
+			Map<String, String> nsMap = DefaultNameSpaces.defaultMap.convertToMap();
+			ret = SesameRioUtil.writeRDFToString(graph, nsMap, RDFFormat.RDFXML);
+			SesameRioUtil.writeRDFToStream(System.out, graph, nsMap, RDFFormat.RDFXML);
+		} catch (RDFHandlerException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+        return ret;
+    }
+    public static void main(String[] args) {
+    	
+		Graph graph = new HashGraph();
+		Graph schema = new HashGraph();
+		
+		String descriptionLocation = "http://omex-library.org/biomodel_12345678.omex";
+		String rdfNamespace  = DefaultNameSpaces.RDF.uri;
+		String rdfsNamespace  = DefaultNameSpaces.RDFS.uri;
+		
+		URI descriptionURI = graph.getValueFactory().createURI(descriptionLocation);
+		URI rdfURI = graph.getValueFactory().createURI(rdfNamespace);
+		URI rdfsURI = graph.getValueFactory().createURI(rdfsNamespace);
+		
+		URI descriptionProperty = OntUtil.createDatatypeProperty(schema, rdfNamespace + "Description");
+		URI authorProperty = OntUtil.createDatatypeProperty(schema, rdfNamespace + "author");
+		URI creatorProperty = OntUtil.createObjectProperty(schema, rdfsNamespace + "creator");
+		
+		
+		graph.add(descriptionURI, RDF.TYPE, descriptionProperty);		// <rdf:Description rdf:about='http://omex-library.org/Monkeyflower_pigmentation_v2.omex'>
+		graph.add(rdfURI, RDF.TYPE, authorProperty);
+		graph.add(descriptionURI, creatorProperty, rdfsURI);
+		
+		try {
+			Map<String, String> nsMap = DefaultNameSpaces.defaultMap.convertToMap();
+			SesameRioUtil.writeRDFToStream(System.out, graph, nsMap, RDFFormat.RDFXML);
+			String ret = SesameRioUtil.writeRDFToString(graph, nsMap, RDFFormat.RDFXML);
+			System.out.println("here");
+
+		} catch (RDFHandlerException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		System.out.println("finished");
+
+    }
 }
