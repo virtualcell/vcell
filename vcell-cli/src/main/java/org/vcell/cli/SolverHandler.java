@@ -174,6 +174,10 @@ public class SolverHandler {
                    
                     if (solver.getSolverStatus().getStatus() == SolverStatus.SOLVER_FINISHED) {
                     	
+//                        File aaa = new File("C:\\TEMP\\aaa.hdf5");
+//                        CLIUtils.exportPDE2HDF5(sim, outputDirForSedml, aaa);
+
+                    	
                     	logTaskMessage += "done. ";
                         System.out.println("Succesful execution: Model '" + docName + "' Task '" + sim.getDescription() + "'.");
 
@@ -195,6 +199,11 @@ public class SolverHandler {
                     }
 //                    CLIUtils.finalStatusUpdate( CLIUtils.Status.SUCCEEDED, outDir);
                 } catch (Exception e) {
+                	
+//                    File aaa = new File("C:\\TEMP\\aaa.hdf5");
+//                    CLIUtils.exportPDE2HDF5(sim, outputDirForSedml, aaa);
+
+                	
                 	String error = "Failed execution: Model '" + docName + "' Task '" + sim.getDescription() + "'. ";
                     System.err.println(error);
                     
@@ -245,12 +254,6 @@ public class SolverHandler {
                 } else {
                 	resultsHash.put(sim.getImportedTaskID(), null);	// if any task fails, we still put it in the hash with a null value
                 }
-                
-                //
-                // CLIUtils.exportPDE2HDF5(sim, outputDirForSedml);
-                //
-
-                
                 if(keepTempFiles == false) {
                 	CLIUtils.removeIntermediarySimFiles(outputDirForSedml);
                 }
