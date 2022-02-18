@@ -304,6 +304,9 @@ public class Libsedml {
         List<SEDMLDocument> docs = new ArrayList<SEDMLDocument>();
         try {
             while ((entry = zis.getNextEntry()) != null) {
+            	if(entry.getName().endsWith(".rdf")) {
+            		continue;		// we skip rdf files, otherwise isSEDML() below fails
+            	}
                 ByteArrayOutputStream baos = new ByteArrayOutputStream();
                 byte[] buf = new byte[4096];
                 while ((read = zis.read(buf)) != -1) {
