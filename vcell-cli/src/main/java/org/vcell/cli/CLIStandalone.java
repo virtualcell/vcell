@@ -18,10 +18,12 @@ import com.lowagie.text.pdf.crypto.RuntimeCryptoException;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.nio.file.FileSystemException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -134,6 +136,12 @@ public class CLIStandalone {
                 			args[3] = outputDir + File.separator + bioModelBaseName;
 //                			Files.createDirectories(Paths.get(args[3]));
                 			boolean mkdirs = new File(args[3]).mkdirs();
+                			if (mkdirs) {
+                				System.out.println("Created path "+args[3]);
+                			} else {
+                				throw new FileSystemException(args[3]);
+                			}
+                			System.out.println(LocalTime.now());
                             singleExecOmex(utils, outputDir, keepTempFiles, exactMatchOnly, args);
                         }
                         if (inputFile.endsWith("vcml")) {
