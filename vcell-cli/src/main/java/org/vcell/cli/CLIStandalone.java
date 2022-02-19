@@ -98,10 +98,18 @@ public class CLIStandalone {
 			}
             
             Executable.setTimeoutMS(CLIUtils.EXECUTABLE_MAX_WALLCLOK_MILLIS);
+            
+            // create base output dir if not exists
+        	String outputDir = args[3];      	
+			try {
+				Files.createDirectories(Paths.get(outputDir));
+			} catch (IOException e2) {
+				// TODO Auto-generated catch block
+				System.err.println("Specified output directory "+outputDir+" does not exist and could not be created");
+				System.exit(1);
+			}
 
             if (input != null && input.isDirectory()) {
-            	String outputDir = args[3];
-            	
                 FilenameFilter filter = (f, name) -> name.endsWith(".omex") || name.endsWith(".vcml");
                 String[] inputFiles = input.list(filter);
                 if (inputFiles == null) System.out.println("No input files found in the directory");
@@ -133,15 +141,9 @@ public class CLIStandalone {
                     try {
                         if (inputFile.endsWith("omex")) {
                 			String bioModelBaseName = org.vcell.util.FileUtils.getBaseName(inputFile);
-                			args[3] = outputDir + File.separator + bioModelBaseName;
-//                			Files.createDirectories(Paths.get(args[3]));
-                			boolean mkdirs = new File(args[3]).mkdirs();
-                			if (mkdirs) {
-                				System.out.println("Created path "+args[3]);
-                			} else {
-                				throw new FileSystemException(args[3]);
-                			}
-                			System.out.println(LocalTime.now());
+                			// make subdirs
+                			outputDir = outputDir + File.separator + bioModelBaseName;
+                			Files.createDirectories(Paths.get(outputDir));
                             singleExecOmex(utils, outputDir, keepTempFiles, exactMatchOnly, args);
                         }
                         if (inputFile.endsWith("vcml")) {
