@@ -132,7 +132,8 @@ public class CLIStandalone {
                         if (inputFile.endsWith("omex")) {
                 			String bioModelBaseName = org.vcell.util.FileUtils.getBaseName(inputFile);
                 			args[3] = outputDir + File.separator + bioModelBaseName;
-                			Files.createDirectories(Paths.get(args[3]));
+//                			Files.createDirectories(Paths.get(args[3]));
+                			boolean mkdirs = new File(args[3]).mkdirs();
                             singleExecOmex(utils, outputDir, keepTempFiles, exactMatchOnly, args);
                         }
                         if (inputFile.endsWith("vcml")) {
