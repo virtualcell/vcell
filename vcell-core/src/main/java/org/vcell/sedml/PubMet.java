@@ -30,4 +30,44 @@ public class PubMet {
 	public static final URI ContributorDescription = OntUtil.createObjectProperty(schema, DefaultNameSpaces.RDF.uri + "Description");
 
 	
+	public static final String CommentTaxon = "\n\n\t<!-- taxon -->";
+	public static final String CommentOther = "\n\n\t<!-- other identifiers -->";
+	public static final String CommentCreator = "\n\n\t<!-- creators -->";
+	public static final String CommentContributor = "\n\n\t<!-- contributors (e.g., curators) -->";
+	public static final String CommentCitations = "\n\n\t<!-- citations -->";
+	public static final String CommentLicense = "\n\n\t<!-- license -->";
+	public static final String CommentCreated = "\n\n\t<!-- created -->";
+	public static final String CommentModified = "\n\n\t<!-- modified -->";
+	
+	public static final String EndDescription0 = "</rdf:Description>";
+
+	
+	public static final String StartDescription = "\n\t\t<rdf:Description>";
+	public static final String EndDescription = "\n\t\t</rdf:Description>";
+	public static final String StartName = "\n\t\t\t<foaf:name>";
+	public static final String EndName = "</foaf:name>";
+	public static final String StartLabel = "\n\t\t\t<rdfs:label>";
+	public static final String EndLabel = "</rdfs:label>";
+	public static final String StartIdentifier = "\n\t\t\t<dc:identifier rdf:resource=\"";
+	public static final String EndIdentifier = "\"/>";
+	public static final String ResourceIdentifier = "http://identifiers.org/";
+	
+	public static final String StartIs = "\n\t<bqmodel:is>";
+	public static final String EndIs = "\n\t/<bqmodel:is>";
+	public static final String StartIsDescribedBy = "\n\t<bqmodel:isDescribedBy>";
+	public static final String EndIsDescribedBy = "\n\t/<bqmodel:isDescribedBy>";
+	
+	public static final String StartCreator = "\n\t<dc:creator>";
+	public static final String EndCreator = "\n\t/<dc:creator>";
+	public static final String StartContributor = "\n\t<dc:contributor>";
+	public static final String EndContributor = "\n\t/<dc:contributor>";
+
+	public static final String StartLicense = "\n\t<dc:license>";
+	public static final String EndLicense = "\n\t/<dc:license>";
+	public static final String StartCreated = "\n\t<dc:created>";
+	public static final String EndCreated = "\n\t/<dc:created>";
+
+	
+	public static final String EndRdf = "</rdf:RDF>";
+	
 }

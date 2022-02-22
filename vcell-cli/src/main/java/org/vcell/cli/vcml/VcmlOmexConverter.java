@@ -507,20 +507,124 @@ public class VcmlOmexConverter {
         contributors.add("Michael Blinov");
         contributors.add("Ion Moraru");
         
-        
-        
-        
-        
-        
-        
-        
 		String description = "http://omex-library.org/" + vcmlName + ".omex";	// "http://omex-library.org/biomodel_12345678.omex";
 		URI descriptionURI = ValueFactoryImpl.getInstance().createURI(description);
 		Literal descTitle = OntUtil.createTypedString(schema, sTitle);
 		graph.add(descriptionURI, RDF.TYPE, PubMet.Description);		// <rdf:Description rdf:about='http://omex-library.org/Monkeyflower_pigmentation_v2.omex'>
 		graph.add(descriptionURI, PubMet.Title, descTitle);
 		
+		try {
+			Map<String, String> nsMap = DefaultNameSpaces.defaultMap.convertToMap();
+			ret = SesameRioUtil.writeRDFToString(graph, nsMap, RDFFormat.RDFXML);
+//			SesameRioUtil.writeRDFToStream(System.out, graph, nsMap, RDFFormat.RDFXML);
+		} catch (RDFHandlerException e) {
+			e.printStackTrace();
+		}
 		
+		String end = "\n\n" + ret.substring(ret.indexOf(PubMet.EndDescription0));
+		ret = ret.substring(0, ret.indexOf(PubMet.EndDescription0));
+
+		ret += PubMet.CommentTaxon;
+		
+		ret += PubMet.CommentOther;
+		ret += PubMet.StartIs;
+		ret += PubMet.StartDescription;
+		ret += PubMet.StartIdentifier;
+		ret += PubMet.ResourceIdentifier;
+		String isLabel = "vcell:" + version.getVersionKey();
+		ret += isLabel;
+		ret += PubMet.EndIdentifier;
+		ret += PubMet.StartLabel;
+		ret += isLabel;
+		ret += PubMet.EndLabel;
+		ret += PubMet.EndDescription;
+		ret += PubMet.EndIs;
+
+		ret += PubMet.StartIsDescribedBy;
+		ret += PubMet.StartDescription;
+		ret += PubMet.StartIdentifier;
+		ret += PubMet.ResourceIdentifier;
+		String pubmed = "pubmed:" + pubmedid;
+		ret += pubmed;
+		ret += PubMet.EndIdentifier;
+		ret += PubMet.StartLabel;
+		ret += pubmed;
+		ret += PubMet.EndLabel;
+		ret += PubMet.EndDescription;
+		ret += PubMet.EndIsDescribedBy;
+
+		ret += PubMet.CommentCreator;
+		for(String creator : creators) {
+			ret += PubMet.StartCreator;
+			ret += PubMet.StartDescription;
+			ret += PubMet.StartName;
+			ret += creator;
+			ret += PubMet.EndName;
+			ret += PubMet.StartLabel;
+			ret += creator;
+			ret += PubMet.EndLabel;
+			ret += PubMet.EndDescription;
+			ret += PubMet.EndCreator;
+		}
+		
+		ret += PubMet.CommentContributor;
+		for(String contributor : contributors) {
+			ret += PubMet.StartContributor;
+			ret += PubMet.StartDescription;
+			ret += PubMet.StartName;
+			ret += contributor;
+			ret += PubMet.EndName;
+			ret += PubMet.StartLabel;
+			ret += contributor;
+			ret += PubMet.EndLabel;
+			ret += PubMet.EndDescription;
+			ret += PubMet.EndContributor;
+		}
+
+		ret += PubMet.CommentCitations;
+		ret += PubMet.StartIsDescribedBy;
+		ret += PubMet.StartDescription;
+		ret += PubMet.StartIdentifier;
+		ret += PubMet.ResourceIdentifier;
+		String sdoi = "doi:" + doi;
+		ret += sdoi;
+		ret += PubMet.EndIdentifier;
+		ret += PubMet.StartLabel;
+		ret += citation;
+		ret += PubMet.EndLabel;
+		ret += PubMet.EndDescription;
+		ret += PubMet.EndIsDescribedBy;
+		
+		ret += PubMet.CommentLicense;
+		ret += PubMet.StartLicense;
+		ret += PubMet.StartDescription;
+		ret += PubMet.StartIdentifier;
+		ret += PubMet.ResourceIdentifier;
+		String lic = "spdx:" + "CC0-1.0";
+		ret += lic;
+		ret += PubMet.EndIdentifier;
+		ret += PubMet.StartLabel;
+		ret += "CC0-1.0";
+		ret += PubMet.EndLabel;
+		ret += PubMet.EndDescription;
+		ret+= PubMet.EndLicense;
+
+		ret += PubMet.CommentCreated;
+		
+		
+
+//		ret += PubMet.CommentModified;
+
+		
+		
+		ret += end;
+		System.out.println(ret);
+
+		
+		System.out.println("");
+		return(ret);
+		
+/*		
 		for(int i=0; i<contributors.size(); i++) {
 //			URI descURI = ValueFactoryImpl.getInstance().createURI(ns + "description"+i);
 			URI contributorURI = ValueFactoryImpl.getInstance().createURI(ns + "contributor"+i);
@@ -546,6 +650,7 @@ public class VcmlOmexConverter {
 			e.printStackTrace();
 		}
         return ret;
+        */
 
 /*		
 		Graph graph = new HashGraph();
