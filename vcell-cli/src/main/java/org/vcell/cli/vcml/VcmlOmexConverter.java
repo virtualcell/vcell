@@ -71,8 +71,10 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.nio.file.Paths;
 import java.sql.SQLException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -608,88 +610,32 @@ public class VcmlOmexConverter {
 		ret += PubMet.EndLabel;
 		ret += PubMet.EndDescription;
 		ret+= PubMet.EndLicense;
-
+		
+		String sPubDate = new SimpleDateFormat("yyyy-MM-dd").format(pubDate);
 		ret += PubMet.CommentCreated;
+		ret += PubMet.StartCreated;
+		ret += PubMet.StartDescription;
+		ret += PubMet.PrefixCreated;
+		ret += new SimpleDateFormat("yyyy-MM-dd").format(pubDate);
+		ret += PubMet.SuffixCreated;
+		ret += PubMet.EndDescription;
+		ret += PubMet.EndCreated;
 		
-		
-
-//		ret += PubMet.CommentModified;
-
-		
+		Calendar calendar = Calendar.getInstance();
+		Date today = calendar.getTime();
+		ret += PubMet.CommentModified;
+		ret += PubMet.StartModified;
+		ret += PubMet.StartDescription;
+		ret += PubMet.PrefixModified;
+		ret += new SimpleDateFormat("yyyy-MM-dd").format(today);
+		ret += PubMet.SuffixModified;
+		ret += PubMet.EndDescription;
+		ret += PubMet.EndModified;
 		
 		ret += end;
 		System.out.println(ret);
-
-		
 		System.out.println("");
 		return(ret);
-		
-/*		
-		for(int i=0; i<contributors.size(); i++) {
-//			URI descURI = ValueFactoryImpl.getInstance().createURI(ns + "description"+i);
-			URI contributorURI = ValueFactoryImpl.getInstance().createURI(ns + "contributor"+i);
-			
-			graph.add(contributorURI, RDF.TYPE, PubMet.Contributor);
-//			graph.add(descURI, RDF.TYPE, PubMet.ContributorDescription);
-			
-			graph.add(descriptionURI, PubMet.Contributor, contributorURI);
-//			graph.add(contributorURI, PubMet.ContributorDescription, descURI);
-			
-			Literal name = OntUtil.createTypedString(schema, contributors.get(i));
-			Literal label = OntUtil.createTypedString(schema, contributors.get(i));
-			graph.add(contributorURI, PubMet.name, name);
-			graph.add(contributorURI, PubMet.label, label);
-		}
-
-		try {
-			Map<String, String> nsMap = DefaultNameSpaces.defaultMap.convertToMap();
-			ret = SesameRioUtil.writeRDFToString(graph, nsMap, RDFFormat.RDFXML);
-			SesameRioUtil.writeRDFToStream(System.out, graph, nsMap, RDFFormat.RDFXML);
-			System.out.println("here");
-		} catch (RDFHandlerException e) {
-			e.printStackTrace();
-		}
-        return ret;
-        */
-
-/*		
-		Graph graph = new HashGraph();
-		
-		
-		String ns = DefaultNameSpaces.EX.uri;						// http://example/org/
-		URI r1 = graph.getValueFactory().createURI(ns + "r1");		// http://example/org/r1
-		URI pe1 = graph.getValueFactory().createURI(ns + "pe1");
-		URI pe2 = graph.getValueFactory().createURI(ns + "pe2");
-		graph.add(r1, RDF.TYPE, BioPAX3.BiochemicalReaction);		// add the reaction to the graph, it'll look like this:
-																	// <bp3:BiochemicalReaction rdf:about="http://example.org/r1">
-		graph.add(pe1, RDF.TYPE, BioPAX3.Protein);
-		graph.add(pe2, RDF.TYPE, BioPAX3.Protein);
-		graph.add(r1, BioPAX3.left, pe1);
-		graph.add(r1, BioPAX3.right, pe2);							// add to reaction a child named right, it'll look like this
-																	// <bp3:right rdf:resource="http://example.org/pe2"/>
-
-<?xml version="1.0" encoding="UTF-8"?>
-<rdf:RDF
-	xmlns:sbo="http://biomodels.net/SBO/"
-	xmlns:bp3="http://www.biopax.org/release/biopax-level3.owl#"
-	xmlns:xmls="http://www.w3.org/2001/XMLSchema#"
-	xmlns:owl="http://www.w3.org/2002/07/owl#"
-	xmlns:uome-core="http://www.sbpax.org/uome/core.owl#"
-	xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
-	xmlns:sbx3="http://vcell.org/sbpax3#"
-	xmlns:dc="http://purl.org/dc/elements/1.1/">
-<bp3:Protein rdf:about="http://example.org/pe1"/>
-<bp3:Protein rdf:about="http://example.org/pe2"/>
-<bp3:BiochemicalReaction rdf:about="http://example.org/r1">
-	<bp3:left rdf:resource="http://example.org/pe1"/>
-	<bp3:right rdf:resource="http://example.org/pe2"/>
-</bp3:BiochemicalReaction>
-
-</rdf:RDF>
-
-
- */
-		
     }
     
     public static void main(String[] args) {

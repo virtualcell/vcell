@@ -23,7 +23,7 @@ public class PubMet {
 	public static final URI Description = OntUtil.createDatatypeProperty(schema, DefaultNameSpaces.RDF.uri + "Description");
 	public static final URI Creator = OntUtil.createObjectProperty(schema, DefaultNameSpaces.DUBLIN_CORE.uri + "creator");
 	public static final URI Contributor = OntUtil.createObjectProperty(schema, DefaultNameSpaces.DUBLIN_CORE.uri + "contributor");
-	public static final URI Title = OntUtil.createObjectProperty(schema, DefaultNameSpaces.DUBLIN_CORE.uri + "title");
+	public static final URI Title = OntUtil.createObjectProperty(schema, DefaultNameSpaces.DC_TERMS.uri + "title");
 	public static final URI name = OntUtil.createObjectProperty(schema, DefaultNameSpaces.FOAF.uri + "name");
 	public static final URI label = OntUtil.createObjectProperty(schema, DefaultNameSpaces.RDFS.uri + "label");
 
@@ -53,19 +53,25 @@ public class PubMet {
 	public static final String ResourceIdentifier = "http://identifiers.org/";
 	
 	public static final String StartIs = "\n\t<bqmodel:is>";
-	public static final String EndIs = "\n\t/<bqmodel:is>";
+	public static final String EndIs = "\n\t</bqmodel:is>";
 	public static final String StartIsDescribedBy = "\n\t<bqmodel:isDescribedBy>";
-	public static final String EndIsDescribedBy = "\n\t/<bqmodel:isDescribedBy>";
+	public static final String EndIsDescribedBy = "\n\t</bqmodel:isDescribedBy>";
 	
 	public static final String StartCreator = "\n\t<dc:creator>";
-	public static final String EndCreator = "\n\t/<dc:creator>";
+	public static final String EndCreator = "\n\t</dc:creator>";
 	public static final String StartContributor = "\n\t<dc:contributor>";
-	public static final String EndContributor = "\n\t/<dc:contributor>";
+	public static final String EndContributor = "\n\t</dc:contributor>";
 
 	public static final String StartLicense = "\n\t<dc:license>";
-	public static final String EndLicense = "\n\t/<dc:license>";
+	public static final String EndLicense = "\n\t</dc:license>";
 	public static final String StartCreated = "\n\t<dc:created>";
-	public static final String EndCreated = "\n\t/<dc:created>";
+	public static final String EndCreated = "\n\t</dc:created>";
+	public static final String PrefixCreated = "\n\t\t\t<dc:W3CDTF>";
+	public static final String SuffixCreated = "</dc:W3CDTF>";
+	public static final String StartModified = "\n\t<dc:modified>";
+	public static final String EndModified = "\n\t</dc:modified>";
+	public static final String PrefixModified = "\n\t\t\t<dc:W3CDTF>";
+	public static final String SuffixModified = "</dc:W3CDTF>";
 
 	
 	public static final String EndRdf = "</rdf:RDF>";

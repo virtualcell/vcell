@@ -28,7 +28,8 @@ public class DefaultNameSpaces {
 	public static final NameSpace XMLS = defaultMap.register("xmls", "http://www.w3.org/2001/XMLSchema#");
 	public static final NameSpace XSD = defaultMap.register("xsd", "http://www.w3.org/2001/XMLSchema#");
 	public static final NameSpace DUBLIN_CORE = defaultMap.register("dc", "http://purl.org/dc/elements/1.1/");
-	public static final NameSpace DC_TERMS = defaultMap.register("dcterms", "http://purl.org/dc/terms/");	
+//	public static final NameSpace DC_TERMS = defaultMap.register("dcterms", "http://purl.org/dc/terms/");	
+	public static final NameSpace DC_TERMS = defaultMap.register("dcterms", "http://dublincore.org/specifications/dublin-core/dcmi-terms/");	
 	public static final NameSpace FOAF = defaultMap.register("foaf", "http://xmlns.com/foaf/0.1/");
 	public static final NameSpace VCARD = defaultMap.register("vcard", "http://www.w3.org/2001/vcard-rdf/3.0#");
 	public static final NameSpace BQBIOL = defaultMap.register("bqbiol", "http://biomodels.net/biology-qualifiers/");
