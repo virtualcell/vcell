@@ -96,21 +96,17 @@ public class CLIStandalone {
 				e1.printStackTrace();
                 System.exit(1);			// can't do anything without CLIUtils
 			}
-            
             Executable.setTimeoutMS(CLIUtils.EXECUTABLE_MAX_WALLCLOK_MILLIS);
             
-//            // create base output dir if not exists
-//        	String outputDir = args[3];      	
-//			try {
-//				Files.createDirectories(Paths.get(outputDir));
-//			} catch (IOException e2) {
-//				// TODO Auto-generated catch block
-//				System.err.println("Specified output directory "+outputDir+" does not exist and could not be created");
-//				System.exit(1);
-//			}
-
+        	// create base output dir if not exists
+        	String outputDir = args[3];
+			try {
+				Files.createDirectories(Paths.get(outputDir));
+			} catch (IOException e2) {
+				System.err.println("Specified output directory "+outputDir+" does not exist and could not be created");
+				System.exit(1);
+			}
             if (input != null && input.isDirectory()) {
-            	String outputDir = args[3];
             	
                 FilenameFilter filter = (f, name) -> name.endsWith(".omex") || name.endsWith(".vcml");
                 String[] inputFiles = input.list(filter);
@@ -142,13 +138,10 @@ public class CLIStandalone {
                     args[1] = file.toString();
                     try {
                         if (inputFile.endsWith("omex")) {
-//                			String bioModelBaseName = org.vcell.util.FileUtils.getBaseName(inputFile);
-//                			// make subdirs
-//                			outputDir = outputDir + File.separator + bioModelBaseName;
-//                			Files.createDirectories(Paths.get(outputDir));
                 			String bioModelBaseName = org.vcell.util.FileUtils.getBaseName(inputFile);
+                			// make subdirs
                 			args[3] = outputDir + File.separator + bioModelBaseName;
-                			boolean mkdirs = new File(args[3]).mkdirs();
+                			Files.createDirectories(Paths.get(args[3]));
                             singleExecOmex(utils, outputDir, keepTempFiles, exactMatchOnly, args);
                         }
                         if (inputFile.endsWith("vcml")) {
@@ -161,7 +154,7 @@ public class CLIStandalone {
             } else {
                 try {
                     if (input == null || input.toString().endsWith("omex")) {
-                        singleExecOmex(utils, args[3], keepTempFiles, exactMatchOnly,  args);
+                        singleExecOmex(utils, args[3], keepTempFiles, exactMatchOnly, args);
                     } else if (input.toString().endsWith("vcml")) {
                         singleExecVcml(utils, args);
                     } else {
