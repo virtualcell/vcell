@@ -36,6 +36,9 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.KeyStroke;
+import javax.swing.border.Border;
+import javax.swing.border.EtchedBorder;
+import javax.swing.border.LineBorder;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.ColorUtil;
@@ -1364,7 +1367,9 @@ private void drawLinePlot(PlotData plotData, int index, Graphics2D g, int render
 			for (int i=0;i<segments.length;i++){
 				if (segments[i].intersects(plotRectHolder)) {
 					Line2D line = BeanUtils.clipLine(segments[i], plotRectHolder);
+//					Line2D max = new Line2D(1,2,3,4);
 					g.draw(line);
+//					line.
 				}
 			}
 		}
@@ -2090,6 +2095,8 @@ private void initialize() {
 		setName("Plot2DPanel");
 		setLayout(null);
 		setSize(300, 200);
+		setBackground(Color.white);
+//		setBorder(new EtchedBorder(Color.black, Color.gray));
 		initConnections();
 		connEtoC5();
 	} catch (java.lang.Throwable ivjExc) {
@@ -2098,6 +2105,12 @@ private void initialize() {
 	// user code begin {2}
 	// user code end
 }
+
+public void setBorder(Border border) {
+//	super.setBorder(new LineBorder(Color.black));
+	super.setBorder(border);
+}
+
 
 
 /**
@@ -2111,6 +2124,9 @@ public static void main(java.lang.String[] args) {
 		aPlot2DPanel = new Plot2DPanel();
 		frame.setContentPane(aPlot2DPanel);
 		frame.setSize(aPlot2DPanel.getSize());
+		aPlot2DPanel.setBackground(Color.white);
+//		LineBorder border = new LineBorder(Color.black);
+//		aPlot2DPanel.setBorder(border);
 		frame.addWindowListener(new java.awt.event.WindowAdapter() {
 			public void windowClosing(java.awt.event.WindowEvent e) {
 				System.exit(0);
