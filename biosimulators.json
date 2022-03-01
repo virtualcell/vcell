@@ -177,6 +177,12 @@
           "id": "format_2585",
           "version": null,
           "supportedFeatures": []
+        },
+        {
+          "namespace": "EDAM",
+          "id": "format_9000",
+          "version": null,
+          "supportedFeatures": []
         }
       ],
       "modelChangePatterns": [
@@ -374,6 +380,12 @@
           "id": "format_2585",
           "version": null,
           "supportedFeatures": []
+        },
+        {
+          "namespace": "EDAM",
+          "id": "format_9000",
+          "version": null,
+          "supportedFeatures": []
         }
       ],
       "modelChangePatterns": [
@@ -529,6 +541,12 @@
         {
           "namespace": "EDAM",
           "id": "format_2585",
+          "version": null,
+          "supportedFeatures": []
+        },
+        {
+          "namespace": "EDAM",
+          "id": "format_9000",
           "version": null,
           "supportedFeatures": []
         }
@@ -688,6 +706,12 @@
           "id": "format_2585",
           "version": null,
           "supportedFeatures": []
+        },
+        {
+          "namespace": "EDAM",
+          "id": "format_9000",
+          "version": null,
+          "supportedFeatures": []
         }
       ],
       "modelChangePatterns": [
@@ -843,6 +867,12 @@
         {
           "namespace": "EDAM",
           "id": "format_2585",
+          "version": null,
+          "supportedFeatures": []
+        },
+        {
+          "namespace": "EDAM",
+          "id": "format_9000",
           "version": null,
           "supportedFeatures": []
         }
@@ -1034,6 +1064,12 @@
           "id": "format_2585",
           "version": null,
           "supportedFeatures": []
+        },
+        {
+          "namespace": "EDAM",
+          "id": "format_9000",
+          "version": null,
+          "supportedFeatures": []
         }
       ],
       "modelChangePatterns": [
@@ -1189,6 +1225,12 @@
         {
           "namespace": "EDAM",
           "id": "format_2585",
+          "version": null,
+          "supportedFeatures": []
+        },
+        {
+          "namespace": "EDAM",
+          "id": "format_9000",
           "version": null,
           "supportedFeatures": []
         }
@@ -1380,6 +1422,12 @@
           "id": "format_2585",
           "version": null,
           "supportedFeatures": []
+        },
+        {
+          "namespace": "EDAM",
+          "id": "format_9000",
+          "version": null,
+          "supportedFeatures": []
         }
       ],
       "modelChangePatterns": [
@@ -1535,6 +1583,12 @@
         {
           "namespace": "EDAM",
           "id": "format_2585",
+          "version": null,
+          "supportedFeatures": []
+        },
+        {
+          "namespace": "EDAM",
+          "id": "format_9000",
           "version": null,
           "supportedFeatures": []
         }
@@ -1747,6 +1801,12 @@
           "id": "format_2585",
           "version": null,
           "supportedFeatures": []
+        },
+        {
+          "namespace": "EDAM",
+          "id": "format_9000",
+          "version": null,
+          "supportedFeatures": []
         }
       ],
       "modelChangePatterns": [
@@ -1956,6 +2016,12 @@
         {
           "namespace": "EDAM",
           "id": "format_2585",
+          "version": null,
+          "supportedFeatures": []
+        },
+        {
+          "namespace": "EDAM",
+          "id": "format_9000",
           "version": null,
           "supportedFeatures": []
         }
@@ -2187,6 +2253,12 @@
           "id": "format_2585",
           "version": null,
           "supportedFeatures": []
+        },
+        {
+          "namespace": "EDAM",
+          "id": "format_9000",
+          "version": null,
+          "supportedFeatures": []
         }
       ],
       "modelChangePatterns": [
@@ -2369,6 +2441,12 @@
         {
           "namespace": "EDAM",
           "id": "format_2585",
+          "version": null,
+          "supportedFeatures": []
+        },
+        {
+          "namespace": "EDAM",
+          "id": "format_9000",
           "version": null,
           "supportedFeatures": []
         }
@@ -2569,6 +2647,12 @@
         {
           "namespace": "EDAM",
           "id": "format_2585",
+          "version": null,
+          "supportedFeatures": []
+        },
+        {
+          "namespace": "EDAM",
+          "id": "format_9000",
           "version": null,
           "supportedFeatures": []
         }
