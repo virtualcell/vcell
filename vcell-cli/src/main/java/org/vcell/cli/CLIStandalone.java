@@ -29,6 +29,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Set;
 
 public class CLIStandalone {
 	
@@ -219,6 +220,27 @@ public class CLIStandalone {
     			StandardOpenOption.CREATE, StandardOpenOption.APPEND);
     	}
    	}
+    // when creating the omex files from vcml, we write here the list of models that have spatial, non-spatial or both applications
+    public static void writeLogForOmexCreation(String outputBaseDir, Set<String> hasNonSpatialSet, Set<String> hasSpatialSet, Set<String> hasBothSet) throws IOException {
+    	if(isBatchExecution(outputBaseDir)) {
+    		String s = "";
+    		s += "Only Non-spatial applications\n";
+    		for(String name : hasNonSpatialSet) {
+    			s += (name + "\n");
+    		}
+    		s += "\nOnly Spatial applications\n";
+    		for(String name : hasSpatialSet) {
+    			s += (name + "\n");
+    		}
+    		s += "\nBoth Spatial and Non-Spatial applications\n";
+    		for(String name : hasBothSet) {
+    			s += (name + "\n");
+    		}
+    		String dest = outputBaseDir + File.separator + "omexCreationLog.txt";
+    		Files.write(Paths.get(dest), (s + "\n").getBytes(), 
+        			StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+    	}
+    }
     
     private static boolean containsExtension(String folder, String ext) {
     	GenericExtensionFilter filter = new GenericExtensionFilter(ext);

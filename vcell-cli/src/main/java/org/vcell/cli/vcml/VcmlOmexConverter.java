@@ -22,6 +22,7 @@ import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XmlHelper;
 import cbit.vcell.xml.XmlParseException;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.eclipse.jetty.util.resource.Resource;
@@ -37,6 +38,7 @@ import org.openrdf.model.vocabulary.OWL;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandlerException;
+import org.sbml.libcombine.CaOmexManifest;
 import org.sbml.libcombine.CombineArchive;
 import org.sbml.libcombine.KnownFormats;
 import org.sbpax.impl.HashGraph;
@@ -47,6 +49,7 @@ import org.sbpax.schemas.util.SBPAX3Util;
 import org.sbpax.util.SesameRioUtil;
 import org.vcell.cli.CLIHandler;
 import org.vcell.cli.CLIStandalone;
+import org.vcell.cli.OmexHandler;
 import org.vcell.db.ConnectionFactory;
 import org.vcell.db.DatabaseService;
 import org.vcell.sedml.PubMet;
@@ -96,6 +99,10 @@ public class VcmlOmexConverter {
 	private static boolean bHasDataOnly = false;	// we only export those simulations that have at least some results; set by -hasDataOnly CL argument
 	private static boolean bMakeLogsOnly = false;	// we do not build omex files, we just write the logs
 	private static CLIHandler cliHandler;
+	
+	private static Set<String> hasNonSpatialSet = new LinkedHashSet<>();	// model has at least one non spatial application (String is omex name)
+	private static Set<String> hasSpatialSet = new LinkedHashSet<>();		// model has at least one spatial application 
+	private static Set<String> hasBothSet = new LinkedHashSet<>();			// model has both spatial and non-spatial applications
 
 	public static void parseArgsAndConvert(String[] args) throws IOException {
         File input = null;
@@ -108,7 +115,6 @@ public class VcmlOmexConverter {
 
         args = parseArgs(args);
     	 
-//    	if (bHasDataOnly) {
 		try {
 			conFactory = DatabaseService.getInstance().createConnectionFactory();
 			adminDbTopLevel = new AdminDBTopLevel(conFactory);
@@ -116,7 +122,6 @@ public class VcmlOmexConverter {
 			System.err.println("\n\n\n=====>>>>EXPORT FAILED: connection to database failed");
 			e.printStackTrace();
 		}
-//    	}
 		
 		VCInfoContainer vcic;
 		try {
@@ -188,6 +193,12 @@ public class VcmlOmexConverter {
                     //                   System.exit(1);
                 }
             }
+            for(String name : hasBothSet) {
+            	// if a model has both spatial and non-spatial, we remove it from the other 2
+            	hasNonSpatialSet.remove(name);
+            	hasSpatialSet.remove(name);
+            }
+            CLIStandalone.writeLogForOmexCreation(outputDir, hasNonSpatialSet, hasSpatialSet, hasBothSet);
         } else {
             try {
                 assert input != null;
@@ -273,13 +284,13 @@ public class VcmlOmexConverter {
 				}
 			}
 		}
-        
+		
         // NOTE: SEDML exporter exports both SEDML as well as required SBML
-        List<Simulation> simsToExport =null;
+        List<Simulation> simsToExport = new ArrayList<Simulation>();
         Set<String> solverNames = new LinkedHashSet<>();
         if (bHasDataOnly) {
         	// make list of simulations to export with only sims that have data on the server
-        	simsToExport = new ArrayList<Simulation>();
+//        	simsToExport = new ArrayList<Simulation>();
 			for (Simulation simulation : bioModel.getSimulations()) {
 				SolverDescription solverDescription = simulation.getSolverTaskDescription().getSolverDescription();
 				String solverName = solverDescription.getShortDisplayLabel();
@@ -319,7 +330,10 @@ public class VcmlOmexConverter {
 //					}
 //				}
 			}
-			
+        } else {	// we add them all regardless of having data
+        	for (Simulation simulation : bioModel.getSimulations()) {
+        		simsToExport.add(simulation);
+        	}
         }
         
         if(outputBaseDir != null && bHasDataOnly == true && simsToExport.size() == 0) {
@@ -330,12 +344,26 @@ public class VcmlOmexConverter {
         	return false;
         }
         
-        String rdfString = getMetadata(vcmlName, bioModel);
-        XmlUtil.writeXMLStringToFile(rdfString, String.valueOf(Paths.get(outputDir, "metadata.rdf")), true);
-
+		for (Simulation simulation : simsToExport) {
+			SolverDescription sd = simulation.getSolverTaskDescription().getSolverDescription();
+			if(sd.isSpatial()) {
+				hasSpatialSet.add(vcmlName);
+				if(hasNonSpatialSet.contains(vcmlName)) {
+					hasBothSet.add(vcmlName);
+				}
+			} else {
+				hasNonSpatialSet.add(vcmlName);
+				if(hasSpatialSet.contains(vcmlName)) {
+					hasBothSet.add(vcmlName);
+				}
+			}
+		}
         if(bMakeLogsOnly) {
         	return false;
         }
+
+        String rdfString = getMetadata(vcmlName, bioModel);
+        XmlUtil.writeXMLStringToFile(rdfString, String.valueOf(Paths.get(outputDir, "metadata.rdf")), true);
         
         SEDMLExporter sedmlExporter = new SEDMLExporter(bioModel, sedmlLevel, sedmlVersion, simsToExport);
         String sedmlString = sedmlExporter.getSEDMLFile(outputDir, vcmlName, bForceVCML, bHasDataOnly, true);
@@ -370,7 +398,7 @@ public class VcmlOmexConverter {
                             Paths.get(outputDir, sd).toString(),
                             "./" + sd,
                             KnownFormats.lookupFormat("sbml"),
-                            false // mark file as master
+                            false
                     );
                 } else if (sd.endsWith(".rdf")) {
                     archive.addFile(
@@ -399,6 +427,21 @@ public class VcmlOmexConverter {
                 omexFile.delete();
             }
             isCreated = archive.writeToFile(omexPath);
+            
+//            CaOmexManifest manifest = archive.getManifest();
+//            // copy all the files unarchived in separate directories for easier tracking
+//            String dest = Paths.get(outputDir, vcmlName).toString();
+//            File destDir = new File(dest);
+//            FileUtils.forceMkdir(destDir);
+//            for (String sd : files) {
+//                if (sd.endsWith(".sedml") || sd.endsWith(".sbml") || sd.endsWith("xml") || sd.endsWith("vcml") || sd.endsWith("rdf")) {
+//                	String src = Paths.get(outputDir, sd).toString();
+//                	File srcFile = new File(src);
+//                	FileUtils.copyFileToDirectory(srcFile, destDir);
+//                }
+//            }
+//        	File srcFile = new File(inputVcmlFile);
+//        	FileUtils.copyFileToDirectory(srcFile, destDir);
 
             // Removing all other files(like SEDML, XML, SBML) after archiving
             for (String sd : files) {
