@@ -383,6 +383,10 @@ public class SolverHandler {
     	processBuilder.redirectErrorStream(true);
     	processBuilder.start();
 
+    	/*
+    	 * Interprocess communication with Python - proof of concept
+    	 * Possible race conditions
+    	 */
     	processBuilder.command("python","-i");
     	Process pythonProcess = processBuilder.start();
     	OutputStream outputStream = pythonProcess.getOutputStream();
