@@ -26,6 +26,8 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.eclipse.jetty.util.resource.Resource;
+import org.jlibsedml.SEDMLDocument;
+import org.jlibsedml.SedML;
 import org.openrdf.model.BNode;
 import org.openrdf.model.Graph;
 import org.openrdf.model.Literal;
@@ -164,6 +166,8 @@ public class VcmlOmexConverter {
             }
             String outputDir = args[3];			// full directory name, like C:\TEMP\biomodel\omex\native
             
+            CLIStandalone.writeSimErrorList(outputDir, "bForceVCML is " + bForceVCML);
+            CLIStandalone.writeSimErrorList(outputDir, "bForceSBML is " + bForceSBML);
             CLIStandalone.writeSimErrorList(outputDir, "hasDataOnly is " + bHasDataOnly);
             CLIStandalone.writeSimErrorList(outputDir, "makeLogsOnly is " + bMakeLogsOnly);
             
@@ -288,7 +292,7 @@ public class VcmlOmexConverter {
 		
         // NOTE: SEDML exporter exports both SEDML as well as required SBML
         List<Simulation> simsToExport = new ArrayList<Simulation>();
-        Set<String> solverNames = new LinkedHashSet<>();
+        LinkedHashSet<String> solverNames = new LinkedHashSet<>();
         if (bHasDataOnly) {
         	// make list of simulations to export with only sims that have data on the server
 //        	simsToExport = new ArrayList<Simulation>();
@@ -339,9 +343,11 @@ public class VcmlOmexConverter {
         
         if(outputBaseDir != null && bHasDataOnly == true && simsToExport.size() == 0) {
         	CLIStandalone.writeSimErrorList(outputBaseDir, vcmlName + " has no simulations with any results.");
+        	String allSolverNames = "";
         	for(String solverName : solverNames) {
-            	CLIStandalone.writeSimErrorList(outputBaseDir, "   " + solverName);
+        		allSolverNames += (solverName + " ");
         	}
+        	CLIStandalone.writeSimErrorList(outputBaseDir, "   " + allSolverNames);
         	return false;
         }
         
@@ -367,7 +373,22 @@ public class VcmlOmexConverter {
         XmlUtil.writeXMLStringToFile(rdfString, String.valueOf(Paths.get(outputDir, "metadata.rdf")), true);
         
         SEDMLExporter sedmlExporter = new SEDMLExporter(bioModel, sedmlLevel, sedmlVersion, simsToExport);
-        String sedmlString = sedmlExporter.getSEDMLFile(outputDir, vcmlName, bForceVCML, bForceSBML, bHasDataOnly, true);
+        SEDMLDocument sedmlDocument = sedmlExporter.getSEDMLFile0(outputDir, vcmlName, bForceVCML, bForceSBML, bHasDataOnly, true);
+        SedML sedmlModel = sedmlDocument.getSedMLModel();
+        if(sedmlModel.getModels().size() == 0) {
+            File dir = new File(outputDir);
+            String[] files = dir.list();
+            removeOtherFiles(outputDir, files);
+        	CLIStandalone.writeSimErrorList(outputBaseDir, vcmlName + ": the sedm model is empty.");
+        	String allSolverNames = "";
+        	for(String solverName : solverNames) {
+        		allSolverNames += (solverName + " ");
+        	}
+        	CLIStandalone.writeSimErrorList(outputBaseDir, "   " + allSolverNames);
+        	return false;
+        }
+        
+        String sedmlString = sedmlDocument.writeDocumentToString();
         XmlUtil.writeXMLStringToFile(sedmlString, String.valueOf(Paths.get(outputDir, vcmlName + ".sedml")), true);
 
         // libCombine needs native lib
@@ -445,19 +466,22 @@ public class VcmlOmexConverter {
 //        	FileUtils.copyFileToDirectory(srcFile, destDir);
 
             // Removing all other files(like SEDML, XML, SBML) after archiving
-            for (String sd : files) {
-                // removing
-                if (sd.endsWith(".sedml") || sd.endsWith(".sbml") || sd.endsWith("xml") || sd.endsWith("vcml") || sd.endsWith("rdf")) {
-                    isDeleted = Paths.get(outputDir, sd).toFile().delete();
-                }
-            }
-
-            if (isDeleted) System.out.println("Removed intermediary files");
+            removeOtherFiles(outputDir, files);
 
         } catch (Exception e) {
             throw new RuntimeException("createZipArchive threw exception: " + e.getMessage());
         }
         return isCreated;
+    }
+    
+    private static void removeOtherFiles(String outputDir, String[] files) {
+    	boolean isDeleted = false;
+        for (String sd : files) {
+            if (sd.endsWith(".sedml") || sd.endsWith(".sbml") || sd.endsWith("xml") || sd.endsWith("vcml") || sd.endsWith("rdf")) {
+                isDeleted = Paths.get(outputDir, sd).toFile().delete();
+            }
+        }
+        if (isDeleted) System.out.println("Removed intermediary files");
     }
     
     

@@ -174,7 +174,7 @@ public class SEDMLExporter {
 		}
 	}
 	
-	public String getSEDMLFile(String sPath, String sBaseFileName, boolean bForceVCML, boolean bForceSBML, 
+	public SEDMLDocument getSEDMLFile0(String sPath, String sBaseFileName, boolean bForceVCML, boolean bForceSBML, 
 				boolean bHasDataOnly, boolean bFromOmex) {
 
 		// Create an SEDMLDocument and create the SEDMLModel from the document, so that other details can be added to it in translateBioModel()
@@ -201,9 +201,19 @@ public class SEDMLExporter {
 
 		
 		translateBioModelToSedML(sPath, sBaseFileName, bForceVCML, bForceSBML, bHasDataOnly, bFromOmex);
+		
+		int models = sedmlModel.getModels().size();
+		int tasks = sedmlModel.getTasks().size();
+		int sims = sedmlModel.getSimulations().size();
 
 		// write SEDML document into SEDML writer, so that the SEDML str can be retrieved
-		return sedmlDocument.writeDocumentToString();
+//		return sedmlDocument.writeDocumentToString();
+		return sedmlDocument;
+	}
+	public String getSEDMLFile(String sPath, String sBaseFileName, boolean bForceVCML, boolean bForceSBML, 
+			boolean bHasDataOnly, boolean bFromOmex) {
+		SEDMLDocument doc = getSEDMLFile0(sPath, sBaseFileName, bForceVCML, bForceSBML, bHasDataOnly, bFromOmex);
+		return doc.writeDocumentToString();
 	}
 
 
