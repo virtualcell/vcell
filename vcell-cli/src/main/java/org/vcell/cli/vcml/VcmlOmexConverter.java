@@ -96,6 +96,7 @@ public class VcmlOmexConverter {
 	private static Map <String, BioModelInfo> bioModelInfoMap2 = new LinkedHashMap<>();		// key: biomodel name, value: biomodel info
 	
 	private static boolean bForceVCML = false;		// set by the -vcml CL argument, means we export to omex as vcml (if missing, default we try sbml first)
+	private static boolean bForceSBML = false;		// set by the -sbml CL argument, means we export to omex strictly as sbml (mutually exclusive with -vcml)
 	private static boolean bHasDataOnly = false;	// we only export those simulations that have at least some results; set by -hasDataOnly CL argument
 	private static boolean bMakeLogsOnly = false;	// we do not build omex files, we just write the logs
 	private static CLIHandler cliHandler;
@@ -366,7 +367,7 @@ public class VcmlOmexConverter {
         XmlUtil.writeXMLStringToFile(rdfString, String.valueOf(Paths.get(outputDir, "metadata.rdf")), true);
         
         SEDMLExporter sedmlExporter = new SEDMLExporter(bioModel, sedmlLevel, sedmlVersion, simsToExport);
-        String sedmlString = sedmlExporter.getSEDMLFile(outputDir, vcmlName, bForceVCML, bHasDataOnly, true);
+        String sedmlString = sedmlExporter.getSEDMLFile(outputDir, vcmlName, bForceVCML, bForceSBML, bHasDataOnly, true);
         XmlUtil.writeXMLStringToFile(sedmlString, String.valueOf(Paths.get(outputDir, vcmlName + ".sedml")), true);
 
         // libCombine needs native lib
@@ -474,6 +475,19 @@ public class VcmlOmexConverter {
     		position++;
     	}
     	
+    	position = 0;
+        for(String s : args) {
+        	if("-sbml".equalsIgnoreCase(s)) {
+        		bForceSBML = true;
+        		args = ArrayUtils.remove(args, position);
+        		break;
+        	}
+        	position++;
+        }
+        if(bForceVCML == true && bForceSBML == true) {
+        	throw new RuntimeException("-sbml and -vcml arguments are mutually exclusive");
+        }
+
     	position = 0;
     	for(String s : args) {
     		if("-hasDataOnly".equalsIgnoreCase(s)) {

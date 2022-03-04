@@ -40,8 +40,12 @@ public class CLIStandalone {
     		System.exit(1);
     	}
     	
-        if(args[0].toLowerCase().equals("convert")) {	// convert -i <input> -o <output> [-vcml] [-hasDataOnly] [-makeLogsOnly]
+         if(args[0].toLowerCase().equals("convert")) {	// convert -i <input> -o <output> [-vcml]/[-sbml] [-hasDataOnly] [-makeLogsOnly]
             // VCML to OMex conversion
+        	// -vcml and -sbml	- mutually exclusive, -sbml means export to sbml omex, -vcml means export to native omex
+         	// if both are missing we try sbml first, if impossible we try vcml
+         	// -hasDataOnly		- we only export the sims that have been previously run with the green button and have results on the server
+         	// -makeLogsOnly	- don't actually create the omex files, just make the logs
         	CLIUtils utils = null;
         	try {
         	   	utils = new CLIUtils();
