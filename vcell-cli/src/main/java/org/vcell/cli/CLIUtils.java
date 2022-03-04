@@ -14,6 +14,7 @@ import cbit.vcell.export.server.VariableSpecs;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.message.server.bootstrap.client.RemoteProxyVCellConnectionFactory.RemoteProxyException;
 import cbit.vcell.model.Species;
+import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.server.ClientExportController;
 import cbit.vcell.client.server.ClientServerManager;
@@ -67,7 +68,7 @@ import java.util.zip.ZipOutputStream;
 
 public class CLIUtils {
 	// timeout for compiled solver running long jobs; default 12 hours
-	//public static long EXECUTABLE_MAX_WALLCLOK_MILLIS = 60000;
+	//public static long EXECUTABLE_MAX_WALLCLOK_MILLIS = 20000;
 	public static long EXECUTABLE_MAX_WALLCLOK_MILLIS = 0;
 
     // Docker hardcode path
@@ -319,17 +320,17 @@ public class CLIUtils {
         }
     	VCSimulationDataIdentifier vcId = new VCSimulationDataIdentifier(vcSimID, 0);
     	
-        Species[] species = bm.getModel().getSpecies();
+        SpeciesContext[] species = bm.getModel().getSpeciesContexts();
         String[] variableNames = new String[species.length];
         for(int i = 0; i<species.length; i++) {
-        	variableNames[i] = species[i].getCommonName();
+        	variableNames[i] = species[i].getName();
         }
     	VariableSpecs variableSpecs = new VariableSpecs(variableNames, ExportConstants.VARIABLE_MULTI);
     	
         DataSetControllerImpl dsControllerImpl = new DataSetControllerImpl(null, userDir.getParentFile(), null);
         double[] dataSetTimes = dsControllerImpl.getDataSetTimes(vcId);
     	TimeSpecs timeSpecs = new TimeSpecs(0,dataSetTimes.length-1, dataSetTimes, ExportConstants.TIME_RANGE);
-    	timeSpecs = new TimeSpecs(0, 0, dataSetTimes, ExportConstants.TIME_RANGE);
+    	//timeSpecs = new TimeSpecs(0, 0, dataSetTimes, ExportConstants.TIME_RANGE);
 
     	
     	
