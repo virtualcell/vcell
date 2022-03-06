@@ -21,7 +21,7 @@
 	<bold>Export Data Panel</bold>
 	<list>
 	<item><bold>Export Format </bold>
-	Choose from spreadsheet comma delimited ascii (*.csv), QuickTime(QT,QTVR) movie (*.mov), image gif or jpeg (*.gif,*.jpg), raw data format (*.nrrd), polygon vtk or ucd (*.vtk,*.ucd)</item>
+	Choose from spreadsheet comma delimited ascii (*.csv), HDF5 files (*.hdf5), QuickTime(QT,QTVR) movie (*.mov), image gif or jpeg (*.gif,*.jpg), raw data format (*.nrrd), polygon vtk or ucd (*.vtk,*.ucd)</item>
 	<item><bold>Define Export Data Variables </bold> 
 	Select one or more volume and/or membrane variables from the list to export depending on the file format chosen.</item>
 	<item><bold>Define Export Data Range </bold> 
@@ -46,6 +46,22 @@
 	Used for 'User ROI...' and 'Current Slice..."' to export values (along ROI or slice XY grid) as text formatted numbers.  
 	Each data point value is separated with a comma (,) and rows are separated corresponding to the ROI or slice 'X' spatial dimension.  
 	Can be imported into common spreadsheet programs.
+	</item>
+	<item><bold>HDF5 Files (*.hdf5) </bold> 
+	Used for 'User ROI...', 'Current Slice..." and "Full"' to export values (along ROI or slice XY grid or all XYZ) as numerical data in HDF5 file format.  
+	Data are saved as multi-dimensional arrays in a heirarchical format defined by the HDF5 standard.  
+	Can be viewed with HDF5 Viewer (see https://www.hdfgroup.org/downloads/hdfview/) or imported into Fiji/ImageJ.  
+	<bold>Example procedure for opening HDF5 data in Fiji/Image program:  </bold>
+	<bold>IMPORT SIM DATA</bold>  File->Import->HDF5...  
+	Select All ".../{varName}/DataValues (XYZT)" datasets to be imported.   
+	click "Individual Hyperstacks (custom layout)"->enter "xyzt" in text box.  
+	Hyperstack viewer will appear.  
+	<bold>DISPLAY SCALE</bold>  Scale display brightness.  
+	(method 1) Image->Adjust->Brightness/Contrast->Auto->(click x to close window).  
+	(method 2) Analyze->Histogram->select "stack histogram"->OK->leave histogram window open, Find min/max values->Image->Adjust->Brightness/Contrast...->Click "Set"->Enter Min/Max displayed value found in histogram window.  
+	<bold>ALIGN VIEW</bold>  Align Fiji/Imagej viewer with vcell:  
+	Image->Transform->Flip Vertically->Process All Image yes.  
+	Image->Transform->Rotate 90 degrees right.  
 	</item>
 	<item><bold>QuickTime(QT,QTVR) files (*.mov) </bold> 
 	Used for 'Current Slice from "View Data"' or 'Full' to export values in Apple's ubiquitous movie file format.  

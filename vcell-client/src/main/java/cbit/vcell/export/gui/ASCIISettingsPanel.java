@@ -23,6 +23,7 @@ import cbit.vcell.export.server.ASCIISpecs;
 import cbit.vcell.export.server.ExportConstants;
 import cbit.vcell.export.server.ExportFormat;
 import cbit.vcell.export.server.ExportSpecs;
+import javax.swing.JLabel;
 /**
  * This type was created in VisualAge.
  */
@@ -303,7 +304,6 @@ private javax.swing.JButton getJButtonOK() {
 		try {
 			ivjJButtonOK = new javax.swing.JButton();
 			ivjJButtonOK.setName("JButtonOK");
-			ivjJButtonOK.setPreferredSize(new java.awt.Dimension(51, 25));
 			ivjJButtonOK.setFont(new java.awt.Font("dialog", 1, 12));
 			ivjJButtonOK.setText("OK");
 			ivjJButtonOK.setMaximumSize(new java.awt.Dimension(100, 50));
@@ -395,13 +395,13 @@ private javax.swing.JPanel getJPanel1() {
 			ivjJPanel1.setLayout(new java.awt.GridBagLayout());
 
 			java.awt.GridBagConstraints constraintsJButtonOK = new java.awt.GridBagConstraints();
+			constraintsJButtonOK.fill = GridBagConstraints.HORIZONTAL;
 			constraintsJButtonOK.gridx = 0; constraintsJButtonOK.gridy = 0;
-			constraintsJButtonOK.insets = new java.awt.Insets(4, 4, 4, 4);
 			getJPanel1().add(getJButtonOK(), constraintsJButtonOK);
 
 			java.awt.GridBagConstraints constraintsCancelJButton = new java.awt.GridBagConstraints();
+			constraintsCancelJButton.fill = GridBagConstraints.HORIZONTAL;
 			constraintsCancelJButton.gridx = 1; constraintsCancelJButton.gridy = 0;
-			constraintsCancelJButton.insets = new java.awt.Insets(4, 4, 4, 4);
 			getJPanel1().add(getCancelJButton(), constraintsCancelJButton);
 			// user code begin {1}
 			// user code end
@@ -506,9 +506,8 @@ private void initialize() {
 		// user code begin {1}
 		// user code end
 		setName("MovieSettingsPanel");
-		setPreferredSize(new Dimension(215, 345));
 		setLayout(new java.awt.GridBagLayout());
-		setSize(188, 206);
+		setSize(235, 403);
 
 		java.awt.GridBagConstraints constraintsJLabelDataType = new java.awt.GridBagConstraints();
 		constraintsJLabelDataType.gridx = 0; constraintsJLabelDataType.gridy = 0;
@@ -518,6 +517,7 @@ private void initialize() {
 		add(getJLabelDataType(), constraintsJLabelDataType);
 
 		java.awt.GridBagConstraints constraintsJRadioButtonVariables = new java.awt.GridBagConstraints();
+		constraintsJRadioButtonVariables.anchor = GridBagConstraints.WEST;
 		constraintsJRadioButtonVariables.gridx = 0; constraintsJRadioButtonVariables.gridy = 1;
 		constraintsJRadioButtonVariables.fill = java.awt.GridBagConstraints.HORIZONTAL;
 		constraintsJRadioButtonVariables.weightx = 1.0;
@@ -525,6 +525,7 @@ private void initialize() {
 		add(getJRadioButtonVariables(), constraintsJRadioButtonVariables);
 
 		java.awt.GridBagConstraints constraintsJRadioButtonParticles = new java.awt.GridBagConstraints();
+		constraintsJRadioButtonParticles.anchor = GridBagConstraints.WEST;
 		constraintsJRadioButtonParticles.gridx = 0; constraintsJRadioButtonParticles.gridy = 2;
 		constraintsJRadioButtonParticles.fill = java.awt.GridBagConstraints.HORIZONTAL;
 		constraintsJRadioButtonParticles.weightx = 1.0;
@@ -550,6 +551,7 @@ private void initialize() {
 		constraintsJCheckBoxSwitch.insets = new Insets(0, 5, 5, 0);
 		add(getJCheckBoxSwitch(), constraintsJCheckBoxSwitch);
 		GridBagConstraints gbc_chckbxExportMultipleSimulations = new GridBagConstraints();
+		gbc_chckbxExportMultipleSimulations.anchor = GridBagConstraints.WEST;
 		gbc_chckbxExportMultipleSimulations.fill = GridBagConstraints.HORIZONTAL;
 		gbc_chckbxExportMultipleSimulations.insets = new Insets(0, 5, 5, 0);
 		gbc_chckbxExportMultipleSimulations.gridx = 0;
@@ -561,7 +563,8 @@ private void initialize() {
 		gbc_simSelectorButton.gridy = 7;
 		add(getSimSelectorButton(), gbc_simSelectorButton);
 		GridBagConstraints gbc_timeSimVarChkBox = new GridBagConstraints();
-		gbc_timeSimVarChkBox.insets = new Insets(0, 0, 5, 0);
+		gbc_timeSimVarChkBox.anchor = GridBagConstraints.WEST;
+		gbc_timeSimVarChkBox.insets = new Insets(0, 5, 5, 0);
 		gbc_timeSimVarChkBox.gridx = 0;
 		gbc_timeSimVarChkBox.gridy = 8;
 		add(getTimeSimVarChkBox(), gbc_timeSimVarChkBox);
@@ -576,13 +579,14 @@ private void initialize() {
 		gbc_paramScanSelectorButton.gridx = 0;
 		gbc_paramScanSelectorButton.gridy = 10;
 		add(getParamScanSelectorButton(), gbc_paramScanSelectorButton);
+		GridBagConstraints gbc_lblSeeVcellHelp = new GridBagConstraints();
+		gbc_lblSeeVcellHelp.insets = new Insets(0, 0, 5, 0);
+		gbc_lblSeeVcellHelp.gridx = 0;
+		gbc_lblSeeVcellHelp.gridy = 11;
+		add(getLblSeeVcellHelp(), gbc_lblSeeVcellHelp);
 
 		java.awt.GridBagConstraints constraintsJPanel1 = new java.awt.GridBagConstraints();
-		constraintsJPanel1.weighty = 1.0;
-		constraintsJPanel1.gridx = 0; constraintsJPanel1.gridy = 11;
-		constraintsJPanel1.fill = java.awt.GridBagConstraints.HORIZONTAL;
-		constraintsJPanel1.weightx = 1.0;
-		constraintsJPanel1.insets = new java.awt.Insets(4, 4, 4, 4);
+		constraintsJPanel1.gridx = 0; constraintsJPanel1.gridy = 12;
 		add(getJPanel1(), constraintsJPanel1);
 		initConnections();
 		connEtoM1();
@@ -716,6 +720,7 @@ private void updateExportDataType() {
 	private JButton paramScanSelectorButton;
 	private JCheckBox timeSimVarChkBox;
 	private JCheckBox ivjJCheckBoxHDF5;
+	private JLabel lblSeeVcellHelp;
 	public void setSimulationSelector(ExportSpecs.SimulationSelector simulationSelector){
 		this.simulationSelector = simulationSelector;
 		getChckbxExportMultipleSimulations().setEnabled(simulationSelector != null && simulationSelector.getNumAvailableSimulations()>1);
@@ -792,5 +797,15 @@ private void updateExportDataType() {
 			ivjJCheckBoxHDF5 = new JCheckBox("HDF5 Format");
 		}
 		return ivjJCheckBoxHDF5;
+	}
+	private JLabel getLblSeeVcellHelp() {
+		if (lblSeeVcellHelp == null) {
+			lblSeeVcellHelp = new JLabel("See VCell Help (Biomodel Applications/Simulations/Simulation Results/Exporting Spatial Simulation Results)");
+			lblSeeVcellHelp.setMinimumSize(new Dimension(300, 15));
+			lblSeeVcellHelp.setMaximumSize(new Dimension(300, 15));
+			lblSeeVcellHelp.setPreferredSize(new Dimension(300, 15));
+			lblSeeVcellHelp.setToolTipText("See VCell Help (Biomodel Applications/Simulations/Simulation Results/Exporting Spatial Simulation Results)");
+		}
+		return lblSeeVcellHelp;
 	}
 }
