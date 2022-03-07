@@ -74,6 +74,8 @@ import java.io.FileOutputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.net.URL;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
@@ -368,8 +370,39 @@ public class VcmlOmexConverter {
         if(bMakeLogsOnly) {
         	return false;
         }
+        
+        
+//        BioModelInfo bioModelInfo = bioModelInfoMap.get(vcmlName);		// we first assume that vcml name is the model id
+//        if(bioModelInfo == null) {										// if not, we try based on biomodel name
+//        	bioModelInfo = bioModelInfoMap2.get(vcmlName);
+//        }
+//        if(bioModelInfo == null) {
+//        	System.out.println("---" + vcmlName);
+//        } else {
+//            Version version1 = bioModelInfo.getVersion();
+//            Version version2 = bioModel.getVersion();
+//        	System.out.println("+++" + vcmlName);
+//        }
+        
+        Version version = bioModel.getVersion();
+        String versionKey = version.getVersionKey().toString();
+        
+//        String omexPath = Paths.get(outputDir, vcmlName + ".omex").toString();
+//        File omexFile = new File(omexPath);
+//      URL source = new URL("https://vcellapi-beta.cam.uchc.edu:8080/biomodel/200301683/diagram");;
+//      File destination = new File("stringOrUrl");
+        // https://vcellapi-beta.cam.uchc.edu:8080/biomodel/200301683/diagram
+        // https://www.iana.org/assignments/media-types/image/png
+        
+        String sourcePath = "https://vcellapi-beta.cam.uchc.edu:8080/biomodel/" + versionKey + "/diagram";
+        String destinationPath = Paths.get(outputDir, "diagram.png").toString();
+        URL source = new URL(sourcePath);
+        File destination = new File(destinationPath);
+        int connectionTimeout = 10000;
+        int readTimeout = 20000;
+        FileUtils.copyURLToFile(source, destination, connectionTimeout, readTimeout);
 
-        String rdfString = getMetadata(vcmlName, bioModel);
+        String rdfString = getMetadata(vcmlName, bioModel, destination);
         XmlUtil.writeXMLStringToFile(rdfString, String.valueOf(Paths.get(outputDir, "metadata.rdf")), true);
         
         SEDMLExporter sedmlExporter = new SEDMLExporter(bioModel, sedmlLevel, sedmlVersion, simsToExport);
@@ -430,6 +463,13 @@ public class VcmlOmexConverter {
 //                            KnownFormats.lookupFormat("xml"),
                             false
                     );
+                } else if(sd.endsWith(".png")) {
+                    archive.addFile(
+                            Paths.get(outputDir, sd).toString(),
+                            "./" + sd,
+                            "https://www.iana.org/assignments/media-types/image/png",
+                            false
+                    );
                 }
             }
 
@@ -477,7 +517,7 @@ public class VcmlOmexConverter {
     private static void removeOtherFiles(String outputDir, String[] files) {
     	boolean isDeleted = false;
         for (String sd : files) {
-            if (sd.endsWith(".sedml") || sd.endsWith(".sbml") || sd.endsWith("xml") || sd.endsWith("vcml") || sd.endsWith("rdf")) {
+            if (sd.endsWith(".sedml") || sd.endsWith(".sbml") || sd.endsWith("xml") || sd.endsWith("vcml") || sd.endsWith("rdf") || sd.endsWith("png")) {
                 isDeleted = Paths.get(outputDir, sd).toFile().delete();
             }
         }
@@ -535,7 +575,7 @@ public class VcmlOmexConverter {
 		return args;
 	}
 	
-    private static String getMetadata(String vcmlName, BioModel bioModel) {
+    private static String getMetadata(String vcmlName, BioModel bioModel, File diagram) {
     	String ret = "";
         String ns = DefaultNameSpaces.EX.uri;
 
@@ -607,6 +647,15 @@ public class VcmlOmexConverter {
 		String end = "\n\n" + ret.substring(ret.indexOf(PubMet.EndDescription0));
 		ret = ret.substring(0, ret.indexOf(PubMet.EndDescription0));
 
+		// https://vcellapi-beta.cam.uchc.edu:8080/biomodel/200301683/diagram
+		// <collex:thumbnail rdf:resource="http://omex-library.org/Monkeyflower_pigmentation_v2.omex/Figure1.png"/>
+		if(diagram.exists()) {
+			ret += PubMet.StartDiagram;
+			ret += description;
+			ret += "/diagram.png";
+			ret += PubMet.EndDiagram;
+		}
+		
 		ret += PubMet.CommentTaxon;
 		
 		ret += PubMet.CommentOther;

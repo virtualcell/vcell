@@ -52,6 +52,9 @@ public class PubMet {
 	public static final String EndIdentifier = "\"/>";
 	public static final String ResourceIdentifier = "http://identifiers.org/";
 	
+	public static final String StartDiagram = "\n\t<collex:thumbnail rdf:resource=\"";
+	public static final String EndDiagram = "\"/>";
+	
 	public static final String StartIs = "\n\t<bqmodel:is>";
 	public static final String EndIs = "\n\t</bqmodel:is>";
 	public static final String StartIsDescribedBy = "\n\t<bqmodel:isDescribedBy>";
