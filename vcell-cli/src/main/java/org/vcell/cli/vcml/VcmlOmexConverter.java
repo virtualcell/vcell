@@ -268,7 +268,7 @@ public class VcmlOmexConverter {
 	        	CLIStandalone.writeSimErrorList(outputBaseDir, vcmlName + " excluded: FieldData not supported at this time.");
 				SolverDescription solverDescription = simulation.getSolverTaskDescription().getSolverDescription();
 				String solverName = solverDescription.getShortDisplayLabel();
-				CLIStandalone.writeSimErrorList(outputBaseDir, "   " + solverName);
+				//CLIStandalone.writeSimErrorList(outputBaseDir, "   " + solverName);
 			}
 		}
 		for(Simulation simulation : simulationsToRemove) {
@@ -345,11 +345,11 @@ public class VcmlOmexConverter {
         
         if(outputBaseDir != null && bHasDataOnly == true && simsToExport.size() == 0) {
         	CLIStandalone.writeSimErrorList(outputBaseDir, vcmlName + " has no simulations with any results.");
-        	String allSolverNames = "";
-        	for(String solverName : solverNames) {
-        		allSolverNames += (solverName + " ");
-        	}
-        	CLIStandalone.writeSimErrorList(outputBaseDir, "   " + allSolverNames);
+//        	String allSolverNames = "";
+//        	for(String solverName : solverNames) {
+//        		allSolverNames += (solverName + " ");
+//        	}
+//        	CLIStandalone.writeSimErrorList(outputBaseDir, "   " + allSolverNames);
         	return false;
         }
         
@@ -372,28 +372,8 @@ public class VcmlOmexConverter {
         }
         
         
-//        BioModelInfo bioModelInfo = bioModelInfoMap.get(vcmlName);		// we first assume that vcml name is the model id
-//        if(bioModelInfo == null) {										// if not, we try based on biomodel name
-//        	bioModelInfo = bioModelInfoMap2.get(vcmlName);
-//        }
-//        if(bioModelInfo == null) {
-//        	System.out.println("---" + vcmlName);
-//        } else {
-//            Version version1 = bioModelInfo.getVersion();
-//            Version version2 = bioModel.getVersion();
-//        	System.out.println("+++" + vcmlName);
-//        }
-        
         Version version = bioModel.getVersion();
         String versionKey = version.getVersionKey().toString();
-        
-//        String omexPath = Paths.get(outputDir, vcmlName + ".omex").toString();
-//        File omexFile = new File(omexPath);
-//      URL source = new URL("https://vcellapi-beta.cam.uchc.edu:8080/biomodel/200301683/diagram");;
-//      File destination = new File("stringOrUrl");
-        // https://vcellapi-beta.cam.uchc.edu:8080/biomodel/200301683/diagram
-        // https://www.iana.org/assignments/media-types/image/png
-        
         String sourcePath = "https://vcellapi-beta.cam.uchc.edu:8080/biomodel/" + versionKey + "/diagram";
         String destinationPath = Paths.get(outputDir, "diagram.png").toString();
         URL source = new URL(sourcePath);
@@ -412,12 +392,12 @@ public class VcmlOmexConverter {
             File dir = new File(outputDir);
             String[] files = dir.list();
             removeOtherFiles(outputDir, files);
-        	CLIStandalone.writeSimErrorList(outputBaseDir, vcmlName + ": the sedm model is empty.");
-        	String allSolverNames = "";
-        	for(String solverName : solverNames) {
-        		allSolverNames += (solverName + " ");
-        	}
-        	CLIStandalone.writeSimErrorList(outputBaseDir, "   " + allSolverNames);
+        	CLIStandalone.writeSimErrorList(outputBaseDir, vcmlName + ": the sedm is empty.");
+//        	String allSolverNames = "";
+//        	for(String solverName : solverNames) {
+//        		allSolverNames += (solverName + " ");
+//        	}
+//        	CLIStandalone.writeSimErrorList(outputBaseDir, "   " + allSolverNames);
         	return false;
         }
         
