@@ -114,6 +114,7 @@ public class SolverHandler {
             	ODESolverResultSet odeSolverResultSet = null;
             	SolverTaskDescription std = null;
             	SolverDescription sd = null;
+            	int solverStatus = SolverStatus.SOLVER_READY;
             	
                 try {
                 	SimulationOwner so = sim.getSimulationOwner();
@@ -192,7 +193,8 @@ public class SolverHandler {
                 		utils.setOutputMessage(sedmlLocation, sim.getImportedTaskID(), outDir, "task", logTaskMessage);
                         CLIUtils.drawBreakLine("-", 100);
                     } else {
-                        System.err.println("Solver status: " + solver.getSolverStatus().getStatus());
+                    	solverStatus = solver.getSolverStatus().getStatus();
+                        System.err.println("Solver status: " + solverStatus);
                         System.err.println("Solver message: " + solver.getSolverStatus().getSimulationMessage().getDisplayMessage());
                         String error = solver.getSolverStatus().getSimulationMessage().getDisplayMessage() + " ";
                         throw new RuntimeException(error);
@@ -218,7 +220,11 @@ public class SolverHandler {
             			System.err.println();
             			logTaskError += str;
             		} else {
-            			utils.updateTaskStatusYml(sedmlLocation, sim.getImportedTaskID(), CLIUtils.Status.FAILED, outDir ,duration + "", kisao);
+            			if(solverStatus == SolverStatus.SOLVER_ABORTED) {
+            				utils.updateTaskStatusYml(sedmlLocation, sim.getImportedTaskID(), CLIUtils.Status.ABORTED, outDir ,duration + "", kisao);
+            			} else {
+            				utils.updateTaskStatusYml(sedmlLocation, sim.getImportedTaskID(), CLIUtils.Status.FAILED, outDir ,duration + "", kisao);
+            			}
             		}
 //                    CLIUtils.finalStatusUpdate(CLIUtils.Status.FAILED, outDir);
                     if (e.getMessage() != null) {

@@ -136,7 +136,8 @@ public class CLIUtils {
         RUNNING("Simulation still running"),
         SKIPPED("Simulation skipped"),
         SUCCEEDED("Simulation succeeded"),
-        FAILED("Simulation failed");
+        FAILED("Simulation failed"),
+        ABORTED("Simulation aborted");
 
         Status(String desc) {
         }
