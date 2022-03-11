@@ -68,8 +68,8 @@ import java.util.zip.ZipOutputStream;
 
 public class CLIUtils {
 	// timeout for compiled solver running long jobs; default 12 hours
-	public static long EXECUTABLE_MAX_WALLCLOK_MILLIS = 600000;
-	//public static long EXECUTABLE_MAX_WALLCLOK_MILLIS = 0;
+	//public static long EXECUTABLE_MAX_WALLCLOK_MILLIS = 600000;
+	public static long EXECUTABLE_MAX_WALLCLOK_MILLIS = 0;
 
     // Docker hardcode path
     // Note: Docker Working Directory and Singularity working directory works in different way.

@@ -60,11 +60,12 @@ public class CLIStandalone {
         	}
         }
 
-        else {										// -i <input> -o <output> [-keepTempFiles]
+        else {										// -i <input> -o <output> [-keepTempFiles] [-timeOut xxxxx]  timeout in milliseconds
 
             File input = null;
             boolean keepTempFiles = false;		// we keep simulation results for debugging, etc; set by -keepTempFiles CL argument
             boolean exactMatchOnly = false;		// we run the solver only if it's an exact kisao match
+            boolean timeOut = false;
     		int position = 0;
         	for(String s : args) {
         		if("-keepTempFiles".equalsIgnoreCase(s)) {
@@ -83,6 +84,24 @@ public class CLIStandalone {
         		}
         		position++;
         	}
+    		position = 0;
+    		int timeout = 0;
+        	for(String s : args) {
+        		if("-timeOut".equalsIgnoreCase(s)) {
+        			timeOut = true;
+        			args = ArrayUtils.remove(args, position);
+        			
+        			s = args[position];		// the timeout in milliseconds
+        			try {
+        				CLIUtils.EXECUTABLE_MAX_WALLCLOK_MILLIS = Integer.parseInt(s);
+        			} catch(NumberFormatException e) {
+        				System.out.println("Error initializing the timeout from the command line, assuming no timeout");
+        			}
+        			args = ArrayUtils.remove(args, position);
+        			break;
+        		}
+        		position++;
+        	}
 
             // Arguments may not always be files, trying for other scenarios
             try {
@@ -96,8 +115,8 @@ public class CLIStandalone {
 				
         		PropertyLoader.loadProperties();
            		utils.recalculatePaths();
-
-			} catch (IOException e1) {
+ 
+           	} catch (IOException e1) {
 				e1.printStackTrace();
                 System.exit(1);			// can't do anything without CLIUtils
 			}
