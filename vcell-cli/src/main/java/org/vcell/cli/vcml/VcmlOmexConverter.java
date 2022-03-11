@@ -305,12 +305,16 @@ public class VcmlOmexConverter {
 				// check server status
 				KeyValue parentKey = simulation.getSimulationVersion().getParentSimulationReference();
 				SimulationJobStatusPersistent[] statuses = adminDbTopLevel.getSimulationJobStatusArray(parentKey == null ? simulation.getKey() : parentKey, false);
-				if (statuses == null) continue;
-				if (statuses.length == 0) continue;
+				if (statuses == null) {
+					continue;
+				}
+				if (statuses.length == 0) {
+					continue;
+				}
 				for (int i = 0; i < statuses.length; i++) {
 					if (statuses[i].hasData()) {
 						simsToExport.add(simulation);
-						continue;
+						break;
 					}
 				}
 				
