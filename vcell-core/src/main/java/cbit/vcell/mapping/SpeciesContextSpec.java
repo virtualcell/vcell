@@ -18,12 +18,14 @@ import java.util.Map;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Compare;
+import org.vcell.util.Displayable;
 import org.vcell.util.Issue;
 import org.vcell.util.Issue.IssueCategory;
 import org.vcell.util.Issue.IssueSource;
 import org.vcell.util.IssueContext;
 import org.vcell.util.IssueContext.ContextType;
 import org.vcell.util.Matchable;
+import org.vcell.util.document.Identifiable;
 
 import cbit.vcell.geometry.GeometryClass;
 import cbit.vcell.geometry.surface.GeometricRegion;
@@ -63,7 +65,8 @@ import cbit.vcell.units.VCUnitDefinition;
 import net.sourceforge.interval.ia_math.RealInterval;
 
 @SuppressWarnings("serial")
-public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Serializable, SimulationContextEntity, IssueSource {
+public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Serializable, SimulationContextEntity, IssueSource,
+	Identifiable, Displayable {
 
 	public static final String PARAMETER_NAME_PROXY_PARAMETERS = "proxyParameters";
 	private static final String PROPERTY_NAME_WELL_MIXED = "wellMixed";
@@ -1698,6 +1701,19 @@ public SpatialQuantity[] getVelocityQuantities(QuantityComponent component) {
 @Override
 public Kind getSimulationContextKind() {
 	return SimulationContext.Kind.SPECIFICATIONS_KIND;
+}
+
+public static final String typeName = "SpeciesContextSpec";
+@Override
+public String getDisplayName() {
+	if(getSpeciesContext() != null) {
+		return getSpeciesContext().getDisplayName();
+	}
+	return("?");
+}
+@Override
+public String getDisplayType() {
+	return typeName;
 }
 
 }

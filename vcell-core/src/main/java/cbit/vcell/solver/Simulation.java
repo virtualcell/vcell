@@ -21,11 +21,13 @@ import org.jlibsedml.SedML;
 import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.Compare;
 import org.vcell.util.DataAccessException;
+import org.vcell.util.Displayable;
 import org.vcell.util.Issue;
 import org.vcell.util.Issue.IssueSource;
 import org.vcell.util.IssueContext;
 import org.vcell.util.Matchable;
 import org.vcell.util.TokenMangler;
+import org.vcell.util.document.Identifiable;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.PropertyConstants;
 import org.vcell.util.document.SimulationVersion;
@@ -49,7 +51,7 @@ import cbit.vcell.solver.ode.ODESolverResultSet;
  */
 @SuppressWarnings("serial")
 public class Simulation implements Versionable, Matchable, java.beans.VetoableChangeListener, java.io.Serializable, PropertyChangeListener,
-		SimulationContextEntity, IssueSource {
+		SimulationContextEntity, IssueSource, Identifiable, Displayable {
 
 	public static final String PSF_FUNCTION_NAME = "__PSF__";
 	/**
@@ -982,10 +984,20 @@ public void vetoableChange(java.beans.PropertyChangeEvent evt) throws java.beans
 		return SimulationContext.Kind.SIMULATIONS_KIND;
 	}
 	public void setImportedTaskID(String id) {
-		// TODO Auto-generated method stub
 		fieldImportedTaskID = id;
 	}
 	public String getImportedTaskID() {
 		return fieldImportedTaskID;
+	}
+	
+	
+	public static final String typeName = "Simulation";
+	@Override
+	public String getDisplayName() {
+		return getName();
+	}
+	@Override
+	public String getDisplayType() {
+		return typeName;
 	}
 }

@@ -14,11 +14,13 @@ import java.beans.VetoableChangeListener;
 import java.util.List;
 import java.util.Map;
 
+import org.vcell.util.Displayable;
 import org.vcell.util.Issue;
 import org.vcell.util.Issue.IssueCategory;
 import org.vcell.util.Issue.IssueSource;
 import org.vcell.util.IssueContext;
 import org.vcell.util.Matchable;
+import org.vcell.util.document.Identifiable;
 
 import cbit.vcell.mapping.SimulationContext.Kind;
 import cbit.vcell.model.BioNameScope;
@@ -38,7 +40,8 @@ import cbit.vcell.parser.ScopedSymbolTable;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.units.VCUnitDefinition;
 
-public class ReactionSpec implements ModelProcessSpec, ScopedSymbolTable, VetoableChangeListener, SimulationContextEntity {
+public class ReactionSpec implements ModelProcessSpec, ScopedSymbolTable, VetoableChangeListener, SimulationContextEntity,
+	Identifiable, Displayable {
 	private ReactionStep reactionStep = null;
 
 	public final static int INCLUDED = 0;
@@ -778,5 +781,18 @@ public void vetoableChange(java.beans.PropertyChangeEvent evt) throws java.beans
 	@Override
 	public Kind getSimulationContextKind() {
 		return SimulationContext.Kind.SPECIFICATIONS_KIND;
+	}
+
+	public static final String typeName = "ReactionSpec";
+	@Override
+	public String getDisplayName() {
+		if(getReactionStep() != null) {
+			return getReactionStep().getDisplayName();
+		}
+		return("?");
+	}
+	@Override
+	public String getDisplayType() {
+		return typeName;
 	}
 }
