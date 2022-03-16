@@ -50,7 +50,9 @@ import cbit.vcell.biomodel.meta.IdentifiableProvider;
 import cbit.vcell.biomodel.meta.VCID;
 import cbit.vcell.biomodel.meta.VCMetaData;
 import cbit.vcell.geometry.Geometry;
+import cbit.vcell.mapping.ReactionSpec;
 import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.mapping.SpeciesContextSpec;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.model.BioModelEntityObject;
 import cbit.vcell.model.Model;
@@ -1195,6 +1197,15 @@ public VCID getVCID(Identifiable identifiable) {
 	} else if (identifiable instanceof SimulationContext) {
 		localName = ((SimulationContext)identifiable).getName();
 		className = VCID.CLASS_APPLICATION;
+	} else if (identifiable instanceof Simulation) {
+		localName = ((Simulation)identifiable).getName();
+		className = VCID.CLASS_SIMULATION;
+	} else if (identifiable instanceof SpeciesContextSpec) {
+		localName = ((SpeciesContextSpec)identifiable).getDisplayName();
+		className = VCID.CLASS_SPECIES_CONTEXT_SPEC;
+	} else if (identifiable instanceof ReactionSpec) {
+		localName = ((ReactionSpec)identifiable).getDisplayName();
+		className = VCID.CLASS_REACTION_SPEC;
 	} else {
 		throw new RuntimeException("unsupported Identifiable class");
 	}
@@ -1214,9 +1225,15 @@ public Set<Identifiable> getAllIdentifiables() {
 	allIdenfiables.addAll(Arrays.asList(fieldModel.getSpecies()));
 	allIdenfiables.addAll(Arrays.asList(fieldModel.getStructures()));
 	allIdenfiables.addAll(Arrays.asList(fieldModel.getReactionSteps()));
-//	allIdenfiables.addAll(Arrays.asList(fieldSimulationContexts));
 	Set<BioPaxObject> biopaxObjects = getPathwayModel().getBiopaxObjects();
 	allIdenfiables.addAll(biopaxObjects);
+	
+	allIdenfiables.addAll(Arrays.asList(fieldSimulationContexts));
+	for(SimulationContext sc : fieldSimulationContexts) {
+		allIdenfiables.addAll(Arrays.asList(sc.getSimulations()));
+		allIdenfiables.addAll(Arrays.asList(sc.getReactionContext().getSpeciesContextSpecs()));
+		allIdenfiables.addAll(Arrays.asList(sc.getReactionContext().getReactionSpecs()));
+	}
 
 	allIdenfiables.addAll(fieldModel.getRbmModelContainer().getMolecularTypeList());
 	allIdenfiables.addAll(fieldModel.getRbmModelContainer().getReactionRuleList());

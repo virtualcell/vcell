@@ -29,6 +29,9 @@ public class VCID {
 
 	public static final String CLASS_BIOPAX_OBJECT = "BioPaxObject";
 	public static final String CLASS_APPLICATION = "SimulationContext";
+	public static final String CLASS_SIMULATION = "Simulation";
+	public static final String CLASS_SPECIES_CONTEXT_SPEC = "SpeciesContextSpec";
+	public static final String CLASS_REACTION_SPEC = "ReactionSpec";
 
 
 	private String id;

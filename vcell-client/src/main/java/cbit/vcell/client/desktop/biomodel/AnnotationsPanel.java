@@ -79,7 +79,9 @@ import cbit.vcell.biomodel.meta.MiriamManager.MiriamRefGroup;
 import cbit.vcell.biomodel.meta.MiriamManager.MiriamResource;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.desktop.BioModelCellRenderer;
+import cbit.vcell.mapping.ReactionSpec;
 import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.mapping.SpeciesContextSpec;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.RbmObservable;
 import cbit.vcell.model.ReactionRule;
@@ -87,6 +89,7 @@ import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.Species;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
+import cbit.vcell.solver.Simulation;
 import cbit.vcell.xml.gui.MiriamTreeModel;
 import cbit.vcell.xml.gui.MiriamTreeModel.LinkNode;
 /**
@@ -163,7 +166,11 @@ public class AnnotationsPanel extends DocumentEditorSubPanel {
 					|| evt.getSource() instanceof Structure
 					|| evt.getSource() instanceof Model.ModelParameter
 					|| evt.getSource() instanceof BioPaxObject
+					
 					|| evt.getSource() instanceof SimulationContext
+//					|| evt.getSource() instanceof Simulation			// TODO: check why is not saving
+//					|| evt.getSource() instanceof SpeciesContextSpec	// TODO: can't use species name for spec too, need some hack
+//					|| evt.getSource() instanceof ReactionSpec
 					) {
 				initializeComboBoxURI();
 				updateInterface();
@@ -887,10 +894,12 @@ public static Identifiable getIdentifiable(Identifiable selectedObject) {
 		return (Model.ModelParameter)selectedObject;
 	} else if(selectedObject instanceof SimulationContext) {
 		return (SimulationContext)selectedObject;
-//	} else if(selectedObject instanceof Simulation) {	// TODO: Simulation must implement Identifiable, Displayable
+//	} else if(selectedObject instanceof Simulation) {
 //		return (Simulation)selectedObject;
-//	} else if(selectedObject instanceof Structure) {
-//		return (Structure)selectedObject;
+//	} else if(selectedObject instanceof SpeciesContextSpec) {
+//		return (SpeciesContextSpec)selectedObject;
+//	} else if(selectedObject instanceof ReactionSpec) {
+//		return (ReactionSpec)selectedObject;
 	} else {
 		return null;
 	}
