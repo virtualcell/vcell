@@ -32,12 +32,16 @@ import org.openrdf.rio.RDFParseException;
 import org.sbpax.impl.HashGraph;
 import org.sbpax.schemas.util.DefaultNameSpaces;
 import org.sbpax.util.SesameRioUtil;
+import org.vcell.model.rbm.MolecularType;
+import org.vcell.pathway.BioPaxObject;
 import org.vcell.relationship.AnnotationMapping;
 import org.vcell.sybil.models.annotate.JDOM2Model;
 import org.vcell.sybil.models.miriam.MIRIAMQualifier;
 import org.vcell.sybil.models.miriam.MIRIAMRef.URNParseFailureException;
 import org.vcell.util.Compare;
+import org.vcell.util.Displayable;
 import org.vcell.util.document.Identifiable;
+import org.openrdf.model.Resource;
 import org.vcell.util.document.KeyValue;
 
 import cbit.vcell.biomodel.BioModel;
@@ -45,6 +49,15 @@ import cbit.vcell.biomodel.meta.MiriamManager.MiriamRefGroup;
 import cbit.vcell.biomodel.meta.registry.Registry;
 import cbit.vcell.biomodel.meta.registry.Registry.Entry;
 import cbit.vcell.biomodel.meta.xml.rdf.XMLRDFWriter;
+import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.model.Model;
+import cbit.vcell.model.RbmObservable;
+import cbit.vcell.model.ReactionRule;
+import cbit.vcell.model.ReactionStep;
+import cbit.vcell.model.Species;
+import cbit.vcell.model.SpeciesContext;
+import cbit.vcell.model.Structure;
+import cbit.vcell.solver.Simulation;
 import cbit.vcell.xml.XMLTags;
 
 /**
@@ -157,10 +170,65 @@ public class VCMetaData implements Serializable {
 		return identifiableProvider;
 	}
 
-	private NonRDFAnnotation getExistingNonRDFAnnotation(Identifiable identifiable){
+	private NonRDFAnnotation getExistingNonRDFAnnotation(Identifiable identifiable) {
 		Entry entry = registry.getEntry(identifiable);
-		NonRDFAnnotation nonRDFAnnotation = nonRDFAnnotationMap.get(entry);
-		return nonRDFAnnotation;
+		if(nonRDFAnnotationMap.containsKey(entry)) {
+			NonRDFAnnotation nonRDFAnnotation = nonRDFAnnotationMap.get(entry);
+			return nonRDFAnnotation;
+		}
+		return null;
+//		return getExistingNonRDFAnnotation2(identifiable);
+	}
+	// when exporting to SBML we work on a copy of the biomodel, hence there is no more identity between 
+	// the variables in the new model and the variables in the nonRDFAnnotationMap
+	// hence we will compare the name and type of the entities
+	private NonRDFAnnotation getExistingNonRDFAnnotation2(Identifiable identifiable) {
+		Entry entry = registry.getEntry(identifiable);
+		Identifiable idEntry = entry.getIdentifiable();		// should be identical to identifiable (?)
+//		String dType = ((Displayable)idEntry).getDisplayType();
+//		Resource res = entry.getResource();
+		NonRDFAnnotation value = null;
+		for (Map.Entry<Entry, NonRDFAnnotation> candidate : nonRDFAnnotationMap.entrySet()) {
+			Entry key = candidate.getKey();
+			Identifiable idCandidate = key.getIdentifiable();
+//			String dCandidate = ((Displayable)idCandidate).getDisplayType();
+			if(idEntry.equals(idCandidate)) {
+				value = candidate.getValue();
+				System.out.println(key + ": " + value.getFreeTextAnnotation());
+				break;
+			}
+		}
+		return value;
+	}
+	
+	private static String extractName(Identifiable identifiable) {
+		if(identifiable instanceof Species) {
+			return ((Species)identifiable).getCommonName();
+		} else if(identifiable instanceof SpeciesContext) {
+			return ((SpeciesContext)identifiable).getSpecies().getCommonName();
+		} else if(identifiable instanceof MolecularType) {
+			return ((MolecularType)identifiable).getName();
+		} else if(identifiable instanceof ReactionRule) {
+			return ((ReactionRule)identifiable).getName();
+		} else if(identifiable instanceof ReactionStep) {
+			return ((ReactionStep)identifiable).getName();
+		} else if(identifiable instanceof RbmObservable) {
+			return ((RbmObservable)identifiable).getName();
+		} else if(identifiable instanceof BioModel) {
+			return ((BioModel)identifiable).getName();
+		} else if(identifiable instanceof Structure) {
+			return ((Structure)identifiable).getName();
+		} else if(identifiable instanceof BioPaxObject) {
+			return null;
+		} else if(identifiable instanceof Model.ModelParameter) {
+			return ((Model.ModelParameter)identifiable).getName();
+		} else if(identifiable instanceof SimulationContext) {
+			return ((SimulationContext)identifiable).getName();
+		} else if(identifiable instanceof Simulation) {	// TODO: Simulation must implement Identifiable, Displayable
+			return ((Simulation)identifiable).getName();
+		} else {
+			return null;
+		}
 	}
 		
 	private NonRDFAnnotation getOrCreateNonRDFAnnotation(Identifiable identifiable){
