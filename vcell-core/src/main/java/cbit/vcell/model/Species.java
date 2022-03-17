@@ -14,6 +14,7 @@ package cbit.vcell.model;
 import java.beans.PropertyVetoException;
 
 import org.vcell.util.Compare;
+import org.vcell.util.Displayable;
 import org.vcell.util.Matchable;
 import org.vcell.util.document.Identifiable;
 
@@ -21,7 +22,7 @@ import cbit.vcell.Historical;
 
 @SuppressWarnings("serial")
 public class Species implements	java.beans.VetoableChangeListener,org.vcell.util.Cacheable,
-	Identifiable {
+	Identifiable, Displayable {
 
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 	protected transient java.beans.VetoableChangeSupport vetoPropertyChange;
@@ -338,4 +339,15 @@ public void vetoableChange(java.beans.PropertyChangeEvent e) throws java.beans.P
 		}
 	}
 }
+
+	// Not really displayable but at times we need the display name and the type name
+	public static final String typeName = "Species"; 
+	@Override
+	public String getDisplayName() {
+		return getCommonName();
+	}
+	@Override
+	public String getDisplayType() {
+		return typeName;
+	}
 }

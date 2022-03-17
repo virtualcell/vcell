@@ -16,6 +16,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.IdentityHashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
@@ -23,6 +24,7 @@ import java.util.Set;
 import org.openrdf.model.Graph;
 import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
+import org.vcell.util.Displayable;
 import org.vcell.util.document.Identifiable;
 
 import cbit.vcell.biomodel.meta.IdentifiableProvider;
@@ -150,7 +152,40 @@ public class Registry implements Serializable {
 			entryList.add(entry);
 		}
 		return entry;
-	}	
+	}
+	public Entry getComparableEntry(Identifiable identifiable) {
+		Entry value;
+		if(!(identifiable instanceof Displayable)) {
+			// we should never get here, anything that accept RDF annotations must
+			// implement both Identifiable and Displayable
+			throw new RuntimeException("This identifiable must implement Displayable");
+			// TODO: once we catch out any related bug comment out the throw and 
+			// uncomment the 2 lines below
+//			value = new Entry(identifiable);
+//			return value;
+		}
+		String entryType = ((Displayable)identifiable).getDisplayType();
+		String entryName = ((Displayable)identifiable).getDisplayName();
+
+		Map<Identifiable, Entry> map = new LinkedHashMap<>(identifiableToEntry);
+		for (Map.Entry<Identifiable, Entry> entry : map.entrySet()) {
+			Identifiable idCandidate = entry.getKey();
+			String candidateType = ((Displayable)idCandidate).getDisplayType();
+			String candidateName = ((Displayable)idCandidate).getDisplayName();
+			if(entryType.contentEquals(candidateType) && entryName.contentEquals(candidateName)) {
+				value = entry.getValue();
+				return value;
+			}
+		}
+		// not found, we make an empty Entry
+		value = new Entry(identifiable);
+		return value;
+	}
+	
+	public boolean containsKey(Identifiable object) {
+		boolean containsKey = identifiableToEntry.containsKey(object);
+		return containsKey;
+	}
 	
 	public Entry getEntry(Resource resource) {
 		return resourceToEntry.get(resource);

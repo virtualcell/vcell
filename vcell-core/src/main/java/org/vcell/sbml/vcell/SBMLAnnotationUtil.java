@@ -46,6 +46,8 @@ import org.vcell.util.document.Identifiable;
 
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.biomodel.meta.VCMetaData;
+import cbit.vcell.biomodel.meta.registry.Registry;
+import cbit.vcell.biomodel.meta.registry.Registry.Entry;
 import cbit.vcell.biomodel.meta.xml.rdf.XMLRDFWriter;
 import cbit.vcell.model.Species;
 import cbit.vcell.xml.XMLTags;
@@ -129,7 +131,15 @@ public class SBMLAnnotationUtil {
 			Element vcellImportRelatedElement) throws XMLStreamException {
 		// Deal with RDF annotation 
 		XMLNode rootAnnotation = new XMLNode(tripleAnnotation, new XMLAttributes());
-		Resource resource = metaData.getRegistry().getEntry(identifiable).getResource();
+		Registry registry = metaData.getRegistry();
+		boolean found = registry.containsKey(identifiable);
+		Entry entry;
+		if(found == false) {
+			entry = registry.getComparableEntry(identifiable);
+		} else {
+			entry = registry.getEntry(identifiable);
+		}
+		Resource resource = entry.getResource();
 		Graph rdfChunk = null;
 		if (resource != null) { 
 			rdfChunk = chopper.getChops().get(resource);

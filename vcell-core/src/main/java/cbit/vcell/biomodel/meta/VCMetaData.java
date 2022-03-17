@@ -176,23 +176,24 @@ public class VCMetaData implements Serializable {
 			NonRDFAnnotation nonRDFAnnotation = nonRDFAnnotationMap.get(entry);
 			return nonRDFAnnotation;
 		}
-		return null;
-//		return getExistingNonRDFAnnotation2(identifiable);
+		return getExistingNonRDFAnnotation2(identifiable);
 	}
 	// when exporting to SBML we work on a copy of the biomodel, hence there is no more identity between 
 	// the variables in the new model and the variables in the nonRDFAnnotationMap
 	// hence we will compare the name and type of the entities
 	private NonRDFAnnotation getExistingNonRDFAnnotation2(Identifiable identifiable) {
-		Entry entry = registry.getEntry(identifiable);
-		Identifiable idEntry = entry.getIdentifiable();		// should be identical to identifiable (?)
-//		String dType = ((Displayable)idEntry).getDisplayType();
-//		Resource res = entry.getResource();
 		NonRDFAnnotation value = null;
+		if(!(identifiable instanceof Displayable)) {
+			return value;
+		}
+		String entryType = ((Displayable)identifiable).getDisplayType();
+		String entryName = ((Displayable)identifiable).getDisplayName();
 		for (Map.Entry<Entry, NonRDFAnnotation> candidate : nonRDFAnnotationMap.entrySet()) {
 			Entry key = candidate.getKey();
 			Identifiable idCandidate = key.getIdentifiable();
-//			String dCandidate = ((Displayable)idCandidate).getDisplayType();
-			if(idEntry.equals(idCandidate)) {
+			String candidateType = ((Displayable)idCandidate).getDisplayType();
+			String candidateName = ((Displayable)idCandidate).getDisplayName();
+			if(entryType.contentEquals(candidateType) && entryName.contentEquals(candidateName)) {
 				value = candidate.getValue();
 				System.out.println(key + ": " + value.getFreeTextAnnotation());
 				break;
