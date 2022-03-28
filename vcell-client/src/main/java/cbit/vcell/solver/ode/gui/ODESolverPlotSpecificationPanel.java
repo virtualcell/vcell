@@ -23,6 +23,8 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Hashtable;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Vector;
 
 import javax.swing.BoxLayout;
@@ -62,6 +64,7 @@ import cbit.vcell.solver.SimulationModelInfo.DataSymbolMetadataResolver;
 import cbit.vcell.solver.SimulationModelInfo.ModelCategoryType;
 import cbit.vcell.units.VCUnitDefinition;
 import cbit.vcell.util.ColumnDescription;
+import ncsa.hdf.object.HObject;
 
 /**
  * Insert the type's description here.  What we want to do with this
@@ -979,10 +982,15 @@ private void regeneratePlot2D() throws ExpressionException,ObjectNotFoundExcepti
 			//getUnfilteredSortedXAxisNames
 			double[] xData = getMyDataInterface().extractColumn((String)getXAxisComboBox_frm().getSelectedItem());
 			double[][] allData = new double[((DefaultListModel)getYAxisChoice().getModel()).size() + 1][xData.length];
+			double[][] allDataMin = new double[((DefaultListModel)getYAxisChoice().getModel()).size() + 1][xData.length];
+			double[][] allDataMax = new double[((DefaultListModel)getYAxisChoice().getModel()).size() + 1][xData.length];
+			double[][] allDataStd = new double[((DefaultListModel)getYAxisChoice().getModel()).size() + 1][xData.length];
 			String[] yNames = new String[((DefaultListModel)getYAxisChoice().getModel()).size()];
 			allData[0] = xData;
+			allDataMin[0] = xData;
+			allDataMax[0] = xData;
+			allDataStd[0] = xData;
 			double[] yData = new double[xData.length];
-	//		double[] yDataMin = new double[xData.length];
 	
 			double currParamValue = 0.0;
 			double deltaParamValue = 0.0;
@@ -1003,6 +1011,9 @@ private void regeneratePlot2D() throws ExpressionException,ObjectNotFoundExcepti
 				getCurLabel().setText(Double.toString(currParamValue));
 			}
 			
+			// map holding variable names and indexes in the hdf5 file result sets
+//			LinkedHashMap<String, Integer> valueToIndexMap = getMyDataInterface().parseHDF5File();
+			
 			if (!getLogSensCheckbox().getModel().isSelected()) {
 				// When log sensitivity check box is not selected.
 				for (int i=0;i<allData.length-1;i++) {
@@ -1010,8 +1021,9 @@ private void regeneratePlot2D() throws ExpressionException,ObjectNotFoundExcepti
 					if (getSensitivityParameter() != null) {
 						ColumnDescription cd = getMyDataInterface().getColumnDescription((String)((DefaultListModel)getYAxisChoice().getModel()).elementAt(i));
 						double sens[] = getSensValues(cd);
-						yData = getMyDataInterface().extractColumn(cd.getName());
-	//					yDataMin = getMyDataInterface().extractColumnMin(cd.getName());
+						String columnName = cd.getName();
+						yData = getMyDataInterface().extractColumn(columnName);
+//						yDataMin = getMyDataInterface().extractColumnMin(columnName, hObjectList);
 						// sens array != null for non-sensitivity state vars and functions, so extrapolate
 						if (sens != null) {
 							for (int j = 0; j < sens.length; j++) {
@@ -1029,8 +1041,9 @@ private void regeneratePlot2D() throws ExpressionException,ObjectNotFoundExcepti
 						} 
 					} else {
 						// No sensitivity analysis case, so do not alter the original values for any variable or function
-						allData[i+1] = getMyDataInterface().extractColumn((String)((DefaultListModel)getYAxisChoice().getModel()).elementAt(i));
-	//					yDataMin = getMyDataInterface().extractColumnMin((String)((DefaultListModel)getYAxisChoice().getModel()).elementAt(i));
+						String columnName = (String)((DefaultListModel)getYAxisChoice().getModel()).elementAt(i);
+						allData[i+1] = getMyDataInterface().extractColumn(columnName);
+//						allDataMin[i+1] = getMyDataInterface().extractColumnMin(columnName);
 					}
 					yNames[i] = (String)((DefaultListModel)getYAxisChoice().getModel()).elementAt(i);
 				}
@@ -1128,7 +1141,9 @@ private void regeneratePlot2D() throws ExpressionException,ObjectNotFoundExcepti
 				
 			}
 			SingleXPlot2D plot2D = new SingleXPlot2D(symbolTableEntries,getMyDataInterface().getDataSymbolMetadataResolver(),xLabel, yNames, allData, new String[] {title, xLabel, yLabel});
+			//
 			// TODO: populate the extra plot2D fields (for min, max, stdev
+			//
 			refreshVisiblePlots(plot2D);
 			//here fire "singleXPlot2D" event, ODEDataViewer's event handler listens to it.
 			setPlot2D(plot2D);

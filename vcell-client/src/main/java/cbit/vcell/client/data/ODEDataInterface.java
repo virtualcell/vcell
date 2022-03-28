@@ -1,6 +1,7 @@
 package cbit.vcell.client.data;
 
 import java.beans.PropertyChangeListener;
+import java.util.LinkedHashMap;
 
 import org.vcell.util.ObjectNotFoundException;
 
@@ -26,6 +27,7 @@ public interface ODEDataInterface {
 	
 	FunctionColumnDescription[] getFunctionColumnDescriptions();
 
+	LinkedHashMap<String, Integer> parseHDF5File()  throws ExpressionException,ObjectNotFoundException;
 	double[] extractColumn(String columnName) throws ExpressionException,ObjectNotFoundException;
 	double[] extractColumnMax(String columnName) throws ExpressionException,ObjectNotFoundException;
 	double[] extractColumnMin(String columnName) throws ExpressionException,ObjectNotFoundException;
