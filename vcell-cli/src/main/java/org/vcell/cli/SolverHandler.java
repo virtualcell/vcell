@@ -35,12 +35,14 @@ import java.io.OutputStreamWriter;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 public class SolverHandler {
 	
 	public int countBioModels = 0;		// number of biomodels in this sedml file
 	public int countSuccessfulSimulationRuns = 0;	// number of simulations that we ran successfully for this sedml file
-
+	public Map <String, String> sim2Hdf5Map = new LinkedHashMap<> ();
+	
     private static void sanityCheck(VCDocument doc) throws Exception {
         if (doc == null) {
             throw new Exception("Imported VCDocument is null.");
@@ -175,8 +177,16 @@ public class SolverHandler {
                    
                     if (solver.getSolverStatus().getStatus() == SolverStatus.SOLVER_FINISHED) {
                     	
+                    	// TODO: proper file name (results folder + importedTaskId + ".h5")
+                    	// check if successfully created
+                    	// call only if the solver is for spatial!!!
 //                        File aaa = new File("C:\\TEMP\\aaa.hdf5");
-//                        CLIUtils.exportPDE2HDF5(sim, outputDirForSedml, aaa);
+//                        try {
+//                        	CLIUtils.exportPDE2HDF5(sim, outputDirForSedml, aaa);
+//                        	sim2Hdf5Map.put(sim.getImportedTaskID(), null);
+//                        } catch(Exception e) {
+//                        	sim2Hdf5Map.put(sim.getImportedTaskID(), null);
+//                        }
 
                     	
                     	logTaskMessage += "done. ";

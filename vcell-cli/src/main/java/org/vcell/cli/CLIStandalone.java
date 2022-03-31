@@ -29,6 +29,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 public class CLIStandalone {
@@ -427,6 +428,7 @@ public class CLIStandalone {
             	System.out.println(str);
             	logDocumentMessage += str;
             	resultsHash = solverHandler.simulateAllTasks(utils, externalDocInfo, sedml, outDirForCurrentSedml, outputDir, outputBaseDir, sedmlLocation, keepTempFiles, exactMatchOnly);
+            	Map<String, String> sim2Hdf5Map = solverHandler.sim2Hdf5Map;	// may not need it
             } catch(Exception e) {
             	somethingFailed = true;
             	oneSedmlDocumentFailed = true;
