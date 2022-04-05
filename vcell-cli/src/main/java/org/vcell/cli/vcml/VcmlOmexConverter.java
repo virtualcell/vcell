@@ -711,19 +711,19 @@ public class VcmlOmexConverter {
 		ret += PubMet.EndDescription;
 		ret += PubMet.EndIsDescribedBy;
 		
-		ret += PubMet.CommentLicense;
-		ret += PubMet.StartLicense;
-		ret += PubMet.StartDescription;
-		ret += PubMet.StartIdentifier;
-		ret += PubMet.ResourceIdentifier;
-		String lic = "spdx:" + "CC0-1.0";
-		ret += lic;
-		ret += PubMet.EndIdentifier;
-		ret += PubMet.StartLabel;
-		ret += "CC0-1.0";
-		ret += PubMet.EndLabel;
-		ret += PubMet.EndDescription;
-		ret+= PubMet.EndLicense;
+//		ret += PubMet.CommentLicense;
+//		ret += PubMet.StartLicense;
+//		ret += PubMet.StartDescription;
+//		ret += PubMet.StartIdentifier;
+//		ret += PubMet.ResourceIdentifier;
+//		String lic = "spdx:" + "CC0-1.0";
+//		ret += lic;
+//		ret += PubMet.EndIdentifier;
+//		ret += PubMet.StartLabel;
+//		ret += "CC0-1.0";
+//		ret += PubMet.EndLabel;
+//		ret += PubMet.EndDescription;
+//		ret+= PubMet.EndLicense;
 		
 		String sPubDate = new SimpleDateFormat("yyyy-MM-dd").format(pubDate);
 		ret += PubMet.CommentCreated;
