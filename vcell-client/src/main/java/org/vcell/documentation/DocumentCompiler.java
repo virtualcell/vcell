@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.URL;
 import java.net.URLConnection;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -121,7 +122,7 @@ public class DocumentCompiler {
 		//Write indexer config file, removes path prefix to make indexed items not dependent of original index file locations
 		File helpSearchConfigFullPath = new File(docSourceDir,javaHelp_helpSearchConfigFile);
 		try (FileWriter fw = new FileWriter(helpSearchConfigFullPath);) {
-			fw.write("IndexRemove "+docTargetDir+"/");
+			fw.write("IndexRemove "+docTargetDir+File.separator);
 		}
 		
 		
