@@ -15,53 +15,29 @@
 
 <introduction>
 Tools are available to adjust the viewer display and define regions of interest (ROI).
-Tools include a selector for individual data point values, zooming and panning, adding single point markers, adding or editing line and curved ROIs.
+Tools include a selection tool that displays individual data point values, zooming and panning tools,  and tools to add and edit single point markers, lines and curves to define ROIs.
 </introduction>
 
-<operations>
-<list>
-
-
-<para>
-Drawing Tools:
+<appearance>
 <imgReference target = "SimResultsDrawingTools.png"/>
-</para>
+</appearance>
+
+	<operations>
+<bold>Creating/Selecting Regions of Interest (ROI):</bold>
 <para>
-<bold>Selecting/Creating Regions of Interest (ROI):</bold>
-Choose tool type from 
-<imgReference target = "roi_selection_tool.png"/> <bold>selection</bold>,
-<imgReference target = "roi_point_tool.png"/> <bold>point</bold>, 
-<imgReference target = "roi_line_tool.png"/> <bold>line</bold>, 
-<imgReference target = "roi_spline_tool.png"/> <bold>spline/curve</bold>,
-<imgReference target = "roi_controlpoint_tool.png"/> <bold>add line/spline control point</bold> .  
-User created ROI line and points are gray when deselected; control nodes and points are white when selected.  
-Use the point, line or spline tools to create a ROI by clicking to add single points or extend line segmentsand.  
-An enclosed region ROI can be created with the line tool by overlapping the end point with the start point.
-For data associated with ROI, see <bold>Statistics</bold> (below).
+Use the point, line or curve tools to create a ROI by clicking to add single points or extend line segments.  
+An enclosed region ROI can be created with the line tool by overlapping the end point with the start point.  To examine data associated with an ROI use either the <link target = "SimResultsKymograph">Plots</link> or <link target = "SimResultsSpatialROIandStatistics">Statistics</link> dropdown menus in the Slice Viewer. <link target = "SimResultsSpatialROIandStatistics">Statistics</link> can also be used to create and view data from 3D regions of interest.
 </para>
-<para>
-<imgReference target = "roi_line_tool.png"/> Line tool -- Enables show spatial plot button which displays values of the selected variable along the line created with two successive clicks of the line tool.
-</para>
-<para><imgReference target = "roi_spline_tool.png"/> Spline/Curve tool -- Creates a region of interest along the line and enables show spatial plot button. which displays values of the selected variable parametrically by distance along a spline curve defined by two or more successive clicks of the curve tool.
-</para><para>
-Deleting Points, Lines, or Curves</para>
-<para>
-Use the selection tool <imgReference target = "roi_selection_tool.png"/> to select the item and then use either Backspace or the Delete key to delete it.
-</para>
-<para>Select the <imgReference target = "roi_zoom_tool.png"/> Image Zoom: <bold>image magnification</bold> tool and drag the mouse across the image to
-increase and decrease the image zoom.
-</para>
-<para><imgReference target = "roi_pan_tool.png"/> Pan Tool: 
-Use the pan tool, while the image is zoomed up, to move across the image. With the Hand icon depressed, hold down the left mouse button and drag the mouse across the image to move it.
-</para>
-<para>Slice
-View 3-D data sets by using the Plus (+1/10) and Minus (-1/10) buttons to step through the series.</para>
-</list>
+<imgReference target = "roi_selection_tool.png"/> <bold>  Select</bold> a line or volume ROI item using the selection tool.  <bold>Delete</bold> ROI items by selecting the item and using either Backspace or Delete.
+<imgReference target = "roi_zoom_tool.png"/> <bold>  Adjust image magnification</bold> by selecting the zoom tool and dragging with the mouse across the image to increase or decrease the image zoom.
+<imgReference target = "roi_pan_tool.png"/> <bold>  Pan</bold> accross the image using the pan tool.  Select the Hand icon and hold down the left mouse button and drag the mouse across the image to move it.
+<imgReference target = "roi_point_tool.png"/> <bold>  Create a point roi</bold> using the point tool.  When a point is created a time plot can be created using the <link target = "SimResultsKymograph">Plots</link> dropdown box. If multiple points are created they will be plotted on the same time graph. 
+<imgReference target = "roi_line_tool.png"/> <bold>  Create a straight line</bold> by selecting the line tool and click once at the beginning point and once at the end point.  When a line is selected (highlighted white), the <link target = "SimResultsKymograph">Spatial Plots</link> are enabled using the Plots dropdown box.  Either <bold>Spatial</bold> or <bold>Kymograph</bold> plots will be available.
+<imgReference target = "roi_spline_tool.png"/> <bold>  Create a curved line</bold> by selecting the Curve tool and click on at least 4 points to create a  spline curve defined by successive clicks of the curve tool. 
+<imgReference target = "roi_controlpoint_tool.png"/> <bold>  Add a control point</bold> by selecting the Add Control Point tool and click to add points to a selected line or curve ROI.
     </operations>
 	
-	<comments>To be broken up into more pages 
-	</comments>
-
+	
 </page>
 
 </vcelldoc>

@@ -19,67 +19,37 @@
 	
 	<operations>
 	<bold>Export Data Panel</bold>
-	<list>
-	<item><bold>Export Format </bold>
-	Choose from spreadsheet comma delimited ascii (*.csv), HDF5 files (*.hdf5), QuickTime(QT,QTVR) movie (*.mov), image gif or jpeg (*.gif,*.jpg), raw data format (*.nrrd), polygon vtk or ucd (*.vtk,*.ucd)</item>
-	<item><bold>Define Export Data Variables </bold> 
-	Select one or more volume and/or membrane variables from the list to export depending on the file format chosen.</item>
-	<item><bold>Define Export Data Range </bold> 
-	Select 'User ROI from...' (user defined lines and points from 'View Data'), 'Current slice from...' (from 'View Data' slice), full (all simulation data points).</item>
-	<item><bold>Define Export Time Interval </bold> 
-	Select simulation timepoints, begin time (top slider) and end time (bottom slider)</item>
-	<item><bold>Start Export </bold> 
-	Display any additional format setting dialogs depending on export file type (see <link target = "SpecificFormatSettings">Specific Format Settings</link>).  
-	Signal VCell server to create the specified file format and return it to the users local computer.  
-	Export progress is displayed at the bottom of the panel under 'Export Jobs'.  
-	Display a 'save' dialog to the user once the export file has been created.
-	</item>
-	<item><bold>Export Jobs </bold> 
-	Displays status of export file creation.
-	</item>
-	</list>
-	
 	<para>
-	<bold>Export Format Info</bold>
-	<list>
-	<item><bold>Comma delimited ASCII files (*.csv) </bold> 
-	Used for 'User ROI...' and 'Current Slice..."' to export values (along ROI or slice XY grid) as text formatted numbers.  
-	Each data point value is separated with a comma (,) and rows are separated corresponding to the ROI or slice 'X' spatial dimension.  
-	Can be imported into common spreadsheet programs.
-	</item>
-	<item><bold>HDF5 Files (*.hdf5) </bold> 
-	Used for 'User ROI...', 'Current Slice..." and "Full"' to export values (along ROI or slice XY grid or all XYZ) as numerical data in HDF5 file format.  
-	Data are saved as multi-dimensional arrays in a heirarchical format defined by the HDF5 standard.  
-	Can be viewed with HDF5 Viewer (see https://www.hdfgroup.org/downloads/hdfview/) or imported into Fiji/ImageJ.  
-	<bold>Example procedure for opening HDF5 data in Fiji/Image program:  </bold>
-	<bold>IMPORT SIM DATA</bold>  File->Import->HDF5...  
-	Select All ".../{varName}/DataValues (XYZT)" datasets to be imported.   
-	click "Individual Hyperstacks (custom layout)"->enter "xyzt" in text box.  
-	Hyperstack viewer will appear.  
-	<bold>DISPLAY SCALE</bold>  Scale display brightness.  
-	(method 1) Image->Adjust->Brightness/Contrast->Auto->(click x to close window).  
-	(method 2) Analyze->Histogram->select "stack histogram"->OK->leave histogram window open, Find min/max values->Image->Adjust->Brightness/Contrast...->Click "Set"->Enter Min/Max displayed value found in histogram window.  
-	<bold>ALIGN VIEW</bold>  Align Fiji/Imagej viewer with vcell:  
-	Image->Transform->Flip Vertically->Process All Image yes.  
-	Image->Transform->Rotate 90 degrees right.  
-	</item>
-	<item><bold>QuickTime(QT,QTVR) files (*.mov) </bold> 
-	Used for 'Current Slice from "View Data"' or 'Full' to export values in Apple's ubiquitous movie file format.  
-	QTVR is a special version of QT formatted to allow the Apple QuickTime movie player (https://www.apple.com/quicktime/) to display an extra dimension of data (e.g multiple slices/variables over time).
-	</item>
-	<item><bold>Gif89a, Animated Gif and JPEG image files (*.gif,*.jpg)</bold>
-	Used for 'Current Slice from "View Data"' to export multiple 2D images in these standard formats.
-	</item>
-	<item><bold>Nearly raw raster data (*.nrrd) </bold> 
-	Used for 'Full' to export data values in a multi-dimension format that can be read by programs such as 'ImageJ' (https://imagej.nih.gov/) for additional numerical analysis and display.
-	</item>
-	<item><bold>VTK (https://www.vtk.org) and UCD (Unstructured Cell Data) files (*.vtk,*.ucd) </bold> 
-	Used for 'Full' to export data values in a polygon format (volume or surface) for each value based the simulation spatial geometry (mesh).  
-	Programs such as 'VisIt' (https://visit.llnl.gov/) and 'ParaView' (https://www.paraview.org/) offer additional visualization and analysis outside of VCell.
-	</item>
+	<bold>Select Export Format </bold> from the dropdown menu.  Available formats are:
+	<list><item> <bold>Comma delimited ascii (*.csv)</bold> for spreadsheet formats.  Each data point value is separated with a comma (,) and rows are separated corresponding to the ROI or slice 'X' spatial dimension.  </item>
+	<item> <bold>HDF5 files (*.hdf5)</bold>.  Stores floating point values as multi-dimensional arrays in a heirarchical format defined by the HDF5 standard. HDF5 files from volume data can be read using <link target = "OpenHDF5ImageJ">ImageJ/Fiji</link> </item>
+	<item> <bold>QuickTime(QT,QTVR) movie (*.mov)</bold>. QTVR is a special version of QT formatted to allow the Apple QuickTime movie player (https://www.apple.com/quicktime/) to display an extra dimension of data (e.g multiple slices/variables over time). </item>
+	<item> <bold>GIF</bold> image or animated GIF image file</item>
+	<item> <bold>JPEG</bold> or animated JPEG image file</item>
+	<item> <bold>Nearly Raw Raster Data (*.nrrd)</bold>. Data is saved as the floating point variable value displayed in an image format; this file can be read by a number of programs including FIJI/ImageJ</item>
+	<item> <bold>ucd (*.ucd)</bold>. Stores data values in a polygon format (volume or surface) for each value based on the simulation spatial geometry (mesh).  Programs such as 'VisIt' (https://visit.llnl.gov/) and 'ParaView' (https://www.paraview.org) can open most polygon formats for further analysis.</item>
+	<item> <bold>Stanford Poly Texture file (*.ply)</bold>. Stores data values in a polygon format (volume or surface) based on the simulation spatial geometry (mesh)</item>
+	<item> <bold>VTK (*.vtk)</bold>. Stores data values in a polygon format (volume or surface) based on the simulation spatial geometry (mesh).  See https://www.vtk.org for more information </item>
+	</list>
+	</para>	
+	<para>
+	<bold>Define Export Data Variables</bold> by selecting one or more volume and/or membrane variables from the list to export. The radio buttons can be used to select the types of variables to view in the list. Types of variables that can be exported will depending on the file format chosen and unavailable items will be greyed out.  
+	</para>
+	<para>
+	<bold>Define Export Data Range </bold> by selecting one of the buttons from the list.
+	<list><item> <bold>User ROI</bold> to select an available ROI created using the <link target = "SpatialSimResultsDrawingTools"> ROI drawing tools</link> in the Results Viewer</item>
+	<item><bold>Full</bold> to select all simulation data points to export.</item>
 	</list>
 	</para>
-	 </operations>
+	<para><bold>Define Export Time Interval </bold> using the sliders or entering directly the start and end time.
+	</para>
+	<para>
+	<bold>Start Export</bold> by selecting this button once the export parameters have been defined.  After you start the export an additional dialog box may appear depending on export file type. See <link target = "SpecificFormatSettings">Specific Format Settings</link> for information related to each specific file format.  Starting the export will signal the VCell server to create the specified file format and return it to the user's local computer.
+	</para>
+	<para>		
+	The <bold>Export progress</bold> panel displays the job ID and progress.  Once the export file has been created, a 'save' dialog will be displayed to save the file on the local computer as a zip file.
+	</para>
+	</operations>
 	
 </page>
 

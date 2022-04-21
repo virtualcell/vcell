@@ -95,8 +95,8 @@
    	 	  		<tocitem target="output_functions" text="Output Functions"/>
    		   		<tocitem target="generated_math" text="Generated Math"/>
 	    		<tocitem target="numerical_solvers" text="Numerical Solvers"/>
-	    		<tocitem target="SimulationViewerOverview" text="Simulation Results">
-   		       <tocitem target="SpatialSimResultsOverview" text="Spatial Simulation Results">
+	    		<tocitem target="SimulationViewerOverview" text="Simulation Results"/>
+   		        <tocitem target="SpatialSimResultsOverview" text="Spatial Simulation Results">
     	   			<tocitem target="SimResSpatialSliceView" text="Spatial Simulation Results Slice View"/>
     	   			<tocitem target="SpatialSimResultsDrawingTools" text="Region of Interest Tools, Data Plots and Statistics"/>
     	   			<tocitem target="SimResultsSpatialSurfaceView" text="Spatial Simulation Results 3D Membrane View"/>
@@ -105,15 +105,13 @@
 					<tocitem target="PostProcessingStats" text="Post Processing Statistics Data"/>
 					<tocitem target="PostProcessingImage" text="Post Processing Image Data"/>
 					<tocitem target="ExportingSpatialSimResults" text="Exporting Spatial Simulation Results"/>
+					<tocitem target="OpenHDF5ImageJ" text="Importing HDF5 files into FIJI/ImageJ"/>		
 					<tocitem target="SpecificFormatSettings" text="Specific Format Settings"/>
-				</tocitem>
+   		        </tocitem>
     	   		<tocitem target="SimCompartmentResults" text="Non-spatial (Compartmental) Simulation Results">		
 					<tocitem target="SimResultsNonSpatialPlotSettings" text="Plot Settings"/>	    
 					<tocitem target="SimResultsNonSpatialStochHistogram" text="Stochastic Results Histograms"/>
-				</tocitem>
-				
-				
-   			</tocitem>
+				</tocitem>		
     	    </tocitem>
     	    <tocitem target="PEOverview" text="Fitting">
     	   		<tocitem target="parameterEstimationMethods" text="Parameter Estimation Methods"/>
