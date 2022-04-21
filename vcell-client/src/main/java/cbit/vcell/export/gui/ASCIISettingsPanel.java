@@ -800,7 +800,7 @@ private void updateExportDataType() {
 	}
 	private JLabel getLblSeeVcellHelp() {
 		if (lblSeeVcellHelp == null) {
-			lblSeeVcellHelp = new JLabel("See VCell Help (Biomodel Applications/Simulations/Simulation Results/Exporting Spatial Simulation Results)");
+			lblSeeVcellHelp = new JLabel("Data set layout is xyzt");		// was "See VCell Help (Biomodel Applications/Simulations/Simulation Results/Exporting Spatial Simulation Results)"
 			lblSeeVcellHelp.setMinimumSize(new Dimension(300, 15));
 			lblSeeVcellHelp.setMaximumSize(new Dimension(300, 15));
 			lblSeeVcellHelp.setPreferredSize(new Dimension(300, 15));
