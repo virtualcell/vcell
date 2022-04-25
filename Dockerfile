@@ -111,7 +111,7 @@ LABEL \
 
 RUN apt-get -y update && \
     apt-get install -y --no-install-recommends curl openjdk-8-jre dnsutils && \
-    apt-get install -y python3 && \
+    apt-get install -y python3.9 && \
     apt install -y python3-pip && \
     mkdir -p /usr/local/app/vcell/lib && \
     mkdir -p /usr/local/app/vcell/simulation && \
