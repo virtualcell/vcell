@@ -64,6 +64,7 @@ jobs:
         run: |
           docker build \
             --file Dockerfile \
+            .
 
       - name: Setup tmate session
         uses: mxschmitt/action-tmate@v3
