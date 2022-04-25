@@ -4,6 +4,5 @@ pyyaml
 pandas
 matplotlib
 seaborn
-python-libsedml
 python-libsbml-experimental
 deprecated
