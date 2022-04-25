@@ -109,7 +109,8 @@ LABEL \
     about.tags="rule-based modeling,kinetic modeling,dynamical simulation,systems biology,BNGL,SED-ML,COMBINE,OMEX" \
     maintainer="BioSimulators Team <info@biosimulators.org>"
 
-RUN apt-get install -y --no-install-recommends curl openjdk-8-jre dnsutils && \
+RUN apt-get -y update && \
+    apt-get install -y --no-install-recommends curl openjdk-8-jre dnsutils && \
     apt-get install -y python3.9 python3-pip && \
     mkdir -p /usr/local/app/vcell/lib && \
     mkdir -p /usr/local/app/vcell/simulation && \
