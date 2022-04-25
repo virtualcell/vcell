@@ -1065,7 +1065,7 @@ protected void addSpecies() throws XMLStreamException, SbmlException {
 								// set diffusionCoefficient element in SpatialParameterPlugin for param
 								DiffusionCoefficient sbmlDiffCoeff = new DiffusionCoefficient();
 								sbmlDiffCoeff.setVariable(vcSpeciesContexts[i].getName());
-								sbmlDiffCoeff.setDiffusionKind(DiffusionKind.isotropic);
+								sbmlDiffCoeff.setType(DiffusionKind.isotropic);
 								sbmlDiffCoeff.setSpeciesRef(vcSpeciesContexts[i].getName());
 								spplugin.setParamType(sbmlDiffCoeff);
 							} 
@@ -1934,8 +1934,8 @@ private void addGeometry() throws SbmlException {
 		sbmlAnalyticGeomDefinition.setIsActive(true);
 		for (int i = 0; i < vcGeomClasses.length; i++) {
 			if (vcGeomClasses[i] instanceof AnalyticSubVolume) {
-				AnalyticVolume analyticVol = sbmlAnalyticGeomDefinition.createAnalyticVolume();
-				analyticVol.setSpatialId(vcGeomClasses[i].getName());
+				AnalyticVolume analyticVol = sbmlAnalyticGeomDefinition.createAnalyticVolume(vcGeomClasses[i].getName());
+//				analyticVol.setSpatialId(vcGeomClasses[i].getName());
 				analyticVol.setDomainType(DOMAIN_TYPE_PREFIX+vcGeomClasses[i].getName());
 				analyticVol.setFunctionType(FunctionKind.layered);
 				analyticVol.setOrdinal(numSubVols - (i+1));
@@ -2226,9 +2226,9 @@ if (translateZ != vcTranslation.getTranslation().getZ()){
 			org.sbml.jsbml.ext.spatial.CSGRotation sbmlRotation = new org.sbml.jsbml.ext.spatial.CSGRotation();
 			sbmlRotation.setSpatialId(csgNodeName);
 			sbmlRotation.setRotateAngleInRadians(vcRotation.getRotationRadians());
-			sbmlRotation.setRotateAxisX(vcRotation.getAxis().getX());
-			sbmlRotation.setRotateAxisY(vcRotation.getAxis().getY());
-			sbmlRotation.setRotateAxisZ(vcRotation.getAxis().getZ());
+			sbmlRotation.setRotateX(vcRotation.getAxis().getX());
+			sbmlRotation.setRotateY(vcRotation.getAxis().getY());
+			sbmlRotation.setRotateZ(vcRotation.getAxis().getZ());
 			sbmlRotation.setCSGNode( getSBMLCSGNode(vcRotation.getChild()));
 			return sbmlRotation;
 		}else if (vcTransformation instanceof cbit.vcell.geometry.CSGScale){

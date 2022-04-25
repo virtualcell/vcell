@@ -5,5 +5,5 @@ pandas
 matplotlib
 seaborn
 python-libsedml
-python-libsbml
+python-libsbml-experimental
 deprecated

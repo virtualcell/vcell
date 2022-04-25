@@ -3790,9 +3790,9 @@ public class SBMLImporter {
 			} else if (sbmlTransformation instanceof CSGRotation) {
 				CSGRotation sbmlRotation = (CSGRotation) sbmlTransformation;
 				Vect3d axis = new Vect3d(
-						sbmlRotation.getRotateAxisX(),
-						sbmlRotation.getRotateAxisY(), 
-						sbmlRotation.getRotateAxisZ());
+						sbmlRotation.getRotateX(),
+						sbmlRotation.getRotateY(), 
+						sbmlRotation.getRotateZ());
 				double rotationAngleRadians = sbmlRotation.getRotateAngleInRadians();
 				cbit.vcell.geometry.CSGRotation vcellRotation = new cbit.vcell.geometry.CSGRotation(
 						csgNodeName, axis, rotationAngleRadians);
