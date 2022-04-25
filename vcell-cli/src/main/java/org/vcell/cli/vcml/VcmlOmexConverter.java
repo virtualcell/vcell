@@ -451,7 +451,7 @@ public class VcmlOmexConverter {
                     archive.addFile(
                             Paths.get(outputDir, sd).toString(),
                             "./" + sd,
-                            "https://www.iana.org/assignments/media-types/image/png",
+                            "http://purl.org/NET/mediatypes/image/png",		// was "https://www.iana.org/assignments/media-types/image/png"
                             false
                     );
                 }
