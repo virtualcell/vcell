@@ -109,10 +109,8 @@ LABEL \
     about.tags="rule-based modeling,kinetic modeling,dynamical simulation,systems biology,BNGL,SED-ML,COMBINE,OMEX" \
     maintainer="BioSimulators Team <info@biosimulators.org>"
 
-RUN apt-get -y update && \
-    apt-get install -y --no-install-recommends curl openjdk-8-jre dnsutils && \
-    apt-get install -y python3.9 && \
-    apt install -y python3-pip && \
+RUN apt-get install -y --no-install-recommends curl openjdk-8-jre dnsutils && \
+    apt-get install -y python3.9 python3-pip && \
     mkdir -p /usr/local/app/vcell/lib && \
     mkdir -p /usr/local/app/vcell/simulation && \
     mkdir -p /usr/local/app/vcell/installDir && \
@@ -142,9 +140,11 @@ COPY ./vcell-client/target/vcell-client-0.0.1-SNAPSHOT.jar \
 COPY ./vcell-cli-utils/ /usr/local/app/vcell/installDir/python/vcell_cli_utils/
 
 # Install required python-packages
-RUN which pip3
-RUN pip3 install -r /usr/local/app/vcell/installDir/python/vcell_cli_utils/requirements.txt
-#RUN pip3 install vcell_cli_utils
+RUN ls -al $(which pip)
+RUN ls -al $(which pip3)
+RUN ls -al $(which python)
+RUN ls -al $(which python3)
+RUN pip install -r /usr/local/app/vcell/installDir/python/vcell_cli_utils/requirements.txt
 
 # Add linux local solvers only
 ADD ./localsolvers /usr/local/app/vcell/installDir/localsolvers
