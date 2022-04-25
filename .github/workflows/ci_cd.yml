@@ -16,46 +16,15 @@ jobs:
     if: ${{ github.event_name == 'push' }}
     steps:
       - uses: actions/checkout@v2
-      - name: Add Linux dependencies
-        shell: bash
-        run: |
-          wget https://vcell.org/webstart/pipeline_files/jdk-8u241-linux-x64.tar.gz
-          tar -xvzf jdk-8u241-linux-x64.tar.gz
-          mv jdk1.8.0_241 jdk
-          wget https://vcell.org/webstart/pipeline_files/apache-maven-3.6.3-bin.tar.gz
-          tar -xvzf apache-maven-3.6.3-bin.tar.gz
-          mv apache-maven-3.6.3 maven
-          export JAVA_HOME=`pwd`/jdk
-          export PATH=${JAVA_HOME}/bin:${PATH}
-          echo $JAVA_HOME
-          export M2_HOME=`pwd`/maven
-          export PATH=${M2_HOME}/bin:${PATH}
-          mvn -version
-          java -version
-          mvn clean install dependency:copy-dependencies
-  
-  Docker-CI:
-    name: Docker-CI
-    runs-on: ubuntu-latest
-    if: ${{ github.event_name == 'push' }}
 
-    steps:
-      - uses: actions/checkout@v2
+      - uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '11'
 
       - name: Add Linux dependencies
         shell: bash
         run: |
-          wget https://vcell.org/webstart/pipeline_files/jdk-8u241-linux-x64.tar.gz
-          tar -xvzf jdk-8u241-linux-x64.tar.gz
-          mv jdk1.8.0_241 jdk
-          wget https://vcell.org/webstart/pipeline_files/apache-maven-3.6.3-bin.tar.gz
-          tar -xvzf apache-maven-3.6.3-bin.tar.gz
-          mv apache-maven-3.6.3 maven
-          export JAVA_HOME=`pwd`/jdk
-          export PATH=${JAVA_HOME}/bin:${PATH}
-          echo $JAVA_HOME
-          export M2_HOME=`pwd`/maven
-          export PATH=${M2_HOME}/bin:${PATH}
           mvn -version
           java -version
           mvn clean install dependency:copy-dependencies
@@ -85,17 +54,6 @@ jobs:
       - name: Add Linux dependencies
         shell: bash
         run: |
-          wget https://vcell.org/webstart/pipeline_files/jdk-8u241-linux-x64.tar.gz
-          tar -xvzf jdk-8u241-linux-x64.tar.gz
-          mv jdk1.8.0_241 jdk
-          wget https://vcell.org/webstart/pipeline_files/apache-maven-3.6.3-bin.tar.gz
-          tar -xvzf apache-maven-3.6.3-bin.tar.gz
-          mv apache-maven-3.6.3 maven
-          export JAVA_HOME=`pwd`/jdk
-          export PATH=${JAVA_HOME}/bin:${PATH}
-          echo $JAVA_HOME
-          export M2_HOME=`pwd`/maven
-          export PATH=${M2_HOME}/bin:${PATH}
           mvn -version
           java -version
           mvn clean install dependency:copy-dependencies
