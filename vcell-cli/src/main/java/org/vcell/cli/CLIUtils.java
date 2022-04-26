@@ -377,11 +377,8 @@ public class CLIUtils {
 			Files.copy(tempHDF5File, hdf5OutputFile);
 			tempHDF5File.delete();
 		}
-
-        
-        
-
     }
+
     public HashMap<String, File> generateReportsAsCSV(SedML sedml, HashMap<String, ODESolverResultSet> resultsHash, File outDirForCurrentSedml, String outDir, String sedmlLocation) throws DataAccessException, IOException {
         // finally, the real work
         HashMap<String, File> reportsHash = new HashMap<>();
@@ -389,80 +386,7 @@ public class CLIUtils {
         for (Output oo : ooo) {
             if (!(oo instanceof Report)) {
                 System.out.println("Ignoring unsupported output `" + oo.getId() + "` while CSV generation.");
-                
-//                BioModel bm = null;
-//                
-//        		VCDataIdentifier vcId = new VCDataIdentifier() {
-//        			public User getOwner() {	return new User("nouser", null);		}
-//        			public KeyValue getDataKey() { return null; }
-//        			public String getID()  {	return "mydata";					}
-//        		};
-//                ExportFormat format = ExportFormat.HDF5;
-//                
-//                Object[] variables = {"ala", "bala" };
-//                String[] variableNames = new String[variables.length];
-//            	VariableSpecs variableSpecs = new VariableSpecs(variableNames, ExportConstants.VARIABLE_MULTI);
-//            	
-//            	double[] timePoints = {0.0, 0.1, 0.2};
-//            	TimeSpecs timeSpecs = new TimeSpecs(0, 100, timePoints, ExportConstants.TIME_RANGE);
-//
-//            	int geoMode = ExportConstants.GEOMETRY_FULL;
-//            	SpatialSelection[] selections = new SpatialSelection[0];
-//            	int axis = 3;
-//            	int sliceNumber = 0;
-//                GeometrySpecs geometrySpecs = new GeometrySpecs(selections, axis, sliceNumber, geoMode);
-//                
-//                ExportConstants.DataType dataType = ExportConstants.DataType.PDE_VARIABLE_DATA;
-//                boolean switchRowsColumns = false;
-//                ExportSpecs.SimNameSimDataID[] simNameSimDataIDs = { null, null };
-//                int[] exportMultipleParamScans = { };
-//                csvRoiLayout csvLayout = null;
-//                boolean isHDF5 = true;
-//                FormatSpecificSpecs formatSpecificSpecs = new ASCIISpecs(format, dataType, switchRowsColumns, simNameSimDataIDs, exportMultipleParamScans, csvLayout, isHDF5);
-//                
-//                String simulationName = null;
-//                String contextName = null;
-//                ExportSpecs exportSpecs = new ExportSpecs(vcId, format, variableSpecs, timeSpecs, geometrySpecs, formatSpecificSpecs, simulationName, contextName);
-//                
-//                SimulationContext sc = bm.getSimulationContext(0);
-//                
-//                OutputFunctionContext ofc = sc.getOutputFunctionContext();
-//                
-//                ArrayList<AnnotatedFunction> outputFunctionsList = ofc.getOutputFunctionsList();
-//                
-//                AnnotatedFunction[] af = outputFunctionsList.toArray(new AnnotatedFunction[0]);
-//                
-//                OutputContext outputContext = new OutputContext(af);
-//
-//                
-//                ExportServiceImpl exportServiceImpl = new ExportServiceImpl();
-//                ASCIIExporter ae = new ASCIIExporter(exportServiceImpl);
-//                
-//                
-//                DataSetControllerImpl dsControllerImpl = new DataSetControllerImpl(null, new File("C:\\TEMP\\eee"), null);
-//                
-//                
-//                
-//                DataServerImpl dataServerImpl = new DataServerImpl(dsControllerImpl, exportServiceImpl);
-//                
-//                
-//                FileDataContainerManager fileDataContainerManager = new FileDataContainerManager();
-//                
-//                JobRequest jobRequest = JobRequest.createExportJobRequest(vcId.getOwner());
-//                
-//                ae.makeASCIIData(outputContext, jobRequest, vcId.getOwner(), dataServerImpl, exportSpecs, fileDataContainerManager);
-//                
-//                ClientServerManager csm = null;
-//                ClientExportController cec = new ClientExportController(csm);
-//                if(csm != null && cec != null) {
-//                	try {
-//						cec.startExport(outputContext, exportSpecs);
-//					} catch (RemoteProxyException e) {
-//						e.printStackTrace();
-//					}
-//                }
-                
-            } else {
+             } else {
                 System.out.println("Generating report `" + oo.getId() +"`.");
                 try {
                     StringBuilder sb = new StringBuilder();
@@ -565,6 +489,7 @@ public class CLIUtils {
                         	if (dataset.getId().contains(",")) sb.append("\"" + dataset.getId() + "\"").append(",");
                         	else sb.append(dataset.getId()).append(",");
                         }
+                        
                         if (dataset.getLabel().contains(",")) sb.append("\"" + dataset.getLabel() + "\"").append(",");
                         else sb.append(dataset.getLabel()).append(",");
                         
@@ -610,7 +535,32 @@ public class CLIUtils {
         }
         return reportsHash;
     }
-
+    
+    public String generateIdNamePlotsMap(SedML sedml, File outDirForCurrentSedml) {
+    	StringBuilder sb = new StringBuilder();
+        List<Output> ooo = sedml.getOutputs();
+        for (Output oo : ooo) {
+            if (!(oo instanceof Report)) {
+                System.out.println("Ignoring unsupported output `" + oo.getId() + "` while generating idNamePlotsMap.");
+             } else {
+            	 sb.append(oo.getId()).append(",");
+            	 sb.append(oo.getName()).append("\n");
+             }
+        }
+ 
+        File f = new File(outDirForCurrentSedml, "idNamePlotsMap.txt");
+        try {
+        	PrintWriter out = new PrintWriter(f);
+        	out.print(sb.toString());
+        	out.flush();
+        	out.close();
+        } catch(Exception e) {
+        	System.out.println("Unable to create the idNamePlotsMap");
+        	e.printStackTrace(System.err);
+        }
+        return f.toString();
+    }
+    
     public static ODESolverResultSet interpolate(ODESolverResultSet odeSolverResultSet, UniformTimeCourse sedmlSim) throws ExpressionException {
         double outputStart = sedmlSim.getOutputStartTime();
         double outputEnd = sedmlSim.getOutputEndTime();
@@ -775,8 +725,8 @@ public class CLIUtils {
         printProcessErrors(process, "","Failed generating SED-ML for plot2d and 3D ");
     }
 
-    public void execPlotOutputSedDoc(String omexFilePath, String outputDir)  throws IOException, InterruptedException {
-        Process process = execShellCommand(new String[]{python, "-W", "ignore", cliPath.toString(), "execPlotOutputSedDoc", omexFilePath, outputDir}).start();
+    public void execPlotOutputSedDoc(String omexFilePath, String idNamePlotsMap, String outputDir)  throws IOException, InterruptedException {
+        Process process = execShellCommand(new String[]{python, "-W", "ignore", cliPath.toString(), "execPlotOutputSedDoc", omexFilePath, idNamePlotsMap, outputDir}).start();
         printProcessErrors(process, "HDF conversion successful\n","HDF conversion failed\n");
     }
 

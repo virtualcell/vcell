@@ -88,11 +88,15 @@ def gen_sedml_2d_3d(omex_file_path, base_out_path):
                                     validate_models_with_languages=False)
 
 
-def exec_plot_output_sed_doc(omex_file_path, base_out_path):
+def exec_plot_output_sed_doc(omex_file_path, idNamePlotsMap, base_out_path):
     config = Config(VALIDATE_OMEX_MANIFESTS=False)
-    archive = CombineArchiveReader().run(in_file=omex_file_path, out_dir=tmp_dir,
-                                         config=config)
+    archive = CombineArchiveReader().run(in_file=omex_file_path, out_dir=tmp_dir, config=config)
 
+    # read the plot id to name map
+    with open(idNamePlotsMap) as file:
+        for line in file:
+            print(line.rstrip())
+    
     # determine files to execute
     sedml_contents = get_sedml_contents(archive)
 

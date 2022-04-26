@@ -417,6 +417,20 @@ public class CLIStandalone {
                 utils.updateSedmlDocStatusYml(sedmlLocation, Status.FAILED, outputDir);
                 continue;
             }
+            
+            
+            
+            {
+            //
+            // temp code to test plot name correctness
+            //
+//    		String idNamePlotsMap = utils.generateIdNamePlotsMap(sedml, outDirForCurrentSedml);
+//    		utils.execPlotOutputSedDoc(inputFile, idNamePlotsMap, outputDir);
+
+            }
+            
+            
+            
             // Run solvers and make reports; all failures/exceptions are being caught
             SolverHandler solverHandler = new SolverHandler();
             // we send both the whole OMEX file and the extracted SEDML file path
@@ -474,7 +488,8 @@ public class CLIStandalone {
         		}
 
         		logDocumentMessage += "Generating HDF5 file... ";
-        		utils.execPlotOutputSedDoc(inputFile, outputDir);							// create the HDF5 file
+        		String idNamePlotsMap = utils.generateIdNamePlotsMap(sedml, outDirForCurrentSedml);
+        		utils.execPlotOutputSedDoc(inputFile, idNamePlotsMap, outputDir);							// create the HDF5 file
         		if(!containsExtension(outputDir, "h5")) {
         			oneSedmlDocumentFailed = true;
         			somethingFailed = true;
