@@ -1,5 +1,5 @@
 
-FROM ubuntu
+FROM ubuntu:20.04
 
 ARG SIMULATOR_VERSION="7.4.0.23"
 
@@ -29,8 +29,7 @@ LABEL \
 
 RUN apt-get -y update
 RUN apt-get install -y --no-install-recommends curl openjdk-8-jre dnsutils
-RUN apt-get remove -y python3 python3-pip
-RUN apt-get install -y python3.9 python3-pip
+RUN apt-get install -y python3 python3-pip
 
 RUN mkdir -p /usr/local/app/vcell/lib && \
     mkdir -p /usr/local/app/vcell/simulation && \
@@ -58,13 +57,8 @@ COPY ./vcell-client/target/vcell-client-0.0.1-SNAPSHOT.jar \
      ./non-maven-java-libs/org/sbml/libcombine/libCombineLinux64/0.2.7/libCombineLinux64-0.2.7.jar \
      /usr/local/app/vcell/lib/
 
-COPY ./vcell-cli-utils/ /usr/local/app/vcell/installDir/python/vcell_cli_utils/
-
 # Install required python-packages
-RUN ls -al $(which pip)
-RUN ls -al $(which pip3)
-RUN ls -al $(which python)
-RUN ls -al $(which python3)
+COPY ./vcell-cli-utils/ /usr/local/app/vcell/installDir/python/vcell_cli_utils/
 RUN pip install -r /usr/local/app/vcell/installDir/python/vcell_cli_utils/requirements.txt
 
 # Add linux local solvers only
