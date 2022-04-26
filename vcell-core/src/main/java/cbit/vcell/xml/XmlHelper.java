@@ -35,6 +35,7 @@ import org.jlibsedml.AbstractTask;
 import org.jlibsedml.Algorithm;
 import org.jlibsedml.AlgorithmParameter;
 import org.jlibsedml.ArchiveComponents;
+import org.jlibsedml.Change;
 import org.jlibsedml.DataGenerator;
 import org.jlibsedml.Libsedml;
 import org.jlibsedml.Model;
@@ -556,6 +557,8 @@ public class XmlHelper {
 	        List<org.jlibsedml.Model> mmm = sedml.getModels();
 	        for(Model mm : mmm) {
 	            System.out.println(mm.toString());
+	            List<Change> listOfChanges = mm.getListOfChanges();
+	            System.out.println("There are " + listOfChanges.size() + " changes.");
 	        }
 	        List<org.jlibsedml.Simulation> sss = sedml.getSimulations();
 	        for(org.jlibsedml.Simulation ss : sss) {
@@ -631,6 +634,7 @@ public class XmlHelper {
 				}
 				sedmlOriginalModelName = sedmlOriginalModel.getId();
 				sedmlOriginalModelLanguage = sedmlOriginalModel.getLanguage();
+				List<Change> listOfChanges = sedmlOriginalModel.getListOfChanges();		// get the list of changes now!
 
 				// at this point we assume that the sedml simulation, algorithm and kisaoID are all valid
 				Algorithm algorithm = sedmlSimulation.getAlgorithm();
@@ -700,6 +704,9 @@ public class XmlHelper {
 							e.printStackTrace();
 						}
 					} else {				// we assume it's sbml, if it's neither import will fail
+						//
+						// TODO: apply all the changes around here, now that we know it's sbml
+						//
 						XMLSource sbmlSource = new XMLSource(newMdl);		// sbmlSource with all the changes applied
 						bioModel = (BioModel)XmlHelper.importSBML(transLogger, sbmlSource, bSpatial);
 						bioModel.setName(bioModelName);
