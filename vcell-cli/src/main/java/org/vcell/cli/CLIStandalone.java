@@ -426,7 +426,6 @@ public class CLIStandalone {
             //
 //    		String idNamePlotsMap = utils.generateIdNamePlotsMap(sedml, outDirForCurrentSedml);
 //    		utils.execPlotOutputSedDoc(inputFile, idNamePlotsMap, outputDir);
-
             }
             
             

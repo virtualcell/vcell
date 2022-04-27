@@ -93,9 +93,13 @@ def exec_plot_output_sed_doc(omex_file_path, idNamePlotsMap, base_out_path):
     archive = CombineArchiveReader().run(in_file=omex_file_path, out_dir=tmp_dir, config=config)
 
     # read the plot id to name map
+    idNamePlotDict = {}
     with open(idNamePlotsMap) as file:
         for line in file:
-            print(line.rstrip())
+            line = line.rstrip('\n')	# #print(line)
+            id, name = line.split('|')
+            idNamePlotDict[id] = name	# equivalent to java  idNamePlotHashMap.put(id, name);
+    print(idNamePlotDict)
     
     # determine files to execute
     sedml_contents = get_sedml_contents(archive)
@@ -106,8 +110,7 @@ def exec_plot_output_sed_doc(omex_file_path, idNamePlotsMap, base_out_path):
 
         for report_filename in glob.glob(os.path.join(base_out_path, content.location, '*.csv')):
             if report_filename.find('__plot__') != -1:
-                report_id = os.path.splitext(
-                    os.path.basename(report_filename))[0]
+                report_id = os.path.splitext(os.path.basename(report_filename))[0]
 
                 # read report from CSV file produced by tellurium
                 # data_set_df = pd.read_csv(report_filename).transpose()
@@ -117,7 +120,7 @@ def exec_plot_output_sed_doc(omex_file_path, idNamePlotsMap, base_out_path):
                 datasets = []
                 for col in data_set_df.columns:
                     datasets.append(DataSet(id=data_set_df.loc[0,col], label=data_set_df.loc[1,col], name=data_set_df.loc[2,col]))
-                report = Report(id=report_id, name=report_id, data_sets=datasets)
+                report = Report(id=report_id, name=idNamePlotDict[report_id], data_sets=datasets)
  
                 data_set_df.columns = data_set_df.iloc[0]
                 data_set_df.drop(0, inplace=True)
@@ -161,7 +164,7 @@ def exec_plot_output_sed_doc(omex_file_path, idNamePlotsMap, base_out_path):
                 datasets = []
                 for col in data_set_df.columns:
                     datasets.append(DataSet(id=data_set_df.loc[0,col], label=data_set_df.loc[1,col], name=""))
-                report = Report(id=report_id, name=report_id, data_sets=datasets)
+                report = Report(id=report_id, name=idNamePlotDict[report_id], data_sets=datasets)
 
                 data_set_df.columns = data_set_df.iloc[0]		# use ids
                 data_set_df.drop(0, inplace=True)

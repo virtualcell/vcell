@@ -543,7 +543,11 @@ public class CLIUtils {
             if (!(oo instanceof Report)) {
                 System.out.println("Ignoring unsupported output `" + oo.getId() + "` while generating idNamePlotsMap.");
              } else {
-            	 sb.append(oo.getId()).append(",");
+            	 String id = oo.getId();
+            	 if(id.startsWith("__plot__")) {
+            		 id = id.substring("__plot__".length());
+            	 }
+            	 sb.append(id).append("|");	// hopefully no vcell name contains '|', so I can use it as separator
             	 sb.append(oo.getName()).append("\n");
              }
         }
