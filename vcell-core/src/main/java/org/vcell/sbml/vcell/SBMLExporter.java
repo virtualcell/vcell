@@ -884,8 +884,8 @@ protected void addSpecies() throws XMLStreamException, SbmlException {
 			sbmlSpecies.setCompartment(compartment.getId());
 		}
 
-		// 'hasSubstanceOnly' field will be 'true', since export to SBML is done by converting to initial amounts.
-		sbmlSpecies.setHasOnlySubstanceUnits(true);
+		// 'hasSubstanceOnly' field will be 'false', since we use concentrations in rate law expressions.
+		sbmlSpecies.setHasOnlySubstanceUnits(false);
 
 		// Get (and set) the initial concentration value
 		if (getSelectedSimContext() == null) {
@@ -896,7 +896,7 @@ protected void addSpecies() throws XMLStreamException, SbmlException {
 		SpeciesContextSpec vcSpeciesContextsSpec = getSelectedSimContext().getReactionContext().getSpeciesContextSpec(vcSpeciesContexts[i]);
 		// since we are setting the substance units for species to 'molecule' or 'item', a unit that is originally in uM (or molecules/um2),
 		// we need to convert concentration from uM -> molecules/um3; this can be achieved by dividing by KMOLE.
-		
+System.out.println("dummy");		
 		// for now we don't do this here and defer to the mechanisms built into the SimContext to convert and set amount instead of concentration
 		// TO-DO: change to export either concentrations or amounts depending on the type of SimContext and setting
 		SpeciesContextSpecParameter initCount = vcSpeciesContextsSpec.getInitialCountParameter();
@@ -913,7 +913,9 @@ protected void addSpecies() throws XMLStreamException, SbmlException {
 				throw new RuntimeException(e.getMessage());
 			}
 		}
+
 		Expression initCountExpr = initCount.getExpression();
+
 		try {
 			sbmlSpecies.setInitialAmount(initCountExpr.evaluateConstant());
 		} catch (cbit.vcell.parser.ExpressionException e) {
@@ -1384,7 +1386,7 @@ protected void addAssignmentRules()  {
 		}
 	}
 }
-protected void addInitialAssignments() throws ExpressionException, MappingException, MathException, MatrixException, ModelException  {
+protected void addOverrideInitialAssignments() throws ExpressionException, MappingException, MathException, MatrixException, ModelException  {
 	// used for overrides and parameter scan exports only!
 	// for species, the initial assignments are done in addSpecies()
 	if(vcSelectedSimJob == null) {
@@ -1593,7 +1595,7 @@ private VCellSBMLDoc convertToSBML() throws SbmlException, SBMLException, XMLStr
 	sbmlLevel = (int)sbmlModel.getLevel();
 	sbmlVersion = (int)sbmlModel.getVersion();
 
-	checkUnistSystem();
+//	checkUnistSystem();
 	
 	translateBioModel();
 
@@ -2286,7 +2288,7 @@ private void translateBioModel() throws SbmlException, XMLStreamException {
 	}
 
 	try {
-		addInitialAssignments();
+		addOverrideInitialAssignments();
 	} catch (Exception e) {
 		e.printStackTrace(System.out);
 		throw new RuntimeException(e.getMessage());
