@@ -50,6 +50,9 @@ def gen_sedml_2d_3d(omex_file_path, base_out_path):
             sedml_name = content.location.split('.')[0]
 #        sedml_name = Path(content.location).stem
         print("name: ", sedml_name, file=sys.stdout)
+        print("sedml_name: ", sedml_name, file=sys.stdout)
+        print("content.location: ", content.location, file=sys.stdout)
+        print("content_filename: ", content_filename, file=sys.stdout)
 
         doc = SedmlSimulationReader().run(content_filename)
         for output in doc.outputs:
@@ -120,6 +123,7 @@ def exec_plot_output_sed_doc(omex_file_path, idNamePlotsMap, base_out_path):
                 datasets = []
                 for col in data_set_df.columns:
                     datasets.append(DataSet(id=data_set_df.loc[0,col], label=data_set_df.loc[1,col], name=data_set_df.loc[2,col]))
+                print(report_id)
                 report = Report(id=report_id, name=idNamePlotDict[report_id], data_sets=datasets)
  
                 data_set_df.columns = data_set_df.iloc[0]
@@ -164,6 +168,7 @@ def exec_plot_output_sed_doc(omex_file_path, idNamePlotsMap, base_out_path):
                 datasets = []
                 for col in data_set_df.columns:
                     datasets.append(DataSet(id=data_set_df.loc[0,col], label=data_set_df.loc[1,col], name=""))
+                print(report_id)
                 report = Report(id=report_id, name=idNamePlotDict[report_id], data_sets=datasets)
 
                 data_set_df.columns = data_set_df.iloc[0]		# use ids
