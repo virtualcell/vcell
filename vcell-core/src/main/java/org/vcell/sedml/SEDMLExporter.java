@@ -259,11 +259,9 @@ public class SEDMLExporter {
 //							StructureSizeSolver.updateAbsoluteStructureSizes(simContext, structureMapping.getStructure(), 1.0, structureMapping.getSizeParameter().getUnitDefinition());
 
 						}
-						SBMLExporter sbmlExporter = new SBMLExporter(vcBioModel, level, version, isSpatial);
-						sbmlExporter.setSelectedSimContext(simContext);
-						sbmlExporter.setSelectedSimulationJob(null);	// no sim job
-						sbmlString = sbmlExporter.getSBMLString();
-						l2gMap = sbmlExporter.getLocalToGlobalTranslationMap();
+						Pair <String, Map<Pair <String, String>, String>> pair = XmlHelper.exportSBMLwithMap(vcBioModel, 3, 2, 0, isSpatial, simContext, null);
+						sbmlString = pair.one;
+						l2gMap = pair.two;
 					} catch (Exception e) {
 						sbmlExportFailed = true;
 					}

@@ -47,10 +47,8 @@ public class SBMLSpatialTest {
 				continue;
 			}
 			boolean isSpatial = sc1.getGeometry().getDimension()>0;
-			SBMLExporter exporter = new SBMLExporter(bioModel1,3,1,isSpatial);
 			sc1.refreshMathDescription(null, NetworkGenerationRequirements.ComputeFullNoTimeout);
-			exporter.setSelectedSimContext(sc1);
-			String sbmlString = exporter.getSBMLString();
+			String sbmlString = XmlHelper.exportSBML(sc1.getBioModel(), 3, 1, 0, isSpatial, sc1, null);
 			File tempFile = File.createTempFile("sbmlSpatialTest_SBML_", ".sbml.xml");
 			FileUtils.write(tempFile, sbmlString);
 			System.out.println(tempFile);

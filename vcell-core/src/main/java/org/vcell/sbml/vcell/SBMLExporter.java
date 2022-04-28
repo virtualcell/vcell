@@ -265,31 +265,12 @@ public class SBMLExporter {
 		}
 	}
 
-	/**
-	 * SBMLExporter constructor comment.
-	 */
-	public SBMLExporter(BioModel argBioModel, int argSbmlLevel, int argSbmlVersion, boolean isSpatial) {
-		super();
-		this.vcBioModel = argBioModel;
-		sbmlLevel = argSbmlLevel;
-		sbmlVersion = argSbmlVersion;
-		bSpatial = isSpatial;
-		if (vcBioModel != null) {
-			sbmlAnnotationUtil = new SBMLAnnotationUtil(vcBioModel.getVCMetaData(), vcBioModel, SBMLHelper.getNamespaceFromLevelAndVersion(sbmlLevel, sbmlVersion));
-		}
-		ModelUnitSystem vcModelUnitSystem = vcBioModel.getModel().getUnitSystem();
-		this.sbmlExportSpec = new SBMLExportSpec(vcModelUnitSystem.getLumpedReactionSubstanceUnit(), vcModelUnitSystem.getVolumeUnit(), vcModelUnitSystem.getAreaUnit(), vcModelUnitSystem.getLengthUnit(), vcModelUnitSystem.getTimeUnit());
-	}
-	
-	public SBMLExporter(SimulationContext ctx, int argSbmlLevel, int argSbmlVersion, boolean isSpatial) {
-		if (isSpatial && !validSpatial(ctx)) {
-			throw new IllegalArgumentException(ctx.getName() + " not valid for spatialSBML export");
-		}
+	public SBMLExporter(SimulationContext ctx, int argSbmlLevel, int argSbmlVersion) {
 		this.vcBioModel = ctx.getBioModel(); 
 		vcSelectedSimContext = ctx;
 		sbmlLevel = argSbmlLevel;
 		sbmlVersion = argSbmlVersion;
-		bSpatial = isSpatial;
+		bSpatial = validSpatial(ctx);
 		sbmlAnnotationUtil = new SBMLAnnotationUtil(vcBioModel.getVCMetaData(), vcBioModel, SBMLHelper.getNamespaceFromLevelAndVersion(sbmlLevel, sbmlVersion));
 		ModelUnitSystem vcModelUnitSystem = vcBioModel.getModel().getUnitSystem();
 		this.sbmlExportSpec = new SBMLExportSpec(vcModelUnitSystem.getLumpedReactionSubstanceUnit(), vcModelUnitSystem.getVolumeUnit(), vcModelUnitSystem.getAreaUnit(), vcModelUnitSystem.getLengthUnit(), vcModelUnitSystem.getTimeUnit());
@@ -899,10 +880,10 @@ protected void addSpecies() throws XMLStreamException, SbmlException {
 System.out.println("dummy");		
 		// for now we don't do this here and defer to the mechanisms built into the SimContext to convert and set amount instead of concentration
 		// TO-DO: change to export either concentrations or amounts depending on the type of SimContext and setting
-		SpeciesContextSpecParameter initCount = vcSpeciesContextsSpec.getInitialCountParameter();
-		if (initCount.getExpression() == null) {
+		SpeciesContextSpecParameter initConc = vcSpeciesContextsSpec.getInitialConcentrationParameter();
+		if (initConc.getExpression() == null) {
 			try {
-				getSelectedSimContext().convertSpeciesIniCondition(false);
+				getSelectedSimContext().convertSpeciesIniCondition(true);
 			} catch (MappingException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -914,21 +895,21 @@ System.out.println("dummy");
 			}
 		}
 
-		Expression initCountExpr = initCount.getExpression();
+		Expression initConcExp = initConc.getExpression();
 
 		try {
-			sbmlSpecies.setInitialAmount(initCountExpr.evaluateConstant());
+			sbmlSpecies.setInitialConcentration(initConcExp.evaluateConstant());
 		} catch (cbit.vcell.parser.ExpressionException e) {
 			// If it is in the catch block, it means that the initial concentration of the species was not a double, but an expression, probably.
 			// Check if the expression for the species is not null. If exporting to L2V1, and species is 'fixed', and if expr is not in terms of
 			// x, y, z, or other species then create an assignment rule for species concentration; else throw exception.
 			// If exporting to L2V3, if species concentration is not an expr with x, y, z or other species, add as InitialAssignment, else complain.
-			if (initCountExpr != null) {
+			if (initConcExp != null) {
 					if ((sbmlLevel == 2 && sbmlVersion >= 3) || (sbmlLevel > 2)) {
 						// L2V3 and above - add expression as init assignment
 						cbit.vcell.mapping.AssignmentRule vcellAs = getSelectedSimContext().getAssignmentRule(vcSpeciesContexts[i]);
 						if(vcellAs == null) {	// we don't create InitialAssignment for an AssignmentRule variable (Reference: L3V1 Section 4.8)
-							ASTNode initAssgnMathNode = getFormulaFromExpression(initCountExpr);
+							ASTNode initAssgnMathNode = getFormulaFromExpression(initConcExp);
 							InitialAssignment initAssignment = sbmlModel.createInitialAssignment();
 							initAssignment.setSymbol(vcSpeciesContexts[i].getName());
 							initAssignment.setMath(initAssgnMathNode);
@@ -1558,10 +1539,6 @@ public static ASTNode getFormulaFromExpression(Expression expression, MathType d
 	return mathNode;
 }
 
-public SimulationContext getSelectedSimContext() {
-	return vcSelectedSimContext;
-}
-
 private Simulation getSelectedSimulation() {
 	if (vcSelectedSimJob == null) {
 		return null;
@@ -1595,6 +1572,9 @@ private VCellSBMLDoc convertToSBML() throws SbmlException, SBMLException, XMLStr
 	sbmlLevel = (int)sbmlModel.getLevel();
 	sbmlVersion = (int)sbmlModel.getVersion();
 
+	// method below was forcibly changing to item based units
+	// exporter has no business changing units but export whatever was given to it
+	// TODO: create method that does real checks and generates warnings as needed 
 //	checkUnistSystem();
 	
 	translateBioModel();
@@ -1653,7 +1633,13 @@ private VCellSBMLDoc convertToSBML() throws SbmlException, SBMLException, XMLStr
 	return new VCellSBMLDoc(sbmlDocument, sbmlModel, sbmlStr);
 }
 
+@Deprecated
 private void checkUnistSystem() {
+	
+	// this method is forcibly changing to item based units
+	// exporter has no business changing units but export whatever was given to it
+	// TODO: create method that does real checks and generates warnings as needed 
+	
 	// check if model to be exported to SBML has units compatible with SBML default units (default units in SBML can be assumed only until SBML Level2)
 	ModelUnitSystem forcedModelUnitSystem = getSelectedSimContext().getModel().getUnitSystem();
 	if (sbmlLevel < 3 && !ModelUnitSystem.isCompatibleWithDefaultSBMLLevel2Units(forcedModelUnitSystem)) {
@@ -2250,10 +2236,6 @@ if (translateZ != vcTranslation.getTranslation().getZ()){
 	}
 }
 
-public void setSelectedSimContext(SimulationContext newVcSelectedSimContext) {
-	vcSelectedSimContext = newVcSelectedSimContext;
-}
-
 public void setSelectedSimulationJob(SimulationJob newVcSelectedSimJob) {
 	vcSelectedSimJob = newVcSelectedSimJob;
 }
@@ -2300,6 +2282,14 @@ private void translateBioModel() throws SbmlException, XMLStreamException {
 	addReactions();
 	// Add Events
 	addEvents();
+}
+
+private SimulationContext getSelectedSimContext() {
+	return vcSelectedSimContext;
+}
+
+private void setSelectedSimContext(SimulationContext vcSelectedSimContext) {
+	this.vcSelectedSimContext = vcSelectedSimContext;
 }
 
 }

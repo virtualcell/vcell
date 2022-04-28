@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.print.Doc;
@@ -65,6 +66,7 @@ import org.vcell.sedml.RelativeFileModelResolver;
 import org.vcell.sedml.SEDMLUtil;
 import org.vcell.util.Extent;
 import org.vcell.util.FileUtils;
+import org.vcell.util.Pair;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.document.VCDocument;
 import org.vcell.util.document.VCellSoftwareVersion;
@@ -209,6 +211,11 @@ public class XmlHelper {
 
 	}
 
+	public static Pair <String, Map<Pair <String, String>, String>> exportSBMLwithMap(VCDocument vcDoc, int level, int version, int pkgVersion, boolean isSpatial, SimulationContext simContext, SimulationJob simJob) throws XmlParseException {
+		return translateSBML(vcDoc, level, version, simContext, simJob);
+	}
+	
+	
 	/**
 	 * Exports VCML format to another supported format (currently: SBML or CellML). It allows
 	 choosing a specific Simulation Spec to export.
@@ -216,14 +223,29 @@ public class XmlHelper {
 	 * @return java.lang.String
 	 */
 	public static String exportSBML(VCDocument vcDoc, int level, int version, int pkgVersion, boolean isSpatial, SimulationContext simContext, SimulationJob simJob) throws XmlParseException {
+		return translateSBML(vcDoc, level, version, simContext, simJob).one;
+	}
 
+
+	private static Pair <String, Map<Pair <String, String>, String>> translateSBML(VCDocument vcDoc, int level, int version, SimulationContext simContext,
+			SimulationJob simJob) throws XmlParseException {
 		if (vcDoc == null) {
 			throw new XmlParseException("Invalid arguments for exporting SBML.");
 		}
 		if (vcDoc instanceof BioModel) {
 			try {
+				// we don't use the spatial flag anymore
+				// TODO: make better use of the spatial flag in the future
+
+				// for now we have only one single combination of version and unit system that works well
+				// TODO: check whether we already have these units
+				// TODO: make unit change optional
+				// TODO: (maybe) support more than one version?
+				
+				BioModel sbmlPreferredUnitsBM = ModelUnitConverter.createBioModelWithSBMLUnitSystem(simContext.getBioModel());
+
 				// clone BioModel
-				BioModel clonedBioModel = cloneBioModel(simContext.getBioModel());
+				BioModel clonedBioModel = cloneBioModel(sbmlPreferredUnitsBM);
 				// extract the simContext from new Biomodel. Apply overrides to *this* modified simContext
 				SimulationContext simContextFromClonedBioModel = clonedBioModel.getSimulationContext(simContext.getName());
 				SimulationContext clonedSimContext = applyOverridesForSBML(clonedBioModel, simContextFromClonedBioModel, simJob);
@@ -233,21 +255,21 @@ public class XmlHelper {
 					Simulation simFromClonedBiomodel = clonedSimContext.getSimulation(simJob.getSimulation().getName());
 					modifiedSimJob = new SimulationJob(simFromClonedBiomodel, simJob.getJobIndex(), null);
 				}
-				SBMLExporter sbmlExporter = new SBMLExporter(clonedBioModel, level, version, isSpatial);
-				sbmlExporter.setSelectedSimContext(clonedSimContext);
+				
+				SBMLExporter sbmlExporter = new SBMLExporter(clonedSimContext, 3, 2);
 				sbmlExporter.setSelectedSimulationJob(modifiedSimJob);
 				String sbmlSTring  = sbmlExporter.getSBMLString();
 
 				// cleanup the string of all the "sameAs" statements
 				sbmlSTring = SBMLAnnotationUtil.postProcessCleanup(sbmlSTring);
-				return sbmlSTring;
-			} catch (SbmlException | SBMLException | XMLStreamException e) {
+				return new Pair(sbmlSTring, sbmlExporter.getLocalToGlobalTranslationMap());
+			} catch (SbmlException | SBMLException | XMLStreamException | ExpressionException e) {
 				e.printStackTrace(System.out);
 				throw new XmlParseException(e);
 			}
 		} else if (vcDoc instanceof MathModel) {
 			try {
-				return MathModel_SBMLExporter.getSBMLString((MathModel)vcDoc, level, version);
+				return new Pair(MathModel_SBMLExporter.getSBMLString((MathModel)vcDoc, level, version), null);
 			} catch (ExpressionException | IOException | SBMLException | XMLStreamException e) {
 				e.printStackTrace(System.out);
 				throw new XmlParseException(e);

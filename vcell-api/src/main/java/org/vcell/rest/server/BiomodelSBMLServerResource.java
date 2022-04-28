@@ -114,8 +114,7 @@ public class BiomodelSBMLServerResource extends AbstractServerResource implement
 			}else {
 				simulationContext = bioModel.getSimulationContext(0);
 			}
-			SBMLExporter sbmlExporter = new SBMLExporter(simulationContext, 3, 1, simulationContext.getGeometryContext().getGeometry().getDimension()>0);
-			return sbmlExporter.getSBMLString();			
+			return XmlHelper.exportSBML(simulationContext.getBioModel(), 3, 1, 0, (simulationContext.getGeometryContext().getGeometry().getDimension()>0), simulationContext, null);			
 		} catch (PermissionException e) {
 			e.printStackTrace();
 			throw new ResourceException(Status.CLIENT_ERROR_UNAUTHORIZED, "permission denied to requested resource");
