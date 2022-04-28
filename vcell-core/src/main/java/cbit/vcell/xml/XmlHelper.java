@@ -700,8 +700,8 @@ public class XmlHelper {
 							String xpath = xPathTarget.getTargetAsString();
 							String newValue = ((ChangeAttribute) change).getNewValue();
 							System.out.println(newValue + ", " + xpath);
-							newMdl = updateXML(newMdl, xpath, newValue);
-							break;	// only do the first
+//							newMdl = updateXML(newMdl, xpath, newValue);
+//							break;	// only do the first
 						}
 					}
 				}
