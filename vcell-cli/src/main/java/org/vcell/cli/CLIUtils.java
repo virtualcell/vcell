@@ -544,11 +544,13 @@ public class CLIUtils {
                 System.out.println("Ignoring unsupported output `" + oo.getId() + "` while generating idNamePlotsMap.");
              } else {
             	 String id = oo.getId();
-            	 if(id.startsWith("__plot__")) {
-            		 id = id.substring("__plot__".length());
-            	 }
             	 sb.append(id).append("|");	// hopefully no vcell name contains '|', so I can use it as separator
             	 sb.append(oo.getName()).append("\n");
+            	 if(id.startsWith("__plot__")) {
+            		 id = id.substring("__plot__".length());
+                	 sb.append(id).append("|");	// the creation of the csv files is whimsical, we also use an id with __plot__ removed
+                	 sb.append(oo.getName()).append("\n");
+            	 }
              }
         }
  
