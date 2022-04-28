@@ -177,9 +177,10 @@ public class SolverHandler {
                    
                     if (solver.getSolverStatus().getStatus() == SolverStatus.SOLVER_FINISHED) {
                     	
+                    	if(sd.isSpatial()) {
+                    		
                     	// TODO: proper file name (results folder + importedTaskId + ".h5")
                     	// check if successfully created
-                    	// call only if the solver is for spatial!!!
 //                        File aaa = new File("C:\\TEMP\\aaa.hdf5");
 //                        try {
 //                        	CLIUtils.exportPDE2HDF5(sim, outputDirForSedml, aaa);
@@ -187,6 +188,8 @@ public class SolverHandler {
 //                        } catch(Exception e) {
 //                        	sim2Hdf5Map.put(sim.getImportedTaskID(), null);
 //                        }
+                    		
+                    	}
 
                     	
                     	logTaskMessage += "done. ";
