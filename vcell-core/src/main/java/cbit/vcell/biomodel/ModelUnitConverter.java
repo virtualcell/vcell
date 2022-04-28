@@ -39,7 +39,7 @@ public class ModelUnitConverter {
 		String volumeSymbol = "l";						// l
 		String areaSymbol = "um2";						// um2
 		String lengthSymbol = "um";						// um
-		String timeSymbol = "t";						// t
+		String timeSymbol = "s";						// s
 		ModelUnitSystem mus = ModelUnitSystem.createVCModelUnitSystem(volumeSubstanceSymbol, membraneSubstanceSymbol, lumpedReactionSubstanceSymbol, volumeSymbol, areaSymbol, lengthSymbol, timeSymbol);
 		BioModel newBioModel = createBioModelWithNewUnitSystem(oldBioModel, mus);
 		return(newBioModel);
