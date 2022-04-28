@@ -32,6 +32,19 @@ import cbit.vcell.xml.XmlParseException;
 
 public class ModelUnitConverter {
 
+	public static BioModel createBioModelWithSBMLUnitSystem(BioModel oldBioModel) throws ExpressionException, XmlParseException {
+		String volumeSubstanceSymbol = "umol";			// InternalUnitDefinition.UNIT_umol
+		String membraneSubstanceSymbol = "umol";		// umol
+		String lumpedReactionSubstanceSymbol = "umol";	// umol
+		String volumeSymbol = "l";						// l
+		String areaSymbol = "um2";						// um2
+		String lengthSymbol = "um";						// um
+		String timeSymbol = "t";						// t
+		ModelUnitSystem mus = ModelUnitSystem.createVCModelUnitSystem(volumeSubstanceSymbol, membraneSubstanceSymbol, lumpedReactionSubstanceSymbol, volumeSymbol, areaSymbol, lengthSymbol, timeSymbol);
+		BioModel newBioModel = createBioModelWithNewUnitSystem(oldBioModel, mus);
+		return(newBioModel);
+	}
+	
 	public static BioModel createBioModelWithNewUnitSystem(BioModel oldBioModel, ModelUnitSystem newUnitSystem) throws ExpressionException, XmlParseException {
 		// new BioModel has new unit system applied to all built-in units ... but expressions still need to be corrected (see below).
 		String biomodelXMLString = XmlHelper.bioModelToXML(oldBioModel);
