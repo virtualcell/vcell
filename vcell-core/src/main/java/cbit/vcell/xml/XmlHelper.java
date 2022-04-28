@@ -14,12 +14,22 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.StringReader;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
 import javax.print.Doc;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.stream.XMLStreamException;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathFactory;
 
 import cbit.vcell.solver.*;
 import cbit.vcell.solver.SolverDescription.AlgorithmParameterDescription;
@@ -36,6 +46,7 @@ import org.jlibsedml.Algorithm;
 import org.jlibsedml.AlgorithmParameter;
 import org.jlibsedml.ArchiveComponents;
 import org.jlibsedml.Change;
+import org.jlibsedml.ChangeAttribute;
 import org.jlibsedml.DataGenerator;
 import org.jlibsedml.Libsedml;
 import org.jlibsedml.Model;
@@ -48,6 +59,7 @@ import org.jlibsedml.SteadyState;
 import org.jlibsedml.SubTask;
 import org.jlibsedml.Task;
 import org.jlibsedml.UniformTimeCourse;
+import org.jlibsedml.XPathTarget;
 import org.jlibsedml.execution.ArchiveModelResolver;
 import org.jlibsedml.execution.FileModelResolver;
 import org.jlibsedml.execution.ModelResolver;
@@ -677,9 +689,23 @@ public class XmlHelper {
 
 				// we make a biomodel for each task; if there are many simulations, probably 
 				// only one will match the selected task id, the others are parasites and must not be run
+				
 				BioModel bioModel = null;
 				boolean justMade = false;
 				String newMdl = resolver.getModelString(sedmlOriginalModel);
+				if(listOfChanges != null && listOfChanges.size() > 0) {
+					for(Change change : listOfChanges) {
+						if(change instanceof ChangeAttribute) {
+							XPathTarget xPathTarget = change.getTargetXPath();
+							String xpath = xPathTarget.getTargetAsString();
+							String newValue = ((ChangeAttribute) change).getNewValue();
+							System.out.println(newValue + ", " + xpath);
+							newMdl = updateXML(newMdl, xpath, newValue);
+							break;	// only do the first
+						}
+					}
+				}
+
 				String bioModelName = bioModelBaseName + "_" + sedml.getFileName() + "_" + sedmlOriginalModelName;
 				// get it if we made it already
 				for (VCDocument existingDoc : docs) {
@@ -1291,6 +1317,32 @@ public class XmlHelper {
 		return getXPathForOutputFunctions(simulationSpecID) + "/vcml:AnnotatedFunction[@Name='" + outputFunctionID + "']";
 	}
 
+	public static String updateXML(String xml, String xpathExpression, String newValue) {
+	try {
+		//Creating document builder
+		DocumentBuilderFactory builderFactory = DocumentBuilderFactory.newInstance();
+		javax.xml.parsers.DocumentBuilder builder = builderFactory.newDocumentBuilder();
+		org.w3c.dom.Document document = builder.parse(new org.xml.sax.InputSource(new StringReader(xml)));
+	      
+		//Evaluating xpath expression using Element
+		XPath xpath = XPathFactory.newInstance().newXPath();
+		org.w3c.dom.Element element = (org.w3c.dom.Element)xpath.evaluate(xpathExpression, document, XPathConstants.NODE);
+
+		//Setting value in the text
+		element.setTextContent(newValue);
+
+		//Transformation of document to xml
+		StringWriter stringWriter = new StringWriter();
+		Transformer xformer = TransformerFactory.newInstance().newTransformer();
+		xformer.transform(new DOMSource(document), new StreamResult(stringWriter));
+
+		xml = stringWriter.toString();
+	} catch (Exception e) 	{
+	   e.printStackTrace();
+	}
+	    return xml;
+	}
+	
 //public static String exportSedML(VCDocument vcDoc, int level, int version, String file) throws XmlParseException {
 //	if (vcDoc == null) {
 //        throw new XmlParseException("Cannot export NULL document to SEDML.");
