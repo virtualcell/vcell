@@ -1041,9 +1041,15 @@ private void regeneratePlot2D() throws ExpressionException,ObjectNotFoundExcepti
 						} 
 					} else {
 						// No sensitivity analysis case, so do not alter the original values for any variable or function
-						String columnName = (String)((DefaultListModel)getYAxisChoice().getModel()).elementAt(i);
+						DefaultListModel model = (DefaultListModel)getYAxisChoice().getModel();
+						String columnName = (String)model.elementAt(i);
 						allData[i+1] = getMyDataInterface().extractColumn(columnName);
-//						allDataMin[i+1] = getMyDataInterface().extractColumnMin(columnName);
+						String columnNameAsCount = columnName + AbstractMathMapping.MATH_VAR_SUFFIX_SPECIES_COUNT;
+//						if(valueToIndexMap.containsKey(columnNameAsCount)) {
+//							allDataMin[i+1] = getMyDataInterface().extractColumn(columnName, ODEDataInterface.PlotType.Min);
+//							allDataMax[i+1] = getMyDataInterface().extractColumn(columnName, ODEDataInterface.PlotType.Max);
+//							allDataStd[i+1] = getMyDataInterface().extractColumn(columnName, ODEDataInterface.PlotType.Std);
+//						}
 					}
 					yNames[i] = (String)((DefaultListModel)getYAxisChoice().getModel()).elementAt(i);
 				}

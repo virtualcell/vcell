@@ -167,7 +167,7 @@ class ODEDataInterfaceImpl implements ODEDataInterface {
 	}
 	
 	@Override
-	public double[] extractColumnMin(String columnName) throws ExpressionException,ObjectNotFoundException {
+	public double[] extractColumn(String columnName, PlotType plotType) throws ExpressionException,ObjectNotFoundException {
 		FileFormat hdf5FileFormat = null;
 		File to = null;
 		try {
@@ -217,15 +217,6 @@ class ODEDataInterfaceImpl implements ODEDataInterface {
 			if(hdf5FileFormat != null) {try{hdf5FileFormat.close();}catch(Exception e2) {e2.printStackTrace();}}
 			if(to != null){try{to.delete();}catch(Exception e2) {e2.printStackTrace();}}
 		}
-		return null;
-
-	}
-	@Override
-	public double[] extractColumnMax(String columnName) throws ExpressionException,ObjectNotFoundException{
-		return null;
-	}
-	@Override
-	public double[] extractColumnStd(String columnName) throws ExpressionException,ObjectNotFoundException{
 		return null;
 	}
 

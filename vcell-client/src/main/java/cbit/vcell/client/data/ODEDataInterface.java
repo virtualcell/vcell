@@ -12,6 +12,14 @@ import cbit.vcell.solver.SimulationModelInfo.ModelCategoryType;
 import cbit.vcell.util.ColumnDescription;
 
 public interface ODEDataInterface {
+	
+	public enum PlotType {
+		Min,
+		Max,
+		Mean,
+		Std
+	}
+
 
 	void removePropertyChangeListener(PropertyChangeListener propertyChangeListener);
 
@@ -29,9 +37,9 @@ public interface ODEDataInterface {
 
 	LinkedHashMap<String, Integer> parseHDF5File()  throws ExpressionException,ObjectNotFoundException;
 	double[] extractColumn(String columnName) throws ExpressionException,ObjectNotFoundException;
-	double[] extractColumnMax(String columnName) throws ExpressionException,ObjectNotFoundException;
-	double[] extractColumnMin(String columnName) throws ExpressionException,ObjectNotFoundException;
-	double[] extractColumnStd(String columnName) throws ExpressionException,ObjectNotFoundException;
+	double[] extractColumn(String columnName, PlotType plotType) throws ExpressionException,ObjectNotFoundException;
+//	double[] extractColumnMin(String columnName) throws ExpressionException,ObjectNotFoundException;
+//	double[] extractColumnStd(String columnName) throws ExpressionException,ObjectNotFoundException;
 
 	boolean isMultiTrialData();
 
