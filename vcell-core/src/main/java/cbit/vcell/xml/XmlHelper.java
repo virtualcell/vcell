@@ -37,6 +37,7 @@ import cbit.vcell.solver.SolverDescription.AlgorithmParameterDescription;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.xml.dtm.ref.DTMNodeList;
 import org.jdom.Comment;
 import org.jdom.Document;
 import org.jdom.Element;
@@ -82,6 +83,9 @@ import org.vcell.util.Pair;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.document.VCDocument;
 import org.vcell.util.document.VCellSoftwareVersion;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
 
 import cbit.image.VCImage;
 import cbit.util.xml.VCLogger;
@@ -716,16 +720,7 @@ public class XmlHelper {
 				boolean justMade = false;
 				String newMdl = resolver.getModelString(sedmlOriginalModel);
 				if(listOfChanges != null && listOfChanges.size() > 0) {
-					for(Change change : listOfChanges) {
-						if(change instanceof ChangeAttribute) {
-							XPathTarget xPathTarget = change.getTargetXPath();
-							String xpath = xPathTarget.getTargetAsString();
-							String newValue = ((ChangeAttribute) change).getNewValue();
-							System.out.println(newValue + ", " + xpath);
-//							newMdl = updateXML(newMdl, xpath, newValue);
-//							break;	// only do the first
-						}
-					}
+					newMdl = updateXML(newMdl, listOfChanges);
 				}
 
 				String bioModelName = bioModelBaseName + "_" + sedml.getFileName() + "_" + sedmlOriginalModelName;
@@ -1339,20 +1334,102 @@ public class XmlHelper {
 		return getXPathForOutputFunctions(simulationSpecID) + "/vcml:AnnotatedFunction[@Name='" + outputFunctionID + "']";
 	}
 
+	public static String updateXML(String xml, List<Change> listOfChanges) {
+
+		for(Change change : listOfChanges) {
+			if(change instanceof ChangeAttribute) {
+				XPathTarget xPathTarget = change.getTargetXPath();
+				String xpath = xPathTarget.getTargetAsString();			// /sbml:sbml/sbml:model/sbml:listOfSpecies/sbml:species[@id='A']
+				String newValue = ((ChangeAttribute) change).getNewValue();
+				System.out.println(newValue + ", " + xpath);
+				if(xpath == null || !isValidXPath(xpath)) {		// the validator only accepts species for now
+					continue;
+				}
+				xml = updateXML(xml, xpath, newValue);
+			}
+		}
+		return xml;
+	}
 	public static String updateXML(String xml, String xpathExpression, String newValue) {
+		try {
+			String filter = "sbml:species[@id='";
+			String target = xpathExpression.substring(xpathExpression.lastIndexOf(filter) + filter.length());
+			target = target.substring(0,target.indexOf("'"));
+			
+			//Creating document builder
+			DocumentBuilderFactory builderFactory = DocumentBuilderFactory.newInstance();
+			javax.xml.parsers.DocumentBuilder builder = builderFactory.newDocumentBuilder();
+			StringReader sr = new StringReader(xml);
+			InputSource is = new org.xml.sax.InputSource(sr);
+			org.w3c.dom.Document document = builder.parse(is);
+		
+			boolean replaced = false;
+			NodeList listOfSpecies = document.getElementsByTagName("species");
+			System.out.println(listOfSpecies.getLength());
+			for (int i = 0; i < listOfSpecies.getLength(); i++) {
+				Node species = listOfSpecies.item(i);
+				if (species.getNodeType() == Node.ELEMENT_NODE) {
+					String id = species.getAttributes().getNamedItem("id").getTextContent();
+					System.out.println(id);
+					if(id.equals(target)) {
+						species.getAttributes().getNamedItem("initialAmount").setTextContent(newValue);
+						System.out.println("Changed entity " + xpathExpression);
+						replaced = true;
+						break;		// we updated the only species with this id, no point to continue
+					}
+				}
+			}
+			if(replaced == false ) {
+				System.err.println("Unable to Change entity " + xpathExpression);
+			}
+			
+			StringWriter stringWriter = new StringWriter();
+			Transformer xformer = TransformerFactory.newInstance().newTransformer();
+			xformer.transform(new DOMSource(document), new StreamResult(stringWriter));
+			
+			xml = stringWriter.toString();
+		} catch (Exception e) {
+			   e.printStackTrace();
+		}
+		return xml;
+	}
+	private static boolean isValidXPath(String xpath) {
+		if(xpath.contains("listOfSpecies")) {
+			return true;
+		} else {
+			System.err.println("Only the Change of species is supported at this time");
+			return false;
+		}
+	}
+	
+	public static String updateXML2(String xml, String xpathExpression, String newValue) {
 	try {
+//		String xpathExpression = "/sbml:sbml/sbml:model/sbml:listOfSpecies/sbml:species[@id=\"A\"]";
 		//Creating document builder
 		DocumentBuilderFactory builderFactory = DocumentBuilderFactory.newInstance();
 		javax.xml.parsers.DocumentBuilder builder = builderFactory.newDocumentBuilder();
-		org.w3c.dom.Document document = builder.parse(new org.xml.sax.InputSource(new StringReader(xml)));
+		StringReader sr = new StringReader(xml);
+		InputSource is = new org.xml.sax.InputSource(sr);
+		org.w3c.dom.Document document = builder.parse(is);
 	      
 		//Evaluating xpath expression using Element
 		XPath xpath = XPathFactory.newInstance().newXPath();
-		org.w3c.dom.Element element = (org.w3c.dom.Element)xpath.evaluate(xpathExpression, document, XPathConstants.NODE);
+		
+		DTMNodeList dtmNodeList = (DTMNodeList)xpath.evaluate(xpathExpression, document, XPathConstants.NODESET);
+		Node node = dtmNodeList.item(0);
+		node.setNodeValue(newValue);
 
-		//Setting value in the text
-		element.setTextContent(newValue);
+//		org.w3c.dom.Element element = (org.w3c.dom.Element)xpath.evaluate(xpathExpression, document, XPathConstants.NODE);
+//		element.setTextContent(newValue);
+		
+//		Node node = (Node) xpath.compile(xpathExpression).evaluate(document, XPathConstants.NODE);
+//		Node node = (Node) xpath.evaluate(xpathExpression, document, XPathConstants.NODE);
+//		node.setNodeValue(newValue);
 
+//		NodeList myNodeList = (NodeList) xpath.compile(xpathExpression).evaluate(document, XPathConstants.NODESET);
+//		Node node = myNodeList.item(0);
+//		node.setNodeValue(newValue);
+		
 		//Transformation of document to xml
 		StringWriter stringWriter = new StringWriter();
 		Transformer xformer = TransformerFactory.newInstance().newTransformer();
