@@ -12,6 +12,8 @@ package cbit.vcell.mapping;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
 import java.io.Serializable;
+import java.math.BigDecimal;
+import java.math.MathContext;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -1522,7 +1524,7 @@ public Expression convertConcentrationToParticles(Expression iniConcentration) t
 		// convert concentration(particles/area) to number of particles
 		// particles = iniConcentration(molecules/um2)*size(um2)
 		try {
-			iniParticlesExpr = new Expression((Math.round(iniConcentration.evaluateConstant()* structSize)));
+			iniParticlesExpr = new Expression(iniConcentration.evaluateConstant()* structSize);
 		} catch (ExpressionException e) {
 			iniParticlesExpr = Expression.mult(iniConcentration, new Expression(structSize)).flatten();
 		}
@@ -1535,13 +1537,15 @@ public Expression convertConcentrationToParticles(Expression iniConcentration) t
 		double volSubstanceToStochasticScale = volSubstanceToStochastic.getDimensionlessScale().doubleValue();
 		try {
 			iniParticlesExpr = new Expression(iniConcentration.evaluateConstant() * structSize * volSubstanceToStochasticScale);
+		    BigDecimal bd = new BigDecimal(iniParticlesExpr.evaluateConstant());
+		    bd = bd.round(new MathContext(15));
+			iniParticlesExpr = new Expression(bd.doubleValue());
 		} catch (ExpressionException e) {
 			Expression numeratorExpr = Expression.mult(iniConcentration, new Expression(structSize));
 			Expression exp = new Expression(volSubstanceToStochasticScale);
 			iniParticlesExpr = Expression.mult(numeratorExpr, exp).flatten();
 		}
 	}
-	
 	return iniParticlesExpr;
 }
 

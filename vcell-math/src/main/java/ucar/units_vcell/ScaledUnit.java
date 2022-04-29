@@ -1,5 +1,7 @@
 package ucar.units_vcell;
 
+import java.math.BigDecimal;
+import java.math.MathContext;
 /**
  * Provides support for a unit that is a mutiplicative factor of a
  * reference unit.
@@ -137,7 +139,10 @@ public ScaledUnit(double scale, Unit unit, UnitName id) {
     {
 	if (!(_unit instanceof DerivableUnit))
 	    throw new ConversionException(getDerivedUnit(), this);
-	return ((DerivableUnit)getUnit()).fromDerivedUnit(amount)/getScale();
+	double value = ((DerivableUnit)getUnit()).fromDerivedUnit(amount)/getScale();
+    BigDecimal bd = new BigDecimal(value);
+    bd = bd.round(new MathContext(15));
+	return bd.doubleValue();
     }
 
 
@@ -401,7 +406,10 @@ public ScaledUnit(double scale, Unit unit, UnitName id) {
     {
 	if (!(_unit instanceof DerivableUnit))
 	    throw new ConversionException(this, getDerivedUnit());
-	return ((DerivableUnit)_unit).toDerivedUnit(amount*getScale());
+		double value = ((DerivableUnit)_unit).toDerivedUnit(amount*getScale());
+	    BigDecimal bd = new BigDecimal(value);
+	    bd = bd.round(new MathContext(15));
+		return bd.doubleValue();
     }
 
 
