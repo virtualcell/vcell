@@ -17,6 +17,7 @@ import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JTextField;
 
+import cbit.vcell.biomodel.ModelUnitConverter;
 import cbit.vcell.model.ModelUnitSystem;
 
 
@@ -46,8 +47,10 @@ public class UnitSystemSelectionPanel extends JPanel {
 				initialize(defaultUnits);
 				updateEnable();
 			}else if (e.getSource() == arbitrarySBMLUnitsButton){
-				membraneSubstanceTextField.setText(volumeSubstanceTextField.getText());
-				lumpedReactionSubstanceTextField.setText(volumeSubstanceTextField.getText());
+				ModelUnitSystem sbmlUnits = ModelUnitConverter.createSbmlModelUnitSystem();
+				initialize(sbmlUnits);
+//				membraneSubstanceTextField.setText(volumeSubstanceTextField.getText());
+//				lumpedReactionSubstanceTextField.setText(volumeSubstanceTextField.getText());
 				updateEnable();
 			}else if (e.getSource() == arbitraryVCellUnitsButton){
 				updateEnable();
@@ -367,8 +370,7 @@ public class UnitSystemSelectionPanel extends JPanel {
 		
 		if (modelUnitSystem.compareEqual(ModelUnitSystem.createDefaultVCModelUnitSystem())){
 			defaultVCellUnitsButton.setSelected(true);
-		}else if (modelUnitSystem.getVolumeSubstanceUnit().compareEqual(modelUnitSystem.getMembraneSubstanceUnit()) &&
-		   	      modelUnitSystem.getVolumeSubstanceUnit().compareEqual(modelUnitSystem.getLumpedReactionSubstanceUnit())){
+		}else if (modelUnitSystem.compareEqual(ModelUnitConverter.createSbmlModelUnitSystem())) {
 			arbitrarySBMLUnitsButton.setSelected(true);
 		}else{
 			arbitraryVCellUnitsButton.setSelected(true);

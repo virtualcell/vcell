@@ -32,7 +32,7 @@ import cbit.vcell.xml.XmlParseException;
 
 public class ModelUnitConverter {
 
-	public static BioModel createBioModelWithSBMLUnitSystem(BioModel oldBioModel) throws ExpressionException, XmlParseException {
+	public static ModelUnitSystem createSbmlModelUnitSystem() {
 		String volumeSubstanceSymbol = "umol";			// InternalUnitDefinition.UNIT_umol
 		String membraneSubstanceSymbol = "umol";		// umol
 		String lumpedReactionSubstanceSymbol = "umol";	// umol
@@ -41,9 +41,14 @@ public class ModelUnitConverter {
 		String lengthSymbol = "um";						// um
 		String timeSymbol = "s";						// s
 		ModelUnitSystem mus = ModelUnitSystem.createVCModelUnitSystem(volumeSubstanceSymbol, membraneSubstanceSymbol, lumpedReactionSubstanceSymbol, volumeSymbol, areaSymbol, lengthSymbol, timeSymbol);
+		return mus;
+	}
+	public static BioModel createBioModelWithSBMLUnitSystem(BioModel oldBioModel) throws ExpressionException, XmlParseException {
+		ModelUnitSystem mus = createSbmlModelUnitSystem();
 		BioModel newBioModel = createBioModelWithNewUnitSystem(oldBioModel, mus);
 		return(newBioModel);
 	}
+	
 	
 	public static BioModel createBioModelWithNewUnitSystem(BioModel oldBioModel, ModelUnitSystem newUnitSystem) throws ExpressionException, XmlParseException {
 		// new BioModel has new unit system applied to all built-in units ... but expressions still need to be corrected (see below).
@@ -277,5 +282,67 @@ public class ModelUnitConverter {
 		Expression flattened = expr.flatten();
 		Expression origExp = new Expression(expr);
 		expr.substituteInPlace(origExp,flattened);
+	}
+	
+	public static void main(String[] args) {
+
+		double a = 1.0;
+		double b = 1E-1;
+		System.out.println(a/b+"");
+		b = 1E-2;
+		System.out.println(a/b+"");
+		b = 1E-3;
+		System.out.println(a/b+"");
+		b = 1E-4;
+		System.out.println(a/b+"");
+		b = 1E-5;
+		System.out.println(a/b+"");
+		b = 1E-6;
+		System.out.println(a/b+"");
+		b = 1E-7;
+		System.out.println(a/b+"");
+		b = 1E-8;
+		System.out.println(a/b+"");
+		b = 1E-9;
+		System.out.println(a/b+"");
+		b = 1E-10;
+		System.out.println(a/b+"");
+		b = 1E-11;
+		System.out.println(a/b+"");
+		b = 1E-12;
+		System.out.println(a/b+"");
+		b = 1E-13;
+		System.out.println(a/b+"");
+		b = 1E-14;
+		System.out.println(a/b+"");
+		b = 1E-15;
+		System.out.println(a/b+"");
+		b = 1E-16;
+		System.out.println(a/b+"");
+		b = 1E-17;
+		System.out.println(a/b+"");
+		b = 1E-18;
+		System.out.println(a/b+"");
+		b = 1E-19;
+		System.out.println(a/b+"");
+		b = 1E-20;
+		System.out.println(a/b+"");
+		b = 1E-21;
+		System.out.println(a/b+"");
+		b = 1E-22;
+		System.out.println(a/b+"");
+		b = 1E-23;
+		System.out.println(a/b+"");
+		b = 1E-24;
+		System.out.println(a/b+"");
+		b = 1E-25;
+		System.out.println(a/b+"");
+		b = 1E-26;
+		System.out.println(a/b+"");
+		
+		
+		
+		
+		
 	}
 }
