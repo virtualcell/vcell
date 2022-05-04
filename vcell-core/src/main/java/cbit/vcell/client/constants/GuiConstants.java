@@ -65,6 +65,8 @@ public class GuiConstants {
 			new ApplicationActionCommand.Create("Create Non-stochastic Application",Application.NETWORK_DETERMINISTIC).getLabel();
 	public static final String ACTIONCMD_CREATE_RULEBASED_APPLICATION = 
 			new ApplicationActionCommand.Create("Create Network-Free Application",Application.RULE_BASED_STOCHASTIC).getLabel();
+	public static final String ACTIONCMD_CREATE_SPRINGSALAD_APPLICATION = 
+			new ApplicationActionCommand.Create("Create SpringSaLaD Application",Application.SPRINGSALAD).getLabel();
 	public static final String ACTIONCMD_EXPORT = "Export";
 	
 	public static final String ACTIONCMD_OPEN_APPLICATION = "Open";
@@ -86,6 +88,7 @@ public class GuiConstants {
 	public static final String MENU_TEXT_DETERMINISTIC_APPLICATION = "Deterministic";
 	public static final String MENU_TEXT_RULEBASED_APPLICATION = "Network-Free";
 	public static final String MENU_TEXT_STOCHASTIC_APPLICATION = "Stochastic";
+	public static final String MENU_TEXT_SPRINGSALAD_APPLICATION = "SpringSaLaD";
 
 	public static final String ACTIONCMD_SPATIAL_COPY_TO_NON_SPATIAL_DETERMINISTIC_APPLICATION = 
 			new ApplicationActionCommand.CopyChange("Spatial Copy To NonSpatial Deterministic Application",true,false,Application.NETWORK_DETERMINISTIC).getLabel();

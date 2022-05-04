@@ -102,6 +102,9 @@ public class BioModelEditorApplicationsTableModel extends BioModelEditorRightSid
 					case RULE_BASED_STOCHASTIC:{
 						return "Agent-based model, "+spatialDescription+", stochastic (SSA)";
 					}
+					case SPRINGSALAD:{
+						return "Agent-based spatial model, "+spatialDescription+", stochastic (Particles)";
+					}
 					default:{
 						throw new RuntimeException("math type description not yet implemented");
 					}

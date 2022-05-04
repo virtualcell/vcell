@@ -408,7 +408,8 @@ public class SimulationContext implements SimulationOwner, Versionable, Matchabl
 	public enum Application {
 		NETWORK_DETERMINISTIC(MathType.Deterministic),
 		NETWORK_STOCHASTIC(MathType.Stochastic),
-		RULE_BASED_STOCHASTIC(MathType.RuleBased);
+		RULE_BASED_STOCHASTIC(MathType.RuleBased),
+		SPRINGSALAD(MathType.SpringSaLaD);
 		
 		final public MathType mathType;
 

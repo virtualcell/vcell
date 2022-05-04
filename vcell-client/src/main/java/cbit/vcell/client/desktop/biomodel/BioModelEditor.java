@@ -254,6 +254,10 @@ protected void popupMenuActionPerformed(DocumentEditorPopupMenuAction action, St
 		newApplication(Application.RULE_BASED_STOCHASTIC);
 		break;
 	}
+	case add_new_app_springsalad: {
+		newApplication(Application.SPRINGSALAD);
+		break;
+	}
 	case copyName:
 		String name = bioModel.getName();
 		StringSelection data = new StringSelection(name);
