@@ -182,6 +182,7 @@ public abstract class VCellIcons {
 	public final static Icon mathTypeIcon = makeIcon("/images/type.gif");
 	
 //	public final static Icon applicationIcon = makeIcon("/images/application3_16x16.gif");
+	public final static Icon appSpringSaLaDSpatialIcon = makeIcon("/images/app_spring_spatial_28x16.png");
 	public final static Icon appDetSpatialIcon = makeIcon("/images/app_det_spatial_28x16.png");
 	public final static Icon appDetNonspIcon = makeIcon("/images/app_det_nonsp_28x16.png");
 	public final static Icon appStoSpatialIcon = makeIcon("/images/app_sto_spatial_28x16.png");

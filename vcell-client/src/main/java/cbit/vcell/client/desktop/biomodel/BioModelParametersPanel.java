@@ -77,6 +77,7 @@ import cbit.vcell.mapping.AssignmentRule;
 import cbit.vcell.mapping.RateRule;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SpeciesContextSpec;
+import cbit.vcell.mapping.SimulationContext.Application;
 import cbit.vcell.mapping.SimulationContext.SimulationContextParameter;
 import cbit.vcell.mapping.gui.SpeciesContextSpecsTableModel;
 import cbit.vcell.model.EditableSymbolTableEntry;
@@ -160,6 +161,8 @@ public class BioModelParametersPanel extends DocumentEditorSubPanel {
 					} else {
 						icon = VCellIcons.appStoSpatialIcon;
 					}
+				} else if(simContext.getApplicationType() == Application.SPRINGSALAD) {
+					icon = VCellIcons.appSpringSaLaDSpatialIcon;
 				} else {
 					if(simContext.getGeometry().getDimension() == 0) {
 						icon = VCellIcons.appDetNonspIcon;
@@ -797,6 +800,8 @@ public class BioModelParametersPanel extends DocumentEditorSubPanel {
 					} else {
 						icon = VCellIcons.appStoSpatialIcon;
 					}
+				} else if(simContext.getApplicationType() == Application.SPRINGSALAD) {
+					icon = VCellIcons.appSpringSaLaDSpatialIcon;
 				} else {		// deterministic
 					if(simContext.getGeometry().getDimension() == 0) {
 						icon = VCellIcons.appDetNonspIcon;
