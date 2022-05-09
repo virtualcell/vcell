@@ -28,6 +28,7 @@ import javax.swing.event.DocumentListener;
 
 import org.vcell.model.rbm.gui.NetworkConstraintsPanel;
 import org.vcell.model.rbm.gui.NetworkFreePanel;
+import org.vcell.model.springsalad.gui.MolecularStructuresPanel;
 
 import cbit.vcell.client.constants.GuiConstants;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorTreeModel.DocumentEditorTreeFolderClass;
@@ -54,6 +55,7 @@ public class ApplicationSpecificationsPanel extends ApplicationSubPanel {
 	*/
 	private NetworkConstraintsPanel networkConstraintsPanel;	
 	private NetworkFreePanel networkFreePanel;	
+	private MolecularStructuresPanel molecularStructuresPanel;
 	//private MembraneConditionsPanel membraneConditionsPanel; 
 	private JTextField textField_1;
 	private static class SpecifierComponent {
@@ -158,11 +160,13 @@ public class ApplicationSpecificationsPanel extends ApplicationSubPanel {
 		networkConstraintsPanel = new NetworkConstraintsPanel();
 		networkFreePanel = new NetworkFreePanel();
 		MembraneConditionsPanel membraneConditionsPanel = new MembraneConditionsPanel();
+		molecularStructuresPanel = new MolecularStructuresPanel();
 		
 		//order of calls determines display order
 		setupTab("Species",initialConditionsPanel);
 		setupTab("Reaction",modelProcessSpecsPanel);
 		setupTab("Membrane",membraneConditionsPanel);
+		setupTab("Molecular Structures", molecularStructuresPanel);
 		setupTab("Network",networkConstraintsPanel);
 		setupTab("Network-Free",networkFreePanel);
 		
@@ -171,6 +175,7 @@ public class ApplicationSpecificationsPanel extends ApplicationSubPanel {
 		if (System.getProperty("showMembrane") != null) {
 			activate(membraneConditionsPanel);
 		}
+		activate(molecularStructuresPanel);
 		
 		JPanel searchPanel = new JPanel();
 		GridBagLayout gbl_searchPanel = new GridBagLayout();
@@ -256,6 +261,13 @@ public class ApplicationSpecificationsPanel extends ApplicationSubPanel {
 			 } else {
 				 tabbedPane.setEnabledAt(indexOfNetworkTab, true);
 			 }
+		}
+		if(simulationContext.getApplicationType().equals(SimulationContext.Application.SPRINGSALAD)) {
+			activate(molecularStructuresPanel);
+			final int indexOfMolecularStructuresTab = tabbedPane.indexOfComponent(molecularStructuresPanel);
+			 tabbedPane.setEnabledAt(indexOfMolecularStructuresTab, true);
+		} else {
+			deactivate(molecularStructuresPanel);
 		}
 	}
 

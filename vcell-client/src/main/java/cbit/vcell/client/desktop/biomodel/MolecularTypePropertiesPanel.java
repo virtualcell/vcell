@@ -1152,6 +1152,17 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 			popupFromShapeMenu.add(deleteMenuItem);
 			popupFromShapeMenu.add(new JSeparator());
 			popupFromShapeMenu.add(addMenuItem);
+			// ---- start SpringSaLaD -----------------------------------------
+			JMenuItem setPositionMenuItem = new JMenuItem("Set Position ");
+			popupFromShapeMenu.add(setPositionMenuItem);
+			popupFromShapeMenu.add(new JSeparator());
+			JMenuItem addLinkMenuItem = new JMenuItem("Add Link ");
+			JMenuItem removeLinkMenuItem = new JMenuItem("Remove Link ");
+			JMenuItem setLinkLengthMenuItem = new JMenuItem("Set Link Length ");
+			popupFromShapeMenu.add(addLinkMenuItem);
+			popupFromShapeMenu.add(removeLinkMenuItem);
+			popupFromShapeMenu.add(setLinkLengthMenuItem);
+			// ---- end SpringSaLaD --------------------------------------------
 			deleteMenuItem.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					MolecularComponent mc = (MolecularComponent) selectedObject;
