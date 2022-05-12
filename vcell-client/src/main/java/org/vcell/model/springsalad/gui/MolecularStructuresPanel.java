@@ -13,8 +13,11 @@ import java.awt.event.FocusListener;
 import java.beans.PropertyChangeListener;
 
 import javax.swing.BorderFactory;
+import javax.swing.JButton;
 import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JPanel;
+import javax.swing.JTextField;
 import javax.swing.border.Border;
 import javax.swing.border.EtchedBorder;
 import javax.swing.border.TitledBorder;
@@ -100,7 +103,7 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 		gbc.insets = new Insets(1, 1, 1, 1);
 		add(thePanel, gbc);
 		
-		// ------------------------------------------- Populating the top group box ---------------
+		// ------------------------------------------- the 3 main panels ---------------
 		JPanel left = new JPanel();
 		JPanel center = new JPanel();
 		JPanel right = new JPanel();
@@ -136,6 +139,274 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 		gbc.fill = GridBagConstraints.BOTH;
 		gbc.insets = new Insets(5, 2, 2, 3);
 		thePanel.add(right, gbc);
+		
+		// --------------------------------------- Components and subpanels for left, center, right ---------------
+		JPanel leftSubpanel1 = new JPanel();
+		JList<String> molecules = new JList<String> ();
+		molecules.setBorder(loweredEtchedBorder);
+		JPanel leftSubpanel2 = new JPanel();
+		JTextField radius = new JTextField();
+		JTextField diameter = new JTextField();
+		JTextField color = new JTextField();
+
+		leftSubpanel1.setLayout(new GridBagLayout());
+		gbc = new GridBagConstraints();
+		gbc.gridx = 0;
+		gbc.gridy = 0;
+		gbc.weightx = 1.0;
+		gbc.weighty = 1.0;
+		gbc.fill = GridBagConstraints.BOTH;
+		gbc.insets = new Insets(5, 2, 2, 3);
+		leftSubpanel1.add(molecules, gbc);
+
+		leftSubpanel2.setLayout(new GridBagLayout());
+		gbc = new GridBagConstraints();		// ----------------------
+		gbc.gridx = 0;
+		gbc.gridy = 0;
+		gbc.insets = new Insets(5, 2, 2, 3);
+		leftSubpanel2.add(new JLabel("Radius (nm): "), gbc);
+
+		gbc = new GridBagConstraints();
+		gbc.gridx = 1;
+		gbc.gridy = 0;
+		gbc.weightx = 1.0;
+		gbc.fill = GridBagConstraints.HORIZONTAL;
+		gbc.insets = new Insets(5, 2, 2, 3);	//  top, left, bottom, right 
+		leftSubpanel2.add(radius, gbc);
+		
+		gbc = new GridBagConstraints();		// ----------------------
+		gbc.gridx = 0;
+		gbc.gridy = 1;
+		gbc.insets = new Insets(5, 2, 2, 3);
+		leftSubpanel2.add(new JLabel("D (um^2/s): "), gbc);
+
+		gbc = new GridBagConstraints();
+		gbc.gridx = 1;
+		gbc.gridy = 1;
+		gbc.weightx = 1.0;
+		gbc.fill = GridBagConstraints.HORIZONTAL;
+		gbc.insets = new Insets(5, 2, 2, 3);
+		leftSubpanel2.add(diameter, gbc);
+
+		gbc = new GridBagConstraints();		// ----------------------
+		gbc.gridx = 0;
+		gbc.gridy = 2;
+		gbc.anchor = GridBagConstraints.EAST;
+		gbc.insets = new Insets(5, 2, 2, 3);
+		leftSubpanel2.add(new JLabel("Color: "), gbc);
+
+		gbc = new GridBagConstraints();
+		gbc.gridx = 1;
+		gbc.gridy = 2;
+		gbc.weightx = 1.0;
+		gbc.fill = GridBagConstraints.HORIZONTAL;
+		gbc.insets = new Insets(5, 2, 2, 3);
+		leftSubpanel2.add(color, gbc);
+		
+		gbc = new GridBagConstraints();		// ----------------------
+		gbc.gridx = 0;
+		gbc.gridy = 3;
+		gbc.fill = GridBagConstraints.HORIZONTAL;
+		gbc.insets = new Insets(5, 2, 2, 3);
+		leftSubpanel2.add(new JLabel("States"), gbc);
+
+		JList<String> states = new JList<String> ();
+		states.setBorder(loweredEtchedBorder);
+		gbc = new GridBagConstraints();
+		gbc.gridx = 0;
+		gbc.gridy = 4;
+		gbc.weightx = 1.0;
+		gbc.weighty = 1.0;
+		gbc.gridwidth = 2;
+		gbc.fill = GridBagConstraints.BOTH;
+		gbc.insets = new Insets(5, 2, 2, 3);
+		leftSubpanel2.add(states, gbc);
+
+		left.setLayout(new GridBagLayout());
+		gbc = new GridBagConstraints();
+		gbc.gridx = 0;
+		gbc.gridy = 0;
+		gbc.weightx = 1.0;
+		gbc.weighty = 1.0;
+		gbc.fill = GridBagConstraints.BOTH;
+		gbc.insets = new Insets(5, 2, 2, 3);
+		left.add(leftSubpanel1, gbc);
+		
+		gbc = new GridBagConstraints();
+		gbc.gridx = 1;
+		gbc.gridy = 0;
+		gbc.weightx = 1.0;
+		gbc.weighty = 1.0;
+		gbc.fill = GridBagConstraints.BOTH;
+		gbc.insets = new Insets(5, 2, 2, 3);
+		left.add(leftSubpanel2, gbc);
+
+		// --------------------------------------------------------------------------
+		JPanel centerSubpanel1 = new JPanel();
+		JList<String> sites = new JList<String> ();
+		sites.setBorder(loweredEtchedBorder);
+		JPanel centerSubpanel2 = new JPanel();
+		JTextField radiusCenter = new JTextField();
+		JTextField diameterCenter = new JTextField();
+		JTextField locationCenter = new JTextField();
+
+		centerSubpanel1.setLayout(new GridBagLayout());
+		gbc = new GridBagConstraints();
+		gbc.gridx = 0;
+		gbc.gridy = 0;
+		gbc.weightx = 1.0;
+		gbc.weighty = 1.0;
+		gbc.fill = GridBagConstraints.BOTH;
+		gbc.insets = new Insets(5, 2, 2, 3);
+		centerSubpanel1.add(molecules, gbc);
+
+		centerSubpanel2.setLayout(new GridBagLayout());
+		gbc = new GridBagConstraints();		// ----------------------
+		gbc.gridx = 0;
+		gbc.gridy = 0;
+		gbc.insets = new Insets(5, 2, 2, 3);
+		centerSubpanel2.add(new JLabel("Radius (nm): "), gbc);
+
+		gbc = new GridBagConstraints();
+		gbc.gridx = 1;
+		gbc.gridy = 0;
+		gbc.weightx = 1.0;
+		gbc.fill = GridBagConstraints.HORIZONTAL;
+		gbc.insets = new Insets(5, 2, 2, 3);	//  top, left, bottom, right 
+		centerSubpanel2.add(radius, gbc);
+		
+		gbc = new GridBagConstraints();		// ----------------------
+		gbc.gridx = 0;
+		gbc.gridy = 1;
+		gbc.insets = new Insets(5, 2, 2, 3);
+		centerSubpanel2.add(new JLabel("D (um^2/s): "), gbc);
+
+		gbc = new GridBagConstraints();
+		gbc.gridx = 1;
+		gbc.gridy = 1;
+		gbc.weightx = 1.0;
+		gbc.fill = GridBagConstraints.HORIZONTAL;
+		gbc.insets = new Insets(5, 2, 2, 3);
+		centerSubpanel2.add(diameter, gbc);
+
+		gbc = new GridBagConstraints();		// ----------------------
+		gbc.gridx = 0;
+		gbc.gridy = 2;
+		gbc.anchor = GridBagConstraints.EAST;
+		gbc.insets = new Insets(5, 2, 2, 3);
+		centerSubpanel2.add(new JLabel("Location: "), gbc);
+
+		gbc = new GridBagConstraints();
+		gbc.gridx = 1;
+		gbc.gridy = 2;
+		gbc.weightx = 1.0;
+		gbc.fill = GridBagConstraints.HORIZONTAL;
+		gbc.insets = new Insets(5, 2, 2, 3);
+		centerSubpanel2.add(color, gbc);
+		
+		gbc = new GridBagConstraints();		// ----------------------
+		gbc.gridx = 0;
+		gbc.gridy = 3;
+		gbc.fill = GridBagConstraints.HORIZONTAL;
+		gbc.insets = new Insets(5, 2, 2, 3);
+		centerSubpanel2.add(new JLabel("Position (nm) "), gbc);
+		
+		JPanel centerSubpanel3 = new JPanel();	// ===================
+		gbc = new GridBagConstraints();
+		gbc.gridx = 0;
+		gbc.gridy = 4;
+		gbc.gridwidth = 2;
+		gbc.weightx = 1.0;
+		gbc.fill = GridBagConstraints.HORIZONTAL;
+		gbc.insets = new Insets(2, 2, 2, 3);
+		centerSubpanel2.add(centerSubpanel3, gbc);
+		
+		gbc = new GridBagConstraints();		// ----------------------
+		gbc.gridx = 0;
+		gbc.gridy = 5;
+		gbc.fill = GridBagConstraints.HORIZONTAL;
+		gbc.insets = new Insets(5, 2, 2, 3);
+		centerSubpanel2.add(new JButton("Set Position"), gbc);
+
+		gbc = new GridBagConstraints();		// ghost
+		gbc.gridx = 0;
+		gbc.gridy = 6;
+		gbc.weighty = 1.0;
+		gbc.fill = GridBagConstraints.VERTICAL;
+		gbc.insets = new Insets(5, 2, 2, 3);
+		centerSubpanel2.add(new JLabel(" "), gbc);
+
+
+		centerSubpanel3.setLayout(new GridBagLayout());
+		gbc = new GridBagConstraints();		// ----------------------
+		gbc.gridx = 0;
+		gbc.gridy = 0;
+		gbc.insets = new Insets(0, 2, 2, 0);		//  top, left, bottom, right 
+		centerSubpanel3.add(new JLabel("X: "), gbc);
+
+		JTextField x = new JTextField();
+		x.setEditable(false);
+		gbc = new GridBagConstraints();
+		gbc.gridx = 1;
+		gbc.gridy = 0;
+		gbc.weightx = 1.0;
+		gbc.fill = GridBagConstraints.HORIZONTAL;
+		gbc.insets = new Insets(0, 1, 2, 3);
+		centerSubpanel3.add(x, gbc);
+
+		gbc = new GridBagConstraints();		// ----------------------
+		gbc.gridx = 2;
+		gbc.gridy = 0;
+		gbc.insets = new Insets(0, 7, 2, 0);
+		centerSubpanel3.add(new JLabel("Y: "), gbc);
+
+		JTextField y = new JTextField();
+		y.setEditable(false);
+		gbc = new GridBagConstraints();
+		gbc.gridx = 3;
+		gbc.gridy = 0;
+		gbc.weightx = 1.0;
+		gbc.fill = GridBagConstraints.HORIZONTAL;
+		gbc.insets = new Insets(0, 1, 2, 3);
+		centerSubpanel3.add(y, gbc);
+
+		gbc = new GridBagConstraints();		// ----------------------
+		gbc.gridx = 4;
+		gbc.gridy = 0;
+		gbc.insets = new Insets(0, 7, 2, 0);
+		centerSubpanel3.add(new JLabel("Z: "), gbc);
+
+		JTextField z = new JTextField();
+		z.setEditable(false);
+		gbc = new GridBagConstraints();
+		gbc.gridx = 5;
+		gbc.gridy = 0;
+		gbc.weightx = 1.0;
+		gbc.fill = GridBagConstraints.HORIZONTAL;
+		gbc.insets = new Insets(0, 1, 2, 0);
+		centerSubpanel3.add(z, gbc);
+
+
+		center.setLayout(new GridBagLayout());
+		gbc = new GridBagConstraints();
+		gbc.gridx = 0;
+		gbc.gridy = 0;
+		gbc.weightx = 1.0;
+		gbc.weighty = 1.0;
+		gbc.fill = GridBagConstraints.BOTH;
+		gbc.insets = new Insets(5, 2, 2, 3);
+		center.add(centerSubpanel1, gbc);
+		
+		gbc = new GridBagConstraints();
+		gbc.gridx = 1;
+		gbc.gridy = 0;
+		gbc.weightx = 1.0;
+		gbc.weighty = 1.0;
+		gbc.fill = GridBagConstraints.BOTH;
+		gbc.insets = new Insets(5, 2, 2, 3);
+		center.add(centerSubpanel2, gbc);
+		
+		// --------------------------------------------------------------------------------
 		
 	}
 	
