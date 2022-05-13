@@ -140,7 +140,7 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 		gbc.insets = new Insets(5, 2, 2, 3);
 		thePanel.add(right, gbc);
 		
-		// --------------------------------------- Components and subpanels for left, center, right ---------------
+		// --- left -------------------------------------------------
 		JPanel leftSubpanel1 = new JPanel();
 		JList<String> molecules = new JList<String> ();
 		molecules.setBorder(loweredEtchedBorder);
@@ -163,6 +163,7 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 		gbc = new GridBagConstraints();		// ----------------------
 		gbc.gridx = 0;
 		gbc.gridy = 0;
+		gbc.anchor = GridBagConstraints.EAST;
 		gbc.insets = new Insets(5, 2, 2, 3);
 		leftSubpanel2.add(new JLabel("Radius (nm): "), gbc);
 
@@ -177,6 +178,7 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 		gbc = new GridBagConstraints();		// ----------------------
 		gbc.gridx = 0;
 		gbc.gridy = 1;
+		gbc.anchor = GridBagConstraints.EAST;
 		gbc.insets = new Insets(5, 2, 2, 3);
 		leftSubpanel2.add(new JLabel("D (um^2/s): "), gbc);
 
@@ -241,7 +243,7 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 		gbc.insets = new Insets(5, 2, 2, 3);
 		left.add(leftSubpanel2, gbc);
 
-		// --------------------------------------------------------------------------
+		// --- center --------------------------------------------------
 		JPanel centerSubpanel1 = new JPanel();
 		JList<String> sites = new JList<String> ();
 		sites.setBorder(loweredEtchedBorder);
@@ -258,12 +260,13 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 		gbc.weighty = 1.0;
 		gbc.fill = GridBagConstraints.BOTH;
 		gbc.insets = new Insets(5, 2, 2, 3);
-		centerSubpanel1.add(molecules, gbc);
+		centerSubpanel1.add(sites, gbc);
 
 		centerSubpanel2.setLayout(new GridBagLayout());
 		gbc = new GridBagConstraints();		// ----------------------
 		gbc.gridx = 0;
 		gbc.gridy = 0;
+		gbc.anchor = GridBagConstraints.EAST;
 		gbc.insets = new Insets(5, 2, 2, 3);
 		centerSubpanel2.add(new JLabel("Radius (nm): "), gbc);
 
@@ -273,11 +276,12 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 		gbc.weightx = 1.0;
 		gbc.fill = GridBagConstraints.HORIZONTAL;
 		gbc.insets = new Insets(5, 2, 2, 3);	//  top, left, bottom, right 
-		centerSubpanel2.add(radius, gbc);
+		centerSubpanel2.add(radiusCenter, gbc);
 		
 		gbc = new GridBagConstraints();		// ----------------------
 		gbc.gridx = 0;
 		gbc.gridy = 1;
+		gbc.anchor = GridBagConstraints.EAST;
 		gbc.insets = new Insets(5, 2, 2, 3);
 		centerSubpanel2.add(new JLabel("D (um^2/s): "), gbc);
 
@@ -287,7 +291,7 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 		gbc.weightx = 1.0;
 		gbc.fill = GridBagConstraints.HORIZONTAL;
 		gbc.insets = new Insets(5, 2, 2, 3);
-		centerSubpanel2.add(diameter, gbc);
+		centerSubpanel2.add(diameterCenter, gbc);
 
 		gbc = new GridBagConstraints();		// ----------------------
 		gbc.gridx = 0;
@@ -302,7 +306,7 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 		gbc.weightx = 1.0;
 		gbc.fill = GridBagConstraints.HORIZONTAL;
 		gbc.insets = new Insets(5, 2, 2, 3);
-		centerSubpanel2.add(color, gbc);
+		centerSubpanel2.add(locationCenter, gbc);
 		
 		gbc = new GridBagConstraints();		// ----------------------
 		gbc.gridx = 0;
@@ -386,7 +390,6 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 		gbc.insets = new Insets(0, 1, 2, 0);
 		centerSubpanel3.add(z, gbc);
 
-
 		center.setLayout(new GridBagLayout());
 		gbc = new GridBagConstraints();
 		gbc.gridx = 0;
@@ -406,8 +409,62 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 		gbc.insets = new Insets(5, 2, 2, 3);
 		center.add(centerSubpanel2, gbc);
 		
-		// --------------------------------------------------------------------------------
+		// --- right -----------------------------------------------
+		JList<String> links = new JList<String> ();
+		links.setBorder(loweredEtchedBorder);
+		JTextField lengthRight = new JTextField();
+		lengthRight.setEditable(false);
+		JButton addLink = new JButton("Add Link");
+		JButton removeLink = new JButton("Remove Link");
+		JButton setLinkLength = new JButton("Set Link Length");
 		
+		right.setLayout(new GridBagLayout());
+		gbc = new GridBagConstraints();
+		gbc.gridx = 0;
+		gbc.gridy = 0;
+		gbc.gridwidth = 2;
+		gbc.weightx = 1.0;
+		gbc.weighty = 1.0;
+		gbc.fill = GridBagConstraints.BOTH;
+		gbc.insets = new Insets(5, 2, 2, 3);
+		right.add(links, gbc);
+
+		gbc = new GridBagConstraints();		// ----------------------
+		gbc.gridx = 0;
+		gbc.gridy = 1;
+		gbc.anchor = GridBagConstraints.EAST;
+		gbc.insets = new Insets(5, 2, 2, 3);
+		right.add(new JLabel("Length (nm): "), gbc);
+
+		gbc = new GridBagConstraints();
+		gbc.gridx = 1;
+		gbc.gridy = 1;
+		gbc.weightx = 1.0;
+		gbc.fill = GridBagConstraints.HORIZONTAL;
+		gbc.insets = new Insets(5, 2, 2, 3);	//  top, left, bottom, right 
+		right.add(lengthRight, gbc);
+
+		gbc = new GridBagConstraints();
+		gbc.gridx = 0;
+		gbc.gridy = 2;
+		gbc.fill = GridBagConstraints.HORIZONTAL;
+		gbc.insets = new Insets(5, 2, 2, 3);
+		right.add(addLink, gbc);
+
+		gbc = new GridBagConstraints();
+		gbc.gridx = 0;
+		gbc.gridy = 3;
+		gbc.fill = GridBagConstraints.HORIZONTAL;
+		gbc.insets = new Insets(5, 2, 2, 3);
+		right.add(removeLink, gbc);
+
+		gbc = new GridBagConstraints();
+		gbc.gridx = 0;
+		gbc.gridy = 4;
+		gbc.fill = GridBagConstraints.HORIZONTAL;
+		gbc.insets = new Insets(5, 2, 2, 3);
+		right.add(setLinkLength, gbc);
+
 	}
 	
 	public void setSimulationContext(SimulationContext simulationContext) {
