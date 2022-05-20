@@ -394,9 +394,13 @@ public final class SedML extends SEDBase {
      *         not found.
      */
     public Model getModelWithId(String modelRef) {
+    	String modelIdCandidate = modelRef;
+    	if(modelRef.startsWith("#")) {
+    		modelIdCandidate = modelIdCandidate.substring(1);
+    	}
         for (int i = 0; i < models.size(); i++) {
             Model m = models.get(i);
-            if (m.getId().equals(modelRef)) {
+            if (m.getId().equals(modelIdCandidate)) {
                 return m;
             }
         }
@@ -412,9 +416,13 @@ public final class SedML extends SEDBase {
      *         <code> modelRef</code> argument, <code>false</code> otherwise.
      */
     public boolean isModel(String modelRef) {
+    	String modelIdCandidate = modelRef;
+    	if(modelRef.startsWith("#")) {
+    		modelIdCandidate = modelIdCandidate.substring(1);
+    	}
         for (int i = 0; i < models.size(); i++) {
             Model m = models.get(i);
-            if (m.getId().equals(modelRef)) {
+            if (m.getId().equals(modelIdCandidate)) {
                 return true;
             }
         }

@@ -280,6 +280,7 @@ public final class Model extends AbstractIdentifiableElement {
 	 * 
 	 * @param srcString
 	 *            A URI of where this model can be retrieved.
+	 *            Attention: if the string is a model reference, it should be prefixed with "#"
 	 */
 	public void setSource(String srcString) {
 		source = srcString;
