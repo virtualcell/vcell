@@ -487,7 +487,7 @@ public class SEDMLExporter {
 							// create new model with change for each parameter that has override; add simple task
 							String overriddenSimContextId = simContextId + "_" + overrideCount;
 							String overriddenSimContextName = simContextName + " modified";
-							Model sedModel = new Model(overriddenSimContextId, overriddenSimContextName, sbmlLanguageURN, simContextId);
+							Model sedModel = new Model(overriddenSimContextId, overriddenSimContextName, sbmlLanguageURN, "#"+simContextId);
 							overrideCount++;
 
 							for (String unscannedParamName : unscannedParamHash.values()) {
@@ -597,7 +597,7 @@ public class SEDMLExporter {
 							// create new model with change for each unscanned parameter that has override
 							String overriddenSimContextId = simContextId + "_" + overrideCount;
 							String overriddenSimContextName = simContextName + " modified";
-							Model sedModel = new Model(overriddenSimContextId, overriddenSimContextName, sbmlLanguageURN, simContextId);
+							Model sedModel = new Model(overriddenSimContextId, overriddenSimContextName, sbmlLanguageURN, "#"+simContextId);
 							overrideCount++;
 
 							String taskId = "tsk_" + simContextCnt + "_" + simCount;
