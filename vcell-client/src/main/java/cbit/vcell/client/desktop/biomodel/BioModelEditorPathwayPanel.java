@@ -169,7 +169,7 @@ public class BioModelEditorPathwayPanel extends DocumentEditorSubPanel {
 		}
 	}
 	
-	private static final int DEPTH_LIMIT = 4;
+	private static final int DEPTH_LIMIT = 12;
 	private void addComplexComponents(Complex complex, ArrayList<PhysicalEntity> addList, int depth) {
 		depth++;
 		if(depth > DEPTH_LIMIT) {
