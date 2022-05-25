@@ -1345,7 +1345,7 @@ public class XmlHelper {
 				if(xpath == null || !isValidXPath(xpath)) {		// the validator only accepts species for now
 					continue;
 				}
-				xml = updateXML(xml, xpath, newValue);
+				xml = updateXML2(xml, xpath, newValue);
 			}
 		}
 		return xml;
@@ -1415,6 +1415,7 @@ public class XmlHelper {
 		//Evaluating xpath expression using Element
 		XPath xpath = XPathFactory.newInstance().newXPath();
 		
+		// here follow 4 different ways to apply the change, none works
 		DTMNodeList dtmNodeList = (DTMNodeList)xpath.evaluate(xpathExpression, document, XPathConstants.NODESET);
 		Node node = dtmNodeList.item(0);
 		node.setNodeValue(newValue);
