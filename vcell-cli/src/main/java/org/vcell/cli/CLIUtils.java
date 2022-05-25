@@ -482,8 +482,13 @@ public class CLIUtils {
                         double[] row = new double[vars.size()];
                         
                         // Handling row labels that contains ","
-                       	if (dataset.getId().contains(",")) sb.append("\"" + dataset.getId() + "\"").append(",");
-                       	else sb.append(dataset.getId()).append(",");
+                        if (dataset.getId().startsWith("__vcell_reserved_data_set_prefix__")) {		// also used in cli.py
+                        	if (dataset.getLabel().contains(",")) sb.append("\"" + dataset.getLabel() + "\"").append(",");
+                        	else sb.append(dataset.getLabel()).append(",");
+                        } else {
+                        	if (dataset.getId().contains(",")) sb.append("\"" + dataset.getId() + "\"").append(",");
+                        	else sb.append(dataset.getId()).append(",");
+                        }
                         
                         if (dataset.getLabel().contains(",")) sb.append("\"" + dataset.getLabel() + "\"").append(",");
                         else sb.append(dataset.getLabel()).append(",");

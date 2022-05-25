@@ -75,7 +75,7 @@ def gen_sedml_2d_3d(omex_file_path, base_out_path):
 
                 for data_generator in data_generators.values():
                     report.data_sets.append(DataSet(
-                        id='__data_set__{}_{}'.format(
+                        id='__vcell_reserved_data_set_prefix__{}_{}'.format(
                             output.id, data_generator.id),
                         name=data_generator.name,
                         label=data_generator.id,
