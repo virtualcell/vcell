@@ -6,3 +6,4 @@ vcell3  -fstype=nfs,tcp,hard,intr,noatime,nfsvers=3 cfs09:/vcell
 vcell7  -fstype=nfs,tcp,hard,intr,noatime,nfsvers=3 cfs07:/ifs/vcell
 vcell5  -fstype=nfs,tcp,hard,intr,noatime,nosharecache,nfsvers=3 cfs09:/vcell5
 vcell10  -fstype=nfs,tcp,hard,intr,noatime,nosharecache,nfsvers=3 cfs10:/vcell
+vcell12  -fstype=nfs,tcp,hard,intr,noatime,nosharecache,nfsvers=3 cfs12:/vcell
