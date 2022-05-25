@@ -63,7 +63,7 @@ ENV jmspswdfile=/run/secrets/jmspswd \
     batchuserkeyfile=/run/secrets/batchuserkeyfile
 
 VOLUME /simdata
-VOLUME /share/apps/vcell10/users
+VOLUME /share/apps/vcell12/users
 VOLUME /htclogs
 
 EXPOSE 8000

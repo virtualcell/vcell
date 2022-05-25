@@ -100,7 +100,7 @@ ENV dbpswdfile=/run/secrets/dbpswd \
     
 
 VOLUME /simdata
-VOLUME /share/apps/vcell10/users
+VOLUME /share/apps/vcell12/users
 VOLUME /exportdir
 
 EXPOSE 8000

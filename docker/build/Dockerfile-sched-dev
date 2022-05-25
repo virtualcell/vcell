@@ -54,7 +54,7 @@ ENV dbpswdfile=/run/secrets/dbpswd \
 EXPOSE 8000
 
 VOLUME /simdata
-VOLUME /share/apps/vcell10/users
+VOLUME /share/apps/vcell12/users
 VOLUME /htclogs
 
 ENTRYPOINT java \
