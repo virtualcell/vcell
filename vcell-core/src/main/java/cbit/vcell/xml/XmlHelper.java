@@ -719,9 +719,10 @@ public class XmlHelper {
 				BioModel bioModel = null;
 				boolean justMade = false;
 				String newMdl = resolver.getModelString(sedmlOriginalModel);
-				if(listOfChanges != null && listOfChanges.size() > 0) {
-					newMdl = updateXML(newMdl, listOfChanges);
-				}
+				// no need for this, the resolver applies all changes
+//				if(listOfChanges != null && listOfChanges.size() > 0) {
+//					newMdl = updateXML(newMdl, listOfChanges);
+//				}
 
 				String bioModelName = bioModelBaseName + "_" + sedml.getFileName() + "_" + sedmlOriginalModelName;
 				// get it if we made it already
@@ -732,7 +733,7 @@ public class XmlHelper {
 							break;
 						}
 					}
-				}
+				}	
 				// make it if we didn't and mark it as fresh
 				if (bioModel == null) {
 					if(sedmlOriginalModelLanguage.contentEquals(SUPPORTED_LANGUAGE.VCELL_GENERIC.getURN())) {	// vcml
@@ -747,9 +748,6 @@ public class XmlHelper {
 							e.printStackTrace();
 						}
 					} else {				// we assume it's sbml, if it's neither import will fail
-						//
-						// TODO: apply all the changes around here, now that we know it's sbml
-						//
 						XMLSource sbmlSource = new XMLSource(newMdl);		// sbmlSource with all the changes applied
 						bioModel = (BioModel)XmlHelper.importSBML(transLogger, sbmlSource, bSpatial);
 						bioModel.setName(bioModelName);
@@ -1334,6 +1332,7 @@ public class XmlHelper {
 		return getXPathForOutputFunctions(simulationSpecID) + "/vcml:AnnotatedFunction[@Name='" + outputFunctionID + "']";
 	}
 
+	@Deprecated
 	public static String updateXML(String xml, List<Change> listOfChanges) {
 
 		for(Change change : listOfChanges) {
@@ -1345,11 +1344,14 @@ public class XmlHelper {
 				if(xpath == null || !isValidXPath(xpath)) {		// the validator only accepts species for now
 					continue;
 				}
-				xml = updateXML2(xml, xpath, newValue);
+				xml = updateXML(xml, xpath, newValue);
 			}
 		}
 		return xml;
 	}
+	
+	@Deprecated
+	// perform a changeAttribute from within our code (not needed, the resolver does it for us)
 	public static String updateXML(String xml, String xpathExpression, String newValue) {
 		try {
 			String filter = "sbml:species[@id='";
@@ -1393,6 +1395,8 @@ public class XmlHelper {
 		}
 		return xml;
 	}
+	
+	@Deprecated
 	private static boolean isValidXPath(String xpath) {
 		if(xpath.contains("listOfSpecies")) {
 			return true;
@@ -1402,9 +1406,13 @@ public class XmlHelper {
 		}
 	}
 	
+	@Deprecated
+	// variant of updateXML(), never worked
 	public static String updateXML2(String xml, String xpathExpression, String newValue) {
 	try {
 //		String xpathExpression = "/sbml:sbml/sbml:model/sbml:listOfSpecies/sbml:species[@id=\"A\"]";
+
+		xpathExpression = "/*:sbml/*:model/*:listOfSpecies/*:species[@id=\"A\"]";
 		//Creating document builder
 		DocumentBuilderFactory builderFactory = DocumentBuilderFactory.newInstance();
 		javax.xml.parsers.DocumentBuilder builder = builderFactory.newDocumentBuilder();
@@ -1416,16 +1424,17 @@ public class XmlHelper {
 		XPath xpath = XPathFactory.newInstance().newXPath();
 		
 		// here follow 4 different ways to apply the change, none works
-		DTMNodeList dtmNodeList = (DTMNodeList)xpath.evaluate(xpathExpression, document, XPathConstants.NODESET);
-		Node node = dtmNodeList.item(0);
-		node.setNodeValue(newValue);
+//		DTMNodeList dtmNodeList = (DTMNodeList)xpath.evaluate(xpathExpression, document, XPathConstants.NODESET);
+//		Node node = dtmNodeList.item(0);
+//		node.setNodeValue(newValue);
 
 //		org.w3c.dom.Element element = (org.w3c.dom.Element)xpath.evaluate(xpathExpression, document, XPathConstants.NODE);
 //		element.setTextContent(newValue);
 		
 //		Node node = (Node) xpath.compile(xpathExpression).evaluate(document, XPathConstants.NODE);
-//		Node node = (Node) xpath.evaluate(xpathExpression, document, XPathConstants.NODE);
-//		node.setNodeValue(newValue);
+		
+		Node node = (Node) xpath.evaluate(xpathExpression, document, XPathConstants.NODE);
+		node.setNodeValue(newValue);
 
 //		NodeList myNodeList = (NodeList) xpath.compile(xpathExpression).evaluate(document, XPathConstants.NODESET);
 //		Node node = myNodeList.item(0);
