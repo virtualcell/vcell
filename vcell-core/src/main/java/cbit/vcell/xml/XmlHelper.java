@@ -16,9 +16,11 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.print.Doc;
 import javax.xml.parsers.DocumentBuilder;
@@ -787,11 +789,27 @@ public class XmlHelper {
 					}
 					bioModel.addSimulationContext(matchingSimulationContext);
 				}
-
-				// making the new vCell simulation based on the sedml simulation
 				matchingSimulationContext.refreshDependencies();
 				MathMappingCallback callback = new MathMappingCallbackTaskAdapter(null);
 				matchingSimulationContext.refreshMathDescription(callback, NetworkGenerationRequirements.ComputeFullStandardTimeout);
+
+				// making the new vCell simulation based on the sedml simulation
+				SimulationType type = SimulationType.get(sedmlSimulation.getName());
+				switch (type) {
+				case UniformTimeCourse:
+					break;
+				// we don't even bother if it's an unsupported type
+				case OneStep:
+					System.err.println("OneStep Simulation not supported");
+					continue;
+				case SteadyState:
+					System.err.println("SteadyState Simulation not supported");
+					continue;
+				default:
+					System.err.println("Unknown Simulation not supported");
+					continue;
+				}
+				
 				Simulation newSimulation = new Simulation(matchingSimulationContext.getMathDescription());
 				newSimulation.setSimulationOwner(matchingSimulationContext);
 				if (selectedTask instanceof Task) {
@@ -804,6 +822,7 @@ public class XmlHelper {
 				} else {
 					newSimulation.setName(SEDMLUtil.getName(sedmlSimulation)+"_"+SEDMLUtil.getName(selectedTask));
 				}
+				
 				// we identify the type of sedml simulation (uniform time course, etc)
 				// and set the vCell simulation parameters accordingly
 				SolverTaskDescription simTaskDesc = newSimulation.getSolverTaskDescription();
@@ -815,7 +834,9 @@ public class XmlHelper {
 				TimeStep timeStep = new TimeStep();
 				double outputTimeStep = 0.1;
 				int outputNumberOfPoints = 1;
-				if(sedmlSimulation instanceof UniformTimeCourse) {
+				ErrorTolerance errorTolerance = new ErrorTolerance();
+				switch (type) {
+				case UniformTimeCourse:
 					// we translate initial time to zero, we provide output for the duration of the simulation
 					// because we can't select just an interval the way the SEDML simulation can
 					double initialTime = ((UniformTimeCourse) sedmlSimulation).getInitialTime();
@@ -824,72 +845,68 @@ public class XmlHelper {
 					outputNumberOfPoints = ((UniformTimeCourse) sedmlSimulation).getNumberOfPoints();
 					outputTimeStep = (outputEndTime - outputStartTime) / outputNumberOfPoints;
 					timeBounds = new TimeBounds(0, outputEndTime - initialTime);
-					ErrorTolerance errorTolerance = new ErrorTolerance();
-
-					// we look for explicit algorithm parameters
-					List<AlgorithmParameter> sedmlAlgorithmParameters = algorithm.getListOfAlgorithmParameters();
-					for(AlgorithmParameter sedmlAlgorithmParameter : sedmlAlgorithmParameters) {
-
-						String apKisaoID = sedmlAlgorithmParameter.getKisaoID();
-						String apValue = sedmlAlgorithmParameter.getValue();
-						if(apKisaoID == null || apKisaoID.isEmpty()) {
-							System.err.println("Undefined KisaoID algorithm parameter for algorithm '" + kisaoID + "'");
-						}
-
-						// we don't check if the recognized algorithm parameters are valid for our algorithm
-						// we just use any parameter we find for the solver task description we have, assuming the exporting code did all the checks
-						// WARNING: if our algorithm is the result of a guess, this may be wrong
-						// TODO: use the proper ontology for the algorithm parameters kisao id
-						if(apKisaoID.contentEquals(ErrorTolerance.ErrorToleranceDescription.Absolute.getKisao())) {
-							double value = Double.parseDouble(apValue);
-							errorTolerance.setAbsoluteErrorTolerance(value);
-						} else if(apKisaoID.contentEquals(ErrorTolerance.ErrorToleranceDescription.Relative.getKisao())) {
-							double value = Double.parseDouble(apValue);
-							errorTolerance.setRelativeErrorTolerance(value);
-
-						} else if(apKisaoID.contentEquals(TimeStep.TimeStepDescription.Default.getKisao())) {
-							double value = Double.parseDouble(apValue);
-							timeStep.setDefaultTimeStep(value);
-						} else if(apKisaoID.contentEquals(TimeStep.TimeStepDescription.Maximum.getKisao())) {
-							double value = Double.parseDouble(apValue);
-							timeStep.setMaximumTimeStep(value);
-						} else if(apKisaoID.contentEquals(TimeStep.TimeStepDescription.Minimum.getKisao())) {
-							double value = Double.parseDouble(apValue);
-							timeStep.setMinimumTimeStep(value);
-
-						} else if(apKisaoID.contentEquals(AlgorithmParameterDescription.Seed.getKisao())) {		// custom seed
-							if(simTaskDesc.getSimulation().getMathDescription().isNonSpatialStoch()) {
-								NonspatialStochSimOptions nssso = simTaskDesc.getStochOpt();
-								int value = Integer.parseInt(apValue);
-								nssso.setCustomSeed(value);
-							} else {
-								System.err.println("Algorithm parameter '" + AlgorithmParameterDescription.Seed.getDescription() +"' is only supported for nonspatial stochastic simulations");
-							}
-							// some arguments used only for non-spatial hybrid solvers
-						} else if(apKisaoID.contentEquals(AlgorithmParameterDescription.Epsilon.getKisao())) {
-							NonspatialStochHybridOptions nssho = simTaskDesc.getStochHybridOpt();
-							nssho.setEpsilon(Double.parseDouble(apValue));
-						} else if(apKisaoID.contentEquals(AlgorithmParameterDescription.Lambda.getKisao())) {
-							NonspatialStochHybridOptions nssho = simTaskDesc.getStochHybridOpt();
-							nssho.setLambda(Double.parseDouble(apValue));
-						} else if(apKisaoID.contentEquals(AlgorithmParameterDescription.MSRTolerance.getKisao())) {
-							NonspatialStochHybridOptions nssho = simTaskDesc.getStochHybridOpt();
-							nssho.setMSRTolerance(Double.parseDouble(apValue));
-						} else if(apKisaoID.contentEquals(AlgorithmParameterDescription.SDETolerance.getKisao())) {
-							NonspatialStochHybridOptions nssho = simTaskDesc.getStochHybridOpt();
-							nssho.setSDETolerance(Double.parseDouble(apValue));
-						} else {
-							System.err.println("Algorithm parameter with kisao id '" + apKisaoID + "' not supported at this time, skipping.");
-						}
-					}
-					simTaskDesc.setErrorTolerance(errorTolerance);
-				} else if(sedmlSimulation instanceof OneStep) {		// for anything other than UniformTimeCourse we just ignore
-					System.err.println("OneStep Simulation not supported");
-					continue;
-				} else if(sedmlSimulation instanceof SteadyState) {
-					System.err.println("SteadyState Simulation not supported");
-					continue;
+					break;
+//				case OneStep:	// someday we may implement these
+//				case SteadyState:
+				default:
+					break;
 				}
+
+				// we look for explicit algorithm parameters
+				List<AlgorithmParameter> sedmlAlgorithmParameters = algorithm.getListOfAlgorithmParameters();
+				for(AlgorithmParameter sedmlAlgorithmParameter : sedmlAlgorithmParameters) {
+
+					String apKisaoID = sedmlAlgorithmParameter.getKisaoID();
+					String apValue = sedmlAlgorithmParameter.getValue();
+					if(apKisaoID == null || apKisaoID.isEmpty()) {
+						System.err.println("Undefined KisaoID algorithm parameter for algorithm '" + kisaoID + "'");
+					}
+
+					// we don't check if the recognized algorithm parameters are valid for our algorithm
+					// we just use any parameter we find for the solver task description we have, assuming the exporting code did all the checks
+					// WARNING: if our algorithm is the result of a guess, this may be wrong
+					// TODO: use the proper ontology for the algorithm parameters kisao id
+					if(apKisaoID.contentEquals(ErrorTolerance.ErrorToleranceDescription.Absolute.getKisao())) {
+						double value = Double.parseDouble(apValue);
+						errorTolerance.setAbsoluteErrorTolerance(value);
+					} else if(apKisaoID.contentEquals(ErrorTolerance.ErrorToleranceDescription.Relative.getKisao())) {
+						double value = Double.parseDouble(apValue);
+						errorTolerance.setRelativeErrorTolerance(value);
+					} else if(apKisaoID.contentEquals(TimeStep.TimeStepDescription.Default.getKisao())) {
+						double value = Double.parseDouble(apValue);
+						timeStep.setDefaultTimeStep(value);
+					} else if(apKisaoID.contentEquals(TimeStep.TimeStepDescription.Maximum.getKisao())) {
+						double value = Double.parseDouble(apValue);
+						timeStep.setMaximumTimeStep(value);
+					} else if(apKisaoID.contentEquals(TimeStep.TimeStepDescription.Minimum.getKisao())) {
+						double value = Double.parseDouble(apValue);
+						timeStep.setMinimumTimeStep(value);
+					} else if(apKisaoID.contentEquals(AlgorithmParameterDescription.Seed.getKisao())) {		// custom seed
+						if(simTaskDesc.getSimulation().getMathDescription().isNonSpatialStoch()) {
+							NonspatialStochSimOptions nssso = simTaskDesc.getStochOpt();
+							int value = Integer.parseInt(apValue);
+							nssso.setCustomSeed(value);
+						} else {
+							System.err.println("Algorithm parameter '" + AlgorithmParameterDescription.Seed.getDescription() +"' is only supported for nonspatial stochastic simulations");
+						}
+						// some arguments used only for non-spatial hybrid solvers
+					} else if(apKisaoID.contentEquals(AlgorithmParameterDescription.Epsilon.getKisao())) {
+						NonspatialStochHybridOptions nssho = simTaskDesc.getStochHybridOpt();
+						nssho.setEpsilon(Double.parseDouble(apValue));
+					} else if(apKisaoID.contentEquals(AlgorithmParameterDescription.Lambda.getKisao())) {
+						NonspatialStochHybridOptions nssho = simTaskDesc.getStochHybridOpt();
+						nssho.setLambda(Double.parseDouble(apValue));
+					} else if(apKisaoID.contentEquals(AlgorithmParameterDescription.MSRTolerance.getKisao())) {
+						NonspatialStochHybridOptions nssho = simTaskDesc.getStochHybridOpt();
+						nssho.setMSRTolerance(Double.parseDouble(apValue));
+					} else if(apKisaoID.contentEquals(AlgorithmParameterDescription.SDETolerance.getKisao())) {
+						NonspatialStochHybridOptions nssho = simTaskDesc.getStochHybridOpt();
+						nssho.setSDETolerance(Double.parseDouble(apValue));
+					} else {
+						System.err.println("Algorithm parameter with kisao id '" + apKisaoID + "' not supported at this time, skipping.");
+					}
+				}
+				simTaskDesc.setErrorTolerance(errorTolerance);
 
 				OutputTimeSpec outputTimeSpec = new UniformOutputTimeSpec(outputTimeStep);
 				simTaskDesc.setTimeBounds(timeBounds);
@@ -1464,7 +1481,30 @@ public class XmlHelper {
 //	}
 //}
 
+	public enum SimulationType {
+		UniformTimeCourse(UniformTimeCourse.class.getName()), 
+		SteadyState(SteadyState.class.getName()),
+		OneStep(OneStep.class.getName());
 
+		private String refClassname;
+		private static final Map<String, SimulationType> ENUM_MAP;
+
+		SimulationType (String refClassname) {
+			this.refClassname = refClassname;
+		}
+
+		static {
+			Map<String, SimulationType> map = new ConcurrentHashMap<String, SimulationType>();
+			for (SimulationType instance : SimulationType.values()) {
+				map.put(instance.refClassname, instance);
+			}
+			ENUM_MAP = Collections.unmodifiableMap(map);
+		}
+
+		public static SimulationType get(String name) {
+			return ENUM_MAP.get(name);
+		}
+	}
 
 
 }
