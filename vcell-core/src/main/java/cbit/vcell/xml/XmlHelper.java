@@ -16,11 +16,9 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 
 import javax.print.Doc;
 import javax.xml.parsers.DocumentBuilder;
@@ -794,22 +792,10 @@ public class XmlHelper {
 				matchingSimulationContext.refreshMathDescription(callback, NetworkGenerationRequirements.ComputeFullStandardTimeout);
 
 				// making the new vCell simulation based on the sedml simulation
-				SimulationType type = SimulationType.get(sedmlSimulation.getName());
-				switch (type) {
-				case UniformTimeCourse:
-					break;
-				// we don't even bother if it's an unsupported type
-				case OneStep:
-					System.err.println("OneStep Simulation not supported");
-					continue;
-				case SteadyState:
-					System.err.println("SteadyState Simulation not supported");
-					continue;
-				default:
-					System.err.println("Unknown Simulation not supported");
+				if(!(sedmlSimulation instanceof UniformTimeCourse)) {
+					// we don't even bother if it's an unsupported type
 					continue;
 				}
-				
 				Simulation newSimulation = new Simulation(matchingSimulationContext.getMathDescription());
 				newSimulation.setSimulationOwner(matchingSimulationContext);
 				if (selectedTask instanceof Task) {
@@ -835,8 +821,7 @@ public class XmlHelper {
 				double outputTimeStep = 0.1;
 				int outputNumberOfPoints = 1;
 				ErrorTolerance errorTolerance = new ErrorTolerance();
-				switch (type) {
-				case UniformTimeCourse:
+				if(sedmlSimulation instanceof UniformTimeCourse) {
 					// we translate initial time to zero, we provide output for the duration of the simulation
 					// because we can't select just an interval the way the SEDML simulation can
 					double initialTime = ((UniformTimeCourse) sedmlSimulation).getInitialTime();
@@ -845,11 +830,10 @@ public class XmlHelper {
 					outputNumberOfPoints = ((UniformTimeCourse) sedmlSimulation).getNumberOfPoints();
 					outputTimeStep = (outputEndTime - outputStartTime) / outputNumberOfPoints;
 					timeBounds = new TimeBounds(0, outputEndTime - initialTime);
-					break;
-//				case OneStep:	// someday we may implement these
-//				case SteadyState:
-				default:
-					break;
+//				} else if(sedmlSimulation instanceof OneStep) {		// for anything other than UniformTimeCourse we just ignore
+//					System.err.println("OneStep Simulation not supported");
+//				} else if(sedmlSimulation instanceof SteadyState) {
+//					System.err.println("SteadyState Simulation not supported");
 				}
 
 				// we look for explicit algorithm parameters
@@ -1481,30 +1465,7 @@ public class XmlHelper {
 //	}
 //}
 
-	public enum SimulationType {
-		UniformTimeCourse(UniformTimeCourse.class.getName()), 
-		SteadyState(SteadyState.class.getName()),
-		OneStep(OneStep.class.getName());
 
-		private String refClassname;
-		private static final Map<String, SimulationType> ENUM_MAP;
-
-		SimulationType (String refClassname) {
-			this.refClassname = refClassname;
-		}
-
-		static {
-			Map<String, SimulationType> map = new ConcurrentHashMap<String, SimulationType>();
-			for (SimulationType instance : SimulationType.values()) {
-				map.put(instance.refClassname, instance);
-			}
-			ENUM_MAP = Collections.unmodifiableMap(map);
-		}
-
-		public static SimulationType get(String name) {
-			return ENUM_MAP.get(name);
-		}
-	}
 
 
 }
