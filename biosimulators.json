@@ -1,7 +1,7 @@
 {
   "id": "VCell",
   "name": "Virtual Cell",
-  "version": "_VC_VERSION_TAG_",
+  "version": "7.4.0.47",
   "description": "VCell (Virtual Cell) is a comprehensive platform for modeling cell biological systems that is built on a central database and disseminated as a standalone application",
   "urls": [
     {
@@ -10,7 +10,8 @@
     }
   ],
   "image": {
-    "url": "ghcr.io/virtualcell/biosimulators_vcell:_VC_VERSION_TAG_",
+    "url": "ghcr.io/virtualcell/biosimulators_vcell:7.4.0.47",
+	"digest": "sha256:4bec97c2b3827f0f944e8ca30ad7ce2eb3581b096f420cb8569d2ad81fdb5966",
     "format": {
       "namespace": "EDAM",
       "id": "format_3973",
@@ -616,7 +617,7 @@
       "citations": [
         {
           "title": "Solving reaction-diffusion and advection problems with Richardon Extrapolation",
-          "authors": "Tamás Mona, István Lagzi & Ágnes Havasi",
+          "authors": "Tamás Mona, István Lagzi & Agnes Havasi",
           "journal": "Journal of Chemistry",
           "volume": "3",
           "issue": "3",
