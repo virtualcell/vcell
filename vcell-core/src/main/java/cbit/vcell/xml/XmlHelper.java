@@ -759,14 +759,49 @@ public class XmlHelper {
 				if(sedmlOriginalModelLanguage.contentEquals(SUPPORTED_LANGUAGE.VCELL_GENERIC.getURN())) {
 					// we don't need to make a simulation from sedml if we're coming from vcml, we already got all we need
 					// we basically ignore the sedml simulation altogether
+					Simulation theSimulation = null;
 					for (Simulation sim : bioModel.getSimulations()) {
 						if (sim.getName().equals(selectedTask.getName())) {
 							System.out.println(" --- selected task - name: " + selectedTask.getName() + ", id: " + selectedTask.getId());
 							sim.setImportedTaskID(selectedTask.getId());
+							theSimulation = sim;
+							break;	// found the one, no point to continue the for loop
 						}
+					}if(theSimulation == null) {
+						System.err.println("Couldn't match sedml task '" + selectedTask.getName() + "' with any biomodel simulation");
+						continue;	// should never happen
 					}
+					if(!(sedmlSimulation instanceof UniformTimeCourse)) {
+						continue;
+					}
+					
+					SolverTaskDescription simTaskDesc = theSimulation.getSolverTaskDescription();
+					TimeBounds timeBounds = new TimeBounds();
+					TimeStep timeStep = new TimeStep();
+					double outputTimeStep = 0.1;
+					int outputNumberOfPoints = 1;
+					// we translate initial time to zero, we provide output for the duration of the simulation
+					// because we can't select just an interval the way the SEDML simulation can
+					double initialTime = ((UniformTimeCourse) sedmlSimulation).getInitialTime();
+					double outputStartTime = ((UniformTimeCourse) sedmlSimulation).getOutputStartTime();
+					double outputEndTime = ((UniformTimeCourse) sedmlSimulation).getOutputEndTime();
+					outputNumberOfPoints = ((UniformTimeCourse) sedmlSimulation).getNumberOfPoints();
+					outputTimeStep = (outputEndTime - outputStartTime) / outputNumberOfPoints;
+					timeBounds = new TimeBounds(0, outputEndTime - initialTime);
+
+					OutputTimeSpec outputTimeSpec = new UniformOutputTimeSpec(outputTimeStep);
+					simTaskDesc.setTimeBounds(timeBounds);
+					simTaskDesc.setTimeStep(timeStep);
+					if (simTaskDesc.getSolverDescription().supports(outputTimeSpec)) {
+						simTaskDesc.setOutputTimeSpec(outputTimeSpec);
+					} else {
+						simTaskDesc.setOutputTimeSpec(new DefaultOutputTimeSpec(1,Integer.max(DefaultOutputTimeSpec.DEFAULT_KEEP_AT_MOST, outputNumberOfPoints)));
+					}
+					//theSimulation.setSolverTaskDescription(simTaskDesc);
+					//theSimulation.refreshDependencies();
 					continue;
 				}
+				
 				// even if we just created the biomodel from the sbml file we have at least one application with initial conditions and stuff
 				// see if there is a suitable application type for the sedml kisao
 				// if not, we add one by doing a "copy as" to the right type
@@ -820,7 +855,6 @@ public class XmlHelper {
 				TimeStep timeStep = new TimeStep();
 				double outputTimeStep = 0.1;
 				int outputNumberOfPoints = 1;
-				ErrorTolerance errorTolerance = new ErrorTolerance();
 				if(sedmlSimulation instanceof UniformTimeCourse) {
 					// we translate initial time to zero, we provide output for the duration of the simulation
 					// because we can't select just an interval the way the SEDML simulation can
@@ -835,8 +869,11 @@ public class XmlHelper {
 //				} else if(sedmlSimulation instanceof SteadyState) {
 //					System.err.println("SteadyState Simulation not supported");
 				}
+				simTaskDesc.setTimeBounds(timeBounds);
+				simTaskDesc.setTimeStep(timeStep);
 
 				// we look for explicit algorithm parameters
+				ErrorTolerance errorTolerance = new ErrorTolerance();
 				List<AlgorithmParameter> sedmlAlgorithmParameters = algorithm.getListOfAlgorithmParameters();
 				for(AlgorithmParameter sedmlAlgorithmParameter : sedmlAlgorithmParameters) {
 
@@ -893,8 +930,6 @@ public class XmlHelper {
 				simTaskDesc.setErrorTolerance(errorTolerance);
 
 				OutputTimeSpec outputTimeSpec = new UniformOutputTimeSpec(outputTimeStep);
-				simTaskDesc.setTimeBounds(timeBounds);
-				simTaskDesc.setTimeStep(timeStep);
 				if (simTaskDesc.getSolverDescription().supports(outputTimeSpec)) {
 					simTaskDesc.setOutputTimeSpec(outputTimeSpec);
 				} else {
