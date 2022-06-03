@@ -257,9 +257,12 @@ public class XmlHelper {
 				// TODO: check whether we already have these units
 				// TODO: make unit change optional
 				// TODO: (maybe) support more than one version?
+				BioModel bm = simContext.getBioModel();
+				BioModel sbmlPreferredUnitsBM = ModelUnitConverter.createBioModelWithSBMLUnitSystem(bm);
+				if(sbmlPreferredUnitsBM == null) {
+					throw new RuntimeException("Unable to clone BioModel: " + bm.getName());
+				}
 				
-				BioModel sbmlPreferredUnitsBM = ModelUnitConverter.createBioModelWithSBMLUnitSystem(simContext.getBioModel());
-
 				// clone BioModel
 				BioModel clonedBioModel = cloneBioModel(sbmlPreferredUnitsBM);
 				// extract the simContext from new Biomodel. Apply overrides to *this* modified simContext

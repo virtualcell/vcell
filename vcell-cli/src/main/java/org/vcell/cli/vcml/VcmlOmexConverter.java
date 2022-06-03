@@ -103,6 +103,7 @@ public class VcmlOmexConverter {
 	private static boolean bForceSBML = false;		// set by the -sbml CL argument, means we export to omex strictly as sbml (mutually exclusive with -vcml)
 	private static boolean bHasDataOnly = false;	// we only export those simulations that have at least some results; set by -hasDataOnly CL argument
 	private static boolean bMakeLogsOnly = false;	// we do not build omex files, we just write the logs
+	private static boolean bNonSpatialOnly = false;	// we only export non-spatial
 	private static CLIHandler cliHandler;
 	
 	private static Set<String> hasNonSpatialSet = new LinkedHashSet<>();	// model has at least one non spatial application (String is omex name)
@@ -172,6 +173,7 @@ public class VcmlOmexConverter {
             CLIStandalone.writeSimErrorList(outputDir, "bForceSBML is " + bForceSBML);
             CLIStandalone.writeSimErrorList(outputDir, "hasDataOnly is " + bHasDataOnly);
             CLIStandalone.writeSimErrorList(outputDir, "makeLogsOnly is " + bMakeLogsOnly);
+            CLIStandalone.writeSimErrorList(outputDir, "nonSpatialOnly is " + bNonSpatialOnly);
             
 //            assert inputFiles != null;
             for (String inputFile : inputFiles) {
@@ -183,10 +185,10 @@ public class VcmlOmexConverter {
                     if (inputFile.endsWith(".vcml")) {
                         boolean isCreated = vcmlToOmexConversion(outputDir);
                         if (isCreated) {
-                        	System.out.println("Combine archive created for file(s) `" + input + "`");
+                        	System.out.println("Combine archive created for file(s) `" + inputFile + "`");
                         }
                         else {
-                        	System.err.println("Failed converting VCML to OMEX archive for `" + input + "`");
+                        	System.err.println("Failed converting VCML to OMEX archive for `" + inputFile + "`");
                         }
                     } else {
                     	System.err.println("No VCML files found in the directory `" + input + "`");
@@ -299,8 +301,11 @@ public class VcmlOmexConverter {
         	// make list of simulations to export with only sims that have data on the server
 //        	simsToExport = new ArrayList<Simulation>();
 			for (Simulation simulation : bioModel.getSimulations()) {
-				SolverDescription solverDescription = simulation.getSolverTaskDescription().getSolverDescription();
-				String solverName = solverDescription.getShortDisplayLabel();
+				SolverDescription sd = simulation.getSolverTaskDescription().getSolverDescription();
+				if(bNonSpatialOnly == true && sd.isSpatial()) {			// we skip all spatial simulations
+					continue;
+				}
+				String solverName = sd.getShortDisplayLabel();
 				solverNames.add(solverName);
 				// check server status
 				KeyValue parentKey = simulation.getSimulationVersion().getParentSimulationReference();
@@ -343,17 +348,32 @@ public class VcmlOmexConverter {
 			}
         } else {	// we add them all regardless of having data
         	for (Simulation simulation : bioModel.getSimulations()) {
+        		if(bNonSpatialOnly == true) {		// we skip all spatial simulations
+        			SolverDescription sd = simulation.getSolverTaskDescription().getSolverDescription();
+        			if(sd.isSpatial()) {
+        				continue;
+        			}
+        		}
         		simsToExport.add(simulation);
         	}
         }
         
         if(outputBaseDir != null && bHasDataOnly == true && simsToExport.size() == 0) {
-        	CLIStandalone.writeSimErrorList(outputBaseDir, vcmlName + " has no simulations with any results.");
-//        	String allSolverNames = "";
-//        	for(String solverName : solverNames) {
-//        		allSolverNames += (solverName + " ");
-//        	}
-//        	CLIStandalone.writeSimErrorList(outputBaseDir, "   " + allSolverNames);
+        	String msg = vcmlName + " has no simulations with any results.";
+        	System.out.println(msg);
+        	CLIStandalone.writeSimErrorList(outputBaseDir, msg);
+        	return false;
+        }
+        if(outputBaseDir != null && bNonSpatialOnly == true && simsToExport.size() == 0) {
+        	String msg = vcmlName + " has no non-spatial simulations to export.";
+        	System.out.println(msg);
+        	CLIStandalone.writeSimErrorList(outputBaseDir, msg);
+        	return false;
+        }
+        if(outputBaseDir != null && simsToExport.size() == 0) {
+        	String msg = vcmlName + " has no simulations to export.";
+        	System.out.println(msg);
+        	CLIStandalone.writeSimErrorList(outputBaseDir, msg);
         	return false;
         }
         
@@ -556,7 +576,17 @@ public class VcmlOmexConverter {
     		position++;
     	}
 
-		return args;
+    	position = 0;
+    	for(String s : args) {
+    		if("-nonSpatialOnly".equalsIgnoreCase(s)) {
+    			bNonSpatialOnly = true;
+    			args = ArrayUtils.remove(args, position);
+    			break;
+    		}
+    		position++;
+    	}
+
+    	return args;
 	}
 	
     private static String getMetadata(String vcmlName, BioModel bioModel, File diagram) {
