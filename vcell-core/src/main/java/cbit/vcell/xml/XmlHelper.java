@@ -275,7 +275,7 @@ public class XmlHelper {
 					modifiedSimJob = new SimulationJob(simFromClonedBiomodel, simJob.getJobIndex(), null);
 				}
 				
-				SBMLExporter sbmlExporter = new SBMLExporter(clonedSimContext, 3, 1);
+				SBMLExporter sbmlExporter = new SBMLExporter(clonedSimContext, level, version);
 				sbmlExporter.setSelectedSimulationJob(modifiedSimJob);
 				String sbmlSTring  = sbmlExporter.getSBMLString();
 
