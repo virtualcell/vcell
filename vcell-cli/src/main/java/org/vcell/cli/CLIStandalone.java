@@ -312,7 +312,7 @@ public class CLIStandalone {
             sedmlPath2d3d = Paths.get(outputDir, "temp");
             System.out.println("VCell CLI input archive " + inputFile);
             CLIUtils.drawBreakLine("-", 100);
-            omexHandler = new OmexHandler(inputFile, outputDir);
+            omexHandler = new OmexHandler(utils, inputFile, outputDir);
             omexHandler.extractOmex();
             sedmlLocations = omexHandler.getSedmlLocationsAbsolute();
             nSedml = sedmlLocations.size();
