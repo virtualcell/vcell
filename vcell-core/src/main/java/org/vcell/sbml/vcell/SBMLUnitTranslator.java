@@ -139,14 +139,14 @@ public static boolean isDouble(String s) {
 }
 
 public static UnitDefinition getSBMLUnitDefinition(VCUnitDefinition vcUnitDefn, int level, int version, VCUnitSystem vcUnitSystem) throws SbmlException {
-	final UnitDefinition sbmlUnitDefn = new UnitDefinition(3,1);
+	final UnitDefinition sbmlUnitDefn = new UnitDefinition(level,version);
 	if (vcUnitDefn.isCompatible(vcUnitSystem.getInstance_DIMENSIONLESS())){
 		double multiplier = 1.0;
 		String symbol = vcUnitDefn.getSymbol();
 		if(isDouble(symbol)) {
 			multiplier = Double.parseDouble(symbol);
 		}
-		sbmlUnitDefn.addUnit(new Unit(multiplier,0,Kind.DIMENSIONLESS,1.0,3,1));
+		sbmlUnitDefn.addUnit(new Unit(multiplier,0,Kind.DIMENSIONLESS,1.0,level,version));
 		return sbmlUnitDefn;
 	}
 	String vcSymbol = vcUnitDefn.getSymbol();
@@ -206,7 +206,7 @@ public static UnitDefinition getSBMLUnitDefinition(VCUnitDefinition vcUnitDefn, 
 			VCUnitDefinition kindVcUnit = vcUnitSystem.getInstance(kindSymbol);
 			if (kindVcUnit.isCompatible(vcUnit)){
 				if (kindVcUnit.isEquivalent(vcUnit)){
-					sbmlUnitDefn.addUnit(new Unit(multiplier, scale, kind, exponent, 3, 1));
+					sbmlUnitDefn.addUnit(new Unit(multiplier, scale, kind, exponent, level, version));
 				}else{
 					double factor = vcUnit.convertTo(1.0, kindVcUnit);
 					double logFactor = Math.log10(factor);
@@ -216,7 +216,7 @@ public static UnitDefinition getSBMLUnitDefinition(VCUnitDefinition vcUnitDefn, 
 						scale = 0;
 						multiplier = multiplier*factor;
 					}
-					Unit sbmlUnit = new Unit(multiplier, scale, kind, exponent, 3, 1);
+					Unit sbmlUnit = new Unit(multiplier, scale, kind, exponent, level, version);
 					sbmlUnitDefn.addUnit(sbmlUnit);
 					System.err.println("kind = "+kind.name()+" is equivalent to vcUnit = "+vcUnit.getSymbol()+",  SBML unit is "+sbmlUnit);
 				}
@@ -229,8 +229,8 @@ public static UnitDefinition getSBMLUnitDefinition(VCUnitDefinition vcUnitDefn, 
 			VCUnitDefinition kindVcUnit = vcUnitSystem.getInstance("molar");
 			if (kindVcUnit.isCompatible(vcUnit)){
 				if (kindVcUnit.isEquivalent(vcUnit)){
-					sbmlUnitDefn.addUnit(new Unit(multiplier, scale, Kind.MOLE, exponent, 3, 1));
-					sbmlUnitDefn.addUnit(new Unit(1, 0, Kind.LITRE, -exponent, 3, 1));
+					sbmlUnitDefn.addUnit(new Unit(multiplier, scale, Kind.MOLE, exponent, level, version));
+					sbmlUnitDefn.addUnit(new Unit(1, 0, Kind.LITRE, -exponent, level, version));
 				}else{
 					double factor = vcUnit.convertTo(1.0, kindVcUnit);
 					double logFactor = Math.log10(factor);
@@ -240,8 +240,8 @@ public static UnitDefinition getSBMLUnitDefinition(VCUnitDefinition vcUnitDefn, 
 						scale = 0;
 						multiplier = multiplier*factor;
 					}
-					sbmlUnitDefn.addUnit(new Unit(multiplier, scale, Kind.MOLE, exponent, 3, 1));
-					sbmlUnitDefn.addUnit(new Unit(1, 0, Kind.LITRE, -exponent, 3, 1));
+					sbmlUnitDefn.addUnit(new Unit(multiplier, scale, Kind.MOLE, exponent, level, version));
+					sbmlUnitDefn.addUnit(new Unit(1, 0, Kind.LITRE, -exponent, level, version));
 					System.err.println("matched to liter ... had to create a replacement for molar, vcUnit = "+vcUnit.getSymbol()+",  SBML unit is "+sbmlUnitDefn);
 				}
 				bFoundMatch = true;

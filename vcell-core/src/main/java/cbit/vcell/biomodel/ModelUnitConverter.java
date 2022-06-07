@@ -71,33 +71,37 @@ public class ModelUnitConverter {
 			for (Parameter p : reactionStep.getKinetics().getKineticsParameters()){
 				convertVarsWithUnitFactors(oldSymbolTable, newSymbolTable, p);
 			}
-			Kinetics kinetics = reactionStep.getKinetics();
-			KineticsParameter kineticsParameter = null;
-			if(kinetics.getKineticsParameterFromRole(Kinetics.ROLE_ReactionRate) != null) {
-				kineticsParameter = kinetics.getKineticsParameterFromRole(Kinetics.ROLE_ReactionRate);
-			} else if(kinetics.getKineticsParameterFromRole(Kinetics.ROLE_LumpedReactionRate) != null) {
-				kineticsParameter = kinetics.getKineticsParameterFromRole(Kinetics.ROLE_LumpedReactionRate);
-			} else {
-				throw new RuntimeException("Role 'reaction rate' or role 'lumped reaction rate' expected");
-			}
 			
-			Expression rateExpression = kineticsParameter.getExpression();
-			jscl.math.Expression jsclExpression = null;
-			String jsclExpressionString = rateExpression.infix_JSCL();
-			try {
-				jsclExpression = jscl.math.Expression.valueOf(jsclExpressionString);
-			}catch (jscl.text.ParseException e){
-				e.printStackTrace(System.out);
-				System.out.println("JSCL couldn't parse \""+jsclExpressionString+"\"");
-				return null;
-			}
-			jscl.math.Generic g1=jsclExpression.expand().simplify();
-			Expression newRate=new Expression(SymbolUtils.getRestoredStringJSCL(g1.toString()));
-			newRate.bindExpression(reactionStep);
-		//	reactionStep.getKinetics().getKineticsParameterFromRole(Kinetics.ROLE_ReactionRate).setExpression(newRate.flatten());
-			if (reactionStep.getKinetics().getKineticsParameterFromRole(Kinetics.ROLE_ReactionRate) != null) {
-				reactionStep.getKinetics().getKineticsParameterFromRole(Kinetics.ROLE_ReactionRate).setExpression(newRate.flatten());
-			}
+//			We no longer have to deal with conversion factor expressions and try to be smart and simplify/flatten and rebind
+//			This was actually imperfect and introducing unexpected buggy behavior
+			
+//			Kinetics kinetics = reactionStep.getKinetics();
+//			KineticsParameter kineticsParameter = null;
+//			if(kinetics.getKineticsParameterFromRole(Kinetics.ROLE_ReactionRate) != null) {
+//				kineticsParameter = kinetics.getKineticsParameterFromRole(Kinetics.ROLE_ReactionRate);
+//			} else if(kinetics.getKineticsParameterFromRole(Kinetics.ROLE_LumpedReactionRate) != null) {
+//				kineticsParameter = kinetics.getKineticsParameterFromRole(Kinetics.ROLE_LumpedReactionRate);
+//			} else {
+//				throw new RuntimeException("Role 'reaction rate' or role 'lumped reaction rate' expected");
+//			}
+//			
+//			Expression rateExpression = kineticsParameter.getExpression();
+//			jscl.math.Expression jsclExpression = null;
+//			String jsclExpressionString = rateExpression.infix_JSCL();
+//			try {
+//				jsclExpression = jscl.math.Expression.valueOf(jsclExpressionString);
+//			}catch (jscl.text.ParseException e){
+//				e.printStackTrace(System.out);
+//				System.out.println("JSCL couldn't parse \""+jsclExpressionString+"\"");
+//				return null;
+//			}
+//			jscl.math.Generic g1=jsclExpression.expand().simplify();
+//			Expression newRate=new Expression(SymbolUtils.getRestoredStringJSCL(g1.toString()));
+//			newRate.bindExpression(reactionStep);
+//		//	reactionStep.getKinetics().getKineticsParameterFromRole(Kinetics.ROLE_ReactionRate).setExpression(newRate.flatten());
+//			if (reactionStep.getKinetics().getKineticsParameterFromRole(Kinetics.ROLE_ReactionRate) != null) {
+//				reactionStep.getKinetics().getKineticsParameterFromRole(Kinetics.ROLE_ReactionRate).setExpression(newRate.flatten());
+//			}
 		}
 		for (ReactionRule reactionRule : newBioModel.getModel().getRbmModelContainer().getReactionRuleList()) {
 			SymbolTable oldSymbolTable = oldBioModel.getModel().getRbmModelContainer().getReactionRule(reactionRule.getName()).getKineticLaw().getScopedSymbolTable();

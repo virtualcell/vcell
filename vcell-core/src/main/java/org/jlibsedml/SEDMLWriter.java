@@ -188,17 +188,21 @@ class SEDMLWriter {
             s = c.getModelReference();
             if (s != null)
                 node.setAttribute(SEDMLTags.SET_VALUE_ATTR_MODEL_REF, s);
-            Element varList = new Element(SEDMLTags.COMPUTE_CHANGE_VARS);
-            node.addContent(varList);
             List<Variable> vars = c.getListOfVariables();
-            for (Variable var : vars) {
-                varList.addContent(getXML(var, VariableType.COMPUTE_CHANGE));
+            if(vars.size() > 0) {
+                Element varList = new Element(SEDMLTags.COMPUTE_CHANGE_VARS);
+                node.addContent(varList);
+            	for (Variable var : vars) {
+            		varList.addContent(getXML(var, VariableType.COMPUTE_CHANGE));
+            	}
             }
-            Element paramList = new Element(SEDMLTags.COMPUTE_CHANGE_PARAMS);
-            node.addContent(paramList);
             List<Parameter> params = c.getListOfParameters();
-            for (Parameter param : params) {
-                paramList.addContent(getXML(param));
+            if(params.size() > 0) {
+                Element paramList = new Element(SEDMLTags.COMPUTE_CHANGE_PARAMS);
+                node.addContent(paramList);
+            	for (Parameter param : params) {
+            		paramList.addContent(getXML(param));
+            	}
             }
             ASTToXMLElementVisitor astElementVisitor = new ASTToXMLElementVisitor();
             c.getMath().accept(astElementVisitor);

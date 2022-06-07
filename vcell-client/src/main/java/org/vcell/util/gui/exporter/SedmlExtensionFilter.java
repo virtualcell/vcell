@@ -30,7 +30,7 @@ public class SedmlExtensionFilter extends SelectorExtensionFilter {
 		String resultString;
 		// export the entire biomodel to a SEDML file (for now, only non-spatial,non-stochastic applns)
 		int sedmlLevel = 1;
-		int sedmlVersion = 1;
+		int sedmlVersion = 3;
 		String sPath = FileUtils.getFullPathNoEndSeparator(exportFile.getAbsolutePath());
 		String sFile = FileUtils.getBaseName(exportFile.getAbsolutePath());
 		String sExt = FileUtils.getExtension(exportFile.getAbsolutePath());
