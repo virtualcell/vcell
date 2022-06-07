@@ -41,18 +41,14 @@ public class CLIStandalone {
     		System.exit(1);
     	}
     	
-         if(args[0].toLowerCase().equals("convert")) {	// convert -i <input> -o <output> [-vcml]/[-sbml] [-hasDataOnly] [-makeLogsOnly]
+        if(args[0].toLowerCase().equals("convert")) {	// convert -i <input> -o <output> [-vcml]/[-sbml] [-hasDataOnly] [-makeLogsOnly]
             // VCML to OMex conversion
         	// -vcml and -sbml	- mutually exclusive, -sbml means export to sbml omex, -vcml means export to native omex
          	// if both are missing we try sbml first, if impossible we try vcml
          	// -hasDataOnly		- we only export the sims that have been previously run with the green button and have results on the server
          	// -makeLogsOnly	- don't actually create the omex files, just make the logs
-        	CLIUtils utils = null;
         	try {
-        	   	utils = new CLIUtils();
-
-        		PropertyLoader.loadProperties();
-           		utils.recalculatePaths();
+        	   	CLIUtils.getCLIUtils(); // not sure what its here for, but it seems to serve some purpose.
            		
         		VcmlOmexConverter.parseArgsAndConvert(ArrayUtils.remove(args, 0));
         		
@@ -112,11 +108,7 @@ public class CLIStandalone {
             }
             CLIUtils utils = null;
            	try {
-				utils = new CLIUtils();
-				
-        		PropertyLoader.loadProperties();
-           		utils.recalculatePaths();
- 
+				utils = CLIUtils.getCLIUtils();
            	} catch (IOException e1) {
 				e1.printStackTrace();
                 System.exit(1);			// can't do anything without CLIUtils
@@ -324,7 +316,7 @@ public class CLIStandalone {
             writeDetailedResultList(outputBaseDir, bioModelBaseName + ", " + ",unknown error with the archive file");
             throw new Exception(error);
         }
-        CLIUtils.checkInstallationError();					// check python installation
+        CLIUtils.checkPythonInstallationError();					// check python installation
         utils.generateStatusYaml(inputFile, outputDir);	// generate Status YAML
         
         // from here on, we need to collect errors, since some subtasks may succeed while other do not

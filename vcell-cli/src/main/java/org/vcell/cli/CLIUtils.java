@@ -63,10 +63,14 @@ import java.util.*;
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
+import java.util.concurrent.TimeoutException;
 
 //import java.nio.file.Files;
 
 public class CLIUtils {
+    // Singleton Instance Variable
+    private static CLIUtils singleInstance;
+
 	// timeout for compiled solver running long jobs; default 12 hours
 	//public static long EXECUTABLE_MAX_WALLCLOK_MILLIS = 600000;
 	public static long EXECUTABLE_MAX_WALLCLOK_MILLIS = 0;
@@ -86,6 +90,7 @@ public class CLIUtils {
     private Path cliUtilPath = Paths.get(utilPath.toString(), "vcell_cli_utils");
     private Path cliPath = Paths.get(cliUtilPath.toString(), "cli.py");
     private Path statusPath = Paths.get(cliUtilPath.toString(), "status.py");
+    private Path wrapperPath = Paths.get(cliUtilPath.toString(), "wrapper.py");
 
 
     // Absolute Submodule path for VCell_CLI_UTILS
@@ -102,6 +107,10 @@ public class CLIUtils {
     public static final String python = isWindowsPlatform ? "python" : "python3";
     public static final String pip = isWindowsPlatform ? "pip" : "pip3";
 
+    // Python Process Variables
+    private static Process pythonProcess; 			// hold python interpreter instance used in updateXxx...() methods
+    private static OutputStreamWriter pythonOSW; 	// input channel *to* python interpreter (see above)
+    private static BufferedReader pythonISB; 		// output channel ("Input Stream Buffer") *from* python interpreter (see above)
 
     // TODO: Implement this to remove System properties dynamically from Run time, Remove hardcoded from docker_run.sh
     private static void removeCliSystemProperties() throws IOException {
@@ -157,8 +166,17 @@ public class CLIUtils {
         System.out.println(breakString + StringUtils.repeat(breakString, times));
     }
 
-    public CLIUtils() throws IOException {
+    private CLIUtils() throws IOException {}
 
+    // Singleton Constructor
+    public static CLIUtils getCLIUtils() throws IOException {
+        if (CLIUtils.singleInstance == null){
+            CLIUtils.singleInstance = new CLIUtils();
+            PropertyLoader.loadProperties();
+            singleInstance.recalculatePaths();
+            singleInstance.instantiatePythonProcess();
+        }
+        return CLIUtils.singleInstance;
     }
 
     public static boolean removeDirs(File f) {
@@ -691,10 +709,9 @@ public class CLIUtils {
         } else {
             System.out.print(outString);
         }
-
     }
 
-    public static int checkInstallationError() {
+    public static int checkPythonInstallationError() {
         String version = "--version";
         ProcessBuilder processBuilder;
         Process process;
@@ -712,7 +729,7 @@ public class CLIUtils {
                 stringBuilder = new StringBuilder();
                 while ((stdOutLog = bufferedReader.readLine()) != null) {
                     stringBuilder.append(stdOutLog);
-                    // search string can be one or more...
+                    // search string can be one or more... (potential python 2.7.X bug here?)
                         if (!stringBuilder.toString().toLowerCase().startsWith("python")) System.err.println("Please check your local Python and PIP Installation, install required packages");
                 }
             }
@@ -745,7 +762,7 @@ public class CLIUtils {
                          --report_formats | --plot_formats | --log | --indent
         * */
         // handle exceptions here
-        if (checkInstallationError() == 0) {
+        if (checkPythonInstallationError() == 0) {
             Process process = execShellCommand(new String[]{python, "-W", "ignore", cliPath.toString(), "execSedDoc", omexFilePath, outputDir}).start();
             printProcessErrors(process, "HDF conversion successful\n","HDF conversion failed\n");
         }
@@ -823,6 +840,14 @@ public class CLIUtils {
     public void updateDatasetStatusYml(String sedmlName, String dataSet, String var, Status simStatus, String outDir) throws IOException, InterruptedException {
         Process process = execShellCommand(new String[]{python, statusPath.toString(), "updateDataSetStatus", sedmlName, dataSet, var, simStatus.toString(), outDir}).start();
         printProcessErrors(process, "","");
+    }
+    
+    public void updateDatasetStatusYml(String sedmlName, String dataSet, String var, Status simStatus, String outDir, boolean usePython) throws IOException, InterruptedException, TimeoutException {
+    	if (!usePython) this.updateDatasetStatusYml(sedmlName, dataSet, var, simStatus, outDir);
+        else {
+            String results = this.callPython("updateDataSetStatus", sedmlName, dataSet, var, simStatus.toString(), outDir);
+            this.printPythonErrors(results);
+        }
     }
 
     public void transposeVcmlCsv(String csvFilePath) throws IOException, InterruptedException {
@@ -910,4 +935,157 @@ public class CLIUtils {
         System.out.println("TempPath Created: " + tempPath);
         return tempPath;
     }
+    
+    // Python Process Accessory Methods
+    /**
+     * Facilitates the construction of the python instance connection
+     */
+    public void instantiatePythonProcess() throws IOException {
+        if (CLIUtils.pythonProcess != null) return; // prevent override
+
+        // Confirm we have python properly installed or kill this exe where it stands.
+        this.checkPythonInstallation();
+
+        // Start Python
+    	ProcessBuilder pb = new ProcessBuilder("python.exe", "-i");
+    	pb.redirectErrorStream(true);
+        CLIUtils.pythonProcess = pb.start();
+        CLIUtils.pythonOSW = new OutputStreamWriter(pythonProcess.getOutputStream());
+        CLIUtils.pythonISB = new BufferedReader(new InputStreamReader(pythonProcess.getInputStream()));
+
+        // "construction" commands
+        this.sendNewCommand(String.format("exec(open(\"%s\").read())", 
+            this.wrapperPath.toString())); // Load wrapper file
+    }
+
+    private void closePythonProcess() throws IOException {
+        // Exit the living Python Process
+        this.sendNewCommand("exit()"); // Sends kill command ("exit()") to python.exe instance;
+        if (CLIUtils.pythonProcess.isAlive()) CLIUtils.pythonProcess.destroyForcibly(); // Making sure it's quite dead
+        
+        // Making sure we clean up
+        CLIUtils.pythonOSW.close(); 
+        CLIUtils.pythonISB.close();
+        
+        // Unbind references to allow reinstantiation
+        CLIUtils.pythonISB = null;
+        CLIUtils.pythonOSW = null;
+        CLIUtils.pythonProcess = null;
+    }
+
+    private String getResultsOfLastCommand() throws IOException, TimeoutException, InterruptedException {
+        String importantPrefix = ">>> ";
+        String results = "";
+
+        int currentTime = 0, TIMEOUT_LIMIT = 10000; // 10 seconds
+
+        // Wait for python to finish what it's working on
+        while(!CLIUtils.pythonISB.ready()){
+            if (currentTime++ >= TIMEOUT_LIMIT) throw new TimeoutException();
+            Thread.sleep(1); // wait 1ms at a time
+        }
+
+        // Python's ready (or we had a timeout?); lets get the buffer without going too far and getting blocked (see note 1 at bottom of file)
+        while ( results.length() < importantPrefix.length() 
+                || !results.substring(results.length() - importantPrefix.length()).equals(importantPrefix)){ // unless we've found the prefix we need at the end of the results
+            results += (char)CLIUtils.pythonISB.read();
+        }
+
+        // Got the results we need. Now lets clean the results string up before returning it
+        results = results.substring(0, results.length() - importantPrefix.length()).strip();
+
+        return results == "" ? null : results;
+    }
+
+    private String processPythonArguments(String... arguments){
+        String argList = "";
+        for (String arg : arguments){
+            argList += arg.strip() + ",";
+        }
+        return argList.substring(0, argList.length() - 1);
+    }
+
+    private boolean printPythonErrors(String returnedString){
+        boolean hasPassed;
+        String ERROR_PHRASE = "Traceback";
+        String firstNineChars = returnedString.substring(0, 9); 
+        returnedString = returnedString.strip();
+        if (firstNineChars.equals(ERROR_PHRASE)){ // Report an error:
+            System.err.printf("Python error caught: <%s>\n", returnedString);
+            hasPassed = false;
+        } else {
+            System.out.printf("Python returned: [%s]\n", returnedString);
+            hasPassed = true;
+        }
+        return hasPassed;
+    }
+
+    private boolean printPythonErrors(String returnedString, String outString, String errString){
+        boolean hasPassed;
+        String ERROR_PHRASE = "Traceback";
+        String firstNineChars = returnedString.substring(0, 9); 
+        returnedString = returnedString.strip();
+        if (firstNineChars.equals(ERROR_PHRASE)){ // Report an error:
+            System.err.printf("Python error caught: <%s>\nResult: %s\n", returnedString, errString);
+            hasPassed = false;
+        } else {
+            System.out.printf("Python returned: [%s]\nResult: %s\n", returnedString, outString);
+            hasPassed = true;
+        }
+        return hasPassed;
+    }
+
+    private void sendNewCommand(String functionName, String... arguments) throws IOException {
+        // we can easily send the command, but we need to format it first.
+        String command = String.format("%s(%s)\n", functionName.strip(), this.processPythonArguments(arguments));
+        CLIUtils.pythonOSW.write(command);
+        CLIUtils.pythonOSW.flush();
+    }
+
+    // returns parsed interpreter return
+    private String callPython(String functionName, String... arguments) throws IOException, InterruptedException, TimeoutException{
+        this.instantiatePythonProcess(); // Make sure we have a python instance; calling will not override an existing intance
+        this.sendNewCommand(functionName, arguments);
+        return this.getResultsOfLastCommand();
+    }
+
+    private int checkPythonInstallation() {
+        String version = "--version", stdOutLog;
+        ProcessBuilder processBuilder;
+        Process process;
+        int exitCode = -10;
+        BufferedReader bufferedReader;
+        StringBuilder stringBuilder = new StringBuilder();
+
+        try {
+            processBuilder = execShellCommand(new String[]{python, version});
+            process = processBuilder.start();
+            exitCode = process.waitFor();
+            if (exitCode == 0) {
+                bufferedReader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+                while ((stdOutLog = bufferedReader.readLine()) != null) {
+                    stringBuilder.append(stdOutLog);
+                    // search string can be one or more... (potential python 2.7.X bug here?) Maybe use regex?
+                        if (!stringBuilder.toString().toLowerCase().startsWith("python 3")) throw new PythonStreamException();
+                            
+                }
+            }
+        } catch (PythonStreamException e) {
+            System.err.println("Please check your local Python and PIP Installation, install required packages and versions");
+            e.printStackTrace();
+            System.exit(1);
+        } catch (IOException | InterruptedException e) {
+            e.printStackTrace();
+        }
+        
+        return exitCode;
+    }
+
 }
+
+/*
+ * NOTES:
+ * 
+ * 1) BufferedReader will block if asked to read the Python interpreter while the interpreter waiting for input (assuming the buffer has already been iterated through).
+ *      To prevent this, we catch the prefix to Python's prompt for a new command (">>> ") to stop before we wait for etinity and break our program.
+ */

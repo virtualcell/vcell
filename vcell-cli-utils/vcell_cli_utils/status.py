@@ -14,7 +14,7 @@ import json
 # Create temp directory
 tmp_dir = tempfile.mkdtemp()
 
-def extract_omex_archive(omex_file):
+def extract_omex_archive(omex_file) -> list:
     if not os.path.isfile(omex_file):
         raise FileNotFoundError("File does not exist: {}".format(omex_file))
 
@@ -32,7 +32,7 @@ def extract_omex_archive(omex_file):
     return sedml_files_list
 
 
-def status_yml(omex_file: str, out_dir: str):
+def status_yml(omex_file: str, out_dir: str) -> None:
     yaml_dict = []
     for sedml in extract_omex_archive(omex_file):
         outputs_dict = {"outputs": []}
@@ -98,10 +98,10 @@ def status_yml(omex_file: str, out_dir: str):
 
     with open(status_yaml_path, 'w' , encoding="utf-8") as sy:
         sy.write(yaml.dump(final_dict))
-    # return final_dict
+    # "return" final_dict
     shutil.rmtree(tmp_dir)
 
-def get_yaml_as_str(yaml_path: str):
+def get_yaml_as_str(yaml_path: str) -> dict:
     # Import yaml
     yaml_str = ''
     with open(yaml_path, 'r') as sy:
@@ -122,7 +122,7 @@ def dump_json_dict(json_path: str,yaml_dict: str):
         json.dump(yaml_dict,json_out,sort_keys=True,indent=4)
 
 
-def update_task_status(sedml: str, task: str, status: str, out_dir: str, duration: str, algorithm: str):
+def update_task_status(sedml: str, task: str, status: str, out_dir: str, duration: str, algorithm: str) -> None:
     # Hardcoded because name is static
     yaml_dict = get_yaml_as_str(os.path.join(out_dir, "log.yml"))
     for sedml_list in yaml_dict['sedDocuments']:
@@ -145,7 +145,7 @@ def update_task_status(sedml: str, task: str, status: str, out_dir: str, duratio
     dump_yaml_dict(status_yaml_path, yaml_dict=yaml_dict, out_dir=out_dir)
 
 
-def update_sedml_doc_status(sedml: str, status: str, out_dir: str):
+def update_sedml_doc_status(sedml: str, status: str, out_dir: str) -> None:
     # Hardcoded because name is static
     yaml_dict = get_yaml_as_str(os.path.join(out_dir, "log.yml"))
     for sedml_list in yaml_dict['sedDocuments']:
@@ -157,7 +157,7 @@ def update_sedml_doc_status(sedml: str, status: str, out_dir: str):
     dump_yaml_dict(status_yaml_path, yaml_dict=yaml_dict, out_dir=out_dir)
 
 
-def update_omex_status(status: str, out_dir: str, duration: str):
+def update_omex_status(status: str, out_dir: str, duration: str) -> None:
 
     yaml_dict = get_yaml_as_str(os.path.join(out_dir, "log.yml"))
     yaml_dict['status'] = status
@@ -167,7 +167,7 @@ def update_omex_status(status: str, out_dir: str, duration: str):
     dump_yaml_dict(status_yaml_path, yaml_dict=yaml_dict, out_dir=out_dir)
 
 
-def update_dataset_status(sedml: str, report: str, dataset: str, status: str, out_dir: str):
+def update_dataset_status(sedml: str, report: str, dataset: str, status: str, out_dir: str) -> None:
     yaml_dict = get_yaml_as_str(os.path.join(out_dir, "log.yml"))
     for sedml_list in yaml_dict['sedDocuments']:
         if sedml.endswith(sedml_list["location"]):
@@ -211,7 +211,7 @@ def update_dataset_status(sedml: str, report: str, dataset: str, status: str, ou
 # outDir            - path to directory where the log files will be placed
 # entityType        - string describing the entity type ex "task" for a task, or "sedml" for sedml document
 #
-def set_output_message(sedmlAbsolutePath:str, entityId:str, out_dir:str, entityType:str , message:str):
+def set_output_message(sedmlAbsolutePath:str, entityId:str, out_dir:str, entityType:str , message:str) -> None:
 
     yaml_dict = get_yaml_as_str(os.path.join(out_dir, "log.yml"))
     if entityType == 'omex':
@@ -236,7 +236,7 @@ def set_output_message(sedmlAbsolutePath:str, entityId:str, out_dir:str, entityT
     # Convert json to yaml # Save new yaml
     dump_yaml_dict(status_yaml_path, yaml_dict=yaml_dict, out_dir=out_dir)
 
-def set_exception_message(sedmlAbsolutePath:str, entityId:str, out_dir:str, entityType:str, type:str, message:str):
+def set_exception_message(sedmlAbsolutePath:str, entityId:str, out_dir:str, entityType:str, type:str, message:str) -> None:
 
     yaml_dict = get_yaml_as_str(os.path.join(out_dir, "log.yml"))
     for sedml_list in yaml_dict['sedDocuments']:
