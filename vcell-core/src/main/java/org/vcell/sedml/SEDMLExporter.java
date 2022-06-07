@@ -263,6 +263,7 @@ public class SEDMLExporter {
 						sbmlString = pair.one;
 						l2gMap = pair.two;
 					} catch (Exception e) {
+						System.out.println("Export failed: " + e.getMessage());
 						sbmlExportFailed = true;
 					}
 				} else {	// we want to force VCML, we act as if saving to SBML failed

@@ -25,7 +25,7 @@ public class OmexHandler {
     CombineArchive archive;
 
     // Assuming omexPath will always be absolute path
-    public OmexHandler(String omexPath, String outDir) throws IOException {
+    public OmexHandler(CLIUtils utils, String omexPath, String outDir) throws IOException {
         try {
             ResourceUtil.setNativeLibraryDirectory();
             NativeLib.combinej.load();
@@ -49,7 +49,7 @@ public class OmexHandler {
         int indexOfLastSlash = omexPath.lastIndexOf("/");
         this.omexName = omexPath.substring(indexOfLastSlash + 1);
 
-        this.utils = new CLIUtils();
+        this.utils = utils;
         this.tempPath = utils.getTempDir();
 
         this.archive = new CombineArchive();

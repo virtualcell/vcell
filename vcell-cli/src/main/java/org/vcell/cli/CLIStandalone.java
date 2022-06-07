@@ -41,11 +41,12 @@ public class CLIStandalone {
     		System.exit(1);
     	}
     	
-        if(args[0].toLowerCase().equals("convert")) {	// convert -i <input> -o <output> [-vcml]/[-sbml] [-hasDataOnly] [-makeLogsOnly]
+        if(args[0].toLowerCase().equals("convert")) {	// convert -i <input> -o <output> [-vcml]/[-sbml] [-hasDataOnly] [-makeLogsOnly] [-nonSpatialOnly]
             // VCML to OMex conversion
         	// -vcml and -sbml	- mutually exclusive, -sbml means export to sbml omex, -vcml means export to native omex
          	// if both are missing we try sbml first, if impossible we try vcml
          	// -hasDataOnly		- we only export the sims that have been previously run with the green button and have results on the server
+        	// -nonSpatialOnly	- we only export non-spatial simulations
          	// -makeLogsOnly	- don't actually create the omex files, just make the logs
         	try {
         	   	CLIUtils.getCLIUtils(); // not sure what its here for, but it seems to serve some purpose.
@@ -303,7 +304,7 @@ public class CLIStandalone {
             sedmlPath2d3d = Paths.get(outputDir, "temp");
             System.out.println("VCell CLI input archive " + inputFile);
             CLIUtils.drawBreakLine("-", 100);
-            omexHandler = new OmexHandler(inputFile, outputDir);
+            omexHandler = new OmexHandler(utils, inputFile, outputDir);
             omexHandler.extractOmex();
             sedmlLocations = omexHandler.getSedmlLocationsAbsolute();
             nSedml = sedmlLocations.size();

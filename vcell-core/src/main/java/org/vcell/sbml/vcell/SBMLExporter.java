@@ -162,7 +162,7 @@ import scala.collection.mutable.SetBuilder;
 public class SBMLExporter {
 	public static final String DOMAIN_TYPE_PREFIX = "domainType_";
 	private int sbmlLevel = 3;
-	private int sbmlVersion = 1;
+	private int sbmlVersion = 2;
 	private org.sbml.jsbml.Model sbmlModel = null;
 	private cbit.vcell.biomodel.BioModel vcBioModel = null;
 	private boolean bSpatial = false;
@@ -804,8 +804,14 @@ protected void addReactions() throws SbmlException, XMLStreamException {
 			}
 		}
 
-		sbmlReaction.setFast(vcReactionSpecs[i].isFast());
-		
+//      Fast attribute was eliminated in L3V2		
+//		sbmlReaction.setFast(vcReactionSpecs[i].isFast());
+		if (vcReactionSpecs[i].isFast()) {
+			System.err.println("WARNING: Reaction "+vcReactionSpecs[i].getDisplayName()+" is set in VCell as FAST but this attribute is no longer supported by SBML, non-VCell solvers will not simulate it in pseudo-equilibrium");
+			//TODO: Add VCell annotation so we car recover this if importing/executing in VCell
+			//TODO: If user-initiated, also put out a pop-up warning
+		}
+				
 		// this attribute is mandatory for L3, optional for L2. So explicitly setting value.
 		sbmlReaction.setReversible(true);
 		
