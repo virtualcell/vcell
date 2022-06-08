@@ -29,6 +29,7 @@ import org.sbml.jsbml.Delay;
 import org.sbml.jsbml.Event;
 import org.sbml.jsbml.InitialAssignment;
 import org.sbml.jsbml.SBMLDocument;
+import org.sbml.jsbml.SBMLErrorLog;
 import org.sbml.jsbml.SBMLException;
 import org.sbml.jsbml.SBMLWriter;
 import org.sbml.jsbml.SimpleSpeciesReference;
@@ -68,6 +69,7 @@ import org.sbml.jsbml.ext.spatial.SpatialParameterPlugin;
 import org.sbml.jsbml.ext.spatial.SpatialReactionPlugin;
 import org.sbml.jsbml.ext.spatial.SpatialSymbolReference;
 import org.sbml.jsbml.text.parser.ParseException;
+import org.sbml.jsbml.validator.SBMLValidator;
 import org.vcell.sbml.SBMLHelper;
 import org.vcell.sbml.SBMLUtils;
 import org.vcell.sbml.SbmlException;
@@ -1629,6 +1631,11 @@ private VCellSBMLDoc convertToSBML() throws SbmlException, SBMLException, XMLStr
 
 	// write sbml document into sbml writer, so that the sbml str can be retrieved
 	SBMLWriter sbmlWriter = new SBMLWriter();
+	
+//	sbmlDocument.setConsistencyChecks(SBMLValidator.CHECK_CATEGORY.UNITS_CONSISTENCY, false);
+//	int errors = sbmlDocument.checkConsistency();
+//	SBMLErrorLog listOfErrors = sbmlDocument.getListOfErrors();
+	
 	
 	String sbmlStr = sbmlWriter.writeSBMLToString(sbmlDocument);
 	/*
