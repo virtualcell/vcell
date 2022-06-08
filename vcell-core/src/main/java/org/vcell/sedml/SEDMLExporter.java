@@ -475,12 +475,28 @@ public class SEDMLExporter {
 						String[] scannedConstantsNames = mathOverrides.getScannedConstantNames();
 						HashMap<String, String> scannedParamHash = new HashMap<String, String>();
 						HashMap<String, String> unscannedParamHash = new HashMap<String, String>();
+						
+						// need to check for "leftover" overrides from parameter renaming or other model editing
+						HashMap<String, String> missingParamHash = new HashMap<String, String>();
 						for (String name : scannedConstantsNames) {
-							scannedParamHash.put(name, name);
+							if (!mathOverrides.isUnusedParameter(name)) {
+								scannedParamHash.put(name, name);
+							} else {
+								missingParamHash.put(name, name);
+							}
 						}
 						for (String name : overridenConstantNames) {
 							if (!scannedParamHash.containsKey(name)) {
-								unscannedParamHash.put(name, name);
+								if (!mathOverrides.isUnusedParameter(name)) {
+									unscannedParamHash.put(name, name);
+								} else {
+									missingParamHash.put(name, name);
+								}
+							}
+						}
+						if (!missingParamHash.isEmpty()) {
+							for (String missingParamName : missingParamHash.values()) {
+								System.err.println("WARNING: there is an override entry for non-existent parameter "+missingParamName);
 							}
 						}
 
