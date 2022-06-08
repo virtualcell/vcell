@@ -183,7 +183,7 @@ public class SEDMLExporter {
 //                Namespace.getNamespace(SEDMLTags.SBML_NS_PREFIX, SEDMLTags.SBML_NS_L2V4)
 //        }));
 
-		final String SBML_NS = "http://www.sbml.org/sbml/level3/version1/core";
+		final String SBML_NS = "http://www.sbml.org/sbml/level3/version2/core";
 		final String SBML_NS_PREFIX = "sbml";
 		final String VCML_NS = "http://sourceforge.net/projects/vcell/vcml";
 		final String VCML_NS_PREFIX = "vcml";
@@ -648,7 +648,8 @@ public class SEDMLExporter {
 									// create setValue for scannedConstName
 									SymbolTableEntry ste2 = getSymbolTableEntryForModelEntity(mathSymbolMapping, scannedConstName);
 									XPathTarget target1 = getTargetXPath(ste2, l2gMap);
-									ASTNode math1 = new ASTCi(scannedConstName);
+									// ASTNode math1 = new ASTCi(scannedConstName); BAD - misses math namespace
+									ASTNode math1 = Libsedml.parseFormulaString(r.getId());
 									SetValue setValue1 = new SetValue(target1, r.getId(), sedModel.getId());
 									setValue1.setMath(math1);
 									rt.addChange(setValue1);
