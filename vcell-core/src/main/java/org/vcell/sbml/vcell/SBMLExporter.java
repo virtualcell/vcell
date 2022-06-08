@@ -1516,10 +1516,21 @@ public static ASTNode getFormulaFromExpression(Expression expression) {
  *  
  */
 public static ASTNode getFormulaFromExpression(Expression expression, MathType desiredType) {
+
+	// first replace VCell reserved symbol t with SBML reserved symbol time, so that it gets correct translation to MathML
+	try {
+		expression.substituteInPlace(new Expression("t"), new Expression("time"));
+	} catch (ExpressionException e2) {
+		// TODO Auto-generated catch block
+		e2.printStackTrace();
+		throw new RuntimeException(e2.toString());
+	}
+
 	// switch to libSBML for non-boolean
 	if (!desiredType.equals(MathType.BOOLEAN)) {
 		try {
-			return ASTNode.parseFormula(expression.infix());
+			ASTNode math = ASTNode.parseFormula(expression.infix());
+			return math;
 		} catch (ParseException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
