@@ -632,7 +632,7 @@ public class SEDMLExporter {
 										cbit.vcell.math.Constant[] cs = constantArraySpec.getConstants();
 										ArrayList<Double> values = new ArrayList<Double>();
 										for (int i = 0; i < cs.length; i++){
-											String value = cs[i].getExpression().infix() + ", ";
+											String value = cs[i].getExpression().infix();
 											values.add(Double.parseDouble(value));
 										}
 										r = new VectorRange(rangeId, values);
