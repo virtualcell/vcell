@@ -65,6 +65,8 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 import java.util.concurrent.TimeoutException;
 
+import cbit.vcell.resource.PropertyLoader;
+
 //import java.nio.file.Files;
 
 public class CLIUtils {
@@ -166,22 +168,28 @@ public class CLIUtils {
         System.out.println(breakString + StringUtils.repeat(breakString, times));
     }
 
-    private CLIUtils() throws IOException {}
+    private CLIUtils(){}
 
     // Singleton Constructor
-    public static CLIUtils getCLIUtils() throws IOException {
+    public static CLIUtils getCLIUtils(){
         if (CLIUtils.singleInstance == null){
-            CLIUtils.singleInstance = new CLIUtils();
-            PropertyLoader.loadProperties();
-            singleInstance.recalculatePaths();
-            singleInstance.instantiatePythonProcess();
+            try{
+                CLIUtils.singleInstance = new CLIUtils();
+                PropertyLoader.loadProperties();
+                singleInstance.recalculatePaths();
+                singleInstance.instantiatePythonProcess();
+            } catch (IOException e){
+                System.err.println("Encountered fatal IOException while creating CLIUtils; killing VCell.");
+                e.printStackTrace();
+                System.exit(1);
+            }
         }
         return CLIUtils.singleInstance;
     }
 
     public static boolean removeDirs(File f) {
         try {
-            deleteRecursively(f);
+            CLIUtils.deleteRecursively(f);
         } catch (IOException ex) {
             System.err.println("Failed to delete the file: " + f);
             return false;
@@ -191,7 +199,7 @@ public class CLIUtils {
 
     public static boolean makeDirs(File f) {
         if (f.exists()) {
-            boolean isRemoved = removeDirs(f);
+            boolean isRemoved = CLIUtils.removeDirs(f);
             if (!isRemoved)
                 return false;
         }
@@ -201,7 +209,7 @@ public class CLIUtils {
     private static void deleteRecursively(File f) throws IOException {
         if (f.isDirectory()) {
             for (File c : Objects.requireNonNull(f.listFiles())) {
-                deleteRecursively(c);
+                CLIUtils.deleteRecursively(c);
             }
         }
         if (!f.delete()) {

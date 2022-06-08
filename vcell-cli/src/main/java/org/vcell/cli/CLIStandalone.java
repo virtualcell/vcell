@@ -1,6 +1,6 @@
 package org.vcell.cli;
 
-import cbit.vcell.resource.PropertyLoader;
+
 import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.xml.ExternalDocInfo;
 import org.apache.commons.lang3.ArrayUtils;
@@ -18,18 +18,18 @@ import com.lowagie.text.pdf.crypto.RuntimeCryptoException;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
-import java.nio.file.FileSystemException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
-import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 import java.util.Set;
 
 public class CLIStandalone {
@@ -51,20 +51,18 @@ public class CLIStandalone {
         	try {
         	   	CLIUtils.getCLIUtils(); // not sure what its here for, but it seems to serve some purpose.
            		
-        		VcmlOmexConverter.parseArgsAndConvert(ArrayUtils.remove(args, 0));
+        		//VcmlOmexConverter.parseArgsAndConvert(ArrayUtils.remove(args, 0));
+                VcmlOmexConverter.parseArgsAndConvert(Arrays.copyOfRange(args, 1, args.length));
         		
         	} catch(IOException e) {
         		e.printStackTrace(System.err);
         	}
-        }
-
-        else {										// -i <input> -o <output> [-keepTempFiles] [-timeOut xxxxx]  timeout in milliseconds
-
+        } else {										// -i <input> -o <output> [-keepTempFiles] [-timeOut xxxxx]  timeout in milliseconds
             File input = null;
             boolean keepTempFiles = false;		// we keep simulation results for debugging, etc; set by -keepTempFiles CL argument
             boolean exactMatchOnly = false;		// we run the solver only if it's an exact kisao match
-            boolean timeOut = false;
     		int position = 0;
+
         	for(String s : args) {
         		if("-keepTempFiles".equalsIgnoreCase(s)) {
         			keepTempFiles = true;
@@ -83,10 +81,9 @@ public class CLIStandalone {
         		position++;
         	}
     		position = 0;
-    		int timeout = 0;
         	for(String s : args) {
         		if("-timeOut".equalsIgnoreCase(s)) {
-        			timeOut = true;
+                    // We want to enable timing out
         			args = ArrayUtils.remove(args, position);
         			
         			s = args[position];		// the timeout in milliseconds
@@ -107,13 +104,7 @@ public class CLIStandalone {
             } catch (Exception e1) {
                 // Non file or invalid argument received, let it pass, CLIHandler will handle the invalid (or non file) arguments
             }
-            CLIUtils utils = null;
-           	try {
-				utils = CLIUtils.getCLIUtils();
-           	} catch (IOException e1) {
-				e1.printStackTrace();
-                System.exit(1);			// can't do anything without CLIUtils
-			}
+            CLIUtils utils = CLIUtils.getCLIUtils();
             Executable.setTimeoutMS(CLIUtils.EXECUTABLE_MAX_WALLCLOK_MILLIS);
             
         	// create base output dir if not exists
@@ -599,6 +590,142 @@ public class CLIStandalone {
         }
 
 
+    }
+
+    static void cleanupMethod(String[] args){
+        // -i <input> -o <output> [-keepTempFiles] [-timeOut xxxxx]  timeout in milliseconds
+        File input = null;
+        String errorReport = null;          // if the arguments were input incorrectly, the reported error is stored here for output
+        boolean keepTempFiles = false;		// we keep simulation results for debugging, etc; set by -keepTempFiles CL argument
+        boolean exactMatchOnly = false;		// we run the solver only if it's an exact kisao match
+        int position = 0;
+        CLIUtils utils = CLIUtils.getCLIUtils();
+
+        Queue<String> argQueue = new LinkedList<>(Arrays.asList(args));
+
+        while (!argQueue.isEmpty()){
+            String currentArg = argQueue.poll().toLowerCase();
+            switch (currentArg) {
+                case "-keeptempfiles":
+                    keepTempFiles = true;
+                    break;
+                case "-exactmatchonly":
+                    exactMatchOnly = true;
+                    break;
+                case "-timeout":
+                    errorReport = CLIStandalone.enableTimeOut(argQueue.poll());
+                    break;
+                case "-i":
+                    errorReport = CLIStandalone.loadInputDirectory(argQueue.poll());
+                    break;
+                case "-o":
+                    errorReport = CLIStandalone.loadOutputDirectory(argQueue.poll());
+                    break;
+                default:
+                    errorReport = "Detected argument: <" + currentArg + "> can not be processed.";
+                    break;
+            }
+
+            if (errorReport != null){
+                System.err.println(String.format("%s\n%s", errorReport, CLIHandler.usage));
+                System.exit(2);
+            }
+        }
+
+
+        // At this point, we should have -i <path> -o <path>; pray to GOD you didnt get it backwards...
+        // Arguments may not always be files, trying for other scenarios
+        String outputDir = null; // TODO: replace this fake variable.
+        try {
+            input = new File(args[1]);
+        } catch (Exception e1) {
+            // Non file or invalid argument received, let it pass, CLIHandler will handle the invalid (or non file) arguments
+        }
+        
+        if (input != null && input.isDirectory()) {
+            
+            FilenameFilter filter = (f, name) -> name.endsWith(".omex") || name.endsWith(".vcml");
+            String[] inputFiles = input.list(filter);
+            if (inputFiles == null) System.out.println("No input files found in the directory");
+            assert inputFiles != null;
+            
+            // base name of the omex file
+            // -- if multiple sedml files in the omex, we display on multiple rows, one for each sedml
+            // current sed-ml file name
+            // error, if any
+            // number of models in sedml file
+            // number of sims in sedml file
+            // number of tasks in sedml file
+            // number of outputs in sedml file
+            // number of biomodels in sedml file
+            // number of succesful simulations that we managed to run
+            // -- we assume that the # of failures = # of tasks - # of successful simulations
+            String header = "BaseName,SedML,Error,Models,Sims,Tasks,Outputs,BioModels,NumSimsSuccessful";
+            try {
+                writeDetailedResultList(outputDir, header);
+            } catch (IOException e1) {
+                // not big deal, we just failed to make the header; we'll find out later what went wrong
+                e1.printStackTrace();
+            }
+            
+            for (String inputFile : inputFiles) {
+                File file = new File(input, inputFile);
+                System.out.println(file);
+                args[1] = file.toString();
+                try {
+                    if (inputFile.endsWith("omex")) {
+                        String bioModelBaseName = org.vcell.util.FileUtils.getBaseName(inputFile);
+                        // make subdirs
+                        args[3] = outputDir + File.separator + bioModelBaseName;
+                        Files.createDirectories(Paths.get(args[3]));
+                        singleExecOmex(utils, outputDir, keepTempFiles, exactMatchOnly, args);
+                    }
+                    if (inputFile.endsWith("vcml")) {
+                        singleExecVcml(utils, args);
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace(System.err);
+                }
+            }
+        } else {
+            try {
+                if (input == null || input.toString().endsWith("omex")) {
+                    singleExecOmex(utils, args[3], keepTempFiles, exactMatchOnly, args);
+                } else if (input.toString().endsWith("vcml")) {
+                    singleExecVcml(utils, args);
+                } else {
+                    throw new RuntimeException("Invalid arguments: " + Arrays.toString(args));
+                }
+            } catch (Exception e) {
+                System.err.print(e.getMessage());
+                System.exit(1);
+            }
+        }
+    }
+
+    private static String enableTimeOut(String timeoutDurationStr){
+        // We want to enable timing out     
+        try {
+            CLIUtils.EXECUTABLE_MAX_WALLCLOK_MILLIS = Integer.parseInt(timeoutDurationStr);
+        } catch(NumberFormatException e) {
+            return "Detected timeout duration: <" + timeoutDurationStr + "> could not be parsed.";
+        }   
+        Executable.setTimeoutMS(CLIUtils.EXECUTABLE_MAX_WALLCLOK_MILLIS);
+        return null;
+    }
+
+    private static String loadInputDirectory(String inputDir){
+        return null;
+    }
+
+    private static String loadOutputDirectory(String outputDir){
+        // create base output dir if not exists
+        try {
+            Files.createDirectories(Paths.get(outputDir));
+        } catch (IOException e) {
+            return ("Specified output directory "+ outputDir + " does not exist and could not be created");
+        }
+        return null;
     }
 }
 
