@@ -1,7 +1,6 @@
 package org.jlibsedml;
 
 import org.jmathml.ASTNode;
-import org.jmathml.FormulaFormatter;
 
 public class SetValue extends ComputeChange {
 
@@ -27,7 +26,6 @@ public class SetValue extends ComputeChange {
     // model variable or range at the current iteration of the enclosing repeatedTask. For a model not being
     // simulated by any subTask, the initial state of the model is used.
     private String rangeReference = null;
-	private FormulaFormatter formulaFormatter=new FormulaFormatter();
 
     // Remember to set the math separately
     public SetValue(XPathTarget target, String rangeReference, String modelReference) {
@@ -63,10 +61,6 @@ public class SetValue extends ComputeChange {
         + ", getListOfParameters().size()=" + getListOfParameters().size()
                  + "]";
     }
-
-	public String getMathAsString(){
-	    return formulaFormatter.formulaToString(getMath());
-	}
 
     @Override
     public String getChangeKind() {
