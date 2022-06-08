@@ -756,7 +756,9 @@ protected void addReactions() throws SbmlException, XMLStreamException {
 				if (bSpatial){
 					exprFormulaNode = getFormulaFromExpression(localRateExpr);
 				}else{
-					exprFormulaNode = getFormulaFromExpression(Expression.mult(localRateExpr, new Expression(vcReactionStep.getStructure().getName())));
+					String structure = vcReactionStep.getStructure().getName();
+					structure = TokenMangler.mangleToSName(structure);
+					exprFormulaNode = getFormulaFromExpression(Expression.mult(localRateExpr, new Expression(structure)));
 				}
 			}
 			sbmlKLaw.setMath(exprFormulaNode);

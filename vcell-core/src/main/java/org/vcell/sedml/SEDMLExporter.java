@@ -95,6 +95,7 @@ import cbit.vcell.mapping.SimulationContext.Application;
 import cbit.vcell.mapping.StructureMapping.StructureMappingParameter;
 import cbit.vcell.math.Function;
 import cbit.vcell.model.Kinetics.KineticsParameter;
+import cbit.vcell.model.Membrane;
 import cbit.vcell.model.Model.ModelParameter;
 import cbit.vcell.model.Model.ReservedSymbol;
 import cbit.vcell.model.Model.ReservedSymbolRole;
@@ -632,7 +633,7 @@ public class SEDMLExporter {
 										cbit.vcell.math.Constant[] cs = constantArraySpec.getConstants();
 										ArrayList<Double> values = new ArrayList<Double>();
 										for (int i = 0; i < cs.length; i++){
-											String value = cs[i].getExpression().infix() + ", ";
+											String value = cs[i].getExpression().infix();
 											values.add(Double.parseDouble(value));
 										}
 										r = new VectorRange(rangeId, values);
@@ -1200,8 +1201,14 @@ public class SEDMLExporter {
 				targetXpath = new XPathTarget(sbmlSupport.getXPathForGlobalParameter(value, ParameterAttribute.value));
 			}
 		} else {
-			System.err.println("Entity should be SpeciesContext, Structure, ModelParameter : " + ste.getClass());
-			throw new RuntimeException("Unknown entity in SBML model");
+			if(ste instanceof Membrane.MembraneVoltage) {
+				String msg = "Export failed: This VCell model has membrane voltage; cannot be exported to SBML at this time";
+				System.out.println(msg);
+				throw new RuntimeException(msg);
+			} else {
+				System.err.println("Entity should be SpeciesContext, Structure, ModelParameter : " + ste.getClass());
+				throw new RuntimeException("Unknown entity in SBML model");
+			}
 		}
 		return targetXpath;
 	}
