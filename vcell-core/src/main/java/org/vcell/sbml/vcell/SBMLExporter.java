@@ -1841,10 +1841,10 @@ private void addGeometry() throws SbmlException {
 	    	} else if (((SubVolume)vcGeomClasses[i]) instanceof CSGObject) {
 	    		bAnyCSGSubvolumes = true;
 	    	}
-	    	domainType.setSpatialDimensions(3);
+	    	domainType.setSpatialDimensions(dimension);
 	    	numSubVols++;
 	    } else if (vcGeomClasses[i] instanceof SurfaceClass) {
-	    	domainType.setSpatialDimensions(2);
+	    	domainType.setSpatialDimensions(dimension - 1);
 	    }
 	}
 	
@@ -1902,8 +1902,12 @@ private void addGeometry() throws SbmlException {
 									double unit_x = (numX>1)?((double)x)/(numX-1):0.5;
 									double coordX = ox + vcExtent.getX() * unit_x;
 									interiorPt.setCoord1(coordX);
-									interiorPt.setCoord2(coordY);
-									interiorPt.setCoord3(coordZ);
+									if (dimension > 1) {
+										interiorPt.setCoord2(coordY);
+										if (dimension > 2) {
+											interiorPt.setCoord3(coordZ);
+										}
+									}
 								}
 								volIndx++;
 							}	// end - for x
