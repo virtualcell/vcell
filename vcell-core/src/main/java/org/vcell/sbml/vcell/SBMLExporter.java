@@ -1948,7 +1948,8 @@ private void addGeometry() throws SbmlException {
 		sbmlAnalyticGeomDefinition.setIsActive(true);
 		for (int i = 0; i < vcGeomClasses.length; i++) {
 			if (vcGeomClasses[i] instanceof AnalyticSubVolume) {
-				AnalyticVolume analyticVol = sbmlAnalyticGeomDefinition.createAnalyticVolume(vcGeomClasses[i].getName());
+				// need to avoid id name clash with structures (compartments)
+				AnalyticVolume analyticVol = sbmlAnalyticGeomDefinition.createAnalyticVolume(TokenMangler.mangleToSName("AnalyticVol_"+vcGeomClasses[i].getName()));
 //				analyticVol.setSpatialId(vcGeomClasses[i].getName());
 				analyticVol.setDomainType(DOMAIN_TYPE_PREFIX+vcGeomClasses[i].getName());
 				analyticVol.setFunctionType(FunctionKind.layered);
