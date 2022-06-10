@@ -206,9 +206,6 @@ public class SEDMLExporter {
 		int models = sedmlModel.getModels().size();
 		int tasks = sedmlModel.getTasks().size();
 		int sims = sedmlModel.getSimulations().size();
-
-		// write SEDML document into SEDML writer, so that the SEDML str can be retrieved
-//		return sedmlDocument.writeDocumentToString();
 		return sedmlDocument;
 	}
 	public String getSEDMLFile(String sPath, String sBaseFileName, boolean bForceVCML, boolean bForceSBML, 

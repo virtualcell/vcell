@@ -7,6 +7,8 @@ import cbit.vcell.field.FieldFunctionArguments;
 import cbit.vcell.field.FieldUtilities;
 import cbit.vcell.field.db.FieldDataDBOperationDriver;
 import cbit.vcell.geometry.GeometryInfo;
+import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.Variable;
 import cbit.vcell.modeldb.AdminDBTopLevel;
 import cbit.vcell.parser.Expression;
@@ -243,13 +245,49 @@ public class VcmlOmexConverter {
         File vcmlFilePath = new File(inputVcmlFile);
         // Create biomodel
         BioModel bioModel = XmlHelper.XMLToBioModel(new XMLSource(vcmlFilePath));
-        bioModel.refreshDependencies();
         
         int numSimulations = bioModel.getNumSimulations();
         if(outputBaseDir != null && numSimulations == 0) {
         	CLIStandalone.writeSimErrorList(outputBaseDir, vcmlName + " has no simulations.");
         	return false;
         }
+        bioModel.refreshDependencies();
+
+        // ========================================================
+        try {
+		SimulationContext scArray[] = bioModel.getSimulationContexts();
+		if (scArray!=null) {
+			MathDescription[] mathDescArray = new MathDescription[scArray.length];
+			for (int i = 0; i < scArray.length; i++){
+				//check if all structure sizes are specified
+				scArray[i].checkValidity();
+				//
+				// compute Geometric Regions if necessary
+				//
+				cbit.vcell.geometry.surface.GeometrySurfaceDescription geoSurfaceDescription = scArray[i].getGeometry().getGeometrySurfaceDescription();
+				if (geoSurfaceDescription!=null && geoSurfaceDescription.getGeometricRegions()==null){
+					cbit.vcell.geometry.surface.GeometrySurfaceUtils.updateGeometricRegions(geoSurfaceDescription);
+				}
+				if (scArray[i].getModel() != bioModel.getModel()){
+					throw new Exception("The BioModel's physiology doesn't match that for Application '"+scArray[i].getName()+"'");
+				}
+				//
+				// create new MathDescription
+				//
+				MathDescription math = scArray[i].createNewMathMapping().getMathDescription();
+				//
+				// load MathDescription into SimulationContext 
+				// (BioModel is responsible for propagating this to all applicable Simulations).
+				//
+				scArray[i].setMathDescription(math);
+			}
+		}
+        } catch(Exception e) {
+        	System.out.println(e.getMessage());
+        }
+
+        
+        // ========================================================
         
         // we extract the simulations with field data from the list of simulations since they are not supported
         List<Simulation> simulationsToRemove = new ArrayList<> ();
@@ -404,7 +442,11 @@ public class VcmlOmexConverter {
         File destination = new File(destinationPath);
         int connectionTimeout = 10000;
         int readTimeout = 20000;
-        FileUtils.copyURLToFile(source, destination, connectionTimeout, readTimeout);
+        try {
+        FileUtils.copyURLToFile(source, destination, connectionTimeout, readTimeout);		// diagram
+        } catch(FileNotFoundException e) {
+        	System.out.println("Diagram not present!");
+        }
 
         String rdfString = getMetadata(vcmlName, bioModel, destination);
         XmlUtil.writeXMLStringToFile(rdfString, String.valueOf(Paths.get(outputDir, "metadata.rdf")), true);
