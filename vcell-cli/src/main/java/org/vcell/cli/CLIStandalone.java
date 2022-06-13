@@ -1,20 +1,18 @@
 package org.vcell.cli;
 
 
+import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.xml.ExternalDocInfo;
-import org.apache.commons.lang3.ArrayUtils;
 import org.jlibsedml.*;
 import org.vcell.cli.CLIUtils.Status;
 import org.vcell.cli.vcml.VCMLHandler;
-//import org.vcell.util.FileUtils;
+
 import org.vcell.cli.vcml.VcmlOmexConverter;
 import org.vcell.util.GenericExtensionFilter;
 import org.vcell.util.exe.Executable;
+import org.vcell.util.FileUtils;
 
-import com.lowagie.text.pdf.crypto.RuntimeCryptoException;
-
-//import org.apache.commons.io.FileUtils;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
@@ -22,158 +20,30 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.Arrays;
+import java.util.List;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.Queue;
 import java.util.Set;
+
+
 
 public class CLIStandalone {
 	
     public static void main(String[] args) {
-    	
-    	if(args == null || args.length < 4) {		// -i <input> -o <output>
-    		System.err.println(CLIHandler.usage);
-    		System.exit(1);
-    	}
-    	
-        if(args[0].toLowerCase().equals("convert")) {	// convert -i <input> -o <output> [-vcml]/[-sbml] [-hasDataOnly] [-makeLogsOnly] [-nonSpatialOnly]
-            // VCML to OMex conversion
-        	// -vcml and -sbml	- mutually exclusive, -sbml means export to sbml omex, -vcml means export to native omex
-         	// if both are missing we try sbml first, if impossible we try vcml
-         	// -hasDataOnly		- we only export the sims that have been previously run with the green button and have results on the server
-        	// -nonSpatialOnly	- we only export non-spatial simulations
-         	// -makeLogsOnly	- don't actually create the omex files, just make the logs
-        	try {
-        	   	CLIUtils.getCLIUtils(); // not sure what its here for, but it seems to serve some purpose.
-           		
-        		//VcmlOmexConverter.parseArgsAndConvert(ArrayUtils.remove(args, 0));
-                VcmlOmexConverter.parseArgsAndConvert(Arrays.copyOfRange(args, 1, args.length));
-        		
-        	} catch(IOException e) {
-        		e.printStackTrace(System.err);
-        	}
-        } else {										// -i <input> -o <output> [-keepTempFiles] [-timeOut xxxxx]  timeout in milliseconds
-            File input = null;
-            boolean keepTempFiles = false;		// we keep simulation results for debugging, etc; set by -keepTempFiles CL argument
-            boolean exactMatchOnly = false;		// we run the solver only if it's an exact kisao match
-    		int position = 0;
+        // We need to immediately Initialize the CLIHandler to parse CLIArgs
+        CLIHandler.instantiateCliHandler(args);
+        CLIHandler cliArgs = CLIHandler.getCLIHandler();
+        File inputFile = new File(cliArgs.getInputFilePath());
 
-        	for(String s : args) {
-        		if("-keepTempFiles".equalsIgnoreCase(s)) {
-        			keepTempFiles = true;
-        			args = ArrayUtils.remove(args, position);
-        			break;
-        		}
-        		position++;
-        	}
-    		position = 0;
-        	for(String s : args) {
-        		if("-exactMatchOnly".equalsIgnoreCase(s)) {
-        			exactMatchOnly = true;
-        			args = ArrayUtils.remove(args, position);
-        			break;
-        		}
-        		position++;
-        	}
-    		position = 0;
-        	for(String s : args) {
-        		if("-timeOut".equalsIgnoreCase(s)) {
-                    // We want to enable timing out
-        			args = ArrayUtils.remove(args, position);
-        			
-        			s = args[position];		// the timeout in milliseconds
-        			try {
-        				CLIUtils.EXECUTABLE_MAX_WALLCLOK_MILLIS = Integer.parseInt(s);
-        			} catch(NumberFormatException e) {
-        				System.out.println("Error initializing the timeout from the command line, assuming no timeout");
-        			}
-        			args = ArrayUtils.remove(args, position);
-        			break;
-        		}
-        		position++;
-        	}
-
-            // Arguments may not always be files, trying for other scenarios
-            try {
-              	input = new File(args[1]);
-            } catch (Exception e1) {
-                // Non file or invalid argument received, let it pass, CLIHandler will handle the invalid (or non file) arguments
-            }
-            CLIUtils utils = CLIUtils.getCLIUtils();
-            Executable.setTimeoutMS(CLIUtils.EXECUTABLE_MAX_WALLCLOK_MILLIS);
-            
-        	// create base output dir if not exists
-        	String outputDir = args[3];
-			try {
-				Files.createDirectories(Paths.get(outputDir));
-			} catch (IOException e2) {
-				System.err.println("Specified output directory "+outputDir+" does not exist and could not be created");
-				System.exit(1);
-			}
-            if (input != null && input.isDirectory()) {
-            	
-                FilenameFilter filter = (f, name) -> name.endsWith(".omex") || name.endsWith(".vcml");
-                String[] inputFiles = input.list(filter);
-                if (inputFiles == null) System.out.println("No input files found in the directory");
-                assert inputFiles != null;
-                
-                // base name of the omex file
-                // -- if multiple sedml files in the omex, we display on multiple rows, one for each sedml
-                // current sed-ml file name
-                // error, if any
-                // number of models in sedml file
-                // number of sims in sedml file
-                // number of tasks in sedml file
-                // number of outputs in sedml file
-                // number of biomodels in sedml file
-                // number of succesful simulations that we managed to run
-                // -- we assume that the # of failures = # of tasks - # of successful simulations
-                String header = "BaseName,SedML,Error,Models,Sims,Tasks,Outputs,BioModels,NumSimsSuccessful";
-                try {
-					writeDetailedResultList(outputDir, header);
-				} catch (IOException e1) {
-					// not big deal, we just failed to make the header; we'll find out later what went wrong
-					e1.printStackTrace();
-				}
-                
-                for (String inputFile : inputFiles) {
-                    File file = new File(input, inputFile);
-                    System.out.println(file);
-                    args[1] = file.toString();
-                    try {
-                        if (inputFile.endsWith("omex")) {
-                			String bioModelBaseName = org.vcell.util.FileUtils.getBaseName(inputFile);
-                			// make subdirs
-                			args[3] = outputDir + File.separator + bioModelBaseName;
-                			Files.createDirectories(Paths.get(args[3]));
-                            singleExecOmex(utils, outputDir, keepTempFiles, exactMatchOnly, args);
-                        }
-                        if (inputFile.endsWith("vcml")) {
-                            singleExecVcml(utils, args);
-                        }
-                    } catch (Exception e) {
-                        e.printStackTrace(System.err);
-                    }
-                }
-            } else {
-                try {
-                    if (input == null || input.toString().endsWith("omex")) {
-                        singleExecOmex(utils, args[3], keepTempFiles, exactMatchOnly, args);
-                    } else if (input.toString().endsWith("vcml")) {
-                        singleExecVcml(utils, args);
-                    } else {
-                    	throw new RuntimeException("Invalid arguments: " + Arrays.toString(args));
-                    }
-                } catch (Exception e) {
-                    System.err.print(e.getMessage());
-                    System.exit(1);
-                }
-            }
+        Executable.setTimeoutMS(CLIUtils.EXECUTABLE_MAX_WALLCLOK_MILLIS);
+        
+        if (cliArgs.inConversionMode()){
+            CLIStandalone.wrappedConvertFiles();
+        } else if (cliArgs.isInputTypeDirectory()){
+            CLIStandalone.batchMode(inputFile);
+        } else {
+            CLIStandalone.singleMode(inputFile);
         }
     }
 
@@ -264,38 +134,27 @@ public class CLIStandalone {
     }
 
 
-    private static void singleExecOmex(CLIUtils utils, String outputBaseDir, boolean keepTempFiles, boolean exactMatchOnly, String[] args) throws Exception {
+    private static void singleExecOmex(File inputFile) throws Exception {
+        int nModels, nSimulations, nSedml, nTasks, nOutputs, nReportsCount = 0, nPlots2DCount = 0, nPlots3DCount = 0;
+        CLIUtils utils = CLIUtils.getCLIUtils();
+        CLIHandler cliHandler = CLIHandler.getCLIHandler();
+        String inputFileName = inputFile.getName(), outputDir = cliHandler.getOutputDirPath() /*TODO: this is wrong, we want a sub directory with the name of the file */, 
+            bioModelBaseName = FileUtils.getBaseName(inputFileName), outputBaseDir = cliHandler.getOutputDirPath(); // bioModelBaseName = input file without the path 
         OmexHandler omexHandler = null;
-        CLIHandler cliHandler;
-        String inputFile;
-        String bioModelBaseName = "";		// input file without the path
-        String outputDir;
-        ArrayList<String> sedmlLocations;
-        int nModels;
-        int nSimulations;
-        int nSedml;
-        int nTasks;
-        int nOutputs;
+        List<String> sedmlLocations;
         List<Output> outputs;
-        int nReportsCount = 0;
-        int nPlots2DCount = 0;
-        int nPlots3DCount = 0;
-        SedML sedml;
-        Path sedmlPath2d3d = null;
-        File sedmlPathwith2dand3d = null;
-        SedML sedmlFromPseudo = null;
+        SedML sedml, sedmlFromPseudo;
+        Path sedmlPath2d3d;
+        File sedmlPathwith2dand3d;
+        boolean keepTempFiles = cliHandler.isKeepTempFiles(), exactMatchOnly = cliHandler.isExactMatchOnly();
 
         long startTimeOmex = System.currentTimeMillis();
 
+        System.out.println("VCell CLI input archive " + inputFileName);
+        CLIUtils.drawBreakLine("-", 100);
         try {
-            cliHandler = new CLIHandler(args);
-            inputFile = cliHandler.getInputFilePath();
-            bioModelBaseName = org.vcell.util.FileUtils.getBaseName(inputFile);
-            outputDir = cliHandler.getOutputDirPath();
             sedmlPath2d3d = Paths.get(outputDir, "temp");
-            System.out.println("VCell CLI input archive " + inputFile);
-            CLIUtils.drawBreakLine("-", 100);
-            omexHandler = new OmexHandler(utils, inputFile, outputDir);
+            omexHandler = new OmexHandler(inputFileName, outputDir);
             omexHandler.extractOmex();
             sedmlLocations = omexHandler.getSedmlLocationsAbsolute();
             nSedml = sedmlLocations.size();
@@ -303,13 +162,13 @@ public class CLIStandalone {
         } catch (Throwable exc) {
             assert omexHandler != null;
             omexHandler.deleteExtractedOmex();
-            String error = exc.getMessage() + ", error for archive " + args[1];
-            writeErrorList(outputBaseDir, bioModelBaseName);
-            writeDetailedResultList(outputBaseDir, bioModelBaseName + ", " + ",unknown error with the archive file");
+            String error = exc.getMessage() + ", error for archive " + inputFileName;
+            CLIStandalone.writeErrorList(outputBaseDir, bioModelBaseName);
+            CLIStandalone.writeDetailedResultList(outputBaseDir, bioModelBaseName + ", " + ",unknown error with the archive file");
             throw new Exception(error);
         }
-        CLIUtils.checkPythonInstallationError();					// check python installation
-        utils.generateStatusYaml(inputFile, outputDir);	// generate Status YAML
+
+        utils.generateStatusYaml(inputFileName, outputDir);	// generate Status YAML
         
         // from here on, we need to collect errors, since some subtasks may succeed while other do not
         // we now have the log file created, so that we also have a place to put them
@@ -320,7 +179,7 @@ public class CLIStandalone {
     	String logOmexError = "";		// not used for now
         for (String sedmlLocation : sedmlLocations) {		// for each sedml document
 
-            boolean somethingFailed = false;		// shows that the current document suffered a partial or total failuri
+            boolean somethingFailed = false;		// shows that the current document suffered a partial or total failure
             
         	String logDocumentMessage = "Initializing sedml document... ";
         	String logDocumentError = "";
@@ -337,8 +196,7 @@ public class CLIStandalone {
                 SedML sedmlFromOmex = Libsedml.readDocument(completeSedmlPath).getSedMLModel();
 
                 String[] sedmlNameSplit;
-                if (CLIUtils.isWindowsPlatform) sedmlNameSplit = sedmlLocation.split("\\\\", -2);
-                else sedmlNameSplit = sedmlLocation.split("/", -2);
+                sedmlNameSplit = sedmlLocation.split(CLIUtils.isWindowsPlatform ? "\\\\" : "/", -2);
                 sedmlName = sedmlNameSplit[sedmlNameSplit.length - 1];
                 logOmexMessage += "Processing " + sedmlName + ". ";
 
@@ -368,7 +226,7 @@ public class CLIStandalone {
                 CLIUtils.drawBreakLine("-", 100);
 
                 // For appending data for SED Plot2D and Plot3d to HDF5 files following a temp convention
-                utils.genSedmlForSed2DAnd3D(inputFile, outputDir);
+                utils.genSedmlForSed2DAnd3D(inputFileName, outputDir);
                 // SED-ML file generated by python VCell_cli_util
                 sedmlPathwith2dand3d = new File(String.valueOf(sedmlPath2d3d), "simulation_" + sedmlName);
                 Path path = Paths.get(sedmlPathwith2dand3d.getAbsolutePath());
@@ -408,8 +266,8 @@ public class CLIStandalone {
             //
             // temp code to test plot name correctness
             //
-//    		String idNamePlotsMap = utils.generateIdNamePlotsMap(sedml, outDirForCurrentSedml);
-//    		utils.execPlotOutputSedDoc(inputFile, idNamePlotsMap, outputDir);
+            //    		String idNamePlotsMap = utils.generateIdNamePlotsMap(sedml, outDirForCurrentSedml);
+            //    		utils.execPlotOutputSedDoc(inputFile, idNamePlotsMap, outputDir);
             }
             
             
@@ -418,7 +276,7 @@ public class CLIStandalone {
             SolverHandler solverHandler = new SolverHandler();
             // we send both the whole OMEX file and the extracted SEDML file path
             // XmlHelper code uses two types of resolvers to handle absolute or relative paths
-            ExternalDocInfo externalDocInfo = new ExternalDocInfo(new File(inputFile), true);
+            ExternalDocInfo externalDocInfo = new ExternalDocInfo(new File(inputFileName), true);
             resultsHash = new LinkedHashMap<String, ODESolverResultSet>();
             try {
             	String str = "Starting simulate all tasks... ";
@@ -472,7 +330,7 @@ public class CLIStandalone {
 
         		logDocumentMessage += "Generating HDF5 file... ";
         		String idNamePlotsMap = utils.generateIdNamePlotsMap(sedml, outDirForCurrentSedml);
-        		utils.execPlotOutputSedDoc(inputFile, idNamePlotsMap, outputDir);							// create the HDF5 file
+        		utils.execPlotOutputSedDoc(inputFileName, idNamePlotsMap, outputDir);							// create the HDF5 file
         		if(!containsExtension(outputDir, "h5")) {
         			oneSedmlDocumentFailed = true;
         			somethingFailed = true;
@@ -540,26 +398,17 @@ public class CLIStandalone {
     }
 
     @Deprecated
-    private static void singleExecVcml(CLIUtils utils, String[] args) throws Exception {
-        CLIHandler cliHandler;
-        String inputFile;
-        String outputDir;
+    private static void singleExecVcml(File vcmlFile)  {
+        CLIHandler cliHandler = CLIHandler.getCLIHandler();
+        String inputFile = cliHandler.getInputFilePath();
+        String outputDir = cliHandler.getOutputDirPath();
 
+        VCMLHandler.outputDir = outputDir;
+        System.out.println("VCell CLI input file " + inputFile);
 
-        try {
-            cliHandler = new CLIHandler(args);
-            inputFile = cliHandler.getInputFilePath();
-            outputDir = cliHandler.getOutputDirPath();
-            VCMLHandler.outputDir = outputDir;
-            System.out.println("VCell CLI input file " + inputFile);
-
-        } catch (Throwable exc) {
-            throw new Exception(exc.getMessage());
-        }
         // from here on, we need to collect errors, since some subtasks may succeed while other do not
         boolean somethingFailed = false;
         HashMap<String, ODESolverResultSet> resultsHash;
-        HashMap<String, File> reportsHash = null;
 
         String vcmlName = inputFile.substring(inputFile.lastIndexOf(File.separator) + 1);
         File outDirForCurrentVcml = new File(Paths.get(outputDir, vcmlName).toString());
@@ -574,158 +423,121 @@ public class CLIStandalone {
 
         // Run solvers and make reports; all failures/exceptions are being caught
         SolverHandler solverHandler = new SolverHandler();
+        try {
+            resultsHash = solverHandler.simulateAllVcmlTasks(new File(inputFile), outDirForCurrentVcml);
 
-        resultsHash = solverHandler.simulateAllVcmlTasks(new File(inputFile), outDirForCurrentVcml);
-
-
-        for (String simName : resultsHash.keySet()) {
-            String CSVFilePath = Paths.get(outDirForCurrentVcml.toString(), simName + ".csv").toString();
-            CLIUtils.createCSVFromODEResultSet(resultsHash.get(simName), new File(CSVFilePath));
-            utils.transposeVcmlCsv(CSVFilePath);
+            for (String simName : resultsHash.keySet()) {
+                String CSVFilePath = Paths.get(outDirForCurrentVcml.toString(), simName + ".csv").toString();
+                CLIUtils.createCSVFromODEResultSet(resultsHash.get(simName), new File(CSVFilePath));
+                CLIUtils.getCLIUtils().transposeVcmlCsv(CSVFilePath);
+            }
+        } catch(IOException e){
+            System.err.println("IOException while processing VCML " + vcmlFile.getName());
+            e.printStackTrace(System.err);
+            somethingFailed = true;
+        } catch (ExpressionException e){
+            System.err.println("InterruptedException while creative results CSV from VCML " + vcmlFile.getName());
+            e.printStackTrace(System.err);
+            somethingFailed = true;
+        } catch (InterruptedException e){
+            System.err.println("InterruptedException while transposing CSV from VCML " + vcmlFile.getName());
+            e.printStackTrace(System.err);
+            somethingFailed = true;
+        } catch (Exception e){
+            System.err.println("Unexpected exception while transposing CSV from VCML " + vcmlFile.getName());
+            System.err.println(e);
+            e.printStackTrace(System.err);
+            somethingFailed = true;
         }
 
         if (somethingFailed) {
-            String error = "One or more errors encountered while executing VCML " + args[1];
-            throw new Exception(error);
-        }
-
-
-    }
-
-    static void cleanupMethod(String[] args){
-        // -i <input> -o <output> [-keepTempFiles] [-timeOut xxxxx]  timeout in milliseconds
-        File input = null;
-        String errorReport = null;          // if the arguments were input incorrectly, the reported error is stored here for output
-        boolean keepTempFiles = false;		// we keep simulation results for debugging, etc; set by -keepTempFiles CL argument
-        boolean exactMatchOnly = false;		// we run the solver only if it's an exact kisao match
-        int position = 0;
-        CLIUtils utils = CLIUtils.getCLIUtils();
-
-        Queue<String> argQueue = new LinkedList<>(Arrays.asList(args));
-
-        while (!argQueue.isEmpty()){
-            String currentArg = argQueue.poll().toLowerCase();
-            switch (currentArg) {
-                case "-keeptempfiles":
-                    keepTempFiles = true;
-                    break;
-                case "-exactmatchonly":
-                    exactMatchOnly = true;
-                    break;
-                case "-timeout":
-                    errorReport = CLIStandalone.enableTimeOut(argQueue.poll());
-                    break;
-                case "-i":
-                    errorReport = CLIStandalone.loadInputDirectory(argQueue.poll());
-                    break;
-                case "-o":
-                    errorReport = CLIStandalone.loadOutputDirectory(argQueue.poll());
-                    break;
-                default:
-                    errorReport = "Detected argument: <" + currentArg + "> can not be processed.";
-                    break;
-            }
-
-            if (errorReport != null){
-                System.err.println(String.format("%s\n%s", errorReport, CLIHandler.usage));
-                System.exit(2);
-            }
-        }
-
-
-        // At this point, we should have -i <path> -o <path>; pray to GOD you didnt get it backwards...
-        // Arguments may not always be files, trying for other scenarios
-        String outputDir = null; // TODO: replace this fake variable.
-        try {
-            input = new File(args[1]);
-        } catch (Exception e1) {
-            // Non file or invalid argument received, let it pass, CLIHandler will handle the invalid (or non file) arguments
-        }
-        
-        if (input != null && input.isDirectory()) {
-            
-            FilenameFilter filter = (f, name) -> name.endsWith(".omex") || name.endsWith(".vcml");
-            String[] inputFiles = input.list(filter);
-            if (inputFiles == null) System.out.println("No input files found in the directory");
-            assert inputFiles != null;
-            
-            // base name of the omex file
-            // -- if multiple sedml files in the omex, we display on multiple rows, one for each sedml
-            // current sed-ml file name
-            // error, if any
-            // number of models in sedml file
-            // number of sims in sedml file
-            // number of tasks in sedml file
-            // number of outputs in sedml file
-            // number of biomodels in sedml file
-            // number of succesful simulations that we managed to run
-            // -- we assume that the # of failures = # of tasks - # of successful simulations
-            String header = "BaseName,SedML,Error,Models,Sims,Tasks,Outputs,BioModels,NumSimsSuccessful";
             try {
-                writeDetailedResultList(outputDir, header);
-            } catch (IOException e1) {
-                // not big deal, we just failed to make the header; we'll find out later what went wrong
-                e1.printStackTrace();
-            }
-            
-            for (String inputFile : inputFiles) {
-                File file = new File(input, inputFile);
-                System.out.println(file);
-                args[1] = file.toString();
-                try {
-                    if (inputFile.endsWith("omex")) {
-                        String bioModelBaseName = org.vcell.util.FileUtils.getBaseName(inputFile);
-                        // make subdirs
-                        args[3] = outputDir + File.separator + bioModelBaseName;
-                        Files.createDirectories(Paths.get(args[3]));
-                        singleExecOmex(utils, outputDir, keepTempFiles, exactMatchOnly, args);
-                    }
-                    if (inputFile.endsWith("vcml")) {
-                        singleExecVcml(utils, args);
-                    }
-                } catch (Exception e) {
-                    e.printStackTrace(System.err);
-                }
-            }
-        } else {
-            try {
-                if (input == null || input.toString().endsWith("omex")) {
-                    singleExecOmex(utils, args[3], keepTempFiles, exactMatchOnly, args);
-                } else if (input.toString().endsWith("vcml")) {
-                    singleExecVcml(utils, args);
-                } else {
-                    throw new RuntimeException("Invalid arguments: " + Arrays.toString(args));
-                }
-            } catch (Exception e) {
+                throw new Exception("One or more errors encountered while executing VCML " + vcmlFile.getName());
+            } catch (Exception e){
                 System.err.print(e.getMessage());
                 System.exit(1);
             }
         }
     }
 
-    private static String enableTimeOut(String timeoutDurationStr){
-        // We want to enable timing out     
-        try {
-            CLIUtils.EXECUTABLE_MAX_WALLCLOK_MILLIS = Integer.parseInt(timeoutDurationStr);
-        } catch(NumberFormatException e) {
-            return "Detected timeout duration: <" + timeoutDurationStr + "> could not be parsed.";
-        }   
-        Executable.setTimeoutMS(CLIUtils.EXECUTABLE_MAX_WALLCLOK_MILLIS);
-        return null;
-    }
+    static void batchMode(File dirOfArchivesToProcess){
+        CLIHandler handler = CLIHandler.getCLIHandler();
+        FilenameFilter filter = (f, name) -> name.endsWith(".omex") || name.endsWith(".vcml");
+        File[] inputFiles = dirOfArchivesToProcess.listFiles(filter);
+        if (inputFiles == null) System.out.println("No input files found in the directory");
+        assert inputFiles != null;
 
-    private static String loadInputDirectory(String inputDir){
-        return null;
-    }
+        CLIStandalone.createHeader();
 
-    private static String loadOutputDirectory(String outputDir){
-        // create base output dir if not exists
-        try {
-            Files.createDirectories(Paths.get(outputDir));
-        } catch (IOException e) {
-            return ("Specified output directory "+ outputDir + " does not exist and could not be created");
+        for (File inputFile : inputFiles) {
+            String inputFileName = inputFile.getName();
+            System.out.println(inputFile);
+            try {
+                if (inputFileName.endsWith("omex")) {
+                    String bioModelBaseName = inputFileName.substring(0, inputFileName.indexOf(".")); // ".omex"??
+                    Files.createDirectories(Paths.get(handler.getOutputDirPath() + File.separator + bioModelBaseName)); // make output subdir
+                    CLIStandalone.singleExecOmex(inputFile);
+                }
+                
+                if (inputFileName.endsWith("vcml")) {
+                    CLIStandalone.singleExecVcml(inputFile);
+                }
+            } catch (Exception e) {
+                e.printStackTrace(System.err);
+            }
         }
-        return null;
+    }
+
+    static void singleMode(File archiveToProcess){
+        if (archiveToProcess.getName().endsWith("vcml")){
+            CLIStandalone.singleExecVcml(archiveToProcess);
+        } else { // archiveToProcess.getName().endsWith("omex")
+            CLIStandalone.wrappedExecSingleOmex(archiveToProcess);
+        }
+    }
+
+    // TODO: Fix singleExecOmex execption system (maybe also singleExecVcml) to not require this wrapper for readibility and understanding.
+    private static void wrappedExecSingleOmex(File archiveToProcess){
+        try{
+            CLIStandalone.singleExecOmex(archiveToProcess);
+        } catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+
+    private static void wrappedConvertFiles(){
+        try {
+            VcmlOmexConverter.convertFiles();
+        } catch (IOException e){
+            e.printStackTrace(System.err);
+        }
+    }
+
+    private static void createHeader(){
+        /**
+         * Header Components:
+         *  * base name of the omex file
+         *  *   foreach sed-ml file:
+         *  *   - (current) sed-ml file name
+         *  *   - error(s) (if any)
+         *  *   - number of models
+         *  *   - number of sims
+         *  *   - number of tasks
+         *  *   - number of outputs
+         *  *   - number of biomodels
+         *  *   - number of succesful sims that we managed to run
+         *  *   (NB: we assume that the # of failures = # of tasks - # of successful simulations)
+         *  *   (NB: if multiple sedml files in the omex, we display on multiple rows, one for each sedml) 
+         */
+        
+        CLIHandler handler = CLIHandler.getCLIHandler();
+        String header = "BaseName,SedML,Error,Models,Sims,Tasks,Outputs,BioModels,NumSimsSuccessful";
+        try {
+            CLIStandalone.writeDetailedResultList(handler.getOutputDirPath(), header);
+        } catch (IOException e1) {
+            // not big deal, we just failed to make the header; we'll find out later what went wrong
+            e1.printStackTrace();
+        }
     }
 }
 

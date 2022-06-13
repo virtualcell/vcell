@@ -5,23 +5,55 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
 
+import java.io.File;
 import java.io.IOException;
+import java.nio.file.Paths;
+import java.nio.file.Files;
+import java.nio.file.Path;
+
 import static java.lang.System.*;
 
 public class CLIHandler {
-    public CommandLine cmd = null; // TODO: make private and selectively expose components.
-    String fetchFailed = "Failed fetching VCell version";
+    private static CLIHandler singleInstance;
+    private CommandLine cmd = null; // TODO: make private and selectively expose components.
+    private String fetchFailed = "Failed fetching VCell version";
+    private boolean isInConversionMode, isInputPathDirectory;
     String osName = getProperty("os.name");
     String osVersion = getProperty("os.version");
     String javaVersion = getProperty("java.version");
     String javaVendor = getProperty("java.vendor");
     String machineArch = getProperty("os.arch");
 
-    public static String syntax =   "VCell [-h | -v] [-q] [-t <milliseconds>] [-c] [-i <input> -o <outputDir>] [-vcml | - sbml] " 
+    private static String syntax =   "VCell [-h | -v] [-q] -i <input> -o <outputDir> [-t <milliseconds>] [-c]  [-vcml | - sbml] " 
                                 +   "[-hasDataOnly] [-makeLogsOnly] [-nonSpatialOnly] [-keepTempFiles] [-exactMatchOnly]";
-    public static String usage = "usage: " + syntax;
+    private static String usage = "usage: " + syntax;
 
-    public CLIHandler(String[] args) {
+    public static CLIHandler getCLIHandler(){
+        if (CLIHandler.singleInstance == null){
+            try {
+                throw new InstantiationError("CLIHandler has not yet been intantiated. Instantiate the singleton first.");
+            } catch(InstantiationError e){
+                out.println(e);
+                System.exit(3);
+            }
+        }
+        return CLIHandler.singleInstance;
+    }
+
+    public static void instantiateCliHandler(String[] args){
+        try {
+            if (CLIHandler.singleInstance != null){
+                throw new InstantiationError("CLIHandler is a singleton that is provided CLI args. Do not attempt to reinstantiate it.");
+            } else {
+                CLIHandler.singleInstance = new CLIHandler(args);
+            }
+        } catch (InstantiationError e){
+            out.println(e);
+            System.exit(3);
+        }
+    }
+
+    private CLIHandler(String[] args) {
         CommandLineParser parser = new DefaultParser();
 
         // Try and parse the cmd args
@@ -31,6 +63,8 @@ public class CLIHandler {
             out.println(e + "\n\n" + usage);
             exit(2);
         }
+
+        this.isInConversionMode = cmd.hasOption("c");
 
         if (cmd.getOptions().length == 0) { // One day maybe this boots the GUI?
             out.println("Welcome to VCell!\n\t" + usage);
@@ -54,19 +88,62 @@ public class CLIHandler {
             // TODO: mute out and err streams
         }
 
-        if (cmd.hasOption("c")){
-            if (!cmd.hasOption("i") || !cmd.hasOption("o")){
-                out.println("When converting omex, -i and -o flags must be specified.\n");
-                out.println(usage);
+        if (cmd.hasOption("t")){
+            try {
+                CLIUtils.EXECUTABLE_MAX_WALLCLOK_MILLIS = Integer.parseInt(cmd.getOptionValue("t"));
+            } catch(NumberFormatException e) {
+                out.println("Detected timeout duration: <" + cmd.getOptionValue("t") + "> could not be parsed.");
+                exit(2);
+            }   
+        } else {
+            CLIUtils.EXECUTABLE_MAX_WALLCLOK_MILLIS = 0;
+        }
+
+        if (cmd.hasOption("vcml") && cmd.hasOption("sbml")){
+            out.println("Flags -vcml and -sbml are mutually exclusive; please select one.");
+            exit(2);
+        }
+
+        if (!cmd.hasOption("i") || !cmd.hasOption("o")){
+            out.println("Please specify input/output with -i and -o flags.\n");
+            out.println(usage);
+            exit(2);
+        }
+
+        if (cmd.hasOption("i")){
+            Path inPath = Paths.get(cmd.getOptionValue("i"));
+            if (Files.notExists(inPath)){
+                out.println("Input path can not be parsed. Please confirm path exists and that it is a directory or file.");
                 exit(2);
             }
 
-            // TODO: finish with flag checks
+            if (Files.isDirectory(inPath)){
+                this.isInputPathDirectory = true;
+            } else if (Files.isRegularFile(inPath)){
+                this.isInputPathDirectory = false;
+            } else {
+                // We have 0 clue what it is
+                out.println("Input path can not be parsed. Please confirm path exists and that it is a directory or file.");
+                exit(2);
+            }
 
+            if (!this.isInputPathDirectory && !inPath.getFileName().endsWith("omex") && !inPath.getFileName().endsWith("vcml")){
+                out.println("Invalid input file detected. Check file extension and try again.");
+                exit(2);
+            }
+            
+        } else if (cmd.hasOption("o")){
+            Path outPath = Paths.get(cmd.getOptionValue("o"));
+
+            // Note the short circuits and side effect of mkdirs
+            if ((Files.notExists(outPath) || !Files.isDirectory(outPath)) && (Files.isRegularFile(outPath) || !outPath.toFile().mkdirs())){ 
+                out.println("Output directory can not be found as a directory nor created. Please double check names and permissions.");
+                exit(2);
+            }
         }
     }
 
-    public Options getCommandLineOptions() {
+    private Options getCommandLineOptions() {
 
         Option help = new Option(
             "h",
@@ -179,11 +256,47 @@ public class CLIHandler {
     }
 
     public String getInputFilePath() {
-        return this.cmd.getOptionValue("archive");
+        return this.cmd.getOptionValue("input");
     }
 
     public String getOutputDirPath() {
-        return cmd.getOptionValue("out-dir");
+        return cmd.getOptionValue("outputDir");
+    }
+
+    public boolean inConversionMode(){
+        return this.isInConversionMode;
+    }
+
+    public boolean isInputTypeDirectory(){
+        return this.isInputPathDirectory;
+    }
+
+    public boolean isExactMatchOnly(){
+        return this.cmd.hasOption("exactMatchOnly");
+    }
+
+    public boolean isKeepTempFiles(){
+        return this.cmd.hasOption("keepTempFiles");
+    }
+
+    public boolean shouldForceVcml(){
+        return this.cmd.hasOption("vcml");
+    }
+
+    public boolean shouldForceSbml(){
+        return this.cmd.hasOption("sbml");
+    }
+
+    public boolean isHasDataOnly(){
+        return this.cmd.hasOption("hasDataOnly");
+    }
+
+    public boolean isMakeLogsOnly(){
+        return this.cmd.hasOption("makeLogsOnly");
+    }
+
+    public boolean isNonSpacialOnly(){
+        return this.cmd.hasOption("nonSpatialOnly");
     }
 
     public void printHelp() {

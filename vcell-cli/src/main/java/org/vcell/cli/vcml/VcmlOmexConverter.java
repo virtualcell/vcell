@@ -110,16 +110,23 @@ public class VcmlOmexConverter {
 	private static Set<String> hasSpatialSet = new LinkedHashSet<>();		// model has at least one spatial application 
 	private static Set<String> hasBothSet = new LinkedHashSet<>();			// model has both spatial and non-spatial applications
 
-	public static void parseArgsAndConvert(String[] args) throws IOException {
+	// TODO: Changes to CLIHandler have made some things here superfluous; this can be trimmed(?).
+	public static void convertFiles() throws IOException {
+		VcmlOmexConverter.cliHandler = CLIHandler.getCLIHandler();
         File input = null;
         try {
-            // TODO: handle if it's not valid PATH
-            input = new File(args[1]);
+            // TODO: handle if it's not valid PATH (NOTE: Changes to CLIHander should make this moot!)
+            input = new File(cliHandler.getInputFilePath());
         } catch (Exception e1) {
             e1.printStackTrace();
         }
 
-        args = parseArgs(args);
+		bForceSBML = cliHandler.shouldForceSbml();
+		bForceVCML = cliHandler.shouldForceVcml();
+		bHasDataOnly = cliHandler.isHasDataOnly();
+		bMakeLogsOnly = cliHandler.isMakeLogsOnly();
+		bNonSpatialOnly = cliHandler.isNonSpacialOnly();
+
     	 
 		try {
 			conFactory = DatabaseService.getInstance().createConnectionFactory();
@@ -167,7 +174,7 @@ public class VcmlOmexConverter {
             if (inputFiles == null) {
                 System.err.println("No VCML files found in the directory `" + input + "`");
             }
-            String outputDir = args[3];			// full directory name, like C:\TEMP\biomodel\omex\native
+            String outputDir = cliHandler.getOutputDirPath();			// full directory name, like C:\TEMP\biomodel\omex\native
             
             CLIStandalone.writeSimErrorList(outputDir, "bForceVCML is " + bForceVCML);
             CLIStandalone.writeSimErrorList(outputDir, "bForceSBML is " + bForceSBML);
@@ -179,11 +186,9 @@ public class VcmlOmexConverter {
             for (String inputFile : inputFiles) {
                 File file = new File(input, inputFile);
                 System.out.println(" ============== start: " + inputFile);
-                args[1] = file.toString();
-                cliHandler = new CLIHandler(args);
                 try {
                     if (inputFile.endsWith(".vcml")) {
-                        boolean isCreated = vcmlToOmexConversion(outputDir);
+                        boolean isCreated = vcmlToOmexConversion(file.toString(), outputDir);
                         if (isCreated) {
                         	System.out.println("Combine archive created for file(s) `" + inputFile + "`");
                         }
@@ -212,8 +217,7 @@ public class VcmlOmexConverter {
             try {
                 assert input != null;
                 if (input.toString().endsWith(".vcml")) {
-                    cliHandler = new CLIHandler(args);
-                    boolean isCreated = vcmlToOmexConversion(null);
+                    boolean isCreated = vcmlToOmexConversion(cliHandler.getInputFilePath(), null);
                     if (isCreated) System.out.println("Combine archive created for `" + input + "`");
                     else System.err.println("Failed converting VCML to OMEX archive for `" + input + "`");
                 } else System.err.println("No input files found in the directory `" + input + "`");
@@ -225,13 +229,13 @@ public class VcmlOmexConverter {
         }
     }
 
-    public static boolean vcmlToOmexConversion(String outputBaseDir) throws XmlParseException, IOException, DataAccessException, SQLException {
+    public static boolean vcmlToOmexConversion(String inputFilePath, String outputBaseDir) throws XmlParseException, IOException, DataAccessException, SQLException {
 
         // Get VCML file path from -i flag
 		int sedmlLevel = 1;
 		int sedmlVersion = 2;
         
-        String inputVcmlFile = cliHandler.getInputFilePath();
+        String inputVcmlFile = inputFilePath;
 
         // Get directory file path from -o flag
         String outputDir = cliHandler.getOutputDirPath();
@@ -527,67 +531,7 @@ public class VcmlOmexConverter {
         }
         if (isDeleted) System.out.println("Removed intermediary files");
     }
-    
-    
-    
 
-
-	private static String[] parseArgs(String[] args) {
-		int position = 0;
-    	for(String s : args) {
-    		if("-vcml".equalsIgnoreCase(s)) {
-    			bForceVCML = true;
-    			args = ArrayUtils.remove(args, position);
-    			break;
-    		}
-    		position++;
-    	}
-    	
-    	position = 0;
-        for(String s : args) {
-        	if("-sbml".equalsIgnoreCase(s)) {
-        		bForceSBML = true;
-        		args = ArrayUtils.remove(args, position);
-        		break;
-        	}
-        	position++;
-        }
-        if(bForceVCML == true && bForceSBML == true) {
-        	throw new RuntimeException("-sbml and -vcml arguments are mutually exclusive");
-        }
-
-    	position = 0;
-    	for(String s : args) {
-    		if("-hasDataOnly".equalsIgnoreCase(s)) {
-    			bHasDataOnly = true;
-    			args = ArrayUtils.remove(args, position);
-    			break;
-    		}
-    		position++;
-    	}
-    	
-    	position = 0;
-    	for(String s : args) {
-    		if("-makeLogsOnly".equalsIgnoreCase(s)) {
-    			bMakeLogsOnly = true;
-    			args = ArrayUtils.remove(args, position);
-    			break;
-    		}
-    		position++;
-    	}
-
-    	position = 0;
-    	for(String s : args) {
-    		if("-nonSpatialOnly".equalsIgnoreCase(s)) {
-    			bNonSpatialOnly = true;
-    			args = ArrayUtils.remove(args, position);
-    			break;
-    		}
-    		position++;
-    	}
-
-    	return args;
-	}
 	
     private static String getMetadata(String vcmlName, BioModel bioModel, File diagram) {
     	String ret = "";

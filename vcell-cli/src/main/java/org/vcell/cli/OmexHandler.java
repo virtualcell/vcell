@@ -2,7 +2,6 @@ package org.vcell.cli;
 
 import cbit.vcell.resource.NativeLib;
 import cbit.vcell.resource.ResourceUtil;
-import org.apache.commons.lang3.ArrayUtils;
 import org.sbml.libcombine.CaContent;
 import org.sbml.libcombine.CaListOfContents;
 import org.sbml.libcombine.CaOmexManifest;
@@ -25,7 +24,7 @@ public class OmexHandler {
     CombineArchive archive;
 
     // Assuming omexPath will always be absolute path
-    public OmexHandler(CLIUtils utils, String omexPath, String outDir) throws IOException {
+    public OmexHandler(String omexPath, String outDir) throws IOException {
         try {
             ResourceUtil.setNativeLibraryDirectory();
             NativeLib.combinej.load();
@@ -49,7 +48,7 @@ public class OmexHandler {
         int indexOfLastSlash = omexPath.lastIndexOf("/");
         this.omexName = omexPath.substring(indexOfLastSlash + 1);
 
-        this.utils = utils;
+        this.utils = CLIUtils.getCLIUtils();
         this.tempPath = utils.getTempDir();
 
         this.archive = new CombineArchive();
@@ -136,7 +135,7 @@ public class OmexHandler {
 
     public String getOutputPathFromSedml(String absoluteSedmlPath) throws Exception {
         String outputPath = "";
-        String sedmlName = absoluteSedmlPath.substring(absoluteSedmlPath.lastIndexOf(File.separator) + 1);
+        //String sedmlName = absoluteSedmlPath.substring(absoluteSedmlPath.lastIndexOf(File.separator) + 1);
         ArrayList<String> sedmlListRelative = this.getSedmlLocationsRelative();
         for (String sedmlFileRelative : sedmlListRelative) {
             boolean check = absoluteSedmlPath.contains(Paths.get(sedmlFileRelative).normalize().toString());
