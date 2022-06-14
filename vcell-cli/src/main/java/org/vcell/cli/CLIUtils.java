@@ -57,9 +57,11 @@ import com.google.common.io.Files;
 
 import java.io.*;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.*;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -146,7 +148,7 @@ public class CLIUtils {
     public void recalculatePaths() {
     	String wd = PropertyLoader.getProperty(PropertyLoader.cliWorkingDir, defaultWorkingDir);
         workingDirectory = Paths.get(wd);
-        utilPath = Paths.get(workingDirectory.toString(), "python", "vcell_cli_utils");
+        utilPath = Paths.get(workingDirectory.toString());
         cliUtilPath = Paths.get(utilPath.toString(), "vcell_cli_utils");
         cliPath = Paths.get(cliUtilPath.toString(), "cli.py");
         statusPath = Paths.get(cliUtilPath.toString(), "status.py");
@@ -675,20 +677,26 @@ public class CLIUtils {
 
     public static ProcessBuilder execShellCommand(String[] args) {
         // Setting the source and destination for subprocess standard I/O to be the same as those of the current Java process
-        return new ProcessBuilder(args).inheritIO();
+        // return new ProcessBuilder(args).inheritIO();
+    	
+    	// the above is stupid because you can't capture and handle the process errors; need to use the default pipe, not inherit
+        return new ProcessBuilder(args);
     }
 
     public static void printProcessErrors(Process process, String outString, String errString) throws InterruptedException, IOException {
         // Process printing code goes here
         process.waitFor();
         if (process.exitValue() != 0) {
+        	// we collect the error
             System.err.print(errString);
             InputStream errorStream = process.getErrorStream();
-            int c;
-            while ((c = errorStream.read()) != -1) {
-                System.err.print((char)c);
-            }
-        } else {
+            String errorMessage = new BufferedReader(new InputStreamReader(errorStream, StandardCharsets.UTF_8))
+            	        .lines()
+            	        .collect(Collectors.joining("\n"));
+            // System.err.print(error);
+            // don't print here, send the error down to caller who is responsible for dealing with it
+            throw new RuntimeException(errString+errorMessage);
+            } else {
             System.out.print(outString);
         }
 
@@ -728,7 +736,7 @@ public class CLIUtils {
 
     public void genSedmlForSed2DAnd3D(String omexFilePath, String outputDir) throws IOException, InterruptedException {
         Process process = execShellCommand(new String[]{python, "-W", "ignore", cliPath.toString(), "genSedml2d3d", omexFilePath, outputDir}).start();
-        printProcessErrors(process, "","Failed generating SED-ML for plot2d and 3D ");
+        printProcessErrors(process, "","Failed generating SED-ML for plot2d and 3D\n");
     }
 
     public void execPlotOutputSedDoc(String omexFilePath, String idNamePlotsMap, String outputDir)  throws IOException, InterruptedException {
