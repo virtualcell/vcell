@@ -685,8 +685,8 @@ public class CLIUtils {
 
     public static void runAndPrintProcessStreams(ProcessBuilder pb, String outString, String errString) throws InterruptedException, IOException {
         // Process printing code goes here
-    	File of = File.createTempFile("temp", "out", currentWorkingDir.toFile());
-    	File ef = File.createTempFile("temp", "err", currentWorkingDir.toFile());
+    	File of = File.createTempFile("temp-", ".out", currentWorkingDir.toFile());
+    	File ef = File.createTempFile("temp-", ".err", currentWorkingDir.toFile());
     	pb.redirectError(ef);
     	pb.redirectOutput(of);
     	Process process = pb.start();
@@ -699,6 +699,8 @@ public class CLIUtils {
         lines = Files.readLines(of, StandardCharsets.UTF_8);
         lines.forEach(line -> sbout.append(line).append("\n"));        
         String os = sbout.toString();
+        of.delete();
+        ef.delete();
         if (process.exitValue() != 0) {
             System.err.println(errString);
             // don't print here, send the error down to caller who is responsible for dealing with it
