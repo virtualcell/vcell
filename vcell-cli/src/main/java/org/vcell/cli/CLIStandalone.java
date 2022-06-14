@@ -419,7 +419,7 @@ public class CLIStandalone {
                 writeDetailedErrorList(outputBaseDir, bioModelBaseName + ",  doc:    " + type + ": " + logDocumentError);
                 writeDetailedResultList(outputBaseDir, bioModelBaseName + "," + sedmlName + "," + logDocumentError);
            	
-                System.err.println(prefix + e.getMessage());
+                System.err.println(prefix);
                 e.printStackTrace(System.err);
                 somethingFailed = true;
                 oneSedmlDocumentFailed = true;

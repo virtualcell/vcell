@@ -675,7 +675,7 @@ public class CLIUtils {
         return yi;
     }
 
-    public static ProcessBuilder execShellCommand(String[] args) {
+    public static ProcessBuilder execCommand(String[] args) {
         // Setting the source and destination for subprocess standard I/O to be the same as those of the current Java process
         // return new ProcessBuilder(args).inheritIO();
     	
@@ -683,21 +683,29 @@ public class CLIUtils {
         return new ProcessBuilder(args);
     }
 
-    public static void printProcessErrors(Process process, String outString, String errString) throws InterruptedException, IOException {
+    public static void runAndPrintProcessStreams(ProcessBuilder pb, String outString, String errString) throws InterruptedException, IOException {
         // Process printing code goes here
+    	File of = File.createTempFile("temp", "out", currentWorkingDir.toFile());
+    	File ef = File.createTempFile("temp", "err", currentWorkingDir.toFile());
+    	pb.redirectError(ef);
+    	pb.redirectOutput(of);
+    	Process process = pb.start();
         process.waitFor();
+        StringBuilder sberr = new StringBuilder();
+        StringBuilder sbout = new StringBuilder();
+        List<String> lines = Files.readLines(ef, StandardCharsets.UTF_8);
+        lines.forEach(line -> sberr.append(line).append("\n"));        
+        String es = sberr.toString();
+        lines = Files.readLines(of, StandardCharsets.UTF_8);
+        lines.forEach(line -> sbout.append(line).append("\n"));        
+        String os = sbout.toString();
         if (process.exitValue() != 0) {
-        	// we collect the error
-            System.err.print(errString);
-            InputStream errorStream = process.getErrorStream();
-            String errorMessage = new BufferedReader(new InputStreamReader(errorStream, StandardCharsets.UTF_8))
-            	        .lines()
-            	        .collect(Collectors.joining("\n"));
-            // System.err.print(error);
+            System.err.println(errString);
             // don't print here, send the error down to caller who is responsible for dealing with it
-            throw new RuntimeException(errString+errorMessage);
+            throw new RuntimeException(es);
             } else {
-            System.out.print(outString);
+            System.out.println(outString);
+            System.out.println(os);
         }
 
     }
@@ -712,7 +720,7 @@ public class CLIUtils {
         String stdOutLog;
 
         try {
-            processBuilder = execShellCommand(new String[]{python, version});
+            processBuilder = execCommand(new String[]{python, version});
             process = processBuilder.start();
             exitCode = process.waitFor();
             if (exitCode == 0) {
@@ -735,13 +743,13 @@ public class CLIUtils {
     // Ignoring biosimulator_utils warnings with -W ignore flag
 
     public void genSedmlForSed2DAnd3D(String omexFilePath, String outputDir) throws IOException, InterruptedException {
-        Process process = execShellCommand(new String[]{python, "-W", "ignore", cliPath.toString(), "genSedml2d3d", omexFilePath, outputDir}).start();
-        printProcessErrors(process, "","Failed generating SED-ML for plot2d and 3D\n");
+        ProcessBuilder pb = execCommand(new String[]{python, "-W", "ignore", cliPath.toString(), "genSedml2d3d", omexFilePath, outputDir});
+        runAndPrintProcessStreams(pb, "","Failed generating SED-ML for plot2d and 3D\n");
     }
 
     public void execPlotOutputSedDoc(String omexFilePath, String idNamePlotsMap, String outputDir)  throws IOException, InterruptedException {
-        Process process = execShellCommand(new String[]{python, "-W", "ignore", cliPath.toString(), "execPlotOutputSedDoc", omexFilePath, idNamePlotsMap, outputDir}).start();
-        printProcessErrors(process, "HDF conversion successful\n","HDF conversion failed\n");
+        ProcessBuilder pb = execCommand(new String[]{python, "-W", "ignore", cliPath.toString(), "execPlotOutputSedDoc", omexFilePath, idNamePlotsMap, outputDir});
+        runAndPrintProcessStreams(pb, "HDF conversion successful\n","HDF conversion failed\n");
     }
 
     public void convertCSVtoHDF(String omexFilePath, String outputDir) throws IOException, InterruptedException {
@@ -754,14 +762,14 @@ public class CLIUtils {
         * */
         // handle exceptions here
         if (checkInstallationError() == 0) {
-            Process process = execShellCommand(new String[]{python, "-W", "ignore", cliPath.toString(), "execSedDoc", omexFilePath, outputDir}).start();
-            printProcessErrors(process, "HDF conversion successful\n","HDF conversion failed\n");
+            ProcessBuilder pb = execCommand(new String[]{python, "-W", "ignore", cliPath.toString(), "execSedDoc", omexFilePath, outputDir});
+            runAndPrintProcessStreams(pb, "HDF conversion successful\n","HDF conversion failed\n");
         }
     }
 
     public void genPlotsPseudoSedml(String sedmlPath, String resultOutDir) throws IOException, InterruptedException {
-        Process process = execShellCommand(new String[]{python, cliPath.toString(), "genPlotsPseudoSedml", sedmlPath, resultOutDir}).start();
-        printProcessErrors(process, "","");
+        ProcessBuilder pb = execCommand(new String[]{python, cliPath.toString(), "genPlotsPseudoSedml", sedmlPath, resultOutDir});
+        runAndPrintProcessStreams(pb, "","");
     }
 
     // Sample STATUS YML
@@ -809,38 +817,38 @@ public class CLIUtils {
 
          status_yml
         */
-        Process process = execShellCommand(new String[]{python, statusPath.toString(), "genStatusYaml", String.valueOf(omexFilePath), outDir}).start();
-        printProcessErrors(process, "","Failed generating status YAML\n");
+        ProcessBuilder pb = execCommand(new String[]{python, statusPath.toString(), "genStatusYaml", String.valueOf(omexFilePath), outDir});
+        runAndPrintProcessStreams(pb, "","Failed generating status YAML\n");
     }
 
     public void updateTaskStatusYml(String sedmlName, String taskName, Status taskStatus, String outDir, String duration, String algorithm) throws IOException, InterruptedException {
     	algorithm = algorithm.toUpperCase(Locale.ROOT);
     	algorithm = algorithm.replace("KISAO:", "KISAO_");
-        Process process = execShellCommand(new String[]{python, statusPath.toString(), "updateTaskStatus", sedmlName, taskName, taskStatus.toString(), outDir, duration, algorithm}).start();
-        printProcessErrors(process, "", "Failed updating task status YAML\n");
+        ProcessBuilder pb = execCommand(new String[]{python, statusPath.toString(), "updateTaskStatus", sedmlName, taskName, taskStatus.toString(), outDir, duration, algorithm});
+        runAndPrintProcessStreams(pb, "", "Failed updating task status YAML\n");
     }
     public void updateSedmlDocStatusYml(String sedmlName, Status sedmlDocStatus, String outDir) throws IOException, InterruptedException {
-        Process process = execShellCommand(new String[]{python, statusPath.toString(), "updateSedmlDocStatus", sedmlName, sedmlDocStatus.toString(), outDir}).start();
-        printProcessErrors(process, "", "Failed updating sedml document status YAML\n");
+        ProcessBuilder pb = execCommand(new String[]{python, statusPath.toString(), "updateSedmlDocStatus", sedmlName, sedmlDocStatus.toString(), outDir});
+        runAndPrintProcessStreams(pb, "", "Failed updating sedml document status YAML\n");
     }
     public void updateOmexStatusYml(Status simStatus, String outDir, String duration) throws IOException, InterruptedException {
-        Process process = execShellCommand(new String[]{python, statusPath.toString(), "updateOmexStatus", simStatus.toString(), outDir, duration}).start();
-        printProcessErrors(process, "","");
+        ProcessBuilder pb = execCommand(new String[]{python, statusPath.toString(), "updateOmexStatus", simStatus.toString(), outDir, duration});
+        runAndPrintProcessStreams(pb, "","");
     }
 
     public void updateDatasetStatusYml(String sedmlName, String dataSet, String var, Status simStatus, String outDir) throws IOException, InterruptedException {
-        Process process = execShellCommand(new String[]{python, statusPath.toString(), "updateDataSetStatus", sedmlName, dataSet, var, simStatus.toString(), outDir}).start();
-        printProcessErrors(process, "","");
+        ProcessBuilder pb = execCommand(new String[]{python, statusPath.toString(), "updateDataSetStatus", sedmlName, dataSet, var, simStatus.toString(), outDir});
+        runAndPrintProcessStreams(pb, "","");
     }
 
     public void transposeVcmlCsv(String csvFilePath) throws IOException, InterruptedException {
-        Process process = execShellCommand(new String[]{python, cliPath.toString(), "transposeVcmlCsv", csvFilePath}).start();
-        printProcessErrors(process, "","");
+        ProcessBuilder pb = execCommand(new String[]{python, cliPath.toString(), "transposeVcmlCsv", csvFilePath});
+        runAndPrintProcessStreams(pb, "","");
     }
 
     public void genPlots(String sedmlPath, String resultOutDir) throws IOException, InterruptedException {
-        Process process = execShellCommand(new String[]{python, cliPath.toString(), "genPlotPdfs", sedmlPath, resultOutDir}).start();
-        printProcessErrors(process, "","");
+        ProcessBuilder pb = execCommand(new String[]{python, cliPath.toString(), "genPlotPdfs", sedmlPath, resultOutDir});
+        runAndPrintProcessStreams(pb, "","");
     }
 
     // sedmlAbsolutePath - full path to location of the actual sedml file (document) used as input
@@ -849,14 +857,14 @@ public class CLIUtils {
     // entityType        - string describing the entity type ex "task" for a task, or "sedml" for sedml document
     // message           - useful info about the execution of the entity (ex: task), could be human readable or concatenation of stdout and stderr
     public void setOutputMessage(String sedmlAbsolutePath, String entityId, String outDir, String entityType, String message) throws IOException, InterruptedException {
-        Process process = execShellCommand(new String[]{python, statusPath.toString(), "setOutputMessage", sedmlAbsolutePath, entityId, outDir, entityType, message}).start();
-        printProcessErrors(process, "","Failed updating task status YAML\n");
+        ProcessBuilder pb = execCommand(new String[]{python, statusPath.toString(), "setOutputMessage", sedmlAbsolutePath, entityId, outDir, entityType, message});
+        runAndPrintProcessStreams(pb, "","Failed updating task status YAML\n");
     }
     // type - exception class, ex RuntimeException
     // message  - exception message
     public void setExceptionMessage(String sedmlAbsolutePath, String entityId, String outDir, String entityType, String type , String message) throws IOException, InterruptedException {
-        Process process = execShellCommand(new String[]{python, statusPath.toString(), "setExceptionMessage", sedmlAbsolutePath, entityId, outDir, entityType, type, message}).start();
-        printProcessErrors(process, "","Failed updating task status YAML\n");
+        ProcessBuilder pb = execCommand(new String[]{python, statusPath.toString(), "setExceptionMessage", sedmlAbsolutePath, entityId, outDir, entityType, type, message});
+        runAndPrintProcessStreams(pb, "","Failed updating task status YAML\n");
     }
 
     private static ArrayList<File> listFilesForFolder(File dirPath, String extensionType) {
