@@ -199,6 +199,14 @@ public class CLIStandalone {
     	boolean isDirectory = Files.isDirectory(path);
     	return isDirectory;
     }
+    // publications with multiple models
+    public static void writeMultiModelPublications(String outputBaseDir, String s) throws IOException {
+    	if(isBatchExecution(outputBaseDir)) {
+    		String dest = outputBaseDir + File.separator + "multiModelPublications.txt";
+    		Files.write(Paths.get(dest), (s + "\n").getBytes(), 
+    			StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+    	}
+   	}
     // omex files that were fully successful
     public static void writeFullSuccessList(String outputBaseDir, String s) throws IOException {
     	if(isBatchExecution(outputBaseDir)) {

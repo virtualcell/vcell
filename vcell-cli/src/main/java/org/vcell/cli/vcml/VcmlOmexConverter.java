@@ -132,6 +132,7 @@ public class VcmlOmexConverter {
 		}
 		
 		VCInfoContainer vcic;
+		Map<String, List<String>> publicationToModelMap = new LinkedHashMap<> ();
 		try {
 			vcic = adminDbTopLevel.getPublicOracleVCInfoContainer(false);
 			if(vcic != null) {
@@ -139,13 +140,30 @@ public class VcmlOmexConverter {
 				BioModelInfo[] bioModelInfos = vcic.getBioModelInfos();
 //				GeometryInfo[] geometryInfos = vcic.getGeometryInfos();
 //				MathModelInfo[] mathModelInfos = vcic.getMathModelInfos();
-//				int count = 0;
+				int count = 0;		// number of biomodels with publication info
 				for(BioModelInfo bi : bioModelInfos) {
-//					if(bi.getPublicationInfos() != null && bi.getPublicationInfos().length > 0) {
-//						// let's see what has PublicationInfo
-//						System.out.println(bi.getVersion().getName());
-//						count++;
-//					}
+					PublicationInfo[] pis = bi.getPublicationInfos();
+					if(pis != null && pis.length > 0) {
+						// let's see what has PublicationInfo
+						String biomodelId = "biomodel_" + bi.getVersion().getVersionKey();
+//						String biomodelName = bi.getVersion().getName();
+						System.out.println(biomodelId);
+						count++;
+						for(PublicationInfo pi : pis) {
+							if(pi.getTitle().contains("Computational Modeling of RNase")) {
+								System.out.println(pi.getTitle());
+							}
+							if(publicationToModelMap.containsKey(pi.getTitle())) {
+								List<String> biomodelIds = publicationToModelMap.get(pi.getTitle());
+								biomodelIds.add(biomodelId);
+								publicationToModelMap.put(pi.getTitle(), biomodelIds);
+							} else {
+								List<String> biomodelIds = new ArrayList<String> ();
+								biomodelIds.add(biomodelId);
+								publicationToModelMap.put(pi.getTitle(), biomodelIds);
+							}
+						}
+					}
 					
 					// build the biomodel id / biomodel info map
 					String biomodelId = "biomodel_" + bi.getVersion().getVersionKey();
@@ -154,7 +172,21 @@ public class VcmlOmexConverter {
 					bioModelInfoMap.put(biomodelId, bi);
 					bioModelInfoMap2.put(biomodelName, bi);
 				}
-//				System.out.println("User: " + user.getName() + "   count published biomodels: " + count);
+				System.out.println("User: " + user.getName() + "   count published biomodels: " + count);
+				
+				for( Map.Entry<String,List<String>> entry : publicationToModelMap.entrySet()) {
+					String pubTitle = entry.getKey();
+					List<String> models = entry.getValue();
+					if(models.size() > 1) {
+						String row = "";
+						row += pubTitle;
+						for(String model : models) {
+							row += (", " + model);
+						}
+						CLIStandalone.writeMultiModelPublications(args[3], row);
+						System.out.println(row);
+					}
+				}
 			}
 		} catch (SQLException | DataAccessException e1) {
 			System.err.println("\n\n\n=====>>>>EXPORT FAILED: failed to retrieve metadata");
