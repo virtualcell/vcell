@@ -1533,10 +1533,11 @@ public static ASTNode getFormulaFromExpression(Expression expression, MathType d
 	// switch to libSBML for non-boolean
 	if (!desiredType.equals(MathType.BOOLEAN)) {
 		try {
-			ASTNode math = ASTNode.parseFormula(expression.infix());
+			String expr = expression.infix();
+			ASTNode math = ASTNode.parseFormula(expr);
 			return math;
 		} catch (ParseException e) {
-			// TODO Auto-generated catch block
+			// (konm * (h ^  - 1.0) / koffm)
 			e.printStackTrace();
 			throw new RuntimeException(e.toString());
 		}
