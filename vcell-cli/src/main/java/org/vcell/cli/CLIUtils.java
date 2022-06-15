@@ -1000,7 +1000,7 @@ public class CLIUtils {
         }
 
         // Got the results we need. Now lets clean the results string up before returning it
-        results = results.substring(0, results.length() - importantPrefix.length()).strip();
+        results = CLIUtils.stripString(results.substring(0, results.length() - importantPrefix.length()));
 
         return results == "" ? null : results;
     }
@@ -1008,7 +1008,7 @@ public class CLIUtils {
     private String processPythonArguments(String... arguments){
         String argList = "";
         for (String arg : arguments){
-            argList += arg.strip() + ",";
+            argList += CLIUtils.stripString(arg) + ",";
         }
         return argList.substring(0, argList.length() - 1);
     }
@@ -1017,7 +1017,7 @@ public class CLIUtils {
         boolean hasPassed;
         String ERROR_PHRASE = "Traceback";
         String firstNineChars = returnedString.substring(0, 9); 
-        returnedString = returnedString.strip();
+        returnedString = CLIUtils.stripString(returnedString);
         if (firstNineChars.equals(ERROR_PHRASE)){ // Report an error:
             System.err.printf("Python error caught: <%s>\n", returnedString);
             hasPassed = false;
@@ -1032,7 +1032,7 @@ public class CLIUtils {
         boolean hasPassed;
         String ERROR_PHRASE = "Traceback";
         String firstNineChars = returnedString.substring(0, 9); 
-        returnedString = returnedString.strip();
+        returnedString = CLIUtils.stripString(returnedString);
         if (firstNineChars.equals(ERROR_PHRASE)){ // Report an error:
             System.err.printf("Python error caught: <%s>\nResult: %s\n", returnedString, errString);
             hasPassed = false;
@@ -1045,7 +1045,7 @@ public class CLIUtils {
 
     private void sendNewCommand(String functionName, String... arguments) throws IOException {
         // we can easily send the command, but we need to format it first.
-        String command = String.format("%s(%s)\n", functionName.strip(), this.processPythonArguments(arguments));
+        String command = String.format("%s(%s)\n", CLIUtils.stripString(functionName), this.processPythonArguments(arguments));
         CLIUtils.pythonOSW.write(command);
         CLIUtils.pythonOSW.flush();
     }
@@ -1087,6 +1087,10 @@ public class CLIUtils {
         }
         
         return exitCode;
+    }
+
+    public static String stripString(String str){
+        return str.replaceAll("^[ \t]+|[ \t]+$", ""); // replace whitespace at the front and back with nothing
     }
 
 }
