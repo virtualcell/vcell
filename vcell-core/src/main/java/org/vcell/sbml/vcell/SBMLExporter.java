@@ -13,7 +13,9 @@ package org.vcell.sbml.vcell;
 import java.beans.PropertyVetoException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import javax.xml.stream.XMLStreamException;
 
@@ -429,9 +431,25 @@ protected void addCompartments() throws XMLStreamException, SbmlException {
  * @throws SbmlException 
  */
 protected void addParameters() throws ExpressionException, SbmlException {
-	Model vcModel = getSelectedSimContext().getModel();
+	
+	// check if any event action modifies any parameter
+	Set<ModelParameter> modelParameterSet = new HashSet<> ();
+	BioEvent[] vcBioevents = getSelectedSimContext().getBioEvents();
+	if (vcBioevents != null) {
+		for (BioEvent vcEvent : vcBioevents) {
+			for(EventAssignment ea : vcEvent.getEventAssignments()) {
+				SymbolTableEntry ste = ea.getTarget();
+				if(ste instanceof ModelParameter) {
+					ModelParameter mp = (ModelParameter)ste;
+					modelParameterSet.add(mp);
+				}
+			}
+		}
+	}
+	
 	// add VCell global parameters to the SBML listofParameters
-	ModelParameter[] vcGlobalParams = vcModel.getModelParameters();  
+	Model vcModel = getSelectedSimContext().getModel();
+	ModelParameter[] vcGlobalParams = vcModel.getModelParameters();
 	if (vcGlobalParams != null) {
 	for (ModelParameter vcParam : vcGlobalParams) {
 		org.sbml.jsbml.Parameter sbmlParam = sbmlModel.createParameter();
@@ -449,6 +467,8 @@ protected void addParameters() throws ExpressionException, SbmlException {
 			sbmlParam.setValue(paramExpr.evaluateConstant());
 			// the expression for modelParam might be numeric, but modelParam could have a rate rule, if so, set constant attribute to 'false'
 			if (getSelectedSimContext().getRateRule(vcParam) != null) {
+				bParamIsNumeric = false;
+			} else if(modelParameterSet.contains(vcParam)) {
 				bParamIsNumeric = false;
 			}
 		} else {
