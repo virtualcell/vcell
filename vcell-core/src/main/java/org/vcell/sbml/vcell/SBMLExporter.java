@@ -841,7 +841,9 @@ protected void addReactions() throws SbmlException, XMLStreamException {
 		
 		if (bSpatial) {
 			// set compartment for reaction if spatial
-			sbmlReaction.setCompartment(vcReactionStep.getStructure().getName());
+			String structure = vcReactionStep.getStructure().getName();
+			structure = TokenMangler.mangleToSName(structure);
+			sbmlReaction.setCompartment(structure);
 			//CORE  HAS ALT MATH true
 	
 			// set the "isLocal" attribute = true (in 'spatial' namespace) for each species
