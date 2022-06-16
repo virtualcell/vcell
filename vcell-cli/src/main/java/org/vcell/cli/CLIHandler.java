@@ -231,7 +231,7 @@ public class CLIHandler {
 
         Option timeOut = new Option (
             "t", 
-            "timeOut", 
+            "timeout", 
             true, 
             "Specifices a timeout duration."
         );

@@ -1007,10 +1007,12 @@ public class CLIUtils {
 
     private String processPythonArguments(String... arguments){
         String argList = "";
+        int adjArgLength;
         for (String arg : arguments){
             argList += CLIUtils.stripString(arg) + ",";
         }
-        return argList.substring(0, argList.length() - 1);
+        adjArgLength = argList.length() == 0 ? 0 : argList.length() - 1;
+        return argList.substring(0, adjArgLength);
     }
 
     private boolean printPythonErrors(String returnedString){
