@@ -138,8 +138,8 @@ public class CLIStandalone {
         int nModels, nSimulations, nSedml, nTasks, nOutputs, nReportsCount = 0, nPlots2DCount = 0, nPlots3DCount = 0;
         CLIUtils utils = CLIUtils.getCLIUtils();
         CLIHandler cliHandler = CLIHandler.getCLIHandler();
-        String inputFileName = inputFile.getName(), outputDir = cliHandler.getOutputDirPath() /*TODO: this is wrong, we want a sub directory with the name of the file */, 
-            bioModelBaseName = FileUtils.getBaseName(inputFileName), outputBaseDir = cliHandler.getOutputDirPath(); // bioModelBaseName = input file without the path 
+        String inputFileName = inputFile.getAbsolutePath(), bioModelBaseName = FileUtils.getBaseName(inputFile.getName()), 
+            outputDir = Paths.get(cliHandler.getOutputDirPath(), bioModelBaseName).toString(), outputBaseDir = cliHandler.getOutputDirPath(); // bioModelBaseName = input file without the path 
         OmexHandler omexHandler = null;
         List<String> sedmlLocations;
         List<Output> outputs;

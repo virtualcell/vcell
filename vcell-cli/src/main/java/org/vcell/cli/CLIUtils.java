@@ -157,7 +157,8 @@ public class CLIUtils {
     public void recalculatePaths() {
     	String wd = PropertyLoader.getProperty(PropertyLoader.cliWorkingDir, defaultWorkingDir);
         workingDirectory = Paths.get(wd);
-        utilPath = Paths.get(workingDirectory.toString(), "python", "vcell_cli_utils");
+        //utilPath = Paths.get(workingDirectory.toString(), "python", "vcell_cli_utils");
+        utilPath = workingDirectory;
         cliUtilPath = Paths.get(utilPath.toString(), "vcell_cli_utils");
         cliPath = Paths.get(cliUtilPath.toString(), "cli.py");
         statusPath = Paths.get(cliUtilPath.toString(), "status.py");
