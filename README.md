@@ -73,7 +73,7 @@ Requirements:  Git, Maven, Eclipse IDE for Java Developers and Java JDK 1.8 or l
                ```
 
 
-### Building and Running VCell Client or Server
+### Building and Running VCell Server
 1. Service has 1 image and configuration, manages 1 or more containers, container is a running image  
 2. All services defined in ./swarm/docker-compose.yml (collection of services,volumes, dependencies,...)  
 
