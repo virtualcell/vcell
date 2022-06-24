@@ -157,7 +157,7 @@ def update_sedml_doc_status(sedml: str, status: str, out_dir: str) -> None:
     dump_yaml_dict(status_yaml_path, yaml_dict=yaml_dict, out_dir=out_dir)
 
 
-def update_omex_status(status: str, out_dir: str, duration: str) -> None:
+def update_omex_status(status: str, out_dir: str, duration: int) -> None:
 
     yaml_dict = get_yaml_as_str(os.path.join(out_dir, "log.yml"))
     yaml_dict['status'] = status

@@ -37,7 +37,7 @@ def updateSedmlDocStatus(sedml: str, statusVar: str, outDir: str) -> None:
     status.update_sedml_doc_status(sedml, statusVar, outDir)
 
 def updateOmexStatus(statusVar: str, outDir: str, duration: str) -> None:
-    status.update_omex_status(statusVar, outDir, duration)
+    status.update_omex_status(statusVar, outDir, int(duration))
 
 def updateDataSetStatus(sedml: str, report: str, dataset: str, statusVar: str, outDir: str) -> None:
     status.update_dataset_status(sedml, report, dataset, statusVar, outDir)
