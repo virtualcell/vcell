@@ -1,4 +1,10 @@
-from . import cli, status
+__package__ = "vcell_cli_utils"
+import os
+from deprecated import deprecated
+if __name__ == "__main__":
+    from vcell_cli_utils import cli, status
+else:
+    from . import cli, status
 
 # Since file is a wrapper access point for a java program, functions will use *java* name-style conventions (camel case)
 
