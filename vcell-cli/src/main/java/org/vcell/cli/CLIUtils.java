@@ -702,7 +702,7 @@ public class CLIUtils {
         return yi;
     }
 
-    public static ProcessBuilder execCommand(String[] args) {
+    public static ProcessBuilder execShellCommand(String[] args) {
         // Setting the source and destination for subprocess standard I/O to be the same as those of the current Java process
         // return new ProcessBuilder(args).inheritIO();
     	
@@ -748,7 +748,7 @@ public class CLIUtils {
         String stdOutLog;
 
         try {
-            processBuilder = execCommand(new String[]{python, version});
+            processBuilder = execShellCommand(new String[]{python, version});
             process = processBuilder.start();
             exitCode = process.waitFor();
             if (exitCode == 0) {
@@ -771,17 +771,11 @@ public class CLIUtils {
     // Ignoring biosimulator_utils warnings with -W ignore flag
 
     public void genSedmlForSed2DAnd3D(String omexFilePath, String outputDir) throws PythonStreamException {
-        //Process process = execShellCommand(new String[]{python, "-W", "ignore", cliPath.toString(), "genSedml2d3d", omexFilePath, outputDir}).start();
-        //printProcessErrors(process, "","Failed generating SED-ML for plot2d and 3D ");
-
         String results = singleInstance.callPython("genSedml2d3d", omexFilePath, outputDir);
         singleInstance.printPythonErrors(results, "", "Failed generating SED-ML for plot2d and 3D ");
     }
 
     public void execPlotOutputSedDoc(String omexFilePath, String idNamePlotsMap, String outputDir)  throws PythonStreamException {
-        //Process process = execShellCommand(new String[]{python, "-W", "ignore", cliPath.toString(), "execPlotOutputSedDoc", omexFilePath, idNamePlotsMap, outputDir}).start();
-        //printProcessErrors(process, "HDF conversion successful\n","HDF conversion failed\n");
-
         String results = singleInstance.callPython("execPlotOutputSedDoc", omexFilePath, idNamePlotsMap, outputDir);
         singleInstance.printPythonErrors(results, "HDF conversion successful\n","HDF conversion failed\n");
     }
@@ -796,9 +790,6 @@ public class CLIUtils {
         * */
         // handle exceptions here
         if (checkPythonInstallationError() == 0) {
-            //Process process = execShellCommand(new String[]{python, "-W", "ignore", cliPath.toString(), "execSedDoc", omexFilePath, outputDir}).start();
-            //printProcessErrors(process, "HDF conversion successful\n","HDF conversion failed\n");
-
             String results = singleInstance.callPython("execSedDoc", omexFilePath, outputDir);
             singleInstance.printPythonErrors(results, "HDF conversion successful\n","HDF conversion failed\n");
         }
@@ -806,8 +797,8 @@ public class CLIUtils {
 
     // Due to what appears to be a leaky python function call, this method will continue using execShellCommand until the unerlying python is fixed
     public void genPlotsPseudoSedml(String sedmlPath, String resultOutDir) throws PythonStreamException, InterruptedException, IOException {
-        Process process = execShellCommand(new String[]{python, cliPath.toString(), "genPlotsPseudoSedml", sedmlPath, resultOutDir}).start();
-        printProcessErrors(process, "","");
+        ProcessBuilder pb = execShellCommand(new String[]{python, cliPath.toString(), "genPlotsPseudoSedml", sedmlPath, resultOutDir});
+        runAndPrintProcessStreams(pb, "","");
 
         //String results = singleInstance.callPython("genPlotsPseudoSedml", sedmlPath, resultOutDir);
         //singleInstance.printPythonErrors(results);
@@ -859,9 +850,6 @@ public class CLIUtils {
 
          status_yml
         */
-        
-        //Process process = execShellCommand(new String[]{python, statusPath.toString(), "genStatusYaml", String.valueOf(omexFilePath), outDir}).start();
-        //printProcessErrors(process, "","Failed generating status YAML\n");
 
         String results = singleInstance.callPython("genStatusYaml", String.valueOf(omexFilePath), outDir);
         singleInstance.printPythonErrors(results, "", "Failed generating status YAML\n");
@@ -870,31 +858,20 @@ public class CLIUtils {
     public void updateTaskStatusYml(String sedmlName, String taskName, Status taskStatus, String outDir, String duration, String algorithm) throws PythonStreamException {
     	algorithm = algorithm.toUpperCase(Locale.ROOT);
     	algorithm = algorithm.replace("KISAO:", "KISAO_");
-        //Process process = execShellCommand(new String[]{python, statusPath.toString(), "updateTaskStatus", sedmlName, taskName, taskStatus.toString(), outDir, duration, algorithm}).start();
-        //printProcessErrors(process, "", "Failed updating task status YAML\n");
 
         String results = singleInstance.callPython("updateTaskStatus", sedmlName, taskName, taskStatus.toString(), outDir, duration, algorithm);
         singleInstance.printPythonErrors(results, "", "Failed updating task status YAML\n");
     }
     public void updateSedmlDocStatusYml(String sedmlName, Status sedmlDocStatus, String outDir) throws PythonStreamException, InterruptedException, IOException {
-        //Process process = execShellCommand(new String[]{python, statusPath.toString(), "updateSedmlDocStatus", sedmlName, sedmlDocStatus.toString(), outDir}).start();
-        //printProcessErrors(process, "", "Failed updating sedml document status YAML\n");
-
         String results = singleInstance.callPython("updateSedmlDocStatus", sedmlName, sedmlDocStatus.toString(), outDir);
         singleInstance.printPythonErrors(results, "", "Failed updating sedml document status YAML\n");
     }
     public void updateOmexStatusYml(Status simStatus, String outDir, String duration) throws PythonStreamException {
-        //Process process = execShellCommand(new String[]{python, statusPath.toString(), "updateOmexStatus", simStatus.toString(), outDir, duration}).start();
-        //printProcessErrors(process, "","");
-
         String results = singleInstance.callPython("updateOmexStatus", simStatus.toString(), outDir, duration);
         singleInstance.printPythonErrors(results);
     }
 
     public void updateDatasetStatusYml(String sedmlName, String dataSet, String var, Status simStatus, String outDir) throws PythonStreamException {
-        //Process process = execShellCommand(new String[]{python, statusPath.toString(), "updateDataSetStatus", sedmlName, dataSet, var, simStatus.toString(), outDir}).start();
-        //printProcessErrors(process, "","");
-
         String results = singleInstance.callPython("updateDataSetStatus", sedmlName, dataSet, var, simStatus.toString(), outDir);
         singleInstance.printPythonErrors(results);
     }
@@ -908,17 +885,11 @@ public class CLIUtils {
     }
 
     public void transposeVcmlCsv(String csvFilePath) throws PythonStreamException {
-        //Process process = execShellCommand(new String[]{python, cliPath.toString(), "transposeVcmlCsv", csvFilePath}).start();
-        //printProcessErrors(process, "","");
-
         String results = singleInstance.callPython("transposeVcmlCsv", csvFilePath);
         singleInstance.printPythonErrors(results);
     }
 
     public void genPlots(String sedmlPath, String resultOutDir) throws PythonStreamException {
-        //Process process = execShellCommand(new String[]{python, cliPath.toString(), "genPlotPdfs", sedmlPath, resultOutDir}).start();
-        //printProcessErrors(process, "","");
-
         String results = singleInstance.callPython("genPlotPdfs", sedmlPath, resultOutDir);
         singleInstance.printPythonErrors(results);
     }
@@ -929,18 +900,12 @@ public class CLIUtils {
     // entityType        - string describing the entity type ex "task" for a task, or "sedml" for sedml document
     // message           - useful info about the execution of the entity (ex: task), could be human readable or concatenation of stdout and stderr
     public void setOutputMessage(String sedmlAbsolutePath, String entityId, String outDir, String entityType, String message) throws PythonStreamException, InterruptedException, IOException {
-        //Process process = execShellCommand(new String[]{python, statusPath.toString(), "setOutputMessage", sedmlAbsolutePath, entityId, outDir, entityType, message}).start();
-        //printProcessErrors(process, "","Failed updating task status YAML\n");
-
         String results = singleInstance.callPython("setOutputMessage", sedmlAbsolutePath, entityId, outDir, entityType, message);
         singleInstance.printPythonErrors(results, "", "Failed updating task status YAML\n");
     }
     // type - exception class, ex RuntimeException
     // message  - exception message
     public void setExceptionMessage(String sedmlAbsolutePath, String entityId, String outDir, String entityType, String type , String message) throws PythonStreamException {
-        //Process process = execShellCommand(new String[]{python, statusPath.toString(), "setExceptionMessage", sedmlAbsolutePath, entityId, outDir, entityType, type, message}).start();
-        //printProcessErrors(process, "","Failed updating task status YAML\n");
-
         String results = this.callPython("setExceptionMessage", sedmlAbsolutePath, entityId, outDir, entityType, type, message);
         singleInstance.printPythonErrors(results, "", "Failed updating task status YAML\n");
     }
@@ -1004,6 +969,10 @@ public class CLIUtils {
         System.out.println("TempPath Created: " + tempPath);
         return tempPath;
     }
+
+    // Process builder commands
+    
+
     
     // Python Process Accessory Methods
     /**

@@ -190,7 +190,7 @@ public class VcmlOmexConverter {
 						for(String model : models) {
 							row += (", " + model);
 						}
-						CLIStandalone.writeMultiModelPublications(args[3], row);
+						CLIStandalone.writeMultiModelPublications(cliHandler.getOutputDirPath(), row);
 						System.out.println(row);
 					}
 				}
