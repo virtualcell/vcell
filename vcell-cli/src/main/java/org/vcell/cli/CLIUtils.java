@@ -57,9 +57,11 @@ import com.google.common.io.Files;
 
 import java.io.*;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.*;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -700,23 +702,39 @@ public class CLIUtils {
         return yi;
     }
 
-    public static ProcessBuilder execShellCommand(String[] args) {
+    public static ProcessBuilder execCommand(String[] args) {
         // Setting the source and destination for subprocess standard I/O to be the same as those of the current Java process
-        return new ProcessBuilder(args).inheritIO();
+        // return new ProcessBuilder(args).inheritIO();
+    	
+    	// the above is stupid because you can't capture and handle the process errors; need to use the default pipe, not inherit
+        return new ProcessBuilder(args);
     }
 
-    public static void printProcessErrors(Process process, String outString, String errString) throws InterruptedException, IOException {
+    public static void runAndPrintProcessStreams(ProcessBuilder pb, String outString, String errString) throws InterruptedException, IOException {
         // Process printing code goes here
+    	File of = File.createTempFile("temp-", ".out", currentWorkingDir.toFile());
+    	File ef = File.createTempFile("temp-", ".err", currentWorkingDir.toFile());
+    	pb.redirectError(ef);
+    	pb.redirectOutput(of);
+    	Process process = pb.start();
         process.waitFor();
+        StringBuilder sberr = new StringBuilder();
+        StringBuilder sbout = new StringBuilder();
+        List<String> lines = Files.readLines(ef, StandardCharsets.UTF_8);
+        lines.forEach(line -> sberr.append(line).append("\n"));        
+        String es = sberr.toString();
+        lines = Files.readLines(of, StandardCharsets.UTF_8);
+        lines.forEach(line -> sbout.append(line).append("\n"));        
+        String os = sbout.toString();
+        of.delete();
+        ef.delete();
         if (process.exitValue() != 0) {
-            System.err.print(errString);
-            InputStream errorStream = process.getErrorStream();
-            int c;
-            while ((c = errorStream.read()) != -1) {
-                System.err.print((char)c);
-            }
-        } else {
-            System.out.print(outString);
+            System.err.println(errString);
+            // don't print here, send the error down to caller who is responsible for dealing with it
+            throw new RuntimeException(es);
+            } else {
+            System.out.println(outString);
+            System.out.println(os);
         }
     }
 
@@ -730,7 +748,7 @@ public class CLIUtils {
         String stdOutLog;
 
         try {
-            processBuilder = execShellCommand(new String[]{python, version});
+            processBuilder = execCommand(new String[]{python, version});
             process = processBuilder.start();
             exitCode = process.waitFor();
             if (exitCode == 0) {
@@ -841,6 +859,7 @@ public class CLIUtils {
 
          status_yml
         */
+        
         //Process process = execShellCommand(new String[]{python, statusPath.toString(), "genStatusYaml", String.valueOf(omexFilePath), outDir}).start();
         //printProcessErrors(process, "","Failed generating status YAML\n");
 

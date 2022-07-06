@@ -7,6 +7,8 @@ import cbit.vcell.field.FieldFunctionArguments;
 import cbit.vcell.field.FieldUtilities;
 import cbit.vcell.field.db.FieldDataDBOperationDriver;
 import cbit.vcell.geometry.GeometryInfo;
+import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.Variable;
 import cbit.vcell.modeldb.AdminDBTopLevel;
 import cbit.vcell.parser.Expression;
@@ -137,6 +139,7 @@ public class VcmlOmexConverter {
 		}
 		
 		VCInfoContainer vcic;
+		Map<String, List<String>> publicationToModelMap = new LinkedHashMap<> ();
 		try {
 			vcic = adminDbTopLevel.getPublicOracleVCInfoContainer(false);
 			if(vcic != null) {
@@ -144,13 +147,30 @@ public class VcmlOmexConverter {
 				BioModelInfo[] bioModelInfos = vcic.getBioModelInfos();
 //				GeometryInfo[] geometryInfos = vcic.getGeometryInfos();
 //				MathModelInfo[] mathModelInfos = vcic.getMathModelInfos();
-//				int count = 0;
+				int count = 0;		// number of biomodels with publication info
 				for(BioModelInfo bi : bioModelInfos) {
-//					if(bi.getPublicationInfos() != null && bi.getPublicationInfos().length > 0) {
-//						// let's see what has PublicationInfo
-//						System.out.println(bi.getVersion().getName());
-//						count++;
-//					}
+					PublicationInfo[] pis = bi.getPublicationInfos();
+					if(pis != null && pis.length > 0) {
+						// let's see what has PublicationInfo
+						String biomodelId = "biomodel_" + bi.getVersion().getVersionKey();
+//						String biomodelName = bi.getVersion().getName();
+						System.out.println(biomodelId);
+						count++;
+						for(PublicationInfo pi : pis) {
+							if(pi.getTitle().contains("Computational Modeling of RNase")) {
+								System.out.println(pi.getTitle());
+							}
+							if(publicationToModelMap.containsKey(pi.getTitle())) {
+								List<String> biomodelIds = publicationToModelMap.get(pi.getTitle());
+								biomodelIds.add(biomodelId);
+								publicationToModelMap.put(pi.getTitle(), biomodelIds);
+							} else {
+								List<String> biomodelIds = new ArrayList<String> ();
+								biomodelIds.add(biomodelId);
+								publicationToModelMap.put(pi.getTitle(), biomodelIds);
+							}
+						}
+					}
 					
 					// build the biomodel id / biomodel info map
 					String biomodelId = "biomodel_" + bi.getVersion().getVersionKey();
@@ -159,7 +179,21 @@ public class VcmlOmexConverter {
 					bioModelInfoMap.put(biomodelId, bi);
 					bioModelInfoMap2.put(biomodelName, bi);
 				}
-//				System.out.println("User: " + user.getName() + "   count published biomodels: " + count);
+				System.out.println("User: " + user.getName() + "   count published biomodels: " + count);
+				
+				for( Map.Entry<String,List<String>> entry : publicationToModelMap.entrySet()) {
+					String pubTitle = entry.getKey();
+					List<String> models = entry.getValue();
+					if(models.size() > 1) {
+						String row = "";
+						row += pubTitle;
+						for(String model : models) {
+							row += (", " + model);
+						}
+						CLIStandalone.writeMultiModelPublications(args[3], row);
+						System.out.println(row);
+					}
+				}
 			}
 		} catch (SQLException | DataAccessException e1) {
 			System.err.println("\n\n\n=====>>>>EXPORT FAILED: failed to retrieve metadata");
@@ -247,13 +281,49 @@ public class VcmlOmexConverter {
         File vcmlFilePath = new File(inputVcmlFile);
         // Create biomodel
         BioModel bioModel = XmlHelper.XMLToBioModel(new XMLSource(vcmlFilePath));
-        bioModel.refreshDependencies();
         
         int numSimulations = bioModel.getNumSimulations();
         if(outputBaseDir != null && numSimulations == 0) {
         	CLIStandalone.writeSimErrorList(outputBaseDir, vcmlName + " has no simulations.");
         	return false;
         }
+        bioModel.refreshDependencies();
+
+        // ========================================================
+        try {
+		SimulationContext scArray[] = bioModel.getSimulationContexts();
+		if (scArray!=null) {
+			MathDescription[] mathDescArray = new MathDescription[scArray.length];
+			for (int i = 0; i < scArray.length; i++){
+				//check if all structure sizes are specified
+				scArray[i].checkValidity();
+				//
+				// compute Geometric Regions if necessary
+				//
+				cbit.vcell.geometry.surface.GeometrySurfaceDescription geoSurfaceDescription = scArray[i].getGeometry().getGeometrySurfaceDescription();
+				if (geoSurfaceDescription!=null && geoSurfaceDescription.getGeometricRegions()==null){
+					cbit.vcell.geometry.surface.GeometrySurfaceUtils.updateGeometricRegions(geoSurfaceDescription);
+				}
+				if (scArray[i].getModel() != bioModel.getModel()){
+					throw new Exception("The BioModel's physiology doesn't match that for Application '"+scArray[i].getName()+"'");
+				}
+				//
+				// create new MathDescription
+				//
+				MathDescription math = scArray[i].createNewMathMapping().getMathDescription();
+				//
+				// load MathDescription into SimulationContext 
+				// (BioModel is responsible for propagating this to all applicable Simulations).
+				//
+				scArray[i].setMathDescription(math);
+			}
+		}
+        } catch(Exception e) {
+        	System.out.println(e.getMessage());
+        }
+
+        
+        // ========================================================
         
         // we extract the simulations with field data from the list of simulations since they are not supported
         List<Simulation> simulationsToRemove = new ArrayList<> ();
@@ -408,7 +478,11 @@ public class VcmlOmexConverter {
         File destination = new File(destinationPath);
         int connectionTimeout = 10000;
         int readTimeout = 20000;
-        FileUtils.copyURLToFile(source, destination, connectionTimeout, readTimeout);
+        try {
+        FileUtils.copyURLToFile(source, destination, connectionTimeout, readTimeout);		// diagram
+        } catch(FileNotFoundException e) {
+        	System.out.println("Diagram not present!");
+        }
 
         String rdfString = getMetadata(vcmlName, bioModel, destination);
         XmlUtil.writeXMLStringToFile(rdfString, String.valueOf(Paths.get(outputDir, "metadata.rdf")), true);

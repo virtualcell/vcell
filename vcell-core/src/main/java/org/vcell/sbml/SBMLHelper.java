@@ -18,6 +18,7 @@ public class SBMLHelper {
 	public static final String SBML_NS_2_3 = "http://www.sbml.org/sbml/level2/version3";
 	public static final String SBML_NS_2_4 = "http://www.sbml.org/sbml/level2/version4";
 	public static final String SBML_NS_3_1 = "http://www.sbml.org/sbml/level3/version1/core";
+	public static final String SBML_NS_3_2 = "http://www.sbml.org/sbml/level3/version2/core";
 
 	public static String getNamespaceFromLevelAndVersion(long level, long version) {
 		String namespaceStr = SBMLHelper.SBML_NS_2;
@@ -36,7 +37,11 @@ public class SBMLHelper {
 			} 
 		}
 		if (level == 3) {
-			namespaceStr = SBMLHelper.SBML_NS_3_1;
+			if (version == 1) {
+				namespaceStr = SBMLHelper.SBML_NS_3_1;
+			} else if (version == 2) {
+				namespaceStr = SBMLHelper.SBML_NS_3_2;
+			}
 		}
 		return namespaceStr;
 	}

@@ -1491,6 +1491,15 @@ public class XmlHelper {
 	    return xml;
 	}
 	
+	public static String convertXMLReservedCharacters(String input) {
+		input = input.replace(">", "&gt;");
+		input = input.replace("<", "&lt;");
+		input = input.replace("&", "&amp;");
+		input = input.replace("%", "&#37;");
+//		input = input.replace("'", "&apos;");
+		return input;
+	}
+	
 //public static String exportSedML(VCDocument vcDoc, int level, int version, String file) throws XmlParseException {
 //	if (vcDoc == null) {
 //        throw new XmlParseException("Cannot export NULL document to SEDML.");

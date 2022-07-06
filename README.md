@@ -53,13 +53,16 @@ mvn clean install dependency:copy-dependencies
 ./vcell.sh
 ```
 
-### Eclipse Setup for Windows
+### Eclipse Setup for Windows/Mac
 Requirements:  Git, Maven, Eclipse IDE for Java Developers and Java JDK 1.8 or later
 
   * Open CommandPrompt, navigate to the Eclipse workspace folder.
   * Clone the VCell client using git: `git clone https://github.com/virtualcell/vcell`
-  * Run this command: `mvn clean install dependency:copy-dependencies`
-  * Build the project in Eclipse.
+  * Start Eclipse
+  * In Eclipse: Project Explorer -> Import -> Projects from Git (smart import) -> Existing local repository, follow all next steps
+  * Make sure the project comes in as a Maven project, otherwise you need to add it to Maven
+  * Build the project in Eclipse (should start automatically, may come with several errors due to different build order).
+  * Errors in individual projects can be fixed by Maven -> Update Project
   * Create a Debug configuration as a Java Application.
      * the Main Class is `cbit.vcell.client.test.VCellClientTest`
      * the Program Arguments is `vcellapi-beta.cam.uchc.edu:8080`
@@ -67,13 +70,20 @@ Requirements:  Git, Maven, Eclipse IDE for Java Developers and Java JDK 1.8 or l
          * the installation directory: `-Dvcell.installDir=<your install dir>`
          * the software version: `-Dvcell.softwareVersion=...`
            * for example:
+           
+               WINDOWS
                ```
-               -Dvcell.installDir=G:\\dan\\jprojects\\git\\vcell
+               -Dvcell.installDir=G:\\dan\\jprojects\\git\\vcell 
                -Dvcell.softwareVersion=DanDev_Version_7.0_build_99
                ```
+               MAC:
+               ```
+               -Dvcell.installDir=/Users/mike/eclipse-workspace2/vcell
+               -Dvcell.softwareVersion=MikeDev_Version_7.0_build_99           
+               ```
+      * Make sure JRE is 1.8 or newer (build-in Eclipse JRE may case problems)
 
-
-### Building and Running VCell Client or Server
+### Building and Running VCell Server
 1. Service has 1 image and configuration, manages 1 or more containers, container is a running image  
 2. All services defined in ./swarm/docker-compose.yml (collection of services,volumes, dependencies,...)  
 

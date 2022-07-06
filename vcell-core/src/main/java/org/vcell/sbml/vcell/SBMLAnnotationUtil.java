@@ -51,6 +51,7 @@ import cbit.vcell.biomodel.meta.registry.Registry.Entry;
 import cbit.vcell.biomodel.meta.xml.rdf.XMLRDFWriter;
 import cbit.vcell.model.Species;
 import cbit.vcell.xml.XMLTags;
+import cbit.vcell.xml.XmlHelper;
 
 /**
  * Creates annotation xml elements from meta data
@@ -414,6 +415,7 @@ public class SBMLAnnotationUtil {
 				// hack to add the proper namespace, without it importing will fail
 				notes = "<html xmlns=\"http://www.w3.org/1999/xhtml\">" + notes;
 			}
+			notes = XmlHelper.convertXMLReservedCharacters(notes);
 			sBaseObj.setNotes(notes);
 			writeMetaID(identifiable, sBaseObj);
 		}
