@@ -13,7 +13,9 @@ package org.vcell.sbml.vcell;
 import java.beans.PropertyVetoException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import javax.xml.stream.XMLStreamException;
 
@@ -29,6 +31,7 @@ import org.sbml.jsbml.Delay;
 import org.sbml.jsbml.Event;
 import org.sbml.jsbml.InitialAssignment;
 import org.sbml.jsbml.SBMLDocument;
+import org.sbml.jsbml.SBMLErrorLog;
 import org.sbml.jsbml.SBMLException;
 import org.sbml.jsbml.SBMLWriter;
 import org.sbml.jsbml.SimpleSpeciesReference;
@@ -68,6 +71,7 @@ import org.sbml.jsbml.ext.spatial.SpatialParameterPlugin;
 import org.sbml.jsbml.ext.spatial.SpatialReactionPlugin;
 import org.sbml.jsbml.ext.spatial.SpatialSymbolReference;
 import org.sbml.jsbml.text.parser.ParseException;
+import org.sbml.jsbml.validator.SBMLValidator;
 import org.vcell.sbml.SBMLHelper;
 import org.vcell.sbml.SBMLUtils;
 import org.vcell.sbml.SbmlException;
@@ -427,9 +431,25 @@ protected void addCompartments() throws XMLStreamException, SbmlException {
  * @throws SbmlException 
  */
 protected void addParameters() throws ExpressionException, SbmlException {
-	Model vcModel = getSelectedSimContext().getModel();
+	
+	// check if any event action modifies any parameter
+	Set<ModelParameter> modelParameterSet = new HashSet<> ();
+	BioEvent[] vcBioevents = getSelectedSimContext().getBioEvents();
+	if (vcBioevents != null) {
+		for (BioEvent vcEvent : vcBioevents) {
+			for(EventAssignment ea : vcEvent.getEventAssignments()) {
+				SymbolTableEntry ste = ea.getTarget();
+				if(ste instanceof ModelParameter) {
+					ModelParameter mp = (ModelParameter)ste;
+					modelParameterSet.add(mp);
+				}
+			}
+		}
+	}
+	
 	// add VCell global parameters to the SBML listofParameters
-	ModelParameter[] vcGlobalParams = vcModel.getModelParameters();  
+	Model vcModel = getSelectedSimContext().getModel();
+	ModelParameter[] vcGlobalParams = vcModel.getModelParameters();
 	if (vcGlobalParams != null) {
 	for (ModelParameter vcParam : vcGlobalParams) {
 		org.sbml.jsbml.Parameter sbmlParam = sbmlModel.createParameter();
@@ -447,6 +467,8 @@ protected void addParameters() throws ExpressionException, SbmlException {
 			sbmlParam.setValue(paramExpr.evaluateConstant());
 			// the expression for modelParam might be numeric, but modelParam could have a rate rule, if so, set constant attribute to 'false'
 			if (getSelectedSimContext().getRateRule(vcParam) != null) {
+				bParamIsNumeric = false;
+			} else if(modelParameterSet.contains(vcParam)) {
 				bParamIsNumeric = false;
 			}
 		} else {
@@ -756,7 +778,9 @@ protected void addReactions() throws SbmlException, XMLStreamException {
 				if (bSpatial){
 					exprFormulaNode = getFormulaFromExpression(localRateExpr);
 				}else{
-					exprFormulaNode = getFormulaFromExpression(Expression.mult(localRateExpr, new Expression(vcReactionStep.getStructure().getName())));
+					String structure = vcReactionStep.getStructure().getName();
+					structure = TokenMangler.mangleToSName(structure);
+					exprFormulaNode = getFormulaFromExpression(Expression.mult(localRateExpr, new Expression(structure)));
 				}
 			}
 			sbmlKLaw.setMath(exprFormulaNode);
@@ -817,7 +841,9 @@ protected void addReactions() throws SbmlException, XMLStreamException {
 		
 		if (bSpatial) {
 			// set compartment for reaction if spatial
-			sbmlReaction.setCompartment(vcReactionStep.getStructure().getName());
+			String structure = vcReactionStep.getStructure().getName();
+			structure = TokenMangler.mangleToSName(structure);
+			sbmlReaction.setCompartment(structure);
 			//CORE  HAS ALT MATH true
 	
 			// set the "isLocal" attribute = true (in 'spatial' namespace) for each species
@@ -1516,12 +1542,24 @@ public static ASTNode getFormulaFromExpression(Expression expression) {
  *  
  */
 public static ASTNode getFormulaFromExpression(Expression expression, MathType desiredType) {
+
+	// first replace VCell reserved symbol t with SBML reserved symbol time, so that it gets correct translation to MathML
+	try {
+		expression.substituteInPlace(new Expression("t"), new Expression("time"));
+	} catch (ExpressionException e2) {
+		// TODO Auto-generated catch block
+		e2.printStackTrace();
+		throw new RuntimeException(e2.toString());
+	}
+
 	// switch to libSBML for non-boolean
 	if (!desiredType.equals(MathType.BOOLEAN)) {
 		try {
-			return ASTNode.parseFormula(expression.infix());
+			String expr = expression.infix();
+			ASTNode math = ASTNode.parseFormula(expr);
+			return math;
 		} catch (ParseException e) {
-			// TODO Auto-generated catch block
+			// (konm * (h ^  - 1.0) / koffm)
 			e.printStackTrace();
 			throw new RuntimeException(e.toString());
 		}
@@ -1616,6 +1654,11 @@ private VCellSBMLDoc convertToSBML() throws SbmlException, SBMLException, XMLStr
 
 	// write sbml document into sbml writer, so that the sbml str can be retrieved
 	SBMLWriter sbmlWriter = new SBMLWriter();
+	
+//	sbmlDocument.setConsistencyChecks(SBMLValidator.CHECK_CATEGORY.UNITS_CONSISTENCY, false);
+//	int errors = sbmlDocument.checkConsistency();
+//	SBMLErrorLog listOfErrors = sbmlDocument.getListOfErrors();
+	
 	
 	String sbmlStr = sbmlWriter.writeSBMLToString(sbmlDocument);
 	/*
@@ -1821,10 +1864,10 @@ private void addGeometry() throws SbmlException {
 	    	} else if (((SubVolume)vcGeomClasses[i]) instanceof CSGObject) {
 	    		bAnyCSGSubvolumes = true;
 	    	}
-	    	domainType.setSpatialDimensions(3);
+	    	domainType.setSpatialDimensions(dimension);
 	    	numSubVols++;
 	    } else if (vcGeomClasses[i] instanceof SurfaceClass) {
-	    	domainType.setSpatialDimensions(2);
+	    	domainType.setSpatialDimensions(dimension - 1);
 	    }
 	}
 	
@@ -1882,8 +1925,12 @@ private void addGeometry() throws SbmlException {
 									double unit_x = (numX>1)?((double)x)/(numX-1):0.5;
 									double coordX = ox + vcExtent.getX() * unit_x;
 									interiorPt.setCoord1(coordX);
-									interiorPt.setCoord2(coordY);
-									interiorPt.setCoord3(coordZ);
+									if (dimension > 1) {
+										interiorPt.setCoord2(coordY);
+										if (dimension > 2) {
+											interiorPt.setCoord3(coordZ);
+										}
+									}
 								}
 								volIndx++;
 							}	// end - for x
@@ -1928,7 +1975,8 @@ private void addGeometry() throws SbmlException {
 		sbmlAnalyticGeomDefinition.setIsActive(true);
 		for (int i = 0; i < vcGeomClasses.length; i++) {
 			if (vcGeomClasses[i] instanceof AnalyticSubVolume) {
-				AnalyticVolume analyticVol = sbmlAnalyticGeomDefinition.createAnalyticVolume(vcGeomClasses[i].getName());
+				// need to avoid id name clash with structures (compartments)
+				AnalyticVolume analyticVol = sbmlAnalyticGeomDefinition.createAnalyticVolume(TokenMangler.mangleToSName("AnalyticVol_"+vcGeomClasses[i].getName()));
 //				analyticVol.setSpatialId(vcGeomClasses[i].getName());
 				analyticVol.setDomainType(DOMAIN_TYPE_PREFIX+vcGeomClasses[i].getName());
 				analyticVol.setFunctionType(FunctionKind.layered);

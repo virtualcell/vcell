@@ -322,6 +322,10 @@ public abstract class BioCartoonTool extends cbit.gui.graph.gui.CartoonTool {
 	public static final void pasteReactionsAndRules(Component requester, ReactionSpeciesCopy rsCopy,
 			Model pasteModel, Structure structTo, RXPasteInterface rxPasteInterface) {
 		
+		// TODO: add the plain reactions and species too
+		// TODO: use Frank's dialog to map the species to be pasted to the existing species. Same for reactions
+		// alternatively, map automatically all the matching names, paste everything else as new
+		// TODO: when pasting, do not bring separately the compartment from where we copy, it's supposed to be the same as the destination
 		PasteHelper[] pasteHelper = new PasteHelper[1];
 		
 		AsynchClientTask issueTask = new AsynchClientTask("Checking Issues...",AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
@@ -358,6 +362,7 @@ public abstract class BioCartoonTool extends cbit.gui.graph.gui.CartoonTool {
 //					clonedModel.getRbmModelContainer().addReactionRule(rr);
 //				}
 				clonedModel.getRbmModelContainer().addReactionRules(rulesTo);
+				// TODO: paste all the seed species? We'll need to add seed species array to ReactionSpeciesCopy during the Copy action
 				
 				// TODO: make any final verifications in the cloned model here
 				// if anything is wrong exit here with some helpful message

@@ -95,6 +95,7 @@ import cbit.vcell.mapping.SimulationContext.Application;
 import cbit.vcell.mapping.StructureMapping.StructureMappingParameter;
 import cbit.vcell.math.Function;
 import cbit.vcell.model.Kinetics.KineticsParameter;
+import cbit.vcell.model.Membrane;
 import cbit.vcell.model.Model.ModelParameter;
 import cbit.vcell.model.Model.ReservedSymbol;
 import cbit.vcell.model.Model.ReservedSymbolRole;
@@ -183,7 +184,7 @@ public class SEDMLExporter {
 //                Namespace.getNamespace(SEDMLTags.SBML_NS_PREFIX, SEDMLTags.SBML_NS_L2V4)
 //        }));
 
-		final String SBML_NS = "http://www.sbml.org/sbml/level3/version1/core";
+		final String SBML_NS = "http://www.sbml.org/sbml/level3/version2/core";
 		final String SBML_NS_PREFIX = "sbml";
 		final String VCML_NS = "http://sourceforge.net/projects/vcell/vcml";
 		final String VCML_NS_PREFIX = "vcml";
@@ -205,9 +206,6 @@ public class SEDMLExporter {
 		int models = sedmlModel.getModels().size();
 		int tasks = sedmlModel.getTasks().size();
 		int sims = sedmlModel.getSimulations().size();
-
-		// write SEDML document into SEDML writer, so that the SEDML str can be retrieved
-//		return sedmlDocument.writeDocumentToString();
 		return sedmlDocument;
 	}
 	public String getSEDMLFile(String sPath, String sBaseFileName, boolean bForceVCML, boolean bForceSBML, 
@@ -474,12 +472,28 @@ public class SEDMLExporter {
 						String[] scannedConstantsNames = mathOverrides.getScannedConstantNames();
 						HashMap<String, String> scannedParamHash = new HashMap<String, String>();
 						HashMap<String, String> unscannedParamHash = new HashMap<String, String>();
+						
+						// need to check for "leftover" overrides from parameter renaming or other model editing
+						HashMap<String, String> missingParamHash = new HashMap<String, String>();
 						for (String name : scannedConstantsNames) {
-							scannedParamHash.put(name, name);
+							if (!mathOverrides.isUnusedParameter(name)) {
+								scannedParamHash.put(name, name);
+							} else {
+								missingParamHash.put(name, name);
+							}
 						}
 						for (String name : overridenConstantNames) {
 							if (!scannedParamHash.containsKey(name)) {
-								unscannedParamHash.put(name, name);
+								if (!mathOverrides.isUnusedParameter(name)) {
+									unscannedParamHash.put(name, name);
+								} else {
+									missingParamHash.put(name, name);
+								}
+							}
+						}
+						if (!missingParamHash.isEmpty()) {
+							for (String missingParamName : missingParamHash.values()) {
+								System.err.println("WARNING: there is an override entry for non-existent parameter "+missingParamName);
 							}
 						}
 
@@ -632,7 +646,7 @@ public class SEDMLExporter {
 										cbit.vcell.math.Constant[] cs = constantArraySpec.getConstants();
 										ArrayList<Double> values = new ArrayList<Double>();
 										for (int i = 0; i < cs.length; i++){
-											String value = cs[i].getExpression().infix() + ", ";
+											String value = cs[i].getExpression().infix();
 											values.add(Double.parseDouble(value));
 										}
 										r = new VectorRange(rangeId, values);
@@ -648,7 +662,8 @@ public class SEDMLExporter {
 									// create setValue for scannedConstName
 									SymbolTableEntry ste2 = getSymbolTableEntryForModelEntity(mathSymbolMapping, scannedConstName);
 									XPathTarget target1 = getTargetXPath(ste2, l2gMap);
-									ASTNode math1 = new ASTCi(scannedConstName);
+									// ASTNode math1 = new ASTCi(scannedConstName); BAD - misses math namespace
+									ASTNode math1 = Libsedml.parseFormulaString(r.getId());
 									SetValue setValue1 = new SetValue(target1, r.getId(), sedModel.getId());
 									setValue1.setMath(math1);
 									rt.addChange(setValue1);
@@ -1199,8 +1214,14 @@ public class SEDMLExporter {
 				targetXpath = new XPathTarget(sbmlSupport.getXPathForGlobalParameter(value, ParameterAttribute.value));
 			}
 		} else {
-			System.err.println("Entity should be SpeciesContext, Structure, ModelParameter : " + ste.getClass());
-			throw new RuntimeException("Unknown entity in SBML model");
+			if(ste instanceof Membrane.MembraneVoltage) {
+				String msg = "Export failed: This VCell model has membrane voltage; cannot be exported to SBML at this time";
+				System.out.println(msg);
+				throw new RuntimeException(msg);
+			} else {
+				System.err.println("Entity should be SpeciesContext, Structure, ModelParameter : " + ste.getClass());
+				throw new RuntimeException("Unknown entity in SBML model");
+			}
 		}
 		return targetXpath;
 	}
