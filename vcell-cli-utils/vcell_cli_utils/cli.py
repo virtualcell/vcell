@@ -392,11 +392,11 @@ def gen_plot_pdfs(sedml_path, result_out_dir):
 
 def gen_plots_for_sed2d_only(sedml_path, result_out_dir):
     all_plot_curves = {}
-    all_report_dataref = {}
 
     sedml = lsed.readSedML(sedml_path)
     # print(sedml)
 
+    # Generate all_plot_curves
     for output in sedml.getListOfOutputs():
         # print(output)
         if type(output) == SedPlot2D:
@@ -427,7 +427,6 @@ def gen_plots_for_sed2d_only(sedml_path, result_out_dir):
             ax.set_ylabel('')
             #             plt.show()
             plt.savefig(os.path.join(result_out_dir, plot + '.pdf'), dpi=300)
-
 
 if __name__ == "__main__":
     fire.Fire({

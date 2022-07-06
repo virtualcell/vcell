@@ -65,10 +65,16 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
+import java.util.concurrent.TimeoutException;
+
+import cbit.vcell.resource.PropertyLoader;
 
 //import java.nio.file.Files;
 
 public class CLIUtils {
+    // Singleton Instance Variable
+    private static CLIUtils singleInstance;
+
 	// timeout for compiled solver running long jobs; default 12 hours
 	//public static long EXECUTABLE_MAX_WALLCLOK_MILLIS = 600000;
 	public static long EXECUTABLE_MAX_WALLCLOK_MILLIS = 0;
@@ -88,6 +94,7 @@ public class CLIUtils {
     private Path cliUtilPath = Paths.get(utilPath.toString(), "vcell_cli_utils");
     private Path cliPath = Paths.get(cliUtilPath.toString(), "cli.py");
     private Path statusPath = Paths.get(cliUtilPath.toString(), "status.py");
+    private Path wrapperPath = Paths.get(cliUtilPath.toString(), "wrapper.py");
 
 
     // Absolute Submodule path for VCell_CLI_UTILS
@@ -104,6 +111,10 @@ public class CLIUtils {
     public static final String python = isWindowsPlatform ? "python" : "python3";
     public static final String pip = isWindowsPlatform ? "pip" : "pip3";
 
+    // Python Process Variables
+    private static Process pythonProcess; 			// hold python interpreter instance used in updateXxx...() methods
+    private static OutputStreamWriter pythonOSW; 	// input channel *to* python interpreter (see above)
+    private static BufferedReader pythonISB; 		// output channel ("Input Stream Buffer") *from* python interpreter (see above)
 
     // TODO: Implement this to remove System properties dynamically from Run time, Remove hardcoded from docker_run.sh
     private static void removeCliSystemProperties() throws IOException {
@@ -152,6 +163,7 @@ public class CLIUtils {
         cliUtilPath = Paths.get(utilPath.toString(), "vcell_cli_utils");
         cliPath = Paths.get(cliUtilPath.toString(), "cli.py");
         statusPath = Paths.get(cliUtilPath.toString(), "status.py");
+        wrapperPath = Paths.get(cliUtilPath.toString(), "wrapper.py");
     }
     
     // Breakline
@@ -159,13 +171,28 @@ public class CLIUtils {
         System.out.println(breakString + StringUtils.repeat(breakString, times));
     }
 
-    public CLIUtils() throws IOException {
+    private CLIUtils(){}
 
+    // Singleton Constructor
+    public static CLIUtils getCLIUtils(){
+        if (CLIUtils.singleInstance == null){
+            try{
+                CLIUtils.singleInstance = new CLIUtils();
+                PropertyLoader.loadProperties();
+                singleInstance.recalculatePaths();
+                singleInstance.instantiatePythonProcess();
+            } catch (IOException e){
+                System.err.println("Encountered fatal IOException while creating CLIUtils; killing VCell.");
+                e.printStackTrace();
+                System.exit(1);
+            }
+        }
+        return CLIUtils.singleInstance;
     }
 
     public static boolean removeDirs(File f) {
         try {
-            deleteRecursively(f);
+            CLIUtils.deleteRecursively(f);
         } catch (IOException ex) {
             System.err.println("Failed to delete the file: " + f);
             return false;
@@ -175,7 +202,7 @@ public class CLIUtils {
 
     public static boolean makeDirs(File f) {
         if (f.exists()) {
-            boolean isRemoved = removeDirs(f);
+            boolean isRemoved = CLIUtils.removeDirs(f);
             if (!isRemoved)
                 return false;
         }
@@ -185,7 +212,7 @@ public class CLIUtils {
     private static void deleteRecursively(File f) throws IOException {
         if (f.isDirectory()) {
             for (File c : Objects.requireNonNull(f.listFiles())) {
-                deleteRecursively(c);
+                CLIUtils.deleteRecursively(c);
             }
         }
         if (!f.delete()) {
@@ -675,7 +702,7 @@ public class CLIUtils {
         return yi;
     }
 
-    public static ProcessBuilder execCommand(String[] args) {
+    public static ProcessBuilder execShellCommand(String[] args) {
         // Setting the source and destination for subprocess standard I/O to be the same as those of the current Java process
         // return new ProcessBuilder(args).inheritIO();
     	
@@ -709,10 +736,9 @@ public class CLIUtils {
             System.out.println(outString);
             System.out.println(os);
         }
-
     }
 
-    public static int checkInstallationError() {
+    public static int checkPythonInstallationError() {
         String version = "--version";
         ProcessBuilder processBuilder;
         Process process;
@@ -722,7 +748,7 @@ public class CLIUtils {
         String stdOutLog;
 
         try {
-            processBuilder = execCommand(new String[]{python, version});
+            processBuilder = execShellCommand(new String[]{python, version});
             process = processBuilder.start();
             exitCode = process.waitFor();
             if (exitCode == 0) {
@@ -730,7 +756,7 @@ public class CLIUtils {
                 stringBuilder = new StringBuilder();
                 while ((stdOutLog = bufferedReader.readLine()) != null) {
                     stringBuilder.append(stdOutLog);
-                    // search string can be one or more...
+                    // search string can be one or more... (potential python 2.7.X bug here?)
                         if (!stringBuilder.toString().toLowerCase().startsWith("python")) System.err.println("Please check your local Python and PIP Installation, install required packages");
                 }
             }
@@ -744,17 +770,17 @@ public class CLIUtils {
 
     // Ignoring biosimulator_utils warnings with -W ignore flag
 
-    public void genSedmlForSed2DAnd3D(String omexFilePath, String outputDir) throws IOException, InterruptedException {
-        ProcessBuilder pb = execCommand(new String[]{python, "-W", "ignore", cliPath.toString(), "genSedml2d3d", omexFilePath, outputDir});
-        runAndPrintProcessStreams(pb, "","Failed generating SED-ML for plot2d and 3D\n");
+    public void genSedmlForSed2DAnd3D(String omexFilePath, String outputDir) throws PythonStreamException {
+        String results = singleInstance.callPython("genSedml2d3d", omexFilePath, outputDir);
+        singleInstance.printPythonErrors(results, "", "Failed generating SED-ML for plot2d and 3D ");
     }
 
-    public void execPlotOutputSedDoc(String omexFilePath, String idNamePlotsMap, String outputDir)  throws IOException, InterruptedException {
-        ProcessBuilder pb = execCommand(new String[]{python, "-W", "ignore", cliPath.toString(), "execPlotOutputSedDoc", omexFilePath, idNamePlotsMap, outputDir});
-        runAndPrintProcessStreams(pb, "HDF conversion successful\n","HDF conversion failed\n");
+    public void execPlotOutputSedDoc(String omexFilePath, String idNamePlotsMap, String outputDir)  throws PythonStreamException {
+        String results = singleInstance.callPython("execPlotOutputSedDoc", omexFilePath, idNamePlotsMap, outputDir);
+        singleInstance.printPythonErrors(results, "HDF conversion successful\n","HDF conversion failed\n");
     }
 
-    public void convertCSVtoHDF(String omexFilePath, String outputDir) throws IOException, InterruptedException {
+    public void convertCSVtoHDF(String omexFilePath, String outputDir) throws PythonStreamException {
 
         // Convert CSV to HDF5
         /*
@@ -763,15 +789,19 @@ public class CLIUtils {
                          --report_formats | --plot_formats | --log | --indent
         * */
         // handle exceptions here
-        if (checkInstallationError() == 0) {
-            ProcessBuilder pb = execCommand(new String[]{python, "-W", "ignore", cliPath.toString(), "execSedDoc", omexFilePath, outputDir});
-            runAndPrintProcessStreams(pb, "HDF conversion successful\n","HDF conversion failed\n");
+        if (checkPythonInstallationError() == 0) {
+            String results = singleInstance.callPython("execSedDoc", omexFilePath, outputDir);
+            singleInstance.printPythonErrors(results, "HDF conversion successful\n","HDF conversion failed\n");
         }
     }
 
-    public void genPlotsPseudoSedml(String sedmlPath, String resultOutDir) throws IOException, InterruptedException {
-        ProcessBuilder pb = execCommand(new String[]{python, cliPath.toString(), "genPlotsPseudoSedml", sedmlPath, resultOutDir});
+    // Due to what appears to be a leaky python function call, this method will continue using execShellCommand until the unerlying python is fixed
+    public void genPlotsPseudoSedml(String sedmlPath, String resultOutDir) throws PythonStreamException, InterruptedException, IOException {
+        ProcessBuilder pb = execShellCommand(new String[]{python, cliPath.toString(), "genPlotsPseudoSedml", sedmlPath, resultOutDir});
         runAndPrintProcessStreams(pb, "","");
+
+        //String results = singleInstance.callPython("genPlotsPseudoSedml", sedmlPath, resultOutDir);
+        //singleInstance.printPythonErrors(results);
     }
 
     // Sample STATUS YML
@@ -798,11 +828,12 @@ public class CLIUtils {
             status: SKIPPED
     status: SUCCEEDED
     * */
-    public void generateStatusYaml(String omexPath, String outDir) throws IOException, InterruptedException {
+    public void generateStatusYaml(String omexPath, String outDir) throws PythonStreamException {
         System.out.println("utilPath: " + utilPath);
         System.out.println("cliUtilPath: " + cliUtilPath);
         System.out.println("cliPath: " + cliPath);
         System.out.println("statusPath: " + statusPath);
+        System.out.println("wrapperPath: " + wrapperPath);
         // Note: by default every status is being skipped
         Path omexFilePath = Paths.get(omexPath);
         /*
@@ -819,38 +850,48 @@ public class CLIUtils {
 
          status_yml
         */
-        ProcessBuilder pb = execCommand(new String[]{python, statusPath.toString(), "genStatusYaml", String.valueOf(omexFilePath), outDir});
-        runAndPrintProcessStreams(pb, "","Failed generating status YAML\n");
+
+        String results = singleInstance.callPython("genStatusYaml", String.valueOf(omexFilePath), outDir);
+        singleInstance.printPythonErrors(results, "", "Failed generating status YAML\n");
     }
 
-    public void updateTaskStatusYml(String sedmlName, String taskName, Status taskStatus, String outDir, String duration, String algorithm) throws IOException, InterruptedException {
+    public void updateTaskStatusYml(String sedmlName, String taskName, Status taskStatus, String outDir, String duration, String algorithm) throws PythonStreamException {
     	algorithm = algorithm.toUpperCase(Locale.ROOT);
     	algorithm = algorithm.replace("KISAO:", "KISAO_");
-        ProcessBuilder pb = execCommand(new String[]{python, statusPath.toString(), "updateTaskStatus", sedmlName, taskName, taskStatus.toString(), outDir, duration, algorithm});
-        runAndPrintProcessStreams(pb, "", "Failed updating task status YAML\n");
+
+        String results = singleInstance.callPython("updateTaskStatus", sedmlName, taskName, taskStatus.toString(), outDir, duration, algorithm);
+        singleInstance.printPythonErrors(results, "", "Failed updating task status YAML\n");
     }
-    public void updateSedmlDocStatusYml(String sedmlName, Status sedmlDocStatus, String outDir) throws IOException, InterruptedException {
-        ProcessBuilder pb = execCommand(new String[]{python, statusPath.toString(), "updateSedmlDocStatus", sedmlName, sedmlDocStatus.toString(), outDir});
-        runAndPrintProcessStreams(pb, "", "Failed updating sedml document status YAML\n");
+    public void updateSedmlDocStatusYml(String sedmlName, Status sedmlDocStatus, String outDir) throws PythonStreamException, InterruptedException, IOException {
+        String results = singleInstance.callPython("updateSedmlDocStatus", sedmlName, sedmlDocStatus.toString(), outDir);
+        singleInstance.printPythonErrors(results, "", "Failed updating sedml document status YAML\n");
     }
-    public void updateOmexStatusYml(Status simStatus, String outDir, String duration) throws IOException, InterruptedException {
-        ProcessBuilder pb = execCommand(new String[]{python, statusPath.toString(), "updateOmexStatus", simStatus.toString(), outDir, duration});
-        runAndPrintProcessStreams(pb, "","");
+    public void updateOmexStatusYml(Status simStatus, String outDir, String duration) throws PythonStreamException {
+        String results = singleInstance.callPython("updateOmexStatus", simStatus.toString(), outDir, duration);
+        singleInstance.printPythonErrors(results);
     }
 
-    public void updateDatasetStatusYml(String sedmlName, String dataSet, String var, Status simStatus, String outDir) throws IOException, InterruptedException {
-        ProcessBuilder pb = execCommand(new String[]{python, statusPath.toString(), "updateDataSetStatus", sedmlName, dataSet, var, simStatus.toString(), outDir});
-        runAndPrintProcessStreams(pb, "","");
+    public void updateDatasetStatusYml(String sedmlName, String dataSet, String var, Status simStatus, String outDir) throws PythonStreamException {
+        String results = singleInstance.callPython("updateDataSetStatus", sedmlName, dataSet, var, simStatus.toString(), outDir);
+        singleInstance.printPythonErrors(results);
+    }
+    
+    public void updateDatasetStatusYml(String sedmlName, String dataSet, String var, Status simStatus, String outDir, boolean usePython) throws PythonStreamException {
+    	if (!usePython) this.updateDatasetStatusYml(sedmlName, dataSet, var, simStatus, outDir);
+        else {
+            String results = this.callPython("updateDataSetStatus", sedmlName, dataSet, var, simStatus.toString(), outDir);
+            this.printPythonErrors(results);
+        }
     }
 
-    public void transposeVcmlCsv(String csvFilePath) throws IOException, InterruptedException {
-        ProcessBuilder pb = execCommand(new String[]{python, cliPath.toString(), "transposeVcmlCsv", csvFilePath});
-        runAndPrintProcessStreams(pb, "","");
+    public void transposeVcmlCsv(String csvFilePath) throws PythonStreamException {
+        String results = singleInstance.callPython("transposeVcmlCsv", csvFilePath);
+        singleInstance.printPythonErrors(results);
     }
 
-    public void genPlots(String sedmlPath, String resultOutDir) throws IOException, InterruptedException {
-        ProcessBuilder pb = execCommand(new String[]{python, cliPath.toString(), "genPlotPdfs", sedmlPath, resultOutDir});
-        runAndPrintProcessStreams(pb, "","");
+    public void genPlots(String sedmlPath, String resultOutDir) throws PythonStreamException {
+        String results = singleInstance.callPython("genPlotPdfs", sedmlPath, resultOutDir);
+        singleInstance.printPythonErrors(results);
     }
 
     // sedmlAbsolutePath - full path to location of the actual sedml file (document) used as input
@@ -858,15 +899,15 @@ public class CLIUtils {
     // outDir            - path to directory where the log files will be placed
     // entityType        - string describing the entity type ex "task" for a task, or "sedml" for sedml document
     // message           - useful info about the execution of the entity (ex: task), could be human readable or concatenation of stdout and stderr
-    public void setOutputMessage(String sedmlAbsolutePath, String entityId, String outDir, String entityType, String message) throws IOException, InterruptedException {
-        ProcessBuilder pb = execCommand(new String[]{python, statusPath.toString(), "setOutputMessage", sedmlAbsolutePath, entityId, outDir, entityType, message});
-        runAndPrintProcessStreams(pb, "","Failed updating task status YAML\n");
+    public void setOutputMessage(String sedmlAbsolutePath, String entityId, String outDir, String entityType, String message) throws PythonStreamException, InterruptedException, IOException {
+        String results = singleInstance.callPython("setOutputMessage", sedmlAbsolutePath, entityId, outDir, entityType, message);
+        singleInstance.printPythonErrors(results, "", "Failed updating task status YAML\n");
     }
     // type - exception class, ex RuntimeException
     // message  - exception message
-    public void setExceptionMessage(String sedmlAbsolutePath, String entityId, String outDir, String entityType, String type , String message) throws IOException, InterruptedException {
-        ProcessBuilder pb = execCommand(new String[]{python, statusPath.toString(), "setExceptionMessage", sedmlAbsolutePath, entityId, outDir, entityType, type, message});
-        runAndPrintProcessStreams(pb, "","Failed updating task status YAML\n");
+    public void setExceptionMessage(String sedmlAbsolutePath, String entityId, String outDir, String entityType, String type , String message) throws PythonStreamException {
+        String results = this.callPython("setExceptionMessage", sedmlAbsolutePath, entityId, outDir, entityType, type, message);
+        singleInstance.printPythonErrors(results, "", "Failed updating task status YAML\n");
     }
 
     private static ArrayList<File> listFilesForFolder(File dirPath, String extensionType) {
@@ -928,4 +969,202 @@ public class CLIUtils {
         System.out.println("TempPath Created: " + tempPath);
         return tempPath;
     }
+
+    // Process builder commands
+    
+
+    
+    // Python Process Accessory Methods
+    /**
+     * Facilitates the construction of the python instance connection
+     */
+    public void instantiatePythonProcess() throws IOException {
+        if (CLIUtils.pythonProcess != null) return; // prevent override
+
+        // Confirm we have python properly installed or kill this exe where it stands.
+        this.checkPythonInstallation();
+
+        // Start Python
+    	ProcessBuilder pb = new ProcessBuilder("python.exe", "-i", "-W ignore");
+    	pb.redirectErrorStream(true);
+        CLIUtils.pythonProcess = pb.start();
+        CLIUtils.pythonOSW = new OutputStreamWriter(pythonProcess.getOutputStream());
+        CLIUtils.pythonISB = new BufferedReader(new InputStreamReader(pythonProcess.getInputStream()));
+        
+        // "construction" commands
+        try {
+            this.getResultsOfLastCommand(); // Clear Buffer of Python Interpeter
+            this.executeThroughPython("import sys");
+            this.executeThroughPython(String.format("sys.path.append(r'%s')", this.utilPath.toString()));
+            this.executeThroughPython(String.format("sys.path.append(r'%s')", this.cliUtilPath.toString()));
+            //this.callPython(String.format("exec(open(\"%s\").read())", sanitizePath(this.wrapperPath.toString())));
+            this.executeThroughPython("import wrapper");
+            System.out.println("\nPython initalization success!\n");
+        } catch (IOException | TimeoutException | InterruptedException e){
+            System.out.println("Python instantiation Exception Thrown:\n" + e);
+            System.exit(1);
+        }
+    }
+
+    public void closePythonProcess() throws IOException {
+        // Exit the living Python Process
+        this.sendNewCommand("exit()"); // Sends kill command ("exit()") to python.exe instance;
+        if (CLIUtils.pythonProcess.isAlive()) CLIUtils.pythonProcess.destroyForcibly(); // Making sure it's quite dead
+        
+        // Making sure we clean up
+        CLIUtils.pythonOSW.close(); 
+        CLIUtils.pythonISB.close();
+        
+        // Unbind references to allow reinstantiation
+        CLIUtils.pythonISB = null;
+        CLIUtils.pythonOSW = null;
+        CLIUtils.pythonProcess = null;
+    }
+
+    private String getResultsOfLastCommand() throws IOException, TimeoutException, InterruptedException {
+        String importantPrefix = ">>> ";
+        String results = "";
+
+        int currentTime = 0, TIMEOUT_LIMIT = 600000; // 600 seconds (10 minutes)
+
+        // Wait for python to finish what it's working on
+        while(!CLIUtils.pythonISB.ready()){
+            if (currentTime++ >= TIMEOUT_LIMIT) throw new TimeoutException();
+            Thread.sleep(1); // wait ~1ms at a time
+        }
+
+        // Python's ready (or we had a timeout?); lets get the buffer without going too far and getting blocked (see note 1 at bottom of file)
+        while ( results.length() < importantPrefix.length() 
+                || !results.substring(results.length() - importantPrefix.length()).equals(importantPrefix)){ // unless we've found the prefix we need at the end of the results
+            results += (char)CLIUtils.pythonISB.read();
+        }
+
+        // Got the results we need. Now lets clean the results string up before returning it
+        results = CLIUtils.stripString(results.substring(0, results.length() - importantPrefix.length()));
+
+        return results == "" ? null : results;
+    }
+
+    private String processPythonArguments(String... arguments){
+        String argList = "";
+        int adjArgLength;
+        for (String arg : arguments){
+            argList += "r'" + CLIUtils.stripString(arg) + "'" + ",";
+        }
+        adjArgLength = argList.length() == 0 ? 0 : argList.length() - 1;
+        return argList.substring(0, adjArgLength);
+    }
+
+    private boolean printPythonErrors(String returnedString){
+        return this.printPythonErrors(returnedString, null, null);
+    }
+
+    private boolean printPythonErrors(String returnedString, String outString, String errString){
+        boolean DEBUG_NORMAL_OUTPUT = false; // Manually override
+        boolean hasPassed;
+        String ERROR_PHRASE1 = "Traceback", ERROR_PHRASE2 = "File \"<stdin>\"";
+
+        // Null or empty strings are considered passing results
+        if(returnedString == null || (returnedString = CLIUtils.stripString(returnedString)).equals("")) 
+            return true;
+
+        if (
+                (returnedString.length() >= ERROR_PHRASE1.length() && ERROR_PHRASE1.equals(returnedString.substring(0, ERROR_PHRASE1.length()))) 
+            ||  (returnedString.length() >= ERROR_PHRASE2.length() && ERROR_PHRASE2.equals(returnedString.substring(0, ERROR_PHRASE2.length())))
+            ||  (returnedString.contains("File \"<stdin>\""))
+        
+        ){ // Report an error:
+            String resultString = (errString != null && errString.length() > 0) ? String.format("Result: %s\n", errString) : "";
+            System.err.printf("Python error caught: <%s>\n%s", returnedString, resultString);
+            hasPassed = false;
+            System.exit(1);
+        } else {
+            String resultString = (outString != null && outString.length() > 0) ? String.format("Result: %s\n", outString) : "";
+            System.out.printf("Python returned%s\nResult: %s\n", DEBUG_NORMAL_OUTPUT? String.format(": [%s]", returnedString) : " sucessfully.", resultString);
+            hasPassed = true;
+        }
+        return hasPassed;
+    }
+
+    private void sendNewCommand(String cmd) throws IOException {
+        // we can easily send the command, but we need to format it first.
+        
+        String command = String.format("%s\n", CLIUtils.stripString(cmd));
+        CLIUtils.pythonOSW.write(command);
+        CLIUtils.pythonOSW.flush();
+    }
+
+    private String formatPythonFuctionCall(String functionName, String... arguments){
+        return String.format("wrapper.%s(%s)", CLIUtils.stripString(functionName), this.processPythonArguments(arguments));
+    }
+
+    // returns parsed interpreter return
+    private String callPython(String functionName, String... arguments) throws PythonStreamException {
+        return this.callPython(this.formatPythonFuctionCall(functionName, arguments));
+    }
+
+    private String callPython(String command) throws PythonStreamException {
+        String returnString = "";
+        try {
+            this.instantiatePythonProcess(); // Make sure we have a python instance; calling will not override an existing intance
+            this.sendNewCommand(command);
+            returnString = this.getResultsOfLastCommand();
+        } catch (IOException | InterruptedException | TimeoutException e){
+            throw new PythonStreamException("Python process encounted an exception:\n" + e);
+        }
+        return returnString;
+    }
+    
+    private void executeThroughPython(String command) throws PythonStreamException {
+        String results = callPython(command);
+        if (!this.printPythonErrors(results)) System.exit(1);
+    }
+
+    private int checkPythonInstallation() {
+        String version = "--version", stdOutLog;
+        ProcessBuilder processBuilder;
+        Process process;
+        int exitCode = -10;
+        BufferedReader bufferedReader;
+        StringBuilder stringBuilder = new StringBuilder();
+
+        try {
+            processBuilder = execShellCommand(new String[]{python, version});
+            process = processBuilder.start();
+            exitCode = process.waitFor();
+            if (exitCode == 0) {
+                bufferedReader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+                while ((stdOutLog = bufferedReader.readLine()) != null) {
+                    stringBuilder.append(stdOutLog);
+                    // search string can be one or more... (potential python 2.7.X bug here?) Maybe use regex?
+                        if (!stringBuilder.toString().toLowerCase().startsWith("python 3")) throw new PythonStreamException();
+                            
+                }
+            }
+        } catch (PythonStreamException e) {
+            System.err.println("Please check your local Python and PIP Installation, install required packages and versions");
+            e.printStackTrace();
+            System.exit(1);
+        } catch (IOException | InterruptedException e) {
+            e.printStackTrace();
+        }
+        
+        return exitCode;
+    }
+
+    public static String stripString(String str){
+        return str.replaceAll("^[ \t]+|[ \t]+$", ""); // replace whitespace at the front and back with nothing
+    }
+
+    public static String encloseString(String s){
+        return "r\"" + s + "\"";
+    }
+
 }
+
+/*
+ * NOTES:
+ * 
+ * 1) BufferedReader will block if asked to read the Python interpreter while the interpreter waiting for input (assuming the buffer has already been iterated through).
+ *      To prevent this, we catch the prefix to Python's prompt for a new command (">>> ") to stop before we wait for etinity and break our program.
+ */
