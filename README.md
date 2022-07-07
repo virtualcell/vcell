@@ -18,8 +18,8 @@ Simulation capabilities include ODEs, Reaction-Diffusion equations within cellul
 * [Download VCell](#download-vcell)
 * [Building VCell](#building-vcell)
 * [Building and Running VCell Client as a standalone tool](#building-and-running-vcell-client-as-a-standalone-tool)
-* [Eclipse Setup for Windows](#eclipse-setup-for-windows)
-* [Building and Running VCell Client or Server](#building-and-running-vcell-client-or-server)
+* [Eclipse Setup for VCell Client on Windows/Mac](#vcell-client-eclipse-setup-for-windows-and-mac)
+* [Building and Running VCell Server](#building-and-running-vcell-server)
 * [CLI Requirements](#vcell-cli-requirements)
 * [Other Details](#other-details)
 * [License](#license)
@@ -53,7 +53,7 @@ mvn clean install dependency:copy-dependencies
 ./vcell.sh
 ```
 
-### VCell client Eclipse setup for Windows/Mac
+### VCell client Eclipse setup for Windows and Mac
 Requirements:  Eclipse IDE for Java Developers and Java JDK 1.8 or later
 
   * Start Eclipse
