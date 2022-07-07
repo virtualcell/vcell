@@ -53,16 +53,18 @@ mvn clean install dependency:copy-dependencies
 ./vcell.sh
 ```
 
-### Eclipse Setup for Windows/Mac
-Requirements:  Git, Maven, Eclipse IDE for Java Developers and Java JDK 1.8 or later
+### VCell client Eclipse setup for Windows/Mac
+Requirements:  Eclipse IDE for Java Developers and Java JDK 1.8 or later
 
-  * Open CommandPrompt, navigate to the Eclipse workspace folder.
-  * Clone the VCell client using git: `git clone https://github.com/virtualcell/vcell`
   * Start Eclipse
-  * In Eclipse: Project Explorer -> Import -> Projects from Git (smart import) -> Existing local repository, follow all next steps
-  * Make sure the project comes in as a Maven project, otherwise you need to add it to Maven
+  * In Eclipse: Project Explorer -> Import -> Projects from Git (smart import) -> Clone URI -> Paste `https://github.com/virtualcell/vcell.git`, follow all next steps
+      * If git is installed, you can install VCell client from a local repository:
+          * Open CommandPrompt, navigate to the Eclipse workspace folder.
+          * Clone the VCell client using git: `git clone https://github.com/virtualcell/vcell`
+          * During Eclipse setup, use an option -> Existing local repository, follow all next steps
+  * Make sure the project comes in as a Maven project (letter `M` on the top of the project, not `J`), otherwise you need to add it to Maven
   * Build the project in Eclipse (should start automatically, may come with several errors due to different build order).
-  * Errors in individual projects can be fixed by Maven -> Update Project
+  * Errors in individual projects can be fixed by Maven -> Update Project for individual projects that display errors.
   * Create a Debug configuration as a Java Application.
      * the Main Class is `cbit.vcell.client.test.VCellClientTest`
      * the Program Arguments is `vcellapi-beta.cam.uchc.edu:8080`
