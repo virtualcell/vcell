@@ -126,8 +126,8 @@ public class CLIHandler {
                 out.println("Input path can not be parsed. Please confirm path exists and that it is a directory or file.");
                 exit(2);
             }
-
-            if (!this.isInputPathDirectory && !inPath.getFileName().endsWith("omex") && !inPath.getFileName().endsWith("vcml")){
+            // endsWith in Path is deceiving, it compares the whole string past the last separator, need to convert Paths to String before checking for extension
+            if (!this.isInputPathDirectory && !inPath.getFileName().toString().endsWith("omex") && !inPath.getFileName().toString().endsWith("vcml")){
                 out.println("Invalid input file detected. Check file extension and try again.");
                 exit(2);
             }

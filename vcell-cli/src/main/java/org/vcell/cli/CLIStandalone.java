@@ -178,6 +178,7 @@ public class CLIStandalone {
             throw new Exception(error);
         }
         
+        CLIUtils.removeAndMakeDirs(new File(outputDir));
         utils.generateStatusYaml(inputFileName, outputDir);	// generate Status YAML
         
         // from here on, we need to collect errors, since some subtasks may succeed while other do not
@@ -201,7 +202,7 @@ public class CLIStandalone {
             File outDirForCurrentSedml = new File(omexHandler.getOutputPathFromSedml(sedmlLocation));
 
             try {
-                CLIUtils.makeDirs(outDirForCurrentSedml);
+                CLIUtils.removeAndMakeDirs(outDirForCurrentSedml);
 
                 SedML sedmlFromOmex = Libsedml.readDocument(completeSedmlPath).getSedMLModel();
 
@@ -432,7 +433,7 @@ public class CLIStandalone {
         File outDirForCurrentVcml = new File(Paths.get(outputDir, vcmlName).toString());
 
         try {
-            CLIUtils.makeDirs(outDirForCurrentVcml);
+            CLIUtils.removeAndMakeDirs(outDirForCurrentVcml);
         } catch (Exception e) {
             System.err.println("Error in creating required directories: " + e.getMessage());
             e.printStackTrace(System.err);

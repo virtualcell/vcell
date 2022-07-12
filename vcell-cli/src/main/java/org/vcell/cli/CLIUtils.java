@@ -200,7 +200,7 @@ public class CLIUtils {
         return true;
     }
 
-    public static boolean makeDirs(File f) {
+    public static boolean removeAndMakeDirs(File f) {
         if (f.exists()) {
             boolean isRemoved = CLIUtils.removeDirs(f);
             if (!isRemoved)
