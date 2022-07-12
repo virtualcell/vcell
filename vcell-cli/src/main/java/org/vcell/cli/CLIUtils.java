@@ -767,7 +767,6 @@ public class CLIUtils {
         return exitCode;
     }
 
-
     // Ignoring biosimulator_utils warnings with -W ignore flag
 
     public void genSedmlForSed2DAnd3D(String omexFilePath, String outputDir) throws PythonStreamException {

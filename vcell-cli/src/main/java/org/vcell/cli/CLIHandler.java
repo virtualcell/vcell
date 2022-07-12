@@ -24,8 +24,8 @@ public class CLIHandler {
     String javaVendor = getProperty("java.vendor");
     String machineArch = getProperty("os.arch");
 
-    private static String syntax =   "VCell [-h | -v] [-q] -i <input> -o <outputDir> [-t <milliseconds>] [-c]  [-vcml | - sbml] " 
-                                +   "[-hasDataOnly] [-makeLogsOnly] [-nonSpatialOnly] [-keepTempFiles] [-exactMatchOnly]";
+    private static String syntax =   "VCell [-h | -v] [-q] -i <input> -o <outputDir> [-t <milliseconds>] [-c]  [-vcml | -sbml] " 
+                                +   "[-hasDataOnly] [-makeLogsOnly] [-nonSpatialOnly] [-keepTempFiles] [-exactMatchOnly] [-forceLogFiles]";
     private static String usage = "usage: " + syntax;
 
     public static CLIHandler getCLIHandler(){
@@ -236,6 +236,13 @@ public class CLIHandler {
             "Specifices a timeout duration."
         );
 
+        Option forceLogs = new Option(
+            "forceLogFiles", 
+            false,
+            "Generates log files ordinarily run only for batch execution"
+        
+        );
+
         Options options = new Options();
 
         options.addOption(help);
@@ -252,6 +259,7 @@ public class CLIHandler {
         options.addOption(keepTempFiles);
         options.addOption(exactMatchOnly);
         options.addOption(timeOut);
+        options.addOption(forceLogs);
         return options;
     }
 
@@ -297,6 +305,10 @@ public class CLIHandler {
 
     public boolean isNonSpacialOnly(){
         return this.cmd.hasOption("nonSpatialOnly");
+    }
+
+    public boolean shouldKeepLogs(){
+        return this.cmd.hasOption("forceLogFiles");
     }
 
     public void printHelp() {

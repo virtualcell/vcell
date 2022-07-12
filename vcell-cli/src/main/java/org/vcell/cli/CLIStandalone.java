@@ -52,7 +52,7 @@ public class CLIStandalone {
     private static boolean isBatchExecution(String outputBaseDir) {
     	Path path = Paths.get(outputBaseDir);
     	boolean isDirectory = Files.isDirectory(path);
-    	return isDirectory;
+    	return isDirectory || CLIHandler.getCLIHandler().shouldKeepLogs();
     }
     // publications with multiple models
     public static void writeMultiModelPublications(String outputBaseDir, String s) throws IOException {
