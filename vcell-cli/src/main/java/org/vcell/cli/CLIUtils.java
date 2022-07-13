@@ -984,7 +984,8 @@ public class CLIUtils {
         this.checkPythonInstallation();
 
         // Start Python
-    	ProcessBuilder pb = new ProcessBuilder("python", "-i", "-W ignore");
+        String pythonKeyWord = this.isWindowsPlatform ? "python.exe" : "python3";
+    	ProcessBuilder pb = new ProcessBuilder(pythonKeyWord, "-i", "-W ignore");
     	pb.redirectErrorStream(true);
         CLIUtils.pythonProcess = pb.start();
         CLIUtils.pythonOSW = new OutputStreamWriter(pythonProcess.getOutputStream());
