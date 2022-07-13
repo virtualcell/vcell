@@ -41,7 +41,7 @@ public class CLIStandalone {
         Executable.setTimeoutMS(CLIUtils.EXECUTABLE_MAX_WALLCLOK_MILLIS);
         
         if (cliArgs.inConversionMode()){
-            CLIStandalone.wrappedConvertFiles();
+            CLIStandalone.wrappedConvertFiles(cliArgs);
         } else if (cliArgs.isInputTypeDirectory()){
             CLIStandalone.batchMode(inputFile);
         } else {
@@ -526,9 +526,9 @@ public class CLIStandalone {
         }
     }
 
-    private static void wrappedConvertFiles(){
+    private static void wrappedConvertFiles(CLIHandler cliHandler){
         try (CLIDatabaseService cliDatabaseService = new CLIDatabaseService()) {
-            VcmlOmexConverter.convertFiles(cliDatabaseService);
+            VcmlOmexConverter.convertFiles(cliDatabaseService, cliHandler);
         } catch (IOException | SQLException | DataAccessException e){
             e.printStackTrace(System.err);
         }

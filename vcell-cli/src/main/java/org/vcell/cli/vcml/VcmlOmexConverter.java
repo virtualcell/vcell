@@ -57,21 +57,12 @@ public class VcmlOmexConverter {
 
 	private static Map <String, BioModelInfo> bioModelInfoMap = new LinkedHashMap<>();		// key: biomodel id,   value: biomodel info
 	private static Map <String, BioModelInfo> bioModelInfoMap2 = new LinkedHashMap<>();		// key: biomodel name, value: biomodel info
-	
-	private static boolean bForceVCML = false;		// set by the -vcml CL argument, means we export to omex as vcml (if missing, default we try sbml first)
-	private static boolean bForceSBML = false;		// set by the -sbml CL argument, means we export to omex strictly as sbml (mutually exclusive with -vcml)
-	private static boolean bHasDataOnly = false;	// we only export those simulations that have at least some results; set by -hasDataOnly CL argument
-	private static boolean bMakeLogsOnly = false;	// we do not build omex files, we just write the logs
-	private static boolean bNonSpatialOnly = false;	// we only export non-spatial
-	private static CLIHandler cliHandler;
-	
 	private static Set<String> hasNonSpatialSet = new LinkedHashSet<>();	// model has at least one non spatial application (String is omex name)
 	private static Set<String> hasSpatialSet = new LinkedHashSet<>();		// model has at least one spatial application 
 	private static Set<String> hasBothSet = new LinkedHashSet<>();			// model has both spatial and non-spatial applications
 
 	// TODO: Changes to CLIHandler have made some things here superfluous; this can be trimmed(?).
-	public static void convertFiles(CLIDatabaseService cliDatabaseService) throws IOException, SQLException, DataAccessException {
-		VcmlOmexConverter.cliHandler = CLIHandler.getCLIHandler();
+	public static void convertFiles(CLIDatabaseService cliDatabaseService, CLIHandler cliHandler) throws IOException, SQLException, DataAccessException {
         File input = null;
         try {
             // TODO: handle if it's not valid PATH (NOTE: Changes to CLIHander should make this moot!)
@@ -80,13 +71,12 @@ public class VcmlOmexConverter {
             e1.printStackTrace();
         }
 
-		bForceSBML = cliHandler.shouldForceSbml();
-		bForceVCML = cliHandler.shouldForceVcml();
-		bHasDataOnly = cliHandler.isHasDataOnly();
-		bMakeLogsOnly = cliHandler.isMakeLogsOnly();
-		bNonSpatialOnly = cliHandler.isNonSpacialOnly();
+		boolean bForceSBML = cliHandler.shouldForceSbml();
+		boolean bForceVCML = cliHandler.shouldForceVcml();
+		boolean bHasDataOnly = cliHandler.isHasDataOnly();
+		boolean bMakeLogsOnly = cliHandler.isMakeLogsOnly();
+		boolean bNonSpatialOnly = cliHandler.isNonSpacialOnly();
 
-    	 
 		VCInfoContainer vcic;
 		Map<String, List<String>> publicationToModelMap = new LinkedHashMap<> ();
 				int count = 0;		// number of biomodels with publication info
@@ -159,7 +149,7 @@ public class VcmlOmexConverter {
                 System.out.println(" ============== start: " + inputFile);
                 try {
                     if (inputFile.endsWith(".vcml")) {
-                        boolean isCreated = vcmlToOmexConversion(file.toString(), outputDir, cliDatabaseService);
+                        boolean isCreated = vcmlToOmexConversion(file.toString(), outputDir, cliDatabaseService, cliHandler);
                         if (isCreated) {
                         	System.out.println("Combine archive created for file(s) `" + inputFile + "`");
                         }
@@ -188,7 +178,7 @@ public class VcmlOmexConverter {
             try {
                 assert input != null;
                 if (input.toString().endsWith(".vcml")) {
-                    boolean isCreated = vcmlToOmexConversion(cliHandler.getInputFilePath(), null, cliDatabaseService);
+                    boolean isCreated = vcmlToOmexConversion(cliHandler.getInputFilePath(), null, cliDatabaseService, cliHandler);
                     if (isCreated) System.out.println("Combine archive created for `" + input + "`");
                     else System.err.println("Failed converting VCML to OMEX archive for `" + input + "`");
                 } else System.err.println("No input files found in the directory `" + input + "`");
@@ -200,7 +190,7 @@ public class VcmlOmexConverter {
         }
     }
 
-    public static boolean vcmlToOmexConversion(String inputFilePath, String outputBaseDir, CLIDatabaseService cliDatabaseService) throws XmlParseException, IOException, DataAccessException, SQLException {
+    private static boolean vcmlToOmexConversion(String inputFilePath, String outputBaseDir, CLIDatabaseService cliDatabaseService, CLIHandler cliHandler) throws XmlParseException, IOException, DataAccessException, SQLException {
 
         // Get VCML file path from -i flag
 		int sedmlLevel = 1;
@@ -308,6 +298,12 @@ public class VcmlOmexConverter {
         // NOTE: SEDML exporter exports both SEDML as well as required SBML
         List<Simulation> simsToExport = new ArrayList<Simulation>();
         LinkedHashSet<String> solverNames = new LinkedHashSet<>();
+		boolean bForceSBML = cliHandler.shouldForceSbml();
+		boolean bForceVCML = cliHandler.shouldForceVcml();
+		boolean bHasDataOnly = cliHandler.isHasDataOnly();
+		boolean bMakeLogsOnly = cliHandler.isMakeLogsOnly();
+		boolean bNonSpatialOnly = cliHandler.isNonSpacialOnly();
+
         if (bHasDataOnly) {
         	// make list of simulations to export with only sims that have data on the server
 //        	simsToExport = new ArrayList<Simulation>();
@@ -333,29 +329,6 @@ public class VcmlOmexConverter {
 						break;
 					}
 				}
-				
-//				String dbDriverName = PropertyLoader.getProperty(PropertyLoader.dbDriverName, null);
-//				String dbConnectURL = PropertyLoader.getProperty(PropertyLoader.dbConnectURL, null);
-//				String dbSchemaUser = PropertyLoader.getProperty(PropertyLoader.dbUserid, null);
-//				String dbPassword = PropertyLoader.getSecretValue(PropertyLoader.dbPasswordValue, PropertyLoader.dbPasswordFile);
-//		        DataSetControllerImpl dsControllerImpl = new DataSetControllerImpl(null, new File(outputBaseDir), null);
-//				
-//				code used to recover field data
-//				
-//				HashMap<User, Vector<ExternalDataIdentifier>> allExternalDataIdentifiers = FieldDataDBOperationDriver.getAllExternalDataIdentifiers();
-//				Enumeration<Variable> variables = simulation.getMathDescription().getVariables();
-//				while(variables.hasMoreElements()) {
-//					Variable var = variables.nextElement();
-//					Expression exp = var.getExpression();
-//					FieldFunctionArguments[] ffas = FieldUtilities.getFieldFunctionArguments( exp);
-//					
-//					if(ffas != null && ffas.length > 0) {
-//						 FieldDataIdentifierSpec[] aaa = DataSetControllerImpl.getFieldDataIdentifierSpecs_private(
-//								 ffas, simulation.getVersion().getOwner(), true, allExternalDataIdentifiers);
-//
-//							System.out.println((ffas == null) ? "null" : exp.infix() + ", not null:" + ffas.length);
-//					}
-//				}
 			}
         } else {	// we add them all regardless of having data
         	for (Simulation simulation : bioModel.getSimulations()) {
