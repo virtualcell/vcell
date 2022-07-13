@@ -1,0 +1,38 @@
+[tool.poetry]
+name = "vcell-cli-utils"
+version = "0.7.1"
+description = "Python utility package for VCell CLI Java App"
+authors = ["Virtual Cell"]
+license = "MIT"
+readme = "README.md"
+repository = "https://github.com/virtualcell/vcell"
+keywords = ["HDF5", "Visualization", "YAML", "Fire"]
+classifiers = [
+    'Development Status :: 3 - Alpha',
+    'Intended Audience :: Science/Research',
+    'License :: OSI Approved :: MIT License',
+    'Topic :: Scientific/Engineering :: Bio-Informatics',
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3 :: Only",
+]
+
+[tool.poetry.dependencies]
+python = "^3.9"
+biosimulators_utils = "^0.1.127"
+fire = "^0.4.0"
+PyYAML = "^6.0"
+pandas = "^1.4.3"
+matplotlib = "^3.5.2"
+seaborn = "^0.11.2"
+python-libsbml-experimental = "^5.19.5"
+Deprecated = "^1.2.13"
+
+[tool.poetry.dev-dependencies]
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"

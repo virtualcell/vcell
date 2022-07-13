@@ -982,10 +982,14 @@ public class CLIUtils {
 
         // Confirm we have python properly installed or kill this exe where it stands.
         this.checkPythonInstallation();
+        // install virtual environment
+        // e.g. source /Users/schaff/Library/Caches/pypoetry/virtualenvs/vcell-cli-utils-g4hrdDfL-py3.9/bin/activate
 
         // Start Python
-    	ProcessBuilder pb = new ProcessBuilder("python", "-i", "-W ignore");
+    	ProcessBuilder pb = new ProcessBuilder("poetry", "run", "python", "-i", "-W ignore");
     	pb.redirectErrorStream(true);
+        File cliWorkingDir = PropertyLoader.getRequiredDirectory(PropertyLoader.cliWorkingDir);
+        pb.directory(cliWorkingDir);
         CLIUtils.pythonProcess = pb.start();
         CLIUtils.pythonOSW = new OutputStreamWriter(pythonProcess.getOutputStream());
         CLIUtils.pythonISB = new BufferedReader(new InputStreamReader(pythonProcess.getInputStream()));
@@ -993,11 +997,7 @@ public class CLIUtils {
         // "construction" commands
         try {
             this.getResultsOfLastCommand(); // Clear Buffer of Python Interpeter
-            this.executeThroughPython("import sys");
-            this.executeThroughPython(String.format("sys.path.append(r'%s')", this.utilPath.toString()));
-            this.executeThroughPython(String.format("sys.path.append(r'%s')", this.cliUtilPath.toString()));
-            //this.callPython(String.format("exec(open(\"%s\").read())", sanitizePath(this.wrapperPath.toString())));
-            this.executeThroughPython("import wrapper");
+            this.executeThroughPython("from vcell_cli_utils import wrapper");
             System.out.println("\nPython initalization success!\n");
         } catch (IOException | TimeoutException | InterruptedException e){
             System.out.println("Python instantiation Exception Thrown:\n" + e);
