@@ -20,6 +20,7 @@ import java.util.Hashtable;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -33,6 +34,7 @@ import javax.swing.JTextField;
 import org.vcell.model.rbm.MolecularType;
 import org.vcell.model.rbm.RbmNetworkGenerator.CompartmentMode;
 import org.vcell.model.rbm.RbmUtils;
+import org.vcell.model.rbm.SpeciesPattern;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.Compare;
@@ -40,6 +42,7 @@ import org.vcell.util.Issue;
 import org.vcell.util.Issue.IssueCategory;
 import org.vcell.util.IssueContext;
 import org.vcell.util.IssueContext.ContextType;
+import org.vcell.util.document.KeyValue;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.gui.DialogUtils;
@@ -284,11 +287,15 @@ public abstract class BioCartoonTool extends cbit.gui.graph.gui.CartoonTool {
 		}
 		return fullyMappedStructures;
 	}	
-	private static void mapStructures(Map<Structure, String> fullyMappedStructures, Model modelTo) {
+	private static void mapStructures(Structure structFrom, Map<Structure, String> fullyMappedStructures, Model modelTo) {
 		// all the 'from' structures are now fully mapped to unique names for the paste model
 		// we only need to generate now those structures if they are missing, using these names
 		for (Map.Entry<Structure, String> entry : fullyMappedStructures.entrySet()) {
 			String nameTo = entry.getKey().getName();
+			String otherName = entry.getValue();
+			if(structFrom.getName().equals(nameTo)) {
+				continue;	// this is the source structure and we know it's mapped to something, we don't want to duplicate it
+			}
 			if(modelTo.getStructure(nameTo) != null) {
 				continue;	// this structure is in the pasteModel already, nothing to do, go to the next
 			}
@@ -362,6 +369,7 @@ public abstract class BioCartoonTool extends cbit.gui.graph.gui.CartoonTool {
 //					clonedModel.getRbmModelContainer().addReactionRule(rr);
 //				}
 				clonedModel.getRbmModelContainer().addReactionRules(rulesTo);
+				// TODO: verify here id there's any name clash between species
 				// TODO: paste all the seed species? We'll need to add seed species array to ReactionSpeciesCopy during the Copy action
 				
 				// TODO: make any final verifications in the cloned model here
@@ -370,15 +378,52 @@ public abstract class BioCartoonTool extends cbit.gui.graph.gui.CartoonTool {
 				
 				// otherwise go directly to populating the real model
 				
-				mapStructures(structuresMap, pasteModel);
+				mapStructures(rsCopy.getFromStructure(), structuresMap, pasteModel);
 				pasteMolecules(mtFromListStrict, pasteModel, structuresMap);
 				
 				// we repeat all the steps to paste the rules in the real model instead of the clone
 				rulesTo = pasteRules(rsCopy, pasteModel, structTo, issues, issueContext, structuresMap);
-//				for(ReactionRule rr : rulesTo) {
-//					pasteModel.getRbmModelContainer().addReactionRule(rr);
-//				}
 				pasteModel.getRbmModelContainer().addReactionRules(rulesTo);
+				
+				LinkedHashSet<String> scMap = new LinkedHashSet<String>();
+				SpeciesContext[] speciesContextArr = rsCopy.getSpeciesContextArr();
+				
+				for(SpeciesContext scToPaste : speciesContextArr) {		// make list with all the scToPaste names
+					scMap.add(scToPaste.getName());
+				}
+				for(SpeciesContext scToPaste : speciesContextArr) {
+
+					int count = 0;				// generate unique name for the species
+					String sName = null;
+					String nameRoot = "s";
+					while (true) {
+						sName = nameRoot + count;	
+						if (Model.isNameUnused(sName, pasteModel) && !scMap.contains(sName)) {
+							break;
+						}	
+						count++;
+					}
+					Species sNew = new Species(sName, null);
+					pasteModel.addSpecies(sNew);
+					SpeciesPattern sp = scToPaste.getSpeciesPattern();
+					// SpeciesContext(KeyValue key, String name, Species species, Structure structure, SpeciesPattern speciesPattern)
+					SpeciesContext scNew = new SpeciesContext(null, scToPaste.getName(), sNew, structTo, sp);
+					pasteModel.addSpeciesContext(scNew);
+					System.out.println(sNew.getCommonName() + ", " + scNew.getName());
+				}
+								
+//				for(SpeciesContext sc : pasteModel.getSpeciesContexts()) {
+//					scMap.put(sc.getName(), sc);
+//				}
+//				for(Species s : pasteModel.getSpecies()) {
+//					sMap.put(s.getCommonName(), s);
+//				}
+//				SpeciesContext[] sca = new SpeciesContext[scMap.size()];
+//				scMap.values().toArray(sca);
+//				Species[] sa = new HashSet<Species>(sMap.values()).toArray(new Species[0]);
+//				pasteModel.setSpecies(sa);
+//				pasteModel.setSpeciesContexts(sca);
+
 				System.out.println("done");
 			}
 		};
