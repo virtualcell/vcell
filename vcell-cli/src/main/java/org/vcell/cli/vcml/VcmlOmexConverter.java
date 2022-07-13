@@ -55,12 +55,6 @@ import java.util.*;
 
 public class VcmlOmexConverter {
 
-	private static Map <String, BioModelInfo> bioModelInfoMap = new LinkedHashMap<>();		// key: biomodel id,   value: biomodel info
-	private static Map <String, BioModelInfo> bioModelInfoMap2 = new LinkedHashMap<>();		// key: biomodel name, value: biomodel info
-	private static Set<String> hasNonSpatialSet = new LinkedHashSet<>();	// model has at least one non spatial application (String is omex name)
-	private static Set<String> hasSpatialSet = new LinkedHashSet<>();		// model has at least one spatial application 
-	private static Set<String> hasBothSet = new LinkedHashSet<>();			// model has both spatial and non-spatial applications
-
 	// TODO: Changes to CLIHandler have made some things here superfluous; this can be trimmed(?).
 	public static void convertFiles(CLIDatabaseService cliDatabaseService, CLIHandler cliHandler) throws IOException, SQLException, DataAccessException {
         File input = null;
@@ -78,57 +72,52 @@ public class VcmlOmexConverter {
 		boolean bNonSpatialOnly = cliHandler.isNonSpacialOnly();
 
 		VCInfoContainer vcic;
-		Map<String, List<String>> publicationToModelMap = new LinkedHashMap<> ();
-				int count = 0;		// number of biomodels with publication info
-				List<BioModelInfo> bioModelInfos = cliDatabaseService.queryPublicBioModels();
-				for(BioModelInfo bi : bioModelInfos) {
-					PublicationInfo[] pis = bi.getPublicationInfos();
-					if(pis != null && pis.length > 0) {
-						// let's see what has PublicationInfo
-						String biomodelId = "biomodel_" + bi.getVersion().getVersionKey();
-						System.out.println(biomodelId);
-						count++;
-						for(PublicationInfo pi : pis) {
-							if(pi.getTitle().contains("Computational Modeling of RNase")) {
-								System.out.println(pi.getTitle());
-							}
-							if(publicationToModelMap.containsKey(pi.getTitle())) {
-								List<String> biomodelIds = publicationToModelMap.get(pi.getTitle());
-								biomodelIds.add(biomodelId);
-								publicationToModelMap.put(pi.getTitle(), biomodelIds);
-							} else {
-								List<String> biomodelIds = new ArrayList<String> ();
-								biomodelIds.add(biomodelId);
-								publicationToModelMap.put(pi.getTitle(), biomodelIds);
-							}
-						}
+		Map<String, List<String>> publicationToModelMap = new LinkedHashMap<>();
+		int count = 0;		// number of biomodels with publication info
+		List<BioModelInfo> bioModelInfos = cliDatabaseService.queryPublicBioModels();
+		System.out.println("Found " + bioModelInfos.size() + " public BioNodelInfo objects");
+
+		for(BioModelInfo bi : bioModelInfos) {
+			String biomodelId = "biomodel_" + bi.getVersion().getVersionKey();
+			PublicationInfo[] pis = bi.getPublicationInfos();
+			if(pis != null && pis.length > 0) {
+				// let's see what has PublicationInfo
+				System.out.println(biomodelId);
+				count++;
+				for(PublicationInfo pi : pis) {
+					if(pi.getTitle().contains("Computational Modeling of RNase")) {
+						System.out.println(pi.getTitle());
 					}
-					
-					// build the biomodel id / biomodel info map
-					String biomodelId = "biomodel_" + bi.getVersion().getVersionKey();
-					String biomodelName = bi.getVersion().getName();
-					//String biomodelId2 = "biomodel_" + bi.getModelKey();
-					bioModelInfoMap.put(biomodelId, bi);
-					bioModelInfoMap2.put(biomodelName, bi);
-				}
-				System.out.println("counted published biomodels: " + count);
-				
-				for( Map.Entry<String,List<String>> entry : publicationToModelMap.entrySet()) {
-					String pubTitle = entry.getKey();
-					List<String> models = entry.getValue();
-					if(models.size() > 1) {
-						String row = "";
-						row += pubTitle;
-						for(String model : models) {
-							row += (", " + model);
-						}
-						CLIStandalone.writeMultiModelPublications(cliHandler.getOutputDirPath(), row);
-						System.out.println(row);
+					if(publicationToModelMap.containsKey(pi.getTitle())) {
+						List<String> biomodelIds = publicationToModelMap.get(pi.getTitle());
+						biomodelIds.add(biomodelId);
+						publicationToModelMap.put(pi.getTitle(), biomodelIds);
+					} else {
+						List<String> biomodelIds = new ArrayList<String> ();
+						biomodelIds.add(biomodelId);
+						publicationToModelMap.put(pi.getTitle(), biomodelIds);
 					}
 				}
-		System.out.println("Found " + bioModelInfoMap.size() + " public BioNodelInfo objects");
+			}
+		}
+		System.out.println("counted published biomodels: " + count);
 
+		for( Map.Entry<String,List<String>> entry : publicationToModelMap.entrySet()) {
+			String pubTitle = entry.getKey();
+			List<String> models = entry.getValue();
+			if(models.size() > 1) {
+				String row = "";
+				row += pubTitle;
+				for(String model : models) {
+					row += (", " + model);
+				}
+				CLIStandalone.writeMultiModelPublications(cliHandler.getOutputDirPath(), row);
+				System.out.println(row);
+			}
+		}
 
+		Set<String> hasNonSpatialSet = new LinkedHashSet<String>();
+		Set<String> hasSpatialSet = new LinkedHashSet<String>();
         if (input != null && input.isDirectory()) {
             FilenameFilter filterVcmlFiles = (f, name) -> name.endsWith(".vcml");
             String[] inputFiles = input.list(filterVcmlFiles);		// jusr a list of vcml names, like biomodel-185577495.vcml, ...
@@ -142,14 +131,15 @@ public class VcmlOmexConverter {
             CLIStandalone.writeSimErrorList(outputDir, "hasDataOnly is " + bHasDataOnly);
             CLIStandalone.writeSimErrorList(outputDir, "makeLogsOnly is " + bMakeLogsOnly);
             CLIStandalone.writeSimErrorList(outputDir, "nonSpatialOnly is " + bNonSpatialOnly);
-            
+
 //            assert inputFiles != null;
             for (String inputFile : inputFiles) {
                 File file = new File(input, inputFile);
                 System.out.println(" ============== start: " + inputFile);
                 try {
                     if (inputFile.endsWith(".vcml")) {
-                        boolean isCreated = vcmlToOmexConversion(file.toString(), outputDir, cliDatabaseService, cliHandler);
+                        boolean isCreated = vcmlToOmexConversion(file.toString(), outputDir, cliDatabaseService,
+								cliHandler, hasNonSpatialSet, hasSpatialSet);
                         if (isCreated) {
                         	System.out.println("Combine archive created for file(s) `" + inputFile + "`");
                         }
@@ -168,17 +158,12 @@ public class VcmlOmexConverter {
                     //                   System.exit(1);
                 }
             }
-            for(String name : hasBothSet) {
-            	// if a model has both spatial and non-spatial, we remove it from the other 2
-            	hasNonSpatialSet.remove(name);
-            	hasSpatialSet.remove(name);
-            }
-            CLIStandalone.writeLogForOmexCreation(outputDir, hasNonSpatialSet, hasSpatialSet, hasBothSet);
+            CLIStandalone.writeLogForOmexCreation(outputDir, hasNonSpatialSet, hasSpatialSet);
         } else {
             try {
                 assert input != null;
                 if (input.toString().endsWith(".vcml")) {
-                    boolean isCreated = vcmlToOmexConversion(cliHandler.getInputFilePath(), null, cliDatabaseService, cliHandler);
+                    boolean isCreated = vcmlToOmexConversion(cliHandler.getInputFilePath(), null, cliDatabaseService, cliHandler, hasNonSpatialSet, hasSpatialSet);
                     if (isCreated) System.out.println("Combine archive created for `" + input + "`");
                     else System.err.println("Failed converting VCML to OMEX archive for `" + input + "`");
                 } else System.err.println("No input files found in the directory `" + input + "`");
@@ -190,7 +175,10 @@ public class VcmlOmexConverter {
         }
     }
 
-    private static boolean vcmlToOmexConversion(String inputFilePath, String outputBaseDir, CLIDatabaseService cliDatabaseService, CLIHandler cliHandler) throws XmlParseException, IOException, DataAccessException, SQLException {
+    private static boolean vcmlToOmexConversion(String inputFilePath, String outputBaseDir,
+												CLIDatabaseService cliDatabaseService, CLIHandler cliHandler,
+												Set<String> hasNonSpatialSet, Set<String> hasSpatialSet
+	) throws XmlParseException, IOException, DataAccessException, SQLException {
 
         // Get VCML file path from -i flag
 		int sedmlLevel = 1;
@@ -204,8 +192,17 @@ public class VcmlOmexConverter {
         // get VCML name from VCML path
         //String vcmlName = inputVcmlFile.split(File.separator, 10)[inputVcmlFile.split(File.separator, 10).length - 1].split("\\.", 5)[0];
         String vcmlName = FilenameUtils.getBaseName(inputVcmlFile);		// platform independent, strips extension too
-        
-        File vcmlFilePath = new File(inputVcmlFile);
+
+		// recover the bioModelInfo
+		List<BioModelInfo> publicBioModelInfos = cliDatabaseService.queryPublicBioModels();
+		BioModelInfo bioModelInfo = null;
+		for (BioModelInfo bmi : publicBioModelInfos){
+			if (vcmlName.equals("biomodel_"+bmi.getVersion().getVersionKey()) || vcmlName.equals(bmi.getVersion().getName())){
+				bioModelInfo = bmi;
+			}
+		}
+
+		File vcmlFilePath = new File(inputVcmlFile);
         // Create biomodel
         BioModel bioModel = XmlHelper.XMLToBioModel(new XMLSource(vcmlFilePath));
         
@@ -365,14 +362,8 @@ public class VcmlOmexConverter {
 			SolverDescription sd = simulation.getSolverTaskDescription().getSolverDescription();
 			if(sd.isSpatial()) {
 				hasSpatialSet.add(vcmlName);
-				if(hasNonSpatialSet.contains(vcmlName)) {
-					hasBothSet.add(vcmlName);
-				}
 			} else {
 				hasNonSpatialSet.add(vcmlName);
-				if(hasSpatialSet.contains(vcmlName)) {
-					hasBothSet.add(vcmlName);
-				}
 			}
 		}
         if(bMakeLogsOnly) {
@@ -394,7 +385,7 @@ public class VcmlOmexConverter {
         	System.out.println("Diagram not present!");
         }
 
-        String rdfString = getMetadata(vcmlName, bioModel, destination);
+        String rdfString = getMetadata(vcmlName, bioModel, destination, bioModelInfo);
         XmlUtil.writeXMLStringToFile(rdfString, String.valueOf(Paths.get(outputDir, "metadata.rdf")), true);
         
         SEDMLExporter sedmlExporter = new SEDMLExporter(bioModel, sedmlLevel, sedmlVersion, simsToExport);
@@ -517,18 +508,13 @@ public class VcmlOmexConverter {
     }
 
 	
-    private static String getMetadata(String vcmlName, BioModel bioModel, File diagram) {
+    private static String getMetadata(String vcmlName, BioModel bioModel, File diagram, BioModelInfo bioModelInfo) {
     	String ret = "";
         String ns = DefaultNameSpaces.EX.uri;
 
 		Graph graph = new HashGraph();
 		Graph schema = new HashGraph();
 
-        // recover the bioModelInfo
-        BioModelInfo bioModelInfo = bioModelInfoMap.get(vcmlName);		// we first assume that vcml name is the model id
-        if(bioModelInfo == null) {										// if not, we try based on biomodel name
-        	bioModelInfo = bioModelInfoMap2.get(vcmlName);
-        }
         if(bioModelInfo == null) {								// perhaps it's not public, in which case is not in the map
         	String description = "http://omex-library.org/" + vcmlName + ".omex";	// make an empty rdf file
         	URI descriptionURI = ValueFactoryImpl.getInstance().createURI(description);

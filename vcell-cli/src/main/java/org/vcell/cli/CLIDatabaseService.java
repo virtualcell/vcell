@@ -15,15 +15,19 @@ import java.util.List;
 
 public class CLIDatabaseService implements AutoCloseable {
     private ConnectionFactory conFactory = null;
+    private List<BioModelInfo> publicBioModelInfos = null;
 
     public CLIDatabaseService() throws SQLException {
         conFactory = DatabaseService.getInstance().createConnectionFactory();
     }
 
     public List<BioModelInfo> queryPublicBioModels() throws SQLException, DataAccessException {
-        AdminDBTopLevel adminDbTopLevel = new AdminDBTopLevel(conFactory);
-        VCInfoContainer vcic = adminDbTopLevel.getPublicOracleVCInfoContainer(false);
-        return Arrays.asList(vcic.getBioModelInfos());
+        if (publicBioModelInfos == null) {
+            AdminDBTopLevel adminDbTopLevel = new AdminDBTopLevel(conFactory);
+            VCInfoContainer vcic = adminDbTopLevel.getPublicOracleVCInfoContainer(false);
+            publicBioModelInfos = Arrays.asList(vcic.getBioModelInfos());
+        }
+        return publicBioModelInfos;
     }
 
     public SimulationJobStatusPersistent[] querySimulationJobStatus(KeyValue simKey) throws SQLException, DataAccessException {
