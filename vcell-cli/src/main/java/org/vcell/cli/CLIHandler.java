@@ -24,7 +24,7 @@ public class CLIHandler {
     String javaVendor = getProperty("java.vendor");
     String machineArch = getProperty("os.arch");
 
-    private static String syntax =   "VCell [-h | -v] [-q] -i <input> -o <outputDir> [-t <milliseconds>] [-c]  [-vcml | -sbml] " 
+    private static String syntax =   "VCell [-h | -v] [-q] -i <ARCHIVE> -o <OUT_DIR> [-t <milliseconds>] [-c]  [-vcml | -sbml] " 
                                 +   "[-hasDataOnly] [-makeLogsOnly] [-nonSpatialOnly] [-keepTempFiles] [-exactMatchOnly] [-forceLogFiles]";
     private static String usage = "usage: " + syntax;
 
@@ -161,14 +161,14 @@ public class CLIHandler {
 
         Option input = new Option(
             "i",
-            "input",
+            "archive",
             true,
             "Path to OMEX/COMBINE Archive which contains one or more SED-ML encoded simulation experiments, or VCML file"
         );
 
         Option output = new Option(
             "o",
-            "outputDir",
+            "out-dir",
             true,
             "Directory to save outputs or the converted OMEX Archive from VCML file"
         );
