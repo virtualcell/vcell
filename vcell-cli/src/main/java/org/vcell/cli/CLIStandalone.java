@@ -9,6 +9,7 @@ import org.vcell.cli.CLIUtils.Status;
 import org.vcell.cli.vcml.VCMLHandler;
 
 import org.vcell.cli.vcml.VcmlOmexConverter;
+import org.vcell.util.DataAccessException;
 import org.vcell.util.GenericExtensionFilter;
 import org.vcell.util.exe.Executable;
 import org.vcell.util.FileUtils;
@@ -20,6 +21,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -525,9 +527,9 @@ public class CLIStandalone {
     }
 
     private static void wrappedConvertFiles(){
-        try {
-            VcmlOmexConverter.convertFiles();
-        } catch (IOException e){
+        try (CLIDatabaseService cliDatabaseService = new CLIDatabaseService()) {
+            VcmlOmexConverter.convertFiles(cliDatabaseService);
+        } catch (IOException | SQLException | DataAccessException e){
             e.printStackTrace(System.err);
         }
     }

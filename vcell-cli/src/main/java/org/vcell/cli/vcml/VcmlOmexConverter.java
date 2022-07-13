@@ -2,102 +2,59 @@ package org.vcell.cli.vcml;
 
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.biomodel.BioModel;
-import cbit.vcell.field.FieldDataIdentifierSpec;
 import cbit.vcell.field.FieldFunctionArguments;
 import cbit.vcell.field.FieldUtilities;
-import cbit.vcell.field.db.FieldDataDBOperationDriver;
-import cbit.vcell.geometry.GeometryInfo;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.Variable;
-import cbit.vcell.modeldb.AdminDBTopLevel;
 import cbit.vcell.parser.Expression;
-import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.server.SimulationJobStatusPersistent;
-import cbit.vcell.simdata.DataSetControllerImpl;
 import cbit.vcell.solver.Simulation;
-import cbit.vcell.solver.SimulationInfo;
 import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.util.NativeLoader;
 import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XmlHelper;
 import cbit.vcell.xml.XmlParseException;
-
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.lang3.ArrayUtils;
-import org.eclipse.jetty.util.resource.Resource;
 import org.jlibsedml.SEDMLDocument;
 import org.jlibsedml.SedML;
-import org.openrdf.model.BNode;
 import org.openrdf.model.Graph;
 import org.openrdf.model.Literal;
-import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
-import org.openrdf.model.Value;
-import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.ValueFactoryImpl;
-import org.openrdf.model.vocabulary.OWL;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandlerException;
-import org.sbml.libcombine.CaOmexManifest;
 import org.sbml.libcombine.CombineArchive;
 import org.sbml.libcombine.KnownFormats;
 import org.sbpax.impl.HashGraph;
 import org.sbpax.schemas.BioPAX3;
 import org.sbpax.schemas.util.DefaultNameSpaces;
 import org.sbpax.schemas.util.OntUtil;
-import org.sbpax.schemas.util.SBPAX3Util;
 import org.sbpax.util.SesameRioUtil;
+import org.vcell.cli.CLIDatabaseService;
 import org.vcell.cli.CLIHandler;
 import org.vcell.cli.CLIStandalone;
-import org.vcell.cli.OmexHandler;
-import org.vcell.db.ConnectionFactory;
-import org.vcell.db.DatabaseService;
 import org.vcell.sedml.PubMet;
 import org.vcell.sedml.SEDMLExporter;
 import org.vcell.util.DataAccessException;
-import org.vcell.util.document.BioModelInfo;
-import org.vcell.util.document.ExternalDataIdentifier;
-import org.vcell.util.document.KeyValue;
-import org.vcell.util.document.MathModelInfo;
-import org.vcell.util.document.PublicationInfo;
-import org.vcell.util.document.User;
-import org.vcell.util.document.VCInfoContainer;
-import org.vcell.util.document.Version;
+import org.vcell.util.document.*;
 
 import java.beans.PropertyVetoException;
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
 import java.net.URL;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.Vector;
+import java.util.*;
 
 public class VcmlOmexConverter {
 
-    private static ConnectionFactory conFactory;
-	private static AdminDBTopLevel adminDbTopLevel;
 	private static Map <String, BioModelInfo> bioModelInfoMap = new LinkedHashMap<>();		// key: biomodel id,   value: biomodel info
 	private static Map <String, BioModelInfo> bioModelInfoMap2 = new LinkedHashMap<>();		// key: biomodel name, value: biomodel info
 	
@@ -113,7 +70,7 @@ public class VcmlOmexConverter {
 	private static Set<String> hasBothSet = new LinkedHashSet<>();			// model has both spatial and non-spatial applications
 
 	// TODO: Changes to CLIHandler have made some things here superfluous; this can be trimmed(?).
-	public static void convertFiles() throws IOException {
+	public static void convertFiles(CLIDatabaseService cliDatabaseService) throws IOException, SQLException, DataAccessException {
 		VcmlOmexConverter.cliHandler = CLIHandler.getCLIHandler();
         File input = null;
         try {
@@ -130,30 +87,15 @@ public class VcmlOmexConverter {
 		bNonSpatialOnly = cliHandler.isNonSpacialOnly();
 
     	 
-		try {
-			conFactory = DatabaseService.getInstance().createConnectionFactory();
-			adminDbTopLevel = new AdminDBTopLevel(conFactory);
-		} catch (SQLException e) {
-			System.err.println("\n\n\n=====>>>>EXPORT FAILED: connection to database failed");
-			e.printStackTrace();
-		}
-		
 		VCInfoContainer vcic;
 		Map<String, List<String>> publicationToModelMap = new LinkedHashMap<> ();
-		try {
-			vcic = adminDbTopLevel.getPublicOracleVCInfoContainer(false);
-			if(vcic != null) {
-				User user = vcic.getUser();
-				BioModelInfo[] bioModelInfos = vcic.getBioModelInfos();
-//				GeometryInfo[] geometryInfos = vcic.getGeometryInfos();
-//				MathModelInfo[] mathModelInfos = vcic.getMathModelInfos();
 				int count = 0;		// number of biomodels with publication info
+				List<BioModelInfo> bioModelInfos = cliDatabaseService.queryPublicBioModels();
 				for(BioModelInfo bi : bioModelInfos) {
 					PublicationInfo[] pis = bi.getPublicationInfos();
 					if(pis != null && pis.length > 0) {
 						// let's see what has PublicationInfo
 						String biomodelId = "biomodel_" + bi.getVersion().getVersionKey();
-//						String biomodelName = bi.getVersion().getName();
 						System.out.println(biomodelId);
 						count++;
 						for(PublicationInfo pi : pis) {
@@ -179,7 +121,7 @@ public class VcmlOmexConverter {
 					bioModelInfoMap.put(biomodelId, bi);
 					bioModelInfoMap2.put(biomodelName, bi);
 				}
-				System.out.println("User: " + user.getName() + "   count published biomodels: " + count);
+				System.out.println("counted published biomodels: " + count);
 				
 				for( Map.Entry<String,List<String>> entry : publicationToModelMap.entrySet()) {
 					String pubTitle = entry.getKey();
@@ -194,11 +136,6 @@ public class VcmlOmexConverter {
 						System.out.println(row);
 					}
 				}
-			}
-		} catch (SQLException | DataAccessException e1) {
-			System.err.println("\n\n\n=====>>>>EXPORT FAILED: failed to retrieve metadata");
-			e1.printStackTrace();
-		}
 		System.out.println("Found " + bioModelInfoMap.size() + " public BioNodelInfo objects");
 
 
@@ -222,7 +159,7 @@ public class VcmlOmexConverter {
                 System.out.println(" ============== start: " + inputFile);
                 try {
                     if (inputFile.endsWith(".vcml")) {
-                        boolean isCreated = vcmlToOmexConversion(file.toString(), outputDir);
+                        boolean isCreated = vcmlToOmexConversion(file.toString(), outputDir, cliDatabaseService);
                         if (isCreated) {
                         	System.out.println("Combine archive created for file(s) `" + inputFile + "`");
                         }
@@ -251,7 +188,7 @@ public class VcmlOmexConverter {
             try {
                 assert input != null;
                 if (input.toString().endsWith(".vcml")) {
-                    boolean isCreated = vcmlToOmexConversion(cliHandler.getInputFilePath(), null);
+                    boolean isCreated = vcmlToOmexConversion(cliHandler.getInputFilePath(), null, cliDatabaseService);
                     if (isCreated) System.out.println("Combine archive created for `" + input + "`");
                     else System.err.println("Failed converting VCML to OMEX archive for `" + input + "`");
                 } else System.err.println("No input files found in the directory `" + input + "`");
@@ -263,7 +200,7 @@ public class VcmlOmexConverter {
         }
     }
 
-    public static boolean vcmlToOmexConversion(String inputFilePath, String outputBaseDir) throws XmlParseException, IOException, DataAccessException, SQLException {
+    public static boolean vcmlToOmexConversion(String inputFilePath, String outputBaseDir, CLIDatabaseService cliDatabaseService) throws XmlParseException, IOException, DataAccessException, SQLException {
 
         // Get VCML file path from -i flag
 		int sedmlLevel = 1;
@@ -383,7 +320,7 @@ public class VcmlOmexConverter {
 				solverNames.add(solverName);
 				// check server status
 				KeyValue parentKey = simulation.getSimulationVersion().getParentSimulationReference();
-				SimulationJobStatusPersistent[] statuses = adminDbTopLevel.getSimulationJobStatusArray(parentKey == null ? simulation.getKey() : parentKey, false);
+				SimulationJobStatusPersistent[] statuses = cliDatabaseService.querySimulationJobStatus(parentKey == null ? simulation.getKey() : parentKey);
 				if (statuses == null) {
 					continue;
 				}
