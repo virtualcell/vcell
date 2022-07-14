@@ -4,7 +4,6 @@ version = "0.7.1"
 description = "Python utility package for VCell CLI Java App"
 authors = ["Virtual Cell"]
 license = "MIT"
-readme = "README.md"
 repository = "https://github.com/virtualcell/vcell"
 keywords = ["HDF5", "Visualization", "YAML", "Fire"]
 classifiers = [

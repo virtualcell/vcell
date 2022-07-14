@@ -29,7 +29,7 @@ LABEL \
 
 RUN apt-get -y update
 RUN apt-get install -y --no-install-recommends curl openjdk-8-jre dnsutils
-RUN apt-get install -y python3 python3-pip
+RUN apt-get install -y python3.9 python3-pip python3.9-venv
 
 RUN mkdir -p /usr/local/app/vcell/lib && \
     mkdir -p /usr/local/app/vcell/simulation && \
@@ -59,9 +59,10 @@ COPY ./vcell-client/target/vcell-client-0.0.1-SNAPSHOT.jar \
 
 # Install required python-packages
 COPY ./vcell-cli-utils/ /usr/local/app/vcell/installDir/python/vcell_cli_utils/
-RUN curl -sSL https://install.python-poetry.org | python3 -
+RUN curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python3 - && \
+    echo export PATH="$HOME/.poetry/bin:$PATH" >> $HOME/.bashrc
 RUN cd /usr/local/app/vcell/installDir/python/vcell_cli_utils/ && \
-    poetry install
+    . $HOME/.bashrc && poetry install
 
 # Add linux local solvers only
 ADD ./localsolvers /usr/local/app/vcell/installDir/localsolvers
