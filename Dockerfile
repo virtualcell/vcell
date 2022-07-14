@@ -59,7 +59,9 @@ COPY ./vcell-client/target/vcell-client-0.0.1-SNAPSHOT.jar \
 
 # Install required python-packages
 COPY ./vcell-cli-utils/ /usr/local/app/vcell/installDir/python/vcell_cli_utils/
-RUN pip install -r /usr/local/app/vcell/installDir/python/vcell_cli_utils/requirements.txt
+RUN curl -sSL https://install.python-poetry.org | python3 -
+RUN cd /usr/local/app/vcell/installDir/python/vcell_cli_utils/ && \
+    poetry install
 
 # Add linux local solvers only
 ADD ./localsolvers /usr/local/app/vcell/installDir/localsolvers
