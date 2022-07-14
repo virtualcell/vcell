@@ -62,7 +62,7 @@ COPY ./vcell-cli-utils/ /usr/local/app/vcell/installDir/python/vcell_cli_utils/
 RUN curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python3 - && \
     echo export PATH="$HOME/.poetry/bin:$PATH" >> $HOME/.bashrc
 RUN cd /usr/local/app/vcell/installDir/python/vcell_cli_utils/ && \
-    . $HOME/.bashrc && poetry install
+    . $HOME/.bashrc && poetry install --dev
 
 # Add linux local solvers only
 ADD ./localsolvers /usr/local/app/vcell/installDir/localsolvers
