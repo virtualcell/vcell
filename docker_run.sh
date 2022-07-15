@@ -29,4 +29,5 @@ java \
   -Dvcell.mongodb.database="localhost" \
   -Dvcell.mongodb.host.internal="localhost" \
   -Dvcell.mongodb.port.internal=27017 \
+  -Dcli.workingDir=/usr/local/app/vcell/installDir/python/vcell_cli_utils/ \
   org.vcell.cli.CLIStandalone "$@"

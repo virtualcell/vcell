@@ -102,12 +102,14 @@
 			<version>1.4</version>
 		</dependency>
 		<!-- https://mvnrepository.com/artifact/com.mxgraph/jgraphx -->
+		<!-- https://mavenlibs.com/maven/dependency/org.tinyjee.jgraphx/jgraphx -->
 		<dependency>
-			<groupId>com.mxgraph</groupId>
+			<groupId>org.tinyjee.jgraphx</groupId>
 			<artifactId>jgraphx</artifactId>
-			<version>1.10.4.2</version>
+			<version>1.13.0.0</version>
 		</dependency>
 
 
 	</dependencies>
 </project>
+
