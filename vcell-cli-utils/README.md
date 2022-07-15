@@ -12,7 +12,7 @@ cd /vcell/vcell-cli-utils
 poetry install
 ```
 
-# to Run CLI interactively
+# Run CLI in Poetry VM (get man page)
 runs module from within virtual environment
 ```bash
 cd /vcell/vcell-cli-utils
