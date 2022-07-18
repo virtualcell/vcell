@@ -9,6 +9,7 @@ import org.vcell.cli.CLIUtils.Status;
 import org.vcell.cli.vcml.VCMLHandler;
 
 import org.vcell.cli.vcml.VcmlOmexConverter;
+import org.vcell.util.DataAccessException;
 import org.vcell.util.GenericExtensionFilter;
 import org.vcell.util.exe.Executable;
 import org.vcell.util.FileUtils;
@@ -20,12 +21,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
-import java.util.List;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Set;
-
+import java.sql.SQLException;
+import java.util.*;
 
 
 public class CLIStandalone {
@@ -39,7 +36,7 @@ public class CLIStandalone {
         Executable.setTimeoutMS(CLIUtils.EXECUTABLE_MAX_WALLCLOK_MILLIS);
         
         if (cliArgs.inConversionMode()){
-            CLIStandalone.wrappedConvertFiles();
+            CLIStandalone.wrappedConvertFiles(cliArgs);
         } else if (cliArgs.isInputTypeDirectory()){
             CLIStandalone.batchMode(inputFile);
         } else {
@@ -109,18 +106,24 @@ public class CLIStandalone {
     	}
    	}
     // when creating the omex files from vcml, we write here the list of models that have spatial, non-spatial or both applications
-    public static void writeLogForOmexCreation(String outputBaseDir, Set<String> hasNonSpatialSet, Set<String> hasSpatialSet, Set<String> hasBothSet) throws IOException {
+    public static void writeLogForOmexCreation(String outputBaseDir, Set<String> hasNonSpatialSet, Set<String> hasSpatialSet) throws IOException {
     	if(isBatchExecution(outputBaseDir)) {
     		String s = "";
     		s += "Only Non-spatial applications\n";
     		for(String name : hasNonSpatialSet) {
-    			s += (name + "\n");
+                if (!hasSpatialSet.contains(name)) {
+                    s += (name + "\n");
+                }
     		}
     		s += "\nOnly Spatial applications\n";
     		for(String name : hasSpatialSet) {
-    			s += (name + "\n");
+                if (!hasNonSpatialSet.contains(name)) {
+                    s += (name + "\n");
+                }
     		}
     		s += "\nBoth Spatial and Non-Spatial applications\n";
+            Set<String> hasBothSet = new LinkedHashSet<>(hasSpatialSet);
+            hasBothSet.addAll(hasNonSpatialSet);
     		for(String name : hasBothSet) {
     			s += (name + "\n");
     		}
@@ -524,10 +527,10 @@ public class CLIStandalone {
         }
     }
 
-    private static void wrappedConvertFiles(){
-        try {
-            VcmlOmexConverter.convertFiles();
-        } catch (IOException e){
+    private static void wrappedConvertFiles(CLIHandler cliHandler){
+        try (CLIDatabaseService cliDatabaseService = new CLIDatabaseService()) {
+            VcmlOmexConverter.convertFiles(cliDatabaseService, cliHandler);
+        } catch (IOException | SQLException | DataAccessException e){
             e.printStackTrace(System.err);
         }
     }
