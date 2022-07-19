@@ -182,7 +182,7 @@ public class RickyTest extends ContextCommand{
 	@Override
 	public void run() {
 		
-	System.out.println(Action);
+	//System.out.println(Action);
 	
 	 if (Action.equals("Line Plot")) {
 		 try {
