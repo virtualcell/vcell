@@ -57,30 +57,37 @@ mvn clean install dependency:copy-dependencies
 Requirements:  Eclipse IDE for Java Developers and Java JDK 1.8 or later
 
   * Start Eclipse
-  * In Eclipse: Project Explorer -> Import -> Projects from Git (smart import) -> Clone URI -> Paste `https://github.com/virtualcell/vcell.git`, follow all next steps
-      * If git is installed, you can install VCell client from a local repository:
+  * In Eclipse: Project Explorer -> Import -> Git -> Projects from Git (with smart import) -> Next -> Clone URI -> Paste under URI `https://github.com/virtualcell/vcell.git` -> Next -> Deselect all, Select `master` -> Next -> Next.
+      * Alternative way of installing: If git is installed, you can install VCell client from a local repository:
           * Open CommandPrompt, navigate to the Eclipse workspace folder.
           * Clone the VCell client using git: `git clone https://github.com/virtualcell/vcell`
           * During Eclipse setup, use an option -> Existing local repository, follow all next steps
   * Make sure the project comes in as a Maven project (letter `M` on the top of the project, not `J`), otherwise you need to add it to Maven
   * Build the project in Eclipse (should start automatically, may come with several errors due to different build order).
-  * Errors in individual projects can be fixed by Maven -> Update Project for individual projects that display errors.
+  * Errors in individual projects can be fixed by Maven -> Update Project for individual projects that display errors. 
   * Create a Debug configuration as a Java Application.
-     * the Main Class is `cbit.vcell.client.test.VCellClientTest`
-     * the Program Arguments is `vcellapi-beta.cam.uchc.edu:8080`
-     * the VM needed arguments are:
-         * the installation directory: `-Dvcell.installDir=<your install dir>`
-         * the software version: `-Dvcell.softwareVersion=...`
-           * for example:
+     * Name: VCellClient
+     * Main: 
+         * Project: `vcell-client`
+         * Main Class: `cbit.vcell.client.test.VCellClientTest`
+     * Arguments:
+         * Program arguments: `vcellapi-beta.cam.uchc.edu:8080`
+         * VM arguments are:
+             * the installation directory: `-Dvcell.installDir=<your install dir>`
+             * the software version: `-Dvcell.softwareVersion=...`
+             * (optional) the ImageJ plugin: `-Dvcell.imagej.plugin.url=http://vcell.org/webstart/`
+             * for example:
            
                WINDOWS
                ```
-               -Dvcell.installDir=G:\\dan\\jprojects\\git\\vcell 
+               -Dvcell.installDir=G:\dan\jprojects\git\vcell 
+               -Dvcell.imagej.plugin.url=http:\vcell.org\webstart\
                -Dvcell.softwareVersion=DanDev_Version_7.0_build_99
                ```
                MAC:
                ```
                -Dvcell.installDir=/Users/mike/eclipse-workspace2/vcell
+               -Dvcell.imagej.plugin.url=http://vcell.org/webstart/
                -Dvcell.softwareVersion=MikeDev_Version_7.0_build_99           
                ```
       * Make sure JRE is 1.8 or newer (build-in Eclipse JRE may case problems)
