@@ -14,6 +14,7 @@ import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.GridBagLayout;
 import java.awt.GridLayout;
+import java.awt.Image;
 import java.awt.Rectangle;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
@@ -106,6 +107,8 @@ import java.awt.FlowLayout;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
+
 import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
@@ -153,8 +156,16 @@ public class VCellPlugin extends ContextCommand {
 	         public void actionPerformed(ActionEvent event) {
 		         JFrame e = new JFrame(type + " Help");    
 		   		 JPanel panel =new JPanel();
-		     	 JLabel picLabel = new JLabel(new ImageIcon("/Users/ricky/Downloads/VCellHelpLogo.png"));
-		   		 panel.add(picLabel);
+		   		Image image;
+				try {
+
+				    URL url = new URL("https://vcell.org/wp-content/uploads/2022/03/VCellLogoCrop-1.png");
+				    image = ImageIO.read(url);
+				    JLabel picLabel = new JLabel(new ImageIcon(image));
+				    panel.add(picLabel,0,0);
+				} catch (Exception exp) {
+				    exp.printStackTrace();
+				}
 		   		 panel.add(new JLabel("example text"));
 	    		 e.add(panel);
 	     		 e.setSize(500,200);            
@@ -404,10 +415,17 @@ public class VCellPlugin extends ContextCommand {
 				}
 			};
 			
-		
-			JLabel VCellLogo = new JLabel(new ImageIcon("/Users/ricky/Downloads/vcellLogo.png"));
+			Image image;
+			try {
+
+			    URL url = new URL("https://vcell.org/wp-content/uploads/2022/03/VCellLogoCrop-1.png");
+			    image = ImageIO.read(url);
+			    JLabel VCellLogo = new JLabel(new ImageIcon(image));
+			    jp.add(VCellLogo,0,0);
+			} catch (Exception exp) {
+			    exp.printStackTrace();
+			}
 			
-			jp.add(VCellLogo,0,0);
 			jp.add(new JLabel(""));
 			jp.add(new JLabel(""));
 			
@@ -417,7 +435,6 @@ public class VCellPlugin extends ContextCommand {
 			final boolean[] bUseVCellSelectionHolder = new boolean[] {false};
 
 			//jcbModelType
-			JButton modelTypeHelp = new JButton("?");
 					
 			
 			helpPopup("Model Type", jp);
