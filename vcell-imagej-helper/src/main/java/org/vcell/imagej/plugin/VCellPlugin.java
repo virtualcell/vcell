@@ -12,6 +12,7 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Frame;
+import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.awt.Rectangle;
 import java.awt.Window;
@@ -73,6 +74,7 @@ import org.vcell.imagej.helper.VCellHelper.IJVarInfos;
 import org.vcell.imagej.helper.VCellHelper.ModelType;
 import org.vcell.imagej.helper.VCellHelper.VCellModelSearchResults;
 
+
 import ij.IJ;
 import ij.ImagePlus;
 import ij.ImageStack;
@@ -100,6 +102,18 @@ import net.imglib2.img.array.ArrayImgs;
 import net.imglib2.img.basictypeaccess.array.DoubleArray;
 import net.imglib2.type.numeric.real.DoubleType;
 import net.imglib2.util.Pair;
+import java.awt.FlowLayout;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
+import javax.imageio.ImageIO;
+import javax.swing.ImageIcon;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import javax.swing.JOptionPane;
 
 
 /**
@@ -131,16 +145,34 @@ public class VCellPlugin extends ContextCommand {
 //	System.out.println(service.getDefaultUI().getApplicationFrame().getClass().getName()+" "+(service.getDefaultUI().getApplicationFrame() instanceof Frame));
 
 		private static Frame mainApplicationFrame;
+		
+	public static void helpPopup(String type, JPanel panel) {
+		JButton button = new JButton("?");
+		panel.add(button);
+		ActionListener buttonAction = new ActionListener() {
+	         public void actionPerformed(ActionEvent event) {
+		         JFrame e = new JFrame(type + " Help");    
+		   		 JPanel panel =new JPanel();
+		     	 JLabel picLabel = new JLabel(new ImageIcon("/Users/ricky/Downloads/VCellHelpLogo.png"));
+		   		 panel.add(picLabel);
+		   		 panel.add(new JLabel("example text"));
+	    		 e.add(panel);
+	     		 e.setSize(500,200);            
+	    		 e.setVisible(true);
+	        	 //uiService.showDialog("example text","Model Type Help", MessageType.INFORMATION_MESSAGE);
+	         }
+	      };
+	      button.addActionListener(buttonAction);		
+	 }
 	
 	public static class StyledComboBoxUI extends BasicComboBoxUI {
 		  protected ComboPopup createPopup() {
 		    @SuppressWarnings("serial")
 			BasicComboPopup popup = new BasicComboPopup(comboBox) {
+		     //not for user interface
 		      @Override
 		      protected Rectangle computePopupBounds(int px,int py,int pw,int ph) {
-		        return super.computePopupBounds(
-		            px,py,Math.max(comboBox.getPreferredSize().width,pw),ph
-		        );
+		        return super.computePopupBounds(px,py,Math.max(comboBox.getPreferredSize().width,pw),ph);
 		      }
 		    };
 		    popup.getAccessibleContext().setAccessibleParent(comboBox);
@@ -361,23 +393,42 @@ public class VCellPlugin extends ContextCommand {
 //			}
 			
 			//ApplicationFrame applicationFrame = uiService.getDefaultUI().getApplicationFrame();
-			final Dimension dim = new Dimension(300,120);
+			
+			//controls size of panel
+			final Dimension dim = new Dimension(350,300);
 			@SuppressWarnings("serial")
-			final JPanel jp = new JPanel() {
+			 JPanel jp = new JPanel() {
 				@Override
 				public Dimension getPreferredSize() {
 					return dim;
 				}
 			};
-			jp.setLayout(new GridLayout(8,2));
+			
+		
+			JLabel VCellLogo = new JLabel(new ImageIcon("/Users/ricky/Downloads/vcellLogo.png"));
+			
+			jp.add(VCellLogo,0,0);
+			jp.add(new JLabel(""));
+			jp.add(new JLabel(""));
+			
+			
+			jp.setLayout(new GridLayout(8,3,0,10));
 			
 			final boolean[] bUseVCellSelectionHolder = new boolean[] {false};
 
 			//jcbModelType
+					
+			
+			helpPopup("Model Type", jp);
 			jp.add(new JLabel("Model Type"));
 			jp.add(jcbModelType);
 			
+			//jp.add(new JLabel(""));	
+			//jp.add(new JLabel(""));	
 			
+					
+			
+			helpPopup("User ID", jp);
 			jp.add(new JLabel("VCell Userid"));
 //			JComboBox<String> jcbUserid = new StyledComboBox<String>(useridSet.toArray(new String[0]));
 			jcbModelType.addActionListener(new ActionListener() {
@@ -413,8 +464,16 @@ public class VCellPlugin extends ContextCommand {
 								}});
 						}}).start();
 				}});
+			
+			
+			
 			jp.add(jcbUserid);
-
+			
+			
+					
+			
+			helpPopup("Model Name", jp);
+			
 			jp.add(new JLabel("Model Name"));
 //			JComboBox<String> jcbModelNames = new StyledComboBox<String>(mapUseridToModelNameTime.get(jcbUserid.getSelectedItem()).toArray(new String[0]));
 			jcbUserid.addActionListener(new ActionListener() {
@@ -436,9 +495,10 @@ public class VCellPlugin extends ContextCommand {
 						}
 					}
 				}});
-			jp.add(jcbModelNames);
-
 			
+			jp.add(jcbModelNames);
+			
+			helpPopup("App Name", jp);
 			jp.add(new JLabel("App Name"));
 //			JComboBox<String> jcbAppNames = new StyledComboBox<String>(mapModelToApps.get(jcbModelNames.getSelectedItem()).toArray(new String[0]));
 			jcbModelNames.addActionListener(new ActionListener() {
@@ -455,13 +515,14 @@ public class VCellPlugin extends ContextCommand {
 					}
 				}});
 			jp.add(jcbAppNames);
+			
 
 			//final JComboBox<String> jcbVars = new StyledComboBox<String>();
 			//jcbVars.setEnabled(false);
 
 			// JComboBox<String> jcbTimes = new StyledComboBox<String>();
 			//jcbTimes.setEnabled(false);
-
+			helpPopup("Sim Name", jp);
 			jp.add(new JLabel("Sim Name"));
 			jcbAppNames.addActionListener(new ActionListener() {
 				@Override
@@ -527,7 +588,7 @@ public class VCellPlugin extends ContextCommand {
 			JTable jtVars = new JTable();
 			JSlider minTimeJSlider1 = new javax.swing.JSlider();
 			JSlider maxTimeJSlider1 = new javax.swing.JSlider();
-			
+			helpPopup("Vars and Times", jp);
 			jp.add(new JLabel("Vars and Times"));
 			JButton selectMultipleVarsAndTimesBtn = new JButton("Select...");
 			selectMultipleVarsAndTimesBtn.addActionListener(new ActionListener() {
@@ -661,8 +722,10 @@ public class VCellPlugin extends ContextCommand {
 				}});
 			jp.add(selectMultipleVarsAndTimesBtn);
 			
-
+			
+			
 			jcbModelType.setSelectedIndex(0);
+			
 
 //			if(vcellModelsInput.getDefaultValue() != null) {//If user provided an inital value for VCellSelection var in VCellPlugin
 //				final VCellSelection defaultValue = vcellModelsInput.getDefaultValue();
