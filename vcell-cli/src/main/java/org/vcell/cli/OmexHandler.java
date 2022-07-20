@@ -16,7 +16,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class OmexHandler {
-    CLIUtils utils;
     String tempPath;
     String omexPath;
     String omexName;
@@ -53,8 +52,7 @@ public class OmexHandler {
         int indexOfLastSlash = omexPath.lastIndexOf("/");
         this.omexName = omexPath.substring(indexOfLastSlash + 1);
 
-        this.utils = CLIUtils.getCLIUtils();
-        this.tempPath = utils.getTempDir();
+        this.tempPath = CLIUtils.getTempDir();
 
         this.archive = new CombineArchive();
         boolean isInitialized = archive.initializeFromArchive(omexPath);

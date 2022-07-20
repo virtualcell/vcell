@@ -5,7 +5,6 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.nio.file.Files;
@@ -14,6 +13,9 @@ import java.nio.file.Path;
 import static java.lang.System.*;
 
 public class CLIHandler {
+    // timeout for compiled solver running long jobs; default 12 hours
+    //public static long EXECUTABLE_MAX_WALLCLOK_MILLIS = 600000;
+    public static long EXECUTABLE_MAX_WALLCLOK_MILLIS = 0;
     private static CLIHandler singleInstance;
     private CommandLine cmd = null; // TODO: make private and selectively expose components.
     private String fetchFailed = "Failed fetching VCell version";
@@ -90,13 +92,13 @@ public class CLIHandler {
 
         if (cmd.hasOption("t")){
             try {
-                CLIUtils.EXECUTABLE_MAX_WALLCLOK_MILLIS = Integer.parseInt(cmd.getOptionValue("t"));
+                EXECUTABLE_MAX_WALLCLOK_MILLIS = Integer.parseInt(cmd.getOptionValue("t"));
             } catch(NumberFormatException e) {
                 out.println("Detected timeout duration: <" + cmd.getOptionValue("t") + "> could not be parsed.");
                 exit(2);
             }   
         } else {
-            CLIUtils.EXECUTABLE_MAX_WALLCLOK_MILLIS = 0;
+            EXECUTABLE_MAX_WALLCLOK_MILLIS = 0;
         }
 
         if (cmd.hasOption("vcml") && cmd.hasOption("sbml")){
@@ -113,7 +115,7 @@ public class CLIHandler {
         if (cmd.hasOption("i")){
             Path inPath = Paths.get(cmd.getOptionValue("i"));
             if (Files.notExists(inPath)){
-                out.println("Input path can not be parsed. Please confirm path exists and that it is a directory or file.");
+                out.println("Input path '"+inPath+"'  can not be parsed. Please confirm path exists and that it is a directory or file.");
                 exit(2);
             }
 
