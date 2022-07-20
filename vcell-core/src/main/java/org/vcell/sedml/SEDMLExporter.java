@@ -551,6 +551,7 @@ public class SEDMLExporter {
 							Task sedmlTask = new Task(taskId, vcSimulation.getName(), sedModel.getId(), utcSim.getId());
 							sedmlModel.addTask(sedmlTask);
 							taskRef = taskId;		// to be used later to add dataGenerators : one set of DGs per model (simContext).
+							
 						} else if (!scannedParamHash.isEmpty() && unscannedParamHash.isEmpty()) {
 							// only parameters with scans
 							String taskId = "tsk_" + simContextCnt + "_" + simCount;
@@ -601,71 +602,17 @@ public class SEDMLExporter {
 								} else {
 									throw new RuntimeException("No scan ranges found for scanned parameter : '" + scannedConstName + "'.");
 								}
-
-								
 								ownerTaskId = repeatedTaskId;
 								repeatedTaskIndex++;
 								
 								sedmlModel.addTask(rt);
 							}
-//						} else if (!scannedParamHash.isEmpty() && unscannedParamHash.isEmpty()) {
-//							// only parameters with scans : only add 1 Task and 1 RepeatedTask
-//							String taskId = "tsk_" + simContextCnt + "_" + simCount;
-//							Task sedmlTask = new Task(taskId, vcSimulation.getName(), simContextId, utcSim.getId());
-//							sedmlModel.addTask(sedmlTask);
-//
-//							String repeatedTaskId = "repTsk_" + simContextCnt + "_" + simCount;
-//							// TODO: temporary solution - we use as range here the first range
-//							String scn = scannedConstantsNames[0];
-//							String rId = "range_" + simContextCnt + "_" + simCount + "_" + scn;
-//							RepeatedTask rt = new RepeatedTask(repeatedTaskId, repeatedTaskId, true, rId);
-//							taskRef = repeatedTaskId;	// to be used later to add dataGenerators - in our case it has to be the repeated task
-//							SubTask subTask = new SubTask("0", taskId);
-//							rt.addSubtask(subTask);
-//
-//							for (String scannedConstName : scannedConstantsNames) {
-//								ConstantArraySpec constantArraySpec = mathOverrides.getConstantArraySpec(scannedConstName);
-//								String rangeId = "range_" + simContextCnt + "_" + simCount + "_" + scannedConstName;
-//
-//								// list of Ranges, if sim is parameter scan.
-//								if(constantArraySpec != null) {
-//									Range r = null;
-//									//										System.out.println("     " + constantArraySpec.toString());
-//									if(constantArraySpec.getType() == ConstantArraySpec.TYPE_INTERVAL) {
-//										// ------ Uniform Range
-//										r = new UniformRange(rangeId, constantArraySpec.getMinValue(), 
-//												constantArraySpec.getMaxValue(), constantArraySpec.getNumValues());
-//										rt.addRange(r);
-//									} else {
-//										// ----- Vector Range
-//										cbit.vcell.math.Constant[] cs = constantArraySpec.getConstants();
-//										ArrayList<Double> values = new ArrayList<Double>();
-//										for (int i = 0; i < cs.length; i++){
-//											String value = cs[i].getExpression().infix();
-//											values.add(Double.parseDouble(value));
-//										}
-//										r = new VectorRange(rangeId, values);
-//										rt.addRange(r);
-//									}
-//
-//									// list of Changes
-//									SymbolTableEntry ste = getSymbolTableEntryForModelEntity(mathSymbolMapping, scannedConstName);
-//									XPathTarget target = getTargetXPath(ste, l2gMap);
-//									//ASTNode math1 = new ASTCi(r.getId());		// was scannedConstName
-//									ASTNode math1 = Libsedml.parseFormulaString(r.getId());
-//									SetValue setValue = new SetValue(target, r.getId(), simContextId);
-//									setValue.setMath(math1);
-//									rt.addChange(setValue);
-//								} else {
-//									throw new RuntimeException("No scan ranges found for scanned parameter : '" + scannedConstName + "'.");
-//								}
-//							}
-//							sedmlModel.addTask(rt);
-
 
 						} else {
 							// both scanned and simple parameters : create new model with change for each simple override; add RepeatedTask
-
+							Map<String, RepeatedTask> rangeToRepeatedTaskHash = new LinkedHashMap<> ();
+							List<RepeatedTask> repeatedTasksList = new ArrayList<> ();
+							
 							// create new model with change for each unscanned parameter that has override
 							String overriddenSimContextId = simContextId + "_" + overrideCount;
 							String overriddenSimContextName = simContextName + " modified";
@@ -673,22 +620,22 @@ public class SEDMLExporter {
 							overrideCount++;
 
 							String taskId = "tsk_" + simContextCnt + "_" + simCount;
-							Task sedmlTask = new Task(taskId, vcSimulation.getName(), overriddenSimContextId, utcSim.getId());
+							String ownerTaskId = taskId;
+							Task sedmlTask = new Task(taskId, vcSimulation.getName(), simContextId, utcSim.getId());
 							sedmlModel.addTask(sedmlTask);
 
 							// scanned parameters
-							String repeatedTaskId = "repTsk_" + simContextCnt + "_" + simCount;
-							// TODO: temporary solution - we use as range here the first range
-							String scn = scannedConstantsNames[0];
-							String rId = "range_" + simContextCnt + "_" + simCount + "_" + scn;
-							RepeatedTask rt = new RepeatedTask(repeatedTaskId, repeatedTaskId, true, rId);
-							taskRef = repeatedTaskId;	// to be used later to add dataGenerators - in our case it has to be the repeated task
-							SubTask subTask = new SubTask("0", taskId);
-							rt.addSubtask(subTask);
+							int repeatedTaskIndex = 0;
 							for (String scannedConstName : scannedConstantsNames) {
-								ConstantArraySpec constantArraySpec = mathOverrides.getConstantArraySpec(scannedConstName);
+								String repeatedTaskId = "repTsk_" + simContextCnt + "_" + simCount + "_" + repeatedTaskIndex;
 								String rangeId = "range_" + simContextCnt + "_" + simCount + "_" + scannedConstName;
-
+								if(repeatedTaskIndex == 0) {
+									taskRef = repeatedTaskId;
+								}
+								RepeatedTask rt = new RepeatedTask(repeatedTaskId, repeatedTaskId, true, rangeId);
+								SubTask subTask = new SubTask("0", ownerTaskId);
+								rt.addSubtask(subTask);
+								ConstantArraySpec constantArraySpec = mathOverrides.getConstantArraySpec(scannedConstName);
 								// list of Ranges, if sim is parameter scan.
 								if(constantArraySpec != null) {
 									Range r = null;
@@ -714,20 +661,26 @@ public class SEDMLExporter {
 									if (scannedParamHash.get(scannedConstName).equals(scannedConstName)) {
 										// the hash was originally populated as <scannedParamName, scannedParamName>. Replace 'value' with rangeId for scannedParam
 										scannedParamHash.put(scannedConstName, r.getId());
+										rangeToRepeatedTaskHash.put(r.getId(), rt);		// we'll need the right repeated task for this range later on, in the unscanned loop
 									}
 
-									// create setValue for scannedConstName
-									SymbolTableEntry ste2 = getSymbolTableEntryForModelEntity(mathSymbolMapping, scannedConstName);
-									XPathTarget target1 = getTargetXPath(ste2, l2gMap);
-									// ASTNode math1 = new ASTCi(scannedConstName); BAD - misses math namespace
+									// list of Changes
+									SymbolTableEntry ste = getSymbolTableEntryForModelEntity(mathSymbolMapping, scannedConstName);
+									XPathTarget target = getTargetXPath(ste, l2gMap);
+									//ASTNode math1 = new ASTCi(r.getId());		// was scannedConstName
 									ASTNode math1 = Libsedml.parseFormulaString(r.getId());
-									SetValue setValue1 = new SetValue(target1, r.getId(), sedModel.getId());
-									setValue1.setMath(math1);
-									rt.addChange(setValue1);
+									SetValue setValue = new SetValue(target, r.getId(), simContextId);
+									setValue.setMath(math1);
+									rt.addChange(setValue);
 								} else {
 									throw new RuntimeException("No scan ranges found for scanned parameter : '" + scannedConstName + "'.");
 								}
+								ownerTaskId = repeatedTaskId;
+								repeatedTaskIndex++;
+								
+								repeatedTasksList.add(rt);
 							}
+
 							// for unscanned parameter overrides
 							for (String unscannedParamName : unscannedParamHash.values()) {
 								SymbolTableEntry ste = getSymbolTableEntryForModelEntity(mathSymbolMapping, unscannedParamName);
@@ -758,7 +711,8 @@ public class SEDMLExporter {
 										String rangeId = scannedParamHash.get(scannedParamNameInUnscannedParamExp);
 										SetValue setValue = new SetValue(target, rangeId, sedModel.getId());	// @TODO: we have no range??
 										setValue.setMath(math);
-										rt.addChange(setValue);
+										RepeatedTask rtRecovered = rangeToRepeatedTaskHash.get(rangeId);
+										rtRecovered.addChange(setValue);
 									} else {
 										// non-numeric expression : add 'computeChange' to modified model
 										XPathTarget targetXpath = getTargetXPath(ste, l2gMap);
@@ -803,7 +757,9 @@ public class SEDMLExporter {
 								}
 							}
 							sedmlModel.addModel(sedModel);
-							sedmlModel.addTask(rt);
+							for(RepeatedTask rt : repeatedTasksList) {
+								sedmlModel.addTask(rt);
+							}
 						}
 					} else {						// no math overrides, add basic task.
 						String taskId = "tsk_" + simContextCnt + "_" + simCount;
