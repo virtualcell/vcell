@@ -54,6 +54,7 @@ import org.jlibsedml.SubTask;
 import org.jlibsedml.Surface;
 import org.jlibsedml.Task;
 import org.jlibsedml.UniformRange;
+import org.jlibsedml.UniformRange.UniformType;
 import org.jlibsedml.UniformTimeCourse;
 import org.jlibsedml.VariableSymbol;
 import org.jlibsedml.VectorRange;
@@ -576,8 +577,9 @@ public class SEDMLExporter {
 									//										System.out.println("     " + constantArraySpec.toString());
 									if(constantArraySpec.getType() == ConstantArraySpec.TYPE_INTERVAL) {
 										// ------ Uniform Range
+										UniformType type = constantArraySpec.isLogInterval() ? UniformType.LOG : UniformType.LINEAR;
 										r = new UniformRange(rangeId, constantArraySpec.getMinValue(), 
-												constantArraySpec.getMaxValue(), constantArraySpec.getNumValues());
+												constantArraySpec.getMaxValue(), constantArraySpec.getNumValues(), type);
 										rt.addRange(r);
 									} else {
 										// ----- Vector Range
@@ -621,7 +623,7 @@ public class SEDMLExporter {
 
 							String taskId = "tsk_" + simContextCnt + "_" + simCount;
 							String ownerTaskId = taskId;
-							Task sedmlTask = new Task(taskId, vcSimulation.getName(), simContextId, utcSim.getId());
+							Task sedmlTask = new Task(taskId, vcSimulation.getName(), overriddenSimContextId, utcSim.getId());
 							sedmlModel.addTask(sedmlTask);
 
 							// scanned parameters
@@ -642,8 +644,9 @@ public class SEDMLExporter {
 									//										System.out.println("     " + constantArraySpec.toString());
 									if(constantArraySpec.getType() == ConstantArraySpec.TYPE_INTERVAL) {
 										// ------ Uniform Range
+										UniformType type = constantArraySpec.isLogInterval() ? UniformType.LOG : UniformType.LINEAR;
 										r = new UniformRange(rangeId, constantArraySpec.getMinValue(), 
-												constantArraySpec.getMaxValue(), constantArraySpec.getNumValues());
+												constantArraySpec.getMaxValue(), constantArraySpec.getNumValues(), type);
 										rt.addRange(r);
 									} else {
 										// ----- Vector Range
