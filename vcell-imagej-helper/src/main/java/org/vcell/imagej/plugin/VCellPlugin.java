@@ -12,6 +12,7 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Frame;
+import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.awt.Image;
@@ -149,32 +150,37 @@ public class VCellPlugin extends ContextCommand {
 
 		private static Frame mainApplicationFrame;
 		
-	public static void helpPopup(String type, JPanel panel) {
-		JButton button = new JButton("?");
-		panel.add(button);
-		ActionListener buttonAction = new ActionListener() {
-	         public void actionPerformed(ActionEvent event) {
-		         JFrame e = new JFrame(type + " Help");    
-		   		 JPanel panel =new JPanel();
-		   		Image image;
-				try {
+		public static void helpButton(String type, JPanel panel, String helpText, GridBagConstraints c) {
+			final JButton button = new JButton("?");
+			panel.add(button, c);
+			Dimension a = new Dimension(button.getSize());
+			ActionListener buttonAction = new ActionListener() {
+		         public void actionPerformed(ActionEvent event) {
+		        	 JOptionPane e = new JOptionPane(helpText);  
+			   		 JPanel panel =new JPanel();
+			   		 Image image;
+					try {
 
-				    URL url = new URL("https://vcell.org/wp-content/uploads/2022/03/VCellLogoCrop-1.png");
-				    image = ImageIO.read(url);
-				    JLabel picLabel = new JLabel(new ImageIcon(image));
-				    panel.add(picLabel,0,0);
-				} catch (Exception exp) {
-				    exp.printStackTrace();
-				}
-		   		 panel.add(new JLabel("example text"));
-	    		 e.add(panel);
-	     		 e.setSize(500,200);            
-	    		 e.setVisible(true);
-	        	 //uiService.showDialog("example text","Model Type Help", MessageType.INFORMATION_MESSAGE);
-	         }
-	      };
-	      button.addActionListener(buttonAction);		
-	 }
+					    URL url = new URL("https://i.imgur.com/mhxoPJD.png");
+					    image = ImageIO.read(url);
+					    JLabel picLabel = new JLabel(new ImageIcon(image));
+					    e.add(picLabel,0,0);
+					} catch (Exception exp) {
+					    exp.printStackTrace();
+					} 
+					JDialog dialog = e.createDialog(panel, type + " Help");
+					dialog.setAlwaysOnTop(true);
+					dialog.setVisible(true);
+		     		e.setSize(500,200);            
+		    	    e.setVisible(true);
+		    		 
+		         }
+		      };
+		      button.addActionListener(buttonAction);	
+		      button.setMaximumSize(a);
+		 }
+	
+
 	
 	public static class StyledComboBoxUI extends BasicComboBoxUI {
 		  protected ComboPopup createPopup() {
@@ -247,6 +253,7 @@ public class VCellPlugin extends ContextCommand {
 		private JComboBox<String> jcbAppNames = new StyledComboBox<String>();
 		private JComboBox<String> jcbSimNames = new StyledComboBox<String>();
 
+		
 		
 		private Comparator<String> comp = new Comparator<String>() {
 			@Override
@@ -405,17 +412,13 @@ public class VCellPlugin extends ContextCommand {
 			
 			//ApplicationFrame applicationFrame = uiService.getDefaultUI().getApplicationFrame();
 			
-			//controls size of panel
-			final Dimension dim = new Dimension(350,300);
-			@SuppressWarnings("serial")
-			 JPanel jp = new JPanel() {
-				@Override
-				public Dimension getPreferredSize() {
-					return dim;
-				}
+			 JPanel jp = new JPanel(new GridBagLayout()); {
+				
 			};
+			jp.setPreferredSize(new Dimension(600, 350));
+			GridBagConstraints constraints = new GridBagConstraints();
 			
-			Image image;
+			/*Image image;
 			try {
 
 			    URL url = new URL("https://vcell.org/wp-content/uploads/2022/03/VCellLogoCrop-1.png");
@@ -424,30 +427,32 @@ public class VCellPlugin extends ContextCommand {
 			    jp.add(VCellLogo,0,0);
 			} catch (Exception exp) {
 			    exp.printStackTrace();
-			}
+			} */
 			
-			jp.add(new JLabel(""));
-			jp.add(new JLabel(""));
-			
-			
-			jp.setLayout(new GridLayout(8,3,0,10));
 			
 			final boolean[] bUseVCellSelectionHolder = new boolean[] {false};
 
 			//jcbModelType
-					
+			constraints.fill = GridBagConstraints.HORIZONTAL;
+			constraints.weightx = 1.0;
+			constraints.weighty = 1.0;
 			
-			helpPopup("Model Type", jp);
-			jp.add(new JLabel("Model Type"));
-			jp.add(jcbModelType);
 			
-			//jp.add(new JLabel(""));	
-			//jp.add(new JLabel(""));	
+			constraints.gridy = 0;
+			constraints.gridx = 0;
+			helpButton("Model Type", jp, "model help text", constraints);
+			constraints.gridx = 1;
+			jp.add(new JLabel("Model Type"),constraints);
+			constraints.gridx = 2;
+			jp.add(jcbModelType,constraints);
 			
-					
 			
-			helpPopup("User ID", jp);
-			jp.add(new JLabel("VCell Userid"));
+			constraints.gridy = 1;
+			constraints.gridx = 0;
+			helpButton("User ID", jp, "user id text", constraints);
+			constraints.gridx = 1;
+			jp.add(new JLabel("VCell Userid"), constraints);
+			constraints.gridx = 2;
 //			JComboBox<String> jcbUserid = new StyledComboBox<String>(useridSet.toArray(new String[0]));
 			jcbModelType.addActionListener(new ActionListener() {
 				@Override
@@ -483,16 +488,16 @@ public class VCellPlugin extends ContextCommand {
 						}}).start();
 				}});
 			
-			
-			
-			jp.add(jcbUserid);
+			jp.add(jcbUserid, constraints);
 			
 			
 					
-			
-			helpPopup("Model Name", jp);
-			
-			jp.add(new JLabel("Model Name"));
+			constraints.gridy = 2;
+			constraints.gridx = 0;
+			helpButton("Model Name", jp, "model name text", constraints);
+			constraints.gridx = 1;
+			jp.add(new JLabel("Model Name"), constraints);
+			constraints.gridx = 2;
 //			JComboBox<String> jcbModelNames = new StyledComboBox<String>(mapUseridToModelNameTime.get(jcbUserid.getSelectedItem()).toArray(new String[0]));
 			jcbUserid.addActionListener(new ActionListener() {
 				@Override
@@ -513,11 +518,14 @@ public class VCellPlugin extends ContextCommand {
 						}
 					}
 				}});
+			jp.add(jcbModelNames, constraints);
 			
-			jp.add(jcbModelNames);
-			
-			helpPopup("App Name", jp);
-			jp.add(new JLabel("App Name"));
+			constraints.gridy = 3;
+			constraints.gridx = 0;
+			helpButton("App Name", jp, "app name text", constraints);
+			constraints.gridx = 1;
+			jp.add(new JLabel("App Name"), constraints);
+			constraints.gridx = 2;
 //			JComboBox<String> jcbAppNames = new StyledComboBox<String>(mapModelToApps.get(jcbModelNames.getSelectedItem()).toArray(new String[0]));
 			jcbModelNames.addActionListener(new ActionListener() {
 				@Override
@@ -532,7 +540,7 @@ public class VCellPlugin extends ContextCommand {
 						}
 					}
 				}});
-			jp.add(jcbAppNames);
+			jp.add(jcbAppNames, constraints);
 			
 
 			//final JComboBox<String> jcbVars = new StyledComboBox<String>();
@@ -540,8 +548,12 @@ public class VCellPlugin extends ContextCommand {
 
 			// JComboBox<String> jcbTimes = new StyledComboBox<String>();
 			//jcbTimes.setEnabled(false);
-			helpPopup("Sim Name", jp);
-			jp.add(new JLabel("Sim Name"));
+			constraints.gridy = 4;
+			constraints.gridx = 0;
+			helpButton("Sim Name", jp, "sim name text", constraints);
+			constraints.gridx = 1;
+			jp.add(new JLabel("Sim Name"),constraints);
+			constraints.gridx = 2;
 			jcbAppNames.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
@@ -557,7 +569,7 @@ public class VCellPlugin extends ContextCommand {
 						}
 					}
 				}});
-			jp.add(jcbSimNames);
+			jp.add(jcbSimNames, constraints);
 			
 //			if(vcellModelsInput.getDefaultValue() != null) {//If user provided an inital value for VCellSelection var in VCellPlugin
 //				final VCellSelection defaultValue = vcellModelsInput.getDefaultValue();
@@ -602,13 +614,18 @@ public class VCellPlugin extends ContextCommand {
 //				}
 //				});
 //			jp.add(loadVarsAndTimesBtn);
-			
 			JTable jtVars = new JTable();
 			JSlider minTimeJSlider1 = new javax.swing.JSlider();
 			JSlider maxTimeJSlider1 = new javax.swing.JSlider();
-			helpPopup("Vars and Times", jp);
-			jp.add(new JLabel("Vars and Times"));
-			JButton selectMultipleVarsAndTimesBtn = new JButton("Select...");
+			constraints.gridy = 5;
+			constraints.gridx = 0;
+			helpButton("Vars and Times", jp, "vars and times text", constraints);
+			constraints.gridx = 1;
+			constraints.gridwidth = 2;
+			jp.add(new JLabel("Vars and Times"), constraints);
+			constraints.gridwidth = 1;
+			constraints.gridx = 2;
+			JButton selectMultipleVarsAndTimesBtn = new JButton("Select");
 			selectMultipleVarsAndTimesBtn.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
@@ -738,13 +755,16 @@ public class VCellPlugin extends ContextCommand {
 						}}).start();
 				
 				}});
-			jp.add(selectMultipleVarsAndTimesBtn);
+			
+			
+			jp.add(selectMultipleVarsAndTimesBtn, constraints);
+			
 			
 			
 			
 			jcbModelType.setSelectedIndex(0);
 			
-
+			
 //			if(vcellModelsInput.getDefaultValue() != null) {//If user provided an inital value for VCellSelection var in VCellPlugin
 //				final VCellSelection defaultValue = vcellModelsInput.getDefaultValue();
 //				jcbUserid.setSelectedItem(defaultValue.userid);
@@ -1170,9 +1190,16 @@ public class VCellPlugin extends ContextCommand {
 			//Create ImageJ datasets and display separate hyperstack for each variable
 			for(int varIndex=0;varIndex<vcellSelection.varName.length;varIndex++) {
 				int[] time = vcellSelection.timePointIndexes;
+				
+				for(int i =0; i < time.length; i++) {
+					System.out.println(time[i]);
+				}
+				
 				displayProgressBar(true, "loading Image...", "VCell Model Loader", (varIndex+1)*100/vcellSelection.varName.length,uiService);
 				final IJDataList tpd = vcellHelper.getTimePointData(vcellSelection.theCacheKey,vcellSelection.varName[varIndex],VCellHelper.VARTYPE_POSTPROC.NotPostProcess,time,0);
+				System.out.println(tpd);
 				BasicStackDimensions bsd = tpd.ijData[0].stackInfo;
+				
 				double[] data = new double[bsd.getTotalSize()*tpd.ijData.length];
 				double min = Double.MAX_VALUE;
 				double max = Double.MIN_VALUE;
