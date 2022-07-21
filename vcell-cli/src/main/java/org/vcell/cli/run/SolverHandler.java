@@ -1,4 +1,4 @@
-package org.vcell.cli;
+package org.vcell.cli.run;
 
 import cbit.util.xml.VCLogger;
 import cbit.vcell.biomodel.BioModel;
@@ -20,6 +20,8 @@ import cbit.vcell.xml.XmlHelper;
 import org.jlibsedml.SedML;
 import org.jlibsedml.Task;
 import org.jlibsedml.UniformTimeCourse;
+import org.python.core.Py;
+import org.vcell.cli.CLIUtils;
 import org.vcell.cli.vcml.VCMLHandler;
 import org.vcell.sbml.vcell.SBMLImportException;
 import org.vcell.sbml.vcell.SBMLImporter;
@@ -167,7 +169,7 @@ public class SolverHandler {
                         assert task != null;
                         org.jlibsedml.Simulation sedmlSim = sedml.getSimulation(task.getSimulationReference());
                         if (sedmlSim instanceof UniformTimeCourse) {
-                            odeSolverResultSet = CLIUtils.interpolate(odeSolverResultSet, (UniformTimeCourse) sedmlSim);
+                            odeSolverResultSet = RunUtils.interpolate(odeSolverResultSet, (UniformTimeCourse) sedmlSim);
                             logTaskMessage += "done. Interpolating... ";
                         }
                     } else {
@@ -203,9 +205,9 @@ public class SolverHandler {
                 		String msg = "Running simulation " + simTask.getSimulation().getName() + ", " + elapsedTime + " ms";
                 		System.out.println(msg);
                 		countSuccessfulSimulationRuns++;	// we only count the number of simulations (tasks) that succeeded
-                		CLIUtils.updateTaskStatusYml(sedmlLocation, sim.getImportedTaskID(), CLIUtils.Status.SUCCEEDED, outDir ,duration + "", kisao);
-                		CLIUtils.setOutputMessage(sedmlLocation, sim.getImportedTaskID(), outDir, "task", logTaskMessage);
-                        CLIUtils.drawBreakLine("-", 100);
+                		PythonCalls.updateTaskStatusYml(sedmlLocation, sim.getImportedTaskID(), Status.SUCCEEDED, outDir ,duration + "", kisao);
+                		PythonCalls.setOutputMessage(sedmlLocation, sim.getImportedTaskID(), outDir, "task", logTaskMessage);
+                        RunUtils.drawBreakLine("-", 100);
                     } else {
                     	solverStatus = solver.getSolverStatus().getStatus();
                         System.err.println("Solver status: " + solverStatus);
@@ -235,9 +237,9 @@ public class SolverHandler {
             			logTaskError += str;
             		} else {
             			if(solverStatus == SolverStatus.SOLVER_ABORTED) {
-            				CLIUtils.updateTaskStatusYml(sedmlLocation, sim.getImportedTaskID(), CLIUtils.Status.ABORTED, outDir ,duration + "", kisao);
+            				PythonCalls.updateTaskStatusYml(sedmlLocation, sim.getImportedTaskID(), Status.ABORTED, outDir ,duration + "", kisao);
             			} else {
-            				CLIUtils.updateTaskStatusYml(sedmlLocation, sim.getImportedTaskID(), CLIUtils.Status.FAILED, outDir ,duration + "", kisao);
+            				PythonCalls.updateTaskStatusYml(sedmlLocation, sim.getImportedTaskID(), Status.FAILED, outDir ,duration + "", kisao);
             			}
             		}
 //                    CLIUtils.finalStatusUpdate(CLIUtils.Status.FAILED, outDir);
@@ -249,8 +251,8 @@ public class SolverHandler {
                     	logTaskError += (error + ". ");
                     }
                     String type = e.getClass().getSimpleName();
-                    CLIUtils.setOutputMessage(sedmlLocation, sim.getImportedTaskID(), outDir, "task", logTaskMessage);
-                    CLIUtils.setExceptionMessage(sedmlLocation, sim.getImportedTaskID(), outDir, "task", type, logTaskError);
+                    PythonCalls.setOutputMessage(sedmlLocation, sim.getImportedTaskID(), outDir, "task", logTaskMessage);
+                    PythonCalls.setExceptionMessage(sedmlLocation, sim.getImportedTaskID(), outDir, "task", type, logTaskError);
                     String sdl = "";
                     if(sd != null && sd.getShortDisplayLabel() != null && !sd.getShortDisplayLabel().isEmpty()) {
                     	sdl = sd.getShortDisplayLabel();
@@ -267,7 +269,7 @@ public class SolverHandler {
                     } else {
                     	CLIUtils.writeDetailedErrorList(outputBaseDir, bioModelBaseName + ",  solver: " + sdl + ": " + type + ": " + logTaskError, bForceLogFiles);
                     }
-                    CLIUtils.drawBreakLine("-", 100);
+                    RunUtils.drawBreakLine("-", 100);
                 }
                 if(odeSolverResultSet != null) {
                     resultsHash.put(sim.getImportedTaskID(), odeSolverResultSet);
@@ -275,7 +277,7 @@ public class SolverHandler {
                 	resultsHash.put(sim.getImportedTaskID(), null);	// if any task fails, we still put it in the hash with a null value
                 }
                 if(keepTempFiles == false) {
-                	CLIUtils.removeIntermediarySimFiles(outputDirForSedml);
+                	RunUtils.removeIntermediarySimFiles(outputDirForSedml);
                 }
                 simulationCount++;
             }
@@ -363,7 +365,7 @@ public class SolverHandler {
                 resultsHash.put(sim.getName(), odeSolverResultSet);
             }
 
-            CLIUtils.removeIntermediarySimFiles(outputDir);
+            RunUtils.removeIntermediarySimFiles(outputDir);
 
         }
         return resultsHash;

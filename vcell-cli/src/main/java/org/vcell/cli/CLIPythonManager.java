@@ -12,6 +12,12 @@ import java.util.List;
 import java.util.concurrent.TimeoutException;
 
 public class CLIPythonManager {
+    /*
+     * NOTES:
+     *
+     * 1) BufferedReader will block if asked to read the Python interpreter while the interpreter waiting for input (assuming the buffer has already been iterated through).
+     *      To prevent this, we catch the prefix to Python's prompt for a new command (">>> ") to stop before we wait for etinity and break our program.
+     */
 
     public static final Path currentWorkingDir = Paths.get("").toAbsolutePath();
 

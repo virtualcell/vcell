@@ -1,8 +1,7 @@
-package org.vcell.cli;
+package org.vcell.cli.vcml;
 
 import cbit.vcell.resource.PropertyLoader;
-import org.vcell.cli.vcml.ModelFormat;
-import org.vcell.cli.vcml.VcmlOmexConverter;
+import org.vcell.cli.CLIPythonManager;
 import org.vcell.util.DataAccessException;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
@@ -13,7 +12,7 @@ import java.sql.SQLException;
 import java.util.concurrent.Callable;
 
 @Command(name = "convert")
-class ConvertCommand implements Callable<Integer> {
+public class ConvertCommand implements Callable<Integer> {
     @Option(names = "-m")
     private ModelFormat outputModelFormat;
 

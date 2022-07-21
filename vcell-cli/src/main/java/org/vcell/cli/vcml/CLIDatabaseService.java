@@ -1,4 +1,4 @@
-package org.vcell.cli;
+package org.vcell.cli.vcml;
 
 import cbit.vcell.modeldb.AdminDBTopLevel;
 import cbit.vcell.server.SimulationJobStatusPersistent;
