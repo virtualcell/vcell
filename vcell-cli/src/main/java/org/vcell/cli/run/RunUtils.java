@@ -308,7 +308,7 @@ public class RunUtils {
 
                             }
                         }
-                        updateDatasetStatusYml(sedmlLocation, oo.getId(), dataset.getId(), Status.SUCCEEDED, outDir);
+                        PythonCalls.updateDatasetStatusYml(sedmlLocation, oo.getId(), dataset.getId(), Status.SUCCEEDED, outDir);
                         if (!supportedDataset) {
                             System.err.println("Dataset " + dataset.getId() + " references unsupported RepeatedTask and is being skipped");
                             continue;
@@ -408,58 +408,6 @@ public class RunUtils {
     }
 
 
-    // Sample STATUS YML
-    /*
-    sedDocuments:
-      BIOMD0000000912_sim.sedml:
-        outputs:
-          BIOMD0000000912_sim:
-            dataSets:
-              data_set_E: SKIPPED
-              data_set_I: PASSED
-              data_set_T: SKIPPED
-              data_set_time: SKIPPED
-            status: SKIPPED
-          plot_1:
-            curves:
-              plot_1_E_time: SKIPPED
-              plot_1_I_time: SKIPPED
-              plot_1_T_time: SKIPPED
-            status: SKIPPED
-        status: SUCCEEDED
-        tasks:
-          BIOMD0000000912_sim:
-            status: SKIPPED
-    status: SUCCEEDED
-    * */
-    public static void generateStatusYaml(String omexPath, String outDir) throws PythonStreamException {
-        // Note: by default every status is being skipped
-        Path omexFilePath = Paths.get(omexPath);
-        /*
-         USAGE:
-
-         NAME
-         status.py
-
-         SYNOPSIS
-         status.py COMMAND
-
-         COMMANDS
-         COMMAND is one of the following:
-
-         status_yml
-        */
-
-        CLIPythonManager cliPythonManager = CLIPythonManager.getInstance();
-        String results = cliPythonManager.callPython("genStatusYaml", String.valueOf(omexFilePath), outDir);
-        cliPythonManager.printPythonErrors(results, "", "Failed generating status YAML\n");
-    }
-
-    public static void transposeVcmlCsv(String csvFilePath) throws PythonStreamException {
-        CLIPythonManager cliPythonManager = CLIPythonManager.getInstance();
-        String results = cliPythonManager.callPython("transposeVcmlCsv", csvFilePath);
-        cliPythonManager.printPythonErrors(results);
-    }
 
     public static void zipResFiles(File dirPath) throws IOException {
 
@@ -579,12 +527,6 @@ public class RunUtils {
             System.err.println("Unable to find path, failed with err: " + e.getMessage());
         }
 
-    }
-
-    public static void updateDatasetStatusYml(String sedmlName, String dataSet, String var, Status simStatus, String outDir) throws PythonStreamException {
-        CLIPythonManager cliPythonManager = CLIPythonManager.getInstance();
-        String results = cliPythonManager.callPython("updateDataSetStatus", sedmlName, dataSet, var, simStatus.toString(), outDir);
-        cliPythonManager.printPythonErrors(results);
     }
 
     public static void removeIntermediarySimFiles(File path) {

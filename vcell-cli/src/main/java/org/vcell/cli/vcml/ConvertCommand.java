@@ -1,7 +1,6 @@
 package org.vcell.cli.vcml;
 
 import cbit.vcell.resource.PropertyLoader;
-import org.vcell.cli.CLIPythonManager;
 import org.vcell.util.DataAccessException;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
@@ -37,7 +36,6 @@ public class ConvertCommand implements Callable<Integer> {
     public Integer call() {
         try {
             PropertyLoader.loadProperties();
-            CLIPythonManager.getInstance().instantiatePythonProcess();
 
             try (CLIDatabaseService cliDatabaseService = new CLIDatabaseService()) {
                 VcmlOmexConverter.convertFiles(cliDatabaseService, inputFilePath, outputFilePath,
@@ -45,8 +43,6 @@ public class ConvertCommand implements Callable<Integer> {
             } catch (IOException | SQLException | DataAccessException e) {
                 e.printStackTrace(System.err);
             }
-
-            CLIPythonManager.getInstance().closePythonProcess(); // WARNING: Python will need reinstantiation after this is called
             return 0;
         } catch (Exception e) {
             e.printStackTrace();

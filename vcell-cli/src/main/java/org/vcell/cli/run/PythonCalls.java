@@ -5,6 +5,8 @@ import org.vcell.cli.CLIUtils;
 import org.vcell.cli.PythonStreamException;
 
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Locale;
 
 public class PythonCalls {
@@ -79,5 +81,80 @@ public class PythonCalls {
             cliPythonManager.printPythonErrors(results, "HDF conversion successful\n","HDF conversion failed\n");
         }
     }
+
+    // Sample STATUS YML
+    /*
+    sedDocuments:
+      BIOMD0000000912_sim.sedml:
+        outputs:
+          BIOMD0000000912_sim:
+            dataSets:
+              data_set_E: SKIPPED
+              data_set_I: PASSED
+              data_set_T: SKIPPED
+              data_set_time: SKIPPED
+            status: SKIPPED
+          plot_1:
+            curves:
+              plot_1_E_time: SKIPPED
+              plot_1_I_time: SKIPPED
+              plot_1_T_time: SKIPPED
+            status: SKIPPED
+        status: SUCCEEDED
+        tasks:
+          BIOMD0000000912_sim:
+            status: SKIPPED
+    status: SUCCEEDED
+    * */
+    public static void generateStatusYaml(String omexPath, String outDir) throws PythonStreamException {
+        // Note: by default every status is being skipped
+        Path omexFilePath = Paths.get(omexPath);
+        /*
+         USAGE:
+
+         NAME
+         status.py
+
+         SYNOPSIS
+         status.py COMMAND
+
+         COMMANDS
+         COMMAND is one of the following:
+
+         status_yml
+        */
+
+        CLIPythonManager cliPythonManager = CLIPythonManager.getInstance();
+        String results = cliPythonManager.callPython("genStatusYaml", String.valueOf(omexFilePath), outDir);
+        cliPythonManager.printPythonErrors(results, "", "Failed generating status YAML\n");
+    }
+
+    public static void transposeVcmlCsv(String csvFilePath) throws PythonStreamException {
+        CLIPythonManager cliPythonManager = CLIPythonManager.getInstance();
+        String results = cliPythonManager.callPython("transposeVcmlCsv", csvFilePath);
+        cliPythonManager.printPythonErrors(results);
+    }
+
+    public static void updateDatasetStatusYml(String sedmlName, String dataSet, String var, Status simStatus, String outDir) throws PythonStreamException {
+        CLIPythonManager cliPythonManager = CLIPythonManager.getInstance();
+        String results = cliPythonManager.callPython("updateDataSetStatus", sedmlName, dataSet, var, simStatus.toString(), outDir);
+        cliPythonManager.printPythonErrors(results);
+    }
+
+    // Due to what appears to be a leaky python function call, this method will continue using execShellCommand until the unerlying python is fixed
+    public static void genPlotsPseudoSedml(String sedmlPath, String resultOutDir) throws PythonStreamException, InterruptedException, IOException {
+        CLIPythonManager.callNonsharedPython("genPlotsPseudoSedml", sedmlPath, resultOutDir);
+//        ProcessBuilder pb = new ProcessBuilder(new String[]{CLIResourceManager.python, cliDirs.cliPath.toString(), "genPlotsPseudoSedml", sedmlPath, resultOutDir});
+//        runAndPrintProcessStreams(pb, "","");
+
+        /**
+         * replace with the following once the leak is fixed
+         */
+//        CLIPythonManager cliPythonManager = CLIPythonManager.getInstance();
+//        String results = cliPythonManager.callPython("genPlotsPseudoSedml", sedmlPath, resultOutDir);
+//        cliPythonManager.printPythonErrors(results);
+    }
+
+
 
 }
