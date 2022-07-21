@@ -1,5 +1,6 @@
 package org.vcell.cli.vcml;
 
+import cbit.util.xml.VCLogger;
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.field.FieldFunctionArguments;
@@ -52,10 +53,11 @@ import java.nio.file.StandardOpenOption;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.*;
-
-
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class VcmlOmexConverter {
+	private static final Logger logger = LogManager.getLogger(VcmlOmexConverter.class);
 
 	// TODO: Changes to CLIHandler have made some things here superfluous; this can be trimmed(?).
 	public static void convertFiles(CLIDatabaseService cliDatabaseService,
@@ -67,28 +69,23 @@ public class VcmlOmexConverter {
 									boolean bNonSpatialOnly,
 									boolean bForceLogFiles)
 			throws IOException, SQLException, DataAccessException {
-//		boolean bForceSBML = cliHandler.shouldForceSbml();
-//		boolean bForceVCML = cliHandler.shouldForceVcml();
-//		boolean bHasDataOnly = cliHandler.isHasDataOnly();
-//		boolean bMakeLogsOnly = cliHandler.isMakeLogsOnly();
-//		boolean bNonSpatialOnly = cliHandler.isNonSpacialOnly();
 
 		VCInfoContainer vcic;
 		Map<String, List<String>> publicationToModelMap = new LinkedHashMap<>();
 		int count = 0;		// number of biomodels with publication info
 		List<BioModelInfo> bioModelInfos = cliDatabaseService.queryPublicBioModels();
-		System.out.println("Found " + bioModelInfos.size() + " public BioNodelInfo objects");
+		logger.info("Found " + bioModelInfos.size() + " public BioNodelInfo objects");
 
 		for(BioModelInfo bi : bioModelInfos) {
 			String biomodelId = "biomodel_" + bi.getVersion().getVersionKey();
 			PublicationInfo[] pis = bi.getPublicationInfos();
 			if(pis != null && pis.length > 0) {
 				// let's see what has PublicationInfo
-				System.out.println(biomodelId);
+				logger.trace("biomodelId="+biomodelId);
 				count++;
 				for(PublicationInfo pi : pis) {
 					if(pi.getTitle().contains("Computational Modeling of RNase")) {
-						System.out.println(pi.getTitle());
+						logger.trace("publication title is "+pi.getTitle());
 					}
 					if(publicationToModelMap.containsKey(pi.getTitle())) {
 						List<String> biomodelIds = publicationToModelMap.get(pi.getTitle());
@@ -102,7 +99,7 @@ public class VcmlOmexConverter {
 				}
 			}
 		}
-		System.out.println("counted published biomodels: " + count);
+		logger.trace("counted published biomodels: " + count);
 
 		for( Map.Entry<String,List<String>> entry : publicationToModelMap.entrySet()) {
 			String pubTitle = entry.getKey();
@@ -114,7 +111,7 @@ public class VcmlOmexConverter {
 					row += (", " + model);
 				}
 				writeMultiModelPublications(outputDir.getAbsolutePath(), row, bForceLogFiles);
-				System.out.println(row);
+				logger.info("publication :"+row);
 			}
 		}
 
@@ -124,7 +121,7 @@ public class VcmlOmexConverter {
             FilenameFilter filterVcmlFiles = (f, name) -> name.endsWith(".vcml");
             String[] inputFiles = input.list(filterVcmlFiles);		// jusr a list of vcml names, like biomodel-185577495.vcml, ...
             if (inputFiles == null) {
-                System.err.println("No VCML files found in the directory `" + input + "`");
+                logger.error("No VCML files found in the directory `" + input + "`");
             }
 
             writeSimErrorList(outputDir.getAbsolutePath(), "bForceVCML is " + modelFormat.equals(ModelFormat.VCML), bForceLogFiles);
@@ -136,27 +133,23 @@ public class VcmlOmexConverter {
 //            assert inputFiles != null;
             for (String inputFile : inputFiles) {
                 File file = new File(input, inputFile);
-                System.out.println(" ============== start: " + inputFile);
+                logger.trace(" ============== start: " + inputFile);
                 try {
                     if (inputFile.endsWith(".vcml")) {
                         boolean isCreated = vcmlToOmexConversion(file.toString(), outputDir.getAbsolutePath(), outputDir.getAbsolutePath(), cliDatabaseService,
 								hasNonSpatialSet, hasSpatialSet, modelFormat, bHasDataOnly, bNonSpatialOnly, bMakeLogsOnly, bForceLogFiles);
                         if (isCreated) {
-                        	System.out.println("Combine archive created for file(s) `" + inputFile + "`");
+                        	logger.info("Combine archive created for file(s) `" + inputFile + "`");
                         }
                         else {
-                        	System.err.println("Failed converting VCML to OMEX archive for `" + inputFile + "`");
+                        	logger.error("Failed converting VCML to OMEX archive for `" + inputFile + "`");
                         }
                     } else {
-                    	System.err.println("No VCML files found in the directory `" + input + "`");
+                    	logger.error("No VCML files found in the directory `" + input + "`");
                     }
                 } catch (Exception e) {
-//					e.printStackTrace(System.err);
-                    
-                	System.out.println("\n\n\n=====>>>>EXPORT FAILED: " +inputFile+"\n\n\n");
+                	logger.error("EXPORT FAILED: file=" +inputFile+", error="+e.getMessage(), e);
 					CLIUtils.writeDetailedErrorList(outputDir.getAbsolutePath(), inputFile + ",   " + e.getMessage(), bForceLogFiles);
-
-                    //                   System.exit(1);
                 }
             }
 			writeLogForOmexCreation(outputDir.getAbsolutePath(), hasNonSpatialSet, hasSpatialSet, bForceLogFiles);
@@ -168,17 +161,15 @@ public class VcmlOmexConverter {
 							outputDir.getAbsolutePath(), cliDatabaseService, hasNonSpatialSet, hasSpatialSet,
 							modelFormat, bHasDataOnly, bNonSpatialOnly, bMakeLogsOnly, bForceLogFiles);
                     if (isCreated) {
-						System.out.println("Combine archive created for `" + input + "`");
+						logger.info("Combine archive created for `" + input + "`");
 					} else {
-						System.err.println("Failed converting VCML to OMEX archive for `" + input + "`");
+						logger.error("Failed converting VCML to OMEX archive for `" + input + "`");
 					}
                 } else {
-					System.err.println("No input files found in the directory `" + input + "`");
+					logger.error("No input files found in the directory `" + input + "`");
 				}
             } catch (Exception e) {
-//                e.printStackTrace();
-                System.out.println("\n\n\n=====>>>>EXPORT FAILED: " +input+"\n\n\n");   
-//                System.exit(1);
+                logger.error("EXPORT FAILED: " +input, e);
             }
         }
     }
@@ -254,7 +245,7 @@ public class VcmlOmexConverter {
 			}
 		}
         } catch(Exception e) {
-        	System.out.println(e.getMessage());
+        	logger.error(e);
         }
 
         
@@ -286,8 +277,7 @@ public class VcmlOmexConverter {
 			try {
 				bioModel.removeSimulation(simulation);
 			} catch (PropertyVetoException e) {
-				System.out.println("Failed to remove simulation with field data");
-				e.printStackTrace();
+				logger.error("Failed to remove simulation with field data", e);
 			}
 		}
 		
@@ -297,8 +287,7 @@ public class VcmlOmexConverter {
 				try {
 					simulation.getSolverTaskDescription().setSolverDescription(SolverDescription.SundialsPDE);
 				} catch (PropertyVetoException e) {
-					System.out.println("Failed to replace obsolete solver");
-					e.printStackTrace();
+					logger.error("Failed to replace obsolete solver", e);
 				}
 			}
 		}
@@ -306,16 +295,9 @@ public class VcmlOmexConverter {
         // NOTE: SEDML exporter exports both SEDML as well as required SBML
         List<Simulation> simsToExport = new ArrayList<Simulation>();
         LinkedHashSet<String> solverNames = new LinkedHashSet<>();
-//		boolean bForceSBML = cliHandler.shouldForceSbml();
-//		boolean bForceVCML = cliHandler.shouldForceVcml();
-//		boolean bHasDataOnly = cliHandler.isHasDataOnly();
-//		boolean bMakeLogsOnly = cliHandler.isMakeLogsOnly();
-//		boolean bNonSpatialOnly = cliHandler.isNonSpacialOnly();
 
         if (bHasDataOnly) {
-        	// make list of simulations to export with only sims that have data on the server
-//        	simsToExport = new ArrayList<Simulation>();
-			for (Simulation simulation : bioModel.getSimulations()) {
+ 			for (Simulation simulation : bioModel.getSimulations()) {
 				SolverDescription sd = simulation.getSolverTaskDescription().getSolverDescription();
 				if(bNonSpatialOnly == true && sd.isSpatial()) {			// we skip all spatial simulations
 					continue;
@@ -352,19 +334,19 @@ public class VcmlOmexConverter {
         
         if(outputBaseDir != null && bHasDataOnly == true && simsToExport.size() == 0) {
         	String msg = vcmlName + " has no simulations with any results.";
-        	System.out.println(msg);
+        	logger.warn(msg);
 			writeSimErrorList(outputBaseDir, msg, bForceLogFiles);
         	return false;
         }
         if(outputBaseDir != null && bNonSpatialOnly == true && simsToExport.size() == 0) {
         	String msg = vcmlName + " has no non-spatial simulations to export.";
-        	System.out.println(msg);
+        	logger.warn(msg);
 			writeSimErrorList(outputBaseDir, msg, bForceLogFiles);
         	return false;
         }
         if(outputBaseDir != null && simsToExport.size() == 0) {
         	String msg = vcmlName + " has no simulations to export.";
-        	System.out.println(msg);
+        	logger.warn(msg);
 			writeSimErrorList(outputBaseDir, msg, bForceLogFiles);
         	return false;
         }
@@ -393,7 +375,7 @@ public class VcmlOmexConverter {
         try {
         FileUtils.copyURLToFile(source, destination, connectionTimeout, readTimeout);		// diagram
         } catch(FileNotFoundException e) {
-        	System.out.println("Diagram not present!");
+        	logger.warn("Diagram not present in source="+sourcePath);
         }
 
         String rdfString = getMetadata(vcmlName, bioModel, destination, bioModelInfo);
@@ -505,7 +487,7 @@ public class VcmlOmexConverter {
             removeOtherFiles(outputDir, files);
 
         } catch (Exception e) {
-            throw new RuntimeException("createZipArchive threw exception: " + e.getMessage());
+			throw new RuntimeException("createZipArchive threw exception: " + e.getMessage(), e);
         }
         return isCreated;
     }
@@ -517,7 +499,7 @@ public class VcmlOmexConverter {
                 isDeleted = Paths.get(outputDir, sd).toFile().delete();
             }
         }
-        if (isDeleted) System.out.println("Removed intermediary files");
+        if (isDeleted) logger.trace("Removed intermediary files in "+outputDir);
     }
 
 	
@@ -537,7 +519,7 @@ public class VcmlOmexConverter {
     			ret = SesameRioUtil.writeRDFToString(graph, nsMap, RDFFormat.RDFXML);
     			SesameRioUtil.writeRDFToStream(System.out, graph, nsMap, RDFFormat.RDFXML);
     		} catch (RDFHandlerException e) {
-    			e.printStackTrace();
+    			logger.error(e);
     		}
     		return ret;
         }
@@ -551,7 +533,7 @@ public class VcmlOmexConverter {
     			ret = SesameRioUtil.writeRDFToString(graph, nsMap, RDFFormat.RDFXML);
     			SesameRioUtil.writeRDFToStream(System.out, graph, nsMap, RDFFormat.RDFXML);
     		} catch (RDFHandlerException e) {
-    			e.printStackTrace();
+    			logger.error(e);
     		}
     		return ret;
         }
@@ -582,7 +564,7 @@ public class VcmlOmexConverter {
 			ret = SesameRioUtil.writeRDFToString(graph, nsMap, RDFFormat.RDFXML);
 //			SesameRioUtil.writeRDFToStream(System.out, graph, nsMap, RDFFormat.RDFXML);
 		} catch (RDFHandlerException e) {
-			e.printStackTrace();
+			logger.error(e);
 		}
 		
 		String end = "\n\n" + ret.substring(ret.indexOf(PubMet.EndDescription0));
@@ -731,13 +713,11 @@ public class VcmlOmexConverter {
 		try {
 			Map<String, String> nsMap = DefaultNameSpaces.defaultMap.convertToMap();
 			SesameRioUtil.writeRDFToStream(System.out, graph, nsMap, RDFFormat.RDFXML);
-			System.out.println("here");
 		} catch (RDFHandlerException e) {
 			e.printStackTrace();
 		}
  
-		System.out.println("finished");
-		
+
     	/*
 		Graph graph = new HashGraph();
 		Graph schema = new HashGraph();

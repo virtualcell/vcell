@@ -164,6 +164,8 @@ import scala.collection.mutable.SetBuilder;
  * @author: Anuradha Lakshminarayana
  */
 public class SBMLExporter {
+
+	Logger logger = LogManager.getLogger(SBMLExporter.class);
 	public static final String DOMAIN_TYPE_PREFIX = "domainType_";
 	private int sbmlLevel = 3;
 	private int sbmlVersion = 2;
@@ -695,7 +697,7 @@ protected void addReactions() throws SbmlException, XMLStreamException {
 							org.sbml.jsbml.LocalParameter sbmlKinParam = sbmlKLaw.createLocalParameter();
 							sbmlKinParam.setId(origParamName);
 							sbmlKinParam.setValue(vcKParam.getConstantValue());
-							System.out.println ("tis constant " + sbmlKinParam.isExplicitlySetConstant());
+							logger.trace("tis constant " + sbmlKinParam.isExplicitlySetConstant());
 							//sbmlKinParam.setConstant(true) ) ;
 							// Set SBML units for sbmlParam using VC units from vcParam  
 							if (!vcUnit.isTBD()) {
@@ -909,7 +911,7 @@ protected void addSpecies() throws XMLStreamException, SbmlException {
 		SpeciesContextSpec vcSpeciesContextsSpec = getSelectedSimContext().getReactionContext().getSpeciesContextSpec(vcSpeciesContexts[i]);
 		// since we are setting the substance units for species to 'molecule' or 'item', a unit that is originally in uM (or molecules/um2),
 		// we need to convert concentration from uM -> molecules/um3; this can be achieved by dividing by KMOLE.
-System.out.println("dummy");		
+		logger.trace("in SBMLExporter");
 		// for now we don't do this here and defer to the mechanisms built into the SimContext to convert and set amount instead of concentration
 		// TO-DO: change to export either concentrations or amounts depending on the type of SimContext and setting
 		SpeciesContextSpecParameter initConc = vcSpeciesContextsSpec.getInitialConcentrationParameter();

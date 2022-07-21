@@ -11,7 +11,8 @@
 package org.vcell.sbml.vcell;
 
 import java.util.ArrayList;
-
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.sbml.jsbml.Unit;
 import org.sbml.jsbml.Unit.Kind;
 import org.sbml.jsbml.UnitDefinition;
@@ -27,7 +28,7 @@ import cbit.vcell.units.VCUnitSystem;
  * @author: Anuradha Lakshminarayana
  */
 public class SBMLUnitTranslator {
-	
+	private final static Logger logger = LogManager.getLogger(SBMLUnitTranslator.class);
 /**
  *
  *   BaseUnit definitions copied from ucar.units_vcell.SI (as modified for Virtual Cell and SBML ... including item and molecules)
@@ -218,7 +219,7 @@ public static UnitDefinition getSBMLUnitDefinition(VCUnitDefinition vcUnitDefn, 
 					}
 					Unit sbmlUnit = new Unit(multiplier, scale, kind, exponent, level, version);
 					sbmlUnitDefn.addUnit(sbmlUnit);
-					System.err.println("kind = "+kind.name()+" is equivalent to vcUnit = "+vcUnit.getSymbol()+",  SBML unit is "+sbmlUnit);
+					logger.warn("kind = "+kind.name()+" is equivalent to vcUnit = "+vcUnit.getSymbol()+",  SBML unit is "+sbmlUnit);
 				}
 				bFoundMatch = true;
 				break;
@@ -242,7 +243,7 @@ public static UnitDefinition getSBMLUnitDefinition(VCUnitDefinition vcUnitDefn, 
 					}
 					sbmlUnitDefn.addUnit(new Unit(multiplier, scale, Kind.MOLE, exponent, level, version));
 					sbmlUnitDefn.addUnit(new Unit(1, 0, Kind.LITRE, -exponent, level, version));
-					System.err.println("matched to liter ... had to create a replacement for molar, vcUnit = "+vcUnit.getSymbol()+",  SBML unit is "+sbmlUnitDefn);
+					logger.warn("matched to liter ... had to create a replacement for molar, vcUnit = "+vcUnit.getSymbol()+",  SBML unit is "+sbmlUnitDefn);
 				}
 				bFoundMatch = true;
 			}
