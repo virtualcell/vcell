@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -54,19 +55,25 @@ import org.jlibsedml.Libsedml;
 import org.jlibsedml.Model;
 import org.jlibsedml.OneStep;
 import org.jlibsedml.Output;
+import org.jlibsedml.Range;
 import org.jlibsedml.RepeatedTask;
 import org.jlibsedml.SedML;
 import org.jlibsedml.SedMLValidationReport;
+import org.jlibsedml.SetValue;
 import org.jlibsedml.SteadyState;
 import org.jlibsedml.SubTask;
 import org.jlibsedml.Task;
+import org.jlibsedml.UniformRange;
+import org.jlibsedml.UniformRange.UniformType;
 import org.jlibsedml.UniformTimeCourse;
+import org.jlibsedml.VectorRange;
 import org.jlibsedml.XPathTarget;
 import org.jlibsedml.execution.ArchiveModelResolver;
 import org.jlibsedml.execution.FileModelResolver;
 import org.jlibsedml.execution.ModelResolver;
 import org.jlibsedml.modelsupport.KisaoOntology;
 import org.jlibsedml.modelsupport.KisaoTerm;
+import org.jlibsedml.modelsupport.SBMLSupport;
 import org.jlibsedml.modelsupport.SUPPORTED_LANGUAGE;
 import org.sbml.jsbml.SBMLException;
 import org.vcell.cellml.CellQuanVCTranslator;
@@ -655,21 +662,17 @@ public class XmlHelper {
 					resolver.add(new RelativeFileModelResolver(sedmlRelativePrefix));
 				} 
 			}
+			// Creating one VCell Simulation per SED-ML Task
+			// VCell Biomodel(s) and Application(s) are also created as necessary
+			HashMap<String, Simulation> vcSimulations = new HashMap<String, Simulation>();
 			for (AbstractTask selectedTask : tasks) {
 				if(selectedTask instanceof Task) {
 					sedmlOriginalModel = sedml.getModelWithId(selectedTask.getModelReference());
 					sedmlSimulation = sedml.getSimulation(selectedTask.getSimulationReference());
 				} else if(selectedTask instanceof RepeatedTask) {
-					System.err.println("RepeatedTask not supported yet, task "+SEDMLUtil.getName(selectedTask)+" is being skipped");
+					// Repeated tasks refer to regular tasks
+					// We need simulations to be created for all regular tasks before we can process repeated tasks
 					continue;
-					// TODO the below is unfinished code
-//				RepeatedTask rt = (RepeatedTask)selectedTask;
-//				assert(rt.getSubTasks().size() == 1);
-//				SubTask st = rt.getSubTasks().entrySet().iterator().next().getValue();		// first (and only) subtask
-//				String taskId = st.getTaskId();
-//				AbstractTask t = sedml.getTaskWithId(taskId);
-//        		sedmlOriginalModel = sedml.getModelWithId(t.getModelReference());			// get model and simulation from subtask
-//        		sedmlSimulation = sedml.getSimulation(t.getSimulationReference());
 				} else {
 					throw new RuntimeException("Unexpected task " + selectedTask);
 				}
@@ -843,6 +846,7 @@ public class XmlHelper {
 					}
 					newSimulation.setName(newSimName);
 					newSimulation.setImportedTaskID(selectedTask.getId());
+					vcSimulations.put(selectedTask.getId(), newSimulation);
 				} else {
 					newSimulation.setName(SEDMLUtil.getName(sedmlSimulation)+"_"+SEDMLUtil.getName(selectedTask));
 				}
@@ -942,6 +946,57 @@ public class XmlHelper {
 				newSimulation.setDescription(SEDMLUtil.getName(selectedTask));
 				bioModel.addSimulation(newSimulation);
 				newSimulation.refreshDependencies();
+			}
+			// now processing repeated tasks, if any
+			for (AbstractTask selectedTask : tasks) {
+				if (selectedTask instanceof RepeatedTask) {
+					RepeatedTask rt = (RepeatedTask)selectedTask;
+					if (!rt.getResetModel() || rt.getSubTasks().size() != 1) {
+						System.err.println("sequential RepeatedTask not yet supported, task "+SEDMLUtil.getName(selectedTask)+" is being skipped");
+						continue;
+					}
+					if (rt.getChanges().size() != 1) {
+						System.err.println("lockstep multiple parameter scans are not yet supported, task "+SEDMLUtil.getName(selectedTask)+" is being skipped");
+						continue;
+					}
+					AbstractTask referredTask;
+					// find the actual Task, which can be directly referred or indirectly through a chain of RepeatedTasks (in case of multiple parameter scans)
+					do {
+						SubTask st = rt.getSubTasks().entrySet().iterator().next().getValue(); // single subtask
+						String taskId = st.getTaskId();
+						referredTask = sedml.getTaskWithId(taskId);
+						if (referredTask instanceof RepeatedTask) rt = (RepeatedTask)referredTask;
+					} while (referredTask instanceof RepeatedTask);
+					Task actualTask = (Task)referredTask;
+					Simulation simulation = vcSimulations.get(actualTask.getId());
+					// now add a parameter scan to the simulation referred by the actual task
+					ConstantArraySpec scanSpec = null;
+					rt = (RepeatedTask)selectedTask;
+					SetValue change = rt.getChanges().get(0); // single param scan
+					SBMLSupport sbmlSupport = new SBMLSupport();
+					String targetID = sbmlSupport.getIdFromXPathIdentifer(change.getTargetXPath().getTargetAsString());
+					Range range = rt.getRange(change.getRangeReference());
+					// TODO start
+					// need to map the SBML target to VCell constant name
+					String constant = targetID; // placeholder
+					// TODO end
+					if (range instanceof UniformRange) {
+						UniformRange ur = (UniformRange)range;
+						scanSpec = ConstantArraySpec.createIntervalSpec(constant, Math.min(ur.getStart(), ur.getEnd()), Math.max(ur.getStart(), ur.getEnd()), ur.getNumberOfPoints(), ur.getType().equals(UniformType.LOG));
+					} else if (range instanceof VectorRange) {
+						VectorRange vr = (VectorRange)range;
+						String[] values = new String[vr.getNumElements()];
+						for (int i = 0; i < values.length; i++) {
+							values[i] = Double.toString(vr.getElementAt(i));
+						}
+						scanSpec = ConstantArraySpec.createListSpec(constant, values);
+					} else {
+						System.err.println("unsupported Range class found, task "+SEDMLUtil.getName(selectedTask)+" is being skipped");
+						continue;						
+					}
+					MathOverrides mo = simulation.getMathOverrides();
+					mo.putConstantArraySpec(scanSpec);
+				}
 			}
 			return docs;
 		} catch (Exception e) {
