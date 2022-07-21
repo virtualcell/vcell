@@ -29,7 +29,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
 
-@Command(name = "execute")
+@Command(name = "execute", description = "run .vcml or .omex files via Python API")
 public class ExecuteCommand implements Callable<Integer> {
 
     @Option(names = { "-i", "--inputFilePath" })
@@ -47,17 +47,16 @@ public class ExecuteCommand implements Callable<Integer> {
     @Option(names = {"--exactMatchOnly"})
     private boolean bExactMatchOnly;
 
-    @Option(names = {"--timeout_ms"}, description = "executable wall clock timeout in milliseconds")
+    @Option(names = {"--timeout_ms"}, defaultValue = "600000", description = "executable wall clock timeout in milliseconds")
     // timeout for compiled solver running long jobs; default 12 hours
-    private long EXECUTABLE_MAX_WALLCLOK_MILLIS = 600000;
+    private long EXECUTABLE_MAX_WALLCLOCK_MILLIS;
 
     public Integer call() {
-        System.out.println("in execute()");
         try {
             PropertyLoader.loadProperties();
             CLIPythonManager.getInstance().instantiatePythonProcess();
 
-            Executable.setTimeoutMS(EXECUTABLE_MAX_WALLCLOK_MILLIS);
+            Executable.setTimeoutMS(EXECUTABLE_MAX_WALLCLOCK_MILLIS);
 
             if (inputFilePath.isDirectory()) {
                 batchMode(inputFilePath, outputFilePath, bKeepTempFiles, bExactMatchOnly, bForceLogFiles);

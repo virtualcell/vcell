@@ -11,9 +11,9 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.concurrent.Callable;
 
-@Command(name = "convert")
+@Command(name = "convert", description = "convert from VCML to COMBINE archive (.omex)")
 public class ConvertCommand implements Callable<Integer> {
-    @Option(names = "-m")
+    @Option(names = "-m", defaultValue = "SBML")
     private ModelFormat outputModelFormat;
 
     @Option(names = { "-i", "--inputFilePath" })
@@ -35,7 +35,6 @@ public class ConvertCommand implements Callable<Integer> {
     boolean bForceLogFiles;
 
     public Integer call() {
-        System.out.println("in convert() with outputModelFormat = " + outputModelFormat);
         try {
             PropertyLoader.loadProperties();
             CLIPythonManager.getInstance().instantiatePythonProcess();
