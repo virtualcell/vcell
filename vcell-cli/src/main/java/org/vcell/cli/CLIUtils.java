@@ -614,19 +614,6 @@ public class CLIUtils {
         }
     }
 
-    // Due to what appears to be a leaky python function call, this method will continue using execShellCommand until the unerlying python is fixed
-    public static void genPlotsPseudoSedml(String sedmlPath, String resultOutDir) throws PythonStreamException, InterruptedException, IOException {
-        CLIPythonManager.callNonsharedPython("genPlotsPseudoSedml", sedmlPath, resultOutDir);
-//        ProcessBuilder pb = new ProcessBuilder(new String[]{CLIResourceManager.python, cliDirs.cliPath.toString(), "genPlotsPseudoSedml", sedmlPath, resultOutDir});
-//        runAndPrintProcessStreams(pb, "","");
-
-        /**
-         * replace with the following once the leak is fixed
-         */
-//        CLIPythonManager cliPythonManager = CLIPythonManager.getInstance();
-//        String results = cliPythonManager.callPython("genPlotsPseudoSedml", sedmlPath, resultOutDir);
-//        cliPythonManager.printPythonErrors(results);
-    }
 
     // Sample STATUS YML
     /*
@@ -805,6 +792,23 @@ public class CLIUtils {
     public static String encloseString(String s){
         return "r\"" + s + "\"";
     }
+
+
+
+    public static boolean isBatchExecution(String outputBaseDir, boolean bForceKeepLogs) {
+        Path path = Paths.get(outputBaseDir);
+        boolean isDirectory = java.nio.file.Files.isDirectory(path);
+        return isDirectory || bForceKeepLogs;
+    }
+
+    public static void writeDetailedErrorList(String outputBaseDir, String s, boolean bForceKeepLogs) throws IOException {
+        if (isBatchExecution(outputBaseDir, bForceKeepLogs)) {
+            String dest = outputBaseDir + File.separator + "detailedErrorLog.txt";
+            java.nio.file.Files.write(Paths.get(dest), (s + "\n").getBytes(),
+                    StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+        }
+    }
+
 
 }
 
