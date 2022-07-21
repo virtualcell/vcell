@@ -67,7 +67,9 @@ public class VcmlOmexConverter {
 									boolean bHasDataOnly,
 									boolean bMakeLogsOnly,
 									boolean bNonSpatialOnly,
-									boolean bForceLogFiles)
+									boolean bForceLogFiles,
+									boolean bValidateOmex,
+									VCLogger vcLogger)
 			throws IOException, SQLException, DataAccessException {
 
 		VCInfoContainer vcic;
@@ -137,8 +139,8 @@ public class VcmlOmexConverter {
                 try {
                     if (inputFile.endsWith(".vcml")) {
                         boolean isCreated = vcmlToOmexConversion(file.toString(), outputDir.getAbsolutePath(), outputDir.getAbsolutePath(), cliDatabaseService,
-								hasNonSpatialSet, hasSpatialSet, modelFormat, bHasDataOnly, bNonSpatialOnly, bMakeLogsOnly, bForceLogFiles);
-                        if (isCreated) {
+								hasNonSpatialSet, hasSpatialSet, modelFormat, bHasDataOnly, bNonSpatialOnly, bMakeLogsOnly, bForceLogFiles, bValidateOmex);
+						if (isCreated) {
                         	logger.info("Combine archive created for file(s) `" + inputFile + "`");
                         }
                         else {
@@ -159,7 +161,7 @@ public class VcmlOmexConverter {
                 if (input.toString().endsWith(".vcml")) {
                     boolean isCreated = vcmlToOmexConversion(input.getAbsolutePath(), null,
 							outputDir.getAbsolutePath(), cliDatabaseService, hasNonSpatialSet, hasSpatialSet,
-							modelFormat, bHasDataOnly, bNonSpatialOnly, bMakeLogsOnly, bForceLogFiles);
+							modelFormat, bHasDataOnly, bNonSpatialOnly, bMakeLogsOnly, bForceLogFiles, bValidateOmex);
                     if (isCreated) {
 						logger.info("Combine archive created for `" + input + "`");
 					} else {
@@ -181,7 +183,8 @@ public class VcmlOmexConverter {
 												boolean bHasDataOnly,
 												boolean bNonSpatialOnly,
 												boolean bMakeLogsOnly,
-												boolean bForceLogFiles
+												boolean bForceLogFiles,
+												boolean bValidate
 	) throws XmlParseException, IOException, DataAccessException, SQLException {
 
         // Get VCML file path from -i flag
@@ -373,7 +376,7 @@ public class VcmlOmexConverter {
         int connectionTimeout = 10000;
         int readTimeout = 20000;
         try {
-        FileUtils.copyURLToFile(source, destination, connectionTimeout, readTimeout);		// diagram
+       	 	FileUtils.copyURLToFile(source, destination, connectionTimeout, readTimeout);		// diagram
         } catch(FileNotFoundException e) {
         	logger.warn("Diagram not present in source="+sourcePath);
         }
@@ -483,6 +486,10 @@ public class VcmlOmexConverter {
 //        	File srcFile = new File(inputVcmlFile);
 //        	FileUtils.copyFileToDirectory(srcFile, destDir);
 
+			if (bValidate){
+				XmlHelper.readOmex(omexFile, new CLIUtils.LocalLogger());
+			}
+
             // Removing all other files(like SEDML, XML, SBML) after archiving
             removeOtherFiles(outputDir, files);
 
@@ -520,7 +527,7 @@ public class VcmlOmexConverter {
     			SesameRioUtil.writeRDFToStream(System.out, graph, nsMap, RDFFormat.RDFXML);
     		} catch (RDFHandlerException e) {
     			logger.error(e);
-    		}
+			}
     		return ret;
         }
         PublicationInfo[] publicationInfos = bioModelInfo.getPublicationInfos();
@@ -534,7 +541,7 @@ public class VcmlOmexConverter {
     			SesameRioUtil.writeRDFToStream(System.out, graph, nsMap, RDFFormat.RDFXML);
     		} catch (RDFHandlerException e) {
     			logger.error(e);
-    		}
+			}
     		return ret;
         }
         

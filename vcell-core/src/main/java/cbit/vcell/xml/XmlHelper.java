@@ -34,6 +34,7 @@ import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathFactory;
 
 import cbit.vcell.solver.*;
+import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SolverDescription.AlgorithmParameterDescription;
 
 import org.apache.logging.log4j.LogManager;
@@ -139,6 +140,8 @@ import cbit.xml.merge.XmlTreeDiff.DiffConfiguration;
  * @author: Rashad Badrawi
  */
 public class XmlHelper {
+
+	private final static Logger logger = LogManager.getLogger(XmlHelper.class);
 
 	//represent the containers XML element for the simulation/image data to be imported/exported.
 	//For now, same as their VCML counterparts.
@@ -595,6 +598,38 @@ public class XmlHelper {
 		return simString;
 	}
 
+	public static List<VCDocument> readOmex(File omexFile, VCLogger vcLogger) throws Exception {
+		List<VCDocument> docs = new ArrayList<>();
+		// iterate through one or more SEDML objects
+		ArchiveComponents ac = null;
+		ac = Libsedml.readSEDMLArchive(new FileInputStream(omexFile));
+		List<SEDMLDocument> sedmlDocs = ac.getSedmlDocuments();
+
+
+		List<SedML> sedmls = new ArrayList<>();
+		for (SEDMLDocument sedmlDoc : sedmlDocs) {
+			SedML sedml = sedmlDoc.getSedMLModel();
+			if (sedml == null) {
+				throw new RuntimeException("Failed importing " + omexFile.getName());
+			}
+			if (sedml.getModels().isEmpty()) {
+				throw new RuntimeException("Unable to find any model in " + omexFile.getName());
+			}
+			sedmls.add(sedml);
+		}
+		for (SedML sedml : sedmls) {
+			// default to import all tasks
+			ExternalDocInfo externalDocInfo = new ExternalDocInfo(omexFile,true);
+			List<VCDocument> vcdocs = XmlHelper.sedmlToBioModel(vcLogger, externalDocInfo,
+					sedml, null, null, false);
+			for (VCDocument vcdoc : vcdocs) {
+				docs.add(vcdoc);
+			}
+		}
+		return docs;
+	}
+
+
 	public static List<VCDocument> sedmlToBioModel(VCLogger transLogger, ExternalDocInfo externalDocInfo,
 												   SedML sedml, List<AbstractTask> tasks, String sedmlFileLocation, boolean exactMatchOnly) throws Exception {
 		if(sedml.getModels().isEmpty()) {
@@ -672,6 +707,7 @@ public class XmlHelper {
 				} else if(selectedTask instanceof RepeatedTask) {
 					// Repeated tasks refer to regular tasks
 					// We need simulations to be created for all regular tasks before we can process repeated tasks
+					logger.warn("RepeatedTask not supported yet, task "+SEDMLUtil.getName(selectedTask)+" is being skipped");
 					continue;
 				} else {
 					throw new RuntimeException("Unexpected task " + selectedTask);
@@ -689,7 +725,7 @@ public class XmlHelper {
 				// try to find a match in the ontology tree
 				SolverDescription solverDescription = SolverUtilities.matchSolverWithKisaoId(kisaoID, exactMatchOnly);
 				if (solverDescription != null) {
-					System.out.println("Task (id='"+selectedTask.getId()+"') is compatible, solver match found in ontology: '" + kisaoID + "' matched to " + solverDescription);
+					logger.info("Task (id='"+selectedTask.getId()+"') is compatible, solver match found in ontology: '" + kisaoID + "' matched to " + solverDescription);
 				} else {
 					// give it a try anyway with our deterministic default solver
 					solverDescription = SolverDescription.CombinedSundials;
@@ -1000,8 +1036,7 @@ public class XmlHelper {
 			}
 			return docs;
 		} catch (Exception e) {
-			e.printStackTrace();
-			throw new RuntimeException("Unable to initialize bioModel for the given selection\n"+e.getMessage());
+			throw new RuntimeException("Unable to initialize bioModel for the given selection\n"+e.getMessage(), e);
 		}
 	}
 
