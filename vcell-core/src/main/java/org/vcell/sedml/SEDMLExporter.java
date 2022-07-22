@@ -1016,8 +1016,7 @@ public class SEDMLExporter {
 	
 
 		} catch (Exception e) {
-			e.printStackTrace(System.out);
-			throw new RuntimeException("Error adding model to SEDML document : " + e.getMessage());
+			throw new RuntimeException("Error adding model to SEDML document : " + e.getMessage(), e);
 		}
 	}
 
@@ -1157,8 +1156,12 @@ public class SEDMLExporter {
 				targetXpath = new XPathTarget(sbmlSupport.getXPathForGlobalParameter(value, ParameterAttribute.value));
 			}
 		} else {
-			System.err.println("Entity should be SpeciesContext, Structure, ModelParameter : " + ste.getClass());
-			throw new RuntimeException("Unknown entity in SBML model");
+			if(ste instanceof Membrane.MembraneVoltage) {
+				String msg = "Export failed: This VCell model has membrane voltage; cannot be exported to SBML at this time";
+				throw new RuntimeException(msg);
+			} else {
+				throw new RuntimeException("Unsupported entity in SBML model export: "+ste.getClass());
+			}
 		}
 		return targetXpath;
 	}
@@ -1236,7 +1239,7 @@ public class SEDMLExporter {
 				throw new RuntimeException(msg);
 			} else {
 				System.err.println("Entity should be SpeciesContext, Structure, ModelParameter : " + ste.getClass());
-				throw new RuntimeException("Unknown entity in SBML model");
+				throw new RuntimeException("Unsupported entity in SBML model export: "+ste.getClass());
 			}
 		}
 		return targetXpath;
