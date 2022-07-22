@@ -101,7 +101,7 @@ public class VcmlOmexConverter {
 				}
 			}
 		}
-		logger.trace("counted published biomodels: " + count);
+		logger.info("counted published biomodels: " + count);
 
 		for( Map.Entry<String,List<String>> entry : publicationToModelMap.entrySet()) {
 			String pubTitle = entry.getKey();
@@ -113,7 +113,7 @@ public class VcmlOmexConverter {
 					row += (", " + model);
 				}
 				writeMultiModelPublications(outputDir.getAbsolutePath(), row, bForceLogFiles);
-				logger.info("publication :"+row);
+				logger.trace("publication :"+row);
 			}
 		}
 
@@ -135,7 +135,7 @@ public class VcmlOmexConverter {
 //            assert inputFiles != null;
             for (String inputFile : inputFiles) {
                 File file = new File(input, inputFile);
-                logger.trace(" ============== start: " + inputFile);
+                logger.info(" ============== start: " + inputFile);
                 try {
                     if (inputFile.endsWith(".vcml")) {
                         boolean isCreated = vcmlToOmexConversion(file.toString(), outputDir.getAbsolutePath(), outputDir.getAbsolutePath(), cliDatabaseService,
