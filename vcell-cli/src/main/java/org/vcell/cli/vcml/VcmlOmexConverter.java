@@ -693,8 +693,7 @@ public class VcmlOmexConverter {
 		ret += PubMet.EndModified;
 		
 		ret += end;
-		System.out.println(ret);
-		System.out.println("");
+		logger.trace(ret);
 		return(ret);
     }
     

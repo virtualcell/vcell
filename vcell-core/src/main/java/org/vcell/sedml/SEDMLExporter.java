@@ -127,8 +127,14 @@ import cbit.vcell.solver.TimeStep;
 import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XmlHelper;
 import cbit.vcell.xml.XmlParseException;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+
 
 public class SEDMLExporter {
+	private final static Logger logger = LogManager.getLogger(SEDMLExporter.class);
+
 	private int sedmlLevel = 1;
 	private int sedmlVersion = 2;
 	private  SedML sedmlModel = null;
@@ -168,11 +174,9 @@ public class SEDMLExporter {
 			String outputName = absolutePath+ "\\" + TokenMangler.mangleToSName(bioModel.getName()) + ".sedml";
 			XmlUtil.writeXMLStringToFile(sedmlStr, outputName, true);
 		} catch (IOException e) {
-			e.printStackTrace(System.out);
-			throw new RuntimeException("Unable to read VCML file '" + pathName + "' into string.");
+			throw new RuntimeException("Unable to read VCML file '" + pathName + "' into string.",e);
 		} catch (XmlParseException e) {
-			e.printStackTrace(System.out);
-			throw new RuntimeException("Unable to convert VCML file '" + pathName + "' to a biomodel.");
+			throw new RuntimeException("Unable to convert VCML file '" + pathName + "' to a biomodel.",e);
 		}
 	}
 	
@@ -262,7 +266,7 @@ public class SEDMLExporter {
 						sbmlString = pair.one;
 						l2gMap = pair.two;
 					} catch (Exception e) {
-						System.out.println("Export failed: " + e.getMessage());
+						logger.error("Export failed: " + e.getMessage(), e);
 						sbmlExportFailed = true;
 					}
 				} else {	// we want to force VCML, we act as if saving to SBML failed
@@ -494,7 +498,7 @@ public class SEDMLExporter {
 						}
 						if (!missingParamHash.isEmpty()) {
 							for (String missingParamName : missingParamHash.values()) {
-								System.err.println("WARNING: there is an override entry for non-existent parameter "+missingParamName);
+								logger.error("WARNING: there is an override entry for non-existent parameter "+missingParamName);
 							}
 						}
 
@@ -740,7 +744,6 @@ public class SEDMLExporter {
 														try {
 															doubleValue = ste.getExpression().evaluateConstant();
 														} catch (Exception e) {
-															e.printStackTrace(System.out);
 															throw new RuntimeException("Unable to evaluate function '" + ste.getName() + "' used in '" + unscannedParamName + "' expression : ", e);
 														}
 													} else {
@@ -1011,7 +1014,7 @@ public class SEDMLExporter {
 	        	sedmlModel.addNote(createNotesElement(sedmlNotesStr));
         	}
         	if(sedmlModel.getModels() != null && sedmlModel.getModels().size() > 0) {
-        		System.out.println("Number of models in the sedml is " + sedmlModel.getModels().size());
+        		logger.trace("Number of models in the sedml is " + sedmlModel.getModels().size());
         	}
 	
 
@@ -1052,7 +1055,6 @@ public class SEDMLExporter {
 					return vcModel.getKMOLE().getExpression().evaluateConstant();
 				}
 			} catch (Exception e) {
-				e.printStackTrace(System.out);
 				throw new RuntimeException("Unable to get the value of (reserved) VCell parameter : '" + ste.getName() + "' : ", e);
 			} 
 		} 
@@ -1235,10 +1237,10 @@ public class SEDMLExporter {
 		} else {
 			if(ste instanceof Membrane.MembraneVoltage) {
 				String msg = "Export failed: This VCell model has membrane voltage; cannot be exported to SBML at this time";
-				System.out.println(msg);
+				logger.error("redundant error log: "+msg);
 				throw new RuntimeException(msg);
 			} else {
-				System.err.println("Entity should be SpeciesContext, Structure, ModelParameter : " + ste.getClass());
+				logger.error("redundant error log: "+"Entity should be SpeciesContext, Structure, ModelParameter : " + ste.getClass());
 				throw new RuntimeException("Unsupported entity in SBML model export: "+ste.getClass());
 			}
 		}
@@ -1283,11 +1285,9 @@ public class SEDMLExporter {
 		try {
 			expMathMLStr = cbit.vcell.parser.ExpressionMathMLPrinter.getMathML(expression, false);
 		} catch (java.io.IOException e) {
-			e.printStackTrace(System.out);
-			throw new RuntimeException("Error converting expression to MathML string :" + e.getMessage());
+			throw new RuntimeException("Error converting expression to MathML string :" + e.getMessage(), e);
 		} catch (cbit.vcell.parser.ExpressionException e1) {
-			e1.printStackTrace(System.out);
-			throw new RuntimeException("Error converting expression to MathML string :" + e1.getMessage());
+			throw new RuntimeException("Error converting expression to MathML string :" + e1.getMessage(), e1);
 		}
 
 		// Use libSBMl routines to convert MathML string to MathML document and a libSBML-readable formula string
@@ -1296,9 +1296,7 @@ public class SEDMLExporter {
 		try {
 			mathNode = mmlr.parseMathMLFromString(expMathMLStr);
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace(System.out);
-			throw new RuntimeException("Error converting MathML string to ASTNode:" + e.getMessage());
+			throw new RuntimeException("Error converting MathML string to ASTNode:" + e.getMessage(), e);
 		}
 		return mathNode;
 //		return mathNode.deepCopy();
@@ -1370,9 +1368,9 @@ public class SEDMLExporter {
 			// StreamResult result = new StreamResult(System.out);
 			transformer.transform(source, result);
 		  } catch (ParserConfigurationException pce) {
-			pce.printStackTrace();
+			logger.error(pce);
 		  } catch (TransformerException tfe) {
-			tfe.printStackTrace();
+			logger.error(tfe);
 		  }
 	}
 	public void addSedmlFileToList(String sedmlFileName) {

@@ -139,6 +139,10 @@ import cbit.vcell.solver.SimulationInfo;
 import cbit.vcell.solver.SimulationOwner;
 import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.vcell.units.VCUnitDefinition;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 /**
  * This type was created in VisualAge.
  */
@@ -146,7 +150,9 @@ import cbit.vcell.units.VCUnitDefinition;
 public class SimulationContext implements SimulationOwner, Versionable, Matchable, BioNetGenUpdaterCallback,
 	ScopedSymbolTable, PropertyChangeListener, VetoableChangeListener, Serializable, IssueSource,
 	Displayable, Identifiable {
-	
+
+	private final static Logger logger = LogManager.getLogger(SimulationContext.class);
+
 	public interface MathMappingCallback {
 		public void setMessage(String message);
 		public void setProgressFraction(float fractionDone);
@@ -687,12 +693,6 @@ public Application getApplicationType() {
 	return applicationType;
 }
 
-/**
- * Sets the analysisTasks index property (cbit.vcell.modelopt.AnalysisTask[]) value.
- * @param index The index value into the property array.
- * @param analysisTasks The new value for the property.
- * @see #getAnalysisTasks
- */
 public void addAnalysisTask(AnalysisTask analysisTask) throws PropertyVetoException {
 	if (fieldAnalysisTasks==null){
 		setAnalysisTasks(new AnalysisTask[] { analysisTask });
@@ -719,12 +719,6 @@ public BioEvent addBioEvent(BioEvent bioEvent) throws PropertyVetoException {
 	return bioEvent;
 }
 
-/**
- * Sets the simulations property (cbit.vcell.solver.Simulation[]) value.
- * @param simulations The new value for the property.
- * @exception java.beans.PropertyVetoException The exception description.
- * @see #getSimulations
- */
 public Simulation addNewSimulation(String simNamePrefix, MathMappingCallback callback, NetworkGenerationRequirements networkGenerationRequirements) throws java.beans.PropertyVetoException {
 	refreshMathDescription(callback, networkGenerationRequirements);
 	if (bioModel==null){
@@ -796,7 +790,7 @@ public void refreshMathDescription(MathMappingCallback callback, NetworkGenerati
 		try {
 			setMathDescription(createNewMathMapping(callback, networkGenerationRequirements).getMathDescription());
 		} catch (Exception e) {
-			e.printStackTrace();
+			logger.error(e);
 			throw new RuntimeException(
 				"Application '"+getName()+"' has no generated Math\n"+
 				"Failed to generate new Math\n"+
@@ -815,12 +809,6 @@ public synchronized void addPropertyChangeListener(java.beans.PropertyChangeList
 }
 
 
-/**
- * Sets the simulations property (cbit.vcell.solver.Simulation[]) value.
- * @param simulations The new value for the property.
- * @exception java.beans.PropertyVetoException The exception description.
- * @see #getSimulations
- */
 public void addSimulation(Simulation newSimulation) throws java.beans.PropertyVetoException {
 	if (newSimulation.getMathDescription() == null){
 		throw new IllegalArgumentException("cannot add simulation '"+newSimulation.getName()+"', has no MathDescription");
@@ -963,12 +951,6 @@ public boolean compareEqual(Matchable object) {
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (3/19/2001 10:37:02 PM)
- * @return boolean
- * @param structure cbit.vcell.model.Structure
- */
 public boolean contains(SimulationContextParameter scParameter) {
 	for (int i=0;i<fieldSimulationContextParameters.length;i++){
 		if (fieldSimulationContextParameters[i].equals(scParameter)){
@@ -978,12 +960,6 @@ public boolean contains(SimulationContextParameter scParameter) {
 	return false;
 }
 
-/**
- * Sets the simulations property (cbit.vcell.solver.Simulation[]) value.
- * @param simulations The new value for the property.
- * @exception java.beans.PropertyVetoException The exception description.
- * @see #getSimulations
- */
 public AnalysisTask copyAnalysisTask(AnalysisTask analysisTask) throws java.beans.PropertyVetoException, ExpressionException, MappingException, MathException {
 
 	if (analysisTask instanceof ParameterEstimationTask){
@@ -1011,12 +987,6 @@ public AnalysisTask copyAnalysisTask(AnalysisTask analysisTask) throws java.bean
 	}
 }
 
-/**
- * Sets the simulations property (cbit.vcell.solver.Simulation[]) value.
- * @param simulations The new value for the property.
- * @exception java.beans.PropertyVetoException The exception description.
- * @see #getSimulations
- */
 public Simulation copySimulation(Simulation simulation) throws java.beans.PropertyVetoException {
 	if (getMathDescription()==null){
 		throw new RuntimeException("Application "+getName()+" has no generated Math, cannot add simulation");
@@ -1584,12 +1554,6 @@ public MembraneContext getMembraneContext() {
 	return membraneContext;
 }
 
-/**
- * Insert the method's description here.
- * Creation date: (3/19/2001 10:37:02 PM)
- * @return boolean
- * @param structure cbit.vcell.model.Structure
- */
 public SimulationContextParameter getSimulationContextParameter(String parameterName){
 	for (int i=0;i<fieldSimulationContextParameters.length;i++){
 		if (fieldSimulationContextParameters[i].getName().equals(parameterName)){
@@ -1620,22 +1584,10 @@ public SimulationContext.SimulationContextParameter getSimulationContextParamete
 }
 
 
-/**
- * Gets the simulations property (cbit.vcell.solver.Simulation[]) value.
- * @return The simulations property value.
- * @see #setSimulations
- */
 public Simulation[] getSimulations() {
 	return extractLocalSimulations(bioModel.getSimulations());
 }
 
-
-/**
- * Gets the simulations index property (cbit.vcell.solver.Simulation) value.
- * @return The simulations property value.
- * @param index The index value into the property array.
- * @see #setSimulations
- */
 public Simulation getSimulations(int index) {
 	return getSimulations()[index];
 }
@@ -2169,13 +2121,6 @@ private void refreshElectrodes(){
 	}
 }
 
-
-/**
- * Sets the analysisTasks index property (cbit.vcell.modelopt.AnalysisTask[]) value.
- * @param index The index value into the property array.
- * @param analysisTasks The new value for the property.
- * @see #getAnalysisTasks
- */
 public void removeAnalysisTask(AnalysisTask analysisTask) throws PropertyVetoException {
 	boolean bFound = false;
 	for (int i = 0; fieldAnalysisTasks!=null && i < fieldAnalysisTasks.length; i++){
@@ -2214,13 +2159,6 @@ public synchronized void removePropertyChangeListener(java.beans.PropertyChangeL
 	getPropertyChange().removePropertyChangeListener(listener);
 }
 
-
-/**
- * Sets the simulations property (cbit.vcell.solver.Simulation[]) value.
- * @param simulations The new value for the property.
- * @exception java.beans.PropertyVetoException The exception description.
- * @see #getSimulations
- */
 public void removeSimulation(Simulation simulation) throws java.beans.PropertyVetoException {
 	if (simulation.getMathDescription() != getMathDescription()){
 		throw new IllegalArgumentException("cannot remove simulation '"+simulation.getName()+"', has different MathDescription");
@@ -2531,20 +2469,20 @@ public void refreshSpatialObjects() {
 		try {
 			for (SpatialObject unmappedSpatialObject : unmappedSpatialObjects){
 				if (unmappedSpatialObject instanceof VolumeRegionObject){
-					System.err.println("volume region spatial object '"+unmappedSpatialObject.getName()+"' not found in geometry, delete.");
+					logger.error("volume region spatial object '"+unmappedSpatialObject.getName()+"' not found in geometry, delete.");
 					removeSpatialObject(unmappedSpatialObject);
 				}
 				if (unmappedSpatialObject instanceof SurfaceRegionObject){
-					System.err.println("surface region spatial object '"+unmappedSpatialObject.getName()+"' not found in geometry, delete.");
+					logger.error("surface region spatial object '"+unmappedSpatialObject.getName()+"' not found in geometry, delete.");
 					removeSpatialObject(unmappedSpatialObject);
 				}
 				if (unmappedSpatialObject instanceof PointObject){
-					System.err.println("point spatial object '"+unmappedSpatialObject.getName()+"' not found in geometry, this is expected.");
+					logger.error("point spatial object '"+unmappedSpatialObject.getName()+"' not found in geometry, this is expected.");
 //					removeSpatialObject(unmappedSpatialObject);
 				}
 			}
 		} catch (PropertyVetoException e) {
-			e.printStackTrace();
+			logger.error(e);
 		}
 	}
 }
@@ -2571,11 +2509,6 @@ public void setGroundElectrode(Electrode groundElectrode) throws java.beans.Prop
 //	bRuleBased = newIsRuleBased;
 //}
 
-
-/**
- * This method was created in VisualAge.
- * @param mathDesc cbit.vcell.math.MathDescription
- */
 public void setMathDescription(MathDescription argMathDesc) throws PropertyVetoException {
 	Object oldValue = this.mathDesc;
 	fireVetoableChange("mathDescription",oldValue,argMathDesc);
