@@ -1,4 +1,4 @@
-package org.vcell.cli;
+package org.vcell.cli.run;
 
 import cbit.vcell.resource.NativeLib;
 import cbit.vcell.resource.ResourceUtil;
@@ -6,6 +6,7 @@ import org.sbml.libcombine.CaContent;
 import org.sbml.libcombine.CaListOfContents;
 import org.sbml.libcombine.CaOmexManifest;
 import org.sbml.libcombine.CombineArchive;
+import org.vcell.cli.CLIUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -16,7 +17,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class OmexHandler {
-    CLIUtils utils;
     String tempPath;
     String omexPath;
     String omexName;
@@ -53,8 +53,7 @@ public class OmexHandler {
         int indexOfLastSlash = omexPath.lastIndexOf("/");
         this.omexName = omexPath.substring(indexOfLastSlash + 1);
 
-        this.utils = CLIUtils.getCLIUtils();
-        this.tempPath = utils.getTempDir();
+        this.tempPath = RunUtils.getTempDir();
 
         this.archive = new CombineArchive();
         boolean isInitialized = archive.initializeFromArchive(omexPath);

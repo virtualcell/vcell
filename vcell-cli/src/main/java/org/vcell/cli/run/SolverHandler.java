@@ -1,4 +1,4 @@
-package org.vcell.cli;
+package org.vcell.cli.run;
 
 import cbit.util.xml.VCLogger;
 import cbit.vcell.biomodel.BioModel;
@@ -20,18 +20,18 @@ import cbit.vcell.xml.XmlHelper;
 import org.jlibsedml.SedML;
 import org.jlibsedml.Task;
 import org.jlibsedml.UniformTimeCourse;
+import org.python.core.Py;
+import org.vcell.cli.CLIUtils;
 import org.vcell.cli.vcml.VCMLHandler;
 import org.vcell.sbml.vcell.SBMLImportException;
 import org.vcell.sbml.vcell.SBMLImporter;
 import org.vcell.util.document.VCDocument;
 import org.vcell.util.exe.Executable;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -64,7 +64,10 @@ public class SolverHandler {
     }
 
 
-    public HashMap<String, ODESolverResultSet> simulateAllTasks(CLIUtils utils, ExternalDocInfo externalDocInfo, SedML sedml, File outputDirForSedml, String outDir, String outputBaseDir, String sedmlLocation, boolean keepTempFiles, boolean exactMatchOnly) throws Exception {
+    public HashMap<String, ODESolverResultSet>
+            simulateAllTasks(ExternalDocInfo externalDocInfo, SedML sedml,
+                             File outputDirForSedml, String outDir, String outputBaseDir, String sedmlLocation,
+                             boolean keepTempFiles, boolean exactMatchOnly, boolean bForceLogFiles) throws Exception {
         // create the VCDocument(s) (bioModel(s) + application(s) + simulation(s)), do sanity checks
         cbit.util.xml.VCLogger sedmlImportLogger = new LocalLogger();
         String inputFile = externalDocInfo.getFile().getAbsolutePath();
@@ -166,7 +169,7 @@ public class SolverHandler {
                         assert task != null;
                         org.jlibsedml.Simulation sedmlSim = sedml.getSimulation(task.getSimulationReference());
                         if (sedmlSim instanceof UniformTimeCourse) {
-                            odeSolverResultSet = CLIUtils.interpolate(odeSolverResultSet, (UniformTimeCourse) sedmlSim);
+                            odeSolverResultSet = RunUtils.interpolate(odeSolverResultSet, (UniformTimeCourse) sedmlSim);
                             logTaskMessage += "done. Interpolating... ";
                         }
                     } else {
@@ -202,9 +205,9 @@ public class SolverHandler {
                 		String msg = "Running simulation " + simTask.getSimulation().getName() + ", " + elapsedTime + " ms";
                 		System.out.println(msg);
                 		countSuccessfulSimulationRuns++;	// we only count the number of simulations (tasks) that succeeded
-                		utils.updateTaskStatusYml(sedmlLocation, sim.getImportedTaskID(), CLIUtils.Status.SUCCEEDED, outDir ,duration + "", kisao);
-                		utils.setOutputMessage(sedmlLocation, sim.getImportedTaskID(), outDir, "task", logTaskMessage);
-                        CLIUtils.drawBreakLine("-", 100);
+                		PythonCalls.updateTaskStatusYml(sedmlLocation, sim.getImportedTaskID(), Status.SUCCEEDED, outDir ,duration + "", kisao);
+                		PythonCalls.setOutputMessage(sedmlLocation, sim.getImportedTaskID(), outDir, "task", logTaskMessage);
+                        RunUtils.drawBreakLine("-", 100);
                     } else {
                     	solverStatus = solver.getSolverStatus().getStatus();
                         System.err.println("Solver status: " + solverStatus);
@@ -234,9 +237,9 @@ public class SolverHandler {
             			logTaskError += str;
             		} else {
             			if(solverStatus == SolverStatus.SOLVER_ABORTED) {
-            				utils.updateTaskStatusYml(sedmlLocation, sim.getImportedTaskID(), CLIUtils.Status.ABORTED, outDir ,duration + "", kisao);
+            				PythonCalls.updateTaskStatusYml(sedmlLocation, sim.getImportedTaskID(), Status.ABORTED, outDir ,duration + "", kisao);
             			} else {
-            				utils.updateTaskStatusYml(sedmlLocation, sim.getImportedTaskID(), CLIUtils.Status.FAILED, outDir ,duration + "", kisao);
+            				PythonCalls.updateTaskStatusYml(sedmlLocation, sim.getImportedTaskID(), Status.FAILED, outDir ,duration + "", kisao);
             			}
             		}
 //                    CLIUtils.finalStatusUpdate(CLIUtils.Status.FAILED, outDir);
@@ -248,8 +251,8 @@ public class SolverHandler {
                     	logTaskError += (error + ". ");
                     }
                     String type = e.getClass().getSimpleName();
-                    utils.setOutputMessage(sedmlLocation, sim.getImportedTaskID(), outDir, "task", logTaskMessage);
-                    utils.setExceptionMessage(sedmlLocation, sim.getImportedTaskID(), outDir, "task", type, logTaskError);
+                    PythonCalls.setOutputMessage(sedmlLocation, sim.getImportedTaskID(), outDir, "task", logTaskMessage);
+                    PythonCalls.setExceptionMessage(sedmlLocation, sim.getImportedTaskID(), outDir, "task", type, logTaskError);
                     String sdl = "";
                     if(sd != null && sd.getShortDisplayLabel() != null && !sd.getShortDisplayLabel().isEmpty()) {
                     	sdl = sd.getShortDisplayLabel();
@@ -260,13 +263,13 @@ public class SolverHandler {
                     	if(bTimeoutFound == false) {		// don't repeat this for each task
                     		String str = logTaskError.substring(0, logTaskError.indexOf("Process timed out"));
                     		str += "Process timed out";		// truncate the rest of the spam
-                        	CLIStandalone.writeDetailedErrorList(outputBaseDir, bioModelBaseName + ",  solver: " + sdl + ": " + type + ": " + str);
+                        	CLIUtils.writeDetailedErrorList(outputBaseDir, bioModelBaseName + ",  solver: " + sdl + ": " + type + ": " + str, bForceLogFiles);
                         	bTimeoutFound = true;
                     	}
                     } else {
-                    	CLIStandalone.writeDetailedErrorList(outputBaseDir, bioModelBaseName + ",  solver: " + sdl + ": " + type + ": " + logTaskError);
+                    	CLIUtils.writeDetailedErrorList(outputBaseDir, bioModelBaseName + ",  solver: " + sdl + ": " + type + ": " + logTaskError, bForceLogFiles);
                     }
-                    CLIUtils.drawBreakLine("-", 100);
+                    RunUtils.drawBreakLine("-", 100);
                 }
                 if(odeSolverResultSet != null) {
                     resultsHash.put(sim.getImportedTaskID(), odeSolverResultSet);
@@ -274,7 +277,7 @@ public class SolverHandler {
                 	resultsHash.put(sim.getImportedTaskID(), null);	// if any task fails, we still put it in the hash with a null value
                 }
                 if(keepTempFiles == false) {
-                	CLIUtils.removeIntermediarySimFiles(outputDirForSedml);
+                	RunUtils.removeIntermediarySimFiles(outputDirForSedml);
                 }
                 simulationCount++;
             }
@@ -282,7 +285,7 @@ public class SolverHandler {
         }
         System.out.println("Ran " + simulationCount + " simulations for " + bioModelCount + " biomodels.");
         if(hasSomeSpatial) {
-        	CLIStandalone.writeSpatialList(outputBaseDir, bioModelBaseName);
+        	writeSpatialList(outputBaseDir, bioModelBaseName, bForceLogFiles);
         }
         return resultsHash;
     }
@@ -362,7 +365,7 @@ public class SolverHandler {
                 resultsHash.put(sim.getName(), odeSolverResultSet);
             }
 
-            CLIUtils.removeIntermediarySimFiles(outputDir);
+            RunUtils.removeIntermediarySimFiles(outputDir);
 
         }
         return resultsHash;
@@ -526,5 +529,15 @@ public class SolverHandler {
     	
 
     }
+
+    // we make a list with the omex files that contain (some) spatial simulations (FVSolverStandalone solver)
+    static void writeSpatialList(String outputBaseDir, String s, boolean bForceLogFile) throws IOException {
+        if (CLIUtils.isBatchExecution(outputBaseDir, bForceLogFile)) {
+            String dest = outputBaseDir + File.separator + "hasSpatialLog.txt";
+            Files.write(Paths.get(dest), (s + "\n").getBytes(),
+                    StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+        }
+    }
+
 }
 
