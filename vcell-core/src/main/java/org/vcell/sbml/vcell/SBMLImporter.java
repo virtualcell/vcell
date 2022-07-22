@@ -1097,16 +1097,12 @@ public class SBMLImporter {
 		vcModel.setModelParameters(vcModelParamsList.toArray(new ModelParameter[0]));
 	}
 
-	/**
-	 * @param spConcFactorInModelParamsList
-	 * @param valueExpr
-	 * @param vcModel
-	 * @param vcSpContexts
-	 * @throws PropertyVetoException
-	 */
-	private Expression adjustExpression(Expression valueExpr, Model model)
-			throws PropertyVetoException {
+	private Expression adjustExpression(Expression valueExpr, Model model) throws ExpressionException {
 		Expression adjustedExpr = new Expression(valueExpr);
+		if (adjustedExpr.hasSymbol("time")){
+			logger.warn("adjustExpression(): should be smarter, replacing 'time' with 't' in "+adjustedExpr.infix());
+			adjustedExpr.substituteInPlace(new Expression("time"), new Expression("t"));
+		}
 		// ************* TIME CONV_FACTOR if 'time' is present in global
 		// parameter expression
 		// If time 't' is present in the global expression, it is in VC units
@@ -4147,7 +4143,7 @@ public class SBMLImporter {
 		Vector<DomainType> surfaceClassDomainTypesVector = new Vector<DomainType>();
 		try {
 			for (DomainType dt : listOfDomainTypes) {
-				if (dt.getSpatialDimensions() == 3) {
+				if (dt.getSpatialDimensions() == vcGeometry.getDimension()) {
 					// subvolume
 					if (selectedGeometryDefinition == analyticGeometryDefinition) {
 						// will set expression later - when reading in Analytic
@@ -4156,7 +4152,7 @@ public class SBMLImporter {
 					} else {
 						// add SubVolumes later for CSG and Image-based
 					}
-				} else if (dt.getSpatialDimensions() == 2) {
+				} else if (dt.getSpatialDimensions() == vcGeometry.getDimension()-1) {
 					surfaceClassDomainTypesVector.add(dt);
 				}
 			}
@@ -4283,13 +4279,15 @@ public class SBMLImporter {
 						currDomainType = dt;
 					}
 				}
-				if (currDomainType.getSpatialDimensions() == 2){
+				if (currDomainType.getSpatialDimensions() == vcGeometry.getDimension() - 1){
+					logger.warn("ignoring missing interior point for domain "+domain.getId()+" with domainType "+currDomainType.getSpatialId());
 					continue;
 				}
 			}
 			Coordinate sbmlInteriorPtCoord = new Coordinate(
-					interiorPt.getCoord1(), interiorPt.getCoord2(),
-					interiorPt.getCoord3());
+					interiorPt.getCoord1(),
+					(vcGeometry.getDimension()>1)?interiorPt.getCoord2():0.0,
+					(vcGeometry.getDimension()>2)?interiorPt.getCoord3():0.0);
 			for (int j = 0; j < vcGeomRegions.length; j++) {
 				if (vcGeomRegions[j] instanceof VolumeGeometricRegion) {
 					int regionID = ((VolumeGeometricRegion) vcGeomRegions[j])
@@ -4381,8 +4379,8 @@ public class SBMLImporter {
 					while (iterator.hasNext()) {
 						Domain dom = iterator.next();
 						DomainType dt = getBySpatialID(sbmlGeometry.getListOfDomainTypes(),dom.getDomainType());
-						if (dt.getSpatialDimensions() == 3) {
-							// for domain type with sp. dim = 3, get
+						if (dt.getSpatialDimensions() == vcGeometry.getDimension()) {
+							// for domain type with sp. dim = geometry dimension, get
 							// correspoinding subVol from VC geometry.
 							GeometryClass gc = vcGeometry.getGeometryClass(dt.getId());
 							adjacentSubVolumesVector.add((SubVolume) gc);
