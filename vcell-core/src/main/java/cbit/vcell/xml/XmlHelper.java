@@ -45,30 +45,8 @@ import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.Namespace;
 import org.jdom.Text;
-import org.jlibsedml.AbstractTask;
-import org.jlibsedml.Algorithm;
-import org.jlibsedml.AlgorithmParameter;
-import org.jlibsedml.ArchiveComponents;
-import org.jlibsedml.Change;
-import org.jlibsedml.ChangeAttribute;
-import org.jlibsedml.DataGenerator;
-import org.jlibsedml.Libsedml;
-import org.jlibsedml.Model;
-import org.jlibsedml.OneStep;
-import org.jlibsedml.Output;
-import org.jlibsedml.Range;
-import org.jlibsedml.RepeatedTask;
-import org.jlibsedml.SedML;
-import org.jlibsedml.SedMLValidationReport;
-import org.jlibsedml.SetValue;
-import org.jlibsedml.SteadyState;
-import org.jlibsedml.SubTask;
-import org.jlibsedml.Task;
-import org.jlibsedml.UniformRange;
+import org.jlibsedml.*;
 import org.jlibsedml.UniformRange.UniformType;
-import org.jlibsedml.UniformTimeCourse;
-import org.jlibsedml.VectorRange;
-import org.jlibsedml.XPathTarget;
 import org.jlibsedml.execution.ArchiveModelResolver;
 import org.jlibsedml.execution.FileModelResolver;
 import org.jlibsedml.execution.ModelResolver;
@@ -1534,24 +1512,32 @@ public class XmlHelper {
 			return false;
 		}
 	}
-	
+
 	@Deprecated
 	// variant of updateXML(), never worked
 	public static String updateXML2(String xml, String xpathExpression, String newValue) {
 	try {
 //		String xpathExpression = "/sbml:sbml/sbml:model/sbml:listOfSpecies/sbml:species[@id=\"A\"]";
 
-		xpathExpression = "/*:sbml/*:model/*:listOfSpecies/*:species[@id=\"A\"]";
+		/**
+		 * the following statement with xpath gives 'unexpected token' error in intellij/IDEA - not used anyway
+		 * commenting it out for now.
+		 *
+		 * "/*:sbml/*:model/*:listOfSpecies/*:species[@id=\"A\"]"
+		 * complains about the first ':' character as an unexpected token ... bug in IDE it seems.
+		 */
+//		xpathExpression = "/*:sbml/*:model/*:listOfSpecies/*:species[@id=\"A\"]";
+
 		//Creating document builder
 		DocumentBuilderFactory builderFactory = DocumentBuilderFactory.newInstance();
 		javax.xml.parsers.DocumentBuilder builder = builderFactory.newDocumentBuilder();
 		StringReader sr = new StringReader(xml);
 		InputSource is = new org.xml.sax.InputSource(sr);
 		org.w3c.dom.Document document = builder.parse(is);
-	      
+
 		//Evaluating xpath expression using Element
 		XPath xpath = XPathFactory.newInstance().newXPath();
-		
+
 		// here follow 4 different ways to apply the change, none works
 //		DTMNodeList dtmNodeList = (DTMNodeList)xpath.evaluate(xpathExpression, document, XPathConstants.NODESET);
 //		Node node = dtmNodeList.item(0);
@@ -1559,16 +1545,16 @@ public class XmlHelper {
 
 //		org.w3c.dom.Element element = (org.w3c.dom.Element)xpath.evaluate(xpathExpression, document, XPathConstants.NODE);
 //		element.setTextContent(newValue);
-		
+
 //		Node node = (Node) xpath.compile(xpathExpression).evaluate(document, XPathConstants.NODE);
-		
+
 		Node node = (Node) xpath.evaluate(xpathExpression, document, XPathConstants.NODE);
 		node.setNodeValue(newValue);
 
 //		NodeList myNodeList = (NodeList) xpath.compile(xpathExpression).evaluate(document, XPathConstants.NODESET);
 //		Node node = myNodeList.item(0);
 //		node.setNodeValue(newValue);
-		
+
 		//Transformation of document to xml
 		StringWriter stringWriter = new StringWriter();
 		Transformer xformer = TransformerFactory.newInstance().newTransformer();
