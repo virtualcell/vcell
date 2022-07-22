@@ -214,8 +214,8 @@ private void refreshInvarianceMatrix() throws MathException, ExpressionException
 	}
 	
 	// Print
-	System.out.println("origMatrix");
-	matrix.show();
+//	System.out.println("origMatrix");
+//	matrix.show();
 	
 	//
 	// gaussian elimination on the matrix give the following representation
@@ -227,7 +227,7 @@ private void refreshInvarianceMatrix() throws MathException, ExpressionException
 	//   |00i1iccc|        (i)'s are the coefficients for dependent vars in terms of independent vars
 	//
 	// Print
-	System.out.println("reducedMatrix");
+//	System.out.println("reducedMatrix");
 	if (rows > 0){
 		try {
 			matrix.gaussianElimination(new RationalExpMatrix(rows,rows));
@@ -236,11 +236,11 @@ private void refreshInvarianceMatrix() throws MathException, ExpressionException
 			throw new MathException(e.getMessage());
 		}
 	}
-	matrix.show();
-	for (int i=0;i<vars.length;i++){
-		System.out.print(vars[i].getName()+"  ");
-	}
-	System.out.println("");
+//	matrix.show();
+//	for (int i=0;i<vars.length;i++){
+//		System.out.print(vars[i].getName()+"  ");
+//	}
+//	System.out.println("");
 
 	//
 	// re-ordering of columns (to get N-r x N-r identity matrix at left)
@@ -276,11 +276,11 @@ private void refreshInvarianceMatrix() throws MathException, ExpressionException
 		}
 	}
 	// Print
-	for (int i=0;i<vars.length;i++){
-		System.out.print(vars[i].getName()+"  ");
-	}
-	System.out.println("");
-	matrix.show();
+//	for (int i=0;i<vars.length;i++){
+//		System.out.print(vars[i].getName()+"  ");
+//	}
+//	System.out.println("");
+//	matrix.show();
 	
 	//
 	// separate into dependent and indepent variables, and chop off identity matrix (left N-r columns)
@@ -309,18 +309,18 @@ private void refreshInvarianceMatrix() throws MathException, ExpressionException
 	}
 
 	// Print
-	System.out.println("\n\nDEPENDENCY MATRIX");
-	dependencyMatrix.show();
-	System.out.print("dependent vars: ");
-	for (int i=0;i<dependentVarList.size();i++){
-		System.out.print(((Variable)dependentVarList.elementAt(i)).getName()+"  ");
-	}
-	System.out.println("");			
-	System.out.print("independent vars: ");
-	for (int i=0;i<independentVarList.size();i++){
-		System.out.print(((Variable)independentVarList.elementAt(i)).getName()+"  ");
-	}
-	System.out.println("");			
+//	System.out.println("\n\nDEPENDENCY MATRIX");
+//	dependencyMatrix.show();
+//	System.out.print("dependent vars: ");
+//	for (int i=0;i<dependentVarList.size();i++){
+//		System.out.print(((Variable)dependentVarList.elementAt(i)).getName()+"  ");
+//	}
+//	System.out.println("");
+//	System.out.print("independent vars: ");
+//	for (int i=0;i<independentVarList.size();i++){
+//		System.out.print(((Variable)independentVarList.elementAt(i)).getName()+"  ");
+//	}
+//	System.out.println("");
 
 }
 

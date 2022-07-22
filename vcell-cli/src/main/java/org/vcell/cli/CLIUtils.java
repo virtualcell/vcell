@@ -1,5 +1,6 @@
 package org.vcell.cli;
 
+import cbit.util.xml.VCLogger;
 import cbit.vcell.export.server.ExportConstants;
 import cbit.vcell.export.server.ExportFormat;
 import cbit.vcell.export.server.ExportOutput;
@@ -89,6 +90,21 @@ public class CLIUtils {
                     StandardOpenOption.CREATE, StandardOpenOption.APPEND);
         }
     }
+
+    public static class LocalLogger extends VCLogger {
+        @Override
+        public void sendMessage(Priority p, ErrorType et, String message) throws Exception {
+            System.out.println("LOGGER: msgLevel=" + p + ", msgType=" + et + ", " + message);
+        }
+
+        public void sendAllMessages() {
+        }
+
+        public boolean hasMessages() {
+            return false;
+        }
+    }
+
 
 
 }

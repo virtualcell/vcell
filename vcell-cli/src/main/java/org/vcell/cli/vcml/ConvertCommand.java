@@ -1,6 +1,8 @@
 package org.vcell.cli.vcml;
 
+import cbit.util.xml.VCLogger;
 import cbit.vcell.resource.PropertyLoader;
+import org.vcell.cli.CLIUtils;
 import org.vcell.util.DataAccessException;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
@@ -12,8 +14,8 @@ import java.util.concurrent.Callable;
 
 @Command(name = "convert", description = "convert from VCML to COMBINE archive (.omex)")
 public class ConvertCommand implements Callable<Integer> {
-    @Option(names = "-m", defaultValue = "SBML")
-    private ModelFormat outputModelFormat;
+    @Option(names = { "-m", "--outputModelFormat" }, defaultValue = "SBML", description = "expecting SBML or VCML")
+    private ModelFormat outputModelFormat = ModelFormat.SBML;
 
     @Option(names = { "-i", "--inputFilePath" })
     private File inputFilePath;
@@ -33,13 +35,18 @@ public class ConvertCommand implements Callable<Integer> {
     @Option(names = "--forceLogFiles")
     boolean bForceLogFiles;
 
+    @Option(names = "--validate")
+    boolean bValidateOmex;
+
     public Integer call() {
         try {
             PropertyLoader.loadProperties();
+            VCLogger vcLogger = new CLIUtils.LocalLogger();
 
             try (CLIDatabaseService cliDatabaseService = new CLIDatabaseService()) {
                 VcmlOmexConverter.convertFiles(cliDatabaseService, inputFilePath, outputFilePath,
-                        outputModelFormat, bHasDataOnly, bMakeLogsOnly, bNonSpatialOnly, bForceLogFiles);
+                        outputModelFormat, bHasDataOnly, bMakeLogsOnly, bNonSpatialOnly, bForceLogFiles, bValidateOmex,
+                        vcLogger);
             } catch (IOException | SQLException | DataAccessException e) {
                 e.printStackTrace(System.err);
             }

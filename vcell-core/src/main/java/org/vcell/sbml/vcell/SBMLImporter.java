@@ -45,6 +45,8 @@ import java.util.Vector;
 
 import javax.xml.stream.XMLStreamException;
 
+import cbit.vcell.mapping.*;
+import cbit.vcell.parser.*;
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -138,7 +140,6 @@ import cbit.vcell.geometry.AnalyticSubVolume;
 import cbit.vcell.geometry.CSGObject;
 import cbit.vcell.geometry.CSGPrimitive.PrimitiveType;
 import cbit.vcell.geometry.CSGSetOperator.OperatorType;
-import cbit.vcell.geometry.CompartmentSubVolume;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometryClass;
 import cbit.vcell.geometry.GeometrySpec;
@@ -151,21 +152,12 @@ import cbit.vcell.geometry.surface.GeometricRegion;
 import cbit.vcell.geometry.surface.GeometrySurfaceDescription;
 import cbit.vcell.geometry.surface.SurfaceGeometricRegion;
 import cbit.vcell.geometry.surface.VolumeGeometricRegion;
-import cbit.vcell.mapping.BioEvent;
 import cbit.vcell.mapping.BioEvent.BioEventParameterType;
 //import cbit.vcell.mapping.BioEvent.Delay;
 import cbit.vcell.mapping.BioEvent.EventAssignment;
 import cbit.vcell.mapping.BioEvent.TriggerType;
-import cbit.vcell.mapping.FeatureMapping;
-import cbit.vcell.mapping.GeometryContext;
-import cbit.vcell.mapping.MembraneMapping;
-import cbit.vcell.mapping.ReactionContext;
-import cbit.vcell.mapping.ReactionSpec;
-import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SimulationContext.Application;
-import cbit.vcell.mapping.SpeciesContextSpec;
 import cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecParameter;
-import cbit.vcell.mapping.StructureMapping;
 import cbit.vcell.math.BoundaryConditionType;
 import cbit.vcell.model.DistributedKinetics;
 import cbit.vcell.model.Feature;
@@ -192,14 +184,6 @@ import cbit.vcell.model.Species;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
 import cbit.vcell.model.StructureSorter;
-import cbit.vcell.parser.AbstractNameScope;
-import cbit.vcell.parser.DivideByZeroException;
-import cbit.vcell.parser.Expression;
-import cbit.vcell.parser.ExpressionBindingException;
-import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.parser.ExpressionMathMLParser;
-import cbit.vcell.parser.LambdaFunction;
-import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.render.Vect3d;
 import cbit.vcell.units.VCUnitDefinition;
 import cbit.vcell.units.VCUnitSystem;
@@ -207,6 +191,9 @@ import cbit.vcell.xml.XMLTags;
 import cbit.vcell.xml.XmlParseException;
 
 public class SBMLImporter {
+
+	private final static Logger logger = LogManager.getLogger(SBMLImporter.class);
+
 	public static class SBMLIssueSource implements Issue.IssueSource {
 		private final SBase issueSource;
 
@@ -249,7 +236,7 @@ public class SBMLImporter {
 	// is model spatial?
 	private boolean bSpatial = false;
 
-	private VCLogger logger = null;
+	private VCLogger vcLogger = null;
 	// for VCell specific annotation
 	private static String RATE_NAME = XMLTags.ReactionRateTag;
 	private static String SPECIES_NAME = XMLTags.SpeciesTag;
@@ -310,7 +297,7 @@ public class SBMLImporter {
 			boolean isSpatial) {
 		super();
 		this.sbmlFileName = argSbmlFileName;
-		this.logger = argVCLogger;
+		this.vcLogger = argVCLogger;
 		this.bSpatial = isSpatial;
 	}
 	
@@ -383,15 +370,14 @@ public class SBMLImporter {
 				String msg = "Initial assignment for Structure '" + compartmentName + "' from expression '" + origExpr.infix() + "' was succesfully converted to a number.";
 				localIssueList.add(new Issue(vcBioModel, issueContext, IssueCategory.SBMLImport_RestrictedFeature, msg, Issue.Severity.WARNING));
 			} catch (ExpressionException e) {
-				e.printStackTrace(System.out);
 				String msg = "Failed to set the initial assignment for symbol '" + compartmentName + "' from expression '" + origExpr.infix() + "'. Ignored.";
+				logger.error(msg, e);
 				localIssueList.add(new Issue(vcBioModel, issueContext, IssueCategory.SBMLImport_UnsupportedAttributeOrElement, msg, Issue.Severity.WARNING));
 			}
 		}
 		try {
 			StructureSizeSolver.updateRelativeStructureSizes(vcBioModel.getSimulationContext(0));
 		} catch (Exception e) {
-			e.printStackTrace(System.out);
 			throw new SBMLImportException("Error adding Feature to vcModel " + e.getMessage(), e);
 		}
 	}
@@ -426,7 +412,7 @@ public class SBMLImporter {
 					structureNameMap.put(compartmentName, membrane);
 				} else {
 					String msg = "Cannot deal with spatial dimension : " + compartment.getSpatialDimensions() + " for compartments at this time.";
-					logger.sendMessage(VCLogger.Priority.HighPriority, VCLogger.ErrorType.CompartmentError, msg);
+					vcLogger.sendMessage(VCLogger.Priority.HighPriority, VCLogger.ErrorType.CompartmentError, msg);
 					throw new SBMLImportException(msg);
 				}
 				if (compartment.isSetName()) {
@@ -490,7 +476,7 @@ public class SBMLImporter {
 					if (sizeExpr != null && !sizeExpr.isNumeric()) {
 						// We are NOT handling compartment sizes with assignment
 						// rules/initial Assignments that are NON-numeric at this time ...
-						logger.sendMessage(VCLogger.Priority.HighPriority, VCLogger.ErrorType.CompartmentError,
+						vcLogger.sendMessage(VCLogger.Priority.HighPriority, VCLogger.ErrorType.CompartmentError,
 							"Compartment '" + compartmentName + "' size has an assignment rule which is not a numeric value, cannot handle it at this time.");
 					}
 					// check if sizeExpr is null - no assignment rule for size -
@@ -509,7 +495,7 @@ public class SBMLImporter {
 //							"Compartment '" + compartmentName + "' size has an initial assignment which is not a numeric value, cannot handle it at this time.");
 // TODO: uncomment below to try and compute the expression later, in finalizeCompartment()
 						allSizesSet = false;
-						System.out.println(sizeExpr.infix());
+						logger.trace("sizeExpr = '"+sizeExpr.infix());
 						deferredStructureExpression.put(compartmentName, sizeExpr);
 						sizeExpr = new Expression(size);
 					}
@@ -536,7 +522,6 @@ public class SBMLImporter {
 				StructureSizeSolver.updateRelativeStructureSizes(vcBioModel.getSimulationContext(0));
 			}
 		} catch (Exception e) {
-			e.printStackTrace(System.out);
 			throw new SBMLImportException("Error adding Feature to vcModel " + e.getMessage(), e);
 		}
 	}
@@ -657,7 +642,7 @@ public class SBMLImporter {
 							EventAssignment vcEvntAssgn = vcEvent.new EventAssignment(ste, evntAssgnExpr);
 							vcEvntAssgnList.add(vcEvntAssgn);
 						} else {
-							logger.sendMessage(VCLogger.Priority.HighPriority, VCLogger.ErrorType.UnsupportedConstruct,
+							vcLogger.sendMessage(VCLogger.Priority.HighPriority, VCLogger.ErrorType.UnsupportedConstruct,
 									"No symbolTableEntry for '" + vcVarName + "'; Cannot add event assignment.");
 						}
 					}
@@ -666,7 +651,6 @@ public class SBMLImporter {
 					vcEvent.bind();
 					vcBioModel.getSimulationContext(0).addBioEvent(vcEvent);
 				} catch (Exception e) {
-					e.printStackTrace(System.out);
 					throw new SBMLImportException(e.getMessage(), e);
 				} // end - try/catch
 			} // end - for(sbmlEvents)
@@ -701,7 +685,7 @@ public class SBMLImporter {
 		}
 		ListOf listofInitialAssgns = sbmlModel.getListOfInitialAssignments();
 		if (listofInitialAssgns == null || listofInitialAssgns.isEmpty()) {
-//			System.out.println("No Initial Assignments specified");
+			logger.debug("No Initial Assignments specified");
 			return;
 		}
 		SimulationContext simContext = vcBioModel.getSimulationContext(0);
@@ -729,7 +713,7 @@ public class SBMLImporter {
 							continue;	// nothing to do here
 						} else {
 							// it's missing from deferredStructureExpression map, this should never happen
-							logger.sendMessage(VCLogger.Priority.HighPriority, VCLogger.ErrorType.CompartmentError,
+							vcLogger.sendMessage(VCLogger.Priority.HighPriority, VCLogger.ErrorType.CompartmentError,
 							"compartment '" + sbmlInitAssgnSymbolName + "' size has an initial assignment, cannot handle it at this time.");
 							continue;
 						}
@@ -743,7 +727,7 @@ public class SBMLImporter {
 					if (initAssignMathExpr.hasSymbol(vcModel.getX().getName())
 							|| initAssignMathExpr.hasSymbol(vcModel.getY().getName())
 							|| initAssignMathExpr.hasSymbol(vcModel.getZ().getName())) {
-						logger.sendMessage(VCLogger.Priority.HighPriority, VCLogger.ErrorType.SpeciesError,
+						vcLogger.sendMessage(VCLogger.Priority.HighPriority, VCLogger.ErrorType.SpeciesError,
 							"species '" + sbmlInitAssgnSymbolName + "' initial assignment expression cannot contain 'x', 'y', 'z'.");
 					}
 				}
@@ -784,8 +768,7 @@ public class SBMLImporter {
 					// "Symbol '"+initAssgnSymbol+"' not a species or global parameter in VCell; initial assignment ignored..");
 				}
 			} catch (Exception e) {
-				e.printStackTrace(System.out);
-				throw new RuntimeException("Error reading InitialAssignment : " + e.getMessage());
+				throw new RuntimeException("Error reading InitialAssignment : " + e.getMessage(), e);
 			}
 		}
 	}
@@ -804,7 +787,7 @@ public class SBMLImporter {
 		}
 		ListOf<FunctionDefinition> listofFunctionDefinitions = sbmlModel.getListOfFunctionDefinitions();
 		if (listofFunctionDefinitions == null) {
-			System.out.println("No Function Definitions");
+			logger.debug("No Function Definitions");
 			return;
 		}
 		// The function definitions contain lambda function definition.
@@ -824,7 +807,7 @@ public class SBMLImporter {
 					math = fnDefn.getMath();
 					// Function body.
 					if (math.getNumChildren() == 0) {
-						System.out.println("(no function body defined)");
+						logger.debug("(no function body defined)");
 						continue;
 					}
 					// Add function arguments into vector, print args
@@ -845,7 +828,6 @@ public class SBMLImporter {
 				}
 			}
 		} catch (Exception e) {
-			e.printStackTrace(System.out);
 			throw new SBMLImportException("Error adding Lambda function" + e.getMessage(), e);
 		}
 	}
@@ -863,7 +845,7 @@ public class SBMLImporter {
 	protected void addParameters( Map<String, String> vcToSbmlNameMap, Map<String, String> sbmlToVcNameMap) throws Exception {
 		ListOf listofGlobalParams = sbmlModel.getListOfParameters();
 		if (listofGlobalParams == null) {
-			System.out.println("No Global Parameters");
+			logger.debug("No Global Parameters");
 			return;
 		}
 		Model vcModel = vcBioModel.getSimulationContext(0).getModel();
@@ -1097,16 +1079,12 @@ public class SBMLImporter {
 		vcModel.setModelParameters(vcModelParamsList.toArray(new ModelParameter[0]));
 	}
 
-	/**
-	 * @param spConcFactorInModelParamsList
-	 * @param valueExpr
-	 * @param vcModel
-	 * @param vcSpContexts
-	 * @throws PropertyVetoException
-	 */
-	private Expression adjustExpression(Expression valueExpr, Model model)
-			throws PropertyVetoException {
+	private Expression adjustExpression(Expression valueExpr, Model model) throws ExpressionException {
 		Expression adjustedExpr = new Expression(valueExpr);
+		if (adjustedExpr.hasSymbol("time")){
+			logger.warn("adjustExpression(): should be smarter, replacing 'time' with 't' in "+adjustedExpr.infix());
+			adjustedExpr.substituteInPlace(new Expression("time"), new Expression("t"));
+		}
 		// ************* TIME CONV_FACTOR if 'time' is present in global
 		// parameter expression
 		// If time 't' is present in the global expression, it is in VC units
@@ -1125,7 +1103,7 @@ public class SBMLImporter {
 		Model vcModel = simContext.getModel();
 		ModelParameter[] mps = vcModel.getModelParameters();
 		if (mps == null || mps.length == 0) {
-			System.out.println("SBML Import: no model parameters.");
+			logger.debug("SBML Import: no model parameters.");
 			return;
 		}
 		for (ModelParameter mp : mps) {
@@ -1151,7 +1129,7 @@ public class SBMLImporter {
 								throw new SBMLImportException("Unsupported use of a Reaction name '" + symbol + "' in the expression of Global Parameter '" + mp.getDisplayName() + "'.");
 							}
 						} else {
-							System.out.println("Symbol '" + symbol + "' still unresolved.");
+							logger.warn("Symbol '" + symbol + "' still unresolved.");
 						}
 					}
 				}
@@ -1465,7 +1443,7 @@ public class SBMLImporter {
 		}
 		ListOf listofRules = sbmlModel.getListOfRules();
 		if (listofRules == null) {
-			System.out.println("No Rules specified");
+			logger.debug("No Rules specified");
 			return;
 		}
 		assignmentRulesHash.clear();
@@ -1526,7 +1504,7 @@ public class SBMLImporter {
 	// check if any assignment rule variables or expressions contain x,y,z and substitute them
 	private void readAssignmentRules(Map<String, String> sbmlToVcNameMap) throws ExpressionException, PropertyVetoException {
 		if (assignmentRulesHash == null || assignmentRulesHash.isEmpty()) {
-			System.out.println("SBML Import: no assignment rules.");
+			logger.debug("SBML Import: no assignment rules.");
 			return;
 		}
 		SimulationContext simContext = vcBioModel.getSimulationContext(0);
@@ -1570,7 +1548,7 @@ public class SBMLImporter {
 	// if yes, we replace the reaction name with the expression of the reaction rate
 	private void processAssignmentRules() throws ExpressionException, PropertyVetoException {
 		if (assignmentRulesHash == null || assignmentRulesHash.isEmpty()) {
-			System.out.println("SBML Import: no assignment rules.");
+			logger.debug("SBML Import: no assignment rules.");
 			return;
 		}
 		SimulationContext simContext = vcBioModel.getSimulationContext(0);
@@ -1596,7 +1574,7 @@ public class SBMLImporter {
 								throw new RuntimeException("Unsupported use of a Reaction name '" + symbol + "' in the expression of an AssignmentRule variable '" + vcVariableName + "'.");
 							}
 						} else {
-							System.out.println("Symbol '" + symbol + "' still unresolved.");
+							logger.warn("Symbol '" + symbol + "' still unresolved.");
 						}
 					}
 				}
@@ -1606,7 +1584,7 @@ public class SBMLImporter {
 		}
 		assignmentRulesHash = destMap;
 	}
-	
+
 	private void finalizeAssignmentRules() {
 		SimulationContext simContext = vcBioModel.getSimulationContext(0);
 		Model vcModel = simContext.getModel();
@@ -1648,19 +1626,18 @@ public class SBMLImporter {
 					}
 				}
 			} catch (PropertyVetoException | ExpressionException e) {
-				e.printStackTrace(System.out);
-				throw new SBMLImportException("Unable to create and add assignment rule to VC model : " + e.getMessage());
+				throw new SBMLImportException("Unable to create and add assignment rule to VC model : " + e.getMessage(), e);
 			}
 		}
 		if (foundConstStructureSize) {
 			try {
 				StructureSizeSolver.updateRelativeStructureSizes(simContext);
 				String msg = "One or more AssignmentRule variables of StructureSize type evaluated to constant and were used as initial assignment for the Feature (Structure)";
+				logger.warn(msg);
 				localIssueList.add(new Issue(vcModel, issueContext, IssueCategory.SBMLImport_RestrictedFeature, msg, Issue.Severity.WARNING));
 			} catch (Exception e) {
-				e.printStackTrace(System.out);
 				String msg = "Error initializing a Feature from an assignment rule StructureSize variable. ";
-				throw new SBMLImportException(msg + e.getMessage(), e);
+				throw new SBMLImportException(msg + ": " + e.getMessage(), e);
 			}
 		}
 	}
@@ -1671,7 +1648,7 @@ public class SBMLImporter {
 		}
 		ListOf<Rule> listofRules = sbmlModel.getListOfRules();
 		if (listofRules == null) {
-			System.out.println("No Rules specified");
+			logger.debug("No Rules specified");
 			return;
 		}
 		rateRulesHash.clear();
@@ -1715,7 +1692,7 @@ public class SBMLImporter {
 	// if yes, we replace the reaction name with the expression of the reaction rate
 	private void processRateRules() throws ExpressionException, PropertyVetoException {
 		if (rateRulesHash == null || rateRulesHash.isEmpty()) {
-//			System.out.println("SBML Import: no rate rules.");
+			logger.debug("SBML Import: no rate rules.");
 			return;
 		}
 		SimulationContext simContext = vcBioModel.getSimulationContext(0);
@@ -1742,7 +1719,7 @@ public class SBMLImporter {
 								throw new RuntimeException("Unsupported use of a Reaction name '" + symbol + "' in the expression of RateRule variable '" + vcVariableName + "'.");
 							}
 						} else {
-							System.out.println("Symbol '" + symbol + "' still unresolved.");
+							logger.warn("Symbol '" + symbol + "' still unresolved.");
 						}
 					}
 				}
@@ -1828,17 +1805,16 @@ public class SBMLImporter {
 					simContext.addRateRule(vcRule);
 				}
 			} catch (PropertyVetoException | ExpressionException e) {
-				e.printStackTrace(System.out);
-				throw new SBMLImportException("Unable to create and add rate rule to VC model : " + e.getMessage());
+				throw new SBMLImportException("Unable to create and add rate rule to VC model : " + e.getMessage(), e);
 			}
 		}
 		if (foundConstStructureSize) {
 			try {
 				StructureSizeSolver.updateRelativeStructureSizes(simContext);
 				String msg = "One or more RateRule variables of StructureSize type evaluated to constant and were used as initial assignment for the Feature (Structure)";
+				logger.warn(msg);
 				localIssueList.add(new Issue(vcModel, issueContext, IssueCategory.SBMLImport_RestrictedFeature, msg, Issue.Severity.WARNING));
 			} catch (Exception e) {
-				e.printStackTrace(System.out);
 				String msg = "Error initializing a Feature from a RateRule StructureSize variable. ";
 				throw new SBMLImportException(msg + e.getMessage(), e);
 			}
@@ -1851,7 +1827,7 @@ public class SBMLImporter {
 		}
 		ListOf listOfSpecies = sbmlModel.getListOfSpecies();
 		if (listOfSpecies == null) {
-			System.out.println("No Spcecies");
+			logger.debug("No Spcecies");
 			return;
 		}
 		HashMap<String, Species> vcSpeciesHash = new HashMap<String, Species>();
@@ -1880,7 +1856,7 @@ public class SBMLImporter {
 							vcSpecies = vcSpeciesHash.get(vcSpeciesName);
 							if (vcSpecies == null) {
 								if(isRestrictedXYZT(vcSpeciesName)) {
-									System.out.println("Here too?");
+									logger.warn("Here too?  --- species name "+vcSpeciesName+" is restricted");
 								}
 								vcSpecies = new Species(vcSpeciesName, vcSpeciesName);
 								vcSpeciesHash.put(vcSpeciesName, vcSpecies);
@@ -1934,7 +1910,7 @@ public class SBMLImporter {
 					dimension = (int) sbmlCompartment.getSpatialDimensions();
 				}
 				if (dimension == 0 || dimension == 1) {
-					logger.sendMessage(VCLogger.Priority.HighPriority,
+					vcLogger.sendMessage(VCLogger.Priority.HighPriority,
 							VCLogger.ErrorType.UnitError, dimension
 									+ " dimensional compartment "
 									+ compartmentId + " not supported");
@@ -1955,11 +1931,7 @@ public class SBMLImporter {
 				sbmlAnnotationUtil.readAnnotation(vcSpecies, sbmlSpecies);
 				sbmlAnnotationUtil.readNotes(vcSpecies, sbmlSpecies);
 			}
-		} catch (ModelPropertyVetoException e) {
-			throw new SBMLImportException("Error adding species context; "
-					+ e.getMessage(), e);
 		} catch (Exception e) {
-			e.printStackTrace(System.out);
 			throw new SBMLImportException("Error adding species context; "
 					+ e.getMessage(), e);
 		}
@@ -2013,7 +1985,7 @@ public class SBMLImporter {
 						if (compartmentSize != 0.0) {
 							initConcentration = new Expression(initAmount / compartmentSize);
 						} else {
-							logger.sendMessage(VCLogger.Priority.HighPriority, VCLogger.ErrorType.UnitError,
+							vcLogger.sendMessage(VCLogger.Priority.HighPriority, VCLogger.ErrorType.UnitError,
 								"compartment '"	+ compartment.getId() + "' has zero size, unable to determine initial concentration for species " + speciesName);
 						}
 						// check if initConc is set by a (assignment) rule. That
@@ -2024,7 +1996,7 @@ public class SBMLImporter {
 							initExpr = new Expression(initConcentration);
 						}
 					} else {
-						logger.sendMessage(VCLogger.Priority.HighPriority, VCLogger.ErrorType.SpeciesError,
+						vcLogger.sendMessage(VCLogger.Priority.HighPriority, VCLogger.ErrorType.SpeciesError,
 							" Compartment '" + compartment.getId() + "' size not set or is defined by a rule; cannot calculate initConc.");
 					}
 				} else {
@@ -2063,7 +2035,6 @@ public class SBMLImporter {
 				speciesContextSpec.setConstant(sbmlSpecies.getBoundaryCondition() || sbmlSpecies.getConstant());
 			}
 		} catch (Throwable e) {
-			e.printStackTrace(System.out);
 			throw new SBMLImportException("Error setting initial condition for species context; " + e.getMessage(), e);
 		}
 	}
@@ -2120,10 +2091,6 @@ public class SBMLImporter {
 	 * import a VCell model that has been exported to SBML, if the user has
 	 * changed the rate name in a reaction, it is stored in the reaction
 	 * annotation. This has to be retrieved and set as reaction rate name.
-	 * 
-	 * @param sbmlRxn
-	 * @param newKinetics
-	 * @throws ExpressionException
 	 */
 	private void resolveRxnParameterNameConflicts(Reaction sbmlRxn,
 			Kinetics vcKinetics, Element sbmlImportElement)
@@ -2248,13 +2215,6 @@ public class SBMLImporter {
 		}
 	}
 
-	/**
-	 * substituteGlobalParamRulesInPlace:
-	 * 
-	 * @param sbmlExpr
-	 * @param expandedExpr
-	 * @throws ExpressionException
-	 */
 	private void substituteGlobalParamRulesInPlace(Expression sbmlExpr, boolean bReplaceValues) throws ExpressionException {
 		boolean bParamChanged = true;
 		while (bParamChanged) {
@@ -2411,8 +2371,7 @@ public class SBMLImporter {
 				msgPackages += "'qual', ";
 			}
 		} catch(Exception e) {
-			e.printStackTrace(System.out);
-			throw new SBMLImportException("Unable to check the SBML file package requirements.");
+			throw new SBMLImportException("Unable to check the SBML file package requirements.", e);
 		}
 		String ext = "extension";
 		String is = "is";
@@ -2440,7 +2399,7 @@ public class SBMLImporter {
 				msgPackages += "'render', ";
 			}
 		} catch(Exception e) {
-			e.printStackTrace(System.out);	// we're going to ignore these packages anyway
+			logger.error("we are going to ignore groups/layout/render packages anyway", e);
 		}
 		if(numPackages > 0) {
 			if(numPackages > 1) {
@@ -2466,7 +2425,6 @@ public class SBMLImporter {
 		try {
 			modelUnitSystem = createSBMLUnitSystemForVCModel();
 		} catch (Exception e) {
-			e.printStackTrace(System.out);
 			throw new SBMLImportException("Inconsistent unit system. Cannot import SBML model into VCell.", Category.INCONSISTENT_UNIT, e);
 		}
 		try {
@@ -2477,7 +2435,6 @@ public class SBMLImporter {
 			simulationContext.setName(vcBioModel.getSimulationContext(0).getModel().getName());
 			// vcBioModel.getSimulationContext(0).setName(vcBioModel.getSimulationContext(0).getModel().getName()+"_"+vcBioModel.getSimulationContext(0).getGeometry().getName());
 		} catch (Exception e) {		// PropertyVetoException
-			e.printStackTrace(System.out);
 			throw new SBMLImportException("Could not create simulation context corresponding to the input SBML model.\n", e);
 		}
 		try {
@@ -2506,7 +2463,6 @@ public class SBMLImporter {
 			}
 
 		} catch(Exception e) {
-			e.printStackTrace(System.out);
 			throw new SBMLImportException("Could not create Biomodel corresponding to the input SBML model.\n", e);
 		}
 
@@ -2523,9 +2479,10 @@ public class SBMLImporter {
 			}
 			if (issueCount > 0) {
 				try {
-					logger.sendMessage(VCLogger.Priority.MediumPriority, VCLogger.ErrorType.OverallWarning, messageBuffer.toString());
+					logger.warn(messageBuffer.toString());
+					vcLogger.sendMessage(VCLogger.Priority.MediumPriority, VCLogger.ErrorType.OverallWarning, messageBuffer.toString());
 				} catch (Exception e) {
-					e.printStackTrace(System.out);
+					logger.error("failed to report issue", e);
 				}
 			}
 		}
@@ -2539,9 +2496,9 @@ public class SBMLImporter {
 				BioModel convertedBioModel = ModelUnitConverter.createBioModelWithNewUnitSystem(vcBioModel,
 						vcUnitSystem);
 				return convertedBioModel;
-			} catch (ExpressionException | XmlParseException e) {
+			} catch (Exception e) {
+				logger.error("failed to convert imported SBML model into default VCell Unit System - continuing anyway!!",e);
 				// TODO maybe alert user? for now fail silently...
-				e.printStackTrace();
 				return vcBioModel;
 			} 
 		}
@@ -2554,7 +2511,7 @@ public class SBMLImporter {
 		}
 		ListOf listofUnitDefns = sbmlModel.getListOfUnitDefinitions();
 		if (listofUnitDefns == null) {
-			System.out.println("No Unit Definitions");
+			logger.warn("No Unit Definitions in SBML model, using default VCell Unit System");
 			// if < level 3, use SBML default units to create unit system; else,
 			// return a default VC modelUnitSystem.
 			// @TODO: deal with SBML level < 3.
@@ -2659,7 +2616,7 @@ public class SBMLImporter {
 		for (int i = 0; i < sbmlModel.getNumUnitDefinitions(); i++) {
 			UnitDefinition ud = (org.sbml.jsbml.UnitDefinition) listofUnitDefns.get(i);
 			String unitName = ud.getId();
-//			System.out.println("sbml id: " + unitName);
+//			logger.trace("sbml id: " + unitName);
 			VCUnitDefinition vcUnitDef = SBMLUnitTranslator.getVCUnitDefinition(ud, tempVCUnitSystem);
 			sbmlUnitIdentifierHash.put(unitName, vcUnitDef);
 		}
@@ -3148,7 +3105,7 @@ public class SBMLImporter {
 			for (int i = 0; i < sbmlModel.getNumRules(); i++) {
 				Rule rule = (org.sbml.jsbml.Rule) sbmlModel.getRule(i);
 				if (rule instanceof AlgebraicRule) {
-					logger.sendMessage(VCLogger.Priority.HighPriority,
+					vcLogger.sendMessage(VCLogger.Priority.HighPriority,
 							VCLogger.ErrorType.UnsupportedConstruct,
 							"Algebraic rules are not handled in the Virtual Cell at this time");
 				}
@@ -3164,7 +3121,7 @@ public class SBMLImporter {
 				
 				if (level > 2) {
 					// level 3+ does not have default value for spatialDimension. So cannot assume a value.
-					logger.sendMessage(
+					vcLogger.sendMessage(
 							VCLogger.Priority.MediumPriority,
 							VCLogger.ErrorType.CompartmentError,
 							"Compartment '" + comp.getId() + "' spatial dimension is not set; assuming 3.");
@@ -3175,7 +3132,7 @@ public class SBMLImporter {
 				
 				if (level > 2) {
 					// level 3+ does not have default value for size. So cannot assume a value.
-					logger.sendMessage(
+					vcLogger.sendMessage(
 							VCLogger.Priority.MediumPriority,
 							VCLogger.ErrorType.CompartmentError,
 							"Compartment '"	+ comp.getId() + "' size is not set; assuming 1.");
@@ -3183,7 +3140,7 @@ public class SBMLImporter {
 			}
 			
 			if (comp.getSpatialDimensions() == 0 || comp.getSpatialDimensions() == 1) {
-				logger.sendMessage(
+				vcLogger.sendMessage(
 						VCLogger.Priority.HighPriority,
 						VCLogger.ErrorType.CompartmentError,
 						"Compartment " + comp.getId() + " has spatial dimension 0; this is not supported in VCell");
@@ -3194,7 +3151,7 @@ public class SBMLImporter {
 		// events are not supported in a spatial VCell model.
 		if (bSpatial) {
 			if (sbmlModel.getNumEvents() > 0) {
-				logger.sendMessage(
+				vcLogger.sendMessage(
 						VCLogger.Priority.HighPriority,
 						VCLogger.ErrorType.UnsupportedConstruct,
 						"Events are not supported in a spatial Virtual Cell model at this time, they are only supported in a non-spatial model.");
@@ -3214,7 +3171,6 @@ public class SBMLImporter {
 		try {
 			checkForUnsupportedVCellFeaturesAndApplyDefaults();
 		} catch (Exception e) {
-			e.printStackTrace(System.out);
 			throw new SBMLImportException(e.getMessage(), e);
 		}
 
@@ -3234,7 +3190,6 @@ public class SBMLImporter {
 		} catch (SBMLImportException sie) {
 			throw sie;
 		} catch (Exception ee) {
-			ee.printStackTrace(System.out);
 			throw new SBMLImportException(ee.getMessage(), ee);
 		}
 		// Add features/compartments
@@ -3248,7 +3203,6 @@ public class SBMLImporter {
 		try {
 			addParameters(vcToSbmlNameMap, sbmlToVcNameMap);
 		} catch (Exception e) {
-			e.printStackTrace(System.out);
 			throw new SBMLImportException(e.getMessage(), e);
 		}
 		
@@ -3257,7 +3211,6 @@ public class SBMLImporter {
 		try {
 			readAssignmentRules(sbmlToVcNameMap);
 		} catch (ExpressionException | PropertyVetoException e) {
-			e.printStackTrace();
 			throw new SBMLImportException(e.getMessage(), e);
 		}
 		// Set initial conditions on species
@@ -3292,7 +3245,6 @@ public class SBMLImporter {
 			processAssignmentRules();
 			processRateRules();
 		} catch (ExpressionException | SBMLException | XMLStreamException | PropertyVetoException e) {
-			e.printStackTrace(System.out);
 			throw new SBMLImportException(e.getMessage(), e);
 		}
 		
@@ -3306,7 +3258,6 @@ public class SBMLImporter {
 		try {
 			vcBioModel.getSimulationContext(0).getModel().setStructures(sortedStructures);
 		} catch (PropertyVetoException e1) {
-			e1.printStackTrace(System.out);
 			throw new SBMLImportException("Error while sorting compartments: " + e1.getMessage(), e1);
 		}
 
@@ -3317,7 +3268,6 @@ public class SBMLImporter {
 		try {
 			checkIdentifiersNameLength();
 		} catch (Exception e) {
-			e.printStackTrace(System.out);
 			throw new SBMLImportException(e.getMessage(), e);
 		}
 
@@ -3716,7 +3666,7 @@ public class SBMLImporter {
 				// set the reaction kinetics, and add reaction to the vcell
 				// model.
 				kinetics.resolveUndefinedUnits();
-				// System.out.println("ADDED SBML REACTION : \"" + rxnName +
+				// logger.trace("ADDED SBML REACTION : \"" + rxnName +
 				// "\" to VCModel");
 				vcReactionList.add(vcReaction);
 				if (sbmlRxn.isSetFast() && sbmlRxn.getFast()) {
@@ -3736,7 +3686,6 @@ public class SBMLImporter {
 		} catch (ModelPropertyVetoException mpve) {
 			throw new SBMLImportException(mpve.getMessage(), mpve);
 		} catch (Exception e1) {
-			e1.printStackTrace(System.out);
 			throw new SBMLImportException(e1.getMessage(), e1);
 		}
 	}
@@ -4056,7 +4005,7 @@ public class SBMLImporter {
 				}
 			}
 			try {
-				//System.out.println("ident " + sf.getId() + " " + sf.getName());
+				// logger.trace("ident " + sf.getId() + " " + sf.getName());
 				VCImage vcImage = null;
 				CompressionKind ck = sf.getCompression();
 				DataKind dk = sf.getDataType();
@@ -4104,10 +4053,9 @@ public class SBMLImporter {
 				// now create image geometry
 				vcGeometry = new Geometry("spatialGeom", vcImage);
 			} catch (Exception e) {
-				e.printStackTrace(System.out);
 				throw new RuntimeException(
 						"Unable to create image from SampledFieldGeometry : "
-								+ e.getMessage());
+								+ e.getMessage(), e);
 			}
 		}
 		GeometrySpec vcGeometrySpec = vcGeometry.getGeometrySpec();
@@ -4115,7 +4063,6 @@ public class SBMLImporter {
 		try {
 			vcGeometrySpec.setExtent(vcExtent);
 		} catch (PropertyVetoException e) {
-			e.printStackTrace(System.out);
 			throw new SBMLImportException(
 					"Unable to set extent on VC geometry : " + e.getMessage(),
 					e);
@@ -4147,7 +4094,7 @@ public class SBMLImporter {
 		Vector<DomainType> surfaceClassDomainTypesVector = new Vector<DomainType>();
 		try {
 			for (DomainType dt : listOfDomainTypes) {
-				if (dt.getSpatialDimensions() == 3) {
+				if (dt.getSpatialDimensions() == vcGeometry.getDimension()) {
 					// subvolume
 					if (selectedGeometryDefinition == analyticGeometryDefinition) {
 						// will set expression later - when reading in Analytic
@@ -4156,7 +4103,7 @@ public class SBMLImporter {
 					} else {
 						// add SubVolumes later for CSG and Image-based
 					}
-				} else if (dt.getSpatialDimensions() == 2) {
+				} else if (dt.getSpatialDimensions() == vcGeometry.getDimension()-1) {
 					surfaceClassDomainTypesVector.add(dt);
 				}
 			}
@@ -4186,7 +4133,6 @@ public class SBMLImporter {
 						Expression subVolExpr = getExpressionFromFormula(analyticVol.getMath());
 						asv.setExpression(subVolExpr);
 					} catch (ExpressionException e) {
-						e.printStackTrace(System.out);
 						throw new SBMLImportException(
 								"Unable to set expression on subVolume '"
 										+ asv.getName() + "'. "
@@ -4256,7 +4202,6 @@ public class SBMLImporter {
 			vcGeometry.precomputeAll(new GeometryThumbnailImageFactoryAWT(),
 					true, true);
 		} catch (Exception e) {
-			e.printStackTrace(System.out);
 			throw new SBMLImportException(
 					"Unable to create VC subVolumes from SBML domainTypes : "
 							+ e.getMessage(), e);
@@ -4283,13 +4228,15 @@ public class SBMLImporter {
 						currDomainType = dt;
 					}
 				}
-				if (currDomainType.getSpatialDimensions() == 2){
+				if (currDomainType.getSpatialDimensions() == vcGeometry.getDimension() - 1){
+					logger.warn("ignoring missing interior point for domain "+domain.getId()+" with domainType "+currDomainType.getSpatialId());
 					continue;
 				}
 			}
 			Coordinate sbmlInteriorPtCoord = new Coordinate(
-					interiorPt.getCoord1(), interiorPt.getCoord2(),
-					interiorPt.getCoord3());
+					interiorPt.getCoord1(),
+					(vcGeometry.getDimension()>1)?interiorPt.getCoord2():0.0,
+					(vcGeometry.getDimension()>2)?interiorPt.getCoord3():0.0);
 			for (int j = 0; j < vcGeomRegions.length; j++) {
 				if (vcGeomRegions[j] instanceof VolumeGeometricRegion) {
 					int regionID = ((VolumeGeometricRegion) vcGeomRegions[j])
@@ -4381,8 +4328,8 @@ public class SBMLImporter {
 					while (iterator.hasNext()) {
 						Domain dom = iterator.next();
 						DomainType dt = getBySpatialID(sbmlGeometry.getListOfDomainTypes(),dom.getDomainType());
-						if (dt.getSpatialDimensions() == 3) {
-							// for domain type with sp. dim = 3, get
+						if (dt.getSpatialDimensions() == vcGeometry.getDimension()) {
+							// for domain type with sp. dim = geometry dimension, get
 							// correspoinding subVol from VC geometry.
 							GeometryClass gc = vcGeometry.getGeometryClass(dt.getId());
 							adjacentSubVolumesVector.add((SubVolume) gc);
@@ -4541,7 +4488,7 @@ public class SBMLImporter {
 							}
 						} // sm != null
 						else {
-							logger.sendMessage(
+							vcLogger.sendMessage(
 									VCLogger.Priority.MediumPriority,
 									VCLogger.ErrorType.OverallWarning,
 									"No structure " + s.getName()
@@ -4555,7 +4502,6 @@ public class SBMLImporter {
 			vcBioModel.getSimulationContext(0).getGeometryContext().refreshStructureMappings();
 			vcBioModel.getSimulationContext(0).refreshSpatialObjects();
 		} catch (Exception e) {
-			e.printStackTrace(System.out);
 			throw new SBMLImportException(
 					"Unable to create VC structureMappings from SBML compartment mappings : "
 							+ e.getMessage(), e);
