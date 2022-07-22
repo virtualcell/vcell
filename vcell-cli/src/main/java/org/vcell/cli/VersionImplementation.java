@@ -4,17 +4,13 @@ import cbit.vcell.resource.PropertyLoader;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
-import picocli.CommandLine.Command;
 
 import java.io.IOException;
-import java.util.concurrent.Callable;
 
 import static java.lang.System.getProperty;
 import static java.lang.System.out;
 
-@Command(name = "version", description = "display software version")
-class VersionCommand implements Callable<Integer> {
-
+public class VersionImplementation implements Implementation {
     public Integer call() {
         try {
             PropertyLoader.loadProperties();
@@ -49,10 +45,4 @@ class VersionCommand implements Callable<Integer> {
             return fetchFailed;
         }
     }
-
 }
-
-
-
-
-

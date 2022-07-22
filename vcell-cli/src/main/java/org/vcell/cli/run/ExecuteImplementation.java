@@ -1,5 +1,7 @@
 package org.vcell.cli.run;
 
+import org.vcell.cli.Implementation;
+
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.resource.OperatingSystemInfo;
 import cbit.vcell.resource.PropertyLoader;
@@ -13,8 +15,6 @@ import org.vcell.cli.vcml.VCMLHandler;
 import org.vcell.util.FileUtils;
 import org.vcell.util.GenericExtensionFilter;
 import org.vcell.util.exe.Executable;
-import picocli.CommandLine.Command;
-import picocli.CommandLine.Option;
 
 import java.io.File;
 import java.io.FilenameFilter;
@@ -27,29 +27,21 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Callable;
 
-@Command(name = "execute", description = "run .vcml or .omex files via Python API")
-public class ExecuteCommand implements Callable<Integer> {
-
-    @Option(names = { "-i", "--inputFilePath" })
-    private File inputFilePath;
-
-    @Option(names = { "-o", "--outputFilePath"})
-    private File outputFilePath;
-
-    @Option(names = {"--forceLogFiles"})
-    private boolean bForceLogFiles;
-
-    @Option(names = {"--keepTempFiles"})
-    private boolean bKeepTempFiles;
-
-    @Option(names = {"--exactMatchOnly"})
-    private boolean bExactMatchOnly;
-
-    @Option(names = {"--timeout_ms"}, defaultValue = "600000", description = "executable wall clock timeout in milliseconds")
-    // timeout for compiled solver running long jobs; default 12 hours
+public class ExecuteImplementation implements Implementation {
+    private File inputFilePath, outputFilePath;
+    private boolean bForceLogFiles, bKeepTempFiles, bExactMatchOnly;
     private long EXECUTABLE_MAX_WALLCLOCK_MILLIS;
+
+    public ExecuteImplementation(File inputFilePath, File outputFilePath, boolean bForceLogFiles, 
+            boolean bKeepTempFiles, boolean bExactMatchOnly, long EXECUTABLE_MAX_WALLCLOCK_MILLIS){
+        this.inputFilePath = inputFilePath;
+        this.outputFilePath = outputFilePath;
+        this.bForceLogFiles = bForceLogFiles;
+        this.bKeepTempFiles = bKeepTempFiles;
+        this.bExactMatchOnly = bExactMatchOnly;
+        this.EXECUTABLE_MAX_WALLCLOCK_MILLIS = EXECUTABLE_MAX_WALLCLOCK_MILLIS;
+    }
 
     public Integer call() {
         try {

@@ -1,42 +1,32 @@
 package org.vcell.cli.vcml;
 
+import org.vcell.cli.Implementation;
+
 import cbit.util.xml.VCLogger;
 import cbit.vcell.resource.PropertyLoader;
 import org.vcell.cli.CLIUtils;
 import org.vcell.util.DataAccessException;
-import picocli.CommandLine.Command;
-import picocli.CommandLine.Option;
 
 import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.concurrent.Callable;
 
-@Command(name = "convert", description = "convert from VCML to COMBINE archive (.omex)")
-public class ConvertCommand implements Callable<Integer> {
-    @Option(names = { "-m", "--outputModelFormat" }, defaultValue = "SBML", description = "expecting SBML or VCML")
+public class ConvertImplementation implements Implementation {
     private ModelFormat outputModelFormat = ModelFormat.SBML;
 
-    @Option(names = { "-i", "--inputFilePath" })
-    private File inputFilePath;
+    private File inputFilePath, outputFilePath;
+    private boolean bHasDataOnly, bMakeLogsOnly, bNonSpatialOnly, bForceLogFiles, bValidateOmex;
 
-    @Option(names = { "-o", "--outputFilePath" })
-    private File outputFilePath;
-
-    @Option(names = "--hasDataOnly")
-    boolean bHasDataOnly;
-
-    @Option(names = "--makeLogsOnly")
-    boolean bMakeLogsOnly;
-
-    @Option(names = "--nonSpatialOnly")
-    boolean bNonSpatialOnly;
-
-    @Option(names = "--forceLogFiles")
-    boolean bForceLogFiles;
-
-    @Option(names = "--validate")
-    boolean bValidateOmex;
+    public ConvertImplementation(File inputFilePath, File outputFilePath, boolean bHasDataOnly, boolean bMakeLogsOnly, 
+            boolean bNonSpatialOnly, boolean bForceLogFiles, boolean bValidateOmex){
+        this.inputFilePath = inputFilePath;
+        this.outputFilePath = outputFilePath;
+        this.bHasDataOnly = bHasDataOnly;
+        this.bMakeLogsOnly = bMakeLogsOnly;
+        this.bNonSpatialOnly = bNonSpatialOnly;
+        this.bForceLogFiles = bForceLogFiles;
+        this.bValidateOmex = bValidateOmex;
+    }
 
     public Integer call() {
         try {
