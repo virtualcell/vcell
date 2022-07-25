@@ -156,8 +156,7 @@ public class VCellPlugin extends ContextCommand {
 			Dimension a = new Dimension(button.getSize());
 			ActionListener buttonAction = new ActionListener() {
 		         public void actionPerformed(ActionEvent event) {
-		        	 JOptionPane e = new JOptionPane(helpText);  
-			   		 JPanel panel =new JPanel();
+		        	 JOptionPane e = new JOptionPane(helpText);
 			   		 Image image;
 					try {
 
