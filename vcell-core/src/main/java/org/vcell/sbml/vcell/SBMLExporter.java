@@ -14,6 +14,7 @@ import java.beans.PropertyVetoException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -177,6 +178,7 @@ public class SBMLExporter {
 	private SimulationJob vcSelectedSimJob = null;
 	
 	Map<Pair <String, String>, String> l2gMap = new HashMap<>();	// local to global translation map, used for reaction parameters
+	Map<String, String> compartmentNameToIdMap = new LinkedHashMap<> ();
 	
 	// used for exporting vcell-related annotations.
 	Namespace sbml_vcml_ns = Namespace.getNamespace(XMLTags.VCELL_NS_PREFIX, SBMLUtils.SBML_VCELL_NS);
@@ -302,8 +304,11 @@ protected void addCompartments() throws XMLStreamException, SbmlException {
 	cbit.vcell.model.Structure[] vcStructures = vcModel.getStructures();
 	for (int i = 0; i < vcStructures.length; i++){
 		Compartment sbmlCompartment = sbmlModel.createCompartment();
-		sbmlCompartment.setId(TokenMangler.mangleToSName(vcStructures[i].getName()));
-		sbmlCompartment.setName(vcStructures[i].getName());
+		String cName = vcStructures[i].getName();
+		String sid = TokenMangler.mangleToSName(cName);
+		sbmlCompartment.setId(sid);
+		sbmlCompartment.setName(cName);
+		compartmentNameToIdMap.put(cName, sid);
 		VCUnitDefinition sbmlSizeUnit = null;
 		StructureTopology structTopology = getSelectedSimContext().getModel().getStructureTopology();
 		Structure parentStructure = structTopology.getParentStructure(vcStructures[i]);
@@ -781,7 +786,8 @@ protected void addReactions() throws SbmlException, XMLStreamException {
 					exprFormulaNode = getFormulaFromExpression(localRateExpr);
 				}else{
 					String structure = vcReactionStep.getStructure().getName();
-					structure = TokenMangler.mangleToSName(structure);
+//					structure = TokenMangler.mangleToSName(structure);
+					structure = compartmentNameToIdMap.get(structure);
 					exprFormulaNode = getFormulaFromExpression(Expression.mult(localRateExpr, new Expression(structure)));
 				}
 			}
@@ -844,7 +850,8 @@ protected void addReactions() throws SbmlException, XMLStreamException {
 		if (bSpatial) {
 			// set compartment for reaction if spatial
 			String structure = vcReactionStep.getStructure().getName();
-			structure = TokenMangler.mangleToSName(structure);
+//			structure = TokenMangler.mangleToSName(structure);
+			structure = compartmentNameToIdMap.get(structure);
 			sbmlReaction.setCompartment(structure);
 			//CORE  HAS ALT MATH true
 	
