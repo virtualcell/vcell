@@ -21,7 +21,7 @@ public class CLIPythonManager {
 
     public static final Path currentWorkingDir = Paths.get("").toAbsolutePath();
 
-    private static final String pythonExeName = OperatingSystemInfo.getInstance().isWindows() ? "python" : "python3";
+    private static final String pythonExeName = OperatingSystemInfo.getInstance().isWindows() ? "python.exe" : "python3";
 
     private static CLIPythonManager instance = null;
 
