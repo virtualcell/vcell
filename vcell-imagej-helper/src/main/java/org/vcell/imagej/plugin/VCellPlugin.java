@@ -415,7 +415,7 @@ public class VCellPlugin extends ContextCommand {
 				
 			};
 			jp.setPreferredSize(new Dimension(600, 350));
-			GridBagConstraints constraints = new GridBagConstraints();
+			GridBagConstraints c = new GridBagConstraints();
 			
 			/*Image image;
 			try {
@@ -432,26 +432,26 @@ public class VCellPlugin extends ContextCommand {
 			final boolean[] bUseVCellSelectionHolder = new boolean[] {false};
 
 			//jcbModelType
-			constraints.fill = GridBagConstraints.HORIZONTAL;
-			constraints.weightx = 1.0;
-			constraints.weighty = 1.0;
+			c.fill = GridBagConstraints.HORIZONTAL;
+			c.weightx = 1.0;
+			c.weighty = 1.0;
 			
 			
-			constraints.gridy = 0;
-			constraints.gridx = 0;
-			helpButton("Model Type", jp, "model help text", constraints);
-			constraints.gridx = 1;
-			jp.add(new JLabel("Model Type"),constraints);
-			constraints.gridx = 2;
-			jp.add(jcbModelType,constraints);
+			c.gridy = 0;
+			c.gridx = 0;
+			helpButton("Model Type", jp, "model help text", c);
+			c.gridx = 1;
+			jp.add(new JLabel("Model Type"),c);
+			c.gridx = 2;
+			jp.add(jcbModelType,c);
 			
 			
-			constraints.gridy = 1;
-			constraints.gridx = 0;
-			helpButton("User ID", jp, "user id text", constraints);
-			constraints.gridx = 1;
-			jp.add(new JLabel("VCell Userid"), constraints);
-			constraints.gridx = 2;
+			c.gridy = 1;
+			c.gridx = 0;
+			helpButton("User ID", jp, "user id text", c);
+			c.gridx = 1;
+			jp.add(new JLabel("VCell Userid"), c);
+			c.gridx = 2;
 //			JComboBox<String> jcbUserid = new StyledComboBox<String>(useridSet.toArray(new String[0]));
 			jcbModelType.addActionListener(new ActionListener() {
 				@Override
@@ -487,16 +487,16 @@ public class VCellPlugin extends ContextCommand {
 						}}).start();
 				}});
 			
-			jp.add(jcbUserid, constraints);
+			jp.add(jcbUserid, c);
 			
 			
 					
-			constraints.gridy = 2;
-			constraints.gridx = 0;
-			helpButton("Model Name", jp, "model name text", constraints);
-			constraints.gridx = 1;
-			jp.add(new JLabel("Model Name"), constraints);
-			constraints.gridx = 2;
+			c.gridy = 2;
+			c.gridx = 0;
+			helpButton("Model Name", jp, "model name text", c);
+			c.gridx = 1;
+			jp.add(new JLabel("Model Name"), c);
+			c.gridx = 2;
 //			JComboBox<String> jcbModelNames = new StyledComboBox<String>(mapUseridToModelNameTime.get(jcbUserid.getSelectedItem()).toArray(new String[0]));
 			jcbUserid.addActionListener(new ActionListener() {
 				@Override
@@ -517,14 +517,14 @@ public class VCellPlugin extends ContextCommand {
 						}
 					}
 				}});
-			jp.add(jcbModelNames, constraints);
+			jp.add(jcbModelNames, c);
 			
-			constraints.gridy = 3;
-			constraints.gridx = 0;
-			helpButton("App Name", jp, "app name text", constraints);
-			constraints.gridx = 1;
-			jp.add(new JLabel("App Name"), constraints);
-			constraints.gridx = 2;
+			c.gridy = 3;
+			c.gridx = 0;
+			helpButton("App Name", jp, "app name text", c);
+			c.gridx = 1;
+			jp.add(new JLabel("App Name"), c);
+			c.gridx = 2;
 //			JComboBox<String> jcbAppNames = new StyledComboBox<String>(mapModelToApps.get(jcbModelNames.getSelectedItem()).toArray(new String[0]));
 			jcbModelNames.addActionListener(new ActionListener() {
 				@Override
@@ -539,7 +539,7 @@ public class VCellPlugin extends ContextCommand {
 						}
 					}
 				}});
-			jp.add(jcbAppNames, constraints);
+			jp.add(jcbAppNames, c);
 			
 
 			//final JComboBox<String> jcbVars = new StyledComboBox<String>();
@@ -547,12 +547,12 @@ public class VCellPlugin extends ContextCommand {
 
 			// JComboBox<String> jcbTimes = new StyledComboBox<String>();
 			//jcbTimes.setEnabled(false);
-			constraints.gridy = 4;
-			constraints.gridx = 0;
-			helpButton("Sim Name", jp, "sim name text", constraints);
-			constraints.gridx = 1;
-			jp.add(new JLabel("Sim Name"),constraints);
-			constraints.gridx = 2;
+			c.gridy = 4;
+			c.gridx = 0;
+			helpButton("Sim Name", jp, "sim name text", c);
+			c.gridx = 1;
+			jp.add(new JLabel("Sim Name"),c);
+			c.gridx = 2;
 			jcbAppNames.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
@@ -568,7 +568,7 @@ public class VCellPlugin extends ContextCommand {
 						}
 					}
 				}});
-			jp.add(jcbSimNames, constraints);
+			jp.add(jcbSimNames, c);
 			
 //			if(vcellModelsInput.getDefaultValue() != null) {//If user provided an inital value for VCellSelection var in VCellPlugin
 //				final VCellSelection defaultValue = vcellModelsInput.getDefaultValue();
@@ -616,14 +616,14 @@ public class VCellPlugin extends ContextCommand {
 			JTable jtVars = new JTable();
 			JSlider minTimeJSlider1 = new javax.swing.JSlider();
 			JSlider maxTimeJSlider1 = new javax.swing.JSlider();
-			constraints.gridy = 5;
-			constraints.gridx = 0;
-			helpButton("Vars and Times", jp, "vars and times text", constraints);
-			constraints.gridx = 1;
-			constraints.gridwidth = 2;
-			jp.add(new JLabel("Vars and Times"), constraints);
-			constraints.gridwidth = 1;
-			constraints.gridx = 2;
+			c.gridy = 5;
+			c.gridx = 0;
+			helpButton("Vars and Times", jp, "vars and times text", c);
+			c.gridx = 1;
+			c.gridwidth = 2;
+			jp.add(new JLabel("Vars and Times"), c);
+			c.gridwidth = 1;
+			c.gridx = 2;
 			JButton selectMultipleVarsAndTimesBtn = new JButton("Select");
 			selectMultipleVarsAndTimesBtn.addActionListener(new ActionListener() {
 				@Override
@@ -756,7 +756,7 @@ public class VCellPlugin extends ContextCommand {
 				}});
 			
 			
-			jp.add(selectMultipleVarsAndTimesBtn, constraints);
+			jp.add(selectMultipleVarsAndTimesBtn, c);
 			
 			
 			
