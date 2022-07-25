@@ -2313,6 +2313,7 @@ public Map<Pair <String, String>, String> getLocalToGlobalTranslationMap() {
  * @throws XMLStreamException 
  */
 private void translateBioModel() throws SbmlException, XMLStreamException {
+	compartmentNameToIdMap.clear();
 	// 'Parse' the Virtual cell model into an SBML model
 	org.sbml.jsbml.Model temp = sbmlModel;
 	addUnitDefinitions();
