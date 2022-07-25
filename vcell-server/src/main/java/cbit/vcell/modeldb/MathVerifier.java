@@ -147,12 +147,14 @@ public static class LoadModelsStatTable extends Table{
 	public final Field bSameCachedAndNotCachedXMLExc	= new Field("bSameCachedAndNotCachedXMLExc",SQLDataType.varchar2_255,	"");
 	public final Field bSameCachedAndNotCachedObjExc	= new Field("bSameCachedAndNotCachedObjExc",SQLDataType.varchar2_255,	"");
 	public final Field bSameSelfXMLCachedRoundtripExc	= new Field("bSameSelfXMLCachedRoundtripExc",SQLDataType.varchar2_255,	"");
-	
+	public final Field bIssuesErrors					= new Field("bIssuesErrors"					,SQLDataType.varchar2_255,	"");
+
 	private final Field fields[] =
 		{bioModelRef,mathModelRef,resultFlag,errorMessage,timeStamp,loadTime,softwareVers,
 			loadOriginalXMLTime,loadUnresolvedTime,
 			bSameCachedAndNotCachedXML,bSameCachedAndNotCachedObj,bSameSelfXMLCachedRoundtrip,
-			bSameCachedAndNotCachedXMLExc,bSameCachedAndNotCachedObjExc,bSameSelfXMLCachedRoundtripExc};
+			bSameCachedAndNotCachedXMLExc,bSameCachedAndNotCachedObjExc,bSameSelfXMLCachedRoundtripExc,
+			bIssuesErrors};
 	
 	public static final LoadModelsStatTable table = new LoadModelsStatTable();
 	/**
