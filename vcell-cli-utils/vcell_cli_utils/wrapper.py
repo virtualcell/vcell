@@ -47,3 +47,7 @@ def setOutputMessage(sedmlAbsolutePath:str, entityId:str, outDir:str, entityType
 
 def setExceptionMessage(sedmlAbsolutePath:str, entityId:str, outDir:str, entityType:str, type:str, message:str) -> None:
     status.set_exception_message(sedmlAbsolutePath, entityId, outDir, entityType, type, message)
+    
+def extract_omex_archive(omex_file) -> None:
+    issues = status.extract_omex_archive(omex_file)
+    print(issues)

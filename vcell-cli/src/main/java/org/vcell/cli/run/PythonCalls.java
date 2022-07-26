@@ -4,6 +4,7 @@ import org.vcell.cli.CLIPythonManager;
 import org.vcell.cli.CLIUtils;
 import org.vcell.cli.PythonStreamException;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -45,6 +46,12 @@ public class PythonCalls {
     public static void genPlots(String sedmlPath, String resultOutDir) throws PythonStreamException {
         CLIPythonManager cliPythonManager = CLIPythonManager.getInstance();
         String results = cliPythonManager.callPython("genPlotPdfs", sedmlPath, resultOutDir);
+        cliPythonManager.printPythonErrors(results);
+    }
+    
+    public static void extract_omex_archive(File omexPath) throws PythonStreamException {
+        CLIPythonManager cliPythonManager = CLIPythonManager.getInstance();
+        String results = cliPythonManager.callPython("extract_omex_archive", omexPath.getAbsolutePath());
         cliPythonManager.printPythonErrors(results);
     }
 

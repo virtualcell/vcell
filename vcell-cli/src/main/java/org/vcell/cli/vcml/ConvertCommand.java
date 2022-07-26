@@ -2,6 +2,8 @@ package org.vcell.cli.vcml;
 
 import cbit.util.xml.VCLogger;
 import cbit.vcell.resource.PropertyLoader;
+
+import org.vcell.cli.CLIPythonManager;
 import org.vcell.cli.CLIUtils;
 import org.vcell.util.DataAccessException;
 import picocli.CommandLine.Command;
@@ -47,9 +49,18 @@ public class ConvertCommand implements Callable<Integer> {
             VCLogger vcLogger = new CLIUtils.LocalLogger();
 
             try (CLIDatabaseService cliDatabaseService = new CLIDatabaseService()) {
-                VcmlOmexConverter.convertFiles(cliDatabaseService, inputFilePath, outputFilePath,
-                        outputModelFormat, bHasDataOnly, bMakeLogsOnly, bNonSpatialOnly, bForceLogFiles, bValidateOmex,
-                        vcLogger);
+            	try {
+	                CLIPythonManager.getInstance().instantiatePythonProcess();
+	                VcmlOmexConverter.convertFiles(cliDatabaseService, inputFilePath, outputFilePath,
+	                        outputModelFormat, bHasDataOnly, bMakeLogsOnly, bNonSpatialOnly, bForceLogFiles, bValidateOmex,
+	                        vcLogger);
+            	}finally {
+            		try {
+            			CLIPythonManager.getInstance().closePythonProcess();
+            		}catch (Exception e) {
+            			
+            		}
+            	}
             } catch (IOException | SQLException | DataAccessException e) {
                 e.printStackTrace(System.err);
             }

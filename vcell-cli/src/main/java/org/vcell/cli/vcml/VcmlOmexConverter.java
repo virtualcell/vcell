@@ -36,6 +36,7 @@ import org.sbpax.schemas.util.DefaultNameSpaces;
 import org.sbpax.schemas.util.OntUtil;
 import org.sbpax.util.SesameRioUtil;
 import org.vcell.cli.*;
+import org.vcell.cli.run.PythonCalls;
 import org.vcell.sedml.PubMet;
 import org.vcell.sedml.SEDMLExporter;
 import org.vcell.util.DataAccessException;
@@ -488,6 +489,8 @@ public class VcmlOmexConverter {
 
 			if (bValidate){
 				XmlHelper.readOmex(omexFile, new CLIUtils.LocalLogger());
+				
+				PythonCalls.extract_omex_archive(omexFile);
 			}
 
             // Removing all other files(like SEDML, XML, SBML) after archiving
