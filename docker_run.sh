@@ -1,27 +1,37 @@
 #!/bin/bash
 
-show_help() {
-	echo "usage: VCell [-h] [-q] -i ARCHIVE [-o OUT_DIR] [-v]"
-	echo "  OPTIONS and ARGUMENTS:"
-	echo "    -h,--help             show this help message and exit"
-	echo ""
-	echo "    -i,--archive <arg>    Path to OMEX/COMBINE Archive file which contains one or more SED-ML encoded simulation experiments"
-	echo ""
-	echo "    -o,--out-dir <arg>    Directory to save outputs"
-	echo ""
-	echo "    -q,--quiet            Suppress all console output"
-	echo ""
-	echo "    -v,--version          Shows program's version number and exit"
-	echo ""
-	exit 1
-}
+command="biosimulations"
+case $1 in
+  convert)
+    command="convert"
+    shift
+    ;;
+  execute)
+    command="execute"
+    shift
+    ;;
+  version)
+    command="version"
+    shift
+    ;;
+  biosimulations)
+    command="biosimulations"
+    shift
+    ;;
+  help)
+    command="help"
+    shift
+    ;;
+  *)               # Default case: No more options, so break out of the loop.
+    ;;
+esac
 
-if [[ $# -lt 1 ]]; then
-    show_help
-fi
+#echo "$command" "$@"
 
 java \
   -classpath '/usr/local/app/vcell/lib/*' \
+  -Dlog4j.configurationFile=/usr/local/app/vcell/installDir/biosimulations_log4j2.xml \
+  -Dvcell.softwareVersion=$ENV_SIMULATOR_VERSION \
   -Dvcell.installDir=/usr/local/app/vcell/installDir \
   -Dvcell.server.id="7.3.0.16" \
   -Dvcell.cli="true" \
@@ -30,4 +40,4 @@ java \
   -Dvcell.mongodb.host.internal="localhost" \
   -Dvcell.mongodb.port.internal=27017 \
   -Dcli.workingDir=/usr/local/app/vcell/installDir/python/vcell_cli_utils/ \
-  org.vcell.cli.CLIStandalone "$@"
+  org.vcell.cli.CLIStandalone "$command" "$@"

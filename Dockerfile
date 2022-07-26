@@ -1,7 +1,8 @@
 
 FROM ubuntu:20.04
 
-ARG SIMULATOR_VERSION="7.4.0.23"
+ARG SIMULATOR_VERSION="7.4.0.51"
+ENV ENV_SIMULATOR_VERSION=$SIMULATOR_VERSION
 
 # metadata
 LABEL \
@@ -36,6 +37,11 @@ RUN mkdir -p /usr/local/app/vcell/lib && \
     mkdir -p /usr/local/app/vcell/installDir && \
     mkdir -p /usr/local/app/vcell/installDir/python/vcell_cli_utils
 
+RUN curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python3 - && \
+    echo export PATH="$HOME/.poetry/bin:$PATH" >> /etc/bash.bashrc
+
+ENV PATH="/root/.poetry/bin:$PATH"
+
 # Copy JAR files
 COPY ./vcell-client/target/vcell-client-0.0.1-SNAPSHOT.jar \
      ./vcell-client/target/maven-jars/*.jar \
@@ -59,15 +65,14 @@ COPY ./vcell-client/target/vcell-client-0.0.1-SNAPSHOT.jar \
 
 # Install required python-packages
 COPY ./vcell-cli-utils/ /usr/local/app/vcell/installDir/python/vcell_cli_utils/
-RUN curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python3 - && \
-    echo export PATH="$HOME/.poetry/bin:$PATH" >> $HOME/.bashrc
 RUN cd /usr/local/app/vcell/installDir/python/vcell_cli_utils/ && \
-    . $HOME/.bashrc && poetry install
+    poetry install
 
 # Add linux local solvers only
 ADD ./localsolvers /usr/local/app/vcell/installDir/localsolvers
 ADD ./nativelibs /usr/local/app/vcell/installDir/nativelibs
 COPY ./docker_run.sh /usr/local/app/vcell/installDir/
+COPY ./biosimulations_log4j2.xml /usr/local/app/vcell/installDir/
 
 # Declare supported environment variables
 ENV ALGORITHM_SUBSTITUTION_POLICY=SIMILAR_VARIABLES

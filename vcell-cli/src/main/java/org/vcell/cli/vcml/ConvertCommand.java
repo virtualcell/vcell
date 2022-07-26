@@ -38,6 +38,9 @@ public class ConvertCommand implements Callable<Integer> {
     @Option(names = "--validate")
     boolean bValidateOmex;
 
+    @Option(names = {"-h", "--help"}, description = "show this help message and exit", usageHelp = true)
+    private boolean help;
+
     public Integer call() {
         try {
             PropertyLoader.loadProperties();
