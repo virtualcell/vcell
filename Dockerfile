@@ -38,7 +38,9 @@ RUN mkdir -p /usr/local/app/vcell/lib && \
     mkdir -p /usr/local/app/vcell/installDir/python/vcell_cli_utils
 
 RUN curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python3 - && \
-    echo export PATH="$HOME/.poetry/bin:$PATH" >> $HOME/.bashrc
+    echo export PATH="$HOME/.poetry/bin:$PATH" >> /etc/bash.bashrc
+
+ENV PATH="/root/.poetry/bin:$PATH"
 
 # Copy JAR files
 COPY ./vcell-client/target/vcell-client-0.0.1-SNAPSHOT.jar \
@@ -64,7 +66,7 @@ COPY ./vcell-client/target/vcell-client-0.0.1-SNAPSHOT.jar \
 # Install required python-packages
 COPY ./vcell-cli-utils/ /usr/local/app/vcell/installDir/python/vcell_cli_utils/
 RUN cd /usr/local/app/vcell/installDir/python/vcell_cli_utils/ && \
-    . $HOME/.bashrc && poetry install
+    poetry install
 
 # Add linux local solvers only
 ADD ./localsolvers /usr/local/app/vcell/installDir/localsolvers
