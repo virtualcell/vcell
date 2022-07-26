@@ -266,7 +266,6 @@ public class CLIPythonManager {
             String resultString = (errString != null && errString.length() > 0) ? String.format("Result: %s\n", errString) : "";
             System.err.printf("Python error caught: <%s>\n%s", returnedString, resultString);
             hasPassed = false;
-            System.exit(1);
         } else {
             String resultString = (outString != null && outString.length() > 0) ? String.format("Result: %s\n", outString) : "";
             System.out.printf("Python returned%s\nResult: %s\n", DEBUG_NORMAL_OUTPUT? String.format(": [%s]", returnedString) : " sucessfully.", resultString);
