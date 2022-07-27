@@ -37,10 +37,12 @@ RUN mkdir -p /usr/local/app/vcell/lib && \
     mkdir -p /usr/local/app/vcell/installDir && \
     mkdir -p /usr/local/app/vcell/installDir/python/vcell_cli_utils
 
-RUN curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python3 - && \
-    echo export PATH="$HOME/.poetry/bin:$PATH" >> /etc/bash.bashrc
+# Install Poetry dependency
+#RUN curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python3 - && \
+#    echo export PATH="$HOME/.poetry/bin:$PATH" >> /etc/bash.bashrc
+RUN python3.9 -m pip install poetry && python3 -m pip install poetry
 
-ENV PATH="/root/.poetry/bin:$PATH"
+ENV PATH="/root/.poetry/bin:/root/.local/bin:$PATH"
 
 # Copy JAR files
 COPY ./vcell-client/target/vcell-client-0.0.1-SNAPSHOT.jar \
