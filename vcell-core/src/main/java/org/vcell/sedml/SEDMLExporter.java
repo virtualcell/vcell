@@ -529,18 +529,19 @@ public class SEDMLExporter {
 									//										}
 									for (String symbol : exprSymbols) {
 										String symbolName = TokenMangler.mangleToSName(symbol);
+										String symbolId = symbolName + "_" + overriddenSimContextId;
 										SymbolTableEntry ste1 = vcModel.getEntry(symbol);
 										if (ste != null) {
 											if (ste1 instanceof SpeciesContext || ste1 instanceof Structure || ste1 instanceof ModelParameter) {
 												XPathTarget ste1_XPath = getTargetXPath(ste1, l2gMap);
-												org.jlibsedml.Variable sedmlVar = new org.jlibsedml.Variable(symbolName, symbolName, taskRef, ste1_XPath.getTargetAsString());
+												org.jlibsedml.Variable sedmlVar = new org.jlibsedml.Variable(symbolId, symbolName, taskRef, ste1_XPath.getTargetAsString());
 												computeChange.addVariable(sedmlVar);
 											} else {
 												double doubleValue = 0.0;
 												if (ste1 instanceof ReservedSymbol) {
 													doubleValue = getReservedSymbolValue(ste1); 
 												}
-												Parameter sedmlParameter = new Parameter(symbolName, symbolName, doubleValue);
+												Parameter sedmlParameter = new Parameter(symbolId, symbolName, doubleValue);
 												computeChange.addParameter(sedmlParameter);
 											}
 										} else {
@@ -726,6 +727,7 @@ public class SEDMLExporter {
 										ComputeChange computeChange = new ComputeChange(targetXpath, math);
 										for (String symbol : exprSymbols) {
 											String symbolName = TokenMangler.mangleToSName(symbol);
+											String symbolId = symbolName + "_" + overriddenSimContextId;
 											SymbolTableEntry ste1 = vcModel.getEntry(symbol);
 											// ste1 could be a math parameter, hence the above could return null
 											if (ste1 == null) {
@@ -734,7 +736,7 @@ public class SEDMLExporter {
 											if (ste1 != null) {
 												if (ste1 instanceof SpeciesContext || ste1 instanceof Structure || ste1 instanceof ModelParameter) {
 													XPathTarget ste1_XPath = getTargetXPath(ste1, l2gMap);
-													org.jlibsedml.Variable sedmlVar = new org.jlibsedml.Variable(symbolName, symbolName, taskRef, ste1_XPath.getTargetAsString());
+													org.jlibsedml.Variable sedmlVar = new org.jlibsedml.Variable(symbolId, symbolName, taskRef, ste1_XPath.getTargetAsString());
 													computeChange.addVariable(sedmlVar);
 												} else {
 													double doubleValue = 0.0;
@@ -751,7 +753,7 @@ public class SEDMLExporter {
 													}
 													// TODO: shouldn't be s1_init_uM which is a math symbol, should be s0 (so use the ste-something from above)
 													// TODO: revert to Variable, not Parameter
-													Parameter sedmlParameter = new Parameter(symbolName, symbolName, doubleValue);
+													Parameter sedmlParameter = new Parameter(symbolId, symbolName, doubleValue);
 													computeChange.addParameter(sedmlParameter);
 												}
 											} else {
