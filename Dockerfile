@@ -42,7 +42,7 @@ RUN mkdir -p /usr/local/app/vcell/lib && \
 # Install Poetry dependency
 #RUN curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python3 - && \
 #    echo export PATH="$HOME/.poetry/bin:$PATH" >> /etc/bash.bashrc
-RUN python3 -m pip install poetry && poetry config cache-dir "/local/.poetry"
+RUN python3 -m pip install poetry && poetry config cache-dir "/poetry/.cache"
 
 ENV PATH="/root/.poetry/bin:/root/.local/bin:$PATH"
 
