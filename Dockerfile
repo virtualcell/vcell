@@ -32,6 +32,8 @@ RUN apt-get -y update
 RUN apt-get install -y --no-install-recommends curl openjdk-8-jre dnsutils
 RUN apt-get install -y python3.9 python3-pip python3.9-venv
 
+RUN update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.8 20 && update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.9 40
+
 RUN mkdir -p /usr/local/app/vcell/lib && \
     mkdir -p /usr/local/app/vcell/simulation && \
     mkdir -p /usr/local/app/vcell/installDir && \
@@ -40,7 +42,7 @@ RUN mkdir -p /usr/local/app/vcell/lib && \
 # Install Poetry dependency
 #RUN curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python3 - && \
 #    echo export PATH="$HOME/.poetry/bin:$PATH" >> /etc/bash.bashrc
-RUN python3.9 -m pip install poetry && python3 -m pip install poetry
+RUN python3 -m pip install poetry &&  poetry config cache-dir "/poetry/.cache"
 
 ENV PATH="/root/.poetry/bin:/root/.local/bin:$PATH"
 
@@ -68,7 +70,7 @@ COPY ./vcell-client/target/vcell-client-0.0.1-SNAPSHOT.jar \
 # Install required python-packages
 COPY ./vcell-cli-utils/ /usr/local/app/vcell/installDir/python/vcell_cli_utils/
 RUN cd /usr/local/app/vcell/installDir/python/vcell_cli_utils/ && \
-    poetry install
+     poetry config cache-dir "/poetry/.cache" --local && chmod 755 poetry.toml && poetry install
 
 # Add linux local solvers only
 ADD ./localsolvers /usr/local/app/vcell/installDir/localsolvers
