@@ -55,7 +55,7 @@ public class SBMLSpatialTest {
 			
 			try {
 				VCLogger argVCLogger = new TLogger();
-				SBMLImporter importer = new SBMLImporter(tempFile.getAbsolutePath(), argVCLogger, isSpatial);
+				SBMLImporter importer = new SBMLImporter(tempFile.getAbsolutePath(), argVCLogger, isSpatial, true);
 				BioModel bioModel2 = importer.getBioModel();
 				File tempFile2 = File.createTempFile("sbmlSpatialTest_Biomodel_", ".vcml.xml");
 				FileUtils.write(tempFile2, XmlHelper.bioModelToXML(bioModel2));

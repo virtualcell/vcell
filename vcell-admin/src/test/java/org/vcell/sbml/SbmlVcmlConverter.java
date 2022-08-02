@@ -98,7 +98,7 @@ public static void main(String[] args) {
 	        	// import SBML model into VCML, store VCML string in 'fileName.vcml'
 			    // Instantiate an SBMLImporter to get the speciesUnitsHash - to compute the conversion factor from VC->SB species units.
 			    // and import SBML  (sbml->bioModel)
-				org.vcell.sbml.vcell.SBMLImporter sbmlImporter = new org.vcell.sbml.vcell.SBMLImporter(pathName, logger, false);
+				org.vcell.sbml.vcell.SBMLImporter sbmlImporter = new org.vcell.sbml.vcell.SBMLImporter(pathName, logger, false,true);
 				BioModel bioModel = sbmlImporter.getBioModel();
 //				Hashtable<String, SBMLImporter.SBVCConcentrationUnits> speciesUnitsHash = sbmlImporter.getSpeciesUnitsHash();
 //				double timeFactor = sbmlImporter.getSBMLTimeUnitsFactor();

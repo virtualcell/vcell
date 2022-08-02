@@ -19,7 +19,7 @@ public class SBMLImporterTest {
 	public static void main(String[] args) {
 		try {
 			VCLogger vcl = new TLogger();
-		SBMLImporter imp = new SBMLImporter("samp.sbml", vcl,false); 
+		SBMLImporter imp = new SBMLImporter("samp.sbml", vcl,false, true);
 		for (;;) {
 			/*
 			JFileChooser jfc = new JFileChooser( new File(System.getProperty("user.dir")));
@@ -146,7 +146,7 @@ public class SBMLImporterTest {
 				continue;
 			}
 			System.out.println("testing "+sbmlFile);
-			SBMLImporter importer = new SBMLImporter(sbmlFile.getAbsolutePath(), vcl, false);
+			SBMLImporter importer = new SBMLImporter(sbmlFile.getAbsolutePath(), vcl, false, true);
 			BioModel bioModel = importer.getBioModel();
 		}
 		

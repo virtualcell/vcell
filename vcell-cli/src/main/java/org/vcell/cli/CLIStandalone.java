@@ -2,9 +2,10 @@ package org.vcell.cli;
 
 import org.vcell.cli.biosimulation.BiosimulationsCommand;
 import org.vcell.cli.run.ExecuteCommand;
-import org.vcell.cli.vcml.ConvertCommand;
+import org.vcell.cli.vcml.ExportOmexBatchCommand;
 
 import cbit.vcell.mongodb.VCMongoMessage;
+import org.vcell.cli.vcml.ExportOmexCommand;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 

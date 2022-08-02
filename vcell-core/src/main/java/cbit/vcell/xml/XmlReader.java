@@ -28,6 +28,7 @@ import java.util.TreeSet;
 import java.util.Vector;
 import java.util.function.Consumer;
 
+import cbit.vcell.model.*;
 import org.jdom.Attribute;
 import org.jdom.DataConversionException;
 import org.jdom.Element;
@@ -247,53 +248,14 @@ import cbit.vcell.math.VolumeRandomVariable;
 import cbit.vcell.math.VolumeRegionEquation;
 import cbit.vcell.math.VolumeRegionVariable;
 import cbit.vcell.mathmodel.MathModel;
-import cbit.vcell.model.Catalyst;
-import cbit.vcell.model.DBFormalSpecies;
-import cbit.vcell.model.DBSpecies;
-import cbit.vcell.model.Diagram;
-import cbit.vcell.model.Feature;
-import cbit.vcell.model.FluxReaction;
-import cbit.vcell.model.FormalSpeciesInfo;
-import cbit.vcell.model.GHKKinetics;
-import cbit.vcell.model.GeneralCurrentKinetics;
-import cbit.vcell.model.GeneralCurrentLumpedKinetics;
-import cbit.vcell.model.GeneralKinetics;
-import cbit.vcell.model.GeneralLumpedKinetics;
-import cbit.vcell.model.GeneralPermeabilityKinetics;
-import cbit.vcell.model.HMM_IRRKinetics;
-import cbit.vcell.model.HMM_REVKinetics;
-import cbit.vcell.model.Kinetics;
 import cbit.vcell.model.Kinetics.KineticsParameter;
-import cbit.vcell.model.Macroscopic_IRRKinetics;
-import cbit.vcell.model.MassActionKinetics;
-import cbit.vcell.model.Membrane;
-import cbit.vcell.model.Microscopic_IRRKinetics;
-import cbit.vcell.model.Model;
 import cbit.vcell.model.Model.ModelParameter;
 import cbit.vcell.model.Model.RbmModelContainer;
 import cbit.vcell.model.Model.ReservedSymbol;
 import cbit.vcell.model.Model.StructureTopology;
-import cbit.vcell.model.ModelException;
-import cbit.vcell.model.ModelUnitSystem;
-import cbit.vcell.model.NernstKinetics;
-import cbit.vcell.model.NodeReference;
 import cbit.vcell.model.NodeReference.Mode;
-import cbit.vcell.model.Product;
-import cbit.vcell.model.ProductPattern;
-import cbit.vcell.model.RbmKineticLaw;
 import cbit.vcell.model.RbmKineticLaw.RateLawType;
 import cbit.vcell.model.RbmKineticLaw.RbmKineticLawParameterType;
-import cbit.vcell.model.RbmObservable;
-import cbit.vcell.model.Reactant;
-import cbit.vcell.model.ReactantPattern;
-import cbit.vcell.model.ReactionParticipant;
-import cbit.vcell.model.ReactionRule;
-import cbit.vcell.model.ReactionStep;
-import cbit.vcell.model.SimpleReaction;
-import cbit.vcell.model.Species;
-import cbit.vcell.model.SpeciesContext;
-import cbit.vcell.model.Structure;
-import cbit.vcell.model.VCMODL;
 import cbit.vcell.modelopt.AnalysisTask;
 import cbit.vcell.modelopt.ParameterEstimationTask;
 import cbit.vcell.modelopt.ParameterEstimationTaskXMLPersistence;
@@ -3507,7 +3469,10 @@ public BioEvent[] getBioEvents(SimulationContext simContext, Element bioEventsEl
 				String varname = eventAssignmentElement.getAttributeValue(XMLTags.EventAssignmentVariableAttrTag);
 				Expression assignExp = unMangleExpression(eventAssignmentElement.getText());
 				SymbolTableEntry target = simContext.getEntry(varname);
-				BioEvent.EventAssignment eventAssignment = newBioEvent.new EventAssignment(target, assignExp);
+				if (!(target instanceof EditableSymbolTableEntry)){
+					throw new XmlParseException("expecting an EditableSymbolTableEntry for event assignment target, found "+target);
+				}
+				BioEvent.EventAssignment eventAssignment = newBioEvent.new EventAssignment((EditableSymbolTableEntry) target, assignExp);
 				eventAssignmentList.add(eventAssignment);
 			} catch (ExpressionException e) {
 				e.printStackTrace(System.out);
@@ -6466,12 +6431,6 @@ private ArrayList<DataSymbol> getDataSymbols(Element dataContextElement, DataCon
 	return dataSymbolsList;
 }
 
-/**
- * This method returns a Version object from an XML representation.
- * Creation date: (3/16/2001 3:41:24 PM)
- * @return cbit.sql.Version
- * @param param org.jdom.Element
- */
 private SimulationVersion getSimulationVersion(Element xmlVersion) throws XmlParseException {
 	if (xmlVersion == null) {
 		return null;
@@ -6982,12 +6941,6 @@ private SpeciesContext getSpeciesContext(Element param, Model model) throws XmlP
 }
 
 
-/**
- * This method returns a SpeciesContextSpec object from a XML representation.
- * Creation date: (4/26/2001 4:14:01 PM)
- * @return cbit.vcell.mapping.SpeciesContextSpec
- * @param param org.jdom.Element
- */
 private void getSpeciesContextSpecs(List<Element> scsChildren, ReactionContext rxnContext, Model model) throws XmlParseException{
 	for (int i = 0; i < scsChildren.size(); i++) {
 		Element scsElement = scsChildren.get(i); 
@@ -7530,12 +7483,6 @@ private User getUser(Element param) {
 	return newuser;
 }
 
-/**
- * This method returns a Kinetics object from a XML Element based on the value of the kinetics type attribute.
- * Creation date: (3/19/2001 4:42:04 PM)
- * @return cbit.vcell.model.Kinetics
- * @param param org.jdom.Element
- */
 private void addResevedSymbols(VariableHash varHash, Model model) throws XmlParseException {
 
 	//
@@ -7719,12 +7666,6 @@ VCImage getVCImage(Element param, Extent extent) throws XmlParseException{
 }
 
 
-/**
- * This method returns a Version object from an XML representation.
- * Creation date: (3/16/2001 3:41:24 PM)
- * @return cbit.sql.Version
- * @param param org.jdom.Element
- */
 private Version getVersion(Element xmlVersion) throws XmlParseException {
 	if (xmlVersion == null) {
 		return null;

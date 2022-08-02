@@ -166,7 +166,9 @@ public void importSbml(String bngSbmlStr) {
 		sbmlFile.deleteOnExit();
 		XmlUtil.writeXMLStringToFile(modifiedSbmlStr, sbmlFile.getAbsolutePath(), true);
 
-		org.vcell.sbml.vcell.SBMLImporter sbmlImporter = new SBMLImporter(sbmlFile.getAbsolutePath(), logger, false);
+		boolean bIsSpatial = false;
+		boolean bValidateSBML = true;
+		org.vcell.sbml.vcell.SBMLImporter sbmlImporter = new SBMLImporter(sbmlFile.getAbsolutePath(), logger, bIsSpatial, bValidateSBML);
 		BioModel bioModel = sbmlImporter.getBioModel();
 		
 		// enforce 'cleaner looking' units on vc biomodel (the process of adding unit defintion to sbml model messes up the units, though they are correct units (eg., 1e-6m for um).

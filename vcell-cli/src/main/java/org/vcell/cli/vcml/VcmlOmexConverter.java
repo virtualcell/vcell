@@ -6,12 +6,15 @@ import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.field.FieldFunctionArguments;
 import cbit.vcell.field.FieldUtilities;
 import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.math.MathCompareResults;
 import cbit.vcell.math.MathDescription;
+import cbit.vcell.math.SubDomain;
 import cbit.vcell.math.Variable;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.server.SimulationJobStatusPersistent;
 import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.SimulationSymbolTable;
 import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.util.NativeLoader;
 import cbit.vcell.xml.XMLSource;
@@ -47,19 +50,43 @@ import java.io.FileNotFoundException;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 public class VcmlOmexConverter {
 	private static final Logger logger = LogManager.getLogger(VcmlOmexConverter.class);
 
-	// TODO: Changes to CLIHandler have made some things here superfluous; this can be trimmed(?).
+	public static void convertOneFile(File input,
+									  File outputDir,
+									  ModelFormat modelFormat,
+									  boolean bForceLogFiles,
+									  boolean bValidateOmex)
+			throws IOException, DataAccessException, XmlParseException {
+
+		if (input == null || !input.isFile() || !input.toString().endsWith(".vcml")) {
+			throw new RuntimeException("expecting inputFilePath '"+input+"' to be an existing .vcml file");
+		}
+		Predicate<Simulation> simulationExportFilter = simulation -> true;
+		BioModelInfo bioModelInfo = null;
+		boolean isCreated = vcmlToOmexConversion(input.getAbsolutePath(), bioModelInfo, null, outputDir.getAbsolutePath(),
+				simulationExportFilter, modelFormat, bForceLogFiles, bValidateOmex);
+		if (isCreated) {
+			logger.info("Combine archive created for `" + input + "`");
+		} else {
+			logger.error("Failed converting VCML to OMEX archive for `" + input + "`");
+		}
+	}
+
 	public static void convertFiles(CLIDatabaseService cliDatabaseService,
 									File input,
 									File outputDir,
@@ -68,10 +95,121 @@ public class VcmlOmexConverter {
 									boolean bMakeLogsOnly,
 									boolean bNonSpatialOnly,
 									boolean bForceLogFiles,
-									boolean bValidateOmex,
-									VCLogger vcLogger)
+									boolean bValidateOmex)
 			throws IOException, SQLException, DataAccessException {
 
+		Set<String> hasNonSpatialSet = new LinkedHashSet<>();
+		Set<String> hasSpatialSet = new LinkedHashSet<>();
+		if (input == null || !input.isDirectory()) {
+			throw new RuntimeException("expecting inputFilePath to be an existing directory");
+		}
+
+		FilenameFilter filterVcmlFiles = (f, name) -> name.endsWith(".vcml");
+		String[] inputFiles = input.list(filterVcmlFiles);		// jusr a list of vcml names, like biomodel-185577495.vcml, ...
+		if (inputFiles == null) {
+			logger.error("No VCML files found in the directory `" + input + "`");
+		}
+
+		writeSimErrorList(outputDir.getAbsolutePath(), "bForceVCML is " + modelFormat.equals(ModelFormat.VCML), bForceLogFiles);
+		writeSimErrorList(outputDir.getAbsolutePath(), "bForceSBML is " + modelFormat.equals(ModelFormat.SBML), bForceLogFiles);
+		writeSimErrorList(outputDir.getAbsolutePath(), "hasDataOnly is " + bHasDataOnly, bForceLogFiles);
+		writeSimErrorList(outputDir.getAbsolutePath(), "makeLogsOnly is " + bMakeLogsOnly, bForceLogFiles);
+		writeSimErrorList(outputDir.getAbsolutePath(), "nonSpatialOnly is " + bNonSpatialOnly, bForceLogFiles);
+
+//            assert inputFiles != null;
+		for (String inputFile : inputFiles) {
+			File file = new File(input, inputFile);
+			logger.info(" ============== start: " + inputFile);
+			try {
+				if (inputFile.endsWith(".vcml")) {
+					Predicate<Simulation> simulationExportFilter = simulation -> keepSimulation(simulation, bHasDataOnly, bNonSpatialOnly, cliDatabaseService);
+					// recover the bioModelInfo
+					List<BioModelInfo> publicBioModelInfos = cliDatabaseService.queryPublicBioModels();
+					BioModelInfo bioModelInfo = null;
+					String vcmlName = FilenameUtils.getBaseName(inputFile);
+					for (BioModelInfo bmi : publicBioModelInfos){
+						if (vcmlName.equals("biomodel_"+bmi.getVersion().getVersionKey()) || vcmlName.equals(bmi.getVersion().getName())){
+							bioModelInfo = bmi;
+						}
+					}
+
+					boolean isCreated = vcmlToOmexConversion(file.toString(), bioModelInfo, outputDir.getAbsolutePath(), outputDir.getAbsolutePath(),
+															simulationExportFilter, modelFormat, bForceLogFiles, bValidateOmex);
+					if (isCreated) {
+						logger.info("Combine archive created for file(s) `" + inputFile + "`");
+					}
+					else {
+						logger.error("Failed converting VCML to OMEX archive for `" + inputFile + "`");
+					}
+				} else {
+					logger.error("No VCML files found in the directory `" + input + "`");
+				}
+			} catch (Exception e) {
+				logger.error("EXPORT FAILED: file=" +inputFile+", error="+e.getMessage(), e);
+				CLIUtils.writeDetailedErrorList(outputDir.getAbsolutePath(), inputFile + ",   " + e.getMessage(), bForceLogFiles);
+			}
+		}
+		writeLogForOmexCreation(outputDir.getAbsolutePath(), hasNonSpatialSet, hasSpatialSet, bForceLogFiles);
+	}
+
+	private static boolean keepSimulation(Simulation simulation, boolean bHasDataOnly, boolean bNonSpatialOnly, CLIDatabaseService cliDatabaseService) {
+
+		//
+		// exclude simulations with field data
+		//
+		Enumeration<Variable> variables = simulation.getMathDescription().getVariables();
+		while(variables.hasMoreElements()) {
+			Variable var = variables.nextElement();
+			Expression exp = var.getExpression();
+			FieldFunctionArguments[] ffas = FieldUtilities.getFieldFunctionArguments( exp);
+			if(ffas != null && ffas.length > 0) {
+				logger.warn("excluding simulation '"+simulation.getName()+", it has field data, not yet supported for OMEX export");
+				return false;
+			}
+		}
+
+		//
+		// exclude spatial simulations if bNonSpatialOnly
+		//
+		if(bNonSpatialOnly == true) {		// we skip all spatial simulations
+			SolverDescription sd = simulation.getSolverTaskDescription().getSolverDescription();
+			if(sd.isSpatial()) {
+				logger.warn("excluding simulation '"+simulation.getName()+", it is spatial, and bNonSpatialOnly was specified.");
+				return false;
+			}
+		}
+
+		//
+		// exclude simulations without data if bHasDataOnly
+		if (bHasDataOnly) {
+			// check server status
+			KeyValue parentKey = simulation.getSimulationVersion().getParentSimulationReference();
+			try {
+				SimulationJobStatusPersistent[] statuses = cliDatabaseService.querySimulationJobStatus(parentKey == null ? simulation.getKey() : parentKey);
+				if (statuses == null || statuses.length == 0) {
+					logger.warn("excluding simulation '" + simulation.getName() + ", it has not been run, and bHasDataOnly was specified.");
+					return false;
+				}
+				boolean hasData = false;
+				for (int i = 0; i < statuses.length; i++) {
+					if (statuses[i].hasData()) {
+						hasData = true;
+					}
+				}
+				if (!hasData) {
+					logger.warn("excluding simulation '" + simulation.getName() + ", it been run, but has no data, and bHasDataOnly was specified.");
+					return false;
+				}
+			} catch (Exception e){
+				logger.error("failed to retrieve status for simulation '"+simulation.getSimulationVersion()+"'", e);
+				throw new RuntimeException("failed to retrieve status for simulation '"+simulation.getSimulationVersion()+"'", e);
+			}
+		}
+		return true;
+	}
+
+
+	public static void queryVCellDbPublishedModels(CLIDatabaseService cliDatabaseService, File outputDir, boolean bForceLogFiles) throws SQLException, DataAccessException, IOException {
 		VCInfoContainer vcic;
 		Map<String, List<String>> publicationToModelMap = new LinkedHashMap<>();
 		int count = 0;		// number of biomodels with publication info
@@ -116,78 +254,15 @@ public class VcmlOmexConverter {
 				logger.trace("publication :"+row);
 			}
 		}
+	}
 
-		Set<String> hasNonSpatialSet = new LinkedHashSet<String>();
-		Set<String> hasSpatialSet = new LinkedHashSet<String>();
-        if (input != null && input.isDirectory()) {
-            FilenameFilter filterVcmlFiles = (f, name) -> name.endsWith(".vcml");
-            String[] inputFiles = input.list(filterVcmlFiles);		// jusr a list of vcml names, like biomodel-185577495.vcml, ...
-            if (inputFiles == null) {
-                logger.error("No VCML files found in the directory `" + input + "`");
-            }
-
-            writeSimErrorList(outputDir.getAbsolutePath(), "bForceVCML is " + modelFormat.equals(ModelFormat.VCML), bForceLogFiles);
-			writeSimErrorList(outputDir.getAbsolutePath(), "bForceSBML is " + modelFormat.equals(ModelFormat.SBML), bForceLogFiles);
-			writeSimErrorList(outputDir.getAbsolutePath(), "hasDataOnly is " + bHasDataOnly, bForceLogFiles);
-			writeSimErrorList(outputDir.getAbsolutePath(), "makeLogsOnly is " + bMakeLogsOnly, bForceLogFiles);
-			writeSimErrorList(outputDir.getAbsolutePath(), "nonSpatialOnly is " + bNonSpatialOnly, bForceLogFiles);
-
-//            assert inputFiles != null;
-            for (String inputFile : inputFiles) {
-                File file = new File(input, inputFile);
-                logger.info(" ============== start: " + inputFile);
-                try {
-                    if (inputFile.endsWith(".vcml")) {
-                        boolean isCreated = vcmlToOmexConversion(file.toString(), outputDir.getAbsolutePath(), outputDir.getAbsolutePath(), cliDatabaseService,
-								hasNonSpatialSet, hasSpatialSet, modelFormat, bHasDataOnly, bNonSpatialOnly, bMakeLogsOnly, bForceLogFiles, bValidateOmex);
-						if (isCreated) {
-                        	logger.info("Combine archive created for file(s) `" + inputFile + "`");
-                        }
-                        else {
-                        	logger.error("Failed converting VCML to OMEX archive for `" + inputFile + "`");
-                        }
-                    } else {
-                    	logger.error("No VCML files found in the directory `" + input + "`");
-                    }
-                } catch (Exception e) {
-                	logger.error("EXPORT FAILED: file=" +inputFile+", error="+e.getMessage(), e);
-					CLIUtils.writeDetailedErrorList(outputDir.getAbsolutePath(), inputFile + ",   " + e.getMessage(), bForceLogFiles);
-                }
-            }
-			writeLogForOmexCreation(outputDir.getAbsolutePath(), hasNonSpatialSet, hasSpatialSet, bForceLogFiles);
-        } else {
-            try {
-                assert input != null;
-                if (input.toString().endsWith(".vcml")) {
-                    boolean isCreated = vcmlToOmexConversion(input.getAbsolutePath(), null,
-							outputDir.getAbsolutePath(), cliDatabaseService, hasNonSpatialSet, hasSpatialSet,
-							modelFormat, bHasDataOnly, bNonSpatialOnly, bMakeLogsOnly, bForceLogFiles, bValidateOmex);
-                    if (isCreated) {
-						logger.info("Combine archive created for `" + input + "`");
-					} else {
-						logger.error("Failed converting VCML to OMEX archive for `" + input + "`");
-					}
-                } else {
-					logger.error("No input files found in the directory `" + input + "`");
-				}
-            } catch (Exception e) {
-                logger.error("EXPORT FAILED: " +input, e);
-            }
-        }
-    }
-
-    private static boolean vcmlToOmexConversion(String inputFilePath, String outputBaseDir, String outputDir,
-												CLIDatabaseService cliDatabaseService,
-												Set<String> hasNonSpatialSet, Set<String> hasSpatialSet,
+	private static boolean vcmlToOmexConversion(String inputFilePath, BioModelInfo bioModelInfo, String outputBaseDir, String outputDir,
+												Predicate<Simulation> simulationExportFilter,
 												ModelFormat modelFormat,
-												boolean bHasDataOnly,
-												boolean bNonSpatialOnly,
-												boolean bMakeLogsOnly,
 												boolean bForceLogFiles,
 												boolean bValidate
-	) throws XmlParseException, IOException, DataAccessException, SQLException {
+	) throws XmlParseException, IOException {
 
-        // Get VCML file path from -i flag
 		int sedmlLevel = 1;
 		int sedmlVersion = 2;
         
@@ -197,15 +272,6 @@ public class VcmlOmexConverter {
         // get VCML name from VCML path
         //String vcmlName = inputVcmlFile.split(File.separator, 10)[inputVcmlFile.split(File.separator, 10).length - 1].split("\\.", 5)[0];
         String vcmlName = FilenameUtils.getBaseName(inputVcmlFile);		// platform independent, strips extension too
-
-		// recover the bioModelInfo
-		List<BioModelInfo> publicBioModelInfos = cliDatabaseService.queryPublicBioModels();
-		BioModelInfo bioModelInfo = null;
-		for (BioModelInfo bmi : publicBioModelInfos){
-			if (vcmlName.equals("biomodel_"+bmi.getVersion().getVersionKey()) || vcmlName.equals(bmi.getVersion().getName())){
-				bioModelInfo = bmi;
-			}
-		}
 
 		File vcmlFilePath = new File(inputVcmlFile);
         // Create biomodel
@@ -251,41 +317,10 @@ public class VcmlOmexConverter {
         	logger.error(e);
         }
 
-        
-        // ========================================================
-        
-        // we extract the simulations with field data from the list of simulations since they are not supported
-        List<Simulation> simulationsToRemove = new ArrayList<> ();
-		for (Simulation simulation : bioModel.getSimulations()) {
-	        boolean bFieldDataFound = false;
-			Enumeration<Variable> variables = simulation.getMathDescription().getVariables();
-			while(variables.hasMoreElements()) {
-				Variable var = variables.nextElement();
-				Expression exp = var.getExpression();
-				FieldFunctionArguments[] ffas = FieldUtilities.getFieldFunctionArguments( exp);
-				if(ffas != null && ffas.length > 0) {
-					bFieldDataFound = true;
-					break;	// we are done with this simulation if we know it has at least one variable with a field data in its expression
-				}
-			}
-			if(bFieldDataFound) {
-				simulationsToRemove.add(simulation);
-				writeSimErrorList(outputBaseDir, vcmlName + " excluded: FieldData not supported at this time.", bForceLogFiles);
-				SolverDescription solverDescription = simulation.getSolverTaskDescription().getSolverDescription();
-				String solverName = solverDescription.getShortDisplayLabel();
-				//CLIStandalone.writeSimErrorList(outputBaseDir, "   " + solverName);
-			}
-		}
-		for(Simulation simulation : simulationsToRemove) {
-			try {
-				bioModel.removeSimulation(simulation);
-			} catch (PropertyVetoException e) {
-				logger.error("Failed to remove simulation with field data", e);
-			}
-		}
-		
+        List<Simulation> simsToExport = Arrays.stream(bioModel.getSimulations()).filter(simulationExportFilter).collect(Collectors.toList());
+
 		// we replace the obsolete solver with the fully supported equivalent
-		for (Simulation simulation : bioModel.getSimulations()) {
+		for (Simulation simulation : simsToExport) {
 			if (simulation.getSolverTaskDescription().getSolverDescription().equals(SolverDescription.FiniteVolume)) {
 				try {
 					simulation.getSolverTaskDescription().setSolverDescription(SolverDescription.SundialsPDE);
@@ -294,80 +329,9 @@ public class VcmlOmexConverter {
 				}
 			}
 		}
-		
-        // NOTE: SEDML exporter exports both SEDML as well as required SBML
-        List<Simulation> simsToExport = new ArrayList<Simulation>();
-        LinkedHashSet<String> solverNames = new LinkedHashSet<>();
 
-        if (bHasDataOnly) {
- 			for (Simulation simulation : bioModel.getSimulations()) {
-				SolverDescription sd = simulation.getSolverTaskDescription().getSolverDescription();
-				if(bNonSpatialOnly == true && sd.isSpatial()) {			// we skip all spatial simulations
-					continue;
-				}
-				String solverName = sd.getShortDisplayLabel();
-				solverNames.add(solverName);
-				// check server status
-				KeyValue parentKey = simulation.getSimulationVersion().getParentSimulationReference();
-				SimulationJobStatusPersistent[] statuses = cliDatabaseService.querySimulationJobStatus(parentKey == null ? simulation.getKey() : parentKey);
-				if (statuses == null) {
-					continue;
-				}
-				if (statuses.length == 0) {
-					continue;
-				}
-				for (int i = 0; i < statuses.length; i++) {
-					if (statuses[i].hasData()) {
-						simsToExport.add(simulation);
-						break;
-					}
-				}
-			}
-        } else {	// we add them all regardless of having data
-        	for (Simulation simulation : bioModel.getSimulations()) {
-        		if(bNonSpatialOnly == true) {		// we skip all spatial simulations
-        			SolverDescription sd = simulation.getSolverTaskDescription().getSolverDescription();
-        			if(sd.isSpatial()) {
-        				continue;
-        			}
-        		}
-        		simsToExport.add(simulation);
-        	}
-        }
-        
-        if(outputBaseDir != null && bHasDataOnly == true && simsToExport.size() == 0) {
-        	String msg = vcmlName + " has no simulations with any results.";
-        	logger.warn(msg);
-			writeSimErrorList(outputBaseDir, msg, bForceLogFiles);
-        	return false;
-        }
-        if(outputBaseDir != null && bNonSpatialOnly == true && simsToExport.size() == 0) {
-        	String msg = vcmlName + " has no non-spatial simulations to export.";
-        	logger.warn(msg);
-			writeSimErrorList(outputBaseDir, msg, bForceLogFiles);
-        	return false;
-        }
-        if(outputBaseDir != null && simsToExport.size() == 0) {
-        	String msg = vcmlName + " has no simulations to export.";
-        	logger.warn(msg);
-			writeSimErrorList(outputBaseDir, msg, bForceLogFiles);
-        	return false;
-        }
-        
-		for (Simulation simulation : simsToExport) {
-			SolverDescription sd = simulation.getSolverTaskDescription().getSolverDescription();
-			if(sd.isSpatial()) {
-				hasSpatialSet.add(vcmlName);
-			} else {
-				hasNonSpatialSet.add(vcmlName);
-			}
-		}
-        if(bMakeLogsOnly) {
-        	return false;
-        }
-        
-        
-        Version version = bioModel.getVersion();
+
+		Version version = bioModel.getVersion();
         String versionKey = version.getVersionKey().toString();
         String sourcePath = "https://vcellapi-beta.cam.uchc.edu:8080/biomodel/" + versionKey + "/diagram";
         String destinationPath = Paths.get(outputDir, "diagram.png").toString();
@@ -377,8 +341,8 @@ public class VcmlOmexConverter {
         int readTimeout = 20000;
         try {
        	 	FileUtils.copyURLToFile(source, destination, connectionTimeout, readTimeout);		// diagram
-        } catch(FileNotFoundException e) {
-        	logger.warn("Diagram not present in source="+sourcePath);
+        } catch(IOException e) {
+        	logger.error("Diagram not present in source="+sourcePath, e);
         }
 
         String rdfString = getMetadata(vcmlName, bioModel, destination, bioModelInfo);
@@ -386,8 +350,7 @@ public class VcmlOmexConverter {
         
         SEDMLExporter sedmlExporter = new SEDMLExporter(bioModel, sedmlLevel, sedmlVersion, simsToExport);
         SEDMLDocument sedmlDocument = sedmlExporter.getSEDMLFile0(outputDir, vcmlName,
-				modelFormat.equals(ModelFormat.VCML), modelFormat.equals(ModelFormat.SBML),
-				bHasDataOnly, true);
+				modelFormat.equals(ModelFormat.VCML), modelFormat.equals(ModelFormat.SBML), true);
         SedML sedmlModel = sedmlDocument.getSedMLModel();
         if(sedmlModel.getModels().size() == 0) {
             File dir = new File(outputDir);
@@ -487,7 +450,33 @@ public class VcmlOmexConverter {
 //        	FileUtils.copyFileToDirectory(srcFile, destDir);
 
 			if (bValidate){
-				XmlHelper.readOmex(omexFile, new CLIUtils.LocalLogger());
+				logger.info("validating Omex file '"+omexFile+"'");
+				List<VCDocument> reread_docs = XmlHelper.readOmex(omexFile, new CLIUtils.LocalLogger());
+				logger.info("validated Omex file '"+omexFile+"'");
+				BioModel reread_BioModel = (BioModel)reread_docs.get(0);
+				reread_BioModel.refreshDependencies();
+				SimulationContext.MathMappingCallback mathMappingCallback = new SimulationContext.MathMappingCallback() {
+					@Override
+					public void setMessage(String message) { }
+					@Override
+					public void setProgressFraction(float fractionDone) { }
+					@Override
+					public boolean isInterrupted() { return false; }
+				};
+				SimulationContext.NetworkGenerationRequirements networkGenerationRequirements =
+						SimulationContext.NetworkGenerationRequirements.AllowTruncatedStandardTimeout;
+
+				bioModel.getSimulationContext(0).refreshMathDescription(mathMappingCallback, networkGenerationRequirements);
+				reread_BioModel.getSimulationContext(0).refreshMathDescription(mathMappingCallback, networkGenerationRequirements);
+				MathDescription origMathDescription = bioModel.getSimulationContext(0).getMathDescription();
+				MathDescription rereadMathDescription = reread_BioModel.getSimulationContext(0).getMathDescription();
+				MathCompareResults mathCompareResults = MathDescription.testEquivalency(SimulationSymbolTable.createMathSymbolTableFactory(),origMathDescription, rereadMathDescription);
+				if (!mathCompareResults.isEquivalent()){
+					logger.error("MathDescriptions ARE NOT equivalent after VCML->SBML->VCML round-trip validation: "+mathCompareResults.toDatabaseStatus());
+				} else {
+					logger.info("MathDescriptions ARE equivalent after VCML->SBML->VCML round-trip validation: "+mathCompareResults.toDatabaseStatus());
+				}
+				Files.write(Paths.get(outputDir, "reread_vcml.xml"), XmlHelper.bioModelToXML(reread_BioModel).getBytes(StandardCharsets.UTF_8));
 			}
 
             // Removing all other files(like SEDML, XML, SBML) after archiving

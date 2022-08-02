@@ -123,7 +123,7 @@ private static ArrayList<Unit> convertVCUnitsToSbmlUnits_NOT_USED(double unitMul
 			return convertVCUnitsToSbmlUnits_NOT_USED(unitMultiplier, unitImpl.getDerivedUnit(), allSbmlUnitsList, level, version);
 		} 
 	} else {
-		System.err.println("Unable to process unit translation: " + " " + vcUcarUnit.getSymbol());
+		logger.error("Unable to process unit translation: " + " " + vcUcarUnit.getSymbol());
 	}
 
 	throw new RuntimeException("unexpected vcell unit during transformation to sbml units: "+vcUcarUnit);
@@ -435,7 +435,7 @@ public static VCUnitDefinition getVCUnitDefinition(org.sbml.jsbml.UnitDefinition
 	}
 	symbol = symbol.substring(1,symbol.length()-1);
 	if (!symbol.equals(vcUnitDefn.getSymbol())){
-		System.err.println("new symbol is "+symbol+",   old symbol is "+vcUnitDefn.getSymbol());
+		logger.warn("new symbol is "+symbol+",   old symbol is "+vcUnitDefn.getSymbol());
 		VCUnitDefinition new_vcUnitDefn = vcUnitSystem.getInstance(symbol);
 		if (!new_vcUnitDefn.isEquivalent(vcUnitDefn)){
 			throw new RuntimeException("failed to simplify unit "+vcUnitDefn.getSymbol()+", created wrong symbol "+symbol);

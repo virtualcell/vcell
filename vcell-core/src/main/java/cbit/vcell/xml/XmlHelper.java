@@ -456,7 +456,8 @@ public class XmlHelper {
 		}
 		VCDocument vcDoc = null;
 //    if (!bSpatial) {
-		SBMLImporter sbmlImporter = new SBMLImporter(sbmlFile.getAbsolutePath(), vcLogger, bSpatial);
+		boolean bValidateSBML = false;
+		SBMLImporter sbmlImporter = new SBMLImporter(sbmlFile.getAbsolutePath(), vcLogger, bSpatial, bValidateSBML);
 		vcDoc = sbmlImporter.getBioModel();
 //    } else {
 //    	SBMLSpatialImporter sbmlSpatialImporter = new SBMLSpatialImporter(sbmlFile.getAbsolutePath(), vcLogger);

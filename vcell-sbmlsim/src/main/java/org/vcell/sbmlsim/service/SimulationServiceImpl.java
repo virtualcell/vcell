@@ -205,7 +205,7 @@ public class SimulationServiceImpl extends AbstractService implements Simulation
     @Override
     public SimulationInfo computeModel(SBMLModel model, SimulationSpec simSpec) {
         try {
-            SBMLImporter importer = new SBMLImporter(model.getFilepath().getAbsolutePath(),vcLogger(),true);
+            SBMLImporter importer = new SBMLImporter(model.getFilepath().getAbsolutePath(),vcLogger(),true,true);
             BioModel bioModel = importer.getBioModel();
             return computeModel(bioModel, simSpec, null);
         }

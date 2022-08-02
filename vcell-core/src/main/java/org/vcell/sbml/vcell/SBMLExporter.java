@@ -167,7 +167,8 @@ import scala.collection.mutable.SetBuilder;
 public class SBMLExporter {
 
 	Logger logger = LogManager.getLogger(SBMLExporter.class);
-	public static final String DOMAIN_TYPE_PREFIX = "domainType_";
+	//public static final String DOMAIN_TYPE_PREFIX = "domainType_";
+	public static final String DOMAIN_TYPE_PREFIX = "";
 	private int sbmlLevel = 3;
 	private int sbmlVersion = 2;
 	private org.sbml.jsbml.Model sbmlModel = null;
@@ -1096,76 +1097,71 @@ protected void addSpecies() throws XMLStreamException, SbmlException {
 							if ((role == SpeciesContextSpec.ROLE_BoundaryValueXm) && (ccX != null)) {
 								// set BoundaryCondn Xm element in SpatialParameterPlugin for param
 								BoundaryCondition sbmlBCXm = new BoundaryCondition();
-								spplugin.setParamType(sbmlBCXm);
 								sbmlBCXm.setType(getBoundaryConditionKind(vcBCType_Xm));
 								sbmlBCXm.setVariable(vcSpeciesContexts[i].getName());
 								sbmlBCXm.setCoordinateBoundary(ccX.getBoundaryMinimum().getId());
-							} 
+								spplugin.setParamType(sbmlBCXm);
+							}
 							if ((role == SpeciesContextSpec.ROLE_BoundaryValueXp) && (ccX != null)) {
 								// set BoundaryCondn Xp element in SpatialParameterPlugin for param
 								BoundaryCondition sbmlBCXp = new BoundaryCondition();
-								spplugin.setParamType(sbmlBCXp);
 								sbmlBCXp.setType(getBoundaryConditionKind(vcBCType_Xp));
 								sbmlBCXp.setVariable(vcSpeciesContexts[i].getName());
-//								sbmlBCXp.setType(sm.getBoundaryConditionTypeXp().boundaryTypeStringValue());
 								sbmlBCXp.setCoordinateBoundary(ccX.getBoundaryMaximum().getId());
-							} 
+								spplugin.setParamType(sbmlBCXp);
+							}
 							if ((role == SpeciesContextSpec.ROLE_BoundaryValueYm)  && (ccY != null)) {
 								// set BoundaryCondn Ym element in SpatialParameterPlugin for param
 								BoundaryCondition sbmlBCYm = new BoundaryCondition();
-								spplugin.setParamType(sbmlBCYm);
-								sbmlBCYm.setType(getBoundaryConditionKind(vcBCType_Yp));
+								sbmlBCYm.setType(getBoundaryConditionKind(vcBCType_Ym));
 								sbmlBCYm.setVariable(vcSpeciesContexts[i].getName());
-//								sbmlBCYm.setType(sm.getBoundaryConditionTypeYm().boundaryTypeStringValue());
 								sbmlBCYm.setCoordinateBoundary(ccY.getBoundaryMinimum().getId());
-							} 
+								spplugin.setParamType(sbmlBCYm);
+							}
 							if ((role == SpeciesContextSpec.ROLE_BoundaryValueYp) && (ccY != null)){
 								// set BoundaryCondn Yp element in SpatialParameterPlugin for param
 								BoundaryCondition sbmlBCYp = new BoundaryCondition();
-								spplugin.setParamType(sbmlBCYp);
 								sbmlBCYp.setType(getBoundaryConditionKind(vcBCType_Yp));
 								sbmlBCYp.setVariable(vcSpeciesContexts[i].getName());
-//								sbmlBCYp.setType(sm.getBoundaryConditionTypeYp().boundaryTypeStringValue());
 								sbmlBCYp.setCoordinateBoundary(ccY.getBoundaryMaximum().getId());
-							} 
+								spplugin.setParamType(sbmlBCYp);
+							}
 							if ((role == SpeciesContextSpec.ROLE_BoundaryValueZm)  && (ccZ != null)) {
 								// set BoundaryCondn Zm element in SpatialParameterPlugin for param
 								BoundaryCondition sbmlBCZm = new BoundaryCondition();
-								spplugin.setParamType(sbmlBCZm);
 								sbmlBCZm.setType(getBoundaryConditionKind(vcBCType_Zm));
 								sbmlBCZm.setVariable(vcSpeciesContexts[i].getName());
-//								sbmlBCZm.setType(sm.getBoundaryConditionTypeZm().boundaryTypeStringValue());
 								sbmlBCZm.setCoordinateBoundary(ccZ.getBoundaryMinimum().getId());
-							} 
+								spplugin.setParamType(sbmlBCZm);
+							}
 							if ((role == SpeciesContextSpec.ROLE_BoundaryValueZp)  && (ccZ != null)) {
 								// set BoundaryCondn Zp element in SpatialParameterPlugin for param
 								BoundaryCondition sbmlBCZp = new BoundaryCondition();
-								spplugin.setParamType(sbmlBCZp);
 								sbmlBCZp.setType(getBoundaryConditionKind(vcBCType_Zp));
 								sbmlBCZp.setVariable(vcSpeciesContexts[i].getName());
-//								sbmlBCZp.setType(sm.getBoundaryConditionTypeZp().boundaryTypeStringValue());
 								sbmlBCZp.setCoordinateBoundary(ccZ.getBoundaryMaximum().getId());
-							} 
+								spplugin.setParamType(sbmlBCZp);
+							}
 							if (role == SpeciesContextSpec.ROLE_VelocityX) {
 								// set advectionCoeff X element in SpatialParameterPlugin for param
 								AdvectionCoefficient sbmlAdvCoeffX = new AdvectionCoefficient();
-								spplugin.setParamType(sbmlAdvCoeffX);
 								sbmlAdvCoeffX.setVariable(vcSpeciesContexts[i].getName());
 								sbmlAdvCoeffX.setCoordinate(CoordinateKind.cartesianX);
-							} 
+								spplugin.setParamType(sbmlAdvCoeffX);
+							}
 							if (role == SpeciesContextSpec.ROLE_VelocityY) {
 								// set advectionCoeff Y element in SpatialParameterPlugin for param
 								AdvectionCoefficient sbmlAdvCoeffY = new AdvectionCoefficient();
-								spplugin.setParamType(sbmlAdvCoeffY);
 								sbmlAdvCoeffY.setVariable(vcSpeciesContexts[i].getName());
 								sbmlAdvCoeffY.setCoordinate(CoordinateKind.cartesianY);
-							} 
+								spplugin.setParamType(sbmlAdvCoeffY);
+							}
 							if (role == SpeciesContextSpec.ROLE_VelocityZ) {
 								// set advectionCoeff Z element in SpatialParameterPlugin for param
 								AdvectionCoefficient sbmlAdvCoeffZ = new AdvectionCoefficient();
-								spplugin.setParamType(sbmlAdvCoeffZ);
 								sbmlAdvCoeffZ.setVariable(vcSpeciesContexts[i].getName());
 								sbmlAdvCoeffZ.setCoordinate(CoordinateKind.cartesianZ);
+								spplugin.setParamType(sbmlAdvCoeffZ);
 							}
 						} 	// if sbmlParam != null
 					}	// if scsParams[j] != null
@@ -2183,10 +2179,14 @@ System.err.println("should be:\n  distanceMapImageData.setSamples((float[])signe
 }
 
 private boolean goodPointer(Object obj, Class<?> clzz, String sourceName) {
-	if (lg.isWarnEnabled()) {
-		lg.warn(sourceName + "has no " + clzz.getSimpleName());
+	if (obj == null) {
+		if (lg.isWarnEnabled()) {
+			lg.warn(sourceName + " has no " + clzz.getSimpleName());
+		}
+		return false;
+	}else{
+		return true;
 	}
-	return obj != null;
 }
 
 public static org.sbml.jsbml.ext.spatial.CSGNode getSBMLCSGNode(cbit.vcell.geometry.CSGNode vcCSGNode) {
