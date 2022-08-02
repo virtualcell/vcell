@@ -16,20 +16,18 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
 public class ExecuteImpl {
+    
     public static void batchMode(File dirOfArchivesToProcess, File outputDir, boolean bKeepTempFiles, boolean bExactMatchOnly, boolean bForceLogFiles) {
         FilenameFilter filter = (f, name) -> name.endsWith(".omex") || name.endsWith(".vcml");
         File[] inputFiles = dirOfArchivesToProcess.listFiles(filter);
         if (inputFiles == null) System.out.println("No input files found in the directory");
         assert inputFiles != null;
-
-        createHeader(outputDir, bForceLogFiles);
 
         for (File inputFile : inputFiles) {
             String inputFileName = inputFile.getName();
@@ -47,32 +45,6 @@ public class ExecuteImpl {
             } catch (Exception e) {
                 e.printStackTrace(System.err);
             }
-        }
-    }
-
-    private static void createHeader(File outputFilePath, boolean bForceLogFiles) {
-        /**
-         * Header Components:
-         *  * base name of the omex file
-         *  *   foreach sed-ml file:
-         *  *   - (current) sed-ml file name
-         *  *   - error(s) (if any)
-         *  *   - number of models
-         *  *   - number of sims
-         *  *   - number of tasks
-         *  *   - number of outputs
-         *  *   - number of biomodels
-         *  *   - number of succesful sims that we managed to run
-         *  *   (NB: we assume that the # of failures = # of tasks - # of successful simulations)
-         *  *   (NB: if multiple sedml files in the omex, we display on multiple rows, one for each sedml)
-         */
-
-        String header = "BaseName,SedML,Error,Models,Sims,Tasks,Outputs,BioModels,NumSimsSuccessful";
-        try {
-            writeDetailedResultList(outputFilePath.getAbsolutePath(), header, bForceLogFiles);
-        } catch (IOException e1) {
-            // not big deal, we just failed to make the header; we'll find out later what went wrong
-            e1.printStackTrace();
         }
     }
 
@@ -167,8 +139,8 @@ public class ExecuteImpl {
             assert omexHandler != null;
             omexHandler.deleteExtractedOmex();
             String error = exc.getMessage() + ", error for archive " + inputFileName;
-            writeErrorList(outputBaseDir, bioModelBaseName, bForceLogFiles);
-            writeDetailedResultList(outputBaseDir, bioModelBaseName + ", " + ",unknown error with the archive file", bForceLogFiles);
+            CLIUtils.writeErrorList(outputBaseDir, bioModelBaseName, bForceLogFiles);
+            CLIUtils.writeDetailedResultList(outputBaseDir, bioModelBaseName + ", " + ",unknown error with the archive file", bForceLogFiles);
             throw new Exception(error);
         }
 
@@ -237,7 +209,7 @@ public class ExecuteImpl {
                 Path path = Paths.get(sedmlPathwith2dand3d.getAbsolutePath());
                 if (!Files.exists(path)) {
                     String message = "Failed to create file " + sedmlPathwith2dand3d.getAbsolutePath();
-                    writeDetailedResultList(outputBaseDir, bioModelBaseName + "," + sedmlName + "," + message, bForceLogFiles);
+                    CLIUtils.writeDetailedResultList(outputBaseDir, bioModelBaseName + "," + sedmlName + "," + message, bForceLogFiles);
                     throw new RuntimeException(message);
                 }
 
@@ -255,7 +227,7 @@ public class ExecuteImpl {
                 PythonCalls.setOutputMessage(sedmlLocation, sedmlName, outputDir, "sedml", logDocumentMessage);
                 PythonCalls.setExceptionMessage(sedmlLocation, sedmlName, outputDir, "sedml", type, logDocumentError);
                 CLIUtils.writeDetailedErrorList(outputBaseDir, bioModelBaseName + ",  doc:    " + type + ": " + logDocumentError, bForceLogFiles);
-                writeDetailedResultList(outputBaseDir, bioModelBaseName + "," + sedmlName + "," + logDocumentError, bForceLogFiles);
+                CLIUtils.writeDetailedResultList(outputBaseDir, bioModelBaseName + "," + sedmlName + "," + logDocumentError, bForceLogFiles);
 
                 System.err.println(prefix);
                 e.printStackTrace(System.err);
@@ -301,7 +273,7 @@ public class ExecuteImpl {
             message += nOutputs + ",";
             message += solverHandler.countBioModels + ",";
             message += solverHandler.countSuccessfulSimulationRuns;
-            writeDetailedResultList(outputBaseDir, bioModelBaseName + "," + sedmlName + ", ," + message, bForceLogFiles);
+            CLIUtils.writeDetailedResultList(outputBaseDir, bioModelBaseName + "," + sedmlName + ", ," + message, bForceLogFiles);
 
             //
             // WARNING!!! Current logic dictates that if any task fails we fail the sedml document
@@ -399,10 +371,10 @@ public class ExecuteImpl {
             PythonCalls.updateOmexStatusYml(Status.FAILED, outputDir, duration + "");
             System.err.println(error);
             logOmexMessage += error;
-            writeErrorList(outputBaseDir, bioModelBaseName, bForceLogFiles);
+            CLIUtils.writeErrorList(outputBaseDir, bioModelBaseName, bForceLogFiles);
         } else {
             PythonCalls.updateOmexStatusYml(Status.SUCCEEDED, outputDir, duration + "");
-            writeFullSuccessList(outputBaseDir, bioModelBaseName, bForceLogFiles);
+            CLIUtils.writeFullSuccessList(outputBaseDir, bioModelBaseName, bForceLogFiles);
             logOmexMessage += " Done";
         }
         PythonCalls.setOutputMessage("null", "null", outputDir, "omex", logOmexMessage);
@@ -421,30 +393,4 @@ public class ExecuteImpl {
         }
         return false;
     }
-
-    private static void writeFullSuccessList(String outputBaseDir, String s, boolean bForceLogFiles) throws IOException {
-        if (CLIUtils.isBatchExecution(outputBaseDir, bForceLogFiles)) {
-            String dest = outputBaseDir + File.separator + "fullSuccessLog.txt";
-            Files.write(Paths.get(dest), (s + "\n").getBytes(),
-                    StandardOpenOption.CREATE, StandardOpenOption.APPEND);
-        }
-    }
-
-    // we just make a list with the omex files that failed
-    private static void writeErrorList(String outputBaseDir, String s, boolean bForceLogFiles) throws IOException {
-        if (CLIUtils.isBatchExecution(outputBaseDir, bForceLogFiles)) {
-            String dest = outputBaseDir + File.separator + "errorLog.txt";
-            Files.write(Paths.get(dest), (s + "\n").getBytes(),
-                    StandardOpenOption.CREATE, StandardOpenOption.APPEND);
-        }
-    }
-
-    private static void writeDetailedResultList(String outputBaseDir, String s, boolean bForceLogFiles) throws IOException {
-        if (CLIUtils.isBatchExecution(outputBaseDir, bForceLogFiles)) {
-            String dest = outputBaseDir + File.separator + "detailedResultLog.txt";
-            Files.write(Paths.get(dest), (s + "\n").getBytes(),
-                    StandardOpenOption.CREATE, StandardOpenOption.APPEND);
-        }
-    }
-
 }

@@ -62,9 +62,12 @@ public class ExecuteCommand implements Callable<Integer> {
             Executable.setTimeoutMS(EXECUTABLE_MAX_WALLCLOCK_MILLIS);
 
             if (inputFilePath.isDirectory()) {
+                CLIUtils.createHeader(outputFilePath, bForceLogFiles);
                 ExecuteImpl.batchMode(inputFilePath, outputFilePath, bKeepTempFiles, bExactMatchOnly, bForceLogFiles);
             } else {
                 File archiveToProcess = inputFilePath;
+                if (bForceLogFiles) CLIUtils.createHeader(outputFilePath, bForceLogFiles);
+
                 if (archiveToProcess.getName().endsWith("vcml")) {
                     ExecuteImpl.singleExecVcml(archiveToProcess, outputFilePath);
                 } else { // archiveToProcess.getName().endsWith("omex")
