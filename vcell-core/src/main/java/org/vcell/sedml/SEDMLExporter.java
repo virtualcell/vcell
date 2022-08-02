@@ -94,7 +94,9 @@ import cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecParameter;
 import cbit.vcell.mapping.StructureMapping;
 import cbit.vcell.mapping.SimulationContext.Application;
 import cbit.vcell.mapping.StructureMapping.StructureMappingParameter;
+import cbit.vcell.math.Constant;
 import cbit.vcell.math.Function;
+import cbit.vcell.math.MathUtilities;
 import cbit.vcell.model.Kinetics.KineticsParameter;
 import cbit.vcell.model.Membrane;
 import cbit.vcell.model.Model.ModelParameter;
@@ -110,6 +112,7 @@ import cbit.vcell.model.Structure.StructureSize;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.SymbolTableEntry;
+import cbit.vcell.parser.VariableSymbolTable;
 import cbit.vcell.server.SimulationJobStatusPersistent;
 import cbit.vcell.solver.AnnotatedFunction;
 import cbit.vcell.solver.ConstantArraySpec;
@@ -120,6 +123,7 @@ import cbit.vcell.solver.NonspatialStochSimOptions;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationJob;
 import cbit.vcell.solver.SimulationOwner;
+import cbit.vcell.solver.SimulationSymbolTable;
 import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solver.SolverTaskDescription;
 import cbit.vcell.solver.TimeBounds;
@@ -460,12 +464,33 @@ public class SEDMLExporter {
 
 					// 3 ------->
 					// create Tasks
-					MathOverrides mathOverrides = vcSimulation.getMathOverrides();
+					MathOverrides mathOverrides = new MathOverrides(vcSimulation, vcSimulation.getMathOverrides());
+//					MathOverrides mathOverrides = vcSimulation.getMathOverrides();
 					if((sbmlExportFailed == false) && mathOverrides != null && mathOverrides.hasOverrides()) {
 						String[] overridenConstantNames = mathOverrides.getOverridenConstantNames();
 						String[] scannedConstantsNames = mathOverrides.getScannedConstantNames();
 						HashMap<String, String> scannedParamHash = new HashMap<String, String>();
 						HashMap<String, String> unscannedParamHash = new HashMap<String, String>();
+						
+						VariableSymbolTable varST = new VariableSymbolTable();
+						String[] constantNames = mathOverrides.getAllConstantNames();
+						final HashMap<String, Expression> substitutedConstants = new HashMap<>();
+						{
+							final ArrayList<Constant> overrides = new ArrayList<>();
+							for (String constantName : constantNames) {
+								overrides.add(new Constant(constantName, new Expression(mathOverrides.getActualExpression(constantName, 0))));
+							}
+							for (Constant override : overrides) {
+								 varST.addVar(override);
+							}
+							for (Constant override : overrides) {
+								 override.bind(varST);
+							}
+							for (Constant override : overrides) {
+								 Expression flattened = MathUtilities.substituteFunctions(override.getExpression(), varST, true);
+								 substitutedConstants.put(override.getName(), new Expression(flattened));
+							}
+						}
 						
 						// need to check for "leftover" overrides from parameter renaming or other model editing
 						HashMap<String, String> missingParamHash = new HashMap<String, String>();
@@ -501,6 +526,7 @@ public class SEDMLExporter {
 
 							for (String unscannedParamName : unscannedParamHash.values()) {
 								SymbolTableEntry ste = getSymbolTableEntryForModelEntity(mathSymbolMapping, unscannedParamName);
+								assert ste != null;
 								Expression unscannedParamExpr = mathOverrides.getActualExpression(unscannedParamName, 0);
 								if(unscannedParamExpr.isNumeric()) {
 									// if expression is numeric, add ChangeAttribute to model created above
@@ -509,34 +535,20 @@ public class SEDMLExporter {
 									sedModel.addChange(changeAttribute);
 								} else {
 									// non-numeric expression : add 'computeChange' to modified model
-									ASTNode math = Libsedml.parseFormulaString(unscannedParamExpr.infix());
-									XPathTarget targetXpath = getTargetXPath(ste, l2gMap);
-									ComputeChange computeChange = new ComputeChange(targetXpath, math);
+									XPathTarget targetXpath = getTargetAttributeXPath(ste, l2gMap);
+									ComputeChange computeChange = new ComputeChange(targetXpath);
 									String[] exprSymbols = unscannedParamExpr.getSymbols();
-									//										if(exprSymbols == null) {
-									//											continue;
-									//										}
 									for (String symbol : exprSymbols) {
 										String symbolName = TokenMangler.mangleToSName(symbol);
 										String symbolId = symbolName + "_" + overriddenSimContextId;
-										SymbolTableEntry ste1 = vcModel.getEntry(symbol);
-										if (ste != null) {
-											if (ste1 instanceof SpeciesContext || ste1 instanceof Structure || ste1 instanceof ModelParameter) {
-												XPathTarget ste1_XPath = getTargetXPath(ste1, l2gMap);
-												org.jlibsedml.Variable sedmlVar = new org.jlibsedml.Variable(symbolId, symbolName, taskRef, ste1_XPath.getTargetAsString());
-												computeChange.addVariable(sedmlVar);
-											} else {
-												double doubleValue = 0.0;
-												if (ste1 instanceof ReservedSymbol) {
-													doubleValue = getReservedSymbolValue(ste1); 
-												}
-												Parameter sedmlParameter = new Parameter(symbolId, symbolName, doubleValue);
-												computeChange.addParameter(sedmlParameter);
-											}
-										} else {
-											throw new RuntimeException("Symbol '" + symbol + "' used in expression for '" + unscannedParamName + "' not found in model.");
-										}
+										Expression exp = substitutedConstants.get(symbol);
+										double doubleValue = exp.evaluateConstant();
+										Parameter sedmlParameter = new Parameter(symbolId, symbolName, doubleValue);
+										computeChange.addParameter(sedmlParameter);
+										unscannedParamExpr.substituteInPlace(new Expression(symbolName), new Expression(symbolId));
 									}
+									ASTNode math = Libsedml.parseFormulaString(unscannedParamExpr.infix());
+									computeChange.setMath(math);
 									sedModel.addChange(computeChange);
 								}
 							}
@@ -1186,7 +1198,7 @@ public class SEDMLExporter {
 				throw new RuntimeException("Unknown species attribute '" + speciesAttr + "'; cannot get xpath target for species '" + speciesId + "'.");
 			}
 
-			targetXpath = new XPathTarget(sbmlSupport.getXPathForSpecies(speciesId));
+//			targetXpath = new XPathTarget(sbmlSupport.getXPathForSpecies(speciesId));
 		} else if (ste instanceof ModelParameter) {
 			// can only change parameter value. 
 			targetXpath = new XPathTarget(sbmlSupport.getXPathForGlobalParameter(ste.getName(), ParameterAttribute.value));
