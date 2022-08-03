@@ -264,7 +264,7 @@ public class CLIPythonManager {
 
         ){ // Report an error:
             String resultString = (errString != null && errString.length() > 0) ? String.format("Result: %s\n", errString) : "";
-            System.err.printf("Python error caught: <%s>\n%s", returnedString, resultString);
+            System.err.printf("Python error caught: <\n%s\n>\n%s\n[ Stack Trace:\n%s\n]", returnedString, resultString, this.getCurrentStackTrace(new Exception()));
             hasPassed = false;
         } else {
             String resultString = (outString != null && outString.length() > 0) ? String.format("Result: %s\n", outString) : "";
@@ -287,6 +287,13 @@ public class CLIPythonManager {
         }
         adjArgLength = argList.length() == 0 ? 0 : argList.length() - 1;
         return argList.substring(0, adjArgLength);
+    }
+
+    private String getCurrentStackTrace(Throwable dummyThrowable){
+        StringWriter sw = new StringWriter();
+        PrintWriter pw = new PrintWriter(sw, true);
+        dummyThrowable.printStackTrace(pw);
+        return sw.getBuffer().toString();
     }
 
     public static String stripString(String str){

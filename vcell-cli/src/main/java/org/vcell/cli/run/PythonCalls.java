@@ -1,7 +1,6 @@
 package org.vcell.cli.run;
 
 import org.vcell.cli.CLIPythonManager;
-import org.vcell.cli.CLIUtils;
 import org.vcell.cli.PythonStreamException;
 
 import java.io.IOException;
@@ -63,7 +62,7 @@ public class PythonCalls {
     // message  - exception message
     public static void setExceptionMessage(String sedmlAbsolutePath, String entityId, String outDir, String entityType, String type , String message) throws PythonStreamException {
         CLIPythonManager cliPythonManager = CLIPythonManager.getInstance();
-        String results = cliPythonManager.callPython("setExceptionMessage", sedmlAbsolutePath, entityId, outDir, entityType, type, message);
+        String results = cliPythonManager.callPython("setExceptionMessage", sedmlAbsolutePath, entityId, outDir, entityType, type, stripIllegalChars(message));
         cliPythonManager.printPythonErrors(results, "", "Failed updating task status YAML\n");
     }
 
@@ -76,7 +75,7 @@ public class PythonCalls {
                          --report_formats | --plot_formats | --log | --indent
         * */
         // handle exceptions here
-        if (cliPythonManager.checkPythonInstallationError() == 0) {
+        if (CLIPythonManager.checkPythonInstallationError() == 0) {
             String results = cliPythonManager.callPython("execSedDoc", omexFilePath, outputDir);
             cliPythonManager.printPythonErrors(results, "HDF conversion successful\n","HDF conversion failed\n");
         }
@@ -155,6 +154,14 @@ public class PythonCalls {
 //        cliPythonManager.printPythonErrors(results);
     }
 
+    private static String stripIllegalChars(String s){
+        String fStr = "";
+        for (char c : s.toCharArray()){
+            char cAppend = ((int)c) < 16 ? ' ' : c;
+            fStr += cAppend;
+        }
+        return fStr;
+    }
 
 
 }
