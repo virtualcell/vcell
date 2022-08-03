@@ -12,7 +12,8 @@ import picocli.CommandLine.Command;
 
 @Command(name = "CLIStandalone", subcommands = {
         BiosimulationsCommand.class,
-        ConvertCommand.class,
+        ExportOmexCommand.class,
+        ExportOmexBatchCommand.class,
         ExecuteCommand.class,
         VersionCommand.class,
         CommandLine.HelpCommand.class
