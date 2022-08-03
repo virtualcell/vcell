@@ -476,7 +476,9 @@ public class VcmlOmexConverter {
 				} else {
 					logger.info("MathDescriptions ARE equivalent after VCML->SBML->VCML round-trip validation: "+mathCompareResults.toDatabaseStatus());
 				}
-				Files.write(Paths.get(outputDir, "reread_vcml.xml"), XmlHelper.bioModelToXML(reread_BioModel).getBytes(StandardCharsets.UTF_8));
+				logger.error("writing extra files ./orig_vcml.xml and ./reread_vcml.xml for debugging - remove later");
+				Files.write(Paths.get(outputDir, "orig_vcml.xml"), XmlHelper.bioModelToXML(bioModel, false).getBytes(StandardCharsets.UTF_8));
+				Files.write(Paths.get(outputDir, "reread_vcml.xml"), XmlHelper.bioModelToXML(reread_BioModel, false).getBytes(StandardCharsets.UTF_8));
 			}
 
             // Removing all other files(like SEDML, XML, SBML) after archiving
