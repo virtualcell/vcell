@@ -105,6 +105,13 @@ private static class Builder {
 	}
 }
 
+public void swapInsideOutsideSubdomains() {
+	// only used in MathDescription.compare function
+	CompartmentSubDomain tempSubdomain = insideCompartment;
+	insideCompartment = outsideCompartment;
+	outsideCompartment = tempSubdomain;
+}
+
 /**
  * create from VCML input
  * @param provider creating object 

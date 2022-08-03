@@ -460,6 +460,20 @@ private MathCompareResults compareEquivalentCanonicalMath(MathDescription newMat
 						if (!compareUpdate(msdNew.getVelocityY( ), msdOld.getVelocityY( ),msdNew::setVelocityY)) {
 							return new MathCompareResults(Decision.MathDifferent_DIFFERENT_VELOCITY, "y");
 						}
+
+						// check if inside/outside of MembraneSubDomains are swapped, set newfeatures was reordered during SBML export/import
+						if (   msdOld.getInsideCompartment().getName().equals(msdNew.getOutsideCompartment().getName())
+								&& msdOld.getOutsideCompartment().getName().equals(msdNew.getInsideCompartment().getName())) {
+							logger.debug("During Compare: swapping inside/outside subdomains and reversing JumpConditions for MembraneSubDomain '"+msdNew.getName()+"'");
+							msdNew.swapInsideOutsideSubdomains();
+							for (JumpCondition jc : Collections.list(msdOld.getJumpConditions())) {
+								Expression tempExp = jc.getInFluxExpression();
+								jc.setInFlux(jc.getOutFluxExpression());
+								jc.setOutFlux(tempExp);
+								logger.debug("During Compare: swapping inside/outside when comparing JumpCondition for variable "+jc.getVariable().getName());
+							}
+						}
+
 					}
 				}
 				
