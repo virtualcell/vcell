@@ -601,7 +601,7 @@ public class SEDMLExporter {
 
 									// list of Changes
 									SymbolTableEntry ste = getSymbolTableEntryForModelEntity(mathSymbolMapping, scannedConstName);
-									XPathTarget target = getTargetXPath(ste, l2gMap);
+									XPathTarget target = getTargetAttributeXPath(ste, l2gMap);
 									//ASTNode math1 = new ASTCi(r.getId());		// was scannedConstName
 									ASTNode math1 = Libsedml.parseFormulaString(r.getId());
 									SetValue setValue = new SetValue(target, r.getId(), simContextId);
@@ -675,8 +675,8 @@ public class SEDMLExporter {
 
 									// list of Changes
 									SymbolTableEntry ste = getSymbolTableEntryForModelEntity(mathSymbolMapping, scannedConstName);
-									XPathTarget target = getTargetXPath(ste, l2gMap);
-									//ASTNode math1 = new ASTCi(r.getId());		// was scannedConstName
+									XPathTarget target = getTargetAttributeXPath(ste, l2gMap);
+									// TODO: math needs to refer to the parameter id, not name
 									ASTNode math1 = Libsedml.parseFormulaString(r.getId());
 									SetValue setValue = new SetValue(target, r.getId(), simContextId);
 									setValue.setMath(math1);
@@ -693,6 +693,7 @@ public class SEDMLExporter {
 							// for unscanned parameter overrides
 							for (String unscannedParamName : unscannedParamHash.values()) {
 								SymbolTableEntry ste = getSymbolTableEntryForModelEntity(mathSymbolMapping, unscannedParamName);
+								assert ste != null;
 								Expression unscannedParamExpr = mathOverrides.getActualExpression(unscannedParamName, 0);
 								if(unscannedParamExpr.isNumeric()) {
 									// if expression is numeric, add ChangeAttribute to model created above
@@ -701,66 +702,43 @@ public class SEDMLExporter {
 									sedModel.addChange(changeAttribute);
 								} else {
 									// check for any scanned parameter in unscanned parameter expression
-									ASTNode math = Libsedml.parseFormulaString(unscannedParamExpr.infix());
 									String[] exprSymbols = unscannedParamExpr.getSymbols();
 									boolean bHasScannedParameter = false;
-									String scannedParamNameInUnscannedParamExp = null;
+									List<String> scannedParamNameInUnscannedParamExpList = new ArrayList<> ();
 									for (String symbol : exprSymbols) {
 										if (scannedParamHash.get(symbol) != null) {
 											bHasScannedParameter = true;
-											scannedParamNameInUnscannedParamExp = new String(symbol);
-											break;		// @TODO check for multiple scannedParameters in expression. 
+											scannedParamNameInUnscannedParamExpList.add(new String(symbol));
 										}
 									}
 									// (scanned parameter in expr) ? (add setValue for unscanned param in repeatedTask) : (add computeChange to modifiedModel)
-									if (bHasScannedParameter && scannedParamNameInUnscannedParamExp != null) {
+									if (bHasScannedParameter) {
 										// create setValue for unscannedParamName (which contains a scanned param in its expression)
+										ASTNode math = Libsedml.parseFormulaString(unscannedParamExpr.infix());
 										SymbolTableEntry entry = getSymbolTableEntryForModelEntity(mathSymbolMapping, unscannedParamName);
-										XPathTarget target = getTargetXPath(entry, l2gMap);
-										String rangeId = scannedParamHash.get(scannedParamNameInUnscannedParamExp);
-										SetValue setValue = new SetValue(target, rangeId, sedModel.getId());	// @TODO: we have no range??
-										setValue.setMath(math);
-										RepeatedTask rtRecovered = rangeToRepeatedTaskHash.get(rangeId);
-										rtRecovered.addChange(setValue);
+										XPathTarget target = getTargetAttributeXPath(entry, l2gMap);
+										for(String scannedParamNameInUnscannedParamExp : scannedParamNameInUnscannedParamExpList) {
+											String rangeId = scannedParamHash.get(scannedParamNameInUnscannedParamExp);
+											SetValue setValue = new SetValue(target, rangeId, sedModel.getId());	// @TODO: we have no range??
+											setValue.setMath(math);
+											RepeatedTask rtRecovered = rangeToRepeatedTaskHash.get(rangeId);
+											rtRecovered.addChange(setValue);
+										}
 									} else {
 										// non-numeric expression : add 'computeChange' to modified model
-										XPathTarget targetXpath = getTargetXPath(ste, l2gMap);
-										ComputeChange computeChange = new ComputeChange(targetXpath, math);
+										XPathTarget targetXpath = getTargetAttributeXPath(ste, l2gMap);
+										ComputeChange computeChange = new ComputeChange(targetXpath);
 										for (String symbol : exprSymbols) {
 											String symbolName = TokenMangler.mangleToSName(symbol);
 											String symbolId = symbolName + "_" + overriddenSimContextId;
-											SymbolTableEntry ste1 = vcModel.getEntry(symbol);
-											// ste1 could be a math parameter, hence the above could return null
-											if (ste1 == null) {
-												ste1 = simContext.getMathDescription().getEntry(symbol);
-											}
-											if (ste1 != null) {
-												if (ste1 instanceof SpeciesContext || ste1 instanceof Structure || ste1 instanceof ModelParameter) {
-													XPathTarget ste1_XPath = getTargetXPath(ste1, l2gMap);
-													org.jlibsedml.Variable sedmlVar = new org.jlibsedml.Variable(symbolId, symbolName, taskRef, ste1_XPath.getTargetAsString());
-													computeChange.addVariable(sedmlVar);
-												} else {
-													double doubleValue = 0.0;
-													if (ste1 instanceof ReservedSymbol) {
-														doubleValue = getReservedSymbolValue(ste1); 
-													} else if (ste instanceof Function) {
-														try {
-															doubleValue = ste.getExpression().evaluateConstant();
-														} catch (Exception e) {
-															throw new RuntimeException("Unable to evaluate function '" + ste.getName() + "' used in '" + unscannedParamName + "' expression : ", e);
-														}
-													} else {
-														doubleValue = ste.getConstantValue();
-													}
-													// TODO: shouldn't be s1_init_uM which is a math symbol, should be s0 (so use the ste-something from above)
-													// TODO: revert to Variable, not Parameter
-													Parameter sedmlParameter = new Parameter(symbolId, symbolName, doubleValue);
-													computeChange.addParameter(sedmlParameter);
-												}
-											} else {
-												throw new RuntimeException("Symbol '" + symbol + "' used in expression for '" + unscannedParamName + "' not found in model.");
-											}
+											Expression exp = substitutedConstants.get(symbol);
+											double doubleValue = exp.evaluateConstant();
+											Parameter sedmlParameter = new Parameter(symbolId, symbolName, doubleValue);
+											computeChange.addParameter(sedmlParameter);
+											unscannedParamExpr.substituteInPlace(new Expression(symbolName), new Expression(symbolId));
 										}
+										ASTNode math = Libsedml.parseFormulaString(unscannedParamExpr.infix());
+										computeChange.setMath(math);
 										sedModel.addChange(computeChange);
 									}
 								}
