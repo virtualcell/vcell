@@ -208,7 +208,7 @@ public class SBMLImporter {
 		}
 	}
 	
-	protected static void addCompartments(org.sbml.jsbml.Model sbmlModel, BioModel vcBioModel,
+	protected static void addCompartments(org.sbml.jsbml.Model sbmlModel, int geometryDimension, BioModel vcBioModel,
 										  SBMLSymbolMapping sbmlSymbolMapping,
 										  SBMLAnnotationUtil sbmlAnnotationUtil, VCLogger vcLogger) {
 		if (sbmlModel == null) {
@@ -326,7 +326,7 @@ public class SBMLImporter {
 			}
 
 			// Handle the absolute size to surface_vol/volFraction conversion if all sizes are set
-			if (allSizesSet) {
+			if (allSizesSet && geometryDimension == 0) {
 				StructureSizeSolver.updateRelativeStructureSizes(vcBioModel.getSimulationContext(0));
 			}
 		} catch (Exception e) {
@@ -2574,9 +2574,20 @@ public class SBMLImporter {
 		} catch (Exception ee) {
 			throw new SBMLImportException(ee.getMessage(), ee);
 		}
+
+		// determine geometric dimension
+		int geometryDimension = 0;
+		final org.sbml.jsbml.ext.spatial.Geometry sbmlGeometry;
+		try {
+			sbmlGeometry = getSbmlGeometry(sbmlModel, localIssueList, issueContext);
+			geometryDimension = sbmlGeometry.getListOfCoordinateComponents().size();
+		} catch (Exception e) {
+			throw new SBMLImportException(e.getMessage(), e);
+		}
+
 		// Add features/compartments
 		VCMetaData vcMetaData = vcBioModel.getVCMetaData();
-		addCompartments(sbmlModel, vcBioModel, sbmlSymbolMapping, sbmlAnnotationUtil, vcLogger);
+		addCompartments(sbmlModel, geometryDimension, vcBioModel, sbmlSymbolMapping, sbmlAnnotationUtil, vcLogger);
 		// Add species/speciesContexts
 		addSpecies(sbmlModel, vcBioModel, bSpatial, sbmlSymbolMapping, sbmlAnnotationUtil, vcLogger);
 
@@ -2587,7 +2598,6 @@ public class SBMLImporter {
 
 		// Add Parameters
 		try {
-			org.sbml.jsbml.ext.spatial.Geometry sbmlGeometry = getSbmlGeometry(sbmlModel, localIssueList, issueContext);
 			addParameters(sbmlModel, sbmlGeometry, vcBioModel, bSpatial, sbmlUnitIdentifierHash, sbmlSymbolMapping);
 		} catch (Exception e) {
 			throw new SBMLImportException(e.getMessage(), e);
