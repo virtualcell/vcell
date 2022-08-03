@@ -82,6 +82,7 @@ import java.io.PrintStream;
 import java.nio.charset.Charset;
 import java.util.*;
 import java.util.Map.Entry;
+import java.util.stream.Collectors;
 
 public class SBMLImporter {
 
@@ -2594,6 +2595,18 @@ public class SBMLImporter {
 		// Add geometry, if sbml model is spatial (will set up speciesContextSpec parameters as needed)
 		if (bSpatial) {
 			addGeometry(sbmlModel, vcBioModel, lambdaFunctions, sbmlSymbolMapping, localIssueList, issueContext, vcLogger);
+
+			//
+			// reset all diffusion coefficients to 0.0
+			// VCell defaults diffusion coefficients to non-zero values - but this would introduce SBML default values.
+			//
+			List<SpeciesContextSpecParameter> allDiffusionParameters = Arrays.stream(vcBioModel.getSimulationContext(0).getReactionContext().getSpeciesContextSpecs())
+					.map(scs -> scs.getDiffusionParameter()).collect(Collectors.toList());
+			for (SpeciesContextSpecParameter diffParam : allDiffusionParameters){
+				try {
+					diffParam.setExpression(new Expression(0.0));
+				} catch (ExpressionException e){}
+			}
 		}
 
 		// Add Parameters
