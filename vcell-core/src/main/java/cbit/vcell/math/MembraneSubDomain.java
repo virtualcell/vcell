@@ -27,7 +27,7 @@ import cbit.vcell.parser.ExpressionException;
  * 
  */
 @SuppressWarnings("serial")
-public class MembraneSubDomain extends SubDomain {
+public class MembraneSubDomain extends SubDomain implements SubDomain.DomainWithBoundaryConditions {
 	
 	@Override
 	protected String startToken() {

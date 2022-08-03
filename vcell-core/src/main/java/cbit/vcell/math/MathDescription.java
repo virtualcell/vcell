@@ -10,23 +10,10 @@
 
 package cbit.vcell.math;
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.NoSuchElementException;
-import java.util.Objects;
-import java.util.Random;
-import java.util.TreeMap;
-import java.util.TreeSet;
-import java.util.Vector;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -430,6 +417,7 @@ private MathCompareResults compareEquivalentCanonicalMath(MathDescription newMat
 			for (int i = 0; i < subDomainsOld.length; i++){
 				// compare boundary type
 				if (getGeometry().getDimension() > 0) {
+					boolean bSwappedOldMembraneInsideOutside = false;
 					if (subDomainsOld[i] instanceof CompartmentSubDomain && subDomainsNew[i] instanceof CompartmentSubDomain) {
 						CompartmentSubDomain csdOld = (CompartmentSubDomain)subDomainsOld[i];
 						CompartmentSubDomain csdNew = (CompartmentSubDomain)subDomainsNew[i];
@@ -466,6 +454,7 @@ private MathCompareResults compareEquivalentCanonicalMath(MathDescription newMat
 								&& msdOld.getOutsideCompartment().getName().equals(msdNew.getInsideCompartment().getName())) {
 							logger.debug("During Compare: swapping inside/outside subdomains and reversing JumpConditions for MembraneSubDomain '"+msdNew.getName()+"'");
 							msdNew.swapInsideOutsideSubdomains();
+							bSwappedOldMembraneInsideOutside = true;
 							for (JumpCondition jc : Collections.list(msdOld.getJumpConditions())) {
 								Expression tempExp = jc.getInFluxExpression();
 								jc.setInFlux(jc.getOutFluxExpression());
@@ -474,6 +463,17 @@ private MathCompareResults compareEquivalentCanonicalMath(MathDescription newMat
 							}
 						}
 
+					}
+					// apply standard, implicit VCell defaults for boundary conditions ...
+					//    1) for Neumann, 'null' boundary condition expression is same as zero flux (set expression to 0.0)
+					//    2) for Dirichlet, 'null' boundary condition expression is same as setting value to initial condition (set expression to 'init expression')
+					if (subDomainsOld[i] instanceof SubDomain.DomainWithBoundaryConditions) {
+						SubDomain.DomainWithBoundaryConditions oldSubdomainWithBC = (SubDomain.DomainWithBoundaryConditions) subDomainsOld[i];
+						setMissingEquationBoundaryConditionsToDefault(oldSubdomainWithBC, geometry.getDimension(), bSwappedOldMembraneInsideOutside);
+					}
+					if (subDomainsNew[i] instanceof SubDomain.DomainWithBoundaryConditions) {
+						SubDomain.DomainWithBoundaryConditions newSubdomainWithBCs = (SubDomain.DomainWithBoundaryConditions) subDomainsNew[i];
+						setMissingEquationBoundaryConditionsToDefault(newSubdomainWithBCs, geometry.getDimension(), false);
 					}
 				}
 				
@@ -504,8 +504,8 @@ private MathCompareResults compareEquivalentCanonicalMath(MathDescription newMat
 									"only one mathDescription had equation for '"+oldVars[j].getQualifiedName()+"' in SubDomain '"+subDomainsOld[i].getName()+"'");
 
 						}
-						ArrayList<Expression> oldExps = new ArrayList<Expression>();
-						ArrayList<Expression> newExps = new ArrayList<Expression>();
+						ArrayList<Expression> oldExps = new ArrayList<>();
+						ArrayList<Expression> newExps = new ArrayList<>();
 						boolean bOdePdeMismatch = false;
 						if (oldEqu instanceof PdeEquation && newEqu instanceof OdeEquation && oldEqu.getExpressions(newMathDesc).size()==3 && ((PdeEquation)oldEqu).getDiffusionExpression().isZero()){
 							oldExps.add(oldEqu.getRateExpression());
@@ -598,7 +598,7 @@ private MathCompareResults compareEquivalentCanonicalMath(MathDescription newMat
 							Expression oldExps[] = oldJC.toArray(new Expression[oldJC.size()]);
 							final Vector<Expression> newJC = newJumpCondition.getExpressions(newMathDesc);
 							Expression newExps[] = newJC.toArray(new Expression[newJC.size()]);
-							if (oldExps.length != newExps.length){
+                            if (oldExps.length != newExps.length){
 								return new MathCompareResults(Decision.MathDifferent_DIFFERENT_NUMBER_OF_EXPRESSIONS,"jump condition has different number of expressions");
 							}
 							for (int k = 0; k < oldExps.length; k++){
@@ -774,6 +774,43 @@ private MathCompareResults compareEquivalentCanonicalMath(MathDescription newMat
 	}
 }
 
+private void setMissingEquationBoundaryConditionsToDefault(SubDomain.DomainWithBoundaryConditions subdomain, int geometryDim, boolean bSwappedMembraneInsideOutside){
+	List<PdeEquation> pdeEquations = subdomain.getEquationCollection().stream().filter(e -> e instanceof PdeEquation).map(e -> (PdeEquation) e).collect(Collectors.toList());
+	for (PdeEquation equ : pdeEquations) {
+		Expression initExp = equ.getInitialExpression();
+		if (geometryDim >= 1) {
+			BoundaryConditionType xmType = (bSwappedMembraneInsideOutside) ? ((MembraneSubDomain)subdomain).getOutsideCompartment().getBoundaryConditionXm() : subdomain.getBoundaryConditionXm();
+			BoundaryConditionType xpType = (bSwappedMembraneInsideOutside) ? ((MembraneSubDomain)subdomain).getOutsideCompartment().getBoundaryConditionXp() : subdomain.getBoundaryConditionXp();
+			equ.setBoundaryXm(replaceDefaultBC(equ.getBoundaryXm(), xmType, initExp));
+			equ.setBoundaryXp(replaceDefaultBC(equ.getBoundaryXp(), xpType, initExp));
+		}
+		if (geometryDim >= 2) {
+			BoundaryConditionType ymType = (bSwappedMembraneInsideOutside) ? ((MembraneSubDomain)subdomain).getOutsideCompartment().getBoundaryConditionYm() : subdomain.getBoundaryConditionYm();
+			BoundaryConditionType ypType = (bSwappedMembraneInsideOutside) ? ((MembraneSubDomain)subdomain).getOutsideCompartment().getBoundaryConditionYp() : subdomain.getBoundaryConditionYp();
+			equ.setBoundaryYm(replaceDefaultBC(equ.getBoundaryYm(), ymType, initExp));
+			equ.setBoundaryYp(replaceDefaultBC(equ.getBoundaryYp(), ypType, initExp));
+		}
+		if (geometryDim == 3) {
+			BoundaryConditionType zmType = (bSwappedMembraneInsideOutside) ? ((MembraneSubDomain)subdomain).getOutsideCompartment().getBoundaryConditionZm() : subdomain.getBoundaryConditionZm();
+			BoundaryConditionType zpType = (bSwappedMembraneInsideOutside) ? ((MembraneSubDomain)subdomain).getOutsideCompartment().getBoundaryConditionZp() : subdomain.getBoundaryConditionZp();
+			equ.setBoundaryZm(replaceDefaultBC(equ.getBoundaryZm(), zmType, initExp));
+			equ.setBoundaryZp(replaceDefaultBC(equ.getBoundaryZp(), zpType, initExp));
+		}
+	}
+}
+
+
+private Expression replaceDefaultBC(Expression bcExp, BoundaryConditionType bcType, Expression initExp) {
+	if (bcExp == null){
+		if (bcType.isNEUMANN()){
+			return new Expression(0.0);
+		} else if (bcType.isDIRICHLET()){
+			return new Expression(initExp);
+		}
+	}
+	return bcExp;
+}
+
 /**
  * compare two expressions; if different but functionally equivalent, set the new to be the same as the old 
  * @param nExp
@@ -868,14 +905,15 @@ private MathCompareResults compareInvariantAttributes(MathDescription newMathDes
 			}
 		}
 	}
-	
+
 	//
 	// compare geometry
 	//
 	if (!Compare.isEqualOrNull(
 			(geometry != null?geometry.getGeometrySpec():null),
 			(newMathDesc.geometry != null?newMathDesc.geometry.getGeometrySpec():null))) {
-		return new MathCompareResults(Decision.MathDifferent_GEOMETRYSPEC_DIFFERENT);
+		logger.error("MathGeneration.geometrySpecs didn't match, ignoring: "+Decision.MathDifferent_GEOMETRYSPEC_DIFFERENT);
+		// return new MathCompareResults(Decision.MathDifferent_GEOMETRYSPEC_DIFFERENT);
 	}
 
 	if (bAlreadyFlattened){
