@@ -209,3 +209,4 @@ remove_temp.sh
 
 vcell-client/UserDocumentation/originalXML/helpSearchConfig.txt
 .vscode/launch.json
+.vscode/settings.json
