@@ -678,7 +678,7 @@ public class SEDMLExporter {
 									XPathTarget target = getTargetAttributeXPath(ste, l2gMap);
 									// TODO: math needs to refer to the parameter id, not name
 									ASTNode math1 = Libsedml.parseFormulaString(r.getId());
-									SetValue setValue = new SetValue(target, r.getId(), simContextId);
+									SetValue setValue = new SetValue(target, r.getId(), overriddenSimContextId);
 									setValue.setMath(math1);
 									rt.addChange(setValue);
 								} else {
@@ -714,12 +714,32 @@ public class SEDMLExporter {
 									// (scanned parameter in expr) ? (add setValue for unscanned param in repeatedTask) : (add computeChange to modifiedModel)
 									if (bHasScannedParameter) {
 										// create setValue for unscannedParamName (which contains a scanned param in its expression)
+										// TODO: in the unscanned param expression we need to substituteInPlace the local var with the global var (ex replace Kf with Kf_r0)
+
+										String[] symbols = unscannedParamExpr.getSymbols();
+										for(String symbol : symbols) {
+											SymbolTableEntry entry = getSymbolTableEntryForModelEntity(mathSymbolMapping, symbol);
+											XPathTarget target = getTargetAttributeXPath(entry, l2gMap);
+											String sTarget = target.toString();
+											String prefix = "@id='";
+											if(sTarget.contains(prefix)) {
+												sTarget = sTarget.substring(sTarget.lastIndexOf(prefix) + prefix.length());
+												sTarget = sTarget.substring(0, sTarget.indexOf("']"));
+												System.out.println(" " + sTarget);
+											}
+											unscannedParamExpr.substituteInPlace(new Expression(symbol), new Expression(sTarget));
+										}
+										
 										ASTNode math = Libsedml.parseFormulaString(unscannedParamExpr.infix());
 										SymbolTableEntry entry = getSymbolTableEntryForModelEntity(mathSymbolMapping, unscannedParamName);
 										XPathTarget target = getTargetAttributeXPath(entry, l2gMap);
+										Set<String> rangeIdSet = new HashSet<>();
 										for(String scannedParamNameInUnscannedParamExp : scannedParamNameInUnscannedParamExpList) {
 											String rangeId = scannedParamHash.get(scannedParamNameInUnscannedParamExp);
-											SetValue setValue = new SetValue(target, rangeId, sedModel.getId());	// @TODO: we have no range??
+											rangeIdSet.add(rangeId);	// all the ranges referred in the scannedParamNameInUnscannedParamExpList
+										}
+										for(String rangeId : rangeIdSet) {
+											SetValue setValue = new SetValue(target, rangeId, overriddenSimContextId);	// @TODO: we have no range??
 											setValue.setMath(math);
 											RepeatedTask rtRecovered = rangeToRepeatedTaskHash.get(rangeId);
 											rtRecovered.addChange(setValue);
