@@ -64,6 +64,7 @@ import org.sbml.jsbml.ext.spatial.CSGScale;
 import org.sbml.jsbml.ext.spatial.CSGSetOperator;
 import org.sbml.jsbml.ext.spatial.CSGTransformation;
 import org.sbml.jsbml.ext.spatial.*;
+import org.sbml.jsbml.xml.XMLNode;
 import org.vcell.sbml.SBMLHelper;
 import org.vcell.sbml.SBMLUtils;
 import org.vcell.sbml.SbmlException;
@@ -256,7 +257,6 @@ public class SBMLImporter {
 			}
 
 			// Second pass - connect the structures
-			Model model = vcBioModel.getSimulationContext(0).getModel();
 			for (int i = 0; i < sbmlModel.getNumCompartments(); i++) {
 				org.sbml.jsbml.Compartment sbmlCompartment = listofCompartments.get(i);
 				String outsideCompartmentId = null;
@@ -283,7 +283,39 @@ public class SBMLImporter {
 
 			// set the structures in vc vcBioModel.getSimulationContext(0)
 			Structure[] structures = structList.toArray(new Structure[0]);
+			Model model = vcBioModel.getSimulationContext(0).getModel();
 			model.setStructures(structures);
+
+			for (int i = 0; i < sbmlModel.getNumCompartments(); i++) {
+				org.sbml.jsbml.Compartment sbmlCompartment = listofCompartments.get(i);
+				//
+				// set the inside and outside features in the structure topology if present in the vcell-specific annotation.
+				//
+				XMLNode compartmentNonRdfAnnotation = sbmlCompartment.getAnnotation().getNonRDFannotation();
+				if (compartmentNonRdfAnnotation != null) {
+					XMLNode compartmentTopologyElement = compartmentNonRdfAnnotation.getChildElement(XMLTags.SBML_VCELL_CompartmentTopologyTag, "*");
+					if (compartmentTopologyElement != null) {
+						Structure struct = structureNameMap.get(sbmlCompartment.getId());
+						if (struct instanceof Membrane) {
+							Membrane membrane = (Membrane) struct;
+							int insideAttrIndex = compartmentTopologyElement.getAttrIndex(XMLTags.SBML_VCELL_CompartmentTopologyTag_insideCompartmentAttr, SBMLUtils.SBML_VCELL_NS);
+							if (insideAttrIndex >= 0) {
+								String insideCompartmentSid = compartmentTopologyElement.getAttrValue(insideAttrIndex);
+								Compartment insideCompartment = sbmlModel.getCompartment(insideCompartmentSid);
+								Structure insideStructure = structureNameMap.get(insideCompartment.getId());
+								model.getStructureTopology().setInsideFeature(membrane, (Feature) insideStructure);
+							}
+							int outsideAttrIndex = compartmentTopologyElement.getAttrIndex(XMLTags.SBML_VCELL_CompartmentTopologyTag_outsideCompartmentAttr, SBMLUtils.SBML_VCELL_NS);
+							if (outsideAttrIndex >= 0) {
+								String outsideCompartmentSid = compartmentTopologyElement.getAttrValue(outsideAttrIndex);
+								Compartment outsideCompartment = sbmlModel.getCompartment(outsideCompartmentSid);
+								Structure outsideStructure = structureNameMap.get(outsideCompartment.getId());
+								model.getStructureTopology().setOutsideFeature(membrane, (Feature) outsideStructure);
+							}
+						}
+					}
+				}
+			}
 
 			// Third pass thro' the list of compartments : set the sizes on the
 			// structureMappings - can be done only after setting
@@ -450,60 +482,6 @@ public class SBMLImporter {
 		}
 	}
 
-	protected static void applyInitialAssignments(org.sbml.jsbml.Model sbmlModel, BioModel vcBioModel,
-												LambdaFunction[] lambdaFunctions, SBMLSymbolMapping sbmlSymbolMapping,
-												Vector<Issue> localIssueList, IssueContext issueContext) {
-		if (sbmlModel == null) {
-			throw new SBMLImportException("SBML model is NULL");
-		}
-		ListOf<InitialAssignment> listofInitialAssgns = sbmlModel.getListOfInitialAssignments();
-		if (listofInitialAssgns == null || listofInitialAssgns.isEmpty()) {
-			logger.debug("No Initial Assignments specified");
-			return;
-		}
-		for (int i = 0; i < sbmlModel.getNumInitialAssignments(); i++) {
-			try {
-				InitialAssignment initAssgn = listofInitialAssgns.get(i);
-
-				Expression sbmlInitAssignmentExpr = getExpressionFromFormula(initAssgn.getMath(), lambdaFunctions);
-				SBase sbmlTargetSbase = sbmlModel.getSBaseById(initAssgn.getVariable());
-
-				EditableSymbolTableEntry vcellTargetSte = sbmlSymbolMapping.getSte(sbmlTargetSbase, SymbolContext.INITIAL);
-				if (vcellTargetSte == null){
-					throw new RuntimeException("couldn't find vcell counterpart of SBML sbase "+sbmlTargetSbase);
-				}
-				Expression vcellInitAssignmentExpr = adjustExpression(sbmlModel, sbmlInitAssignmentExpr, vcellTargetSte.getNameScope(), sbmlSymbolMapping, SymbolContext.INITIAL);
-
-				//
-				// apply the initial assignment to vcell object which was previously mapped to the target.
-				//
-				if (vcellTargetSte.isExpressionEditable()) {
-					vcellTargetSte.setExpression(vcellInitAssignmentExpr);
-				}else if (vcellTargetSte instanceof SpeciesContext) {
-					SpeciesContext speciesContext = (SpeciesContext) vcellTargetSte;
-					org.sbml.jsbml.Species sbmlSpecies = (org.sbml.jsbml.Species) sbmlTargetSbase;
-					SpeciesContextSpec scs = vcBioModel.getSimulationContext(0).getReactionContext().getSpeciesContextSpec(speciesContext);
-					Compartment sbmlCompartment = sbmlSpecies.getCompartmentInstance();
-					if (sbmlSpecies.hasOnlySubstanceUnits() || sbmlSpecies.isSetInitialAmount()) {
-						Expression initConc = Expression.div(vcellInitAssignmentExpr, new Expression(sbmlCompartment.getSize())).flatten();
-						scs.getInitialConditionParameter().setExpression(initConc);
-					} else {
-						scs.getInitialConditionParameter().setExpression(vcellInitAssignmentExpr);
-					}
-				}else if (vcellTargetSte instanceof Structure) {
-					Structure structure = (Structure) vcellTargetSte;
-					StructureMapping sm = vcBioModel.getSimulationContext(0).getGeometryContext().getStructureMapping(structure);
-					sm.getSizeParameter().setExpression(vcellInitAssignmentExpr);
-				} else {
-					String msg = "SBML '" + sbmlTargetSbase.getId() + "' is not mapped to a corresponding VCell entity; initial assignment ignored.";
-					localIssueList.add(new Issue(new SBMLIssueSource(initAssgn), issueContext, IssueCategory.SBMLImport_UnsupportedAttributeOrElement, msg, Issue.Severity.WARNING));
-					logger.error(msg);
-				}
-			} catch (Exception e) {
-				throw new RuntimeException("Error reading InitialAssignment : " + e.getMessage(), e);
-			}
-		}
-	}
 
 	// Hard to detect bugs may occur when replacing the lambda function formal arguments with the actual arguments
 	// when they overlap - for example formal arguments xyz and actual arguments azc will result in a substitution error
@@ -624,35 +602,8 @@ public class SBMLImporter {
 				}
 			}
 
-			//
-			// Get param value if set or get its expression from rule
-			//
-
-			// Check if param is defined by an assignment rule or initial
-			// assignment. If so, that value overrides the value existing in the
-			// param element.
-			// assignment rule, first
-			Expression sbmlExpr = sbmlSymbolMapping.getRuleSBMLExpression(sbmlGlobalParam, SymbolContext.INITIAL);
-			SymbolContext symbolContext = SymbolContext.RUNTIME;
-			if (sbmlExpr == null) {
-				if (sbmlGlobalParam.isSetValue()) {
-					double value = sbmlGlobalParam.getValue();
-					sbmlExpr = new Expression(value);
-				} else {
-					// if value for global param is not set and param has a rate
-					// rule, need to set an init value for param (else, there
-					// will be a problem in reaction which uses this parameter).
-					// use a 'default' initial value of '0'
-					sbmlExpr = new Expression(0.0);
-					// logger.sendMessage(VCLogger.Priority.MediumPriority,
-					// VCLogger.Priority.LowPriority,
-					// "Parameter did not have an initial value, but has a rate rule specified. Using a default value of 0.0.");
-				}
-			}
-
 			// if SBML model is spatial, check if param represents species
-			// diffusion/advection/boundary condition parameters for 'spatial'
-			// extension
+			// diffusion/advection/boundary condition parameters for 'spatial' extension
 			if (bSpatial) {
 				VCAssert.assertTrue(spplugin != null, "invalid initialization logic");
 				ParameterType sbmlParamType = spplugin.getParamType();
@@ -663,30 +614,27 @@ public class SBMLImporter {
 				if (sbmlParamType instanceof DiffusionCoefficient){
 					DiffusionCoefficient diffCoeff = (DiffusionCoefficient)sbmlParamType;
 					if (diffCoeff.isSetVariable()) {
-						// get the var of diffCoeff; find appropriate spContext
-						// in vcell; set its diff param to param value.
+						// find corresponding vcell diffusion parameter and map to this sbml global parameter
 						String variableSid = diffCoeff.getVariable();
 						SBase sBase = sbmlModel.getSBaseById(variableSid);
-						SymbolTableEntry diffTargetSte = sbmlSymbolMapping.getSte(sBase, symbolContext);
+						SymbolTableEntry diffTargetSte = sbmlSymbolMapping.getRuntimeSte(sBase);
 						if (diffTargetSte instanceof SpeciesContext){
 							paramSpContext = (SpeciesContext) diffTargetSte;
 							vcSpContextsSpec = vcBioModel.getSimulationContext(0).getReactionContext().getSpeciesContextSpec(paramSpContext);
 							SpeciesContextSpecParameter diffusionParameter = vcSpContextsSpec.getDiffusionParameter();
-							if (sbmlExpr.isNumeric()){
-								diffusionParameter.setExpression(sbmlExpr);
+							sbmlSymbolMapping.putRuntime(sbmlGlobalParam, diffusionParameter);
+							if (sbmlGlobalParam.isSetValue()) {
+								double sbmlValue = sbmlGlobalParam.getValue();
+								sbmlSymbolMapping.putSbmlValue(sbmlGlobalParam, sbmlValue);
 							}
-//							wait until later to add non-numeric expressions
-//							Expression vcellExpr = adjustExpression(sbmlModel, sbmlExpr, diffusionParameter.getNameScope(), sbmlSymbolMapping, SymbolContext.RUNTIME);
-//							diffusionParameter.setExpression(vcellExpr);
-							sbmlSymbolMapping.putSte(sbmlGlobalParam, diffusionParameter, symbolContext);
 						}else{
 							logger.error("failed to resolve diffusion coefficient variable (speciesContext) sid="+variableSid+" during SBML import");
+							logger.error("add VCLogger event");
 						}
-						// go to the next parameter - do not add the diffusion
-						// coeff parameter to the list of vcell parameters.
-						continue;
+						continue; // do not add this sbml parameter to vcell, it already maps to an existing parameter.
 					}else{
 						logger.error("missing diffusion coefficient variable for sid="+diffCoeff.getId()+" during SBML import");
+						logger.error("add VCLogger event");
 					}
 				}
 
@@ -696,12 +644,12 @@ public class SBMLImporter {
 					if (advCoeff.isSetVariable()) {
 						String variableSid = advCoeff.getVariable();
 						SBase advTargetSBase = sbmlModel.getSBaseById(variableSid);
-						SymbolTableEntry advTargetSte = sbmlSymbolMapping.getSte(advTargetSBase, symbolContext);
+						SymbolTableEntry advTargetSte = sbmlSymbolMapping.getRuntimeSte(advTargetSBase);
 						if (advTargetSte instanceof SpeciesContext) {
 							paramSpContext = (SpeciesContext) advTargetSte;
 							vcSpContextsSpec = vcBioModel.getSimulationContext(0).getReactionContext().getSpeciesContextSpec(paramSpContext);
 							CoordinateKind coordKind = advCoeff.getCoordinate();
-							SpeciesContextSpecParameter scsAdvParam = null;
+							final SpeciesContextSpecParameter scsAdvParam;
 							switch (coordKind){
 							case cartesianX:{
 								scsAdvParam = vcSpContextsSpec.getParameterFromRole(SpeciesContextSpec.ROLE_VelocityX);
@@ -715,29 +663,23 @@ public class SBMLImporter {
 								scsAdvParam = vcSpContextsSpec.getParameterFromRole(SpeciesContextSpec.ROLE_VelocityZ);
 								break;
 							}
+							default: {
+								throw new SBMLImportException("unexpected Coordiante Kind "+coordKind);
 							}
-							if (sbmlExpr.isNumeric()) {
-								try {
-									double value = sbmlExpr.evaluateConstant();
-									if (value != 0.0) {
-										scsAdvParam.setExpression(new Expression(value));
-									}
-								}catch (ExpressionException e){
-									logger.error("unexpected error evaluating constant expression");
-								}
 							}
-//							else wait until later to resolve symbols
-//							Expression vcellExpr = adjustExpression(sbmlModel, sbmlExpr, scsAdvParam.getNameScope(), sbmlSymbolMapping, SymbolContext.RUNTIME);
-//							scsAdvParam.setExpression(vcellExpr);
-							sbmlSymbolMapping.putSte(sbmlGlobalParam, scsAdvParam, symbolContext);
+							sbmlSymbolMapping.putRuntime(sbmlGlobalParam, scsAdvParam);
+							if (sbmlGlobalParam.isSetValue()) {
+								double sbmlValue = sbmlGlobalParam.getValue();
+								sbmlSymbolMapping.putSbmlValue(sbmlGlobalParam, sbmlValue);
+							}
 						}else{
 							logger.error("failed to resolve advection coefficient variable (speciesContext) for sid="+variableSid+" during SBML import");
+							logger.error("add VCLogger event");
 						}
-						// go to the next parameter - do not add the advection
-						// coeff parameter to the list of vcell parameters.
-						continue;
+						continue; // do not add this sbml parameter to vcell, it already maps to an existing parameter.
 					}else{
 						logger.error("missing advection coefficient variable (speciesContext) for sid="+advCoeff.getId()+" during SBML import");
+						logger.error("add VCLogger event");
 					}
 				}
 				
@@ -749,7 +691,7 @@ public class SBMLImporter {
 						// set the BC param of its speciesContextSpec to param value.
 						String variableSid = bCondn.getVariable();
 						SBase sBase = sbmlModel.getSBaseById(variableSid);
-						SymbolTableEntry bcondTargetSte = sbmlSymbolMapping.getSte(sBase, symbolContext);
+						SymbolTableEntry bcondTargetSte = sbmlSymbolMapping.getRuntimeSte(sBase);
 						if (bcondTargetSte instanceof SpeciesContext) {
 							paramSpContext = (SpeciesContext) bcondTargetSte;
 							vcSpContextsSpec = vcBioModel.getSimulationContext(0).getReactionContext().getSpeciesContextSpec(paramSpContext);
@@ -797,29 +739,22 @@ public class SBMLImporter {
 								}
 							}
 							if (scsParam != null) {
-								if (sbmlExpr.isNumeric()) {
-									try {
-										double value = sbmlExpr.evaluateConstant();
-										if (value != 0.0) {
-											scsParam.setExpression(new Expression(value));
-										}
-									}catch (ExpressionException e){
-										logger.error("unexpected error evaluating constant expression");
-									}
+								sbmlSymbolMapping.putRuntime(sbmlGlobalParam, scsParam);
+								if (sbmlGlobalParam.isSetValue()) {
+									double sbmlValue = sbmlGlobalParam.getValue();
+									sbmlSymbolMapping.putSbmlValue(sbmlGlobalParam, sbmlValue);
 								}
-//								if non-numeric, wait until later to resolve dependencies
-//								Expression vcellExpr = adjustExpression(sbmlModel, sbmlExpr, scsParam.getNameScope(), sbmlSymbolMapping, SymbolContext.RUNTIME);
-//								scsParam.setExpression(vcellExpr);
-								sbmlSymbolMapping.putSte(sbmlGlobalParam, scsParam, symbolContext);
 							} else {
 								throw new SBMLImportException("could not find corresponding vcell boundary condition for sbml parameter "+sbmlParamId);
 							}
 						}else{
 							logger.error("failed to resolve boundary condition variable (speciesContext) for sid="+variableSid+" during SBML import");
+							logger.error("add VCLogger event");
 						}
-						continue;
+						continue; // do not add this sbml parameter to vcell, it already maps to an existing parameter.
 					}else{
 						logger.error("missing boundary condition variable for sid="+bCondn.getId()+" during SBML import");
+						logger.error("add VCLogger event");
 					}
 				}
 				
@@ -830,8 +765,9 @@ public class SBMLImporter {
 				}
 			}
 					
-			// Finally, create and add model parameter to VC model if it already doesn't exist.
-			if (vcModel.getModelParameter(sbmlParamId) == null) {
+			// Finally, create and add model parameter to VC model (as it didn't map to a predefined parameter in spatial .. from above)
+			ModelParameter vcellModelParameter = vcModel.getModelParameter(sbmlParamId);
+			if (vcellModelParameter == null) {
 				VCUnitDefinition glParamUnitDefn = sbmlUnitIdentifierMap.get(sbmlGlobalParam.getUnits());
 				// if units for param were not defined, don't let it be null;
 				// set it to TBD or check if it was dimensionless.
@@ -844,16 +780,28 @@ public class SBMLImporter {
 				if(isRestrictedXYZT(sbmlParamId, vcBioModel, bSpatial) || reservedSymbolHash.contains(sbmlParamId)) {
 					vcParamName = "param_" + sbmlParamId;
 				}
-				Expression vcellExpr = adjustExpression(sbmlModel, sbmlExpr, vcBioModel.getModel().getNameScope(), sbmlSymbolMapping, symbolContext);
-				ModelParameter vcGlobalParam = vcModel.new ModelParameter(vcParamName, vcellExpr, Model.ROLE_UserDefined, glParamUnitDefn);
-				sbmlSymbolMapping.putSte(sbmlGlobalParam, vcGlobalParam, symbolContext);
+				ModelParameter vcGlobalParam = vcModel.new ModelParameter(vcParamName, new Expression(0.0), Model.ROLE_UserDefined, glParamUnitDefn);
+				sbmlSymbolMapping.putRuntime(sbmlGlobalParam, vcGlobalParam);
 				if (vcParamName.length() > 64) {
 					vcGlobalParam.setDescription("Parameter Name : " + vcParamName);
 				}
 				if(sbmlParamName != null && !sbmlParamName.isEmpty()) {
 					vcGlobalParam.setSbmlName(sbmlParamName);
 				}
+				if (sbmlGlobalParam.isSetValue()) {
+					double sbmlValue = sbmlGlobalParam.getValue();
+					sbmlSymbolMapping.putSbmlValue(sbmlGlobalParam, sbmlValue);
+					sbmlSymbolMapping.putInitial(sbmlGlobalParam, vcGlobalParam);
+				}
 				vcModelParamsList.add(vcGlobalParam);
+			}else{
+				if (sbmlGlobalParam.isSetValue()) {
+					double sbmlValue = sbmlGlobalParam.getValue();
+					sbmlSymbolMapping.putSbmlValue(sbmlGlobalParam, sbmlValue);
+					sbmlSymbolMapping.putInitial(sbmlGlobalParam, vcellModelParameter);
+				}else{
+					sbmlSymbolMapping.putRuntime(sbmlGlobalParam, vcellModelParameter);
+				}
 			}
 		} // end for - sbmlModel.parameters
 		vcModel.setModelParameters(vcModelParamsList.toArray(new ModelParameter[0]));
@@ -861,17 +809,7 @@ public class SBMLImporter {
 
 	/**
 	 *
-	 *
-	 *
-	 *
-	 *
-	 *
-	 *
-	 * TODO: should we call this translateExpression()? from SBML symbols to VCell Symbols? YES
-	 *
-	 *
-	 *
-	 *
+	 * Translate Expressions from SBML symbols to VCell Symbols in the correct namespace and context
 	 *
 	 */
 	private static Expression adjustExpression(org.sbml.jsbml.Model sbmlModel, Expression sbmlExpr, NameScope namescope,
@@ -910,44 +848,44 @@ public class SBMLImporter {
 		return adjustedExpr;
 	}
 	
-	private static void processParameters(BioModel vcBioModel) throws ExpressionException, PropertyVetoException {
-		SimulationContext simContext = vcBioModel.getSimulationContext(0);
-		Model vcModel = simContext.getModel();
-		ModelParameter[] mps = vcModel.getModelParameters();
-		if (mps == null || mps.length == 0) {
-			logger.debug("SBML Import: no model parameters.");
-			return;
-		}
-		for (ModelParameter mp : mps) {
-			Expression expression = mp.getExpression();
-			if(expression.isNumeric()) {
-				continue;
-			}
-			String[] symbols = expression.getSymbols();	// check if the expression has unresolved symbols
-			if(symbols != null) {
-				for(String symbol : symbols) {
-					SymbolTableEntry ste = simContext.getEntry(symbol);
-					if(ste == null) {
-						ReactionStep candidate = vcBioModel.getModel().getReactionStep(symbol);
-						if(candidate != null) {
-							convertLocalParameters(candidate);
-							// we replace the reaction name with the expression of the reaction rate, if possible
-							Kinetics kinetics = candidate.getKinetics();
-							KineticsParameter reactionRate = kinetics.getKineticsParameterFromRole(Kinetics.ROLE_LumpedReactionRate);
-							if(reactionRate != null && reactionRate.getExpression() != null) {
-								Expression rrExpression = reactionRate.getExpression();
-								expression.substituteInPlace(new Expression(symbol), new Expression(rrExpression.flatten()));
-							} else {
-								throw new SBMLImportException("Unsupported use of a Reaction name '" + symbol + "' in the expression of Global Parameter '" + mp.getDisplayName() + "'.");
-							}
-						} else {
-							logger.warn("Symbol '" + symbol + "' still unresolved.");
-						}
-					}
-				}
-			}
-		}
-	}
+//	private static void processParameters(BioModel vcBioModel) throws ExpressionException, PropertyVetoException {
+//		SimulationContext simContext = vcBioModel.getSimulationContext(0);
+//		Model vcModel = simContext.getModel();
+//		ModelParameter[] mps = vcModel.getModelParameters();
+//		if (mps == null || mps.length == 0) {
+//			logger.debug("SBML Import: no model parameters.");
+//			return;
+//		}
+//		for (ModelParameter mp : mps) {
+//			Expression expression = mp.getExpression();
+//			if(expression.isNumeric()) {
+//				continue;
+//			}
+//			String[] symbols = expression.getSymbols();	// check if the expression has unresolved symbols
+//			if(symbols != null) {
+//				for(String symbol : symbols) {
+//					SymbolTableEntry ste = simContext.getEntry(symbol);
+//					if(ste == null) {
+//						ReactionStep candidate = vcBioModel.getModel().getReactionStep(symbol);
+//						if(candidate != null) {
+//							convertLocalParameters(candidate);
+//							// we replace the reaction name with the expression of the reaction rate, if possible
+//							Kinetics kinetics = candidate.getKinetics();
+//							KineticsParameter reactionRate = kinetics.getKineticsParameterFromRole(Kinetics.ROLE_LumpedReactionRate);
+//							if(reactionRate != null && reactionRate.getExpression() != null) {
+//								Expression rrExpression = reactionRate.getExpression();
+//								expression.substituteInPlace(new Expression(symbol), new Expression(rrExpression.flatten()));
+//							} else {
+//								throw new SBMLImportException("Unsupported use of a Reaction name '" + symbol + "' in the expression of Global Parameter '" + mp.getDisplayName() + "'.");
+//							}
+//						} else {
+//							logger.warn("Symbol '" + symbol + "' still unresolved.");
+//						}
+//					}
+//				}
+//			}
+//		}
+//	}
 
 	/**
 	 * addReactionParticipant : Adds reactants and products and modifiers to a
@@ -1122,7 +1060,7 @@ public class SBMLImporter {
 			if (targetSBase == null){
 				throw new RuntimeException("failed to resolve target of assignment rule with id "+initialAssignment.getId());
 			}
-			sbmlSymbolMapping.putInitialAssignmentRuleSbmlExpression(targetSBase, sbmlInitialAssignExpr);
+			sbmlSymbolMapping.putInitialAssignmentSbmlExpression(targetSBase, sbmlInitialAssignExpr);
 		}
 	}
 	
@@ -1153,37 +1091,18 @@ public class SBMLImporter {
 			}
 			AssignmentRule assignmentRule = (AssignmentRule) rule;
 			EditableSymbolTableEntry assignmentTargetSte = sbmlSymbolMapping.getRuntimeSte(assignmentRule.getVariableInstance());
-			Expression sbmlExpression = sbmlSymbolMapping.getRuleSBMLExpression(assignmentRule.getVariableInstance(), SymbolContext.RUNTIME);
 			try {
-				Expression vcellExpr = adjustExpression(sbmlModel, sbmlExpression, assignmentTargetSte.getNameScope(), sbmlSymbolMapping, SymbolContext.RUNTIME);
-				String vcRuleName = simContext.getFreeAssignmentRuleName();
-				if (assignmentTargetSte.isExpressionEditable()){
-					assignmentTargetSte.setExpression(vcellExpr);
-				} else if (assignmentTargetSte instanceof Structure.StructureSize) {	// we allow StructureSize variable if it evaluates to a constant
-					double constantSize;
-					try {
-						constantSize = vcellExpr.evaluateConstant();
-					} catch (ExpressionException e1) {
-						throw new SBMLImportException("Structure '" + assignmentTargetSte.getName() + "' is used as a non-constant assignment rule variable: not allowed in VCell at this time.");
-					}
-					// it is a constant, we don't make a rule, we just override the structure size in the geometry
-					Structure.StructureSize ss = (Structure.StructureSize)assignmentTargetSte;
-					Structure struct = ss.getStructure();
-					StructureMapping.StructureMappingParameter mapping = gc.getStructureMapping(struct).getSizeParameter();
-					Expression constExpression = new Expression(constantSize);
-					mapping.setExpression(constExpression);
-					foundConstStructureSize = true;
-				} else if (assignmentTargetSte instanceof SpeciesContext) {		// override default values and initial assignments, if any
-					SpeciesContextSpec scs = simContext.getReactionContext().getSpeciesContextSpec((SpeciesContext)assignmentTargetSte);
-					scs.setConstant(true);
-					if(simContext.isUsingConcentration()) {
-						scs.getInitialConcentrationParameter().setExpression(new Expression(vcellExpr));
-					} else {
-						scs.getInitialCountParameter().setExpression(new Expression(vcellExpr));
-					}
-				} else {
-					logger.error("unexpected assignment rule target '"+assignmentTargetSte+"', adding as assignment rule");
-					// shouldn't get here - what is left?
+				// only add those assignment rules for runtime targets that don't have editable expressions - not sure what to do about these if they don't map to anything.
+				if (!assignmentTargetSte.isExpressionEditable()
+					&& !(assignmentTargetSte instanceof Structure.StructureSize)
+					&& !(assignmentTargetSte instanceof SpeciesContext)) {
+
+					logger.error("unexpected assignment rule target '"+assignmentTargetSte+"', adding as assignment rule - minimal support provided");
+					logger.error("need to create a VCLogger event");
+
+					Expression sbmlExpression = sbmlSymbolMapping.getRuleSBMLExpression(assignmentRule.getVariableInstance(), SymbolContext.RUNTIME);
+					Expression vcellExpr = adjustExpression(sbmlModel, sbmlExpression, assignmentTargetSte.getNameScope(), sbmlSymbolMapping, SymbolContext.RUNTIME);
+					String vcRuleName = simContext.getFreeAssignmentRuleName();
 					cbit.vcell.mapping.AssignmentRule vcRule = new cbit.vcell.mapping.AssignmentRule(vcRuleName, assignmentTargetSte, vcellExpr, simContext);
 					vcRule.bind();
 					simContext.addAssignmentRule(vcRule);
@@ -1354,6 +1273,29 @@ public class SBMLImporter {
 				vcSpeciesContexts[i] = new SpeciesContext(vcSpecies, spStructure);
 				vcSpeciesContexts[i].setName(vcSpeciesId);
 				sbmlSymbolMapping.putRuntime(sbmlSpecies, vcSpeciesContexts[i]);
+				if (sbmlSpecies.isSetInitialAmount()){
+					double initAmount = sbmlSpecies.getInitialAmount();
+					// initConcentration := initAmount / compartmentSize.
+					// If compartmentSize is set and non-zero, compute initConcentration. Else, throw exception.
+					Compartment compartment = sbmlModel.getCompartment(sbmlSpecies.getCompartment());
+					if (compartment.isSetSize()) {
+						double compartmentSize = compartment.getSize();
+						double initConcentration = 0.0;
+						if (compartmentSize != 0.0) {
+							initConcentration = initAmount / compartmentSize;
+						} else {
+							vcLogger.sendMessage(VCLogger.Priority.HighPriority, VCLogger.ErrorType.UnitError,
+									"compartment '"	+ compartment.getId() + "' has zero size, unable to determine initial concentration for sbml species " + sbmlSpecies.getId());
+						}
+						sbmlSymbolMapping.putSbmlValue(sbmlSpecies,initConcentration);
+					} else {
+						vcLogger.sendMessage(VCLogger.Priority.HighPriority, VCLogger.ErrorType.SpeciesError,
+								" Compartment '" + compartment.getId() + "' size not set or is defined by a rule; cannot calculate initConc.");
+					}
+				}
+				if (sbmlSpecies.isSetInitialConcentration()){
+					sbmlSymbolMapping.putSbmlValue(sbmlSpecies,sbmlSpecies.getInitialConcentration());
+				}
 
 				if(sbmlSpecies.isSetName()) {
 					String sbmlSpeciesName = sbmlSpecies.getName();
@@ -1395,17 +1337,13 @@ public class SBMLImporter {
 	}
 
 	/**
-	 * setSpeciesInitialConditions : called after speciesContexts and global
-	 * parameters have been set. Checks for init conditions set on species in
-	 * the Sbml model, and if it is set using an assignment rule, obtain the
-	 * corresponding expression. Obtain the sbml -> vc unit conversion factor
-	 * for species concentrations to adjust the species initial condition
-	 * units/factor.
-	 * 
+	 * for all SpeciesContextSpecs:
+	 * 1) map the SpeciesContextSpec initialConditions parameter to the SBML Species (in SBMLSymbolMapping)
+	 * 2) set the 'constant' attribute of the SpeciesContextSpec
 	 */
-	private static void setSpeciesInitialConditions(org.sbml.jsbml.Model sbmlModel, BioModel vcBioModel,
-													SBMLSymbolMapping sbmlSymbolMapping, VCLogger vcLogger,
-													Vector<Issue> localIssueList, IssueContext issueContext) {
+	private static void configureSpeciesContextSpecs(org.sbml.jsbml.Model sbmlModel, BioModel vcBioModel,
+													 SBMLSymbolMapping sbmlSymbolMapping, VCLogger vcLogger,
+													 Vector<Issue> localIssueList, IssueContext issueContext) {
 		try {
 			// fill in SpeciesContextSpec for each speciesContext
 			Model vcModel = vcBioModel.getSimulationContext(0).getModel();
@@ -1416,74 +1354,10 @@ public class SBMLImporter {
 					throw new RuntimeException("could not find sbml Species corresponding to SpeciesContext "+vcSpeciesContext.getName());
 				}
 				org.sbml.jsbml.Species sbmlSpecies = (org.sbml.jsbml.Species) sbase;
-				// Sometimes, the species name can be null or a blank string; in
-				// that case, use species id as the name.
-				String speciesName = sbmlSpecies.getId();
-				Compartment compartment = sbmlModel.getCompartment(sbmlSpecies.getCompartment());
-
-				Expression sbmlExpression = sbmlSymbolMapping.getRuleSBMLExpression(sbmlSpecies, SymbolContext.INITIAL);
-				if (sbmlSpecies.isSetInitialConcentration()) { // If initial
-																// Concentration
-																// is set
-					Expression sbmlInitConcentration = new Expression(sbmlSpecies.getInitialConcentration());
-					// check if initConc is set by a (assignment) rule. That
-					// takes precedence over initConc value set on species.
-					if (sbmlExpression == null) {
-						sbmlExpression = new Expression(sbmlInitConcentration);
-					}
-				} else if (sbmlSpecies.isSetInitialAmount()) { // If initial amount is set
-					double initAmount = sbmlSpecies.getInitialAmount();
-					// initConcentration := initAmount / compartmentSize.
-					// If compartmentSize is set and non-zero, compute
-					// initConcentration. Else, throw exception.
-					if (compartment.isSetSize()) {
-						double compartmentSize = compartment.getSize();
-						Expression initConcentration = new Expression(0.0);
-						if (compartmentSize != 0.0) {
-							initConcentration = new Expression(initAmount / compartmentSize);
-						} else {
-							vcLogger.sendMessage(VCLogger.Priority.HighPriority, VCLogger.ErrorType.UnitError,
-								"compartment '"	+ compartment.getId() + "' has zero size, unable to determine initial concentration for species " + speciesName);
-						}
-						// check if initConc is set by a (assignment) rule. That
-						// takes precedence over initConc/initAmt value set on
-						// species.
-						if (sbmlExpression == null) {
-							sbmlExpression = new Expression(initConcentration);
-						}
-					} else {
-						vcLogger.sendMessage(VCLogger.Priority.HighPriority, VCLogger.ErrorType.SpeciesError,
-							" Compartment '" + compartment.getId() + "' size not set or is defined by a rule; cannot calculate initConc.");
-					}
-				} else {
-					// initConc/initAmt not set; check if species has a
-					// (assignment) rule.
-					if (sbmlExpression == null) {
-						// no assignment rule (and there was no initConc or
-						// initAmt); if it doesn't have initialAssignment, throw
-						// warning and set it to 0.0
-						if (sbmlModel.getInitialAssignment(speciesName) == null) {
-							localIssueList.add(new Issue(new SBMLIssueSource(sbmlModel.getSpecies(speciesName)), issueContext, IssueCategory.SBMLImport_MissingSpeciesInitCondition,
-								"no initial condition for species " + speciesName + ", assuming 0.0", Issue.Severity.WARNING));
-							// logger.sendMessage(VCLogger.Priority.MediumPriority, VCLogger.ErrorType.UnitError,
-							// "no initial condition for species "+speciesName+", assuming 0.0");
-						}
-						sbmlExpression = new Expression(0.0);
-					}
-
-				}
-
-				// if initExpr is an expression with model species, we need a
-				// conversion factor for the species units (SBML - VC units),
-				// similar to the conversion that is done in reactions.
-
-				// If any of the symbols in the expression for speciesConc is a
-				// rule, expand it.
-//				substituteGlobalParamRulesInPlace(vcellExpression, false);
 				ReactionContext rc = vcBioModel.getSimulationContext(0).getReactionContext();
 				SpeciesContextSpec speciesContextSpec = rc.getSpeciesContextSpec(vcSpeciesContext);
-				Expression vcellExpression = adjustExpression(sbmlModel, sbmlExpression, speciesContextSpec.getInitialConditionParameter().getNameScope(), sbmlSymbolMapping, SymbolContext.RUNTIME);
-				speciesContextSpec.getInitialConditionParameter().setExpression(vcellExpression);
+
+				sbmlSymbolMapping.putInitial(sbmlSpecies, speciesContextSpec.getInitialConcentrationParameter());
 				speciesContextSpec.setConstant(sbmlSpecies.getBoundaryCondition() || sbmlSpecies.getConstant());
 			}
 		} catch (Throwable e) {
@@ -2567,15 +2441,6 @@ public class SBMLImporter {
 		// Add spciesTypes (not handled in VCell)
 		addSpeciesTypes(sbmlModel, localIssueList, issueContext, vcBioModel);
 
-		// parse AssignmentRule and InitialAssignment and get (SBML Sbase / SBML Expression) pairs to be used later)
-		try {
-			parseAssignmentAndInitialAssignmentExpressions(sbmlModel, lambdaFunctions, sbmlSymbolMapping);
-		} catch (SBMLImportException sie) {
-			throw sie;
-		} catch (Exception ee) {
-			throw new SBMLImportException(ee.getMessage(), ee);
-		}
-
 		// determine geometric dimension
 		int geometryDimension = 0;
 		final org.sbml.jsbml.ext.spatial.Geometry sbmlGeometry;
@@ -2616,6 +2481,15 @@ public class SBMLImporter {
 			throw new SBMLImportException(e.getMessage(), e);
 		}
 
+		// parse AssignmentRule and InitialAssignment and get (SBML Sbase / SBML Expression) pairs to be used later)
+		try {
+			parseAssignmentAndInitialAssignmentExpressions(sbmlModel, lambdaFunctions, sbmlSymbolMapping);
+		} catch (SBMLImportException sie) {
+			throw sie;
+		} catch (Exception ee) {
+			throw new SBMLImportException(ee.getMessage(), ee);
+		}
+
 		/**
 		 * commented out old facility for renaming x,y,z ...
 		 * just mangle the vcell name for the sbml x,y,z symbol and the adjustExpression will take care of the rest
@@ -2631,10 +2505,10 @@ public class SBMLImporter {
 		// Set initial conditions on species
 		// assignment rules must be present already because initConc set by an assignment rule
 		// takes precedence over initConc value set on species
-		setSpeciesInitialConditions(sbmlModel, vcBioModel, sbmlSymbolMapping, vcLogger, localIssueList, issueContext);
-		
+		configureSpeciesContextSpecs(sbmlModel, vcBioModel, sbmlSymbolMapping, vcLogger, localIssueList, issueContext);
+
 		// Add InitialAssignments
-		applyInitialAssignments(sbmlModel, vcBioModel, lambdaFunctions, sbmlSymbolMapping, localIssueList, issueContext);
+//		addInitialAssignments(sbmlModel, lambdaFunctions, sbmlSymbolMapping);
 
 		// Add constraints (not handled in VCell)
 		addConstraints(sbmlModel);
@@ -2648,7 +2522,8 @@ public class SBMLImporter {
 		// for those vars can be read in).
 		try {
 			readRateRules(sbmlModel, lambdaFunctions, sbmlSymbolMapping);
-			processParameters(vcBioModel); // TODO what does this do???
+			applySavedExpressions(sbmlModel, sbmlSymbolMapping);
+			//processParameters(vcBioModel); // TODO what does this do???
 			//processAssignmentRules(vcBioModel);
 			//processRateRules(vcBioModel, sbmlSymbolMapping); // TODO: can we remove this?
 			/**
@@ -2656,7 +2531,7 @@ public class SBMLImporter {
 			 * 1) parse SBML model for Compartments/Geometry/Species/Parameters/Reactions, store SBase/STE and SBase/SbmlExpression mappings
 			 * 2) parse AssignmentRules, InitialAssignments, RateRules
 			 */
-		} catch (ExpressionException | SBMLException | XMLStreamException | PropertyVetoException e) {
+		} catch (ExpressionException | SBMLException | XMLStreamException e) {
 			throw new SBMLImportException(e.getMessage(), e);
 		}
 		
@@ -2697,7 +2572,56 @@ public class SBMLImporter {
 		createRateRules(sbmlModel, vcBioModel, sbmlSymbolMapping);
 		postProcessing(vcBioModel);
 	}
-	
+
+	private static void applySavedExpressions(org.sbml.jsbml.Model sbmlModel, SBMLSymbolMapping sbmlSymbolMapping) {
+		for (SBase sbmlValueTargetSbase : sbmlSymbolMapping.getSbmlValueTargets()){
+			Double sbmlValue = sbmlSymbolMapping.getSbmlValue(sbmlValueTargetSbase);
+			EditableSymbolTableEntry targetSte = sbmlSymbolMapping.getInitialSte(sbmlValueTargetSbase);
+			try {
+				if (targetSte != null) {
+					if (targetSte.isExpressionEditable()) {
+						targetSte.setExpression(new Expression(sbmlValue));
+					}
+				} else {
+					targetSte = sbmlSymbolMapping.getRuntimeSte(sbmlValueTargetSbase);
+					if (targetSte != null) {
+						if (targetSte.isExpressionEditable()) {
+							targetSte.setExpression(new Expression(sbmlValue));
+						}
+					} else {
+						logger.error("couldn't find vcell object mapped to sbml object: "+sbmlValueTargetSbase);
+					}
+				}
+			}catch (ExpressionException e){
+				logger.error("failed to set expression for SBML object "+sbmlValueTargetSbase+" on vcell object "+targetSte);
+			}
+		}
+		for (SBase initialAssignmentTargetSbase : sbmlSymbolMapping.getInitialAssignmentTargets()){
+			Expression sbmlExpr = sbmlSymbolMapping.getRuleSBMLExpression(initialAssignmentTargetSbase, SymbolContext.INITIAL);
+			EditableSymbolTableEntry initialAssignmentTargetSte = sbmlSymbolMapping.getInitialSte(initialAssignmentTargetSbase);
+			try {
+				if (initialAssignmentTargetSte.isExpressionEditable()) {
+					Expression vcellExpr = adjustExpression(sbmlModel, sbmlExpr, initialAssignmentTargetSte.getNameScope(), sbmlSymbolMapping, SymbolContext.INITIAL);
+					initialAssignmentTargetSte.setExpression(vcellExpr);
+				}
+			}catch (Exception e){
+				logger.error("failed to set expression for SBML object "+initialAssignmentTargetSbase+" on vcell object "+initialAssignmentTargetSte);
+			}
+		}
+		for (SBase assignmentRuleTargetSbase : sbmlSymbolMapping.getAssignmentRuleTargets()){
+			Expression sbmlExpr = sbmlSymbolMapping.getRuleSBMLExpression(assignmentRuleTargetSbase, SymbolContext.RUNTIME);
+			EditableSymbolTableEntry assignmentRuleTargetSte = sbmlSymbolMapping.getRuntimeSte(assignmentRuleTargetSbase);
+			try {
+				if (assignmentRuleTargetSte.isExpressionEditable()) {
+					Expression vcellExpr = adjustExpression(sbmlModel, sbmlExpr, assignmentRuleTargetSte.getNameScope(), sbmlSymbolMapping, SymbolContext.RUNTIME);
+					assignmentRuleTargetSte.setExpression(vcellExpr);
+				}
+			}catch (Exception e){
+				logger.error("failed to set expression for SBML object "+assignmentRuleTargetSbase+" on vcell object "+assignmentRuleTargetSte);
+			}
+		}
+	}
+
 	private static void postProcessing(BioModel vcBioModel) {
 		// clamp all RateRule and AssignmentRule species
 		SimulationContext simContext = vcBioModel.getSimulationContext(0);
@@ -3018,13 +2942,10 @@ public class SBMLImporter {
 						}
 						if (!lpSet) {
 							// check if it is a proxy parameter (specifically,
-							// speciesContext or model parameter (structureSize
-							// too)).
+							// speciesContext or model parameter (structureSize too)).
 							KineticsProxyParameter kpp = kinetics.getProxyParameter(paramName);
-							// if there is a proxy param with same name as sbml
-							// kinetic local param, if proxy param
-							// is a model global parameter, change proxy param
-							// to local, set its value
+							// if there is a proxy param with same name as sbml kinetic local param, if proxy param
+							// is a model global parameter, change proxy param to local, set its value
 							// and units to local param values
 							if (kpp != null && kpp.getTarget() instanceof ModelParameter) {
 								kinetics.convertParameterType(kpp, false);
@@ -3035,19 +2956,34 @@ public class SBMLImporter {
 						}
 					}
 				} else {
-					// sbmlKLaw was null, so creating a GeneralKinetics with 0.0
-					// as rate.
+					// sbmlKLaw was null, so creating a GeneralKinetics with 0.0 as rate.
 					kinetics = new GeneralKinetics(vcReaction);
 				} // end - if-else KLaw != null
 
-				// set the reaction kinetics, and add reaction to the vcell
-				// model.
+				// set the reaction kinetics, and add reaction to the vcell model.
 				kinetics.resolveUndefinedUnits();
-				// logger.trace("ADDED SBML REACTION : \"" + rxnName +
-				// "\" to VCModel");
+				// logger.trace("ADDED SBML REACTION : \"" + rxnName + "\" to VCModel");
 				vcReactionList.add(vcReaction);
 				if (sbmlReaction.isSetFast() && sbmlReaction.getFast()) {
 					fastReactionList.add(vcReaction);
+				}
+				XMLNode reactionNonRdfAnnotation = sbmlReaction.getAnnotation().getNonRDFannotation();
+				if (reactionNonRdfAnnotation != null) {
+					XMLNode reactionAttributesElement = reactionNonRdfAnnotation.getChildElement(XMLTags.SBML_VCELL_ReactionAttributesTag, "*");
+					if (reactionAttributesElement != null) {
+						int attrIndex = reactionAttributesElement.getAttrIndex(XMLTags.SBML_VCELL_ReactionAttributesTag_fastAttr, SBMLUtils.SBML_VCELL_NS);
+						if (attrIndex >= 0) {
+							String fastAttrValue = reactionAttributesElement.getAttrValue(attrIndex);
+							if (fastAttrValue.equals("true")) {
+								fastReactionList.add(vcReaction);
+							} else if (fastAttrValue.equals("false")) {
+								logger.info("ignoring fast=false when reading reaction " + vcReaction.getName());
+							} else {
+								throw new RuntimeException("unexpected value " + fastAttrValue + " for " + XMLTags.SBML_VCELL_ReactionAttributesTag
+										+ " attribute " + XMLTags.SBML_VCELL_ReactionAttributesTag_fastAttr);
+							}
+						}
+					}
 				}
 			} // end - for vcReactions
 
@@ -3875,7 +3811,7 @@ public class SBMLImporter {
 							if (vcellBCondParam != null){
 								if (bCondn.getParent() instanceof Parameter) {
 									Parameter sbmlBCondParam = (Parameter) bCondn.getParent();
-									sbmlSymbolMapping.putSte(sbmlBCondParam, vcellBCondParam, SymbolContext.RUNTIME);
+									sbmlSymbolMapping.putRuntime(sbmlBCondParam, vcellBCondParam);
 									if (sbmlBCondParam.isSetValue() && sbmlBCondParam.getValue() != 0.0) {
 										vcellBCondParam.setExpression(new Expression(sbmlBCondParam.getValue()));
 									}

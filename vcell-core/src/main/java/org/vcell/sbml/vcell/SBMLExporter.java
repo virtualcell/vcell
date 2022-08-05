@@ -20,27 +20,14 @@ import java.util.Set;
 
 import javax.xml.stream.XMLStreamException;
 
+import cbit.util.xml.XmlUtil;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.bouncycastle.crypto.RuntimeCryptoException;
 import org.jdom.Element;
 import org.jdom.Namespace;
-import org.sbml.jsbml.ASTNode;
-import org.sbml.jsbml.AssignmentRule;
-import org.sbml.jsbml.Compartment;
-import org.sbml.jsbml.Delay;
-import org.sbml.jsbml.Event;
-import org.sbml.jsbml.InitialAssignment;
-import org.sbml.jsbml.SBMLDocument;
-import org.sbml.jsbml.SBMLErrorLog;
-import org.sbml.jsbml.SBMLException;
-import org.sbml.jsbml.SBMLWriter;
-import org.sbml.jsbml.SimpleSpeciesReference;
-import org.sbml.jsbml.SpeciesReference;
-import org.sbml.jsbml.Trigger;
-import org.sbml.jsbml.Unit;
+import org.sbml.jsbml.*;
 import org.sbml.jsbml.Unit.Kind;
-import org.sbml.jsbml.UnitDefinition;
 import org.sbml.jsbml.ext.spatial.AdjacentDomains;
 import org.sbml.jsbml.ext.spatial.AdvectionCoefficient;
 import org.sbml.jsbml.ext.spatial.AnalyticGeometry;
@@ -73,6 +60,7 @@ import org.sbml.jsbml.ext.spatial.SpatialReactionPlugin;
 import org.sbml.jsbml.ext.spatial.SpatialSymbolReference;
 import org.sbml.jsbml.text.parser.ParseException;
 import org.sbml.jsbml.validator.SBMLValidator;
+import org.sbml.jsbml.xml.XMLNode;
 import org.vcell.sbml.SBMLHelper;
 import org.vcell.sbml.SBMLUtils;
 import org.vcell.sbml.SbmlException;
@@ -182,7 +170,7 @@ public class SBMLExporter {
 	Map<String, String> compartmentNameToIdMap = new LinkedHashMap<> ();
 	
 	// used for exporting vcell-related annotations.
-	Namespace sbml_vcml_ns = Namespace.getNamespace(XMLTags.VCELL_NS_PREFIX, SBMLUtils.SBML_VCELL_NS);
+	public static final Namespace sbml_vcml_ns = Namespace.getNamespace(XMLTags.VCELL_NS_PREFIX, SBMLUtils.SBML_VCELL_NS);
 
 	// SBMLAnnotationUtil to get the SBML-related annotations, notes, free-text annotations from a Biomodel VCMetaData
 	private SBMLAnnotationUtil sbmlAnnotationUtil = null;
@@ -331,8 +319,15 @@ protected void addCompartments() throws XMLStreamException, SbmlException {
 			Membrane vcMembrane = (Membrane)vcStructures[i];
 			sbmlCompartment.setSpatialDimensions(2);
 			Feature outsideFeature = structTopology.getOutsideFeature(vcMembrane);
-			if (outsideFeature != null) {
-				sbmlCompartment.setOutside(TokenMangler.mangleToSName(outsideFeature.getName()));
+			Feature insideFeature = structTopology.getInsideFeature(vcMembrane);
+			if (outsideFeature != null && insideFeature != null) {
+				// add custom vcell annotation for the SBML compartment element
+				Element compartmentTopologyElement = new Element(XMLTags.SBML_VCELL_CompartmentTopologyTag, sbml_vcml_ns);
+				compartmentTopologyElement.setAttribute(XMLTags.SBML_VCELL_CompartmentTopologyTag_insideCompartmentAttr, TokenMangler.mangleToSName(insideFeature.getName()), sbml_vcml_ns);
+				compartmentTopologyElement.setAttribute(XMLTags.SBML_VCELL_CompartmentTopologyTag_outsideCompartmentAttr, TokenMangler.mangleToSName(outsideFeature.getName()), sbml_vcml_ns);
+				sbmlCompartment.getAnnotation().appendNonRDFAnnotation(XmlUtil.xmlToString(compartmentTopologyElement));
+
+				sbmlCompartment.setOutside(TokenMangler.mangleToSName(outsideFeature.getName())); // leave this in for level 2 support?
 				sbmlSizeUnit = sbmlExportSpec.getAreaUnits();
 				UnitDefinition unitDefn = getOrCreateSBMLUnit(sbmlSizeUnit);
 				sbmlCompartment.setUnits(unitDefn);
@@ -368,13 +363,8 @@ protected void addCompartments() throws XMLStreamException, SbmlException {
 		
 		// Add the outside compartment of given compartment as annotation to the compartment.
 		// This is required later while trying to read in compartments ...
+
 		Element sbmlImportRelatedElement = null;
-//		if (parentStructure != null) {
-//			sbmlImportRelatedElement = new Element(XMLTags.VCellRelatedInfoTag, sbml_vcml_ns);
-//			Element compartmentElement = new Element(XMLTags.OutsideCompartmentTag, sbml_vcml_ns);
-//			compartmentElement.setAttribute(XMLTags.NameAttrTag, TokenMangler.mangleToSName(parentStructure.getName()));
-//			sbmlImportRelatedElement.addContent(compartmentElement);
-//		}
 
 		// Get annotation (RDF and non-RDF) for reactionStep from SBMLAnnotationUtils
 		sbmlAnnotationUtil.writeAnnotation(vcStructures[i], sbmlCompartment, sbmlImportRelatedElement);
@@ -840,9 +830,10 @@ protected void addReactions() throws SbmlException, XMLStreamException {
 //      Fast attribute was eliminated in L3V2		
 //		sbmlReaction.setFast(vcReactionSpecs[i].isFast());
 		if (vcReactionSpecs[i].isFast()) {
-			System.err.println("WARNING: Reaction "+vcReactionSpecs[i].getDisplayName()+" is set in VCell as FAST but this attribute is no longer supported by SBML, non-VCell solvers will not simulate it in pseudo-equilibrium");
-			//TODO: Add VCell annotation so we car recover this if importing/executing in VCell
-			//TODO: If user-initiated, also put out a pop-up warning
+			logger.warn("WARNING: Reaction "+vcReactionSpecs[i].getDisplayName()+" is set in VCell as FAST but this attribute is no longer supported by SBML, non-VCell solvers will not simulate it in pseudo-equilibrium");
+			Element compartmentTopologyElement = new Element(XMLTags.SBML_VCELL_ReactionAttributesTag, sbml_vcml_ns);
+			compartmentTopologyElement.setAttribute(XMLTags.SBML_VCELL_ReactionAttributesTag_fastAttr, TokenMangler.mangleToSName(Boolean.toString(vcReactionSpecs[i].isFast())), sbml_vcml_ns);
+			sbmlReaction.getAnnotation().appendNonRDFAnnotation(XmlUtil.xmlToString(compartmentTopologyElement));
 		}
 				
 		// this attribute is mandatory for L3, optional for L2. So explicitly setting value.

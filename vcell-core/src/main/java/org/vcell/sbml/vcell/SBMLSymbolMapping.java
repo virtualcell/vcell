@@ -23,8 +23,9 @@ public class SBMLSymbolMapping {
     private final Map<Event, BioEvent> event_to_bioevent_map = new LinkedHashMap<>();
     private final Map<org.sbml.jsbml.Species, Species> sbmlSpecies_to_vcSpecies_map = new LinkedHashMap<>();
     private final Map<SBase, Expression> sbase_to_assignmentRuleSbmlExpression_map = new LinkedHashMap<>();
-    private final Map<SBase, Expression> sbase_to_initialAssignmentRuleSbmlExpression_map = new LinkedHashMap<>();
+    private final Map<SBase, Expression> sbase_to_initialAssignmentSbmlExpression_map = new LinkedHashMap<>();
     private final Map<SBase, Expression> sbase_to_rateRuleSbmlExpression_map = new LinkedHashMap<>();
+    private final Map<SBase, Double> sbase_to_sbmlValue_map = new LinkedHashMap<>();
 
     @Deprecated
     private final Map<Reaction, ReactionStep> sbmlReaction_to_reactionStep_map = new LinkedHashMap<>();
@@ -153,60 +154,67 @@ public class SBMLSymbolMapping {
         }
     }
 
-    public void putSte(SBase sbase, EditableSymbolTableEntry ste, SymbolContext symbolContext) {
-        switch (symbolContext) {
-            case INITIAL: {
-                putInitial(sbase, ste);
-                break;
-            }
-            case RUNTIME: {
-                putRuntime(sbase, ste);
-                break;
-            }
-            default:
-                throw new RuntimeException("unexpected SymbolContext " + symbolContext.name());
-        }
-    }
-
-    public void putAssignmentRuleSbmlExpression(SBase targetSBase, Expression assignmentRuleMathExpr) {
+    public void putAssignmentRuleSbmlExpression(SBase targetSBase, Expression sbmlAssignmentRuleMathExpr) {
         Expression e = sbase_to_assignmentRuleSbmlExpression_map.get(targetSBase);
         if (e != null) {
-            if (e.equals(assignmentRuleMathExpr)) {
-                logger.warn("targetSBase " + targetSBase + " is already bound to the same SBML expression " + e.infix());
+            if (e.compareEqual(sbmlAssignmentRuleMathExpr)) {
+                logger.info("assignRule targetSBase " + targetSBase + " is already bound to the same SBML expression " + e.infix());
             } else {
-                throw new RuntimeException("targetSBase " + targetSBase + " is already bound to SBML expression " + e.infix());
+                logger.warn("assignRule targetSBase " + targetSBase + " is already bound to another SBML expression," +
+                        " previous=" + e.infix()+", new="+sbmlAssignmentRuleMathExpr);
             }
         } else {
-            sbase_to_assignmentRuleSbmlExpression_map.put(targetSBase, assignmentRuleMathExpr);
+            logger.trace("assignRule targetSBase " + targetSBase + " mapped to SBML expression " + sbmlAssignmentRuleMathExpr.infix());
+            sbase_to_assignmentRuleSbmlExpression_map.put(targetSBase, sbmlAssignmentRuleMathExpr);
         }
     }
 
-    public void putInitialAssignmentRuleSbmlExpression(SBase targetSBase, Expression sbmlInitialAssignmentRuleExpr) {
-        Expression e = sbase_to_initialAssignmentRuleSbmlExpression_map.get(targetSBase);
+    public void putInitialAssignmentSbmlExpression(SBase targetSBase, Expression sbmlInitialAssignmentRuleExpr) {
+        Expression e = sbase_to_initialAssignmentSbmlExpression_map.get(targetSBase);
         if (e != null) {
-            if (e.equals(sbmlInitialAssignmentRuleExpr)) {
-                logger.warn("targetSBase " + targetSBase + " is already bound to the same SBML expression " + e.infix());
+            if (e.compareEqual(sbmlInitialAssignmentRuleExpr)) {
+                logger.info("initialAssign targetSBase " + targetSBase + " is already bound to the same SBML expression " + e.infix());
             } else {
-                throw new RuntimeException("targetSBase " + targetSBase + " is already bound to another SBML expression," +
+                logger.warn("initialAssign targetSBase " + targetSBase + " is already bound to another SBML expression," +
                         " previous=" + e.infix() + ", new=" + sbmlInitialAssignmentRuleExpr.infix());
             }
         } else {
-            sbase_to_initialAssignmentRuleSbmlExpression_map.put(targetSBase, sbmlInitialAssignmentRuleExpr);
+            logger.trace("initialAssign targetSBase " + targetSBase + " mapped to SBML expression " + sbmlInitialAssignmentRuleExpr.infix());
+            sbase_to_initialAssignmentSbmlExpression_map.put(targetSBase, sbmlInitialAssignmentRuleExpr);
+        }
+    }
+
+    public void putSbmlValue(SBase targetSBase, Double sbmlValue) {
+        Double v = sbase_to_sbmlValue_map.get(targetSBase);
+        if (v != null) {
+            if (v.equals(sbmlValue)) {
+                logger.info("sbase value targetSBase " + targetSBase + " is already bound to the same SBML value " + v);
+            } else {
+                logger.warn("sbase value targetSBase " + targetSBase + " is already bound to another SBML value," +
+                        " previous=" + v + ", new=" + sbmlValue);
+            }
+        } else {
+            logger.trace("sbase value targetSBase " + targetSBase + " mapped to SBML expression " + sbmlValue);
+            sbase_to_sbmlValue_map.put(targetSBase, sbmlValue);
         }
     }
 
     public void putRateRuleSbmlExpression(SBase targetSBase, Expression sbmlRateRuleExpr) {
         Expression e = sbase_to_rateRuleSbmlExpression_map.get(targetSBase);
         if (e != null) {
-            if (e.equals(sbmlRateRuleExpr)) {
-                logger.warn("targetSBase " + targetSBase + " is already bound to the same SBML expression " + e.infix());
+            if (e.compareEqual(sbmlRateRuleExpr)) {
+                logger.info("targetSBase " + targetSBase + " is already bound to the same SBML expression " + e.infix());
             } else {
-                throw new RuntimeException("targetSBase " + targetSBase + " is already bound to another SBML expression," +
+                logger.warn("targetSBase " + targetSBase + " is already bound to another SBML expression," +
                         " previous=" + e.infix() + ", new=" + sbmlRateRuleExpr.infix());
             }
         } else {
             sbase_to_rateRuleSbmlExpression_map.put(targetSBase, sbmlRateRuleExpr);
         }
+    }
+
+    public Double getSbmlValue(SBase sbase) {
+        return sbase_to_sbmlValue_map.get(sbase);
     }
 
     public Expression getRuleSBMLExpression(SBase sbase, SymbolContext symbolContext) {
@@ -215,9 +223,15 @@ public class SBMLSymbolMapping {
                 //
                 // for INITIAL context, favor initial assignment rule over assignment rule
                 //
-                Expression sbmlExpression = sbase_to_initialAssignmentRuleSbmlExpression_map.get(sbase);
+                Expression sbmlExpression = sbase_to_initialAssignmentSbmlExpression_map.get(sbase);
                 if (sbmlExpression == null) {
                     sbmlExpression = sbase_to_assignmentRuleSbmlExpression_map.get(sbase);
+                }
+                if (sbmlExpression == null) {
+                    Double sbmlValue = sbase_to_sbmlValue_map.get(sbase);
+                    if (sbmlValue != null){
+                        sbmlExpression = new Expression(sbmlValue);
+                    }
                 }
                 return sbmlExpression;
                 //break;
@@ -229,10 +243,16 @@ public class SBMLSymbolMapping {
                 //
                 Expression sbmlExpression = sbase_to_assignmentRuleSbmlExpression_map.get(sbase);
                 if (sbmlExpression == null) {
-                    Expression initialSbmlExpr = sbase_to_initialAssignmentRuleSbmlExpression_map.get(sbase);
+                    Expression initialSbmlExpr = sbase_to_initialAssignmentSbmlExpression_map.get(sbase);
                     if (initialSbmlExpr != null) {
                         if (sbase instanceof Variable && !((Variable) sbase).isConstant()) {
                             sbmlExpression = initialSbmlExpr;
+                            if (sbmlExpression == null) {
+                                Double sbmlValue = sbase_to_sbmlValue_map.get(sbase);
+                                if (sbmlValue != null){
+                                    sbmlExpression = new Expression(sbmlValue);
+                                }
+                            }
                         } else {
                             logger.warn("ignoring initial assignment '" + initialSbmlExpr.infix() + "' for sbase " + sbase.getId() + " in RUNTIME context (it is not constant species)");
                         }
@@ -248,6 +268,14 @@ public class SBMLSymbolMapping {
 
     public Expression getRateRuleSBMLExpression(SBase sbase) {
         return sbase_to_rateRuleSbmlExpression_map.get(sbase);
+    }
+
+    public Set<SBase> getSbmlValueTargets() {
+        return sbase_to_sbmlValue_map.keySet();
+    }
+
+    public Set<SBase> getInitialAssignmentTargets() {
+        return sbase_to_initialAssignmentSbmlExpression_map.keySet();
     }
 
     public Set<SBase> getAssignmentRuleTargets() {

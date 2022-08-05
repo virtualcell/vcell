@@ -465,9 +465,6 @@ public class VcmlOmexConverter {
 				};
 				SimulationContext.NetworkGenerationRequirements networkGenerationRequirements =
 						SimulationContext.NetworkGenerationRequirements.AllowTruncatedStandardTimeout;
-
-				bioModel.getSimulationContext(0).refreshMathDescription(mathMappingCallback, networkGenerationRequirements);
-				reread_BioModel.getSimulationContext(0).refreshMathDescription(mathMappingCallback, networkGenerationRequirements);
 				MathDescription origMathDescription = bioModel.getSimulationContext(0).getMathDescription();
 				MathDescription rereadMathDescription = reread_BioModel.getSimulationContext(0).getMathDescription();
 				MathCompareResults mathCompareResults = MathDescription.testEquivalency(SimulationSymbolTable.createMathSymbolTableFactory(),origMathDescription, rereadMathDescription);

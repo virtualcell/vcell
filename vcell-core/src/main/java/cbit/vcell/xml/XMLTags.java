@@ -347,6 +347,10 @@ public class XMLTags {
     public final static String FastRateTag = "FastRate";
     public final static String InsideCompartmentTag = "InsideCompartment";
     public final static String OutsideCompartmentTag = "OutsideCompartment";
+    // to be used in SBML child annotations of the sbml:compartmnent element.
+    public final static String SBML_VCELL_CompartmentTopologyTag = "CompartmentTopology";
+        public final static String SBML_VCELL_CompartmentTopologyTag_insideCompartmentAttr = "insideCompartment";
+        public final static String SBML_VCELL_CompartmentTopologyTag_outsideCompartmentAttr = "ousideCompartment";
     public final static String MeshTag = "Mesh";
     public final static String SizeTag = "Size";
     public final static String XAttrTag = "X";
@@ -491,6 +495,10 @@ public class XMLTags {
     public final static String ReactionSpecTag = "ReactionSpec";
     public final static String ReactionStepRefAttrTag = "ReactionStepRef";
     public final static String ReactionMappingAttrTag = "ReactionMapping";
+
+    public final static String SBML_VCELL_ReactionAttributesTag = "ReactionAttributes";
+        public final static String SBML_VCELL_ReactionAttributesTag_fastAttr = "fast";
+
     public static final String UseSymbolicJacobianAttrTag = "UseSymbolicJacobian";
     public static final String VCUnitDefinitionAttrTag = "Unit";
 

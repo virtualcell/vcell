@@ -18,6 +18,7 @@ import java.util.stream.Collectors;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
+import cbit.vcell.geometry.SurfaceClass;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.vcell.util.BeanUtils;
@@ -417,7 +418,6 @@ private MathCompareResults compareEquivalentCanonicalMath(MathDescription newMat
 			for (int i = 0; i < subDomainsOld.length; i++){
 				// compare boundary type
 				if (getGeometry().getDimension() > 0) {
-					boolean bSwappedOldMembraneInsideOutside = false;
 					if (subDomainsOld[i] instanceof CompartmentSubDomain && subDomainsNew[i] instanceof CompartmentSubDomain) {
 						CompartmentSubDomain csdOld = (CompartmentSubDomain)subDomainsOld[i];
 						CompartmentSubDomain csdNew = (CompartmentSubDomain)subDomainsNew[i];
@@ -448,32 +448,17 @@ private MathCompareResults compareEquivalentCanonicalMath(MathDescription newMat
 						if (!compareUpdate(msdNew.getVelocityY( ), msdOld.getVelocityY( ),msdNew::setVelocityY)) {
 							return new MathCompareResults(Decision.MathDifferent_DIFFERENT_VELOCITY, "y");
 						}
-
-						// check if inside/outside of MembraneSubDomains are swapped, set newfeatures was reordered during SBML export/import
-						if (   msdOld.getInsideCompartment().getName().equals(msdNew.getOutsideCompartment().getName())
-								&& msdOld.getOutsideCompartment().getName().equals(msdNew.getInsideCompartment().getName())) {
-							logger.debug("During Compare: swapping inside/outside subdomains and reversing JumpConditions for MembraneSubDomain '"+msdNew.getName()+"'");
-							msdNew.swapInsideOutsideSubdomains();
-							bSwappedOldMembraneInsideOutside = true;
-							for (JumpCondition jc : Collections.list(msdOld.getJumpConditions())) {
-								Expression tempExp = jc.getInFluxExpression();
-								jc.setInFlux(jc.getOutFluxExpression());
-								jc.setOutFlux(tempExp);
-								logger.debug("During Compare: swapping inside/outside when comparing JumpCondition for variable "+jc.getVariable().getName());
-							}
-						}
-
 					}
 					// apply standard, implicit VCell defaults for boundary conditions ...
 					//    1) for Neumann, 'null' boundary condition expression is same as zero flux (set expression to 0.0)
 					//    2) for Dirichlet, 'null' boundary condition expression is same as setting value to initial condition (set expression to 'init expression')
 					if (subDomainsOld[i] instanceof SubDomain.DomainWithBoundaryConditions) {
 						SubDomain.DomainWithBoundaryConditions oldSubdomainWithBC = (SubDomain.DomainWithBoundaryConditions) subDomainsOld[i];
-						setMissingEquationBoundaryConditionsToDefault(oldSubdomainWithBC, geometry.getDimension(), bSwappedOldMembraneInsideOutside);
+						setMissingEquationBoundaryConditionsToDefault(oldSubdomainWithBC, geometry.getDimension());
 					}
 					if (subDomainsNew[i] instanceof SubDomain.DomainWithBoundaryConditions) {
 						SubDomain.DomainWithBoundaryConditions newSubdomainWithBCs = (SubDomain.DomainWithBoundaryConditions) subDomainsNew[i];
-						setMissingEquationBoundaryConditionsToDefault(newSubdomainWithBCs, geometry.getDimension(), false);
+						setMissingEquationBoundaryConditionsToDefault(newSubdomainWithBCs, geometry.getDimension());
 					}
 				}
 				
@@ -774,25 +759,36 @@ private MathCompareResults compareEquivalentCanonicalMath(MathDescription newMat
 	}
 }
 
-private void setMissingEquationBoundaryConditionsToDefault(SubDomain.DomainWithBoundaryConditions subdomain, int geometryDim, boolean bSwappedMembraneInsideOutside){
+private void setMissingEquationBoundaryConditionsToDefault(SubDomain.DomainWithBoundaryConditions subdomain, int geometryDim){
 	List<PdeEquation> pdeEquations = subdomain.getEquationCollection().stream().filter(e -> e instanceof PdeEquation).map(e -> (PdeEquation) e).collect(Collectors.toList());
+	//
+	// CompartmentSubDomains have correct boundary condition types for external boundaries.
+	//
+	SubDomain.DomainWithBoundaryConditions subdomainForBoundaryTypes = subdomain;
+	if (subdomain instanceof MembraneSubDomain){
+		//
+		// MembraneSubDomain boundary condition types are ignored for most VCell solvers,
+		// instead they defer to the inside CompartmentSubDomain's definition.
+		//
+		subdomainForBoundaryTypes = ((MembraneSubDomain)subdomain).getInsideCompartment();
+	}
 	for (PdeEquation equ : pdeEquations) {
 		Expression initExp = equ.getInitialExpression();
 		if (geometryDim >= 1) {
-			BoundaryConditionType xmType = (bSwappedMembraneInsideOutside) ? ((MembraneSubDomain)subdomain).getOutsideCompartment().getBoundaryConditionXm() : subdomain.getBoundaryConditionXm();
-			BoundaryConditionType xpType = (bSwappedMembraneInsideOutside) ? ((MembraneSubDomain)subdomain).getOutsideCompartment().getBoundaryConditionXp() : subdomain.getBoundaryConditionXp();
+			BoundaryConditionType xmType = subdomainForBoundaryTypes.getBoundaryConditionXm();
+			BoundaryConditionType xpType = subdomainForBoundaryTypes.getBoundaryConditionXp();
 			equ.setBoundaryXm(replaceDefaultBC(equ.getBoundaryXm(), xmType, initExp));
 			equ.setBoundaryXp(replaceDefaultBC(equ.getBoundaryXp(), xpType, initExp));
 		}
 		if (geometryDim >= 2) {
-			BoundaryConditionType ymType = (bSwappedMembraneInsideOutside) ? ((MembraneSubDomain)subdomain).getOutsideCompartment().getBoundaryConditionYm() : subdomain.getBoundaryConditionYm();
-			BoundaryConditionType ypType = (bSwappedMembraneInsideOutside) ? ((MembraneSubDomain)subdomain).getOutsideCompartment().getBoundaryConditionYp() : subdomain.getBoundaryConditionYp();
+			BoundaryConditionType ymType = subdomainForBoundaryTypes.getBoundaryConditionYm();
+			BoundaryConditionType ypType = subdomainForBoundaryTypes.getBoundaryConditionYp();
 			equ.setBoundaryYm(replaceDefaultBC(equ.getBoundaryYm(), ymType, initExp));
 			equ.setBoundaryYp(replaceDefaultBC(equ.getBoundaryYp(), ypType, initExp));
 		}
 		if (geometryDim == 3) {
-			BoundaryConditionType zmType = (bSwappedMembraneInsideOutside) ? ((MembraneSubDomain)subdomain).getOutsideCompartment().getBoundaryConditionZm() : subdomain.getBoundaryConditionZm();
-			BoundaryConditionType zpType = (bSwappedMembraneInsideOutside) ? ((MembraneSubDomain)subdomain).getOutsideCompartment().getBoundaryConditionZp() : subdomain.getBoundaryConditionZp();
+			BoundaryConditionType zmType = subdomainForBoundaryTypes.getBoundaryConditionZm();
+			BoundaryConditionType zpType = subdomainForBoundaryTypes.getBoundaryConditionZp();
 			equ.setBoundaryZm(replaceDefaultBC(equ.getBoundaryZm(), zmType, initExp));
 			equ.setBoundaryZp(replaceDefaultBC(equ.getBoundaryZp(), zpType, initExp));
 		}
