@@ -13,6 +13,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -464,8 +465,8 @@ public class SEDMLExporter {
 
 					// 3 ------->
 					// create Tasks
+					Set<String> dataGeneratorTasksSet = new LinkedHashSet<>();	// tasks not referenced as subtasks by any other (repeated) task; only these will have data generators
 					MathOverrides mathOverrides = new MathOverrides(vcSimulation, vcSimulation.getMathOverrides());
-//					MathOverrides mathOverrides = vcSimulation.getMathOverrides();
 					if((sbmlExportFailed == false) && mathOverrides != null && mathOverrides.hasOverrides()) {
 						String[] overridenConstantNames = mathOverrides.getOverridenConstantNames();
 						String[] scannedConstantsNames = mathOverrides.getScannedConstantNames();
@@ -556,6 +557,7 @@ public class SEDMLExporter {
 
 							String taskId = "tsk_" + simContextCnt + "_" + simCount;
 							Task sedmlTask = new Task(taskId, vcSimulation.getName(), sedModel.getId(), utcSim.getId());
+							dataGeneratorTasksSet.add(sedmlTask.getId());
 							sedmlModel.addTask(sedmlTask);
 							taskRef = taskId;		// to be used later to add dataGenerators : one set of DGs per model (simContext).
 							
@@ -564,6 +566,7 @@ public class SEDMLExporter {
 							String taskId = "tsk_" + simContextCnt + "_" + simCount;
 							String ownerTaskId = taskId;
 							Task sedmlTask = new Task(taskId, vcSimulation.getName(), simContextId, utcSim.getId());
+							dataGeneratorTasksSet.add(sedmlTask.getId());
 							sedmlModel.addTask(sedmlTask);
 
 							int repeatedTaskIndex = 0;
@@ -574,7 +577,9 @@ public class SEDMLExporter {
 									taskRef = repeatedTaskId;
 								}
 								RepeatedTask rt = new RepeatedTask(repeatedTaskId, repeatedTaskId, true, rangeId);
+								dataGeneratorTasksSet.add(rt.getId());
 								SubTask subTask = new SubTask("0", ownerTaskId);
+								dataGeneratorTasksSet.remove(ownerTaskId);
 								rt.addSubtask(subTask);
 								ConstantArraySpec constantArraySpec = mathOverrides.getConstantArraySpec(scannedConstName);
 								// list of Ranges, if sim is parameter scan.
@@ -630,6 +635,7 @@ public class SEDMLExporter {
 							String taskId = "tsk_" + simContextCnt + "_" + simCount;
 							String ownerTaskId = taskId;
 							Task sedmlTask = new Task(taskId, vcSimulation.getName(), overriddenSimContextId, utcSim.getId());
+							dataGeneratorTasksSet.add(sedmlTask.getId());
 							sedmlModel.addTask(sedmlTask);
 
 							// scanned parameters
@@ -641,7 +647,9 @@ public class SEDMLExporter {
 									taskRef = repeatedTaskId;
 								}
 								RepeatedTask rt = new RepeatedTask(repeatedTaskId, repeatedTaskId, true, rangeId);
+								dataGeneratorTasksSet.add(rt.getId());
 								SubTask subTask = new SubTask("0", ownerTaskId);
+								dataGeneratorTasksSet.remove(ownerTaskId);
 								rt.addSubtask(subTask);
 								ConstantArraySpec constantArraySpec = mathOverrides.getConstantArraySpec(scannedConstName);
 								// list of Ranges, if sim is parameter scan.
@@ -776,6 +784,7 @@ public class SEDMLExporter {
 						simContextId = sbmlExportFailed? bioModelID : simContextId;
 						
 						Task sedmlTask = new Task(taskId, vcSimulation.getName(), simContextId, utcSim.getId());
+						dataGeneratorTasksSet.add(sedmlTask.getId());
 						sedmlModel.addTask(sedmlTask);
 						taskRef = taskId;		// to be used later to add dataGenerators : one set of DGs per model (simContext).
 					}
