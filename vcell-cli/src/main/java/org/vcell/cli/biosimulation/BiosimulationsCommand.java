@@ -1,20 +1,21 @@
 package org.vcell.cli.biosimulation;
 
 import cbit.vcell.resource.PropertyLoader;
+
+import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.core.LoggerContext;
-import org.apache.logging.log4j.core.config.Configuration;
-import org.apache.logging.log4j.core.config.LoggerConfig;
+
 import org.vcell.cli.CLIPythonManager;
+import org.vcell.cli.CLIUtils;
 import org.vcell.cli.run.ExecuteImpl;
 import org.vcell.util.exe.Executable;
+
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.concurrent.Callable;
 
 @Command(name = "biosimulations", description = "BioSimulators-compliant command-line interface to the vcell simulation program <https://vcell.org>.")
@@ -46,17 +47,16 @@ public class BiosimulationsCommand implements Callable<Integer> {
                 System.err.println("cannot specify both debug and quiet, try --help for usage");
                 return 1;
             }
+
+            LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
             Level logLevel = Level.WARN;
             if (bDebug) {
                 logLevel = Level.DEBUG;
             } else if (bQuiet) {
                 logLevel = Level.OFF;
             }
-            LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
-            Configuration config = ctx.getConfiguration();
-            LoggerConfig loggerConfig = config.getLoggerConfig(LogManager.ROOT_LOGGER_NAME);
-            loggerConfig.setLevel(logLevel);
-            ctx.updateLoggers();  // This causes all Loggers to refetch information from their LoggerConfig.
+            
+            CLIUtils.setLogLevel(ctx, logLevel);
 
             PropertyLoader.loadProperties();
             if (bVersion) {
@@ -91,7 +91,7 @@ public class BiosimulationsCommand implements Callable<Integer> {
                 CLIPythonManager.getInstance().instantiatePythonProcess();
                 ExecuteImpl.singleExecOmex(ARCHIVE, OUT_DIR, bKeepTempFiles, bExactMatchOnly, bForceLogFiles);
                 return 0;
-            }finally {
+            } finally {
                 try {
                     CLIPythonManager.getInstance().closePythonProcess(); // WARNING: Python will need reinstantiation after this is called
                 } catch (Exception e) {
@@ -104,5 +104,4 @@ public class BiosimulationsCommand implements Callable<Integer> {
             return 1;
         }
     }
-
 }

@@ -4,7 +4,14 @@ import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.resource.OperatingSystemInfo;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.xml.ExternalDocInfo;
+
 import org.jlibsedml.*;
+
+import org.apache.logging.log4j.core.LoggerContext;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import org.vcell.cli.CLIUtils;
 import org.vcell.cli.vcml.VCMLHandler;
 import org.vcell.util.FileUtils;
@@ -13,6 +20,7 @@ import org.vcell.util.GenericExtensionFilter;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
+
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -23,6 +31,8 @@ import java.util.Map;
 
 public class ExecuteImpl {
     
+    private final static Logger logger = LogManager.getLogger(ExecuteImpl.class);
+
     public static void batchMode(File dirOfArchivesToProcess, File outputDir, boolean bKeepTempFiles, boolean bExactMatchOnly, boolean bForceLogFiles) {
         FilenameFilter filter = (f, name) -> name.endsWith(".omex") || name.endsWith(".vcml");
         File[] inputFiles = dirOfArchivesToProcess.listFiles(filter);
@@ -31,7 +41,7 @@ public class ExecuteImpl {
 
         for (File inputFile : inputFiles) {
             String inputFileName = inputFile.getName();
-            System.out.println(inputFile);
+            logger.debug(inputFile);
             try {
                 if (inputFileName.endsWith("omex")) {
                     String bioModelBaseName = inputFileName.substring(0, inputFileName.indexOf(".")); // ".omex"??
@@ -43,7 +53,7 @@ public class ExecuteImpl {
                     singleExecVcml(inputFile, outputDir);
                 }
             } catch (Exception e) {
-                e.printStackTrace(System.err);
+                logger.error("Error caught executing batch mode", e);
             }
         }
     }
@@ -64,8 +74,7 @@ public class ExecuteImpl {
         try {
             RunUtils.removeAndMakeDirs(outDirForCurrentVcml);
         } catch (Exception e) {
-            System.err.println("Error in creating required directories: " + e.getMessage());
-            e.printStackTrace(System.err);
+            logger.error("Error in creating required directories: " + e.getMessage(), e);
             somethingFailed = true;
         }
 
@@ -80,21 +89,17 @@ public class ExecuteImpl {
                 PythonCalls.transposeVcmlCsv(CSVFilePath);
             }
         } catch (IOException e) {
-            System.err.println("IOException while processing VCML " + vcmlFile.getName());
-            e.printStackTrace(System.err);
+            logger.error("IOException while processing VCML " + vcmlFile.getName(), e);
             somethingFailed = true;
         } catch (ExpressionException e) {
-            System.err.println("InterruptedException while creative results CSV from VCML " + vcmlFile.getName());
-            e.printStackTrace(System.err);
+            logger.error("InterruptedException while creating results CSV from VCML " + vcmlFile.getName(), e);
             somethingFailed = true;
         } catch (InterruptedException e) {
-            System.err.println("InterruptedException while transposing CSV from VCML " + vcmlFile.getName());
-            e.printStackTrace(System.err);
+            logger.error("InterruptedException while transposing CSV from VCML " + vcmlFile.getName(), e);
             somethingFailed = true;
         } catch (Exception e) {
-            System.err.println("Unexpected exception while transposing CSV from VCML " + vcmlFile.getName());
-            System.err.println(e);
-            e.printStackTrace(System.err);
+            String errorMessage = String.format("Unexpected exception while transposing CSV from VCML <%s>\n%s", vcmlFile.getName(), e.toString());
+            logger.error(errorMessage, e);
             somethingFailed = true;
         }
 
@@ -102,8 +107,7 @@ public class ExecuteImpl {
             try {
                 throw new Exception("One or more errors encountered while executing VCML " + vcmlFile.getName());
             } catch (Exception e) {
-                System.err.print(e.getMessage());
-                System.exit(1);
+                logger.error(e.getMessage());
             }
         }
     }
@@ -229,8 +233,7 @@ public class ExecuteImpl {
                 CLIUtils.writeDetailedErrorList(outputBaseDir, bioModelBaseName + ",  doc:    " + type + ": " + logDocumentError, bForceLogFiles);
                 CLIUtils.writeDetailedResultList(outputBaseDir, bioModelBaseName + "," + sedmlName + "," + logDocumentError, bForceLogFiles);
 
-                System.err.println(prefix);
-                e.printStackTrace(System.err);
+                logger.error(prefix, e);
                 somethingFailed = true;
                 oneSedmlDocumentFailed = true;
                 PythonCalls.updateSedmlDocStatusYml(sedmlLocation, Status.FAILED, outputDir);
@@ -369,7 +372,7 @@ public class ExecuteImpl {
                 error = " At least one document in this archive failed to execute";
             }
             PythonCalls.updateOmexStatusYml(Status.FAILED, outputDir, duration + "");
-            System.err.println(error);
+            logger.error(error);
             logOmexMessage += error;
             CLIUtils.writeErrorList(outputBaseDir, bioModelBaseName, bForceLogFiles);
         } else {

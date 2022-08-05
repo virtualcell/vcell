@@ -1,36 +1,26 @@
 package org.vcell.cli.run;
 
-import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.resource.OperatingSystemInfo;
 import cbit.vcell.resource.PropertyLoader;
-import cbit.vcell.solver.ode.ODESolverResultSet;
-import cbit.vcell.xml.ExternalDocInfo;
-import org.jlibsedml.*;
+
 import org.vcell.cli.CLIPythonManager;
 import org.vcell.cli.CLIUtils;
-import org.vcell.cli.PythonStreamException;
-import org.vcell.cli.vcml.VCMLHandler;
-import org.vcell.util.FileUtils;
-import org.vcell.util.GenericExtensionFilter;
 import org.vcell.util.exe.Executable;
+
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 
+import org.apache.logging.log4j.core.LoggerContext;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.io.File;
-import java.io.FilenameFilter;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.concurrent.Callable;
 
 @Command(name = "execute", description = "run .vcml or .omex files via Python API")
 public class ExecuteCommand implements Callable<Integer> {
+
+    private final static Logger logger = LogManager.getLogger(ExecuteCommand.class);
 
     @Option(names = { "-i", "--inputFilePath" })
     private File inputFilePath;
@@ -54,8 +44,29 @@ public class ExecuteCommand implements Callable<Integer> {
     @Option(names = {"-h", "--help"}, description = "show this help message and exit", usageHelp = true)
     private boolean help;
 
+    @Option(names = {"-d", "--debug"}, description = "full application debug mode")
+    private boolean bDebug = false;
+
+    @Option(names = {"-q", "--quiet"}, description = "suppress all console output")
+    private boolean bQuiet = false;
+
     public Integer call() {
         try {
+            if (bDebug && bQuiet) {
+                System.err.println("cannot specify both debug and quiet, try --help for usage");
+                return 1;
+            }
+            
+            LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
+            Level logLevel = Level.WARN;
+            if (bDebug) {
+                logLevel = Level.DEBUG;
+            } else if (bQuiet) {
+                logLevel = Level.OFF;
+            }
+            
+            CLIUtils.setLogLevel(ctx, logLevel);
+
             PropertyLoader.loadProperties();
             CLIPythonManager.getInstance().instantiatePythonProcess();
 
@@ -79,8 +90,8 @@ public class ExecuteCommand implements Callable<Integer> {
             return 0;
         } catch (Exception e) {
             e.printStackTrace();
-            throw new RuntimeException(e.getMessage());
+            logger.error(e);
+            return 1;
         }
     }
-
 }
