@@ -319,7 +319,7 @@ public class SEDMLExporter {
 				
 
 				int simCount = 0;
-				String taskRef = null;
+//				String taskRef = null;
 				int overrideCount = 0;
 				for (Simulation vcSimulation : simContext.getSimulations()) {
 					// if we have a hash containing a subset of simulations to export
@@ -559,7 +559,7 @@ public class SEDMLExporter {
 							Task sedmlTask = new Task(taskId, vcSimulation.getName(), sedModel.getId(), utcSim.getId());
 							dataGeneratorTasksSet.add(sedmlTask.getId());
 							sedmlModel.addTask(sedmlTask);
-							taskRef = taskId;		// to be used later to add dataGenerators : one set of DGs per model (simContext).
+//							taskRef = taskId;		// to be used later to add dataGenerators : one set of DGs per model (simContext).
 							
 						} else if (!scannedParamHash.isEmpty() && unscannedParamHash.isEmpty()) {
 							// only parameters with scans
@@ -573,9 +573,9 @@ public class SEDMLExporter {
 							for (String scannedConstName : scannedConstantsNames) {
 								String repeatedTaskId = "repTsk_" + simContextCnt + "_" + simCount + "_" + repeatedTaskIndex;
 								String rangeId = "range_" + simContextCnt + "_" + simCount + "_" + scannedConstName;
-								if(repeatedTaskIndex == 0) {
-									taskRef = repeatedTaskId;
-								}
+//								if(repeatedTaskIndex == 0) {
+//									taskRef = repeatedTaskId;
+//								}
 								RepeatedTask rt = new RepeatedTask(repeatedTaskId, repeatedTaskId, true, rangeId);
 								dataGeneratorTasksSet.add(rt.getId());
 								SubTask subTask = new SubTask("0", ownerTaskId);
@@ -643,9 +643,9 @@ public class SEDMLExporter {
 							for (String scannedConstName : scannedConstantsNames) {
 								String repeatedTaskId = "repTsk_" + simContextCnt + "_" + simCount + "_" + repeatedTaskIndex;
 								String rangeId = "range_" + simContextCnt + "_" + simCount + "_" + scannedConstName;
-								if(repeatedTaskIndex == 0) {
-									taskRef = repeatedTaskId;
-								}
+//								if(repeatedTaskIndex == 0) {
+//									taskRef = repeatedTaskId;
+//								}
 								RepeatedTask rt = new RepeatedTask(repeatedTaskId, repeatedTaskId, true, rangeId);
 								dataGeneratorTasksSet.add(rt.getId());
 								SubTask subTask = new SubTask("0", ownerTaskId);
@@ -786,230 +786,235 @@ public class SEDMLExporter {
 						Task sedmlTask = new Task(taskId, vcSimulation.getName(), simContextId, utcSim.getId());
 						dataGeneratorTasksSet.add(sedmlTask.getId());
 						sedmlModel.addTask(sedmlTask);
-						taskRef = taskId;		// to be used later to add dataGenerators : one set of DGs per model (simContext).
+//						taskRef = taskId;		// to be used later to add dataGenerators : one set of DGs per model (simContext).
 					}
 					
 					// 4 ------->
 					// Create DataGenerators
 
-					List<DataGenerator> dataGeneratorsOfSim = new ArrayList<DataGenerator> ();					
-
-					// add one DataGenerator for 'time'
-					String timeDataGenPrefix = DATAGENERATOR_TIME_NAME + "_" + taskRef;
-					DataGenerator timeDataGen = sedmlModel.getDataGeneratorWithId(timeDataGenPrefix);
-					org.jlibsedml.Variable timeVar = new org.jlibsedml.Variable(DATAGENERATOR_TIME_SYMBOL + "_" + taskRef, DATAGENERATOR_TIME_SYMBOL, taskRef, VariableSymbol.TIME);
-					ASTNode math = Libsedml.parseFormulaString(DATAGENERATOR_TIME_SYMBOL + "_" + taskRef);
-					timeDataGen = new DataGenerator(timeDataGenPrefix, timeDataGenPrefix, math);
-					timeDataGen.addVariable(timeVar);
-					sedmlModel.addDataGenerator(timeDataGen);
-					dataGeneratorsOfSim.add(timeDataGen);
-
-					// add dataGenerators for species
-					// get species list from SBML model.
-					//		        		Map<String, String> name2IdMap = new LinkedHashMap<> ();
-					String dataGenIdPrefix = "dataGen_" + taskRef;
-					if(sbmlExportFailed) {		// we try vcml export
-						for(SpeciesContext sc : vcModel.getSpeciesContexts()) {
-							String varName = sc.getName();
-							String varId = varName + "_" + taskRef;
-							//								name2IdMap.put(varName, varId);
-							ASTNode varMath = Libsedml.parseFormulaString(varId);
-							String dataGenId = dataGenIdPrefix + "_" + TokenMangler.mangleToSName(varName);
-							DataGenerator dataGen = new DataGenerator(dataGenId, dataGenId, varMath);
-							org.jlibsedml.Variable variable = new org.jlibsedml.Variable(varId, varName, taskRef, XmlHelper.getXPathForSpecies(varName));
-							dataGen.addVariable(variable);
-							sedmlModel.addDataGenerator(dataGen);
-							dataGeneratorsOfSim.add(dataGen);
+					List<DataGenerator> dataGeneratorsOfSim = new ArrayList<> ();					
+					Map<String, DataGenerator> timeDataGeneratorMap = new LinkedHashMap<>();
+					for(String taskRef : dataGeneratorTasksSet) {
+						// add one DataGenerator for 'time'
+						String timeDataGenPrefix = DATAGENERATOR_TIME_NAME + "_" + taskRef;
+						DataGenerator timeDataGen = sedmlModel.getDataGeneratorWithId(timeDataGenPrefix);
+						org.jlibsedml.Variable timeVar = new org.jlibsedml.Variable(DATAGENERATOR_TIME_SYMBOL + "_" + taskRef, DATAGENERATOR_TIME_SYMBOL, taskRef, VariableSymbol.TIME);
+						ASTNode math = Libsedml.parseFormulaString(DATAGENERATOR_TIME_SYMBOL + "_" + taskRef);
+						timeDataGen = new DataGenerator(timeDataGenPrefix, timeDataGenPrefix, math);
+						timeDataGen.addVariable(timeVar);
+						sedmlModel.addDataGenerator(timeDataGen);
+						dataGeneratorsOfSim.add(timeDataGen);
+						timeDataGeneratorMap.put(taskRef, timeDataGen);
+	
+						// add dataGenerators for species
+						// get species list from SBML model.
+						//		        		Map<String, String> name2IdMap = new LinkedHashMap<> ();
+						String dataGenIdPrefix = "dataGen_" + taskRef;
+						if(sbmlExportFailed) {		// we try vcml export
+							for(SpeciesContext sc : vcModel.getSpeciesContexts()) {
+								String varName = sc.getName();
+								String varId = varName + "_" + taskRef;
+								//								name2IdMap.put(varName, varId);
+								ASTNode varMath = Libsedml.parseFormulaString(varId);
+								String dataGenId = dataGenIdPrefix + "_" + TokenMangler.mangleToSName(varName);
+								DataGenerator dataGen = new DataGenerator(dataGenId, dataGenId, varMath);
+								org.jlibsedml.Variable variable = new org.jlibsedml.Variable(varId, varName, taskRef, XmlHelper.getXPathForSpecies(varName));
+								dataGen.addVariable(variable);
+								sedmlModel.addDataGenerator(dataGen);
+								dataGeneratorsOfSim.add(dataGen);
+							}
+						} else {
+							String[] varNamesList = SimSpec.fromSBML(sbmlString).getVarsList();
+							for (String varName : varNamesList) {
+								String varId = varName + "_" + taskRef;
+								//								name2IdMap.put(varName, varId);
+								org.jlibsedml.Variable sedmlVar = new org.jlibsedml.Variable(varId, varName, taskRef, sbmlSupport.getXPathForSpecies(varName));
+								ASTNode varMath = Libsedml.parseFormulaString(varId);
+								String dataGenId = dataGenIdPrefix + "_" + TokenMangler.mangleToSName(varName);			//"dataGen_" + varCount; - old code
+								DataGenerator dataGen = new DataGenerator(dataGenId, dataGenId, varMath);
+								dataGen.addVariable(sedmlVar);
+								sedmlModel.addDataGenerator(dataGen);
+								dataGeneratorsOfSim.add(dataGen);
+							}
 						}
-					} else {
-						String[] varNamesList = SimSpec.fromSBML(sbmlString).getVarsList();
-						for (String varName : varNamesList) {
-							String varId = varName + "_" + taskRef;
-							//								name2IdMap.put(varName, varId);
-							org.jlibsedml.Variable sedmlVar = new org.jlibsedml.Variable(varId, varName, taskRef, sbmlSupport.getXPathForSpecies(varName));
-							ASTNode varMath = Libsedml.parseFormulaString(varId);
-							String dataGenId = dataGenIdPrefix + "_" + TokenMangler.mangleToSName(varName);			//"dataGen_" + varCount; - old code
-							DataGenerator dataGen = new DataGenerator(dataGenId, dataGenId, varMath);
-							dataGen.addVariable(sedmlVar);
-							sedmlModel.addDataGenerator(dataGen);
-							dataGeneratorsOfSim.add(dataGen);
+	
+						// add DataGenerators for output functions here
+						ArrayList<AnnotatedFunction> outputFunctions = simContext.getOutputFunctionContext().getOutputFunctionsList();
+						for (AnnotatedFunction annotatedFunction : outputFunctions) {
+							//							Expression originalFunctionExpression = annotatedFunction.getExpression();
+							//							Expression modifiedFunctionExpr = new Expression(annotatedFunction.getExpression());
+							//							System.out.println("Before: " + originalFunctionExpression);
+							//							String[] symbols = modifiedFunctionExpr.getSymbols();
+							//							for(String symbol : symbols) {
+							//								String id = name2IdMap.get(symbol);
+							//								if(id == null) {
+							//									System.err.println("Could not find id for " + symbol);
+							//								} else {
+							//									modifiedFunctionExpr.substituteInPlace(new Expression(symbol), new Expression(id));
+							//								}
+							//							}
+							//							System.out.println("After:  " + modifiedFunctionExpr);
+							//							ASTNode funcMath = Libsedml.parseFormulaString(modifiedFunctionExpr.infix());
+							String dataGenId = dataGenIdPrefix + "_" + TokenMangler.mangleToSName(annotatedFunction.getName());		//"dataGen_" + varCount; - old code
+							String varId = TokenMangler.mangleToSName(annotatedFunction.getName()) + taskRef;
+	
+							if(sbmlExportFailed) {		// VCML
+								Expression exp = new Expression(varId);
+								ASTNode funcMath = Libsedml.parseFormulaString(exp.infix());
+								DataGenerator dataGen = new DataGenerator(dataGenId, dataGenId, funcMath);
+								org.jlibsedml.Variable sedmlVar = new org.jlibsedml.Variable(varId, annotatedFunction.getName(), taskRef, 
+										XmlHelper.getXPathForOutputFunction(simContextName, annotatedFunction.getName()));
+								dataGen.addVariable(sedmlVar);
+								sedmlModel.addDataGenerator(dataGen);
+								dataGeneratorsOfSim.add(dataGen);
+							} else {					// SBML
+	
+							}
+	
+	
+	
+	
+							//							String[] functionSymbols = originalFunctionExpression.getSymbols();
+							//							for (String symbol : functionSymbols) {
+							//								String symbolName = TokenMangler.mangleToSName(symbol);
+							//								// try to get symbol from model, if null, try simContext.mathDesc
+							//								SymbolTableEntry ste = vcModel.getEntry(symbol);
+							//								if (ste == null) {
+							//									ste = simContext.getMathDescription().getEntry(symbol);
+							//								}
+							//								if (ste instanceof SpeciesContext || ste instanceof Structure || ste instanceof ModelParameter) {
+							//									XPathTarget targetXPath = getTargetXPath(ste, l2gMap);
+							//									if(sbmlExportFailed) {		// VCML
+							//										if(ste instanceof SpeciesContext) {
+							////											String varId = symbolName + "_" + taskRef;
+							////											org.jlibsedml.Variable sedmlVar = new org.jlibsedml.Variable(varId, symbolName, taskRef, XmlHelper.getXPathForSpecies(symbolName));
+							////											dataGen.addVariable(sedmlVar);
+							//										} else {
+							//											System.err.println("Not a species");
+							//										}
+							//									} else {					// SBML
+							////										String varId = symbolName + "_" + taskRef;
+							////										org.jlibsedml.Variable sedmlVar = new org.jlibsedml.Variable(varId, symbolName, taskRef, targetXPath.getTargetAsString());
+							////										dataGen.addVariable(sedmlVar);
+							//									}
+							//								} else {
+							//									double value = 0.0;
+							//									if (ste instanceof Function) {
+							//										try {
+							//											value = ste.getExpression().evaluateConstant();
+							//										} catch (Exception e) {
+							//											e.printStackTrace(System.out);
+							//											throw new RuntimeException("Unable to evaluate function '" + ste.getName() + "' for output function '" + annotatedFunction.getName() + "'.", e);
+							//										}
+							//									} else {
+							//										value = ste.getConstantValue();
+							//									}
+							//									Parameter sedmlParameter = new Parameter(symbolName, symbolName, value);
+							//									dataGen.addParameter(sedmlParameter);
+							//								}
+							//							}
 						}
-					}
-
-					// add DataGenerators for output functions here
-					ArrayList<AnnotatedFunction> outputFunctions = simContext.getOutputFunctionContext().getOutputFunctionsList();
-					for (AnnotatedFunction annotatedFunction : outputFunctions) {
-						//							Expression originalFunctionExpression = annotatedFunction.getExpression();
-						//							Expression modifiedFunctionExpr = new Expression(annotatedFunction.getExpression());
-						//							System.out.println("Before: " + originalFunctionExpression);
-						//							String[] symbols = modifiedFunctionExpr.getSymbols();
-						//							for(String symbol : symbols) {
-						//								String id = name2IdMap.get(symbol);
-						//								if(id == null) {
-						//									System.err.println("Could not find id for " + symbol);
-						//								} else {
-						//									modifiedFunctionExpr.substituteInPlace(new Expression(symbol), new Expression(id));
-						//								}
-						//							}
-						//							System.out.println("After:  " + modifiedFunctionExpr);
-						//							ASTNode funcMath = Libsedml.parseFormulaString(modifiedFunctionExpr.infix());
-						String dataGenId = dataGenIdPrefix + "_" + TokenMangler.mangleToSName(annotatedFunction.getName());		//"dataGen_" + varCount; - old code
-						String varId = TokenMangler.mangleToSName(annotatedFunction.getName()) + taskRef;
-
-						if(sbmlExportFailed) {		// VCML
-							Expression exp = new Expression(varId);
-							ASTNode funcMath = Libsedml.parseFormulaString(exp.infix());
-							DataGenerator dataGen = new DataGenerator(dataGenId, dataGenId, funcMath);
-							org.jlibsedml.Variable sedmlVar = new org.jlibsedml.Variable(varId, annotatedFunction.getName(), taskRef, 
-									XmlHelper.getXPathForOutputFunction(simContextName, annotatedFunction.getName()));
-							dataGen.addVariable(sedmlVar);
-							sedmlModel.addDataGenerator(dataGen);
-							dataGeneratorsOfSim.add(dataGen);
-						} else {					// SBML
-
-						}
-
-
-
-
-						//							String[] functionSymbols = originalFunctionExpression.getSymbols();
-						//							for (String symbol : functionSymbols) {
-						//								String symbolName = TokenMangler.mangleToSName(symbol);
-						//								// try to get symbol from model, if null, try simContext.mathDesc
-						//								SymbolTableEntry ste = vcModel.getEntry(symbol);
-						//								if (ste == null) {
-						//									ste = simContext.getMathDescription().getEntry(symbol);
-						//								}
-						//								if (ste instanceof SpeciesContext || ste instanceof Structure || ste instanceof ModelParameter) {
-						//									XPathTarget targetXPath = getTargetXPath(ste, l2gMap);
-						//									if(sbmlExportFailed) {		// VCML
-						//										if(ste instanceof SpeciesContext) {
-						////											String varId = symbolName + "_" + taskRef;
-						////											org.jlibsedml.Variable sedmlVar = new org.jlibsedml.Variable(varId, symbolName, taskRef, XmlHelper.getXPathForSpecies(symbolName));
-						////											dataGen.addVariable(sedmlVar);
-						//										} else {
-						//											System.err.println("Not a species");
-						//										}
-						//									} else {					// SBML
-						////										String varId = symbolName + "_" + taskRef;
-						////										org.jlibsedml.Variable sedmlVar = new org.jlibsedml.Variable(varId, symbolName, taskRef, targetXPath.getTargetAsString());
-						////										dataGen.addVariable(sedmlVar);
-						//									}
-						//								} else {
-						//									double value = 0.0;
-						//									if (ste instanceof Function) {
-						//										try {
-						//											value = ste.getExpression().evaluateConstant();
-						//										} catch (Exception e) {
-						//											e.printStackTrace(System.out);
-						//											throw new RuntimeException("Unable to evaluate function '" + ste.getName() + "' for output function '" + annotatedFunction.getName() + "'.", e);
-						//										}
-						//									} else {
-						//										value = ste.getConstantValue();
-						//									}
-						//									Parameter sedmlParameter = new Parameter(symbolName, symbolName, value);
-						//									dataGen.addParameter(sedmlParameter);
-						//								}
-						//							}
 					}
 
 					// 5 ------->
 					// create Report and Plot
 
-					// add output to sedml Model : 1 plot2d for each non-spatial simulation with all vars (species/output functions) vs time (1 curve per var)
-					// ignoring output for spatial deterministic (spatial stochastic is not exported to SEDML) and non-spatial stochastic applications with histogram
-					if (!(simContext.getGeometry().getDimension() > 0)) {
-						String plot2dId = "plot2d_" + TokenMangler.mangleToSName(vcSimulation.getName());
-						String reportId = "report_" + TokenMangler.mangleToSName(vcSimulation.getName());
-						//								String reportId = "__plot__" + plot2dId;
-						String plotName = simContextName + "_" + simName + "_plot";
-						Plot2D sedmlPlot2d = new Plot2D(plot2dId, plotName);
-						Report sedmlReport = new Report(reportId, plotName);
-
-						sedmlPlot2d.addNote(createNotesElement("Plot of all variables and output functions from application '" + simContext.getName() + "' ; simulation '" + vcSimulation.getName() + "' in VCell model"));
-						sedmlReport.addNote(createNotesElement("Report of all variables and output functions from application '" + simContext.getName() + "' ; simulation '" + vcSimulation.getName() + "' in VCell model"));
-						DataGenerator dgtime = sedmlModel.getDataGeneratorWithId(DATAGENERATOR_TIME_NAME + "_" + taskRef);
-						String xDataRef = dgtime.getId();
-						String xDatasetXId = "__data_set__" + plot2dId + dgtime.getId();
-						DataSet dataSet = new DataSet(xDatasetXId, DATAGENERATOR_TIME_NAME, xDataRef, xDataRef);	// id, name, label, data generator reference
-						sedmlReport.addDataSet(dataSet);
-
-						// add a curve for each dataGenerator in SEDML model
-						int curveCnt = 0;
-						// String id, String name, ASTNode math
-						for (DataGenerator dg : dataGeneratorsOfSim) {
-							// no curve for time, since time is xDateReference
-							if (dg.getId().equals(xDataRef)) {
-								continue;
+					for(String taskRef : dataGeneratorTasksSet) {
+						// add output to sedml Model : 1 plot2d for each non-spatial simulation with all vars (species/output functions) vs time (1 curve per var)
+						// ignoring output for spatial deterministic (spatial stochastic is not exported to SEDML) and non-spatial stochastic applications with histogram
+						if (!(simContext.getGeometry().getDimension() > 0)) {
+							String plot2dId = "plot2d_" + TokenMangler.mangleToSName(vcSimulation.getName());
+							String reportId = "report_" + TokenMangler.mangleToSName(vcSimulation.getName());
+							//								String reportId = "__plot__" + plot2dId;
+							String plotName = simContextName + "_" + simName + "_plot";
+							Plot2D sedmlPlot2d = new Plot2D(plot2dId, plotName);
+							Report sedmlReport = new Report(reportId, plotName);
+	
+							sedmlPlot2d.addNote(createNotesElement("Plot of all variables and output functions from application '" + simContext.getName() + "' ; simulation '" + vcSimulation.getName() + "' in VCell model"));
+							sedmlReport.addNote(createNotesElement("Report of all variables and output functions from application '" + simContext.getName() + "' ; simulation '" + vcSimulation.getName() + "' in VCell model"));
+							DataGenerator dgtime = sedmlModel.getDataGeneratorWithId(DATAGENERATOR_TIME_NAME + "_" + taskRef);
+							String xDataRef = dgtime.getId();
+							String xDatasetXId = "__data_set__" + plot2dId + dgtime.getId();
+							DataSet dataSet = new DataSet(xDatasetXId, DATAGENERATOR_TIME_NAME, xDataRef, xDataRef);	// id, name, label, data generator reference
+							sedmlReport.addDataSet(dataSet);
+	
+							// add a curve for each dataGenerator in SEDML model
+							int curveCnt = 0;
+							// String id, String name, ASTNode math
+							for (DataGenerator dg : dataGeneratorsOfSim) {
+								// no curve for time, since time is xDateReference
+								if (dg.getId().equals(xDataRef)) {
+									continue;
+								}
+								String curveId = "curve_" + plot2dId + "_" + dg.getName();
+								String datasetYId = "__data_set__" + plot2dId + dg.getName();
+								Curve curve = new Curve(curveId, dg.getName(), false, false, xDataRef, dg.getId());
+								sedmlPlot2d.addCurve(curve);
+								//									// id, name, label, dataRef
+								//									// dataset id    <- unique id
+								//									// dataset name  <- data generator name
+								//									// dataset label <- dataset id
+								DataSet yDataSet = new DataSet(datasetYId, dg.getName(), dg.getId(), dg.getId());
+								sedmlReport.addDataSet(yDataSet);
+								curveCnt++;
 							}
-							String curveId = "curve_" + plot2dId + "_" + dg.getName();
-							String datasetYId = "__data_set__" + plot2dId + dg.getName();
-							Curve curve = new Curve(curveId, dg.getName(), false, false, xDataRef, dg.getId());
-							sedmlPlot2d.addCurve(curve);
-							//									// id, name, label, dataRef
-							//									// dataset id    <- unique id
-							//									// dataset name  <- data generator name
-							//									// dataset label <- dataset id
-							DataSet yDataSet = new DataSet(datasetYId, dg.getName(), dg.getId(), dg.getId());
-							sedmlReport.addDataSet(yDataSet);
-							curveCnt++;
-						}
-						sedmlModel.addOutput(sedmlPlot2d);
-						sedmlModel.addOutput(sedmlReport);
-					} else {		// spatial deterministic
-						if(simContext.getApplicationType().equals(Application.NETWORK_DETERMINISTIC)) {	// we ignore spatial stochastic (Smoldyn)
-							if(bForceVCML) {
-								String reportId = "_report_" + TokenMangler.mangleToSName(vcSimulation.getName());
-								Report sedmlReport = new Report(reportId, simContext.getName() + "plots");
-								String xDataRef = sedmlModel.getDataGeneratorWithId(DATAGENERATOR_TIME_NAME + "_" + taskRef).getId();
-								String xDatasetXId = "datasetX_" + DATAGENERATOR_TIME_NAME + "_" + timeDataGen.getId();
-								DataSet dataSetTime = new DataSet(xDatasetXId, xDataRef, xDatasetXId, xDataRef);
-								sedmlReport.addDataSet(dataSetTime);
-								int surfaceCnt = 0;
-								for (DataGenerator dg : dataGeneratorsOfSim) {
-									if (dg.getId().equals(xDataRef)) {
-										continue;
+							sedmlModel.addOutput(sedmlPlot2d);
+							sedmlModel.addOutput(sedmlReport);
+						} else {		// spatial deterministic
+							if(simContext.getApplicationType().equals(Application.NETWORK_DETERMINISTIC)) {	// we ignore spatial stochastic (Smoldyn)
+								if(bForceVCML) {
+									String reportId = "_report_" + TokenMangler.mangleToSName(vcSimulation.getName());
+									Report sedmlReport = new Report(reportId, simContext.getName() + "plots");
+									String xDataRef = sedmlModel.getDataGeneratorWithId(DATAGENERATOR_TIME_NAME + "_" + taskRef).getId();
+									String xDatasetXId = "datasetX_" + DATAGENERATOR_TIME_NAME + "_" +timeDataGeneratorMap.get(taskRef).getId();
+									DataSet dataSetTime = new DataSet(xDatasetXId, xDataRef, xDatasetXId, xDataRef);
+									sedmlReport.addDataSet(dataSetTime);
+									int surfaceCnt = 0;
+									for (DataGenerator dg : dataGeneratorsOfSim) {
+										if (dg.getId().equals(xDataRef)) {
+											continue;
+										}
+										//										String datasetYId = "datasetY_" + surfaceCnt;
+										String datasetYId = "__data_set__" + surfaceCnt + "_" + dg.getName();
+										DataSet yDataSet = new DataSet(datasetYId, dg.getName(), datasetYId, dg.getId());
+										sedmlReport.addDataSet(yDataSet);
+	
+										surfaceCnt++;
 									}
-									//										String datasetYId = "datasetY_" + surfaceCnt;
-									String datasetYId = "__data_set__" + surfaceCnt + "_" + dg.getName();
-									DataSet yDataSet = new DataSet(datasetYId, dg.getName(), datasetYId, dg.getId());
-									sedmlReport.addDataSet(yDataSet);
-
-									surfaceCnt++;
-								}
-								sedmlModel.addOutput(sedmlReport);
-							} else {	// spatial deterministic SBML
-								// TODO: add surfaces to the plots
-								String plot3dId = "plot3d_" + TokenMangler.mangleToSName(vcSimulation.getName());
-								String reportId = "report_" + TokenMangler.mangleToSName(vcSimulation.getName());
-								String plotName = simContext.getName() + "plots";
-								Plot3D sedmlPlot3d = new Plot3D(plot3dId, plotName);
-								Report sedmlReport = new Report(reportId, plotName);
-
-								sedmlPlot3d.addNote(createNotesElement("Plot of all variables and output functions from application '" + simContext.getName() + "' ; simulation '" + vcSimulation.getName() + "' in VCell model"));
-								sedmlReport.addNote(createNotesElement("Report of all variables and output functions from application '" + simContext.getName() + "' ; simulation '" + vcSimulation.getName() + "' in VCell model"));
-								DataGenerator dgtime = sedmlModel.getDataGeneratorWithId(DATAGENERATOR_TIME_NAME + "_" + taskRef);
-								String xDataRef = dgtime.getId();
-								String xDatasetXId = "__data_set__" + plot3dId + dgtime.getId();
-								DataSet dataSet = new DataSet(xDatasetXId, DATAGENERATOR_TIME_NAME, xDataRef, xDataRef);	// id, name, label, data generator reference
-								sedmlReport.addDataSet(dataSet);
-
-								// add a curve for each dataGenerator in SEDML model
-								int curveCnt = 0;
-								// String id, String name, ASTNode math
-								for (DataGenerator dg : dataGeneratorsOfSim) {
-									// no curve for time, since time is xDateReference
-									if (dg.getId().equals(xDataRef)) {
-										continue;
+									sedmlModel.addOutput(sedmlReport);
+								} else {	// spatial deterministic SBML
+									// TODO: add surfaces to the plots
+									String plot3dId = "plot3d_" + TokenMangler.mangleToSName(vcSimulation.getName());
+									String reportId = "report_" + TokenMangler.mangleToSName(vcSimulation.getName());
+									String plotName = simContext.getName() + "plots";
+									Plot3D sedmlPlot3d = new Plot3D(plot3dId, plotName);
+									Report sedmlReport = new Report(reportId, plotName);
+	
+									sedmlPlot3d.addNote(createNotesElement("Plot of all variables and output functions from application '" + simContext.getName() + "' ; simulation '" + vcSimulation.getName() + "' in VCell model"));
+									sedmlReport.addNote(createNotesElement("Report of all variables and output functions from application '" + simContext.getName() + "' ; simulation '" + vcSimulation.getName() + "' in VCell model"));
+									DataGenerator dgtime = sedmlModel.getDataGeneratorWithId(DATAGENERATOR_TIME_NAME + "_" + taskRef);
+									String xDataRef = dgtime.getId();
+									String xDatasetXId = "__data_set__" + plot3dId + dgtime.getId();
+									DataSet dataSet = new DataSet(xDatasetXId, DATAGENERATOR_TIME_NAME, xDataRef, xDataRef);	// id, name, label, data generator reference
+									sedmlReport.addDataSet(dataSet);
+	
+									// add a curve for each dataGenerator in SEDML model
+									int curveCnt = 0;
+									// String id, String name, ASTNode math
+									for (DataGenerator dg : dataGeneratorsOfSim) {
+										// no curve for time, since time is xDateReference
+										if (dg.getId().equals(xDataRef)) {
+											continue;
+										}
+										String curveId = "curve_" + plot3dId + "_" + dg.getName();
+										String datasetYId = "__data_set__" + plot3dId + dg.getName();
+	
+										DataSet yDataSet = new DataSet(datasetYId, dg.getName(), dg.getId(), dg.getId());
+										sedmlReport.addDataSet(yDataSet);
+										curveCnt++;
 									}
-									String curveId = "curve_" + plot3dId + "_" + dg.getName();
-									String datasetYId = "__data_set__" + plot3dId + dg.getName();
-
-									DataSet yDataSet = new DataSet(datasetYId, dg.getName(), dg.getId(), dg.getId());
-									sedmlReport.addDataSet(yDataSet);
-									curveCnt++;
+									sedmlModel.addOutput(sedmlReport);
 								}
-								sedmlModel.addOutput(sedmlReport);
 							}
 						}
 					}
