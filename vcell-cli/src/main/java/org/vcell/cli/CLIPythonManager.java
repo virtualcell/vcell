@@ -194,7 +194,7 @@ public class CLIPythonManager {
         }
 
         // Got the results we need. Now lets clean the results string up before returning it
-        results = stripString(results.substring(0, results.length() - importantPrefix.length()));
+        results = CLIUtils.stripString(results.substring(0, results.length() - importantPrefix.length()));
 
         return results == "" ? null : results;
     }
@@ -203,7 +203,7 @@ public class CLIPythonManager {
     private void sendNewCommand(String cmd) throws IOException {
         // we can easily send the command, but we need to format it first.
 
-        String command = String.format("%s\n", stripString(cmd));
+        String command = String.format("%s\n", CLIPythonManager.stripStringForPython(cmd));
         pythonOSW.write(command);
         pythonOSW.flush();
     }
@@ -254,7 +254,7 @@ public class CLIPythonManager {
         String ERROR_PHRASE1 = "Traceback", ERROR_PHRASE2 = "File \"<stdin>\"";
 
         // Null or empty strings are considered passing results
-        if(returnedString == null || (returnedString = stripString(returnedString)).equals(""))
+        if(returnedString == null || (returnedString = CLIUtils.stripString(returnedString)).equals(""))
             return true;
 
         if (
@@ -275,7 +275,7 @@ public class CLIPythonManager {
     }
 
     private String formatPythonFuctionCall(String functionName, String... arguments){
-        return String.format("wrapper.%s(%s)", stripString(functionName), this.processPythonArguments(arguments));
+        return String.format("wrapper.%s(%s)", CLIUtils.stripString(functionName), this.processPythonArguments(arguments));
     }
 
 
@@ -283,7 +283,7 @@ public class CLIPythonManager {
         String argList = "";
         int adjArgLength;
         for (String arg : arguments){
-            argList += "r'" + stripString(arg) + "'" + ",";
+            argList += "r\"" + CLIUtils.stripString(arg) + "\",";
         }
         adjArgLength = argList.length() == 0 ? 0 : argList.length() - 1;
         return argList.substring(0, adjArgLength);
@@ -296,7 +296,8 @@ public class CLIPythonManager {
         return sw.getBuffer().toString();
     }
 
-    public static String stripString(String str){
-        return str.replaceAll("^[ \t]+|[ \t]+$", ""); // replace whitespace at the front and back with nothing
+    private static String stripStringForPython(String str){
+        String s = CLIUtils.stripString(str);
+        return s.replaceAll("([\"])+", "'");
     }
 }
