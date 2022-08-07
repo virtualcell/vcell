@@ -3481,7 +3481,12 @@ public class SBMLImporter {
 										+ e.getMessage(), e);
 					}
 				}
+				// specify default volume sampling (can be overridden by vcell-specific annotation)
+				vcGsd.setVolumeSampleSize(vcGeometry.getGeometrySpec().getDefaultSampledImageSize());
+				// read vcell-specific annotation for volume sampling
+				readGeometrySamplingAnnotation(analyticGeometryDefinition, vcGsd);
 			}
+
 			SampledFieldGeometry sfg = BeanUtils.downcast(SampledFieldGeometry.class, selectedGeometryDefinition);
 			if (sfg != null) {
 				ListOf<SampledVolume> sampledVolumes = sfg.getListOfSampledVolumes();
@@ -3528,6 +3533,10 @@ public class SBMLImporter {
 					vcellCSGObject.setRoot(getVCellCSGNode(sbmlCSGObject.getCSGNode()));
 				}
 
+				// specify default volume sampling (can be overridden by vcell-specific annotation)
+				vcGsd.setVolumeSampleSize(vcGeometry.getGeometrySpec().getDefaultSampledImageSize());
+				// read vcell-specific annotation for volume sampling
+				readGeometrySamplingAnnotation(analyticGeometryDefinition, vcGsd);
 				vcGeometry.getGeometrySpec().setSubVolumes(vcCSGSubVolumes);
 			}
 
@@ -3838,6 +3847,37 @@ public class SBMLImporter {
 			throw new SBMLImportException(
 					"Unable to create VC structureMappings from SBML compartment mappings : "
 							+ e.getMessage(), e);
+		}
+	}
+
+	private static void readGeometrySamplingAnnotation(GeometryDefinition sbmlGeometryDefinition, GeometrySurfaceDescription vcGsd) throws PropertyVetoException {
+		XMLNode geometryDefinitionNonRdfAnnotation = sbmlGeometryDefinition.getAnnotation().getNonRDFannotation();
+		if (geometryDefinitionNonRdfAnnotation != null) {
+			XMLNode geometrySamplingElement = geometryDefinitionNonRdfAnnotation.getChildElement(XMLTags.SBML_VCELL_GeometrySamplingTag, "*");
+			if (geometrySamplingElement != null) {
+				int numX = 1;
+				int numY = 1;
+				int numZ = 1;
+				double cutoffFrequency = 0.3;
+				int attrIndexX = geometrySamplingElement.getAttrIndex(XMLTags.SBML_VCELL_GeometrySamplingTag_numXAttr, SBMLUtils.SBML_VCELL_NS);
+				if (attrIndexX >= 0) {
+					numX = Integer.parseInt(geometrySamplingElement.getAttrValue(attrIndexX));
+				}
+				int attrIndexY = geometrySamplingElement.getAttrIndex(XMLTags.SBML_VCELL_GeometrySamplingTag_numYAttr, SBMLUtils.SBML_VCELL_NS);
+				if (attrIndexY >= 0) {
+					numY = Integer.parseInt(geometrySamplingElement.getAttrValue(attrIndexY));
+				}
+				int attrIndexZ = geometrySamplingElement.getAttrIndex(XMLTags.SBML_VCELL_GeometrySamplingTag_numZAttr, SBMLUtils.SBML_VCELL_NS);
+				if (attrIndexZ >= 0) {
+					numZ = Integer.parseInt(geometrySamplingElement.getAttrValue(attrIndexZ));
+				}
+				int attrIndexC = geometrySamplingElement.getAttrIndex(XMLTags.SBML_VCELL_GeometrySamplingTag_cutoffFrequencyAttr, SBMLUtils.SBML_VCELL_NS);
+				if (attrIndexC >= 0) {
+					cutoffFrequency = Double.parseDouble(geometrySamplingElement.getAttrValue(attrIndexC));
+				}
+				vcGsd.setVolumeSampleSize(new ISize(numX,numY,numZ));
+				vcGsd.setFilterCutoffFrequency(cutoffFrequency);
+			}
 		}
 	}
 

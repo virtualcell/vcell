@@ -908,8 +908,7 @@ private MathCompareResults compareInvariantAttributes(MathDescription newMathDes
 	if (!Compare.isEqualOrNull(
 			(geometry != null?geometry.getGeometrySpec():null),
 			(newMathDesc.geometry != null?newMathDesc.geometry.getGeometrySpec():null))) {
-		logger.error("MathGeneration.geometrySpecs didn't match, ignoring: "+Decision.MathDifferent_GEOMETRYSPEC_DIFFERENT);
-		// return new MathCompareResults(Decision.MathDifferent_GEOMETRYSPEC_DIFFERENT);
+		return new MathCompareResults(Decision.MathDifferent_GEOMETRYSPEC_DIFFERENT);
 	}
 
 	if (bAlreadyFlattened){

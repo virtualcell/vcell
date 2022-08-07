@@ -349,8 +349,14 @@ public class XMLTags {
     public final static String OutsideCompartmentTag = "OutsideCompartment";
     // to be used in SBML child annotations of the sbml:compartmnent element.
     public final static String SBML_VCELL_CompartmentTopologyTag = "CompartmentTopology";
-        public final static String SBML_VCELL_CompartmentTopologyTag_insideCompartmentAttr = "insideCompartment";
-        public final static String SBML_VCELL_CompartmentTopologyTag_outsideCompartmentAttr = "ousideCompartment";
+    public final static String SBML_VCELL_CompartmentTopologyTag_insideCompartmentAttr = "insideCompartment";
+    public final static String SBML_VCELL_CompartmentTopologyTag_outsideCompartmentAttr = "ousideCompartment";
+    // to round trip with same geometry sampling.
+    public final static String SBML_VCELL_GeometrySamplingTag = "GeometrySampling";
+    public final static String SBML_VCELL_GeometrySamplingTag_numXAttr = "numX";
+    public final static String SBML_VCELL_GeometrySamplingTag_numYAttr = "numY";
+    public final static String SBML_VCELL_GeometrySamplingTag_numZAttr = "numZ";
+    public final static String SBML_VCELL_GeometrySamplingTag_cutoffFrequencyAttr = "cutoffFrequency";
     public final static String MeshTag = "Mesh";
     public final static String SizeTag = "Size";
     public final static String XAttrTag = "X";

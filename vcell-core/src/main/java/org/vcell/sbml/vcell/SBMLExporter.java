@@ -28,36 +28,7 @@ import org.jdom.Element;
 import org.jdom.Namespace;
 import org.sbml.jsbml.*;
 import org.sbml.jsbml.Unit.Kind;
-import org.sbml.jsbml.ext.spatial.AdjacentDomains;
-import org.sbml.jsbml.ext.spatial.AdvectionCoefficient;
-import org.sbml.jsbml.ext.spatial.AnalyticGeometry;
-import org.sbml.jsbml.ext.spatial.AnalyticVolume;
-import org.sbml.jsbml.ext.spatial.Boundary;
-import org.sbml.jsbml.ext.spatial.BoundaryCondition;
-import org.sbml.jsbml.ext.spatial.BoundaryConditionKind;
-import org.sbml.jsbml.ext.spatial.CSGeometry;
-import org.sbml.jsbml.ext.spatial.CompartmentMapping;
-import org.sbml.jsbml.ext.spatial.CompressionKind;
-import org.sbml.jsbml.ext.spatial.CoordinateComponent;
-import org.sbml.jsbml.ext.spatial.CoordinateKind;
-import org.sbml.jsbml.ext.spatial.DataKind;
-import org.sbml.jsbml.ext.spatial.DiffusionCoefficient;
-import org.sbml.jsbml.ext.spatial.DiffusionKind;
-import org.sbml.jsbml.ext.spatial.Domain;
-import org.sbml.jsbml.ext.spatial.DomainType;
-import org.sbml.jsbml.ext.spatial.FunctionKind;
-import org.sbml.jsbml.ext.spatial.GeometryKind;
-import org.sbml.jsbml.ext.spatial.InteriorPoint;
-import org.sbml.jsbml.ext.spatial.InterpolationKind;
-import org.sbml.jsbml.ext.spatial.SampledField;
-import org.sbml.jsbml.ext.spatial.SampledFieldGeometry;
-import org.sbml.jsbml.ext.spatial.SampledVolume;
-import org.sbml.jsbml.ext.spatial.SetOperation;
-import org.sbml.jsbml.ext.spatial.SpatialCompartmentPlugin;
-import org.sbml.jsbml.ext.spatial.SpatialModelPlugin;
-import org.sbml.jsbml.ext.spatial.SpatialParameterPlugin;
-import org.sbml.jsbml.ext.spatial.SpatialReactionPlugin;
-import org.sbml.jsbml.ext.spatial.SpatialSymbolReference;
+import org.sbml.jsbml.ext.spatial.*;
 import org.sbml.jsbml.text.parser.ParseException;
 import org.sbml.jsbml.validator.SBMLValidator;
 import org.sbml.jsbml.xml.XMLNode;
@@ -1988,6 +1959,7 @@ private void addGeometry() throws SbmlException {
 				}
 			}
 		}
+		addGeometrySamplingAnnotation(dimension, vcGSD, sbmlAnalyticGeomDefinition);
 	}
 	//
 	// add CSGeometry
@@ -2008,6 +1980,7 @@ private void addGeometry() throws SbmlException {
 				sbmlCSGObject.setCSGNode(sbmlcsgNode);
 			}
 		}
+		addGeometrySamplingAnnotation(dimension, vcGSD, sbmlCSGeomDefinition);
 	}
 	//
 	// add "Segmented" and "DistanceMap" SampledField Geometries
@@ -2169,7 +2142,25 @@ System.err.println("should be:\n  distanceMapImageData.setSamples((float[])signe
 //	}
 }
 
-private boolean goodPointer(Object obj, Class<?> clzz, String sourceName) {
+	private void addGeometrySamplingAnnotation(int dimension, GeometrySurfaceDescription vcGSD, GeometryDefinition sbmlGeomDefinition) {
+		// add custom vcell annotation for the SBML compartment element
+		try {
+			Element geometrySamplingElement = new Element(XMLTags.SBML_VCELL_GeometrySamplingTag, sbml_vcml_ns);
+			geometrySamplingElement.setAttribute(XMLTags.SBML_VCELL_GeometrySamplingTag_numXAttr, Integer.toString(vcGSD.getVolumeSampleSize().getX()), sbml_vcml_ns);
+			if (dimension > 1) {
+				geometrySamplingElement.setAttribute(XMLTags.SBML_VCELL_GeometrySamplingTag_numYAttr, Integer.toString(vcGSD.getVolumeSampleSize().getY()), sbml_vcml_ns);
+			}
+			if (dimension > 2) {
+				geometrySamplingElement.setAttribute(XMLTags.SBML_VCELL_GeometrySamplingTag_numZAttr, Integer.toString(vcGSD.getVolumeSampleSize().getZ()), sbml_vcml_ns);
+			}
+			geometrySamplingElement.setAttribute(XMLTags.SBML_VCELL_GeometrySamplingTag_cutoffFrequencyAttr, Double.toString(vcGSD.getFilterCutoffFrequency()), sbml_vcml_ns);
+			sbmlGeomDefinition.getAnnotation().appendNonRDFAnnotation(XmlUtil.xmlToString(geometrySamplingElement));
+		} catch (XMLStreamException e){
+			logger.error("failed to add optional vcell-specific GeometrySampling annotation to SBML", e);
+		}
+	}
+
+	private boolean goodPointer(Object obj, Class<?> clzz, String sourceName) {
 	if (obj == null) {
 		if (lg.isWarnEnabled()) {
 			lg.warn(sourceName + " has no " + clzz.getSimpleName());
