@@ -19,28 +19,24 @@ import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.units.VCUnitDefinition;
 import cbit.vcell.units.VCUnitSystem;
 
-@Ignore
 public class SBMLUnitTranslatorTest {
 
 	public static File[] getBiomodelsCuratedSBMLFiles(){
 		File[] sbmlFiles = new File("/Users/schaff/Documents/workspace-maven/BioModels_Database-r30_pub-sbml_files/curated/").listFiles();
 		return sbmlFiles;
 	}
-	
+
+	@Ignore
 	@Test
 	public void testSBMLtoVCell() throws XMLStreamException, IOException, SbmlException {
-		File[] sbmlFiles = getBiomodelsCuratedSBMLFiles();
+		int[] biomodelsIds = SbmlTestSuiteFiles.getBiomodelsModels();
 //		File[] sbmlFiles = new File[] {
 //				new File("/Users/schaff/Documents/workspace-maven/BioModels_Database-r30_pub-sbml_files/curated/BIOMD0000000001.xml"),
 //				new File("/Users/schaff/Documents/workspace-maven/BioModels_Database-r30_pub-sbml_files/curated/BIOMD0000000101.xml"),
 //			new File("/Users/schaff/Documents/workspace-maven/sbml-test-suite/cases/semantic/00001/00001-sbml-l3v1.xml")
 //		};
-		for (File sbmlFile : sbmlFiles){
-			if (sbmlFile.getName().equals("BIOMD0000000539.xml")){
-				System.err.println("skipping this model, seems like a bug in jsbml  RenderParser.processEndDocument() ... line 403 ... wrong constant for extension name");
-				continue;
-			}
-			SBMLDocument doc = SBMLReader.read(sbmlFile);
+		for (int biomodelId : biomodelsIds){
+			SBMLDocument doc = SBMLReader.read(SbmlTestSuiteFiles.getSbmlTestCase(biomodelId));
 			BioModel bioModel = new BioModel(null);
 			VCUnitSystem unitSystem = bioModel.getModel().getUnitSystem();
 			Model sbmlModel = doc.getModel();
@@ -68,7 +64,6 @@ public class SBMLUnitTranslatorTest {
 					System.out.println("found bigger unit, "+sbmlUnitDef);
 				}
 			}
-			if (sbmlFile == sbmlFiles[0]){
 				System.out.println("sbml length unit = "+sbmlModel.getLengthUnitsInstance()+", idref="+sbmlModel.getLengthUnits());
 				System.out.println("sbml area unit = "+sbmlModel.getAreaUnitsInstance()+", idref="+sbmlModel.getAreaUnits());
 				System.out.println("sbml volume unit = "+sbmlModel.getVolumeUnitsInstance()+", idref="+sbmlModel.getVolumeUnits());
@@ -94,8 +89,7 @@ public class SBMLUnitTranslatorTest {
 		//				}
 		//			}
 				}
-			}
-		}		
+		}
 	}
 
 }

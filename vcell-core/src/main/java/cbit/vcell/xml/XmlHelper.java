@@ -455,14 +455,9 @@ public class XmlHelper {
 			}
 		}
 		VCDocument vcDoc = null;
-//    if (!bSpatial) {
 		boolean bValidateSBML = false;
-		SBMLImporter sbmlImporter = new SBMLImporter(sbmlFile.getAbsolutePath(), vcLogger, bSpatial, bValidateSBML);
+		SBMLImporter sbmlImporter = new SBMLImporter(sbmlFile.getAbsolutePath(), vcLogger, bValidateSBML);
 		vcDoc = sbmlImporter.getBioModel();
-//    } else {
-//    	SBMLSpatialImporter sbmlSpatialImporter = new SBMLSpatialImporter(sbmlFile.getAbsolutePath(), vcLogger);
-//    	vcDoc = sbmlSpatialImporter.getBioModel();
-//    }
 
 		vcDoc.refreshDependencies();
 		logger.info("Succesful model import: SBML file "+sbmlFile);

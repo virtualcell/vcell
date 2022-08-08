@@ -10,6 +10,9 @@
 
 package cbit.vcell.parser;
 
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -21,6 +24,8 @@ import java.util.Map;
  * @author: Jim Schaff
  */
 public abstract class AbstractNameScope implements NameScope, java.io.Serializable {
+
+	private final static Logger logger = LogManager.getLogger(AbstractNameScope.class);
 /**
  * AbstractNameScope constructor comment.
  */
@@ -268,7 +273,7 @@ public String getRelativeScopePrefix(NameScope referenceNameScope) {
 	}else if (referenceNameScope == this || referenceNameScope.isPeer(this)){
 		return "";
 	}else{
-		System.out.println("AbstractNameScope.getRelativeScopePrefix() scopes '"+name+"' and '"+referenceNameScope.getName()+"' are unrelated");
+		logger.warn("AbstractNameScope.getRelativeScopePrefix() scopes '"+name+"' and '"+referenceNameScope.getName()+"' are unrelated");
 		return "UNRESOLVED.";
 		//throw new RuntimeException("scopes are unrelated");
 	}
@@ -327,7 +332,7 @@ public String getSymbolName(SymbolTableEntry symbolTableEntry) {
 	}
 	if (symbolTableEntry.getNameScope()==null){
 		//throw new RuntimeException("NameScope can't resolve bound symbol '"+symbolTableEntry.getName()+"', symbol has no scope");
-		System.out.println("AbstractNameScope.getSymbolName() can't resolve bound symbol '"+symbolTableEntry.getName()+"', symbol has no scope");
+		logger.warn("AbstractNameScope.getSymbolName() can't resolve bound symbol '"+symbolTableEntry.getName()+"', symbol has no scope");
 		return symbolTableEntry.getName();
 	}else{
 		if (symbolTableEntry.getNameScope() == this){
@@ -358,7 +363,6 @@ public String getSymbolName(SymbolTableEntry symbolTableEntry) {
  * @param unboundName java.lang.String
  */
 public String getUnboundSymbolName(String unboundName) {
-	//System.out.println("AbstractNameScope.getUnboundSymbolName("+unboundName+"): within scope "+getName());
 	return unboundName;
 }
 /**
@@ -429,7 +433,8 @@ public void findReferences(SymbolTableEntry symbolTableEntry, ArrayList<SymbolTa
 			//
 			if (boundSTE == symbolTableEntry || ((boundSTE instanceof SymbolProxy) && ((SymbolProxy)boundSTE).getTarget() == symbolTableEntry)){
 				if (references.contains(localSTE)){
-					System.err.println("found duplicate referenced to "+localSTE.getClass().getName()+"("+localSTE.getName()+") when looking for references to ste "+symbolTableEntry.getName());
+					logger.error("found duplicate referenced to "+localSTE.getClass().getName()+"("+localSTE.getName()+")" +
+							" when looking for references to ste "+symbolTableEntry.getName(), new RuntimeException("dumping stack trace"));
 					Thread.dumpStack();
 				}else{
 					references.add(localSTE);

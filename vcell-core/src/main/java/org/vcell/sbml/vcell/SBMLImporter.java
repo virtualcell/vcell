@@ -76,10 +76,7 @@ import org.vcell.util.document.BioModelChildSummary;
 
 import javax.xml.stream.XMLStreamException;
 import java.beans.PropertyVetoException;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.PrintStream;
+import java.io.*;
 import java.nio.charset.Charset;
 import java.util.*;
 import java.util.Map.Entry;
@@ -109,10 +106,10 @@ public class SBMLImporter {
 	 */
 	private static final String DELAY_URL = "www.sbml.org/sbml/symbols/delay";
 
+	private final InputStream sbmlInputStream;
 	private final String sbmlFileName;
 	private org.sbml.jsbml.Model sbmlModel = null;
 	private final VCLogger vcLogger;
-	private final boolean bSpatial;
 	private final boolean bValidateSBML;
 	private boolean isFromVCell;
 
@@ -126,19 +123,27 @@ public class SBMLImporter {
 	private final static String REACTION = XMLTags.ReactionTag;
 	private final static String OUTSIDE_COMP_NAME = XMLTags.OutsideCompartmentTag;
 
-	public SBMLImporter(org.sbml.jsbml.Model sbmlModel, VCLogger argVCLogger, boolean isSpatial, boolean bValidateSBML) {
-		this((String) null, argVCLogger, isSpatial, bValidateSBML);
+	public SBMLImporter(org.sbml.jsbml.Model sbmlModel, VCLogger argVCLogger, boolean bValidateSBML) {
+		this((String) null, argVCLogger, bValidateSBML);
 		if (sbmlModel == null) throw new NullPointerException("Model must not be null");
 		this.sbmlModel = sbmlModel;
 	}
-	public SBMLImporter(String argSbmlFileName, VCLogger argVCLogger, boolean isSpatial, boolean bValidateSBML) {
+	public SBMLImporter(String argSbmlFileName, VCLogger argVCLogger, boolean bValidateSBML) {
 		super();
+		this.sbmlInputStream = null;
 		this.sbmlFileName = argSbmlFileName;
 		this.vcLogger = argVCLogger;
-		this.bSpatial = isSpatial;
 		this.bValidateSBML = bValidateSBML;
 	}
-	
+
+	public SBMLImporter(InputStream sbmlInputStream, VCLogger argVCLogger, boolean bValidateSBML) {
+		super();
+		this.sbmlInputStream = sbmlInputStream;
+		this.sbmlFileName = null;
+		this.vcLogger = argVCLogger;
+		this.bValidateSBML = bValidateSBML;
+	}
+
 	private static Expression flattenUnbound(Expression originalExpression, SimulationContext simContext, Map<String, SymbolTableEntry> entryMap, int depth) throws ExpressionException {
 		if(depth > 20) {
 			throw new ExpressionException("Too many iterations.");
@@ -235,11 +240,13 @@ public class SBMLImporter {
 				if (!compartment.isSetSpatialDimensions() || compartment.getSpatialDimensions() == 3) {
 					Feature feature = new Feature(compartmentSid);
 					sbmlSymbolMapping.putStructure(compartment, feature);
+					sbmlSymbolMapping.putRuntime(compartment, feature.getStructureSize());
 					structList.add(structIndx, feature);
 					structureNameMap.put(compartmentSid, feature);
 				} else if (compartment.getSpatialDimensions() == 2) { // spatial dimensions is set (see clause above)
 					Membrane membrane = new Membrane(compartmentSid);
 					sbmlSymbolMapping.putStructure(compartment, membrane);
+					sbmlSymbolMapping.putRuntime(compartment, membrane.getStructureSize());
 					structList.add(structIndx, membrane);
 					structureNameMap.put(compartmentSid, membrane);
 				} else {
@@ -373,7 +380,7 @@ public class SBMLImporter {
 
 		if (sbmlModel.getNumEvents() > 0) {
 			// VCell does not support events in spatial model
-			if (bSpatial) {
+			if (vcBioModel.getSimulationContext(0).getGeometry().getDimension() > 0) {
 				throw new SBMLImportException("Events are not supported in a spatial VCell model.");
 			}
 
@@ -1189,8 +1196,9 @@ public class SBMLImporter {
 				continue;
 			}
 			RateRule rateRule = (RateRule) rule;
-			Expression sbmlExpression = sbmlSymbolMapping.getRateRuleSBMLExpression(rateRule.getVariableInstance());
-			EditableSymbolTableEntry vcellTargetSte = sbmlSymbolMapping.getRuntimeSte(rateRule.getVariableInstance());
+			SBase sbmlTarget = sbmlModel.getSBaseById(rateRule.getVariable());
+			Expression sbmlExpression = sbmlSymbolMapping.getRateRuleSBMLExpression(sbmlTarget);
+			EditableSymbolTableEntry vcellTargetSte = sbmlSymbolMapping.getRuntimeSte(sbmlTarget);
 			try {
 				String vcRuleName = simContext.getFreeRateRuleName();
 				Expression vcExpression = adjustExpression(sbmlModel, sbmlExpression, vcellTargetSte.getNameScope(), sbmlSymbolMapping, SymbolContext.RUNTIME);
@@ -1534,7 +1542,7 @@ public class SBMLImporter {
 	 */
 	public BioModel getBioModel() throws XMLStreamException, IOException {
 		
-		if (sbmlFileName == null && sbmlModel == null) {
+		if (sbmlFileName == null && sbmlModel == null && sbmlInputStream == null) {
 			throw new IllegalStateException("Expected non-null SBML model");
 		}
 		
@@ -1542,7 +1550,10 @@ public class SBMLImporter {
 		if (sbmlFileName != null) {
 			document = readSbmlDocument(new File(sbmlFileName));
 			sbmlModel = document.getModel();
-		} else {	// sbmlModel != null
+		} else if (sbmlInputStream != null) {
+			document = readSbmlDocument(this.sbmlInputStream);
+			sbmlModel = document.getModel();
+		} else { // sbmlModel != null
 			document = sbmlModel.getSBMLDocument();
 		}
 		// get namespace and SBML model level to use in SBMLAnnotationUtil
@@ -1610,7 +1621,7 @@ public class SBMLImporter {
 		// translate read SBML model and import contents into VCell BioModel
 		//
 		try {
-			translateSBMLModel(sbmlModel, vcBioModel, sbmlAnnotationUtil, bSpatial, sbmlUnitIdentifierHash, sbmlSymbolMapping, vcLogger);
+			translateSBMLModel(sbmlModel, vcBioModel, sbmlAnnotationUtil, sbmlUnitIdentifierHash, sbmlSymbolMapping, vcLogger);
 			vcBioModel.refreshDependencies();
 		} catch(Exception e) {
 			throw new SBMLImportException("Failed to translate SBML model into BioModel: "+e.getMessage(), e);
@@ -1707,11 +1718,33 @@ public class SBMLImporter {
 		return document;
 	}
 
+	private SBMLDocument readSbmlDocument(InputStream sbmlInputStream) {
+		final String defaultErrorPrefix = "Unable to read SBML stream";
+		try {
+			SBMLReader reader = new SBMLReader();
+			SBMLDocument document = reader.readSBMLFromStream(new BufferedInputStream(sbmlInputStream));
+			// check for VCell origin
+			String topNotes = document.getNotesString();
+			if (topNotes != null && topNotes.contains("VCell")) {
+				isFromVCell  = true;
+			}
+			return document;
+
+		} catch(XMLStreamException e) {
+			throw new SBMLImportException("Unable to read SBML stream", e);
+		} finally {
+			try {
+				sbmlInputStream.close();
+			} catch (IOException e) {
+				throw new RuntimeException(e);
+			}
+		}
+	}
+
 	private static void validateSBMLDocument(SBMLDocument document) {
 		document.checkConsistencyOffline();
 		long numProblems = document.getNumErrors();
 
-		System.out.println("\n\nSBML Import Error Report");
 		ByteArrayOutputStream os = new ByteArrayOutputStream();
 		PrintStream ps = new PrintStream(os);
 		document.printErrors(ps);
@@ -2416,12 +2449,18 @@ public class SBMLImporter {
 	 * translateSBMLModel:
 	 */
 	private static void translateSBMLModel(org.sbml.jsbml.Model sbmlModel, BioModel vcBioModel,
-										   SBMLAnnotationUtil sbmlAnnotationUtil, boolean bSpatial,
+										   SBMLAnnotationUtil sbmlAnnotationUtil,
 										   Map<String, VCUnitDefinition> sbmlUnitIdentifierHash,
 										   SBMLSymbolMapping sbmlSymbolMapping, VCLogger vcLogger) {
 
 		final Vector<Issue> localIssueList = new Vector<>();
 		final IssueContext issueContext = new IssueContext();
+
+		boolean bSpatial = false;
+		SpatialModelPlugin mplugin = (SpatialModelPlugin) sbmlModel.getPlugin(SBMLUtils.SBML_SPATIAL_NS_PREFIX);
+		if (mplugin != null && mplugin.isSetGeometry()){
+			bSpatial = true;
+		}
 
 		// Add Function Definitions (Lambda functions).
 		LambdaFunction[] lambdaFunctions = addFunctionDefinitions(sbmlModel);
@@ -2446,7 +2485,9 @@ public class SBMLImporter {
 		final org.sbml.jsbml.ext.spatial.Geometry sbmlGeometry;
 		try {
 			sbmlGeometry = getSbmlGeometry(sbmlModel, localIssueList, issueContext);
-			geometryDimension = sbmlGeometry.getListOfCoordinateComponents().size();
+			if (sbmlGeometry != null) {
+				geometryDimension = sbmlGeometry.getListOfCoordinateComponents().size();
+			}
 		} catch (Exception e) {
 			throw new SBMLImportException(e.getMessage(), e);
 		}
@@ -2598,7 +2639,7 @@ public class SBMLImporter {
 		}
 		for (SBase initialAssignmentTargetSbase : sbmlSymbolMapping.getInitialAssignmentTargets()){
 			Expression sbmlExpr = sbmlSymbolMapping.getRuleSBMLExpression(initialAssignmentTargetSbase, SymbolContext.INITIAL);
-			EditableSymbolTableEntry initialAssignmentTargetSte = sbmlSymbolMapping.getInitialSte(initialAssignmentTargetSbase);
+			EditableSymbolTableEntry initialAssignmentTargetSte = sbmlSymbolMapping.getSte(initialAssignmentTargetSbase, SymbolContext.INITIAL);
 			try {
 				if (initialAssignmentTargetSte.isExpressionEditable()) {
 					Expression vcellExpr = adjustExpression(sbmlModel, sbmlExpr, initialAssignmentTargetSte.getNameScope(), sbmlSymbolMapping, SymbolContext.INITIAL);
@@ -2610,7 +2651,7 @@ public class SBMLImporter {
 		}
 		for (SBase assignmentRuleTargetSbase : sbmlSymbolMapping.getAssignmentRuleTargets()){
 			Expression sbmlExpr = sbmlSymbolMapping.getRuleSBMLExpression(assignmentRuleTargetSbase, SymbolContext.RUNTIME);
-			EditableSymbolTableEntry assignmentRuleTargetSte = sbmlSymbolMapping.getRuntimeSte(assignmentRuleTargetSbase);
+			EditableSymbolTableEntry assignmentRuleTargetSte = sbmlSymbolMapping.getSte(assignmentRuleTargetSbase, SymbolContext.RUNTIME);
 			try {
 				if (assignmentRuleTargetSte.isExpressionEditable()) {
 					Expression vcellExpr = adjustExpression(sbmlModel, sbmlExpr, assignmentRuleTargetSte.getNameScope(), sbmlSymbolMapping, SymbolContext.RUNTIME);
@@ -2846,7 +2887,7 @@ public class SBMLImporter {
 						// if spatial SBML ('isSpatial' attribute set), create DistributedKinetics)
 						SpatialReactionPlugin ssrplugin = (SpatialReactionPlugin) sbmlReaction.getPlugin(SBMLUtils.SBML_SPATIAL_NS_PREFIX);
 						// (a) the requiredElements attributes should be 'spatial'
-						if (ssrplugin != null && ssrplugin.getIsLocal()) {
+						if (ssrplugin != null && ssrplugin.isSetIsLocal() && ssrplugin.getIsLocal()) {
 							kinetics = new GeneralKinetics(vcReaction);
 						} else {
 							kinetics = new GeneralLumpedKinetics(vcReaction);

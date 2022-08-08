@@ -254,9 +254,8 @@ public class SBMLStandaloneImporter {
 					lg.info("read name " + file.getCanonicalPath()); 
 				}
 				if (file != null) {
-					boolean bIsSpatial = false;
 					boolean bValidate = true;
-					SBMLImporter importer = new SBMLImporter(file.getAbsolutePath(), this, bIsSpatial, bValidate);
+					SBMLImporter importer = new SBMLImporter(file.getAbsolutePath(), this, bValidate);
 					return importer.getBioModel();
 				}
 				return null;
