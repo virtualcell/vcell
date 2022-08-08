@@ -57,6 +57,7 @@ import org.jlibsedml.Task;
 import org.jlibsedml.UniformRange;
 import org.jlibsedml.UniformRange.UniformType;
 import org.jlibsedml.UniformTimeCourse;
+import org.jlibsedml.Variable;
 import org.jlibsedml.VariableSymbol;
 import org.jlibsedml.VectorRange;
 import org.jlibsedml.XPathTarget;
@@ -608,7 +609,7 @@ public class SEDMLExporter {
 									SymbolTableEntry ste = getSymbolTableEntryForModelEntity(mathSymbolMapping, scannedConstName);
 									XPathTarget target = getTargetAttributeXPath(ste, l2gMap);
 									//ASTNode math1 = new ASTCi(r.getId());		// was scannedConstName
-									ASTNode math1 = Libsedml.parseFormulaString(r.getId());
+									ASTNode math1 = Libsedml.parseFormulaString(r.getId());		// here the math is always the range id expression
 									SetValue setValue = new SetValue(target, r.getId(), simContextId);
 									setValue.setMath(math1);
 									rt.addChange(setValue);
@@ -685,7 +686,7 @@ public class SEDMLExporter {
 									SymbolTableEntry ste = getSymbolTableEntryForModelEntity(mathSymbolMapping, scannedConstName);
 									XPathTarget target = getTargetAttributeXPath(ste, l2gMap);
 									// TODO: math needs to refer to the parameter id, not name
-									ASTNode math1 = Libsedml.parseFormulaString(r.getId());
+									ASTNode math1 = Libsedml.parseFormulaString(r.getId());		// here the math is always the range id expression
 									SetValue setValue = new SetValue(target, r.getId(), overriddenSimContextId);
 									setValue.setMath(math1);
 									rt.addChange(setValue);
@@ -721,24 +722,25 @@ public class SEDMLExporter {
 									}
 									// (scanned parameter in expr) ? (add setValue for unscanned param in repeatedTask) : (add computeChange to modifiedModel)
 									if (bHasScannedParameter) {
+										Map<String, XPathTarget> symbolToTargetMap = new LinkedHashMap<>();
 										// create setValue for unscannedParamName (which contains a scanned param in its expression)
-										// TODO: in the unscanned param expression we need to substituteInPlace the local var with the global var (ex replace Kf with Kf_r0)
-
 										String[] symbols = unscannedParamExpr.getSymbols();
 										for(String symbol : symbols) {
 											SymbolTableEntry entry = getSymbolTableEntryForModelEntity(mathSymbolMapping, symbol);
 											XPathTarget target = getTargetAttributeXPath(entry, l2gMap);
-											String sTarget = target.toString();
-											String prefix = "@id='";
-											if(sTarget.contains(prefix)) {
-												sTarget = sTarget.substring(sTarget.lastIndexOf(prefix) + prefix.length());
-												sTarget = sTarget.substring(0, sTarget.indexOf("']"));
-												System.out.println(" " + sTarget);
-											}
-											unscannedParamExpr.substituteInPlace(new Expression(symbol), new Expression(sTarget));
+											symbolToTargetMap.put(symbol, target);
+											
+//											XPathTarget target = getTargetAttributeXPath(entry, l2gMap);
+//											String sTarget = target.toString();
+//											String prefix = "@id='";
+//											if(sTarget.contains(prefix)) {
+//												sTarget = sTarget.substring(sTarget.lastIndexOf(prefix) + prefix.length());
+//												sTarget = sTarget.substring(0, sTarget.indexOf("']"));
+//												System.out.println(" " + sTarget);
+//											}
+//											unscannedParamExpr.substituteInPlace(new Expression(symbol), new Expression(sTarget));
 										}
 										
-										ASTNode math = Libsedml.parseFormulaString(unscannedParamExpr.infix());
 										SymbolTableEntry entry = getSymbolTableEntryForModelEntity(mathSymbolMapping, unscannedParamName);
 										XPathTarget target = getTargetAttributeXPath(entry, l2gMap);
 										Set<String> rangeIdSet = new HashSet<>();
@@ -748,6 +750,14 @@ public class SEDMLExporter {
 										}
 										for(String rangeId : rangeIdSet) {
 											SetValue setValue = new SetValue(target, rangeId, overriddenSimContextId);	// @TODO: we have no range??
+											Expression expr = new Expression(unscannedParamExpr);
+											for(String symbol : symbols) {
+												String symbolName = rangeId + "_" + symbol;
+												Variable sedmlVar = new Variable(symbolName, symbolName, rangeId, symbolToTargetMap.get(symbol).toString());	// sbmlSupport.getXPathForSpecies(symbol));
+												setValue.addVariable(sedmlVar);
+												expr.substituteInPlace(new Expression(symbol), new Expression(symbolName));
+											}
+											ASTNode math = Libsedml.parseFormulaString(expr.infix());
 											setValue.setMath(math);
 											RepeatedTask rtRecovered = rangeToRepeatedTaskHash.get(rangeId);
 											rtRecovered.addChange(setValue);
