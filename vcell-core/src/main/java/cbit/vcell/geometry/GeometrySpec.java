@@ -377,7 +377,7 @@ public boolean compareEqual(Matchable object) {
 	if (dimension != geometrySpec.dimension){
 		return false;
 	}
-	if (!Compare.isEqual(getExtent(), geometrySpec.getExtent())){
+	if (!Compare.isEqual(getExtent().getAsClipped(dimension), geometrySpec.getExtent().getAsClipped(dimension))){
 		return false;
 	}
 

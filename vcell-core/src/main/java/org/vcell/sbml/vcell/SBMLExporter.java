@@ -20,59 +20,18 @@ import java.util.Set;
 
 import javax.xml.stream.XMLStreamException;
 
+import cbit.util.xml.XmlUtil;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.bouncycastle.crypto.RuntimeCryptoException;
 import org.jdom.Element;
 import org.jdom.Namespace;
-import org.sbml.jsbml.ASTNode;
-import org.sbml.jsbml.AssignmentRule;
-import org.sbml.jsbml.Compartment;
-import org.sbml.jsbml.Delay;
-import org.sbml.jsbml.Event;
-import org.sbml.jsbml.InitialAssignment;
-import org.sbml.jsbml.SBMLDocument;
-import org.sbml.jsbml.SBMLErrorLog;
-import org.sbml.jsbml.SBMLException;
-import org.sbml.jsbml.SBMLWriter;
-import org.sbml.jsbml.SimpleSpeciesReference;
-import org.sbml.jsbml.SpeciesReference;
-import org.sbml.jsbml.Trigger;
-import org.sbml.jsbml.Unit;
+import org.sbml.jsbml.*;
 import org.sbml.jsbml.Unit.Kind;
-import org.sbml.jsbml.UnitDefinition;
-import org.sbml.jsbml.ext.spatial.AdjacentDomains;
-import org.sbml.jsbml.ext.spatial.AdvectionCoefficient;
-import org.sbml.jsbml.ext.spatial.AnalyticGeometry;
-import org.sbml.jsbml.ext.spatial.AnalyticVolume;
-import org.sbml.jsbml.ext.spatial.Boundary;
-import org.sbml.jsbml.ext.spatial.BoundaryCondition;
-import org.sbml.jsbml.ext.spatial.BoundaryConditionKind;
-import org.sbml.jsbml.ext.spatial.CSGeometry;
-import org.sbml.jsbml.ext.spatial.CompartmentMapping;
-import org.sbml.jsbml.ext.spatial.CompressionKind;
-import org.sbml.jsbml.ext.spatial.CoordinateComponent;
-import org.sbml.jsbml.ext.spatial.CoordinateKind;
-import org.sbml.jsbml.ext.spatial.DataKind;
-import org.sbml.jsbml.ext.spatial.DiffusionCoefficient;
-import org.sbml.jsbml.ext.spatial.DiffusionKind;
-import org.sbml.jsbml.ext.spatial.Domain;
-import org.sbml.jsbml.ext.spatial.DomainType;
-import org.sbml.jsbml.ext.spatial.FunctionKind;
-import org.sbml.jsbml.ext.spatial.GeometryKind;
-import org.sbml.jsbml.ext.spatial.InteriorPoint;
-import org.sbml.jsbml.ext.spatial.InterpolationKind;
-import org.sbml.jsbml.ext.spatial.SampledField;
-import org.sbml.jsbml.ext.spatial.SampledFieldGeometry;
-import org.sbml.jsbml.ext.spatial.SampledVolume;
-import org.sbml.jsbml.ext.spatial.SetOperation;
-import org.sbml.jsbml.ext.spatial.SpatialCompartmentPlugin;
-import org.sbml.jsbml.ext.spatial.SpatialModelPlugin;
-import org.sbml.jsbml.ext.spatial.SpatialParameterPlugin;
-import org.sbml.jsbml.ext.spatial.SpatialReactionPlugin;
-import org.sbml.jsbml.ext.spatial.SpatialSymbolReference;
+import org.sbml.jsbml.ext.spatial.*;
 import org.sbml.jsbml.text.parser.ParseException;
 import org.sbml.jsbml.validator.SBMLValidator;
+import org.sbml.jsbml.xml.XMLNode;
 import org.vcell.sbml.SBMLHelper;
 import org.vcell.sbml.SBMLUtils;
 import org.vcell.sbml.SbmlException;
@@ -167,7 +126,8 @@ import scala.collection.mutable.SetBuilder;
 public class SBMLExporter {
 
 	Logger logger = LogManager.getLogger(SBMLExporter.class);
-	public static final String DOMAIN_TYPE_PREFIX = "domainType_";
+	//public static final String DOMAIN_TYPE_PREFIX = "domainType_";
+	public static final String DOMAIN_TYPE_PREFIX = "";
 	private int sbmlLevel = 3;
 	private int sbmlVersion = 2;
 	private org.sbml.jsbml.Model sbmlModel = null;
@@ -181,7 +141,7 @@ public class SBMLExporter {
 	Map<String, String> compartmentNameToIdMap = new LinkedHashMap<> ();
 	
 	// used for exporting vcell-related annotations.
-	Namespace sbml_vcml_ns = Namespace.getNamespace(XMLTags.VCELL_NS_PREFIX, SBMLUtils.SBML_VCELL_NS);
+	public static final Namespace sbml_vcml_ns = Namespace.getNamespace(XMLTags.VCELL_NS_PREFIX, SBMLUtils.SBML_VCELL_NS);
 
 	// SBMLAnnotationUtil to get the SBML-related annotations, notes, free-text annotations from a Biomodel VCMetaData
 	private SBMLAnnotationUtil sbmlAnnotationUtil = null;
@@ -330,8 +290,15 @@ protected void addCompartments() throws XMLStreamException, SbmlException {
 			Membrane vcMembrane = (Membrane)vcStructures[i];
 			sbmlCompartment.setSpatialDimensions(2);
 			Feature outsideFeature = structTopology.getOutsideFeature(vcMembrane);
-			if (outsideFeature != null) {
-				sbmlCompartment.setOutside(TokenMangler.mangleToSName(outsideFeature.getName()));
+			Feature insideFeature = structTopology.getInsideFeature(vcMembrane);
+			if (outsideFeature != null && insideFeature != null) {
+				// add custom vcell annotation for the SBML compartment element
+				Element compartmentTopologyElement = new Element(XMLTags.SBML_VCELL_CompartmentTopologyTag, sbml_vcml_ns);
+				compartmentTopologyElement.setAttribute(XMLTags.SBML_VCELL_CompartmentTopologyTag_insideCompartmentAttr, TokenMangler.mangleToSName(insideFeature.getName()), sbml_vcml_ns);
+				compartmentTopologyElement.setAttribute(XMLTags.SBML_VCELL_CompartmentTopologyTag_outsideCompartmentAttr, TokenMangler.mangleToSName(outsideFeature.getName()), sbml_vcml_ns);
+				sbmlCompartment.getAnnotation().appendNonRDFAnnotation(XmlUtil.xmlToString(compartmentTopologyElement));
+
+				sbmlCompartment.setOutside(TokenMangler.mangleToSName(outsideFeature.getName())); // leave this in for level 2 support?
 				sbmlSizeUnit = sbmlExportSpec.getAreaUnits();
 				UnitDefinition unitDefn = getOrCreateSBMLUnit(sbmlSizeUnit);
 				sbmlCompartment.setUnits(unitDefn);
@@ -367,13 +334,8 @@ protected void addCompartments() throws XMLStreamException, SbmlException {
 		
 		// Add the outside compartment of given compartment as annotation to the compartment.
 		// This is required later while trying to read in compartments ...
+
 		Element sbmlImportRelatedElement = null;
-//		if (parentStructure != null) {
-//			sbmlImportRelatedElement = new Element(XMLTags.VCellRelatedInfoTag, sbml_vcml_ns);
-//			Element compartmentElement = new Element(XMLTags.OutsideCompartmentTag, sbml_vcml_ns);
-//			compartmentElement.setAttribute(XMLTags.NameAttrTag, TokenMangler.mangleToSName(parentStructure.getName()));
-//			sbmlImportRelatedElement.addContent(compartmentElement);
-//		}
 
 		// Get annotation (RDF and non-RDF) for reactionStep from SBMLAnnotationUtils
 		sbmlAnnotationUtil.writeAnnotation(vcStructures[i], sbmlCompartment, sbmlImportRelatedElement);
@@ -839,9 +801,10 @@ protected void addReactions() throws SbmlException, XMLStreamException {
 //      Fast attribute was eliminated in L3V2		
 //		sbmlReaction.setFast(vcReactionSpecs[i].isFast());
 		if (vcReactionSpecs[i].isFast()) {
-			System.err.println("WARNING: Reaction "+vcReactionSpecs[i].getDisplayName()+" is set in VCell as FAST but this attribute is no longer supported by SBML, non-VCell solvers will not simulate it in pseudo-equilibrium");
-			//TODO: Add VCell annotation so we car recover this if importing/executing in VCell
-			//TODO: If user-initiated, also put out a pop-up warning
+			logger.warn("WARNING: Reaction "+vcReactionSpecs[i].getDisplayName()+" is set in VCell as FAST but this attribute is no longer supported by SBML, non-VCell solvers will not simulate it in pseudo-equilibrium");
+			Element compartmentTopologyElement = new Element(XMLTags.SBML_VCELL_ReactionAttributesTag, sbml_vcml_ns);
+			compartmentTopologyElement.setAttribute(XMLTags.SBML_VCELL_ReactionAttributesTag_fastAttr, TokenMangler.mangleToSName(Boolean.toString(vcReactionSpecs[i].isFast())), sbml_vcml_ns);
+			sbmlReaction.getAnnotation().appendNonRDFAnnotation(XmlUtil.xmlToString(compartmentTopologyElement));
 		}
 				
 		// this attribute is mandatory for L3, optional for L2. So explicitly setting value.
@@ -1096,76 +1059,71 @@ protected void addSpecies() throws XMLStreamException, SbmlException {
 							if ((role == SpeciesContextSpec.ROLE_BoundaryValueXm) && (ccX != null)) {
 								// set BoundaryCondn Xm element in SpatialParameterPlugin for param
 								BoundaryCondition sbmlBCXm = new BoundaryCondition();
-								spplugin.setParamType(sbmlBCXm);
 								sbmlBCXm.setType(getBoundaryConditionKind(vcBCType_Xm));
 								sbmlBCXm.setVariable(vcSpeciesContexts[i].getName());
 								sbmlBCXm.setCoordinateBoundary(ccX.getBoundaryMinimum().getId());
-							} 
+								spplugin.setParamType(sbmlBCXm);
+							}
 							if ((role == SpeciesContextSpec.ROLE_BoundaryValueXp) && (ccX != null)) {
 								// set BoundaryCondn Xp element in SpatialParameterPlugin for param
 								BoundaryCondition sbmlBCXp = new BoundaryCondition();
-								spplugin.setParamType(sbmlBCXp);
 								sbmlBCXp.setType(getBoundaryConditionKind(vcBCType_Xp));
 								sbmlBCXp.setVariable(vcSpeciesContexts[i].getName());
-//								sbmlBCXp.setType(sm.getBoundaryConditionTypeXp().boundaryTypeStringValue());
 								sbmlBCXp.setCoordinateBoundary(ccX.getBoundaryMaximum().getId());
-							} 
+								spplugin.setParamType(sbmlBCXp);
+							}
 							if ((role == SpeciesContextSpec.ROLE_BoundaryValueYm)  && (ccY != null)) {
 								// set BoundaryCondn Ym element in SpatialParameterPlugin for param
 								BoundaryCondition sbmlBCYm = new BoundaryCondition();
-								spplugin.setParamType(sbmlBCYm);
-								sbmlBCYm.setType(getBoundaryConditionKind(vcBCType_Yp));
+								sbmlBCYm.setType(getBoundaryConditionKind(vcBCType_Ym));
 								sbmlBCYm.setVariable(vcSpeciesContexts[i].getName());
-//								sbmlBCYm.setType(sm.getBoundaryConditionTypeYm().boundaryTypeStringValue());
 								sbmlBCYm.setCoordinateBoundary(ccY.getBoundaryMinimum().getId());
-							} 
+								spplugin.setParamType(sbmlBCYm);
+							}
 							if ((role == SpeciesContextSpec.ROLE_BoundaryValueYp) && (ccY != null)){
 								// set BoundaryCondn Yp element in SpatialParameterPlugin for param
 								BoundaryCondition sbmlBCYp = new BoundaryCondition();
-								spplugin.setParamType(sbmlBCYp);
 								sbmlBCYp.setType(getBoundaryConditionKind(vcBCType_Yp));
 								sbmlBCYp.setVariable(vcSpeciesContexts[i].getName());
-//								sbmlBCYp.setType(sm.getBoundaryConditionTypeYp().boundaryTypeStringValue());
 								sbmlBCYp.setCoordinateBoundary(ccY.getBoundaryMaximum().getId());
-							} 
+								spplugin.setParamType(sbmlBCYp);
+							}
 							if ((role == SpeciesContextSpec.ROLE_BoundaryValueZm)  && (ccZ != null)) {
 								// set BoundaryCondn Zm element in SpatialParameterPlugin for param
 								BoundaryCondition sbmlBCZm = new BoundaryCondition();
-								spplugin.setParamType(sbmlBCZm);
 								sbmlBCZm.setType(getBoundaryConditionKind(vcBCType_Zm));
 								sbmlBCZm.setVariable(vcSpeciesContexts[i].getName());
-//								sbmlBCZm.setType(sm.getBoundaryConditionTypeZm().boundaryTypeStringValue());
 								sbmlBCZm.setCoordinateBoundary(ccZ.getBoundaryMinimum().getId());
-							} 
+								spplugin.setParamType(sbmlBCZm);
+							}
 							if ((role == SpeciesContextSpec.ROLE_BoundaryValueZp)  && (ccZ != null)) {
 								// set BoundaryCondn Zp element in SpatialParameterPlugin for param
 								BoundaryCondition sbmlBCZp = new BoundaryCondition();
-								spplugin.setParamType(sbmlBCZp);
 								sbmlBCZp.setType(getBoundaryConditionKind(vcBCType_Zp));
 								sbmlBCZp.setVariable(vcSpeciesContexts[i].getName());
-//								sbmlBCZp.setType(sm.getBoundaryConditionTypeZp().boundaryTypeStringValue());
 								sbmlBCZp.setCoordinateBoundary(ccZ.getBoundaryMaximum().getId());
-							} 
+								spplugin.setParamType(sbmlBCZp);
+							}
 							if (role == SpeciesContextSpec.ROLE_VelocityX) {
 								// set advectionCoeff X element in SpatialParameterPlugin for param
 								AdvectionCoefficient sbmlAdvCoeffX = new AdvectionCoefficient();
-								spplugin.setParamType(sbmlAdvCoeffX);
 								sbmlAdvCoeffX.setVariable(vcSpeciesContexts[i].getName());
 								sbmlAdvCoeffX.setCoordinate(CoordinateKind.cartesianX);
-							} 
+								spplugin.setParamType(sbmlAdvCoeffX);
+							}
 							if (role == SpeciesContextSpec.ROLE_VelocityY) {
 								// set advectionCoeff Y element in SpatialParameterPlugin for param
 								AdvectionCoefficient sbmlAdvCoeffY = new AdvectionCoefficient();
-								spplugin.setParamType(sbmlAdvCoeffY);
 								sbmlAdvCoeffY.setVariable(vcSpeciesContexts[i].getName());
 								sbmlAdvCoeffY.setCoordinate(CoordinateKind.cartesianY);
-							} 
+								spplugin.setParamType(sbmlAdvCoeffY);
+							}
 							if (role == SpeciesContextSpec.ROLE_VelocityZ) {
 								// set advectionCoeff Z element in SpatialParameterPlugin for param
 								AdvectionCoefficient sbmlAdvCoeffZ = new AdvectionCoefficient();
-								spplugin.setParamType(sbmlAdvCoeffZ);
 								sbmlAdvCoeffZ.setVariable(vcSpeciesContexts[i].getName());
 								sbmlAdvCoeffZ.setCoordinate(CoordinateKind.cartesianZ);
+								spplugin.setParamType(sbmlAdvCoeffZ);
 							}
 						} 	// if sbmlParam != null
 					}	// if scsParams[j] != null
@@ -2001,6 +1959,7 @@ private void addGeometry() throws SbmlException {
 				}
 			}
 		}
+		addGeometrySamplingAnnotation(dimension, vcGSD, sbmlAnalyticGeomDefinition);
 	}
 	//
 	// add CSGeometry
@@ -2021,6 +1980,7 @@ private void addGeometry() throws SbmlException {
 				sbmlCSGObject.setCSGNode(sbmlcsgNode);
 			}
 		}
+		addGeometrySamplingAnnotation(dimension, vcGSD, sbmlCSGeomDefinition);
 	}
 	//
 	// add "Segmented" and "DistanceMap" SampledField Geometries
@@ -2182,11 +2142,33 @@ System.err.println("should be:\n  distanceMapImageData.setSamples((float[])signe
 //	}
 }
 
-private boolean goodPointer(Object obj, Class<?> clzz, String sourceName) {
-	if (lg.isWarnEnabled()) {
-		lg.warn(sourceName + "has no " + clzz.getSimpleName());
+	private void addGeometrySamplingAnnotation(int dimension, GeometrySurfaceDescription vcGSD, GeometryDefinition sbmlGeomDefinition) {
+		// add custom vcell annotation for the SBML compartment element
+		try {
+			Element geometrySamplingElement = new Element(XMLTags.SBML_VCELL_GeometrySamplingTag, sbml_vcml_ns);
+			geometrySamplingElement.setAttribute(XMLTags.SBML_VCELL_GeometrySamplingTag_numXAttr, Integer.toString(vcGSD.getVolumeSampleSize().getX()), sbml_vcml_ns);
+			if (dimension > 1) {
+				geometrySamplingElement.setAttribute(XMLTags.SBML_VCELL_GeometrySamplingTag_numYAttr, Integer.toString(vcGSD.getVolumeSampleSize().getY()), sbml_vcml_ns);
+			}
+			if (dimension > 2) {
+				geometrySamplingElement.setAttribute(XMLTags.SBML_VCELL_GeometrySamplingTag_numZAttr, Integer.toString(vcGSD.getVolumeSampleSize().getZ()), sbml_vcml_ns);
+			}
+			geometrySamplingElement.setAttribute(XMLTags.SBML_VCELL_GeometrySamplingTag_cutoffFrequencyAttr, Double.toString(vcGSD.getFilterCutoffFrequency()), sbml_vcml_ns);
+			sbmlGeomDefinition.getAnnotation().appendNonRDFAnnotation(XmlUtil.xmlToString(geometrySamplingElement));
+		} catch (XMLStreamException e){
+			logger.error("failed to add optional vcell-specific GeometrySampling annotation to SBML", e);
+		}
 	}
-	return obj != null;
+
+	private boolean goodPointer(Object obj, Class<?> clzz, String sourceName) {
+	if (obj == null) {
+		if (lg.isWarnEnabled()) {
+			lg.warn(sourceName + " has no " + clzz.getSimpleName());
+		}
+		return false;
+	}else{
+		return true;
+	}
 }
 
 public static org.sbml.jsbml.ext.spatial.CSGNode getSBMLCSGNode(cbit.vcell.geometry.CSGNode vcCSGNode) {

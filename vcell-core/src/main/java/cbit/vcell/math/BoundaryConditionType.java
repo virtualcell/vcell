@@ -215,4 +215,8 @@ public String boundaryTypeStringValue() {
 	}
 	return null;
 }
+
+public String toString() {
+	return "BoundaryConditionType("+boundaryTypeStringValue()+")";
+}
 }

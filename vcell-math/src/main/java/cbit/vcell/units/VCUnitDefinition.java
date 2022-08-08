@@ -137,7 +137,7 @@ public class VCUnitDefinition implements Matchable, Serializable{
 			powerMap.put(rationalNumber, powerUnit);
 			return powerUnit;
 		}else{
-			throw new RuntimeException("raiseTo( non-integer ) not yet supported");
+			throw new RuntimeException("raiseTo( non-integer ) not longer supported - even when solving for unknown units");
 		}
 	}
 

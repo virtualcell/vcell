@@ -254,7 +254,8 @@ public class SBMLStandaloneImporter {
 					lg.info("read name " + file.getCanonicalPath()); 
 				}
 				if (file != null) {
-					SBMLImporter importer = new SBMLImporter(file.getAbsolutePath(), this,false); 
+					boolean bValidate = true;
+					SBMLImporter importer = new SBMLImporter(file.getAbsolutePath(), this, bValidate);
 					return importer.getBioModel();
 				}
 				return null;

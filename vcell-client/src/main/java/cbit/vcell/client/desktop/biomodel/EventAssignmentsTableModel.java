@@ -26,6 +26,7 @@ import javax.swing.JComboBox;
 import javax.swing.JList;
 import javax.swing.SwingConstants;
 
+import cbit.vcell.model.EditableSymbolTableEntry;
 import org.vcell.util.gui.ScrollTable;
 
 import cbit.gui.ScopedExpression;
@@ -243,7 +244,7 @@ public class EventAssignmentsTableModel extends VCellSortTableModel<EventAssignm
 					Map<String, SymbolTableEntry> entryMap = new HashMap<String, SymbolTableEntry>();
 					fieldSimContext.getEntries(entryMap);
 					SymbolTableEntry symbolTableEntry = entryMap.get((String)aValue);
-					eventAssignment.setTarget(symbolTableEntry);
+					eventAssignment.setTarget((EditableSymbolTableEntry) symbolTableEntry);
 				}
 			}
 		}

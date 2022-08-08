@@ -37,6 +37,25 @@ public Extent(double newX,double newY,double newZ) throws IllegalArgumentExcepti
 	this.z = newZ;
 }
 
+public Extent getAsClipped(int dimension){
+	switch (dimension) {
+		case 0: {
+			return new Extent(1, 1, 1);
+		}
+		case 1: {
+			return new Extent(this.x, 1, 1);
+		}
+		case 2: {
+			return new Extent(this.x, this.y, 1);
+		}
+		case 3: {
+			return new Extent(this.x, this.y, this.z);
+		}
+		default:{
+			throw new IllegalArgumentException("dimension must be between 0 and 3");
+		}
+	}
+}
 
 /**
  * This method was created in VisualAge.

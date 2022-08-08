@@ -10,27 +10,15 @@
 
 package cbit.vcell.math;
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.NoSuchElementException;
-import java.util.Objects;
-import java.util.Random;
-import java.util.TreeMap;
-import java.util.TreeSet;
-import java.util.Vector;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
+import cbit.vcell.geometry.SurfaceClass;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.vcell.util.BeanUtils;
@@ -76,7 +64,9 @@ import cbit.vcell.parser.SymbolTableFunctionEntry;
  */
 @SuppressWarnings("serial")
 public class MathDescription implements Versionable, Matchable, SymbolTable, Serializable, ProblemRequirements, IssueSource {
-	
+
+	private final Logger logger = LogManager.getLogger(MathDescription.class);
+
 	public static final TreeMap<Long,TreeSet<String>> originalHasLowPrecisionConstants = new TreeMap<>();
 	public final static String MATH_FUNC_INIT_SUFFIX_PREFIX = "_init_";
 	
@@ -105,8 +95,7 @@ public class MathDescription implements Versionable, Matchable, SymbolTable, Ser
 	private static final char NEWLINE_CHAR = '\n';
 
 	private ArrayList<ParticleMolecularType> particleMolecularTypes = new ArrayList<ParticleMolecularType>();
-	private static Logger lg = LogManager.getLogger(MathDescription.class);
-	
+
 /**
  * MathDescription constructor comment.
  */
@@ -305,11 +294,7 @@ public static void updateReservedSymbols(MathDescription updateThis,ReservedSymb
 		}
 	}
 }
-/**
- * This method was created in VisualAge.
- * @return boolean
- * @param mathDesc cbit.vcell.math.MathDescription
- */
+
 public boolean compareEqual(Matchable object) {
 
 	MathDescription mathDesc = null;
@@ -368,11 +353,6 @@ public boolean compareEqual(Matchable object) {
 }
 
 
-/**
- * This method was created in VisualAge.
- * @return boolean
- * @param mathDesc cbit.vcell.math.MathDescription
- */
 private MathCompareResults compareEquivalentCanonicalMath(MathDescription newMathDesc) {
 	try {
 		MathDescription oldMathDesc = this;
@@ -469,6 +449,17 @@ private MathCompareResults compareEquivalentCanonicalMath(MathDescription newMat
 							return new MathCompareResults(Decision.MathDifferent_DIFFERENT_VELOCITY, "y");
 						}
 					}
+					// apply standard, implicit VCell defaults for boundary conditions ...
+					//    1) for Neumann, 'null' boundary condition expression is same as zero flux (set expression to 0.0)
+					//    2) for Dirichlet, 'null' boundary condition expression is same as setting value to initial condition (set expression to 'init expression')
+					if (subDomainsOld[i] instanceof SubDomain.DomainWithBoundaryConditions) {
+						SubDomain.DomainWithBoundaryConditions oldSubdomainWithBC = (SubDomain.DomainWithBoundaryConditions) subDomainsOld[i];
+						setMissingEquationBoundaryConditionsToDefault(oldSubdomainWithBC, geometry.getDimension());
+					}
+					if (subDomainsNew[i] instanceof SubDomain.DomainWithBoundaryConditions) {
+						SubDomain.DomainWithBoundaryConditions newSubdomainWithBCs = (SubDomain.DomainWithBoundaryConditions) subDomainsNew[i];
+						setMissingEquationBoundaryConditionsToDefault(newSubdomainWithBCs, geometry.getDimension());
+					}
 				}
 				
 				for (int j = 0; j < oldVars.length; j++){
@@ -498,8 +489,8 @@ private MathCompareResults compareEquivalentCanonicalMath(MathDescription newMat
 									"only one mathDescription had equation for '"+oldVars[j].getQualifiedName()+"' in SubDomain '"+subDomainsOld[i].getName()+"'");
 
 						}
-						ArrayList<Expression> oldExps = new ArrayList<Expression>();
-						ArrayList<Expression> newExps = new ArrayList<Expression>();
+						ArrayList<Expression> oldExps = new ArrayList<>();
+						ArrayList<Expression> newExps = new ArrayList<>();
 						boolean bOdePdeMismatch = false;
 						if (oldEqu instanceof PdeEquation && newEqu instanceof OdeEquation && oldEqu.getExpressions(newMathDesc).size()==3 && ((PdeEquation)oldEqu).getDiffusionExpression().isZero()){
 							oldExps.add(oldEqu.getRateExpression());
@@ -592,7 +583,7 @@ private MathCompareResults compareEquivalentCanonicalMath(MathDescription newMat
 							Expression oldExps[] = oldJC.toArray(new Expression[oldJC.size()]);
 							final Vector<Expression> newJC = newJumpCondition.getExpressions(newMathDesc);
 							Expression newExps[] = newJC.toArray(new Expression[newJC.size()]);
-							if (oldExps.length != newExps.length){
+                            if (oldExps.length != newExps.length){
 								return new MathCompareResults(Decision.MathDifferent_DIFFERENT_NUMBER_OF_EXPRESSIONS,"jump condition has different number of expressions");
 							}
 							for (int k = 0; k < oldExps.length; k++){
@@ -768,6 +759,54 @@ private MathCompareResults compareEquivalentCanonicalMath(MathDescription newMat
 	}
 }
 
+private void setMissingEquationBoundaryConditionsToDefault(SubDomain.DomainWithBoundaryConditions subdomain, int geometryDim){
+	List<PdeEquation> pdeEquations = subdomain.getEquationCollection().stream().filter(e -> e instanceof PdeEquation).map(e -> (PdeEquation) e).collect(Collectors.toList());
+	//
+	// CompartmentSubDomains have correct boundary condition types for external boundaries.
+	//
+	SubDomain.DomainWithBoundaryConditions subdomainForBoundaryTypes = subdomain;
+	if (subdomain instanceof MembraneSubDomain){
+		//
+		// MembraneSubDomain boundary condition types are ignored for most VCell solvers,
+		// instead they defer to the inside CompartmentSubDomain's definition.
+		//
+		subdomainForBoundaryTypes = ((MembraneSubDomain)subdomain).getInsideCompartment();
+	}
+	for (PdeEquation equ : pdeEquations) {
+		Expression initExp = equ.getInitialExpression();
+		if (geometryDim >= 1) {
+			BoundaryConditionType xmType = subdomainForBoundaryTypes.getBoundaryConditionXm();
+			BoundaryConditionType xpType = subdomainForBoundaryTypes.getBoundaryConditionXp();
+			equ.setBoundaryXm(replaceDefaultBC(equ.getBoundaryXm(), xmType, initExp));
+			equ.setBoundaryXp(replaceDefaultBC(equ.getBoundaryXp(), xpType, initExp));
+		}
+		if (geometryDim >= 2) {
+			BoundaryConditionType ymType = subdomainForBoundaryTypes.getBoundaryConditionYm();
+			BoundaryConditionType ypType = subdomainForBoundaryTypes.getBoundaryConditionYp();
+			equ.setBoundaryYm(replaceDefaultBC(equ.getBoundaryYm(), ymType, initExp));
+			equ.setBoundaryYp(replaceDefaultBC(equ.getBoundaryYp(), ypType, initExp));
+		}
+		if (geometryDim == 3) {
+			BoundaryConditionType zmType = subdomainForBoundaryTypes.getBoundaryConditionZm();
+			BoundaryConditionType zpType = subdomainForBoundaryTypes.getBoundaryConditionZp();
+			equ.setBoundaryZm(replaceDefaultBC(equ.getBoundaryZm(), zmType, initExp));
+			equ.setBoundaryZp(replaceDefaultBC(equ.getBoundaryZp(), zpType, initExp));
+		}
+	}
+}
+
+
+private Expression replaceDefaultBC(Expression bcExp, BoundaryConditionType bcType, Expression initExp) {
+	if (bcExp == null){
+		if (bcType.isNEUMANN()){
+			return new Expression(0.0);
+		} else if (bcType.isDIRICHLET()){
+			return new Expression(initExp);
+		}
+	}
+	return bcExp;
+}
+
 /**
  * compare two expressions; if different but functionally equivalent, set the new to be the same as the old 
  * @param nExp
@@ -798,13 +837,6 @@ private static boolean compareUpdate(Expression nExp, Expression oExp, Consumer<
 }
 
 
-
-
-/**
- * This method was created in VisualAge.
- * @return boolean
- * @param mathDesc cbit.vcell.math.MathDescription
- */
 private MathCompareResults compareInvariantAttributes(MathDescription newMathDesc, boolean bAlreadyFlattened){
 	//
 	// making cannonical math descriptions is expensive, so the idea is to quickly identify those differences that are invariant of any cannonical form.
@@ -869,7 +901,7 @@ private MathCompareResults compareInvariantAttributes(MathDescription newMathDes
 			}
 		}
 	}
-	
+
 	//
 	// compare geometry
 	//
@@ -1107,11 +1139,6 @@ public void fireVetoableChange(java.lang.String propertyName, java.lang.Object o
 	getVetoPropertyChange().fireVetoableChange(propertyName, oldValue, newValue);
 }
 
-/**
- * This method was created by a SmartGuide.
- * @param tokens java.util.StringTokenizer
- * @exception java.lang.Exception The exception description.
- */
 public static MathDescription fromEditor(MathDescription oldMathDesc, String vcml) throws MathException, java.beans.PropertyVetoException {
 	
 	CommentStringTokenizer tokens = new CommentStringTokenizer(vcml);
@@ -1131,11 +1158,6 @@ public static MathDescription fromEditor(MathDescription oldMathDesc, String vcm
 }
 
 
-/**
- * This method was created by a SmartGuide.
- * @return cbit.vcell.math.SubDomain
- * @param handle int
- */
 public CompartmentSubDomain getCompartmentSubDomain(String name) {
 	Enumeration<SubDomain> enum1 = getSubDomains();
 	while (enum1.hasMoreElements()){
@@ -1183,24 +1205,11 @@ public Enumeration<Constant> getConstants() {
 	};
 }
 
-
-/**
- * Gets the description property (java.lang.String) value.
- * @return The description property value.
- * @see #setDescription
- */
 public java.lang.String getDescription() {
 	return fieldDescription;
 }
 
 
-/**
- * This method was created by a SmartGuide.
- * @return cbit.vcell.parser.SymbolTableEntry
- * @param id java.lang.String
- * @param qualifier java.lang.String
- * @exception java.lang.Exception The exception description.
- */
 public SymbolTableEntry getEntry(String id) {
 	SymbolTableEntry entry = null;
 	
@@ -1353,21 +1362,10 @@ public int getHandle(CompartmentSubDomain compartmentSubDomain) throws MathExcep
 	return subVolume.getHandle();
 }
 
-/**
- * This method was created in VisualAge.
- * @return KeyValue
- */
 public KeyValue getKey() {
 	return (getVersion()!=null)?getVersion().getVersionKey():null;
 }
 
-
-/**
- * This method was created by a SmartGuide.
- * @return cbit.vcell.math.SubDomain
- * @param name java.lang.String
- * @exception java.lang.Exception The exception description.
- */
 public MembraneSubDomain getMembraneSubDomain(CompartmentSubDomain compartment1, CompartmentSubDomain compartment2) {
 	Enumeration<SubDomain> enum1 = getSubDomains();
 	while (enum1.hasMoreElements()){
@@ -1384,12 +1382,6 @@ public MembraneSubDomain getMembraneSubDomain(CompartmentSubDomain compartment1,
 }
 
 
-/**
- * This method was created by a SmartGuide.
- * @return cbit.vcell.math.SubDomain
- * @param name java.lang.String
- * @exception java.lang.Exception The exception description.
- */
 private MembraneSubDomain getMembraneSubDomain(String membraneName) {
 	Enumeration<SubDomain> enum1 = getSubDomains();
 	while (enum1.hasMoreElements()){
@@ -1405,12 +1397,6 @@ private MembraneSubDomain getMembraneSubDomain(String membraneName) {
 }
 
 
-/**
- * This method was created by a SmartGuide.
- * @return cbit.vcell.math.SubDomain
- * @param name java.lang.String
- * @exception java.lang.Exception The exception description.
- */
 public MembraneSubDomain[] getMembraneSubDomains(CompartmentSubDomain compartment) {
 	ArrayList<MembraneSubDomain> membraneSubDomainList = new ArrayList<MembraneSubDomain>();
 	Enumeration<SubDomain> enum1 = getSubDomains();
@@ -1427,21 +1413,11 @@ public MembraneSubDomain[] getMembraneSubDomains(CompartmentSubDomain compartmen
 }
 
 
-/**
- * Gets the name property (java.lang.String) value.
- * @return The name property value.
- * @see #setName
- */
 public java.lang.String getName() {
 	return fieldName;
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (4/22/2001 7:18:42 PM)
- * @return int
- */
 public int getNumVariables() {
 	return variableList.size();
 }
@@ -1688,7 +1664,7 @@ public String getVCML_database(boolean includeComments) throws MathException {
 	}
 	buffer.append("}\n");
 	final String rval = buffer.toString();		
-	lg.debug(rval);
+	logger.debug(rval);
 	return rval;
 }
 
@@ -1853,11 +1829,6 @@ public boolean hasGradient(VolVariable volVariable) {
 	return false;
 }
 
-/**
- * This method was created by a SmartGuide.
- * @return boolean
- * @param volVariable cbit.vcell.math.VolVariable
- */
 public boolean isPDE(MemVariable memVariable) {
 	Enumeration<SubDomain> enum1 = getSubDomains();
 	while (enum1.hasMoreElements()){
@@ -3196,25 +3167,15 @@ public void removeChangeListener(javax.swing.event.ChangeListener newListener) {
 }
 
 
-/**
- * The removePropertyChangeListener method was generated to support the propertyChange field.
- */
 public synchronized void removePropertyChangeListener(java.beans.PropertyChangeListener listener) {
 	getPropertyChange().removePropertyChangeListener(listener);
 }
 
-/**
- * The removeVetoableChangeListener method was generated to support the vetoPropertyChange field.
- */
 public synchronized void removeVetoableChangeListener(java.beans.VetoableChangeListener listener) {
 	getVetoPropertyChange().removeVetoableChangeListener(listener);
 }
 
 
-/**
- * This method was created by a SmartGuide.
- * @param var cbit.vcell.math.Variable
- */
 public void setAllVariables(Variable vars[]) throws MathException, ExpressionBindingException {
 	// make sure it's OK
 	VariableHash hash = new VariableHash();
@@ -3294,11 +3255,6 @@ public void setDescription(java.lang.String description) throws java.beans.Prope
 	firePropertyChange("description", oldValue, description);
 }
 
-
-/**
- * This method was created in VisualAge.
- * @param geometry cbit.vcell.geometry.Geometry
- */
 public void setGeometry(Geometry argGeometry) throws java.beans.PropertyVetoException {
 	Geometry oldValue = this.geometry;
 	fireVetoableChange(GeometryOwner.PROPERTY_NAME_GEOMETRY, oldValue, argGeometry);
@@ -3313,23 +3269,12 @@ public void setGeometry(Geometry argGeometry) throws java.beans.PropertyVetoExce
 
 }
 
-
-/**
- * This method was created in VisualAge.
- * @param geometry cbit.vcell.geometry.Geometry
- */
 private void setGeometry0(Geometry geometry) {
 	if (this.geometry != geometry){
 		this.geometry = geometry;
 	}
 }
 
-/**
- * Sets the name property (java.lang.String) value.
- * @param name The new value for the property.
- * @exception java.beans.PropertyVetoException The exception description.
- * @see #getName
- */
 public void setName(java.lang.String name) throws java.beans.PropertyVetoException {
 	String oldValue = fieldName;
 	fireVetoableChange("name", oldValue, name);
@@ -3415,13 +3360,6 @@ void substituteInPlace(MathSymbolTableFactory mathSymbolTableFactory, Function f
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (9/28/2004 5:50:22 PM)
- * @return java.lang.String
- * @param memoryMathDescription cbit.vcell.math.MathDescription
- * @param databaseMathDescription cbit.vcell.math.MathDescription
- */
 public static MathCompareResults testEquivalency(MathSymbolTableFactory mathSymbolTableFactory, MathDescription mathDescription1, MathDescription mathDescription2) {
 // test commit
 	try {

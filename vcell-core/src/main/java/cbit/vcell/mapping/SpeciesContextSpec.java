@@ -18,6 +18,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Compare;
 import org.vcell.util.Displayable;
@@ -69,6 +71,8 @@ import net.sourceforge.interval.ia_math.RealInterval;
 @SuppressWarnings("serial")
 public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Serializable, SimulationContextEntity, IssueSource,
 	Identifiable, Displayable {
+
+	private final static Logger logger = LogManager.getLogger(SpeciesContextSpec.class);
 
 	public static final String PARAMETER_NAME_PROXY_PARAMETERS = "proxyParameters";
 	private static final String PROPERTY_NAME_WELL_MIXED = "wellMixed";
@@ -374,12 +378,8 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
 					//
 					cleanupParameters();
 
-				}catch (ModelException e1){
-					e1.printStackTrace(System.out);
-				}catch (ExpressionException e2){
-					e2.printStackTrace(System.out);
-				}catch (PropertyVetoException e3){
-					e3.printStackTrace(System.out);
+				}catch (ModelException | ExpressionException | PropertyVetoException e1){
+					logger.error("property change failed", e1);
 				}
 			} 
 		} 
@@ -1312,7 +1312,7 @@ public void refreshDependencies() {
 				fieldParameters[i].getExpression().bindExpression(this);
 			}
 		}catch (ExpressionException e){
-			System.out.println("error binding expression '"+fieldParameters[i].getExpression().infix()+"', "+e.getMessage());
+			logger.error("error binding expression '"+fieldParameters[i].getExpression().infix()+"', "+e.getMessage());
 		}
 	}
 }

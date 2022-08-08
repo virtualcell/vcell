@@ -26,7 +26,7 @@ import cbit.vcell.parser.ExpressionException;
  * 
  */
 @SuppressWarnings("serial")
-public class CompartmentSubDomain extends SubDomain {
+public class CompartmentSubDomain extends SubDomain implements SubDomain.DomainWithBoundaryConditions {
 	public final static int NON_SPATIAL_PRIORITY = -1;
 	
 	private BoundaryConditionType boundaryConditionTypeXp = BoundaryConditionType.getDIRICHLET();

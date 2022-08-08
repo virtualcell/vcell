@@ -1,8 +1,6 @@
 package org.vcell.cli.vcml;
 
-import cbit.util.xml.VCLogger;
 import cbit.vcell.resource.PropertyLoader;
-import org.vcell.cli.CLIUtils;
 import org.vcell.util.DataAccessException;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
@@ -12,12 +10,12 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.concurrent.Callable;
 
-@Command(name = "convert", description = "convert from VCML to COMBINE archive (.omex)")
-public class ConvertCommand implements Callable<Integer> {
+@Command(name = "export-omex-batch", description = "convert directory of VCML documents to COMBINE archives (.omex)")
+public class ExportOmexBatchCommand implements Callable<Integer> {
     @Option(names = { "-m", "--outputModelFormat" }, defaultValue = "SBML", description = "expecting SBML or VCML")
     private ModelFormat outputModelFormat = ModelFormat.SBML;
 
-    @Option(names = { "-i", "--inputFilePath" })
+    @Option(names = { "-i", "--inputFilePath" }, description = "directory of .vcml files")
     private File inputFilePath;
 
     @Option(names = { "-o", "--outputFilePath" })
@@ -32,9 +30,6 @@ public class ConvertCommand implements Callable<Integer> {
     @Option(names = "--nonSpatialOnly")
     boolean bNonSpatialOnly;
 
-    @Option(names = "--forceLogFiles")
-    boolean bForceLogFiles;
-
     @Option(names = "--validate")
     boolean bValidateOmex;
 
@@ -44,12 +39,16 @@ public class ConvertCommand implements Callable<Integer> {
     public Integer call() {
         try {
             PropertyLoader.loadProperties();
-            VCLogger vcLogger = new CLIUtils.LocalLogger();
+            boolean bForceLogFiles = true; // TODO: find out what this means and simplify
+            if (inputFilePath == null || !inputFilePath.exists() || !inputFilePath.isDirectory()){
+                throw new RuntimeException("inputFilePath '"+inputFilePath+"' should be a directory");
+            }
 
             try (CLIDatabaseService cliDatabaseService = new CLIDatabaseService()) {
+                VcmlOmexConverter.queryVCellDbPublishedModels(cliDatabaseService, outputFilePath, bForceLogFiles);
+
                 VcmlOmexConverter.convertFiles(cliDatabaseService, inputFilePath, outputFilePath,
-                        outputModelFormat, bHasDataOnly, bMakeLogsOnly, bNonSpatialOnly, bForceLogFiles, bValidateOmex,
-                        vcLogger);
+                        outputModelFormat, bHasDataOnly, bMakeLogsOnly, bNonSpatialOnly, bForceLogFiles, bValidateOmex);
             } catch (IOException | SQLException | DataAccessException e) {
                 e.printStackTrace(System.err);
             }

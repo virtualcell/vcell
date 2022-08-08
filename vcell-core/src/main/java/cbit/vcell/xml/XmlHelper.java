@@ -119,7 +119,7 @@ public class XmlHelper {
 	static String getEscapedSoftwareVersion(){
 		return TokenMangler.getEscapedString(System.getProperty("vcell.softwareVersion", "unknown"));
 	}
-	static String bioModelToXML(BioModel bioModel, boolean printkeys) throws XmlParseException {
+	public static String bioModelToXML(BioModel bioModel, boolean printkeys) throws XmlParseException {
 
 		String xmlString = null;
 
@@ -455,13 +455,9 @@ public class XmlHelper {
 			}
 		}
 		VCDocument vcDoc = null;
-//    if (!bSpatial) {
-		SBMLImporter sbmlImporter = new SBMLImporter(sbmlFile.getAbsolutePath(), vcLogger, bSpatial);
+		boolean bValidateSBML = false;
+		SBMLImporter sbmlImporter = new SBMLImporter(sbmlFile.getAbsolutePath(), vcLogger, bValidateSBML);
 		vcDoc = sbmlImporter.getBioModel();
-//    } else {
-//    	SBMLSpatialImporter sbmlSpatialImporter = new SBMLSpatialImporter(sbmlFile.getAbsolutePath(), vcLogger);
-//    	vcDoc = sbmlSpatialImporter.getBioModel();
-//    }
 
 		vcDoc.refreshDependencies();
 		logger.info("Succesful model import: SBML file "+sbmlFile);

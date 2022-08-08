@@ -27,7 +27,7 @@ import cbit.vcell.parser.ExpressionException;
  * 
  */
 @SuppressWarnings("serial")
-public class MembraneSubDomain extends SubDomain {
+public class MembraneSubDomain extends SubDomain implements SubDomain.DomainWithBoundaryConditions {
 	
 	@Override
 	protected String startToken() {
@@ -103,6 +103,13 @@ private static class Builder {
 		}	
 		name = SurfaceClass.createName(insideCompartment.getName(), outsideCompartment.getName());
 	}
+}
+
+public void swapInsideOutsideSubdomains() {
+	// only used in MathDescription.compare function
+	CompartmentSubDomain tempSubdomain = insideCompartment;
+	insideCompartment = outsideCompartment;
+	outsideCompartment = tempSubdomain;
 }
 
 /**

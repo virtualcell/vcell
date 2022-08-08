@@ -73,7 +73,8 @@ public class VCellSBMLSolver implements SBMLSolver {
 	}
 	
 	private BioModel importSBML(String filename,VCLogger logger,boolean isSpatial) throws ClassNotFoundException, IOException, ExecutableException, XmlParseException, XMLStreamException {
-			org.vcell.sbml.vcell.SBMLImporter sbmlImporter = new org.vcell.sbml.vcell.SBMLImporter(filename,logger, false);
+			boolean bValidateSBML = true;
+			org.vcell.sbml.vcell.SBMLImporter sbmlImporter = new org.vcell.sbml.vcell.SBMLImporter(filename,logger, bValidateSBML);
 			BioModel bioModel = sbmlImporter.getBioModel();
 		//EXPORT_NOTE isolates JVM from SBML crashes -- generally not needed
 		/*
@@ -387,7 +388,8 @@ public class VCellSBMLSolver implements SBMLSolver {
 			//    
 		    // Instantiate an SBMLImporter to get the speciesUnitsHash - to compute the conversion factor from VC->SB species units.
 		    // and import SBML  (sbml->bioModel)
-			org.vcell.sbml.vcell.SBMLImporter sbmlImporter = new org.vcell.sbml.vcell.SBMLImporter(sbmlFileName, logger, false);
+			boolean bValidateSBML = true;
+			org.vcell.sbml.vcell.SBMLImporter sbmlImporter = new org.vcell.sbml.vcell.SBMLImporter(sbmlFileName, logger, bValidateSBML);
 			BioModel bioModel = sbmlImporter.getBioModel();
 //			Hashtable<String, SBMLImporter.SBVCConcentrationUnits> speciesUnitsHash = sbmlImporter.getSpeciesUnitsHash();
 //			double timeFactor = sbmlImporter.getSBMLTimeUnitsFactor();

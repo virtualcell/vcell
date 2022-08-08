@@ -50,6 +50,7 @@ import javax.swing.border.LineBorder;
 import javax.swing.event.UndoableEditEvent;
 import javax.swing.event.UndoableEditListener;
 
+import cbit.vcell.model.*;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.gui.DefaultScrollTableCellRenderer;
 import org.vcell.util.gui.DialogUtils;
@@ -65,10 +66,6 @@ import cbit.vcell.mapping.SpeciesContextSpec;
 import cbit.vcell.mapping.gui.ElectricalStimulusPanel;
 import cbit.vcell.math.Equation;
 import cbit.vcell.math.MathException;
-import cbit.vcell.model.Model;
-import cbit.vcell.model.RbmObservable;
-import cbit.vcell.model.SpeciesContext;
-import cbit.vcell.model.Structure;
 import cbit.vcell.parser.AutoCompleteSymbolFilter;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
@@ -823,7 +820,7 @@ public class EventPanel extends DocumentEditorSubPanel {
 				try {
 					SymbolTableEntry ste = fieldSimContext.getEntry(varName);
 					Expression eventAssgnExp = new Expression(getEventAssignExpressionTextField().getText());
-					newEventAssignment = fieldBioEvent.new EventAssignment(ste, eventAssgnExp);
+					newEventAssignment = fieldBioEvent.new EventAssignment((EditableSymbolTableEntry) ste, eventAssgnExp);
 					fieldBioEvent.addEventAssignment(newEventAssignment);
 				} catch (ExpressionException e) {
 					e.printStackTrace(System.out);
