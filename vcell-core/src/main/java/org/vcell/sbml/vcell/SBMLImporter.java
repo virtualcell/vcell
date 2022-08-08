@@ -144,6 +144,10 @@ public class SBMLImporter {
 		this.bValidateSBML = bValidateSBML;
 	}
 
+	public SBMLSymbolMapping getSymbolMapping() {
+		return this.sbmlSymbolMapping;
+	}
+
 	private static Expression flattenUnbound(Expression originalExpression, SimulationContext simContext, Map<String, SymbolTableEntry> entryMap, int depth) throws ExpressionException {
 		if(depth > 20) {
 			throw new ExpressionException("Too many iterations.");

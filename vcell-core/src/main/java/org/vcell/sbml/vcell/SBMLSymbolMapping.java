@@ -21,15 +21,16 @@ public class SBMLSymbolMapping {
     private final Map<SBase, EditableSymbolTableEntry> sbase_to_runtime_ste_map = new LinkedHashMap<>();
     private final Map<Compartment, Structure> compartment_to_structure_map = new LinkedHashMap<>();
     private final Map<Event, BioEvent> event_to_bioevent_map = new LinkedHashMap<>();
-    private final Map<org.sbml.jsbml.Species, Species> sbmlSpecies_to_vcSpecies_map = new LinkedHashMap<>();
     private final Map<SBase, Expression> sbase_to_assignmentRuleSbmlExpression_map = new LinkedHashMap<>();
     private final Map<SBase, Expression> sbase_to_initialAssignmentSbmlExpression_map = new LinkedHashMap<>();
     private final Map<SBase, Expression> sbase_to_rateRuleSbmlExpression_map = new LinkedHashMap<>();
     private final Map<SBase, Double> sbase_to_sbmlValue_map = new LinkedHashMap<>();
 
-    @Deprecated
-    private final Map<Reaction, ReactionStep> sbmlReaction_to_reactionStep_map = new LinkedHashMap<>();
-
+    //
+    // only used locally in SBMLImporter, could replace with a local map.
+    // Or, could add an SBML Species to VCell SpeciesContext map for use in SEDML processing?
+    //
+    private final Map<org.sbml.jsbml.Species, Species> sbmlSpecies_to_vcSpecies_map = new LinkedHashMap<>();
 
     public SBMLSymbolMapping() {
         super();
@@ -109,10 +110,23 @@ public class SBMLSymbolMapping {
         }
     }
 
+    @Deprecated
+    public BioEvent getBioEvent(Event sbmlEvent){
+        return event_to_bioevent_map.get(sbmlEvent);
+    }
+
+    /**
+     * note that this only maps to Species not SpeciesContext - should be moved as a local map in SBMLImporter
+     */
+    @Deprecated
     public Species getVCellSpecies(org.sbml.jsbml.Species sbmlSpecies) {
         return sbmlSpecies_to_vcSpecies_map.get(sbmlSpecies);
     }
 
+    /**
+     * note that this only maps to Species not SpeciesContext - should be moved as a local map in SBMLImporter
+     */
+    @Deprecated
     public void putVCellSpecies(org.sbml.jsbml.Species sbmlSpecies, cbit.vcell.model.Species vcSpecies) {
         cbit.vcell.model.Species s = sbmlSpecies_to_vcSpecies_map.get(sbmlSpecies);
         if (s != null && s != vcSpecies) {
@@ -122,23 +136,13 @@ public class SBMLSymbolMapping {
         }
     }
 
-    public org.sbml.jsbml.Species getSbmlSpecies(Species vcellSpecies) {
-        final org.sbml.jsbml.Species[] matches = sbmlSpecies_to_vcSpecies_map.entrySet().stream()
-                .filter(entry -> entry.getValue() == vcellSpecies)
-                .map(Map.Entry::getKey).toArray(org.sbml.jsbml.Species[]::new);
-        if (matches.length == 1) {
-            return matches[0];
-        } else if (matches.length == 0) {
-            return null;
-        } else {
-            throw new RuntimeException("multiple SBML Species objects map to vcell Species " + vcellSpecies.getCommonName());
-        }
-    }
-
-
+    /**
+     * note that this only maps to Species not SpeciesContext - should be moved as a local map in SBMLImporter
+     */
     public Species[] getVCellSpeciesArray() {
         return this.sbmlSpecies_to_vcSpecies_map.values().toArray(new Species[0]);
     }
+
 
     public EditableSymbolTableEntry getSte(SBase sbase, SymbolContext symbolContext) {
         if (symbolContext.equals(SymbolContext.RUNTIME)) {
@@ -184,6 +188,11 @@ public class SBMLSymbolMapping {
         }
     }
 
+    /**
+     * this is to capture the value="5.0" attributes of SBML Elements for later processing
+     * @param targetSBase
+     * @param sbmlValue
+     */
     public void putSbmlValue(SBase targetSBase, Double sbmlValue) {
         Double v = sbase_to_sbmlValue_map.get(targetSBase);
         if (v != null) {
@@ -198,6 +207,9 @@ public class SBMLSymbolMapping {
             sbase_to_sbmlValue_map.put(targetSBase, sbmlValue);
         }
     }
+    public Double getSbmlValue(SBase sbase) {
+        return sbase_to_sbmlValue_map.get(sbase);
+    }
 
     public void putRateRuleSbmlExpression(SBase targetSBase, Expression sbmlRateRuleExpr) {
         Expression e = sbase_to_rateRuleSbmlExpression_map.get(targetSBase);
@@ -211,10 +223,6 @@ public class SBMLSymbolMapping {
         } else {
             sbase_to_rateRuleSbmlExpression_map.put(targetSBase, sbmlRateRuleExpr);
         }
-    }
-
-    public Double getSbmlValue(SBase sbase) {
-        return sbase_to_sbmlValue_map.get(sbase);
     }
 
     public Expression getRuleSBMLExpression(SBase sbase, SymbolContext symbolContext) {
@@ -282,11 +290,4 @@ public class SBMLSymbolMapping {
         return sbase_to_assignmentRuleSbmlExpression_map.keySet();
     }
 
-    public void putVCellReaction(Reaction sbmlReaction, ReactionStep reactionStep){
-        sbmlReaction_to_reactionStep_map.put(sbmlReaction, reactionStep);
-    }
-
-    public ReactionStep getVCellReaction(Reaction sbmlReaction) {
-        return sbmlReaction_to_reactionStep_map.get(sbmlReaction);
-    }
 }
