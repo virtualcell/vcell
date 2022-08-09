@@ -81,7 +81,7 @@ public class SBMLSymbolMapping {
     public void putRuntime(SBase sbase, EditableSymbolTableEntry ste) {
         EditableSymbolTableEntry s = sbase_to_runtime_ste_map.get(sbase);
         if (s != null && s != ste) {
-            throw new RuntimeException("sbmlSid is already bound to runtime ste " + ste.getName());
+            throw new RuntimeException("sbmlSid is already bound to runtime ste " + s.getClass().getSimpleName()+"("+s.getName()+"), trying to bind to " + ste.getClass().getSimpleName()+"("+ste.getName()+")");
         } else {
             sbase_to_runtime_ste_map.put(sbase, ste);
         }
@@ -90,7 +90,7 @@ public class SBMLSymbolMapping {
     public void putStructure(Compartment compartment, Structure structure) {
         Structure s = compartment_to_structure_map.get(compartment);
         if (s != null && s != structure) {
-            throw new RuntimeException("sbmlSid is already bound to a structure " + structure.getName());
+            throw new RuntimeException("sbmlSid is already bound to a structure " + s.getName()+", trying to bind to structure " + structure.getName());
         } else {
             compartment_to_structure_map.put(compartment, structure);
         }
@@ -104,7 +104,7 @@ public class SBMLSymbolMapping {
     public void putBioEvent(Event event, BioEvent vcEvent) {
         BioEvent e = event_to_bioevent_map.get(event);
         if (e != null && e != vcEvent) {
-            throw new RuntimeException("sbmlSid is already bound to an Event " + vcEvent.getName());
+            throw new RuntimeException("sbmlSid is already bound to an Event " + e.getName()+", trying to bind to event "+vcEvent.getName());
         } else {
             event_to_bioevent_map.put(event, vcEvent);
         }
@@ -130,7 +130,7 @@ public class SBMLSymbolMapping {
     public void putVCellSpecies(org.sbml.jsbml.Species sbmlSpecies, cbit.vcell.model.Species vcSpecies) {
         cbit.vcell.model.Species s = sbmlSpecies_to_vcSpecies_map.get(sbmlSpecies);
         if (s != null && s != vcSpecies) {
-            throw new RuntimeException("sbmlSid is already bound to a species " + vcSpecies.getCommonName());
+            throw new RuntimeException("sbmlSid is already bound to a species " + s.getCommonName()+", trying to bind to species "+vcSpecies.getCommonName());
         } else {
             sbmlSpecies_to_vcSpecies_map.put(sbmlSpecies, vcSpecies);
         }

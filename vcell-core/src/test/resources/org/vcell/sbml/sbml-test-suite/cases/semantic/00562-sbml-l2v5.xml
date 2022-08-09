@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sbml xmlns="http://www.sbml.org/sbml/level2/version5" level="2" version="5">
+  <model metaid="_case00562" id="case00562" name="case00562">
+    <listOfCompartments>
+      <compartment id="C" name="C" size="1" units="volume"/>
+    </listOfCompartments>
+    <listOfSpecies>
+      <species id="X0" name="X0" compartment="C" initialAmount="0.5" substanceUnits="substance"/>
+      <species id="X1" name="X1" compartment="C" initialAmount="0" substanceUnits="substance"/>
+      <species id="T" name="T" compartment="C" initialAmount="0" substanceUnits="substance"/>
+      <species id="S1" name="S1" compartment="C" initialAmount="0" substanceUnits="substance"/>
+    </listOfSpecies>
+    <listOfParameters>
+      <parameter id="k1" name="k1" value="0.1"/>
+      <parameter id="k2" name="k2" value="0.375"/>
+      <parameter id="k3" name="k3" value="2.5"/>
+      <parameter id="p1" name="p1" value="0.5"/>
+    </listOfParameters>
+    <listOfRules>
+      <algebraicRule metaid="rule1">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <plus/>
+            <apply>
+              <times/>
+              <apply>
+                <plus/>
+                <ci> k3 </ci>
+                <cn type="integer"> 1 </cn>
+              </apply>
+              <ci> S1 </ci>
+            </apply>
+            <apply>
+              <times/>
+              <cn type="integer"> -1 </cn>
+              <ci> T </ci>
+            </apply>
+          </apply>
+        </math>
+      </algebraicRule>
+    </listOfRules>
+    <listOfReactions>
+      <reaction id="reaction1" name="reaction1" reversible="false" fast="false">
+        <listOfReactants>
+          <speciesReference species="X0">
+            <stoichiometryMath>
+              <math xmlns="http://www.w3.org/1998/Math/MathML">
+                <apply>
+                  <times/>
+                  <cn type="integer"> 4 </cn>
+                  <ci> p1 </ci>
+                </apply>
+              </math>
+            </stoichiometryMath>
+          </speciesReference>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference species="T"/>
+        </listOfProducts>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+              <times/>
+              <ci> C </ci>
+              <ci> k1 </ci>
+              <ci> X0 </ci>
+            </apply>
+          </math>
+        </kineticLaw>
+      </reaction>
+      <reaction id="reaction2" name="reaction2" reversible="false" fast="false">
+        <listOfReactants>
+          <speciesReference species="T"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference species="X1"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference species="S1"/>
+        </listOfModifiers>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+              <times/>
+              <ci> C </ci>
+              <ci> k2 </ci>
+              <ci> S1 </ci>
+            </apply>
+          </math>
+        </kineticLaw>
+      </reaction>
+    </listOfReactions>
+  </model>
+</sbml>

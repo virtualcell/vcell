@@ -36,13 +36,12 @@ public class SBMLTestSuiteImportTest {
 		faults.put(48, FAULT.COMPARTMENT_0D);
 		faults.put(49, FAULT.COMPARTMENT_0D);
 		faults.put(50, FAULT.COMPARTMENT_0D);
-		faults.put(58, FAULT.JSBML_ERROR);
+		faults.put(96, FAULT.COMPARTMENT_1D);
 		faults.put(97, FAULT.COMPARTMENT_0D);
 		faults.put(99, FAULT.COMPARTMENT_1D);
 		faults.put(100, FAULT.COMPARTMENT_0D);
 		faults.put(102, FAULT.COMPARTMENT_1D);
 		faults.put(103, FAULT.COMPARTMENT_0D);
-		faults.put(133, FAULT.JSBML_ERROR);
 		faults.put(153, FAULT.COMPARTMENT_1D);
 		faults.put(154, FAULT.COMPARTMENT_1D);
 		faults.put(155, FAULT.COMPARTMENT_0D);
@@ -112,17 +111,106 @@ public class SBMLTestSuiteImportTest {
 		faults.put(422, FAULT.COMPARTMENT_0D);
 		faults.put(424, FAULT.COMPARTMENT_1D);
 		faults.put(425, FAULT.COMPARTMENT_0D);
-		faults.put(436, FAULT.SBML_SYMBOL_MAPPING); // Failed to translate SBML model into BioModel: sbmlSid is already bound to runtime ste delay
-		faults.put(437, FAULT.SBML_SYMBOL_MAPPING); // Failed to translate SBML model into BioModel: sbmlSid is already bound to runtime ste delay
+		// consider using ObjectReferenceWrapper.java to avoid .equals() and .hashCode() for getSte() in SBMLSymbolMapping
+		faults.put(436, FAULT.SBML_SYMBOL_MAPPING); // JSBML's event delay objects don't hash properly, delay1.equals(delay2) == true for different events
+		faults.put(437, FAULT.SBML_SYMBOL_MAPPING); // JSBML's event delay objects don't hash properly, delay1.equals(delay2) == true for different events
 		faults.put(486, FAULT.COMPARTMENT_1D);
 		faults.put(487, FAULT.COMPARTMENT_1D);
 		faults.put(488, FAULT.COMPARTMENT_1D);
 		faults.put(489, FAULT.COMPARTMENT_0D);
 		faults.put(490, FAULT.COMPARTMENT_0D);
 		faults.put(491, FAULT.COMPARTMENT_0D);
-		faults.put(525, FAULT.JSBML_ERROR);
-		faults.put(526, FAULT.JSBML_ERROR);
-		faults.put(527, FAULT.JSBML_ERROR);
+		faults.put(531, FAULT.ALGEBRAIC_RULES);
+		faults.put(532, FAULT.ALGEBRAIC_RULES);
+		faults.put(533, FAULT.ALGEBRAIC_RULES);
+		faults.put(534, FAULT.ALGEBRAIC_RULES);
+		faults.put(535, FAULT.ALGEBRAIC_RULES);
+		faults.put(536, FAULT.ALGEBRAIC_RULES);
+		faults.put(537, FAULT.ALGEBRAIC_RULES);
+		faults.put(538, FAULT.ALGEBRAIC_RULES);
+		faults.put(539, FAULT.ALGEBRAIC_RULES);
+		faults.put(540, FAULT.ALGEBRAIC_RULES);
+		faults.put(541, FAULT.ALGEBRAIC_RULES);
+		faults.put(542, FAULT.ALGEBRAIC_RULES);
+		faults.put(543, FAULT.COMPARTMENT_0D);
+		faults.put(544, FAULT.ALGEBRAIC_RULES);
+		faults.put(545, FAULT.ALGEBRAIC_RULES);
+		faults.put(546, FAULT.COMPARTMENT_0D);
+		faults.put(547, FAULT.ALGEBRAIC_RULES);
+		faults.put(548, FAULT.ALGEBRAIC_RULES);
+		faults.put(549, FAULT.ALGEBRAIC_RULES);
+		faults.put(550, FAULT.ALGEBRAIC_RULES);
+		faults.put(551, FAULT.ALGEBRAIC_RULES);
+		faults.put(552, FAULT.ALGEBRAIC_RULES);
+		faults.put(553, FAULT.ALGEBRAIC_RULES);
+		faults.put(554, FAULT.ALGEBRAIC_RULES);
+		faults.put(555, FAULT.ALGEBRAIC_RULES);
+		faults.put(556, FAULT.ALGEBRAIC_RULES);
+		faults.put(557, FAULT.ALGEBRAIC_RULES);
+		faults.put(558, FAULT.ALGEBRAIC_RULES);
+		faults.put(559, FAULT.ALGEBRAIC_RULES);
+		faults.put(560, FAULT.ALGEBRAIC_RULES);
+		faults.put(561, FAULT.ALGEBRAIC_RULES);
+		faults.put(562, FAULT.ALGEBRAIC_RULES);
+		faults.put(563, FAULT.ALGEBRAIC_RULES);
+		faults.put(564, FAULT.ALGEBRAIC_RULES);
+		faults.put(565, FAULT.ALGEBRAIC_RULES);
+		faults.put(566, FAULT.ALGEBRAIC_RULES);
+		faults.put(567, FAULT.ALGEBRAIC_RULES);
+		faults.put(568, FAULT.ALGEBRAIC_RULES);
+		faults.put(569, FAULT.ALGEBRAIC_RULES);
+		faults.put(570, FAULT.ALGEBRAIC_RULES);
+		faults.put(571, FAULT.ALGEBRAIC_RULES);
+		faults.put(572, FAULT.ALGEBRAIC_RULES);
+		faults.put(573, FAULT.ALGEBRAIC_RULES);
+		faults.put(574, FAULT.ALGEBRAIC_RULES);
+		faults.put(575, FAULT.ALGEBRAIC_RULES);
+		faults.put(576, FAULT.ALGEBRAIC_RULES);
+		faults.put(592, FAULT.COMPARTMENT_1D);
+		faults.put(593, FAULT.COMPARTMENT_1D);
+		faults.put(594, FAULT.COMPARTMENT_1D);
+		faults.put(613, FAULT.ALGEBRAIC_RULES);
+		faults.put(614, FAULT.ALGEBRAIC_RULES);
+		faults.put(615, FAULT.ALGEBRAIC_RULES);
+		faults.put(628, FAULT.ALGEBRAIC_RULES);
+		faults.put(629, FAULT.ALGEBRAIC_RULES);
+		faults.put(630, FAULT.ALGEBRAIC_RULES);
+		faults.put(658, FAULT.ALGEBRAIC_RULES);
+		faults.put(659, FAULT.ALGEBRAIC_RULES);
+		faults.put(660, FAULT.ALGEBRAIC_RULES);
+		faults.put(661, FAULT.ALGEBRAIC_RULES);
+		faults.put(662, FAULT.ALGEBRAIC_RULES);
+		faults.put(663, FAULT.ALGEBRAIC_RULES);
+		faults.put(664, FAULT.ALGEBRAIC_RULES);
+		faults.put(665, FAULT.ALGEBRAIC_RULES);
+		faults.put(666, FAULT.ALGEBRAIC_RULES);
+		faults.put(673, FAULT.ALGEBRAIC_RULES);
+		faults.put(674, FAULT.ALGEBRAIC_RULES);
+		faults.put(675, FAULT.ALGEBRAIC_RULES);
+		faults.put(687, FAULT.ALGEBRAIC_RULES);
+		faults.put(695, FAULT.ALGEBRAIC_RULES);
+		faults.put(696, FAULT.ALGEBRAIC_RULES);
+		faults.put(705, FAULT.ALGEBRAIC_RULES);
+		faults.put(760, FAULT.ALGEBRAIC_RULES);
+		faults.put(761, FAULT.ALGEBRAIC_RULES);
+		faults.put(762, FAULT.ALGEBRAIC_RULES);
+		faults.put(777, FAULT.ALGEBRAIC_RULES);
+		faults.put(778, FAULT.ALGEBRAIC_RULES);
+		faults.put(779, FAULT.ALGEBRAIC_RULES);
+		faults.put(780, FAULT.ALGEBRAIC_RULES);
+		faults.put(844, FAULT.ALGEBRAIC_RULES);
+		faults.put(876, FAULT.ALGEBRAIC_RULES);
+		faults.put(905, FAULT.COMPARTMENT_1D);
+		faults.put(907, FAULT.COMPARTMENT_1D);
+		faults.put(909, FAULT.COMPARTMENT_1D);
+		faults.put(910, FAULT.COMPARTMENT_1D);
+		faults.put(915, FAULT.COMPARTMENT_1D);
+		faults.put(917, FAULT.COMPARTMENT_1D);
+		faults.put(919, FAULT.COMPARTMENT_1D);
+		faults.put(930, FAULT.SBML_SYMBOL_MAPPING); // this time it is the event trigger which fails mapping.
+		faults.put(931, FAULT.SBML_SYMBOL_MAPPING); // this time it is the event trigger which fails mapping.
+		faults.put(934, FAULT.SBML_SYMBOL_MAPPING); // this time it is the event trigger which fails mapping.
+		faults.put(935, FAULT.SBML_SYMBOL_MAPPING); // this time it is the event trigger which fails mapping.
 
 		return Arrays.stream(SbmlTestSuiteFiles.getSbmlTestSuiteCases()).boxed().filter(t -> !faults.containsKey(t)).collect(Collectors.toList());
 	}
@@ -146,7 +234,7 @@ public class SBMLTestSuiteImportTest {
 
 
 	@Test
-	public void testSbmlTestSuiteImport() throws XMLStreamException, IOException{
+	public void testSbmlTestSuiteImport() throws Exception{
 		HashMap<Integer,FAULT> faults = new HashMap();
 		faults.put(22, FAULT.NONINTEGER_STOICH);
 
@@ -154,7 +242,12 @@ public class SBMLTestSuiteImportTest {
 		InputStream testFileInputStream = SbmlTestSuiteFiles.getSbmlTestCase(testCase);
 		boolean bValidateSBML = true;
 		SBMLImporter importer = new SBMLImporter(testFileInputStream, vcl, bValidateSBML);
-		BioModel bioModel = importer.getBioModel();
-		Assert.assertArrayEquals("testCase "+testCase+" failed", vcl.highPriority.toArray(),new String[0]);
+		try {
+			BioModel bioModel = importer.getBioModel();
+		}catch (Exception e){
+			System.err.println("unexpected exception in test case "+testCase);
+			throw e;
+		}
+		Assert.assertArrayEquals("testCase "+testCase+" failed", new String[0], vcl.highPriority.toArray());
 	}
 }
