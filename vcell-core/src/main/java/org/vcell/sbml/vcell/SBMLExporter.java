@@ -304,7 +304,6 @@ protected void addCompartments() throws XMLStreamException, SbmlException {
 				sbmlCompartment.setUnits(unitDefn);
 			} else if (lg.isWarnEnabled()) {
 				lg.warn(this.sbmlModel.getName() + " membrame "  + vcMembrane.getName()  + " has not outside feature");
-				
 			}
 		}
 		sbmlCompartment.setConstant(true);
@@ -313,7 +312,14 @@ protected void addCompartments() throws XMLStreamException, SbmlException {
 		try {
 			if (vcStructMapping.getSizeParameter().getExpression() != null) {
 				sbmlCompartment.setSize(vcStructMapping.getSizeParameter().getExpression().evaluateConstant());
-			} else {
+			} else if (getSelectedSimContext().getGeometry().getDimension() == 0){
+				try {
+					// old vcell spatial application, with only relative compartment sizes (SBML wants absolute sizes for nonspatial ... easier to understand anyway)
+					double structureSize = 1.0;
+					StructureSizeSolver.updateAbsoluteStructureSizes(getSelectedSimContext(), vcStructures[i], structureSize, vcStructMapping.getSizeParameter().getUnitDefinition());
+				} catch (Exception e){
+					lg.error("failed to compute size parameter: "+e.getMessage(), e);
+				}
 				// really no need to set sizes of compartments in spatial ..... ????
 				//	throw new RuntimeException("Compartment size not set for compartment \"" + vcStructures[i].getName() + "\" ; Please set size and try exporting again.");
 			}
@@ -1511,26 +1517,26 @@ public static ASTNode getFormulaFromExpression(Expression expression) {
 public static ASTNode getFormulaFromExpression(Expression expression, MathType desiredType) {
 
 	// first replace VCell reserved symbol t with SBML reserved symbol time, so that it gets correct translation to MathML
-	try {
-		expression.substituteInPlace(new Expression("t"), new Expression("time"));
-	} catch (ExpressionException e2) {
-		// TODO Auto-generated catch block
-		e2.printStackTrace();
-		throw new RuntimeException(e2.toString());
-	}
-
-	// switch to libSBML for non-boolean
-	if (!desiredType.equals(MathType.BOOLEAN)) {
-		try {
-			String expr = expression.infix();
-			ASTNode math = ASTNode.parseFormula(expr);
-			return math;
-		} catch (ParseException e) {
-			// (konm * (h ^  - 1.0) / koffm)
-			e.printStackTrace();
-			throw new RuntimeException(e.toString());
-		}
-	}
+//	try {
+//		expression.substituteInPlace(new Expression("t"), new Expression("time"));
+//	} catch (ExpressionException e2) {
+//		// TODO Auto-generated catch block
+//		e2.printStackTrace();
+//		throw new RuntimeException(e2.toString());
+//	}
+//
+//	// switch to libSBML for non-boolean
+//	if (!desiredType.equals(MathType.BOOLEAN)) {
+//		try {
+//			String expr = expression.infix();
+//			ASTNode math = ASTNode.parseFormula(expr);
+//			return math;
+//		} catch (ParseException e) {
+//			// (konm * (h ^  - 1.0) / koffm)
+//			e.printStackTrace();
+//			throw new RuntimeException(e.toString());
+//		}
+//	}
 	
 	// Convert expression into MathML string
 	String expMathMLStr = null;
@@ -2032,7 +2038,7 @@ private void addGeometry() throws SbmlException {
 				for (int j = 0; j < vcImageGeomClasses.length; j++) {
 					if (vcImageGeomClasses[j] instanceof ImageSubVolume) {
 						SampledVolume sampledVol = segmentedImageSampledFieldGeometry.createSampledVolume();
-						sampledVol.setSpatialId(vcGeomClasses[j].getName());
+						sampledVol.setSpatialId(vcImageGeomClasses[j].getName());
 						sampledVol.setDomainType(DOMAIN_TYPE_PREFIX+vcGeomClasses[j].getName());
 						sampledVol.setSampledValue(((ImageSubVolume) vcImageGeomClasses[j]).getPixelValue());
 					}
