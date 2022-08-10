@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sbml xmlns="http://www.sbml.org/sbml/level3/version2/core" level="3" version="2">
+  <model id="case_01116" name="case_01116">
+    <listOfParameters>
+      <parameter id="a" constant="true"/>
+      <parameter id="b" constant="true"/>
+    </listOfParameters>
+    <listOfInitialAssignments>
+      <initialAssignment symbol="a">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <piecewise>
+            <piece>
+              <cn type="integer"> 1 </cn>
+              <true/>
+            </piece>
+          </piecewise>
+        </math>
+      </initialAssignment>
+      <initialAssignment symbol="b">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <piecewise>
+            <piece>
+              <cn type="integer"> 1 </cn>
+              <apply>
+                <gt/>
+                <ci> a </ci>
+                <cn type="integer"> 0 </cn>
+              </apply>
+            </piece>
+            <piece>
+              <cn type="integer"> 2 </cn>
+              <apply>
+                <leq/>
+                <ci> a </ci>
+                <cn type="integer"> 0 </cn>
+              </apply>
+            </piece>
+          </piecewise>
+        </math>
+      </initialAssignment>
+    </listOfInitialAssignments>
+  </model>
+</sbml>

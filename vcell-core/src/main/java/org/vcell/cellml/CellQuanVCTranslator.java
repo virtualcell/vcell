@@ -175,7 +175,7 @@ public class CellQuanVCTranslator extends Translator {
 					fixMathMLBug(trimmedMath);
 					Expression rateExp = null;
 					try {
-						rateExp = (new ExpressionMathMLParser(null)).fromMathML(trimmedMath);
+						rateExp = (new ExpressionMathMLParser(null)).fromMathML(trimmedMath, "t");
 						rateExp = processMathExp(comp, rateExp);
 						rateExp = rateExp.flatten();
 						nl.mangleString(rateExp.infix());
@@ -226,7 +226,7 @@ public class CellQuanVCTranslator extends Translator {
 			Element trimmedMath = new Element(CELLMLTags.MATH, mathns).addContent(sibling.detach());
 			fixMathMLBug(trimmedMath); 
 			try {
-				exp = (new ExpressionMathMLParser(null)).fromMathML(trimmedMath);
+				exp = (new ExpressionMathMLParser(null)).fromMathML(trimmedMath, "t");
 			} catch (ExpressionException e) {
 				e.printStackTrace(System.out);
 				throw new RuntimeException(e.getMessage());

@@ -111,9 +111,6 @@ public class SBMLTestSuiteImportTest {
 		faults.put(422, FAULT.COMPARTMENT_0D);
 		faults.put(424, FAULT.COMPARTMENT_1D);
 		faults.put(425, FAULT.COMPARTMENT_0D);
-		// consider using ObjectReferenceWrapper.java to avoid .equals() and .hashCode() for getSte() in SBMLSymbolMapping
-		faults.put(436, FAULT.SBML_SYMBOL_MAPPING); // JSBML's event delay objects don't hash properly, delay1.equals(delay2) == true for different events
-		faults.put(437, FAULT.SBML_SYMBOL_MAPPING); // JSBML's event delay objects don't hash properly, delay1.equals(delay2) == true for different events
 		faults.put(486, FAULT.COMPARTMENT_1D);
 		faults.put(487, FAULT.COMPARTMENT_1D);
 		faults.put(488, FAULT.COMPARTMENT_1D);
@@ -207,19 +204,134 @@ public class SBMLTestSuiteImportTest {
 		faults.put(915, FAULT.COMPARTMENT_1D);
 		faults.put(917, FAULT.COMPARTMENT_1D);
 		faults.put(919, FAULT.COMPARTMENT_1D);
-		faults.put(930, FAULT.SBML_SYMBOL_MAPPING); // this time it is the event trigger which fails mapping.
-		faults.put(931, FAULT.SBML_SYMBOL_MAPPING); // this time it is the event trigger which fails mapping.
-		faults.put(934, FAULT.SBML_SYMBOL_MAPPING); // this time it is the event trigger which fails mapping.
-		faults.put(935, FAULT.SBML_SYMBOL_MAPPING); // this time it is the event trigger which fails mapping.
+		faults.put(937, FAULT.DELAY);
+		faults.put(938, FAULT.DELAY);
+		faults.put(939, FAULT.DELAY);
+		faults.put(940, FAULT.DELAY);
+		faults.put(941, FAULT.DELAY);
+		faults.put(942, FAULT.DELAY);
+		faults.put(943, FAULT.DELAY);
+		faults.put(950, FAULT.VALUE_NAN_INF_OR_MISSING);
+		faults.put(951, FAULT.VALUE_NAN_INF_OR_MISSING);
+		faults.put(957, FAULT.XOR_MISSING);
+		faults.put(958, FAULT.XOR_MISSING);
+		faults.put(959, FAULT.INCONSISTENT_UNIT_SYSTEM);
+		faults.put(960, FAULT.AVOGADRO);
+		faults.put(961, FAULT.AVOGADRO);
+		faults.put(974, FAULT.RUNTIME_ERROR); // dummy stoichiometry STE used in expression in rate rule - not supported.
+		faults.put(981, FAULT.DELAY);
+		faults.put(982, FAULT.DELAY);
+		faults.put(983, FAULT.DELAY);
+		faults.put(984, FAULT.DELAY);
+		faults.put(985, FAULT.DELAY);
+		faults.put(993, FAULT.ALGEBRAIC_RULES);
+		faults.put(1000, FAULT.AVOGADRO);
+		faults.put(1011, FAULT.COMPARTMENT_1D);
+		faults.put(1012, FAULT.COMPARTMENT_1D);
+		faults.put(1013, FAULT.COMPARTMENT_1D);
+		faults.put(1044, FAULT.ALGEBRAIC_RULES);
+		faults.put(1051, FAULT.JSBML_ERROR); // The order of subelements within <reaction> ... with id 'slowerReaction1' does not comply.
+		faults.put(1052, FAULT.JSBML_ERROR); // The order of subelements within <reaction> ... with id 'slowerReaction1' does not comply.
+		faults.put(1053, FAULT.JSBML_ERROR); // The order of subelements within <reaction> ... with id 'slowerReaction1' does not comply.
+		faults.put(1054, FAULT.ALGEBRAIC_RULES);
+		faults.put(1083, FAULT.ALGEBRAIC_RULES);
+		faults.put(1084, FAULT.ALGEBRAIC_RULES);
+		faults.put(1085, FAULT.ALGEBRAIC_RULES);
+		faults.put(1086, FAULT.ALGEBRAIC_RULES);
+		faults.put(1103, FAULT.OVERDETERMINED_SYSTEM);
+		faults.put(1108, FAULT.ALGEBRAIC_RULES);
+		faults.put(1112, FAULT.XOR_MISSING);
+		faults.put(1113, FAULT.XOR_MISSING);
+		faults.put(1114, FAULT.XOR_MISSING);
+		faults.put(1115, FAULT.XOR_MISSING);
+		faults.put(1121, FAULT.AVOGADRO);
+		faults.put(1124, FAULT.COMP_PACKAGE);
+		faults.put(1125, FAULT.COMP_PACKAGE);
+		faults.put(1126, FAULT.COMP_PACKAGE);
+		faults.put(1127, FAULT.COMP_PACKAGE);
+		faults.put(1128, FAULT.COMP_PACKAGE);
+		faults.put(1129, FAULT.COMP_PACKAGE);
+		faults.put(1130, FAULT.COMP_PACKAGE);
+		faults.put(1131, FAULT.COMP_PACKAGE);
+		faults.put(1132, FAULT.COMP_PACKAGE);
+		faults.put(1133, FAULT.COMP_PACKAGE);
+		faults.put(1134, FAULT.COMP_PACKAGE);
+		faults.put(1135, FAULT.COMP_PACKAGE);
+		faults.put(1136, FAULT.COMP_PACKAGE);
+		faults.put(1137, FAULT.COMP_PACKAGE);
+		faults.put(1138, FAULT.COMP_PACKAGE);
+		faults.put(1139, FAULT.COMP_PACKAGE);
+		faults.put(1140, FAULT.COMP_PACKAGE);
+		faults.put(1141, FAULT.COMP_PACKAGE);
+		faults.put(1142, FAULT.COMP_PACKAGE);
+		faults.put(1143, FAULT.COMP_PACKAGE);
+		faults.put(1144, FAULT.COMP_PACKAGE);
+		faults.put(1145, FAULT.COMP_PACKAGE);
+		faults.put(1146, FAULT.COMP_PACKAGE);
+		faults.put(1147, FAULT.COMP_PACKAGE);
+		faults.put(1148, FAULT.COMP_PACKAGE);
+		faults.put(1149, FAULT.COMP_PACKAGE);
+		faults.put(1150, FAULT.COMP_PACKAGE);
+		faults.put(1151, FAULT.COMP_PACKAGE);
+		faults.put(1152, FAULT.COMP_PACKAGE);
+		faults.put(1153, FAULT.COMP_PACKAGE);
+		faults.put(1154, FAULT.COMP_PACKAGE);
+		faults.put(1155, FAULT.COMP_PACKAGE);
+		faults.put(1156, FAULT.COMP_PACKAGE);
+		faults.put(1157, FAULT.COMP_PACKAGE);
+		faults.put(1158, FAULT.COMP_PACKAGE);
+		faults.put(1159, FAULT.COMP_PACKAGE);
+		faults.put(1160, FAULT.COMP_PACKAGE);
+		faults.put(1161, FAULT.COMP_PACKAGE);
+		faults.put(1162, FAULT.COMP_PACKAGE);
+		faults.put(1163, FAULT.COMP_PACKAGE);
+		faults.put(1164, FAULT.COMP_PACKAGE);
+		faults.put(1165, FAULT.COMP_PACKAGE);
+		faults.put(1166, FAULT.COMP_PACKAGE);
+		faults.put(1167, FAULT.COMP_PACKAGE);
+		faults.put(1168, FAULT.COMP_PACKAGE);
+		faults.put(1169, FAULT.COMP_PACKAGE);
+		faults.put(1170, FAULT.COMP_PACKAGE);
+		faults.put(1171, FAULT.COMP_PACKAGE);
+		faults.put(1172, FAULT.COMP_PACKAGE);
+		faults.put(1173, FAULT.COMP_PACKAGE);
+		faults.put(1174, FAULT.COMP_PACKAGE);
+		faults.put(1175, FAULT.COMP_PACKAGE);
+		faults.put(1176, FAULT.COMP_PACKAGE);
+		faults.put(1177, FAULT.COMP_PACKAGE);
+		faults.put(1178, FAULT.COMP_PACKAGE);
+		faults.put(1179, FAULT.COMP_PACKAGE);
+		faults.put(1180, FAULT.COMP_PACKAGE);
+		faults.put(1181, FAULT.COMP_PACKAGE);
+		faults.put(1182, FAULT.COMP_PACKAGE);
+		faults.put(1183, FAULT.COMP_PACKAGE);
+		faults.put(1186, FAULT.FBC_PACKAGE);
+		faults.put(1187, FAULT.FBC_PACKAGE);
+		faults.put(1188, FAULT.FBC_PACKAGE);
+		faults.put(1189, FAULT.FBC_PACKAGE);
+		faults.put(1190, FAULT.FBC_PACKAGE);
+		faults.put(1191, FAULT.FBC_PACKAGE);
+		faults.put(1192, FAULT.FBC_PACKAGE);
+		faults.put(1193, FAULT.FBC_PACKAGE);
+		faults.put(1194, FAULT.FBC_PACKAGE);
+		faults.put(1195, FAULT.FBC_PACKAGE);
+		faults.put(1196, FAULT.FBC_PACKAGE);
+		faults.put(1197, FAULT.INVALID); // compartment spatial dimension 7
 
 		return Arrays.stream(SbmlTestSuiteFiles.getSbmlTestSuiteCases()).boxed().filter(t -> !faults.containsKey(t)).collect(Collectors.toList());
 	}
 
 	public enum FAULT {
 		SBML_SYMBOL_MAPPING,
-
+		INVALID, // invalid model (e.g. compartment spatialDimension=7)
+		RUNTIME_ERROR,
 		RESERVED_WORD,
 		DELAY,
+		AVOGADRO,
+		COMP_PACKAGE,
+		FBC_PACKAGE,
+		VALUE_NAN_INF_OR_MISSING,
+		OVERDETERMINED_SYSTEM,
 		NONINTEGER_STOICH,
 		COMPARTMENT_0D,
 		COMPARTMENT_1D,
@@ -228,7 +340,7 @@ public class SBMLTestSuiteImportTest {
 		INCONSISTENT_UNIT_SYSTEM,
 		EXPRESSION_BINDING_EXCEPTION,
 		XOR_MISSING,
-		JSBML_ERROR		// seems like a bug in jsbml  RenderParser.processEndDocument() ... line 403 ... wrong constant for extension name
+		JSBML_ERROR
 	};
 
 
