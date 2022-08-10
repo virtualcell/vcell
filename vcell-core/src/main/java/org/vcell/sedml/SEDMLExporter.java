@@ -1435,7 +1435,20 @@ public class SEDMLExporter {
 				"http://purl.org/NET/mediatypes/application/vcml+xml",
 				false
 		);
-
+		
+        String[] files;
+        File dir = new File(srcFolder);
+        files = dir.list();
+        for(String sd : files) {
+        	if (sd.endsWith(".rdf")) {
+        		archive.addFile(	
+        				Paths.get(srcFolder, sd).toString(),
+        				"./" + sd,
+        				"http://identifiers.org/combine.specifications/omex-metadata",
+        				false
+        		);
+        	}
+        }
 
 		archive.writeToFile(Paths.get(srcFolder, sFileName + ".omex").toString());
 
@@ -1447,6 +1460,11 @@ public class SEDMLExporter {
 			Paths.get(srcFolder, sd).toFile().delete();
 		}
 		Paths.get(srcFolder, sFileName + ".vcml").toFile().delete();
+        for(String sd : files) {
+        	if (sd.endsWith(".rdf")) {
+        		Paths.get(srcFolder, sd).toFile().delete();
+        	}
+        }
 
     } catch (Exception e) {
     	throw new RuntimeException("createZipArchive threw exception: " + e.getMessage());        
