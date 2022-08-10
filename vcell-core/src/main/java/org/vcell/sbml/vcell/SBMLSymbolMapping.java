@@ -8,9 +8,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.sbml.jsbml.*;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class SBMLSymbolMapping {
@@ -20,22 +18,24 @@ public class SBMLSymbolMapping {
 
     private static class SBaseWrapper<T extends SBase> {
         private T internalSBase = null;
-        public SBaseWrapper(T object) {
+        private SBaseWrapper(T object) {
             if (object == null){
                 throw new IllegalArgumentException("null object");
             }
             this.internalSBase = object;
         }
-         public boolean equals(Object object) {
+        @Override
+        public boolean equals(Object object) {
             if (object instanceof SBaseWrapper){
                 return (internalSBase == ((SBaseWrapper)object).internalSBase);
             }else{
                 return false;
             }
         }
-        public T getSBase() {
+        T getSBase() {
             return internalSBase;
         }
+        @Override
         public int hashCode() {
             //
             // equals() has been overridden to support reference equates
@@ -63,21 +63,21 @@ public class SBMLSymbolMapping {
     //
     private final Map<SBaseWrapper<org.sbml.jsbml.Species>, Species> sbmlSpecies_to_vcSpecies_map = new LinkedHashMap<>();
 
-    public SBMLSymbolMapping() {
+    SBMLSymbolMapping() {
         super();
     }
 
-    public EditableSymbolTableEntry getInitialSte(SBase _sbase) {
+    EditableSymbolTableEntry getInitialSte(SBase _sbase) {
         SBaseWrapper<SBase> sbaseWrapper = new SBaseWrapper<>(_sbase);
         return sbase_to_initial_ste_map.get(sbaseWrapper);
     }
 
-    public EditableSymbolTableEntry getRuntimeSte(SBase _sbase) {
+    EditableSymbolTableEntry getRuntimeSte(SBase _sbase) {
         SBaseWrapper<SBase> sbaseWrapper = new SBaseWrapper<>(_sbase);
         return sbase_to_runtime_ste_map.get(sbaseWrapper);
     }
 
-    public SBase getSBase(EditableSymbolTableEntry ste, SymbolContext symbolContext) {
+    SBase getSBase(EditableSymbolTableEntry ste, SymbolContext symbolContext) {
         final SBase[] matches;
         switch (symbolContext) {
             case RUNTIME: {
@@ -102,7 +102,7 @@ public class SBMLSymbolMapping {
         }
     }
 
-    public void putInitial(SBase _sbase, EditableSymbolTableEntry ste) {
+    void putInitial(SBase _sbase, EditableSymbolTableEntry ste) {
         SBaseWrapper<SBase> sbaseWrapper = new SBaseWrapper<>(_sbase);
         EditableSymbolTableEntry s = sbase_to_initial_ste_map.get(sbaseWrapper);
         if (s != null && s != ste) {
@@ -112,7 +112,7 @@ public class SBMLSymbolMapping {
         }
     }
 
-    public void putRuntime(SBase _sbase, EditableSymbolTableEntry ste) {
+    void putRuntime(SBase _sbase, EditableSymbolTableEntry ste) {
         SBaseWrapper<SBase> sbaseWrapper = new SBaseWrapper<>(_sbase);
         EditableSymbolTableEntry s = sbase_to_runtime_ste_map.get(sbaseWrapper);
         if (s != null && s != ste) {
@@ -122,7 +122,35 @@ public class SBMLSymbolMapping {
         }
     }
 
-    public void putStructure(Compartment _compartment, Structure structure) {
+    Set<SBaseWrapper<SBase>> getAllSbaseWrappers() {
+        LinkedHashSet<SBaseWrapper<SBase>> allInitialSBase = new LinkedHashSet<>(sbase_to_initial_ste_map.keySet());
+        LinkedHashSet<SBaseWrapper<SBase>> allRuntimeSBase = new LinkedHashSet<>(sbase_to_runtime_ste_map.keySet());
+        allInitialSBase.addAll(allRuntimeSBase);
+        return allInitialSBase;
+    }
+
+    public Set<SBase> getAllSbase() {
+        Set<SBase> allSBase = getAllSbaseWrappers().stream().map(wrapper -> wrapper.internalSBase).collect(Collectors.toSet());
+        return allSBase;
+    }
+
+    public SBase getMappedSBase(String sid){
+        ArrayList<SBaseWrapper<SBase>> matches = new ArrayList<>();
+        for (SBaseWrapper<SBase> sbaseWrapper : getAllSbaseWrappers()){
+            if (sbaseWrapper.internalSBase.getId().equals(sid)){
+                matches.add(sbaseWrapper);
+            }
+        }
+        if (matches.size() == 0){
+            return null;
+        } else if (matches.size() == 1){
+            return matches.get(0).internalSBase;
+        } else {
+            throw new RuntimeException("found more than one SBase match for sid="+sid+", matched "+matches);
+        }
+    }
+
+    void putStructure(Compartment _compartment, Structure structure) {
         SBaseWrapper<Compartment> compartmentWrapper = new SBaseWrapper<>(_compartment);
         Structure s = compartment_to_structure_map.get(compartmentWrapper);
         if (s != null && s != structure) {
@@ -132,13 +160,13 @@ public class SBMLSymbolMapping {
         }
     }
 
-    public Structure getStructure(Compartment _compartment){
+    Structure getStructure(Compartment _compartment){
         SBaseWrapper<Compartment> compartmentWrapper = new SBaseWrapper<>(_compartment);
         return compartment_to_structure_map.get(compartmentWrapper);
     }
 
     @Deprecated
-    public void putBioEvent(Event _event, BioEvent vcEvent) {
+    void putBioEvent(Event _event, BioEvent vcEvent) {
         SBaseWrapper<Event> eventWrapper = new SBaseWrapper<>(_event);
         BioEvent e = event_to_bioevent_map.get(eventWrapper);
         if (e != null && e != vcEvent) {
@@ -149,7 +177,7 @@ public class SBMLSymbolMapping {
     }
 
     @Deprecated
-    public BioEvent getBioEvent(Event _sbmlEvent){
+    BioEvent getBioEvent(Event _sbmlEvent){
         SBaseWrapper<Event> eventWrapper = new SBaseWrapper<>(_sbmlEvent);
         return event_to_bioevent_map.get(eventWrapper);
     }
@@ -158,7 +186,7 @@ public class SBMLSymbolMapping {
      * note that this only maps to Species not SpeciesContext - should be moved as a local map in SBMLImporter
      */
     @Deprecated
-    public Species getVCellSpecies(org.sbml.jsbml.Species _sbmlSpecies) {
+    Species getVCellSpecies(org.sbml.jsbml.Species _sbmlSpecies) {
         SBaseWrapper<org.sbml.jsbml.Species> speciesWrapper = new SBaseWrapper<>(_sbmlSpecies);
         return sbmlSpecies_to_vcSpecies_map.get(speciesWrapper);
     }
@@ -167,7 +195,7 @@ public class SBMLSymbolMapping {
      * note that this only maps to Species not SpeciesContext - should be moved as a local map in SBMLImporter
      */
     @Deprecated
-    public void putVCellSpecies(org.sbml.jsbml.Species _sbmlSpecies, cbit.vcell.model.Species vcSpecies) {
+    void putVCellSpecies(org.sbml.jsbml.Species _sbmlSpecies, cbit.vcell.model.Species vcSpecies) {
         SBaseWrapper<org.sbml.jsbml.Species> speciesWrapper = new SBaseWrapper<>(_sbmlSpecies);
         cbit.vcell.model.Species s = sbmlSpecies_to_vcSpecies_map.get(speciesWrapper);
         if (s != null && s != vcSpecies) {
@@ -180,7 +208,7 @@ public class SBMLSymbolMapping {
     /**
      * note that this only maps to Species not SpeciesContext - should be moved as a local map in SBMLImporter
      */
-    public Species[] getVCellSpeciesArray() {
+    Species[] getVCellSpeciesArray() {
         return this.sbmlSpecies_to_vcSpecies_map.values().toArray(new Species[0]);
     }
 
@@ -200,7 +228,7 @@ public class SBMLSymbolMapping {
         }
     }
 
-    public void putAssignmentRuleSbmlExpression(SBase _targetSBase, Expression sbmlAssignmentRuleMathExpr) {
+    void putAssignmentRuleSbmlExpression(SBase _targetSBase, Expression sbmlAssignmentRuleMathExpr) {
         SBaseWrapper<SBase> targetSBaseWrapper = new SBaseWrapper<>(_targetSBase);
         Expression e = sbase_to_assignmentRuleSbmlExpression_map.get(targetSBaseWrapper);
         if (e != null) {
@@ -216,7 +244,7 @@ public class SBMLSymbolMapping {
         }
     }
 
-    public void putInitialAssignmentSbmlExpression(SBase _targetSBase, Expression sbmlInitialAssignmentRuleExpr) {
+    void putInitialAssignmentSbmlExpression(SBase _targetSBase, Expression sbmlInitialAssignmentRuleExpr) {
         SBaseWrapper<SBase> targetSBaseWrapper = new SBaseWrapper<>(_targetSBase);
         Expression e = sbase_to_initialAssignmentSbmlExpression_map.get(targetSBaseWrapper);
         if (e != null) {
@@ -235,7 +263,7 @@ public class SBMLSymbolMapping {
     /**
      * this is to capture the value="5.0" attributes of SBML Elements for later processing
      */
-    public void putSbmlValue(SBase _targetSBase, Double sbmlValue) {
+    void putSbmlValue(SBase _targetSBase, Double sbmlValue) {
         SBaseWrapper<SBase> targetSBaseWrapper = new SBaseWrapper<>(_targetSBase);
         Double v = sbase_to_sbmlValue_map.get(targetSBaseWrapper);
         if (v != null) {
@@ -250,12 +278,12 @@ public class SBMLSymbolMapping {
             sbase_to_sbmlValue_map.put(targetSBaseWrapper, sbmlValue);
         }
     }
-    public Double getSbmlValue(SBase _sbase) {
+    Double getSbmlValue(SBase _sbase) {
         SBaseWrapper<SBase> sbaseWrapper = new SBaseWrapper<>(_sbase);
         return sbase_to_sbmlValue_map.get(sbaseWrapper);
     }
 
-    public void putRateRuleSbmlExpression(SBase _targetSBase, Expression sbmlRateRuleExpr) {
+    void putRateRuleSbmlExpression(SBase _targetSBase, Expression sbmlRateRuleExpr) {
         SBaseWrapper<SBase> targetSBaseWrapper = new SBaseWrapper<>(_targetSBase);
         Expression e = sbase_to_rateRuleSbmlExpression_map.get(targetSBaseWrapper);
         if (e != null) {
@@ -270,7 +298,7 @@ public class SBMLSymbolMapping {
         }
     }
 
-    public Expression getRuleSBMLExpression(SBase _sbase, SymbolContext symbolContext) {
+    Expression getRuleSBMLExpression(SBase _sbase, SymbolContext symbolContext) {
         SBaseWrapper<SBase> sbaseWrapper = new SBaseWrapper<>(_sbase);
         switch (symbolContext) {
             case INITIAL: {
@@ -320,22 +348,22 @@ public class SBMLSymbolMapping {
         }
     }
 
-    public Expression getRateRuleSBMLExpression(SBase _sbase) {
+    Expression getRateRuleSBMLExpression(SBase _sbase) {
         SBaseWrapper<SBase> sbaseWrapper = new SBaseWrapper<>(_sbase);
         return sbase_to_rateRuleSbmlExpression_map.get(sbaseWrapper);
     }
 
-    public Set<SBase> getSbmlValueTargets() {
+    Set<SBase> getSbmlValueTargets() {
         return sbase_to_sbmlValue_map.keySet().stream()
                 .map(sbaseWrapper -> sbaseWrapper.internalSBase).collect(Collectors.toSet());
     }
 
-    public Set<SBase> getInitialAssignmentTargets() {
+    Set<SBase> getInitialAssignmentTargets() {
         return sbase_to_initialAssignmentSbmlExpression_map.keySet().stream()
                 .map(sbaseWrapper -> sbaseWrapper.internalSBase).collect(Collectors.toSet());
     }
 
-    public Set<SBase> getAssignmentRuleTargets() {
+    Set<SBase> getAssignmentRuleTargets() {
         return sbase_to_assignmentRuleSbmlExpression_map.keySet().stream()
                 .map(sbaseWrapper -> sbaseWrapper.internalSBase).collect(Collectors.toSet());
     }

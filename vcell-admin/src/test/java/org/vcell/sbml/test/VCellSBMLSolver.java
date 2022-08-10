@@ -72,7 +72,7 @@ public class VCellSBMLSolver implements SBMLSolver {
 
 	}
 	
-	private BioModel importSBML(String filename,VCLogger logger,boolean isSpatial) throws ClassNotFoundException, IOException, ExecutableException, XmlParseException, XMLStreamException {
+	private BioModel importSBML(String filename,VCLogger logger,boolean isSpatial) throws Exception {
 			boolean bValidateSBML = true;
 			org.vcell.sbml.vcell.SBMLImporter sbmlImporter = new org.vcell.sbml.vcell.SBMLImporter(filename,logger, bValidateSBML);
 			BioModel bioModel = sbmlImporter.getBioModel();
