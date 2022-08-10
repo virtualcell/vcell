@@ -3,6 +3,8 @@ package org.vcell.sbml;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.util.Arrays;
@@ -13,18 +15,13 @@ import java.util.stream.IntStream;
 public class SbmlTestSuiteFiles {
 
     private final static int[] allTestCases = IntStream.rangeClosed(1, 1821).toArray();
-    private final static String SbmlTestSuiteFilenameFormatPattern = "sbml-test-suite/cases/semantic/%05d-sbml-l3v2.xml";
+    private final static String SbmlTestSuiteFilenameFormatPattern_l3v2 = "sbml-test-suite/cases/semantic/%05d-sbml-l3v2.xml";
+    private final static String SbmlTestSuiteFilenameFormatPattern_l3v1 = "sbml-test-suite/cases/semantic/%05d-sbml-l3v1.xml";
+    private final static String SbmlTestSuiteFilenameFormatPattern_l2v5 = "sbml-test-suite/cases/semantic/%05d-sbml-l2v5.xml";
     private final static String BiomodelsFilenameFormatPattern = "BIO%010d_urn.xml";
 
     public static int[] getSbmlTestSuiteCases() {
-        IntPredicate testFilter = t ->
-                (t >= 0) && (t < 527)
-                        && (t != 59) && (t != 68) && (t != 69) && (t != 70) && (t != 96)
-                        && (t != 129) && (t != 130) && (t != 131) && (t != 134)
-                        && (t != 388) && (t != 391) && (t != 394) && (t != 445)
-                        && (t != 448) && (t != 451) && (t != 516) && (t != 516)
-                        && (t != 517) && (t != 518) && (t != 519) && (t != 520)
-                        && (t != 521);
+        IntPredicate testFilter = t -> (t >= 0) && (t < 1200);
 
         return Arrays.stream(allTestCases).filter(testFilter).toArray();
     }
@@ -36,24 +33,40 @@ public class SbmlTestSuiteFiles {
     public static InputStream getSbmlTestCase(int testCaseNumber) {
         int[] testCases = getSbmlTestSuiteCases();
         if (!Arrays.stream(testCases).anyMatch(i -> i == testCaseNumber)) {
-            throw new RuntimeException("file not found");
+            throw new RuntimeException("file not found for SBML Test Suite test "+testCaseNumber);
         }
-        return getFileFromResourceAsStream(String.format(SbmlTestSuiteFilenameFormatPattern, testCaseNumber));
+        try {
+            return getFileFromResourceAsStream(String.format(SbmlTestSuiteFilenameFormatPattern_l3v2, testCaseNumber));
+        }catch (FileNotFoundException e){
+            try {
+                return getFileFromResourceAsStream(String.format(SbmlTestSuiteFilenameFormatPattern_l3v1, testCaseNumber));
+            }catch (FileNotFoundException e1){
+                try {
+                    return getFileFromResourceAsStream(String.format(SbmlTestSuiteFilenameFormatPattern_l2v5, testCaseNumber));
+                }catch (FileNotFoundException e2){
+                    throw new RuntimeException("failed to find L3V2 or L3V1 or L2V5 file: "+e2.getMessage(), e2);
+                }
+            }
+        }
     }
 
     public static InputStream getBioModelsModel(int biomodelsId) {
         int[] testCases = getBiomodelsModels();
         if (!Arrays.stream(testCases).anyMatch(i -> i == biomodelsId)) {
-            throw new RuntimeException("file not found");
+            throw new RuntimeException("file not found for biomodels id "+biomodelsId);
         }
-        return getFileFromResourceAsStream(String.format(BiomodelsFilenameFormatPattern, biomodelsId));
+        try {
+            return getFileFromResourceAsStream(String.format(BiomodelsFilenameFormatPattern, biomodelsId));
+        }catch (FileNotFoundException e){
+            throw new RuntimeException("File Not Found: "+e.getMessage(),e);
+        }
     }
 
 
-    private static InputStream getFileFromResourceAsStream(String fileName) {
+    private static InputStream getFileFromResourceAsStream(String fileName) throws FileNotFoundException {
         InputStream inputStream = SbmlTestSuiteFiles.class.getResourceAsStream(fileName);
         if (inputStream == null) {
-            throw new IllegalArgumentException("file not found! " + fileName);
+            throw new FileNotFoundException("file not found! " + fileName);
         } else {
             return inputStream;
         }
@@ -66,7 +79,7 @@ public class SbmlTestSuiteFiles {
 
     @Test
     public void test_read_sbmlFile() throws URISyntaxException {
-        InputStream inputStream = getSbmlTestCase(2);
+        InputStream inputStream = getSbmlTestCase(getSbmlTestSuiteCases()[0]);
         Assert.assertTrue(inputStream != null);
     }
 

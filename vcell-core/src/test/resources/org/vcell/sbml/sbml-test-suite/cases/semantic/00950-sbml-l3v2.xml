@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sbml xmlns="http://www.sbml.org/sbml/level3/version2/core" level="3" version="2">
+  <model id="case000950" name="case000950">
+    <notes>
+      <body xmlns="http://www.w3.org/1999/xhtml">
+        <p> Originally created by libAntimony v1.4 (using libSBML 5.0.0-a1) </p>
+      </body>
+    </notes>
+    <listOfParameters>
+      <parameter id="P" value="0" constant="true"/>
+      <parameter id="Q" value="0" constant="true"/>
+      <parameter id="R" value="0" constant="true"/>
+    </listOfParameters>
+    <listOfInitialAssignments>
+      <initialAssignment symbol="P">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <infinity/>
+        </math>
+      </initialAssignment>
+      <initialAssignment symbol="Q">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <minus/>
+            <infinity/>
+          </apply>
+        </math>
+      </initialAssignment>
+      <initialAssignment symbol="R">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <notanumber/>
+        </math>
+      </initialAssignment>
+    </listOfInitialAssignments>
+  </model>
+</sbml>

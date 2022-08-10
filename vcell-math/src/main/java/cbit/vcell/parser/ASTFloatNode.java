@@ -25,7 +25,7 @@ public class ASTFloatNode extends SimpleNode {
 ASTFloatNode (double doubleValue) {
 	super(ExpressionParserTreeConstants.JJTFLOATNODE);
 	if (Double.isNaN(doubleValue)){
-		throw new RuntimeException("cannot set float node to NaN");
+		throw new ArithmeticException("cannot set float node to NaN");
 	}
 	this.value = new Double(doubleValue);
 }

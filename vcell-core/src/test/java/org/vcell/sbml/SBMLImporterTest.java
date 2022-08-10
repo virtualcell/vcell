@@ -51,7 +51,7 @@ public class SBMLImporterTest {
 
 	@Ignore
 	@Test
-	public void testBioModelsCuratedImport() throws XMLStreamException, IOException{
+	public void testBioModelsCuratedImport() throws Exception{
 		HashMap<Integer,FAULT> faults = new HashMap();
 		faults.put(6, FAULT.RESERVED_WORD);
 		faults.put(15, FAULT.RESERVED_WORD);

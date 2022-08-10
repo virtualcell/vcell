@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sbml xmlns="http://www.sbml.org/sbml/level3/version2/core" level="3" version="2">
+  <model id="case00961" name="case00961">
+    <listOfParameters>
+      <parameter id="P1" constant="false"/>
+      <parameter id="P2" constant="false"/>
+      <parameter id="P3" constant="false"/>
+      <parameter id="P4" constant="false"/>
+      <parameter id="P5" constant="false"/>
+    </listOfParameters>
+    <listOfRules>
+      <assignmentRule variable="P1">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <csymbol encoding="text" definitionURL="http://www.sbml.org/sbml/symbols/avogadro"> avogadro </csymbol>
+        </math>
+      </assignmentRule>
+      <assignmentRule variable="P2">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <csymbol encoding="text" definitionURL="http://www.sbml.org/sbml/symbols/avogadro"> time </csymbol>
+        </math>
+      </assignmentRule>
+      <assignmentRule variable="P3">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <csymbol encoding="text" definitionURL="http://www.sbml.org/sbml/symbols/avogadro"> delay </csymbol>
+        </math>
+      </assignmentRule>
+      <assignmentRule variable="P4">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <csymbol encoding="text" definitionURL="http://www.sbml.org/sbml/symbols/avogadro">  </csymbol>
+        </math>
+      </assignmentRule>
+      <assignmentRule variable="P5">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <minus/>
+            <csymbol encoding="text" definitionURL="http://www.sbml.org/sbml/symbols/avogadro"> avogadro </csymbol>
+            <cn type="e-notation"> 6.0221 <sep/> 23 </cn>
+          </apply>
+        </math>
+      </assignmentRule>
+    </listOfRules>
+  </model>
+</sbml>
