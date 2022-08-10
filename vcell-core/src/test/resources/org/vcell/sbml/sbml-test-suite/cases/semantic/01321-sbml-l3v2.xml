@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created by libAntimony version v2.9.0 with libSBML version 5.14.1. -->
+<sbml xmlns="http://www.sbml.org/sbml/level3/version2/core" level="3" version="2">
+  <model id="case01321" name="case01321">
+    <listOfParameters>
+      <parameter id="p1" value="1" constant="false"/>
+      <parameter id="p2" constant="false"/>
+    </listOfParameters>
+    <listOfRules>
+      <rateRule variable="p1">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <cn type="integer"> 2 </cn>
+        </math>
+      </rateRule>
+      <assignmentRule variable="p2">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <csymbol encoding="text" definitionURL="http://www.sbml.org/sbml/symbols/rateOf"> p1 </csymbol>
+            <ci> p1 </ci>
+          </apply>
+        </math>
+      </assignmentRule>
+    </listOfRules>
+  </model>
+</sbml>

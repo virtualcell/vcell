@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sbml xmlns="http://www.sbml.org/sbml/level3/version2/core" level="3" version="2">
+  <model id="case01574" name="case01574">
+    <listOfCompartments>
+      <compartment id="C" spatialDimensions="3" size="1" constant="true"/>
+    </listOfCompartments>
+    <listOfSpecies>
+      <species id="S1" compartment="C" initialConcentration="3" hasOnlySubstanceUnits="false" boundaryCondition="true" constant="false"/>
+      <species id="S2" compartment="C" initialConcentration="3" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+    </listOfSpecies>
+    <listOfRules>
+      <assignmentRule variable="S1_stoich">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <cn type="integer"> 2 </cn>
+        </math>
+      </assignmentRule>
+    </listOfRules>
+    <listOfReactions>
+      <reaction id="J0" reversible="true">
+        <listOfReactants>
+          <speciesReference id="S1_stoich" species="S1" constant="false"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference species="S2" stoichiometry="1" constant="true"/>
+        </listOfProducts>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+              <times/>
+              <ci> S1 </ci>
+              <cn> 0.1 </cn>
+            </apply>
+          </math>
+        </kineticLaw>
+      </reaction>
+    </listOfReactions>
+  </model>
+</sbml>

@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sbml xmlns="http://www.sbml.org/sbml/level3/version2/core" level="3" version="2">
+  <model id="case01204" name="case01204">
+    <listOfParameters>
+      <parameter id="z" constant="false"/>
+      <parameter id="y" value="2" constant="false"/>
+      <parameter id="x" value="0" constant="false"/>
+    </listOfParameters>
+    <listOfRules>
+      <assignmentRule variable="z">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <piecewise>
+            <piece>
+              <piecewise>
+                <piece>
+                  <cn type="integer"> 2 </cn>
+                  <apply>
+                    <gt/>
+                    <ci> y </ci>
+                    <cn> 1.49 </cn>
+                  </apply>
+                </piece>
+                <otherwise>
+                  <cn type="integer"> 1 </cn>
+                </otherwise>
+              </piecewise>
+              <piecewise>
+                <piece>
+                  <true/>
+                  <apply>
+                    <leq/>
+                    <ci> x </ci>
+                    <cn> 0.49 </cn>
+                  </apply>
+                </piece>
+                <otherwise>
+                  <false/>
+                </otherwise>
+              </piecewise>
+            </piece>
+            <otherwise>
+              <piecewise>
+                <piece>
+                  <cn type="integer"> 1 </cn>
+                  <apply>
+                    <gt/>
+                    <ci> y </ci>
+                    <cn> 0.49 </cn>
+                  </apply>
+                </piece>
+                <otherwise>
+                  <cn type="integer"> 0 </cn>
+                </otherwise>
+              </piecewise>
+            </otherwise>
+          </piecewise>
+        </math>
+      </assignmentRule>
+      <rateRule variable="y">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <cn type="integer"> -2 </cn>
+        </math>
+      </rateRule>
+      <rateRule variable="x">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <cn type="integer"> 1 </cn>
+        </math>
+      </rateRule>
+    </listOfRules>
+  </model>
+</sbml>

@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created by libAntimony version v2.9.0 with libSBML version 5.14.1. -->
+<sbml xmlns="http://www.sbml.org/sbml/level3/version2/core" level="3" version="2">
+  <model id="case01401" name="case01401">
+    <listOfParameters>
+      <parameter id="P0" constant="false"/>
+      <parameter id="S1" value="5" constant="false"/>
+      <parameter id="P1" constant="false"/>
+    </listOfParameters>
+    <listOfRules>
+      <assignmentRule variable="P0">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <csymbol encoding="text" definitionURL="http://www.sbml.org/sbml/symbols/rateOf"> rateOf </csymbol>
+            <ci> S1 </ci>
+          </apply>
+        </math>
+      </assignmentRule>
+      <rateRule variable="S1">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <times/>
+            <cn> -0.1 </cn>
+            <ci> S1 </ci>
+          </apply>
+        </math>
+      </rateRule>
+      <assignmentRule variable="P1">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <csymbol encoding="text" definitionURL="http://www.sbml.org/sbml/symbols/delay"> delay </csymbol>
+            <apply>
+              <csymbol encoding="text" definitionURL="http://www.sbml.org/sbml/symbols/rateOf"> rateOf </csymbol>
+              <ci> S1 </ci>
+            </apply>
+            <cn type="integer"> 1 </cn>
+          </apply>
+        </math>
+      </assignmentRule>
+    </listOfRules>
+  </model>
+</sbml>

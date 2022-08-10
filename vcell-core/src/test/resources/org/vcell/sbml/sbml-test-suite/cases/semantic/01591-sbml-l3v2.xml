@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created by libAntimony version v2.9.1 with libSBML version 5.14.1. -->
+<sbml xmlns="http://www.sbml.org/sbml/level3/version2/core" level="3" version="2">
+  <model id="case01591" name="case01591">
+    <listOfParameters>
+      <parameter id="S" constant="false"/>
+      <parameter id="Q" value="0" constant="false"/>
+      <parameter id="R" value="0" constant="false"/>
+      <parameter id="reset" value="0" constant="false"/>
+      <parameter id="maxdiff" value="0" constant="false"/>
+      <parameter id="errorLow" value="0" constant="false"/>
+      <parameter id="errorHigh" value="0" constant="false"/>
+    </listOfParameters>
+    <listOfRules>
+      <assignmentRule variable="S">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <plus/>
+            <ci> Q </ci>
+            <ci> R </ci>
+          </apply>
+        </math>
+      </assignmentRule>
+      <rateRule variable="reset">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <cn type="integer"> 1 </cn>
+        </math>
+      </rateRule>
+    </listOfRules>
+    <listOfEvents>
+      <event id="Qinc" useValuesFromTriggerTime="true">
+        <trigger initialValue="true" persistent="false">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+              <geq/>
+              <ci> reset </ci>
+              <cn> 0.01 </cn>
+            </apply>
+          </math>
+        </trigger>
+        <priority>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <cn type="integer"> 1 </cn>
+          </math>
+        </priority>
+        <listOfEventAssignments>
+          <eventAssignment variable="reset">
+            <math xmlns="http://www.w3.org/1998/Math/MathML">
+              <cn type="integer"> 0 </cn>
+            </math>
+          </eventAssignment>
+          <eventAssignment variable="Q">
+            <math xmlns="http://www.w3.org/1998/Math/MathML">
+              <apply>
+                <plus/>
+                <ci> Q </ci>
+                <cn> 0.01 </cn>
+              </apply>
+            </math>
+          </eventAssignment>
+        </listOfEventAssignments>
+      </event>
+      <event id="Rinc" useValuesFromTriggerTime="true">
+        <trigger initialValue="true" persistent="false">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+              <geq/>
+              <ci> reset </ci>
+              <cn> 0.01 </cn>
+            </apply>
+          </math>
+        </trigger>
+        <priority>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <cn type="integer"> 1 </cn>
+          </math>
+        </priority>
+        <listOfEventAssignments>
+          <eventAssignment variable="reset">
+            <math xmlns="http://www.w3.org/1998/Math/MathML">
+              <cn type="integer"> 0 </cn>
+            </math>
+          </eventAssignment>
+          <eventAssignment variable="R">
+            <math xmlns="http://www.w3.org/1998/Math/MathML">
+              <apply>
+                <plus/>
+                <ci> R </ci>
+                <cn> 0.01 </cn>
+              </apply>
+            </math>
+          </eventAssignment>
+        </listOfEventAssignments>
+      </event>
+      <event id="maxcheck" useValuesFromTriggerTime="true">
+        <trigger initialValue="true" persistent="true">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+              <gt/>
+              <apply>
+                <abs/>
+                <apply>
+                  <minus/>
+                  <ci> Q </ci>
+                  <ci> R </ci>
+                </apply>
+              </apply>
+              <ci> maxdiff </ci>
+            </apply>
+          </math>
+        </trigger>
+        <listOfEventAssignments>
+          <eventAssignment variable="maxdiff">
+            <math xmlns="http://www.w3.org/1998/Math/MathML">
+              <apply>
+                <abs/>
+                <apply>
+                  <minus/>
+                  <ci> Q </ci>
+                  <ci> R </ci>
+                </apply>
+              </apply>
+            </math>
+          </eventAssignment>
+        </listOfEventAssignments>
+      </event>
+      <event id="error_check" useValuesFromTriggerTime="true">
+        <trigger initialValue="true" persistent="true">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+              <and/>
+              <apply>
+                <geq/>
+                <csymbol encoding="text" definitionURL="http://www.sbml.org/sbml/symbols/time"> time </csymbol>
+                <cn type="integer"> 99 </cn>
+              </apply>
+              <apply>
+                <lt/>
+                <ci> maxdiff </ci>
+                <cn> 0.2 </cn>
+              </apply>
+            </apply>
+          </math>
+        </trigger>
+        <listOfEventAssignments>
+          <eventAssignment variable="errorLow">
+            <math xmlns="http://www.w3.org/1998/Math/MathML">
+              <cn type="integer"> 1 </cn>
+            </math>
+          </eventAssignment>
+        </listOfEventAssignments>
+      </event>
+      <event id="error_check2" useValuesFromTriggerTime="true">
+        <trigger initialValue="true" persistent="true">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+              <geq/>
+              <ci> maxdiff </ci>
+              <cn type="integer"> 4 </cn>
+            </apply>
+          </math>
+        </trigger>
+        <listOfEventAssignments>
+          <eventAssignment variable="errorHigh">
+            <math xmlns="http://www.w3.org/1998/Math/MathML">
+              <cn type="integer"> 1 </cn>
+            </math>
+          </eventAssignment>
+        </listOfEventAssignments>
+      </event>
+    </listOfEvents>
+  </model>
+</sbml>

@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created by libAntimony version v2.9.1 with libSBML version 5.15.1. -->
+<sbml xmlns="http://www.sbml.org/sbml/level3/version2/core" level="3" version="2">
+  <model id="case01718" name="case01718">
+    <listOfCompartments>
+      <compartment id="C" spatialDimensions="3" size="1" constant="true"/>
+    </listOfCompartments>
+    <listOfSpecies>
+      <species id="S1" compartment="C" initialConcentration="0" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+    </listOfSpecies>
+    <listOfParameters>
+      <parameter id="P1" value="0" constant="false"/>
+    </listOfParameters>
+    <listOfRules>
+      <rateRule variable="S1_stoich">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <cn type="integer"> 1 </cn>
+        </math>
+      </rateRule>
+    </listOfRules>
+    <listOfReactions>
+      <reaction id="J0" reversible="true">
+        <listOfProducts>
+          <speciesReference id="S1_stoich" species="S1" stoichiometry="1" constant="false"/>
+        </listOfProducts>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <cn> 0.1 </cn>
+          </math>
+        </kineticLaw>
+      </reaction>
+    </listOfReactions>
+    <listOfEvents>
+      <event id="E1" useValuesFromTriggerTime="true">
+        <trigger initialValue="true" persistent="false">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+              <and/>
+              <apply>
+                <geq/>
+                <ci> S1_stoich </ci>
+                <cn> 2.3 </cn>
+              </apply>
+              <apply>
+                <leq/>
+                <ci> S1_stoich </ci>
+                <cn> 3.3 </cn>
+              </apply>
+            </apply>
+          </math>
+        </trigger>
+        <delay>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <cn type="integer"> 2 </cn>
+          </math>
+        </delay>
+        <listOfEventAssignments>
+          <eventAssignment variable="P1">
+            <math xmlns="http://www.w3.org/1998/Math/MathML">
+              <cn type="integer"> 3 </cn>
+            </math>
+          </eventAssignment>
+        </listOfEventAssignments>
+      </event>
+    </listOfEvents>
+  </model>
+</sbml>

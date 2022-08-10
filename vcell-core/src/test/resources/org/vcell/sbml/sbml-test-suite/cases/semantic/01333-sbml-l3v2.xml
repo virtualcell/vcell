@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created by libAntimony version v2.9.0 with libSBML version 5.14.1. -->
+<sbml xmlns="http://www.sbml.org/sbml/level3/version2/core" level="3" version="2">
+  <model id="case01333" name="case01333">
+    <listOfParameters>
+      <parameter id="x" value="3" constant="false"/>
+      <parameter id="y" value="0" constant="false"/>
+    </listOfParameters>
+    <listOfEvents>
+      <event id="E1" useValuesFromTriggerTime="true">
+        <trigger initialValue="false" persistent="true">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+              <gt/>
+              <ci> x </ci>
+              <cn type="integer"> 2 </cn>
+            </apply>
+          </math>
+        </trigger>
+        <priority>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <cn type="integer"> 10 </cn>
+          </math>
+        </priority>
+        <listOfEventAssignments>
+          <eventAssignment variable="x">
+            <math xmlns="http://www.w3.org/1998/Math/MathML">
+              <cn type="integer"> 7 </cn>
+            </math>
+          </eventAssignment>
+        </listOfEventAssignments>
+      </event>
+      <event id="E2" useValuesFromTriggerTime="true">
+        <trigger initialValue="false" persistent="true">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+              <gt/>
+              <ci> x </ci>
+              <cn type="integer"> 2 </cn>
+            </apply>
+          </math>
+        </trigger>
+        <priority>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <cn type="integer"> 5 </cn>
+          </math>
+        </priority>
+        <listOfEventAssignments>
+          <eventAssignment variable="y">
+            <math xmlns="http://www.w3.org/1998/Math/MathML">
+              <ci> x </ci>
+            </math>
+          </eventAssignment>
+        </listOfEventAssignments>
+      </event>
+    </listOfEvents>
+  </model>
+</sbml>

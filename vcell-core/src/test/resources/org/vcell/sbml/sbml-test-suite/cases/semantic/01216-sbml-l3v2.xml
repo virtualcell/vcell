@@ -1,0 +1,217 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sbml xmlns="http://www.sbml.org/sbml/level3/version2/core" level="3" version="2">
+  <model id="case01216" name="case01216">
+    <listOfParameters>
+      <parameter id="a" constant="false"/>
+      <parameter id="b" constant="false"/>
+      <parameter id="c" constant="false"/>
+      <parameter id="d" constant="false"/>
+      <parameter id="e" constant="false"/>
+      <parameter id="f" constant="false"/>
+      <parameter id="g" constant="false"/>
+      <parameter id="h" constant="false"/>
+      <parameter id="i" constant="false"/>
+      <parameter id="j" constant="false"/>
+    </listOfParameters>
+    <listOfRules>
+      <assignmentRule variable="a">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <piecewise>
+            <piece>
+              <cn type="integer"> 1 </cn>
+              <apply>
+                <gt/>
+                <cn type="integer"> 2 </cn>
+                <cn type="integer"> 1 </cn>
+                <cn type="integer"> 2 </cn>
+              </apply>
+            </piece>
+            <otherwise>
+              <cn type="integer"> 3 </cn>
+            </otherwise>
+          </piecewise>
+        </math>
+      </assignmentRule>
+      <assignmentRule variable="b">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <piecewise>
+            <piece>
+              <cn type="integer"> 1 </cn>
+              <apply>
+                <lt/>
+                <cn type="integer"> 1 </cn>
+                <cn type="integer"> 2 </cn>
+                <cn type="integer"> 1 </cn>
+              </apply>
+            </piece>
+            <otherwise>
+              <cn type="integer"> 4 </cn>
+            </otherwise>
+          </piecewise>
+        </math>
+      </assignmentRule>
+      <assignmentRule variable="c">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <piecewise>
+            <piece>
+              <cn type="integer"> 1 </cn>
+              <apply>
+                <geq/>
+                <cn type="integer"> 2 </cn>
+                <cn type="integer"> 1 </cn>
+                <cn type="integer"> 2 </cn>
+              </apply>
+            </piece>
+            <otherwise>
+              <cn type="integer"> 5 </cn>
+            </otherwise>
+          </piecewise>
+        </math>
+      </assignmentRule>
+      <assignmentRule variable="d">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <piecewise>
+            <piece>
+              <cn type="integer"> 1 </cn>
+              <apply>
+                <leq/>
+                <cn type="integer"> 1 </cn>
+                <cn type="integer"> 2 </cn>
+                <cn type="integer"> 1 </cn>
+              </apply>
+            </piece>
+            <otherwise>
+              <cn type="integer"> 6 </cn>
+            </otherwise>
+          </piecewise>
+        </math>
+      </assignmentRule>
+      <assignmentRule variable="e">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <piecewise>
+            <piece>
+              <cn type="integer"> 1 </cn>
+              <apply>
+                <eq/>
+                <cn type="integer"> 1 </cn>
+                <cn type="integer"> 1 </cn>
+                <cn type="integer"> 2 </cn>
+              </apply>
+            </piece>
+            <otherwise>
+              <cn type="integer"> 7 </cn>
+            </otherwise>
+          </piecewise>
+        </math>
+      </assignmentRule>
+      <assignmentRule variable="f">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <piecewise>
+            <piece>
+              <cn type="integer"> 1 </cn>
+              <apply>
+                <gt/>
+                <cn type="integer"> 2 </cn>
+                <cn type="integer"> 1 </cn>
+                <cn type="integer"> 0 </cn>
+                <cn type="integer"> 0 </cn>
+                <cn type="integer"> -1 </cn>
+              </apply>
+            </piece>
+            <otherwise>
+              <cn type="integer"> 8 </cn>
+            </otherwise>
+          </piecewise>
+        </math>
+      </assignmentRule>
+      <assignmentRule variable="g">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <piecewise>
+            <piece>
+              <cn type="integer"> 1 </cn>
+              <apply>
+                <lt/>
+                <cn type="integer"> 1 </cn>
+                <cn type="integer"> 2 </cn>
+                <cn type="integer"> 3 </cn>
+                <cn type="integer"> 3 </cn>
+                <cn type="integer"> 4 </cn>
+              </apply>
+            </piece>
+            <otherwise>
+              <cn type="integer"> 9 </cn>
+            </otherwise>
+          </piecewise>
+        </math>
+      </assignmentRule>
+      <assignmentRule variable="h">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <piecewise>
+            <piece>
+              <cn type="integer"> 1 </cn>
+              <apply>
+                <geq/>
+                <cn type="integer"> 2 </cn>
+                <cn type="integer"> 1 </cn>
+                <cn type="integer"> 0 </cn>
+                <cn type="integer"> 1 </cn>
+                <cn type="integer"> -1 </cn>
+              </apply>
+            </piece>
+            <otherwise>
+              <cn type="integer"> 10 </cn>
+            </otherwise>
+          </piecewise>
+        </math>
+      </assignmentRule>
+      <assignmentRule variable="i">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <piecewise>
+            <piece>
+              <cn type="integer"> 1 </cn>
+              <apply>
+                <leq/>
+                <cn type="integer"> 1 </cn>
+                <cn type="integer"> 2 </cn>
+                <cn type="integer"> 3 </cn>
+                <cn type="integer"> 2 </cn>
+                <cn type="integer"> 4 </cn>
+              </apply>
+            </piece>
+            <otherwise>
+              <cn type="integer"> 11 </cn>
+            </otherwise>
+          </piecewise>
+        </math>
+      </assignmentRule>
+      <assignmentRule variable="j">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <piecewise>
+            <piece>
+              <cn type="integer"> 1 </cn>
+              <apply>
+                <eq/>
+                <cn type="integer"> 1 </cn>
+                <cn type="integer"> 1 </cn>
+                <cn type="integer"> 1 </cn>
+                <cn type="integer"> 1 </cn>
+                <cn type="integer"> 1 </cn>
+                <cn type="integer"> 1 </cn>
+                <cn type="integer"> 1 </cn>
+                <cn type="integer"> 1 </cn>
+                <cn type="integer"> 1 </cn>
+                <cn type="integer"> 2 </cn>
+                <cn type="integer"> 1 </cn>
+                <cn type="integer"> 1 </cn>
+                <cn type="integer"> 1 </cn>
+              </apply>
+            </piece>
+            <otherwise>
+              <cn type="integer"> 12 </cn>
+            </otherwise>
+          </piecewise>
+        </math>
+      </assignmentRule>
+    </listOfRules>
+  </model>
+</sbml>

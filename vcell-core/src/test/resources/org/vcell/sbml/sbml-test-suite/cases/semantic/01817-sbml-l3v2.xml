@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created by libAntimony version v2.13.0 with libSBML version 5.18.1. -->
+<sbml xmlns="http://www.sbml.org/sbml/level3/version2/core" level="3" version="2">
+  <model metaid="case01817" id="case01817">
+    <listOfParameters>
+      <parameter id="false" value="4" constant="true"/>
+      <parameter id="False" value="5" constant="true"/>
+      <parameter id="FALSE" value="6" constant="true"/>
+      <parameter id="a" constant="true"/>
+      <parameter id="b" constant="true"/>
+      <parameter id="c" constant="true"/>
+    </listOfParameters>
+    <listOfInitialAssignments>
+      <initialAssignment symbol="a">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <ci> false </ci>
+        </math>
+      </initialAssignment>
+      <initialAssignment symbol="b">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <ci> False </ci>
+        </math>
+      </initialAssignment>
+      <initialAssignment symbol="c">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <ci> FALSE </ci>
+        </math>
+      </initialAssignment>
+    </listOfInitialAssignments>
+  </model>
+</sbml>

@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created by libAntimony version v2.9.0 with libSBML version 5.14.1. -->
+<sbml xmlns="http://www.sbml.org/sbml/level3/version2/core" level="3" version="2">
+  <model id="case01447" name="case01447">
+    <listOfCompartments>
+      <compartment id="C" spatialDimensions="3" size="1" constant="true"/>
+    </listOfCompartments>
+    <listOfSpecies>
+      <species id="A" compartment="C" initialConcentration="50" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+      <species id="B" compartment="C"  initialConcentration="1" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+    </listOfSpecies>
+    <listOfInitialAssignments>
+      <initialAssignment symbol="A_sr1">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <cn type="integer"> 2 </cn>
+        </math>
+      </initialAssignment>
+      <initialAssignment symbol="A_sr2">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <cn type="integer"> 1 </cn>
+        </math>
+      </initialAssignment>
+       <initialAssignment symbol="B_sr1">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <cn type="integer"> 2 </cn>
+        </math>
+      </initialAssignment>
+      <initialAssignment symbol="B_sr2">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <cn type="integer"> 1 </cn>
+        </math>
+      </initialAssignment>
+    </listOfInitialAssignments>
+    <listOfEvents>
+      <event id="_E0" useValuesFromTriggerTime="true">
+        <trigger initialValue="true" persistent="true">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+              <geq/>
+              <csymbol encoding="text" definitionURL="http://www.sbml.org/sbml/symbols/time"> time </csymbol>
+              <cn type="integer"> 5 </cn>
+            </apply>
+          </math>
+        </trigger>
+        <listOfEventAssignments>
+          <eventAssignment variable="A_sr1">
+            <math xmlns="http://www.w3.org/1998/Math/MathML">
+              <cn type="integer"> 1 </cn>
+            </math>
+          </eventAssignment>
+          <eventAssignment variable="A_sr2">
+            <math xmlns="http://www.w3.org/1998/Math/MathML">
+              <cn type="integer"> 3 </cn>
+            </math>
+          </eventAssignment>
+          <eventAssignment variable="B_sr1">
+            <math xmlns="http://www.w3.org/1998/Math/MathML">
+              <cn type="integer"> 1 </cn>
+            </math>
+          </eventAssignment>
+          <eventAssignment variable="B_sr2">
+            <math xmlns="http://www.w3.org/1998/Math/MathML">
+              <cn type="integer"> 3 </cn>
+            </math>
+          </eventAssignment>
+        </listOfEventAssignments>
+      </event>
+    </listOfEvents>
+    <listOfReactions>
+      <reaction id="J0" reversible="true">
+        <listOfReactants>
+          <speciesReference id="A_sr1" species="A" stoichiometry="4" constant="false"/>
+          <speciesReference id="A_sr2" species="A" stoichiometry="2" constant="false"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference id="B_sr1" species="B" stoichiometry="3" constant="false"/>
+          <speciesReference id="B_sr2" species="B" stoichiometry="5" constant="false"/>
+        </listOfProducts>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <cn type="integer"> 1 </cn>
+          </math>
+        </kineticLaw>
+      </reaction>
+    </listOfReactions>
+  </model>
+</sbml>

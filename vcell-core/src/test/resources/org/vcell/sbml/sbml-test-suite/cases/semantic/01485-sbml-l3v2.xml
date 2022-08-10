@@ -1,0 +1,558 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created by libAntimony version v2.9.1 with libSBML version 5.14.1. -->
+<sbml xmlns="http://www.sbml.org/sbml/level3/version2/core" level="3" version="2">
+  <model id="case01485" name="case01485">
+    <listOfFunctionDefinitions>
+      <functionDefinition id="my_abs">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <lambda>
+            <bvar>
+              <ci> x </ci>
+            </bvar>
+            <apply>
+              <abs/>
+              <ci> x </ci>
+            </apply>
+          </lambda>
+        </math>
+      </functionDefinition>
+      <functionDefinition id="my_acos">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <lambda>
+            <bvar>
+              <ci> x </ci>
+            </bvar>
+            <apply>
+              <arccos/>
+              <ci> x </ci>
+            </apply>
+          </lambda>
+        </math>
+      </functionDefinition>
+      <functionDefinition id="my_asin">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <lambda>
+            <bvar>
+              <ci> x </ci>
+            </bvar>
+            <apply>
+              <arcsin/>
+              <ci> x </ci>
+            </apply>
+          </lambda>
+        </math>
+      </functionDefinition>
+      <functionDefinition id="my_atan">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <lambda>
+            <bvar>
+              <ci> x </ci>
+            </bvar>
+            <apply>
+              <arctan/>
+              <ci> x </ci>
+            </apply>
+          </lambda>
+        </math>
+      </functionDefinition>
+      <functionDefinition id="my_ceil">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <lambda>
+            <bvar>
+              <ci> x </ci>
+            </bvar>
+            <apply>
+              <ceiling/>
+              <ci> x </ci>
+            </apply>
+          </lambda>
+        </math>
+      </functionDefinition>
+      <functionDefinition id="my_cos">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <lambda>
+            <bvar>
+              <ci> x </ci>
+            </bvar>
+            <apply>
+              <cos/>
+              <ci> x </ci>
+            </apply>
+          </lambda>
+        </math>
+      </functionDefinition>
+      <functionDefinition id="my_exp">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <lambda>
+            <bvar>
+              <ci> x </ci>
+            </bvar>
+            <apply>
+              <exp/>
+              <ci> x </ci>
+            </apply>
+          </lambda>
+        </math>
+      </functionDefinition>
+      <functionDefinition id="my_floor">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <lambda>
+            <bvar>
+              <ci> x </ci>
+            </bvar>
+            <apply>
+              <floor/>
+              <ci> x </ci>
+            </apply>
+          </lambda>
+        </math>
+      </functionDefinition>
+      <functionDefinition id="my_log">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <lambda>
+            <bvar>
+              <ci> x </ci>
+            </bvar>
+            <apply>
+              <ln/>
+              <ci> x </ci>
+            </apply>
+          </lambda>
+        </math>
+      </functionDefinition>
+      <functionDefinition id="my_log10">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <lambda>
+            <bvar>
+              <ci> x </ci>
+            </bvar>
+            <apply>
+              <log/>
+              <logbase>
+                <cn type="integer"> 10 </cn>
+              </logbase>
+              <ci> x </ci>
+            </apply>
+          </lambda>
+        </math>
+      </functionDefinition>
+      <functionDefinition id="my_pow">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <lambda>
+            <bvar>
+              <ci> x </ci>
+            </bvar>
+            <bvar>
+              <ci> y </ci>
+            </bvar>
+            <apply>
+              <power/>
+              <ci> x </ci>
+              <ci> y </ci>
+            </apply>
+          </lambda>
+        </math>
+      </functionDefinition>
+      <functionDefinition id="my_sqr">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <lambda>
+            <bvar>
+              <ci> x </ci>
+            </bvar>
+            <apply>
+              <power/>
+              <ci> x </ci>
+              <cn type="integer"> 2 </cn>
+            </apply>
+          </lambda>
+        </math>
+      </functionDefinition>
+      <functionDefinition id="my_sqrt">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <lambda>
+            <bvar>
+              <ci> x </ci>
+            </bvar>
+            <apply>
+              <root/>
+              <degree>
+                <cn type="integer"> 2 </cn>
+              </degree>
+              <ci> x </ci>
+            </apply>
+          </lambda>
+        </math>
+      </functionDefinition>
+      <functionDefinition id="my_sin">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <lambda>
+            <bvar>
+              <ci> x </ci>
+            </bvar>
+            <apply>
+              <sin/>
+              <ci> x </ci>
+            </apply>
+          </lambda>
+        </math>
+      </functionDefinition>
+      <functionDefinition id="my_tan">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <lambda>
+            <bvar>
+              <ci> x </ci>
+            </bvar>
+            <apply>
+              <tan/>
+              <ci> x </ci>
+            </apply>
+          </lambda>
+        </math>
+      </functionDefinition>
+      <functionDefinition id="my_tanh">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <lambda>
+            <bvar>
+              <ci> x </ci>
+            </bvar>
+            <apply>
+              <tanh/>
+              <ci> x </ci>
+            </apply>
+          </lambda>
+        </math>
+      </functionDefinition>
+    </listOfFunctionDefinitions>
+    <listOfParameters>
+      <parameter id="P2" constant="false"/>
+      <parameter id="P3" constant="false"/>
+      <parameter id="P4" constant="false"/>
+      <parameter id="P5" constant="false"/>
+      <parameter id="P6" constant="false"/>
+      <parameter id="P7" constant="false"/>
+      <parameter id="P8" constant="false"/>
+      <parameter id="P9" constant="false"/>
+      <parameter id="P10" constant="false"/>
+      <parameter id="P11" constant="false"/>
+      <parameter id="P12" constant="false"/>
+      <parameter id="P13" constant="false"/>
+      <parameter id="P14" constant="false"/>
+      <parameter id="P15" constant="false"/>
+      <parameter id="P16" constant="false"/>
+      <parameter id="P17" constant="false"/>
+      <parameter id="P18" constant="false"/>
+      <parameter id="P19" constant="false"/>
+      <parameter id="P20" constant="false"/>
+      <parameter id="P21" constant="false"/>
+      <parameter id="P22" constant="false"/>
+      <parameter id="P23" constant="false"/>
+      <parameter id="P24" constant="false"/>
+      <parameter id="P25" constant="false"/>
+      <parameter id="P26" constant="false"/>
+      <parameter id="P27" constant="false"/>
+      <parameter id="P28" constant="false"/>
+      <parameter id="P29" constant="false"/>
+      <parameter id="P30" constant="false"/>
+      <parameter id="P31" constant="false"/>
+      <parameter id="P32" constant="false"/>
+      <parameter id="P33" constant="false"/>
+      <parameter id="P34" constant="false"/>
+      <parameter id="P35" constant="false"/>
+      <parameter id="P36" constant="false"/>
+      <parameter id="P37" constant="false"/>
+    </listOfParameters>
+    <listOfRules>
+      <assignmentRule variable="P2">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <ci> my_abs </ci>
+            <cn type="integer"> -1 </cn>
+          </apply>
+        </math>
+      </assignmentRule>
+      <assignmentRule variable="P3">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <ci> my_abs </ci>
+            <cn type="integer"> 1 </cn>
+          </apply>
+        </math>
+      </assignmentRule>
+      <assignmentRule variable="P4">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <ci> my_acos </ci>
+            <cn type="integer"> -1 </cn>
+          </apply>
+        </math>
+      </assignmentRule>
+      <assignmentRule variable="P5">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <ci> my_acos </ci>
+            <cn> 0.5 </cn>
+          </apply>
+        </math>
+      </assignmentRule>
+      <assignmentRule variable="P6">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <ci> my_asin </ci>
+            <cn type="integer"> 1 </cn>
+          </apply>
+        </math>
+      </assignmentRule>
+      <assignmentRule variable="P7">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <ci> my_asin </ci>
+            <cn> -0.5 </cn>
+          </apply>
+        </math>
+      </assignmentRule>
+      <assignmentRule variable="P8">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <ci> my_atan </ci>
+            <cn> 2.8 </cn>
+          </apply>
+        </math>
+      </assignmentRule>
+      <assignmentRule variable="P9">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <ci> my_atan </ci>
+            <cn> -7.09 </cn>
+          </apply>
+        </math>
+      </assignmentRule>
+      <assignmentRule variable="P10">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <ci> my_ceil </ci>
+            <cn> 0.5 </cn>
+          </apply>
+        </math>
+      </assignmentRule>
+      <assignmentRule variable="P11">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <ci> my_ceil </ci>
+            <cn> 3.55 </cn>
+          </apply>
+        </math>
+      </assignmentRule>
+      <assignmentRule variable="P12">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <ci> my_ceil </ci>
+            <cn> -4.6 </cn>
+          </apply>
+        </math>
+      </assignmentRule>
+      <assignmentRule variable="P13">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <ci> my_cos </ci>
+            <cn> 9.1 </cn>
+          </apply>
+        </math>
+      </assignmentRule>
+      <assignmentRule variable="P14">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <ci> my_cos </ci>
+            <cn> -0.22 </cn>
+          </apply>
+        </math>
+      </assignmentRule>
+      <assignmentRule variable="P15">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <ci> my_exp </ci>
+            <cn type="integer"> 0 </cn>
+          </apply>
+        </math>
+      </assignmentRule>
+      <assignmentRule variable="P16">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <ci> my_exp </ci>
+            <cn type="integer"> 1 </cn>
+          </apply>
+        </math>
+      </assignmentRule>
+      <assignmentRule variable="P17">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <ci> my_exp </ci>
+            <cn> 0.77 </cn>
+          </apply>
+        </math>
+      </assignmentRule>
+      <assignmentRule variable="P18">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <ci> my_floor </ci>
+            <cn> -4.6 </cn>
+          </apply>
+        </math>
+      </assignmentRule>
+      <assignmentRule variable="P19">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <ci> my_floor </ci>
+            <cn> 9.1 </cn>
+          </apply>
+        </math>
+      </assignmentRule>
+      <assignmentRule variable="P20">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <ci> my_log </ci>
+            <cn> 0.2 </cn>
+          </apply>
+        </math>
+      </assignmentRule>
+      <assignmentRule variable="P21">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <ci> my_log </ci>
+            <cn type="integer"> 1 </cn>
+          </apply>
+        </math>
+      </assignmentRule>
+      <assignmentRule variable="P22">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <ci> my_log10 </ci>
+            <cn> 0.2 </cn>
+          </apply>
+        </math>
+      </assignmentRule>
+      <assignmentRule variable="P23">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <ci> my_log10 </ci>
+            <cn type="integer"> 1 </cn>
+          </apply>
+        </math>
+      </assignmentRule>
+      <assignmentRule variable="P24">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <ci> my_pow </ci>
+            <cn type="integer"> 1 </cn>
+            <cn type="integer"> 2 </cn>
+          </apply>
+        </math>
+      </assignmentRule>
+      <assignmentRule variable="P25">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <ci> my_pow </ci>
+            <cn type="integer"> 2 </cn>
+            <cn type="integer"> 2 </cn>
+          </apply>
+        </math>
+      </assignmentRule>
+      <assignmentRule variable="P26">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <ci> my_pow </ci>
+            <cn> 1.4 </cn>
+            <cn> 5.1 </cn>
+          </apply>
+        </math>
+      </assignmentRule>
+      <assignmentRule variable="P27">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <ci> my_sqr </ci>
+            <cn type="integer"> 4 </cn>
+          </apply>
+        </math>
+      </assignmentRule>
+      <assignmentRule variable="P28">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <ci> my_sqr </ci>
+            <cn> 3.1 </cn>
+          </apply>
+        </math>
+      </assignmentRule>
+      <assignmentRule variable="P29">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <ci> my_sqrt </ci>
+            <cn type="integer"> 4 </cn>
+          </apply>
+        </math>
+      </assignmentRule>
+      <assignmentRule variable="P30">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <ci> my_sqrt </ci>
+            <cn> 7.4 </cn>
+          </apply>
+        </math>
+      </assignmentRule>
+      <assignmentRule variable="P31">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <ci> my_sin </ci>
+            <cn> 2.1 </cn>
+          </apply>
+        </math>
+      </assignmentRule>
+      <assignmentRule variable="P32">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <ci> my_sin </ci>
+            <cn type="integer"> 0 </cn>
+          </apply>
+        </math>
+      </assignmentRule>
+      <assignmentRule variable="P33">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <ci> my_sin </ci>
+            <cn> -5.9 </cn>
+          </apply>
+        </math>
+      </assignmentRule>
+      <assignmentRule variable="P34">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <ci> my_tan </ci>
+            <cn type="integer"> 0 </cn>
+          </apply>
+        </math>
+      </assignmentRule>
+      <assignmentRule variable="P35">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <ci> my_tan </ci>
+            <cn> 1.11 </cn>
+          </apply>
+        </math>
+      </assignmentRule>
+      <assignmentRule variable="P36">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <ci> my_tan </ci>
+            <cn type="integer"> -6 </cn>
+          </apply>
+        </math>
+      </assignmentRule>
+      <assignmentRule variable="P37">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <ci> my_tanh </ci>
+            <cn> -0.4 </cn>
+          </apply>
+        </math>
+      </assignmentRule>
+    </listOfRules>
+  </model>
+</sbml>

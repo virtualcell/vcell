@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created by libAntimony version v2.9.1 with libSBML version 5.14.1. -->
+<sbml xmlns="http://www.sbml.org/sbml/level3/version2/core" level="3" version="2">
+  <model id="case01576" name="case01576">
+    <listOfParameters>
+      <parameter id="k1" value="1" constant="false"/>
+      <parameter id="k2" constant="false"/>
+    </listOfParameters>
+    <listOfRules>
+      <algebraicRule>
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <minus/>
+            <ci> k1 </ci>
+            <ci> k2 </ci>
+          </apply>
+        </math>
+      </algebraicRule>
+      <rateRule variable="k1">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <cn type="integer"> 1 </cn>
+        </math>
+      </rateRule>
+    </listOfRules>
+    <listOfEvents>
+      <event id="E0" useValuesFromTriggerTime="true">
+        <trigger initialValue="true" persistent="false">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+              <and/>
+              <apply>
+                <gt/>
+                <ci> k2 </ci>
+                <cn> 3.5 </cn>
+              </apply>
+              <apply>
+                <lt/>
+                <ci> k2 </ci>
+                <cn type="integer"> 4 </cn>
+              </apply>
+            </apply>
+          </math>
+        </trigger>
+        <delay>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <cn type="integer"> 1 </cn>
+          </math>
+        </delay>
+        <listOfEventAssignments>
+          <eventAssignment variable="k1">
+            <math xmlns="http://www.w3.org/1998/Math/MathML">
+              <cn type="integer"> 1 </cn>
+            </math>
+          </eventAssignment>
+        </listOfEventAssignments>
+      </event>
+    </listOfEvents>
+  </model>
+</sbml>

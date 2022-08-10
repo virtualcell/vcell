@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created by libAntimony version v2.9.1 with libSBML version 5.14.1. -->
+<sbml xmlns="http://www.sbml.org/sbml/level3/version2/core" level="3" version="2">
+  <model id="case01528" name="case01528">
+    <listOfParameters>
+      <parameter id="P1" value="0" constant="false"/>
+      <parameter id="P2" value="0" constant="false"/>
+    </listOfParameters>
+    <listOfRules>
+      <rateRule variable="P1">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <csymbol encoding="text" definitionURL="http://www.sbml.org/sbml/symbols/time"> time </csymbol>
+        </math>
+      </rateRule>
+    </listOfRules>
+    <listOfEvents>
+      <event id="E0" useValuesFromTriggerTime="true">
+        <trigger initialValue="true" persistent="true">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+              <gt/>
+              <csymbol encoding="text" definitionURL="http://www.sbml.org/sbml/symbols/time"> time </csymbol>
+              <cn> 1.5 </cn>
+            </apply>
+          </math>
+        </trigger>
+        <delay>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <cn type="integer"> 2 </cn>
+          </math>
+        </delay>
+        <listOfEventAssignments>
+          <eventAssignment variable="P2">
+            <math xmlns="http://www.w3.org/1998/Math/MathML">
+              <apply>
+                <csymbol encoding="text" definitionURL="http://www.sbml.org/sbml/symbols/rateOf"> rateOf </csymbol>
+                <ci> P1 </ci>
+              </apply>
+            </math>
+          </eventAssignment>
+        </listOfEventAssignments>
+      </event>
+    </listOfEvents>
+  </model>
+</sbml>

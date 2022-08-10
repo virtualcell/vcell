@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sbml xmlns:comp="http://www.sbml.org/sbml/level3/version1/comp/version1" xmlns="http://www.sbml.org/sbml/level3/version2/core" level="3" version="2" comp:required="true">
+  <model id="case01352" name="case01352">
+    <listOfCompartments>
+      <compartment id="C" spatialDimensions="3" size="1" constant="true">
+        <comp:listOfReplacedElements>
+          <comp:replacedElement comp:idRef="C" comp:submodelRef="A"/>
+        </comp:listOfReplacedElements>
+      </compartment>
+    </listOfCompartments>
+    <listOfSpecies>
+      <species id="S1" compartment="C" initialConcentration="3" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false">
+        <comp:listOfReplacedElements>
+          <comp:replacedElement comp:idRef="S1" comp:submodelRef="A"/>
+        </comp:listOfReplacedElements>
+      </species>
+    </listOfSpecies>
+    <listOfReactions>
+      <reaction id="J1" reversible="true">
+        <listOfProducts>
+          <speciesReference species="S1" stoichiometry="1" constant="true"/>
+        </listOfProducts>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <cn type="integer"> 5 </cn>
+          </math>
+        </kineticLaw>
+        <comp:listOfReplacedElements>
+          <comp:replacedElement comp:idRef="J0" comp:submodelRef="A"/>
+        </comp:listOfReplacedElements>
+      </reaction>
+    </listOfReactions>
+    <comp:listOfSubmodels>
+      <comp:submodel comp:id="A" comp:modelRef="sub1"/>
+    </comp:listOfSubmodels>
+  </model>
+  <comp:listOfModelDefinitions>
+    <comp:modelDefinition id="sub1" name="sub1">
+      <listOfCompartments>
+        <compartment id="C" spatialDimensions="3" size="1" constant="true"/>
+      </listOfCompartments>
+      <listOfSpecies>
+        <species id="S1" compartment="C" initialConcentration="3" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+      </listOfSpecies>
+      <listOfParameters>
+        <parameter id="x" value="0" constant="false"/>
+      </listOfParameters>
+      <listOfRules>
+        <rateRule variable="x">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <ci> J0 </ci>
+          </math>
+        </rateRule>
+      </listOfRules>
+      <listOfReactions>
+        <reaction id="J0" reversible="true">
+          <listOfProducts>
+            <speciesReference species="S1" stoichiometry="1" constant="true"/>
+          </listOfProducts>
+          <kineticLaw>
+            <math xmlns="http://www.w3.org/1998/Math/MathML">
+              <cn type="integer"> 2 </cn>
+            </math>
+          </kineticLaw>
+        </reaction>
+      </listOfReactions>
+    </comp:modelDefinition>
+  </comp:listOfModelDefinitions>
+</sbml>

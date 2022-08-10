@@ -1,0 +1,1179 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sbml xmlns="http://www.sbml.org/sbml/level3/version2/core" level="3" version="2">
+  <model id="case01395" name="case01395">
+    <listOfCompartments>
+      <compartment id="DefaultCompartment" name="DefaultCompartment" spatialDimensions="3" size="1" constant="true"/>
+    </listOfCompartments>
+    <listOfSpecies>
+      <species id="pp9_mrna" name="pp9_mrna" compartment="DefaultCompartment" initialAmount="0" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+      <species id="p9" name="p9" compartment="DefaultCompartment" initialAmount="0" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+      <species id="pp8_mrna" name="pp8_mrna" compartment="DefaultCompartment" initialAmount="0" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+      <species id="p8" name="p8" compartment="DefaultCompartment" initialAmount="0" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+      <species id="pp7_mrna" name="pp7_mrna" compartment="DefaultCompartment" initialAmount="0" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+      <species id="p7" name="p7" compartment="DefaultCompartment" initialAmount="0" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+      <species id="pp6_mrna" name="pp6_mrna" compartment="DefaultCompartment" initialAmount="0" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+      <species id="p6" name="p6" compartment="DefaultCompartment" initialAmount="0" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+      <species id="pp5_mrna" name="pp5_mrna" compartment="DefaultCompartment" initialAmount="0" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+      <species id="p5" name="p5" compartment="DefaultCompartment" initialAmount="0" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+      <species id="pp4_mrna" name="pp4_mrna" compartment="DefaultCompartment" initialAmount="0" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+      <species id="p4" name="p4" compartment="DefaultCompartment" initialAmount="0" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+      <species id="pp3_mrna" name="pp3_mrna" compartment="DefaultCompartment" initialAmount="0" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+      <species id="p3" name="p3" compartment="DefaultCompartment" initialAmount="0" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+      <species id="pp2_mrna" name="pp2_mrna" compartment="DefaultCompartment" initialAmount="0" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+      <species id="p2" name="p2" compartment="DefaultCompartment" initialAmount="0" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+      <species id="pp1_mrna" name="pp1_mrna" compartment="DefaultCompartment" initialAmount="0" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+      <species id="p1" name="p1" compartment="DefaultCompartment" initialAmount="5" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+    </listOfSpecies>
+    <listOfParameters>
+      <parameter id="pp8_mrna_degradation_rate" name="pp8_mrna_degradation_rate" value="1" constant="true"/>
+      <parameter id="pp9_mrna_degradation_rate" name="pp9_mrna_degradation_rate" value="1" constant="true"/>
+      <parameter id="p1_degradation_rate" name="p1_degradation_rate" value="0.5" constant="true"/>
+      <parameter id="p2_degradation_rate" name="p2_degradation_rate" value="0.5" constant="true"/>
+      <parameter id="p3_degradation_rate" name="p3_degradation_rate" value="0.5" constant="true"/>
+      <parameter id="p4_degradation_rate" name="p4_degradation_rate" value="0.5" constant="true"/>
+      <parameter id="p5_degradation_rate" name="p5_degradation_rate" value="0.5" constant="true"/>
+      <parameter id="p6_degradation_rate" name="p6_degradation_rate" value="0.5" constant="true"/>
+      <parameter id="p7_degradation_rate" name="p7_degradation_rate" value="0.5" constant="true"/>
+      <parameter id="p8_degradation_rate" name="p8_degradation_rate" value="0.5" constant="true"/>
+      <parameter id="p9_degradation_rate" name="p9_degradation_rate" value="0.5" constant="true"/>
+      <parameter id="v1_Kd" name="v1_Kd" value="11.147" constant="true"/>
+      <parameter id="v1_h" name="v1_h" value="1" constant="true"/>
+      <parameter id="v2_Kd" name="v2_Kd" value="1" constant="true"/>
+      <parameter id="v2_h" name="v2_h" value="4" constant="true"/>
+      <parameter id="v3_Kd" name="v3_Kd" value="20" constant="true"/>
+      <parameter id="v3_h" name="v3_h" value="1" constant="true"/>
+      <parameter id="v4_Kd" name="v4_Kd" value="0.2" constant="true"/>
+      <parameter id="v4_h" name="v4_h" value="4" constant="true"/>
+      <parameter id="v5_Kd" name="v5_Kd" value="0.2" constant="true"/>
+      <parameter id="v5_h" name="v5_h" value="4" constant="true"/>
+      <parameter id="v6_Kd" name="v6_Kd" value="0.04" constant="true"/>
+      <parameter id="v6_h" name="v6_h" value="4" constant="true"/>
+      <parameter id="v7_Kd" name="v7_Kd" value="0.02" constant="true"/>
+      <parameter id="v7_h" name="v7_h" value="4" constant="true"/>
+      <parameter id="v8_Kd" name="v8_Kd" value="0.04" constant="true"/>
+      <parameter id="v8_h" name="v8_h" value="4" constant="true"/>
+      <parameter id="v9_Kd" name="v9_Kd" value="0.2" constant="true"/>
+      <parameter id="v9_h" name="v9_h" value="4" constant="true"/>
+      <parameter id="pp1_mrna_degradation_rate" name="pp1_mrna_degradation_rate" value="1" constant="true"/>
+      <parameter id="pp2_mrna_degradation_rate" name="pp2_mrna_degradation_rate" value="1" constant="true"/>
+      <parameter id="pro1_strength" name="pro1_strength" value="2" constant="true"/>
+      <parameter id="pro2_strength" name="pro2_strength" value="4.5077" constant="true"/>
+      <parameter id="pro3_strength" name="pro3_strength" value="5" constant="true"/>
+      <parameter id="pro4_strength" name="pro4_strength" value="5" constant="true"/>
+      <parameter id="pro5_strength" name="pro5_strength" value="5" constant="true"/>
+      <parameter id="pro6_strength" name="pro6_strength" value="1.31" constant="true"/>
+      <parameter id="pro7_strength" name="pro7_strength" value="1.31" constant="true"/>
+      <parameter id="pro8_strength" name="pro8_strength" value="5" constant="true"/>
+      <parameter id="pro9_strength" name="pro9_strength" value="5" constant="true"/>
+      <parameter id="pp3_mrna_degradation_rate" name="pp3_mrna_degradation_rate" value="1" constant="true"/>
+      <parameter id="v10_Kd" name="v10_Kd" value="0.02" constant="true"/>
+      <parameter id="v10_h" name="v10_h" value="4" constant="true"/>
+      <parameter id="v11_Kd" name="v11_Kd" value="0.1" constant="true"/>
+      <parameter id="v11_h" name="v11_h" value="2" constant="true"/>
+      <parameter id="v12_Kd" name="v12_Kd" value="0.1" constant="true"/>
+      <parameter id="v12_h" name="v12_h" value="2" constant="true"/>
+      <parameter id="v13_Kd" name="v13_Kd" value="0.01" constant="true"/>
+      <parameter id="v13_h" name="v13_h" value="2" constant="true"/>
+      <parameter id="pp4_mrna_degradation_rate" name="pp4_mrna_degradation_rate" value="1" constant="true"/>
+      <parameter id="v14_Kd" name="v14_Kd" value="1" constant="true"/>
+      <parameter id="v14_h" name="v14_h" value="4" constant="true"/>
+      <parameter id="v15_Kd" name="v15_Kd" value="20" constant="true"/>
+      <parameter id="v15_h" name="v15_h" value="1" constant="true"/>
+      <parameter id="pp5_mrna_degradation_rate" name="pp5_mrna_degradation_rate" value="1" constant="true"/>
+      <parameter id="rbs1_strength" name="rbs1_strength" value="0.3668" constant="true"/>
+      <parameter id="rbs2_strength" name="rbs2_strength" value="1.4102" constant="true"/>
+      <parameter id="rbs3_strength" name="rbs3_strength" value="0.8" constant="true"/>
+      <parameter id="rbs4_strength" name="rbs4_strength" value="2.21" constant="true"/>
+      <parameter id="rbs5_strength" name="rbs5_strength" value="0.5" constant="true"/>
+      <parameter id="rbs6_strength" name="rbs6_strength" value="2" constant="true"/>
+      <parameter id="rbs7_strength" name="rbs7_strength" value="5" constant="true"/>
+      <parameter id="rbs8_strength" name="rbs8_strength" value="3.6377" constant="true"/>
+      <parameter id="rbs9_strength" name="rbs9_strength" value="8" constant="true"/>
+      <parameter id="pp6_mrna_degradation_rate" name="pp6_mrna_degradation_rate" value="1" constant="true"/>
+      <parameter id="pp7_mrna_degradation_rate" name="pp7_mrna_degradation_rate" value="1" constant="true"/>
+      <parameter id="as8" name="as8" value="1" constant="false"/>
+      <parameter id="cod1" name="cod1" value="1" constant="false"/>
+      <parameter id="cod2" name="cod2" value="1" constant="false"/>
+      <parameter id="cod3" name="cod3" value="1" constant="false"/>
+      <parameter id="cod4" name="cod4" value="1" constant="false"/>
+      <parameter id="cod5" name="cod5" value="1" constant="false"/>
+      <parameter id="cod6" name="cod6" value="1" constant="false"/>
+      <parameter id="cod7" name="cod7" value="1" constant="false"/>
+      <parameter id="cod8" name="cod8" value="1" constant="false"/>
+      <parameter id="cod9" name="cod9" value="1" constant="false"/>
+      <parameter id="rs1" name="rs1" value="1" constant="false"/>
+      <parameter id="rs2" name="rs2" value="1" constant="false"/>
+      <parameter id="rs3" name="rs3" value="1" constant="false"/>
+      <parameter id="rs4" name="rs4" value="1" constant="false"/>
+      <parameter id="rs5" name="rs5" value="1" constant="false"/>
+      <parameter id="rs6" name="rs6" value="1" constant="false"/>
+      <parameter id="rs7" name="rs7" value="1" constant="false"/>
+      <parameter id="as1" name="as1" value="1" constant="false"/>
+      <parameter id="as2" name="as2" value="1" constant="false"/>
+      <parameter id="as3" name="as3" value="1" constant="false"/>
+      <parameter id="as4" name="as4" value="1" constant="false"/>
+      <parameter id="as5" name="as5" value="1" constant="false"/>
+      <parameter id="as6" name="as6" value="1" constant="false"/>
+      <parameter id="as7" name="as7" value="1" constant="false"/>
+    </listOfParameters>
+    <listOfRules>
+      <assignmentRule variable="as8">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <divide/>
+            <apply>
+              <minus/>
+              <apply>
+                <plus/>
+                <cn type="integer"> 1 </cn>
+                <apply>
+                  <power/>
+                  <apply>
+                    <divide/>
+                    <ci> p5 </ci>
+                    <ci> v9_Kd </ci>
+                  </apply>
+                  <ci> v9_h </ci>
+                </apply>
+              </apply>
+              <cn type="integer"> 1 </cn>
+            </apply>
+            <apply>
+              <plus/>
+              <cn type="integer"> 1 </cn>
+              <apply>
+                <power/>
+                <apply>
+                  <divide/>
+                  <ci> p5 </ci>
+                  <ci> v9_Kd </ci>
+                </apply>
+                <ci> v9_h </ci>
+              </apply>
+            </apply>
+          </apply>
+        </math>
+      </assignmentRule>
+      <assignmentRule variable="cod1">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <ci> pro1_strength </ci>
+        </math>
+      </assignmentRule>
+      <assignmentRule variable="cod2">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <times/>
+            <ci> pro2_strength </ci>
+            <ci> as1 </ci>
+            <ci> rs1 </ci>
+          </apply>
+        </math>
+      </assignmentRule>
+      <assignmentRule variable="cod3">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <times/>
+            <ci> pro3_strength </ci>
+            <ci> rs2 </ci>
+            <ci> rs3 </ci>
+          </apply>
+        </math>
+      </assignmentRule>
+      <assignmentRule variable="cod4">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <times/>
+            <ci> pro4_strength </ci>
+            <ci> rs7 </ci>
+            <ci> rs6 </ci>
+          </apply>
+        </math>
+      </assignmentRule>
+      <assignmentRule variable="cod5">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <times/>
+            <ci> pro5_strength </ci>
+            <ci> as2 </ci>
+          </apply>
+        </math>
+      </assignmentRule>
+      <assignmentRule variable="cod6">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <times/>
+            <ci> pro6_strength </ci>
+            <apply>
+              <plus/>
+              <ci> as3 </ci>
+              <ci> as4 </ci>
+            </apply>
+          </apply>
+        </math>
+      </assignmentRule>
+      <assignmentRule variable="cod7">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <times/>
+            <ci> pro7_strength </ci>
+            <apply>
+              <plus/>
+              <ci> as7 </ci>
+              <ci> as8 </ci>
+            </apply>
+          </apply>
+        </math>
+      </assignmentRule>
+      <assignmentRule variable="cod8">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <times/>
+            <ci> pro8_strength </ci>
+            <ci> as5 </ci>
+            <ci> rs4 </ci>
+          </apply>
+        </math>
+      </assignmentRule>
+      <assignmentRule variable="cod9">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <times/>
+            <ci> pro9_strength </ci>
+            <ci> as6 </ci>
+            <ci> rs5 </ci>
+          </apply>
+        </math>
+      </assignmentRule>
+      <assignmentRule variable="rs1">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <divide/>
+            <cn> 1 </cn>
+            <apply>
+              <plus/>
+              <cn type="integer"> 1 </cn>
+              <apply>
+                <power/>
+                <apply>
+                  <divide/>
+                  <ci> p9 </ci>
+                  <ci> v13_Kd </ci>
+                </apply>
+                <ci> v13_h </ci>
+              </apply>
+            </apply>
+          </apply>
+        </math>
+      </assignmentRule>
+      <assignmentRule variable="rs2">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <divide/>
+            <cn> 1 </cn>
+            <apply>
+              <plus/>
+              <cn type="integer"> 1 </cn>
+              <apply>
+                <power/>
+                <apply>
+                  <divide/>
+                  <ci> p2 </ci>
+                  <ci> v2_Kd </ci>
+                </apply>
+                <ci> v2_h </ci>
+              </apply>
+            </apply>
+          </apply>
+        </math>
+      </assignmentRule>
+      <assignmentRule variable="rs3">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <divide/>
+            <cn> 1 </cn>
+            <apply>
+              <plus/>
+              <cn type="integer"> 1 </cn>
+              <apply>
+                <power/>
+                <apply>
+                  <divide/>
+                  <ci> p3 </ci>
+                  <ci> v3_Kd </ci>
+                </apply>
+                <ci> v3_h </ci>
+              </apply>
+            </apply>
+          </apply>
+        </math>
+      </assignmentRule>
+      <assignmentRule variable="rs4">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <divide/>
+            <cn> 1 </cn>
+            <apply>
+              <plus/>
+              <cn type="integer"> 1 </cn>
+              <apply>
+                <power/>
+                <apply>
+                  <divide/>
+                  <ci> p8 </ci>
+                  <ci> v11_Kd </ci>
+                </apply>
+                <ci> v11_h </ci>
+              </apply>
+            </apply>
+          </apply>
+        </math>
+      </assignmentRule>
+      <assignmentRule variable="rs5">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <divide/>
+            <cn> 1 </cn>
+            <apply>
+              <plus/>
+              <cn type="integer"> 1 </cn>
+              <apply>
+                <power/>
+                <apply>
+                  <divide/>
+                  <ci> p8 </ci>
+                  <ci> v12_Kd </ci>
+                </apply>
+                <ci> v12_h </ci>
+              </apply>
+            </apply>
+          </apply>
+        </math>
+      </assignmentRule>
+      <assignmentRule variable="rs6">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <divide/>
+            <cn> 1 </cn>
+            <apply>
+              <plus/>
+              <cn type="integer"> 1 </cn>
+              <apply>
+                <power/>
+                <apply>
+                  <divide/>
+                  <ci> p2 </ci>
+                  <ci> v14_Kd </ci>
+                </apply>
+                <ci> v14_h </ci>
+              </apply>
+            </apply>
+          </apply>
+        </math>
+      </assignmentRule>
+      <assignmentRule variable="rs7">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <divide/>
+            <cn> 1 </cn>
+            <apply>
+              <plus/>
+              <cn type="integer"> 1 </cn>
+              <apply>
+                <power/>
+                <apply>
+                  <divide/>
+                  <ci> p3 </ci>
+                  <ci> v15_Kd </ci>
+                </apply>
+                <ci> v15_h </ci>
+              </apply>
+            </apply>
+          </apply>
+        </math>
+      </assignmentRule>
+      <assignmentRule variable="as1">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <divide/>
+            <apply>
+              <minus/>
+              <apply>
+                <plus/>
+                <cn type="integer"> 1 </cn>
+                <apply>
+                  <power/>
+                  <apply>
+                    <divide/>
+                    <ci> p1 </ci>
+                    <ci> v1_Kd </ci>
+                  </apply>
+                  <ci> v1_h </ci>
+                </apply>
+              </apply>
+              <cn type="integer"> 1 </cn>
+            </apply>
+            <apply>
+              <plus/>
+              <cn type="integer"> 1 </cn>
+              <apply>
+                <power/>
+                <apply>
+                  <divide/>
+                  <ci> p1 </ci>
+                  <ci> v1_Kd </ci>
+                </apply>
+                <ci> v1_h </ci>
+              </apply>
+            </apply>
+          </apply>
+        </math>
+      </assignmentRule>
+      <assignmentRule variable="as2">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <divide/>
+            <apply>
+              <minus/>
+              <apply>
+                <plus/>
+                <cn type="integer"> 1 </cn>
+                <apply>
+                  <power/>
+                  <apply>
+                    <divide/>
+                    <ci> p4 </ci>
+                    <ci> v4_Kd </ci>
+                  </apply>
+                  <ci> v4_h </ci>
+                </apply>
+              </apply>
+              <cn type="integer"> 1 </cn>
+            </apply>
+            <apply>
+              <plus/>
+              <cn type="integer"> 1 </cn>
+              <apply>
+                <power/>
+                <apply>
+                  <divide/>
+                  <ci> p4 </ci>
+                  <ci> v4_Kd </ci>
+                </apply>
+                <ci> v4_h </ci>
+              </apply>
+            </apply>
+          </apply>
+        </math>
+      </assignmentRule>
+      <assignmentRule variable="as3">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <divide/>
+            <apply>
+              <minus/>
+              <apply>
+                <plus/>
+                <cn type="integer"> 1 </cn>
+                <apply>
+                  <power/>
+                  <apply>
+                    <divide/>
+                    <ci> p5 </ci>
+                    <ci> v5_Kd </ci>
+                  </apply>
+                  <ci> v5_h </ci>
+                </apply>
+              </apply>
+              <cn type="integer"> 1 </cn>
+            </apply>
+            <apply>
+              <plus/>
+              <cn type="integer"> 1 </cn>
+              <apply>
+                <power/>
+                <apply>
+                  <divide/>
+                  <ci> p5 </ci>
+                  <ci> v5_Kd </ci>
+                </apply>
+                <ci> v5_h </ci>
+              </apply>
+            </apply>
+          </apply>
+        </math>
+      </assignmentRule>
+      <assignmentRule variable="as4">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <divide/>
+            <apply>
+              <minus/>
+              <apply>
+                <plus/>
+                <cn type="integer"> 1 </cn>
+                <apply>
+                  <power/>
+                  <apply>
+                    <divide/>
+                    <ci> p6 </ci>
+                    <ci> v6_Kd </ci>
+                  </apply>
+                  <ci> v6_h </ci>
+                </apply>
+              </apply>
+              <cn type="integer"> 1 </cn>
+            </apply>
+            <apply>
+              <plus/>
+              <cn type="integer"> 1 </cn>
+              <apply>
+                <power/>
+                <apply>
+                  <divide/>
+                  <ci> p6 </ci>
+                  <ci> v6_Kd </ci>
+                </apply>
+                <ci> v6_h </ci>
+              </apply>
+            </apply>
+          </apply>
+        </math>
+      </assignmentRule>
+      <assignmentRule variable="as5">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <divide/>
+            <apply>
+              <minus/>
+              <apply>
+                <plus/>
+                <cn type="integer"> 1 </cn>
+                <apply>
+                  <power/>
+                  <apply>
+                    <divide/>
+                    <ci> p7 </ci>
+                    <ci> v7_Kd </ci>
+                  </apply>
+                  <ci> v7_h </ci>
+                </apply>
+              </apply>
+              <cn type="integer"> 1 </cn>
+            </apply>
+            <apply>
+              <plus/>
+              <cn type="integer"> 1 </cn>
+              <apply>
+                <power/>
+                <apply>
+                  <divide/>
+                  <ci> p7 </ci>
+                  <ci> v7_Kd </ci>
+                </apply>
+                <ci> v7_h </ci>
+              </apply>
+            </apply>
+          </apply>
+        </math>
+      </assignmentRule>
+      <assignmentRule variable="as6">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <divide/>
+            <apply>
+              <minus/>
+              <apply>
+                <plus/>
+                <cn type="integer"> 1 </cn>
+                <apply>
+                  <power/>
+                  <apply>
+                    <divide/>
+                    <ci> p7 </ci>
+                    <ci> v10_Kd </ci>
+                  </apply>
+                  <ci> v10_h </ci>
+                </apply>
+              </apply>
+              <cn type="integer"> 1 </cn>
+            </apply>
+            <apply>
+              <plus/>
+              <cn type="integer"> 1 </cn>
+              <apply>
+                <power/>
+                <apply>
+                  <divide/>
+                  <ci> p7 </ci>
+                  <ci> v10_Kd </ci>
+                </apply>
+                <ci> v10_h </ci>
+              </apply>
+            </apply>
+          </apply>
+        </math>
+      </assignmentRule>
+      <assignmentRule variable="as7">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <divide/>
+            <apply>
+              <minus/>
+              <apply>
+                <plus/>
+                <cn type="integer"> 1 </cn>
+                <apply>
+                  <power/>
+                  <apply>
+                    <divide/>
+                    <ci> p6 </ci>
+                    <ci> v8_Kd </ci>
+                  </apply>
+                  <ci> v8_h </ci>
+                </apply>
+              </apply>
+              <cn type="integer"> 1 </cn>
+            </apply>
+            <apply>
+              <plus/>
+              <cn type="integer"> 1 </cn>
+              <apply>
+                <power/>
+                <apply>
+                  <divide/>
+                  <ci> p6 </ci>
+                  <ci> v8_Kd </ci>
+                </apply>
+                <ci> v8_h </ci>
+              </apply>
+            </apply>
+          </apply>
+        </math>
+      </assignmentRule>
+    </listOfRules>
+    <listOfReactions>
+      <reaction id="pp9_v1" name="pp9_v1" reversible="false">
+        <listOfProducts>
+          <speciesReference species="pp9_mrna" stoichiometry="1" constant="false"/>
+        </listOfProducts>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <ci> cod9 </ci>
+          </math>
+        </kineticLaw>
+      </reaction>
+      <reaction id="pp9_v2" name="pp9_v2" reversible="false">
+        <listOfReactants>
+          <speciesReference species="pp9_mrna" stoichiometry="1" constant="false"/>
+        </listOfReactants>
+        <listOfModifiers>
+          <modifierSpeciesReference id="pp9_v2_p9" name="p9" species="p9"/>
+        </listOfModifiers>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+              <times/>
+              <ci> pp9_mrna_degradation_rate </ci>
+              <ci> pp9_mrna </ci>
+            </apply>
+          </math>
+        </kineticLaw>
+      </reaction>
+      <reaction id="pp9_v3" name="pp9_v3" reversible="false">
+        <listOfProducts>
+          <speciesReference species="p9" stoichiometry="1" constant="false"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference id="pp9_v3_pp9_mrna" name="pp9_mrna" species="pp9_mrna"/>
+        </listOfModifiers>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+              <times/>
+              <ci> rbs9_strength </ci>
+              <ci> pp9_mrna </ci>
+            </apply>
+          </math>
+        </kineticLaw>
+      </reaction>
+      <reaction id="pp9_v4" name="pp9_v4" reversible="false">
+        <listOfReactants>
+          <speciesReference species="p9" stoichiometry="1" constant="false"/>
+        </listOfReactants>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+              <times/>
+              <ci> p9_degradation_rate </ci>
+              <ci> p9 </ci>
+            </apply>
+          </math>
+        </kineticLaw>
+      </reaction>
+      <reaction id="pp8_v1" name="pp8_v1" reversible="false">
+        <listOfProducts>
+          <speciesReference species="pp8_mrna" stoichiometry="1" constant="false"/>
+        </listOfProducts>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <ci> cod8 </ci>
+          </math>
+        </kineticLaw>
+      </reaction>
+      <reaction id="pp8_v2" name="pp8_v2" reversible="false">
+        <listOfReactants>
+          <speciesReference species="pp8_mrna" stoichiometry="1" constant="false"/>
+        </listOfReactants>
+        <listOfModifiers>
+          <modifierSpeciesReference id="pp8_v2_p8" name="p8" species="p8"/>
+        </listOfModifiers>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+              <times/>
+              <ci> pp8_mrna_degradation_rate </ci>
+              <ci> pp8_mrna </ci>
+            </apply>
+          </math>
+        </kineticLaw>
+      </reaction>
+      <reaction id="pp8_v3" name="pp8_v3" reversible="false">
+        <listOfProducts>
+          <speciesReference species="p8" stoichiometry="1" constant="false"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference id="pp8_v3_pp8_mrna" name="pp8_mrna" species="pp8_mrna"/>
+        </listOfModifiers>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+              <times/>
+              <ci> rbs8_strength </ci>
+              <ci> pp8_mrna </ci>
+            </apply>
+          </math>
+        </kineticLaw>
+      </reaction>
+      <reaction id="pp8_v4" name="pp8_v4" reversible="false">
+        <listOfReactants>
+          <speciesReference species="p8" stoichiometry="1" constant="false"/>
+        </listOfReactants>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+              <times/>
+              <ci> p8_degradation_rate </ci>
+              <ci> p8 </ci>
+            </apply>
+          </math>
+        </kineticLaw>
+      </reaction>
+      <reaction id="pp7_v1" name="pp7_v1" reversible="false">
+        <listOfProducts>
+          <speciesReference species="pp7_mrna" stoichiometry="1" constant="false"/>
+        </listOfProducts>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <ci> cod7 </ci>
+          </math>
+        </kineticLaw>
+      </reaction>
+      <reaction id="pp7_v2" name="pp7_v2" reversible="false">
+        <listOfReactants>
+          <speciesReference species="pp7_mrna" stoichiometry="1" constant="false"/>
+        </listOfReactants>
+        <listOfModifiers>
+          <modifierSpeciesReference id="pp7_v2_p7" name="p7" species="p7"/>
+        </listOfModifiers>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+              <times/>
+              <ci> pp7_mrna_degradation_rate </ci>
+              <ci> pp7_mrna </ci>
+            </apply>
+          </math>
+        </kineticLaw>
+      </reaction>
+      <reaction id="pp7_v3" name="pp7_v3" reversible="false">
+        <listOfProducts>
+          <speciesReference species="p7" stoichiometry="1" constant="false"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference id="pp7_v3_pp7_mrna" name="pp7_mrna" species="pp7_mrna"/>
+        </listOfModifiers>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+              <times/>
+              <ci> rbs7_strength </ci>
+              <ci> pp7_mrna </ci>
+            </apply>
+          </math>
+        </kineticLaw>
+      </reaction>
+      <reaction id="pp7_v4" name="pp7_v4" reversible="false">
+        <listOfReactants>
+          <speciesReference species="p7" stoichiometry="1" constant="false"/>
+        </listOfReactants>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+              <times/>
+              <ci> p7_degradation_rate </ci>
+              <ci> p7 </ci>
+            </apply>
+          </math>
+        </kineticLaw>
+      </reaction>
+      <reaction id="pp6_v1" name="pp6_v1" reversible="false">
+        <listOfProducts>
+          <speciesReference species="pp6_mrna" stoichiometry="1" constant="false"/>
+        </listOfProducts>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <ci> cod6 </ci>
+          </math>
+        </kineticLaw>
+      </reaction>
+      <reaction id="pp6_v2" name="pp6_v2" reversible="false">
+        <listOfReactants>
+          <speciesReference species="pp6_mrna" stoichiometry="1" constant="false"/>
+        </listOfReactants>
+        <listOfModifiers>
+          <modifierSpeciesReference id="pp6_v2_p6" name="p6" species="p6"/>
+        </listOfModifiers>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+              <times/>
+              <ci> pp6_mrna_degradation_rate </ci>
+              <ci> pp6_mrna </ci>
+            </apply>
+          </math>
+        </kineticLaw>
+      </reaction>
+      <reaction id="pp6_v3" name="pp6_v3" reversible="false">
+        <listOfProducts>
+          <speciesReference species="p6" stoichiometry="1" constant="false"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference id="pp6_v3_pp6_mrna" name="pp6_mrna" species="pp6_mrna"/>
+        </listOfModifiers>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+              <times/>
+              <ci> rbs6_strength </ci>
+              <ci> pp6_mrna </ci>
+            </apply>
+          </math>
+        </kineticLaw>
+      </reaction>
+      <reaction id="pp6_v4" name="pp6_v4" reversible="false">
+        <listOfReactants>
+          <speciesReference species="p6" stoichiometry="1" constant="false"/>
+        </listOfReactants>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+              <times/>
+              <ci> p6_degradation_rate </ci>
+              <ci> p6 </ci>
+            </apply>
+          </math>
+        </kineticLaw>
+      </reaction>
+      <reaction id="pp5_v1" name="pp5_v1" reversible="false">
+        <listOfProducts>
+          <speciesReference species="pp5_mrna" stoichiometry="1" constant="false"/>
+        </listOfProducts>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <ci> cod5 </ci>
+          </math>
+        </kineticLaw>
+      </reaction>
+      <reaction id="pp5_v2" name="pp5_v2" reversible="false">
+        <listOfReactants>
+          <speciesReference species="pp5_mrna" stoichiometry="1" constant="false"/>
+        </listOfReactants>
+        <listOfModifiers>
+          <modifierSpeciesReference id="pp5_v2_p5" name="p5" species="p5"/>
+        </listOfModifiers>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+              <times/>
+              <ci> pp5_mrna_degradation_rate </ci>
+              <ci> pp5_mrna </ci>
+            </apply>
+          </math>
+        </kineticLaw>
+      </reaction>
+      <reaction id="pp5_v3" name="pp5_v3" reversible="false">
+        <listOfProducts>
+          <speciesReference species="p5" stoichiometry="1" constant="false"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference id="pp5_v3_pp5_mrna" name="pp5_mrna" species="pp5_mrna"/>
+        </listOfModifiers>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+              <times/>
+              <ci> rbs5_strength </ci>
+              <ci> pp5_mrna </ci>
+            </apply>
+          </math>
+        </kineticLaw>
+      </reaction>
+      <reaction id="pp5_v4" name="pp5_v4" reversible="false">
+        <listOfReactants>
+          <speciesReference species="p5" stoichiometry="1" constant="false"/>
+        </listOfReactants>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+              <times/>
+              <ci> p5_degradation_rate </ci>
+              <ci> p5 </ci>
+            </apply>
+          </math>
+        </kineticLaw>
+      </reaction>
+      <reaction id="pp4_v1" name="pp4_v1" reversible="false">
+        <listOfProducts>
+          <speciesReference species="pp4_mrna" stoichiometry="1" constant="false"/>
+        </listOfProducts>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <ci> cod4 </ci>
+          </math>
+        </kineticLaw>
+      </reaction>
+      <reaction id="pp4_v2" name="pp4_v2" reversible="false">
+        <listOfReactants>
+          <speciesReference species="pp4_mrna" stoichiometry="1" constant="false"/>
+        </listOfReactants>
+        <listOfModifiers>
+          <modifierSpeciesReference id="pp4_v2_p4" name="p4" species="p4"/>
+        </listOfModifiers>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+              <times/>
+              <ci> pp4_mrna_degradation_rate </ci>
+              <ci> pp4_mrna </ci>
+            </apply>
+          </math>
+        </kineticLaw>
+      </reaction>
+      <reaction id="pp4_v3" name="pp4_v3" reversible="false">
+        <listOfProducts>
+          <speciesReference species="p4" stoichiometry="1" constant="false"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference id="pp4_v3_pp4_mrna" name="pp4_mrna" species="pp4_mrna"/>
+        </listOfModifiers>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+              <times/>
+              <ci> rbs4_strength </ci>
+              <ci> pp4_mrna </ci>
+            </apply>
+          </math>
+        </kineticLaw>
+      </reaction>
+      <reaction id="pp4_v4" name="pp4_v4" reversible="false">
+        <listOfReactants>
+          <speciesReference species="p4" stoichiometry="1" constant="false"/>
+        </listOfReactants>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+              <times/>
+              <ci> p4_degradation_rate </ci>
+              <ci> p4 </ci>
+            </apply>
+          </math>
+        </kineticLaw>
+      </reaction>
+      <reaction id="pp3_v1" name="pp3_v1" reversible="false">
+        <listOfProducts>
+          <speciesReference species="pp3_mrna" stoichiometry="1" constant="false"/>
+        </listOfProducts>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <ci> cod3 </ci>
+          </math>
+        </kineticLaw>
+      </reaction>
+      <reaction id="pp3_v2" name="pp3_v2" reversible="false">
+        <listOfReactants>
+          <speciesReference species="pp3_mrna" stoichiometry="1" constant="false"/>
+        </listOfReactants>
+        <listOfModifiers>
+          <modifierSpeciesReference id="pp3_v2_p3" name="p3" species="p3"/>
+        </listOfModifiers>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+              <times/>
+              <ci> pp3_mrna_degradation_rate </ci>
+              <ci> pp3_mrna </ci>
+            </apply>
+          </math>
+        </kineticLaw>
+      </reaction>
+      <reaction id="pp3_v3" name="pp3_v3" reversible="false">
+        <listOfProducts>
+          <speciesReference species="p3" stoichiometry="1" constant="false"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference id="pp3_v3_pp3_mrna" name="pp3_mrna" species="pp3_mrna"/>
+        </listOfModifiers>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+              <times/>
+              <ci> rbs3_strength </ci>
+              <ci> pp3_mrna </ci>
+            </apply>
+          </math>
+        </kineticLaw>
+      </reaction>
+      <reaction id="pp3_v4" name="pp3_v4" reversible="false">
+        <listOfReactants>
+          <speciesReference species="p3" stoichiometry="1" constant="false"/>
+        </listOfReactants>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+              <times/>
+              <ci> p3_degradation_rate </ci>
+              <ci> p3 </ci>
+            </apply>
+          </math>
+        </kineticLaw>
+      </reaction>
+      <reaction id="pp2_v1" name="pp2_v1" reversible="false">
+        <listOfProducts>
+          <speciesReference species="pp2_mrna" stoichiometry="1" constant="false"/>
+        </listOfProducts>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <ci> cod2 </ci>
+          </math>
+        </kineticLaw>
+      </reaction>
+      <reaction id="pp2_v2" name="pp2_v2" reversible="false">
+        <listOfReactants>
+          <speciesReference species="pp2_mrna" stoichiometry="1" constant="false"/>
+        </listOfReactants>
+        <listOfModifiers>
+          <modifierSpeciesReference id="pp2_v2_p2" name="p2" species="p2"/>
+        </listOfModifiers>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+              <times/>
+              <ci> pp2_mrna_degradation_rate </ci>
+              <ci> pp2_mrna </ci>
+            </apply>
+          </math>
+        </kineticLaw>
+      </reaction>
+      <reaction id="pp2_v3" name="pp2_v3" reversible="false">
+        <listOfProducts>
+          <speciesReference species="p2" stoichiometry="1" constant="false"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference id="pp2_v3_pp2_mrna" name="pp2_mrna" species="pp2_mrna"/>
+        </listOfModifiers>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+              <times/>
+              <ci> rbs2_strength </ci>
+              <ci> pp2_mrna </ci>
+            </apply>
+          </math>
+        </kineticLaw>
+      </reaction>
+      <reaction id="pp2_v4" name="pp2_v4" reversible="false">
+        <listOfReactants>
+          <speciesReference species="p2" stoichiometry="1" constant="false"/>
+        </listOfReactants>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+              <times/>
+              <ci> p2_degradation_rate </ci>
+              <ci> p2 </ci>
+            </apply>
+          </math>
+        </kineticLaw>
+      </reaction>
+      <reaction id="pp1_v1" name="pp1_v1" reversible="false">
+        <listOfProducts>
+          <speciesReference species="pp1_mrna" stoichiometry="1" constant="false"/>
+        </listOfProducts>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <ci> cod1 </ci>
+          </math>
+        </kineticLaw>
+      </reaction>
+      <reaction id="pp1_v2" name="pp1_v2" reversible="false">
+        <listOfReactants>
+          <speciesReference species="pp1_mrna" stoichiometry="1" constant="false"/>
+        </listOfReactants>
+        <listOfModifiers>
+          <modifierSpeciesReference id="pp1_v2_p1" name="p1" species="p1"/>
+        </listOfModifiers>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+              <times/>
+              <ci> pp1_mrna_degradation_rate </ci>
+              <ci> pp1_mrna </ci>
+            </apply>
+          </math>
+        </kineticLaw>
+      </reaction>
+      <reaction id="pp1_v3" name="pp1_v3" reversible="false">
+        <listOfProducts>
+          <speciesReference species="p1" stoichiometry="1" constant="false"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference id="pp1_v3_pp1_mrna" name="pp1_mrna" species="pp1_mrna"/>
+        </listOfModifiers>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+              <times/>
+              <ci> rbs1_strength </ci>
+              <ci> pp1_mrna </ci>
+            </apply>
+          </math>
+        </kineticLaw>
+      </reaction>
+      <reaction id="pp1_v4" name="pp1_v4" reversible="false">
+        <listOfReactants>
+          <speciesReference species="p1" stoichiometry="1" constant="false"/>
+        </listOfReactants>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+              <times/>
+              <ci> p1_degradation_rate </ci>
+              <ci> p1 </ci>
+            </apply>
+          </math>
+        </kineticLaw>
+      </reaction>
+    </listOfReactions>
+  </model>
+</sbml>

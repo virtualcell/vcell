@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created by libAntimony version v2.9.0 with libSBML version 5.13.1. -->
+<sbml xmlns="http://www.sbml.org/sbml/level3/version2/core" level="3" version="2">
+  <model id="case01274" name="case01274">
+    <listOfParameters>
+      <parameter id="p1" constant="true"/>
+      <parameter id="p2" constant="true"/>
+      <parameter id="p3" constant="true"/>
+      <parameter id="p4" constant="true"/>
+    </listOfParameters>
+    <listOfInitialAssignments>
+      <initialAssignment symbol="p1">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <implies/>
+            <true/>
+            <true/>
+          </apply>
+        </math>
+      </initialAssignment>
+      <initialAssignment symbol="p2">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <implies/>
+            <true/>
+            <false/>
+          </apply>
+        </math>
+      </initialAssignment>
+      <initialAssignment symbol="p3">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <implies/>
+            <false/>
+            <true/>
+          </apply>
+        </math>
+      </initialAssignment>
+      <initialAssignment symbol="p4">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <implies/>
+            <false/>
+            <false/>
+          </apply>
+        </math>
+      </initialAssignment>
+    </listOfInitialAssignments>
+  </model>
+</sbml>

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created by libAntimony version v2.9.0 with libSBML version 5.13.1. -->
+<sbml xmlns="http://www.sbml.org/sbml/level3/version2/core" level="3" version="2">
+  <model id="case01277" name="case01277">
+    <listOfParameters>
+      <parameter id="p1" constant="false"/>
+    </listOfParameters>
+    <listOfRules>
+      <assignmentRule variable="p1">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <quotient/>
+            <csymbol encoding="text" definitionURL="http://www.sbml.org/sbml/symbols/time"> time </csymbol>
+            <cn type="integer"> 2 </cn>
+          </apply>
+        </math>
+      </assignmentRule>
+    </listOfRules>
+  </model>
+</sbml>

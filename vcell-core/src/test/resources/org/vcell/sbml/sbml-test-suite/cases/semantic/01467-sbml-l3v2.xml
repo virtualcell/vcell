@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created by libAntimony version v2.9.1 with libSBML version 5.14.1. -->
+<sbml xmlns="http://www.sbml.org/sbml/level3/version2/core" xmlns:comp="http://www.sbml.org/sbml/level3/version1/comp/version1" level="3" version="2" comp:required="true">
+  <model id="case01467" name="case01467">
+    <listOfParameters>
+      <parameter id="conv" value="0.1" constant="true"/>
+      <parameter id="p8" constant="false">
+        <comp:listOfReplacedElements>
+          <comp:replacedElement comp:idRef="sub1" comp:submodelRef="sub2" comp:conversionFactor="conv">
+            <comp:sBaseRef comp:idRef="p80"/>
+          </comp:replacedElement>
+        </comp:listOfReplacedElements>
+      </parameter>
+    </listOfParameters>
+    <comp:listOfSubmodels>
+      <comp:submodel comp:id="sub2" comp:modelRef="moddef2"/>
+    </comp:listOfSubmodels>
+  </model>
+  <comp:listOfModelDefinitions>
+    <comp:modelDefinition id="moddef1" name="moddef1">
+      <listOfParameters>
+        <parameter id="p80" value="80" constant="false"/>
+      </listOfParameters>
+      <listOfRules>
+        <assignmentRule variable="p80">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <cn type="integer"> 80 </cn>
+          </math>
+        </assignmentRule>
+      </listOfRules>
+    </comp:modelDefinition>
+    <comp:modelDefinition id="moddef2" name="moddef2">
+      <comp:listOfSubmodels>
+        <comp:submodel comp:id="sub1" comp:modelRef="moddef1"/>
+      </comp:listOfSubmodels>
+    </comp:modelDefinition>
+  </comp:listOfModelDefinitions>
+</sbml>

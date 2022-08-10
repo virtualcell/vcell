@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sbml xmlns="http://www.sbml.org/sbml/level3/version2/core" level="3" version="2">
+  <model id="case01465" name="case01465">
+    <listOfCompartments>
+      <compartment id="C1" spatialDimensions="3" size="1" constant="true"/>
+    </listOfCompartments>
+    <listOfSpecies>
+      <species id="S1" compartment="C1" initialConcentration="0" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+    </listOfSpecies>
+    <listOfRules>
+      <assignmentRule variable="S1_sr" />
+    </listOfRules>
+    <listOfReactions>
+      <reaction id="J0" reversible="true">
+        <listOfProducts>
+          <speciesReference id="S1_sr" species="S1" stoichiometry="2" constant="false"/>
+        </listOfProducts>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <cn type="integer"> 1 </cn>
+          </math>
+        </kineticLaw>
+      </reaction>
+    </listOfReactions>
+  </model>
+</sbml>
