@@ -317,8 +317,9 @@ public class SEDMLExporter {
 				String taskRef = null;
 				int overrideCount = 0;
 				for (Simulation vcSimulation : simContext.getSimulations()) {
+					// if we have a hash containing a subset of simulations to export
 					// skip simulations not present in hash
-					if (!simsToExport.contains(vcSimulation)) continue;
+					if (simsToExport != null && !simsToExport.contains(vcSimulation)) continue;
 
 					// 1 -------> check compatibility
 					// if simContext is non-spatial stochastic, check if sim is histogram; if so, skip it, it can't be encoded in sedml 1.x
