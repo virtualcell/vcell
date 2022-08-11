@@ -105,7 +105,6 @@ public class XmlHelper {
 	//For now, same as their VCML counterparts.
 	private static final String SIM_CONTAINER = XMLTags.SimulationSpecTag;
 	private static final String IMAGE_CONTAINER = XMLTags.GeometryTag;
-	private static final Logger lg = LogManager.getLogger(XmlHelper.class);
 
 	//no instances allowed
 	private XmlHelper() {}
@@ -151,8 +150,8 @@ public class XmlHelper {
 		} catch (Exception e) {
 			throw new XmlParseException("Unable to generate Biomodel XML: ", e);
 		}
-		if (lg.isTraceEnabled()) {
-			lg.trace(xmlString);
+		if (logger.isTraceEnabled()) {
+			logger.trace(xmlString);
 		}
 		return xmlString;
 	}
@@ -515,7 +514,7 @@ public class XmlHelper {
 //		Element element = xmlProducer.getXML(mathModel);
 //		element = XmlUtil.setDefaultNamespace(element, Namespace.getNamespace(XMLTags.VCML_NS_ALT));
 //		xmlString = XmlUtil.xmlToString(element);
-		if (lg.isTraceEnabled()) lg.trace(xmlString);
+		if (logger.isTraceEnabled()) logger.trace(xmlString);
 		return xmlString;
 	}
 
