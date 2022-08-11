@@ -1410,8 +1410,8 @@ public class SBMLImporter {
 			SpeciesContext[] vcSpeciesContexts = vcModel.getSpeciesContexts();
 			for (SpeciesContext vcSpeciesContext : vcSpeciesContexts) {
 				SBase sbase = sbmlSymbolMapping.getSBase(vcSpeciesContext, SymbolContext.RUNTIME);
-				if (!(sbase instanceof org.sbml.jsbml.Species)){
-					throw new RuntimeException("could not find sbml Species corresponding to SpeciesContext "+vcSpeciesContext.getName());
+				if (!(sbase instanceof org.sbml.jsbml.Species)) {
+					throw new RuntimeException("could not find sbml Species corresponding to SpeciesContext " + vcSpeciesContext.getName());
 				}
 				org.sbml.jsbml.Species sbmlSpecies = (org.sbml.jsbml.Species) sbase;
 				ReactionContext rc = vcBioModel.getSimulationContext(0).getReactionContext();
@@ -1419,6 +1419,26 @@ public class SBMLImporter {
 
 				sbmlSymbolMapping.putInitial(sbmlSpecies, speciesContextSpec.getInitialConcentrationParameter());
 				speciesContextSpec.setConstant(sbmlSpecies.getBoundaryCondition() || sbmlSpecies.getConstant());
+
+				// set wellmixed attribute (if present from vcell-specific annotation)
+				XMLNode speciesNonRdfAnnotation = sbmlSpecies.getAnnotation().getNonRDFannotation();
+				if (speciesNonRdfAnnotation != null) {
+					XMLNode speciesContextSpecSettingsElement = speciesNonRdfAnnotation.getChildElement(XMLTags.SBML_VCELL_SpeciesContextSpecSettingsTag, "*");
+					if (speciesContextSpecSettingsElement != null) {
+						int attrWellMixed = speciesContextSpecSettingsElement.getAttrIndex(XMLTags.SBML_VCELL_SpeciesContextSpecSettingsTag_wellmixedAttr, SBMLUtils.SBML_VCELL_NS);
+						if (attrWellMixed >= 0) {
+							String wellMixedValue = speciesContextSpecSettingsElement.getAttrValue(attrWellMixed);
+							if (wellMixedValue.equals("true")) {
+								speciesContextSpec.setWellMixed(true);
+							} else if (wellMixedValue.equals("false")) {
+								speciesContextSpec.setWellMixed(false);
+							} else {
+								throw new RuntimeException("unexpected attribute value '" + attrWellMixed + "' for attribute " +
+										XMLTags.SBML_VCELL_SpeciesContextSpecSettingsTag + ":" + XMLTags.SBML_VCELL_SpeciesContextSpecSettingsTag_wellmixedAttr);
+							}
+						}
+					}
+				}
 			}
 		} catch (Throwable e) {
 			throw new SBMLImportException("Error setting initial condition for species context; " + e.getMessage(), e);
@@ -3433,7 +3453,7 @@ public class SBMLImporter {
 			int numY = sf.getNumSamples2();
 			int numZ = sf.getNumSamples3();
 			int[] samples = new int[sf.getSamplesLength()];
-			StringTokenizer tokens = new StringTokenizer(sf.getSamples()," ");
+			StringTokenizer tokens = new StringTokenizer(sf.getSamples()," ,;");
 			int count = 0;
 			while (tokens.hasMoreTokens()){
 				int sample = Integer.parseInt(tokens.nextToken());

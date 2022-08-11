@@ -397,6 +397,8 @@ public class VcmlOmexConverter {
         boolean isDeleted = false;
         boolean isCreated;
 
+		String failureMessage = null;
+		String successMessage = null;
         try {
             CombineArchive archive = new CombineArchive();
 
@@ -491,18 +493,22 @@ public class VcmlOmexConverter {
 				MathDescription rereadMathDescription = reread_BioModel.getSimulationContext(0).getMathDescription();
 				MathCompareResults mathCompareResults = MathDescription.testEquivalency(SimulationSymbolTable.createMathSymbolTableFactory(),origMathDescription, rereadMathDescription);
 				if (!mathCompareResults.isEquivalent()){
-					logger.error("MathDescriptions ARE NOT equivalent after VCML->SBML->VCML round-trip validation: "+mathCompareResults.toDatabaseStatus());
+					failureMessage = "MathDescriptions ARE NOT equivalent after VCML->SBML->VCML round-trip validation: "+mathCompareResults.toDatabaseStatus();
+					logger.error(failureMessage);
 				} else {
-					logger.info("MathDescriptions ARE equivalent after VCML->SBML->VCML round-trip validation: "+mathCompareResults.toDatabaseStatus());
+					successMessage = "MathDescriptions ARE equivalent after VCML->SBML->VCML round-trip validation: "+mathCompareResults.toDatabaseStatus();
+					logger.info(successMessage);
 				}
 				logger.error("writing extra files ./orig_vcml.xml and ./reread_vcml.xml for debugging - remove later");
 				Files.write(Paths.get(outputDir, "orig_vcml.xml"), XmlHelper.bioModelToXML(bioModel, false).getBytes(StandardCharsets.UTF_8));
 				Files.write(Paths.get(outputDir, "reread_vcml.xml"), XmlHelper.bioModelToXML(reread_BioModel, false).getBytes(StandardCharsets.UTF_8));
 			}
-
             // Removing all other files(like SEDML, XML, SBML) after archiving
             removeOtherFiles(outputDir, files);
 
+			if (failureMessage != null){
+				throw new RuntimeException(failureMessage);
+			}
         } catch (Exception e) {
 			throw new RuntimeException("createZipArchive threw exception: " + e.getMessage(), e);
         }

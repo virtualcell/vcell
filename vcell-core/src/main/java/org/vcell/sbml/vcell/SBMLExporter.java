@@ -128,6 +128,7 @@ public class SBMLExporter {
 	Logger logger = LogManager.getLogger(SBMLExporter.class);
 	//public static final String DOMAIN_TYPE_PREFIX = "domainType_";
 	public static final String DOMAIN_TYPE_PREFIX = "";
+	public static final String SAMPLED_VOLUME_PREFIX = "SampledVolume_";
 	private int sbmlLevel = 3;
 	private int sbmlVersion = 2;
 	private org.sbml.jsbml.Model sbmlModel = null;
@@ -885,6 +886,11 @@ protected void addSpecies() throws XMLStreamException, SbmlException {
 
 		// Get the speciesContextSpec in the simContext corresponding to the 'speciesContext'; and extract its initial concentration value.
 		SpeciesContextSpec vcSpeciesContextsSpec = getSelectedSimContext().getReactionContext().getSpeciesContextSpec(vcSpeciesContexts[i]);
+		if (bSpatial && vcSpeciesContextsSpec.isWellMixed()) {
+			Element speciesContextSpecSettingsElement = new Element(XMLTags.SBML_VCELL_SpeciesContextSpecSettingsTag, sbml_vcml_ns);
+			speciesContextSpecSettingsElement.setAttribute(XMLTags.SBML_VCELL_SpeciesContextSpecSettingsTag_wellmixedAttr, "true", sbml_vcml_ns);
+			sbmlSpecies.getAnnotation().appendNonRDFAnnotation(XmlUtil.xmlToString(speciesContextSpecSettingsElement));
+		}
 		// since we are setting the substance units for species to 'molecule' or 'item', a unit that is originally in uM (or molecules/um2),
 		// we need to convert concentration from uM -> molecules/um3; this can be achieved by dividing by KMOLE.
 		logger.trace("in SBMLExporter");
@@ -1991,8 +1997,7 @@ private void addGeometry() throws SbmlException {
 	//
 	// add "Segmented" and "DistanceMap" SampledField Geometries
 	//
-		final boolean bVCGeometryIsImage = bAnyImageSubvolumes && !bAnyAnalyticSubvolumes && !bAnyCSGSubvolumes;
-	//55if (bAnyAnalyticSubvolumes || bAnyImageSubvolumes || bAnyCSGSubvolumes){
+	final boolean bVCGeometryIsImage = bAnyImageSubvolumes && !bAnyAnalyticSubvolumes && !bAnyCSGSubvolumes;
 	if (bVCGeometryIsImage) {
 		//
 		// add "Segmented" SampledFieldGeometry
@@ -2001,79 +2006,73 @@ private void addGeometry() throws SbmlException {
 		segmentedImageSampledFieldGeometry.setSpatialId(TokenMangler.mangleToSName("SegmentedImage_"+vcGeometry.getName()));
 		segmentedImageSampledFieldGeometry.setIsActive(true);
 		//55boolean bVCGeometryIsImage = bAnyImageSubvolumes && !bAnyAnalyticSubvolumes && !bAnyCSGSubvolumes;
-		Geometry vcImageGeometry = null;
+		Geometry vcImageGeometry = vcGeometry;
 		{
-			if (bVCGeometryIsImage){
-				// use existing image
-				// make a resampled image;
-				if (dimension == 3) {
-					try {
-						ISize imageSize = vcGeometry.getGeometrySpec().getDefaultSampledImageSize();
-						vcGeometry.precomputeAll(new GeometryThumbnailImageFactoryAWT());
-						vcImageGeometry = RayCaster.resampleGeometry(new GeometryThumbnailImageFactoryAWT(), vcGeometry, imageSize);
-					} catch (Throwable e) {
-						e.printStackTrace(System.out);
-						throw new RuntimeException("Unable to convert the original analytic or constructed solid geometry to image-based geometry : " + e.getMessage());
-					}
-				} else {
-					try {
-						vcGeometry.precomputeAll(new GeometryThumbnailImageFactoryAWT(),true,false);
-						GeometrySpec origGeometrySpec = vcGeometry.getGeometrySpec();
-						VCImage newVCImage = origGeometrySpec.getSampledImage().getCurrentValue();
-						//
-						// construct the new geometry with the sampled VCImage.
-						//
-						vcImageGeometry = new Geometry(vcGeometry.getName()+"_asImage", newVCImage);
-						vcImageGeometry.getGeometrySpec().setExtent(vcGeometry.getExtent());
-						vcImageGeometry.getGeometrySpec().setOrigin(vcGeometry.getOrigin());
-						vcImageGeometry.setDescription(vcGeometry.getDescription());
-						vcImageGeometry.getGeometrySurfaceDescription().setFilterCutoffFrequency(vcGeometry.getGeometrySurfaceDescription().getFilterCutoffFrequency());
-						vcImageGeometry.precomputeAll(new GeometryThumbnailImageFactoryAWT(), true,true);
-					} catch (Exception e) {
-						e.printStackTrace(System.out);
-						throw new RuntimeException("Unable to convert the original analytic or constructed solid geometry to image-based geometry : " + e.getMessage());
-					}
+			// use existing image
+			// make a resampled image;
+//			if (dimension == 3) {
+//				try {
+//					ISize imageSize = vcGeometry.getGeometrySpec().getDefaultSampledImageSize();
+//					vcGeometry.precomputeAll(new GeometryThumbnailImageFactoryAWT());
+//					vcImageGeometry = RayCaster.resampleGeometry(new GeometryThumbnailImageFactoryAWT(), vcGeometry, imageSize);
+//				} catch (Throwable e) {
+//					e.printStackTrace(System.out);
+//					throw new RuntimeException("Unable to convert the original analytic or constructed solid geometry to image-based geometry : " + e.getMessage());
+//				}
+//			} else {
+//				try {
+//					vcGeometry.precomputeAll(new GeometryThumbnailImageFactoryAWT(),true,false);
+//					GeometrySpec origGeometrySpec = vcGeometry.getGeometrySpec();
+//					VCImage newVCImage = origGeometrySpec.getSampledImage().getCurrentValue();
+//					//
+//					// construct the new geometry with the sampled VCImage.
+//					//
+//					vcImageGeometry = new Geometry(vcGeometry.getName()+"_asImage", newVCImage);
+//					vcImageGeometry.getGeometrySpec().setExtent(vcGeometry.getExtent());
+//					vcImageGeometry.getGeometrySpec().setOrigin(vcGeometry.getOrigin());
+//					vcImageGeometry.setDescription(vcGeometry.getDescription());
+//					vcImageGeometry.getGeometrySurfaceDescription().setFilterCutoffFrequency(vcGeometry.getGeometrySurfaceDescription().getFilterCutoffFrequency());
+//					vcImageGeometry.precomputeAll(new GeometryThumbnailImageFactoryAWT(), true,true);
+//				} catch (Exception e) {
+//					e.printStackTrace(System.out);
+//					throw new RuntimeException("Unable to convert the original analytic or constructed solid geometry to image-based geometry : " + e.getMessage());
+//				}
+//			}
+			GeometryClass[] vcImageGeomClasses = vcImageGeometry.getGeometryClasses();
+			for (int j = 0; j < vcImageGeomClasses.length; j++) {
+				if (vcImageGeomClasses[j] instanceof ImageSubVolume) {
+					ImageSubVolume vcImageSubVolume = (ImageSubVolume) vcImageGeomClasses[j];
+					SampledVolume sampledVol = segmentedImageSampledFieldGeometry.createSampledVolume();
+					sampledVol.setSpatialId(SAMPLED_VOLUME_PREFIX+vcImageSubVolume.getName());
+					sampledVol.setDomainType(DOMAIN_TYPE_PREFIX+vcImageSubVolume.getPixelClass().getPixelClassName());
+					sampledVol.setSampledValue(vcImageSubVolume.getPixelValue());
 				}
-				GeometryClass[] vcImageGeomClasses = vcImageGeometry.getGeometryClasses();
-				for (int j = 0; j < vcImageGeomClasses.length; j++) {
-					if (vcImageGeomClasses[j] instanceof ImageSubVolume) {
-						SampledVolume sampledVol = segmentedImageSampledFieldGeometry.createSampledVolume();
-						sampledVol.setSpatialId(vcImageGeomClasses[j].getName());
-						sampledVol.setDomainType(DOMAIN_TYPE_PREFIX+vcGeomClasses[j].getName());
-						sampledVol.setSampledValue(((ImageSubVolume) vcImageGeomClasses[j]).getPixelValue());
-					}
-				}
-				// add sampledField to sampledFieldGeometry
-				SampledField segmentedImageSampledField = sbmlGeometry.createSampledField(); 
-				VCImage vcImage = vcImageGeometry.getGeometrySpec().getImage();
-				segmentedImageSampledField.setSpatialId("SegmentedImageSampledField");
-				segmentedImageSampledField.setNumSamples1(vcImage.getNumX());
-				segmentedImageSampledField.setNumSamples2(vcImage.getNumY());
-				segmentedImageSampledField.setNumSamples3(vcImage.getNumZ());
-				segmentedImageSampledField.setInterpolationType(InterpolationKind.nearestNeighbor);
-				segmentedImageSampledField.setCompression(CompressionKind.uncompressed);
-				segmentedImageSampledField.setDataType(DataKind.UINT8);
-				segmentedImageSampledFieldGeometry.setSampledField(segmentedImageSampledField.getId());
-				/*
-		if (segmentedImageSampledFieldGeometry.isSampledFieldGeometry()) {
-			System.out.println("Sample field is " + segmentedImageSampledFieldGeometry.getSampledField());
-		}
-				 */
+			}
+			// add sampledField to sampledFieldGeometry
+			SampledField segmentedImageSampledField = sbmlGeometry.createSampledField();
+			VCImage vcImage = vcImageGeometry.getGeometrySpec().getImage();
+			segmentedImageSampledField.setSpatialId("SegmentedImageSampledField");
+			segmentedImageSampledField.setNumSamples1(vcImage.getNumX());
+			segmentedImageSampledField.setNumSamples2(vcImage.getNumY());
+			segmentedImageSampledField.setNumSamples3(vcImage.getNumZ());
+			segmentedImageSampledField.setInterpolationType(InterpolationKind.nearestNeighbor);
+			segmentedImageSampledField.setCompression(CompressionKind.uncompressed);
+			segmentedImageSampledField.setDataType(DataKind.UINT8);
+			segmentedImageSampledFieldGeometry.setSampledField(segmentedImageSampledField.getId());
 
-				try {
-					byte[] vcImagePixelsBytes = vcImage.getPixels();
-					//			imageData.setCompression("");
-					StringBuffer sb = new StringBuffer();
-					for (int i = 0; i < vcImagePixelsBytes.length; i++) {
-						int uint8_sample = ((int)vcImagePixelsBytes[i]) & 0xff;
-						sb.append(uint8_sample+" ");
-					}
-					segmentedImageSampledField.setSamplesLength(vcImage.getNumXYZ());
-					segmentedImageSampledField.setSamples(sb.toString().trim());
-				} catch (ImageException e) {
-					e.printStackTrace(System.out);
-					throw new RuntimeException("Unable to export image from VCell to SBML : " + e.getMessage());
+			try {
+				byte[] vcImagePixelsBytes = vcImage.getPixels();
+				//			imageData.setCompression("");
+				StringBuffer sb = new StringBuffer();
+				for (int i = 0; i < vcImagePixelsBytes.length; i++) {
+					int uint8_sample = ((int)vcImagePixelsBytes[i]) & 0xff;
+					sb.append(uint8_sample+" ");
 				}
+				segmentedImageSampledField.setSamplesLength(vcImage.getNumXYZ());
+				segmentedImageSampledField.setSamples(sb.toString().trim());
+			} catch (ImageException e) {
+				e.printStackTrace(System.out);
+				throw new RuntimeException("Unable to export image from VCell to SBML : " + e.getMessage());
 			}
 		}
 

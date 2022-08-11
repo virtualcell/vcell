@@ -388,7 +388,10 @@ public boolean compareEqual(Matchable object) {
 	//
 	// if only one is null, bad
 	//
-	if (!Compare.isEqualOrNull(vcImage,geometrySpec.vcImage)){
+	if ((vcImage == null && geometrySpec.vcImage != null) || (vcImage != null && geometrySpec.vcImage == null)) {
+		return false;
+	}
+	if (vcImage != null && geometrySpec.vcImage != null && !vcImage.compareEqual(geometrySpec.vcImage, dimension, true)){
 		return false;
 	}
 

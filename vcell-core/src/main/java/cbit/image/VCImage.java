@@ -140,19 +140,24 @@ public void clearVersion() {
  * @param obj java.lang.Object
  */
 public boolean compareEqual(Matchable obj) {
+	return compareEqual(obj, 3, false);
+}
+
+
+public boolean compareEqual(Matchable obj, int dimension, boolean bIgnoreMetadata) {
 	if (!(obj instanceof VCImage)){
 		return false;
 	}
 	VCImage vci = (VCImage)obj;
 
-	if(!org.vcell.util.Compare.isEqual(getName(),vci.getName())){
+	if(!bIgnoreMetadata && !org.vcell.util.Compare.isEqual(getName(),vci.getName())){
 		return false;
 	}
-	if(!org.vcell.util.Compare.isEqual(getDescription(),vci.getDescription())){
+	if(!bIgnoreMetadata && !org.vcell.util.Compare.isEqual(getDescription(),vci.getDescription())){
 		return false;
 	}
-	
-	if(!org.vcell.util.Compare.isEqual(getExtent(),vci.getExtent())){
+
+	if(!org.vcell.util.Compare.isEqual(getExtent().getAsClipped(dimension),vci.getExtent().getAsClipped(dimension))){
 		return false;
 	}
 

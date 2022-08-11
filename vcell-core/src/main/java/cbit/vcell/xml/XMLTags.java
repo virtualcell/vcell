@@ -357,6 +357,8 @@ public class XMLTags {
     public final static String SBML_VCELL_GeometrySamplingTag_numYAttr = "numY";
     public final static String SBML_VCELL_GeometrySamplingTag_numZAttr = "numZ";
     public final static String SBML_VCELL_GeometrySamplingTag_cutoffFrequencyAttr = "cutoffFrequency";
+    public final static String SBML_VCELL_SpeciesContextSpecSettingsTag = "SpeciesContextSpecSettings";
+    public final static String SBML_VCELL_SpeciesContextSpecSettingsTag_wellmixedAttr = "wellmixed";
     public final static String MeshTag = "Mesh";
     public final static String SizeTag = "Size";
     public final static String XAttrTag = "X";
