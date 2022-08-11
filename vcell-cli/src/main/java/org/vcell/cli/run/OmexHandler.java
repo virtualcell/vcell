@@ -24,18 +24,24 @@ public class OmexHandler {
     CombineArchive archive;
 
     // Assuming omexPath will always be absolute path
+    // NB: Need to convert class to use Log4j2
     public OmexHandler(String omexPath, String outDir) throws IOException {
         try {
-            ResourceUtil.setNativeLibraryDirectory();
-            NativeLib.combinej.load();
-//            System.load("combinej");
+            try {
+                ResourceUtil.setNativeLibraryDirectory();
+                NativeLib.combinej.load();
+            } catch (Exception e){
+                System.err.println("Unable to link to native 'libCombine' lib, check native lib. Attemping alternate solution...");
+                NativeLib.combinej.directLoad();
+            }
         } catch (UnsatisfiedLinkError ex) {
             System.err.println("Unable to link to native 'libCombine' lib, check native lib: " + ex.getMessage());
-            System.exit(1);
-        } catch (Exception e) {
-            System.err.println("Error occurred while importing libCombine: " + e.getMessage());
-            System.exit(1);
+            throw ex;
+        } catch (Exception ex) {
+            System.err.println("Error occurred while importing libCombine: " + ex.getMessage());
+            throw ex;
         }
+        
         this.omexPath = omexPath;
         this.outDirPath = outDir;
 

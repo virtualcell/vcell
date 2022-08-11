@@ -1,5 +1,7 @@
 package cbit.vcell.resource;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
@@ -61,12 +63,49 @@ public enum NativeLib {
 		loaded = true;
 	}
 
+	public void directLoad(){
+		Runtime.getRuntime().load(this.generatePath());
+	}
+
 	/**
 	 * find whether underlying thread is complete
 	 * @return
 	 */
 	public boolean isDone( ) {
 		return NativeLoader.load(libName).isDone();
+	}
+
+	private String generatePath(){
+		OperatingSystemInfo osi = OperatingSystemInfo.getInstance();
+		String installDir = ResourceUtil.getVCellInstall().getAbsolutePath();
+		String nativeLibDir = "nativelibs";
+		String osDir = osi.getNativeLibDirectory();
+		String libFileName = this.getLibraryFileName();
+
+		Path path = Paths.get(installDir, nativeLibDir, osDir, libFileName);
+		return path.toAbsolutePath().toString();
+	}
+
+	private String getLibraryFileName(){
+		OperatingSystemInfo osi = OperatingSystemInfo.getInstance();
+		String fileName = osi.isWindows() ? "" : "lib" ; // unix library start with lib
+		fileName += this.libName;
+		return fileName + "." + this.getAppropraiteLibrarySuffix();
+	}
+
+	private String getAppropraiteLibrarySuffix(){
+		String suff;
+		OperatingSystemInfo osi = OperatingSystemInfo.getInstance();
+		if (osi.isWindows()){
+			suff = "dll";
+		} else if (osi.isMac()){
+			suff = "jnilib";
+		} else if (osi.isLinux()){
+			suff = "so";
+		} else {
+			throw new RuntimeException("Unknown OS type encountered when trying to load dynamic library");
+		}
+		return suff;
 	}
 
 }
