@@ -298,6 +298,7 @@ public class CLIPythonManager {
 
     private static String stripStringForPython(String str){
         String s = CLIUtils.stripString(str);
-        return s.replaceAll("([\"])+", "'");
+        //return s.replaceAll("([\"])+", "'");
+        return s;
     }
 }

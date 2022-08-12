@@ -325,6 +325,7 @@ public class ExecuteImpl {
                 PythonCalls.genPlotsPseudoSedml(sedmlLocation, outDirForCurrentSedml.toString());    // generate the plots
                 oneSedmlDocumentSucceeded = true;
             } catch (Exception e) {
+            	System.err.println(e.getMessage());
                 somethingFailed = true;
                 oneSedmlDocumentFailed = true;
                 logDocumentError += e.getMessage();
