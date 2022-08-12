@@ -35,6 +35,7 @@ import org.jlibsedml.execution.FileModelResolver;
 import org.jlibsedml.execution.ModelResolver;
 import org.jlibsedml.modelsupport.SBMLSupport;
 import org.jlibsedml.modelsupport.SUPPORTED_LANGUAGE;
+import org.vcell.sbml.vcell.SBMLImporter;
 import org.vcell.util.FileUtils;
 import org.vcell.util.document.VCDocument;
 
@@ -70,14 +71,19 @@ import cbit.vcell.xml.XmlHelper;
 public class SEDMLImporter {
 
 	private final static Logger logger = LogManager.getLogger(SEDMLImporter.class);
+	
 	private SedML sedml;
 	private ExternalDocInfo externalDocInfo;
 	private boolean exactMatchOnly;
+	
 	private VCLogger transLogger;
 	private List<BioModel> docs;
 	private String bioModelBaseName;
 	private ArchiveComponents ac;
 	private ModelResolver resolver;
+	
+	private HashMap<BioModel, SBMLImporter> importMap = new HashMap<BioModel, SBMLImporter>();
+
 	
 	public  SEDMLImporter(VCLogger transLogger, ExternalDocInfo externalDocInfo, SedML sedml, boolean exactMatchOnly) throws FileNotFoundException, XMLException {
 		this.transLogger = transLogger;
@@ -108,30 +114,28 @@ public class SEDMLImporter {
 		try {
 	        // iterate through all the elements and show them at the console
 	        List<org.jlibsedml.Model> mmm = sedml.getModels();
-	        for(Model mm : mmm) {
-	            logger.trace("sedml model: "+mm.toString());
-	            List<Change> listOfChanges = mm.getListOfChanges();
-	            logger.debug("There are " + listOfChanges.size() + " changes in model "+mm.getId());
+	        if (mmm.isEmpty()) {
+	        	// nothing to import
+	        	return docs;
 	        }
 	        List<org.jlibsedml.Simulation> sss = sedml.getSimulations();
-	        for(org.jlibsedml.Simulation ss : sss) {
-	            logger.trace("sedml simulaton: "+ss.toString());
-	        }
 	        List<AbstractTask> ttt = sedml.getTasks();
-	        for(AbstractTask tt : ttt) {
-	            logger.trace("sedml task: "+tt.toString());
-	        }
 	        List<DataGenerator> ddd = sedml.getDataGenerators();
-	        for(DataGenerator dd : ddd) {
-	            logger.trace("sedml dataGenerator: "+dd.toString());
-	        }
 	        List<Output> ooo = sedml.getOutputs();
-	        for(Output oo : ooo) {
-	            logger.trace("sedml output: "+oo.toString());
-	        }
-
-
-			// We need to make a separate BioModel for each SED-ML model
+	        printSEDMLSummary(mmm, sss, ttt, ddd, ooo);
+	        
+			// We don't know how many BioModels we'll end up with as some model changes may be translatable as simulations with overrides
+			HashMap<String, BioModel> bmMap = new HashMap<String, BioModel>();
+	        for(Model mm : mmm) {
+				if (mm.getListOfChanges().isEmpty()) {
+					// unique, must be imported as new BioModel
+					bmMap.put(mm.getId(), importModel(mm));
+				} else {
+					// mm.
+				}
+			}
+	        
+	        
 			// We will parse all tasks and create Simulations for each in the BioModel(s) corresponding to the model referenced by the tasks
 	    	String kisaoID = null;
 	    	org.jlibsedml.Simulation sedmlSimulation = null;	// this will become the vCell simulation
@@ -480,6 +484,32 @@ public class SEDMLImporter {
 			return docs;
 		} catch (Exception e) {
 			throw new RuntimeException("Unable to initialize bioModel for the given selection\n"+e.getMessage(), e);
+		}
+	}
+
+	private BioModel importModel(Model mm) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	private void printSEDMLSummary(List<org.jlibsedml.Model> mmm, List<org.jlibsedml.Simulation> sss,
+			List<AbstractTask> ttt, List<DataGenerator> ddd, List<Output> ooo) {
+		for(Model mm : mmm) {
+		    logger.trace("sedml model: "+mm.toString());
+		    List<Change> listOfChanges = mm.getListOfChanges();
+		    logger.debug("There are " + listOfChanges.size() + " changes in model "+mm.getId());
+		}
+		for(org.jlibsedml.Simulation ss : sss) {
+		    logger.trace("sedml simulaton: "+ss.toString());
+		}
+		for(AbstractTask tt : ttt) {
+		    logger.trace("sedml task: "+tt.toString());
+		}
+		for(DataGenerator dd : ddd) {
+		    logger.trace("sedml dataGenerator: "+dd.toString());
+		}
+		for(Output oo : ooo) {
+		    logger.trace("sedml output: "+oo.toString());
 		}
 	}
 
