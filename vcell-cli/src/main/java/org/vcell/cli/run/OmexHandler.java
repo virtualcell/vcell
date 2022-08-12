@@ -2,6 +2,9 @@ package org.vcell.cli.run;
 
 import cbit.vcell.resource.NativeLib;
 import cbit.vcell.resource.ResourceUtil;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.sbml.libcombine.CaContent;
 import org.sbml.libcombine.CaListOfContents;
 import org.sbml.libcombine.CaOmexManifest;
@@ -23,6 +26,8 @@ public class OmexHandler {
     String outDirPath;
     CombineArchive archive;
 
+    private final static Logger logger = LogManager.getLogger(OmexHandler.class);
+    
     // Assuming omexPath will always be absolute path
     // NB: Need to convert class to use Log4j2
     public OmexHandler(String omexPath, String outDir) throws IOException {
@@ -31,14 +36,14 @@ public class OmexHandler {
                 ResourceUtil.setNativeLibraryDirectory();
                 NativeLib.combinej.load();
             } catch (Exception e){
-                System.err.println("Unable to link to native 'libCombine' lib, check native lib. Attemping alternate solution...");
+            	logger.error("Unable to link to native 'libCombine' lib, check native lib. Attemping alternate solution...");
                 NativeLib.combinej.directLoad();
             }
         } catch (UnsatisfiedLinkError ex) {
-            System.err.println("Unable to link to native 'libCombine' lib, check native lib: " + ex.getMessage());
+            logger.error("Unable to link to native 'libCombine' lib, check native lib: " + ex.getMessage());
             throw ex;
-        } catch (Exception ex) {
-            System.err.println("Error occurred while importing libCombine: " + ex.getMessage());
+        } catch (RuntimeException ex) {
+            logger.error("Error occurred while importing libCombine: " + ex.getMessage());
             throw ex;
         }
         
@@ -48,13 +53,13 @@ public class OmexHandler {
         if (!new File(omexPath).exists()) {
             String[] omexNameArray = omexPath.split("/", -2);
             String omexName = omexNameArray[omexNameArray.length - 1];
-            System.err.println("Provided OMEX `" + omexName + "` is not present at path: " + omexPath);
+            
             try{
-                throw new Exception ("PathException");
-            } catch(Exception e){
-                e.printStackTrace();
+                throw new RuntimeException("OmexPathException");
+            } catch(RuntimeException e){
+            	logger.error("Provided OMEX `" + omexName + "` is not present at path: " + omexPath, e);
+            	throw e;
             }
-            System.exit(1);
         }
         int indexOfLastSlash = omexPath.lastIndexOf("/");
         this.omexName = omexPath.substring(indexOfLastSlash + 1);
@@ -65,8 +70,9 @@ public class OmexHandler {
         boolean isInitialized = archive.initializeFromArchive(omexPath);
 
         if (!isInitialized) {
-            System.err.println("Unable to initialise OMEX archive, archive maybe corrupted");
-            System.exit(1);
+        	String message = String.format("Unable to initialise OMEX archive \"%s\", archive maybe corrupted", this.omexName);
+            logger.error(message);
+            throw new RuntimeException(message);
         }
     }
 
@@ -86,10 +92,10 @@ public class OmexHandler {
             Path pathInZipfile = zipfs.getPath(entryOldName);
             /* Specify new file name */
             Path renamedZipEntry = zipfs.getPath(entryNewName);
-            System.out.println("About to rename an entry from ZIP File" + pathInZipfile.toUri());
+            logger.trace("About to rename an entry from ZIP File" + pathInZipfile.toUri());
             /* Execute rename */
             Files.move(pathInZipfile, renamedZipEntry, StandardCopyOption.ATOMIC_MOVE);
-            System.out.println("File successfully renamed");
+            logger.trace("File successfully renamed");
         }
     }
 
@@ -160,15 +166,16 @@ public class OmexHandler {
     public void extractOmex() {
         boolean isExtracted = this.archive.extractTo(this.tempPath);
         if (!isExtracted) {
-            System.err.println("Unable to extract OMEX archive, archive maybe corrupted");
-            System.exit(1);
+        	String message = String.format("Unable to initialise OMEX archive \"%s\", archive maybe corrupted", this.omexName);
+            logger.error(message);
+            throw new RuntimeException(message);
         }
     }
 
     public void deleteExtractedOmex() {
         boolean isRemoved = CLIUtils.removeDirs(new File(this.tempPath));
         if (!isRemoved) {
-            System.err.println("Unable to remove temp directory: " + this.tempPath);
+            logger.error("Unable to remove temp directory: " + this.tempPath);
         }
     }
 }

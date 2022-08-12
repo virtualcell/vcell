@@ -1,5 +1,6 @@
 package cbit.vcell.resource;
 
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.concurrent.ExecutionException;
@@ -35,10 +36,6 @@ public enum NativeLib {
 		this.libName = libName;
 		this.autoload = autoload;
 	}
-
-
-
-
 
 	/**
 	 *  commence load process but don't wait for results
@@ -80,32 +77,43 @@ public enum NativeLib {
 		String installDir = ResourceUtil.getVCellInstall().getAbsolutePath();
 		String nativeLibDir = "nativelibs";
 		String osDir = osi.getNativeLibDirectory();
-		String libFileName = this.getLibraryFileName();
+		String libFileName = this.getLibraryFileName(Paths.get(installDir, nativeLibDir, osDir));
 
 		Path path = Paths.get(installDir, nativeLibDir, osDir, libFileName);
 		return path.toAbsolutePath().toString();
 	}
 
-	private String getLibraryFileName(){
+	private String getLibraryFileName(Path partialAbsPath){
 		OperatingSystemInfo osi = OperatingSystemInfo.getInstance();
 		String fileName = osi.isWindows() ? "" : "lib" ; // unix library start with lib
 		fileName += this.libName;
-		return fileName + "." + this.getAppropraiteLibrarySuffix();
+		return fileName + "." + this.getAppropraiteLibrarySuffix(partialAbsPath, fileName);
 	}
 
-	private String getAppropraiteLibrarySuffix(){
+	private String getAppropraiteLibrarySuffix(Path partialAbsPath, String fileName){
 		String suff;
 		OperatingSystemInfo osi = OperatingSystemInfo.getInstance();
 		if (osi.isWindows()){
 			suff = "dll";
 		} else if (osi.isMac()){
-			suff = "jnilib";
+			suff = this.getMacLibSuffix(partialAbsPath.toAbsolutePath().toString(), fileName);
 		} else if (osi.isLinux()){
 			suff = "so";
 		} else {
 			throw new RuntimeException("Unknown OS type encountered when trying to load dynamic library");
 		}
 		return suff;
+	}
+	
+	private String getMacLibSuffix(String partialAbsPath, String fileName) {
+		// Local list to keep track of:
+		String[] validSuffixes = {"dylib", "jnilib"};
+		for (String suff : validSuffixes) {
+			Path p = Paths.get(partialAbsPath, fileName + "." + suff);
+			if (Files.exists(p)) return suff;
+		}
+		// If execution gets here, we have a problem
+		throw new RuntimeException("Was not able to find MacOS version of dynamic library: " + this.libName);
 	}
 
 }
