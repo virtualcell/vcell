@@ -528,7 +528,9 @@ public class SEDMLExporter {
 
 							for (String unscannedParamName : unscannedParamHash.values()) {
 								SymbolTableEntry ste = getSymbolTableEntryForModelEntity(mathSymbolMapping, unscannedParamName);
-								assert ste != null;
+								if(ste == null) {
+									throw new RuntimeException("failed to retrieve vcell parameter from unscanned SEDML parameter " + unscannedParamName + " using mathSymbolMapping.");
+								}
 								Expression unscannedParamExpr = mathOverrides.getActualExpression(unscannedParamName, 0);
 								if(unscannedParamExpr.isNumeric()) {
 									// if expression is numeric, add ChangeAttribute to model created above
@@ -702,7 +704,9 @@ public class SEDMLExporter {
 							// for unscanned parameter overrides
 							for (String unscannedParamName : unscannedParamHash.values()) {
 								SymbolTableEntry ste = getSymbolTableEntryForModelEntity(mathSymbolMapping, unscannedParamName);
-								assert ste != null;
+								if(ste == null) {
+									throw new RuntimeException("failed to retrieve vcell parameter from unscanned SEDML parameter " + unscannedParamName + " using mathSymbolMapping.");
+								}
 								Expression unscannedParamExpr = mathOverrides.getActualExpression(unscannedParamName, 0);
 								if(unscannedParamExpr.isNumeric()) {
 									// if expression is numeric, add ChangeAttribute to model created above
