@@ -2,6 +2,13 @@ package org.vcell.cli;
 
 import cbit.util.xml.VCLogger;
 
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.core.LoggerContext;
+import org.apache.logging.log4j.core.config.Configuration;
+import org.apache.logging.log4j.core.config.LoggerConfig;
+
 import java.io.*;
 import java.nio.file.*;
 import java.util.*;
@@ -30,6 +37,13 @@ public class CLIUtils {
         if (!f.delete()) {
             throw new FileNotFoundException("Failed to delete file: " + f);
         }
+    }
+
+    public static void setLogLevel(LoggerContext ctx, Level logLevel){
+        Configuration config = ctx.getConfiguration();
+        LoggerConfig loggerConfig = config.getLoggerConfig(LogManager.ROOT_LOGGER_NAME);
+        loggerConfig.setLevel(logLevel);
+        ctx.updateLoggers();  // This causes all Loggers to refetch information from their LoggerConfig.
     }
 
     public static boolean isBatchExecution(String outputBaseDir, boolean bForceKeepLogs) {
@@ -62,6 +76,10 @@ public class CLIUtils {
             // not big deal, we just failed to make the header; we'll find out later what went wrong
             e1.printStackTrace();
         }
+    }
+
+    public static String stripString(String str){
+        return str.replaceAll("^[ \t]+|[ \t]+$", ""); // replace whitespace at the front and back with nothing
     }
 
     public static void writeDetailedErrorList(String outputBaseDir, String s, boolean bForceKeepLogs) throws IOException {
@@ -110,8 +128,5 @@ public class CLIUtils {
             return false;
         }
     }
-
-
-
 }
 

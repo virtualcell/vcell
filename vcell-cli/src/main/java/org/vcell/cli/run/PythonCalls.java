@@ -158,6 +158,8 @@ public class PythonCalls {
         String fStr = "";
         for (char c : s.toCharArray()){
             char cAppend = ((int)c) < 16 ? ' ' : c;
+            if (cAppend == '"') 
+            	cAppend = '\'';
             fStr += cAppend;
         }
         return fStr;

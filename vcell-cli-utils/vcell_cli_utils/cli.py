@@ -89,6 +89,7 @@ def gen_sedml_2d_3d(omex_file_path, base_out_path):
             temp_path, f'simulation_{sedml_name}.sedml')
         SedmlSimulationWriter().run(doc, filename_with_reports_for_plots,
                                     validate_models_with_languages=False)
+    return temp_path
 
 
 def exec_plot_output_sed_doc(omex_file_path, idNamePlotsMap, base_out_path):
