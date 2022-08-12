@@ -836,6 +836,17 @@ private static boolean compareUpdate(Expression nExp, Expression oExp, Consumer<
 	return false;
 }
 
+private static void printMaths(MathDescription math1, MathDescription math2){
+	try {
+		System.out.println("\n===================MATH 1==================\n"
+				+ math1.getVCML_database() + "\n"
+				+ "==================MATH 2====================\n"
+				+ math2.getVCML_database() + "\n"
+				+ "==================END MATHS=================\n");
+	}catch (Exception e){
+		e.printStackTrace(System.out);
+	}
+}
 
 private MathCompareResults compareInvariantAttributes(MathDescription newMathDesc, boolean bAlreadyFlattened){
 	//
@@ -863,6 +874,7 @@ private MathCompareResults compareInvariantAttributes(MathDescription newMathDes
 	HashSet<String> thisStateVarHash = getStateVariableNames();
 	HashSet<String> otherStateVarHash = newMathDesc.getStateVariableNames();
 	if (thisStateVarHash.size() != otherStateVarHash.size()){
+		printMaths(this, newMathDesc);
 		return new MathCompareResults(Decision.MathDifferent_DIFFERENT_NUMBER_OF_VARIABLES);
 	}
 	//

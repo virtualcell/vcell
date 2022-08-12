@@ -27,21 +27,12 @@ public abstract class VCImage implements Serializable, org.vcell.util.document.V
 	//	private String imageName = null;
 	//	private String annot = ""; //Deprecated
 	private Version version = null;
-	private java.lang.String fieldName = new String();
+	private java.lang.String fieldName = "";
 	protected transient java.beans.VetoableChangeSupport vetoPropertyChange;
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 	private java.lang.String fieldDescription = new String("NoName");
 	private cbit.image.VCPixelClass[] fieldPixelClasses = null;
 
-/**
- * This method was created in VisualAge.
- * @param pix byte[]
- * @param x int
- * @param y int
- * @param z int
- * @param name java.lang.String
- * @param annot java.lang.String
- */
 protected VCImage(VCImage vci){
 	this.numX = vci.getNumX();
 	this.numY = vci.getNumY();
@@ -59,15 +50,6 @@ protected VCImage(VCImage vci){
 }
 
 
-/**
- * This method was created in VisualAge.
- * @param pix byte[]
- * @param x int
- * @param y int
- * @param z int
- * @param name java.lang.String
- * @param annot java.lang.String
- */
 protected VCImage(Version aVersion, org.vcell.util.Extent aExtent, int aNumX, int aNumY, int aNumZ) throws ImageException {
 	
 	this.version = aVersion;
@@ -89,42 +71,26 @@ protected VCImage(Version aVersion, org.vcell.util.Extent aExtent, int aNumX, in
 }
 
 
-/**
- * The addPropertyChangeListener method was generated to support the propertyChange field.
- */
 public synchronized void addPropertyChangeListener(java.beans.PropertyChangeListener listener) {
 	getPropertyChange().addPropertyChangeListener(listener);
 }
 
 
-/**
- * The addPropertyChangeListener method was generated to support the propertyChange field.
- */
 public synchronized void addPropertyChangeListener(java.lang.String propertyName, java.beans.PropertyChangeListener listener) {
 	getPropertyChange().addPropertyChangeListener(propertyName, listener);
 }
 
 
-/**
- * The addVetoableChangeListener method was generated to support the vetoPropertyChange field.
- */
 public synchronized void addVetoableChangeListener(java.beans.VetoableChangeListener listener) {
 	getVetoPropertyChange().addVetoableChangeListener(listener);
 }
 
 
-/**
- * The addVetoableChangeListener method was generated to support the vetoPropertyChange field.
- */
 public synchronized void addVetoableChangeListener(java.lang.String propertyName, java.beans.VetoableChangeListener listener) {
 	getVetoPropertyChange().addVetoableChangeListener(propertyName, listener);
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (4/24/2003 3:35:25 PM)
- */
 public void clearVersion() {
 	version = null;
 	VCPixelClass[] pcArr =  getPixelClasses();
@@ -134,11 +100,6 @@ public void clearVersion() {
 }
 
 
-/**
- * This method was created in VisualAge.
- * @return boolean
- * @param obj java.lang.Object
- */
 public boolean compareEqual(Matchable obj) {
 	return compareEqual(obj, 3, false);
 }
@@ -182,24 +143,23 @@ public boolean compareEqual(Matchable obj, int dimension, boolean bIgnoreMetadat
 	//}
 	try {
 		byte array1[] = getPixelsCompressed();
-		byte array2[] = vci.getPixelsCompressed();	
+		byte array2[] = vci.getPixelsCompressed();
 
 		if (array1.length!=array2.length){
 			return false;
 		}
-		
+
 		for (int i=0;i<array1.length;i++){
 			if (array1[i]!=array2[i]){
 				return false;
 			}
 		}
-		
+
 		return true;
 	}catch (ImageException e){
 		return false;
 	}
 }
-
 
 /**
  * This method was created by a SmartGuide.
@@ -435,22 +395,11 @@ public cbit.image.VCPixelClass[] getPixelClasses() {
 }
 
 
-/**
- * Gets the pixelClasses index property (cbit.image.VCPixelClass) value.
- * @return The pixelClasses property value.
- * @param index The index value into the property array.
- * @see #setPixelClasses
- */
 public VCPixelClass getPixelClasses(int index) {
 	return getPixelClasses()[index];
 }
 
 
-/**
- * This method was created in VisualAge.
- * @return cbit.image.VCImageRegion
- * @param pixelValue int
- */
 public VCPixelClass getPixelClassFromName(String pixelClassName) {
 	for (int i = 0; i < fieldPixelClasses.length; i++){
 		VCPixelClass pixelClass = fieldPixelClasses[i];
@@ -462,11 +411,6 @@ public VCPixelClass getPixelClassFromName(String pixelClassName) {
 }
 
 
-/**
- * This method was created in VisualAge.
- * @return cbit.image.VCImageRegion
- * @param pixelValue int
- */
 public VCPixelClass getPixelClassFromPixelValue(int pixelValue) {
 	for (int i = 0; i < fieldPixelClasses.length; i++){
 		VCPixelClass pixelClass = fieldPixelClasses[i];
@@ -478,23 +422,12 @@ public VCPixelClass getPixelClassFromPixelValue(int pixelValue) {
 }
 
 
-/**
- * This method was created in VisualAge.
- * @return byte[]
- */
 public abstract byte[] getPixels() throws ImageException;
 
 
-/**
- * This method was created in VisualAge.
- * @return byte[]
- */
 public abstract byte[] getPixelsCompressed() throws ImageException;
 
 
-/**
- * Accessor for the propertyChange field.
- */
 protected java.beans.PropertyChangeSupport getPropertyChange() {
 	if (propertyChange == null) {
 		propertyChange = new java.beans.PropertyChangeSupport(this);
@@ -503,10 +436,6 @@ protected java.beans.PropertyChangeSupport getPropertyChange() {
 }
 
 
-/**
- * This method was created in VisualAge.
- * @return int[]
- */
 public int[] getUniquePixelValues() throws ImageException{
 	byte pixels[] = getPixels();
 	int imageLength = pixels.length;
@@ -545,18 +474,11 @@ public int[] getUniquePixelValues() throws ImageException{
 }
 
 
-/**
- * This method was created in VisualAge.
- * @return Version
- */
 public Version getVersion() {
 	return version;
 }
 
 
-/**
- * Accessor for the vetoPropertyChange field.
- */
 protected java.beans.VetoableChangeSupport getVetoPropertyChange() {
 	if (vetoPropertyChange == null) {
 		vetoPropertyChange = new java.beans.VetoableChangeSupport(this);
@@ -565,17 +487,11 @@ protected java.beans.VetoableChangeSupport getVetoPropertyChange() {
 }
 
 
-/**
- * The hasListeners method was generated to support the propertyChange field.
- */
 public synchronized boolean hasListeners(java.lang.String propertyName) {
 	return getPropertyChange().hasListeners(propertyName);
 }
 
 
-/**
- * This method was created in VisualAge.
- */
 protected final void initPixelClasses() throws ImageException {
 	Vector pixelClassList = new Vector();
 	int uniquePixels[] = getUniquePixelValues();
@@ -590,10 +506,6 @@ protected final void initPixelClasses() throws ImageException {
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (5/11/01 4:09:03 PM)
- */
 public void refreshDependencies() {
 	//
 	// this is where you refresh volatile (e.g. propertyChangeListeners and vetoableChangeListeners)
@@ -605,43 +517,26 @@ public void refreshDependencies() {
 }
 
 
-/**
- * The removePropertyChangeListener method was generated to support the propertyChange field.
- */
 public synchronized void removePropertyChangeListener(java.beans.PropertyChangeListener listener) {
 	getPropertyChange().removePropertyChangeListener(listener);
 }
 
 
-/**
- * The removePropertyChangeListener method was generated to support the propertyChange field.
- */
 public synchronized void removePropertyChangeListener(java.lang.String propertyName, java.beans.PropertyChangeListener listener) {
 	getPropertyChange().removePropertyChangeListener(propertyName, listener);
 }
 
 
-/**
- * The removeVetoableChangeListener method was generated to support the vetoPropertyChange field.
- */
 public synchronized void removeVetoableChangeListener(java.beans.VetoableChangeListener listener) {
 	getVetoPropertyChange().removeVetoableChangeListener(listener);
 }
 
 
-/**
- * The removeVetoableChangeListener method was generated to support the vetoPropertyChange field.
- */
 public synchronized void removeVetoableChangeListener(java.lang.String propertyName, java.beans.VetoableChangeListener listener) {
 	getVetoPropertyChange().removeVetoableChangeListener(propertyName, listener);
 }
 
 
-/**
- * Sets the description property (java.lang.String) value.
- * @param description The new value for the property.
- * @see #getDescription
- */
 public void setDescription(java.lang.String description) {
 	String oldValue = fieldDescription;
 	fieldDescription = description;
@@ -649,10 +544,6 @@ public void setDescription(java.lang.String description) {
 }
 
 
-/**
- * This method was created in VisualAge.
- * @return int
- */
 public void setExtent(org.vcell.util.Extent newExtent) {
 	org.vcell.util.Extent oldExtent = this.extent;
 	this.extent = newExtent;
@@ -660,12 +551,6 @@ public void setExtent(org.vcell.util.Extent newExtent) {
 }
 
 
-/**
- * Sets the name property (java.lang.String) value.
- * @param name The new value for the property.
- * @exception java.beans.PropertyVetoException The exception description.
- * @see #getName
- */
 public void setName(java.lang.String name) throws java.beans.PropertyVetoException {
 	String oldValue = fieldName;
 	fireVetoableChange("name", oldValue, name);
@@ -673,12 +558,6 @@ public void setName(java.lang.String name) throws java.beans.PropertyVetoExcepti
 	firePropertyChange("name", oldValue, name);
 }
 
-/**
- * Sets the pixelClasses property (cbit.image.VCPixelClass[]) value.
- * @param pixelClasses The new value for the property.
- * @exception java.beans.PropertyVetoException The exception description.
- * @see #getPixelClasses
- */
 public void setPixelClasses(cbit.image.VCPixelClass[] pixelClasses) throws java.beans.PropertyVetoException {
 	cbit.image.VCPixelClass[] oldValue = fieldPixelClasses;
 	fireVetoableChange("pixelClasses", oldValue, pixelClasses);
@@ -687,11 +566,6 @@ public void setPixelClasses(cbit.image.VCPixelClass[] pixelClasses) throws java.
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (12/18/00 2:31:07 PM)
- * @return java.lang.String
- */
 public String toString() {
 	return "VCImage@"+Integer.toHexString(hashCode())+"("+((version!=null)?version.toString():getName())+")";
 }
@@ -707,11 +581,6 @@ public long countPixelsByValue(byte value) throws ImageException {
 	return count;
 }
 
-/**
- * Insert the method's description here.
- * Creation date: (6/19/2002 2:14:04 PM)
- * @param evt java.beans.PropertyChangeEvent
- */
 public void vetoableChange(java.beans.PropertyChangeEvent evt) throws java.beans.PropertyVetoException {
 	
 	if (evt.getSource() == this && evt.getPropertyName().equals("pixelClasses")){

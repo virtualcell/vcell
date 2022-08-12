@@ -1817,7 +1817,8 @@ public class SBMLImporter {
 	}
 
 	private static void validateSBMLDocument(SBMLDocument document, VCLogger vcLogger) throws Exception {
-		document.checkConsistencyOffline();
+		//document.checkConsistencyOffline();
+		document.checkConsistencyOnline();
 		long numProblems = document.getNumErrors();
 
 		ByteArrayOutputStream os = new ByteArrayOutputStream();
@@ -3143,7 +3144,7 @@ public class SBMLImporter {
 	}
 
 	public static cbit.vcell.geometry.CSGNode getVCellCSGNode(org.sbml.jsbml.ext.spatial.CSGNode sbmlCSGNode) {
-		String csgNodeName = sbmlCSGNode.getId();
+		String csgNodeName = sbmlCSGNode.getParent().getId();
 		if (sbmlCSGNode instanceof org.sbml.jsbml.ext.spatial.CSGPrimitive){
 			PrimitiveKind primitiveKind = ((org.sbml.jsbml.ext.spatial.CSGPrimitive) sbmlCSGNode).getPrimitiveType();
 			cbit.vcell.geometry.CSGPrimitive.PrimitiveType vcellCSGPrimitiveType = getVCellPrimitiveType(primitiveKind);
@@ -3667,15 +3668,16 @@ public class SBMLImporter {
 				CSGObject[] vcCSGSubVolumes = new CSGObject[n];
 				for (int i = 0; i < n; i++) {
 					org.sbml.jsbml.ext.spatial.CSGObject sbmlCSGObject = sbmlCSGs.get(i);
-					CSGObject vcellCSGObject = new CSGObject(null,
-							sbmlCSGObject.getDomainType(), i);
+					CSGObject vcellCSGObject = new CSGObject(null, sbmlCSGObject.getDomainType(), i);
 					vcellCSGObject.setRoot(getVCellCSGNode(sbmlCSGObject.getCSGNode()));
+					boolean bFront = true;
+					vcGeometry.getGeometrySpec().addSubVolume(vcellCSGObject, bFront);
 				}
 
 				// specify default volume sampling (can be overridden by vcell-specific annotation)
 				vcGsd.setVolumeSampleSize(vcGeometry.getGeometrySpec().getDefaultSampledImageSize());
 				// read vcell-specific annotation for volume sampling
-				readGeometrySamplingAnnotation(analyticGeometryDefinition, vcGsd);
+				readGeometrySamplingAnnotation(csGeometry, vcGsd);
 				vcGeometry.getGeometrySpec().setSubVolumes(vcCSGSubVolumes);
 			}
 
@@ -3719,6 +3721,7 @@ public class SBMLImporter {
 					interiorPt.getCoord1(),
 					(vcGeometry.getDimension()>1)?interiorPt.getCoord2():0.0,
 					(vcGeometry.getDimension()>2)?interiorPt.getCoord3():0.0);
+			GeometricRegion vcGeometricRegionNearest = null;
 			for (GeometricRegion vcGeomRegion : vcGeomRegions) {
 				if (vcGeomRegion instanceof VolumeGeometricRegion) {
 					int regionID = ((VolumeGeometricRegion) vcGeomRegion).getRegionID();
@@ -3749,6 +3752,7 @@ public class SBMLImporter {
 											if (distance < minDistance) {
 												minDistance = distance;
 												nearestPtCoord = vcCoord;
+												vcGeometricRegionNearest = vcGeomRegion;
 											}
 										}
 										volIndx++;
@@ -3757,18 +3761,19 @@ public class SBMLImporter {
 							} // end - for z
 							// verify that domainType of domain and geomClass of geomRegion are the same; if so, name
 							// vcGeomReg[j] with domain name
-							if (nearestPtCoord != null) {
-								GeometryClass geomClassSBML = vcGeometry.getGeometryClass(domainType);
-								// we know vcGeometryReg[j] is a VolGeomRegion
-								GeometryClass geomClassVC = ((VolumeGeometricRegion) vcGeomRegion).getSubVolume();
-								if (geomClassSBML.compareEqual(geomClassVC)) {
-									vcGeomRegion.setName(domain.getId());
-								}
-							}
 						} // end if (regInfoIndx = regId)
 					} // end - for regInfo
 				}
 			} // end for - vcGeomRegions
+			if (vcGeometricRegionNearest != null) {
+				GeometryClass geomClassSBML = vcGeometry.getGeometryClass(domainType);
+				// we know vcGeometryReg[j] is a VolGeomRegion
+				GeometryClass geomClassVC = ((VolumeGeometricRegion) vcGeometricRegionNearest).getSubVolume();
+				if (geomClassSBML.compareEqual(geomClassVC)) {
+					vcGeometricRegionNearest.setName(domain.getId()); // TODO ... gets set every iteration ... pull outside of loop??
+				}
+			}
+
 		} // end - for domains
 
 		// now that we have the subVolumes:spDim3-domainTypes mapped, we need to
@@ -3841,7 +3846,7 @@ public class SBMLImporter {
 				Compartment c = sbmlModel.getCompartment(i);
 				String cname = c.getName();
 				cplugin = (SpatialCompartmentPlugin) c.getPlugin(SBMLUtils.SBML_SPATIAL_NS_PREFIX);
-				CompartmentMapping compMapping = cplugin.getCompartmentMapping();
+				CompartmentMapping compMapping = (cplugin.isSetCompartmentMapping()) ? cplugin.getCompartmentMapping() : null;
 				if (compMapping != null) {
 					CastInfo<Structure> ci = SBMLHelper.getTypedStructure(Structure.class, vcModel, cname);
 					if (ci.isGood()) {
@@ -3990,9 +3995,9 @@ public class SBMLImporter {
 	}
 
 	private static void readGeometrySamplingAnnotation(GeometryDefinition sbmlGeometryDefinition, GeometrySurfaceDescription vcGsd) throws PropertyVetoException {
-		XMLNode geometryDefinitionNonRdfAnnotation = sbmlGeometryDefinition.getAnnotation().getNonRDFannotation();
-		if (geometryDefinitionNonRdfAnnotation != null) {
-			XMLNode geometrySamplingElement = geometryDefinitionNonRdfAnnotation.getChildElement(XMLTags.SBML_VCELL_GeometrySamplingTag, "*");
+		Annotation geometryDefinitionAnnotation = sbmlGeometryDefinition.getAnnotation();
+		if (geometryDefinitionAnnotation != null && geometryDefinitionAnnotation.getNonRDFannotation() != null) {
+			XMLNode geometrySamplingElement = geometryDefinitionAnnotation.getNonRDFannotation().getChildElement(XMLTags.SBML_VCELL_GeometrySamplingTag, "*");
 			if (geometrySamplingElement != null) {
 				int numX = 1;
 				int numY = 1;

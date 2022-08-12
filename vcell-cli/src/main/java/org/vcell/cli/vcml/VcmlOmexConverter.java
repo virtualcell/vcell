@@ -508,6 +508,8 @@ public class VcmlOmexConverter {
 
 			if (failureMessage != null){
 				throw new RuntimeException(failureMessage);
+			}else if (successMessage != null){
+				throw new RuntimeException("<<<SUCCESS, BUT THROWING EXCEPTION FOR REPORTING --- REMOVE THIS: "+successMessage);
 			}
         } catch (Exception e) {
 			throw new RuntimeException("createZipArchive threw exception: " + e.getMessage(), e);

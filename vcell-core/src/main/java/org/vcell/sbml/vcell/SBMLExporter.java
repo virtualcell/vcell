@@ -311,9 +311,7 @@ protected void addCompartments() throws XMLStreamException, SbmlException {
 
 		StructureMapping vcStructMapping = getSelectedSimContext().getGeometryContext().getStructureMapping(vcStructures[i]);
 		try {
-			if (vcStructMapping.getSizeParameter().getExpression() != null) {
-				sbmlCompartment.setSize(vcStructMapping.getSizeParameter().getExpression().evaluateConstant());
-			} else if (getSelectedSimContext().getGeometry().getDimension() == 0){
+			if (vcStructMapping.getSizeParameter().getExpression() == null && getSelectedSimContext().getGeometry().getDimension() == 0){
 				try {
 					// old vcell spatial application, with only relative compartment sizes (SBML wants absolute sizes for nonspatial ... easier to understand anyway)
 					double structureSize = 1.0;
@@ -321,8 +319,9 @@ protected void addCompartments() throws XMLStreamException, SbmlException {
 				} catch (Exception e){
 					lg.error("failed to compute size parameter: "+e.getMessage(), e);
 				}
-				// really no need to set sizes of compartments in spatial ..... ????
-				//	throw new RuntimeException("Compartment size not set for compartment \"" + vcStructures[i].getName() + "\" ; Please set size and try exporting again.");
+			}
+			if (vcStructMapping.getSizeParameter().getExpression() != null) {
+				sbmlCompartment.setSize(vcStructMapping.getSizeParameter().getExpression().evaluateConstant());
 			}
 		} catch (cbit.vcell.parser.ExpressionException e) {
 			// If it is in the catch block, it means that the compartment size was probably not a double, but an assignment.
@@ -2044,7 +2043,7 @@ private void addGeometry() throws SbmlException {
 					ImageSubVolume vcImageSubVolume = (ImageSubVolume) vcImageGeomClasses[j];
 					SampledVolume sampledVol = segmentedImageSampledFieldGeometry.createSampledVolume();
 					sampledVol.setSpatialId(SAMPLED_VOLUME_PREFIX+vcImageSubVolume.getName());
-					sampledVol.setDomainType(DOMAIN_TYPE_PREFIX+vcImageSubVolume.getPixelClass().getPixelClassName());
+					sampledVol.setDomainType(DOMAIN_TYPE_PREFIX+vcImageSubVolume.getName());
 					sampledVol.setSampledValue(vcImageSubVolume.getPixelValue());
 				}
 			}
