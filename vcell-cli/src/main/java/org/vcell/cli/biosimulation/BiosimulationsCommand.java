@@ -89,7 +89,7 @@ public class BiosimulationsCommand implements Callable<Integer> {
 
             try {
                 CLIPythonManager.getInstance().instantiatePythonProcess();
-                ExecuteImpl.singleExecOmex(ARCHIVE, OUT_DIR, bKeepTempFiles, bExactMatchOnly, bForceLogFiles);
+                ExecuteImpl.singleExecOmex(ARCHIVE, OUT_DIR, bKeepTempFiles, bExactMatchOnly, bForceLogFiles, false);
                 return 0;
             } finally {
                 try {
