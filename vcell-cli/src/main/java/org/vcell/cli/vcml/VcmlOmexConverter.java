@@ -11,12 +11,14 @@ import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.SubDomain;
 import cbit.vcell.math.Variable;
 import cbit.vcell.parser.Expression;
+import cbit.vcell.resource.NativeLib;
+import cbit.vcell.resource.OperatingSystemInfo;
 import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.server.SimulationJobStatusPersistent;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationSymbolTable;
 import cbit.vcell.solver.SolverDescription;
-import cbit.vcell.util.NativeLoader;
+//import cbit.vcell.util.NativeLoader;
 import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XmlHelper;
 import cbit.vcell.xml.XmlParseException;
@@ -369,8 +371,28 @@ public class VcmlOmexConverter {
         XmlUtil.writeXMLStringToFile(sedmlString, String.valueOf(Paths.get(outputDir, vcmlName + ".sedml")), true);
 
         // libCombine needs native lib
-        ResourceUtil.setNativeLibraryDirectory();
-        NativeLoader.load("combinej");
+//        ResourceUtil.setNativeLibraryDirectory();
+//	    OperatingSystemInfo osi = OperatingSystemInfo.getInstance();
+//	    if (osi.isWindows()) {
+//        	org.scijava.nativelib.NativeLoader.loadLibrary("combinej");
+//        } else {
+//        	cbit.vcell.util.NativeLoader.load("combinej");
+//        }
+        try {
+            try {
+                ResourceUtil.setNativeLibraryDirectory();
+                NativeLib.combinej.load();
+            } catch (Exception e){
+            	logger.error("Unable to link to native 'libCombine' lib, check native lib. Attemping alternate solution...");
+                NativeLib.combinej.directLoad();
+            }
+        } catch (UnsatisfiedLinkError ex) {
+            logger.error("Unable to link to native 'libCombine' lib, check native lib: " + ex.getMessage());
+            throw ex;
+        } catch (RuntimeException ex) {
+            logger.error("Error occurred while importing libCombine: " + ex.getMessage());
+            throw ex;
+        }
 
         boolean isDeleted = false;
         boolean isCreated;
