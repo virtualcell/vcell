@@ -39,6 +39,17 @@ public class CLIUtils {
         }
     }
 
+    public static void cleanRootDir(File outdir){
+        // If this could be done without hard coding it'd be preferable.
+        String[] filesToDelete = {"detailedResultLog.txt", "fullSuccessLog.txt", "log.json", "log.yml", "reports.h5", "reports.zip"};
+        for (String fileName : filesToDelete){
+            File instance = new File(outdir, fileName);
+            if (instance.exists()){
+                instance.delete();
+            }
+        }
+    }
+
     public static void setLogLevel(LoggerContext ctx, Level logLevel){
         Configuration config = ctx.getConfiguration();
         LoggerConfig loggerConfig = config.getLoggerConfig(LogManager.ROOT_LOGGER_NAME);

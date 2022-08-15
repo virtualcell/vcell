@@ -37,6 +37,10 @@ public class ExecuteCommand implements Callable<Integer> {
     @Option(names = {"--exactMatchOnly"})
     private boolean bExactMatchOnly;
 
+    @Option(names = {"--encapsulateOutput"}, defaultValue = "true", description = 
+        "VCell will encapsulate output results in a sub directory when executing with a single input archive; has no effect when providing an input directory")
+    private boolean bEncapsulateOutput;
+
     @Option(names = {"--timeout_ms"}, defaultValue = "600000", description = "executable wall clock timeout in milliseconds")
     // timeout for compiled solver running long jobs; default 12 hours
     private long EXECUTABLE_MAX_WALLCLOCK_MILLIS;
@@ -82,7 +86,7 @@ public class ExecuteCommand implements Callable<Integer> {
                 if (archiveToProcess.getName().endsWith("vcml")) {
                     ExecuteImpl.singleExecVcml(archiveToProcess, outputFilePath);
                 } else { // archiveToProcess.getName().endsWith("omex")
-                    ExecuteImpl.singleExecOmex(archiveToProcess, outputFilePath, bKeepTempFiles, bExactMatchOnly, bForceLogFiles);
+                    ExecuteImpl.singleExecOmex(archiveToProcess, outputFilePath, bKeepTempFiles, bExactMatchOnly, bForceLogFiles, bEncapsulateOutput);
                 }
             }
 

@@ -113,14 +113,20 @@ public class ExecuteImpl {
     }
 
 
-    public static void singleExecOmex(File inputFile, File rootOutputDir,
-                                      boolean bKeepTempFiles, boolean bExactMatchOnly, boolean bForceLogFiles)
+    public static void singleExecOmex(File inputFile, File rootOutputDir, boolean bKeepTempFiles, 
+                                        boolean bExactMatchOnly, boolean bForceLogFiles) 
+            throws Exception {
+        ExecuteImpl.singleExecOmex(inputFile, rootOutputDir, bKeepTempFiles, bExactMatchOnly, bForceLogFiles, true);
+    }
+
+    public static void singleExecOmex(File inputFile, File rootOutputDir, boolean bKeepTempFiles, 
+                                        boolean bExactMatchOnly, boolean bForceLogFiles, boolean bEncapsulateOutput)
             throws Exception {
         int nModels, nSimulations, nSedml, nTasks, nOutputs, nReportsCount = 0, nPlots2DCount = 0, nPlots3DCount = 0;
         String inputFileName = inputFile.getAbsolutePath();
         String bioModelBaseName = FileUtils.getBaseName(inputFile.getName());
-        String outputDir = Paths.get(rootOutputDir.getAbsolutePath(), bioModelBaseName).toString();
         String outputBaseDir = rootOutputDir.getAbsolutePath(); // bioModelBaseName = input file without the path
+        String outputDir = bEncapsulateOutput ? Paths.get(outputBaseDir, bioModelBaseName).toString() : outputBaseDir;
         OmexHandler omexHandler = null;
         List<String> sedmlLocations;
         List<Output> outputs;
@@ -148,7 +154,8 @@ public class ExecuteImpl {
             throw new Exception(error);
         }
 
-        RunUtils.removeAndMakeDirs(new File(outputDir));
+        CLIUtils.cleanRootDir(new File(outputBaseDir));
+        if (bEncapsulateOutput) RunUtils.removeAndMakeDirs(new File(outputDir));
         PythonCalls.generateStatusYaml(inputFileName, outputDir);    // generate Status YAML
 
         // from here on, we need to collect errors, since some subtasks may succeed while other do not
