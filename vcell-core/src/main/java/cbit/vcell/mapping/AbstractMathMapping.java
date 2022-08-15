@@ -76,6 +76,8 @@ import cbit.vcell.units.VCUnitException;
 
 public abstract class AbstractMathMapping implements ScopedSymbolTable, UnitFactorProvider, IssueSource, MathMapping {
 
+	private final static Logger logger = LogManager.getLogger(AbstractMathMapping.class);
+
 	protected final NetworkGenerationRequirements networkGenerationRequirements;
 	protected final MathMappingCallback callback;
 	protected final SimulationContext simContext;
@@ -142,7 +144,7 @@ public abstract class AbstractMathMapping implements ScopedSymbolTable, UnitFact
 			return "MathMapping_for_"+TokenMangler.fixTokenStrict(simContext.getName());
 		}
 		public NameScope getParent() {
-			//System.out.println("MathMappingNameScope.getParent() returning null ... no parent");
+			//logger.trace("MathMappingNameScope.getParent() returning null ... no parent");
 			return null;
 		}
 		public ScopedSymbolTable getScopedSymbolTable() {
@@ -588,7 +590,7 @@ public SymbolTableEntry getEntry(java.lang.String identifierString) {
 	}
 	ste = getNameScope().getExternalEntry(identifierString,this);
 	if (ste==null){
-		System.out.println("MathMapping is unable to bind identifier '"+identifierString+"'");
+		logger.info("MathMapping is unable to bind identifier '"+identifierString+"'");
 	}
 	return ste;
 }
@@ -766,8 +768,7 @@ public Expression getUnitFactor(VCUnitDefinition unitFactor) {
 	try {
 		setMathMapppingParameters(newMathMappingParameters);
 	}catch (java.beans.PropertyVetoException e){
-		e.printStackTrace(System.out);
-		throw new RuntimeException(e.getMessage());
+		throw new RuntimeException(e.getMessage(), e);
 	}
 	return new Expression(unitFactorParameter,getNameScope());
 }
@@ -793,8 +794,7 @@ public RationalExp getUnitFactorAsRationalExp(VCUnitDefinition unitFactor) {
 	try {
 		setMathMapppingParameters(newMathMappingParameters);
 	}catch (java.beans.PropertyVetoException e){
-		e.printStackTrace(System.out);
-		throw new RuntimeException(e.getMessage());
+		throw new RuntimeException(e.getMessage(), e);
 	}
 	return new RationalExp(factor);
 }
@@ -907,8 +907,7 @@ protected void reconcileWithOriginalModel() throws MappingException,
 			try {
 				mathDesc.setGeometry(transformation.originalSimContext.getGeometry());
 			} catch (PropertyVetoException e) {
-				e.printStackTrace();
-				throw new MappingException(e.getMessage());
+				throw new MappingException(e.getMessage(), e);
 			}
 		}
 
@@ -1030,31 +1029,31 @@ protected Expression getIdentifierSubstitutions(Expression origExp, VCUnitDefini
 				expUnitDef = unitEvaluator.getUnitDefinition(origExp);
 				if (desiredExpUnitDef == null){
 					String expStr = origExp.renameBoundSymbols(getNameScope()).infix();
-					System.out.println("...........exp='"+expStr+"', desiredUnits are null");
+					logger.warn("...........exp='"+expStr+"', desiredUnits are null");
 					localIssueList.add(new Issue(origExp, issueContext, IssueCategory.Units,"expected=[null], observed=["+expUnitDef.getSymbol()+"]",Issue.SEVERITY_WARNING));
 				}else if (expUnitDef == null){
 					String expStr = origExp.renameBoundSymbols(getNameScope()).infix();
-					System.out.println("...........exp='"+expStr+"', evaluated Units are null");
+					logger.warn("...........exp='"+expStr+"', evaluated Units are null");
 					localIssueList.add(new Issue(origExp, issueContext, IssueCategory.Units,"expected=["+desiredExpUnitDef.getSymbol()+"], observed=[null]",Issue.SEVERITY_WARNING));
 				}else if (desiredExpUnitDef.isTBD()){
 					String expStr = origExp.renameBoundSymbols(getNameScope()).infix();
-		//			System.out.println("...........exp='"+expStr+"', desiredUnits are ["+desiredExpUnitDef.getSymbol()+"] and expression units are ["+expUnitDef.getSymbol()+"]");
+//					logger.warn("...........exp='"+expStr+"', desiredUnits are ["+desiredExpUnitDef.getSymbol()+"] and expression units are ["+expUnitDef.getSymbol()+"]");
 					localIssueList.add(new Issue(origExp, issueContext, IssueCategory.Units,"expected=["+desiredExpUnitDef.getSymbol()+"], observed=["+expUnitDef.getSymbol()+"] for exp = "+expStr,Issue.SEVERITY_WARNING));
 				}else if (!desiredExpUnitDef.isEquivalent(expUnitDef) && !expUnitDef.isTBD()){
 					String expStr = origExp.renameBoundSymbols(getNameScope()).infix();
-		//			System.out.println("...........exp='"+expStr+"', desiredUnits are ["+desiredExpUnitDef.getSymbol()+"] and expression units are ["+expUnitDef.getSymbol()+"]");
+//					logger.warn("...........exp='"+expStr+"', desiredUnits are ["+desiredExpUnitDef.getSymbol()+"] and expression units are ["+expUnitDef.getSymbol()+"]");
 					localIssueList.add(new Issue(origExp, issueContext, IssueCategory.Units,"expected=["+desiredExpUnitDef.getSymbol()+"], observed=["+expUnitDef.getSymbol()+"] for exp = "+expStr,Issue.SEVERITY_WARNING));
 				}
 			}catch (VCUnitException e){
 				String expStr = origExp.renameBoundSymbols(getNameScope()).infix();
-				System.out.println(".........exp='"+expStr+"' exception='"+e.getMessage()+"'");
+				logger.warn("Unit exception: exp='"+expStr+"' exception='"+e.getMessage()+"'", e);
 				localIssueList.add(new Issue(origExp, issueContext, IssueCategory.Units,"expected=["+((desiredExpUnitDef!=null)?(desiredExpUnitDef.getSymbol()):("null"))+"], exception="+e.getMessage(),Issue.SEVERITY_WARNING));
 			}catch (ExpressionException e){
 				String expStr = origExp.renameBoundSymbols(getNameScope()).infix();
-				System.out.println(".........exp='"+expStr+"' exception='"+e.getMessage()+"'");
+				logger.error("exp='"+expStr+"' exception='"+e.getMessage()+"'", e);
 				localIssueList.add(new Issue(origExp, issueContext, IssueCategory.Units,"expected=["+((desiredExpUnitDef!=null)?(desiredExpUnitDef.getSymbol()):("null"))+"], exception="+e.getMessage(),Issue.SEVERITY_WARNING));
 			}catch (Exception e){
-				e.printStackTrace(System.out);
+				logger.error(e);
 				localIssueList.add(new Issue(origExp, issueContext, IssueCategory.Units,"expected=["+((desiredExpUnitDef!=null)?(desiredExpUnitDef.getSymbol()):("null"))+"], exception="+e.getMessage(),Issue.SEVERITY_WARNING));
 			}
 			Expression newExp = new Expression(origExp);
@@ -1526,7 +1525,7 @@ final LocalizedDistanceToMembraneQuantity addLocalizedDistanceToMembraneQuantity
 	LocalizedDistanceToMembraneQuantity newQuantity = new LocalizedDistanceToMembraneQuantity(name, surfaceClass, subVolume);
 	MathMappingQuantity previousQuantity = getMathMappingQuantity(name);
 	if(previousQuantity != null){
-		System.out.println("MathMappingQuantity addLocalizedDistanceToMembraneQuantity found duplicate parameter for name "+name);
+		logger.info("MathMappingQuantity addLocalizedDistanceToMembraneQuantity found duplicate parameter for name "+name);
 		if(!previousQuantity.compareEqual(newQuantity)){
 			throw new RuntimeException("MathMappingParameter addLocalizedDistanceToMembraneQuantity found duplicate parameter for name '"+name+"'.");
 		}
@@ -1541,7 +1540,7 @@ final LocalizedDirectionToMembraneQuantity addLocalizedDirectionToMembraneQuanti
 	LocalizedDirectionToMembraneQuantity newQuantity = new LocalizedDirectionToMembraneQuantity(name, surfaceClass, subVolume, component);
 	MathMappingQuantity previousQuantity = getMathMappingQuantity(name);
 	if(previousQuantity != null){
-		System.out.println("MathMappingQuantity addLocalizedDirectionToMembraneQuantity found duplicate parameter for name "+name);
+		logger.info("MathMappingQuantity addLocalizedDirectionToMembraneQuantity found duplicate parameter for name "+name);
 		if(!previousQuantity.compareEqual(newQuantity)){
 			throw new RuntimeException("MathMappingParameter addLocalizedDirectionToMembraneQuantity found duplicate parameter for name '"+name+"'.");
 		}
@@ -1559,7 +1558,7 @@ final ObservableConcentrationParameter addObservableConcentrationParameter(Strin
 			ObservableConcentrationParameter newParameter = new ObservableConcentrationParameter(name,expr,role,unitDefn,argObservable,geometryClass);
 			MathMappingParameter previousParameter = getMathMappingParameter(name);
 			if(previousParameter != null){
-				System.out.println("MathMappingParameter addObservableConcentrationParameter found duplicate parameter for name "+name);
+				logger.info("MathMappingParameter addObservableConcentrationParameter found duplicate parameter for name "+name);
 				if(!previousParameter.compareEqual(newParameter)){
 					throw new RuntimeException("MathMappingParameter addObservableConcentrationParameter found duplicate parameter for name '"+name+"'.");
 				}
@@ -1578,7 +1577,7 @@ final ObservableCountParameter addObservableCountParameter(String name, Expressi
 			ObservableCountParameter newParameter = new ObservableCountParameter(name,expr,role,unitDefn,argObservable,geometryClass);
 			MathMappingParameter previousParameter = getMathMappingParameter(name);
 			if(previousParameter != null){
-				System.out.println("MathMappingParameter addConcentrationParameter found duplicate parameter for name "+name);
+				logger.info("MathMappingParameter addConcentrationParameter found duplicate parameter for name "+name);
 				if(!previousParameter.compareEqual(newParameter)){
 					if (!(previousParameter instanceof SpeciesCountParameter)){
 						throw new RuntimeException("MathMappingParameter addObservableConcentrationParameter found duplicate parameter for name '"+name+"'.");
@@ -1599,7 +1598,7 @@ final SpeciesConcentrationParameter addSpeciesConcentrationParameter(String name
 			SpeciesConcentrationParameter newParameter = new SpeciesConcentrationParameter(name,expr,role,unitDefn,argSpeciesContext,geometryClass);
 			MathMappingParameter previousParameter = getMathMappingParameter(name);
 			if(previousParameter != null){
-				System.out.println("MathMappingParameter addConcentrationParameter found duplicate parameter for name "+name);
+				logger.info("MathMappingParameter addConcentrationParameter found duplicate parameter for name "+name);
 				if(!previousParameter.compareEqual(newParameter)){
 					throw new RuntimeException("MathMappingParameter addConcentrationParameter found duplicate parameter for name '"+name+"'.");
 				}
@@ -1617,7 +1616,7 @@ protected final SpeciesCountParameter addSpeciesCountParameter(String name, Expr
 	SpeciesCountParameter newParameter = new SpeciesCountParameter(name,expr,role,unitDefn,argSpeciesContext,geometryClass);
 	MathMappingParameter previousParameter = getMathMappingParameter(name);
 	if(previousParameter != null){
-		System.out.println("MathMappingParameter addCountParameter found duplicate parameter for name "+name);
+		logger.info("MathMappingParameter addCountParameter found duplicate parameter for name "+name);
 		if(!previousParameter.compareEqual(newParameter)){
 			throw new RuntimeException("MathMappingParameter addCountParameter found duplicate parameter for name '"+name+"'.");
 		}
@@ -1648,7 +1647,7 @@ final ProbabilityParameter addProbabilityParameter(String name, Expression expre
 			ProbabilityParameter newParameter = new ProbabilityParameter(name,expression,role,unitDefinition,argModelProcess,geometryClass);
 			MathMappingParameter previousParameter = getMathMappingParameter(name);
 			if(previousParameter != null){
-				System.out.println("MathMappingParameter addProbabilityParameter found duplicate parameter for name "+name);
+				logger.info("MathMappingParameter addProbabilityParameter found duplicate parameter for name "+name);
 				if(!previousParameter.compareEqual(newParameter)){
 					throw new RuntimeException("MathMappingParameter addProbabilityParameter found duplicate parameter for name "+name);
 				}
@@ -1728,8 +1727,7 @@ public KFluxParameter getFluxCorrectionParameter(StructureMapping sourceStructur
 			try {
 				setMathMapppingParameters(newMathMappingParameters);
 			}catch (java.beans.PropertyVetoException e){
-				e.printStackTrace(System.out);
-				throw new RuntimeException(e.getMessage());
+				throw new RuntimeException(e.getMessage(), e);
 			}
 			return kFluxParameter;
 		}
@@ -1749,7 +1747,7 @@ final MathMappingParameter addMathMappingParameter(String name, Expression expre
 			MathMappingParameter newParameter = new MathMappingParameter(name,expression,role,unitDefinition, geometryClass);
 			MathMappingParameter previousParameter = getMathMappingParameter(name);
 			if(previousParameter != null){
-				System.out.println("MathMappingParameter addMathMappingParameter found duplicate parameter for name "+name);
+				logger.info("MathMappingParameter addMathMappingParameter found duplicate parameter for name "+name);
 				if(!previousParameter.compareEqual(newParameter)){
 					throw new RuntimeException("MathMappingParameter addMathMappingParameter found duplicate parameter for name "+name);
 				}
