@@ -3665,10 +3665,10 @@ public class SBMLImporter {
 				});
 
 				int n = sbmlCSGs.size();
-				CSGObject[] vcCSGSubVolumes = new CSGObject[n];
+//				CSGObject[] vcCSGSubVolumes = new CSGObject[n];
 				for (int i = 0; i < n; i++) {
 					org.sbml.jsbml.ext.spatial.CSGObject sbmlCSGObject = sbmlCSGs.get(i);
-					CSGObject vcellCSGObject = new CSGObject(null, sbmlCSGObject.getDomainType(), i);
+					CSGObject vcellCSGObject = new CSGObject(null, sbmlCSGObject.getSpatialId(), i);
 					vcellCSGObject.setRoot(getVCellCSGNode(sbmlCSGObject.getCSGNode()));
 					boolean bFront = true;
 					vcGeometry.getGeometrySpec().addSubVolume(vcellCSGObject, bFront);
@@ -3678,7 +3678,7 @@ public class SBMLImporter {
 				vcGsd.setVolumeSampleSize(vcGeometry.getGeometrySpec().getDefaultSampledImageSize());
 				// read vcell-specific annotation for volume sampling
 				readGeometrySamplingAnnotation(csGeometry, vcGsd);
-				vcGeometry.getGeometrySpec().setSubVolumes(vcCSGSubVolumes);
+//				vcGeometry.getGeometrySpec().setSubVolumes(vcCSGSubVolumes);
 			}
 
 			// Call geom.geomSurfDesc.updateAll() to automatically generate
