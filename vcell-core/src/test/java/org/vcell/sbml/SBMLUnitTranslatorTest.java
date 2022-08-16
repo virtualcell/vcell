@@ -124,6 +124,26 @@ public class SBMLUnitTranslatorTest {
 		Assert.assertTrue("expected=["+expectedUnit.getSymbol()+"], parsed=["+vcUnit.getSymbol()+"] are not equivalent", expectedUnit.isEquivalent(vcUnit));
 	}
 
+	@Test
+	public void testKMOLE_Derivation() {
+		final VCUnitSystem vcUnitSystem = new BioModel(null).getModel().getUnitSystem();
+		cbit.vcell.model.Model.ReservedSymbol KMOLE = new BioModel(null).getModel().getReservedSymbolByName("KMOLE");
+
+		VCUnitDefinition vcFluxUnits = vcUnitSystem.getInstance("uM.um.s-1");
+		VCUnitDefinition vcMemReactUnits = vcUnitSystem.getInstance("molecules.um-2.s-1");
+		Assert.assertFalse("flux and membrane units are incompatible because moles/molecules are different", vcFluxUnits.isCompatible(vcMemReactUnits));
+		System.out.println("["+vcFluxUnits.getSymbol()+"] / ["+vcMemReactUnits.getSymbol()+"] = ["+vcFluxUnits.divideBy(vcMemReactUnits).getSymbol()+"]");
+//		VCUnitDefinition KMOLE_expected_units = vcFluxUnits.divideBy(vcMemReactUnits);
+//		Assert.assertTrue("KMOLE units should be equivalent to flux/membrane units", );
+//
+//		VCUnitDefinition fluxToMembraneReactUnits = vcFluxUnits.convertTo(1, vcMemReactUnits);
+//		VCUnitDefinition fluxToMembraneReactUnits = vcFluxUnits.convertTo(1, vcMemReactUnits);
+//		UnitDefinition sbmlUnit = new SBMLReader().readSBMLFromString(getSbmlUnitDefinition_KMOLE).getModel().getListOfUnitDefinitions().get("unitid");
+//		VCUnitDefinition vcUnit = SBMLUnitTranslator.getVCUnitDefinition(sbmlUnit, vcUnitSystem);
+//
+//		Assert.assertTrue("expected=["+expectedUnit.getSymbol()+"], parsed=["+vcUnit.getSymbol()+"] are not equivalent", expectedUnit.isEquivalent(vcUnit));
+	}
+
 	@Ignore
 	@Test
 	public void testSBMLtoVCell() throws XMLStreamException, IOException, SbmlException {

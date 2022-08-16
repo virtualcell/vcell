@@ -815,7 +815,7 @@ protected RulebasedMathMapping(SimulationContext simContext, MathMappingCallback
 			e.printStackTrace();
 		}
 		
-		Expression forward_rateExp = Expression.mult(new Expression(forward_rateParameter, getNameScope()),forward_sizeFactor,getUnitFactor(forward_substanceConversionUnit)).flatten();
+		Expression forward_rateExp = Expression.mult(getUnitFactor(forward_substanceConversionUnit), new Expression(forward_rateParameter, getNameScope()),forward_sizeFactor).flatten();
 		VCUnitDefinition forward_rateUnit = forward_rateParameter.getUnitDefinition().multiplyBy(forward_sizeFactorUnit).multiplyBy(forward_substanceConversionUnit);
 		
 		ProbabilityParameter forward_probParm = addProbabilityParameter(PARAMETER_PROBABILITYRATE_PREFIX+jpName, forward_rateExp, PARAMETER_ROLE_P, forward_rateUnit,reactionRule);

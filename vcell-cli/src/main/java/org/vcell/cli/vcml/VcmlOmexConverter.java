@@ -3,6 +3,7 @@ package org.vcell.cli.vcml;
 import cbit.util.xml.VCLogger;
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.biomodel.ModelUnitConverter;
 import cbit.vcell.field.FieldFunctionArguments;
 import cbit.vcell.field.FieldUtilities;
 import cbit.vcell.mapping.SimulationContext;
@@ -477,8 +478,23 @@ public class VcmlOmexConverter {
 				logger.info("validating Omex file '"+omexFile+"'");
 				List<VCDocument> reread_docs = XmlHelper.readOmex(omexFile, new CLIUtils.LocalLogger());
 				logger.info("validated Omex file '"+omexFile+"'");
-				BioModel reread_BioModel = (BioModel)reread_docs.get(0);
-				reread_BioModel.refreshDependencies();
+				BioModel reread_BioModel_sbml_units = (BioModel)reread_docs.get(0);
+				reread_BioModel_sbml_units.refreshDependencies();
+
+				BioModel reread_BioModel_sbml_units_cloned = XmlHelper.cloneBioModel(reread_BioModel_sbml_units);
+				//
+				// transform re-read BioModel back to original unit system before comparing with original model
+				//
+				BioModel reread_BioModel_vcell_units = ModelUnitConverter.createBioModelWithNewUnitSystem(
+						reread_BioModel_sbml_units_cloned,
+						bioModel.getModel().getUnitSystem());
+				if(reread_BioModel_vcell_units == null) {
+					throw new RuntimeException("Unable to clone BioModel: " + reread_BioModel_sbml_units_cloned.getName());
+				}
+
+				// clone BioModel - do we need this?
+
+
 				SimulationContext.MathMappingCallback mathMappingCallback = new SimulationContext.MathMappingCallback() {
 					@Override
 					public void setMessage(String message) { }
@@ -490,7 +506,7 @@ public class VcmlOmexConverter {
 				SimulationContext.NetworkGenerationRequirements networkGenerationRequirements =
 						SimulationContext.NetworkGenerationRequirements.AllowTruncatedStandardTimeout;
 				MathDescription origMathDescription = bioModel.getSimulationContext(0).getMathDescription();
-				MathDescription rereadMathDescription = reread_BioModel.getSimulationContext(0).getMathDescription();
+				MathDescription rereadMathDescription = reread_BioModel_vcell_units.getSimulationContext(0).getMathDescription();
 				MathCompareResults mathCompareResults = MathDescription.testEquivalency(SimulationSymbolTable.createMathSymbolTableFactory(),origMathDescription, rereadMathDescription);
 				if (!mathCompareResults.isEquivalent()){
 					failureMessage = "MathDescriptions ARE NOT equivalent after VCML->SBML->VCML round-trip validation: "+mathCompareResults.toDatabaseStatus();
@@ -501,7 +517,8 @@ public class VcmlOmexConverter {
 				}
 				logger.error("writing extra files ./orig_vcml.xml and ./reread_vcml.xml for debugging - remove later");
 				Files.write(Paths.get(outputDir, "orig_vcml.xml"), XmlHelper.bioModelToXML(bioModel, false).getBytes(StandardCharsets.UTF_8));
-				Files.write(Paths.get(outputDir, "reread_vcml.xml"), XmlHelper.bioModelToXML(reread_BioModel, false).getBytes(StandardCharsets.UTF_8));
+				Files.write(Paths.get(outputDir, "reread_vcml_sbml_units.xml"), XmlHelper.bioModelToXML(reread_BioModel_sbml_units, false).getBytes(StandardCharsets.UTF_8));
+				Files.write(Paths.get(outputDir, "reread_vcml.xml"), XmlHelper.bioModelToXML(reread_BioModel_vcell_units, false).getBytes(StandardCharsets.UTF_8));
 			}
             // Removing all other files(like SEDML, XML, SBML) after archiving
             removeOtherFiles(outputDir, files);

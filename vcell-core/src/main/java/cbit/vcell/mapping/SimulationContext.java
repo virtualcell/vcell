@@ -2721,7 +2721,8 @@ public boolean isUsingConcentration() {
 }
 
 public boolean isUsingMassConservationModelReduction() {
-	return bMassConservationModelReduction;
+	//return bMassConservationModelReduction;
+	return false;
 }
 public void setUsingMassConservationModelReduction(boolean bMassConservationModelReduction) {
 	this.bMassConservationModelReduction = bMassConservationModelReduction;

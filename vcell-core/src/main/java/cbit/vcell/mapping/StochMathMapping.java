@@ -104,7 +104,7 @@ private Expression getProbabilityRate(ReactionStep reactionStep, Expression rate
 	VCUnitDefinition reactionSubstanceUnit = model.getUnitSystem().getSubstanceUnit(reactionStep.getStructure());
 	VCUnitDefinition stochasticSubstanceUnit = model.getUnitSystem().getStochasticSubstanceUnit();
 	Expression reactionSubstanceUnitFactor = getUnitFactor(stochasticSubstanceUnit.divideBy(reactionSubstanceUnit));
-	Expression factorExpr = Expression.mult(reactionStructureSize,reactionSubstanceUnitFactor);
+	Expression factorExpr = Expression.mult(reactionSubstanceUnitFactor, reactionStructureSize);
 
 	// Using the MassActionFunction to write out the math description 
 	MassActionSolver.MassActionFunction maFunc = null;
@@ -772,7 +772,7 @@ private Expression getProbabilityRate(ReactionStep reactionStep, Expression rate
 						
 						Expression scConcExpr = new Expression(getSpeciesConcentrationParameter(scReactant),getNameScope());
 
-						Expression probExp = Expression.mult(rate, rsRateUnitFactor, rsStructureSize, scConcExpr);
+						Expression probExp = Expression.mult(rsRateUnitFactor, rate, rsStructureSize, scConcExpr);
 
 						//jump process name
 						String jpName = TokenMangler.mangleToSName(reactionStep.getName());//+"_reverse";

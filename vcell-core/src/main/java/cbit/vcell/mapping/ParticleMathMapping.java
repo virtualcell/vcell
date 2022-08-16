@@ -590,7 +590,7 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 				Expression initialDistribution = scs.getInitialConcentrationParameter().getExpression() == null ? null : new Expression(getMathSymbol(scs.getInitialConcentrationParameter(),sm.getGeometryClass()));
 				if(particleVariable instanceof VolumeParticleVariable)
 				{
-					initialDistribution = Expression.mult(initialDistribution, unitFactor);
+					initialDistribution = Expression.mult(unitFactor, initialDistribution);
 				}
 				pic = new ParticleInitialConditionConcentration(initialDistribution);
 			} else {
@@ -1183,7 +1183,7 @@ private void combineHybrid() throws MappingException, ExpressionException, Matri
 			allContinuousVars.put(contVar.getName(),new Function(contVar.getName(),new Expression(stochVar,getNameScope()),contVar.getDomain()));
 		}else{
 			Expression conversionFactorExp = getUnitFactor(continuousDensityUnit.divideBy(stochasticDensityUnit));
-			allContinuousVars.put(contVar.getName(),new Function(contVar.getName(),Expression.mult(new Expression(stochVar,getNameScope()),conversionFactorExp),contVar.getDomain()));
+			allContinuousVars.put(contVar.getName(),new Function(contVar.getName(),Expression.mult(conversionFactorExp, new Expression(stochVar,getNameScope())),contVar.getDomain()));
 		}
 		
 		//

@@ -974,12 +974,6 @@ public NameScope getNameScope() {
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (4/3/2004 10:48:38 AM)
- * @return cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecParameter
- * @param role int
- */
 public SpeciesContextSpec.SpeciesContextSpecParameter getParameterFromName(String name) {
 	for (int i = 0; i < fieldParameters.length; i++){
 		if (fieldParameters[i].getName().equals(name)){

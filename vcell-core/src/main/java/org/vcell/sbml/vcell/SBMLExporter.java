@@ -556,19 +556,8 @@ protected void addReactions() throws SbmlException, XMLStreamException {
 			sbmlReaction.setName(rxnSbmlName);
 		}
 			
-		// If the reactionStep is a flux reaction, add the details to the annotation (structure, carrier valence, flux carrier, fluxOption, etc.)
-		// If reactionStep is a simple reaction, add annotation to indicate the structure of reaction.
-		// Useful when roundtripping ...
-		Element sbmlImportRelatedElement = null;
-//		try {
-//			sbmlImportRelatedElement = getAnnotationElement(vcReactionStep);
-//		} catch (XmlParseException e1) {
-//			e1.printStackTrace(System.out);
-////			throw new RuntimeException("Error ");
-//		}
-		
 		// Get annotation (RDF and non-RDF) for reactionStep from SBMLAnnotationUtils
-		sbmlAnnotationUtil.writeAnnotation(vcReactionStep, sbmlReaction, sbmlImportRelatedElement);
+		sbmlAnnotationUtil.writeAnnotation(vcReactionStep, sbmlReaction, null);
 		
 		// Now set notes, 
 		sbmlAnnotationUtil.writeNotes(vcReactionStep, sbmlReaction);
@@ -806,15 +795,22 @@ protected void addReactions() throws SbmlException, XMLStreamException {
 
 //      Fast attribute was eliminated in L3V2		
 //		sbmlReaction.setFast(vcReactionSpecs[i].isFast());
-		if (vcReactionSpecs[i].isFast()) {
+		if (vcReactionSpecs[i].isFast() || vcReactionStep instanceof FluxReaction) {
 			logger.warn("WARNING: Reaction "+vcReactionSpecs[i].getDisplayName()+" is set in VCell as FAST but this attribute is no longer supported by SBML, non-VCell solvers will not simulate it in pseudo-equilibrium");
 			Element compartmentTopologyElement = new Element(XMLTags.SBML_VCELL_ReactionAttributesTag, sbml_vcml_ns);
-			compartmentTopologyElement.setAttribute(XMLTags.SBML_VCELL_ReactionAttributesTag_fastAttr, TokenMangler.mangleToSName(Boolean.toString(vcReactionSpecs[i].isFast())), sbml_vcml_ns);
+			if (vcReactionSpecs[i].isFast()) {
+				compartmentTopologyElement.setAttribute(XMLTags.SBML_VCELL_ReactionAttributesTag_fastAttr, TokenMangler.mangleToSName(Boolean.toString(vcReactionSpecs[i].isFast())), sbml_vcml_ns);
+			}
+			if (vcReactionStep instanceof FluxReaction){
+				compartmentTopologyElement.setAttribute(XMLTags.SBML_VCELL_ReactionAttributesTag_fluxReactionAttr, TokenMangler.mangleToSName(Boolean.toString(true)), sbml_vcml_ns);
+			}
 			sbmlReaction.getAnnotation().appendNonRDFAnnotation(XmlUtil.xmlToString(compartmentTopologyElement));
 		}
 				
 		// this attribute is mandatory for L3, optional for L2. So explicitly setting value.
 		sbmlReaction.setReversible(true);
+		Compartment reactionCompartment = sbmlModel.getCompartment(vcReactionStep.getStructure().getName());
+		sbmlReaction.setCompartment(reactionCompartment);
 		
 		if (bSpatial) {
 			// set compartment for reaction if spatial
@@ -1429,59 +1425,6 @@ protected void addOverrideInitialAssignments() throws ExpressionException, Mappi
 		ia.setMath(math);
 	}
 }
-
-
-/**
- * 	getAnnotationElement : 
- *	For a flux reaction, we need to add an annotation specifying the structure, flux carrier, carrier valence and fluxOption. 
- *  For a simple reaction, we need to add a annotation specifying the structure (useful for import)
- *  Using XML JDOM elements, so that it is convenient for libSBML setAnnotation (requires the annotation to be provided as an xml string).
- *
- **/
-private Element getAnnotationElement(ReactionStep reactionStep) throws cbit.vcell.xml.XmlParseException {
-
-	Element sbmlImportRelatedElement = new Element(XMLTags.VCellRelatedInfoTag, sbml_vcml_ns);
-	Element rxnElement = null;
-	
-	if (reactionStep instanceof FluxReaction) {
-		FluxReaction fluxRxn = (FluxReaction)reactionStep;
-		// Element for flux reaction. Write out the structure and flux carrier name.
-		rxnElement = new Element(XMLTags.FluxStepTag, sbml_vcml_ns);
-		rxnElement.setAttribute(XMLTags.StructureAttrTag, fluxRxn.getStructure().getName());
-
-		// Get the physics option value.
-		if (fluxRxn.getPhysicsOptions() == ReactionStep.PHYSICS_ELECTRICAL_ONLY){
-			rxnElement.setAttribute(XMLTags.FluxOptionAttrTag, XMLTags.FluxOptionElectricalOnly);
-		}else if (fluxRxn.getPhysicsOptions() == ReactionStep.PHYSICS_MOLECULAR_AND_ELECTRICAL){
-			rxnElement.setAttribute(XMLTags.FluxOptionAttrTag, XMLTags.FluxOptionMolecularAndElectrical);
-		}else if (fluxRxn.getPhysicsOptions() == ReactionStep.PHYSICS_MOLECULAR_ONLY){
-			rxnElement.setAttribute(XMLTags.FluxOptionAttrTag, XMLTags.FluxOptionMolecularOnly);
-		}
-
-	} else if (reactionStep instanceof cbit.vcell.model.SimpleReaction) {
-		// Element for a simple reaction - just store structure name - will be useful while importing.
-		cbit.vcell.model.SimpleReaction simpleRxn = (cbit.vcell.model.SimpleReaction)reactionStep;
-		rxnElement = new org.jdom.Element(cbit.vcell.xml.XMLTags.SimpleReactionTag, sbml_vcml_ns);
-		rxnElement.setAttribute(cbit.vcell.xml.XMLTags.StructureAttrTag, simpleRxn.getStructure().getName());
-	}
-
-	// Add rate name as an element of annotation - this is especially useful when roundtripping VCell models, when the reaction
-	// rate parameters have been renamed by user.
-	Element rateElement = new Element(XMLTags.ReactionRateTag, sbml_vcml_ns);
-	if (reactionStep.getKinetics() instanceof DistributedKinetics){
-		rateElement.setAttribute(XMLTags.NameAttrTag, ((DistributedKinetics)reactionStep.getKinetics()).getReactionRateParameter().getName());
-	}else if (reactionStep.getKinetics() instanceof LumpedKinetics){
-		rateElement.setAttribute(XMLTags.NameAttrTag, ((LumpedKinetics)reactionStep.getKinetics()).getLumpedReactionRateParameter().getName());
-	}else{
-		throw new RuntimeException("unexpected kinetic type "+reactionStep.getKinetics().getClass().getName());
-	}
-
-	sbmlImportRelatedElement.addContent(rxnElement);
-	sbmlImportRelatedElement.addContent(rateElement);
-	
-	return sbmlImportRelatedElement;
-}
-
 
 /**
  * 	getInitialConc : 

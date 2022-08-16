@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 
+import cbit.vcell.biomodel.ModelUnitConverter;
+import cbit.vcell.math.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.vcell.util.BeanUtils;
@@ -32,11 +34,6 @@ import cbit.vcell.mapping.potential.ElectricalDevice;
 import cbit.vcell.mapping.potential.MembraneElectricalDevice;
 import cbit.vcell.mapping.potential.PotentialMapping;
 import cbit.vcell.mapping.spatial.SpatialObject.QuantityComponent;
-import cbit.vcell.math.Constant;
-import cbit.vcell.math.Function;
-import cbit.vcell.math.MathDescription;
-import cbit.vcell.math.MathException;
-import cbit.vcell.math.Variable;
 import cbit.vcell.math.Variable.Domain;
 import cbit.vcell.matrix.MatrixException;
 import cbit.vcell.matrix.RationalExp;
@@ -760,11 +757,12 @@ public Expression getUnitFactor(VCUnitDefinition unitFactor) {
 			return new Expression(p,getNameScope());
 		}
 	}
-	
-	RationalNumber factor = unitFactor.getDimensionlessScale();
+
+	Model model = simContext.getModel();
+	Expression factor = ModelUnitConverter.getDimensionlessScaleFactor(unitFactor, model.getUnitSystem().getInstance_DIMENSIONLESS(), model.getKMOLE());
 	String name = PARAMETER_K_UNITFACTOR_PREFIX + TokenMangler.fixTokenStrict(unitFactor.getSymbol().replace("-","_neg_"));
 	UnitFactorParameter unitFactorParameter = new UnitFactorParameter(name, new Expression(factor), unitFactor);
-	MathMappingParameter[] newMathMappingParameters = (MathMappingParameter[])BeanUtils.addElement(this.fieldMathMappingParameters,unitFactorParameter);
+	MathMappingParameter[] newMathMappingParameters = BeanUtils.addElement(this.fieldMathMappingParameters,unitFactorParameter);
 	try {
 		setMathMapppingParameters(newMathMappingParameters);
 	}catch (java.beans.PropertyVetoException e){
@@ -786,17 +784,19 @@ public RationalExp getUnitFactorAsRationalExp(VCUnitDefinition unitFactor) {
 			return new RationalExp(p.getName());
 		}
 	}
-	
-	RationalNumber factor = unitFactor.getDimensionlessScale();
+
+	Model model = simContext.getModel();
+	Expression factorExp = ModelUnitConverter.getDimensionlessScaleFactor(unitFactor, model.getUnitSystem().getInstance_DIMENSIONLESS(), model.getKMOLE());
+	RationalExp factorRationalExp = ModelUnitConverter.getDimensionlessScaleFactorAsRationalExp(unitFactor, model.getUnitSystem().getInstance_DIMENSIONLESS(), model.getKMOLE());
 	String name = PARAMETER_K_UNITFACTOR_PREFIX + TokenMangler.fixTokenStrict(unitFactor.getSymbol().replace("-","_neg_"));
-	UnitFactorParameter unitFactorParameter = new UnitFactorParameter(name, new Expression(factor), unitFactor);
-	MathMappingParameter[] newMathMappingParameters = (MathMappingParameter[])BeanUtils.addElement(this.fieldMathMappingParameters,unitFactorParameter);
+	UnitFactorParameter unitFactorParameter = new UnitFactorParameter(name, new Expression(factorExp), unitFactor);
+	MathMappingParameter[] newMathMappingParameters = BeanUtils.addElement(this.fieldMathMappingParameters,unitFactorParameter);
 	try {
 		setMathMapppingParameters(newMathMappingParameters);
 	}catch (java.beans.PropertyVetoException e){
 		throw new RuntimeException(e.getMessage(), e);
 	}
-	return new RationalExp(factor);
+	return factorRationalExp;
 }
 
 /**
@@ -1046,7 +1046,7 @@ protected Expression getIdentifierSubstitutions(Expression origExp, VCUnitDefini
 				}
 			}catch (VCUnitException e){
 				String expStr = origExp.renameBoundSymbols(getNameScope()).infix();
-				logger.warn("Unit exception: exp='"+expStr+"' exception='"+e.getMessage()+"'", e);
+				logger.warn("Unit exception: "+e.getMessage());
 				localIssueList.add(new Issue(origExp, issueContext, IssueCategory.Units,"expected=["+((desiredExpUnitDef!=null)?(desiredExpUnitDef.getSymbol()):("null"))+"], exception="+e.getMessage(),Issue.SEVERITY_WARNING));
 			}catch (ExpressionException e){
 				String expStr = origExp.renameBoundSymbols(getNameScope()).infix();

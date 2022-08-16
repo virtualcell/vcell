@@ -505,7 +505,8 @@ public class XMLTags {
     public final static String ReactionMappingAttrTag = "ReactionMapping";
 
     public final static String SBML_VCELL_ReactionAttributesTag = "ReactionAttributes";
-        public final static String SBML_VCELL_ReactionAttributesTag_fastAttr = "fast";
+    public final static String SBML_VCELL_ReactionAttributesTag_fastAttr = "fast";
+    public final static String SBML_VCELL_ReactionAttributesTag_fluxReactionAttr = "fluxReaction";
 
     public static final String UseSymbolicJacobianAttrTag = "UseSymbolicJacobian";
     public static final String VCUnitDefinitionAttrTag = "Unit";

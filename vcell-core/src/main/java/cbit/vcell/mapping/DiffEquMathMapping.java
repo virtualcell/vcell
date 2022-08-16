@@ -865,7 +865,7 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 				VCUnitDefinition concUnit = initConcParm.getUnitDefinition();
 				VCUnitDefinition countDensityUnit = initCountParm.getUnitDefinition().divideBy(speciesContext.getStructure().getStructureSize().getUnitDefinition());
 				Expression unitFactor = getUnitFactor(concUnit.divideBy(countDensityUnit));
-				initConcExpr = Expression.mult(Expression.div(new Expression(initCountParm,getNameScope()),structureSizeExpr),unitFactor);
+				initConcExpr = Expression.mult(unitFactor, Expression.div(new Expression(initCountParm,getNameScope()),structureSizeExpr));
 			}
 			StructureMapping sm = simContext.getGeometryContext().getStructureMapping(speciesContext.getStructure());
 			String[] symbols = initConcExpr.getSymbols();
