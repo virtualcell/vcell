@@ -213,11 +213,13 @@ class SEDMLWriter {
             node = new Element(SEDMLTags.COMPUTE_CHANGE);
             addNotesAndAnnotation(sedmlChange, node);
             ComputeChange computeChange = (ComputeChange) sedmlChange;
-            Element varList = new Element(SEDMLTags.COMPUTE_CHANGE_VARS);
-            node.addContent(varList);
-            List<Variable> vars = computeChange.getListOfVariables();
-            for (Variable var : vars) {
-                varList.addContent(getXML(var, VariableType.COMPUTE_CHANGE));
+            if(!computeChange.getListOfVariables().isEmpty()) {
+	            Element varList = new Element(SEDMLTags.COMPUTE_CHANGE_VARS);
+	            node.addContent(varList);
+	            List<Variable> vars = computeChange.getListOfVariables();
+	            for (Variable var : vars) {
+	                varList.addContent(getXML(var, VariableType.COMPUTE_CHANGE));
+	            }
             }
             Element paramList = new Element(SEDMLTags.COMPUTE_CHANGE_PARAMS);
             node.addContent(paramList);

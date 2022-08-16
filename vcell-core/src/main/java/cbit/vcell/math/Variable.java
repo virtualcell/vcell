@@ -201,6 +201,12 @@ public String getName() {
 public NameScope getNameScope() {
 	return null;
 }
+
+@Override
+public boolean hasNameScope() {
+	return false;
+}
+
 /**
  * Insert the method's description here.
  * Creation date: (3/31/2004 3:02:23 PM)

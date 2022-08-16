@@ -330,6 +330,9 @@ public String getSymbolName(SymbolTableEntry symbolTableEntry) {
 	if (symbolTableEntry instanceof SymbolProxy){
 		return getSymbolName(((SymbolProxy)symbolTableEntry).getTarget());
 	}
+	if (!symbolTableEntry.hasNameScope()) {
+		return symbolTableEntry.getName();
+	}
 	if (symbolTableEntry.getNameScope()==null){
 		//throw new RuntimeException("NameScope can't resolve bound symbol '"+symbolTableEntry.getName()+"', symbol has no scope");
 		logger.warn("AbstractNameScope.getSymbolName() can't resolve bound symbol '"+symbolTableEntry.getName()+"', symbol has no scope");
