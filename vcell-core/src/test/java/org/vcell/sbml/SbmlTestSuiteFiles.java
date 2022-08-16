@@ -21,7 +21,7 @@ public class SbmlTestSuiteFiles {
     private final static String BiomodelsFilenameFormatPattern = "BIO%010d_urn.xml";
 
     public static int[] getSbmlTestSuiteCases() {
-        IntPredicate testFilter = t -> (t >= 1200) && (t < 1300);
+        IntPredicate testFilter = t -> (t >= 0) && (t < 1200);
 
         return Arrays.stream(allTestCases).filter(testFilter).toArray();
     }
