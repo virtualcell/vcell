@@ -1,13 +1,19 @@
+
 package org.vcell.sedml;
 
+import java.beans.PropertyVetoException;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.commons.io.IOUtils;
+import org.apache.log4j.legacy.core.CategoryUtil;
+import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jlibsedml.AbstractTask;
@@ -67,6 +73,7 @@ import cbit.vcell.solver.UniformOutputTimeSpec;
 import cbit.vcell.xml.ExternalDocInfo;
 import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XmlHelper;
+import cbit.vcell.xml.XmlParseException;
 
 public class SEDMLImporter {
 
@@ -110,6 +117,7 @@ public class SEDMLImporter {
 	}
 
 	public  List<BioModel> getBioModels() throws Exception {
+		CategoryUtil.setLevel(logger, Level.DEBUG);
 		docs = new ArrayList<BioModel>();
 		try {
 	        // iterate through all the elements and show them at the console
@@ -125,26 +133,19 @@ public class SEDMLImporter {
 	        printSEDMLSummary(mmm, sss, ttt, ddd, ooo);
 	        
 			// We don't know how many BioModels we'll end up with as some model changes may be translatable as simulations with overrides
+	        // The HashMap below has entries for all SEDML Models where some may reference the same BioModel
+	        // The docs field will have a List of all unique BioModels
 			HashMap<String, BioModel> bmMap = new HashMap<String, BioModel>();
-	        for(Model mm : mmm) {
-				if (mm.getListOfChanges().isEmpty()) {
-					// unique, must be imported as new BioModel
-					bmMap.put(mm.getId(), importModel(mm));
-				} else {
-					// mm.
-				}
-			}
-	        
-	        
-			// We will parse all tasks and create Simulations for each in the BioModel(s) corresponding to the model referenced by the tasks
+			createBioModels(mmm, bmMap);
+ 	        
+			// We will parse all tasks and create Simulations in BioModels
+			// Creating one VCell Simulation for each SED-ML actual Task (RepeatedTasks get added as parameter scan overrides)
 	    	String kisaoID = null;
 	    	org.jlibsedml.Simulation sedmlSimulation = null;	// this will become the vCell simulation
 	    	org.jlibsedml.Model sedmlOriginalModel = null;		// the "original" model referred to by the task
 	    	String sedmlOriginalModelName = null;				// this will be used in the BioModel name
 	    	String sedmlOriginalModelLanguage = null;			// can be sbml or vcml
 			
-			// Creating one VCell Simulation per SED-ML Task
-			// VCell Biomodel(s) and Application(s) are also created as necessary
 			HashMap<String, Simulation> vcSimulations = new HashMap<String, Simulation>();
 			for (AbstractTask selectedTask : ttt) {
 				if(selectedTask instanceof Task) {
@@ -158,9 +159,6 @@ public class SEDMLImporter {
 				} else {
 					throw new RuntimeException("Unexpected task " + selectedTask);
 				}
-				sedmlOriginalModelName = sedmlOriginalModel.getId();
-				sedmlOriginalModelLanguage = sedmlOriginalModel.getLanguage();
-				List<Change> listOfChanges = sedmlOriginalModel.getListOfChanges();		// get the list of changes now!
 
 				// at this point we assume that the sedml simulation, algorithm and kisaoID are all valid
 				Algorithm algorithm = sedmlSimulation.getAlgorithm();
@@ -201,48 +199,7 @@ public class SEDMLImporter {
 					}
 				}
 
-				// we make a biomodel for each task; if there are many simulations, probably 
-				// only one will match the selected task id, the others are parasites and must not be run
-				
-				BioModel bioModel = null;
-				boolean justMade = false;
-				String newMdl = resolver.getModelString(sedmlOriginalModel);
-				// no need for this, the resolver applies all changes
-//				if(listOfChanges != null && listOfChanges.size() > 0) {
-//					newMdl = updateXML(newMdl, listOfChanges);
-//				}
-
-				String bioModelName = bioModelBaseName + "_" + sedml.getFileName() + "_" + sedmlOriginalModelName;
-				// get it if we made it already
-				for (VCDocument existingDoc : docs) {
-					if (!docs.isEmpty()) {
-						if (existingDoc.getName().equals(bioModelName)) {
-							bioModel = (BioModel)existingDoc;
-							break;
-						}
-					}
-				}	
-				// make it if we didn't and mark it as fresh
-				if (bioModel == null) {
-					if(sedmlOriginalModelLanguage.contentEquals(SUPPORTED_LANGUAGE.VCELL_GENERIC.getURN())) {	// vcml
-						XMLSource vcmlSource = new XMLSource(newMdl);
-						bioModel = (BioModel)XmlHelper.XMLToBioModel(vcmlSource);
-						bioModel.setName(bioModelName);
-						docs.add(bioModel);
-						justMade = true;
-						try {
-							bioModel.getVCMetaData().createBioPaxObjects(bioModel);
-						} catch (Exception e) {
-							logger.error("failed to make BioPax objects", e);
-						}
-					} else {				// we assume it's sbml, if it's neither import will fail
-						XMLSource sbmlSource = new XMLSource(newMdl);		// sbmlSource with all the changes applied
-						bioModel = (BioModel)XmlHelper.importSBML(transLogger, sbmlSource, bSpatial);
-						bioModel.setName(bioModelName);
-						docs.add(bioModel);
-						justMade = true;
-					}
-				}
+				BioModel bioModel = bmMap.get(sedmlOriginalModel.getId());
 				
 				if(sedmlOriginalModelLanguage.contentEquals(SUPPORTED_LANGUAGE.VCELL_GENERIC.getURN())) {
 					// we don't need to make a simulation from sedml if we're coming from vcml, we already got all we need
@@ -303,12 +260,7 @@ public class SEDMLImporter {
 					}
 				}
 				if (matchingSimulationContext == null) {
-					if (justMade) {
-						matchingSimulationContext = SimulationContext.copySimulationContext(existingSimulationContexts[0], sedmlOriginalModelName, bSpatial, appType);
-						bioModel.removeSimulationContext(existingSimulationContexts[0]);
-					} else {
-						matchingSimulationContext = SimulationContext.copySimulationContext(existingSimulationContexts[0], sedmlOriginalModelName+"_"+existingSimulationContexts.length, bSpatial, appType);
-					}
+					matchingSimulationContext = SimulationContext.copySimulationContext(existingSimulationContexts[0], sedmlOriginalModelName+"_"+existingSimulationContexts.length, bSpatial, appType);
 					bioModel.addSimulationContext(matchingSimulationContext);
 				}
 				matchingSimulationContext.refreshDependencies();
@@ -487,9 +439,96 @@ public class SEDMLImporter {
 		}
 	}
 
+	private void createBioModels(List<org.jlibsedml.Model> mmm, HashMap<String, BioModel> bmMap) {
+		// first go through models without changes which are unique and must be imported as new BioModel/SimContext
+		for(Model mm : mmm) {
+			if (mm.getListOfChanges().isEmpty()) {
+				String id = mm.getId();
+				bmMap.put(id, importModel(mm));
+			}
+		}
+		// now go through models with changes and see if they refer to another model within this sedml
+		for(Model mm : mmm) {
+			if (!mm.getListOfChanges().isEmpty()) {
+				String refID = null;
+				if (mm.getSource().startsWith("#")) {
+					refID = mm.getSource().substring(1);
+					// direct reference within sedml
+				} else {
+					// need to check if it is an indirect reference (another model using same source URI)
+					for (Model model : sedml.getModels()) {
+						if (model != mm && model.getSource().equals(mm.getSource())) {
+							refID = model.getId();
+						}
+					}
+				}
+				if (refID != null) {
+					BioModel refBM = bmMap.get(refID);
+					if (refBM == null) {
+						//TODO at some point we need to check for sequential application of changes and apply in chain
+						throw new RuntimeException("Model " + mm
+								+ " refers to either a non-existent model (invalid SED-ML) or to another model with changes (not supported yet)");
+					}
+					boolean translateToOverrides = canTranslateToOverrides(refBM, mm);
+					if (!translateToOverrides) {
+						bmMap.put(mm.getId(), importModel(mm));
+					} else {
+						bmMap.put(mm.getId(), refBM);
+					} 
+				} else {
+					bmMap.put(mm.getId(), importModel(mm));
+				}
+			}
+		}
+	}
+
+	private boolean canTranslateToOverrides(BioModel refBM, Model mm) {
+		// TODO Actually check if true
+		return true; //should work for all VCell-exported SED-MLs
+	}
+
 	private BioModel importModel(Model mm) {
-		// TODO Auto-generated method stub
-		return null;
+		BioModel bioModel = null;
+		String sedmlOriginalModelName = mm.getId();
+		String sedmlOriginalModelLanguage = mm.getLanguage();
+		String modelXML = resolver.getModelString(mm); // source with all the changes applied
+		String bioModelName = bioModelBaseName + "_" + sedml.getFileName() + "_" + sedmlOriginalModelName;
+		try {
+			if(sedmlOriginalModelLanguage.contentEquals(SUPPORTED_LANGUAGE.VCELL_GENERIC.getURN())) {	// vcml
+				XMLSource vcmlSource = new XMLSource(modelXML);
+				bioModel = (BioModel)XmlHelper.XMLToBioModel(vcmlSource);
+				bioModel.setName(bioModelName);
+				try {
+					bioModel.getVCMetaData().createBioPaxObjects(bioModel);
+				} catch (Exception e) {
+					logger.error("failed to make BioPax objects", e);
+				}
+				docs.add(bioModel);
+			} else {				// we assume it's sbml, if it's neither import will fail
+				InputStream sbmlSource = IOUtils.toInputStream(modelXML);
+				VCDocument vcDoc = null;
+				boolean bValidateSBML = false;
+				SBMLImporter sbmlImporter = new SBMLImporter(sbmlSource,transLogger,bValidateSBML);
+				bioModel = (BioModel)sbmlImporter.getBioModel();
+				bioModel.refreshDependencies();			
+				bioModel.setName(bioModelName);
+				docs.add(bioModel);
+				importMap.put(bioModel, sbmlImporter);
+			}
+		} catch (XmlParseException e) {
+			// TODO Auto-generated catch block 
+			logger.error(e.getMessage());
+			e.printStackTrace();
+		} catch (PropertyVetoException e) {
+			// TODO Auto-generated catch block
+			logger.error(e.getMessage());
+			e.printStackTrace();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			logger.error(e.getMessage());
+			e.printStackTrace();
+		}
+		return bioModel;
 	}
 
 	private void printSEDMLSummary(List<org.jlibsedml.Model> mmm, List<org.jlibsedml.Simulation> sss,
