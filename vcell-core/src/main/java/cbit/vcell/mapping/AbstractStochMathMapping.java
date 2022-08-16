@@ -75,7 +75,7 @@ public abstract class AbstractStochMathMapping extends AbstractMathMapping {
 				ModelUnitSystem unitSystem = getSimulationContext().getModel().getUnitSystem();
 				VCUnitDefinition substanceUnit = unitSystem.getSubstanceUnit(structure);
 				Expression unitFactor = getUnitFactor(unitSystem.getStochasticSubstanceUnit().divideBy(substanceUnit));
-				Expression particlesExpr = Expression.mult(exp, unitFactor);
+				Expression particlesExpr = Expression.mult(unitFactor, exp);
 				return particlesExpr;
 			}
 
@@ -95,7 +95,7 @@ public abstract class AbstractStochMathMapping extends AbstractMathMapping {
 				VCUnitDefinition substanceUnit = unitSystem.getSubstanceUnit(structure);
 				Expression unitFactor = getUnitFactor(substanceUnit.divideBy(unitSystem.getStochasticSubstanceUnit()));
 				Expression scStructureSize = new Expression(structure.getStructureSize(), getNameScope());
-				Expression concentrationExpr = Expression.mult(particlesExpr, Expression.div(unitFactor,scStructureSize));
+				Expression concentrationExpr = Expression.mult(unitFactor, particlesExpr, Expression.invert(scStructureSize));
 				return concentrationExpr;
 			}
 

@@ -80,10 +80,6 @@ public class GeometrySpec implements Matchable, PropertyChangeListener, Vetoable
 	private SubVolume[] fieldSubVolumes = new SubVolume[0];
 	private FilamentGroup fieldFilamentGroup = new FilamentGroup();
 	
-/**
- * This method was created in VisualAge.
- * @param name java.lang.String
- */
 public GeometrySpec(Version aVersion, int aDimension) {
 	addVetoableChangeListener(this);
 	addPropertyChangeListener(this);
@@ -99,10 +95,6 @@ public GeometrySpec(Version aVersion, int aDimension) {
 }
 
 
-/**
- * This method was created in VisualAge.
- * @param name java.lang.String
- */
 public GeometrySpec(Version aVersion, VCImage aVCImage) {
 	addVetoableChangeListener(this);
 	addPropertyChangeListener(this);
@@ -115,10 +107,6 @@ public GeometrySpec(Version aVersion, VCImage aVCImage) {
 }
 
 
-/**
- * This method was created in VisualAge.
- * @param name java.lang.String
- */
 public GeometrySpec(GeometrySpec geometrySpec){
 	addVetoableChangeListener(this);
 	addPropertyChangeListener(this);
@@ -159,10 +147,6 @@ public GeometrySpec(GeometrySpec geometrySpec){
 	this.origin = geometrySpec.getOrigin(); // Origin is immutable
 }
 
-/**
- * This method was created in VisualAge.
- * @param name java.lang.String
- */
 public GeometrySpec(String aName, int aDimension) {
 	addVetoableChangeListener(this);
 	addPropertyChangeListener(this);
@@ -178,10 +162,6 @@ public GeometrySpec(String aName, int aDimension) {
 }
 
 
-/**
- * This method was created in VisualAge.
- * @param name java.lang.String
- */
 public GeometrySpec(String aName, VCImage aVCImage) {
 	addVetoableChangeListener(this);
 	addPropertyChangeListener(this);
@@ -388,7 +368,10 @@ public boolean compareEqual(Matchable object) {
 	//
 	// if only one is null, bad
 	//
-	if (!Compare.isEqualOrNull(vcImage,geometrySpec.vcImage)){
+	if ((vcImage == null && geometrySpec.vcImage != null) || (vcImage != null && geometrySpec.vcImage == null)) {
+		return false;
+	}
+	if (vcImage != null && geometrySpec.vcImage != null && !vcImage.compareEqual(geometrySpec.vcImage, dimension, true)){
 		return false;
 	}
 
@@ -735,11 +718,6 @@ public Extent getExtent() {
 }	
 
 
-/**
- * Gets the filamentGroup property (cbit.vcell.geometry.FilamentGroup) value.
- * @return The filamentGroup property value.
- * @see #setFilamentGroup
- */
 public FilamentGroup getFilamentGroup() {
 	if(getDimension() == 0){
 		throw new RuntimeException("FilamentGroup undefined for 0 dimesnion geometry");
@@ -795,11 +773,6 @@ int getImageIndex(double x, double y, double z) throws GeometryException {
 }
 
 
-/**
- * This method was created in VisualAge.
- * @param name java.lang.String
- * @param pixelValue int
- */
 public ImageSubVolume getImageSubVolumeFromPixelValue(int pixelValue) {
 	if (getImage() == null){
 		throw new RuntimeException("Geometry doesn't have an image");
@@ -920,11 +893,6 @@ public SubVolume getSubVolume(double x, double y, double z) throws GeometryExcep
 	return null;	
 }
 
-/**
- * This method was created in VisualAge.
- * @return cbit.vcell.geometry.SubVolume
- * @param name java.lang.String
- */
 public SubVolume getSubVolume(int handle) {
 	for (int i=0;i<fieldSubVolumes.length;i++){
 		if (fieldSubVolumes[i].getHandle() == handle){
@@ -935,11 +903,6 @@ public SubVolume getSubVolume(int handle) {
 }
 
 
-/**
- * This method was created in VisualAge.
- * @return cbit.vcell.geometry.SubVolume
- * @param name java.lang.String
- */
 public SubVolume getSubVolume(String name) {
 	for (int i=0;i<fieldSubVolumes.length;i++){
 		if (fieldSubVolumes[i].getName().equals(name)){
@@ -950,11 +913,6 @@ public SubVolume getSubVolume(String name) {
 }
 
 
-/**
- * This method was created in VisualAge.
- * @return int
- * @param subVolume cbit.vcell.geometry.SubVolume
- */
 public int getSubVolumeIndex(SubVolume subVolume) {
 	for (int i=0;i<fieldSubVolumes.length;i++){
 		if (fieldSubVolumes[i] == subVolume){
@@ -1010,22 +968,11 @@ protected java.beans.VetoableChangeSupport getVetoPropertyChange() {
 	return vetoPropertyChange;
 }
 
-/**
- * This method was created in VisualAge.
- * @return boolean
- */
 public boolean hasImage() {
 	return (getImage() != null);
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (8/15/00 12:33:13 PM)
- * @return boolean
- * @param filamentName java.lang.String
- * @param curve cbit.vcell.geometry.Curve
- */
 public boolean isCurveValid(Curve curve) {
 	if (!curve.isValid()) {
 		return false;
@@ -1039,11 +986,6 @@ public boolean isCurveValid(Curve curve) {
 	return true;
 }
 
-/**
- * Insert the method's description here.
- * Creation date: (6/3/00 9:58:08 AM)
- * @param event java.beans.PropertyChangeEvent
- */
 public void propertyChange(java.beans.PropertyChangeEvent event) {
 	if (event.getSource() == this && event.getPropertyName().equals("subVolumes")) {
 		SubVolume oldSubVolumes[] = (SubVolume[])event.getOldValue();
@@ -1206,11 +1148,6 @@ private void sendBackwardAnalyticSubVolumeOrCSGObject(SubVolume subVolume) throw
 }
 
 
-/**
- * This method was created by a SmartGuide.
- * @param x double
- * @param y double
- */
 public void setExtent(Extent aExtent) throws PropertyVetoException {
 	if (!this.extent.compareEqual(aExtent)){
 		Extent oldExtent = this.extent;
@@ -1232,10 +1169,6 @@ public void setExtent(Extent aExtent) throws PropertyVetoException {
 }
 
 
-/**
- * This method was created in VisualAge.
- * @param image cbit.image.FileImage
- */
 public void setImage(VCImage image) throws PropertyVetoException {
 	
 	VCImage oldImage = this.vcImage;
@@ -1303,11 +1236,6 @@ public void setImage(VCImage image) throws PropertyVetoException {
 	firePropertyChange("image",oldImage,image);
 }
 
-/**
- * This method was created by a SmartGuide.
- * @param x double
- * @param y double
- */
 public void setOrigin(Origin aOrigin) {
 	if (!this.origin.compareEqual(aOrigin)){
 		Origin oldOrigin = this.origin;
@@ -1317,12 +1245,6 @@ public void setOrigin(Origin aOrigin) {
 	return;
 }
 
-/**
- * Sets the subVolumes property (cbit.vcell.geometry.SubVolume[]) value.
- * @param subVolumes The new value for the property.
- * @exception java.beans.PropertyVetoException The exception description.
- * @see #getSubVolumes
- */
 public void setSubVolumes(SubVolume[] subVolumes) throws java.beans.PropertyVetoException {
 	SubVolume[] oldSubVolumes = fieldSubVolumes;
 	//Check instance change

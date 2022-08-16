@@ -2,6 +2,7 @@ package org.vcell.cli;
 
 import org.vcell.cli.biosimulation.BiosimulationsCommand;
 import org.vcell.cli.run.ExecuteCommand;
+import org.vcell.cli.sbml.ModelCommand;
 import org.vcell.cli.vcml.ExportOmexBatchCommand;
 
 import cbit.vcell.mongodb.VCMongoMessage;
@@ -16,6 +17,7 @@ import picocli.CommandLine.Command;
         ExportOmexBatchCommand.class,
         ExecuteCommand.class,
         VersionCommand.class,
+        ModelCommand.class,
         CommandLine.HelpCommand.class
 })
 public class CLIStandalone {

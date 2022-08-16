@@ -42,7 +42,7 @@ public class SBMLSymbolMapping {
             // hashCode could be overridden, but as long as it gives the same value every time (immutability), it will work.
             // because equals() will only match the same object.
             //
-            return internalSBase.hashCode();  // either uses Object.hashCode or based on value
+            return System.identityHashCode(internalSBase);  // either uses Object.hashCode or based on value
         }
     }
 

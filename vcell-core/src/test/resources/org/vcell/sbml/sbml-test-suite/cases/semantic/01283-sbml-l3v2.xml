@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created by libAntimony version v2.9.0 with libSBML version 5.13.1. -->
+<sbml xmlns="http://www.sbml.org/sbml/level3/version2/core" level="3" version="2">
+  <model id="case01283" name="case01283">
+    <listOfParameters>
+      <parameter id="p1" constant="true"/>
+      <parameter id="p2" constant="true"/>
+      <parameter id="p3" constant="true"/>
+      <parameter id="p4" constant="true"/>
+      <parameter id="p5" constant="true"/>
+    </listOfParameters>
+    <listOfInitialAssignments>
+      <initialAssignment symbol="p1">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <piecewise>
+            <piece>
+              <false/>
+              <true/>
+            </piece>
+            <otherwise>
+              <true/>
+            </otherwise>
+          </piecewise>
+        </math>
+      </initialAssignment>
+      <initialAssignment symbol="p2">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <true/>
+        </math>
+      </initialAssignment>
+      <initialAssignment symbol="p3">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <false/>
+        </math>
+      </initialAssignment>
+      <initialAssignment symbol="p4">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <plus/>
+            <true/>
+            <cn type="integer"> 3 </cn>
+          </apply>
+        </math>
+      </initialAssignment>
+      <initialAssignment symbol="p5">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <minus/>
+            <apply>
+              <divide/>
+              <false/>
+              <cn type="integer"> 5 </cn>
+            </apply>
+            <apply>
+              <power/>
+              <apply>
+                <times/>
+                <cn type="integer"> 2 </cn>
+                <true/>
+              </apply>
+              <cn type="integer"> 2 </cn>
+            </apply>
+          </apply>
+        </math>
+      </initialAssignment>
+    </listOfInitialAssignments>
+  </model>
+</sbml>

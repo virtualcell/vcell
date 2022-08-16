@@ -1,0 +1,495 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created by libAntimony version v2.9.1 with libSBML version 5.14.1. -->
+<sbml xmlns="http://www.sbml.org/sbml/level3/version2/core" level="3" version="2">
+  <model id="case01502" name="case01502">
+    <listOfParameters>
+      <parameter id="P2" constant="false"/>
+      <parameter id="P3" constant="false"/>
+      <parameter id="P4" constant="false"/>
+      <parameter id="P5" constant="false"/>
+      <parameter id="P6" constant="false"/>
+      <parameter id="P7" constant="false"/>
+      <parameter id="P8" constant="false"/>
+      <parameter id="P9" constant="false"/>
+      <parameter id="P10" constant="false"/>
+      <parameter id="P11" constant="false"/>
+      <parameter id="P12" constant="false"/>
+      <parameter id="P13" constant="false"/>
+      <parameter id="P14" constant="false"/>
+      <parameter id="P15" constant="false"/>
+      <parameter id="P16" constant="false"/>
+      <parameter id="P17" constant="false"/>
+      <parameter id="P18" constant="false"/>
+      <parameter id="P19" constant="false"/>
+      <parameter id="P20" constant="false"/>
+      <parameter id="P21" constant="false"/>
+      <parameter id="P22" constant="false"/>
+      <parameter id="P23" constant="false"/>
+      <parameter id="P24" constant="false"/>
+      <parameter id="P25" constant="false"/>
+      <parameter id="P26" constant="false"/>
+      <parameter id="P27" constant="false"/>
+      <parameter id="P28" constant="false"/>
+      <parameter id="P29" constant="false"/>
+      <parameter id="P30" constant="false"/>
+      <parameter id="P31" constant="false"/>
+      <parameter id="P32" constant="false"/>
+      <parameter id="P33" constant="false"/>
+      <parameter id="P34" constant="false"/>
+      <parameter id="P35" constant="false"/>
+      <parameter id="P36" constant="false"/>
+      <parameter id="P37" constant="false"/>
+    </listOfParameters>
+    <listOfRules>
+      <algebraicRule>
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <minus/>
+            <ci> P2 </ci>
+            <apply>
+              <abs/>
+              <cn type="integer"> -1 </cn>
+            </apply>
+          </apply>
+        </math>
+      </algebraicRule>
+      <algebraicRule>
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <minus/>
+            <ci> P3 </ci>
+            <apply>
+              <abs/>
+              <cn type="integer"> 1 </cn>
+            </apply>
+          </apply>
+        </math>
+      </algebraicRule>
+      <algebraicRule>
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <minus/>
+            <ci> P4 </ci>
+            <apply>
+              <arccos/>
+              <cn type="integer"> -1 </cn>
+            </apply>
+          </apply>
+        </math>
+      </algebraicRule>
+      <algebraicRule>
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <minus/>
+            <ci> P5 </ci>
+            <apply>
+              <arccos/>
+              <cn> 0.5 </cn>
+            </apply>
+          </apply>
+        </math>
+      </algebraicRule>
+      <algebraicRule>
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <minus/>
+            <ci> P6 </ci>
+            <apply>
+              <arcsin/>
+              <cn type="integer"> 1 </cn>
+            </apply>
+          </apply>
+        </math>
+      </algebraicRule>
+      <algebraicRule>
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <minus/>
+            <ci> P7 </ci>
+            <apply>
+              <arcsin/>
+              <cn> -0.5 </cn>
+            </apply>
+          </apply>
+        </math>
+      </algebraicRule>
+      <algebraicRule>
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <minus/>
+            <ci> P8 </ci>
+            <apply>
+              <arctan/>
+              <cn> 2.8 </cn>
+            </apply>
+          </apply>
+        </math>
+      </algebraicRule>
+      <algebraicRule>
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <minus/>
+            <ci> P9 </ci>
+            <apply>
+              <arctan/>
+              <cn> -7.09 </cn>
+            </apply>
+          </apply>
+        </math>
+      </algebraicRule>
+      <algebraicRule>
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <minus/>
+            <ci> P10 </ci>
+            <apply>
+              <ceiling/>
+              <cn> 0.5 </cn>
+            </apply>
+          </apply>
+        </math>
+      </algebraicRule>
+      <algebraicRule>
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <minus/>
+            <ci> P11 </ci>
+            <apply>
+              <ceiling/>
+              <cn> 3.55 </cn>
+            </apply>
+          </apply>
+        </math>
+      </algebraicRule>
+      <algebraicRule>
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <minus/>
+            <ci> P12 </ci>
+            <apply>
+              <ceiling/>
+              <cn> -4.6 </cn>
+            </apply>
+          </apply>
+        </math>
+      </algebraicRule>
+      <algebraicRule>
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <minus/>
+            <ci> P13 </ci>
+            <apply>
+              <cos/>
+              <cn> 9.1 </cn>
+            </apply>
+          </apply>
+        </math>
+      </algebraicRule>
+      <algebraicRule>
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <minus/>
+            <ci> P14 </ci>
+            <apply>
+              <cos/>
+              <cn> -0.22 </cn>
+            </apply>
+          </apply>
+        </math>
+      </algebraicRule>
+      <algebraicRule>
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <minus/>
+            <ci> P15 </ci>
+            <apply>
+              <exp/>
+              <cn type="integer"> 0 </cn>
+            </apply>
+          </apply>
+        </math>
+      </algebraicRule>
+      <algebraicRule>
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <minus/>
+            <ci> P16 </ci>
+            <apply>
+              <exp/>
+              <cn type="integer"> 1 </cn>
+            </apply>
+          </apply>
+        </math>
+      </algebraicRule>
+      <algebraicRule>
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <minus/>
+            <ci> P17 </ci>
+            <apply>
+              <exp/>
+              <cn> 0.77 </cn>
+            </apply>
+          </apply>
+        </math>
+      </algebraicRule>
+      <algebraicRule>
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <minus/>
+            <ci> P18 </ci>
+            <apply>
+              <floor/>
+              <cn> -4.6 </cn>
+            </apply>
+          </apply>
+        </math>
+      </algebraicRule>
+      <algebraicRule>
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <minus/>
+            <ci> P19 </ci>
+            <apply>
+              <floor/>
+              <cn> 9.1 </cn>
+            </apply>
+          </apply>
+        </math>
+      </algebraicRule>
+      <algebraicRule>
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <minus/>
+            <ci> P20 </ci>
+            <apply>
+              <ln/>
+              <cn> 0.2 </cn>
+            </apply>
+          </apply>
+        </math>
+      </algebraicRule>
+      <algebraicRule>
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <minus/>
+            <ci> P21 </ci>
+            <apply>
+              <ln/>
+              <cn type="integer"> 1 </cn>
+            </apply>
+          </apply>
+        </math>
+      </algebraicRule>
+      <algebraicRule>
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <minus/>
+            <ci> P22 </ci>
+            <apply>
+              <log/>
+              <logbase>
+                <cn type="integer"> 10 </cn>
+              </logbase>
+              <cn> 0.2 </cn>
+            </apply>
+          </apply>
+        </math>
+      </algebraicRule>
+      <algebraicRule>
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <minus/>
+            <ci> P23 </ci>
+            <apply>
+              <log/>
+              <logbase>
+                <cn type="integer"> 10 </cn>
+              </logbase>
+              <cn type="integer"> 1 </cn>
+            </apply>
+          </apply>
+        </math>
+      </algebraicRule>
+      <algebraicRule>
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <minus/>
+            <ci> P24 </ci>
+            <apply>
+              <power/>
+              <cn type="integer"> 1 </cn>
+              <cn type="integer"> 2 </cn>
+            </apply>
+          </apply>
+        </math>
+      </algebraicRule>
+      <algebraicRule>
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <minus/>
+            <ci> P25 </ci>
+            <apply>
+              <power/>
+              <cn type="integer"> 2 </cn>
+              <cn type="integer"> 2 </cn>
+            </apply>
+          </apply>
+        </math>
+      </algebraicRule>
+      <algebraicRule>
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <minus/>
+            <ci> P26 </ci>
+            <apply>
+              <power/>
+              <cn> 1.4 </cn>
+              <cn> 5.1 </cn>
+            </apply>
+          </apply>
+        </math>
+      </algebraicRule>
+      <algebraicRule>
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <minus/>
+            <ci> P27 </ci>
+            <apply>
+              <power/>
+              <cn type="integer"> 4 </cn>
+              <cn type="integer"> 2 </cn>
+            </apply>
+          </apply>
+        </math>
+      </algebraicRule>
+      <algebraicRule>
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <minus/>
+            <ci> P28 </ci>
+            <apply>
+              <power/>
+              <cn> 3.1 </cn>
+              <cn type="integer"> 2 </cn>
+            </apply>
+          </apply>
+        </math>
+      </algebraicRule>
+      <algebraicRule>
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <minus/>
+            <ci> P29 </ci>
+            <apply>
+              <root/>
+              <degree>
+                <cn type="integer"> 2 </cn>
+              </degree>
+              <cn type="integer"> 4 </cn>
+            </apply>
+          </apply>
+        </math>
+      </algebraicRule>
+      <algebraicRule>
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <minus/>
+            <ci> P30 </ci>
+            <apply>
+              <root/>
+              <degree>
+                <cn type="integer"> 2 </cn>
+              </degree>
+              <cn> 7.4 </cn>
+            </apply>
+          </apply>
+        </math>
+      </algebraicRule>
+      <algebraicRule>
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <minus/>
+            <ci> P31 </ci>
+            <apply>
+              <sin/>
+              <cn> 2.1 </cn>
+            </apply>
+          </apply>
+        </math>
+      </algebraicRule>
+      <algebraicRule>
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <minus/>
+            <ci> P32 </ci>
+            <apply>
+              <sin/>
+              <cn type="integer"> 0 </cn>
+            </apply>
+          </apply>
+        </math>
+      </algebraicRule>
+      <algebraicRule>
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <minus/>
+            <ci> P33 </ci>
+            <apply>
+              <sin/>
+              <cn> -5.9 </cn>
+            </apply>
+          </apply>
+        </math>
+      </algebraicRule>
+      <algebraicRule>
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <minus/>
+            <ci> P34 </ci>
+            <apply>
+              <tan/>
+              <cn type="integer"> 0 </cn>
+            </apply>
+          </apply>
+        </math>
+      </algebraicRule>
+      <algebraicRule>
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <minus/>
+            <ci> P35 </ci>
+            <apply>
+              <tan/>
+              <cn> 1.11 </cn>
+            </apply>
+          </apply>
+        </math>
+      </algebraicRule>
+      <algebraicRule>
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <minus/>
+            <ci> P36 </ci>
+            <apply>
+              <tan/>
+              <cn type="integer"> -6 </cn>
+            </apply>
+          </apply>
+        </math>
+      </algebraicRule>
+      <algebraicRule>
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <minus/>
+            <ci> P37 </ci>
+            <apply>
+              <tanh/>
+              <cn> -0.4 </cn>
+            </apply>
+          </apply>
+        </math>
+      </algebraicRule>
+    </listOfRules>
+  </model>
+</sbml>

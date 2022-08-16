@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created by libAntimony version v2.12.0 with libSBML version 5.18.1. -->
+<sbml xmlns="http://www.sbml.org/sbml/level3/version2/core" level="3" version="2">
+  <model metaid="case01803" id="case01803">
+    <listOfParameters>
+      <parameter id="param" value="3" constant="true"/>
+      <parameter id="Param" value="4" constant="true"/>
+      <parameter id="pArAm" value="5" constant="true"/>
+    </listOfParameters>
+  </model>
+</sbml>

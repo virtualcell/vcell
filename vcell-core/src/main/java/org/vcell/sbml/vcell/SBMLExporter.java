@@ -128,6 +128,7 @@ public class SBMLExporter {
 	Logger logger = LogManager.getLogger(SBMLExporter.class);
 	//public static final String DOMAIN_TYPE_PREFIX = "domainType_";
 	public static final String DOMAIN_TYPE_PREFIX = "";
+	public static final String SAMPLED_VOLUME_PREFIX = "SampledVolume_";
 	private int sbmlLevel = 3;
 	private int sbmlVersion = 2;
 	private org.sbml.jsbml.Model sbmlModel = null;
@@ -304,18 +305,23 @@ protected void addCompartments() throws XMLStreamException, SbmlException {
 				sbmlCompartment.setUnits(unitDefn);
 			} else if (lg.isWarnEnabled()) {
 				lg.warn(this.sbmlModel.getName() + " membrame "  + vcMembrane.getName()  + " has not outside feature");
-				
 			}
 		}
 		sbmlCompartment.setConstant(true);
 
 		StructureMapping vcStructMapping = getSelectedSimContext().getGeometryContext().getStructureMapping(vcStructures[i]);
 		try {
+			if (vcStructMapping.getSizeParameter().getExpression() == null && getSelectedSimContext().getGeometry().getDimension() == 0){
+				try {
+					// old vcell spatial application, with only relative compartment sizes (SBML wants absolute sizes for nonspatial ... easier to understand anyway)
+					double structureSize = 1.0;
+					StructureSizeSolver.updateAbsoluteStructureSizes(getSelectedSimContext(), vcStructures[i], structureSize, vcStructMapping.getSizeParameter().getUnitDefinition());
+				} catch (Exception e){
+					lg.error("failed to compute size parameter: "+e.getMessage(), e);
+				}
+			}
 			if (vcStructMapping.getSizeParameter().getExpression() != null) {
 				sbmlCompartment.setSize(vcStructMapping.getSizeParameter().getExpression().evaluateConstant());
-			} else {
-				// really no need to set sizes of compartments in spatial ..... ????
-				//	throw new RuntimeException("Compartment size not set for compartment \"" + vcStructures[i].getName() + "\" ; Please set size and try exporting again.");
 			}
 		} catch (cbit.vcell.parser.ExpressionException e) {
 			// If it is in the catch block, it means that the compartment size was probably not a double, but an assignment.
@@ -550,19 +556,8 @@ protected void addReactions() throws SbmlException, XMLStreamException {
 			sbmlReaction.setName(rxnSbmlName);
 		}
 			
-		// If the reactionStep is a flux reaction, add the details to the annotation (structure, carrier valence, flux carrier, fluxOption, etc.)
-		// If reactionStep is a simple reaction, add annotation to indicate the structure of reaction.
-		// Useful when roundtripping ...
-		Element sbmlImportRelatedElement = null;
-//		try {
-//			sbmlImportRelatedElement = getAnnotationElement(vcReactionStep);
-//		} catch (XmlParseException e1) {
-//			e1.printStackTrace(System.out);
-////			throw new RuntimeException("Error ");
-//		}
-		
 		// Get annotation (RDF and non-RDF) for reactionStep from SBMLAnnotationUtils
-		sbmlAnnotationUtil.writeAnnotation(vcReactionStep, sbmlReaction, sbmlImportRelatedElement);
+		sbmlAnnotationUtil.writeAnnotation(vcReactionStep, sbmlReaction, null);
 		
 		// Now set notes, 
 		sbmlAnnotationUtil.writeNotes(vcReactionStep, sbmlReaction);
@@ -800,15 +795,22 @@ protected void addReactions() throws SbmlException, XMLStreamException {
 
 //      Fast attribute was eliminated in L3V2		
 //		sbmlReaction.setFast(vcReactionSpecs[i].isFast());
-		if (vcReactionSpecs[i].isFast()) {
+		if (vcReactionSpecs[i].isFast() || vcReactionStep instanceof FluxReaction) {
 			logger.warn("WARNING: Reaction "+vcReactionSpecs[i].getDisplayName()+" is set in VCell as FAST but this attribute is no longer supported by SBML, non-VCell solvers will not simulate it in pseudo-equilibrium");
 			Element compartmentTopologyElement = new Element(XMLTags.SBML_VCELL_ReactionAttributesTag, sbml_vcml_ns);
-			compartmentTopologyElement.setAttribute(XMLTags.SBML_VCELL_ReactionAttributesTag_fastAttr, TokenMangler.mangleToSName(Boolean.toString(vcReactionSpecs[i].isFast())), sbml_vcml_ns);
+			if (vcReactionSpecs[i].isFast()) {
+				compartmentTopologyElement.setAttribute(XMLTags.SBML_VCELL_ReactionAttributesTag_fastAttr, TokenMangler.mangleToSName(Boolean.toString(vcReactionSpecs[i].isFast())), sbml_vcml_ns);
+			}
+			if (vcReactionStep instanceof FluxReaction){
+				compartmentTopologyElement.setAttribute(XMLTags.SBML_VCELL_ReactionAttributesTag_fluxReactionAttr, TokenMangler.mangleToSName(Boolean.toString(true)), sbml_vcml_ns);
+			}
 			sbmlReaction.getAnnotation().appendNonRDFAnnotation(XmlUtil.xmlToString(compartmentTopologyElement));
 		}
 				
 		// this attribute is mandatory for L3, optional for L2. So explicitly setting value.
 		sbmlReaction.setReversible(true);
+		Compartment reactionCompartment = sbmlModel.getCompartment(vcReactionStep.getStructure().getName());
+		sbmlReaction.setCompartment(reactionCompartment);
 		
 		if (bSpatial) {
 			// set compartment for reaction if spatial
@@ -879,6 +881,11 @@ protected void addSpecies() throws XMLStreamException, SbmlException {
 
 		// Get the speciesContextSpec in the simContext corresponding to the 'speciesContext'; and extract its initial concentration value.
 		SpeciesContextSpec vcSpeciesContextsSpec = getSelectedSimContext().getReactionContext().getSpeciesContextSpec(vcSpeciesContexts[i]);
+		if (bSpatial && vcSpeciesContextsSpec.isWellMixed()) {
+			Element speciesContextSpecSettingsElement = new Element(XMLTags.SBML_VCELL_SpeciesContextSpecSettingsTag, sbml_vcml_ns);
+			speciesContextSpecSettingsElement.setAttribute(XMLTags.SBML_VCELL_SpeciesContextSpecSettingsTag_wellmixedAttr, "true", sbml_vcml_ns);
+			sbmlSpecies.getAnnotation().appendNonRDFAnnotation(XmlUtil.xmlToString(speciesContextSpecSettingsElement));
+		}
 		// since we are setting the substance units for species to 'molecule' or 'item', a unit that is originally in uM (or molecules/um2),
 		// we need to convert concentration from uM -> molecules/um3; this can be achieved by dividing by KMOLE.
 		logger.trace("in SBMLExporter");
@@ -1419,59 +1426,6 @@ protected void addOverrideInitialAssignments() throws ExpressionException, Mappi
 	}
 }
 
-
-/**
- * 	getAnnotationElement : 
- *	For a flux reaction, we need to add an annotation specifying the structure, flux carrier, carrier valence and fluxOption. 
- *  For a simple reaction, we need to add a annotation specifying the structure (useful for import)
- *  Using XML JDOM elements, so that it is convenient for libSBML setAnnotation (requires the annotation to be provided as an xml string).
- *
- **/
-private Element getAnnotationElement(ReactionStep reactionStep) throws cbit.vcell.xml.XmlParseException {
-
-	Element sbmlImportRelatedElement = new Element(XMLTags.VCellRelatedInfoTag, sbml_vcml_ns);
-	Element rxnElement = null;
-	
-	if (reactionStep instanceof FluxReaction) {
-		FluxReaction fluxRxn = (FluxReaction)reactionStep;
-		// Element for flux reaction. Write out the structure and flux carrier name.
-		rxnElement = new Element(XMLTags.FluxStepTag, sbml_vcml_ns);
-		rxnElement.setAttribute(XMLTags.StructureAttrTag, fluxRxn.getStructure().getName());
-
-		// Get the physics option value.
-		if (fluxRxn.getPhysicsOptions() == ReactionStep.PHYSICS_ELECTRICAL_ONLY){
-			rxnElement.setAttribute(XMLTags.FluxOptionAttrTag, XMLTags.FluxOptionElectricalOnly);
-		}else if (fluxRxn.getPhysicsOptions() == ReactionStep.PHYSICS_MOLECULAR_AND_ELECTRICAL){
-			rxnElement.setAttribute(XMLTags.FluxOptionAttrTag, XMLTags.FluxOptionMolecularAndElectrical);
-		}else if (fluxRxn.getPhysicsOptions() == ReactionStep.PHYSICS_MOLECULAR_ONLY){
-			rxnElement.setAttribute(XMLTags.FluxOptionAttrTag, XMLTags.FluxOptionMolecularOnly);
-		}
-
-	} else if (reactionStep instanceof cbit.vcell.model.SimpleReaction) {
-		// Element for a simple reaction - just store structure name - will be useful while importing.
-		cbit.vcell.model.SimpleReaction simpleRxn = (cbit.vcell.model.SimpleReaction)reactionStep;
-		rxnElement = new org.jdom.Element(cbit.vcell.xml.XMLTags.SimpleReactionTag, sbml_vcml_ns);
-		rxnElement.setAttribute(cbit.vcell.xml.XMLTags.StructureAttrTag, simpleRxn.getStructure().getName());
-	}
-
-	// Add rate name as an element of annotation - this is especially useful when roundtripping VCell models, when the reaction
-	// rate parameters have been renamed by user.
-	Element rateElement = new Element(XMLTags.ReactionRateTag, sbml_vcml_ns);
-	if (reactionStep.getKinetics() instanceof DistributedKinetics){
-		rateElement.setAttribute(XMLTags.NameAttrTag, ((DistributedKinetics)reactionStep.getKinetics()).getReactionRateParameter().getName());
-	}else if (reactionStep.getKinetics() instanceof LumpedKinetics){
-		rateElement.setAttribute(XMLTags.NameAttrTag, ((LumpedKinetics)reactionStep.getKinetics()).getLumpedReactionRateParameter().getName());
-	}else{
-		throw new RuntimeException("unexpected kinetic type "+reactionStep.getKinetics().getClass().getName());
-	}
-
-	sbmlImportRelatedElement.addContent(rxnElement);
-	sbmlImportRelatedElement.addContent(rateElement);
-	
-	return sbmlImportRelatedElement;
-}
-
-
 /**
  * 	getInitialConc : 
  */
@@ -1511,26 +1465,26 @@ public static ASTNode getFormulaFromExpression(Expression expression) {
 public static ASTNode getFormulaFromExpression(Expression expression, MathType desiredType) {
 
 	// first replace VCell reserved symbol t with SBML reserved symbol time, so that it gets correct translation to MathML
-	try {
-		expression.substituteInPlace(new Expression("t"), new Expression("time"));
-	} catch (ExpressionException e2) {
-		// TODO Auto-generated catch block
-		e2.printStackTrace();
-		throw new RuntimeException(e2.toString());
-	}
-
-	// switch to libSBML for non-boolean
-	if (!desiredType.equals(MathType.BOOLEAN)) {
-		try {
-			String expr = expression.infix();
-			ASTNode math = ASTNode.parseFormula(expr);
-			return math;
-		} catch (ParseException e) {
-			// (konm * (h ^  - 1.0) / koffm)
-			e.printStackTrace();
-			throw new RuntimeException(e.toString());
-		}
-	}
+//	try {
+//		expression.substituteInPlace(new Expression("t"), new Expression("time"));
+//	} catch (ExpressionException e2) {
+//		// TODO Auto-generated catch block
+//		e2.printStackTrace();
+//		throw new RuntimeException(e2.toString());
+//	}
+//
+//	// switch to libSBML for non-boolean
+//	if (!desiredType.equals(MathType.BOOLEAN)) {
+//		try {
+//			String expr = expression.infix();
+//			ASTNode math = ASTNode.parseFormula(expr);
+//			return math;
+//		} catch (ParseException e) {
+//			// (konm * (h ^  - 1.0) / koffm)
+//			e.printStackTrace();
+//			throw new RuntimeException(e.toString());
+//		}
+//	}
 	
 	// Convert expression into MathML string
 	String expMathMLStr = null;
@@ -1985,8 +1939,7 @@ private void addGeometry() throws SbmlException {
 	//
 	// add "Segmented" and "DistanceMap" SampledField Geometries
 	//
-		final boolean bVCGeometryIsImage = bAnyImageSubvolumes && !bAnyAnalyticSubvolumes && !bAnyCSGSubvolumes;
-	//55if (bAnyAnalyticSubvolumes || bAnyImageSubvolumes || bAnyCSGSubvolumes){
+	final boolean bVCGeometryIsImage = bAnyImageSubvolumes && !bAnyAnalyticSubvolumes && !bAnyCSGSubvolumes;
 	if (bVCGeometryIsImage) {
 		//
 		// add "Segmented" SampledFieldGeometry
@@ -1995,79 +1948,73 @@ private void addGeometry() throws SbmlException {
 		segmentedImageSampledFieldGeometry.setSpatialId(TokenMangler.mangleToSName("SegmentedImage_"+vcGeometry.getName()));
 		segmentedImageSampledFieldGeometry.setIsActive(true);
 		//55boolean bVCGeometryIsImage = bAnyImageSubvolumes && !bAnyAnalyticSubvolumes && !bAnyCSGSubvolumes;
-		Geometry vcImageGeometry = null;
+		Geometry vcImageGeometry = vcGeometry;
 		{
-			if (bVCGeometryIsImage){
-				// use existing image
-				// make a resampled image;
-				if (dimension == 3) {
-					try {
-						ISize imageSize = vcGeometry.getGeometrySpec().getDefaultSampledImageSize();
-						vcGeometry.precomputeAll(new GeometryThumbnailImageFactoryAWT());
-						vcImageGeometry = RayCaster.resampleGeometry(new GeometryThumbnailImageFactoryAWT(), vcGeometry, imageSize);
-					} catch (Throwable e) {
-						e.printStackTrace(System.out);
-						throw new RuntimeException("Unable to convert the original analytic or constructed solid geometry to image-based geometry : " + e.getMessage());
-					}
-				} else {
-					try {
-						vcGeometry.precomputeAll(new GeometryThumbnailImageFactoryAWT(),true,false);
-						GeometrySpec origGeometrySpec = vcGeometry.getGeometrySpec();
-						VCImage newVCImage = origGeometrySpec.getSampledImage().getCurrentValue();
-						//
-						// construct the new geometry with the sampled VCImage.
-						//
-						vcImageGeometry = new Geometry(vcGeometry.getName()+"_asImage", newVCImage);
-						vcImageGeometry.getGeometrySpec().setExtent(vcGeometry.getExtent());
-						vcImageGeometry.getGeometrySpec().setOrigin(vcGeometry.getOrigin());
-						vcImageGeometry.setDescription(vcGeometry.getDescription());
-						vcImageGeometry.getGeometrySurfaceDescription().setFilterCutoffFrequency(vcGeometry.getGeometrySurfaceDescription().getFilterCutoffFrequency());
-						vcImageGeometry.precomputeAll(new GeometryThumbnailImageFactoryAWT(), true,true);
-					} catch (Exception e) {
-						e.printStackTrace(System.out);
-						throw new RuntimeException("Unable to convert the original analytic or constructed solid geometry to image-based geometry : " + e.getMessage());
-					}
+			// use existing image
+			// make a resampled image;
+//			if (dimension == 3) {
+//				try {
+//					ISize imageSize = vcGeometry.getGeometrySpec().getDefaultSampledImageSize();
+//					vcGeometry.precomputeAll(new GeometryThumbnailImageFactoryAWT());
+//					vcImageGeometry = RayCaster.resampleGeometry(new GeometryThumbnailImageFactoryAWT(), vcGeometry, imageSize);
+//				} catch (Throwable e) {
+//					e.printStackTrace(System.out);
+//					throw new RuntimeException("Unable to convert the original analytic or constructed solid geometry to image-based geometry : " + e.getMessage());
+//				}
+//			} else {
+//				try {
+//					vcGeometry.precomputeAll(new GeometryThumbnailImageFactoryAWT(),true,false);
+//					GeometrySpec origGeometrySpec = vcGeometry.getGeometrySpec();
+//					VCImage newVCImage = origGeometrySpec.getSampledImage().getCurrentValue();
+//					//
+//					// construct the new geometry with the sampled VCImage.
+//					//
+//					vcImageGeometry = new Geometry(vcGeometry.getName()+"_asImage", newVCImage);
+//					vcImageGeometry.getGeometrySpec().setExtent(vcGeometry.getExtent());
+//					vcImageGeometry.getGeometrySpec().setOrigin(vcGeometry.getOrigin());
+//					vcImageGeometry.setDescription(vcGeometry.getDescription());
+//					vcImageGeometry.getGeometrySurfaceDescription().setFilterCutoffFrequency(vcGeometry.getGeometrySurfaceDescription().getFilterCutoffFrequency());
+//					vcImageGeometry.precomputeAll(new GeometryThumbnailImageFactoryAWT(), true,true);
+//				} catch (Exception e) {
+//					e.printStackTrace(System.out);
+//					throw new RuntimeException("Unable to convert the original analytic or constructed solid geometry to image-based geometry : " + e.getMessage());
+//				}
+//			}
+			GeometryClass[] vcImageGeomClasses = vcImageGeometry.getGeometryClasses();
+			for (int j = 0; j < vcImageGeomClasses.length; j++) {
+				if (vcImageGeomClasses[j] instanceof ImageSubVolume) {
+					ImageSubVolume vcImageSubVolume = (ImageSubVolume) vcImageGeomClasses[j];
+					SampledVolume sampledVol = segmentedImageSampledFieldGeometry.createSampledVolume();
+					sampledVol.setSpatialId(SAMPLED_VOLUME_PREFIX+vcImageSubVolume.getName());
+					sampledVol.setDomainType(DOMAIN_TYPE_PREFIX+vcImageSubVolume.getName());
+					sampledVol.setSampledValue(vcImageSubVolume.getPixelValue());
 				}
-				GeometryClass[] vcImageGeomClasses = vcImageGeometry.getGeometryClasses();
-				for (int j = 0; j < vcImageGeomClasses.length; j++) {
-					if (vcImageGeomClasses[j] instanceof ImageSubVolume) {
-						SampledVolume sampledVol = segmentedImageSampledFieldGeometry.createSampledVolume();
-						sampledVol.setSpatialId(vcGeomClasses[j].getName());
-						sampledVol.setDomainType(DOMAIN_TYPE_PREFIX+vcGeomClasses[j].getName());
-						sampledVol.setSampledValue(((ImageSubVolume) vcImageGeomClasses[j]).getPixelValue());
-					}
-				}
-				// add sampledField to sampledFieldGeometry
-				SampledField segmentedImageSampledField = sbmlGeometry.createSampledField(); 
-				VCImage vcImage = vcImageGeometry.getGeometrySpec().getImage();
-				segmentedImageSampledField.setSpatialId("SegmentedImageSampledField");
-				segmentedImageSampledField.setNumSamples1(vcImage.getNumX());
-				segmentedImageSampledField.setNumSamples2(vcImage.getNumY());
-				segmentedImageSampledField.setNumSamples3(vcImage.getNumZ());
-				segmentedImageSampledField.setInterpolationType(InterpolationKind.nearestNeighbor);
-				segmentedImageSampledField.setCompression(CompressionKind.uncompressed);
-				segmentedImageSampledField.setDataType(DataKind.UINT8);
-				segmentedImageSampledFieldGeometry.setSampledField(segmentedImageSampledField.getId());
-				/*
-		if (segmentedImageSampledFieldGeometry.isSampledFieldGeometry()) {
-			System.out.println("Sample field is " + segmentedImageSampledFieldGeometry.getSampledField());
-		}
-				 */
+			}
+			// add sampledField to sampledFieldGeometry
+			SampledField segmentedImageSampledField = sbmlGeometry.createSampledField();
+			VCImage vcImage = vcImageGeometry.getGeometrySpec().getImage();
+			segmentedImageSampledField.setSpatialId("SegmentedImageSampledField");
+			segmentedImageSampledField.setNumSamples1(vcImage.getNumX());
+			segmentedImageSampledField.setNumSamples2(vcImage.getNumY());
+			segmentedImageSampledField.setNumSamples3(vcImage.getNumZ());
+			segmentedImageSampledField.setInterpolationType(InterpolationKind.nearestNeighbor);
+			segmentedImageSampledField.setCompression(CompressionKind.uncompressed);
+			segmentedImageSampledField.setDataType(DataKind.UINT8);
+			segmentedImageSampledFieldGeometry.setSampledField(segmentedImageSampledField.getId());
 
-				try {
-					byte[] vcImagePixelsBytes = vcImage.getPixels();
-					//			imageData.setCompression("");
-					StringBuffer sb = new StringBuffer();
-					for (int i = 0; i < vcImagePixelsBytes.length; i++) {
-						int uint8_sample = ((int)vcImagePixelsBytes[i]) & 0xff;
-						sb.append(uint8_sample+" ");
-					}
-					segmentedImageSampledField.setSamplesLength(vcImage.getNumXYZ());
-					segmentedImageSampledField.setSamples(sb.toString().trim());
-				} catch (ImageException e) {
-					e.printStackTrace(System.out);
-					throw new RuntimeException("Unable to export image from VCell to SBML : " + e.getMessage());
+			try {
+				byte[] vcImagePixelsBytes = vcImage.getPixels();
+				//			imageData.setCompression("");
+				StringBuffer sb = new StringBuffer();
+				for (int i = 0; i < vcImagePixelsBytes.length; i++) {
+					int uint8_sample = ((int)vcImagePixelsBytes[i]) & 0xff;
+					sb.append(uint8_sample+" ");
 				}
+				segmentedImageSampledField.setSamplesLength(vcImage.getNumXYZ());
+				segmentedImageSampledField.setSamples(sb.toString().trim());
+			} catch (ImageException e) {
+				e.printStackTrace(System.out);
+				throw new RuntimeException("Unable to export image from VCell to SBML : " + e.getMessage());
 			}
 		}
 

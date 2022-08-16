@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created by libAntimony version v2.13.0 with libSBML version 5.18.1. -->
+<sbml xmlns="http://www.sbml.org/sbml/level3/version2/core" level="3" version="2">
+  <model metaid="case01812" id="case01812">
+    <listOfParameters>
+      <parameter id="NAN" value="0.1" constant="true"/>
+      <parameter id="NaN" value="0.01" constant="true"/>
+      <parameter id="nan" value="0.001" constant="true"/>
+    </listOfParameters>
+  </model>
+</sbml>

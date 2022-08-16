@@ -791,11 +791,7 @@ public void refreshMathDescription(MathMappingCallback callback, NetworkGenerati
 			setMathDescription(createNewMathMapping(callback, networkGenerationRequirements).getMathDescription());
 		} catch (Exception e) {
 			logger.error(e);
-			throw new RuntimeException(
-				"Application '"+getName()+"' has no generated Math\n"+
-				"Failed to generate new Math\n"+
-				e.getMessage()
-			);
+			throw new RuntimeException("Application '"+getName()+"' has no generated Math, Failed to generate new Math: "+ e.getMessage());
 		}
 	}
 }

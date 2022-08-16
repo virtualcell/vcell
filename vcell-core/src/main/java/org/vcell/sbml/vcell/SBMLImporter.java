@@ -801,12 +801,28 @@ public class SBMLImporter {
 				if(isRestrictedXYZT(sbmlParamId, vcBioModel, bSpatial) || reservedSymbolHash.contains(sbmlParamId)) {
 					vcParamName = "param_" + sbmlParamId;
 				}
+				//
+				// treat KMOLE special
+				//
+				ReservedSymbol KMOLE = vcModel.getKMOLE();
+				double KMOLE_value;
+				try {
+					KMOLE_value = KMOLE.getExpression().evaluateConstant();
+				} catch (Exception e){ throw new RuntimeException("unexpected exception: "+e.getMessage(),e); }
+				if (sbmlGlobalParam.equals(KMOLE.getName()) && sbmlGlobalParam.isSetValue() && sbmlGlobalParam.getValue()==KMOLE_value) {
+					sbmlSymbolMapping.putRuntime(sbmlGlobalParam, KMOLE);
+					continue;
+				}
+
+				//
+				// not KMOLE, map to a new VCell parameter
+				//
 				ModelParameter vcGlobalParam = vcModel.new ModelParameter(vcParamName, new Expression(0.0), Model.ROLE_UserDefined, glParamUnitDefn);
 				sbmlSymbolMapping.putRuntime(sbmlGlobalParam, vcGlobalParam);
 				if (vcParamName.length() > 64) {
 					vcGlobalParam.setDescription("Parameter Name : " + vcParamName);
 				}
-				if(sbmlParamName != null && !sbmlParamName.isEmpty()) {
+				if (sbmlParamName != null && !sbmlParamName.isEmpty()) {
 					vcGlobalParam.setSbmlName(sbmlParamName);
 				}
 				if (sbmlGlobalParam.isSetValue()) {
@@ -1410,8 +1426,8 @@ public class SBMLImporter {
 			SpeciesContext[] vcSpeciesContexts = vcModel.getSpeciesContexts();
 			for (SpeciesContext vcSpeciesContext : vcSpeciesContexts) {
 				SBase sbase = sbmlSymbolMapping.getSBase(vcSpeciesContext, SymbolContext.RUNTIME);
-				if (!(sbase instanceof org.sbml.jsbml.Species)){
-					throw new RuntimeException("could not find sbml Species corresponding to SpeciesContext "+vcSpeciesContext.getName());
+				if (!(sbase instanceof org.sbml.jsbml.Species)) {
+					throw new RuntimeException("could not find sbml Species corresponding to SpeciesContext " + vcSpeciesContext.getName());
 				}
 				org.sbml.jsbml.Species sbmlSpecies = (org.sbml.jsbml.Species) sbase;
 				ReactionContext rc = vcBioModel.getSimulationContext(0).getReactionContext();
@@ -1419,6 +1435,26 @@ public class SBMLImporter {
 
 				sbmlSymbolMapping.putInitial(sbmlSpecies, speciesContextSpec.getInitialConcentrationParameter());
 				speciesContextSpec.setConstant(sbmlSpecies.getBoundaryCondition() || sbmlSpecies.getConstant());
+
+				// set wellmixed attribute (if present from vcell-specific annotation)
+				XMLNode speciesNonRdfAnnotation = sbmlSpecies.getAnnotation().getNonRDFannotation();
+				if (speciesNonRdfAnnotation != null) {
+					XMLNode speciesContextSpecSettingsElement = speciesNonRdfAnnotation.getChildElement(XMLTags.SBML_VCELL_SpeciesContextSpecSettingsTag, "*");
+					if (speciesContextSpecSettingsElement != null) {
+						int attrWellMixed = speciesContextSpecSettingsElement.getAttrIndex(XMLTags.SBML_VCELL_SpeciesContextSpecSettingsTag_wellmixedAttr, SBMLUtils.SBML_VCELL_NS);
+						if (attrWellMixed >= 0) {
+							String wellMixedValue = speciesContextSpecSettingsElement.getAttrValue(attrWellMixed);
+							if (wellMixedValue.equals("true")) {
+								speciesContextSpec.setWellMixed(true);
+							} else if (wellMixedValue.equals("false")) {
+								speciesContextSpec.setWellMixed(false);
+							} else {
+								throw new RuntimeException("unexpected attribute value '" + attrWellMixed + "' for attribute " +
+										XMLTags.SBML_VCELL_SpeciesContextSpecSettingsTag + ":" + XMLTags.SBML_VCELL_SpeciesContextSpecSettingsTag_wellmixedAttr);
+							}
+						}
+					}
+				}
 			}
 		} catch (Throwable e) {
 			throw new SBMLImportException("Error setting initial condition for species context; " + e.getMessage(), e);
@@ -1479,21 +1515,8 @@ public class SBMLImporter {
 	 * annotation. This has to be retrieved and set as reaction rate name.
 	 */
 	private static void resolveRxnParameterNameConflicts(org.sbml.jsbml.Model sbmlModel, Reaction sbmlRxn,
-														 Kinetics vcKinetics, Element sbmlImportElement)
+														 Kinetics vcKinetics)
 			throws PropertyVetoException {
-		// If the name of the rate parameter has been changed by user, it is
-		// stored in rxnAnnotation.
-		// Retrieve this to re-set rate param name.
-		if (sbmlImportElement != null) {
-			Element embeddedRxnElement = getEmbeddedElementInAnnotation(sbmlImportElement, RATE_NAME);
-			if (embeddedRxnElement != null) {
-				if (embeddedRxnElement.getName().equals(XMLTags.RateTag)) {
-					String vcRateParamName = embeddedRxnElement.getAttributeValue(XMLTags.NameAttrTag);
-					vcKinetics.getAuthoritativeParameter().setName(vcRateParamName);
-				}
-			}
-		}
-
 		/*
 		 * Get the rate name from the kinetics : if it is from GeneralKinetics,
 		 * it is the reactionRateParamter name; if it is from LumpedKinetics, it
@@ -1726,13 +1749,14 @@ public class SBMLImporter {
 		//   if called from GUI application convert if VCell origin, otherwise ask user
 		//
 		if (isFromVCell) {
-			ModelUnitSystem vcUnitSystem = ModelUnitSystem.createDefaultVCModelUnitSystem();
-			try {
-				return ModelUnitConverter.createBioModelWithNewUnitSystem(vcBioModel, vcUnitSystem);
-			} catch (Exception e) {
-				logger.error("failed to convert imported SBML model into default VCell Unit System - continuing anyway!!",e);
-				// TODO: maybe alert user? for now fail silently...
-			}
+			logger.error("SKIPPING translation back to vcell unit system ... testing only");
+//			ModelUnitSystem vcUnitSystem = ModelUnitSystem.createDefaultVCModelUnitSystem();
+//			try {
+//				return ModelUnitConverter.createBioModelWithNewUnitSystem(vcBioModel, vcUnitSystem);
+//			} catch (Exception e) {
+//				logger.error("failed to convert imported SBML model into default VCell Unit System - continuing anyway!!",e);
+//				// TODO: maybe alert user? for now fail silently...
+//			}
 		}
 		return vcBioModel;
 	}
@@ -1797,7 +1821,8 @@ public class SBMLImporter {
 	}
 
 	private static void validateSBMLDocument(SBMLDocument document, VCLogger vcLogger) throws Exception {
-		document.checkConsistencyOffline();
+		//document.checkConsistencyOffline();
+		document.checkConsistencyOnline();
 		long numProblems = document.getNumErrors();
 
 		ByteArrayOutputStream os = new ByteArrayOutputStream();
@@ -2299,38 +2324,19 @@ public class SBMLImporter {
 	/**
 	 *
 	 */
-	private static Structure getReactionStructure(org.sbml.jsbml.Model sbmlModel, org.sbml.jsbml.Reaction sbmlRxn,
-												  BioModel vcBioModel, boolean bSpatial, Element sbmlImportElement,
+	private static Structure getReactionStructure(org.sbml.jsbml.Model sbmlModel, org.sbml.jsbml.Reaction sbmlRxn, BioModel vcBioModel,
 												  LambdaFunction[] lambdaFunctions, SBMLSymbolMapping sbmlSymbolMapping,
 												  VCLogger vcLogger) throws Exception {
 		Structure struct;
 		String structName = null;
 		Model vcModel = vcBioModel.getSimulationContext(0).getModel();
 
-		// if sbml model is spatial, see if reaction has compartment atribute,
+		// if sbml model is level 3, see if reaction has compartment attribute,
 		// return structure from vcmodel, if present.
-		if (bSpatial) {
-			structName = sbmlRxn.getCompartment();
-			if (structName != null && structName.length() > 0) {
-				struct = vcModel.getStructure(structName);
-				if (struct != null) {
-					return struct;
-				}
-			}
-		}
-
-		// Check annotation for reaction - if we are importing an exported VCell
-		// model, it will contain annotation for reaction.
-		// If annotation has structure name, return the corresponding structure.
-		if (sbmlImportElement != null) {
-			// Get the embedded element in the annotation str (fluxStep or
-			// simpleReaction), and the structure attribute from the element.
-			Element embeddedElement = getEmbeddedElementInAnnotation(sbmlImportElement, REACTION);
-			if (embeddedElement != null) {
-				structName = embeddedElement.getAttributeValue(XMLTags.StructureAttrTag);
-				// Using the structName, get the structure from the structures
-				// (compartments) list.
-				struct = vcModel.getStructure(structName);
+		structName = sbmlRxn.getCompartment();
+		if (structName != null && structName.length() > 0) {
+			struct = vcModel.getStructure(structName);
+			if (struct != null) {
 				return struct;
 			}
 		}
@@ -2856,61 +2862,45 @@ public class SBMLImporter {
 				if (sbmlReaction.isSetReversible()){
 					bReversible = sbmlReaction.getReversible();
 				}
-				// Check if reaction annotation is present; if so, does it have an embedded element (FluxReaction or SimpleReaction).
-				// Create a FluxReaction or SimpleReaction accordingly.
-				Element sbmlImportRelatedElement = sbmlAnnotationUtil.readVCellSpecificAnnotation(sbmlReaction);
-				Structure reactionStructure = getReactionStructure(sbmlModel, sbmlReaction, vcBioModel, bSpatial,
-																sbmlImportRelatedElement, lambdaFunctions, sbmlSymbolMapping, vcLogger);
-				if (sbmlImportRelatedElement != null) {
-					Element embeddedRxnElement = getEmbeddedElementInAnnotation(sbmlImportRelatedElement, REACTION);
-					if (embeddedRxnElement != null) {
-						if (embeddedRxnElement.getName().equals(XMLTags.FluxStepTag)) {
-							// If embedded element is a flux reaction, set flux reaction's structure, flux carrier, physicsOption
-							// from the element attributes.
-							String structName = embeddedRxnElement.getAttributeValue(XMLTags.StructureAttrTag);
-							/**
-							 * look up structure name as stored ... or a mangled version of it.
-							 */
-							Structure structure = vcModel.getStructure(structName);
-							if (structure == null){
-								structure = vcModel.getStructure(SBMLUtils.mangleToSName(structName));
+				boolean bIsFluxReaction = false;
+				boolean bIsFast = false;
+				XMLNode reactionNonRdfAnnotation = sbmlReaction.getAnnotation().getNonRDFannotation();
+				if (reactionNonRdfAnnotation != null) {
+					XMLNode reactionAttributesElement = reactionNonRdfAnnotation.getChildElement(XMLTags.SBML_VCELL_ReactionAttributesTag, "*");
+					if (reactionAttributesElement != null) {
+						int fastAttrIndex = reactionAttributesElement.getAttrIndex(XMLTags.SBML_VCELL_ReactionAttributesTag_fastAttr, SBMLUtils.SBML_VCELL_NS);
+						if (fastAttrIndex >= 0) {
+							String fastAttrValue = reactionAttributesElement.getAttrValue(fastAttrIndex);
+							if (fastAttrValue.equals("true")) {
+								fastReactionList.add(vcReaction);
+							} else if (fastAttrValue.equals("false")) {
+								logger.info("ignoring fast=false when reading reaction " + vcReaction.getName());
+							} else {
+								throw new RuntimeException("unexpected value " + fastAttrValue + " for " + XMLTags.SBML_VCELL_ReactionAttributesTag
+										+ " attribute " + XMLTags.SBML_VCELL_ReactionAttributesTag_fastAttr);
 							}
-							if (!(structure instanceof Membrane)){
-								throw new SBMLImportException("Appears that the flux reaction is occuring on "
-										+ structure.getClass().getSimpleName() + ", not a membrane.");
-							}
-							vcReaction = new FluxReaction(vcModel, (Membrane) structure, null, sbmlReaction.getId(), bReversible);
-							vcReaction.setModel(vcModel);
-							// Set the fluxOption on the flux reaction based on
-							// whether it is molecular, molecular & electrical,
-							// electrical.
-							String fluxOptionStr = embeddedRxnElement.getAttributeValue(XMLTags.FluxOptionAttrTag);
-							switch (fluxOptionStr){
-								case XMLTags.FluxOptionMolecularOnly: {
-									vcReaction.setPhysicsOptions(ReactionStep.PHYSICS_MOLECULAR_ONLY);
-									break;
-								}
-								case XMLTags.FluxOptionMolecularAndElectrical: {
-									vcReaction.setPhysicsOptions(ReactionStep.PHYSICS_MOLECULAR_AND_ELECTRICAL);
-									break;
-								}
-								case XMLTags.FluxOptionElectricalOnly: {
-									vcReaction.setPhysicsOptions(ReactionStep.PHYSICS_ELECTRICAL_ONLY);
-									break;
-								}
-								default: {
-									localIssueList.add(new Issue(vcReaction, issueContext, IssueCategory.SBMLImport_Reaction,
-											"Unknown FluxOption : " + fluxOptionStr + " for SBML reaction : " + sbmlReaction.getId(), Issue.Severity.WARNING));
-								}
-							}
-						} else if (embeddedRxnElement.getName().equals(XMLTags.SimpleReactionTag)) {
-							// if embedded element is a simple reaction, set
-							// simple reaction's structure from element attributes
-							vcReaction = new SimpleReaction(vcModel, reactionStructure, sbmlReaction.getId(), bReversible);
 						}
-					} else {
-						vcReaction = new SimpleReaction(vcModel, reactionStructure, sbmlReaction.getId(), bReversible);
+						int fluxReactionAttrIndex = reactionAttributesElement.getAttrIndex(XMLTags.SBML_VCELL_ReactionAttributesTag_fluxReactionAttr, SBMLUtils.SBML_VCELL_NS);
+						if (fluxReactionAttrIndex >= 0) {
+							String fluxReactionAttrValue = reactionAttributesElement.getAttrValue(fluxReactionAttrIndex);
+							if (fluxReactionAttrValue.equals("true")) {
+								bIsFluxReaction = true;
+							} else if (fluxReactionAttrValue.equals("false")) {
+								logger.info("ignoring fluxReaction=false when reading reaction " + vcReaction.getName());
+							} else {
+								throw new RuntimeException("unexpected value " + fluxReactionAttrValue + " for " + XMLTags.SBML_VCELL_ReactionAttributesTag
+										+ " attribute " + XMLTags.SBML_VCELL_ReactionAttributesTag_fluxReactionAttr);
+							}
+						}
 					}
+				}
+				Structure reactionStructure = getReactionStructure(sbmlModel, sbmlReaction, vcBioModel, lambdaFunctions, sbmlSymbolMapping, vcLogger);
+				if (bIsFluxReaction) {
+					if (!(reactionStructure instanceof Membrane)){
+						throw new SBMLImportException("Flux reaction on " + reactionStructure.getClass().getSimpleName() + ", not a membrane.");
+					}
+					vcReaction = new FluxReaction(vcModel, (Membrane) reactionStructure, null, sbmlReaction.getId(), bReversible);
+					vcReaction.setModel(vcModel);
 				} else {
 					vcReaction = new SimpleReaction(vcModel, reactionStructure, sbmlReaction.getId(), bReversible);
 				}
@@ -2960,18 +2950,27 @@ public class SBMLImporter {
 						}
 					}
 
-					// set kinetics on VCell reaction
+					// set kinetics on VCell reaction - and determine assumed SBML rate units (may need to be converted)
+					final VCUnitDefinition sbmlRateUnit;
 					if (bSpatial) {
 						// if spatial SBML ('isSpatial' attribute set), create DistributedKinetics)
 						SpatialReactionPlugin ssrplugin = (SpatialReactionPlugin) sbmlReaction.getPlugin(SBMLUtils.SBML_SPATIAL_NS_PREFIX);
 						// (a) the requiredElements attributes should be 'spatial'
 						if (ssrplugin != null && ssrplugin.isSetIsLocal() && ssrplugin.getIsLocal()) {
+							if (reactionStructure instanceof Feature) {
+								sbmlRateUnit = vcModelUnitSystem.getVolumeReactionRateUnit();
+							}else if (reactionStructure instanceof Membrane) {
+								sbmlRateUnit = vcModelUnitSystem.getMembraneReactionRateUnit();
+							}else {
+								throw new SBMLImportException("unexpected reaction structure " + reactionStructure);
+							}
 							kinetics = new GeneralKinetics(vcReaction);
 						} else {
+							sbmlRateUnit = vcModelUnitSystem.getLumpedReactionRateUnit();
 							kinetics = new GeneralLumpedKinetics(vcReaction);
 						}
-
 					} else {
+						sbmlRateUnit = vcModelUnitSystem.getLumpedReactionRateUnit();
 						kinetics = new GeneralLumpedKinetics(vcReaction);
 					}
 
@@ -2980,7 +2979,7 @@ public class SBMLImporter {
 
 					// If the name of the rate parameter has been changed by
 					// user, or matches with global/local param, it has to be changed.
-					resolveRxnParameterNameConflicts(sbmlModel, sbmlReaction, kinetics, sbmlImportRelatedElement);
+					resolveRxnParameterNameConflicts(sbmlModel, sbmlReaction, kinetics);
 
 					/**
 					 * Now, based on the kinetic law expression, see if the rate
@@ -3006,6 +3005,14 @@ public class SBMLImporter {
 					KineticsParameter kp = kinetics.getAuthoritativeParameter();
 					if (logger.isDebugEnabled()) {
 						logger.debug("Setting " + kp.getName() + ":  " + vcRateExpression.infix());
+					}
+					VCUnitDefinition vcellRateUnit = kp.getUnitDefinition();
+					Expression factor = ModelUnitConverter.getDimensionlessScaleFactor(
+							vcellRateUnit.divideBy(sbmlRateUnit),
+							vcModelUnitSystem.getInstance_DIMENSIONLESS(),
+							vcModel.getKMOLE());
+					if (!factor.isOne()){
+						vcRateExpression = Expression.mult(factor, vcRateExpression);
 					}
 					kinetics.setParameterValue(kp, vcRateExpression);
 
@@ -3083,26 +3090,8 @@ public class SBMLImporter {
 				kinetics.resolveUndefinedUnits();
 				// logger.trace("ADDED SBML REACTION : \"" + rxnName + "\" to VCModel");
 				vcReactionList.add(vcReaction);
-				if (sbmlReaction.isSetFast() && sbmlReaction.getFast()) {
+				if ((sbmlReaction.isSetFast() && sbmlReaction.getFast()) || bIsFast) {
 					fastReactionList.add(vcReaction);
-				}
-				XMLNode reactionNonRdfAnnotation = sbmlReaction.getAnnotation().getNonRDFannotation();
-				if (reactionNonRdfAnnotation != null) {
-					XMLNode reactionAttributesElement = reactionNonRdfAnnotation.getChildElement(XMLTags.SBML_VCELL_ReactionAttributesTag, "*");
-					if (reactionAttributesElement != null) {
-						int attrIndex = reactionAttributesElement.getAttrIndex(XMLTags.SBML_VCELL_ReactionAttributesTag_fastAttr, SBMLUtils.SBML_VCELL_NS);
-						if (attrIndex >= 0) {
-							String fastAttrValue = reactionAttributesElement.getAttrValue(attrIndex);
-							if (fastAttrValue.equals("true")) {
-								fastReactionList.add(vcReaction);
-							} else if (fastAttrValue.equals("false")) {
-								logger.info("ignoring fast=false when reading reaction " + vcReaction.getName());
-							} else {
-								throw new RuntimeException("unexpected value " + fastAttrValue + " for " + XMLTags.SBML_VCELL_ReactionAttributesTag
-										+ " attribute " + XMLTags.SBML_VCELL_ReactionAttributesTag_fastAttr);
-							}
-						}
-					}
 				}
 			} // end - for vcReactions
 
@@ -3123,7 +3112,7 @@ public class SBMLImporter {
 	}
 
 	public static cbit.vcell.geometry.CSGNode getVCellCSGNode(org.sbml.jsbml.ext.spatial.CSGNode sbmlCSGNode) {
-		String csgNodeName = sbmlCSGNode.getId();
+		String csgNodeName = sbmlCSGNode.getParent().getId();
 		if (sbmlCSGNode instanceof org.sbml.jsbml.ext.spatial.CSGPrimitive){
 			PrimitiveKind primitiveKind = ((org.sbml.jsbml.ext.spatial.CSGPrimitive) sbmlCSGNode).getPrimitiveType();
 			cbit.vcell.geometry.CSGPrimitive.PrimitiveType vcellCSGPrimitiveType = getVCellPrimitiveType(primitiveKind);
@@ -3433,7 +3422,7 @@ public class SBMLImporter {
 			int numY = sf.getNumSamples2();
 			int numZ = sf.getNumSamples3();
 			int[] samples = new int[sf.getSamplesLength()];
-			StringTokenizer tokens = new StringTokenizer(sf.getSamples()," ");
+			StringTokenizer tokens = new StringTokenizer(sf.getSamples()," ,;");
 			int count = 0;
 			while (tokens.hasMoreTokens()){
 				int sample = Integer.parseInt(tokens.nextToken());
@@ -3644,19 +3633,20 @@ public class SBMLImporter {
 				});
 
 				int n = sbmlCSGs.size();
-				CSGObject[] vcCSGSubVolumes = new CSGObject[n];
+//				CSGObject[] vcCSGSubVolumes = new CSGObject[n];
 				for (int i = 0; i < n; i++) {
 					org.sbml.jsbml.ext.spatial.CSGObject sbmlCSGObject = sbmlCSGs.get(i);
-					CSGObject vcellCSGObject = new CSGObject(null,
-							sbmlCSGObject.getDomainType(), i);
+					CSGObject vcellCSGObject = new CSGObject(null, sbmlCSGObject.getSpatialId(), i);
 					vcellCSGObject.setRoot(getVCellCSGNode(sbmlCSGObject.getCSGNode()));
+					boolean bFront = true;
+					vcGeometry.getGeometrySpec().addSubVolume(vcellCSGObject, bFront);
 				}
 
 				// specify default volume sampling (can be overridden by vcell-specific annotation)
 				vcGsd.setVolumeSampleSize(vcGeometry.getGeometrySpec().getDefaultSampledImageSize());
 				// read vcell-specific annotation for volume sampling
-				readGeometrySamplingAnnotation(analyticGeometryDefinition, vcGsd);
-				vcGeometry.getGeometrySpec().setSubVolumes(vcCSGSubVolumes);
+				readGeometrySamplingAnnotation(csGeometry, vcGsd);
+//				vcGeometry.getGeometrySpec().setSubVolumes(vcCSGSubVolumes);
 			}
 
 			// Call geom.geomSurfDesc.updateAll() to automatically generate
@@ -3699,6 +3689,7 @@ public class SBMLImporter {
 					interiorPt.getCoord1(),
 					(vcGeometry.getDimension()>1)?interiorPt.getCoord2():0.0,
 					(vcGeometry.getDimension()>2)?interiorPt.getCoord3():0.0);
+			GeometricRegion vcGeometricRegionNearest = null;
 			for (GeometricRegion vcGeomRegion : vcGeomRegions) {
 				if (vcGeomRegion instanceof VolumeGeometricRegion) {
 					int regionID = ((VolumeGeometricRegion) vcGeomRegion).getRegionID();
@@ -3729,6 +3720,7 @@ public class SBMLImporter {
 											if (distance < minDistance) {
 												minDistance = distance;
 												nearestPtCoord = vcCoord;
+												vcGeometricRegionNearest = vcGeomRegion;
 											}
 										}
 										volIndx++;
@@ -3737,18 +3729,19 @@ public class SBMLImporter {
 							} // end - for z
 							// verify that domainType of domain and geomClass of geomRegion are the same; if so, name
 							// vcGeomReg[j] with domain name
-							if (nearestPtCoord != null) {
-								GeometryClass geomClassSBML = vcGeometry.getGeometryClass(domainType);
-								// we know vcGeometryReg[j] is a VolGeomRegion
-								GeometryClass geomClassVC = ((VolumeGeometricRegion) vcGeomRegion).getSubVolume();
-								if (geomClassSBML.compareEqual(geomClassVC)) {
-									vcGeomRegion.setName(domain.getId());
-								}
-							}
 						} // end if (regInfoIndx = regId)
 					} // end - for regInfo
 				}
 			} // end for - vcGeomRegions
+			if (vcGeometricRegionNearest != null) {
+				GeometryClass geomClassSBML = vcGeometry.getGeometryClass(domainType);
+				// we know vcGeometryReg[j] is a VolGeomRegion
+				GeometryClass geomClassVC = ((VolumeGeometricRegion) vcGeometricRegionNearest).getSubVolume();
+				if (geomClassSBML.compareEqual(geomClassVC)) {
+					vcGeometricRegionNearest.setName(domain.getId()); // TODO ... gets set every iteration ... pull outside of loop??
+				}
+			}
+
 		} // end - for domains
 
 		// now that we have the subVolumes:spDim3-domainTypes mapped, we need to
@@ -3821,7 +3814,7 @@ public class SBMLImporter {
 				Compartment c = sbmlModel.getCompartment(i);
 				String cname = c.getName();
 				cplugin = (SpatialCompartmentPlugin) c.getPlugin(SBMLUtils.SBML_SPATIAL_NS_PREFIX);
-				CompartmentMapping compMapping = cplugin.getCompartmentMapping();
+				CompartmentMapping compMapping = (cplugin.isSetCompartmentMapping()) ? cplugin.getCompartmentMapping() : null;
 				if (compMapping != null) {
 					CastInfo<Structure> ci = SBMLHelper.getTypedStructure(Structure.class, vcModel, cname);
 					if (ci.isGood()) {
@@ -3970,9 +3963,9 @@ public class SBMLImporter {
 	}
 
 	private static void readGeometrySamplingAnnotation(GeometryDefinition sbmlGeometryDefinition, GeometrySurfaceDescription vcGsd) throws PropertyVetoException {
-		XMLNode geometryDefinitionNonRdfAnnotation = sbmlGeometryDefinition.getAnnotation().getNonRDFannotation();
-		if (geometryDefinitionNonRdfAnnotation != null) {
-			XMLNode geometrySamplingElement = geometryDefinitionNonRdfAnnotation.getChildElement(XMLTags.SBML_VCELL_GeometrySamplingTag, "*");
+		Annotation geometryDefinitionAnnotation = sbmlGeometryDefinition.getAnnotation();
+		if (geometryDefinitionAnnotation != null && geometryDefinitionAnnotation.getNonRDFannotation() != null) {
+			XMLNode geometrySamplingElement = geometryDefinitionAnnotation.getNonRDFannotation().getChildElement(XMLTags.SBML_VCELL_GeometrySamplingTag, "*");
 			if (geometrySamplingElement != null) {
 				int numX = 1;
 				int numY = 1;

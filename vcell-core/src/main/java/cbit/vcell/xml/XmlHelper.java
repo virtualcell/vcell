@@ -986,7 +986,7 @@ public class XmlHelper {
 			}
 			return docs;
 		} catch (Exception e) {
-			throw new RuntimeException("Unable to initialize bioModel for the given selection\n"+e.getMessage(), e);
+			throw new RuntimeException("Unable to initialize bioModel for the given selection: "+e.getMessage(), e);
 		}
 	}
 

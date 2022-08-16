@@ -3313,8 +3313,7 @@ public void refreshDependencies() {
 		try {
 			fieldModelParameters[i].getExpression().bindExpression(this);
 		} catch (ExpressionBindingException e) {
-			e.printStackTrace(System.out);
-			throw new RuntimeException("Error binding global parameter '" + fieldModelParameters[i].getName() + "' to model."  + e.getMessage());
+			throw new RuntimeException("Error binding global parameter '" + fieldModelParameters[i].getName() + "' to model: "  + e.getMessage(), e);
 		}
 	}
 	
