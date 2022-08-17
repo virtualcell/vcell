@@ -148,10 +148,10 @@ public void importSbml(String bngSbmlStr) {
 		cbit.util.xml.VCLogger logger = new cbit.util.xml.VCLogger() {
 
 			@Override
-			public void sendMessage(Priority p, ErrorType et, String message) {
+			public void sendMessage(Priority p, ErrorType et, String message) throws VCLoggerException {
 				System.err.println("LOGGER: msgLevel="+p+", msgType="+et+", "+message);
 				if (p == VCLogger.Priority.HighPriority) {
-					throw new RuntimeException("Import failed : " + message);
+					throw new VCLoggerException("Import failed : " + message);
 				}
 			}
 			public void sendAllMessages() {

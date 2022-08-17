@@ -106,7 +106,7 @@ public class TranslationLogger extends VCLogger implements AutoCloseable {
 			break;
 		case HighPriority:
 			PopupGenerator.showErrorDialog(requester, message);
-		throw UserCancelException.CANCEL_XML_TRANSLATION;
+		throw (UserCancelException.CANCEL_XML_TRANSLATION); // this shouldnt be wrapped as a VCLoggerException
 		}
 	}
 	/**
