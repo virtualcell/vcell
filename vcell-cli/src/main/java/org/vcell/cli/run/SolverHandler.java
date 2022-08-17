@@ -1,6 +1,7 @@
 package org.vcell.cli.run;
 
 import cbit.util.xml.VCLogger;
+import cbit.util.xml.VCLoggerException;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.solver.*;
@@ -376,7 +377,7 @@ public class SolverHandler {
     // TODO: Complete this logger and use it for whole CLI
     private static class LocalLogger extends VCLogger {
         @Override
-        public void sendMessage(Priority p, ErrorType et, String message) throws Exception {
+        public void sendMessage(Priority p, ErrorType et, String message) throws VCLoggerException {
             System.out.println("LOGGER: msgLevel=" + p + ", msgType=" + et + ", " + message);
             if (p == VCLogger.Priority.HighPriority) {
                 SBMLImportException.Category cat = SBMLImportException.Category.UNSPECIFIED;

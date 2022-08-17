@@ -15,6 +15,7 @@ import java.util.Set;
 import org.vcell.util.UserCancelException;
 
 import cbit.util.xml.VCLogger;
+import cbit.util.xml.VCLoggerException;
 /**
 	* This class represents the otherwise missing link between the GUI layer classes and the XML translation package. 
 	* It allows user interaction while importing/exporting a document, like providing extra parameters, or the option to 
@@ -93,7 +94,7 @@ public class TranslationLogger extends VCLogger implements AutoCloseable {
 
 	@Override
 	public void sendMessage(Priority p, ErrorType et, String message)
-			throws Exception {
+			throws VCLoggerException {
 
 		if  (p == null ||et == null ) {
 			throw new IllegalArgumentException("Invalid params for sending translation message.");

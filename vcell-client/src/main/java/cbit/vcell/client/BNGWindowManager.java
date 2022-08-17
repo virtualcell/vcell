@@ -29,6 +29,7 @@ import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.VCFileChooser;
 
 import cbit.util.xml.VCLogger;
+import cbit.util.xml.VCLoggerException;
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.biomodel.ModelUnitConverter;
@@ -148,7 +149,7 @@ public void importSbml(String bngSbmlStr) {
 
 			@Override
 			public void sendMessage(Priority p, ErrorType et, String message)
-					throws Exception {
+					throws VCLoggerException {
 				System.err.println("LOGGER: msgLevel="+p+", msgType="+et+", "+message);
 				if (p == VCLogger.Priority.HighPriority) {
 					throw new RuntimeException("Import failed : " + message);

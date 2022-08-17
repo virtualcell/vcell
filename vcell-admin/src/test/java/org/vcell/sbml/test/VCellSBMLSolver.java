@@ -22,6 +22,7 @@ import org.vcell.util.exe.Executable;
 import org.vcell.util.exe.ExecutableException;
 
 import cbit.util.xml.VCLogger;
+import cbit.util.xml.VCLoggerException;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.mapping.MathMapping;
 import cbit.vcell.mapping.SimulationContext;
@@ -760,7 +761,7 @@ public class VCellSBMLSolver implements SBMLSolver {
     private class LocalLogger extends VCLogger{
 				@Override
 				public void sendMessage(Priority p, ErrorType et, String message)
-						throws Exception {
+						throws VCLoggerException {
 		            System.out.println("LOGGER: msgLevel="+p+", msgType="+et+", "+message);
 		            if (p==VCLogger.Priority.HighPriority) {
 		            	SBMLImportException.Category cat = SBMLImportException.Category.UNSPECIFIED;

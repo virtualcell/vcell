@@ -1,6 +1,7 @@
 package org.vcell.sbml;
 
 import cbit.util.xml.VCLogger;
+import cbit.util.xml.VCLoggerException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,7 +22,7 @@ public class TLogger extends VCLogger {
 
 	@Override
 	public void sendMessage(Priority p, ErrorType et, String message)
-			throws Exception {
+			throws VCLoggerException {
 		String msg = p + " " + et + ": "  + message;
 		if (p == Priority.HighPriority) {
 			highPriority.add(msg);
