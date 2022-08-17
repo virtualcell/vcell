@@ -878,7 +878,7 @@ public Expression getCorrectedRateExpression(ReactionStep reactionStep, Reaction
 	}else if (rateType == RateType.ResolvedFluxRate){
 		unitFactor = mathMapping.getUnitFactor(speciesConcRateUnit.multiplyBy(unitSystem.getLengthUnit()).divideBy(correctedReactionRateUnit));
 	}
-	return Expression.mult(unitFactor,distribRateWithStoichFlux).flatten();
+	return Expression.mult(unitFactor,distribRateWithStoichFlux).flattenFactors("KMOLE");
 }
 
 }

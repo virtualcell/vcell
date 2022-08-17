@@ -815,7 +815,7 @@ protected RulebasedMathMapping(SimulationContext simContext, MathMappingCallback
 			e.printStackTrace();
 		}
 		
-		Expression forward_rateExp = Expression.mult(getUnitFactor(forward_substanceConversionUnit), new Expression(forward_rateParameter, getNameScope()),forward_sizeFactor).flatten();
+		Expression forward_rateExp = Expression.mult(getUnitFactor(forward_substanceConversionUnit), new Expression(forward_rateParameter, getNameScope()),forward_sizeFactor).flattenFactors("KMOLE");
 		VCUnitDefinition forward_rateUnit = forward_rateParameter.getUnitDefinition().multiplyBy(forward_sizeFactorUnit).multiplyBy(forward_substanceConversionUnit);
 		
 		ProbabilityParameter forward_probParm = addProbabilityParameter(PARAMETER_PROBABILITYRATE_PREFIX+jpName, forward_rateExp, PARAMETER_ROLE_P, forward_rateUnit,reactionRule);
@@ -898,7 +898,7 @@ protected RulebasedMathMapping(SimulationContext simContext, MathMappingCallback
 				e.printStackTrace();
 			}
 			
-			Expression reverse_rateExp = Expression.mult(new Expression(reverse_rateParameter, getNameScope()),reverse_sizeFactor,getUnitFactor(reverse_substanceConversionUnit)).flatten();
+			Expression reverse_rateExp = Expression.mult(new Expression(reverse_rateParameter, getNameScope()),reverse_sizeFactor,getUnitFactor(reverse_substanceConversionUnit)).flattenFactors("KMOLE");
 			VCUnitDefinition reverse_rateUnit = reverse_rateParameter.getUnitDefinition().multiplyBy(reverse_sizeFactorUnit).multiplyBy(reverse_substanceConversionUnit);
 			
 			// if the reaction has forward rate (Mass action,HMMs), or don't have either forward or reverse rate (some other rate laws--like general)

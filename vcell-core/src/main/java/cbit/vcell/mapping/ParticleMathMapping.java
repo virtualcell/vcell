@@ -590,7 +590,7 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 				Expression initialDistribution = scs.getInitialConcentrationParameter().getExpression() == null ? null : new Expression(getMathSymbol(scs.getInitialConcentrationParameter(),sm.getGeometryClass()));
 				if(particleVariable instanceof VolumeParticleVariable)
 				{
-					initialDistribution = Expression.mult(unitFactor, initialDistribution);
+					initialDistribution = Expression.mult(unitFactor, initialDistribution).flattenFactors("KMOLE");
 				}
 				pic = new ParticleInitialConditionConcentration(initialDistribution);
 			} else {
@@ -903,7 +903,7 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 						forwardUnitFactor = forwardUnitFactor.multiplyBy(reactantUnitFactor); // accumulate unit factors for all reactants
 					}
 
-					forwardRate = Expression.mult(forwardRate, getUnitFactor(forwardUnitFactor));
+					forwardRate = Expression.mult(forwardRate, getUnitFactor(forwardUnitFactor)).flattenFactors("KMOLE");
 					VCUnitDefinition smoldynExpectedForwardRateUnit = smoldynReactionRateUnit.divideBy(smoldynReactantsUnit);
 
 					// get probability
@@ -944,7 +944,7 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 						reverseUnitFactor = reverseUnitFactor.multiplyBy(productUnitFactor); // accumulate unit factors for all products
 					}
 
-					reverseRate = Expression.mult(reverseRate, getUnitFactor(reverseUnitFactor));
+					reverseRate = Expression.mult(reverseRate, getUnitFactor(reverseUnitFactor)).flattenFactors("KMOLE");
 					VCUnitDefinition smoldynExpectedReverseRateUnit = smoldynReactionRateUnit.divideBy(smoldynProductsUnit);
 							
 					// get probability

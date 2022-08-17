@@ -810,7 +810,7 @@ public class SBMLImporter {
 				try {
 					KMOLE_value = KMOLE.getExpression().evaluateConstant();
 				} catch (Exception e){ throw new RuntimeException("unexpected exception: "+e.getMessage(),e); }
-				if (sbmlGlobalParam.equals(KMOLE.getName()) && sbmlGlobalParam.isSetValue() && sbmlGlobalParam.getValue()==KMOLE_value) {
+				if (sbmlGlobalParam.getId().equals(KMOLE.getName()) && sbmlGlobalParam.isSetValue() && sbmlGlobalParam.getValue()==KMOLE_value) {
 					sbmlSymbolMapping.putRuntime(sbmlGlobalParam, KMOLE);
 					continue;
 				}
@@ -3015,7 +3015,7 @@ public class SBMLImporter {
 							vcModelUnitSystem.getInstance_DIMENSIONLESS(),
 							vcModel.getKMOLE());
 					if (!factor.isOne()){
-						vcRateExpression = Expression.mult(factor, vcRateExpression);
+						vcRateExpression = Expression.mult(factor, vcRateExpression).flattenFactors(vcModel.getKMOLE().getName());
 					}
 					kinetics.setParameterValue(kp, vcRateExpression);
 

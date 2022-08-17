@@ -347,6 +347,7 @@ public class ModelUnitConverter {
 				if (!conversionFactor.isOne()){
 					Expression spcSymbol = new Expression(newSTE, newSTE.getNameScope());
 					expr.substituteInPlace(spcSymbol, Expression.mult(new Expression(conversionFactor), spcSymbol));
+					expr.substituteInPlace(expr, expr.flattenFactors(KMOLE.getName()));
 				}
 			}
 		}
@@ -362,8 +363,9 @@ public class ModelUnitConverter {
 		if (!conversionFactor.isOne()){
 			Expression oldExp = new Expression(expr);
 			expr.substituteInPlace(oldExp, Expression.mult(new Expression(conversionFactor), oldExp));
+			expr.substituteInPlace(expr, expr.flattenFactors(KMOLE.getName()));
 		}
-		Expression flattened = expr.flatten();
+		Expression flattened = expr.flattenFactors(KMOLE.getName());
 		Expression origExp = new Expression(expr);
 		expr.substituteInPlace(origExp,flattened);
 	}
