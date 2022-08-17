@@ -433,7 +433,7 @@ public class XmlHelper {
 	/**
 	 Allows the translation process to interact with the user via TranslationMessager
 	 */
-	public static VCDocument importSBML(VCLogger vcLogger, XMLSource xmlSource, boolean bSpatial) throws Exception {
+	public static VCDocument importSBML(VCLogger vcLogger, XMLSource xmlSource, boolean bSpatial) throws XmlParseException {
 
 		//checks that the source is not empty
 		if (xmlSource == null){
@@ -581,7 +581,7 @@ public class XmlHelper {
 	public static List<VCDocument> sedmlToBioModel(VCLogger transLogger, ExternalDocInfo externalDocInfo,
 												   SedML sedml, List<AbstractTask> tasks, String sedmlFileLocation, boolean exactMatchOnly) {
 		if(sedml.getModels().isEmpty()) {
-			throw new Exception("No models found in SED-ML document");
+			throw new RuntimeException("No models found in SED-ML document");
 		}
 		try {
 	        // iterate through all the elements and show them at the console
@@ -597,7 +597,7 @@ public class XmlHelper {
 	        }
 	        List<AbstractTask> ttt = sedml.getTasks();
 	        if (ttt.isEmpty()) {
-	        	throw new Exception("No tasks found in SED-ML document");
+	        	throw new RuntimeException("No tasks found in SED-ML document");
 	        }
 	        for(AbstractTask tt : ttt) {
 	            logger.trace("sedml task: "+tt.toString());
@@ -985,8 +985,12 @@ public class XmlHelper {
 				}
 			}
 			return docs;
-		} catch (Exception e) {
-			throw new RuntimeException("Unable to initialize bioModel for the given selection: "+e.getMessage(), e);
+		} catch (XMLException | XmlParseException e) {
+
+		} catch (PropertyVetoException | ExpressionException | MappingException | GeometryException | ImageException e) {
+
+		} catch (FileNotFoundException e) {
+			throw new RuntimeException("Unable to initialize bioModel for the given selection\n" + e.getMessage(), e);
 		}
 	}
 
