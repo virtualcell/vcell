@@ -384,7 +384,7 @@ public class SolverHandler {
                 if (message.contains(SBMLImporter.RESERVED_SPATIAL)) {
                     cat = SBMLImportException.Category.RESERVED_SPATIAL;
                 }
-                throw new SBMLImportException(message, cat);
+                throw new VCLoggerException(new SBMLImportException(message, cat));
             }
         }
 

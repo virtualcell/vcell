@@ -97,7 +97,7 @@ public class TranslationLogger extends VCLogger implements AutoCloseable {
 			throws VCLoggerException {
 
 		if  (p == null ||et == null ) {
-			throw new IllegalArgumentException("Invalid params for sending translation message.");
+			throw new VCLoggerException(new IllegalArgumentException("Invalid params for sending translation message."));
 		}
 		switch (p) {
 		case LowPriority:

@@ -32,6 +32,7 @@ public class TLogger extends VCLogger {
 			lowPriority.add(msg);
 		}
 		System.err.println(p + " " + et + ": "  + message);
+		throw new VCLoggerException(message);
 	}
 
 }

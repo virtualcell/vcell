@@ -129,7 +129,7 @@ public class CLIUtils {
 
     public static class LocalLogger extends VCLogger {
         @Override
-        public void sendMessage(Priority p, ErrorType et, String message) throws VCLoggerException {
+        public void sendMessage(Priority p, ErrorType et, String message) {
             System.out.println("LOGGER: msgLevel=" + p + ", msgType=" + et + ", " + message);
         }
 
