@@ -52,6 +52,7 @@ import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SimulationContext.Application;
 import cbit.vcell.mapping.SimulationContext.MathMappingCallback;
 import cbit.vcell.mapping.SimulationContext.NetworkGenerationRequirements;
+import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.solver.ConstantArraySpec;
 import cbit.vcell.solver.DefaultOutputTimeSpec;
 import cbit.vcell.solver.ErrorTolerance;
@@ -117,7 +118,6 @@ public class SEDMLImporter {
 	}
 
 	public  List<BioModel> getBioModels() throws Exception {
-		CategoryUtil.setLevel(logger, Level.DEBUG);
 		docs = new ArrayList<BioModel>();
 		try {
 	        // iterate through all the elements and show them at the console
@@ -140,7 +140,6 @@ public class SEDMLImporter {
  	        
 			// We will parse all tasks and create Simulations in BioModels
 			// Creating one VCell Simulation for each SED-ML actual Task (RepeatedTasks get added as parameter scan overrides)
-	    	String kisaoID = null;
 	    	org.jlibsedml.Simulation sedmlSimulation = null;	// this will become the vCell simulation
 	    	org.jlibsedml.Model sedmlOriginalModel = null;		// the "original" model referred to by the task
 	    	String sedmlOriginalModelName = null;				// this will be used in the BioModel name
@@ -151,21 +150,24 @@ public class SEDMLImporter {
 				if(selectedTask instanceof Task) {
 					sedmlOriginalModel = sedml.getModelWithId(selectedTask.getModelReference());
 					sedmlSimulation = sedml.getSimulation(selectedTask.getSimulationReference());
+					sedmlOriginalModelLanguage = sedmlOriginalModel.getLanguage();
 				} else if(selectedTask instanceof RepeatedTask) {
 					// Repeated tasks refer to regular tasks
 					// We need simulations to be created for all regular tasks before we can process repeated tasks
-					logger.warn("RepeatedTask not supported yet, task "+SEDMLUtil.getName(selectedTask)+" is being skipped");
 					continue;
 				} else {
 					throw new RuntimeException("Unexpected task " + selectedTask);
 				}
+				// only UTC sims supported
+				if(!(sedmlSimulation instanceof UniformTimeCourse)) {
+					logger.error("task '" + selectedTask.getName() + "' is being skipped, it references an unsupported simulation type: "+sedmlSimulation);
+					continue;
+				}
 
 				// at this point we assume that the sedml simulation, algorithm and kisaoID are all valid
-				Algorithm algorithm = sedmlSimulation.getAlgorithm();
-				kisaoID = algorithm.getKisaoID();
 
 				// identify the vCell solvers that would match best the sedml solver kisao id
-
+				String kisaoID = sedmlSimulation.getAlgorithm().getKisaoID();
 				// try to find a match in the ontology tree
 				SolverDescription solverDescription = SolverUtilities.matchSolverWithKisaoId(kisaoID, exactMatchOnly);
 				if (solverDescription != null) {
@@ -201,9 +203,10 @@ public class SEDMLImporter {
 
 				BioModel bioModel = bmMap.get(sedmlOriginalModel.getId());
 				
+				// if language is VCML, we don't need to create Applications and Simulations in BioModel
+				// we allow a subset of SED-ML Simulation settings (may have been edited) to override existing BioModel Simulation settings
+				
 				if(sedmlOriginalModelLanguage.contentEquals(SUPPORTED_LANGUAGE.VCELL_GENERIC.getURN())) {
-					// we don't need to make a simulation from sedml if we're coming from vcml, we already got all we need
-					// we basically ignore the sedml simulation altogether
 					Simulation theSimulation = null;
 					for (Simulation sim : bioModel.getSimulations()) {
 						if (sim.getName().equals(selectedTask.getName())) {
@@ -217,39 +220,16 @@ public class SEDMLImporter {
 						// TODO: should we throw an exception?
 						continue;	// should never happen
 					}
-					if(!(sedmlSimulation instanceof UniformTimeCourse)) {
-						continue;
-					}
 					
 					SolverTaskDescription simTaskDesc = theSimulation.getSolverTaskDescription();
-					TimeBounds timeBounds = new TimeBounds();
-					TimeStep timeStep = new TimeStep();
-					double outputTimeStep = 0.1;
-					int outputNumberOfPoints = 1;
-					// we translate initial time to zero, we provide output for the duration of the simulation
-					// because we can't select just an interval the way the SEDML simulation can
-					double initialTime = ((UniformTimeCourse) sedmlSimulation).getInitialTime();
-					double outputStartTime = ((UniformTimeCourse) sedmlSimulation).getOutputStartTime();
-					double outputEndTime = ((UniformTimeCourse) sedmlSimulation).getOutputEndTime();
-					outputNumberOfPoints = ((UniformTimeCourse) sedmlSimulation).getNumberOfPoints();
-					outputTimeStep = (outputEndTime - outputStartTime) / outputNumberOfPoints;
-					timeBounds = new TimeBounds(0, outputEndTime - initialTime);
-
-					OutputTimeSpec outputTimeSpec = new UniformOutputTimeSpec(outputTimeStep);
-					simTaskDesc.setTimeBounds(timeBounds);
-					simTaskDesc.setTimeStep(timeStep);
-					if (simTaskDesc.getSolverDescription().supports(outputTimeSpec)) {
-						simTaskDesc.setOutputTimeSpec(outputTimeSpec);
-					} else {
-						simTaskDesc.setOutputTimeSpec(new DefaultOutputTimeSpec(1,Integer.max(DefaultOutputTimeSpec.DEFAULT_KEEP_AT_MOST, outputNumberOfPoints)));
-					}
-					//theSimulation.setSolverTaskDescription(simTaskDesc);
-					//theSimulation.refreshDependencies();
+					translateTimeBounds(simTaskDesc, sedmlSimulation);
 					continue;
 				}
 				
-				// even if we just created the biomodel from the sbml file we have at least one application with initial conditions and stuff
-				// see if there is a suitable application type for the sedml kisao
+				// if language is SBML, we must create Simulations
+				// we may need to also create Applications, since the default one from SBML import may not be the right type)
+				
+				// see first if there is a suitable application type for the specified kisao
 				// if not, we add one by doing a "copy as" to the right type
 				SimulationContext[] existingSimulationContexts = bioModel.getSimulationContexts();
 				SimulationContext matchingSimulationContext = null;
@@ -268,10 +248,6 @@ public class SEDMLImporter {
 				matchingSimulationContext.refreshMathDescription(callback, NetworkGenerationRequirements.ComputeFullStandardTimeout);
 
 				// making the new vCell simulation based on the sedml simulation
-				if(!(sedmlSimulation instanceof UniformTimeCourse)) {
-					// we don't even bother if it's an unsupported type
-					continue;
-				}
 				Simulation newSimulation = new Simulation(matchingSimulationContext.getMathDescription());
 				newSimulation.setSimulationOwner(matchingSimulationContext);
 				if (selectedTask instanceof Task) {
@@ -293,149 +269,74 @@ public class SEDMLImporter {
 					simTaskDesc.setSolverDescription(solverDescription);
 				}
 
-				TimeBounds timeBounds = new TimeBounds();
-				TimeStep timeStep = new TimeStep();
-				double outputTimeStep = 0.1;
-				int outputNumberOfPoints = 1;
-				if(sedmlSimulation instanceof UniformTimeCourse) {
-					// we translate initial time to zero, we provide output for the duration of the simulation
-					// because we can't select just an interval the way the SEDML simulation can
-					double initialTime = ((UniformTimeCourse) sedmlSimulation).getInitialTime();
-					double outputStartTime = ((UniformTimeCourse) sedmlSimulation).getOutputStartTime();
-					double outputEndTime = ((UniformTimeCourse) sedmlSimulation).getOutputEndTime();
-					outputNumberOfPoints = ((UniformTimeCourse) sedmlSimulation).getNumberOfPoints();
-					outputTimeStep = (outputEndTime - outputStartTime) / outputNumberOfPoints;
-					timeBounds = new TimeBounds(0, outputEndTime - initialTime);
-//				} else if(sedmlSimulation instanceof OneStep) {		// for anything other than UniformTimeCourse we just ignore
-//					System.err.println("OneStep Simulation not supported");
-//				} else if(sedmlSimulation instanceof SteadyState) {
-//					System.err.println("SteadyState Simulation not supported");
-				}
-				simTaskDesc.setTimeBounds(timeBounds);
-				simTaskDesc.setTimeStep(timeStep);
+				translateTimeBounds(simTaskDesc, sedmlSimulation);
 
-				// we look for explicit algorithm parameters
-				ErrorTolerance errorTolerance = new ErrorTolerance();
-				List<AlgorithmParameter> sedmlAlgorithmParameters = algorithm.getListOfAlgorithmParameters();
-				for(AlgorithmParameter sedmlAlgorithmParameter : sedmlAlgorithmParameters) {
-
-					String apKisaoID = sedmlAlgorithmParameter.getKisaoID();
-					String apValue = sedmlAlgorithmParameter.getValue();
-					if(apKisaoID == null || apKisaoID.isEmpty()) {
-						logger.error("Undefined KisaoID algorithm parameter for algorithm '" + kisaoID + "'");
-					}
-
-					// we don't check if the recognized algorithm parameters are valid for our algorithm
-					// we just use any parameter we find for the solver task description we have, assuming the exporting code did all the checks
-					// WARNING: if our algorithm is the result of a guess, this may be wrong
-					// TODO: use the proper ontology for the algorithm parameters kisao id
-					if(apKisaoID.contentEquals(ErrorTolerance.ErrorToleranceDescription.Absolute.getKisao())) {
-						double value = Double.parseDouble(apValue);
-						errorTolerance.setAbsoluteErrorTolerance(value);
-					} else if(apKisaoID.contentEquals(ErrorTolerance.ErrorToleranceDescription.Relative.getKisao())) {
-						double value = Double.parseDouble(apValue);
-						errorTolerance.setRelativeErrorTolerance(value);
-					} else if(apKisaoID.contentEquals(TimeStep.TimeStepDescription.Default.getKisao())) {
-						double value = Double.parseDouble(apValue);
-						timeStep.setDefaultTimeStep(value);
-					} else if(apKisaoID.contentEquals(TimeStep.TimeStepDescription.Maximum.getKisao())) {
-						double value = Double.parseDouble(apValue);
-						timeStep.setMaximumTimeStep(value);
-					} else if(apKisaoID.contentEquals(TimeStep.TimeStepDescription.Minimum.getKisao())) {
-						double value = Double.parseDouble(apValue);
-						timeStep.setMinimumTimeStep(value);
-					} else if(apKisaoID.contentEquals(AlgorithmParameterDescription.Seed.getKisao())) {		// custom seed
-						if(simTaskDesc.getSimulation().getMathDescription().isNonSpatialStoch()) {
-							NonspatialStochSimOptions nssso = simTaskDesc.getStochOpt();
-							int value = Integer.parseInt(apValue);
-							nssso.setCustomSeed(value);
-						} else {
-							logger.error("Algorithm parameter '" + AlgorithmParameterDescription.Seed.getDescription() +"' is only supported for nonspatial stochastic simulations");
-						}
-						// some arguments used only for non-spatial hybrid solvers
-					} else if(apKisaoID.contentEquals(AlgorithmParameterDescription.Epsilon.getKisao())) {
-						NonspatialStochHybridOptions nssho = simTaskDesc.getStochHybridOpt();
-						nssho.setEpsilon(Double.parseDouble(apValue));
-					} else if(apKisaoID.contentEquals(AlgorithmParameterDescription.Lambda.getKisao())) {
-						NonspatialStochHybridOptions nssho = simTaskDesc.getStochHybridOpt();
-						nssho.setLambda(Double.parseDouble(apValue));
-					} else if(apKisaoID.contentEquals(AlgorithmParameterDescription.MSRTolerance.getKisao())) {
-						NonspatialStochHybridOptions nssho = simTaskDesc.getStochHybridOpt();
-						nssho.setMSRTolerance(Double.parseDouble(apValue));
-					} else if(apKisaoID.contentEquals(AlgorithmParameterDescription.SDETolerance.getKisao())) {
-						NonspatialStochHybridOptions nssho = simTaskDesc.getStochHybridOpt();
-						nssho.setSDETolerance(Double.parseDouble(apValue));
-					} else {
-						logger.error("Algorithm parameter with kisao id '" + apKisaoID + "' not supported at this time, skipping.");
-					}
-				}
-				simTaskDesc.setErrorTolerance(errorTolerance);
-
-				OutputTimeSpec outputTimeSpec = new UniformOutputTimeSpec(outputTimeStep);
-				if (simTaskDesc.getSolverDescription().supports(outputTimeSpec)) {
-					simTaskDesc.setOutputTimeSpec(outputTimeSpec);
-				} else {
-					simTaskDesc.setOutputTimeSpec(new DefaultOutputTimeSpec(1,Integer.max(DefaultOutputTimeSpec.DEFAULT_KEEP_AT_MOST, outputNumberOfPoints)));
-				}
+				translateAlgorithmParams(simTaskDesc, sedmlSimulation);
+				
 				newSimulation.setSolverTaskDescription(simTaskDesc);
 				newSimulation.setDescription(SEDMLUtil.getName(selectedTask));
 				bioModel.addSimulation(newSimulation);
 				newSimulation.refreshDependencies();
 			}
-			// now processing repeated tasks, if any
-			for (AbstractTask selectedTask : ttt) {
-				if (selectedTask instanceof RepeatedTask) {
-					RepeatedTask rt = (RepeatedTask)selectedTask;
-					if (!rt.getResetModel() || rt.getSubTasks().size() != 1) {
-						logger.error("sequential RepeatedTask not yet supported, task "+SEDMLUtil.getName(selectedTask)+" is being skipped");
-						continue;
-					}
-					if (rt.getChanges().size() != 1) {
-						logger.error("lockstep multiple parameter scans are not yet supported, task "+SEDMLUtil.getName(selectedTask)+" is being skipped");
-						continue;
-					}
-					AbstractTask referredTask;
-					// find the actual Task, which can be directly referred or indirectly through a chain of RepeatedTasks (in case of multiple parameter scans)
-					do {
-						SubTask st = rt.getSubTasks().entrySet().iterator().next().getValue(); // single subtask
-						String taskId = st.getTaskId();
-						referredTask = sedml.getTaskWithId(taskId);
-						if (referredTask instanceof RepeatedTask) rt = (RepeatedTask)referredTask;
-					} while (referredTask instanceof RepeatedTask);
-					Task actualTask = (Task)referredTask;
-					Simulation simulation = vcSimulations.get(actualTask.getId());
-					// now add a parameter scan to the simulation referred by the actual task
-					ConstantArraySpec scanSpec = null;
-					rt = (RepeatedTask)selectedTask;
-					SetValue change = rt.getChanges().get(0); // single param scan
-					SBMLSupport sbmlSupport = new SBMLSupport();
-					String targetID = sbmlSupport.getIdFromXPathIdentifer(change.getTargetXPath().getTargetAsString());
-					Range range = rt.getRange(change.getRangeReference());
-					// TODO start
-					// need to map the SBML target to VCell constant name
-					String constant = targetID; // placeholder
-					// TODO end
-					if (range instanceof UniformRange) {
-						UniformRange ur = (UniformRange)range;
-						scanSpec = ConstantArraySpec.createIntervalSpec(constant, Math.min(ur.getStart(), ur.getEnd()), Math.max(ur.getStart(), ur.getEnd()), ur.getNumberOfPoints(), ur.getType().equals(UniformType.LOG));
-					} else if (range instanceof VectorRange) {
-						VectorRange vr = (VectorRange)range;
-						String[] values = new String[vr.getNumElements()];
-						for (int i = 0; i < values.length; i++) {
-							values[i] = Double.toString(vr.getElementAt(i));
-						}
-						scanSpec = ConstantArraySpec.createListSpec(constant, values);
-					} else {
-						logger.error("unsupported Range class found, task "+SEDMLUtil.getName(selectedTask)+" is being skipped");
-						continue;						
-					}
-					MathOverrides mo = simulation.getMathOverrides();
-					mo.putConstantArraySpec(scanSpec);
-				}
-			}
+			// now process repeated tasks, if any
+			addRepeatedTasks(ttt, vcSimulations);
 			return docs;
 		} catch (Exception e) {
 			throw new RuntimeException("Unable to initialize bioModel for the given selection\n"+e.getMessage(), e);
+		}
+	}
+
+	private void addRepeatedTasks(List<AbstractTask> ttt, HashMap<String, Simulation> vcSimulations)
+			throws ExpressionException {
+		for (AbstractTask selectedTask : ttt) {
+			if (selectedTask instanceof RepeatedTask) {
+				RepeatedTask rt = (RepeatedTask)selectedTask;
+				if (!rt.getResetModel() || rt.getSubTasks().size() != 1) {
+					logger.error("sequential RepeatedTask not yet supported, task "+SEDMLUtil.getName(selectedTask)+" is being skipped");
+					continue;
+				}
+				if (rt.getChanges().size() != 1) {
+					logger.error("lockstep multiple parameter scans are not yet supported, task "+SEDMLUtil.getName(selectedTask)+" is being skipped");
+					continue;
+				}
+				AbstractTask referredTask;
+				// find the actual Task, which can be directly referred or indirectly through a chain of RepeatedTasks (in case of multiple parameter scans)
+				do {
+					SubTask st = rt.getSubTasks().entrySet().iterator().next().getValue(); // single subtask
+					String taskId = st.getTaskId();
+					referredTask = sedml.getTaskWithId(taskId);
+					if (referredTask instanceof RepeatedTask) rt = (RepeatedTask)referredTask;
+				} while (referredTask instanceof RepeatedTask);
+				Task actualTask = (Task)referredTask;
+				Simulation simulation = vcSimulations.get(actualTask.getId());
+				// now add a parameter scan to the simulation referred by the actual task
+				ConstantArraySpec scanSpec = null;
+				rt = (RepeatedTask)selectedTask;
+				SetValue change = rt.getChanges().get(0); // single param scan
+				SBMLSupport sbmlSupport = new SBMLSupport();
+				String targetID = sbmlSupport.getIdFromXPathIdentifer(change.getTargetXPath().getTargetAsString());
+				Range range = rt.getRange(change.getRangeReference());
+				// TODO start
+				// need to map the SBML target to VCell constant name
+				String constant = targetID; // placeholder
+				// TODO end
+				if (range instanceof UniformRange) {
+					UniformRange ur = (UniformRange)range;
+					scanSpec = ConstantArraySpec.createIntervalSpec(constant, Math.min(ur.getStart(), ur.getEnd()), Math.max(ur.getStart(), ur.getEnd()), ur.getNumberOfPoints(), ur.getType().equals(UniformType.LOG));
+				} else if (range instanceof VectorRange) {
+					VectorRange vr = (VectorRange)range;
+					String[] values = new String[vr.getNumElements()];
+					for (int i = 0; i < values.length; i++) {
+						values[i] = Double.toString(vr.getElementAt(i));
+					}
+					scanSpec = ConstantArraySpec.createListSpec(constant, values);
+				} else {
+					logger.error("unsupported Range class found, task "+SEDMLUtil.getName(selectedTask)+" is being skipped");
+					continue;						
+				}
+				MathOverrides mo = simulation.getMathOverrides();
+				mo.putConstantArraySpec(scanSpec);
+			}
 		}
 	}
 
@@ -552,4 +453,89 @@ public class SEDMLImporter {
 		}
 	}
 
+	private void translateTimeBounds(SolverTaskDescription simTaskDesc, org.jlibsedml.Simulation sedmlSimulation) throws PropertyVetoException {
+		TimeBounds timeBounds = new TimeBounds();
+		TimeStep timeStep = new TimeStep();
+		double outputTimeStep = 0.1;
+		int outputNumberOfPoints = 1;
+		// we translate initial time to zero, we provide output for the duration of the simulation
+		// because we can't select just an interval the way the SEDML simulation can
+		double initialTime = ((UniformTimeCourse) sedmlSimulation).getInitialTime();
+		double outputStartTime = ((UniformTimeCourse) sedmlSimulation).getOutputStartTime();
+		double outputEndTime = ((UniformTimeCourse) sedmlSimulation).getOutputEndTime();
+		outputNumberOfPoints = ((UniformTimeCourse) sedmlSimulation).getNumberOfPoints();
+		outputTimeStep = (outputEndTime - outputStartTime) / outputNumberOfPoints;
+		timeBounds = new TimeBounds(0, outputEndTime - initialTime);
+
+		OutputTimeSpec outputTimeSpec = new UniformOutputTimeSpec(outputTimeStep);
+		simTaskDesc.setTimeBounds(timeBounds);
+		simTaskDesc.setTimeStep(timeStep);
+		if (simTaskDesc.getSolverDescription().supports(outputTimeSpec)) {
+			simTaskDesc.setOutputTimeSpec(outputTimeSpec);
+		} else {
+			simTaskDesc.setOutputTimeSpec(new DefaultOutputTimeSpec(1,Integer.max(DefaultOutputTimeSpec.DEFAULT_KEEP_AT_MOST, outputNumberOfPoints)));
+		}
+
+	}
+	
+	private void translateAlgorithmParams(SolverTaskDescription simTaskDesc, org.jlibsedml.Simulation sedmlSimulation) throws PropertyVetoException {
+		TimeStep timeStep = simTaskDesc.getTimeStep();
+		Algorithm algorithm = sedmlSimulation.getAlgorithm();
+		String kisaoID = algorithm.getKisaoID();
+		ErrorTolerance errorTolerance = new ErrorTolerance();
+		List<AlgorithmParameter> sedmlAlgorithmParameters = algorithm.getListOfAlgorithmParameters();
+		for(AlgorithmParameter sedmlAlgorithmParameter : sedmlAlgorithmParameters) {
+
+			String apKisaoID = sedmlAlgorithmParameter.getKisaoID();
+			String apValue = sedmlAlgorithmParameter.getValue();
+			if(apKisaoID == null || apKisaoID.isEmpty()) {
+				logger.error("Undefined KisaoID algorithm parameter for algorithm '" + kisaoID + "'");
+			}
+
+			// we don't check if the recognized algorithm parameters are valid for our algorithm
+			// we just use any parameter we find for the solver task description we have, assuming the exporting code did all the checks
+			// WARNING: if our algorithm is the result of a guess, this may be wrong
+			// TODO: use the proper ontology for the algorithm parameters kisao id
+			if(apKisaoID.contentEquals(ErrorTolerance.ErrorToleranceDescription.Absolute.getKisao())) {
+				double value = Double.parseDouble(apValue);
+				errorTolerance.setAbsoluteErrorTolerance(value);
+			} else if(apKisaoID.contentEquals(ErrorTolerance.ErrorToleranceDescription.Relative.getKisao())) {
+				double value = Double.parseDouble(apValue);
+				errorTolerance.setRelativeErrorTolerance(value);
+			} else if(apKisaoID.contentEquals(TimeStep.TimeStepDescription.Default.getKisao())) {
+				double value = Double.parseDouble(apValue);
+				timeStep.setDefaultTimeStep(value);
+			} else if(apKisaoID.contentEquals(TimeStep.TimeStepDescription.Maximum.getKisao())) {
+				double value = Double.parseDouble(apValue);
+				timeStep.setMaximumTimeStep(value);
+			} else if(apKisaoID.contentEquals(TimeStep.TimeStepDescription.Minimum.getKisao())) {
+				double value = Double.parseDouble(apValue);
+				timeStep.setMinimumTimeStep(value);
+			} else if(apKisaoID.contentEquals(AlgorithmParameterDescription.Seed.getKisao())) {		// custom seed
+				if(simTaskDesc.getSimulation().getMathDescription().isNonSpatialStoch()) {
+					NonspatialStochSimOptions nssso = simTaskDesc.getStochOpt();
+					int value = Integer.parseInt(apValue);
+					nssso.setCustomSeed(value);
+				} else {
+					logger.error("Algorithm parameter '" + AlgorithmParameterDescription.Seed.getDescription() +"' is only supported for nonspatial stochastic simulations");
+				}
+				// some arguments used only for non-spatial hybrid solvers
+			} else if(apKisaoID.contentEquals(AlgorithmParameterDescription.Epsilon.getKisao())) {
+				NonspatialStochHybridOptions nssho = simTaskDesc.getStochHybridOpt();
+				nssho.setEpsilon(Double.parseDouble(apValue));
+			} else if(apKisaoID.contentEquals(AlgorithmParameterDescription.Lambda.getKisao())) {
+				NonspatialStochHybridOptions nssho = simTaskDesc.getStochHybridOpt();
+				nssho.setLambda(Double.parseDouble(apValue));
+			} else if(apKisaoID.contentEquals(AlgorithmParameterDescription.MSRTolerance.getKisao())) {
+				NonspatialStochHybridOptions nssho = simTaskDesc.getStochHybridOpt();
+				nssho.setMSRTolerance(Double.parseDouble(apValue));
+			} else if(apKisaoID.contentEquals(AlgorithmParameterDescription.SDETolerance.getKisao())) {
+				NonspatialStochHybridOptions nssho = simTaskDesc.getStochHybridOpt();
+				nssho.setSDETolerance(Double.parseDouble(apValue));
+			} else {
+				logger.error("Algorithm parameter with kisao id '" + apKisaoID + "' not supported at this time, skipping.");
+			}
+		}
+		simTaskDesc.setErrorTolerance(errorTolerance);
+	}
 }
