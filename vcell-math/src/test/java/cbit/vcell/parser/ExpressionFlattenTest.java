@@ -28,7 +28,7 @@ public class ExpressionFlattenTest {
                 {new Expression("KMOLE/KMOLE"),
                         new Expression("1.0")},
                 {new Expression("KMOLE/KMOLE*KMOLE/KMOLE"),
-                        new Expression("1.0")},
+                        new Expression("KMOLE/KMOLE")},
                 {new Expression("KMOLE/KMOLE*KMOLE/KMOLE2"),
                         new Expression("KMOLE/KMOLE2")},
                 {new Expression("KMOLE*pow(KMOLE,-1)"),
