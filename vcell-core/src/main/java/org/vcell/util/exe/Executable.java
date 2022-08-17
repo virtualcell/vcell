@@ -513,6 +513,7 @@ public static long getTimeoutMS() {
 }
 
 public static void setTimeoutMS(long timeoutMS) {
+	lg.trace("Setting timeout to: " + Long.toString(timeoutMS) + "ms");
 	Executable.timeoutMS = timeoutMS;
 }
 }

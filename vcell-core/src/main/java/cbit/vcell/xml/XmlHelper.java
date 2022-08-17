@@ -579,7 +579,7 @@ public class XmlHelper {
 
 
 	public static List<VCDocument> sedmlToBioModel(VCLogger transLogger, ExternalDocInfo externalDocInfo,
-												   SedML sedml, List<AbstractTask> tasks, String sedmlFileLocation, boolean exactMatchOnly) throws Exception {
+												   SedML sedml, List<AbstractTask> tasks, String sedmlFileLocation, boolean exactMatchOnly) {
 		if(sedml.getModels().isEmpty()) {
 			throw new Exception("No models found in SED-ML document");
 		}

@@ -43,11 +43,6 @@ public class BiosimulationsCommand implements Callable<Integer> {
 
     public Integer call() {
         try {
-            if (bDebug && bQuiet) {
-                System.err.println("cannot specify both debug and quiet, try --help for usage");
-                return 1;
-            }
-
             LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
             Level logLevel = Level.WARN;
             if (bDebug) {
@@ -55,29 +50,49 @@ public class BiosimulationsCommand implements Callable<Integer> {
             } else if (bQuiet) {
                 logLevel = Level.OFF;
             }
-            
             CLIUtils.setLogLevel(ctx, logLevel);
 
+            logger.debug("Biosimulations mode requested");
+
+            String trace_args =  String.format(
+                "Arguments:\nArchive\t: \"%s\"\nOut Dir\t: \"%s\"\nDebug\t: %b\n" +
+                    "Quiet\t: %b\nVersion\t: %b\nHelp\t: %b",
+                ARCHIVE.getAbsolutePath(), OUT_DIR.getAbsolutePath(), bDebug, bQuiet, bVersion, help
+            );
+
+            logger.trace(trace_args);
+
+            // Load properties before we need them below!
             PropertyLoader.loadProperties();
+
+            logger.debug("Validating CLI arguments");
+            if (bDebug && bQuiet) {
+                logger.error("cannot specify both debug and quiet, try --help for usage");
+                return 1;
+            }
+
             if (bVersion) {
-                System.out.println(PropertyLoader.getRequiredDirectory(PropertyLoader.vcellSoftwareVersion));
+                logger.error(PropertyLoader.getRequiredDirectory(PropertyLoader.vcellSoftwareVersion));
                 return 0;
             }
 
+            logger.trace("Validating input");
             if (ARCHIVE == null) {
-                System.err.println("ARCHIVE file not specified, try --help for usage");
+                logger.error("ARCHIVE file not specified, try --help for usage");
                 return 1;
             }
             if (!ARCHIVE.isFile()) {
-                System.err.println("ARCHIVE file " + ARCHIVE.getAbsolutePath() + " not found, try --help for usage");
+                logger.error("ARCHIVE file " + ARCHIVE.getAbsolutePath() + " not found, try --help for usage");
                 return 1;
             }
+
+            logger.trace("Validating output");
             if (OUT_DIR == null) {
-                System.err.println("OUT_DIR not specified, try --help for usage");
+                logger.error("OUT_DIR not specified, try --help for usage");
                 return 1;
             }
             if (!OUT_DIR.isDirectory()) {
-                System.err.println("OUT_DIR " + OUT_DIR.getAbsolutePath() + " not found or is not a directory, try --help for usage");
+                logger.error("OUT_DIR " + OUT_DIR.getAbsolutePath() + " not found or is not a directory, try --help for usage");
                 return 1;
             }
             long EXECUTABLE_MAX_WALLCLOCK_MILLIS = 600000;
@@ -87,20 +102,20 @@ public class BiosimulationsCommand implements Callable<Integer> {
             final boolean bKeepTempFiles = false;
             final boolean bExactMatchOnly = false;
 
+            logger.info("Beginning execution");
             try {
                 CLIPythonManager.getInstance().instantiatePythonProcess();
                 ExecuteImpl.singleExecOmex(ARCHIVE, OUT_DIR, bKeepTempFiles, bExactMatchOnly, bForceLogFiles, false);
-                return 0;
+                return 0; // Does this prevent finally?
             } finally {
                 try {
                     CLIPythonManager.getInstance().closePythonProcess(); // WARNING: Python will need reinstantiation after this is called
                 } catch (Exception e) {
-                    logger.error(e);
+                    logger.error(e.getMessage(), e);
                 }
             }
         } catch (Exception e) {
-            e.printStackTrace();
-            logger.error(e);
+            logger.error(e.getMessage(), e);
             return 1;
         }
     }
