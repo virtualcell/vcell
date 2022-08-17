@@ -38,9 +38,11 @@ import cbit.vcell.mapping.ParameterContext.LocalParameter;
 import cbit.vcell.mapping.ParameterContext.ParameterPolicy;
 import cbit.vcell.mapping.ParameterContext.ParameterRoleEnum;
 import cbit.vcell.mapping.SimulationContext.Kind;
+import cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecParameter;
 import cbit.vcell.math.Event;
 import cbit.vcell.math.MathUtilities;
 import cbit.vcell.model.Structure.StructureSize;
+import cbit.vcell.parser.DivideByZeroException;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
@@ -558,6 +560,101 @@ public class BioEvent implements Matchable, Serializable, VetoableChangeListener
 				}
 			}
 		}
+		
+		// raise issue if trigger expression is 0
+//				String msg = "The Trigger Condition for BioEvent '" + name + "' cannot be 0.";
+//				String tip = msg;
+//				issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.ERROR));
+		SymbolTableEntry timeSymbolTableEntry = getSimulationContext().getModel().getTIME();
+		Expression tExp = new Expression(timeSymbolTableEntry,getNameScope());
+
+		
+		try {
+		switch (triggerType) {
+		case SingleTriggerTime:
+		{
+			Expression originalExp = getParameterValue(BioEventParameterType.SingleTriggerTime);
+			Expression exp = new Expression(originalExp);
+			exp = exp.flatten();
+			if(exp.isZero()) {
+				System.out.println(exp);
+				String msg = "The Trigger Condition for BioEvent '" + name + "' cannot be 0.";
+				String tip = msg;
+				issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.ERROR));
+			} else if(!exp.isNumeric()) {
+				System.out.println(exp);
+				String[] symbols = exp.getSymbols();
+				if(symbols.length == 0) {
+					break;
+				}
+				for(String symbol : symbols) {
+					SpeciesContext sc = simulationContext.getBioModel().getModel().getSpeciesContext(symbol);
+					SpeciesContextSpec scs = simulationContext.getReactionContext().getSpeciesContextSpec(sc);
+					SpeciesContextSpecParameter initConc = scs.getInitialConcentrationParameter();
+					if(initConc.getExpression().isNumeric()) {
+						exp.substituteInPlace(new Expression(symbol), new Expression(initConc.getConstantValue()));
+					} else {
+						break;	// for now we don't try to deal here with expressions in initConc
+					}
+				}
+				exp = exp.flatten();
+				if(exp.isZero()) {
+					System.out.println(exp);
+					String msg = "The Trigger Condition for BioEvent '" + name + "' cannot be 0.";
+					String tip = msg;
+					issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.ERROR));
+				}
+			}
+			break;
+		}
+		case LinearRangeTimes:
+		case LogRangeTimes:
+		case ListOfTimes:
+		{
+			Expression exp = getParameterValue(BioEventParameterType.RangeMinTime);
+			exp = exp.flatten();
+			if(exp.isZero()) {
+				System.out.println(exp);
+				String msg = "The Min Trigger Condition for BioEvent '" + name + "' cannot be 0.";
+				String tip = msg;
+				issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.ERROR));
+			} else if(!exp.isNumeric()) {
+				System.out.println(exp);
+				System.out.println(exp);
+				String[] symbols = exp.getSymbols();
+				if(symbols.length == 0) {
+					break;
+				}
+				for(String symbol : symbols) {
+					SpeciesContext sc = simulationContext.getBioModel().getModel().getSpeciesContext(symbol);
+					SpeciesContextSpec scs = simulationContext.getReactionContext().getSpeciesContextSpec(sc);
+					SpeciesContextSpecParameter initConc = scs.getInitialConcentrationParameter();
+					if(initConc.getExpression().isNumeric()) {
+						exp.substituteInPlace(new Expression(symbol), new Expression(initConc.getConstantValue()));
+					} else {
+						break;	// for now we don't try to deal here with expressions in initConc
+					}
+				}
+				exp = exp.flatten();
+				if(exp.isZero()) {
+					System.out.println(exp);
+					String msg = "The Trigger Condition for BioEvent '" + name + "' cannot be 0.";
+					String tip = msg;
+					issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.ERROR));
+				}
+			}
+			break;
+		}
+		}
+		} catch(DivideByZeroException e) {
+			String msg = "Divide by zero in the Trigger Condition for BioEvent '" + name + "'.";
+			String tip = msg;
+			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.ERROR));
+		}
+		catch (ExpressionException e) {
+			e.printStackTrace();
+		}
+		
 		if(sbmlName != null && sbmlName.isEmpty()) {
 			String message = "SbmlName cannot be an empty string.";
 			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, message, Issue.Severity.ERROR));
