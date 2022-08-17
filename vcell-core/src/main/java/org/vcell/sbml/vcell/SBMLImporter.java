@@ -15,6 +15,7 @@ import cbit.image.VCImageCompressed;
 import cbit.image.VCImageUncompressed;
 import cbit.image.VCPixelClass;
 import cbit.util.xml.VCLogger;
+import cbit.util.xml.VCLoggerException;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.biomodel.ModelUnitConverter;
 import cbit.vcell.biomodel.meta.VCMetaData;
@@ -1615,7 +1616,7 @@ public class SBMLImporter {
 	/**
 	 * parse SBML file into biomodel logs errors to log4j if present in source document
 	 */
-	public BioModel getBioModel() throws Exception {
+	public BioModel getBioModel() throws IllegalStateException, SBMLImportException, VCLoggerException {
 		
 		if (sbmlFileName == null && sbmlModel == null && sbmlInputStream == null) {
 			throw new IllegalStateException("Expected non-null SBML model");
@@ -1784,7 +1785,8 @@ public class SBMLImporter {
 				sb.append(line).append("\n");
 			}
 			SBMLReader reader = new SBMLReader();
-			document = reader.readSBMLFromString(sb.toString());
+			String sbmlString = sb.toString();
+			document = reader.readSBMLFromString(sbmlString);
 			// check for VCell origin
 			String topNotes = document.getNotesString();
 			if (topNotes != null && topNotes.contains("VCell")) {
@@ -1820,9 +1822,10 @@ public class SBMLImporter {
 		}
 	}
 
-	private static void validateSBMLDocument(SBMLDocument document, VCLogger vcLogger) throws Exception {
+	private static void validateSBMLDocument(SBMLDocument document, VCLogger vcLogger) throws VCLoggerException {
 		//document.checkConsistencyOffline();
 		document.checkConsistencyOnline();
+
 		long numProblems = document.getNumErrors();
 
 		ByteArrayOutputStream os = new ByteArrayOutputStream();

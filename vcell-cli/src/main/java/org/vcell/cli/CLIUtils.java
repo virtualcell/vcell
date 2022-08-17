@@ -1,11 +1,9 @@
 package org.vcell.cli;
 
 import cbit.util.xml.VCLogger;
-import cbit.util.xml.VCLoggerException;
 
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.config.Configuration;
 import org.apache.logging.log4j.core.config.LoggerConfig;
@@ -53,7 +51,10 @@ public class CLIUtils {
 
     public static void setLogLevel(LoggerContext ctx, Level logLevel){
         Configuration config = ctx.getConfiguration();
-        LoggerConfig loggerConfig = config.getLoggerConfig(LogManager.ROOT_LOGGER_NAME);
+        
+        LoggerConfig loggerConfig = config.getLoggerConfig(LogManager.getLogger("org.vcell").getName());
+        loggerConfig.setLevel(logLevel);
+        loggerConfig = config.getLoggerConfig(LogManager.getLogger("cbit").getName());
         loggerConfig.setLevel(logLevel);
         ctx.updateLoggers();  // This causes all Loggers to refetch information from their LoggerConfig.
     }

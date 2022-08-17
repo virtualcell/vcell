@@ -10,8 +10,10 @@
 
 package cbit.vcell.xml;
 
+import cbit.image.ImageException;
 import cbit.image.VCImage;
 import cbit.util.xml.VCLogger;
+import cbit.util.xml.VCLoggerException;
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.biomodel.ModelUnitConverter;
@@ -21,6 +23,8 @@ import cbit.vcell.biomodel.meta.xml.XMLMetaDataReader;
 import cbit.vcell.biomodel.meta.xml.XMLMetaDataWriter;
 import cbit.vcell.field.FieldDataIdentifierSpec;
 import cbit.vcell.geometry.Geometry;
+import cbit.vcell.geometry.GeometryException;
+import cbit.vcell.mapping.MappingException;
 import cbit.vcell.mapping.MathMapping;
 import cbit.vcell.mapping.MathMappingCallbackTaskAdapter;
 import cbit.vcell.mapping.MathSymbolMapping;
@@ -59,6 +63,7 @@ import org.vcell.sbml.SbmlException;
 import org.vcell.sbml.vcell.MathModel_SBMLExporter;
 import org.vcell.sbml.vcell.SBMLAnnotationUtil;
 import org.vcell.sbml.vcell.SBMLExporter;
+import org.vcell.sbml.vcell.SBMLImportException;
 import org.vcell.sbml.vcell.SBMLImporter;
 import org.vcell.sedml.RelativeFileModelResolver;
 import org.vcell.sedml.SEDMLUtil;
@@ -81,6 +86,8 @@ import javax.xml.transform.stream.StreamResult;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathFactory;
+
+import java.beans.PropertyVetoException;
 import java.io.*;
 import java.util.*;
 
@@ -433,7 +440,7 @@ public class XmlHelper {
 	/**
 	 Allows the translation process to interact with the user via TranslationMessager
 	 */
-	public static VCDocument importSBML(VCLogger vcLogger, XMLSource xmlSource, boolean bSpatial) throws XmlParseException {
+	public static VCDocument importSBML(VCLogger vcLogger, XMLSource xmlSource, boolean bSpatial) throws XmlParseException, VCLoggerException, IOException {
 
 		//checks that the source is not empty
 		if (xmlSource == null){
@@ -580,6 +587,7 @@ public class XmlHelper {
 
 	public static List<VCDocument> sedmlToBioModel(VCLogger transLogger, ExternalDocInfo externalDocInfo,
 												   SedML sedml, List<AbstractTask> tasks, String sedmlFileLocation, boolean exactMatchOnly) {
+		List<VCDocument> docs = null;
 		if(sedml.getModels().isEmpty()) {
 			throw new RuntimeException("No models found in SED-ML document");
 		}
@@ -623,7 +631,7 @@ public class XmlHelper {
 			// We need to make a separate BioModel for each SED-ML model
 			// We will parse all tasks and create Simulations for each in the BioModel(s) corresponding to the model referenced by the tasks
 
-			List<VCDocument> docs = new ArrayList<VCDocument>();
+			docs = new ArrayList<VCDocument>();
 			String bioModelBaseName = FileUtils.getBaseName(externalDocInfo.getFile().getAbsolutePath());		// extract bioModel name from sedx (or sedml) file
 			String kisaoID = null;
 			org.jlibsedml.Simulation sedmlSimulation = null;	// this will become the vCell simulation
@@ -984,14 +992,20 @@ public class XmlHelper {
 					mo.putConstantArraySpec(scanSpec);
 				}
 			}
-			return docs;
+		} catch (SBMLImportException e){
+			throw new RuntimeException("Unable to initialize bioModel for the given selection; Problem with SBML Import encountered\n" + e.getMessage(), e);
 		} catch (XMLException | XmlParseException e) {
-
-		} catch (PropertyVetoException | ExpressionException | MappingException | GeometryException | ImageException e) {
-
-		} catch (FileNotFoundException e) {
-			throw new RuntimeException("Unable to initialize bioModel for the given selection\n" + e.getMessage(), e);
+			throw new RuntimeException("Unable to initialize bioModel for the given selection; Problem with XML encountered\n" + e.getMessage(), e);
+		} catch (ExpressionException | MappingException | GeometryException | ImageException e) {
+			throw new RuntimeException("Unable to initialize bioModel for the given selection; CBit VCell Exception encountered\n" + e.getMessage(), e);
+		} catch(PropertyVetoException e) {
+			throw new RuntimeException("Unable to initialize bioModel for the given selection; PropertyVetoException encountered\n" + e.getMessage(), e);
+		} catch (IOException e) {
+			throw new RuntimeException("Unable to initialize bioModel for the given selection; IOException encountered\n" + e.getMessage(), e);
+		} catch (VCLoggerException e){
+			throw new RuntimeException("Unable to initialize bioModel for the given selection; VCLoggerException encountered\n" + e.getMessage(), e);
 		}
+		return docs;
 	}
 
 	public static BioModel XMLToBioModel(XMLSource xmlSource) throws XmlParseException {
