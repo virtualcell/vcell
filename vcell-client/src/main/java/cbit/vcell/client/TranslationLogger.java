@@ -15,6 +15,7 @@ import java.util.Set;
 import org.vcell.util.UserCancelException;
 
 import cbit.util.xml.VCLogger;
+import cbit.util.xml.VCLoggerException;
 /**
 	* This class represents the otherwise missing link between the GUI layer classes and the XML translation package. 
 	* It allows user interaction while importing/exporting a document, like providing extra parameters, or the option to 
@@ -93,10 +94,10 @@ public class TranslationLogger extends VCLogger implements AutoCloseable {
 
 	@Override
 	public void sendMessage(Priority p, ErrorType et, String message)
-			throws Exception {
+			throws VCLoggerException {
 
 		if  (p == null ||et == null ) {
-			throw new IllegalArgumentException("Invalid params for sending translation message.");
+			throw new VCLoggerException(new IllegalArgumentException("Invalid params for sending translation message."));
 		}
 		switch (p) {
 		case LowPriority:
@@ -105,7 +106,7 @@ public class TranslationLogger extends VCLogger implements AutoCloseable {
 			break;
 		case HighPriority:
 			PopupGenerator.showErrorDialog(requester, message);
-		throw UserCancelException.CANCEL_XML_TRANSLATION;
+		throw (UserCancelException.CANCEL_XML_TRANSLATION); // this shouldnt be wrapped as a VCLoggerException
 		}
 	}
 	/**

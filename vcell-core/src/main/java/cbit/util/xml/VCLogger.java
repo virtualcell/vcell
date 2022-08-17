@@ -106,12 +106,12 @@ public abstract class VCLogger {
 
 	public abstract void sendAllMessages();
 
-	public void sendMessage(Priority p, ErrorType et) throws Exception {
+	public void sendMessage(Priority p, ErrorType et) throws VCLoggerException {
 		sendMessage(p,et,et.message);
 		
 	}
 	
-	public abstract void sendMessage(Priority p, ErrorType et, String message) throws Exception; 
+	public abstract void sendMessage(Priority p, ErrorType et, String message) throws VCLoggerException; 
 
 
 	/*

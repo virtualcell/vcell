@@ -1,6 +1,7 @@
 package org.vcell.cli;
 
 import cbit.util.xml.VCLogger;
+import cbit.util.xml.VCLoggerException;
 
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
@@ -128,7 +129,7 @@ public class CLIUtils {
 
     public static class LocalLogger extends VCLogger {
         @Override
-        public void sendMessage(Priority p, ErrorType et, String message) throws Exception {
+        public void sendMessage(Priority p, ErrorType et, String message) {
             System.out.println("LOGGER: msgLevel=" + p + ", msgType=" + et + ", " + message);
         }
 
