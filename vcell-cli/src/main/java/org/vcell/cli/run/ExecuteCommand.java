@@ -56,30 +56,41 @@ public class ExecuteCommand implements Callable<Integer> {
 
     public Integer call() {
         try {
+            LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
+            Level logLevel = Level.WARN;
+            if (bDebug) logLevel = Level.DEBUG;
+             else if (bQuiet) logLevel = Level.OFF;
+            CLIUtils.setLogLevel(ctx, logLevel);
+
+            logger.debug("Biosimulations mode requested");
+
+            String trace_args =  String.format(
+                "Arguments:\nInput\t: \"%s\"\nOutput\t: \"%s\"\nForceLogs\t: %b\n" +
+                    "KeepTemp\t: %b\nExactMatch\t: %b\nEncapOut\t: %b\nTimeout\t: %dms\n" + 
+                    "Help\t: %b\nDebug\t: %b\nQuiet\t: %b",
+                inputFilePath.getAbsolutePath(), outputFilePath.getAbsolutePath(), bForceLogFiles, 
+                    bKeepTempFiles, bExactMatchOnly, bEncapsulateOutput, 
+                    EXECUTABLE_MAX_WALLCLOCK_MILLIS, help, bDebug, bQuiet
+            );
+            logger.trace(trace_args);
+
+            logger.debug("Validating CLI arguments");
             if (bDebug && bQuiet) {
                 System.err.println("cannot specify both debug and quiet, try --help for usage");
                 return 1;
             }
-            
-            LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
-            Level logLevel = Level.WARN;
-            if (bDebug) {
-                logLevel = Level.DEBUG;
-            } else if (bQuiet) {
-                logLevel = Level.OFF;
-            }
-            
-            CLIUtils.setLogLevel(ctx, logLevel);
 
             PropertyLoader.loadProperties();
             CLIPythonManager.getInstance().instantiatePythonProcess();
 
             Executable.setTimeoutMS(EXECUTABLE_MAX_WALLCLOCK_MILLIS);
-
+            logger.info("Beginning execution");
             if (inputFilePath.isDirectory()) {
+                logger.debug("Batch mode requested");
                 CLIUtils.createHeader(outputFilePath, bForceLogFiles);
                 ExecuteImpl.batchMode(inputFilePath, outputFilePath, bKeepTempFiles, bExactMatchOnly, bForceLogFiles);
             } else {
+                logger.debug("Single mode requested");
                 File archiveToProcess = inputFilePath;
                 if (bForceLogFiles) CLIUtils.createHeader(outputFilePath, bForceLogFiles);
 
@@ -93,8 +104,7 @@ public class ExecuteCommand implements Callable<Integer> {
             CLIPythonManager.getInstance().closePythonProcess(); // WARNING: Python will need reinstantiation after this is called
             return 0;
         } catch (Exception e) {
-            e.printStackTrace();
-            logger.error(e);
+            logger.error(e.getMessage(), e);
             return 1;
         }
     }

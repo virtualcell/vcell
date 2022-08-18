@@ -11,6 +11,9 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.concurrent.TimeoutException;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 public class CLIPythonManager {
     /*
      * NOTES:
@@ -18,6 +21,8 @@ public class CLIPythonManager {
      * 1) BufferedReader will block if asked to read the Python interpreter while the interpreter waiting for input (assuming the buffer has already been iterated through).
      *      To prevent this, we catch the prefix to Python's prompt for a new command (">>> ") to stop before we wait for etinity and break our program.
      */
+
+    private final static Logger logger = LogManager.getLogger(CLIPythonManager.class);
 
     public static final Path currentWorkingDir = Paths.get("").toAbsolutePath();
 
@@ -30,6 +35,7 @@ public class CLIPythonManager {
     private BufferedReader pythonISB; 		// output channel ("Input Stream Buffer") *from* python interpreter (see above)
 
     public static CLIPythonManager getInstance(){
+        logger.trace("Getting Python instance");
         if (instance == null){
             instance = new CLIPythonManager();
         }

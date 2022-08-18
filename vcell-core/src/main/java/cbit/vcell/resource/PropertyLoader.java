@@ -521,7 +521,7 @@ public class PropertyLoader {
 	 * @throws java.io.IOException
 	 */
 	public final static void loadProperties() throws java.io.IOException {
-
+		lg.debug("Loading Properties");
 		File propertyFile = null;
 		//
 		// if vcell.propertyfile defined (on the command line via -Dvcell.propertyfile=/tmp/vcell.properties)

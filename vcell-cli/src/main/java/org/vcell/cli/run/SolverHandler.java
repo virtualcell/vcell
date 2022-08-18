@@ -85,6 +85,7 @@ public class SolverHandler {
             docs = XmlHelper.sedmlToBioModel(sedmlImportLogger, externalDocInfo, sedml, null, sedmlLocation, exactMatchOnly);
         } catch (Exception e) {
             System.err.println("Unable to Parse SED-ML into Bio-Model, failed with err: " + e.getMessage());
+            e.printStackTrace();
             throw e;
         }
         if(docs != null) {
