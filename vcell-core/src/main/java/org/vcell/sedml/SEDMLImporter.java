@@ -21,6 +21,8 @@ import org.jlibsedml.Algorithm;
 import org.jlibsedml.AlgorithmParameter;
 import org.jlibsedml.ArchiveComponents;
 import org.jlibsedml.Change;
+import org.jlibsedml.ChangeAttribute;
+import org.jlibsedml.ComputeChange;
 import org.jlibsedml.DataGenerator;
 import org.jlibsedml.Libsedml;
 import org.jlibsedml.Model;
@@ -36,11 +38,14 @@ import org.jlibsedml.UniformRange.UniformType;
 import org.jlibsedml.UniformTimeCourse;
 import org.jlibsedml.VectorRange;
 import org.jlibsedml.XMLException;
+import org.jlibsedml.XPathTarget;
 import org.jlibsedml.execution.ArchiveModelResolver;
 import org.jlibsedml.execution.FileModelResolver;
 import org.jlibsedml.execution.ModelResolver;
 import org.jlibsedml.modelsupport.SBMLSupport;
 import org.jlibsedml.modelsupport.SUPPORTED_LANGUAGE;
+import org.jmathml.ASTNode;
+import org.jmathml.ASTNumber;
 import org.vcell.sbml.vcell.SBMLImporter;
 import org.vcell.util.FileUtils;
 import org.vcell.util.document.VCDocument;
@@ -52,6 +57,8 @@ import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SimulationContext.Application;
 import cbit.vcell.mapping.SimulationContext.MathMappingCallback;
 import cbit.vcell.mapping.SimulationContext.NetworkGenerationRequirements;
+import cbit.vcell.math.Constant;
+import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.solver.ConstantArraySpec;
 import cbit.vcell.solver.DefaultOutputTimeSpec;
@@ -89,6 +96,7 @@ public class SEDMLImporter {
 	private String bioModelBaseName;
 	private ArchiveComponents ac;
 	private ModelResolver resolver;
+	private SBMLSupport sbmlSupport;
 	
 	private HashMap<BioModel, SBMLImporter> importMap = new HashMap<BioModel, SBMLImporter>();
 
@@ -115,6 +123,7 @@ public class SEDMLImporter {
 			String sedmlRelativePrefix = externalDocInfo.getFile().getParent() + File.separator;
 			resolver.add(new RelativeFileModelResolver(sedmlRelativePrefix)); // in case model URIs are relative paths
 		}
+		sbmlSupport = new SBMLSupport();
 	}
 
 	public  List<BioModel> getBioModels() throws Exception {
@@ -141,16 +150,16 @@ public class SEDMLImporter {
 			// We will parse all tasks and create Simulations in BioModels
 			// Creating one VCell Simulation for each SED-ML actual Task (RepeatedTasks get added as parameter scan overrides)
 	    	org.jlibsedml.Simulation sedmlSimulation = null;	// this will become the vCell simulation
-	    	org.jlibsedml.Model sedmlOriginalModel = null;		// the "original" model referred to by the task
+	    	org.jlibsedml.Model sedmlModel = null;		// the "original" model referred to by the task
 	    	String sedmlOriginalModelName = null;				// this will be used in the BioModel name
 	    	String sedmlOriginalModelLanguage = null;			// can be sbml or vcml
 			
 			HashMap<String, Simulation> vcSimulations = new HashMap<String, Simulation>();
 			for (AbstractTask selectedTask : ttt) {
 				if(selectedTask instanceof Task) {
-					sedmlOriginalModel = sedml.getModelWithId(selectedTask.getModelReference());
+					sedmlModel = sedml.getModelWithId(selectedTask.getModelReference());
 					sedmlSimulation = sedml.getSimulation(selectedTask.getSimulationReference());
-					sedmlOriginalModelLanguage = sedmlOriginalModel.getLanguage();
+					sedmlOriginalModelLanguage = sedmlModel.getLanguage();
 				} else if(selectedTask instanceof RepeatedTask) {
 					// Repeated tasks refer to regular tasks
 					// We need simulations to be created for all regular tasks before we can process repeated tasks
@@ -201,7 +210,7 @@ public class SEDMLImporter {
 					}
 				}
 
-				BioModel bioModel = bmMap.get(sedmlOriginalModel.getId());
+				BioModel bioModel = bmMap.get(sedmlModel.getId());
 				
 				// if language is VCML, we don't need to create Applications and Simulations in BioModel
 				// we allow a subset of SED-ML Simulation settings (may have been edited) to override existing BioModel Simulation settings
@@ -270,13 +279,18 @@ public class SEDMLImporter {
 				}
 
 				translateTimeBounds(simTaskDesc, sedmlSimulation);
-
 				translateAlgorithmParams(simTaskDesc, sedmlSimulation);
 				
 				newSimulation.setSolverTaskDescription(simTaskDesc);
 				newSimulation.setDescription(SEDMLUtil.getName(selectedTask));
 				bioModel.addSimulation(newSimulation);
 				newSimulation.refreshDependencies();
+				
+				// finally, add MathOverrides if referenced model has specified compatible changes
+				if (!sedmlModel.getListOfChanges().isEmpty() && canTranslateToOverrides(bioModel, sedmlModel)) {
+					createOverrides(newSimulation, sedmlModel);
+				}
+				
 			}
 			// now process repeated tasks, if any
 			addRepeatedTasks(ttt, vcSimulations);
@@ -284,6 +298,35 @@ public class SEDMLImporter {
 		} catch (Exception e) {
 			throw new RuntimeException("Unable to initialize bioModel for the given selection\n"+e.getMessage(), e);
 		}
+	}
+
+	private void createOverrides(Simulation newSimulation, Model sedmlModel) throws ExpressionException {
+		// TODO Auto-generated method stub
+		List<Change> changes = sedmlModel.getListOfChanges();
+		for (Change change : changes) {
+			String targetID = sbmlSupport.getIdFromXPathIdentifer(change.getTargetXPath().getTargetAsString());
+			String vcConstantName = resolveConstant(((SimulationContext)newSimulation.getSimulationOwner()).getBioModel(), targetID);
+			Expression exp = null;
+			if (change.isChangeAttribute()) {
+				exp = new Expression(((ChangeAttribute)change).getNewValue());
+			} else if (change.isComputeChange()) {
+				ComputeChange cc = (ComputeChange)change;
+				ASTNode math = cc.getMath();
+				// TODO convert from org.jmathml.ASTNode to org.sbml.jsbml.ASTNode
+				// TODO SEDML-declared variables with mangled unique IDs will need to be substituted
+				// then get final expression
+			} else {
+				logger.error("unsupported change encountered, overrides not applied");
+				return;
+			}
+			Constant constant = new Constant(vcConstantName,exp);
+			newSimulation.getMathOverrides().putConstant(constant);
+		}
+	}
+
+	private String resolveConstant(BioModel bioModel, String SBMLtargetID) {
+		// TODO Auto-generated method stub
+		return SBMLtargetID; //placeholder
 	}
 
 	private void addRepeatedTasks(List<AbstractTask> ttt, HashMap<String, Simulation> vcSimulations)
@@ -313,7 +356,6 @@ public class SEDMLImporter {
 				ConstantArraySpec scanSpec = null;
 				rt = (RepeatedTask)selectedTask;
 				SetValue change = rt.getChanges().get(0); // single param scan
-				SBMLSupport sbmlSupport = new SBMLSupport();
 				String targetID = sbmlSupport.getIdFromXPathIdentifer(change.getTargetXPath().getTargetAsString());
 				Range range = rt.getRange(change.getRangeReference());
 				// TODO start
