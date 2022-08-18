@@ -2954,26 +2954,16 @@ public class SBMLImporter {
 					}
 
 					// set kinetics on VCell reaction - and determine assumed SBML rate units (may need to be converted)
-					final VCUnitDefinition sbmlRateUnit;
 					if (bSpatial) {
 						// if spatial SBML ('isSpatial' attribute set), create DistributedKinetics)
 						SpatialReactionPlugin ssrplugin = (SpatialReactionPlugin) sbmlReaction.getPlugin(SBMLUtils.SBML_SPATIAL_NS_PREFIX);
 						// (a) the requiredElements attributes should be 'spatial'
 						if (ssrplugin != null && ssrplugin.isSetIsLocal() && ssrplugin.getIsLocal()) {
-							if (reactionStructure instanceof Feature) {
-								sbmlRateUnit = vcModelUnitSystem.getVolumeReactionRateUnit();
-							}else if (reactionStructure instanceof Membrane) {
-								sbmlRateUnit = vcModelUnitSystem.getMembraneReactionRateUnit();
-							}else {
-								throw new SBMLImportException("unexpected reaction structure " + reactionStructure);
-							}
 							kinetics = new GeneralKinetics(vcReaction);
 						} else {
-							sbmlRateUnit = vcModelUnitSystem.getLumpedReactionRateUnit();
 							kinetics = new GeneralLumpedKinetics(vcReaction);
 						}
 					} else {
-						sbmlRateUnit = vcModelUnitSystem.getLumpedReactionRateUnit();
 						kinetics = new GeneralLumpedKinetics(vcReaction);
 					}
 
@@ -3008,14 +2998,6 @@ public class SBMLImporter {
 					KineticsParameter kp = kinetics.getAuthoritativeParameter();
 					if (logger.isDebugEnabled()) {
 						logger.debug("Setting " + kp.getName() + ":  " + vcRateExpression.infix());
-					}
-					VCUnitDefinition vcellRateUnit = kp.getUnitDefinition();
-					Expression factor = ModelUnitConverter.getDimensionlessScaleFactor(
-							vcellRateUnit.divideBy(sbmlRateUnit),
-							vcModelUnitSystem.getInstance_DIMENSIONLESS(),
-							vcModel.getKMOLE());
-					if (!factor.isOne()){
-						vcRateExpression = Expression.mult(factor, vcRateExpression).flattenFactors(vcModel.getKMOLE().getName());
 					}
 					kinetics.setParameterValue(kp, vcRateExpression);
 
