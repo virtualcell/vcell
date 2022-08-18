@@ -571,10 +571,6 @@ public class XmlHelper {
 	}
 
 
-<<<<<<< Upstream, based on origin/master
-
-=======
->>>>>>> d530fc6 Complete first pass refactoring of SEDML import (new class, changed API)
 	public static List<BioModel> importSEDML(VCLogger transLogger, ExternalDocInfo externalDocInfo,
 	   SedML sedml, boolean exactMatchOnly) throws Exception {
 		SEDMLImporter sedmlImporter = new SEDMLImporter(transLogger, externalDocInfo,
