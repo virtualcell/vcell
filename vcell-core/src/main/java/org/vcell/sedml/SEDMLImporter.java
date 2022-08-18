@@ -10,6 +10,8 @@ import java.util.Set;
 
 import cbit.vcell.parser.ExpressionMathMLParser;
 import cbit.vcell.parser.LambdaFunction;
+import cbit.vcell.parser.SymbolTableEntry;
+
 import org.apache.commons.io.IOUtils;
 import org.apache.log4j.legacy.core.CategoryUtil;
 import org.apache.logging.log4j.Level;
@@ -28,6 +30,7 @@ import org.jlibsedml.DataGenerator;
 import org.jlibsedml.Libsedml;
 import org.jlibsedml.Model;
 import org.jlibsedml.Output;
+import org.jlibsedml.Parameter;
 import org.jlibsedml.Range;
 import org.jlibsedml.RepeatedTask;
 import org.jlibsedml.SedML;
@@ -49,19 +52,29 @@ import org.jmathml.ASTNode;
 import org.jmathml.ASTNumber;
 import org.jmathml.ASTToXMLElementVisitor;
 import org.sbml.jsbml.JSBML;
+import org.sbml.jsbml.SBase;
 import org.sbml.jsbml.math.compiler.LibSBMLFormulaCompiler;
 import org.vcell.sbml.vcell.SBMLImporter;
+import org.vcell.sbml.vcell.SBMLSymbolMapping;
+import org.vcell.sbml.vcell.SymbolContext;
 import org.vcell.util.FileUtils;
 import org.vcell.util.document.VCDocument;
 
 import cbit.util.xml.VCLogger;
 import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.mapping.MappingException;
+import cbit.vcell.mapping.MathMapping;
 import cbit.vcell.mapping.MathMappingCallbackTaskAdapter;
+import cbit.vcell.mapping.MathSymbolMapping;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SimulationContext.Application;
 import cbit.vcell.mapping.SimulationContext.MathMappingCallback;
 import cbit.vcell.mapping.SimulationContext.NetworkGenerationRequirements;
 import cbit.vcell.math.Constant;
+import cbit.vcell.math.MathException;
+import cbit.vcell.math.Variable;
+import cbit.vcell.matrix.MatrixException;
+import cbit.vcell.model.ModelException;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.solver.ConstantArraySpec;
@@ -292,7 +305,7 @@ public class SEDMLImporter {
 				
 				// finally, add MathOverrides if referenced model has specified compatible changes
 				if (!sedmlModel.getListOfChanges().isEmpty() && canTranslateToOverrides(bioModel, sedmlModel)) {
-					createOverrides(newSimulation, sedmlModel);
+					createOverrides(newSimulation, sedmlModel.getListOfChanges());
 				}
 				
 			}
@@ -304,33 +317,71 @@ public class SEDMLImporter {
 		}
 	}
 
-	private void createOverrides(Simulation newSimulation, Model sedmlModel) throws ExpressionException, IOException {
-		// TODO Auto-generated method stub
-		List<Change> changes = sedmlModel.getListOfChanges();
+	private void createOverrides(Simulation newSimulation, List<Change> changes) {
 		for (Change change : changes) {
 			String targetID = sbmlSupport.getIdFromXPathIdentifer(change.getTargetXPath().getTargetAsString());
-			String vcConstantName = resolveConstant(((SimulationContext)newSimulation.getSimulationOwner()).getBioModel(), targetID);
-			Expression exp = null;
-			if (change.isChangeAttribute()) {
-				exp = new Expression(((ChangeAttribute)change).getNewValue());
-			} else if (change.isComputeChange()) {
-				ComputeChange cc = (ComputeChange)change;
-				ASTNode math = cc.getMath();
-				exp = new ExpressionMathMLParser(null).fromMathML(math, "t");
-				// TODO SEDML-declared variables with mangled unique IDs will need to be substituted
-				// then get final expression
-			} else {
-				logger.error("unsupported change encountered, overrides not applied");
-				return;
+			String vcConstantName = resolveConstant(((SimulationContext)newSimulation.getSimulationOwner()), targetID);
+			if (vcConstantName == null) {
+				logger.warn("target in change "+change+" could not be resolved to Constant, overrides not applied");
+				continue;
 			}
-			Constant constant = new Constant(vcConstantName,exp);
-			newSimulation.getMathOverrides().putConstant(constant);
+			try {
+				Expression exp = null;
+				if (change.isChangeAttribute()) {
+					exp = new Expression(((ChangeAttribute)change).getNewValue());
+				} else if (change.isComputeChange()) {
+					ComputeChange cc = (ComputeChange)change;
+					ASTNode math = cc.getMath();
+					exp = new ExpressionMathMLParser(null).fromMathML(math, "t");
+					
+					// Substitute SED-ML parameters
+					List<Parameter> params = cc.getListOfParameters();
+					System.out.println(params);
+					for (Parameter param : params) {
+						exp.substituteInPlace(new Expression(param.getId()), new Expression(param.getValue()));
+					}
+					
+					// Substitute SED-ML variables (which reference SBML entities)
+					List<org.jlibsedml.Variable> vars = cc.getListOfVariables();
+					System.out.println(vars);
+					for (org.jlibsedml.Variable var : vars) {
+						String sbmlID = sbmlSupport.getIdFromXPathIdentifer(var.getTarget());
+						String vcmlName = resolveConstant(((SimulationContext)newSimulation.getSimulationOwner()), sbmlID);
+						exp.substituteInPlace(new Expression(var.getId()), new Expression(vcmlName));
+					}
+				} else {
+					logger.warn("unsupported change "+change+" encountered, overrides not applied");
+					continue;
+				}
+				Constant constant = new Constant(vcConstantName,exp);
+				newSimulation.getMathOverrides().putConstant(constant);
+			} catch (ExpressionException e) {
+				logger.error("expression in change "+change+" could not be resolved to Constant, overrides not applied");
+				continue;
+			}
 		}
 	}
 
-	private String resolveConstant(BioModel bioModel, String SBMLtargetID) {
-		// TODO Auto-generated method stub
-		return SBMLtargetID; //placeholder
+	private String resolveConstant(SimulationContext simContext, String SBMLtargetID) {
+		// finds name of math-side Constant corresponding to SBML entity, if there is one
+		// returns null if there isn't
+		String constantName = null;
+		MathMapping mathMapping = simContext.createNewMathMapping();
+		MathSymbolMapping msm;
+		try {
+			msm = mathMapping.getMathSymbolMapping();
+		} catch (MappingException | MathException | MatrixException | ExpressionException | ModelException e) {
+			// fail is equivalent with couldn't find
+			return null;
+		}
+		SBMLImporter sbmlImporter = importMap.get(simContext.getBioModel());
+		SBMLSymbolMapping sbmlMap = sbmlImporter.getSymbolMapping();
+		SymbolTableEntry ste =sbmlMap.getSte(sbmlMap.getMappedSBase(SBMLtargetID), SymbolContext.INITIAL);
+		Variable var = msm.getVariable(ste);
+		if (var instanceof Constant) {
+			constantName = var.getName();
+		} 
+		return constantName;
 	}
 
 	private void addRepeatedTasks(List<AbstractTask> ttt, HashMap<String, Simulation> vcSimulations)
@@ -342,10 +393,6 @@ public class SEDMLImporter {
 					logger.error("sequential RepeatedTask not yet supported, task "+SEDMLUtil.getName(selectedTask)+" is being skipped");
 					continue;
 				}
-				if (rt.getChanges().size() != 1) {
-					logger.error("lockstep multiple parameter scans are not yet supported, task "+SEDMLUtil.getName(selectedTask)+" is being skipped");
-					continue;
-				}
 				AbstractTask referredTask;
 				// find the actual Task, which can be directly referred or indirectly through a chain of RepeatedTasks (in case of multiple parameter scans)
 				do {
@@ -354,39 +401,51 @@ public class SEDMLImporter {
 					referredTask = sedml.getTaskWithId(taskId);
 					if (referredTask instanceof RepeatedTask) rt = (RepeatedTask)referredTask;
 				} while (referredTask instanceof RepeatedTask);
+				rt = (RepeatedTask)selectedTask; // need to reset if we had a chain above
 				Task actualTask = (Task)referredTask;
 				Simulation simulation = vcSimulations.get(actualTask.getId());
-				// now add a parameter scan to the simulation referred by the actual task
-				ConstantArraySpec scanSpec = null;
-				rt = (RepeatedTask)selectedTask;
-				SetValue change = rt.getChanges().get(0); // single param scan
-				String targetID = sbmlSupport.getIdFromXPathIdentifer(change.getTargetXPath().getTargetAsString());
-				Range range = rt.getRange(change.getRangeReference());
-				// TODO start
-				// need to map the SBML target to VCell constant name
-				String constant = targetID; // placeholder
-				// TODO end
-				if (range instanceof UniformRange) {
-					UniformRange ur = (UniformRange)range;
-					scanSpec = ConstantArraySpec.createIntervalSpec(constant, Math.min(ur.getStart(), ur.getEnd()), Math.max(ur.getStart(), ur.getEnd()), ur.getNumberOfPoints(), ur.getType().equals(UniformType.LOG));
-				} else if (range instanceof VectorRange) {
-					VectorRange vr = (VectorRange)range;
-					String[] values = new String[vr.getNumElements()];
-					for (int i = 0; i < values.length; i++) {
-						values[i] = Double.toString(vr.getElementAt(i));
+				List<SetValue> changes = rt.getChanges();
+				List<Change> functions = new ArrayList<Change>();
+				for (SetValue change : changes) {
+					Range range = rt.getRange(change.getRangeReference());
+					ASTNode math = change.getMath();
+					Expression exp = new ExpressionMathMLParser(null).fromMathML(math, "t");
+					if (exp.infix().equals(range.getId())) {
+						// add a parameter scan to the simulation referred by the actual task
+						ConstantArraySpec scanSpec = null;
+						String targetID = sbmlSupport
+								.getIdFromXPathIdentifer(change.getTargetXPath().getTargetAsString());
+						String constant = resolveConstant((SimulationContext) simulation.getSimulationOwner(),
+								targetID);
+						if (range instanceof UniformRange) {
+							UniformRange ur = (UniformRange) range;
+							scanSpec = ConstantArraySpec.createIntervalSpec(constant,
+									Math.min(ur.getStart(), ur.getEnd()), Math.max(ur.getStart(), ur.getEnd()),
+									ur.getNumberOfPoints(), ur.getType().equals(UniformType.LOG));
+						} else if (range instanceof VectorRange) {
+							VectorRange vr = (VectorRange) range;
+							String[] values = new String[vr.getNumElements()];
+							for (int i = 0; i < values.length; i++) {
+								values[i] = Double.toString(vr.getElementAt(i));
+							}
+							scanSpec = ConstantArraySpec.createListSpec(constant, values);
+						} else {
+							logger.error("unsupported Range class found, task " + SEDMLUtil.getName(selectedTask)
+									+ " is being skipped");
+							continue;
+						}
+						MathOverrides mo = simulation.getMathOverrides();
+						mo.putConstantArraySpec(scanSpec);
+					} else {
+						functions.add(change);
 					}
-					scanSpec = ConstantArraySpec.createListSpec(constant, values);
-				} else {
-					logger.error("unsupported Range class found, task "+SEDMLUtil.getName(selectedTask)+" is being skipped");
-					continue;						
 				}
-				MathOverrides mo = simulation.getMathOverrides();
-				mo.putConstantArraySpec(scanSpec);
+				createOverrides(simulation, functions);
 			}
 		}
 	}
 
-	private void createBioModels(List<org.jlibsedml.Model> mmm, HashMap<String, BioModel> bmMap) {
+	private void createBioModels(List<org.jlibsedml.Model> mmm, HashMap<String, BioModel> bmMap)  {
 		// first go through models without changes which are unique and must be imported as new BioModel/SimContext
 		for(Model mm : mmm) {
 			if (mm.getListOfChanges().isEmpty()) {
@@ -430,8 +489,16 @@ public class SEDMLImporter {
 	}
 
 	private boolean canTranslateToOverrides(BioModel refBM, Model mm) {
-		// TODO Actually check if true
-		return true; //should work for all VCell-exported SED-MLs
+		List<Change> changes = mm.getListOfChanges();
+		// XML changes can't be translated to math overrides, only attribute changes and compute changes can
+		for (Change change : changes) {
+			if (change.isAddXML() || change.isChangeXML() || change.isRemoveXML()) return false;			
+		}
+		// check whether all targets have addressable Constants on the Math side
+		for (Change change : changes) {
+			if (resolveConstant(refBM.getSimulationContext(0), sbmlSupport.getIdFromXPathIdentifer(change.getTargetXPath().toString())) == null) return false;
+		}
+		return true;
 	}
 
 	private BioModel importModel(Model mm) {
