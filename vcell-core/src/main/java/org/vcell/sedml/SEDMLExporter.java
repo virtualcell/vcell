@@ -526,6 +526,7 @@ public class SEDMLExporter {
 							Model sedModel = new Model(overriddenSimContextId, overriddenSimContextName, sbmlLanguageURN, "#"+simContextId);
 							overrideCount++;
 
+							int variableCount = 0;
 							for (String unscannedParamName : unscannedParamHash.values()) {
 								SymbolTableEntry ste = getSymbolTableEntryForModelEntity(mathSymbolMapping, unscannedParamName);
 								if(ste == null) {
@@ -538,20 +539,30 @@ public class SEDMLExporter {
 									ChangeAttribute changeAttribute = new ChangeAttribute(targetXpath, unscannedParamExpr.infix());
 									sedModel.addChange(changeAttribute);
 								} else {
+									
+									Map<String, XPathTarget> symbolToTargetMap = new LinkedHashMap<>();
+									// create setValue for unscannedParamName (which contains a scanned param in its expression)
+									String[] symbols = unscannedParamExpr.getSymbols();
+									for(String symbol : symbols) {
+										SymbolTableEntry entry = getSymbolTableEntryForModelEntity(mathSymbolMapping, symbol);
+										XPathTarget target = getTargetAttributeXPath(entry, l2gMap);
+										symbolToTargetMap.put(symbol, target);
+									}
+
 									// non-numeric expression : add 'computeChange' to modified model
 									XPathTarget targetXpath = getTargetAttributeXPath(ste, l2gMap);
 									ComputeChange computeChange = new ComputeChange(targetXpath);
-									String[] exprSymbols = unscannedParamExpr.getSymbols();
+									
+									Expression expr = new Expression(unscannedParamExpr);
+									String[] exprSymbols = expr.getSymbols();
 									for (String symbol : exprSymbols) {
-										String symbolName = TokenMangler.mangleToSName(symbol);
-										String symbolId = symbolName + "_" + overriddenSimContextId;
-										Expression exp = substitutedConstants.get(symbol);
-										double doubleValue = exp.evaluateConstant();
-										Parameter sedmlParameter = new Parameter(symbolId, symbolName, doubleValue);
-										computeChange.addParameter(sedmlParameter);
-										unscannedParamExpr.substituteInPlace(new Expression(symbolName), new Expression(symbolId));
+										String varName = overriddenSimContextId + "_" + symbol + "_" + variableCount;
+										Variable sedmlVar = new Variable(varName, varName, overriddenSimContextId, symbolToTargetMap.get(symbol).toString());
+										expr.substituteInPlace(new Expression(symbol), new Expression(varName));
+										computeChange.addVariable(sedmlVar);
+										variableCount++;
 									}
-									ASTNode math = Libsedml.parseFormulaString(unscannedParamExpr.infix());
+									ASTNode math = Libsedml.parseFormulaString(expr.infix());
 									computeChange.setMath(math);
 									sedModel.addChange(computeChange);
 								}
@@ -726,15 +737,15 @@ public class SEDMLExporter {
 										}
 									}
 									// (scanned parameter in expr) ? (add setValue for unscanned param in repeatedTask) : (add computeChange to modifiedModel)
+									Map<String, XPathTarget> symbolToTargetMap = new LinkedHashMap<>();
+									String[] symbols = unscannedParamExpr.getSymbols();
+									for(String symbol : symbols) {
+										SymbolTableEntry entry = getSymbolTableEntryForModelEntity(mathSymbolMapping, symbol);
+										XPathTarget target = getTargetAttributeXPath(entry, l2gMap);
+										symbolToTargetMap.put(symbol, target);
+									}
 									if (bHasScannedParameter) {
-										Map<String, XPathTarget> symbolToTargetMap = new LinkedHashMap<>();
 										// create setValue for unscannedParamName (which contains a scanned param in its expression)
-										String[] symbols = unscannedParamExpr.getSymbols();
-										for(String symbol : symbols) {
-											SymbolTableEntry entry = getSymbolTableEntryForModelEntity(mathSymbolMapping, symbol);
-											XPathTarget target = getTargetAttributeXPath(entry, l2gMap);
-											symbolToTargetMap.put(symbol, target);
-										}
 										SymbolTableEntry entry = getSymbolTableEntryForModelEntity(mathSymbolMapping, unscannedParamName);
 										XPathTarget target = getTargetAttributeXPath(entry, l2gMap);
 										Set<String> rangeIdSet = new HashSet<>();
@@ -761,16 +772,15 @@ public class SEDMLExporter {
 										// non-numeric expression : add 'computeChange' to modified model
 										XPathTarget targetXpath = getTargetAttributeXPath(ste, l2gMap);
 										ComputeChange computeChange = new ComputeChange(targetXpath);
+										Expression expr = new Expression(unscannedParamExpr);
 										for (String symbol : exprSymbols) {
-											String symbolName = TokenMangler.mangleToSName(symbol);
-											String symbolId = symbolName + "_" + overriddenSimContextId;
-											Expression exp = substitutedConstants.get(symbol);
-											double doubleValue = exp.evaluateConstant();
-											Parameter sedmlParameter = new Parameter(symbolId, symbolName, doubleValue);
-											computeChange.addParameter(sedmlParameter);
-											unscannedParamExpr.substituteInPlace(new Expression(symbolName), new Expression(symbolId));
+											String varName = overriddenSimContextId + "_" + symbol + "_" + variableCount;
+											Variable sedmlVar = new Variable(varName, varName, overriddenSimContextId, symbolToTargetMap.get(symbol).toString());
+											expr.substituteInPlace(new Expression(symbol), new Expression(varName));
+											computeChange.addVariable(sedmlVar);
+											variableCount++;
 										}
-										ASTNode math = Libsedml.parseFormulaString(unscannedParamExpr.infix());
+										ASTNode math = Libsedml.parseFormulaString(expr.infix());
 										computeChange.setMath(math);
 										sedModel.addChange(computeChange);
 									}
