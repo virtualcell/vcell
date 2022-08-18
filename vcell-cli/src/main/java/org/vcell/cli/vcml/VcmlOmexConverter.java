@@ -482,6 +482,7 @@ public class VcmlOmexConverter {
 				reread_BioModel_sbml_units.refreshDependencies();
 
 				BioModel reread_BioModel_sbml_units_cloned = XmlHelper.cloneBioModel(reread_BioModel_sbml_units);
+				reread_BioModel_sbml_units_cloned.refreshDependencies();
 				//
 				// transform re-read BioModel back to original unit system before comparing with original model
 				//
