@@ -303,12 +303,8 @@ flattenCount++;////////////////////////
 			String mangledInfix = mangledExpression.infix();
 			final String[][] patterns = {
 					{ "pow(____"+factorSymbol+"____,-1.0) * ____"+factorSymbol+"____", 				"1.0" },
-					{ "pow(____"+factorSymbol+"____, - 1.0) * ____"+factorSymbol+"____", 			"1.0" },
 					{ "____"+factorSymbol+"____ * pow(____"+factorSymbol+"____,-1.0)", 				"1.0" },
-					{ "____"+factorSymbol+"____ * pow(____"+factorSymbol+"____, - 1.0)", 			"1.0" },
-					{ "pow(____"+factorSymbol+"____, 2.0) * pow(____"+factorSymbol+"____, - 2.0)",	"1.0" },
 					{ "pow(____"+factorSymbol+"____,2.0) * pow(____"+factorSymbol+"____,-2.0)",		"1.0" },
-					{ "pow(____"+factorSymbol+"____, 3.0) * pow(____"+factorSymbol+"____, - 3.0)",	"1.0" },
 					{ "pow(____"+factorSymbol+"____,3.0) * pow(____"+factorSymbol+"____,-3.0)",		"1.0" },
 					{ "____"+factorSymbol+"____ / ____"+factorSymbol+"____",						"1.0" },
 					{ "/ ____"+factorSymbol+"____ * ____"+factorSymbol+"____", 						"* 1.0" }
