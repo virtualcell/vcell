@@ -125,7 +125,6 @@ public class CLIPythonManager {
      */
     public void instantiatePythonProcess() throws IOException {
         if (this.pythonProcess != null) return; // prevent override
-
         logger.info("Initializing Python...\n");
         // Confirm we have python properly installed or kill this exe where it stands.
         this.checkPythonInstallation();
@@ -146,7 +145,7 @@ public class CLIPythonManager {
         try {
             this.getResultsOfLastCommand(); // Clear Buffer of Python Interpeter
             this.executeThroughPython("from vcell_cli_utils import wrapper");
-            logger.info("\nPython initalization success!\n");
+            logger.info("Python initalization success!\n");
         } catch (IOException | TimeoutException | InterruptedException e){
             logger.warn("Python instantiation Exception Thrown:\n" + e);
             throw new PythonStreamException("Could not initialize Python. Problem is probably python-side.");
@@ -219,8 +218,8 @@ public class CLIPythonManager {
             // don't print here, send the error down to caller who is responsible for dealing with it
             throw new RuntimeException(es);
         } else {
-            logger.info(outString);
-            logger.info(os);
+            if (!outString.equals("")) logger.info(outString);
+            if (!os.equals("")) logger.info(os);
         }
     }
 

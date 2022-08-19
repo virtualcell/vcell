@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Configuration status="WARN" name="XMLConfigTest" packages="org.vcell.*">
+<Configuration status="INFO" name="XMLConfigTest" packages="org.vcell.*">
     <Appenders>
         <Console name="console">
             <PatternLayout pattern="%5p (%F:%L) - %m%n"/>

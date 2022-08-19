@@ -44,8 +44,8 @@ public class BiosimulationsCommand implements Callable<Integer> {
     public Integer call() {
         try {
             LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
-            Level logLevel = Level.WARN;
-            if (bDebug) {
+            Level logLevel = logger.getLevel();
+            if (!bQuiet && bDebug) {
                 logLevel = Level.DEBUG;
             } else if (bQuiet) {
                 logLevel = Level.OFF;

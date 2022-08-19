@@ -57,12 +57,15 @@ public class ExecuteCommand implements Callable<Integer> {
     public Integer call() {
         try {
             LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
-            Level logLevel = Level.WARN;
-            if (bDebug) logLevel = Level.DEBUG;
-             else if (bQuiet) logLevel = Level.OFF;
+            Level logLevel = logger.getLevel();
+            if (!bQuiet && bDebug) {
+                logLevel = Level.DEBUG;
+            } else if (bQuiet) {
+                logLevel = Level.OFF;
+            }
             CLIUtils.setLogLevel(ctx, logLevel);
 
-            logger.debug("Biosimulations mode requested");
+            logger.debug("Execution mode requested");
 
             String trace_args =  String.format(
                 "Arguments:\nInput\t: \"%s\"\nOutput\t: \"%s\"\nForceLogs\t: %b\n" +
