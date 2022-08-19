@@ -9,6 +9,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.MissingResourceException;
 import java.util.concurrent.TimeoutException;
 
 import org.apache.logging.log4j.LogManager;
@@ -61,6 +62,7 @@ public class CLIPythonManager {
 
     @Deprecated
     public static void callNonsharedPython(String cliCommand, String sedmlPath, String resultOutDir) throws InterruptedException, IOException {
+        logger.warn("Using old style python invocation!");
         Path cliWorkingDir = Paths.get(PropertyLoader.getRequiredProperty(PropertyLoader.cliWorkingDir));
         Path cliPath = Paths.get(cliWorkingDir.toString(), "vcell_cli_utils", "cli.py");
         ProcessBuilder pb = new ProcessBuilder(new String[]{pythonExeName, cliPath.toString(), cliCommand, sedmlPath, resultOutDir});
@@ -69,7 +71,7 @@ public class CLIPythonManager {
 
     private void executeThroughPython(String command) throws PythonStreamException {
         String results = callPython(command);
-        if (!this.printPythonErrors(results)) System.exit(1);
+        this.parsePythonReturn(results);
     }
 
     private int checkPythonInstallation() {
@@ -94,42 +96,11 @@ public class CLIPythonManager {
                 }
             }
         } catch (PythonStreamException e) {
-            System.err.println("Please check your local Python and PIP Installation, install required packages and versions");
-            e.printStackTrace();
-            System.exit(1);
+            logger.error("Please check your local Python and PIP Installation, install required packages and versions", e);
+            throw new MissingResourceException("Error validating Python installation:\n" + e.getMessage(), "Python 3.9+", "");
         } catch (IOException | InterruptedException e) {
-            e.printStackTrace();
+            logger.error("System produced " + e.getClass().getSimpleName() + " when trying to validate Python.", e);
         }
-
-        return exitCode;
-    }
-
-    public static int checkPythonInstallationError() {
-        String version = "--version";
-        ProcessBuilder processBuilder;
-        Process process;
-        int exitCode = -10;
-        BufferedReader bufferedReader;
-        StringBuilder stringBuilder;
-        String stdOutLog;
-
-        try {
-            processBuilder = execShellCommand(new String[]{pythonExeName, version});
-            process = processBuilder.start();
-            exitCode = process.waitFor();
-            if (exitCode == 0) {
-                bufferedReader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-                stringBuilder = new StringBuilder();
-                while ((stdOutLog = bufferedReader.readLine()) != null) {
-                    stringBuilder.append(stdOutLog);
-                    // search string can be one or more... (potential python 2.7.X bug here?)
-                    if (!stringBuilder.toString().toLowerCase().startsWith("python")) System.err.println("Please check your local Python and PIP Installation, install required packages");
-                }
-            }
-        } catch (IOException | InterruptedException e) {
-            e.printStackTrace();
-        }
-
         return exitCode;
     }
 
@@ -155,12 +126,14 @@ public class CLIPythonManager {
     public void instantiatePythonProcess() throws IOException {
         if (this.pythonProcess != null) return; // prevent override
 
+        logger.info("\nInitializing Python...\n");
         // Confirm we have python properly installed or kill this exe where it stands.
         this.checkPythonInstallation();
         // install virtual environment
         // e.g. source /Users/schaff/Library/Caches/pypoetry/virtualenvs/vcell-cli-utils-g4hrdDfL-py3.9/bin/activate
 
         // Start Python
+        logger.debug("Loading poetry");
         ProcessBuilder pb = new ProcessBuilder("poetry", "run", "python", "-i", "-W ignore");
         pb.redirectErrorStream(true);
         File cliWorkingDir = PropertyLoader.getRequiredDirectory(PropertyLoader.cliWorkingDir);
@@ -173,10 +146,10 @@ public class CLIPythonManager {
         try {
             this.getResultsOfLastCommand(); // Clear Buffer of Python Interpeter
             this.executeThroughPython("from vcell_cli_utils import wrapper");
-            System.out.println("\nPython initalization success!\n");
+            logger.info("\nPython initalization success!\n");
         } catch (IOException | TimeoutException | InterruptedException e){
-            System.out.println("Python instantiation Exception Thrown:\n" + e);
-            System.exit(1);
+            logger.warn("Python instantiation Exception Thrown:\n" + e);
+            throw new PythonStreamException("Could not initialize Python. Problem is probably python-side.");
         }
     }
 
@@ -210,6 +183,7 @@ public class CLIPythonManager {
         // we can easily send the command, but we need to format it first.
 
         String command = String.format("%s\n", CLIPythonManager.stripStringForPython(cmd));
+        logger.trace("Sent cmd to Python: " + command);
         pythonOSW.write(command);
         pythonOSW.flush();
     }
@@ -241,43 +215,41 @@ public class CLIPythonManager {
         of.delete();
         ef.delete();
         if (process.exitValue() != 0) {
-            System.err.println(errString);
+            logger.error(errString);
             // don't print here, send the error down to caller who is responsible for dealing with it
             throw new RuntimeException(es);
         } else {
-            System.out.println(outString);
-            System.out.println(os);
+            logger.info(outString);
+            logger.info(os);
         }
     }
 
-    public boolean printPythonErrors(String returnedString){
-        return this.printPythonErrors(returnedString, null, null);
+    public void parsePythonReturn(String returnedString) throws PythonStreamException {
+       this.parsePythonReturn(returnedString, null, null);
     }
 
-    public boolean printPythonErrors(String returnedString, String outString, String errString){
-        boolean DEBUG_NORMAL_OUTPUT = false; // Manually override
-        boolean hasPassed;
+    public void parsePythonReturn(String returnedString, String outString, String errString) throws PythonStreamException {
+        boolean DEBUG_NORMAL_OUTPUT = logger.isTraceEnabled(); // Consider getting rid of this, currently redundant
         String ERROR_PHRASE1 = "Traceback", ERROR_PHRASE2 = "File \"<stdin>\"";
 
         // Null or empty strings are considered passing results
-        if(returnedString == null || (returnedString = CLIUtils.stripString(returnedString)).equals(""))
-            return true;
+        if(returnedString == null || (returnedString = CLIUtils.stripString(returnedString)).equals("")){
+            logger.trace("Python returned sucessfully.");
+            return;
+        }
 
         if (
                 (returnedString.length() >= ERROR_PHRASE1.length() && ERROR_PHRASE1.equals(returnedString.substring(0, ERROR_PHRASE1.length())))
-                        ||  (returnedString.length() >= ERROR_PHRASE2.length() && ERROR_PHRASE2.equals(returnedString.substring(0, ERROR_PHRASE2.length())))
-                        ||  (returnedString.contains("File \"<stdin>\""))
-
+            ||  (returnedString.length() >= ERROR_PHRASE2.length() && ERROR_PHRASE2.equals(returnedString.substring(0, ERROR_PHRASE2.length())))
+            ||  (returnedString.contains("File \"<stdin>\""))
         ){ // Report an error:
             String resultString = (errString != null && errString.length() > 0) ? String.format("Result: %s\n", errString) : "";
-            System.err.printf("Python error caught: <\n%s\n>\n%s\n[ Stack Trace:\n%s\n]", returnedString, resultString, this.getCurrentStackTrace(new Exception()));
-            hasPassed = false;
+            String errorMessage = String.format("Python error caught: <\n%s\n>\n%s\n", returnedString, resultString);
+            throw new PythonStreamException(errorMessage);
         } else {
             String resultString = (outString != null && outString.length() > 0) ? String.format("Result: %s\n", outString) : "";
-            System.out.printf("Python returned%s\nResult: %s\n", DEBUG_NORMAL_OUTPUT? String.format(": [%s]", returnedString) : " sucessfully.", resultString);
-            hasPassed = true;
+            logger.trace("Python returned%s\nResult: %s\n", DEBUG_NORMAL_OUTPUT? String.format(": [%s]", returnedString) : " sucessfully.", resultString);
         }
-        return hasPassed;
     }
 
     private String formatPythonFuctionCall(String functionName, String... arguments){
@@ -289,22 +261,18 @@ public class CLIPythonManager {
         String argList = "";
         int adjArgLength;
         for (String arg : arguments){
-            argList += "r\"" + CLIUtils.stripString(arg) + "\",";
+            argList += "r\"" + CLIUtils.stripString(CLIPythonManager.makePythonStringSafe(arg)) + "\",";
         }
         adjArgLength = argList.length() == 0 ? 0 : argList.length() - 1;
         return argList.substring(0, adjArgLength);
     }
 
-    private String getCurrentStackTrace(Throwable dummyThrowable){
-        StringWriter sw = new StringWriter();
-        PrintWriter pw = new PrintWriter(sw, true);
-        dummyThrowable.printStackTrace(pw);
-        return sw.getBuffer().toString();
+    private static String makePythonStringSafe(String str){
+        return str.replaceAll("([\"])+", "'");
     }
 
     private static String stripStringForPython(String str){
         String s = CLIUtils.stripString(str);
-        //return s.replaceAll("([\"])+", "'");
         return s;
     }
 }
