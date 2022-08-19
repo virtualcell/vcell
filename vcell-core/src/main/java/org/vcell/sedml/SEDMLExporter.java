@@ -1219,7 +1219,9 @@ public class SEDMLExporter {
 		} else if (ste instanceof ModelParameter) {
 			// can only change parameter value. 
 			targetXpath = new XPathTarget(sbmlSupport.getXPathForGlobalParameter(ste.getName(), ParameterAttribute.value));
-		}  else if (ste instanceof Structure || ste instanceof Structure.StructureSize || (ste instanceof StructureMappingParameter && ((StructureMappingParameter)ste).getRole() == StructureMapping.ROLE_Size)) {
+		// TODO: add xpath for VolulePerUnitVolume and AreaPerUnitArea, see SBMLSupport
+			// use Ion's sample 3, with spatial app
+		}  else if (ste instanceof Structure || ste instanceof Structure.StructureSize || (ste instanceof StructureMappingParameter && ((StructureMappingParameter)ste).getRole() == StructureMapping.ROLE_Size )) {
 			String compartmentId = ste.getName();
 			// can change compartment size or spatial dimension, but in vcell, we cannot change compartment dimension. 
 			String compartmentAttr = "";
