@@ -198,12 +198,12 @@ public class ExecuteImpl {
                         + nReportsCount + "  report(s),  "
                         + nPlots2DCount + " plot2D(s), and "
                         + nPlots3DCount + " plot3D(s)\n";
-                System.out.println(summarySedmlContentString);
+                logger.debug(summarySedmlContentString);
 
                 logDocumentMessage += "done. ";
                 String str = "Successful translation of SED-ML file";
                 logDocumentMessage += str + ". ";
-                System.out.println(str + " : " + sedmlName);
+                logger.info(str + " : " + sedmlName);
                 RunUtils.drawBreakLine("-", 100);
 
                 // For appending data for SED Plot2D and Plot3d to HDF5 files following a temp convention
