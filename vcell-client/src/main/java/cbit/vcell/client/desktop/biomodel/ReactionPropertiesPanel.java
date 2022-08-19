@@ -40,6 +40,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 
+import cbit.vcell.client.desktop.biomodel.annotations.AnnotationsPanel;
 import org.vcell.pathway.BioPaxObject;
 import org.vcell.pathway.Entity;
 import org.vcell.relationship.RelationshipEvent;
