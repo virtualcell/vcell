@@ -79,8 +79,8 @@ private static Enumeration<Variable> getRequiredVariablesExplicit(Expression exp
 	Vector<Variable> requiredVarList = new Vector<Variable>();
 	if (exp != null){
 		String identifiers[] = exp.getSymbols();
-		if (lg.isDebugEnabled()) {
-			lg.debug("from expression " + exp + " parsing identifiers " + Arrays.toString(identifiers) );
+		if (lg.isTraceEnabled()) {
+			lg.trace("from expression " + exp + " parsing identifiers " + Arrays.toString(identifiers) );
 		}
 		if (identifiers != null){
 			for (int i=0;i<identifiers.length;i++){
@@ -94,13 +94,12 @@ private static Enumeration<Variable> getRequiredVariablesExplicit(Expression exp
 				//
 				if (entry == null){
 					entry = ReservedMathSymbolEntries.getReservedVariableEntry(id);
-					if (lg.isDebugEnabled()) {
-						lg.debug("id " + id + "not in symbol table looked for reserved symbols,found = " + (entry !=null));
+					if (lg.isTraceEnabled()) {
+						lg.trace("id " + id + "not in symbol table looked for reserved symbols,found = " + (entry !=null));
 					}
 				}
-				else if (lg.isDebugEnabled()){
-					lg.debug("symbolTable.getEntry( ) returned " + entry + " for " + id);
-					
+				else if (lg.isTraceEnabled()){
+					lg.trace("symbolTable.getEntry( ) returned " + entry + " for " + id);
 				}
 				//
 				// PseudoConstant's are locally bound variables, look for existing binding
@@ -150,8 +149,8 @@ public static Expression substituteFunctions(Expression exp, SymbolTable symbolT
 		//
 		// get All symbols (identifiers), make list of functions
 		//
-		if (lg.isDebugEnabled()) {
-			lg.debug("substituteFunctions() exp2 = '"+exp2+"'");
+		if (lg.isTraceEnabled()) {
+			lg.trace("substituteFunctions() exp2 = '"+exp2+"'");
 		}
 		if(bFlattenAgressive) {
 			exp2 = exp2.flatten();		
@@ -163,8 +162,8 @@ public static Expression substituteFunctions(Expression exp, SymbolTable symbolT
 			Variable var = enum1.nextElement();
 			if (var instanceof Function){
 				functionList.addElement(var);
-				if (lg.isDebugEnabled()) {
-					lg.debug("added " + var + " to function list");
+				if (lg.isTraceEnabled()) {
+					lg.trace("added " + var + " to function list");
 				}
 			}
 		}
@@ -180,12 +179,12 @@ public static Expression substituteFunctions(Expression exp, SymbolTable symbolT
 		for (int i=0;i<functionList.size();i++){
 			Function funct = (Function)functionList.elementAt(i);
 			Expression functExp = new Expression(funct.getName()+";");
-			if (lg.isDebugEnabled()) {
-				lg.debug("flattenFunctions(pass="+count+"), substituting '"+funct.getExpression()+"' for function '"+functExp+"'");
+			if (lg.isTraceEnabled()) {
+				lg.trace("flattenFunctions(pass="+count+"), substituting '"+funct.getExpression()+"' for function '"+functExp+"'");
 			}
 			exp2.substituteInPlace(functExp,new Expression(funct.getExpression()));
-			if (lg.isDebugEnabled()) {
-				lg.debug(".......substituted exp2 = '"+exp2+"'");
+			if (lg.isTraceEnabled()) {
+				lg.trace(".......substituted exp2 = '"+exp2+"'");
 			}
 		}
 	}

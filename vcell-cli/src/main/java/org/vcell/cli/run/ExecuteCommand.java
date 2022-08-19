@@ -101,6 +101,7 @@ public class ExecuteCommand implements Callable<Integer> {
                 }
             }
 
+            logger.trace("Closing Python Instance");
             CLIPythonManager.getInstance().closePythonProcess(); // WARNING: Python will need reinstantiation after this is called
             return 0;
         } catch (Exception e) {

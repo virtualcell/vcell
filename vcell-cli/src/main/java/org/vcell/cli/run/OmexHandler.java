@@ -36,7 +36,7 @@ public class OmexHandler {
                 ResourceUtil.setNativeLibraryDirectory();
                 NativeLib.combinej.load();
             } catch (Exception e){
-            	logger.error("Unable to link to native 'libCombine' lib, check native lib. Attemping alternate solution...");
+            	logger.warn("Unable to link to native 'libCombine' lib. Attemping alternate solution...");
                 NativeLib.combinej.directLoad();
             }
         } catch (UnsatisfiedLinkError ex) {
@@ -53,19 +53,13 @@ public class OmexHandler {
         if (!new File(omexPath).exists()) {
             String[] omexNameArray = omexPath.split("/", -2);
             String omexName = omexNameArray[omexNameArray.length - 1];
-            
-            try{
-                throw new RuntimeException("OmexPathException");
-            } catch(RuntimeException e){
-            	logger.error("Provided OMEX `" + omexName + "` is not present at path: " + omexPath, e);
-            	throw e;
-            }
+            IOException e = new IOException("Provided OMEX `" + omexName + "` is not present at path: " + omexPath);
+            logger.error(e.getMessage(), e);
+            throw e;
         }
         int indexOfLastSlash = omexPath.lastIndexOf("/");
         this.omexName = omexPath.substring(indexOfLastSlash + 1);
-
         this.tempPath = RunUtils.getTempDir();
-
         this.archive = new CombineArchive();
         boolean isInitialized = archive.initializeFromArchive(omexPath);
 
@@ -99,7 +93,7 @@ public class OmexHandler {
         }
     }
 
-    public ArrayList<String> getSedmlLocationsRelative() throws Exception {
+    public ArrayList<String> getSedmlLocationsRelative(){
         ArrayList<String> sedmlList = new ArrayList<>();
         CaOmexManifest manifest = this.archive.getManifest();
         CaListOfContents contents = manifest.getListOfContents();
@@ -113,12 +107,12 @@ public class OmexHandler {
             }
 
             if(!contentFile.isFormat("sedml") && contentFile.getMaster()) {
-                throw new Exception("No SED-ML's are intended to be executed (non SED-ML file is set to be master)");
+                throw new RuntimeException("No SED-ML's are intended to be executed (non SED-ML file is set to be master)");
             }
         }
 
         if( masterCount > 1) {
-            throw new Exception("More than two master SED-ML's found");
+            throw new RuntimeException("More than two master SED-ML's found");
         }
 
         for (int contentIndex = 0; contentIndex < contents.getNumContents(); contentIndex++) {
@@ -139,7 +133,7 @@ public class OmexHandler {
     }
 
 
-    public ArrayList<String> getSedmlLocationsAbsolute() throws Exception {
+    public ArrayList<String> getSedmlLocationsAbsolute(){
         ArrayList<String> sedmlListAbsolute = new ArrayList<>();
         ArrayList<String> sedmlListRelative = this.getSedmlLocationsRelative();
 
@@ -159,7 +153,6 @@ public class OmexHandler {
                 outputPath = Paths.get(this.outDirPath, sedmlFileRelative).normalize().toString();
             }
         }
-
         return outputPath;
     }
 

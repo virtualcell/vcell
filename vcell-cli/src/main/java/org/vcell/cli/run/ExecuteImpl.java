@@ -7,8 +7,6 @@ import cbit.vcell.xml.ExternalDocInfo;
 
 import org.jlibsedml.*;
 
-import org.apache.logging.log4j.core.LoggerContext;
-import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -27,21 +25,19 @@ import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 public class ExecuteImpl {
     
     private final static Logger logger = LogManager.getLogger(ExecuteImpl.class);
 
-    public static void batchMode(File dirOfArchivesToProcess, File outputDir, boolean bKeepTempFiles, boolean bExactMatchOnly, boolean bForceLogFiles) {
+    public static void batchMode(File dirOfArchivesToProcess, File outputDir, boolean bKeepTempFiles, boolean bExactMatchOnly, boolean bForceLogFiles) throws IOException {
         FilenameFilter filter = (f, name) -> name.endsWith(".omex") || name.endsWith(".vcml");
         File[] inputFiles = dirOfArchivesToProcess.listFiles(filter);
-        if (inputFiles == null) System.out.println("No input files found in the directory");
-        assert inputFiles != null;
+        if (inputFiles == null) throw new IOException("Error trying to retrieve files from input directory.");
 
         for (File inputFile : inputFiles) {
             String inputFileName = inputFile.getName();
-            logger.debug(inputFile);
+            logger.info("Processing " + inputFileName + "(" + inputFile + ")");
             try {
                 if (inputFileName.endsWith("omex")) {
                     String bioModelBaseName = inputFileName.substring(0, inputFileName.indexOf(".")); // ".omex"??
@@ -62,7 +58,7 @@ public class ExecuteImpl {
     public static void singleExecVcml(File vcmlFile, File outputDir) {
 
         VCMLHandler.outputDir = outputDir.getAbsolutePath();
-        System.out.println("VCell CLI input file " + vcmlFile);
+        logger.debug("Executing VCML file " + vcmlFile);
 
         // from here on, we need to collect errors, since some subtasks may succeed while other do not
         boolean somethingFailed = false;
@@ -104,29 +100,31 @@ public class ExecuteImpl {
         }
 
         if (somethingFailed) {
-            try {
-                throw new Exception("One or more errors encountered while executing VCML " + vcmlFile.getName());
-            } catch (Exception e) {
-                logger.error(e.getMessage());
-            }
+            RuntimeException e = new RuntimeException("One or more errors encountered while executing VCML " + vcmlFile.getName());
+            logger.error(e.getMessage(), e);
+            throw e;
         }
     }
 
 
     public static void singleExecOmex(File inputFile, File rootOutputDir, boolean bKeepTempFiles, 
-                                        boolean bExactMatchOnly, boolean bForceLogFiles) 
-            throws Exception {
+                                        boolean bExactMatchOnly, boolean bForceLogFiles) throws Exception {
         ExecuteImpl.singleExecOmex(inputFile, rootOutputDir, bKeepTempFiles, bExactMatchOnly, bForceLogFiles, true);
     }
 
     public static void singleExecOmex(File inputFile, File rootOutputDir, boolean bKeepTempFiles, 
                                         boolean bExactMatchOnly, boolean bForceLogFiles, boolean bEncapsulateOutput)
             throws Exception {
-        int nModels, nSimulations, nSedml, nTasks, nOutputs, nReportsCount = 0, nPlots2DCount = 0, nPlots3DCount = 0;
+        int nModels, nSimulations, nTasks, nOutputs, nReportsCount = 0, nPlots2DCount = 0, nPlots3DCount = 0;
+        String logOmexMessage = "";
+
         String inputFileName = inputFile.getAbsolutePath();
         String bioModelBaseName = FileUtils.getBaseName(inputFile.getName());
         String outputBaseDir = rootOutputDir.getAbsolutePath(); // bioModelBaseName = input file without the path
         String outputDir = bEncapsulateOutput ? Paths.get(outputBaseDir, bioModelBaseName).toString() : outputBaseDir;
+        boolean anySedmlDocumentHasSucceeded = false;    // set to true if at least one sedml document run is successful
+        boolean anySedmlDocumentHasFailed = false;        // set to true if at least one sedml document run fails
+        
         OmexHandler omexHandler = null;
         List<String> sedmlLocations;
         List<Output> outputs;
@@ -136,54 +134,49 @@ public class ExecuteImpl {
 
         long startTimeOmex = System.currentTimeMillis();
 
-        System.out.println("VCell CLI input archive " + inputFileName);
+        logger.debug("Executing OMEX archive " + inputFileName);
         RunUtils.drawBreakLine("-", 100);
-        try {
+        try { // It's unlikely, but if we get errors here they're fatal.
             sedmlPath2d3d = Paths.get(outputDir, "temp");
             omexHandler = new OmexHandler(inputFileName, outputDir);
             omexHandler.extractOmex();
             sedmlLocations = omexHandler.getSedmlLocationsAbsolute();
-            nSedml = sedmlLocations.size();
-            // any error up to now is fatal (unlikely, but still...)
-        } catch (Throwable exc) {
-            assert omexHandler != null;
+        } catch (IOException e){
+            String error = e.getMessage() + ", error for OmexHandler with " + inputFileName;
+            CLIUtils.writeErrorList(outputBaseDir, bioModelBaseName, bForceLogFiles);
+            CLIUtils.writeDetailedResultList(outputBaseDir, bioModelBaseName + ", " + ", IO error with OmexHandler", bForceLogFiles);
+            logger.error(error);
+            throw new RuntimeException(error, e);
+        } catch (Exception e) { 
             omexHandler.deleteExtractedOmex();
-            String error = exc.getMessage() + ", error for archive " + inputFileName;
+            String error = e.getMessage() + ", error for archive " + inputFileName;
             CLIUtils.writeErrorList(outputBaseDir, bioModelBaseName, bForceLogFiles);
             CLIUtils.writeDetailedResultList(outputBaseDir, bioModelBaseName + ", " + ",unknown error with the archive file", bForceLogFiles);
-            throw new Exception(error);
-        }
+            logger.error(error);
+            throw new RuntimeException(error, e);
+        } 
 
         CLIUtils.cleanRootDir(new File(outputBaseDir));
         if (bEncapsulateOutput) RunUtils.removeAndMakeDirs(new File(outputDir));
         PythonCalls.generateStatusYaml(inputFileName, outputDir);    // generate Status YAML
 
-        // from here on, we need to collect errors, since some subtasks may succeed while other do not
-        // we now have the log file created, so that we also have a place to put them
-        boolean oneSedmlDocumentSucceeded = false;    // set to true if at least one sedml document run is successful
-        boolean oneSedmlDocumentFailed = false;        // set to true if at least one sedml document run fails
-
-        String logOmexMessage = "";
-        String logOmexError = "";        // not used for now
-        for (String sedmlLocation : sedmlLocations) {        // for each sedml document
-
-            boolean somethingFailed = false;        // shows that the current document suffered a partial or total failure
-
-            String logDocumentMessage = "Initializing sedml document... ";
-            String logDocumentError = "";
-
+        /*
+         * from here on, we need to collect errors, since some subtasks may succeed while other do not
+         * we now have the log file created, so that we also have a place to put them
+         */
+        for (String sedmlLocation : sedmlLocations) {
+            String sedmlName = "", logDocumentMessage = "Initializing sedml document... ", logDocumentError = "";
+            boolean somethingFailed = false; // shows that the current document suffered a partial or total failure
             HashMap<String, ODESolverResultSet> resultsHash;
             HashMap<String, File> reportsHash = null;
-            String sedmlName = "";
-            File completeSedmlPath = new File(sedmlLocation);
-            File outDirForCurrentSedml = new File(omexHandler.getOutputPathFromSedml(sedmlLocation));
+            File completeSedmlPath = new File(sedmlLocation), outDirForCurrentSedml = new File(omexHandler.getOutputPathFromSedml(sedmlLocation));
 
             try {
-                RunUtils.removeAndMakeDirs(outDirForCurrentSedml);
-
-                SedML sedmlFromOmex = Libsedml.readDocument(completeSedmlPath).getSedMLModel();
-
+                SedML sedmlFromOmex;
                 String[] sedmlNameSplit;
+
+                RunUtils.removeAndMakeDirs(outDirForCurrentSedml);
+                sedmlFromOmex = Libsedml.readDocument(completeSedmlPath).getSedMLModel();
                 sedmlNameSplit = sedmlLocation.split(OperatingSystemInfo.getInstance().isWindows() ? "\\\\" : "/", -2);
                 sedmlName = sedmlNameSplit[sedmlNameSplit.length - 1];
                 logOmexMessage += "Processing " + sedmlName + ". ";
@@ -198,7 +191,7 @@ public class ExecuteImpl {
                     if (output instanceof Plot3D) nPlots3DCount++;
                 }
                 nSimulations = sedmlFromOmex.getSimulations().size();
-                String summarySedmlContentString = "Found " + nSedml + " SED-ML document(s) with "
+                String summarySedmlContentString = "Found " + sedmlLocations.size() + " SED-ML document(s) with "
                         + nModels + " model(s), "
                         + nSimulations + " simulation(s), "
                         + nTasks + " task(s), "
@@ -242,38 +235,36 @@ public class ExecuteImpl {
 
                 logger.error(prefix, e);
                 somethingFailed = true;
-                oneSedmlDocumentFailed = true;
+                anySedmlDocumentHasFailed = true;
                 PythonCalls.updateSedmlDocStatusYml(sedmlLocation, Status.FAILED, outputDir);
-                continue;
+                continue; // Next document
             }
 
+            /*  temp code to test plot name correctness
+            String idNamePlotsMap = utils.generateIdNamePlotsMap(sedml, outDirForCurrentSedml);
+            utils.execPlotOutputSedDoc(inputFile, idNamePlotsMap, outputDir);
+            */
 
-            {
-                //
-                // temp code to test plot name correctness
-                //
-                //    		String idNamePlotsMap = utils.generateIdNamePlotsMap(sedml, outDirForCurrentSedml);
-                //    		utils.execPlotOutputSedDoc(inputFile, idNamePlotsMap, outputDir);
-            }
-
-
-            // Run solvers and make reports; all failures/exceptions are being caught
+            /*
+             * - Run solvers and make reports; all failures/exceptions are being caught
+             * - we send both the whole OMEX file and the extracted SEDML file path
+             * - XmlHelper code uses two types of resolvers to handle absolute or relative paths
+             */
             SolverHandler solverHandler = new SolverHandler();
-            // we send both the whole OMEX file and the extracted SEDML file path
-            // XmlHelper code uses two types of resolvers to handle absolute or relative paths
             ExternalDocInfo externalDocInfo = new ExternalDocInfo(new File(inputFileName), true);
             resultsHash = new LinkedHashMap<String, ODESolverResultSet>();
             try {
-                String str = "Starting simulate all tasks... ";
-                System.out.println(str);
+                String str = "Starting simulation of all tasks... ";
+                logger.info(str);
                 logDocumentMessage += str;
                 resultsHash = solverHandler.simulateAllTasks(externalDocInfo, sedml, outDirForCurrentSedml, outputDir,
                         outputBaseDir, sedmlLocation, bKeepTempFiles, bExactMatchOnly, bForceLogFiles);
-                Map<String, String> sim2Hdf5Map = solverHandler.sim2Hdf5Map;    // may not need it
+                //Map<String, String> sim2Hdf5Map = solverHandler.sim2Hdf5Map;    // may not need it
             } catch (Exception e) {
                 somethingFailed = true;
-                oneSedmlDocumentFailed = true;
+                anySedmlDocumentHasFailed = true;
                 logDocumentError = e.getMessage();        // probably the hash is empty
+                logger.error(e.getMessage(), e);
                 // still possible to have some data in the hash, from some task that was successful - that would be partial success
             }
 
@@ -284,6 +275,7 @@ public class ExecuteImpl {
             message += solverHandler.countBioModels + ",";
             message += solverHandler.countSuccessfulSimulationRuns;
             CLIUtils.writeDetailedResultList(outputBaseDir, bioModelBaseName + "," + sedmlName + ", ," + message, bForceLogFiles);
+            logger.debug(message);
 
             //
             // WARNING!!! Current logic dictates that if any task fails we fail the sedml document
@@ -293,22 +285,23 @@ public class ExecuteImpl {
             //
             try {
                 if (resultsHash.containsValue(null)) {        // some tasks failed, but not all
-                    oneSedmlDocumentFailed = true;
+                    anySedmlDocumentHasFailed = true;
                     somethingFailed = true;
                     logDocumentMessage += "Failed to execute one or more tasks. ";
+                    logger.info("Failed to execute one or more tasks in " + sedmlName);
                 }
                 logDocumentMessage += "Generating outputs... ";
-
+                logger.info("Generating outputs... ");
                 reportsHash = RunUtils.generateReportsAsCSV(sedml, resultsHash, outDirForCurrentSedml, outputDir, sedmlLocation);
 
                 if (reportsHash == null || reportsHash.size() == 0) {
-                    oneSedmlDocumentFailed = true;
+                    anySedmlDocumentHasFailed = true;
                     somethingFailed = true;
                     String msg = "Failed to generate any reports. ";
                     throw new RuntimeException(msg);
                 }
                 if (reportsHash.containsValue(null)) {
-                    oneSedmlDocumentFailed = true;
+                    anySedmlDocumentHasFailed = true;
                     somethingFailed = true;
                     String msg = "Failed to generate one or more reports. ";
                     logDocumentMessage += msg;
@@ -317,24 +310,26 @@ public class ExecuteImpl {
                 }
 
                 logDocumentMessage += "Generating HDF5 file... ";
+                logger.info("Generating HDF5 file... ");
                 String idNamePlotsMap = RunUtils.generateIdNamePlotsMap(sedml, outDirForCurrentSedml);
 
                 PythonCalls.execPlotOutputSedDoc(inputFileName, idNamePlotsMap, outputDir);                            // create the HDF5 file
 
                 if (!containsExtension(outputDir, "h5")) {
-                    oneSedmlDocumentFailed = true;
+                    anySedmlDocumentHasFailed = true;
                     somethingFailed = true;
                     throw new RuntimeException("Failed to generate the HDF5 output file. ");
                 } else {
                     logDocumentMessage += "Done. ";
                 }
 
+                logger.info("Generating Plots... ");
                 PythonCalls.genPlotsPseudoSedml(sedmlLocation, outDirForCurrentSedml.toString());    // generate the plots
-                oneSedmlDocumentSucceeded = true;
+                anySedmlDocumentHasSucceeded = true;
             } catch (Exception e) {
-            	System.err.println(e.getMessage());
+            	logger.error(e.getMessage(), e);
                 somethingFailed = true;
-                oneSedmlDocumentFailed = true;
+                anySedmlDocumentHasFailed = true;
                 logDocumentError += e.getMessage();
                 String type = e.getClass().getSimpleName();
                 PythonCalls.setOutputMessage(sedmlLocation, sedmlName, outputDir, "sedml", logDocumentMessage);
@@ -345,9 +340,10 @@ public class ExecuteImpl {
                 continue;
             }
 
-            if (somethingFailed == true) {        // something went wrong but no exception was fired
+            if (somethingFailed) {        // something went wrong but no exception was fired
                 Exception e = new RuntimeException("Failure executing the sed document. ");
                 logDocumentError += e.getMessage();
+                logger.error(e.getMessage(), e);
                 String type = e.getClass().getSimpleName();
                 PythonCalls.setOutputMessage(sedmlLocation, sedmlName, outputDir, "sedml", logDocumentMessage);
                 PythonCalls.setExceptionMessage(sedmlLocation, sedmlName, outputDir, "sedml", type, logDocumentError);
@@ -359,6 +355,7 @@ public class ExecuteImpl {
             org.apache.commons.io.FileUtils.deleteDirectory(new File(String.valueOf(sedmlPath2d3d)));    // removing temp path generated from python
 
             // archiving res files
+            logger.debug("Archiving res files");
             RunUtils.zipResFiles(new File(outputDir));
             PythonCalls.setOutputMessage(sedmlLocation, sedmlName, outputDir, "sedml", logDocumentMessage);
             PythonCalls.updateSedmlDocStatusYml(sedmlLocation, Status.SUCCEEDED, outputDir);
@@ -369,14 +366,14 @@ public class ExecuteImpl {
         long endTimeOmex = System.currentTimeMillis();
         long elapsedTime = endTimeOmex - startTimeOmex;
         int duration = (int) Math.ceil(elapsedTime / 1000.0);
-
+        logger.info("Completion time: " + Integer.toString(duration) + "s");
         //
         // failure if at least one of the documents in the omex archive fails
         //
 
-        if (oneSedmlDocumentFailed) {
+        if (anySedmlDocumentHasFailed) {
             String error = " All sedml documents in this archive failed to execute";
-            if (oneSedmlDocumentSucceeded) {        // some succeeded, some failed
+            if (anySedmlDocumentHasSucceeded) {        // some succeeded, some failed
                 error = " At least one document in this archive failed to execute";
             }
             PythonCalls.updateOmexStatusYml(Status.FAILED, outputDir, duration + "");
