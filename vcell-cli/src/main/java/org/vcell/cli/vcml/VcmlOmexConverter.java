@@ -476,8 +476,9 @@ public class VcmlOmexConverter {
 
 			if (bValidate){
 				logger.info("validating Omex file '"+omexFile+"'");
-				List<VCDocument> reread_docs = XmlHelper.readOmex(omexFile, new CLIUtils.LocalLogger());
+				List<BioModel> reread_docs = XmlHelper.readOmex(omexFile, new CLIUtils.LocalLogger());
 				logger.info("validated Omex file '"+omexFile+"'");
+<<<<<<< Upstream, based on origin/master
 				BioModel reread_BioModel_sbml_units = (BioModel)reread_docs.get(0);
 				reread_BioModel_sbml_units.refreshDependencies();
 
@@ -496,6 +497,10 @@ public class VcmlOmexConverter {
 				// clone BioModel - do we need this?
 
 
+=======
+				BioModel reread_BioModel = reread_docs.get(0);
+				reread_BioModel.refreshDependencies();
+>>>>>>> c0f7106 Complete first pass refactoring of SEDML import (new class, changed API)
 				SimulationContext.MathMappingCallback mathMappingCallback = new SimulationContext.MathMappingCallback() {
 					@Override
 					public void setMessage(String message) { }
