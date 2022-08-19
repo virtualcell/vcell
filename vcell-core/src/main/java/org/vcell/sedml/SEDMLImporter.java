@@ -2,20 +2,21 @@
 package org.vcell.sedml;
 
 import java.beans.PropertyVetoException;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.InputStream;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 
+import cbit.vcell.parser.ExpressionMathMLParser;
+import cbit.vcell.parser.LambdaFunction;
 import org.apache.commons.io.IOUtils;
 import org.apache.log4j.legacy.core.CategoryUtil;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jdom.Element;
+import org.jdom.output.XMLOutputter;
 import org.jlibsedml.AbstractTask;
 import org.jlibsedml.Algorithm;
 import org.jlibsedml.AlgorithmParameter;
@@ -46,6 +47,9 @@ import org.jlibsedml.modelsupport.SBMLSupport;
 import org.jlibsedml.modelsupport.SUPPORTED_LANGUAGE;
 import org.jmathml.ASTNode;
 import org.jmathml.ASTNumber;
+import org.jmathml.ASTToXMLElementVisitor;
+import org.sbml.jsbml.JSBML;
+import org.sbml.jsbml.math.compiler.LibSBMLFormulaCompiler;
 import org.vcell.sbml.vcell.SBMLImporter;
 import org.vcell.util.FileUtils;
 import org.vcell.util.document.VCDocument;
@@ -300,7 +304,7 @@ public class SEDMLImporter {
 		}
 	}
 
-	private void createOverrides(Simulation newSimulation, Model sedmlModel) throws ExpressionException {
+	private void createOverrides(Simulation newSimulation, Model sedmlModel) throws ExpressionException, IOException {
 		// TODO Auto-generated method stub
 		List<Change> changes = sedmlModel.getListOfChanges();
 		for (Change change : changes) {
@@ -312,7 +316,7 @@ public class SEDMLImporter {
 			} else if (change.isComputeChange()) {
 				ComputeChange cc = (ComputeChange)change;
 				ASTNode math = cc.getMath();
-				// TODO convert from org.jmathml.ASTNode to org.sbml.jsbml.ASTNode
+				exp = new ExpressionMathMLParser(null).fromMathML(math, "t");
 				// TODO SEDML-declared variables with mangled unique IDs will need to be substituted
 				// then get final expression
 			} else {
