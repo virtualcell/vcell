@@ -6,7 +6,10 @@ import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.biomodel.ModelUnitConverter;
 import cbit.vcell.field.FieldFunctionArguments;
 import cbit.vcell.field.FieldUtilities;
+import cbit.vcell.mapping.MathMappingCallbackTaskAdapter;
 import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.mapping.SimulationContext.MathMappingCallback;
+import cbit.vcell.mapping.SimulationContext.NetworkGenerationRequirements;
 import cbit.vcell.math.MathCompareResults;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.SubDomain;
@@ -16,6 +19,7 @@ import cbit.vcell.resource.NativeLib;
 import cbit.vcell.resource.OperatingSystemInfo;
 import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.server.SimulationJobStatusPersistent;
+import cbit.vcell.solver.MathOverrides;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationSymbolTable;
 import cbit.vcell.solver.SolverDescription;
@@ -45,6 +49,8 @@ import org.vcell.cli.*;
 import org.vcell.sedml.PubMet;
 import org.vcell.sedml.SEDMLExporter;
 import org.vcell.util.DataAccessException;
+import org.vcell.util.Issue;
+import org.vcell.util.Issue.IssueCategory;
 import org.vcell.util.document.*;
 
 import java.beans.PropertyVetoException;
@@ -290,9 +296,9 @@ public class VcmlOmexConverter {
         // ========================================================
         try {
 		SimulationContext scArray[] = bioModel.getSimulationContexts();
-		if (scArray!=null) {
+		if (scArray != null) {
 			MathDescription[] mathDescArray = new MathDescription[scArray.length];
-			for (int i = 0; i < scArray.length; i++){
+			for (int i = 0; i < scArray.length; i++) {
 				//check if all structure sizes are specified
 				scArray[i].checkValidity();
 				//
@@ -302,7 +308,7 @@ public class VcmlOmexConverter {
 				if (geoSurfaceDescription!=null && geoSurfaceDescription.getGeometricRegions()==null){
 					cbit.vcell.geometry.surface.GeometrySurfaceUtils.updateGeometricRegions(geoSurfaceDescription);
 				}
-				if (scArray[i].getModel() != bioModel.getModel()){
+				if (scArray[i].getModel() != bioModel.getModel()) {
 					throw new Exception("The BioModel's physiology doesn't match that for Application '"+scArray[i].getName()+"'");
 				}
 				//
@@ -331,8 +337,14 @@ public class VcmlOmexConverter {
 					logger.error("Failed to replace obsolete solver", e);
 				}
 			}
+			MathOverrides mo = simulation.getMathOverrides();
+			if(mo != null && mo.hasUnusedOverrides()) {
+				String msg = "A Simulation has unused Math Overrides";
+				logger.error(msg);
+				writeSimErrorList(outputBaseDir, vcmlName + ": " + msg, bForceLogFiles);
+				return false;
+			}
 		}
-
 
 		Version version = bioModel.getVersion();
         String versionKey = version.getVersionKey().toString();
