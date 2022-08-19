@@ -1,31 +1,22 @@
 package cbit.vcell.biomodel;
 
-import cbit.vcell.mapping.AssignmentRule;
-import cbit.vcell.mapping.BioEvent;
+import cbit.vcell.mapping.*;
 import cbit.vcell.mapping.BioEvent.EventAssignment;
-import cbit.vcell.mapping.ElectricalStimulus;
-import cbit.vcell.mapping.RateRule;
-import cbit.vcell.mapping.SimulationContext;
-import cbit.vcell.mapping.SpeciesContextSpec;
-import cbit.vcell.mapping.StructureMapping;
+import cbit.vcell.math.MathDescription;
 import cbit.vcell.matrix.RationalExp;
 import cbit.vcell.matrix.RationalNumber;
-import cbit.vcell.model.Model;
-import cbit.vcell.model.ModelUnitSystem;
-import cbit.vcell.model.Parameter;
-import cbit.vcell.model.ReactionRule;
-import cbit.vcell.model.ReactionStep;
-import cbit.vcell.model.SpeciesContext;
-import cbit.vcell.model.Structure;
+import cbit.vcell.model.*;
 import cbit.vcell.parser.*;
 import cbit.vcell.units.VCUnitDefinition;
 import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XmlHelper;
 import cbit.vcell.xml.XmlParseException;
-
-import java.math.BigInteger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class ModelUnitConverter {
+
+	private final static Logger logger = LogManager.getLogger(ModelUnitConverter.class);
 
 	public static ModelUnitSystem createSbmlModelUnitSystem() {
 		String volumeSubstanceSymbol = "umol";			// InternalUnitDefinition.UNIT_umol
@@ -187,6 +178,19 @@ public class ModelUnitConverter {
 				}
 			}
 		}	// end  for - simulationContext
+		newBioModel.refreshDependencies();
+		for (SimulationContext simContext : newBioModel.getSimulationContexts()){
+			//
+			// force new math generation
+			//
+			MathMapping mathMapping = simContext.createNewMathMapping();
+			try {
+				MathDescription mathDesc = mathMapping.getMathDescription();
+				simContext.setMathDescription(mathDesc);
+			}catch (Exception e){
+				throw new RuntimeException("failed to generated math for application "+simContext.getName()+": "+e.getMessage(), e);
+			}
+		}
 		return newBioModel;
 	}
 
@@ -300,38 +304,26 @@ public class ModelUnitConverter {
 		String[] symbols = expr.getSymbols();
 		if (symbols != null) {
 			for (String s : symbols) {
-				SymbolTableEntry boundSTE = expr.getSymbolBinding(s);
-				
 				SymbolTableEntry newSTE = newSymbolTable.getEntry(s);
 				SymbolTableEntry oldSTE = oldSymbolTable.getEntry(s);
 				
-				if (boundSTE == null){
-					System.err.println("symbol '"+s+"' in expression "+expr.infix() + " was not bound to the model");
-					continue;
-				}
-	
 				if (oldSTE == null){
-					System.err.println("symbol '"+s+"' in expression "+expr.infix() + " was not found in the new symbol table");
+					logger.error("symbol '"+s+"' in expression "+expr.infix() + " was not found in the new symbol table");
 					continue;
 				}
 	
 				if (newSTE == null){
-					System.err.println("symbol '"+s+"' in expression "+expr.infix() + " was not bound to the old symbol table");
+					logger.error("symbol '"+s+"' in expression "+expr.infix() + " was not bound to the old symbol table");
 					continue;
 				}
 	
-				if (newSTE != boundSTE){
-					System.err.println("symbol '"+s+"' in expression "+expr.infix() + " is not bound properly (binding doesn't match new symbol table)");
-					continue;
-				}
-				
 				if (oldSTE.getUnitDefinition() == null){
-					System.err.println("symbol '"+s+"' in expression "+expr.infix() + " is has a null unit in old model, can't convert");
+					logger.error("symbol '"+s+"' in expression "+expr.infix() + " is has a null unit in old model, can't convert");
 					continue;
 				}
 				
 				if (newSTE.getUnitDefinition() == null){
-					System.err.println("symbol '"+s+"' in expression "+expr.infix() + " is has a null unit in new model, can't convert");
+					logger.error("symbol '"+s+"' in expression "+expr.infix() + " is has a null unit in new model, can't convert");
 					continue;
 				}
 	
@@ -342,11 +334,11 @@ public class ModelUnitConverter {
 					continue;
 				}
 				VCUnitDefinition oldToNewConversionUnit = oldSTE.getUnitDefinition().divideBy(newSTE.getUnitDefinition());
-//				UnitConversion unitConversion = getDimensionlessScaleFactor(oldToNewConversionUnit, KMOLE);
 				Expression conversionFactor = getDimensionlessScaleFactor(oldToNewConversionUnit, dimensionless, KMOLE);
 				if (!conversionFactor.isOne()){
 					Expression spcSymbol = new Expression(newSTE, newSTE.getNameScope());
 					expr.substituteInPlace(spcSymbol, Expression.mult(new Expression(conversionFactor), spcSymbol));
+					expr.substituteInPlace(expr, expr.flattenFactors(KMOLE.getName()));
 				}
 			}
 		}
@@ -362,8 +354,9 @@ public class ModelUnitConverter {
 		if (!conversionFactor.isOne()){
 			Expression oldExp = new Expression(expr);
 			expr.substituteInPlace(oldExp, Expression.mult(new Expression(conversionFactor), oldExp));
+			expr.substituteInPlace(expr, expr.flattenFactors(KMOLE.getName()));
 		}
-		Expression flattened = expr.flatten();
+		Expression flattened = expr.flattenFactors(KMOLE.getName());
 		Expression origExp = new Expression(expr);
 		expr.substituteInPlace(origExp,flattened);
 	}

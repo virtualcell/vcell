@@ -12,10 +12,7 @@ package cbit.vcell.parser;
 
 import java.io.IOException;
 import java.io.StreamTokenizer;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.Stack;
-import java.util.Vector;
+import java.util.*;
 
 import org.vcell.util.Issue.IssueSource;
 import org.vcell.util.Matchable;
@@ -287,6 +284,55 @@ public Expression flatten() throws ExpressionException {
 flattenCount++;////////////////////////
 	return new Expression((SimpleNode)rootNode.flatten());
 }
+
+	/**
+	 * cancel out terms of the type .... * KMOLE / KMOLE * ....
+	 * substitute in place will only work with (KMOLE / KMOLE) where the entire subtree is replaced
+	 * @param factorSymbol
+	 * @return
+	 * @throws ExpressionException
+	 */
+	public Expression flattenFactors(String factorSymbol) throws ExpressionException {
+		String[] symbols = this.getSymbols();
+		if (symbols==null || symbols.length==0){
+			return this.flatten();
+		}
+		if (Arrays.asList(symbols).contains(factorSymbol)) {
+			Expression mangledExpression = new Expression(this).flatten();
+			mangledExpression.substituteInPlace(new Expression(factorSymbol), new Expression("____"+factorSymbol+"____"));
+			String mangledInfix = mangledExpression.infix();
+			final String[][] patterns = {
+					{ "pow(____"+factorSymbol+"____,-1.0) * ____"+factorSymbol+"____", 				"1.0" },
+					{ "____"+factorSymbol+"____ * pow(____"+factorSymbol+"____,-1.0)", 				"1.0" },
+					{ "pow(____"+factorSymbol+"____,2.0) * pow(____"+factorSymbol+"____,-2.0)",		"1.0" },
+					{ "pow(____"+factorSymbol+"____,3.0) * pow(____"+factorSymbol+"____,-3.0)",		"1.0" },
+					{ "____"+factorSymbol+"____ / ____"+factorSymbol+"____",						"1.0" },
+					{ "/ ____"+factorSymbol+"____ * ____"+factorSymbol+"____", 						"* 1.0" }
+			};
+			boolean bReplaced = false;
+			for (String[] pattern : patterns) {
+				if (mangledInfix.contains(pattern[0])) {
+					mangledInfix = mangledInfix.replace(pattern[0], pattern[1]);
+					bReplaced = true;
+				}
+			}
+			if (bReplaced) {
+				Expression substitutedExpression = new Expression(mangledInfix);
+				SymbolTableEntry factorSte = this.getSymbolBinding(factorSymbol);
+				final Expression KMOLE_exp;
+				if (factorSte == null) {
+					KMOLE_exp = new Expression(factorSymbol);
+				}else{
+					KMOLE_exp = new Expression(factorSte, factorSte.getNameScope());
+				}
+				substitutedExpression.substituteInPlace(new Expression("____KMOLE____"), KMOLE_exp);
+				substitutedExpression = substitutedExpression.flatten();
+				return substitutedExpression;
+			}
+		}
+		return this.flatten();
+	}
+
 /**
  * This method was created by a SmartGuide.
  */
