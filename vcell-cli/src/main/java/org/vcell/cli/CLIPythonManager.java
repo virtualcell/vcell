@@ -260,14 +260,10 @@ public class CLIPythonManager {
         String argList = "";
         int adjArgLength;
         for (String arg : arguments){
-            argList += "r\"" + CLIUtils.stripString(CLIPythonManager.makePythonStringSafe(arg)) + "\",";
+            argList += "r\"\"\"" + CLIUtils.stripString(arg) + "\"\"\",";
         }
         adjArgLength = argList.length() == 0 ? 0 : argList.length() - 1;
         return argList.substring(0, adjArgLength);
-    }
-
-    private static String makePythonStringSafe(String str){
-        return str.replaceAll("([\"])+", "'");
     }
 
     private static String stripStringForPython(String str){
