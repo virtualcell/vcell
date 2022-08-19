@@ -20,13 +20,13 @@ public class BioPortalSearch {
     private final String REST_URL = "http://data.bioontology.org/search?q=";
     private final String API_KEY = "d77db9ae-3fb4-4cc9-b95a-5ea18b1bfda4";
     private String format;
-    private final List<SearchElement> SearchElements = new ArrayList<>();
+    private final List<searchElement> searchElements = new ArrayList<>();
 
-    public List<SearchElement> search(String searchTerm) throws IOException, URISyntaxException, ParserConfigurationException, InterruptedException, SAXException {
+    public List<searchElement> search(String searchTerm) throws IOException, URISyntaxException, ParserConfigurationException, InterruptedException, SAXException {
         return search(searchTerm, 5000, "", false);
     }
 
-    public List<SearchElement> search(String searchTerm, int pageSize, String ontologyNicknames, boolean requireExactMatch) throws IOException, SAXException, URISyntaxException, ParserConfigurationException, InterruptedException {
+    public List<searchElement> search(String searchTerm, int pageSize, String ontologyNicknames, boolean requireExactMatch) throws IOException, SAXException, URISyntaxException, ParserConfigurationException, InterruptedException {
         //Advanced Search Attributes
         String includeAttr = "prefLabel,synonym,definition"; //,notation,cui,semanticType,properties
         format = "xml";
@@ -94,7 +94,7 @@ public class BioPortalSearch {
 //                if (searchElements.size()-1 < noOfElements) {
 //                    if (qName.equals("class")) {
                 if (qName.equals("class") && !collectionEnds) {
-                    SearchElements.add(new SearchElement(prefLabel, synonyms, definition, id));
+                    searchElements.add(new searchElement(prefLabel, synonyms, definition, id));
 //                    }
                 }
 
@@ -134,10 +134,10 @@ public class BioPortalSearch {
         };
 
         saxParser.parse(new InputSource(new StringReader(response)), handle);
-        for (SearchElement element: SearchElements) {
+        for (searchElement element: searchElements) {
             System.out.println(element.toString());
         }
-        return SearchElements;
+        return searchElements;
     }
 
     //    private HttpResponse<String> get(String urlToGet) throws URISyntaxException, IOException, InterruptedException {

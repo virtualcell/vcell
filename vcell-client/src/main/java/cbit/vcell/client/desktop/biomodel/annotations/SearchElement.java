@@ -5,13 +5,13 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SearchElement {
+public class searchElement {
     private final String entityName;
     private final List<String> synonyms;
     private final String definition;
     private final URI dbLink;
 
-    public SearchElement(String entityName, List<String> synonyms, String definition, String dbLink) {
+    public searchElement(String entityName, List<String> synonyms, String definition, String dbLink) {
         this.entityName = entityName;
         this.synonyms = new ArrayList<>(synonyms);
         this.definition = definition;
@@ -23,7 +23,6 @@ public class SearchElement {
         } else  {
             this.dbLink = URI.create(dbLink);
         }
-
     }
 
     public String getEntityName() {

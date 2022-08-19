@@ -1,7 +1,7 @@
 package cbit.vcell.client.desktop.biomodel.annotations;
 
-import cbit.vcell.biomodel.meta.VCMetaDataMiriamManager;
-import org.vcell.util.document.Identifiable;
+import cbit.vcell.biomodel.meta.MiriamManager;
+import org.vcell.sybil.models.miriam.MIRIAMQualifier;
 import org.xml.sax.SAXException;
 
 import javax.swing.*;
@@ -25,19 +25,16 @@ public class AddAnnotationsPanel extends JFrame implements ActionListener {
     private JComboBox<String> containsBox;
     private JComboBox<String> limitBox;
     private JTextArea descriptionArea;
-    private List<SearchElement> SearchElements;
+    private List<searchElement> searchElements;
     private final JButton addButton, oKButton;
     private final AnnotationsPanel annotationsPanel; //to connect AnnotationsPanel with AddAnnotationsPanel
     private String annotDescription;
-    private JComboBox jComboBoxURI, jComboBoxQualifier;			// identity provider combo
-    DefaultComboBoxModel defaultComboBoxModelURI = null;
-    public static final int MAX_URI_LENGTH = 130;
-    private Identifiable selectedObject = null;
+    private JComboBox<MIRIAMQualifier> jComboBoxQualifier;
+    private DefaultComboBoxModel<MIRIAMQualifier> defaultComboBoxModelQualifier;
 
-    public AddAnnotationsPanel (AnnotationsPanel annotationsPanel, JComboBox JComboBoxURI, JComboBox JComboBoxQualifier) {
+    public AddAnnotationsPanel (AnnotationsPanel annotationsPanel) {
         this.annotationsPanel = annotationsPanel;
-        this.jComboBoxURI = (JComboBoxURI==null) ? new JComboBox<>(): JComboBoxURI;
-        this.jComboBoxQualifier = (JComboBoxQualifier==null) ? new JComboBox<>(): JComboBoxQualifier;
+//        initializeComboBoxQualifier();
 
         setTitle("Add Annotations");
         setResizable(false);
@@ -59,6 +56,7 @@ public class AddAnnotationsPanel extends JFrame implements ActionListener {
         addSearchPanelComponents(searchPanel);
         mainPanel.add(searchPanel, gbc);
 
+
         //Add right panel for descriptions
         gbc.gridx = 1;
         gbc.gridwidth = 2;
@@ -67,13 +65,14 @@ public class AddAnnotationsPanel extends JFrame implements ActionListener {
         addDescriptionPanelComponents(descriptionPanel);
         mainPanel.add(descriptionPanel,gbc);
 
+
         //Add JComboBox for qualifier
         gbc.gridy = 1;
         gbc.gridx = 0;
         gbc.fill = GridBagConstraints.VERTICAL;
         gbc.anchor = GridBagConstraints.EAST;
         gbc.insets = new Insets(0,0,12,10);
-        mainPanel.add(jComboBoxQualifier,gbc);
+        mainPanel.add(annotationsPanel.getJComboBoxQualifier(),gbc);
 
         //Add "add" button to main panel
         gbc.gridy = 1;
@@ -100,6 +99,7 @@ public class AddAnnotationsPanel extends JFrame implements ActionListener {
         this.getContentPane().add(mainPanel);
         this.pack();
         this.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+//        this.setDefaultCloseOperation();
         this.setVisible(true);
     }
 
@@ -128,16 +128,15 @@ public class AddAnnotationsPanel extends JFrame implements ActionListener {
         sGbc.gridx = 1;
         sGbc.insets = new Insets(0,10,0,0);
 
-//        ontologiesBox = new JComboBox<>();
-//        ontologiesBox.addItem("All Selected");
-//        ontologiesBox.addItem("GO");
-//        ontologiesBox.addItem("NCIT");
-//        ontologiesBox.addItem("CHEBI");
-//        ontologiesBox.addItem("FMA");
-//        ontologiesBox.addItem("BTO");
+        ontologiesBox = new JComboBox<>();
+        ontologiesBox.addItem("All Selected");
+        ontologiesBox.addItem("GO");
+        ontologiesBox.addItem("NCIT");
+        ontologiesBox.addItem("CHEBI");
+        ontologiesBox.addItem("FMA");
+        ontologiesBox.addItem("BTO");
 //        leftPanel.add(ontologiesBox, sGbc);
-//        leftPanel.add(annotationsPanel.getJComboBoxURI(), sGbc);
-        leftPanel.add(jComboBoxURI, sGbc);
+        leftPanel.add(annotationsPanel.getJComboBoxURI(), sGbc);
 
         //adding search label
         sGbc.gridy = 1;
@@ -156,6 +155,7 @@ public class AddAnnotationsPanel extends JFrame implements ActionListener {
         containsBox = new JComboBox<>();
         containsBox.addItem("contains");
         containsBox.addItem("exact");
+        containsBox.addItem("suggest");
         leftPanel.add(containsBox, sGbc);
 
         //adding search bar
@@ -282,30 +282,25 @@ public class AddAnnotationsPanel extends JFrame implements ActionListener {
     }
 
     private void getSearchResults() {
-        //clear description area and search list before new
-        descriptionArea.setText(null);
-//        list.removeAll();
         DefaultListModel<String> dlm = new DefaultListModel<>();
         String searchTerm = searchBar.getText();
         BioPortalSearch bioPortalSearch = new BioPortalSearch();
 
 //        String bioPortalDatabases = Objects.equals(ontologiesBox.getSelectedItem(), "All Selected") ?
 //                "GO,NCIT,CHEBI,FMA,BTO" : Objects.requireNonNull(ontologiesBox.getSelectedItem()).toString();
-        //MiriamManager.DataType dataType = (MiriamManager.DataType) annotationsPanel.getJComboBoxURI().getSelectedItem();
-        VCMetaDataMiriamManager.VCMetaDataDataType mdt = (VCMetaDataMiriamManager.VCMetaDataDataType)jComboBoxURI.getSelectedItem();
-//        String bioPortalDatabases = dataType.getDataTypeName();
-        String bioPortalDatabases = mdt.getDataTypeName();
+        MiriamManager.DataType dataType = (MiriamManager.DataType) annotationsPanel.getJComboBoxURI().getSelectedItem();
+        String bioPortalDatabases = dataType.getDataTypeName();
 
         boolean exactMatch = Objects.equals(containsBox.getSelectedItem(), "exact");
 
         int pageSize = Integer.parseInt(Objects.requireNonNull(limitBox.getSelectedItem()).toString());
 
         try {
-            SearchElements = bioPortalSearch.search(searchTerm,pageSize,bioPortalDatabases,exactMatch);
-            if (!SearchElements.isEmpty()) {
+            searchElements = bioPortalSearch.search(searchTerm,pageSize,bioPortalDatabases,exactMatch);
+            if (!searchElements.isEmpty()) {
                 list.setEnabled(true);
                 list.setFont(new Font("TimesRoman",Font.PLAIN,13));
-                for (SearchElement element: SearchElements) {
+                for (searchElement element: searchElements) {
                     dlm.addElement(element.getEntityName());
                 }
             } else {
@@ -322,7 +317,7 @@ public class AddAnnotationsPanel extends JFrame implements ActionListener {
 
     private void getDescription() {
         if (!list.isSelectionEmpty()) {
-            annotDescription = SearchElements.get(list.getSelectedIndex()).toString();
+            annotDescription = searchElements.get(list.getSelectedIndex()).toString();
             descriptionArea.setText(annotDescription);
             descriptionArea.setCaretPosition(0);
         }
@@ -332,31 +327,7 @@ public class AddAnnotationsPanel extends JFrame implements ActionListener {
         if (!list.isSelectionEmpty()) {
             annotationsPanel.addToAnnotationTextArea(annotDescription);
         }
-        annotationsPanel.addIdentifier(SearchElements.get(list.getSelectedIndex()));
+        annotationsPanel.addIdentifier();
     }
-
-    //getter and setter for JComboBoxURI
-    public JComboBox getjComboBoxURI() {
-        return jComboBoxURI;
-    }
-
-    public void setjComboBoxURI(JComboBox jComboBoxURI) {
-        this.jComboBoxURI = jComboBoxURI;
-    }
-
-
-//    JComboBox getJComboBoxURI() {
-//        if (jComboBoxURI == null) {
-//            jComboBoxURI = new JComboBox();
-//            defaultComboBoxModelURI = new DefaultComboBoxModel();
-//            jComboBoxURI.setModel(defaultComboBoxModelURI);
-//            Dimension d = jComboBoxURI.getPreferredSize();
-//            jComboBoxURI.setMinimumSize(new Dimension(MAX_URI_LENGTH, d.height));
-//            jComboBoxURI.setPreferredSize(new Dimension(MAX_URI_LENGTH, d.height));
-//            AnnotationsPanel.ComboboxToolTipRenderer renderer = new AnnotationsPanel.ComboboxToolTipRenderer();
-//            jComboBoxURI.setRenderer(renderer);
-//        }
-//        return jComboBoxURI;
-//    }
 
 }
