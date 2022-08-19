@@ -268,6 +268,12 @@ public class SEDMLImporter {
 				if (matchingSimulationContext == null) {
 					matchingSimulationContext = SimulationContext.copySimulationContext(existingSimulationContexts[0], sedmlOriginalModelName+"_"+existingSimulationContexts.length, bSpatial, appType);
 					bioModel.addSimulationContext(matchingSimulationContext);
+					try {
+						matchingSimulationContext.setName(sedmlModel.getName());
+					} catch (Exception e) {
+						// we should never bomb out just for trying to set a pretty name
+						logger.warn("could not set name on application from name of model "+sedmlModel);
+					}
 				}
 				matchingSimulationContext.refreshDependencies();
 				MathMappingCallback callback = new MathMappingCallbackTaskAdapter(null);
@@ -311,6 +317,19 @@ public class SEDMLImporter {
 			}
 			// now process repeated tasks, if any
 			addRepeatedTasks(ttt, vcSimulations);
+			// finally try to pretty up simulation names
+			for (BioModel bm : docs) {
+				Simulation[] sims = bm.getSimulations();
+				for (int i = 0; i < sims.length; i++) {
+					String taskId = sims[i].getImportedTaskID();
+					AbstractTask task = sedml.getTaskWithId(taskId);
+					try {
+						sims[i].setName(task.getName());
+					} catch (Exception e) {
+						logger.warn("could not set pretty name for simulation "+sims[i].getDisplayName()+" from task "+task);
+					}
+				}
+			}
 			return docs;
 		} catch (Exception e) {
 			throw new RuntimeException("Unable to initialize bioModel for the given selection\n"+e.getMessage(), e);
@@ -526,6 +545,7 @@ public class SEDMLImporter {
 				bioModel = (BioModel)sbmlImporter.getBioModel();
 				bioModel.refreshDependencies();			
 				bioModel.setName(bioModelName);
+				bioModel.getSimulationContext(0).setName(mm.getName());
 				docs.add(bioModel);
 				importMap.put(bioModel, sbmlImporter);
 			}
