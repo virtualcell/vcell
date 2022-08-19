@@ -74,22 +74,21 @@ public class SolverHandler {
         String inputFile = externalDocInfo.getFile().getAbsolutePath();
         String bioModelBaseName = org.vcell.util.FileUtils.getBaseName(inputFile);
         
-        List<BioModel> biomodels = null;
+        List<BioModel> bioModelList = null;
         // Key String is SEDML Task ID
         HashMap<String, ODESolverResultSet> resultsHash = new LinkedHashMap<String, ODESolverResultSet>();
         String docName = null;
-        BioModel bioModel = null;
         Simulation[] sims = null;
         String outDirRoot = outputDirForSedml.toString().substring(0, outputDirForSedml.toString().lastIndexOf(System.getProperty("file.separator")));
         try {
-            biomodels = XmlHelper.importSEDML(sedmlImportLogger, externalDocInfo, sedml, exactMatchOnly);
+            bioModelList = XmlHelper.importSEDML(sedmlImportLogger, externalDocInfo, sedml, exactMatchOnly);
         } catch (Exception e) {
             System.err.println("Unable to Parse SED-ML into Bio-Model, failed with err: " + e.getMessage());
             e.printStackTrace();
             throw e;
         }
-        if(biomodels != null) {
-        	countBioModels = biomodels.size();
+        if(bioModelList != null) {
+        	countBioModels = bioModelList.size();
         }
 
         int simulationCount = 0;
@@ -97,14 +96,14 @@ public class SolverHandler {
         boolean hasSomeSpatial = false;
         boolean bTimeoutFound = false;
         
-        for (BioModel biomodel : biomodels) {
+        for (BioModel bioModel : bioModelList) {
             try {
                 sanityCheck(bioModel);
             } catch (Exception e) {
                 e.printStackTrace(System.err);
 //                continue;
             }
-            docName = biomodel.getName();
+            docName = bioModel.getName();
             sims = bioModel.getSimulations();
             for (Simulation sim : sims) {
             	if(sim.getImportedTaskID() == null) {
