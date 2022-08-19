@@ -126,7 +126,7 @@ public class CLIPythonManager {
     public void instantiatePythonProcess() throws IOException {
         if (this.pythonProcess != null) return; // prevent override
 
-        logger.info("\nInitializing Python...\n");
+        logger.info("Initializing Python...\n");
         // Confirm we have python properly installed or kill this exe where it stands.
         this.checkPythonInstallation();
         // install virtual environment
