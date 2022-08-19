@@ -74,7 +74,7 @@ public class SolverHandler {
         String inputFile = externalDocInfo.getFile().getAbsolutePath();
         String bioModelBaseName = org.vcell.util.FileUtils.getBaseName(inputFile);
         
-        List<VCDocument> docs = null;
+        List<BioModel> biomodels = null;
         // Key String is SEDML Task ID
         HashMap<String, ODESolverResultSet> resultsHash = new LinkedHashMap<String, ODESolverResultSet>();
         String docName = null;
@@ -82,14 +82,14 @@ public class SolverHandler {
         Simulation[] sims = null;
         String outDirRoot = outputDirForSedml.toString().substring(0, outputDirForSedml.toString().lastIndexOf(System.getProperty("file.separator")));
         try {
-            docs = XmlHelper.sedmlToBioModel(sedmlImportLogger, externalDocInfo, sedml, null, sedmlLocation, exactMatchOnly);
+            biomodels = XmlHelper.importSEDML(sedmlImportLogger, externalDocInfo, sedml, exactMatchOnly);
         } catch (Exception e) {
             System.err.println("Unable to Parse SED-ML into Bio-Model, failed with err: " + e.getMessage());
             e.printStackTrace();
             throw e;
         }
-        if(docs != null) {
-        	countBioModels = docs.size();
+        if(biomodels != null) {
+        	countBioModels = biomodels.size();
         }
 
         int simulationCount = 0;
@@ -97,15 +97,14 @@ public class SolverHandler {
         boolean hasSomeSpatial = false;
         boolean bTimeoutFound = false;
         
-        for (VCDocument doc : docs) {
+        for (BioModel biomodel : biomodels) {
             try {
-                sanityCheck(doc);
+                sanityCheck(bioModel);
             } catch (Exception e) {
                 e.printStackTrace(System.err);
 //                continue;
             }
-            docName = doc.getName();
-            bioModel = (BioModel) doc;
+            docName = biomodel.getName();
             sims = bioModel.getSimulations();
             for (Simulation sim : sims) {
             	if(sim.getImportedTaskID() == null) {
@@ -298,7 +297,7 @@ public class SolverHandler {
         List<VCDocument> docs = null;
         // Key String is SEDML Task ID
         HashMap<String, ODESolverResultSet> resultsHash = new LinkedHashMap<String, ODESolverResultSet>();
-        String docName = null;
+        String biomodelName = null;
         BioModel bioModel = null;
         Simulation[] sims = null;
         VCDocument singleDoc = null;
@@ -314,7 +313,7 @@ public class SolverHandler {
             e.printStackTrace(System.err);
         }
         assert singleDoc != null;
-        docName = singleDoc.getName();
+        biomodelName = singleDoc.getName();
         bioModel = (BioModel) singleDoc;
         sims = bioModel.getSimulations();
         for (Simulation sim : sims) {
@@ -347,7 +346,7 @@ public class SolverHandler {
                     throw new Exception("Unexpected solver: " + kisao + " " + solver);
                 }
                 if (solver.getSolverStatus().getStatus() == SolverStatus.SOLVER_FINISHED) {
-                    System.out.println("Succesful execution: Model '" + docName + "' Task '" + sim.getDescription() + "'.");
+                    System.out.println("Succesful execution: Model '" + biomodelName + "' Task '" + sim.getDescription() + "'.");
 
                 } else {
                     System.err.println("Solver status: " + solver.getSolverStatus().getStatus());
@@ -356,7 +355,7 @@ public class SolverHandler {
                 }
 
             } catch (Exception e) {
-                System.err.println("Failed execution: Model '" + docName + "' Task '" + sim.getDescription() + "'.");
+                System.err.println("Failed execution: Model '" + biomodelName + "' Task '" + sim.getDescription() + "'.");
 
                 if (e.getMessage() != null) {
                     // something else than failure caught by solver instance during execution

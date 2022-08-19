@@ -3604,8 +3604,8 @@ public class ClientRequestManager
 						List<SedML> sedmls = (List<SedML>) hashTable.get(SEDML_MODELS);
 						for (SedML sedml : sedmls) {
 							// default to import all tasks
-							List<VCDocument> vcdocs = XmlHelper.sedmlToBioModel(transLogger, externalDocInfo,
-									sedml, null, null, false);
+							List<BioModel> vcdocs = XmlHelper.importSEDML(transLogger, externalDocInfo,
+									sedml, false);
 							for (VCDocument vcdoc : vcdocs) {
 								docs.add(vcdoc);
 							}
@@ -3739,8 +3739,12 @@ public class ClientRequestManager
 								List<SedML> sedmls = (List<SedML>) hashTable.get(SEDML_MODELS);
 								SedML sedml = sedmls.get(0);						
 								// default to import all tasks
-								docs = XmlHelper.sedmlToBioModel(transLogger, externalDocInfo,
-										sedml, null, externalDocInfo.getFile().getAbsolutePath(), false);
+								List<BioModel> vcdocs = XmlHelper.importSEDML(transLogger, externalDocInfo,
+										sedml, false);
+								for (VCDocument vcdoc : vcdocs) {
+									docs.add(vcdoc);
+								}
+								
 								isSEDML = true;
 							} else { // unknown XML format
 								throw new RuntimeException(
