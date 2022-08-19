@@ -122,7 +122,7 @@ def dump_json_dict(json_path: str,yaml_dict: str):
         json.dump(yaml_dict,json_out,sort_keys=True,indent=4)
 
 
-def update_task_status(sedml: str, task: str, status: str, out_dir: str, duration: str, algorithm: str) -> None:
+def update_task_status(sedml: str, task: str, status: str, out_dir: str, duration: int, algorithm: str) -> None:
     # Hardcoded because name is static
     yaml_dict = get_yaml_as_str(os.path.join(out_dir, "log.yml"))
     for sedml_list in yaml_dict['sedDocuments']:
