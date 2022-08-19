@@ -10,15 +10,18 @@ import org.vcell.sbml.vcell.SBMLImporter;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.concurrent.Callable;
 
 @Command(name = "model", description = "translate between a BioModel application and an SBML model")
 public class ModelCommand implements Callable<Integer> {
+
+    private final static Logger logger = LogManager.getLogger(ModelCommand.class);
 
     @Option(names = { "-i", "--inputFile" }, description = "input file  (xml model file)")
     private File inputFile;
@@ -39,7 +42,9 @@ public class ModelCommand implements Callable<Integer> {
         try {
 
             if (inputFile == null || !inputFile.isFile() || !inputFile.exists()) {
-                throw new RuntimeException("inputFile not found or not a directory "+inputFile);
+                RuntimeException e = new RuntimeException("inputFile not found or not a directory "+inputFile);
+                logger.error(e.getMessage(), e);
+                throw e;
             }
             if (format == ModelFormat.VCML){
                 File sbmlInputFile = inputFile;
@@ -59,9 +64,8 @@ public class ModelCommand implements Callable<Integer> {
             }
             return 0;
         } catch (Exception e) {
-            e.printStackTrace();
-            throw new RuntimeException(e.getMessage());
+            logger.error("Exception encountered while processing CLI Model request");
+            throw new RuntimeException(e.getMessage(), e);
         }
     }
-
 }

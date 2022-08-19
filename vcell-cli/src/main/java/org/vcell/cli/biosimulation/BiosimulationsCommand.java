@@ -44,8 +44,8 @@ public class BiosimulationsCommand implements Callable<Integer> {
     public Integer call() {
         try {
             LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
-            Level logLevel = Level.WARN;
-            if (bDebug) {
+            Level logLevel = logger.getLevel();
+            if (!bQuiet && bDebug) {
                 logLevel = Level.DEBUG;
             } else if (bQuiet) {
                 logLevel = Level.OFF;
@@ -109,6 +109,7 @@ public class BiosimulationsCommand implements Callable<Integer> {
                 return 0; // Does this prevent finally?
             } finally {
                 try {
+                    logger.trace("Closing Python Instance");
                     CLIPythonManager.getInstance().closePythonProcess(); // WARNING: Python will need reinstantiation after this is called
                 } catch (Exception e) {
                     logger.error(e.getMessage(), e);

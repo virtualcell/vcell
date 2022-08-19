@@ -24,21 +24,23 @@ import org.apache.commons.lang.StringUtils;
 import org.jlibsedml.*;
 import org.jlibsedml.execution.IXPathToVariableIDResolver;
 import org.jlibsedml.modelsupport.SBMLSupport;
-import org.vcell.cli.CLIPythonManager;
 import org.vcell.cli.CLIUtils;
-import org.vcell.cli.PythonStreamException;
 import org.vcell.stochtest.TimeSeriesMultitrialData;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.User;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.io.*;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 public class RunUtils {
+
+    private final static Logger logger = LogManager.getLogger(RunUtils.class);
 
     public static ODESolverResultSet interpolate(ODESolverResultSet odeSolverResultSet, UniformTimeCourse sedmlSim) throws ExpressionException {
         double outputStart = sedmlSim.getOutputStartTime();
@@ -225,9 +227,9 @@ public class RunUtils {
         List<Output> ooo = sedml.getOutputs();
         for (Output oo : ooo) {
             if (!(oo instanceof Report)) {
-                System.out.println("Ignoring unsupported output `" + oo.getId() + "` while CSV generation.");
+                logger.info("Ignoring unsupported output `" + oo.getId() + "` while CSV generation.");
             } else {
-                System.out.println("Generating report `" + oo.getId() +"`.");
+                logger.info("Generating report `" + oo.getId() +"`.");
                 try {
                     StringBuilder sb = new StringBuilder();
 
@@ -247,10 +249,10 @@ public class RunUtils {
                         int mxlen = 0;
                         boolean supportedDataset = true;
                         // get target values
-                        HashMap values = new HashMap<Variable, double[]>();
+                        HashMap<Variable, double[]> values = new HashMap<>();
                         for (Variable var : vars) {
                             AbstractTask task = sedml.getTaskWithId(var.getReference());
-                            Model model = sedml.getModelWithId(task.getModelReference());
+                            //Model model = sedml.getModelWithId(task.getModelReference());
                             Simulation sim = sedml.getSimulation(task.getSimulationReference());
                             IXPathToVariableIDResolver variable2IDResolver = new SBMLSupport();
                             // must get variable ID from SBML model
@@ -303,14 +305,14 @@ public class RunUtils {
                                     }
 
                                 } else {
-                                    System.err.println("only uniform time course simulations are supported");
+                                    logger.error("only uniform time course simulations are supported");
                                 }
 
                             }
                         }
                         PythonCalls.updateDatasetStatusYml(sedmlLocation, oo.getId(), dataset.getId(), Status.SUCCEEDED, outDir);
                         if (!supportedDataset) {
-                            System.err.println("Dataset " + dataset.getId() + " references unsupported RepeatedTask and is being skipped");
+                            logger.error("Dataset " + dataset.getId() + " references unsupported RepeatedTask and is being skipped");
                             continue;
                         }
                         //get math
@@ -368,7 +370,7 @@ public class RunUtils {
                     out.close();
                     reportsHash.put(oo.getId(), f);
                 } catch (Exception e) {
-                    e.printStackTrace(System.err);
+                    logger.error("Encountered exception: " + e.getMessage(), e);
                     reportsHash.put(oo.getId(), null);
                 }
             }
@@ -381,7 +383,7 @@ public class RunUtils {
         List<Output> ooo = sedml.getOutputs();
         for (Output oo : ooo) {
             if (!(oo instanceof Report)) {
-                System.out.println("Ignoring unsupported output `" + oo.getId() + "` while generating idNamePlotsMap.");
+                logger.info("Ignoring unsupported output `" + oo.getId() + "` while generating idNamePlotsMap.");
             } else {
                 String id = oo.getId();
                 sb.append(id).append("|");	// hopefully no vcell name contains '|', so I can use it as separator
@@ -401,8 +403,7 @@ public class RunUtils {
             out.flush();
             out.close();
         } catch(Exception e) {
-            System.out.println("Unable to create the idNamePlotsMap");
-            e.printStackTrace(System.err);
+            logger.error("Unable to create the idNamePlotsMap; " + e.getMessage(), e);
         }
         return f.toString();
     }
@@ -429,11 +430,11 @@ public class RunUtils {
             srcFiles = listFilesForFolder(dirPath, ext);
 
             if (srcFiles.size() == 0) {
-                System.err.println("No " + ext.toUpperCase() + " files found, skipping archiving `" + extensionListMap.get(ext) + "` files");
+                logger.error("No " + ext.toUpperCase() + " files found, skipping archiving `" + extensionListMap.get(ext) + "` files");
             } else {
                 fileOutputStream = new FileOutputStream(Paths.get(dirPath.toString(), extensionListMap.get(ext)).toFile());
                 zipOutputStream = new ZipOutputStream(fileOutputStream);
-                if (srcFiles.size() != 0) System.out.println("Archiving resultant " + ext.toUpperCase() + " files to `" + extensionListMap.get(ext) + "`.");
+                if (srcFiles.size() != 0) logger.info("Archiving resultant " + ext.toUpperCase() + " files to `" + extensionListMap.get(ext) + "`.");
                 for (File srcFile : srcFiles) {
 
                     fileInputstream = new FileInputStream(srcFile);
@@ -458,7 +459,7 @@ public class RunUtils {
 
     public static String getTempDir() throws IOException {
         String tempPath = String.valueOf(java.nio.file.Files.createTempDirectory("vcell_temp_" + UUID.randomUUID().toString()).toAbsolutePath());
-        System.out.println("TempPath Created: " + tempPath);
+        logger.info("TempPath Created: " + tempPath);
         return tempPath;
     }
 
@@ -472,7 +473,8 @@ public class RunUtils {
 
     // Breakline
     public static void drawBreakLine(String breakString, int times) {
-        System.out.println(breakString + StringUtils.repeat(breakString, times));
+        if (logger.isInfoEnabled()) System.out.println(breakString + StringUtils.repeat(breakString, times));
+        //logger.info(breakString + StringUtils.repeat(breakString, times));
     }
 
 
@@ -524,7 +526,7 @@ public class RunUtils {
             out.print(sb.toString());
             out.flush();
         } catch (FileNotFoundException e) {
-            System.err.println("Unable to find path, failed with err: " + e.getMessage());
+            logger.error("Unable to find path, failed with err: " + e.getMessage(), e);
         }
 
     }

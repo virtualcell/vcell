@@ -8,6 +8,8 @@ import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.config.Configuration;
 import org.apache.logging.log4j.core.config.LoggerConfig;
 
+import org.apache.logging.log4j.Logger;
+
 import java.io.*;
 import java.nio.file.*;
 import java.util.*;
@@ -15,13 +17,13 @@ import java.util.*;
 //import java.nio.file.Files;
 
 public class CLIUtils {
-    // Simulation Status enum
+    private final static Logger logger = LogManager.getLogger(CLIUtils.class);
 
     public static boolean removeDirs(File f) {
         try {
             CLIUtils.deleteRecursively(f);
         } catch (IOException ex) {
-            System.err.println("Failed to delete the file: " + f);
+            logger.error("Failed to delete the file: " + f);
             return false;
         }
         return true;
@@ -131,7 +133,7 @@ public class CLIUtils {
     public static class LocalLogger extends VCLogger {
         @Override
         public void sendMessage(Priority p, ErrorType et, String message) {
-            System.out.println("LOGGER: msgLevel=" + p + ", msgType=" + et + ", " + message);
+            logger.info("LOGGER: msgLevel=" + p + ", msgType=" + et + ", " + message);
         }
 
         public void sendAllMessages() {
