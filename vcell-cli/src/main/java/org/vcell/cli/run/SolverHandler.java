@@ -75,21 +75,20 @@ public class SolverHandler {
         String inputFile = externalDocInfo.getFile().getAbsolutePath();
         String bioModelBaseName = org.vcell.util.FileUtils.getBaseName(inputFile);
         
-        List<VCDocument> docs = null;
+        List<BioModel> bioModelList = null;
         // Key String is SEDML Task ID
         HashMap<String, ODESolverResultSet> resultsHash = new LinkedHashMap<String, ODESolverResultSet>();
         String docName = null;
-        BioModel bioModel = null;
         Simulation[] sims = null;
         //String outDirRoot = outputDirForSedml.toString().substring(0, outputDirForSedml.toString().lastIndexOf(System.getProperty("file.separator")));
         try {
-            docs = XmlHelper.sedmlToBioModel(sedmlImportLogger, externalDocInfo, sedml, null, sedmlLocation, exactMatchOnly);
+            bioModelList = XmlHelper.importSEDML(sedmlImportLogger, externalDocInfo, sedml, exactMatchOnly);
         } catch (Exception e) {
             logger.error("Unable to Parse SED-ML into Bio-Model, failed with err: " + e.getMessage(), e);
             throw e;
         }
-        if(docs != null) {
-        	countBioModels = docs.size();
+        if(bioModelList != null) {
+        	countBioModels = bioModelList.size();
         }
 
         int simulationCount = 0;
@@ -97,15 +96,14 @@ public class SolverHandler {
         boolean hasSomeSpatial = false;
         boolean bTimeoutFound = false;
         
-        for (VCDocument doc : docs) {
+        for (BioModel bioModel : bioModelList) {
             try {
-                sanityCheck(doc);
+                sanityCheck(bioModel);
             } catch (Exception e) {
                 logger.error("Exception encountered: " + e.getMessage(), e);
                 // continue;
             }
-            docName = doc.getName();
-            bioModel = (BioModel) doc;
+            docName = bioModel.getName();
             sims = bioModel.getSimulations();
             for (Simulation sim : sims) {
             	if(sim.getImportedTaskID() == null) {
@@ -293,7 +291,7 @@ public class SolverHandler {
         //List<VCDocument> docs = null;
         // Key String is SEDML Task ID
         HashMap<String, ODESolverResultSet> resultsHash = new LinkedHashMap<String, ODESolverResultSet>();
-        String docName = null;
+        String biomodelName = null;
         BioModel bioModel = null;
         Simulation[] sims = null;
         VCDocument singleDoc = null;
@@ -309,7 +307,7 @@ public class SolverHandler {
             logger.error("Exception encountered: " + e.getMessage(), e);
         }
         assert singleDoc != null;
-        docName = singleDoc.getName();
+        biomodelName = singleDoc.getName();
         bioModel = (BioModel) singleDoc;
         sims = bioModel.getSimulations();
         for (Simulation sim : sims) {
@@ -342,8 +340,7 @@ public class SolverHandler {
                     throw new Exception("Unexpected solver: " + kisao + " " + solver);
                 }
                 if (solver.getSolverStatus().getStatus() == SolverStatus.SOLVER_FINISHED) {
-                    logger.info("Succesful execution: Model '" + docName + "' Task '" + sim.getDescription() + "'.");
-
+                    logger.info("Succesful execution: Model '" + biomodelName + "' Task '" + sim.getDescription() + "'.");
                 } else {
                     logger.debug("Solver status: " + solver.getSolverStatus().getStatus());
                     logger.debug("Solver message: " + solver.getSolverStatus().getSimulationMessage().getDisplayMessage());
@@ -351,8 +348,8 @@ public class SolverHandler {
                 }
 
             } catch (Exception e) {
-                logger.error("Failed execution: Model '" + docName + "' Task '" + sim.getDescription() + "'.");
-
+                logger.error("Failed execution: Model '" + biomodelName + "' Task '" + sim.getDescription() + "'.");
+                
                 if (e.getMessage() != null) {
                     // something else than failure caught by solver instance during execution
                     logger.error(e.getMessage(), e);
