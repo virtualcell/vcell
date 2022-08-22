@@ -19,13 +19,14 @@ public class ModelUnitConverter {
 	private final static Logger logger = LogManager.getLogger(ModelUnitConverter.class);
 
 	public static ModelUnitSystem createSbmlModelUnitSystem() {
-		String volumeSubstanceSymbol = "umol";			// InternalUnitDefinition.UNIT_umol
-		String membraneSubstanceSymbol = "umol";		// umol
-		String lumpedReactionSubstanceSymbol = "umol";	// umol
-		String volumeSymbol = "l";						// l = dm3
-		String areaSymbol = "dm2";  					// dm2
-		String lengthSymbol = "dm";						// dm
-		String timeSymbol = "s";						// s
+		final String substanceUnit = "uM.um3";
+		String volumeSubstanceSymbol = substanceUnit;
+		String membraneSubstanceSymbol = substanceUnit;
+		String lumpedReactionSubstanceSymbol = substanceUnit;
+		String volumeSymbol = "um3";
+		String areaSymbol = "um2";
+		String lengthSymbol = "um";
+		String timeSymbol = "s";
 		ModelUnitSystem mus = ModelUnitSystem.createVCModelUnitSystem(volumeSubstanceSymbol, membraneSubstanceSymbol, lumpedReactionSubstanceSymbol, volumeSymbol, areaSymbol, lengthSymbol, timeSymbol);
 		return mus;
 	}
