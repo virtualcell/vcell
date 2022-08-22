@@ -60,7 +60,6 @@ import cbit.vcell.xml.XmlHelper;
 import cbit.vcell.xml.XmlParseException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.bouncycastle.jcajce.provider.digest.SHA3;
 import org.jdom.Element;
 import org.jdom.Namespace;
 import org.sbml.jsbml.AssignmentRule;
@@ -72,17 +71,11 @@ import org.vcell.sbml.SBMLUtils;
 import org.vcell.sbml.SbmlException;
 import org.vcell.sedml.SEDMLExporter;
 import org.vcell.util.*;
-import org.vcell.util.document.VCDocument;
-import sun.security.provider.SHA;
 
 import javax.xml.stream.XMLStreamException;
 import java.beans.PropertyVetoException;
-import java.io.IOException;
-import java.io.StringBufferInputStream;
-import java.io.StringReader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 
