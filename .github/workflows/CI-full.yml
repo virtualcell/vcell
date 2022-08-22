@@ -32,11 +32,12 @@ jobs:
         cd ..
         sudo tar -xvf deploy/deploy_dir.tar
         sudo chmod 777 -R deploy
-    - name: setup java 8
+    - name: setup java 8 with maven cache
       uses: actions/setup-java@v2
       with:
         java-version: '8'
         distribution: 'adopt'
+        cache: 'maven'
     - name: Install Singularity # to make singularity image for cluster
       uses: eWaterCycle/setup-singularity@v6
       with:
