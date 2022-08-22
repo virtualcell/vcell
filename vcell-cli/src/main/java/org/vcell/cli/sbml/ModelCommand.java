@@ -1,5 +1,6 @@
 package org.vcell.cli.sbml;
 
+import cbit.util.xml.XmlUtil;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.xml.XMLSource;
@@ -16,6 +17,7 @@ import org.apache.logging.log4j.Logger;
 import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.concurrent.Callable;
 
 @Command(name = "model", description = "translate between a BioModel application and an SBML model")
@@ -31,6 +33,9 @@ public class ModelCommand implements Callable<Integer> {
 
     @Option(names = { "-o", "--outputFile"}, description = "output file  (xml model file)")
     private File outputFile;
+
+    @Option(names = { "-v", "--validate"}, defaultValue = "false", description = "perform round-trip validation for math equivalence")
+    private boolean roundTripValidation = false;
 
     @Option(names = {"-f", "--format"}, defaultValue = "SBML", description = "output format (SBML or VCML)")
     private ModelFormat format = ModelFormat.SBML;
@@ -57,9 +62,9 @@ public class ModelCommand implements Callable<Integer> {
                 BioModel bioModel = XmlHelper.XMLToBioModel(new XMLSource(inputFile));
                 if (bioModel.getNumSimulationContexts() > appIndex) {
                     SimulationContext application = bioModel.getSimulationContext(appIndex);
-                    SBMLExporter exporter = new SBMLExporter(application, 3, 2);
-                    String sbmlString = exporter.getSBMLString();
-                    Files.write(outputFile.toPath(), sbmlString.getBytes(StandardCharsets.UTF_8));
+                    boolean isSpatial = application.getGeometry().getDimension() > 0;
+                    String resultString = XmlHelper.exportSBML(bioModel, 3, 2, 0, isSpatial, application, null, roundTripValidation);
+                    XmlUtil.writeXMLStringToFile(resultString, outputFile.getAbsolutePath(), true);
                 }
             }
             return 0;

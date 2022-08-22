@@ -365,7 +365,7 @@ public class VcmlOmexConverter {
         
         SEDMLExporter sedmlExporter = new SEDMLExporter(bioModel, sedmlLevel, sedmlVersion, simsToExport);
         SEDMLDocument sedmlDocument = sedmlExporter.getSEDMLFile0(outputDir, vcmlName,
-				modelFormat.equals(ModelFormat.VCML), modelFormat.equals(ModelFormat.SBML), true);
+				modelFormat.equals(ModelFormat.VCML), modelFormat.equals(ModelFormat.SBML), true, bValidate);
         SedML sedmlModel = sedmlDocument.getSedMLModel();
         if(sedmlModel.getModels().size() == 0) {
             File dir = new File(outputDir);
@@ -487,61 +487,45 @@ public class VcmlOmexConverter {
 //        	FileUtils.copyFileToDirectory(srcFile, destDir);
 
 			if (bValidate){
-				logger.info("validating Omex file '"+omexFile+"'");
-				List<BioModel> reread_docs = XmlHelper.readOmex(omexFile, new CLIUtils.LocalLogger());
-				logger.info("validated Omex file '"+omexFile+"'");
-				BioModel reread_BioModel_sbml_units = (BioModel)reread_docs.get(0);
-				reread_BioModel_sbml_units.refreshDependencies();
-
-				BioModel reread_BioModel_sbml_units_cloned = XmlHelper.cloneBioModel(reread_BioModel_sbml_units);
-				reread_BioModel_sbml_units_cloned.refreshDependencies();
-				//
-				// transform re-read BioModel back to original unit system before comparing with original model
-				//
-				BioModel reread_BioModel_vcell_units = ModelUnitConverter.createBioModelWithNewUnitSystem(
-						reread_BioModel_sbml_units_cloned,
-						bioModel.getModel().getUnitSystem());
-				if(reread_BioModel_vcell_units == null) {
-					throw new RuntimeException("Unable to clone BioModel: " + reread_BioModel_sbml_units_cloned.getName());
-				}
-
-				// clone BioModel - do we need this?
-
-
-				BioModel reread_BioModel = reread_docs.get(0);
-				reread_BioModel.refreshDependencies();
-				SimulationContext.MathMappingCallback mathMappingCallback = new SimulationContext.MathMappingCallback() {
-					@Override
-					public void setMessage(String message) { }
-					@Override
-					public void setProgressFraction(float fractionDone) { }
-					@Override
-					public boolean isInterrupted() { return false; }
-				};
-				SimulationContext.NetworkGenerationRequirements networkGenerationRequirements =
-						SimulationContext.NetworkGenerationRequirements.AllowTruncatedStandardTimeout;
-				MathDescription origMathDescription = bioModel.getSimulationContext(0).getMathDescription();
-				MathDescription rereadMathDescription = reread_BioModel_vcell_units.getSimulationContext(0).getMathDescription();
-				MathCompareResults mathCompareResults = MathDescription.testEquivalency(SimulationSymbolTable.createMathSymbolTableFactory(),origMathDescription, rereadMathDescription);
-				if (!mathCompareResults.isEquivalent()){
-					failureMessage = "MathDescriptions ARE NOT equivalent after VCML->SBML->VCML round-trip validation: "+mathCompareResults.toDatabaseStatus();
-					logger.error(failureMessage);
-				} else {
-					successMessage = "MathDescriptions ARE equivalent after VCML->SBML->VCML round-trip validation: "+mathCompareResults.toDatabaseStatus();
-					logger.info(successMessage);
-				}
-				logger.error("writing extra files ./orig_vcml.xml and ./reread_vcml.xml for debugging - remove later");
-				Files.write(Paths.get(outputDir, "orig_vcml.xml"), XmlHelper.bioModelToXML(bioModel, false).getBytes(StandardCharsets.UTF_8));
-				Files.write(Paths.get(outputDir, "reread_vcml_sbml_units.xml"), XmlHelper.bioModelToXML(reread_BioModel_sbml_units, false).getBytes(StandardCharsets.UTF_8));
-				Files.write(Paths.get(outputDir, "reread_vcml.xml"), XmlHelper.bioModelToXML(reread_BioModel_vcell_units, false).getBytes(StandardCharsets.UTF_8));
+				logger.error("skipping VcmlOmexConverter.validation until verify math override round-trip (relying on SBMLExporter.bRoundTripSBMLValidation)");
+//				logger.info("validating Omex file '"+omexFile+"'");
+//				List<BioModel> reread_docs = XmlHelper.readOmex(omexFile, new CLIUtils.LocalLogger());
+//				logger.info("validated Omex file '"+omexFile+"'");
+//				BioModel reread_BioModel_sbml_units = (BioModel)reread_docs.get(0);
+//				reread_BioModel_sbml_units.refreshDependencies();
+//
+//				BioModel reread_BioModel_sbml_units_cloned = XmlHelper.cloneBioModel(reread_BioModel_sbml_units);
+//				reread_BioModel_sbml_units_cloned.refreshDependencies();
+//				//
+//				// transform re-read BioModel back to original unit system before comparing with original model
+//				//
+//				BioModel reread_BioModel_vcell_units = ModelUnitConverter.createBioModelWithNewUnitSystem(
+//						reread_BioModel_sbml_units_cloned,
+//						bioModel.getModel().getUnitSystem());
+//				if(reread_BioModel_vcell_units == null) {
+//					throw new RuntimeException("Unable to clone BioModel: " + reread_BioModel_sbml_units_cloned.getName());
+//				}
+//
+//				MathDescription origMathDescription = bioModel.getSimulationContext(0).getMathDescription();
+//				MathDescription rereadMathDescription = reread_BioModel_vcell_units.getSimulationContext(0).getMathDescription();
+//				MathCompareResults mathCompareResults = MathDescription.testEquivalency(SimulationSymbolTable.createMathSymbolTableFactory(),origMathDescription, rereadMathDescription);
+//				if (!mathCompareResults.isEquivalent()){
+//					failureMessage = "MathDescriptions ARE NOT equivalent after VCML->SBML->VCML round-trip validation: "+mathCompareResults.toDatabaseStatus();
+//					logger.error(failureMessage);
+//				} else {
+//					successMessage = "MathDescriptions ARE equivalent after VCML->SBML->VCML round-trip validation: "+mathCompareResults.toDatabaseStatus();
+//					logger.info(successMessage);
+//				}
+//				logger.error("writing extra files ./orig_vcml.xml and ./reread_vcml.xml for debugging - remove later");
+//				Files.write(Paths.get(outputDir, "orig_vcml.xml"), XmlHelper.bioModelToXML(bioModel, false).getBytes(StandardCharsets.UTF_8));
+//				Files.write(Paths.get(outputDir, "reread_vcml_sbml_units.xml"), XmlHelper.bioModelToXML(reread_BioModel_sbml_units, false).getBytes(StandardCharsets.UTF_8));
+//				Files.write(Paths.get(outputDir, "reread_vcml.xml"), XmlHelper.bioModelToXML(reread_BioModel_vcell_units, false).getBytes(StandardCharsets.UTF_8));
 			}
             // Removing all other files(like SEDML, XML, SBML) after archiving
             removeOtherFiles(outputDir, files);
 
 			if (failureMessage != null){
 				throw new RuntimeException(failureMessage);
-			}else if (successMessage != null){
-				throw new RuntimeException("<<<SUCCESS, BUT THROWING EXCEPTION FOR REPORTING --- REMOVE THIS: "+successMessage);
 			}
         } catch (Exception e) {
 			throw new RuntimeException("createZipArchive threw exception: " + e.getMessage(), e);

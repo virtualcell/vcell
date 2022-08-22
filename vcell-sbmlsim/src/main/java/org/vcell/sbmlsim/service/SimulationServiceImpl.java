@@ -483,7 +483,8 @@ public class SimulationServiceImpl extends AbstractService implements Simulation
 		try {
 			BioModel bioModel = XmlHelper.XMLToBioModel(new XMLSource(vcmlFile));
 			SimulationContext simContext = bioModel.getSimulationContext(applicationName);
-			String sbml = XmlHelper.exportSBML(bioModel, 3, 1, 0, simContext.getGeometry().getDimension()>0, simContext, null);
+			boolean bRoundTripValidation = true;
+			String sbml = XmlHelper.exportSBML(bioModel, 3, 1, 0, simContext.getGeometry().getDimension()>0, simContext, null, bRoundTripValidation);
 			FileUtils.write(outputFile, sbml);
 			VcmlToSbmlResults results = new VcmlToSbmlResults();
 			results.setSbmlFilePath(outputFile);
