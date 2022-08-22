@@ -37,7 +37,6 @@ import cbit.vcell.mapping.spatial.SpatialObject.QuantityComponent;
 import cbit.vcell.math.Variable.Domain;
 import cbit.vcell.matrix.MatrixException;
 import cbit.vcell.matrix.RationalExp;
-import cbit.vcell.matrix.RationalNumber;
 import cbit.vcell.model.BioNameScope;
 import cbit.vcell.model.ExpressionContainer;
 import cbit.vcell.model.Kinetics;
@@ -572,9 +571,11 @@ public static final int PARAMETER_ROLE_P_reverse = 4;
 public static final String PARAMETER_MASS_CONSERVATION_PREFIX = "K_";
 public static final String PARAMETER_MASS_CONSERVATION_SUFFIX = "_total";
 public static final String MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_old = "_init";
-public static final String MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_old_uM = "_init_uM";
+	public static final String MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_uM = "_init_uM";
+	public static final String MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_umol_l_1 = "_init_umol_l_1";
+	public static final String MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_umol_dm_2 = "_init_umol_dm_2";
 public static final String MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_old_molecules_per_um2 = "_init_molecules_per_um2";
-public static final String MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_old_molecules_um_2 = "_init_molecules_um_2";
+public static final String MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_molecules_um_2 = "_init_molecules_um_2";
 public static final int PARAMETER_ROLE_UNITFACTOR = 9;
 
 /**

@@ -9,21 +9,17 @@
  */
 
 package cbit.vcell.solver;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
-import org.vcell.util.BeanUtils;
-import org.vcell.util.CommentStringTokenizer;
-import org.vcell.util.Compare;
-import org.vcell.util.DataAccessException;
-import org.vcell.util.Issue;
+import cbit.vcell.model.Model;
+import cbit.vcell.model.ModelUnitSystem;
+import cbit.vcell.units.VCUnitDefinition;
+import cbit.vcell.units.VCUnitSystem;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.vcell.util.*;
 import org.vcell.util.Issue.IssueCategory;
-import org.vcell.util.IssueContext;
 import org.vcell.util.IssueContext.ContextType;
-import org.vcell.util.Matchable;
 
 import cbit.vcell.mapping.DiffEquMathMapping;
 import cbit.vcell.math.Constant;
@@ -44,6 +40,8 @@ import cbit.vcell.parser.SymbolTable;
  * @author: John Wagner
  */
 public class MathOverrides implements Matchable, java.io.Serializable {
+
+	private final static Logger logger = LogManager.getLogger(MathOverrides.class);
 	private Simulation simulation = null;
 	//
 	// key = constant name (String)
@@ -231,7 +229,6 @@ protected void fireConstantRemoved(cbit.vcell.solver.MathOverridesEvent event) {
  * @return  the value to which the key is mapped in this hashtable;
  *          <code>null</code> if the key is not mapped to any value in
  *          this hashtable.
- * @see     #put(Object, Object)
  */
 public Expression getActualExpression(String key, int index) {
 	MathOverrides.Element element = getOverridesElement(key);
@@ -298,7 +295,6 @@ public Constant getConstant(String constantName) {
  * @return  the value to which the key is mapped in this hashtable;
  *          <code>null</code> if the key is not mapped to any value in
  *          this hashtable.
- * @see     #put(Object, Object)
  */
 public ConstantArraySpec getConstantArraySpec(String key) {
 	if(isScan(key)) {
@@ -538,7 +534,7 @@ private void putConstant(Constant value, boolean bFireEvent) throws ExpressionEx
 		def = ((Constant)var).getExpression();
 	} else {
 		// ignore
-		System.out.println(">>>>WARNING: Math does not have constant with name: "+name);
+		logger.error("Math does not have constant with name: "+name);
 		return;
 	}
 	if (act.compareEqual(def)) {
@@ -705,6 +701,19 @@ private static java.util.Vector<Element> toVector (java.util.Enumeration<Element
 	return (vector);
 }
 
+private static class SymbolReplacement {
+	final String oldName;
+	final String newName;
+	final double factor;
+	SymbolReplacement(String oldName, String newName) {
+		this(oldName, newName, 1.0);
+	}
+	SymbolReplacement(String oldName, String newName, double factor) {
+		this.oldName = oldName;
+		this.newName = newName;
+		this.factor = factor;
+	}
+}
 
 void updateFromMathDescription() {
 	MathDescription mathDescription = getSimulation().getMathDescription();
@@ -712,7 +721,7 @@ void updateFromMathDescription() {
 	// get list of names of constants in this math
 	//
 	Enumeration<Constant> enumeration = mathDescription.getConstants();
-	java.util.HashSet<String> mathDescriptionHash = new java.util.HashSet<String>();
+	Set<String> mathDescriptionHash = new LinkedHashSet<>();
 	while (enumeration.hasMoreElements()) {
 		Constant constant = enumeration.nextElement();
 		mathDescriptionHash.add(constant.getName());
@@ -725,6 +734,41 @@ void updateFromMathDescription() {
 	//
 	//      2) if not repaired, will be reported as an issue.
 	//
+	List<SymbolReplacement> replacements = new ArrayList<>();
+
+	// test for renamed initial condition constant (changed from _init to _init_uM)
+	replacements.add(new SymbolReplacement(DiffEquMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_old,
+			DiffEquMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_uM));
+
+	// test for renamed initial condition constant (changed from _init to _init_molecules_um_2)
+	replacements.add(new SymbolReplacement(DiffEquMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_old,
+			DiffEquMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_molecules_um_2));
+
+	// test for renamed initial condition constant (changed from _init_molecules_per_um2 to _init_molecules_um_2)
+	replacements.add(new SymbolReplacement(DiffEquMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_old_molecules_per_um2,
+			DiffEquMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_molecules_um_2));
+
+	// test for equivalent unit systems _init_uM or _init <==> _init_umol_l_1
+	replacements.add(new SymbolReplacement(DiffEquMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_uM,
+			DiffEquMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_umol_l_1));
+	replacements.add(new SymbolReplacement(DiffEquMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_old,
+			DiffEquMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_umol_l_1));
+	replacements.add(new SymbolReplacement(DiffEquMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_umol_l_1,
+			DiffEquMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_uM));
+
+	// test for equivalent unit systems _init or _init_molecules_per_um2 or _init_molecules_um_2 <==> _init_umol_dm_2  (needs unit conversion)
+//				VCUnitSystem unitSystem = new VCUnitSystem() {};
+//				VCUnitDefinition unit_molecules_um_2 = unitSystem.getInstance("molecules.um-2");
+//				VCUnitDefinition unit_nmol_dm_2 = unitSystem.getInstance("umol.dm-2");
+//				replacements.add(new SymbolReplacement(DiffEquMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_old,
+//														DiffEquMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_umol_dm_2));
+//				replacements.add(new SymbolReplacement(DiffEquMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_old_molecules_per_um2,
+//														DiffEquMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_umol_dm_2));
+//				replacements.add(new SymbolReplacement(DiffEquMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_molecules_um_2,
+//														DiffEquMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_umol_dm_2));
+//				replacements.add(new SymbolReplacement(DiffEquMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_umol_dm_2,
+//														DiffEquMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_molecules_um_2));
+
 	HashMap<String, String> renamedMap = new HashMap<String, String>();
 	boolean bNameRepaired = true;
 	while (bNameRepaired){
@@ -733,57 +777,20 @@ void updateFromMathDescription() {
 		while (mathOverrideNamesEnum.hasMoreElements()){
 			String name = mathOverrideNamesEnum.nextElement();
 			if (!mathDescriptionHash.contains(name)){
-				//
-				// test for renamed initial condition constant (changed from _init to _init_uM)
-				//
-				if (name.endsWith(DiffEquMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_old)){
-					String name_repaired_to_uM = name.replace(
-							DiffEquMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_old, 
-							DiffEquMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_old_uM);
-					if (mathDescriptionHash.contains(name_repaired_to_uM)){
+				for (SymbolReplacement replacement : replacements){
+					String repaired_name = name.replace(replacement.oldName, replacement.newName);
+					if (mathDescriptionHash.contains(repaired_name)){
 						Element element = overridesHash.remove(name);
-						element.name = name_repaired_to_uM;
-						overridesHash.put(name_repaired_to_uM, element);
-						renamedMap.put(name, name_repaired_to_uM);
+						element.name = repaired_name;
+						overridesHash.put(repaired_name, element);
+						renamedMap.put(name, repaired_name);
 						removeConstant(name);
 						bNameRepaired = true;
+//						logger.info("replace math override name "+name+" with "+repaired_name);
 						break;
-					}						
+					}
 				}
-				//
-				// test for renamed initial condition constant (changed from _init to _init_molecules_um_2)
-				//
-				if (name.endsWith(DiffEquMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_old)){
-					String name_repaired_to_molecule_per_um2 = name.replace(
-							DiffEquMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_old, 
-							DiffEquMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_old_molecules_um_2);
-					if (mathDescriptionHash.contains(name_repaired_to_molecule_per_um2)){
-						Element element = overridesHash.remove(name);
-						element.name = name_repaired_to_molecule_per_um2;
-						overridesHash.put(name_repaired_to_molecule_per_um2, element);
-						renamedMap.put(name, name_repaired_to_molecule_per_um2);
-						removeConstant(name);
-						bNameRepaired = true;
-						break;
-					}						
-				}
-				//
-				// test for renamed initial condition constant (changed from _init_molecules_per_um2 to _init_molecules_um_2)
-				//
-				if (name.endsWith(DiffEquMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_old_molecules_per_um2)){
-					String name_repaired_to_molecule_per_um2 = name.replace(
-							DiffEquMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_old_molecules_per_um2, 
-							DiffEquMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_old_molecules_um_2);
-					if (mathDescriptionHash.contains(name_repaired_to_molecule_per_um2)){
-						Element element = overridesHash.remove(name);
-						element.name = name_repaired_to_molecule_per_um2;
-						overridesHash.put(name_repaired_to_molecule_per_um2, element);
-						renamedMap.put(name, name_repaired_to_molecule_per_um2);
-						removeConstant(name);
-						bNameRepaired = true;
-						break;
-					}						
-				}
+				logger.error("didn't find a replacement for math override symbol "+name);
 			}
 		}
 	}
