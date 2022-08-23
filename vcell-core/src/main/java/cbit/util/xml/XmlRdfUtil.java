@@ -39,6 +39,8 @@ import javax.xml.transform.TransformerFactoryConfigurationError;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.JDOMException;
@@ -64,7 +66,9 @@ import org.vcell.util.ClientTaskStatusSupport;
  * General Xml Rdf utility methods.
  */
 public class XmlRdfUtil {
-		
+	private static final Logger logger = LogManager.getLogger(XmlRdfUtil.class);
+
+	
     public static String getMetadata(String vcmlName) {
     	String ret = "";
         String ns = DefaultNameSpaces.EX.uri;
@@ -75,13 +79,17 @@ public class XmlRdfUtil {
        	String description = "http://omex-library.org/" + vcmlName + ".omex";	// make an empty rdf file
 		URI descriptionURI = ValueFactoryImpl.getInstance().createURI(description);
 		graph.add(descriptionURI, RDF.TYPE, PubMet.Description);		// <rdf:Description rdf:about='http://omex-library.org/Monkeyflower_pigmentation_v2.omex'>
+		
+		Literal descTitle = OntUtil.createTypedString(schema, "Untitled");
+		graph.add(descriptionURI, PubMet.Title, descTitle);
    		try {
    			Map<String, String> nsMap = DefaultNameSpaces.defaultMap.convertToMap();
    			ret = SesameRioUtil.writeRDFToString(graph, nsMap, RDFFormat.RDFXML);
-   			ret = ret.replaceFirst(".omex\"/", ".omex\"");
+//   			ret = ret.replaceFirst(".omex\"/", ".omex\"");
    			
-   			int index = ret.indexOf(PubMet.EndRdf);
-   			String end = "\n\n" + ret.substring(index);
+//   			int index = ret.indexOf(PubMet.EndRdf);
+   			int index = ret.indexOf(PubMet.EndDescription0);
+   			String end = ret.substring(index);
    			ret = ret.substring(0, ret.indexOf(end));
 
    			Calendar calendar = Calendar.getInstance();
@@ -101,7 +109,7 @@ public class XmlRdfUtil {
 
    			System.out.println(ret);
    		} catch (RDFHandlerException e) {
-			throw new RuntimeException("failed to create metadata");
+			logger.error("failed to create metadata");
 		}
    		return ret;
    	}
