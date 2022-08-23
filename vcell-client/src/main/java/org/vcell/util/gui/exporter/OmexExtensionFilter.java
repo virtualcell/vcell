@@ -3,6 +3,9 @@ package org.vcell.util.gui.exporter;
 import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.Map;
 import java.util.Objects;
 
@@ -25,6 +28,7 @@ import org.vcell.util.FileUtils;
 import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.PublicationInfo;
 
+import cbit.util.xml.XmlRdfUtil;
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.clientdb.DocumentManager;
@@ -87,31 +91,10 @@ public class OmexExtensionFilter extends SedmlExtensionFilter {
 	public void doSpecificWork(SEDMLExporter sedmlExporter, String resultString, String sPath, String sFile) throws Exception {
 		super.doSpecificWork(sedmlExporter, resultString, sPath, sFile);
 		
-        String rdfString = getMetadata(sFile);
+        String rdfString = XmlRdfUtil.getMetadata(sFile);
         XmlUtil.writeXMLStringToFile(rdfString, String.valueOf(Paths.get(sPath, "metadata.rdf")), true);
 
 		
 		sedmlExporter.createOmexArchive(sPath, sFile);
 	}
-
-    private static String getMetadata(String vcmlName) {
-    	String ret = "";
-        String ns = DefaultNameSpaces.EX.uri;
-
-		Graph graph = new HashGraph();
-		Graph schema = new HashGraph();
-
-       	String description = "http://omex-library.org/" + vcmlName + ".omex";	// make an empty rdf file
-       	URI descriptionURI = ValueFactoryImpl.getInstance().createURI(description);
-   		graph.add(descriptionURI, RDF.TYPE, PubMet.Description);
-   		try {
-   			Map<String, String> nsMap = DefaultNameSpaces.defaultMap.convertToMap();
-   			ret = SesameRioUtil.writeRDFToString(graph, nsMap, RDFFormat.RDFXML);
-   			SesameRioUtil.writeRDFToStream(System.out, graph, nsMap, RDFFormat.RDFXML);
-   		} catch (RDFHandlerException e) {
-			throw new RuntimeException("failed to create metadata");
-		}
-   		return ret;
-   	}
-
 }

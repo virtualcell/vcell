@@ -199,6 +199,8 @@ public class SEDMLExporter {
 		final String SBML_NS_PREFIX = "sbml";
 		final String VCML_NS = "http://sourceforge.net/projects/vcell/vcml";
 		final String VCML_NS_PREFIX = "vcml";
+		final String SPATIAL_NS = "https://sbml.org/documents/specifications/level-3/version-1/spatial";
+		final String SPATIAL_NS_PREFIX = "spatial";
 		
 		List<Namespace> nsList = new ArrayList<>();
 		Namespace ns = Namespace.getNamespace(SEDMLTags.MATHML_NS_PREFIX, SEDMLTags.MATHML_NS);
@@ -207,7 +209,15 @@ public class SEDMLExporter {
 		nsList.add(ns);
 		ns = Namespace.getNamespace(VCML_NS_PREFIX, VCML_NS);
 		nsList.add(ns);
-
+		
+		SimulationContext[] simContexts = vcBioModel.getSimulationContexts();
+		for(SimulationContext sc : simContexts) {
+			if(sc.getGeometry() != null && sc.getGeometry().getDimension() > 0) {
+				ns = Namespace.getNamespace(SPATIAL_NS_PREFIX, SPATIAL_NS);
+				nsList.add(ns);
+				break;
+			}
+		}
 		sedmlModel = sedmlDocument.getSedMLModel();
 		sedmlModel.setAdditionalNamespaces(nsList);
 
@@ -1208,10 +1218,14 @@ public class SEDMLExporter {
 			if (ste instanceof SpeciesContextSpecParameter) {
 				SpeciesContextSpecParameter scsp = (SpeciesContextSpecParameter)ste;
 				speciesId = (scsp).getSpeciesContext().getName();
-				if (scsp.getRole() == SpeciesContextSpec.ROLE_InitialConcentration) {
+				int role = scsp.getRole();
+				if (role == SpeciesContextSpec.ROLE_InitialConcentration) {
 					speciesAttr = scsp.getName(); 
 				}
-				if (scsp.getRole() == SpeciesContextSpec.ROLE_InitialCount) {
+				if (role == SpeciesContextSpec.ROLE_InitialCount) {
+					speciesAttr = scsp.getName(); 
+				}
+				if(role == SpeciesContextSpec.ROLE_DiffusionRate) {
 					speciesAttr = scsp.getName(); 
 				}
 			}
@@ -1221,6 +1235,8 @@ public class SEDMLExporter {
 				targetXpath = new XPathTarget(sbmlSupport.getXPathForSpecies(speciesId, SpeciesAttribute.initialConcentration));
 			} else if (speciesAttr.equalsIgnoreCase("initialCount") || speciesAttr.equalsIgnoreCase("initCount")) {
 				targetXpath = new XPathTarget(sbmlSupport.getXPathForSpecies(speciesId, SpeciesAttribute.initialAmount));
+			} else if (speciesAttr.equalsIgnoreCase("diff")) {
+				targetXpath = new XPathTarget(sbmlSupport.getXPathForGlobalParameter(speciesId + "_" + speciesAttr, ParameterAttribute.value));
 			} else {
 				throw new RuntimeException("Unknown species attribute '" + speciesAttr + "'; cannot get xpath target for species '" + speciesId + "'.");
 			}
@@ -1229,7 +1245,9 @@ public class SEDMLExporter {
 		} else if (ste instanceof ModelParameter) {
 			// can only change parameter value. 
 			targetXpath = new XPathTarget(sbmlSupport.getXPathForGlobalParameter(ste.getName(), ParameterAttribute.value));
-		}  else if (ste instanceof Structure || ste instanceof Structure.StructureSize || (ste instanceof StructureMappingParameter && ((StructureMappingParameter)ste).getRole() == StructureMapping.ROLE_Size)) {
+		// TODO: add xpath for VolulePerUnitVolume and AreaPerUnitArea, see SBMLSupport
+			// use Ion's sample 3, with spatial app
+		}  else if (ste instanceof Structure || ste instanceof Structure.StructureSize || ste instanceof StructureMappingParameter) {
 			String compartmentId = ste.getName();
 			// can change compartment size or spatial dimension, but in vcell, we cannot change compartment dimension. 
 			String compartmentAttr = "";
@@ -1240,7 +1258,10 @@ public class SEDMLExporter {
 			if (ste instanceof StructureMappingParameter) {
 				StructureMappingParameter smp = (StructureMappingParameter)ste;
 				compartmentId = smp.getStructure().getName();
-				if (smp.getRole() == StructureMapping.ROLE_Size) {
+				int role = ((StructureMappingParameter)ste).getRole();
+				if (role == StructureMapping.ROLE_Size) {
+					compartmentAttr = smp.getName();
+				} else if(role == StructureMapping.ROLE_AreaPerUnitArea || role == StructureMapping.ROLE_VolumePerUnitVolume) {
 					compartmentAttr = smp.getName();
 				}
 			}
@@ -1248,6 +1269,8 @@ public class SEDMLExporter {
 				targetXpath = new XPathTarget(sbmlSupport.getXPathForCompartment(compartmentId));
 			} else if (compartmentAttr.equalsIgnoreCase("size")) {
 				targetXpath = new XPathTarget(sbmlSupport.getXPathForCompartment(compartmentId, CompartmentAttribute.size));
+			} else if(compartmentAttr.equalsIgnoreCase("AreaPerUnitArea") || compartmentAttr.equalsIgnoreCase("VolPerUnitVol")) {
+				targetXpath = new XPathTarget(sbmlSupport.getXPathForCompartmentMapping(compartmentId, CompartmentAttribute.unitSize));
 			} else {
 				throw new RuntimeException("Unknown compartment attribute '" + compartmentAttr + "'; cannot get xpath target for compartment '" + compartmentId + "'.");
 			}

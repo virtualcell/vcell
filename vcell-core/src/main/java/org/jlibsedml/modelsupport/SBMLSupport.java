@@ -28,7 +28,7 @@ public class SBMLSupport implements IXPathToVariableIDResolver {
             .compile("@\\S+='(\\S+)'");
 
     public enum CompartmentAttribute {
-        size, spatialDimensions;
+        size, spatialDimensions, unitSize;
     }
 
     public enum ParameterAttribute {
@@ -225,6 +225,12 @@ public class SBMLSupport implements IXPathToVariableIDResolver {
         return getXPathForListOfCompartments() + "/sbml:compartment[@id='"
                 + compartmentID + "']" + "/@" + compartmentAttribute;
     }
+    public String getXPathForCompartmentMapping(String compartmentID,
+            CompartmentAttribute compartmentAttribute) {
+   		return getXPathForListOfCompartments() + "/sbml:compartment[@id='"
+                + compartmentID + "']" + "/spatial:compartmentMapping"
+    			+ "/@spatial:" + compartmentAttribute;
+    }
 
     String getXPathForListOfCompartments() {
         return "/sbml:sbml/sbml:model/sbml:listOfCompartments";
@@ -312,5 +318,16 @@ public class SBMLSupport implements IXPathToVariableIDResolver {
         return getXPathForKineticLawParameter(reactionID, parameterID) + "/@"
                 + parameterAttributeName;
     }
+    
+//	-----> VolumPerUnitVolume
+//	<changeAttribute newValue="0.6" target="/sbml:sbml/sbml:model/sbml:listOfCompartments/sbml:compartment[@id='c1']/spatial:compartmentMapping/@spatial:unitSize"
+//	same for AreaPerUnitArea
+//	
+//	-----> Diff coeff
+//	<changeAttribute newValue="33"target="/sbml:sbml/sbml:model/sbml:listOfParameters/sbml:parameter[@id='s1_diff']/@value"
+//	
+//	-----> add spatial namespace top line in sedml if is spatial
+//	xmlns:spatial="https://sbml.org/documents/specifications/level-3/version-1/spatial/"
+
 
 }

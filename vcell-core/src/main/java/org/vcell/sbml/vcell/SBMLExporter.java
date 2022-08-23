@@ -321,7 +321,20 @@ protected void addCompartments() throws XMLStreamException, SbmlException {
 				}
 			}
 			if (vcStructMapping.getSizeParameter().getExpression() != null) {
-				sbmlCompartment.setSize(vcStructMapping.getSizeParameter().getExpression().evaluateConstant());
+				if(vcSelectedSimContext.getGeometry() != null && vcSelectedSimContext.getGeometry().getDimension() == 0) {
+					sbmlCompartment.setSize(vcStructMapping.getSizeParameter().getExpression().evaluateConstant());
+				} else {
+					Expression sizeRatio = vcStructMapping.getUnitSizeParameter().getExpression();
+					GeometryClass srcGeometryClass = vcStructMapping.getGeometryClass();
+					GeometricRegion[] srcGeometricRegions = vcSelectedSimContext.getGeometry().getGeometrySurfaceDescription().getGeometricRegions(srcGeometryClass);
+					if (srcGeometricRegions != null) {
+						double size = 0;
+						for (GeometricRegion srcGeometricRegion : srcGeometricRegions) {
+							size += srcGeometricRegion.getSize();
+						}
+						sbmlCompartment.setSize(Expression.mult(sizeRatio, new Expression(size)).evaluateConstant());
+					}
+				}
 			}
 		} catch (cbit.vcell.parser.ExpressionException e) {
 			// If it is in the catch block, it means that the compartment size was probably not a double, but an assignment.
