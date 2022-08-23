@@ -15,8 +15,8 @@ public class ArchiveModelResolver implements IModelResolver {
         String rc=null;
         List<IModelContent> children = ac.getModelFiles();
         for (IModelContent imc: children) {
-            if(imc.getName().equals(modelURI.toString())){
-                rc= imc.getContents();
+            if(imc.getName().endsWith(modelURI.toString())){
+                rc = imc.getContents();
             }
         }
         return rc;

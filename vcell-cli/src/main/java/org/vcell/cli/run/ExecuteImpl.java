@@ -177,12 +177,13 @@ public class ExecuteImpl {
                 SedML sedmlFromOmex;
                 String[] sedmlNameSplit;
 
-                logger.info("Processing SED-ML: " + sedmlName);
+                
                 RunUtils.removeAndMakeDirs(outDirForCurrentSedml);
                 sedmlFromOmex = Libsedml.readDocument(completeSedmlPath).getSedMLModel();
                 sedmlNameSplit = sedmlLocation.split(OperatingSystemInfo.getInstance().isWindows() ? "\\\\" : "/", -2);
                 sedmlName = sedmlNameSplit[sedmlNameSplit.length - 1];
                 logOmexMessage += "Processing " + sedmlName + ". ";
+                logger.info("Processing SED-ML: " + sedmlName);
 
                 nModels = sedmlFromOmex.getModels().size();
                 nTasks = sedmlFromOmex.getTasks().size();
