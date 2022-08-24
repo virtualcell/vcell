@@ -14,13 +14,10 @@ import java.beans.PropertyChangeSupport;
 import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
 import java.beans.VetoableChangeSupport;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.Vector;
+import java.util.*;
+import java.util.stream.Collectors;
 
+import cbit.vcell.mapping.StructureMapping;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.vcell.model.rbm.MolecularType;
@@ -1152,6 +1149,38 @@ public Identifiable getIdentifiableObject(VCID vcid) {
 		String localName = vcid.getLocalName();
 		return getSimulationContexts(localName);
 	}
+	if (vcid.getClassName().equals(VCID.CLASS_SPECIES_CONTEXT_SPEC_PARAMETER)) {
+		String localName = vcid.getLocalName();
+		String[] tokens = localName.split("\\.");
+		// localName = scsParam.getSimulationContext().getName()+"."+scsParam.getSpeciesContext().getName()+"."+scsParam.getName();
+		SimulationContext simContext = getSimulationContext(tokens[0]);
+		if (simContext != null){
+			SpeciesContext sc = getModel().getSpeciesContext(tokens[1]);
+			if (sc != null){
+				SpeciesContextSpec scs = simContext.getReactionContext().getSpeciesContextSpec(sc);
+				if (scs != null){
+					SpeciesContextSpec.SpeciesContextSpecParameter scsParam = scs.getParameterFromName(tokens[2]);
+					return scsParam;
+				}
+			}
+		}
+	}
+	if (vcid.getClassName().equals(VCID.CLASS_STRUCTURE_MAPPING_PARAMETER)) {
+		String localName = vcid.getLocalName();
+		String[] tokens = localName.split("\\.");
+		// localName = smParam.getSimulationContext().getName()+"."+smParam.getStructure().getName()+"."+smParam.getName();
+		SimulationContext simContext = getSimulationContext(tokens[0]);
+		if (simContext != null){
+			Structure struct = getModel().getStructure(tokens[1]);
+			if (struct != null){
+				StructureMapping sm = simContext.getGeometryContext().getStructureMapping(struct);
+				if (sm != null){
+					StructureMapping.StructureMappingParameter smParam = sm.getParameter(tokens[2]);
+					return smParam;
+				}
+			}
+		}
+	}
 	if (vcid.getClassName().equals(VCID.CLASS_BIOMODEL)) {
 		return this;
 	}
@@ -1203,6 +1232,14 @@ public VCID getVCID(Identifiable identifiable) {
 	} else if (identifiable instanceof SpeciesContextSpec) {
 		localName = ((SpeciesContextSpec)identifiable).getDisplayName();
 		className = VCID.CLASS_SPECIES_CONTEXT_SPEC;
+	} else if (identifiable instanceof SpeciesContextSpec.SpeciesContextSpecParameter) {
+		SpeciesContextSpec.SpeciesContextSpecParameter scsParam = (SpeciesContextSpec.SpeciesContextSpecParameter) identifiable;
+		localName = scsParam.getSimulationContext().getName()+"."+scsParam.getSpeciesContext().getName()+"."+scsParam.getName();
+		className = VCID.CLASS_SPECIES_CONTEXT_SPEC_PARAMETER;
+	} else if (identifiable instanceof StructureMapping.StructureMappingParameter) {
+		StructureMapping.StructureMappingParameter smParam = (StructureMapping.StructureMappingParameter) identifiable;
+		localName = smParam.getSimulationContext().getName()+"."+smParam.getStructure().getName()+"."+smParam.getName();
+		className = VCID.CLASS_STRUCTURE_MAPPING_PARAMETER;
 	} else if (identifiable instanceof ReactionSpec) {
 		localName = ((ReactionSpec)identifiable).getDisplayName();
 		className = VCID.CLASS_REACTION_SPEC;
@@ -1231,8 +1268,24 @@ public Set<Identifiable> getAllIdentifiables() {
 	allIdenfiables.addAll(Arrays.asList(fieldSimulationContexts));
 	for(SimulationContext sc : fieldSimulationContexts) {
 		allIdenfiables.addAll(Arrays.asList(sc.getSimulations()));
-		allIdenfiables.addAll(Arrays.asList(sc.getReactionContext().getSpeciesContextSpecs()));
+		// species context specs and their parameters
+		List<SpeciesContextSpec> speciesContextSpecs = Arrays.asList(sc.getReactionContext().getSpeciesContextSpecs());
+		allIdenfiables.addAll(speciesContextSpecs);
+		allIdenfiables.addAll(speciesContextSpecs.stream().flatMap(scs -> Arrays.stream(scs.getParameters()))
+				.filter(p -> p instanceof Identifiable)
+				.map(p -> (Identifiable)p)
+				.collect(Collectors.toList()));
+
+		// structure mappings parameters
+		List<StructureMapping> structureMappings = Arrays.asList(sc.getGeometryContext().getStructureMappings());
+		//allIdenfiables.addAll(structureMappings); // not Identifiable
+		allIdenfiables.addAll(structureMappings.stream().flatMap(scs -> Arrays.stream(scs.getParameters()))
+				.filter(p -> p instanceof Identifiable)
+				.map(p -> (Identifiable)p)
+				.collect(Collectors.toList()));
+
 		allIdenfiables.addAll(Arrays.asList(sc.getReactionContext().getReactionSpecs()));
+
 	}
 
 	allIdenfiables.addAll(fieldModel.getRbmModelContainer().getMolecularTypeList());
