@@ -33,6 +33,7 @@ import org.jlibsedml.Output;
 import org.jlibsedml.Parameter;
 import org.jlibsedml.Range;
 import org.jlibsedml.RepeatedTask;
+import org.jlibsedml.SEDMLDocument;
 import org.jlibsedml.SedML;
 import org.jlibsedml.SetValue;
 import org.jlibsedml.SubTask;
@@ -132,6 +133,7 @@ public class SEDMLImporter {
 		if(externalDocInfo.getFile().getPath().toLowerCase().endsWith("sedx") || externalDocInfo.getFile().getPath().toLowerCase().endsWith("omex")) {
 			ac = Libsedml.readSEDMLArchive(new FileInputStream(externalDocInfo.getFile().getPath()));
 		}
+		List<SEDMLDocument> lsd = ac.getSedmlDocuments(); //DEBUG: DELETE BEFORE MERGE
 		resolver = new ModelResolver(sedml);
 		if(ac != null) {
 			resolver.add(new ArchiveModelResolver(ac));

@@ -16,6 +16,7 @@ import org.vcell.util.FileUtils;
 import org.vcell.util.GenericExtensionFilter;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
 
@@ -229,6 +230,8 @@ public class ExecuteImpl {
                 /* If SED-ML has only plots as an output, we will use SED-ML that got generated from vcell_cli_util python code
                  * As of now, we are going to create a resultant dataSet for Plot output, using their respective data generators */
                 sedml = sedmlFromPseudo;
+                // We need the name and path of the sedml file, which sedmlFromPseudo doesnt have!
+                //sedml = this.
 
             } catch (Exception e) {
                 String prefix = "SED-ML processing for " + sedmlLocation + " failed with error: ";
@@ -393,6 +396,11 @@ public class ExecuteImpl {
         }
         PythonCalls.setOutputMessage("null", "null", outputDir, "omex", logOmexMessage);
 
+    }
+
+    private static SedML getFullSedML(String pathToOmex, String pathToSedML){
+        SedML targetSedML = null;
+        return targetSedML;
     }
 
     private static boolean containsExtension(String folder, String ext) {
