@@ -1545,6 +1545,11 @@ private void roundTripValidation() throws SBMLValidationException {
 					simContext.removeSimulation(sim);
 				}
 				bioModel.removeSimulationContext(simContext);
+			}else{
+				// for cloned biomodel/simcontext, force no mass conservation and regenerate math for later comparison.
+				simContext.setUsingMassConservationModelReduction(false);
+				MathMapping mathMapping = simContext.createNewMathMapping();
+				simContext.setMathDescription(mathMapping.getMathDescription());
 			}
 		}
 		bioModel.refreshDependencies();

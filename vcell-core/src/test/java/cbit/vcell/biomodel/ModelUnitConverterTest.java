@@ -1,8 +1,6 @@
 package cbit.vcell.biomodel;
 
 import cbit.vcell.mapping.MappingException;
-import cbit.vcell.mapping.MathMapping;
-import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.math.MathCompareResults;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathException;
@@ -18,15 +16,11 @@ import cbit.vcell.xml.XmlParseException;
 import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
 import org.junit.Test;
-import org.vcell.sbml.SbmlTestSuiteFiles;
-import org.vcell.sbml.vcell.SBMLExporter;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.LinkedHashMap;
-import java.util.Map;
 
 public class ModelUnitConverterTest {
 
@@ -38,8 +32,7 @@ public class ModelUnitConverterTest {
         expected_bioModel_sbmlUnts.refreshDependencies();
         MathDescription expectedMathDescription = expected_bioModel_sbmlUnts.getSimulationContext(0).createNewMathMapping().getMathDescription();
 
-        ModelUnitConverter modelUnitConverter = new ModelUnitConverter();
-        BioModel bioModel_sbmlUnits = modelUnitConverter.createBioModelWithSBMLUnitSystem(bioModel_vcellUnits);
+        BioModel bioModel_sbmlUnits = ModelUnitConverter.createBioModelWithSBMLUnitSystem(bioModel_vcellUnits);
         MathDescription mathDescription = bioModel_sbmlUnits.getSimulationContext(0).getMathDescription();
 
         //
@@ -66,8 +59,7 @@ public class ModelUnitConverterTest {
         expected_bioModel_vcellUnits.refreshDependencies();
         MathDescription expectedMathDescription = expected_bioModel_vcellUnits.getSimulationContext(0).createNewMathMapping().getMathDescription();
 
-        ModelUnitConverter modelUnitConverter = new ModelUnitConverter();
-        BioModel bioModel_vcellUnits = modelUnitConverter.createBioModelWithNewUnitSystem(bioModel_sbmlUnts, ModelUnitSystem.createDefaultVCModelUnitSystem());
+        BioModel bioModel_vcellUnits = ModelUnitConverter.createBioModelWithNewUnitSystem(bioModel_sbmlUnts, ModelUnitSystem.createDefaultVCModelUnitSystem());
         MathDescription mathDescription = bioModel_vcellUnits.getSimulationContext(0).getMathDescription();
 
         //
