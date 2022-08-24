@@ -854,22 +854,18 @@ public boolean isDummy(MathSymbolTable simSymbolTable, CompartmentSubDomain this
 				  			}
 				  		}
 				  		// check if BoundaryConditionValue is defined for var on membrane
-				  		try { 
-					  		BoundaryConditionValue boundaryValue = getBoundaryConditionValue(memSubDomain.getName());
-							if (boundaryValue != null) {
-								Expression boundaryValExpr = boundaryValue.getBoundaryConditionExpression();
-								BoundaryConditionSpec boundarySpec = thisCompartment.getBoundaryConditionSpec(memSubDomain.getName());
-								if (boundarySpec != null) {
-									boolean bZeroFlux = boundarySpec.getBoundaryConditionType().isNEUMANN() && testZero(simSymbolTable, boundaryValExpr);
-									boolean bUniformDirichlet = boundarySpec.getBoundaryConditionType().isDIRICHLET() && testZero(simSymbolTable, Expression.add(boundaryValExpr, Expression.negate(getInitialExpression())));
-									if (!bZeroFlux && !bUniformDirichlet) {
-										return false;
-									}
+						BoundaryConditionValue boundaryValue = getBoundaryConditionValue(memSubDomain.getName());
+						if (boundaryValue != null) {
+							Expression boundaryValExpr = boundaryValue.getBoundaryConditionExpression();
+							BoundaryConditionSpec boundarySpec = thisCompartment.getBoundaryConditionSpec(memSubDomain.getName());
+							if (boundarySpec != null) {
+								boolean bZeroFlux = boundarySpec.getBoundaryConditionType().isNEUMANN() && testZero(simSymbolTable, boundaryValExpr);
+								boolean bUniformDirichlet = boundarySpec.getBoundaryConditionType().isDIRICHLET() && testZero(simSymbolTable, Expression.add(boundaryValExpr, Expression.negate(getInitialExpression())));
+								if (!bZeroFlux && !bUniformDirichlet) {
+									return false;
 								}
-					  		}
-				  		} catch (ExpressionException e) {
-				  			e.printStackTrace(System.out);
-				  		}
+							}
+						}
 			  		}
 		  		}
 		  		// check fast system if jump conditions are all zero
