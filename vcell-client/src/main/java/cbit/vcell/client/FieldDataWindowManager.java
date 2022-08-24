@@ -25,6 +25,7 @@ import java.util.Vector;
 import javax.swing.JPanel;
 import javax.swing.ListSelectionModel;
 
+import cbit.vcell.solver.*;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.Issue;
 import org.vcell.util.IssueContext;
@@ -76,12 +77,6 @@ import cbit.vcell.simdata.DataListener;
 import cbit.vcell.simdata.OutputContext;
 import cbit.vcell.simdata.PDEDataContext;
 import cbit.vcell.simdata.PDEDataManager;
-import cbit.vcell.solver.AnnotatedFunction;
-import cbit.vcell.solver.OutputFunctionContext;
-import cbit.vcell.solver.Simulation;
-import cbit.vcell.solver.SimulationModelInfo;
-import cbit.vcell.solver.SimulationOwner;
-import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.vcell.solvers.CartesianMesh;
 
 public class FieldDataWindowManager 
@@ -361,7 +356,12 @@ private static class OutputFunctionViewer extends JPanel{
 				// TODO Auto-generated method stub
 				return outputFunctionContext;
 			}
-			
+
+			@Override
+			public MathOverridesResolver getMathOverridesResolver() {
+				return null;
+			}
+
 			@Override
 			public String getName() {
 				// TODO Auto-generated method stub

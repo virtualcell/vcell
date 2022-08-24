@@ -11,17 +11,12 @@
 package cbit.vcell.solver;
 import java.util.*;
 
-import cbit.vcell.model.Model;
-import cbit.vcell.model.ModelUnitSystem;
-import cbit.vcell.units.VCUnitDefinition;
-import cbit.vcell.units.VCUnitSystem;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.vcell.util.*;
 import org.vcell.util.Issue.IssueCategory;
 import org.vcell.util.IssueContext.ContextType;
 
-import cbit.vcell.mapping.DiffEquMathMapping;
 import cbit.vcell.math.Constant;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathFunctionDefinitions;
@@ -701,20 +696,6 @@ private static java.util.Vector<Element> toVector (java.util.Enumeration<Element
 	return (vector);
 }
 
-private static class SymbolReplacement {
-	final String oldName;
-	final String newName;
-	final double factor;
-	SymbolReplacement(String oldName, String newName) {
-		this(oldName, newName, 1.0);
-	}
-	SymbolReplacement(String oldName, String newName, double factor) {
-		this.oldName = oldName;
-		this.newName = newName;
-		this.factor = factor;
-	}
-}
-
 void updateFromMathDescription() {
 	MathDescription mathDescription = getSimulation().getMathDescription();
 	//
@@ -726,48 +707,6 @@ void updateFromMathDescription() {
 		Constant constant = enumeration.nextElement();
 		mathDescriptionHash.add(constant.getName());
 	}
-	//
-	//  for any elements in this MathOverrides but not in the new MathDescription
-	//
-	//  	1) try to "repair" overridden constants for automatically generated constant names (via math generation)
-	//         which have changed due to changes to Math generation
-	//
-	//      2) if not repaired, will be reported as an issue.
-	//
-	List<SymbolReplacement> replacements = new ArrayList<>();
-
-	// test for renamed initial condition constant (changed from _init to _init_uM)
-	replacements.add(new SymbolReplacement(DiffEquMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_old,
-			DiffEquMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_uM));
-
-	// test for renamed initial condition constant (changed from _init to _init_molecules_um_2)
-	replacements.add(new SymbolReplacement(DiffEquMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_old,
-			DiffEquMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_molecules_um_2));
-
-	// test for renamed initial condition constant (changed from _init_molecules_per_um2 to _init_molecules_um_2)
-	replacements.add(new SymbolReplacement(DiffEquMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_old_molecules_per_um2,
-			DiffEquMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_molecules_um_2));
-
-	// test for equivalent unit systems _init_uM or _init <==> _init_umol_l_1
-	replacements.add(new SymbolReplacement(DiffEquMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_uM,
-			DiffEquMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_umol_l_1));
-	replacements.add(new SymbolReplacement(DiffEquMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_old,
-			DiffEquMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_umol_l_1));
-	replacements.add(new SymbolReplacement(DiffEquMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_umol_l_1,
-			DiffEquMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_uM));
-
-	// test for equivalent unit systems _init or _init_molecules_per_um2 or _init_molecules_um_2 <==> _init_umol_dm_2  (needs unit conversion)
-//				VCUnitSystem unitSystem = new VCUnitSystem() {};
-//				VCUnitDefinition unit_molecules_um_2 = unitSystem.getInstance("molecules.um-2");
-//				VCUnitDefinition unit_nmol_dm_2 = unitSystem.getInstance("umol.dm-2");
-//				replacements.add(new SymbolReplacement(DiffEquMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_old,
-//														DiffEquMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_umol_dm_2));
-//				replacements.add(new SymbolReplacement(DiffEquMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_old_molecules_per_um2,
-//														DiffEquMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_umol_dm_2));
-//				replacements.add(new SymbolReplacement(DiffEquMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_molecules_um_2,
-//														DiffEquMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_umol_dm_2));
-//				replacements.add(new SymbolReplacement(DiffEquMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_umol_dm_2,
-//														DiffEquMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_molecules_um_2));
 
 	HashMap<String, String> renamedMap = new HashMap<String, String>();
 	boolean bNameRepaired = true;
@@ -777,20 +716,29 @@ void updateFromMathDescription() {
 		while (mathOverrideNamesEnum.hasMoreElements()){
 			String name = mathOverrideNamesEnum.nextElement();
 			if (!mathDescriptionHash.contains(name)){
-				for (SymbolReplacement replacement : replacements){
-					String repaired_name = name.replace(replacement.oldName, replacement.newName);
-					if (mathDescriptionHash.contains(repaired_name)){
+				MathOverridesResolver mathOverridesResolver = getSimulation().getSimulationOwner().getMathOverridesResolver();
+				if (mathOverridesResolver != null) {
+					MathOverridesResolver.SymbolReplacement replacement = mathOverridesResolver.getSymbolReplacement(name);
+					if (replacement != null) {
 						Element element = overridesHash.remove(name);
-						element.name = repaired_name;
-						overridesHash.put(repaired_name, element);
-						renamedMap.put(name, repaired_name);
+						element.name = replacement.newName;
+						if (!replacement.factor.isOne()) {
+							try {
+								element.actualValue = Expression.mult(element.actualValue, replacement.factor).flattenFactors("KMOLE").flatten();
+							} catch (ExpressionException e) {
+								String msg = "failed to simplify unit converted Math Override "+replacement.newName+"="+replacement.factor.infix();
+								logger.error(msg, e);
+								throw new RuntimeException(msg, e);
+							}
+						}
+						overridesHash.put(replacement.newName, element);
+						renamedMap.put(name, replacement.newName);
 						removeConstant(name);
 						bNameRepaired = true;
-//						logger.info("replace math override name "+name+" with "+repaired_name);
+						logger.error("didn't find a replacement for math override symbol " + name);
 						break;
 					}
 				}
-				logger.error("didn't find a replacement for math override symbol "+name);
 			}
 		}
 	}
