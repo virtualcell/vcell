@@ -72,10 +72,10 @@ public class ModelUnitConverterTest {
         //
         // test that math overrides same for new SBML translation and saved SBML translation
         //
-//        Simulation expectedSim = expected_bioModel_vcellUnits.getSimulation(0);
-//        Simulation sim = bioModel_vcellUnits.getSimulation(0);
-//        boolean overridesMatch = expectedSim.getMathOverrides().compareEqual(sim.getMathOverrides());
-//        Assert.assertTrue("expecting math overrides to be equivalent", overridesMatch);
+        Simulation expectedSim = expected_bioModel_vcellUnits.getSimulation(0);
+        Simulation sim = bioModel_vcellUnits.getSimulation(0);
+        boolean overridesMatch = expectedSim.getMathOverrides().compareEqual(sim.getMathOverrides());
+        Assert.assertTrue("expecting math overrides to be equivalent", overridesMatch);
     }
 
     private static BioModel getBioModelFromResource(String fileName) throws IOException, XmlParseException {
