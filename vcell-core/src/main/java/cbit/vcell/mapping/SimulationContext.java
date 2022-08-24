@@ -364,6 +364,7 @@ public class SimulationContext implements SimulationOwner, Versionable, Matchabl
 	private ReactionContext reactionContext = null;
 	private MembraneContext membraneContext = null; 
 	private final OutputFunctionContext outputFunctionContext = new OutputFunctionContext(this);
+	private MathDescription prevMathDesc = null;
 	private MathDescription mathDesc = null;
 	private Double characteristicSize = null;
 	protected transient java.beans.PropertyChangeSupport propertyChange;
@@ -2505,10 +2506,19 @@ public void setGroundElectrode(Electrode groundElectrode) throws java.beans.Prop
 //	bRuleBased = newIsRuleBased;
 //}
 
-public void setMathDescription(MathDescription argMathDesc) throws PropertyVetoException {
-	Object oldValue = this.mathDesc;
-	fireVetoableChange("mathDescription",oldValue,argMathDesc);
-	this.mathDesc = argMathDesc;
+	public void setMathDescriptionAndPrevious(MathDescription mathDesc, MathDescription prevMathDesc) throws PropertyVetoException {
+		Object oldValue = this.mathDesc;
+		fireVetoableChange("mathDescription",oldValue,mathDesc);
+		this.prevMathDesc = prevMathDesc;
+		this.mathDesc = mathDesc;
+		firePropertyChange("mathDescription",oldValue,mathDesc);
+	}
+
+	public void setMathDescription(MathDescription argMathDesc) throws PropertyVetoException {
+		Object oldValue = this.mathDesc;
+		fireVetoableChange("mathDescription",oldValue,argMathDesc);
+		this.prevMathDesc = this.mathDesc;
+		this.mathDesc = argMathDesc;
 	firePropertyChange("mathDescription",oldValue,argMathDesc);
 }
 

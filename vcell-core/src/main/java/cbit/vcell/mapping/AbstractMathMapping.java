@@ -1,11 +1,7 @@
 package cbit.vcell.mapping;
 
 import java.beans.PropertyVetoException;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Vector;
+import java.util.*;
 
 import cbit.vcell.biomodel.ModelUnitConverter;
 import cbit.vcell.math.*;
@@ -884,6 +880,7 @@ public final SimContextTransformation getTransformation() {
 public final MathDescription getMathDescription(MathMappingCallback callback) throws MappingException, MathException, MatrixException, ModelException, ExpressionException {
 	if (mathDesc==null){
 		refresh(callback);
+		mathSymbolMapping.reconcileVarNames(mathDesc);
 	}
 	return mathDesc;
 }
@@ -1393,9 +1390,23 @@ protected final String getMathSymbol0(SymbolTableEntry ste, GeometryClass geomet
  * @param exp cbit.vcell.parser.Expression
  */
 protected Variable newFunctionOrConstant(String name, Expression exp, GeometryClass geometryClass) {
-	if (exp.isNumeric()){
-		return new Constant(name,exp);
+	if (exp.isNumeric()) {
+		return new Constant(name, exp);
 	}else{
+		//
+		// even if this expression is not numeric, if it is only a simple function of KMOLE - then make it a constant
+		// this allows MathOverrides to contain simple unit conversion factors as needed.
+		//
+		String[] symbols = exp.getSymbols();
+		String KMOLE_name = Model.ReservedSymbolRole.KMOLE.name();
+		if (symbols!=null && symbols.length==1 && symbols[0].equals(KMOLE_name)){
+			try {
+				exp.getSubstitutedExpression(new Expression(KMOLE_name), new Expression(1.0)).flatten().evaluateConstant();
+				return new Constant(name, exp);
+			} catch (ExpressionException e) {
+				logger.warn("unexpected: Variable "+name+"='"+exp.infix()+"' contains only "+KMOLE_name+" but failed evaluate to Constant");
+			}
+		}
 		if (geometryClass!=null){
 			return new Function(name,exp,new Domain(geometryClass));
 		}else{
