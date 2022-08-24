@@ -1,6 +1,7 @@
 package org.vcell.cli.vcml;
 
 import cbit.util.xml.VCLogger;
+import cbit.util.xml.XmlRdfUtil;
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.biomodel.ModelUnitConverter;
@@ -441,7 +442,6 @@ public class VcmlOmexConverter {
                             Paths.get(outputDir, sd).toString(),
                             "./" + sd,
                             "http://identifiers.org/combine.specifications/omex-metadata",
-//                            KnownFormats.lookupFormat("xml"),
                             false
                     );
                 } else if(sd.endsWith(".png")) {
@@ -567,31 +567,13 @@ public class VcmlOmexConverter {
 		Graph graph = new HashGraph();
 		Graph schema = new HashGraph();
 
-        if(bioModelInfo == null) {								// perhaps it's not public, in which case is not in the map
-        	String description = "http://omex-library.org/" + vcmlName + ".omex";	// make an empty rdf file
-        	URI descriptionURI = ValueFactoryImpl.getInstance().createURI(description);
-    		graph.add(descriptionURI, RDF.TYPE, PubMet.Description);
-    		try {
-    			Map<String, String> nsMap = DefaultNameSpaces.defaultMap.convertToMap();
-    			ret = SesameRioUtil.writeRDFToString(graph, nsMap, RDFFormat.RDFXML);
-    			SesameRioUtil.writeRDFToStream(System.out, graph, nsMap, RDFFormat.RDFXML);
-    		} catch (RDFHandlerException e) {
-    			logger.error(e);
-			}
+        if(bioModelInfo == null) {				// perhaps it's not public, in which case is not in the map
+        	ret = XmlRdfUtil.getMetadata(vcmlName);
     		return ret;
         }
         PublicationInfo[] publicationInfos = bioModelInfo.getPublicationInfos();
-        if(publicationInfos == null || publicationInfos.length == 0) {				// we may not have PublicationInfo
-        	String description = "http://omex-library.org/" + vcmlName + ".omex";	// make an empty rdf file
-        	URI descriptionURI = ValueFactoryImpl.getInstance().createURI(description);
-    		graph.add(descriptionURI, RDF.TYPE, PubMet.Description);
-    		try {
-    			Map<String, String> nsMap = DefaultNameSpaces.defaultMap.convertToMap();
-    			ret = SesameRioUtil.writeRDFToString(graph, nsMap, RDFFormat.RDFXML);
-    			SesameRioUtil.writeRDFToStream(System.out, graph, nsMap, RDFFormat.RDFXML);
-    		} catch (RDFHandlerException e) {
-    			logger.error(e);
-			}
+        if(publicationInfos == null || publicationInfos.length == 0) {	// we may not have PublicationInfo
+        	ret = XmlRdfUtil.getMetadata(vcmlName);
     		return ret;
         }
         
@@ -749,6 +731,55 @@ public class VcmlOmexConverter {
     
     public static void main(String[] args) {
     	
+    	final String outputBaseDir = "U:/vcdbresults/vcdb/public/";
+    	List<String> modelKeyList = new ArrayList<>();
+    	CLIDatabaseService cliDatabaseService;
+		try {
+			cliDatabaseService = new CLIDatabaseService();
+			List<BioModelInfo> publicBioModelInfos = cliDatabaseService.queryPublicBioModels();
+			for (BioModelInfo bmi : publicBioModelInfos){
+				// KeyValue modelKey = bmi.getModelKey();
+				KeyValue modelKey = bmi.getVersion().getVersionKey();
+				String modelName = bmi.getVersion().getName();
+		        System.out.println(modelKey.toString());
+				modelKeyList.add(modelKey.toString());
+			}
+			
+			for(String modelKey : modelKeyList) {
+				String dest = outputBaseDir + File.separator + "modelKeyList.txt";
+				Files.write(Paths.get(dest), (modelKey + "\n").getBytes(), StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+	
+			}
+			
+		} catch (SQLException | DataAccessException | IOException e) {
+			e.printStackTrace();
+		}
+
+		for(String modelKey : modelKeyList) {
+			try {
+				String surl = "https://vcellapi-beta.cam.uchc.edu:8080/biomodel/";
+				surl += modelKey;
+				surl += "/biomodel.vcml";
+				URL from = new URL(surl);
+				String durl = outputBaseDir;
+				durl += "biomodel_";
+				durl += modelKey;
+				durl += ".vcml";
+				File dest = new File(durl);
+				FileUtils.copyURLToFile(new URL(surl), dest);
+			} catch(Exception e) {
+		        System.out.println(modelKey.toString());
+			}
+		}
+		
+		System.out.println("Done");
+		
+//		https://vcellapi-beta.cam.uchc.edu:8080/biomodel/225440511/biomodel.vcml
+		
+		
+		
+		
+    	/*
 		Graph graph = new HashGraph();
 				
 		String ns = DefaultNameSpaces.EX.uri;						// http://example/org/
@@ -772,7 +803,7 @@ public class VcmlOmexConverter {
 		} catch (RDFHandlerException e) {
 			e.printStackTrace();
 		}
- 
+ */
 
     	/*
 		Graph graph = new HashGraph();
