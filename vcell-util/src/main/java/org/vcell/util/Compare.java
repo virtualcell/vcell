@@ -16,6 +16,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.function.BiPredicate;
 
 /**
  * This type was created in VisualAge.
@@ -202,68 +203,75 @@ public static boolean isEqual(float v1[], float v2[]) {
 	return true;
 }
 
-public static boolean isEqual(Matchable v1[], Matchable v2[]) {
-	if (v1==null || v2==null){
-		throw new RuntimeException("Compare.isEqual(Matchable[],Matchable[]) received null argument(s)");
-	}
-	if (v1.length != v2.length){
-		return logFailure();
-	}
-	
-	int arrayLen = v1.length;
-	//
-	// check that every element v1[i] == v2[i]
-	//
-	Object internalDisableLock = getLogInternalDisableLock();Compare.logInternalDisable(internalDisableLock);
-	boolean bSame = true;
-	int ii = 0;
-	for (ii=0;ii<arrayLen;ii++){
-		if (!v1[ii].compareEqual(v2[ii])){
-			bSame = false;
-			break;
+	public static boolean isEqual(Matchable[] v1, Matchable[] v2, BiPredicate<Matchable,Matchable> predicate) {
+		if (v1==null || v2==null){
+			throw new RuntimeException("Compare.isEqual(Matchable[],Matchable[]) received null argument(s)");
 		}
-	}
-	if (bSame) {
+		if (v1.length != v2.length){
+			return logFailure();
+		}
+
+		int arrayLen = v1.length;
+		//
+		// check that every element v1[i] == v2[i]
+		//
+		Object internalDisableLock = getLogInternalDisableLock();Compare.logInternalDisable(internalDisableLock);
+		boolean bSame = true;
+		int ii = 0;
+		for (ii=0;ii<arrayLen;ii++){
+			if (!predicate.test(v1[ii],v2[ii])){
+				bSame = false;
+				break;
+			}
+		}
+		if (bSame) {
+			Compare.logInternalEnable(internalDisableLock);
+			return true;
+		}
+
+		//
+		// check that every element in v1 is in v2
+		//
+		for (int i=ii;i<arrayLen;i++){
+			Matchable c1 = (Matchable)v1[i];
+			boolean bFound = false;
+			for (int j=ii;j<arrayLen;j++){
+				Matchable c2 = (Matchable)v2[j];
+				if (predicate.test(c2,c1)){
+					bFound = true;
+					break;
+				}
+			}
+			if (!bFound){
+				return logFailure(internalDisableLock);
+			}
+		}
+		//
+		// check that every element in v2 is in v1
+		//
+		for (int i=ii;i<arrayLen;i++){
+			Matchable c2 = (Matchable)v2[i];
+			boolean bFound = false;
+			for (int j=ii;j<arrayLen;j++){
+				Matchable c1 = (Matchable)v1[j];
+				if (predicate.test(c1,c2)){
+					bFound = true;
+					break;
+				}
+			}
+			if (!bFound){
+				return logFailure(internalDisableLock);
+			}
+		}
 		Compare.logInternalEnable(internalDisableLock);
 		return true;
 	}
-	
-	//
-	// check that every element in v1 is in v2
-	//
-	for (int i=ii;i<arrayLen;i++){
-		Matchable c1 = (Matchable)v1[i];
-		boolean bFound = false;
-		for (int j=ii;j<arrayLen;j++){
-			Matchable c2 = (Matchable)v2[j];
-			if (c2.compareEqual(c1)){
-				bFound = true;
-				break;
-			}
-		}
-		if (!bFound){
-			return logFailure(internalDisableLock);
-		}
-	}
-	//
-	// check that every element in v2 is in v1
-	//
-	for (int i=ii;i<arrayLen;i++){
-		Matchable c2 = (Matchable)v2[i];
-		boolean bFound = false;
-		for (int j=ii;j<arrayLen;j++){
-			Matchable c1 = (Matchable)v1[j];
-			if (c1.compareEqual(c2)){
-				bFound = true;
-				break;
-			}
-		}
-		if (!bFound){
-			return logFailure(internalDisableLock);
-		}
-	}
-	Compare.logInternalEnable(internalDisableLock);	
-	return true;
+
+
+
+public static boolean isEqual(Matchable v1[], Matchable v2[]) {
+	BiPredicate<Matchable,Matchable> predicate = (vv1, vv2) -> vv1.compareEqual(vv2);
+	return isEqual(v1, v2, predicate);
 }
 
 public static boolean isEqual(String[] v1, String[] v2) {

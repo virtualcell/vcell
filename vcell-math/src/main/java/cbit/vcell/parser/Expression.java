@@ -738,7 +738,7 @@ public static Expression laplacian(Expression expression) throws ExpressionExcep
  * @param expression2 cbit.vcell.model.Expression
  * @exception java.lang.Exception The exception description.
  */
-public static Expression mult(Expression... expressions) throws ExpressionException {
+public static Expression mult(Expression... expressions) {
 	Expression exp = new Expression();
 	ASTMultNode multNode = new ASTMultNode();
 
@@ -751,7 +751,7 @@ public static Expression mult(Expression... expressions) throws ExpressionExcept
 	return exp;
 }
 
-public static Expression div(Expression expression1, Expression expression2) throws ExpressionException {
+public static Expression div(Expression expression1, Expression expression2) {
 	Expression exp = new Expression();
 	ASTMultNode multNode = new ASTMultNode();
 

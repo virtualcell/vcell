@@ -306,12 +306,12 @@ private Expression getProbabilityRate(ReactionStep reactionStep, Expression rate
 		mathDesc = null;
 		if (oldMathDesc != null){
 			if (oldMathDesc.getVersion() != null){
-				mathDesc = new MathDescription(oldMathDesc.getVersion());
+				mathDesc = new MathDescription(oldMathDesc.getVersion(), mathSymbolMapping);
 			}else{
-				mathDesc = new MathDescription(oldMathDesc.getName());
+				mathDesc = new MathDescription(oldMathDesc.getName(), mathSymbolMapping);
 			}
 		}else{
-			mathDesc = new MathDescription(simContext.getName()+"_generated");
+			mathDesc = new MathDescription(simContext.getName()+"_generated", mathSymbolMapping);
 		}
 
 		//

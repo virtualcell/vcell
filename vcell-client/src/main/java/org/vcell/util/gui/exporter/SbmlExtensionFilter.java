@@ -243,8 +243,9 @@ public class SbmlExtensionFilter extends SelectorExtensionFilter {
 	public void writeBioModel(DocumentManager documentManager, BioModel bioModel, File exportFile, SimulationContext simulationContext) throws Exception {
 		VCAssert.assertValid(selectedSimContext);
 		final int sbmlPkgVersion = 0;
+		boolean bRoundTripValidation = false;
 		if (selectedSimWOSBE == null) {
-			String resultString = XmlHelper.exportSBML(bioModel, sbmlLevel, sbmlVersion, sbmlPkgVersion, isSpatial, selectedSimContext, null);
+			String resultString = XmlHelper.exportSBML(bioModel, sbmlLevel, sbmlVersion, sbmlPkgVersion, isSpatial, selectedSimContext, null, bRoundTripValidation);
 			XmlUtil.writeXMLStringToFile(resultString, exportFile.getAbsolutePath(), true);
 			return;
 		} else {
@@ -252,7 +253,7 @@ public class SbmlExtensionFilter extends SelectorExtensionFilter {
 			Files.deleteIfExists(Paths.get(originalExportFilename));
 			for (int sc = 0; sc < selectedSimWOSBE.getScanCount(); sc++) {
 				SimulationJob simJob = new SimulationJob(selectedSimWOSBE, sc, null);
-				String resultString = XmlHelper.exportSBML(bioModel, sbmlLevel, sbmlVersion, sbmlPkgVersion, isSpatial, selectedSimContext, simJob);
+				String resultString = XmlHelper.exportSBML(bioModel, sbmlLevel, sbmlVersion, sbmlPkgVersion, isSpatial, selectedSimContext, simJob, bRoundTripValidation);
 				// Need to export each parameter scan into a separate file
 				String newExportFileName = exportFile.getPath().substring(0, exportFile.getPath().indexOf(".xml")) + "_" + sc + ".xml";
 				Files.deleteIfExists(Paths.get(newExportFileName));

@@ -159,35 +159,9 @@ public class SEDMLExporter {
 		this.sedmlVersion = argVersion;
 		this.simsToExport = argSimsToExport;
 	}
-	
-	public static void main(String[] args) {
-//		if (args.length != 1) {
-//			System.out.println("Usage:\n\t path_of_vcml_file\n" );
-//	        System.exit(1);
-//		} 
-//		String pathName = args[0];
-		String pathName = "c:\\dan\\SEDML\\SEDML2.vcml";
-		try {
-			String biomodelXmlStr = XmlUtil.getXMLString(pathName);
-			BioModel bioModel = XmlHelper.XMLToBioModel(new XMLSource(biomodelXmlStr.toString()));
-			bioModel.refreshDependencies();
-			
-			// invoke the SEDMLEXporter
-			SEDMLExporter sedmlExporter = new SEDMLExporter(bioModel, 1, 1, null);
-			String absolutePath = "c:\\dan\\SEDML";
-			String sedmlStr = sedmlExporter.getSEDMLFile(absolutePath, "SEDML2", false, false, false);
-//			String absolutePath = ResourceUtil.getUserHomeDir().getAbsolutePath();
-			String outputName = absolutePath+ "\\" + TokenMangler.mangleToSName(bioModel.getName()) + ".sedml";
-			XmlUtil.writeXMLStringToFile(sedmlStr, outputName, true);
-		} catch (IOException e) {
-			throw new RuntimeException("Unable to read VCML file '" + pathName + "' into string.",e);
-		} catch (XmlParseException e) {
-			throw new RuntimeException("Unable to convert VCML file '" + pathName + "' to a biomodel.",e);
-		}
-	}
-	
+
 	public SEDMLDocument getSEDMLFile0(String sPath, String sBaseFileName, boolean bForceVCML, boolean bForceSBML, 
-				boolean bFromOmex) {
+				boolean bFromOmex, boolean bRoundTripSBMLValidation) {
 
 		// Create an SEDMLDocument and create the SEDMLModel from the document, so that other details can be added to it in translateBioModel()
 		SEDMLDocument sedmlDocument = new SEDMLDocument(this.sedmlLevel, this.sedmlVersion);
@@ -222,21 +196,21 @@ public class SEDMLExporter {
 		sedmlModel.setAdditionalNamespaces(nsList);
 
 		
-		translateBioModelToSedML(sPath, sBaseFileName, bForceVCML, bForceSBML, bFromOmex);
+		translateBioModelToSedML(sPath, sBaseFileName, bForceVCML, bForceSBML, bFromOmex, bRoundTripSBMLValidation);
 		
 		int models = sedmlModel.getModels().size();
 		int tasks = sedmlModel.getTasks().size();
 		int sims = sedmlModel.getSimulations().size();
 		return sedmlDocument;
 	}
-	public String getSEDMLFile(String sPath, String sBaseFileName, boolean bForceVCML, boolean bForceSBML, boolean bFromOmex) {
-		SEDMLDocument doc = getSEDMLFile0(sPath, sBaseFileName, bForceVCML, bForceSBML, bFromOmex);
+	public String getSEDMLFile(String sPath, String sBaseFileName, boolean bForceVCML, boolean bForceSBML, boolean bFromOmex, boolean bRoundTripSBMLValidation) {
+		SEDMLDocument doc = getSEDMLFile0(sPath, sBaseFileName, bForceVCML, bForceSBML, bFromOmex, bRoundTripSBMLValidation);
 		return doc.writeDocumentToString();
 	}
 
 
 	private void translateBioModelToSedML(String savePath, String sBaseFileName, boolean bForceVCML, boolean bForceSBML,
-				boolean bFromOmex) {		// true if invoked for omex export, false if for sedml
+				boolean bFromOmex, boolean bRoundTripSBMLValidation) {		// true if invoked for omex export, false if for sedml
 		sbmlFilePathStrAbsoluteList.clear();
 		// models
 		try {
@@ -268,7 +242,7 @@ public class SEDMLExporter {
 						if (!simContext.getGeometryContext().isAllSizeSpecifiedPositive() && simContext.getGeometry().getDimension()==0) {
 							throw new RuntimeException("non-spatial SBML Model must have all absolute compartment sizes set (responsibility of SBMLExporter)");
 						}
-						Pair <String, Map<Pair <String, String>, String>> pair = XmlHelper.exportSBMLwithMap(vcBioModel, 3, 2, 0, isSpatial, simContext, null);
+						Pair <String, Map<Pair <String, String>, String>> pair = XmlHelper.exportSBMLwithMap(vcBioModel, 3, 2, 0, isSpatial, simContext, null, bRoundTripSBMLValidation);
 						sbmlString = pair.one;
 						l2gMap = pair.two;
 					} catch (Exception e) {

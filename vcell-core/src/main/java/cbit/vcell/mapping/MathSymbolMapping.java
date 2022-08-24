@@ -13,14 +13,11 @@ package cbit.vcell.mapping;
 import java.util.ArrayList;
 import java.util.Map;
 
+import cbit.vcell.math.*;
 import org.vcell.util.BeanUtils;
 
 import cbit.vcell.mapping.SimContextTransformer.ModelEntityMapping;
 import cbit.vcell.mapping.SimContextTransformer.SimContextTransformation;
-import cbit.vcell.math.InsideVariable;
-import cbit.vcell.math.MathDescription;
-import cbit.vcell.math.OutsideVariable;
-import cbit.vcell.math.Variable;
 import cbit.vcell.model.Model.ModelParameter;
 import cbit.vcell.model.ProxyParameter;
 import cbit.vcell.parser.SymbolTableEntry;
@@ -30,7 +27,7 @@ import cbit.vcell.parser.SymbolTableEntry;
  * Creation date: (5/3/2006 3:47:33 PM)
  * @author: Jim Schaff
  */
-public class MathSymbolMapping {
+public class MathSymbolMapping implements SourceSymbolMapping {
 	private java.util.HashMap<SymbolTableEntry, String> biologicalToMathSymbolNameHash = new java.util.HashMap<SymbolTableEntry, String>();
 	private java.util.HashMap<SymbolTableEntry, Variable> biologicalToMathHash = new java.util.HashMap<SymbolTableEntry, Variable>();
 	private java.util.HashMap<Variable, SymbolTableEntry[]> mathToBiologicalHash = new java.util.HashMap<Variable, SymbolTableEntry[]>();

@@ -482,12 +482,12 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 	mathDesc = null;
 	if (oldMathDesc != null){
 		if (oldMathDesc.getVersion() != null){
-			mathDesc = new MathDescription(oldMathDesc.getVersion());
+			mathDesc = new MathDescription(oldMathDesc.getVersion(), mathSymbolMapping);
 		}else{
-			mathDesc = new MathDescription(oldMathDesc.getName());
+			mathDesc = new MathDescription(oldMathDesc.getName(), mathSymbolMapping);
 		}
 	}else{
-		mathDesc = new MathDescription(simContext.getName()+"_generated");
+		mathDesc = new MathDescription(simContext.getName()+"_generated", mathSymbolMapping);
 	}
 
 	//

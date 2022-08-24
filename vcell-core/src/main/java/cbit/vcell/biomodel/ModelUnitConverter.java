@@ -14,18 +14,22 @@ import cbit.vcell.xml.XmlParseException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.util.LinkedHashMap;
+import java.util.Map;
+
 public class ModelUnitConverter {
 
 	private final static Logger logger = LogManager.getLogger(ModelUnitConverter.class);
 
 	public static ModelUnitSystem createSbmlModelUnitSystem() {
-		String volumeSubstanceSymbol = "umol";			// InternalUnitDefinition.UNIT_umol
-		String membraneSubstanceSymbol = "umol";		// umol
-		String lumpedReactionSubstanceSymbol = "umol";	// umol
-		String volumeSymbol = "l";						// l = dm3
-		String areaSymbol = "dm2";  					// dm2
-		String lengthSymbol = "dm";						// dm
-		String timeSymbol = "s";						// s
+		final String substanceUnit = "uM.um3";
+		String volumeSubstanceSymbol = substanceUnit;
+		String membraneSubstanceSymbol = substanceUnit;
+		String lumpedReactionSubstanceSymbol = substanceUnit;
+		String volumeSymbol = "um3";
+		String areaSymbol = "um2";
+		String lengthSymbol = "um";
+		String timeSymbol = "s";
 		ModelUnitSystem mus = ModelUnitSystem.createVCModelUnitSystem(volumeSubstanceSymbol, membraneSubstanceSymbol, lumpedReactionSubstanceSymbol, volumeSymbol, areaSymbol, lengthSymbol, timeSymbol);
 		return mus;
 	}
@@ -38,6 +42,22 @@ public class ModelUnitConverter {
 	
 	public static BioModel createBioModelWithNewUnitSystem(BioModel oldBioModel, ModelUnitSystem newUnitSystem)
 			throws ExpressionException, XmlParseException {
+
+		oldBioModel.refreshDependencies();
+		Map<String, MathDescription> previousMathDescriptionMap = new LinkedHashMap<>();
+		for (SimulationContext simContext : oldBioModel.getSimulationContexts()){
+			//
+			// force new math generation
+			//
+			MathMapping mathMapping = simContext.createNewMathMapping();
+			try {
+				MathDescription mathDesc = mathMapping.getMathDescription();
+				previousMathDescriptionMap.put(simContext.getName(), mathDesc);
+			}catch (Exception e){
+				throw new RuntimeException("failed to generated math for application "+simContext.getName()+": "+e.getMessage(), e);
+			}
+		}
+
 		// new BioModel has new unit system applied to all built-in units ... but expressions still need to be corrected (see below).
 		String biomodelXMLString = XmlHelper.bioModelToXML(oldBioModel);
 		XMLSource newXMLSource = new XMLSource(biomodelXMLString);
@@ -186,7 +206,7 @@ public class ModelUnitConverter {
 			MathMapping mathMapping = simContext.createNewMathMapping();
 			try {
 				MathDescription mathDesc = mathMapping.getMathDescription();
-				simContext.setMathDescription(mathDesc);
+				simContext.setMathDescriptionAndPrevious(mathDesc, previousMathDescriptionMap.get(simContext.getName()));
 			}catch (Exception e){
 				throw new RuntimeException("failed to generated math for application "+simContext.getName()+": "+e.getMessage(), e);
 			}
@@ -241,7 +261,7 @@ public class ModelUnitConverter {
 			if (practicallyDimensionlessUnit.multiplyBy(power_of_KMOLE).isCompatible(dimensionless)) {
 				double conversionScale = dimensionless.convertTo(1.0, practicallyDimensionlessUnit.multiplyBy(power_of_KMOLE));
 				try {
-					return Expression.mult(new Expression(conversionScale), Expression.power(new Expression(KMOLE, KMOLE.getNameScope()), power));
+					return Expression.mult(new Expression(conversionScale), Expression.power(new Expression(KMOLE, KMOLE.getNameScope()), -power));
 				} catch (ExpressionException e) {
 					throw new RuntimeException(e);
 				}
@@ -249,7 +269,7 @@ public class ModelUnitConverter {
 			if (practicallyDimensionlessUnit.divideBy(power_of_KMOLE).isCompatible(dimensionless)) {
 				double conversionScale = dimensionless.convertTo(1.0, practicallyDimensionlessUnit.divideBy(power_of_KMOLE));
 				try {
-					return Expression.mult(new Expression(conversionScale), Expression.power(new Expression(KMOLE, KMOLE.getNameScope()), -power));
+					return Expression.mult(new Expression(conversionScale), Expression.power(new Expression(KMOLE, KMOLE.getNameScope()), power));
 				} catch (ExpressionException e) {
 					throw new RuntimeException(e);
 				}

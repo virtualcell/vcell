@@ -11,6 +11,8 @@
 package cbit.image;
 import java.io.Serializable;
 import java.util.Vector;
+import java.util.function.BiPredicate;
+import java.util.function.Consumer;
 
 import org.vcell.util.Matchable;
 import org.vcell.util.document.KeyValue;
@@ -134,7 +136,8 @@ public boolean compareEqual(Matchable obj, int dimension, boolean bIgnoreMetadat
 		return false;
 	}
 
-	if(!org.vcell.util.Compare.isEqual(fieldPixelClasses,vci.fieldPixelClasses)){
+	BiPredicate<Matchable, Matchable> predicate = (pc1, pc2) -> ((VCPixelClass)pc1).compareEqual(pc2,false);
+	if(!org.vcell.util.Compare.isEqual(fieldPixelClasses,vci.fieldPixelClasses,predicate)){
 		return false;
 	}
 

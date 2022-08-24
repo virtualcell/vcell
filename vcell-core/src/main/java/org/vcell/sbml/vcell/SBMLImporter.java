@@ -1830,7 +1830,9 @@ public class SBMLImporter {
 
 		ByteArrayOutputStream os = new ByteArrayOutputStream();
 		PrintStream ps = new PrintStream(os);
-		document.printErrors(ps);
+		if (document.getErrorCount()>0) {
+			document.printErrors(ps);
+		}
 		String output = os.toString();
 		if (numProblems > 0) {
 			logger.error("Num problems in original SBML document : " + numProblems);

@@ -42,6 +42,7 @@ import cbit.vcell.xml.XmlHelper;
 /**
  * Command line utility to convert between SBML and VCML
  * Optionally runs SundialsStandalone with default settings
+ * Referenced in Install4j (expected to be deployed to client desktop ???)
  */
 public class SbmlVcmlConverter {
 	private static double endTime = 10.0;
@@ -208,7 +209,8 @@ public static void main(String[] args) {
 						}
 						
 						// Export the application itself, with default overrides
-						String sbmlString = XmlHelper.exportSBML(bioModel, 2, 4, 0, false, simContext, null);
+						boolean bRoundTripValidation = true;
+						String sbmlString = XmlHelper.exportSBML(bioModel, 2, 4, 0, false, simContext, null, bRoundTripValidation);
 						String filePath = pathName.substring(0, pathName.lastIndexOf("\\")+1);
 						String sbmlFileName = TokenMangler.mangleToSName(bioModel.getName() + "_" + i);
 						File sbmlFile = new File(filePath + sbmlFileName + ".xml");
@@ -221,7 +223,7 @@ public static void main(String[] args) {
 								// Check for parameter scan and create simJob to pass into exporter
 								for (int k = 0; k < simulations[j].getScanCount(); k++) {
 									SimulationJob simJob = new SimulationJob(simulations[j], k, null);
-									sbmlString = XmlHelper.exportSBML(bioModel, 2, 4, 0, false, simContext, simJob);
+									sbmlString = XmlHelper.exportSBML(bioModel, 2, 4, 0, false, simContext, simJob, bRoundTripValidation);
 									String fileName = TokenMangler.mangleToSName(sbmlFileName + "_" + j + "_" + k); 
 									sbmlFile = new File(filePath + fileName + ".xml");
 									XmlUtil.writeXMLStringToFile(sbmlString, sbmlFile.getAbsolutePath(), true);

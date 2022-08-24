@@ -186,8 +186,10 @@ public class XmlHelper {
 
 	}
 
-	public static Pair <String, Map<Pair <String, String>, String>> exportSBMLwithMap(VCDocument vcDoc, int level, int version, int pkgVersion, boolean isSpatial, SimulationContext simContext, SimulationJob simJob) throws XmlParseException {
-		return translateSBML(vcDoc, level, version, simContext, simJob);
+	public static Pair <String, Map<Pair <String, String>, String>> exportSBMLwithMap(
+			VCDocument vcDoc, int level, int version, int pkgVersion, boolean isSpatial,
+			SimulationContext simContext, SimulationJob simJob, boolean bRoundTripValidation) throws XmlParseException {
+		return translateSBML(vcDoc, level, version, simContext, simJob, bRoundTripValidation);
 	}
 
 
@@ -197,13 +199,13 @@ public class XmlHelper {
 	 * Creation date: (4/8/2003 12:30:27 PM)
 	 * @return java.lang.String
 	 */
-	public static String exportSBML(VCDocument vcDoc, int level, int version, int pkgVersion, boolean isSpatial, SimulationContext simContext, SimulationJob simJob) throws XmlParseException {
-		return translateSBML(vcDoc, level, version, simContext, simJob).one;
+	public static String exportSBML(VCDocument vcDoc, int level, int version, int pkgVersion, boolean isSpatial, SimulationContext simContext, SimulationJob simJob, boolean bRoundTripValidation) throws XmlParseException {
+		return translateSBML(vcDoc, level, version, simContext, simJob, bRoundTripValidation).one;
 	}
 
 
 	private static Pair <String, Map<Pair <String, String>, String>> translateSBML(VCDocument vcDoc, int level, int version, SimulationContext simContext,
-																				   SimulationJob simJob) throws XmlParseException {
+			SimulationJob simJob, boolean bRoundTripValidation) throws XmlParseException {
 		if (vcDoc == null) {
 			throw new XmlParseException("Invalid arguments for exporting SBML.");
 		}
@@ -233,14 +235,14 @@ public class XmlHelper {
 					Simulation simFromClonedBiomodel = clonedSimContext.getSimulation(simJob.getSimulation().getName());
 					modifiedSimJob = new SimulationJob(simFromClonedBiomodel, simJob.getJobIndex(), null);
 				}
-
-				SBMLExporter sbmlExporter = new SBMLExporter(clonedSimContext, level, version);
+				
+				SBMLExporter sbmlExporter = new SBMLExporter(clonedSimContext, level, version, bRoundTripValidation);
 				sbmlExporter.setSelectedSimulationJob(modifiedSimJob);
-				String sbmlSTring  = sbmlExporter.getSBMLString();
+				String sbmlString  = sbmlExporter.getSBMLString();
 
 				// cleanup the string of all the "sameAs" statements
-				sbmlSTring = SBMLAnnotationUtil.postProcessCleanup(sbmlSTring);
-				return new Pair(sbmlSTring, sbmlExporter.getLocalToGlobalTranslationMap());
+				sbmlString = SBMLAnnotationUtil.postProcessCleanup(sbmlString);
+				return new Pair(sbmlString, sbmlExporter.getLocalToGlobalTranslationMap());
 			} catch (SbmlException | SBMLException | XMLStreamException | ExpressionException e) {
 				throw new XmlParseException(e);
 			}

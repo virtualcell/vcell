@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import cbit.vcell.model.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.vcell.util.BeanUtils;
@@ -40,22 +41,6 @@ import cbit.vcell.mapping.spatial.SpatialObject.QuantityComponent;
 import cbit.vcell.mapping.spatial.SpatialObject.SpatialQuantity;
 import cbit.vcell.mapping.spatial.VolumeRegionObject;
 import cbit.vcell.matrix.RationalNumber;
-import cbit.vcell.model.BioNameScope;
-import cbit.vcell.model.ExpressionContainer;
-import cbit.vcell.model.Feature;
-import cbit.vcell.model.Membrane;
-import cbit.vcell.model.ModelException;
-import cbit.vcell.model.ModelUnitSystem;
-import cbit.vcell.model.Parameter;
-import cbit.vcell.model.Product;
-import cbit.vcell.model.ProxyParameter;
-import cbit.vcell.model.Reactant;
-import cbit.vcell.model.ReactionParticipant;
-import cbit.vcell.model.ReactionStep;
-import cbit.vcell.model.SimpleBoundsIssue;
-import cbit.vcell.model.SpeciesContext;
-import cbit.vcell.model.Structure;
-import cbit.vcell.model.VCMODL;
 import cbit.vcell.parser.AbstractNameScope;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
@@ -116,7 +101,7 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
 		}
 	}
 	
-	public class SpeciesContextSpecParameter extends Parameter implements ExpressionContainer, IssueSource {
+	public class SpeciesContextSpecParameter extends Parameter implements Identifiable, ExpressionContainer, IssueSource {
 		private Expression fieldParameterExpression = null;
 		private String fieldParameterName = null;
  		private int fieldParameterRole = -1;
@@ -134,6 +119,10 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
 			}
 			fieldUnitDefinition = argUnitDefinition;
 			setDescription(argDescription);
+		}
+
+		public SimulationContext getSimulationContext() {
+			return SpeciesContextSpec.this.simulationContext;
 		}
 		
 		public String getNullExpressionDescription() {

@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.TreeSet;
 import java.util.Vector;
 
+import cbit.vcell.VirtualMicroscopy.Image;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -380,8 +381,16 @@ public boolean compareEqual(Matchable object) {
 	}
 
 	for (int i=0;i<fieldSubVolumes.length;i++){
-		if (!fieldSubVolumes[i].compareEqual(geometrySpec.fieldSubVolumes[i])){
-			return false;
+		if (fieldSubVolumes[i] instanceof ImageSubVolume && geometrySpec.fieldSubVolumes[i] instanceof ImageSubVolume){
+			ImageSubVolume isv1 = (ImageSubVolume)fieldSubVolumes[i];
+			ImageSubVolume isv2 = (ImageSubVolume)geometrySpec.fieldSubVolumes[i];
+			if (!isv1.compareEqual(isv2, VCPixelClass::compareEqualIgnoreNames)){
+				return false;
+			}
+		}else {
+			if (!fieldSubVolumes[i].compareEqual(geometrySpec.fieldSubVolumes[i])) {
+				return false;
+			}
 		}
 	}
 	//

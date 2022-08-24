@@ -18,6 +18,7 @@ import java.util.stream.Collectors;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
+import cbit.vcell.mapping.MathSymbolMapping;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.vcell.util.BeanUtils;
@@ -64,6 +65,15 @@ import cbit.vcell.parser.SymbolTableFunctionEntry;
 @SuppressWarnings("serial")
 public class MathDescription implements Versionable, Matchable, SymbolTable, Serializable, ProblemRequirements, IssueSource {
 
+	public SourceSymbolMapping getSourceSymbolMapping() {
+		return sourceSymbolMapping;
+	}
+
+	public void setSourceSymbolMapping(SourceSymbolMapping sourceSymbolMapping) {
+		this.sourceSymbolMapping = sourceSymbolMapping;
+	}
+
+	private SourceSymbolMapping sourceSymbolMapping;
 	private final static Logger logger = LogManager.getLogger(MathDescription.class);
 
 	public static final TreeMap<Long,TreeSet<String>> originalHasLowPrecisionConstants = new TreeMap<>();
@@ -98,14 +108,18 @@ public class MathDescription implements Versionable, Matchable, SymbolTable, Ser
 /**
  * MathDescription constructor comment.
  */
-public MathDescription(Version argVersion) {
+public MathDescription(Version argVersion, SourceSymbolMapping mathSymbolMapping) {
 	super();
 	this.version = argVersion;
 	if (argVersion!=null){
 		this.fieldName = argVersion.getName();
 		this.fieldDescription = argVersion.getAnnot();
 	}
+	this.sourceSymbolMapping = mathSymbolMapping;
 }
+	public MathDescription(Version argVersion) {
+		this(argVersion, null);
+	}
 
 
 /**
@@ -127,15 +141,17 @@ public MathDescription(MathDescription mathDescription) {
 }
 
 
-/**
- * MathDescription constructor comment.
- */
-public MathDescription(String name) {
+public MathDescription(String name, SourceSymbolMapping mathSymbolMapping) {
 	this.fieldName = name;
 	this.version = null;
+	this.sourceSymbolMapping = mathSymbolMapping;
 }
 
-/**
+	public MathDescription(String name) {
+		this(name, null);
+	}
+
+	/**
  * Add a javax.swing.event.ChangeListener.
  */
 public void addChangeListener(ChangeListener newListener) {

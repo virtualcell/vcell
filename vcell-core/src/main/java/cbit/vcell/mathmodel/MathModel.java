@@ -17,6 +17,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import cbit.vcell.solver.*;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Compare;
 import org.vcell.util.Issue;
@@ -40,10 +41,7 @@ import cbit.vcell.math.MathDescription;
 import cbit.vcell.model.VCMODL;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.solver.MathOverrides;
-import cbit.vcell.solver.OutputFunctionContext;
-import cbit.vcell.solver.Simulation;
-import cbit.vcell.solver.SimulationOwner;
+
 /**
  * Insert the type's description here.
  * Creation date: (10/17/00 3:12:16 PM)
@@ -748,6 +746,11 @@ public void vetoableChange(java.beans.PropertyChangeEvent evt) throws java.beans
 
 	public OutputFunctionContext getOutputFunctionContext() {
 		return outputFunctionContext;
+	}
+
+	@Override
+	public MathOverridesResolver getMathOverridesResolver() {
+		return null;
 	}
 
 	public Geometry getGeometry() {
