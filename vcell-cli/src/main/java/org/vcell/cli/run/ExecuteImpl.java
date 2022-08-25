@@ -130,7 +130,7 @@ public class ExecuteImpl {
         OmexHandler omexHandler = null;
         List<String> sedmlLocations;
         List<Output> outputs;
-        SedML sedml, sedmlFromPython;
+        SedML sedml;
         Path sedmlPath2d3d;
         File sedmlPathwith2dand3d;
 
@@ -176,7 +176,7 @@ public class ExecuteImpl {
             File completeSedmlPath = new File(sedmlLocation), outDirForCurrentSedml = new File(omexHandler.getOutputPathFromSedml(sedmlLocation));
 
             try {
-                SedML sedmlFromOmex;
+                SedML sedmlFromOmex, sedmlFromPython;
                 String[] sedmlNameSplit;
 
                 
@@ -405,12 +405,9 @@ public class ExecuteImpl {
      */
     private static SedML repairSedML(SedML brokenSedML, String[] tokenizedPath){
         for (int i = 0; i < tokenizedPath.length; i++){
-            if (tokenizedPath[i].startsWith("vcell_temp")){
-                
-                //String[] relativePathTokens = ;
+            if (tokenizedPath[i].startsWith(RunUtils.VCELL_TEMP_DIR_PREFIX)){
                 Path relativePath = Paths.get(tokenizedPath[i + 1], Arrays.copyOfRange(tokenizedPath, i + 2, tokenizedPath.length));
-                String name = relativePath.getFileName().toString();
-                brokenSedML.setFileName(name);
+                brokenSedML.setFileName(relativePath.getFileName().toString());
                 // Take the relative path, remove the file name, and...
                 String source = relativePath.toString().substring(0, relativePath.toString().length() - name.length());
                 // Convert to unix file separators (java URI does not windows style)
@@ -418,7 +415,7 @@ public class ExecuteImpl {
                 break;
             }
         }
-        return brokenSedML;
+        return brokenSedML; // now fixed!
     }
 
     private static boolean containsExtension(String folder, String ext) {

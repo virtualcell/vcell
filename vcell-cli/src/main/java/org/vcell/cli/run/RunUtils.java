@@ -40,6 +40,7 @@ import java.util.zip.ZipOutputStream;
 
 public class RunUtils {
 
+    public final static String VCELL_TEMP_DIR_PREFIX = "vcell_temp_";
     private final static Logger logger = LogManager.getLogger(RunUtils.class);
 
     public static ODESolverResultSet interpolate(ODESolverResultSet odeSolverResultSet, UniformTimeCourse sedmlSim) throws ExpressionException {
@@ -458,7 +459,8 @@ public class RunUtils {
     }
 
     public static String getTempDir() throws IOException {
-        String tempPath = String.valueOf(java.nio.file.Files.createTempDirectory("vcell_temp_" + UUID.randomUUID().toString()).toAbsolutePath());
+        String tempPath = String.valueOf(java.nio.file.Files.createTempDirectory(
+            RunUtils.VCELL_TEMP_DIR_PREFIX + UUID.randomUUID().toString()).toAbsolutePath());
         logger.info("TempPath Created: " + tempPath);
         return tempPath;
     }
