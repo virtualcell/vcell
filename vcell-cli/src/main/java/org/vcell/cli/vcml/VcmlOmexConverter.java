@@ -11,10 +11,12 @@ import cbit.vcell.mapping.MathMappingCallbackTaskAdapter;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SimulationContext.MathMappingCallback;
 import cbit.vcell.mapping.SimulationContext.NetworkGenerationRequirements;
+import cbit.vcell.math.Constant;
 import cbit.vcell.math.MathCompareResults;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.SubDomain;
 import cbit.vcell.math.Variable;
+import cbit.vcell.model.common.VCellErrorMessages;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.resource.NativeLib;
 import cbit.vcell.resource.OperatingSystemInfo;
@@ -330,7 +332,8 @@ public class VcmlOmexConverter {
         List<Simulation> simsToExport = Arrays.stream(bioModel.getSimulations()).filter(simulationExportFilter).collect(Collectors.toList());
 
 		// we replace the obsolete solver with the fully supported equivalent
-		for (Simulation simulation : simsToExport) {
+        String msg = "";
+        for (Simulation simulation : simsToExport) {
 			if (simulation.getSolverTaskDescription().getSolverDescription().equals(SolverDescription.FiniteVolume)) {
 				try {
 					simulation.getSolverTaskDescription().setSolverDescription(SolverDescription.SundialsPDE);
@@ -340,12 +343,31 @@ public class VcmlOmexConverter {
 			}
 			MathOverrides mo = simulation.getMathOverrides();
 			if(mo != null && mo.hasUnusedOverrides()) {
-				String msg = "A Simulation has unused Math Overrides";
-				logger.error(msg);
-				writeSimErrorList(outputBaseDir, vcmlName + ": " + msg, bForceLogFiles);
-				return false;
+				
+				MathDescription mathDescription = simulation.getMathDescription();
+				Enumeration<Constant> enumeration = mathDescription.getConstants();
+				java.util.HashSet<String> mathDescriptionHash = new java.util.HashSet<String>();
+				while (enumeration.hasMoreElements()) {
+					Constant constant = enumeration.nextElement();
+					mathDescriptionHash.add(constant.getName());
+				}
+				Enumeration<String> mathOverrideNamesEnum = mo.getOverridesHashKeys();
+				String str = "";
+				while (mathOverrideNamesEnum.hasMoreElements()){
+					String name = mathOverrideNamesEnum.nextElement();
+					if (!mathDescriptionHash.contains(name)){
+						str += name + ", ";
+					}
+				}
+				msg += "; Simulation '" + simulation.getName() + "': " + str;
 			}
 		}
+       	if(!msg.isEmpty()) {
+       		msg = "Unused Math Overrides found" + msg;
+       		logger.error(msg);
+       		writeSimErrorList(outputBaseDir, vcmlName + ": " + msg, bForceLogFiles);
+        }
+
 
 		Version version = bioModel.getVersion();
         String versionKey = version.getVersionKey().toString();
