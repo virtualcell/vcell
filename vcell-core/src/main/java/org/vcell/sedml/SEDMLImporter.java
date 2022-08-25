@@ -44,6 +44,7 @@ import org.jlibsedml.execution.ModelResolver;
 import org.jlibsedml.modelsupport.SBMLSupport;
 import org.jlibsedml.modelsupport.SUPPORTED_LANGUAGE;
 import org.jmathml.ASTNode;
+import org.sbml.jsbml.SBase;
 import org.vcell.sbml.vcell.SBMLImporter;
 import org.vcell.sbml.vcell.SBMLSymbolMapping;
 import org.vcell.sbml.vcell.SymbolContext;
@@ -374,15 +375,22 @@ public class SEDMLImporter {
 		MathSymbolMapping msm = (MathSymbolMapping) simContext.getMathDescription().getSourceSymbolMapping();
 		SBMLImporter sbmlImporter = importMap.get(simContext.getBioModel());
 		SBMLSymbolMapping sbmlMap = sbmlImporter.getSymbolMapping();
-		SymbolTableEntry ste =sbmlMap.getSte(sbmlMap.getMappedSBase(SBMLtargetID), SymbolContext.INITIAL);
+		SBase targetSBase = sbmlMap.getMappedSBase(SBMLtargetID);
+		if (targetSBase == null){
+			logger.error("couldn't find SBase with sid="+SBMLtargetID+" in SBMLSymbolMapping");
+			return null;
+		}
+		SymbolTableEntry ste =sbmlMap.getSte(targetSBase, SymbolContext.INITIAL);
 		Variable var = msm.getVariable(ste);
 		if (var instanceof Constant) {
 			constantName = var.getName();
 		}
 		if (constantName == null){
-			logger.warn("couldn't find target with sid="+SBMLtargetID+" in symbol mapping");
+			logger.error("couldn't find Constant target with sid="+SBMLtargetID+" in symbol mapping, var = "+var);
+			return null;
+		}else {
+			return constantName;
 		}
-		return constantName;
 	}
 
 	private void addRepeatedTasks(List<AbstractTask> ttt, HashMap<String, Simulation> vcSimulations)
