@@ -15,8 +15,6 @@ import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import javax.swing.JFrame;
-
 import org.vcell.db.ConnectionFactory;
 import org.vcell.db.DatabaseService;
 import org.vcell.db.DatabaseSyntax;
@@ -184,22 +182,6 @@ public static void main(java.lang.String[] args) {
         String dbSchemaUser = args[2];
         String dbPassword = args[3];
         //
-        int ok =
-            javax.swing.JOptionPane.showConfirmDialog(
-                new JFrame(),
-                "Will compare VCell Software 'Tables' with Database Schema: "
-                    + "connectURL="
-                    + connectURL
-                    + "\nUser="
-                    + dbSchemaUser
-                    + "\npassword="
-                    + dbPassword,
-                "Confirm",
-                javax.swing.JOptionPane.OK_CANCEL_OPTION,
-                javax.swing.JOptionPane.WARNING_MESSAGE);
-        if (ok != javax.swing.JOptionPane.OK_OPTION) {
-            throw new RuntimeException("Aborted by user");
-        }
 
         ConnectionFactory conFactory = null;
         KeyFactory keyFactory = null;
@@ -208,11 +190,12 @@ public static void main(java.lang.String[] args) {
         //
         // get appropriate database factory objects
         //
+
         DatabaseSyntax dbSyntax = null;
         if (args[0].equalsIgnoreCase(oracle)) {
         	dbSyntax = DatabaseSyntax.ORACLE;
             String driverName = "oracle.jdbc.driver.OracleDriver";
-            conFactory = DatabaseService.getInstance().createConnectionFactory(
+			conFactory = DatabaseService.getInstance().createConnectionFactory(
                     driverName,
                     connectURL,
                     dbSchemaUser,
