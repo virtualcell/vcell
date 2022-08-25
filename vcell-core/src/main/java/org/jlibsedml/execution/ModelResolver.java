@@ -123,7 +123,7 @@ public class ModelResolver {
             if (baseModelAsStr == null) {
             	// try again with relative path to sedml
             	try {
-					srcURI = new URI(sedml.getPathForURI()+srcURI.toString());
+					srcURI = new URI(sedml.getPathForURI() + srcURI.toString());
 				} catch (URISyntaxException e) {
 		            message = MODEL_SRC_NOT_VALID_URI;
 		            return null;

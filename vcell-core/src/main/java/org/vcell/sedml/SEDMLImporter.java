@@ -3,22 +3,18 @@ package org.vcell.sedml;
 
 import java.beans.PropertyVetoException;
 import java.io.*;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 
 import cbit.vcell.parser.ExpressionMathMLParser;
-import cbit.vcell.parser.LambdaFunction;
 import cbit.vcell.parser.SymbolTableEntry;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.log4j.legacy.core.CategoryUtil;
-import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.jdom.Element;
-import org.jdom.output.XMLOutputter;
 import org.jlibsedml.AbstractTask;
 import org.jlibsedml.Algorithm;
 import org.jlibsedml.AlgorithmParameter;
@@ -42,23 +38,16 @@ import org.jlibsedml.UniformRange.UniformType;
 import org.jlibsedml.UniformTimeCourse;
 import org.jlibsedml.VectorRange;
 import org.jlibsedml.XMLException;
-import org.jlibsedml.XPathTarget;
 import org.jlibsedml.execution.ArchiveModelResolver;
 import org.jlibsedml.execution.FileModelResolver;
 import org.jlibsedml.execution.ModelResolver;
 import org.jlibsedml.modelsupport.SBMLSupport;
 import org.jlibsedml.modelsupport.SUPPORTED_LANGUAGE;
 import org.jmathml.ASTNode;
-import org.jmathml.ASTNumber;
-import org.jmathml.ASTToXMLElementVisitor;
-import org.sbml.jsbml.JSBML;
-import org.sbml.jsbml.SBase;
-import org.sbml.jsbml.math.compiler.LibSBMLFormulaCompiler;
 import org.vcell.sbml.vcell.SBMLImporter;
 import org.vcell.sbml.vcell.SBMLSymbolMapping;
 import org.vcell.sbml.vcell.SymbolContext;
 import org.vcell.util.FileUtils;
-import org.vcell.util.document.VCDocument;
 
 import cbit.util.xml.VCLogger;
 import cbit.vcell.biomodel.BioModel;
@@ -80,7 +69,6 @@ import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.solver.ConstantArraySpec;
 import cbit.vcell.solver.DefaultOutputTimeSpec;
 import cbit.vcell.solver.ErrorTolerance;
-import cbit.vcell.solver.ErrorTolerance.ErrorToleranceDescription;
 import cbit.vcell.solver.MathOverrides;
 import cbit.vcell.solver.NonspatialStochHybridOptions;
 import cbit.vcell.solver.NonspatialStochSimOptions;
@@ -88,12 +76,10 @@ import cbit.vcell.solver.OutputTimeSpec;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solver.SolverDescription.AlgorithmParameterDescription;
-import cbit.vcell.solver.SolverDescription.SolverFeature;
 import cbit.vcell.solver.SolverTaskDescription;
 import cbit.vcell.solver.SolverUtilities;
 import cbit.vcell.solver.TimeBounds;
 import cbit.vcell.solver.TimeStep;
-import cbit.vcell.solver.TimeStep.TimeStepDescription;
 import cbit.vcell.solver.UniformOutputTimeSpec;
 import cbit.vcell.xml.ExternalDocInfo;
 import cbit.vcell.xml.XMLSource;
@@ -538,8 +524,7 @@ public class SEDMLImporter {
 				}
 				docs.add(bioModel);
 			} else {				// we assume it's sbml, if it's neither import will fail
-				InputStream sbmlSource = IOUtils.toInputStream(modelXML);
-				VCDocument vcDoc = null;
+				InputStream sbmlSource = IOUtils.toInputStream(modelXML, Charset.defaultCharset());
 				boolean bValidateSBML = false;
 				SBMLImporter sbmlImporter = new SBMLImporter(sbmlSource,transLogger,bValidateSBML);
 				bioModel = (BioModel)sbmlImporter.getBioModel();

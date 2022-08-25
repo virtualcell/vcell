@@ -7,6 +7,7 @@ import cbit.vcell.xml.ExternalDocInfo;
 
 import org.jlibsedml.*;
 
+import org.apache.commons.io.FilenameUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -22,6 +23,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -118,7 +120,7 @@ public class ExecuteImpl {
         int nModels, nSimulations, nTasks, nOutputs, nReportsCount = 0, nPlots2DCount = 0, nPlots3DCount = 0;
         String logOmexMessage = "";
 
-        String inputFileName = inputFile.getAbsolutePath();
+        String inputFilePath = inputFile.getAbsolutePath();
         String bioModelBaseName = FileUtils.getBaseName(inputFile.getName());
         String outputBaseDir = rootOutputDir.getAbsolutePath(); // bioModelBaseName = input file without the path
         String outputDir = bEncapsulateOutput ? Paths.get(outputBaseDir, bioModelBaseName).toString() : outputBaseDir;
@@ -128,28 +130,28 @@ public class ExecuteImpl {
         OmexHandler omexHandler = null;
         List<String> sedmlLocations;
         List<Output> outputs;
-        SedML sedml, sedmlFromPseudo;
+        SedML sedml;
         Path sedmlPath2d3d;
         File sedmlPathwith2dand3d;
 
         long startTimeOmex = System.currentTimeMillis();
 
-        logger.info("Executing OMEX archive " + inputFileName);
+        logger.info("Executing OMEX archive " + inputFilePath);
         RunUtils.drawBreakLine("-", 100);
         try { // It's unlikely, but if we get errors here they're fatal.
             sedmlPath2d3d = Paths.get(outputDir, "temp");
-            omexHandler = new OmexHandler(inputFileName, outputDir);
+            omexHandler = new OmexHandler(inputFilePath, outputDir);
             omexHandler.extractOmex();
             sedmlLocations = omexHandler.getSedmlLocationsAbsolute();
         } catch (IOException e){
-            String error = e.getMessage() + ", error for OmexHandler with " + inputFileName;
+            String error = e.getMessage() + ", error for OmexHandler with " + inputFilePath;
             CLIUtils.writeErrorList(outputBaseDir, bioModelBaseName, bForceLogFiles);
             CLIUtils.writeDetailedResultList(outputBaseDir, bioModelBaseName + ", " + ", IO error with OmexHandler", bForceLogFiles);
             logger.error(error);
             throw new RuntimeException(error, e);
         } catch (Exception e) { 
             omexHandler.deleteExtractedOmex();
-            String error = e.getMessage() + ", error for archive " + inputFileName;
+            String error = e.getMessage() + ", error for archive " + inputFilePath;
             CLIUtils.writeErrorList(outputBaseDir, bioModelBaseName, bForceLogFiles);
             CLIUtils.writeDetailedResultList(outputBaseDir, bioModelBaseName + ", " + ",unknown error with the archive file", bForceLogFiles);
             logger.error(error);
@@ -159,7 +161,7 @@ public class ExecuteImpl {
         logger.info("Preparing output directory...");
         CLIUtils.cleanRootDir(new File(outputBaseDir));
         if (bEncapsulateOutput) RunUtils.removeAndMakeDirs(new File(outputDir));
-        PythonCalls.generateStatusYaml(inputFileName, outputDir);    // generate Status YAML
+        PythonCalls.generateStatusYaml(inputFilePath, outputDir);    // generate Status YAML
 
         /*
          * from here on, we need to collect errors, since some subtasks may succeed while other do not
@@ -174,15 +176,16 @@ public class ExecuteImpl {
             File completeSedmlPath = new File(sedmlLocation), outDirForCurrentSedml = new File(omexHandler.getOutputPathFromSedml(sedmlLocation));
 
             try {
-                SedML sedmlFromOmex;
+                SedML sedmlFromOmex, sedmlFromPython;
                 String[] sedmlNameSplit;
 
-                logger.info("Processing SED-ML: " + sedmlName);
+                
                 RunUtils.removeAndMakeDirs(outDirForCurrentSedml);
                 sedmlFromOmex = Libsedml.readDocument(completeSedmlPath).getSedMLModel();
                 sedmlNameSplit = sedmlLocation.split(OperatingSystemInfo.getInstance().isWindows() ? "\\\\" : "/", -2);
                 sedmlName = sedmlNameSplit[sedmlNameSplit.length - 1];
                 logOmexMessage += "Processing " + sedmlName + ". ";
+                logger.info("Processing SED-ML: " + sedmlName);
 
                 nModels = sedmlFromOmex.getModels().size();
                 nTasks = sedmlFromOmex.getTasks().size();
@@ -211,7 +214,7 @@ public class ExecuteImpl {
 
                 // For appending data for SED Plot2D and Plot3d to HDF5 files following a temp convention
                 logger.info("Creating pseudo SED-ML for HDF5 conversion...");
-                PythonCalls.genSedmlForSed2DAnd3D(inputFileName, outputDir);
+                PythonCalls.genSedmlForSed2DAnd3D(inputFilePath, outputDir);
                 // SED-ML file generated by python VCell_cli_util
                 sedmlPathwith2dand3d = new File(String.valueOf(sedmlPath2d3d), "simulation_" + sedmlName);
                 Path path = Paths.get(sedmlPathwith2dand3d.getAbsolutePath());
@@ -223,11 +226,13 @@ public class ExecuteImpl {
 
                 // Converting pseudo SED-ML to biomodel
                 logger.info("Creating Biomodel from pseudo SED-ML");
-                sedmlFromPseudo = Libsedml.readDocument(sedmlPathwith2dand3d).getSedMLModel();
+                sedmlFromPython = Libsedml.readDocument(sedmlPathwith2dand3d).getSedMLModel();
 
                 /* If SED-ML has only plots as an output, we will use SED-ML that got generated from vcell_cli_util python code
                  * As of now, we are going to create a resultant dataSet for Plot output, using their respective data generators */
-                sedml = sedmlFromPseudo;
+                sedml = ExecuteImpl.repairSedML(sedmlFromPython, sedmlNameSplit);
+                // We need the name and path of the sedml file, which sedmlFromPseudo doesnt have!
+                //sedml = this.
 
             } catch (Exception e) {
                 String prefix = "SED-ML processing for " + sedmlLocation + " failed with error: ";
@@ -256,7 +261,7 @@ public class ExecuteImpl {
              * - XmlHelper code uses two types of resolvers to handle absolute or relative paths
              */
             SolverHandler solverHandler = new SolverHandler();
-            ExternalDocInfo externalDocInfo = new ExternalDocInfo(new File(inputFileName), true);
+            ExternalDocInfo externalDocInfo = new ExternalDocInfo(new File(inputFilePath), true);
             resultsHash = new LinkedHashMap<String, ODESolverResultSet>();
             try {
                 String str = "Building solvers and starting simulation of all tasks... ";
@@ -318,7 +323,7 @@ public class ExecuteImpl {
                 logger.info("Generating HDF5 file... ");
                 String idNamePlotsMap = RunUtils.generateIdNamePlotsMap(sedml, outDirForCurrentSedml);
 
-                PythonCalls.execPlotOutputSedDoc(inputFileName, idNamePlotsMap, outputDir);                            // create the HDF5 file
+                PythonCalls.execPlotOutputSedDoc(inputFilePath, idNamePlotsMap, outputDir);                            // create the HDF5 file
 
                 if (!containsExtension(outputDir, "h5")) {
                     anySedmlDocumentHasFailed = true;
@@ -392,6 +397,26 @@ public class ExecuteImpl {
         }
         PythonCalls.setOutputMessage("null", "null", outputDir, "omex", logOmexMessage);
 
+    }
+
+    /**
+     * In its current state, the sed-ml generated with python is missing two important fields;
+     * this function fixes that.
+     */
+    private static SedML repairSedML(SedML brokenSedML, String[] tokenizedPath){
+        for (int i = 0; i < tokenizedPath.length; i++){
+            if (tokenizedPath[i].startsWith(RunUtils.VCELL_TEMP_DIR_PREFIX)){
+                Path relativePath = Paths.get(tokenizedPath[i + 1], Arrays.copyOfRange(tokenizedPath, i + 2, tokenizedPath.length));
+                String name = relativePath.getFileName().toString();
+                brokenSedML.setFileName(name);
+                // Take the relative path, remove the file name, and...
+                String source = relativePath.toString().substring(0, relativePath.toString().length() - name.length());
+                // Convert to unix file separators (java URI does not windows style)
+                brokenSedML.setPathForURI(FilenameUtils.separatorsToUnix(source));
+                break;
+            }
+        }
+        return brokenSedML; // now fixed!
     }
 
     private static boolean containsExtension(String folder, String ext) {
