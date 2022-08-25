@@ -759,7 +759,7 @@ public void setMathDescription(MathDescription mathDescription) throws java.bean
 	//
 	// refresh MathOverrides
 	//
-	if (mathDescription!=null && getMathOverrides()!=null){
+	if (mathDescription!=null && getMathOverrides()!=null && oldValue != fieldMathDescription){
 		getMathOverrides().updateFromMathDescription();
 	}
 

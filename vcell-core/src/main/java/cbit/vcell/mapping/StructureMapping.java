@@ -50,6 +50,7 @@ import cbit.vcell.parser.ScopedSymbolTable;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.units.VCUnitDefinition;
 import net.sourceforge.interval.ia_math.RealInterval;
+import org.vcell.util.document.Identifiable;
 
 @SuppressWarnings("serial")
 public abstract class StructureMapping implements Matchable, ScopedSymbolTable, java.io.Serializable, IssueSource {
@@ -97,7 +98,7 @@ public abstract class StructureMapping implements Matchable, ScopedSymbolTable, 
 		}
 	}
 	
-	public class StructureMappingParameter extends Parameter implements ExpressionContainer, IssueSource {
+	public class StructureMappingParameter extends Parameter implements ExpressionContainer, IssueSource, Identifiable {
 
 		private int fieldParameterRole = -1;
 		private String fieldParameterName = null;
@@ -260,6 +261,10 @@ public abstract class StructureMapping implements Matchable, ScopedSymbolTable, 
 		
 		public Structure getStructure() {
 			return StructureMapping.this.getStructure();
+		}
+
+		public SimulationContext getSimulationContext() {
+			return simulationContext;
 		}
 	}
 	

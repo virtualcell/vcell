@@ -14,6 +14,8 @@ import java.io.IOException;
 import java.io.StreamTokenizer;
 import java.util.*;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.util.Issue.IssueSource;
 import org.vcell.util.Matchable;
 
@@ -23,6 +25,8 @@ import net.sourceforge.interval.ia_math.RealInterval;
 
 @SuppressWarnings("serial")
 public class Expression implements java.io.Serializable, org.vcell.util.Matchable, IssueSource {
+
+	private final static Logger logger = LogManager.getLogger(Expression.class);
 
 //   private String expString = null;
 	private SimpleNode rootNode = null;
@@ -38,10 +42,6 @@ public class Expression implements java.io.Serializable, org.vcell.util.Matchabl
    private static final Expression ONE = new Expression(1);
 
 
-	/**
- * This method was created in VisualAge.
- * @param value double
- */
 private Expression() {
 }
 
@@ -111,14 +111,7 @@ public Expression(String expString) throws ExpressionException {
 }
 
 
-/**
- * This method was created by a SmartGuide.
- * @return cbit.vcell.model.Expression
- * @param expression1 cbit.vcell.model.Expression
- * @param expression2 cbit.vcell.model.Expression
- * @exception java.lang.Exception The exception description.
- */
-public static Expression add(Expression... expressions) throws ExpressionException {
+public static Expression add(Expression... expressions) {
 	Expression exp = new Expression();
 	ASTAddNode addNode = new ASTAddNode();
 
@@ -130,13 +123,7 @@ public static Expression add(Expression... expressions) throws ExpressionExcepti
 	exp.rootNode = addNode;
 	return exp;
 }
-/**
- * This method was created by a SmartGuide.
- * @return cbit.vcell.model.Expression
- * @param lvalueExp cbit.vcell.model.Expression
- * @param rvalueExp cbit.vcell.model.Expression
- * @exception java.lang.Exception The exception description.
- */
+
 public static Expression assign(Expression lvalueExp, Expression rvalueExp) throws ExpressionException {
 	Expression exp = new Expression();
 	ASTAssignNode assignNode = new ASTAssignNode();
@@ -298,35 +285,55 @@ flattenCount++;////////////////////////
 			return this.flatten();
 		}
 		if (Arrays.asList(symbols).contains(factorSymbol)) {
-			Expression mangledExpression = new Expression(this).flatten();
-			mangledExpression.substituteInPlace(new Expression(factorSymbol), new Expression("____"+factorSymbol+"____"));
-			String mangledInfix = mangledExpression.infix();
+			// in case factorSymbol STE is 'constant' (will be removed during flattening)
+			// in some cases KMOLE from biomodel is not constant, KMOLE from MathDescription is constant
+			// and only one gets flattened away (in this case it will store the first binding it sees - better than nothing)
+			// this binding will be replaced later.
+			HashMap<String, SymbolTableEntry> bindings = new HashMap<>();
+			for (String symbol : symbols){
+				bindings.put(symbol, getSymbolBinding(symbol));
+			}
+
+			Expression flattenedExpression = new Expression(this);
+			flattenedExpression.bindExpression(null);  // clear bindings so that flatten will not remove symbols
+			flattenedExpression = flattenedExpression.flatten();
+
+			String mangledFactorSymbol = "____"+factorSymbol+"____";
+			flattenedExpression.substituteInPlace(new Expression(factorSymbol), new Expression(mangledFactorSymbol));
+			String flattenedInfix = flattenedExpression.infix();
 			final String[][] patterns = {
-					{ "pow(____"+factorSymbol+"____,-1.0) * ____"+factorSymbol+"____", 				"1.0" },
-					{ "____"+factorSymbol+"____ * pow(____"+factorSymbol+"____,-1.0)", 				"1.0" },
-					{ "pow(____"+factorSymbol+"____,2.0) * pow(____"+factorSymbol+"____,-2.0)",		"1.0" },
-					{ "pow(____"+factorSymbol+"____,3.0) * pow(____"+factorSymbol+"____,-3.0)",		"1.0" },
-					{ "____"+factorSymbol+"____ / ____"+factorSymbol+"____",						"1.0" },
-					{ "/ ____"+factorSymbol+"____ * ____"+factorSymbol+"____", 						"* 1.0" }
+					{ "pow("+mangledFactorSymbol+",-1.0) * "+mangledFactorSymbol,	 				"1.0" },
+					{ mangledFactorSymbol+" * pow("+mangledFactorSymbol+",-1.0)", 					"1.0" },
+					{ "pow("+mangledFactorSymbol+",2.0) * pow("+mangledFactorSymbol+",-2.0)",		"1.0" },
+					{ "pow("+mangledFactorSymbol+",3.0) * pow("+mangledFactorSymbol+",-3.0)",		"1.0" },
+					{ mangledFactorSymbol+" / "+mangledFactorSymbol,								"1.0" },
+					{ "/ "+mangledFactorSymbol+" * "+mangledFactorSymbol, 							"* 1.0" }
 			};
 			boolean bReplaced = false;
 			for (String[] pattern : patterns) {
-				if (mangledInfix.contains(pattern[0])) {
-					mangledInfix = mangledInfix.replace(pattern[0], pattern[1]);
+				if (flattenedInfix.contains(pattern[0])) {
+					flattenedInfix = flattenedInfix.replace(pattern[0], pattern[1]);
 					bReplaced = true;
 				}
 			}
 			if (bReplaced) {
-				Expression substitutedExpression = new Expression(mangledInfix);
-				SymbolTableEntry factorSte = this.getSymbolBinding(factorSymbol);
-				final Expression KMOLE_exp;
-				if (factorSte == null) {
-					KMOLE_exp = new Expression(factorSymbol);
-				}else{
-					KMOLE_exp = new Expression(factorSte, factorSte.getNameScope());
-				}
-				substitutedExpression.substituteInPlace(new Expression("____KMOLE____"), KMOLE_exp);
+				Expression substitutedExpression = new Expression(flattenedInfix);
+				SymbolTable symbolTable = new SymbolTable() {
+					@Override
+					public SymbolTableEntry getEntry(String identifierString) { return bindings.get(identifierString); }
+					@Override
+					public void getEntries(Map<String, SymbolTableEntry> entryMap) { throw new RuntimeException("not implemented");}
+				};
+				final Expression factorSymbol_exp = new Expression(factorSymbol);
+				substitutedExpression.substituteInPlace(new Expression(mangledFactorSymbol), factorSymbol_exp);
 				substitutedExpression = substitutedExpression.flatten();
+				if (bindings.size()>0) {
+					try {
+						substitutedExpression.bindExpression(symbolTable);
+					} catch (ExpressionBindingException e) {
+						logger.info("failed to rebind expression "+substitutedExpression.infix()+" after flattenFactor(): "+e.getMessage());
+					}
+				}
 				return substitutedExpression;
 			}
 		}
@@ -438,27 +445,15 @@ substituteCount++;////////////////////////////////
 		return new Expression(clonedRootNode);
 	}
 }
-/**
- * This method was created by a SmartGuide.
- * @return cbit.vcell.parser.SymbolTableEntry
- * @param symbolName java.lang.String
- */
+
 public SymbolTableEntry getSymbolBinding(String symbol) {
 	return rootNode.getBinding(symbol);
 }
-/**
- * This method was created by a SmartGuide.
- * @return cbit.vcell.model.String[]
- * @exception java.lang.Exception The exception description.
- */
+
 public String[] getSymbols() {
 	return getSymbols(SimpleNode.LANGUAGE_DEFAULT);
 }
-/**
- * This method was created by a SmartGuide.
- * @return cbit.vcell.model.String[]
- * @exception java.lang.Exception The exception description.
- */
+
 public String[] getSymbols(int language) {
 	Set<String> symbolSet = new HashSet<String>();
 	rootNode.getSymbols(language, symbolSet);
@@ -468,11 +463,6 @@ public String[] getSymbols(int language) {
 	return symbolSet.toArray(new String[symbolSet.size()]);	
 }
 
-/**
- * This method was created by a SmartGuide.
- * @return cbit.vcell.model.String[]
- * @exception java.lang.Exception The exception description.
- */
 public boolean hasSymbol(String symbolName) {
 	String[] symbols = getSymbols();
 	for (int i = 0 ; symbols != null && i < symbols.length; i++){
@@ -731,14 +721,8 @@ public static Expression laplacian(Expression expression) throws ExpressionExcep
 	exp.rootNode = laplacianNode;
 	return exp;
 }
-/**
- * This method was created by a SmartGuide.
- * @return cbit.vcell.model.Expression
- * @param expression1 cbit.vcell.model.Expression
- * @param expression2 cbit.vcell.model.Expression
- * @exception java.lang.Exception The exception description.
- */
-public static Expression mult(Expression... expressions) throws ExpressionException {
+
+public static Expression mult(Expression... expressions) {
 	Expression exp = new Expression();
 	ASTMultNode multNode = new ASTMultNode();
 
@@ -751,7 +735,7 @@ public static Expression mult(Expression... expressions) throws ExpressionExcept
 	return exp;
 }
 
-public static Expression div(Expression expression1, Expression expression2) throws ExpressionException {
+public static Expression div(Expression expression1, Expression expression2) {
 	Expression exp = new Expression();
 	ASTMultNode multNode = new ASTMultNode();
 
@@ -932,12 +916,7 @@ public static Expression function(String functionName, Expression... expressions
 	return exp;
 }
 
-/**
- * Insert the method's description here.
- * Creation date: (2/11/2002 1:34:06 PM)
- * @return cbit.vcell.parser.Expression
- * @param mathML java.lang.String
- */
+
 public static void printNode(org.w3c.dom.Node nodeArg, String pad){
 	if (nodeArg== null) {
 		throw new IllegalArgumentException("Invalid null NodeList");

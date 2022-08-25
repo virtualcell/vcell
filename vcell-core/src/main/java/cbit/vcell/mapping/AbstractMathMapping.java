@@ -1,11 +1,7 @@
 package cbit.vcell.mapping;
 
 import java.beans.PropertyVetoException;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Vector;
+import java.util.*;
 
 import cbit.vcell.biomodel.ModelUnitConverter;
 import cbit.vcell.math.*;
@@ -37,7 +33,6 @@ import cbit.vcell.mapping.spatial.SpatialObject.QuantityComponent;
 import cbit.vcell.math.Variable.Domain;
 import cbit.vcell.matrix.MatrixException;
 import cbit.vcell.matrix.RationalExp;
-import cbit.vcell.matrix.RationalNumber;
 import cbit.vcell.model.BioNameScope;
 import cbit.vcell.model.ExpressionContainer;
 import cbit.vcell.model.Kinetics;
@@ -572,9 +567,11 @@ public static final int PARAMETER_ROLE_P_reverse = 4;
 public static final String PARAMETER_MASS_CONSERVATION_PREFIX = "K_";
 public static final String PARAMETER_MASS_CONSERVATION_SUFFIX = "_total";
 public static final String MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_old = "_init";
-public static final String MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_old_uM = "_init_uM";
+	public static final String MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_uM = "_init_uM";
+	public static final String MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_umol_l_1 = "_init_umol_l_1";
+	public static final String MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_umol_dm_2 = "_init_umol_dm_2";
 public static final String MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_old_molecules_per_um2 = "_init_molecules_per_um2";
-public static final String MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_old_molecules_um_2 = "_init_molecules_um_2";
+public static final String MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_molecules_um_2 = "_init_molecules_um_2";
 public static final int PARAMETER_ROLE_UNITFACTOR = 9;
 
 /**
@@ -883,6 +880,7 @@ public final SimContextTransformation getTransformation() {
 public final MathDescription getMathDescription(MathMappingCallback callback) throws MappingException, MathException, MatrixException, ModelException, ExpressionException {
 	if (mathDesc==null){
 		refresh(callback);
+		mathSymbolMapping.reconcileVarNames(mathDesc);
 	}
 	return mathDesc;
 }
@@ -1392,9 +1390,23 @@ protected final String getMathSymbol0(SymbolTableEntry ste, GeometryClass geomet
  * @param exp cbit.vcell.parser.Expression
  */
 protected Variable newFunctionOrConstant(String name, Expression exp, GeometryClass geometryClass) {
-	if (exp.isNumeric()){
-		return new Constant(name,exp);
+	if (exp.isNumeric()) {
+		return new Constant(name, exp);
 	}else{
+		//
+		// even if this expression is not numeric, if it is only a simple function of KMOLE - then make it a constant
+		// this allows MathOverrides to contain simple unit conversion factors as needed.
+		//
+		String[] symbols = exp.getSymbols();
+		String KMOLE_name = Model.ReservedSymbolRole.KMOLE.name();
+		if (symbols!=null && symbols.length==1 && symbols[0].equals(KMOLE_name)){
+			try {
+				exp.getSubstitutedExpression(new Expression(KMOLE_name), new Expression(1.0)).flatten().evaluateConstant();
+				return new Constant(name, exp);
+			} catch (ExpressionException e) {
+				logger.warn("unexpected: Variable "+name+"='"+exp.infix()+"' contains only "+KMOLE_name+" but failed evaluate to Constant");
+			}
+		}
 		if (geometryClass!=null){
 			return new Function(name,exp,new Domain(geometryClass));
 		}else{
