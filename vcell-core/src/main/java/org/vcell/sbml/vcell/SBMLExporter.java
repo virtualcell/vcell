@@ -222,7 +222,7 @@ public class SBMLExporter {
 	}
 
 	public SBMLExporter(SimulationContext ctx, int argSbmlLevel, int argSbmlVersion, boolean bRoundTripValidation) {
-		this.vcBioModel = ctx.getBioModel(); 
+		this.vcBioModel = ctx.getBioModel();
 		vcSelectedSimContext = ctx;
 		sbmlLevel = argSbmlLevel;
 		sbmlVersion = argSbmlVersion;
@@ -320,7 +320,7 @@ private void addCompartments() throws XMLStreamException, SbmlException {
 						for (GeometricRegion srcGeometricRegion : srcGeometricRegions) {
 							size += srcGeometricRegion.getSize();
 						}
-						sbmlCompartment.setSize(Expression.mult(sizeRatio, new Expression(size)).evaluateConstant());
+						sbmlCompartment.setSize(Expression.mult(new Expression(sizeRatio), new Expression(size)).evaluateConstant());
 					}
 				}
 			}
@@ -574,11 +574,21 @@ private void addReactions() throws SbmlException, XMLStreamException {
 			final Expression localRateExpr;
 			final Expression lumpedRateExpr;
 			if (vcRxnKinetics instanceof DistributedKinetics){
-				localRateExpr = ((DistributedKinetics) vcRxnKinetics).getReactionRateParameter().getExpression();
+				Expression temp_localRateExpr = ((DistributedKinetics) vcRxnKinetics).getReactionRateParameter().getExpression();
+				if (temp_localRateExpr != null){
+					localRateExpr = new Expression(temp_localRateExpr);
+				}else{
+					localRateExpr = null;
+				}
 				lumpedRateExpr = null;
 			}else if (vcRxnKinetics instanceof LumpedKinetics){
 				localRateExpr = null;
-				lumpedRateExpr = ((LumpedKinetics) vcRxnKinetics).getLumpedReactionRateParameter().getExpression();
+				Expression temp_lumpedRateExpr = ((LumpedKinetics) vcRxnKinetics).getLumpedReactionRateParameter().getExpression();
+				if (temp_lumpedRateExpr != null){
+					lumpedRateExpr = new Expression(temp_lumpedRateExpr);
+				}else{
+					lumpedRateExpr = null;
+				}
 			}else{
 				throw new RuntimeException("unexpected Rate Law '"+vcRxnKinetics.getClass().getSimpleName()+"', not distributed or lumped type");
 			}
@@ -1545,14 +1555,14 @@ private void roundTripValidation() throws SBMLValidationException {
 					simContext.removeSimulation(sim);
 				}
 				bioModel.removeSimulationContext(simContext);
-			}else{
-				// for cloned biomodel/simcontext, force no mass conservation and regenerate math for later comparison.
-				simContext.setUsingMassConservationModelReduction(false);
-				MathMapping mathMapping = simContext.createNewMathMapping();
-				simContext.setMathDescription(mathMapping.getMathDescription());
 			}
 		}
 		bioModel.refreshDependencies();
+		// for cloned biomodel/simcontext, force no mass conservation and regenerate math for later comparison.
+		bioModel.getSimulationContext(0).setUsingMassConservationModelReduction(false);
+		MathMapping mathMapping = bioModel.getSimulationContext(0).createNewMathMapping();
+		bioModel.getSimulationContext(0).setMathDescription(mathMapping.getMathDescription());
+
 
 		//
 		// reimport the recently exported SBML model as a BioModel (still with SBML units)

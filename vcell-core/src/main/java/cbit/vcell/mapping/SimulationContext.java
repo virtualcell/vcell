@@ -139,8 +139,6 @@ public class SimulationContext implements SimulationOwner, Versionable, Matchabl
 	public static final String PROPERTY_NAME_RATE_RULE_CHANGE = "rateRuleChange";
 	public static final String PROPERTY_NAME_ASSIGNMENT_RULE_CHANGE = "assignmentRuleChange";
 
-	public final SimulationContextOverridesResolver mathOverridesResolver = new SimulationContextOverridesResolver();
-
 	public enum Kind {
 		GEOMETRY_KIND,
 		SPECIFICATIONS_KIND,
@@ -1557,7 +1555,7 @@ public OutputFunctionContext getOutputFunctionContext() {
 
 	@Override
 	public MathOverridesResolver getMathOverridesResolver() {
-		return mathOverridesResolver;
+		return new SimulationContextOverridesResolver();
 	}
 
 	/**
