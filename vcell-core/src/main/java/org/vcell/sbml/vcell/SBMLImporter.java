@@ -3815,16 +3815,20 @@ public class SBMLImporter {
 							featureMapping.setGeometryClass(geometryClass);
 							if (geometryClass instanceof SubVolume) {
 								featureMapping.getVolumePerUnitVolumeParameter().setExpression(new Expression(unitSize));
+								sbmlSymbolMapping.putInitial(compMapping, featureMapping.getVolumePerUnitVolumeParameter());
 							} else if (geometryClass instanceof SurfaceClass) {
 								featureMapping.getVolumePerUnitAreaParameter().setExpression(new Expression(unitSize));
+								sbmlSymbolMapping.putInitial(compMapping, featureMapping.getVolumePerUnitAreaParameter());
 							}
 							structMappingsVector.add(featureMapping);
 						} else if (struct instanceof Membrane) {
 							MembraneMapping membraneMapping = new MembraneMapping( (Membrane) struct, vcBioModel.getSimulationContext(0), vcModelUnitSystem); membraneMapping.setGeometryClass(geometryClass);
 							if (geometryClass instanceof SubVolume) {
 								membraneMapping.getAreaPerUnitVolumeParameter().setExpression(new Expression(unitSize));
+								sbmlSymbolMapping.putInitial(compMapping, membraneMapping.getAreaPerUnitVolumeParameter());
 							} else if (geometryClass instanceof SurfaceClass) {
 								membraneMapping.getAreaPerUnitAreaParameter().setExpression(new Expression(unitSize));
+								sbmlSymbolMapping.putInitial(compMapping, membraneMapping.getAreaPerUnitAreaParameter());
 							}
 							structMappingsVector.add(membraneMapping);
 						}

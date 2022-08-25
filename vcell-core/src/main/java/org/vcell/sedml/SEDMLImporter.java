@@ -371,21 +371,17 @@ public class SEDMLImporter {
 		// finds name of math-side Constant corresponding to SBML entity, if there is one
 		// returns null if there isn't
 		String constantName = null;
-		MathMapping mathMapping = simContext.createNewMathMapping();
-		MathSymbolMapping msm;
-		try {
-			msm = mathMapping.getMathSymbolMapping();
-		} catch (MappingException | MathException | MatrixException | ExpressionException | ModelException e) {
-			// fail is equivalent with couldn't find
-			return null;
-		}
+		MathSymbolMapping msm = (MathSymbolMapping) simContext.getMathDescription().getSourceSymbolMapping();
 		SBMLImporter sbmlImporter = importMap.get(simContext.getBioModel());
 		SBMLSymbolMapping sbmlMap = sbmlImporter.getSymbolMapping();
 		SymbolTableEntry ste =sbmlMap.getSte(sbmlMap.getMappedSBase(SBMLtargetID), SymbolContext.INITIAL);
 		Variable var = msm.getVariable(ste);
 		if (var instanceof Constant) {
 			constantName = var.getName();
-		} 
+		}
+		if (constantName == null){
+			logger.warn("couldn't find target with sid="+SBMLtargetID+" in symbol mapping");
+		}
 		return constantName;
 	}
 
