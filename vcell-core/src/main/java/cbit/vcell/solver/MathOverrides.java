@@ -352,6 +352,9 @@ private MathOverrides.Element getOverridesElement(String key) {
 private java.util.Hashtable<String, Element> getOverridesHash() {
 	return overridesHash;
 }
+public java.util.Enumeration<String> getOverridesHashKeys() {
+	return overridesHash.keys();
+}
 
 
 /**
@@ -931,13 +934,12 @@ public boolean hasUnusedOverrides() {
 	IssueContext issueContext = new IssueContext(ContextType.Simulation,getSimulation(),null);
 	gatherIssues(issueContext,issueList);
 	for (Issue issue : issueList) {
-		if (issue.getSeverity()==Issue.SEVERITY_ERROR && (issue.getCategory().equals(IssueCategory.Simulation_Override_NotFound) || issue.getCategory().equals(IssueCategory.Simulation_Override_NotSupported))){
+		if (issue.getSeverity()==Issue.Severity.ERROR && (issue.getCategory().equals(IssueCategory.Simulation_Override_NotFound) || issue.getCategory().equals(IssueCategory.Simulation_Override_NotSupported))){
 			return true;
 		}
 	}
 	return false;
 }
-
 
 public boolean isUnusedParameter(String name) {
 	Variable var = getSimulation().getMathDescription().getVariable(name);

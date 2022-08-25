@@ -794,6 +794,15 @@ public void refreshMathDescription(MathMappingCallback callback, NetworkGenerati
 			throw new RuntimeException("Application '"+getName()+"' has no generated Math, Failed to generate new Math: "+ e.getMessage());
 		}
 	}
+//	Simulation[] sims = bioModel.getSimulations();
+//	for(Simulation sim : sims) {
+//		MathOverrides mo = sim.getMathOverrides();
+//		if(mo != null && mo.hasUnusedOverrides()) {
+//			String msg = "A Simulation has unused Math Overrides";
+//			logger.error(msg);
+//			throw new RuntimeException(msg);
+//		}
+//	}
 }
 
 	

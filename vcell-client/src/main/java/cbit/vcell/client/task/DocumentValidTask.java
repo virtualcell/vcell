@@ -20,6 +20,8 @@ import cbit.vcell.client.ClientRequestManager.CallAction;
 import cbit.vcell.client.DocumentWindowManager;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.math.MathDescription;
+import cbit.vcell.solver.MathOverrides;
+import cbit.vcell.solver.Simulation;
 /**
  * Insert the type's description here.
  * Creation date: (5/31/2004 6:03:16 PM)
@@ -50,6 +52,7 @@ public void run(Hashtable<String, Object> hashTable) throws java.lang.Exception 
 		if (scArray!=null) {
 			MathDescription[] mathDescArray = new MathDescription[scArray.length];
 			for (int i = 0; i < scArray.length; i++){
+//				scArray[i].refreshMathDescription(null, null);
 				//check if all structure sizes are specified
 				scArray[i].checkValidity();
 				//

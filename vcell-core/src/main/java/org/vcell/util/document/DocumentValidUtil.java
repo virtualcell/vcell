@@ -9,6 +9,8 @@ import org.vcell.util.IssueContext;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.solver.OutputFunctionContext.OutputFunctionIssueSource;
+import cbit.vcell.solver.MathOverrides;
+import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationOwner;
 
 public class DocumentValidUtil {
@@ -25,7 +27,21 @@ public class DocumentValidUtil {
 		Vector<Issue> issueList = new Vector<Issue>();
 		IssueContext issueContext = new IssueContext();
 		bioModel.gatherIssues(issueContext, issueList);
+		gatherMathOverrideIssues(bioModel, issueContext, issueList);
 		checkIssuesForErrors(issueList);
+	}
+
+	private static void gatherMathOverrideIssues(BioModel bioModel, IssueContext issueContext, Vector<Issue> issueList) {
+		Simulation[] sims = bioModel.getSimulations();
+		for(Simulation sim : sims) {
+			MathOverrides mo = sim.getMathOverrides();
+			if(mo != null && mo.hasUnusedOverrides()) {
+				String msg = "The Simulation has unused Math Overrides.";
+				String tip = "Remove the unused Math Overrides.";
+				issueList.add(new Issue(sim, issueContext, IssueCategory.Simulation_Override_NotFound, msg, tip, Issue.Severity.ERROR));
+				break;
+			}
+		}
 	}
 
 	public static void checkIssuesForErrors(Vector<Issue> issueList) {
