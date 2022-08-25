@@ -1590,6 +1590,34 @@ private void roundTripValidation() throws SBMLValidationException {
 		// if vcSelectedSimJob is null or has empty math overrides - then it is safe to try to compare for math equivalence
 		//
 		if (vcSelectedSimJob == null || vcSelectedSimJob.getSimulation().getMathOverrides().getSize() == 0) {
+
+			//
+			// before testing for mathematical equivalence, we have to make sure the imported SimulationContext has the same mathematical framework
+			//
+			Application applicationType_original = bioModel.getSimulationContext(0).getApplicationType();
+			Application applicationType_reread = reread_BioModel_vcell_units.getSimulationContext(0).getApplicationType();
+			if (!applicationType_original.equals(applicationType_reread)) {
+				//
+				// replace re-read SimualtionContext with transformed SimulationContext with the same mathenmatical framework
+				// (e.g. nonspatial determinstic, nonspatial stochastic, spatial deterministic)
+				//
+				boolean bSpatial_original = bioModel.getSimulationContext(0).getGeometry().getDimension() > 0;
+				boolean bSpatial_reread = reread_BioModel_vcell_units.getSimulationContext(0).getGeometry().getDimension() > 0;
+				if (bSpatial_original != bSpatial_reread){
+					String failureMessage = "original application and reread application differ regarding spatial/nonspatial";
+					throw new SBMLValidationException(failureMessage);
+				}
+
+				SimulationContext simulationContextToReplace = reread_BioModel_vcell_units.getSimulationContext(0);
+				String simContextName = simulationContextToReplace.getName();
+				SimulationContext newSimulationContext = SimulationContext.copySimulationContext(simulationContextToReplace, simContextName, bSpatial_original, applicationType_original);
+				newSimulationContext.getGeometry().precomputeAll(new GeometryThumbnailImageFactoryAWT());
+				reread_BioModel_vcell_units.setSimulationContexts(new SimulationContext[] { newSimulationContext });
+				reread_BioModel_vcell_units.refreshDependencies();
+				MathMapping newMathMapping = newSimulationContext.createNewMathMapping();
+				newSimulationContext.setMathDescription(newMathMapping.getMathDescription());
+			}
+
 			MathDescription origMathDescription = bioModel.getSimulationContext(0).getMathDescription();
 			MathDescription rereadMathDescription = reread_BioModel_vcell_units.getSimulationContext(0).getMathDescription();
 			MathCompareResults mathCompareResults = MathDescription.testEquivalency(SimulationSymbolTable.createMathSymbolTableFactory(), origMathDescription, rereadMathDescription);
