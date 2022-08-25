@@ -225,12 +225,12 @@ public class RunUtils {
     public static HashMap<String, File> generateReportsAsCSV(SedML sedml, HashMap<String, ODESolverResultSet> resultsHash, File outDirForCurrentSedml, String outDir, String sedmlLocation) throws DataAccessException, IOException {
         // finally, the real work
         HashMap<String, File> reportsHash = new HashMap<>();
-        List<Output> ooo = sedml.getOutputs();
-        for (Output oo : ooo) {
-            if (!(oo instanceof Report)) {
-                logger.info("Ignoring unsupported output `" + oo.getId() + "` while CSV generation.");
+        List<Output> sedmlOutputs = sedml.getOutputs();
+        for (Output output : sedmlOutputs) {
+            if (!(output instanceof Report)) {
+                logger.info("Ignoring unsupported output `" + output.getId() + "` while CSV generation.");
             } else {
-                logger.info("Generating report `" + oo.getId() +"`.");
+                logger.info("Generating report `" + output.getId() +"`.");
                 try {
                     StringBuilder sb = new StringBuilder();
 
@@ -241,7 +241,7 @@ public class RunUtils {
                     //   for each variable we recover the task, from the task we get the sbml model
                     //   we search the sbml model to find the vcell variable name associated with the urn
 
-                    List<DataSet> datasets = ((Report) oo).getListOfDataSets();
+                    List<DataSet> datasets = ((Report) output).getListOfDataSets();
                     for (DataSet dataset : datasets) {
                         DataGenerator datagen = sedml.getDataGeneratorWithId(dataset.getDataReference());
                         ArrayList<String> varIDs = new ArrayList<>();
@@ -311,7 +311,7 @@ public class RunUtils {
 
                             }
                         }
-                        PythonCalls.updateDatasetStatusYml(sedmlLocation, oo.getId(), dataset.getId(), Status.SUCCEEDED, outDir);
+                        PythonCalls.updateDatasetStatusYml(sedmlLocation, output.getId(), dataset.getId(), Status.SUCCEEDED, outDir);
                         if (!supportedDataset) {
                             logger.error("Dataset " + dataset.getId() + " references unsupported RepeatedTask and is being skipped");
                             continue;
@@ -364,15 +364,15 @@ public class RunUtils {
                         sb.deleteCharAt(sb.lastIndexOf(","));
                         sb.append("\n");
                     }
-                    File f = new File(outDirForCurrentSedml, oo.getId() + ".csv");
+                    File f = new File(outDirForCurrentSedml, output.getId() + ".csv");
                     PrintWriter out = new PrintWriter(f);
                     out.print(sb.toString());
                     out.flush();
                     out.close();
-                    reportsHash.put(oo.getId(), f);
+                    reportsHash.put(output.getId(), f);
                 } catch (Exception e) {
                     logger.error("Encountered exception: " + e.getMessage(), e);
-                    reportsHash.put(oo.getId(), null);
+                    reportsHash.put(output.getId(), null);
                 }
             }
         }
@@ -380,19 +380,20 @@ public class RunUtils {
     }
 
     public static String generateIdNamePlotsMap(SedML sedml, File outDirForCurrentSedml) {
-        StringBuilder sb = new StringBuilder();
-        List<Output> ooo = sedml.getOutputs();
-        for (Output oo : ooo) {
-            if (!(oo instanceof Report)) {
-                logger.info("Ignoring unsupported output `" + oo.getId() + "` while generating idNamePlotsMap.");
+        StringBuilder buffer = new StringBuilder();
+        List<Output> sedmlOutputs = sedml.getOutputs();
+        for (Output output : sedmlOutputs) {
+            if (!(output instanceof Report)) {
+                logger.info("Ignoring unsupported output `" + output.getId() + "` while generating idNamePlotsMap.");
             } else {
-                String id = oo.getId();
-                sb.append(id).append("|");	// hopefully no vcell name contains '|', so I can use it as separator
-                sb.append(oo.getName()).append("\n");
+                String id = output.getId();
+                String name = output.getName();
+                buffer.append(id).append("|");	// hopefully no vcell name contains '|', so I can use it as separator
+                buffer.append(name).append("\n");
                 if(id.startsWith("__plot__")) {
                     id = id.substring("__plot__".length());
-                    sb.append(id).append("|");	// the creation of the csv files is whimsical, we also use an id with __plot__ removed
-                    sb.append(oo.getName()).append("\n");
+                    buffer.append(id).append("|");	// the creation of the csv files is whimsical, we also use an id with __plot__ removed
+                    buffer.append(name).append("\n");
                 }
             }
         }
@@ -400,7 +401,7 @@ public class RunUtils {
         File f = new File(outDirForCurrentSedml, "idNamePlotsMap.txt");
         try {
             PrintWriter out = new PrintWriter(f);
-            out.print(sb.toString());
+            out.print(buffer.toString());
             out.flush();
             out.close();
         } catch(Exception e) {
