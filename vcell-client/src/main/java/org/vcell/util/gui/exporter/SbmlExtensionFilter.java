@@ -243,7 +243,7 @@ public class SbmlExtensionFilter extends SelectorExtensionFilter {
 	public void writeBioModel(DocumentManager documentManager, BioModel bioModel, File exportFile, SimulationContext simulationContext) throws Exception {
 		VCAssert.assertValid(selectedSimContext);
 		final int sbmlPkgVersion = 0;
-		boolean bRoundTripValidation = false;
+		boolean bRoundTripValidation = true;
 		if (selectedSimWOSBE == null) {
 			String resultString = XmlHelper.exportSBML(bioModel, sbmlLevel, sbmlVersion, sbmlPkgVersion, isSpatial, selectedSimContext, null, bRoundTripValidation);
 			XmlUtil.writeXMLStringToFile(resultString, exportFile.getAbsolutePath(), true);
