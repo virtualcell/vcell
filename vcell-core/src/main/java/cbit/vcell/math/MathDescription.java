@@ -1520,7 +1520,8 @@ public HashSet<String> getStateVariableNames() {
 	for (int i = 0; i < variableList.size(); i++){
 		Variable var = variableList.get(i);
 		if (var instanceof VolVariable || var instanceof MemVariable || var instanceof FilamentVariable ||
-			var instanceof VolumeRegionVariable || var instanceof MembraneRegionVariable || var instanceof FilamentRegionVariable){
+			var instanceof VolumeRegionVariable || var instanceof MembraneRegionVariable || var instanceof FilamentRegionVariable ||
+			var instanceof ParticleVariable || var instanceof StochVolVariable || var instanceof PointVariable){
 			stateVarNameSet.add(var.getName());
 		}
 	}
