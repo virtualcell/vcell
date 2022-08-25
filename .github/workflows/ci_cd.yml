@@ -29,7 +29,7 @@ jobs:
         run: |
           mvn -version
           java -version
-          mvn clean install dependency:copy-dependencies
+          mvn --batch-mode clean install dependency:copy-dependencies
 
       - name: Test building of docker image
         run: |
@@ -65,7 +65,7 @@ jobs:
         run: |
           mvn -version
           java -version
-          mvn clean install dependency:copy-dependencies
+          mvn --batch-mode clean install dependency:copy-dependencies
 
       - name: Build Docker image and push with latest tag
         run: |
