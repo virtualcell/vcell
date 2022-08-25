@@ -407,7 +407,8 @@ public class ExecuteImpl {
         for (int i = 0; i < tokenizedPath.length; i++){
             if (tokenizedPath[i].startsWith(RunUtils.VCELL_TEMP_DIR_PREFIX)){
                 Path relativePath = Paths.get(tokenizedPath[i + 1], Arrays.copyOfRange(tokenizedPath, i + 2, tokenizedPath.length));
-                brokenSedML.setFileName(relativePath.getFileName().toString());
+                String name = relativePath.getFileName().toString();
+                brokenSedML.setFileName(name);
                 // Take the relative path, remove the file name, and...
                 String source = relativePath.toString().substring(0, relativePath.toString().length() - name.length());
                 // Convert to unix file separators (java URI does not windows style)
