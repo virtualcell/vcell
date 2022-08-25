@@ -501,7 +501,11 @@ public class SEDMLImporter {
 		}
 		// check whether all targets have addressable Constants on the Math side
 		for (Change change : changes) {
-			if (resolveConstant(refBM.getSimulationContext(0), sbmlSupport.getIdFromXPathIdentifer(change.getTargetXPath().toString())) == null) return false;
+			String sbmlID = sbmlSupport.getIdFromXPathIdentifer(change.getTargetXPath().toString());
+			if (resolveConstant(refBM.getSimulationContext(0), sbmlID) == null) {
+				logger.trace("could not map changeAttribute for ID "+sbmlID+" to a VCell Constant");
+				return false;
+			}
 		}
 		return true;
 	}
