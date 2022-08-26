@@ -73,7 +73,7 @@ public class MathDescription implements Versionable, Matchable, SymbolTable, Ser
 		this.sourceSymbolMapping = sourceSymbolMapping;
 	}
 
-	private SourceSymbolMapping sourceSymbolMapping;
+	private transient SourceSymbolMapping sourceSymbolMapping;
 	private final static Logger logger = LogManager.getLogger(MathDescription.class);
 
 	public static final TreeMap<Long,TreeSet<String>> originalHasLowPrecisionConstants = new TreeMap<>();
