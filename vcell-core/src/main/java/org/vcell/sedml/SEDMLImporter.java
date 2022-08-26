@@ -254,8 +254,17 @@ public class SEDMLImporter {
 					}
 				}
 				if (matchingSimulationContext == null) {
-					matchingSimulationContext = SimulationContext.copySimulationContext(existingSimulationContexts[0], sedmlOriginalModelName+"_"+existingSimulationContexts.length, bSpatial, appType);
+					if (!sedmlModel.getListOfChanges().isEmpty() && canTranslateToOverrides(bioModel, sedmlModel)) {
+						// for now we can't put overrides for different app type than original from SBML import
+						// if on initial check it looked like we can, we skipped the import with changes
+						// the referenced model has not been imported, this will bring it with changes applied
+						BioModel newBioModel = importModel(sedmlModel);
+						bmMap.put(sedmlModel.getId(), newBioModel);
+						bioModel = newBioModel;
+					}
+					matchingSimulationContext = SimulationContext.copySimulationContext(bioModel.getSimulationContext(0), sedmlOriginalModelName+"_"+existingSimulationContexts.length, bSpatial, appType);
 					bioModel.addSimulationContext(matchingSimulationContext);
+					bioModel.removeSimulationContext(bioModel.getSimulationContext(0));
 					try {
 						matchingSimulationContext.setName(sedmlModel.getName());
 					} catch (Exception e) {
@@ -316,6 +325,12 @@ public class SEDMLImporter {
 					} catch (Exception e) {
 						logger.warn("could not set pretty name for simulation "+sims[i].getDisplayName()+" from task "+task);
 					}
+				}
+			}
+			// purge unused biomodels
+			for (BioModel doc : docs) {
+				if (doc.getSimulations() == null || doc.getSimulations().length == 0) {
+					docs.remove(doc);
 				}
 			}
 			return docs;
