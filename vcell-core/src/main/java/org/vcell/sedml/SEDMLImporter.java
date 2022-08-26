@@ -61,6 +61,7 @@ import cbit.vcell.mapping.SimulationContext.Application;
 import cbit.vcell.mapping.SimulationContext.MathMappingCallback;
 import cbit.vcell.mapping.SimulationContext.NetworkGenerationRequirements;
 import cbit.vcell.math.Constant;
+import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathException;
 import cbit.vcell.math.Variable;
 import cbit.vcell.matrix.MatrixException;
@@ -372,7 +373,7 @@ public class SEDMLImporter {
 		// finds name of math-side Constant corresponding to SBML entity, if there is one
 		// returns null if there isn't
 		String constantName = null;
-		MathSymbolMapping msm = (MathSymbolMapping) simContext.getMathDescription().getSourceSymbolMapping();
+		MathSymbolMapping msm = (MathSymbolMapping)simContext.getMathDescription().getSourceSymbolMapping();
 		SBMLImporter sbmlImporter = importMap.get(simContext.getBioModel());
 		SBMLSymbolMapping sbmlMap = sbmlImporter.getSymbolMapping();
 		SBase targetSBase = sbmlMap.getMappedSBase(SBMLtargetID);
@@ -507,7 +508,7 @@ public class SEDMLImporter {
 		for (Change change : changes) {
 			String sbmlID = sbmlSupport.getIdFromXPathIdentifer(change.getTargetXPath().toString());
 			if (resolveConstant(refBM.getSimulationContext(0), sbmlID) == null) {
-				logger.trace("could not map changeAttribute for ID "+sbmlID+" to a VCell Constant");
+				logger.warn("could not map changeAttribute for ID "+sbmlID+" to a VCell Constant");
 				return false;
 			}
 		}
@@ -536,9 +537,11 @@ public class SEDMLImporter {
 				boolean bValidateSBML = false;
 				SBMLImporter sbmlImporter = new SBMLImporter(sbmlSource,transLogger,bValidateSBML);
 				bioModel = (BioModel)sbmlImporter.getBioModel();
-				bioModel.refreshDependencies();			
 				bioModel.setName(bioModelName);
 				bioModel.getSimulationContext(0).setName(mm.getName());
+				MathDescription math = bioModel.getSimulationContext(0).createNewMathMapping().getMathDescription();
+				bioModel.getSimulationContext(0).setMathDescription(math);
+				bioModel.refreshDependencies();			
 				docs.add(bioModel);
 				importMap.put(bioModel, sbmlImporter);
 			}
