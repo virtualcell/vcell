@@ -225,11 +225,11 @@ public class SBMLSupport implements IXPathToVariableIDResolver {
         return getXPathForListOfCompartments() + "/sbml:compartment[@id='"
                 + compartmentID + "']" + "/@" + compartmentAttribute;
     }
-    public String getXPathForCompartmentMapping(String compartmentID,
+    public String getXPathForCompartmentMapping(String compartmentID, String mappingID,
             CompartmentAttribute compartmentAttribute) {
    		return getXPathForListOfCompartments() + "/sbml:compartment[@id='"
-                + compartmentID + "']" + "/spatial:compartmentMapping"
-    			+ "/@spatial:" + compartmentAttribute;
+                + compartmentID + "']" + "/spatial:compartmentMapping[@id='"
+    			+ mappingID + "']/@spatial:" + compartmentAttribute;
     }
 
     String getXPathForListOfCompartments() {

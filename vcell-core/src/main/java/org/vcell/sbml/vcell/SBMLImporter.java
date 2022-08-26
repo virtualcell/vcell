@@ -427,6 +427,7 @@ public class SBMLImporter {
 						Expression sbmlDurationExpr = getExpressionFromFormula(event.getDelay().getMath(), lambdaFunctions, vcLogger);
 						Expression vcellDurationExpr = adjustExpression(sbmlModel, sbmlDurationExpr, triggerDelayParameter.getNameScope(), sbmlSymbolMapping, SymbolContext.RUNTIME);
 						triggerDelayParameter.setExpression(vcellDurationExpr);
+						sbmlSymbolMapping.putRuntime(event.getDelay(), triggerDelayParameter);
 
 						boolean bUseValsFromTriggerTime = true;
 						if (event.isSetUseValuesFromTriggerTime()) {
@@ -449,6 +450,7 @@ public class SBMLImporter {
 					if (sbmlTriggerExpr != null){
 						Expression vcellTriggerExpr = adjustExpression(sbmlModel, sbmlTriggerExpr, vcTriggerParameter.getNameScope(), sbmlSymbolMapping, SymbolContext.RUNTIME);
 						vcTriggerParameter.setExpression(vcellTriggerExpr);
+						sbmlSymbolMapping.putRuntime(event.getTrigger(), vcTriggerParameter);
 					}else{
 						vcLogger.sendMessage(VCLogger.Priority.HighPriority, VCLogger.ErrorType.SchemaValidation, "trigger expression not set for sbml Event "+event.getId());
 					}
@@ -3044,6 +3046,7 @@ public class SBMLImporter {
 							}
 							kineticsParameter.setExpression(exp);
 							kineticsParameter.setUnitDefinition(paramUnit);
+							sbmlSymbolMapping.putRuntime(param, kineticsParameter);
 							lpSet = true;
 						}
 						else { 
@@ -3569,6 +3572,12 @@ public class SBMLImporter {
 						
 						Expression subVolExpr = getExpressionFromFormula(analyticVol.getMath(), lambdaFunctions, vcLogger);
 						asv.setExpression(subVolExpr);
+
+						//
+						// can't add a mapping here because AnalyticSubVolume is not an EditableSymbolTableEntry - maybe some day.
+						//
+//						sbmlSymbolMapping.putRuntime(analyticVol, asv);
+
 					} catch (ExpressionException e) {
 						throw new SBMLImportException(
 								"Unable to set expression on subVolume '"
@@ -3815,16 +3824,20 @@ public class SBMLImporter {
 							featureMapping.setGeometryClass(geometryClass);
 							if (geometryClass instanceof SubVolume) {
 								featureMapping.getVolumePerUnitVolumeParameter().setExpression(new Expression(unitSize));
+								sbmlSymbolMapping.putInitial(compMapping, featureMapping.getVolumePerUnitVolumeParameter());
 							} else if (geometryClass instanceof SurfaceClass) {
 								featureMapping.getVolumePerUnitAreaParameter().setExpression(new Expression(unitSize));
+								sbmlSymbolMapping.putInitial(compMapping, featureMapping.getVolumePerUnitAreaParameter());
 							}
 							structMappingsVector.add(featureMapping);
 						} else if (struct instanceof Membrane) {
 							MembraneMapping membraneMapping = new MembraneMapping( (Membrane) struct, vcBioModel.getSimulationContext(0), vcModelUnitSystem); membraneMapping.setGeometryClass(geometryClass);
 							if (geometryClass instanceof SubVolume) {
 								membraneMapping.getAreaPerUnitVolumeParameter().setExpression(new Expression(unitSize));
+								sbmlSymbolMapping.putInitial(compMapping, membraneMapping.getAreaPerUnitVolumeParameter());
 							} else if (geometryClass instanceof SurfaceClass) {
 								membraneMapping.getAreaPerUnitAreaParameter().setExpression(new Expression(unitSize));
+								sbmlSymbolMapping.putInitial(compMapping, membraneMapping.getAreaPerUnitAreaParameter());
 							}
 							structMappingsVector.add(membraneMapping);
 						}
@@ -3922,6 +3935,7 @@ public class SBMLImporter {
 									sbmlSymbolMapping.putRuntime(sbmlBCondParam, vcellBCondParam);
 									if (sbmlBCondParam.isSetValue() && sbmlBCondParam.getValue() != 0.0) {
 										vcellBCondParam.setExpression(new Expression(sbmlBCondParam.getValue()));
+										sbmlSymbolMapping.putRuntime(sbmlBCondParam, vcellBCondParam);
 									}
 								} else {
 									logger.error("unexpected boundary condition parent type "+bCondn.getParent());

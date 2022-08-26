@@ -87,6 +87,7 @@ import cbit.util.xml.XmlUtil;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.biomodel.ModelUnitConverter;
 import cbit.vcell.clientdb.DocumentManager;
+import cbit.vcell.geometry.GeometryClass;
 import cbit.vcell.mapping.GeometryContext;
 import cbit.vcell.mapping.MathMapping;
 import cbit.vcell.mapping.MathSymbolMapping;
@@ -1219,12 +1220,12 @@ public class SEDMLExporter {
 		} else if (ste instanceof ModelParameter) {
 			// can only change parameter value. 
 			targetXpath = new XPathTarget(sbmlSupport.getXPathForGlobalParameter(ste.getName(), ParameterAttribute.value));
-		// TODO: add xpath for VolulePerUnitVolume and AreaPerUnitArea, see SBMLSupport
 			// use Ion's sample 3, with spatial app
 		}  else if (ste instanceof Structure || ste instanceof Structure.StructureSize || ste instanceof StructureMappingParameter) {
 			String compartmentId = ste.getName();
 			// can change compartment size or spatial dimension, but in vcell, we cannot change compartment dimension. 
 			String compartmentAttr = "";
+			String mappingId = "";
 			if (ste instanceof Structure.StructureSize) { 
 				compartmentId = ((StructureSize)ste).getStructure().getName();
 				compartmentAttr = ((StructureSize)ste).getName();
@@ -1237,6 +1238,9 @@ public class SEDMLExporter {
 					compartmentAttr = smp.getName();
 				} else if(role == StructureMapping.ROLE_AreaPerUnitArea || role == StructureMapping.ROLE_VolumePerUnitVolume) {
 					compartmentAttr = smp.getName();
+					Structure structure = smp.getStructure();
+					GeometryClass gc = smp.getSimulationContext().getGeometryContext().getStructureMapping(structure).getGeometryClass();
+					mappingId = TokenMangler.mangleToSName(gc.getName() + structure.getName());
 				}
 			}
 			if (compartmentAttr.length() < 1) {
@@ -1244,7 +1248,7 @@ public class SEDMLExporter {
 			} else if (compartmentAttr.equalsIgnoreCase("size")) {
 				targetXpath = new XPathTarget(sbmlSupport.getXPathForCompartment(compartmentId, CompartmentAttribute.size));
 			} else if(compartmentAttr.equalsIgnoreCase("AreaPerUnitArea") || compartmentAttr.equalsIgnoreCase("VolPerUnitVol")) {
-				targetXpath = new XPathTarget(sbmlSupport.getXPathForCompartmentMapping(compartmentId, CompartmentAttribute.unitSize));
+				targetXpath = new XPathTarget(sbmlSupport.getXPathForCompartmentMapping(compartmentId, mappingId, CompartmentAttribute.unitSize));
 			} else {
 				throw new RuntimeException("Unknown compartment attribute '" + compartmentAttr + "'; cannot get xpath target for compartment '" + compartmentId + "'.");
 			}
