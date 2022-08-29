@@ -106,11 +106,12 @@ public class SolverHandler {
             docName = bioModel.getName();
             sims = bioModel.getSimulations();
             for (Simulation sim : sims) {
-            	if(sim.getImportedTaskID() == null) {
+           	if(sim.getImportedTaskID() == null) {
             		// this is a simulation not matching the imported task, so we skip it
             		continue;
             	}
-            	String logTaskMessage = "Initializing simulation... ";
+            	logger.debug("Initializing simulation... ");
+                String logTaskMessage = "Initializing simulation... ";
             	String logTaskError = "";
                 long startTimeTask = System.currentTimeMillis();
 

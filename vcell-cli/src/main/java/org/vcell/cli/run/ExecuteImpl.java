@@ -19,7 +19,8 @@ import org.vcell.util.GenericExtensionFilter;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
-
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -181,8 +182,9 @@ public class ExecuteImpl {
 
                 
                 RunUtils.removeAndMakeDirs(outDirForCurrentSedml);
-                sedmlFromOmex = Libsedml.readDocument(completeSedmlPath).getSedMLModel();
                 sedmlNameSplit = sedmlLocation.split(OperatingSystemInfo.getInstance().isWindows() ? "\\\\" : "/", -2);
+                //sedmlFromOmex = Libsedml.readDocument(completeSedmlPath).getSedMLModel();
+                sedmlFromOmex = ExecuteImpl.getSedMLFile(sedmlNameSplit, inputFile);
                 sedmlName = sedmlNameSplit[sedmlNameSplit.length - 1];
                 logOmexMessage += "Processing " + sedmlName + ". ";
                 logger.info("Processing SED-ML: " + sedmlName);
@@ -399,11 +401,30 @@ public class ExecuteImpl {
 
     }
 
+    // This method is a bit weird; it uses a temp file as a reference to compare against while getting the file straight from the archive.
+    private static SedML getSedMLFile(String[] tokenizedPath, File inputFile) throws FileNotFoundException, XMLException, IOException {
+        SedML file = null;
+        String identifyingPath = FilenameUtils.separatorsToUnix(ExecuteImpl.getRelativePath(tokenizedPath).toString());
+        FileInputStream omexStream = new FileInputStream(inputFile);
+        ArchiveComponents omexComponents = Libsedml.readSEDMLArchive(omexStream);
+        List<SEDMLDocument> sedmlDocuments = omexComponents.getSedmlDocuments();
+        for (SEDMLDocument doc : sedmlDocuments){
+            SedML potentiallyCorrectFile = doc.getSedMLModel();
+            if (identifyingPath.equals(potentiallyCorrectFile.getPathForURI() + potentiallyCorrectFile.getFileName())){
+                file = potentiallyCorrectFile;
+                break;
+            }
+        }
+        omexStream.close();
+        return file;
+    }
+
     /**
      * In its current state, the sed-ml generated with python is missing two important fields;
      * this function fixes that.
      */
     private static SedML repairSedML(SedML brokenSedML, String[] tokenizedPath){
+        /* 
         for (int i = 0; i < tokenizedPath.length; i++){
             if (tokenizedPath[i].startsWith(RunUtils.VCELL_TEMP_DIR_PREFIX)){
                 Path relativePath = Paths.get(tokenizedPath[i + 1], Arrays.copyOfRange(tokenizedPath, i + 2, tokenizedPath.length));
@@ -417,6 +438,26 @@ public class ExecuteImpl {
             }
         }
         return brokenSedML; // now fixed!
+        */
+        Path relativePath = getRelativePath(tokenizedPath);
+        if (relativePath == null) return null;
+        String name = relativePath.getFileName().toString();
+        brokenSedML.setFileName(name);
+        // Take the relative path, remove the file name, and...
+        String source = relativePath.toString().substring(0, relativePath.toString().length() - name.length());
+        // Convert to unix file separators (java URI does not windows style)
+        brokenSedML.setPathForURI(FilenameUtils.separatorsToUnix(source));
+        return brokenSedML; // now fixed!
+    }
+
+    private static Path getRelativePath(String[] tokenizedPath){
+        for (int i = 0; i < tokenizedPath.length; i++){
+            if (tokenizedPath[i].startsWith(RunUtils.VCELL_TEMP_DIR_PREFIX)){
+                return  Paths.get(tokenizedPath[i + 1], Arrays.copyOfRange(tokenizedPath, i + 2, tokenizedPath.length));
+            }
+        }
+        //return Paths.get("", tokenizedPath);
+        return null;
     }
 
     private static boolean containsExtension(String folder, String ext) {
