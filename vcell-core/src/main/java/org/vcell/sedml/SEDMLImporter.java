@@ -321,7 +321,7 @@ public class SEDMLImporter {
 					String taskId = sims[i].getImportedTaskID();
 					AbstractTask task = sedml.getTaskWithId(taskId);
 					try {
-						sims[i].setName(task.getName());
+						sims[i].setName(task.getId()); // TODO: This used to be task.getName(), but since name could be null it caused problems.
 					} catch (Exception e) {
 						logger.warn("could not set pretty name for simulation "+sims[i].getDisplayName()+" from task "+task);
 					}
