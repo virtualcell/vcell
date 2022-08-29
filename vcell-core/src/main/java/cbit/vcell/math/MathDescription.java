@@ -73,7 +73,7 @@ public class MathDescription implements Versionable, Matchable, SymbolTable, Ser
 		this.sourceSymbolMapping = sourceSymbolMapping;
 	}
 
-	private SourceSymbolMapping sourceSymbolMapping;
+	private transient SourceSymbolMapping sourceSymbolMapping;
 	private final static Logger logger = LogManager.getLogger(MathDescription.class);
 
 	public static final TreeMap<Long,TreeSet<String>> originalHasLowPrecisionConstants = new TreeMap<>();
@@ -1520,7 +1520,8 @@ public HashSet<String> getStateVariableNames() {
 	for (int i = 0; i < variableList.size(); i++){
 		Variable var = variableList.get(i);
 		if (var instanceof VolVariable || var instanceof MemVariable || var instanceof FilamentVariable ||
-			var instanceof VolumeRegionVariable || var instanceof MembraneRegionVariable || var instanceof FilamentRegionVariable){
+			var instanceof VolumeRegionVariable || var instanceof MembraneRegionVariable || var instanceof FilamentRegionVariable ||
+			var instanceof ParticleVariable || var instanceof StochVolVariable || var instanceof PointVariable){
 			stateVarNameSet.add(var.getName());
 		}
 	}

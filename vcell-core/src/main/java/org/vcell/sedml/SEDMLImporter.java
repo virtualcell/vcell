@@ -44,6 +44,7 @@ import org.jlibsedml.execution.ModelResolver;
 import org.jlibsedml.modelsupport.SBMLSupport;
 import org.jlibsedml.modelsupport.SUPPORTED_LANGUAGE;
 import org.jmathml.ASTNode;
+import org.sbml.jsbml.SBase;
 import org.vcell.sbml.vcell.SBMLImporter;
 import org.vcell.sbml.vcell.SBMLSymbolMapping;
 import org.vcell.sbml.vcell.SymbolContext;
@@ -60,6 +61,7 @@ import cbit.vcell.mapping.SimulationContext.Application;
 import cbit.vcell.mapping.SimulationContext.MathMappingCallback;
 import cbit.vcell.mapping.SimulationContext.NetworkGenerationRequirements;
 import cbit.vcell.math.Constant;
+import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathException;
 import cbit.vcell.math.Variable;
 import cbit.vcell.matrix.MatrixException;
@@ -252,8 +254,17 @@ public class SEDMLImporter {
 					}
 				}
 				if (matchingSimulationContext == null) {
-					matchingSimulationContext = SimulationContext.copySimulationContext(existingSimulationContexts[0], sedmlOriginalModelName+"_"+existingSimulationContexts.length, bSpatial, appType);
+					if (!sedmlModel.getListOfChanges().isEmpty() && canTranslateToOverrides(bioModel, sedmlModel)) {
+						// for now we can't put overrides for different app type than original from SBML import
+						// if on initial check it looked like we can, we skipped the import with changes
+						// the referenced model has not been imported, this will bring it with changes applied
+						BioModel newBioModel = importModel(sedmlModel);
+						bmMap.put(sedmlModel.getId(), newBioModel);
+						bioModel = newBioModel;
+					}
+					matchingSimulationContext = SimulationContext.copySimulationContext(bioModel.getSimulationContext(0), sedmlOriginalModelName+"_"+existingSimulationContexts.length, bSpatial, appType);
 					bioModel.addSimulationContext(matchingSimulationContext);
+					bioModel.removeSimulationContext(bioModel.getSimulationContext(0));
 					try {
 						matchingSimulationContext.setName(sedmlModel.getName());
 					} catch (Exception e) {
@@ -316,6 +327,12 @@ public class SEDMLImporter {
 					}
 				}
 			}
+			// purge unused biomodels
+			for (BioModel doc : docs) {
+				if (doc.getSimulations() == null || doc.getSimulations().length == 0) {
+					docs.remove(doc);
+				}
+			}
 			return docs;
 		} catch (Exception e) {
 			throw new RuntimeException("Unable to initialize bioModel for the given selection\n"+e.getMessage(), e);
@@ -371,22 +388,25 @@ public class SEDMLImporter {
 		// finds name of math-side Constant corresponding to SBML entity, if there is one
 		// returns null if there isn't
 		String constantName = null;
-		MathMapping mathMapping = simContext.createNewMathMapping();
-		MathSymbolMapping msm;
-		try {
-			msm = mathMapping.getMathSymbolMapping();
-		} catch (MappingException | MathException | MatrixException | ExpressionException | ModelException e) {
-			// fail is equivalent with couldn't find
-			return null;
-		}
+		MathSymbolMapping msm = (MathSymbolMapping)simContext.getMathDescription().getSourceSymbolMapping();
 		SBMLImporter sbmlImporter = importMap.get(simContext.getBioModel());
 		SBMLSymbolMapping sbmlMap = sbmlImporter.getSymbolMapping();
-		SymbolTableEntry ste =sbmlMap.getSte(sbmlMap.getMappedSBase(SBMLtargetID), SymbolContext.INITIAL);
+		SBase targetSBase = sbmlMap.getMappedSBase(SBMLtargetID);
+		if (targetSBase == null){
+			logger.error("couldn't find SBase with sid="+SBMLtargetID+" in SBMLSymbolMapping");
+			return null;
+		}
+		SymbolTableEntry ste =sbmlMap.getSte(targetSBase, SymbolContext.INITIAL);
 		Variable var = msm.getVariable(ste);
 		if (var instanceof Constant) {
 			constantName = var.getName();
-		} 
-		return constantName;
+		}
+		if (constantName == null){
+			logger.error("couldn't find Constant target with sid="+SBMLtargetID+" in symbol mapping, var = "+var);
+			return null;
+		}else {
+			return constantName;
+		}
 	}
 
 	private void addRepeatedTasks(List<AbstractTask> ttt, HashMap<String, Simulation> vcSimulations)
@@ -501,7 +521,11 @@ public class SEDMLImporter {
 		}
 		// check whether all targets have addressable Constants on the Math side
 		for (Change change : changes) {
-			if (resolveConstant(refBM.getSimulationContext(0), sbmlSupport.getIdFromXPathIdentifer(change.getTargetXPath().toString())) == null) return false;
+			String sbmlID = sbmlSupport.getIdFromXPathIdentifer(change.getTargetXPath().toString());
+			if (resolveConstant(refBM.getSimulationContext(0), sbmlID) == null) {
+				logger.warn("could not map changeAttribute for ID "+sbmlID+" to a VCell Constant");
+				return false;
+			}
 		}
 		return true;
 	}
@@ -528,9 +552,11 @@ public class SEDMLImporter {
 				boolean bValidateSBML = false;
 				SBMLImporter sbmlImporter = new SBMLImporter(sbmlSource,transLogger,bValidateSBML);
 				bioModel = (BioModel)sbmlImporter.getBioModel();
-				bioModel.refreshDependencies();			
 				bioModel.setName(bioModelName);
 				bioModel.getSimulationContext(0).setName(mm.getName());
+				MathDescription math = bioModel.getSimulationContext(0).createNewMathMapping().getMathDescription();
+				bioModel.getSimulationContext(0).setMathDescription(math);
+				bioModel.refreshDependencies();			
 				docs.add(bioModel);
 				importMap.put(bioModel, sbmlImporter);
 			}

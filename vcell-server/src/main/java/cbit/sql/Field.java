@@ -36,6 +36,7 @@ public class Field {
 		number_as_integer("number","bigint",BasicDataType.BIGINT),
 		number_as_real("number","numeric",BasicDataType.NUMERIC),
 		varchar2_4000("varchar2(4000)","varchar(4000)",BasicDataType.VARCHAR),
+		varchar2_2000("varchar2(2000)","varchar(2000)",BasicDataType.VARCHAR),
 		varchar2_1024("varchar2(1024)","varchar(1024)",BasicDataType.VARCHAR),
 		varchar2_512("varchar2(512)","varchar(512)",BasicDataType.VARCHAR),
 		varchar2_256("varchar2(256)","varchar(256)",BasicDataType.VARCHAR),

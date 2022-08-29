@@ -222,7 +222,7 @@ public class SBMLExporter {
 	}
 
 	public SBMLExporter(SimulationContext ctx, int argSbmlLevel, int argSbmlVersion, boolean bRoundTripValidation) {
-		this.vcBioModel = ctx.getBioModel(); 
+		this.vcBioModel = ctx.getBioModel();
 		vcSelectedSimContext = ctx;
 		sbmlLevel = argSbmlLevel;
 		sbmlVersion = argSbmlVersion;
@@ -320,7 +320,7 @@ private void addCompartments() throws XMLStreamException, SbmlException {
 						for (GeometricRegion srcGeometricRegion : srcGeometricRegions) {
 							size += srcGeometricRegion.getSize();
 						}
-						sbmlCompartment.setSize(Expression.mult(sizeRatio, new Expression(size)).evaluateConstant());
+						sbmlCompartment.setSize(Expression.mult(new Expression(sizeRatio), new Expression(size)).evaluateConstant());
 					}
 				}
 			}
@@ -574,11 +574,21 @@ private void addReactions() throws SbmlException, XMLStreamException {
 			final Expression localRateExpr;
 			final Expression lumpedRateExpr;
 			if (vcRxnKinetics instanceof DistributedKinetics){
-				localRateExpr = ((DistributedKinetics) vcRxnKinetics).getReactionRateParameter().getExpression();
+				Expression temp_localRateExpr = ((DistributedKinetics) vcRxnKinetics).getReactionRateParameter().getExpression();
+				if (temp_localRateExpr != null){
+					localRateExpr = new Expression(temp_localRateExpr);
+				}else{
+					localRateExpr = null;
+				}
 				lumpedRateExpr = null;
 			}else if (vcRxnKinetics instanceof LumpedKinetics){
 				localRateExpr = null;
-				lumpedRateExpr = ((LumpedKinetics) vcRxnKinetics).getLumpedReactionRateParameter().getExpression();
+				Expression temp_lumpedRateExpr = ((LumpedKinetics) vcRxnKinetics).getLumpedReactionRateParameter().getExpression();
+				if (temp_lumpedRateExpr != null){
+					lumpedRateExpr = new Expression(temp_lumpedRateExpr);
+				}else{
+					lumpedRateExpr = null;
+				}
 			}else{
 				throw new RuntimeException("unexpected Rate Law '"+vcRxnKinetics.getClass().getSimpleName()+"', not distributed or lumped type");
 			}
@@ -1545,14 +1555,14 @@ private void roundTripValidation() throws SBMLValidationException {
 					simContext.removeSimulation(sim);
 				}
 				bioModel.removeSimulationContext(simContext);
-			}else{
-				// for cloned biomodel/simcontext, force no mass conservation and regenerate math for later comparison.
-				simContext.setUsingMassConservationModelReduction(false);
-				MathMapping mathMapping = simContext.createNewMathMapping();
-				simContext.setMathDescription(mathMapping.getMathDescription());
 			}
 		}
 		bioModel.refreshDependencies();
+		// for cloned biomodel/simcontext, force no mass conservation and regenerate math for later comparison.
+		bioModel.getSimulationContext(0).setUsingMassConservationModelReduction(false);
+		MathMapping mathMapping = bioModel.getSimulationContext(0).createNewMathMapping();
+		bioModel.getSimulationContext(0).setMathDescription(mathMapping.getMathDescription());
+
 
 		//
 		// reimport the recently exported SBML model as a BioModel (still with SBML units)
@@ -1580,6 +1590,34 @@ private void roundTripValidation() throws SBMLValidationException {
 		// if vcSelectedSimJob is null or has empty math overrides - then it is safe to try to compare for math equivalence
 		//
 		if (vcSelectedSimJob == null || vcSelectedSimJob.getSimulation().getMathOverrides().getSize() == 0) {
+
+			//
+			// before testing for mathematical equivalence, we have to make sure the imported SimulationContext has the same mathematical framework
+			//
+			Application applicationType_original = bioModel.getSimulationContext(0).getApplicationType();
+			Application applicationType_reread = reread_BioModel_vcell_units.getSimulationContext(0).getApplicationType();
+			if (!applicationType_original.equals(applicationType_reread)) {
+				//
+				// replace re-read SimualtionContext with transformed SimulationContext with the same mathenmatical framework
+				// (e.g. nonspatial determinstic, nonspatial stochastic, spatial deterministic)
+				//
+				boolean bSpatial_original = bioModel.getSimulationContext(0).getGeometry().getDimension() > 0;
+				boolean bSpatial_reread = reread_BioModel_vcell_units.getSimulationContext(0).getGeometry().getDimension() > 0;
+				if (bSpatial_original != bSpatial_reread){
+					String failureMessage = "original application and reread application differ regarding spatial/nonspatial";
+					throw new SBMLValidationException(failureMessage);
+				}
+
+				SimulationContext simulationContextToReplace = reread_BioModel_vcell_units.getSimulationContext(0);
+				String simContextName = simulationContextToReplace.getName();
+				SimulationContext newSimulationContext = SimulationContext.copySimulationContext(simulationContextToReplace, simContextName, bSpatial_original, applicationType_original);
+				newSimulationContext.getGeometry().precomputeAll(new GeometryThumbnailImageFactoryAWT());
+				reread_BioModel_vcell_units.setSimulationContexts(new SimulationContext[] { newSimulationContext });
+				reread_BioModel_vcell_units.refreshDependencies();
+				MathMapping newMathMapping = newSimulationContext.createNewMathMapping();
+				newSimulationContext.setMathDescription(newMathMapping.getMathDescription());
+			}
+
 			MathDescription origMathDescription = bioModel.getSimulationContext(0).getMathDescription();
 			MathDescription rereadMathDescription = reread_BioModel_vcell_units.getSimulationContext(0).getMathDescription();
 			MathCompareResults mathCompareResults = MathDescription.testEquivalency(SimulationSymbolTable.createMathSymbolTableFactory(), origMathDescription, rereadMathDescription);
@@ -1596,7 +1634,7 @@ private void roundTripValidation() throws SBMLValidationException {
 			String outputDir = Files.createTempDirectory(dirName).toFile().getAbsolutePath();
 			logger.error("writing temp files ./sbml.xml, ./orig_vcml.xml, ./reread_vcml_sbml_units.xml and ./reread_vcml.xml to "+outputDir);
 			if (sbmlModel != null) {
-				TidySBMLWriter sbmlWriter = new TidySBMLWriter();
+				SBMLWriter sbmlWriter = new SBMLWriter();
 				sbmlWriter.writeSBML(sbmlModel.getSBMLDocument(), Paths.get(outputDir, "sbml.xml").toFile());
 			}
 			if (bioModel != null) {
@@ -1876,15 +1914,47 @@ private void addGeometry() throws SbmlException {
 	    DomainType domainType = sbmlGeometry.createDomainType();
 	    domainType.setSpatialId(DOMAIN_TYPE_PREFIX+vcGeomClasses[i].getName());
 	    if (vcGeomClasses[i] instanceof SubVolume) {
-	    	if (((SubVolume)vcGeomClasses[i]) instanceof AnalyticSubVolume) {
+			SubVolume vcSubVolume = (SubVolume) vcGeomClasses[i];
+	    	if (vcSubVolume instanceof AnalyticSubVolume) {
 	    		bAnyAnalyticSubvolumes = true;
-	    	} else if (((SubVolume)vcGeomClasses[i]) instanceof ImageSubVolume) {
+	    	} else if (vcSubVolume instanceof ImageSubVolume) {
 	    		bAnyImageSubvolumes = true;
-	    	} else if (((SubVolume)vcGeomClasses[i]) instanceof CSGObject) {
+	    	} else if (vcSubVolume instanceof CSGObject) {
 	    		bAnyCSGSubvolumes = true;
 	    	}
 	    	domainType.setSpatialDimensions(dimension);
-	    	numSubVols++;
+
+			Element analyticSubVolumeElement = new Element(XMLTags.SBML_VCELL_SubVolumeAttributesTag, sbml_vcml_ns);
+			analyticSubVolumeElement.setAttribute(XMLTags.SBML_VCELL_SubVolumeAttributesTag_handleAttr, Integer.toString(vcSubVolume.getHandle()), sbml_vcml_ns);
+			StructureMapping[] structureMappings = vcGeoContext.getStructureMappings(vcSubVolume);
+			for (StructureMapping structureMapping : structureMappings){
+				analyticSubVolumeElement.setAttribute(XMLTags.SBML_VCELL_SubVolumeAttributesTag_defaultBCtypeXminAttr,
+						structureMapping.getBoundaryConditionTypeXm().boundaryTypeStringValue(), sbml_vcml_ns);
+				analyticSubVolumeElement.setAttribute(XMLTags.SBML_VCELL_SubVolumeAttributesTag_defaultBCtypeXmaxAttr,
+						structureMapping.getBoundaryConditionTypeXp().boundaryTypeStringValue(), sbml_vcml_ns);
+				if (vcGeometry.getDimension()>1){
+					analyticSubVolumeElement.setAttribute(XMLTags.SBML_VCELL_SubVolumeAttributesTag_defaultBCtypeYminAttr,
+							structureMapping.getBoundaryConditionTypeYm().boundaryTypeStringValue(), sbml_vcml_ns);
+					analyticSubVolumeElement.setAttribute(XMLTags.SBML_VCELL_SubVolumeAttributesTag_defaultBCtypeYmaxAttr,
+							structureMapping.getBoundaryConditionTypeYp().boundaryTypeStringValue(), sbml_vcml_ns);
+				}
+				if (vcGeometry.getDimension()>2){
+					analyticSubVolumeElement.setAttribute(XMLTags.SBML_VCELL_SubVolumeAttributesTag_defaultBCtypeZminAttr,
+							structureMapping.getBoundaryConditionTypeZm().boundaryTypeStringValue(), sbml_vcml_ns);
+					analyticSubVolumeElement.setAttribute(XMLTags.SBML_VCELL_SubVolumeAttributesTag_defaultBCtypeZmaxAttr,
+							structureMapping.getBoundaryConditionTypeZp().boundaryTypeStringValue(), sbml_vcml_ns);
+				}
+			}
+			Annotation annotation = domainType.getAnnotation();
+			if (annotation!=null) {
+				try {
+					annotation.appendNonRDFAnnotation(XmlUtil.xmlToString(analyticSubVolumeElement));
+				} catch (XMLStreamException e) {
+					throw new RuntimeException(e);
+				}
+			}
+
+			numSubVols++;
 	    } else if (vcGeomClasses[i] instanceof SurfaceClass) {
 	    	domainType.setSpatialDimensions(dimension - 1);
 	    }
@@ -1994,12 +2064,14 @@ private void addGeometry() throws SbmlException {
 		sbmlAnalyticGeomDefinition.setIsActive(true);
 		for (int i = 0; i < vcGeomClasses.length; i++) {
 			if (vcGeomClasses[i] instanceof AnalyticSubVolume) {
+				AnalyticSubVolume vcAnalyticSubVolume = (AnalyticSubVolume) vcGeomClasses[i];
 				// need to avoid id name clash with structures (compartments)
-				AnalyticVolume analyticVol = sbmlAnalyticGeomDefinition.createAnalyticVolume(TokenMangler.mangleToSName("AnalyticVol_"+vcGeomClasses[i].getName()));
+				AnalyticVolume analyticVol = sbmlAnalyticGeomDefinition.createAnalyticVolume(TokenMangler.mangleToSName("AnalyticVol_"+vcAnalyticSubVolume.getName()));
 //				analyticVol.setSpatialId(vcGeomClasses[i].getName());
-				analyticVol.setDomainType(DOMAIN_TYPE_PREFIX+vcGeomClasses[i].getName());
+				analyticVol.setDomainType(DOMAIN_TYPE_PREFIX+vcAnalyticSubVolume.getName());
 				analyticVol.setFunctionType(FunctionKind.layered);
 				analyticVol.setOrdinal(numSubVols - (i+1));
+
 				Expression expr = ((AnalyticSubVolume)vcGeomClasses[i]).getExpression();
 				try {
 					String mathMLStr = ExpressionMathMLPrinter.getMathML(expr, true, MathType.BOOLEAN);

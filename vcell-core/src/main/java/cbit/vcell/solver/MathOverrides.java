@@ -803,7 +803,7 @@ public void refreshDependencies() {
 			iter.next().bind(getSimulation().getMathDescription());
 		}
 	} catch (ExpressionBindingException e) {
-		e.printStackTrace();
+		logger.error("failed to bind a math override: "+e.getMessage(), e);
 		throw new RuntimeException(e.getMessage());
 	}	
 }
