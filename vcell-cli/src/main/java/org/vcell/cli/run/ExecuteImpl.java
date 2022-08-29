@@ -424,21 +424,6 @@ public class ExecuteImpl {
      * this function fixes that.
      */
     private static SedML repairSedML(SedML brokenSedML, String[] tokenizedPath){
-        /* 
-        for (int i = 0; i < tokenizedPath.length; i++){
-            if (tokenizedPath[i].startsWith(RunUtils.VCELL_TEMP_DIR_PREFIX)){
-                Path relativePath = Paths.get(tokenizedPath[i + 1], Arrays.copyOfRange(tokenizedPath, i + 2, tokenizedPath.length));
-                String name = relativePath.getFileName().toString();
-                brokenSedML.setFileName(name);
-                // Take the relative path, remove the file name, and...
-                String source = relativePath.toString().substring(0, relativePath.toString().length() - name.length());
-                // Convert to unix file separators (java URI does not windows style)
-                brokenSedML.setPathForURI(FilenameUtils.separatorsToUnix(source));
-                break;
-            }
-        }
-        return brokenSedML; // now fixed!
-        */
         Path relativePath = getRelativePath(tokenizedPath);
         if (relativePath == null) return null;
         String name = relativePath.getFileName().toString();
@@ -456,7 +441,6 @@ public class ExecuteImpl {
                 return  Paths.get(tokenizedPath[i + 1], Arrays.copyOfRange(tokenizedPath, i + 2, tokenizedPath.length));
             }
         }
-        //return Paths.get("", tokenizedPath);
         return null;
     }
 
