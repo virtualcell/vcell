@@ -160,7 +160,7 @@ public synchronized void removeVetoableChangeListener(java.beans.VetoableChangeL
  * This method was created in VisualAge.
  * @param handle int
  */
-void setHandle(int handle) {
+public void setHandle(int handle) {
 	this.handle = handle;
 }
 /**

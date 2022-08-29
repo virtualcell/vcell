@@ -348,6 +348,14 @@ public class XMLTags {
     public final static String InsideCompartmentTag = "InsideCompartment";
     public final static String OutsideCompartmentTag = "OutsideCompartment";
     // to be used in SBML child annotations of the sbml:compartmnent element.
+    public final static String SBML_VCELL_SubVolumeAttributesTag = "SubVolumeAttributes";
+    public final static String SBML_VCELL_SubVolumeAttributesTag_handleAttr = "handle";
+    public final static String SBML_VCELL_SubVolumeAttributesTag_defaultBCtypeXminAttr = "defaultBCtypeXmin";
+    public final static String SBML_VCELL_SubVolumeAttributesTag_defaultBCtypeXmaxAttr = "defaultBCtypeXmax";
+    public final static String SBML_VCELL_SubVolumeAttributesTag_defaultBCtypeYminAttr = "defaultBCtypeYmin";
+    public final static String SBML_VCELL_SubVolumeAttributesTag_defaultBCtypeYmaxAttr = "defaultBCtypeYmax";
+    public final static String SBML_VCELL_SubVolumeAttributesTag_defaultBCtypeZminAttr = "defaultBCtypeZmin";
+    public final static String SBML_VCELL_SubVolumeAttributesTag_defaultBCtypeZmaxAttr = "defaultBCtypeZmax";
     public final static String SBML_VCELL_CompartmentTopologyTag = "CompartmentTopology";
     public final static String SBML_VCELL_CompartmentTopologyTag_insideCompartmentAttr = "insideCompartment";
     public final static String SBML_VCELL_CompartmentTopologyTag_outsideCompartmentAttr = "ousideCompartment";
