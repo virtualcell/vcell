@@ -88,7 +88,7 @@ public class SolverHandler {
         	countBioModels = bioModelList.size();
         }
 
-        int simulationCount = 0;
+        int simulationJobCount = 0;
         int bioModelCount = 0;
         boolean hasSomeSpatial = false;
         boolean bTimeoutFound = false;
@@ -102,16 +102,26 @@ public class SolverHandler {
             }
             docName = bioModel.getName();
             sims = bioModel.getSimulations();
+            
+            Map<SimulationJob, Simulation> jobToSimulationMap = new LinkedHashMap<>();
             for (Simulation sim : sims) {
-           	if(sim.getImportedTaskID() == null) {
-            		// this is a simulation not matching the imported task, so we skip it
-            		continue;
+               	if(sim.getImportedTaskID() == null) {
+            		continue;	// this is a simulation not matching the imported task, so we skip it
             	}
-            	logger.debug("Initializing simulation... ");
-                String logTaskMessage = "Initializing simulation... ";
+               	int scanCount = sim.getScanCount();
+               	for(int i=0; i < scanCount; i++) {
+               		SimulationJob simJob = new SimulationJob(sim, i, null);
+               		jobToSimulationMap.put(simJob, sim);
+               	}
+            }
+            
+            for (SimulationJob simJob : jobToSimulationMap.keySet()) {
+            	logger.debug("Initializing simulation job... ");
+                String logTaskMessage = "Initializing simulation job... ";
             	String logTaskError = "";
                 long startTimeTask = System.currentTimeMillis();
 
+                int simulationJobIndex = 0;
                 SimulationTask simTask;
                 String kisao = "null";
             	ODESolverResultSet odeSolverResultSet = null;
@@ -119,6 +129,7 @@ public class SolverHandler {
             	SolverDescription sd = null;
             	int solverStatus = SolverStatus.SOLVER_READY;
             	
+            	Simulation sim = jobToSimulationMap.get(simJob);
                 try {
                 	SimulationOwner so = sim.getSimulationOwner();
                 	sim = new TempSimulation(sim, false);
@@ -130,7 +141,6 @@ public class SolverHandler {
                 	if(kisao == null) {
                 		throw new RuntimeException("KISAO is null.");
                 	}
-                	SimulationJob simJob = new SimulationJob(sim, 0, null);
                 	simTask = new SimulationTask(simJob, 0);
                 	Solver solver = SolverFactory.createSolver(outputDirForSedml, simTask, false);
                 	logTaskMessage += "done. Starting simulation... ";
@@ -138,11 +148,6 @@ public class SolverHandler {
                 	if(sd.isSpatial()) {
                 		hasSomeSpatial = true;
                 	}
-//                	if(solver instanceof FVSolverStandalone) {
-//                		hasSomeSpatial = true;
-//                		throw new RuntimeException("FVSolverStandalone timeout failure.");
-//                	} 
-//                	else 
                 	if (solver instanceof AbstractCompiledSolver) {
                         ((AbstractCompiledSolver) solver).runSolver();
                         logger.info("Solver: " + solver);
@@ -265,18 +270,19 @@ public class SolverHandler {
                     RunUtils.drawBreakLine("-", 100);
                 }
                 if(odeSolverResultSet != null) {
-                    resultsHash.put(sim.getImportedTaskID(), odeSolverResultSet);
+                    resultsHash.put(sim.getImportedTaskID() + "_" + simulationJobIndex, odeSolverResultSet);
                 } else {
-                	resultsHash.put(sim.getImportedTaskID(), null);	// if any task fails, we still put it in the hash with a null value
+                	resultsHash.put(sim.getImportedTaskID() + "_" + simulationJobIndex, null);	// if any task fails, we still put it in the hash with a null value
                 }
                 if(keepTempFiles == false) {
                 	RunUtils.removeIntermediarySimFiles(outputDirForSedml);
                 }
-                simulationCount++;
+                simulationJobIndex++;
+                simulationJobCount++;
             }
             bioModelCount++;
         }
-        logger.info("Ran " + simulationCount + " simulations for " + bioModelCount + " biomodels.");
+        logger.info("Ran " + simulationJobCount + " simulation jobs for " + bioModelCount + " biomodels.");
         if(hasSomeSpatial) {
             logManager.writeSpatialList(bioModelBaseName);
         }
