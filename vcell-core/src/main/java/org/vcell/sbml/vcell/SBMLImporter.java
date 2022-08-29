@@ -16,6 +16,7 @@ import cbit.image.VCImageUncompressed;
 import cbit.image.VCPixelClass;
 import cbit.util.xml.VCLogger;
 import cbit.util.xml.VCLoggerException;
+import cbit.util.xml.XmlUtil;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.biomodel.ModelUnitConverter;
 import cbit.vcell.biomodel.meta.VCMetaData;
@@ -3531,14 +3532,49 @@ public class SBMLImporter {
 		// afterwards.
 		GeometrySurfaceDescription vcGsd = vcGeometry.getGeometrySurfaceDescription();
 		Vector<DomainType> surfaceClassDomainTypesVector = new Vector<>();
+		HashMap<SubVolume,List<BoundaryConditionType>> defaultBCMap = new HashMap<>();
 		try {
 			for (DomainType dt : listOfDomainTypes) {
+				ArrayList<BoundaryConditionType> bcTypes = new ArrayList<>();
 				if (dt.getSpatialDimensions() == vcGeometry.getDimension()) {
 					// subvolume
+					int handle = -1; // -1 is unknown
+					Annotation analyticSubVolumeAnnotation = dt.getAnnotation();
+					if (analyticSubVolumeAnnotation != null && analyticSubVolumeAnnotation.getNonRDFannotation() != null) {
+						XMLNode analyticSubVolumeElement = analyticSubVolumeAnnotation.getNonRDFannotation().getChildElement(XMLTags.SBML_VCELL_SubVolumeAttributesTag, "*");
+						if (analyticSubVolumeElement != null) {
+							handle = Integer.parseInt(analyticSubVolumeElement.getAttrValue(XMLTags.SBML_VCELL_SubVolumeAttributesTag_handleAttr, SBMLUtils.SBML_VCELL_NS));
+							BoundaryConditionType bcTypeXm = BoundaryConditionType.fromString(
+									analyticSubVolumeElement.getAttrValue(XMLTags.SBML_VCELL_SubVolumeAttributesTag_defaultBCtypeXminAttr, SBMLUtils.SBML_VCELL_NS));
+							BoundaryConditionType bcTypeXp = BoundaryConditionType.fromString(
+									analyticSubVolumeElement.getAttrValue(XMLTags.SBML_VCELL_SubVolumeAttributesTag_defaultBCtypeXmaxAttr, SBMLUtils.SBML_VCELL_NS));
+							bcTypes.add(bcTypeXm);
+							bcTypes.add(bcTypeXp);
+							if (vcGeometry.getDimension()>1){
+								BoundaryConditionType bcTypeYm = BoundaryConditionType.fromString(
+										analyticSubVolumeElement.getAttrValue(XMLTags.SBML_VCELL_SubVolumeAttributesTag_defaultBCtypeYminAttr, SBMLUtils.SBML_VCELL_NS));
+								BoundaryConditionType bcTypeYp = BoundaryConditionType.fromString(
+										analyticSubVolumeElement.getAttrValue(XMLTags.SBML_VCELL_SubVolumeAttributesTag_defaultBCtypeYmaxAttr, SBMLUtils.SBML_VCELL_NS));
+								bcTypes.add(bcTypeYm);
+								bcTypes.add(bcTypeYp);
+							}
+							if (vcGeometry.getDimension()>2){
+								BoundaryConditionType bcTypeZm = BoundaryConditionType.fromString(
+										analyticSubVolumeElement.getAttrValue(XMLTags.SBML_VCELL_SubVolumeAttributesTag_defaultBCtypeZminAttr, SBMLUtils.SBML_VCELL_NS));
+								BoundaryConditionType bcTypeZp = BoundaryConditionType.fromString(
+										analyticSubVolumeElement.getAttrValue(XMLTags.SBML_VCELL_SubVolumeAttributesTag_defaultBCtypeZmaxAttr, SBMLUtils.SBML_VCELL_NS));
+								bcTypes.add(bcTypeZm);
+								bcTypes.add(bcTypeZp);
+							}
+						}
+					}
 					if (selectedGeometryDefinition == analyticGeometryDefinition) {
 						// will set expression later - when reading in Analytic
 						// Volumes in GeometryDefinition
-						vcGeometrySpec.addSubVolume(new AnalyticSubVolume(dt.getId(), new Expression(1.0)));
+						AnalyticSubVolume analyticSubVolume = new AnalyticSubVolume(dt.getId(), new Expression(1.0));
+						vcGeometrySpec.addSubVolume(analyticSubVolume);
+						analyticSubVolume.setHandle(handle);
+						defaultBCMap.put(analyticSubVolume, bcTypes);
 					}
 //					else {
 //						// add SubVolumes later for CSG and Image-based
@@ -3560,6 +3596,7 @@ public class SBMLImporter {
 				for (AnalyticVolume analyticVol : aVolumes) { 
 					// get subVol from VC geometry using analyticVol spatialId;
 					// set its expr using analyticVol's math.
+
 					SubVolume vcSubvolume = vcGeometrySpec .getSubVolume(analyticVol.getDomainType());
 					CastInfo<AnalyticSubVolume> ci = BeanUtils.attemptCast(AnalyticSubVolume.class, vcSubvolume);
 					if (!ci.isGood()) {
@@ -3848,6 +3885,31 @@ public class SBMLImporter {
 					.toArray(new StructureMapping[0]);
 			vcBioModel.getSimulationContext(0).getGeometryContext()
 					.setStructureMappings(structMappings);
+
+			//
+			// set default boundary condition types if set in vcell annotation (to help round-trip)
+			//
+			if (vcGeometry.getDimension()>0){
+				for (StructureMapping structureMapping : structMappings) {
+					if (structureMapping.getGeometryClass() instanceof SubVolume) {
+						List<BoundaryConditionType> bcTypes = defaultBCMap.get(structureMapping.getGeometryClass());
+						if (bcTypes != null) {
+							if (vcGeometry.getDimension() > 0) {
+								structureMapping.setBoundaryConditionTypeXm(bcTypes.get(0));
+								structureMapping.setBoundaryConditionTypeXp(bcTypes.get(1));
+							}
+							if (vcGeometry.getDimension() > 1) {
+								structureMapping.setBoundaryConditionTypeYm(bcTypes.get(2));
+								structureMapping.setBoundaryConditionTypeYp(bcTypes.get(3));
+							}
+							if (vcGeometry.getDimension() > 2) {
+								structureMapping.setBoundaryConditionTypeZm(bcTypes.get(4));
+								structureMapping.setBoundaryConditionTypeZp(bcTypes.get(5));
+							}
+						}
+					}
+				}
+			}
 
 			// if type from SBML parameter Boundary Condn is not the same as the boundary type of the
 			// structureMapping of structure of paramSpContext, set the boundary condn type of the structureMapping

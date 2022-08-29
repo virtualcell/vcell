@@ -247,8 +247,9 @@ public class SEDMLExporter {
 						sbmlString = pair.one;
 						l2gMap = pair.two;
 					} catch (Exception e) {
-						logger.error("Export failed: " + e.getMessage(), e);
-						sbmlExportFailed = true;
+						String msg = "Export failed: for simContext '"+simContext.getName()+"': " + e.getMessage();
+						logger.error(msg, e);
+						throw new RuntimeException(msg, e);
 					}
 				} else {	// we want to force VCML, we act as if saving to SBML failed
 					sbmlExportFailed = true;

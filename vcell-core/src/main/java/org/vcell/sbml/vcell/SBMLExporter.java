@@ -1634,7 +1634,7 @@ private void roundTripValidation() throws SBMLValidationException {
 			String outputDir = Files.createTempDirectory(dirName).toFile().getAbsolutePath();
 			logger.error("writing temp files ./sbml.xml, ./orig_vcml.xml, ./reread_vcml_sbml_units.xml and ./reread_vcml.xml to "+outputDir);
 			if (sbmlModel != null) {
-				TidySBMLWriter sbmlWriter = new TidySBMLWriter();
+				SBMLWriter sbmlWriter = new SBMLWriter();
 				sbmlWriter.writeSBML(sbmlModel.getSBMLDocument(), Paths.get(outputDir, "sbml.xml").toFile());
 			}
 			if (bioModel != null) {
@@ -1914,15 +1914,47 @@ private void addGeometry() throws SbmlException {
 	    DomainType domainType = sbmlGeometry.createDomainType();
 	    domainType.setSpatialId(DOMAIN_TYPE_PREFIX+vcGeomClasses[i].getName());
 	    if (vcGeomClasses[i] instanceof SubVolume) {
-	    	if (((SubVolume)vcGeomClasses[i]) instanceof AnalyticSubVolume) {
+			SubVolume vcSubVolume = (SubVolume) vcGeomClasses[i];
+	    	if (vcSubVolume instanceof AnalyticSubVolume) {
 	    		bAnyAnalyticSubvolumes = true;
-	    	} else if (((SubVolume)vcGeomClasses[i]) instanceof ImageSubVolume) {
+	    	} else if (vcSubVolume instanceof ImageSubVolume) {
 	    		bAnyImageSubvolumes = true;
-	    	} else if (((SubVolume)vcGeomClasses[i]) instanceof CSGObject) {
+	    	} else if (vcSubVolume instanceof CSGObject) {
 	    		bAnyCSGSubvolumes = true;
 	    	}
 	    	domainType.setSpatialDimensions(dimension);
-	    	numSubVols++;
+
+			Element analyticSubVolumeElement = new Element(XMLTags.SBML_VCELL_SubVolumeAttributesTag, sbml_vcml_ns);
+			analyticSubVolumeElement.setAttribute(XMLTags.SBML_VCELL_SubVolumeAttributesTag_handleAttr, Integer.toString(vcSubVolume.getHandle()), sbml_vcml_ns);
+			StructureMapping[] structureMappings = vcGeoContext.getStructureMappings(vcSubVolume);
+			for (StructureMapping structureMapping : structureMappings){
+				analyticSubVolumeElement.setAttribute(XMLTags.SBML_VCELL_SubVolumeAttributesTag_defaultBCtypeXminAttr,
+						structureMapping.getBoundaryConditionTypeXm().boundaryTypeStringValue(), sbml_vcml_ns);
+				analyticSubVolumeElement.setAttribute(XMLTags.SBML_VCELL_SubVolumeAttributesTag_defaultBCtypeXmaxAttr,
+						structureMapping.getBoundaryConditionTypeXp().boundaryTypeStringValue(), sbml_vcml_ns);
+				if (vcGeometry.getDimension()>1){
+					analyticSubVolumeElement.setAttribute(XMLTags.SBML_VCELL_SubVolumeAttributesTag_defaultBCtypeYminAttr,
+							structureMapping.getBoundaryConditionTypeYm().boundaryTypeStringValue(), sbml_vcml_ns);
+					analyticSubVolumeElement.setAttribute(XMLTags.SBML_VCELL_SubVolumeAttributesTag_defaultBCtypeYmaxAttr,
+							structureMapping.getBoundaryConditionTypeYp().boundaryTypeStringValue(), sbml_vcml_ns);
+				}
+				if (vcGeometry.getDimension()>2){
+					analyticSubVolumeElement.setAttribute(XMLTags.SBML_VCELL_SubVolumeAttributesTag_defaultBCtypeZminAttr,
+							structureMapping.getBoundaryConditionTypeZm().boundaryTypeStringValue(), sbml_vcml_ns);
+					analyticSubVolumeElement.setAttribute(XMLTags.SBML_VCELL_SubVolumeAttributesTag_defaultBCtypeZmaxAttr,
+							structureMapping.getBoundaryConditionTypeZp().boundaryTypeStringValue(), sbml_vcml_ns);
+				}
+			}
+			Annotation annotation = domainType.getAnnotation();
+			if (annotation!=null) {
+				try {
+					annotation.appendNonRDFAnnotation(XmlUtil.xmlToString(analyticSubVolumeElement));
+				} catch (XMLStreamException e) {
+					throw new RuntimeException(e);
+				}
+			}
+
+			numSubVols++;
 	    } else if (vcGeomClasses[i] instanceof SurfaceClass) {
 	    	domainType.setSpatialDimensions(dimension - 1);
 	    }
@@ -2032,12 +2064,14 @@ private void addGeometry() throws SbmlException {
 		sbmlAnalyticGeomDefinition.setIsActive(true);
 		for (int i = 0; i < vcGeomClasses.length; i++) {
 			if (vcGeomClasses[i] instanceof AnalyticSubVolume) {
+				AnalyticSubVolume vcAnalyticSubVolume = (AnalyticSubVolume) vcGeomClasses[i];
 				// need to avoid id name clash with structures (compartments)
-				AnalyticVolume analyticVol = sbmlAnalyticGeomDefinition.createAnalyticVolume(TokenMangler.mangleToSName("AnalyticVol_"+vcGeomClasses[i].getName()));
+				AnalyticVolume analyticVol = sbmlAnalyticGeomDefinition.createAnalyticVolume(TokenMangler.mangleToSName("AnalyticVol_"+vcAnalyticSubVolume.getName()));
 //				analyticVol.setSpatialId(vcGeomClasses[i].getName());
-				analyticVol.setDomainType(DOMAIN_TYPE_PREFIX+vcGeomClasses[i].getName());
+				analyticVol.setDomainType(DOMAIN_TYPE_PREFIX+vcAnalyticSubVolume.getName());
 				analyticVol.setFunctionType(FunctionKind.layered);
 				analyticVol.setOrdinal(numSubVols - (i+1));
+
 				Expression expr = ((AnalyticSubVolume)vcGeomClasses[i]).getExpression();
 				try {
 					String mathMLStr = ExpressionMathMLPrinter.getMathML(expr, true, MathType.BOOLEAN);

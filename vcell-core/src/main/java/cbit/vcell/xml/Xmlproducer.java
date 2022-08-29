@@ -26,6 +26,8 @@ import java.util.Vector;
 
 import org.apache.commons.lang3.mutable.Mutable;
 import org.apache.commons.lang3.mutable.MutableObject;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.Namespace;
@@ -289,6 +291,9 @@ import cbit.vcell.units.VCUnitDefinition;
  * @author: Daniel Lucio
  */
 public class Xmlproducer extends XmlBase{
+
+	private final static Logger logger = LogManager.getLogger(Xmlproducer.class);
+
 	//This variable is used as a flag to determine if the keys should generated or not.
 	//By the default, is set to false to not affect the current code and behavior of the VCell framework.
 	private boolean printKeysFlag = false;
@@ -350,7 +355,6 @@ Element getXML(VCImage param) throws XmlParseException{
 		try {
 			compressedPixels = param.getPixelsCompressed();
 		} catch (ImageException e) {
-			e.printStackTrace();
 			throw new XmlParseException("An ImageParseException occurred when tring to retrieving the compressed Pixels", e);
 		}
 		Element imagedata = new Element(XMLTags.ImageDataTag);
@@ -538,7 +542,6 @@ public Element getXML(BioModel param) throws XmlParseException, ExpressionExcept
 	try {
 		biomodelnode.addContent( getXML(param.getModel()) );
 	} catch (XmlParseException e) {
-		e.printStackTrace();
 		throw new XmlParseException("An error occurred while processing the BioModel " + name, e);
 	}
 	//Get SimulationContexts
@@ -1055,7 +1058,6 @@ public Element getXML(Geometry param) throws XmlParseException{
 		try {
 			geometry.addContent( getXML(param.getGeometrySpec().getImage()) );
 		} catch (XmlParseException e) {
-			e.printStackTrace();
 			throw new XmlParseException("A problem occurred when trying to get the Image for the geometry " + name, e);
 		}
 	}
@@ -1571,7 +1573,6 @@ public Element getXML(SimulationContext param, BioModel bioModel) throws XmlPars
 	try {
 		simulationcontext.addContent(getXML(param.getGeometryContext().getGeometry()));
 	} catch (XmlParseException e) {
-		e.printStackTrace();
 		throw new XmlParseException("A problem occurred when trying to process the geometry for the simulationContext " + name, e);
 	}
 	// write GeometryContext (geometric mapping)
@@ -3218,7 +3219,7 @@ private Element getXML(ParticleVariable param) {
 	} else if(param instanceof MembraneParticleVariable){
 		e = new org.jdom.Element(XMLTags.MembraneParticleVariableTag);
 	} else {
-		System.out.println("Unexpected element" + param);
+		throw new RuntimeException("Unexpected element" + param);
 	}
 	//Add atribute
 	e.setAttribute(XMLTags.NameAttrTag, mangle(param.getName()));
@@ -3492,7 +3493,6 @@ public Element getXML(MathModel param) throws XmlParseException{
 	try {
 		mathmodel.addContent( getXML(param.getMathDescription().getGeometry()) );
 	} catch (XmlParseException e) {
-		e.printStackTrace();
 		throw new XmlParseException("A problem occurred when trying to process the geometry!", e);
 	}
 	//Add Mathdescription
@@ -4019,7 +4019,7 @@ private Element getXML(MolecularComponentPattern param) {
 			if(cs.getComponentStateDefinition() != null) {
 				e.setAttribute(XMLTags.RbmMolecularComponentStatePatternTag, mangle(cs.getComponentStateDefinition().getName()));
 			} else {
-				System.err.println(ComponentStateDefinition.typeName + " is missing!");
+				logger.error(ComponentStateDefinition.typeName + " is missing!");
 			}
 		}
 	}
@@ -4122,7 +4122,6 @@ public Element getXML(Model param) throws XmlParseException/*, cbit.vcell.parser
 			modelnode.addContent((Element)list.get(i));
 		}
 	} catch (XmlParseException e) {
-		e.printStackTrace();
 		throw new XmlParseException("An error occurred while procesing a Structure for the model " + versionName, e);
 	}
 	//Process SpeciesContexts
@@ -4141,12 +4140,12 @@ public Element getXML(Model param) throws XmlParseException/*, cbit.vcell.parser
 	if(rbmModelContainer != null && !rbmModelContainer.isEmpty()) {
 		Element rbmModelContainerElement = getXML(rbmModelContainer);
 
-		{	// for testing purposes only
+		if (logger.isTraceEnabled()){
 			Document doc = new Document();
 			Element clone = (Element)rbmModelContainerElement.clone();
 			doc.setRootElement(clone);
 			String xmlString = XmlUtil.xmlToString(doc, false);
-			System.out.println(xmlString);
+			logger.trace(xmlString);
 		}
 		modelnode.addContent(rbmModelContainerElement);
 	}
@@ -5009,7 +5008,9 @@ public Element getXML(BioEvent[] bioEvents) throws XmlParseException{
 		bioEventsElement.addContent(eventElement);
 	}
 
-	System.out.println(XmlUtil.xmlToString(bioEventsElement));
+	if (logger.isTraceEnabled()) {
+		logger.trace(XmlUtil.xmlToString(bioEventsElement));
+	}
 	return bioEventsElement;
 }
 
@@ -5047,7 +5048,9 @@ public Element getXML(SpatialObject[] spatialObjects) throws XmlParseException{
 		spatialObjectsElement.addContent(spatialObjectElement);
 	}
 
-	System.out.println(XmlUtil.xmlToString(spatialObjectsElement));
+	if (logger.isTraceEnabled()){
+		logger.trace(XmlUtil.xmlToString(spatialObjectsElement));
+	}
 	return spatialObjectsElement;
 }
 
@@ -5092,7 +5095,9 @@ public Element getXML(SpatialProcess[] spatialProcesses) throws XmlParseExceptio
 		spatialProcessesElement.addContent(spatialProcessElement);
 	}
 
-	System.out.println(XmlUtil.xmlToString(spatialProcessesElement));
+	if (logger.isTraceEnabled()) {
+		logger.trace(XmlUtil.xmlToString(spatialProcessesElement));
+	}
 	return spatialProcessesElement;
 }
 

@@ -54,10 +54,7 @@ import org.vcell.util.Issue.IssueCategory;
 import org.vcell.util.document.*;
 
 import java.beans.PropertyVetoException;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FilenameFilter;
-import java.io.IOException;
+import java.io.*;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -92,7 +89,9 @@ public class VcmlOmexConverter {
 		if (isCreated) {
 			logger.info("Combine archive created for `" + input + "`");
 		} else {
-			logger.error("Failed converting VCML to OMEX archive for `" + input + "`");
+			String msg = "Failed converting VCML to OMEX archive for `" + input + "`";
+			logger.error(msg);
+			throw new RuntimeException(msg);
 		}
 	}
 
@@ -116,7 +115,7 @@ public class VcmlOmexConverter {
 		FilenameFilter filterVcmlFiles = (f, name) -> name.endsWith(".vcml");
 		String[] inputFiles = input.list(filterVcmlFiles);		// jusr a list of vcml names, like biomodel-185577495.vcml, ...
 		if (inputFiles == null) {
-			logger.error("No VCML files found in the directory `" + input + "`");
+			throw new RuntimeException("No VCML files found in the directory `" + input + "`");
 		}
 
 		writeSimErrorList(outputDir.getAbsolutePath(), "bForceVCML is " + modelFormat.equals(ModelFormat.VCML), bForceLogFiles);
@@ -146,8 +145,7 @@ public class VcmlOmexConverter {
 															simulationExportFilter, modelFormat, bForceLogFiles, bValidateOmex);
 					if (isCreated) {
 						logger.info("Combine archive created for file(s) `" + inputFile + "`");
-					}
-					else {
+					} else {
 						logger.error("Failed converting VCML to OMEX archive for `" + inputFile + "`");
 					}
 				} else {
@@ -210,8 +208,9 @@ public class VcmlOmexConverter {
 					return false;
 				}
 			} catch (Exception e){
-				logger.error("failed to retrieve status for simulation '"+simulation.getSimulationVersion()+"'", e);
-				throw new RuntimeException("failed to retrieve status for simulation '"+simulation.getSimulationVersion()+"'", e);
+				String msg = "failed to retrieve status for simulation '"+simulation.getSimulationVersion()+"'";
+				logger.error(msg, e);
+				throw new RuntimeException(msg, e);
 			}
 		}
 		return true;
@@ -294,37 +293,40 @@ public class VcmlOmexConverter {
         bioModel.refreshDependencies();
 
         // ========================================================
-        try {
 		SimulationContext scArray[] = bioModel.getSimulationContexts();
 		if (scArray != null) {
 			MathDescription[] mathDescArray = new MathDescription[scArray.length];
 			for (int i = 0; i < scArray.length; i++) {
-				//check if all structure sizes are specified
-				scArray[i].checkValidity();
-				//
-				// compute Geometric Regions if necessary
-				//
-				cbit.vcell.geometry.surface.GeometrySurfaceDescription geoSurfaceDescription = scArray[i].getGeometry().getGeometrySurfaceDescription();
-				if (geoSurfaceDescription!=null && geoSurfaceDescription.getGeometricRegions()==null){
-					cbit.vcell.geometry.surface.GeometrySurfaceUtils.updateGeometricRegions(geoSurfaceDescription);
+				try {
+					//check if all structure sizes are specified
+					scArray[i].checkValidity();
+					//
+					// compute Geometric Regions if necessary
+					//
+					cbit.vcell.geometry.surface.GeometrySurfaceDescription geoSurfaceDescription = scArray[i].getGeometry().getGeometrySurfaceDescription();
+					if (geoSurfaceDescription!=null && geoSurfaceDescription.getGeometricRegions()==null){
+						cbit.vcell.geometry.surface.GeometrySurfaceUtils.updateGeometricRegions(geoSurfaceDescription);
+					}
+					if (scArray[i].getModel() != bioModel.getModel()) {
+						throw new Exception("The BioModel's physiology doesn't match that for Application '"+scArray[i].getName()+"'");
+					}
+					//
+					// create new MathDescription
+					//
+					MathDescription math = scArray[i].createNewMathMapping().getMathDescription();
+					//
+					// load MathDescription into SimulationContext
+					// (BioModel is responsible for propagating this to all applicable Simulations).
+					//
+					scArray[i].setMathDescription(math);
+				} catch(Exception e) {
+					String msg = "failed to export SimulationContext "+scArray[i].getName()+": "+e.getMessage();
+					logger.error(msg, e);
+					throw new RuntimeException(msg, e);
 				}
-				if (scArray[i].getModel() != bioModel.getModel()) {
-					throw new Exception("The BioModel's physiology doesn't match that for Application '"+scArray[i].getName()+"'");
-				}
-				//
-				// create new MathDescription
-				//
-				MathDescription math = scArray[i].createNewMathMapping().getMathDescription();
-				//
-				// load MathDescription into SimulationContext 
-				// (BioModel is responsible for propagating this to all applicable Simulations).
-				//
-				scArray[i].setMathDescription(math);
+
 			}
 		}
-        } catch(Exception e) {
-        	logger.error(e);
-        }
 
         List<Simulation> simsToExport = Arrays.stream(bioModel.getSimulations()).filter(simulationExportFilter).collect(Collectors.toList());
 
@@ -357,7 +359,7 @@ public class VcmlOmexConverter {
         try {
        	 	FileUtils.copyURLToFile(source, destination, connectionTimeout, readTimeout);		// diagram
         } catch(IOException e) {
-        	logger.error("Diagram not present in source="+sourcePath, e);
+        	logger.error("Diagram not present in source="+sourcePath+": "+e.getMessage(), e);
         }
 
         String rdfString = getMetadata(vcmlName, bioModel, destination, bioModelInfo);
@@ -402,9 +404,10 @@ public class VcmlOmexConverter {
         } catch (UnsatisfiedLinkError ex) {
             logger.error("Unable to link to native 'libCombine' lib, check native lib: " + ex.getMessage());
             throw ex;
-        } catch (RuntimeException ex) {
-            logger.error("Error occurred while importing libCombine: " + ex.getMessage());
-            throw ex;
+        } catch (Exception ex) {
+			String msg = "Error occurred while importing libCombine: " + ex.getMessage();
+            logger.error(msg, ex);
+            throw new RuntimeException(msg, ex);
         }
 
         boolean isDeleted = false;
@@ -487,7 +490,7 @@ public class VcmlOmexConverter {
 //        	FileUtils.copyFileToDirectory(srcFile, destDir);
 
 			if (bValidate){
-				logger.error("skipping VcmlOmexConverter.validation until verify math override round-trip (relying on SBMLExporter.bRoundTripSBMLValidation)");
+				logger.warn("skipping VcmlOmexConverter.validation until verify math override round-trip (relying on SBMLExporter.bRoundTripSBMLValidation)");
 //				logger.info("validating Omex file '"+omexFile+"'");
 //				List<BioModel> reread_docs = XmlHelper.readOmex(omexFile, new CLIUtils.LocalLogger());
 //				logger.info("validated Omex file '"+omexFile+"'");
@@ -558,7 +561,15 @@ public class VcmlOmexConverter {
     		try {
     			Map<String, String> nsMap = DefaultNameSpaces.defaultMap.convertToMap();
     			ret = SesameRioUtil.writeRDFToString(graph, nsMap, RDFFormat.RDFXML);
-    			SesameRioUtil.writeRDFToStream(System.out, graph, nsMap, RDFFormat.RDFXML);
+				if (logger.isTraceEnabled()) {
+					ByteArrayOutputStream bos = new ByteArrayOutputStream();
+					SesameRioUtil.writeRDFToStream(bos, graph, nsMap, RDFFormat.RDFXML);
+					try {
+						logger.trace(bos.toString(StandardCharsets.UTF_8.name()));
+					} catch (UnsupportedEncodingException e) {
+						logger.error(e);
+					}
+				}
     		} catch (RDFHandlerException e) {
     			logger.error(e);
 			}
