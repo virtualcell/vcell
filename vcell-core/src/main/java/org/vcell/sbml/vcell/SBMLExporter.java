@@ -311,18 +311,22 @@ private void addCompartments() throws XMLStreamException, SbmlException {
 		StructureMapping vcStructMapping = getSelectedSimContext().getGeometryContext().getStructureMapping(vcStructures[i]);
 		try {
 			if (vcStructMapping.getSizeParameter().getExpression() != null) {
-				if(vcSelectedSimContext.getGeometry() != null && vcSelectedSimContext.getGeometry().getDimension() == 0) {
+				if(vcSelectedSimContext.getGeometry().getDimension() == 0) {
 					sbmlCompartment.setSize(vcStructMapping.getSizeParameter().getExpression().evaluateConstant());
 				} else {
-					Expression sizeRatio = vcStructMapping.getUnitSizeParameter().getExpression();
 					GeometryClass srcGeometryClass = vcStructMapping.getGeometryClass();
-					GeometricRegion[] srcGeometricRegions = vcSelectedSimContext.getGeometry().getGeometrySurfaceDescription().getGeometricRegions(srcGeometryClass);
-					if (srcGeometricRegions != null) {
-						double size = 0;
-						for (GeometricRegion srcGeometricRegion : srcGeometricRegions) {
-							size += srcGeometricRegion.getSize();
+					if (srcGeometryClass!=null) {
+						Expression sizeRatio = vcStructMapping.getUnitSizeParameter().getExpression();
+						GeometricRegion[] srcGeometricRegions = vcSelectedSimContext.getGeometry().getGeometrySurfaceDescription().getGeometricRegions(srcGeometryClass);
+						if (srcGeometricRegions != null) {
+							double size = 0;
+							for (GeometricRegion srcGeometricRegion : srcGeometricRegions) {
+								size += srcGeometricRegion.getSize();
+							}
+							sbmlCompartment.setSize(Expression.mult(new Expression(sizeRatio), new Expression(size)).evaluateConstant());
 						}
-						sbmlCompartment.setSize(Expression.mult(new Expression(sizeRatio), new Expression(size)).evaluateConstant());
+					}else{
+						sbmlCompartment.setSize(vcStructMapping.getSizeParameter().getExpression().evaluateConstant());
 					}
 				}
 			}
