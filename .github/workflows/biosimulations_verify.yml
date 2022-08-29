@@ -1,4 +1,4 @@
-name: Submit simulator version from GHCR to BioSimulators
+name: Validate simulator version from GHCR to BioSimulators
 on:
   workflow_dispatch:
     inputs:
