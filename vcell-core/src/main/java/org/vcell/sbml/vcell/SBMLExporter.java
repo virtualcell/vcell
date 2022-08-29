@@ -250,6 +250,17 @@ public class SBMLExporter {
  */
 private void addCompartments() throws XMLStreamException, SbmlException {
 	Model vcModel = vcBioModel.getModel();
+	try {
+		// old vcell spatial application, with only relative compartment sizes (SBML wants absolute sizes for nonspatial ... easier to understand anyway)
+		if (!getSelectedSimContext().getGeometryContext().isAllSizeSpecifiedPositive() && getSelectedSimContext().getGeometry().getDimension() == 0) {
+			Structure structure = getSelectedSimContext().getModel().getStructure(0);
+			double structureSize = 1.0;
+			StructureMapping structMapping = getSelectedSimContext().getGeometryContext().getStructureMapping(structure);
+			StructureSizeSolver.updateAbsoluteStructureSizes(getSelectedSimContext(), structure, structureSize, structMapping.getSizeParameter().getUnitDefinition());
+		}
+	}catch (Exception e){
+		throw new RuntimeException("Failed to solve for absolute compartment sizes for nonspatial application: "+e.getMessage(), e);
+	}
 	cbit.vcell.model.Structure[] vcStructures = vcModel.getStructures();
 	for (int i = 0; i < vcStructures.length; i++){
 		Compartment sbmlCompartment = sbmlModel.createCompartment();
@@ -299,15 +310,6 @@ private void addCompartments() throws XMLStreamException, SbmlException {
 
 		StructureMapping vcStructMapping = getSelectedSimContext().getGeometryContext().getStructureMapping(vcStructures[i]);
 		try {
-			if (vcStructMapping.getSizeParameter().getExpression() == null && getSelectedSimContext().getGeometry().getDimension() == 0){
-				try {
-					// old vcell spatial application, with only relative compartment sizes (SBML wants absolute sizes for nonspatial ... easier to understand anyway)
-					double structureSize = 1.0;
-					StructureSizeSolver.updateAbsoluteStructureSizes(getSelectedSimContext(), vcStructures[i], structureSize, vcStructMapping.getSizeParameter().getUnitDefinition());
-				} catch (Exception e){
-					logger.error("failed to compute size parameter: "+e.getMessage(), e);
-				}
-			}
 			if (vcStructMapping.getSizeParameter().getExpression() != null) {
 				if(vcSelectedSimContext.getGeometry() != null && vcSelectedSimContext.getGeometry().getDimension() == 0) {
 					sbmlCompartment.setSize(vcStructMapping.getSizeParameter().getExpression().evaluateConstant());
@@ -338,7 +340,7 @@ private void addCompartments() throws XMLStreamException, SbmlException {
 				sbmlModel.addRule(assignRule);
 			}
 		}
-		
+
 		// Add the outside compartment of given compartment as annotation to the compartment.
 		// This is required later while trying to read in compartments ...
 

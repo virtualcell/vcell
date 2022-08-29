@@ -239,10 +239,6 @@ public class SEDMLExporter {
 				boolean sbmlExportFailed = false;
 				if(!bForceVCML) {	// we try to save to SBML
 					try {
-						// check if structure sizes are set for nonspatial models.
-						if (!simContext.getGeometryContext().isAllSizeSpecifiedPositive() && simContext.getGeometry().getDimension()==0) {
-							throw new RuntimeException("non-spatial SBML Model must have all absolute compartment sizes set (responsibility of SBMLExporter)");
-						}
 						Pair <String, Map<Pair <String, String>, String>> pair = XmlHelper.exportSBMLwithMap(vcBioModel, 3, 2, 0, isSpatial, simContext, null, bRoundTripSBMLValidation);
 						sbmlString = pair.one;
 						l2gMap = pair.two;
