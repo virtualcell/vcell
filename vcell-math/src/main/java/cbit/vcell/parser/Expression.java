@@ -284,15 +284,24 @@ flattenCount++;////////////////////////
 		if (symbols==null || symbols.length==0){
 			return this.flatten();
 		}
+		HashMap<String, SymbolTableEntry> bindings = new HashMap<>();
+		for (String symbol : symbols){
+			SymbolTableEntry symbolBinding = getSymbolBinding(symbol);
+			if (symbolBinding != null) {
+				bindings.put(symbol, symbolBinding);
+			}
+		}
+		SymbolTable symbolTable = new SymbolTable() {
+			@Override
+			public SymbolTableEntry getEntry(String identifierString) { return bindings.get(identifierString); }
+			@Override
+			public void getEntries(Map<String, SymbolTableEntry> entryMap) { throw new RuntimeException("not implemented");}
+		};
 		if (Arrays.asList(symbols).contains(factorSymbol)) {
 			// in case factorSymbol STE is 'constant' (will be removed during flattening)
 			// in some cases KMOLE from biomodel is not constant, KMOLE from MathDescription is constant
 			// and only one gets flattened away (in this case it will store the first binding it sees - better than nothing)
 			// this binding will be replaced later.
-			HashMap<String, SymbolTableEntry> bindings = new HashMap<>();
-			for (String symbol : symbols){
-				bindings.put(symbol, getSymbolBinding(symbol));
-			}
 
 			Expression flattenedExpression = new Expression(this);
 			flattenedExpression.bindExpression(null);  // clear bindings so that flatten will not remove symbols
@@ -318,12 +327,6 @@ flattenCount++;////////////////////////
 			}
 			if (bReplaced) {
 				Expression substitutedExpression = new Expression(flattenedInfix);
-				SymbolTable symbolTable = new SymbolTable() {
-					@Override
-					public SymbolTableEntry getEntry(String identifierString) { return bindings.get(identifierString); }
-					@Override
-					public void getEntries(Map<String, SymbolTableEntry> entryMap) { throw new RuntimeException("not implemented");}
-				};
 				final Expression factorSymbol_exp = new Expression(factorSymbol);
 				substitutedExpression.substituteInPlace(new Expression(mangledFactorSymbol), factorSymbol_exp);
 				substitutedExpression = substitutedExpression.flatten();
@@ -337,7 +340,13 @@ flattenCount++;////////////////////////
 				return substitutedExpression;
 			}
 		}
-		return this.flatten();
+		Expression safeExp = new Expression(this);
+		safeExp.bindExpression(null);
+		safeExp = safeExp.flatten();
+		if (bindings.size()>0) {
+			safeExp.bindExpression(symbolTable);
+		}
+		return safeExp;
 	}
 
 /**

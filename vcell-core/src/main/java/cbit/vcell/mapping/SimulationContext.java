@@ -231,7 +231,7 @@ public class SimulationContext implements SimulationOwner, Versionable, Matchabl
 		private final List<SymbolReplacementTemplate> builtin_replacements = new ArrayList<>();
 		private final IdentifiableProvider bioIdentifiableProvider = new BioModel(null);
 
-		public void SimulationContextOverridesResolver() {
+		void SimulationContextOverridesResolver() {
 			// test for renamed initial condition constant (changed from _init to _init_uM)
 			builtin_replacements.add(new SymbolReplacementTemplate(DiffEquMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_old,
 					DiffEquMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_uM));
@@ -283,7 +283,49 @@ public class SimulationContext implements SimulationOwner, Versionable, Matchabl
 											bioModel.getModel().getUnitSystem().getInstance_DIMENSIONLESS(),
 											bioModel.getModel().getKMOLE());
 									Variable replacementVariable = currentMathSymbolMapping.getVariable(newBioSte);
-									return new SymbolReplacement(replacementVariable.getName(), factor);
+									if (replacementVariable instanceof Constant) {
+										return new SymbolReplacement(replacementVariable.getName(), factor);
+									}else{
+										if (newBioSte instanceof SpeciesContextSpecParameter){
+											SpeciesContextSpecParameter scsParam = (SpeciesContextSpecParameter) newBioSte;
+											//
+											// get size parameter
+											//
+											StructureMapping structureMapping = getGeometryContext().getStructureMapping(scsParam.getSpeciesContext().getStructure());
+											StructureMapping.StructureMappingParameter sizeParam = structureMapping.getSizeParameter();
+											Variable sizeVariable = currentMathSymbolMapping.getVariable(sizeParam);
+											if (scsParam.getRole() == SpeciesContextSpec.ROLE_InitialCount){
+												// couldn't find count, look for concentration instead
+												newBioSte = scsParam.getSpeciesContextSpec().getParameterFromRole(SpeciesContextSpec.ROLE_InitialConcentration);
+												replacementVariable = currentMathSymbolMapping.getVariable(newBioSte);
+												if (replacementVariable != null){
+													newUnit = newBioSte.getUnitDefinition();
+													factor = ModelUnitConverter.getDimensionlessScaleFactor(
+															newUnit.divideBy(previousUnit).multiplyBy(sizeParam.getUnitDefinition()),
+															bioModel.getModel().getUnitSystem().getInstance_DIMENSIONLESS(),
+															bioModel.getModel().getKMOLE());
+													factor = Expression.div(factor, new Expression(sizeVariable, null));
+													return new SymbolReplacement(replacementVariable.getName(), factor);
+												}
+											}else if (scsParam.getRole() == SpeciesContextSpec.ROLE_InitialConcentration){
+												// couldn't find concentration, look for count instead
+												// couldn't find count, look for concentration instead
+												newBioSte = scsParam.getSpeciesContextSpec().getParameterFromRole(SpeciesContextSpec.ROLE_InitialCount);
+												replacementVariable = currentMathSymbolMapping.getVariable(newBioSte);
+												if (replacementVariable != null){
+													newUnit = newBioSte.getUnitDefinition();
+													factor = ModelUnitConverter.getDimensionlessScaleFactor(
+															newUnit.divideBy(previousUnit).divideBy(sizeParam.getUnitDefinition()),
+															bioModel.getModel().getUnitSystem().getInstance_DIMENSIONLESS(),
+															bioModel.getModel().getKMOLE());
+													factor = Expression.mult(factor, new Expression(sizeVariable, null));
+													return new SymbolReplacement(replacementVariable.getName(), factor);
+												}
+											}
+										}
+										logger.warn("could not find replacement symbol for "+name);
+										// look for corresponding items instead (e.g. initCount vs initConc) ????
+									}
 								}
 							}
 						}
