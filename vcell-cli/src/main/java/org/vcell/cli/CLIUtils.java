@@ -98,7 +98,7 @@ public class CLIUtils {
     }
 
     public static void writeDetailedErrorList(String outputBaseDir, String s, boolean bForceKeepLogs) throws IOException {
-        if (isBatchExecution(outputBaseDir, bForceKeepLogs)) {
+        if (CLIUtils.isBatchExecution(outputBaseDir, bForceKeepLogs)) {
             String dest = outputBaseDir + File.separator + "detailedErrorLog.txt";
             java.nio.file.Files.write(Paths.get(dest), (s + "\n").getBytes(),
                     StandardOpenOption.CREATE, StandardOpenOption.APPEND);
