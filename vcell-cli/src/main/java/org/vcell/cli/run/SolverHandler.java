@@ -29,6 +29,10 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -103,7 +107,7 @@ public class SolverHandler {
             docName = bioModel.getName();
             sims = bioModel.getSimulations();
             
-            Map<SimulationJob, Simulation> jobToSimulationMap = new LinkedHashMap<>();
+            List<SimulationJob> simJobsList = new ArrayList<>();
             for (Simulation sim : sims) {
                	if(sim.getImportedTaskID() == null) {
             		continue;	// this is a simulation not matching the imported task, so we skip it
@@ -111,17 +115,15 @@ public class SolverHandler {
                	int scanCount = sim.getScanCount();
                	for(int i=0; i < scanCount; i++) {
                		SimulationJob simJob = new SimulationJob(sim, i, null);
-               		jobToSimulationMap.put(simJob, sim);
+               		simJobsList.add(simJob);
                	}
             }
-            
-            for (SimulationJob simJob : jobToSimulationMap.keySet()) {
+            for (SimulationJob simJob : simJobsList) {
             	logger.debug("Initializing simulation job... ");
-                String logTaskMessage = "Initializing simulation job... ";
+                String logTaskMessage = "Initializing simulation job " + simJob.getJobIndex() + " ... ";
             	String logTaskError = "";
                 long startTimeTask = System.currentTimeMillis();
 
-                int simulationJobIndex = 0;
                 SimulationTask simTask;
                 String kisao = "null";
             	ODESolverResultSet odeSolverResultSet = null;
@@ -129,7 +131,7 @@ public class SolverHandler {
             	SolverDescription sd = null;
             	int solverStatus = SolverStatus.SOLVER_READY;
             	
-            	Simulation sim = jobToSimulationMap.get(simJob);
+            	Simulation sim = simJob.getSimulation();
                 try {
                 	SimulationOwner so = sim.getSimulationOwner();
                 	sim = new TempSimulation(sim, false);
@@ -270,14 +272,13 @@ public class SolverHandler {
                     RunUtils.drawBreakLine("-", 100);
                 }
                 if(odeSolverResultSet != null) {
-                    resultsHash.put(sim.getImportedTaskID() + "_" + simulationJobIndex, odeSolverResultSet);
+                    resultsHash.put(sim.getImportedTaskID() + "_" + simJob.getJobIndex(), odeSolverResultSet);
                 } else {
-                	resultsHash.put(sim.getImportedTaskID() + "_" + simulationJobIndex, null);	// if any task fails, we still put it in the hash with a null value
+                	resultsHash.put(sim.getImportedTaskID() + "_" + simJob.getJobIndex(), null);	// if any task fails, we still put it in the hash with a null value
                 }
                 if(keepTempFiles == false) {
                 	RunUtils.removeIntermediarySimFiles(outputDirForSedml);
                 }
-                simulationJobIndex++;
                 simulationJobCount++;
             }
             bioModelCount++;
