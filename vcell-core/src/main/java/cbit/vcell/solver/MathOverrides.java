@@ -947,4 +947,19 @@ public boolean isUnusedParameter(String name) {
 	}
 }
 
+
+public String[] getFilteredConstantNames() {
+	// TODO Jim to replace filtering logic
+	List<String> reservedConstants = Arrays.asList("KMOLE","_T_","_F_","F_nmol_","_N_pmol_","_PI_","_R_","_K_GHK","K_millivolts_per_volt","param_K_millivolts_per_volt");
+	List<String> allConstants = Arrays.asList(getAllConstantNames());
+	ArrayList<String> filteredConstants = new ArrayList<String>();
+	for (String constant : allConstants) {
+		if (reservedConstants.stream().anyMatch(constant::contains)) continue;
+		if (constant.startsWith("UnitFactor")) continue;
+		if (constant.startsWith("param__")) continue;
+		filteredConstants.add(constant);
+	}
+	return (String[])filteredConstants.toArray(new String[filteredConstants.size()]);
+}
+
 }

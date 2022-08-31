@@ -60,6 +60,8 @@ import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SimulationContext.Application;
 import cbit.vcell.mapping.SimulationContext.MathMappingCallback;
 import cbit.vcell.mapping.SimulationContext.NetworkGenerationRequirements;
+import cbit.vcell.mapping.SpeciesContextSpec;
+import cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecParameter;
 import cbit.vcell.math.Constant;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathException;
@@ -254,22 +256,16 @@ public class SEDMLImporter {
 					}
 				}
 				if (matchingSimulationContext == null) {
-					if (!sedmlModel.getListOfChanges().isEmpty() && canTranslateToOverrides(bioModel, sedmlModel)) {
-						// for now we can't put overrides for different app type than original from SBML import
-						// if on initial check it looked like we can, we skipped the import with changes
-						// the referenced model has not been imported, this will bring it with changes applied
-						BioModel newBioModel = importModel(sedmlModel);
-						bmMap.put(sedmlModel.getId(), newBioModel);
-						bioModel = newBioModel;
-					}
+					// this happens if we need a NETWORK_STOCHASTIC application
 					matchingSimulationContext = SimulationContext.copySimulationContext(bioModel.getSimulationContext(0), sedmlOriginalModelName+"_"+existingSimulationContexts.length, bSpatial, appType);
 					bioModel.addSimulationContext(matchingSimulationContext);
-					bioModel.removeSimulationContext(bioModel.getSimulationContext(0));
 					try {
-						matchingSimulationContext.setName(sedmlModel.getName());
-					} catch (Exception e) {
+						String importedSCName = bioModel.getSimulationContext(0).getName();
+						bioModel.getSimulationContext(0).setName("original_imported_"+importedSCName);
+						matchingSimulationContext.setName(importedSCName);
+					} catch (PropertyVetoException e) {
 						// we should never bomb out just for trying to set a pretty name
-						logger.warn("could not set name on application from name of model "+sedmlModel);
+						logger.warn("could not set pretty name on application from name of model "+sedmlModel);
 					}
 				}
 				matchingSimulationContext.refreshDependencies();
@@ -320,31 +316,94 @@ public class SEDMLImporter {
 				for (int i = 0; i < sims.length; i++) {
 					String taskId = sims[i].getImportedTaskID();
 					AbstractTask task = sedml.getTaskWithId(taskId);
-					try {
-						sims[i].setName(task.getId()); // TODO: This used to be task.getName(), but since name could be null it caused problems.
-					} catch (Exception e) {
-						logger.warn("could not set pretty name for simulation "+sims[i].getDisplayName()+" from task "+task);
+					if (task.getName() != null) {
+						try {
+							sims[i].setName(task.getName());
+						} catch (PropertyVetoException e) {
+							// we should never bomb out just for trying to set a pretty name
+							logger.warn("could not set pretty name for simulation "+sims[i].getDisplayName()+" from task "+task);
+						}
 					}
 				}
 			}
-			// purge unused biomodels
+			// purge unused biomodels and applications
 			for (BioModel doc : docs) {
-				if (doc.getSimulations() == null || doc.getSimulations().length == 0) {
-					docs.remove(doc);
+				for (int i = 0; i < doc.getSimulationContexts().length; i++) {
+					if (doc.getSimulationContext(i).getSimulations().length == 0) doc.removeSimulationContext(doc.getSimulationContext(i));
 				}
+				if (doc.getSimulations().length == 0) docs.remove(doc);
 			}
+			// finally try to consolidate SimContexts into fewer (posibly just one) BioModels
+			// unlikely to happen from SEDMLs not originating from VCell, but very useful for roundtripping if so
+			// TODO: maybe try to detect that and only try if of VCell origin
+			mergeBioModels(docs);
 			return docs;
 		} catch (Exception e) {
 			throw new RuntimeException("Unable to initialize bioModel for the given selection\n"+e.getMessage(), e);
 		}
 	}
 
+	private void mergeBioModels(List<BioModel> bioModels) {
+		if (bioModels.size() <=1) return;
+		// for now just try if they *ALL* have matchable model
+		// this should be the case if dealing with exported SEDML/OMEX from VCell BioModel with multiple applications
+		HashMap<BioModel, BioModel> strippedMap= new HashMap<BioModel, BioModel>();
+		for (BioModel bm : bioModels) {
+			BioModel strippedBM = null;
+			try {
+				strippedBM = XmlHelper.cloneBioModel(bm);
+				for (Simulation sim : strippedBM.getSimulations()) {
+					strippedBM.removeSimulation(sim);
+				}
+				strippedBM.removeSimulationContext(strippedBM.getSimulationContext(0));
+			} catch (XmlParseException | PropertyVetoException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			strippedMap.put(bm, strippedBM);
+		}
+		for (BioModel bm : bioModels) {
+			BioModel sbm = strippedMap.get(bm);
+			for (BioModel cbm : bioModels) {
+				System.out.println("----comparing stripped----"+sbm.getName()+" with stripped "+strippedMap.get(cbm));
+				boolean matchable = sbm.getModel().compareEqual(strippedMap.get(cbm).getModel());
+				System.out.println(matchable);
+				if (!matchable) return;
+			}
+		}
+		// all have matchable model, merge by pooling SimContexts
+		BioModel baseBM = bioModels.get(0);
+		String baseXML = null;
+		try {
+			baseXML = XmlHelper.bioModelToXML(baseBM);
+		} catch (XmlParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return;
+		}
+		for (int i = 1; i < bioModels.size(); i++) {
+			// TODO get XML of SimContext here and insert into baseXML
+		}
+		// TODO re-read XML into a single BioModel and replace docs List
+		return;
+		// TODO more work here if we want to generalize
+	}
+
 	private void createOverrides(Simulation newSimulation, List<Change> changes) {
 		for (Change change : changes) {
 			String targetID = sbmlSupport.getIdFromXPathIdentifer(change.getTargetXPath().getTargetAsString());
-			String vcConstantName = resolveConstant(((SimulationContext)newSimulation.getSimulationOwner()), targetID);
+			SimulationContext importedSC = null; SimulationContext convertedSC = null;
+			SimulationContext currentSC = (SimulationContext)newSimulation.getSimulationOwner();
+			if (((SimulationContext)newSimulation.getSimulationOwner()).getApplicationType() == Application.NETWORK_STOCHASTIC) {
+				importedSC = currentSC.getBioModel().getSimulationContext(0);
+				convertedSC = (SimulationContext)newSimulation.getSimulationOwner();
+			} else {
+				importedSC = (SimulationContext)newSimulation.getSimulationOwner();
+				convertedSC = null;
+			}
+			String vcConstantName = resolveConstant(importedSC, convertedSC, targetID);
 			if (vcConstantName == null) {
-				logger.warn("target in change "+change+" could not be resolved to Constant, overrides not applied");
+				logger.error("target in change "+change+" could not be resolved to Constant, overrides not applied");
 				continue;
 			}
 			try {
@@ -368,11 +427,11 @@ public class SEDMLImporter {
 					System.out.println(vars);
 					for (org.jlibsedml.Variable var : vars) {
 						String sbmlID = sbmlSupport.getIdFromXPathIdentifer(var.getTarget());
-						String vcmlName = resolveConstant(((SimulationContext)newSimulation.getSimulationOwner()), sbmlID);
+						String vcmlName = resolveConstant(importedSC, convertedSC, sbmlID);
 						exp.substituteInPlace(new Expression(var.getId()), new Expression(vcmlName));
 					}
 				} else {
-					logger.warn("unsupported change "+change+" encountered, overrides not applied");
+					logger.error("unsupported change "+change+" encountered, overrides not applied");
 					continue;
 				}
 				Constant constant = new Constant(vcConstantName,exp);
@@ -384,12 +443,11 @@ public class SEDMLImporter {
 		}
 	}
 
-	private String resolveConstant(SimulationContext simContext, String SBMLtargetID) {
+	private String resolveConstant(SimulationContext importedSimContext, SimulationContext convertedSimContext, String SBMLtargetID) {
 		// finds name of math-side Constant corresponding to SBML entity, if there is one
 		// returns null if there isn't
-		String constantName = null;
-		MathSymbolMapping msm = (MathSymbolMapping)simContext.getMathDescription().getSourceSymbolMapping();
-		SBMLImporter sbmlImporter = importMap.get(simContext.getBioModel());
+		MathSymbolMapping msm = (MathSymbolMapping)importedSimContext.getMathDescription().getSourceSymbolMapping();
+		SBMLImporter sbmlImporter = importMap.get(importedSimContext.getBioModel());
 		SBMLSymbolMapping sbmlMap = sbmlImporter.getSymbolMapping();
 		SBase targetSBase = sbmlMap.getMappedSBase(SBMLtargetID);
 		if (targetSBase == null){
@@ -399,13 +457,28 @@ public class SEDMLImporter {
 		SymbolTableEntry ste =sbmlMap.getSte(targetSBase, SymbolContext.INITIAL);
 		Variable var = msm.getVariable(ste);
 		if (var instanceof Constant) {
-			constantName = var.getName();
-		}
-		if (constantName == null){
+			String constantName = var.getName();
+			// if simcontext was converted to stochastic then species init constants use different names
+			if (convertedSimContext != null && ste instanceof SpeciesContextSpecParameter) {
+				SpeciesContextSpecParameter scsp = (SpeciesContextSpecParameter)ste;
+				if (scsp.getRole() == SpeciesContextSpec.ROLE_InitialConcentration || scsp.getRole() == SpeciesContextSpec.ROLE_InitialCount) {
+					String spcName = scsp.getSpeciesContext().getName();
+					SpeciesContextSpec scs = null;
+					for (int i = 0; i < convertedSimContext.getReactionContext().getSpeciesContextSpecs().length; i++) {
+						scs = convertedSimContext.getReactionContext().getSpeciesContextSpecs()[i];
+						if (scs.getSpeciesContext().getName().equals(spcName)) {
+							break;
+						}
+					}
+					SpeciesContextSpecParameter convertedSCSP = scs.getInitialConditionParameter();
+					var = ((MathSymbolMapping)convertedSimContext.getMathDescription().getSourceSymbolMapping()).getVariable(convertedSCSP);
+					constantName = var.getName();
+				}
+			}
+			return constantName; 
+		} else {
 			logger.error("couldn't find Constant target with sid="+SBMLtargetID+" in symbol mapping, var = "+var);
 			return null;
-		}else {
-			return constantName;
 		}
 	}
 
@@ -429,6 +502,15 @@ public class SEDMLImporter {
 				rt = (RepeatedTask)selectedTask; // need to reset if we had a chain above
 				Task actualTask = (Task)referredTask;
 				Simulation simulation = vcSimulations.get(actualTask.getId());
+				SimulationContext importedSC = null; SimulationContext convertedSC = null;
+				SimulationContext currentSC = (SimulationContext)simulation.getSimulationOwner();
+				if (((SimulationContext)simulation.getSimulationOwner()).getApplicationType() == Application.NETWORK_STOCHASTIC) {
+					importedSC = currentSC.getBioModel().getSimulationContext(0);
+					convertedSC = (SimulationContext)simulation.getSimulationOwner();
+				} else {
+					importedSC = (SimulationContext)simulation.getSimulationOwner();
+					convertedSC = null;
+				}
 				List<SetValue> changes = rt.getChanges();
 				List<Change> functions = new ArrayList<Change>();
 				for (SetValue change : changes) {
@@ -440,8 +522,7 @@ public class SEDMLImporter {
 						ConstantArraySpec scanSpec = null;
 						String targetID = sbmlSupport
 								.getIdFromXPathIdentifer(change.getTargetXPath().getTargetAsString());
-						String constant = resolveConstant((SimulationContext) simulation.getSimulationOwner(),
-								targetID);
+						String constant = resolveConstant(importedSC, convertedSC, targetID);
 						if (range instanceof UniformRange) {
 							UniformRange ur = (UniformRange) range;
 							scanSpec = ConstantArraySpec.createIntervalSpec(constant,
@@ -522,7 +603,7 @@ public class SEDMLImporter {
 		// check whether all targets have addressable Constants on the Math side
 		for (Change change : changes) {
 			String sbmlID = sbmlSupport.getIdFromXPathIdentifer(change.getTargetXPath().toString());
-			if (resolveConstant(refBM.getSimulationContext(0), sbmlID) == null) {
+			if (resolveConstant(refBM.getSimulationContext(0), null, sbmlID) == null) {
 				logger.warn("could not map changeAttribute for ID "+sbmlID+" to a VCell Constant");
 				return false;
 			}
