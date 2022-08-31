@@ -949,8 +949,26 @@ public boolean isUnusedParameter(String name) {
 
 
 public String[] getFilteredConstantNames() {
-	// TODO Jim to replace filtering logic
-	List<String> reservedConstants = Arrays.asList("KMOLE","_T_","_F_","F_nmol_","_N_pmol_","_PI_","_R_","_K_GHK","K_millivolts_per_volt","param_K_millivolts_per_volt");
+	//
+	// try to ask SimulationContext for Constants which map to unit conversions and physical constants (exclude these).
+	//
+	SimulationOwner simulationOwner = simulation.getSimulationOwner();
+	//
+	// MathModels don't provide MathOverrides resolvers, and in context of Simulation editor, cloned Simulation doesn't have an owner (transient field)
+	//
+	if (simulationOwner != null && simulationOwner.getMathOverridesResolver() != null) {
+		Set<String> nonOverridableConstantNames = simulationOwner.getMathOverridesResolver().getNonOverridableConstantNames();
+		if (nonOverridableConstantNames!=null) { // returns null if MathSymbolMapping is missing from MathDescription.
+			List<String> allConstants = Arrays.asList(getAllConstantNames());
+			allConstants.removeAll(nonOverridableConstantNames);
+			return allConstants.toArray(new String[0]);
+		}
+	}
+
+	//
+	// Simulation owner cannot provide intelligent choices (MathModel or MathSymbolMapping is missing)
+	//
+	List<String> reservedConstants = Arrays.asList("KMOLE", "_T_", "_F_", "F_nmol_", "_N_pmol_", "_PI_", "_R_", "_K_GHK", "K_millivolts_per_volt", "param_K_millivolts_per_volt");
 	List<String> allConstants = Arrays.asList(getAllConstantNames());
 	ArrayList<String> filteredConstants = new ArrayList<String>();
 	for (String constant : allConstants) {
@@ -959,7 +977,7 @@ public String[] getFilteredConstantNames() {
 		if (constant.startsWith("param__")) continue;
 		filteredConstants.add(constant);
 	}
-	return (String[])filteredConstants.toArray(new String[filteredConstants.size()]);
+	return filteredConstants.toArray(new String[filteredConstants.size()]);
 }
 
 }
