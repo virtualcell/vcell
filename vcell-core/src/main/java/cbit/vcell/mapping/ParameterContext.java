@@ -16,6 +16,8 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Compare;
 import org.vcell.util.Displayable;
@@ -49,7 +51,8 @@ import cbit.vcell.units.VCUnitSystem;
 import net.sourceforge.interval.ia_math.RealInterval;
 
 public class ParameterContext implements Matchable, ScopedSymbolTable, Serializable {
-	
+
+	private final static Logger logger = LogManager.getLogger(ParameterContext.class);
 	public interface ParameterRoleEnum {
 		// uses == semantics, must be implemented by an enumeration
 		String getDescription();
@@ -334,10 +337,8 @@ public class ParameterContext implements Matchable, ScopedSymbolTable, Serializa
 						}
 					}
 					
-				}catch (ExpressionException e2){
-					e2.printStackTrace(System.out);
-				}catch (PropertyVetoException e3){
-					e3.printStackTrace(System.out);
+				}catch (ExpressionException | PropertyVetoException e2){
+					logger.error("property change failed", e2);
 				}
 			} 
 		} 
@@ -377,7 +378,7 @@ public class ParameterContext implements Matchable, ScopedSymbolTable, Serializa
 					resolveUndefinedUnits();
 				}
 			}catch (Throwable e){
-				e.printStackTrace(System.out);
+				logger.error("property change failed", e);
 			}
 		}
 	};
@@ -388,8 +389,7 @@ public ParameterContext(BioNameScope bioNameScope, ParameterPolicy parameterPoli
 	this.parameterPolicy = parameterPolicy;
 	this.unitSystemProvider = argUnitSystemProvider;
 	addPropertyChangeListener(listener);
-//System.out.println(this);
-}            
+}
 
 /**
  * The addPropertyChangeListener method was generated to support the propertyChange field.
@@ -628,7 +628,7 @@ public void refreshDependencies() {
 				fieldParameters[i].getExpression().bindExpression(this);
 			}
 		}catch (ExpressionException e){
-			System.out.println("error binding expression '"+fieldParameters[i].getExpression().infix()+"', "+e.getMessage());
+			logger.error("error binding expression '"+fieldParameters[i].getExpression().infix()+"', "+e.getMessage(), e);
 		}
 	}
 	for (int i = 0; i < fieldParameters.length; i++){
@@ -698,8 +698,7 @@ public void renameLocalParameter(String oldName, String newName) throws Expressi
 		try {
 			cleanupParameters();
 		}catch (Exception e){
-			e.printStackTrace(System.out);
-			throw new RuntimeException(e.getMessage());
+			throw new RuntimeException(e.getMessage(), e);
 		}
 		parameter.firePropertyChange("name",oldName,newName);
 	}
@@ -734,12 +733,11 @@ public void resolveUndefinedUnits() {
 						fieldParameters[i].setUnitDefinition(vcUnitDefinitions[i]);
 					}
 				}
-				//System.out.println("successfully completed Kinetics.resolveUndefinedUnits() for ReactionStep '"+getReactionStep()+"'");
 			}
 		}catch (ExpressionBindingException e){
-			System.out.println("ParameterContext.resolveUndefinedUnits(): EXCEPTION: "+e.getMessage());
+			logger.warn("error resolving units: "+e.getMessage());
 		}catch (Exception e){
-			System.out.println("ParameterContext.resolveUndefinedUnits(): EXCEPTION: "+e.getMessage());
+			logger.error("error resolving units: "+e.getMessage(), e);
 		}finally{
 			bResolvingUnits = false;
 		}
@@ -847,27 +845,13 @@ final void cleanupParameters() throws ExpressionException, PropertyVetoException
 			try {
 				exp.bindExpression(this);
 			}catch (ExpressionBindingException e){
-				System.out.println("error binding expression '"+exp.infix()+"': "+e.getMessage());
+				logger.warn("error binding expression '"+exp.infix()+"': "+e.getMessage());
 			}
 		}
 	}
 	resolveUndefinedUnits();
 }
 
-/**
- * Insert the method's description here.
- * Creation date: (5/11/2004 6:19:00 PM)
- * @param bReading boolean
- */
-//public void reading(boolean argReading) {
-//	if (argReading == bReading){
-//		throw new RuntimeException("flag conflict");
-//	}
-//	this.bReading = argReading;
-//	if (!bReading){
-//		resolveUndefinedUnits();
-//	}
-//}
 
 /**
  * Sets the parameters property (cbit.vcell.model.Parameter[]) value.

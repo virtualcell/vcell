@@ -70,8 +70,10 @@ public SundialsSolver(SimulationTask simTask, File directory, boolean bMessaging
 	if (simTask.getSimulation().isSpatial()) {
 		throw new SolverException("Cannot use SundialsSolver on spatial simulation");
 	}
-	System.out.println(directory);
-	System.out.println(bMessaging);	
+	if (lg.isTraceEnabled()){
+		lg.trace("SedML: " + directory);
+		lg.trace("bMessaging" + bMessaging);
+	}
 }
 
 protected void initialize() throws SolverException {

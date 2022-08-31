@@ -1,0 +1,421 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created by libAntimony version v2.9.1 with libSBML version 5.14.1. -->
+<sbml xmlns="http://www.sbml.org/sbml/level3/version2/core" level="3" version="2">
+  <model id="case01516" name="case01516">
+    <listOfCompartments>
+      <compartment id="C" spatialDimensions="3" size="1" constant="true"/>
+    </listOfCompartments>
+    <listOfSpecies>
+      <species id="P2" compartment="C" initialConcentration="0" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+      <species id="P3" compartment="C" initialConcentration="0" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+      <species id="P4" compartment="C" initialConcentration="0" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+      <species id="P5" compartment="C" initialConcentration="0" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+      <species id="P6" compartment="C" initialConcentration="0" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+      <species id="P7" compartment="C" initialConcentration="0" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+      <species id="P8" compartment="C" initialConcentration="0" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+      <species id="P9" compartment="C" initialConcentration="0" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+      <species id="P10" compartment="C" initialConcentration="0" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+      <species id="P11" compartment="C" initialConcentration="0" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+      <species id="P12" compartment="C" initialConcentration="0" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+      <species id="P13" compartment="C" initialConcentration="0" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+      <species id="P14" compartment="C" initialConcentration="0" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+      <species id="P15" compartment="C" initialConcentration="0" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+      <species id="P16" compartment="C" initialConcentration="0" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+      <species id="P17" compartment="C" initialConcentration="0" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+      <species id="P18" compartment="C" initialConcentration="0" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+      <species id="P19" compartment="C" initialConcentration="0" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+      <species id="P20" compartment="C" initialConcentration="0" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+      <species id="P21" compartment="C" initialConcentration="0" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+      <species id="P22" compartment="C" initialConcentration="0" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+      <species id="P23" compartment="C" initialConcentration="0" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+      <species id="P24" compartment="C" initialConcentration="0" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+      <species id="P25" compartment="C" initialConcentration="0" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+      <species id="P26" compartment="C" initialConcentration="0" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+      <species id="P27" compartment="C" initialConcentration="0" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+      <species id="P28" compartment="C" initialConcentration="0" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+      <species id="P29" compartment="C" initialConcentration="0" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+      <species id="P30" compartment="C" initialConcentration="0" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+      <species id="P31" compartment="C" initialConcentration="0" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+      <species id="P32" compartment="C" initialConcentration="0" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+      <species id="P33" compartment="C" initialConcentration="0" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+      <species id="P34" compartment="C" initialConcentration="0" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+      <species id="P35" compartment="C" initialConcentration="0" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+      <species id="P36" compartment="C" initialConcentration="0" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+      <species id="P37" compartment="C" initialConcentration="0" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+      <species id="P38" compartment="C" initialConcentration="0" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+      <species id="P39" compartment="C" initialConcentration="0" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+    </listOfSpecies>
+    <listOfInitialAssignments>
+      <initialAssignment symbol="P2_sr">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <abs/>
+            <cn type="integer"> -1 </cn>
+          </apply>
+        </math>
+      </initialAssignment>
+      <initialAssignment symbol="P3_sr">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <abs/>
+            <cn type="integer"> 1 </cn>
+          </apply>
+        </math>
+      </initialAssignment>
+      <initialAssignment symbol="P4_sr">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <arccos/>
+            <cn type="integer"> -1 </cn>
+          </apply>
+        </math>
+      </initialAssignment>
+      <initialAssignment symbol="P5_sr">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <arccos/>
+            <cn> 0.5 </cn>
+          </apply>
+        </math>
+      </initialAssignment>
+      <initialAssignment symbol="P6_sr">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <arcsin/>
+            <cn type="integer"> 1 </cn>
+          </apply>
+        </math>
+      </initialAssignment>
+      <initialAssignment symbol="P7_sr">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <arcsin/>
+            <cn> -0.5 </cn>
+          </apply>
+        </math>
+      </initialAssignment>
+      <initialAssignment symbol="P8_sr">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <arctan/>
+            <cn> 2.8 </cn>
+          </apply>
+        </math>
+      </initialAssignment>
+      <initialAssignment symbol="P9_sr">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <arctan/>
+            <cn> -7.09 </cn>
+          </apply>
+        </math>
+      </initialAssignment>
+      <initialAssignment symbol="P10_sr">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <ceiling/>
+            <cn> 0.5 </cn>
+          </apply>
+        </math>
+      </initialAssignment>
+      <initialAssignment symbol="P11_sr">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <ceiling/>
+            <cn> 3.55 </cn>
+          </apply>
+        </math>
+      </initialAssignment>
+      <initialAssignment symbol="P12_sr">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <ceiling/>
+            <cn> -4.6 </cn>
+          </apply>
+        </math>
+      </initialAssignment>
+      <initialAssignment symbol="P13_sr">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <cos/>
+            <cn> 9.1 </cn>
+          </apply>
+        </math>
+      </initialAssignment>
+      <initialAssignment symbol="P14_sr">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <cos/>
+            <cn> -0.22 </cn>
+          </apply>
+        </math>
+      </initialAssignment>
+      <initialAssignment symbol="P15_sr">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <exp/>
+            <cn type="integer"> 0 </cn>
+          </apply>
+        </math>
+      </initialAssignment>
+      <initialAssignment symbol="P16_sr">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <exp/>
+            <cn type="integer"> 1 </cn>
+          </apply>
+        </math>
+      </initialAssignment>
+      <initialAssignment symbol="P17_sr">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <exp/>
+            <cn> 0.77 </cn>
+          </apply>
+        </math>
+      </initialAssignment>
+      <initialAssignment symbol="P18_sr">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <floor/>
+            <cn> -4.6 </cn>
+          </apply>
+        </math>
+      </initialAssignment>
+      <initialAssignment symbol="P19_sr">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <floor/>
+            <cn> 9.1 </cn>
+          </apply>
+        </math>
+      </initialAssignment>
+      <initialAssignment symbol="P20_sr">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <ln/>
+            <cn> 0.2 </cn>
+          </apply>
+        </math>
+      </initialAssignment>
+      <initialAssignment symbol="P21_sr">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <ln/>
+            <cn type="integer"> 1 </cn>
+          </apply>
+        </math>
+      </initialAssignment>
+      <initialAssignment symbol="P22_sr">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <log/>
+            <logbase>
+              <cn type="integer"> 10 </cn>
+            </logbase>
+            <cn> 0.2 </cn>
+          </apply>
+        </math>
+      </initialAssignment>
+      <initialAssignment symbol="P23_sr">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <log/>
+            <logbase>
+              <cn type="integer"> 10 </cn>
+            </logbase>
+            <cn type="integer"> 1 </cn>
+          </apply>
+        </math>
+      </initialAssignment>
+      <initialAssignment symbol="P24_sr">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <power/>
+            <cn type="integer"> 1 </cn>
+            <cn type="integer"> 2 </cn>
+          </apply>
+        </math>
+      </initialAssignment>
+      <initialAssignment symbol="P25_sr">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <power/>
+            <cn type="integer"> 2 </cn>
+            <cn type="integer"> 2 </cn>
+          </apply>
+        </math>
+      </initialAssignment>
+      <initialAssignment symbol="P26_sr">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <power/>
+            <cn> 1.4 </cn>
+            <cn> 5.1 </cn>
+          </apply>
+        </math>
+      </initialAssignment>
+      <initialAssignment symbol="P27_sr">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <power/>
+            <cn type="integer"> 4 </cn>
+            <cn type="integer"> 2 </cn>
+          </apply>
+        </math>
+      </initialAssignment>
+      <initialAssignment symbol="P28_sr">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <power/>
+            <cn> 3.1 </cn>
+            <cn type="integer"> 2 </cn>
+          </apply>
+        </math>
+      </initialAssignment>
+      <initialAssignment symbol="P29_sr">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <root/>
+            <degree>
+              <cn type="integer"> 2 </cn>
+            </degree>
+            <cn type="integer"> 4 </cn>
+          </apply>
+        </math>
+      </initialAssignment>
+      <initialAssignment symbol="P30_sr">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <root/>
+            <degree>
+              <cn type="integer"> 2 </cn>
+            </degree>
+            <cn> 7.4 </cn>
+          </apply>
+        </math>
+      </initialAssignment>
+      <initialAssignment symbol="P31_sr">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <sin/>
+            <cn> 2.1 </cn>
+          </apply>
+        </math>
+      </initialAssignment>
+      <initialAssignment symbol="P32_sr">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <sin/>
+            <cn type="integer"> 0 </cn>
+          </apply>
+        </math>
+      </initialAssignment>
+      <initialAssignment symbol="P33_sr">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <sin/>
+            <cn> -5.9 </cn>
+          </apply>
+        </math>
+      </initialAssignment>
+      <initialAssignment symbol="P34_sr">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <tan/>
+            <cn type="integer"> 0 </cn>
+          </apply>
+        </math>
+      </initialAssignment>
+      <initialAssignment symbol="P35_sr">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <tan/>
+            <cn> 1.11 </cn>
+          </apply>
+        </math>
+      </initialAssignment>
+      <initialAssignment symbol="P36_sr">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <tan/>
+            <cn type="integer"> -6 </cn>
+          </apply>
+        </math>
+      </initialAssignment>
+      <initialAssignment symbol="P37_sr">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <tanh/>
+            <cn type="integer"> 0 </cn>
+          </apply>
+        </math>
+      </initialAssignment>
+      <initialAssignment symbol="P38_sr">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <tanh/>
+            <cn> 1.11 </cn>
+          </apply>
+        </math>
+      </initialAssignment>
+      <initialAssignment symbol="P39_sr">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <tanh/>
+            <cn type="integer"> -6 </cn>
+          </apply>
+        </math>
+      </initialAssignment>
+    </listOfInitialAssignments>
+    <listOfReactions>
+      <reaction id="J0" reversible="true">
+        <listOfProducts>
+          <speciesReference id="P2_sr" species="P2" stoichiometry="1" constant="true"/>
+          <speciesReference id="P3_sr" species="P3" stoichiometry="1" constant="true"/>
+          <speciesReference id="P4_sr" species="P4" stoichiometry="1" constant="true"/>
+          <speciesReference id="P5_sr" species="P5" stoichiometry="1" constant="true"/>
+          <speciesReference id="P6_sr" species="P6" stoichiometry="1" constant="true"/>
+          <speciesReference id="P7_sr" species="P7" stoichiometry="1" constant="true"/>
+          <speciesReference id="P8_sr" species="P8" stoichiometry="1" constant="true"/>
+          <speciesReference id="P9_sr" species="P9" stoichiometry="1" constant="true"/>
+          <speciesReference id="P10_sr" species="P10" stoichiometry="1" constant="true"/>
+          <speciesReference id="P11_sr" species="P11" stoichiometry="1" constant="true"/>
+          <speciesReference id="P12_sr" species="P12" stoichiometry="1" constant="true"/>
+          <speciesReference id="P13_sr" species="P13" stoichiometry="1" constant="true"/>
+          <speciesReference id="P14_sr" species="P14" stoichiometry="1" constant="true"/>
+          <speciesReference id="P15_sr" species="P15" stoichiometry="1" constant="true"/>
+          <speciesReference id="P16_sr" species="P16" stoichiometry="1" constant="true"/>
+          <speciesReference id="P17_sr" species="P17" stoichiometry="1" constant="true"/>
+          <speciesReference id="P18_sr" species="P18" stoichiometry="1" constant="true"/>
+          <speciesReference id="P19_sr" species="P19" stoichiometry="1" constant="true"/>
+          <speciesReference id="P20_sr" species="P20" stoichiometry="1" constant="true"/>
+          <speciesReference id="P21_sr" species="P21" stoichiometry="1" constant="true"/>
+          <speciesReference id="P22_sr" species="P22" stoichiometry="1" constant="true"/>
+          <speciesReference id="P23_sr" species="P23" stoichiometry="1" constant="true"/>
+          <speciesReference id="P24_sr" species="P24" stoichiometry="1" constant="true"/>
+          <speciesReference id="P25_sr" species="P25" stoichiometry="1" constant="true"/>
+          <speciesReference id="P26_sr" species="P26" stoichiometry="1" constant="true"/>
+          <speciesReference id="P27_sr" species="P27" stoichiometry="1" constant="true"/>
+          <speciesReference id="P28_sr" species="P28" stoichiometry="1" constant="true"/>
+          <speciesReference id="P29_sr" species="P29" stoichiometry="1" constant="true"/>
+          <speciesReference id="P30_sr" species="P30" stoichiometry="1" constant="true"/>
+          <speciesReference id="P31_sr" species="P31" stoichiometry="1" constant="true"/>
+          <speciesReference id="P32_sr" species="P32" stoichiometry="1" constant="true"/>
+          <speciesReference id="P33_sr" species="P33" stoichiometry="1" constant="true"/>
+          <speciesReference id="P34_sr" species="P34" stoichiometry="1" constant="true"/>
+          <speciesReference id="P35_sr" species="P35" stoichiometry="1" constant="true"/>
+          <speciesReference id="P36_sr" species="P36" stoichiometry="1" constant="true"/>
+          <speciesReference id="P37_sr" species="P37" stoichiometry="1" constant="true"/>
+          <speciesReference id="P38_sr" species="P38" stoichiometry="1" constant="true"/>
+          <speciesReference id="P39_sr" species="P39" stoichiometry="1" constant="true"/>
+        </listOfProducts>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <cn type="integer"> 1 </cn>
+          </math>
+        </kineticLaw>
+      </reaction>
+    </listOfReactions>
+  </model>
+</sbml>

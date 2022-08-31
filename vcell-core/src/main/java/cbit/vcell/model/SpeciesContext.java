@@ -640,7 +640,7 @@ private void checkBondsSufficiency(IssueContext issueContext, List<Issue> issueL
 	if(atLeastOneBad) {
 		String msg = "Each Molecular Pattern of the Species Pattern " + sp.toString() + " needs at least one explicit Bond.\n";
 		IssueSource parent = issueContext.getContextObject();
-		issueList.add(new Issue(parent, issueContext, IssueCategory.Identifiers, msg, Issue.Severity.ERROR));
+		issueList.add(new Issue(parent, issueContext, IssueCategory.Identifiers, msg, Issue.Severity.WARNING));
 	}
 }
 public void findComponentUsage(MolecularType mt, MolecularComponent mc, Map<String, Pair<Displayable, SpeciesPattern>> usedHere) {

@@ -13,6 +13,8 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.util.TokenMangler;
 
 import cbit.vcell.constraints.AbstractConstraint;
@@ -45,6 +47,8 @@ import net.sourceforge.interval.ia_math.RealInterval;
  * @author: Jim Schaff
  */
 public class StructureSizeSolver {
+
+	final static Logger logger = LogManager.getLogger(StructureSizeSolver.class);
 
 	private static class SolverParameter {
 		public final StructureMappingParameter parameter;
@@ -120,7 +124,10 @@ public class StructureSizeSolver {
 			ArrayList<String> unknownVars = new ArrayList<String>();
 			
 			for (StructureMapping sm : structMappings){
-				System.out.println("Structure "+ sm.getStructure().getDisplayName() + " size " + sm.getStructure().getStructureSize().getExpression());
+				logger.debug("trace "+ sm.getStructure().getDisplayName() + " size " + sm.getStructure().getStructureSize().getExpression());
+				if (sm.getStructure().getStructureSize().getExpression() == null){
+					logger.error("Structure "+ sm.getStructure().getDisplayName() + " size is null");
+				}
 				if (sm.getStructure() instanceof Membrane){
 					MembraneMapping mm = (MembraneMapping)sm;
 					StructureMappingParameter svRatioParam = mm.getSurfaceToVolumeParameter();
@@ -255,7 +262,7 @@ public class StructureSizeSolver {
 			StructureMappingParameter sizeParam = simContext.getGeometryContext().getStructureMapping(struct).getSizeParameter();
 			sizeParam.setExpression(new Expression(structSize));
 			
-			System.out.println("done");
+			logger.trace("done");
 		}catch (ExpressionException e){
 			e.printStackTrace(System.out);
 			throw new Exception(e.getMessage());
@@ -263,13 +270,6 @@ public class StructureSizeSolver {
 	}
 
 	
-/**
- * Insert the method's description here.
- * Creation date: (5/17/2006 10:33:38 AM)
- * @return double[]
- * @param structName java.lang.String
- * @param structSize double
- */
 public static void updateUnitStructureSizes(SimulationContext simContext, GeometryClass geometryClass) {
 	if (simContext.getGeometryContext().getGeometry().getDimension() == 0) {
 		return;
@@ -481,13 +481,6 @@ public static void updateUnitStructureSizes(SimulationContext simContext, Geomet
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (5/17/2006 10:33:38 AM)
- * @return double[]
- * @param structName java.lang.String
- * @param structSize double
- */
 public static void updateRelativeStructureSizes(SimulationContext simContext) throws Exception {
 
 	if (simContext.getGeometry().getDimension() > 0){

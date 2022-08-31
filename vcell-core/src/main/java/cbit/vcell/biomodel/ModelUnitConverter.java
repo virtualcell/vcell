@@ -1,56 +1,63 @@
 package cbit.vcell.biomodel;
 
-import cbit.vcell.mapping.AssignmentRule;
-import cbit.vcell.mapping.BioEvent;
+import cbit.vcell.mapping.*;
 import cbit.vcell.mapping.BioEvent.EventAssignment;
-import cbit.vcell.mapping.ElectricalStimulus;
-import cbit.vcell.mapping.RateRule;
-import cbit.vcell.mapping.SimulationContext;
-import cbit.vcell.mapping.SpeciesContextSpec;
-import cbit.vcell.mapping.StructureMapping;
-import cbit.vcell.math.MathUtilities;
+import cbit.vcell.math.MathDescription;
+import cbit.vcell.matrix.RationalExp;
 import cbit.vcell.matrix.RationalNumber;
-import cbit.vcell.model.Kinetics;
-import cbit.vcell.model.Kinetics.KineticsParameter;
-import cbit.vcell.model.Model;
-import cbit.vcell.model.ModelUnitSystem;
-import cbit.vcell.model.Parameter;
-import cbit.vcell.model.ReactionRule;
-import cbit.vcell.model.ReactionStep;
-import cbit.vcell.model.SpeciesContext;
-import cbit.vcell.model.Structure;
-import cbit.vcell.parser.Expression;
-import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.parser.ScopedSymbolTable;
-import cbit.vcell.parser.SymbolTable;
-import cbit.vcell.parser.SymbolTableEntry;
-import cbit.vcell.parser.SymbolUtils;
+import cbit.vcell.model.*;
+import cbit.vcell.parser.*;
 import cbit.vcell.units.VCUnitDefinition;
 import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XmlHelper;
 import cbit.vcell.xml.XmlParseException;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 public class ModelUnitConverter {
 
+	private final static Logger logger = LogManager.getLogger(ModelUnitConverter.class);
+
 	public static ModelUnitSystem createSbmlModelUnitSystem() {
-		String volumeSubstanceSymbol = "umol";			// InternalUnitDefinition.UNIT_umol
-		String membraneSubstanceSymbol = "umol";		// umol
-		String lumpedReactionSubstanceSymbol = "umol";	// umol
-		String volumeSymbol = "l";						// l
-		String areaSymbol = "um2";						// um2
-		String lengthSymbol = "um";						// um
-		String timeSymbol = "s";						// s
+		final String substanceUnit = "uM.um3";
+		String volumeSubstanceSymbol = substanceUnit;
+		String membraneSubstanceSymbol = substanceUnit;
+		String lumpedReactionSubstanceSymbol = substanceUnit;
+		String volumeSymbol = "um3";
+		String areaSymbol = "um2";
+		String lengthSymbol = "um";
+		String timeSymbol = "s";
 		ModelUnitSystem mus = ModelUnitSystem.createVCModelUnitSystem(volumeSubstanceSymbol, membraneSubstanceSymbol, lumpedReactionSubstanceSymbol, volumeSymbol, areaSymbol, lengthSymbol, timeSymbol);
 		return mus;
 	}
 	public static BioModel createBioModelWithSBMLUnitSystem(BioModel oldBioModel) throws ExpressionException, XmlParseException {
 		ModelUnitSystem mus = createSbmlModelUnitSystem();
 		BioModel newBioModel = createBioModelWithNewUnitSystem(oldBioModel, mus);
-		return(newBioModel);
+		return newBioModel;
 	}
 	
 	
-	public static BioModel createBioModelWithNewUnitSystem(BioModel oldBioModel, ModelUnitSystem newUnitSystem) throws ExpressionException, XmlParseException {
+	public static BioModel createBioModelWithNewUnitSystem(BioModel oldBioModel, ModelUnitSystem newUnitSystem)
+			throws ExpressionException, XmlParseException {
+
+		oldBioModel.refreshDependencies();
+		Map<String, MathDescription> previousMathDescriptionMap = new LinkedHashMap<>();
+		for (SimulationContext simContext : oldBioModel.getSimulationContexts()){
+			//
+			// force new math generation
+			//
+			MathMapping mathMapping = simContext.createNewMathMapping();
+			try {
+				MathDescription mathDesc = mathMapping.getMathDescription();
+				previousMathDescriptionMap.put(simContext.getName(), mathDesc);
+			}catch (Exception e){
+				throw new RuntimeException("failed to generated math for application "+simContext.getName()+": "+e.getMessage(), e);
+			}
+		}
+
 		// new BioModel has new unit system applied to all built-in units ... but expressions still need to be corrected (see below).
 		String biomodelXMLString = XmlHelper.bioModelToXML(oldBioModel);
 		XMLSource newXMLSource = new XMLSource(biomodelXMLString);
@@ -58,18 +65,21 @@ public class ModelUnitConverter {
 		Model newModel = newBioModel.getModel();
 		Model oldModel = oldBioModel.getModel();
 
+		VCUnitDefinition dimensionless = newModel.getUnitSystem().getInstance_DIMENSIONLESS();
+		Model.ReservedSymbol KMOLE = newModel.getReservedSymbolByRole(Model.ReservedSymbolRole.KMOLE);
+
 		for (Parameter p : newBioModel.getModel().getModelParameters()){
-			convertVarsWithUnitFactors(oldBioModel.getModel(), newBioModel.getModel(), p);
+			convertVarsWithUnitFactors(oldBioModel.getModel(), newBioModel.getModel(), p, dimensionless, KMOLE);
 		}
 		
 		for (ReactionStep reactionStep : newBioModel.getModel().getReactionSteps()) {
 			SymbolTable oldSymbolTable = oldBioModel.getModel().getReactionStep(reactionStep.getName());
 			SymbolTable newSymbolTable = reactionStep;
 			for (Parameter p : reactionStep.getKinetics().getUnresolvedParameters()){
-				convertVarsWithUnitFactors(oldSymbolTable, newSymbolTable, p);
+				convertVarsWithUnitFactors(oldSymbolTable, newSymbolTable, p, dimensionless, KMOLE);
 			}
 			for (Parameter p : reactionStep.getKinetics().getKineticsParameters()){
-				convertVarsWithUnitFactors(oldSymbolTable, newSymbolTable, p);
+				convertVarsWithUnitFactors(oldSymbolTable, newSymbolTable, p, dimensionless, KMOLE);
 			}
 			
 //			We no longer have to deal with conversion factor expressions and try to be smart and simplify/flatten and rebind
@@ -107,10 +117,10 @@ public class ModelUnitConverter {
 			SymbolTable oldSymbolTable = oldBioModel.getModel().getRbmModelContainer().getReactionRule(reactionRule.getName()).getKineticLaw().getScopedSymbolTable();
 			SymbolTable newSymbolTable = reactionRule.getKineticLaw().getScopedSymbolTable();
 			for (Parameter p : reactionRule.getKineticLaw().getUnresolvedParameters()){
-				convertVarsWithUnitFactors(oldSymbolTable, newSymbolTable, p);
+				convertVarsWithUnitFactors(oldSymbolTable, newSymbolTable, p, dimensionless, KMOLE);
 			}
 			for (Parameter p : reactionRule.getKineticLaw().getLocalParameters()){
-				convertVarsWithUnitFactors(oldSymbolTable, newSymbolTable, p);
+				convertVarsWithUnitFactors(oldSymbolTable, newSymbolTable, p, dimensionless, KMOLE);
 			}
 		}
 		for (SimulationContext simContext : newBioModel.getSimulationContexts()) {
@@ -120,21 +130,21 @@ public class ModelUnitConverter {
 				Structure oldStructure = oldModel.getStructure(mapping.getStructure().getName());
 				StructureMapping oldMapping = oldSimContext.getGeometryContext().getStructureMapping(oldStructure);
 				for (Parameter p : mapping.computeApplicableParameterList()){
-					convertVarsWithUnitFactors(oldMapping, mapping, p);
+					convertVarsWithUnitFactors(oldMapping, mapping, p, dimensionless, KMOLE);
 				}
 			}
 			for (SpeciesContextSpec spec : simContext.getReactionContext().getSpeciesContextSpecs()) {
 				SpeciesContext oldSpeciesContext = oldModel.getSpeciesContext(spec.getSpeciesContext().getName());
 				SpeciesContextSpec oldSpec = oldSimContext.getReactionContext().getSpeciesContextSpec(oldSpeciesContext);
 				for (Parameter p : spec.computeApplicableParameterList()){
-					convertVarsWithUnitFactors(oldSpec, spec, p);
+					convertVarsWithUnitFactors(oldSpec, spec, p, dimensionless, KMOLE);
 				}
 			}
 			for (int i=0; i<simContext.getElectricalStimuli().length; i++){
 				ElectricalStimulus newElectricalStimulus = simContext.getElectricalStimuli()[i];
 				ElectricalStimulus oldElectricalStimulus = oldSimContext.getElectricalStimuli()[i];
 				for (Parameter p : newElectricalStimulus.getParameters()){
-					convertVarsWithUnitFactors(oldElectricalStimulus.getNameScope().getScopedSymbolTable(), newElectricalStimulus.getNameScope().getScopedSymbolTable(), p);
+					convertVarsWithUnitFactors(oldElectricalStimulus.getNameScope().getScopedSymbolTable(), newElectricalStimulus.getNameScope().getScopedSymbolTable(), p, dimensionless, KMOLE);
 				}
 			}
 			// convert events : trigger and delay parameters and event assignments
@@ -142,7 +152,7 @@ public class ModelUnitConverter {
 				BioEvent newBioEvent = simContext.getBioEvents()[i];
 				BioEvent oldBioEvent = oldSimContext.getBioEvent(newBioEvent.getName());
 				for (Parameter p : newBioEvent.getEventParameters()){
-					convertVarsWithUnitFactors(oldBioEvent.getNameScope().getScopedSymbolTable(), newBioEvent.getNameScope().getScopedSymbolTable(), p);
+					convertVarsWithUnitFactors(oldBioEvent.getNameScope().getScopedSymbolTable(), newBioEvent.getNameScope().getScopedSymbolTable(), p, dimensionless, KMOLE);
 				}
 				// for each event assignment expression
 				for (int e=0;e<newBioEvent.getEventAssignments().size();e++){
@@ -153,7 +163,7 @@ public class ModelUnitConverter {
 					VCUnitDefinition oldTargetUnit = oldEventAssignment.getTarget().getUnitDefinition();
 					VCUnitDefinition newTargetUnit = newEventAssignment.getTarget().getUnitDefinition();
 					Expression eventAssgnExpr = newEventAssignment.getAssignmentExpression();
-					convertExprWithUnitFactors(oldSymbolTable, newSymbolTable, oldTargetUnit, newTargetUnit, eventAssgnExpr);
+					convertExprWithUnitFactors(oldSymbolTable, newSymbolTable, oldTargetUnit, newTargetUnit, eventAssgnExpr, dimensionless, KMOLE);
 				}
 			}
 			
@@ -171,7 +181,7 @@ public class ModelUnitConverter {
 					VCUnitDefinition oldTargetUnit = oldRateRule.getRateRuleVar().getUnitDefinition();
 					VCUnitDefinition newTargetUnit = rateRule.getRateRuleVar().getUnitDefinition();
 					Expression rateRuleExpr = rateRule.getRateRuleExpression();
-					convertExprWithUnitFactors(oldSymbolTable, newSymbolTable, oldTargetUnit, newTargetUnit, rateRuleExpr);
+					convertExprWithUnitFactors(oldSymbolTable, newSymbolTable, oldTargetUnit, newTargetUnit, rateRuleExpr, dimensionless, KMOLE);
 				}
 			}
 			AssignmentRule[] assignmentRules = simContext.getAssignmentRules();
@@ -184,14 +194,28 @@ public class ModelUnitConverter {
 					VCUnitDefinition oldTargetUnit = oldAssignRule.getAssignmentRuleVar().getUnitDefinition();
 					VCUnitDefinition newTargetUnit = assignmentRule.getAssignmentRuleVar().getUnitDefinition();
 					Expression assignmentRuleExpr = assignmentRule.getAssignmentRuleExpression();
-					convertExprWithUnitFactors(oldSymbolTable, newSymbolTable, oldTargetUnit, newTargetUnit, assignmentRuleExpr);
+					convertExprWithUnitFactors(oldSymbolTable, newSymbolTable, oldTargetUnit, newTargetUnit, assignmentRuleExpr, dimensionless, KMOLE);
 				}
 			}
 		}	// end  for - simulationContext
+		newBioModel.refreshDependencies();
+		for (SimulationContext simContext : newBioModel.getSimulationContexts()){
+			//
+			// force new math generation
+			//
+			MathMapping mathMapping = simContext.createNewMathMapping();
+			try {
+				MathDescription mathDesc = mathMapping.getMathDescription();
+				simContext.setMathDescriptionAndPrevious(mathDesc, previousMathDescriptionMap.get(simContext.getName()));
+			}catch (Exception e){
+				throw new RuntimeException("failed to generated math for application "+simContext.getName()+": "+e.getMessage(), e);
+			}
+		}
 		return newBioModel;
 	}
 
-	private static void convertVarsWithUnitFactors(SymbolTable oldSymbolTable, SymbolTable newSymbolTable, Parameter parameter) throws ExpressionException {
+	private static void convertVarsWithUnitFactors(SymbolTable oldSymbolTable, SymbolTable newSymbolTable, Parameter parameter,
+												   VCUnitDefinition dimensionless, Model.ReservedSymbol KMOLE) throws ExpressionException {
 		// get old unit
 		VCUnitDefinition oldExprUnit = null;
 		Parameter oldParameter = (Parameter)oldSymbolTable.getEntry(parameter.getName());
@@ -211,48 +235,115 @@ public class ModelUnitConverter {
 			newExprUnit = parameter.getUnitDefinition();
 		}
 		
-		convertExprWithUnitFactors(oldSymbolTable, newSymbolTable, oldExprUnit, newExprUnit, parameter.getExpression());
+		convertExprWithUnitFactors(oldSymbolTable, newSymbolTable, oldExprUnit, newExprUnit, parameter.getExpression(), dimensionless, KMOLE);
 	}
-	
-	private static void convertExprWithUnitFactors(SymbolTable oldSymbolTable, SymbolTable newSymbolTable, VCUnitDefinition oldExprUnit, VCUnitDefinition newExprUnit, Expression expr) throws ExpressionException {
+
+	/**
+	 * getDimensionlessScaleFactor() returns scale factor expression which may include powers of KMOLE
+	 * KMOLE is already bound in the expression.
+	 */
+	public static Expression getDimensionlessScaleFactor(VCUnitDefinition practicallyDimensionlessUnit, VCUnitDefinition dimensionless, Model.ReservedSymbol KMOLE)  {
+		if (practicallyDimensionlessUnit.isEquivalent(dimensionless)){
+			return new Expression(1.0);
+		}
+		if (practicallyDimensionlessUnit.isCompatible(dimensionless)){
+			double conversionScale = dimensionless.convertTo(1.0, practicallyDimensionlessUnit);
+			RationalNumber rationalConversionScale =  RationalNumber.getApproximateFraction(conversionScale);
+			return new Expression(rationalConversionScale);
+		}
+		//
+		// not equivalent with dimensionless - try to introduce powers of KMOLE to get equivalence (introduces moles to molecules equivalence)
+		//
+		final VCUnitDefinition KMOLE_Unit = KMOLE.getUnitDefinition();
+		VCUnitDefinition power_of_KMOLE = dimensionless;
+		for (int power=1; power<5; power++) {
+			power_of_KMOLE = power_of_KMOLE.multiplyBy(KMOLE_Unit);
+			if (practicallyDimensionlessUnit.multiplyBy(power_of_KMOLE).isCompatible(dimensionless)) {
+				double conversionScale = dimensionless.convertTo(1.0, practicallyDimensionlessUnit.multiplyBy(power_of_KMOLE));
+				try {
+					return Expression.mult(new Expression(conversionScale), Expression.power(new Expression(KMOLE, KMOLE.getNameScope()), -power));
+				} catch (ExpressionException e) {
+					throw new RuntimeException(e);
+				}
+			}
+			if (practicallyDimensionlessUnit.divideBy(power_of_KMOLE).isCompatible(dimensionless)) {
+				double conversionScale = dimensionless.convertTo(1.0, practicallyDimensionlessUnit.divideBy(power_of_KMOLE));
+				try {
+					return Expression.mult(new Expression(conversionScale), Expression.power(new Expression(KMOLE, KMOLE.getNameScope()), power));
+				} catch (ExpressionException e) {
+					throw new RuntimeException(e);
+				}
+			}
+		}
+		throw new RuntimeException("unit " + practicallyDimensionlessUnit.getSymbol() + " is not practically dimensionless, even by using KMOLE");
+	}
+
+	/**
+	 * getDimensionlessScaleFactor() returns scale factor expression which may include powers of KMOLE
+	 * KMOLE is already bound in the expression.
+	 */
+	public static RationalExp getDimensionlessScaleFactorAsRationalExp(VCUnitDefinition practicallyDimensionlessUnit, VCUnitDefinition dimensionless, Model.ReservedSymbol KMOLE)  {
+		if (practicallyDimensionlessUnit.isEquivalent(dimensionless)){
+			return RationalExp.ONE;
+		}
+		if (practicallyDimensionlessUnit.isCompatible(dimensionless)){
+			double conversionScale = dimensionless.convertTo(1.0, practicallyDimensionlessUnit);
+			RationalNumber rationalConversionScale =  RationalNumber.getApproximateFraction(conversionScale);
+			return new RationalExp(rationalConversionScale);
+		}
+		//
+		// not equivalent with dimensionless - try to introduce powers of KMOLE to get equivalence (introduces moles to molecules equivalence)
+		//
+		final VCUnitDefinition KMOLE_Unit = KMOLE.getUnitDefinition();
+		VCUnitDefinition power_of_KMOLE_unit = dimensionless;
+		RationalExp power_of_KMOLE_exp = RationalExp.ONE;
+		for (int power=1; power<5; power++) {
+			power_of_KMOLE_unit = power_of_KMOLE_unit.multiplyBy(KMOLE_Unit);
+			power_of_KMOLE_exp = power_of_KMOLE_exp.mult(new RationalExp(KMOLE.getName()));
+			if (practicallyDimensionlessUnit.multiplyBy(power_of_KMOLE_unit).isCompatible(dimensionless)) {
+				double conversionScale = dimensionless.convertTo(1.0, practicallyDimensionlessUnit.multiplyBy(power_of_KMOLE_unit));
+				RationalExp rexp = new RationalExp(RationalNumber.getApproximateFraction(conversionScale));
+				return rexp.mult(power_of_KMOLE_exp);
+			}
+			if (practicallyDimensionlessUnit.divideBy(power_of_KMOLE_unit).isCompatible(dimensionless)) {
+				double conversionScale = dimensionless.convertTo(1.0, practicallyDimensionlessUnit.divideBy(power_of_KMOLE_unit));
+				RationalExp rexp = new RationalExp(RationalNumber.getApproximateFraction(conversionScale));
+				return rexp.div(power_of_KMOLE_exp);
+			}
+		}
+		throw new RuntimeException("unit " + practicallyDimensionlessUnit.getSymbol() + " is not practically dimensionless, even by using KMOLE");
+	}
+
+	private static void convertExprWithUnitFactors(SymbolTable oldSymbolTable, SymbolTable newSymbolTable,
+												   VCUnitDefinition oldExprUnit, VCUnitDefinition newExprUnit,
+												   Expression expr, VCUnitDefinition dimensionless, Model.ReservedSymbol KMOLE) throws ExpressionException {
+
 		if (expr == null) {
 			return;
 		}
 		String[] symbols = expr.getSymbols();
 		if (symbols != null) {
 			for (String s : symbols) {
-				SymbolTableEntry boundSTE = expr.getSymbolBinding(s);
-				
 				SymbolTableEntry newSTE = newSymbolTable.getEntry(s);
 				SymbolTableEntry oldSTE = oldSymbolTable.getEntry(s);
 				
-				if (boundSTE == null){
-					System.err.println("symbol '"+s+"' in expression "+expr.infix() + " was not bound to the model");
-					continue;
-				}
-	
 				if (oldSTE == null){
-					System.err.println("symbol '"+s+"' in expression "+expr.infix() + " was not found in the new symbol table");
+					logger.error("symbol '"+s+"' in expression "+expr.infix() + " was not found in the new symbol table");
 					continue;
 				}
 	
 				if (newSTE == null){
-					System.err.println("symbol '"+s+"' in expression "+expr.infix() + " was not bound to the old symbol table");
+					logger.error("symbol '"+s+"' in expression "+expr.infix() + " was not bound to the old symbol table");
 					continue;
 				}
 	
-				if (newSTE != boundSTE){
-					System.err.println("symbol '"+s+"' in expression "+expr.infix() + " is not bound properly (binding doesn't match new symbol table)");
-					continue;
-				}
-				
 				if (oldSTE.getUnitDefinition() == null){
-					System.err.println("symbol '"+s+"' in expression "+expr.infix() + " is has a null unit in old model, can't convert");
+					logger.error("symbol '"+s+"' in expression "+expr.infix() + " is has a null unit in old model, can't convert");
 					continue;
 				}
 				
 				if (newSTE.getUnitDefinition() == null){
-					System.err.println("symbol '"+s+"' in expression "+expr.infix() + " is has a null unit in new model, can't convert");
+					logger.error("symbol '"+s+"' in expression "+expr.infix() + " is has a null unit in new model, can't convert");
 					continue;
 				}
 	
@@ -263,10 +354,11 @@ public class ModelUnitConverter {
 					continue;
 				}
 				VCUnitDefinition oldToNewConversionUnit = oldSTE.getUnitDefinition().divideBy(newSTE.getUnitDefinition());
-				RationalNumber conversionFactor = oldToNewConversionUnit.getDimensionlessScale();
-				if (conversionFactor.doubleValue() != 1.0){
+				Expression conversionFactor = getDimensionlessScaleFactor(oldToNewConversionUnit, dimensionless, KMOLE);
+				if (!conversionFactor.isOne()){
 					Expression spcSymbol = new Expression(newSTE, newSTE.getNameScope());
-					expr.substituteInPlace(spcSymbol, Expression.mult(spcSymbol,new Expression(conversionFactor)));
+					expr.substituteInPlace(spcSymbol, Expression.mult(new Expression(conversionFactor), spcSymbol));
+					expr.substituteInPlace(expr, expr.flattenFactors(KMOLE.getName()));
 				}
 			}
 		}
@@ -278,12 +370,13 @@ public class ModelUnitConverter {
 		}
 		
 		VCUnitDefinition oldToNewConversionUnit = newExprUnit.divideBy(oldExprUnit);
-		RationalNumber conversionFactor = oldToNewConversionUnit.getDimensionlessScale();
-		if (conversionFactor.doubleValue() != 1.0){
+		Expression conversionFactor = getDimensionlessScaleFactor(oldToNewConversionUnit, dimensionless, KMOLE);
+		if (!conversionFactor.isOne()){
 			Expression oldExp = new Expression(expr);
-			expr.substituteInPlace(oldExp, Expression.mult(oldExp,new Expression(conversionFactor)));
+			expr.substituteInPlace(oldExp, Expression.mult(new Expression(conversionFactor), oldExp));
+			expr.substituteInPlace(expr, expr.flattenFactors(KMOLE.getName()));
 		}
-		Expression flattened = expr.flatten();
+		Expression flattened = expr.flattenFactors(KMOLE.getName());
 		Expression origExp = new Expression(expr);
 		expr.substituteInPlace(origExp,flattened);
 	}

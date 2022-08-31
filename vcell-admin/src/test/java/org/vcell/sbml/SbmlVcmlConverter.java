@@ -16,6 +16,7 @@ import org.vcell.util.document.KeyValue;
 import org.vcell.util.exe.Executable;
 
 import cbit.util.xml.VCLogger;
+import cbit.util.xml.VCLoggerException;
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.mapping.SimulationContext;
@@ -41,6 +42,7 @@ import cbit.vcell.xml.XmlHelper;
 /**
  * Command line utility to convert between SBML and VCML
  * Optionally runs SundialsStandalone with default settings
+ * Referenced in Install4j (expected to be deployed to client desktop ???)
  */
 public class SbmlVcmlConverter {
 	private static double endTime = 10.0;
@@ -80,10 +82,10 @@ public static void main(String[] args) {
 	        	
 	        	
 	            @Override
-				public void sendMessage(Priority p, ErrorType et, String message) {
+				public void sendMessage(Priority p, ErrorType et, String message) throws VCLoggerException{
 	                System.err.println("LOGGER: msgLevel="+p+", msgType="+et+", "+message);
 	                if (p == VCLogger.Priority.HighPriority) {
-	                	throw new RuntimeException("Import failed : " + message);
+	                	throw new VCLoggerException("Import failed : " + message);
 	                }
 	            }
 	            public void sendAllMessages() {
@@ -98,7 +100,7 @@ public static void main(String[] args) {
 	        	// import SBML model into VCML, store VCML string in 'fileName.vcml'
 			    // Instantiate an SBMLImporter to get the speciesUnitsHash - to compute the conversion factor from VC->SB species units.
 			    // and import SBML  (sbml->bioModel)
-				org.vcell.sbml.vcell.SBMLImporter sbmlImporter = new org.vcell.sbml.vcell.SBMLImporter(pathName, logger, false);
+				org.vcell.sbml.vcell.SBMLImporter sbmlImporter = new org.vcell.sbml.vcell.SBMLImporter(pathName, logger,true);
 				BioModel bioModel = sbmlImporter.getBioModel();
 //				Hashtable<String, SBMLImporter.SBVCConcentrationUnits> speciesUnitsHash = sbmlImporter.getSpeciesUnitsHash();
 //				double timeFactor = sbmlImporter.getSBMLTimeUnitsFactor();
@@ -207,7 +209,8 @@ public static void main(String[] args) {
 						}
 						
 						// Export the application itself, with default overrides
-						String sbmlString = XmlHelper.exportSBML(bioModel, 2, 4, 0, false, simContext, null);
+						boolean bRoundTripValidation = true;
+						String sbmlString = XmlHelper.exportSBML(bioModel, 2, 4, 0, false, simContext, null, bRoundTripValidation);
 						String filePath = pathName.substring(0, pathName.lastIndexOf("\\")+1);
 						String sbmlFileName = TokenMangler.mangleToSName(bioModel.getName() + "_" + i);
 						File sbmlFile = new File(filePath + sbmlFileName + ".xml");
@@ -220,7 +223,7 @@ public static void main(String[] args) {
 								// Check for parameter scan and create simJob to pass into exporter
 								for (int k = 0; k < simulations[j].getScanCount(); k++) {
 									SimulationJob simJob = new SimulationJob(simulations[j], k, null);
-									sbmlString = XmlHelper.exportSBML(bioModel, 2, 4, 0, false, simContext, simJob);
+									sbmlString = XmlHelper.exportSBML(bioModel, 2, 4, 0, false, simContext, simJob, bRoundTripValidation);
 									String fileName = TokenMangler.mangleToSName(sbmlFileName + "_" + j + "_" + k); 
 									sbmlFile = new File(filePath + fileName + ".xml");
 									XmlUtil.writeXMLStringToFile(sbmlString, sbmlFile.getAbsolutePath(), true);

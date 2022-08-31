@@ -1,0 +1,1277 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created by libAntimony version v2.9.1 with libSBML version 5.14.1. -->
+<sbml xmlns="http://www.sbml.org/sbml/level3/version2/core" level="3" version="2">
+  <model id="case01531" name="case01531">
+    <listOfParameters>
+      <parameter id="trig" value="-5.3" constant="false"/>
+      <parameter id="P0" value="0" constant="false"/>
+      <parameter id="P1" value="0" constant="false"/>
+      <parameter id="P2" value="0" constant="false"/>
+      <parameter id="P3" value="0" constant="false"/>
+      <parameter id="P4" value="0" constant="false"/>
+      <parameter id="P5" value="0" constant="false"/>
+      <parameter id="P6" value="0" constant="false"/>
+      <parameter id="P7" value="0" constant="false"/>
+      <parameter id="P8" value="0" constant="false"/>
+      <parameter id="P9" value="0" constant="false"/>
+      <parameter id="P10" value="0" constant="false"/>
+      <parameter id="P11" value="0" constant="false"/>
+      <parameter id="P12" value="0" constant="false"/>
+      <parameter id="P13" value="0" constant="false"/>
+      <parameter id="P14" value="0" constant="false"/>
+      <parameter id="P15" value="0" constant="false"/>
+      <parameter id="P16" value="0" constant="false"/>
+      <parameter id="P17" value="0" constant="false"/>
+      <parameter id="P18" value="0" constant="false"/>
+      <parameter id="P19" value="0" constant="false"/>
+      <parameter id="P20" value="0" constant="false"/>
+      <parameter id="P21" value="0" constant="false"/>
+      <parameter id="P22" value="0" constant="false"/>
+      <parameter id="P23" value="0" constant="false"/>
+      <parameter id="P24" value="0" constant="false"/>
+      <parameter id="P25" value="0" constant="false"/>
+      <parameter id="P26" value="0" constant="false"/>
+      <parameter id="P27" value="0" constant="false"/>
+      <parameter id="P28" value="0" constant="false"/>
+      <parameter id="P29" value="0" constant="false"/>
+      <parameter id="P30" value="0" constant="false"/>
+      <parameter id="P31" value="0" constant="false"/>
+      <parameter id="P32" value="0" constant="false"/>
+      <parameter id="P33" value="0" constant="false"/>
+      <parameter id="P34" value="0" constant="false"/>
+      <parameter id="P35" value="0" constant="false"/>
+      <parameter id="P36" value="0" constant="false"/>
+      <parameter id="P37" value="0" constant="false"/>
+      <parameter id="P38" value="0" constant="false"/>
+      <parameter id="P39" value="0" constant="false"/>
+      <parameter id="P40" value="0" constant="false"/>
+      <parameter id="P41" value="0" constant="false"/>
+      <parameter id="P42" value="0" constant="false"/>
+      <parameter id="P43" value="0" constant="false"/>
+      <parameter id="P44" value="0" constant="false"/>
+      <parameter id="P45" value="0" constant="false"/>
+      <parameter id="P46" value="0" constant="false"/>
+      <parameter id="P47" value="0" constant="false"/>
+      <parameter id="P48" value="0" constant="false"/>
+      <parameter id="P49" value="0" constant="false"/>
+      <parameter id="P50" value="0" constant="false"/>
+      <parameter id="P51" value="0" constant="false"/>
+      <parameter id="P52" value="0" constant="false"/>
+      <parameter id="P53" value="0" constant="false"/>
+      <parameter id="P54" value="0" constant="false"/>
+      <parameter id="P55" value="0" constant="false"/>
+    </listOfParameters>
+    <listOfRules>
+      <rateRule variable="trig">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <cn type="integer"> 1 </cn>
+        </math>
+      </rateRule>
+    </listOfRules>
+    <listOfEvents>
+      <event id="E0" useValuesFromTriggerTime="true">
+        <trigger initialValue="true" persistent="true">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+              <gt/>
+              <ci> trig </ci>
+              <exponentiale/>
+            </apply>
+          </math>
+        </trigger>
+        <listOfEventAssignments>
+          <eventAssignment variable="P0">
+            <math xmlns="http://www.w3.org/1998/Math/MathML">
+              <cn type="integer"> 2 </cn>
+            </math>
+          </eventAssignment>
+        </listOfEventAssignments>
+      </event>
+      <event id="E1" useValuesFromTriggerTime="true">
+        <trigger initialValue="true" persistent="true">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+              <gt/>
+              <ci> trig </ci>
+              <apply>
+                <exp/>
+                <exponentiale/>
+              </apply>
+            </apply>
+          </math>
+        </trigger>
+        <listOfEventAssignments>
+          <eventAssignment variable="P1">
+            <math xmlns="http://www.w3.org/1998/Math/MathML">
+              <cn type="integer"> 2 </cn>
+            </math>
+          </eventAssignment>
+        </listOfEventAssignments>
+      </event>
+      <event id="E2" useValuesFromTriggerTime="true">
+        <trigger initialValue="true" persistent="true">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+              <gt/>
+              <ci> trig </ci>
+              <apply>
+                <abs/>
+                <cn type="integer"> -1 </cn>
+              </apply>
+            </apply>
+          </math>
+        </trigger>
+        <listOfEventAssignments>
+          <eventAssignment variable="P2">
+            <math xmlns="http://www.w3.org/1998/Math/MathML">
+              <cn type="integer"> 2 </cn>
+            </math>
+          </eventAssignment>
+        </listOfEventAssignments>
+      </event>
+      <event id="E3" useValuesFromTriggerTime="true">
+        <trigger initialValue="true" persistent="true">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+              <gt/>
+              <ci> trig </ci>
+              <apply>
+                <abs/>
+                <cn type="integer"> 1 </cn>
+              </apply>
+            </apply>
+          </math>
+        </trigger>
+        <listOfEventAssignments>
+          <eventAssignment variable="P3">
+            <math xmlns="http://www.w3.org/1998/Math/MathML">
+              <cn type="integer"> 2 </cn>
+            </math>
+          </eventAssignment>
+        </listOfEventAssignments>
+      </event>
+      <event id="E4" useValuesFromTriggerTime="true">
+        <trigger initialValue="true" persistent="true">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+              <gt/>
+              <ci> trig </ci>
+              <apply>
+                <arccos/>
+                <cn type="integer"> -1 </cn>
+              </apply>
+            </apply>
+          </math>
+        </trigger>
+        <listOfEventAssignments>
+          <eventAssignment variable="P4">
+            <math xmlns="http://www.w3.org/1998/Math/MathML">
+              <cn type="integer"> 2 </cn>
+            </math>
+          </eventAssignment>
+        </listOfEventAssignments>
+      </event>
+      <event id="E5" useValuesFromTriggerTime="true">
+        <trigger initialValue="true" persistent="true">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+              <gt/>
+              <ci> trig </ci>
+              <apply>
+                <arccos/>
+                <cn> 0.5 </cn>
+              </apply>
+            </apply>
+          </math>
+        </trigger>
+        <listOfEventAssignments>
+          <eventAssignment variable="P5">
+            <math xmlns="http://www.w3.org/1998/Math/MathML">
+              <cn type="integer"> 2 </cn>
+            </math>
+          </eventAssignment>
+        </listOfEventAssignments>
+      </event>
+      <event id="E6" useValuesFromTriggerTime="true">
+        <trigger initialValue="true" persistent="true">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+              <gt/>
+              <ci> trig </ci>
+              <apply>
+                <arcsin/>
+                <cn type="integer"> 1 </cn>
+              </apply>
+            </apply>
+          </math>
+        </trigger>
+        <listOfEventAssignments>
+          <eventAssignment variable="P6">
+            <math xmlns="http://www.w3.org/1998/Math/MathML">
+              <cn type="integer"> 2 </cn>
+            </math>
+          </eventAssignment>
+        </listOfEventAssignments>
+      </event>
+      <event id="E7" useValuesFromTriggerTime="true">
+        <trigger initialValue="true" persistent="true">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+              <gt/>
+              <ci> trig </ci>
+              <apply>
+                <arcsin/>
+                <cn> -0.5 </cn>
+              </apply>
+            </apply>
+          </math>
+        </trigger>
+        <listOfEventAssignments>
+          <eventAssignment variable="P7">
+            <math xmlns="http://www.w3.org/1998/Math/MathML">
+              <cn type="integer"> 2 </cn>
+            </math>
+          </eventAssignment>
+        </listOfEventAssignments>
+      </event>
+      <event id="E8" useValuesFromTriggerTime="true">
+        <trigger initialValue="true" persistent="true">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+              <gt/>
+              <ci> trig </ci>
+              <apply>
+                <arctan/>
+                <cn> 2.8 </cn>
+              </apply>
+            </apply>
+          </math>
+        </trigger>
+        <listOfEventAssignments>
+          <eventAssignment variable="P8">
+            <math xmlns="http://www.w3.org/1998/Math/MathML">
+              <cn type="integer"> 2 </cn>
+            </math>
+          </eventAssignment>
+        </listOfEventAssignments>
+      </event>
+      <event id="E9" useValuesFromTriggerTime="true">
+        <trigger initialValue="true" persistent="true">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+              <gt/>
+              <ci> trig </ci>
+              <apply>
+                <arctan/>
+                <cn> -7.09 </cn>
+              </apply>
+            </apply>
+          </math>
+        </trigger>
+        <listOfEventAssignments>
+          <eventAssignment variable="P9">
+            <math xmlns="http://www.w3.org/1998/Math/MathML">
+              <cn type="integer"> 2 </cn>
+            </math>
+          </eventAssignment>
+        </listOfEventAssignments>
+      </event>
+      <event id="E10" useValuesFromTriggerTime="true">
+        <trigger initialValue="true" persistent="true">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+              <gt/>
+              <ci> trig </ci>
+              <apply>
+                <ceiling/>
+                <cn> 0.5 </cn>
+              </apply>
+            </apply>
+          </math>
+        </trigger>
+        <listOfEventAssignments>
+          <eventAssignment variable="P10">
+            <math xmlns="http://www.w3.org/1998/Math/MathML">
+              <cn type="integer"> 2 </cn>
+            </math>
+          </eventAssignment>
+        </listOfEventAssignments>
+      </event>
+      <event id="E11" useValuesFromTriggerTime="true">
+        <trigger initialValue="true" persistent="true">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+              <gt/>
+              <ci> trig </ci>
+              <apply>
+                <ceiling/>
+                <cn> 3.55 </cn>
+              </apply>
+            </apply>
+          </math>
+        </trigger>
+        <listOfEventAssignments>
+          <eventAssignment variable="P11">
+            <math xmlns="http://www.w3.org/1998/Math/MathML">
+              <cn type="integer"> 2 </cn>
+            </math>
+          </eventAssignment>
+        </listOfEventAssignments>
+      </event>
+      <event id="E12" useValuesFromTriggerTime="true">
+        <trigger initialValue="true" persistent="true">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+              <gt/>
+              <ci> trig </ci>
+              <apply>
+                <ceiling/>
+                <cn> -4.6 </cn>
+              </apply>
+            </apply>
+          </math>
+        </trigger>
+        <listOfEventAssignments>
+          <eventAssignment variable="P12">
+            <math xmlns="http://www.w3.org/1998/Math/MathML">
+              <cn type="integer"> 2 </cn>
+            </math>
+          </eventAssignment>
+        </listOfEventAssignments>
+      </event>
+      <event id="E13" useValuesFromTriggerTime="true">
+        <trigger initialValue="true" persistent="true">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+              <gt/>
+              <ci> trig </ci>
+              <apply>
+                <cos/>
+                <cn> 9.1 </cn>
+              </apply>
+            </apply>
+          </math>
+        </trigger>
+        <listOfEventAssignments>
+          <eventAssignment variable="P13">
+            <math xmlns="http://www.w3.org/1998/Math/MathML">
+              <cn type="integer"> 2 </cn>
+            </math>
+          </eventAssignment>
+        </listOfEventAssignments>
+      </event>
+      <event id="E14" useValuesFromTriggerTime="true">
+        <trigger initialValue="true" persistent="true">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+              <gt/>
+              <ci> trig </ci>
+              <apply>
+                <cos/>
+                <cn> -0.22 </cn>
+              </apply>
+            </apply>
+          </math>
+        </trigger>
+        <listOfEventAssignments>
+          <eventAssignment variable="P14">
+            <math xmlns="http://www.w3.org/1998/Math/MathML">
+              <cn type="integer"> 2 </cn>
+            </math>
+          </eventAssignment>
+        </listOfEventAssignments>
+      </event>
+      <event id="E15" useValuesFromTriggerTime="true">
+        <trigger initialValue="true" persistent="true">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+              <gt/>
+              <ci> trig </ci>
+              <apply>
+                <exp/>
+                <cn type="integer"> 0 </cn>
+              </apply>
+            </apply>
+          </math>
+        </trigger>
+        <listOfEventAssignments>
+          <eventAssignment variable="P15">
+            <math xmlns="http://www.w3.org/1998/Math/MathML">
+              <cn type="integer"> 2 </cn>
+            </math>
+          </eventAssignment>
+        </listOfEventAssignments>
+      </event>
+      <event id="E16" useValuesFromTriggerTime="true">
+        <trigger initialValue="true" persistent="true">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+              <gt/>
+              <ci> trig </ci>
+              <apply>
+                <exp/>
+                <cn type="integer"> 1 </cn>
+              </apply>
+            </apply>
+          </math>
+        </trigger>
+        <listOfEventAssignments>
+          <eventAssignment variable="P16">
+            <math xmlns="http://www.w3.org/1998/Math/MathML">
+              <cn type="integer"> 2 </cn>
+            </math>
+          </eventAssignment>
+        </listOfEventAssignments>
+      </event>
+      <event id="E17" useValuesFromTriggerTime="true">
+        <trigger initialValue="true" persistent="true">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+              <gt/>
+              <ci> trig </ci>
+              <apply>
+                <exp/>
+                <cn> 0.77 </cn>
+              </apply>
+            </apply>
+          </math>
+        </trigger>
+        <listOfEventAssignments>
+          <eventAssignment variable="P17">
+            <math xmlns="http://www.w3.org/1998/Math/MathML">
+              <cn type="integer"> 2 </cn>
+            </math>
+          </eventAssignment>
+        </listOfEventAssignments>
+      </event>
+      <event id="E18" useValuesFromTriggerTime="true">
+        <trigger initialValue="true" persistent="true">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+              <gt/>
+              <ci> trig </ci>
+              <apply>
+                <floor/>
+                <cn> -4.6 </cn>
+              </apply>
+            </apply>
+          </math>
+        </trigger>
+        <listOfEventAssignments>
+          <eventAssignment variable="P18">
+            <math xmlns="http://www.w3.org/1998/Math/MathML">
+              <cn type="integer"> 2 </cn>
+            </math>
+          </eventAssignment>
+        </listOfEventAssignments>
+      </event>
+      <event id="E19" useValuesFromTriggerTime="true">
+        <trigger initialValue="true" persistent="true">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+              <gt/>
+              <ci> trig </ci>
+              <apply>
+                <floor/>
+                <cn> 9.1 </cn>
+              </apply>
+            </apply>
+          </math>
+        </trigger>
+        <listOfEventAssignments>
+          <eventAssignment variable="P19">
+            <math xmlns="http://www.w3.org/1998/Math/MathML">
+              <cn type="integer"> 2 </cn>
+            </math>
+          </eventAssignment>
+        </listOfEventAssignments>
+      </event>
+      <event id="E20" useValuesFromTriggerTime="true">
+        <trigger initialValue="true" persistent="true">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+              <gt/>
+              <ci> trig </ci>
+              <apply>
+                <ln/>
+                <cn> 0.2 </cn>
+              </apply>
+            </apply>
+          </math>
+        </trigger>
+        <listOfEventAssignments>
+          <eventAssignment variable="P20">
+            <math xmlns="http://www.w3.org/1998/Math/MathML">
+              <cn type="integer"> 2 </cn>
+            </math>
+          </eventAssignment>
+        </listOfEventAssignments>
+      </event>
+      <event id="E21" useValuesFromTriggerTime="true">
+        <trigger initialValue="true" persistent="true">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+              <gt/>
+              <ci> trig </ci>
+              <apply>
+                <ln/>
+                <cn type="integer"> 1 </cn>
+              </apply>
+            </apply>
+          </math>
+        </trigger>
+        <listOfEventAssignments>
+          <eventAssignment variable="P21">
+            <math xmlns="http://www.w3.org/1998/Math/MathML">
+              <cn type="integer"> 2 </cn>
+            </math>
+          </eventAssignment>
+        </listOfEventAssignments>
+      </event>
+      <event id="E22" useValuesFromTriggerTime="true">
+        <trigger initialValue="true" persistent="true">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+              <gt/>
+              <ci> trig </ci>
+              <apply>
+                <log/>
+                <logbase>
+                  <cn type="integer"> 10 </cn>
+                </logbase>
+                <cn> 0.2 </cn>
+              </apply>
+            </apply>
+          </math>
+        </trigger>
+        <listOfEventAssignments>
+          <eventAssignment variable="P22">
+            <math xmlns="http://www.w3.org/1998/Math/MathML">
+              <cn type="integer"> 2 </cn>
+            </math>
+          </eventAssignment>
+        </listOfEventAssignments>
+      </event>
+      <event id="E23" useValuesFromTriggerTime="true">
+        <trigger initialValue="true" persistent="true">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+              <gt/>
+              <ci> trig </ci>
+              <apply>
+                <log/>
+                <logbase>
+                  <cn type="integer"> 10 </cn>
+                </logbase>
+                <cn type="integer"> 1 </cn>
+              </apply>
+            </apply>
+          </math>
+        </trigger>
+        <listOfEventAssignments>
+          <eventAssignment variable="P23">
+            <math xmlns="http://www.w3.org/1998/Math/MathML">
+              <cn type="integer"> 2 </cn>
+            </math>
+          </eventAssignment>
+        </listOfEventAssignments>
+      </event>
+      <event id="E24" useValuesFromTriggerTime="true">
+        <trigger initialValue="true" persistent="true">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+              <gt/>
+              <ci> trig </ci>
+              <apply>
+                <power/>
+                <cn type="integer"> 1 </cn>
+                <cn type="integer"> 2 </cn>
+              </apply>
+            </apply>
+          </math>
+        </trigger>
+        <listOfEventAssignments>
+          <eventAssignment variable="P24">
+            <math xmlns="http://www.w3.org/1998/Math/MathML">
+              <cn type="integer"> 2 </cn>
+            </math>
+          </eventAssignment>
+        </listOfEventAssignments>
+      </event>
+      <event id="E25" useValuesFromTriggerTime="true">
+        <trigger initialValue="true" persistent="true">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+              <gt/>
+              <ci> trig </ci>
+              <apply>
+                <power/>
+                <cn type="integer"> 2 </cn>
+                <cn type="integer"> 2 </cn>
+              </apply>
+            </apply>
+          </math>
+        </trigger>
+        <listOfEventAssignments>
+          <eventAssignment variable="P25">
+            <math xmlns="http://www.w3.org/1998/Math/MathML">
+              <cn type="integer"> 2 </cn>
+            </math>
+          </eventAssignment>
+        </listOfEventAssignments>
+      </event>
+      <event id="E26" useValuesFromTriggerTime="true">
+        <trigger initialValue="true" persistent="true">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+              <gt/>
+              <ci> trig </ci>
+              <apply>
+                <power/>
+                <cn> 1.4 </cn>
+                <cn> 5.1 </cn>
+              </apply>
+            </apply>
+          </math>
+        </trigger>
+        <listOfEventAssignments>
+          <eventAssignment variable="P26">
+            <math xmlns="http://www.w3.org/1998/Math/MathML">
+              <cn type="integer"> 2 </cn>
+            </math>
+          </eventAssignment>
+        </listOfEventAssignments>
+      </event>
+      <event id="E27" useValuesFromTriggerTime="true">
+        <trigger initialValue="true" persistent="true">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+              <gt/>
+              <ci> trig </ci>
+              <apply>
+                <power/>
+                <cn type="integer"> 4 </cn>
+                <cn type="integer"> 2 </cn>
+              </apply>
+            </apply>
+          </math>
+        </trigger>
+        <listOfEventAssignments>
+          <eventAssignment variable="P27">
+            <math xmlns="http://www.w3.org/1998/Math/MathML">
+              <cn type="integer"> 2 </cn>
+            </math>
+          </eventAssignment>
+        </listOfEventAssignments>
+      </event>
+      <event id="E28" useValuesFromTriggerTime="true">
+        <trigger initialValue="true" persistent="true">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+              <gt/>
+              <ci> trig </ci>
+              <apply>
+                <power/>
+                <cn> 3.1 </cn>
+                <cn type="integer"> 2 </cn>
+              </apply>
+            </apply>
+          </math>
+        </trigger>
+        <listOfEventAssignments>
+          <eventAssignment variable="P28">
+            <math xmlns="http://www.w3.org/1998/Math/MathML">
+              <cn type="integer"> 2 </cn>
+            </math>
+          </eventAssignment>
+        </listOfEventAssignments>
+      </event>
+      <event id="E29" useValuesFromTriggerTime="true">
+        <trigger initialValue="true" persistent="true">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+              <gt/>
+              <ci> trig </ci>
+              <apply>
+                <root/>
+                <degree>
+                  <cn type="integer"> 2 </cn>
+                </degree>
+                <cn type="integer"> 4 </cn>
+              </apply>
+            </apply>
+          </math>
+        </trigger>
+        <listOfEventAssignments>
+          <eventAssignment variable="P29">
+            <math xmlns="http://www.w3.org/1998/Math/MathML">
+              <cn type="integer"> 2 </cn>
+            </math>
+          </eventAssignment>
+        </listOfEventAssignments>
+      </event>
+      <event id="E30" useValuesFromTriggerTime="true">
+        <trigger initialValue="true" persistent="true">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+              <gt/>
+              <ci> trig </ci>
+              <apply>
+                <root/>
+                <degree>
+                  <cn type="integer"> 2 </cn>
+                </degree>
+                <cn> 7.4 </cn>
+              </apply>
+            </apply>
+          </math>
+        </trigger>
+        <listOfEventAssignments>
+          <eventAssignment variable="P30">
+            <math xmlns="http://www.w3.org/1998/Math/MathML">
+              <cn type="integer"> 2 </cn>
+            </math>
+          </eventAssignment>
+        </listOfEventAssignments>
+      </event>
+      <event id="E31" useValuesFromTriggerTime="true">
+        <trigger initialValue="true" persistent="true">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+              <gt/>
+              <ci> trig </ci>
+              <apply>
+                <sin/>
+                <cn> 2.1 </cn>
+              </apply>
+            </apply>
+          </math>
+        </trigger>
+        <listOfEventAssignments>
+          <eventAssignment variable="P31">
+            <math xmlns="http://www.w3.org/1998/Math/MathML">
+              <cn type="integer"> 2 </cn>
+            </math>
+          </eventAssignment>
+        </listOfEventAssignments>
+      </event>
+      <event id="E32" useValuesFromTriggerTime="true">
+        <trigger initialValue="true" persistent="true">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+              <gt/>
+              <ci> trig </ci>
+              <apply>
+                <sin/>
+                <cn type="integer"> 0 </cn>
+              </apply>
+            </apply>
+          </math>
+        </trigger>
+        <listOfEventAssignments>
+          <eventAssignment variable="P32">
+            <math xmlns="http://www.w3.org/1998/Math/MathML">
+              <cn type="integer"> 2 </cn>
+            </math>
+          </eventAssignment>
+        </listOfEventAssignments>
+      </event>
+      <event id="E33" useValuesFromTriggerTime="true">
+        <trigger initialValue="true" persistent="true">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+              <gt/>
+              <ci> trig </ci>
+              <apply>
+                <sin/>
+                <cn> -5.9 </cn>
+              </apply>
+            </apply>
+          </math>
+        </trigger>
+        <listOfEventAssignments>
+          <eventAssignment variable="P33">
+            <math xmlns="http://www.w3.org/1998/Math/MathML">
+              <cn type="integer"> 2 </cn>
+            </math>
+          </eventAssignment>
+        </listOfEventAssignments>
+      </event>
+      <event id="E34" useValuesFromTriggerTime="true">
+        <trigger initialValue="true" persistent="true">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+              <gt/>
+              <ci> trig </ci>
+              <apply>
+                <tan/>
+                <cn type="integer"> 0 </cn>
+              </apply>
+            </apply>
+          </math>
+        </trigger>
+        <listOfEventAssignments>
+          <eventAssignment variable="P34">
+            <math xmlns="http://www.w3.org/1998/Math/MathML">
+              <cn type="integer"> 2 </cn>
+            </math>
+          </eventAssignment>
+        </listOfEventAssignments>
+      </event>
+      <event id="E35" useValuesFromTriggerTime="true">
+        <trigger initialValue="true" persistent="true">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+              <gt/>
+              <ci> trig </ci>
+              <apply>
+                <tan/>
+                <cn> 1.11 </cn>
+              </apply>
+            </apply>
+          </math>
+        </trigger>
+        <listOfEventAssignments>
+          <eventAssignment variable="P35">
+            <math xmlns="http://www.w3.org/1998/Math/MathML">
+              <cn type="integer"> 2 </cn>
+            </math>
+          </eventAssignment>
+        </listOfEventAssignments>
+      </event>
+      <event id="E36" useValuesFromTriggerTime="true">
+        <trigger initialValue="true" persistent="true">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+              <gt/>
+              <ci> trig </ci>
+              <apply>
+                <tan/>
+                <cn type="integer"> -6 </cn>
+              </apply>
+            </apply>
+          </math>
+        </trigger>
+        <listOfEventAssignments>
+          <eventAssignment variable="P36">
+            <math xmlns="http://www.w3.org/1998/Math/MathML">
+              <cn type="integer"> 2 </cn>
+            </math>
+          </eventAssignment>
+        </listOfEventAssignments>
+      </event>
+      <event id="E37" useValuesFromTriggerTime="true">
+        <trigger initialValue="true" persistent="true">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+              <gt/>
+              <ci> trig </ci>
+              <apply>
+                <sec/>
+                <cn> 0.5 </cn>
+              </apply>
+            </apply>
+          </math>
+        </trigger>
+        <listOfEventAssignments>
+          <eventAssignment variable="P37">
+            <math xmlns="http://www.w3.org/1998/Math/MathML">
+              <cn type="integer"> 2 </cn>
+            </math>
+          </eventAssignment>
+        </listOfEventAssignments>
+      </event>
+      <event id="E38" useValuesFromTriggerTime="true">
+        <trigger initialValue="true" persistent="true">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+              <gt/>
+              <ci> trig </ci>
+              <apply>
+                <csc/>
+                <cn> 4.5 </cn>
+              </apply>
+            </apply>
+          </math>
+        </trigger>
+        <listOfEventAssignments>
+          <eventAssignment variable="P38">
+            <math xmlns="http://www.w3.org/1998/Math/MathML">
+              <cn type="integer"> 2 </cn>
+            </math>
+          </eventAssignment>
+        </listOfEventAssignments>
+      </event>
+      <event id="E39" useValuesFromTriggerTime="true">
+        <trigger initialValue="true" persistent="true">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+              <gt/>
+              <ci> trig </ci>
+              <apply>
+                <cot/>
+                <cn> 0.2 </cn>
+              </apply>
+            </apply>
+          </math>
+        </trigger>
+        <listOfEventAssignments>
+          <eventAssignment variable="P39">
+            <math xmlns="http://www.w3.org/1998/Math/MathML">
+              <cn type="integer"> 2 </cn>
+            </math>
+          </eventAssignment>
+        </listOfEventAssignments>
+      </event>
+      <event id="E40" useValuesFromTriggerTime="true">
+        <trigger initialValue="true" persistent="true">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+              <gt/>
+              <ci> trig </ci>
+              <apply>
+                <sinh/>
+                <cn> 0.3 </cn>
+              </apply>
+            </apply>
+          </math>
+        </trigger>
+        <listOfEventAssignments>
+          <eventAssignment variable="P40">
+            <math xmlns="http://www.w3.org/1998/Math/MathML">
+              <cn type="integer"> 2 </cn>
+            </math>
+          </eventAssignment>
+        </listOfEventAssignments>
+      </event>
+      <event id="E41" useValuesFromTriggerTime="true">
+        <trigger initialValue="true" persistent="true">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+              <gt/>
+              <ci> trig </ci>
+              <apply>
+                <cosh/>
+                <cn> 1.7 </cn>
+              </apply>
+            </apply>
+          </math>
+        </trigger>
+        <listOfEventAssignments>
+          <eventAssignment variable="P41">
+            <math xmlns="http://www.w3.org/1998/Math/MathML">
+              <cn type="integer"> 2 </cn>
+            </math>
+          </eventAssignment>
+        </listOfEventAssignments>
+      </event>
+      <event id="E42" useValuesFromTriggerTime="true">
+        <trigger initialValue="true" persistent="true">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+              <gt/>
+              <ci> trig </ci>
+              <apply>
+                <arcsec/>
+                <cn> 2.3 </cn>
+              </apply>
+            </apply>
+          </math>
+        </trigger>
+        <listOfEventAssignments>
+          <eventAssignment variable="P42">
+            <math xmlns="http://www.w3.org/1998/Math/MathML">
+              <cn type="integer"> 2 </cn>
+            </math>
+          </eventAssignment>
+        </listOfEventAssignments>
+      </event>
+      <event id="E43" useValuesFromTriggerTime="true">
+        <trigger initialValue="true" persistent="true">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+              <gt/>
+              <ci> trig </ci>
+              <apply>
+                <arccsc/>
+                <cn> 1.1 </cn>
+              </apply>
+            </apply>
+          </math>
+        </trigger>
+        <listOfEventAssignments>
+          <eventAssignment variable="P43">
+            <math xmlns="http://www.w3.org/1998/Math/MathML">
+              <cn type="integer"> 2 </cn>
+            </math>
+          </eventAssignment>
+        </listOfEventAssignments>
+      </event>
+      <event id="E44" useValuesFromTriggerTime="true">
+        <trigger initialValue="true" persistent="true">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+              <gt/>
+              <ci> trig </ci>
+              <apply>
+                <arccot/>
+                <cn> -0.1 </cn>
+              </apply>
+            </apply>
+          </math>
+        </trigger>
+        <listOfEventAssignments>
+          <eventAssignment variable="P44">
+            <math xmlns="http://www.w3.org/1998/Math/MathML">
+              <cn type="integer"> 2 </cn>
+            </math>
+          </eventAssignment>
+        </listOfEventAssignments>
+      </event>
+      <event id="E45" useValuesFromTriggerTime="true">
+        <trigger initialValue="true" persistent="true">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+              <gt/>
+              <ci> trig </ci>
+              <apply>
+                <arcsinh/>
+                <cn type="integer"> 99 </cn>
+              </apply>
+            </apply>
+          </math>
+        </trigger>
+        <listOfEventAssignments>
+          <eventAssignment variable="P45">
+            <math xmlns="http://www.w3.org/1998/Math/MathML">
+              <cn type="integer"> 2 </cn>
+            </math>
+          </eventAssignment>
+        </listOfEventAssignments>
+      </event>
+      <event id="E46" useValuesFromTriggerTime="true">
+        <trigger initialValue="true" persistent="true">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+              <gt/>
+              <ci> trig </ci>
+              <apply>
+                <arccosh/>
+                <cn> 1.34 </cn>
+              </apply>
+            </apply>
+          </math>
+        </trigger>
+        <listOfEventAssignments>
+          <eventAssignment variable="P46">
+            <math xmlns="http://www.w3.org/1998/Math/MathML">
+              <cn type="integer"> 2 </cn>
+            </math>
+          </eventAssignment>
+        </listOfEventAssignments>
+      </event>
+      <event id="E47" useValuesFromTriggerTime="true">
+        <trigger initialValue="true" persistent="true">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+              <gt/>
+              <ci> trig </ci>
+              <apply>
+                <arctanh/>
+                <cn> -0.7 </cn>
+              </apply>
+            </apply>
+          </math>
+        </trigger>
+        <listOfEventAssignments>
+          <eventAssignment variable="P47">
+            <math xmlns="http://www.w3.org/1998/Math/MathML">
+              <cn type="integer"> 2 </cn>
+            </math>
+          </eventAssignment>
+        </listOfEventAssignments>
+      </event>
+      <event id="E48" useValuesFromTriggerTime="true">
+        <trigger initialValue="true" persistent="true">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+              <gt/>
+              <ci> trig </ci>
+              <apply>
+                <arcsech/>
+                <cn> 0.42 </cn>
+              </apply>
+            </apply>
+          </math>
+        </trigger>
+        <listOfEventAssignments>
+          <eventAssignment variable="P48">
+            <math xmlns="http://www.w3.org/1998/Math/MathML">
+              <cn type="integer"> 2 </cn>
+            </math>
+          </eventAssignment>
+        </listOfEventAssignments>
+      </event>
+      <event id="E49" useValuesFromTriggerTime="true">
+        <trigger initialValue="true" persistent="true">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+              <gt/>
+              <ci> trig </ci>
+              <apply>
+                <arccsch/>
+                <cn> 0.01 </cn>
+              </apply>
+            </apply>
+          </math>
+        </trigger>
+        <listOfEventAssignments>
+          <eventAssignment variable="P49">
+            <math xmlns="http://www.w3.org/1998/Math/MathML">
+              <cn type="integer"> 2 </cn>
+            </math>
+          </eventAssignment>
+        </listOfEventAssignments>
+      </event>
+      <event id="E50" useValuesFromTriggerTime="true">
+        <trigger initialValue="true" persistent="true">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+              <gt/>
+              <ci> trig </ci>
+              <apply>
+                <arccoth/>
+                <cn> 8.2 </cn>
+              </apply>
+            </apply>
+          </math>
+        </trigger>
+        <listOfEventAssignments>
+          <eventAssignment variable="P50">
+            <math xmlns="http://www.w3.org/1998/Math/MathML">
+              <cn type="integer"> 2 </cn>
+            </math>
+          </eventAssignment>
+        </listOfEventAssignments>
+      </event>
+      <event id="E51" useValuesFromTriggerTime="true">
+        <trigger initialValue="true" persistent="true">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+              <gt/>
+              <ci> trig </ci>
+              <apply>
+                <times/>
+              </apply>
+            </apply>
+          </math>
+        </trigger>
+        <listOfEventAssignments>
+          <eventAssignment variable="P51">
+            <math xmlns="http://www.w3.org/1998/Math/MathML">
+              <cn type="integer"> 2 </cn>
+            </math>
+          </eventAssignment>
+        </listOfEventAssignments>
+      </event>
+      <event id="E52" useValuesFromTriggerTime="true">
+        <trigger initialValue="true" persistent="true">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+              <gt/>
+              <ci> trig </ci>
+              <apply>
+                <plus/>
+              </apply>
+            </apply>
+          </math>
+        </trigger>
+        <listOfEventAssignments>
+          <eventAssignment variable="P52">
+            <math xmlns="http://www.w3.org/1998/Math/MathML">
+              <cn type="integer"> 2 </cn>
+            </math>
+          </eventAssignment>
+        </listOfEventAssignments>
+      </event>
+      <event id="E53" useValuesFromTriggerTime="true">
+        <trigger initialValue="true" persistent="true">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+              <and/>
+              <apply>
+                <gt/>
+                <ci> trig </ci>
+                <cn type="integer"> 0 </cn>
+              </apply>
+              <apply>
+                <and/>
+              </apply>
+            </apply>
+          </math>
+        </trigger>
+        <listOfEventAssignments>
+          <eventAssignment variable="P53">
+            <math xmlns="http://www.w3.org/1998/Math/MathML">
+              <cn type="integer"> 2 </cn>
+            </math>
+          </eventAssignment>
+        </listOfEventAssignments>
+      </event>
+      <event id="E54" useValuesFromTriggerTime="true">
+        <trigger initialValue="true" persistent="true">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+              <and/>
+              <apply>
+                <gt/>
+                <ci> trig </ci>
+                <cn type="integer"> 0 </cn>
+              </apply>
+              <apply>
+                <not/>
+                <apply>
+                  <or/>
+                </apply>
+              </apply>
+            </apply>
+          </math>
+        </trigger>
+        <listOfEventAssignments>
+          <eventAssignment variable="P54">
+            <math xmlns="http://www.w3.org/1998/Math/MathML">
+              <cn type="integer"> 2 </cn>
+            </math>
+          </eventAssignment>
+        </listOfEventAssignments>
+      </event>
+      <event id="E55" useValuesFromTriggerTime="true">
+        <trigger initialValue="true" persistent="true">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+              <and/>
+              <apply>
+                <gt/>
+                <ci> trig </ci>
+                <cn type="integer"> 0 </cn>
+              </apply>
+              <apply>
+                <not/>
+                <apply>
+                  <xor/>
+                </apply>
+              </apply>
+            </apply>
+          </math>
+        </trigger>
+        <listOfEventAssignments>
+          <eventAssignment variable="P55">
+            <math xmlns="http://www.w3.org/1998/Math/MathML">
+              <cn type="integer"> 2 </cn>
+            </math>
+          </eventAssignment>
+        </listOfEventAssignments>
+      </event>
+    </listOfEvents>
+  </model>
+</sbml>

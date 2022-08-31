@@ -1,0 +1,1169 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sbml xmlns="http://www.sbml.org/sbml/level3/version2/core" level="3" version="2">
+  <model id="case00966" name="case00966">
+    <listOfFunctionDefinitions>
+      <functionDefinition id="calculateerror">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <lambda>
+            <bvar>
+              <ci> x0 </ci>
+            </bvar>
+            <bvar>
+              <ci> x1 </ci>
+            </bvar>
+            <bvar>
+              <ci> x2 </ci>
+            </bvar>
+            <bvar>
+              <ci> x3 </ci>
+            </bvar>
+            <bvar>
+              <ci> x4 </ci>
+            </bvar>
+            <bvar>
+              <ci> x5 </ci>
+            </bvar>
+            <bvar>
+              <ci> x6 </ci>
+            </bvar>
+            <bvar>
+              <ci> x7 </ci>
+            </bvar>
+            <bvar>
+              <ci> x8 </ci>
+            </bvar>
+            <bvar>
+              <ci> x9 </ci>
+            </bvar>
+            <bvar>
+              <ci> x10 </ci>
+            </bvar>
+            <bvar>
+              <ci> x11 </ci>
+            </bvar>
+            <bvar>
+              <ci> x12 </ci>
+            </bvar>
+            <bvar>
+              <ci> x13 </ci>
+            </bvar>
+            <bvar>
+              <ci> x14 </ci>
+            </bvar>
+            <bvar>
+              <ci> x15 </ci>
+            </bvar>
+            <bvar>
+              <ci> x16 </ci>
+            </bvar>
+            <apply>
+              <plus/>
+              <apply>
+                <divide/>
+                <apply>
+                  <power/>
+                  <apply>
+                    <minus/>
+                    <ci> x0 </ci>
+                    <cn> 0.0952 </cn>
+                  </apply>
+                  <cn type="integer"> 2 </cn>
+                </apply>
+                <cn> 0.0952 </cn>
+              </apply>
+              <apply>
+                <divide/>
+                <apply>
+                  <power/>
+                  <apply>
+                    <minus/>
+                    <ci> x1 </ci>
+                    <cn> 1.523 </cn>
+                  </apply>
+                  <cn type="integer"> 2 </cn>
+                </apply>
+                <cn> 1.523 </cn>
+              </apply>
+              <apply>
+                <divide/>
+                <apply>
+                  <power/>
+                  <apply>
+                    <minus/>
+                    <ci> x2 </ci>
+                    <cn> 11.428 </cn>
+                  </apply>
+                  <cn type="integer"> 2 </cn>
+                </apply>
+                <cn> 11.428 </cn>
+              </apply>
+              <apply>
+                <divide/>
+                <apply>
+                  <power/>
+                  <apply>
+                    <minus/>
+                    <ci> x3 </ci>
+                    <cn> 53.32 </cn>
+                  </apply>
+                  <cn type="integer"> 2 </cn>
+                </apply>
+                <cn> 53.32 </cn>
+              </apply>
+              <apply>
+                <divide/>
+                <apply>
+                  <power/>
+                  <apply>
+                    <minus/>
+                    <ci> x4 </ci>
+                    <cn> 173.29 </cn>
+                  </apply>
+                  <cn type="integer"> 2 </cn>
+                </apply>
+                <cn> 173.29 </cn>
+              </apply>
+              <apply>
+                <divide/>
+                <apply>
+                  <power/>
+                  <apply>
+                    <minus/>
+                    <ci> x5 </ci>
+                    <cn> 415.898 </cn>
+                  </apply>
+                  <cn type="integer"> 2 </cn>
+                </apply>
+                <cn> 415.898 </cn>
+              </apply>
+              <apply>
+                <divide/>
+                <apply>
+                  <power/>
+                  <apply>
+                    <minus/>
+                    <ci> x6 </ci>
+                    <cn> 762.48 </cn>
+                  </apply>
+                  <cn type="integer"> 2 </cn>
+                </apply>
+                <cn> 762.48 </cn>
+              </apply>
+              <apply>
+                <divide/>
+                <apply>
+                  <power/>
+                  <apply>
+                    <minus/>
+                    <ci> x7 </ci>
+                    <cn> 1089.26 </cn>
+                  </apply>
+                  <cn type="integer"> 2 </cn>
+                </apply>
+                <cn> 1089.26 </cn>
+              </apply>
+              <apply>
+                <divide/>
+                <apply>
+                  <power/>
+                  <apply>
+                    <minus/>
+                    <ci> x8 </ci>
+                    <cn> 1225.415 </cn>
+                  </apply>
+                  <cn type="integer"> 2 </cn>
+                </apply>
+                <cn> 1225.415 </cn>
+              </apply>
+              <apply>
+                <divide/>
+                <apply>
+                  <power/>
+                  <apply>
+                    <minus/>
+                    <ci> x9 </ci>
+                    <cn> 1089.26 </cn>
+                  </apply>
+                  <cn type="integer"> 2 </cn>
+                </apply>
+                <cn> 1089.26 </cn>
+              </apply>
+              <apply>
+                <divide/>
+                <apply>
+                  <power/>
+                  <apply>
+                    <minus/>
+                    <ci> x10 </ci>
+                    <cn> 762.48 </cn>
+                  </apply>
+                  <cn type="integer"> 2 </cn>
+                </apply>
+                <cn> 762.48 </cn>
+              </apply>
+              <apply>
+                <divide/>
+                <apply>
+                  <power/>
+                  <apply>
+                    <minus/>
+                    <ci> x11 </ci>
+                    <cn> 415.898 </cn>
+                  </apply>
+                  <cn type="integer"> 2 </cn>
+                </apply>
+                <cn> 415.898 </cn>
+              </apply>
+              <apply>
+                <divide/>
+                <apply>
+                  <power/>
+                  <apply>
+                    <minus/>
+                    <ci> x12 </ci>
+                    <cn> 173.29 </cn>
+                  </apply>
+                  <cn type="integer"> 2 </cn>
+                </apply>
+                <cn> 173.29 </cn>
+              </apply>
+              <apply>
+                <divide/>
+                <apply>
+                  <power/>
+                  <apply>
+                    <minus/>
+                    <ci> x13 </ci>
+                    <cn> 53.32 </cn>
+                  </apply>
+                  <cn type="integer"> 2 </cn>
+                </apply>
+                <cn> 53.32 </cn>
+              </apply>
+              <apply>
+                <divide/>
+                <apply>
+                  <power/>
+                  <apply>
+                    <minus/>
+                    <ci> x14 </ci>
+                    <cn> 11.428 </cn>
+                  </apply>
+                  <cn type="integer"> 2 </cn>
+                </apply>
+                <cn> 11.428 </cn>
+              </apply>
+              <apply>
+                <divide/>
+                <apply>
+                  <power/>
+                  <apply>
+                    <minus/>
+                    <ci> x15 </ci>
+                    <cn> 1.523 </cn>
+                  </apply>
+                  <cn type="integer"> 2 </cn>
+                </apply>
+                <cn> 1.523 </cn>
+              </apply>
+              <apply>
+                <divide/>
+                <apply>
+                  <power/>
+                  <apply>
+                    <minus/>
+                    <ci> x16 </ci>
+                    <cn> 0.0952 </cn>
+                  </apply>
+                  <cn type="integer"> 2 </cn>
+                </apply>
+                <cn> 0.0952 </cn>
+              </apply>
+            </apply>
+          </lambda>
+        </math>
+      </functionDefinition>
+    </listOfFunctionDefinitions>
+    <listOfParameters>
+      <parameter id="S" value="0" constant="false"/>
+      <parameter id="Q" value="0" constant="false"/>
+      <parameter id="R" value="0" constant="false"/>
+      <parameter id="reset" value="0" constant="false"/>
+      <parameter id="chicount" value="0" constant="false"/>
+      <parameter id="chitest" value="0" constant="false"/>
+      <parameter id="assemble" value="0" constant="false"/>
+      <parameter id="chi0" value="0" constant="false"/>
+      <parameter id="chi1" value="0" constant="false"/>
+      <parameter id="chi2" value="0" constant="false"/>
+      <parameter id="chi3" value="0" constant="false"/>
+      <parameter id="chi4" value="0" constant="false"/>
+      <parameter id="chi5" value="0" constant="false"/>
+      <parameter id="chi6" value="0" constant="false"/>
+      <parameter id="chi7" value="0" constant="false"/>
+      <parameter id="chi8" value="0" constant="false"/>
+      <parameter id="chi9" value="0" constant="false"/>
+      <parameter id="chi10" value="0" constant="false"/>
+      <parameter id="chi11" value="0" constant="false"/>
+      <parameter id="chi12" value="0" constant="false"/>
+      <parameter id="chi13" value="0" constant="false"/>
+      <parameter id="chi14" value="0" constant="false"/>
+      <parameter id="chi15" value="0" constant="false"/>
+      <parameter id="chi16" value="0" constant="false"/>
+      <parameter id="tests" value="0" constant="false"/>
+      <parameter id="finalchi" value="0" constant="false"/>
+      <parameter id="error" value="0" constant="false"/>
+    </listOfParameters>
+    <listOfRules>
+      <assignmentRule variable="S">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <plus/>
+            <ci> Q </ci>
+            <ci> R </ci>
+          </apply>
+        </math>
+      </assignmentRule>
+    </listOfRules>
+    <listOfEvents>
+      <event id="Rinc" useValuesFromTriggerTime="true">
+        <trigger initialValue="true" persistent="false">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+              <geq/>
+              <apply>
+                <minus/>
+                <csymbol encoding="text" definitionURL="http://www.sbml.org/sbml/symbols/time"> time </csymbol>
+                <ci> reset </ci>
+              </apply>
+              <cn> 0.01 </cn>
+            </apply>
+          </math>
+        </trigger>
+        <priority>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <cn type="integer"> 10 </cn>
+          </math>
+        </priority>
+        <listOfEventAssignments>
+          <eventAssignment variable="reset">
+            <math xmlns="http://www.w3.org/1998/Math/MathML">
+              <csymbol encoding="text" definitionURL="http://www.sbml.org/sbml/symbols/time"> time </csymbol>
+            </math>
+          </eventAssignment>
+          <eventAssignment variable="chicount">
+            <math xmlns="http://www.w3.org/1998/Math/MathML">
+              <apply>
+                <plus/>
+                <ci> chicount </ci>
+                <cn type="integer"> 1 </cn>
+              </apply>
+            </math>
+          </eventAssignment>
+          <eventAssignment variable="R">
+            <math xmlns="http://www.w3.org/1998/Math/MathML">
+              <apply>
+                <plus/>
+                <ci> R </ci>
+                <cn> 0.01 </cn>
+              </apply>
+            </math>
+          </eventAssignment>
+        </listOfEventAssignments>
+      </event>
+      <event id="Qinc" useValuesFromTriggerTime="true">
+        <trigger initialValue="true" persistent="false">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+              <geq/>
+              <apply>
+                <minus/>
+                <csymbol encoding="text" definitionURL="http://www.sbml.org/sbml/symbols/time"> time </csymbol>
+                <ci> reset </ci>
+              </apply>
+              <cn> 0.01 </cn>
+            </apply>
+          </math>
+        </trigger>
+        <priority>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <cn type="integer"> 10 </cn>
+          </math>
+        </priority>
+        <listOfEventAssignments>
+          <eventAssignment variable="reset">
+            <math xmlns="http://www.w3.org/1998/Math/MathML">
+              <csymbol encoding="text" definitionURL="http://www.sbml.org/sbml/symbols/time"> time </csymbol>
+            </math>
+          </eventAssignment>
+          <eventAssignment variable="chitest">
+            <math xmlns="http://www.w3.org/1998/Math/MathML">
+              <apply>
+                <plus/>
+                <ci> chitest </ci>
+                <cn type="integer"> 1 </cn>
+              </apply>
+            </math>
+          </eventAssignment>
+          <eventAssignment variable="chicount">
+            <math xmlns="http://www.w3.org/1998/Math/MathML">
+              <apply>
+                <plus/>
+                <ci> chicount </ci>
+                <cn type="integer"> 1 </cn>
+              </apply>
+            </math>
+          </eventAssignment>
+          <eventAssignment variable="Q">
+            <math xmlns="http://www.w3.org/1998/Math/MathML">
+              <apply>
+                <plus/>
+                <ci> Q </ci>
+                <cn> 0.01 </cn>
+              </apply>
+            </math>
+          </eventAssignment>
+        </listOfEventAssignments>
+      </event>
+      <event id="repeat" useValuesFromTriggerTime="true">
+        <trigger initialValue="true" persistent="true">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+              <geq/>
+              <apply>
+                <floor/>
+                <apply>
+                  <divide/>
+                  <ci> chicount </ci>
+                  <cn type="integer"> 16 </cn>
+                </apply>
+              </apply>
+              <cn type="integer"> 1 </cn>
+            </apply>
+          </math>
+        </trigger>
+        <priority>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <cn type="integer"> 5 </cn>
+          </math>
+        </priority>
+        <listOfEventAssignments>
+          <eventAssignment variable="assemble">
+            <math xmlns="http://www.w3.org/1998/Math/MathML">
+              <cn> 1.5 </cn>
+            </math>
+          </eventAssignment>
+          <eventAssignment variable="chicount">
+            <math xmlns="http://www.w3.org/1998/Math/MathML">
+              <cn type="integer"> 0 </cn>
+            </math>
+          </eventAssignment>
+        </listOfEventAssignments>
+      </event>
+      <event id="_E0" useValuesFromTriggerTime="true">
+        <trigger initialValue="true" persistent="true">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+              <and/>
+              <apply>
+                <geq/>
+                <ci> assemble </ci>
+                <cn type="integer"> 1 </cn>
+              </apply>
+              <apply>
+                <eq/>
+                <ci> chitest </ci>
+                <cn type="integer"> 0 </cn>
+              </apply>
+            </apply>
+          </math>
+        </trigger>
+        <priority>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <cn type="integer"> 3 </cn>
+          </math>
+        </priority>
+        <listOfEventAssignments>
+          <eventAssignment variable="chi0">
+            <math xmlns="http://www.w3.org/1998/Math/MathML">
+              <apply>
+                <plus/>
+                <ci> chi0 </ci>
+                <cn type="integer"> 1 </cn>
+              </apply>
+            </math>
+          </eventAssignment>
+        </listOfEventAssignments>
+      </event>
+      <event id="_E1" useValuesFromTriggerTime="true">
+        <trigger initialValue="true" persistent="true">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+              <and/>
+              <apply>
+                <geq/>
+                <ci> assemble </ci>
+                <cn type="integer"> 1 </cn>
+              </apply>
+              <apply>
+                <eq/>
+                <ci> chitest </ci>
+                <cn type="integer"> 1 </cn>
+              </apply>
+            </apply>
+          </math>
+        </trigger>
+        <priority>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <cn type="integer"> 3 </cn>
+          </math>
+        </priority>
+        <listOfEventAssignments>
+          <eventAssignment variable="chi1">
+            <math xmlns="http://www.w3.org/1998/Math/MathML">
+              <apply>
+                <plus/>
+                <ci> chi1 </ci>
+                <cn type="integer"> 1 </cn>
+              </apply>
+            </math>
+          </eventAssignment>
+        </listOfEventAssignments>
+      </event>
+      <event id="_E2" useValuesFromTriggerTime="true">
+        <trigger initialValue="true" persistent="true">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+              <and/>
+              <apply>
+                <geq/>
+                <ci> assemble </ci>
+                <cn type="integer"> 1 </cn>
+              </apply>
+              <apply>
+                <eq/>
+                <ci> chitest </ci>
+                <cn type="integer"> 2 </cn>
+              </apply>
+            </apply>
+          </math>
+        </trigger>
+        <priority>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <cn type="integer"> 3 </cn>
+          </math>
+        </priority>
+        <listOfEventAssignments>
+          <eventAssignment variable="chi2">
+            <math xmlns="http://www.w3.org/1998/Math/MathML">
+              <apply>
+                <plus/>
+                <ci> chi2 </ci>
+                <cn type="integer"> 1 </cn>
+              </apply>
+            </math>
+          </eventAssignment>
+        </listOfEventAssignments>
+      </event>
+      <event id="_E3" useValuesFromTriggerTime="true">
+        <trigger initialValue="true" persistent="true">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+              <and/>
+              <apply>
+                <geq/>
+                <ci> assemble </ci>
+                <cn type="integer"> 1 </cn>
+              </apply>
+              <apply>
+                <eq/>
+                <ci> chitest </ci>
+                <cn type="integer"> 3 </cn>
+              </apply>
+            </apply>
+          </math>
+        </trigger>
+        <priority>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <cn type="integer"> 3 </cn>
+          </math>
+        </priority>
+        <listOfEventAssignments>
+          <eventAssignment variable="chi3">
+            <math xmlns="http://www.w3.org/1998/Math/MathML">
+              <apply>
+                <plus/>
+                <ci> chi3 </ci>
+                <cn type="integer"> 1 </cn>
+              </apply>
+            </math>
+          </eventAssignment>
+        </listOfEventAssignments>
+      </event>
+      <event id="_E4" useValuesFromTriggerTime="true">
+        <trigger initialValue="true" persistent="true">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+              <and/>
+              <apply>
+                <geq/>
+                <ci> assemble </ci>
+                <cn type="integer"> 1 </cn>
+              </apply>
+              <apply>
+                <eq/>
+                <ci> chitest </ci>
+                <cn type="integer"> 4 </cn>
+              </apply>
+            </apply>
+          </math>
+        </trigger>
+        <priority>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <cn type="integer"> 3 </cn>
+          </math>
+        </priority>
+        <listOfEventAssignments>
+          <eventAssignment variable="chi4">
+            <math xmlns="http://www.w3.org/1998/Math/MathML">
+              <apply>
+                <plus/>
+                <ci> chi4 </ci>
+                <cn type="integer"> 1 </cn>
+              </apply>
+            </math>
+          </eventAssignment>
+        </listOfEventAssignments>
+      </event>
+      <event id="_E5" useValuesFromTriggerTime="true">
+        <trigger initialValue="true" persistent="true">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+              <and/>
+              <apply>
+                <geq/>
+                <ci> assemble </ci>
+                <cn type="integer"> 1 </cn>
+              </apply>
+              <apply>
+                <eq/>
+                <ci> chitest </ci>
+                <cn type="integer"> 5 </cn>
+              </apply>
+            </apply>
+          </math>
+        </trigger>
+        <priority>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <cn type="integer"> 3 </cn>
+          </math>
+        </priority>
+        <listOfEventAssignments>
+          <eventAssignment variable="chi5">
+            <math xmlns="http://www.w3.org/1998/Math/MathML">
+              <apply>
+                <plus/>
+                <ci> chi5 </ci>
+                <cn type="integer"> 1 </cn>
+              </apply>
+            </math>
+          </eventAssignment>
+        </listOfEventAssignments>
+      </event>
+      <event id="_E6" useValuesFromTriggerTime="true">
+        <trigger initialValue="true" persistent="true">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+              <and/>
+              <apply>
+                <geq/>
+                <ci> assemble </ci>
+                <cn type="integer"> 1 </cn>
+              </apply>
+              <apply>
+                <eq/>
+                <ci> chitest </ci>
+                <cn type="integer"> 6 </cn>
+              </apply>
+            </apply>
+          </math>
+        </trigger>
+        <priority>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <cn type="integer"> 3 </cn>
+          </math>
+        </priority>
+        <listOfEventAssignments>
+          <eventAssignment variable="chi6">
+            <math xmlns="http://www.w3.org/1998/Math/MathML">
+              <apply>
+                <plus/>
+                <ci> chi6 </ci>
+                <cn type="integer"> 1 </cn>
+              </apply>
+            </math>
+          </eventAssignment>
+        </listOfEventAssignments>
+      </event>
+      <event id="_E7" useValuesFromTriggerTime="true">
+        <trigger initialValue="true" persistent="true">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+              <and/>
+              <apply>
+                <geq/>
+                <ci> assemble </ci>
+                <cn type="integer"> 1 </cn>
+              </apply>
+              <apply>
+                <eq/>
+                <ci> chitest </ci>
+                <cn type="integer"> 7 </cn>
+              </apply>
+            </apply>
+          </math>
+        </trigger>
+        <priority>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <cn type="integer"> 3 </cn>
+          </math>
+        </priority>
+        <listOfEventAssignments>
+          <eventAssignment variable="chi7">
+            <math xmlns="http://www.w3.org/1998/Math/MathML">
+              <apply>
+                <plus/>
+                <ci> chi7 </ci>
+                <cn type="integer"> 1 </cn>
+              </apply>
+            </math>
+          </eventAssignment>
+        </listOfEventAssignments>
+      </event>
+      <event id="_E8" useValuesFromTriggerTime="true">
+        <trigger initialValue="true" persistent="true">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+              <and/>
+              <apply>
+                <geq/>
+                <ci> assemble </ci>
+                <cn type="integer"> 1 </cn>
+              </apply>
+              <apply>
+                <eq/>
+                <ci> chitest </ci>
+                <cn type="integer"> 8 </cn>
+              </apply>
+            </apply>
+          </math>
+        </trigger>
+        <priority>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <cn type="integer"> 3 </cn>
+          </math>
+        </priority>
+        <listOfEventAssignments>
+          <eventAssignment variable="chi8">
+            <math xmlns="http://www.w3.org/1998/Math/MathML">
+              <apply>
+                <plus/>
+                <ci> chi8 </ci>
+                <cn type="integer"> 1 </cn>
+              </apply>
+            </math>
+          </eventAssignment>
+        </listOfEventAssignments>
+      </event>
+      <event id="_E9" useValuesFromTriggerTime="true">
+        <trigger initialValue="true" persistent="true">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+              <and/>
+              <apply>
+                <geq/>
+                <ci> assemble </ci>
+                <cn type="integer"> 1 </cn>
+              </apply>
+              <apply>
+                <eq/>
+                <ci> chitest </ci>
+                <cn type="integer"> 9 </cn>
+              </apply>
+            </apply>
+          </math>
+        </trigger>
+        <priority>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <cn type="integer"> 3 </cn>
+          </math>
+        </priority>
+        <listOfEventAssignments>
+          <eventAssignment variable="chi9">
+            <math xmlns="http://www.w3.org/1998/Math/MathML">
+              <apply>
+                <plus/>
+                <ci> chi9 </ci>
+                <cn type="integer"> 1 </cn>
+              </apply>
+            </math>
+          </eventAssignment>
+        </listOfEventAssignments>
+      </event>
+      <event id="_E10" useValuesFromTriggerTime="true">
+        <trigger initialValue="true" persistent="true">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+              <and/>
+              <apply>
+                <geq/>
+                <ci> assemble </ci>
+                <cn type="integer"> 1 </cn>
+              </apply>
+              <apply>
+                <eq/>
+                <ci> chitest </ci>
+                <cn type="integer"> 10 </cn>
+              </apply>
+            </apply>
+          </math>
+        </trigger>
+        <priority>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <cn type="integer"> 3 </cn>
+          </math>
+        </priority>
+        <listOfEventAssignments>
+          <eventAssignment variable="chi10">
+            <math xmlns="http://www.w3.org/1998/Math/MathML">
+              <apply>
+                <plus/>
+                <ci> chi10 </ci>
+                <cn type="integer"> 1 </cn>
+              </apply>
+            </math>
+          </eventAssignment>
+        </listOfEventAssignments>
+      </event>
+      <event id="_E11" useValuesFromTriggerTime="true">
+        <trigger initialValue="true" persistent="true">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+              <and/>
+              <apply>
+                <geq/>
+                <ci> assemble </ci>
+                <cn type="integer"> 1 </cn>
+              </apply>
+              <apply>
+                <eq/>
+                <ci> chitest </ci>
+                <cn type="integer"> 11 </cn>
+              </apply>
+            </apply>
+          </math>
+        </trigger>
+        <priority>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <cn type="integer"> 3 </cn>
+          </math>
+        </priority>
+        <listOfEventAssignments>
+          <eventAssignment variable="chi11">
+            <math xmlns="http://www.w3.org/1998/Math/MathML">
+              <apply>
+                <plus/>
+                <ci> chi11 </ci>
+                <cn type="integer"> 1 </cn>
+              </apply>
+            </math>
+          </eventAssignment>
+        </listOfEventAssignments>
+      </event>
+      <event id="_E12" useValuesFromTriggerTime="true">
+        <trigger initialValue="true" persistent="true">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+              <and/>
+              <apply>
+                <geq/>
+                <ci> assemble </ci>
+                <cn type="integer"> 1 </cn>
+              </apply>
+              <apply>
+                <eq/>
+                <ci> chitest </ci>
+                <cn type="integer"> 12 </cn>
+              </apply>
+            </apply>
+          </math>
+        </trigger>
+        <priority>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <cn type="integer"> 3 </cn>
+          </math>
+        </priority>
+        <listOfEventAssignments>
+          <eventAssignment variable="chi12">
+            <math xmlns="http://www.w3.org/1998/Math/MathML">
+              <apply>
+                <plus/>
+                <ci> chi12 </ci>
+                <cn type="integer"> 1 </cn>
+              </apply>
+            </math>
+          </eventAssignment>
+        </listOfEventAssignments>
+      </event>
+      <event id="_E13" useValuesFromTriggerTime="true">
+        <trigger initialValue="true" persistent="true">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+              <and/>
+              <apply>
+                <geq/>
+                <ci> assemble </ci>
+                <cn type="integer"> 1 </cn>
+              </apply>
+              <apply>
+                <eq/>
+                <ci> chitest </ci>
+                <cn type="integer"> 13 </cn>
+              </apply>
+            </apply>
+          </math>
+        </trigger>
+        <priority>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <cn type="integer"> 3 </cn>
+          </math>
+        </priority>
+        <listOfEventAssignments>
+          <eventAssignment variable="chi13">
+            <math xmlns="http://www.w3.org/1998/Math/MathML">
+              <apply>
+                <plus/>
+                <ci> chi13 </ci>
+                <cn type="integer"> 1 </cn>
+              </apply>
+            </math>
+          </eventAssignment>
+        </listOfEventAssignments>
+      </event>
+      <event id="_E14" useValuesFromTriggerTime="true">
+        <trigger initialValue="true" persistent="true">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+              <and/>
+              <apply>
+                <geq/>
+                <ci> assemble </ci>
+                <cn type="integer"> 1 </cn>
+              </apply>
+              <apply>
+                <eq/>
+                <ci> chitest </ci>
+                <cn type="integer"> 14 </cn>
+              </apply>
+            </apply>
+          </math>
+        </trigger>
+        <priority>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <cn type="integer"> 3 </cn>
+          </math>
+        </priority>
+        <listOfEventAssignments>
+          <eventAssignment variable="chi14">
+            <math xmlns="http://www.w3.org/1998/Math/MathML">
+              <apply>
+                <plus/>
+                <ci> chi14 </ci>
+                <cn type="integer"> 1 </cn>
+              </apply>
+            </math>
+          </eventAssignment>
+        </listOfEventAssignments>
+      </event>
+      <event id="_E15" useValuesFromTriggerTime="true">
+        <trigger initialValue="true" persistent="true">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+              <and/>
+              <apply>
+                <geq/>
+                <ci> assemble </ci>
+                <cn type="integer"> 1 </cn>
+              </apply>
+              <apply>
+                <eq/>
+                <ci> chitest </ci>
+                <cn type="integer"> 15 </cn>
+              </apply>
+            </apply>
+          </math>
+        </trigger>
+        <priority>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <cn type="integer"> 3 </cn>
+          </math>
+        </priority>
+        <listOfEventAssignments>
+          <eventAssignment variable="chi15">
+            <math xmlns="http://www.w3.org/1998/Math/MathML">
+              <apply>
+                <plus/>
+                <ci> chi15 </ci>
+                <cn type="integer"> 1 </cn>
+              </apply>
+            </math>
+          </eventAssignment>
+        </listOfEventAssignments>
+      </event>
+      <event id="_E16" useValuesFromTriggerTime="true">
+        <trigger initialValue="true" persistent="true">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+              <and/>
+              <apply>
+                <geq/>
+                <ci> assemble </ci>
+                <cn type="integer"> 1 </cn>
+              </apply>
+              <apply>
+                <eq/>
+                <ci> chitest </ci>
+                <cn type="integer"> 16 </cn>
+              </apply>
+            </apply>
+          </math>
+        </trigger>
+        <priority>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <cn type="integer"> 3 </cn>
+          </math>
+        </priority>
+        <listOfEventAssignments>
+          <eventAssignment variable="chi16">
+            <math xmlns="http://www.w3.org/1998/Math/MathML">
+              <apply>
+                <plus/>
+                <ci> chi16 </ci>
+                <cn type="integer"> 1 </cn>
+              </apply>
+            </math>
+          </eventAssignment>
+        </listOfEventAssignments>
+      </event>
+      <event id="_E17" useValuesFromTriggerTime="true">
+        <trigger initialValue="true" persistent="true">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+              <geq/>
+              <ci> assemble </ci>
+              <cn type="integer"> 1 </cn>
+            </apply>
+          </math>
+        </trigger>
+        <priority>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <cn type="integer"> 1 </cn>
+          </math>
+        </priority>
+        <listOfEventAssignments>
+          <eventAssignment variable="tests">
+            <math xmlns="http://www.w3.org/1998/Math/MathML">
+              <apply>
+                <plus/>
+                <ci> tests </ci>
+                <cn type="integer"> 1 </cn>
+              </apply>
+            </math>
+          </eventAssignment>
+          <eventAssignment variable="chitest">
+            <math xmlns="http://www.w3.org/1998/Math/MathML">
+              <cn type="integer"> 0 </cn>
+            </math>
+          </eventAssignment>
+          <eventAssignment variable="assemble">
+            <math xmlns="http://www.w3.org/1998/Math/MathML">
+              <cn type="integer"> 0 </cn>
+            </math>
+          </eventAssignment>
+        </listOfEventAssignments>
+      </event>
+      <event id="_E18" useValuesFromTriggerTime="true">
+        <trigger initialValue="true" persistent="true">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+              <and/>
+              <apply>
+                <geq/>
+                <ci> tests </ci>
+                <cn type="integer"> 6240 </cn>
+              </apply>
+              <apply>
+                <eq/>
+                <ci> finalchi </ci>
+                <cn type="integer"> 0 </cn>
+              </apply>
+            </apply>
+          </math>
+        </trigger>
+        <priority>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <cn type="integer"> 0 </cn>
+          </math>
+        </priority>
+        <listOfEventAssignments>
+          <eventAssignment variable="finalchi">
+            <math xmlns="http://www.w3.org/1998/Math/MathML">
+              <apply>
+                <ci> calculateerror </ci>
+                <ci> chi0 </ci>
+                <ci> chi1 </ci>
+                <ci> chi2 </ci>
+                <ci> chi3 </ci>
+                <ci> chi4 </ci>
+                <ci> chi5 </ci>
+                <ci> chi6 </ci>
+                <ci> chi7 </ci>
+                <ci> chi8 </ci>
+                <ci> chi9 </ci>
+                <ci> chi10 </ci>
+                <ci> chi11 </ci>
+                <ci> chi12 </ci>
+                <ci> chi13 </ci>
+                <ci> chi14 </ci>
+                <ci> chi15 </ci>
+                <ci> chi16 </ci>
+              </apply>
+            </math>
+          </eventAssignment>
+        </listOfEventAssignments>
+      </event>
+      <event id="error_check" useValuesFromTriggerTime="true">
+        <trigger initialValue="true" persistent="true">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+              <gt/>
+              <ci> finalchi </ci>
+              <cn type="integer"> 50 </cn>
+            </apply>
+          </math>
+        </trigger>
+        <priority>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <cn type="integer"> -1 </cn>
+          </math>
+        </priority>
+        <listOfEventAssignments>
+          <eventAssignment variable="error">
+            <math xmlns="http://www.w3.org/1998/Math/MathML">
+              <cn type="integer"> 1 </cn>
+            </math>
+          </eventAssignment>
+        </listOfEventAssignments>
+      </event>
+    </listOfEvents>
+  </model>
+</sbml>

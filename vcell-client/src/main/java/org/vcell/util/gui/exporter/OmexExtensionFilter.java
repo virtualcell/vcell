@@ -3,14 +3,32 @@ package org.vcell.util.gui.exporter;
 import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.Map;
 import java.util.Objects;
 
 import javax.swing.JOptionPane;
 
 import cbit.vcell.xml.XmlHelper;
+
+import org.openrdf.model.Graph;
+import org.openrdf.model.URI;
+import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.vocabulary.RDF;
+import org.openrdf.rio.RDFFormat;
+import org.openrdf.rio.RDFHandlerException;
+import org.sbpax.impl.HashGraph;
+import org.sbpax.schemas.util.DefaultNameSpaces;
+import org.sbpax.util.SesameRioUtil;
+import org.vcell.sedml.PubMet;
 import org.vcell.sedml.SEDMLExporter;
 import org.vcell.util.FileUtils;
+import org.vcell.util.document.BioModelInfo;
+import org.vcell.util.document.PublicationInfo;
 
+import cbit.util.xml.XmlRdfUtil;
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.clientdb.DocumentManager;
@@ -50,7 +68,8 @@ public class OmexExtensionFilter extends SedmlExtensionFilter {
 			boolean bForceSBML = choice == 1 ? true : false;
 			
 			sedmlExporter = new SEDMLExporter(bioModel, sedmlLevel, sedmlVersion, null);
-			resultString = sedmlExporter.getSEDMLFile(sPath, sFile, bForceVCML, bForceSBML, false, true);
+			boolean bRoundTripSBMLValidation = true;
+			resultString = sedmlExporter.getSEDMLFile(sPath, sFile, bForceVCML, bForceSBML, false, bRoundTripSBMLValidation);
 
 			// convert biomodel to vcml and save to file.
 			String vcmlString = XmlHelper.bioModelToXML(bioModel);
@@ -72,7 +91,11 @@ public class OmexExtensionFilter extends SedmlExtensionFilter {
 	@Override
 	public void doSpecificWork(SEDMLExporter sedmlExporter, String resultString, String sPath, String sFile) throws Exception {
 		super.doSpecificWork(sedmlExporter, resultString, sPath, sFile);
+		
+        String rdfString = XmlRdfUtil.getMetadata(sFile);
+        XmlUtil.writeXMLStringToFile(rdfString, String.valueOf(Paths.get(sPath, "metadata.rdf")), true);
+
+		
 		sedmlExporter.createOmexArchive(sPath, sFile);
 	}
-
 }

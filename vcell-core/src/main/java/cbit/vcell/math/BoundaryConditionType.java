@@ -114,7 +114,7 @@ public boolean equals(Object obj) {
  * @param bcString java.lang.String
  */
 public static BoundaryConditionType fromString(String bcString) {
-	if (bcString==null){
+	if (bcString==null || bcString.length()==0){
 		return null;
 	}
 	return new BoundaryConditionType(bcString);
@@ -214,5 +214,9 @@ public String boundaryTypeStringValue() {
 		return PERIODIC_STRING;
 	}
 	return null;
+}
+
+public String toString() {
+	return "BoundaryConditionType("+boundaryTypeStringValue()+")";
 }
 }

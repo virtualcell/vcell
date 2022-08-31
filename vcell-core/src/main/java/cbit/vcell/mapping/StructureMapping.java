@@ -14,6 +14,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.util.Compare;
 import org.vcell.util.Issue;
 import org.vcell.util.Issue.IssueCategory;
@@ -48,10 +50,12 @@ import cbit.vcell.parser.ScopedSymbolTable;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.units.VCUnitDefinition;
 import net.sourceforge.interval.ia_math.RealInterval;
+import org.vcell.util.document.Identifiable;
 
 @SuppressWarnings("serial")
 public abstract class StructureMapping implements Matchable, ScopedSymbolTable, java.io.Serializable, IssueSource {
-	
+	private final static Logger logger = LogManager.getLogger(StructureMapping.class);
+
 	public class StructureMappingNameScope extends BioNameScope {
 		private final NameScope children[] = new NameScope[0]; // always empty
 		public StructureMappingNameScope(){
@@ -94,7 +98,7 @@ public abstract class StructureMapping implements Matchable, ScopedSymbolTable, 
 		}
 	}
 	
-	public class StructureMappingParameter extends Parameter implements ExpressionContainer, IssueSource {
+	public class StructureMappingParameter extends Parameter implements ExpressionContainer, IssueSource, Identifiable {
 
 		private int fieldParameterRole = -1;
 		private String fieldParameterName = null;
@@ -257,6 +261,10 @@ public abstract class StructureMapping implements Matchable, ScopedSymbolTable, 
 		
 		public Structure getStructure() {
 			return StructureMapping.this.getStructure();
+		}
+
+		public SimulationContext getSimulationContext() {
+			return simulationContext;
 		}
 	}
 	
@@ -562,12 +570,12 @@ public cbit.vcell.math.BoundaryConditionType getBoundaryCondition0(BoundaryLocat
 public final BoundaryConditionType getBoundaryCondition(BoundaryLocation boundaryLocation) {
 	BoundaryConditionType savedType = getBoundaryCondition0(boundaryLocation);
 	if (simulationContext==null){
-		System.err.println("simulation context is null, returning saved BoundaryConditionType of "+savedType+" for location "+boundaryLocation);
+		logger.error("simulation context is null, returning saved BoundaryConditionType of "+savedType+" for location "+boundaryLocation);
 	}else if (getGeometryClass() instanceof SurfaceClass){
 		Pair<SubVolume, SubVolume> adjacentSubvolumes = DiffEquMathMapping.computeBoundaryConditionSource(simulationContext.getModel(), simulationContext, (SurfaceClass)getGeometryClass());
 		StructureMapping[] volumeStructureMappings = simulationContext.getGeometryContext().getStructureMappings(adjacentSubvolumes.one);
 		if (volumeStructureMappings==null || volumeStructureMappings.length==0){
-			System.err.println("no structures mapped to 'inside' subvolume "+adjacentSubvolumes.one.getName()+" so can't determine Boundary Condition type, returning saved BoundaryConditionType of "+savedType+" for location "+boundaryLocation);
+			logger.error("no structures mapped to 'inside' subvolume "+adjacentSubvolumes.one.getName()+" so can't determine Boundary Condition type, returning saved BoundaryConditionType of "+savedType+" for location "+boundaryLocation);
 		}else{
 			return volumeStructureMappings[0].getBoundaryCondition(boundaryLocation);
 		}
@@ -809,7 +817,7 @@ public void refreshDependencies(){
 				fieldParameters[i].getExpression().bindExpression(this);
 			}
 		}catch (ExpressionException e){
-			System.out.println("error binding expression '"+fieldParameters[i].getExpression().infix()+"', "+e.getMessage());
+			logger.error("error binding expression '"+fieldParameters[i].getExpression().infix()+"', "+e.getMessage());
 		}
 	}
 }

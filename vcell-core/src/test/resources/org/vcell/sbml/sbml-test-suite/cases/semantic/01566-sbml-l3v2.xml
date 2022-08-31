@@ -1,0 +1,737 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created by libAntimony version v2.9.1 with libSBML version 5.14.1. -->
+<sbml xmlns="http://www.sbml.org/sbml/level3/version2/core" level="3" version="2">
+  <model id="case01566" name="case01566">
+    <listOfCompartments>
+      <compartment id="C" spatialDimensions="3" size="1" constant="true"/>
+    </listOfCompartments>
+    <listOfSpecies>
+      <species id="S1" initialAmount="0" compartment="C" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+    </listOfSpecies>
+    <listOfParameters>
+      <parameter id="P1" constant="false"/>
+      <parameter id="P2" constant="false"/>
+      <parameter id="P3" constant="false"/>
+      <parameter id="P4" constant="false"/>
+      <parameter id="P5" constant="false"/>
+      <parameter id="P6" constant="false"/>
+      <parameter id="P7" constant="false"/>
+      <parameter id="P8" constant="false"/>
+      <parameter id="P9" constant="false"/>
+      <parameter id="P10" constant="false"/>
+      <parameter id="P11" constant="false"/>
+      <parameter id="P12" constant="false"/>
+      <parameter id="P13" constant="false"/>
+      <parameter id="P14" constant="false"/>
+      <parameter id="P15" constant="false"/>
+      <parameter id="P16" constant="false"/>
+      <parameter id="P17" constant="false"/>
+      <parameter id="P18" constant="false"/>
+      <parameter id="P19" constant="false"/>
+      <parameter id="P20" constant="false"/>
+      <parameter id="P21" constant="false"/>
+      <parameter id="P22" constant="false"/>
+      <parameter id="P23" constant="false"/>
+      <parameter id="P24" constant="false"/>
+      <parameter id="P25" constant="false"/>
+      <parameter id="P26" constant="false"/>
+      <parameter id="P27" constant="false"/>
+      <parameter id="P28" constant="false"/>
+      <parameter id="P29" constant="false"/>
+      <parameter id="P30" constant="false"/>
+      <parameter id="P31" constant="false"/>
+      <parameter id="P32" constant="false"/>
+      <parameter id="P33" constant="false"/>
+      <parameter id="P34" constant="false"/>
+      <parameter id="P35" constant="false"/>
+      <parameter id="P36" constant="false"/>
+      <parameter id="P37" constant="false"/>
+      <parameter id="P38" constant="false"/>
+      <parameter id="P39" constant="false"/>
+      <parameter id="P40" constant="false"/>
+      <parameter id="P41" constant="false"/>
+      <parameter id="P42" constant="false"/>
+      <parameter id="P43" constant="false"/>
+      <parameter id="P44" constant="false"/>
+      <parameter id="P45" constant="false"/>
+      <parameter id="P46" constant="false"/>
+      <parameter id="P47" constant="false"/>
+      <parameter id="P48" constant="false"/>
+      <parameter id="P49" constant="false"/>
+    </listOfParameters>
+    <listOfRules>
+      <assignmentRule variable="P1">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <exp/>
+            <ci> S1_stoich </ci>
+          </apply>
+        </math>
+      </assignmentRule>
+      <assignmentRule variable="P2">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <abs/>
+            <apply>
+              <minus/>
+              <ci> S1_stoich </ci>
+            </apply>
+          </apply>
+        </math>
+      </assignmentRule>
+      <assignmentRule variable="P3">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <abs/>
+            <ci> S1_stoich </ci>
+          </apply>
+        </math>
+      </assignmentRule>
+      <assignmentRule variable="P4">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <arccos/>
+            <apply>
+              <plus/>
+              <apply>
+                <minus/>
+                <ci> S1_stoich </ci>
+              </apply>
+              <cn type="integer"> 1 </cn>
+            </apply>
+          </apply>
+        </math>
+      </assignmentRule>
+      <assignmentRule variable="P5">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <arccos/>
+            <apply>
+              <divide/>
+              <ci> S1_stoich </ci>
+              <cn type="integer"> 4 </cn>
+            </apply>
+          </apply>
+        </math>
+      </assignmentRule>
+      <assignmentRule variable="P6">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <arcsin/>
+            <apply>
+              <minus/>
+              <ci> S1_stoich </ci>
+              <cn type="integer"> 1 </cn>
+            </apply>
+          </apply>
+        </math>
+      </assignmentRule>
+      <assignmentRule variable="P7">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <arcsin/>
+            <apply>
+              <divide/>
+              <apply>
+                <minus/>
+                <ci> S1_stoich </ci>
+              </apply>
+              <cn type="integer"> 4 </cn>
+            </apply>
+          </apply>
+        </math>
+      </assignmentRule>
+      <assignmentRule variable="P8">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <arctan/>
+            <apply>
+              <plus/>
+              <ci> S1_stoich </ci>
+              <cn> 0.8 </cn>
+            </apply>
+          </apply>
+        </math>
+      </assignmentRule>
+      <assignmentRule variable="P9">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <arctan/>
+            <apply>
+              <minus/>
+              <apply>
+                <times/>
+                <apply>
+                  <minus/>
+                  <ci> S1_stoich </ci>
+                </apply>
+                <cn type="integer"> 3 </cn>
+              </apply>
+              <cn> 1.09 </cn>
+            </apply>
+          </apply>
+        </math>
+      </assignmentRule>
+      <assignmentRule variable="P10">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <ceiling/>
+            <apply>
+              <divide/>
+              <ci> S1_stoich </ci>
+              <cn type="integer"> 4 </cn>
+            </apply>
+          </apply>
+        </math>
+      </assignmentRule>
+      <assignmentRule variable="P11">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <ceiling/>
+            <apply>
+              <minus/>
+              <apply>
+                <times/>
+                <ci> S1_stoich </ci>
+                <cn type="integer"> 4 </cn>
+              </apply>
+              <cn> 0.45 </cn>
+            </apply>
+          </apply>
+        </math>
+      </assignmentRule>
+      <assignmentRule variable="P12">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <ceiling/>
+            <apply>
+              <minus/>
+              <apply>
+                <times/>
+                <apply>
+                  <minus/>
+                  <ci> S1_stoich </ci>
+                </apply>
+                <cn type="integer"> 2 </cn>
+              </apply>
+              <cn> 0.6 </cn>
+            </apply>
+          </apply>
+        </math>
+      </assignmentRule>
+      <assignmentRule variable="P13">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <cos/>
+            <apply>
+              <plus/>
+              <apply>
+                <times/>
+                <ci> S1_stoich </ci>
+                <cn type="integer"> 4 </cn>
+              </apply>
+              <cn> 1.1 </cn>
+            </apply>
+          </apply>
+        </math>
+      </assignmentRule>
+      <assignmentRule variable="P14">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <cos/>
+            <apply>
+              <minus/>
+              <apply>
+                <divide/>
+                <apply>
+                  <minus/>
+                  <ci> S1_stoich </ci>
+                </apply>
+                <cn type="integer"> 10 </cn>
+              </apply>
+              <cn> 0.02 </cn>
+            </apply>
+          </apply>
+        </math>
+      </assignmentRule>
+      <assignmentRule variable="P15">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <exp/>
+            <apply>
+              <times/>
+              <cn type="integer"> 0 </cn>
+              <ci> S1_stoich </ci>
+            </apply>
+          </apply>
+        </math>
+      </assignmentRule>
+      <assignmentRule variable="P16">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <exp/>
+            <apply>
+              <divide/>
+              <ci> S1_stoich </ci>
+              <cn type="integer"> 2 </cn>
+            </apply>
+          </apply>
+        </math>
+      </assignmentRule>
+      <assignmentRule variable="P17">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <exp/>
+            <apply>
+              <minus/>
+              <apply>
+                <divide/>
+                <ci> S1_stoich </ci>
+                <cn type="integer"> 2 </cn>
+              </apply>
+              <cn> 0.33 </cn>
+            </apply>
+          </apply>
+        </math>
+      </assignmentRule>
+      <assignmentRule variable="P18">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <floor/>
+            <apply>
+              <minus/>
+              <apply>
+                <times/>
+                <apply>
+                  <minus/>
+                  <ci> S1_stoich </ci>
+                </apply>
+                <cn type="integer"> 2 </cn>
+              </apply>
+              <cn> 0.6 </cn>
+            </apply>
+          </apply>
+        </math>
+      </assignmentRule>
+      <assignmentRule variable="P19">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <floor/>
+            <apply>
+              <plus/>
+              <apply>
+                <times/>
+                <ci> S1_stoich </ci>
+                <cn type="integer"> 4 </cn>
+              </apply>
+              <cn> 1.1 </cn>
+            </apply>
+          </apply>
+        </math>
+      </assignmentRule>
+      <assignmentRule variable="P20">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <ln/>
+            <apply>
+              <divide/>
+              <ci> S1_stoich </ci>
+              <cn type="integer"> 10 </cn>
+            </apply>
+          </apply>
+        </math>
+      </assignmentRule>
+      <assignmentRule variable="P21">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <ln/>
+            <apply>
+              <divide/>
+              <ci> S1_stoich </ci>
+              <cn type="integer"> 2 </cn>
+            </apply>
+          </apply>
+        </math>
+      </assignmentRule>
+      <assignmentRule variable="P22">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <log/>
+            <logbase>
+              <cn type="integer"> 10 </cn>
+            </logbase>
+            <apply>
+              <divide/>
+              <ci> S1_stoich </ci>
+              <cn type="integer"> 10 </cn>
+            </apply>
+          </apply>
+        </math>
+      </assignmentRule>
+      <assignmentRule variable="P23">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <log/>
+            <logbase>
+              <cn type="integer"> 10 </cn>
+            </logbase>
+            <apply>
+              <divide/>
+              <ci> S1_stoich </ci>
+              <cn type="integer"> 2 </cn>
+            </apply>
+          </apply>
+        </math>
+      </assignmentRule>
+      <assignmentRule variable="P24">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <power/>
+            <cn type="integer"> 1 </cn>
+            <ci> S1_stoich </ci>
+          </apply>
+        </math>
+      </assignmentRule>
+      <assignmentRule variable="P25">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <power/>
+            <ci> S1_stoich </ci>
+            <ci> S1_stoich </ci>
+          </apply>
+        </math>
+      </assignmentRule>
+      <assignmentRule variable="P26">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <power/>
+            <cn> 1.4 </cn>
+            <cn> 5.1 </cn>
+          </apply>
+        </math>
+      </assignmentRule>
+      <assignmentRule variable="P27">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <power/>
+            <apply>
+              <times/>
+              <ci> S1_stoich </ci>
+              <ci> S1_stoich </ci>
+            </apply>
+            <ci> S1_stoich </ci>
+          </apply>
+        </math>
+      </assignmentRule>
+      <assignmentRule variable="P28">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <power/>
+            <cn> 3.1 </cn>
+            <ci> S1_stoich </ci>
+          </apply>
+        </math>
+      </assignmentRule>
+      <assignmentRule variable="P29">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <root/>
+            <degree>
+              <cn type="integer"> 2 </cn>
+            </degree>
+            <apply>
+              <times/>
+              <ci> S1_stoich </ci>
+              <cn type="integer"> 2 </cn>
+            </apply>
+          </apply>
+        </math>
+      </assignmentRule>
+      <assignmentRule variable="P30">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <root/>
+            <degree>
+              <cn type="integer"> 2 </cn>
+            </degree>
+            <apply>
+              <plus/>
+              <cn type="integer"> 7 </cn>
+              <apply>
+                <divide/>
+                <ci> S1_stoich </ci>
+                <cn type="integer"> 5 </cn>
+              </apply>
+            </apply>
+          </apply>
+        </math>
+      </assignmentRule>
+      <assignmentRule variable="P31">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <sin/>
+            <apply>
+              <plus/>
+              <ci> S1_stoich </ci>
+              <cn> 0.1 </cn>
+            </apply>
+          </apply>
+        </math>
+      </assignmentRule>
+      <assignmentRule variable="P32">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <sin/>
+            <apply>
+              <times/>
+              <cn type="integer"> 0 </cn>
+              <ci> S1_stoich </ci>
+            </apply>
+          </apply>
+        </math>
+      </assignmentRule>
+      <assignmentRule variable="P33">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <sin/>
+            <apply>
+              <minus/>
+              <apply>
+                <times/>
+                <apply>
+                  <minus/>
+                  <ci> S1_stoich </ci>
+                </apply>
+                <cn type="integer"> 2 </cn>
+              </apply>
+              <cn> 1.9 </cn>
+            </apply>
+          </apply>
+        </math>
+      </assignmentRule>
+      <assignmentRule variable="P34">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <tan/>
+            <apply>
+              <times/>
+              <cn type="integer"> 0 </cn>
+              <ci> S1_stoich </ci>
+            </apply>
+          </apply>
+        </math>
+      </assignmentRule>
+      <assignmentRule variable="P35">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <tan/>
+            <apply>
+              <plus/>
+              <apply>
+                <divide/>
+                <ci> S1_stoich </ci>
+                <cn type="integer"> 2 </cn>
+              </apply>
+              <cn> 0.11 </cn>
+            </apply>
+          </apply>
+        </math>
+      </assignmentRule>
+      <assignmentRule variable="P36">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <tan/>
+            <apply>
+              <times/>
+              <apply>
+                <minus/>
+                <ci> S1_stoich </ci>
+              </apply>
+              <cn type="integer"> 3 </cn>
+            </apply>
+          </apply>
+        </math>
+      </assignmentRule>
+      <assignmentRule variable="P37">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <sec/>
+            <apply>
+              <divide/>
+              <ci> S1_stoich </ci>
+              <cn type="integer"> 4 </cn>
+            </apply>
+          </apply>
+        </math>
+      </assignmentRule>
+      <assignmentRule variable="P38">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <csc/>
+            <apply>
+              <times/>
+              <ci> S1_stoich </ci>
+              <cn> 2.25 </cn>
+            </apply>
+          </apply>
+        </math>
+      </assignmentRule>
+      <assignmentRule variable="P39">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <cot/>
+            <apply>
+              <divide/>
+              <ci> S1_stoich </ci>
+              <cn type="integer"> 10 </cn>
+            </apply>
+          </apply>
+        </math>
+      </assignmentRule>
+      <assignmentRule variable="P40">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <sinh/>
+            <apply>
+              <plus/>
+              <apply>
+                <divide/>
+                <ci> S1_stoich </ci>
+                <cn type="integer"> 10 </cn>
+              </apply>
+              <cn> 0.1 </cn>
+            </apply>
+          </apply>
+        </math>
+      </assignmentRule>
+      <assignmentRule variable="P41">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <cosh/>
+            <apply>
+              <minus/>
+              <ci> S1_stoich </ci>
+              <cn> 0.3 </cn>
+            </apply>
+          </apply>
+        </math>
+      </assignmentRule>
+      <assignmentRule variable="P42">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <arcsec/>
+            <apply>
+              <plus/>
+              <ci> S1_stoich </ci>
+              <cn> 0.3 </cn>
+            </apply>
+          </apply>
+        </math>
+      </assignmentRule>
+      <assignmentRule variable="P43">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <arccsc/>
+            <apply>
+              <minus/>
+              <ci> S1_stoich </ci>
+              <cn> 0.9 </cn>
+            </apply>
+          </apply>
+        </math>
+      </assignmentRule>
+      <assignmentRule variable="P44">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <arccot/>
+            <apply>
+              <minus/>
+              <ci> S1_stoich </ci>
+              <cn> 2.1 </cn>
+            </apply>
+          </apply>
+        </math>
+      </assignmentRule>
+      <assignmentRule variable="P45">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <arcsinh/>
+            <apply>
+              <minus/>
+              <apply>
+                <times/>
+                <ci> S1_stoich </ci>
+                <cn type="integer"> 50 </cn>
+              </apply>
+              <cn type="integer"> 1 </cn>
+            </apply>
+          </apply>
+        </math>
+      </assignmentRule>
+      <assignmentRule variable="P46">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <arccosh/>
+            <apply>
+              <plus/>
+              <apply>
+                <divide/>
+                <ci> S1_stoich </ci>
+                <cn type="integer"> 2 </cn>
+              </apply>
+              <cn> 0.34 </cn>
+            </apply>
+          </apply>
+        </math>
+      </assignmentRule>
+      <assignmentRule variable="P47">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <arctanh/>
+            <apply>
+              <minus/>
+              <ci> S1_stoich </ci>
+              <cn> 2.7 </cn>
+            </apply>
+          </apply>
+        </math>
+      </assignmentRule>
+      <assignmentRule variable="P48">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <arcsech/>
+            <apply>
+              <times/>
+              <ci> S1_stoich </ci>
+              <cn> 0.21 </cn>
+            </apply>
+          </apply>
+        </math>
+      </assignmentRule>
+      <assignmentRule variable="P49">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <arccsch/>
+            <apply>
+              <times/>
+              <ci> S1_stoich </ci>
+              <cn> 0.005 </cn>
+            </apply>
+          </apply>
+        </math>
+      </assignmentRule>
+    </listOfRules>
+    <listOfReactions>
+      <reaction id="J0" reversible="true">
+        <listOfProducts>
+          <speciesReference id="S1_stoich" species="S1" stoichiometry="2" constant="true"/>
+        </listOfProducts>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <cn type="integer"> 1 </cn>
+          </math>
+        </kineticLaw>
+      </reaction>
+    </listOfReactions>
+  </model>
+</sbml>

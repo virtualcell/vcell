@@ -482,12 +482,12 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 	mathDesc = null;
 	if (oldMathDesc != null){
 		if (oldMathDesc.getVersion() != null){
-			mathDesc = new MathDescription(oldMathDesc.getVersion());
+			mathDesc = new MathDescription(oldMathDesc.getVersion(), mathSymbolMapping);
 		}else{
-			mathDesc = new MathDescription(oldMathDesc.getName());
+			mathDesc = new MathDescription(oldMathDesc.getName(), mathSymbolMapping);
 		}
 	}else{
-		mathDesc = new MathDescription(simContext.getName()+"_generated");
+		mathDesc = new MathDescription(simContext.getName()+"_generated", mathSymbolMapping);
 	}
 
 	//
@@ -865,7 +865,7 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 				VCUnitDefinition concUnit = initConcParm.getUnitDefinition();
 				VCUnitDefinition countDensityUnit = initCountParm.getUnitDefinition().divideBy(speciesContext.getStructure().getStructureSize().getUnitDefinition());
 				Expression unitFactor = getUnitFactor(concUnit.divideBy(countDensityUnit));
-				initConcExpr = Expression.mult(Expression.div(new Expression(initCountParm,getNameScope()),structureSizeExpr),unitFactor);
+				initConcExpr = Expression.mult(unitFactor, Expression.div(new Expression(initCountParm,getNameScope()),structureSizeExpr)).flattenFactors("KMOLE");
 			}
 			StructureMapping sm = simContext.getGeometryContext().getStructureMapping(speciesContext.getStructure());
 			String[] symbols = initConcExpr.getSymbols();
@@ -2011,13 +2011,13 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 				int dimension = 3;
 				VCUnitDefinition desiredConcUnits = model.getUnitSystem().getInstance("molecules").divideBy(model.getUnitSystem().getLengthUnit().raiseTo(new ucar.units_vcell.RationalNumber(dimension)));
 				Expression unitFactor = getUnitFactor(desiredConcUnits.divideBy(mappedSpeciesContextUnit));
-				volumeConcExp = Expression.add(volumeConcExp,Expression.mult(unitFactor,mappedSpeciesContextExpression)).flatten();
+				volumeConcExp = Expression.add(volumeConcExp,Expression.mult(unitFactor,mappedSpeciesContextExpression)).flattenFactors("KMOLE");
 			}else if (geometryClass instanceof SurfaceClass){
 				// membrane function
 				int dimension = 2;
 				VCUnitDefinition desiredSurfaceDensityUnits = model.getUnitSystem().getInstance("molecules").divideBy(model.getUnitSystem().getLengthUnit().raiseTo(new ucar.units_vcell.RationalNumber(dimension)));
 				Expression unitFactor = getUnitFactor(desiredSurfaceDensityUnits.divideBy(mappedSpeciesContextUnit));
-				membraneDensityExp = Expression.add(membraneDensityExp,Expression.mult(unitFactor,mappedSpeciesContextExpression)).flatten();
+				membraneDensityExp = Expression.add(membraneDensityExp,Expression.mult(unitFactor,mappedSpeciesContextExpression)).flattenFactors("KMOLE");
 			}else{
 				throw new MathException("unsupported geometry mapping for microscopy measurement");
 			}

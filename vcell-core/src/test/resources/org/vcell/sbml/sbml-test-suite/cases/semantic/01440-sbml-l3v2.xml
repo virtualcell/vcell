@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created by libAntimony version v2.9.0 with libSBML version 5.14.1. -->
+<sbml xmlns="http://www.sbml.org/sbml/level3/version2/core" level="3" version="2">
+  <model id="case01440" name="case01440">
+    <listOfCompartments>
+      <compartment id="C" spatialDimensions="3" size="1" constant="true"/>
+    </listOfCompartments>
+    <listOfSpecies>
+      <species id="A" compartment="C" initialConcentration="30" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+      <species id="B" compartment="C"  initialConcentration="1" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+    </listOfSpecies>
+    <listOfInitialAssignments>
+      <initialAssignment symbol="A_sr1">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <cn type="integer"> 2 </cn>
+        </math>
+      </initialAssignment>
+      <initialAssignment symbol="A_sr2">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <cn type="integer"> 1 </cn>
+        </math>
+      </initialAssignment>
+       <initialAssignment symbol="B_sr1">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <cn type="integer"> 2 </cn>
+        </math>
+      </initialAssignment>
+      <initialAssignment symbol="B_sr2">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <cn type="integer"> 1 </cn>
+        </math>
+      </initialAssignment>
+   </listOfInitialAssignments>
+    <listOfReactions>
+      <reaction id="J0" reversible="true">
+        <listOfReactants>
+          <speciesReference id="A_sr1" species="A" stoichiometry="4" constant="true"/>
+          <speciesReference id="A_sr2" species="A" stoichiometry="2" constant="true"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference id="B_sr1" species="B" stoichiometry="3" constant="true"/>
+          <speciesReference id="B_sr2" species="B" stoichiometry="5" constant="true"/>
+        </listOfProducts>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <cn type="integer"> 1 </cn>
+          </math>
+        </kineticLaw>
+      </reaction>
+    </listOfReactions>
+  </model>
+</sbml>

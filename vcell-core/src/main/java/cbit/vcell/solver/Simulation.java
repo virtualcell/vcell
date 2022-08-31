@@ -13,16 +13,15 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Set;
 
-import org.jlibsedml.SedML;
 import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.Compare;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.Displayable;
 import org.vcell.util.Issue;
+import org.vcell.util.Issue.IssueCategory;
 import org.vcell.util.Issue.IssueSource;
 import org.vcell.util.IssueContext;
 import org.vcell.util.Matchable;
@@ -42,7 +41,6 @@ import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathException;
 import cbit.vcell.math.VCML;
 import cbit.vcell.solver.SolverDescription.SolverFeature;
-import cbit.vcell.solver.ode.ODESolverResultSet;
 /**
  * Specifies the problem to be solved by a solver.
  * It is subclassed for each type of problem/solver.
@@ -761,7 +759,7 @@ public void setMathDescription(MathDescription mathDescription) throws java.bean
 	//
 	// refresh MathOverrides
 	//
-	if (mathDescription!=null && getMathOverrides()!=null){
+	if (mathDescription!=null && getMathOverrides()!=null && oldValue != fieldMathDescription){
 		getMathOverrides().updateFromMathDescription();
 	}
 
@@ -976,6 +974,14 @@ public void vetoableChange(java.beans.PropertyChangeEvent evt) throws java.beans
 	 * @param issueList
 	 */
 	public void gatherIssues(IssueContext issueContext, List<Issue> issueList) {
+		
+		MathOverrides mo = getMathOverrides();
+		if(mo!=null && mo.hasUnusedOverrides()) {
+			String msg = "The Simulation has unused Math Overrides.";
+			String tip = "Remove the unused Math Overrides.";
+			issueList.add(new Issue(this, issueContext, IssueCategory.Simulation_Override_NotFound, msg, tip, Issue.Severity.ERROR));
+		}
+		
 		SimulationWarning.gatherIssues(this, issueContext, issueList);
 	}
 	

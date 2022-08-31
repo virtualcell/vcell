@@ -703,7 +703,7 @@ public class ReactionCartoonTool extends BioCartoonTool implements BioCartoonToo
 			// TODO: here we may want to warn the user about compartment number / type / name mismatch
 			// between the source and the destination
 			
-			String response = null;
+/*			String response = null;
 			if((reactionSpeciesCopy.getReactStepArr() != null || reactionSpeciesCopy.getReactionRuleArr() != null) && reactionSpeciesCopy.getSpeciesContextArr() != null) {
 				String msg = "There are ";
 				msg += reactionSpeciesCopy.getSpeciesContextArr().length+" Species and ";
@@ -727,9 +727,9 @@ public class ReactionCartoonTool extends BioCartoonTool implements BioCartoonToo
 				}
 				ReactionCartoonTool.selectAndSaveDiagram(ReactionCartoonTool.this, pastedSpeciesContextV);
 			}
+*/			
 			
-			
-			if(reactionSpeciesCopy.getReactStepArr() != null && reactionSpeciesCopy.getReactionRuleArr() == null && (response == null || response.equals(RXSPECIES_PASTERX))){
+/*			if(reactionSpeciesCopy.getReactStepArr() != null && reactionSpeciesCopy.getReactionRuleArr() == null && (response == null || response.equals(RXSPECIES_PASTERX))){
 				BioModel bioModel = null;
 				try {
 					bioModel = findBioModel(requester);
@@ -787,9 +787,10 @@ public class ReactionCartoonTool extends BioCartoonTool implements BioCartoonToo
 					assignmentHelper);
 //				pasteReactionSteps(getGraphPane(),reactionSpeciesCopy.getReactStepArr(), getModel(),structure,true, null,ReactionCartoonTool.this);
 			} else if(reactionSpeciesCopy.getReactionRuleArr() != null && (response == null || response.equals(RXSPECIES_PASTERX))){
+			*/
 				pasteReactionsAndRules(getGraphPane(), reactionSpeciesCopy, getModel(), pasteToStructure, ReactionCartoonTool.this);
-			}
-			
+/*			}
+*/			
 			
 //					try {
 //					for(MolecularType mtOurs : mtNewList) {

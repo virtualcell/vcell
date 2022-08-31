@@ -128,21 +128,22 @@ public ScaledUnit(double scale, Unit unit, UnitName id) {
 
     /**
      * Converts a numeric value from the underlying derived unit to this unit.
-     * @param amount		The numeric value in the underlying derived
-     *				unit.
+     * @param amount		The numeric value in the underlying derived unit.
      * @return			The equivalent value in this unit.
      * @throws ConversionException	Can't convert value.
      */
-    public double
-    fromDerivedUnit(double amount)
-	throws ConversionException
+    public double fromDerivedUnit(double amount) throws ConversionException
     {
-	if (!(_unit instanceof DerivableUnit))
-	    throw new ConversionException(getDerivedUnit(), this);
-	double value = ((DerivableUnit)getUnit()).fromDerivedUnit(amount)/getScale();
-    BigDecimal bd = new BigDecimal(value);
-    bd = bd.round(new MathContext(15));
-	return bd.doubleValue();
+    	if (!(_unit instanceof DerivableUnit)) {
+    		throw new ConversionException(getDerivedUnit(), this);
+    	}
+    	double value = ((DerivableUnit)getUnit()).fromDerivedUnit(amount)/getScale();
+    	if(Double.isInfinite(value) || Double.isNaN(value)) {
+    		return value;
+    	}
+    	BigDecimal bd = new BigDecimal(value);
+    	bd = bd.round(new MathContext(15));
+    	return bd.doubleValue();
     }
 
 
@@ -392,21 +393,20 @@ public ScaledUnit(double scale, Unit unit, UnitName id) {
 
 
     /**
-     * Converts a numeric value from this unit to the underlying derived
-     * unit.
+     * Converts a numeric value from this unit to the underlying derived unit.
      * @param amount		The numeric value in this unit.
-     * @return			The equivalent value in the underlying
-     *				derived unit.
-     * @throws ConversionException	Can't convert value to the underlying
-     *					derived unit.
+     * @return			The equivalent value in the underlying derived unit.
+     * @throws ConversionException	Can't convert value to the underlying derived unit.
      */
-    public double
-    toDerivedUnit(double amount)
-	throws ConversionException
+    public double toDerivedUnit(double amount) throws ConversionException
     {
-	if (!(_unit instanceof DerivableUnit))
-	    throw new ConversionException(this, getDerivedUnit());
+    	if (!(_unit instanceof DerivableUnit)) {
+    		throw new ConversionException(this, getDerivedUnit());
+    	}
 		double value = ((DerivableUnit)_unit).toDerivedUnit(amount*getScale());
+    	if(Double.isInfinite(value) || Double.isNaN(value)) {
+    		return value;
+    	}
 	    BigDecimal bd = new BigDecimal(value);
 	    bd = bd.round(new MathContext(15));
 		return bd.doubleValue();

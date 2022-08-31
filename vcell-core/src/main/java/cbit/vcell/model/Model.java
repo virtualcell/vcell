@@ -57,7 +57,6 @@ import org.vcell.util.document.Versionable;
 
 import cbit.vcell.biomodel.meta.MiriamManager.MiriamResource;
 import cbit.vcell.biomodel.meta.VCMetaData;
-import cbit.vcell.matrix.RationalNumber;
 import cbit.vcell.model.Kinetics.KineticsParameter;
 import cbit.vcell.model.Membrane.MembraneVoltage;
 import cbit.vcell.model.Structure.StructureSize;
@@ -273,7 +272,8 @@ public class Model implements Versionable, Matchable, PropertyChangeListener, Ve
 			}else{
 				throw new IllegalArgumentException("unexpected argument of StructureTopology.enclosedBy()");
 			}
-		}
+		}
+
 		@Override
 		public boolean compareEqual(Matchable object) {
 			if (object instanceof StructureTopology){
@@ -2076,11 +2076,6 @@ public SpeciesContext addSpeciesContext(Species species, Structure structure) th
 	return addSpeciesContext(speciesContext);
 }
 
-
-/**
- * This method was created by a SmartGuide.
- * @param structure cbit.vcell.model.Structure
- */
 public SpeciesContext addSpeciesContext(SpeciesContext speciesContext) throws PropertyVetoException {
 	
 	if (!contains(speciesContext.getSpecies())){
@@ -2185,12 +2180,6 @@ public boolean compareEqual(Matchable object) {
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (3/19/2001 10:37:02 PM)
- * @return boolean
- * @param structure cbit.vcell.model.Structure
- */
 public boolean contains(Diagram diagram) {
 	for (int i=0;i<fieldDiagrams.length;i++){
 		if (fieldDiagrams[i] == diagram){
@@ -2201,12 +2190,6 @@ public boolean contains(Diagram diagram) {
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (3/19/2001 10:37:02 PM)
- * @return boolean
- * @param structure cbit.vcell.model.Structure
- */
 public boolean contains(ModelParameter modelParameter) {
 	for (int i=0;i<fieldModelParameters.length;i++){
 		if (fieldModelParameters[i] == modelParameter){
@@ -2216,12 +2199,6 @@ public boolean contains(ModelParameter modelParameter) {
 	return false;
 }
 
-/**
- * Insert the method's description here.
- * Creation date: (3/19/2001 10:37:02 PM)
- * @return boolean
- * @param structure cbit.vcell.model.Structure
- */
 public boolean contains(ReactionStep reactionStep) {
 	for (int i=0;i<fieldReactionSteps.length;i++){
 		if (fieldReactionSteps[i] == reactionStep){
@@ -2232,12 +2209,6 @@ public boolean contains(ReactionStep reactionStep) {
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (3/19/2001 10:37:02 PM)
- * @return boolean
- * @param structure cbit.vcell.model.Structure
- */
 public boolean contains(Species species) {
 	for (int i=0;i<fieldSpecies.length;i++){
 		if (fieldSpecies[i] == species){
@@ -2248,12 +2219,6 @@ public boolean contains(Species species) {
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (3/19/2001 10:37:02 PM)
- * @return boolean
- * @param structure cbit.vcell.model.Structure
- */
 public boolean contains(SpeciesContext speciesContext) {
 	for (int i=0;i<fieldSpeciesContexts.length;i++){
 		if (fieldSpeciesContexts[i] == speciesContext){
@@ -2264,12 +2229,6 @@ public boolean contains(SpeciesContext speciesContext) {
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (3/19/2001 10:37:02 PM)
- * @return boolean
- * @param structure cbit.vcell.model.Structure
- */
 public boolean contains(Structure structure) {
 	for (int i=0;i<fieldStructures.length;i++){
 		if (fieldStructures[i] == structure){
@@ -2280,27 +2239,15 @@ public boolean contains(Structure structure) {
 }
 
 
-/**
- * The firePropertyChange method was generated to support the propertyChange field.
- */
 public void firePropertyChange(String propertyName, Object oldValue, Object newValue) {
 	getPropertyChange().firePropertyChange(propertyName, oldValue, newValue);
 }
 
 
-/**
- * The fireVetoableChange method was generated to support the vetoPropertyChange field.
- */
 public void fireVetoableChange(java.lang.String propertyName, java.lang.Object oldValue, java.lang.Object newValue) throws java.beans.PropertyVetoException {
 	getVetoPropertyChange().fireVetoableChange(propertyName, oldValue, newValue);
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (5/12/2004 10:38:12 PM)
- * @param issueList java.util.Vector
- */
 public void gatherIssues(IssueContext issueContext, List<Issue> issueList) {
 	issueContext = issueContext.newChildContext(ContextType.Model, this);
 	//
@@ -2704,11 +2651,6 @@ public KeyValue getKey() {
 }
 
 
-/**
- * This method was created by a SmartGuide.
- * @return cbit.vcell.model.SpeciesContext
- * @param species cbit.vcell.model.Species
- */
 public Kinetics.KineticsParameter getKineticsParameter(String kineticsParameterName) {
 	for (int i=0;i<fieldReactionSteps.length;i++){
 		Kinetics.KineticsParameter parm = fieldReactionSteps[i].getKinetics().getKineticsParameter(kineticsParameterName);
@@ -2720,12 +2662,6 @@ public Kinetics.KineticsParameter getKineticsParameter(String kineticsParameterN
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (8/27/2003 10:03:05 PM)
- * @return cbit.vcell.parser.SymbolTableEntry
- * @param identifier java.lang.String
- */
 public SymbolTableEntry getLocalEntry(java.lang.String identifier) {
 	
 	for (ReservedSymbol rs : fieldReservedSymbols) {
@@ -2781,12 +2717,6 @@ public SymbolTableEntry getLocalEntry(java.lang.String identifier) {
 	return getSpeciesContext(identifier);
 }
 
-/**
- * Insert the method's description here.
- * Creation date: (8/27/2003 10:03:05 PM)
- * @return cbit.vcell.parser.SymbolTableEntry
- * @param identifier java.lang.String
- */
 public void gatherLocalEntries(Set<SymbolTableEntry> symbolTableEntries) {
 
 	for (int i = 0; i < fieldReservedSymbols.length; i++) {
@@ -2952,23 +2882,11 @@ public Species[] getSpecies() {
 }
 
 
-/**
- * Gets the species index property (cbit.vcell.model.Species) value.
- * @return The species property value.
- * @param index The index value into the property array.
- * @see #setSpecies
- */
 public Species getSpecies(int index) {
 	return getSpecies()[index];
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (1/16/2003 4:19:29 PM)
- * @return cbit.vcell.model.Species
- * @param speciesReference cbit.vcell.dictionary.SpeciesReference
- */
 public Species[] getSpecies(DBSpecies dbSpecies) {
 	if (dbSpecies == null){
 		throw new IllegalArgumentException("DBSpecies was null");
@@ -3034,11 +2952,6 @@ public SpeciesContext getSpeciesContext(Species species, Structure structure) {
 }
 
 
-/**
- * This method was created by a SmartGuide.
- * @return cbit.vcell.model.SpeciesContext
- * @param species cbit.vcell.model.Species
- */
 public SpeciesContext getSpeciesContext(String speciesContextName) {
 	for (int i=0;i<fieldSpeciesContexts.length;i++){
 		if (fieldSpeciesContexts[i].getName().equals(speciesContextName)){
@@ -3049,31 +2962,16 @@ public SpeciesContext getSpeciesContext(String speciesContextName) {
 }
 
 
-/**
- * Gets the speciesContexts property (cbit.vcell.model.SpeciesContext[]) value.
- * @return The speciesContexts property value.
- * @see #setSpeciesContexts
- */
 public SpeciesContext[] getSpeciesContexts() {
 	return fieldSpeciesContexts;
 }
 
 
-/**
- * Gets the speciesContexts index property (cbit.vcell.model.SpeciesContext) value.
- * @return The speciesContexts property value.
- * @param index The index value into the property array.
- * @see #setSpeciesContexts
- */
 public SpeciesContext getSpeciesContexts(int index) {
 	return getSpeciesContexts()[index];
 }
 
 
-/**
- * This method was created by a SmartGuide.
- * @return java.util.Enumeration
- */
 public SpeciesContext[] getSpeciesContexts(Structure structure) {
 	Vector<SpeciesContext> scList = new Vector<SpeciesContext>();
 	
@@ -3113,13 +3011,6 @@ public SpeciesContext getSpeciesContextByPattern(String speciesPattern) {
 
 
 
-/**
- * Insert the method's description here.
- * Creation date: (6/22/2005 4:13:20 PM)
- * @return cbit.vcell.model.Species[]
- * @param movingFeature cbit.vcell.model.Feature
- * @param destinationFeature cbit.vcell.model.Feature
- */
 public SpeciesContext[] getSpeciesContextsNeededByMovingMembrane(Membrane movingMembrane) {
 
 	//Find any species that are needed by reactions in the membrane of movingFeature
@@ -3163,11 +3054,6 @@ public ElectricalTopology getElectricalTopology(){
 	return electricalTopology;
 }
 
-/**
- * This method was created by a SmartGuide.
- * @return cbit.vcell.model.Feature
- * @param featureName java.lang.String
- */
 public Structure getStructure(String structureName) {
 	if (structureName==null){
 		return null;
@@ -3427,8 +3313,7 @@ public void refreshDependencies() {
 		try {
 			fieldModelParameters[i].getExpression().bindExpression(this);
 		} catch (ExpressionBindingException e) {
-			e.printStackTrace(System.out);
-			throw new RuntimeException("Error binding global parameter '" + fieldModelParameters[i].getName() + "' to model."  + e.getMessage());
+			throw new RuntimeException("Error binding global parameter '" + fieldModelParameters[i].getName() + "' to model: "  + e.getMessage(), e);
 		}
 	}
 	
@@ -3687,12 +3572,6 @@ public void setDiagrams(int index, Diagram diagrams) {
 }
 
 
-/**
- * Sets the modelParameters property (cbit.vcell.model.ModelParameter[]) value.
- * @param modelParameters The new value for the property.
- * @exception java.beans.ModelPropertyVetoException The exception description.
- * @see #getModelParameters
- */
 public void setModelParameters(ModelParameter[] modelParameters) throws java.beans.PropertyVetoException {
 	ModelParameter[] oldValue = fieldModelParameters;
 	fireVetoableChange(Model.PROPERTY_NAME_MODEL_PARAMETERS, oldValue, modelParameters);
@@ -3729,12 +3608,6 @@ public void setModelParameters(ModelParameter[] modelParameters) throws java.bea
 
 
 
-/**
- * Sets the modelParameters property (cbit.vcell.model.ModelParameter[]) value.
- * @param modelParameters The new value for the property.
- * @exception java.beans.ModelPropertyVetoException The exception description.
- * @see #getModelFunctions
- */
 public void setModelFunctions(ModelFunction[] modelFunctions) throws java.beans.PropertyVetoException {
 	ModelFunction[] oldValue = fieldModelFunctions;
 	fireVetoableChange(Model.PROPERTY_NAME_MODEL_FUNCTIONS, oldValue, modelFunctions);
@@ -3761,13 +3634,6 @@ public ModelFunction[] getModelFunctions(){
 }
 
 
-
-/**
- * Sets the name property (java.lang.String) value.
- * @param name The new value for the property.
- * @exception java.beans.ModelPropertyVetoException The exception description.
- * @see #getName
- */
 public void setName(java.lang.String name) throws java.beans.PropertyVetoException {
 	String oldValue = fieldName;
 	fireVetoableChange("name", oldValue, name);
@@ -3775,13 +3641,6 @@ public void setName(java.lang.String name) throws java.beans.PropertyVetoExcepti
 	firePropertyChange("name", oldValue, name);
 }
 
-
-/**
- * Sets the reactionSteps property (cbit.vcell.model.ReactionStep[]) value.
- * @param reactionSteps The new value for the property.
- * @exception java.beans.PropertyVetoException The exception description.
- * @see #getReactionSteps
- */
 public void setReactionSteps(ReactionStep[] reactionSteps) throws java.beans.PropertyVetoException {
 	ReactionStep[] oldValue = fieldReactionSteps;
 	fireVetoableChange(PROPERTY_NAME_REACTION_STEPS, oldValue, reactionSteps);

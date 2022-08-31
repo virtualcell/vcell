@@ -22,6 +22,7 @@ import org.vcell.util.exe.Executable;
 import org.vcell.util.exe.ExecutableException;
 
 import cbit.util.xml.VCLogger;
+import cbit.util.xml.VCLoggerException;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.mapping.MathMapping;
 import cbit.vcell.mapping.SimulationContext;
@@ -72,8 +73,9 @@ public class VCellSBMLSolver implements SBMLSolver {
 
 	}
 	
-	private BioModel importSBML(String filename,VCLogger logger,boolean isSpatial) throws ClassNotFoundException, IOException, ExecutableException, XmlParseException, XMLStreamException {
-			org.vcell.sbml.vcell.SBMLImporter sbmlImporter = new org.vcell.sbml.vcell.SBMLImporter(filename,logger, false);
+	private BioModel importSBML(String filename,VCLogger logger,boolean isSpatial) throws Exception {
+			boolean bValidateSBML = true;
+			org.vcell.sbml.vcell.SBMLImporter sbmlImporter = new org.vcell.sbml.vcell.SBMLImporter(filename,logger, bValidateSBML);
 			BioModel bioModel = sbmlImporter.getBioModel();
 		//EXPORT_NOTE isolates JVM from SBML crashes -- generally not needed
 		/*
@@ -112,7 +114,8 @@ public class VCellSBMLSolver implements SBMLSolver {
 			    // export bioModel as sbml and save
 			    // String vcml_sbml = cbit.vcell.xml.XmlHelper.exportSBML(bioModel, 2, 1, bioModel.getSimulationContexts(0).getName());
 			    // SimulationJob simJob = new SimulationJob(bioModel.getSimulations(bioModel.getSimulationContexts(0))[0], null, 0);
-			    String vcml_sbml = cbit.vcell.xml.XmlHelper.exportSBML(bioModel, 2, 1, 0, false, bioModel.getSimulationContext(0), null);
+				boolean bRoundTripValidation = true;
+			    String vcml_sbml = cbit.vcell.xml.XmlHelper.exportSBML(bioModel, 2, 1, 0, false, bioModel.getSimulationContext(0), null, bRoundTripValidation);
 			    SBMLUtils.writeStringToFile(vcml_sbml, new File(outDir,filePrefix+".vcml.sbml").getAbsolutePath(), true);
 			    
 			    // re-import bioModel from exported sbml
@@ -387,7 +390,8 @@ public class VCellSBMLSolver implements SBMLSolver {
 			//    
 		    // Instantiate an SBMLImporter to get the speciesUnitsHash - to compute the conversion factor from VC->SB species units.
 		    // and import SBML  (sbml->bioModel)
-			org.vcell.sbml.vcell.SBMLImporter sbmlImporter = new org.vcell.sbml.vcell.SBMLImporter(sbmlFileName, logger, false);
+			boolean bValidateSBML = true;
+			org.vcell.sbml.vcell.SBMLImporter sbmlImporter = new org.vcell.sbml.vcell.SBMLImporter(sbmlFileName, logger, bValidateSBML);
 			BioModel bioModel = sbmlImporter.getBioModel();
 //			Hashtable<String, SBMLImporter.SBVCConcentrationUnits> speciesUnitsHash = sbmlImporter.getSpeciesUnitsHash();
 //			double timeFactor = sbmlImporter.getSBMLTimeUnitsFactor();
@@ -399,7 +403,8 @@ public class VCellSBMLSolver implements SBMLSolver {
 			    // Round trip the bioModel (bioModel->sbml->bioModel).
 		    	
 			    // export bioModel as sbml and save
-			    String vcml_sbml = cbit.vcell.xml.XmlHelper.exportSBML(bioModel, 2, 1, 0, false, bioModel.getSimulationContext(0), null);
+				boolean bRoundTripValidation = true;
+			    String vcml_sbml = cbit.vcell.xml.XmlHelper.exportSBML(bioModel, 2, 1, 0, false, bioModel.getSimulationContext(0), null, bRoundTripValidation);
 			    
 			    // re-import bioModel from exported sbml
 			    XMLSource vcml_sbml_Src = new XMLSource(vcml_sbml);
@@ -758,7 +763,7 @@ public class VCellSBMLSolver implements SBMLSolver {
     private class LocalLogger extends VCLogger{
 				@Override
 				public void sendMessage(Priority p, ErrorType et, String message)
-						throws Exception {
+						throws VCLoggerException {
 		            System.out.println("LOGGER: msgLevel="+p+", msgType="+et+", "+message);
 		            if (p==VCLogger.Priority.HighPriority) {
 		            	SBMLImportException.Category cat = SBMLImportException.Category.UNSPECIFIED;
@@ -766,7 +771,7 @@ public class VCellSBMLSolver implements SBMLSolver {
 		            		cat = SBMLImportException.Category.RESERVED_SPATIAL;
 		            	}
 		            	
-		            	throw new SBMLImportException(message,cat);
+		            	throw new VCLoggerException(new SBMLImportException(message,cat));
 		            }
 		        }
 		        public void sendAllMessages() {

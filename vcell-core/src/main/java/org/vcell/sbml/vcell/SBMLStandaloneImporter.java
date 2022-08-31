@@ -26,6 +26,7 @@ import org.vcell.util.executable.LiveProcess;
 import org.vcell.util.executable.LiveProcess.LiveProcessStatus;
 
 import cbit.util.xml.VCLogger;
+import cbit.util.xml.VCLoggerException;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.resource.ResourceUtil;
@@ -254,7 +255,8 @@ public class SBMLStandaloneImporter {
 					lg.info("read name " + file.getCanonicalPath()); 
 				}
 				if (file != null) {
-					SBMLImporter importer = new SBMLImporter(file.getAbsolutePath(), this,false); 
+					boolean bValidate = true;
+					SBMLImporter importer = new SBMLImporter(file.getAbsolutePath(), this, bValidate);
 					return importer.getBioModel();
 				}
 				return null;
@@ -289,7 +291,7 @@ public class SBMLStandaloneImporter {
 
 		@Override
 		public void sendMessage(Priority p, ErrorType et, String message)
-				throws Exception {
+				throws VCLoggerException {
 			
 		}
 

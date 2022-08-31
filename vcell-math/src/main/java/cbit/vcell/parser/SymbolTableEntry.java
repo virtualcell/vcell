@@ -49,6 +49,9 @@ public String getName();
  * @return cbit.vcell.parser.NameScope
  */
 NameScope getNameScope();
+default boolean hasNameScope() {
+	return true;
+}
 /**
  * Insert the method's description here.
  * Creation date: (3/31/2004 10:33:52 AM)

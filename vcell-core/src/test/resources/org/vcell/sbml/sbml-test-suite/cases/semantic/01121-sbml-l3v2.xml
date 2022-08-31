@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sbml xmlns="http://www.sbml.org/sbml/level3/version2/core" level="3" version="2">
+  <model id="case01121" name="case01121" conversionFactor="conversion1">
+    <listOfFunctionDefinitions>
+      <functionDefinition id="kinetics">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <lambda>
+            <bvar>
+              <ci> a </ci>
+            </bvar>
+            <bvar>
+              <ci> b </ci>
+            </bvar>
+            <bvar>
+              <ci> c </ci>
+            </bvar>
+            <bvar>
+              <ci> d </ci>
+            </bvar>
+            <bvar>
+              <ci> e </ci>
+            </bvar>
+            <bvar>
+              <ci> f </ci>
+            </bvar>
+            <bvar>
+              <ci> g </ci>
+            </bvar>
+            <bvar>
+              <ci> h </ci>
+            </bvar>
+            <bvar>
+              <ci> i </ci>
+            </bvar>
+            <bvar>
+              <ci> j </ci>
+            </bvar>
+            <apply>
+              <divide/>
+              <apply>
+                <plus/>
+                <apply>
+                  <minus/>
+                  <ci> a </ci>
+                </apply>
+                <ci> b </ci>
+                <ci> c </ci>
+                <ci> d </ci>
+                <ci> e </ci>
+                <ci> f </ci>
+                <ci> g </ci>
+                <ci> h </ci>
+                <ci> i </ci>
+                <ci> j </ci>
+              </apply>
+              <cn> 10 </cn>
+            </apply>
+          </lambda>
+        </math>
+      </functionDefinition>
+    </listOfFunctionDefinitions>
+    <listOfCompartments>
+      <compartment id="comp" spatialDimensions="3" size="5" constant="false"/>
+      <compartment id="comp2" spatialDimensions="3" size="2" constant="false"/>
+    </listOfCompartments>
+    <listOfSpecies>
+      <species id="S1" compartment="comp" initialAmount="1" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+      <species id="S2" compartment="comp2" initialConcentration="3" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+      <species id="S3" compartment="comp2" initialAmount="4" hasOnlySubstanceUnits="true" boundaryCondition="true" constant="false"/>
+      <species id="S4" compartment="comp2" initialConcentration="2" hasOnlySubstanceUnits="true" boundaryCondition="false" constant="true" conversionFactor="conversion2"/>
+    </listOfSpecies>
+    <listOfParameters>
+      <parameter id="kavo" value="1.1" constant="true"/>
+      <parameter id="k1" value="1.1" constant="true"/>
+      <parameter id="k3" value="2.5" constant="false"/>
+      <parameter id="k4" value="1" constant="false"/>
+      <parameter id="k5" value="2.8" constant="false"/>
+      <parameter id="k2" value="8.12" constant="true"/>
+      <parameter id="conversion1" value="10" constant="true"/>
+      <parameter id="conversion2" value="100" constant="true"/>
+    </listOfParameters>
+    <listOfInitialAssignments>
+      <initialAssignment symbol="kavo">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <divide/>
+            <csymbol encoding="text" definitionURL="http://www.sbml.org/sbml/symbols/avogadro"> avogadro </csymbol>
+            <cn type="e-notation"> 6.022 <sep/> 23 </cn>
+          </apply>
+        </math>
+      </initialAssignment>
+      <initialAssignment symbol="S1ref">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <ci> k1 </ci>
+        </math>
+      </initialAssignment>
+    </listOfInitialAssignments>
+    <listOfRules>
+      <rateRule variable="comp">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <cn type="integer"> 1 </cn>
+        </math>
+      </rateRule>
+      <assignmentRule variable="comp2">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <ci> k4 </ci>
+        </math>
+      </assignmentRule>
+      <rateRule variable="k4">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <csymbol encoding="text" definitionURL="http://www.sbml.org/sbml/symbols/time"> time </csymbol>
+        </math>
+      </rateRule>
+      <assignmentRule variable="S2ref">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <times/>
+            <ci> k1 </ci>
+            <ci> S1 </ci>
+          </apply>
+        </math>
+      </assignmentRule>
+    </listOfRules>
+    <listOfReactions>
+      <reaction id="_J0" reversible="true">
+        <listOfReactants>
+          <speciesReference species="S3" stoichiometry="1" constant="true"/>
+          <speciesReference id="S1ref" species="S1" stoichiometry="2" constant="true"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference id="S2ref" species="S2" stoichiometry="1" constant="false"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference species="S4"/>
+        </listOfModifiers>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+              <ci> kinetics </ci>
+              <ci> k1 </ci>
+              <ci> k2 </ci>
+              <ci> k3 </ci>
+              <ci> k4 </ci>
+              <ci> k5 </ci>
+              <ci> S1 </ci>
+              <ci> S1ref </ci>
+              <ci> S3 </ci>
+              <ci> S4 </ci>
+              <ci> S2 </ci>
+            </apply>
+          </math>
+          <listOfLocalParameters>
+            <localParameter id="k1" value="1"/>
+          </listOfLocalParameters>
+        </kineticLaw>
+      </reaction>
+    </listOfReactions>
+  </model>
+</sbml>

@@ -14,22 +14,14 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
 import java.beans.VetoableChangeSupport;
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Hashtable;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.Vector;
+import java.util.*;
 
-import javax.swing.SwingUtilities;
-
+import cbit.vcell.biomodel.ModelUnitConverter;
+import cbit.vcell.biomodel.meta.IdentifiableProvider;
+import cbit.vcell.biomodel.meta.VCID;
+import cbit.vcell.math.*;
+import cbit.vcell.solver.*;
 import org.vcell.model.rbm.NetworkConstraints;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Compare;
@@ -51,10 +43,7 @@ import org.vcell.util.document.DocumentValidUtil;
 import org.vcell.util.document.ExternalDataIdentifier;
 import org.vcell.util.document.Identifiable;
 import org.vcell.util.document.KeyValue;
-import org.vcell.util.document.LocalVCDataIdentifier;
 import org.vcell.util.document.PropertyConstants;
-import org.vcell.util.document.PublicationInfo;
-import org.vcell.util.document.User;
 import org.vcell.util.document.Version;
 import org.vcell.util.document.Versionable;
 
@@ -62,9 +51,7 @@ import cbit.image.ImageException;
 import cbit.image.VCImage;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.bionetgen.BNGOutputSpec;
-import cbit.vcell.client.server.UserPreferences;
 import cbit.vcell.data.DataContext;
-import cbit.vcell.export.server.ExportServiceImpl;
 import cbit.vcell.field.FieldFunctionArguments;
 import cbit.vcell.field.FieldUtilities;
 import cbit.vcell.geometry.Geometry;
@@ -81,7 +68,6 @@ import cbit.vcell.geometry.surface.VolumeGeometricRegion;
 import cbit.vcell.mapping.AbstractMathMapping.MathMappingNameScope;
 import cbit.vcell.mapping.BioEvent.EventAssignment;
 import cbit.vcell.mapping.MicroscopeMeasurement.ProjectionZKernel;
-import cbit.vcell.mapping.NetworkTransformer.GeneratedSpeciesSymbolTableEntry;
 import cbit.vcell.mapping.ParameterContext.LocalParameter;
 import cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecParameter;
 import cbit.vcell.mapping.spatial.CurveObject;
@@ -95,10 +81,6 @@ import cbit.vcell.mapping.spatial.processes.PointLocation;
 import cbit.vcell.mapping.spatial.processes.SpatialProcess;
 import cbit.vcell.mapping.spatial.processes.SurfaceKinematics;
 import cbit.vcell.mapping.spatial.processes.VolumeKinematics;
-import cbit.vcell.math.Constant;
-import cbit.vcell.math.MathDescription;
-import cbit.vcell.math.MathException;
-import cbit.vcell.math.MathFunctionDefinitions;
 import cbit.vcell.matrix.MatrixException;
 import cbit.vcell.model.BioNameScope;
 import cbit.vcell.model.ExpressionContainer;
@@ -112,7 +94,6 @@ import cbit.vcell.model.ModelUnitSystem;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.model.Product;
 import cbit.vcell.model.Reactant;
-import cbit.vcell.model.ReactionParticipant;
 import cbit.vcell.model.ReactionRule;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.SpeciesContext;
@@ -126,27 +107,17 @@ import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.NameScope;
 import cbit.vcell.parser.ScopedSymbolTable;
 import cbit.vcell.parser.SymbolTableEntry;
-import cbit.vcell.resource.ResourceUtil;
-import cbit.vcell.simdata.DataManager;
-import cbit.vcell.simdata.DataSetControllerImpl;
-import cbit.vcell.simdata.ODEDataManager;
-import cbit.vcell.simdata.PDEDataManager;
-import cbit.vcell.simdata.VCDataManager;
-import cbit.vcell.solver.MathOverrides;
-import cbit.vcell.solver.OutputFunctionContext;
-import cbit.vcell.solver.Simulation;
-import cbit.vcell.solver.SimulationInfo;
-import cbit.vcell.solver.SimulationOwner;
-import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.vcell.units.VCUnitDefinition;
-/**
- * This type was created in VisualAge.
- */
-@SuppressWarnings("serial")
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 public class SimulationContext implements SimulationOwner, Versionable, Matchable, BioNetGenUpdaterCallback,
 	ScopedSymbolTable, PropertyChangeListener, VetoableChangeListener, Serializable, IssueSource,
 	Displayable, Identifiable {
-	
+
+	private final static Logger logger = LogManager.getLogger(SimulationContext.class);
+
 	public interface MathMappingCallback {
 		public void setMessage(String message);
 		public void setProgressFraction(float fractionDone);
@@ -167,7 +138,7 @@ public class SimulationContext implements SimulationOwner, Versionable, Matchabl
 	public static final String PROPERTY_NAME_ASSIGNMENTRULES = "assignmentrules";
 	public static final String PROPERTY_NAME_RATE_RULE_CHANGE = "rateRuleChange";
 	public static final String PROPERTY_NAME_ASSIGNMENT_RULE_CHANGE = "assignmentRuleChange";
-	
+
 	public enum Kind {
 		GEOMETRY_KIND,
 		SPECIFICATIONS_KIND,
@@ -175,7 +146,7 @@ public class SimulationContext implements SimulationOwner, Versionable, Matchabl
 		SIMULATIONS_KIND,
 		PARAMETER_ESTIMATION_KIND;
 	}
-	
+
 	public class SimulationContextNameScope extends BioNameScope {
 		private transient NameScope nameScopes[] = null;
 		public SimulationContextNameScope(){
@@ -241,7 +212,145 @@ public class SimulationContext implements SimulationOwner, Versionable, Matchabl
 		}
 	}
 
-	public class SimulationContextParameter extends Parameter implements ExpressionContainer {
+	private static class SymbolReplacementTemplate {
+		public final String oldNameSuffix;
+		public final String newNameSuffix;
+		public final double factor;
+		public SymbolReplacementTemplate(String oldName, String newName) {
+			this(oldName, newName, 1.0);
+		}
+		public SymbolReplacementTemplate(String oldName, String newName, double factor) {
+			this.oldNameSuffix = oldName;
+			this.newNameSuffix = newName;
+			this.factor = factor;
+		}
+	}
+
+
+	public class SimulationContextOverridesResolver implements MathOverridesResolver {
+		private final List<SymbolReplacementTemplate> builtin_replacements = new ArrayList<>();
+		private final IdentifiableProvider bioIdentifiableProvider = new BioModel(null);
+
+		void SimulationContextOverridesResolver() {
+			// test for renamed initial condition constant (changed from _init to _init_uM)
+			builtin_replacements.add(new SymbolReplacementTemplate(DiffEquMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_old,
+					DiffEquMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_uM));
+
+			// test for renamed initial condition constant (changed from _init to _init_molecules_um_2)
+			builtin_replacements.add(new SymbolReplacementTemplate(DiffEquMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_old,
+					DiffEquMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_molecules_um_2));
+
+			// test for renamed initial condition constant (changed from _init_molecules_per_um2 to _init_molecules_um_2)
+			builtin_replacements.add(new SymbolReplacementTemplate(DiffEquMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_old_molecules_per_um2,
+					DiffEquMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_molecules_um_2));
+
+			// test for equivalent unit systems _init_uM or _init <==> _init_umol_l_1
+			builtin_replacements.add(new SymbolReplacementTemplate(DiffEquMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_uM,
+					DiffEquMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_umol_l_1));
+			builtin_replacements.add(new SymbolReplacementTemplate(DiffEquMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_old,
+					DiffEquMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_umol_l_1));
+			builtin_replacements.add(new SymbolReplacementTemplate(DiffEquMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_umol_l_1,
+					DiffEquMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_uM));
+		}
+
+		@Override
+		public SymbolReplacement getSymbolReplacement(String name) {
+			if (mathDesc!=null && mathDesc.getSourceSymbolMapping().findVariableByName(name) instanceof Constant) {
+				throw new RuntimeException("unexpected: override var name " + name + " found as a Constant in latest math");
+			}
+			SourceSymbolMapping currentMathSymbolMapping = getMathDescription().getSourceSymbolMapping();
+			SourceSymbolMapping previousMathSymbolMapping = (prevMathDesc!=null) ? prevMathDesc.getSourceSymbolMapping() : null;
+			//
+			// if previous MathSymbolMapping exists, use it and current MathSymbolMapping to find the new
+			// math parameter name and conversion factor (if units changed).
+			//
+			if (currentMathSymbolMapping != null && previousMathSymbolMapping != null) {
+				Variable previousVariable = previousMathSymbolMapping.findVariableByName(name);
+				if (previousVariable != null) {
+					SymbolTableEntry[] previousBioSTEs = previousMathSymbolMapping.getBiologicalSymbol(previousVariable);
+					if (previousBioSTEs != null) {
+						for (SymbolTableEntry ste : previousBioSTEs) {
+							VCUnitDefinition previousUnit = ste.getUnitDefinition();
+							if (ste instanceof Identifiable) {
+								Identifiable prevIdentifiableObject = (Identifiable) ste;
+								VCID previousVCID = bioIdentifiableProvider.getVCID(prevIdentifiableObject);
+								Identifiable newIdentifiableObject = bioModel.getIdentifiableObject(previousVCID);
+								if (newIdentifiableObject instanceof SymbolTableEntry) {
+									SymbolTableEntry newBioSte = (SymbolTableEntry) newIdentifiableObject;
+									VCUnitDefinition newUnit = newBioSte.getUnitDefinition();
+									Expression factor = ModelUnitConverter.getDimensionlessScaleFactor(
+											newUnit.divideBy(previousUnit),
+											bioModel.getModel().getUnitSystem().getInstance_DIMENSIONLESS(),
+											bioModel.getModel().getKMOLE());
+									Variable replacementVariable = currentMathSymbolMapping.getVariable(newBioSte);
+									if (replacementVariable instanceof Constant) {
+										return new SymbolReplacement(replacementVariable.getName(), factor);
+									}else{
+										if (newBioSte instanceof SpeciesContextSpecParameter){
+											SpeciesContextSpecParameter scsParam = (SpeciesContextSpecParameter) newBioSte;
+											//
+											// get size parameter
+											//
+											StructureMapping structureMapping = getGeometryContext().getStructureMapping(scsParam.getSpeciesContext().getStructure());
+											StructureMapping.StructureMappingParameter sizeParam = structureMapping.getSizeParameter();
+											Variable sizeVariable = currentMathSymbolMapping.getVariable(sizeParam);
+											if (scsParam.getRole() == SpeciesContextSpec.ROLE_InitialCount){
+												// couldn't find count, look for concentration instead
+												newBioSte = scsParam.getSpeciesContextSpec().getParameterFromRole(SpeciesContextSpec.ROLE_InitialConcentration);
+												replacementVariable = currentMathSymbolMapping.getVariable(newBioSte);
+												if (replacementVariable != null){
+													newUnit = newBioSte.getUnitDefinition();
+													factor = ModelUnitConverter.getDimensionlessScaleFactor(
+															newUnit.divideBy(previousUnit).multiplyBy(sizeParam.getUnitDefinition()),
+															bioModel.getModel().getUnitSystem().getInstance_DIMENSIONLESS(),
+															bioModel.getModel().getKMOLE());
+													factor = Expression.div(factor, new Expression(sizeVariable, null));
+													return new SymbolReplacement(replacementVariable.getName(), factor);
+												}
+											}else if (scsParam.getRole() == SpeciesContextSpec.ROLE_InitialConcentration){
+												// couldn't find concentration, look for count instead
+												// couldn't find count, look for concentration instead
+												newBioSte = scsParam.getSpeciesContextSpec().getParameterFromRole(SpeciesContextSpec.ROLE_InitialCount);
+												replacementVariable = currentMathSymbolMapping.getVariable(newBioSte);
+												if (replacementVariable != null){
+													newUnit = newBioSte.getUnitDefinition();
+													factor = ModelUnitConverter.getDimensionlessScaleFactor(
+															newUnit.divideBy(previousUnit).divideBy(sizeParam.getUnitDefinition()),
+															bioModel.getModel().getUnitSystem().getInstance_DIMENSIONLESS(),
+															bioModel.getModel().getKMOLE());
+													factor = Expression.mult(factor, new Expression(sizeVariable, null));
+													return new SymbolReplacement(replacementVariable.getName(), factor);
+												}
+											}
+										}
+										logger.warn("could not find replacement symbol for "+name);
+										// look for corresponding items instead (e.g. initCount vs initConc) ????
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+			//
+			// if not found in the previous math symbol mapping, try to repair using suffix patterns.
+			//
+			if (currentMathSymbolMapping != null) {
+				for (SymbolReplacementTemplate replacementTemplate : builtin_replacements) {
+					String repaired_name = name.replace(replacementTemplate.oldNameSuffix, replacementTemplate.newNameSuffix);
+					Variable mathVar = currentMathSymbolMapping.findVariableByName(repaired_name);
+					if (mathVar != null) {
+						logger.info("replaced math override name " + name + " with " + repaired_name + " with factor " + replacementTemplate.factor + " using template pattern");
+						return new SymbolReplacement(repaired_name, new Expression(replacementTemplate.factor));
+					}
+				}
+			}
+			return null;
+		}
+
+	}
+
+		public class SimulationContextParameter extends Parameter implements ExpressionContainer {
 		
 		private String fieldParameterName = null;
 		private Expression fieldParameterExpression = null;
@@ -358,6 +467,7 @@ public class SimulationContext implements SimulationOwner, Versionable, Matchabl
 	private ReactionContext reactionContext = null;
 	private MembraneContext membraneContext = null; 
 	private final OutputFunctionContext outputFunctionContext = new OutputFunctionContext(this);
+	private MathDescription prevMathDesc = null;
 	private MathDescription mathDesc = null;
 	private Double characteristicSize = null;
 	protected transient java.beans.PropertyChangeSupport propertyChange;
@@ -687,12 +797,6 @@ public Application getApplicationType() {
 	return applicationType;
 }
 
-/**
- * Sets the analysisTasks index property (cbit.vcell.modelopt.AnalysisTask[]) value.
- * @param index The index value into the property array.
- * @param analysisTasks The new value for the property.
- * @see #getAnalysisTasks
- */
 public void addAnalysisTask(AnalysisTask analysisTask) throws PropertyVetoException {
 	if (fieldAnalysisTasks==null){
 		setAnalysisTasks(new AnalysisTask[] { analysisTask });
@@ -719,12 +823,6 @@ public BioEvent addBioEvent(BioEvent bioEvent) throws PropertyVetoException {
 	return bioEvent;
 }
 
-/**
- * Sets the simulations property (cbit.vcell.solver.Simulation[]) value.
- * @param simulations The new value for the property.
- * @exception java.beans.PropertyVetoException The exception description.
- * @see #getSimulations
- */
 public Simulation addNewSimulation(String simNamePrefix, MathMappingCallback callback, NetworkGenerationRequirements networkGenerationRequirements) throws java.beans.PropertyVetoException {
 	refreshMathDescription(callback, networkGenerationRequirements);
 	if (bioModel==null){
@@ -796,12 +894,8 @@ public void refreshMathDescription(MathMappingCallback callback, NetworkGenerati
 		try {
 			setMathDescription(createNewMathMapping(callback, networkGenerationRequirements).getMathDescription());
 		} catch (Exception e) {
-			e.printStackTrace();
-			throw new RuntimeException(
-				"Application '"+getName()+"' has no generated Math\n"+
-				"Failed to generate new Math\n"+
-				e.getMessage()
-			);
+			logger.error(e);
+			throw new RuntimeException("Application '"+getName()+"' has no generated Math, Failed to generate new Math: "+ e.getMessage());
 		}
 	}
 }
@@ -815,12 +909,6 @@ public synchronized void addPropertyChangeListener(java.beans.PropertyChangeList
 }
 
 
-/**
- * Sets the simulations property (cbit.vcell.solver.Simulation[]) value.
- * @param simulations The new value for the property.
- * @exception java.beans.PropertyVetoException The exception description.
- * @see #getSimulations
- */
 public void addSimulation(Simulation newSimulation) throws java.beans.PropertyVetoException {
 	if (newSimulation.getMathDescription() == null){
 		throw new IllegalArgumentException("cannot add simulation '"+newSimulation.getName()+"', has no MathDescription");
@@ -963,12 +1051,6 @@ public boolean compareEqual(Matchable object) {
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (3/19/2001 10:37:02 PM)
- * @return boolean
- * @param structure cbit.vcell.model.Structure
- */
 public boolean contains(SimulationContextParameter scParameter) {
 	for (int i=0;i<fieldSimulationContextParameters.length;i++){
 		if (fieldSimulationContextParameters[i].equals(scParameter)){
@@ -978,12 +1060,6 @@ public boolean contains(SimulationContextParameter scParameter) {
 	return false;
 }
 
-/**
- * Sets the simulations property (cbit.vcell.solver.Simulation[]) value.
- * @param simulations The new value for the property.
- * @exception java.beans.PropertyVetoException The exception description.
- * @see #getSimulations
- */
 public AnalysisTask copyAnalysisTask(AnalysisTask analysisTask) throws java.beans.PropertyVetoException, ExpressionException, MappingException, MathException {
 
 	if (analysisTask instanceof ParameterEstimationTask){
@@ -1011,12 +1087,6 @@ public AnalysisTask copyAnalysisTask(AnalysisTask analysisTask) throws java.bean
 	}
 }
 
-/**
- * Sets the simulations property (cbit.vcell.solver.Simulation[]) value.
- * @param simulations The new value for the property.
- * @exception java.beans.PropertyVetoException The exception description.
- * @see #getSimulations
- */
 public Simulation copySimulation(Simulation simulation) throws java.beans.PropertyVetoException {
 	if (getMathDescription()==null){
 		throw new RuntimeException("Application "+getName()+" has no generated Math, cannot add simulation");
@@ -1525,7 +1595,12 @@ public OutputFunctionContext getOutputFunctionContext() {
 	return outputFunctionContext;
 }
 
-/**
+	@Override
+	public MathOverridesResolver getMathOverridesResolver() {
+		return new SimulationContextOverridesResolver();
+	}
+
+	/**
  * This method was created in VisualAge.
  */
 public Model getModel() {
@@ -1584,12 +1659,6 @@ public MembraneContext getMembraneContext() {
 	return membraneContext;
 }
 
-/**
- * Insert the method's description here.
- * Creation date: (3/19/2001 10:37:02 PM)
- * @return boolean
- * @param structure cbit.vcell.model.Structure
- */
 public SimulationContextParameter getSimulationContextParameter(String parameterName){
 	for (int i=0;i<fieldSimulationContextParameters.length;i++){
 		if (fieldSimulationContextParameters[i].getName().equals(parameterName)){
@@ -1620,22 +1689,10 @@ public SimulationContext.SimulationContextParameter getSimulationContextParamete
 }
 
 
-/**
- * Gets the simulations property (cbit.vcell.solver.Simulation[]) value.
- * @return The simulations property value.
- * @see #setSimulations
- */
 public Simulation[] getSimulations() {
 	return extractLocalSimulations(bioModel.getSimulations());
 }
 
-
-/**
- * Gets the simulations index property (cbit.vcell.solver.Simulation) value.
- * @return The simulations property value.
- * @param index The index value into the property array.
- * @see #setSimulations
- */
 public Simulation getSimulations(int index) {
 	return getSimulations()[index];
 }
@@ -2169,13 +2226,6 @@ private void refreshElectrodes(){
 	}
 }
 
-
-/**
- * Sets the analysisTasks index property (cbit.vcell.modelopt.AnalysisTask[]) value.
- * @param index The index value into the property array.
- * @param analysisTasks The new value for the property.
- * @see #getAnalysisTasks
- */
 public void removeAnalysisTask(AnalysisTask analysisTask) throws PropertyVetoException {
 	boolean bFound = false;
 	for (int i = 0; fieldAnalysisTasks!=null && i < fieldAnalysisTasks.length; i++){
@@ -2214,13 +2264,6 @@ public synchronized void removePropertyChangeListener(java.beans.PropertyChangeL
 	getPropertyChange().removePropertyChangeListener(listener);
 }
 
-
-/**
- * Sets the simulations property (cbit.vcell.solver.Simulation[]) value.
- * @param simulations The new value for the property.
- * @exception java.beans.PropertyVetoException The exception description.
- * @see #getSimulations
- */
 public void removeSimulation(Simulation simulation) throws java.beans.PropertyVetoException {
 	if (simulation.getMathDescription() != getMathDescription()){
 		throw new IllegalArgumentException("cannot remove simulation '"+simulation.getName()+"', has different MathDescription");
@@ -2531,20 +2574,20 @@ public void refreshSpatialObjects() {
 		try {
 			for (SpatialObject unmappedSpatialObject : unmappedSpatialObjects){
 				if (unmappedSpatialObject instanceof VolumeRegionObject){
-					System.err.println("volume region spatial object '"+unmappedSpatialObject.getName()+"' not found in geometry, delete.");
+					logger.error("volume region spatial object '"+unmappedSpatialObject.getName()+"' not found in geometry, delete.");
 					removeSpatialObject(unmappedSpatialObject);
 				}
 				if (unmappedSpatialObject instanceof SurfaceRegionObject){
-					System.err.println("surface region spatial object '"+unmappedSpatialObject.getName()+"' not found in geometry, delete.");
+					logger.error("surface region spatial object '"+unmappedSpatialObject.getName()+"' not found in geometry, delete.");
 					removeSpatialObject(unmappedSpatialObject);
 				}
 				if (unmappedSpatialObject instanceof PointObject){
-					System.err.println("point spatial object '"+unmappedSpatialObject.getName()+"' not found in geometry, this is expected.");
+					logger.error("point spatial object '"+unmappedSpatialObject.getName()+"' not found in geometry, this is expected.");
 //					removeSpatialObject(unmappedSpatialObject);
 				}
 			}
 		} catch (PropertyVetoException e) {
-			e.printStackTrace();
+			logger.error(e);
 		}
 	}
 }
@@ -2571,17 +2614,21 @@ public void setGroundElectrode(Electrode groundElectrode) throws java.beans.Prop
 //	bRuleBased = newIsRuleBased;
 //}
 
+	public void setMathDescriptionAndPrevious(MathDescription mathDesc, MathDescription prevMathDesc) throws PropertyVetoException {
+		Object oldValue = this.mathDesc;
+		fireVetoableChange("mathDescription",oldValue,mathDesc);
+		this.prevMathDesc = prevMathDesc;
+		this.mathDesc = mathDesc;
+		firePropertyChange("mathDescription",oldValue,mathDesc);
+	}
 
-/**
- * This method was created in VisualAge.
- * @param mathDesc cbit.vcell.math.MathDescription
- */
-public void setMathDescription(MathDescription argMathDesc) throws PropertyVetoException {
-	Object oldValue = this.mathDesc;
-	fireVetoableChange("mathDescription",oldValue,argMathDesc);
-	this.mathDesc = argMathDesc;
-	firePropertyChange("mathDescription",oldValue,argMathDesc);
-}
+	public void setMathDescription(MathDescription argMathDesc) throws PropertyVetoException {
+		Object oldValue = this.mathDesc;
+		fireVetoableChange("mathDescription",oldValue,argMathDesc);
+		this.prevMathDesc = this.mathDesc;
+		this.mathDesc = argMathDesc;
+		firePropertyChange("mathDescription",oldValue,argMathDesc);
+	}
 
 /**
  * This method was created in VisualAge.

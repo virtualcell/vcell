@@ -439,7 +439,7 @@ public static StructureAnalyzer.Dependency[] refreshTotalDependancies(RationalMa
 		}
 	}
 				
-	System.out.println("there are "+nullSpaceMatrix.getNumRows()+" dependencies, " + nullSpaceMatrix.getNumCols() + " columns.");
+	//System.out.println("there are "+nullSpaceMatrix.getNumRows()+" dependencies, " + nullSpaceMatrix.getNumCols() + " columns.");
 	long startTime = System.currentTimeMillis();
 
 	Vector<Dependency> dependencyList = new Vector<Dependency>();
@@ -555,7 +555,7 @@ public static StructureAnalyzer.Dependency[] refreshTotalDependancies(RationalMa
 	}
 	long endTime = System.currentTimeMillis();
 	long elapsedTime = endTime - startTime;
-	System.out.println("     " + elapsedTime + " milliseconds");
+//	System.out.println("     " + elapsedTime + " milliseconds");
 	
 	return (StructureAnalyzer.Dependency[])BeanUtils.getArray(dependencyList,StructureAnalyzer.Dependency.class);
 }
@@ -878,7 +878,7 @@ public Expression getCorrectedRateExpression(ReactionStep reactionStep, Reaction
 	}else if (rateType == RateType.ResolvedFluxRate){
 		unitFactor = mathMapping.getUnitFactor(speciesConcRateUnit.multiplyBy(unitSystem.getLengthUnit()).divideBy(correctedReactionRateUnit));
 	}
-	return Expression.mult(unitFactor,distribRateWithStoichFlux).flatten();
+	return Expression.mult(unitFactor,distribRateWithStoichFlux).flattenFactors("KMOLE");
 }
 
 }

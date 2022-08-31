@@ -35,6 +35,7 @@ import org.vcell.util.document.VCDocument;
 
 import cbit.image.VCImage;
 import cbit.util.xml.VCLogger;
+import cbit.util.xml.VCLoggerException;
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.geometry.GeometrySpec;
@@ -231,10 +232,10 @@ public class SimulationServiceImpl extends AbstractService implements Simulation
     public static cbit.util.xml.VCLogger vcLogger() {
         return new cbit.util.xml.VCLogger() {
             @Override
-            public void sendMessage(Priority p, ErrorType et, String message) {
+            public void sendMessage(Priority p, ErrorType et, String message) throws VCLoggerException {
                 System.err.println("LOGGER: msgLevel="+p+", msgType="+et+", "+message);
                 if (p == VCLogger.Priority.HighPriority) {
-                    throw new RuntimeException("Import failed : " + message);
+                    throw new VCLoggerException("Import failed : " + message);
                 }
             }
             public void sendAllMessages() {
@@ -482,7 +483,8 @@ public class SimulationServiceImpl extends AbstractService implements Simulation
 		try {
 			BioModel bioModel = XmlHelper.XMLToBioModel(new XMLSource(vcmlFile));
 			SimulationContext simContext = bioModel.getSimulationContext(applicationName);
-			String sbml = XmlHelper.exportSBML(bioModel, 3, 1, 0, simContext.getGeometry().getDimension()>0, simContext, null);
+			boolean bRoundTripValidation = true;
+			String sbml = XmlHelper.exportSBML(bioModel, 3, 1, 0, simContext.getGeometry().getDimension()>0, simContext, null, bRoundTripValidation);
 			FileUtils.write(outputFile, sbml);
 			VcmlToSbmlResults results = new VcmlToSbmlResults();
 			results.setSbmlFilePath(outputFile);

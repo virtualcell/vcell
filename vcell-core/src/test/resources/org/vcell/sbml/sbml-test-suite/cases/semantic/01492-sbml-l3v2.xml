@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created by libAntimony version v2.9.1 with libSBML version 5.14.1. -->
+<sbml xmlns="http://www.sbml.org/sbml/level3/version2/core" level="3" version="2">
+  <model id="case01492" name="case01492">
+    <listOfFunctionDefinitions>
+      <functionDefinition id="my_piecewise">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <lambda>
+            <bvar>
+              <ci> x </ci>
+            </bvar>
+            <bvar>
+              <ci> y </ci>
+            </bvar>
+            <bvar>
+              <ci> z </ci>
+            </bvar>
+            <piecewise>
+              <piece>
+                <ci> x </ci>
+                <ci> y </ci>
+              </piece>
+              <otherwise>
+                <ci> z </ci>
+              </otherwise>
+            </piecewise>
+          </lambda>
+        </math>
+      </functionDefinition>
+      <functionDefinition id="my_gt">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <lambda>
+            <bvar>
+              <ci> x </ci>
+            </bvar>
+            <bvar>
+              <ci> y </ci>
+            </bvar>
+            <apply>
+              <gt/>
+              <ci> x </ci>
+              <ci> y </ci>
+            </apply>
+          </lambda>
+        </math>
+      </functionDefinition>
+      <functionDefinition id="my_lteq">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <lambda>
+            <bvar>
+              <ci> x </ci>
+            </bvar>
+            <bvar>
+              <ci> y </ci>
+            </bvar>
+            <apply>
+              <leq/>
+              <ci> x </ci>
+              <ci> y </ci>
+            </apply>
+          </lambda>
+        </math>
+      </functionDefinition>
+    </listOfFunctionDefinitions>
+    <listOfParameters>
+      <parameter id="z" constant="false"/>
+      <parameter id="y" value="2" constant="false"/>
+      <parameter id="x" value="0" constant="false"/>
+    </listOfParameters>
+    <listOfRules>
+      <assignmentRule variable="z">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <ci> my_piecewise </ci>
+            <apply>
+              <ci> my_piecewise </ci>
+              <cn type="integer"> 2 </cn>
+              <apply>
+                <ci> my_gt </ci>
+                <ci> y </ci>
+                <cn> 1.49 </cn>
+              </apply>
+              <cn type="integer"> 1 </cn>
+            </apply>
+            <apply>
+              <ci> my_lteq </ci>
+              <ci> x </ci>
+              <cn> 0.49 </cn>
+            </apply>
+            <cn type="integer"> 0 </cn>
+          </apply>
+        </math>
+      </assignmentRule>
+      <rateRule variable="y">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <cn type="integer"> -2 </cn>
+        </math>
+      </rateRule>
+      <rateRule variable="x">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <cn type="integer"> 1 </cn>
+        </math>
+      </rateRule>
+    </listOfRules>
+  </model>
+</sbml>

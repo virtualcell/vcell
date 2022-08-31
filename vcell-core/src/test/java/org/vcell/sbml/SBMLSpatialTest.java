@@ -48,14 +48,15 @@ public class SBMLSpatialTest {
 			}
 			boolean isSpatial = sc1.getGeometry().getDimension()>0;
 			sc1.refreshMathDescription(null, NetworkGenerationRequirements.ComputeFullNoTimeout);
-			String sbmlString = XmlHelper.exportSBML(sc1.getBioModel(), 3, 1, 0, isSpatial, sc1, null);
+			boolean bRoundTripValidation = true;
+			String sbmlString = XmlHelper.exportSBML(sc1.getBioModel(), 3, 1, 0, isSpatial, sc1, null, bRoundTripValidation);
 			File tempFile = File.createTempFile("sbmlSpatialTest_SBML_", ".sbml.xml");
 			FileUtils.write(tempFile, sbmlString);
 			System.out.println(tempFile);
 			
 			try {
 				VCLogger argVCLogger = new TLogger();
-				SBMLImporter importer = new SBMLImporter(tempFile.getAbsolutePath(), argVCLogger, isSpatial);
+				SBMLImporter importer = new SBMLImporter(tempFile.getAbsolutePath(), argVCLogger, true);
 				BioModel bioModel2 = importer.getBioModel();
 				File tempFile2 = File.createTempFile("sbmlSpatialTest_Biomodel_", ".vcml.xml");
 				FileUtils.write(tempFile2, XmlHelper.bioModelToXML(bioModel2));

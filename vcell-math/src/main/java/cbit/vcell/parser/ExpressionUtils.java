@@ -213,6 +213,43 @@ private static SimpleNode createTerminalNode(java.util.Random random, boolean bI
 		return new ASTFloatNode(random.nextDouble());
 	}
 }
+
+public static Expression simplifyUsingJSCL(Expression exp) throws ExpressionException {
+
+	jscl.math.Expression jsclExpression = null;
+	String jsclExpressionString = exp.infix_JSCL();
+	try {
+		jsclExpression = jscl.math.Expression.valueOf(jsclExpressionString);
+	}catch (jscl.text.ParseException e){
+		throw new ExpressionException("JSCL couldn't parse \""+jsclExpressionString+"\"");
+	}
+
+	jscl.math.Generic jsclSolution = jsclExpression.expand().simplify().factorize();
+	cbit.vcell.parser.Expression firstSolution = new cbit.vcell.parser.Expression(jsclSolution.toString());
+
+	firstSolution = firstSolution.flatten();
+
+	jsclExpressionString = firstSolution.infix_JSCL();
+	try {
+		jsclExpression = jscl.math.Expression.valueOf(jsclExpressionString);
+	}catch (jscl.text.ParseException e){
+		throw new ExpressionException("JSCL couldn't parse \""+jsclExpressionString+"\"");
+	}
+
+	jsclSolution = jsclExpression.expand().simplify().factorize();
+	Expression solution = new cbit.vcell.parser.Expression(jsclSolution.toString());
+
+	String[] jsclSymbols = solution.getSymbols();
+	for (int i = 0;jsclSymbols!=null && i < jsclSymbols.length; i++){
+		String restoredSymbol = cbit.vcell.parser.SymbolUtils.getRestoredStringJSCL(jsclSymbols[i]);
+		if (!restoredSymbol.equals(jsclSymbols[i])){
+			solution.substituteInPlace(new cbit.vcell.parser.Expression(jsclSymbols[i]),new cbit.vcell.parser.Expression(restoredSymbol));
+		}
+	}
+
+	return solution.flatten();
+}
+
 /**
  * Insert the method's description here.
  * Creation date: (10/17/2002 12:42:18 AM)

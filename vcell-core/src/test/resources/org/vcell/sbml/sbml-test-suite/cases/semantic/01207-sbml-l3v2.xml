@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sbml xmlns="http://www.sbml.org/sbml/level3/version2/core" level="3" version="2">
+  <model id="case01207" name="case01207">
+    <listOfCompartments>
+      <compartment id="C1" spatialDimensions="3" size="0.5" constant="false"/>
+    </listOfCompartments>
+    <listOfSpecies>
+      <species id="S1" compartment="C1" initialAmount="3" hasOnlySubstanceUnits="true" boundaryCondition="true" constant="false"/>
+    </listOfSpecies>
+    <listOfParameters>
+      <parameter id="x" constant="false"/>
+    </listOfParameters>
+    <listOfRules>
+      <rateRule variable="S1">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <cn type="integer"> 0 </cn>
+        </math>
+      </rateRule>
+      <rateRule variable="C1">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <cn> 0.2 </cn>
+        </math>
+      </rateRule>
+      <assignmentRule variable="x">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <divide/>
+            <ci> S1 </ci>
+            <ci> C1 </ci>
+          </apply>
+        </math>
+      </assignmentRule>
+    </listOfRules>
+  </model>
+</sbml>

@@ -75,7 +75,7 @@ public static void testMathML(Expression[] expressions) {
 			}
 			try {
 				cbit.vcell.parser.ExpressionMathMLParser expMathParser = new cbit.vcell.parser.ExpressionMathMLParser(null);
-				newExp = expMathParser.fromMathML(expMathMLStr);
+				newExp = expMathParser.fromMathML(expMathMLStr, "t");
 				boolean equivalent3 = cbit.vcell.parser.ExpressionUtils.functionallyEquivalent(exp, newExp, false);
 				equiv3 = (equivalent3) ? 1 : 0;
 			} catch (Exception e) {

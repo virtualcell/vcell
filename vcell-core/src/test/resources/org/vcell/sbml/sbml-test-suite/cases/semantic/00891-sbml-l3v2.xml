@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sbml xmlns="http://www.sbml.org/sbml/level3/version2/core" level="3" version="2">
+  <model metaid="_case00891" id="case00891" name="case00891" timeUnits="time">
+    <listOfUnitDefinitions>
+      <unitDefinition id="time">
+        <listOfUnits>
+          <unit kind="second" exponent="1" scale="0" multiplier="1"/>
+        </listOfUnits>
+      </unitDefinition>
+    </listOfUnitDefinitions>
+    <listOfParameters>
+      <parameter id="k1" name="k1" value="0.00015" constant="false"/>
+      <parameter id="k2" name="k2" value="0" constant="false"/>
+      <parameter id="k3" name="k3" value="1" constant="true"/>
+    </listOfParameters>
+    <listOfRules>
+      <rateRule metaid="rule1" variable="k1">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <times/>
+            <cn type="integer"> -1 </cn>
+            <ci> k1 </ci>
+            <ci> k3 </ci>
+            <csymbol encoding="text" definitionURL="http://www.sbml.org/sbml/symbols/time"> t </csymbol>
+          </apply>
+        </math>
+      </rateRule>
+      <rateRule metaid="rule2" variable="k2">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <times/>
+            <ci> k1 </ci>
+            <ci> k3 </ci>
+            <csymbol encoding="text" definitionURL="http://www.sbml.org/sbml/symbols/time"> t </csymbol>
+          </apply>
+        </math>
+      </rateRule>
+    </listOfRules>
+  </model>
+</sbml>

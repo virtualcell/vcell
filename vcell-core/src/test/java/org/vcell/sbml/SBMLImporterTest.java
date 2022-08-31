@@ -2,6 +2,7 @@ package org.vcell.sbml;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.HashMap;
 
 import javax.xml.stream.XMLStreamException;
@@ -13,13 +14,12 @@ import org.vcell.sbml.vcell.SBMLImporter;
 import cbit.util.xml.VCLogger;
 import cbit.vcell.biomodel.BioModel;
 
-@Ignore
 public class SBMLImporterTest {
 
 	public static void main(String[] args) {
 		try {
 			VCLogger vcl = new TLogger();
-		SBMLImporter imp = new SBMLImporter("samp.sbml", vcl,false); 
+		SBMLImporter imp = new SBMLImporter("samp.sbml", vcl, true);
 		for (;;) {
 			/*
 			JFileChooser jfc = new JFileChooser( new File(System.getProperty("user.dir")));
@@ -47,11 +47,11 @@ public class SBMLImporterTest {
 		XOR_MISSING,
 		JSBML_ERROR		// seems like a bug in jsbml  RenderParser.processEndDocument() ... line 403 ... wrong constant for extension name
 	};
-	
-	
-	
+
+
+	@Ignore
 	@Test
-	public void testImport() throws XMLStreamException, IOException{
+	public void testBioModelsCuratedImport() throws Exception{
 		HashMap<Integer,FAULT> faults = new HashMap();
 		faults.put(6, FAULT.RESERVED_WORD);
 		faults.put(15, FAULT.RESERVED_WORD);
@@ -123,32 +123,34 @@ public class SBMLImporterTest {
 		faults.put(402, FAULT.RESERVED_WORD);
 		faults.put(403, FAULT.RESERVED_WORD);
 		faults.put(405, FAULT.INCONSISTENT_UNIT_SYSTEM);
-		
-		
-		
+
+
+
 		faults.put(539, FAULT.JSBML_ERROR);
-		
+
 		File[] sbmlFiles = SBMLUnitTranslatorTest.getBiomodelsCuratedSBMLFiles();
 //		File[] sbmlFiles = new File[] {
 //				new File("/Users/schaff/Documents/workspace-maven/BioModels_Database-r30_pub-sbml_files/curated/BIOMD0000000001.xml"),
 //				new File("/Users/schaff/Documents/workspace-maven/BioModels_Database-r30_pub-sbml_files/curated/BIOMD0000000101.xml"),
 //			new File("/Users/schaff/Documents/workspace-maven/sbml-test-suite/cases/semantic/00001/00001-sbml-l3v1.xml")
 //		};
-		
+
 		VCLogger vcl = new TLogger();
 		int start = 401;
+
 		for (int index=start; index<sbmlFiles.length; index++){
 			File sbmlFile = sbmlFiles[index];
 			int sbmlNumber = Integer.parseInt(sbmlFile.getName().substring(6).replace(".xml", ""));
-			
+
 			if (faults.containsKey(sbmlNumber)){
 				System.err.println("skipping this model, "+faults.get(sbmlNumber).name());
 				continue;
 			}
 			System.out.println("testing "+sbmlFile);
-			SBMLImporter importer = new SBMLImporter(sbmlFile.getAbsolutePath(), vcl, false);
+			SBMLImporter importer = new SBMLImporter(sbmlFile.getAbsolutePath(), vcl, true);
 			BioModel bioModel = importer.getBioModel();
 		}
-		
+
 	}
+
 }

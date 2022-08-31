@@ -1,0 +1,361 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sbml xmlns="http://www.sbml.org/sbml/level3/version2/core" level="3" version="2">
+  <model id="case000958" name="case000958" timeUnits="time">
+    <notes>
+      <body xmlns="http://www.w3.org/1999/xhtml">
+        <p> Originally created by libAntimony v1.4 (using libSBML 5.0.0-a1) </p>
+      </body>
+    </notes>
+    <listOfUnitDefinitions>
+      <unitDefinition id="volume">
+        <listOfUnits>
+          <unit kind="litre" exponent="1" scale="0" multiplier="1"/>
+        </listOfUnits>
+      </unitDefinition>
+      <unitDefinition id="time">
+        <listOfUnits>
+          <unit kind="second" exponent="1" scale="0" multiplier="1"/>
+        </listOfUnits>
+      </unitDefinition>
+    </listOfUnitDefinitions>
+    <listOfParameters>
+      <parameter id="P1" constant="true"/>
+      <parameter id="P3" constant="true"/>
+      <parameter id="P4" constant="true"/>
+      <parameter id="P5" constant="true"/>
+      <parameter id="P6" constant="true"/>
+      <parameter id="P7" constant="true"/>
+      <parameter id="P8" constant="true"/>
+      <parameter id="P9" constant="true"/>
+      <parameter id="P10" constant="true"/>
+      <parameter id="P11" constant="true"/>
+      <parameter id="P12" constant="true"/>
+      <parameter id="P13" constant="true"/>
+      <parameter id="P14" constant="true"/>
+      <parameter id="P15" constant="true"/>
+      <parameter id="P16" constant="true"/>
+      <parameter id="P17" constant="true"/>
+      <parameter id="P18" constant="true"/>
+      <parameter id="P19" constant="true"/>
+      <parameter id="P20" constant="true"/>
+      <parameter id="P21" constant="true"/>
+      <parameter id="P22" constant="true"/>
+      <parameter id="P23" constant="true"/>
+      <parameter id="P24" constant="true"/>
+      <parameter id="P25" constant="true"/>
+      <parameter id="P26" constant="true"/>
+      <parameter id="P27" constant="true"/>
+      <parameter id="P28" constant="true"/>
+      <parameter id="P29" constant="true"/>
+    </listOfParameters>
+    <listOfInitialAssignments>
+      <initialAssignment symbol="P1">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <pi/>
+        </math>
+      </initialAssignment>
+      <initialAssignment symbol="P3">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <piecewise>
+            <piece>
+              <cn type="integer"> 2 </cn>
+              <apply>
+                <gt/>
+                <cn type="integer"> 1 </cn>
+                <cn> 0.5 </cn>
+              </apply>
+            </piece>
+            <otherwise>
+              <cn type="integer"> 3 </cn>
+            </otherwise>
+          </piecewise>
+        </math>
+      </initialAssignment>
+      <initialAssignment symbol="P4">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <piecewise>
+            <piece>
+              <cn type="integer"> 2 </cn>
+              <apply>
+                <geq/>
+                <cn type="integer"> 1 </cn>
+                <cn> 0.5 </cn>
+              </apply>
+            </piece>
+            <otherwise>
+              <cn type="integer"> 3 </cn>
+            </otherwise>
+          </piecewise>
+        </math>
+      </initialAssignment>
+      <initialAssignment symbol="P5">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <piecewise>
+            <piece>
+              <cn type="integer"> 2 </cn>
+              <apply>
+                <lt/>
+                <cn type="integer"> 1 </cn>
+                <cn> 0.5 </cn>
+              </apply>
+            </piece>
+            <otherwise>
+              <cn type="integer"> 3 </cn>
+            </otherwise>
+          </piecewise>
+        </math>
+      </initialAssignment>
+      <initialAssignment symbol="P6">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <piecewise>
+            <piece>
+              <cn type="integer"> 2 </cn>
+              <apply>
+                <leq/>
+                <cn type="integer"> 1 </cn>
+                <cn> 0.5 </cn>
+              </apply>
+            </piece>
+            <otherwise>
+              <cn type="integer"> 3 </cn>
+            </otherwise>
+          </piecewise>
+        </math>
+      </initialAssignment>
+      <initialAssignment symbol="P7">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <piecewise>
+            <piece>
+              <cn type="integer"> 2 </cn>
+              <apply>
+                <eq/>
+                <ci> P1 </ci>
+                <pi/>
+              </apply>
+            </piece>
+            <otherwise>
+              <cn type="integer"> 3 </cn>
+            </otherwise>
+          </piecewise>
+        </math>
+      </initialAssignment>
+      <initialAssignment symbol="P8">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <piecewise>
+            <piece>
+              <cn type="integer"> 2 </cn>
+              <apply>
+                <neq/>
+                <ci> P1 </ci>
+                <pi/>
+              </apply>
+            </piece>
+            <otherwise>
+              <cn type="integer"> 3 </cn>
+            </otherwise>
+          </piecewise>
+        </math>
+      </initialAssignment>
+      <initialAssignment symbol="P9">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <factorial/>
+            <cn type="integer"> 4 </cn>
+          </apply>
+        </math>
+      </initialAssignment>
+      <initialAssignment symbol="P10">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <piecewise>
+            <piece>
+              <cn type="integer"> 2 </cn>
+              <apply>
+                <and/>
+                <true/>
+                <false/>
+              </apply>
+            </piece>
+            <otherwise>
+              <cn type="integer"> 3 </cn>
+            </otherwise>
+          </piecewise>
+        </math>
+      </initialAssignment>
+      <initialAssignment symbol="P11">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <piecewise>
+            <piece>
+              <cn type="integer"> 2 </cn>
+              <apply>
+                <or/>
+                <true/>
+                <false/>
+              </apply>
+            </piece>
+            <otherwise>
+              <cn type="integer"> 3 </cn>
+            </otherwise>
+          </piecewise>
+        </math>
+      </initialAssignment>
+      <initialAssignment symbol="P12">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <piecewise>
+            <piece>
+              <cn type="integer"> 2 </cn>
+              <apply>
+                <xor/>
+                <true/>
+                <false/>
+              </apply>
+            </piece>
+            <otherwise>
+              <cn type="integer"> 3 </cn>
+            </otherwise>
+          </piecewise>
+        </math>
+      </initialAssignment>
+      <initialAssignment symbol="P13">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <piecewise>
+            <piece>
+              <cn type="integer"> 2 </cn>
+              <apply>
+                <not/>
+                <false/>
+              </apply>
+            </piece>
+            <otherwise>
+              <cn type="integer"> 3 </cn>
+            </otherwise>
+          </piecewise>
+        </math>
+      </initialAssignment>
+      <initialAssignment symbol="P14">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <sec/>
+            <cn> 0.5 </cn>
+          </apply>
+        </math>
+      </initialAssignment>
+      <initialAssignment symbol="P15">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <csc/>
+            <cn> 4.5 </cn>
+          </apply>
+        </math>
+      </initialAssignment>
+      <initialAssignment symbol="P16">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <cot/>
+            <cn> 0.2 </cn>
+          </apply>
+        </math>
+      </initialAssignment>
+      <initialAssignment symbol="P17">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <sinh/>
+            <cn> 0.3 </cn>
+          </apply>
+        </math>
+      </initialAssignment>
+      <initialAssignment symbol="P18">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <cosh/>
+            <cn> 1.7 </cn>
+          </apply>
+        </math>
+      </initialAssignment>
+      <initialAssignment symbol="P19">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <arcsec/>
+            <cn> 2.3 </cn>
+          </apply>
+        </math>
+      </initialAssignment>
+      <initialAssignment symbol="P20">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <arccsc/>
+            <cn> 1.1 </cn>
+          </apply>
+        </math>
+      </initialAssignment>
+      <initialAssignment symbol="P21">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <arccot/>
+            <cn> -0.1 </cn>
+          </apply>
+        </math>
+      </initialAssignment>
+      <initialAssignment symbol="P22">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <arcsinh/>
+            <cn type="integer"> 99 </cn>
+          </apply>
+        </math>
+      </initialAssignment>
+      <initialAssignment symbol="P23">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <arccosh/>
+            <cn> 1.34 </cn>
+          </apply>
+        </math>
+      </initialAssignment>
+      <initialAssignment symbol="P24">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <arctanh/>
+            <cn> -0.7 </cn>
+          </apply>
+        </math>
+      </initialAssignment>
+      <initialAssignment symbol="P25">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <arcsech/>
+            <cn> 0.42 </cn>
+          </apply>
+        </math>
+      </initialAssignment>
+      <initialAssignment symbol="P26">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <arccsch/>
+            <cn> 0.01 </cn>
+          </apply>
+        </math>
+      </initialAssignment>
+      <initialAssignment symbol="P27">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <arccoth/>
+            <cn> 8.2 </cn>
+          </apply>
+        </math>
+      </initialAssignment>
+      <initialAssignment symbol="P28">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <exponentiale/>
+        </math>
+      </initialAssignment>
+      <initialAssignment symbol="P29">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <exp/>
+            <exponentiale/>
+          </apply>
+        </math>
+      </initialAssignment>
+    </listOfInitialAssignments>
+  </model>
+</sbml>

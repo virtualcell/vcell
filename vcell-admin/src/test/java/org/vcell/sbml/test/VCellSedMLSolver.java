@@ -29,6 +29,7 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import cbit.util.xml.VCLogger;
+import cbit.util.xml.VCLoggerException;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.math.MathDescription;
@@ -302,9 +303,7 @@ public class VCellSedMLSolver {
 
 		// create the VCDocument (bioModel + application + simulation), do sanity checks
 		cbit.util.xml.VCLogger sedmlImportLogger = new LocalLogger();
-		List<AbstractTask> tasks = new ArrayList<AbstractTask>();
-		tasks.add(sedmlTask);
-		List<VCDocument> docs = XmlHelper.sedmlToBioModel(sedmlImportLogger, externalDocInfo, sedml, tasks, null, false);
+		List<BioModel> docs = XmlHelper.importSEDML(sedmlImportLogger, externalDocInfo, sedml, false);
 		VCDocument doc = docs.get(0);
 		sanityCheck(doc);
 		
@@ -491,14 +490,14 @@ public class VCellSedMLSolver {
 
 	private class LocalLogger extends VCLogger {
 		@Override
-		public void sendMessage(Priority p, ErrorType et, String message) throws Exception {
+		public void sendMessage(Priority p, ErrorType et, String message) throws VCLoggerException {
 			System.out.println("LOGGER: msgLevel="+p+", msgType="+et+", "+message);
 			if (p==VCLogger.Priority.HighPriority) {
 				SBMLImportException.Category cat = SBMLImportException.Category.UNSPECIFIED;
 				if (message.contains(SBMLImporter.RESERVED_SPATIAL) ) {
 					cat = SBMLImportException.Category.RESERVED_SPATIAL;
 				}
-				throw new SBMLImportException(message,cat);
+				throw new VCLoggerException(new SBMLImportException(message,cat));
 			}
 		}
 		public void sendAllMessages() {

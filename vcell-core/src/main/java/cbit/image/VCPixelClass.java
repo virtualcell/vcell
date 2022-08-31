@@ -54,23 +54,33 @@ public void clearKey() {
  * @return boolean
  * @param obj java.lang.Object
  */
+@Override
 public boolean compareEqual(Matchable obj) {
-	if (!(obj instanceof VCPixelClass)){
-		return false;
-	}
-	VCPixelClass pc = (VCPixelClass)obj;
-
-	if (pixel != pc.pixel){
-		return false;
-	}
-	if (!Compare.isEqual(pixelClassName,pc.pixelClassName)){
-		return false;
-	}
-	return true;
+	return compareEqual(obj, true);
 }
 
+	public boolean compareEqualIgnoreNames(Matchable obj) {
+		return compareEqual(obj, false);
+	}
 
-/**
+
+	public boolean compareEqual(Matchable obj, boolean bCompareNames) {
+		if (!(obj instanceof VCPixelClass)){
+			return false;
+		}
+		VCPixelClass pc = (VCPixelClass)obj;
+
+		if (pixel != pc.pixel){
+			return false;
+		}
+		if (bCompareNames && !Compare.isEqual(pixelClassName,pc.pixelClassName)){
+			return false;
+		}
+		return true;
+	}
+
+
+	/**
  * This method was created in VisualAge.
  * @param newKey cbit.sql.KeyValue
  */

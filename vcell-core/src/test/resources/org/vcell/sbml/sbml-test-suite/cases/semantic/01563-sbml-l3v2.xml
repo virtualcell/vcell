@@ -1,0 +1,1014 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sbml xmlns="http://www.sbml.org/sbml/level3/version2/core" level="3" version="2">
+  <model id="case01563" name="case01561" >
+    <listOfCompartments>
+      <compartment id="C" spatialDimensions="3" size="1" constant="true"/>
+    </listOfCompartments>
+    <listOfSpecies>
+      <species id="S0" compartment="C" initialConcentration="0" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+      <species id="S1" compartment="C" initialConcentration="0" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+      <species id="S2" compartment="C" initialConcentration="0" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+      <species id="S3" compartment="C" initialConcentration="0" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+      <species id="S4" compartment="C" initialConcentration="0" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+      <species id="S5" compartment="C" initialConcentration="0" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+      <species id="S6" compartment="C" initialConcentration="0" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+      <species id="S7" compartment="C" initialConcentration="0" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+      <species id="S8" compartment="C" initialConcentration="0" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+      <species id="S9" compartment="C" initialConcentration="0" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+      <species id="S10" compartment="C" initialConcentration="0" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+      <species id="S11" compartment="C" initialConcentration="0" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+      <species id="S12" compartment="C" initialConcentration="0" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+      <species id="S13" compartment="C" initialConcentration="0" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+      <species id="S14" compartment="C" initialConcentration="0" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+      <species id="S15" compartment="C" initialConcentration="0" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+      <species id="S16" compartment="C" initialConcentration="0" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+      <species id="S17" compartment="C" initialConcentration="0" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+      <species id="S18" compartment="C" initialConcentration="0" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+      <species id="S19" compartment="C" initialConcentration="0" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+      <species id="S20" compartment="C" initialConcentration="0" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+      <species id="S21" compartment="C" initialConcentration="0" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+      <species id="S22" compartment="C" initialConcentration="0" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+      <species id="S23" compartment="C" initialConcentration="0" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+      <species id="S24" compartment="C" initialConcentration="0" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+      <species id="S25" compartment="C" initialConcentration="0" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+      <species id="S26" compartment="C" initialConcentration="0" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+      <species id="S27" compartment="C" initialConcentration="0" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+      <species id="S28" compartment="C" initialConcentration="0" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+      <species id="S29" compartment="C" initialConcentration="0" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+      <species id="S30" compartment="C" initialConcentration="0" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+      <species id="S31" compartment="C" initialConcentration="0" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+      <species id="S32" compartment="C" initialConcentration="0" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+      <species id="S33" compartment="C" initialConcentration="0" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+      <species id="S34" compartment="C" initialConcentration="0" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+      <species id="S35" compartment="C" initialConcentration="0" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+      <species id="S36" compartment="C" initialConcentration="0" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+      <species id="S37" compartment="C" initialConcentration="0" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+      <species id="S38" compartment="C" initialConcentration="0" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+      <species id="S39" compartment="C" initialConcentration="0" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+      <species id="S40" compartment="C" initialConcentration="0" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+      <species id="S41" compartment="C" initialConcentration="0" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+      <species id="S42" compartment="C" initialConcentration="0" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+      <species id="S43" compartment="C" initialConcentration="0" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+      <species id="S44" compartment="C" initialConcentration="0" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+      <species id="S45" compartment="C" initialConcentration="0" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+      <species id="S46" compartment="C" initialConcentration="0" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+      <species id="S47" compartment="C" initialConcentration="0" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+      <species id="S48" compartment="C" initialConcentration="0" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+      <species id="S49" compartment="C" initialConcentration="0" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+      <species id="S50" compartment="C" initialConcentration="0" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+      <species id="S51" compartment="C" initialConcentration="0" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+    </listOfSpecies>
+    <listOfRules>
+      <rateRule variable="S0_stoich">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <exponentiale/>
+        </math>
+      </rateRule>
+      <rateRule variable="S1_stoich">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <exp/>
+            <exponentiale/>
+          </apply>
+        </math>
+      </rateRule>
+      <rateRule variable="S2_stoich">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <abs/>
+            <cn type="integer"> -1 </cn>
+          </apply>
+        </math>
+      </rateRule>
+      <rateRule variable="S3_stoich">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <abs/>
+            <cn type="integer"> 1 </cn>
+          </apply>
+        </math>
+      </rateRule>
+      <rateRule variable="S4_stoich">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <arccos/>
+            <cn type="integer"> -1 </cn>
+          </apply>
+        </math>
+      </rateRule>
+      <rateRule variable="S5_stoich">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <arccos/>
+            <cn> 0.5 </cn>
+          </apply>
+        </math>
+      </rateRule>
+      <rateRule variable="S6_stoich">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <arcsin/>
+            <cn type="integer"> 1 </cn>
+          </apply>
+        </math>
+      </rateRule>
+      <rateRule variable="S7_stoich">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <arcsin/>
+            <cn> -0.5 </cn>
+          </apply>
+        </math>
+      </rateRule>
+      <rateRule variable="S8_stoich">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <arctan/>
+            <cn> 2.8 </cn>
+          </apply>
+        </math>
+      </rateRule>
+      <rateRule variable="S9_stoich">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <arctan/>
+            <cn> -7.09 </cn>
+          </apply>
+        </math>
+      </rateRule>
+      <rateRule variable="S10_stoich">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <ceiling/>
+            <cn> 0.5 </cn>
+          </apply>
+        </math>
+      </rateRule>
+      <rateRule variable="S11_stoich">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <ceiling/>
+            <cn> 3.55 </cn>
+          </apply>
+        </math>
+      </rateRule>
+      <rateRule variable="S12_stoich">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <ceiling/>
+            <cn> -4.6 </cn>
+          </apply>
+        </math>
+      </rateRule>
+      <rateRule variable="S13_stoich">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <cos/>
+            <cn> 9.1 </cn>
+          </apply>
+        </math>
+      </rateRule>
+      <rateRule variable="S14_stoich">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <cos/>
+            <cn> -0.22 </cn>
+          </apply>
+        </math>
+      </rateRule>
+      <rateRule variable="S15_stoich">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <exp/>
+            <cn type="integer"> 0 </cn>
+          </apply>
+        </math>
+      </rateRule>
+      <rateRule variable="S16_stoich">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <exp/>
+            <cn type="integer"> 1 </cn>
+          </apply>
+        </math>
+      </rateRule>
+      <rateRule variable="S17_stoich">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <exp/>
+            <cn> 0.77 </cn>
+          </apply>
+        </math>
+      </rateRule>
+      <rateRule variable="S18_stoich">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <floor/>
+            <cn> -4.6 </cn>
+          </apply>
+        </math>
+      </rateRule>
+      <rateRule variable="S19_stoich">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <floor/>
+            <cn> 9.1 </cn>
+          </apply>
+        </math>
+      </rateRule>
+      <rateRule variable="S20_stoich">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <ln/>
+            <cn> 0.2 </cn>
+          </apply>
+        </math>
+      </rateRule>
+      <rateRule variable="S21_stoich">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <ln/>
+            <cn type="integer"> 1 </cn>
+          </apply>
+        </math>
+      </rateRule>
+      <rateRule variable="S22_stoich">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <log/>
+            <logbase>
+              <cn type="integer"> 10 </cn>
+            </logbase>
+            <cn> 0.2 </cn>
+          </apply>
+        </math>
+      </rateRule>
+      <rateRule variable="S23_stoich">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <log/>
+            <logbase>
+              <cn type="integer"> 10 </cn>
+            </logbase>
+            <cn type="integer"> 1 </cn>
+          </apply>
+        </math>
+      </rateRule>
+      <rateRule variable="S24_stoich">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <power/>
+            <cn type="integer"> 1 </cn>
+            <cn type="integer"> 2 </cn>
+          </apply>
+        </math>
+      </rateRule>
+      <rateRule variable="S25_stoich">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <power/>
+            <cn type="integer"> 2 </cn>
+            <cn type="integer"> 2 </cn>
+          </apply>
+        </math>
+      </rateRule>
+      <rateRule variable="S26_stoich">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <power/>
+            <cn> 1.4 </cn>
+            <cn> 5.1 </cn>
+          </apply>
+        </math>
+      </rateRule>
+      <rateRule variable="S27_stoich">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <power/>
+            <cn type="integer"> 4 </cn>
+            <cn type="integer"> 2 </cn>
+          </apply>
+        </math>
+      </rateRule>
+      <rateRule variable="S28_stoich">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <power/>
+            <cn> 3.1 </cn>
+            <cn type="integer"> 2 </cn>
+          </apply>
+        </math>
+      </rateRule>
+      <rateRule variable="S29_stoich">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <root/>
+            <degree>
+              <cn type="integer"> 2 </cn>
+            </degree>
+            <cn type="integer"> 4 </cn>
+          </apply>
+        </math>
+      </rateRule>
+      <rateRule variable="S30_stoich">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <root/>
+            <degree>
+              <cn type="integer"> 2 </cn>
+            </degree>
+            <cn> 7.4 </cn>
+          </apply>
+        </math>
+      </rateRule>
+      <rateRule variable="S31_stoich">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <sin/>
+            <cn> 2.1 </cn>
+          </apply>
+        </math>
+      </rateRule>
+      <rateRule variable="S32_stoich">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <sin/>
+            <cn type="integer"> 0 </cn>
+          </apply>
+        </math>
+      </rateRule>
+      <rateRule variable="S33_stoich">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <sin/>
+            <cn> -5.9 </cn>
+          </apply>
+        </math>
+      </rateRule>
+      <rateRule variable="S34_stoich">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <tan/>
+            <cn type="integer"> 0 </cn>
+          </apply>
+        </math>
+      </rateRule>
+      <rateRule variable="S35_stoich">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <tan/>
+            <cn> 1.11 </cn>
+          </apply>
+        </math>
+      </rateRule>
+      <rateRule variable="S36_stoich">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <tan/>
+            <cn type="integer"> -6 </cn>
+          </apply>
+        </math>
+      </rateRule>
+      <rateRule variable="S37_stoich">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <sec/>
+            <cn> 0.5 </cn>
+          </apply>
+        </math>
+      </rateRule>
+      <rateRule variable="S38_stoich">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <csc/>
+            <cn> 4.5 </cn>
+          </apply>
+        </math>
+      </rateRule>
+      <rateRule variable="S39_stoich">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <cot/>
+            <cn> 0.2 </cn>
+          </apply>
+        </math>
+      </rateRule>
+      <rateRule variable="S40_stoich">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <sinh/>
+            <cn> 0.3 </cn>
+          </apply>
+        </math>
+      </rateRule>
+      <rateRule variable="S41_stoich">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <cosh/>
+            <cn> 1.7 </cn>
+          </apply>
+        </math>
+      </rateRule>
+      <rateRule variable="S42_stoich">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <arcsec/>
+            <cn> 2.3 </cn>
+          </apply>
+        </math>
+      </rateRule>
+      <rateRule variable="S43_stoich">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <arccsc/>
+            <cn> 1.1 </cn>
+          </apply>
+        </math>
+      </rateRule>
+      <rateRule variable="S44_stoich">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <arccot/>
+            <cn> -0.1 </cn>
+          </apply>
+        </math>
+      </rateRule>
+      <rateRule variable="S45_stoich">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <arcsinh/>
+            <cn type="integer"> 99 </cn>
+          </apply>
+        </math>
+      </rateRule>
+      <rateRule variable="S46_stoich">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <arccosh/>
+            <cn> 1.34 </cn>
+          </apply>
+        </math>
+      </rateRule>
+      <rateRule variable="S47_stoich">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <arctanh/>
+            <cn> -0.7 </cn>
+          </apply>
+        </math>
+      </rateRule>
+      <rateRule variable="S48_stoich">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <arcsech/>
+            <cn> 0.42 </cn>
+          </apply>
+        </math>
+      </rateRule>
+      <rateRule variable="S49_stoich">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <arccsch/>
+            <cn> 0.01 </cn>
+          </apply>
+        </math>
+      </rateRule>
+      <rateRule variable="S50_stoich">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <times/>
+          </apply>
+        </math>
+      </rateRule>
+      <rateRule variable="S51_stoich">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <plus/>
+          </apply>
+        </math>
+      </rateRule>
+    </listOfRules>
+    <listOfReactions>
+      <reaction id="J0" reversible="true">
+        <listOfProducts>
+          <speciesReference stoichiometry="0" id="S0_stoich" species="S0" constant="false"/>
+        </listOfProducts>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <cn type="integer"> 1 </cn>
+          </math>
+        </kineticLaw>
+      </reaction>
+      <reaction id="J1" reversible="true">
+        <listOfProducts>
+          <speciesReference stoichiometry="0" id="S1_stoich" species="S1" constant="false"/>
+        </listOfProducts>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <cn type="integer"> 1 </cn>
+          </math>
+        </kineticLaw>
+      </reaction>
+      <reaction id="J2" reversible="true">
+        <listOfProducts>
+          <speciesReference stoichiometry="0" id="S2_stoich" species="S2" constant="false"/>
+        </listOfProducts>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <cn type="integer"> 1 </cn>
+          </math>
+        </kineticLaw>
+      </reaction>
+      <reaction id="J3" reversible="true">
+        <listOfProducts>
+          <speciesReference stoichiometry="0" id="S3_stoich" species="S3" constant="false"/>
+        </listOfProducts>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <cn type="integer"> 1 </cn>
+          </math>
+        </kineticLaw>
+      </reaction>
+      <reaction id="J4" reversible="true">
+        <listOfProducts>
+          <speciesReference stoichiometry="0" id="S4_stoich" species="S4" constant="false"/>
+        </listOfProducts>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <cn type="integer"> 1 </cn>
+          </math>
+        </kineticLaw>
+      </reaction>
+      <reaction id="J5" reversible="true">
+        <listOfProducts>
+          <speciesReference stoichiometry="0" id="S5_stoich" species="S5" constant="false"/>
+        </listOfProducts>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <cn type="integer"> 1 </cn>
+          </math>
+        </kineticLaw>
+      </reaction>
+      <reaction id="J6" reversible="true">
+        <listOfProducts>
+          <speciesReference stoichiometry="0" id="S6_stoich" species="S6" constant="false"/>
+        </listOfProducts>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <cn type="integer"> 1 </cn>
+          </math>
+        </kineticLaw>
+      </reaction>
+      <reaction id="J7" reversible="true">
+        <listOfProducts>
+          <speciesReference stoichiometry="0" id="S7_stoich" species="S7" constant="false"/>
+        </listOfProducts>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <cn type="integer"> 1 </cn>
+          </math>
+        </kineticLaw>
+      </reaction>
+      <reaction id="J8" reversible="true">
+        <listOfProducts>
+          <speciesReference stoichiometry="0" id="S8_stoich" species="S8" constant="false"/>
+        </listOfProducts>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <cn type="integer"> 1 </cn>
+          </math>
+        </kineticLaw>
+      </reaction>
+      <reaction id="J9" reversible="true">
+        <listOfProducts>
+          <speciesReference stoichiometry="0" id="S9_stoich" species="S9" constant="false"/>
+        </listOfProducts>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <cn type="integer"> 1 </cn>
+          </math>
+        </kineticLaw>
+      </reaction>
+      <reaction id="J10" reversible="true">
+        <listOfProducts>
+          <speciesReference stoichiometry="0" id="S10_stoich" species="S10" constant="false"/>
+        </listOfProducts>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <cn type="integer"> 1 </cn>
+          </math>
+        </kineticLaw>
+      </reaction>
+      <reaction id="J11" reversible="true">
+        <listOfProducts>
+          <speciesReference stoichiometry="0" id="S11_stoich" species="S11" constant="false"/>
+        </listOfProducts>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <cn type="integer"> 1 </cn>
+          </math>
+        </kineticLaw>
+      </reaction>
+      <reaction id="J12" reversible="true">
+        <listOfProducts>
+          <speciesReference stoichiometry="0" id="S12_stoich" species="S12" constant="false"/>
+        </listOfProducts>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <cn type="integer"> 1 </cn>
+          </math>
+        </kineticLaw>
+      </reaction>
+      <reaction id="J13" reversible="true">
+        <listOfProducts>
+          <speciesReference stoichiometry="0" id="S13_stoich" species="S13" constant="false"/>
+        </listOfProducts>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <cn type="integer"> 1 </cn>
+          </math>
+        </kineticLaw>
+      </reaction>
+      <reaction id="J14" reversible="true">
+        <listOfProducts>
+          <speciesReference stoichiometry="0" id="S14_stoich" species="S14" constant="false"/>
+        </listOfProducts>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <cn type="integer"> 1 </cn>
+          </math>
+        </kineticLaw>
+      </reaction>
+      <reaction id="J15" reversible="true">
+        <listOfProducts>
+          <speciesReference stoichiometry="0" id="S15_stoich" species="S15" constant="false"/>
+        </listOfProducts>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <cn type="integer"> 1 </cn>
+          </math>
+        </kineticLaw>
+      </reaction>
+      <reaction id="J16" reversible="true">
+        <listOfProducts>
+          <speciesReference stoichiometry="0" id="S16_stoich" species="S16" constant="false"/>
+        </listOfProducts>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <cn type="integer"> 1 </cn>
+          </math>
+        </kineticLaw>
+      </reaction>
+      <reaction id="J17" reversible="true">
+        <listOfProducts>
+          <speciesReference stoichiometry="0" id="S17_stoich" species="S17" constant="false"/>
+        </listOfProducts>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <cn type="integer"> 1 </cn>
+          </math>
+        </kineticLaw>
+      </reaction>
+      <reaction id="J18" reversible="true">
+        <listOfProducts>
+          <speciesReference stoichiometry="0" id="S18_stoich" species="S18" constant="false"/>
+        </listOfProducts>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <cn type="integer"> 1 </cn>
+          </math>
+        </kineticLaw>
+      </reaction>
+      <reaction id="J19" reversible="true">
+        <listOfProducts>
+          <speciesReference stoichiometry="0" id="S19_stoich" species="S19" constant="false"/>
+        </listOfProducts>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <cn type="integer"> 1 </cn>
+          </math>
+        </kineticLaw>
+      </reaction>
+      <reaction id="J20" reversible="true">
+        <listOfProducts>
+          <speciesReference stoichiometry="0" id="S20_stoich" species="S20" constant="false"/>
+        </listOfProducts>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <cn type="integer"> 1 </cn>
+          </math>
+        </kineticLaw>
+      </reaction>
+      <reaction id="J21" reversible="true">
+        <listOfProducts>
+          <speciesReference stoichiometry="0" id="S21_stoich" species="S21" constant="false"/>
+        </listOfProducts>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <cn type="integer"> 1 </cn>
+          </math>
+        </kineticLaw>
+      </reaction>
+      <reaction id="J22" reversible="true">
+        <listOfProducts>
+          <speciesReference stoichiometry="0" id="S22_stoich" species="S22" constant="false"/>
+        </listOfProducts>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <cn type="integer"> 1 </cn>
+          </math>
+        </kineticLaw>
+      </reaction>
+      <reaction id="J23" reversible="true">
+        <listOfProducts>
+          <speciesReference stoichiometry="0" id="S23_stoich" species="S23" constant="false"/>
+        </listOfProducts>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <cn type="integer"> 1 </cn>
+          </math>
+        </kineticLaw>
+      </reaction>
+      <reaction id="J24" reversible="true">
+        <listOfProducts>
+          <speciesReference stoichiometry="0" id="S24_stoich" species="S24" constant="false"/>
+        </listOfProducts>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <cn type="integer"> 1 </cn>
+          </math>
+        </kineticLaw>
+      </reaction>
+      <reaction id="J25" reversible="true">
+        <listOfProducts>
+          <speciesReference stoichiometry="0" id="S25_stoich" species="S25" constant="false"/>
+        </listOfProducts>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <cn type="integer"> 1 </cn>
+          </math>
+        </kineticLaw>
+      </reaction>
+      <reaction id="J26" reversible="true">
+        <listOfProducts>
+          <speciesReference stoichiometry="0" id="S26_stoich" species="S26" constant="false"/>
+        </listOfProducts>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <cn type="integer"> 1 </cn>
+          </math>
+        </kineticLaw>
+      </reaction>
+      <reaction id="J27" reversible="true">
+        <listOfProducts>
+          <speciesReference stoichiometry="0" id="S27_stoich" species="S27" constant="false"/>
+        </listOfProducts>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <cn type="integer"> 1 </cn>
+          </math>
+        </kineticLaw>
+      </reaction>
+      <reaction id="J28" reversible="true">
+        <listOfProducts>
+          <speciesReference stoichiometry="0" id="S28_stoich" species="S28" constant="false"/>
+        </listOfProducts>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <cn type="integer"> 1 </cn>
+          </math>
+        </kineticLaw>
+      </reaction>
+      <reaction id="J29" reversible="true">
+        <listOfProducts>
+          <speciesReference stoichiometry="0" id="S29_stoich" species="S29" constant="false"/>
+        </listOfProducts>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <cn type="integer"> 1 </cn>
+          </math>
+        </kineticLaw>
+      </reaction>
+      <reaction id="J30" reversible="true">
+        <listOfProducts>
+          <speciesReference stoichiometry="0" id="S30_stoich" species="S30" constant="false"/>
+        </listOfProducts>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <cn type="integer"> 1 </cn>
+          </math>
+        </kineticLaw>
+      </reaction>
+      <reaction id="J31" reversible="true">
+        <listOfProducts>
+          <speciesReference stoichiometry="0" id="S31_stoich" species="S31" constant="false"/>
+        </listOfProducts>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <cn type="integer"> 1 </cn>
+          </math>
+        </kineticLaw>
+      </reaction>
+      <reaction id="J32" reversible="true">
+        <listOfProducts>
+          <speciesReference stoichiometry="0" id="S32_stoich" species="S32" constant="false"/>
+        </listOfProducts>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <cn type="integer"> 1 </cn>
+          </math>
+        </kineticLaw>
+      </reaction>
+      <reaction id="J33" reversible="true">
+        <listOfProducts>
+          <speciesReference stoichiometry="0" id="S33_stoich" species="S33" constant="false"/>
+        </listOfProducts>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <cn type="integer"> 1 </cn>
+          </math>
+        </kineticLaw>
+      </reaction>
+      <reaction id="J34" reversible="true">
+        <listOfProducts>
+          <speciesReference stoichiometry="0" id="S34_stoich" species="S34" constant="false"/>
+        </listOfProducts>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <cn type="integer"> 1 </cn>
+          </math>
+        </kineticLaw>
+      </reaction>
+      <reaction id="J35" reversible="true">
+        <listOfProducts>
+          <speciesReference stoichiometry="0" id="S35_stoich" species="S35" constant="false"/>
+        </listOfProducts>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <cn type="integer"> 1 </cn>
+          </math>
+        </kineticLaw>
+      </reaction>
+      <reaction id="J36" reversible="true">
+        <listOfProducts>
+          <speciesReference stoichiometry="0" id="S36_stoich" species="S36" constant="false"/>
+        </listOfProducts>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <cn type="integer"> 1 </cn>
+          </math>
+        </kineticLaw>
+      </reaction>
+      <reaction id="J37" reversible="true">
+        <listOfProducts>
+          <speciesReference stoichiometry="0" id="S37_stoich" species="S37" constant="false"/>
+        </listOfProducts>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <cn type="integer"> 1 </cn>
+          </math>
+        </kineticLaw>
+      </reaction>
+      <reaction id="J38" reversible="true">
+        <listOfProducts>
+          <speciesReference stoichiometry="0" id="S38_stoich" species="S38" constant="false"/>
+        </listOfProducts>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <cn type="integer"> 1 </cn>
+          </math>
+        </kineticLaw>
+      </reaction>
+      <reaction id="J39" reversible="true">
+        <listOfProducts>
+          <speciesReference stoichiometry="0" id="S39_stoich" species="S39" constant="false"/>
+        </listOfProducts>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <cn type="integer"> 1 </cn>
+          </math>
+        </kineticLaw>
+      </reaction>
+      <reaction id="J40" reversible="true">
+        <listOfProducts>
+          <speciesReference stoichiometry="0" id="S40_stoich" species="S40" constant="false"/>
+        </listOfProducts>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <cn type="integer"> 1 </cn>
+          </math>
+        </kineticLaw>
+      </reaction>
+      <reaction id="J41" reversible="true">
+        <listOfProducts>
+          <speciesReference stoichiometry="0" id="S41_stoich" species="S41" constant="false"/>
+        </listOfProducts>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <cn type="integer"> 1 </cn>
+          </math>
+        </kineticLaw>
+      </reaction>
+      <reaction id="J42" reversible="true">
+        <listOfProducts>
+          <speciesReference stoichiometry="0" id="S42_stoich" species="S42" constant="false"/>
+        </listOfProducts>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <cn type="integer"> 1 </cn>
+          </math>
+        </kineticLaw>
+      </reaction>
+      <reaction id="J43" reversible="true">
+        <listOfProducts>
+          <speciesReference stoichiometry="0" id="S43_stoich" species="S43" constant="false"/>
+        </listOfProducts>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <cn type="integer"> 1 </cn>
+          </math>
+        </kineticLaw>
+      </reaction>
+      <reaction id="J44" reversible="true">
+        <listOfProducts>
+          <speciesReference stoichiometry="0" id="S44_stoich" species="S44" constant="false"/>
+        </listOfProducts>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <cn type="integer"> 1 </cn>
+          </math>
+        </kineticLaw>
+      </reaction>
+      <reaction id="J45" reversible="true">
+        <listOfProducts>
+          <speciesReference stoichiometry="0" id="S45_stoich" species="S45" constant="false"/>
+        </listOfProducts>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <cn type="integer"> 1 </cn>
+          </math>
+        </kineticLaw>
+      </reaction>
+      <reaction id="J46" reversible="true">
+        <listOfProducts>
+          <speciesReference stoichiometry="0" id="S46_stoich" species="S46" constant="false"/>
+        </listOfProducts>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <cn type="integer"> 1 </cn>
+          </math>
+        </kineticLaw>
+      </reaction>
+      <reaction id="J47" reversible="true">
+        <listOfProducts>
+          <speciesReference stoichiometry="0" id="S47_stoich" species="S47" constant="false"/>
+        </listOfProducts>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <cn type="integer"> 1 </cn>
+          </math>
+        </kineticLaw>
+      </reaction>
+      <reaction id="J48" reversible="true">
+        <listOfProducts>
+          <speciesReference stoichiometry="0" id="S48_stoich" species="S48" constant="false"/>
+        </listOfProducts>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <cn type="integer"> 1 </cn>
+          </math>
+        </kineticLaw>
+      </reaction>
+      <reaction id="J49" reversible="true">
+        <listOfProducts>
+          <speciesReference stoichiometry="0" id="S49_stoich" species="S49" constant="false"/>
+        </listOfProducts>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <cn type="integer"> 1 </cn>
+          </math>
+        </kineticLaw>
+      </reaction>
+      <reaction id="J50" reversible="true">
+        <listOfProducts>
+          <speciesReference stoichiometry="0" id="S50_stoich" species="S50" constant="false"/>
+        </listOfProducts>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <cn type="integer"> 1 </cn>
+          </math>
+        </kineticLaw>
+      </reaction>
+      <reaction id="J51" reversible="true">
+        <listOfProducts>
+          <speciesReference stoichiometry="0" id="S51_stoich" species="S51" constant="false"/>
+        </listOfProducts>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <cn type="integer"> 1 </cn>
+          </math>
+        </kineticLaw>
+      </reaction>
+    </listOfReactions>
+  </model>
+</sbml>

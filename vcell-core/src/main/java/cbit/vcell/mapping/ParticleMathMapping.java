@@ -216,12 +216,12 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 	mathDesc = null;
 	if (oldMathDesc != null){
 		if (oldMathDesc.getVersion() != null){
-			mathDesc = new MathDescription(oldMathDesc.getVersion());
+			mathDesc = new MathDescription(oldMathDesc.getVersion(), mathSymbolMapping);
 		}else{
-			mathDesc = new MathDescription(oldMathDesc.getName());
+			mathDesc = new MathDescription(oldMathDesc.getName(), mathSymbolMapping);
 		}
 	}else{
-		mathDesc = new MathDescription(getSimulationContext().getName()+"_generated");
+		mathDesc = new MathDescription(getSimulationContext().getName()+"_generated", mathSymbolMapping);
 	}
 
 	//
@@ -590,7 +590,7 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 				Expression initialDistribution = scs.getInitialConcentrationParameter().getExpression() == null ? null : new Expression(getMathSymbol(scs.getInitialConcentrationParameter(),sm.getGeometryClass()));
 				if(particleVariable instanceof VolumeParticleVariable)
 				{
-					initialDistribution = Expression.mult(initialDistribution, unitFactor);
+					initialDistribution = Expression.mult(unitFactor, initialDistribution).flattenFactors("KMOLE");
 				}
 				pic = new ParticleInitialConditionConcentration(initialDistribution);
 			} else {
@@ -903,7 +903,7 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 						forwardUnitFactor = forwardUnitFactor.multiplyBy(reactantUnitFactor); // accumulate unit factors for all reactants
 					}
 
-					forwardRate = Expression.mult(forwardRate, getUnitFactor(forwardUnitFactor));
+					forwardRate = Expression.mult(forwardRate, getUnitFactor(forwardUnitFactor)).flattenFactors("KMOLE");
 					VCUnitDefinition smoldynExpectedForwardRateUnit = smoldynReactionRateUnit.divideBy(smoldynReactantsUnit);
 
 					// get probability
@@ -944,7 +944,7 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 						reverseUnitFactor = reverseUnitFactor.multiplyBy(productUnitFactor); // accumulate unit factors for all products
 					}
 
-					reverseRate = Expression.mult(reverseRate, getUnitFactor(reverseUnitFactor));
+					reverseRate = Expression.mult(reverseRate, getUnitFactor(reverseUnitFactor)).flattenFactors("KMOLE");
 					VCUnitDefinition smoldynExpectedReverseRateUnit = smoldynReactionRateUnit.divideBy(smoldynProductsUnit);
 							
 					// get probability
@@ -1183,7 +1183,7 @@ private void combineHybrid() throws MappingException, ExpressionException, Matri
 			allContinuousVars.put(contVar.getName(),new Function(contVar.getName(),new Expression(stochVar,getNameScope()),contVar.getDomain()));
 		}else{
 			Expression conversionFactorExp = getUnitFactor(continuousDensityUnit.divideBy(stochasticDensityUnit));
-			allContinuousVars.put(contVar.getName(),new Function(contVar.getName(),Expression.mult(new Expression(stochVar,getNameScope()),conversionFactorExp),contVar.getDomain()));
+			allContinuousVars.put(contVar.getName(),new Function(contVar.getName(),Expression.mult(conversionFactorExp, new Expression(stochVar,getNameScope())),contVar.getDomain()));
 		}
 		
 		//

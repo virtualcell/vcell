@@ -160,8 +160,8 @@ public class NativeLoader {
 		String jlp = System.getProperty(NATIVE_PATH_PROP);
 		Collection<File> files = FileUtils.toFiles(FileUtils.splitPathString(jlp), true);
 		for (File f: files) {
-			if (lg.isDebugEnabled()) {
-				lg.debug("native path directory " + f.getAbsolutePath());
+			if (lg.isTraceEnabled()) {
+				lg.trace("native path directory " + f.getAbsolutePath());
 			}
 			if (nativeDir.equals(f)) {
 				found = true;

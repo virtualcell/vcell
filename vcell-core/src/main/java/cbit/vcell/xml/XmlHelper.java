@@ -10,18 +10,60 @@
 
 package cbit.vcell.xml;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.StringReader;
-import java.io.StringWriter;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import cbit.image.ImageException;
+import cbit.image.VCImage;
+import cbit.util.xml.VCLogger;
+import cbit.util.xml.VCLoggerException;
+import cbit.util.xml.XmlUtil;
+import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.biomodel.ModelUnitConverter;
+import cbit.vcell.biomodel.meta.IdentifiableProvider;
+import cbit.vcell.biomodel.meta.VCMetaData;
+import cbit.vcell.biomodel.meta.xml.XMLMetaDataReader;
+import cbit.vcell.biomodel.meta.xml.XMLMetaDataWriter;
+import cbit.vcell.field.FieldDataIdentifierSpec;
+import cbit.vcell.geometry.Geometry;
+import cbit.vcell.geometry.GeometryException;
+import cbit.vcell.mapping.MappingException;
+import cbit.vcell.mapping.MathMapping;
+import cbit.vcell.mapping.MathSymbolMapping;
+import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.math.MathDescription;
+import cbit.vcell.mathmodel.MathModel;
+import cbit.vcell.messaging.server.SimulationTask;
+import cbit.vcell.model.Kinetics;
+import cbit.vcell.model.ModelUnitSystem;
+import cbit.vcell.model.Parameter;
+import cbit.vcell.model.ReactionStep;
+import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.*;
+import cbit.xml.merge.NodeInfo;
+import cbit.xml.merge.XmlTreeDiff;
+import cbit.xml.merge.XmlTreeDiff.DiffConfiguration;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.jdom.*;
+import org.jlibsedml.*;
+import org.sbml.jsbml.SBMLException;
+import org.vcell.cellml.CellQuanVCTranslator;
+import org.vcell.sbml.SbmlException;
+import org.vcell.sbml.vcell.MathModel_SBMLExporter;
+import org.vcell.sbml.vcell.SBMLAnnotationUtil;
+import org.vcell.sbml.vcell.SBMLExporter;
+import org.vcell.sbml.vcell.SBMLImportException;
+import org.vcell.sbml.vcell.SBMLImporter;
+import org.vcell.sedml.SEDMLImporter;
+import org.vcell.util.Extent;
+import org.vcell.util.Pair;
+import org.vcell.util.TokenMangler;
+import org.vcell.util.document.VCDocument;
+import org.vcell.util.document.VCellSoftwareVersion;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
 
-import javax.print.Doc;
-import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.transform.Transformer;
@@ -32,91 +74,9 @@ import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathFactory;
 
-import cbit.vcell.solver.*;
-import cbit.vcell.solver.SolverDescription.AlgorithmParameterDescription;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.apache.xml.dtm.ref.DTMNodeList;
-import org.jdom.Comment;
-import org.jdom.Document;
-import org.jdom.Element;
-import org.jdom.Namespace;
-import org.jdom.Text;
-import org.jlibsedml.AbstractTask;
-import org.jlibsedml.Algorithm;
-import org.jlibsedml.AlgorithmParameter;
-import org.jlibsedml.ArchiveComponents;
-import org.jlibsedml.Change;
-import org.jlibsedml.ChangeAttribute;
-import org.jlibsedml.DataGenerator;
-import org.jlibsedml.Libsedml;
-import org.jlibsedml.Model;
-import org.jlibsedml.OneStep;
-import org.jlibsedml.Output;
-import org.jlibsedml.RepeatedTask;
-import org.jlibsedml.SedML;
-import org.jlibsedml.SedMLValidationReport;
-import org.jlibsedml.SteadyState;
-import org.jlibsedml.SubTask;
-import org.jlibsedml.Task;
-import org.jlibsedml.UniformTimeCourse;
-import org.jlibsedml.XPathTarget;
-import org.jlibsedml.execution.ArchiveModelResolver;
-import org.jlibsedml.execution.FileModelResolver;
-import org.jlibsedml.execution.ModelResolver;
-import org.jlibsedml.modelsupport.KisaoOntology;
-import org.jlibsedml.modelsupport.KisaoTerm;
-import org.jlibsedml.modelsupport.SUPPORTED_LANGUAGE;
-import org.sbml.jsbml.SBMLException;
-import org.vcell.cellml.CellQuanVCTranslator;
-import org.vcell.sbml.SbmlException;
-import org.vcell.sbml.vcell.MathModel_SBMLExporter;
-import org.vcell.sbml.vcell.SBMLAnnotationUtil;
-import org.vcell.sbml.vcell.SBMLExporter;
-import org.vcell.sbml.vcell.SBMLImporter;
-import org.vcell.sedml.RelativeFileModelResolver;
-import org.vcell.sedml.SEDMLUtil;
-import org.vcell.util.Extent;
-import org.vcell.util.FileUtils;
-import org.vcell.util.Pair;
-import org.vcell.util.TokenMangler;
-import org.vcell.util.document.VCDocument;
-import org.vcell.util.document.VCellSoftwareVersion;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.xml.sax.InputSource;
-
-import cbit.image.VCImage;
-import cbit.util.xml.VCLogger;
-import cbit.util.xml.XmlUtil;
-import cbit.vcell.biomodel.BioModel;
-import cbit.vcell.biomodel.ModelUnitConverter;
-import cbit.vcell.biomodel.meta.IdentifiableProvider;
-import cbit.vcell.biomodel.meta.VCMetaData;
-import cbit.vcell.biomodel.meta.xml.XMLMetaDataReader;
-import cbit.vcell.biomodel.meta.xml.XMLMetaDataWriter;
-import cbit.vcell.field.FieldDataIdentifierSpec;
-import cbit.vcell.geometry.Geometry;
-import cbit.vcell.mapping.MathMapping;
-import cbit.vcell.mapping.MathMappingCallbackTaskAdapter;
-import cbit.vcell.mapping.MathSymbolMapping;
-import cbit.vcell.mapping.SimulationContext;
-import cbit.vcell.mapping.SimulationContext.Application;
-import cbit.vcell.mapping.SimulationContext.MathMappingCallback;
-import cbit.vcell.mapping.SimulationContext.NetworkGenerationRequirements;
-import cbit.vcell.math.MathDescription;
-import cbit.vcell.mathmodel.MathModel;
-import cbit.vcell.messaging.server.SimulationTask;
-import cbit.vcell.model.Kinetics;
-import cbit.vcell.model.ModelUnitSystem;
-import cbit.vcell.model.Parameter;
-import cbit.vcell.model.ReactionStep;
-import cbit.vcell.parser.Expression;
-import cbit.vcell.parser.ExpressionException;
-import cbit.xml.merge.NodeInfo;
-import cbit.xml.merge.XmlTreeDiff;
-import cbit.xml.merge.XmlTreeDiff.DiffConfiguration;
+import java.beans.PropertyVetoException;
+import java.io.*;
+import java.util.*;
 
 /**
  This class represents the 'API' of the XML framework for all VC classes, outside that framework. Most of the methods of
@@ -133,11 +93,12 @@ import cbit.xml.merge.XmlTreeDiff.DiffConfiguration;
  */
 public class XmlHelper {
 
+	private final static Logger logger = LogManager.getLogger(XmlHelper.class);
+
 	//represent the containers XML element for the simulation/image data to be imported/exported.
 	//For now, same as their VCML counterparts.
 	private static final String SIM_CONTAINER = XMLTags.SimulationSpecTag;
 	private static final String IMAGE_CONTAINER = XMLTags.GeometryTag;
-	private static final Logger lg = LogManager.getLogger(XmlHelper.class);
 
 	//no instances allowed
 	private XmlHelper() {}
@@ -151,7 +112,7 @@ public class XmlHelper {
 	static String getEscapedSoftwareVersion(){
 		return TokenMangler.getEscapedString(System.getProperty("vcell.softwareVersion", "unknown"));
 	}
-	static String bioModelToXML(BioModel bioModel, boolean printkeys) throws XmlParseException {
+	public static String bioModelToXML(BioModel bioModel, boolean printkeys) throws XmlParseException {
 
 		String xmlString = null;
 
@@ -181,11 +142,10 @@ public class XmlHelper {
 //			element = XmlUtil.setDefaultNamespace(element, Namespace.getNamespace(XMLTags.VCML_NS));
 //			xmlString = XmlUtil.xmlToString(element);
 		} catch (Exception e) {
-			e.printStackTrace();
 			throw new XmlParseException("Unable to generate Biomodel XML: ", e);
 		}
-		if (lg.isTraceEnabled()) {
-			lg.trace(xmlString);
+		if (logger.isTraceEnabled()) {
+			logger.trace(xmlString);
 		}
 		return xmlString;
 	}
@@ -221,30 +181,31 @@ public class XmlHelper {
 			// Return the result
 			return merger;                                               //return the tree-diff instead of the root node.
 		} catch (Exception e) {
-			e.printStackTrace(System.out);
 			throw new XmlParseException(e);
 		}
 
 	}
 
-	public static Pair <String, Map<Pair <String, String>, String>> exportSBMLwithMap(VCDocument vcDoc, int level, int version, int pkgVersion, boolean isSpatial, SimulationContext simContext, SimulationJob simJob) throws XmlParseException {
-		return translateSBML(vcDoc, level, version, simContext, simJob);
+	public static Pair <String, Map<Pair <String, String>, String>> exportSBMLwithMap(
+			VCDocument vcDoc, int level, int version, int pkgVersion, boolean isSpatial,
+			SimulationContext simContext, SimulationJob simJob, boolean bRoundTripValidation) throws XmlParseException {
+		return translateSBML(vcDoc, level, version, simContext, simJob, bRoundTripValidation);
 	}
-	
-	
+
+
 	/**
 	 * Exports VCML format to another supported format (currently: SBML or CellML). It allows
 	 choosing a specific Simulation Spec to export.
 	 * Creation date: (4/8/2003 12:30:27 PM)
 	 * @return java.lang.String
 	 */
-	public static String exportSBML(VCDocument vcDoc, int level, int version, int pkgVersion, boolean isSpatial, SimulationContext simContext, SimulationJob simJob) throws XmlParseException {
-		return translateSBML(vcDoc, level, version, simContext, simJob).one;
+	public static String exportSBML(VCDocument vcDoc, int level, int version, int pkgVersion, boolean isSpatial, SimulationContext simContext, SimulationJob simJob, boolean bRoundTripValidation) throws XmlParseException {
+		return translateSBML(vcDoc, level, version, simContext, simJob, bRoundTripValidation).one;
 	}
 
 
 	private static Pair <String, Map<Pair <String, String>, String>> translateSBML(VCDocument vcDoc, int level, int version, SimulationContext simContext,
-			SimulationJob simJob) throws XmlParseException {
+			SimulationJob simJob, boolean bRoundTripValidation) throws XmlParseException {
 		if (vcDoc == null) {
 			throw new XmlParseException("Invalid arguments for exporting SBML.");
 		}
@@ -262,7 +223,7 @@ public class XmlHelper {
 				if(sbmlPreferredUnitsBM == null) {
 					throw new RuntimeException("Unable to clone BioModel: " + bm.getName());
 				}
-				
+
 				// clone BioModel
 				BioModel clonedBioModel = cloneBioModel(sbmlPreferredUnitsBM);
 				// extract the simContext from new Biomodel. Apply overrides to *this* modified simContext
@@ -275,22 +236,20 @@ public class XmlHelper {
 					modifiedSimJob = new SimulationJob(simFromClonedBiomodel, simJob.getJobIndex(), null);
 				}
 				
-				SBMLExporter sbmlExporter = new SBMLExporter(clonedSimContext, level, version);
+				SBMLExporter sbmlExporter = new SBMLExporter(clonedSimContext, level, version, bRoundTripValidation);
 				sbmlExporter.setSelectedSimulationJob(modifiedSimJob);
-				String sbmlSTring  = sbmlExporter.getSBMLString();
+				String sbmlString  = sbmlExporter.getSBMLString();
 
 				// cleanup the string of all the "sameAs" statements
-				sbmlSTring = SBMLAnnotationUtil.postProcessCleanup(sbmlSTring);
-				return new Pair(sbmlSTring, sbmlExporter.getLocalToGlobalTranslationMap());
+				sbmlString = SBMLAnnotationUtil.postProcessCleanup(sbmlString);
+				return new Pair(sbmlString, sbmlExporter.getLocalToGlobalTranslationMap());
 			} catch (SbmlException | SBMLException | XMLStreamException | ExpressionException e) {
-				e.printStackTrace(System.out);
 				throw new XmlParseException(e);
 			}
 		} else if (vcDoc instanceof MathModel) {
 			try {
 				return new Pair(MathModel_SBMLExporter.getSBMLString((MathModel)vcDoc, level, version), null);
 			} catch (ExpressionException | IOException | SBMLException | XMLStreamException e) {
-				e.printStackTrace(System.out);
 				throw new XmlParseException(e);
 			}
 		} else{
@@ -369,8 +328,7 @@ public class XmlHelper {
 					}	// end  - for moConstNames
 				} 	// end if (sim has MathOverrides)
 			} catch (Exception e) {
-				e.printStackTrace(System.out);
-				throw new RuntimeException("Could not apply overrides from simulation to application parameters : " + e.getMessage());
+				throw new RuntimeException("Could not apply overrides from simulation to application parameters : " + e.getMessage(), e);
 			}
 		}	// end if (simJob != null)
 		return overriddenSimContext;
@@ -471,7 +429,7 @@ public class XmlHelper {
 	/**
 	 Allows the translation process to interact with the user via TranslationMessager
 	 */
-	public static VCDocument importSBML(VCLogger vcLogger, XMLSource xmlSource, boolean bSpatial) throws Exception {
+	public static VCDocument importSBML(VCLogger vcLogger, XMLSource xmlSource, boolean bSpatial) throws XmlParseException, VCLoggerException, IOException {
 
 		//checks that the source is not empty
 		if (xmlSource == null){
@@ -492,16 +450,12 @@ public class XmlHelper {
 			}
 		}
 		VCDocument vcDoc = null;
-//    if (!bSpatial) {
-		SBMLImporter sbmlImporter = new SBMLImporter(sbmlFile.getAbsolutePath(), vcLogger, bSpatial);
+		boolean bValidateSBML = false;
+		SBMLImporter sbmlImporter = new SBMLImporter(sbmlFile.getAbsolutePath(), vcLogger, bValidateSBML);
 		vcDoc = sbmlImporter.getBioModel();
-//    } else {
-//    	SBMLSpatialImporter sbmlSpatialImporter = new SBMLSpatialImporter(sbmlFile.getAbsolutePath(), vcLogger);
-//    	vcDoc = sbmlSpatialImporter.getBioModel();
-//    }
 
 		vcDoc.refreshDependencies();
-		System.out.println("Succesful model import: SBML file "+sbmlFile);
+		logger.info("Succesful model import: SBML file "+sbmlFile);
 		return vcDoc;
 	}
 
@@ -556,7 +510,7 @@ public class XmlHelper {
 //		Element element = xmlProducer.getXML(mathModel);
 //		element = XmlUtil.setDefaultNamespace(element, Namespace.getNamespace(XMLTags.VCML_NS_ALT));
 //		xmlString = XmlUtil.xmlToString(element);
-		if (lg.isTraceEnabled()) lg.trace(xmlString);
+		if (logger.isTraceEnabled()) logger.trace(xmlString);
 		return xmlString;
 	}
 
@@ -578,7 +532,7 @@ public class XmlHelper {
 			Element geomElement = xmlProducer.getXML(geom);
 			container.addContent(geomElement);
 		} else {
-			System.err.println("No corresponding geometry for the simulation: " + sim.getName());
+			logger.error("No corresponding geometry for the simulation: " + sim.getName());
 		}
 		container.addContent(mathElement);
 		container.addContent(simElement);
@@ -588,366 +542,42 @@ public class XmlHelper {
 		return simString;
 	}
 
-	public static List<VCDocument> sedmlToBioModel(VCLogger transLogger, ExternalDocInfo externalDocInfo,
-												   SedML sedml, List<AbstractTask> tasks, String sedmlFileLocation, boolean exactMatchOnly) throws Exception {
-		if(sedml.getModels().isEmpty()) {
-			throw new Exception("No models found in SED-ML document");
+	public static List<BioModel> readOmex(File omexFile, VCLogger vcLogger) throws Exception {
+		List<BioModel> docs = new ArrayList<>();
+		// iterate through one or more SEDML objects
+		ArchiveComponents ac = null;
+		ac = Libsedml.readSEDMLArchive(new FileInputStream(omexFile));
+		List<SEDMLDocument> sedmlDocs = ac.getSedmlDocuments();
+
+
+		List<SedML> sedmls = new ArrayList<>();
+		for (SEDMLDocument sedmlDoc : sedmlDocs) {
+			SedML sedml = sedmlDoc.getSedMLModel();
+			if (sedml == null) {
+				throw new RuntimeException("Failed importing " + omexFile.getName());
+			}
+			if (sedml.getModels().isEmpty()) {
+				throw new RuntimeException("Unable to find any model in " + omexFile.getName());
+			}
+			sedmls.add(sedml);
 		}
-		try {
-	        // iterate through all the elements and show them at the console
-	        List<org.jlibsedml.Model> mmm = sedml.getModels();
-	        for(Model mm : mmm) {
-	            System.out.println(mm.toString());
-	            List<Change> listOfChanges = mm.getListOfChanges();
-	            System.out.println("There are " + listOfChanges.size() + " changes.");
-	        }
-	        List<org.jlibsedml.Simulation> sss = sedml.getSimulations();
-	        for(org.jlibsedml.Simulation ss : sss) {
-	            System.out.println(ss.toString());
-	        }
-	        List<AbstractTask> ttt = sedml.getTasks();
-	        if (ttt.isEmpty()) {
-	        	throw new Exception("No tasks found in SED-ML document");
-	        }
-	        for(AbstractTask tt : ttt) {
-	            System.out.println(tt.toString());
-	        }
-	        List<DataGenerator> ddd = sedml.getDataGenerators();
-	        for(DataGenerator dd : ddd) {
-	            System.out.println(dd.toString());
-	        }
-	        List<Output> ooo = sedml.getOutputs();
-	        for(Output oo : ooo) {
-	            System.out.println(oo.toString());
-	        }
-	        if(ooo.isEmpty()) {
-	        	System.err.println("List of outputs cannot be empty!");
-	        }
-
-			if (tasks == null || tasks.isEmpty()) {
-				// no task selection, we'll import all that we find in the SED-ML
-				tasks = sedml.getTasks();
+		for (SedML sedml : sedmls) {
+			// default to import all tasks
+			ExternalDocInfo externalDocInfo = new ExternalDocInfo(omexFile,true);
+			List<BioModel> biomodels = importSEDML(vcLogger, externalDocInfo, sedml, false);
+			for (BioModel biomodel : biomodels) {
+				docs.add(biomodel);
 			}
-
-			// We need to make a separate BioModel for each SED-ML model
-			// We will parse all tasks and create Simulations for each in the BioModel(s) corresponding to the model referenced by the tasks
-
-			List<VCDocument> docs = new ArrayList<VCDocument>();
-			String bioModelBaseName = FileUtils.getBaseName(externalDocInfo.getFile().getAbsolutePath());		// extract bioModel name from sedx (or sedml) file
-			String kisaoID = null;
-			org.jlibsedml.Simulation sedmlSimulation = null;	// this will become the vCell simulation
-			org.jlibsedml.Model sedmlOriginalModel = null;		// the "original" model referred to by the task
-			String sedmlOriginalModelName = null;				// this will be used in the BioModel name
-			String sedmlOriginalModelLanguage = null;			// can be sbml or vcml
-			ArchiveComponents ac = null;
-			if(externalDocInfo.getFile().getPath().toLowerCase().endsWith("sedx") || externalDocInfo.getFile().getPath().toLowerCase().endsWith("omex")) {
-				ac = Libsedml.readSEDMLArchive(new FileInputStream(externalDocInfo.getFile().getPath()));
-			}
-			ModelResolver resolver = new ModelResolver(sedml);
-			if(ac != null) {
-				resolver.add(new ArchiveModelResolver(ac));
-			}
-			resolver.add(new FileModelResolver());
-			if (sedmlFileLocation != null) {
-				File sedmlFile = new File(sedmlFileLocation);
-				String sedmlRelativePrefix = sedmlFile.getParent() + File.separator;
-				if (sedmlRelativePrefix != null) {
-					resolver.add(new RelativeFileModelResolver(sedmlRelativePrefix));
-				} 
-			}
-			for (AbstractTask selectedTask : tasks) {
-				if(selectedTask instanceof Task) {
-					sedmlOriginalModel = sedml.getModelWithId(selectedTask.getModelReference());
-					sedmlSimulation = sedml.getSimulation(selectedTask.getSimulationReference());
-				} else if(selectedTask instanceof RepeatedTask) {
-					System.err.println("RepeatedTask not supported yet, task "+SEDMLUtil.getName(selectedTask)+" is being skipped");
-					continue;
-					// TODO the below is unfinished code
-//				RepeatedTask rt = (RepeatedTask)selectedTask;
-//				assert(rt.getSubTasks().size() == 1);
-//				SubTask st = rt.getSubTasks().entrySet().iterator().next().getValue();		// first (and only) subtask
-//				String taskId = st.getTaskId();
-//				AbstractTask t = sedml.getTaskWithId(taskId);
-//        		sedmlOriginalModel = sedml.getModelWithId(t.getModelReference());			// get model and simulation from subtask
-//        		sedmlSimulation = sedml.getSimulation(t.getSimulationReference());
-				} else {
-					throw new RuntimeException("Unexpected task " + selectedTask);
-				}
-				sedmlOriginalModelName = sedmlOriginalModel.getId();
-				sedmlOriginalModelLanguage = sedmlOriginalModel.getLanguage();
-				List<Change> listOfChanges = sedmlOriginalModel.getListOfChanges();		// get the list of changes now!
-
-				// at this point we assume that the sedml simulation, algorithm and kisaoID are all valid
-				Algorithm algorithm = sedmlSimulation.getAlgorithm();
-				kisaoID = algorithm.getKisaoID();
-
-				// identify the vCell solvers that would match best the sedml solver kisao id
-
-				// try to find a match in the ontology tree
-				SolverDescription solverDescription = SolverUtilities.matchSolverWithKisaoId(kisaoID, exactMatchOnly);
-				if (solverDescription != null) {
-					System.out.println("Task (id='"+selectedTask.getId()+"') is compatible, solver match found in ontology: '" + kisaoID + "' matched to " + solverDescription);
-				} else {
-					// give it a try anyway with our deterministic default solver
-					solverDescription = SolverDescription.CombinedSundials;
-					System.err.println("Task (id='"+selectedTask.getId()+")' is not compatible, no equivalent solver found in ontology for requested algorithm '"+kisaoID + "'; trying with deterministic default solver "+solverDescription);
-				}
-				// find out everything else we need about the application we're going to use,
-				// some of the info will be needed when we parse the sbml file
-				boolean bSpatial = false;
-				Application appType = Application.NETWORK_DETERMINISTIC;
-				Set<SolverDescription.SolverFeature> sfList = solverDescription.getSupportedFeatures();
-				for(SolverDescription.SolverFeature sf : sfList) {
-					switch(sf) {
-						case Feature_Rulebased:
-							appType = Application.RULE_BASED_STOCHASTIC;
-							break;
-						case Feature_Stochastic:
-							appType = Application.NETWORK_STOCHASTIC;
-							break;
-						case Feature_Deterministic:
-							appType = Application.NETWORK_DETERMINISTIC;
-							break;
-						case Feature_Spatial:
-							bSpatial = true;
-							break;
-						default:
-							break;
-					}
-				}
-
-				// we make a biomodel for each task; if there are many simulations, probably 
-				// only one will match the selected task id, the others are parasites and must not be run
-				
-				BioModel bioModel = null;
-				boolean justMade = false;
-				String newMdl = resolver.getModelString(sedmlOriginalModel);
-				// no need for this, the resolver applies all changes
-//				if(listOfChanges != null && listOfChanges.size() > 0) {
-//					newMdl = updateXML(newMdl, listOfChanges);
-//				}
-
-				String bioModelName = bioModelBaseName + "_" + sedml.getFileName() + "_" + sedmlOriginalModelName;
-				// get it if we made it already
-				for (VCDocument existingDoc : docs) {
-					if (!docs.isEmpty()) {
-						if (existingDoc.getName().equals(bioModelName)) {
-							bioModel = (BioModel)existingDoc;
-							break;
-						}
-					}
-				}	
-				// make it if we didn't and mark it as fresh
-				if (bioModel == null) {
-					if(sedmlOriginalModelLanguage.contentEquals(SUPPORTED_LANGUAGE.VCELL_GENERIC.getURN())) {	// vcml
-						XMLSource vcmlSource = new XMLSource(newMdl);
-						bioModel = (BioModel)XmlHelper.XMLToBioModel(vcmlSource);
-						bioModel.setName(bioModelName);
-						docs.add(bioModel);
-						justMade = true;
-						try {
-							bioModel.getVCMetaData().createBioPaxObjects(bioModel);
-						} catch (Exception e) {
-							e.printStackTrace();
-						}
-					} else {				// we assume it's sbml, if it's neither import will fail
-						XMLSource sbmlSource = new XMLSource(newMdl);		// sbmlSource with all the changes applied
-						bioModel = (BioModel)XmlHelper.importSBML(transLogger, sbmlSource, bSpatial);
-						bioModel.setName(bioModelName);
-						docs.add(bioModel);
-						justMade = true;
-					}
-				}
-				
-				if(sedmlOriginalModelLanguage.contentEquals(SUPPORTED_LANGUAGE.VCELL_GENERIC.getURN())) {
-					// we don't need to make a simulation from sedml if we're coming from vcml, we already got all we need
-					// we basically ignore the sedml simulation altogether
-					Simulation theSimulation = null;
-					for (Simulation sim : bioModel.getSimulations()) {
-						if (sim.getName().equals(selectedTask.getName())) {
-							System.out.println(" --- selected task - name: " + selectedTask.getName() + ", id: " + selectedTask.getId());
-							sim.setImportedTaskID(selectedTask.getId());
-							theSimulation = sim;
-							break;	// found the one, no point to continue the for loop
-						}
-					}if(theSimulation == null) {
-						System.err.println("Couldn't match sedml task '" + selectedTask.getName() + "' with any biomodel simulation");
-						continue;	// should never happen
-					}
-					if(!(sedmlSimulation instanceof UniformTimeCourse)) {
-						continue;
-					}
-					
-					SolverTaskDescription simTaskDesc = theSimulation.getSolverTaskDescription();
-					TimeBounds timeBounds = new TimeBounds();
-					TimeStep timeStep = new TimeStep();
-					double outputTimeStep = 0.1;
-					int outputNumberOfPoints = 1;
-					// we translate initial time to zero, we provide output for the duration of the simulation
-					// because we can't select just an interval the way the SEDML simulation can
-					double initialTime = ((UniformTimeCourse) sedmlSimulation).getInitialTime();
-					double outputStartTime = ((UniformTimeCourse) sedmlSimulation).getOutputStartTime();
-					double outputEndTime = ((UniformTimeCourse) sedmlSimulation).getOutputEndTime();
-					outputNumberOfPoints = ((UniformTimeCourse) sedmlSimulation).getNumberOfPoints();
-					outputTimeStep = (outputEndTime - outputStartTime) / outputNumberOfPoints;
-					timeBounds = new TimeBounds(0, outputEndTime - initialTime);
-
-					OutputTimeSpec outputTimeSpec = new UniformOutputTimeSpec(outputTimeStep);
-					simTaskDesc.setTimeBounds(timeBounds);
-					simTaskDesc.setTimeStep(timeStep);
-					if (simTaskDesc.getSolverDescription().supports(outputTimeSpec)) {
-						simTaskDesc.setOutputTimeSpec(outputTimeSpec);
-					} else {
-						simTaskDesc.setOutputTimeSpec(new DefaultOutputTimeSpec(1,Integer.max(DefaultOutputTimeSpec.DEFAULT_KEEP_AT_MOST, outputNumberOfPoints)));
-					}
-					//theSimulation.setSolverTaskDescription(simTaskDesc);
-					//theSimulation.refreshDependencies();
-					continue;
-				}
-				
-				// even if we just created the biomodel from the sbml file we have at least one application with initial conditions and stuff
-				// see if there is a suitable application type for the sedml kisao
-				// if not, we add one by doing a "copy as" to the right type
-				SimulationContext[] existingSimulationContexts = bioModel.getSimulationContexts();
-				SimulationContext matchingSimulationContext = null;
-				for (SimulationContext simContext : existingSimulationContexts) {
-					if (simContext.getApplicationType().equals(appType) && ((simContext.getGeometry().getDimension() > 0) == bSpatial)) {
-						matchingSimulationContext = simContext;
-						break;
-					}
-				}
-				if (matchingSimulationContext == null) {
-					if (justMade) {
-						matchingSimulationContext = SimulationContext.copySimulationContext(existingSimulationContexts[0], sedmlOriginalModelName, bSpatial, appType);
-						bioModel.removeSimulationContext(existingSimulationContexts[0]);
-					} else {
-						matchingSimulationContext = SimulationContext.copySimulationContext(existingSimulationContexts[0], sedmlOriginalModelName+"_"+existingSimulationContexts.length, bSpatial, appType);
-					}
-					bioModel.addSimulationContext(matchingSimulationContext);
-				}
-				matchingSimulationContext.refreshDependencies();
-				MathMappingCallback callback = new MathMappingCallbackTaskAdapter(null);
-				matchingSimulationContext.refreshMathDescription(callback, NetworkGenerationRequirements.ComputeFullStandardTimeout);
-
-				// making the new vCell simulation based on the sedml simulation
-				if(!(sedmlSimulation instanceof UniformTimeCourse)) {
-					// we don't even bother if it's an unsupported type
-					continue;
-				}
-				Simulation newSimulation = new Simulation(matchingSimulationContext.getMathDescription());
-				newSimulation.setSimulationOwner(matchingSimulationContext);
-				if (selectedTask instanceof Task) {
-					String newSimName = selectedTask.getId();
-					if(SEDMLUtil.getName(selectedTask) != null) {
-						newSimName += "_" + SEDMLUtil.getName(selectedTask);
-					}
-					newSimulation.setName(newSimName);
-					newSimulation.setImportedTaskID(selectedTask.getId());
-				} else {
-					newSimulation.setName(SEDMLUtil.getName(sedmlSimulation)+"_"+SEDMLUtil.getName(selectedTask));
-				}
-				
-				// we identify the type of sedml simulation (uniform time course, etc)
-				// and set the vCell simulation parameters accordingly
-				SolverTaskDescription simTaskDesc = newSimulation.getSolverTaskDescription();
-				if(solverDescription != null) {
-					simTaskDesc.setSolverDescription(solverDescription);
-				}
-
-				TimeBounds timeBounds = new TimeBounds();
-				TimeStep timeStep = new TimeStep();
-				double outputTimeStep = 0.1;
-				int outputNumberOfPoints = 1;
-				if(sedmlSimulation instanceof UniformTimeCourse) {
-					// we translate initial time to zero, we provide output for the duration of the simulation
-					// because we can't select just an interval the way the SEDML simulation can
-					double initialTime = ((UniformTimeCourse) sedmlSimulation).getInitialTime();
-					double outputStartTime = ((UniformTimeCourse) sedmlSimulation).getOutputStartTime();
-					double outputEndTime = ((UniformTimeCourse) sedmlSimulation).getOutputEndTime();
-					outputNumberOfPoints = ((UniformTimeCourse) sedmlSimulation).getNumberOfPoints();
-					outputTimeStep = (outputEndTime - outputStartTime) / outputNumberOfPoints;
-					timeBounds = new TimeBounds(0, outputEndTime - initialTime);
-//				} else if(sedmlSimulation instanceof OneStep) {		// for anything other than UniformTimeCourse we just ignore
-//					System.err.println("OneStep Simulation not supported");
-//				} else if(sedmlSimulation instanceof SteadyState) {
-//					System.err.println("SteadyState Simulation not supported");
-				}
-				simTaskDesc.setTimeBounds(timeBounds);
-				simTaskDesc.setTimeStep(timeStep);
-
-				// we look for explicit algorithm parameters
-				ErrorTolerance errorTolerance = new ErrorTolerance();
-				List<AlgorithmParameter> sedmlAlgorithmParameters = algorithm.getListOfAlgorithmParameters();
-				for(AlgorithmParameter sedmlAlgorithmParameter : sedmlAlgorithmParameters) {
-
-					String apKisaoID = sedmlAlgorithmParameter.getKisaoID();
-					String apValue = sedmlAlgorithmParameter.getValue();
-					if(apKisaoID == null || apKisaoID.isEmpty()) {
-						System.err.println("Undefined KisaoID algorithm parameter for algorithm '" + kisaoID + "'");
-					}
-
-					// we don't check if the recognized algorithm parameters are valid for our algorithm
-					// we just use any parameter we find for the solver task description we have, assuming the exporting code did all the checks
-					// WARNING: if our algorithm is the result of a guess, this may be wrong
-					// TODO: use the proper ontology for the algorithm parameters kisao id
-					if(apKisaoID.contentEquals(ErrorTolerance.ErrorToleranceDescription.Absolute.getKisao())) {
-						double value = Double.parseDouble(apValue);
-						errorTolerance.setAbsoluteErrorTolerance(value);
-					} else if(apKisaoID.contentEquals(ErrorTolerance.ErrorToleranceDescription.Relative.getKisao())) {
-						double value = Double.parseDouble(apValue);
-						errorTolerance.setRelativeErrorTolerance(value);
-					} else if(apKisaoID.contentEquals(TimeStep.TimeStepDescription.Default.getKisao())) {
-						double value = Double.parseDouble(apValue);
-						timeStep.setDefaultTimeStep(value);
-					} else if(apKisaoID.contentEquals(TimeStep.TimeStepDescription.Maximum.getKisao())) {
-						double value = Double.parseDouble(apValue);
-						timeStep.setMaximumTimeStep(value);
-					} else if(apKisaoID.contentEquals(TimeStep.TimeStepDescription.Minimum.getKisao())) {
-						double value = Double.parseDouble(apValue);
-						timeStep.setMinimumTimeStep(value);
-					} else if(apKisaoID.contentEquals(AlgorithmParameterDescription.Seed.getKisao())) {		// custom seed
-						if(simTaskDesc.getSimulation().getMathDescription().isNonSpatialStoch()) {
-							NonspatialStochSimOptions nssso = simTaskDesc.getStochOpt();
-							int value = Integer.parseInt(apValue);
-							nssso.setCustomSeed(value);
-						} else {
-							System.err.println("Algorithm parameter '" + AlgorithmParameterDescription.Seed.getDescription() +"' is only supported for nonspatial stochastic simulations");
-						}
-						// some arguments used only for non-spatial hybrid solvers
-					} else if(apKisaoID.contentEquals(AlgorithmParameterDescription.Epsilon.getKisao())) {
-						NonspatialStochHybridOptions nssho = simTaskDesc.getStochHybridOpt();
-						nssho.setEpsilon(Double.parseDouble(apValue));
-					} else if(apKisaoID.contentEquals(AlgorithmParameterDescription.Lambda.getKisao())) {
-						NonspatialStochHybridOptions nssho = simTaskDesc.getStochHybridOpt();
-						nssho.setLambda(Double.parseDouble(apValue));
-					} else if(apKisaoID.contentEquals(AlgorithmParameterDescription.MSRTolerance.getKisao())) {
-						NonspatialStochHybridOptions nssho = simTaskDesc.getStochHybridOpt();
-						nssho.setMSRTolerance(Double.parseDouble(apValue));
-					} else if(apKisaoID.contentEquals(AlgorithmParameterDescription.SDETolerance.getKisao())) {
-						NonspatialStochHybridOptions nssho = simTaskDesc.getStochHybridOpt();
-						nssho.setSDETolerance(Double.parseDouble(apValue));
-					} else {
-						System.err.println("Algorithm parameter with kisao id '" + apKisaoID + "' not supported at this time, skipping.");
-					}
-				}
-				simTaskDesc.setErrorTolerance(errorTolerance);
-
-				OutputTimeSpec outputTimeSpec = new UniformOutputTimeSpec(outputTimeStep);
-				if (simTaskDesc.getSolverDescription().supports(outputTimeSpec)) {
-					simTaskDesc.setOutputTimeSpec(outputTimeSpec);
-				} else {
-					simTaskDesc.setOutputTimeSpec(new DefaultOutputTimeSpec(1,Integer.max(DefaultOutputTimeSpec.DEFAULT_KEEP_AT_MOST, outputNumberOfPoints)));
-				}
-				newSimulation.setSolverTaskDescription(simTaskDesc);
-				newSimulation.setDescription(SEDMLUtil.getName(selectedTask));
-				bioModel.addSimulation(newSimulation);
-				newSimulation.refreshDependencies();
-			}
-			return docs;
-		} catch (Exception e) {
-			e.printStackTrace();
-			throw new RuntimeException("Unable to initialize bioModel for the given selection\n"+e.getMessage());
 		}
+		return docs;
+	}
+
+
+	public static List<BioModel> importSEDML(VCLogger transLogger, ExternalDocInfo externalDocInfo,
+	   SedML sedml, boolean exactMatchOnly) throws Exception {
+		SEDMLImporter sedmlImporter = new SEDMLImporter(transLogger, externalDocInfo,
+				sedml, exactMatchOnly);
+		return sedmlImporter.getBioModels();
 	}
 
 	public static BioModel XMLToBioModel(XMLSource xmlSource) throws XmlParseException {
@@ -1015,8 +645,8 @@ public class XmlHelper {
 		//long l1 = System.currentTimeMillis();
 		bioModel.refreshDependencies();
 		//long l2 = System.currentTimeMillis();
-		//System.out.println("refresh-------- "+((double)(l2-l1))/1000);
-		//System.out.println("total-------- "+((double)(l2-l0))/1000);
+		//logger.trace("refresh-------- "+((double)(l2-l1))/1000);
+		//logger.trace("total-------- "+((double)(l2-l0))/1000);
 
 		return bioModel;
 	}
@@ -1221,7 +851,6 @@ public class XmlHelper {
 			MathDescription md = reader.getMathDescription(mdElement, geom);
 			sim = reader.getSimulation(simElement, md);
 		} catch (Exception pve) {
-			pve.printStackTrace();
 			throw new XmlParseException("Unable to parse simulation string.", pve);
 		}
 
@@ -1287,7 +916,7 @@ public class XmlHelper {
 			Element geomElement = xmlProducer.getXML(geom);
 			container.addContent(geomElement);
 		} else {
-			System.err.println("No corresponding geometry for the simulation: " + sim.getName());
+			logger.error("No corresponding geometry for the simulation: " + sim.getName());
 		}
 
 		container = XmlUtil.setDefaultNamespace(container, Namespace.getNamespace(XMLTags.VCML_NS));
@@ -1344,7 +973,6 @@ public class XmlHelper {
 			return simTask;
 
 		} catch (Exception pve) {
-			pve.printStackTrace();
 			throw new XmlParseException("Unable to parse simulation string.", pve);
 		}
 	}
@@ -1355,7 +983,7 @@ public class XmlHelper {
 	public static String getXPathForSimulationSpecs() {
 		return "/vcml:vcml/vcml:BioModel/vcml:SimulationSpec";
 	}
-	
+
 	public static String getXPathForSimulationSpec(String simulationSpecID) {
 		return getXPathForSimulationSpecs() + "[@Name='" + simulationSpecID + "']";
 	}
@@ -1363,7 +991,7 @@ public class XmlHelper {
 	public static String getXPathForOutputFunctions(String simulationSpecID) {
 		return getXPathForSimulationSpec(simulationSpecID) + "/vcml:OutputFunctions";
 	}
-	
+
 	public static String getXPathForSpecies(String speciesID) {
 		return getXPathForModel() + "/vcml:LocalizedCompound[@Name='" + speciesID + "']";
 	}
@@ -1379,7 +1007,7 @@ public class XmlHelper {
 				XPathTarget xPathTarget = change.getTargetXPath();
 				String xpath = xPathTarget.getTargetAsString();			// /sbml:sbml/sbml:model/sbml:listOfSpecies/sbml:species[@id='A']
 				String newValue = ((ChangeAttribute) change).getNewValue();
-				System.out.println(newValue + ", " + xpath);
+				logger.trace(newValue + ", " + xpath);
 				if(xpath == null || !isValidXPath(xpath)) {		// the validator only accepts species for now
 					continue;
 				}
@@ -1388,7 +1016,7 @@ public class XmlHelper {
 		}
 		return xml;
 	}
-	
+
 	@Deprecated
 	// perform a changeAttribute from within our code (not needed, the resolver does it for us)
 	public static String updateXML(String xml, String xpathExpression, String newValue) {
@@ -1396,101 +1024,109 @@ public class XmlHelper {
 			String filter = "sbml:species[@id='";
 			String target = xpathExpression.substring(xpathExpression.lastIndexOf(filter) + filter.length());
 			target = target.substring(0,target.indexOf("'"));
-			
+
 			//Creating document builder
 			DocumentBuilderFactory builderFactory = DocumentBuilderFactory.newInstance();
 			javax.xml.parsers.DocumentBuilder builder = builderFactory.newDocumentBuilder();
 			StringReader sr = new StringReader(xml);
 			InputSource is = new org.xml.sax.InputSource(sr);
 			org.w3c.dom.Document document = builder.parse(is);
-		
+
 			boolean replaced = false;
 			NodeList listOfSpecies = document.getElementsByTagName("species");
-			System.out.println(listOfSpecies.getLength());
+			logger.trace("there are "+listOfSpecies.getLength()+" species");
 			for (int i = 0; i < listOfSpecies.getLength(); i++) {
 				Node species = listOfSpecies.item(i);
 				if (species.getNodeType() == Node.ELEMENT_NODE) {
 					String id = species.getAttributes().getNamedItem("id").getTextContent();
-					System.out.println(id);
+					logger.trace("species id: "+id);
 					if(id.equals(target)) {
 						species.getAttributes().getNamedItem("initialAmount").setTextContent(newValue);
-						System.out.println("Changed entity " + xpathExpression);
+						logger.trace("Changed entity " + xpathExpression);
 						replaced = true;
 						break;		// we updated the only species with this id, no point to continue
 					}
 				}
 			}
 			if(replaced == false ) {
-				System.err.println("Unable to Change entity " + xpathExpression);
+				logger.error("Unable to Change entity " + xpathExpression);
 			}
-			
+
 			StringWriter stringWriter = new StringWriter();
 			Transformer xformer = TransformerFactory.newInstance().newTransformer();
 			xformer.transform(new DOMSource(document), new StreamResult(stringWriter));
-			
+
 			xml = stringWriter.toString();
 		} catch (Exception e) {
-			   e.printStackTrace();
+			logger.error(e);
 		}
 		return xml;
 	}
-	
+
 	@Deprecated
 	private static boolean isValidXPath(String xpath) {
 		if(xpath.contains("listOfSpecies")) {
 			return true;
 		} else {
-			System.err.println("Only the Change of species is supported at this time");
+			logger.error("Only the Change of species is supported at this time");
 			return false;
 		}
 	}
-	
+
 	@Deprecated
 	// variant of updateXML(), never worked
 	public static String updateXML2(String xml, String xpathExpression, String newValue) {
-	try {
+		try {
 //		String xpathExpression = "/sbml:sbml/sbml:model/sbml:listOfSpecies/sbml:species[@id=\"A\"]";
 
-		xpathExpression = "/*:sbml/*:model/*:listOfSpecies/*:species[@id=\"A\"]";
-		//Creating document builder
-		DocumentBuilderFactory builderFactory = DocumentBuilderFactory.newInstance();
-		javax.xml.parsers.DocumentBuilder builder = builderFactory.newDocumentBuilder();
-		StringReader sr = new StringReader(xml);
-		InputSource is = new org.xml.sax.InputSource(sr);
-		org.w3c.dom.Document document = builder.parse(is);
-	      
-		//Evaluating xpath expression using Element
-		XPath xpath = XPathFactory.newInstance().newXPath();
-		
-		// here follow 4 different ways to apply the change, none works
+			/**
+			 * the following statement with xpath gives 'unexpected token' error in intellij/IDEA - not used anyway
+			 * commenting it out for now.
+			 *
+			 * "/*:sbml/*:model/*:listOfSpecies/*:species[@id=\"A\"]"
+			 * complains about the first ':' character as an unexpected token ... bug in IDE it seems.
+			 */
+//		xpathExpression = "/*:sbml/*:model/*:listOfSpecies/*:species[@id=\"A\"]";
+
+			//Creating document builder
+			DocumentBuilderFactory builderFactory = DocumentBuilderFactory.newInstance();
+			javax.xml.parsers.DocumentBuilder builder = builderFactory.newDocumentBuilder();
+			StringReader sr = new StringReader(xml);
+			InputSource is = new org.xml.sax.InputSource(sr);
+			org.w3c.dom.Document document = builder.parse(is);
+
+			//Evaluating xpath expression using Element
+			XPath xpath = XPathFactory.newInstance().newXPath();
+
+			// here follow 4 different ways to apply the change, none works
 //		DTMNodeList dtmNodeList = (DTMNodeList)xpath.evaluate(xpathExpression, document, XPathConstants.NODESET);
 //		Node node = dtmNodeList.item(0);
 //		node.setNodeValue(newValue);
 
 //		org.w3c.dom.Element element = (org.w3c.dom.Element)xpath.evaluate(xpathExpression, document, XPathConstants.NODE);
 //		element.setTextContent(newValue);
-		
+
 //		Node node = (Node) xpath.compile(xpathExpression).evaluate(document, XPathConstants.NODE);
-		
-		Node node = (Node) xpath.evaluate(xpathExpression, document, XPathConstants.NODE);
-		node.setNodeValue(newValue);
+
+			Node node = (Node) xpath.evaluate(xpathExpression, document, XPathConstants.NODE);
+			node.setNodeValue(newValue);
 
 //		NodeList myNodeList = (NodeList) xpath.compile(xpathExpression).evaluate(document, XPathConstants.NODESET);
 //		Node node = myNodeList.item(0);
 //		node.setNodeValue(newValue);
-		
-		//Transformation of document to xml
-		StringWriter stringWriter = new StringWriter();
-		Transformer xformer = TransformerFactory.newInstance().newTransformer();
-		xformer.transform(new DOMSource(document), new StreamResult(stringWriter));
 
-		xml = stringWriter.toString();
-	} catch (Exception e) 	{
-	   e.printStackTrace();
+			//Transformation of document to xml
+			StringWriter stringWriter = new StringWriter();
+			Transformer xformer = TransformerFactory.newInstance().newTransformer();
+			xformer.transform(new DOMSource(document), new StreamResult(stringWriter));
+
+			xml = stringWriter.toString();
+		} catch (Exception e) 	{
+			logger.error(e);
+		}
+		return xml;
 	}
-	    return xml;
-	}
-	
+
 	public static String convertXMLReservedCharacters(String input) {
 		input = input.replace(">", "&gt;");
 		input = input.replace("<", "&lt;");
@@ -1499,7 +1135,7 @@ public class XmlHelper {
 //		input = input.replace("'", "&apos;");
 		return input;
 	}
-	
+
 //public static String exportSedML(VCDocument vcDoc, int level, int version, String file) throws XmlParseException {
 //	if (vcDoc == null) {
 //        throw new XmlParseException("Cannot export NULL document to SEDML.");

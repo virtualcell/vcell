@@ -731,7 +731,7 @@ public Expression getOdeRHS(MembraneElectricalDevice capacitiveDevice, AbstractM
 	VCUnitDefinition unitFactor = potentialUnit.divideBy(timeUnit).multiplyBy(capacitanceParameter.getUnitDefinition()).divideBy(capacitiveDevice.getTotalCurrentSymbol().getUnitDefinition());
 	Expression unitFactorExp = fieldMathMapping.getUnitFactor(unitFactor);
 	
-	Expression exp = Expression.mult(Expression.div(unitFactorExp, totalCapacitance), Expression.add(totalCurrent, Expression.negate(transMembraneCurrent)));
+	Expression exp = Expression.mult(Expression.div(unitFactorExp, totalCapacitance), Expression.add(totalCurrent, Expression.negate(transMembraneCurrent))).flattenFactors("KMOLE");
 //	exp.bindExpression(mathMapping); 
 	return exp;
 }

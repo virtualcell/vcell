@@ -41,24 +41,13 @@ public class MembraneMapping extends StructureMapping implements java.beans.Veto
 	//private cbit.vcell.parser.Expression fieldInitialVoltage = new Expression(0.0);
 	private boolean fieldCalculateVoltage = false;
 
-/**
- * MembraneMapping constructor comment.
- * @param membrane cbit.vcell.model.Membrane
- * @param geoContext cbit.vcell.mapping.GeometryContext
- * @exception java.lang.Exception The exception description.
- */
 public MembraneMapping(MembraneMapping membraneMapping, SimulationContext argSimulationContext,Geometry newGeometry, ModelUnitSystem argModelUnitSystem) {
 	super(membraneMapping, argSimulationContext,newGeometry, argModelUnitSystem);
 	fieldCalculateVoltage = membraneMapping.fieldCalculateVoltage;
 
 	addVetoableChangeListener(this);
 }
-/**
- * MembraneMapping constructor comment.
- * @param membrane cbit.vcell.model.Membrane
- * @param geoContext cbit.vcell.mapping.GeometryContext
- * @exception java.lang.Exception The exception description.
- */
+
 public MembraneMapping(Membrane membrane, SimulationContext argSimulationContext, ModelUnitSystem argModelUnitSystem) {
 	super(membrane, argSimulationContext, argModelUnitSystem);
 	double volume = 50000.0;
@@ -138,11 +127,7 @@ public boolean getCalculateVoltage() {
 private String getInitialVoltageName() {
 	return TokenMangler.fixToken(getMembrane().getMembraneVoltage().getName())+"_init";
 }
-/**
- * Gets the initialVoltage property (cbit.vcell.parser.Expression) value.
- * @return The initialVoltage property value.
- * @see #setInitialVoltage
- */
+
 public StructureMappingParameter getInitialVoltageParameter() {
 	return getParameterFromRole(ROLE_InitialVoltage);
 }
@@ -162,11 +147,7 @@ protected java.beans.PropertyChangeSupport getPropertyChange() {
 	};
 	return propertyChange;
 }
-/**
- * Gets the specificCapacitance_pF_squm property (double) value.
- * @return The specificCapacitance_pF_squm property value.
- * @see #setSpecificCapacitance_pF_squm
- */
+
 public StructureMappingParameter getSpecificCapacitanceParameter() {
 	return getParameterFromRole(ROLE_SpecificCapacitance);
 }
@@ -214,7 +195,7 @@ public Expression getNormalizedConcentrationCorrection(SimulationContext simulat
 	Expression exp = getSizeCorrection(simulationContext);
 	if (getGeometryClass() instanceof CompartmentSubVolume || getGeometryClass() instanceof SubVolume){
 		Expression unitFactor = unitFactorProvider.getUnitFactor(modelUnitSystem.getVolumeSubstanceUnit().divideBy(modelUnitSystem.getMembraneSubstanceUnit()));
-		exp = Expression.mult(exp,unitFactor);
+		exp = Expression.mult(unitFactor, exp).flattenFactors("KMOLE");
 	}
 	return exp;
 }

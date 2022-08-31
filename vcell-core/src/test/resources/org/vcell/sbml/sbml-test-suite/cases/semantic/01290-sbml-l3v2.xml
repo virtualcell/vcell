@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created by libAntimony version v2.9.0 with libSBML version 5.13.1. -->
+<sbml xmlns="http://www.sbml.org/sbml/level3/version2/core" level="3" version="2">
+  <model id="case01290" name="case01290">
+    <listOfParameters>
+      <parameter id="p1" value="1" constant="false"/>
+      <parameter id="p2" value="2" constant="false"/>
+    </listOfParameters>
+    <listOfRules>
+      <rateRule variable="p1">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <true/>
+        </math>
+      </rateRule>
+      <rateRule variable="p2">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <false/>
+        </math>
+      </rateRule>
+    </listOfRules>
+  </model>
+</sbml>

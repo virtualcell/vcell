@@ -9,33 +9,18 @@
  */
 
 package cbit.vcell.solver;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
 
-import org.vcell.util.BeanUtils;
-import org.vcell.util.CommentStringTokenizer;
-import org.vcell.util.Compare;
-import org.vcell.util.DataAccessException;
-import org.vcell.util.Issue;
-import org.vcell.util.Issue.IssueCategory;
-import org.vcell.util.IssueContext;
-import org.vcell.util.IssueContext.ContextType;
-import org.vcell.util.Matchable;
-
-import cbit.vcell.mapping.DiffEquMathMapping;
-import cbit.vcell.math.Constant;
-import cbit.vcell.math.MathDescription;
-import cbit.vcell.math.MathFunctionDefinitions;
-import cbit.vcell.math.VCML;
-import cbit.vcell.math.Variable;
+import cbit.vcell.math.*;
 import cbit.vcell.model.common.VCellErrorMessages;
-import cbit.vcell.parser.Expression;
-import cbit.vcell.parser.ExpressionBindingException;
-import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.parser.SymbolTable;
+import cbit.vcell.parser.*;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.vcell.util.*;
+import org.vcell.util.Issue.IssueCategory;
+import org.vcell.util.IssueContext.ContextType;
+
+import java.util.*;
+
 /**
  * Constant expressions that override those specified in the MathDescription
  * for a given Simulation.  These expressions are to be bound to the Simulation
@@ -44,6 +29,8 @@ import cbit.vcell.parser.SymbolTable;
  * @author: John Wagner
  */
 public class MathOverrides implements Matchable, java.io.Serializable {
+
+	private final static Logger logger = LogManager.getLogger(MathOverrides.class);
 	private Simulation simulation = null;
 	//
 	// key = constant name (String)
@@ -231,7 +218,6 @@ protected void fireConstantRemoved(cbit.vcell.solver.MathOverridesEvent event) {
  * @return  the value to which the key is mapped in this hashtable;
  *          <code>null</code> if the key is not mapped to any value in
  *          this hashtable.
- * @see     #put(Object, Object)
  */
 public Expression getActualExpression(String key, int index) {
 	MathOverrides.Element element = getOverridesElement(key);
@@ -298,7 +284,6 @@ public Constant getConstant(String constantName) {
  * @return  the value to which the key is mapped in this hashtable;
  *          <code>null</code> if the key is not mapped to any value in
  *          this hashtable.
- * @see     #put(Object, Object)
  */
 public ConstantArraySpec getConstantArraySpec(String key) {
 	if(isScan(key)) {
@@ -538,7 +523,7 @@ private void putConstant(Constant value, boolean bFireEvent) throws ExpressionEx
 		def = ((Constant)var).getExpression();
 	} else {
 		// ignore
-		System.out.println(">>>>WARNING: Math does not have constant with name: "+name);
+		logger.error("Math does not have constant with name: "+name);
 		return;
 	}
 	if (act.compareEqual(def)) {
@@ -705,84 +690,61 @@ private static java.util.Vector<Element> toVector (java.util.Enumeration<Element
 	return (vector);
 }
 
-
 void updateFromMathDescription() {
 	MathDescription mathDescription = getSimulation().getMathDescription();
 	//
 	// get list of names of constants in this math
 	//
 	Enumeration<Constant> enumeration = mathDescription.getConstants();
-	java.util.HashSet<String> mathDescriptionHash = new java.util.HashSet<String>();
+	Set<String> mathDescriptionHash = new LinkedHashSet<>();
 	while (enumeration.hasMoreElements()) {
 		Constant constant = enumeration.nextElement();
 		mathDescriptionHash.add(constant.getName());
 	}
-	//
-	//  for any elements in this MathOverrides but not in the new MathDescription
-	//
-	//  	1) try to "repair" overridden constants for automatically generated constant names (via math generation)
-	//         which have changed due to changes to Math generation
-	//
-	//      2) if not repaired, will be reported as an issue.
-	//
-	HashMap<String, String> renamedMap = new HashMap<String, String>();
-	boolean bNameRepaired = true;
-	while (bNameRepaired){
-		bNameRepaired = false;
-		Enumeration<String> mathOverrideNamesEnum = getOverridesHash().keys();
-		while (mathOverrideNamesEnum.hasMoreElements()){
-			String name = mathOverrideNamesEnum.nextElement();
-			if (!mathDescriptionHash.contains(name)){
-				//
-				// test for renamed initial condition constant (changed from _init to _init_uM)
-				//
-				if (name.endsWith(DiffEquMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_old)){
-					String name_repaired_to_uM = name.replace(
-							DiffEquMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_old, 
-							DiffEquMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_old_uM);
-					if (mathDescriptionHash.contains(name_repaired_to_uM)){
-						Element element = overridesHash.remove(name);
-						element.name = name_repaired_to_uM;
-						overridesHash.put(name_repaired_to_uM, element);
-						renamedMap.put(name, name_repaired_to_uM);
-						removeConstant(name);
-						bNameRepaired = true;
-						break;
-					}						
+	LinkedHashSet<String> referencedNames = new LinkedHashSet<>();
+	Enumeration<String> mathOverrideNamesEnum = getOverridesHash().keys();
+	while (mathOverrideNamesEnum.hasMoreElements()) {
+		String name = mathOverrideNamesEnum.nextElement();
+		referencedNames.add(name);
+		Element element = getOverridesHash().get(name);
+		if (element.getSpec() != null) {
+			for (Constant constant : element.getSpec().getConstants()){
+				String[] symbols = constant.getExpression().getSymbols();
+				if (symbols!=null) {
+					referencedNames.addAll(Arrays.asList(symbols));
 				}
-				//
-				// test for renamed initial condition constant (changed from _init to _init_molecules_um_2)
-				//
-				if (name.endsWith(DiffEquMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_old)){
-					String name_repaired_to_molecule_per_um2 = name.replace(
-							DiffEquMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_old, 
-							DiffEquMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_old_molecules_um_2);
-					if (mathDescriptionHash.contains(name_repaired_to_molecule_per_um2)){
-						Element element = overridesHash.remove(name);
-						element.name = name_repaired_to_molecule_per_um2;
-						overridesHash.put(name_repaired_to_molecule_per_um2, element);
-						renamedMap.put(name, name_repaired_to_molecule_per_um2);
+			}
+		}
+		if (element.getActualValue() != null) {
+			String[] symbols = element.getActualValue().getSymbols();
+			if (symbols!=null) {
+				referencedNames.addAll(Arrays.asList(symbols));
+			}
+		}
+	}
+
+	LinkedHashSet<String> allFactorSymbols = new LinkedHashSet<>();
+
+	HashMap<String, MathOverridesResolver.SymbolReplacement> renamedMap = new HashMap<>();
+	for (String name : referencedNames){
+		if (!mathDescriptionHash.contains(name)){
+			MathOverridesResolver mathOverridesResolver = getSimulation().getSimulationOwner().getMathOverridesResolver();
+			if (mathOverridesResolver != null) {
+				MathOverridesResolver.SymbolReplacement replacement = mathOverridesResolver.getSymbolReplacement(name);
+				if (replacement != null) {
+					allFactorSymbols.addAll(replacement.getFactorSymbols());
+					Element element = overridesHash.remove(name);
+					if (element != null) {
+						element.name = replacement.newName;
+						if (!replacement.factor.isOne()) {
+							element.actualValue = Expression.mult(element.actualValue, replacement.factor);
+						}
+						overridesHash.put(replacement.newName, element);
 						removeConstant(name);
-						bNameRepaired = true;
-						break;
-					}						
-				}
-				//
-				// test for renamed initial condition constant (changed from _init_molecules_per_um2 to _init_molecules_um_2)
-				//
-				if (name.endsWith(DiffEquMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_old_molecules_per_um2)){
-					String name_repaired_to_molecule_per_um2 = name.replace(
-							DiffEquMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_old_molecules_per_um2, 
-							DiffEquMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_old_molecules_um_2);
-					if (mathDescriptionHash.contains(name_repaired_to_molecule_per_um2)){
-						Element element = overridesHash.remove(name);
-						element.name = name_repaired_to_molecule_per_um2;
-						overridesHash.put(name_repaired_to_molecule_per_um2, element);
-						renamedMap.put(name, name_repaired_to_molecule_per_um2);
-						removeConstant(name);
-						bNameRepaired = true;
-						break;
-					}						
+					}
+					renamedMap.put(name, replacement);
+				}else{
+					logger.error("didn't find a replacement for math override symbol " + name);
 				}
 			}
 		}
@@ -791,19 +753,50 @@ void updateFromMathDescription() {
 	//
 	// for repaired constants, go through all entries and rename expressions where they refer to the renamed constant.
 	//
-	for (String origName : renamedMap.keySet()){
-		for (Element element : overridesHash.values()){
-			if (element.actualValue!=null && element.actualValue.hasSymbol(origName)){
-				try {
-					element.actualValue = element.actualValue.getSubstitutedExpression(new Expression(origName), new Expression(mathDescription.getVariable(renamedMap.get(origName)),null));
-				} catch (ExpressionException e) {
-					// won't happen ... here because new Expression(origName) throws a parse exception ... but it must be able to parse.
-					e.printStackTrace();
+	for (Element element : overridesHash.values()){
+		if (element.actualValue!=null) {
+			for (String replacedSymbol : renamedMap.keySet()) {
+				if (element.actualValue.hasSymbol(replacedSymbol)) {
+					try {
+						MathOverridesResolver.SymbolReplacement replacement = renamedMap.get(replacedSymbol);
+						Expression replacementExp = new Expression(mathDescription.getVariable(replacement.newName), null);
+						if (!replacement.factor.isOne()) {
+							replacementExp = Expression.mult(Expression.invert(replacement.factor), replacementExp);
+						}
+						element.actualValue = element.actualValue.getSubstitutedExpression(new Expression(replacedSymbol), replacementExp);
+
+					} catch (ExpressionException e) {
+						String msg = "failed to process expression substitution for " + element.name + ", value=" + element.actualValue.infix();
+						throw new RuntimeException(msg, e);
+					}
 				}
 			}
 		}
 	}
-	
+
+	//
+	// loop through all expressions and try to flatten factors.
+	//
+	for (String overriddenName : getOverridesHash().keySet()) {
+		Element element = overridesHash.get(overriddenName);
+		for (String factorSymbol : allFactorSymbols) {
+			try {
+				element.actualValue = element.actualValue.flattenFactors(factorSymbol);
+			} catch (ExpressionException e) {
+				String msg = "failed to simplify unit converted Math Override " + overriddenName + "=" + element.actualValue.infix();
+				logger.error(msg, e);
+				throw new RuntimeException(msg, e);
+			}
+		}
+		try {
+			Expression simplifiedExp = ExpressionUtils.simplifyUsingJSCL(element.actualValue);
+			simplifiedExp.bindExpression(mathDescription);
+			element.actualValue = simplifiedExp;
+		} catch (Exception e){
+			logger.error(e);
+		}
+	}
+
 	refreshDependencies();
 }
 
@@ -848,7 +841,7 @@ public void refreshDependencies() {
 			iter.next().bind(getSimulation().getMathDescription());
 		}
 	} catch (ExpressionBindingException e) {
-		e.printStackTrace();
+		logger.error("failed to bind a math override: "+e.getMessage(), e);
 		throw new RuntimeException(e.getMessage());
 	}	
 }

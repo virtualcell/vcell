@@ -18,6 +18,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import cbit.vcell.model.*;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Compare;
 import org.vcell.util.Displayable;
@@ -38,22 +41,6 @@ import cbit.vcell.mapping.spatial.SpatialObject.QuantityComponent;
 import cbit.vcell.mapping.spatial.SpatialObject.SpatialQuantity;
 import cbit.vcell.mapping.spatial.VolumeRegionObject;
 import cbit.vcell.matrix.RationalNumber;
-import cbit.vcell.model.BioNameScope;
-import cbit.vcell.model.ExpressionContainer;
-import cbit.vcell.model.Feature;
-import cbit.vcell.model.Membrane;
-import cbit.vcell.model.ModelException;
-import cbit.vcell.model.ModelUnitSystem;
-import cbit.vcell.model.Parameter;
-import cbit.vcell.model.Product;
-import cbit.vcell.model.ProxyParameter;
-import cbit.vcell.model.Reactant;
-import cbit.vcell.model.ReactionParticipant;
-import cbit.vcell.model.ReactionStep;
-import cbit.vcell.model.SimpleBoundsIssue;
-import cbit.vcell.model.SpeciesContext;
-import cbit.vcell.model.Structure;
-import cbit.vcell.model.VCMODL;
 import cbit.vcell.parser.AbstractNameScope;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
@@ -69,6 +56,8 @@ import net.sourceforge.interval.ia_math.RealInterval;
 @SuppressWarnings("serial")
 public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Serializable, SimulationContextEntity, IssueSource,
 	Identifiable, Displayable {
+
+	private final static Logger logger = LogManager.getLogger(SpeciesContextSpec.class);
 
 	public static final String PARAMETER_NAME_PROXY_PARAMETERS = "proxyParameters";
 	private static final String PROPERTY_NAME_WELL_MIXED = "wellMixed";
@@ -112,7 +101,7 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
 		}
 	}
 	
-	public class SpeciesContextSpecParameter extends Parameter implements ExpressionContainer, IssueSource {
+	public class SpeciesContextSpecParameter extends Parameter implements Identifiable, ExpressionContainer, IssueSource {
 		private Expression fieldParameterExpression = null;
 		private String fieldParameterName = null;
  		private int fieldParameterRole = -1;
@@ -131,7 +120,15 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
 			fieldUnitDefinition = argUnitDefinition;
 			setDescription(argDescription);
 		}
-		
+
+		public SimulationContext getSimulationContext() {
+			return SpeciesContextSpec.this.simulationContext;
+		}
+
+		public SpeciesContextSpec getSpeciesContextSpec() {
+			return SpeciesContextSpec.this;
+		}
+
 		public String getNullExpressionDescription() {
 			if (fieldParameterRole == ROLE_BoundaryValueXm
 					|| fieldParameterRole == ROLE_BoundaryValueXp
@@ -374,12 +371,8 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
 					//
 					cleanupParameters();
 
-				}catch (ModelException e1){
-					e1.printStackTrace(System.out);
-				}catch (ExpressionException e2){
-					e2.printStackTrace(System.out);
-				}catch (PropertyVetoException e3){
-					e3.printStackTrace(System.out);
+				}catch (ModelException | ExpressionException | PropertyVetoException e1){
+					logger.error("property change failed", e1);
 				}
 			} 
 		} 
@@ -974,12 +967,6 @@ public NameScope getNameScope() {
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (4/3/2004 10:48:38 AM)
- * @return cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecParameter
- * @param role int
- */
 public SpeciesContextSpec.SpeciesContextSpecParameter getParameterFromName(String name) {
 	for (int i = 0; i < fieldParameters.length; i++){
 		if (fieldParameters[i].getName().equals(name)){
@@ -1312,7 +1299,7 @@ public void refreshDependencies() {
 				fieldParameters[i].getExpression().bindExpression(this);
 			}
 		}catch (ExpressionException e){
-			System.out.println("error binding expression '"+fieldParameters[i].getExpression().infix()+"', "+e.getMessage());
+			logger.error("error binding expression '"+fieldParameters[i].getExpression().infix()+"', "+e.getMessage());
 		}
 	}
 }
@@ -1540,7 +1527,7 @@ public Expression convertConcentrationToParticles(Expression iniConcentration) t
 		    BigDecimal bd = new BigDecimal(iniParticlesExpr.evaluateConstant());
 		    bd = bd.round(new MathContext(15));
 			iniParticlesExpr = new Expression(bd.doubleValue());
-		} catch (ExpressionException e) {
+		} catch (RuntimeException | ExpressionException e) {
 			Expression numeratorExpr = Expression.mult(iniConcentration, new Expression(structSize));
 			Expression exp = new Expression(volSubstanceToStochasticScale);
 			iniParticlesExpr = Expression.mult(numeratorExpr, exp).flatten();

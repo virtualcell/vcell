@@ -30,6 +30,7 @@ public interface SimulationOwner extends GeometryOwner {
 	Simulation[] getSimulations();
 	void removeSimulation(Simulation simulation) throws PropertyVetoException;
 	OutputFunctionContext getOutputFunctionContext();
+	MathOverridesResolver getMathOverridesResolver();
 	MathDescription getMathDescription();
 	String getName();
 	public Issue gatherIssueForMathOverride(IssueContext issueContext, Simulation simulation, String overriddenConstantName);

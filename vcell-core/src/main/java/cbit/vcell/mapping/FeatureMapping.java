@@ -138,7 +138,7 @@ public Expression getNormalizedConcentrationCorrection(SimulationContext simulat
 		// everything mapped to molecules/sq-um : need volume/area fraction and KMOLE
 		//
 		Expression unitFactor = unitFactorProvider.getUnitFactor(modelUnitSystem.getMembraneSubstanceUnit().divideBy(modelUnitSystem.getVolumeSubstanceUnit()));
-		Expression exp = Expression.mult(new Expression(getVolumePerUnitAreaParameter(),simulationContext.getNameScope()),unitFactor);
+		Expression exp = Expression.mult(unitFactor, new Expression(getVolumePerUnitAreaParameter(),simulationContext.getNameScope())).flattenFactors("KMOLE");
 		return exp;
 	}else{
 		throw new RuntimeException("structure "+getStructure().getName()+" not mapped");

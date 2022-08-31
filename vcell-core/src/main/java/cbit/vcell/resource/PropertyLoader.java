@@ -32,7 +32,7 @@ import cbit.vcell.mongodb.VCMongoMessage;
 public class PropertyLoader {
 
 	//must come before uses of #record method
-	private static HashMap<String, MetaProp> propMap = new HashMap<String,MetaProp>( );
+	private static final HashMap<String, MetaProp> propMap = new HashMap<>( );
 	public static final String ADMINISTRATOR_ACCOUNT = "Administrator";
 	public static final String ADMINISTRATOR_ID = "2";
 
@@ -441,7 +441,7 @@ public class PropertyLoader {
 
 		if (prop.message == null) {
 			prop.message = message;
-			System.err.println(message);
+			lg.error(message);
 		}
 	}
 
@@ -521,7 +521,7 @@ public class PropertyLoader {
 	 * @throws java.io.IOException
 	 */
 	public final static void loadProperties() throws java.io.IOException {
-
+		lg.debug("Loading Properties");
 		File propertyFile = null;
 		//
 		// if vcell.propertyfile defined (on the command line via -Dvcell.propertyfile=/tmp/vcell.properties)
@@ -553,7 +553,7 @@ public class PropertyLoader {
 			java.io.FileInputStream propFile = new java.io.FileInputStream(propertyFile);
 			p.load(propFile);
 			propFile.close();
-			System.out.println("loaded properties from " + propertyFile.getAbsolutePath() + " specifed by " + where);
+			lg.debug("loaded properties from " + propertyFile.getAbsolutePath() + " specifed by " + where);
 			for (Map.Entry<Object,Object> entry : p.entrySet() ) {
 				String key = entry.getKey().toString();
 				String value = entry.getValue().toString();
@@ -562,20 +562,20 @@ public class PropertyLoader {
 					System.setProperty(key, value);
 				}
 				else if (!existingValue.equals(value)){
-					System.out.println("Property " + key + " property value "  + value + " overridden by system value " + existingValue);
+					lg.debug("Property " + key + " property value "  + value + " overridden by system value " + existingValue);
 				}
 			}
 			lookForMagic(propertyFile);
 		}
 		else {
-			if (lg.isWarnEnabled()) {
-				lg.warn("Can't read propertyFile " + propertyFile.getAbsolutePath() + " specified by " + where);
+			if (lg.isInfoEnabled()) {
+				lg.info("Can't read propertyFile " + propertyFile.getAbsolutePath() + " specified by " + where);
 			}
 			
 		}
 		// display new properties
 		//System.getProperties().list(System.out);
-		System.out.println("ServerID=" + getProperty(vcellServerIDProperty,"unknown")+", SoftwareVersion="+getProperty(vcellSoftwareVersion,"unknown"));
+		lg.info("ServerID=" + getProperty(vcellServerIDProperty,"unknown")+", SoftwareVersion="+getProperty(vcellSoftwareVersion,"unknown"));
 	}
 
 	/**
@@ -703,9 +703,6 @@ public class PropertyLoader {
 
 	/**
 	 * verify entry based on properties
-	 * @param entry to verify
-	 * @param report destination to report discrepancies
-	 * @param fileSet is set from file? (for formatting messages)
 	 */
 	//private static void verifyEntry( Map.Entry<String,MetaProp> entry, StringBuffer report, boolean fileSet)  {
 	private static void verifyEntry(String name, MetaProp meta, StringBuffer report)  {

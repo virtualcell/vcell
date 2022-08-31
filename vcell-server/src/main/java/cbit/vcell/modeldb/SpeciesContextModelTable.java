@@ -35,7 +35,7 @@ public class SpeciesContextModelTable extends cbit.sql.Table {
 	//public final Field diffRate		= new Field("diffRate",		"varchar(255)",			"NOT NULL");
 	//public final Field initCond		= new Field("initCond",		"varchar(255)",			"NOT NULL");
 	public final Field hasOverride	= new Field("hasOverride",	SQLDataType.varchar2_1,		"NOT NULL");// 'T' or 'F'
-	public final Field speciesPattern=new Field("speciesPattern",SQLDataType.varchar2_255,	"");
+	public final Field speciesPattern=new Field("speciesPattern",SQLDataType.varchar2_2000,	"");
 	public final Field sbmlName		= new Field("sbmlName",			SQLDataType.varchar_255,	"");
 	
 	private final Field fields[] = {modelRef,speciesRef,structRef,name,/*diffRate,initCond,*/hasOverride,speciesPattern, sbmlName};

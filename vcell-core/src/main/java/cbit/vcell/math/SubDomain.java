@@ -338,7 +338,17 @@ public abstract class SubDomain extends CommentedBlockObject implements Serializ
 	private ArrayList<ParticleProperties> listOfParticleProperties = new ArrayList<ParticleProperties>();
 	
 	private ArrayList<BoundaryConditionSpec> listOfBoundaryConditionSpecs = new ArrayList<SubDomain.BoundaryConditionSpec>();
-	
+
+	public interface DomainWithBoundaryConditions {
+		BoundaryConditionType getBoundaryConditionXm();
+		BoundaryConditionType getBoundaryConditionXp();
+		BoundaryConditionType getBoundaryConditionYm();
+		BoundaryConditionType getBoundaryConditionYp();
+		BoundaryConditionType getBoundaryConditionZm();
+		BoundaryConditionType getBoundaryConditionZp();
+		Collection<Equation> getEquationCollection();
+	}
+
 	// To specify the <MembraneName, BoundaryConditionType> for each compartmentsubDomain
 	public static class BoundaryConditionSpec implements Matchable, Serializable {
 		

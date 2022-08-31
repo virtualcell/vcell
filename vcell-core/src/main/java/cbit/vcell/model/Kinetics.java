@@ -53,6 +53,8 @@ import net.sourceforge.interval.ia_math.RealInterval;
 public abstract class Kinetics implements ModelProcessDynamics, Matchable, PropertyChangeListener, VetoableChangeListener, 
 java.io.Serializable, IssueSource
 {
+	private final static Logger logger = LogManager.getLogger(Kinetics.class);
+
 	public static final String PROPERTY_NAME_KINETICS_PARAMETERS = "kineticsParameters";
 	private String name;
 	private final ReactionStep reactionStep;
@@ -504,12 +506,8 @@ java.io.Serializable, IssueSource
 					//
 					cleanupParameters();
 					
-				}catch (ModelException e1){
-					e1.printStackTrace(System.out);
-				}catch (ExpressionException e2){
-					e2.printStackTrace(System.out);
-				}catch (PropertyVetoException e3){
-					e3.printStackTrace(System.out);
+				}catch (ModelException | ExpressionException | PropertyVetoException e1){
+					logger.error("property change failed", e1);
 				}
 			} 
 		} 
@@ -827,18 +825,8 @@ public void bind(SymbolTable symbolTable) throws ExpressionBindingException {
 	try {
 		cleanupParameters();
 		//resolveUndefinedUnits();
-	}catch (PropertyVetoException e){
-		e.printStackTrace(System.out);
-		throw new RuntimeException(e.getMessage());
-	}catch (ModelException e){
-		e.printStackTrace(System.out);
-		throw new RuntimeException(e.getMessage());
-	}catch (ExpressionBindingException e){
-		e.printStackTrace(System.out);
-		throw e;
-	}catch (ExpressionException e){
-		e.printStackTrace(System.out);
-		throw new RuntimeException(e.getMessage());	
+	}catch (PropertyVetoException | ModelException | ExpressionException e){
+		throw new RuntimeException(e.getMessage(), e);
 	}
 }
 
@@ -885,7 +873,7 @@ private final void cleanupParameters() throws ModelException, ExpressionExceptio
 				try {
 					exp.bindExpression(reactionStep);
 				}catch (ExpressionBindingException e){
-					System.out.println("error binding expression '"+exp.infix()+"': "+e.getMessage());
+					logger.error("error binding expression '"+exp.infix()+"': "+e.getMessage(), e);
 				}
 			}
 		}
@@ -1716,7 +1704,7 @@ public final void electricalTopologyChanged(ElectricalTopology electricalTopolog
 		refreshUnits();
 		cleanupParameters();
 	}catch (Exception e){
-		e.printStackTrace(System.out);
+		logger.error(e.getMessage(), e);
 	}
 }
 
@@ -1778,7 +1766,7 @@ public void propertyChange(PropertyChangeEvent event) {
 			cleanupParameters();
 		}
 	}catch (Throwable e){
-		e.printStackTrace(System.out);
+		logger.error(e.getMessage(), e);
 	}
 }
 
@@ -1999,8 +1987,7 @@ public void renameParameter(String oldName, String newName) throws ExpressionExc
 		try {
 			cleanupParameters();
 		}catch (ModelException e){
-			e.printStackTrace(System.out);
-			throw new RuntimeException(e.getMessage());
+			throw new RuntimeException(e.getMessage(), e);
 		}
 	}
 }
@@ -2066,7 +2053,6 @@ public void resolveUndefinedUnits() {
 							fieldKineticsParameters[i].setUnitDefinition(vcUnitDefinitions[i]);
 						}
 					}
-					//System.out.println("successfully completed Kinetics.resolveUndefinedUnits() for ReactionStep '"+getReactionStep()+"'");
 				}
 			}
 		}catch (Exception e){
@@ -2090,14 +2076,6 @@ void setKineticsParameters(KineticsParameter[] kineticsParameters) throws java.b
 	KineticsParameter[] oldValue = fieldKineticsParameters;
 	fireVetoableChange(PROPERTY_NAME_KINETICS_PARAMETERS, oldValue, kineticsParameters);
 	fieldKineticsParameters = kineticsParameters;
-
-//System.out.print("kineticsParams (reaction "+getReactionStep().getName()+") [");
-//if (fieldKineticsParameters!=null){
-//for (KineticsParameter kpp : fieldKineticsParameters){
-//System.out.print(" "+kpp.getName()+"="+kpp.getExpression().infix()+" ");
-//}
-//}
-//System.out.println("]");
 
 	firePropertyChange(PROPERTY_NAME_KINETICS_PARAMETERS, oldValue, kineticsParameters);
 }
@@ -2161,12 +2139,8 @@ public void setParameterValue(KineticsParameter parm, Expression exp) throws Exp
 				parm.setExpression(oldExpression);
 			}
 			cleanupParameters();
-		}catch (ModelException e){
-			e.printStackTrace(System.out);
-			throw new RuntimeException(e.getMessage());
-		}catch (PropertyVetoException e){
-			e.printStackTrace(System.out);
-			throw new RuntimeException(e.getMessage());
+		}catch (ModelException | PropertyVetoException e){
+			throw new RuntimeException(e.getMessage(), e);
 		}
 	}
 }
@@ -2180,14 +2154,6 @@ private void setUnresolvedParameters(UnresolvedParameter[] unresolvedParameters)
 	UnresolvedParameter[] oldValue = fieldUnresolvedParameters;
 	fieldUnresolvedParameters = unresolvedParameters;
 
-//System.out.print("unresolvedParams (reaction "+getReactionStep().getName()+") [");
-//if (fieldUnresolvedParameters!=null){
-//for (UnresolvedParameter kpp : fieldUnresolvedParameters){
-//System.out.print(" "+kpp.getName()+" ");
-//}
-//}
-//System.out.println("]");
-
 	firePropertyChange("unresolvedParameters", oldValue, unresolvedParameters);
 }
 
@@ -2200,14 +2166,6 @@ private void setUnresolvedParameters(UnresolvedParameter[] unresolvedParameters)
 private void setProxyParameters(KineticsProxyParameter[] proxyParameters) {
 	KineticsProxyParameter[] oldValue = fieldProxyParameters;
 	fieldProxyParameters = proxyParameters;
-
-//System.out.print("proxyParams (reaction "+getReactionStep().getName()+") [");
-//if (fieldProxyParameters!=null){
-//for (KineticsProxyParameter kpp : fieldProxyParameters){
-//System.out.print(" "+kpp.getName()+" ");
-//}
-//}
-//System.out.println("]");
 
 	firePropertyChange("proxyParameters", oldValue, proxyParameters);
 }
