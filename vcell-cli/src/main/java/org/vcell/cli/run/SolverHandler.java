@@ -19,6 +19,7 @@ import cbit.vcell.xml.XmlHelper;
 import org.jlibsedml.SedML;
 import org.jlibsedml.Task;
 import org.jlibsedml.UniformTimeCourse;
+import org.vcell.cli.CLILocalLogFileManager;
 import org.vcell.cli.CLIUtils;
 import org.vcell.cli.vcml.VCMLHandler;
 import org.vcell.sbml.vcell.SBMLImportException;
@@ -67,7 +68,7 @@ public class SolverHandler {
 
 
     public HashMap<String, ODESolverResultSet>
-            simulateAllTasks(ExternalDocInfo externalDocInfo, SedML sedml,
+            simulateAllTasks(ExternalDocInfo externalDocInfo, SedML sedml, CLILocalLogFileManager logManager,
                              File outputDirForSedml, String outDir, String outputBaseDir, String sedmlLocation,
                              boolean keepTempFiles, boolean exactMatchOnly, boolean bForceLogFiles) throws Exception {
         // create the VCDocument(s) (bioModel(s) + application(s) + simulation(s)), do sanity checks
@@ -259,11 +260,11 @@ public class SolverHandler {
                     	if(bTimeoutFound == false) {		// don't repeat this for each task
                     		String str = logTaskError.substring(0, logTaskError.indexOf("Process timed out"));
                     		str += "Process timed out";		// truncate the rest of the spam
-                        	CLIUtils.writeDetailedErrorList(outputBaseDir, bioModelBaseName + ",  solver: " + sdl + ": " + type + ": " + str, bForceLogFiles);
+                            logManager.writeDetailedErrorList(bioModelBaseName + ",  solver: " + sdl + ": " + type + ": " + str);
                         	bTimeoutFound = true;
                     	}
                     } else {
-                    	CLIUtils.writeDetailedErrorList(outputBaseDir, bioModelBaseName + ",  solver: " + sdl + ": " + type + ": " + logTaskError, bForceLogFiles);
+                        logManager.writeDetailedErrorList(bioModelBaseName + ",  solver: " + sdl + ": " + type + ": " + logTaskError);
                     }
                     RunUtils.drawBreakLine("-", 100);
                 }

@@ -1,6 +1,8 @@
 package org.vcell.cli.vcml;
 
 import cbit.vcell.resource.PropertyLoader;
+
+import org.vcell.cli.CLILocalLogFileManager;
 import org.vcell.util.DataAccessException;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
@@ -38,6 +40,7 @@ public class ExportOmexBatchCommand implements Callable<Integer> {
 
     public Integer call() {
         try {
+            CLILocalLogFileManager logManager = new CLILocalLogFileManager(outputFilePath, true);
             PropertyLoader.loadProperties();
             boolean bForceLogFiles = true; // TODO: find out what this means and simplify
             if (inputFilePath == null || !inputFilePath.exists() || !inputFilePath.isDirectory()){
@@ -48,7 +51,7 @@ public class ExportOmexBatchCommand implements Callable<Integer> {
                 VcmlOmexConverter.queryVCellDbPublishedModels(cliDatabaseService, outputFilePath, bForceLogFiles);
 
                 VcmlOmexConverter.convertFiles(cliDatabaseService, inputFilePath, outputFilePath,
-                        outputModelFormat, bHasDataOnly, bMakeLogsOnly, bNonSpatialOnly, bForceLogFiles, bValidateOmex);
+                        outputModelFormat, logManager, bHasDataOnly, bMakeLogsOnly, bNonSpatialOnly, bForceLogFiles, bValidateOmex);
             } catch (IOException | SQLException | DataAccessException e) {
                 e.printStackTrace(System.err);
             }

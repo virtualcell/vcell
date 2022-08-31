@@ -6,7 +6,7 @@ import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
+import org.vcell.cli.CLILocalLogFileManager;
 import org.vcell.cli.CLIPythonManager;
 import org.vcell.cli.CLIUtils;
 import org.vcell.cli.run.ExecuteImpl;
@@ -42,6 +42,7 @@ public class BiosimulationsCommand implements Callable<Integer> {
     private boolean help;
 
     public Integer call() {
+        CLILocalLogFileManager logManager = new CLILocalLogFileManager(OUT_DIR, bDebug);
         try {
             LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
             Level logLevel = logger.getLevel();
@@ -105,11 +106,11 @@ public class BiosimulationsCommand implements Callable<Integer> {
             logger.info("Beginning execution");
             try {
                 CLIPythonManager.getInstance().instantiatePythonProcess();
-                ExecuteImpl.singleExecOmex(ARCHIVE, OUT_DIR, bKeepTempFiles, bExactMatchOnly, bForceLogFiles, false);
+                ExecuteImpl.singleExecOmex(ARCHIVE, OUT_DIR, logManager, bKeepTempFiles, bExactMatchOnly, bForceLogFiles, false);
                 return 0; // Does this prevent finally?
             } finally {
                 try {
-                    logger.trace("Closing Python Instance");
+                    logManager.finalizeAndExportLogFiles();
                     CLIPythonManager.getInstance().closePythonProcess(); // WARNING: Python will need reinstantiation after this is called
                 } catch (Exception e) {
                     logger.error(e.getMessage(), e);

@@ -2,6 +2,7 @@ package org.vcell.cli.run;
 
 import cbit.vcell.resource.PropertyLoader;
 
+import org.vcell.cli.CLILocalLogFileManager;
 import org.vcell.cli.CLIPythonManager;
 import org.vcell.cli.CLIUtils;
 import org.vcell.util.exe.Executable;
@@ -85,26 +86,27 @@ public class ExecuteCommand implements Callable<Integer> {
 
             PropertyLoader.loadProperties();
             CLIPythonManager.getInstance().instantiatePythonProcess();
+            CLILocalLogFileManager logManager = new CLILocalLogFileManager(outputFilePath, bForceLogFiles);
 
             Executable.setTimeoutMS(EXECUTABLE_MAX_WALLCLOCK_MILLIS);
             logger.info("Beginning execution");
             if (inputFilePath.isDirectory()) {
                 logger.debug("Batch mode requested");
-                CLIUtils.createHeader(outputFilePath, bForceLogFiles);
-                ExecuteImpl.batchMode(inputFilePath, outputFilePath, bKeepTempFiles, bExactMatchOnly, bForceLogFiles);
+                //CLIUtils.createHeader(outputFilePath, bForceLogFiles);
+                ExecuteImpl.batchMode(inputFilePath, outputFilePath, logManager, bKeepTempFiles, bExactMatchOnly, bForceLogFiles);
             } else {
                 logger.debug("Single mode requested");
                 File archiveToProcess = inputFilePath;
-                if (bForceLogFiles) CLIUtils.createHeader(outputFilePath, bForceLogFiles);
+                //if (bForceLogFiles) CLIUtils.createHeader(outputFilePath, bForceLogFiles);
 
                 if (archiveToProcess.getName().endsWith("vcml")) {
-                    ExecuteImpl.singleExecVcml(archiveToProcess, outputFilePath);
+                    ExecuteImpl.singleExecVcml(archiveToProcess, outputFilePath, logManager);
                 } else { // archiveToProcess.getName().endsWith("omex")
-                    ExecuteImpl.singleExecOmex(archiveToProcess, outputFilePath, bKeepTempFiles, bExactMatchOnly, bForceLogFiles, bEncapsulateOutput);
+                    ExecuteImpl.singleExecOmex(archiveToProcess, outputFilePath, logManager, bKeepTempFiles, bExactMatchOnly, bForceLogFiles, bEncapsulateOutput);
                 }
             }
 
-            logger.trace("Closing Python Instance");
+            logManager.finalizeAndExportLogFiles();
             CLIPythonManager.getInstance().closePythonProcess(); // WARNING: Python will need reinstantiation after this is called
             return 0;
         } catch (Exception e) {

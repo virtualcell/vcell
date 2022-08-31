@@ -36,6 +36,7 @@ public class CLILocalLogFileManager implements LocalLogFileManager {
 
     // Note: this constructor is private
     private CLILocalLogFileManager(){
+        logger.debug(this.getClass().getName() + " initializing");
         this.logFileBuffers = new HashMap<>();
         for(LocalLogFileName name : this.getAllLocalLogFileName())
             this.logFileBuffers.put(name, null);
@@ -59,16 +60,16 @@ public class CLILocalLogFileManager implements LocalLogFileManager {
         this(outputDirectory, DEFAULT_SHOULD_PRINT_LOG_FILES);
     }
 
-    public CLILocalLogFileManager(String outputDirectoryPath, boolean shouldPrintLogFiles){
-        this(new File(outputDirectoryPath), shouldPrintLogFiles);
+    public CLILocalLogFileManager(String outputDirectoryPath, boolean forceLogFiles){
+        this(new File(outputDirectoryPath), forceLogFiles);
     }
 
-    public CLILocalLogFileManager(Path outputDirectoryPath, boolean shouldPrintLogFiles){
-        this(outputDirectoryPath.toFile(), shouldPrintLogFiles);
+    public CLILocalLogFileManager(Path outputDirectoryPath, boolean forceLogFiles){
+        this(outputDirectoryPath.toFile(), forceLogFiles);
     }
 
-    public CLILocalLogFileManager(File outputDirectory, boolean shouldPrintLogFiles){
-        this(CLIUtils.isBatchExecution(outputDirectory.getAbsolutePath(), shouldPrintLogFiles));
+    public CLILocalLogFileManager(File outputDirectory, boolean forceLogFiles){
+        this(CLIUtils.isBatchExecution(outputDirectory.getAbsolutePath(), forceLogFiles));
         if (!outputDirectory.exists() && !outputDirectory.mkdirs()) {
             String format = "Path: <%s> does not lead to an existing directory, nor could it be created.";
             String message = String.format(format, outputDirectory.getAbsolutePath());
@@ -119,6 +120,7 @@ public class CLILocalLogFileManager implements LocalLogFileManager {
     public boolean finalizeAndExportLogFiles(){
         boolean didSucceed = false;
         if (!outputDirectory.exists()) return false;
+        logger.debug("Exporting CLI Local Log Files");
         try {
             for (LocalLogFileName logFileType : this.getAllLocalLogFileName()){
                 if (this.logFileBuffers.containsKey(logFileType) && this.logFileBuffers.get(logFileType) != null) {
@@ -165,10 +167,5 @@ public class CLILocalLogFileManager implements LocalLogFileManager {
     private void createHeader() {
         String header = "BaseName,SedML,Error,Models,Sims,Tasks,Outputs,BioModels,NumSimsSuccessful";
         this.writeDetailedResultList(header);
-    }
-
-    // In case VCell CLI crashes, we still want logs.
-    protected void finalize(){
-        this.finalizeAndExportLogFiles();
     }
 }
