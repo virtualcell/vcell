@@ -4,10 +4,7 @@ package org.vcell.sedml;
 import java.beans.PropertyVetoException;
 import java.io.*;
 import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import cbit.vcell.parser.ExpressionMathMLParser;
 import cbit.vcell.parser.SymbolTableEntry;
@@ -327,11 +324,16 @@ public class SEDMLImporter {
 				}
 			}
 			// purge unused biomodels and applications
-			for (BioModel doc : docs) {
+			Iterator<BioModel> docIter = docs.iterator();
+			while (docIter.hasNext()) {
+				BioModel doc = docIter.next();
 				for (int i = 0; i < doc.getSimulationContexts().length; i++) {
-					if (doc.getSimulationContext(i).getSimulations().length == 0) doc.removeSimulationContext(doc.getSimulationContext(i));
+					if (doc.getSimulationContext(i).getSimulations().length == 0) {
+						doc.removeSimulationContext(doc.getSimulationContext(i));
+						i--;
+					}
 				}
-				if (doc.getSimulations().length == 0) docs.remove(doc);
+				if (doc.getSimulations().length == 0) docIter.remove();
 			}
 			// finally try to consolidate SimContexts into fewer (posibly just one) BioModels
 			// unlikely to happen from SEDMLs not originating from VCell, but very useful for roundtripping if so
@@ -352,9 +354,7 @@ public class SEDMLImporter {
 			BioModel strippedBM = null;
 			try {
 				strippedBM = XmlHelper.cloneBioModel(bm);
-				for (Simulation sim : strippedBM.getSimulations()) {
-					strippedBM.removeSimulation(sim);
-				}
+				strippedBM.setSimulations(new Simulation[0]);
 				strippedBM.removeSimulationContext(strippedBM.getSimulationContext(0));
 			} catch (XmlParseException | PropertyVetoException e) {
 				// TODO Auto-generated catch block

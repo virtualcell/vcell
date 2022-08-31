@@ -5,9 +5,10 @@ import cbit.vcell.parser.Expression;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 
 public interface MathOverridesResolver {
-    
+
     class SymbolReplacement {
         public final String newName;
         public final Expression factor;
@@ -27,4 +28,11 @@ public interface MathOverridesResolver {
     }
 
     SymbolReplacement getSymbolReplacement(String name);
+
+    /**
+     * @return set of constant names belonging to physical constants and unit conversions
+     *         or 'null' if it cannot fulfill request (e.g. MathSymbolMapping is missing)
+     */
+    Set<String> getNonOverridableConstantNames();
+
 }

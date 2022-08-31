@@ -348,6 +348,38 @@ public class SimulationContext implements SimulationOwner, Versionable, Matchabl
 			return null;
 		}
 
+		/**
+		 * @return set of constant names belonging to physical constants and unit conversions
+		 *         or 'null' if it cannot fulfill request (e.g. MathSymbolMapping is missing)
+		 */
+		@Override
+		public Set<String> getNonOverridableConstantNames() {
+			MathSymbolMapping mathSymbolMapping = (MathSymbolMapping) mathDesc.getSourceSymbolMapping();
+			if (mathSymbolMapping == null){
+				return null;
+			}
+			List<Constant> constants = Collections.list(mathDesc.getConstants());
+			Set<String> nonOverridableConstantNames = new LinkedHashSet<>();
+			for (Constant c : constants){
+				SymbolTableEntry[] stes = mathSymbolMapping.getBiologicalSymbol(c);
+				if (stes != null && stes.length > 0){
+					SymbolTableEntry bioSTE = stes[0];
+					if (bioSTE instanceof ReservedSymbol){
+						ReservedSymbol reservedSymbol = (ReservedSymbol)bioSTE;
+						if (reservedSymbol.getRole() != ReservedSymbolRole.TEMPERATURE) {
+							nonOverridableConstantNames.add(c.getName());
+						}
+					} else if (bioSTE instanceof AbstractMathMapping.MathMappingParameter){
+						AbstractMathMapping.MathMappingParameter mmParam = (AbstractMathMapping.MathMappingParameter) bioSTE;
+						if (mmParam.getRole() == AbstractMathMapping.PARAMETER_ROLE_UNITFACTOR){
+							nonOverridableConstantNames.add(c.getName());
+						}
+					}
+				}
+			}
+			return nonOverridableConstantNames;
+		}
+
 	}
 
 		public class SimulationContextParameter extends Parameter implements ExpressionContainer {
