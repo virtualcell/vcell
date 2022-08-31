@@ -56,7 +56,7 @@ class ModelTransformationUtils {
 	 * @throws XPathEvaluationException
 	 *             if errors occur applying the XPath expression.
 	 */
-	static public void deleteXMLElement(final Document doc,
+	static void deleteXMLElement(final Document doc,
 			String xPathToElementToDelete,  XPath xpath)
 			throws XMLException, XPathEvaluationException {
 		Object result = applyXpath(xPathToElementToDelete, xpath, doc );
@@ -71,7 +71,7 @@ class ModelTransformationUtils {
 		}
 	}
 
-	static public void changeXMLElement(final Document doc, NewXML newXML,
+	static void changeXMLElement(final Document doc, NewXML newXML,
 			String xPathToRemove,  XPath xpath)
 			throws XMLException, XPathEvaluationException {
 		Object result = applyXpath(xPathToRemove, xpath, doc);
@@ -132,7 +132,7 @@ class ModelTransformationUtils {
 	 * @throws XPathEvaluationException
 	 *             if errors occur applying the XPath expression.
 	 */
-	static public void addXMLelement(final Document doc, String xmlToAdd,
+	static void addXMLelement(final Document doc, String xmlToAdd,
 			String xPathTpoParentElement,  XPath xpath)
 			throws XMLException, XPathEvaluationException {
 
@@ -163,7 +163,7 @@ class ModelTransformationUtils {
 
 	}
 
-	static public String exportChangedXMLAsString(Document doc)
+	static String exportChangedXMLAsString(Document doc)
 			throws TransformerConfigurationException,
 			TransformerFactoryConfigurationError, TransformerException {
 		String xmlString;
@@ -180,7 +180,7 @@ class ModelTransformationUtils {
 		return xmlString;
 	}
 
-	static public void applyAttributeChange(Document doc, XPath xpath, Change change)
+	static void applyAttributeChange(Document doc, XPath xpath, Change change)
 			throws XPathExpressionException {
 		ChangeAttribute chAtrr = (ChangeAttribute) change;
 		XPathExpression expr;
@@ -194,7 +194,7 @@ class ModelTransformationUtils {
 		}
 	}
 
-	static public Document getXMLDocumentFromModelString(final String originalModel)
+	static Document getXMLDocumentFromModelString(final String originalModel)
 			throws ParserConfigurationException, UnsupportedEncodingException,
 			IOException, SAXException {
 		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
