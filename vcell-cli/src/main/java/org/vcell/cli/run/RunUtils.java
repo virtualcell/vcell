@@ -396,6 +396,7 @@ public class RunUtils {
                         SymbolTable st = new SimpleSymbolTable(varIDs.toArray(new String[vars.size()]));
                         expr.bindExpression(st);
                         //compute and write result, padding with NaN if unequal length or errors
+                        
                         double[] row = new double[vars.size()];
 
                         // Handling row labels that contains ","
@@ -418,31 +419,34 @@ public class RunUtils {
                             sb.append("").append(",");
                         }
 
-                        for (int i = 0; i < mxlen; i++) {
-                            for (int j = 0; j < vars.size(); j++) {
-                            	ArrayList<double[]> variablesList = values.get(vars.get(j));
-                            	//
-                            	// TODO: add another for loop to deal with multiple double[] in the list (repeated task)
-                            	//
-                            	double[] varVals = variablesList.get(0);
-//                                double[] varVals = ((double[]) values.get(vars.get(j)));
-                                if (i < varVals.length) {
-                                    row[j] = varVals[i];
-                                } else {
-                                    row[j] = Double.NaN;
-                                }
-                            }
-                            double computed = Double.NaN;
-                            try {
-                                computed = expr.evaluateVector(row);
-                            } catch (Exception e) {
-                                // do nothing, we leave NaN and don't warn/log since it could flood
-                            }
-                            sb.append(computed).append(",");
+                        Variable firstVar = vars.get(0);
+                        int overridesCount = values.get(firstVar).size();
+                        for(int k=0; k<overridesCount; k++) {
+	                        for (int i = 0; i < mxlen; i++) {
+	                            for (int j = 0; j < vars.size(); j++) {
+	                            	Variable var = vars.get(j);
+	                            	ArrayList<double[]> variablesList = values.get(var);
+	
+	                            	double[] varVals = variablesList.get(k);
+	//                                double[] varVals = ((double[]) values.get(vars.get(j)));
+	                                if (i < varVals.length) {
+	                                    row[j] = varVals[i];
+	                                } else {
+	                                    row[j] = Double.NaN;
+	                                }
+	                            }
+	                            double computed = Double.NaN;
+	                            try {
+	                                computed = expr.evaluateVector(row);
+	                            } catch (Exception e) {
+	                                // do nothing, we leave NaN and don't warn/log since it could flood
+	                            }
+	                            sb.append(computed).append(",");
+	                        }
                         }
                         sb.deleteCharAt(sb.lastIndexOf(","));
                         sb.append("\n");
-                    }
+                    }		// end for dataset
                     File f = new File(outDirForCurrentSedml, oo.getId() + ".csv");
                     PrintWriter out = new PrintWriter(f);
                     out.print(sb.toString());
