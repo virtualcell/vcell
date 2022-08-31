@@ -381,7 +381,7 @@ private void updateKeys(MathOverrides mathOverrides) {
 	if (mathOverrides != null) {
 		if (getEditable()) {
 			// show all
-			fieldKeys = mathOverrides.getAllConstantNames();
+			fieldKeys = mathOverrides.getFilteredConstantNames();
 		} else {
 			// summary, show only overriden ones
 			fieldKeys = mathOverrides.getOverridenConstantNames();

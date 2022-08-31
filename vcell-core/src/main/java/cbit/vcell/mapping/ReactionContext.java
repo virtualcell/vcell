@@ -743,7 +743,7 @@ public void convertSpeciesIniCondition(boolean bUseConcentration) throws Express
 			iniConParam.setExpression(covertedConcentration);
 			iniPartParam.setExpression(null);
 		}
-		else if (iniConParam.getExpression() != null)
+		else if (!bUseConcentration && iniConParam.getExpression() != null)
 		{
 			Expression covertedAmount = scs.convertConcentrationToParticles(iniConParam.getExpression());
 			iniPartParam.setExpression(covertedAmount);

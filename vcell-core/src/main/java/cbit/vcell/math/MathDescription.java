@@ -2086,11 +2086,10 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueList) {
 	}
 	
 	// check Constant are really constants
-	for (int i=0;i<variableList.size();i++){
-		Variable var = variableList.get(i);
-		if (var instanceof Constant){
+	for (Variable var : variableList) {
+		if (var instanceof Constant) {
 			try {
-				((Constant)var).getExpression().evaluateConstant();
+				var.getExpression().evaluateConstant();
 			} catch (Exception ex) {
 				ex.printStackTrace(System.out);
 				Issue issue = new Issue(var, issueContext, IssueCategory.MathDescription_Constant_NotANumber, VCellErrorMessages.getErrorMessage(VCellErrorMessages.MATH_DESCRIPTION_CONSTANT, var.getExpression().infix()), Issue.SEVERITY_ERROR);

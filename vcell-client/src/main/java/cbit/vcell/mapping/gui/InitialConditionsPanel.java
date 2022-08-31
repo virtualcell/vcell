@@ -270,7 +270,7 @@ private JPanel getRadioButtonAndCheckboxPanel()
 }
 
 public void concentrationRadioButton_actionPerformed() {
-	AsynchClientTask task1 = new AsynchClientTask("converting to count", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+	AsynchClientTask task1 = new AsynchClientTask("converting to concentration", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 		
 		@Override
 		public void run(Hashtable<String, Object> hashTable) throws Exception {	

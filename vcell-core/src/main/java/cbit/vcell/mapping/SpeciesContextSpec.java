@@ -124,7 +124,11 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
 		public SimulationContext getSimulationContext() {
 			return SpeciesContextSpec.this.simulationContext;
 		}
-		
+
+		public SpeciesContextSpec getSpeciesContextSpec() {
+			return SpeciesContextSpec.this;
+		}
+
 		public String getNullExpressionDescription() {
 			if (fieldParameterRole == ROLE_BoundaryValueXm
 					|| fieldParameterRole == ROLE_BoundaryValueXp
@@ -1523,7 +1527,7 @@ public Expression convertConcentrationToParticles(Expression iniConcentration) t
 		    BigDecimal bd = new BigDecimal(iniParticlesExpr.evaluateConstant());
 		    bd = bd.round(new MathContext(15));
 			iniParticlesExpr = new Expression(bd.doubleValue());
-		} catch (ExpressionException e) {
+		} catch (RuntimeException | ExpressionException e) {
 			Expression numeratorExpr = Expression.mult(iniConcentration, new Expression(structSize));
 			Expression exp = new Expression(volSubstanceToStochasticScale);
 			iniParticlesExpr = Expression.mult(numeratorExpr, exp).flatten();
