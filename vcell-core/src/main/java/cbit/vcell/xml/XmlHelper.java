@@ -117,24 +117,7 @@ public class XmlHelper {
 		String xmlString = null;
 
 		try {
-			if (bioModel == null){
-				throw new IllegalArgumentException("Invalid input for BioModel: " + bioModel);
-			}
-			// NEW WAY, with XML declaration, vcml element, namespace, version #, etc.
-			// create root vcml element
-			Element vcmlElement = new Element(XMLTags.VcmlRootNodeTag);
-			vcmlElement.setAttribute(XMLTags.VersionTag, getEscapedSoftwareVersion());
-			// get biomodel element from xmlProducer and add it to vcml root element
-			Xmlproducer xmlProducer = new Xmlproducer(printkeys);
-			Element biomodelElement = xmlProducer.getXML(bioModel);
-			vcmlElement.addContent(biomodelElement);
-			//set namespace for vcmlElement
-			vcmlElement = XmlUtil.setDefaultNamespace(vcmlElement, Namespace.getNamespace(XMLTags.VCML_NS));
-			// create xml doc with vcml root element and convert to string
-			Document bioDoc = new Document();
-			Comment docComment = new Comment("This biomodel was generated in VCML Version "+getEscapedSoftwareVersion());
-			bioDoc.addContent(docComment);
-			bioDoc.setRootElement(vcmlElement);
+			Document bioDoc = bioModelToXMLDocument(bioModel, printkeys);
 			xmlString = XmlUtil.xmlToString(bioDoc, false);
 
 //			// OLD WAY
@@ -148,6 +131,30 @@ public class XmlHelper {
 			logger.trace(xmlString);
 		}
 		return xmlString;
+	}
+
+
+	public static Document bioModelToXMLDocument(BioModel bioModel, boolean printkeys)
+			throws XmlParseException, ExpressionException {
+		if (bioModel == null){
+			throw new IllegalArgumentException("Invalid input for BioModel: " + bioModel);
+		}
+		// NEW WAY, with XML declaration, vcml element, namespace, version #, etc.
+		// create root vcml element
+		Element vcmlElement = new Element(XMLTags.VcmlRootNodeTag);
+		vcmlElement.setAttribute(XMLTags.VersionTag, getEscapedSoftwareVersion());
+		// get biomodel element from xmlProducer and add it to vcml root element
+		Xmlproducer xmlProducer = new Xmlproducer(printkeys);
+		Element biomodelElement = xmlProducer.getXML(bioModel);
+		vcmlElement.addContent(biomodelElement);
+		//set namespace for vcmlElement
+		vcmlElement = XmlUtil.setDefaultNamespace(vcmlElement, Namespace.getNamespace(XMLTags.VCML_NS));
+		// create xml doc with vcml root element and convert to string
+		Document bioDoc = new Document();
+		Comment docComment = new Comment("This biomodel was generated in VCML Version "+getEscapedSoftwareVersion());
+		bioDoc.addContent(docComment);
+		bioDoc.setRootElement(vcmlElement);
+		return bioDoc;
 	}
 
 
@@ -1134,6 +1141,11 @@ public class XmlHelper {
 		input = input.replace("%", "&#37;");
 //		input = input.replace("'", "&apos;");
 		return input;
+	}
+
+
+	public static String getXPathForBioModel() {
+		return "/vcml:vcml/vcml:BioModel";
 	}
 
 //public static String exportSedML(VCDocument vcDoc, int level, int version, String file) throws XmlParseException {

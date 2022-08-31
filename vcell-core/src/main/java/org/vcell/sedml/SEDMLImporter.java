@@ -6,12 +6,21 @@ import java.io.*;
 import java.nio.charset.Charset;
 import java.util.*;
 
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathFactory;
+
 import cbit.vcell.parser.ExpressionMathMLParser;
 import cbit.vcell.parser.SymbolTableEntry;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jdom.Document;
+import org.jdom.Element;
+import org.jdom.JDOMException;
+import org.jdom.Namespace;
+import org.jdom.input.DOMBuilder;
+import org.jdom.output.DOMOutputter;
 import org.jlibsedml.AbstractTask;
 import org.jlibsedml.Algorithm;
 import org.jlibsedml.AlgorithmParameter;
@@ -35,6 +44,7 @@ import org.jlibsedml.UniformRange.UniformType;
 import org.jlibsedml.UniformTimeCourse;
 import org.jlibsedml.VectorRange;
 import org.jlibsedml.XMLException;
+import org.jlibsedml.XPathEvaluationException;
 import org.jlibsedml.execution.ArchiveModelResolver;
 import org.jlibsedml.execution.FileModelResolver;
 import org.jlibsedml.execution.ModelResolver;
@@ -48,6 +58,7 @@ import org.vcell.sbml.vcell.SymbolContext;
 import org.vcell.util.FileUtils;
 
 import cbit.util.xml.VCLogger;
+import cbit.util.xml.XmlUtil;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.mapping.MappingException;
 import cbit.vcell.mapping.MathMapping;
@@ -86,6 +97,7 @@ import cbit.vcell.xml.ExternalDocInfo;
 import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XmlHelper;
 import cbit.vcell.xml.XmlParseException;
+import cbit.vcell.xml.Xmlproducer;
 
 public class SEDMLImporter {
 
@@ -345,46 +357,50 @@ public class SEDMLImporter {
 		}
 	}
 
+	@SuppressWarnings("unchecked")
 	private void mergeBioModels(List<BioModel> bioModels) {
 		if (bioModels.size() <=1) return;
 		// for now just try if they *ALL* have matchable model
 		// this should be the case if dealing with exported SEDML/OMEX from VCell BioModel with multiple applications
-		HashMap<BioModel, BioModel> strippedMap= new HashMap<BioModel, BioModel>();
-		for (BioModel bm : bioModels) {
-			BioModel strippedBM = null;
-			try {
-				strippedBM = XmlHelper.cloneBioModel(bm);
-				strippedBM.setSimulations(new Simulation[0]);
-				strippedBM.removeSimulationContext(strippedBM.getSimulationContext(0));
-			} catch (XmlParseException | PropertyVetoException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			strippedMap.put(bm, strippedBM);
+		BioModel bm0 = bioModels.get(0);
+		for (int i = 1; i < bioModels.size(); i++) {
+			System.out.println("----comparing model from----"+bioModels.get(i)+" with model from "+bm0);
+			boolean matchable = bioModels.get(i).getModel().compareEqual(bm0.getModel());
+			System.out.println(matchable);
+			if (!matchable) return;
 		}
-		for (BioModel bm : bioModels) {
-			BioModel sbm = strippedMap.get(bm);
-			for (BioModel cbm : bioModels) {
-				System.out.println("----comparing stripped----"+sbm.getName()+" with stripped "+strippedMap.get(cbm));
-				boolean matchable = sbm.getModel().compareEqual(strippedMap.get(cbm).getModel());
-				System.out.println(matchable);
-				if (!matchable) return;
-			}
-		}
-		// all have matchable model, merge by pooling SimContexts
-		BioModel baseBM = bioModels.get(0);
-		String baseXML = null;
+		// all have matchable model, try to merge by pooling SimContexts
+		Document dom = null;
+		Xmlproducer xmlProducer = new Xmlproducer(false);
 		try {
-			baseXML = XmlHelper.bioModelToXML(baseBM);
-		} catch (XmlParseException e) {
-			// TODO Auto-generated catch block
+			dom = XmlHelper.bioModelToXMLDocument(bm0,false);
+			Element root = dom.getRootElement();
+			Element bmel = root.getChild("BioModel", root.getNamespace());
+			for (int i = 1; i < bioModels.size(); i++) {
+				// get XML of SimContext here and insert into baseXML
+				SimulationContext[] simContexts = bioModels.get(i).getSimulationContexts();
+				for (SimulationContext sc : simContexts) {
+					Element scElement = xmlProducer.getXML(sc, bioModels.get(i));
+					XmlUtil.setDefaultNamespace(scElement, root.getNamespace());
+					bmel.addContent(scElement);
+				}
+			}
+		} catch (Exception e) {
 			e.printStackTrace();
 			return;
 		}
-		for (int i = 1; i < bioModels.size(); i++) {
-			// TODO get XML of SimContext here and insert into baseXML
+		// re-read XML into a single BioModel and replace docs List
+		BioModel mergedBM = null;
+		try {
+			String mergedXML = XmlUtil.xmlToString(dom, true);
+			mergedBM = XmlHelper.XMLToBioModel(new XMLSource(mergedXML));
+		} catch (Exception e) {
+			e.printStackTrace();
+			return;
 		}
-		// TODO re-read XML into a single BioModel and replace docs List
+		// merge succeeded, replace the list
+		docs = new ArrayList<BioModel>();
+		docs.add(mergedBM);
 		return;
 		// TODO more work here if we want to generalize
 	}
