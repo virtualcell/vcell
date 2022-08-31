@@ -9,24 +9,18 @@
  */
 
 package cbit.vcell.solver;
-import java.util.*;
 
+import cbit.vcell.math.*;
+import cbit.vcell.model.common.VCellErrorMessages;
+import cbit.vcell.parser.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.vcell.util.*;
 import org.vcell.util.Issue.IssueCategory;
 import org.vcell.util.IssueContext.ContextType;
 
-import cbit.vcell.math.Constant;
-import cbit.vcell.math.MathDescription;
-import cbit.vcell.math.MathFunctionDefinitions;
-import cbit.vcell.math.VCML;
-import cbit.vcell.math.Variable;
-import cbit.vcell.model.common.VCellErrorMessages;
-import cbit.vcell.parser.Expression;
-import cbit.vcell.parser.ExpressionBindingException;
-import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.parser.SymbolTable;
+import java.util.*;
+
 /**
  * Constant expressions that override those specified in the MathDescription
  * for a given Simulation.  These expressions are to be bound to the Simulation
@@ -707,37 +701,50 @@ void updateFromMathDescription() {
 		Constant constant = enumeration.nextElement();
 		mathDescriptionHash.add(constant.getName());
 	}
+	LinkedHashSet<String> referencedNames = new LinkedHashSet<>();
+	Enumeration<String> mathOverrideNamesEnum = getOverridesHash().keys();
+	while (mathOverrideNamesEnum.hasMoreElements()) {
+		String name = mathOverrideNamesEnum.nextElement();
+		referencedNames.add(name);
+		Element element = getOverridesHash().get(name);
+		if (element.getSpec() != null) {
+			for (Constant constant : element.getSpec().getConstants()){
+				String[] symbols = constant.getExpression().getSymbols();
+				if (symbols!=null) {
+					referencedNames.addAll(Arrays.asList(symbols));
+				}
+			}
+		}
+		if (element.getActualValue() != null) {
+			String[] symbols = element.getActualValue().getSymbols();
+			if (symbols!=null) {
+				referencedNames.addAll(Arrays.asList(symbols));
+			}
+		}
+	}
 
-	HashMap<String, String> renamedMap = new HashMap<String, String>();
-	boolean bNameRepaired = true;
-	while (bNameRepaired){
-		bNameRepaired = false;
-		Enumeration<String> mathOverrideNamesEnum = getOverridesHash().keys();
-		while (mathOverrideNamesEnum.hasMoreElements()){
-			String name = mathOverrideNamesEnum.nextElement();
-			if (!mathDescriptionHash.contains(name)){
-				MathOverridesResolver mathOverridesResolver = getSimulation().getSimulationOwner().getMathOverridesResolver();
-				if (mathOverridesResolver != null) {
-					MathOverridesResolver.SymbolReplacement replacement = mathOverridesResolver.getSymbolReplacement(name);
-					if (replacement != null) {
-						Element element = overridesHash.remove(name);
+	LinkedHashSet<String> allFactorSymbols = new LinkedHashSet<>();
+
+	HashMap<String, MathOverridesResolver.SymbolReplacement> renamedMap = new HashMap<>();
+	for (String name : referencedNames){
+		if (!mathDescriptionHash.contains(name)){
+			MathOverridesResolver mathOverridesResolver = getSimulation().getSimulationOwner().getMathOverridesResolver();
+			if (mathOverridesResolver != null) {
+				MathOverridesResolver.SymbolReplacement replacement = mathOverridesResolver.getSymbolReplacement(name);
+				if (replacement != null) {
+					allFactorSymbols.addAll(replacement.getFactorSymbols());
+					Element element = overridesHash.remove(name);
+					if (element != null) {
 						element.name = replacement.newName;
 						if (!replacement.factor.isOne()) {
-							try {
-								element.actualValue = Expression.mult(element.actualValue, replacement.factor).flattenFactors("KMOLE").flatten();
-							} catch (ExpressionException e) {
-								String msg = "failed to simplify unit converted Math Override "+replacement.newName+"="+replacement.factor.infix();
-								logger.error(msg, e);
-								throw new RuntimeException(msg, e);
-							}
+							element.actualValue = Expression.mult(element.actualValue, replacement.factor);
 						}
 						overridesHash.put(replacement.newName, element);
-						renamedMap.put(name, replacement.newName);
 						removeConstant(name);
-						bNameRepaired = true;
-						logger.error("didn't find a replacement for math override symbol " + name);
-						break;
 					}
+					renamedMap.put(name, replacement);
+				}else{
+					logger.error("didn't find a replacement for math override symbol " + name);
 				}
 			}
 		}
@@ -746,19 +753,50 @@ void updateFromMathDescription() {
 	//
 	// for repaired constants, go through all entries and rename expressions where they refer to the renamed constant.
 	//
-	for (String origName : renamedMap.keySet()){
-		for (Element element : overridesHash.values()){
-			if (element.actualValue!=null && element.actualValue.hasSymbol(origName)){
-				try {
-					element.actualValue = element.actualValue.getSubstitutedExpression(new Expression(origName), new Expression(mathDescription.getVariable(renamedMap.get(origName)),null));
-				} catch (ExpressionException e) {
-					// won't happen ... here because new Expression(origName) throws a parse exception ... but it must be able to parse.
-					e.printStackTrace();
+	for (Element element : overridesHash.values()){
+		if (element.actualValue!=null) {
+			for (String replacedSymbol : renamedMap.keySet()) {
+				if (element.actualValue.hasSymbol(replacedSymbol)) {
+					try {
+						MathOverridesResolver.SymbolReplacement replacement = renamedMap.get(replacedSymbol);
+						Expression replacementExp = new Expression(mathDescription.getVariable(replacement.newName), null);
+						if (!replacement.factor.isOne()) {
+							replacementExp = Expression.mult(Expression.invert(replacement.factor), replacementExp);
+						}
+						element.actualValue = element.actualValue.getSubstitutedExpression(new Expression(replacedSymbol), replacementExp);
+
+					} catch (ExpressionException e) {
+						String msg = "failed to process expression substitution for " + element.name + ", value=" + element.actualValue.infix();
+						throw new RuntimeException(msg, e);
+					}
 				}
 			}
 		}
 	}
-	
+
+	//
+	// loop through all expressions and try to flatten factors.
+	//
+	for (String overriddenName : getOverridesHash().keySet()) {
+		Element element = overridesHash.get(overriddenName);
+		for (String factorSymbol : allFactorSymbols) {
+			try {
+				element.actualValue = element.actualValue.flattenFactors(factorSymbol);
+			} catch (ExpressionException e) {
+				String msg = "failed to simplify unit converted Math Override " + overriddenName + "=" + element.actualValue.infix();
+				logger.error(msg, e);
+				throw new RuntimeException(msg, e);
+			}
+		}
+		try {
+			Expression simplifiedExp = ExpressionUtils.simplifyUsingJSCL(element.actualValue);
+			simplifiedExp.bindExpression(mathDescription);
+			element.actualValue = simplifiedExp;
+		} catch (Exception e){
+			logger.error(e);
+		}
+	}
+
 	refreshDependencies();
 }
 
