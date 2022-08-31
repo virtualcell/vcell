@@ -42,8 +42,10 @@ public class BiosimulationsCommand implements Callable<Integer> {
     private boolean help;
 
     public Integer call() {
-        CLILocalLogFileManager logManager = new CLILocalLogFileManager(OUT_DIR, bDebug);
+        CLILocalLogFileManager logManager = null;
         try {
+            logManager = new CLILocalLogFileManager(OUT_DIR, bDebug, bDebug);
+
             LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
             Level logLevel = logger.getLevel();
             if (!bQuiet && bDebug) {
@@ -110,7 +112,7 @@ public class BiosimulationsCommand implements Callable<Integer> {
                 return 0; // Does this prevent finally?
             } finally {
                 try {
-                    logManager.finalizeAndExportLogFiles();
+                    if (logManager != null) logManager.finalizeAndExportLogFiles();
                     CLIPythonManager.getInstance().closePythonProcess(); // WARNING: Python will need reinstantiation after this is called
                 } catch (Exception e) {
                     logger.error(e.getMessage(), e);

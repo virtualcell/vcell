@@ -16,7 +16,7 @@ import org.apache.logging.log4j.Logger;
 
 public class CLILocalLogFileManager implements LocalLogFileManager {
 
-    private final static boolean DEFAULT_SHOULD_PRINT_LOG_FILES = false;
+    private final static boolean DEFAULT_SHOULD_PRINT_LOG_FILES = false, DEFAULT_SHOULD_FLUSH_LOG_FILES = false;
     private final static Logger logger = LogManager.getLogger(CLILocalLogFileManager.class);
     private final static LocalLogFileName[] localLogFileNames = {
         new LocalLogFileName("detailedErrorLog.txt"),
@@ -30,7 +30,7 @@ public class CLILocalLogFileManager implements LocalLogFileManager {
     private final static int ERROR_LOG = 2; 
     private final static int DETAILED_RESULTS_LOG = 3; 
 
-    private boolean shouldPrintLogFiles;
+    private boolean shouldPrintLogFiles, flushLogs;
     private Map<LocalLogFileName, StringBuffer> logFileBuffers;
     private File outputDirectory;
 
@@ -43,33 +43,46 @@ public class CLILocalLogFileManager implements LocalLogFileManager {
     }
 
     // Note: this constructor is private
-    private CLILocalLogFileManager(boolean shouldPrintLogFiles){
+    private CLILocalLogFileManager(boolean shouldPrintLogFiles, boolean shouldFlushLogFiles){
         this();
         this.shouldPrintLogFiles = shouldPrintLogFiles;
+        this.flushLogs = shouldFlushLogFiles;
     }
 
-    public CLILocalLogFileManager(String outputDirectoryPath){
+    public CLILocalLogFileManager(String outputDirectoryPath) throws IOException {
         this(outputDirectoryPath, DEFAULT_SHOULD_PRINT_LOG_FILES);
     }
 
-    public CLILocalLogFileManager(Path outputDirectoryPath){
+    public CLILocalLogFileManager(Path outputDirectoryPath) throws IOException {
         this(outputDirectoryPath, DEFAULT_SHOULD_PRINT_LOG_FILES);
     }
 
-    public CLILocalLogFileManager(File outputDirectory){
+    public CLILocalLogFileManager(File outputDirectory) throws IOException {
         this(outputDirectory, DEFAULT_SHOULD_PRINT_LOG_FILES);
     }
 
-    public CLILocalLogFileManager(String outputDirectoryPath, boolean forceLogFiles){
-        this(new File(outputDirectoryPath), forceLogFiles);
+    public CLILocalLogFileManager(String outputDirectoryPath, boolean forceLogFiles) throws IOException {
+        this(new File(outputDirectoryPath), forceLogFiles, DEFAULT_SHOULD_FLUSH_LOG_FILES);
     }
 
-    public CLILocalLogFileManager(Path outputDirectoryPath, boolean forceLogFiles){
-        this(outputDirectoryPath.toFile(), forceLogFiles);
+    public CLILocalLogFileManager(Path outputDirectoryPath, boolean forceLogFiles) throws IOException {
+        this(outputDirectoryPath.toFile(), forceLogFiles, DEFAULT_SHOULD_FLUSH_LOG_FILES);
     }
 
-    public CLILocalLogFileManager(File outputDirectory, boolean forceLogFiles){
-        this(CLIUtils.isBatchExecution(outputDirectory.getAbsolutePath(), forceLogFiles));
+    public CLILocalLogFileManager(File outputDirectory, boolean forceLogFiles) throws IOException {
+        this(outputDirectory, forceLogFiles, DEFAULT_SHOULD_FLUSH_LOG_FILES);
+    }
+
+    public CLILocalLogFileManager(String outputDirectoryPath, boolean forceLogFiles, boolean shouldFlushLogFiles) throws IOException {
+        this(new File(outputDirectoryPath), forceLogFiles, shouldFlushLogFiles);
+    }
+
+    public CLILocalLogFileManager(Path outputDirectoryPath, boolean forceLogFiles, boolean shouldFlushLogFiles) throws IOException {
+        this(outputDirectoryPath.toFile(), forceLogFiles, shouldFlushLogFiles);
+    }
+
+    public CLILocalLogFileManager(File outputDirectory, boolean forceLogFiles, boolean shouldFlushLogFiles) throws IOException {
+        this(CLIUtils.isBatchExecution(outputDirectory.getAbsolutePath(), forceLogFiles), shouldFlushLogFiles);
         if (!outputDirectory.exists() && !outputDirectory.mkdirs()) {
             String format = "Path: <%s> does not lead to an existing directory, nor could it be created.";
             String message = String.format(format, outputDirectory.getAbsolutePath());
@@ -85,19 +98,19 @@ public class CLILocalLogFileManager implements LocalLogFileManager {
         return Arrays.asList(localLogFileNames);
     }
 
-    public void writeDetailedErrorList(String message) {
+    public void writeDetailedErrorList(String message) throws IOException {
         this.appendToLogFile(this.getAllLocalLogFileName().get(DETAILED_ERROR_LOG), message);
     }
 
-    public void writeFullSuccessList(String message) {
+    public void writeFullSuccessList(String message) throws IOException {
         this.appendToLogFile(this.getAllLocalLogFileName().get(FULL_SUCCESS_LOG), message);
     }
 
-    public void writeErrorList(String message) {
+    public void writeErrorList(String message) throws IOException {
         this.appendToLogFile(this.getAllLocalLogFileName().get(ERROR_LOG), message);
     }
 
-    public void writeDetailedResultList(String message)  {
+    public void writeDetailedResultList(String message) throws IOException {
         this.appendToLogFile(this.getAllLocalLogFileName().get(DETAILED_RESULTS_LOG), message);
     }
 
@@ -144,9 +157,10 @@ public class CLILocalLogFileManager implements LocalLogFileManager {
         writer.close();
     }
 
-    private void appendToLogFile(LocalLogFileName name, String message) {
+    private void appendToLogFile(LocalLogFileName name, String message) throws IOException {
         if (this.logFileBuffers.get(name) == null) this.logFileBuffers.put(name, new StringBuffer());
         this.logFileBuffers.get(name).append(message + '\n');
+        if (this.flushLogs) this.writeToSystemFile(name);
     }
 
     /**
@@ -164,7 +178,7 @@ public class CLILocalLogFileManager implements LocalLogFileManager {
      *  *   (NB: we assume that the # of failures = # of tasks - # of successful simulations)
      *  *   (NB: if multiple sedml files in the omex, we display on multiple rows, one for each sedml)
      */
-    private void createHeader() {
+    private void createHeader() throws IOException {
         String header = "BaseName,SedML,Error,Models,Sims,Tasks,Outputs,BioModels,NumSimsSuccessful";
         this.writeDetailedResultList(header);
     }

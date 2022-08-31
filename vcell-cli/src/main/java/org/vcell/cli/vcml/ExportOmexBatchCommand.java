@@ -35,14 +35,20 @@ public class ExportOmexBatchCommand implements Callable<Integer> {
     @Option(names = "--validate")
     boolean bValidateOmex;
 
+    @Option(names = "--forceLogFiles")
+    boolean bForceLogFiles;
+
+    @Option(names = "--keepFlushingLogs")
+    boolean bKeepFlushingLogs;
+
     @Option(names = {"-h", "--help"}, description = "show this help message and exit", usageHelp = true)
     private boolean help;
 
     public Integer call() {
+        CLILocalLogFileManager logManager = null;
         try {
-            CLILocalLogFileManager logManager = new CLILocalLogFileManager(outputFilePath, true);
+            logManager = new CLILocalLogFileManager(outputFilePath, bForceLogFiles, bKeepFlushingLogs);
             PropertyLoader.loadProperties();
-            boolean bForceLogFiles = true; // TODO: find out what this means and simplify
             if (inputFilePath == null || !inputFilePath.exists() || !inputFilePath.isDirectory()){
                 throw new RuntimeException("inputFilePath '"+inputFilePath+"' should be a directory");
             }
@@ -59,6 +65,8 @@ public class ExportOmexBatchCommand implements Callable<Integer> {
         } catch (Exception e) {
             e.printStackTrace();
             throw new RuntimeException(e.getMessage());
+        } finally {
+            if (logManager != null) logManager.finalizeAndExportLogFiles();
         }
     }
 }

@@ -38,6 +38,9 @@ public class ExecuteCommand implements Callable<Integer> {
     @Option(names = {"--exactMatchOnly"})
     private boolean bExactMatchOnly;
 
+    @Option(names = "--keepFlushingLogs")
+    private boolean bKeepFlushingLogs;
+
     @Option(names = {"--encapsulateOutput"}, defaultValue = "true", description = 
         "VCell will encapsulate output results in a sub directory when executing with a single input archive; has no effect when providing an input directory")
     private boolean bEncapsulateOutput;
@@ -55,8 +58,12 @@ public class ExecuteCommand implements Callable<Integer> {
     @Option(names = {"-q", "--quiet"}, description = "suppress all console output")
     private boolean bQuiet = false;
 
+
     public Integer call() {
+        CLILocalLogFileManager logManager = null;
         try {
+            logManager = new CLILocalLogFileManager(outputFilePath, bForceLogFiles, bKeepFlushingLogs);
+
             LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
             Level logLevel = logger.getLevel();
             if (!bQuiet && bDebug) {
@@ -86,7 +93,7 @@ public class ExecuteCommand implements Callable<Integer> {
 
             PropertyLoader.loadProperties();
             CLIPythonManager.getInstance().instantiatePythonProcess();
-            CLILocalLogFileManager logManager = new CLILocalLogFileManager(outputFilePath, bForceLogFiles);
+            
 
             Executable.setTimeoutMS(EXECUTABLE_MAX_WALLCLOCK_MILLIS);
             logger.info("Beginning execution");
@@ -106,12 +113,14 @@ public class ExecuteCommand implements Callable<Integer> {
                 }
             }
 
-            logManager.finalizeAndExportLogFiles();
+            
             CLIPythonManager.getInstance().closePythonProcess(); // WARNING: Python will need reinstantiation after this is called
             return 0;
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
             return 1;
+        } finally {
+            if (logManager != null) logManager.finalizeAndExportLogFiles();
         }
     }
 }
