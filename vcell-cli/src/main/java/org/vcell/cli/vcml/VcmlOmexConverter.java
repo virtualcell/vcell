@@ -49,8 +49,6 @@ import org.vcell.cli.*;
 import org.vcell.sedml.PubMet;
 import org.vcell.sedml.SEDMLExporter;
 import org.vcell.util.DataAccessException;
-import org.vcell.util.Issue;
-import org.vcell.util.Issue.IssueCategory;
 import org.vcell.util.document.*;
 
 import java.beans.PropertyVetoException;
@@ -99,7 +97,7 @@ public class VcmlOmexConverter {
 									File input,
 									File outputDir,
 									ModelFormat modelFormat,
-									CLILocalLogFileManager logManager,
+									CLILogFileManager logManager, 
 									boolean bHasDataOnly,
 									boolean bMakeLogsOnly,
 									boolean bNonSpatialOnly,

@@ -99,17 +99,15 @@ public class ExecuteCommand implements Callable<Integer> {
             logger.info("Beginning execution");
             if (inputFilePath.isDirectory()) {
                 logger.debug("Batch mode requested");
-                //CLIUtils.createHeader(outputFilePath, bForceLogFiles);
-                ExecuteImpl.batchMode(inputFilePath, outputFilePath, logManager, bKeepTempFiles, bExactMatchOnly, bForceLogFiles);
+                ExecuteImpl.batchMode(inputFilePath, outputFilePath, logManager, bKeepTempFiles, bExactMatchOnly);
             } else {
                 logger.debug("Single mode requested");
                 File archiveToProcess = inputFilePath;
-                //if (bForceLogFiles) CLIUtils.createHeader(outputFilePath, bForceLogFiles);
 
                 if (archiveToProcess.getName().endsWith("vcml")) {
                     ExecuteImpl.singleExecVcml(archiveToProcess, outputFilePath, logManager);
                 } else { // archiveToProcess.getName().endsWith("omex")
-                    ExecuteImpl.singleExecOmex(archiveToProcess, outputFilePath, logManager, bKeepTempFiles, bExactMatchOnly, bForceLogFiles, bEncapsulateOutput);
+                    ExecuteImpl.singleExecOmex(archiveToProcess, outputFilePath, logManager, bKeepTempFiles, bExactMatchOnly, bEncapsulateOutput);
                 }
             }
 

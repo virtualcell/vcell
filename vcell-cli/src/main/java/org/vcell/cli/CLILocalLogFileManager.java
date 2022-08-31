@@ -14,7 +14,7 @@ import java.io.IOException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-public class CLILocalLogFileManager implements LocalLogFileManager {
+public class CLILocalLogFileManager implements CLILogFileManager {
 
     private final static boolean DEFAULT_SHOULD_PRINT_LOG_FILES = false, DEFAULT_SHOULD_FLUSH_LOG_FILES = false;
     private final static Logger logger = LogManager.getLogger(CLILocalLogFileManager.class);
@@ -22,13 +22,15 @@ public class CLILocalLogFileManager implements LocalLogFileManager {
         new LocalLogFileName("detailedErrorLog.txt"),
         new LocalLogFileName("fullSuccessLog.txt"),
         new LocalLogFileName("errorLog.txt"),
-        new LocalLogFileName("detailedResultLog.txt")
+        new LocalLogFileName("detailedResultLog.txt"),
+        new LocalLogFileName("hasSpatialLog.txt")
     };
 
     private final static int DETAILED_ERROR_LOG = 0; 
     private final static int FULL_SUCCESS_LOG = 1; 
     private final static int ERROR_LOG = 2; 
     private final static int DETAILED_RESULTS_LOG = 3; 
+    private final static int HAS_SPACIAL_LOG = 4; 
 
     private boolean shouldPrintLogFiles, flushLogs;
     private Map<LocalLogFileName, StringBuffer> logFileBuffers;
@@ -112,6 +114,11 @@ public class CLILocalLogFileManager implements LocalLogFileManager {
 
     public void writeDetailedResultList(String message) throws IOException {
         this.appendToLogFile(this.getAllLocalLogFileName().get(DETAILED_RESULTS_LOG), message);
+    }
+
+    // we make a list with the omex files that contain (some) spatial simulations (FVSolverStandalone solver)
+    public void writeSpatialList(String message) throws IOException {
+        this.appendToLogFile(this.getAllLocalLogFileName().get(HAS_SPACIAL_LOG), message);
     }
 
     public File getLogFile(LocalLogFileName logFile){
