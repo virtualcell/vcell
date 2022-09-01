@@ -13,6 +13,7 @@ package cbit.vcell.parser;
 import java.util.Random;
 import java.util.Vector;
 
+import jscl.math.Generic;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -25,12 +26,7 @@ import cbit.vcell.parser.ASTFuncNode.FunctionType;
 public class ExpressionUtils {
 	private static Logger lg = LogManager.getLogger(ExpressionUtils.class);
 	public static String value_molecules_per_uM_um3_NUMERATOR = "6.02214179E8";
-/**
- * Insert the method's description here.
- * Creation date: (12/22/2002 3:41:17 PM)
- * @return int
- * @param node cbit.vcell.parser.SimpleNode
- */
+
 private static SimpleNode createNode(java.util.Random random, boolean bIsConstraint) {
 	final int AddNode = 0;
 	final int AndNode = 1;
@@ -215,16 +211,30 @@ private static SimpleNode createTerminalNode(java.util.Random random, boolean bI
 }
 
 public static Expression simplifyUsingJSCL(Expression exp) throws ExpressionException {
+	return simplifyUsingJSCL(exp, 100);
+}
 
+public static Expression simplifyUsingJSCL(Expression exp, int maxExpLength) throws ExpressionException {
+	long startTime = System.currentTimeMillis();
 	jscl.math.Expression jsclExpression = null;
 	String jsclExpressionString = exp.infix_JSCL();
+	if (jsclExpressionString.replace("underscore","_").length()>100){
+		throw new ExpressionException("large expression, abort JSCL simplification");
+	}
 	try {
 		jsclExpression = jscl.math.Expression.valueOf(jsclExpressionString);
 	}catch (jscl.text.ParseException e){
 		throw new ExpressionException("JSCL couldn't parse \""+jsclExpressionString+"\"");
 	}
 
-	jscl.math.Generic jsclSolution = jsclExpression.expand().simplify().factorize();
+	Generic expand = jsclExpression.expand();
+	String expandStr = expand.toString();
+	Generic simplify = expand.simplify();
+	String simplifyStr = simplify.toString();
+	if (simplifyStr.replace("underscore","_").length()>100){
+		throw new ExpressionException("large expression, abort JSCL simplification");
+	}
+	jscl.math.Generic jsclSolution = simplify.factorize();
 	cbit.vcell.parser.Expression firstSolution = new cbit.vcell.parser.Expression(jsclSolution.toString());
 
 	firstSolution = firstSolution.flatten();
@@ -236,8 +246,15 @@ public static Expression simplifyUsingJSCL(Expression exp) throws ExpressionExce
 		throw new ExpressionException("JSCL couldn't parse \""+jsclExpressionString+"\"");
 	}
 
-	jsclSolution = jsclExpression.expand().simplify().factorize();
+	Generic expand1 = jsclExpression.expand();
+	Generic simplify1 = expand1.simplify();
+	String simplifyStr1 = simplify.toString();
+	if (simplifyStr1.replace("underscore","_").length()>100){
+		throw new ExpressionException("large expression, abort JSCL simplification");
+	}
+	jsclSolution = simplify1.factorize();
 	Expression solution = new cbit.vcell.parser.Expression(jsclSolution.toString());
+
 
 	String[] jsclSymbols = solution.getSymbols();
 	for (int i = 0;jsclSymbols!=null && i < jsclSymbols.length; i++){
@@ -246,17 +263,13 @@ public static Expression simplifyUsingJSCL(Expression exp) throws ExpressionExce
 			solution.substituteInPlace(new cbit.vcell.parser.Expression(jsclSymbols[i]),new cbit.vcell.parser.Expression(restoredSymbol));
 		}
 	}
-
+	long endTime = System.currentTimeMillis();
+	if (endTime-startTime > 1000){
+		lg.warn("JSCL expression simplification took "+((endTime-startTime)/1000.0)+" seconds for '"+exp.infix()+"'");
+	}
 	return solution.flatten();
 }
 
-/**
- * Insert the method's description here.
- * Creation date: (10/17/2002 12:42:18 AM)
- * @return boolean
- * @param exp1 cbit.vcell.parser.Expression
- * @param exp2 cbit.vcell.parser.Expression
- */
 public static boolean derivativeFunctionallyEquivalent(Expression exp, String diffSymbol, Expression diff, double relativeTolerance, double absoluteTolerance) {
 	try {
 		String symbolsExp[] = exp.getSymbols();
@@ -576,12 +589,7 @@ public static Expression generateExpression(java.util.Random random, int maxDept
 	}
 	return new Expression(node.infixString(SimpleNode.LANGUAGE_DEFAULT));
 }
-/**
- * Insert the method's description here.
- * Creation date: (12/22/2002 3:16:19 PM)
- * @return cbit.vcell.parser.Expression
- * @param seed long
- */
+
 private static SimpleNode generateSubtree(int depth, int maxDepth, java.util.Random random, boolean bIsConstraint) {
 	SimpleNode newNode = null;
 	if (depth == 0 && bIsConstraint){
