@@ -346,7 +346,7 @@ flattenCount++;////////////////////////
 		try {
 			safeExp = ExpressionUtils.simplifyUsingJSCL(safeExp);
 		}catch (Exception e) {
-			logger.warn("simplify with JSCL failed on expression '"+safeExp.infix()+"': "+e.getMessage(),e);
+			logger.warn("simplify with JSCL failed on expression '"+safeExp.infix()+"': "+e.getMessage());
 		}
 		if (bindings.size()>0) {
 			safeExp.bindExpression(symbolTable);
