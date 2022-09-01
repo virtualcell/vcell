@@ -76,6 +76,18 @@ public void applyFunctionToExpressions(Function<Expression, Expression> expressi
 	}
 }
 
+public void changeName(String newName) {
+	if (type == ConstantArraySpec.TYPE_LIST){
+		for (int i = 0; i < constants.length; i++){
+			constants[i] = new Constant(newName, constants[i].getExpression());
+		}
+	}
+	if (type == ConstantArraySpec.TYPE_INTERVAL){
+		for (int i = 0; i < constants.length; i++){
+			constants[i] = new Constant(newName, constants[i].getExpression());
+		}
+	}
+}
 
 /**
  * Checks for internal representation of objects, not keys from database

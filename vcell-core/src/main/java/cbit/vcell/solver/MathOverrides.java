@@ -22,6 +22,7 @@ import org.vcell.util.IssueContext.ContextType;
 
 import java.util.*;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * Constant expressions that override those specified in the MathDescription
@@ -122,6 +123,12 @@ public class MathOverrides implements Matchable, java.io.Serializable {
 			}
 		}
 
+		public void changeName(String newName) {
+			this.name = newName;
+			if (this.spec!=null){
+				this.spec.changeName(newName);
+			}
+		}
 	}
 
 /**
@@ -200,7 +207,12 @@ public boolean compareEqual(Matchable obj) {
 	if (!(obj instanceof MathOverrides)){
 		return false;
 	}
-	boolean returnValue = Compare.isEqual(toVector(getOverridesHash().elements()),toVector(((MathOverrides)obj).getOverridesHash().elements()));
+	List<Element> elements = Collections.list(getOverridesHash().elements());
+	List<Element> otherElements = Collections.list(((MathOverrides)obj).getOverridesHash().elements());
+	// sort elements by name of overridden constant
+	elements.sort((el1,el2) -> el1.name.compareTo(el2.name));
+	otherElements.sort((el1,el2) -> el1.name.compareTo(el2.name));
+	boolean returnValue = Compare.isEqual(elements, otherElements);
 	return returnValue;
 }
 
@@ -792,6 +804,7 @@ void updateFromMathDescription() {
 							return substitutedExp;
 						};
 						element.applyFunctionToExpressions(scaleExpressionsByUnitFactor);
+						element.changeName(replacement.newName);
 						overridesHash.put(replacement.newName, element);
 						removeConstant(name);
 					}
