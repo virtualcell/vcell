@@ -44,7 +44,7 @@ public class ExpressionUtilsJSCLFlattenTest {
                         new Expression("5.0")},
 
                 {new Expression("(5.0 * KMOLE * ((1.0 / KMOLE) ^ 2.0))"),
-                        new Expression("(5.0 * KMOLE * ((1.0 / KMOLE) ^ 2.0))")},
+                        new Expression("(5.0 / KMOLE)")},
 
                 {new Expression("(10.0 * pow(KMOLE,-1.0) * Size_c0)"),
                         new Expression("((10.0 * Size_c0) / KMOLE)")},
@@ -67,11 +67,8 @@ public class ExpressionUtilsJSCLFlattenTest {
                 {new Expression("(((2.0 * KMOLE) * (1.0 * pow(KMOLE,1.0))) * (1.0 * pow(KMOLE, - 1.0)))"),
                         new Expression("2.0*KMOLE")},
 
-                {new Expression("1.0"),
-                        new Expression("1.0")},
-
-                {new Expression("- (SCAfoldchange * KMOLE * pow(KMOLE,-1.0) * ERDensity_ER_SM * Jmax2_IP3R_flux * (1.0 - (Ca_spine / Ca_ER)) * pow((KMOLE * pow(KMOLE,-1.0) * h_ER_SM * IP3_spine * Ca_spine / (IP3_spine + dIP3_IP3R_flux) / (Ca_spine + Kact_IP3R_flux)),3.0))"),
-                 new Expression("( - (ERDensity_ER_SM * Jmax2_IP3R_flux * SCAfoldchange * (((Ca_spine * IP3_spine * h_ER_SM) / ((Ca_spine + Kact_IP3R_flux) * (IP3_spine + dIP3_IP3R_flux))) ^ 3.0) * (Ca_ER - Ca_spine)) / Ca_ER)")},
+                {new Expression("((KMOLE ^ 2.0) / KMOLE)"),
+                        new Expression("KMOLE")},
         });
     }
 

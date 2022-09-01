@@ -123,7 +123,7 @@ public Node flatten() throws ExpressionException {
 			}else{
 				return value.toString();
 			}
-		  } else if (lang == LANGUAGE_UNITS) {
+		  } else if (lang == LANGUAGE_UNITS || lang == LANGUAGE_JSCL) {
 			  if (value == value.intValue()) {
 				  return Integer.toString(value.intValue());
 			  } else {
