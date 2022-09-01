@@ -260,19 +260,11 @@ public class ModelUnitConverter {
 			power_of_KMOLE = power_of_KMOLE.multiplyBy(KMOLE_Unit);
 			if (practicallyDimensionlessUnit.multiplyBy(power_of_KMOLE).isCompatible(dimensionless)) {
 				double conversionScale = dimensionless.convertTo(1.0, practicallyDimensionlessUnit.multiplyBy(power_of_KMOLE));
-				try {
-					return Expression.mult(new Expression(conversionScale), Expression.power(new Expression(KMOLE, KMOLE.getNameScope()), -power));
-				} catch (ExpressionException e) {
-					throw new RuntimeException(e);
-				}
+				return Expression.mult(new Expression(conversionScale), Expression.power(new Expression(KMOLE, KMOLE.getNameScope()), -power));
 			}
 			if (practicallyDimensionlessUnit.divideBy(power_of_KMOLE).isCompatible(dimensionless)) {
 				double conversionScale = dimensionless.convertTo(1.0, practicallyDimensionlessUnit.divideBy(power_of_KMOLE));
-				try {
-					return Expression.mult(new Expression(conversionScale), Expression.power(new Expression(KMOLE, KMOLE.getNameScope()), power));
-				} catch (ExpressionException e) {
-					throw new RuntimeException(e);
-				}
+				return Expression.mult(new Expression(conversionScale), Expression.power(new Expression(KMOLE, KMOLE.getNameScope()), power));
 			}
 		}
 		throw new RuntimeException("unit " + practicallyDimensionlessUnit.getSymbol() + " is not practically dimensionless, even by using KMOLE");

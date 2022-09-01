@@ -634,7 +634,7 @@ public int hashCode() {
  * @param expression Expression
  * @exception java.lang.Exception The exception description.
  */
-public static Expression invert(Expression expression) throws ExpressionException {
+public static Expression invert(Expression expression)  {
 	Expression exp = new Expression();
 	ASTInvertTermNode invertNode = new ASTInvertTermNode();
 	
@@ -827,7 +827,7 @@ public static Expression power(Expression expression1, Expression expression2) t
 	return function(FunctionType.POW, expression1, expression2);
 }
 
-public static Expression power(Expression expression1, double exponent) throws ExpressionException {
+public static Expression power(Expression expression1, double exponent) {
 	return function(FunctionType.POW, expression1, new Expression(exponent));
 }
 
