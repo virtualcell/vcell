@@ -926,8 +926,9 @@ public void refreshMathDescription(MathMappingCallback callback, NetworkGenerati
 		try {
 			setMathDescription(createNewMathMapping(callback, networkGenerationRequirements).getMathDescription());
 		} catch (Exception e) {
-			logger.error(e);
-			throw new RuntimeException("Application '"+getName()+"' has no generated Math, Failed to generate new Math: "+ e.getMessage());
+			String msg = "Application '"+getName()+"' has no generated Math, Failed to generate new Math: "+ e.getMessage();
+			logger.error(msg, e);
+			throw new RuntimeException(msg);
 		}
 	}
 }
@@ -2619,7 +2620,7 @@ public void refreshSpatialObjects() {
 				}
 			}
 		} catch (PropertyVetoException e) {
-			logger.error(e);
+			logger.error("failed to remove spatial objects: "+e.getMessage(), e);
 		}
 	}
 }

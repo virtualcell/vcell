@@ -1051,7 +1051,7 @@ protected Expression getIdentifierSubstitutions(Expression origExp, VCUnitDefini
 				logger.error("exp='"+expStr+"' exception='"+e.getMessage()+"'", e);
 				localIssueList.add(new Issue(origExp, issueContext, IssueCategory.Units,"expected=["+((desiredExpUnitDef!=null)?(desiredExpUnitDef.getSymbol()):("null"))+"], exception="+e.getMessage(),Issue.SEVERITY_WARNING));
 			}catch (Exception e){
-				logger.error(e);
+				logger.error("error evaluating units for expression '"+origExp+": "+e.getMessage(), e);
 				localIssueList.add(new Issue(origExp, issueContext, IssueCategory.Units,"expected=["+((desiredExpUnitDef!=null)?(desiredExpUnitDef.getSymbol()):("null"))+"], exception="+e.getMessage(),Issue.SEVERITY_WARNING));
 			}
 			Expression newExp = new Expression(origExp);

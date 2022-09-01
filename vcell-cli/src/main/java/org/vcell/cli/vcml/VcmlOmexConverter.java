@@ -566,11 +566,11 @@ public class VcmlOmexConverter {
 					try {
 						logger.trace(bos.toString(StandardCharsets.UTF_8.name()));
 					} catch (UnsupportedEncodingException e) {
-						logger.error(e);
+						logger.error("failed to write RDF to file during logging: "+e.getMessage(), e);
 					}
 				}
     		} catch (RDFHandlerException e) {
-    			logger.error(e);
+    			logger.error("error forming RDF: "+e.getMessage(), e);
 			}
     		return ret;
         }
@@ -584,7 +584,7 @@ public class VcmlOmexConverter {
     			ret = SesameRioUtil.writeRDFToString(graph, nsMap, RDFFormat.RDFXML);
     			SesameRioUtil.writeRDFToStream(System.out, graph, nsMap, RDFFormat.RDFXML);
     		} catch (RDFHandlerException e) {
-    			logger.error(e);
+    			logger.error("failed to write RDF to console: "+e.getMessage(), e);
 			}
     		return ret;
         }
@@ -615,7 +615,7 @@ public class VcmlOmexConverter {
 			ret = SesameRioUtil.writeRDFToString(graph, nsMap, RDFFormat.RDFXML);
 //			SesameRioUtil.writeRDFToStream(System.out, graph, nsMap, RDFFormat.RDFXML);
 		} catch (RDFHandlerException e) {
-			logger.error(e);
+			logger.error(e.getMessage(), e);
 		}
 		
 		String end = "\n\n" + ret.substring(ret.indexOf(PubMet.EndDescription0));
