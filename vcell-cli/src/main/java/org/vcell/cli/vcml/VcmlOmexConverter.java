@@ -556,7 +556,7 @@ public class VcmlOmexConverter {
 
         if(bioModelInfo == null) {								// perhaps it's not public, in which case is not in the map
         	ret = XmlRdfUtil.getMetadata(vcmlName);
-   		return ret;
+        	return ret;
         }
         PublicationInfo[] publicationInfos = bioModelInfo.getPublicationInfos();
         if(publicationInfos == null || publicationInfos.length == 0) {				// we may not have PublicationInfo
@@ -718,78 +718,44 @@ public class VcmlOmexConverter {
     
     public static void main(String[] args) {
     	
-		Graph graph = new HashGraph();
-				
-		String ns = DefaultNameSpaces.EX.uri;						// http://example/org/
-		URI r1 = graph.getValueFactory().createURI(ns + "r1");		// http://example/org/r1
-		URI pe1 = graph.getValueFactory().createURI(ns + "pe1");
-		URI pe2 = graph.getValueFactory().createURI(ns + "pe2");
-		URI ce3 = graph.getValueFactory().createURI(ns + "ce3");
-		
-		graph.add(r1, RDF.TYPE, BioPAX3.BiochemicalReaction);		// add the reaction to the graph, it'll look like this:
-		graph.add(pe1, RDF.TYPE, BioPAX3.Protein);
-		graph.add(pe2, RDF.TYPE, BioPAX3.Protein);
-//		graph.add(ce3, RDF.TYPE, BioPAX3.Catalysis);
-		
-		graph.add(r1, BioPAX3.left, pe1);
-		graph.add(r1, BioPAX3.right, pe2);						// add to reaction a child named right, it'll look like this
-		graph.add(pe2, BioPAX3.Catalysis, ce3);						// add to reaction a child named right, it'll look like this
-		
+    	final String outputBaseDir = "U:/vcdbresults/vcdb/public/";
+    	List<String> modelKeyList = new ArrayList<>();
+    	CLIDatabaseService cliDatabaseService;
 		try {
-			Map<String, String> nsMap = DefaultNameSpaces.defaultMap.convertToMap();
-			SesameRioUtil.writeRDFToStream(System.out, graph, nsMap, RDFFormat.RDFXML);
-		} catch (RDFHandlerException e) {
+			cliDatabaseService = new CLIDatabaseService();
+			List<BioModelInfo> publicBioModelInfos = cliDatabaseService.queryPublicBioModels();
+			for (BioModelInfo bmi : publicBioModelInfos){
+				// KeyValue modelKey = bmi.getModelKey();
+				KeyValue modelKey = bmi.getVersion().getVersionKey();
+		        System.out.println(modelKey.toString());
+				modelKeyList.add(modelKey.toString());
+			}
+			for(String modelKey : modelKeyList) {
+				String dest = outputBaseDir + File.separator + "modelKeyList.txt";
+				Files.write(Paths.get(dest), (modelKey + "\n").getBytes(), StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+			}
+		} catch (SQLException | DataAccessException | IOException e) {
 			e.printStackTrace();
 		}
- 
 
-    	/*
-		Graph graph = new HashGraph();
-		Graph schema = new HashGraph();
-		
-		ValueFactory factory = ValueFactoryImpl.getInstance();
-		
-		
-		String descriptionLocation = "http://omex-library.org/biomodel_12345678.omex";
-		URI descriptionURI = ValueFactoryImpl.getInstance().createURI(descriptionLocation);
-		Literal descTitle = OntUtil.createTypedString(schema, "Publication title");
-		
-		URI authorProperty = OntUtil.createDatatypeProperty(schema, DefaultNameSpaces.RDF.uri + "contributor");
-		URI isDescribedBy = OntUtil.createObjectProperty(schema, DefaultNameSpaces.BQMODEL.uri + "isDescribedBy");
-		URI is = OntUtil.createObjectProperty(schema, DefaultNameSpaces.BQMODEL.uri + "is");
-		
-		
-//		alternate way, using factory
-//		URI isDescribedBy = factory.createURI(DefaultNameSpaces.BQMODEL.uri, "isDescribedBy");
-//		OntUtil.addTypedComment(schema, isDescribedBy, "A relationship");										// shema, resource, comment
-//		Literal aaa = factory.createLiteral("aaa label");
-
-		
-//		URI ccc = OntUtil.createAnnotationProperty(graph, uri);				// graph, uri
-//		URI ddd = OntUtil.createURIIndividual(graph, uri, RDF.TYPE);		// graph, uri, RDF.TYPE
-//		URI fff = SBPAX3Util.addSubEntity(graph, is, descriptionURI, sbTerm);		// graph, uri, parent, sbTerm
-		
-//		OntUtil.addEnglishComment(schema, creatorProperty, "The authors of this, one per property value.");		// schema, resource, comment
-//		BNode node = OntUtil.createDataRange(schema, "Dan Vasilescu");
-		
-		URI contributor = factory.createURI(DefaultNameSpaces.DUBLIN_CORE.uri, "contributor");
-		
-		graph.add(PubMet.rdfURI, RDF.TYPE, authorProperty);					// add to the rdf root
-		graph.add(descriptionURI, RDF.TYPE, PubMet.Description);		// <rdf:Description rdf:about='http://omex-library.org/Monkeyflower_pigmentation_v2.omex'>
-		graph.add(descriptionURI, PubMet.Creator, PubMet.rdfsURI);			// <rdfs:creator rdf:resource="http://www.w3.org/2000/01/rdf-schema#"/>
-		graph.add(descriptionURI, isDescribedBy, descTitle);
-		
-		try {
-			Map<String, String> nsMap = DefaultNameSpaces.defaultMap.convertToMap();
-			SesameRioUtil.writeRDFToStream(System.out, graph, nsMap, RDFFormat.RDFXML);
-			String ret = SesameRioUtil.writeRDFToString(graph, nsMap, RDFFormat.RDFXML);
-			System.out.println("here");
-
-		} catch (RDFHandlerException e) {
-			e.printStackTrace();
+		// ex: https://vcellapi-beta.cam.uchc.edu:8080/biomodel/225440511/biomodel.vcml
+		for(String modelKey : modelKeyList) {
+			try {
+				String surl = "https://vcellapi-beta.cam.uchc.edu:8080/biomodel/";
+				surl += modelKey;
+				surl += "/biomodel.vcml";
+				URL from = new URL(surl);
+				String durl = outputBaseDir;
+				durl += "biomodel_";
+				durl += modelKey;
+				durl += ".vcml";
+				File dest = new File(durl);
+				FileUtils.copyURLToFile(from, dest);
+			} catch(Exception e) {
+		        System.out.println(modelKey.toString());
+			}
 		}
-		System.out.println("finished");
-*/
+		System.out.println("Done");
     }
 
 	// when creating the omex files from vcml, we write here the list of models that have spatial, non-spatial or both applications
