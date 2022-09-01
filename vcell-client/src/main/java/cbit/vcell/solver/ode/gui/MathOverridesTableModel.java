@@ -107,7 +107,7 @@ private void editScanValues(String name, int r) throws DivideByZeroException, Ex
 	if (getMathOverrides().isScan(name)) {
 		spec = getMathOverrides().getConstantArraySpec(name);
 	} else {
-		spec = ConstantArraySpec.createIntervalSpec(name, 0, getMathOverrides().getDefaultExpression(name).evaluateConstant(), 2, false);
+		spec = ConstantArraySpec.createIntervalSpec(name, "0", getMathOverrides().getDefaultExpression(name).infix(), 2, false);
 	}
 	panel.setConstantArraySpec(spec);
 	int confirm = DialogUtils.showComponentOKCancelDialog(ownerTable, panel, "Scan values for parameter '" + fieldKeys[r]);

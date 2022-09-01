@@ -585,8 +585,8 @@ public class SEDMLExporter {
 									if(constantArraySpec.getType() == ConstantArraySpec.TYPE_INTERVAL) {
 										// ------ Uniform Range
 										UniformType type = constantArraySpec.isLogInterval() ? UniformType.LOG : UniformType.LINEAR;
-										r = new UniformRange(rangeId, constantArraySpec.getMinValue(), 
-												constantArraySpec.getMaxValue(), constantArraySpec.getNumValues(), type);
+										r = new UniformRange(rangeId, constantArraySpec.getMinValue().evaluateConstant(),
+												constantArraySpec.getMaxValue().evaluateConstant(), constantArraySpec.getNumValues(), type);
 										rt.addRange(r);
 									} else {
 										// ----- Vector Range
@@ -656,8 +656,8 @@ public class SEDMLExporter {
 									if(constantArraySpec.getType() == ConstantArraySpec.TYPE_INTERVAL) {
 										// ------ Uniform Range
 										UniformType type = constantArraySpec.isLogInterval() ? UniformType.LOG : UniformType.LINEAR;
-										r = new UniformRange(rangeId, constantArraySpec.getMinValue(), 
-												constantArraySpec.getMaxValue(), constantArraySpec.getNumValues(), type);
+										r = new UniformRange(rangeId, constantArraySpec.getMinValue().evaluateConstant(),
+												constantArraySpec.getMaxValue().evaluateConstant(), constantArraySpec.getNumValues(), type);
 										rt.addRange(r);
 									} else {
 										// ----- Vector Range

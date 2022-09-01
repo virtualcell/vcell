@@ -542,7 +542,7 @@ public class SEDMLImporter {
 						if (range instanceof UniformRange) {
 							UniformRange ur = (UniformRange) range;
 							scanSpec = ConstantArraySpec.createIntervalSpec(constant,
-									Math.min(ur.getStart(), ur.getEnd()), Math.max(ur.getStart(), ur.getEnd()),
+									""+Math.min(ur.getStart(), ur.getEnd()), ""+Math.max(ur.getStart(), ur.getEnd()),
 									ur.getNumberOfPoints(), ur.getType().equals(UniformType.LOG));
 						} else if (range instanceof VectorRange) {
 							VectorRange vr = (VectorRange) range;

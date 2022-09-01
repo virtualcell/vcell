@@ -1065,7 +1065,7 @@ public class XmlHelper {
 
 			xml = stringWriter.toString();
 		} catch (Exception e) {
-			logger.error(e);
+			logger.error("unexpected exception updating attribute "+xpathExpression+" to "+newValue+": "+e.getMessage(), e);
 		}
 		return xml;
 	}
@@ -1129,7 +1129,7 @@ public class XmlHelper {
 
 			xml = stringWriter.toString();
 		} catch (Exception e) 	{
-			logger.error(e);
+			logger.error("error while updating XML attribute: "+e.getMessage(), e);
 		}
 		return xml;
 	}

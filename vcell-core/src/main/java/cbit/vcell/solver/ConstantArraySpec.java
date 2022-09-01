@@ -12,6 +12,11 @@ package cbit.vcell.solver;
 import cbit.vcell.math.Constant;
 import cbit.vcell.math.VCML;
 import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionException;
+
+import java.util.ArrayList;
+import java.util.function.Function;
+
 /**
  * Insert the type's description here.
  * Creation date: (9/23/2005 1:25:30 PM)
@@ -23,8 +28,8 @@ public class ConstantArraySpec implements org.vcell.util.Matchable, java.io.Seri
 	private int type;
 	private int numValues;
 	private String name;
-	private double minValue;
-	private double maxValue;
+	private Expression minValue;
+	private Expression maxValue;
 	private boolean logInterval;
 	private Constant[] constants;
 
@@ -56,6 +61,33 @@ public static ConstantArraySpec clone(ConstantArraySpec spec) {
 	return clone;
 }
 
+public void applyFunctionToExpressions(Function<Expression, Expression> expressionFunction){
+	if (type == ConstantArraySpec.TYPE_LIST){
+		for (int i = 0; i < constants.length; i++){
+			constants[i] = new Constant(constants[i].getName(), expressionFunction.apply(constants[i].getExpression()));
+		}
+	}
+	if (type == ConstantArraySpec.TYPE_INTERVAL){
+		minValue = expressionFunction.apply(minValue);
+		maxValue = expressionFunction.apply(maxValue);
+		for (int i = 0; i < constants.length; i++){
+			constants[i] = new Constant(constants[i].getName(), expressionFunction.apply(constants[i].getExpression()));
+		}
+	}
+}
+
+public void changeName(String newName) {
+	if (type == ConstantArraySpec.TYPE_LIST){
+		for (int i = 0; i < constants.length; i++){
+			constants[i] = new Constant(newName, constants[i].getExpression());
+		}
+	}
+	if (type == ConstantArraySpec.TYPE_INTERVAL){
+		for (int i = 0; i < constants.length; i++){
+			constants[i] = new Constant(newName, constants[i].getExpression());
+		}
+	}
+}
 
 /**
  * Checks for internal representation of objects, not keys from database
@@ -83,9 +115,15 @@ public boolean compareEqual(org.vcell.util.Matchable obj) {
  */
 public static ConstantArraySpec createFromString(String name, String description, int type) {
 	// parses toString() output to recreate object
-	java.util.StringTokenizer tokens = new java.util.StringTokenizer(description, ", ");
 	try {
 		if (type == TYPE_LIST) {
+			final String delimiter;
+			if (description.contains(";")){
+				delimiter = ";";
+			}else{
+				delimiter = ",";
+			}
+			java.util.StringTokenizer tokens = new java.util.StringTokenizer(description, delimiter);
 			String[] values = new String[tokens.countTokens()];
 			int i = 0;
 			while (tokens.hasMoreElements()) {
@@ -94,17 +132,26 @@ public static ConstantArraySpec createFromString(String name, String description
 			}
 			return createListSpec(name, values);
 		} else if (type == TYPE_INTERVAL) {
-			double minValue = Double.parseDouble(tokens.nextToken());
-			tokens.nextToken();
-			double maxValue = Double.parseDouble(tokens.nextToken());
-			String token = tokens.nextToken();
-			boolean logInterval = false;
-			if (token.equals("log")) {
-				logInterval = true;
-				token = tokens.nextToken();
+			int index_of_to = description.indexOf(" to ");
+			if (index_of_to == -1){
+				throw new RuntimeException("invalid format '"+description+"'");
 			}
+			String rest = description.substring(index_of_to+4);
+			boolean logInterval = false;
+			if (rest.contains("log,")){
+				logInterval = true;
+				rest = rest.replace("log,","");
+			}
+			int index_of_last_comma = rest.lastIndexOf(",");
+
+			String[] parts = description.replace(" to ",",").split(",");
+			String minValueExpStr = description.substring(0,index_of_to);
+			String maxValueExpStr = rest.substring(0, index_of_last_comma);
+			String rest2 = rest.substring(index_of_last_comma+1);
+			java.util.StringTokenizer tokens = new java.util.StringTokenizer(rest2, " ");
+			String token = tokens.nextToken();
 			int numValues = Integer.parseInt(token);
-			return createIntervalSpec(name, minValue, maxValue, numValues, logInterval);
+			return createIntervalSpec(name, minValueExpStr, maxValueExpStr, numValues, logInterval);
 		} else {
 			throw new RuntimeException("unknown type");
 		}
@@ -118,36 +165,55 @@ public static ConstantArraySpec createFromString(String name, String description
  * Insert the method's description here.
  * Creation date: (9/23/2005 1:47:17 PM)
  * @return cbit.vcell.solver.ConstantArraySpec
- * @param name java.lang.String
- * @param minValue double
- * @param maxValue double
+ * @param name String
+ * @param minValueExpStr String
+ * @param maxValueExpStr String
  * @param numValues int
  * @param logInterval boolean
  */
-public static ConstantArraySpec createIntervalSpec(String name, double minValue, double maxValue, int numValues, boolean logInterval) {
-	if (logInterval && (minValue * maxValue <= 0)) throw new RuntimeException("Min and Max values cannot be zero or have different signs for log interval");
+public static ConstantArraySpec createIntervalSpec(String name, String minValueExpStr, String maxValueExpStr, int numValues, boolean logInterval) {
+	Expression minValueExp = null;
+	Expression maxValueExp = null;
+	try {
+		minValueExp = new Expression(minValueExpStr);
+		maxValueExp = new Expression(maxValueExpStr);
+	} catch (ExpressionException e) {
+		throw new RuntimeException("failed to parse expressions '"+minValueExpStr+"' and '"+maxValueExpStr+"': "+e.getMessage(), e);
+	}
+	try {
+		double minValue = minValueExp.evaluateConstant();
+		double maxValue = maxValueExp.evaluateConstant();
+		if (logInterval && (minValue * maxValue <= 0)) throw new RuntimeException("Min and Max values cannot be zero or have different signs for log interval");
+	} catch (ExpressionException e){
+	}
 	ConstantArraySpec spec = new ConstantArraySpec();
 	spec.type = TYPE_INTERVAL;
 	spec.name = name;
-	spec.minValue = minValue;
-	spec.maxValue = maxValue;
+	spec.minValue = minValueExp;
+	spec.maxValue = maxValueExp;
 	spec.numValues = numValues;
 	spec.logInterval = logInterval;
 	spec.constants = new Constant[numValues];
 	if (logInterval) {
 		for (int i = 0; i < numValues; i++){
-			spec.constants[i] = new Constant(name, new cbit.vcell.parser.Expression(minValue * Math.pow(maxValue/minValue, ((double)i)/(numValues - 1))));
+			spec.constants[i] = new Constant(name, Expression.mult(
+					minValueExp,
+					Expression.power(Expression.div(maxValueExp, minValueExp),
+							((double)i)/(numValues - 1))));
 		}
 	} else {
 		for (int i = 0; i < numValues; i++){
-			spec.constants[i] = new Constant(name, new cbit.vcell.parser.Expression(minValue + (maxValue - minValue) * ((double)i)/(numValues - 1)));
+			spec.constants[i] = new Constant(name, Expression.add(
+					minValueExp,
+					Expression.mult(Expression.add(maxValueExp, Expression.negate(minValueExp)),
+							new Expression(((double)i)/(numValues - 1)))));
 		}
 	}
 	return spec;
 }
 
 
-/**
+	/**
  * Insert the method's description here.
  * Creation date: (9/23/2005 1:33:00 PM)
  * @return cbit.vcell.solver.ConstantArraySpec
@@ -181,7 +247,7 @@ public Constant[] getConstants() {
  * Creation date: (9/23/2005 2:21:53 PM)
  * @return double
  */
-public double getMaxValue() {
+public Expression getMaxValue() {
 	return maxValue;
 }
 
@@ -191,7 +257,7 @@ public double getMaxValue() {
  * Creation date: (9/23/2005 2:21:53 PM)
  * @return double
  */
-public double getMinValue() {
+public Expression getMinValue() {
 	return minValue;
 }
 
@@ -257,13 +323,13 @@ public String toString() {
 			cbit.vcell.math.Constant[] cs = getConstants();
 			String list = "";
 			for (int i = 0; i < cs.length; i++){
-				list += cs[i].getExpression().infix() + ", ";
+				list += cs[i].getExpression().infix() + "; ";
 			}
 			list = list.substring(0, list.length() - 2);
 			return list;
 		} 
 		case TYPE_INTERVAL: {
-			String interval = minValue + " to " + maxValue + ", ";
+			String interval = minValue.infix() + " to " + maxValue.infix() + ", ";
 			if (logInterval) interval += "log, ";
 			interval += numValues + " values";
 			return interval;
@@ -273,4 +339,5 @@ public String toString() {
 		}
 	}
 }
+
 }

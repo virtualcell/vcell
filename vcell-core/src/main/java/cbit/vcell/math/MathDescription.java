@@ -807,7 +807,7 @@ private MathCompareResults compareEquivalentCanonicalMath(MathDescription newMat
 			return oldMathDesc.compareInvariantAttributes(newMathDesc,true);
 		}
 	}catch (Exception e){
-		logger.error(e);
+		logger.error("unexpected failure comparing math descriptions: "+e.getMessage(), e);
 		logMathTexts(this, newMathDesc, Decision.MathDifferent_FAILURE_UNKNOWN, "Failure comparing math: "+e.getMessage());
 		return new MathCompareResults(Decision.MathDifferent_FAILURE_UNKNOWN, "failed to compare math: "+e.getMessage());
 	}
@@ -891,17 +891,17 @@ private static boolean compareUpdate(Expression nExp, Expression oExp, Consumer<
 }
 
 private static void logMathTexts(MathDescription math1, MathDescription math2, Decision decision, String msg){
-	try {
-		if (logger.isTraceEnabled()) {
-			logger.trace("maths different: "+decision.name()+" details: "+msg
-					+"\n===================MATH 1==================\n"
-					+ math1.getVCML_database() + "\n"
-					+ "==================MATH 2====================\n"
-					+ math2.getVCML_database() + "\n"
-					+ "==================END MATHS=================");
+	if (logger.isTraceEnabled()) {
+		try {
+		logger.trace("maths different: "+decision.name()+" details: "+msg
+				+"\n===================MATH 1==================\n"
+				+ math1.getVCML_database() + "\n"
+				+ "==================MATH 2====================\n"
+				+ math2.getVCML_database() + "\n"
+				+ "==================END MATHS=================");
+		}catch (Exception e){
+			logger.error("error logging math description text: "+e.getMessage(), e);
 		}
-	}catch (Exception e){
-		logger.error(e);
 	}
 }
 

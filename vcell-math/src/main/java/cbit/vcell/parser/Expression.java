@@ -297,52 +297,57 @@ flattenCount++;////////////////////////
 			@Override
 			public void getEntries(Map<String, SymbolTableEntry> entryMap) { throw new RuntimeException("not implemented");}
 		};
-		if (Arrays.asList(symbols).contains(factorSymbol)) {
-			// in case factorSymbol STE is 'constant' (will be removed during flattening)
-			// in some cases KMOLE from biomodel is not constant, KMOLE from MathDescription is constant
-			// and only one gets flattened away (in this case it will store the first binding it sees - better than nothing)
-			// this binding will be replaced later.
-
-			Expression flattenedExpression = new Expression(this);
-			flattenedExpression.bindExpression(null);  // clear bindings so that flatten will not remove symbols
-			flattenedExpression = flattenedExpression.flatten();
-
-			String mangledFactorSymbol = "____"+factorSymbol+"____";
-			flattenedExpression.substituteInPlace(new Expression(factorSymbol), new Expression(mangledFactorSymbol));
-			String flattenedInfix = flattenedExpression.infix();
-			final String[][] patterns = {
-					{ "pow("+mangledFactorSymbol+",-1.0) * "+mangledFactorSymbol,	 				"1.0" },
-					{ mangledFactorSymbol+" * pow("+mangledFactorSymbol+",-1.0)", 					"1.0" },
-					{ "pow("+mangledFactorSymbol+",2.0) * pow("+mangledFactorSymbol+",-2.0)",		"1.0" },
-					{ "pow("+mangledFactorSymbol+",3.0) * pow("+mangledFactorSymbol+",-3.0)",		"1.0" },
-					{ mangledFactorSymbol+" / "+mangledFactorSymbol,								"1.0" },
-					{ "/ "+mangledFactorSymbol+" * "+mangledFactorSymbol, 							"* 1.0" }
-			};
-			boolean bReplaced = false;
-			for (String[] pattern : patterns) {
-				if (flattenedInfix.contains(pattern[0])) {
-					flattenedInfix = flattenedInfix.replace(pattern[0], pattern[1]);
-					bReplaced = true;
-				}
-			}
-			if (bReplaced) {
-				Expression substitutedExpression = new Expression(flattenedInfix);
-				final Expression factorSymbol_exp = new Expression(factorSymbol);
-				substitutedExpression.substituteInPlace(new Expression(mangledFactorSymbol), factorSymbol_exp);
-				substitutedExpression = substitutedExpression.flatten();
-				if (bindings.size()>0) {
-					try {
-						substitutedExpression.bindExpression(symbolTable);
-					} catch (ExpressionBindingException e) {
-						logger.info("failed to rebind expression "+substitutedExpression.infix()+" after flattenFactor(): "+e.getMessage());
-					}
-				}
-				return substitutedExpression;
-			}
-		}
+//		if (Arrays.asList(symbols).contains(factorSymbol)) {
+//			// in case factorSymbol STE is 'constant' (will be removed during flattening)
+//			// in some cases KMOLE from biomodel is not constant, KMOLE from MathDescription is constant
+//			// and only one gets flattened away (in this case it will store the first binding it sees - better than nothing)
+//			// this binding will be replaced later.
+//
+//			Expression flattenedExpression = new Expression(this);
+//			flattenedExpression.bindExpression(null);  // clear bindings so that flatten will not remove symbols
+//			flattenedExpression = flattenedExpression.flatten();
+//
+//			String mangledFactorSymbol = "____"+factorSymbol+"____";
+//			flattenedExpression.substituteInPlace(new Expression(factorSymbol), new Expression(mangledFactorSymbol));
+//			String flattenedInfix = flattenedExpression.infix();
+//			final String[][] patterns = {
+//					{ "pow("+mangledFactorSymbol+",-1.0) * "+mangledFactorSymbol,	 				"1.0" },
+//					{ mangledFactorSymbol+" * pow("+mangledFactorSymbol+",-1.0)", 					"1.0" },
+//					{ "pow("+mangledFactorSymbol+",2.0) * pow("+mangledFactorSymbol+",-2.0)",		"1.0" },
+//					{ "pow("+mangledFactorSymbol+",3.0) * pow("+mangledFactorSymbol+",-3.0)",		"1.0" },
+//					{ mangledFactorSymbol+" / "+mangledFactorSymbol,								"1.0" },
+//					{ "/ "+mangledFactorSymbol+" * "+mangledFactorSymbol, 							"* 1.0" }
+//			};
+//			boolean bReplaced = false;
+//			for (String[] pattern : patterns) {
+//				if (flattenedInfix.contains(pattern[0])) {
+//					flattenedInfix = flattenedInfix.replace(pattern[0], pattern[1]);
+//					bReplaced = true;
+//				}
+//			}
+//			if (bReplaced) {
+//				Expression substitutedExpression = new Expression(flattenedInfix);
+//				final Expression factorSymbol_exp = new Expression(factorSymbol);
+//				substitutedExpression.substituteInPlace(new Expression(mangledFactorSymbol), factorSymbol_exp);
+//				substitutedExpression = substitutedExpression.flatten();
+//				if (bindings.size()>0) {
+//					try {
+//						substitutedExpression.bindExpression(symbolTable);
+//					} catch (ExpressionBindingException e) {
+//						logger.info("failed to rebind expression "+substitutedExpression.infix()+" after flattenFactor(): "+e.getMessage());
+//					}
+//				}
+////				return substitutedExpression;
+//			}
+//		}
 		Expression safeExp = new Expression(this);
 		safeExp.bindExpression(null);
 		safeExp = safeExp.flatten();
+		try {
+			safeExp = ExpressionUtils.simplifyUsingJSCL(safeExp);
+		}catch (Exception e) {
+			logger.warn("simplify with JSCL failed on expression '"+safeExp.infix()+"': "+e.getMessage(),e);
+		}
 		if (bindings.size()>0) {
 			safeExp.bindExpression(symbolTable);
 		}
@@ -634,7 +639,7 @@ public int hashCode() {
  * @param expression Expression
  * @exception java.lang.Exception The exception description.
  */
-public static Expression invert(Expression expression) throws ExpressionException {
+public static Expression invert(Expression expression)  {
 	Expression exp = new Expression();
 	ASTInvertTermNode invertNode = new ASTInvertTermNode();
 	
@@ -827,7 +832,7 @@ public static Expression power(Expression expression1, Expression expression2) t
 	return function(FunctionType.POW, expression1, expression2);
 }
 
-public static Expression power(Expression expression1, double exponent) throws ExpressionException {
+public static Expression power(Expression expression1, double exponent) {
 	return function(FunctionType.POW, expression1, new Expression(exponent));
 }
 
