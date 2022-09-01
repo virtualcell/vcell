@@ -49,8 +49,6 @@ import org.vcell.cli.*;
 import org.vcell.sedml.PubMet;
 import org.vcell.sedml.SEDMLExporter;
 import org.vcell.util.DataAccessException;
-import org.vcell.util.Issue;
-import org.vcell.util.Issue.IssueCategory;
 import org.vcell.util.document.*;
 
 import java.beans.PropertyVetoException;
@@ -99,6 +97,7 @@ public class VcmlOmexConverter {
 									File input,
 									File outputDir,
 									ModelFormat modelFormat,
+									CLILogFileManager logManager, 
 									boolean bHasDataOnly,
 									boolean bMakeLogsOnly,
 									boolean bNonSpatialOnly,
@@ -153,7 +152,7 @@ public class VcmlOmexConverter {
 				}
 			} catch (Exception e) {
 				logger.error("EXPORT FAILED: file=" +inputFile+", error="+e.getMessage(), e);
-				CLIUtils.writeDetailedErrorList(outputDir.getAbsolutePath(), inputFile + ",   " + e.getMessage(), bForceLogFiles);
+				logManager.writeDetailedErrorList(inputFile + ",   " + e.getMessage());
 			}
 		}
 		writeLogForOmexCreation(outputDir.getAbsolutePath(), hasNonSpatialSet, hasSpatialSet, bForceLogFiles);

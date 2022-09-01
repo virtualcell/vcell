@@ -6,7 +6,7 @@ import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
+import org.vcell.cli.CLILocalLogFileManager;
 import org.vcell.cli.CLIPythonManager;
 import org.vcell.cli.CLIUtils;
 import org.vcell.cli.run.ExecuteImpl;
@@ -42,7 +42,10 @@ public class BiosimulationsCommand implements Callable<Integer> {
     private boolean help;
 
     public Integer call() {
+        CLILocalLogFileManager logManager = null;
         try {
+            logManager = new CLILocalLogFileManager(OUT_DIR, bDebug, bDebug);
+
             LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
             Level logLevel = logger.getLevel();
             if (!bQuiet && bDebug) {
@@ -98,18 +101,17 @@ public class BiosimulationsCommand implements Callable<Integer> {
             long EXECUTABLE_MAX_WALLCLOCK_MILLIS = 600000;
             Executable.setTimeoutMS(EXECUTABLE_MAX_WALLCLOCK_MILLIS);
 
-            final boolean bForceLogFiles = false;
             final boolean bKeepTempFiles = false;
             final boolean bExactMatchOnly = false;
 
             logger.info("Beginning execution");
             try {
                 CLIPythonManager.getInstance().instantiatePythonProcess();
-                ExecuteImpl.singleExecOmex(ARCHIVE, OUT_DIR, bKeepTempFiles, bExactMatchOnly, bForceLogFiles, false);
+                ExecuteImpl.singleExecOmex(ARCHIVE, OUT_DIR, logManager, bKeepTempFiles, bExactMatchOnly, false);
                 return 0; // Does this prevent finally?
             } finally {
                 try {
-                    logger.trace("Closing Python Instance");
+                    if (logManager != null) logManager.finalizeAndExportLogFiles();
                     CLIPythonManager.getInstance().closePythonProcess(); // WARNING: Python will need reinstantiation after this is called
                 } catch (Exception e) {
                     logger.error(e.getMessage(), e);

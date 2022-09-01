@@ -19,7 +19,7 @@ import cbit.vcell.xml.XmlHelper;
 import org.jlibsedml.SedML;
 import org.jlibsedml.Task;
 import org.jlibsedml.UniformTimeCourse;
-import org.vcell.cli.CLIUtils;
+import org.vcell.cli.CLILogFileManager;
 import org.vcell.cli.vcml.VCMLHandler;
 import org.vcell.sbml.vcell.SBMLImportException;
 import org.vcell.sbml.vcell.SBMLImporter;
@@ -29,9 +29,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -67,9 +64,9 @@ public class SolverHandler {
 
 
     public HashMap<String, ODESolverResultSet>
-            simulateAllTasks(ExternalDocInfo externalDocInfo, SedML sedml,
+            simulateAllTasks(ExternalDocInfo externalDocInfo, SedML sedml, CLILogFileManager logManager, 
                              File outputDirForSedml, String outDir, String outputBaseDir, String sedmlLocation,
-                             boolean keepTempFiles, boolean exactMatchOnly, boolean bForceLogFiles) throws Exception {
+                             boolean keepTempFiles, boolean exactMatchOnly) throws Exception {
         // create the VCDocument(s) (bioModel(s) + application(s) + simulation(s)), do sanity checks
         cbit.util.xml.VCLogger sedmlImportLogger = new LocalLogger();
         String inputFile = externalDocInfo.getFile().getAbsolutePath();
@@ -259,11 +256,11 @@ public class SolverHandler {
                     	if(bTimeoutFound == false) {		// don't repeat this for each task
                     		String str = logTaskError.substring(0, logTaskError.indexOf("Process timed out"));
                     		str += "Process timed out";		// truncate the rest of the spam
-                        	CLIUtils.writeDetailedErrorList(outputBaseDir, bioModelBaseName + ",  solver: " + sdl + ": " + type + ": " + str, bForceLogFiles);
+                            logManager.writeDetailedErrorList(bioModelBaseName + ",  solver: " + sdl + ": " + type + ": " + str);
                         	bTimeoutFound = true;
                     	}
                     } else {
-                    	CLIUtils.writeDetailedErrorList(outputBaseDir, bioModelBaseName + ",  solver: " + sdl + ": " + type + ": " + logTaskError, bForceLogFiles);
+                        logManager.writeDetailedErrorList(bioModelBaseName + ",  solver: " + sdl + ": " + type + ": " + logTaskError);
                     }
                     RunUtils.drawBreakLine("-", 100);
                 }
@@ -281,7 +278,7 @@ public class SolverHandler {
         }
         logger.info("Ran " + simulationCount + " simulations for " + bioModelCount + " biomodels.");
         if(hasSomeSpatial) {
-        	writeSpatialList(outputBaseDir, bioModelBaseName, bForceLogFiles);
+            logManager.writeSpatialList(bioModelBaseName);
         }
         return resultsHash;
     }
@@ -521,18 +518,6 @@ public class SolverHandler {
         }
 
 */
-    	
-
     }
-
-    // we make a list with the omex files that contain (some) spatial simulations (FVSolverStandalone solver)
-    static void writeSpatialList(String outputBaseDir, String s, boolean bForceLogFile) throws IOException {
-        if (CLIUtils.isBatchExecution(outputBaseDir, bForceLogFile)) {
-            String dest = outputBaseDir + File.separator + "hasSpatialLog.txt";
-            Files.write(Paths.get(dest), (s + "\n").getBytes(),
-                    StandardOpenOption.CREATE, StandardOpenOption.APPEND);
-        }
-    }
-
 }
 

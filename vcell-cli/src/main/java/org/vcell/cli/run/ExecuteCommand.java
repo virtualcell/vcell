@@ -2,6 +2,7 @@ package org.vcell.cli.run;
 
 import cbit.vcell.resource.PropertyLoader;
 
+import org.vcell.cli.CLILocalLogFileManager;
 import org.vcell.cli.CLIPythonManager;
 import org.vcell.cli.CLIUtils;
 import org.vcell.util.exe.Executable;
@@ -37,6 +38,9 @@ public class ExecuteCommand implements Callable<Integer> {
     @Option(names = {"--exactMatchOnly"})
     private boolean bExactMatchOnly;
 
+    @Option(names = "--keepFlushingLogs")
+    private boolean bKeepFlushingLogs;
+
     @Option(names = {"--encapsulateOutput"}, defaultValue = "true", description = 
         "VCell will encapsulate output results in a sub directory when executing with a single input archive; has no effect when providing an input directory")
     private boolean bEncapsulateOutput;
@@ -54,8 +58,12 @@ public class ExecuteCommand implements Callable<Integer> {
     @Option(names = {"-q", "--quiet"}, description = "suppress all console output")
     private boolean bQuiet = false;
 
+
     public Integer call() {
+        CLILocalLogFileManager logManager = null;
         try {
+            logManager = new CLILocalLogFileManager(outputFilePath, bForceLogFiles, bKeepFlushingLogs);
+
             LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
             Level logLevel = logger.getLevel();
             if (!bQuiet && bDebug) {
@@ -85,31 +93,32 @@ public class ExecuteCommand implements Callable<Integer> {
 
             PropertyLoader.loadProperties();
             CLIPythonManager.getInstance().instantiatePythonProcess();
+            
 
             Executable.setTimeoutMS(EXECUTABLE_MAX_WALLCLOCK_MILLIS);
             logger.info("Beginning execution");
             if (inputFilePath.isDirectory()) {
                 logger.debug("Batch mode requested");
-                CLIUtils.createHeader(outputFilePath, bForceLogFiles);
-                ExecuteImpl.batchMode(inputFilePath, outputFilePath, bKeepTempFiles, bExactMatchOnly, bForceLogFiles);
+                ExecuteImpl.batchMode(inputFilePath, outputFilePath, logManager, bKeepTempFiles, bExactMatchOnly);
             } else {
                 logger.debug("Single mode requested");
                 File archiveToProcess = inputFilePath;
-                if (bForceLogFiles) CLIUtils.createHeader(outputFilePath, bForceLogFiles);
 
                 if (archiveToProcess.getName().endsWith("vcml")) {
-                    ExecuteImpl.singleExecVcml(archiveToProcess, outputFilePath);
+                    ExecuteImpl.singleExecVcml(archiveToProcess, outputFilePath, logManager);
                 } else { // archiveToProcess.getName().endsWith("omex")
-                    ExecuteImpl.singleExecOmex(archiveToProcess, outputFilePath, bKeepTempFiles, bExactMatchOnly, bForceLogFiles, bEncapsulateOutput);
+                    ExecuteImpl.singleExecOmex(archiveToProcess, outputFilePath, logManager, bKeepTempFiles, bExactMatchOnly, bEncapsulateOutput);
                 }
             }
 
-            logger.trace("Closing Python Instance");
+            
             CLIPythonManager.getInstance().closePythonProcess(); // WARNING: Python will need reinstantiation after this is called
             return 0;
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
             return 1;
+        } finally {
+            if (logManager != null) logManager.finalizeAndExportLogFiles();
         }
     }
 }
