@@ -11,6 +11,7 @@ import cbit.vcell.mapping.MathMappingCallbackTaskAdapter;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SimulationContext.MathMappingCallback;
 import cbit.vcell.mapping.SimulationContext.NetworkGenerationRequirements;
+import cbit.vcell.math.Constant;
 import cbit.vcell.math.MathCompareResults;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.SubDomain;
@@ -331,6 +332,7 @@ public class VcmlOmexConverter {
         List<Simulation> simsToExport = Arrays.stream(bioModel.getSimulations()).filter(simulationExportFilter).collect(Collectors.toList());
 
 		// we replace the obsolete solver with the fully supported equivalent
+        Set<String> orphanMathOverrides = new LinkedHashSet<>();
 		for (Simulation simulation : simsToExport) {
 			if (simulation.getSolverTaskDescription().getSolverDescription().equals(SolverDescription.FiniteVolume)) {
 				try {
@@ -341,11 +343,30 @@ public class VcmlOmexConverter {
 			}
 			MathOverrides mo = simulation.getMathOverrides();
 			if(mo != null && mo.hasUnusedOverrides()) {
-				String msg = "A Simulation has unused Math Overrides";
-				logger.error(msg);
-				writeSimErrorList(outputBaseDir, vcmlName + ": " + msg, bForceLogFiles);
-				return false;
+				MathDescription mathDescription = simulation.getMathDescription();
+				Enumeration<Constant> enumeration = mathDescription.getConstants();
+				java.util.HashSet<String> mathDescriptionHash = new java.util.HashSet<String>();
+				while (enumeration.hasMoreElements()) {
+					Constant constant = enumeration.nextElement();
+					mathDescriptionHash.add(constant.getName());
+				}
+				Enumeration<String> mathOverrideNamesEnum = mo.getOverridesHashKeys();
+				while (mathOverrideNamesEnum.hasMoreElements()){
+					String name = mathOverrideNamesEnum.nextElement();
+					if (!mathDescriptionHash.contains(name)){
+						orphanMathOverrides.add(name + ", ");
+					}
+				}
 			}
+		}
+		if(!orphanMathOverrides.isEmpty()) {
+			String msg = "Orphaned Math Overrides found: ";
+			for(String name : orphanMathOverrides) {
+				msg += name; 
+			}
+			logger.error(msg);
+			writeSimErrorList(outputBaseDir, vcmlName + ": " + msg, bForceLogFiles);
+			return false;
 		}
 
 		Version version = bioModel.getVersion();
