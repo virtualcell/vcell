@@ -1,6 +1,7 @@
 package org.vcell.cli.vcml;
 
 import cbit.util.xml.VCLogger;
+import cbit.util.xml.XmlRdfUtil;
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.biomodel.ModelUnitConverter;
@@ -554,38 +555,12 @@ public class VcmlOmexConverter {
 		Graph schema = new HashGraph();
 
         if(bioModelInfo == null) {								// perhaps it's not public, in which case is not in the map
-        	String description = "http://omex-library.org/" + vcmlName + ".omex";	// make an empty rdf file
-        	URI descriptionURI = ValueFactoryImpl.getInstance().createURI(description);
-    		graph.add(descriptionURI, RDF.TYPE, PubMet.Description);
-    		try {
-    			Map<String, String> nsMap = DefaultNameSpaces.defaultMap.convertToMap();
-    			ret = SesameRioUtil.writeRDFToString(graph, nsMap, RDFFormat.RDFXML);
-				if (logger.isTraceEnabled()) {
-					ByteArrayOutputStream bos = new ByteArrayOutputStream();
-					SesameRioUtil.writeRDFToStream(bos, graph, nsMap, RDFFormat.RDFXML);
-					try {
-						logger.trace(bos.toString(StandardCharsets.UTF_8.name()));
-					} catch (UnsupportedEncodingException e) {
-						logger.error("failed to write RDF to file during logging: "+e.getMessage(), e);
-					}
-				}
-    		} catch (RDFHandlerException e) {
-    			logger.error("error forming RDF: "+e.getMessage(), e);
-			}
-    		return ret;
+        	ret = XmlRdfUtil.getMetadata(vcmlName);
+   		return ret;
         }
         PublicationInfo[] publicationInfos = bioModelInfo.getPublicationInfos();
         if(publicationInfos == null || publicationInfos.length == 0) {				// we may not have PublicationInfo
-        	String description = "http://omex-library.org/" + vcmlName + ".omex";	// make an empty rdf file
-        	URI descriptionURI = ValueFactoryImpl.getInstance().createURI(description);
-    		graph.add(descriptionURI, RDF.TYPE, PubMet.Description);
-    		try {
-    			Map<String, String> nsMap = DefaultNameSpaces.defaultMap.convertToMap();
-    			ret = SesameRioUtil.writeRDFToString(graph, nsMap, RDFFormat.RDFXML);
-    			SesameRioUtil.writeRDFToStream(System.out, graph, nsMap, RDFFormat.RDFXML);
-    		} catch (RDFHandlerException e) {
-    			logger.error("failed to write RDF to console: "+e.getMessage(), e);
-			}
+        	ret = XmlRdfUtil.getMetadata(vcmlName);
     		return ret;
         }
         
