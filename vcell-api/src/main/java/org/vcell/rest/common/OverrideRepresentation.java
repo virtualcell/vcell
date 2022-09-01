@@ -17,10 +17,10 @@ public class OverrideRepresentation {
 	public final String name;
 	public final String type;
 	public final String expression;
-	public final double[] values;
+	public final String[] values;
 	public final int cardinality;
 	
-	public OverrideRepresentation(String name, String type, int cardinality, double[] values, String expression) {
+	public OverrideRepresentation(String name, String type, int cardinality, String[] values, String expression) {
 		this.name = name;
 		this.type = type;
 		this.cardinality = cardinality;
@@ -38,7 +38,7 @@ public class OverrideRepresentation {
 			this.cardinality = 1;
 			if (element.getActualValue().isNumeric()){
 				this.type = OVERRIDE_TYPE_Single;
-				this.values = new double[] { element.getActualValue().evaluateConstant() };
+				this.values = new String[] { element.getActualValue().infix() };
 				this.expression = null;
 			}else{
 				this.type = OVERRIDE_TYPE_Variable;
@@ -58,9 +58,9 @@ public class OverrideRepresentation {
 			//
 			case ConstantArraySpec.TYPE_LIST:{
 				this.type = OVERRIDE_TYPE_List;
-				this.values = new double[this.cardinality];
+				this.values = new String[this.cardinality];
 				for (int i=0;i<cardinality;i++){
-					values[i] = arraySpec.getConstants()[i].getExpression().evaluateConstant();
+					values[i] = arraySpec.getConstants()[i].getExpression().infix();
 				}
 				break;
 			}
@@ -73,7 +73,7 @@ public class OverrideRepresentation {
 				}else{
 					this.type = OVERRIDE_TYPE_LinearInterval;
 				}
-				this.values = new double[] { arraySpec.getMinValue(), arraySpec.getMaxValue() };
+				this.values = new String[] { arraySpec.getMinValue().infix(), arraySpec.getMaxValue().infix() };
 				break;
 			}
 			default:{
@@ -129,8 +129,8 @@ public class OverrideRepresentation {
 		if (type.equals(OVERRIDE_TYPE_List)){
 			StringBuffer buffer = new StringBuffer();
 			buffer.append("[");
-			for (double val : values){
-				buffer.append(val+" ");
+			for (String val : values){
+				buffer.append("\""+val+"\", ");
 			}
 			buffer.append("]");
 		}
@@ -151,7 +151,7 @@ public class OverrideRepresentation {
 		return type;
 	}
 
-	public double[] getValues() {
+	public String[] getValues() {
 		return values;
 	}
 

@@ -13,6 +13,7 @@ package cbit.vcell.solver;
 import cbit.vcell.math.*;
 import cbit.vcell.model.common.VCellErrorMessages;
 import cbit.vcell.parser.*;
+import jscl.math.function.Exp;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.vcell.util.*;
@@ -20,6 +21,7 @@ import org.vcell.util.Issue.IssueCategory;
 import org.vcell.util.IssueContext.ContextType;
 
 import java.util.*;
+import java.util.function.Function;
 
 /**
  * Constant expressions that override those specified in the MathDescription
@@ -80,7 +82,46 @@ public class MathOverrides implements Matchable, java.io.Serializable {
 		public ConstantArraySpec getSpec() {
 			return spec;
 		}
-		
+
+//		public void applySymbolReplacement(MathOverridesResolver.SymbolReplacement replacement) {
+//			this.name = replacement.newName;
+//			if (!replacement.factor.isOne()) {
+//				if (this.actualValue != null) {
+//					this.actualValue = Expression.mult(this.actualValue, replacement.factor);
+//				} else if (this.getSpec() != null) {
+//					ConstantArraySpec oldSpec = this.getSpec();
+//					if (this.getSpec().getType() == ConstantArraySpec.TYPE_INTERVAL) {
+//						Expression newMinValueExp = Expression.mult(oldSpec.getMinValue(), replacement.factor);
+//						Expression newMaxValueExp = Expression.mult(oldSpec.getMaxValue(), replacement.factor);
+//						ConstantArraySpec newSpec = ConstantArraySpec.createIntervalSpec(oldSpec.getName(), newMinValueExp.infix(), newMaxValueExp.infix(), oldSpec.getNumValues(), oldSpec.isLogInterval());
+//						this.spec = newSpec;
+//					}else if (this.getSpec().getType() == ConstantArraySpec.TYPE_LIST) {
+//						ArrayList<String> newExpStrings = new ArrayList<>();
+//						for (int i=0; i<oldSpec.getNumValues(); i++){
+//							Constant c = oldSpec.getConstants()[i];
+//							newExpStrings.add(Expression.mult(c.getExpression(),replacement.factor).infix());
+//						}
+//						ConstantArraySpec newSpec = null;
+//						try {
+//							newSpec = ConstantArraySpec.createListSpec(oldSpec.getName(), newExpStrings.toArray(new String[0]));
+//						} catch (ExpressionException e) {
+//							String msg = "failed to transform list type math override for '"+name+"' with nonconstant factor "+replacement.factor.infix();
+//							throw new RuntimeException(msg, e);
+//						}
+//						this.spec = newSpec;
+//					}
+//				}
+//			}
+//		}
+
+		public void applyFunctionToExpressions(Function<Expression, Expression> expressionFunction) {
+			if (this.actualValue!=null) {
+				this.actualValue = expressionFunction.apply(this.actualValue);
+			} else if (this.spec!=null) {
+				this.spec.applyFunctionToExpressions(expressionFunction);
+			}
+		}
+
 	}
 
 /**
@@ -701,6 +742,10 @@ void updateFromMathDescription() {
 		Constant constant = enumeration.nextElement();
 		mathDescriptionHash.add(constant.getName());
 	}
+
+	//
+	// get list of referenced names (in overridden constant names or those referenced in overridden expressions)
+	//
 	LinkedHashSet<String> referencedNames = new LinkedHashSet<>();
 	Enumeration<String> mathOverrideNamesEnum = getOverridesHash().keys();
 	while (mathOverrideNamesEnum.hasMoreElements()) {
@@ -723,7 +768,9 @@ void updateFromMathDescription() {
 		}
 	}
 
+
 	LinkedHashSet<String> allFactorSymbols = new LinkedHashSet<>();
+
 
 	HashMap<String, MathOverridesResolver.SymbolReplacement> renamedMap = new HashMap<>();
 	for (String name : referencedNames){
@@ -735,10 +782,16 @@ void updateFromMathDescription() {
 					allFactorSymbols.addAll(replacement.getFactorSymbols());
 					Element element = overridesHash.remove(name);
 					if (element != null) {
-						element.name = replacement.newName;
-						if (!replacement.factor.isOne()) {
-							element.actualValue = Expression.mult(element.actualValue, replacement.factor);
-						}
+						java.util.function.Function<Expression, Expression> scaleExpressionsByUnitFactor = exp -> {
+							Expression substitutedExp = Expression.mult(exp, replacement.factor);
+							try {
+								substitutedExp = ExpressionUtils.simplifyUsingJSCL(substitutedExp);
+							} catch (ExpressionException e) {
+								logger.warn("failed to simplify '"+substitutedExp.infix()+"': "+e.getMessage(),e);
+							}
+							return substitutedExp;
+						};
+						element.applyFunctionToExpressions(scaleExpressionsByUnitFactor);
 						overridesHash.put(replacement.newName, element);
 						removeConstant(name);
 					}
@@ -749,52 +802,62 @@ void updateFromMathDescription() {
 			}
 		}
 	}
+
+	java.util.function.Function<Expression, Expression> substituteWithFactors = exp -> {
+		exp = new Expression(exp);
+		for (String replacedSymbol : renamedMap.keySet()) {
+			if (exp.hasSymbol(replacedSymbol)) {
+				try {
+					MathOverridesResolver.SymbolReplacement replacement = renamedMap.get(replacedSymbol);
+					Expression replacementExp = new Expression(mathDescription.getVariable(replacement.newName), null);
+					if (!replacement.factor.isOne()) {
+						replacementExp = Expression.mult(Expression.invert(replacement.factor), replacementExp);
+					}
+					exp = exp.getSubstitutedExpression(new Expression(replacedSymbol), replacementExp);
+
+				} catch (ExpressionException e) {
+					String msg = "failed to process expression substitution for exp '"+exp.infix()+"'";
+					throw new RuntimeException(msg, e);
+				}
+			}
+		}
+		return exp;
+	};
 	
 	//
 	// for repaired constants, go through all entries and rename expressions where they refer to the renamed constant.
 	//
 	for (Element element : overridesHash.values()){
-		if (element.actualValue!=null) {
-			for (String replacedSymbol : renamedMap.keySet()) {
-				if (element.actualValue.hasSymbol(replacedSymbol)) {
-					try {
-						MathOverridesResolver.SymbolReplacement replacement = renamedMap.get(replacedSymbol);
-						Expression replacementExp = new Expression(mathDescription.getVariable(replacement.newName), null);
-						if (!replacement.factor.isOne()) {
-							replacementExp = Expression.mult(Expression.invert(replacement.factor), replacementExp);
-						}
-						element.actualValue = element.actualValue.getSubstitutedExpression(new Expression(replacedSymbol), replacementExp);
+		element.applyFunctionToExpressions(substituteWithFactors);
+	}
 
-					} catch (ExpressionException e) {
-						String msg = "failed to process expression substitution for " + element.name + ", value=" + element.actualValue.infix();
-						throw new RuntimeException(msg, e);
-					}
-				}
+	java.util.function.Function<Expression, Expression> simplifyFunction = (exp) -> {
+		for (String factorSymbol : allFactorSymbols) {
+			try {
+				exp = exp.flattenFactors(factorSymbol);
+			} catch (ExpressionException e) {
+				String msg = "failed to simplify unit converted Math Override expression '" + exp.infix() + "'";
+				logger.error(msg, e);
+				throw new RuntimeException(msg, e);
 			}
 		}
-	}
+		try {
+			Expression simplifiedExp = ExpressionUtils.simplifyUsingJSCL(exp);
+			simplifiedExp.bindExpression(mathDescription);
+			exp = simplifiedExp;
+		} catch (Exception e) {
+			logger.error("unable to simplify expression: '" + exp.infix() + "': " + e.getMessage(), e);
+		}
+		return exp;
+	};
+
 
 	//
 	// loop through all expressions and try to flatten factors.
 	//
 	for (String overriddenName : getOverridesHash().keySet()) {
 		Element element = overridesHash.get(overriddenName);
-		for (String factorSymbol : allFactorSymbols) {
-			try {
-				element.actualValue = element.actualValue.flattenFactors(factorSymbol);
-			} catch (ExpressionException e) {
-				String msg = "failed to simplify unit converted Math Override " + overriddenName + "=" + element.actualValue.infix();
-				logger.error(msg, e);
-				throw new RuntimeException(msg, e);
-			}
-		}
-		try {
-			Expression simplifiedExp = ExpressionUtils.simplifyUsingJSCL(element.actualValue);
-			simplifiedExp.bindExpression(mathDescription);
-			element.actualValue = simplifiedExp;
-		} catch (Exception e){
-			logger.error(e);
-		}
+		element.applyFunctionToExpressions(simplifyFunction);
 	}
 
 	refreshDependencies();

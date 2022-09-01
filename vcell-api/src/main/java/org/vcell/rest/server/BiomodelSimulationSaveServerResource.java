@@ -82,12 +82,12 @@ public class BiomodelSimulationSaveServerResource extends AbstractServerResource
 				String name = overrideObj.getString("name");
 				String type = overrideObj.getString("type");
 				int cardinality = overrideObj.getInt("cardinality");
-				double[] values = new double[0];
+				String[] values = new String[0];
 				if (overrideObj.has("values")){
 					JSONArray valuesArray = overrideObj.getJSONArray("values");
-					values = new double[valuesArray.length()];
+					values = new String[valuesArray.length()];
 					for (int j=0; j<valuesArray.length(); j++){
-						values[j] = valuesArray.getDouble(j);
+						values[j] = valuesArray.getString(j);
 					}
 				}
 				String expression = null;

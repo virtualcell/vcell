@@ -61,11 +61,11 @@ public class ExpressionUtilsJSCLFlattenTest {
                 {new Expression("(((50.0 * Size_c0) + (KMOLE * s1_Count_init_uM / (KMOLE / Size_c0))) / Size_c0)"),
                         new Expression("(50.0 + s1_Count_init_uM)")},
 
-                {new Expression("1.0"),
-                        new Expression("1.0")},
+                {new Expression("((KMOLE * (1.0 * pow(KMOLE,1.0))) * (1.0 * pow(KMOLE, - 1.0)))"),
+                        new Expression("KMOLE")},
 
-                {new Expression("1.0"),
-                        new Expression("1.0")},
+                {new Expression("(((2.0 * KMOLE) * (1.0 * pow(KMOLE,1.0))) * (1.0 * pow(KMOLE, - 1.0)))"),
+                        new Expression("2.0*KMOLE")},
 
                 {new Expression("1.0"),
                         new Expression("1.0")},
