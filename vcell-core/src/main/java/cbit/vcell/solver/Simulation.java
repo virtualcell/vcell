@@ -977,7 +977,7 @@ public void vetoableChange(java.beans.PropertyChangeEvent evt) throws java.beans
 		
 		MathOverrides mo = getMathOverrides();
 		if(mo!=null && mo.hasUnusedOverrides()) {
-			String msg = "The Simulation has unused Math Overrides.";
+			String msg = "The Simulation '" + getName() + "' has unused Math Overrides.";
 			String tip = "Remove the unused Math Overrides.";
 			issueList.add(new Issue(this, issueContext, IssueCategory.Simulation_Override_NotFound, msg, tip, Issue.Severity.ERROR));
 		}
