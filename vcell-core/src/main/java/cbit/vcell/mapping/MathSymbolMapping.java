@@ -10,8 +10,7 @@
 
 package cbit.vcell.mapping;
 
-import java.util.ArrayList;
-import java.util.Map;
+import java.util.*;
 
 import cbit.vcell.math.*;
 import org.vcell.util.BeanUtils;
@@ -28,9 +27,9 @@ import cbit.vcell.parser.SymbolTableEntry;
  * @author: Jim Schaff
  */
 public class MathSymbolMapping implements SourceSymbolMapping {
-	private java.util.HashMap<SymbolTableEntry, String> biologicalToMathSymbolNameHash = new java.util.HashMap<SymbolTableEntry, String>();
-	private java.util.HashMap<SymbolTableEntry, Variable> biologicalToMathHash = new java.util.HashMap<SymbolTableEntry, Variable>();
-	private java.util.HashMap<Variable, SymbolTableEntry[]> mathToBiologicalHash = new java.util.HashMap<Variable, SymbolTableEntry[]>();
+	private TreeMap<SymbolTableEntry, String> biologicalToMathSymbolNameHash = new TreeMap<SymbolTableEntry, String>();
+	private TreeMap<SymbolTableEntry, Variable> biologicalToMathHash = new TreeMap<SymbolTableEntry, Variable>();
+	private TreeMap<Variable, SymbolTableEntry[]> mathToBiologicalHash = new TreeMap<Variable, SymbolTableEntry[]>();
 
 /**
  * MathSymbolMapping constructor comment.

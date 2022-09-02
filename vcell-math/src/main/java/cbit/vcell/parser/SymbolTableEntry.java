@@ -20,7 +20,7 @@ import cbit.vcell.units.VCUnitDefinition;
  * or a <code>ReactionParticipant</code>
  * <p>
  */
-public interface SymbolTableEntry {
+public interface SymbolTableEntry extends Comparable<SymbolTableEntry> {
 
 /**
  * This method was created in VisualAge.
@@ -64,4 +64,15 @@ VCUnitDefinition getUnitDefinition();
  * @exception java.lang.Exception The exception description.
  */
 public boolean isConstant() throws ExpressionException;
+
+	@Override
+	default int compareTo(SymbolTableEntry o) {
+		int classCompareTo = getClass().getSimpleName().compareTo(o.getClass().getSimpleName());
+		if (classCompareTo != 0){
+			return classCompareTo;
+		}
+		String thisName = (getNameScope()!=null) ? (getNameScope().getAbsoluteScopePrefix()+"."+getName()) : getName();
+		String otherName = (o.getNameScope()!=null) ? (o.getNameScope().getAbsoluteScopePrefix()+"."+o.getName()) : o.getName();
+		return thisName.compareTo(otherName);
+	}
 }
