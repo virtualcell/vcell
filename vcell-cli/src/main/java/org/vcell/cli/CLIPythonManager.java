@@ -146,7 +146,7 @@ public class CLIPythonManager {
         try {
             this.getResultsOfLastCommand(); // Clear Buffer of Python Interpeter
             this.executeThroughPython("from vcell_cli_utils import wrapper");
-            logger.info("Python initalization success!\n");
+            logger.info("Python initialization success!\n");
         } catch (IOException | TimeoutException | InterruptedException e){
             logger.warn("Python instantiation Exception Thrown:\n" + e);
             throw new PythonStreamException("Could not initialize Python. Problem is probably python-side.");
