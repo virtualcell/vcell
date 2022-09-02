@@ -390,6 +390,9 @@ private MathOverrides.Element getOverridesElement(String key) {
 private java.util.Hashtable<String, Element> getOverridesHash() {
 	return overridesHash;
 }
+public java.util.Enumeration<String> getOverridesHashKeys() {
+	return overridesHash.keys();
+}
 
 
 /**

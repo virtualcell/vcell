@@ -63,6 +63,7 @@ import cbit.vcell.parser.NameScope;
 import cbit.vcell.parser.ScopedSymbolTable;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.parser.VCUnitEvaluator;
+import cbit.vcell.solver.Simulation;
 import cbit.vcell.units.VCUnitDefinition;
 import cbit.vcell.units.VCUnitException;
 
@@ -600,6 +601,10 @@ public Issue[] getIssues() {
 	getSimulationContext().gatherIssues(issueContext,issueList,bIgnoreMathDescription);
 	getSimulationContext().getModel().gatherIssues(issueContext,issueList);
 	issueList.addAll(localIssueList);
+	Simulation[] sims = getSimulationContext().getSimulations();
+	for(Simulation sim : sims) {
+		sim.gatherIssues(issueContext, issueList);
+	}
 	return (Issue[])BeanUtils.getArray(issueList,Issue.class);
 }
 
