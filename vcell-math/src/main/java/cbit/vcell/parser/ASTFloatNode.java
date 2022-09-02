@@ -131,9 +131,17 @@ public Node flatten() throws ExpressionException {
 			  }
 		  } else if (lang == LANGUAGE_JSCL) {
 			  if (value == value.intValue() && Math.abs(value) <= 2) {
-				  return Integer.toString(value.intValue());
+				  if (value >= 0) {
+					  return Integer.toString(value.intValue());
+				  }else{
+					  return "("+ value.intValue() +")";
+				  }
 			  } else {
-				  return value.toString();
+				  if (value >= 0) {
+					  return value.toString();
+				  }else{
+					  return "("+ value +")";
+				  }
 			  }
 		  } else {
 		      return value.toString();

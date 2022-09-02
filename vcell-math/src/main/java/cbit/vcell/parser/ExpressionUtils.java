@@ -211,15 +211,18 @@ private static SimpleNode createTerminalNode(java.util.Random random, boolean bI
 }
 
 public static Expression simplifyUsingJSCL(Expression exp) throws ExpressionException {
-	return simplifyUsingJSCL(exp, 100);
+	return simplifyUsingJSCL(exp, 200);
 }
 
 public static Expression simplifyUsingJSCL(Expression exp, int maxExpLength) throws ExpressionException {
 	long startTime = System.currentTimeMillis();
 	jscl.math.Expression jsclExpression = null;
 	String jsclExpressionString = exp.infix_JSCL();
-	if (jsclExpressionString.replace("underscore","_").length()>100){
+	if (jsclExpressionString.replace("underscore","_").length()>maxExpLength){
 		throw new ExpressionException("large expression, abort JSCL simplification");
+	}
+	if (jsclExpressionString.contains("<") || jsclExpressionString.contains(">")){
+		throw new ExpressionException("JSCL cannot parse inequalities, cannot parse \""+jsclExpressionString+"\"");
 	}
 	try {
 		jsclExpression = jscl.math.Expression.valueOf(jsclExpressionString);
@@ -231,7 +234,7 @@ public static Expression simplifyUsingJSCL(Expression exp, int maxExpLength) thr
 	String expandStr = expand.toString();
 	Generic simplify = expand.simplify();
 	String simplifyStr = simplify.toString();
-	if (simplifyStr.replace("underscore","_").length()>100){
+	if (simplifyStr.replace("underscore","_").length()>maxExpLength){
 		throw new ExpressionException("large expression, abort JSCL simplification");
 	}
 	jscl.math.Generic jsclSolution = simplify.factorize();
@@ -249,7 +252,7 @@ public static Expression simplifyUsingJSCL(Expression exp, int maxExpLength) thr
 	Generic expand1 = jsclExpression.expand();
 	Generic simplify1 = expand1.simplify();
 	String simplifyStr1 = simplify.toString();
-	if (simplifyStr1.replace("underscore","_").length()>100){
+	if (simplifyStr1.replace("underscore","_").length()>maxExpLength){
 		throw new ExpressionException("large expression, abort JSCL simplification");
 	}
 	jsclSolution = simplify1.factorize();
