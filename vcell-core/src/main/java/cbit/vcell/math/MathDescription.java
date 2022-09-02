@@ -283,12 +283,7 @@ public static void updateReservedSymbols(MathDescription updateThis,ReservedSymb
 		for (int j = 0; j < reservedSymbols.length; j++) {
 			if(reservedSymbols[j].getName().equals(updateThis.variableList.get(i).getName()) && reservedSymbols[j].getExpression() != null) {
 				//System.out.println("--Found "+updateThis.variableList.get(i)+" "+reservedSymbols[j].getName()+" "+reservedSymbols[j].getExpression().infix());
-				try {
-					updateThis.variableList.get(i).getExpression().substituteInPlace(updateThis.variableList.get(i).getExpression(), reservedSymbols[j].getExpression());
-				} catch (ExpressionException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
+				updateThis.variableList.get(i).getExpression().substituteInPlace(updateThis.variableList.get(i).getExpression(), reservedSymbols[j].getExpression());
 				break;
 			}
 		}

@@ -1008,7 +1008,7 @@ System.out.println("bind("+bindCount+")");
  * @param newExp cbit.vcell.parser.Expression
  * @exception java.lang.Exception The exception description.
  */
-public void substituteInPlace(Expression origExp, Expression newExp) throws ExpressionException {
+public void substituteInPlace(Expression origExp, Expression newExp) {
 substituteCount++;////////////////////////////////
 	SimpleNode origNode = origExp.rootNode;
 	SimpleNode newNode = (SimpleNode)newExp.rootNode.copyTree();

@@ -69,6 +69,7 @@ import org.sbml.jsbml.ext.spatial.*;
 import org.vcell.sbml.SBMLHelper;
 import org.vcell.sbml.SBMLUtils;
 import org.vcell.sbml.SbmlException;
+import org.vcell.sbml.UnsupportedSbmlExportException;
 import org.vcell.sedml.SEDMLExporter;
 import org.vcell.util.*;
 
@@ -2412,12 +2413,49 @@ public Map<Pair <String, String>, String> getLocalToGlobalTranslationMap() {
 	return l2gMap;
 }
 
+public static void validateSimulationContextSupport(SimulationContext simulationContext) throws UnsupportedSbmlExportException {
+	String applicationTypeErrorMessage = null;
+	if (!simulationContext.getModel().getRbmModelContainer().isEmpty()) {
+		applicationTypeErrorMessage = "Application '" + simulationContext.getName() + "' has reaction rules, SBML Export is currently not supported";
+	}else {
+		switch (simulationContext.getApplicationType()) {
+			case SPRINGSALAD: {
+				applicationTypeErrorMessage = "Application '" + simulationContext.getName() + "' is a Spring Salad application, SBML Export is currently not supported";
+				break;
+			}
+			case NETWORK_DETERMINISTIC: {
+				break;
+			}
+			case NETWORK_STOCHASTIC: {
+				if (simulationContext.getGeometry().getDimension() > 0) {
+					applicationTypeErrorMessage = "Application '" + simulationContext.getName() + "' is a spatial stochastic application, SBML Export is currently not supported";
+				}
+				break;
+			}
+			case RULE_BASED_STOCHASTIC: {
+				applicationTypeErrorMessage = "Application '" + simulationContext.getName() + "' is a spatial stochastic application, SBML Export is currently not supported";
+				break;
+			}
+			default: {
+				applicationTypeErrorMessage = "Application '" + simulationContext.getName() + "' is " + simulationContext.getApplicationType().name() + ", SBML Export is currently not supported";
+				break;
+			}
+		}
+	}
+	if (applicationTypeErrorMessage != null) {
+		throw new UnsupportedSbmlExportException(applicationTypeErrorMessage);
+	}
+}
+
 /**
  * VC_to_SB_Translator constructor comment.
  * @throws SbmlException 
  * @throws XMLStreamException 
  */
-private void translateBioModel() throws SbmlException, XMLStreamException {
+private void translateBioModel() throws SbmlException, UnsupportedSbmlExportException, XMLStreamException {
+
+	validateSimulationContextSupport(vcSelectedSimContext);
+
 	compartmentNameToIdMap.clear();
 	// 'Parse' the Virtual cell model into an SBML model
 	org.sbml.jsbml.Model temp = sbmlModel;
