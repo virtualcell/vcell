@@ -231,7 +231,7 @@ public class SimulationContext implements SimulationOwner, Versionable, Matchabl
 		private final List<SymbolReplacementTemplate> builtin_replacements = new ArrayList<>();
 		private final IdentifiableProvider bioIdentifiableProvider = new BioModel(null);
 
-		void SimulationContextOverridesResolver() {
+		SimulationContextOverridesResolver() {
 			// test for renamed initial condition constant (changed from _init to _init_uM)
 			builtin_replacements.add(new SymbolReplacementTemplate(DiffEquMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_old,
 					DiffEquMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_uM));
