@@ -241,7 +241,7 @@ public void setIndex(int symbolTableIndex) {
  * @return java.lang.String
  */
 public String toString() {
-	return getClass().getName().substring(getClass().getName().lastIndexOf('.')+1)+" <"+getQualifiedName()+">";
+	return getClass().getSimpleName()+" <"+getQualifiedName()+">";
 }
 public Domain getDomain() {
 	return this.domain;

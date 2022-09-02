@@ -896,7 +896,7 @@ private void verifyExpression(Constant value, boolean checkScan) throws Expressi
 			//
 			Variable variable = mathDescription.getVariable(symbols[i]);
 			if (!(variable != null && variable instanceof Constant)){
-				throw new ExpressionBindingException("identifier " + symbols[i] + " is not a constant. " +
+				throw new ExpressionBindingException("identifier " + symbols[i] + " is of type '"+variable.getClass().getSimpleName()+"'. " +
 						"Parameter overrides should only refer to constants.");
 			}
 			if (checkScan && isScan(symbols[i])) {
