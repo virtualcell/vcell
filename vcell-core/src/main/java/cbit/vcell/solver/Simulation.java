@@ -229,6 +229,7 @@ public Simulation(Simulation simulation, boolean bCloneMath) {
 	}else{
 		fieldMeshSpecification = null;
 	}
+	simulationOwner = simulation.getSimulationOwner();
 	//  Must set the MathDescription before constructing these...
 	fieldMathOverrides = new MathOverrides (this, simulation.getMathOverrides());
 	fieldSolverTaskDescription = new SolverTaskDescription(this, simulation.getSolverTaskDescription());
