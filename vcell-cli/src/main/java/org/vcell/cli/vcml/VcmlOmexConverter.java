@@ -84,7 +84,7 @@ public class VcmlOmexConverter {
 		}
 		Predicate<Simulation> simulationExportFilter = simulation -> true;
 		BioModelInfo bioModelInfo = null;
-		boolean isCreated = vcmlToOmexConversion(input.getAbsolutePath(), bioModelInfo, null, outputDir.getAbsolutePath(),
+		boolean isCreated = vcmlToOmexConversion(input.getAbsolutePath(), bioModelInfo, outputDir.getAbsolutePath(), outputDir.getAbsolutePath(),
 				simulationExportFilter, modelFormat, bForceLogFiles, bValidateOmex);
 		if (isCreated) {
 			logger.info("Combine archive created for `" + input + "`");
