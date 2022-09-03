@@ -971,6 +971,7 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 			GeometryClass geometryClass = fieldMathMappingParameters[i].getGeometryClass();
 			Variable variable = newFunctionOrConstant(getMathSymbol(fieldMathMappingParameters[i],geometryClass),getIdentifierSubstitutions(fieldMathMappingParameters[i].getExpression(),fieldMathMappingParameters[i].getUnitDefinition(),geometryClass),fieldMathMappingParameters[i].getGeometryClass());
 			if (mathDesc.getVariable(variable.getName())==null){
+				variable.bind(mathDesc);
 				mathDesc.addVariable(variable);
 			}
 		}

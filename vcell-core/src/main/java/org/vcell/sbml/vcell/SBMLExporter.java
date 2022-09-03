@@ -79,6 +79,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Insert the type's description here.
@@ -529,22 +530,6 @@ private void addParameters() throws ExpressionException, SbmlException {
  * @throws XMLStreamException 
  */
 private void addReactions() throws SbmlException, XMLStreamException {
-
-	// Check if any reaction has electrical mapping
-	boolean bCalculatePotential = false;
-	StructureMapping structureMappings[] = getSelectedSimContext().getGeometryContext().getStructureMappings();
-	for (int i = 0; i < structureMappings.length; i++){
-		if (structureMappings[i] instanceof MembraneMapping){
-			if (((MembraneMapping)structureMappings[i]).getCalculateVoltage()){
-				bCalculatePotential = true;
-			}
-		}
-		
-	}
-	// If it does, VCell doesn't export it to SBML (no representation).
-	if (bCalculatePotential) {
-		throw new RuntimeException("This VCell model has Electrical mapping; cannot be exported to SBML at this time");
-	}
 
 	// l2gMap.clear();
 	if (!l2gMap.isEmpty()){
@@ -2416,11 +2401,11 @@ public Map<Pair <String, String>, String> getLocalToGlobalTranslationMap() {
 public static void validateSimulationContextSupport(SimulationContext simulationContext) throws UnsupportedSbmlExportException {
 	String applicationTypeErrorMessage = null;
 	if (!simulationContext.getModel().getRbmModelContainer().isEmpty()) {
-		applicationTypeErrorMessage = "Application '" + simulationContext.getName() + "' has reaction rules, SBML Export is currently not supported";
+		applicationTypeErrorMessage = "Application '" + simulationContext.getName() + "' has reaction rules, SBML Export is not supported";
 	}else {
 		switch (simulationContext.getApplicationType()) {
 			case SPRINGSALAD: {
-				applicationTypeErrorMessage = "Application '" + simulationContext.getName() + "' is a Spring Salad application, SBML Export is currently not supported";
+				applicationTypeErrorMessage = "Application '" + simulationContext.getName() + "' is a Spring Salad application, SBML Export is not supported";
 				break;
 			}
 			case NETWORK_DETERMINISTIC: {
@@ -2428,22 +2413,43 @@ public static void validateSimulationContextSupport(SimulationContext simulation
 			}
 			case NETWORK_STOCHASTIC: {
 				if (simulationContext.getGeometry().getDimension() > 0) {
-					applicationTypeErrorMessage = "Application '" + simulationContext.getName() + "' is a spatial stochastic application, SBML Export is currently not supported";
+					applicationTypeErrorMessage = "Application '" + simulationContext.getName() + "' is a spatial stochastic application, SBML Export is not supported";
 				}
 				break;
 			}
 			case RULE_BASED_STOCHASTIC: {
-				applicationTypeErrorMessage = "Application '" + simulationContext.getName() + "' is a spatial stochastic application, SBML Export is currently not supported";
+				applicationTypeErrorMessage = "Application '" + simulationContext.getName() + "' is a spatial stochastic application, SBML Export is not supported";
 				break;
 			}
 			default: {
-				applicationTypeErrorMessage = "Application '" + simulationContext.getName() + "' is " + simulationContext.getApplicationType().name() + ", SBML Export is currently not supported";
+				applicationTypeErrorMessage = "Application '" + simulationContext.getName() + "' is " + simulationContext.getApplicationType().name() + ", SBML Export is not supported";
 				break;
 			}
 		}
 	}
 	if (applicationTypeErrorMessage != null) {
 		throw new UnsupportedSbmlExportException(applicationTypeErrorMessage);
+	}
+
+	// Check if any membrane has 'calculateVoltage' set, not supported for SBML Export.
+	StructureMapping structureMappings[] = simulationContext.getGeometryContext().getStructureMappings();
+	for (int i = 0; i < structureMappings.length; i++){
+		if (structureMappings[i] instanceof MembraneMapping){
+			if (((MembraneMapping)structureMappings[i]).getCalculateVoltage()){
+				throw new UnsupportedSbmlExportException("Membrane '"+((MembraneMapping) structureMappings[i]).getMembrane().getName()+" has membrane potential enabled, SBML Export is not supported");
+			}
+		}
+	}
+
+	// Check if any reaction has electric current defined, not supported by SBML Export.
+	List<KineticsParameter> kineticsParameters = Arrays.stream(simulationContext.getModel().getReactionSteps())
+					.map(rs -> rs.getKinetics()).flatMap(kinetics -> Arrays.stream(kinetics.getKineticsParameters())).collect(Collectors.toList());
+	for (KineticsParameter kineticsParameter : kineticsParameters) {
+		if ((kineticsParameter.getRole() == Kinetics.ROLE_CurrentDensity && (!kineticsParameter.getExpression().isZero()))
+				|| (kineticsParameter.getRole() == Kinetics.ROLE_LumpedCurrent && (!kineticsParameter.getExpression().isZero()))) {
+			String reactionName = kineticsParameter.getKinetics().getReactionStep().getName();
+			throw new UnsupportedSbmlExportException("Reaction '"+reactionName+"' has electric current defined, SBML Export is not supported");
+		}
 	}
 }
 
