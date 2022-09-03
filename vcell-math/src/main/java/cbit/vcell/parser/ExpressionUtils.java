@@ -211,7 +211,7 @@ private static SimpleNode createTerminalNode(java.util.Random random, boolean bI
 }
 
 public static Expression simplifyUsingJSCL(Expression exp) throws ExpressionException {
-	return simplifyUsingJSCL(exp, 200);
+	return simplifyUsingJSCL(exp, 100);
 }
 
 public static Expression simplifyUsingJSCL(Expression exp, int maxExpLength) throws ExpressionException {
@@ -267,8 +267,8 @@ public static Expression simplifyUsingJSCL(Expression exp, int maxExpLength) thr
 		}
 	}
 	long endTime = System.currentTimeMillis();
-	if (endTime-startTime > 1000){
-		lg.warn("JSCL expression simplification took "+((endTime-startTime)/1000.0)+" seconds for '"+exp.infix()+"'");
+	if (endTime-startTime > 100){
+		lg.info("JSCL expression simplification took "+(endTime-startTime)+" ms for '"+exp.infix()+"'");
 	}
 	return solution.flatten();
 }
