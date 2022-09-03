@@ -150,7 +150,7 @@ public class VCellSBMLSolver implements SBMLSolver {
 		            null,
 		            null,
 		            null);
-		    Simulation sim = new Simulation(simVersion, mathDesc);
+		    Simulation sim = new Simulation(simVersion, mathDesc, simContext);
 		    
 		    sim.setName("unnamed");
 		    // if time factor from SBML is not 1 (i.e., it is not in secs but in minutes or hours), convert endTime to min/hr as : endTime*timeFactor
@@ -432,7 +432,7 @@ public class VCellSBMLSolver implements SBMLSolver {
 		            null,
 		            null,
 		            null);
-		    Simulation sim = new Simulation(simVersion, mathDesc);
+		    Simulation sim = new Simulation(simVersion, mathDesc, simContext);
 		    
 		    sim.setName("unnamed");
 		    // if time factor from SBML is not 1 (i.e., it is not in secs but in minutes or hours), convert endTime to min/hr as : endTime*timeFactor
