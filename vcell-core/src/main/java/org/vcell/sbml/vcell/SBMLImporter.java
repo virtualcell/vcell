@@ -2863,7 +2863,6 @@ public class SBMLImporter {
 		SpeciesContext[] vcSpeciesContexts = vcModel.getSpeciesContexts();
 		try {
 			for (Reaction sbmlReaction: reactions) {
-				ReactionStep vcReaction = null;
 				String rxnSbmlName = sbmlReaction.getName();
 
 				boolean bReversible = true;
@@ -2880,9 +2879,9 @@ public class SBMLImporter {
 						if (fastAttrIndex >= 0) {
 							String fastAttrValue = reactionAttributesElement.getAttrValue(fastAttrIndex);
 							if (fastAttrValue.equals("true")) {
-								fastReactionList.add(vcReaction);
+								bIsFast = true;
 							} else if (fastAttrValue.equals("false")) {
-								logger.info("ignoring fast=false when reading reaction " + vcReaction.getName());
+								logger.info("ignoring fast=false when reading reaction " + sbmlReaction.getId());
 							} else {
 								throw new RuntimeException("unexpected value " + fastAttrValue + " for " + XMLTags.SBML_VCELL_ReactionAttributesTag
 										+ " attribute " + XMLTags.SBML_VCELL_ReactionAttributesTag_fastAttr);
@@ -2894,7 +2893,7 @@ public class SBMLImporter {
 							if (fluxReactionAttrValue.equals("true")) {
 								bIsFluxReaction = true;
 							} else if (fluxReactionAttrValue.equals("false")) {
-								logger.info("ignoring fluxReaction=false when reading reaction " + vcReaction.getName());
+								logger.info("ignoring fluxReaction=false when reading reaction " + sbmlReaction.getId());
 							} else {
 								throw new RuntimeException("unexpected value " + fluxReactionAttrValue + " for " + XMLTags.SBML_VCELL_ReactionAttributesTag
 										+ " attribute " + XMLTags.SBML_VCELL_ReactionAttributesTag_fluxReactionAttr);
@@ -2903,6 +2902,7 @@ public class SBMLImporter {
 					}
 				}
 				Structure reactionStructure = getReactionStructure(sbmlModel, sbmlReaction, vcBioModel, lambdaFunctions, sbmlSymbolMapping, vcLogger);
+				final ReactionStep vcReaction;
 				if (bIsFluxReaction) {
 					if (!(reactionStructure instanceof Membrane)){
 						throw new SBMLImportException("Flux reaction on " + reactionStructure.getClass().getSimpleName() + ", not a membrane.");
