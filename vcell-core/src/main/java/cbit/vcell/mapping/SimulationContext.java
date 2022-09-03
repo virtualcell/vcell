@@ -255,7 +255,7 @@ public class SimulationContext implements SimulationOwner, Versionable, Matchabl
 
 		@Override
 		public SymbolReplacement getSymbolReplacement(String name) {
-			if (mathDesc!=null && mathDesc.getSourceSymbolMapping().findVariableByName(name) instanceof Constant) {
+			if (mathDesc!=null && mathDesc.getSourceSymbolMapping() != null && mathDesc.getSourceSymbolMapping().findVariableByName(name) instanceof Constant) {
 				throw new RuntimeException("unexpected: override var name " + name + " found as a Constant in latest math");
 			}
 			SourceSymbolMapping currentMathSymbolMapping = getMathDescription().getSourceSymbolMapping();
