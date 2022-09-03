@@ -4,6 +4,7 @@ import java.beans.PropertyVetoException;
 import java.math.BigDecimal;
 import java.util.Date;
 
+import cbit.vcell.solver.*;
 import org.vcell.util.Extent;
 import org.vcell.util.document.GroupAccessNone;
 import org.vcell.util.document.KeyValue;
@@ -42,10 +43,6 @@ import cbit.vcell.model.Species;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.solver.Simulation;
-import cbit.vcell.solver.SolverDescription;
-import cbit.vcell.solver.TimeBounds;
-import cbit.vcell.solver.UniformOutputTimeSpec;
 
 public class Generate2DSimBioModelOp {
 	private static final String SPECIES_NAME_PREFIX_MOBILE = "fluor_primary_mobile"; 
@@ -272,7 +269,7 @@ public class Generate2DSimBioModelOp {
 		simContext.setMathDescription(mathDesc);
 
 		SimulationVersion simVersion = new SimulationVersion(simKey,"sim1",owner,new GroupAccessNone(),new KeyValue("0"),new BigDecimal(0),new Date(),VersionFlag.Current,"",null);
-		Simulation newSimulation = new Simulation(simVersion,mathDesc);
+		Simulation newSimulation = new Simulation(simVersion,mathDesc, new SimulationOwner.StandaloneSimulationOwner());
 		simContext.addSimulation(newSimulation);
 		newSimulation.getSolverTaskDescription().setTimeBounds(timeBounds);
 		newSimulation.getMeshSpecification().setSamplingSize(cellROI.getISize());
