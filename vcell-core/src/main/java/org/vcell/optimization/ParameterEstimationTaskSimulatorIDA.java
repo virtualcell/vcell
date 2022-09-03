@@ -3,6 +3,7 @@ package org.vcell.optimization;
 import java.util.Random;
 import java.util.Vector;
 
+import cbit.vcell.solver.*;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.SimulationVersion;
 import org.vcell.util.document.User;
@@ -19,13 +20,6 @@ import cbit.vcell.opt.OptimizationSpec;
 import cbit.vcell.opt.ReferenceData;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.resource.ResourceUtil;
-import cbit.vcell.solver.AnnotatedFunction;
-import cbit.vcell.solver.ExplicitOutputTimeSpec;
-import cbit.vcell.solver.MathOverrides;
-import cbit.vcell.solver.Simulation;
-import cbit.vcell.solver.SimulationJob;
-import cbit.vcell.solver.SimulationSymbolTable;
-import cbit.vcell.solver.TimeBounds;
 import cbit.vcell.solver.ode.IDASolverStandalone;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 
@@ -36,7 +30,7 @@ public class ParameterEstimationTaskSimulatorIDA {
 		//create a temp simulation based on math description
 		KeyValue key = new KeyValue(""+Math.abs(new Random().nextLong()));
 		SimulationVersion dummyVersion = new SimulationVersion(key, "name", new User("temp",new KeyValue("1")), null, null, null, null, null, null, null);
-		Simulation simulation = new Simulation(dummyVersion, parameterEstimationTask.getSimulationContext().getMathDescription());
+		Simulation simulation = new Simulation(dummyVersion, parameterEstimationTask.getSimulationContext().getMathDescription(), new SimulationOwner.StandaloneSimulationOwner());
 		
 		ReferenceData refData = parameterEstimationTask.getModelOptimizationSpec().getReferenceData();
 		double[] times = refData.getDataByColumn(0);

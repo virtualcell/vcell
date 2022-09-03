@@ -4,6 +4,7 @@ import java.beans.PropertyVetoException;
 import java.math.BigDecimal;
 import java.util.Date;
 
+import cbit.vcell.solver.*;
 import org.vcell.util.Extent;
 import org.vcell.util.ISize;
 import org.vcell.util.Origin;
@@ -36,11 +37,6 @@ import cbit.vcell.model.SimpleReaction;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.solver.OutputTimeSpec;
-import cbit.vcell.solver.Simulation;
-import cbit.vcell.solver.SolverDescription;
-import cbit.vcell.solver.TimeBounds;
-import cbit.vcell.solver.UniformOutputTimeSpec;
 
 public abstract class Generate2DExpModelOpAbstract {
 	
@@ -211,7 +207,7 @@ public abstract class Generate2DExpModelOpAbstract {
 		
 		KeyValue fakeDataSimKey = context.createNewKeyValue();
 		SimulationVersion fakeDataSimVersion = new SimulationVersion(fakeDataSimKey,"fakeDataSim",owner,new GroupAccessNone(),new KeyValue("0"),new BigDecimal(0),new Date(),VersionFlag.Current,"",null);
-		Simulation fakeDataSim = new Simulation(fakeDataSimVersion, mathDesc);
+		Simulation fakeDataSim = new Simulation(fakeDataSimVersion, mathDesc, new SimulationOwner.StandaloneSimulationOwner());
 		simContext.addSimulation(fakeDataSim);
 		
 		fakeDataSim.getSolverTaskDescription().setTimeBounds(timeBounds);
@@ -224,7 +220,7 @@ public abstract class Generate2DExpModelOpAbstract {
 		//
 		KeyValue fullExperimentSimKey = context.createNewKeyValue();
 		SimulationVersion fullExperimentSimVersion = new SimulationVersion(fullExperimentSimKey,"fullExperiment",owner,new GroupAccessNone(),new KeyValue("0"),new BigDecimal(0),new Date(),VersionFlag.Current,"",null);
-		Simulation fullExperimentSim = new Simulation(fullExperimentSimVersion, mathDesc);
+		Simulation fullExperimentSim = new Simulation(fullExperimentSimVersion, mathDesc, new SimulationOwner.StandaloneSimulationOwner());
 		simContext.addSimulation(fullExperimentSim);
 				
 		OutputTimeSpec fullExperimentOutputTimeSpec = new UniformOutputTimeSpec(outputTimeStep/10.0);

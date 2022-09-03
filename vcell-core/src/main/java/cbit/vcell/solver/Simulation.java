@@ -110,7 +110,7 @@ private Simulation( ) {
  * One of three ways to construct a Simulation.  This constructor
  * is used when creating a new Simulation.
  */
-public Simulation(SimulationVersion argSimulationVersion, MathDescription mathDescription) {
+public Simulation(SimulationVersion argSimulationVersion, MathDescription mathDescription, SimulationOwner simulationOwner) {
 	this( );
 	addVetoableChangeListener(this);
 	this.fieldSimulationVersion = argSimulationVersion;
@@ -124,6 +124,7 @@ public Simulation(SimulationVersion argSimulationVersion, MathDescription mathDe
 
 	this.fieldName = argSimulationVersion.getName();
 	this.fieldDescription = argSimulationVersion.getAnnot();
+	this.simulationOwner = simulationOwner;
 
 	try {
 		setMathDescription(mathDescription);
@@ -318,12 +319,6 @@ private boolean compareEqualMathematically(Simulation simulation) {
 	return true;
 }
 
-/**
- * Insert the method's description here.
- * Creation date: (10/25/00 1:53:36 PM)
- * @return java.lang.String
- * @param version cbit.sql.Version
- */
 public static String createSimulationID(KeyValue simKey) {
 	return "SimID_"+simKey;
 }
@@ -345,11 +340,6 @@ public void fireVetoableChange(java.lang.String propertyName, java.lang.Object o
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (3/18/2004 1:54:51 PM)
- * @param newVersion cbit.sql.Version
- */
 public void forceNewVersionAnnotation(SimulationVersion newSimulationVersion) throws PropertyVetoException {
 	if (getVersion().getVersionKey().equals(newSimulationVersion.getVersionKey())) {
 		setVersion(newSimulationVersion);
@@ -359,21 +349,11 @@ public void forceNewVersionAnnotation(SimulationVersion newSimulationVersion) th
 }
 
 
-/**
- * Gets the description property (java.lang.String) value.
- * @return The description property value.
- * @see #setDescription
- */
 public java.lang.String getDescription() {
 	return fieldDescription;
 }
 
 
-/**
- * Gets the isDirty property (boolean) value.
- * @return The isDirty property value.
- * @see #setIsDirty
- */
 public boolean getIsDirty() {
 	return fieldIsDirty;
 }
@@ -738,11 +718,6 @@ public void setIsDirty(boolean isDirty) {
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (10/24/00 1:17:37 PM)
- * @param mathDesc cbit.vcell.math.MathDescription
- */
 public void setMathDescription(MathDescription mathDescription) throws java.beans.PropertyVetoException {
 	MathDescription oldValue = fieldMathDescription;
 	fireVetoableChange("mathDescription", oldValue, mathDescription);
@@ -775,12 +750,6 @@ public void setMathDescription(MathDescription mathDescription) throws java.bean
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (5/3/2001 7:13:50 PM)
- * @param newMathOverrides cbit.vcell.solver.MathOverrides
- * @exception java.beans.PropertyVetoException The exception description.
- */
 public void setMathOverrides(MathOverrides mathOverrides) {
 	MathOverrides oldValue = fieldMathOverrides;
 	fieldMathOverrides = mathOverrides;
@@ -835,11 +804,6 @@ public void setSolverTaskDescription(SolverTaskDescription solverTaskDescription
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (11/14/00 3:49:12 PM)
- * @param version cbit.sql.Version
- */
 private void setVersion(SimulationVersion simulationVersion) throws PropertyVetoException {
 	this.fieldSimulationVersion = simulationVersion;
 	if (simulationVersion != null){
@@ -848,13 +812,6 @@ private void setVersion(SimulationVersion simulationVersion) throws PropertyVeto
 	}
 }
 
-/**
- * Insert the method's description here.
- * Creation date: (9/28/2004 5:50:22 PM)
- * @return java.lang.String
- * @param memoryMathDescription cbit.vcell.math.MathDescription
- * @param databaseMathDescription cbit.vcell.math.MathDescription
- */
 public static boolean testEquivalency(Simulation memorySimulation, Simulation databaseSimulation, MathCompareResults mathCompareResults) {
 
 	if (memorySimulation == databaseSimulation){
@@ -969,11 +926,7 @@ public void vetoableChange(java.beans.PropertyChangeEvent evt) throws java.beans
 		return getSolverTaskDescription() != null && getSolverTaskDescription().getSolverDescription() != null
 				&& getSolverTaskDescription().getSolverDescription().hasCellCenteredMesh();
 	}
-	/**
-	 * forward to {@link #simWarning}
-	 * @param issueContext
-	 * @param issueList
-	 */
+
 	public void gatherIssues(IssueContext issueContext, List<Issue> issueList) {
 		
 		MathOverrides mo = getMathOverrides();

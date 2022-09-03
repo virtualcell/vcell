@@ -141,7 +141,7 @@ public static void main(String[] args) {
 						"",
 						null);
 
-				Simulation sim1 = new Simulation(simVersion, simContext.getMathDescription());
+				Simulation sim1 = new Simulation(simVersion, simContext.getMathDescription(), simContext);
 				simContext.addSimulation(sim1);
 				
 				sim1.setName("sim1");

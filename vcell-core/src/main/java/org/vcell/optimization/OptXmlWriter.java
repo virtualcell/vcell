@@ -17,6 +17,7 @@ import java.io.StringWriter;
 
 import javax.xml.stream.XMLStreamException;
 
+import cbit.vcell.solver.*;
 import org.jdom.CDATA;
 import org.jdom.Element;
 import org.sbml.jsbml.SBMLException;
@@ -61,12 +62,6 @@ import cbit.vcell.opt.VariableWeights;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.resource.ResourceUtil;
-import cbit.vcell.solver.Simulation;
-import cbit.vcell.solver.SimulationJob;
-import cbit.vcell.solver.SimulationSymbolTable;
-import cbit.vcell.solver.SolverDescription;
-import cbit.vcell.solver.SolverException;
-import cbit.vcell.solver.TimeStep;
 import cbit.vcell.solvers.FiniteVolumeFileWriter;
 import cbit.vcell.xml.XmlParseException;
 
@@ -375,7 +370,7 @@ public class OptXmlWriter {
 					org.vcell.util.document.VersionFlag.Archived,
 					"",
 					null);
-			Simulation simulation = new Simulation(simVersion,pdeObjectiveFunction.getMathDescription());
+			Simulation simulation = new Simulation(simVersion,pdeObjectiveFunction.getMathDescription(), new SimulationOwner.StandaloneSimulationOwner());
 			simulation.getMeshSpecification().setSamplingSize(refData.getDataISize());	
 
 			double[] times = refData.getDataByColumn(0);
