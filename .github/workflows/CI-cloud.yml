@@ -19,7 +19,7 @@ jobs:
     - name: set global environment variables
       run: |
         echo "VCELL_TAG=`git rev-parse --short HEAD`" >> $GITHUB_ENV
-        echo "VCELL_REPO_NAMESPACE=ghcr.io/jcschaff" >> $GITHUB_ENV
+        echo "VCELL_REPO_NAMESPACE=ghcr.io/modeltwice-llc" >> $GITHUB_ENV
     - name: setup java 8 with maven cache
       uses: actions/setup-java@v2
       with:
@@ -38,22 +38,17 @@ jobs:
         cd docker/build-cloud
         sudo docker login -u ${{ secrets.ACTION_USER }} -p ${{ secrets.ACTION_TOKEN }} ghcr.io
         docker login -u ${{ secrets.ACTION_USER }} -p ${{ secrets.ACTION_TOKEN }} ghcr.io
-        ./build.sh all ${{ env.VCELL_REPO_NAMESPACE }} ${{ env.VCELL_TAG }}
-        cd singularity-vm
-        singularity remote login -u ${{ secrets.ACTION_USER }} -p ${{ secrets.ACTION_TOKEN }} oras://ghcr.io
+        ./build.sh api ${{ env.VCELL_REPO_NAMESPACE }} ${{ env.VCELL_TAG }}
     - name: tag as latest and push to registry
       shell: bash
+#        for CONTAINER in vcell-api vcell-batch vcell-clientgen vcell-data vcell-db vcell-mongo vcell-sched vcell-submit vcell-web;\
       run: |
-        for CONTAINER in vcell-api vcell-batch vcell-clientgen vcell-data vcell-db vcell-mongo vcell-sched vcell-submit vcell-web;\
+        for CONTAINER in vcell-api;\
         do docker tag ${VCELL_REPO_NAMESPACE}/$CONTAINER:${VCELL_TAG} ${VCELL_REPO_NAMESPACE}/$CONTAINER:latest;\
         docker tag ${VCELL_REPO_NAMESPACE}/$CONTAINER:${VCELL_TAG} ${VCELL_REPO_NAMESPACE}/$CONTAINER:${{ steps.version.outputs.tag }};\
         docker push --all-tags ${VCELL_REPO_NAMESPACE}/$CONTAINER;\
         done
-        cd docker/build/singularity-vm
-        singularity push -U $(ls *img) oras://${VCELL_REPO_NAMESPACE}/vcell-batch-singularity:${VCELL_TAG}
-        singularity push -U $(ls *img) oras://${VCELL_REPO_NAMESPACE}/vcell-batch-singularity:${{ steps.version.outputs.tag }}
-        singularity push -U $(ls *img) oras://${VCELL_REPO_NAMESPACE}/vcell-batch-singularity:latest
-        
-    - name: Setup tmate session
-      uses: mxschmitt/action-tmate@v3
-      if: ${{ failure() }}
+
+#    - name: Setup tmate session
+#      uses: mxschmitt/action-tmate@v3
+#      if: ${{ failure() }}
