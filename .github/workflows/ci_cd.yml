@@ -1,4 +1,4 @@
-name: CI/CD
+name: CI-minimal-build
 
 on:
   push:
@@ -30,73 +30,6 @@ jobs:
           mvn -version
           java -version
           mvn --batch-mode clean install dependency:copy-dependencies
-
-      - name: Test building of docker image
-        run: |
-          docker build \
-            --file Dockerfile \
-            .
-
-      - name: Setup tmate session
-        uses: mxschmitt/action-tmate@v3
-        if: ${{ failure() }}
-
-  CD:
-    name: CD
-    runs-on: ubuntu-latest
-    if: ${{ github.event_name == 'release' }}
-
-    steps:
-      - uses: actions/checkout@v2
-
-      - name: setup java 8 with maven cache
-        uses: actions/setup-java@v3
-        with:
-          distribution: 'temurin'
-          java-version: '8'
-          cache: 'maven'
-
-      - name: Get the VCell version from tags
-        id: version
-        run: echo ::set-output name=tag::$(echo ${GITHUB_REF:10})
-
-      - name: Add Linux dependencies
-        shell: bash
-        run: |
-          mvn -version
-          java -version
-          mvn --batch-mode clean install dependency:copy-dependencies
-
-      - name: Build Docker image and push with latest tag
-        run: |
-          set -ux
-          REVISION=$(git rev-parse HEAD)
-          CREATED=$(date --rfc-3339=seconds | sed 's/ /T/')
-          sed -i 's/_VC_VERSION_TAG_/${{steps.version.outputs.tag}}/g' biosimulators.json
-          echo ${{ secrets.ACTION_TOKEN }} | docker login ghcr.io -u ${{ secrets.ACTION_USER }} --password-stdin
-          docker build \
-            --no-cache \
-            --file Dockerfile \
-            --build-arg SIMULATOR_VERSION=${{steps.version.outputs.tag}} \
-            --tag ghcr.io/virtualcell/biosimulators_vcell:latest \
-            --label org.opencontainers.image.revision=${REVISION} \
-            --label org.opencontainers.image.created=${CREATED} \
-            --label org.opencontainers.image.version=${{steps.version.outputs.tag}} \
-            --label org.opencontainers.image.license=MIT \
-            .
-          docker tag ghcr.io/virtualcell/biosimulators_vcell:latest ghcr.io/virtualcell/biosimulators_vcell:${{steps.version.outputs.tag}}
-          docker push --all-tags ghcr.io/virtualcell/biosimulators_vcell
-      - name: Get release upload URL
-        id: get_url
-        uses: pdamianik/release-tag-to-upload-url-action@v1.0.1
-        with:
-          tag: ${{ steps.version.outputs.tag }}
-          token: ${{ github.token }}
-      - name: Upload edited specifications file
-        uses: shogo82148/actions-upload-release-asset@v1
-        with:
-          upload_url: ${{ steps.get_url.outputs.uploadUrl }}
-          asset_path: biosimulators.json
 
       - name: Setup tmate session
         uses: mxschmitt/action-tmate@v3

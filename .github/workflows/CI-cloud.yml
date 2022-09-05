@@ -1,8 +1,12 @@
-name: CI-application-containers
+name: CI-cloud-containers
 
 on:
-  release:
-    types: [published]
+  workflow_dispatch:
+#    inputs:
+#      tag_name:
+#        description: 'version tag'
+#        required: true
+#        default: 7.4.0.23
 
 jobs:
   build:
@@ -15,23 +19,7 @@ jobs:
     - name: set global environment variables
       run: |
         echo "VCELL_TAG=`git rev-parse --short HEAD`" >> $GITHUB_ENV
-        echo "VCELL_REPO_NAMESPACE=ghcr.io/virtualcell" >> $GITHUB_ENV
-        echo "VCELL_DEPLOY_REMOTE_DIR=/share/apps/vcell3/deployed_github" >> $GITHUB_ENV
-        echo "VCELL_MANAGER_NODE=vcellapi-beta.cam.uchc.edu" >> $GITHUB_ENV
-    - name: setup ssh-agent
-      uses: webfactory/ssh-agent@v0.5.3
-      with:
-        ssh-private-key: ${{ secrets.VC_KEY }}
-    - name: get installer secrets
-      run: |
-        ssh-keyscan vcellapi-beta.cam.uchc.edu >> ~/.ssh/known_hosts
-        sudo mkdir /usr/local/deploy
-        sudo chmod 777 /usr/local/deploy
-        cd /usr/local/deploy
-        scp ${{ secrets.CD_FULL_USER }}@${VCELL_MANAGER_NODE}:${VCELL_DEPLOY_REMOTE_DIR}/deploy_dir.tar .
-        cd ..
-        sudo tar -xvf deploy/deploy_dir.tar
-        sudo chmod 777 -R deploy
+        echo "VCELL_REPO_NAMESPACE=ghcr.io/jcschaff" >> $GITHUB_ENV
     - name: setup java 8 with maven cache
       uses: actions/setup-java@v2
       with:
@@ -39,13 +27,15 @@ jobs:
         distribution: 'adopt'
         cache: 'maven'
     - name: Install Singularity # to make singularity image for cluster
-      uses: eWaterCycle/setup-singularity@v6
+      uses: eWaterCycle/setup-singularity@v7
       with:
-        singularity-version: 3.7.1
+        singularity-version: 3.8.3
     - name: build and publish all images
       shell: bash
+      # ./build.sh all ${{ env.VCELL_REPO_NAMESPACE }} ${{ env.VCELL_TAG }}
+      # ./build.sh api ${{ env.VCELL_REPO_NAMESPACE }} ${{ env.VCELL_TAG }}
       run: |
-        cd docker/build
+        cd docker/build-cloud
         sudo docker login -u ${{ secrets.ACTION_USER }} -p ${{ secrets.ACTION_TOKEN }} ghcr.io
         docker login -u ${{ secrets.ACTION_USER }} -p ${{ secrets.ACTION_TOKEN }} ghcr.io
         ./build.sh all ${{ env.VCELL_REPO_NAMESPACE }} ${{ env.VCELL_TAG }}
