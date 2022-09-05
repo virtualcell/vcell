@@ -6,9 +6,9 @@ metadata:
   name: api-service
 spec:
   ports:
-    - name: "8080"
-      port: 8080
-      targetPort: 8080
+    - name: "80"
+      port: 80
+      targetPort: 80
     - name: "8000"
       port: 8000
       targetPort: 8000
@@ -31,8 +31,8 @@ spec:
       labels:
         app: api
     spec:
-      imagePullSecrets:
-        - name: dockerconfigjson-github-com
+#      imagePullSecrets:
+#        - name: dockerconfigjson-github-com
       containers:
         - env:
             - name: dbuser
@@ -74,10 +74,10 @@ spec:
             - name: smtp_hostname
             - name: smtp_port
             - name: softwareVersion
-          image: "ghcr.io/virtualcell/vcell-api:latest"
+          image: "ghcr.io/jcschaff/vcell-api:latest"
           name: api
           ports:
-            - containerPort: 8080
+            - containerPort: 80
             - containerPort: 8000
           volumeMounts:
             - name: database-creds
