@@ -1,0 +1,142 @@
+# VTK and OpenJDK n Alpine Linux
+#FROM alpine:3.7
+# Install some Alpine packages
+#RUN apk add --no-cache \
+#    bash \
+#    build-base \
+#    cmake \
+#    wget \
+#    mesa-dev \
+#    mesa-osmesa \
+#    python2-dev
+# Download and extract VTK source, then configure and build VTK
+#RUN wget -nv -O- http://www.vtk.org/files/release/7.1/VTK-7.1.0.tar.gz | \
+#    tar xz && \
+#    cd VTK-7.1.0 && \
+#    cmake \
+#    -D CMAKE_BUILD_TYPE:STRING=Release \
+#    -D CMAKE_INSTALL_PREFIX:STRING=/usr \
+#    -D BUILD_DOCUMENTATION:BOOL=OFF \
+#    -D BUILD_EXAMPLES:BOOL=OFF \
+#    -D BUILD_TESTING:BOOL=OFF \
+#    -D BUILD_SHARED_LIBS:BOOL=ON \
+#    -D VTK_USE_X:BOOL=OFF \
+#    -D VTK_OPENGL_HAS_OSMESA:BOOL=ON \
+#    -D OSMESA_LIBRARY=/usr/lib/libOSMesa.so.8 \
+#    -D OSMESA_INCLUDE_DIR=/usr/include/GL/ \
+#    -D VTK_RENDERING_BACKEND:STRING=OpenGL \
+#    -D VTK_Group_MPI:BOOL=OFF \
+#    -D VTK_Group_StandAlone:BOOL=OFF \
+#    -D VTK_Group_Rendering:BOOL=ON \
+#    -D VTK_WRAP_PYTHON=ON \
+#    -D VTK_PYTHON_VERSION:STRING=2 \
+#    . && \
+#    make -j 2 && \
+#    make install && \
+#    cd .. && rm -rf VTK-7.1.0
+# install thrift python package
+#RUN wget https://bootstrap.pypa.io/get-pip.py \
+#    && python get-pip.py \
+#    && pip install thrift
+#RUN apk update && apk upgrade && \
+#    apk add openjdk8 && \
+#    mkdir /tmp/tmprt && \
+#    cd /tmp/tmprt && \
+#    apk add zip && \
+#    unzip -q /usr/lib/jvm/default-jvm/jre/lib/rt.jar && \
+#    apk add zip && \
+#    zip -q -r /tmp/rt.zip . && \
+#    apk del zip && \
+#    cd /tmp && \
+#    mv rt.zip /usr/lib/jvm/default-jvm/jre/lib/rt.jar && \
+#    rm -rf /tmp/tmprt /var/cache/apk/* bin/jjs bin/keytool bin/orbd bin/pack200 bin/policytool \
+#    bin/rmid bin/rmiregistry bin/servertool bin/tnameserv bin/unpack200 
+
+FROM schaff/vtk-openjdk-alpine:latest
+
+RUN mkdir -p /usr/local/app && \
+	apk update && \
+	apk add --no-cache ttf-dejavu && \
+    apk add openssh-client && \
+    apk add screen
+
+WORKDIR /usr/local/app
+
+COPY ./vcell-server/target/vcell-server-0.0.1-SNAPSHOT.jar \
+     ./vcell-server/target/maven-jars/*.jar \
+     ./vcell-oracle/target/vcell-oracle-0.0.1-SNAPSHOT.jar \
+     ./vcell-oracle/target/maven-jars/*.jar \
+     ./non-maven-java-libs/com/oracle/ojdbc6/11.2.0.4/ojdbc6-11.2.0.4.jar \
+     ./non-maven-java-libs/com/oracle/ucp/11.2.0.4/ucp-11.2.0.4.jar \
+     ./lib/
+
+
+COPY ./pythonScripts ./pythonScripts
+COPY ./nativelibs/linux64 ./nativelibs/linux64
+COPY ./docker/build/vcell-data.log4j.xml .
+
+ENV softwareVersion=SOFTWARE-VERSION-NOT-SET \
+	serverid=SITE \
+	dburl="db-url-not-set" \
+    dbdriver="db-driver-not-set" \
+    dbuser="db-user-not-set" \
+    jmshost_int_internal=activemqint \
+    jmsport_int_internal=61616 \
+    jmsuser=clientUser \
+	mongodb_host_internal=mongodb \
+	mongodb_port_internal=27017 \
+    mongodb_database=test \
+    export_baseurl="export-baseurl-not-set" \
+    simdatadir_external=/path/to/external/simdata/ \
+    jmsblob_minsize=100000 \
+    simdataCacheSize="simdataCacheSize-not-set" \
+    webDataPort="webDataPort-not-set" \
+    servertype="servertype-not-set"
+
+ENV dbpswdfile=/run/secrets/dbpswd \
+    jmspswdfile=/run/secrets/jmspswd \
+    keystore=/run/secrets/keystorefile_20210125 \
+    keystorepswdfile=/run/secrets/keystorepswd
+    
+
+VOLUME /simdata
+VOLUME /share/apps/vcell12/users
+VOLUME /exportdir
+
+EXPOSE 8000
+#webservice for hdf5 downloads
+#EXPOSE 55555
+
+ENTRYPOINT java \
+	-Xdebug -Xrunjdwp:transport=dt_socket,address=8000,server=y,suspend=n \
+	-XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap -XX:MaxRAMFraction=1 -Xms64M \
+    -Djava.awt.headless=true \
+	-Dvcell.softwareVersion="${softwareVersion}" \
+	-Djava.util.logging.manager=org.apache.logging.log4j.jul.LogManager \
+	-Dlog4j.configurationFile=/usr/local/app/vcell-data.log4j.xml \
+	-Dvcell.server.id="${serverid}" \
+	-Dvcell.server.dbConnectURL="${dburl}" \
+	-Dvcell.server.dbDriverName="${dbdriver}" \
+	-Dvcell.server.dbUserid="${dbuser}" \
+	-Dvcell.db.pswdfile="${dbpswdfile}" \
+	-Dvcell.python.executable=/usr/bin/python \
+	-Dvcell.primarySimdatadir.internal=/simdata \
+	-Dvcell.primarySimdatadir.external="${simdatadir_external}" \
+	-Dvcell.simdataCacheSize="${simdataCacheSize}" \
+	-Dvcell.export.baseDir.internal=/exportdir/ \
+	-Dvcell.export.baseURL="${export_baseurl}" \
+	-Dvcell.installDir=/usr/local/app \
+	-Dvcell.jms.int.host.internal="${jmshost_int_internal}" \
+	-Dvcell.jms.int.port.internal="${jmsport_int_internal}" \
+	-Dvcell.jms.blobMessageUseMongo=true \
+	-Dvcell.jms.blobMessageMinSize="${jmsblob_minsize}" \
+	-Dvcell.jms.user="${jmsuser}" \
+	-Dvcell.jms.pswdfile="${jmspswdfile}" \
+	-Dvcellapi.keystore.file="${keystore}" \
+	-Dvcellapi.keystore.pswdfile="${keystorepswdfile}" \
+	-Dvcell.mongodb.host.internal=${mongodb_host_internal} \
+	-Dvcell.mongodb.port.internal=${mongodb_port_internal} \
+	-Dvcell.mongodb.database=${mongodb_database} \
+	-Dvcelldata.web.server.port=${webDataPort} \
+	-cp "./lib/*" cbit.vcell.message.server.data.SimDataServer \
+	"${servertype}"

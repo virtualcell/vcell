@@ -1,0 +1,61 @@
+#!/bin/bash
+
+printusage() {
+	echo "Usage: JavaPostprocessor64 simKey userid userKey jobindex taskid solverExitCode"
+	exit 1
+}
+echo "JavaPostprocessor64 $@"
+
+# main code
+if [ $# -lt 6 ] ; then
+	printusage
+fi
+
+#
+# make sure no variables are left unset
+#
+shopt -s -o nounset
+
+postprocessor_mainclass=cbit.vcell.message.server.batch.sim.SolverPostprocessor
+
+jvmprop="-Djava.io.tmpdir=/tmp"
+jvmprop="${jvmprop} -Dvcell.installDir=${installdir}"
+jvmprop="${jvmprop} -Dvcell.jms.sim.host.internal=${jmshost_sim_internal}"
+jvmprop="${jvmprop} -Dvcell.jms.sim.port.internal=${jmsport_sim_internal}"
+jvmprop="${jvmprop} -Dvcell.jms.sim.restport.internal=${jmsrestport_sim_internal}"
+jvmprop="${jvmprop} -Dvcell.jms.sim.host.external=${jmshost_sim_internal}"
+jvmprop="${jvmprop} -Dvcell.jms.sim.port.external=${jmsport_sim_internal}"
+jvmprop="${jvmprop} -Dvcell.jms.sim.restport.external=${jmsrestport_sim_internal}"
+jvmprop="${jvmprop} -Dvcell.jms.user=${jmsuser}"
+jvmprop="${jvmprop} -Dvcell.jms.password=${jmspswd}"
+jvmprop="${jvmprop} -Dvcell.jms.blobMessageUseMongo=${blob_message_use_mongo}"
+jvmprop="${jvmprop} -Dvcell.primarySimdatadir.internal=${datadir_internal}"
+jvmprop="${jvmprop} -Dvcell.secondarySimdatadir.internal=${datadir_internal}"
+jvmprop="${jvmprop} -Dvcell.primarySimdatadir.external=${datadir_external}"
+jvmprop="${jvmprop} -Dvcell.secondarySimdatadir.external=${datadir_external}"
+jvmprop="${jvmprop} -Dvcell.server.id=${serverid}"
+jvmprop="${jvmprop} -Dvcell.softwareVersion=${softwareVersion}"
+jvmprop="${jvmprop} -Dvcell.lib=/usr/local/app/nativelibs/linux64"
+jvmprop="${jvmprop} -Dvcell.mongodb.database=${mongodb_database}"
+jvmprop="${jvmprop} -Dvcell.mongodb.host.internal=${mongodbhost_internal}"
+jvmprop="${jvmprop} -Dvcell.mongodb.port.internal=${mongodbport_internal}"
+
+jvmoptions="-XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap -XX:MaxRAMFraction=1 -Xms64M -Xmx${java_mem_Xmx}"
+
+arguments=$*
+
+echo "starting postprocessor"
+
+echo "expecting jre 1.8_144 or later for memory options"
+java -version
+
+java ${jvmoptions} ${jvmprop} ${postprocessor_mainclass} ${arguments}
+stat=$?
+
+if [[ $stat -ne 0 ]]; then
+	echo "postprocessor failed with exit code $stat"
+	exit $stat
+else
+	echo "postprocessor returned"
+	exit 0
+fi

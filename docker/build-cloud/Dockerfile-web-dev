@@ -1,0 +1,57 @@
+#FROM alpine:3.14
+FROM openjdk:8u302-jre
+#https://hub.docker.com/layers/openjdk/library/openjdk/8u302-jre/images/sha256-c2ab563c5dc423583f7cd022b2053384d8e343eb0a9f51e0a77e7d17be33d5e9?context=explore
+#FROM openjdk:8u302-jdk
+#https://hub.docker.com/layers/openjdk/library/openjdk/8u302-jdk/images/sha256-9951cac523b5234148d6df82e26139e5791b2fa894d38f04fbebac98195e06f9?context=explore
+
+#RUN mkdir -p /usr/local/app && apk update && apk upgrade && apk add --no-cache \
+#    bash nano wget openjdk8 openssh-client
+
+RUN apt-get -y update && apt-get install -y bash nano wget
+
+WORKDIR /usr/local/app
+
+COPY ./vcell-web/target/vcell-web-0.0.1-SNAPSHOT.jar \
+     ./vcell-web/target/maven-jars/*.jar \
+     ./vcell-oracle/target/vcell-oracle-0.0.1-SNAPSHOT.jar \
+     ./vcell-oracle/target/maven-jars/*.jar \
+     ./non-maven-java-libs/com/oracle/ojdbc6/11.2.0.4/ojdbc6-11.2.0.4.jar \
+     ./non-maven-java-libs/com/oracle/ucp/11.2.0.4/ucp-11.2.0.4.jar \
+     ./lib/
+     
+COPY ./nativelibs/linux64/* /usr/lib/
+
+ENV dburl="db-url-not-set" \
+    dbdriver="db-driver-not-set" \
+    dbuser="db-user-not-set" \
+    export_baseurl="export-baseurl-not-set" \
+    simdataCacheSize="simdataCacheSize-not-set" \
+    webDataPort="webDataPort-not-set"
+
+ENV dbpswdfile=/run/secrets/dbpswd \
+    keystore=/run/secrets/keystorefile_20210125 \
+    keystorepswdfile=/run/secrets/keystorepswd
+    
+VOLUME /simdata
+VOLUME /altsimdata
+VOLUME /exportdir
+
+ENTRYPOINT java \
+	-Xdebug -Xrunjdwp:transport=dt_socket,address=8000,server=y,suspend=n \
+	-XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap -XX:MaxRAMFraction=1 -Xms64M \
+    -Djava.awt.headless=true \
+	-Dvcell.server.dbConnectURL="${dburl}" \
+	-Dvcell.server.dbDriverName="${dbdriver}" \
+	-Dvcell.server.dbUserid="${dbuser}" \
+	-Dvcell.db.pswdfile="${dbpswdfile}" \
+	-Dvcell.primarySimdatadir.internal=/simdata \
+	-Dvcell.simdataCacheSize="${simdataCacheSize}" \
+	-Dvcell.export.baseDir.internal=/exportdir \
+	-Dvcell.export.baseURL="${export_baseurl}" \
+	-Dvcell.installDir=/usr/local/app \
+	-Dvcellapi.keystore.file="${keystore}" \
+	-Dvcellapi.keystore.pswdfile="${keystorepswdfile}" \
+	-Dvcelldata.web.server.port=${webDataPort} \
+	-cp "./lib/*" org.vcell.web.MainService
+	
+    

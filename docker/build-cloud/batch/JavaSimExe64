@@ -1,0 +1,61 @@
+#!/bin/bash
+
+printusage() {
+	echo "Usage: JavaSimExe64 simTaskFileName userdir"
+	exit 1
+}
+echo "JavaSimExe64 $@"
+
+# main code
+if [[ $# -ne 2 ]] ; then 
+	printusage
+fi
+
+#
+# make sure no variables are left unset
+#
+shopt -s -o nounset
+
+javasolver_mainclass=cbit.vcell.message.server.batch.sim.JavaSimulationExecutable
+
+jvmprop="-Djava.io.tmpdir=/tmp"
+jvmprop="${jvmprop} -Dvcell.installDir=${installdir}"
+jvmprop="${jvmprop} -Dvcell.jms.sim.host.internal=${jmshost_sim_internal}"
+jvmprop="${jvmprop} -Dvcell.jms.sim.port.internal=${jmsport_sim_internal}"
+jvmprop="${jvmprop} -Dvcell.jms.sim.restport.internal=${jmsrestport_sim_internal}"
+jvmprop="${jvmprop} -Dvcell.jms.user=${jmsuser}"
+jvmprop="${jvmprop} -Dvcell.jms.password=${jmspswd}"
+jvmprop="${jvmprop} -Dvcell.jms.blobMessageUseMongo=${blob_message_use_mongo}"
+jvmprop="${jvmprop} -Dvcell.primarySimdatadir.internal=${datadir_internal}"
+jvmprop="${jvmprop} -Dvcell.secondarySimdatadir.internal=${datadir_internal}"
+jvmprop="${jvmprop} -Dvcell.primarySimdatadir.external=${datadir_external}"
+jvmprop="${jvmprop} -Dvcell.secondarySimdatadir.external=${datadir_external}"
+jvmprop="${jvmprop} -Dvcell.server.id=${serverid}"
+jvmprop="${jvmprop} -Dvcell.softwareVersion=${softwareVersion}"
+jvmprop="${jvmprop} -Dvcell.mongodb.database=${mongodb_database}"
+jvmprop="${jvmprop} -Dvcell.mongodb.host.internal=${mongodbhost_internal}"
+jvmprop="${jvmprop} -Dvcell.mongodb.port.internal=${mongodbport_internal}"
+
+jvmoptions="-XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap -XX:MaxRAMFraction=1 -Xms64M -Xmx${java_mem_Xmx}"
+
+echo "starting java solver"
+
+echo "expecting jre 1.8_144 or later for memory options"
+java -version
+
+arguments=$*
+
+java ${jvmoptions} ${jvmprop} ${javasolver_mainclass} ${arguments}
+stat=$?
+
+if [[ $stat -ne 0 ]]; then
+	echo "java solver failed with exit code $stat"
+	exit $stat
+else
+	echo "java solver returned"
+	exit 0
+fi
+echo "java solver returned"
+
+exit 0
+
