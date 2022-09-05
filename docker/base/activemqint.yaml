@@ -1,0 +1,62 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: activemqint
+spec:
+  ports:
+    - name: "61616"
+      port: 61616
+      targetPort: 61616
+  selector:
+    app: activemqint
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: activemqint
+  labels:
+    app: activemqint
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: activemqint
+  template:
+    metadata:
+      labels:
+        app: activemqint
+    spec:
+      containers:
+        - env:
+            - name: ACTIVEMQ_CONFIG_AUTHENABLED
+              value: "true"
+            - name: ACTIVEMQ_ENABLED_SCHEDULER
+              value: "true"
+            - name: ACTIVEMQ_GROUPS_reads
+              value: clientUser
+            - name: ACTIVEMQ_GROUPS_writes
+              value: clientUser
+            - name: ACTIVEMQ_MAX_MEMORY
+              value: "2048"
+            - name: ACTIVEMQ_MIN_MEMORY
+              value: "512"
+            - name: ACTIVEMQ_STATIC_QUEUES
+              value: simReq;dataReq;dbReq;simJob
+            - name: ACTIVEMQ_STATIC_TOPICS
+              value: clientStatus
+            - name: ACTIVEMQ_USERS_clientUser
+              value: dummy
+          image: webcenter/activemq:5.14.3
+          name: activemqint
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 61616
+            - containerPort: 8161
+          resources:
+            requests:
+              memory: "1048Mi"
+              cpu: "250m"
+            limits:
+              memory: "2048Mi"
+              cpu: "500m"
+      restartPolicy: Always

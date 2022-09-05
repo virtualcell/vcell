@@ -1,0 +1,69 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: activemq-sim
+  labels:
+    app: activemq-sim
+spec:
+  type: LoadBalancer
+  ports:
+    - name: activemq-sim-amq
+      port: 61616
+      nodePort: 30616
+      protocol: TCP
+    - name: activemq-sim-http
+      port: 8161
+      nodePort: 30161
+      protocol: TCP
+  selector:
+    app: activemq-sim
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: activemq-sim
+  name: activemq-sim
+spec:
+  selector:
+    matchLabels:
+      app: activemq-sim
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: activemq-sim
+    spec:
+      containers:
+        - env:
+            - name: ACTIVEMQ_CONFIG_AUTHENABLED
+              value: "true"
+            - name: ACTIVEMQ_ENABLED_SCHEDULER
+              value: "true"
+            - name: ACTIVEMQ_GROUPS_reads
+              value: clientUser
+            - name: ACTIVEMQ_GROUPS_writes
+              value: clientUser
+            - name: ACTIVEMQ_MAX_MEMORY
+              value: "2048"
+            - name: ACTIVEMQ_MIN_MEMORY
+              value: "512"
+            - name: ACTIVEMQ_STATIC_QUEUES
+              value: workerEvent
+            - name: ACTIVEMQ_STATIC_TOPICS
+              value: serviceControl
+            - name: ACTIVEMQ_USERS_clientUser
+              value: dummy
+          image: webcenter/activemq:5.14.3
+          name: activemq-sim
+          ports:
+            - containerPort: 61616
+            - containerPort: 8161
+          resources:
+            requests:
+              memory: "1048Mi"
+              cpu: "250m"
+            limits:
+              memory: "2048Mi"
+              cpu: "500m"
+      restartPolicy: Always

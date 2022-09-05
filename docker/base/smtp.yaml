@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: smtp-service
+spec:
+  clusterIP: None
+  ports:
+    - port: 587
+---
+apiVersion: v1
+kind: Endpoints
+metadata:
+  name: smtp-service
+subsets:
+  - addresses:
+      - ip: 155.37.248.200
+    ports:
+      - port: 1521
+        name: smtp-service

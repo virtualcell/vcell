@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: vcell-config
+data:
+  ACTIVEMQ_CONFIG_AUTHENABLED: "true"
+  ACTIVEMQ_ENABLED_SCHEDULER: "true"
+  ACTIVEMQ_GROUPS_reads: "clientUser"
+  ACTIVEMQ_GROUPS_writes: "clientUser"
+  ACTIVEMQ_USERS_clientUser: "dummy"
+  database-driver: "oracle.jdbc.driver.OracleDriver"
+  database-url: "jdbc:oracle:thin:@VCELL-DB.cam.uchc.edu:1521/vcelldborcl.cam.uchc.edu"
+  jmshost_int_internal: "activemq-int"
+  jmsport_int_internal: "61616"
+  jmsuser: "clientUser"
+  mongodb_database: "test"
+  mongodb_host_internal: "mongodb"
+  mongodb_port_internal: "27017"
+  serverid: "rel"
+  smtp_emailaddress: "VCell_Support@uchc.edu"
+  smtp_hostname: "vdsmtp.cam.uchc.edu"
+  smtp_port: "25"
+  softwareVersion: "7.5.???"

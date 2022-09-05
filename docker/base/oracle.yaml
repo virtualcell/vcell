@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: oracle-db-service
+spec:
+  clusterIP: None
+  ports:
+    - port: 1521
+---
+apiVersion: v1
+kind: Endpoints
+metadata:
+  name: oracle-db-service
+subsets:
+  - addresses:
+      - ip: 155.37.250.28
+    ports:
+      - port: 1521
+        name: oracle-db-service
