@@ -5111,11 +5111,10 @@ public class ClientRequestManager
 						Issue issues[] = mathMapping.getIssues();
 						if (issues != null && issues.length > 0) {
 							StringBuffer messageBuffer = new StringBuffer(
-									"Issues encountered during Math Generation:\n");
+									"Errors encountered during Math Generation:\n");
 							int issueCount = 0;
 							for (int i = 0; i < issues.length; i++) {
-								if (issues[i].getSeverity() == Issue.SEVERITY_ERROR
-										|| issues[i].getSeverity() == Issue.SEVERITY_WARNING) {
+								if (issues[i].getSeverity() == Issue.Severity.ERROR) {
 									messageBuffer.append(issues[i].getCategory() + " " + issues[i].getSeverityName()
 											+ " : " + issues[i].getMessage() + "\n");
 									issueCount++;
