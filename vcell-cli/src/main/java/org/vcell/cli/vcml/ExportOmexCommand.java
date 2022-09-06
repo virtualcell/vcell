@@ -1,6 +1,8 @@
 package org.vcell.cli.vcml;
 
 import cbit.vcell.resource.PropertyLoader;
+
+import org.vcell.sedml.ModelFormat;
 import org.vcell.util.DataAccessException;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;

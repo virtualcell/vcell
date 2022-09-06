@@ -6,6 +6,7 @@ import java.util.Objects;
 
 import javax.swing.JOptionPane;
 
+import org.vcell.sedml.ModelFormat;
 import org.vcell.sedml.SEDMLExporter;
 import org.vcell.util.FileUtils;
 
@@ -37,6 +38,7 @@ public class SedmlExtensionFilter extends SelectorExtensionFilter {
 		
 		SEDMLExporter sedmlExporter = null;
 		if (bioModel != null) {
+			ModelFormat modelFormat = ModelFormat.SBML;
 			Object[] options = {"VCML","SBML"};
 			int choice = JOptionPane.showOptionDialog(null,	// parent component
 					"VCML or SBML?",			// message,
@@ -45,13 +47,12 @@ public class SedmlExtensionFilter extends SelectorExtensionFilter {
 					JOptionPane.QUESTION_MESSAGE,	// messageType
 					null,						// Icon
 					options,
-					"VCML");					// initialValue 
-			boolean bForceVCML = choice == 0 ? true : false;
-			boolean bForceSBML = choice == 1 ? true : false;
+					"SBML");					// initialValue 
+			if (choice == 0) modelFormat = ModelFormat.VCML;
 
 			sedmlExporter = new SEDMLExporter(bioModel, sedmlLevel, sedmlVersion, null);
 			boolean bRoundTripSBMLValidation = true;
-			resultString = sedmlExporter.getSEDMLFile(sPath, sFile, bForceVCML, bForceSBML, false, bRoundTripSBMLValidation);
+			resultString = sedmlExporter.getSEDMLFile(sPath, sFile, modelFormat, false, bRoundTripSBMLValidation);
 		} else {
 			throw new RuntimeException("unsupported Document Type " + Objects.requireNonNull(bioModel).getClass().getName() + " for SedML export");
 		}
