@@ -51,7 +51,6 @@ jobs:
       run: |
         for CONTAINER in vcell-api;\
         do docker tag ${VCELL_REPO_NAMESPACE}/$CONTAINER:${VCELL_TAG} ${VCELL_REPO_NAMESPACE}/$CONTAINER:latest;\
-        docker tag ${VCELL_REPO_NAMESPACE}/$CONTAINER:${VCELL_TAG} ${VCELL_REPO_NAMESPACE}/$CONTAINER:${{ steps.version.outputs.tag }};\
         docker push --all-tags ${VCELL_REPO_NAMESPACE}/$CONTAINER;\
         done
 
