@@ -278,7 +278,7 @@ public class SEDMLExporter {
 					exportSimulationsVCML(simContextCnt, simContext);
 				}
 
-				// if sedmlNotesStr is not null, there were some Simulations that could not be exported to SEDML (eg., spatial stochastic). Create a notes element and add it to sedml Model.
+				// if sedmlNotesStr is not empty, there were some Simulations that could not be exported to SEDML (eg., non-spatial stochastic app sim with histogram option)
 	        	if (sedmlNotesStr.length() > 0) {
 		        	sedmlNotesStr = "\n\tThe following Simulations in the VCell model were not exported to SEDML : " + sedmlNotesStr;
 	        		logger.error(sedmlNotesStr);
