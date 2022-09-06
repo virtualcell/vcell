@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-
+set -o xtrace
 shopt -s -o nounset
 
 ssh_user=$(whoami)
@@ -7,7 +7,6 @@ ssh_key=
 skip_push=false
 skip_maven=false
 skip_singularity=false
-mvn_repo=$HOME/.m2
 
 show_help() {
 	echo "usage: build.sh [OPTIONS] target repo tag"
@@ -32,8 +31,6 @@ show_help() {
 	echo "    --skip-maven          skip vcell software build prior to building containers"
 	echo ""
 	echo "    --skip-push           skip pushing containers to repository"
-	echo ""
-	echo "    --mvn-repo REPO_DIR   override local maven repository (defaults to $HOME/.m2)"
 	exit 1
 }
 
@@ -54,10 +51,6 @@ while :; do
 		--ssh-key)
 			shift
 			ssh_key="-i $1"
-			;;
-		--mvn-repo)
-			shift
-			mvn_repo=$1
 			;;
 		--skip-maven)
 			skip_maven=true
@@ -93,6 +86,7 @@ build_api() {
 	sudo docker build -f Dockerfile-api-dev --tag $repo/vcell-api:$tag ../..
 	if [[ $? -ne 0 ]]; then echo "docker build failed"; exit 1; fi
 	if [ "$skip_push" == "false" ]; then
+	  echo sudo docker push $repo/vcell-api:$tag
 		sudo docker push $repo/vcell-api:$tag
 	fi
 }
@@ -337,7 +331,7 @@ shift
 
 if [ "$skip_maven" == "false" ]; then
 	pushd ../..
-	mvn -Dmaven.repo.local=$mvn_repo clean install dependency:copy-dependencies
+	mvn --batch-mode clean install dependency:copy-dependencies
 	popd
 fi
 

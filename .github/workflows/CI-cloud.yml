@@ -30,6 +30,12 @@ jobs:
       uses: eWaterCycle/setup-singularity@v7
       with:
         singularity-version: 3.8.3
+    - name: Add Linux dependencies
+      shell: bash
+      run: |
+        mvn -version
+        java -version
+        mvn --batch-mode clean install dependency:copy-dependencies
     - name: build and publish all images
       shell: bash
       # ./build.sh all ${{ env.VCELL_REPO_NAMESPACE }} ${{ env.VCELL_TAG }}
@@ -38,7 +44,7 @@ jobs:
         cd docker/build-cloud
         sudo docker login -u ${{ secrets.ACTION_USER }} -p ${{ secrets.ACTION_TOKEN }} ghcr.io
         docker login -u ${{ secrets.ACTION_USER }} -p ${{ secrets.ACTION_TOKEN }} ghcr.io
-        ./build.sh api ${{ env.VCELL_REPO_NAMESPACE }} ${{ env.VCELL_TAG }}
+        ./build.sh --skip-maven api ${{ env.VCELL_REPO_NAMESPACE }} ${{ env.VCELL_TAG }}
     - name: tag as latest and push to registry
       shell: bash
 #        for CONTAINER in vcell-api vcell-batch vcell-clientgen vcell-data vcell-db vcell-mongo vcell-sched vcell-submit vcell-web;\
