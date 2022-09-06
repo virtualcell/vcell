@@ -89,18 +89,20 @@ public abstract class AbstractMathMapping implements ScopedSymbolTable, UnitFact
 	protected Vector<SpeciesContextMapping> speciesContextMappingList = new Vector<SpeciesContextMapping>();
 
 	public AbstractMathMapping(SimulationContext simContext, MathMappingCallback callback, NetworkGenerationRequirements networkGenerationRequirements) {
+
 		this.callback = callback;
 		this.networkGenerationRequirements = networkGenerationRequirements;
 		SimContextTransformer transformer = simContext.createNewTransformer();
 		if (transformer != null){
 			this.transformation = transformer.transform(simContext, callback, networkGenerationRequirements);
+			transformation.transformedSimContext.setBioModel(simContext.getBioModel());
 			this.simContext = transformation.transformedSimContext;
 		}else{
 			this.transformation = null;
 			this.simContext = simContext;
 		}
 		this.issueContext = new IssueContext(ContextType.SimContext,simContext,null).newChildContext(ContextType.MathMapping,this);
-
+		
 	}
 
 	public static final int NUM_PARAMETER_ROLES = 10;
