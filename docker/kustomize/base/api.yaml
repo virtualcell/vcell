@@ -31,8 +31,8 @@ spec:
       labels:
         app: api
     spec:
-#      imagePullSecrets:
-#        - name: dockerconfigjson-github-com
+      imagePullSecrets:
+        - name: dockerconfigjson-github-com
       containers:
         - env:
             - name: dbuser
@@ -74,7 +74,8 @@ spec:
             - name: smtp_hostname
             - name: smtp_port
             - name: softwareVersion
-          image: "ghcr.io/jcschaff/vcell-api:latest"
+          image:
+            "ghcr.io/modeltwice-llc/vcell-api:latest"
           name: api
           ports:
             - containerPort: 80
