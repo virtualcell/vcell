@@ -22,6 +22,7 @@ import org.openrdf.rio.RDFHandlerException;
 import org.sbpax.impl.HashGraph;
 import org.sbpax.schemas.util.DefaultNameSpaces;
 import org.sbpax.util.SesameRioUtil;
+import org.vcell.sedml.ModelFormat;
 import org.vcell.sedml.PubMet;
 import org.vcell.sedml.SEDMLExporter;
 import org.vcell.util.FileUtils;
@@ -55,6 +56,7 @@ public class OmexExtensionFilter extends SedmlExtensionFilter {
 		SEDMLExporter sedmlExporter = null;
 		if (bioModel != null) {
 			
+			ModelFormat modelFormat = ModelFormat.SBML;
 			Object[] options = {"VCML","SBML"};
 			int choice = JOptionPane.showOptionDialog(null,	// parent component
 					"VCML or SBML?",			// message,
@@ -63,13 +65,12 @@ public class OmexExtensionFilter extends SedmlExtensionFilter {
 					JOptionPane.QUESTION_MESSAGE,	// messageType
 					null,						// Icon
 					options,
-					"VCML");					// initialValue 
-			boolean bForceVCML = choice == 0 ? true : false;
-			boolean bForceSBML = choice == 1 ? true : false;
+					"SBML");					// initialValue 
+			if (choice == 0) modelFormat = ModelFormat.VCML;
 			
 			sedmlExporter = new SEDMLExporter(bioModel, sedmlLevel, sedmlVersion, null);
 			boolean bRoundTripSBMLValidation = true;
-			resultString = sedmlExporter.getSEDMLFile(sPath, sFile, bForceVCML, bForceSBML, false, bRoundTripSBMLValidation);
+			resultString = sedmlExporter.getSEDMLFile(sPath, sFile, modelFormat, false, bRoundTripSBMLValidation);
 
 			// convert biomodel to vcml and save to file.
 			String vcmlString = XmlHelper.bioModelToXML(bioModel);

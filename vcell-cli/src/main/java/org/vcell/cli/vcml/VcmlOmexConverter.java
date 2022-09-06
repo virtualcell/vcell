@@ -48,6 +48,7 @@ import org.sbpax.schemas.util.DefaultNameSpaces;
 import org.sbpax.schemas.util.OntUtil;
 import org.sbpax.util.SesameRioUtil;
 import org.vcell.cli.*;
+import org.vcell.sedml.ModelFormat;
 import org.vcell.sedml.PubMet;
 import org.vcell.sedml.SEDMLExporter;
 import org.vcell.util.DataAccessException;
@@ -388,7 +389,7 @@ public class VcmlOmexConverter {
         
         SEDMLExporter sedmlExporter = new SEDMLExporter(bioModel, sedmlLevel, sedmlVersion, simsToExport);
         SEDMLDocument sedmlDocument = sedmlExporter.getSEDMLFile0(outputDir, vcmlName,
-				modelFormat.equals(ModelFormat.VCML), modelFormat.equals(ModelFormat.SBML), true, bValidate);
+				modelFormat, true, bValidate);
         SedML sedmlModel = sedmlDocument.getSedMLModel();
         if(sedmlModel.getModels().size() == 0) {
             File dir = new File(outputDir);
