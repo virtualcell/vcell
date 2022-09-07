@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -123,6 +124,7 @@ import cbit.vcell.parser.DivideByZeroException;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.parser.ExpressionUtils;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.parser.VariableSymbolTable;
 import cbit.vcell.server.SimulationJobStatusPersistent;
@@ -1015,36 +1017,63 @@ public class SEDMLExporter {
 				Expression func = Expression.add(expMax, Expression.negate(expMin));
 				func = Expression.mult(func, trans);
 				func = Expression.add(expMin, func);
-				// create range variables for symbols and substitute
-				String[] symbols = func.getSymbols();
-				for(String symbol : symbols) {
-					if (symbol.equals(rangeId)) continue;
-					SymbolTableEntry entry = getSymbolTableEntryForModelEntity(msm, symbol);
-					XPathTarget target = getTargetXPath(entry, l2gMap);
-					String symbolName = rangeId + "_" + symbol;
-					Variable sedmlVar = new Variable(symbolName, symbolName, modelReferenceId, target.toString());	// sbmlSupport.getXPathForSpecies(symbol));
-					fr.addVariable(sedmlVar);
-					func.substituteInPlace(new Expression(symbol), new Expression(symbolName));
-				}
-				ASTNode math = Libsedml.parseFormulaString(func.infix());
-				fr.setMath(math);
+				createFunctionalRangeElements(fr, func, msm, l2gMap, modelReferenceId);
 				rt.addRange(fr);
 				return fr;
 			}
 		} else {
 			// ----- Vector Range
-			// we do not preserve symbolic values...
-			// could be done via FunctionalRange using piecewise expression, but too cumbersome
-			// plus it can't be used yet anyway, since a List scan using symbols can't be saved to VCDB
+			// we try to preserve symbolic values...
 			cbit.vcell.math.Constant[] cs = constantArraySpec.getConstants();
 			ArrayList<Double> values = new ArrayList<Double>();
+			Expression exp0 = cs[0].getExpression();
+			boolean bFactorized = true;
 			for (int i = 0; i < cs.length; i++){
-				values.add(new Double(cs[i].getExpression().evaluateConstant()));
+				Expression exp = cs[i].getExpression();
+				exp = Expression.div(exp, exp0);
+				exp = ExpressionUtils.simplifyUsingJSCL(exp);
+				if (!exp.isNumeric()) {
+					bFactorized = false;
+					break;
+				}
+				values.add(new Double(exp.infix()));
 			}
-			r = new VectorRange(rangeId, values);
-			rt.addRange(r);
-			return r;
+			if (!bFactorized) {
+				// write it out flattened
+				values.removeAll(values);
+				for (int j = 0; j < cs.length; j++) {
+					values.add(new Double(cs[j].getExpression().evaluateConstant()));					
+				}
+				r = new VectorRange(rangeId, values);
+				rt.addRange(r);
+				return r;
+			} else {
+				r = new VectorRange(rangeId, values);
+				rt.addRange(r);
+				// now make a FunctionalRange with expressions
+				FunctionalRange fr = new FunctionalRange("fr_"+rangeId, rangeId);
+				exp0 = Expression.mult(new Expression(rangeId), exp0);
+				createFunctionalRangeElements(fr, exp0, msm, l2gMap, modelReferenceId);
+				rt.addRange(fr);
+				return fr;
+			}
 		}
+	}
+
+	private void createFunctionalRangeElements(FunctionalRange fr, Expression func, MathSymbolMapping msm,
+			Map<Pair<String, String>, String> l2gMap, String modelReferenceId) throws ExpressionException {
+		String[] symbols = func.getSymbols();
+		for(String symbol : symbols) {
+			if (symbol.equals(fr.getRange())) continue;
+			SymbolTableEntry entry = getSymbolTableEntryForModelEntity(msm, symbol);
+			XPathTarget target = getTargetXPath(entry, l2gMap);
+			String symbolName = fr.getRange() + "_" + symbol;
+			Variable sedmlVar = new Variable(symbolName, symbolName, modelReferenceId, target.toString());	// sbmlSupport.getXPathForSpecies(symbol));
+			fr.addVariable(sedmlVar);
+			func.substituteInPlace(new Expression(symbol), new Expression(symbolName));
+		}
+		ASTNode math = Libsedml.parseFormulaString(func.infix());
+		fr.setMath(math);
 	}
 
 	private void writeModelVCML(String savePath, String sBaseFileName, boolean bFromCLI) throws XmlParseException, IOException {

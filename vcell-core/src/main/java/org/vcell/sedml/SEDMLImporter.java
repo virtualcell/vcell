@@ -597,9 +597,37 @@ public class SEDMLImporter {
 								String minValueExpStr = frExpMin.infix();
 								String maxValueExpStr = frExpMax.infix();
 								scanSpec = ConstantArraySpec.createIntervalSpec(constant, minValueExpStr, maxValueExpStr, ur.getNumberOfPoints(), ur.getType().equals(UniformType.LOG));
+							} else if (index instanceof VectorRange) {
+								VectorRange vr = (VectorRange)index;
+								ASTNode frMath = fr.getMath();
+								Expression expFact = new ExpressionMathMLParser(null).fromMathML(frMath, "t");
+								// Substitute SED-ML parameters
+								Map<String, AbstractIdentifiableElement> params = fr.getParameters();
+								System.out.println(params);
+								for (String paramId : params.keySet()) {
+									expFact.substituteInPlace(new Expression(params.get(paramId).getId()), new Expression(((Parameter)params.get(paramId)).getValue()));
+								}
+								// Substitute SED-ML variables (which reference SBML entities)
+								Map<String, AbstractIdentifiableElement> vars = fr.getVariables();
+								System.out.println(vars);
+								for (String varId : vars.keySet()) {
+									String sbmlID = sbmlSupport.getIdFromXPathIdentifer(((org.jlibsedml.Variable)vars.get(varId)).getTarget());
+									String vcmlName = resolveConstant(importedSC, convertedSC, sbmlID);
+									expFact.substituteInPlace(new Expression(varId), new Expression(vcmlName));
+								}
+								expFact = ExpressionUtils.simplifyUsingJSCL(expFact);
+								String[] values = new String[vr.getNumElements()];
+								for (int i = 0; i < values.length; i++) {
+									Expression expFinal = new Expression(expFact);
+									// Substitute Range values
+									expFinal.substituteInPlace(new Expression(vr.getId()), new Expression(vr.getElementAt(i)));
+									expFinal = ExpressionUtils.simplifyUsingJSCL(expFinal);
+									values[i] = expFinal.infix();
+								}
+								scanSpec = ConstantArraySpec.createListSpec(constant, values);
 							} else {
-								// we only support FunctionalRange with interval scans, not in lists
-								logger.error("FunctionalRange does not reference UniformRange, task " + SEDMLUtil.getName(selectedTask)
+								// we only support FunctionalRange with intervals and lists
+								logger.error("FunctionalRange does not reference UniformRange or VectorRange, task " + SEDMLUtil.getName(selectedTask)
 								+ " is being skipped");
 								continue;								
 							}
