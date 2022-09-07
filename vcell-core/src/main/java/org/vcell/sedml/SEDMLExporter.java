@@ -1003,6 +1003,7 @@ public class SEDMLExporter {
 				r = new UniformRange(rangeId, constantArraySpec.getMinValue().evaluateConstant(),
 						constantArraySpec.getMaxValue().evaluateConstant(), constantArraySpec.getNumValues(), type);
 				rt.addRange(r);
+				return r;
 			} else {
 				r = new UniformRange(rangeId, 1, 2, constantArraySpec.getNumValues(), type);
 				rt.addRange(r);
@@ -1028,19 +1029,20 @@ public class SEDMLExporter {
 				ASTNode math = Libsedml.parseFormulaString(func.infix());
 				fr.setMath(math);
 				rt.addRange(fr);
+				return fr;
 			}
 		} else {
 			// ----- Vector Range
+			// we do not preserve symbolic values... could be done via FunctionalRange using piecewise expression, but too cumbersome 
 			cbit.vcell.math.Constant[] cs = constantArraySpec.getConstants();
 			ArrayList<Double> values = new ArrayList<Double>();
 			for (int i = 0; i < cs.length; i++){
-				String value = cs[i].getExpression().infix();
-				values.add(Double.parseDouble(value));
+				values.add(new Double(cs[i].getExpression().evaluateConstant()));
 			}
 			r = new VectorRange(rangeId, values);
 			rt.addRange(r);
+			return r;
 		}
-		return r;
 	}
 
 	private void writeModelVCML(String savePath, String sBaseFileName, boolean bFromCLI) throws XmlParseException, IOException {
