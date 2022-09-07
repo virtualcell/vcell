@@ -76,6 +76,7 @@ import org.jmathml.MathMLReader;
 import org.sbml.libcombine.*;
 import org.vcell.sbml.SbmlException;
 import org.vcell.sbml.SimSpec;
+import org.vcell.sbml.UnsupportedSbmlExportException;
 import org.vcell.sbml.vcell.SBMLExporter;
 import org.vcell.sbml.vcell.StructureSizeSolver;
 import org.vcell.util.FileUtils;
@@ -246,6 +247,7 @@ public class SEDMLExporter {
 					Map<Pair <String, String>, String> l2gMap = null;		// local to global translation map
 	
 					try {
+						SBMLExporter.validateSimulationContextSupport(simContext);
 						Pair <String, Map<Pair <String, String>, String>> pair = XmlHelper.exportSBMLwithMap(vcBioModel, 3, 2, 0, isSpatial, simContext, null, bRoundTripSBMLValidation);
 						sbmlString = pair.one;
 						l2gMap = pair.two;
@@ -255,18 +257,9 @@ public class SEDMLExporter {
 						sbmlExportFailed = true;
 					}
 
-					// applications that are not compatible with SBML are marked as failed 
-					if (simContext.getGeometry().getDimension() > 0 && simContext.getApplicationType() == Application.NETWORK_STOCHASTIC) {
-						logger.error("SimContext '"+simContext.getName()+"' is not compatible with SBML export");
-						sbmlExportFailed = true;
-					} else if(simContext.getApplicationType() == Application.RULE_BASED_STOCHASTIC) {
-						logger.error("SimContext '"+simContext.getName()+"' is not compatible with SBML export");
-						sbmlExportFailed = true;
-					}
-					
 					if (!sbmlExportFailed) {
 						writeModelSBML(savePath, sBaseFileName, sbmlString, simContext);
-						exportSimulationsSBML(simContextCnt, simContext, sbmlString, l2gMap);
+						sedmlNotesStr += " "+exportSimulationsSBML(simContextCnt, simContext, sbmlString, l2gMap);
 					} else {
 						if (bFromCLI) {
 							continue;
