@@ -3,7 +3,7 @@ package org.vcell.util.logging;
 import java.io.IOException;
 
 public class Log4JStdOutLog extends StdOutLog {
-    private final static org.apache.log4j.Logger logger = org.apache.log4j.LogManager.getLogger(Log4JStdErrLog.class);
+    private final static org.apache.logging.log4j.Logger logger = org.apache.logging.log4j.LogManager.getLogger(Log4JStdErrLog.class);
 
     @Override
     protected void write(String m) {

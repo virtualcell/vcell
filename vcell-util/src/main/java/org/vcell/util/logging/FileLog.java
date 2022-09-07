@@ -23,10 +23,19 @@ public class FileLog extends Log {
             throw new RuntimeException("File \"" + fileName + "\"  could not be created or opened.", e);
         }
     }
+
+    // Expose the underlying write method.
+    public void print(String message) throws IOException {
+        this.sBuff.append(message);
+    }
+
+    public void flush() throws IOException {
+        this.write(this.sBuff.toString());
+    }
     
     @Override
     public void close() throws IOException {
-        this.write(sBuff.toString());
+        this.flush();
         this.fileWriter.close();
     }
 

@@ -19,7 +19,7 @@ import cbit.vcell.xml.XmlHelper;
 import org.jlibsedml.SedML;
 import org.jlibsedml.Task;
 import org.jlibsedml.UniformTimeCourse;
-import org.vcell.cli.CLILogFileManager;
+import org.vcell.cli.CLILoggable;
 import org.vcell.cli.vcml.VCMLHandler;
 import org.vcell.sbml.vcell.SBMLImportException;
 import org.vcell.sbml.vcell.SBMLImporter;
@@ -64,7 +64,7 @@ public class SolverHandler {
 
 
     public HashMap<String, ODESolverResultSet>
-            simulateAllTasks(ExternalDocInfo externalDocInfo, SedML sedml, CLILogFileManager logManager, 
+            simulateAllTasks(ExternalDocInfo externalDocInfo, SedML sedml, CLILoggable logManager, 
                              File outputDirForSedml, String outDir, String outputBaseDir, String sedmlLocation,
                              boolean keepTempFiles, boolean exactMatchOnly) throws Exception {
         // create the VCDocument(s) (bioModel(s) + application(s) + simulation(s)), do sanity checks

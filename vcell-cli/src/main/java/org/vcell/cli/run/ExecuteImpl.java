@@ -10,7 +10,7 @@ import org.jlibsedml.*;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.vcell.cli.CLILogFileManager;
+import org.vcell.cli.CLILoggable;
 import org.vcell.cli.CLIUtils;
 import org.vcell.cli.vcml.VCMLHandler;
 import org.vcell.util.FileUtils;
@@ -33,7 +33,7 @@ public class ExecuteImpl {
     
     private final static Logger logger = LogManager.getLogger(ExecuteImpl.class);
 
-    public static void batchMode(File dirOfArchivesToProcess, File outputDir, CLILogFileManager logManager,
+    public static void batchMode(File dirOfArchivesToProcess, File outputDir, CLILoggable logManager,
             boolean bKeepTempFiles, boolean bExactMatchOnly) throws IOException {
         FilenameFilter filter = (f, name) -> name.endsWith(".omex") || name.endsWith(".vcml");
         File[] inputFiles = dirOfArchivesToProcess.listFiles(filter);
@@ -59,7 +59,7 @@ public class ExecuteImpl {
     }
 
     @Deprecated
-    public static void singleExecVcml(File vcmlFile, File outputDir, CLILogFileManager logManager) {
+    public static void singleExecVcml(File vcmlFile, File outputDir, CLILoggable logManager) {
 
         VCMLHandler.outputDir = outputDir.getAbsolutePath();
         logger.debug("Executing VCML file " + vcmlFile);
@@ -111,12 +111,12 @@ public class ExecuteImpl {
     }
 
 
-    public static void singleExecOmex(File inputFile, File rootOutputDir, CLILogFileManager logManager, 
+    public static void singleExecOmex(File inputFile, File rootOutputDir, CLILoggable logManager, 
             boolean bKeepTempFiles, boolean bExactMatchOnly) throws Exception {
         ExecuteImpl.singleExecOmex(inputFile, rootOutputDir, logManager, bKeepTempFiles, bExactMatchOnly, true);
     }
 
-    public static void singleExecOmex(File inputFile, File rootOutputDir, CLILogFileManager logManager,
+    public static void singleExecOmex(File inputFile, File rootOutputDir, CLILoggable logManager,
             boolean bKeepTempFiles, boolean bExactMatchOnly, boolean bEncapsulateOutput) throws Exception {
         int nModels, nSimulations, nTasks, nOutputs, nReportsCount = 0, nPlots2DCount = 0, nPlots3DCount = 0;
         String logOmexMessage = "";

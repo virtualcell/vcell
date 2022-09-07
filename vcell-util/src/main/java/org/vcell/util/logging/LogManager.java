@@ -18,4 +18,5 @@ public interface LogManager extends AutoCloseable {
     public FileLog requestNewFileLog(String fileName);
     public StdErrLog requestStdErrLog();
     public StdOutLog requestStdOutLog();
+    public Log4JLog requestLog4JLog();
 }

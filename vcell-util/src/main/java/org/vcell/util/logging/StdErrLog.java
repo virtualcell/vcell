@@ -12,7 +12,7 @@ public class StdErrLog extends StdStreamLog {
 
     @Override
     protected void write(String m) {
-        System.err.println("Error: " + m);
+        System.err.println(m);
     }
     
 }

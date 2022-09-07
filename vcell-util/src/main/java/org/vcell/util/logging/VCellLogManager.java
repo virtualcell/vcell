@@ -15,24 +15,33 @@ public class VCellLogManager implements LogManager {
         this.logSet = new HashSet<>();
     }
 
+    @Override
     public FileLog requestNewFileLog(String fileName){
         return (FileLog)this.addLog(new FileLog(fileName));
     }
 
+    @Override
     public StdErrLog requestStdErrLog(){
         return (StdErrLog)this.addLog(new StdErrLog());
     }
 
+    @Override
     public StdOutLog requestStdOutLog(){
         return (StdOutLog)this.addLog(new StdOutLog());
     }
 
+    @Override
+    public Log4JLog requestLog4JLog(){
+        return (Log4JLog)this.addLog(new Log4JLog());
+    }
+
+    // Note: uses AutoClose
     public void close() throws IOException {
         for (Log l : this.logSet) l.close();
         logSet.clear();
     }
 
-    private Log addLog(Log log){
+    protected Log addLog(Log log){
         this.logSet.add(log);
         return log;
     }

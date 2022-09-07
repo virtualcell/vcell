@@ -3,7 +3,7 @@ package org.vcell.cli;
 import java.io.IOException;
 
 
-public interface CLILogFileManager {
+public interface CLILoggable {
 
     public void writeDetailedErrorList(String message) throws IOException;
 
@@ -16,4 +16,5 @@ public interface CLILogFileManager {
     // we make a list with the omex files that contain (some) spatial simulations (FVSolverStandalone solver)
     public void writeSpatialList(String message) throws IOException;
 
+    public void writeImportErrorList(String message) throws IOException;
 }
