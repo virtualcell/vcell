@@ -76,6 +76,7 @@ import org.jmathml.MathMLReader;
 import org.sbml.libcombine.*;
 import org.vcell.sbml.SbmlException;
 import org.vcell.sbml.SimSpec;
+import org.vcell.sbml.UnsupportedSbmlExportException;
 import org.vcell.sbml.vcell.SBMLExporter;
 import org.vcell.sbml.vcell.StructureSizeSolver;
 import org.vcell.util.FileUtils;
@@ -176,7 +177,7 @@ public class SEDMLExporter {
 	}
 
 	public SEDMLDocument getSEDMLFile0(String sPath, String sBaseFileName, ModelFormat modelFormat, 
-				boolean bFromCLI, boolean bRoundTripSBMLValidation) {
+				boolean bFromCLI, boolean bRoundTripSBMLValidation, ExportStatusListener exportStatusListener) {
 
 		// Create an SEDMLDocument and create the SEDMLModel from the document, so that other details can be added to it in translateBioModel()
 		SEDMLDocument sedmlDocument = new SEDMLDocument(this.sedmlLevel, this.sedmlVersion);
@@ -211,21 +212,25 @@ public class SEDMLExporter {
 		sedmlModel.setAdditionalNamespaces(nsList);
 
 		
-		translateBioModelToSedML(sPath, sBaseFileName, modelFormat, bFromCLI, bRoundTripSBMLValidation);
+		translateBioModelToSedML(sPath, sBaseFileName, modelFormat, bFromCLI, bRoundTripSBMLValidation, exportStatusListener);
 		
 		int models = sedmlModel.getModels().size();
 		int tasks = sedmlModel.getTasks().size();
 		int sims = sedmlModel.getSimulations().size();
 		return sedmlDocument;
 	}
-	public String getSEDMLFile(String sPath, String sBaseFileName, ModelFormat modelFormat, boolean bFromCLI, boolean bRoundTripSBMLValidation) {
-		SEDMLDocument doc = getSEDMLFile0(sPath, sBaseFileName, modelFormat, bFromCLI, bRoundTripSBMLValidation);
+	public String getSEDMLFile(String sPath, String sBaseFileName, ModelFormat modelFormat, boolean bFromCLI, boolean bRoundTripSBMLValidation, ExportStatusListener exportStatusListener) {
+		SEDMLDocument doc = getSEDMLFile0(sPath, sBaseFileName, modelFormat, bFromCLI, bRoundTripSBMLValidation, exportStatusListener);
 		return doc.writeDocumentToString();
 	}
 
+	public interface ExportStatusListener {
+		void sbmlExportErrorEvent(BioModel bioModel, SimulationContext simulationContext, String msg);
+		void sedmlExportErrorEvent(BioModel bioModel, SimulationContext simulationContext, Simulation simulation, String msg);
+	}
 
 	private void translateBioModelToSedML(String savePath, String sBaseFileName, ModelFormat modelFormat,
-				boolean bFromCLI, boolean bRoundTripSBMLValidation) {		// true if invoked for omex export, false if for sedml
+				boolean bFromCLI, boolean bRoundTripSBMLValidation, ExportStatusListener exportStatusListener) {		// true if invoked for omex export, false if for sedml
 		sbmlFilePathStrAbsoluteList.clear();
 		try {
 			SimulationContext[] simContexts = vcBioModel.getSimulationContexts();
@@ -246,27 +251,22 @@ public class SEDMLExporter {
 					Map<Pair <String, String>, String> l2gMap = null;		// local to global translation map
 	
 					try {
+						SBMLExporter.validateSimulationContextSupport(simContext);
 						Pair <String, Map<Pair <String, String>, String>> pair = XmlHelper.exportSBMLwithMap(vcBioModel, 3, 2, 0, isSpatial, simContext, null, bRoundTripSBMLValidation);
 						sbmlString = pair.one;
 						l2gMap = pair.two;
 					} catch (Exception e) {
 						String msg = "SBML export failed for simContext '"+simContext.getName()+"': " + e.getMessage();
 						logger.error(msg, e);
+						if (exportStatusListener != null) {
+							exportStatusListener.sbmlExportErrorEvent(vcBioModel, simContext, msg);
+						}
 						sbmlExportFailed = true;
 					}
 
-					// applications that are not compatible with SBML are marked as failed 
-					if (simContext.getGeometry().getDimension() > 0 && simContext.getApplicationType() == Application.NETWORK_STOCHASTIC) {
-						logger.error("SimContext '"+simContext.getName()+"' is not compatible with SBML export");
-						sbmlExportFailed = true;
-					} else if(simContext.getApplicationType() == Application.RULE_BASED_STOCHASTIC) {
-						logger.error("SimContext '"+simContext.getName()+"' is not compatible with SBML export");
-						sbmlExportFailed = true;
-					}
-					
 					if (!sbmlExportFailed) {
 						writeModelSBML(savePath, sBaseFileName, sbmlString, simContext);
-						exportSimulationsSBML(simContextCnt, simContext, sbmlString, l2gMap);
+						sedmlNotesStr += " "+exportSimulationsSBML(simContextCnt, simContext, sbmlString, l2gMap, exportStatusListener);
 					} else {
 						if (bFromCLI) {
 							continue;
@@ -421,7 +421,7 @@ public class SEDMLExporter {
 	}
 	
 	private String exportSimulationsSBML(int simContextCnt, SimulationContext simContext,
-			String sbmlString, Map<Pair<String, String>, String> l2gMap)
+			String sbmlString, Map<Pair<String, String>, String> l2gMap, ExportStatusListener exportStatusListener)
 			throws ExpressionBindingException, ExpressionException, DivideByZeroException, IOException, SbmlException, MappingException, MathException, MatrixException, ModelException {
 		// -------
 		// create sedml objects (simulation, task, datagenerators, report, plot) for each simulation in simcontext 
@@ -445,6 +445,9 @@ public class SEDMLExporter {
 				long numOfTrials = simTaskDesc.getStochOpt().getNumOfTrials();
 				if (numOfTrials > 1) {
 					String msg = "\n\t" + simContextName + " ( " + vcSimulation.getName() + " ) : export of non-spatial stochastic simulation with histogram option to SEDML not supported at this time.";
+					if (exportStatusListener != null) {
+						exportStatusListener.sedmlExportErrorEvent(vcBioModel, simContext, vcSimulation, msg);
+					}
 					sedmlNotesStr += msg;
 					continue;
 				}
