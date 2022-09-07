@@ -38,6 +38,7 @@ import org.jlibsedml.ComputeChange;
 import org.jlibsedml.Curve;
 import org.jlibsedml.DataGenerator;
 import org.jlibsedml.DataSet;
+import org.jlibsedml.FunctionalRange;
 import org.jlibsedml.Libsedml;
 import org.jlibsedml.Model;
 import org.jlibsedml.Notes;
@@ -823,7 +824,6 @@ public class SEDMLExporter {
 				Task sedmlTask = new Task(taskId, vcSimulation.getName(), sedModel.getId(), utcSim.getId());
 				dataGeneratorTasksSet.add(sedmlTask.getId());
 				sedmlModel.addTask(sedmlTask);
-//							taskRef = taskId;		// to be used later to add dataGenerators : one set of DGs per model (simContext).
 				
 			} else if (!scannedParamHash.isEmpty() && unscannedParamHash.isEmpty()) {
 				// only parameters with scans
@@ -837,51 +837,10 @@ public class SEDMLExporter {
 				for (String scannedConstName : scannedConstantsNames) {
 					String repeatedTaskId = "repTsk_" + simContextCnt + "_" + simCount + "_" + repeatedTaskIndex;
 					String rangeId = "range_" + simContextCnt + "_" + simCount + "_" + scannedConstName;
-//								if(repeatedTaskIndex == 0) {
-//									taskRef = repeatedTaskId;
-//								}
-					RepeatedTask rt = new RepeatedTask(repeatedTaskId, repeatedTaskId, true, rangeId);
-					dataGeneratorTasksSet.add(rt.getId());
-					SubTask subTask = new SubTask("0", ownerTaskId);
-					dataGeneratorTasksSet.remove(ownerTaskId);
-					rt.addSubtask(subTask);
-					ConstantArraySpec constantArraySpec = mathOverrides.getConstantArraySpec(scannedConstName);
-					// list of Ranges, if sim is parameter scan.
-					if(constantArraySpec != null) {
-						Range r = null;
-						//										System.out.println("     " + constantArraySpec.toString());
-						if(constantArraySpec.getType() == ConstantArraySpec.TYPE_INTERVAL) {
-							// ------ Uniform Range
-							UniformType type = constantArraySpec.isLogInterval() ? UniformType.LOG : UniformType.LINEAR;
-							r = new UniformRange(rangeId, constantArraySpec.getMinValue().evaluateConstant(),
-									constantArraySpec.getMaxValue().evaluateConstant(), constantArraySpec.getNumValues(), type);
-							rt.addRange(r);
-						} else {
-							// ----- Vector Range
-							cbit.vcell.math.Constant[] cs = constantArraySpec.getConstants();
-							ArrayList<Double> values = new ArrayList<Double>();
-							for (int i = 0; i < cs.length; i++){
-								String value = cs[i].getExpression().infix();
-								values.add(Double.parseDouble(value));
-							}
-							r = new VectorRange(rangeId, values);
-							rt.addRange(r);
-						}
-
-						// list of Changes
-						SymbolTableEntry ste = getSymbolTableEntryForModelEntity(mathSymbolMapping, scannedConstName);
-						XPathTarget target = getTargetAttributeXPath(ste, l2gMap);
-						//ASTNode math1 = new ASTCi(r.getId());		// was scannedConstName
-						ASTNode math1 = Libsedml.parseFormulaString(r.getId());		// here the math is always the range id expression
-						SetValue setValue = new SetValue(target, r.getId(), simContextId);
-						setValue.setMath(math1);
-						rt.addChange(setValue);
-					} else {
-						throw new RuntimeException("No scan ranges found for scanned parameter : '" + scannedConstName + "'.");
-					}
+					RepeatedTask rt = createSEDMLreptask(rangeId, l2gMap, mathSymbolMapping,
+							dataGeneratorTasksSet, mathOverrides, ownerTaskId, scannedConstName, repeatedTaskId, simContextId);
 					ownerTaskId = repeatedTaskId;
 					repeatedTaskIndex++;
-					
 					sedmlModel.addTask(rt);
 				}
 
@@ -908,58 +867,18 @@ public class SEDMLExporter {
 				for (String scannedConstName : scannedConstantsNames) {
 					String repeatedTaskId = "repTsk_" + simContextCnt + "_" + simCount + "_" + repeatedTaskIndex;
 					String rangeId = "range_" + simContextCnt + "_" + simCount + "_" + scannedConstName;
-//								if(repeatedTaskIndex == 0) {
-//									taskRef = repeatedTaskId;
-//								}
-					RepeatedTask rt = new RepeatedTask(repeatedTaskId, repeatedTaskId, true, rangeId);
-					dataGeneratorTasksSet.add(rt.getId());
-					SubTask subTask = new SubTask("0", ownerTaskId);
-					dataGeneratorTasksSet.remove(ownerTaskId);
-					rt.addSubtask(subTask);
-					ConstantArraySpec constantArraySpec = mathOverrides.getConstantArraySpec(scannedConstName);
-					// list of Ranges, if sim is parameter scan.
-					if(constantArraySpec != null) {
-						Range r = null;
-						//										System.out.println("     " + constantArraySpec.toString());
-						if(constantArraySpec.getType() == ConstantArraySpec.TYPE_INTERVAL) {
-							// ------ Uniform Range
-							UniformType type = constantArraySpec.isLogInterval() ? UniformType.LOG : UniformType.LINEAR;
-							r = new UniformRange(rangeId, constantArraySpec.getMinValue().evaluateConstant(),
-									constantArraySpec.getMaxValue().evaluateConstant(), constantArraySpec.getNumValues(), type);
-							rt.addRange(r);
-						} else {
-							// ----- Vector Range
-							cbit.vcell.math.Constant[] cs = constantArraySpec.getConstants();
-							ArrayList<Double> values = new ArrayList<Double>();
-							for (int i = 0; i < cs.length; i++){
-								String value = cs[i].getExpression().infix();
-								values.add(Double.parseDouble(value));
-							}
-							r = new VectorRange(rangeId, values);
-							rt.addRange(r);
-						}
-
-						// use scannedParamHash to store rangeId for that param, since it might be needed if unscanned param has a scanned param in expr.
-						if (scannedParamHash.get(scannedConstName).equals(scannedConstName)) {
-							// the hash was originally populated as <scannedParamName, scannedParamName>. Replace 'value' with rangeId for scannedParam
-							scannedParamHash.put(scannedConstName, r.getId());
-							rangeToRepeatedTaskHash.put(r.getId(), rt);		// we'll need the right repeated task for this range later on, in the unscanned loop
-						}
-
-						// list of Changes
-						SymbolTableEntry ste = getSymbolTableEntryForModelEntity(mathSymbolMapping, scannedConstName);
-						XPathTarget target = getTargetAttributeXPath(ste, l2gMap);
-						// TODO: math needs to refer to the parameter id, not name
-						ASTNode math1 = Libsedml.parseFormulaString(r.getId());		// here the math is always the range id expression
-						SetValue setValue = new SetValue(target, r.getId(), overriddenSimContextId);
-						setValue.setMath(math1);
-						rt.addChange(setValue);
-					} else {
-						throw new RuntimeException("No scan ranges found for scanned parameter : '" + scannedConstName + "'.");
-					}
+					RepeatedTask rt = createSEDMLreptask(rangeId, l2gMap, mathSymbolMapping,
+							dataGeneratorTasksSet, mathOverrides, ownerTaskId, scannedConstName, repeatedTaskId, overriddenSimContextId);
 					ownerTaskId = repeatedTaskId;
 					repeatedTaskIndex++;
-					
+
+					// use scannedParamHash to store rangeId for that param, since it might be needed if unscanned param has a scanned param in expr.
+					if (scannedParamHash.get(scannedConstName).equals(scannedConstName)) {
+						// the hash was originally populated as <scannedParamName, scannedParamName>. Replace 'value' with rangeId for scannedParam
+						scannedParamHash.put(scannedConstName, rangeId);
+						rangeToRepeatedTaskHash.put(rangeId, rt);		// we'll need the right repeated task for this range later on, in the unscanned loop
+					}
+					// add to local list; will be added to sedml doc later
 					repeatedTasksList.add(rt);
 				}
 
@@ -1050,6 +969,80 @@ public class SEDMLExporter {
 		}
 	}
 
+	private RepeatedTask createSEDMLreptask(String rangeId, Map<Pair<String, String>, String> l2gMap,
+			MathSymbolMapping mathSymbolMapping, Set<String> dataGeneratorTasksSet,
+			MathOverrides mathOverrides, String ownerTaskId, String scannedConstName, String repeatedTaskId, String modelReferenceId)
+			throws ExpressionException, DivideByZeroException {
+		RepeatedTask rt = new RepeatedTask(repeatedTaskId, repeatedTaskId, true, rangeId);
+		dataGeneratorTasksSet.add(rt.getId());
+		SubTask subTask = new SubTask("0", ownerTaskId);
+		dataGeneratorTasksSet.remove(ownerTaskId);
+		rt.addSubtask(subTask);
+		ConstantArraySpec constantArraySpec = mathOverrides.getConstantArraySpec(scannedConstName);
+		// list of Ranges, if sim is parameter scan.
+		Range r = createSEDMLrange(rangeId, rt, constantArraySpec, mathSymbolMapping, l2gMap, modelReferenceId);
+		// list of Changes
+		SymbolTableEntry ste = getSymbolTableEntryForModelEntity(mathSymbolMapping, scannedConstName);
+		XPathTarget target = getTargetAttributeXPath(ste, l2gMap);
+		//ASTNode math1 = new ASTCi(r.getId());		// was scannedConstName
+		ASTNode math1 = Libsedml.parseFormulaString(r.getId());		// here the math is always the range id expression
+		SetValue setValue = new SetValue(target, r.getId(), modelReferenceId);
+		setValue.setMath(math1);
+		rt.addChange(setValue);
+		return rt;
+	}
+
+	private Range createSEDMLrange(String rangeId, RepeatedTask rt, ConstantArraySpec constantArraySpec, MathSymbolMapping msm, Map<Pair<String, String>, String> l2gMap, String modelReferenceId)
+			throws ExpressionException, DivideByZeroException {
+		Range r = null;
+		//										System.out.println("     " + constantArraySpec.toString());
+		if(constantArraySpec.getType() == ConstantArraySpec.TYPE_INTERVAL) {
+			// ------ Uniform Range
+			UniformType type = constantArraySpec.isLogInterval() ? UniformType.LOG : UniformType.LINEAR;
+			if (constantArraySpec.getMinValue().isNumeric() && constantArraySpec.getMaxValue().isNumeric()) {
+				r = new UniformRange(rangeId, constantArraySpec.getMinValue().evaluateConstant(),
+						constantArraySpec.getMaxValue().evaluateConstant(), constantArraySpec.getNumValues(), type);
+				rt.addRange(r);
+			} else {
+				r = new UniformRange(rangeId, 1, 2, constantArraySpec.getNumValues(), type);
+				rt.addRange(r);
+				// now make a FunctionalRange with expressions
+				FunctionalRange fr = new FunctionalRange("fr_"+rangeId, rangeId);
+				Expression expMin = constantArraySpec.getMinValue();
+				Expression expMax = constantArraySpec.getMaxValue();
+				Expression trans = Expression.add(new Expression(rangeId), new Expression("-1"));
+				Expression func = Expression.add(expMax, Expression.negate(expMin));
+				func = Expression.mult(func, trans);
+				func = Expression.add(expMin, func);
+				// create range variables for symbols and substitute
+				String[] symbols = func.getSymbols();
+				for(String symbol : symbols) {
+					if (symbol.equals(rangeId)) continue;
+					SymbolTableEntry entry = getSymbolTableEntryForModelEntity(msm, symbol);
+					XPathTarget target = getTargetXPath(entry, l2gMap);
+					String symbolName = rangeId + "_" + symbol;
+					Variable sedmlVar = new Variable(symbolName, symbolName, modelReferenceId, target.toString());	// sbmlSupport.getXPathForSpecies(symbol));
+					fr.addVariable(sedmlVar);
+					func.substituteInPlace(new Expression(symbol), new Expression(symbolName));
+				}
+				ASTNode math = Libsedml.parseFormulaString(func.infix());
+				fr.setMath(math);
+				rt.addRange(fr);
+			}
+		} else {
+			// ----- Vector Range
+			cbit.vcell.math.Constant[] cs = constantArraySpec.getConstants();
+			ArrayList<Double> values = new ArrayList<Double>();
+			for (int i = 0; i < cs.length; i++){
+				String value = cs[i].getExpression().infix();
+				values.add(Double.parseDouble(value));
+			}
+			r = new VectorRange(rangeId, values);
+			rt.addRange(r);
+		}
+		return r;
+	}
+
 	private void writeModelVCML(String savePath, String sBaseFileName, boolean bFromCLI) throws XmlParseException, IOException {
 		String filePathStrAbsolute;
 		String filePathStrRelative;
@@ -1076,44 +1069,6 @@ public class SEDMLExporter {
 		XmlUtil.writeXMLStringToFile(sbmlString, filePathStrAbsolute, true);
 		sbmlFilePathStrAbsoluteList.add(filePathStrRelative);
 		sedmlModel.addModel(new Model(simContextId, simContextName, sbmlLanguageURN, filePathStrRelative));
-	}
-
-	private double getReservedSymbolValue(SymbolTableEntry ste) {
-		cbit.vcell.model.Model vcModel = vcBioModel.getModel();
-		if (ste instanceof ReservedSymbol) {
-			try {
-				if (((ReservedSymbol) ste).getRole().compareTo(ReservedSymbolRole.TEMPERATURE) == 0) {
-					return vcBioModel.getSimulationContext(0).getTemperatureKelvin();
-				}
-				if (((ReservedSymbol) ste).getRole().compareTo(ReservedSymbolRole.PI_CONSTANT) == 0) {
-					return vcModel.getPI_CONSTANT().getExpression().evaluateConstant();
-				}
-				if (((ReservedSymbol) ste).getRole().compareTo(ReservedSymbolRole.FARADAY_CONSTANT) == 0) {
-					return vcModel.getFARADAY_CONSTANT().getExpression().evaluateConstant();
-				}
-				if (((ReservedSymbol) ste).getRole().compareTo(ReservedSymbolRole.FARADAY_CONSTANT_NMOLE) == 0) {
-					return vcModel.getFARADAY_CONSTANT_NMOLE().getExpression().evaluateConstant();
-				}
-				if (((ReservedSymbol) ste).getRole().compareTo(ReservedSymbolRole.N_PMOLE) == 0) {
-					return vcModel.getN_PMOLE().getExpression().evaluateConstant();
-				}
-				if (((ReservedSymbol) ste).getRole().compareTo(ReservedSymbolRole.GAS_CONSTANT) == 0) {
-					return vcModel.getGAS_CONSTANT().getExpression().evaluateConstant();
-				}
-				if (((ReservedSymbol) ste).getRole().compareTo(ReservedSymbolRole.K_GHK) == 0) {
-					return vcModel.getK_GHK().getExpression().evaluateConstant();
-				}
-				if (((ReservedSymbol) ste).getRole().compareTo(ReservedSymbolRole.KMILLIVOLTS) == 0) {
-					return vcModel.getKMILLIVOLTS().getExpression().evaluateConstant();
-				}
-				if (((ReservedSymbol) ste).getRole().compareTo(ReservedSymbolRole.KMOLE) == 0) {
-					return vcModel.getKMOLE().getExpression().evaluateConstant();
-				}
-			} catch (Exception e) {
-				throw new RuntimeException("Unable to get the value of (reserved) VCell parameter : '" + ste.getName() + "' : ", e);
-			} 
-		} 
-		return 0;
 	}
 
 	private Notes createNotesElement(String notesStr) {
@@ -1177,7 +1132,7 @@ public class SEDMLExporter {
 				name = ((SpeciesContextSpecParameter)ste).getSpeciesContext().getName();
 			}
 			targetXpath = new XPathTarget(sbmlSupport.getXPathForSpecies(name));
-		} else if (ste instanceof ModelParameter) {
+		} else if (ste instanceof ModelParameter || ste instanceof ReservedSymbol) {
 			targetXpath = new XPathTarget(sbmlSupport.getXPathForGlobalParameter(ste.getName()));
 		}  else if (ste instanceof Structure || ste instanceof Structure.StructureSize || (ste instanceof StructureMappingParameter && ((StructureMappingParameter)ste).getRole() == StructureMapping.ROLE_Size)) {
 			String compartmentId = ste.getName();
@@ -1257,7 +1212,7 @@ public class SEDMLExporter {
 			}
 
 //			targetXpath = new XPathTarget(sbmlSupport.getXPathForSpecies(speciesId));
-		} else if (ste instanceof ModelParameter) {
+		} else if (ste instanceof ModelParameter || ste instanceof ReservedSymbol) {
 			// can only change parameter value. 
 			targetXpath = new XPathTarget(sbmlSupport.getXPathForGlobalParameter(ste.getName(), ParameterAttribute.value));
 			// use Ion's sample 3, with spatial app
