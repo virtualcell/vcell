@@ -83,6 +83,7 @@ public class CLILogger extends Logger implements CLILoggable {
         this.detailedResultsLog = logManager.requestNewFileLog(Paths.get(this.outputDirectory.getAbsolutePath(), "detailedResultLog.txt").toString());
         this.spatialLog = logManager.requestNewFileLog(Paths.get(this.outputDirectory.getAbsolutePath(), "hasSpatialLog.txt").toString());
         this.importErrorLog = logManager.requestNewFileLog(Paths.get(this.outputDirectory.getAbsolutePath(), "importErrorLog.txt").toString());
+        this.logger = logManager.requestLog4JLog(CLILogger.class);
         
         this.createHeader();
     }

@@ -31,8 +31,8 @@ public class VCellLogManager implements LogManager {
     }
 
     @Override
-    public Log4JLog requestLog4JLog(){
-        return (Log4JLog)this.addLog(new Log4JLog());
+    public Log4JLog requestLog4JLog(Class<?> clazz){
+        return (Log4JLog)this.addLog(new Log4JLog(clazz));
     }
 
     // Note: uses AutoClose

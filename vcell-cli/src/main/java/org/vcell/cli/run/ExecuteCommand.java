@@ -2,7 +2,7 @@ package org.vcell.cli.run;
 
 import cbit.vcell.resource.PropertyLoader;
 
-import org.vcell.cli.CLILocalLogFileManager;
+import org.vcell.cli.CLILogger;
 import org.vcell.cli.CLIPythonManager;
 import org.vcell.cli.CLIUtils;
 import org.vcell.util.exe.Executable;
@@ -60,7 +60,7 @@ public class ExecuteCommand implements Callable<Integer> {
 
 
     public Integer call() {
-        CLILocalLogFileManager logManager = null;
+        CLILogger logger = null;
         try {
             logManager = new CLILocalLogFileManager(outputFilePath, bForceLogFiles, bKeepFlushingLogs);
 
