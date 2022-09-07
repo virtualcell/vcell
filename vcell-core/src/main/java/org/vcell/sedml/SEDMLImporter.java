@@ -10,6 +10,7 @@ import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathFactory;
 
 import cbit.vcell.parser.ExpressionMathMLParser;
+import cbit.vcell.parser.ExpressionUtils;
 import cbit.vcell.parser.SymbolTableEntry;
 
 import org.apache.commons.io.IOUtils;
@@ -21,6 +22,7 @@ import org.jdom.JDOMException;
 import org.jdom.Namespace;
 import org.jdom.input.DOMBuilder;
 import org.jdom.output.DOMOutputter;
+import org.jlibsedml.AbstractIdentifiableElement;
 import org.jlibsedml.AbstractTask;
 import org.jlibsedml.Algorithm;
 import org.jlibsedml.AlgorithmParameter;
@@ -29,6 +31,7 @@ import org.jlibsedml.Change;
 import org.jlibsedml.ChangeAttribute;
 import org.jlibsedml.ComputeChange;
 import org.jlibsedml.DataGenerator;
+import org.jlibsedml.FunctionalRange;
 import org.jlibsedml.Libsedml;
 import org.jlibsedml.Model;
 import org.jlibsedml.Output;
@@ -75,6 +78,7 @@ import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathException;
 import cbit.vcell.math.Variable;
 import cbit.vcell.matrix.MatrixException;
+import cbit.vcell.model.Model.ReservedSymbol;
 import cbit.vcell.model.ModelException;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
@@ -462,6 +466,13 @@ public class SEDMLImporter {
 	private String resolveConstant(SimulationContext importedSimContext, SimulationContext convertedSimContext, String SBMLtargetID) {
 		// finds name of math-side Constant corresponding to SBML entity, if there is one
 		// returns null if there isn't
+
+		// check ReservedSymbols first
+		// TODO this is crude implementation
+		ReservedSymbol rs = importedSimContext.getModel().getReservedSymbolByName(SBMLtargetID);
+		if (rs != null) return SBMLtargetID;
+		
+		// now check mapping from importer
 		MathSymbolMapping msm = (MathSymbolMapping)importedSimContext.getMathDescription().getSourceSymbolMapping();
 		SBMLImporter sbmlImporter = importMap.get(importedSimContext.getBioModel());
 		SBMLSymbolMapping sbmlMap = sbmlImporter.getSymbolMapping();
@@ -540,17 +551,58 @@ public class SEDMLImporter {
 								.getIdFromXPathIdentifer(change.getTargetXPath().getTargetAsString());
 						String constant = resolveConstant(importedSC, convertedSC, targetID);
 						if (range instanceof UniformRange) {
-							UniformRange ur = (UniformRange) range;
+							UniformRange ur = (UniformRange)range;
 							scanSpec = ConstantArraySpec.createIntervalSpec(constant,
 									""+Math.min(ur.getStart(), ur.getEnd()), ""+Math.max(ur.getStart(), ur.getEnd()),
 									ur.getNumberOfPoints(), ur.getType().equals(UniformType.LOG));
 						} else if (range instanceof VectorRange) {
-							VectorRange vr = (VectorRange) range;
+							VectorRange vr = (VectorRange)range;
 							String[] values = new String[vr.getNumElements()];
 							for (int i = 0; i < values.length; i++) {
 								values[i] = Double.toString(vr.getElementAt(i));
 							}
 							scanSpec = ConstantArraySpec.createListSpec(constant, values);
+						} else if (range instanceof FunctionalRange){
+							FunctionalRange fr = (FunctionalRange)range;
+							Range index = rt.getRange(fr.getRange());
+							if (index instanceof UniformRange) {
+								UniformRange ur = (UniformRange)index;
+								ASTNode frMath = fr.getMath();
+								Expression frExpMin = new ExpressionMathMLParser(null).fromMathML(frMath, "t");
+								Expression frExpMax = new ExpressionMathMLParser(null).fromMathML(frMath, "t");
+
+								// Substitute Range values
+								frExpMin.substituteInPlace(new Expression(ur.getId()), new Expression(ur.getStart()));
+								frExpMax.substituteInPlace(new Expression(ur.getId()), new Expression(ur.getEnd()));
+
+								// Substitute SED-ML parameters
+								Map<String, AbstractIdentifiableElement> params = fr.getParameters();
+								System.out.println(params);
+								for (String paramId : params.keySet()) {
+									frExpMin.substituteInPlace(new Expression(params.get(paramId).getId()), new Expression(((Parameter)params.get(paramId)).getValue()));
+									frExpMax.substituteInPlace(new Expression(params.get(paramId).getId()), new Expression(((Parameter)params.get(paramId)).getValue()));
+								}
+								
+								// Substitute SED-ML variables (which reference SBML entities)
+								Map<String, AbstractIdentifiableElement> vars = fr.getVariables();
+								System.out.println(vars);
+								for (String varId : vars.keySet()) {
+									String sbmlID = sbmlSupport.getIdFromXPathIdentifer(((org.jlibsedml.Variable)vars.get(varId)).getTarget());
+									String vcmlName = resolveConstant(importedSC, convertedSC, sbmlID);
+									frExpMin.substituteInPlace(new Expression(varId), new Expression(vcmlName));
+									frExpMax.substituteInPlace(new Expression(varId), new Expression(vcmlName));
+								}
+								frExpMin = ExpressionUtils.simplifyUsingJSCL(frExpMin);
+								frExpMax = ExpressionUtils.simplifyUsingJSCL(frExpMax);								
+								String minValueExpStr = frExpMin.infix();
+								String maxValueExpStr = frExpMax.infix();
+								scanSpec = ConstantArraySpec.createIntervalSpec(constant, minValueExpStr, maxValueExpStr, ur.getNumberOfPoints(), ur.getType().equals(UniformType.LOG));
+							} else {
+								// we only support FunctionalRange with interval scans, not in lists
+								logger.error("FunctionalRange does not reference UniformRange, task " + SEDMLUtil.getName(selectedTask)
+								+ " is being skipped");
+								continue;								
+							}
 						} else {
 							logger.error("unsupported Range class found, task " + SEDMLUtil.getName(selectedTask)
 									+ " is being skipped");

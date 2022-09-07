@@ -1033,7 +1033,9 @@ public class SEDMLExporter {
 			}
 		} else {
 			// ----- Vector Range
-			// we do not preserve symbolic values... could be done via FunctionalRange using piecewise expression, but too cumbersome 
+			// we do not preserve symbolic values...
+			// could be done via FunctionalRange using piecewise expression, but too cumbersome
+			// plus it can't be used yet anyway, since a List scan using symbols can't be saved to VCDB
 			cbit.vcell.math.Constant[] cs = constantArraySpec.getConstants();
 			ArrayList<Double> values = new ArrayList<Double>();
 			for (int i = 0; i < cs.length; i++){
