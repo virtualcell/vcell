@@ -10,6 +10,8 @@ import org.apache.logging.log4j.Logger;
 
 import cbit.vcell.mongodb.VCMongoMessage;
 import org.vcell.cli.vcml.ExportOmexCommand;
+import org.vcell.util.VCellUtilityHub;
+
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 
@@ -29,7 +31,13 @@ public class CLIStandalone {
         logger.info("Starting Vcell...");
         if (logger.isDebugEnabled()) logger.debug("!!!DEBUG Mode Active!!!");
         VCMongoMessage.enabled = false;
+        VCellUtilityHub.startup(VCellUtilityHub.MODE.CLI);
         int exitCode = new CommandLine(new CLIStandalone()).execute(args);
+        try {
+            VCellUtilityHub.shutdown();
+        } catch (Exception e){
+            logger.error("VCellUtilityHub encountered a problem during shutdown: " + e.getMessage(), e);
+        }
         System.exit(exitCode);
     }
 }

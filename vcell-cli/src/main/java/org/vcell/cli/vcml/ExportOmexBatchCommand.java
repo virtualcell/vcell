@@ -2,6 +2,7 @@ package org.vcell.cli.vcml;
 
 import cbit.vcell.resource.PropertyLoader;
 
+import org.vcell.cli.CLILogger;
 import org.vcell.sedml.ModelFormat;
 import org.vcell.util.DataAccessException;
 import picocli.CommandLine.Command;
@@ -45,9 +46,10 @@ public class ExportOmexBatchCommand implements Callable<Integer> {
     private boolean help;
 
     public Integer call() {
-        CLILocalLogFileManager logManager = null;
+        CLILogger logger = null;
         try {
-            logManager = new CLILocalLogFileManager(outputFilePath, bForceLogFiles, bKeepFlushingLogs);
+            logger = new CLILogger(outputFilePath); // CLILogger will throw an execption if our output dir isn't valid.
+            logger.debug("Batch export of omex files requested");
             PropertyLoader.loadProperties();
             if (inputFilePath == null || !inputFilePath.exists() || !inputFilePath.isDirectory()){
                 throw new RuntimeException("inputFilePath '"+inputFilePath+"' should be a directory");
@@ -57,7 +59,7 @@ public class ExportOmexBatchCommand implements Callable<Integer> {
                 VcmlOmexConverter.queryVCellDbPublishedModels(cliDatabaseService, outputFilePath, bForceLogFiles);
 
                 VcmlOmexConverter.convertFiles(cliDatabaseService, inputFilePath, outputFilePath,
-                        outputModelFormat, logManager, bHasDataOnly, bMakeLogsOnly, bNonSpatialOnly, bForceLogFiles, bValidateOmex);
+                        outputModelFormat, logger, bHasDataOnly, bMakeLogsOnly, bNonSpatialOnly, bForceLogFiles, bValidateOmex);
             } catch (IOException | SQLException | DataAccessException e) {
                 e.printStackTrace(System.err);
             }
@@ -65,8 +67,6 @@ public class ExportOmexBatchCommand implements Callable<Integer> {
         } catch (Exception e) {
             e.printStackTrace();
             throw new RuntimeException(e.getMessage());
-        } finally {
-            if (logManager != null) logManager.finalizeAndExportLogFiles();
         }
     }
 }

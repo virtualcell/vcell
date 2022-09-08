@@ -37,7 +37,8 @@ public class VCellLogManager implements LogManager {
 
     // Note: uses AutoClose
     public void close() throws IOException {
-        for (Log l : this.logSet) l.close();
+        for (Log l : this.logSet) 
+            l.close();
         logSet.clear();
     }
 

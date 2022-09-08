@@ -2,7 +2,7 @@
 <Configuration status="INFO" name="XMLConfigTest" packages="org.vcell.*">
     <Appenders>
         <Console name="console">
-            <PatternLayout pattern="%5p (%F:%L) - %m%n"/>
+            <PatternLayout pattern="%5p (%c{1}:%L) - %m%n"/>
         </Console>
     </Appenders>
 

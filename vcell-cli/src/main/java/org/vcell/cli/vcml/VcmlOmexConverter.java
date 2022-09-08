@@ -100,7 +100,7 @@ public class VcmlOmexConverter {
 									File input,
 									File outputDir,
 									ModelFormat modelFormat,
-									CLILoggable logManager, 
+									CLILogger cliLogger, 
 									boolean bHasDataOnly,
 									boolean bMakeLogsOnly,
 									boolean bNonSpatialOnly,
@@ -155,7 +155,7 @@ public class VcmlOmexConverter {
 				}
 			} catch (Exception e) {
 				logger.error("EXPORT FAILED: file=" +inputFile+", error="+e.getMessage(), e);
-				logManager.writeDetailedErrorList(inputFile + ",   " + e.getMessage());
+				cliLogger.writeDetailedErrorList(inputFile + ",   " + e.getMessage());
 			}
 		}
 		writeLogForOmexCreation(outputDir.getAbsolutePath(), hasNonSpatialSet, hasSpatialSet, bForceLogFiles);

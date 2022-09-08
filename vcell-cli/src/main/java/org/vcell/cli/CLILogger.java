@@ -151,7 +151,7 @@ public class CLILogger extends Logger implements CLILoggable {
 
     private void writeToFileLog(FileLog log, String message) throws IOException {
         if (!this.shouldPrintLogFiles) return;
-        log.print(message);
+        log.print(message + "\n");
         if (this.shouldFlushLogFiles) log.flush();
     }
 

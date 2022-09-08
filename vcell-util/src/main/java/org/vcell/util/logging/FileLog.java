@@ -3,6 +3,7 @@ package org.vcell.util.logging;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Files;
 
 public class FileLog extends Log {
     protected File logFile;
@@ -13,12 +14,12 @@ public class FileLog extends Log {
         this.sBuff = new StringBuffer();
         this.logFile = new File(fileName);
         this.fileWriter = null;
-
-        if (!logFile.exists() || logFile.isDirectory()) 
-            throw new RuntimeException("File \"" + fileName + "\" is invalid.");
-        
         try {
+        if ((logFile.exists() || logFile.createNewFile()) && !logFile.isDirectory()){
+            logFile.delete();
             this.fileWriter = new FileWriter(logFile, false);
+        }
+            
         } catch (IOException e){
             throw new RuntimeException("File \"" + fileName + "\"  could not be created or opened.", e);
         }
@@ -37,10 +38,13 @@ public class FileLog extends Log {
     public void close() throws IOException {
         this.flush();
         this.fileWriter.close();
+        if (this.sBuff.toString().equals("")) 
+            Files.delete(this.logFile.toPath()); // Throws an exception on failure
     }
 
     @Override
     protected void write(String m) throws IOException {
-        this.fileWriter.write(m);
-    }    
+        if (!m.equals(""))
+            this.fileWriter.write(m);
+    }   
 }

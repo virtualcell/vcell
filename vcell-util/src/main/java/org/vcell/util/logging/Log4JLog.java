@@ -29,8 +29,7 @@ public class Log4JLog extends Log implements Log4JLoggable {
     }
 
     public void trace(Class<?> callingClass, String message){
-        this.setLogger(callingClass);
-        this.logger.trace(message);
+        this.log(callingClass, Level.TRACE, message);
     }
 
     public void trace(String message, Throwable throwable){
@@ -38,8 +37,7 @@ public class Log4JLog extends Log implements Log4JLoggable {
     }
 
     public void trace(Class<?> callingClass, String message, Throwable throwable){
-        this.setLogger(callingClass);
-        this.logger.trace(message, throwable);
+        this.log(callingClass, Level.TRACE, message, throwable);
     }
 
     public void debug(String message){
@@ -47,8 +45,7 @@ public class Log4JLog extends Log implements Log4JLoggable {
     }
 
     public void debug(Class<?> callingClass, String message){
-        this.setLogger(callingClass);
-        this.logger.debug(message);
+        this.log(callingClass, Level.DEBUG, message);
     }
 
     public void debug(String message, Throwable throwable){
@@ -56,8 +53,7 @@ public class Log4JLog extends Log implements Log4JLoggable {
     }
 
     public void debug(Class<?> callingClass, String message, Throwable throwable){
-        this.setLogger(callingClass);
-        this.logger.debug(message, throwable);
+        this.log(callingClass, Level.DEBUG, message, throwable);
     }
 
     public void info(String message){
@@ -65,8 +61,7 @@ public class Log4JLog extends Log implements Log4JLoggable {
     }
 
     public void info(Class<?> callingClass, String message){
-        this.setLogger(callingClass);
-        this.logger.info(message);
+        this.log(callingClass, Level.INFO, message);
     }
 
     public void info(String message, Throwable throwable){
@@ -74,8 +69,7 @@ public class Log4JLog extends Log implements Log4JLoggable {
     }
 
     public void info(Class<?> callingClass, String message, Throwable throwable){
-        this.setLogger(callingClass);
-        this.logger.info(message, throwable);
+        this.log(callingClass, Level.INFO, message, throwable);
     }
 
     public void warn(String message){
@@ -83,8 +77,7 @@ public class Log4JLog extends Log implements Log4JLoggable {
     }
 
     public void warn(Class<?> callingClass, String message){
-        this.setLogger(callingClass);
-        this.logger.warn(message);
+        this.log(callingClass, Level.WARN, message);
     }
 
     public void warn(String message, Throwable throwable){
@@ -92,8 +85,7 @@ public class Log4JLog extends Log implements Log4JLoggable {
     }
 
     public void warn(Class<?> callingClass, String message, Throwable throwable){
-        this.setLogger(callingClass);
-        this.logger.warn(message, throwable);
+        this.log(callingClass, Level.WARN, message, throwable);
     }
 
     public void error(String message){
@@ -101,8 +93,7 @@ public class Log4JLog extends Log implements Log4JLoggable {
     }
 
     public void error(Class<?> callingClass, String message){
-        this.setLogger(callingClass);
-        this.logger.error(message);
+        this.log(callingClass, Level.ERROR, message);
     }
 
     public void error(String message, Throwable throwable){
@@ -110,8 +101,7 @@ public class Log4JLog extends Log implements Log4JLoggable {
     }
 
     public void error(Class<?> callingClass, String message, Throwable throwable){
-        this.setLogger(callingClass);
-        this.logger.error(message, throwable);
+        this.log(callingClass, Level.ERROR, message, throwable);
     }
 
     public void fatal(String message){
@@ -119,8 +109,7 @@ public class Log4JLog extends Log implements Log4JLoggable {
     }
 
     public void fatal(Class<?> callingClass, String message){
-        this.setLogger(callingClass);
-        this.logger.fatal(message);
+        this.log(callingClass, Level.FATAL, message);
     }
 
     public void fatal(String message, Throwable throwable){
@@ -128,33 +117,34 @@ public class Log4JLog extends Log implements Log4JLoggable {
     }
 
     public void fatal(Class<?> callingClass, String message, Throwable throwable){
-        this.setLogger(callingClass);
-        this.logger.fatal(message, throwable);
-    }
-
-    @Override
-    public void close() throws IOException {
-        // Nothing to close in Log4J
+        this.log(callingClass, Level.ERROR, message, throwable);
     }
 
     @Override
     public void log(org.apache.logging.log4j.Level level, String message){
-        this.fatal(this.getCallerClass(), message);
+        this.log(this.getCallerClass(), level, message);
     }
 
     public void log(Class<?> callingClass, org.apache.logging.log4j.Level level, String message){
-        this.setLogger(callingClass);
-        this.logger.fatal(message);
+        this.log(callingClass, level, message, null);
     }
 
     @Override
     public void log(org.apache.logging.log4j.Level level, String message, Throwable throwable){
-        this.fatal(this.getCallerClass(), message, throwable);
+        this.log(this.getCallerClass(), level, message, throwable);
     }
 
     public void log(Class<?> callingClass, org.apache.logging.log4j.Level level, String message, Throwable throwable){
         this.setLogger(callingClass);
-        this.logger.fatal(message, throwable);
+        
+        // Temporary formatting; will need formatter method in the future (maybe require in parent(s)?)
+        message = "(Line: " + this.getProperLineNumber(callingClass) + ") - " + message;
+
+        if (throwable == null){
+            this.logger.log(level, message);
+        } else {
+            this.logger.log(level, message, throwable);
+        }
     }
 
     @Override
@@ -180,17 +170,38 @@ public class Log4JLog extends Log implements Log4JLoggable {
         this.log(Log4JLog.IMPORTANT, m);
     }
 
+    @Override
+    public void close() throws IOException {
+        // Nothing to close in Log4J
+    }
+
     protected Class<?> getCallerClass(){
         ///TODO: improve this method to find the first stack element not from this class.
         // 0th frame is this method, 1st is a local method, 2nd is the caller; 
-        Class<?> caller = null;
-        try {
-            caller = Class.forName(new Exception().getStackTrace()[2].getClassName());
-        } catch (ClassNotFoundException e){
-            this.setLogger(this.getClass());
-            this.error("Black magic attempt failed; class name could not be resolved.", e);
-            throw new RuntimeException("Error trying to log information.", e);
+        for (StackTraceElement elem : new Exception().getStackTrace()){
+            String className = elem.getClassName();
+            if (!className.contains(".Log4JLog")){
+                try {
+                    Class<?> clazz = Class.forName(className);
+                    // We don't want to accidentally log as the logger, so we'll skipp any implementation of Logger.java!
+                    if (Class.forName("org.vcell.util.logging.Logger").isAssignableFrom(clazz)) continue;
+                    return clazz;
+                } catch (ClassNotFoundException e){
+                    this.setLogger(this.getClass());
+                    this.error("Black magic attempt failed; class name could not be resolved.", e);
+                    throw new RuntimeException("Error trying to log information.", e);
+                }
+            }
         }
-        return caller;
+        return null;
+    }
+
+    protected int getProperLineNumber(Class<?> classInStack){
+        for (StackTraceElement elem : new Exception().getStackTrace()){
+            if (elem.getClassName().equals(classInStack.getName())){
+                return elem.getLineNumber();
+            }
+        }
+        return -1;
     }
 }

@@ -109,7 +109,7 @@ public class ExecuteCommand implements Callable<Integer> {
             CLIPythonManager.getInstance().closePythonProcess(); // WARNING: Python will need reinstantiation after this is called
             return 0;
         } catch (Exception e) { ///TODO: Break apart into specific exceptions to maximize logging.
-            org.apache.logging.log4j.LogManager.getLogger(ExecuteCommand.class).error(e.getMessage(), e);
+            org.apache.logging.log4j.LogManager.getLogger(this.getClass()).error(e.getMessage(), e);
             return 1;
         }
     }

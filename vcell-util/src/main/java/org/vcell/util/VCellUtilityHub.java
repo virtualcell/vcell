@@ -11,6 +11,7 @@ public class VCellUtilityHub {
      * - Add a option to MODE
      * - Add a startVCell<MODE name> method
      * - Add the new start method to the private constructor
+     * - (optional) Add relevant closing calls to shutdown  
      */
 
 
@@ -21,11 +22,17 @@ public class VCellUtilityHub {
 
     private static VCellUtilityHub instance;
 
+    // Utility declarations
     private static LogManager logManager;
 
+    // Methods
     public static void startup(MODE mode){
         if (instance == null) instance = new VCellUtilityHub(mode);
         else throw new RuntimeException("VCellUtilityHub already started.");
+    }
+
+    public static void shutdown() throws Exception {
+        logManager.close();
     }
 
     private VCellUtilityHub(MODE m){
