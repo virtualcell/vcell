@@ -6,7 +6,7 @@ import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.vcell.cli.CLILocalLogFileManager;
+import org.vcell.cli.CLILogger;
 import org.vcell.cli.CLIPythonManager;
 import org.vcell.cli.CLIUtils;
 import org.vcell.cli.run.ExecuteImpl;
@@ -21,7 +21,7 @@ import java.util.concurrent.Callable;
 @Command(name = "biosimulations", description = "BioSimulators-compliant command-line interface to the vcell simulation program <https://vcell.org>.")
 public class BiosimulationsCommand implements Callable<Integer> {
 
-    private final static Logger logger = LogManager.getLogger(BiosimulationsCommand.class);
+    //private final static Logger logger = LogManager.getLogger(BiosimulationsCommand.class);
 
     @Option(names = {"-i", "--archive"}, description = "Path to a COMBINE/OMEX archive file which contains one or more SED-ML-encoded simulation experiments")
     private File ARCHIVE;
@@ -42,18 +42,16 @@ public class BiosimulationsCommand implements Callable<Integer> {
     private boolean help;
 
     public Integer call() {
-        CLILocalLogFileManager logManager = null;
+        CLILogger logger = null;
         try {
-            logManager = new CLILocalLogFileManager(OUT_DIR, bDebug, bDebug);
-
-            LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
-            Level logLevel = logger.getLevel();
+            logger = new CLILogger(OUT_DIR); // CLILogger will throw an execption if our output dir isn't valid.
+            Level logLevel = logger.getLog4JLogLevel();
             if (!bQuiet && bDebug) {
                 logLevel = Level.DEBUG;
             } else if (bQuiet) {
                 logLevel = Level.OFF;
             }
-            CLIUtils.setLogLevel(ctx, logLevel);
+            logger.setLog4JLogLevel(logLevel);
 
             logger.debug("Biosimulations mode requested");
 

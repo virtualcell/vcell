@@ -6,6 +6,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import org.vcell.util.logging.*;
+import org.apache.logging.log4j.Level;
 
 import org.vcell.util.VCellUtilityHub;
 
@@ -89,6 +90,64 @@ public class CLILogger extends Logger implements CLILoggable {
     }
 
     // Logging Methods
+        // Logging Log4J Methods
+    public Level getLog4JLogLevel(){
+        return this.logger.getLogLevel();
+    }
+
+    public void setLog4JLogLevel(Level logLevel){
+        this.logger.setLogLevel(logLevel);
+    }
+
+    public void trace(String message){
+        this.logger.trace(message);
+    }
+
+    public void trace(String message, Throwable throwable){
+        this.logger.trace(message, throwable);
+    }
+
+    public void debug(String message){
+        this.logger.debug(message);
+    }
+
+    public void debug(String message, Throwable throwable){
+        this.logger.debug(message, throwable);
+    }
+
+    public void info(String message){
+        this.logger.info(message);
+    }
+
+    public void info(String message, Throwable throwable){
+        this.logger.info(message, throwable);
+    }
+
+    public void warn(String message){
+        this.logger.warn(message);
+    }
+
+    public void warn(String message, Throwable throwable){
+        this.logger.warn(message, throwable);
+    }
+
+    public void error(String message){
+        this.logger.error(message);
+    }
+
+    public void error(String message, Throwable throwable){
+        this.logger.error(message, throwable);
+    }
+
+    public void fatal(String message){
+        this.logger.fatal(message);
+    }
+
+    public void fatal(String message, Throwable throwable){
+        this.logger.fatal(message, throwable);
+    }
+
+        // Logging file methods
 
     private void writeToFileLog(FileLog log, String message) throws IOException {
         if (!this.shouldPrintLogFiles) return;

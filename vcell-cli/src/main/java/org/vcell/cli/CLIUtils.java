@@ -52,7 +52,7 @@ public class CLIUtils {
     }
 
     public static void setLogLevel(LoggerContext ctx, Level logLevel){
-        Configuration config = ctx.getConfiguration();
+        org.apache.logging.log4j.core.config.Configuration config = ctx.getConfiguration();
         
         LoggerConfig loggerConfig = config.getLoggerConfig(LogManager.getLogger("org.vcell").getName());
         loggerConfig.setLevel(logLevel);

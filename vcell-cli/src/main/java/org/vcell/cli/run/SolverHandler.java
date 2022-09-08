@@ -19,7 +19,7 @@ import cbit.vcell.xml.XmlHelper;
 import org.jlibsedml.SedML;
 import org.jlibsedml.Task;
 import org.jlibsedml.UniformTimeCourse;
-import org.vcell.cli.CLILoggable;
+import org.vcell.cli.CLILogger;
 import org.vcell.cli.vcml.VCMLHandler;
 import org.vcell.sbml.vcell.SBMLImportException;
 import org.vcell.sbml.vcell.SBMLImporter;
@@ -64,7 +64,7 @@ public class SolverHandler {
 
 
     public HashMap<String, ODESolverResultSet>
-            simulateAllTasks(ExternalDocInfo externalDocInfo, SedML sedml, CLILoggable logManager, 
+            simulateAllTasks(ExternalDocInfo externalDocInfo, SedML sedml, CLILogger cliLogger, 
                              File outputDirForSedml, String outDir, String outputBaseDir, String sedmlLocation,
                              boolean keepTempFiles, boolean exactMatchOnly) throws Exception {
         // create the VCDocument(s) (bioModel(s) + application(s) + simulation(s)), do sanity checks
@@ -256,11 +256,11 @@ public class SolverHandler {
                     	if(bTimeoutFound == false) {		// don't repeat this for each task
                     		String str = logTaskError.substring(0, logTaskError.indexOf("Process timed out"));
                     		str += "Process timed out";		// truncate the rest of the spam
-                            logManager.writeDetailedErrorList(bioModelBaseName + ",  solver: " + sdl + ": " + type + ": " + str);
+                            cliLogger.writeDetailedErrorList(bioModelBaseName + ",  solver: " + sdl + ": " + type + ": " + str);
                         	bTimeoutFound = true;
                     	}
                     } else {
-                        logManager.writeDetailedErrorList(bioModelBaseName + ",  solver: " + sdl + ": " + type + ": " + logTaskError);
+                        cliLogger.writeDetailedErrorList(bioModelBaseName + ",  solver: " + sdl + ": " + type + ": " + logTaskError);
                     }
                     RunUtils.drawBreakLine("-", 100);
                 }
@@ -278,7 +278,7 @@ public class SolverHandler {
         }
         logger.info("Ran " + simulationCount + " simulations for " + bioModelCount + " biomodels.");
         if(hasSomeSpatial) {
-            logManager.writeSpatialList(bioModelBaseName);
+            cliLogger.writeSpatialList(bioModelBaseName);
         }
         return resultsHash;
     }
