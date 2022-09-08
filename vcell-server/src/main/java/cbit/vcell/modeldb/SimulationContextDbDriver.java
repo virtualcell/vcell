@@ -18,6 +18,8 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 
+import cbit.vcell.matrix.MatrixException;
+import cbit.vcell.model.ModelException;
 import org.vcell.db.DatabaseSyntax;
 import org.vcell.sbml.vcell.StructureSizeSolver;
 import org.vcell.util.DataAccessException;
@@ -347,7 +349,11 @@ private void assignSpeciesContextSpecsSQL(Connection con,KeyValue simContextKey,
 		stmt.close();
 	}
 	if(bUseConcentration != null){
-		simContext.setUsingConcentration(bUseConcentration);
+		try {
+			simContext.setUsingConcentration(bUseConcentration, false);
+		} catch (Exception e) {
+			throw new RuntimeException("not expected to ever fail: "+e.getMessage(), e);
+		}
 	}
 }
 
