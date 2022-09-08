@@ -281,8 +281,7 @@ public void concentrationRadioButton_actionPerformed() {
 					throw new Exception("\nStructure sizes are required to convert number of particles to concentration.\nPlease go to StructureMapping tab to set valid sizes.");
 				}
 				//set to use concentration
-				getSimulationContext().setUsingConcentration(true);
-				getSimulationContext().convertSpeciesIniCondition(true);
+				getSimulationContext().setUsingConcentration(true, true);
 				// force propertyChange(by setting old value to null), inform other listeners that simulation contect has changed.
 				//firePropertyChange("simulationContext", null, getSimulationContext());
 			}
@@ -293,7 +292,7 @@ public void concentrationRadioButton_actionPerformed() {
 		@Override
 		public void run(Hashtable<String, Object> hashTable) throws Exception {
 			if (hashTable.get(ClientTaskDispatcher.TASK_ABORTED_BY_ERROR) != null) {
-				getSimulationContext().setUsingConcentration(false);
+				getSimulationContext().setUsingConcentration(false, true);
 				updateTopScrollPanel();
 			}
 		}
@@ -324,8 +323,7 @@ private void amountRadioButton_actionPerformed() {
 					throw new Exception("\nStructure sizes are required to convert concentration to number of paticles.\nPlease go to StructureMapping tab to set valid sizes.");
 				}
 				//set to use number of particles
-				getSimulationContext().setUsingConcentration(false);
-				getSimulationContext().convertSpeciesIniCondition(false);
+				getSimulationContext().setUsingConcentration(false, true);
 				// force propertyChange(by setting old value to null), inform other listeners that simulation context has changed.
 				//firePropertyChange("simulationContext", null, getSimulationContext());				
 			}
@@ -336,7 +334,7 @@ private void amountRadioButton_actionPerformed() {
 		@Override
 		public void run(Hashtable<String, Object> hashTable) throws Exception {
 			if (hashTable.get(ClientTaskDispatcher.TASK_ABORTED_BY_ERROR) != null) {
-				getSimulationContext().setUsingConcentration(true);
+				getSimulationContext().setUsingConcentration(true, true);
 				updateTopScrollPanel();
 			}
 		}

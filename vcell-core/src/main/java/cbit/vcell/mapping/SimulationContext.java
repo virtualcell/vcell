@@ -2878,12 +2878,21 @@ public void setUsingMassConservationModelReduction(boolean bMassConservationMode
 	this.bMassConservationModelReduction = bMassConservationModelReduction;
 }
 
-public void setUsingConcentration(boolean bUseConcentration) /*throws MappingException, PropertyVetoException*/ {
+public void setUsingConcentration(boolean bUseConcentration, boolean bTransformIfNeeded) throws PropertyVetoException, MappingException, MatrixException, ModelException, MathException, ExpressionException /*throws MappingException, PropertyVetoException*/ {
 	if(applicationType == Application.NETWORK_STOCHASTIC || applicationType == Application.RULE_BASED_STOCHASTIC)
 	{
 		boolean oldValue = bConcentration;
 		bConcentration = bUseConcentration;
+		if (bUseConcentration != oldValue && bTransformIfNeeded){
+			MathMapping mathMapping = createNewMathMapping();
+			setMathDescription(mathMapping.getMathDescription());
+		}
 		firePropertyChange(PROPERTY_NAME_USE_CONCENTRATION, oldValue, bConcentration);
+		if (bUseConcentration != oldValue && bTransformIfNeeded){
+			convertSpeciesIniCondition(bUseConcentration);
+			MathMapping mathMapping = createNewMathMapping();
+			setMathDescription(mathMapping.getMathDescription());
+		}
 	}
 }
 
@@ -2900,27 +2909,6 @@ public void setRandomizeInitConditions(boolean bRandomize) {
 	}
 }
 
-
-//specially created for loading from database, used in ServerDocumentManager.saveBioModel()
-public void updateSpeciesIniCondition(SimulationContext simContext) throws MappingException, PropertyVetoException
-{
-	boolean bUseConcentration = simContext.isUsingConcentration();
-	this.setUsingConcentration(bUseConcentration);
-	SpeciesContextSpec[] refScSpec = simContext.getReactionContext().getSpeciesContextSpecs();
-//	SpeciesContextSpec[] scSpec = this.getReactionContext().getSpeciesContextSpecs();
-	for(int i = 0; i<refScSpec.length; i++ )
-	{
-		SpeciesContext refSc = refScSpec[i].getSpeciesContext();
-		SpeciesContextSpec scSpec = this.getReactionContext().getSpeciesContextSpec(refSc);
-		try {
-			scSpec.getInitialConcentrationParameter().setExpression(refScSpec[i].getInitialConcentrationParameter().getExpression());
-			scSpec.getInitialCountParameter().setExpression(refScSpec[i].getInitialCountParameter().getExpression());
-		} catch (ExpressionBindingException e) {
-			e.printStackTrace();
-			throw new MappingException(e.getMessage());
-		} 
-	}
-}
 
 public void convertSpeciesIniCondition(boolean bUseConcentration) throws MappingException, PropertyVetoException
 {
