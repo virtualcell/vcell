@@ -248,13 +248,35 @@ public class RunUtils {
                         assert datagen != null;
                         ArrayList<Variable> vars = new ArrayList<>(datagen.getListOfVariables());
                         int mxlen = 0;
-                        boolean supportedDataset = true;
+//                        boolean supportedDataset = true;
                         // get target values
-                        HashMap<Variable, double[]> values = new HashMap<>();
+                        HashMap<Variable, ArrayList<double[]> > values = new HashMap<>();
                         for (Variable var : vars) {
                             AbstractTask task = sedml.getTaskWithId(var.getReference());
-                            //Model model = sedml.getModelWithId(task.getModelReference());
-                            Simulation sim = sedml.getSimulation(task.getSimulationReference());
+
+                        	Simulation sedmlSim = null;
+                        	Task actualTask = null;
+                            if(task instanceof RepeatedTask) {
+                				RepeatedTask rt = (RepeatedTask)task;
+                				// We assume that we can never have a sequential repeated task at this point, we check for that in SEDMLImporter
+//                				if (!rt.getResetModel() || rt.getSubTasks().size() != 1) {
+//                					logger.error("sequential RepeatedTask not yet supported, task "+SEDMLUtil.getName(selectedTask)+" is being skipped");
+//                					continue;
+//                				}
+                				AbstractTask referredTask;
+                				// find the actual Task and extract the simulation
+                				do {
+                					SubTask st = rt.getSubTasks().entrySet().iterator().next().getValue(); // single subtask
+                					String taskId = st.getTaskId();
+                					referredTask = sedml.getTaskWithId(taskId);
+                					if (referredTask instanceof RepeatedTask) rt = (RepeatedTask)referredTask;
+                				} while (referredTask instanceof RepeatedTask);
+                				actualTask = (Task)referredTask;
+                				sedmlSim = sedml.getSimulation(actualTask.getSimulationReference());
+                            } else {
+                            	sedmlSim = sedml.getSimulation(task.getSimulationReference());
+                            }
+                            
                             IXPathToVariableIDResolver variable2IDResolver = new SBMLSupport();
                             // must get variable ID from SBML model
                             String sbmlVarId = "";
@@ -276,14 +298,67 @@ public class RunUtils {
                             }
 
                             if (task instanceof RepeatedTask) {
-                                supportedDataset = false;
+                            	// ==================================================================================
+                                assert actualTask != null;
+                                ArrayList<String> keys = new ArrayList<>();
+                                for (Map.Entry<String, ODESolverResultSet> entry : resultsHash.entrySet()) {
+                                	String key = entry.getKey();
+                                	ODESolverResultSet value = entry.getValue();
+                                	if(value != null && key.startsWith(actualTask.getId())) {
+                                		keys.add(key);
+                                	}
+                                }
+                                varIDs.add(var.getId());
+                                if(sedmlSim instanceof UniformTimeCourse) {
+                                    int outputNumberOfPoints = ((UniformTimeCourse) sedmlSim).getNumberOfPoints();
+                                    double outputStartTime = ((UniformTimeCourse) sedmlSim).getOutputStartTime();
+                                    ArrayList<double[]> variablesList = new ArrayList<>();
+                                    if(outputStartTime > 0) {
+                                    	for(String key : keys) {
+                                            ODESolverResultSet results = resultsHash.get(task.getId());
+                                            int column = results.findColumn(sbmlVarId);
+                                            double[] tmpData = results.extractColumn(column);
+                                            double[] data = new double[outputNumberOfPoints+1];
+                                            for(int i=tmpData.length-outputNumberOfPoints-1, j=0; i<tmpData.length; i++, j++) {
+                                                data[j] = tmpData[i];
+                                            }
+                                            mxlen = Integer.max(mxlen, data.length);
+                                            if(!values.containsKey(var)) {		// this is the first double[]
+                                                variablesList.add(data);
+                                                values.put(var, variablesList);
+                                            } else {
+                                            	ArrayList<double[]> variablesListTemp = values.get(var);
+                                            	variablesListTemp.add(data);
+                                                values.put(var, variablesListTemp);
+                                            }
+                                    	}
+                                    } else {
+                                    	for(String key : keys) {
+                                    		ODESolverResultSet results = resultsHash.get(key);
+                                            int column = results.findColumn(sbmlVarId);
+                                            double[] data = results.extractColumn(column);
+                                            mxlen = Integer.max(mxlen, data.length);
+                                            if(!values.containsKey(var)) {		// this is the first double[]
+                                                variablesList.add(data);
+                                                values.put(var, variablesList);
+                                            } else {
+                                            	ArrayList<double[]> variablesListTemp = values.get(var);
+                                            	variablesListTemp.add(data);
+                                                values.put(var, variablesListTemp);
+                                            }
+                                    	}
+                                    }
+                                } else {
+                                	logger.error("only uniform time course simulations are supported");
+                                }
                             } else {
                                 varIDs.add(var.getId());
                                 assert task != null;
-                                if(sim instanceof UniformTimeCourse) {
+                                if(sedmlSim instanceof UniformTimeCourse) {
                                     // we want to keep the last outputNumberOfPoints only
-                                    int outputNumberOfPoints = ((UniformTimeCourse) sim).getNumberOfPoints();
-                                    double outputStartTime = ((UniformTimeCourse) sim).getOutputStartTime();
+                                    int outputNumberOfPoints = ((UniformTimeCourse) sedmlSim).getNumberOfPoints();
+                                    double outputStartTime = ((UniformTimeCourse) sedmlSim).getOutputStartTime();
+                                    ArrayList<double[]> variablesList = new ArrayList<>();
                                     if(outputStartTime > 0) {
 
                                         ODESolverResultSet results = resultsHash.get(task.getId());
@@ -293,16 +368,18 @@ public class RunUtils {
                                         for(int i=tmpData.length-outputNumberOfPoints-1, j=0; i<tmpData.length; i++, j++) {
                                             data[j] = tmpData[i];
                                         }
-
+                                        
                                         mxlen = Integer.max(mxlen, data.length);
-                                        values.put(var, data);
+                                        variablesList.add(data);		// we only have one double[]
+                                        values.put(var, variablesList);
 
                                     } else {
                                         ODESolverResultSet results = resultsHash.get(task.getId());
                                         int column = results.findColumn(sbmlVarId);
                                         double[] data = results.extractColumn(column);
                                         mxlen = Integer.max(mxlen, data.length);
-                                        values.put(var, data);
+                                        variablesList.add(data);
+                                        values.put(var, variablesList);
                                     }
 
                                 } else {
@@ -312,10 +389,7 @@ public class RunUtils {
                             }
                         }
                         PythonCalls.updateDatasetStatusYml(sedmlLocation, oo.getId(), dataset.getId(), Status.SUCCEEDED, outDir);
-                        if (!supportedDataset) {
-                            logger.error("Dataset " + dataset.getId() + " references unsupported RepeatedTask and is being skipped");
-                            continue;
-                        }
+
                         //get math
                         String mathMLStr = datagen.getMathAsString();
                         Expression expr = new Expression(mathMLStr);
@@ -344,9 +418,16 @@ public class RunUtils {
                             sb.append("").append(",");
                         }
 
+                        Variable firstVar = vars.get(0);
+                        int overridesCount = values.get(firstVar).size();
+                        // TODO: here was the for(k : overridesCount)
                         for (int i = 0; i < mxlen; i++) {
                             for (int j = 0; j < vars.size(); j++) {
-                                double[] varVals = ((double[]) values.get(vars.get(j)));
+//                                double[] varVals = ((double[]) values.get(vars.get(j)));
+                            	Variable var = vars.get(j);
+                            	ArrayList<double[]> variablesList = values.get(var);
+                            	double[] varVals = variablesList.get(0);	// previous csv had get(k)
+
                                 if (i < varVals.length) {
                                     row[j] = varVals[i];
                                 } else {
@@ -361,9 +442,10 @@ public class RunUtils {
                             }
                             sb.append(computed).append(",");
                         }
+                    	//	}	// here would have been the close bracket for the loop over k
                         sb.deleteCharAt(sb.lastIndexOf(","));
                         sb.append("\n");
-                    }
+                    }			// end of dataset
                     File f = new File(outDirForCurrentSedml, oo.getId() + ".csv");
                     PrintWriter out = new PrintWriter(f);
                     out.print(sb.toString());
