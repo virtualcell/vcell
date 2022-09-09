@@ -223,9 +223,6 @@ public class SEDMLExporter {
 				boolean bFromCLI, boolean bRoundTripSBMLValidation) {		// true if invoked for omex export, false if for sedml
 		sbmlFilePathStrAbsoluteList.clear();
 		try {
-			SimulationContext[] simContexts = vcBioModel.getSimulationContexts();
-			int simContextCnt = 0;	// for model count, task subcount
-			String sedmlNotesStr = "";
 
 			if (modelFormat == ModelFormat.SBML_VCML) {
 				// TODO
@@ -239,6 +236,21 @@ public class SEDMLExporter {
 //				exportSimulationsVCML(simContextCnt, simContext);
 			}
 			if (modelFormat == ModelFormat.SBML) {
+				try {
+					// convert to SBML units; this also ensures we will use a clone
+					vcBioModel = ModelUnitConverter.createBioModelWithSBMLUnitSystem(vcBioModel);
+				} catch (Exception e1) {
+					String msg = "unit conversion failed for BioModel '"+vcBioModel.getName()+"': " + e1.getMessage();
+					logger.error(msg, e1);
+					sedmlLogger.addTaskLog(sedmlLogger.new TaskLog(vcBioModel.getName(), TaskType.BIOMODEL, TaskResult.FAILED, e1));
+					if (bFromCLI) {
+						return;
+					} else {
+						throw e1;
+					}
+				}
+				SimulationContext[] simContexts = vcBioModel.getSimulationContexts();
+				int simContextCnt = 0;	// for model count, task subcount
 				for (SimulationContext simContext : simContexts) {
 					// Export the application itself to SBML, with default values (overrides will become model changes or repeated tasks)
 					String sbmlString = null;
@@ -266,7 +278,7 @@ public class SEDMLExporter {
 
 					if (!sbmlExportFailed) {
 						// simContext was exported succesfully, now we try to export its simulations
-						sedmlNotesStr = exportSimulationsSBML(simContextCnt, simContext, sbmlString, l2gMap, mathSymbolMapping);
+						exportSimulationsSBML(simContextCnt, simContext, sbmlString, l2gMap, mathSymbolMapping, bFromCLI);
 					} else {
 						if (bFromCLI) {
 							continue;
@@ -275,17 +287,6 @@ public class SEDMLExporter {
 							throw new Exception ("SimContext '"+simContext.getName()+"' could not be exported to SBML :" +simContextException.getMessage());
 						}
 					}			
-					// if sedmlNotesStr is not empty, there were some Simulations that could not be exported to SEDML (eg., non-spatial stochastic app sim with histogram option)
-		        	if (sedmlNotesStr.length() > 0) {
-			        	sedmlNotesStr = "\n\tThe following Simulations in the VCell model were not exported to SEDML : " + sedmlNotesStr;
-		        		logger.error(sedmlNotesStr);
-			        	if (bFromCLI) {
-			        		continue;
-			        	} else {
-							System.err.println(sedmlLogger.getLogsCSV());
-			        		throw new Exception(sedmlNotesStr);
-			        	}
-		        	}
 					simContextCnt++;
 				}
 			}
@@ -419,8 +420,8 @@ public class SEDMLExporter {
 		return "";
 	}
 	
-	private String exportSimulationsSBML(int simContextCnt, SimulationContext simContext,
-			String sbmlString, Map<Pair<String, String>, String> l2gMap, MathSymbolMapping mathSymbolMapping) {
+	private void exportSimulationsSBML(int simContextCnt, SimulationContext simContext,
+			String sbmlString, Map<Pair<String, String>, String> l2gMap, MathSymbolMapping mathSymbolMapping, boolean bFromCLI) throws Exception {
 		// -------
 		// create sedml objects (simulation, task, datagenerators, report, plot) for each simulation in simcontext 
 		// -------	
@@ -428,8 +429,7 @@ public class SEDMLExporter {
 		String simContextId = TokenMangler.mangleToSName(simContextName);
 		simCount = 0;
 		overrideCount = 0;
-		String sedmlNotesStr = "";
-		if (simContext.getSimulations().length == 0) return sedmlNotesStr;
+		if (simContext.getSimulations().length == 0) return;
 		for (Simulation vcSimulation : simContext.getSimulations()) {
 			try {
 				// if we have a hash containing a subset of simulations to export
@@ -442,7 +442,7 @@ public class SEDMLExporter {
 				if (simContext.getGeometry().getDimension() == 0 && simContext.isStoch()) {
 					long numOfTrials = simTaskDesc.getStochOpt().getNumOfTrials();
 					if (numOfTrials > 1) {
-						String msg = "\n\t" + simContextName + " ( " + vcSimulation.getName() + " ) : export of non-spatial stochastic simulation with histogram option to SEDML not supported at this time.";
+						String msg = simContextName + " ( " + vcSimulation.getName() + " ) : export of non-spatial stochastic simulation with histogram option to SEDML not supported at this time.";
 						throw new Exception(msg);
 					}
 				}
@@ -471,12 +471,19 @@ public class SEDMLExporter {
 				}
 				sedmlLogger.addTaskLog(sedmlLogger.new TaskLog(simContext.getName(), TaskType.SIMCONTEXT, TaskResult.SUCCEEDED, null));
 			} catch (Exception e) {
+				String msg = "SEDML export failed for simulation '"+vcSimulation.getName()+"': " + e.getMessage();
+				logger.error(msg, e);
 				sedmlLogger.addTaskLog(sedmlLogger.new TaskLog(vcSimulation.getName(), TaskType.SIMULATION, TaskResult.FAILED, e));
-				sedmlNotesStr += e.getMessage();
+	        	if (bFromCLI) {
+	        		continue;
+	        	} else {
+					System.err.println(sedmlLogger.getLogsCSV());
+	        		throw e;
+	        	}
 			}
 			simCount++;
 		}
-		return sedmlNotesStr;
+		return;
 	}
 
 	private void createSEDMLoutputs(SimulationContext simContext, Simulation vcSimulation,
@@ -1028,11 +1035,17 @@ public class SEDMLExporter {
 			// we try to preserve symbolic values...
 			cbit.vcell.math.Constant[] cs = constantArraySpec.getConstants();
 			ArrayList<Double> values = new ArrayList<Double>();
-			Expression exp0 = cs[0].getExpression();
+			Expression expFact = null;
+			for (int i = 0; i < cs.length; i++){
+				if (!(cs[i].getExpression().isNumeric() && cs[i].getExpression().evaluateConstant() == 0)) {
+					expFact = cs[i].getExpression();
+					break;
+				}
+			}
 			boolean bFactorized = true;
 			for (int i = 0; i < cs.length; i++){
 				Expression exp = cs[i].getExpression();
-				exp = Expression.div(exp, exp0);
+				exp = Expression.div(exp, expFact);
 				exp = ExpressionUtils.simplifyUsingJSCL(exp);
 				if (!exp.isNumeric()) {
 					bFactorized = false;
@@ -1054,8 +1067,8 @@ public class SEDMLExporter {
 				rt.addRange(r);
 				// now make a FunctionalRange with expressions
 				FunctionalRange fr = new FunctionalRange("fr_"+rangeId, rangeId);
-				exp0 = Expression.mult(new Expression(rangeId), exp0);
-				createFunctionalRangeElements(fr, exp0, msm, l2gMap, modelReferenceId);
+				expFact = Expression.mult(new Expression(rangeId), expFact);
+				createFunctionalRangeElements(fr, expFact, msm, l2gMap, modelReferenceId);
 				rt.addRange(fr);
 				return fr;
 			}

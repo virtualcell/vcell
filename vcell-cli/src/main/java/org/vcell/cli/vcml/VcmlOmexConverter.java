@@ -299,41 +299,41 @@ public class VcmlOmexConverter {
 
         // the checks below are now delegated
         
-//        // ========================================================
-//		SimulationContext scArray[] = bioModel.getSimulationContexts();
-//		if (scArray != null) {
-//			MathDescription[] mathDescArray = new MathDescription[scArray.length];
-//			for (int i = 0; i < scArray.length; i++) {
-//				try {
-//					//check if all structure sizes are specified
-//					scArray[i].checkValidity();
-//					//
-//					// compute Geometric Regions if necessary
-//					//
-//					cbit.vcell.geometry.surface.GeometrySurfaceDescription geoSurfaceDescription = scArray[i].getGeometry().getGeometrySurfaceDescription();
-//					if (geoSurfaceDescription!=null && geoSurfaceDescription.getGeometricRegions()==null){
-//						cbit.vcell.geometry.surface.GeometrySurfaceUtils.updateGeometricRegions(geoSurfaceDescription);
-//					}
-//					if (scArray[i].getModel() != bioModel.getModel()) {
-//						throw new Exception("The BioModel's physiology doesn't match that for Application '"+scArray[i].getName()+"'");
-//					}
-//					//
-//					// create new MathDescription
-//					//
-//					MathDescription math = scArray[i].createNewMathMapping().getMathDescription();
-//					//
-//					// load MathDescription into SimulationContext
-//					// (BioModel is responsible for propagating this to all applicable Simulations).
-//					//
-//					scArray[i].setMathDescription(math);
-//				} catch(Exception e) {
-//					String msg = "failed to export SimulationContext "+scArray[i].getName()+": "+e.getMessage();
-//					logger.error(msg, e);
-//					throw new RuntimeException(msg, e);
-//				}
-//
-//			}
-//		}
+        // ========================================================
+		SimulationContext scArray[] = bioModel.getSimulationContexts();
+		if (scArray != null) {
+			MathDescription[] mathDescArray = new MathDescription[scArray.length];
+			for (int i = 0; i < scArray.length; i++) {
+				try {
+					//check if all structure sizes are specified
+					scArray[i].checkValidity();
+					//
+					// compute Geometric Regions if necessary
+					//
+					cbit.vcell.geometry.surface.GeometrySurfaceDescription geoSurfaceDescription = scArray[i].getGeometry().getGeometrySurfaceDescription();
+					if (geoSurfaceDescription!=null && geoSurfaceDescription.getGeometricRegions()==null){
+						cbit.vcell.geometry.surface.GeometrySurfaceUtils.updateGeometricRegions(geoSurfaceDescription);
+					}
+					if (scArray[i].getModel() != bioModel.getModel()) {
+						throw new Exception("The BioModel's physiology doesn't match that for Application '"+scArray[i].getName()+"'");
+					}
+					//
+					// create new MathDescription
+					//
+					MathDescription math = scArray[i].createNewMathMapping().getMathDescription();
+					//
+					// load MathDescription into SimulationContext
+					// (BioModel is responsible for propagating this to all applicable Simulations).
+					//
+					scArray[i].setMathDescription(math);
+				} catch(Exception e) {
+					String msg = "failed to export SimulationContext "+scArray[i].getName()+": "+e.getMessage();
+					logger.error(msg, e);
+					throw new RuntimeException(msg, e);
+				}
+
+			}
+		}
 
         List<Simulation> simsToExport = Arrays.stream(bioModel.getSimulations()).filter(simulationExportFilter).collect(Collectors.toList());
 
