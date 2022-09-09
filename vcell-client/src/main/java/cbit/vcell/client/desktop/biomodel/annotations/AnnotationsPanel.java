@@ -384,6 +384,15 @@ private JPanel getJPanelLeftTitle() {
 	gbc.fill = GridBagConstraints.HORIZONTAL;
 	gbc.weightx = 1.0;
 	jPanelLeftTitle.add(new JLabel("User defined cross-references."), gbc);
+
+	gridx++;
+	gbc = new GridBagConstraints();
+	gbc.insets = new Insets(3, 6, 3, 8);
+	gbc.gridx = gridx;
+	gbc.gridy = 0;
+	jPanelLeftTitle.add(getJButtonAddRef(), gbc);
+	getJButtonAddRef().addActionListener(eventHandler);
+
 	return jPanelLeftTitle;
 }
 private JPanel getJPanelRightTitle() {
@@ -428,35 +437,35 @@ private JPanel getJPanelIdentifierManager() {
 		
 		int gridx = 0;
 		GridBagConstraints gbc = new GridBagConstraints();
-		gbc.insets = new Insets(3, 15, 3, 0);		// top left bottom right
-		gbc.gridx = gridx;
-		gbc.gridy = 0;
-		jPanelIdentifierManager.add(new JLabel("Provider"), gbc);
+//		gbc.insets = new Insets(3, 15, 3, 0);		// top left bottom right
+//		gbc.gridx = gridx;
+//		gbc.gridy = 0;
+//		jPanelIdentifierManager.add(new JLabel("Provider"), gbc);
 		
-		gridx++;
+//		gridx++;
 		gbc = new GridBagConstraints();
 		gbc.insets = new Insets(3, 5, 3, 4);
 		gbc.gridx = gridx;
 		gbc.gridy = 0;
 		jPanelIdentifierManager.add(getJComboBoxURI(), gbc);
 		
-		gridx++;
-		gbc = new GridBagConstraints();
-		gbc.insets = new Insets(3, 5, 3, 5);
-		gbc.gridx = gridx;
-		gbc.gridy = 0;
-		jPanelIdentifierManager.add(getJButtonAddRef(), gbc);
+//		gridx++;
+//		gbc = new GridBagConstraints();
+//		gbc.insets = new Insets(3, 5, 3, 5);
+//		gbc.gridx = gridx;
+//		gbc.gridy = 0;
+//		jPanelIdentifierManager.add(getJButtonAddRef(), gbc);
 
-		gridx++;
-		gbc = new GridBagConstraints();
-		gbc.insets = new Insets(3, 0, 3, 0);
-		gbc.gridx = gridx;
-		gbc.gridy = 0;
-		gbc.fill = GridBagConstraints.HORIZONTAL;
-		gbc.weightx = 1.0;
-		jPanelIdentifierManager.add(new JLabel(""), gbc);
+//		gridx++;
+//		gbc = new GridBagConstraints();
+//		gbc.insets = new Insets(3, 0, 3, 0);
+//		gbc.gridx = gridx;
+//		gbc.gridy = 0;
+//		gbc.fill = GridBagConstraints.HORIZONTAL;
+//		gbc.weightx = 1.0;
+//		jPanelIdentifierManager.add(new JLabel(""), gbc);
 		
-		getJButtonAddRef().addActionListener(eventHandler);
+//		getJButtonAddRef().addActionListener(eventHandler);
 	}
 	return jPanelIdentifierManager;
 }
