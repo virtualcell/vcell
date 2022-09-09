@@ -1,49 +1,60 @@
 package org.vcell.util.logging;
 
 import java.io.IOException;
-import java.util.HashSet;
+import java.util.Map;
+import java.util.HashMap;
 
 public class VCellLogManager implements LogManager {
     protected static VCellLogManager instance;
-    protected HashSet<Log> logSet; 
+    protected Map<String,Log> logMap; 
 
     public static LogManager getInstance(){
         return VCellLogManager.instance == null ? instance = new VCellLogManager() : VCellLogManager.instance;
     }
 
     protected VCellLogManager(){
-        this.logSet = new HashSet<>();
+        this.logMap = new HashMap<>();
     }
 
     @Override
     public FileLog requestNewFileLog(String fileName){
-        return (FileLog)this.addLog(new FileLog(fileName));
+        if (this.logMap.containsKey(fileName)) 
+            return (FileLog)this.logMap.get(fileName);
+        return (FileLog)this.addLog(fileName, new FileLog(fileName));
     }
 
     @Override
     public StdErrLog requestStdErrLog(){
-        return (StdErrLog)this.addLog(new StdErrLog());
+        String stdErrKey = "StdErrStream";
+        if (this.logMap.containsKey(stdErrKey)) 
+            return (StdErrLog)this.logMap.get(stdErrKey);
+        return (StdErrLog)this.addLog(stdErrKey, new StdErrLog());
     }
 
     @Override
     public StdOutLog requestStdOutLog(){
-        return (StdOutLog)this.addLog(new StdOutLog());
+        String stdOutKey = "StdOutStream";
+        if (this.logMap.containsKey(stdOutKey)) 
+            return (StdOutLog)this.logMap.get(stdOutKey);
+        return (StdOutLog)this.addLog(stdOutKey, new StdOutLog());
     }
 
     @Override
     public Log4JLog requestLog4JLog(Class<?> clazz){
-        return (Log4JLog)this.addLog(new Log4JLog(clazz));
+        if (this.logMap.containsKey(clazz.getName())) 
+            return (Log4JLog)this.logMap.get(clazz.getName());
+        return (Log4JLog)this.addLog(clazz.getName(), new Log4JLog(clazz));
     }
 
     // Note: uses AutoClose
     public void close() throws IOException {
-        for (Log l : this.logSet) 
+        for (Log l : this.logMap.values()) 
             l.close();
-        logSet.clear();
+        logMap.clear();
     }
 
-    protected Log addLog(Log log){
-        this.logSet.add(log);
+    protected Log addLog(String name, Log log){
+        this.logMap.put(name, log);
         return log;
     }
 }
