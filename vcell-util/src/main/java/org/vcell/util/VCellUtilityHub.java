@@ -61,7 +61,14 @@ public class VCellUtilityHub {
     // Getters
 
     public static LogManager getLogManager(){
-        if (instance == null) throw new RuntimeException("VCellUtilityHub not started.");
+        if (instance == null) {
+            // Attempt to auto-start in standard mode
+            try {
+                VCellUtilityHub.startup(MODE.STANDARD);
+            } catch (Exception e){
+                throw new RuntimeException("VCellUtilityHub not started, and unable to be started.", e);
+            }
+        } 
         return VCellUtilityHub.logManager;
     }
 
