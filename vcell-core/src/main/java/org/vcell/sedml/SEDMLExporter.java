@@ -1568,6 +1568,10 @@ public class SEDMLExporter {
 
 	}
 
+	public SEDMLLogger getSedmlLogger() {
+		return sedmlLogger;
+	}
+
 }
 
 

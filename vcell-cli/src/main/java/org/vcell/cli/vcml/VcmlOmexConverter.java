@@ -287,48 +287,53 @@ public class VcmlOmexConverter {
         // Create biomodel
         BioModel bioModel = XmlHelper.XMLToBioModel(new XMLSource(vcmlFilePath));
         
-        int numSimulations = bioModel.getNumSimulations();
-        if(outputBaseDir != null && numSimulations == 0) {
-			writeSimErrorList(outputBaseDir, vcmlName + " has no simulations.", bForceLogFiles);
-        	return false;
-        }
+        // Simulations/Tasks are optional in SEDML
+        // If none, we should still export the SimContexts as Models
+        
+//        int numSimulations = bioModel.getNumSimulations();
+//        if(outputBaseDir != null && numSimulations == 0) {
+//			writeSimErrorList(outputBaseDir, vcmlName + " has no simulations.", bForceLogFiles);
+//        	return false;
+//        }
         bioModel.refreshDependencies();
 
-        // ========================================================
-		SimulationContext scArray[] = bioModel.getSimulationContexts();
-		if (scArray != null) {
-			MathDescription[] mathDescArray = new MathDescription[scArray.length];
-			for (int i = 0; i < scArray.length; i++) {
-				try {
-					//check if all structure sizes are specified
-					scArray[i].checkValidity();
-					//
-					// compute Geometric Regions if necessary
-					//
-					cbit.vcell.geometry.surface.GeometrySurfaceDescription geoSurfaceDescription = scArray[i].getGeometry().getGeometrySurfaceDescription();
-					if (geoSurfaceDescription!=null && geoSurfaceDescription.getGeometricRegions()==null){
-						cbit.vcell.geometry.surface.GeometrySurfaceUtils.updateGeometricRegions(geoSurfaceDescription);
-					}
-					if (scArray[i].getModel() != bioModel.getModel()) {
-						throw new Exception("The BioModel's physiology doesn't match that for Application '"+scArray[i].getName()+"'");
-					}
-					//
-					// create new MathDescription
-					//
-					MathDescription math = scArray[i].createNewMathMapping().getMathDescription();
-					//
-					// load MathDescription into SimulationContext
-					// (BioModel is responsible for propagating this to all applicable Simulations).
-					//
-					scArray[i].setMathDescription(math);
-				} catch(Exception e) {
-					String msg = "failed to export SimulationContext "+scArray[i].getName()+": "+e.getMessage();
-					logger.error(msg, e);
-					throw new RuntimeException(msg, e);
-				}
-
-			}
-		}
+        // the checks below are now delegated
+        
+//        // ========================================================
+//		SimulationContext scArray[] = bioModel.getSimulationContexts();
+//		if (scArray != null) {
+//			MathDescription[] mathDescArray = new MathDescription[scArray.length];
+//			for (int i = 0; i < scArray.length; i++) {
+//				try {
+//					//check if all structure sizes are specified
+//					scArray[i].checkValidity();
+//					//
+//					// compute Geometric Regions if necessary
+//					//
+//					cbit.vcell.geometry.surface.GeometrySurfaceDescription geoSurfaceDescription = scArray[i].getGeometry().getGeometrySurfaceDescription();
+//					if (geoSurfaceDescription!=null && geoSurfaceDescription.getGeometricRegions()==null){
+//						cbit.vcell.geometry.surface.GeometrySurfaceUtils.updateGeometricRegions(geoSurfaceDescription);
+//					}
+//					if (scArray[i].getModel() != bioModel.getModel()) {
+//						throw new Exception("The BioModel's physiology doesn't match that for Application '"+scArray[i].getName()+"'");
+//					}
+//					//
+//					// create new MathDescription
+//					//
+//					MathDescription math = scArray[i].createNewMathMapping().getMathDescription();
+//					//
+//					// load MathDescription into SimulationContext
+//					// (BioModel is responsible for propagating this to all applicable Simulations).
+//					//
+//					scArray[i].setMathDescription(math);
+//				} catch(Exception e) {
+//					String msg = "failed to export SimulationContext "+scArray[i].getName()+": "+e.getMessage();
+//					logger.error(msg, e);
+//					throw new RuntimeException(msg, e);
+//				}
+//
+//			}
+//		}
 
         List<Simulation> simsToExport = Arrays.stream(bioModel.getSimulations()).filter(simulationExportFilter).collect(Collectors.toList());
 
@@ -390,12 +395,16 @@ public class VcmlOmexConverter {
         SEDMLExporter sedmlExporter = new SEDMLExporter(bioModel, sedmlLevel, sedmlVersion, simsToExport);
         SEDMLDocument sedmlDocument = sedmlExporter.getSEDMLDocument(outputDir, vcmlName,
 				modelFormat, true, bValidate);
-        SedML sedmlModel = sedmlDocument.getSedMLModel();
-        if(sedmlModel.getModels().size() == 0) {
+        
+//        SedML sedmlModel = sedmlDocument.getSedMLModel();
+//        if(sedmlModel.getModels().size() == 0) {
+        
+        if (sedmlExporter.getSedmlLogger().hasErrors()) {
+        
             File dir = new File(outputDir);
             String[] files = dir.list();
             removeOtherFiles(outputDir, files);
-			writeSimErrorList(outputBaseDir, vcmlName + ": the sedm is empty.", bForceLogFiles);
+			writeSimErrorList(outputBaseDir, vcmlName + "\n" + sedmlExporter.getSedmlLogger().getLogsCSV(), bForceLogFiles);
 //        	String allSolverNames = "";
 //        	for(String solverName : solverNames) {
 //        		allSolverNames += (solverName + " ");
