@@ -79,6 +79,10 @@ import org.vcell.sbml.SimSpec;
 import org.vcell.sbml.UnsupportedSbmlExportException;
 import org.vcell.sbml.vcell.SBMLExporter;
 import org.vcell.sbml.vcell.StructureSizeSolver;
+import org.vcell.sedml.SEDMLConversion;
+import org.vcell.sedml.SEDMLLogger.TaskLog;
+import org.vcell.sedml.TaskResult;
+import org.vcell.sedml.TaskType;
 import org.vcell.util.FileUtils;
 import org.vcell.util.Pair;
 import org.vcell.util.TokenMangler;
@@ -168,22 +172,22 @@ public class SEDMLExporter {
 	private String sbmlLanguageURN = SUPPORTED_LANGUAGE.SBML_GENERIC.getURN();
 	private String vcmlLanguageURN = SUPPORTED_LANGUAGE.VCELL_GENERIC.getURN();
 	
+	private SEDMLLogger sedmlLogger = null;
+	
 	public SEDMLExporter(BioModel argBiomodel, int argLevel, int argVersion, List<Simulation> argSimsToExport) {
 		super();
 		this.vcBioModel = argBiomodel;
 		this.sedmlLevel = argLevel;
 		this.sedmlVersion = argVersion;
 		this.simsToExport = argSimsToExport;
+		this.sedmlLogger = new SEDMLLogger(argBiomodel.getName(), SEDMLConversion.EXPORT);
 	}
 
-	public SEDMLDocument getSEDMLFile0(String sPath, String sBaseFileName, ModelFormat modelFormat, 
+	public SEDMLDocument getSEDMLDocument(String sPath, String sBaseFileName, ModelFormat modelFormat, 
 				boolean bFromCLI, boolean bRoundTripSBMLValidation) {
 
 		// Create an SEDMLDocument and create the SEDMLModel from the document, so that other details can be added to it in translateBioModel()
 		SEDMLDocument sedmlDocument = new SEDMLDocument(this.sedmlLevel, this.sedmlVersion);
-//		sedmlDocument.getSedMLModel().setAdditionalNamespaces(Arrays.asList(new Namespace[] { 
-//                Namespace.getNamespace(SEDMLTags.SBML_NS_PREFIX, SEDMLTags.SBML_NS_L2V4)
-//        }));
 
 		final String SBML_NS = "http://www.sbml.org/sbml/level3/version2/core";
 		final String SBML_NS_PREFIX = "sbml";
@@ -210,21 +214,11 @@ public class SEDMLExporter {
 		}
 		sedmlModel = sedmlDocument.getSedMLModel();
 		sedmlModel.setAdditionalNamespaces(nsList);
-
 		
 		translateBioModelToSedML(sPath, sBaseFileName, modelFormat, bFromCLI, bRoundTripSBMLValidation);
 		
-		int models = sedmlModel.getModels().size();
-		int tasks = sedmlModel.getTasks().size();
-		int sims = sedmlModel.getSimulations().size();
 		return sedmlDocument;
 	}
-	public String getSEDMLFile(String sPath, String sBaseFileName, ModelFormat modelFormat, boolean bFromCLI, boolean bRoundTripSBMLValidation) {
-		SEDMLDocument doc = getSEDMLFile0(sPath, sBaseFileName, modelFormat, bFromCLI, bRoundTripSBMLValidation);
-		return doc.writeDocumentToString();
-	}
-
-
 	private void translateBioModelToSedML(String savePath, String sBaseFileName, ModelFormat modelFormat,
 				boolean bFromCLI, boolean bRoundTripSBMLValidation) {		// true if invoked for omex export, false if for sedml
 		sbmlFilePathStrAbsoluteList.clear();
@@ -233,67 +227,79 @@ public class SEDMLExporter {
 			int simContextCnt = 0;	// for model count, task subcount
 			String sedmlNotesStr = "";
 
-			for (SimulationContext simContext : simContexts) {
-				if (modelFormat == ModelFormat.SBML_VCML) {
-					// TODO
-					throw new RuntimeException("Hybrid SBML_VCML export not yet implemented");
-				}
-				
-				if (modelFormat == ModelFormat.SBML) {
-					boolean sbmlExportFailed = false;
+			if (modelFormat == ModelFormat.SBML_VCML) {
+				// TODO
+				throw new RuntimeException("Hybrid SBML_VCML export not yet implemented");
+			}
+			if (modelFormat == ModelFormat.VCML) {
+				// TODO
+				throw new RuntimeException("VCML export not yet implemented");
+				// methods below are stubs
+//				writeModelVCML(savePath, sBaseFileName, bFromCLI);
+//				exportSimulationsVCML(simContextCnt, simContext);
+			}
+			if (modelFormat == ModelFormat.SBML) {
+				for (SimulationContext simContext : simContexts) {
 					// Export the application itself to SBML, with default values (overrides will become model changes or repeated tasks)
 					String sbmlString = null;
-					boolean isSpatial = simContext.getGeometry().getDimension() > 0 ? true : false;
 					Map<Pair <String, String>, String> l2gMap = null;		// local to global translation map
-	
+					MathSymbolMapping mathSymbolMapping = null;
+					boolean sbmlExportFailed = false;
+					Exception simContextException = null;
 					try {
 						SBMLExporter.validateSimulationContextSupport(simContext);
+						boolean isSpatial = simContext.getGeometry().getDimension() > 0 ? true : false;
 						Pair <String, Map<Pair <String, String>, String>> pair = XmlHelper.exportSBMLwithMap(vcBioModel, 3, 2, 0, isSpatial, simContext, null, bRoundTripSBMLValidation);
 						sbmlString = pair.one;
 						l2gMap = pair.two;
+						writeModelSBML(savePath, sBaseFileName, sbmlString, simContext);
+						MathMapping mathMapping = simContext.createNewMathMapping();
+						mathSymbolMapping = mathMapping.getMathSymbolMapping();
+						sedmlLogger.addTaskLog(sedmlLogger.new TaskLog(simContext.getName(), TaskType.SIMCONTEXT, TaskResult.SUCCEEDED, null));
 					} catch (Exception e) {
 						String msg = "SBML export failed for simContext '"+simContext.getName()+"': " + e.getMessage();
 						logger.error(msg, e);
 						sbmlExportFailed = true;
+						simContextException = e;
+						sedmlLogger.addTaskLog(sedmlLogger.new TaskLog(simContext.getName(), TaskType.SIMCONTEXT, TaskResult.FAILED, e));
 					}
 
 					if (!sbmlExportFailed) {
-						writeModelSBML(savePath, sBaseFileName, sbmlString, simContext);
-						sedmlNotesStr += " "+exportSimulationsSBML(simContextCnt, simContext, sbmlString, l2gMap);
+						// simContext was exported succesfully, now we try to export its simulations
+						sedmlNotesStr = exportSimulationsSBML(simContextCnt, simContext, sbmlString, l2gMap, mathSymbolMapping);
 					} else {
 						if (bFromCLI) {
 							continue;
 						} else {
-							throw new Exception ("SimContext '"+simContext.getName()+"' is not compatible with SBML export");
+							System.err.println(sedmlLogger.getLogsCSV());
+							throw new Exception ("SimContext '"+simContext.getName()+"' could not be exported to SBML :" +simContextException.getMessage());
 						}
 					}			
-				}
-
-				if (modelFormat == ModelFormat.VCML) {
-					writeModelVCML(savePath, sBaseFileName, bFromCLI);
-					exportSimulationsVCML(simContextCnt, simContext);
-				}
-
-				// if sedmlNotesStr is not empty, there were some Simulations that could not be exported to SEDML (eg., non-spatial stochastic app sim with histogram option)
-	        	if (sedmlNotesStr.length() > 0) {
-		        	sedmlNotesStr = "\n\tThe following Simulations in the VCell model were not exported to SEDML : " + sedmlNotesStr;
-	        		logger.error(sedmlNotesStr);
-		        	if (bFromCLI) {
-		        		continue;
-		        	} else {
-		        		throw new Exception(sedmlNotesStr);
+					// if sedmlNotesStr is not empty, there were some Simulations that could not be exported to SEDML (eg., non-spatial stochastic app sim with histogram option)
+		        	if (sedmlNotesStr.length() > 0) {
+			        	sedmlNotesStr = "\n\tThe following Simulations in the VCell model were not exported to SEDML : " + sedmlNotesStr;
+		        		logger.error(sedmlNotesStr);
+			        	if (bFromCLI) {
+			        		continue;
+			        	} else {
+							System.err.println(sedmlLogger.getLogsCSV());
+			        		throw new Exception(sedmlNotesStr);
+			        	}
 		        	}
-	        	}
-				simContextCnt++;
+					simContextCnt++;
+				}
 			}
-			
-       	if(sedmlModel.getModels() != null && sedmlModel.getModels().size() > 0) {
-        		logger.trace("Number of models in the sedml is " + sedmlModel.getModels().size());
-        	}
-	
-
+	       	if(sedmlModel.getModels() != null && sedmlModel.getModels().size() > 0) {
+	       		logger.trace("Number of models in the sedml is " + sedmlModel.getModels().size());
+	       	}
+	       	if (sedmlLogger.hasErrors()) {
+				System.err.println(sedmlLogger.getLogsCSV());       		
+	       	} else {
+	       		System.out.println(sedmlLogger.getLogsCSV());
+	       	}
 		} catch (Exception e) {
-			throw new RuntimeException("Error adding model to SEDML document : " + e.getMessage(), e);
+			// this only happens if not from CLI, we need to pass this down the calling thread
+			throw new RuntimeException("Error adding model to SEDML document : " + e.getMessage());
 		}
 	}
 
@@ -414,8 +420,7 @@ public class SEDMLExporter {
 	}
 	
 	private String exportSimulationsSBML(int simContextCnt, SimulationContext simContext,
-			String sbmlString, Map<Pair<String, String>, String> l2gMap)
-			throws ExpressionBindingException, ExpressionException, DivideByZeroException, IOException, SbmlException, MappingException, MathException, MatrixException, ModelException {
+			String sbmlString, Map<Pair<String, String>, String> l2gMap, MathSymbolMapping mathSymbolMapping) {
 		// -------
 		// create sedml objects (simulation, task, datagenerators, report, plot) for each simulation in simcontext 
 		// -------	
@@ -424,49 +429,53 @@ public class SEDMLExporter {
 		simCount = 0;
 		overrideCount = 0;
 		String sedmlNotesStr = "";
-		MathMapping mathMapping = simContext.createNewMathMapping();
-		MathSymbolMapping mathSymbolMapping = mathMapping.getMathSymbolMapping();
+		if (simContext.getSimulations().length == 0) return sedmlNotesStr;
 		for (Simulation vcSimulation : simContext.getSimulations()) {
-			// if we have a hash containing a subset of simulations to export
-			// skip simulations not present in hash
-			if (simsToExport != null && !simsToExport.contains(vcSimulation)) continue;
+			try {
+				// if we have a hash containing a subset of simulations to export
+				// skip simulations not present in hash
+				if (simsToExport != null && !simsToExport.contains(vcSimulation)) continue;
 
-			// 1 -------> check compatibility
-			// if simContext is non-spatial stochastic, check if sim is histogram; if so, skip it, it can't be encoded in sedml 1.x
-			SolverTaskDescription simTaskDesc = vcSimulation.getSolverTaskDescription();
-			if (simContext.getGeometry().getDimension() == 0 && simContext.isStoch()) {
-				long numOfTrials = simTaskDesc.getStochOpt().getNumOfTrials();
-				if (numOfTrials > 1) {
-					String msg = "\n\t" + simContextName + " ( " + vcSimulation.getName() + " ) : export of non-spatial stochastic simulation with histogram option to SEDML not supported at this time.";
-					sedmlNotesStr += msg;
-					continue;
+				// 1 -------> check compatibility
+				// if simContext is non-spatial stochastic, check if sim is histogram; if so, skip it, it can't be encoded in sedml 1.x
+				SolverTaskDescription simTaskDesc = vcSimulation.getSolverTaskDescription();
+				if (simContext.getGeometry().getDimension() == 0 && simContext.isStoch()) {
+					long numOfTrials = simTaskDesc.getStochOpt().getNumOfTrials();
+					if (numOfTrials > 1) {
+						String msg = "\n\t" + simContextName + " ( " + vcSimulation.getName() + " ) : export of non-spatial stochastic simulation with histogram option to SEDML not supported at this time.";
+						throw new Exception(msg);
+					}
 				}
-			}
-			
-			// 2 ------->
-			// create sedmlSimulation (UniformTimeCourse) with specs and algorithm parameters
-			UniformTimeCourse utcSim = createSEDMLsim(simTaskDesc);
+				
+				// 2 ------->
+				// create sedmlSimulation (UniformTimeCourse) with specs and algorithm parameters
+				UniformTimeCourse utcSim = createSEDMLsim(simTaskDesc);
 
-			// 3 ------->
-			// create Tasks
-			Set<String> dataGeneratorTasksSet = new LinkedHashSet<>();	// tasks not referenced as subtasks by any other (repeated) task; only these will have data generators
-			MathOverrides mathOverrides = new MathOverrides(vcSimulation, vcSimulation.getMathOverrides()); // need to clone so we can manipulate expressions
-			createSEDMLtasks(simContextCnt, l2gMap, simContextName, simContextId, mathSymbolMapping,
-					vcSimulation, utcSim, dataGeneratorTasksSet, mathOverrides);
-			
-			// 4 ------->
-			// Create DataGenerators
+				// 3 ------->
+				// create Tasks
+				Set<String> dataGeneratorTasksSet = new LinkedHashSet<>();	// tasks not referenced as subtasks by any other (repeated) task; only these will have data generators
+				MathOverrides mathOverrides = new MathOverrides(vcSimulation, vcSimulation.getMathOverrides()); // need to clone so we can manipulate expressions
+				createSEDMLtasks(simContextCnt, l2gMap, simContextName, simContextId, mathSymbolMapping,
+						vcSimulation, utcSim, dataGeneratorTasksSet, mathOverrides);
+				
+				// 4 ------->
+				// Create DataGenerators
 
-			List<DataGenerator> dataGeneratorsOfSim = createSEDMLdatagens(sbmlString, dataGeneratorTasksSet);
+				List<DataGenerator> dataGeneratorsOfSim = createSEDMLdatagens(sbmlString, dataGeneratorTasksSet);
 
-			// 5 ------->
-			// create Report and Plot
+				// 5 ------->
+				// create Report and Plot
 
-			for(String taskRef : dataGeneratorTasksSet) {
-				createSEDMLoutputs(simContext, vcSimulation, dataGeneratorsOfSim, taskRef);
+				for(String taskRef : dataGeneratorTasksSet) {
+					createSEDMLoutputs(simContext, vcSimulation, dataGeneratorsOfSim, taskRef);
+				}
+				sedmlLogger.addTaskLog(sedmlLogger.new TaskLog(simContext.getName(), TaskType.SIMCONTEXT, TaskResult.SUCCEEDED, null));
+			} catch (Exception e) {
+				sedmlLogger.addTaskLog(sedmlLogger.new TaskLog(vcSimulation.getName(), TaskType.SIMULATION, TaskResult.FAILED, e));
+				sedmlNotesStr += e.getMessage();
 			}
 			simCount++;
-		} // end - for 'sims'
+		}
 		return sedmlNotesStr;
 	}
 
@@ -1330,30 +1339,6 @@ public class SEDMLExporter {
 //		return kiSAOId;
 //	}
 
-	public static ASTNode getFormulaFromExpression(Expression expression) { 
-		// Convert expression into MathML string
-		String expMathMLStr = null;
-
-		try {
-			expMathMLStr = cbit.vcell.parser.ExpressionMathMLPrinter.getMathML(expression, false);
-		} catch (java.io.IOException e) {
-			throw new RuntimeException("Error converting expression to MathML string :" + e.getMessage(), e);
-		} catch (cbit.vcell.parser.ExpressionException e1) {
-			throw new RuntimeException("Error converting expression to MathML string :" + e1.getMessage(), e1);
-		}
-
-		// Use libSBMl routines to convert MathML string to MathML document and a libSBML-readable formula string
-		MathMLReader mmlr = new MathMLReader();
-		ASTNode mathNode = null;
-		try {
-			mathNode = mmlr.parseMathMLFromString(expMathMLStr);
-		} catch (IOException e) {
-			throw new RuntimeException("Error converting MathML string to ASTNode:" + e.getMessage(), e);
-		}
-		return mathNode;
-//		return mathNode.deepCopy();
-	}
-	
 	public void createManifest(String savePath, String fileName) {
 		
 		final String xmlnsAttribute = "http://identifiers.org/combine.specifications/omex-manifest";	 
