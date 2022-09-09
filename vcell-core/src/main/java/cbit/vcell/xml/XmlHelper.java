@@ -227,16 +227,19 @@ public class XmlHelper {
 				// TODO: make unit change optional
 				// TODO: (maybe) support more than one version?
 				BioModel bm = simContext.getBioModel();
-				BioModel sbmlPreferredUnitsBM = ModelUnitConverter.createBioModelWithSBMLUnitSystem(bm);
-				if(sbmlPreferredUnitsBM == null) {
-					throw new RuntimeException("Unable to clone BioModel: " + bm.getName());
+				BioModel sbmlPreferredUnitsBM = null;
+				if (!bm.getModel().getUnitSystem().compareEqual(ModelUnitConverter.createSbmlModelUnitSystem())) {
+					sbmlPreferredUnitsBM = ModelUnitConverter.createBioModelWithSBMLUnitSystem(bm);
+					if(sbmlPreferredUnitsBM == null) {
+						throw new RuntimeException("Unable to clone BioModel: " + bm.getName());
+					}
+				} else {
+					sbmlPreferredUnitsBM = bm;
 				}
-
-				// clone BioModel
-				BioModel clonedBioModel = cloneBioModel(sbmlPreferredUnitsBM);
+				// we assume BioModel was cloned !!
 				// extract the simContext from new Biomodel. Apply overrides to *this* modified simContext
-				SimulationContext simContextFromClonedBioModel = clonedBioModel.getSimulationContext(simContext.getName());
-				SimulationContext clonedSimContext = applyOverridesForSBML(clonedBioModel, simContextFromClonedBioModel, simJob);
+				SimulationContext simContextFromClonedBioModel = sbmlPreferredUnitsBM.getSimulationContext(simContext.getName());
+				SimulationContext clonedSimContext = applyOverridesForSBML(sbmlPreferredUnitsBM, simContextFromClonedBioModel, simJob);
 				// extract sim (in simJob) from modified Biomodel, if not null
 				SimulationJob modifiedSimJob = null;
 				if (simJob != null) {
