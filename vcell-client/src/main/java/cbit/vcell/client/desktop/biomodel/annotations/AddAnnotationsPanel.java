@@ -1,6 +1,7 @@
 package cbit.vcell.client.desktop.biomodel.annotations;
 
 import cbit.vcell.biomodel.meta.MiriamManager;
+import cbit.vcell.biomodel.meta.VCMetaDataMiriamManager;
 import org.vcell.sybil.models.miriam.MIRIAMQualifier;
 import org.xml.sax.SAXException;
 
@@ -155,7 +156,6 @@ public class AddAnnotationsPanel extends JFrame implements ActionListener {
         containsBox = new JComboBox<>();
         containsBox.addItem("contains");
         containsBox.addItem("exact");
-        containsBox.addItem("suggest");
         leftPanel.add(containsBox, sGbc);
 
         //adding search bar
@@ -282,14 +282,19 @@ public class AddAnnotationsPanel extends JFrame implements ActionListener {
     }
 
     private void getSearchResults() {
+        //clear description area and search list before new
+        descriptionArea.setText(null);
+//        list.removeAll();
         DefaultListModel<String> dlm = new DefaultListModel<>();
         String searchTerm = searchBar.getText();
         BioPortalSearch bioPortalSearch = new BioPortalSearch();
 
 //        String bioPortalDatabases = Objects.equals(ontologiesBox.getSelectedItem(), "All Selected") ?
 //                "GO,NCIT,CHEBI,FMA,BTO" : Objects.requireNonNull(ontologiesBox.getSelectedItem()).toString();
-        MiriamManager.DataType dataType = (MiriamManager.DataType) annotationsPanel.getJComboBoxURI().getSelectedItem();
-        String bioPortalDatabases = dataType.getDataTypeName();
+        //MiriamManager.DataType dataType = (MiriamManager.DataType) annotationsPanel.getJComboBoxURI().getSelectedItem();
+        VCMetaDataMiriamManager.VCMetaDataDataType mdt = (VCMetaDataMiriamManager.VCMetaDataDataType)annotationsPanel.getJComboBoxURI().getSelectedItem();
+//        String bioPortalDatabases = dataType.getDataTypeName();
+        String bioPortalDatabases = mdt.getDataTypeName();
 
         boolean exactMatch = Objects.equals(containsBox.getSelectedItem(), "exact");
 
