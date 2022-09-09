@@ -1,9 +1,14 @@
 package org.vcell.util;
 
-import org.vcell.util.logging.CLILogManager;
-import org.vcell.util.logging.LogManager;
-import org.vcell.util.logging.VCellLogManager;
+import org.vcell.util.recording.CLIRecordManager;
+import org.vcell.util.recording.RecordManager;
+import org.vcell.util.recording.VCellRecordManager;
 
+/**
+ * Class to hold all singletons and resources needed across VCell.
+ * 
+ * @since VCell 7.4.0.62
+ */
 public class VCellUtilityHub {
 
     /*
@@ -14,7 +19,9 @@ public class VCellUtilityHub {
      * - (optional) Add relevant closing calls to shutdown  
      */
 
-
+    /**
+     * Class that contains all the modes VCell can start in.
+     */
     public enum MODE {
         CLI,STANDARD
     }
@@ -23,14 +30,23 @@ public class VCellUtilityHub {
     private static VCellUtilityHub instance;
 
     // Utility declarations
-    private static LogManager logManager;
+    private static RecordManager logManager;
 
     // Methods
+    /**
+     * Starts {@code VCellUtilityHub} using the provided {@code VCellUtilityHub.MODE} as a blueprint for how to construct the underlying singletons and resources.
+     * @param mode the mode in which VCell was launched.
+     */
     public static void startup(MODE mode){
         if (instance == null) instance = new VCellUtilityHub(mode);
         else throw new RuntimeException("VCellUtilityHub already started.");
     }
 
+    /**
+     * Closes all underlying singletons and resources.
+     * 
+     * @throws Exception if closing anything produced errors
+     */
     public static void shutdown() throws Exception {
         logManager.close();
     }
@@ -51,16 +67,20 @@ public class VCellUtilityHub {
     // Starters
 
     private void startVCellCLI(){
-        VCellUtilityHub.logManager = CLILogManager.getInstance();
+        VCellUtilityHub.logManager = CLIRecordManager.getInstance();
     }
 
     private void startVCellStandard(){
-        VCellUtilityHub.logManager = VCellLogManager.getInstance();
+        VCellUtilityHub.logManager = VCellRecordManager.getInstance();
     }
 
     // Getters
-
-    public static LogManager getLogManager(){
+    /** 
+     * Method to get the singleton instance of {@code LogManager} selected for the requested mode of VCell
+     * 
+     * @return The {@code LogManager} for current execution of VCell
+     */
+    public static RecordManager getLogManager(){
         if (instance == null) {
             // Attempt to auto-start in standard mode
             try {
@@ -71,5 +91,4 @@ public class VCellUtilityHub {
         } 
         return VCellUtilityHub.logManager;
     }
-
 }

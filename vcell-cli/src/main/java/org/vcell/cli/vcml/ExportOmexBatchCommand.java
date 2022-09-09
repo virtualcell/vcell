@@ -8,6 +8,9 @@ import org.vcell.util.DataAccessException;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
@@ -15,6 +18,9 @@ import java.util.concurrent.Callable;
 
 @Command(name = "export-omex-batch", description = "convert directory of VCML documents to COMBINE archives (.omex)")
 public class ExportOmexBatchCommand implements Callable<Integer> {
+
+    private final static Logger logger = LogManager.getLogger(ExportOmexBatchCommand.class);
+
     @Option(names = { "-m", "--outputModelFormat" }, defaultValue = "SBML", description = "expecting SBML or VCML")
     private ModelFormat outputModelFormat = ModelFormat.SBML;
 
@@ -46,9 +52,9 @@ public class ExportOmexBatchCommand implements Callable<Integer> {
     private boolean help;
 
     public Integer call() {
-        CLILogger logger = null;
+        CLILogger cliLogger = null;
         try {
-            logger = new CLILogger(outputFilePath); // CLILogger will throw an execption if our output dir isn't valid.
+            cliLogger = new CLILogger(outputFilePath); // CLILogger will throw an execption if our output dir isn't valid.
             logger.debug("Batch export of omex files requested");
             PropertyLoader.loadProperties();
             if (inputFilePath == null || !inputFilePath.exists() || !inputFilePath.isDirectory()){
@@ -59,7 +65,7 @@ public class ExportOmexBatchCommand implements Callable<Integer> {
                 VcmlOmexConverter.queryVCellDbPublishedModels(cliDatabaseService, outputFilePath, bForceLogFiles);
 
                 VcmlOmexConverter.convertFiles(cliDatabaseService, inputFilePath, outputFilePath,
-                        outputModelFormat, logger, bHasDataOnly, bMakeLogsOnly, bNonSpatialOnly, bForceLogFiles, bValidateOmex);
+                        outputModelFormat, cliLogger, bHasDataOnly, bMakeLogsOnly, bNonSpatialOnly, bForceLogFiles, bValidateOmex);
             } catch (IOException | SQLException | DataAccessException e) {
                 e.printStackTrace(System.err);
             }

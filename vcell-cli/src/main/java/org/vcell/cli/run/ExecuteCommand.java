@@ -9,6 +9,9 @@ import org.vcell.util.exe.Executable;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.core.LoggerContext;
+import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Level;
 
 import java.io.File;
@@ -17,7 +20,7 @@ import java.util.concurrent.Callable;
 @Command(name = "execute", description = "run .vcml or .omex files via Python API")
 public class ExecuteCommand implements Callable<Integer> {
 
-    //private final static Logger logger = org.apache.logging.log4j.LogManager.getLogger(ExecuteCommand.class);
+    private final static Logger logger = org.apache.logging.log4j.LogManager.getLogger(ExecuteCommand.class);
 
     @Option(names = { "-i", "--inputFilePath" })
     private File inputFilePath;
@@ -56,16 +59,21 @@ public class ExecuteCommand implements Callable<Integer> {
 
 
     public Integer call() {
-        CLILogger logger = null;
+        CLILogger cliLogger = null;
         try {
-            logger = new CLILogger(outputFilePath); // CLILogger will throw an execption if our output dir isn't valid.
-            Level logLevel = logger.getLog4JLogLevel();
+            cliLogger = new CLILogger(outputFilePath); // CLILogger will throw an execption if our output dir isn't valid.
+
+            Level logLevel = logger.getLevel();
             if (!bQuiet && bDebug) {
                 logLevel = Level.DEBUG;
             } else if (bQuiet) {
                 logLevel = Level.OFF;
             }
-            logger.setLog4JLogLevel(logLevel);
+            
+            LoggerContext config = (LoggerContext)(LogManager.getContext(false));
+            config.getConfiguration().getLoggerConfig(LogManager.getLogger("org.vcell").getName()).setLevel(logLevel);
+            config.getConfiguration().getLoggerConfig(LogManager.getLogger("cbit").getName()).setLevel(logLevel);
+            config.updateLoggers();
 
             logger.debug("Execution mode requested");
 
@@ -93,15 +101,15 @@ public class ExecuteCommand implements Callable<Integer> {
             logger.info("Beginning execution");
             if (inputFilePath.isDirectory()) {
                 logger.debug("Batch mode requested");
-                ExecuteImpl.batchMode(inputFilePath, outputFilePath, logger, bKeepTempFiles, bExactMatchOnly);
+                ExecuteImpl.batchMode(inputFilePath, outputFilePath, cliLogger, bKeepTempFiles, bExactMatchOnly);
             } else {
                 logger.debug("Single mode requested");
                 File archiveToProcess = inputFilePath;
 
                 if (archiveToProcess.getName().endsWith("vcml")) {
-                    ExecuteImpl.singleExecVcml(archiveToProcess, outputFilePath, logger);
+                    ExecuteImpl.singleExecVcml(archiveToProcess, outputFilePath, cliLogger);
                 } else { // archiveToProcess.getName().endsWith("omex")
-                    ExecuteImpl.singleExecOmex(archiveToProcess, outputFilePath, logger, bKeepTempFiles, bExactMatchOnly, bEncapsulateOutput);
+                    ExecuteImpl.singleExecOmex(archiveToProcess, outputFilePath, cliLogger, bKeepTempFiles, bExactMatchOnly, bEncapsulateOutput);
                 }
             }
 

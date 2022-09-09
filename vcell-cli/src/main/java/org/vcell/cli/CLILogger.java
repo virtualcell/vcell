@@ -5,16 +5,13 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import org.vcell.util.logging.*;
-import org.apache.logging.log4j.Level;
-
 import org.vcell.util.VCellUtilityHub;
+import org.vcell.util.recording.*;
 
-public class CLILogger extends Logger implements CLILoggable {
+public class CLILogger extends Recorder implements CLILoggable {
     protected final static boolean DEFAULT_SHOULD_PRINT_LOG_FILES = false, DEFAULT_SHOULD_FLUSH_LOG_FILES = false;
     protected boolean shouldPrintLogFiles, shouldFlushLogFiles;
-    protected FileLog detailedErrorLog, fullSuccessLog, errorLog, detailedResultsLog, spatialLog, importErrorLog;
-    protected Log4JLog logger;
+    protected FileRecord detailedErrorLog, fullSuccessLog, errorLog, detailedResultsLog, spatialLog, importErrorLog;
     protected File outputDirectory;
 
     // Note: this constructor is not public
@@ -77,79 +74,20 @@ public class CLILogger extends Logger implements CLILoggable {
         }
         this.outputDirectory = outputDirectory;
 
-        LogManager logManager = VCellUtilityHub.getLogManager();
+        RecordManager logManager = VCellUtilityHub.getLogManager();
         this.detailedErrorLog = logManager.requestNewFileLog(Paths.get(this.outputDirectory.getAbsolutePath(), "detailedErrorLog.txt").toString());
         this.fullSuccessLog = logManager.requestNewFileLog(Paths.get(this.outputDirectory.getAbsolutePath(), "fullSuccessLog.txt").toString());
         this.errorLog = logManager.requestNewFileLog(Paths.get(this.outputDirectory.getAbsolutePath(), "errorLog.txt").toString());
         this.detailedResultsLog = logManager.requestNewFileLog(Paths.get(this.outputDirectory.getAbsolutePath(), "detailedResultLog.txt").toString());
         this.spatialLog = logManager.requestNewFileLog(Paths.get(this.outputDirectory.getAbsolutePath(), "hasSpatialLog.txt").toString());
         this.importErrorLog = logManager.requestNewFileLog(Paths.get(this.outputDirectory.getAbsolutePath(), "importErrorLog.txt").toString());
-        this.logger = logManager.requestLog4JLog(CLILogger.class);
         
         this.createHeader();
     }
 
-    // Logging Methods
-        // Logging Log4J Methods
-    public Level getLog4JLogLevel(){
-        return this.logger.getLogLevel();
-    }
+    // Logging file methods
 
-    public void setLog4JLogLevel(Level logLevel){
-        this.logger.setLogLevel(logLevel);
-    }
-
-    public void trace(String message){
-        this.logger.trace(message);
-    }
-
-    public void trace(String message, Throwable throwable){
-        this.logger.trace(message, throwable);
-    }
-
-    public void debug(String message){
-        this.logger.debug(message);
-    }
-
-    public void debug(String message, Throwable throwable){
-        this.logger.debug(message, throwable);
-    }
-
-    public void info(String message){
-        this.logger.info(message);
-    }
-
-    public void info(String message, Throwable throwable){
-        this.logger.info(message, throwable);
-    }
-
-    public void warn(String message){
-        this.logger.warn(message);
-    }
-
-    public void warn(String message, Throwable throwable){
-        this.logger.warn(message, throwable);
-    }
-
-    public void error(String message){
-        this.logger.error(message);
-    }
-
-    public void error(String message, Throwable throwable){
-        this.logger.error(message, throwable);
-    }
-
-    public void fatal(String message){
-        this.logger.fatal(message);
-    }
-
-    public void fatal(String message, Throwable throwable){
-        this.logger.fatal(message, throwable);
-    }
-
-        // Logging file methods
-
-    private void writeToFileLog(FileLog log, String message) throws IOException {
+    private void writeToFileLog(FileRecord log, String message) throws IOException {
         if (!this.shouldPrintLogFiles) return;
         log.print(message + "\n");
         if (this.shouldFlushLogFiles) log.flush();

@@ -1,16 +1,16 @@
-package org.vcell.util.logging;
+package org.vcell.util.recording;
 
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 
-public class FileLog extends Log {
+public class FileRecord extends Record {
     protected File logFile;
     protected FileWriter fileWriter;
     protected StringBuffer sBuff;
 
-    public FileLog(String fileName){
+    public FileRecord(String fileName){
         this.sBuff = new StringBuffer();
         this.logFile = new File(fileName);
         this.fileWriter = null;

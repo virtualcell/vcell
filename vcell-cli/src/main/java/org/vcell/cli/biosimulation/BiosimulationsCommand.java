@@ -2,6 +2,9 @@ package org.vcell.cli.biosimulation;
 
 import cbit.vcell.resource.PropertyLoader;
 
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.core.LoggerContext;
+import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Level;
 import org.vcell.cli.CLILogger;
 import org.vcell.cli.CLIPythonManager;
@@ -17,7 +20,7 @@ import java.util.concurrent.Callable;
 @Command(name = "biosimulations", description = "BioSimulators-compliant command-line interface to the vcell simulation program <https://vcell.org>.")
 public class BiosimulationsCommand implements Callable<Integer> {
 
-    //private final static Logger logger = LogManager.getLogger(BiosimulationsCommand.class);
+    private final static Logger logger = LogManager.getLogger(BiosimulationsCommand.class);
 
     @Option(names = {"-i", "--archive"}, description = "Path to a COMBINE/OMEX archive file which contains one or more SED-ML-encoded simulation experiments")
     private File ARCHIVE;
@@ -38,16 +41,19 @@ public class BiosimulationsCommand implements Callable<Integer> {
     private boolean help;
 
     public Integer call() {
-        CLILogger logger = null;
+        CLILogger cliLogger = null;
         try {
-            logger = new CLILogger(OUT_DIR); // CLILogger will throw an execption if our output dir isn't valid.
-            Level logLevel = logger.getLog4JLogLevel();
+            cliLogger = new CLILogger(OUT_DIR); // CLILogger will throw an execption if our output dir isn't valid.
+            Level logLevel = logger.getLevel();
             if (!bQuiet && bDebug) {
                 logLevel = Level.DEBUG;
             } else if (bQuiet) {
                 logLevel = Level.OFF;
             }
-            logger.setLog4JLogLevel(logLevel);
+            LoggerContext config = (LoggerContext)(LogManager.getContext(false));
+            config.getConfiguration().getLoggerConfig(LogManager.getLogger("org.vcell").getName()).setLevel(logLevel);
+            config.getConfiguration().getLoggerConfig(LogManager.getLogger("cbit").getName()).setLevel(logLevel);
+            config.updateLoggers();
 
             logger.debug("Biosimulations mode requested");
 
@@ -101,7 +107,7 @@ public class BiosimulationsCommand implements Callable<Integer> {
             logger.info("Beginning execution");
             try {
                 CLIPythonManager.getInstance().instantiatePythonProcess();
-                ExecuteImpl.singleExecOmex(ARCHIVE, OUT_DIR, logger, bKeepTempFiles, bExactMatchOnly, false);
+                ExecuteImpl.singleExecOmex(ARCHIVE, OUT_DIR, cliLogger, bKeepTempFiles, bExactMatchOnly, false);
                 return 0; // Does this prevent finally?
             } finally {
                 try {

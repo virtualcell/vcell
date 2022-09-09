@@ -1,8 +1,8 @@
-package org.vcell.util.logging;
+package org.vcell.util.recording;
 
 import java.io.Closeable;
 import java.io.IOException;
 
-public abstract class Log implements Closeable {
+public abstract class Record implements Closeable {
     protected abstract void write(String m) throws IOException;
 }
