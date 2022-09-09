@@ -760,7 +760,33 @@ private void addReactions() throws SbmlException, XMLStreamException {
 		// Add reactants, products, modifiers
 		// Simple reactions have catalysts, fluxes have 'flux' 
 		cbit.vcell.model.ReactionParticipant[] rxnParticipants = vcReactionStep.getReactionParticipants();
-		for (ReactionParticipant rxnParticpant:rxnParticipants) { 
+
+		//
+		// account for repeated reactants or products (e.g. a + a --> b) ... treat like (2a --> b)
+		// reactantParticipants = [reactant("a",1), reactant("a",1), product("b",1) ]
+		// stoichiometries      = [        2      ,         0      ,         1      ]
+		// ... second reactant is omitted, but stoichiometry is preserved.
+		//
+		Integer[] stoichiometries = new Integer[rxnParticipants.length];
+		for (int currIndex=0; currIndex < rxnParticipants.length ; currIndex++){
+			// if already reactionParticipant of the same type, add stochiometry and mark stochiometry as null
+			stoichiometries[currIndex] = rxnParticipants[currIndex].getStoichiometry();
+			for (int prevIndex=0; prevIndex < currIndex; prevIndex++){
+				if (rxnParticipants[prevIndex].getClass().equals(rxnParticipants[currIndex].getClass()) &&
+				    rxnParticipants[prevIndex].getSpeciesContext() == rxnParticipants[currIndex].getSpeciesContext()){
+					stoichiometries[prevIndex] += rxnParticipants[currIndex].getStoichiometry();
+					stoichiometries[currIndex] = null;
+					break;
+				}
+			}
+		}
+
+		for (int rpIndex=0; rpIndex < rxnParticipants.length; rpIndex++){
+			if (stoichiometries[rpIndex] == null){
+				// skip repeated reactant or product
+				continue;
+			}
+			ReactionParticipant rxnParticpant = rxnParticipants[rpIndex];
 			SimpleSpeciesReference ssr = null;
 			SpeciesReference sr = null;
 			String rolePostfix = "";	// to get unique ID when the same species is both a reactant and a product
@@ -779,9 +805,10 @@ private void addReactions() throws SbmlException, XMLStreamException {
 				ssr.setSpecies(rxnParticpant.getSpeciesContext().getName());
 			}
 			if (sr != null) {
-				sr.setStoichiometry(Double.parseDouble(Integer.toString(rxnParticpant.getStoichiometry())));
+				sr.setStoichiometry(stoichiometries[rpIndex]); // use stoichiometry computed above
 				String modelUniqueName = vcReactionStep.getName() + '_'  + rxnParticpant.getName() + rolePostfix;
-				sr.setId(TokenMangler.mangleToSName(modelUniqueName));
+				String mangledUniqueName = TokenMangler.mangleToSName(modelUniqueName);
+				sr.setId(mangledUniqueName);
 				sr.setConstant(true); //SBML-REVIEW
 				//int rcode = sr.appendNotes("<
 				// we know that in VCell we can't override stoichiometry anywhere, below is no longer questionable
