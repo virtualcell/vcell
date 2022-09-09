@@ -3532,7 +3532,8 @@ public class SBMLImporter {
 		// afterwards.
 		GeometrySurfaceDescription vcGsd = vcGeometry.getGeometrySurfaceDescription();
 		Vector<DomainType> surfaceClassDomainTypesVector = new Vector<>();
-		HashMap<SubVolume,List<BoundaryConditionType>> defaultBCMap = new HashMap<>();
+		HashMap<String,List<BoundaryConditionType>> domainTypeID_to_defaultBC_map = new HashMap<>();
+		HashMap<String,Integer> domainTypeId_to_handle_map = new HashMap<>();
 		try {
 			for (DomainType dt : listOfDomainTypes) {
 				ArrayList<BoundaryConditionType> bcTypes = new ArrayList<>();
@@ -3568,13 +3569,14 @@ public class SBMLImporter {
 							}
 						}
 					}
+					domainTypeID_to_defaultBC_map.put(dt.getId(), bcTypes);
+					domainTypeId_to_handle_map.put(dt.getId(),handle);
 					if (selectedGeometryDefinition == analyticGeometryDefinition) {
 						// will set expression later - when reading in Analytic
 						// Volumes in GeometryDefinition
 						AnalyticSubVolume analyticSubVolume = new AnalyticSubVolume(dt.getId(), new Expression(1.0));
 						vcGeometrySpec.addSubVolume(analyticSubVolume);
 						analyticSubVolume.setHandle(handle);
-						defaultBCMap.put(analyticSubVolume, bcTypes);
 					}
 //					else {
 //						// add SubVolumes later for CSG and Image-based
@@ -3649,6 +3651,9 @@ public class SBMLImporter {
 					// Create the new Image SubVolume - use index of this for
 					// loop as 'handle' for ImageSubVol?
 					ImageSubVolume isv = new ImageSubVolume(null, pc, idx);
+					if (domainTypeId_to_handle_map.get(sVol.getDomainType())!=null){
+						isv.setHandle(domainTypeId_to_handle_map.get(sVol.getDomainType()));
+					}
 					isv.setName(name);
 					vcImageSubVols[idx++] = isv;
 				}
@@ -3670,6 +3675,9 @@ public class SBMLImporter {
 				for (int i = 0; i < n; i++) {
 					org.sbml.jsbml.ext.spatial.CSGObject sbmlCSGObject = sbmlCSGs.get(i);
 					CSGObject vcellCSGObject = new CSGObject(null, sbmlCSGObject.getSpatialId(), i);
+					if (domainTypeId_to_handle_map.get(sbmlCSGObject.getDomainType()) != null){
+						vcellCSGObject.setHandle(domainTypeId_to_handle_map.get(sbmlCSGObject.getDomainType()));
+					}
 					vcellCSGObject.setRoot(getVCellCSGNode(sbmlCSGObject.getCSGNode()));
 					boolean bFront = true;
 					vcGeometry.getGeometrySpec().addSubVolume(vcellCSGObject, bFront);
@@ -3892,7 +3900,7 @@ public class SBMLImporter {
 			if (vcGeometry.getDimension()>0){
 				for (StructureMapping structureMapping : structMappings) {
 					if (structureMapping.getGeometryClass() instanceof SubVolume) {
-						List<BoundaryConditionType> bcTypes = defaultBCMap.get(structureMapping.getGeometryClass());
+						List<BoundaryConditionType> bcTypes = domainTypeID_to_defaultBC_map.get(structureMapping.getGeometryClass().getName());
 						if (bcTypes != null) {
 							if (vcGeometry.getDimension() > 0) {
 								structureMapping.setBoundaryConditionTypeXm(bcTypes.get(0));

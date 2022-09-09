@@ -52,7 +52,7 @@ public class SedmlExtensionFilter extends SelectorExtensionFilter {
 
 			sedmlExporter = new SEDMLExporter(bioModel, sedmlLevel, sedmlVersion, null);
 			boolean bRoundTripSBMLValidation = true;
-			resultString = sedmlExporter.getSEDMLFile(sPath, sFile, modelFormat, false, bRoundTripSBMLValidation);
+			resultString = sedmlExporter.getSEDMLDocument(sPath, sFile, modelFormat, false, bRoundTripSBMLValidation).writeDocumentToString();
 		} else {
 			throw new RuntimeException("unsupported Document Type " + Objects.requireNonNull(bioModel).getClass().getName() + " for SedML export");
 		}

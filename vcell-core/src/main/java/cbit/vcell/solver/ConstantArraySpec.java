@@ -117,20 +117,32 @@ public static ConstantArraySpec createFromString(String name, String description
 	// parses toString() output to recreate object
 	try {
 		if (type == TYPE_LIST) {
-			final String delimiter;
-			if (description.contains(";")){
-				delimiter = ";";
-			}else{
-				delimiter = ",";
+			if (description.contains("\"")){
+				// new style (each element surrounded by double-quotes and separated by commas)
+				// for example:   "KMOLE", "KMOLE*2", "KMOLE*3"
+				String tokens[] = description.split("\"");
+				ArrayList<String> itemExpressions = new ArrayList<>();
+				for (String token : tokens){
+					token = token.trim();
+					if (token.length()==0 || token.equals(",")){
+						continue;
+					}
+					itemExpressions.add(token);
+				}
+				return createListSpec(name, itemExpressions.toArray(new String[0]));
+			}else {
+				// old style (each element is a double without quotes and separated by commas)
+				// for example:   1, 2, 3
+				final String delimiter = ",";
+				java.util.StringTokenizer tokens = new java.util.StringTokenizer(description, delimiter);
+				String[] values = new String[tokens.countTokens()];
+				int i = 0;
+				while (tokens.hasMoreElements()) {
+					values[i] = tokens.nextToken();
+					i++;
+				}
+				return createListSpec(name, values);
 			}
-			java.util.StringTokenizer tokens = new java.util.StringTokenizer(description, delimiter);
-			String[] values = new String[tokens.countTokens()];
-			int i = 0;
-			while (tokens.hasMoreElements()) {
-				values[i] = tokens.nextToken();
-				i++;
-			}
-			return createListSpec(name, values);
 		} else if (type == TYPE_INTERVAL) {
 			int index_of_to = description.indexOf(" to ");
 			if (index_of_to == -1){
@@ -317,17 +329,17 @@ public boolean isLogInterval() {
  * Creation date: (9/23/2005 4:44:23 PM)
  * @return java.lang.String
  */
-public String toString() {
+public String toDatabaseString() {
 	switch (type) {
 		case TYPE_LIST: {
 			cbit.vcell.math.Constant[] cs = getConstants();
 			String list = "";
 			for (int i = 0; i < cs.length; i++){
-				list += cs[i].getExpression().infix() + "; ";
+				list += "\"" + cs[i].getExpression().infix() + "\"" + ", ";
 			}
-			list = list.substring(0, list.length() - 2);
+			list = list.substring(0, list.length() - 2); // remove trailing ", "
 			return list;
-		} 
+		}
 		case TYPE_INTERVAL: {
 			String interval = minValue.infix() + " to " + maxValue.infix() + ", ";
 			if (logInterval) interval += "log, ";
@@ -339,5 +351,9 @@ public String toString() {
 		}
 	}
 }
+
+	public String toString() {
+		return toDatabaseString();
+	}
 
 }

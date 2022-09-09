@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -38,6 +39,7 @@ import org.jlibsedml.ComputeChange;
 import org.jlibsedml.Curve;
 import org.jlibsedml.DataGenerator;
 import org.jlibsedml.DataSet;
+import org.jlibsedml.FunctionalRange;
 import org.jlibsedml.Libsedml;
 import org.jlibsedml.Model;
 import org.jlibsedml.Notes;
@@ -74,8 +76,13 @@ import org.jmathml.MathMLReader;
 import org.sbml.libcombine.*;
 import org.vcell.sbml.SbmlException;
 import org.vcell.sbml.SimSpec;
+import org.vcell.sbml.UnsupportedSbmlExportException;
 import org.vcell.sbml.vcell.SBMLExporter;
 import org.vcell.sbml.vcell.StructureSizeSolver;
+import org.vcell.sedml.SEDMLConversion;
+import org.vcell.sedml.SEDMLLogger.TaskLog;
+import org.vcell.sedml.TaskResult;
+import org.vcell.sedml.TaskType;
 import org.vcell.util.FileUtils;
 import org.vcell.util.Pair;
 import org.vcell.util.TokenMangler;
@@ -122,6 +129,7 @@ import cbit.vcell.parser.DivideByZeroException;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.parser.ExpressionUtils;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.parser.VariableSymbolTable;
 import cbit.vcell.server.SimulationJobStatusPersistent;
@@ -164,22 +172,22 @@ public class SEDMLExporter {
 	private String sbmlLanguageURN = SUPPORTED_LANGUAGE.SBML_GENERIC.getURN();
 	private String vcmlLanguageURN = SUPPORTED_LANGUAGE.VCELL_GENERIC.getURN();
 	
+	private SEDMLLogger sedmlLogger = null;
+	
 	public SEDMLExporter(BioModel argBiomodel, int argLevel, int argVersion, List<Simulation> argSimsToExport) {
 		super();
 		this.vcBioModel = argBiomodel;
 		this.sedmlLevel = argLevel;
 		this.sedmlVersion = argVersion;
 		this.simsToExport = argSimsToExport;
+		this.sedmlLogger = new SEDMLLogger(argBiomodel.getName(), SEDMLConversion.EXPORT);
 	}
 
-	public SEDMLDocument getSEDMLFile0(String sPath, String sBaseFileName, ModelFormat modelFormat, 
+	public SEDMLDocument getSEDMLDocument(String sPath, String sBaseFileName, ModelFormat modelFormat, 
 				boolean bFromCLI, boolean bRoundTripSBMLValidation) {
 
 		// Create an SEDMLDocument and create the SEDMLModel from the document, so that other details can be added to it in translateBioModel()
 		SEDMLDocument sedmlDocument = new SEDMLDocument(this.sedmlLevel, this.sedmlVersion);
-//		sedmlDocument.getSedMLModel().setAdditionalNamespaces(Arrays.asList(new Namespace[] { 
-//                Namespace.getNamespace(SEDMLTags.SBML_NS_PREFIX, SEDMLTags.SBML_NS_L2V4)
-//        }));
 
 		final String SBML_NS = "http://www.sbml.org/sbml/level3/version2/core";
 		final String SBML_NS_PREFIX = "sbml";
@@ -206,21 +214,11 @@ public class SEDMLExporter {
 		}
 		sedmlModel = sedmlDocument.getSedMLModel();
 		sedmlModel.setAdditionalNamespaces(nsList);
-
 		
 		translateBioModelToSedML(sPath, sBaseFileName, modelFormat, bFromCLI, bRoundTripSBMLValidation);
 		
-		int models = sedmlModel.getModels().size();
-		int tasks = sedmlModel.getTasks().size();
-		int sims = sedmlModel.getSimulations().size();
 		return sedmlDocument;
 	}
-	public String getSEDMLFile(String sPath, String sBaseFileName, ModelFormat modelFormat, boolean bFromCLI, boolean bRoundTripSBMLValidation) {
-		SEDMLDocument doc = getSEDMLFile0(sPath, sBaseFileName, modelFormat, bFromCLI, bRoundTripSBMLValidation);
-		return doc.writeDocumentToString();
-	}
-
-
 	private void translateBioModelToSedML(String savePath, String sBaseFileName, ModelFormat modelFormat,
 				boolean bFromCLI, boolean bRoundTripSBMLValidation) {		// true if invoked for omex export, false if for sedml
 		sbmlFilePathStrAbsoluteList.clear();
@@ -229,75 +227,79 @@ public class SEDMLExporter {
 			int simContextCnt = 0;	// for model count, task subcount
 			String sedmlNotesStr = "";
 
-			for (SimulationContext simContext : simContexts) {
-				if (modelFormat == ModelFormat.SBML_VCML) {
-					// TODO
-					throw new RuntimeException("Hybrid SBML_VCML export not yet implemented");
-				}
-				
-				if (modelFormat == ModelFormat.SBML) {
-					boolean sbmlExportFailed = false;
+			if (modelFormat == ModelFormat.SBML_VCML) {
+				// TODO
+				throw new RuntimeException("Hybrid SBML_VCML export not yet implemented");
+			}
+			if (modelFormat == ModelFormat.VCML) {
+				// TODO
+				throw new RuntimeException("VCML export not yet implemented");
+				// methods below are stubs
+//				writeModelVCML(savePath, sBaseFileName, bFromCLI);
+//				exportSimulationsVCML(simContextCnt, simContext);
+			}
+			if (modelFormat == ModelFormat.SBML) {
+				for (SimulationContext simContext : simContexts) {
 					// Export the application itself to SBML, with default values (overrides will become model changes or repeated tasks)
 					String sbmlString = null;
-					boolean isSpatial = simContext.getGeometry().getDimension() > 0 ? true : false;
 					Map<Pair <String, String>, String> l2gMap = null;		// local to global translation map
-	
+					MathSymbolMapping mathSymbolMapping = null;
+					boolean sbmlExportFailed = false;
+					Exception simContextException = null;
 					try {
+						SBMLExporter.validateSimulationContextSupport(simContext);
+						boolean isSpatial = simContext.getGeometry().getDimension() > 0 ? true : false;
 						Pair <String, Map<Pair <String, String>, String>> pair = XmlHelper.exportSBMLwithMap(vcBioModel, 3, 2, 0, isSpatial, simContext, null, bRoundTripSBMLValidation);
 						sbmlString = pair.one;
 						l2gMap = pair.two;
+						writeModelSBML(savePath, sBaseFileName, sbmlString, simContext);
+						MathMapping mathMapping = simContext.createNewMathMapping();
+						mathSymbolMapping = mathMapping.getMathSymbolMapping();
+						sedmlLogger.addTaskLog(sedmlLogger.new TaskLog(simContext.getName(), TaskType.SIMCONTEXT, TaskResult.SUCCEEDED, null));
 					} catch (Exception e) {
 						String msg = "SBML export failed for simContext '"+simContext.getName()+"': " + e.getMessage();
 						logger.error(msg, e);
 						sbmlExportFailed = true;
+						simContextException = e;
+						sedmlLogger.addTaskLog(sedmlLogger.new TaskLog(simContext.getName(), TaskType.SIMCONTEXT, TaskResult.FAILED, e));
 					}
 
-					// applications that are not compatible with SBML are marked as failed 
-					if (simContext.getGeometry().getDimension() > 0 && simContext.getApplicationType() == Application.NETWORK_STOCHASTIC) {
-						logger.error("SimContext '"+simContext.getName()+"' is not compatible with SBML export");
-						sbmlExportFailed = true;
-					} else if(simContext.getApplicationType() == Application.RULE_BASED_STOCHASTIC) {
-						logger.error("SimContext '"+simContext.getName()+"' is not compatible with SBML export");
-						sbmlExportFailed = true;
-					}
-					
 					if (!sbmlExportFailed) {
-						writeModelSBML(savePath, sBaseFileName, sbmlString, simContext);
-						exportSimulationsSBML(simContextCnt, simContext, sbmlString, l2gMap);
+						// simContext was exported succesfully, now we try to export its simulations
+						sedmlNotesStr = exportSimulationsSBML(simContextCnt, simContext, sbmlString, l2gMap, mathSymbolMapping);
 					} else {
 						if (bFromCLI) {
 							continue;
 						} else {
-							throw new Exception ("SimContext '"+simContext.getName()+"' is not compatible with SBML export");
+							System.err.println(sedmlLogger.getLogsCSV());
+							throw new Exception ("SimContext '"+simContext.getName()+"' could not be exported to SBML :" +simContextException.getMessage());
 						}
 					}			
-				}
-
-				if (modelFormat == ModelFormat.VCML) {
-					writeModelVCML(savePath, sBaseFileName, bFromCLI);
-					exportSimulationsVCML(simContextCnt, simContext);
-				}
-
-				// if sedmlNotesStr is not empty, there were some Simulations that could not be exported to SEDML (eg., non-spatial stochastic app sim with histogram option)
-	        	if (sedmlNotesStr.length() > 0) {
-		        	sedmlNotesStr = "\n\tThe following Simulations in the VCell model were not exported to SEDML : " + sedmlNotesStr;
-	        		logger.error(sedmlNotesStr);
-		        	if (bFromCLI) {
-		        		continue;
-		        	} else {
-		        		throw new Exception(sedmlNotesStr);
+					// if sedmlNotesStr is not empty, there were some Simulations that could not be exported to SEDML (eg., non-spatial stochastic app sim with histogram option)
+		        	if (sedmlNotesStr.length() > 0) {
+			        	sedmlNotesStr = "\n\tThe following Simulations in the VCell model were not exported to SEDML : " + sedmlNotesStr;
+		        		logger.error(sedmlNotesStr);
+			        	if (bFromCLI) {
+			        		continue;
+			        	} else {
+							System.err.println(sedmlLogger.getLogsCSV());
+			        		throw new Exception(sedmlNotesStr);
+			        	}
 		        	}
-	        	}
-				simContextCnt++;
+					simContextCnt++;
+				}
 			}
-			
-       	if(sedmlModel.getModels() != null && sedmlModel.getModels().size() > 0) {
-        		logger.trace("Number of models in the sedml is " + sedmlModel.getModels().size());
-        	}
-	
-
+	       	if(sedmlModel.getModels() != null && sedmlModel.getModels().size() > 0) {
+	       		logger.trace("Number of models in the sedml is " + sedmlModel.getModels().size());
+	       	}
+	       	if (sedmlLogger.hasErrors()) {
+				System.err.println(sedmlLogger.getLogsCSV());       		
+	       	} else {
+	       		System.out.println(sedmlLogger.getLogsCSV());
+	       	}
 		} catch (Exception e) {
-			throw new RuntimeException("Error adding model to SEDML document : " + e.getMessage(), e);
+			// this only happens if not from CLI, we need to pass this down the calling thread
+			throw new RuntimeException("Error adding model to SEDML document : " + e.getMessage());
 		}
 	}
 
@@ -418,8 +420,7 @@ public class SEDMLExporter {
 	}
 	
 	private String exportSimulationsSBML(int simContextCnt, SimulationContext simContext,
-			String sbmlString, Map<Pair<String, String>, String> l2gMap)
-			throws ExpressionBindingException, ExpressionException, DivideByZeroException, IOException, SbmlException, MappingException, MathException, MatrixException, ModelException {
+			String sbmlString, Map<Pair<String, String>, String> l2gMap, MathSymbolMapping mathSymbolMapping) {
 		// -------
 		// create sedml objects (simulation, task, datagenerators, report, plot) for each simulation in simcontext 
 		// -------	
@@ -428,49 +429,53 @@ public class SEDMLExporter {
 		simCount = 0;
 		overrideCount = 0;
 		String sedmlNotesStr = "";
-		MathMapping mathMapping = simContext.createNewMathMapping();
-		MathSymbolMapping mathSymbolMapping = mathMapping.getMathSymbolMapping();
+		if (simContext.getSimulations().length == 0) return sedmlNotesStr;
 		for (Simulation vcSimulation : simContext.getSimulations()) {
-			// if we have a hash containing a subset of simulations to export
-			// skip simulations not present in hash
-			if (simsToExport != null && !simsToExport.contains(vcSimulation)) continue;
+			try {
+				// if we have a hash containing a subset of simulations to export
+				// skip simulations not present in hash
+				if (simsToExport != null && !simsToExport.contains(vcSimulation)) continue;
 
-			// 1 -------> check compatibility
-			// if simContext is non-spatial stochastic, check if sim is histogram; if so, skip it, it can't be encoded in sedml 1.x
-			SolverTaskDescription simTaskDesc = vcSimulation.getSolverTaskDescription();
-			if (simContext.getGeometry().getDimension() == 0 && simContext.isStoch()) {
-				long numOfTrials = simTaskDesc.getStochOpt().getNumOfTrials();
-				if (numOfTrials > 1) {
-					String msg = "\n\t" + simContextName + " ( " + vcSimulation.getName() + " ) : export of non-spatial stochastic simulation with histogram option to SEDML not supported at this time.";
-					sedmlNotesStr += msg;
-					continue;
+				// 1 -------> check compatibility
+				// if simContext is non-spatial stochastic, check if sim is histogram; if so, skip it, it can't be encoded in sedml 1.x
+				SolverTaskDescription simTaskDesc = vcSimulation.getSolverTaskDescription();
+				if (simContext.getGeometry().getDimension() == 0 && simContext.isStoch()) {
+					long numOfTrials = simTaskDesc.getStochOpt().getNumOfTrials();
+					if (numOfTrials > 1) {
+						String msg = "\n\t" + simContextName + " ( " + vcSimulation.getName() + " ) : export of non-spatial stochastic simulation with histogram option to SEDML not supported at this time.";
+						throw new Exception(msg);
+					}
 				}
-			}
-			
-			// 2 ------->
-			// create sedmlSimulation (UniformTimeCourse) with specs and algorithm parameters
-			UniformTimeCourse utcSim = createSEDMLsim(simTaskDesc);
+				
+				// 2 ------->
+				// create sedmlSimulation (UniformTimeCourse) with specs and algorithm parameters
+				UniformTimeCourse utcSim = createSEDMLsim(simTaskDesc);
 
-			// 3 ------->
-			// create Tasks
-			Set<String> dataGeneratorTasksSet = new LinkedHashSet<>();	// tasks not referenced as subtasks by any other (repeated) task; only these will have data generators
-			MathOverrides mathOverrides = new MathOverrides(vcSimulation, vcSimulation.getMathOverrides()); // need to clone so we can manipulate expressions
-			createSEDMLtasks(simContextCnt, l2gMap, simContextName, simContextId, mathSymbolMapping,
-					vcSimulation, utcSim, dataGeneratorTasksSet, mathOverrides);
-			
-			// 4 ------->
-			// Create DataGenerators
+				// 3 ------->
+				// create Tasks
+				Set<String> dataGeneratorTasksSet = new LinkedHashSet<>();	// tasks not referenced as subtasks by any other (repeated) task; only these will have data generators
+				MathOverrides mathOverrides = new MathOverrides(vcSimulation, vcSimulation.getMathOverrides()); // need to clone so we can manipulate expressions
+				createSEDMLtasks(simContextCnt, l2gMap, simContextName, simContextId, mathSymbolMapping,
+						vcSimulation, utcSim, dataGeneratorTasksSet, mathOverrides);
+				
+				// 4 ------->
+				// Create DataGenerators
 
-			List<DataGenerator> dataGeneratorsOfSim = createSEDMLdatagens(sbmlString, dataGeneratorTasksSet);
+				List<DataGenerator> dataGeneratorsOfSim = createSEDMLdatagens(sbmlString, dataGeneratorTasksSet);
 
-			// 5 ------->
-			// create Report and Plot
+				// 5 ------->
+				// create Report and Plot
 
-			for(String taskRef : dataGeneratorTasksSet) {
-				createSEDMLoutputs(simContext, vcSimulation, dataGeneratorsOfSim, taskRef);
+				for(String taskRef : dataGeneratorTasksSet) {
+					createSEDMLoutputs(simContext, vcSimulation, dataGeneratorsOfSim, taskRef);
+				}
+				sedmlLogger.addTaskLog(sedmlLogger.new TaskLog(simContext.getName(), TaskType.SIMCONTEXT, TaskResult.SUCCEEDED, null));
+			} catch (Exception e) {
+				sedmlLogger.addTaskLog(sedmlLogger.new TaskLog(vcSimulation.getName(), TaskType.SIMULATION, TaskResult.FAILED, e));
+				sedmlNotesStr += e.getMessage();
 			}
 			simCount++;
-		} // end - for 'sims'
+		}
 		return sedmlNotesStr;
 	}
 
@@ -823,7 +828,6 @@ public class SEDMLExporter {
 				Task sedmlTask = new Task(taskId, vcSimulation.getName(), sedModel.getId(), utcSim.getId());
 				dataGeneratorTasksSet.add(sedmlTask.getId());
 				sedmlModel.addTask(sedmlTask);
-//							taskRef = taskId;		// to be used later to add dataGenerators : one set of DGs per model (simContext).
 				
 			} else if (!scannedParamHash.isEmpty() && unscannedParamHash.isEmpty()) {
 				// only parameters with scans
@@ -837,51 +841,10 @@ public class SEDMLExporter {
 				for (String scannedConstName : scannedConstantsNames) {
 					String repeatedTaskId = "repTsk_" + simContextCnt + "_" + simCount + "_" + repeatedTaskIndex;
 					String rangeId = "range_" + simContextCnt + "_" + simCount + "_" + scannedConstName;
-//								if(repeatedTaskIndex == 0) {
-//									taskRef = repeatedTaskId;
-//								}
-					RepeatedTask rt = new RepeatedTask(repeatedTaskId, repeatedTaskId, true, rangeId);
-					dataGeneratorTasksSet.add(rt.getId());
-					SubTask subTask = new SubTask("0", ownerTaskId);
-					dataGeneratorTasksSet.remove(ownerTaskId);
-					rt.addSubtask(subTask);
-					ConstantArraySpec constantArraySpec = mathOverrides.getConstantArraySpec(scannedConstName);
-					// list of Ranges, if sim is parameter scan.
-					if(constantArraySpec != null) {
-						Range r = null;
-						//										System.out.println("     " + constantArraySpec.toString());
-						if(constantArraySpec.getType() == ConstantArraySpec.TYPE_INTERVAL) {
-							// ------ Uniform Range
-							UniformType type = constantArraySpec.isLogInterval() ? UniformType.LOG : UniformType.LINEAR;
-							r = new UniformRange(rangeId, constantArraySpec.getMinValue().evaluateConstant(),
-									constantArraySpec.getMaxValue().evaluateConstant(), constantArraySpec.getNumValues(), type);
-							rt.addRange(r);
-						} else {
-							// ----- Vector Range
-							cbit.vcell.math.Constant[] cs = constantArraySpec.getConstants();
-							ArrayList<Double> values = new ArrayList<Double>();
-							for (int i = 0; i < cs.length; i++){
-								String value = cs[i].getExpression().infix();
-								values.add(Double.parseDouble(value));
-							}
-							r = new VectorRange(rangeId, values);
-							rt.addRange(r);
-						}
-
-						// list of Changes
-						SymbolTableEntry ste = getSymbolTableEntryForModelEntity(mathSymbolMapping, scannedConstName);
-						XPathTarget target = getTargetAttributeXPath(ste, l2gMap);
-						//ASTNode math1 = new ASTCi(r.getId());		// was scannedConstName
-						ASTNode math1 = Libsedml.parseFormulaString(r.getId());		// here the math is always the range id expression
-						SetValue setValue = new SetValue(target, r.getId(), simContextId);
-						setValue.setMath(math1);
-						rt.addChange(setValue);
-					} else {
-						throw new RuntimeException("No scan ranges found for scanned parameter : '" + scannedConstName + "'.");
-					}
+					RepeatedTask rt = createSEDMLreptask(rangeId, l2gMap, mathSymbolMapping,
+							dataGeneratorTasksSet, mathOverrides, ownerTaskId, scannedConstName, repeatedTaskId, simContextId);
 					ownerTaskId = repeatedTaskId;
 					repeatedTaskIndex++;
-					
 					sedmlModel.addTask(rt);
 				}
 
@@ -908,58 +871,18 @@ public class SEDMLExporter {
 				for (String scannedConstName : scannedConstantsNames) {
 					String repeatedTaskId = "repTsk_" + simContextCnt + "_" + simCount + "_" + repeatedTaskIndex;
 					String rangeId = "range_" + simContextCnt + "_" + simCount + "_" + scannedConstName;
-//								if(repeatedTaskIndex == 0) {
-//									taskRef = repeatedTaskId;
-//								}
-					RepeatedTask rt = new RepeatedTask(repeatedTaskId, repeatedTaskId, true, rangeId);
-					dataGeneratorTasksSet.add(rt.getId());
-					SubTask subTask = new SubTask("0", ownerTaskId);
-					dataGeneratorTasksSet.remove(ownerTaskId);
-					rt.addSubtask(subTask);
-					ConstantArraySpec constantArraySpec = mathOverrides.getConstantArraySpec(scannedConstName);
-					// list of Ranges, if sim is parameter scan.
-					if(constantArraySpec != null) {
-						Range r = null;
-						//										System.out.println("     " + constantArraySpec.toString());
-						if(constantArraySpec.getType() == ConstantArraySpec.TYPE_INTERVAL) {
-							// ------ Uniform Range
-							UniformType type = constantArraySpec.isLogInterval() ? UniformType.LOG : UniformType.LINEAR;
-							r = new UniformRange(rangeId, constantArraySpec.getMinValue().evaluateConstant(),
-									constantArraySpec.getMaxValue().evaluateConstant(), constantArraySpec.getNumValues(), type);
-							rt.addRange(r);
-						} else {
-							// ----- Vector Range
-							cbit.vcell.math.Constant[] cs = constantArraySpec.getConstants();
-							ArrayList<Double> values = new ArrayList<Double>();
-							for (int i = 0; i < cs.length; i++){
-								String value = cs[i].getExpression().infix();
-								values.add(Double.parseDouble(value));
-							}
-							r = new VectorRange(rangeId, values);
-							rt.addRange(r);
-						}
-
-						// use scannedParamHash to store rangeId for that param, since it might be needed if unscanned param has a scanned param in expr.
-						if (scannedParamHash.get(scannedConstName).equals(scannedConstName)) {
-							// the hash was originally populated as <scannedParamName, scannedParamName>. Replace 'value' with rangeId for scannedParam
-							scannedParamHash.put(scannedConstName, r.getId());
-							rangeToRepeatedTaskHash.put(r.getId(), rt);		// we'll need the right repeated task for this range later on, in the unscanned loop
-						}
-
-						// list of Changes
-						SymbolTableEntry ste = getSymbolTableEntryForModelEntity(mathSymbolMapping, scannedConstName);
-						XPathTarget target = getTargetAttributeXPath(ste, l2gMap);
-						// TODO: math needs to refer to the parameter id, not name
-						ASTNode math1 = Libsedml.parseFormulaString(r.getId());		// here the math is always the range id expression
-						SetValue setValue = new SetValue(target, r.getId(), overriddenSimContextId);
-						setValue.setMath(math1);
-						rt.addChange(setValue);
-					} else {
-						throw new RuntimeException("No scan ranges found for scanned parameter : '" + scannedConstName + "'.");
-					}
+					RepeatedTask rt = createSEDMLreptask(rangeId, l2gMap, mathSymbolMapping,
+							dataGeneratorTasksSet, mathOverrides, ownerTaskId, scannedConstName, repeatedTaskId, overriddenSimContextId);
 					ownerTaskId = repeatedTaskId;
 					repeatedTaskIndex++;
-					
+
+					// use scannedParamHash to store rangeId for that param, since it might be needed if unscanned param has a scanned param in expr.
+					if (scannedParamHash.get(scannedConstName).equals(scannedConstName)) {
+						// the hash was originally populated as <scannedParamName, scannedParamName>. Replace 'value' with rangeId for scannedParam
+						scannedParamHash.put(scannedConstName, rangeId);
+						rangeToRepeatedTaskHash.put(rangeId, rt);		// we'll need the right repeated task for this range later on, in the unscanned loop
+					}
+					// add to local list; will be added to sedml doc later
 					repeatedTasksList.add(rt);
 				}
 
@@ -1050,6 +973,111 @@ public class SEDMLExporter {
 		}
 	}
 
+	private RepeatedTask createSEDMLreptask(String rangeId, Map<Pair<String, String>, String> l2gMap,
+			MathSymbolMapping mathSymbolMapping, Set<String> dataGeneratorTasksSet,
+			MathOverrides mathOverrides, String ownerTaskId, String scannedConstName, String repeatedTaskId, String modelReferenceId)
+			throws ExpressionException, DivideByZeroException {
+		RepeatedTask rt = new RepeatedTask(repeatedTaskId, repeatedTaskId, true, rangeId);
+		dataGeneratorTasksSet.add(rt.getId());
+		SubTask subTask = new SubTask("0", ownerTaskId);
+		dataGeneratorTasksSet.remove(ownerTaskId);
+		rt.addSubtask(subTask);
+		ConstantArraySpec constantArraySpec = mathOverrides.getConstantArraySpec(scannedConstName);
+		// list of Ranges, if sim is parameter scan.
+		Range r = createSEDMLrange(rangeId, rt, constantArraySpec, mathSymbolMapping, l2gMap, modelReferenceId);
+		// list of Changes
+		SymbolTableEntry ste = getSymbolTableEntryForModelEntity(mathSymbolMapping, scannedConstName);
+		XPathTarget target = getTargetAttributeXPath(ste, l2gMap);
+		//ASTNode math1 = new ASTCi(r.getId());		// was scannedConstName
+		ASTNode math1 = Libsedml.parseFormulaString(r.getId());		// here the math is always the range id expression
+		SetValue setValue = new SetValue(target, r.getId(), modelReferenceId);
+		setValue.setMath(math1);
+		rt.addChange(setValue);
+		return rt;
+	}
+
+	private Range createSEDMLrange(String rangeId, RepeatedTask rt, ConstantArraySpec constantArraySpec, MathSymbolMapping msm, Map<Pair<String, String>, String> l2gMap, String modelReferenceId)
+			throws ExpressionException, DivideByZeroException {
+		Range r = null;
+		//										System.out.println("     " + constantArraySpec.toString());
+		if(constantArraySpec.getType() == ConstantArraySpec.TYPE_INTERVAL) {
+			// ------ Uniform Range
+			UniformType type = constantArraySpec.isLogInterval() ? UniformType.LOG : UniformType.LINEAR;
+			if (constantArraySpec.getMinValue().isNumeric() && constantArraySpec.getMaxValue().isNumeric()) {
+				r = new UniformRange(rangeId, constantArraySpec.getMinValue().evaluateConstant(),
+						constantArraySpec.getMaxValue().evaluateConstant(), constantArraySpec.getNumValues(), type);
+				rt.addRange(r);
+				return r;
+			} else {
+				r = new UniformRange(rangeId, 1, 2, constantArraySpec.getNumValues(), type);
+				rt.addRange(r);
+				// now make a FunctionalRange with expressions
+				FunctionalRange fr = new FunctionalRange("fr_"+rangeId, rangeId);
+				Expression expMin = constantArraySpec.getMinValue();
+				Expression expMax = constantArraySpec.getMaxValue();
+				Expression trans = Expression.add(new Expression(rangeId), new Expression("-1"));
+				Expression func = Expression.add(expMax, Expression.negate(expMin));
+				func = Expression.mult(func, trans);
+				func = Expression.add(expMin, func);
+				createFunctionalRangeElements(fr, func, msm, l2gMap, modelReferenceId);
+				rt.addRange(fr);
+				return fr;
+			}
+		} else {
+			// ----- Vector Range
+			// we try to preserve symbolic values...
+			cbit.vcell.math.Constant[] cs = constantArraySpec.getConstants();
+			ArrayList<Double> values = new ArrayList<Double>();
+			Expression exp0 = cs[0].getExpression();
+			boolean bFactorized = true;
+			for (int i = 0; i < cs.length; i++){
+				Expression exp = cs[i].getExpression();
+				exp = Expression.div(exp, exp0);
+				exp = ExpressionUtils.simplifyUsingJSCL(exp);
+				if (!exp.isNumeric()) {
+					bFactorized = false;
+					break;
+				}
+				values.add(new Double(exp.infix()));
+			}
+			if (!bFactorized) {
+				// write it out flattened
+				values.removeAll(values);
+				for (int j = 0; j < cs.length; j++) {
+					values.add(new Double(cs[j].getExpression().evaluateConstant()));					
+				}
+				r = new VectorRange(rangeId, values);
+				rt.addRange(r);
+				return r;
+			} else {
+				r = new VectorRange(rangeId, values);
+				rt.addRange(r);
+				// now make a FunctionalRange with expressions
+				FunctionalRange fr = new FunctionalRange("fr_"+rangeId, rangeId);
+				exp0 = Expression.mult(new Expression(rangeId), exp0);
+				createFunctionalRangeElements(fr, exp0, msm, l2gMap, modelReferenceId);
+				rt.addRange(fr);
+				return fr;
+			}
+		}
+	}
+
+	private void createFunctionalRangeElements(FunctionalRange fr, Expression func, MathSymbolMapping msm,
+			Map<Pair<String, String>, String> l2gMap, String modelReferenceId) throws ExpressionException {
+		String[] symbols = func.getSymbols();
+		for(String symbol : symbols) {
+			if (symbol.equals(fr.getRange())) continue;
+			SymbolTableEntry entry = getSymbolTableEntryForModelEntity(msm, symbol);
+			XPathTarget target = getTargetXPath(entry, l2gMap);
+			String symbolName = fr.getRange() + "_" + symbol;
+			Variable sedmlVar = new Variable(symbolName, symbolName, modelReferenceId, target.toString());	// sbmlSupport.getXPathForSpecies(symbol));
+			fr.addVariable(sedmlVar);
+			func.substituteInPlace(new Expression(symbol), new Expression(symbolName));
+		}
+		ASTNode math = Libsedml.parseFormulaString(func.infix());
+		fr.setMath(math);
+	}
+
 	private void writeModelVCML(String savePath, String sBaseFileName, boolean bFromCLI) throws XmlParseException, IOException {
 		String filePathStrAbsolute;
 		String filePathStrRelative;
@@ -1076,44 +1104,6 @@ public class SEDMLExporter {
 		XmlUtil.writeXMLStringToFile(sbmlString, filePathStrAbsolute, true);
 		sbmlFilePathStrAbsoluteList.add(filePathStrRelative);
 		sedmlModel.addModel(new Model(simContextId, simContextName, sbmlLanguageURN, filePathStrRelative));
-	}
-
-	private double getReservedSymbolValue(SymbolTableEntry ste) {
-		cbit.vcell.model.Model vcModel = vcBioModel.getModel();
-		if (ste instanceof ReservedSymbol) {
-			try {
-				if (((ReservedSymbol) ste).getRole().compareTo(ReservedSymbolRole.TEMPERATURE) == 0) {
-					return vcBioModel.getSimulationContext(0).getTemperatureKelvin();
-				}
-				if (((ReservedSymbol) ste).getRole().compareTo(ReservedSymbolRole.PI_CONSTANT) == 0) {
-					return vcModel.getPI_CONSTANT().getExpression().evaluateConstant();
-				}
-				if (((ReservedSymbol) ste).getRole().compareTo(ReservedSymbolRole.FARADAY_CONSTANT) == 0) {
-					return vcModel.getFARADAY_CONSTANT().getExpression().evaluateConstant();
-				}
-				if (((ReservedSymbol) ste).getRole().compareTo(ReservedSymbolRole.FARADAY_CONSTANT_NMOLE) == 0) {
-					return vcModel.getFARADAY_CONSTANT_NMOLE().getExpression().evaluateConstant();
-				}
-				if (((ReservedSymbol) ste).getRole().compareTo(ReservedSymbolRole.N_PMOLE) == 0) {
-					return vcModel.getN_PMOLE().getExpression().evaluateConstant();
-				}
-				if (((ReservedSymbol) ste).getRole().compareTo(ReservedSymbolRole.GAS_CONSTANT) == 0) {
-					return vcModel.getGAS_CONSTANT().getExpression().evaluateConstant();
-				}
-				if (((ReservedSymbol) ste).getRole().compareTo(ReservedSymbolRole.K_GHK) == 0) {
-					return vcModel.getK_GHK().getExpression().evaluateConstant();
-				}
-				if (((ReservedSymbol) ste).getRole().compareTo(ReservedSymbolRole.KMILLIVOLTS) == 0) {
-					return vcModel.getKMILLIVOLTS().getExpression().evaluateConstant();
-				}
-				if (((ReservedSymbol) ste).getRole().compareTo(ReservedSymbolRole.KMOLE) == 0) {
-					return vcModel.getKMOLE().getExpression().evaluateConstant();
-				}
-			} catch (Exception e) {
-				throw new RuntimeException("Unable to get the value of (reserved) VCell parameter : '" + ste.getName() + "' : ", e);
-			} 
-		} 
-		return 0;
 	}
 
 	private Notes createNotesElement(String notesStr) {
@@ -1177,7 +1167,7 @@ public class SEDMLExporter {
 				name = ((SpeciesContextSpecParameter)ste).getSpeciesContext().getName();
 			}
 			targetXpath = new XPathTarget(sbmlSupport.getXPathForSpecies(name));
-		} else if (ste instanceof ModelParameter) {
+		} else if (ste instanceof ModelParameter || ste instanceof ReservedSymbol) {
 			targetXpath = new XPathTarget(sbmlSupport.getXPathForGlobalParameter(ste.getName()));
 		}  else if (ste instanceof Structure || ste instanceof Structure.StructureSize || (ste instanceof StructureMappingParameter && ((StructureMappingParameter)ste).getRole() == StructureMapping.ROLE_Size)) {
 			String compartmentId = ste.getName();
@@ -1257,7 +1247,7 @@ public class SEDMLExporter {
 			}
 
 //			targetXpath = new XPathTarget(sbmlSupport.getXPathForSpecies(speciesId));
-		} else if (ste instanceof ModelParameter) {
+		} else if (ste instanceof ModelParameter || ste instanceof ReservedSymbol) {
 			// can only change parameter value. 
 			targetXpath = new XPathTarget(sbmlSupport.getXPathForGlobalParameter(ste.getName(), ParameterAttribute.value));
 			// use Ion's sample 3, with spatial app
@@ -1349,30 +1339,6 @@ public class SEDMLExporter {
 //		return kiSAOId;
 //	}
 
-	public static ASTNode getFormulaFromExpression(Expression expression) { 
-		// Convert expression into MathML string
-		String expMathMLStr = null;
-
-		try {
-			expMathMLStr = cbit.vcell.parser.ExpressionMathMLPrinter.getMathML(expression, false);
-		} catch (java.io.IOException e) {
-			throw new RuntimeException("Error converting expression to MathML string :" + e.getMessage(), e);
-		} catch (cbit.vcell.parser.ExpressionException e1) {
-			throw new RuntimeException("Error converting expression to MathML string :" + e1.getMessage(), e1);
-		}
-
-		// Use libSBMl routines to convert MathML string to MathML document and a libSBML-readable formula string
-		MathMLReader mmlr = new MathMLReader();
-		ASTNode mathNode = null;
-		try {
-			mathNode = mmlr.parseMathMLFromString(expMathMLStr);
-		} catch (IOException e) {
-			throw new RuntimeException("Error converting MathML string to ASTNode:" + e.getMessage(), e);
-		}
-		return mathNode;
-//		return mathNode.deepCopy();
-	}
-	
 	public void createManifest(String savePath, String fileName) {
 		
 		final String xmlnsAttribute = "http://identifiers.org/combine.specifications/omex-manifest";	 
@@ -1600,6 +1566,10 @@ public class SEDMLExporter {
 //		}
 //		t.addRange(r);
 
+	}
+
+	public SEDMLLogger getSedmlLogger() {
+		return sedmlLogger;
 	}
 
 }

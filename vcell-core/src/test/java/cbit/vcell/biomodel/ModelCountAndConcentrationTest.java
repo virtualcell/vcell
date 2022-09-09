@@ -34,16 +34,12 @@ public class ModelCountAndConcentrationTest {
         MathDescription expectedMathDescription = expected_bioModel_stoch_init_count.getSimulationContext(0).createNewMathMapping().getMathDescription();
 
         SimulationContext stoch_app = bioModel_stoch_init_concentration.getSimulationContext("stoch app");
-        stoch_app.setMathDescription(stoch_app.createNewMathMapping().getMathDescription());
-        stoch_app.setUsingConcentration(false);
-        stoch_app.convertSpeciesIniCondition(false);
-        stoch_app.setMathDescription(stoch_app.createNewMathMapping().getMathDescription());
-        MathDescription mathDescription = stoch_app.getMathDescription();
+        stoch_app.setUsingConcentration(false, true);
 
         //
         // test that maths are equivalent (math for the translation from concentration to count)
         //
-        MathCompareResults mathCompareResults = MathDescription.testEquivalency(SimulationSymbolTable.createMathSymbolTableFactory(), expectedMathDescription, mathDescription);
+        MathCompareResults mathCompareResults = MathDescription.testEquivalency(SimulationSymbolTable.createMathSymbolTableFactory(), expectedMathDescription, stoch_app.getMathDescription());
         boolean mathMatches = mathCompareResults.isEquivalent();
         Assert.assertTrue("expecting concentration to count translation to match: reason: "+mathCompareResults.toDatabaseStatus(), mathMatches);
 
@@ -57,6 +53,26 @@ public class ModelCountAndConcentrationTest {
     }
 
     @Test
+    public void test_concentration_to_count_notransform() throws IOException, XmlParseException, PropertyVetoException, MappingException, MatrixException, ModelException, MathException, ExpressionException {
+        BioModel bioModel_stoch_init_concentration = getBioModelFromResource("ExportScanTest2_stoch_concentration.vcml");
+
+        BioModel expected_bioModel_stoch_init_count = getBioModelFromResource("ExportScanTest2_stoch_count.vcml");
+        expected_bioModel_stoch_init_count.refreshDependencies();
+        MathDescription expectedMathDescription = expected_bioModel_stoch_init_count.getSimulationContext(0).createNewMathMapping().getMathDescription();
+
+        SimulationContext stoch_app = bioModel_stoch_init_concentration.getSimulationContext("stoch app");
+        stoch_app.setUsingConcentration(false, false);
+
+        //
+        // test that math overrides are not the same for new concentration to count translation saved BioModel (because didn't transform)
+        //
+        Simulation expectedSim = expected_bioModel_stoch_init_count.getSimulation(0);
+        Simulation sim = bioModel_stoch_init_concentration.getSimulation(0);
+        boolean overridesMatch = expectedSim.getMathOverrides().compareEqual(sim.getMathOverrides());
+        Assert.assertFalse("expecting math overrides to not be equivalent", overridesMatch);
+    }
+
+    @Test
     public void test_count_to_concentration() throws IOException, XmlParseException, PropertyVetoException, MappingException, MatrixException, ModelException, MathException, ExpressionException {
         BioModel bioModel_stoch_init_count = getBioModelFromResource("ExportScanTest2_stoch_count.vcml");
 
@@ -65,16 +81,12 @@ public class ModelCountAndConcentrationTest {
         MathDescription expectedMathDescription = expected_bioModel_stoch_init_concentration.getSimulationContext(0).createNewMathMapping().getMathDescription();
 
         SimulationContext stoch_app = bioModel_stoch_init_count.getSimulationContext("stoch app");
-        stoch_app.setMathDescription(stoch_app.createNewMathMapping().getMathDescription());
-        stoch_app.setUsingConcentration(true);
-        stoch_app.convertSpeciesIniCondition(true);
-        stoch_app.setMathDescription(stoch_app.createNewMathMapping().getMathDescription());
-        MathDescription mathDescription = stoch_app.getMathDescription();
+        stoch_app.setUsingConcentration(true, true);
 
         //
         // test that maths are equivalent (math for the translation from concentration to count)
         //
-        MathCompareResults mathCompareResults = MathDescription.testEquivalency(SimulationSymbolTable.createMathSymbolTableFactory(), expectedMathDescription, mathDescription);
+        MathCompareResults mathCompareResults = MathDescription.testEquivalency(SimulationSymbolTable.createMathSymbolTableFactory(), expectedMathDescription, stoch_app.getMathDescription());
         boolean mathMatches = mathCompareResults.isEquivalent();
         Assert.assertTrue("expecting concentration to count translation to match: reason: "+mathCompareResults.toDatabaseStatus(), mathMatches);
 
@@ -85,6 +97,26 @@ public class ModelCountAndConcentrationTest {
         Simulation sim = bioModel_stoch_init_count.getSimulation(0);
         boolean overridesMatch = expectedSim.getMathOverrides().compareEqual(sim.getMathOverrides());
         Assert.assertTrue("expecting math overrides to be equivalent", overridesMatch);
+    }
+
+    @Test
+    public void test_count_to_concentration_notransform() throws IOException, XmlParseException, PropertyVetoException, MappingException, MatrixException, ModelException, MathException, ExpressionException {
+        BioModel bioModel_stoch_init_count = getBioModelFromResource("ExportScanTest2_stoch_count.vcml");
+
+        BioModel expected_bioModel_stoch_init_concentration = getBioModelFromResource("ExportScanTest2_stoch_concentration.vcml");
+        expected_bioModel_stoch_init_concentration.refreshDependencies();
+        MathDescription expectedMathDescription = expected_bioModel_stoch_init_concentration.getSimulationContext(0).createNewMathMapping().getMathDescription();
+
+        SimulationContext stoch_app = bioModel_stoch_init_count.getSimulationContext("stoch app");
+        stoch_app.setUsingConcentration(true, false);
+
+        //
+        // test that math overrides not the same for new concentration to count translation saved BioModel (because didn't transform)
+        //
+        Simulation expectedSim = expected_bioModel_stoch_init_concentration.getSimulation(0);
+        Simulation sim = bioModel_stoch_init_count.getSimulation(0);
+        boolean overridesMatch = expectedSim.getMathOverrides().compareEqual(sim.getMathOverrides());
+        Assert.assertFalse("expecting math overrides to not be equivalent", overridesMatch);
     }
 
     private static BioModel getBioModelFromResource(String fileName) throws IOException, XmlParseException {

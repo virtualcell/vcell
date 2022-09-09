@@ -3626,8 +3626,8 @@ public class ClientRequestManager
 							appList.add(odeSimContext);
 							// set convention for initial conditions in generated application for seed
 							// species (concentration or count)
-							ruleBasedSimContext.setUsingConcentration(bngUnitSystem.isConcentration());
-							odeSimContext.setUsingConcentration(bngUnitSystem.isConcentration());
+							ruleBasedSimContext.setUsingConcentration(bngUnitSystem.isConcentration(), false);
+							odeSimContext.setUsingConcentration(bngUnitSystem.isConcentration(), false);
 
 							RbmModelContainer rbmModelContainer = bioModel.getModel().getRbmModelContainer();
 							RbmUtils.reactionRuleLabelIndex = 0;

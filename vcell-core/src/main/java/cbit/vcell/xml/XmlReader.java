@@ -6068,7 +6068,7 @@ private SimulationContext getSimulationContext(Element param, BioModel biomodel)
 			newsimcontext.setDescription(unMangle(annotation));
 		}
 		//set if using concentration
-		newsimcontext.setUsingConcentration(bUseConcentration);
+		newsimcontext.setUsingConcentration(bUseConcentration, false);
 		// set mass conservation model reduction flag
 		newsimcontext.setUsingMassConservationModelReduction(bMassConservationModelReduction);
 		// set if randomizing init condition or not (for stochastic applications
@@ -6085,7 +6085,7 @@ private SimulationContext getSimulationContext(Element param, BioModel biomodel)
 			newsimcontext.setNetworkConstraints(nc);
 		}
 		 
-	} catch(java.beans.PropertyVetoException e) {
+	} catch(Exception e) {
 		e.printStackTrace(System.out);
 		throw new XmlParseException("Exception", e);
 	} 

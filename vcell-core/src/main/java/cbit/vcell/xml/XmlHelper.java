@@ -142,7 +142,8 @@ public class XmlHelper {
 		// NEW WAY, with XML declaration, vcml element, namespace, version #, etc.
 		// create root vcml element
 		Element vcmlElement = new Element(XMLTags.VcmlRootNodeTag);
-		vcmlElement.setAttribute(XMLTags.VersionTag, getEscapedSoftwareVersion());
+		String versionString = getEscapedSoftwareVersion();
+		vcmlElement.setAttribute(XMLTags.VersionTag, versionString);
 		// get biomodel element from xmlProducer and add it to vcml root element
 		Xmlproducer xmlProducer = new Xmlproducer(printkeys);
 		Element biomodelElement = xmlProducer.getXML(bioModel);
@@ -621,9 +622,12 @@ public class XmlHelper {
 		// The code below attempts to take care of this situation.
 		Element root = xmlDoc.getRootElement();
 		Namespace ns = null;
+		VCellSoftwareVersion vCellSoftwareVersion = null;
 		if (root.getName().equals(XMLTags.VcmlRootNodeTag)) {
 			// NEW WAY - with xml string containing xml declaration, vcml element, namespace, etc ...
 			ns = root.getNamespace();
+			String version = root.getAttributeValue(XMLTags.SoftwareVersionAttrTag);
+			vCellSoftwareVersion = VCellSoftwareVersion.fromString(version);
 			Element bioRoot = root.getChild(XMLTags.BioModelTag, ns);
 			if (bioRoot == null) {
 				bioRoot = root.getChild(XMLTags.BioModelTag);
@@ -637,12 +641,10 @@ public class XmlHelper {
 		// common for both new way (with xml declaration, vcml element, etc) and existing way (biomodel is root)
 		// If namespace is null, xml is the old-style xml with biomodel as root, so invoke XMLReader without namespace argument.
 		XmlReader reader = null;
-		VCellSoftwareVersion vCellSoftwareVersion = null;
 		if (ns == null) {
 			reader = new XmlReader(printkeys);
 		} else {
 			reader = new XmlReader(printkeys, ns);
-			vCellSoftwareVersion = VCellSoftwareVersion.fromString(root.getAttributeValue(XMLTags.SoftwareVersionAttrTag,ns));
 		}
 		if (forcedModelUnitSystem != null) {
 			reader.setForcedModelUnitSystem(forcedModelUnitSystem);
