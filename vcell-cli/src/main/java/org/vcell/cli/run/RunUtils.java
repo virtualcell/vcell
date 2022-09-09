@@ -395,56 +395,62 @@ public class RunUtils {
                         Expression expr = new Expression(mathMLStr);
                         SymbolTable st = new SimpleSymbolTable(varIDs.toArray(new String[vars.size()]));
                         expr.bindExpression(st);
-                        //compute and write result, padding with NaN if unequal length or errors
-                        double[] row = new double[vars.size()];
-
-                        // Handling row labels that contains ","
-                        if (dataset.getId().startsWith("__vcell_reserved_data_set_prefix__")) {		// also used in cli.py
-                            if (dataset.getLabel().contains(",")) sb.append("\"" + dataset.getLabel() + "\"").append(",");
-                            else sb.append(dataset.getLabel()).append(",");
-                        } else {
-                            if (dataset.getId().contains(",")) sb.append("\"" + dataset.getId() + "\"").append(",");
-                            else sb.append(dataset.getId()).append(",");
-                        }
-
-                        if (dataset.getLabel().contains(",")) sb.append("\"" + dataset.getLabel() + "\"").append(",");
-                        else sb.append(dataset.getLabel()).append(",");
-
-                        DataGenerator dg = sedml.getDataGeneratorWithId(dataset.getDataReference());
-                        if(dg != null && dg.getName() != null && !dg.getName().isEmpty()) {
-                            // name may contain spaces or other things
-                            sb.append("\"" + dg.getName() + "\"").append(",");
-                        } else {			// dg may be null, name may be null
-                            sb.append("").append(",");
-                        }
-
+                        
                         Variable firstVar = vars.get(0);
                         int overridesCount = values.get(firstVar).size();
-                        // TODO: here was the for(k : overridesCount)
-                        for (int i = 0; i < mxlen; i++) {
-                            for (int j = 0; j < vars.size(); j++) {
-//                                double[] varVals = ((double[]) values.get(vars.get(j)));
-                            	Variable var = vars.get(j);
-                            	ArrayList<double[]> variablesList = values.get(var);
-                            	double[] varVals = variablesList.get(0);	// previous csv had get(k)
-
-                                if (i < varVals.length) {
-                                    row[j] = varVals[i];
-                                } else {
-                                    row[j] = Double.NaN;
-                                }
-                            }
-                            double computed = Double.NaN;
-                            try {
-                                computed = expr.evaluateVector(row);
-                            } catch (Exception e) {
-                                // do nothing, we leave NaN and don't warn/log since it could flood
-                            }
-                            sb.append(computed).append(",");
-                        }
-                    	//	}	// here would have been the close bracket for the loop over k
-                        sb.deleteCharAt(sb.lastIndexOf(","));
-                        sb.append("\n");
+                        for(int k=0; k < overridesCount; k++) {
+                        
+	                        //compute and write result, padding with NaN if unequal length or errors
+	                        double[] row = new double[vars.size()];
+	
+	                        // Handling row labels that contains ","
+	                        if (dataset.getId().startsWith("__vcell_reserved_data_set_prefix__")) {		// also used in cli.py
+	                            if (dataset.getLabel().contains(",")) sb.append("\"" + dataset.getLabel() + "\"").append(",");
+	                            else sb.append(dataset.getLabel()).append(",");
+	                        } else {
+	                            if (dataset.getId().contains(",")) sb.append("\"" + dataset.getId() + "\"").append(",");
+	                            else sb.append(dataset.getId()).append(",");
+	                        }
+	
+	                        if (dataset.getLabel().contains(",")) sb.append("\"" + dataset.getLabel() + "\"").append(",");
+	                        else sb.append(dataset.getLabel()).append(",");
+	
+	                        DataGenerator dg = sedml.getDataGeneratorWithId(dataset.getDataReference());
+	                        if(dg != null && dg.getName() != null && !dg.getName().isEmpty()) {
+	                            // name may contain spaces or other things
+	                            sb.append("\"" + dg.getName() + "\"").append(",");
+	                        } else {			// dg may be null, name may be null
+	                            sb.append("").append(",");
+	                        }
+	
+	                        // TODO: here was the for(k : overridesCount)
+	                        for (int i = 0; i < mxlen; i++) {
+	                            for (int j = 0; j < vars.size(); j++) {
+	//                                double[] varVals = ((double[]) values.get(vars.get(j)));
+	                            	Variable var = vars.get(j);
+	                            	ArrayList<double[]> variablesList = values.get(var);
+	                            	double[] varVals = variablesList.get(k);
+	
+	                                if (i < varVals.length) {
+	                                    row[j] = varVals[i];
+	                                } else {
+	                                    row[j] = Double.NaN;
+	                                }
+	                            }
+	                            double computed = Double.NaN;
+	                            try {
+	                                computed = expr.evaluateVector(row);
+	                            } catch (Exception e) {
+	                                // do nothing, we leave NaN and don't warn/log since it could flood
+	                            }
+	                            sb.append(computed).append(",");
+	                        }
+	                    	//	}	// here would have been the close bracket for the loop over k
+	                        sb.deleteCharAt(sb.lastIndexOf(","));
+	                        sb.append("\n");
+	                        
+	                    }	//end of k loop
+                        
                     }			// end of dataset
                     File f = new File(outDirForCurrentSedml, oo.getId() + ".csv");
                     PrintWriter out = new PrintWriter(f);
