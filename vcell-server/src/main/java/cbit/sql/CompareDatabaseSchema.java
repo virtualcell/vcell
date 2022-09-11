@@ -42,7 +42,11 @@ private static void compareSchemas(ConnectionFactory conFactory, KeyFactory keyF
 			Field fields[] = table.getFields();
 			java.util.Vector fieldsNotYetFoundList = new java.util.Vector(java.util.Arrays.asList(fields));
 			DatabaseMetaData metaData = con.getMetaData();
-			ResultSet rs = metaData.getColumns(null,null,table.getTableName().toUpperCase(),null);
+			String table_name = table.getTableName();
+			if (dbSyntax == DatabaseSyntax.ORACLE){
+				table_name = table_name.toUpperCase();
+			}
+			ResultSet rs = metaData.getColumns(null,null,table_name,null);
 			System.out.println("\n\nTABLE: "+table.getTableName());
 			//ResultSetMetaData rsMetaData = rs.getMetaData();
 			//for (int j = 1; j <= rsMetaData.getColumnCount(); j++) {
@@ -108,7 +112,7 @@ private static void compareSchemas(ConnectionFactory conFactory, KeyFactory keyF
 					//
 					// compare detailed data types (especially strings)
 					//
-					boolean databaseIsVarchar = typeName.startsWith("VARCHAR");
+					boolean databaseIsVarchar = typeName.toUpperCase().startsWith("VARCHAR");
 					boolean vcellIsVarchar = field.getSqlType(dbSyntax).toUpperCase().startsWith("VARCHAR");
 					if (databaseIsVarchar != vcellIsVarchar){
 						System.out.println("vcell field "+field.getQualifiedColName()+" is of type "+field.getSqlType(dbSyntax)+" and database is of type "+typeName);
