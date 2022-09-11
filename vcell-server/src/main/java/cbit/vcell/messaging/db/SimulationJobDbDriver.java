@@ -497,14 +497,13 @@ public List<SimpleJobStatusPersistent> getSimpleJobStatus(Connection con, String
 				") as " + MMLINK
 		+ " FROM " + jobTable.getTableName()
 					+ "," + simTable.getTableName() + " vc_sim_1"
-					+ "," + userTable.getTableName() 
-					+ "," + bioSimLinkTable.getTableName() + " vc_bmsim_1"
-					+ "," + mathSimLinkTable.getTableName() + " vc_mmsim_1"
+					+ "," + userTable.getTableName()
+		+ " LEFT JOIN " + bioSimLinkTable.getTableName() + " vc_bmsim_1"
+			+ " ON " + "vc_bmsim_1." + bioSimLinkTable.simRef.getUnqualifiedColName() + "=" + "vc_sim_1." + simTable.id.getUnqualifiedColName()
+		+ " LEFT JOIN " + mathSimLinkTable.getTableName() + " vc_mmsim_1"
+			+ " ON " + "vc_mmsim_1." + mathSimLinkTable.simRef.getUnqualifiedColName() + "=" + "vc_sim_1." + simTable.id.getUnqualifiedColName()
 		+ " WHERE " + "vc_sim_1." + simTable.id.getUnqualifiedColName() + "=" + jobTable.simRef.getQualifiedColName()
-		+ " AND " + "vc_sim_1." + simTable.ownerRef.getUnqualifiedColName() + "=" + userTable.id.getQualifiedColName()
-		+ " AND " + "vc_bmsim_1." + bioSimLinkTable.simRef.getUnqualifiedColName()+" (+) " + "=" + "vc_sim_1." + simTable.id.getUnqualifiedColName()
-		+ " AND " + "vc_mmsim_1." + mathSimLinkTable.simRef.getUnqualifiedColName()+" (+) " + "=" + "vc_sim_1." + simTable.id.getUnqualifiedColName();
-
+		+ " AND " + "vc_sim_1." + simTable.ownerRef.getUnqualifiedColName() + "=" + userTable.id.getQualifiedColName();
 	String additionalConditionsClause = "";
 	if (conditions!=null && conditions.length() > 0) {
 		additionalConditionsClause = " AND (" + conditions + ")";

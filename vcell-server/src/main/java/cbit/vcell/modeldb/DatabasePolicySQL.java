@@ -28,14 +28,8 @@ public class DatabasePolicySQL {
 	public static boolean bAllowAdministrativeAccess = false;
 	private static final String alias = "_alias";
 
-/**
- * This method was created in VisualAge.
- * @return java.lang.String
- * @param fields cbit.sql.Field[]
- * @param conditions java.lang.String[]
- * @param special java.lang.String
- */
-public static String enforceOwnershipDelete(User user, VersionTable vTable, String conditions) {
+
+	public static String enforceOwnershipDelete(User user, VersionTable vTable, String conditions) {
 	StringBuffer sb = new StringBuffer();
 	sb.append("DELETE FROM " + vTable.getTableName());
 	sb.append(" WHERE ");
@@ -52,14 +46,7 @@ public static String enforceOwnershipDelete(User user, VersionTable vTable, Stri
 }
 
 
-/**
- * This method was created in VisualAge.
- * @return java.lang.String
- * @param fields cbit.sql.Field[]
- * @param conditions java.lang.String[]
- * @param special java.lang.String
- */
-public static String enforceOwnershipInsert(User user, VersionTable vTable, Object[] valueData, org.vcell.util.document.Version version, DatabaseSyntax dbSyntax) 
+public static String enforceOwnershipInsert(User user, VersionTable vTable, Object[] valueData, org.vcell.util.document.Version version, DatabaseSyntax dbSyntax)
 									throws org.vcell.util.DataAccessException {
 	//
 	if (!version.getOwner().compareEqual(user)) {
@@ -120,63 +107,44 @@ public static String enforceOwnershipInsert(User user, VersionTable vTable, Obje
  * @param conditions java.lang.String[]
  * @param special java.lang.String
  */ 
-public static String enforceOwnershipSelect(User user, Field[] fields, Table[] tables, OuterJoin outerJoin, String conditions, String special, DatabaseSyntax dbSyntax) {
-	return enforceOwnershipSelect(user,fields,tables,outerJoin,conditions,special,dbSyntax,false);
+public static String enforceOwnershipSelect(User user, Field[] fields, Table[] tables, LeftOuterJoin outerJoin, String conditions, String special) {
+	return enforceOwnershipSelect(user,fields,tables,outerJoin,conditions,special,false);
 }
 
 
-/**
- * This method was created in VisualAge.
- * @return java.lang.String
- * @param fields cbit.sql.Field[]
- * @param conditions java.lang.String[]
- * @param special java.lang.String
- */ 
-public enum JoinOp {
-	RIGHT_OUTER_JOIN("RIGHT OUTER JOIN"),
-	LEFT_OUTER_JOIN("LEFT OUTER JOIN");
-	
-	final String opString;
-	private JoinOp(String op){
-		this.opString = op;
-	}
-}
-
-public static class OuterJoin {
-	public final Table table1;
-	public final Table table2;
-	public final JoinOp joinOp;
+public static class LeftOuterJoin {
+	public final Table leftTable;
+	public final Table rightTable;
 	public final Field leftField;
 	public final Field rightField;
-	public OuterJoin(Table t1, Table t2, JoinOp op, Field left, Field right){
-		this.table1 = t1;
-		this.table2 = t2;
-		this.joinOp = op;
-		this.leftField = left;
-		this.rightField = right;
-		if (t1==t2){
+	public LeftOuterJoin(Table leftTable, Table rightTable, Field leftField, Field rightField){
+		this.leftTable = leftTable;
+		this.rightTable = rightTable;
+		this.leftField = leftField;
+		this.rightField = rightField;
+		if (leftTable==rightTable){
 			throw new RuntimeException("table1 and table2 must be unique");
 		}
-		if (left==right){
+		if (leftField==rightField){
 			throw new RuntimeException("left and right fields must be unique");
 		}
-		boolean LEFT_T1_RIGHT_T1 = (leftField.getTableName().equals(table1.getTableName()) && rightField.getTableName().equals(table2.getTableName()));
-		boolean LEFT_T2_RIGHT_T2 = (leftField.getTableName().equals(table2.getTableName()) && rightField.getTableName().equals(table1.getTableName()));
+		boolean LEFT_T1_RIGHT_T1 = (leftField.getTableName().equals(leftTable.getTableName()) && rightField.getTableName().equals(rightTable.getTableName()));
+		boolean LEFT_T2_RIGHT_T2 = (leftField.getTableName().equals(rightTable.getTableName()) && rightField.getTableName().equals(leftTable.getTableName()));
 		if (!LEFT_T1_RIGHT_T1 && !LEFT_T2_RIGHT_T2){
 			throw new RuntimeException("DatabasePolicy.Join left and right fields must match tables");
 		}
 	}
 }
 
-public static String enforceOwnershipSelect(User user, Field[] fields, Table[] tables, OuterJoin outerJoin, String conditions, String special, DatabaseSyntax dbSyntax, boolean bCheckPermission) {
+public static String enforceOwnershipSelect(User user, Field[] fields, Table[] tables, LeftOuterJoin leftOuterJoin, String conditions, String special, boolean bCheckPermission) {
 
 	boolean isAdministrator = user.getName().equals(PropertyLoader.ADMINISTRATOR_ACCOUNT) && user.getID().equals(new org.vcell.util.document.KeyValue(PropertyLoader.ADMINISTRATOR_ID));
 	if (bAllowAdministrativeAccess && isAdministrator){
 		bCheckPermission = false;
 	}
 	
-	if (dbSyntax==DatabaseSyntax.POSTGRES && conditions.contains("(+)")){
-		throw new RuntimeException("Postgres does not support (+) syntax for outer joins");
+	if (conditions.contains("(+)")){
+		throw new RuntimeException("Replace Oracle outer join syntax (+) with LEFT JOIN");
 	}
 		
  /**
@@ -253,53 +221,35 @@ public static String enforceOwnershipSelect(User user, Field[] fields, Table[] t
 	if (bCheckPermission){
 		sb.append(GroupTable.table.getTableName()+",");
 	}
-	switch (dbSyntax){
-	case ORACLE:{
-		//
-		// Add caller's tables
-		//
-		for(int c = 0;c < tables.length;c+= 1){
-			Table table = tables[c];
-			sb.append(table.getTableName());
-			if(c != (tables.length-1)){
-				sb.append(",");
-			}
+	//
+	// Add caller's tables not mentioned in outer join
+	//
+	boolean bFirst = true;
+	for(int c = 0;c < tables.length;c+= 1){
+		Table table = tables[c];
+		if (leftOuterJoin!=null && ((table == leftOuterJoin.leftTable) || (table == leftOuterJoin.rightTable))){
+			// add this table later as "LEFT JOIN rightTable ON leftTable.leftField = rightTable.rightField"
+			continue;
 		}
-		if (outerJoin!=null){
-			throw new RuntimeException("explicit outer join syntax not yet implemented for ORACLE");
+		if (!bFirst){
+			sb.append(",");
 		}
-		break;
+		sb.append(table.getTableName());
+		bFirst = false;
 	}
-	case POSTGRES:{
-		//
-		// Add caller's tables not mentioned in outer join
-		//
-		for(int c = 0;c < tables.length;c+= 1){
-			Table table = tables[c];
-			if (outerJoin!=null && ((table == outerJoin.table1) || (table == outerJoin.table2))){
-				continue;
-			}
-			sb.append(table.getTableName());
-			if(c != (tables.length-1)){
-				sb.append(",");
-			}
+	//
+	// add outer join clause
+	//
+	if (leftOuterJoin!=null) {
+		if (!bFirst){
+			sb.append(",");
 		}
-		//
-		// add outer join clause
-		//
-		if (outerJoin!=null){
-			List<Table> tableList = Arrays.asList(tables);
-			if (!tableList.contains(outerJoin.table1) || !tableList.contains(outerJoin.table2)){
-				throw new RuntimeException("outerJoin tables must be taken from table list");
-			}
-			sb.append(outerJoin.table1.getTableName()+" "+outerJoin.joinOp.opString+" "+outerJoin.table2.getTableName()+
-					" ON "+outerJoin.leftField.getQualifiedColName()+" = "+outerJoin.rightField.getQualifiedColName());
+		List<Table> tableList = Arrays.asList(tables);
+		if (!tableList.contains(leftOuterJoin.leftTable) || !tableList.contains(leftOuterJoin.rightTable)) {
+			throw new RuntimeException("outerJoin tables must be taken from table list");
 		}
-		break;
-	}
-	default:{
-		throw new RuntimeException("unexpected DatabaseSyntax "+dbSyntax);
-	}
+		sb.append(leftOuterJoin.leftTable.getTableName() + " LEFT JOIN " + leftOuterJoin.rightTable.getTableName() +
+				" ON " + leftOuterJoin.leftField.getQualifiedColName() + " = " + leftOuterJoin.rightField.getQualifiedColName());
 	}
 	//
 	sb.append(" WHERE ");
@@ -324,19 +274,12 @@ public static String enforceOwnershipSelect(User user, Field[] fields, Table[] t
 		sb.append (" "+special);
 	}
 	if (lg.isTraceEnabled()){
-		lg.trace("\nDatabasePolicySQL.enforceOwnershipSelect(), sql = "+sb.toString());
+		lg.trace("sql = "+sb.toString());
 	}
 	return sb.toString();
 }
 
 
-/**
- * This method was created in VisualAge.
- * @return java.lang.String
- * @param fields cbit.sql.Field[]
- * @param conditions java.lang.String[]
- * @param special java.lang.String
- */
 public static String enforceOwnershipUpdate(User user, VersionTable vTable, String setValues, String conditions) {
 	StringBuffer sb = new StringBuffer();
 	sb.append("UPDATE " + vTable.getTableName());
@@ -355,14 +298,6 @@ public static String enforceOwnershipUpdate(User user, VersionTable vTable, Stri
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (11/28/2001 5:09:00 PM)
- * @return java.lang.String
- * @param vTable cbit.sql.VersionTable
- * @param gTable cbit.vcell.modeldb.GroupTable
- * @param user cbit.vcell.server.User
- */
 static String getVTableDirectSelectClause(VersionTable vTable,User user) {
 
 	String sql = 	" ( "+

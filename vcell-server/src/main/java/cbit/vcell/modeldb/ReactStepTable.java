@@ -36,7 +36,7 @@ import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.SimpleReaction;
 import cbit.vcell.model.Structure;
 import cbit.vcell.model.VCMODL;
-import cbit.vcell.modeldb.DatabasePolicySQL.OuterJoin;
+import cbit.vcell.modeldb.DatabasePolicySQL.LeftOuterJoin;
 /**
  * This type was created in VisualAge.
  */
@@ -249,12 +249,6 @@ private String getReactTypeDbString(ReactionStep reactionStep) throws DataAccess
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (7/12/2003 2:59:27 PM)
- * @return java.lang.String
- * @param likeString java.lang.String
- */
 public String getSQLReactionStepInfosQuery(KeyValue[] rxIDs,User user, DatabaseSyntax dbSyntax) {
 	//Get Descriptive name for rxID
 	//watch for multiple copies of reactionsteps being return because of
@@ -311,7 +305,7 @@ public String getSQLReactionStepInfosQuery(KeyValue[] rxIDs,User user, DatabaseS
 		" AND "+
 		ReactStepTable.table.structRef.getQualifiedColName() + " = " + StructTable.table.id.getQualifiedColName();
 	String special = " ORDER BY " + ReactStepTable.table.id.getQualifiedColName();
-	sql = DatabasePolicySQL.enforceOwnershipSelect(user,f,t,(OuterJoin)null,condition,special,dbSyntax,true);
+	sql = DatabasePolicySQL.enforceOwnershipSelect(user,f,t,(LeftOuterJoin)null,condition,special,true);
 	StringBuffer sb = new StringBuffer(sql);
 	//LOBs cannot be accessed if the query uses the DISTINCT or UNIQUE keyword
 	sb.insert(7," DISTINCT ");
@@ -540,7 +534,7 @@ public String getSQLUserReactionListQuery(ReactionQuerySpec rqs, User user, Data
 		ReactStepTable.table.modelRef.getQualifiedColName() + " = " + BioModelTable.table.modelRef.getQualifiedColName();
 
 	String special = " ORDER BY " + ReactStepTable.table.id.getQualifiedColName()+" , "+BMID_NAME;
-	sql = DatabasePolicySQL.enforceOwnershipSelect(user,f,t,(OuterJoin)null,condition,special,dbSyntax,true);
+	sql = DatabasePolicySQL.enforceOwnershipSelect(user,f,t,(LeftOuterJoin)null,condition,special,true);
 	StringBuffer sb = new StringBuffer(sql);
 	//LOBs cannot be accessed if the query uses the DISTINCT or UNIQUE keyword
 	sb.insert(7,Table.SQL_GLOBAL_HINT+" DISTINCT ");
@@ -548,12 +542,6 @@ public String getSQLUserReactionListQuery(ReactionQuerySpec rqs, User user, Data
 }
 
 
-/**
- * This method was created in VisualAge.
- * @return java.lang.String
- * @param key KeyValue
- * @param modelName java.lang.String
- */
 public String getSQLValueList(ReactionStep reactionStep, KeyValue modelKey, KeyValue structKey,KeyValue key, DatabaseSyntax dbSyntax) throws DataAccessException {
 
 	switch (dbSyntax){
@@ -646,12 +634,6 @@ public String getSQLValueList(ReactionStep reactionStep, KeyValue modelKey, KeyV
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (7/12/2003 2:59:27 PM)
- * @return java.lang.String
- * @param likeString java.lang.String
- */
 public ReactionDescription[] getUserReactionList(java.sql.ResultSet rset)throws java.sql.SQLException {
 
 	java.util.Vector resultV = new java.util.Vector();

@@ -36,7 +36,7 @@ import cbit.sql.QueryHashtable;
 import cbit.sql.RecordChangedException;
 import cbit.sql.Table;
 import cbit.vcell.mathmodel.MathModelMetaData;
-import cbit.vcell.modeldb.DatabasePolicySQL.OuterJoin;
+import cbit.vcell.modeldb.DatabasePolicySQL.LeftOuterJoin;
 /**
  * This type was created in VisualAge.
  */
@@ -108,13 +108,7 @@ private void deleteMathModelMetaDataSQL(Connection con, User user, KeyValue math
 }
 
 
-/**
- * This method was created in VisualAge.
- * @param user cbit.vcell.server.User
- * @param vType int
- * @param versionKey cbit.sql.KeyValue
- */
-public void deleteVersionable(Connection con, User user, VersionableType vType, KeyValue vKey) 
+public void deleteVersionable(Connection con, User user, VersionableType vType, KeyValue vKey)
 				throws DependencyException, ObjectNotFoundException,
 						SQLException,DataAccessException,PermissionException {
 
@@ -196,7 +190,7 @@ private MathModelMetaData getMathModelMetaData(Connection con,User user, KeyValu
 	String condition =	mathModelTable.id.getQualifiedColName() + " = " + mathModelKey + 
 					" AND " + 
 						userTable.id.getQualifiedColName() + " = " + mathModelTable.ownerRef.getQualifiedColName();
-	sql = DatabasePolicySQL.enforceOwnershipSelect(user,f,t,(OuterJoin)null,condition,null,dbSyntax,true);
+	sql = DatabasePolicySQL.enforceOwnershipSelect(user,f,t,(LeftOuterJoin)null,condition,null,true);
 
 	Statement stmt = con.createStatement();
 	MathModelMetaData mathModelMetaData = null;
@@ -243,7 +237,7 @@ MathModelMetaData[] getMathModelMetaDatas(Connection con,User user, boolean bAll
 	if (!bAll) {
 		condition += " AND " + userTable.id.getQualifiedColName() + " = " + user.getID();
 	}
-	sql = DatabasePolicySQL.enforceOwnershipSelect(user,f,t,(OuterJoin)null,condition,null,dbSyntax,true);
+	sql = DatabasePolicySQL.enforceOwnershipSelect(user,f,t,(LeftOuterJoin)null,condition,null,true);
 	//
 	StringBuffer newSQL = new StringBuffer(sql);
 	newSQL.insert(7,Table.SQL_GLOBAL_HINT);
@@ -307,13 +301,7 @@ KeyValue[] getSimulationEntriesFromMathModel(Connection con,KeyValue mathModelKe
 }
 
 
-/**
- * This method was created in VisualAge.
- * @return cbit.sql.Versionable
- * @param user cbit.vcell.server.User
- * @param versionable cbit.sql.Versionable
- */
-public Versionable getVersionable(QueryHashtable dbc, Connection con, User user, VersionableType vType, KeyValue vKey) 
+public Versionable getVersionable(QueryHashtable dbc, Connection con, User user, VersionableType vType, KeyValue vKey)
 			throws ObjectNotFoundException, SQLException, DataAccessException {
 				
 	Versionable versionable = (Versionable) dbc.get(vKey);
@@ -331,11 +319,7 @@ public Versionable getVersionable(QueryHashtable dbc, Connection con, User user,
 }
 
 
-/**
- * This method was created in VisualAge.
- * @param model cbit.vcell.model.Model
- */
-private void insertMathModelMetaData(Connection con,User user ,MathModelMetaData mathModel,MathModelChildSummary mmcs,Version newVersion) 
+private void insertMathModelMetaData(Connection con,User user ,MathModelMetaData mathModel,MathModelChildSummary mmcs,Version newVersion)
 						throws SQLException, DataAccessException, RecordChangedException {
 	
 	//
@@ -357,13 +341,7 @@ private void insertMathModelMetaData(Connection con,User user ,MathModelMetaData
 }
 
 
-/**
- * This method was created in VisualAge.
- * @param vcimage cbit.image.VCImage
- * @param userid java.lang.String
- * @exception java.rmi.RemoteException The exception description.
- */
-private void insertMathModelMetaDataSQL(Connection con,User user, MathModelMetaData mathModel,MathModelChildSummary mmcs,Version newVersion) 
+private void insertMathModelMetaDataSQL(Connection con,User user, MathModelMetaData mathModel,MathModelChildSummary mmcs,Version newVersion)
 					throws SQLException, DataAccessException {
 
 	String sql;
@@ -391,12 +369,6 @@ private void insertMathModelMetaDataSQL(Connection con,User user, MathModelMetaD
 }
 
 
-/**
- * This method was created in VisualAge.
- * @param vcimage cbit.image.VCImage
- * @param userid java.lang.String
- * @exception java.rmi.RemoteException The exception description.
- */
 private void insertSimulationEntryLinkSQL(Connection con, KeyValue key, KeyValue mathModelKey, KeyValue simKey) throws SQLException, DataAccessException {
 	String sql;
 	sql = 	"INSERT INTO " + mathModelSimLinkTable.getTableName() + " " + 
@@ -408,14 +380,7 @@ private void insertSimulationEntryLinkSQL(Connection con, KeyValue key, KeyValue
 }
 
 
-/**
- * This method was created in VisualAge.
- * @return cbit.sql.KeyValue
- * @param versionable cbit.sql.Versionable
- * @param pRef cbit.sql.KeyValue
- * @param bCommit boolean
- */
-public KeyValue insertVersionable(InsertHashtable hash, Connection con, User user, MathModelMetaData mathModelMetaData,MathModelChildSummary mmcs, String name, boolean bVersion) 
+public KeyValue insertVersionable(InsertHashtable hash, Connection con, User user, MathModelMetaData mathModelMetaData,MathModelChildSummary mmcs, String name, boolean bVersion)
 					throws DataAccessException, SQLException, RecordChangedException {
 						
 	Version newVersion = insertVersionableInit(hash, con, user, mathModelMetaData, name, mathModelMetaData.getDescription(), bVersion);
@@ -424,13 +389,7 @@ public KeyValue insertVersionable(InsertHashtable hash, Connection con, User use
 }
 
 
-/**
- * This method was created in VisualAge.
- * @return cbit.image.VCImage
- * @param user cbit.vcell.server.User
- * @param image cbit.image.VCImage
- */
-public KeyValue updateVersionable(InsertHashtable hash, Connection con, User user, MathModelMetaData mathModelMetaData,MathModelChildSummary mmcs, boolean bVersion) 
+public KeyValue updateVersionable(InsertHashtable hash, Connection con, User user, MathModelMetaData mathModelMetaData,MathModelChildSummary mmcs, boolean bVersion)
 			throws DataAccessException, SQLException, RecordChangedException {
 				
 	Version newVersion = updateVersionableInit(hash, con, user, mathModelMetaData, bVersion);

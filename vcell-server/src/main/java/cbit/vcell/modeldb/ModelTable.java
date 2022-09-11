@@ -35,8 +35,7 @@ import cbit.vcell.model.Model.RbmModelContainer;
 import cbit.vcell.model.ModelException;
 import cbit.vcell.model.ModelInfo;
 import cbit.vcell.model.ModelUnitSystem;
-import cbit.vcell.modeldb.DatabasePolicySQL.JoinOp;
-import cbit.vcell.modeldb.DatabasePolicySQL.OuterJoin;
+import cbit.vcell.modeldb.DatabasePolicySQL.LeftOuterJoin;
 import cbit.vcell.xml.XmlParseException;
 import cbit.vcell.xml.XmlReader;
 import cbit.vcell.xml.Xmlproducer;
@@ -105,12 +104,7 @@ public static void readRbmElement(Connection con,Model model,DatabaseSyntax dbSy
 		if(stmt != null){try{stmt.close();}catch(Exception e){e.printStackTrace();}}
 	}
 }
-/**
- * This method was created in VisualAge.
- * @return cbit.vcell.geometry.GeometryInfo
- * @param rset java.sql.ResultSet
- * @param log cbit.vcell.server.SessionLog
- */
+
 public VersionInfo getInfo(ResultSet rset, Connection con) throws SQLException,DataAccessException {
 	
 	java.math.BigDecimal groupid = rset.getBigDecimal(VersionTable.privacy_ColumnName);
@@ -132,23 +126,14 @@ public String getInfoSQL(User user,String extraConditions,String special,Databas
 	Table[] t = {vTable,userTable,swvTable};
 	
 	switch (dbSyntax){
-	case ORACLE:{
-		String condition = userTable.id.getQualifiedColName() + " = " + vTable.ownerRef.getQualifiedColName() +  // links in the userTable
-		           " AND " + vTable.id.getQualifiedColName() + " = " + swvTable.versionableRef.getQualifiedColName()+"(+) ";
-		if (extraConditions != null && extraConditions.trim().length()>0){
-			condition += " AND "+extraConditions;
-		}
-		sql = DatabasePolicySQL.enforceOwnershipSelect(user,f,t,(OuterJoin)null,condition,special,dbSyntax);
-		return sql;
-	}
+	case ORACLE:
 	case POSTGRES:{
 		String condition = userTable.id.getQualifiedColName() + " = " + vTable.ownerRef.getQualifiedColName() + " "; // links in the userTable
-		         //  " AND " + vTable.id.getQualifiedColName() + " = " + swvTable.versionableRef.getQualifiedColName()+"(+) ";
 		if (extraConditions != null && extraConditions.trim().length()>0){
 			condition += " AND "+extraConditions;
 		}
-		OuterJoin outerJoin = new OuterJoin(vTable, swvTable, JoinOp.LEFT_OUTER_JOIN, vTable.id, swvTable.versionableRef);
-		sql = DatabasePolicySQL.enforceOwnershipSelect(user,f,t,outerJoin,condition,special,dbSyntax);
+		LeftOuterJoin outerJoin = new LeftOuterJoin(vTable, swvTable, vTable.id, swvTable.versionableRef);
+		sql = DatabasePolicySQL.enforceOwnershipSelect(user,f,t,outerJoin,condition,special);
 		return sql;
 	}
 	default:{
@@ -156,12 +141,7 @@ public String getInfoSQL(User user,String extraConditions,String special,Databas
 	}
 	}
 }
-/**
- * This method was created in VisualAge.
- * @return Model
- * @param rset ResultSet
- * @param log SessionLog
- */
+
 public Model getModel(ResultSet rset, Connection con) throws SQLException,DataAccessException {
 
 	java.math.BigDecimal groupid = rset.getBigDecimal(VersionTable.privacy_ColumnName);
@@ -178,12 +158,7 @@ public Model getModel(ResultSet rset, Connection con) throws SQLException,DataAc
 
 	return new Model(version, modelUnitSystem);
 }
-/**
- * This method was created in VisualAge.
- * @return java.lang.String
- * @param key KeyValue
- * @param modelName java.lang.String
- */
+
 public String getSQLValueList(Model model,String rbm, Version version) {
 	Xmlproducer xmlProducer = new Xmlproducer(false);
 	String modelUnitSystemXML = TokenMangler.getSQLEscapedString(XmlUtil.xmlToString(xmlProducer.getXML(model.getUnitSystem())));
