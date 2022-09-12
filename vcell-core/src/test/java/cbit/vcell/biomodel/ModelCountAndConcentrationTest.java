@@ -30,8 +30,8 @@ public class ModelCountAndConcentrationTest {
         BioModel bioModel_stoch_init_concentration = getBioModelFromResource("ExportScanTest2_stoch_concentration.vcml");
 
         BioModel expected_bioModel_stoch_init_count = getBioModelFromResource("ExportScanTest2_stoch_count.vcml");
-        expected_bioModel_stoch_init_count.refreshDependencies();
-        MathDescription expectedMathDescription = expected_bioModel_stoch_init_count.getSimulationContext(0).createNewMathMapping().getMathDescription();
+        expected_bioModel_stoch_init_count.updateAll(false);
+        MathDescription expectedMathDescription = expected_bioModel_stoch_init_count.getSimulationContext(0).getMathDescription();
 
         SimulationContext stoch_app = bioModel_stoch_init_concentration.getSimulationContext("stoch app");
         stoch_app.setUsingConcentration(false, true);
@@ -57,8 +57,8 @@ public class ModelCountAndConcentrationTest {
         BioModel bioModel_stoch_init_concentration = getBioModelFromResource("ExportScanTest2_stoch_concentration.vcml");
 
         BioModel expected_bioModel_stoch_init_count = getBioModelFromResource("ExportScanTest2_stoch_count.vcml");
-        expected_bioModel_stoch_init_count.refreshDependencies();
-        MathDescription expectedMathDescription = expected_bioModel_stoch_init_count.getSimulationContext(0).createNewMathMapping().getMathDescription();
+        expected_bioModel_stoch_init_count.updateAll(false);
+        MathDescription expectedMathDescription = expected_bioModel_stoch_init_count.getSimulationContext(0).getMathDescription();
 
         SimulationContext stoch_app = bioModel_stoch_init_concentration.getSimulationContext("stoch app");
         stoch_app.setUsingConcentration(false, false);
@@ -77,8 +77,8 @@ public class ModelCountAndConcentrationTest {
         BioModel bioModel_stoch_init_count = getBioModelFromResource("ExportScanTest2_stoch_count.vcml");
 
         BioModel expected_bioModel_stoch_init_concentration = getBioModelFromResource("ExportScanTest2_stoch_concentration.vcml");
-        expected_bioModel_stoch_init_concentration.refreshDependencies();
-        MathDescription expectedMathDescription = expected_bioModel_stoch_init_concentration.getSimulationContext(0).createNewMathMapping().getMathDescription();
+        expected_bioModel_stoch_init_concentration.updateAll(false);
+        MathDescription expectedMathDescription = expected_bioModel_stoch_init_concentration.getSimulationContext(0).getMathDescription();
 
         SimulationContext stoch_app = bioModel_stoch_init_count.getSimulationContext("stoch app");
         stoch_app.setUsingConcentration(true, true);
@@ -104,8 +104,7 @@ public class ModelCountAndConcentrationTest {
         BioModel bioModel_stoch_init_count = getBioModelFromResource("ExportScanTest2_stoch_count.vcml");
 
         BioModel expected_bioModel_stoch_init_concentration = getBioModelFromResource("ExportScanTest2_stoch_concentration.vcml");
-        expected_bioModel_stoch_init_concentration.refreshDependencies();
-        MathDescription expectedMathDescription = expected_bioModel_stoch_init_concentration.getSimulationContext(0).createNewMathMapping().getMathDescription();
+        expected_bioModel_stoch_init_concentration.updateAll(false);
 
         SimulationContext stoch_app = bioModel_stoch_init_count.getSimulationContext("stoch app");
         stoch_app.setUsingConcentration(true, false);

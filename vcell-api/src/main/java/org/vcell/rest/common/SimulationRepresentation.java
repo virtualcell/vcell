@@ -11,6 +11,7 @@ import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.math.Constant;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathException;
+import cbit.vcell.math.MathSymbolTable;
 import cbit.vcell.matrix.MatrixException;
 import cbit.vcell.model.Model.ReservedSymbol;
 import cbit.vcell.model.ModelException;
@@ -129,11 +130,11 @@ public class SimulationRepresentation {
 			return null;
 		}
 		MathDescription mathDesc = simContext.getMathDescription(); // initialize to old mathDescription in case error generating math
-		MathMapping mathMapping = simContext.createNewMathMapping();
 		MathSymbolMapping mathSymbolMapping = null;
 		try {
-			mathDesc = mathMapping.getMathDescription();
-			mathSymbolMapping = mathMapping.getMathSymbolMapping();
+			simContext.updateAll(true);
+			mathDesc = simContext.getMathDescription();
+			mathSymbolMapping = (MathSymbolMapping) simContext.getMathDescription().getSourceSymbolMapping();
 		} catch (Exception e1) {
 			System.err.println(e1.getMessage());
 		}

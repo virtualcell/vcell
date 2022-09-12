@@ -367,31 +367,10 @@ public String addTestCases(final TestSuiteInfoNew tsInfo, final TestCaseNew[] te
 									}
 								}
 							}
+							bioModel.updateAll(true);
 							SimulationContext[] simContexts = bioModel.getSimulationContexts();
 							for (int j = 0; j < simContexts.length; j++){
 								simContexts[j].clearVersion();
-								GeometrySurfaceDescription gsd = simContexts[j].getGeometry().getGeometrySurfaceDescription();
-								if(gsd != null){
-									GeometricRegion[] grArr = gsd.getGeometricRegions();
-									if(grArr == null){
-										gsd.updateAll();
-									}
-								}
-								MathMapping mathMapping = simContexts[j].createNewMathMapping();
-
-								// for older models that do not have absolute compartment sizes set, but have relative sizes (SVR/VF); or if there is only one compartment with size not set,
-								// compute absolute compartment sizes using relative sizes and assuming a default value of '1' for one of the compartments.
-								// Otherwise, the math generation will fail, since for the relaxed topology (VCell 5.3 and later) absolute compartment sizes are required.
-								GeometryContext gc = simContexts[j].getGeometryContext();
-								if (simContexts[j].getGeometry().getDimension() == 0 &&
-										((gc.isAllSizeSpecifiedNull() && !gc.isAllVolFracAndSurfVolSpecifiedNull()) || (gc.getModel().getStructures().length == 1 && gc.isAllSizeSpecifiedNull())) ) {
-									// choose the first structure in model and set its size to '1'.
-									Structure struct = simContexts[j].getModel().getStructure(0);
-									double structSize = 1.0;
-									StructureSizeSolver.updateAbsoluteStructureSizes(simContexts[j], struct, structSize, struct.getStructureSize().getUnitDefinition());
-								}
-
-								simContexts[j].setMathDescription(mathMapping.getMathDescription());
 							}
 							Simulation[] sims = bioModel.getSimulations();
 							String[] simNames = new String[sims.length];

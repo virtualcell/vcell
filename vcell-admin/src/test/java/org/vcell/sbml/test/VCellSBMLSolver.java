@@ -130,9 +130,9 @@ public class VCellSBMLSolver implements SBMLSolver {
 			//
 		    // select only Application, generate math, and create a single Simulation.
 			//
+			bioModel.updateAll();
 		    SimulationContext simContext = bioModel.getSimulationContext(0);
-		    MathMapping mathMapping = simContext.createNewMathMapping();
-		    MathDescription mathDesc = mathMapping.getMathDescription();
+		    MathDescription mathDesc = simContext.getMathDescription();
 		    String vcml = mathDesc.getVCML();
 		    try (PrintWriter pw = new PrintWriter("vcmlTrace.txt")) {
 		    	pw.println(vcml);
@@ -416,9 +416,9 @@ public class VCellSBMLSolver implements SBMLSolver {
 			//
 		    // select only Application, generate math, and create a single Simulation.
 			//
+			bioModel.updateAll();
 		    SimulationContext simContext = bioModel.getSimulationContext(0);
-		    MathMapping mathMapping = simContext.createNewMathMapping();
-		    MathDescription mathDesc = mathMapping.getMathDescription();
+		    MathDescription mathDesc = simContext.getMathDescription();
 		    simContext.setMathDescription(mathDesc);
 		    SimulationVersion simVersion =
 		        new SimulationVersion(

@@ -123,10 +123,8 @@ public static void main(String[] args) {
 				if (!bSimulate) {
 					return;
 				}
-				// Generate math for lone simContext
-				SimulationContext simContext = (SimulationContext)bioModel.getSimulationContext(0);  
-				MathDescription mathDesc = simContext.createNewMathMapping().getMathDescription();
-				simContext.setMathDescription(mathDesc);
+				bioModel.updateAll(); // generate math
+				SimulationContext simContext = (SimulationContext)bioModel.getSimulationContext(0);
 
 				// Create basic simulation, with IDA solver (set in solve method) and other defaults, and end time 'Te'
 				org.vcell.util.document.SimulationVersion simVersion = new org.vcell.util.document.SimulationVersion(
