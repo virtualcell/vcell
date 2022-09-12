@@ -256,6 +256,10 @@ public class SimulationContext implements SimulationOwner, Versionable, Matchabl
 			builtin_replacements.add(new SymbolReplacementTemplate(DiffEquMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_COUNT,
 					DiffEquMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_COUNT_template_replace));
 
+			// test for renamed initial condition constant for a event assignment or rate rule init (changed from _init to _protocol_init)
+			builtin_replacements.add(new SymbolReplacementTemplate(DiffEquMathMapping.MATH_FUNC_SUFFIX_EVENTASSIGN_OR_RATERULE_INIT_old,
+					DiffEquMathMapping.MATH_FUNC_SUFFIX_EVENTASSIGN_OR_RATERULE_INIT));
+
 		}
 
 		@Override
