@@ -170,20 +170,6 @@ public class VcmlOmexConverter {
 	private static boolean keepSimulation(Simulation simulation, boolean bHasDataOnly, boolean bNonSpatialOnly, CLIDatabaseService cliDatabaseService) {
 
 		//
-		// exclude simulations with field data
-		//
-		Enumeration<Variable> variables = simulation.getMathDescription().getVariables();
-		while(variables.hasMoreElements()) {
-			Variable var = variables.nextElement();
-			Expression exp = var.getExpression();
-			FieldFunctionArguments[] ffas = FieldUtilities.getFieldFunctionArguments( exp);
-			if(ffas != null && ffas.length > 0) {
-				logger.warn("excluding simulation '"+simulation.getName()+", it has field data, not yet supported for OMEX export");
-				return false;
-			}
-		}
-
-		//
 		// exclude spatial simulations if bNonSpatialOnly
 		//
 		if(bNonSpatialOnly == true) {		// we skip all spatial simulations
