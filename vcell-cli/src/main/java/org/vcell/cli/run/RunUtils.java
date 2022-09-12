@@ -399,7 +399,10 @@ public class RunUtils {
                         Variable firstVar = vars.get(0);
                         int overridesCount = values.get(firstVar).size();
                         for(int k=0; k < overridesCount; k++) {
-                        
+                        	
+                        	if(k>0 && dataset.getId().contains("time_")) {
+                        		continue;
+                        	}
 	                        //compute and write result, padding with NaN if unequal length or errors
 	                        double[] row = new double[vars.size()];
 	
