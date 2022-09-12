@@ -335,11 +335,11 @@ public class SimulationContext implements SimulationOwner, Versionable, Matchabl
 			//
 			// if not found in the previous math symbol mapping, try to repair using suffix patterns.
 			//
-			if (currentMathSymbolMapping != null) {
-				for (SymbolReplacementTemplate replacementTemplate : builtin_replacements) {
+			for (SymbolReplacementTemplate replacementTemplate : builtin_replacements) {
+				if (name.endsWith(replacementTemplate.oldNameSuffix)) {
 					String repaired_name = name.replace(replacementTemplate.oldNameSuffix, replacementTemplate.newNameSuffix);
-					Variable mathVar = currentMathSymbolMapping.findVariableByName(repaired_name);
-					if (mathVar != null) {
+					Variable mathVar = mathDesc.getVariable(repaired_name);
+					if (mathVar instanceof Constant) {
 						logger.info("replaced math override name " + name + " with " + repaired_name + " with factor " + replacementTemplate.factor + " using template pattern");
 						return new SymbolReplacement(repaired_name, new Expression(replacementTemplate.factor));
 					}
