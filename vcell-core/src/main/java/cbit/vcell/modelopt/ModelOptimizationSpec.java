@@ -509,12 +509,6 @@ public void removeUncoupledParameters() {
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (5/5/2006 5:18:19 PM)
- * @return cbit.vcell.modelopt.ParameterMappingSpec
- * @param parameter cbit.vcell.model.Parameter
- */
 public ParameterMappingSpec getParameterMappingSpec(String parameterName) {
 	for (int i = 0;fieldParameterMappingSpecs!=null && i < fieldParameterMappingSpecs.length; i++){
 		if (fieldParameterMappingSpecs[i].getModelParameter().getName().equals(parameterName)){
@@ -543,11 +537,6 @@ private ParameterMappingSpec getParameterMappingSpecByCompareEqual(Parameter par
 	return null;
 }
 
-/**
- * Gets the parameterMapping property (cbit.vcell.modelopt.ParameterMapping[]) value.
- * @return The parameterMapping property value.
- * @see #setParameterMapping
- */
 public ParameterMappingSpec[] getParameterMappingSpecs() {
 	return fieldParameterMappingSpecs;
 }
@@ -564,11 +553,6 @@ protected java.beans.PropertyChangeSupport getPropertyChange() {
 }
 
 
-/**
- * Gets the constraintData property (cbit.vcell.opt.ConstraintData) value.
- * @return The constraintData property value.
- * @see #setConstraintData
- */
 public ReferenceData getReferenceData() {
 	return fieldReferenceData;
 }
@@ -599,11 +583,6 @@ public ReferenceDataMappingSpec[] getReferenceDataMappingSpecs() {
 }
 
 
-/**
- * Gets the simulationContext property (cbit.vcell.mapping.SimulationContext) value.
- * @return The simulationContext property value.
- * @see #setSimulationContext
- */
 public SimulationContext getSimulationContext() {
 	return parameterEstimationTask.getSimulationContext();
 }
@@ -789,12 +768,6 @@ public synchronized void removeVetoableChangeListener(java.lang.String propertyN
 }
 
 
-/**
- * Sets the parameterMapping property (cbit.vcell.modelopt.ParameterMapping[]) value.
- * @param parameterMapping The new value for the property.
- * @exception java.beans.PropertyVetoException The exception description.
- * @see #getParameterMapping
- */
 public void setParameterMappingSpecs(ParameterMappingSpec[] parameterMappingSpecs) throws java.beans.PropertyVetoException {
 	ParameterMappingSpec[] oldValue = fieldParameterMappingSpecs;
 	fireVetoableChange("parameterMappingSpecs", oldValue, parameterMappingSpecs);
@@ -803,11 +776,6 @@ public void setParameterMappingSpecs(ParameterMappingSpec[] parameterMappingSpec
 }
 
 
-/**
- * Sets the constraintData property (cbit.vcell.opt.ConstraintData) value.
- * @param constraintData The new value for the property.
- * @see #getConstraintData
- */
 public void setReferenceData(ReferenceData referenceData) {
 	ReferenceData oldValue = fieldReferenceData;
 	fieldReferenceData = referenceData;
@@ -818,11 +786,6 @@ public void setReferenceData(ReferenceData referenceData) {
 }
 
 
-/**
- * Sets the referenceDataMappingSpecs property (cbit.vcell.modelopt.ReferenceDataMappingSpec[]) value.
- * @param referenceDataMappingSpecs The new value for the property.
- * @see #getReferenceDataMappingSpecs
- */
 private void setReferenceDataMappingSpecs(ReferenceDataMappingSpec[] referenceDataMappingSpecs) {
 	ReferenceDataMappingSpec[] oldValue = fieldReferenceDataMappingSpecs;
 	fieldReferenceDataMappingSpecs = referenceDataMappingSpecs;
