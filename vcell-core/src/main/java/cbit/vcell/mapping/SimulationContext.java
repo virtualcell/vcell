@@ -251,6 +251,15 @@ public class SimulationContext implements SimulationOwner, Versionable, Matchabl
 					DiffEquMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_umol_l_1));
 			builtin_replacements.add(new SymbolReplacementTemplate(DiffEquMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_umol_l_1,
 					DiffEquMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_uM));
+
+			// test for renamed initial condition constant (changed from _initCount to _Count_initCount)
+			builtin_replacements.add(new SymbolReplacementTemplate(DiffEquMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_COUNT,
+					DiffEquMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_COUNT_template_replace));
+
+			// test for renamed initial condition constant for a event assignment or rate rule init (changed from _init to _protocol_init)
+			builtin_replacements.add(new SymbolReplacementTemplate(DiffEquMathMapping.MATH_FUNC_SUFFIX_EVENTASSIGN_OR_RATERULE_INIT_old,
+					DiffEquMathMapping.MATH_FUNC_SUFFIX_EVENTASSIGN_OR_RATERULE_INIT));
+
 		}
 
 		@Override
@@ -335,11 +344,11 @@ public class SimulationContext implements SimulationOwner, Versionable, Matchabl
 			//
 			// if not found in the previous math symbol mapping, try to repair using suffix patterns.
 			//
-			if (currentMathSymbolMapping != null) {
-				for (SymbolReplacementTemplate replacementTemplate : builtin_replacements) {
+			for (SymbolReplacementTemplate replacementTemplate : builtin_replacements) {
+				if (name.endsWith(replacementTemplate.oldNameSuffix)) {
 					String repaired_name = name.replace(replacementTemplate.oldNameSuffix, replacementTemplate.newNameSuffix);
-					Variable mathVar = currentMathSymbolMapping.findVariableByName(repaired_name);
-					if (mathVar != null) {
+					Variable mathVar = mathDesc.getVariable(repaired_name);
+					if (mathVar instanceof Constant) {
 						logger.info("replaced math override name " + name + " with " + repaired_name + " with factor " + replacementTemplate.factor + " using template pattern");
 						return new SymbolReplacement(repaired_name, new Expression(replacementTemplate.factor));
 					}
