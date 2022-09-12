@@ -361,7 +361,9 @@ public class RunUtils {
                                     ArrayList<double[]> variablesList = new ArrayList<>();
                                     if(outputStartTime > 0) {
 
-                                        ODESolverResultSet results = resultsHash.get(task.getId());
+                                    	// key format in resultsHash is taskId + "_" + simJobId  
+                                    	// ex: task_0_0_0 where the last 0 is the simJobId (always 0 when no parameter scan)
+                                        ODESolverResultSet results = resultsHash.get(task.getId() + "_0");	// hence the added "_0"
                                         int column = results.findColumn(sbmlVarId);
                                         double[] tmpData = results.extractColumn(column);
                                         double[] data = new double[outputNumberOfPoints+1];
@@ -374,7 +376,7 @@ public class RunUtils {
                                         values.put(var, variablesList);
 
                                     } else {
-                                        ODESolverResultSet results = resultsHash.get(task.getId());
+                                        ODESolverResultSet results = resultsHash.get(task.getId() + "_0");
                                         int column = results.findColumn(sbmlVarId);
                                         double[] data = results.extractColumn(column);
                                         mxlen = Integer.max(mxlen, data.length);
