@@ -217,6 +217,15 @@ public class SEDMLExporter {
 		
 		translateBioModelToSedML(sPath, sBaseFileName, modelFormat, bFromCLI, bRoundTripSBMLValidation);
 		
+		// update overall status
+		if (bFromCLI) {
+			if (sedmlLogger.hasErrors()) {
+				sedmlLogger.addTaskLog(sedmlLogger.new TaskLog(sBaseFileName, TaskType.BIOMODEL, TaskResult.FAILED, null));
+			} else {
+				sedmlLogger.addTaskLog(sedmlLogger.new TaskLog(sBaseFileName, TaskType.BIOMODEL, TaskResult.SUCCEEDED, null));
+			}
+		}
+		
 		return sedmlDocument;
 	}
 	private void translateBioModelToSedML(String savePath, String sBaseFileName, ModelFormat modelFormat,
@@ -239,10 +248,11 @@ public class SEDMLExporter {
 				try {
 					// convert to SBML units; this also ensures we will use a clone
 					vcBioModel = ModelUnitConverter.createBioModelWithSBMLUnitSystem(vcBioModel);
+					sedmlLogger.addTaskLog(sedmlLogger.new TaskLog(vcBioModel.getName(), TaskType.UNITS, TaskResult.SUCCEEDED, null));
 				} catch (Exception e1) {
 					String msg = "unit conversion failed for BioModel '"+vcBioModel.getName()+"': " + e1.getMessage();
 					logger.error(msg, e1);
-					sedmlLogger.addTaskLog(sedmlLogger.new TaskLog(vcBioModel.getName(), TaskType.BIOMODEL, TaskResult.FAILED, e1));
+					sedmlLogger.addTaskLog(sedmlLogger.new TaskLog(vcBioModel.getName(), TaskType.UNITS, TaskResult.FAILED, e1));
 					if (bFromCLI) {
 						return;
 					} else {

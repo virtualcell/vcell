@@ -73,6 +73,12 @@ import org.apache.logging.log4j.Logger;
 public class VcmlOmexConverter {
 	private static final Logger logger = LogManager.getLogger(VcmlOmexConverter.class);
 
+	public static final String jobFile = "jobConfig.txt";
+	public static final String overrideFile = "orphanOverrides.txt";
+	public static final String successFile = "successfulExports.txt";
+	public static final String failureFile = "failedExports.txt";
+	
+	
 	public static void convertOneFile(File input,
 									  File outputDir,
 									  ModelFormat modelFormat,
@@ -119,12 +125,12 @@ public class VcmlOmexConverter {
 		if (inputFiles == null) {
 			throw new RuntimeException("No VCML files found in the directory `" + input + "`");
 		}
-
-		writeSimErrorList(outputDir.getAbsolutePath(), "bForceVCML is " + modelFormat.equals(ModelFormat.VCML), bForceLogFiles);
-		writeSimErrorList(outputDir.getAbsolutePath(), "bForceSBML is " + modelFormat.equals(ModelFormat.SBML), bForceLogFiles);
-		writeSimErrorList(outputDir.getAbsolutePath(), "hasDataOnly is " + bHasDataOnly, bForceLogFiles);
-		writeSimErrorList(outputDir.getAbsolutePath(), "makeLogsOnly is " + bMakeLogsOnly, bForceLogFiles);
-		writeSimErrorList(outputDir.getAbsolutePath(), "nonSpatialOnly is " + bNonSpatialOnly, bForceLogFiles);
+		
+		writeExportStatusList(outputDir.getAbsolutePath(), "bForceVCML is " + modelFormat.equals(ModelFormat.VCML), jobFile, bForceLogFiles);
+		writeExportStatusList(outputDir.getAbsolutePath(), "bForceSBML is " + modelFormat.equals(ModelFormat.SBML), jobFile, bForceLogFiles);
+		writeExportStatusList(outputDir.getAbsolutePath(), "hasDataOnly is " + bHasDataOnly, jobFile, bForceLogFiles);
+		writeExportStatusList(outputDir.getAbsolutePath(), "makeLogsOnly is " + bMakeLogsOnly, jobFile, bForceLogFiles);
+		writeExportStatusList(outputDir.getAbsolutePath(), "nonSpatialOnly is " + bNonSpatialOnly, jobFile, bForceLogFiles);
 
 //            assert inputFiles != null;
 		for (String inputFile : inputFiles) {
@@ -371,8 +377,7 @@ public class VcmlOmexConverter {
 				msg += name; 
 			}
 			logger.error(msg);
-			writeSimErrorList(outputBaseDir, vcmlName + ": " + msg, bForceLogFiles);
-			return false;
+			writeExportStatusList(outputBaseDir, vcmlName + ": " + msg, overrideFile, bForceLogFiles);
 		}
 
 		Version version = bioModel.getVersion();
@@ -396,21 +401,15 @@ public class VcmlOmexConverter {
         SEDMLDocument sedmlDocument = sedmlExporter.getSEDMLDocument(outputDir, vcmlName,
 				modelFormat, true, bValidate);
         
-//        SedML sedmlModel = sedmlDocument.getSedMLModel();
-//        if(sedmlModel.getModels().size() == 0) {
-        
         if (sedmlExporter.getSedmlLogger().hasErrors()) {
         
             File dir = new File(outputDir);
             String[] files = dir.list();
             removeOtherFiles(outputDir, files);
-			writeSimErrorList(outputBaseDir, vcmlName + "\n" + sedmlExporter.getSedmlLogger().getLogsCSV(), bForceLogFiles);
-//        	String allSolverNames = "";
-//        	for(String solverName : solverNames) {
-//        		allSolverNames += (solverName + " ");
-//        	}
-//        	CLIStandalone.writeSimErrorList(outputBaseDir, "   " + allSolverNames);
+			writeExportStatusList(outputBaseDir, vcmlName + "\n" + sedmlExporter.getSedmlLogger().getLogsCSV(), failureFile, bForceLogFiles);
         	return false;
+        } else {
+			writeExportStatusList(outputBaseDir, vcmlName + "\n" + sedmlExporter.getSedmlLogger().getLogsCSV(), successFile, bForceLogFiles);
         }
         
         String sedmlString = sedmlDocument.writeDocumentToString();
@@ -824,10 +823,10 @@ public class VcmlOmexConverter {
 		}
 	}
 	// biomodels with no simulations and biomodels with no sim results (fired when building the omex files)
-	public static void writeSimErrorList(String outputBaseDir, String s, boolean bForceLogFiles) throws IOException {
+	public static void writeExportStatusList(String outputBaseDir, String status, String statusFileName, boolean bForceLogFiles) throws IOException {
 		if (CLIUtils.isBatchExecution(outputBaseDir, bForceLogFiles)) {
-			String dest = outputBaseDir + File.separator + "simsErrorLog.txt";
-			Files.write(Paths.get(dest), (s + "\n").getBytes(),
+			String dest = outputBaseDir + File.separator + statusFileName;
+			Files.write(Paths.get(dest), (status + "\n").getBytes(),
 					StandardOpenOption.CREATE, StandardOpenOption.APPEND);
 		}
 	}
