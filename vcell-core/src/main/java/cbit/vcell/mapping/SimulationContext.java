@@ -251,6 +251,11 @@ public class SimulationContext implements SimulationOwner, Versionable, Matchabl
 					DiffEquMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_umol_l_1));
 			builtin_replacements.add(new SymbolReplacementTemplate(DiffEquMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_umol_l_1,
 					DiffEquMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_uM));
+
+			// test for renamed initial condition constant (changed from _initCount to _Count_initCount)
+			builtin_replacements.add(new SymbolReplacementTemplate(DiffEquMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_COUNT,
+					DiffEquMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_COUNT_template_replace));
+
 		}
 
 		@Override
