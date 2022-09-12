@@ -123,7 +123,7 @@ public static void main(String[] args) {
 				if (!bSimulate) {
 					return;
 				}
-				bioModel.updateAll(); // generate math
+				bioModel.updateAll(true); // generate math
 				SimulationContext simContext = (SimulationContext)bioModel.getSimulationContext(0);
 
 				// Create basic simulation, with IDA solver (set in solve method) and other defaults, and end time 'Te'

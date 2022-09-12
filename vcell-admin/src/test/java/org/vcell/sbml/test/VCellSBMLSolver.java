@@ -130,7 +130,7 @@ public class VCellSBMLSolver implements SBMLSolver {
 			//
 		    // select only Application, generate math, and create a single Simulation.
 			//
-			bioModel.updateAll();
+			bioModel.updateAll(false);
 		    SimulationContext simContext = bioModel.getSimulationContext(0);
 		    MathDescription mathDesc = simContext.getMathDescription();
 		    String vcml = mathDesc.getVCML();
@@ -416,7 +416,7 @@ public class VCellSBMLSolver implements SBMLSolver {
 			//
 		    // select only Application, generate math, and create a single Simulation.
 			//
-			bioModel.updateAll();
+			bioModel.updateAll(false);
 		    SimulationContext simContext = bioModel.getSimulationContext(0);
 		    MathDescription mathDesc = simContext.getMathDescription();
 		    simContext.setMathDescription(mathDesc);
