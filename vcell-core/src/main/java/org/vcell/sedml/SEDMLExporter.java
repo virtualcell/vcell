@@ -164,7 +164,7 @@ public class SEDMLExporter {
 	private cbit.vcell.biomodel.BioModel vcBioModel = null;
 	private ArrayList<String> sbmlFilePathStrAbsoluteList = new ArrayList<String>();
 	private ArrayList<String> sedmlFilePathStrAbsoluteList = new ArrayList<String>();
-	private List<Simulation> simsToExport = null;
+	private List<String> simsToExport = new ArrayList<String>();
 
 	private static String DATAGENERATOR_TIME_NAME = "time";
 	private static String DATAGENERATOR_TIME_SYMBOL = "t";
@@ -179,8 +179,11 @@ public class SEDMLExporter {
 		this.vcBioModel = argBiomodel;
 		this.sedmlLevel = argLevel;
 		this.sedmlVersion = argVersion;
-		this.simsToExport = argSimsToExport;
 		this.sedmlLogger = new SEDMLLogger(argBiomodel.getName(), SEDMLConversion.EXPORT);
+        // we need to collect simulation names to be able to match sims in BioModel clone
+        for (Simulation sim : argSimsToExport) {
+        	simsToExport.add(sim.getName());
+        }
 	}
 
 	public SEDMLDocument getSEDMLDocument(String sPath, String sBaseFileName, ModelFormat modelFormat, 
@@ -444,7 +447,7 @@ public class SEDMLExporter {
 			try {
 				// if we have a hash containing a subset of simulations to export
 				// skip simulations not present in hash
-				if (simsToExport != null && !simsToExport.contains(vcSimulation)) continue;
+				if (simsToExport != null && !simsToExport.contains(vcSimulation.getName())) continue;
 
 				// 1 -------> check compatibility
 				// if simContext is non-spatial stochastic, check if sim is histogram; if so, skip it, it can't be encoded in sedml 1.x
@@ -479,7 +482,7 @@ public class SEDMLExporter {
 				for(String taskRef : dataGeneratorTasksSet) {
 					createSEDMLoutputs(simContext, vcSimulation, dataGeneratorsOfSim, taskRef);
 				}
-				sedmlLogger.addTaskLog(sedmlLogger.new TaskLog(simContext.getName(), TaskType.SIMCONTEXT, TaskResult.SUCCEEDED, null));
+				sedmlLogger.addTaskLog(sedmlLogger.new TaskLog(vcSimulation.getName(), TaskType.SIMULATION, TaskResult.SUCCEEDED, null));
 			} catch (Exception e) {
 				String msg = "SEDML export failed for simulation '"+vcSimulation.getName()+"': " + e.getMessage();
 				logger.error(msg, e);

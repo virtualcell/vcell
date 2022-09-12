@@ -15,6 +15,9 @@ public class SEDMLLogger {
 			String excString = exception == null ? "null:null" : "\""+exception.getClass().getName()+"\":\""+exception.getMessage()+"\"";
 			return taskName+","+taskType+","+taskResult+","+excString;
 		}
+		public String toString() {
+			return getCSV();
+		}
 	}
 	private ArrayList<TaskLog> taskLogs = new ArrayList<TaskLog>();
 	private String identifier; private SEDMLConversion operation;
