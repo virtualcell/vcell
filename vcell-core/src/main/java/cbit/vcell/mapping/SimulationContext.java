@@ -20,9 +20,11 @@ import java.util.*;
 import cbit.vcell.biomodel.ModelUnitConverter;
 import cbit.vcell.biomodel.meta.IdentifiableProvider;
 import cbit.vcell.biomodel.meta.VCID;
+import cbit.vcell.geometry.surface.GeometrySurfaceDescription;
 import cbit.vcell.math.*;
 import cbit.vcell.solver.*;
 import org.vcell.model.rbm.NetworkConstraints;
+import org.vcell.sbml.vcell.StructureSizeSolver;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Compare;
 import org.vcell.util.Displayable;
@@ -251,6 +253,15 @@ public class SimulationContext implements SimulationOwner, Versionable, Matchabl
 					DiffEquMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_umol_l_1));
 			builtin_replacements.add(new SymbolReplacementTemplate(DiffEquMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_umol_l_1,
 					DiffEquMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_uM));
+
+			// test for renamed initial condition constant (changed from _initCount to _Count_initCount)
+			builtin_replacements.add(new SymbolReplacementTemplate(DiffEquMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_COUNT,
+					DiffEquMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_COUNT_template_replace));
+
+			// test for renamed initial condition constant for a event assignment or rate rule init (changed from _init to _protocol_init)
+			builtin_replacements.add(new SymbolReplacementTemplate(DiffEquMathMapping.MATH_FUNC_SUFFIX_EVENTASSIGN_OR_RATERULE_INIT_old,
+					DiffEquMathMapping.MATH_FUNC_SUFFIX_EVENTASSIGN_OR_RATERULE_INIT));
+
 		}
 
 		@Override
@@ -335,11 +346,11 @@ public class SimulationContext implements SimulationOwner, Versionable, Matchabl
 			//
 			// if not found in the previous math symbol mapping, try to repair using suffix patterns.
 			//
-			if (currentMathSymbolMapping != null) {
-				for (SymbolReplacementTemplate replacementTemplate : builtin_replacements) {
+			for (SymbolReplacementTemplate replacementTemplate : builtin_replacements) {
+				if (name.endsWith(replacementTemplate.oldNameSuffix)) {
 					String repaired_name = name.replace(replacementTemplate.oldNameSuffix, replacementTemplate.newNameSuffix);
-					Variable mathVar = currentMathSymbolMapping.findVariableByName(repaired_name);
-					if (mathVar != null) {
+					Variable mathVar = mathDesc.getVariable(repaired_name);
+					if (mathVar instanceof Constant) {
 						logger.info("replaced math override name " + name + " with " + repaired_name + " with factor " + replacementTemplate.factor + " using template pattern");
 						return new SymbolReplacement(repaired_name, new Expression(replacementTemplate.factor));
 					}
@@ -3153,14 +3164,12 @@ public MathMapping createNewMathMapping() {
 	MathMappingCallback callback = new MathMappingCallback() {
 		@Override
 		public void setProgressFraction(float fractionDone) {
-			Thread.dumpStack();
-			System.out.println("---> stdout mathMapping: progress = "+(fractionDone*100.0)+"% done");
+			logger.info("mathMapping: progress = "+(fractionDone*100.0)+"% done");
 		}
 		
 		@Override
 		public void setMessage(String message) {
-			Thread.dumpStack();
-			System.out.println("---> stdout mathMapping: message = "+message);
+			logger.info("mathMapping: message = "+message);
 		}
 		
 		@Override
@@ -3736,6 +3745,49 @@ public String getDisplayName() {
 @Override
 public String getDisplayType() {
 	return typeName;
+}
+
+public void updateAll(boolean bForceUpgrade) throws MappingException {
+	try {
+		checkValidity();
+
+		if (bForceUpgrade) {
+			// for older models that do not have absolute compartment sizes set, but have relative sizes (SVR/VF); or if there is only one compartment with size not set,
+			// compute absolute compartment sizes using relative sizes and assuming a default value of '1' for one of the compartments.
+			// Otherwise, the math generation will fail, since for the relaxed topology (VCell 5.3 and later) absolute compartment sizes are required.
+			GeometryContext gc = getGeometryContext();
+			if (getGeometry().getDimension() == 0 &&
+					((gc.isAllSizeSpecifiedNull() && !gc.isAllVolFracAndSurfVolSpecifiedNull()) || (gc.getModel().getStructures().length == 1 && gc.isAllSizeSpecifiedNull()))) {
+				// choose the first structure in model and set its size to '1'.
+				Structure struct = getModel().getStructure(0);
+				double structSize = 1.0;
+				StructureSizeSolver.updateAbsoluteStructureSizes(this, struct, structSize, struct.getStructureSize().getUnitDefinition());
+			}
+		}
+
+		//
+		// compute Geometric Regions if necessary
+		//
+		cbit.vcell.geometry.surface.GeometrySurfaceDescription geoSurfaceDescription = getGeometry().getGeometrySurfaceDescription();
+		if (geoSurfaceDescription != null && geoSurfaceDescription.getGeometricRegions() == null) {
+			cbit.vcell.geometry.surface.GeometrySurfaceUtils.updateGeometricRegions(geoSurfaceDescription);
+		}
+	}catch (Exception e) {
+		throw new MappingException("failed to update computed Geometry metrics: " + e.getMessage(), e);
+	}
+	try {
+		//
+		// create new MathDescription
+		//
+		MathDescription math = createNewMathMapping().getMathDescription();
+		//
+		// load MathDescription into SimulationContext
+		// (BioModel is responsible for propagating this to all applicable Simulations).
+		//
+		setMathDescription(math);
+	} catch (Exception e) {
+		throw new MappingException("failed to gerate math: "+e.getMessage(), e);
+	}
 }
 
 }

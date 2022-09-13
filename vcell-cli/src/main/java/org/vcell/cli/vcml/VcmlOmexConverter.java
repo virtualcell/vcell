@@ -73,6 +73,11 @@ import org.apache.logging.log4j.Logger;
 public class VcmlOmexConverter {
 	private static final Logger logger = LogManager.getLogger(VcmlOmexConverter.class);
 
+	public static final String jobConfigFile = "jobConfig.txt";
+	public static final String overrideFile = "orphanOverrides.txt";
+	public static final String jobLogFile = "jobLog.txt";
+	
+	
 	public static void convertOneFile(File input,
 									  File outputDir,
 									  ModelFormat modelFormat,
@@ -119,12 +124,12 @@ public class VcmlOmexConverter {
 		if (inputFiles == null) {
 			throw new RuntimeException("No VCML files found in the directory `" + input + "`");
 		}
-
-		writeSimErrorList(outputDir.getAbsolutePath(), "bForceVCML is " + modelFormat.equals(ModelFormat.VCML), bForceLogFiles);
-		writeSimErrorList(outputDir.getAbsolutePath(), "bForceSBML is " + modelFormat.equals(ModelFormat.SBML), bForceLogFiles);
-		writeSimErrorList(outputDir.getAbsolutePath(), "hasDataOnly is " + bHasDataOnly, bForceLogFiles);
-		writeSimErrorList(outputDir.getAbsolutePath(), "makeLogsOnly is " + bMakeLogsOnly, bForceLogFiles);
-		writeSimErrorList(outputDir.getAbsolutePath(), "nonSpatialOnly is " + bNonSpatialOnly, bForceLogFiles);
+		
+		writeExportStatusList(outputDir.getAbsolutePath(), "bForceVCML is " + modelFormat.equals(ModelFormat.VCML), jobConfigFile, bForceLogFiles);
+		writeExportStatusList(outputDir.getAbsolutePath(), "bForceSBML is " + modelFormat.equals(ModelFormat.SBML), jobConfigFile, bForceLogFiles);
+		writeExportStatusList(outputDir.getAbsolutePath(), "hasDataOnly is " + bHasDataOnly, jobConfigFile, bForceLogFiles);
+		writeExportStatusList(outputDir.getAbsolutePath(), "makeLogsOnly is " + bMakeLogsOnly, jobConfigFile, bForceLogFiles);
+		writeExportStatusList(outputDir.getAbsolutePath(), "nonSpatialOnly is " + bNonSpatialOnly, jobConfigFile, bForceLogFiles);
 
 //            assert inputFiles != null;
 		for (String inputFile : inputFiles) {
@@ -162,20 +167,6 @@ public class VcmlOmexConverter {
 	}
 
 	private static boolean keepSimulation(Simulation simulation, boolean bHasDataOnly, boolean bNonSpatialOnly, CLIDatabaseService cliDatabaseService) {
-
-		//
-		// exclude simulations with field data
-		//
-		Enumeration<Variable> variables = simulation.getMathDescription().getVariables();
-		while(variables.hasMoreElements()) {
-			Variable var = variables.nextElement();
-			Expression exp = var.getExpression();
-			FieldFunctionArguments[] ffas = FieldUtilities.getFieldFunctionArguments( exp);
-			if(ffas != null && ffas.length > 0) {
-				logger.warn("excluding simulation '"+simulation.getName()+", it has field data, not yet supported for OMEX export");
-				return false;
-			}
-		}
 
 		//
 		// exclude spatial simulations if bNonSpatialOnly
@@ -299,41 +290,24 @@ public class VcmlOmexConverter {
 
         // the checks below are now delegated
         
-//        // ========================================================
-//		SimulationContext scArray[] = bioModel.getSimulationContexts();
-//		if (scArray != null) {
-//			MathDescription[] mathDescArray = new MathDescription[scArray.length];
-//			for (int i = 0; i < scArray.length; i++) {
-//				try {
-//					//check if all structure sizes are specified
-//					scArray[i].checkValidity();
-//					//
-//					// compute Geometric Regions if necessary
-//					//
-//					cbit.vcell.geometry.surface.GeometrySurfaceDescription geoSurfaceDescription = scArray[i].getGeometry().getGeometrySurfaceDescription();
-//					if (geoSurfaceDescription!=null && geoSurfaceDescription.getGeometricRegions()==null){
-//						cbit.vcell.geometry.surface.GeometrySurfaceUtils.updateGeometricRegions(geoSurfaceDescription);
-//					}
-//					if (scArray[i].getModel() != bioModel.getModel()) {
-//						throw new Exception("The BioModel's physiology doesn't match that for Application '"+scArray[i].getName()+"'");
-//					}
-//					//
-//					// create new MathDescription
-//					//
-//					MathDescription math = scArray[i].createNewMathMapping().getMathDescription();
-//					//
-//					// load MathDescription into SimulationContext
-//					// (BioModel is responsible for propagating this to all applicable Simulations).
-//					//
-//					scArray[i].setMathDescription(math);
-//				} catch(Exception e) {
-//					String msg = "failed to export SimulationContext "+scArray[i].getName()+": "+e.getMessage();
-//					logger.error(msg, e);
-//					throw new RuntimeException(msg, e);
-//				}
-//
-//			}
-//		}
+        // ========================================================
+		SimulationContext scArray[] = bioModel.getSimulationContexts();
+		if (scArray != null) {
+			MathDescription[] mathDescArray = new MathDescription[scArray.length];
+			for (int i = 0; i < scArray.length; i++) {
+				try {
+					//check if all structure sizes are specified
+					scArray[i].checkValidity();
+					scArray[i].updateAll(true);
+
+				} catch(Exception e) {
+					String msg = "failed to export SimulationContext "+scArray[i].getName()+": "+e.getMessage();
+					logger.error(msg, e);
+					throw new RuntimeException(msg, e);
+				}
+
+			}
+		}
 
         List<Simulation> simsToExport = Arrays.stream(bioModel.getSimulations()).filter(simulationExportFilter).collect(Collectors.toList());
 
@@ -371,8 +345,7 @@ public class VcmlOmexConverter {
 				msg += name; 
 			}
 			logger.error(msg);
-			writeSimErrorList(outputBaseDir, vcmlName + ": " + msg, bForceLogFiles);
-			return false;
+			writeExportStatusList(outputBaseDir, vcmlName + ": " + msg, overrideFile, bForceLogFiles);
 		}
 
 		Version version = bioModel.getVersion();
@@ -393,38 +366,23 @@ public class VcmlOmexConverter {
         XmlUtil.writeXMLStringToFile(rdfString, String.valueOf(Paths.get(outputDir, "metadata.rdf")), true);
         
 		String jsonFullyQualifiedName = Paths.get(outputBaseDir, "json_reports" ,vcmlName + ".json").toString();
-        SEDMLExporter sedmlExporter = new SEDMLExporter(bioModel, sedmlLevel, sedmlVersion, simsToExport, jsonFullyQualifiedName);
+        SEDMLExporter sedmlExporter = new SEDMLExporter(vcmlName, bioModel, sedmlLevel, sedmlVersion, simsToExport, jsonFullyQualifiedName);
+
         SEDMLDocument sedmlDocument = sedmlExporter.getSEDMLDocument(outputDir, vcmlName,
 				modelFormat, true, bValidate);
         
-//        SedML sedmlModel = sedmlDocument.getSedMLModel();
-//        if(sedmlModel.getModels().size() == 0) {
+		writeExportStatusList(outputBaseDir, vcmlName + "\n" + sedmlExporter.getSedmlLogger().getLogsCSV(), jobLogFile, bForceLogFiles);
         
         if (sedmlExporter.getSedmlLogger().hasErrors()) {
-        
             File dir = new File(outputDir);
             String[] files = dir.list();
             removeOtherFiles(outputDir, files);
-			writeSimErrorList(outputBaseDir, vcmlName + "\n" + sedmlExporter.getSedmlLogger().getLogsCSV(), bForceLogFiles);
-//        	String allSolverNames = "";
-//        	for(String solverName : solverNames) {
-//        		allSolverNames += (solverName + " ");
-//        	}
-//        	CLIStandalone.writeSimErrorList(outputBaseDir, "   " + allSolverNames);
         	return false;
         }
         
         String sedmlString = sedmlDocument.writeDocumentToString();
         XmlUtil.writeXMLStringToFile(sedmlString, String.valueOf(Paths.get(outputDir, vcmlName + ".sedml")), true);
 
-        // libCombine needs native lib
-//        ResourceUtil.setNativeLibraryDirectory();
-//	    OperatingSystemInfo osi = OperatingSystemInfo.getInstance();
-//	    if (osi.isWindows()) {
-//        	org.scijava.nativelib.NativeLoader.loadLibrary("combinej");
-//        } else {
-//        	cbit.vcell.util.NativeLoader.load("combinej");
-//        }
         try {
             try {
                 ResourceUtil.setNativeLibraryDirectory();
@@ -825,10 +783,10 @@ public class VcmlOmexConverter {
 		}
 	}
 	// biomodels with no simulations and biomodels with no sim results (fired when building the omex files)
-	public static void writeSimErrorList(String outputBaseDir, String s, boolean bForceLogFiles) throws IOException {
+	public static void writeExportStatusList(String outputBaseDir, String status, String statusFileName, boolean bForceLogFiles) throws IOException {
 		if (CLIUtils.isBatchExecution(outputBaseDir, bForceLogFiles)) {
-			String dest = outputBaseDir + File.separator + "simsErrorLog.txt";
-			Files.write(Paths.get(dest), (s + "\n").getBytes(),
+			String dest = outputBaseDir + File.separator + statusFileName;
+			Files.write(Paths.get(dest), (status + "\n").getBytes(),
 					StandardOpenOption.CREATE, StandardOpenOption.APPEND);
 		}
 	}

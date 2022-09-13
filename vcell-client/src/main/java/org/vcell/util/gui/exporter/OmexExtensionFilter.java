@@ -68,7 +68,7 @@ public class OmexExtensionFilter extends SedmlExtensionFilter {
 					"SBML");					// initialValue 
 			if (choice == 0) modelFormat = ModelFormat.VCML;
 			
-			sedmlExporter = new SEDMLExporter(bioModel, sedmlLevel, sedmlVersion, null);
+			sedmlExporter = new SEDMLExporter(sFile, bioModel, sedmlLevel, sedmlVersion, null);
 			boolean bRoundTripSBMLValidation = true;
 			resultString = sedmlExporter.getSEDMLDocument(sPath, sFile, modelFormat, false, bRoundTripSBMLValidation).writeDocumentToString();
 

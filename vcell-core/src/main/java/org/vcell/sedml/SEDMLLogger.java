@@ -27,9 +27,9 @@ public class SEDMLLogger extends Recorder {
 	private List<SEDMLTaskRecord> taskLogs = new LinkedList<>();
 	private transient FileRecord jsonFile;
 
-	public SEDMLLogger(String jobName, SEDMLConversion conversion) {
+	public SEDMLLogger(String jobId, SEDMLConversion conversion) {
 		super(SEDMLLogger.class);
-		this.identifier = jobName;
+		this.identifier = jobId;
 		this.operation = conversion;
 		this.jsonFile = null;
 	}

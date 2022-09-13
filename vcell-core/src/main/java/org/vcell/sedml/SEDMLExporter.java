@@ -84,6 +84,7 @@ import org.w3c.dom.Element;
 import cbit.util.xml.XmlUtil;
 
 import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.biomodel.ModelUnitConverter;
 import cbit.vcell.geometry.GeometryClass;
 import cbit.vcell.mapping.MathMapping;
 import cbit.vcell.mapping.MathSymbolMapping;
@@ -136,9 +137,10 @@ public class SEDMLExporter {
 	private int sedmlVersion = 2;
 	private  SedML sedmlModel = null;
 	private cbit.vcell.biomodel.BioModel vcBioModel = null;
+	private String jobId = null;
 	private ArrayList<String> sbmlFilePathStrAbsoluteList = new ArrayList<String>();
 	private ArrayList<String> sedmlFilePathStrAbsoluteList = new ArrayList<String>();
-	private List<Simulation> simsToExport = null;
+	private List<String> simsToExport = new ArrayList<String>();
 
 	private static String DATAGENERATOR_TIME_NAME = "time";
 	private static String DATAGENERATOR_TIME_SYMBOL = "t";
@@ -148,17 +150,29 @@ public class SEDMLExporter {
 	
 	private SEDMLLogger sedmlLogger = null;
 	
-	public SEDMLExporter(BioModel argBiomodel, int argLevel, int argVersion, List<Simulation> argSimsToExport) {
-		this(argBiomodel, argLevel, argVersion, argSimsToExport, null);
+
+	public SEDMLExporter(String argJobId, BioModel argBiomodel, int argLevel, int argVersion, List<Simulation> argSimsToExport) {
+		this(argJobId, argBiomodel, argLevel, argVersion, argSimsToExport, null);
 	}
 
-	public SEDMLExporter(BioModel argBiomodel, int argLevel, int argVersion, List<Simulation> argSimsToExport, String jsonFilePath) {
+	public SEDMLExporter(String argJobId, BioModel argBiomodel, int argLevel, int argVersion, List<Simulation> argSimsToExport, String jsonFilePath) {
+
 		super();
+		
+		this.jobId = argJobId;
 		this.vcBioModel = argBiomodel;
 		this.sedmlLevel = argLevel;
 		this.sedmlVersion = argVersion;
-		this.simsToExport = argSimsToExport;
-		this.sedmlLogger = new SEDMLLogger(argBiomodel.getName(), SEDMLConversion.EXPORT, jsonFilePath);
+
+		this.sedmlLogger = new SEDMLLogger(argJobId, SEDMLConversion.EXPORT, jsonFilePath);
+        // we need to collect simulation names to be able to match sims in BioModel clone
+		if (argSimsToExport != null && argSimsToExport.size() > 0) {
+	        for (Simulation sim : argSimsToExport) {
+	        	simsToExport.add(sim.getName());
+	        }
+		} else {
+			simsToExport = null;
+		}
 	}
 
 	public SEDMLDocument getSEDMLDocument(String sPath, String sBaseFileName, ModelFormat modelFormat, 
@@ -195,15 +209,21 @@ public class SEDMLExporter {
 		
 		translateBioModelToSedML(sPath, sBaseFileName, modelFormat, bFromCLI, bRoundTripSBMLValidation);
 		
+		// update overall status
+		if (bFromCLI) {
+			if (sedmlLogger.hasErrors()) {
+				sedmlLogger.addTaskLog(vcBioModel.getName(), TaskType.BIOMODEL, TaskResult.FAILED, null);
+			} else {
+				sedmlLogger.addTaskLog(vcBioModel.getName(), TaskType.BIOMODEL, TaskResult.SUCCEEDED, null);
+			}
+		}
+		
 		return sedmlDocument;
 	}
 	private void translateBioModelToSedML(String savePath, String sBaseFileName, ModelFormat modelFormat,
 				boolean bFromCLI, boolean bRoundTripSBMLValidation) {		// true if invoked for omex export, false if for sedml
 		sbmlFilePathStrAbsoluteList.clear();
 		try {
-			SimulationContext[] simContexts = vcBioModel.getSimulationContexts();
-			int simContextCnt = 0;	// for model count, task subcount
-			String sedmlNotesStr = "";
 
 			if (modelFormat == ModelFormat.SBML_VCML) {
 				// TODO
@@ -217,6 +237,22 @@ public class SEDMLExporter {
 //				exportSimulationsVCML(simContextCnt, simContext);
 			}
 			if (modelFormat == ModelFormat.SBML) {
+				try {
+					// convert to SBML units; this also ensures we will use a clone
+					vcBioModel = ModelUnitConverter.createBioModelWithSBMLUnitSystem(vcBioModel);
+					sedmlLogger.addTaskLog(vcBioModel.getName(), TaskType.UNITS, TaskResult.SUCCEEDED, null);
+				} catch (Exception e1) {
+					String msg = "unit conversion failed for BioModel '"+vcBioModel.getName()+"': " + e1.getMessage();
+					logger.error(msg, e1);
+					sedmlLogger.addTaskLog(vcBioModel.getName(), TaskType.UNITS, TaskResult.FAILED, e1);
+					if (bFromCLI) {
+						return;
+					} else {
+						throw e1;
+					}
+				}
+				SimulationContext[] simContexts = vcBioModel.getSimulationContexts();
+				int simContextCnt = 0;	// for model count, task subcount
 				for (SimulationContext simContext : simContexts) {
 					// Export the application itself to SBML, with default values (overrides will become model changes or repeated tasks)
 					String sbmlString = null;
@@ -244,7 +280,7 @@ public class SEDMLExporter {
 
 					if (!sbmlExportFailed) {
 						// simContext was exported succesfully, now we try to export its simulations
-						sedmlNotesStr = exportSimulationsSBML(simContextCnt, simContext, sbmlString, l2gMap, mathSymbolMapping);
+						exportSimulationsSBML(simContextCnt, simContext, sbmlString, l2gMap, mathSymbolMapping, bFromCLI);
 					} else {
 						if (bFromCLI) {
 							continue;
@@ -253,17 +289,6 @@ public class SEDMLExporter {
 							throw new Exception ("SimContext '"+simContext.getName()+"' could not be exported to SBML :" +simContextException.getMessage());
 						}
 					}			
-					// if sedmlNotesStr is not empty, there were some Simulations that could not be exported to SEDML (eg., non-spatial stochastic app sim with histogram option)
-		        	if (sedmlNotesStr.length() > 0) {
-			        	sedmlNotesStr = "\n\tThe following Simulations in the VCell model were not exported to SEDML : " + sedmlNotesStr;
-		        		logger.error(sedmlNotesStr);
-			        	if (bFromCLI) {
-			        		continue;
-			        	} else {
-							System.err.println(sedmlLogger.getLogsCSV());
-			        		throw new Exception(sedmlNotesStr);
-			        	}
-		        	}
 					simContextCnt++;
 				}
 			}
@@ -399,8 +424,8 @@ public class SEDMLExporter {
 		return "";
 	}
 	
-	private String exportSimulationsSBML(int simContextCnt, SimulationContext simContext,
-			String sbmlString, Map<Pair<String, String>, String> l2gMap, MathSymbolMapping mathSymbolMapping) {
+	private void exportSimulationsSBML(int simContextCnt, SimulationContext simContext,
+			String sbmlString, Map<Pair<String, String>, String> l2gMap, MathSymbolMapping mathSymbolMapping, boolean bFromCLI) throws Exception {
 		// -------
 		// create sedml objects (simulation, task, datagenerators, report, plot) for each simulation in simcontext 
 		// -------	
@@ -408,13 +433,12 @@ public class SEDMLExporter {
 		String simContextId = TokenMangler.mangleToSName(simContextName);
 		simCount = 0;
 		overrideCount = 0;
-		String sedmlNotesStr = "";
-		if (simContext.getSimulations().length == 0) return sedmlNotesStr;
+		if (simContext.getSimulations().length == 0) return;
 		for (Simulation vcSimulation : simContext.getSimulations()) {
 			try {
 				// if we have a hash containing a subset of simulations to export
 				// skip simulations not present in hash
-				if (simsToExport != null && !simsToExport.contains(vcSimulation)) continue;
+				if (simsToExport != null && !simsToExport.contains(vcSimulation.getName())) continue;
 
 				// 1 -------> check compatibility
 				// if simContext is non-spatial stochastic, check if sim is histogram; if so, skip it, it can't be encoded in sedml 1.x
@@ -422,7 +446,7 @@ public class SEDMLExporter {
 				if (simContext.getGeometry().getDimension() == 0 && simContext.isStoch()) {
 					long numOfTrials = simTaskDesc.getStochOpt().getNumOfTrials();
 					if (numOfTrials > 1) {
-						String msg = "\n\t" + simContextName + " ( " + vcSimulation.getName() + " ) : export of non-spatial stochastic simulation with histogram option to SEDML not supported at this time.";
+						String msg = simContextName + " ( " + vcSimulation.getName() + " ) : export of non-spatial stochastic simulation with histogram option to SEDML not supported at this time.";
 						throw new Exception(msg);
 					}
 				}
@@ -449,14 +473,21 @@ public class SEDMLExporter {
 				for(String taskRef : dataGeneratorTasksSet) {
 					createSEDMLoutputs(simContext, vcSimulation, dataGeneratorsOfSim, taskRef);
 				}
-				sedmlLogger.addTaskLog(simContext.getName(), TaskType.SIMCONTEXT, TaskResult.SUCCEEDED, null);
+				sedmlLogger.addTaskLog(vcSimulation.getName(), TaskType.SIMULATION, TaskResult.SUCCEEDED, null);
 			} catch (Exception e) {
+				String msg = "SEDML export failed for simulation '"+ vcSimulation.getName() + "': " + e.getMessage();
+				logger.error(msg, e);
 				sedmlLogger.addTaskLog(vcSimulation.getName(), TaskType.SIMULATION, TaskResult.FAILED, e);
-				sedmlNotesStr += e.getMessage();
+	        	if (bFromCLI) {
+	        		continue;
+	        	} else {
+					System.err.println(sedmlLogger.getLogsCSV());
+	        		throw e;
+	        	}
 			}
 			simCount++;
 		}
-		return sedmlNotesStr;
+		return;
 	}
 
 	private void createSEDMLoutputs(SimulationContext simContext, Simulation vcSimulation,
@@ -1008,11 +1039,17 @@ public class SEDMLExporter {
 			// we try to preserve symbolic values...
 			cbit.vcell.math.Constant[] cs = constantArraySpec.getConstants();
 			ArrayList<Double> values = new ArrayList<Double>();
-			Expression exp0 = cs[0].getExpression();
+			Expression expFact = null;
+			for (int i = 0; i < cs.length; i++){
+				if (!(cs[i].getExpression().isNumeric() && cs[i].getExpression().evaluateConstant() == 0)) {
+					expFact = cs[i].getExpression();
+					break;
+				}
+			}
 			boolean bFactorized = true;
 			for (int i = 0; i < cs.length; i++){
 				Expression exp = cs[i].getExpression();
-				exp = Expression.div(exp, exp0);
+				exp = Expression.div(exp, expFact);
 				exp = ExpressionUtils.simplifyUsingJSCL(exp);
 				if (!exp.isNumeric()) {
 					bFactorized = false;
@@ -1034,8 +1071,8 @@ public class SEDMLExporter {
 				rt.addRange(r);
 				// now make a FunctionalRange with expressions
 				FunctionalRange fr = new FunctionalRange("fr_"+rangeId, rangeId);
-				exp0 = Expression.mult(new Expression(rangeId), exp0);
-				createFunctionalRangeElements(fr, exp0, msm, l2gMap, modelReferenceId);
+				expFact = Expression.mult(new Expression(rangeId), expFact);
+				createFunctionalRangeElements(fr, expFact, msm, l2gMap, modelReferenceId);
 				rt.addRange(fr);
 				return fr;
 			}

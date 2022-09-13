@@ -126,7 +126,8 @@ import cbit.vcell.units.VCUnitDefinition;
  * 		capacitances must not be overridden and must be constant (used as literals in KVL)
  */
 public class DiffEquMathMapping extends AbstractMathMapping {
-	private static final String MATH_FUNC_SUFFIX_EVENTASSIGN_OR_RATERULE_INIT = "_protocol_init";
+	protected static final String MATH_FUNC_SUFFIX_EVENTASSIGN_OR_RATERULE_INIT = "_protocol_init";
+	protected static final String MATH_FUNC_SUFFIX_EVENTASSIGN_OR_RATERULE_INIT_old = "_init";
 	private static final String MATH_FUNC_SUFFIX_RATERULE_RATE = "_rate";
 	private static final String MATH_FUNC_SUFFIX_ASSIGNMENTRULE = "_assign";
 	public static final int PARAMETER_ROLE_TOTALMASS = 0;

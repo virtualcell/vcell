@@ -1082,19 +1082,7 @@ public class ClientRequestManager
 			@Override
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
 
-				MathMappingCallback dummyCallback = new MathMappingCallback() {
-					public void setProgressFraction(float percentDone) {
-					}
-
-					public void setMessage(String message) {
-					}
-
-					public boolean isInterrupted() {
-						return false;
-					}
-				};
-				MathMapping transformedMathMapping = simContext.createNewMathMapping(dummyCallback,
-						NetworkGenerationRequirements.ComputeFullStandardTimeout);
+				MathMapping transformedMathMapping = simContext.createNewMathMapping();
 
 				BioModel newBioModel = new BioModel(null);
 				SimulationContext transformedSimContext = transformedMathMapping
@@ -1149,29 +1137,12 @@ public class ClientRequestManager
 			@Override
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
 
-				MathMappingCallback dummyCallback = new MathMappingCallback() {
-					public void setProgressFraction(float percentDone) {
-					}
-
-					public void setMessage(String message) {
-					}
-
-					public boolean isInterrupted() {
-						return false;
-					}
-				};
-				MathMapping transformedMathMapping = simContext.createNewMathMapping(dummyCallback,
-						NetworkGenerationRequirements.ComputeFullStandardTimeout);
-//			simContext.setMathDescription(transformedMathMapping.getMathDescription());
+				MathMapping transformedMathMapping = simContext.createNewMathMapping();
 
 				BioModel newBioModel = new BioModel(null);
 				SimulationContext transformedSimContext = transformedMathMapping
 						.getTransformation().transformedSimContext;
 				Model model = transformedSimContext.getModel();
-
-//			for(ReactionStep rs : model.getReactionSteps()) {
-//				model.removeReactionStep(rs);
-//			}
 
 				newBioModel.setModel(model);
 
@@ -3875,34 +3846,16 @@ public class ClientRequestManager
 					BioModel bioModel = (BioModel) doc;
 					SimulationContext simulationContext = bioModel.getSimulationContext(0);
 					simulationContext.setName(BMDB_DEFAULT_APPLICATION);
-					MathMappingCallback callback = new MathMappingCallback() {
-						@Override
-						public void setProgressFraction(float fractionDone) {
-						}
-
-						@Override
-						public void setMessage(String message) {
-						}
-
-						@Override
-						public boolean isInterrupted() {
-							return false;
-						}
-					};
-					MathMapping mathMapping = simulationContext.createNewMathMapping(callback,
-							NetworkGenerationRequirements.ComputeFullNoTimeout);
-					MathDescription mathDesc = null;
 					try {
-						mathDesc = mathMapping.getMathDescription(callback);
-						simulationContext.setMathDescription(mathDesc);
+						simulationContext.updateAll(false);
+						MathDescription mathDesc = simulationContext.getMathDescription();
 
 						Simulation sim = new Simulation(mathDesc);
 						sim.setName(simulationContext.getBioModel().getFreeSimulationName());
 						simulationContext.addSimulation(sim);
 						bioModel.refreshDependencies();
 
-					} catch (MappingException | MathException | MatrixException | ExpressionException
-							| ModelException e1) {
+					} catch (MappingException e1) {
 						e1.printStackTrace();
 					}
 					hashTable.put("doc", doc);

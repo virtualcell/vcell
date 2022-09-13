@@ -111,12 +111,6 @@ public void applySolutionToMathOverrides(Simulation simulation, OptimizationResu
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (8/22/2005 9:26:52 AM)
- * @return cbit.vcell.opt.OptimizationSpec
- * @param modelOptimizationSpec cbit.vcell.modelopt.ModelOptimizationSpec
- */
 MathSymbolMapping computeOptimizationSpec() throws MathException, MappingException {
 
 	if (getModelOptimizationSpec().getReferenceData()==null){
@@ -264,42 +258,21 @@ MathSymbolMapping computeOptimizationSpec() throws MathException, MappingExcepti
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (8/25/2005 10:32:23 AM)
- * @return cbit.vcell.modelopt.ModelOptimizationSpec
- */
 public ModelOptimizationSpec getModelOptimizationSpec() {
 	return modelOptimizationSpec;
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (8/22/2005 9:26:52 AM)
- * @return cbit.vcell.opt.OptimizationSpec
- * @param modelOptimizationSpec cbit.vcell.modelopt.ModelOptimizationSpec
- */
 public OptimizationSpec getOptimizationSpec() {
 	return optimizationSpec;
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (8/25/2005 10:26:34 AM)
- * @return cbit.vcell.modelopt.ParameterMapping[]
- */
 public ParameterMapping[] getParameterMappings() {
 	return parameterMappings;
 }
 
 
-/**
- * Gets the constraintData property (cbit.vcell.opt.ConstraintData) value.
- * @return The constraintData property value.
- * @see #setConstraintData
- */
 private ReferenceData getRemappedReferenceData(MathMapping mathMapping) throws MappingException {
 	if (modelOptimizationSpec.getReferenceData()==null){
 		return null;

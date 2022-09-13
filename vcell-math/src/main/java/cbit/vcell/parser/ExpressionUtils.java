@@ -238,26 +238,27 @@ public static Expression simplifyUsingJSCL(Expression exp, int maxExpLength) thr
 		throw new ExpressionException("large expression, abort JSCL simplification");
 	}
 	jscl.math.Generic jsclSolution = simplify.factorize();
-	cbit.vcell.parser.Expression firstSolution = new cbit.vcell.parser.Expression(jsclSolution.toString());
 
-	firstSolution = firstSolution.flatten();
+//	cbit.vcell.parser.Expression firstSolution = new cbit.vcell.parser.Expression(jsclSolution.toString());
+//
+//	firstSolution = firstSolution.flatten();
+//
+//	jsclExpressionString = firstSolution.infix_JSCL();
+//	try {
+//		jsclExpression = jscl.math.Expression.valueOf(jsclExpressionString);
+//	}catch (jscl.text.ParseException e){
+//		throw new ExpressionException("JSCL couldn't parse \""+jsclExpressionString+"\"");
+//	}
+//
+//	Generic expand1 = jsclExpression.expand();
+//	Generic simplify1 = expand1.simplify();
+//	String simplifyStr1 = simplify.toString();
+//	if (simplifyStr1.replace("underscore","_").length()>maxExpLength){
+//		throw new ExpressionException("large expression, abort JSCL simplification");
+//	}
+//	jsclSolution = simplify1.factorize();
 
-	jsclExpressionString = firstSolution.infix_JSCL();
-	try {
-		jsclExpression = jscl.math.Expression.valueOf(jsclExpressionString);
-	}catch (jscl.text.ParseException e){
-		throw new ExpressionException("JSCL couldn't parse \""+jsclExpressionString+"\"");
-	}
-
-	Generic expand1 = jsclExpression.expand();
-	Generic simplify1 = expand1.simplify();
-	String simplifyStr1 = simplify.toString();
-	if (simplifyStr1.replace("underscore","_").length()>maxExpLength){
-		throw new ExpressionException("large expression, abort JSCL simplification");
-	}
-	jsclSolution = simplify1.factorize();
 	Expression solution = new cbit.vcell.parser.Expression(jsclSolution.toString());
-
 
 	String[] jsclSymbols = solution.getSymbols();
 	for (int i = 0;jsclSymbols!=null && i < jsclSymbols.length; i++){
@@ -440,8 +441,8 @@ public static boolean functionallyEquivalent(Expression exp1, Expression exp2, b
 				} else {
 					return true;
 				}
-			}catch (Throwable e){
-				throw new RuntimeException("unexpected exception ("+e.getMessage()+") while evaluating functional equivalence");
+			}catch (Exception e){
+				throw new RuntimeException("unexpected exception ("+e.getMessage()+") while evaluating functional equivalence", e);
 			}
 		}
 		String symbols[] = null;
@@ -514,7 +515,7 @@ public static boolean functionallyEquivalent(Expression exp1, Expression exp2, b
 		// go through 20 different sets of random inputs to test for equivalence
 		// ignore cases of Exceptions during evaluations (out of domain of imbedded functions), keep trying until 20 successful evaluations
 		//
-		Random rand = new Random();
+		Random rand = new Random(0);
 		final int MAX_TRIES = 1000;
 		final int REQUIRED_NUM_EVALUATIONS = 20;
 		int numEvaluations = 0;
@@ -579,6 +580,243 @@ public static boolean functionallyEquivalent(Expression exp1, Expression exp2, b
 		return false;
 	}
 }
+
+public interface IExpression {
+
+	String[] getSymbols();
+
+	double evaluateConstant() throws ExpressionException;
+
+	void bindExpression(SymbolTable symbolTable) throws ExpressionBindingException;
+
+	double evaluateVector(double[] values) throws ExpressionException;
+
+	Vector<Discontinuity> getDiscontinuities() throws ExpressionException;
+};
+
+	public static class VCellIExpression implements IExpression {
+		final Expression exp;
+		public VCellIExpression(Expression expression){
+			this.exp = expression;
+		}
+		@Override
+		public String[] getSymbols() {
+			return exp.getSymbols();
+		}
+		@Override
+		public double evaluateConstant() throws ExpressionException {
+			return exp.evaluateConstant();
+		}
+		@Override
+		public void bindExpression(SymbolTable symbolTable) throws ExpressionBindingException {
+			exp.bindExpression(symbolTable);
+		}
+		@Override
+		public double evaluateVector(double[] values) throws ExpressionException {
+			return exp.evaluateVector(values);
+		}
+		@Override
+		public Vector<Discontinuity> getDiscontinuities() throws ExpressionException {
+			return exp.getDiscontinuities();
+		}
+	}
+
+//	public static class JSCLIExpression implements IExpression {
+//		final jscl.math.Expression exp;
+//		public JSCLIExpression(jscl.math.Expression expression){
+//			this.exp = expression;
+//		}
+//		@Override
+//		public String[] getSymbols() {
+//			return jscl.math.Expression.exp.getSymbols();
+//		}
+//		@Override
+//		public double evaluateConstant() throws ExpressionException {
+//			return exp.evaluateConstant();
+//		}
+//		@Override
+//		public void bindExpression(SymbolTable symbolTable) throws ExpressionBindingException {
+//			exp.bindExpression(symbolTable);
+//		}
+//		@Override
+//		public double evaluateVector(double[] values) throws ExpressionException {
+//			return exp.evaluateVector(values);
+//		}
+//		@Override
+//		public Vector<Discontinuity> getDiscontinuities() throws ExpressionException {
+//			return exp.getDiscontinuities();
+//		}
+//	}
+
+	public static boolean functionallyEquivalent(IExpression exp1, IExpression exp2, boolean verifySameSymbols, double relativeTolerance, double absoluteTolerance) {
+		try {
+			String symbols1[] = exp1.getSymbols();
+			String symbols2[] = exp2.getSymbols();
+			if (symbols1==null && symbols2==null){
+				//
+				// compare solutions
+				//
+				try {
+					double result1 = exp1.evaluateConstant();
+					double result2 = exp2.evaluateConstant();
+					if (Double.isInfinite(result1) || Double.isNaN(result1)){
+						throw new RuntimeException("exp1 = '"+exp1+"' evaluates to "+result1);
+					}
+					if (Double.isInfinite(result2) || Double.isNaN(result2)){
+						throw new RuntimeException("exp1 = '"+exp2+"' evaluates to "+result2);
+					}
+					double scale = Math.abs(result1)+Math.abs(result2);
+					double absdiff = Math.abs(result1-result2);
+					if (scale > absoluteTolerance){
+						if (absdiff > relativeTolerance*scale){
+							lg.debug("EXPRESSIONS DIFFERENT: no symbols, delta eval: "+(result2-result1));
+							return false;
+						}
+						else {
+							return true;
+						}
+					} else {
+						return true;
+					}
+				}catch (Exception e){
+					throw new RuntimeException("unexpected exception ("+e.getMessage()+") while evaluating functional equivalence", e);
+				}
+			}
+			String symbols[] = null;
+			if (verifySameSymbols){
+				if (symbols1==null || symbols2==null){
+					lg.debug("EXPRESSIONS DIFFERENT: symbols null");
+					return false;
+				}
+				if (symbols1.length!=symbols2.length){
+					lg.debug("EXPRESSIONS DIFFERENT: symbols different number");
+					return false;
+				}
+				//
+				// make sure every symbol in symbol1 is in symbol2
+				//
+				for (int i = 0; i < symbols1.length; i++){
+					boolean bFound = false;
+					for (int j = 0; j < symbols2.length; j++){
+						if (symbols1[i].equals(symbols2[j])){
+							bFound = true;
+							break;
+						}
+					}
+					if (!bFound){
+						lg.debug("EXPRESSIONS DIFFERENT: symbols don't match");
+						return false;
+					}
+				}
+				//
+				// make sure every symbol in symbol2 is in symbol1
+				//
+				for (int i = 0; i < symbols2.length; i++){
+					boolean bFound = false;
+					for (int j = 0; j < symbols1.length; j++){
+						if (symbols2[i].equals(symbols1[j])){
+							bFound = true;
+							break;
+						}
+					}
+					if (!bFound){
+						lg.debug("EXPRESSIONS DIFFERENT: symbols don't match");
+						return false;
+					}
+				}
+				symbols = symbols1;
+			}else{ // don't verify symbols
+				if (symbols1==null && symbols2!=null){
+					symbols = symbols2;
+				}else if (symbols1!=null && symbols2==null){
+					symbols = symbols1;
+				}else{
+					//
+					// make combined list (without duplicates)
+					//
+					java.util.HashSet hashSet = new java.util.HashSet();
+					for (int i = 0; i < symbols1.length; i++){
+						hashSet.add(symbols1[i]);
+					}
+					for (int i = 0; i < symbols2.length; i++){
+						hashSet.add(symbols2[i]);
+					}
+					symbols = (String[])hashSet.toArray(new String[hashSet.size()]);
+				}
+			}
+			cbit.vcell.parser.SymbolTable symbolTable = new SimpleSymbolTable(symbols);
+			exp1.bindExpression(symbolTable);
+			exp2.bindExpression(symbolTable);
+			double values[] = new double[symbols.length];
+			//
+			// go through 20 different sets of random inputs to test for equivalence
+			// ignore cases of Exceptions during evaluations (out of domain of imbedded functions), keep trying until 20 successful evaluations
+			//
+			Random rand = new Random();
+			final int MAX_TRIES = 1000;
+			final int REQUIRED_NUM_EVALUATIONS = 20;
+			int numEvaluations = 0;
+			Exception savedException = null;
+			for (int i = 0; i < MAX_TRIES && numEvaluations < REQUIRED_NUM_EVALUATIONS; i++){
+				for (int j = 0; j < values.length; j++){
+					values[j] = 0.01*(i+1)*rand.nextGaussian();
+				}
+				try {
+					double result1 = exp1.evaluateVector(values);
+					double result2 = exp2.evaluateVector(values);
+					if (Double.isInfinite(result1) || Double.isNaN(result1)){
+						throw new RuntimeException("Expression = '"+exp1+"' evaluates to "+result1);
+					}
+					if (Double.isInfinite(result2) || Double.isNaN(result2)){
+						throw new RuntimeException("Expression = '"+exp2+"' evaluates to "+result2);
+					}
+					double scale = Math.abs(result1)+Math.abs(result2);
+					double absdiff = Math.abs(result1-result2);
+					if (scale > absoluteTolerance){
+						if (absdiff > relativeTolerance*scale){
+							lg.debug("EXPRESSIONS DIFFERENT: numerical test "+numEvaluations+", tolerance exceeded by "+(int)Math.log(absdiff/(relativeTolerance*scale))+"digits");
+							return false;
+						}
+					}
+					numEvaluations++;
+				}catch (Exception e){
+					savedException = e;
+				}
+			}
+			if (numEvaluations < REQUIRED_NUM_EVALUATIONS){
+				//savedException.printStackTrace(System.out);
+				throw new RuntimeException("too many failed evaluations ("+numEvaluations+" of "+REQUIRED_NUM_EVALUATIONS+") ("+savedException.toString()+") of expressions '"+exp1+"' and '"+exp2+"'");
+			}
+			Vector<Discontinuity> discont1 = exp1.getDiscontinuities();
+			Vector<Discontinuity> discont2 = exp2.getDiscontinuities();
+			if(discont1.size() != discont2.size())
+			{
+				return false;
+			}
+			else
+			{
+				if (discont1.size() != 0)
+				{
+					Expression productOfdiscont1 = new Expression(1);
+					Expression productOfdiscont2 = new Expression(1);
+					for(Discontinuity dis1 : discont1)
+					{
+						productOfdiscont1 = Expression.mult(productOfdiscont1, dis1.getSignedRootFindingExp());
+					}
+					for(Discontinuity dis2 : discont2)
+					{
+						productOfdiscont2 = Expression.mult(productOfdiscont2, dis2.getSignedRootFindingExp());
+					}
+					return functionallyEquivalent(productOfdiscont1, productOfdiscont2, verifySameSymbols, relativeTolerance, absoluteTolerance);
+				}
+			}
+			return true;
+		}catch (cbit.vcell.parser.ExpressionException e){
+			e.printStackTrace(System.out);
+			lg.debug("EXPRESSIONS DIFFERENT: "+e);
+			return false;
+		}
+	}
 
 /**
  * Insert the method's description here.

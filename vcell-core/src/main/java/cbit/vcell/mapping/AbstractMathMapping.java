@@ -547,6 +547,7 @@ public static final String MATH_FUNC_SUFFIX_SPECIES_INIT_CONC_UNIT_PREFIX = "_in
 static final String MATH_FUNC_SUFFIX_SPECIES_CONCENTRATION = "";
 public static final String MATH_VAR_SUFFIX_SPECIES_COUNT = "_Count";
 public static final String MATH_FUNC_SUFFIX_SPECIES_INIT_COUNT = "_initCount";
+	public static final String MATH_FUNC_SUFFIX_SPECIES_INIT_COUNT_template_replace = "_Count_initCount";
 static final String PARAMETER_PROBABLIITY_RATE_SUFFIX = "_probabilityRate";
 static final String PARAMETER_VELOCITY_X_SUFFIX = "_velocityX";
 static final String PARAMETER_VELOCITY_Y_SUFFIX = "_velocityY";
