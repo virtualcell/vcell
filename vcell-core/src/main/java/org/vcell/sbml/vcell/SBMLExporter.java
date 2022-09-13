@@ -1658,6 +1658,7 @@ private void roundTripValidation() throws SBMLValidationException {
 				Files.write(Paths.get(outputDir, "orig_vcml.xml"), XmlHelper.bioModelToXML(bioModel, false).getBytes(StandardCharsets.UTF_8));
 			}
 			if (reread_BioModel_sbml_units != null) {
+				reread_BioModel_sbml_units.updateAll(false);
 				Files.write(Paths.get(outputDir, "reread_vcml_sbml_units.xml"), XmlHelper.bioModelToXML(reread_BioModel_sbml_units, false).getBytes(StandardCharsets.UTF_8));
 			}
 			if (reread_BioModel_vcell_units != null) {
