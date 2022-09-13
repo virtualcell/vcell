@@ -2,7 +2,7 @@ package org.vcell.cli.run;
 
 import cbit.vcell.resource.PropertyLoader;
 
-import org.vcell.cli.CLILogger;
+import org.vcell.cli.CLIRecorder;
 import org.vcell.cli.CLIPythonManager;
 import org.vcell.util.exe.Executable;
 
@@ -59,9 +59,9 @@ public class ExecuteCommand implements Callable<Integer> {
 
 
     public Integer call() {
-        CLILogger cliLogger = null;
+        CLIRecorder cliLogger = null;
         try {
-            cliLogger = new CLILogger(outputFilePath); // CLILogger will throw an execption if our output dir isn't valid.
+            cliLogger = new CLIRecorder(outputFilePath); // CLILogger will throw an execption if our output dir isn't valid.
 
             Level logLevel = logger.getLevel();
             if (!bQuiet && bDebug) {

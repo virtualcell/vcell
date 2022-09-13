@@ -3,7 +3,7 @@ package org.vcell.cli;
 import java.io.IOException;
 
 
-public interface CLILoggable {
+public interface CLIRecordable {
 
     public void writeDetailedErrorList(String message) throws IOException;
 

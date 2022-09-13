@@ -6,7 +6,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Level;
-import org.vcell.cli.CLILogger;
+import org.vcell.cli.CLIRecorder;
 import org.vcell.cli.CLIPythonManager;
 import org.vcell.cli.run.ExecuteImpl;
 import org.vcell.util.exe.Executable;
@@ -41,9 +41,9 @@ public class BiosimulationsCommand implements Callable<Integer> {
     private boolean help;
 
     public Integer call() {
-        CLILogger cliLogger = null;
+        CLIRecorder cliLogger = null;
         try {
-            cliLogger = new CLILogger(OUT_DIR); // CLILogger will throw an execption if our output dir isn't valid.
+            cliLogger = new CLIRecorder(OUT_DIR); // CLILogger will throw an execption if our output dir isn't valid.
             Level logLevel = logger.getLevel();
             if (!bQuiet && bDebug) {
                 logLevel = Level.DEBUG;

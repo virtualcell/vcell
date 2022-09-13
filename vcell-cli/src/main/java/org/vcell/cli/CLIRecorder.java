@@ -8,63 +8,63 @@ import java.nio.file.Paths;
 import org.vcell.util.VCellUtilityHub;
 import org.vcell.util.recording.*;
 
-public class CLILogger extends Recorder implements CLILoggable {
+public class CLIRecorder extends Recorder implements CLIRecordable {
     protected final static boolean DEFAULT_SHOULD_PRINT_LOG_FILES = false, DEFAULT_SHOULD_FLUSH_LOG_FILES = false;
     protected boolean shouldPrintLogFiles, shouldFlushLogFiles;
     protected FileRecord detailedErrorLog, fullSuccessLog, errorLog, detailedResultsLog, spatialLog, importErrorLog;
     protected File outputDirectory;
 
     // Note: this constructor is not public
-    protected CLILogger(Class<?> clazz){
+    protected CLIRecorder(Class<?> clazz){
         super(clazz);
         selfLogger.debug(this.getClass().getName() + " initializing");
     }
 
     // Note: this constructor is not public
-    private CLILogger(){
-        this(CLILogger.class);
+    private CLIRecorder(){
+        this(CLIRecorder.class);
     }
 
     // Note: this constructor is not public
-    protected CLILogger(boolean shouldPrintLogFiles, boolean shouldFlushLogFiles){
+    protected CLIRecorder(boolean shouldPrintLogFiles, boolean shouldFlushLogFiles){
         this();
         this.shouldPrintLogFiles = shouldPrintLogFiles;
         this.shouldFlushLogFiles = shouldFlushLogFiles;
     }
 
-    public CLILogger(String outputDirectoryPath) throws IOException {
+    public CLIRecorder(String outputDirectoryPath) throws IOException {
         this(outputDirectoryPath, DEFAULT_SHOULD_PRINT_LOG_FILES);
     }
 
-    public CLILogger(Path outputDirectoryPath) throws IOException {
+    public CLIRecorder(Path outputDirectoryPath) throws IOException {
         this(outputDirectoryPath, DEFAULT_SHOULD_PRINT_LOG_FILES);
     }
 
-    public CLILogger(File outputDirectory) throws IOException {
+    public CLIRecorder(File outputDirectory) throws IOException {
         this(outputDirectory, DEFAULT_SHOULD_PRINT_LOG_FILES);
     }
 
-    public CLILogger(String outputDirectoryPath, boolean forceLogFiles) throws IOException {
+    public CLIRecorder(String outputDirectoryPath, boolean forceLogFiles) throws IOException {
         this(new File(outputDirectoryPath), forceLogFiles, DEFAULT_SHOULD_FLUSH_LOG_FILES);
     }
 
-    public CLILogger(Path outputDirectoryPath, boolean forceLogFiles) throws IOException {
+    public CLIRecorder(Path outputDirectoryPath, boolean forceLogFiles) throws IOException {
         this(outputDirectoryPath.toFile(), forceLogFiles, DEFAULT_SHOULD_FLUSH_LOG_FILES);
     }
 
-    public CLILogger(File outputDirectory, boolean forceLogFiles) throws IOException {
+    public CLIRecorder(File outputDirectory, boolean forceLogFiles) throws IOException {
         this(outputDirectory, forceLogFiles, DEFAULT_SHOULD_FLUSH_LOG_FILES);
     }
 
-    public CLILogger(String outputDirectoryPath, boolean forceLogFiles, boolean shouldFlushLogFiles) throws IOException {
+    public CLIRecorder(String outputDirectoryPath, boolean forceLogFiles, boolean shouldFlushLogFiles) throws IOException {
         this(new File(outputDirectoryPath), forceLogFiles, shouldFlushLogFiles);
     }
 
-    public CLILogger(Path outputDirectoryPath, boolean forceLogFiles, boolean shouldFlushLogFiles) throws IOException {
+    public CLIRecorder(Path outputDirectoryPath, boolean forceLogFiles, boolean shouldFlushLogFiles) throws IOException {
         this(outputDirectoryPath.toFile(), forceLogFiles, shouldFlushLogFiles);
     }
 
-    public CLILogger(File outputDirectory, boolean forceLogFiles, boolean shouldFlushLogFiles) throws IOException {
+    public CLIRecorder(File outputDirectory, boolean forceLogFiles, boolean shouldFlushLogFiles) throws IOException {
         this(CLIUtils.isBatchExecution(outputDirectory.getAbsolutePath(), forceLogFiles), shouldFlushLogFiles);
         if (!outputDirectory.exists() && !outputDirectory.mkdirs()) {
             String format = "Path: <%s> does not lead to an existing directory, nor could it be created.";

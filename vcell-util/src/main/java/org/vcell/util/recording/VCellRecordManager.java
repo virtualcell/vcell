@@ -1,5 +1,6 @@
 package org.vcell.util.recording;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Map;
 import java.util.HashMap;
@@ -17,10 +18,14 @@ public class VCellRecordManager implements RecordManager {
     }
 
     @Override
-    public FileRecord requestNewFileLog(String fileName){
-        if (this.logMap.containsKey(fileName)) 
-            return (FileRecord)this.logMap.get(fileName);
-        return (FileRecord)this.addLog(fileName, new FileRecord(fileName));
+    public FileRecord requestNewFileLog(String filePath){
+        // Make parent if it doesn't exist
+        File parent = (new File(filePath)).getParentFile();
+        if (!parent.exists())parent.mkdirs();
+        
+        if (this.logMap.containsKey(filePath)) 
+            return (FileRecord)this.logMap.get(filePath);
+        return (FileRecord)this.addLog(filePath, new FileRecord(filePath));
     }
 
     // Note: uses AutoClose

@@ -10,9 +10,9 @@ public class FileRecord extends Record {
     protected FileWriter fileWriter;
     protected StringBuffer sBuff;
 
-    public FileRecord(String fileName){
+    public FileRecord(String filePath){
         this.sBuff = new StringBuffer();
-        this.logFile = new File(fileName);
+        this.logFile = new File(filePath);
         this.fileWriter = null;
         try {
         if ((logFile.exists() || logFile.createNewFile()) && !logFile.isDirectory()){
@@ -21,7 +21,7 @@ public class FileRecord extends Record {
         }
             
         } catch (IOException e){
-            throw new RuntimeException("File \"" + fileName + "\"  could not be created or opened.", e);
+            throw new RuntimeException("File \"" + filePath + "\"  could not be created or opened.", e);
         }
     }
 
@@ -32,6 +32,14 @@ public class FileRecord extends Record {
 
     public void flush() throws IOException {
         this.write(this.sBuff.toString());
+    }
+
+    public String getPath(){
+        return this.logFile.getAbsolutePath();
+    }
+
+    public String getName(){
+        return this.logFile.getName();
     }
     
     @Override

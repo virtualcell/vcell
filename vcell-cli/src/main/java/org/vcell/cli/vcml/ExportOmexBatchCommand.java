@@ -2,7 +2,7 @@ package org.vcell.cli.vcml;
 
 import cbit.vcell.resource.PropertyLoader;
 
-import org.vcell.cli.CLILogger;
+import org.vcell.cli.CLIRecorder;
 import org.vcell.sedml.ModelFormat;
 import org.vcell.util.DataAccessException;
 import picocli.CommandLine.Command;
@@ -52,9 +52,9 @@ public class ExportOmexBatchCommand implements Callable<Integer> {
     private boolean help;
 
     public Integer call() {
-        CLILogger cliLogger = null;
+        CLIRecorder cliLogger = null;
         try {
-            cliLogger = new CLILogger(outputFilePath); // CLILogger will throw an execption if our output dir isn't valid.
+            cliLogger = new CLIRecorder(outputFilePath); // CLILogger will throw an execption if our output dir isn't valid.
             logger.debug("Batch export of omex files requested");
             PropertyLoader.loadProperties();
             if (inputFilePath == null || !inputFilePath.exists() || !inputFilePath.isDirectory()){

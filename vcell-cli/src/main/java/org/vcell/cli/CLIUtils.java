@@ -12,6 +12,7 @@ import org.apache.logging.log4j.Logger;
 
 import java.io.*;
 import java.nio.file.*;
+import java.nio.file.Files;
 import java.util.*;
 
 //import java.nio.file.Files;
@@ -63,7 +64,7 @@ public class CLIUtils {
 
     public static boolean isBatchExecution(String outputBaseDir, boolean bForceKeepLogs) {
         Path path = Paths.get(outputBaseDir);
-        boolean isDirectory = java.nio.file.Files.isDirectory(path);
+        boolean isDirectory = Files.isDirectory(path);
         return isDirectory || bForceKeepLogs;
     }
 
