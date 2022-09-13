@@ -13,7 +13,7 @@ public class SEDMLLogger {
 		}
 		public String getCSV() {
 			String excString = exception == null ? "null:null" : "\""+exception.getClass().getName()+"\":\""+exception.getMessage()+"\"";
-			return taskName+","+taskType+","+taskResult+","+excString;
+			return identifier+","+taskName+","+taskType+","+taskResult+","+excString;
 		}
 		public String toString() {
 			return getCSV();
