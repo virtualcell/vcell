@@ -61,9 +61,9 @@ public class ASTFuncNode extends SimpleNode {
 		ASIN		("asin",			1, 	MathMLTags.INV_SINE				,	"inverse since function" ),	 
 		ACOS		("acos",			1, 	MathMLTags.INV_COSINE			,	"inverse cosine function" ),
 		ATAN		("atan",			1, 	MathMLTags.INV_TANGENT			,	"inverse tangent function" ),	 
-		ATAN2		("atan2",			2, 	null							,	"<html>similar to <i>atan(y/x)</i>, except places the angle in the correct quadrant</html>" ),	 
-		MAX			("max",				2, 	null							,	"<html>maximum of <i>x</i> and <i>y</i></html>" ),
-		MIN			("min",				2, 	null							,	"<html>minimum of <i>x</i> and <i>y</i></html>" ),
+		ATAN2		("atan2",			2, 	null						,	"<html>similar to <i>atan(y/x)</i>, except places the angle in the correct quadrant</html>" ),
+		MAX			("max",				2, 	MathMLTags.MAX					,	"<html>maximum of <i>x</i> and <i>y</i></html>" ),
+		MIN			("min",				2, 	MathMLTags.MIN					,	"<html>minimum of <i>x</i> and <i>y</i></html>" ),
 		CEIL		("ceil",			1, 	MathMLTags.CEILING				,	"<html>smallest integral value not less than <i>x</i></html>" ),	 
 		FLOOR		("floor",			1, 	MathMLTags.FLOOR				,	"<html>largest integral value not greater than <i>x</i></html>" ),	 
 		CSC			("csc",				1, 	MathMLTags.COSECANT				,	"cosecant function" ),	 
@@ -1352,6 +1352,12 @@ public double evaluateConstant() throws ExpressionException {
 		if (arg1 == 0 && arg2 == 0) {
 			throw new FunctionDomainException("atan2(u, v) where u=0 and v=0 is undefined, expression='"+infixString(LANGUAGE_DEFAULT)+"'");
 		}
+		if (arg1==-0.0){
+			arg1 = 0.0;
+		}
+		if (arg2==-0.0){
+			arg2 = 0.0;
+		}
 		result = Math.atan2(arg1,arg2);
 		break;
 	}
@@ -1939,6 +1945,12 @@ public double evaluateVector(double values[]) throws ExpressionException {
 		if (arg1 == 0 && arg2 == 0) {
 			throw new FunctionDomainException("atan2(u, v) where u=0 and v=0 is undefined, expression='"+infixString(LANGUAGE_DEFAULT)+"'");
 		}
+		if (arg1 == -0.0){
+			arg1 = 0.0;
+		}
+		if (arg2 == -0.0){
+			arg2 = 0.0;
+		}
 		result = Math.atan2(arg1, arg2);
 		break;
 	}
@@ -2126,10 +2138,10 @@ public Node flatten() throws ExpressionException {
 	funcNode.funcType = funcType;
 	funcNode.funcName = funcName;
 	funcNode.symbolTableFunctionEntry = symbolTableFunctionEntry;
-	java.util.Vector<Node> tempChildren = new java.util.Vector<Node>();
+	ArrayList<Node> tempChildren = new ArrayList<>();
 
 	for (int i=0;i<jjtGetNumChildren();i++){
-		tempChildren.addElement(jjtGetChild(i).flatten());
+		tempChildren.add(jjtGetChild(i).flatten());
 	}
 
 	switch (funcType){
@@ -2142,37 +2154,12 @@ public Node flatten() throws ExpressionException {
 	}
 	case POW: {
 		if (tempChildren.size()!=2) throw new ExpressionException("pow() expects 2 arguments");
-		//
-		//  b
-		// a   test for b = 1
-		//
-		Node exponentChild = (Node)tempChildren.elementAt(1);
-		Node mantissaChild = (Node)tempChildren.elementAt(0);
-		if (exponentChild instanceof ASTFloatNode){
-			double exponent = ((ASTFloatNode)exponentChild).value.doubleValue();
-			if (exponent == 1.0){
-				return mantissaChild;
-			}
-		}
-		//
-		//   w    
-		//  v          v*w
-		// u    --->  u
-		//
-		if (mantissaChild instanceof ASTFuncNode){
-			if (((ASTFuncNode)mantissaChild).funcType == FunctionType.POW){
-				ASTMultNode newMultNode = new ASTMultNode();
-				newMultNode.jjtAddChild(mantissaChild.jjtGetChild(1));
-				newMultNode.jjtAddChild(exponentChild);
-				ASTFuncNode newExponentNode = new ASTFuncNode();
-				newExponentNode.funcType = funcType;
-				newExponentNode.funcName = funcName;
-				newExponentNode.jjtAddChild(mantissaChild.jjtGetChild(0));
-				newExponentNode.jjtAddChild(newMultNode);
-				return newExponentNode.flatten();
-			}
-		}
-		break;
+
+		ASTPowerNode powNode = new ASTPowerNode();
+		powNode.jjtAddChild(tempChildren.get(0));
+		powNode.jjtAddChild(tempChildren.get(1));
+
+		return powNode.flatten();
 	}
 	case SQRT: {
 		if (tempChildren.size()!=1) throw new ExpressionException("sqrt() expects 1 argument");
@@ -2181,7 +2168,7 @@ public Node flatten() throws ExpressionException {
 		// sqrt(a^2) -> abs(a)
 		// sqrt(pow(a,2)) -> abs(a)
 		//
-		Node child = (Node)tempChildren.elementAt(0);
+		Node child = (Node)tempChildren.get(0);
 		if (child instanceof ASTFuncNode){
 			if (((ASTFuncNode)child).funcType == FunctionType.POW){
 				Node childPowMantissa = child.jjtGetChild(0);
@@ -2342,7 +2329,7 @@ public Node flatten() throws ExpressionException {
 	}
 	}
 	for (int i=0;i<tempChildren.size();i++){
-		funcNode.jjtAddChild((Node)tempChildren.elementAt(i));
+		funcNode.jjtAddChild((Node)tempChildren.get(i));
 	}
 	return funcNode;	
 }
@@ -2427,14 +2414,26 @@ public String infixString(int lang) {
 		//
 		// pow() is treated specially, Matlab needs a^b.
 		//
-	 	case POW: {		      
-	 		if (lang == LANGUAGE_MATLAB || lang == LANGUAGE_ECLiPSe || lang == LANGUAGE_JSCL || lang == LANGUAGE_UNITS){
+	 	case POW: {
+			if (lang == LANGUAGE_MATLAB || lang == LANGUAGE_ECLiPSe || lang == LANGUAGE_UNITS) {
 				buffer.append("(");
 				buffer.append(jjtGetChild(0).infixString(lang));
 				buffer.append(" ^ ");
 				buffer.append(jjtGetChild(1).infixString(lang));
 				buffer.append(")");
-			} else  if (lang == LANGUAGE_C){
+			} else if (lang == LANGUAGE_JSCL){
+				buffer.append("(");
+				if (jjtGetChild(0) instanceof ASTMinusTermNode) {
+					buffer.append("(");
+					buffer.append(jjtGetChild(0).infixString(lang));
+					buffer.append(")");
+				}else{
+					buffer.append(jjtGetChild(0).infixString(lang));
+				}
+				buffer.append(" ^ ");
+				buffer.append(jjtGetChild(1).infixString(lang));
+				buffer.append(")");
+			} else if (lang == LANGUAGE_C){
 				buffer.append("pow(");
 				buffer.append("((double)(" + jjtGetChild(0).infixString(lang) + "))");
 				buffer.append(",");
@@ -2704,11 +2703,6 @@ void setFunctionType(FunctionType funcType) {
 	funcName = funcType.getName();
 }
 
-/**
- * Insert the method's description here.
- * Creation date: (12/20/2002 2:10:31 PM)
- * @param parserFunction int
- */
 void setFunctionFromName(String parserToken) {
 	funcType = FunctionType.USERDEFINED;
 	funcName = parserToken;
