@@ -73,10 +73,9 @@ import org.apache.logging.log4j.Logger;
 public class VcmlOmexConverter {
 	private static final Logger logger = LogManager.getLogger(VcmlOmexConverter.class);
 
-	public static final String jobFile = "jobConfig.txt";
+	public static final String jobConfigFile = "jobConfig.txt";
 	public static final String overrideFile = "orphanOverrides.txt";
-	public static final String successFile = "successfulExports.txt";
-	public static final String failureFile = "failedExports.txt";
+	public static final String jobLogFile = "jobLog.txt";
 	
 	
 	public static void convertOneFile(File input,
@@ -126,11 +125,11 @@ public class VcmlOmexConverter {
 			throw new RuntimeException("No VCML files found in the directory `" + input + "`");
 		}
 		
-		writeExportStatusList(outputDir.getAbsolutePath(), "bForceVCML is " + modelFormat.equals(ModelFormat.VCML), jobFile, bForceLogFiles);
-		writeExportStatusList(outputDir.getAbsolutePath(), "bForceSBML is " + modelFormat.equals(ModelFormat.SBML), jobFile, bForceLogFiles);
-		writeExportStatusList(outputDir.getAbsolutePath(), "hasDataOnly is " + bHasDataOnly, jobFile, bForceLogFiles);
-		writeExportStatusList(outputDir.getAbsolutePath(), "makeLogsOnly is " + bMakeLogsOnly, jobFile, bForceLogFiles);
-		writeExportStatusList(outputDir.getAbsolutePath(), "nonSpatialOnly is " + bNonSpatialOnly, jobFile, bForceLogFiles);
+		writeExportStatusList(outputDir.getAbsolutePath(), "bForceVCML is " + modelFormat.equals(ModelFormat.VCML), jobConfigFile, bForceLogFiles);
+		writeExportStatusList(outputDir.getAbsolutePath(), "bForceSBML is " + modelFormat.equals(ModelFormat.SBML), jobConfigFile, bForceLogFiles);
+		writeExportStatusList(outputDir.getAbsolutePath(), "hasDataOnly is " + bHasDataOnly, jobConfigFile, bForceLogFiles);
+		writeExportStatusList(outputDir.getAbsolutePath(), "makeLogsOnly is " + bMakeLogsOnly, jobConfigFile, bForceLogFiles);
+		writeExportStatusList(outputDir.getAbsolutePath(), "nonSpatialOnly is " + bNonSpatialOnly, jobConfigFile, bForceLogFiles);
 
 //            assert inputFiles != null;
 		for (String inputFile : inputFiles) {
@@ -387,28 +386,18 @@ public class VcmlOmexConverter {
         SEDMLDocument sedmlDocument = sedmlExporter.getSEDMLDocument(outputDir, vcmlName,
 				modelFormat, true, bValidate);
         
-        if (sedmlExporter.getSedmlLogger().hasErrors()) {
+		writeExportStatusList(outputBaseDir, vcmlName + "\n" + sedmlExporter.getSedmlLogger().getLogsCSV(), jobLogFile, bForceLogFiles);
         
+        if (sedmlExporter.getSedmlLogger().hasErrors()) {
             File dir = new File(outputDir);
             String[] files = dir.list();
             removeOtherFiles(outputDir, files);
-			writeExportStatusList(outputBaseDir, vcmlName + "\n" + sedmlExporter.getSedmlLogger().getLogsCSV(), failureFile, bForceLogFiles);
         	return false;
-        } else {
-			writeExportStatusList(outputBaseDir, vcmlName + "\n" + sedmlExporter.getSedmlLogger().getLogsCSV(), successFile, bForceLogFiles);
         }
         
         String sedmlString = sedmlDocument.writeDocumentToString();
         XmlUtil.writeXMLStringToFile(sedmlString, String.valueOf(Paths.get(outputDir, vcmlName + ".sedml")), true);
 
-        // libCombine needs native lib
-//        ResourceUtil.setNativeLibraryDirectory();
-//	    OperatingSystemInfo osi = OperatingSystemInfo.getInstance();
-//	    if (osi.isWindows()) {
-//        	org.scijava.nativelib.NativeLoader.loadLibrary("combinej");
-//        } else {
-//        	cbit.vcell.util.NativeLoader.load("combinej");
-//        }
         try {
             try {
                 ResourceUtil.setNativeLibraryDirectory();
