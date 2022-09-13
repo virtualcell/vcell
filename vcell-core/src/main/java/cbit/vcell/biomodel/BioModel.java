@@ -17,7 +17,11 @@ import java.beans.VetoableChangeSupport;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import cbit.vcell.mapping.StructureMapping;
+import cbit.vcell.mapping.*;
+import cbit.vcell.math.MathException;
+import cbit.vcell.matrix.MatrixException;
+import cbit.vcell.model.*;
+import cbit.vcell.parser.ExpressionException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.vcell.model.rbm.MolecularType;
@@ -47,21 +51,8 @@ import cbit.vcell.biomodel.meta.IdentifiableProvider;
 import cbit.vcell.biomodel.meta.VCID;
 import cbit.vcell.biomodel.meta.VCMetaData;
 import cbit.vcell.geometry.Geometry;
-import cbit.vcell.mapping.ReactionSpec;
-import cbit.vcell.mapping.SimulationContext;
-import cbit.vcell.mapping.SpeciesContextSpec;
 import cbit.vcell.math.MathDescription;
-import cbit.vcell.model.BioModelEntityObject;
-import cbit.vcell.model.Model;
 import cbit.vcell.model.Model.RbmModelContainer;
-import cbit.vcell.model.ModelUnitSystem;
-import cbit.vcell.model.RbmObservable;
-import cbit.vcell.model.ReactionRule;
-import cbit.vcell.model.ReactionStep;
-import cbit.vcell.model.Species;
-import cbit.vcell.model.SpeciesContext;
-import cbit.vcell.model.Structure;
-import cbit.vcell.model.VCellSbmlName;
 import cbit.vcell.parser.NameScope;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.solver.Simulation;
@@ -1391,4 +1382,10 @@ public String getDisplayType() {
 	return typeName;
 }
 
+public void updateAll(boolean bForceUpgrade) throws MappingException {
+	refreshDependencies();
+	for (SimulationContext simulationContext : getSimulationContexts()){
+		simulationContext.updateAll(bForceUpgrade);
+	}
+}
 }

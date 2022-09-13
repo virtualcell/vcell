@@ -156,27 +156,8 @@ public class StochtestRunService {
 		    	   	}
 		    		bioModel.addSimulationContext(simContext);
 		    	}
-		    	
-		    	MathMappingCallback mathMappingCallback = new MathMappingCallback() {
-					
-					@Override
-					public void setProgressFraction(float fractionDone) {
-					}
-					
-					@Override
-					public void setMessage(String message) {
-					}
-					
-					@Override
-					public boolean isInterrupted() {
-						return false;
-					}
-				};
-				
-				MathMapping mathMapping = simContext.createNewMathMapping(mathMappingCallback, NetworkGenerationRequirements.ComputeFullStandardTimeout);
-				MathDescription mathDesc = mathMapping.getMathDescription(mathMappingCallback);
-				simContext.setMathDescription(mathDesc);
-				
+		    	simContext.updateAll(false);
+
 				if (simContext.isInsufficientIterations()){
 					networkGenProbs = "insufficientIterations";
 				} else if (simContext.isInsufficientMaxMolecules()){
