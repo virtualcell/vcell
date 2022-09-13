@@ -181,9 +181,13 @@ public class SEDMLExporter {
 		this.sedmlVersion = argVersion;
 		this.sedmlLogger = new SEDMLLogger(argBiomodel.getName(), SEDMLConversion.EXPORT);
         // we need to collect simulation names to be able to match sims in BioModel clone
-        for (Simulation sim : argSimsToExport) {
-        	simsToExport.add(sim.getName());
-        }
+		if (argSimsToExport != null && argSimsToExport.size() > 0) {
+	        for (Simulation sim : argSimsToExport) {
+	        	simsToExport.add(sim.getName());
+	        }
+		} else {
+			simsToExport = null;
+		}
 	}
 
 	public SEDMLDocument getSEDMLDocument(String sPath, String sBaseFileName, ModelFormat modelFormat, 
