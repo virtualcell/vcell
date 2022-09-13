@@ -67,6 +67,7 @@ import cbit.vcell.mapping.MappingException;
 import cbit.vcell.mapping.MathMapping;
 import cbit.vcell.mapping.MathMappingCallbackTaskAdapter;
 import cbit.vcell.mapping.MathSymbolMapping;
+import cbit.vcell.mapping.ReactionSpec;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SimulationContext.Application;
 import cbit.vcell.mapping.SimulationContext.MathMappingCallback;
@@ -78,8 +79,12 @@ import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathException;
 import cbit.vcell.math.Variable;
 import cbit.vcell.matrix.MatrixException;
+import cbit.vcell.model.Model.ModelParameter;
 import cbit.vcell.model.Model.ReservedSymbol;
 import cbit.vcell.model.ModelException;
+import cbit.vcell.model.ReactionParticipant;
+import cbit.vcell.model.ReactionStep;
+import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.solver.ConstantArraySpec;
@@ -366,6 +371,61 @@ public class SEDMLImporter {
 		if (bioModels.size() <=1) return;
 		// for now just try if they *ALL* have matchable model
 		// this should be the case if dealing with exported SEDML/OMEX from VCell BioModel with multiple applications
+		
+		// temporary kludge for dealing with BioModels that have Applications with disabled reactions
+		// TODO export disabled reactions with specific zero kinetic law multiplier
+		BioModel bmMax = bioModels.get(0);
+		boolean differentRxNo = false;
+		for (int i = 1; i < bioModels.size(); i++) {
+			if (bioModels.get(i).getModel().getReactionSteps().length != bmMax.getModel().getReactionSteps().length) {
+				differentRxNo = true;				
+			}
+			if (bioModels.get(i).getModel().getReactionSteps().length > bmMax.getModel().getReactionSteps().length) {
+				bmMax = bioModels.get(i);
+			}
+		}
+		if (differentRxNo) {
+			for (int i = 0; i < bioModels.size(); i++) {
+				BioModel currentBM = bioModels.get(i);
+				if (currentBM.getModel().getReactionSteps().length < bmMax.getModel().getReactionSteps().length) {
+					try {
+						BioModel clonedBM = XmlHelper.cloneBioModel(bmMax);
+						// try to add missing reactions
+						// these may use unique global params, so try to first add missing model params, if any
+						for (int l = 0; l < clonedBM.getModel().getModelParameters().length; l++) {
+							if (currentBM.getModel().getModelParameter(clonedBM.getModel().getModelParameters()[l].getName()) == null) {
+								currentBM.getModel().addModelParameter(clonedBM.getModel().getModelParameters()[l]);
+							}
+						}
+						// now try to add the missing reactions
+						for (int j = 0; j < clonedBM.getModel().getReactionSteps().length; j++) {
+							if (currentBM.getModel().getReactionStep(clonedBM.getModel().getReactionSteps()[j].getName()) == null) {
+								ReactionStep rxToAdd = clonedBM.getModel().getReactionSteps()[j];
+								// must update pointers to objects in current model
+								ReactionParticipant[] rxPart = rxToAdd.getReactionParticipants();
+								for (int k = 0; k < rxPart.length; k++) {
+									String spcn = rxPart[k].getSpeciesContext().getName();
+									SpeciesContext sc = currentBM.getModel().getSpeciesContext(spcn);
+									rxPart[k].setSpeciesContext(sc);
+								}
+								rxToAdd.setStructure(currentBM.getModel().getStructure(rxToAdd.getStructure().getName()));
+								rxToAdd.setModel(currentBM.getModel());
+								currentBM.getModel().addReactionStep(rxToAdd);
+								// set the added reactions as disabled in simcontext(s)
+								for (int k = 0; k < bioModels.get(i).getSimulationContexts().length; k++) {
+									currentBM.getSimulationContexts()[k].getReactionContext().getReactionSpec(clonedBM.getModel().getReactionSteps()[j]).setReactionMapping(ReactionSpec.EXCLUDED);
+								}
+							}
+						}
+						bioModels.get(i).refreshDependencies();
+					} catch (XmlParseException | PropertyVetoException e) {
+						e.printStackTrace();
+						return;
+					}
+				}
+			}
+		}
+		
 		BioModel bm0 = bioModels.get(0);
 		for (int i = 1; i < bioModels.size(); i++) {
 			System.out.println("----comparing model from----"+bioModels.get(i)+" with model from "+bm0);
