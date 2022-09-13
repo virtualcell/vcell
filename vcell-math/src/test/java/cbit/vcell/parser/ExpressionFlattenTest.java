@@ -44,7 +44,7 @@ public class ExpressionFlattenTest {
                 {new Expression("((-x)^2)"),
                         new Expression("(x^2)")},
                 {new Expression("((Kf_dimerization * pow(EGFR_active,2.0)) - (Kr_dimerization * EGFR_dimer))"),
-                        new Expression(" - (((EGFR_active ^ 2.0) * Kf_dimerization) + (EGFR_dimer * Kr_dimerization))")}
+                        new Expression(" - ( - ((EGFR_active ^ 2.0) * Kf_dimerization) + (EGFR_dimer * Kr_dimerization))")}
         });
     }
 
@@ -53,6 +53,8 @@ public class ExpressionFlattenTest {
         Expression flattenedExp = origExpression.flattenFactors("KMOLE");
         Assert.assertTrue("didn't compare equal, expected='"+expectedFlattenedExpression.infix()+"', actual='"+flattenedExp.infix()+"'",
                 expectedFlattenedExpression.compareEqual(flattenedExp));
+        Assert.assertTrue("expected flattened not equivalent, expected='"+expectedFlattenedExpression.infix()+"', original='"+origExpression.infix()+"'",
+                ExpressionUtils.functionallyEquivalent(expectedFlattenedExpression,origExpression,false));
     }
 
     @Test

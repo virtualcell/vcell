@@ -51,7 +51,7 @@ public class ExpressionUtilsJSCLFlattenTest {
                         Boolean.FALSE},
 
                 {new Expression("((Kf_dimerization * pow(EGFR_active,2.0)) - (Kr_dimerization * EGFR_dimer))"),
-                        new Expression(" - ((( - EGFR_active ^ 2.0) * Kf_dimerization) + (EGFR_dimer * Kr_dimerization))"),
+                        new Expression(" - ( - ((EGFR_active ^ 2.0) * Kf_dimerization) + (EGFR_dimer * Kr_dimerization))"),
                         Boolean.FALSE},
 
                 {new Expression("(5.0 * KMOLE * ((1.0 / KMOLE) ^ 2.0))"),
@@ -111,7 +111,9 @@ public class ExpressionUtilsJSCLFlattenTest {
             Assert.assertTrue("expected='" + expectedFlattenedExpression.infix() + "', actual='" + flattenedExp.infix() + "'",
                     expectedFlattenedExpression.compareEqual(flattenedExp));
             Assert.assertTrue("expressions not equivalent: expected='" + expectedFlattenedExpression.infix() + "', actual='" + flattenedExp.infix() + "'",
-                    ExpressionUtils.functionallyEquivalent(expectedFlattenedExpression, flattenedExp));
+                    ExpressionUtils.functionallyEquivalent(expectedFlattenedExpression, flattenedExp, false));
+            Assert.assertTrue("expressions not equivalent: expected='" + expectedFlattenedExpression.infix() + "', original='" + origExpression.infix() + "'",
+                    ExpressionUtils.functionallyEquivalent(expectedFlattenedExpression, origExpression, false));
         } catch (ExpressionException e){
             if (tooBig){
                 return;
