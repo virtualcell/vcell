@@ -162,6 +162,7 @@ public class SEDMLExporter {
 	private int sedmlVersion = 2;
 	private  SedML sedmlModel = null;
 	private cbit.vcell.biomodel.BioModel vcBioModel = null;
+	private String jobId = null;
 	private ArrayList<String> sbmlFilePathStrAbsoluteList = new ArrayList<String>();
 	private ArrayList<String> sedmlFilePathStrAbsoluteList = new ArrayList<String>();
 	private List<String> simsToExport = new ArrayList<String>();
@@ -174,8 +175,10 @@ public class SEDMLExporter {
 	
 	private SEDMLLogger sedmlLogger = null;
 	
-	public SEDMLExporter(BioModel argBiomodel, int argLevel, int argVersion, List<Simulation> argSimsToExport) {
+	public SEDMLExporter(String argJobId, BioModel argBiomodel, int argLevel, int argVersion, List<Simulation> argSimsToExport) {
 		super();
+		
+		this.jobId = argJobId;
 		this.vcBioModel = argBiomodel;
 		this.sedmlLevel = argLevel;
 		this.sedmlVersion = argVersion;
@@ -227,9 +230,9 @@ public class SEDMLExporter {
 		// update overall status
 		if (bFromCLI) {
 			if (sedmlLogger.hasErrors()) {
-				sedmlLogger.addTaskLog(sedmlLogger.new TaskLog(sBaseFileName, TaskType.BIOMODEL, TaskResult.FAILED, null));
+				sedmlLogger.addTaskLog(sedmlLogger.new TaskLog(vcBioModel.getName(), TaskType.BIOMODEL, TaskResult.FAILED, null));
 			} else {
-				sedmlLogger.addTaskLog(sedmlLogger.new TaskLog(sBaseFileName, TaskType.BIOMODEL, TaskResult.SUCCEEDED, null));
+				sedmlLogger.addTaskLog(sedmlLogger.new TaskLog(vcBioModel.getName(), TaskType.BIOMODEL, TaskResult.SUCCEEDED, null));
 			}
 		}
 		

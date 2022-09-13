@@ -21,8 +21,8 @@ public class SEDMLLogger {
 	}
 	private ArrayList<TaskLog> taskLogs = new ArrayList<TaskLog>();
 	private String identifier; private SEDMLConversion operation;
-	public SEDMLLogger(String jobName, SEDMLConversion conversion) {
-		identifier = jobName;
+	public SEDMLLogger(String jobId, SEDMLConversion conversion) {
+		identifier = jobId;
 		operation = conversion;
 	}
 	public void addTaskLog(TaskLog taskLog) {
