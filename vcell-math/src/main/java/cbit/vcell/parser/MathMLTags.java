@@ -29,6 +29,8 @@ public interface MathMLTags {
 	// basic content elements
 	//
 	public final static String APPLY				= "apply";
+	public final static String MAX					= "max";
+	public final static String MIN					= "min";
 	public final static String PIECEWISE			= "piecewise";
 	public final static String PIECE				= "piece";
 	public final static String OTHERWISE			= "otherwise";

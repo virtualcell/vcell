@@ -22,10 +22,8 @@ import cbit.vcell.parser.ASTFuncNode.FunctionType;
 public class ExpressionMathMLPrinter {
 	private SimpleNode rootNode = null;
 	public enum MathType {REAL, BOOLEAN};
-/**
- * This method was created by a SmartGuide.
- * @param font java.awt.Font
- */
+	public enum Dialect {SBML_SUBSET, GENERAL};
+
 ExpressionMathMLPrinter (SimpleNode rootNode) {
 	this.rootNode = rootNode;
 }
@@ -34,10 +32,10 @@ ExpressionMathMLPrinter (SimpleNode rootNode) {
  * Creation date: (2/8/2002 5:51:09 PM)
  * @return java.lang.String
  */
-String getMathML(boolean bOnlyMathMLFragment, MathType desiredMathType) throws ExpressionException, java.io.IOException {
+String getMathML(boolean bOnlyMathMLFragment, MathType desiredMathType, Dialect dialect) throws ExpressionException, java.io.IOException {
 	org.jdom.output.XMLOutputter xmlwriter = new org.jdom.output.XMLOutputter();
 	Element mathElement = new Element("math",Namespace.getNamespace("http://www.w3.org/1998/Math/MathML"));
-	mathElement.addContent(getMathML(rootNode, desiredMathType));
+	mathElement.addContent(getMathML(rootNode, desiredMathType, dialect));
 	if (!bOnlyMathMLFragment) {
 		Document mathDoc = new Document(mathElement);
 		return xmlwriter.outputString(mathDoc);
@@ -160,52 +158,48 @@ private Element castChild(Element element, MathType outputType, MathType inputTy
  * @return java.lang.String
  */
 public static String getMathML(Expression exp, boolean bOnlyMathMLFragment) throws ExpressionException, java.io.IOException {
-	return getMathML(exp, bOnlyMathMLFragment, MathType.REAL);
+	return getMathML(exp, bOnlyMathMLFragment, MathType.REAL, Dialect.SBML_SUBSET);
 }
 
-public static String getMathML(Expression exp, boolean bOnlyMathMLFragment, MathType desiredMathType) throws ExpressionException, java.io.IOException {
+public static String getMathML(Expression exp, boolean bOnlyMathMLFragment, MathType desiredMathType, Dialect dialect) throws ExpressionException, java.io.IOException {
 	ExpressionMathMLPrinter mathMLPrinter = new ExpressionMathMLPrinter(exp.getRootNode());
-	return mathMLPrinter.getMathML(bOnlyMathMLFragment, desiredMathType);
+	return mathMLPrinter.getMathML(bOnlyMathMLFragment, desiredMathType, dialect);
 }
-/**
- * draw the expression with y at the center and x at the left
- * @param g java.awt.Graphics
- * @param node cbit.vcell.parser.SimpleNode
- */
-private org.jdom.Element getMathML(Node node, MathType desiredMathType) throws ExpressionException {
+
+private org.jdom.Element getMathML(Node node, MathType desiredMathType, Dialect dialect) throws ExpressionException {
 	//
 	// Equals
 	//
 	if (node instanceof ASTRelationalNode){
 		org.jdom.Element applyNode = new org.jdom.Element(MathMLTags.APPLY);
 		applyNode.addContent(new org.jdom.Element(((ASTRelationalNode)node).getMathMLElementTag()));
-		applyNode.addContent(getMathML(node.jjtGetChild(0), MathType.REAL));
-		applyNode.addContent(getMathML(node.jjtGetChild(1), MathType.REAL));
+		applyNode.addContent(getMathML(node.jjtGetChild(0), MathType.REAL, dialect));
+		applyNode.addContent(getMathML(node.jjtGetChild(1), MathType.REAL, dialect));
 		return castChild(applyNode, desiredMathType, MathType.BOOLEAN);
 	}else if (node instanceof ASTAndNode){
 		org.jdom.Element applyNode = new org.jdom.Element(MathMLTags.APPLY);
 		applyNode.addContent(new org.jdom.Element(MathMLTags.AND));
 		for (int i = 0; i < node.jjtGetNumChildren(); i++){
-			applyNode.addContent(getMathML(node.jjtGetChild(i), MathType.BOOLEAN));	
+			applyNode.addContent(getMathML(node.jjtGetChild(i), MathType.BOOLEAN, dialect));	
 		}
 		return castChild(applyNode, desiredMathType, MathType.BOOLEAN);
 	}else if (node instanceof ASTOrNode){
 		org.jdom.Element applyNode = new org.jdom.Element(MathMLTags.APPLY);
 		applyNode.addContent(new org.jdom.Element(MathMLTags.OR));
 		for (int i = 0; i < node.jjtGetNumChildren(); i++){
-			applyNode.addContent(getMathML(node.jjtGetChild(i), MathType.BOOLEAN));	
+			applyNode.addContent(getMathML(node.jjtGetChild(i), MathType.BOOLEAN, dialect));	
 		}
 		return castChild(applyNode, desiredMathType, MathType.BOOLEAN);
 	}else if (node instanceof ASTNotNode){
 		org.jdom.Element applyNode = new org.jdom.Element(MathMLTags.APPLY);
 		applyNode.addContent(new org.jdom.Element(MathMLTags.NOT));
-		applyNode.addContent(getMathML(node.jjtGetChild(0), MathType.BOOLEAN));
+		applyNode.addContent(getMathML(node.jjtGetChild(0), MathType.BOOLEAN, dialect));
 		return castChild(applyNode, desiredMathType, MathType.BOOLEAN);
 	}else if (node instanceof ASTPowerNode){
 		org.jdom.Element applyNode = new org.jdom.Element(MathMLTags.APPLY);
 		applyNode.addContent(new org.jdom.Element(MathMLTags.POWER));
-		applyNode.addContent(getMathML(node.jjtGetChild(0), MathType.REAL));
-		applyNode.addContent(getMathML(node.jjtGetChild(1), MathType.REAL));
+		applyNode.addContent(getMathML(node.jjtGetChild(0), MathType.REAL, dialect));
+		applyNode.addContent(getMathML(node.jjtGetChild(1), MathType.REAL, dialect));
 		return castChild(applyNode, desiredMathType, MathType.REAL);
 	}else if (node instanceof DerivativeNode){
 		org.jdom.Element applyNode = new org.jdom.Element(MathMLTags.APPLY);
@@ -215,21 +209,21 @@ private org.jdom.Element getMathML(Node node, MathType desiredMathType) throws E
 		idNode.setText(((DerivativeNode)node).independentVar);
 		bvarNode.addContent(idNode);
 		applyNode.addContent(bvarNode);
-		applyNode.addContent(getMathML(node.jjtGetChild(0), MathType.REAL));
+		applyNode.addContent(getMathML(node.jjtGetChild(0), MathType.REAL, dialect));
 		return castChild(applyNode, desiredMathType, MathType.REAL);
 	}else if (node instanceof ASTLaplacianNode){
 		throw new RuntimeException("ExpressionMathMLPrinter.getMathML(), laplacian operator not yet supported");
 	}else if (node instanceof ASTAssignNode){
 		org.jdom.Element applyNode = new org.jdom.Element(MathMLTags.APPLY);
 		applyNode.addContent(new org.jdom.Element(MathMLTags.EQUAL));
-		applyNode.addContent(getMathML(node.jjtGetChild(0), MathType.REAL));
-		applyNode.addContent(getMathML(node.jjtGetChild(1), MathType.REAL));
+		applyNode.addContent(getMathML(node.jjtGetChild(0), MathType.REAL, dialect));
+		applyNode.addContent(getMathML(node.jjtGetChild(1), MathType.REAL, dialect));
 		return castChild(applyNode, desiredMathType, MathType.REAL);
 	}else if (node instanceof ASTAddNode){
 		org.jdom.Element applyNode = new org.jdom.Element(MathMLTags.APPLY);
 		applyNode.addContent(new org.jdom.Element(MathMLTags.PLUS));
 		for (int i = 0; i < node.jjtGetNumChildren(); i++){
-			applyNode.addContent(getMathML(node.jjtGetChild(i), MathType.REAL));	
+			applyNode.addContent(getMathML(node.jjtGetChild(i), MathType.REAL, dialect));	
 		}
 		return castChild(applyNode, desiredMathType, MathType.REAL);
 	}else if (node instanceof ASTFloatNode){
@@ -248,7 +242,7 @@ private org.jdom.Element getMathML(Node node, MathType desiredMathType) throws E
 			String mathMLFunctionName = funcNode.getMathMLName();
 			applyNode.addContent(new org.jdom.Element(mathMLFunctionName));
 			for (int i = 0; i < node.jjtGetNumChildren(); i++){
-				applyNode.addContent(getMathML(node.jjtGetChild(i), MathType.REAL));	
+				applyNode.addContent(getMathML(node.jjtGetChild(i), MathType.REAL, dialect));	
 			}
 			return castChild(applyNode, desiredMathType, MathType.REAL);
 		//
@@ -263,77 +257,93 @@ private org.jdom.Element getMathML(Node node, MathType desiredMathType) throws E
 			constNode.setAttribute("type", "integer");
 			constNode.addContent("2");
 			degreeNode.addContent(constNode);
-			applyNode.addContent(getMathML(node.jjtGetChild(0), MathType.REAL));	
+			applyNode.addContent(getMathML(node.jjtGetChild(0), MathType.REAL, dialect));	
 			//constNode.setAttribute(new org.jdom.Attribute(MathMLTags.CellML_units,MathMLTags.DIMENSIONLESS,org.jdom.Namespace.getNamespace(cbit.util.XMLTags.CELLML_NAMESPACE_PREFIX, cbit.util.XMLTags.CELLML_NAMESPACE_URI)));
 			return castChild(applyNode, desiredMathType, MathType.REAL);
 		}else if (funcNode.getFunction() == FunctionType.ATAN2){
 			throw new ExpressionException("cannot translate atan(a,b) into MathML");
 		}else if (funcNode.getFunction() == FunctionType.MIN){
-			/* a < b ? a : b;
-				 <piecewise>                           
-				    <piece>                            
-				       <ci> a < /ci>                        
-				       <apply>                                 
-				         (a < b)                  
-				       </apply>                            
-				    </piece>                                  
-				    <otherwise>                                    
-				       <ci> b </ci>
-				    </othewise>                       
-				 </piecewise>
-			 */                             
+			if (dialect == Dialect.SBML_SUBSET) {
+				/* a < b ? a : b;
+					 <piecewise>
+						<piece>
+						   <ci> a < /ci>
+						   <apply>
+							 (a < b)
+						   </apply>
+						</piece>
+						<otherwise>
+						   <ci> b </ci>
+						</othewise>
+					 </piecewise>
+				 */
 
-			// Construct the piecewise element : create piece and otherwise separately and add.
-			Element piecewiseElement = new org.jdom.Element(MathMLTags.PIECEWISE);
-			// construct the piece element :  
-			Element pieceElement  = new org.jdom.Element(MathMLTags.PIECE);
-			pieceElement.addContent(getMathML(node.jjtGetChild(0), MathType.REAL));
-			Element applyElement = new org.jdom.Element(MathMLTags.APPLY);
-			Element condnElement = new org.jdom.Element(MathMLTags.LESS);
-			applyElement.addContent(condnElement);
-			applyElement.addContent(getMathML(node.jjtGetChild(0), MathType.REAL));
-			applyElement.addContent(getMathML(node.jjtGetChild(1), MathType.REAL));
-			pieceElement.addContent(applyElement);
-			// construct the otherwise element : add
-			Element otherwiseElement = new org.jdom.Element(MathMLTags.OTHERWISE);
-			otherwiseElement.addContent(getMathML(node.jjtGetChild(1), MathType.REAL));
-			// Now put together the piecewise element with the piece and otherwise. 
-			piecewiseElement.addContent(pieceElement);
-			piecewiseElement.addContent(otherwiseElement);
-			return castChild(piecewiseElement, desiredMathType, MathType.REAL);
+				// Construct the piecewise element : create piece and otherwise separately and add.
+				Element piecewiseElement = new org.jdom.Element(MathMLTags.PIECEWISE);
+				// construct the piece element :
+				Element pieceElement = new org.jdom.Element(MathMLTags.PIECE);
+				pieceElement.addContent(getMathML(node.jjtGetChild(0), MathType.REAL, dialect));
+				Element applyElement = new org.jdom.Element(MathMLTags.APPLY);
+				Element condnElement = new org.jdom.Element(MathMLTags.LESS);
+				applyElement.addContent(condnElement);
+				applyElement.addContent(getMathML(node.jjtGetChild(0), MathType.REAL, dialect));
+				applyElement.addContent(getMathML(node.jjtGetChild(1), MathType.REAL, dialect));
+				pieceElement.addContent(applyElement);
+				// construct the otherwise element : add
+				Element otherwiseElement = new org.jdom.Element(MathMLTags.OTHERWISE);
+				otherwiseElement.addContent(getMathML(node.jjtGetChild(1), MathType.REAL, dialect));
+				// Now put together the piecewise element with the piece and otherwise.
+				piecewiseElement.addContent(pieceElement);
+				piecewiseElement.addContent(otherwiseElement);
+				return castChild(piecewiseElement, desiredMathType, MathType.REAL);
+			}else{ // (dialect == Dialect.GENERAL)
+				org.jdom.Element applyNode = new org.jdom.Element(MathMLTags.APPLY);
+				applyNode.addContent(new org.jdom.Element(MathMLTags.MIN));
+				applyNode.addContent(getMathML(node.jjtGetChild(0), MathType.REAL, dialect));
+				applyNode.addContent(getMathML(node.jjtGetChild(1), MathType.REAL, dialect));
+				return castChild(applyNode, desiredMathType, MathType.REAL);
+			}
 		}else if (funcNode.getFunction() == FunctionType.MAX){
-			/* a < b ? b : a;
-				 <piecewise>                           
-				    <piece>                            
-				       <ci> b < /ci>                        
-				       <apply>                                 
-				         (a < b)                  
-				       </apply>                            
-				    </piece>                                  
-				    <otherwise>                                    
-				       <ci> a </ci>
-				    </othewise>                       
-				 </piecewise>
-			 */                             
+			if (dialect == Dialect.SBML_SUBSET) {
+				/* a < b ? b : a;
+					 <piecewise>
+						<piece>
+						   <ci> b < /ci>
+						   <apply>
+							 (a < b)
+						   </apply>
+						</piece>
+						<otherwise>
+						   <ci> a </ci>
+						</othewise>
+					 </piecewise>
+				 */
 
-			// Construct the piecewise element : create piece and otherwise separately and add.
-			Element piecewiseElement = new org.jdom.Element(MathMLTags.PIECEWISE);
-			// construct the piece element :  
-			Element pieceElement  = new org.jdom.Element(MathMLTags.PIECE);
-			pieceElement.addContent(getMathML(node.jjtGetChild(1), MathType.REAL));
-			Element applyElement = new org.jdom.Element(MathMLTags.APPLY);
-			Element condnElement = new org.jdom.Element(MathMLTags.LESS);
-			applyElement.addContent(condnElement);
-			applyElement.addContent(getMathML(node.jjtGetChild(0), MathType.REAL));
-			applyElement.addContent(getMathML(node.jjtGetChild(1), MathType.REAL));
-			pieceElement.addContent(applyElement);
-			// construct the otherwise element : add
-			Element otherwiseElement = new org.jdom.Element(MathMLTags.OTHERWISE);
-			otherwiseElement.addContent(getMathML(node.jjtGetChild(0), MathType.REAL));
-			// Now put together the piecewise element with the piece and otherwise. 
-			piecewiseElement.addContent(pieceElement);
-			piecewiseElement.addContent(otherwiseElement);
-			return castChild(piecewiseElement, desiredMathType, MathType.REAL);
+				// Construct the piecewise element : create piece and otherwise separately and add.
+				Element piecewiseElement = new org.jdom.Element(MathMLTags.PIECEWISE);
+				// construct the piece element :
+				Element pieceElement = new org.jdom.Element(MathMLTags.PIECE);
+				pieceElement.addContent(getMathML(node.jjtGetChild(1), MathType.REAL, dialect));
+				Element applyElement = new org.jdom.Element(MathMLTags.APPLY);
+				Element condnElement = new org.jdom.Element(MathMLTags.LESS);
+				applyElement.addContent(condnElement);
+				applyElement.addContent(getMathML(node.jjtGetChild(0), MathType.REAL, dialect));
+				applyElement.addContent(getMathML(node.jjtGetChild(1), MathType.REAL, dialect));
+				pieceElement.addContent(applyElement);
+				// construct the otherwise element : add
+				Element otherwiseElement = new org.jdom.Element(MathMLTags.OTHERWISE);
+				otherwiseElement.addContent(getMathML(node.jjtGetChild(0), MathType.REAL, dialect));
+				// Now put together the piecewise element with the piece and otherwise.
+				piecewiseElement.addContent(pieceElement);
+				piecewiseElement.addContent(otherwiseElement);
+				return castChild(piecewiseElement, desiredMathType, MathType.REAL);
+			}else{ // (dialect == Dialect.GENERAL)
+				org.jdom.Element applyNode = new org.jdom.Element(MathMLTags.APPLY);
+				applyNode.addContent(new org.jdom.Element(MathMLTags.MAX));
+				applyNode.addContent(getMathML(node.jjtGetChild(0), MathType.REAL, dialect));
+				applyNode.addContent(getMathML(node.jjtGetChild(1), MathType.REAL, dialect));
+				return castChild(applyNode, desiredMathType, MathType.REAL);
+			}
 		}else{
 			throw new ExpressionException("cannot translate "+funcNode.getName()+" into MathML");
 		}
@@ -358,12 +368,12 @@ private org.jdom.Element getMathML(Node node, MathType desiredMathType) throws E
 		//unityNode.setAttribute(new org.jdom.Attribute(MathMLTags.CellML_units,MathMLTags.DIMENSIONLESS,org.jdom.Namespace.getNamespace(cbit.util.XMLTags.CELLML_NAMESPACE_PREFIX, cbit.util.XMLTags.CELLML_NAMESPACE_URI)));
 		unityNode.setText("1.0");
 		applyNode.addContent(unityNode);
-		applyNode.addContent(getMathML(node.jjtGetChild(0), MathType.REAL));
+		applyNode.addContent(getMathML(node.jjtGetChild(0), MathType.REAL, dialect));
 		return castChild(applyNode, desiredMathType, MathType.REAL);
 	}else if (node instanceof ASTMinusTermNode){
 		org.jdom.Element applyNode = new org.jdom.Element(MathMLTags.APPLY);
 		applyNode.addContent(new org.jdom.Element(MathMLTags.MINUS));
-		applyNode.addContent(getMathML(node.jjtGetChild(0), MathType.REAL));
+		applyNode.addContent(getMathML(node.jjtGetChild(0), MathType.REAL, dialect));
 		return castChild(applyNode, desiredMathType, MathType.REAL);
 	}else if (node instanceof ASTMultNode){
 		// See ASTMultNode.infix for C_language fix.
@@ -394,7 +404,7 @@ private org.jdom.Element getMathML(Node node, MathType desiredMathType) throws E
 			}
 			for (int i = 0; i < numChildren; i++){
 				if (!boolChildFlags[i]) {
-					valueParentElement.addContent(getMathML(node.jjtGetChild(i), MathType.REAL));
+					valueParentElement.addContent(getMathML(node.jjtGetChild(i), MathType.REAL, dialect));
 				} 
 			}
 			if (numBoolean > 1) {
@@ -406,7 +416,7 @@ private org.jdom.Element getMathML(Node node, MathType desiredMathType) throws E
 			}
 			for (int i = 0; i < numChildren; i++){
 				if (boolChildFlags[i]) {
-					condnParentElement.addContent(getMathML(node.jjtGetChild(i), MathType.BOOLEAN));
+					condnParentElement.addContent(getMathML(node.jjtGetChild(i), MathType.BOOLEAN, dialect));
 				} 
 			}
 			// Construct the piecewise element : create piece and otherwise separately and add.
@@ -424,14 +434,14 @@ private org.jdom.Element getMathML(Node node, MathType desiredMathType) throws E
 			resultantElement = new org.jdom.Element(MathMLTags.APPLY);
 			resultantElement.addContent(new org.jdom.Element(MathMLTags.TIMES));
 			for (int i = 0; i < node.jjtGetNumChildren(); i++){
-				resultantElement.addContent(getMathML(node.jjtGetChild(i), MathType.REAL));	
+				resultantElement.addContent(getMathML(node.jjtGetChild(i), MathType.REAL, dialect));	
 			}
 			resultantElement = castChild(resultantElement, desiredMathType, MathType.REAL);
 		} else if (numBoolean > 0){
 			resultantElement = new org.jdom.Element(MathMLTags.APPLY);
 			resultantElement.addContent(new org.jdom.Element(MathMLTags.AND));
 			for (int i = 0; i < node.jjtGetNumChildren(); i++){
-				resultantElement.addContent(getMathML(node.jjtGetChild(i), MathType.BOOLEAN));	
+				resultantElement.addContent(getMathML(node.jjtGetChild(i), MathType.BOOLEAN, dialect));	
 			}
 			resultantElement = castChild(resultantElement, desiredMathType, MathType.BOOLEAN);
 		}

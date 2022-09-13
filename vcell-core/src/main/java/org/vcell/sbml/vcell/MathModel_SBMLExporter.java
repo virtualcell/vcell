@@ -339,7 +339,7 @@ public static ASTNode getFormulaFromExpression(Expression expression, MathType m
 				}
 			}
 		}
-		expMathMLStr = cbit.vcell.parser.ExpressionMathMLPrinter.getMathML(mangledExpression, false, mathType);
+		expMathMLStr = cbit.vcell.parser.ExpressionMathMLPrinter.getMathML(mangledExpression, false, mathType, ExpressionMathMLPrinter.Dialect.SBML_SUBSET);
 	} catch (java.io.IOException e) {
 		e.printStackTrace(System.out);
 		throw new RuntimeException("Error converting expression to MathML string :" + e.getMessage());

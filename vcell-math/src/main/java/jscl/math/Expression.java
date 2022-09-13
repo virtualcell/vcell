@@ -638,7 +638,7 @@ public class Expression extends Generic {
             if(l.degree()==0) buffer.append(en);
             else {
                 if(en.abs().compareTo(JSCLInteger.valueOf(1))==0) {
-                    if(en.signum()<0) buffer.append("-");
+                    if(en.signum()<0) buffer.append("-1*");
                 } else buffer.append(en).append("*");
                 buffer.append(l);
             }
