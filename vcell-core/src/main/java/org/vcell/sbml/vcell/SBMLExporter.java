@@ -1519,7 +1519,7 @@ private static ASTNode getFormulaFromExpression(Expression expression, MathType 
 	String expMathMLStr = null;
 
 	try {
-		expMathMLStr = cbit.vcell.parser.ExpressionMathMLPrinter.getMathML(expression, false, desiredType);
+		expMathMLStr = cbit.vcell.parser.ExpressionMathMLPrinter.getMathML(expression, false, desiredType, ExpressionMathMLPrinter.Dialect.SBML_SUBSET);
 	} catch (java.io.IOException e) {
 		e.printStackTrace(System.out);
 		throw new RuntimeException("Error converting expression to MathML string :" + e.getMessage());
@@ -2095,7 +2095,7 @@ private void addGeometry() throws SbmlException {
 
 				Expression expr = ((AnalyticSubVolume)vcGeomClasses[i]).getExpression();
 				try {
-					String mathMLStr = ExpressionMathMLPrinter.getMathML(expr, true, MathType.BOOLEAN);
+					String mathMLStr = ExpressionMathMLPrinter.getMathML(expr, true, MathType.BOOLEAN, ExpressionMathMLPrinter.Dialect.SBML_SUBSET);
 					ASTNode mathMLNode = ASTNode.readMathMLFromString(mathMLStr);
 					analyticVol.setMath(mathMLNode);
 				} catch (Exception e) {

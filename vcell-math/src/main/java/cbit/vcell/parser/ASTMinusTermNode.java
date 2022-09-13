@@ -99,11 +99,20 @@ public String infixString(int lang){
 	 
 	if (lang == LANGUAGE_BNGL){
 		buffer.append(" -");
+		buffer.append(jjtGetChild(0).infixString(lang));
+	} else if (lang == LANGUAGE_JSCL) {
+		if (jjtGetChild(0) instanceof ASTMinusTermNode) {
+			buffer.append(" - (");
+			buffer.append(jjtGetChild(0).infixString(lang));
+			buffer.append(")");
+		} else {
+			buffer.append(" - ");
+			buffer.append(jjtGetChild(0).infixString(lang));
+		}
 	} else {
 		buffer.append(" - ");
+		buffer.append(jjtGetChild(0).infixString(lang));
 	}
-
-	buffer.append(jjtGetChild(0).infixString(lang));
 
 	return buffer.toString();
 

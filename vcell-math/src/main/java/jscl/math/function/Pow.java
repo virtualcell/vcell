@@ -202,6 +202,7 @@ public class Pow extends Algebraic {
             JSCLInteger en=parameter[1].integerValue();
             buffer.append(en);
         } catch (NotIntegerException e) {
+            buffer.append("(");
             try {
                 Variable v=parameter[1].variableValue();
                 if(v instanceof Frac) {
@@ -215,6 +216,7 @@ public class Pow extends Algebraic {
                     buffer.append(GenericVariable.valueOf(parameter[1]));
                 }
             }
+            buffer.append(")");
         }
         return buffer.toString();
     }
