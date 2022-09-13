@@ -182,7 +182,7 @@ public class SEDMLExporter {
 		this.vcBioModel = argBiomodel;
 		this.sedmlLevel = argLevel;
 		this.sedmlVersion = argVersion;
-		this.sedmlLogger = new SEDMLLogger(argBiomodel.getName(), SEDMLConversion.EXPORT);
+		this.sedmlLogger = new SEDMLLogger(argJobId, SEDMLConversion.EXPORT);
         // we need to collect simulation names to be able to match sims in BioModel clone
 		if (argSimsToExport != null && argSimsToExport.size() > 0) {
 	        for (Simulation sim : argSimsToExport) {
