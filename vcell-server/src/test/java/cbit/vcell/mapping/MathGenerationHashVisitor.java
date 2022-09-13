@@ -23,6 +23,7 @@ public class MathGenerationHashVisitor implements VCDatabaseVisitor {
 
 	private static PrintStream mathGenHashStream = null;
 
+	@Override
 	public boolean filterBioModel(BioModelInfo bioModelInfo) {
 		if (bioModelInfo.getVersion().getOwner().getName().equals("schaff")){
 			return true;
@@ -30,6 +31,7 @@ public class MathGenerationHashVisitor implements VCDatabaseVisitor {
 		return false;
 	}
 
+	@Override
 	public void visitBioModel(BioModel bioModel, PrintStream logFilePrintStream) {
 		try {
 			logFilePrintStream.println(bioModel.getVersion().getName()+"  "+bioModel.getVersion().getDate()+"  "+bioModel.getVersion().getVersionKey());
@@ -80,17 +82,21 @@ public class MathGenerationHashVisitor implements VCDatabaseVisitor {
 	    return result;
 	}
 
+	@Override
 	public boolean filterGeometry(GeometryInfo geometryInfo) {
 		return false;
 	}
 
+	@Override
 	public void visitGeometry(Geometry geometry, PrintStream logFilePrintStream) {
 	}
 
+	@Override
 	public boolean filterMathModel(MathModelInfo mathModelInfo) {
 		return false;
 	}
 
+	@Override
 	public void visitMathModel(MathModel mathModel, PrintStream logFilePrintStream) {
 	}
 

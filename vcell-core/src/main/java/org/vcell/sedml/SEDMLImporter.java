@@ -731,9 +731,7 @@ public class SEDMLImporter {
 				bioModel = (BioModel)sbmlImporter.getBioModel();
 				bioModel.setName(bioModelName);
 				bioModel.getSimulationContext(0).setName(mm.getName());
-				MathDescription math = bioModel.getSimulationContext(0).createNewMathMapping().getMathDescription();
-				bioModel.getSimulationContext(0).setMathDescription(math);
-				bioModel.refreshDependencies();			
+				bioModel.updateAll(false);
 				docs.add(bioModel);
 				importMap.put(bioModel, sbmlImporter);
 			}

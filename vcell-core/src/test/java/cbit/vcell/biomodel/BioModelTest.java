@@ -42,9 +42,8 @@ public static BioModel getExample() throws Exception {
 	bioModel.getModel().setName("physiology_"+Integer.toHexString(((new Random()).nextInt())));
 	SimulationContext sc2 = new SimulationContext(bioModel.getModel(),new Geometry("0-D Geometry_"+Integer.toHexString(((new Random()).nextInt())),0));
 	sc2.setName("simContext2_"+Integer.toHexString(((new Random()).nextInt())));
-	sc1.setMathDescription(sc1.createNewMathMapping().getMathDescription());
-	sc2.setMathDescription(sc2.createNewMathMapping().getMathDescription());
 	bioModel.setSimulationContexts(new SimulationContext[] { sc1, sc2 });
+	bioModel.updateAll(false);
 
 	//
 	// add simulations (must be after 
@@ -108,7 +107,7 @@ public static BioModel getExampleWithImage() throws Exception {
 	bioModel.setSimulationContexts(new SimulationContext[] { /*sc1,*/ sc2 });
 	sc2.setName("simContext2_"+Integer.toHexString(((new Random()).nextInt())));
 //	sc1.setMathDescription(sc1.createNewMathMapping().getMathDescription());
-	sc2.setMathDescription(sc2.createNewMathMapping().getMathDescription());
+	bioModel.updateAll(false);
 
 	//
 	// add simulations (must be after 

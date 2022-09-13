@@ -1581,9 +1581,7 @@ private void roundTripValidation() throws SBMLValidationException {
 		bioModel.refreshDependencies();
 		// for cloned biomodel/simcontext, force no mass conservation and regenerate math for later comparison.
 		bioModel.getSimulationContext(0).setUsingMassConservationModelReduction(false);
-		MathMapping mathMapping = bioModel.getSimulationContext(0).createNewMathMapping();
-		bioModel.getSimulationContext(0).setMathDescription(mathMapping.getMathDescription());
-
+		bioModel.getSimulationContext(0).updateAll(false);
 
 		//
 		// reimport the recently exported SBML model as a BioModel (still with SBML units)
@@ -1634,9 +1632,7 @@ private void roundTripValidation() throws SBMLValidationException {
 				SimulationContext newSimulationContext = SimulationContext.copySimulationContext(simulationContextToReplace, simContextName, bSpatial_original, applicationType_original);
 				newSimulationContext.getGeometry().precomputeAll(new GeometryThumbnailImageFactoryAWT());
 				reread_BioModel_vcell_units.setSimulationContexts(new SimulationContext[] { newSimulationContext });
-				reread_BioModel_vcell_units.refreshDependencies();
-				MathMapping newMathMapping = newSimulationContext.createNewMathMapping();
-				newSimulationContext.setMathDescription(newMathMapping.getMathDescription());
+				reread_BioModel_vcell_units.updateAll(false);
 			}
 
 			MathDescription origMathDescription = bioModel.getSimulationContext(0).getMathDescription();
@@ -1662,6 +1658,7 @@ private void roundTripValidation() throws SBMLValidationException {
 				Files.write(Paths.get(outputDir, "orig_vcml.xml"), XmlHelper.bioModelToXML(bioModel, false).getBytes(StandardCharsets.UTF_8));
 			}
 			if (reread_BioModel_sbml_units != null) {
+				reread_BioModel_sbml_units.updateAll(false);
 				Files.write(Paths.get(outputDir, "reread_vcml_sbml_units.xml"), XmlHelper.bioModelToXML(reread_BioModel_sbml_units, false).getBytes(StandardCharsets.UTF_8));
 			}
 			if (reread_BioModel_vcell_units != null) {
