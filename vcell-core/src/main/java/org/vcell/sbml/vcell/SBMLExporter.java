@@ -17,6 +17,8 @@ import cbit.util.xml.VCLoggerException;
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.biomodel.ModelUnitConverter;
+import cbit.vcell.field.FieldFunctionArguments;
+import cbit.vcell.field.FieldUtilities;
 import cbit.vcell.geometry.CSGObject;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.*;
@@ -2476,6 +2478,16 @@ public static void validateSimulationContextSupport(SimulationContext simulation
 				|| (kineticsParameter.getRole() == Kinetics.ROLE_LumpedCurrent && (!kineticsParameter.getExpression().isZero()))) {
 			String reactionName = kineticsParameter.getKinetics().getReactionStep().getName();
 			throw new UnsupportedSbmlExportException("Reaction '"+reactionName+"' has electric current defined, SBML Export is not supported");
+		}
+	}
+	
+	// Check whether species init uses field data, not supported by SBML export
+	List<SpeciesContextSpec> scSpecs = Arrays.stream(simulationContext.getReactionContext().getSpeciesContextSpecs()).collect(Collectors.toList());
+	for (SpeciesContextSpec scs : scSpecs) {
+		Expression initExp = scs.getInitialConditionParameter().getExpression();
+		FieldFunctionArguments[] ffas = FieldUtilities.getFieldFunctionArguments(initExp);
+		if (ffas != null && ffas.length > 0) {
+			throw new UnsupportedSbmlExportException("Species '"+scs.getDisplayName()+"' has FieldData as initial condition, SBML Export is not supported");
 		}
 	}
 }
