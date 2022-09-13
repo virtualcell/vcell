@@ -3850,7 +3850,7 @@ public class ClientRequestManager
 						simulationContext.updateAll(false);
 						MathDescription mathDesc = simulationContext.getMathDescription();
 
-						Simulation sim = new Simulation(mathDesc);
+						Simulation sim = new Simulation(mathDesc, simulationContext);
 						sim.setName(simulationContext.getBioModel().getFreeSimulationName());
 						simulationContext.addSimulation(sim);
 						bioModel.refreshDependencies();

@@ -897,7 +897,7 @@ public Simulation addNewSimulation(String simNamePrefix, MathMappingCallback cal
 	//
 	// create new Simulation and add to BioModel.
 	//
-	Simulation newSimulation = new Simulation(getMathDescription());
+	Simulation newSimulation = new Simulation(getMathDescription(),this);
 	newSimulation.setName(newSimName);	
 	
 	bioModel.addSimulation(newSimulation);

@@ -221,7 +221,7 @@ public class OptXmlWriter {
 			Element modelElement = getModelXML(pdeObjectiveFunction, optimizationSpec.getParameterNames());
 			objectiveFunctionElement.addContent(modelElement);
 			
-			Simulation tempSim = new Simulation(pdeObjectiveFunction.getMathDescription());
+			Simulation tempSim = new Simulation(pdeObjectiveFunction.getMathDescription(), null);
 			SimulationSymbolTable simSymbolTable = new SimulationSymbolTable(tempSim, 0); 
 			//
 			// write data/model variable mappings

@@ -579,8 +579,7 @@ private void putConstant(Constant value, boolean bFireEvent) throws ExpressionEx
 		def = ((Constant)var).getExpression();
 	} else {
 		// ignore
-		logger.error("Math does not have constant with name: "+name);
-		return;
+		logger.warn("Math override '"+name+"' not found, adding to overrides anyway");
 	}
 	if (act.compareEqual(def)) {
 		if (getOverridesHash().containsKey(name)) {
