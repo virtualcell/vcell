@@ -39,10 +39,13 @@ import org.vcell.solver.smoldyn.SmoldynFileWriter;
 import org.vcell.solver.smoldyn.SmoldynSolver;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.DataAccessException;
+import org.vcell.util.Issue;
+import org.vcell.util.IssueContext;
 import org.vcell.util.ProgressDialogListener;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.UtilCancelException;
+import org.vcell.util.document.DocumentValidUtil;
 import org.vcell.util.document.LocalVCDataIdentifier;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCDocument;
@@ -784,6 +787,12 @@ public void runQuickSimulation(final Simulation originalSimulation, ViewerType v
 						
 			Simulation simulation = new TempSimulation(originalSimulation, false);
 			simulation.setSimulationOwner(originalSimulation.getSimulationOwner());
+			
+			Vector<Issue> issueList = new Vector<Issue>();
+			IssueContext issueContext = new IssueContext();
+			simulation.gatherIssues(issueContext, issueList);
+			DocumentValidUtil.checkIssuesForErrors(issueList);
+
 			SimulationTask simTask = new SimulationTask(new SimulationJob(simulation, 0, null),0);
 			Solver solver = createQuickRunSolver(localSimDataDir, simTask);
 			if (solver == null) {
