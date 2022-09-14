@@ -125,7 +125,7 @@ public Simulation addNewSimulation(String simNamePrefix) throws java.beans.Prope
 	//
 	// create new Simulation and add to MathModel.
 	//
-	Simulation newSimulation = new Simulation(math);
+	Simulation newSimulation = new Simulation(math, this);
 	newSimulation.setName(newSimName);
 
 	addSimulation(newSimulation);

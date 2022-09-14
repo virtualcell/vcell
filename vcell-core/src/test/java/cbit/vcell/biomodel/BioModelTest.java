@@ -48,9 +48,9 @@ public static BioModel getExample() throws Exception {
 	//
 	// add simulations (must be after 
 	//
-	Simulation sim1 = new Simulation(sc1.getMathDescription());
+	Simulation sim1 = new Simulation(sc1.getMathDescription(), sc1);
 	sim1.setName("sim1_"+Integer.toHexString(((new Random()).nextInt())));
-	Simulation sim2 = new Simulation(sc1.getMathDescription());
+	Simulation sim2 = new Simulation(sc1.getMathDescription(), sc1);
 	sim2.setName("sim2_"+Integer.toHexString(((new Random()).nextInt())));
 	bioModel.setSimulations(new Simulation[] { sim1, sim2 });
 	return bioModel;
@@ -112,9 +112,9 @@ public static BioModel getExampleWithImage() throws Exception {
 	//
 	// add simulations (must be after 
 	//
-	Simulation sim1 = new Simulation(sc2.getMathDescription());
+	Simulation sim1 = new Simulation(sc2.getMathDescription(), sc2);
 	sim1.setName("sim1_"+Integer.toHexString(((new Random()).nextInt())));
-	Simulation sim2 = new Simulation(sc2.getMathDescription());
+	Simulation sim2 = new Simulation(sc2.getMathDescription(), sc2);
 	sim2.setName("sim2_"+Integer.toHexString(((new Random()).nextInt())));
 	bioModel.setSimulations(new Simulation[] { sim1, sim2 });
 	return bioModel;

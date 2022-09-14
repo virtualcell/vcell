@@ -5828,7 +5828,7 @@ Simulation getSimulation(Element param, MathDescription mathDesc, SimulationOwne
 	if (simulationVersion!=null) {
 		simulation = new Simulation(simulationVersion, mathDesc, simulationOwner);
 	} else {
-		simulation = new Simulation(mathDesc);
+		simulation = new Simulation(mathDesc, simulationOwner);
 	}
 	
 	//set attributes

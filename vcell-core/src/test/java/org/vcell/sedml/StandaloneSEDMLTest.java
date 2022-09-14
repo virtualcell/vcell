@@ -225,7 +225,7 @@ public class StandaloneSEDMLTest {
 	        newSimulationContext.refreshDependencies();
 	        MathMappingCallback callback = new MathMappingCallbackTaskAdapter(progressListener);
 	        newSimulationContext.refreshMathDescription(callback, NetworkGenerationRequirements.ComputeFullStandardTimeout);
-	    	Simulation newSimulation = new Simulation(newSimulationContext.getMathDescription());
+	    	Simulation newSimulation = new Simulation(newSimulationContext.getMathDescription(), newSimulationContext);
 	    	newSimulation.setName(sedmlSimulation.getName());	
 	    	bioModel.addSimulation(newSimulation);
 			

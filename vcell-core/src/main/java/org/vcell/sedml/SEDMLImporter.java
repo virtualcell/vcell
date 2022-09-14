@@ -291,8 +291,7 @@ public class SEDMLImporter {
 				matchingSimulationContext.refreshMathDescription(callback, NetworkGenerationRequirements.ComputeFullStandardTimeout);
 
 				// making the new vCell simulation based on the sedml simulation
-				Simulation newSimulation = new Simulation(matchingSimulationContext.getMathDescription());
-				newSimulation.setSimulationOwner(matchingSimulationContext);
+				Simulation newSimulation = new Simulation(matchingSimulationContext.getMathDescription(), matchingSimulationContext);
 				if (selectedTask instanceof Task) {
 					String newSimName = selectedTask.getId();
 					if(SEDMLUtil.getName(selectedTask) != null) {
