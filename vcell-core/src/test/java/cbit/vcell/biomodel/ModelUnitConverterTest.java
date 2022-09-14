@@ -1,13 +1,16 @@
 package cbit.vcell.biomodel;
 
 import cbit.vcell.mapping.MappingException;
+import cbit.vcell.math.Constant;
 import cbit.vcell.math.MathCompareResults;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathException;
 import cbit.vcell.matrix.MatrixException;
 import cbit.vcell.model.ModelException;
 import cbit.vcell.model.ModelUnitSystem;
+import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.solver.MathOverrides;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationSymbolTable;
 import cbit.vcell.xml.XMLSource;
@@ -21,6 +24,9 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 public class ModelUnitConverterTest {
 
@@ -77,6 +83,92 @@ public class ModelUnitConverterTest {
         boolean overridesMatch = expectedSim.getMathOverrides().compareEqual(sim.getMathOverrides());
         Assert.assertTrue("expecting math overrides to be equivalent", overridesMatch);
     }
+
+    static class OverrideInfo {
+        final String constantName;
+        final String unitSymbol;
+        final Expression origExp;
+        final Expression overrideExp;
+
+        OverrideInfo(String constantName, String unitSymbol, Expression origExp, Expression overideExp) {
+            this.constantName = constantName;
+            this.unitSymbol = unitSymbol;
+            this.origExp = origExp;
+            this.overrideExp = overideExp;
+        }
+    }
+
+    @Test
+    public void test_VCell_to_SBML_conversion_same_name_overrides() throws IOException, XmlParseException, ExpressionException, MatrixException, ModelException, MathException, MappingException {
+        BioModel bioModel_vcellUnits = getBioModelFromResource("BioModel_overrides_std_units.vcml");
+        {
+            Simulation sim = bioModel_vcellUnits.getSimulation(0);
+            MathOverrides mathOverrides = sim.getMathOverrides();
+
+            LinkedHashMap<String, OverrideInfo> expectedVCUnits = new LinkedHashMap<>();
+            expectedVCUnits.put("Kf_r0", new OverrideInfo("Kf_r0", "um2.s-1.molecules-1", new Expression(5.0), new Expression(21.0)));
+            expectedVCUnits.put("Kf_r1", new OverrideInfo("Kf_r1", "s-1", new Expression(3.0), new Expression(22.0)));
+            expectedVCUnits.put("Kr_r0", new OverrideInfo("Kr_r0", "s-1", new Expression(7.0), new Expression(23.0)));
+            expectedVCUnits.put("Kr_r1", new OverrideInfo("Kr_r1", "s-1", new Expression(8.0), new Expression(24.0)));
+            expectedVCUnits.put("s0_init_molecules_um_2", new OverrideInfo("s0_init_molecules_um_2", "molecules.um-2", new Expression(3.0), new Expression(11.0)));
+            expectedVCUnits.put("s1_init_molecules_um_2", new OverrideInfo("s1_init_molecules_um_2", "molecules.um-2", new Expression(4.0), new Expression(12.0)));
+            expectedVCUnits.put("s2_init_molecules_um_2", new OverrideInfo("s2_init_molecules_um_2", "molecules.um-2", new Expression(5.0), new Expression(13.0)));
+            expectedVCUnits.put("s3_init_uM", new OverrideInfo("s3_init_uM", "uM", new Expression(1.0), new Expression(14.0)));
+            expectedVCUnits.put("s4_init_uM", new OverrideInfo("s3_init_uM", "uM", new Expression(2.0), new Expression(15.0)));
+
+            MathOverrides expectedMathOverrides = new MathOverrides(sim);
+            for (Map.Entry<String, OverrideInfo> entry : expectedVCUnits.entrySet()) {
+                expectedMathOverrides.putConstant(new Constant(entry.getKey(), entry.getValue().overrideExp));
+            }
+            boolean equiv = expectedMathOverrides.compareEqual(mathOverrides);
+            if (!equiv) {
+                for (String c : expectedMathOverrides.getOverridenConstantNames()) {
+                    Constant constant = expectedMathOverrides.getConstant(c);
+                    System.out.println("expected: " + constant.getName() + "=" + constant.getExpression().infix());
+                }
+                for (String c : mathOverrides.getOverridenConstantNames()) {
+                    Constant constant = mathOverrides.getConstant(c);
+                    System.out.println("parsed: " + constant.getName() + "=" + constant.getExpression().infix());
+                }
+            }
+            Assert.assertTrue("expected math overrides to match", equiv);
+        }
+        BioModel bioModel_sbmlUnits = ModelUnitConverter.createBioModelWithSBMLUnitSystem(bioModel_vcellUnits);
+        {
+            Simulation sim = bioModel_sbmlUnits.getSimulation(0);
+            MathOverrides mathOverrides = sim.getMathOverrides();
+
+            LinkedHashMap<String, OverrideInfo> expectedVCUnits = new LinkedHashMap<>();
+            expectedVCUnits.put("Kf_r0", new OverrideInfo("Kf_r0", "um2.s-1.molecules-1", new Expression("5.0 / KMOLE"), new Expression("21.0 / KMOLE")));
+            expectedVCUnits.put("Kf_r1", new OverrideInfo("Kf_r1", "s-1", new Expression(3.0), new Expression(22.0)));
+            expectedVCUnits.put("Kr_r0", new OverrideInfo("Kr_r0", "s-1", new Expression(7.0), new Expression(23.0)));
+            expectedVCUnits.put("Kr_r1", new OverrideInfo("Kr_r1", "s-1", new Expression(8.0), new Expression(24.0)));
+            expectedVCUnits.put("s0_init_uM_um", new OverrideInfo("s0_init_uM_um", "uM", new Expression("3.0 * KMOLE"), new Expression("11.0 * KMOLE")));
+            expectedVCUnits.put("s1_init_uM_um", new OverrideInfo("s1_init_uM_um", "uM", new Expression("4.0 * KMOLE"), new Expression("12.0 * KMOLE")));
+            expectedVCUnits.put("s2_init_uM_um", new OverrideInfo("s2_init_uM_um", "uM", new Expression("5.0 * KMOLE"), new Expression("13.0 * KMOLE")));
+            expectedVCUnits.put("s3_init_uM", new OverrideInfo("s3_init_uM", "uM", new Expression(1.0), new Expression(14.0)));
+            expectedVCUnits.put("s4_init_uM", new OverrideInfo("s3_init_uM", "uM", new Expression(2.0), new Expression(15.0)));
+
+            MathOverrides expectedMathOverrides = new MathOverrides(sim);
+            for (Map.Entry<String, OverrideInfo> entry : expectedVCUnits.entrySet()) {
+                expectedMathOverrides.putConstant(new Constant(entry.getKey(), entry.getValue().overrideExp));
+            }
+            boolean equiv = expectedMathOverrides.compareEqual(mathOverrides);
+            if (!equiv) {
+                for (String c : expectedMathOverrides.getOverridenConstantNames()) {
+                    Constant constant = expectedMathOverrides.getConstant(c);
+                    System.out.println("expected: " + constant.getName() + "=" + constant.getExpression().infix());
+                }
+                for (String c : mathOverrides.getOverridenConstantNames()) {
+                    Constant constant = mathOverrides.getConstant(c);
+                    System.out.println("parsed: " + constant.getName() + "=" + constant.getExpression().infix());
+                }
+            }
+            Assert.assertTrue("expected math overrides to match", equiv);
+        }
+
+    }
+
 
     private static BioModel getBioModelFromResource(String fileName) throws IOException, XmlParseException {
         InputStream inputStream = ModelUnitConverterTest.class.getResourceAsStream(fileName);
