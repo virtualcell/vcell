@@ -411,23 +411,42 @@ def gen_plots_for_sed2d_only(sedml_path, result_out_dir):
             all_plot_curves[output.getId()] = all_curves
 
     all_plots = dict(all_plot_curves)
-    for plot, curve_dat in all_plots.items():
+    for plot_id, curve_dat_dict in all_plots.items(): # curve_dat_dict <--> all_curves
         dims = (12, 8)
         fig, ax = plt.subplots(figsize=dims)
-        for curve, data in curve_dat.items():
-            df = pd.read_csv(os.path.join(
-                result_out_dir, plot + '.csv'), header=None).T
-            df.columns = df.iloc[1]		# use labels
-            df.drop(0, inplace=True)
-            df.drop(1, inplace=True)
-            df.drop(2, inplace=True)
-            df.reset_index(inplace=True)
-            df.drop('index', axis=1, inplace=True)
 
-            sns.lineplot(x=df[data['x']].astype(float), y=df[data['y']].astype(float), ax=ax, label=curve)
-            ax.set_ylabel('')
-            #             plt.show()
-            plt.savefig(os.path.join(result_out_dir, plot + '.pdf'), dpi=300)
+        labelMap = {}
+        df = pd.read_csv(os.path.join(result_out_dir, plot_id + '.csv'), header=None).T
+        
+        # create mapping from task to all repeated tasks (or just itself)
+        for elem in df.iloc[1]:
+            if elem not in labelMap:
+                labelMap[elem] = []
+            labelMap[elem].append(str(elem) + "_" + str(len(labelMap[elem])))
+
+        # Prepare new labels
+        labels = []
+        for key in labelMap:
+            if len(labelMap[key]) == 1:
+                labelMap[key][0] = key      # If there wasn't repreated tasks, restore the old name
+            for elem in labelMap[key]:
+                labels.append(elem)
+
+        # format data frame
+        df.columns = labels 
+        df.drop(0, inplace=True)
+        df.drop(1, inplace=True)
+        df.drop(2, inplace=True)
+        df.reset_index(inplace=True)
+        df.drop('index', axis=1, inplace=True)
+
+        for curve_id, data in curve_dat_dict.items(): # data <--> (dict)all_curves.values()
+            shouldLabel = True
+            for series_name in labelMap[data['y']]:
+                sns.lineplot(data=df, x=data['x'], y=series_name, ax=ax, label=(curve_id if shouldLabel else None))
+                ax.set_ylabel('')
+                shouldLabel = False
+            plt.savefig(os.path.join(result_out_dir, plot_id + '.pdf'), dpi=300)
 
 if __name__ == "__main__":
     fire.Fire({
