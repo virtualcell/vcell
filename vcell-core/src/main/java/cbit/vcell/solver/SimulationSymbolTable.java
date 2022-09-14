@@ -16,6 +16,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
 
+import cbit.vcell.mapping.SimulationContext;
 import org.vcell.util.BeanUtils;
 
 import cbit.vcell.field.FieldFunctionArguments;
@@ -699,7 +700,7 @@ public void getEntries(Map<String, SymbolTableEntry> entryMap) {
 	public static MathSymbolTableFactory createMathSymbolTableFactory() {
 		return new MathSymbolTableFactory() {
 			public MathSymbolTable createMathSymbolTable(MathDescription newMath) {
-				return new SimulationSymbolTable(new Simulation(newMath),0);
+				return new SimulationSymbolTable(new Simulation(newMath,null),0);
 			}
 		};
 	}

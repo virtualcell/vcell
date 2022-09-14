@@ -31,7 +31,7 @@ public class MatlabExtensionFilter extends SelectorExtensionFilter {
 				VCAssert.assertValid(mathDesc);
 				VCAssert.assertFalse(mathDesc.isSpatial(),"spatial");
 				VCAssert.assertFalse(mathDesc.isNonSpatialStoch(),"stochastic");
-				Simulation sim = new Simulation(mathDesc);
+				Simulation sim = new Simulation(mathDesc, simulationContext);
 				MatlabOdeFileCoder coder = new MatlabOdeFileCoder(sim);
 				java.io.StringWriter sw = new java.io.StringWriter();
 				java.io.PrintWriter pw = new java.io.PrintWriter(sw);

@@ -62,7 +62,7 @@ public class ExportDocument extends ExportTask {
  * Creation date: (7/26/2004 12:29:53 PM)
  */
 private String exportMatlab(File exportFile, javax.swing.filechooser.FileFilter fileFilter, MathDescription mathDesc,OutputFunctionContext outputFunctionContext) throws ExpressionException, MathException {
-	Simulation sim = new Simulation(mathDesc);
+	Simulation sim = new Simulation(mathDesc, null);
 	MatlabOdeFileCoder coder = new MatlabOdeFileCoder(sim);
 	java.io.StringWriter sw = new java.io.StringWriter();
 	java.io.PrintWriter pw = new java.io.PrintWriter(sw);

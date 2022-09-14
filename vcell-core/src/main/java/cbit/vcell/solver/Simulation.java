@@ -177,7 +177,7 @@ public Simulation(SimulationVersion simulationVersion, MathDescription mathDescr
  * One of three ways to construct a Simulation.  This constructor
  * is used when creating a new Simulation.
  */
-public Simulation(MathDescription mathDescription) {
+public Simulation(MathDescription mathDescription, SimulationOwner simulationOwner) {
 	this( );
 	addVetoableChangeListener(this);
 
@@ -188,6 +188,7 @@ public Simulation(MathDescription mathDescription) {
 		throw new RuntimeException(e.getMessage());
 	}
 	fieldName = mathDescription.getName()+"_"+Math.random();
+	this.simulationOwner = simulationOwner;
 	//  Must set the MathDescription before constructing these...
 	if (mathDescription.getGeometry().getDimension()>0){
 		fieldMeshSpecification = new MeshSpecification(mathDescription.getGeometry());

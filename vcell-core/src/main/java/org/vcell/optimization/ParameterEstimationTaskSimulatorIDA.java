@@ -100,7 +100,7 @@ public class ParameterEstimationTaskSimulatorIDA {
 			// make temporary simulation (with overrides for parameter values)
 			//
 			MathDescription mathDesc = parameterEstimationTask.getSimulationContext().getMathDescription();
-			Simulation simulation = new Simulation(mathDesc);
+			Simulation simulation = new Simulation(mathDesc, parameterEstimationTask.getSimulationContext());
 			SimulationSymbolTable simSymbolTable = new SimulationSymbolTable(simulation, 0);
 			//
 			// set math overrides with initial guess
