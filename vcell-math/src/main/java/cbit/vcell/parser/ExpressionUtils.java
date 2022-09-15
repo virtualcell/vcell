@@ -12,12 +12,14 @@ package cbit.vcell.parser;
 
 import java.util.Random;
 import java.util.Vector;
+import java.util.function.BiPredicate;
 
-import jscl.math.Generic;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import cbit.vcell.parser.ASTFuncNode.FunctionType;
+import org.vcell.util.Matchable;
+
 /**
  * Insert the type's description here.
  * Creation date: (12/27/2002 1:37:29 PM)
@@ -26,6 +28,16 @@ import cbit.vcell.parser.ASTFuncNode.FunctionType;
 public class ExpressionUtils {
 	private static Logger lg = LogManager.getLogger(ExpressionUtils.class);
 	public static String value_molecules_per_uM_um3_NUMERATOR = "6.02214179E8";
+
+	public static class ExpressionEquivalencePredicate implements BiPredicate<Matchable,Matchable> {
+		@Override
+		public boolean test(Matchable matchable, Matchable matchable2) {
+			if (matchable instanceof Expression && matchable2 instanceof Expression){
+				return functionallyEquivalent((Expression)matchable, (Expression) matchable2);
+			}
+			return false;
+		}
+	}
 
 private static SimpleNode createNode(java.util.Random random, boolean bIsConstraint) {
 	final int AddNode = 0;
