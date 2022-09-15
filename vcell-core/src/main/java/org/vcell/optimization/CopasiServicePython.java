@@ -54,8 +54,8 @@ public class CopasiServicePython {
 	protected static final Logger lg = LogManager.getLogger(VtkService.class);
 
 	public static void writeOptProblem(File optProblemFile,  OptProblem optProblem) throws IOException {
-		TSerializer serializer = new TSerializer(new TBinaryProtocol.Factory());
 		try {
+			TSerializer serializer = new TSerializer(new TBinaryProtocol.Factory());
 			byte[] blob = serializer.serialize(optProblem);
 			FileUtils.writeByteArrayToFile(optProblemFile, blob);
 		} catch (TException e) {
@@ -66,8 +66,8 @@ public class CopasiServicePython {
 		
 		
 	public static OptRun readOptRun(File optRunFile) throws IOException {
-		TDeserializer deserializer = new TDeserializer(new TBinaryProtocol.Factory());
 		try {
+			TDeserializer deserializer = new TDeserializer(new TBinaryProtocol.Factory());
 			OptRun optJob = new OptRun();
 			byte[] bytes = FileUtils.readFileToByteArray(optRunFile);
 			deserializer.deserialize(optJob, bytes);
@@ -79,8 +79,8 @@ public class CopasiServicePython {
 	}
 		
 	public static void writeOptProblemJson(File optProblemFile,  OptProblem optProblem) throws IOException {
-		TSerializer serializer = new TSerializer(new TJSONProtocol.Factory());
 		try {
+			TSerializer serializer = new TSerializer(new TJSONProtocol.Factory());
 			byte[] blob = serializer.serialize(optProblem);
 			FileUtils.writeByteArrayToFile(optProblemFile, blob);
 		} catch (TException e) {
@@ -90,8 +90,8 @@ public class CopasiServicePython {
 	}
 
 	public static OptProblem readOptProblem(File optProblemFile) throws IOException {
-		TDeserializer deserializer = new TDeserializer(new TBinaryProtocol.Factory());
-		try {
+		try {	
+			TDeserializer deserializer = new TDeserializer(new TBinaryProtocol.Factory());
 			OptProblem optProblem = new OptProblem();
 			byte[] bytes = FileUtils.readFileToByteArray(optProblemFile);
 			deserializer.deserialize(optProblem, bytes);
@@ -103,8 +103,8 @@ public class CopasiServicePython {
 	}
 		
 	public static void writeOptRunJson(File optRunFile,  OptRun optRun) throws IOException {
-		TSerializer serializer = new TSerializer(new TJSONProtocol.Factory());
 		try {
+			TSerializer serializer = new TSerializer(new TJSONProtocol.Factory());
 			byte[] blob = serializer.serialize(optRun);
 			FileUtils.writeByteArrayToFile(optRunFile, blob);
 		} catch (TException e) {

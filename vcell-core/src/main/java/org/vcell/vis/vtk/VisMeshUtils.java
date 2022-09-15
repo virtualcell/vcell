@@ -28,10 +28,11 @@ import cbit.vcell.client.pyvcellproxy.SimulationDataSetRef;
 public class VisMeshUtils {
 
 	public static ChomboIndexData readChomboIndexData(File chomboIndexDataFile) throws IOException {
-		TDeserializer deserializer = new TDeserializer(new TBinaryProtocol.Factory());
+		TDeserializer deserializer;
 		byte[] blob = FileUtils.readFileToByteArray(chomboIndexDataFile);
 		ChomboIndexData chomboIndexData = new ChomboIndexData();
 		try {
+			deserializer = new TDeserializer(new TBinaryProtocol.Factory());
 			deserializer.deserialize(chomboIndexData, blob);
 		} catch (TException e) {
 			e.printStackTrace();
@@ -41,10 +42,11 @@ public class VisMeshUtils {
 	}
 
 	public static MovingBoundaryIndexData readMovingBoundaryIndexData(File movingBoundaryIndexDataFile) throws IOException {
-		TDeserializer deserializer = new TDeserializer(new TBinaryProtocol.Factory());
+		TDeserializer deserializer;
 		byte[] blob = FileUtils.readFileToByteArray(movingBoundaryIndexDataFile);
 		MovingBoundaryIndexData movingBoundaryIndexData = new MovingBoundaryIndexData();
 		try {
+			deserializer = new TDeserializer(new TBinaryProtocol.Factory());
 			deserializer.deserialize(movingBoundaryIndexData, blob);
 		} catch (TException e) {
 			e.printStackTrace();
@@ -54,10 +56,11 @@ public class VisMeshUtils {
 	}
 
 	public static FiniteVolumeIndexData readFiniteVolumeIndexData(File finiteVolumeIndexFile) throws IOException {
-		TDeserializer deserializer = new TDeserializer(new TBinaryProtocol.Factory());
+		TDeserializer deserializer;
 		byte[] blob = FileUtils.readFileToByteArray(finiteVolumeIndexFile);
 		FiniteVolumeIndexData finiteVolumeIndexData = new FiniteVolumeIndexData();
 		try {
+			deserializer = new TDeserializer(new TBinaryProtocol.Factory());
 			deserializer.deserialize(finiteVolumeIndexData, blob);
 		} catch (TException e) {
 			e.printStackTrace();
@@ -67,8 +70,9 @@ public class VisMeshUtils {
 	}
 
 	static void writeChomboIndexData(File chomboIndexFile, ChomboIndexData chomboIndexData) throws IOException {
-		TSerializer serializer = new TSerializer(new TBinaryProtocol.Factory());
+		TSerializer serializer;
 		try {
+			serializer = new TSerializer(new TBinaryProtocol.Factory());
 			byte[] blob = serializer.serialize(chomboIndexData);
 			FileUtils.writeByteArrayToFile(chomboIndexFile, blob);
 		} catch (TException e) {
@@ -78,8 +82,9 @@ public class VisMeshUtils {
 	}
 
 	public static void writeSimulationDataSetRef(File simDataSetRefFile, SimulationDataSetRef simDataSetRef) throws IOException {
-		TSerializer serializer = new TSerializer(new TBinaryProtocol.Factory());
+		TSerializer serializer;
 		try {
+			serializer = new TSerializer(new TBinaryProtocol.Factory());
 			byte[] blob = serializer.serialize(simDataSetRef);
 			FileUtils.writeByteArrayToFile(simDataSetRefFile, blob);
 		} catch (TException e) {
@@ -89,8 +94,9 @@ public class VisMeshUtils {
 	}
 
 	static void writeVisMesh(File visMeshFile, VisMesh visMesh) throws IOException {
-		TSerializer serializer = new TSerializer(new TBinaryProtocol.Factory());
+		TSerializer serializer;
 		try {
+			serializer = new TSerializer(new TBinaryProtocol.Factory());
 			byte[] blob = serializer.serialize(visMesh);
 			FileUtils.writeByteArrayToFile(visMeshFile, blob);
 		} catch (TException e) {
@@ -100,8 +106,9 @@ public class VisMeshUtils {
 	}
 
 	static void writeFiniteVolumeIndexData(File finiteVolumeIndexFile, FiniteVolumeIndexData finiteVolumeIndexData) throws IOException {
-		TSerializer serializer = new TSerializer(new TBinaryProtocol.Factory());
+		TSerializer serializer;
 		try {
+			serializer = new TSerializer(new TBinaryProtocol.Factory());
 			byte[] blob = serializer.serialize(finiteVolumeIndexData);
 			FileUtils.writeByteArrayToFile(finiteVolumeIndexFile, blob);
 		} catch (TException e) {
