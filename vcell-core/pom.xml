@@ -227,22 +227,13 @@
 			<groupId>org.scijava</groupId>
 			<artifactId>scijava-common</artifactId>
 		</dependency>
-		<!-- https://mvnrepository.com/artifact/org.scala-saddle/jhdf5_2.10 -->
 		
+		<!-- https://mvnrepository.com/artifact/org.scala-saddle/jhdf5_2.10 -->
 		<dependency>
 			<groupId>org.scala-saddle</groupId>
 			<artifactId>jhdf5_2.10</artifactId>
 			<version>2.9</version>
 		</dependency>
-		
-
-		<!-- https://mvnrepository.com/artifact/cisd/jhdf5 -->
-		<dependency>
-			<groupId>cisd</groupId>
-			<artifactId>jhdf5</artifactId>
-			<version>19.04.0</version>
-		</dependency>
-
 
 		<!-- https://mvnrepository.com/artifact/org.apache.commons/commons-math3 -->
 		<dependency>
