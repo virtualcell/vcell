@@ -22,13 +22,13 @@ public class ModelUnitConverter {
 	private final static Logger logger = LogManager.getLogger(ModelUnitConverter.class);
 
 	public static ModelUnitSystem createSbmlModelUnitSystem() {
-		final String substanceUnit = "uM.um3";
+		final String substanceUnit = "nmol";
 		String volumeSubstanceSymbol = substanceUnit;
 		String membraneSubstanceSymbol = substanceUnit;
 		String lumpedReactionSubstanceSymbol = substanceUnit;
-		String volumeSymbol = "um3";
-		String areaSymbol = "um2";
-		String lengthSymbol = "um";
+		String volumeSymbol = "l";
+		String areaSymbol = "dm2";
+		String lengthSymbol = "dm";
 		String timeSymbol = "s";
 		ModelUnitSystem mus = ModelUnitSystem.createVCModelUnitSystem(volumeSubstanceSymbol, membraneSubstanceSymbol, lumpedReactionSubstanceSymbol, volumeSymbol, areaSymbol, lengthSymbol, timeSymbol);
 		return mus;
