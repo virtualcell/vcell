@@ -320,7 +320,7 @@ public class SEDMLExporter {
 	       	}
 		} catch (Exception e) {
 			// this only happens if not from CLI, we need to pass this down the calling thread
-			throw new RuntimeException("Error adding model to SEDML document : " + e.getMessage());
+			throw new RuntimeException("Error adding model to SEDML document : " + e.getMessage(),e);
 		}
 	}
 
@@ -749,7 +749,7 @@ public class SEDMLExporter {
 	private void createSEDMLtasks(int simContextCnt, Map<Pair<String, String>, String> l2gMap, String simContextName,
 			String simContextId, MathSymbolMapping mathSymbolMapping, Simulation vcSimulation, UniformTimeCourse utcSim,
 			Set<String> dataGeneratorTasksSet, MathOverrides mathOverrides)
-			throws ExpressionBindingException, ExpressionException, DivideByZeroException {
+			throws ExpressionBindingException, ExpressionException, DivideByZeroException, MappingException {
 		if(mathOverrides != null && mathOverrides.hasOverrides()) {
 			String[] overridenConstantNames = mathOverrides.getOverridenConstantNames();
 			String[] scannedConstantsNames = mathOverrides.getScannedConstantNames();
@@ -796,7 +796,8 @@ public class SEDMLExporter {
 			}
 			if (!missingParamHash.isEmpty()) {
 				for (String missingParamName : missingParamHash.values()) {
-					logger.error("WARNING: there is an override entry for non-existent parameter "+missingParamName);
+					logger.error("ERROR: there is an override entry for non-existent parameter "+missingParamName);
+					throw new MappingException("MathOverrides has entry for non-existent parameter "+missingParamName);
 				}
 			}
 
@@ -811,9 +812,6 @@ public class SEDMLExporter {
 				int variableCount = 0;
 				for (String unscannedParamName : unscannedParamHash.values()) {
 					SymbolTableEntry ste = getSymbolTableEntryForModelEntity(mathSymbolMapping, unscannedParamName);
-					if(ste == null) {
-						throw new RuntimeException("failed to retrieve vcell parameter from unscanned SEDML parameter " + unscannedParamName + " using mathSymbolMapping.");
-					}
 					Expression unscannedParamExpr = mathOverrides.getActualExpression(unscannedParamName, 0);
 					if(unscannedParamExpr.isNumeric()) {
 						// if expression is numeric, add ChangeAttribute to model created above
@@ -916,9 +914,6 @@ public class SEDMLExporter {
 				// for unscanned parameter overrides
 				for (String unscannedParamName : unscannedParamHash.values()) {
 					SymbolTableEntry ste = getSymbolTableEntryForModelEntity(mathSymbolMapping, unscannedParamName);
-					if(ste == null) {
-						throw new RuntimeException("failed to retrieve vcell parameter from unscanned SEDML parameter " + unscannedParamName + " using mathSymbolMapping.");
-					}
 					Expression unscannedParamExpr = mathOverrides.getActualExpression(unscannedParamName, 0);
 					if(unscannedParamExpr.isNumeric()) {
 						// if expression is numeric, add ChangeAttribute to model created above
@@ -1003,7 +998,7 @@ public class SEDMLExporter {
 	private RepeatedTask createSEDMLreptask(String rangeId, Map<Pair<String, String>, String> l2gMap,
 			MathSymbolMapping mathSymbolMapping, Set<String> dataGeneratorTasksSet,
 			MathOverrides mathOverrides, String ownerTaskId, String scannedConstName, String repeatedTaskId, String modelReferenceId)
-			throws ExpressionException, DivideByZeroException {
+			throws ExpressionException, DivideByZeroException, MappingException {
 		RepeatedTask rt = new RepeatedTask(repeatedTaskId, repeatedTaskId, true, rangeId);
 		dataGeneratorTasksSet.add(rt.getId());
 		SubTask subTask = new SubTask("0", ownerTaskId);
@@ -1024,7 +1019,7 @@ public class SEDMLExporter {
 	}
 
 	private Range createSEDMLrange(String rangeId, RepeatedTask rt, ConstantArraySpec constantArraySpec, MathSymbolMapping msm, Map<Pair<String, String>, String> l2gMap, String modelReferenceId)
-			throws ExpressionException, DivideByZeroException {
+			throws ExpressionException, DivideByZeroException, MappingException {
 		Range r = null;
 		//										System.out.println("     " + constantArraySpec.toString());
 		if(constantArraySpec.getType() == ConstantArraySpec.TYPE_INTERVAL) {
@@ -1096,7 +1091,7 @@ public class SEDMLExporter {
 	}
 
 	private void createFunctionalRangeElements(FunctionalRange fr, Expression func, MathSymbolMapping msm,
-			Map<Pair<String, String>, String> l2gMap, String modelReferenceId) throws ExpressionException {
+			Map<Pair<String, String>, String> l2gMap, String modelReferenceId) throws ExpressionException, MappingException {
 		String[] symbols = func.getSymbols();
 		for(String symbol : symbols) {
 			if (symbol.equals(fr.getRange())) continue;
@@ -1148,11 +1143,14 @@ public class SEDMLExporter {
 		return note;
 	}
 
-	public static SymbolTableEntry getSymbolTableEntryForModelEntity(MathSymbolMapping mathSymbolMapping, String paramName) {
+	public static SymbolTableEntry getSymbolTableEntryForModelEntity(MathSymbolMapping mathSymbolMapping, String paramName) throws MappingException {
 		cbit.vcell.math.Variable mathVar = mathSymbolMapping.findVariableByName(paramName);
+		if (mathVar == null) {
+			throw new MappingException("No variable found for parameter: " + paramName);
+		}
 		SymbolTableEntry[] stEntries = mathSymbolMapping.getBiologicalSymbol(mathVar);
-		if (stEntries == null || stEntries.length == 0) {
-			throw new NullPointerException("No matching biological symbol for : " + paramName);
+		if (stEntries == null) {
+			throw new MappingException("No matching biological symbol for variable: " + mathVar);
 		}
 		
 		// if the extra stes in the array are KineticsProxyParameters/ModelQuantities, remove them from array. Should be left with only one entry for overriddenConstantName
@@ -1179,10 +1177,10 @@ public class SEDMLExporter {
 			}
 			// after removing proxy parameters, cannot have more than one ste in list
 			if (steList.size() == 0) {
-				throw new RuntimeException("No mapping entry for constant : '" + paramName + "'.");
+				throw new MappingException("No mapping entry for constant : '" + paramName + "'.");
 			}
 			if (steList.size() > 1) {
-				throw new RuntimeException("Cannot have more than one mapping entry for constant : '" + paramName + "'.");
+				throw new MappingException("Cannot have more than one mapping entry for constant : '" + paramName + "'.");
 			}
 			SymbolTableEntry[] stes = (SymbolTableEntry[])steList.toArray(new SymbolTableEntry[0]);
 			return stes[0];
