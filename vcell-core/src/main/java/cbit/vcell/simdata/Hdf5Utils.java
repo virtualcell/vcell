@@ -136,4 +136,20 @@ public class Hdf5Utils {
 		H5.H5Dclose(hdf5DatasetID);
 		H5.H5Sclose(hdf5DataspaceID);
 	}
+	
+	// exercising some hdf5 features
+    public static void main(String[] args) {
+    	try {
+			int fileId = H5.H5Fcreate("file.h5", HDF5Constants.H5F_ACC_TRUNC, HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT);
+			H5.H5Fclose(fileId);
+			
+			long dims[] = {4, 6};
+			int datasetId = H5.H5Screate_simple(dims.length,  dims, null);
+			
+			
+		} catch (HDF5Exception | NullPointerException e) {
+			e.printStackTrace();
+		}
+    }
+
 }
