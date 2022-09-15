@@ -12,8 +12,6 @@ package cbit.vcell.resource;
 
 import java.util.regex.Pattern;
 
-import cbit.vcell.util.NativeLoader;
-
 /**
  * Singleton class / object which models operating system specific data.
  * initializes on first explicit access 
@@ -167,19 +165,16 @@ public class OperatingSystemInfo {
 			osnamePrefix = "win";
 			exeSuffix = ".exe";
 			sharedLibraryPattern = Pattern.compile(".dll$");
-			NativeLoader.setOsType(OperatingSystemInfo.OsType.WINDOWS);
 		} else if (bMac) {
 			osType = OsType.MAC;
 			osnamePrefix = "mac";
 			exeSuffix = "";
 			sharedLibraryPattern = Pattern.compile(".*[dylib|jnilib]$");
-			NativeLoader.setOsType(OperatingSystemInfo.OsType.MAC);
 		} else if (bLinux) {
 			osType = OsType.LINUX;
 			osnamePrefix = "linux";
 			exeSuffix = "";
 			sharedLibraryPattern = Pattern.compile(".+\\.so[.\\d]*$"); //libc.so, libc.so.1, libc.so.1.4
-			NativeLoader.setOsType(OperatingSystemInfo.OsType.LINUX);
 		} else {
 			throw new RuntimeException(system_osname + " is not supported by the Virtual Cell.");
 		}

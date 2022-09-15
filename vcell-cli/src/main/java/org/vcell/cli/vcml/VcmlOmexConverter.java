@@ -327,13 +327,7 @@ public class VcmlOmexConverter {
         XmlUtil.writeXMLStringToFile(sedmlString, String.valueOf(Paths.get(outputDir, vcmlName + ".sedml")), true);
 
         try {
-            try {
-                ResourceUtil.setNativeLibraryDirectory();
-                NativeLib.combinej.load();
-            } catch (Exception e){
-            	logger.error("Unable to link to native 'libCombine' lib, check native lib. Attemping alternate solution...");
-                NativeLib.combinej.directLoad();
-            }
+			NativeLib.combinej.load();
         } catch (UnsatisfiedLinkError ex) {
             logger.error("Unable to link to native 'libCombine' lib, check native lib: " + ex.getMessage());
             throw ex;

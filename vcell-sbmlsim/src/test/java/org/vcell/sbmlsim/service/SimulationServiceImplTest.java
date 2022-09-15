@@ -39,7 +39,6 @@ public class SimulationServiceImplTest {
 		// TODO - Encapsulate this common setup stuff into VCellService initialization.
 		// Then all VCell-based scripts can focus on the customization below.
 		System.setProperty(PropertyLoader.installationRoot, new File("..").getAbsolutePath());
-		ResourceUtil.setNativeLibraryDirectory();
 		NativeLib.HDF5.load();
 
 		file = new File("src/test/resources/org/vcell/sbmlsim/optoPlexin_PRG_rule_based.xml");

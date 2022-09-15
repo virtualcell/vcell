@@ -103,6 +103,7 @@ import cbit.vcell.parser.FunctionInvocation;
 import cbit.vcell.parser.SimpleSymbolTable;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.parser.VariableSymbolTable;
+import cbit.vcell.resource.NativeLib;
 import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.simdata.DataOperation.DataProcessingOutputDataValuesOP.DataIndexHelper;
 import cbit.vcell.simdata.DataOperation.DataProcessingOutputDataValuesOP.TimePointHelper;
@@ -429,6 +430,11 @@ public class DataSetControllerImpl implements SimDataConstants,DataJobListenerHo
 			outside_near_far_indexes = arg_outside_near_far_indexes;
 		}
 	};
+
+	static {
+		NativeLib.HDF5.load();
+	}
+
 
 /**
  * This method was created by a SmartGuide.

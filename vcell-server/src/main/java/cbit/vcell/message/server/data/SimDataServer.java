@@ -43,8 +43,6 @@ import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URLEncodedUtils;
-import org.apache.http.entity.ByteArrayEntity;
-import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.bootstrap.HttpServer;
 import org.apache.http.impl.bootstrap.ServerBootstrap;
@@ -84,12 +82,10 @@ import cbit.vcell.resource.OperatingSystemInfo;
 import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.resource.PythonSupport;
 import cbit.vcell.resource.PythonSupport.PythonPackage;
-import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.simdata.Cachetable;
 import cbit.vcell.simdata.DataServerImpl;
 import cbit.vcell.simdata.DataSetControllerImpl;
 import cbit.vcell.simdata.Hdf5Utils;
-import cbit.vcell.simdata.Hdf5Utils.HDF5WriteHelper;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.vcell.solver.ode.ODESimData;
@@ -364,7 +360,6 @@ public static void main(java.lang.String[] args) {
 	
 	try {
 		PropertyLoader.loadProperties(REQUIRED_SERVICE_PROPERTIES);
-		ResourceUtil.setNativeLibraryDirectory();
 		new LibraryLoaderThread(false).start( );
 
 		PythonSupport.verifyInstallation(new PythonPackage[] { PythonPackage.VTK, PythonPackage.THRIFT});
@@ -398,7 +393,7 @@ public static void main(java.lang.String[] args) {
 		}
 		}
 
-		VCMongoMessage.serviceStartup(serviceName, new Integer(serviceOrdinal), args);
+		VCMongoMessage.serviceStartup(serviceName, Integer.valueOf(serviceOrdinal), args);
 
 //		//
 //		// JMX registration
