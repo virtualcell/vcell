@@ -87,7 +87,17 @@ public class SolverHandler {
         if(bioModelList != null) {
         	countBioModels = bioModelList.size();
         }
+        
+        // make some maps
+        Map<Simulation, String> vcellSimToImportedTaskId = new LinkedHashMap<> ();	// key = vcell simulation, value = sedml task id (task reference)
+        // use sedml.getTaskWithId(importedTaskId) to recover the task from the sedml, given the task id
+        
+        Map<String, Task> terminalTasks = new LinkedHashMap<> ();		// tasks that are not referenced by any other task (they are not in any list of subtasks)
+        Map<String, Task> subTasks = new LinkedHashMap<> ();			// tasks that are referred by other tasks as subtasks
 
+        // more maps output to data generator
+        // data generator to task
+        
         int simulationCount = 0;
         int bioModelCount = 0;
         boolean hasSomeSpatial = false;
