@@ -195,7 +195,7 @@ public Expression getNormalizedConcentrationCorrection(SimulationContext simulat
 	Expression exp = getSizeCorrection(simulationContext);
 	if (getGeometryClass() instanceof CompartmentSubVolume || getGeometryClass() instanceof SubVolume){
 		Expression unitFactor = unitFactorProvider.getUnitFactor(modelUnitSystem.getVolumeSubstanceUnit().divideBy(modelUnitSystem.getMembraneSubstanceUnit()));
-		exp = Expression.mult(unitFactor, exp).flattenFactors("KMOLE");
+		exp = Expression.mult(unitFactor, exp).simplifyJSCL();
 	}
 	return exp;
 }

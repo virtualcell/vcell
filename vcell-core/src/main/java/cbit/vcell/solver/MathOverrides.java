@@ -798,7 +798,7 @@ void updateFromMathDescription() {
 					java.util.function.Function<Expression, Expression> scaleExpressionsByUnitFactor = exp -> {
 						Expression substitutedExp = Expression.mult(exp, replacement.factor);
 						try {
-							substitutedExp = ExpressionUtils.simplifyUsingJSCL(substitutedExp);
+							substitutedExp = substitutedExp.simplifyJSCL();
 						} catch (ExpressionException e) {
 							logger.warn("failed to simplify '"+substitutedExp.infix()+"': "+e.getMessage(),e);
 						}
@@ -847,17 +847,8 @@ void updateFromMathDescription() {
 	}
 
 	java.util.function.Function<Expression, Expression> simplifyFunction = (exp) -> {
-		for (String factorSymbol : allFactorSymbols) {
-			try {
-				exp = exp.flattenFactors(factorSymbol);
-			} catch (ExpressionException e) {
-				String msg = "failed to simplify unit converted Math Override expression '" + exp.infix() + "'";
-				logger.error(msg, e);
-				throw new RuntimeException(msg, e);
-			}
-		}
 		try {
-			Expression simplifiedExp = ExpressionUtils.simplifyUsingJSCL(exp);
+			Expression simplifiedExp = exp.simplifyJSCL();
 			simplifiedExp.bindExpression(mathDescription);
 			exp = simplifiedExp;
 		} catch (Exception e) {
