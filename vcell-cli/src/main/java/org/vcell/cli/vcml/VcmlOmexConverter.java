@@ -7,6 +7,7 @@ import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.biomodel.ModelUnitConverter;
 import cbit.vcell.field.FieldFunctionArguments;
 import cbit.vcell.field.FieldUtilities;
+import cbit.vcell.mapping.MappingException;
 import cbit.vcell.mapping.MathMappingCallbackTaskAdapter;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SimulationContext.MathMappingCallback;
@@ -74,7 +75,6 @@ public class VcmlOmexConverter {
 	private static final Logger logger = LogManager.getLogger(VcmlOmexConverter.class);
 
 	public static final String jobConfigFile = "jobConfig.txt";
-	public static final String overrideFile = "orphanOverrides.txt";
 	public static final String jobLogFile = "jobLog.txt";
 	
 	
@@ -83,7 +83,7 @@ public class VcmlOmexConverter {
 									  ModelFormat modelFormat,
 									  boolean bForceLogFiles,
 									  boolean bValidateOmex)
-			throws IOException, DataAccessException, XmlParseException {
+			throws IOException, DataAccessException, XmlParseException, MappingException {
 
 		if (input == null || !input.isFile() || !input.toString().endsWith(".vcml")) {
 			throw new RuntimeException("expecting inputFilePath '"+input+"' to be an existing .vcml file");
@@ -262,7 +262,7 @@ public class VcmlOmexConverter {
 												ModelFormat modelFormat,
 												boolean bForceLogFiles,
 												boolean bValidate
-	) throws XmlParseException, IOException {
+	) throws XmlParseException, IOException, MappingException {
 
 		int sedmlLevel = 1;
 		int sedmlVersion = 2;
@@ -271,43 +271,13 @@ public class VcmlOmexConverter {
 
 
         // get VCML name from VCML path
-        //String vcmlName = inputVcmlFile.split(File.separator, 10)[inputVcmlFile.split(File.separator, 10).length - 1].split("\\.", 5)[0];
         String vcmlName = FilenameUtils.getBaseName(inputVcmlFile);		// platform independent, strips extension too
 
 		File vcmlFilePath = new File(inputVcmlFile);
         // Create biomodel
         BioModel bioModel = XmlHelper.XMLToBioModel(new XMLSource(vcmlFilePath));
         
-        // Simulations/Tasks are optional in SEDML
-        // If none, we should still export the SimContexts as Models
-        
-//        int numSimulations = bioModel.getNumSimulations();
-//        if(outputBaseDir != null && numSimulations == 0) {
-//			writeSimErrorList(outputBaseDir, vcmlName + " has no simulations.", bForceLogFiles);
-//        	return false;
-//        }
-        bioModel.refreshDependencies();
-
-        // the checks below are now delegated
-        
-        // ========================================================
-		SimulationContext scArray[] = bioModel.getSimulationContexts();
-		if (scArray != null) {
-			MathDescription[] mathDescArray = new MathDescription[scArray.length];
-			for (int i = 0; i < scArray.length; i++) {
-				try {
-					//check if all structure sizes are specified
-					scArray[i].checkValidity();
-					scArray[i].updateAll(true);
-
-				} catch(Exception e) {
-					String msg = "failed to export SimulationContext "+scArray[i].getName()+": "+e.getMessage();
-					logger.error(msg, e);
-					throw new RuntimeException(msg, e);
-				}
-
-			}
-		}
+        bioModel.updateAll(false);
 
         List<Simulation> simsToExport = Arrays.stream(bioModel.getSimulations()).filter(simulationExportFilter).collect(Collectors.toList());
 
@@ -321,31 +291,6 @@ public class VcmlOmexConverter {
 					logger.error("Failed to replace obsolete solver", e);
 				}
 			}
-			MathOverrides mo = simulation.getMathOverrides();
-			if(mo != null && mo.hasUnusedOverrides()) {
-				MathDescription mathDescription = simulation.getMathDescription();
-				Enumeration<Constant> enumeration = mathDescription.getConstants();
-				java.util.HashSet<String> mathDescriptionHash = new java.util.HashSet<String>();
-				while (enumeration.hasMoreElements()) {
-					Constant constant = enumeration.nextElement();
-					mathDescriptionHash.add(constant.getName());
-				}
-				Enumeration<String> mathOverrideNamesEnum = mo.getOverridesHashKeys();
-				while (mathOverrideNamesEnum.hasMoreElements()){
-					String name = mathOverrideNamesEnum.nextElement();
-					if (!mathDescriptionHash.contains(name)){
-						orphanMathOverrides.add(name + ", ");
-					}
-				}
-			}
-		}
-		if(!orphanMathOverrides.isEmpty()) {
-			String msg = "Orphaned Math Overrides found: ";
-			for(String name : orphanMathOverrides) {
-				msg += name; 
-			}
-			logger.error(msg);
-			writeExportStatusList(outputBaseDir, vcmlName + ": " + msg, overrideFile, bForceLogFiles);
 		}
 
 		Version version = bioModel.getVersion();
