@@ -1,6 +1,5 @@
 package cbit.vcell.parser;
 
-import jscl.text.ParseException;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -49,8 +48,8 @@ public class ExpressionFlattenTest {
     }
 
     @Test
-    public void simplifySymbolFactorMatchesExpected() throws ExpressionException, ParseException {
-        Expression flattenedExp = origExpression.flattenFactors("KMOLE");
+    public void simplifySymbolFactorMatchesExpected() throws ExpressionException {
+        Expression flattenedExp = origExpression.simplifyJSCL();
         Assert.assertTrue("didn't compare equal, expected='"+expectedFlattenedExpression.infix()+"', actual='"+flattenedExp.infix()+"'",
                 expectedFlattenedExpression.compareEqual(flattenedExp));
         Assert.assertTrue("expected flattened not equivalent, expected='"+expectedFlattenedExpression.infix()+"', original='"+origExpression.infix()+"'",
@@ -58,8 +57,8 @@ public class ExpressionFlattenTest {
     }
 
     @Test
-    public void simplifySymbolFactorIsEquivalent() throws ExpressionException, ParseException {
-        Expression flattenedExp = origExpression.flattenFactors("KMOLE");
+    public void simplifySymbolFactorIsEquivalent() throws ExpressionException {
+        Expression flattenedExp = origExpression.simplifyJSCL();
         Assert.assertTrue("not equivalent, expected='"+origExpression.infix()+"', actual='"+flattenedExp.infix()+"'",
                 ExpressionUtils.functionallyEquivalent(origExpression,flattenedExp,false));
     }

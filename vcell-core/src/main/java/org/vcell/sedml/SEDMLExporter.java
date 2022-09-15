@@ -1060,8 +1060,7 @@ public class SEDMLExporter {
 			boolean bFactorized = true;
 			for (int i = 0; i < cs.length; i++){
 				Expression exp = cs[i].getExpression();
-				exp = Expression.div(exp, expFact);
-				exp = ExpressionUtils.simplifyUsingJSCL(exp);
+				exp = Expression.div(exp, expFact).simplifyJSCL();
 				if (!exp.isNumeric()) {
 					bFactorized = false;
 					break;
