@@ -4,6 +4,7 @@ import cbit.util.xml.VCLogger;
 import cbit.util.xml.VCLoggerException;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.messaging.server.SimulationTask;
+import cbit.vcell.parser.Expression;
 import cbit.vcell.solver.*;
 import cbit.vcell.solver.ode.AbstractJavaSolver;
 import cbit.vcell.solver.ode.ODESolver;
@@ -16,9 +17,19 @@ import cbit.vcell.solver.stoch.HybridSolver;
 import cbit.vcell.solvers.AbstractCompiledSolver;
 import cbit.vcell.xml.ExternalDocInfo;
 import cbit.vcell.xml.XmlHelper;
+
+import org.jlibsedml.AbstractTask;
+import org.jlibsedml.DataGenerator;
+import org.jlibsedml.DataSet;
+import org.jlibsedml.Output;
+import org.jlibsedml.Range;
+import org.jlibsedml.RepeatedTask;
+import org.jlibsedml.Report;
 import org.jlibsedml.SedML;
+import org.jlibsedml.SubTask;
 import org.jlibsedml.Task;
 import org.jlibsedml.UniformTimeCourse;
+import org.jlibsedml.Variable;
 import org.vcell.cli.CLILogFileManager;
 import org.vcell.cli.vcml.VCMLHandler;
 import org.vcell.sbml.vcell.SBMLImportException;
@@ -88,7 +99,113 @@ public class SolverHandler {
         if(bioModelList != null) {
         	countBioModels = bioModelList.size();
         }
+        
+        // ===================  Refactoring  =====================================================
+        
+        // make some maps
+        Map<Simulation, AbstractTask> simulationToTaskMap = new LinkedHashMap<> ();	// key = vcell simulation, value = sedml task (task reference)
+        Map<AbstractTask, Simulation> taskToSimulationMap = new LinkedHashMap<> ();	// the opposite
+        Map<AbstractTask, List<AbstractTask>> taskToListOfSubtasksMap = new LinkedHashMap<> ();	// key = topmost task, value = recursive list of subtasks
+        Map<AbstractTask, List<Variable>> taskToVariableMap = new LinkedHashMap<> ();		// key = task, 
+        
+        for(BioModel bioModel : bioModelList) {
+        	sims = bioModel.getSimulations();
+        	for(Simulation sim : sims) {
+               	if(sim.getImportedTaskID() == null) {
+            		continue;
+            	}
+               	String importedTaskId = sim.getImportedTaskID();
+               	AbstractTask at = sedml.getTaskWithId(importedTaskId);
+               	simulationToTaskMap.put(sim, at);
+               	taskToSimulationMap.put(at,  sim);
+        	}
+        }
+        for (Map.Entry<Simulation, AbstractTask> entry : simulationToTaskMap.entrySet()) {
+        	Simulation sim = entry.getKey();
+        	AbstractTask task = entry.getValue();
+        	List<AbstractTask> subtasksList = new ArrayList<> ();	// will remain empty if task is instanceof Task
+        	
+			AbstractTask referredTask;
+			RepeatedTask rt;
+			// find the actual Task and extract the simulation
+			if(task instanceof RepeatedTask) {
+				rt = (RepeatedTask)task;
+				do {
+					SubTask st = rt.getSubTasks().entrySet().iterator().next().getValue(); // single subtask
+					String taskId = st.getTaskId();
+					referredTask = sedml.getTaskWithId(taskId);
+					if (referredTask instanceof RepeatedTask) {
+						rt = (RepeatedTask)referredTask;
+					}
+					subtasksList.add(referredTask);				// last entry added will be a instanceof Task
+				} while (referredTask instanceof RepeatedTask);
+				Task actualTask = (Task)referredTask;
+			}
+        	taskToListOfSubtasksMap.put(task, subtasksList);	// may be empty if task instanceof Task
+        }
+        
+        {
+        Map<Variable, AbstractTask> variableToTaskMap = new LinkedHashMap<> ();		// temporary use
+        List<Output> ooo = sedml.getOutputs();
+        for(Output oo : ooo) {
+        	if(oo instanceof Report) {
+                List<DataSet> datasets = ((Report) oo).getListOfDataSets();
+                for (DataSet dataset : datasets) {
+                    DataGenerator datagen = sedml.getDataGeneratorWithId(dataset.getDataReference());
+                    assert datagen != null;
+                    List<Variable> vars = new ArrayList<>(datagen.getListOfVariables());
+                    for(Variable var : vars) {
+                    	AbstractTask task = sedml.getTaskWithId(var.getReference());
+                    	variableToTaskMap.put(var, task);
+                    }
+                }
+        	}
+        }
+        for(Map.Entry<Variable, AbstractTask> entry : variableToTaskMap.entrySet()) {
+        	Variable var = entry.getKey();
+        	AbstractTask task = entry.getValue();
+        	if(!taskToVariableMap.containsKey(task)) {
+        		List<Variable> vars = new ArrayList<> ();
+        		vars.add(var);
+        		taskToVariableMap.put(task, vars);
+        	} else {
+        		List<Variable> vars = taskToVariableMap.get(task);
+        		vars.add(var);
+        		taskToVariableMap.put(task, vars);
+        	}
+        }
+        }
+        
+        Map<RepeatedTask, Integer> taskToNumIterationsMap = new LinkedHashMap<> ();
+        for (Map.Entry<AbstractTask, List<AbstractTask>> entry : taskToListOfSubtasksMap.entrySet()) {
+        	AbstractTask task = entry.getKey();
+        	List<AbstractTask> subTasksList = entry.getValue();
+        	Simulation sim = taskToSimulationMap.get(task);
+			int scanCount = sim.getScanCount();
+			
+			if(scanCount > 1) {
+				assert task instanceof RepeatedTask;
+				assert !subTasksList.isEmpty();
+				Map<String, Range> ranges = ((RepeatedTask)task).getRanges();
 
+
+				//taskToNumIterationsMap.put(((RepeatedTask)task).
+			
+			}
+//			MathOverrides mathOverrides = sim.getMathOverrides();
+//			Expression exp = mathOverrides.getActualExpression("Kf_r0", 0);
+//			System.out.println(exp.infix());
+
+        }
+        
+        
+
+        System.out.println("taskToSimulationMap: " + taskToSimulationMap.size());
+        System.out.println("taskToListOfSubtasksMap: " + taskToListOfSubtasksMap.size());
+        System.out.println("taskToVariableMap: " + taskToVariableMap.size());
+        
+        // ---------------------------------------------------------------------------------------
+        
         int simulationJobCount = 0;
         int bioModelCount = 0;
         boolean hasSomeSpatial = false;
