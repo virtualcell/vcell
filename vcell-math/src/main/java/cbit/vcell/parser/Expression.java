@@ -266,11 +266,27 @@ public ExpressionTerm extractTopLevelTerm() {
 	return new ExpressionTerm(operator,children);
 }
 /**
- * This method was created by a SmartGuide.
+ * flatten performs very basic simplification, and also replaces constant SymbolTableEntry.isConstant() with numerical values
+ * if this numeric substitution is not wanted either clear binding before calling, or call flattenSafe() method.
  */
 public Expression flatten() throws ExpressionException {
 flattenCount++;////////////////////////
 	return new Expression((SimpleNode)rootNode.flatten());
+}
+
+/**
+ * flatten will substitute numbers for constants (e.g. SymbolTableEntry.isConstant() like math Constant class)
+ * flattenSafe temporarily removes binding, flattens, and restores binding
+ * @return flattened expression without substituting numbers for Constants
+ * @throws ExpressionException
+ */
+public Expression flattenSafe() throws ExpressionException {
+	Expression flattened = new Expression(this);
+	SymbolTable tempExpressionSymbolTable = this.createSymbolTableFromBinding();
+	flattened.bindExpression(null);
+	flattened = flattened.flatten();
+	flattened.bindExpression(tempExpressionSymbolTable);
+	return flattened;
 }
 
 	public Expression simplifyJSCL() throws ExpressionException {
@@ -283,18 +299,44 @@ flattenCount++;////////////////////////
 			return flatten();
 		}
 		try {
-			return simplifyUsingJSCL(this, maxExecutionTime_ms).flatten();
+			return simplifyUsingJSCL(this, maxExecutionTime_ms);
 		}catch (ExpressionException e){
 			logger.info("failed to simplify using JSCL, reverting to flatten(): "+e.getMessage());
-			return flatten();
+			return flattenSafe();
 		}catch (jscl.math.Expression.ExpressionTimeoutException e){
 			if (bFailOnTimeout){
 				throw new jscl.math.Expression.ExpressionTimeoutException("simplifyJSCL() timeout for: "+infix(), e);
 			}else {
 				logger.info("timeout simplify using JSCL, reverting to flatten(): " + e.getMessage());
-				return flatten();
+				return flattenSafe();
 			}
 		}
+	}
+
+
+	/**
+	 * for internal use only - for restoring the expression binding for safe flatten().
+	 * @return SymbolTable temporary symbol table associated with this expression
+	 */
+	public SymbolTable createSymbolTableFromBinding(){
+		String[] symbols = this.getSymbols();
+		if (symbols==null || symbols.length==0){
+			return null;
+		}
+		HashMap<String, SymbolTableEntry> bindings = new HashMap<>();
+		for (String symbol : symbols){
+			SymbolTableEntry symbolBinding = getSymbolBinding(symbol);
+			if (symbolBinding != null) {
+				bindings.put(symbol, symbolBinding);
+			}
+		}
+		SymbolTable symbolTable = new SymbolTable() {
+			@Override
+			public SymbolTableEntry getEntry(String identifierString) { return bindings.get(identifierString); }
+			@Override
+			public void getEntries(Map<String, SymbolTableEntry> entryMap) { throw new RuntimeException("not implemented");}
+		};
+		return symbolTable;
 	}
 
 	private static Expression simplifyUsingJSCL(Expression exp, int maxExecutionTime_ms) throws ExpressionException, jscl.math.Expression.ExpressionTimeoutException {
