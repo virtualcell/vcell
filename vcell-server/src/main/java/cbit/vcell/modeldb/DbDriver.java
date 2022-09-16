@@ -1410,16 +1410,16 @@ public static VCInfoContainer getVCInfoContainer(User user,Connection con, Datab
 											//							SubVolumeTable.table.ordinal.getQualifiedColName()+
 									) : "") +
 									" FROM " +
-									SimContextTable.table.getTableName() + "," +
+									SimContextTable.table.getTableName() +
+									(whichExtraInfo == 0xFF ? (
+										" LEFT JOIN " + ApplicationMathTable.table.getTableName() +
+											" ON " + SimContextTable.table.id.getQualifiedColName() + " = " + ApplicationMathTable.table.simContextRef.getQualifiedColName() +
+										" LEFT JOIN " + SubVolumeTable.table.getTableName() +
+											" ON " + SimContextTable.table.geometryRef.getQualifiedColName() + " = " + SubVolumeTable.table.geometryRef.getQualifiedColName() + ","
+									) : ",") +
 									BioModelSimContextLinkTable.table.getTableName() + "," +
 									BioModelSimulationLinkTable.table.getTableName() + "," +
 									SimulationTable.table.getTableName() +
-									(whichExtraInfo == 0xFF ? (
-									" LEFT JOIN " + ApplicationMathTable.table.getTableName() +
-												" ON " + SimContextTable.table.id.getQualifiedColName() + " = " + ApplicationMathTable.table.simContextRef.getQualifiedColName() +
-									" LEFT JOIN " + SubVolumeTable.table.getTableName() +
-												" ON " + SimContextTable.table.geometryRef.getQualifiedColName() + " = " + SubVolumeTable.table.geometryRef.getQualifiedColName()
-									) : "") +
 									" WHERE " +
 									BioModelSimContextLinkTable.table.simContextRef.getQualifiedColName() + " = " + SimContextTable.table.id.getQualifiedColName() +
 									" AND " + SimulationTable.table.id.getQualifiedColName() + " = " + BioModelSimulationLinkTable.table.simRef.getQualifiedColName() +
@@ -1551,13 +1551,13 @@ public static VCInfoContainer getVCInfoContainer(User user,Connection con, Datab
 								SubVolumeTable.table.name.getQualifiedColName()+" "+aliasSVName+
 							" FROM "+
 								MathModelTable.table.getTableName()+","+
-								MathDescTable.table.getTableName()+","+
-								MathModelSimulationLinkTable.table.getTableName()+","+
+								MathDescTable.table.getTableName()+
+									" LEFT JOIN "+SubVolumeTable.table.getTableName()+
+									" ON "+MathDescTable.table.geometryRef.getQualifiedColName()+" = "+SubVolumeTable.table.geometryRef.getQualifiedColName()+","+
+								MathModelSimulationLinkTable.table.getTableName()+
+									" LEFT JOIN "+ApplicationMathTable.table.getTableName()+
+									" ON "+MathModelSimulationLinkTable.table.mathModelRef.getQualifiedColName()+" = "+ApplicationMathTable.table.mathModelRef.getQualifiedColName()+","+
 								SimulationTable.table.getTableName()+
-							" LEFT JOIN "+ApplicationMathTable.table.getTableName()+
-									" ON "+MathModelSimulationLinkTable.table.mathModelRef.getQualifiedColName()+" = "+ApplicationMathTable.table.mathModelRef.getQualifiedColName()+
-							" LEFT JOIN "+SubVolumeTable.table.getTableName()+
-									" ON "+MathDescTable.table.geometryRef.getQualifiedColName()+" = "+SubVolumeTable.table.geometryRef.getQualifiedColName()+
 							" WHERE "+
 								MathModelTable.table.id.getQualifiedColName()+" = "+MathModelSimulationLinkTable.table.mathModelRef.getQualifiedColName()+
 								" AND "+SimulationTable.table.id.getQualifiedColName()+" = "+MathModelSimulationLinkTable.table.simRef.getQualifiedColName()+
@@ -2763,12 +2763,12 @@ public static TestSuiteNew testSuiteGet(BigDecimal getThisTS,Connection con,User
 				TFTestCriteriaTable.table.getTableName()+".*"+","+
 				MathModelSimulationLinkTable.table.getTableName()+".*"+
 			" FROM " +
-			TFTestCriteriaTable.table.getTableName()+","+
+			TFTestCriteriaTable.table.getTableName()+
+					" LEFT JOIN "+MathModelSimulationLinkTable.table.getTableName()+
+					" ON "+TFTestCriteriaTable.table.regressionMMSimRef.getQualifiedColName()+"="+MathModelSimulationLinkTable.table.id.getQualifiedColName()+","+
 			TFTestCaseTable.table.getTableName()+","+
 			TFTestSuiteTable.table.getTableName()+","+
 			SimulationTable.table.getTableName()+
-			" LEFT JOIN "+MathModelSimulationLinkTable.table.getTableName()+
-					" ON "+TFTestCriteriaTable.table.regressionMMSimRef.getQualifiedColName()+"="+MathModelSimulationLinkTable.table.id.getQualifiedColName()+
 			" WHERE "+
 			TFTestSuiteTable.table.id.getQualifiedColName()+"="+getThisTS+
 			" AND " +
@@ -2871,31 +2871,32 @@ public static TestSuiteNew testSuiteGet(BigDecimal getThisTS,Connection con,User
 		{
 		final String REGRSIMREF = "REGRSIMREF";
 		final String SCNAME = "SCNAME";
-		sql =
-			"SELECT "+
-				TFTestCriteriaTable.table.getTableName()+".*"+","+
-				BioModelSimContextLinkTable.table.bioModelRef.getQualifiedColName()+","+
-				BioModelSimulationLinkTable.table.simRef.getQualifiedColName()+" "+REGRSIMREF+","+
-				SimContextTable.table.name.getQualifiedColName()+" "+SCNAME+
-			" FROM " +
-			TFTestCriteriaTable.table.getTableName()+","+
-			TFTestCaseTable.table.getTableName()+","+
-			TFTestSuiteTable.table.getTableName()+","+
-			BioModelSimContextLinkTable.table.getTableName()+
-			" LEFT JOIN "+SimContextTable.table.getTableName()+
-					" ON "+BioModelSimContextLinkTable.table.simContextRef+" = "+SimContextTable.table.id.getQualifiedColName()+
-			" LEFT JOIN "+BioModelSimulationLinkTable.table.getTableName()+
-					" ON "+TFTestCriteriaTable.table.regressionBMSimRef.getQualifiedColName()+" = "+BioModelSimulationLinkTable.table.id.getQualifiedColName()+
+			sql =
+					"SELECT "+
+							TFTestCriteriaTable.table.getTableName()+".*"+","+
+							BioModelSimContextLinkTable.table.bioModelRef.getQualifiedColName()+","+
+							BioModelSimulationLinkTable.table.simRef.getQualifiedColName()+" "+REGRSIMREF+","+
+							SimContextTable.table.name.getQualifiedColName()+" "+SCNAME+
+							" FROM " +
+							TFTestCriteriaTable.table.getTableName()+
+							" LEFT JOIN "+BioModelSimulationLinkTable.table.getTableName()+
+							" ON "+TFTestCriteriaTable.table.regressionBMSimRef.getQualifiedColName()+" = "+BioModelSimulationLinkTable.table.id.getQualifiedColName()+
+							" LEFT JOIN "+BioModelSimContextLinkTable.table.getTableName()+
+							" ON "+TFTestCriteriaTable.table.regressionBMAPPRef.getQualifiedColName()+" = "+BioModelSimContextLinkTable.table.id.getQualifiedColName()+
+							" LEFT JOIN "+SimContextTable.table.getTableName()+
+							" ON "+BioModelSimContextLinkTable.table.simContextRef.getQualifiedColName()+" = "+SimContextTable.table.id.getQualifiedColName()+","+
+							TFTestCaseTable.table.getTableName()+","+
+							TFTestSuiteTable.table.getTableName()+
 //			" LEFT JOIN "+SimulationTable.table.getTableName()+
 //					" ON "+SimContextTable.table.mathRef.getQualifiedColName()+" = "+SimulationTable.table.mathRef.getQualifiedColName()
-			" WHERE "+
-			TFTestSuiteTable.table.id.getQualifiedColName()+"="+getThisTS+
-			" AND " +
-			TFTestSuiteTable.table.id.getQualifiedColName()+"="+TFTestCaseTable.table.testSuiteRef.getQualifiedColName()+
-			" AND " +
-			TFTestCaseTable.table.id.getQualifiedColName()+"="+TFTestCriteriaTable.table.testCaseRef.getQualifiedColName()+
-			" AND " +
-			TFTestCaseTable.table.bmAppRef.getQualifiedColName()+" IS NOT NULL ";
+							" WHERE "+
+							TFTestSuiteTable.table.id.getQualifiedColName()+"="+getThisTS+
+							" AND " +
+							TFTestSuiteTable.table.id.getQualifiedColName()+"="+TFTestCaseTable.table.testSuiteRef.getQualifiedColName()+
+							" AND " +
+							TFTestCaseTable.table.id.getQualifiedColName()+"="+TFTestCriteriaTable.table.testCaseRef.getQualifiedColName()+
+							" AND " +
+							TFTestCaseTable.table.bmAppRef.getQualifiedColName()+" IS NOT NULL ";
 			
 //System.out.println(sql);
 		rset = stmt.executeQuery(sql);
@@ -4508,7 +4509,17 @@ public static TestSuiteOPResults testSuiteOP(TestSuiteOP tsop,Connection con,Use
 				" FROM " +
 				TFTestSuiteTable.table.getTableName()+","+
 				TFTestCaseTable.table.getTableName()+","+
-				TFTestCriteriaTable.table.getTableName()+","+
+				TFTestCriteriaTable.table.getTableName()+
+						" JOIN "+TFTestCriteriaTable.table.getTableName()+" "+TCRALT+
+						" ON "+TCRALT+"."+TFTestCriteriaTable.table.id.getUnqualifiedColName() +"="+ TFTestCriteriaTable.table.id.getQualifiedColName()+
+						" LEFT JOIN "+TFTestResultTable.table.getTableName()+
+						" ON "+TFTestResultTable.table.testCriteriaRef.getQualifiedColName()+"="+ TFTestCriteriaTable.table.id.getQualifiedColName()+
+						" LEFT JOIN "+TFTestCaseTable.table.getTableName()+" "+TCALT+
+						" ON "+TCALT+"."+TFTestCaseTable.table.bmAppRef.getUnqualifiedColName()+"="+ TCRALT+"."+TFTestCriteriaTable.table.regressionBMAPPRef.getUnqualifiedColName()+
+						" LEFT JOIN "+TFTestSuiteTable.table.getTableName()+" "+TSALT+
+						" ON "+TSALT+"."+TFTestSuiteTable.table.id.getUnqualifiedColName()+"="+ TCALT+"."+TFTestCaseTable.table.testSuiteRef.getUnqualifiedColName()+
+						" LEFT JOIN "+BioModelSimContextLinkTable.table.getTableName()+" "+BSCALT+
+						" ON "+BSCALT+"."+BioModelSimContextLinkTable.table.id.getUnqualifiedColName()+"="+ TCRALT+"."+TFTestCriteriaTable.table.regressionBMAPPRef.getUnqualifiedColName()+","+
 				BioModelSimContextLinkTable.table.getTableName()+","+
 				BioModelTable.table.getTableName()+","+
 				SimContextTable.table.getTableName()+","+
@@ -4517,21 +4528,10 @@ public static TestSuiteOPResults testSuiteOP(TestSuiteOP tsop,Connection con,Use
 //				","+SimulationTable.table.getTableName()+" "+SIM2+
 //				" LEFT JOIN "+TFTestCriteriaTable.table.getTableName()+" "+TCRALT2+
 //						" ON "+TCRALT2+"."+TFTestCriteriaTable.table.testCaseRef.getUnqualifiedColName() +"="+ TCALT+"."+TFTestCaseTable.table.id.getUnqualifiedColName()+
-				" LEFT JOIN "+TFTestResultTable.table.getTableName()+
-						" ON "+TFTestResultTable.table.testCriteriaRef.getQualifiedColName()+"="+ TFTestCriteriaTable.table.id.getQualifiedColName()+
-				" LEFT JOIN "+TFTestSuiteTable.table.getTableName()+" "+TSALT+
-						" ON "+TSALT+"."+TFTestSuiteTable.table.id.getUnqualifiedColName()+"="+ TCALT+"."+TFTestCaseTable.table.testSuiteRef.getUnqualifiedColName()+
-				" LEFT JOIN "+BioModelSimContextLinkTable.table.getTableName()+" "+BSCALT+
-						" ON "+BSCALT+"."+BioModelSimContextLinkTable.table.id.getUnqualifiedColName()+"="+ TCRALT+"."+TFTestCriteriaTable.table.regressionBMAPPRef.getUnqualifiedColName()+
-				" LEFT JOIN "+TFTestCaseTable.table.getTableName()+" "+TCALT+
-						" ON "+TCALT+"."+TFTestCaseTable.table.bmAppRef.getUnqualifiedColName()+"="+ TCRALT+"."+TFTestCriteriaTable.table.regressionBMAPPRef.getUnqualifiedColName()+
-				" JOIN "+TFTestCriteriaTable.table.getTableName()+" "+TCRALT+
-						" ON "+TCRALT+"."+TFTestCriteriaTable.table.id.getUnqualifiedColName() +"="+ TFTestCriteriaTable.table.id.getQualifiedColName()+
 				" WHERE " +
 				TFTestSuiteTable.table.id.getQualifiedColName() +"="+ TFTestCaseTable.table.testSuiteRef.getQualifiedColName()+
 				" AND " +
 				TFTestCriteriaTable.table.testCaseRef.getQualifiedColName() +"="+ TFTestCaseTable.table.id.getQualifiedColName()+
-				" AND " +
 				(qtcritxr_tsop.getVarName() != null?" AND "+TFTestResultTable.table.varName.getQualifiedColName()+"="+"'"+qtcritxr_tsop.getVarName()+"'":"")+
 				" AND " +
 				TFTestCaseTable.table.bmAppRef.getQualifiedColName() +"="+ BioModelSimContextLinkTable.table.id.getQualifiedColName()+
@@ -4644,19 +4644,20 @@ public static TestSuiteOPResults testSuiteOP(TestSuiteOP tsop,Connection con,Use
 				" FROM " +
 				TFTestSuiteTable.table.getTableName()+","+
 				TFTestCaseTable.table.getTableName()+","+
-				TFTestCriteriaTable.table.getTableName()+","+
+				TFTestCriteriaTable.table.getTableName()+
+						" LEFT JOIN "+TFTestResultTable.table.getTableName()+
+						" ON "+TFTestResultTable.table.testCriteriaRef.getQualifiedColName()+"="+ TFTestCriteriaTable.table.id.getQualifiedColName()+
+						      (qtcritxr_tsop.getVarName() != null?" AND "+TFTestResultTable.table.varName.getQualifiedColName()+"="+"'"+qtcritxr_tsop.getVarName()+"'":"")+","+
 				MathModelTable.table.getTableName()+","+
 				SimulationTable.table.getTableName() +","+
 				MathModelSimulationLinkTable.table.getTableName()+","+
-				TFTestCriteriaTable.table.getTableName()+" "+TCRALT+","+
-				" LEFT JOIN "+TFTestResultTable.table.getTableName()+
-						" ON "+TFTestResultTable.table.testCriteriaRef.getQualifiedColName()+"="+ TFTestCriteriaTable.table.id.getQualifiedColName()+
-				" LEFT JOIN "+TFTestSuiteTable.table.getTableName()+" "+TSALT+
-						" ON "+TSALT+"."+TFTestSuiteTable.table.id.getUnqualifiedColName()+"="+ TCALT+"."+TFTestCaseTable.table.testSuiteRef.getUnqualifiedColName()+
-				" LEFT JOIN "+TFTestCaseTable.table.getTableName()+" "+TCALT+
-						" ON "+TCALT+"."+TFTestCaseTable.table.mathModelRef.getUnqualifiedColName()+"="+ MMSIMALT+"."+MathModelSimulationLinkTable.table.mathModelRef.getUnqualifiedColName()+
+				TFTestCriteriaTable.table.getTableName()+" "+TCRALT+
 				" LEFT JOIN "+MathModelSimulationLinkTable.table.getTableName()+" "+MMSIMALT+
-						" ON "+TCRALT+"."+TFTestCriteriaTable.table.regressionMMSimRef.getUnqualifiedColName()+"="+ MMSIMALT+"."+MathModelSimulationLinkTable.table.id.getUnqualifiedColName()+
+				" ON "+TCRALT+"."+TFTestCriteriaTable.table.regressionMMSimRef.getUnqualifiedColName()+"="+ MMSIMALT+"."+MathModelSimulationLinkTable.table.id.getUnqualifiedColName()+
+				" LEFT JOIN "+TFTestCaseTable.table.getTableName()+" "+TCALT+
+				" ON "+TCALT+"."+TFTestCaseTable.table.mathModelRef.getUnqualifiedColName()+"="+ MMSIMALT+"."+MathModelSimulationLinkTable.table.mathModelRef.getUnqualifiedColName()+
+				" LEFT JOIN "+TFTestSuiteTable.table.getTableName()+" "+TSALT+
+				" ON "+TSALT+"."+TFTestSuiteTable.table.id.getUnqualifiedColName()+"="+ TCALT+"."+TFTestCaseTable.table.testSuiteRef.getUnqualifiedColName()+
 //				" LEFT JOIN "+TFTestCriteriaTable.table.getTableName()+" "+TCRALT2+
 //						" ON "+TCRALT2+"."+TFTestCriteriaTable.table.testCaseRef.getUnqualifiedColName()+"="+ TCALT+"."+TFTestCaseTable.table.id.getUnqualifiedColName()+
 //				","+SimulationTable.table.getTableName()+" "+SIM2+
@@ -4664,7 +4665,6 @@ public static TestSuiteOPResults testSuiteOP(TestSuiteOP tsop,Connection con,Use
 				TFTestSuiteTable.table.id.getQualifiedColName()+"="+ TFTestCaseTable.table.testSuiteRef.getQualifiedColName()+
 				" AND " +
 				TFTestCriteriaTable.table.testCaseRef.getQualifiedColName() +"="+ TFTestCaseTable.table.id.getQualifiedColName()+
-				(qtcritxr_tsop.getVarName() != null?" AND "+TFTestResultTable.table.varName.getQualifiedColName()+"="+"'"+qtcritxr_tsop.getVarName()+"'":"")+
 				" AND " +
 				TFTestCaseTable.table.mathModelRef.getQualifiedColName() +"="+ MathModelTable.table.id.getQualifiedColName()+
 				" AND " +
