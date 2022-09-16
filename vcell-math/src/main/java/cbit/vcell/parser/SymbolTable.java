@@ -16,5 +16,8 @@ public interface SymbolTable {
 
 public SymbolTableEntry getEntry(String identifierString); 
 public void getEntries(Map<String, SymbolTableEntry> entryMap);
+default boolean allowPartialBinding() {
+    return false;
+}
 
 }
