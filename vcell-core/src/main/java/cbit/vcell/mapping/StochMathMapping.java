@@ -104,7 +104,7 @@ private Expression getProbabilityRate(ReactionStep reactionStep, Expression rate
 	VCUnitDefinition reactionSubstanceUnit = model.getUnitSystem().getSubstanceUnit(reactionStep.getStructure());
 	VCUnitDefinition stochasticSubstanceUnit = model.getUnitSystem().getStochasticSubstanceUnit();
 	Expression reactionSubstanceUnitFactor = getUnitFactor(stochasticSubstanceUnit.divideBy(reactionSubstanceUnit));
-	Expression factorExpr = Expression.mult(reactionSubstanceUnitFactor, reactionStructureSize).flattenFactors("KMOLE");
+	Expression factorExpr = Expression.mult(reactionSubstanceUnitFactor, reactionStructureSize).simplifyJSCL();
 
 	// Using the MassActionFunction to write out the math description 
 	MassActionSolver.MassActionFunction maFunc = null;
@@ -150,7 +150,7 @@ private Expression getProbabilityRate(ReactionStep reactionStep, Expression rate
 		stoichiometry = reacPart.get(i).getStoichiometry();
 		//******the following part is to form the s*(s-1)(s-2)..(s-stoi+1).portion of the probability rate.
 		Expression speciesStructureSize = new Expression(reacPart.get(i).getStructure().getStructureSize(), getNameScope());
-		Expression speciesFactor = Expression.div(speciesUnitFactor, speciesStructureSize).flattenFactors("KMOLE");
+		Expression speciesFactor = Expression.div(speciesUnitFactor, speciesStructureSize).simplifyJSCL();
 		//s*(s-1)(s-2)..(s-stoi+1)
 		SpeciesCountParameter spCountParam = getSpeciesCountParameter(reacPart.get(i).getSpeciesContext());
 		Expression spCount_exp = new Expression(spCountParam, getNameScope());
@@ -758,7 +758,7 @@ private Expression getProbabilityRate(ReactionStep reactionStep, Expression rate
 					//create jump process for forward flux if it exists.
 					Expression rsStructureSize = new Expression(reactionStep.getStructure().getStructureSize(), getNameScope());
 					VCUnitDefinition probRateUnit = modelUnitSystem.getStochasticSubstanceUnit().divideBy(modelUnitSystem.getAreaUnit()).divideBy(modelUnitSystem.getTimeUnit());
-					Expression rsRateUnitFactor = getUnitFactor(probRateUnit.divideBy(modelUnitSystem.getFluxReactionUnit())).flattenFactors("KMOLE");
+					Expression rsRateUnitFactor = getUnitFactor(probRateUnit.divideBy(modelUnitSystem.getFluxReactionUnit())).simplifyJSCL();
 					if(fluxFunc.getForwardRate() != null && !fluxFunc.getForwardRate().isZero()) 
 					{
 											

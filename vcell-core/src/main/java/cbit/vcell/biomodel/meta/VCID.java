@@ -33,6 +33,8 @@ public class VCID {
 	public static final String CLASS_SPECIES_CONTEXT_SPEC = "SpeciesContextSpec";
 	public static final String CLASS_SPECIES_CONTEXT_SPEC_PARAMETER = "SpeciesContextSpecParameter";
 	public static final String CLASS_STRUCTURE_MAPPING_PARAMETER = "StructureMappingParameter";
+	public static final String CLASS_SIMULATION_CONTEXT_PARAMETER = "SimulationContextParameter";
+	public static final String CLASS_KINETICS_PARAMETER = "KineticsParameter";
 	public static final String CLASS_REACTION_SPEC = "ReactionSpec";
 
 
