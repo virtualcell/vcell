@@ -76,8 +76,13 @@ public class Standard {
     }
 
     void add(List list) {
+        long timeoutValue_ms = Expression.timeoutMS.get();
         Iterator it=list.iterator();
         while(it.hasNext()) {
+            long currentTime = System.currentTimeMillis();
+            if (timeoutValue_ms > 0 && currentTime > timeoutValue_ms) {
+                throw new Expression.ExpressionTimeoutException("timeout JSCL Standard.add()");
+            }
             Polynomial p=(Polynomial)it.next();
             if(p.signum()!=0) add(p);
         }
