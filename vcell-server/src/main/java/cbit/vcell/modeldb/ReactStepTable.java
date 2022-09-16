@@ -621,7 +621,12 @@ public String getSQLValueList(ReactionStep reactionStep, KeyValue modelKey, KeyV
 			buffer.append(DbDriver.INSERT_CLOB_HERE+","+"null"+",");
 		}
 	
-		buffer.append("NULL");
+		buffer.append("NULL,");
+		if(reactionStep.getSbmlName() != null && reactionStep.getSbmlName().length()>0){
+			buffer.append("'"+TokenMangler.getSQLEscapedString(reactionStep.getSbmlName())+"'");
+		}else {
+			buffer.append("NULL");
+		}
 		buffer.append(")");
 		
 		return buffer.toString();
