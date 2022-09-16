@@ -110,10 +110,11 @@
 			<artifactId>activemq-client</artifactId>
 			<version>5.15.9</version>
 		</dependency>
+		<!-- https://mvnrepository.com/artifact/org.apache.activemq/activemq-broker -->
 		<dependency>
 			<groupId>org.apache.activemq</groupId>
 			<artifactId>activemq-broker</artifactId>
-			<version>5.14.4</version>
+			<version>5.17.2</version>
 		</dependency>
 
 		<!-- https://mvnrepository.com/artifact/org.postgresql/postgresql -->
