@@ -861,7 +861,9 @@ void updateFromMathDescription() {
 				}
 				renamedMap.put(name, replacement);
 			}else{
-				logger.error("didn't find a replacement for math override symbol " + name);
+				if (!mathDescriptionHash.contains(name)) {
+					logger.error("didn't find a replacement for math override symbol " + name);
+				}
 			}
 		}
 	}
