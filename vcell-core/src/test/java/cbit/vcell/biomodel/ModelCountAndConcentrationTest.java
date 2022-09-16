@@ -48,7 +48,7 @@ public class ModelCountAndConcentrationTest {
         //
         Simulation expectedSim = expected_bioModel_stoch_init_count.getSimulation(0);
         Simulation sim = bioModel_stoch_init_concentration.getSimulation(0);
-        boolean overridesMatch = expectedSim.getMathOverrides().compareEquivalent(sim.getMathOverrides());
+        boolean overridesMatch = expectedSim.getMathOverrides().compareEqual(sim.getMathOverrides());
         Assert.assertTrue("expecting math overrides to be equivalent", overridesMatch);
     }
 
@@ -68,7 +68,7 @@ public class ModelCountAndConcentrationTest {
         //
         Simulation expectedSim = expected_bioModel_stoch_init_count.getSimulation(0);
         Simulation sim = bioModel_stoch_init_concentration.getSimulation(0);
-        boolean overridesMatch = expectedSim.getMathOverrides().compareEquivalent(sim.getMathOverrides());
+        boolean overridesMatch = expectedSim.getMathOverrides().compareEqual(sim.getMathOverrides());
         Assert.assertFalse("expecting math overrides to not be equivalent", overridesMatch);
     }
 
@@ -95,7 +95,7 @@ public class ModelCountAndConcentrationTest {
         //
         Simulation expectedSim = expected_bioModel_stoch_init_concentration.getSimulation(0);
         Simulation sim = bioModel_stoch_init_count.getSimulation(0);
-        boolean overridesMatch = expectedSim.getMathOverrides().compareEquivalent(sim.getMathOverrides());
+        boolean overridesMatch = expectedSim.getMathOverrides().compareEqual(sim.getMathOverrides());
         Assert.assertTrue("expecting math overrides to be equivalent", overridesMatch);
     }
 
