@@ -61,9 +61,9 @@ public User.SpecialUser getUserFromUserid(Connection con, String userid) throws 
 	if (lg.isTraceEnabled()) {
 		lg.trace("UserDbDriver.getUserFromUserid(userid=" + userid + ")");
 	}
-	sql = 	"SELECT DISTINCT " + UserTable.table.id.getQualifiedColName()+" userkey" + "," + SpecialUsersTable.table.special.getQualifiedColName() +" special" +
+	sql = 	"SELECT DISTINCT " + UserTable.table.id.getQualifiedColName()+" userkey" + "," + SpecialUsersTable.table.special.getQualifiedColName() +" as special" +
 			" FROM " + userTable.getTableName() +
-			" RIGHT JOIN " + SpecialUsersTable.table.getTableName() +
+			" LEFT JOIN " + SpecialUsersTable.table.getTableName() +
 			" ON " + SpecialUsersTable.table.userRef.getQualifiedColName()+"="+userTable.id.getQualifiedColName() +
 			" WHERE " + UserTable.table.userid + " = '" + userid + "'";
 			
