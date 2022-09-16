@@ -231,7 +231,6 @@ public class SimulationContext implements SimulationOwner, Versionable, Matchabl
 
 	public class SimulationContextOverridesResolver implements MathOverridesResolver {
 		private final List<SymbolReplacementTemplate> builtin_replacements = new ArrayList<>();
-		private final IdentifiableProvider bioIdentifiableProvider = new BioModel(null);
 
 		SimulationContextOverridesResolver() {
 			// test for renamed initial condition constant (changed from _init to _init_uM)
@@ -281,7 +280,7 @@ public class SimulationContext implements SimulationOwner, Versionable, Matchabl
 							VCUnitDefinition previousUnit = ste.getUnitDefinition();
 							if (ste instanceof Identifiable) {
 								Identifiable prevIdentifiableObject = (Identifiable) ste;
-								VCID previousVCID = bioIdentifiableProvider.getVCID(prevIdentifiableObject);
+								VCID previousVCID = bioModel.getVCID(prevIdentifiableObject);
 								Identifiable newIdentifiableObject = bioModel.getIdentifiableObject(previousVCID);
 								if (newIdentifiableObject instanceof SymbolTableEntry) {
 									SymbolTableEntry newBioSte = (SymbolTableEntry) newIdentifiableObject;
@@ -502,6 +501,7 @@ public class SimulationContext implements SimulationOwner, Versionable, Matchabl
 	public static final int NUM_ROLES		= 1;
 	public static final String RoleDesc = "user defined";
 
+	private transient SimulationContextOverridesResolver simulationContextOverridesResolver;
 	private Version version = null;
 	private GeometryContext geoContext = null;
 	private ReactionContext reactionContext = null;
@@ -1638,7 +1638,10 @@ public OutputFunctionContext getOutputFunctionContext() {
 
 	@Override
 	public MathOverridesResolver getMathOverridesResolver() {
-		return new SimulationContextOverridesResolver();
+		if (this.simulationContextOverridesResolver == null){
+			this.simulationContextOverridesResolver = new SimulationContextOverridesResolver();
+		}
+		return this.simulationContextOverridesResolver;
 	}
 
 	/**
