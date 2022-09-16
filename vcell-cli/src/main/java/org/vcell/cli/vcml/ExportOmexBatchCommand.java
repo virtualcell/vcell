@@ -42,6 +42,9 @@ public class ExportOmexBatchCommand implements Callable<Integer> {
     @Option(names = "--keepFlushingLogs")
     boolean bKeepFlushingLogs;
 
+    @Option(names = "--offline")
+    boolean bOffline=false;
+
     @Option(names = {"-h", "--help"}, description = "show this help message and exit", usageHelp = true)
     private boolean help;
 
@@ -58,7 +61,7 @@ public class ExportOmexBatchCommand implements Callable<Integer> {
                 VcmlOmexConverter.queryVCellDbPublishedModels(cliDatabaseService, outputFilePath, bForceLogFiles);
 
                 VcmlOmexConverter.convertFiles(cliDatabaseService, inputFilePath, outputFilePath,
-                        outputModelFormat, logManager, bHasDataOnly, bMakeLogsOnly, bNonSpatialOnly, bForceLogFiles, bValidateOmex);
+                        outputModelFormat, logManager, bHasDataOnly, bMakeLogsOnly, bNonSpatialOnly, bForceLogFiles, bValidateOmex, bOffline);
             } catch (IOException | SQLException | DataAccessException e) {
                 e.printStackTrace(System.err);
             }
