@@ -12,7 +12,11 @@ public class SEDMLLogger {
 			this.exception = exception;
 		}
 		public String getCSV() {
-			String excString = exception == null ? "null:null" : "\""+exception.getClass().getName()+"\":\""+exception.getMessage()+"\"";
+			String excString = "";
+			if (taskType != TaskType.BIOMODEL) {
+				excString = exception == null ? "noException"
+						: "\"" + exception.getClass().getName() + "\":\"" + exception.getMessage() + "\"";
+			}
 			return identifier+","+taskName+","+taskType+","+taskResult+","+excString;
 		}
 		public String toString() {

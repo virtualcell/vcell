@@ -16,8 +16,37 @@ import jscl.text.Parser;
 import jscl.util.ArrayUtils;
 
 public class Expression extends Generic {
+
+    /**
+     * timeoutMS is a thread-local variable which if set must be cleared or subsequent calls will fail.
+     * Usage:
+     *         try {
+     *             // initialize timeout thread variable to 100ms from now.
+     *             jscl.math.Expression.timeoutMS.set(System.currentTimeMillis() + 100);
+     *
+     *             // perform expensive JSCL operations (currently only factorize() enforces the timeout)
+     *             jscl.math.Expression exp = jscl.math.Expression.valueOf("a+b/(c+d)^4");
+     *             jscl.math.Generic simplerExp = exp.expand().simplify().factorize();
+     *
+     *         } finally {
+     *             // clear timeout thread variable (important!!)
+     *             jscl.math.Expression.timeoutMS.remove();
+     *         }
+     */
+    public final static ThreadLocal<Long> timeoutMS = ThreadLocal.withInitial(() -> 0L);
+
+    public static class ExpressionTimeoutException extends RuntimeException {
+        public ExpressionTimeoutException(String msg){
+            super(msg);
+        }
+        public ExpressionTimeoutException(String msg, Exception e){
+            super(msg, e);
+        }
+    }
+
     Literal literal[];
     JSCLInteger coef[];
+
     int size;
 
     Expression() {}

@@ -651,8 +651,8 @@ public class SEDMLImporter {
 									frExpMin.substituteInPlace(new Expression(varId), new Expression(vcmlName));
 									frExpMax.substituteInPlace(new Expression(varId), new Expression(vcmlName));
 								}
-								frExpMin = ExpressionUtils.simplifyUsingJSCL(frExpMin);
-								frExpMax = ExpressionUtils.simplifyUsingJSCL(frExpMax);								
+								frExpMin = frExpMin.simplifyJSCL();
+								frExpMax = frExpMax.simplifyJSCL();
 								String minValueExpStr = frExpMin.infix();
 								String maxValueExpStr = frExpMax.infix();
 								scanSpec = ConstantArraySpec.createIntervalSpec(constant, minValueExpStr, maxValueExpStr, ur.getNumberOfPoints(), ur.getType().equals(UniformType.LOG));
@@ -674,13 +674,13 @@ public class SEDMLImporter {
 									String vcmlName = resolveConstant(importedSC, convertedSC, sbmlID);
 									expFact.substituteInPlace(new Expression(varId), new Expression(vcmlName));
 								}
-								expFact = ExpressionUtils.simplifyUsingJSCL(expFact);
+								expFact = expFact.simplifyJSCL();
 								String[] values = new String[vr.getNumElements()];
 								for (int i = 0; i < values.length; i++) {
 									Expression expFinal = new Expression(expFact);
 									// Substitute Range values
 									expFinal.substituteInPlace(new Expression(vr.getId()), new Expression(vr.getElementAt(i)));
-									expFinal = ExpressionUtils.simplifyUsingJSCL(expFinal);
+									expFinal = expFinal.simplifyJSCL();
 									values[i] = expFinal.infix();
 								}
 								scanSpec = ConstantArraySpec.createListSpec(constant, values);
@@ -702,6 +702,8 @@ public class SEDMLImporter {
 					}
 				}
 				createOverrides(simulation, functions);
+				// we didn't bomb out, so update the simulation
+				simulation.setImportedTaskID(selectedTask.getId());
 			}
 		}
 	}

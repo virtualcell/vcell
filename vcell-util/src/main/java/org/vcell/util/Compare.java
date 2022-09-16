@@ -386,12 +386,15 @@ public static boolean isEqualOrNull(List<? extends Matchable> v1, List<? extends
 	return isEqual(v1,v2);
 }
 
-/**
- * @return boolean
- * @param v1 java.util.AbstractList
- * @param v2 java.util.AbstractList
- */
-public static boolean isEqual(List<? extends Matchable> v1, List<? extends Matchable> v2) {
+
+	public static boolean isEqual(List<? extends Matchable> v1, List<? extends Matchable> v2) {
+		BiPredicate<Matchable,Matchable> predicate = (vv1, vv2) -> vv1.compareEqual(vv2);
+		return isEqual(v1, v2, predicate);
+	}
+
+
+
+public static boolean isEqual(List<? extends Matchable> v1, List<? extends Matchable> v2, BiPredicate<Matchable,Matchable> predicate) {
 	if (v1==null || v2==null){
 		throw new RuntimeException("Compare.isEqual(AbstractList,AbstractList) received null argument(s)");
 	}
@@ -409,7 +412,7 @@ public static boolean isEqual(List<? extends Matchable> v1, List<? extends Match
 	for (ii=0;ii<arrayLen;ii++){
 		Matchable c1 = v1.get(ii);
 		Matchable c2 = v2.get(ii);
-		if (!c2.compareEqual(c1)){
+		if (!predicate.test(c2,c1)){
 			bSame = false;
 			break;
 		}
@@ -426,7 +429,7 @@ public static boolean isEqual(List<? extends Matchable> v1, List<? extends Match
 		boolean bFound = false;
 		for (int j=ii;j<arrayLen;j++){
 			Matchable c2 = v2.get(j);
-			if (c2.compareEqual(c1)){
+			if (predicate.test(c2,c1)){
 				bFound = true;
 				break;
 			}
@@ -443,7 +446,7 @@ public static boolean isEqual(List<? extends Matchable> v1, List<? extends Match
 		boolean bFound = false;
 		for (int j=ii;j<arrayLen;j++){
 			Matchable c1 = v1.get(j);
-			if (c1.compareEqual(c2)){
+			if (predicate.test(c1,c2)){
 				bFound = true;
 				break;
 			}

@@ -64,7 +64,7 @@ public abstract class AbstractStochMathMapping extends AbstractMathMapping {
 	 * 		If argument 'speciesContext' is on a membrane, particlesExpr = concExpr * size_of_Mem. If 'speciesContext' is in 
 	 * 		feature, particlesExpr = (concExpr * size_of_Feature)/KMOLE.
 	 * @param concExpr
-	 * @param speciesContext
+	 * @param structure
 	 * @return
 	 * @throws MappingException
 	 * @throws ExpressionException
@@ -75,7 +75,7 @@ public abstract class AbstractStochMathMapping extends AbstractMathMapping {
 				ModelUnitSystem unitSystem = getSimulationContext().getModel().getUnitSystem();
 				VCUnitDefinition substanceUnit = unitSystem.getSubstanceUnit(structure);
 				Expression unitFactor = getUnitFactor(unitSystem.getStochasticSubstanceUnit().divideBy(substanceUnit));
-				Expression particlesExpr = Expression.mult(unitFactor, exp).flattenFactors("KMOLE");
+				Expression particlesExpr = Expression.mult(unitFactor, exp).simplifyJSCL();
 				return particlesExpr;
 			}
 
@@ -84,7 +84,7 @@ public abstract class AbstractStochMathMapping extends AbstractMathMapping {
 	 * 		If argument 'speciesContext' is on a membrane, concExpr = particlesExpr/size_of_Mem. If 'speciesContext' is in 
 	 * 		feature, concExpr = (particlesExpr/size_of_Feature)*KMOLE.
 	 * @param particlesExpr
-	 * @param speciesContext
+	 * @param structure
 	 * @return
 	 * @throws MappingException
 	 * @throws ExpressionException
@@ -95,7 +95,7 @@ public abstract class AbstractStochMathMapping extends AbstractMathMapping {
 				VCUnitDefinition substanceUnit = unitSystem.getSubstanceUnit(structure);
 				Expression unitFactor = getUnitFactor(substanceUnit.divideBy(unitSystem.getStochasticSubstanceUnit()));
 				Expression scStructureSize = new Expression(structure.getStructureSize(), getNameScope());
-				Expression concentrationExpr = Expression.mult(unitFactor, particlesExpr, Expression.invert(scStructureSize)).flattenFactors("KMOLE");
+				Expression concentrationExpr = Expression.mult(unitFactor, particlesExpr, Expression.invert(scStructureSize)).simplifyJSCL();
 				return concentrationExpr;
 			}
 
