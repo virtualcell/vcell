@@ -335,6 +335,8 @@ public Expression flattenSafe() throws ExpressionException {
 			public SymbolTableEntry getEntry(String identifierString) { return bindings.get(identifierString); }
 			@Override
 			public void getEntries(Map<String, SymbolTableEntry> entryMap) { throw new RuntimeException("not implemented");}
+			@Override
+			public boolean allowPartialBinding() {return true;}
 		};
 		return symbolTable;
 	}
