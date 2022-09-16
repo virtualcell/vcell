@@ -16,6 +16,8 @@ import cbit.vcell.solver.stoch.HybridSolver;
 import cbit.vcell.solvers.AbstractCompiledSolver;
 import cbit.vcell.xml.ExternalDocInfo;
 import cbit.vcell.xml.XmlHelper;
+
+import org.jlibsedml.AbstractTask;
 import org.jlibsedml.SedML;
 import org.jlibsedml.Task;
 import org.jlibsedml.UniformTimeCourse;
@@ -29,6 +31,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.*;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -88,14 +91,32 @@ public class SolverHandler {
         	countBioModels = bioModelList.size();
         }
         
+        // -----------------------------------------------------------------------------------------------
         // make some maps
-        Map<Simulation, String> vcellSimToImportedTaskId = new LinkedHashMap<> ();	// key = vcell simulation, value = sedml task id (task reference)
+        Map<Simulation, AbstractTask> vcellSimToSedmlTask = new LinkedHashMap<> ();	// key = vcell simulation, value = sedml task (task reference)
+        Map<AbstractTask, ArrayList<AbstractTask>> taskToListOfSubtasks = new LinkedHashMap<> ();	// key = topmost task, value = recursive list of subtasks
         // use sedml.getTaskWithId(importedTaskId) to recover the task from the sedml, given the task id
+        for(BioModel bioModel : bioModelList) {
+        	sims = bioModel.getSimulations();
+        	for(Simulation sim : sims) {
+               	if(sim.getImportedTaskID() == null) {
+            		continue;
+            	}
+               	String importedTaskId = sim.getImportedTaskID();
+               	AbstractTask at = sedml.getTaskWithId(importedTaskId);
+            	SimulationOwner so = sim.getSimulationOwner();
+            	sim = new TempSimulation(sim, false);
+            	sim.setSimulationOwner(so);
+               	vcellSimToSedmlTask.put(sim, at);
+        	}
+        }
+        
         
         Map<String, Task> terminalTasks = new LinkedHashMap<> ();		// tasks that are not referenced by any other task (they are not in any list of subtasks)
         Map<String, Task> subTasks = new LinkedHashMap<> ();			// tasks that are referred by other tasks as subtasks
 
         // more maps output to data generator
+        
         // data generator to task
         
         int simulationCount = 0;
