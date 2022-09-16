@@ -694,4 +694,13 @@ public class VcmlOmexConverter {
 		}
 	}
 
+	public static void importOmexFiles(File inputDirectory, File outputDirectory, CLILocalLogFileManager logManager) {
+		// TODO: needs implementation
+		throw new RuntimeException("not yet implemented");
+	}
+
+	public static void importOneOmexFile(File inputFile, File outputDirectory) {
+		// TODO: needs implementation
+		throw new RuntimeException("not yet implemented");
+	}
 }
