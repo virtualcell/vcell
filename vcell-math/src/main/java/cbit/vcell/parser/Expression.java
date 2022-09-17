@@ -290,7 +290,7 @@ public Expression flattenSafe() throws ExpressionException {
 }
 
 	public Expression simplifyJSCL() throws ExpressionException {
-		return simplifyJSCL(40, false);
+		return simplifyJSCL(100, false);
 	}
 
 	public Expression simplifyJSCL(int maxExecutionTime_ms, boolean bFailOnTimeout) throws ExpressionException, jscl.math.Expression.ExpressionTimeoutException {
@@ -299,7 +299,12 @@ public Expression flattenSafe() throws ExpressionException {
 			return flatten();
 		}
 		try {
-			return simplifyUsingJSCL(this, maxExecutionTime_ms);
+			Expression simplified = new Expression(this);
+			SymbolTable tempExpressionSymbolTable = this.createSymbolTableFromBinding();
+			simplified.bindExpression(null);
+			simplified = simplifyUsingJSCL(simplified, maxExecutionTime_ms);
+			simplified.bindExpression(tempExpressionSymbolTable);
+			return simplified;
 		}catch (ExpressionException e){
 			logger.info("failed to simplify using JSCL, reverting to flatten(): "+e.getMessage());
 			return flattenSafe();
@@ -369,18 +374,7 @@ public Expression flattenSafe() throws ExpressionException {
 			for (int i = 0; jsclSymbols != null && i < jsclSymbols.length; i++) {
 				String restoredSymbol = cbit.vcell.parser.SymbolUtils.getRestoredStringJSCL(jsclSymbols[i]);
 				if (!restoredSymbol.equals(jsclSymbols[i])) {
-
-					//
-					// reverse symbol name mangling and restore the previous symbol bindings
-					//
-					SymbolTableEntry ste = exp.getSymbolBinding(restoredSymbol);
-					final Expression replacementExpression;
-					if (ste != null){
-						replacementExpression = new Expression(ste, ste.getNameScope());
-					}else{
-						replacementExpression = new Expression(restoredSymbol);
-					}
-					solution.substituteInPlace(new cbit.vcell.parser.Expression(jsclSymbols[i]), replacementExpression);
+					solution.substituteInPlace(new cbit.vcell.parser.Expression(jsclSymbols[i]), new Expression(restoredSymbol));
 				}
 			}
 			if (logger.isTraceEnabled()) {
