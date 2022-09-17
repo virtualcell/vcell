@@ -290,7 +290,7 @@ public Expression flattenSafe() throws ExpressionException {
 }
 
 	public Expression simplifyJSCL() throws ExpressionException {
-		return simplifyJSCL(40, false);
+		return simplifyJSCL(100, false);
 	}
 
 	public Expression simplifyJSCL(int maxExecutionTime_ms, boolean bFailOnTimeout) throws ExpressionException, jscl.math.Expression.ExpressionTimeoutException {
