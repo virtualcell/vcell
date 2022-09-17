@@ -203,13 +203,13 @@ public class ExpressionFlattenTest {
 
     @Test
     public void testSimplifyJSCL() throws ExpressionException {
-        Expression simplifiedUnboundExp = origExpression.simplifyJSCL();
+        Expression simplifiedUnboundExp = origExpression.simplifyJSCL(1000, true);
         Assert.assertTrue("didn't compare equal for unbound, expected='"+expectedSimplifiedExpression.infix()+"', actual='"+simplifiedUnboundExp.infix()+"'",
                 expectedSimplifiedExpression.compareEqual(simplifiedUnboundExp));
 
         // simplifyJSCL works the same (is safe) for bound or unbound expressions
         Expression boundOrigExpression = getBoundExpression(origExpression);
-        Expression simplifiedBoundExp = boundOrigExpression.simplifyJSCL();
+        Expression simplifiedBoundExp = boundOrigExpression.simplifyJSCL(1000, true);
         Assert.assertTrue("didn't compare equal for bound, expected='"+expectedSimplifiedExpression.infix()+"', actual='"+simplifiedBoundExp.infix()+"'",
                 expectedSimplifiedExpression.compareEqual(simplifiedBoundExp));
     }

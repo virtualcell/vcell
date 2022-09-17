@@ -125,7 +125,7 @@ public class MathMLTester {
 	public void testJSCLSimplifyInfix() {
 		Expression expSimplified = null;
 		try {
-			expSimplified = expression.simplifyJSCL();
+			expSimplified = expression.simplifyJSCL(1000, true);
 		} catch (ExpressionException e) {
 			String msg = "failed to simplify '"+expression.infix()+"': "+e.getMessage();
 			Assert.fail(msg);

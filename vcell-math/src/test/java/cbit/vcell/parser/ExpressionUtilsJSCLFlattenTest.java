@@ -120,7 +120,7 @@ public class ExpressionUtilsJSCLFlattenTest {
     @Test
     public void simplifySymbolFactorTest_small() throws ExpressionException {
         try {
-            Expression flattenedExp = origExpression.simplifyJSCL(50, true);
+            Expression flattenedExp = origExpression.simplifyJSCL(1000, true);
             Assert.assertTrue("expected='" + expectedFlattenedExpression.infix() + "', actual='" + flattenedExp.infix() + "'",
                     expectedFlattenedExpression.compareEqual(flattenedExp));
             Assert.assertTrue("expressions not equivalent: expected='" + expectedFlattenedExpression.infix() + "', actual='" + flattenedExp.infix() + "'",
