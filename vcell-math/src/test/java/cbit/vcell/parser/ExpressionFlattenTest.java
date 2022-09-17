@@ -97,16 +97,6 @@ public class ExpressionFlattenTest {
                                 "- (6.0 * (k_PIP2 ^ 2) * m * ((100.0 * (KMOLE ^ (-1))) * pT)) + ((k_PIP2 ^ 2) " +
                                 "* (((100.0 * (KMOLE ^ (-1))) * pT) ^ 2)) + (6.0 * k_PIP2 * m) " +
                                 "+ (2 * k_PIP2 * ((100.0 * (KMOLE ^ (-1))) * pT)) + 1))) + (5.0 / 2))))))))"),
-//                        new Expression("((kon_m * M) - (koff_m * m / (1.0 - (0.5 * (1.0 + (3.0 * k_PIP2 * m) " +
-//                                "- (60221.41789999999 * k_PIP2 * pT) - sqrt((1.0 + (9.0 * (k_PIP2 ^ 2.0) * (m ^ 2.0)) " +
-//                                "- (361328.50739999994 * (k_PIP2 ^ 2.0) * m * pT) + ((k_PIP2 ^ 2.0) * ((60221.41789999999 * pT) ^ 2.0)) " +
-//                                "+ (6.0 * k_PIP2 * m) + (120442.83579999999 * k_PIP2 * pT)))) * (3.0 - (0.5 * (1.0 + (3.0 * k_PIP2 * m) " +
-//                                "- (60221.41789999999 * k_PIP2 * pT) - sqrt((1.0 + (9.0 * (k_PIP2 ^ 2.0) * (m ^ 2.0)) " +
-//                                "- (361328.50739999994 * (k_PIP2 ^ 2.0) * m * pT) + ((k_PIP2 ^ 2.0) * ((60221.41789999999 * pT) ^ 2.0)) " +
-//                                "+ (6.0 * k_PIP2 * m) + (120442.83579999999 * k_PIP2 * pT)))) * (2.5 - (1.5 * k_PIP2 * m) " +
-//                                "+ (30110.708949999997 * k_PIP2 * pT) + (0.5 * sqrt((1.0 + (9.0 * (k_PIP2 ^ 2.0) * (m ^ 2.0)) " +
-//                                "- (361328.50739999994 * (k_PIP2 ^ 2.0) * m * pT) + ((k_PIP2 ^ 2.0) * ((60221.41789999999 * pT) ^ 2.0)) " +
-//                                "+ (6.0 * k_PIP2 * m) + (120442.83579999999 * k_PIP2 * pT)))))))))))"),
                         new Expression("((kon_m * M) - ((koff_m * m) / (1.0 - ((1.0 / 2.0 * ((3.0 * k_PIP2 * m) " +
                                 "- (k_PIP2 * ((100.0 * (0.001660538783162726 ^  - 1.0)) * pT)) - sqrt(((9.0 * (k_PIP2 ^ 2.0) * (m ^ 2.0)) " +
                                 "- (6.0 * (k_PIP2 ^ 2.0) * m * ((100.0 * (0.001660538783162726 ^  - 1.0)) * pT)) " +
@@ -203,13 +193,13 @@ public class ExpressionFlattenTest {
 
     @Test
     public void testSimplifyJSCL() throws ExpressionException {
-        Expression simplifiedUnboundExp = origExpression.simplifyJSCL(1000, true);
+        Expression simplifiedUnboundExp = origExpression.simplifyJSCL(20000, false);
         Assert.assertTrue("didn't compare equal for unbound, expected='"+expectedSimplifiedExpression.infix()+"', actual='"+simplifiedUnboundExp.infix()+"'",
                 expectedSimplifiedExpression.compareEqual(simplifiedUnboundExp));
 
         // simplifyJSCL works the same (is safe) for bound or unbound expressions
         Expression boundOrigExpression = getBoundExpression(origExpression);
-        Expression simplifiedBoundExp = boundOrigExpression.simplifyJSCL(1000, true);
+        Expression simplifiedBoundExp = boundOrigExpression.simplifyJSCL(20000, false);
         Assert.assertTrue("didn't compare equal for bound, expected='"+expectedSimplifiedExpression.infix()+"', actual='"+simplifiedBoundExp.infix()+"'",
                 expectedSimplifiedExpression.compareEqual(simplifiedBoundExp));
     }
