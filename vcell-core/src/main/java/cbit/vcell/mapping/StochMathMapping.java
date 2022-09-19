@@ -499,7 +499,7 @@ private Expression getProbabilityRate(ReactionStep reactionStep, Expression rate
 			StructureMapping sm = simContext.getGeometryContext().getStructureMapping(speciesContextSpecs[i].getSpeciesContext().getStructure());
 			String varName = getMathSymbol(spCountParam, sm.getGeometryClass()); 
 
-			StochVolVariable var = (StochVolVariable)mathDesc.getVariable(varName);
+			StochVolVariable var = (StochVolVariable)varHash.getVariable(varName);
 			SpeciesContextSpec.SpeciesContextSpecParameter initParm = scSpecs[i].getInitialCountParameter();//stochastic use initial number of particles
 			//stochastic variables initial expression.
 			if (initParm!=null)
