@@ -107,7 +107,7 @@ public class XmlRdfUtil {
    			ret += "\n\n";
    			ret += PubMet.EndRdf;
 
-   			System.out.println(ret);
+   			//System.out.println(ret);
    		} catch (RDFHandlerException e) {
 			logger.error("failed to create metadata");
 		}

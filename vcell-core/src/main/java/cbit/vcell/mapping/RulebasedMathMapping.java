@@ -393,11 +393,6 @@ protected RulebasedMathMapping(SimulationContext simContext, MathMappingCallback
 		}
 
 		//
-		// set Variables to MathDescription all at once with the order resolved by "VariableHash"
-		//
-		mathDesc.setAllVariables(varHash.getAlphabeticallyOrderedVariables());
-		
-		//
 		// set up particle initial conditions in subdomain
 		//
 		for (SpeciesContext sc : model.getSpeciesContexts()){
@@ -422,22 +417,29 @@ protected RulebasedMathMapping(SimulationContext simContext, MathMappingCallback
 		for (int i = 0; i < fieldMathMappingParameters.length; i++){
 			if (fieldMathMappingParameters[i] instanceof UnitFactorParameter){
 				Variable variable = newFunctionOrConstant(getMathSymbol(fieldMathMappingParameters[i],geometryClass),getIdentifierSubstitutions(fieldMathMappingParameters[i].getExpression(),fieldMathMappingParameters[i].getUnitDefinition(),geometryClass),fieldMathMappingParameters[i].getGeometryClass());
-				if (mathDesc.getVariable(variable.getName())==null){
-					mathDesc.addVariable(variable);
+				if (varHash.getVariable(variable.getName())==null){
+					varHash.addVariable(variable);
 				}
 			}
 			if (fieldMathMappingParameters[i] instanceof ObservableConcentrationParameter){
 				Variable variable = newFunctionOrConstant(getMathSymbol(fieldMathMappingParameters[i],geometryClass),getIdentifierSubstitutions(fieldMathMappingParameters[i].getExpression(),fieldMathMappingParameters[i].getUnitDefinition(),geometryClass),fieldMathMappingParameters[i].getGeometryClass());
-				if (mathDesc.getVariable(variable.getName())==null){
-					mathDesc.addVariable(variable);
+				if (varHash.getVariable(variable.getName())==null){
+					varHash.addVariable(variable);
 				}
 			}
 		}
 
+		//
+		// set Variables to MathDescription all at once with the order resolved by "VariableHash"
+		//
+		mathDesc.setAllVariables(varHash.getAlphabeticallyOrderedVariables());
+
 		mathDesc.refreshDependencies();
 
 		if (!mathDesc.isValid()){
-			System.out.println(mathDesc.getVCML_database());
+			if (lg.isTraceEnabled()) {
+				lg.trace(mathDesc.getVCML_database());
+			}
 			throw new MappingException("generated an invalid mathDescription: "+mathDesc.getWarning());
 		}
 	}

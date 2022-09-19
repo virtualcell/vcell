@@ -490,7 +490,7 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 	while (enum1.hasMoreElements()){
 		SpeciesContextMapping scm = enum1.nextElement();
 		if (scm.getVariable() instanceof VolVariable){
-			if (!(mathDesc.getVariable(scm.getVariable().getName()) instanceof VolVariable)){
+			if (!(varHash.getVariable(scm.getVariable().getName()) instanceof VolVariable)){
 				varHash.addVariable(scm.getVariable());
 			}
 		}
@@ -707,7 +707,7 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 							// spatially resolved membrane, and must solve for potential .... 
 							//   make single MembraneRegionVariable for all resolved potentials
 							//
-							if (mathDesc.getVariable(Membrane.MEMBRANE_VOLTAGE_REGION_NAME)==null){
+							if (varHash.getVariable(Membrane.MEMBRANE_VOLTAGE_REGION_NAME)==null){
 								//varHash.addVariable(new MembraneRegionVariable(MembraneVoltage.MEMBRANE_VOLTAGE_REGION_NAME));
 								varHash.addVariable(new MembraneRegionVariable(getMathSymbol(membraneVoltage,geometryClass),domain));
 							}
@@ -1441,11 +1441,6 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 	}
 
 	//
-	// set Variables to MathDescription all at once with the order resolved by "VariableHash"
-	//
-	mathDesc.setAllVariables(varHash.getAlphabeticallyOrderedVariables());
-	
-	//
 	// geometry
 	//
 	if (simContext.getGeometryContext().getGeometry() != null){
@@ -1674,7 +1669,7 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 				if ((membraneMapping.getGeometryClass() instanceof SubVolume) && membraneMapping.getCalculateVoltage()){
 					MembraneElectricalDevice capacitiveDevice = potentialMapping.getCapacitiveDevice(membrane);
 					if (capacitiveDevice.getDependentVoltageExpression()==null){
-						VolVariable vVar = (VolVariable)mathDesc.getVariable(getMathSymbol(capacitiveDevice.getVoltageSymbol(),membraneMapping.getGeometryClass()));
+						VolVariable vVar = (VolVariable)varHash.getVariable(getMathSymbol(capacitiveDevice.getVoltageSymbol(),membraneMapping.getGeometryClass()));
 						Expression initExp = new Expression(getMathSymbol(capacitiveDevice.getMembraneMapping().getInitialVoltageParameter(),membraneMapping.getGeometryClass()));
 						subDomain.addEquation(new OdeEquation(vVar,initExp,getIdentifierSubstitutions(potentialMapping.getOdeRHS(capacitiveDevice,this), membrane.getMembraneVoltage().getUnitDefinition().divideBy(timeUnit),membraneMapping.getGeometryClass())));
 					}else{
@@ -1911,8 +1906,8 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 					if (numCapacitiveDevices!=1){
 						throw new MappingException("expecting 1 capacitive electrical device on graph edge for membrane "+membrane.getName()+", found '"+numCapacitiveDevices+"'");
 					}
-					if (mathDesc.getVariable(getMathSymbol(capacitiveDevice.getVoltageSymbol(),membraneMapping.getGeometryClass())) instanceof MembraneRegionVariable){
-						MembraneRegionVariable vVar = (MembraneRegionVariable)mathDesc.getVariable(getMathSymbol(capacitiveDevice.getVoltageSymbol(),membraneMapping.getGeometryClass()));
+					if (varHash.getVariable(getMathSymbol(capacitiveDevice.getVoltageSymbol(),membraneMapping.getGeometryClass())) instanceof MembraneRegionVariable){
+						MembraneRegionVariable vVar = (MembraneRegionVariable)varHash.getVariable(getMathSymbol(capacitiveDevice.getVoltageSymbol(),membraneMapping.getGeometryClass()));
 						Parameter initialVoltageParm = capacitiveDevice.getMembraneMapping().getInitialVoltageParameter();
 						Expression initExp = getIdentifierSubstitutions(initialVoltageParm.getExpression(),initialVoltageParm.getUnitDefinition(),capacitiveDevice.getMembraneMapping().getGeometryClass());
 						MembraneRegionEquation vEquation = new MembraneRegionEquation(vVar,initExp);
@@ -2063,16 +2058,23 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 		if (fieldMathMappingParameters[i] instanceof UnitFactorParameter){
 			GeometryClass geometryClass = fieldMathMappingParameters[i].getGeometryClass();
 			Variable variable = newFunctionOrConstant(getMathSymbol(fieldMathMappingParameters[i],geometryClass),getIdentifierSubstitutions(fieldMathMappingParameters[i].getExpression(),fieldMathMappingParameters[i].getUnitDefinition(),geometryClass),fieldMathMappingParameters[i].getGeometryClass());
-			if (mathDesc.getVariable(variable.getName())==null){
-				mathDesc.addVariable(variable);
+			if (varHash.getVariable(variable.getName())==null){
+				varHash.addVariable(variable);
 			}
 		}
 	}
 
+	//
+	// set Variables to MathDescription all at once with the order resolved by "VariableHash"
+	//
+	mathDesc.setAllVariables(varHash.getAlphabeticallyOrderedVariables());
+
 	mathDesc.refreshDependencies();
 
 	if (!mathDesc.isValid()){
-		System.out.println(mathDesc.getVCML_database());
+		if (lg.isTraceEnabled()) {
+			lg.trace(mathDesc.getVCML_database());
+		}
 		throw new MappingException("generated an invalid mathDescription: "+mathDesc.getWarning());
 	}
 

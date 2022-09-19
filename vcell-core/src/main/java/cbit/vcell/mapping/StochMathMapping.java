@@ -490,11 +490,6 @@ private Expression getProbabilityRate(ReactionStep reactionStep, Expression rate
 		}
 
 		//
-		// set Variables to MathDescription all at once with the order resolved by "VariableHash"
-		//
-		mathDesc.setAllVariables(varHash.getAlphabeticallyOrderedVariables());
-		
-		//
 		// set up variable initial conditions in subDomain
 		//
 		SpeciesContextSpec scSpecs[] = simContext.getReactionContext().getSpeciesContextSpecs();
@@ -504,7 +499,7 @@ private Expression getProbabilityRate(ReactionStep reactionStep, Expression rate
 			StructureMapping sm = simContext.getGeometryContext().getStructureMapping(speciesContextSpecs[i].getSpeciesContext().getStructure());
 			String varName = getMathSymbol(spCountParam, sm.getGeometryClass()); 
 
-			StochVolVariable var = (StochVolVariable)mathDesc.getVariable(varName);
+			StochVolVariable var = (StochVolVariable)varHash.getVariable(varName);
 			SpeciesContextSpec.SpeciesContextSpecParameter initParm = scSpecs[i].getInitialCountParameter();//stochastic use initial number of particles
 			//stochastic variables initial expression.
 			if (initParm!=null)
@@ -529,22 +524,29 @@ private Expression getProbabilityRate(ReactionStep reactionStep, Expression rate
 		for (int i = 0; i < fieldMathMappingParameters.length; i++){
 			if (fieldMathMappingParameters[i] instanceof UnitFactorParameter){
 				Variable variable = newFunctionOrConstant(getMathSymbol(fieldMathMappingParameters[i],geometryClass),getIdentifierSubstitutions(fieldMathMappingParameters[i].getExpression(),fieldMathMappingParameters[i].getUnitDefinition(),geometryClass),fieldMathMappingParameters[i].getGeometryClass());
-				if (mathDesc.getVariable(variable.getName())==null){
-					mathDesc.addVariable(variable);
+				if (varHash.getVariable(variable.getName())==null){
+					varHash.addVariable(variable);
 				}
 			}
 			if (fieldMathMappingParameters[i] instanceof ObservableCountParameter){
 				Variable variable = newFunctionOrConstant(getMathSymbol(fieldMathMappingParameters[i],geometryClass),getIdentifierSubstitutions(fieldMathMappingParameters[i].getExpression(),fieldMathMappingParameters[i].getUnitDefinition(),geometryClass),fieldMathMappingParameters[i].getGeometryClass());
-				if (mathDesc.getVariable(variable.getName())==null){
-					mathDesc.addVariable(variable);
+				if (varHash.getVariable(variable.getName())==null){
+					varHash.addVariable(variable);
 				}
 			}
 		}
 
+		//
+		// set Variables to MathDescription all at once with the order resolved by "VariableHash"
+		//
+		mathDesc.setAllVariables(varHash.getAlphabeticallyOrderedVariables());
+
 		mathDesc.refreshDependencies();
 
 		if (!mathDesc.isValid()){
-			lg.error(mathDesc.getVCML_database());
+			if (lg.isTraceEnabled()) {
+				lg.trace(mathDesc.getVCML_database());
+			}
 			throw new MappingException("generated an invalid mathDescription: "+mathDesc.getWarning());
 		}
 	}
