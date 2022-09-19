@@ -973,15 +973,17 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 	mathDesc.refreshDependencies();
 
 	if (!mathDesc.isValid()){
-		lg.warn(mathDesc.getVCML_database());
+		if (lg.isTraceEnabled()) {
+			lg.trace(mathDesc.getVCML_database());
+		}
 		throw new MappingException("generated an invalid mathDescription: "+mathDesc.getWarning());
 	}
 
-	if (lg.isDebugEnabled()) {
-		System.out.println("]]]]]]]]]]]]]]]]]]]]]] VCML string begin ]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]");
-		System.out.println(mathDesc.getVCML());
-		System.out.println("]]]]]]]]]]]]]]]]]]]]]] VCML string end ]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]");
-	}
+//	if (lg.isTraceEnabled()) {
+//		System.out.println("]]]]]]]]]]]]]]]]]]]]]] VCML string begin ]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]");
+//		System.out.println(mathDesc.getVCML());
+//		System.out.println("]]]]]]]]]]]]]]]]]]]]]] VCML string end ]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]");
+//	}
 }
 
 /**
@@ -1299,13 +1301,15 @@ private void combineHybrid() throws MappingException, ExpressionException, Matri
 	mathDesc.refreshDependencies();
 
 	if (!mathDesc.isValid()){
-		System.out.println(mathDesc.getVCML_database());
+		if (lg.isTraceEnabled()) {
+			lg.trace(mathDesc.getVCML_database());
+		}
 		throw new MappingException("generated an invalid mathDescription: "+mathDesc.getWarning());
 	}
 
-	System.out.println("]]]]]]]]]]]]]]]]]]]]]] VCML string begin ]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]");
-	System.out.println(mathDesc.getVCML());
-	System.out.println("]]]]]]]]]]]]]]]]]]]]]] VCML string end ]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]");
+//	System.out.println("]]]]]]]]]]]]]]]]]]]]]] VCML string begin ]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]");
+//	System.out.println(mathDesc.getVCML());
+//	System.out.println("]]]]]]]]]]]]]]]]]]]]]] VCML string end ]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]");
 
 }
 

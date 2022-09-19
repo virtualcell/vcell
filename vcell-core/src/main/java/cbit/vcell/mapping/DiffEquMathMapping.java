@@ -2072,7 +2072,9 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 	mathDesc.refreshDependencies();
 
 	if (!mathDesc.isValid()){
-		System.out.println(mathDesc.getVCML_database());
+		if (lg.isTraceEnabled()) {
+			lg.trace(mathDesc.getVCML_database());
+		}
 		throw new MappingException("generated an invalid mathDescription: "+mathDesc.getWarning());
 	}
 

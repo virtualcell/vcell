@@ -544,7 +544,9 @@ private Expression getProbabilityRate(ReactionStep reactionStep, Expression rate
 		mathDesc.refreshDependencies();
 
 		if (!mathDesc.isValid()){
-			lg.error(mathDesc.getVCML_database());
+			if (lg.isTraceEnabled()) {
+				lg.trace(mathDesc.getVCML_database());
+			}
 			throw new MappingException("generated an invalid mathDescription: "+mathDesc.getWarning());
 		}
 	}
