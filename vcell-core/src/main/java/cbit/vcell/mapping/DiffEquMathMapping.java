@@ -1441,11 +1441,6 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 	}
 
 	//
-	// set Variables to MathDescription all at once with the order resolved by "VariableHash"
-	//
-	mathDesc.setAllVariables(varHash.getAlphabeticallyOrderedVariables());
-	
-	//
 	// geometry
 	//
 	if (simContext.getGeometryContext().getGeometry() != null){
@@ -2063,11 +2058,16 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 		if (fieldMathMappingParameters[i] instanceof UnitFactorParameter){
 			GeometryClass geometryClass = fieldMathMappingParameters[i].getGeometryClass();
 			Variable variable = newFunctionOrConstant(getMathSymbol(fieldMathMappingParameters[i],geometryClass),getIdentifierSubstitutions(fieldMathMappingParameters[i].getExpression(),fieldMathMappingParameters[i].getUnitDefinition(),geometryClass),fieldMathMappingParameters[i].getGeometryClass());
-			if (mathDesc.getVariable(variable.getName())==null){
-				mathDesc.addVariable(variable);
+			if (varHash.getVariable(variable.getName())==null){
+				varHash.addVariable(variable);
 			}
 		}
 	}
+
+	//
+	// set Variables to MathDescription all at once with the order resolved by "VariableHash"
+	//
+	mathDesc.setAllVariables(varHash.getAlphabeticallyOrderedVariables());
 
 	mathDesc.refreshDependencies();
 

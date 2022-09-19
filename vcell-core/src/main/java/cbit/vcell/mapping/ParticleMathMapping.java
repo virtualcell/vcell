@@ -226,7 +226,7 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 	while (enum1.hasMoreElements()){
 		SpeciesContextMapping scm = enum1.nextElement();
 		if (scm.getVariable() instanceof ParticleVariable){
-			if (!(mathDesc.getVariable(scm.getVariable().getName()) instanceof ParticleVariable)){
+			if (!(varHash.getVariable(scm.getVariable().getName()) instanceof ParticleVariable)){
 				varHash.addVariable(scm.getVariable());
 			}
 		}
@@ -480,12 +480,6 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 	}
 
 	//
-	// set Variables to MathDescription all at once with the order resolved by "VariableHash"
-	//
-	mathDesc.setAllVariables(varHash.getAlphabeticallyOrderedVariables());
-	
-	
-	//
 	// geometry
 	//
 	if (getSimulationContext().getGeometryContext().getGeometry() != null){
@@ -703,7 +697,7 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 				SpeciesContextSpec scs = getSimulationContext().getReactionContext().getSpeciesContextSpec(sc);
 				GeometryClass scGeometryClass = getSimulationContext().getGeometryContext().getStructureMapping(sc.getStructure()).getGeometryClass();
 				String varName = getMathSymbol(sc, scGeometryClass);
-				Variable var = mathDesc.getVariable(varName);
+				Variable var = varHash.getVariable(varName);
 				if (var instanceof ParticleVariable)
 				{
 					ParticleVariable particle = (ParticleVariable)var;
@@ -806,7 +800,7 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 					SpeciesContextSpec scs = getSimulationContext().getReactionContext().getSpeciesContextSpec(sc);
 					GeometryClass scGeometryClass = getSimulationContext().getGeometryContext().getStructureMapping(sc.getStructure()).getGeometryClass();
 					String varName = getMathSymbol(sc, scGeometryClass);
-					Variable var = mathDesc.getVariable(varName);
+					Variable var = varHash.getVariable(varName);
 					if (var instanceof ParticleVariable){
 						ParticleVariable particle = (ParticleVariable)var;
 						reactantParticles.add(particle);
@@ -829,7 +823,7 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 					SpeciesContextSpec scs = getSimulationContext().getReactionContext().getSpeciesContextSpec(sc);
 					GeometryClass scGeometryClass = getSimulationContext().getGeometryContext().getStructureMapping(sc.getStructure()).getGeometryClass();
 					String varName = getMathSymbol(sc, scGeometryClass);
-					Variable var = mathDesc.getVariable(varName);
+					Variable var = varHash.getVariable(varName);
 					if (var instanceof ParticleVariable){
 						ParticleVariable particle = (ParticleVariable)var;
 						productParticles.add(particle);
@@ -965,12 +959,16 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 		if (fieldMathMappingParameters[i] instanceof UnitFactorParameter){
 			GeometryClass geometryClass = fieldMathMappingParameters[i].getGeometryClass();
 			Variable variable = newFunctionOrConstant(getMathSymbol(fieldMathMappingParameters[i],geometryClass),getIdentifierSubstitutions(fieldMathMappingParameters[i].getExpression(),fieldMathMappingParameters[i].getUnitDefinition(),geometryClass),fieldMathMappingParameters[i].getGeometryClass());
-			if (mathDesc.getVariable(variable.getName())==null){
-				variable.bind(mathDesc);
-				mathDesc.addVariable(variable);
+			if (varHash.getVariable(variable.getName())==null){
+				varHash.addVariable(variable);
 			}
 		}
 	}
+
+	//
+	// set Variables to MathDescription all at once with the order resolved by "VariableHash"
+	//
+	mathDesc.setAllVariables(varHash.getAlphabeticallyOrderedVariables());
 
 	mathDesc.refreshDependencies();
 
