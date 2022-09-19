@@ -9,12 +9,7 @@
  */
 
 package cbit.vcell.mapping;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Vector;
+import java.util.*;
 
 import org.vcell.util.Pair;
 import org.vcell.util.TokenMangler;
@@ -976,7 +971,8 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 			}
 		}
 	}
-	
+
+	mathDesc.refreshDependencies();
 
 	if (!mathDesc.isValid()){
 		lg.warn(mathDesc.getVCML_database());
@@ -1301,6 +1297,8 @@ private void combineHybrid() throws MappingException, ExpressionException, Matri
 			}
 		}
 	}
+
+	mathDesc.refreshDependencies();
 
 	if (!mathDesc.isValid()){
 		System.out.println(mathDesc.getVCML_database());

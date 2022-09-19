@@ -9,6 +9,7 @@
  */
 
 package cbit.vcell.solver.test;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.Vector;
 
@@ -1070,6 +1071,8 @@ public static MathDescription constructExactMath(MathDescription mathDesc, java.
 		}
 	}
 	exactMath.setAllVariables(varHash.getAlphabeticallyOrderedVariables());
+
+	exactMath.refreshDependencies();
 
 	if (!exactMath.isValid()){
 		throw new RuntimeException("generated Math is not valid: "+exactMath.getWarning());

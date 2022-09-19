@@ -10,6 +10,7 @@
 
 package cbit.vcell.mapping;
 import java.beans.PropertyVetoException;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Vector;
@@ -539,6 +540,8 @@ private Expression getProbabilityRate(ReactionStep reactionStep, Expression rate
 				}
 			}
 		}
+
+		mathDesc.refreshDependencies();
 
 		if (!mathDesc.isValid()){
 			lg.error(mathDesc.getVCML_database());

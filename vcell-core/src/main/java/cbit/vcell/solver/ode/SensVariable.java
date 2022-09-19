@@ -10,6 +10,8 @@
 
 package cbit.vcell.solver.ode;
 
+import cbit.vcell.parser.ExpressionBindingException;
+import cbit.vcell.parser.SymbolTable;
 import org.vcell.util.Compare;
 import org.vcell.util.Matchable;
 
@@ -58,6 +60,14 @@ public boolean compareEqual(Matchable obj, boolean bIgnoreMissingDomain) {
 	
 	return true;
 }
+
+	@Override
+	public void bind(SymbolTable symbolTable) throws ExpressionBindingException {
+		if (getExpression()!=null){
+			getExpression().bindExpression(symbolTable);
+		}
+	}
+
 /**
  * This method was created in VisualAge.
  * @return cbit.vcell.math.Constant

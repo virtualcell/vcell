@@ -10,13 +10,7 @@
 
 package cbit.vcell.mapping;
 import java.beans.PropertyVetoException;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
-import java.util.Vector;
+import java.util.*;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Pair;
@@ -2075,7 +2069,8 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 		}
 	}
 
-	
+	mathDesc.refreshDependencies();
+
 	if (!mathDesc.isValid()){
 		System.out.println(mathDesc.getVCML_database());
 		throw new MappingException("generated an invalid mathDescription: "+mathDesc.getWarning());

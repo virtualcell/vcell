@@ -12,14 +12,7 @@ package cbit.vcell.mapping;
 
 
 import java.beans.PropertyVetoException;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import org.vcell.model.rbm.ComponentStateDefinition;
 import org.vcell.model.rbm.ComponentStatePattern;
@@ -440,6 +433,8 @@ protected RulebasedMathMapping(SimulationContext simContext, MathMappingCallback
 				}
 			}
 		}
+
+		mathDesc.refreshDependencies();
 
 		if (!mathDesc.isValid()){
 			System.out.println(mathDesc.getVCML_database());

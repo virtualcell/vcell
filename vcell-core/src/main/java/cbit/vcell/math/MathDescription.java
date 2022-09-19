@@ -1219,6 +1219,8 @@ public static MathDescription fromEditor(MathDescription oldMathDesc, String vcm
 	mathDesc.setGeometry0(oldMathDesc.getGeometry());
 	mathDesc.read_database(tokens);
 
+	mathDesc.refreshDependencies();
+
 	//
 	// compute warning string (if necessary)
 	//
@@ -2086,7 +2088,8 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueList) {
 			try {
 				var.getExpression().evaluateConstant();
 			} catch (Exception ex) {
-				ex.printStackTrace(System.out);
+				String msg = "Constant cannot be evaluated to a number, "+var.getName()+"="+var.getExpression().infix();
+				logger.error(msg, ex);
 				Issue issue = new Issue(var, issueContext, IssueCategory.MathDescription_Constant_NotANumber, VCellErrorMessages.getErrorMessage(VCellErrorMessages.MATH_DESCRIPTION_CONSTANT, var.getExpression().infix()), Issue.SEVERITY_ERROR);
 				issueList.add(issue);
 			}
@@ -3223,6 +3226,14 @@ public void addParticleMolecularType(ParticleMolecularType particleMolecularType
 
 
 public void refreshDependencies() {
+	for (Variable var : Collections.list(getVariables())){
+		try {
+			var.bind(this);
+		} catch (ExpressionBindingException e) {
+			logger.warn("unable to bind expression for math variable "+var.getName()+" when reading from VCML: "+e.getMessage());
+		}
+	}
+
 	for (SubDomain subDomain : this.subDomainList){
 		subDomain.refreshDependencies(this);
 	}
