@@ -183,7 +183,8 @@ derivativeCount++;
  */
 public Expression differentiate(String variable) throws ExpressionException {
 diffCount++;
-	SimpleNode node = (SimpleNode)rootNode.differentiate(variable);
+	Expression exp = new Expression(this);
+	SimpleNode node = (SimpleNode)exp.rootNode.differentiate(variable);
 	if (node == null){
 		throw new ExpressionException("derivative wrt "+variable+" returned null");
 	}
