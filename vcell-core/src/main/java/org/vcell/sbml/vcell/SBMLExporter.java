@@ -2487,6 +2487,11 @@ public static void validateSimulationContextSupport(SimulationContext simulation
 			throw new UnsupportedSbmlExportException("Species '"+scs.getDisplayName()+"' has FieldData as initial condition, SBML Export is not supported");
 		}
 	}
+
+	// Check if there is a microscopy protocol defined (e.g. convolution)
+	if (simulationContext.getMicroscopeMeasurement()!=null){
+		throw new UnsupportedSbmlExportException("MicroscopyMeasurement '"+simulationContext.getMicroscopeMeasurement().getName()+"' defined involving convolution with kernel (point spread function), SBML Export is not supported");
+	}
 }
 
 /**
