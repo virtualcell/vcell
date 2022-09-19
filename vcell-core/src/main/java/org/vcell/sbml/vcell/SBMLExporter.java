@@ -2489,7 +2489,7 @@ public static void validateSimulationContextSupport(SimulationContext simulation
 	}
 
 	// Check if there is a microscopy protocol defined (e.g. convolution)
-	if (simulationContext.getMicroscopeMeasurement()!=null){
+	if (simulationContext.getMicroscopeMeasurement()!=null && simulationContext.getMicroscopeMeasurement().getFluorescentSpecies().size()>0){
 		throw new UnsupportedSbmlExportException("MicroscopyMeasurement '"+simulationContext.getMicroscopeMeasurement().getName()+"' defined involving convolution with kernel (point spread function), SBML Export is not supported");
 	}
 }
