@@ -1654,9 +1654,6 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 				}
 			}
 			subDomain.setFastSystem(fastSystem);
-			// constructor calls the 'refresh' method which constructs depemdency matrix, dependent/independent vars and pseudoconstants, etc. 
-			//FastSystemAnalyzer fs_analyzer = 
-				new FastSystemAnalyzer(fastSystem, mathDesc);
 		}
 		//
 		// create ode's for voltages to be calculated on unresolved membranes mapped to this subVolume
@@ -1881,9 +1878,6 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 				}
 			}
 			memSubDomain.setFastSystem(fastSystem);
-			// constructor calls the 'refresh' method which constructs depemdency matrix, dependent/independent vars and pseudoconstants, etc. 
-			//FastSystemAnalyzer fs_analyzer = 
-				new FastSystemAnalyzer(fastSystem, mathDesc);
 		}
 		//
 		// create Membrane-region equations for potential of this resolved membrane
@@ -2068,6 +2062,16 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 	// set Variables to MathDescription all at once with the order resolved by "VariableHash"
 	//
 	mathDesc.setAllVariables(varHash.getAlphabeticallyOrderedVariables());
+
+	//
+	// check all fast systems (needs to have bound expressions)
+	//
+	for (SubDomain subDomain1 : Collections.list(mathDesc.getSubDomains())){
+		if (subDomain1.getFastSystem()!=null){
+			// constructor calls the 'refresh' method which constructs dependency matrix, dependent/independent vars and pseudoconstants, etc.
+			new FastSystemAnalyzer(subDomain1.getFastSystem(), mathDesc);
+		}
+	}
 
 	mathDesc.refreshDependencies();
 
