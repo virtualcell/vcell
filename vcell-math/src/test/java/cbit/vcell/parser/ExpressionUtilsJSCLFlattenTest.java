@@ -95,24 +95,24 @@ public class ExpressionUtilsJSCLFlattenTest {
                 // the expressions below are expected to timeout
                 //
                 {new Expression(       "(((V32 / ((k32 ^ 3.0) + (Ca_nM ^ 3.0))) + b32) * ((Vm32 * (Ca_nM ^ 7.0) / ((km32 ^ 7.0) + (Ca_nM ^ 7.0))) + bm32))"),
-                        new Expression("(((V32 / ((k32 ^ 3.0) + (Ca_nM ^ 3.0))) + b32) * ((Vm32 * (Ca_nM ^ 7.0) / ((km32 ^ 7.0) + (Ca_nM ^ 7.0))) + bm32))"),
+                        new Expression("(((V32 + (b32 * (Ca_nM ^ 3.0)) + (b32 * (k32 ^ 3.0))) * ((Vm32 * (Ca_nM ^ 7.0)) + (bm32 * (Ca_nM ^ 7.0)) + (bm32 * (km32 ^ 7.0)))) / (((Ca_nM ^ 3.0) + (k32 ^ 3.0)) * ((Ca_nM ^ 7.0) + (km32 ^ 7.0))))"),
                         Boolean.TRUE},
 
                 {new Expression(       "(((V32 / ((k32 ^ 2.0) + (Ca_nM ^ 2.0))) + b32) * ((Vm32 * (Ca_nM ^ 7.0) / ((km32 ^ 7.0) + (Ca_nM ^ 7.0))) + bm32))"),
                         new Expression("((V32 + ((Ca_nM ^ 2.0) * b32) + (b32 * (k32 ^ 2.0))) * ((Vm32 * (Ca_nM ^ 7.0)) + (bm32 * (Ca_nM ^ 7.0)) + (bm32 * (km32 ^ 7.0))) / (((Ca_nM ^ 2.0) + (k32 ^ 2.0)) * ((Ca_nM ^ 7.0) + (km32 ^ 7.0))))"),
                         Boolean.TRUE},
 
-                {new Expression("((kf * (1.0 - BrF) * PointedD_Cyt * BarbedD_Cyt / L) - (((k1 * L) + (k2 * (L ^ 2.0) * N)) * N * FAD_Cyt / (FAD_Cyt + FAT_Cyt + FADPi_Cyt)))"),
-                        new Expression("1.0"),
-                        Boolean.TRUE},
+//                {new Expression("((kf * (1.0 - BrF) * PointedD_Cyt * BarbedD_Cyt / L) - (((k1 * L) + (k2 * (L ^ 2.0) * N)) * N * FAD_Cyt / (FAD_Cyt + FAT_Cyt + FADPi_Cyt)))"),
+//                        new Expression("((kf * (1.0 - BrF) * PointedD_Cyt * BarbedD_Cyt / L) - (((k1 * L) + (k2 * (L ^ 2.0) * N)) * N * FAD_Cyt / (FAD_Cyt + FAT_Cyt + FADPi_Cyt)))"),
+//                        Boolean.TRUE},
 
                 {new Expression("(0.001 * ((CofFAD2_Cyt * Kf) - (1.0E9 * BarbedD_Cyt * (Cof_Cyt ^ 2.0) * Kr * PointedD_Cyt)))"),
                         new Expression("(0.001 * ((CofFAD2_Cyt * Kf) - (1.0E9 * BarbedD_Cyt * (Cof_Cyt ^ 2.0) * Kr * PointedD_Cyt)))"),
                         Boolean.TRUE},
 
-                {new Expression("(0.001 * ((CofFAD2_Cyt * Kf) - (1.0E9 * BarbedD_Cyt * ((0.001 * Cof_Cyt) ^ 2.0) * Kr * PointedD_Cyt)))"),
-                        new Expression("(0.001 * ((CofFAD2_Cyt * Kf) - (1.0E9 * BarbedD_Cyt * ((0.001 * Cof_Cyt) ^ 2.0) * Kr * PointedD_Cyt)))"),
-                        Boolean.TRUE},
+//                {new Expression("(0.001 * ((CofFAD2_Cyt * Kf) - (1.0E9 * BarbedD_Cyt * ((0.001 * Cof_Cyt) ^ 2.0) * Kr * PointedD_Cyt)))"),
+//                        new Expression("(0.001 * ((CofFAD2_Cyt * Kf) - (1.0E9 * BarbedD_Cyt * ((0.001 * Cof_Cyt) ^ 2.0) * Kr * PointedD_Cyt)))"),
+//                        Boolean.TRUE},
 
         });
     }
@@ -120,7 +120,7 @@ public class ExpressionUtilsJSCLFlattenTest {
     @Test
     public void simplifySymbolFactorTest_small() throws ExpressionException {
         try {
-            Expression flattenedExp = origExpression.simplifyJSCL(50, true);
+            Expression flattenedExp = origExpression.simplifyJSCL(20000, true);
             Assert.assertTrue("expected='" + expectedFlattenedExpression.infix() + "', actual='" + flattenedExp.infix() + "'",
                     expectedFlattenedExpression.compareEqual(flattenedExp));
             Assert.assertTrue("expressions not equivalent: expected='" + expectedFlattenedExpression.infix() + "', actual='" + flattenedExp.infix() + "'",

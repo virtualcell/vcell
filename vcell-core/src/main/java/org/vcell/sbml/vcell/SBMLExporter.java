@@ -2487,6 +2487,19 @@ public static void validateSimulationContextSupport(SimulationContext simulation
 			throw new UnsupportedSbmlExportException("Species '"+scs.getDisplayName()+"' has FieldData as initial condition, SBML Export is not supported");
 		}
 	}
+
+	// Check if there is a microscopy protocol defined (e.g. convolution)
+	if (simulationContext.getMicroscopeMeasurement()!=null && simulationContext.getMicroscopeMeasurement().getFluorescentSpecies().size()>0){
+		throw new UnsupportedSbmlExportException("MicroscopyMeasurement '"+simulationContext.getMicroscopeMeasurement().getName()+"' defined involving convolution with kernel (point spread function), SBML Export is not supported");
+	}
+
+	// Check if this is a spatial deterministic application and the model contains lumped kinetics.
+	// VCell math has vcRegionVolume('cyt') functions, SBML round trip will use a constant size instead.
+	// The round trip validation will always fail.
+	Optional<ReactionStep> lumpedReaction = Arrays.stream(simulationContext.getModel().getReactionSteps()).filter(rs -> rs.getKinetics() instanceof LumpedKinetics).findFirst();
+	if (simulationContext.getGeometry().getDimension()>0 && simulationContext.getApplicationType()==Application.NETWORK_DETERMINISTIC && lumpedReaction.isPresent()){
+		throw new UnsupportedSbmlExportException("Lumped reaction '"+lumpedReaction.get().getName()+"' in spatial application, SBML Export is not supported");
+	}
 }
 
 /**

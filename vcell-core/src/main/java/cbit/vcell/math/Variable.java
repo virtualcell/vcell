@@ -94,6 +94,9 @@ protected Variable (String argName, Domain argDomain ) {
  * @param symbolTable cbit.vcell.parser.SymbolTable
  */
 public void bind(SymbolTable symbolTable) throws ExpressionBindingException {
+	if (getExpression()!=null){
+		getExpression().bindExpression(symbolTable);
+	}
 }
 
 public static String getNameFromCombinedIdentifier(String combinedIdentifier){

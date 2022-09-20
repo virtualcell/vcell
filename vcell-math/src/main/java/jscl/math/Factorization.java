@@ -62,7 +62,7 @@ public class Factorization {
         loop: while(d[1].hasNext()) {
             long currentTime = System.currentTimeMillis();
             if (timeoutValue_ms > 0 && currentTime > timeoutValue_ms) {
-                throw new Expression.ExpressionTimeoutException("timeout in Factorization.computeValue("+generic.toString().replace("underscore","_")+")");
+                throw new Expression.ExpressionTimeoutException("timeout JSCL Factorization.computeValue()");
             }
             p[1]=(Monomial)d[1].next();
             q[1]=d[1].complementary();
