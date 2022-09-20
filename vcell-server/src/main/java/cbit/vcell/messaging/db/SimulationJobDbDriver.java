@@ -461,8 +461,9 @@ public List<SimpleJobStatusPersistent> getSimpleJobStatus(Connection con, String
 	
 	final String BMLINK = "bmlink";
 	final String MMLINK = "mmlink";
+	final String text_cast_type = (dbSyntax==DatabaseSyntax.ORACLE)?"varchar2(20)":"text";
 
-	String subquery = "SELECT " +
+	String subquery = "SELECT DISTINCT " +
 		"current_timestamp as " + DatabaseConstants.SYSDATE_COLUMN_NAME
 		+ "," + jobTable.getTableName() + ".*," + userTable.userid.getQualifiedColName() + "," + userTable.id.getQualifiedColName()+" as ownerkey"
 		+ "," + "vc_sim_1." + simTable.ownerRef.getUnqualifiedColName()
@@ -471,14 +472,16 @@ public List<SimpleJobStatusPersistent> getSimpleJobStatus(Connection con, String
 		+ "," + "vc_sim_1." + simTable.meshSpecX.getUnqualifiedColName()
 		+ "," + "vc_sim_1." + simTable.meshSpecY.getUnqualifiedColName()
 		+ "," + "vc_sim_1." + simTable.meshSpecZ.getUnqualifiedColName()
-		+ "," + "vc_sim_1." + simTable.mathOverridesLarge.getUnqualifiedColName()+" as "+simTable.mathOverridesLarge.getUnqualifiedColName()
-		+ "," + "vc_sim_1." + simTable.mathOverridesSmall.getUnqualifiedColName()+" as "+simTable.mathOverridesSmall.getUnqualifiedColName()
-		+ "," + "(SELECT '{\""+BioModelLink.bmid+"\":\"' || lpad(vc_biomodel.id,14,0)" +
-							" || '\",\""+BioModelLink.scid+"\":\"' || lpad(vc_simcontext.id,14,0)" +
-							" || '\",\""+BioModelLink.bmbranch+"\":\"' || lpad(vc_biomodel.versionbranchid,14,0)" +
-							" || '\",\""+BioModelLink.scbranch+"\":\"' || lpad(vc_simcontext.versionbranchid,14,0)" +
-							" || '\",\""+BioModelLink.bmname+"\":\"' || vc_biomodel.name" +
-							" || '\",\""+BioModelLink.scname+"\":\"' || vc_simcontext.name || '\"}'" +
+		+ "," + ((dbSyntax==DatabaseSyntax.ORACLE)
+				 ? ("to_char( vc_sim_1." + simTable.mathOverridesLarge.getUnqualifiedColName()+") as "+simTable.mathOverridesLarge.getUnqualifiedColName())
+				 : (         "vc_sim_1." + simTable.mathOverridesLarge.getUnqualifiedColName()+"  as "+simTable.mathOverridesLarge.getUnqualifiedColName()))
+		+ "," + "vc_sim_1." + simTable.mathOverridesSmall.getUnqualifiedColName()+"  as "+simTable.mathOverridesSmall.getUnqualifiedColName()
+		+ "," + "(SELECT '{\""+BioModelLink.bmid+"\":\"'               || lpad(cast(vc_biomodel.id as "+text_cast_type+"),14,'0')" +
+							" || '\",\""+BioModelLink.scid+"\":\"'     || lpad(cast(vc_simcontext.id as "+text_cast_type+"),14,'0')" +
+							" || '\",\""+BioModelLink.bmbranch+"\":\"' || lpad(cast(vc_biomodel.versionbranchid as "+text_cast_type+"),14,'0')" +
+							" || '\",\""+BioModelLink.scbranch+"\":\"' || lpad(cast(vc_simcontext.versionbranchid as "+text_cast_type+"),14,'0')" +
+							" || '\",\""+BioModelLink.bmname+"\":\"'   || vc_biomodel.name" +
+							" || '\",\""+BioModelLink.scname+"\":\"'   || vc_simcontext.name || '\"}'" +
 				" FROM vc_biomodel" +
 				", vc_biomodelsimcontext" +
 				", vc_simcontext" +
@@ -488,9 +491,9 @@ public List<SimpleJobStatusPersistent> getSimpleJobStatus(Connection con, String
 				" AND vc_bmsim_1.SIMREF = vc_sim_1.id" +
 				" AND vc_bmsim_1.BIOMODELREF = vc_biomodel.id" +
 				") as " + BMLINK
-		+ "," + "(SELECT '{\""+MathModelLink.mmid+"\":\"' || lpad(vc_mathmodel.id,14,0)" +
-							" || '\",\""+MathModelLink.mmbranch+"\":\"' || lpad(vc_mathmodel.versionbranchid,14,0)" +
-							" || '\",\""+MathModelLink.mmname+"\":\"' || vc_mathmodel.name || '\"}'" +
+		+ "," + "(SELECT '{\""+MathModelLink.mmid+"\":\"'               || lpad(cast(vc_mathmodel.id as "+text_cast_type+"),14,'0')" +
+							" || '\",\""+MathModelLink.mmbranch+"\":\"' || lpad(cast(vc_mathmodel.versionbranchid as "+text_cast_type+"),14,'0')" +
+							" || '\",\""+MathModelLink.mmname+"\":\"'   || vc_mathmodel.name || '\"}'" +
 				" FROM vc_mathmodel" +
 				" WHERE vc_sim_1.id = vc_mmsim_1.SIMREF" +
 				" AND vc_mmsim_1.MATHMODELREF = vc_mathmodel.id" +
@@ -514,18 +517,30 @@ public List<SimpleJobStatusPersistent> getSimpleJobStatus(Connection con, String
 	String sql = null;
 	
 	if (maxNumRows>0){
-		if (startRow <= 1){
-			// simpler query, only limit rows, not starting row
-			sql = "select * from "+
-					"(" + subquery + " " + additionalConditionsClause + " " + orderByClause + ") "+
-					"where rownum <= "+maxNumRows;
+		if (dbSyntax == DatabaseSyntax.ORACLE) {
+			if (startRow <= 1) {
+				// simpler query, only limit rows, not starting row
+				sql = "select * from " +
+						"(" + subquery + " " + additionalConditionsClause + " " + orderByClause + ") " +
+						"where rownum <= " + maxNumRows;
+			} else {
+				// full query, limit start and limit
+				sql = "select * from " +
+						"(select a.*, ROWNUM rnum from " +
+						"(" + subquery + " " + additionalConditionsClause + " " + orderByClause + ") a " +
+						" where rownum <= " + (startRow + maxNumRows - 1) + ") " +
+						"where rnum >= " + startRow;
+			}
+		}else if (dbSyntax == DatabaseSyntax.POSTGRES){
+			if (startRow <= 1) {
+				// simpler query, only limit rows, not starting row
+				sql = subquery + " " + additionalConditionsClause + " " + orderByClause + " LIMIT " + maxNumRows;
+			} else {
+				// full query, limit start and limit
+				sql = subquery + " " + additionalConditionsClause + " " + orderByClause + " LIMIT " + maxNumRows + " OFFSET " + startRow;
+			}
 		}else{
-			// full query, limit start and limit
-			sql = "select * from "+
-						"(select a.*, ROWNUM rnum from "+
-							"(" + subquery + " " + additionalConditionsClause + " " + orderByClause + ") a "+
-						" where rownum <= " + (startRow + maxNumRows - 1) + ") "+
-				  "where rnum >= "+startRow;
+			throw new RuntimeException("unexpected dbSyntax: "+dbSyntax);
 		}
 	}else{
 		sql = subquery + " " + additionalConditionsClause + " " + orderByClause;
