@@ -18,26 +18,26 @@ import org.apache.logging.log4j.Logger;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
-public class SEDMLLogger extends Recorder {
+public class SEDMLRecorder extends Recorder {
 
-	private final static Logger logger = LogManager.getLogger(SEDMLLogger.class);
+	private final static Logger logger = LogManager.getLogger(SEDMLRecorder.class);
 	
 	private String identifier; 
 	private SEDMLConversion operation;
 	private List<SEDMLTaskRecord> taskLogs = new LinkedList<>();
+	private transient Set<Class<? extends Exception>> exceptionTypes;
 	private transient FileRecord jsonFile;
+	
 
-	public SEDMLLogger(String jobId, SEDMLConversion conversion) {
-		super(SEDMLLogger.class);
-		this.identifier = jobId;
-		this.operation = conversion;
-		this.jsonFile = null;
+	public SEDMLRecorder(String jobName, SEDMLConversion conversion) {
+		this(jobName, conversion, null);
 	}
 
-	public SEDMLLogger(String jobName, SEDMLConversion conversion, String jsonFilePath) {
-		super(SEDMLLogger.class);
+	public SEDMLRecorder(String jobName, SEDMLConversion conversion, String jsonFilePath) {
+		super(SEDMLRecorder.class);
 		this.identifier = jobName;
 		this.operation = conversion;
+		this.exceptionTypes = new HashSet<>();
 		if (jsonFilePath != null) this.jsonFile = VCellUtilityHub.getLogManager().requestNewFileLog(jsonFilePath);
 		else this.jsonFile = null;
 	}
@@ -75,6 +75,7 @@ public class SEDMLLogger extends Recorder {
 
 	public void addTaskLog(String taskName, TaskType taskType, TaskResult taskResult, Exception exception) {
 		this.taskLogs.add(new SEDMLTaskRecord(taskName, taskType, taskResult, exception));
+		this.addException(exception);
 	}
 
 	public String getLogsCSV() {
@@ -90,10 +91,6 @@ public class SEDMLLogger extends Recorder {
 	public String exportToJSON() {
 		Gson gson; GsonBuilder builder;
 		String jsonPrefix;
-		Set<Class<? extends Exception>> exceptionTypes = new HashSet<>();
-		for(SEDMLTaskRecord task : this.taskLogs)
-			if (task.getException() != null) 
-				exceptionTypes.add(task.getException().getClass());
 
 		// Gson construction
 		builder = new GsonBuilder(); // Now for the custom serializers
@@ -112,5 +109,9 @@ public class SEDMLLogger extends Recorder {
 			logger.warn(String.format("Unable to export json report to file <%s>", this.jsonFile.getPath()), e);
 		}
 		return jsonPrefix;
+	}
+
+	private <T extends Exception> void addException(T e){
+		if (e != null) this.exceptionTypes.add(e.getClass());
 	}
 }

@@ -75,7 +75,9 @@ public class BiosimulationsCommand implements Callable<Integer> {
             }
 
             if (bVersion) {
-                logger.error(PropertyLoader.getRequiredDirectory(PropertyLoader.vcellSoftwareVersion).getPath());
+                String version = PropertyLoader.getRequiredProperty(PropertyLoader.vcellSoftwareVersion);
+                logger.info("Outputing version:");
+                System.out.println(version);
                 return 0;
             }
 
@@ -117,7 +119,7 @@ public class BiosimulationsCommand implements Callable<Integer> {
                 }
             }
         } catch (Exception e) {
-            org.apache.logging.log4j.LogManager.getLogger(this.getClass()).error(e.getMessage(), e);
+            LogManager.getLogger(this.getClass()).error(e.getMessage(), e);
             return 1;
         }
     }

@@ -2,7 +2,6 @@ package org.vcell.cli;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import org.vcell.util.VCellUtilityHub;
@@ -32,36 +31,12 @@ public class CLIRecorder extends Recorder implements CLIRecordable {
         this.shouldFlushLogFiles = shouldFlushLogFiles;
     }
 
-    public CLIRecorder(String outputDirectoryPath) throws IOException {
+    public CLIRecorder(File outputDirectoryPath) throws IOException {
         this(outputDirectoryPath, DEFAULT_SHOULD_PRINT_LOG_FILES);
-    }
-
-    public CLIRecorder(Path outputDirectoryPath) throws IOException {
-        this(outputDirectoryPath, DEFAULT_SHOULD_PRINT_LOG_FILES);
-    }
-
-    public CLIRecorder(File outputDirectory) throws IOException {
-        this(outputDirectory, DEFAULT_SHOULD_PRINT_LOG_FILES);
-    }
-
-    public CLIRecorder(String outputDirectoryPath, boolean forceLogFiles) throws IOException {
-        this(new File(outputDirectoryPath), forceLogFiles, DEFAULT_SHOULD_FLUSH_LOG_FILES);
-    }
-
-    public CLIRecorder(Path outputDirectoryPath, boolean forceLogFiles) throws IOException {
-        this(outputDirectoryPath.toFile(), forceLogFiles, DEFAULT_SHOULD_FLUSH_LOG_FILES);
     }
 
     public CLIRecorder(File outputDirectory, boolean forceLogFiles) throws IOException {
         this(outputDirectory, forceLogFiles, DEFAULT_SHOULD_FLUSH_LOG_FILES);
-    }
-
-    public CLIRecorder(String outputDirectoryPath, boolean forceLogFiles, boolean shouldFlushLogFiles) throws IOException {
-        this(new File(outputDirectoryPath), forceLogFiles, shouldFlushLogFiles);
-    }
-
-    public CLIRecorder(Path outputDirectoryPath, boolean forceLogFiles, boolean shouldFlushLogFiles) throws IOException {
-        this(outputDirectoryPath.toFile(), forceLogFiles, shouldFlushLogFiles);
     }
 
     public CLIRecorder(File outputDirectory, boolean forceLogFiles, boolean shouldFlushLogFiles) throws IOException {

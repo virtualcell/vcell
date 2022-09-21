@@ -148,7 +148,7 @@ public class SEDMLExporter {
 	private String sbmlLanguageURN = SUPPORTED_LANGUAGE.SBML_GENERIC.getURN();
 	private String vcmlLanguageURN = SUPPORTED_LANGUAGE.VCELL_GENERIC.getURN();
 	
-	private SEDMLLogger sedmlLogger = null;
+	private SEDMLRecorder sedmlRecorder = null;
 	
 
 	public SEDMLExporter(String argJobId, BioModel argBiomodel, int argLevel, int argVersion, List<Simulation> argSimsToExport) {
@@ -164,7 +164,7 @@ public class SEDMLExporter {
 		this.sedmlLevel = argLevel;
 		this.sedmlVersion = argVersion;
 
-		this.sedmlLogger = new SEDMLLogger(argJobId, SEDMLConversion.EXPORT, jsonFilePath);
+		this.sedmlRecorder = new SEDMLRecorder(argJobId, SEDMLConversion.EXPORT, jsonFilePath);
         // we need to collect simulation names to be able to match sims in BioModel clone
 		if (argSimsToExport != null && argSimsToExport.size() > 0) {
 	        for (Simulation sim : argSimsToExport) {
@@ -207,17 +207,18 @@ public class SEDMLExporter {
 		sedmlModel = sedmlDocument.getSedMLModel();
 		sedmlModel.setAdditionalNamespaces(nsList);
 		
-		translateBioModelToSedML(sPath, sBaseFileName, modelFormat, bFromCLI, bRoundTripSBMLValidation);
+		this.translateBioModelToSedML(sPath, sBaseFileName, modelFormat, bFromCLI, bRoundTripSBMLValidation);
 		
 		// update overall status
 		if (bFromCLI) {
-			if (sedmlLogger.hasErrors()) {
-				sedmlLogger.addTaskLog(vcBioModel.getName(), TaskType.BIOMODEL, TaskResult.FAILED, null);
+			if (sedmlRecorder.hasErrors()) {
+				sedmlRecorder.addTaskLog(vcBioModel.getName(), TaskType.BIOMODEL, TaskResult.FAILED, null);
 			} else {
-				sedmlLogger.addTaskLog(vcBioModel.getName(), TaskType.BIOMODEL, TaskResult.SUCCEEDED, null);
+				sedmlRecorder.addTaskLog(vcBioModel.getName(), TaskType.BIOMODEL, TaskResult.SUCCEEDED, null);
 			}
 		}
 		
+		this.sedmlRecorder.exportToJSON();
 		return sedmlDocument;
 	}
 	private void translateBioModelToSedML(String savePath, String sBaseFileName, ModelFormat modelFormat,
@@ -240,11 +241,11 @@ public class SEDMLExporter {
 				try {
 					// convert to SBML units; this also ensures we will use a clone
 					vcBioModel = ModelUnitConverter.createBioModelWithSBMLUnitSystem(vcBioModel);
-					sedmlLogger.addTaskLog(vcBioModel.getName(), TaskType.UNITS, TaskResult.SUCCEEDED, null);
+					sedmlRecorder.addTaskLog(vcBioModel.getName(), TaskType.UNITS, TaskResult.SUCCEEDED, null);
 				} catch (Exception e1) {
 					String msg = "unit conversion failed for BioModel '"+vcBioModel.getName()+"': " + e1.getMessage();
 					logger.error(msg, e1);
-					sedmlLogger.addTaskLog(vcBioModel.getName(), TaskType.UNITS, TaskResult.FAILED, e1);
+					sedmlRecorder.addTaskLog(vcBioModel.getName(), TaskType.UNITS, TaskResult.FAILED, e1);
 					if (bFromCLI) {
 						return;
 					} else {
@@ -269,13 +270,13 @@ public class SEDMLExporter {
 						writeModelSBML(savePath, sBaseFileName, sbmlString, simContext);
 						MathMapping mathMapping = simContext.createNewMathMapping();
 						mathSymbolMapping = mathMapping.getMathSymbolMapping();
-						sedmlLogger.addTaskLog(simContext.getName(), TaskType.SIMCONTEXT, TaskResult.SUCCEEDED, null);
+						sedmlRecorder.addTaskLog(simContext.getName(), TaskType.SIMCONTEXT, TaskResult.SUCCEEDED, null);
 					} catch (Exception e) {
 						String msg = "SBML export failed for simContext '"+simContext.getName()+"': " + e.getMessage();
 						logger.error(msg, e);
 						sbmlExportFailed = true;
 						simContextException = e;
-						sedmlLogger.addTaskLog(simContext.getName(), TaskType.SIMCONTEXT, TaskResult.FAILED, e);
+						sedmlRecorder.addTaskLog(simContext.getName(), TaskType.SIMCONTEXT, TaskResult.FAILED, e);
 					}
 
 					if (!sbmlExportFailed) {
@@ -285,7 +286,7 @@ public class SEDMLExporter {
 						if (bFromCLI) {
 							continue;
 						} else {
-							System.err.println(sedmlLogger.getLogsCSV());
+							System.err.println(sedmlRecorder.getLogsCSV());
 							throw new Exception ("SimContext '"+simContext.getName()+"' could not be exported to SBML :" +simContextException.getMessage());
 						}
 					}			
@@ -295,16 +296,14 @@ public class SEDMLExporter {
 	       	if(sedmlModel.getModels() != null && sedmlModel.getModels().size() > 0) {
 	       		logger.trace("Number of models in the sedml is " + sedmlModel.getModels().size());
 	       	}
-	       	if (sedmlLogger.hasErrors()) {
-				System.err.println(sedmlLogger.getLogsCSV());       		
+	       	if (sedmlRecorder.hasErrors()) {
+				System.err.println(sedmlRecorder.getLogsCSV());       		
 	       	} else {
-	       		System.out.println(sedmlLogger.getLogsCSV());
+	       		System.out.println(sedmlRecorder.getLogsCSV());
 	       	}
 		} catch (Exception e) {
 			// this only happens if not from CLI, we need to pass this down the calling thread
 			throw new RuntimeException("Error adding model to SEDML document : " + e.getMessage(), e);
-		} finally {
-			this.sedmlLogger.exportToJSON();
 		}
 	}
 
@@ -473,15 +472,15 @@ public class SEDMLExporter {
 				for(String taskRef : dataGeneratorTasksSet) {
 					createSEDMLoutputs(simContext, vcSimulation, dataGeneratorsOfSim, taskRef);
 				}
-				sedmlLogger.addTaskLog(vcSimulation.getName(), TaskType.SIMULATION, TaskResult.SUCCEEDED, null);
+				sedmlRecorder.addTaskLog(vcSimulation.getName(), TaskType.SIMULATION, TaskResult.SUCCEEDED, null);
 			} catch (Exception e) {
 				String msg = "SEDML export failed for simulation '"+ vcSimulation.getName() + "': " + e.getMessage();
 				logger.error(msg, e);
-				sedmlLogger.addTaskLog(vcSimulation.getName(), TaskType.SIMULATION, TaskResult.FAILED, e);
+				sedmlRecorder.addTaskLog(vcSimulation.getName(), TaskType.SIMULATION, TaskResult.FAILED, e);
 	        	if (bFromCLI) {
 	        		continue;
 	        	} else {
-					System.err.println(sedmlLogger.getLogsCSV());
+					System.err.println(sedmlRecorder.getLogsCSV());
 	        		throw e;
 	        	}
 			}
@@ -1582,8 +1581,8 @@ public class SEDMLExporter {
 
 	}
 
-	public SEDMLLogger getSedmlLogger() {
-		return sedmlLogger;
+	public SEDMLRecorder getSedmlLogger() {
+		return sedmlRecorder;
 	}
 
 }
