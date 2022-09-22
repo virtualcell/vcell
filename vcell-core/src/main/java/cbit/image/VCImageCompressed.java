@@ -10,19 +10,20 @@
 
 package cbit.image;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.util.zip.InflaterInputStream;
+import java.security.MessageDigest;
+import java.util.zip.DataFormatException;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.vcell.util.Hex;
+
 /**
  * This type was created in VisualAge.
  */
 @SuppressWarnings("serial")
 public class VCImageCompressed extends VCImage {
-	private byte compressedPixels[] = null;
+	private final byte compressedPixels[];
 	private transient byte uncompressed[] = null;
 	private static Logger lg = LogManager.getLogger(VCImageCompressed.class);
 /**
@@ -33,19 +34,19 @@ public VCImageCompressed(VCImage vcimage) throws ImageException {
 	super(vcimage);
 	this.compressedPixels = vcimage.getPixelsCompressed().clone();
 }
-/**
- * This method was created in VisualAge.
- * @param pix byte[]
- * @param x int
- * @param y int
- * @param z int
- * @param name java.lang.String
- * @param annot java.lang.String
- */
+
 public VCImageCompressed(org.vcell.util.document.Version aVersion, byte pixels[], org.vcell.util.Extent extent, int aNumX, int aNumY, int aNumZ) throws ImageException {
 	super(aVersion,extent,aNumX,aNumY,aNumZ);
 	this.compressedPixels = pixels;
 	initPixelClasses();
+	if (lg.isTraceEnabled()) {
+		try {
+			MessageDigest digest = MessageDigest.getInstance("SHA-256");
+			String hashCompressed = Hex.toString(digest.digest(compressedPixels));
+			lg.trace("Constructor(byte[]): compressed pixels(" + compressedPixels.length + "): hash=" + hashCompressed.substring(0, 6));
+		} catch (Exception e) {
+		}
+	}
 }
 public void nullifyUncompressedPixels(){
 	uncompressed = null;
@@ -57,24 +58,11 @@ public void nullifyUncompressedPixels(){
 public byte[] getPixels() throws ImageException {
 	try {
 		if (uncompressed == null){
-			lg.debug("VCImageCompressed.getPixels()  <<<<<<UNCOMPRESSING>>>>>>");
-			ByteArrayInputStream bis = new ByteArrayInputStream(compressedPixels);
-			InflaterInputStream iis = new InflaterInputStream(bis);
-			int temp;
-			byte buf[] = new byte[65536];
-			ByteArrayOutputStream bos = new ByteArrayOutputStream();
-			while((temp = iis.read(buf,0,buf.length)) != -1){
-				bos.write(buf,0,temp);
-			}
-			//byte uncompressed[] = new byte[getSizeX()*getSizeY()*getSizeZ()];
-			//int result = iis.read(uncompressed,0,getSizeX()*getSizeY()*getSizeZ());
-			//return uncompressed;
-			uncompressed = bos.toByteArray();
+			uncompressed = VCImage.inflate(compressedPixels,getNumXYZ());
 		}
 		return uncompressed;
-	} catch (IOException e){
-		lg.debug("getPixels( )",e);
-		throw new ImageException(e.getMessage());
+	} catch (IOException | DataFormatException e){
+		throw new ImageException(e.getMessage(), e);
 	}
 }
 /**
