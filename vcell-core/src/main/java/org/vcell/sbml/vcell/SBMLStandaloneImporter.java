@@ -180,7 +180,6 @@ public class SBMLStandaloneImporter {
 	
 	
 	public static void main(String[] args) {
-		ResourceUtil.setNativeLibraryDirectory();
 		new Standalone(args);
 	}
 	

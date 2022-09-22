@@ -8,7 +8,6 @@ public class NativeLibTest {
 	public void init( ) {
 		System.setProperty(PropertyLoader.installationRoot,"..");
 		ResourceUtil.init();
-		ResourceUtil.setNativeLibraryDirectory();
 	}
 	
 	@Test

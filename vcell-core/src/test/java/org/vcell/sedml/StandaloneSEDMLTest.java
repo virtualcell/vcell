@@ -331,11 +331,7 @@ public class StandaloneSEDMLTest {
 	
 	public static void main(String[] args) {
 		try {
-			
-			ResourceUtil.setNativeLibraryDirectory();
-
-			doit(new File("C:\\temp\\fff\\BBasicModel.sedx"));
-			
+			doit(new File("C:\\temp\\fff\\BBasicModel.sedx"));	
 		}catch (Exception e){
 			e.printStackTrace(System.out);
 		}finally{

@@ -52,7 +52,6 @@ public class SbmlVcmlConverter {
 	 * @param args -import or -export
 	 */
 public static void main(String[] args) {
-	ResourceUtil.setNativeLibraryDirectory();
 	if (args.length < 2 || args.length > 3) {
 		System.out.println("Usage:\n\t -export path_of_input_file\n\tOR\n\t -import path_of_input_file [-simulate]" );
         System.exit(1);
