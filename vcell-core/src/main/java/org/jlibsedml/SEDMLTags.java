@@ -10,6 +10,7 @@ public class SEDMLTags {
 	public static final String SEDML_L1V1_NS = "http://sed-ml.org/";
 	public static final String SEDML_L1V2_NS = "http://sed-ml.org/sed-ml/level1/version2";
 	public static final String SEDML_L1V3_NS = "http://sed-ml.org/sed-ml/level1/version3";
+	public static final String SEDML_L1V4_NS = "http://sed-ml.org/sed-ml/level1/version4";
 	public static final String SBML_NS = "http://www.sbml.org/sbml/level2";
 	public static final String SBML_NS_L2V4 = "http://www.sbml.org/sbml/level2/version4";
 	public static final String MATHML_NS = "http://www.w3.org/1998/Math/MathML";
@@ -80,6 +81,7 @@ public class SEDMLTags {
     public static final String UTCA_OUT_START_T			= "outputStartTime";
     public static final String UTCA_OUT_END_T			= "outputEndTime";
     public static final String UTCA_POINTS_NUM			= "numberOfPoints";
+    public static final String UTCA_STEPS_NUM			= "numberOfSteps";
     
     // one step attributes
     public static final String OS_STEP                  = "step";
