@@ -8,13 +8,14 @@ import cbit.vcell.xml.ExternalDocInfo;
 import org.jlibsedml.*;
 
 import org.apache.commons.io.FilenameUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.vcell.cli.CLILogFileManager;
+import org.vcell.cli.CLIRecorder;
 import org.vcell.cli.CLIUtils;
 import org.vcell.cli.vcml.VCMLHandler;
 import org.vcell.util.FileUtils;
 import org.vcell.util.GenericExtensionFilter;
+
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import java.io.File;
 import java.io.FilenameFilter;
@@ -33,7 +34,7 @@ public class ExecuteImpl {
     
     private final static Logger logger = LogManager.getLogger(ExecuteImpl.class);
 
-    public static void batchMode(File dirOfArchivesToProcess, File outputDir, CLILogFileManager logManager,
+    public static void batchMode(File dirOfArchivesToProcess, File outputDir, CLIRecorder cliLogger,
             boolean bKeepTempFiles, boolean bExactMatchOnly) throws IOException {
         FilenameFilter filter = (f, name) -> name.endsWith(".omex") || name.endsWith(".vcml");
         File[] inputFiles = dirOfArchivesToProcess.listFiles(filter);
@@ -46,11 +47,11 @@ public class ExecuteImpl {
                 if (inputFileName.endsWith("omex")) {
                     String bioModelBaseName = inputFileName.substring(0, inputFileName.indexOf(".")); // ".omex"??
                     Files.createDirectories(Paths.get(outputDir.getAbsolutePath() + File.separator + bioModelBaseName)); // make output subdir
-                    singleExecOmex(inputFile, outputDir, logManager, bKeepTempFiles, bExactMatchOnly, true);
+                    singleExecOmex(inputFile, outputDir, cliLogger, bKeepTempFiles, bExactMatchOnly, true);
                 }
 
                 if (inputFileName.endsWith("vcml")) {
-                    singleExecVcml(inputFile, outputDir, logManager);
+                    singleExecVcml(inputFile, outputDir, cliLogger);
                 }
             } catch (Exception e) {
                 logger.error("Error caught executing batch mode", e);
@@ -59,7 +60,7 @@ public class ExecuteImpl {
     }
 
     @Deprecated
-    public static void singleExecVcml(File vcmlFile, File outputDir, CLILogFileManager logManager) {
+    public static void singleExecVcml(File vcmlFile, File outputDir, CLIRecorder cliLogger) {
 
         VCMLHandler.outputDir = outputDir.getAbsolutePath();
         logger.debug("Executing VCML file " + vcmlFile);
@@ -111,12 +112,12 @@ public class ExecuteImpl {
     }
 
 
-    public static void singleExecOmex(File inputFile, File rootOutputDir, CLILogFileManager logManager, 
+    public static void singleExecOmex(File inputFile, File rootOutputDir, CLIRecorder logger, 
             boolean bKeepTempFiles, boolean bExactMatchOnly) throws Exception {
-        ExecuteImpl.singleExecOmex(inputFile, rootOutputDir, logManager, bKeepTempFiles, bExactMatchOnly, true);
+        ExecuteImpl.singleExecOmex(inputFile, rootOutputDir, logger, bKeepTempFiles, bExactMatchOnly, true);
     }
 
-    public static void singleExecOmex(File inputFile, File rootOutputDir, CLILogFileManager logManager,
+    public static void singleExecOmex(File inputFile, File rootOutputDir, CLIRecorder cliLogger,
             boolean bKeepTempFiles, boolean bExactMatchOnly, boolean bEncapsulateOutput) throws Exception {
         int nModels, nSimulations, nTasks, nOutputs, nReportsCount = 0, nPlots2DCount = 0, nPlots3DCount = 0;
         String logOmexMessage = "";
@@ -146,15 +147,15 @@ public class ExecuteImpl {
             sedmlLocations = omexHandler.getSedmlLocationsAbsolute();
         } catch (IOException e){
             String error = e.getMessage() + ", error for OmexHandler with " + inputFilePath;
-            logManager.writeErrorList(bioModelBaseName);
-            logManager.writeDetailedResultList(bioModelBaseName + ", " + ", IO error with OmexHandler");
+            cliLogger.writeErrorList(bioModelBaseName);
+            cliLogger.writeDetailedResultList(bioModelBaseName + ", " + "IO error with OmexHandler");
             logger.error(error);
             throw new RuntimeException(error, e);
         } catch (Exception e) { 
             omexHandler.deleteExtractedOmex();
             String error = e.getMessage() + ", error for archive " + inputFilePath;
-            logManager.writeErrorList(bioModelBaseName);
-            logManager.writeDetailedResultList(bioModelBaseName + ", " + ",unknown error with the archive file");
+            cliLogger.writeErrorList(bioModelBaseName);
+            cliLogger.writeDetailedResultList(bioModelBaseName + ", " + "unknown error with the archive file");
             logger.error(error);
             throw new RuntimeException(error, e);
         } 
@@ -221,7 +222,7 @@ public class ExecuteImpl {
                 Path path = Paths.get(sedmlPathwith2dand3d.getAbsolutePath());
                 if (!Files.exists(path)) {
                     String message = "Failed to create file " + sedmlPathwith2dand3d.getAbsolutePath();
-                    logManager.writeDetailedResultList(bioModelBaseName + "," + sedmlName + "," + message);
+                    cliLogger.writeDetailedResultList(bioModelBaseName + "," + sedmlName + "," + message);
                     throw new RuntimeException(message);
                 }
 
@@ -241,8 +242,8 @@ public class ExecuteImpl {
                 String type = e.getClass().getSimpleName();
                 PythonCalls.setOutputMessage(sedmlLocation, sedmlName, outputDir, "sedml", logDocumentMessage);
                 PythonCalls.setExceptionMessage(sedmlLocation, sedmlName, outputDir, "sedml", type, logDocumentError);
-                logManager.writeDetailedErrorList(bioModelBaseName + ",  doc:    " + type + ": " + logDocumentError);
-                logManager.writeDetailedResultList(bioModelBaseName + "," + sedmlName + "," + logDocumentError);
+                cliLogger.writeDetailedErrorList(bioModelBaseName + ",  doc:    " + type + ": " + logDocumentError);
+                cliLogger.writeDetailedResultList(bioModelBaseName + "," + sedmlName + "," + logDocumentError);
 
                 logger.error(prefix, e);
                 somethingFailed = true;
@@ -268,7 +269,7 @@ public class ExecuteImpl {
                 String str = "Building solvers and starting simulation of all tasks... ";
                 logger.info(str);
                 logDocumentMessage += str;
-                resultsHash = solverHandler.simulateAllTasks(externalDocInfo, sedml, logManager, outDirForCurrentSedml, outputDir,
+                resultsHash = solverHandler.simulateAllTasks(externalDocInfo, sedml, cliLogger, outDirForCurrentSedml, outputDir,
                         outputBaseDir, sedmlLocation, bKeepTempFiles, bExactMatchOnly);
                 //Map<String, String> sim2Hdf5Map = solverHandler.sim2Hdf5Map;    // may not need it
             } catch (Exception e) {
@@ -286,7 +287,7 @@ public class ExecuteImpl {
             message += solverHandler.countBioModels + ",";
             message += solverHandler.countSuccessfulSimulationRuns;
             //CLIUtils.writeDetailedResultList(outputBaseDir, bioModelBaseName + "," + sedmlName + ", ," + message, bForceLogFiles);
-            logManager.writeDetailedResultList(bioModelBaseName + "," + sedmlName + ", ," + message);
+            cliLogger.writeDetailedResultList(bioModelBaseName + "," + sedmlName + ", ," + message);
             logger.debug(message);
 
             //
@@ -347,7 +348,7 @@ public class ExecuteImpl {
                 PythonCalls.setOutputMessage(sedmlLocation, sedmlName, outputDir, "sedml", logDocumentMessage);
                 PythonCalls.setExceptionMessage(sedmlLocation, sedmlName, outputDir, "sedml", type, logDocumentError);
                 //CLIUtils.writeDetailedErrorList(outputBaseDir, bioModelBaseName + ",  doc:    " + type + ": " + logDocumentError, bForceLogFiles);
-                logManager.writeDetailedErrorList(bioModelBaseName + ",  doc:    " + type + ": " + logDocumentError);
+                cliLogger.writeDetailedErrorList(bioModelBaseName + ",  doc:    " + type + ": " + logDocumentError);
                 PythonCalls.updateSedmlDocStatusYml(sedmlLocation, Status.FAILED, outputDir);
                 org.apache.commons.io.FileUtils.deleteDirectory(new File(String.valueOf(sedmlPath2d3d)));    // removing temp path generated from python
                 continue;
@@ -361,7 +362,7 @@ public class ExecuteImpl {
                 PythonCalls.setOutputMessage(sedmlLocation, sedmlName, outputDir, "sedml", logDocumentMessage);
                 PythonCalls.setExceptionMessage(sedmlLocation, sedmlName, outputDir, "sedml", type, logDocumentError);
                 //CLIUtils.writeDetailedErrorList(outputBaseDir, bioModelBaseName + ",  doc:    " + type + ": " + logDocumentError, bForceLogFiles);
-                logManager.writeDetailedErrorList(bioModelBaseName + ",  doc:    " + type + ": " + logDocumentError);
+                cliLogger.writeDetailedErrorList(bioModelBaseName + ",  doc:    " + type + ": " + logDocumentError);
                 PythonCalls.updateSedmlDocStatusYml(sedmlLocation, Status.FAILED, outputDir);
                 org.apache.commons.io.FileUtils.deleteDirectory(new File(String.valueOf(sedmlPath2d3d)));    // removing temp path generated from python
                 continue;
@@ -394,11 +395,11 @@ public class ExecuteImpl {
             logger.error(error);
             logOmexMessage += error;
             //CLIUtils.writeErrorList(outputBaseDir, bioModelBaseName, bForceLogFiles);
-            logManager.writeErrorList(bioModelBaseName);
+            cliLogger.writeErrorList(bioModelBaseName);
         } else {
             PythonCalls.updateOmexStatusYml(Status.SUCCEEDED, outputDir, duration + "");
             //CLIUtils.writeFullSuccessList(outputBaseDir, bioModelBaseName, bForceLogFiles);
-            logManager.writeFullSuccessList(bioModelBaseName);
+            cliLogger.writeFullSuccessList(bioModelBaseName);
             logOmexMessage += " Done";
         }
         PythonCalls.setOutputMessage("null", "null", outputDir, "omex", logOmexMessage);

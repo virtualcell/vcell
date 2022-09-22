@@ -2,18 +2,17 @@ package org.vcell.cli.run;
 
 import cbit.vcell.resource.PropertyLoader;
 
-import org.vcell.cli.CLILocalLogFileManager;
+import org.vcell.cli.CLIRecorder;
 import org.vcell.cli.CLIPythonManager;
-import org.vcell.cli.CLIUtils;
 import org.vcell.util.exe.Executable;
 
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 
-import org.apache.logging.log4j.core.LoggerContext;
-import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.core.LoggerContext;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Level;
 
 import java.io.File;
 import java.util.concurrent.Callable;
@@ -21,7 +20,7 @@ import java.util.concurrent.Callable;
 @Command(name = "execute", description = "run .vcml or .omex files via Python API")
 public class ExecuteCommand implements Callable<Integer> {
 
-    private final static Logger logger = LogManager.getLogger(ExecuteCommand.class);
+    private final static Logger logger = org.apache.logging.log4j.LogManager.getLogger(ExecuteCommand.class);
 
     @Option(names = { "-i", "--inputFilePath" })
     private File inputFilePath;
@@ -60,18 +59,21 @@ public class ExecuteCommand implements Callable<Integer> {
 
 
     public Integer call() {
-        CLILocalLogFileManager logManager = null;
+        CLIRecorder cliLogger = null;
         try {
-            logManager = new CLILocalLogFileManager(outputFilePath, bForceLogFiles, bKeepFlushingLogs);
+            cliLogger = new CLIRecorder(outputFilePath); // CLILogger will throw an execption if our output dir isn't valid.
 
-            LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
             Level logLevel = logger.getLevel();
             if (!bQuiet && bDebug) {
                 logLevel = Level.DEBUG;
             } else if (bQuiet) {
                 logLevel = Level.OFF;
             }
-            CLIUtils.setLogLevel(ctx, logLevel);
+            
+            LoggerContext config = (LoggerContext)(LogManager.getContext(false));
+            config.getConfiguration().getLoggerConfig(LogManager.getLogger("org.vcell").getName()).setLevel(logLevel);
+            config.getConfiguration().getLoggerConfig(LogManager.getLogger("cbit").getName()).setLevel(logLevel);
+            config.updateLoggers();
 
             logger.debug("Execution mode requested");
 
@@ -99,26 +101,24 @@ public class ExecuteCommand implements Callable<Integer> {
             logger.info("Beginning execution");
             if (inputFilePath.isDirectory()) {
                 logger.debug("Batch mode requested");
-                ExecuteImpl.batchMode(inputFilePath, outputFilePath, logManager, bKeepTempFiles, bExactMatchOnly);
+                ExecuteImpl.batchMode(inputFilePath, outputFilePath, cliLogger, bKeepTempFiles, bExactMatchOnly);
             } else {
                 logger.debug("Single mode requested");
                 File archiveToProcess = inputFilePath;
 
                 if (archiveToProcess.getName().endsWith("vcml")) {
-                    ExecuteImpl.singleExecVcml(archiveToProcess, outputFilePath, logManager);
+                    ExecuteImpl.singleExecVcml(archiveToProcess, outputFilePath, cliLogger);
                 } else { // archiveToProcess.getName().endsWith("omex")
-                    ExecuteImpl.singleExecOmex(archiveToProcess, outputFilePath, logManager, bKeepTempFiles, bExactMatchOnly, bEncapsulateOutput);
+                    ExecuteImpl.singleExecOmex(archiveToProcess, outputFilePath, cliLogger, bKeepTempFiles, bExactMatchOnly, bEncapsulateOutput);
                 }
             }
 
             
             CLIPythonManager.getInstance().closePythonProcess(); // WARNING: Python will need reinstantiation after this is called
             return 0;
-        } catch (Exception e) {
-            logger.error(e.getMessage(), e);
+        } catch (Exception e) { ///TODO: Break apart into specific exceptions to maximize logging.
+            org.apache.logging.log4j.LogManager.getLogger(this.getClass()).error(e.getMessage(), e);
             return 1;
-        } finally {
-            if (logManager != null) logManager.finalizeAndExportLogFiles();
         }
     }
 }

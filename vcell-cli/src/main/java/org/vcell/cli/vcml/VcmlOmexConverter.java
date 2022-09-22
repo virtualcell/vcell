@@ -105,7 +105,7 @@ public class VcmlOmexConverter {
 									File input,
 									File outputDir,
 									ModelFormat modelFormat,
-									CLILogFileManager logManager, 
+									CLIRecorder cliLogger, 
 									boolean bHasDataOnly,
 									boolean bMakeLogsOnly,
 									boolean bNonSpatialOnly,
@@ -157,7 +157,7 @@ public class VcmlOmexConverter {
 				}
 			} catch (Exception e) {
 				logger.error("EXPORT FAILED: file=" +inputFile+", error="+e.getMessage(), e);
-				logManager.writeDetailedErrorList(inputFile + ",   " + e.getMessage());
+				cliLogger.writeDetailedErrorList(inputFile + ",   " + e.getMessage());
 			}
 		}
 	}
@@ -305,7 +305,9 @@ public class VcmlOmexConverter {
         String rdfString = getMetadata(vcmlName, bioModel, destination, bioModelInfo);
         XmlUtil.writeXMLStringToFile(rdfString, String.valueOf(Paths.get(outputDir, "metadata.rdf")), true);
         
-        SEDMLExporter sedmlExporter = new SEDMLExporter(vcmlName, bioModel, sedmlLevel, sedmlVersion, simsToExport);
+		String jsonFullyQualifiedName = Paths.get(outputBaseDir, "json_reports" ,vcmlName + ".json").toString();
+        SEDMLExporter sedmlExporter = new SEDMLExporter(vcmlName, bioModel, sedmlLevel, sedmlVersion, simsToExport, jsonFullyQualifiedName);
+
         SEDMLDocument sedmlDocument = sedmlExporter.getSEDMLDocument(outputDir, vcmlName,
 				modelFormat, true, bValidate);
         

@@ -2,13 +2,12 @@ package org.vcell.cli.biosimulation;
 
 import cbit.vcell.resource.PropertyLoader;
 
-import org.apache.logging.log4j.core.LoggerContext;
-import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.vcell.cli.CLILocalLogFileManager;
+import org.apache.logging.log4j.core.LoggerContext;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Level;
+import org.vcell.cli.CLIRecorder;
 import org.vcell.cli.CLIPythonManager;
-import org.vcell.cli.CLIUtils;
 import org.vcell.cli.run.ExecuteImpl;
 import org.vcell.util.exe.Executable;
 
@@ -42,18 +41,19 @@ public class BiosimulationsCommand implements Callable<Integer> {
     private boolean help;
 
     public Integer call() {
-        CLILocalLogFileManager logManager = null;
+        CLIRecorder cliLogger = null;
         try {
-            logManager = new CLILocalLogFileManager(OUT_DIR, bDebug, bDebug);
-
-            LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
+            cliLogger = new CLIRecorder(OUT_DIR); // CLILogger will throw an execption if our output dir isn't valid.
             Level logLevel = logger.getLevel();
             if (!bQuiet && bDebug) {
                 logLevel = Level.DEBUG;
             } else if (bQuiet) {
                 logLevel = Level.OFF;
             }
-            CLIUtils.setLogLevel(ctx, logLevel);
+            LoggerContext config = (LoggerContext)(LogManager.getContext(false));
+            config.getConfiguration().getLoggerConfig(LogManager.getLogger("org.vcell").getName()).setLevel(logLevel);
+            config.getConfiguration().getLoggerConfig(LogManager.getLogger("cbit").getName()).setLevel(logLevel);
+            config.updateLoggers();
 
             logger.debug("Biosimulations mode requested");
 
@@ -75,7 +75,9 @@ public class BiosimulationsCommand implements Callable<Integer> {
             }
 
             if (bVersion) {
-                logger.error(PropertyLoader.getRequiredDirectory(PropertyLoader.vcellSoftwareVersion));
+                String version = PropertyLoader.getRequiredProperty(PropertyLoader.vcellSoftwareVersion);
+                logger.info("Outputing version:");
+                System.out.println(version);
                 return 0;
             }
 
@@ -107,18 +109,17 @@ public class BiosimulationsCommand implements Callable<Integer> {
             logger.info("Beginning execution");
             try {
                 CLIPythonManager.getInstance().instantiatePythonProcess();
-                ExecuteImpl.singleExecOmex(ARCHIVE, OUT_DIR, logManager, bKeepTempFiles, bExactMatchOnly, false);
+                ExecuteImpl.singleExecOmex(ARCHIVE, OUT_DIR, cliLogger, bKeepTempFiles, bExactMatchOnly, false);
                 return 0; // Does this prevent finally?
             } finally {
                 try {
-                    if (logManager != null) logManager.finalizeAndExportLogFiles();
                     CLIPythonManager.getInstance().closePythonProcess(); // WARNING: Python will need reinstantiation after this is called
                 } catch (Exception e) {
                     logger.error(e.getMessage(), e);
                 }
             }
         } catch (Exception e) {
-            logger.error(e.getMessage(), e);
+            LogManager.getLogger(this.getClass()).error(e.getMessage(), e);
             return 1;
         }
     }

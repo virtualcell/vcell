@@ -10,6 +10,8 @@ import org.apache.logging.log4j.Logger;
 
 import cbit.vcell.mongodb.VCMongoMessage;
 import org.vcell.cli.vcml.ExportOmexCommand;
+import org.vcell.util.VCellUtilityHub;
+
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 
@@ -26,11 +28,24 @@ import picocli.CommandLine.Command;
 public class CLIStandalone {
     private final static Logger logger = LogManager.getLogger(CLIStandalone.class);
     public static void main(String[] args) {
-        logger.info("Starting Vcell...");
-        if (logger.isDebugEnabled()) logger.debug("!!!DEBUG Mode Active!!!");
-        VCMongoMessage.enabled = false;
-        int exitCode = new CommandLine(new CLIStandalone()).execute(args);
-        System.exit(exitCode);
+        int exitCode = -1;
+        try{
+            logger.info("Starting Vcell...");
+            if (logger.isDebugEnabled()) logger.debug("!!!DEBUG Mode Active!!!");
+            VCMongoMessage.enabled = false;
+            VCellUtilityHub.startup(VCellUtilityHub.MODE.CLI);
+            exitCode = new CommandLine(new CLIStandalone()).execute(args);
+        } catch (Throwable t){
+            logger.fatal("VCell encountered a serious error: " + t.getMessage(), t);
+        } finally {
+            try {
+                VCellUtilityHub.shutdown();
+            } catch (Exception e){
+                logger.error("VCellUtilityHub encountered a problem during shutdown: " + e.getMessage(), e);
+                exitCode = -1;
+            }
+            System.exit(exitCode);
+        }
     }
 }
 
