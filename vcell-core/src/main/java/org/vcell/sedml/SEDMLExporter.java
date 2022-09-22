@@ -177,6 +177,8 @@ public class SEDMLExporter {
 
 	public SEDMLDocument getSEDMLDocument(String sPath, String sBaseFileName, ModelFormat modelFormat, 
 				boolean bFromCLI, boolean bRoundTripSBMLValidation) {
+		
+		double start = System.currentTimeMillis();
 
 		// Create an SEDMLDocument and create the SEDMLModel from the document, so that other details can be added to it in translateBioModel()
 		SEDMLDocument sedmlDocument = new SEDMLDocument(this.sedmlLevel, this.sedmlVersion);
@@ -209,12 +211,14 @@ public class SEDMLExporter {
 		
 		this.translateBioModelToSedML(sPath, sBaseFileName, modelFormat, bFromCLI, bRoundTripSBMLValidation);
 		
+		double stop = System.currentTimeMillis();
+		Exception timer = new Exception(Double.toString((stop-start)/1000)+" seconds");
 		// update overall status
 		if (bFromCLI) {
 			if (sedmlRecorder.hasErrors()) {
-				sedmlRecorder.addTaskLog(vcBioModel.getName(), TaskType.BIOMODEL, TaskResult.FAILED, null);
+				sedmlRecorder.addTaskLog(vcBioModel.getName(), TaskType.BIOMODEL, TaskResult.FAILED, timer);
 			} else {
-				sedmlRecorder.addTaskLog(vcBioModel.getName(), TaskType.BIOMODEL, TaskResult.SUCCEEDED, null);
+				sedmlRecorder.addTaskLog(vcBioModel.getName(), TaskType.BIOMODEL, TaskResult.SUCCEEDED, timer);
 			}
 		}
 		

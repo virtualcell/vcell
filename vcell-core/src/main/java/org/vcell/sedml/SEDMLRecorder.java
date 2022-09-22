@@ -74,7 +74,7 @@ public class SEDMLRecorder extends Recorder {
 	}
 
 	public void addTaskLog(String taskName, TaskType taskType, TaskResult taskResult, Exception exception) {
-		this.taskLogs.add(new SEDMLTaskRecord(taskName, taskType, taskResult, exception));
+		this.taskLogs.add(new SEDMLTaskRecord(identifier, taskName, taskType, taskResult, exception));
 		this.addException(exception);
 	}
 
