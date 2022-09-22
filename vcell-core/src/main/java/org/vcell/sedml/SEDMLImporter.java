@@ -142,7 +142,9 @@ public class SEDMLImporter {
 		}
 		resolver = new ModelResolver(sedml);
 		if(ac != null) {
-			resolver.add(new ArchiveModelResolver(ac));
+			ArchiveModelResolver amr = new ArchiveModelResolver(ac);
+			amr.setSedmlPath(sedml.getPathForURI());
+			resolver.add(amr);
 		} else {
 			resolver.add(new FileModelResolver()); // assumes absolute paths
 			String sedmlRelativePrefix = externalDocInfo.getFile().getParent() + File.separator;
@@ -708,7 +710,7 @@ public class SEDMLImporter {
 		}
 	}
 
-	private void createBioModels(List<org.jlibsedml.Model> mmm, HashMap<String, BioModel> bmMap)  {
+	private void createBioModels(List<org.jlibsedml.Model> mmm, HashMap<String, BioModel> bmMap) throws Exception {
 		// first go through models without changes which are unique and must be imported as new BioModel/SimContext
 		for(Model mm : mmm) {
 			if (mm.getListOfChanges().isEmpty()) {
@@ -768,11 +770,14 @@ public class SEDMLImporter {
 		return true;
 	}
 
-	private BioModel importModel(Model mm) {
+	private BioModel importModel(Model mm) throws Exception {
 		BioModel bioModel = null;
 		String sedmlOriginalModelName = mm.getId();
 		String sedmlOriginalModelLanguage = mm.getLanguage();
 		String modelXML = resolver.getModelString(mm); // source with all the changes applied
+		if (modelXML == null) {
+			throw new Exception("Resolver could not find model: "+mm.getId());
+		}
 		String bioModelName = bioModelBaseName + "_" + sedml.getFileName() + "_" + sedmlOriginalModelName;
 		try {
 			if(sedmlOriginalModelLanguage.contentEquals(SUPPORTED_LANGUAGE.VCELL_GENERIC.getURN())) {	// vcml
@@ -796,18 +801,10 @@ public class SEDMLImporter {
 				docs.add(bioModel);
 				importMap.put(bioModel, sbmlImporter);
 			}
-		} catch (XmlParseException e) {
-			// TODO Auto-generated catch block 
-			logger.error(e.getMessage());
-			e.printStackTrace();
-		} catch (PropertyVetoException e) {
-			// TODO Auto-generated catch block
-			logger.error(e.getMessage());
-			e.printStackTrace();
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			logger.error(e.getMessage());
-			e.printStackTrace();
+			throw e;
 		}
 		return bioModel;
 	}
