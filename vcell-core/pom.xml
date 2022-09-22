@@ -82,13 +82,13 @@
 			<artifactId>junit</artifactId>
 			<scope>test</scope>
 		</dependency>
-		<!-- https://mvnrepository.com/artifact/com.github.stefanbirkner/system-rules -->
-		<dependency>
-			<groupId>com.github.stefanbirkner</groupId>
-			<artifactId>system-rules</artifactId>
-			<version>1.19.0</version>
-			<scope>test</scope>
-		</dependency>
+<!--		&lt;!&ndash; https://mvnrepository.com/artifact/com.github.stefanbirkner/system-rules &ndash;&gt;-->
+<!--		<dependency>-->
+<!--			<groupId>com.github.stefanbirkner</groupId>-->
+<!--			<artifactId>system-rules</artifactId>-->
+<!--			<version>1.19.0</version>-->
+<!--			<scope>test</scope>-->
+<!--		</dependency>-->
 		<!-- https://mvnrepository.com/artifact/com.google.code.gson/gson -->
 		<dependency>
 			<groupId>com.google.code.gson</groupId>

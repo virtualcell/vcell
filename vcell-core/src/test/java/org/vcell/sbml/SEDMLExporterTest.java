@@ -8,10 +8,8 @@ import cbit.vcell.xml.XmlHelper;
 import cbit.vcell.xml.XmlParseException;
 import com.google.common.io.Files;
 import org.jlibsedml.SEDMLDocument;
-import org.junit.Assert;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.contrib.java.lang.system.ProvideSystemProperty;
+import org.junit.*;
+//import org.junit.contrib.java.lang.system.ProvideSystemProperty;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.vcell.sedml.*;
@@ -31,10 +29,11 @@ import java.util.stream.Collectors;
 @RunWith(Parameterized.class)
 public class SEDMLExporterTest {
 
-	@Rule
-	public final ProvideSystemProperty myPropertyHasMyValue = new ProvideSystemProperty("vcell.installDir", "..");
+//	@Rule
+//	public final ProvideSystemProperty myPropertyHasMyValue = new ProvideSystemProperty("vcell.installDir", "..");
 
 	private String filename;
+	private String savedInstalldirProperty;
 
 	public SEDMLExporterTest(String filename){
 		this.filename = filename;
@@ -65,6 +64,17 @@ public class SEDMLExporterTest {
 		faults.put("biomodel_14647285.vcml", FAULT.MATHOVERRIDES_INVALID);
 
 		return Arrays.stream(VcmlTestSuiteFiles.getVcmlTestCases()).filter(t -> !faults.containsKey(t)).collect(Collectors.toList());
+	}
+
+	@Parameterized.BeforeParam
+	public void setup() {
+		this.savedInstalldirProperty = System.getProperty("vcell.installDir");
+		System.setProperty("vcell.installDir", "..");
+	}
+
+	@Parameterized.AfterParam
+	public void teardown(){
+		System.setProperty("vcell.installDir",this.savedInstalldirProperty);
 	}
 
 	@Test
