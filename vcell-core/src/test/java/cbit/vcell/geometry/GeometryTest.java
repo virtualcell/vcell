@@ -68,23 +68,26 @@ public static Geometry getExample_er_cytsol3D() throws Exception {
  */
 public static Geometry getImageExample2D() {
 
+	int numx=100;
+	int numy=100;
+	int numz=1;
 	try {
 		byte pixelValue1 = (byte)50;
-		byte pixelValue2 = (byte)200;
+		byte pixelValue2 = (byte)100;
 
-		byte array[] = new byte[100*100];
-		for (int i=0;i<100;i++){
-			for (int j=0;j<100;j++){
-				if (i>50){
-					array[i+100*j] = pixelValue1;
+		byte array[] = new byte[numx*numy*numz];
+		for (int i=0;i<numx;i++){
+			for (int j=0;j<numy;j++){
+				if (i>numx/2){
+					array[i+numx*j] = pixelValue1;
 				}else{
-					array[i+100*j] = pixelValue2;
+					array[i+numx*j] = pixelValue2;
 				}
 			}
 		}
 
-		org.vcell.util.Extent extent = new org.vcell.util.Extent(10,10,10);
-		cbit.image.VCImage vcImage = new cbit.image.VCImageUncompressed(null,array,extent,100,100,1);
+		org.vcell.util.Extent extent = new org.vcell.util.Extent(10,10,1);
+		cbit.image.VCImage vcImage = new cbit.image.VCImageUncompressed(null,array,extent,numx,numy,numz);
 
 		Geometry geo = new Geometry("getImageExample()",vcImage);
 		geo.getGeometrySpec().setOrigin(new org.vcell.util.Origin(-5,-5,-5));
@@ -95,7 +98,7 @@ public static Geometry getImageExample2D() {
 		ImageSubVolume isv1 = geo.getGeometrySpec().getImageSubVolumeFromPixelValue(0xff & (int)pixelValue1);
 		isv1.setName("cytosol");
 		ImageSubVolume isv2 = geo.getGeometrySpec().getImageSubVolumeFromPixelValue(0xff & (int)pixelValue2);
-		isv2.setName("er");
+		isv2.setName("ec");
 
 		cbit.vcell.geometry.surface.GeometrySurfaceUtils.updateGeometricRegions(geo.getGeometrySurfaceDescription());
 		
