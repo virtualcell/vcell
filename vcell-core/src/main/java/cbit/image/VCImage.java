@@ -145,8 +145,8 @@ public boolean compareEqual(Matchable obj, int dimension, boolean bIgnoreMetadat
 	//	return false;
 	//}
 	try {
-		byte array1[] = getPixelsCompressed();
-		byte array2[] = vci.getPixelsCompressed();
+		byte array1[] = getPixels();
+		byte array2[] = vci.getPixels();
 
 		if (array1.length!=array2.length){
 			return false;

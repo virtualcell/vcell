@@ -9,12 +9,7 @@
  */
 
 package cbit.vcell.mapping;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Vector;
+import java.util.*;
 
 import org.vcell.util.Pair;
 import org.vcell.util.TokenMangler;
@@ -231,7 +226,7 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 	while (enum1.hasMoreElements()){
 		SpeciesContextMapping scm = enum1.nextElement();
 		if (scm.getVariable() instanceof ParticleVariable){
-			if (!(mathDesc.getVariable(scm.getVariable().getName()) instanceof ParticleVariable)){
+			if (!(varHash.getVariable(scm.getVariable().getName()) instanceof ParticleVariable)){
 				varHash.addVariable(scm.getVariable());
 			}
 		}
@@ -485,12 +480,6 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 	}
 
 	//
-	// set Variables to MathDescription all at once with the order resolved by "VariableHash"
-	//
-	mathDesc.setAllVariables(varHash.getAlphabeticallyOrderedVariables());
-	
-	
-	//
 	// geometry
 	//
 	if (getSimulationContext().getGeometryContext().getGeometry() != null){
@@ -590,7 +579,7 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 				Expression initialDistribution = scs.getInitialConcentrationParameter().getExpression() == null ? null : new Expression(getMathSymbol(scs.getInitialConcentrationParameter(),sm.getGeometryClass()));
 				if(particleVariable instanceof VolumeParticleVariable)
 				{
-					initialDistribution = Expression.mult(unitFactor, initialDistribution).flattenFactors("KMOLE");
+					initialDistribution = Expression.mult(unitFactor, initialDistribution).simplifyJSCL();
 				}
 				pic = new ParticleInitialConditionConcentration(initialDistribution);
 			} else {
@@ -708,7 +697,7 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 				SpeciesContextSpec scs = getSimulationContext().getReactionContext().getSpeciesContextSpec(sc);
 				GeometryClass scGeometryClass = getSimulationContext().getGeometryContext().getStructureMapping(sc.getStructure()).getGeometryClass();
 				String varName = getMathSymbol(sc, scGeometryClass);
-				Variable var = mathDesc.getVariable(varName);
+				Variable var = varHash.getVariable(varName);
 				if (var instanceof ParticleVariable)
 				{
 					ParticleVariable particle = (ParticleVariable)var;
@@ -811,7 +800,7 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 					SpeciesContextSpec scs = getSimulationContext().getReactionContext().getSpeciesContextSpec(sc);
 					GeometryClass scGeometryClass = getSimulationContext().getGeometryContext().getStructureMapping(sc.getStructure()).getGeometryClass();
 					String varName = getMathSymbol(sc, scGeometryClass);
-					Variable var = mathDesc.getVariable(varName);
+					Variable var = varHash.getVariable(varName);
 					if (var instanceof ParticleVariable){
 						ParticleVariable particle = (ParticleVariable)var;
 						reactantParticles.add(particle);
@@ -834,7 +823,7 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 					SpeciesContextSpec scs = getSimulationContext().getReactionContext().getSpeciesContextSpec(sc);
 					GeometryClass scGeometryClass = getSimulationContext().getGeometryContext().getStructureMapping(sc.getStructure()).getGeometryClass();
 					String varName = getMathSymbol(sc, scGeometryClass);
-					Variable var = mathDesc.getVariable(varName);
+					Variable var = varHash.getVariable(varName);
 					if (var instanceof ParticleVariable){
 						ParticleVariable particle = (ParticleVariable)var;
 						productParticles.add(particle);
@@ -903,7 +892,7 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 						forwardUnitFactor = forwardUnitFactor.multiplyBy(reactantUnitFactor); // accumulate unit factors for all reactants
 					}
 
-					forwardRate = Expression.mult(forwardRate, getUnitFactor(forwardUnitFactor)).flattenFactors("KMOLE");
+					forwardRate = Expression.mult(forwardRate, getUnitFactor(forwardUnitFactor)).simplifyJSCL();
 					VCUnitDefinition smoldynExpectedForwardRateUnit = smoldynReactionRateUnit.divideBy(smoldynReactantsUnit);
 
 					// get probability
@@ -944,7 +933,7 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 						reverseUnitFactor = reverseUnitFactor.multiplyBy(productUnitFactor); // accumulate unit factors for all products
 					}
 
-					reverseRate = Expression.mult(reverseRate, getUnitFactor(reverseUnitFactor)).flattenFactors("KMOLE");
+					reverseRate = Expression.mult(reverseRate, getUnitFactor(reverseUnitFactor)).simplifyJSCL();
 					VCUnitDefinition smoldynExpectedReverseRateUnit = smoldynReactionRateUnit.divideBy(smoldynProductsUnit);
 							
 					// get probability
@@ -970,24 +959,31 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 		if (fieldMathMappingParameters[i] instanceof UnitFactorParameter){
 			GeometryClass geometryClass = fieldMathMappingParameters[i].getGeometryClass();
 			Variable variable = newFunctionOrConstant(getMathSymbol(fieldMathMappingParameters[i],geometryClass),getIdentifierSubstitutions(fieldMathMappingParameters[i].getExpression(),fieldMathMappingParameters[i].getUnitDefinition(),geometryClass),fieldMathMappingParameters[i].getGeometryClass());
-			if (mathDesc.getVariable(variable.getName())==null){
-				variable.bind(mathDesc);
-				mathDesc.addVariable(variable);
+			if (varHash.getVariable(variable.getName())==null){
+				varHash.addVariable(variable);
 			}
 		}
 	}
-	
+
+	//
+	// set Variables to MathDescription all at once with the order resolved by "VariableHash"
+	//
+	mathDesc.setAllVariables(varHash.getAlphabeticallyOrderedVariables());
+
+	mathDesc.refreshDependencies();
 
 	if (!mathDesc.isValid()){
-		lg.warn(mathDesc.getVCML_database());
+		if (lg.isTraceEnabled()) {
+			lg.trace(mathDesc.getVCML_database());
+		}
 		throw new MappingException("generated an invalid mathDescription: "+mathDesc.getWarning());
 	}
 
-	if (lg.isDebugEnabled()) {
-		System.out.println("]]]]]]]]]]]]]]]]]]]]]] VCML string begin ]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]");
-		System.out.println(mathDesc.getVCML());
-		System.out.println("]]]]]]]]]]]]]]]]]]]]]] VCML string end ]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]");
-	}
+//	if (lg.isTraceEnabled()) {
+//		System.out.println("]]]]]]]]]]]]]]]]]]]]]] VCML string begin ]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]");
+//		System.out.println(mathDesc.getVCML());
+//		System.out.println("]]]]]]]]]]]]]]]]]]]]]] VCML string end ]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]");
+//	}
 }
 
 /**
@@ -1302,14 +1298,18 @@ private void combineHybrid() throws MappingException, ExpressionException, Matri
 		}
 	}
 
+	mathDesc.refreshDependencies();
+
 	if (!mathDesc.isValid()){
-		System.out.println(mathDesc.getVCML_database());
+		if (lg.isTraceEnabled()) {
+			lg.trace(mathDesc.getVCML_database());
+		}
 		throw new MappingException("generated an invalid mathDescription: "+mathDesc.getWarning());
 	}
 
-	System.out.println("]]]]]]]]]]]]]]]]]]]]]] VCML string begin ]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]");
-	System.out.println(mathDesc.getVCML());
-	System.out.println("]]]]]]]]]]]]]]]]]]]]]] VCML string end ]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]");
+//	System.out.println("]]]]]]]]]]]]]]]]]]]]]] VCML string begin ]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]");
+//	System.out.println(mathDesc.getVCML());
+//	System.out.println("]]]]]]]]]]]]]]]]]]]]]] VCML string end ]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]");
 
 }
 

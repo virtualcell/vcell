@@ -12,12 +12,14 @@ package cbit.vcell.parser;
 
 import java.util.Random;
 import java.util.Vector;
+import java.util.function.BiPredicate;
 
-import jscl.math.Generic;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import cbit.vcell.parser.ASTFuncNode.FunctionType;
+import org.vcell.util.Matchable;
+
 /**
  * Insert the type's description here.
  * Creation date: (12/27/2002 1:37:29 PM)
@@ -26,6 +28,16 @@ import cbit.vcell.parser.ASTFuncNode.FunctionType;
 public class ExpressionUtils {
 	private static Logger lg = LogManager.getLogger(ExpressionUtils.class);
 	public static String value_molecules_per_uM_um3_NUMERATOR = "6.02214179E8";
+
+	public static class ExpressionEquivalencePredicate implements BiPredicate<Matchable,Matchable> {
+		@Override
+		public boolean test(Matchable matchable, Matchable matchable2) {
+			if (matchable instanceof Expression && matchable2 instanceof Expression){
+				return functionallyEquivalent((Expression)matchable, (Expression) matchable2);
+			}
+			return false;
+		}
+	}
 
 private static SimpleNode createNode(java.util.Random random, boolean bIsConstraint) {
 	final int AddNode = 0;
@@ -208,70 +220,6 @@ private static SimpleNode createTerminalNode(java.util.Random random, boolean bI
 	}else{
 		return new ASTFloatNode(random.nextDouble());
 	}
-}
-
-public static Expression simplifyUsingJSCL(Expression exp) throws ExpressionException {
-	return simplifyUsingJSCL(exp, 100);
-}
-
-public static Expression simplifyUsingJSCL(Expression exp, int maxExpLength) throws ExpressionException {
-	long startTime = System.currentTimeMillis();
-	jscl.math.Expression jsclExpression = null;
-	String jsclExpressionString = exp.infix_JSCL();
-	if (jsclExpressionString.replace("underscore","_").length()>maxExpLength){
-		throw new ExpressionException("large expression, abort JSCL simplification");
-	}
-	if (jsclExpressionString.contains("<") || jsclExpressionString.contains(">")){
-		throw new ExpressionException("JSCL cannot parse inequalities, cannot parse \""+jsclExpressionString+"\"");
-	}
-	try {
-		jsclExpression = jscl.math.Expression.valueOf(jsclExpressionString);
-	}catch (jscl.text.ParseException e){
-		throw new ExpressionException("JSCL couldn't parse \""+jsclExpressionString+"\"");
-	}
-
-	Generic expand = jsclExpression.expand();
-	String expandStr = expand.toString();
-	Generic simplify = expand.simplify();
-	String simplifyStr = simplify.toString();
-	if (simplifyStr.replace("underscore","_").length()>maxExpLength){
-		throw new ExpressionException("large expression, abort JSCL simplification");
-	}
-	jscl.math.Generic jsclSolution = simplify.factorize();
-
-//	cbit.vcell.parser.Expression firstSolution = new cbit.vcell.parser.Expression(jsclSolution.toString());
-//
-//	firstSolution = firstSolution.flatten();
-//
-//	jsclExpressionString = firstSolution.infix_JSCL();
-//	try {
-//		jsclExpression = jscl.math.Expression.valueOf(jsclExpressionString);
-//	}catch (jscl.text.ParseException e){
-//		throw new ExpressionException("JSCL couldn't parse \""+jsclExpressionString+"\"");
-//	}
-//
-//	Generic expand1 = jsclExpression.expand();
-//	Generic simplify1 = expand1.simplify();
-//	String simplifyStr1 = simplify.toString();
-//	if (simplifyStr1.replace("underscore","_").length()>maxExpLength){
-//		throw new ExpressionException("large expression, abort JSCL simplification");
-//	}
-//	jsclSolution = simplify1.factorize();
-
-	Expression solution = new cbit.vcell.parser.Expression(jsclSolution.toString());
-
-	String[] jsclSymbols = solution.getSymbols();
-	for (int i = 0;jsclSymbols!=null && i < jsclSymbols.length; i++){
-		String restoredSymbol = cbit.vcell.parser.SymbolUtils.getRestoredStringJSCL(jsclSymbols[i]);
-		if (!restoredSymbol.equals(jsclSymbols[i])){
-			solution.substituteInPlace(new cbit.vcell.parser.Expression(jsclSymbols[i]),new cbit.vcell.parser.Expression(restoredSymbol));
-		}
-	}
-	long endTime = System.currentTimeMillis();
-	if (endTime-startTime > 100){
-		lg.info("JSCL expression simplification took "+(endTime-startTime)+" ms for '"+exp.infix()+"'");
-	}
-	return solution.flatten();
 }
 
 public static boolean derivativeFunctionallyEquivalent(Expression exp, String diffSymbol, Expression diff, double relativeTolerance, double absoluteTolerance) {

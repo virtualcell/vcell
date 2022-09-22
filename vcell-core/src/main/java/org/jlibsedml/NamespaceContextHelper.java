@@ -90,7 +90,7 @@ import org.slf4j.LoggerFactory;
  
  */
  public class NamespaceContextHelper implements NamespaceContext {
-     Logger log = LoggerFactory.getLogger(NamespaceContextHelper.class);
+    Logger log = LoggerFactory.getLogger(NamespaceContextHelper.class);
 	private Map<String, String> ns = new HashMap<String, String>();
 
 	/**
@@ -152,6 +152,12 @@ import org.slf4j.LoggerFactory;
 					"Null prefix or uri passed to NamespaceContextHelper");
 		}
 
+		// VCell Hacky-fix (for a hacky implementation)
+		//if (uri.equals("http://www.copasi.org/static/sbml")){
+		//	log.warn("jlibsedml just tried to map a COPASI RDF namespace! Don't worry, we stopped it.");
+		//	return; // We have no need to consider the COPASI RDF namespace in VCell
+		//}
+
 		if (ns.containsKey(prefix)) {
 			String curURI = (String) ns.get(prefix);
 			if (uri.equals(curURI)) {
@@ -183,7 +189,7 @@ import org.slf4j.LoggerFactory;
 			ns.put(prefix, uri);
 		} else {
 			if (prefix.matches("\\w[^ :/]*")) {
-				ns.put(prefix, uri);
+				this.ns.put(prefix, uri);
 			} else {
 				throw new IllegalArgumentException(
 						"Prefix is not a valid NCName in NamespaceContextHelper");
@@ -193,7 +199,8 @@ import org.slf4j.LoggerFactory;
 
 	/** Implements the NamespaceContext getNamespaceURI method. */
 	public String getNamespaceURI(String prefix) {
-		return ns.get(prefix);
+		String s = ns.get(prefix);
+		return s;
 	}
 	private Set<Namespace> nss;
 
@@ -213,6 +220,9 @@ import org.slf4j.LoggerFactory;
 			Namespace ns = el.getNamespace();
 
 			if (ns != null && !nss.contains(ns)) {
+				if (ns.getURI().equals("http://www.copasi.org/static/sbml")){
+					ns = Namespace.getNamespace("COPASI", "http://www.copasi.org/static/sbml");
+				}
 				nss.add(ns);
 			}
 			List<Attribute> atts = el.getAttributes();

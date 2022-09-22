@@ -12,14 +12,7 @@ package cbit.vcell.mapping;
 
 
 import java.beans.PropertyVetoException;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import org.vcell.model.rbm.ComponentStateDefinition;
 import org.vcell.model.rbm.ComponentStatePattern;
@@ -400,11 +393,6 @@ protected RulebasedMathMapping(SimulationContext simContext, MathMappingCallback
 		}
 
 		//
-		// set Variables to MathDescription all at once with the order resolved by "VariableHash"
-		//
-		mathDesc.setAllVariables(varHash.getAlphabeticallyOrderedVariables());
-		
-		//
 		// set up particle initial conditions in subdomain
 		//
 		for (SpeciesContext sc : model.getSpeciesContexts()){
@@ -429,20 +417,29 @@ protected RulebasedMathMapping(SimulationContext simContext, MathMappingCallback
 		for (int i = 0; i < fieldMathMappingParameters.length; i++){
 			if (fieldMathMappingParameters[i] instanceof UnitFactorParameter){
 				Variable variable = newFunctionOrConstant(getMathSymbol(fieldMathMappingParameters[i],geometryClass),getIdentifierSubstitutions(fieldMathMappingParameters[i].getExpression(),fieldMathMappingParameters[i].getUnitDefinition(),geometryClass),fieldMathMappingParameters[i].getGeometryClass());
-				if (mathDesc.getVariable(variable.getName())==null){
-					mathDesc.addVariable(variable);
+				if (varHash.getVariable(variable.getName())==null){
+					varHash.addVariable(variable);
 				}
 			}
 			if (fieldMathMappingParameters[i] instanceof ObservableConcentrationParameter){
 				Variable variable = newFunctionOrConstant(getMathSymbol(fieldMathMappingParameters[i],geometryClass),getIdentifierSubstitutions(fieldMathMappingParameters[i].getExpression(),fieldMathMappingParameters[i].getUnitDefinition(),geometryClass),fieldMathMappingParameters[i].getGeometryClass());
-				if (mathDesc.getVariable(variable.getName())==null){
-					mathDesc.addVariable(variable);
+				if (varHash.getVariable(variable.getName())==null){
+					varHash.addVariable(variable);
 				}
 			}
 		}
 
+		//
+		// set Variables to MathDescription all at once with the order resolved by "VariableHash"
+		//
+		mathDesc.setAllVariables(varHash.getAlphabeticallyOrderedVariables());
+
+		mathDesc.refreshDependencies();
+
 		if (!mathDesc.isValid()){
-			System.out.println(mathDesc.getVCML_database());
+			if (lg.isTraceEnabled()) {
+				lg.trace(mathDesc.getVCML_database());
+			}
 			throw new MappingException("generated an invalid mathDescription: "+mathDesc.getWarning());
 		}
 	}
@@ -815,7 +812,7 @@ protected RulebasedMathMapping(SimulationContext simContext, MathMappingCallback
 			e.printStackTrace();
 		}
 		
-		Expression forward_rateExp = Expression.mult(getUnitFactor(forward_substanceConversionUnit), new Expression(forward_rateParameter, getNameScope()),forward_sizeFactor).flattenFactors("KMOLE");
+		Expression forward_rateExp = Expression.mult(getUnitFactor(forward_substanceConversionUnit), new Expression(forward_rateParameter, getNameScope()),forward_sizeFactor).simplifyJSCL();
 		VCUnitDefinition forward_rateUnit = forward_rateParameter.getUnitDefinition().multiplyBy(forward_sizeFactorUnit).multiplyBy(forward_substanceConversionUnit);
 		
 		ProbabilityParameter forward_probParm = addProbabilityParameter(PARAMETER_PROBABILITYRATE_PREFIX+jpName, forward_rateExp, PARAMETER_ROLE_P, forward_rateUnit,reactionRule);
@@ -898,7 +895,7 @@ protected RulebasedMathMapping(SimulationContext simContext, MathMappingCallback
 				e.printStackTrace();
 			}
 			
-			Expression reverse_rateExp = Expression.mult(new Expression(reverse_rateParameter, getNameScope()),reverse_sizeFactor,getUnitFactor(reverse_substanceConversionUnit)).flattenFactors("KMOLE");
+			Expression reverse_rateExp = Expression.mult(new Expression(reverse_rateParameter, getNameScope()),reverse_sizeFactor,getUnitFactor(reverse_substanceConversionUnit)).simplifyJSCL();
 			VCUnitDefinition reverse_rateUnit = reverse_rateParameter.getUnitDefinition().multiplyBy(reverse_sizeFactorUnit).multiplyBy(reverse_substanceConversionUnit);
 			
 			// if the reaction has forward rate (Mass action,HMMs), or don't have either forward or reverse rate (some other rate laws--like general)

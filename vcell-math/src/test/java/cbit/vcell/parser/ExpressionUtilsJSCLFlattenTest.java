@@ -13,12 +13,12 @@ public class ExpressionUtilsJSCLFlattenTest {
 
     private Expression expectedFlattenedExpression;
     private Expression origExpression;
-    private Boolean tooBig;
+    private Boolean expectTimeout;
 
-    public ExpressionUtilsJSCLFlattenTest(Expression origExpression, Expression expectedFlattenedExpression, Boolean tooBig) {
+    public ExpressionUtilsJSCLFlattenTest(Expression origExpression, Expression expectedFlattenedExpression, Boolean expectTimeout) {
         this.expectedFlattenedExpression = expectedFlattenedExpression;
         this.origExpression = origExpression;
-        this.tooBig = tooBig;
+        this.expectTimeout = expectTimeout;
     }
 
 
@@ -26,6 +26,7 @@ public class ExpressionUtilsJSCLFlattenTest {
     @Parameterized.Parameters
     public static Collection<Object[]> testCases() throws ExpressionException {
         return Arrays.asList(new Object[][]{
+
                 {new Expression("KMOLE/KMOLE"),
                         new Expression("1.0"),
                         Boolean.FALSE},
@@ -90,32 +91,44 @@ public class ExpressionUtilsJSCLFlattenTest {
                         new Expression("KMOLE"),
                         Boolean.FALSE},
 
+                //
+                // the expressions below are expected to timeout
+                //
                 {new Expression(       "(((V32 / ((k32 ^ 3.0) + (Ca_nM ^ 3.0))) + b32) * ((Vm32 * (Ca_nM ^ 7.0) / ((km32 ^ 7.0) + (Ca_nM ^ 7.0))) + bm32))"),
-                        new Expression("((V32 + (b32 * (Ca_nM ^ 3.0)) + (b32 * (k32 ^ 3.0))) * ((Vm32 * (Ca_nM ^ 7.0)) + (bm32 * (Ca_nM ^ 7.0)) + (bm32 * (km32 ^ 7.0))) / (((Ca_nM ^ 3.0) + (k32 ^ 3.0)) * ((Ca_nM ^ 7.0) + (km32 ^ 7.0))))"),
+                        new Expression("(((V32 + (b32 * (Ca_nM ^ 3.0)) + (b32 * (k32 ^ 3.0))) * ((Vm32 * (Ca_nM ^ 7.0)) + (bm32 * (Ca_nM ^ 7.0)) + (bm32 * (km32 ^ 7.0)))) / (((Ca_nM ^ 3.0) + (k32 ^ 3.0)) * ((Ca_nM ^ 7.0) + (km32 ^ 7.0))))"),
                         Boolean.TRUE},
 
                 {new Expression(       "(((V32 / ((k32 ^ 2.0) + (Ca_nM ^ 2.0))) + b32) * ((Vm32 * (Ca_nM ^ 7.0) / ((km32 ^ 7.0) + (Ca_nM ^ 7.0))) + bm32))"),
                         new Expression("((V32 + ((Ca_nM ^ 2.0) * b32) + (b32 * (k32 ^ 2.0))) * ((Vm32 * (Ca_nM ^ 7.0)) + (bm32 * (Ca_nM ^ 7.0)) + (bm32 * (km32 ^ 7.0))) / (((Ca_nM ^ 2.0) + (k32 ^ 2.0)) * ((Ca_nM ^ 7.0) + (km32 ^ 7.0))))"),
                         Boolean.TRUE},
 
-                {new Expression("((kf * (1.0 - BrF) * PointedD_Cyt * BarbedD_Cyt / L) - (((k1 * L) + (k2 * (L ^ 2.0) * N)) * N * FAD_Cyt / (FAD_Cyt + FAT_Cyt + FADPi_Cyt)))"),
-                        new Expression("1.0"),
+//                {new Expression("((kf * (1.0 - BrF) * PointedD_Cyt * BarbedD_Cyt / L) - (((k1 * L) + (k2 * (L ^ 2.0) * N)) * N * FAD_Cyt / (FAD_Cyt + FAT_Cyt + FADPi_Cyt)))"),
+//                        new Expression("((kf * (1.0 - BrF) * PointedD_Cyt * BarbedD_Cyt / L) - (((k1 * L) + (k2 * (L ^ 2.0) * N)) * N * FAD_Cyt / (FAD_Cyt + FAT_Cyt + FADPi_Cyt)))"),
+//                        Boolean.TRUE},
+
+                {new Expression("(0.001 * ((CofFAD2_Cyt * Kf) - (1.0E9 * BarbedD_Cyt * (Cof_Cyt ^ 2.0) * Kr * PointedD_Cyt)))"),
+                        new Expression("(0.001 * ((CofFAD2_Cyt * Kf) - (1.0E9 * BarbedD_Cyt * (Cof_Cyt ^ 2.0) * Kr * PointedD_Cyt)))"),
                         Boolean.TRUE},
+
+//                {new Expression("(0.001 * ((CofFAD2_Cyt * Kf) - (1.0E9 * BarbedD_Cyt * ((0.001 * Cof_Cyt) ^ 2.0) * Kr * PointedD_Cyt)))"),
+//                        new Expression("(0.001 * ((CofFAD2_Cyt * Kf) - (1.0E9 * BarbedD_Cyt * ((0.001 * Cof_Cyt) ^ 2.0) * Kr * PointedD_Cyt)))"),
+//                        Boolean.TRUE},
+
         });
     }
 
     @Test
     public void simplifySymbolFactorTest_small() throws ExpressionException {
         try {
-            Expression flattenedExp = ExpressionUtils.simplifyUsingJSCL(origExpression);
+            Expression flattenedExp = origExpression.simplifyJSCL(20000, true);
             Assert.assertTrue("expected='" + expectedFlattenedExpression.infix() + "', actual='" + flattenedExp.infix() + "'",
                     expectedFlattenedExpression.compareEqual(flattenedExp));
             Assert.assertTrue("expressions not equivalent: expected='" + expectedFlattenedExpression.infix() + "', actual='" + flattenedExp.infix() + "'",
                     ExpressionUtils.functionallyEquivalent(expectedFlattenedExpression, flattenedExp, false));
             Assert.assertTrue("expressions not equivalent: expected='" + expectedFlattenedExpression.infix() + "', original='" + origExpression.infix() + "'",
                     ExpressionUtils.functionallyEquivalent(expectedFlattenedExpression, origExpression, false));
-        } catch (ExpressionException e){
-            if (tooBig){
+        } catch (jscl.math.Expression.ExpressionTimeoutException e){
+            if (expectTimeout){
                 return;
             }else{
                 throw e;

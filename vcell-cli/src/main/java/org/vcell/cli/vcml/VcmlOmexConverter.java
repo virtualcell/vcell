@@ -113,8 +113,6 @@ public class VcmlOmexConverter {
 									boolean bValidateOmex)
 			throws IOException, SQLException, DataAccessException {
 
-		Set<String> hasNonSpatialSet = new LinkedHashSet<>();
-		Set<String> hasSpatialSet = new LinkedHashSet<>();
 		if (input == null || !input.isDirectory()) {
 			throw new RuntimeException("expecting inputFilePath to be an existing directory");
 		}
@@ -131,15 +129,14 @@ public class VcmlOmexConverter {
 		writeExportStatusList(outputDir.getAbsolutePath(), "makeLogsOnly is " + bMakeLogsOnly, jobConfigFile, bForceLogFiles);
 		writeExportStatusList(outputDir.getAbsolutePath(), "nonSpatialOnly is " + bNonSpatialOnly, jobConfigFile, bForceLogFiles);
 
-//            assert inputFiles != null;
+		// get the bioModelInfos from database
+		List<BioModelInfo> publicBioModelInfos = cliDatabaseService.queryPublicBioModels();
 		for (String inputFile : inputFiles) {
 			File file = new File(input, inputFile);
 			logger.info(" ============== start: " + inputFile);
 			try {
 				if (inputFile.endsWith(".vcml")) {
 					Predicate<Simulation> simulationExportFilter = simulation -> keepSimulation(simulation, bHasDataOnly, bNonSpatialOnly, cliDatabaseService);
-					// recover the bioModelInfo
-					List<BioModelInfo> publicBioModelInfos = cliDatabaseService.queryPublicBioModels();
 					BioModelInfo bioModelInfo = null;
 					String vcmlName = FilenameUtils.getBaseName(inputFile);
 					for (BioModelInfo bmi : publicBioModelInfos){
@@ -163,7 +160,6 @@ public class VcmlOmexConverter {
 				logManager.writeDetailedErrorList(inputFile + ",   " + e.getMessage());
 			}
 		}
-		writeLogForOmexCreation(outputDir.getAbsolutePath(), hasNonSpatialSet, hasSpatialSet, bForceLogFiles);
 	}
 
 	private static boolean keepSimulation(Simulation simulation, boolean bHasDataOnly, boolean bNonSpatialOnly, CLIDatabaseService cliDatabaseService) {
@@ -282,7 +278,6 @@ public class VcmlOmexConverter {
         List<Simulation> simsToExport = Arrays.stream(bioModel.getSimulations()).filter(simulationExportFilter).collect(Collectors.toList());
 
 		// we replace the obsolete solver with the fully supported equivalent
-        Set<String> orphanMathOverrides = new LinkedHashSet<>();
 		for (Simulation simulation : simsToExport) {
 			if (simulation.getSolverTaskDescription().getSolverDescription().equals(SolverDescription.FiniteVolume)) {
 				try {
@@ -321,6 +316,19 @@ public class VcmlOmexConverter {
             String[] files = dir.list();
             removeOtherFiles(outputDir, files);
         	return false;
+        } else {
+        	// write summary of successful export
+        	boolean hasSpatial = false;
+        	for (SimulationContext sc : bioModel.getSimulationContexts()) {
+        		if (sc.getGeometry().getDimension() > 0) {
+        			hasSpatial = true;
+        			break;
+        		}
+        	}
+        	int numModels = sedmlDocument.getSedMLModel().getModels().size();
+        	int numTasks = sedmlDocument.getSedMLModel().getTasks().size();
+        	String summary = vcmlName+",EXPORTED,hasSpatial="+hasSpatial+",numModels="+numModels+",numTasks="+numTasks+"\n"; 
+    		writeExportStatusList(outputBaseDir, summary, jobLogFile, bForceLogFiles);        	
         }
         
         String sedmlString = sedmlDocument.writeDocumentToString();
@@ -401,57 +409,10 @@ public class VcmlOmexConverter {
             }
             isCreated = archive.writeToFile(omexPath);
             
-//            CaOmexManifest manifest = archive.getManifest();
-//            // copy all the files unarchived in separate directories for easier tracking
-//            String dest = Paths.get(outputDir, vcmlName).toString();
-//            File destDir = new File(dest);
-//            FileUtils.forceMkdir(destDir);
-//            for (String sd : files) {
-//                if (sd.endsWith(".sedml") || sd.endsWith(".sbml") || sd.endsWith("xml") || sd.endsWith("vcml") || sd.endsWith("rdf")) {
-//                	String src = Paths.get(outputDir, sd).toString();
-//                	File srcFile = new File(src);
-//                	FileUtils.copyFileToDirectory(srcFile, destDir);
-//                }
-//            }
-//        	File srcFile = new File(inputVcmlFile);
-//        	FileUtils.copyFileToDirectory(srcFile, destDir);
-
 			if (bValidate){
 				logger.warn("skipping VcmlOmexConverter.validation until verify math override round-trip (relying on SBMLExporter.bRoundTripSBMLValidation)");
-//				logger.info("validating Omex file '"+omexFile+"'");
-//				List<BioModel> reread_docs = XmlHelper.readOmex(omexFile, new CLIUtils.LocalLogger());
-//				logger.info("validated Omex file '"+omexFile+"'");
-//				BioModel reread_BioModel_sbml_units = (BioModel)reread_docs.get(0);
-//				reread_BioModel_sbml_units.refreshDependencies();
-//
-//				BioModel reread_BioModel_sbml_units_cloned = XmlHelper.cloneBioModel(reread_BioModel_sbml_units);
-//				reread_BioModel_sbml_units_cloned.refreshDependencies();
-//				//
-//				// transform re-read BioModel back to original unit system before comparing with original model
-//				//
-//				BioModel reread_BioModel_vcell_units = ModelUnitConverter.createBioModelWithNewUnitSystem(
-//						reread_BioModel_sbml_units_cloned,
-//						bioModel.getModel().getUnitSystem());
-//				if(reread_BioModel_vcell_units == null) {
-//					throw new RuntimeException("Unable to clone BioModel: " + reread_BioModel_sbml_units_cloned.getName());
-//				}
-//
-//				MathDescription origMathDescription = bioModel.getSimulationContext(0).getMathDescription();
-//				MathDescription rereadMathDescription = reread_BioModel_vcell_units.getSimulationContext(0).getMathDescription();
-//				MathCompareResults mathCompareResults = MathDescription.testEquivalency(SimulationSymbolTable.createMathSymbolTableFactory(),origMathDescription, rereadMathDescription);
-//				if (!mathCompareResults.isEquivalent()){
-//					failureMessage = "MathDescriptions ARE NOT equivalent after VCML->SBML->VCML round-trip validation: "+mathCompareResults.toDatabaseStatus();
-//					logger.error(failureMessage);
-//				} else {
-//					successMessage = "MathDescriptions ARE equivalent after VCML->SBML->VCML round-trip validation: "+mathCompareResults.toDatabaseStatus();
-//					logger.info(successMessage);
-//				}
-//				logger.error("writing extra files ./orig_vcml.xml and ./reread_vcml.xml for debugging - remove later");
-//				Files.write(Paths.get(outputDir, "orig_vcml.xml"), XmlHelper.bioModelToXML(bioModel, false).getBytes(StandardCharsets.UTF_8));
-//				Files.write(Paths.get(outputDir, "reread_vcml_sbml_units.xml"), XmlHelper.bioModelToXML(reread_BioModel_sbml_units, false).getBytes(StandardCharsets.UTF_8));
-//				Files.write(Paths.get(outputDir, "reread_vcml.xml"), XmlHelper.bioModelToXML(reread_BioModel_vcell_units, false).getBytes(StandardCharsets.UTF_8));
 			}
-            // Removing all other files(like SEDML, XML, SBML) after archiving
+			// Removing all other files(like SEDML, XML, SBML) after archiving
             removeOtherFiles(outputDir, files);
 
 			if (failureMessage != null){
@@ -719,7 +680,6 @@ public class VcmlOmexConverter {
 					StandardOpenOption.CREATE, StandardOpenOption.APPEND);
 		}
 	}
-	// biomodels with no simulations and biomodels with no sim results (fired when building the omex files)
 	public static void writeExportStatusList(String outputBaseDir, String status, String statusFileName, boolean bForceLogFiles) throws IOException {
 		if (CLIUtils.isBatchExecution(outputBaseDir, bForceLogFiles)) {
 			String dest = outputBaseDir + File.separator + statusFileName;

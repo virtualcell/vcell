@@ -137,13 +137,13 @@ public class SimpleSymbolTable implements ScopedSymbolTable {
 		private int index = -1;
 		private NameScope nameScope = null;
 		private VCUnitDefinition vcUnitDefinition = null;
-		
-		private SimpleSymbolTableEntry(String argName, int argIndex, NameScope argNameScope){
+
+		public SimpleSymbolTableEntry(String argName, int argIndex, NameScope argNameScope){
 			this.name = argName;
 			this.index = argIndex;
 			this.nameScope = argNameScope;
 		}
-		private SimpleSymbolTableEntry(String argName, int argIndex, NameScope argNameScope, VCUnitDefinition unit){
+		public SimpleSymbolTableEntry(String argName, int argIndex, NameScope argNameScope, VCUnitDefinition unit){
 			this.name = argName;
 			this.index = argIndex;
 			this.nameScope = argNameScope;

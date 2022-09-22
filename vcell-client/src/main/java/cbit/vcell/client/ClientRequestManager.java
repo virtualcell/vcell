@@ -3487,33 +3487,15 @@ public class ClientRequestManager
 					}
 				}
 				hashTable.put(BNG_UNIT_SYSTEM, bngUnitSystem);
-			} else if (file != null && !file.getName().isEmpty() && file.getName().toLowerCase().endsWith(".sedml")) {
-				try {
-					XMLSource xmlSource = externalDocInfo.createXMLSource();
-					File sedmlFile = xmlSource.getXmlFile();
-
-					SedML sedml = Libsedml.readDocument(sedmlFile).getSedMLModel();
-					if (sedml == null || sedml.getModels().isEmpty()) {
-						return;
-					}
-//					AbstractTask chosenTask = SEDMLChooserPanel.chooseTask(sedml, requester.getComponent(),
-//							file.getName());
-					List<SedML> sedmls = new ArrayList<>();
-					sedmls.add(sedml);
-					hashTable.put(SEDML_MODELS, sedmls);
-//					hashTable.put(SEDML_TASK, chosenTask);
-
-				} catch (Exception e) {
-					e.printStackTrace();
-					throw new RuntimeException("failed to read document: " + e.getMessage(), e);
-				}
 			} else if (file != null && !file.getName().isEmpty() && (file.getName().toLowerCase().endsWith(".sedx")
 					|| file.getName().toLowerCase().endsWith(".omex"))) {
 				try {
 					ArchiveComponents ac = null;
 					ac = Libsedml.readSEDMLArchive(new FileInputStream(file));
 					List<SEDMLDocument> docs = ac.getSedmlDocuments();
-
+					if (docs.isEmpty()) {
+						throw new RuntimeException("Did not find any supported SEDML files in archive " + file.getName());
+					}
 					List<SedML> sedmls = new ArrayList<>();
 					for (SEDMLDocument doc : docs) {
 						SedML sedml =doc.getSedMLModel();						
@@ -3525,11 +3507,7 @@ public class ClientRequestManager
 						}
 						sedmls.add(sedml);
 					}
-//					AbstractTask chosenTask = SEDMLChooserPanel.chooseTask(sedml, requester.getComponent(),
-//							file.getName());
-
 					hashTable.put(SEDML_MODELS, sedmls);
-//					hashTable.put(SEDML_TASK, chosenTask);
 
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -3706,9 +3684,18 @@ public class ClientRequestManager
 								doc = VFrapXmlHelper.VFRAPToBioModel(hashTable, xmlSource, getDocumentManager(),
 										requester);
 							} else if (xmlType.equals(XMLTags.SedMLTypeTag)) {
-								// we know it is a single SedML since it is an actual XML source
-								List<SedML> sedmls = (List<SedML>) hashTable.get(SEDML_MODELS);
-								SedML sedml = sedmls.get(0);						
+								File sedmlFile = xmlSource.getXmlFile();
+								SedML sedml = Libsedml.readDocument(sedmlFile).getSedMLModel();
+								if (sedml == null) {
+									throw new RuntimeException("Failed importing " + file.getName());
+								}
+								if (sedml.getModels().isEmpty()) {
+									throw new RuntimeException("Unable to find any model in " + file.getName());
+								}
+								List<SedML> sedmls = new ArrayList<>();
+								sedmls.add(sedml);
+								hashTable.put(SEDML_MODELS, sedmls);
+								
 								// default to import all tasks
 								List<BioModel> vcdocs = XmlHelper.importSEDML(transLogger, externalDocInfo,
 										sedml, false);
