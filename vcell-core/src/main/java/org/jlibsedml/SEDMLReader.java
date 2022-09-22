@@ -25,7 +25,6 @@ class SEDMLReader {
 
 	Namespace sedNS = null;
 	Logger   log = LoggerFactory.getLogger(SEDMLReader.class);
-
 	Model getModel(Element modelElement) throws DataConversionException {
 		Model m = new Model(modelElement.getAttributeValue(SEDMLTags.MODEL_ATTR_ID),
 		        modelElement.getAttributeValue(SEDMLTags.MODEL_ATTR_NAME),
@@ -207,12 +206,19 @@ class SEDMLReader {
 			}
 		}
 		if (simElement.getName().equals(SEDMLTags.SIM_UTC)) {
+			int numberOf;
+			if (simElement.getAttributeValue(SEDMLTags.UTCA_POINTS_NUM) != null) {
+				// deprecated in version 4
+				numberOf = Integer.parseInt(simElement.getAttributeValue(SEDMLTags.UTCA_POINTS_NUM));
+			} else {
+				numberOf = Integer.parseInt(simElement.getAttributeValue(SEDMLTags.UTCA_STEPS_NUM));
+			}
             s = new UniformTimeCourse(simElement.getAttributeValue(SEDMLTags.SIM_ATTR_ID), 
                     simElement.getAttributeValue(SEDMLTags.SIM_ATTR_NAME), 
                     Double.parseDouble(simElement.getAttributeValue(SEDMLTags.UTCA_INIT_T)), 
                     Double.parseDouble(simElement.getAttributeValue(SEDMLTags.UTCA_OUT_START_T)),
                     Double.parseDouble(simElement.getAttributeValue(SEDMLTags.UTCA_OUT_END_T)),
-                    Integer.parseInt(simElement.getAttributeValue(SEDMLTags.UTCA_POINTS_NUM)), alg);
+                    numberOf, alg);
 		} else if(simElement.getName().equals(SEDMLTags.SIM_OS)) {
             s = new OneStep(simElement.getAttributeValue(SEDMLTags.SIM_ATTR_ID), 
                     simElement.getAttributeValue(SEDMLTags.SIM_ATTR_NAME), alg,
