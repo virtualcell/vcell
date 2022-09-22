@@ -1,5 +1,6 @@
 package cbit.vcell.simdata;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -139,17 +140,130 @@ public class Hdf5Utils {
 	
 	// exercising some hdf5 features
     public static void main(String[] args) {
+    	
+    	int numColumns = 6;
+    	int numRows = 5;
+    	
+    	int numJobs = 2;
+    	int selectedColCount = 3;	// # of variables per job
+    	int actualLength = numRows;
+    	String[] paramScanParamNames = { "Kf" };
+    	
+    	String[] names = { "t", "s0", "s1" };
+    	
+    	double[] t_set0 = { 0, 1, 2, 3, 4 };
+    	double[] s0_set0 = { 1.1, 1.2, 1.3, 1.4, 1.5 };
+    	double[] s1_set0 = { 2.1, 2.2, 2.3, 2.4, 2.5 };
+    	
+    	double[] t_set1 = { 0, 1, 2, 3, 4 };
+    	double[] s0_set1 = { 3.1, 3.2, 3.3, 3.4, 3.5 };
+    	double[] s1_set1 = { 4.1, 4.2, 4.3, 4.4, 4.5 };
+    			
+		int hdf5FileID = -1;
+		File hdf5TempFile = null;
+
     	try {
-			int fileId = H5.H5Fcreate("file.h5", HDF5Constants.H5F_ACC_TRUNC, HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT);
-			H5.H5Fclose(fileId);
+    		hdf5TempFile = File.createTempFile("plot2D", ".h5");
+			hdf5FileID = H5.H5Fcreate(hdf5TempFile.getAbsolutePath(), HDF5Constants.H5F_ACC_TRUNC, HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT);				
 			
-			long dims[] = {4, 6};
-			int datasetId = H5.H5Screate_simple(dims.length,  dims, null);
-			
-			
-		} catch (HDF5Exception | NullPointerException e) {
-			e.printStackTrace();
+			for(int k=0; k<numJobs; k++) {
+				int jobGroupID = -1;
+				
+				Hdf5Utils.HDF5WriteHelper help0 = null;
+				ArrayList<String> dataTypes = new ArrayList<String>();
+				ArrayList<String> dataIDs = new ArrayList<String>();
+				ArrayList<String> dataNames = new ArrayList<String>();
+				ArrayList<String> paramNames = new ArrayList<String>();
+				ArrayList<String> paramValues = new ArrayList<String>();
+
+				for(int col = 0; col<3; col++) {
+					dataTypes.add("float64");
+					dataIDs.add("data_set_" + names[col]);
+					dataNames.add(names[col]);
+				}
+				for(int z=0; z < paramScanParamNames.length; z++) {
+					paramNames.add(paramScanParamNames[z]);
+					paramValues.add(paramScanParamNames[z]);
+				}
+				jobGroupID = (int) Hdf5Utils.createGroup(hdf5FileID, "Set "+ k);
+				help0 = Hdf5Utils.createDataset(jobGroupID, "data", new long[] {selectedColCount, actualLength});
+				
+				double[] fromData2 = new double[actualLength*selectedColCount];
+				
+				int datasetValuesId = help0.hdf5DatasetValuesID;
+				long[] copyToStart = new long[] { 0, 0 };
+				long[] copyToLength = new long[] { selectedColCount, actualLength };
+				long[] copyFromDims = new long[] { selectedColCount, actualLength };
+				long[] copyFromStart = new long[] { 0,0 };
+				long[] copyFromLength = new long[] { selectedColCount, actualLength };
+				Hdf5Utils.copySlice(datasetValuesId, fromData2, copyToStart, copyToLength, copyFromDims, copyFromStart, copyFromLength, help0.hdf5DataSpaceID);
+
+				
+			}
+    		
+    	} catch(Exception e) {
+    		e.printStackTrace();
+		} finally {
+			if(hdf5FileID != -1) {
+				try {
+					H5.H5Fclose(hdf5FileID);
+				} catch(Exception e) {
+					e.printStackTrace();
+				}
+			}
+			if(hdf5TempFile != null && hdf5TempFile.exists()) {
+				try {
+					hdf5TempFile.delete();
+				} catch(Exception e) {
+					e.printStackTrace();
+				}
+			}
 		}
+    	
+    	
+//    	try {
+//    		String name = "file.h5";
+//			int fileId = H5.H5Fcreate(name, HDF5Constants.H5F_ACC_TRUNC, HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT);
+//			
+//			// create the dataspace for the dataset
+//			long dims[] = {4, 6};
+//			int dataSpaceId = H5.H5Screate_simple(dims.length,  dims, null);	// # of dimensions of dataspace, array of the size of each dimension
+//			
+//			// create the dataset
+//			String dataspaceName = "/" + name;
+//			int datasetId = H5.H5Dcreate(fileId, dataspaceName, HDF5Constants.H5T_STD_I32BE, dataSpaceId, HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT);
+//			
+//			// create group and add a dataset to it using this class Hdf5Utils
+//			int set = Integer.parseInt("5");
+//			int jobGroupID = Hdf5Utils.createGroup(fileId, "Set "+ set);
+//			Hdf5Utils.HDF5WriteHelper help = null;	// contains a int hdf5DataSpaceID, int hdf5DatasetValuesID
+//			int selectedColCount = 3;
+//			int actualLength = 21;
+//			help = Hdf5Utils.createDataset(jobGroupID, "data", new long[] {selectedColCount,actualLength});
+//
+//			// writing or reading to / from a dataset
+//			H5.H5Dwrite_long(datasetId, jobGroupID, selectedColCount, fileId, actualLength, dims);
+//
+//			ArrayList<String> dataTypes = new ArrayList<String>();
+//			ArrayList<String> dataIDs = new ArrayList<String>();
+//			ArrayList<String> dataLabels = new ArrayList<String>();
+//			ArrayList<String> dataNames = new ArrayList<String>();
+//			Hdf5Utils.insertAttribute(help.hdf5DatasetValuesID, "_type", "ODE Data Export");//.writeHDF5Dataset(help0.hdf5DatasetValuesID, "_type", null, "ODE Data Export", true);
+//			Hdf5Utils.insertAttributes(help.hdf5DatasetValuesID,"dataSetDataTypes", dataTypes);//.writeHDF5Dataset(help0.hdf5DatasetValuesID, "dataSetDataTypes", null, dataTypes, true);
+//			Hdf5Utils.insertAttributes(help.hdf5DatasetValuesID,"dataSetIds",dataIDs);//Hdf5Utils.writeHDF5Dataset(help0.hdf5DatasetValuesID, "dataSetIds", null,dataIDs , true);
+//			Hdf5Utils.insertAttributes(help.hdf5DatasetValuesID,"dataSetLabels",dataLabels);//Hdf5Utils.writeHDF5Dataset(help0.hdf5DatasetValuesID, "dataSetLabels", null,dataLabels , true);
+//			Hdf5Utils.insertAttributes(help.hdf5DatasetValuesID,"dataSetNames",dataNames);//Hdf5Utils.writeHDF5Dataset(help0.hdf5DatasetValuesID, "dataSetNames", null,dataNames , true);
+//
+//			
+//			// close the dataset and the dataspace
+//			H5.H5Dclose(datasetId);
+//			H5.H5Sclose(dataSpaceId);
+//			H5.H5Fclose(fileId);
+//
+//			
+//		} catch (HDF5Exception | NullPointerException e) {
+//			e.printStackTrace();
+//		}
     }
 
 }
