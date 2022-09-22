@@ -469,234 +469,300 @@ public static Model getExample_Bound() throws Exception {
 /**
  * This method was created by a SmartGuide.
  */
-public static Model getExample_Wagner() throws Exception {
+public static Model getExample_Wagner_simple(boolean bIncludeER) throws Exception {
 
-	//
-	// Constants
-	//
-	double D = 300.0;
-	double R = 500.0;	
-	double r = 170.0;
-	double LAMBDA = 75.0;
-	double vL = 0.0005;
-	double vP = 0.1;
-	double Is = 0.12;
-	double Ih = 1.0;
-	double Iw = 0.015;
-	double I1h = 0.84;
-	double I1w = 0.8;
-	double dI = 0.025;
-	double dact = 1.2;
-	double kP = 0.4;
-	double dinh = 1.5;
-	double TAU = 4;
-	double RI_tot = 0.01;
-	double RCact_tot = 0.01;
-	double RCinh_tot = 0.01;
-	double B_tot = 1400;
-	double K = 100;
-	double PI = 3.141592653589;
-	
-	//
-	// initial conditions
-	// 
-	double Ca_init 			= 0.1153;
-	double Ca_ER_init		= 10.0;
-	double I_init 			= 0.12;
-	double RCact_init		= RCact_tot * dact / (Ca_init + dact);
-	double RCact_bound_init	= RCact_tot * Ca_init / (Ca_init + dact);
-	double RCinh_init		= RCinh_tot * dinh / (Ca_init + dinh);
-	double RCinh_bound_init	= RCinh_tot * Ca_init / (Ca_init + dinh);
-	double B_init			= B_tot * K / (Ca_init + K);
-	double CaB_init			= B_tot * Ca_init / (Ca_init + K);
-
-	//
-	// diffusion constants
-	//
-	double Ca_diff 			= D;
-	double Ca_ER_diff		= 0.0;
-	double I_diff 			= 0.0;
-	double RCact_diff		= 0.0;
-	double RCact_bound_diff	= 0.0;
-	double RCinh_diff		= 0.0;
-	double RCinh_bound_diff	= 0.0;
-	double B_diff			= 0.0;
-	double CaB_diff			= 0.0;
-
-	//
-	// 
-	//
-	
 	Model model = new Model("oocyte3d");
 
-	model.addSpecies(new Species("B","CalciumBufferUnbound"));
-	Species B = model.getSpecies("B");
-	model.addSpecies(new Species("CaB","CalciumBufferBound"));
-	Species CaB = model.getSpecies("CaB");
-	model.addSpecies(new Species("IP3Ra","IP3ReceptorCalciumActivationSiteUnbound"));
-	Species RCact = model.getSpecies("IP3Ra");
-	model.addSpecies(new Species("IP3RaCa","IP3ReceptorCalciumActivationSiteBound"));
-	Species RCact_bound = model.getSpecies("IP3RaCa");
-	model.addSpecies(new Species("IP3Ri","IP3ReceptorCalciumInhibitionSiteUnbound"));
-	Species RCinh = model.getSpecies("IP3Ri");
-	model.addSpecies(new Species("IP3RiCa","IP3ReceptorCalciumInhibitionSiteBound"));
-	Species RCinh_bound = model.getSpecies("IP3RiCa");
-	model.addSpecies(new Species("Ca","Calcium"));
-	Species Ca = model.getSpecies("Ca");
-	model.addSpecies(new Species("IP3","IP3"));
-	Species I = model.getSpecies("IP3");
-	
 	Feature extracellular = model.addFeature("extracellular");
 	Feature cytosol = model.addFeature("cytosol");
 	Membrane plasmaMem = model.addMembrane("plasmaMembrane");
-	Feature ER = model.addFeature("er");
-	Membrane ERmem = model.addMembrane("erMembrane");
-	
-	
-	model.addSpeciesContext(Ca,cytosol);
-	SpeciesContext Ca_cyt = model.getSpeciesContext(Ca,cytosol);
-	//Ca_cyt.setInitialValue(Ca_init);
-	//Ca_cyt.setDiffusionRate(Ca_diff);
 
-	model.addSpeciesContext(I,cytosol);
-	SpeciesContext I_cyt = model.getSpeciesContext(I,cytosol);
-	//I_cyt.setInitialValue(I_init);
-	//I_cyt.setDiffusionRate(I_diff);
+	Species Ca 							= model.addSpecies(new Species("Ca",null));
+	Species RCact						= model.addSpecies(new Species("RCact",null));
+	Species RCact_bound					= model.addSpecies(new Species("RCact_bound",null));
+	Species B							= model.addSpecies(new Species("B",null));
+	Species CaB							= model.addSpecies(new Species("CaB",null));
 
-	model.addSpeciesContext(Ca,ER);
-	SpeciesContext Ca_ER = model.getSpeciesContext(Ca,ER);
-	//Ca_ER.setInitialValue(Ca_ER_init);
-	//Ca_ER.setDiffusionRate(Ca_ER_diff);
+	SpeciesContext Ca_cyt 				= model.addSpeciesContext(Ca,	cytosol);
+	SpeciesContext B_cyt 				= model.addSpeciesContext(B,	cytosol);
+	SpeciesContext CaB_cyt 				= model.addSpeciesContext(CaB,	cytosol);
 
-	model.addSpeciesContext(RCact,ERmem);
-	SpeciesContext RCact_ERmem = model.getSpeciesContext(RCact,ERmem);
-	//RCact_ERmem.setInitialValue(RCact_init);
-	//RCact_ERmem.setDiffusionRate(RCact_diff);
-
-	model.addSpeciesContext(RCact_bound,ERmem);
-	SpeciesContext RCact_bound_ERmem = model.getSpeciesContext(RCact_bound,ERmem);
-	//RCact_bound_ERmem.setInitialValue(RCact_bound_init);
-	//RCact_bound_ERmem.setDiffusionRate(RCact_bound_diff);
-
-	model.addSpeciesContext(RCinh,ERmem);
-	SpeciesContext RCinh_ERmem = model.getSpeciesContext(RCinh,ERmem);
-	//RCinh_ERmem.setInitialValue(RCinh_init);
-	//RCinh_ERmem.setDiffusionRate(RCinh_diff);
-
-	model.addSpeciesContext(RCinh_bound,ERmem);
-	SpeciesContext RCinh_bound_ERmem = model.getSpeciesContext(RCinh_bound,ERmem);
-	//RCinh_bound_ERmem.setInitialValue(RCinh_bound_init);
-	//RCinh_bound_ERmem.setDiffusionRate(RCinh_bound_diff);
-
-	model.addSpeciesContext(B,cytosol);
-	SpeciesContext B_cyt = model.getSpeciesContext(B,cytosol);
-	//B_cyt.setInitialValue(B_init);
-	//B_cyt.setDiffusionRate(B_diff);
-
-	model.addSpeciesContext(CaB,cytosol);
-	SpeciesContext CaB_cyt = model.getSpeciesContext(CaB,cytosol);
-	//CaB_cyt.setInitialValue(CaB_init);
-	//CaB_cyt.setDiffusionRate(CaB_diff);
-
-	SimpleReaction sr;
-	
-	//
-	// CYTOSOL REACTIONS
-	//
-	double K1f = 1.0;
-	double K1r = 1.0;
-	double K2f = 200.0;
-	double K2r = 300.0;
-	double K3f = 4.0;
-	double K3r = 4.0;
+	ReactionStep rs;
+	MassActionKinetics massAct;
 
 	//
 	// Calcium Buffering
 	//
-	sr = new SimpleReaction(model, cytosol, "CA_BUFFERING", true);
-	sr.addReactant(Ca_cyt,1);
-	sr.addReactant(B_cyt,1);
-	sr.addProduct(CaB_cyt,1);
-	MassActionKinetics massAct = new MassActionKinetics(sr);
-	sr.setKinetics(massAct);
+	rs = new SimpleReaction(model, cytosol, "CA_BUFFERING", true);
+	rs.addReactant(Ca_cyt,1);
+	rs.addReactant(B_cyt,1);
+	rs.addProduct(CaB_cyt,1);
+	massAct = new MassActionKinetics(rs);
+	rs.setKinetics(massAct);
 	massAct.setParameterValue(massAct.getForwardRateParameter(),new Expression(1.0));
 	massAct.setParameterValue(massAct.getReverseRateParameter(),new Expression("K"));
-	massAct.setParameterValue(massAct.getKineticsParameter("K"),new Expression(K));
-//	massAct.setFast(true);
-	model.addReactionStep(sr);
+	massAct.setParameterValue(massAct.getKineticsParameter("K"),new Expression(100));
+	model.addReactionStep(rs);
 
-	//
-	// Calcium binding to RCact
-	//
-	sr = new SimpleReaction(model, ERmem, "CA_BINDING_ACT", true);
-	sr.addReactant(Ca_cyt,1);
-	sr.addReactant(RCact_ERmem,1);
-	sr.addProduct(RCact_bound_ERmem,1);
-	massAct = new MassActionKinetics(sr);
-	sr.setKinetics(massAct);
-	massAct.setParameterValue(massAct.getForwardRateParameter(),new Expression(1.0));
-	massAct.setParameterValue(massAct.getReverseRateParameter(),new Expression("dact;"));
-	massAct.setParameterValue(massAct.getKineticsParameter("dact"),new Expression(dact));
-//	massAct.setFast(true);
-	model.addReactionStep(sr);
+	if (bIncludeER){
+		Feature ER = model.addFeature("er");
+		Membrane ERmem = model.addMembrane("erMembrane");
 
-	//
-	// Calcium binding to RCinh
-	//
-	sr = new SimpleReaction(model, ERmem, "CA_BINDING_INH", true);
-	sr.addReactant(Ca_cyt,1);
-	sr.addReactant(RCinh_ERmem,1);
-	sr.addProduct(RCinh_bound_ERmem,1);
-	massAct = new MassActionKinetics(sr);
-	sr.setKinetics(massAct);
-	massAct.setParameterValue(massAct.getForwardRateParameter(),new Expression("1.0/TAU;"));
-	massAct.setParameterValue(massAct.getReverseRateParameter(),new Expression("dinh/TAU;"));
-	massAct.setParameterValue(massAct.getKineticsParameter("dinh"),new Expression(dinh));
-	massAct.setParameterValue(massAct.getKineticsParameter("TAU"),new Expression(TAU));
-//	massAct.setFast(false);
-	model.addReactionStep(sr);
+		SpeciesContext RCact_ERmem 			= model.addSpeciesContext(RCact,		ERmem);
+		SpeciesContext RCact_bound_ERmem 	= model.addSpeciesContext(RCact_bound,	ERmem);
+		//
+		// Calcium binding to RCact
+		//
+		rs = new SimpleReaction(model, ERmem, "CA_BINDING_ACT", true);
+		rs.addReactant(Ca_cyt,1);
+		rs.addReactant(RCact_ERmem,1);
+		rs.addProduct(RCact_bound_ERmem,1);
+		massAct = new MassActionKinetics(rs);
+		rs.setKinetics(massAct);
+		massAct.setParameterValue(massAct.getForwardRateParameter(),new Expression(1.0));
+		massAct.setParameterValue(massAct.getReverseRateParameter(),new Expression("dact;"));
+		massAct.setParameterValue(massAct.getKineticsParameter("dact"),new Expression(1.2));
+		model.addReactionStep(rs);
+	}
 
-	//
-	// calcium flux through the IP3 Receptor
-	//
-	FluxReaction fr = new FluxReaction(model, ERmem, null,"IP3R_FLUX", true);
-	fr.addCatalyst(I_cyt);
-	fr.addCatalyst(RCact_bound_ERmem);
-	fr.addCatalyst(RCact_ERmem);
-	fr.addCatalyst(RCinh_ERmem);
-	fr.addCatalyst(RCinh_bound_ERmem);
-	GeneralKinetics genKinetics = new GeneralKinetics(fr);
-	fr.setKinetics(genKinetics);
-	genKinetics.setParameterValue(genKinetics.getReactionRateParameter(),new Expression("-LAMBDA1*(Ca_er-Ca_cytosol)*pow((IP3_cytosol/(IP3_cytosol+dI))*(IP3RaCa_erMembrane/(IP3RaCa_erMembrane+IP3Ra_erMembrane))*(IP3Ri_erMembrane/(IP3RiCa_erMembrane+IP3Ri_erMembrane)),3);"));
-	genKinetics.setParameterValue(genKinetics.getKineticsParameter("LAMBDA1"),new Expression(LAMBDA));
-	genKinetics.setParameterValue(genKinetics.getKineticsParameter("dI"),new Expression(dI));
-	model.addReactionStep(fr);
 
-	//
-	// calcium flux through the SERCA pump
-	//
-	fr = new FluxReaction(model, ERmem, null,"SERCA_FLUX", true);
-	genKinetics = new GeneralKinetics(fr);
-	fr.setKinetics(genKinetics);
-	genKinetics.setParameterValue(genKinetics.getReactionRateParameter(),new Expression("LAMBDA2*vP*Ca_cytosol*Ca_cytosol/(kP*kP + Ca_cytosol*Ca_cytosol);"));
-	genKinetics.setParameterValue(genKinetics.getKineticsParameter("vP"),new Expression(vP));
-	genKinetics.setParameterValue(genKinetics.getKineticsParameter("kP"),new Expression(kP));
-	genKinetics.setParameterValue(genKinetics.getKineticsParameter("LAMBDA2"),new Expression(LAMBDA));
-	model.addReactionStep(fr);
 
-	//
-	// calcium flux through leak
-	//
-	fr = new FluxReaction(model, ERmem, null,"LEAK_FLUX", true);
-	genKinetics = new GeneralKinetics(fr);
-	fr.setKinetics(genKinetics);
-	genKinetics.setParameterValue(genKinetics.getReactionRateParameter(),new Expression("-LAMBDA3*vL*(Ca_er-Ca_cytosol);"));
-	genKinetics.setParameterValue(genKinetics.getKineticsParameter("vL"),new Expression(vL));
-	genKinetics.setParameterValue(genKinetics.getKineticsParameter("LAMBDA3"),new Expression(LAMBDA));
-	model.addReactionStep(fr);
+
+
+
 
 	return model;
 }
+
+	public static Model getExample_Wagner() throws Exception {
+
+		//
+		// Constants
+		//
+		double D = 300.0;
+		double R = 500.0;
+		double r = 170.0;
+		double LAMBDA = 75.0;
+		double vL = 0.0005;
+		double vP = 0.1;
+		double Is = 0.12;
+		double Ih = 1.0;
+		double Iw = 0.015;
+		double I1h = 0.84;
+		double I1w = 0.8;
+		double dI = 0.025;
+		double dact = 1.2;
+		double kP = 0.4;
+		double dinh = 1.5;
+		double TAU = 4;
+		double RI_tot = 0.01;
+		double RCact_tot = 0.01;
+		double RCinh_tot = 0.01;
+		double B_tot = 1400;
+		double K = 100;
+		double PI = 3.141592653589;
+
+		//
+		// initial conditions
+		//
+		double Ca_init 			= 0.1153;
+		double Ca_ER_init		= 10.0;
+		double I_init 			= 0.12;
+		double RCact_init		= RCact_tot * dact / (Ca_init + dact);
+		double RCact_bound_init	= RCact_tot * Ca_init / (Ca_init + dact);
+		double RCinh_init		= RCinh_tot * dinh / (Ca_init + dinh);
+		double RCinh_bound_init	= RCinh_tot * Ca_init / (Ca_init + dinh);
+		double B_init			= B_tot * K / (Ca_init + K);
+		double CaB_init			= B_tot * Ca_init / (Ca_init + K);
+
+		//
+		// diffusion constants
+		//
+		double Ca_diff 			= D;
+		double Ca_ER_diff		= 0.0;
+		double I_diff 			= 0.0;
+		double RCact_diff		= 0.0;
+		double RCact_bound_diff	= 0.0;
+		double RCinh_diff		= 0.0;
+		double RCinh_bound_diff	= 0.0;
+		double B_diff			= 0.0;
+		double CaB_diff			= 0.0;
+
+		//
+		//
+		//
+
+		Model model = new Model("oocyte3d");
+
+		model.addSpecies(new Species("B","CalciumBufferUnbound"));
+		Species B = model.getSpecies("B");
+		model.addSpecies(new Species("CaB","CalciumBufferBound"));
+		Species CaB = model.getSpecies("CaB");
+		model.addSpecies(new Species("IP3Ra","IP3ReceptorCalciumActivationSiteUnbound"));
+		Species RCact = model.getSpecies("IP3Ra");
+		model.addSpecies(new Species("IP3RaCa","IP3ReceptorCalciumActivationSiteBound"));
+		Species RCact_bound = model.getSpecies("IP3RaCa");
+		model.addSpecies(new Species("IP3Ri","IP3ReceptorCalciumInhibitionSiteUnbound"));
+		Species RCinh = model.getSpecies("IP3Ri");
+		model.addSpecies(new Species("IP3RiCa","IP3ReceptorCalciumInhibitionSiteBound"));
+		Species RCinh_bound = model.getSpecies("IP3RiCa");
+		model.addSpecies(new Species("Ca","Calcium"));
+		Species Ca = model.getSpecies("Ca");
+		model.addSpecies(new Species("IP3","IP3"));
+		Species I = model.getSpecies("IP3");
+
+		Feature extracellular = model.addFeature("extracellular");
+		Feature cytosol = model.addFeature("cytosol");
+		Membrane plasmaMem = model.addMembrane("plasmaMembrane");
+		Feature ER = model.addFeature("er");
+		Membrane ERmem = model.addMembrane("erMembrane");
+
+
+		model.addSpeciesContext(Ca,cytosol);
+		SpeciesContext Ca_cyt = model.getSpeciesContext(Ca,cytosol);
+		//Ca_cyt.setInitialValue(Ca_init);
+		//Ca_cyt.setDiffusionRate(Ca_diff);
+
+		model.addSpeciesContext(I,cytosol);
+		SpeciesContext I_cyt = model.getSpeciesContext(I,cytosol);
+		//I_cyt.setInitialValue(I_init);
+		//I_cyt.setDiffusionRate(I_diff);
+
+		model.addSpeciesContext(Ca,ER);
+		SpeciesContext Ca_ER = model.getSpeciesContext(Ca,ER);
+		//Ca_ER.setInitialValue(Ca_ER_init);
+		//Ca_ER.setDiffusionRate(Ca_ER_diff);
+
+		model.addSpeciesContext(RCact,ERmem);
+		SpeciesContext RCact_ERmem = model.getSpeciesContext(RCact,ERmem);
+		//RCact_ERmem.setInitialValue(RCact_init);
+		//RCact_ERmem.setDiffusionRate(RCact_diff);
+
+		model.addSpeciesContext(RCact_bound,ERmem);
+		SpeciesContext RCact_bound_ERmem = model.getSpeciesContext(RCact_bound,ERmem);
+		//RCact_bound_ERmem.setInitialValue(RCact_bound_init);
+		//RCact_bound_ERmem.setDiffusionRate(RCact_bound_diff);
+
+		model.addSpeciesContext(RCinh,ERmem);
+		SpeciesContext RCinh_ERmem = model.getSpeciesContext(RCinh,ERmem);
+		//RCinh_ERmem.setInitialValue(RCinh_init);
+		//RCinh_ERmem.setDiffusionRate(RCinh_diff);
+
+		model.addSpeciesContext(RCinh_bound,ERmem);
+		SpeciesContext RCinh_bound_ERmem = model.getSpeciesContext(RCinh_bound,ERmem);
+		//RCinh_bound_ERmem.setInitialValue(RCinh_bound_init);
+		//RCinh_bound_ERmem.setDiffusionRate(RCinh_bound_diff);
+
+		model.addSpeciesContext(B,cytosol);
+		SpeciesContext B_cyt = model.getSpeciesContext(B,cytosol);
+		//B_cyt.setInitialValue(B_init);
+		//B_cyt.setDiffusionRate(B_diff);
+
+		model.addSpeciesContext(CaB,cytosol);
+		SpeciesContext CaB_cyt = model.getSpeciesContext(CaB,cytosol);
+		//CaB_cyt.setInitialValue(CaB_init);
+		//CaB_cyt.setDiffusionRate(CaB_diff);
+
+		SimpleReaction sr;
+
+		//
+		// CYTOSOL REACTIONS
+		//
+		double K1f = 1.0;
+		double K1r = 1.0;
+		double K2f = 200.0;
+		double K2r = 300.0;
+		double K3f = 4.0;
+		double K3r = 4.0;
+
+		//
+		// Calcium Buffering
+		//
+		sr = new SimpleReaction(model, cytosol, "CA_BUFFERING", true);
+		sr.addReactant(Ca_cyt,1);
+		sr.addReactant(B_cyt,1);
+		sr.addProduct(CaB_cyt,1);
+		MassActionKinetics massAct = new MassActionKinetics(sr);
+		sr.setKinetics(massAct);
+		massAct.setParameterValue(massAct.getForwardRateParameter(),new Expression(1.0));
+		massAct.setParameterValue(massAct.getReverseRateParameter(),new Expression("K"));
+		massAct.setParameterValue(massAct.getKineticsParameter("K"),new Expression(K));
+//	massAct.setFast(true);
+		model.addReactionStep(sr);
+
+		//
+		// Calcium binding to RCact
+		//
+		sr = new SimpleReaction(model, ERmem, "CA_BINDING_ACT", true);
+		sr.addReactant(Ca_cyt,1);
+		sr.addReactant(RCact_ERmem,1);
+		sr.addProduct(RCact_bound_ERmem,1);
+		massAct = new MassActionKinetics(sr);
+		sr.setKinetics(massAct);
+		massAct.setParameterValue(massAct.getForwardRateParameter(),new Expression(1.0));
+		massAct.setParameterValue(massAct.getReverseRateParameter(),new Expression("dact;"));
+		massAct.setParameterValue(massAct.getKineticsParameter("dact"),new Expression(dact));
+//	massAct.setFast(true);
+		model.addReactionStep(sr);
+
+		//
+		// Calcium binding to RCinh
+		//
+		sr = new SimpleReaction(model, ERmem, "CA_BINDING_INH", true);
+		sr.addReactant(Ca_cyt,1);
+		sr.addReactant(RCinh_ERmem,1);
+		sr.addProduct(RCinh_bound_ERmem,1);
+		massAct = new MassActionKinetics(sr);
+		sr.setKinetics(massAct);
+		massAct.setParameterValue(massAct.getForwardRateParameter(),new Expression("1.0/TAU;"));
+		massAct.setParameterValue(massAct.getReverseRateParameter(),new Expression("dinh/TAU;"));
+		massAct.setParameterValue(massAct.getKineticsParameter("dinh"),new Expression(dinh));
+		massAct.setParameterValue(massAct.getKineticsParameter("TAU"),new Expression(TAU));
+//	massAct.setFast(false);
+		model.addReactionStep(sr);
+
+		//
+		// calcium flux through the IP3 Receptor
+		//
+		FluxReaction fr = new FluxReaction(model, ERmem, null,"IP3R_FLUX", true);
+		fr.addCatalyst(I_cyt);
+		fr.addCatalyst(RCact_bound_ERmem);
+		fr.addCatalyst(RCact_ERmem);
+		fr.addCatalyst(RCinh_ERmem);
+		fr.addCatalyst(RCinh_bound_ERmem);
+		GeneralKinetics genKinetics = new GeneralKinetics(fr);
+		fr.setKinetics(genKinetics);
+		genKinetics.setParameterValue(genKinetics.getReactionRateParameter(),new Expression("-LAMBDA1*(Ca_er-Ca_cytosol)*pow((IP3_cytosol/(IP3_cytosol+dI))*(IP3RaCa_erMembrane/(IP3RaCa_erMembrane+IP3Ra_erMembrane))*(IP3Ri_erMembrane/(IP3RiCa_erMembrane+IP3Ri_erMembrane)),3);"));
+		genKinetics.setParameterValue(genKinetics.getKineticsParameter("LAMBDA1"),new Expression(LAMBDA));
+		genKinetics.setParameterValue(genKinetics.getKineticsParameter("dI"),new Expression(dI));
+		model.addReactionStep(fr);
+
+		//
+		// calcium flux through the SERCA pump
+		//
+		fr = new FluxReaction(model, ERmem, null,"SERCA_FLUX", true);
+		genKinetics = new GeneralKinetics(fr);
+		fr.setKinetics(genKinetics);
+		genKinetics.setParameterValue(genKinetics.getReactionRateParameter(),new Expression("LAMBDA2*vP*Ca_cytosol*Ca_cytosol/(kP*kP + Ca_cytosol*Ca_cytosol);"));
+		genKinetics.setParameterValue(genKinetics.getKineticsParameter("vP"),new Expression(vP));
+		genKinetics.setParameterValue(genKinetics.getKineticsParameter("kP"),new Expression(kP));
+		genKinetics.setParameterValue(genKinetics.getKineticsParameter("LAMBDA2"),new Expression(LAMBDA));
+		model.addReactionStep(fr);
+
+		//
+		// calcium flux through leak
+		//
+		fr = new FluxReaction(model, ERmem, null,"LEAK_FLUX", true);
+		genKinetics = new GeneralKinetics(fr);
+		fr.setKinetics(genKinetics);
+		genKinetics.setParameterValue(genKinetics.getReactionRateParameter(),new Expression("-LAMBDA3*vL*(Ca_er-Ca_cytosol);"));
+		genKinetics.setParameterValue(genKinetics.getKineticsParameter("vL"),new Expression(vL));
+		genKinetics.setParameterValue(genKinetics.getKineticsParameter("LAMBDA3"),new Expression(LAMBDA));
+		model.addReactionStep(fr);
+
+		return model;
+	}
+
 /**
  * This method was created by a SmartGuide.
  */

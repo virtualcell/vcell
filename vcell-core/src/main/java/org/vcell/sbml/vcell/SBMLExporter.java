@@ -77,6 +77,7 @@ import org.vcell.util.*;
 
 import javax.xml.stream.XMLStreamException;
 import java.beans.PropertyVetoException;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -2186,21 +2187,28 @@ private void addGeometry() throws SbmlException {
 			segmentedImageSampledField.setNumSamples2(vcImage.getNumY());
 			segmentedImageSampledField.setNumSamples3(vcImage.getNumZ());
 			segmentedImageSampledField.setInterpolationType(InterpolationKind.nearestNeighbor);
-			segmentedImageSampledField.setCompression(CompressionKind.uncompressed);
+			segmentedImageSampledField.setCompression(CompressionKind.deflated);
 			segmentedImageSampledField.setDataType(DataKind.UINT8);
 			segmentedImageSampledFieldGeometry.setSampledField(segmentedImageSampledField.getId());
 
 			try {
 				byte[] vcImagePixelsBytes = vcImage.getPixels();
-				//			imageData.setCompression("");
-				StringBuffer sb = new StringBuffer();
+				StringBuffer uncompressedBuffer = new StringBuffer();
 				for (int i = 0; i < vcImagePixelsBytes.length; i++) {
 					int uint8_sample = ((int)vcImagePixelsBytes[i]) & 0xff;
-					sb.append(uint8_sample+" ");
+					uncompressedBuffer.append(uint8_sample+" ");
 				}
-				segmentedImageSampledField.setSamplesLength(vcImage.getNumXYZ());
-				segmentedImageSampledField.setSamples(sb.toString().trim());
-			} catch (ImageException e) {
+				String uncompressedStringData = uncompressedBuffer.toString().trim();
+
+				byte[] compressedData = VCImage.deflate(uncompressedStringData.getBytes(StandardCharsets.UTF_8));
+				StringBuffer compressedBuffer = new StringBuffer();
+				for (int i = 0; i < compressedData.length; i++) {
+					int uint8_sample = ((int)compressedData[i]) & 0xff;
+					compressedBuffer.append(uint8_sample+" ");
+				}
+				segmentedImageSampledField.setSamplesLength(compressedData.length);
+				segmentedImageSampledField.setSamples(compressedBuffer.toString().trim());
+			} catch (ImageException | IOException e) {
 				e.printStackTrace(System.out);
 				throw new RuntimeException("Unable to export image from VCell to SBML : " + e.getMessage());
 			}
