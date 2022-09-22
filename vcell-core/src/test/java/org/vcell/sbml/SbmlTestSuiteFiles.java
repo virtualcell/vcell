@@ -50,20 +50,7 @@ public class SbmlTestSuiteFiles {
         }
     }
 
-    public static InputStream getBioModelsModel(int biomodelsId) {
-        int[] testCases = getBiomodelsModels();
-        if (!Arrays.stream(testCases).anyMatch(i -> i == biomodelsId)) {
-            throw new RuntimeException("file not found for biomodels id "+biomodelsId);
-        }
-        try {
-            return getFileFromResourceAsStream(String.format(BiomodelsFilenameFormatPattern, biomodelsId));
-        }catch (FileNotFoundException e){
-            throw new RuntimeException("File Not Found: "+e.getMessage(),e);
-        }
-    }
-
-
-    private static InputStream getFileFromResourceAsStream(String fileName) throws FileNotFoundException {
+     private static InputStream getFileFromResourceAsStream(String fileName) throws FileNotFoundException {
         InputStream inputStream = SbmlTestSuiteFiles.class.getResourceAsStream(fileName);
         if (inputStream == null) {
             throw new FileNotFoundException("file not found! " + fileName);

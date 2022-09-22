@@ -16,28 +16,6 @@ import cbit.vcell.biomodel.BioModel;
 
 public class SBMLImporterTest {
 
-	public static void main(String[] args) {
-		try {
-			VCLogger vcl = new TLogger();
-		SBMLImporter imp = new SBMLImporter("samp.sbml", vcl, true);
-		for (;;) {
-			/*
-			JFileChooser jfc = new JFileChooser( new File(System.getProperty("user.dir")));
-			int returnVal = jfc.showOpenDialog(null);
-			if(returnVal == JFileChooser.APPROVE_OPTION) {
-				File f= jfc.getSelectedFile();
-				BioModel bm = sa.importSBML(f);
-				System.out.println(bm.getName());
-			}
-			*/
-			BioModel bm = imp.getBioModel(); 
-			System.out.println(bm.getName());
-		}
-		} catch (Exception e) {
-			System.err.println(e.getMessage());
-			e.printStackTrace();
-		}
-	}
 	public enum FAULT {
 		RESERVED_WORD,
 		DELAY,
