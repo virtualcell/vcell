@@ -3602,6 +3602,7 @@ public class SBMLImporter {
 		try {
 			for (int domainTypeIndex=0; domainTypeIndex < listOfDomainTypes.size(); domainTypeIndex++){
 				DomainType dt = listOfDomainTypes.get(domainTypeIndex);
+				domainTypeId_to_handle_map.put(dt.getId(),domainTypeIndex);
 				ArrayList<BoundaryConditionType> bcTypes = new ArrayList<>();
 				if (dt.getSpatialDimensions() == vcGeometry.getDimension()) {
 					// subvolume
@@ -3641,7 +3642,7 @@ public class SBMLImporter {
 						// Volumes in GeometryDefinition
 						AnalyticSubVolume analyticSubVolume = new AnalyticSubVolume(dt.getId(), new Expression(1.0));
 						vcGeometrySpec.addSubVolume(analyticSubVolume);
-						analyticSubVolume.setHandle(domainTypeIndex);
+						analyticSubVolume.setHandle(domainTypeId_to_handle_map.get(dt.getId()));
 					}
 //					else {
 //						// add SubVolumes later for CSG and Image-based
