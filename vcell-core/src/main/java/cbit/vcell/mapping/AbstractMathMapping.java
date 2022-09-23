@@ -572,8 +572,8 @@ public static final String PARAMETER_MASS_CONSERVATION_PREFIX = "K_";
 public static final String PARAMETER_MASS_CONSERVATION_SUFFIX = "_total";
 public static final String MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_old = "_init";
 	public static final String MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_uM = "_init_uM";
-	public static final String MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_umol_l_1 = "_init_umol_l_1";
-	public static final String MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_umol_dm_2 = "_init_umol_dm_2";
+	public static final String MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_nmol_l_1 = "_init_nmol_l_1";
+	public static final String MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_nmol_dm_2 = "_init_nmol_dm_2";
 public static final String MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_old_molecules_per_um2 = "_init_molecules_per_um2";
 public static final String MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_molecules_um_2 = "_init_molecules_um_2";
 public static final int PARAMETER_ROLE_UNITFACTOR = 9;
@@ -714,11 +714,6 @@ public SimulationContext getSimulationContext() {
 	return simContext;
 }
 
-/**
- * Gets the mathMappingParameters index property (cbit.vcell.mapping.MathMappingParameter) value.
- * @return The mathMappingParameters property value.
- * @param index The index value into the property array.
- */
 public MathMappingParameter getMathMappingParameter(String argName) {
 	for (int i = 0; i < fieldMathMappingParameters.length; i++){
 		if (fieldMathMappingParameters[i].getName().equals(argName)){
@@ -853,12 +848,6 @@ protected java.beans.VetoableChangeSupport getVetoPropertyChange() {
 	return vetoPropertyChange;
 }
 
-/**
- * Sets the mathMappingParameters property (MathMappingParameter[]) value.
- * @param kineticsParameters The new value for the property.
- * @exception java.beans.PropertyVetoException The exception description.
- * @see #getMathMappingParameters
- */
 protected void setMathMapppingParameters(MathMappingParameter[] mathMappingParameters) throws java.beans.PropertyVetoException {
 	MathMappingParameter[] oldValue = fieldMathMappingParameters;
 	fireVetoableChange("mathMappingParameters", oldValue, mathMappingParameters);
@@ -1018,10 +1007,6 @@ protected Enumeration<SpeciesContextMapping> getSpeciesContextMappings() {
 
 /**
  * Substitutes appropriate variables for speciesContext bindings
- *
- * @return cbit.vcell.parser.Expression
- * @param origExp cbit.vcell.parser.Expression
- * @param structureMapping cbit.vcell.mapping.StructureMapping
  */
 protected Expression getIdentifierSubstitutions(Expression origExp, VCUnitDefinition desiredExpUnitDef,
 		GeometryClass geometryClass) throws ExpressionException, MappingException {
@@ -1100,13 +1085,6 @@ protected Expression getIdentifierSubstitutions(Expression origExp, VCUnitDefini
 			return newExp;
 		}
 
-/**
- * Substitutes appropriate variables for speciesContext bindings
- *
- * @return cbit.vcell.parser.Expression
- * @param origExp cbit.vcell.parser.Expression
- * @param structureMapping cbit.vcell.mapping.StructureMapping
- */
 public String getMathSymbol(SymbolTableEntry ste, GeometryClass geometryClass) throws MappingException {
 
 	String mathSymbol = getMathSymbol0(ste,geometryClass);
@@ -1128,13 +1106,6 @@ public String getMathSymbol(SymbolTableEntry ste, GeometryClass geometryClass) t
 	return mathSymbol;
 }
 
-/**
- * Substitutes appropriate variables for speciesContext bindings
- *
- * @return cbit.vcell.parser.Expression
- * @param origExp cbit.vcell.parser.Expression
- * @param structureMapping cbit.vcell.mapping.StructureMapping
- */
 protected final String getMathSymbol0(SymbolTableEntry ste, GeometryClass geometryClass)
 		throws MappingException {
 			String steName = ste.getName();
