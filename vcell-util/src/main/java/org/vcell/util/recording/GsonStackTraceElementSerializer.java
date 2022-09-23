@@ -12,10 +12,12 @@ public class GsonStackTraceElementSerializer implements JsonSerializer<StackTrac
     @Override
     public JsonElement serialize(StackTraceElement src, Type typeOfSrc, JsonSerializationContext context){
         JsonObject jsonObj = new JsonObject();
-        jsonObj.add("className", new JsonPrimitive(src.getClassName()));
-        jsonObj.add("fileName", new JsonPrimitive(src.getFileName()));
+        String className, fileName, methodName;
+
+        jsonObj.add("className", new JsonPrimitive((className = src.getClassName()) == null ? "<none>" : className));
+        jsonObj.add("fileName", new JsonPrimitive((fileName = src.getFileName()) == null ? "<none" : fileName));
         jsonObj.add("lineNumber", new JsonPrimitive(src.getLineNumber()));
-        jsonObj.add("methodName", new JsonPrimitive(src.getMethodName()));
+        jsonObj.add("methodName", new JsonPrimitive((methodName = src.getMethodName()) == null ? "<none>" : methodName));
         jsonObj.add("isNativeMethod", new JsonPrimitive(src.isNativeMethod()));
         return jsonObj;
     }

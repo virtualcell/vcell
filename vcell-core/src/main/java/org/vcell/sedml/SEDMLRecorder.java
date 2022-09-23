@@ -94,7 +94,7 @@ public class SEDMLRecorder extends Recorder {
 
 		// Gson construction
 		builder = new GsonBuilder(); // Now for the custom serializers
-		builder.registerTypeAdapter(this.getClass(), new GsonSEDMLLoggerSerializer());
+		builder.registerTypeAdapter(this.getClass(), new GsonSEDMLRecorderSerializer());
 		builder.registerTypeAdapter(Exception.class, new GsonExceptionSerializer());
 		for (Class<? extends Exception> clazz : exceptionTypes) // we must register *every* exception we had this way
 			builder.registerTypeAdapter(clazz, new GsonExceptionSerializer());
