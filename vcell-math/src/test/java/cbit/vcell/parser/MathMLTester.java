@@ -64,14 +64,13 @@ public class MathMLTester {
 		expressions.add(new Expression("-((-x)^2)"));
 		expressions.add(new Expression("-(-x^2)"));
 		expressions.add(new Expression("((Kf_dimerization * pow(EGFR_active,2.0)) - (Kr_dimerization * EGFR_dimer))"));
+		expressions.add(new Expression("((pow(( - 17.0 + x),2.0) + pow(( - 2.0 + y),2.0)) < (225.0 * (y > 2.0)))"));
 		return expressions;
 	}
 
 	@Test
 	public void testMathML_SBMLSubset() throws IOException, ExpressionException {
-		if (expression.infix().contains("atan")
-				|| expression.infix().contains("min")
-				|| expression.infix().contains("max")){
+		if (expression.infix().contains("atan")){
 			return;
 		}
 		String expMathMLStr = ExpressionMathMLPrinter.getMathML(expression, true,
@@ -104,6 +103,14 @@ public class MathMLTester {
 
 	@Test
 	public void testJSCLParseInfix() throws ExpressionException, ParseException {
+		List<String> tokensToAvoid = Arrays.asList(
+				"<",">","=","&","|","!"
+		);
+		boolean skipUnsupported = tokensToAvoid.stream().anyMatch(expression.infix()::contains);
+		if (skipUnsupported) {
+			return;
+		}
+
 		jscl.math.Expression jsclExp = jscl.math.Expression.valueOf(expression.infix_JSCL());
 		String jsclExpInfix = jsclExp.toString();
 		Expression roundTripExp = new Expression(jsclExpInfix);

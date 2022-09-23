@@ -350,7 +350,18 @@ public static boolean functionallyEquivalent(Expression exp1, Expression exp2) {
 public static boolean functionallyEquivalent(Expression exp1, Expression exp2, boolean bVerifySameSymbols) {
 	double defaultAbsoluteTolerance = 1e-12;
 	double defaultRelativeTolerance = 1e-10;
-	return functionallyEquivalent(exp1,exp2,bVerifySameSymbols,defaultRelativeTolerance,defaultAbsoluteTolerance);
+	boolean bFirstAnswer = functionallyEquivalent(exp1,exp2,bVerifySameSymbols,defaultRelativeTolerance,defaultAbsoluteTolerance);
+	try {
+		boolean bSecondAnswer = functionallyEquivalent(exp1.flattenSafe(),exp2.flattenSafe(),false,defaultRelativeTolerance,defaultAbsoluteTolerance);
+		if (bFirstAnswer == bSecondAnswer){
+			return bFirstAnswer;
+		}else{
+			System.out.println("first  '"+exp1.infix()+"=="+exp2.infix()+"':"+bFirstAnswer+"'\nsecond '"+exp1.flattenSafe().infix()+"=="+exp2.flattenSafe().infix()+"':"+bSecondAnswer+"'");
+			return bFirstAnswer;
+		}
+	} catch (ExpressionException e) {
+		throw new RuntimeException(e);
+	}
 }
 /**
  * Insert the method's description here.
@@ -500,12 +511,12 @@ public static boolean functionallyEquivalent(Expression exp1, Expression exp2, b
 		}
 		Vector<Discontinuity> discont1 = exp1.getDiscontinuities();
 		Vector<Discontinuity> discont2 = exp2.getDiscontinuities();
-		if(discont1.size() != discont2.size())
-		{
-			return false;
-		}
-		else
-		{
+//		if(discont1.size() != discont2.size())
+//		{
+//			return false;
+//		}
+//		else
+//		{
 			if (discont1.size() != 0)
 			{
 				Expression productOfdiscont1 = new Expression(1);
@@ -520,7 +531,7 @@ public static boolean functionallyEquivalent(Expression exp1, Expression exp2, b
 				}
 				return functionallyEquivalent(productOfdiscont1, productOfdiscont2, verifySameSymbols, relativeTolerance, absoluteTolerance);
 			}
-		}
+//		}
 		return true;
 	}catch (cbit.vcell.parser.ExpressionException e){
 		e.printStackTrace(System.out);

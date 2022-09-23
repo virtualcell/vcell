@@ -376,6 +376,10 @@ private SimpleNode getRootNode(Element nodeMathML, String timeSymbol) throws Exp
 			}else if (child.getName().equals(MathMLTags.OTHERWISE)){
 				Element pieceExp = (Element)child.getChildren().get(0);
 				SimpleNode vcellExp = getRootNode(pieceExp, timeSymbol);
+				boolean bOthewiseValueZero = false;
+				if (vcellExp instanceof ASTFloatNode && ((ASTFloatNode)vcellExp).value == 0.0){
+					bOthewiseValueZero = true;
+				}
 				//
 				// add term for this conditional expression (pieceExp * pieceCond)
 				//
@@ -385,6 +389,9 @@ private SimpleNode getRootNode(Element nodeMathML, String timeSymbol) throws Exp
 				// gather conditionals
 				//
 				if (conditionExpList.size() > 1) {
+					if (bOthewiseValueZero){
+						return addNode;
+					}
 					ASTOrNode orNode = new ASTOrNode();
 					for (int j = 0; j < conditionExpList.size(); j++){
 						orNode.jjtAddChild(conditionExpList.elementAt(j));
@@ -397,6 +404,9 @@ private SimpleNode getRootNode(Element nodeMathML, String timeSymbol) throws Exp
 					multNode.jjtAddChild(notNode);
 					addNode.jjtAddChild(multNode);
 				} else if (conditionExpList.size() == 1){		// only one condition (piece) in piecewise.
+					if (bOthewiseValueZero){
+						return (SimpleNode) addNode.jjtGetChild(0);
+					}
 					ASTNotNode notNode = new ASTNotNode();
 					notNode.jjtAddChild(conditionExpList.elementAt(0));
 					multNode.jjtAddChild(notNode);
