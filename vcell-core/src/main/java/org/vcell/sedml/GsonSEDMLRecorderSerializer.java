@@ -9,7 +9,7 @@ import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
 
 
-public class GsonSEDMLLoggerSerializer implements JsonSerializer<SEDMLRecorder> {
+public class GsonSEDMLRecorderSerializer implements JsonSerializer<SEDMLRecorder> {
     @Override
     public JsonElement serialize(SEDMLRecorder src, Type typeOfSrc, JsonSerializationContext context){
 
