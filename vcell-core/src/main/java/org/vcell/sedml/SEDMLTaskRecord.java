@@ -28,7 +28,15 @@ public class SEDMLTaskRecord {
     public TaskResult getTaskResult(){
         return this.taskResult;
     }
-    
+
+    public TaskType getTaskType(){
+        return this.taskType;
+    }
+
+    public String getTaskName(){
+        return this.taskName;
+    }
+
     public Exception getException(){
         return this.exception;
     }

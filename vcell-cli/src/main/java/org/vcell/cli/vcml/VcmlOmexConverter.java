@@ -268,6 +268,7 @@ public class VcmlOmexConverter {
 
         // get VCML name from VCML path
         String vcmlName = FilenameUtils.getBaseName(inputVcmlFile);		// platform independent, strips extension too
+		String jsonFullyQualifiedName = Paths.get(outputBaseDir, "json_reports" ,vcmlName + ".json").toString();
 
 		File vcmlFilePath = new File(inputVcmlFile);
         // Create biomodel
@@ -288,24 +289,7 @@ public class VcmlOmexConverter {
 			}
 		}
 
-		Version version = bioModel.getVersion();
-        String versionKey = version.getVersionKey().toString();
-        String sourcePath = "https://vcellapi-beta.cam.uchc.edu:8080/biomodel/" + versionKey + "/diagram";
-        String destinationPath = Paths.get(outputDir, "diagram.png").toString();
-        URL source = new URL(sourcePath);
-        File destination = new File(destinationPath);
-        int connectionTimeout = 10000;
-        int readTimeout = 20000;
-        try {
-       	 	FileUtils.copyURLToFile(source, destination, connectionTimeout, readTimeout);		// diagram
-        } catch(IOException e) {
-        	logger.error("Diagram not present in source="+sourcePath+": "+e.getMessage(), e);
-        }
 
-        String rdfString = getMetadata(vcmlName, bioModel, destination, bioModelInfo);
-        XmlUtil.writeXMLStringToFile(rdfString, String.valueOf(Paths.get(outputDir, "metadata.rdf")), true);
-        
-		String jsonFullyQualifiedName = Paths.get(outputBaseDir, "json_reports" ,vcmlName + ".json").toString();
         SEDMLExporter sedmlExporter = new SEDMLExporter(vcmlName, bioModel, sedmlLevel, sedmlVersion, simsToExport, jsonFullyQualifiedName);
 
         SEDMLDocument sedmlDocument = sedmlExporter.getSEDMLDocument(outputDir, vcmlName,
@@ -336,6 +320,22 @@ public class VcmlOmexConverter {
         String sedmlString = sedmlDocument.writeDocumentToString();
         XmlUtil.writeXMLStringToFile(sedmlString, String.valueOf(Paths.get(outputDir, vcmlName + ".sedml")), true);
 
+		Version version = bioModel.getVersion();
+		String versionKey = version.getVersionKey().toString();
+		String sourcePath = "https://vcellapi-beta.cam.uchc.edu:8080/biomodel/" + versionKey + "/diagram";
+		String destinationPath = Paths.get(outputDir, "diagram.png").toString();
+		URL source = new URL(sourcePath);
+		File destination = new File(destinationPath);
+		int connectionTimeout = 10000;
+		int readTimeout = 20000;
+		try {
+			FileUtils.copyURLToFile(source, destination, connectionTimeout, readTimeout);		// diagram
+		} catch(IOException e) {
+			logger.error("Diagram not present in source="+sourcePath+": "+e.getMessage(), e);
+		}
+
+		String rdfString = getMetadata(vcmlName, bioModel, destination, bioModelInfo);
+		XmlUtil.writeXMLStringToFile(rdfString, String.valueOf(Paths.get(outputDir, "metadata.rdf")), true);
         try {
 			NativeLib.combinej.load();
         } catch (UnsatisfiedLinkError ex) {
