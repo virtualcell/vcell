@@ -49,7 +49,7 @@ private Expression() {
 public Expression(SymbolTableEntry ste, NameScope nameScope) {
 	ASTIdNode idNode = new ASTIdNode(); 
 	idNode.name = (nameScope == null)? ste.getName():nameScope.getSymbolName(ste);
-	idNode.symbolTableEntry = ste;
+	idNode.setSymbolTableEntry(ste);
 	this.rootNode = idNode;
 	this.normalizedInfixString = idNode.name;
 }

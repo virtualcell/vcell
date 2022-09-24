@@ -18,17 +18,25 @@ import net.sourceforge.interval.ia_math.RealInterval;
 
 public class ASTIdNode extends SimpleNode {
 
+	private static enum BindState {
+		CLEARED,
+		NOT_YET_SET,
+		SET,
+		FAILED_TO_SET
+	}
+
   String name = null;
-  transient SymbolTableEntry symbolTableEntry = null;
+  private transient SymbolTableEntry symbolTableEntry = null;
+  private transient BindState bindState = BindState.NOT_YET_SET;
 
 ASTIdNode() {
 	super(ExpressionParserTreeConstants.JJTIDNODE);
-  }    
+  }
 ASTIdNode(int id) {
 	super(id);
 if (id != ExpressionParserTreeConstants.JJTIDNODE){ System.out.println("ASTIdNode(), id = "+id); }
 
-  }    
+  }
 /**
  * This method was created by a SmartGuide.
  */
@@ -36,23 +44,43 @@ ASTIdNode ( ASTIdNode node ) {
 	super(node.id);
 	this.name = node.name;
 	this.symbolTableEntry = node.symbolTableEntry;
+	this.bindState = node.bindState;
 }
   /** Bind method, identifiers bind themselves to ValueObjects */
 public void bind(SymbolTable symbolTable) throws ExpressionBindingException {
-	
+
 	if (symbolTable == null){
+		bindState = BindState.CLEARED;
 		symbolTableEntry = null;
 		return;
-	}	
-	
+	}
+
 	symbolTableEntry = symbolTable.getEntry(name);
+	if (symbolTableEntry != null){
+		bindState = BindState.SET;
+	}else{
+		bindState = BindState.FAILED_TO_SET;
+	}
 
 	if (symbolTableEntry==null && !symbolTable.allowPartialBinding()){
 		String id = name;
 		throw new ExpressionBindingException("'" + id + "' is either not found in your model or is not allowed to " +
 				"be used in the current context. Check that you have provided the correct and full name (e.g. Ca_Cytosol).");
 	}
-}    
+}
+
+void setSymbolTableEntry(SymbolTableEntry ste){
+	symbolTableEntry = ste;
+	if (ste == null){
+		bindState = BindState.CLEARED;
+	}else{
+		bindState = BindState.SET;
+	}
+}
+
+SymbolTableEntry getSymbolTableEntry() {
+	return symbolTableEntry;
+}
 /**
  * This method was created by a SmartGuide.
  * @return cbit.vcell.parser.Node
@@ -173,7 +201,7 @@ public RealInterval evaluateInterval(RealInterval intervals[]) throws Expression
 
 	if (symbolTableEntry==null){
 		String id = name;
-		throw new ExpressionBindingException("referencing unbound identifier " + id);
+		throw new ExpressionBindingException("referencing unbound identifier " + id + ", bindState="+bindState);
 	}
 
 	Expression exp = symbolTableEntry.getExpression();
@@ -192,7 +220,7 @@ public double evaluateVector(double values[]) throws ExpressionException {
 
 	if (symbolTableEntry==null){
 		String id = name;
-		throw new ExpressionBindingException("referencing unbound identifier " + id);
+		throw new ExpressionBindingException("referencing unbound identifier " + id + ", bindState="+bindState);
 	}
 
 	Expression exp = symbolTableEntry.getExpression();
@@ -316,7 +344,7 @@ public String toString() {
 @Override
 public void renameBoundSymbols(NameScope nameScope) throws ExpressionBindingException {
 	if (symbolTableEntry == null) {
-		throw new ExpressionBindingException("error renaming unbound identifier '" + name + "'");
+		throw new ExpressionBindingException("error renaming unbound identifier '" + name + "', bindState="+bindState);
 	}
 	
 	name = nameScope.getSymbolName(symbolTableEntry);

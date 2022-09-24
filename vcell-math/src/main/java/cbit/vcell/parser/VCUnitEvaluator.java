@@ -235,7 +235,7 @@ public class VCUnitEvaluator {
 				}
 		} else if (node instanceof ASTIdNode) {
 			if (!nodeUnit.isTBD()){
-				unitsHashMap.put(((ASTIdNode)node).symbolTableEntry,nodeUnit);
+				unitsHashMap.put(((ASTIdNode)node).getSymbolTableEntry(),nodeUnit);
 			}
 		} else {
 			throw new ExpressionException("node type "+node.getClass().toString()+" not supported yet");
@@ -434,7 +434,7 @@ public class VCUnitEvaluator {
 				return unitSystem.getInstance_TBD();
 			}
 		} else if (node instanceof ASTIdNode) {
-			SymbolTableEntry ste = ((ASTIdNode)node).symbolTableEntry;
+			SymbolTableEntry ste = ((ASTIdNode)node).getSymbolTableEntry();
 			unit = unitsHashMap.get(ste);
 			if (unit == null) {
 				unit = ste.getUnitDefinition();
