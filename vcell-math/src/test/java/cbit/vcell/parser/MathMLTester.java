@@ -54,7 +54,7 @@ public class MathMLTester {
 				continue;
 			}
 			try {
-				exp.evaluateConstant();
+				exp.evaluateConstantSafe();
 			}catch (FunctionDomainException fde) {
 				continue;
 			}catch (ExpressionException e){

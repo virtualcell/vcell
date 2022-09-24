@@ -85,7 +85,8 @@ public boolean equals(Node node) {
 	return true;
 }
 
-public double evaluateConstant() throws ExpressionException {
+@Override
+public double evaluateConstant(boolean substituteConstants) throws ExpressionException {
 	throw new ExpressionException("trying to evaluate literal identifier '"+infixString(LANGUAGE_DEFAULT)+"'");
 }        
 
@@ -97,7 +98,8 @@ public double evaluateVector(double values[]) throws ExpressionException {
 	throw new ExpressionBindingException("cannote evaluate literal identifier " + name);
 }
 
-public Node flatten() throws ExpressionException {
+@Override
+public Node flatten(boolean substituteConstants) throws ExpressionException {
 	return copyTree();
 }
 

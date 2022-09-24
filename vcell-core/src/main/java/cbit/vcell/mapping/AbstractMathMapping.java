@@ -1077,9 +1077,7 @@ protected Expression getIdentifierSubstitutions(Expression origExp, VCUnitDefini
 				
 				if (ste != null){
 					String newName = getMathSymbol(ste,geometryClass);
-					if (!newName.equals(symbols[i])){
-						newExp.substituteInPlace(new Expression(symbols[i]),new Expression(newName));
-					}
+					newExp.substituteInPlace(new Expression(symbols[i]),new Expression(newName));
 				}
 			}
 			return newExp;

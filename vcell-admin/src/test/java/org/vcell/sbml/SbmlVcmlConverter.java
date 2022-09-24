@@ -329,7 +329,7 @@ private static void solveSimulation(SimulationJob simJob, String filePathName,  
 		            Variable var = simJob.getSimulationSymbolTable().getVariable(argSimSpec.getVarsList()[i]);
 		            data[i + 1] = new double[data[0].length];
 		            if (var instanceof cbit.vcell.math.Constant) {
-		                double value = ((cbit.vcell.math.Constant) var).getExpression().evaluateConstant();
+		                double value = ((cbit.vcell.math.Constant) var).getExpression().evaluateConstantWithSubstitution();
 		                for (int j = 0; j < data[i + 1].length; j++) {
 		                    data[i + 1][j] = value;
 		                }

@@ -1204,7 +1204,7 @@ public boolean equals(Node node) {
 }
 
 
-public double evaluateConstant() throws ExpressionException {
+public double evaluateConstant(boolean substituteConstants) throws ExpressionException {
 
 	double result = 0.0;
 	
@@ -1212,7 +1212,7 @@ public double evaluateConstant() throws ExpressionException {
 	case USERDEFINED: {
 		SimpleNode substitutedFunction = getSubstitutedFunction();
 		if (substitutedFunction!=null){
-			result = substitutedFunction.evaluateConstant();
+			result = substitutedFunction.evaluateConstant(substituteConstants);
 		}else if (symbolTableFunctionEntry instanceof SymbolTableFunctionEntry.Evaluable){
 			SymbolTableFunctionEntry.Evaluable evaluatableFunction = (SymbolTableFunctionEntry.Evaluable)symbolTableFunctionEntry;
 			result = evaluatableFunction.evaluateConstant(getArguments());
@@ -1223,7 +1223,7 @@ public double evaluateConstant() throws ExpressionException {
 	}
 	case EXP: {
 		if (jjtGetNumChildren()!=1) throw new Error("exp() expects 1 argument");
-		result = Math.exp(jjtGetChild(0).evaluateConstant());
+		result = Math.exp(jjtGetChild(0).evaluateConstant(substituteConstants));
 		break;
 	}
 	case POW: {
@@ -1236,13 +1236,13 @@ public double evaluateConstant() throws ExpressionException {
 		double mantissa = 0.0;
 		ExpressionException savedException = null;
 		try {
-			exponent = exponentChild.evaluateConstant();
+			exponent = exponentChild.evaluateConstant(substituteConstants);
 			bExponentConstant = true;
 		}catch (ExpressionException e){
 			savedException = e;
 		}	
 		try {
-			mantissa = mantissaChild.evaluateConstant();
+			mantissa = mantissaChild.evaluateConstant(substituteConstants);
 			bMantissaConstant = true;
 		}catch (ExpressionException e){
 			savedException = e;
@@ -1283,7 +1283,7 @@ public double evaluateConstant() throws ExpressionException {
 	}
 	case LOG: {
 		if (jjtGetNumChildren()!=1) throw new Error("log() expects 1 argument");
-		double argument = jjtGetChild(0).evaluateConstant();
+		double argument = jjtGetChild(0).evaluateConstant(substituteConstants);
 		if (argument == 0.0){
 			throw new FunctionDomainException("log() of 0.0 is undefined, '"+infixString(LANGUAGE_DEFAULT)+"' == 0.0");
 		}
@@ -1295,12 +1295,12 @@ public double evaluateConstant() throws ExpressionException {
 	}
 	case ABS: {
 		if (jjtGetNumChildren()!=1) throw new Error("abs() expects 1 argument");
-		result = Math.abs(jjtGetChild(0).evaluateConstant());
+		result = Math.abs(jjtGetChild(0).evaluateConstant(substituteConstants));
 		break;
 	}
 	case SQRT: {
 		if (jjtGetNumChildren()!=1) throw new Error("sqrt() expects 1 argument");
-		double argument = jjtGetChild(0).evaluateConstant();
+		double argument = jjtGetChild(0).evaluateConstant(substituteConstants);
 		if (argument<0){
 			throw new FunctionDomainException("sqrt(u) where u<0 is undefined: u="+argument+", expression='"+infixString(LANGUAGE_DEFAULT)+"' < 0.0");
 		}
@@ -1309,22 +1309,22 @@ public double evaluateConstant() throws ExpressionException {
 	}
 	case SIN: {
 		if (jjtGetNumChildren()!=1) throw new Error("sin() expects 1 argument");
-		result = Math.sin(jjtGetChild(0).evaluateConstant());
+		result = Math.sin(jjtGetChild(0).evaluateConstant(substituteConstants));
 		break;
 	}
 	case COS: {
 		if (jjtGetNumChildren()!=1) throw new Error("cos() expects 1 argument");
-		result = Math.cos(jjtGetChild(0).evaluateConstant());
+		result = Math.cos(jjtGetChild(0).evaluateConstant(substituteConstants));
 		break;
 	}
 	case TAN: {
 		if (jjtGetNumChildren()!=1) throw new Error("tan() expects 1 argument");
-		result = Math.tan(jjtGetChild(0).evaluateConstant());
+		result = Math.tan(jjtGetChild(0).evaluateConstant(substituteConstants));
 		break;
 	}
 	case ASIN: {
 		if (jjtGetNumChildren()!=1) throw new Error("asin() expects 1 argument");
-		double argument = jjtGetChild(0).evaluateConstant();
+		double argument = jjtGetChild(0).evaluateConstant(substituteConstants);
 		if (Math.abs(argument)>1.0){
 			throw new FunctionDomainException("asin(u) and |u|>1.0 undefined, u="+argument+", expression='"+infixString(LANGUAGE_DEFAULT)+"'");
 		}
@@ -1333,7 +1333,7 @@ public double evaluateConstant() throws ExpressionException {
 	}
 	case ACOS: {
 		if (jjtGetNumChildren()!=1) throw new Error("acos() expects 1 argument");
-		double argument = jjtGetChild(0).evaluateConstant();
+		double argument = jjtGetChild(0).evaluateConstant(substituteConstants);
 		if (Math.abs(argument)>1.0){
 			throw new FunctionDomainException("acos(u) and |u|>1.0 undefined, u="+argument+", expression='"+infixString(LANGUAGE_DEFAULT)+"'");
 		}
@@ -1342,13 +1342,13 @@ public double evaluateConstant() throws ExpressionException {
 	}
 	case ATAN: {
 		if (jjtGetNumChildren()!=1) throw new Error("atan() expects 1 argument");
-		result = Math.atan(jjtGetChild(0).evaluateConstant());
+		result = Math.atan(jjtGetChild(0).evaluateConstant(substituteConstants));
 		break;
 	}
 	case ATAN2: {
 		if (jjtGetNumChildren()!=2) throw new Error("atan2() expects 2 arguments");
-		double arg1 = jjtGetChild(0).evaluateConstant();
-		double arg2 = jjtGetChild(1).evaluateConstant();
+		double arg1 = jjtGetChild(0).evaluateConstant(substituteConstants);
+		double arg2 = jjtGetChild(1).evaluateConstant(substituteConstants);
 		if (arg1 == 0 && arg2 == 0) {
 			throw new FunctionDomainException("atan2(u, v) where u=0 and v=0 is undefined, expression='"+infixString(LANGUAGE_DEFAULT)+"'");
 		}
@@ -1363,27 +1363,27 @@ public double evaluateConstant() throws ExpressionException {
 	}
 	case MAX: {
 		if (jjtGetNumChildren()!=2) throw new Error("max() expects 2 arguments");
-		result = Math.max(jjtGetChild(0).evaluateConstant(),jjtGetChild(1).evaluateConstant());
+		result = Math.max(jjtGetChild(0).evaluateConstant(substituteConstants),jjtGetChild(1).evaluateConstant(substituteConstants));
 		break;
 	}
 	case MIN: {
 		if (jjtGetNumChildren()!=2) throw new Error("min() expects 2 arguments");
-		result = Math.min(jjtGetChild(0).evaluateConstant(),jjtGetChild(1).evaluateConstant());
+		result = Math.min(jjtGetChild(0).evaluateConstant(substituteConstants),jjtGetChild(1).evaluateConstant(substituteConstants));
 		break;
 	}
 	case CEIL: {
 		if (jjtGetNumChildren()!=1) throw new Error("ceil() expects 1 argument");
-		result = Math.ceil(jjtGetChild(0).evaluateConstant());
+		result = Math.ceil(jjtGetChild(0).evaluateConstant(substituteConstants));
 		break;
 	}
 	case FLOOR: {
 		if (jjtGetNumChildren()!=1) throw new Error("floor() expects 1 argument");
-		result = Math.floor(jjtGetChild(0).evaluateConstant());
+		result = Math.floor(jjtGetChild(0).evaluateConstant(substituteConstants));
 		break;
 	}
 	case CSC: {
 		if (jjtGetNumChildren()!=1) throw new Error("csc() expects 1 argument");
-		double argument = jjtGetChild(0).evaluateConstant();
+		double argument = jjtGetChild(0).evaluateConstant(substituteConstants);
 		if (Math.abs(argument) == 0.0){
 			throw new FunctionDomainException("csc(u) & u = 0.0 undefined, u="+argument+", expression='"+infixString(LANGUAGE_DEFAULT)+"'");
 		}
@@ -1392,17 +1392,17 @@ public double evaluateConstant() throws ExpressionException {
 	}
 	case COT: {
 		if (jjtGetNumChildren()!=1) throw new Error("cot() expects 1 argument");
-		result = MathUtil.cot(jjtGetChild(0).evaluateConstant());
+		result = MathUtil.cot(jjtGetChild(0).evaluateConstant(substituteConstants));
 		break;
 	}
 	case SEC: {
 		if (jjtGetNumChildren()!=1) throw new Error("sec() expects 1 argument");
-		result = MathUtil.sec(jjtGetChild(0).evaluateConstant());
+		result = MathUtil.sec(jjtGetChild(0).evaluateConstant(substituteConstants));
 		break;
 	}
 	case ACSC: {
 		if (jjtGetNumChildren()!=1) throw new Error("acsc() expects 1 argument");
-		double argument = jjtGetChild(0).evaluateConstant();
+		double argument = jjtGetChild(0).evaluateConstant(substituteConstants);
 		if (Math.abs(argument) < 1.0){
 			throw new FunctionDomainException("acsc(u) and -1<u<1 undefined, u="+argument+", expression='"+infixString(LANGUAGE_DEFAULT)+"'");
 		}
@@ -1411,12 +1411,12 @@ public double evaluateConstant() throws ExpressionException {
 	}
 	case ACOT: {
 		if (jjtGetNumChildren()!=1) throw new Error("acot() expects 1 argument");
-		result = MathUtil.acot(jjtGetChild(0).evaluateConstant());
+		result = MathUtil.acot(jjtGetChild(0).evaluateConstant(substituteConstants));
 		break;
 	}
 	case ASEC: {
 		if (jjtGetNumChildren()!=1) throw new Error("asec() expects 1 argument");
-		double argument = jjtGetChild(0).evaluateConstant();
+		double argument = jjtGetChild(0).evaluateConstant(substituteConstants);
 		if (Math.abs(argument) < 1.0){
 			throw new FunctionDomainException("asec(u) and -1<u<1 undefined, u="+argument+", expression='"+infixString(LANGUAGE_DEFAULT)+"'");
 		}
@@ -1425,22 +1425,22 @@ public double evaluateConstant() throws ExpressionException {
 	}
 	case SINH: {
 		if (jjtGetNumChildren()!=1) throw new Error("sinh() expects 1 argument");
-		result = Math.sinh(jjtGetChild(0).evaluateConstant());
+		result = Math.sinh(jjtGetChild(0).evaluateConstant(substituteConstants));
 		break;
 	}
 	case COSH: {
 		if (jjtGetNumChildren()!=1) throw new Error("cosh() expects 1 argument");
-		result = Math.cosh(jjtGetChild(0).evaluateConstant());
+		result = Math.cosh(jjtGetChild(0).evaluateConstant(substituteConstants));
 		break;
 	}
 	case TANH: {
 		if (jjtGetNumChildren()!=1) throw new Error("tanh() expects 1 argument");
-		result = Math.tanh(jjtGetChild(0).evaluateConstant());
+		result = Math.tanh(jjtGetChild(0).evaluateConstant(substituteConstants));
 		break;
 	}
 	case CSCH: {
 		if (jjtGetNumChildren()!=1) throw new Error("csch() expects 1 argument");
-		double argument = jjtGetChild(0).evaluateConstant();
+		double argument = jjtGetChild(0).evaluateConstant(substituteConstants);
 		if (argument == 0.0){
 			throw new FunctionDomainException("csch(u) and |u| = 0, u="+argument+", expression='"+infixString(LANGUAGE_DEFAULT)+"'");
 		}
@@ -1449,7 +1449,7 @@ public double evaluateConstant() throws ExpressionException {
 	}
 	case COTH: {
 		if (jjtGetNumChildren()!=1) throw new Error("coth() expects 1 argument");
-		double argument = jjtGetChild(0).evaluateConstant();
+		double argument = jjtGetChild(0).evaluateConstant(substituteConstants);
 		if (argument == 0.0){
 			throw new FunctionDomainException("coth(u) and |u| = 0, u="+argument+", expression='"+infixString(LANGUAGE_DEFAULT)+"'");
 		}
@@ -1458,17 +1458,17 @@ public double evaluateConstant() throws ExpressionException {
 	}
 	case SECH: {
 		if (jjtGetNumChildren()!=1) throw new Error("sech() expects 1 argument");
-		result = MathUtil.sech(jjtGetChild(0).evaluateConstant());
+		result = MathUtil.sech(jjtGetChild(0).evaluateConstant(substituteConstants));
 		break;
 	}
 	case ASINH: {
 		if (jjtGetNumChildren()!=1) throw new Error("asinh() expects 1 argument");
-		result = MathUtil.asinh(jjtGetChild(0).evaluateConstant());
+		result = MathUtil.asinh(jjtGetChild(0).evaluateConstant(substituteConstants));
 		break;
 	}
 	case ACOSH: {
 		if (jjtGetNumChildren()!=1) throw new Error("acosh() expects 1 argument");
-		double argument = jjtGetChild(0).evaluateConstant();
+		double argument = jjtGetChild(0).evaluateConstant(substituteConstants);
 		if (argument < 1.0){
 			throw new FunctionDomainException("acosh(u) and u < 1.0, u="+argument+", expression='"+infixString(LANGUAGE_DEFAULT)+"'");
 		}
@@ -1477,7 +1477,7 @@ public double evaluateConstant() throws ExpressionException {
 	}
 	case ATANH: {
 		if (jjtGetNumChildren()!=1) throw new Error("atanh() expects 1 argument");
-		double argument = jjtGetChild(0).evaluateConstant();
+		double argument = jjtGetChild(0).evaluateConstant(substituteConstants);
 		if (Math.abs(argument) >= 1.0){
 			throw new FunctionDomainException("atanh(u) and |u| >= 1.0, u="+argument+", expression='"+infixString(LANGUAGE_DEFAULT)+"'");
 		}
@@ -1486,7 +1486,7 @@ public double evaluateConstant() throws ExpressionException {
 	}
 	case ACSCH: {
 		if (jjtGetNumChildren()!=1) throw new Error("acsch() expects 1 argument");
-		double argument = jjtGetChild(0).evaluateConstant();
+		double argument = jjtGetChild(0).evaluateConstant(substituteConstants);
 		if (argument == 0.0){
 			throw new FunctionDomainException("acsch(u) and |u| = 0, u="+argument+", expression='"+infixString(LANGUAGE_DEFAULT)+"'");
 		}
@@ -1495,7 +1495,7 @@ public double evaluateConstant() throws ExpressionException {
 	}
 	case ACOTH: {
 		if (jjtGetNumChildren()!=1) throw new Error("acoth() expects 1 argument");
-		double argument = jjtGetChild(0).evaluateConstant();
+		double argument = jjtGetChild(0).evaluateConstant(substituteConstants);
 		if (Math.abs(argument) <= 1.0){
 			throw new FunctionDomainException("acoth(u) and |u| <= 1.0, u="+argument+", expression='"+infixString(LANGUAGE_DEFAULT)+"'");
 		}
@@ -1504,7 +1504,7 @@ public double evaluateConstant() throws ExpressionException {
 	}
 	case ASECH: {
 		if (jjtGetNumChildren()!=1) throw new Error("asech() expects 1 argument");
-		double argument = jjtGetChild(0).evaluateConstant();
+		double argument = jjtGetChild(0).evaluateConstant(substituteConstants);
 		if (argument <= 0.0 || argument > 1.0){
 			throw new FunctionDomainException("asech(u) and 0.0 <= u  and u > 1.0, u="+argument+", expression='"+infixString(LANGUAGE_DEFAULT)+"'");
 		}
@@ -1513,7 +1513,7 @@ public double evaluateConstant() throws ExpressionException {
 	}
 	case FACTORIAL: {
 		if (jjtGetNumChildren()!=1) throw new Error("factorial() expects 1 argument");
-		double argument = jjtGetChild(0).evaluateConstant();
+		double argument = jjtGetChild(0).evaluateConstant(substituteConstants);
 		if (Math.abs(argument) < 0.0){
 			throw new FunctionDomainException("factorial(u) and u < 0.0, u="+argument+", expression='"+infixString(LANGUAGE_DEFAULT)+"'");
 		}
@@ -1522,7 +1522,7 @@ public double evaluateConstant() throws ExpressionException {
 	}
 	case LOG_10: {
 		if (jjtGetNumChildren()!=1) throw new Error("log10() expects 1 argument");
-		double argument = jjtGetChild(0).evaluateConstant();
+		double argument = jjtGetChild(0).evaluateConstant(substituteConstants);
 		if (argument == 0.0){
 			throw new FunctionDomainException("log10() of 0.0 is undefined, '"+infixString(LANGUAGE_DEFAULT)+"' == 0.0");
 		}
@@ -1534,7 +1534,7 @@ public double evaluateConstant() throws ExpressionException {
 	}
 	case LOGBASE: {
 		if (jjtGetNumChildren()!=1) throw new Error("logbase() expects 1 argument");
-		double argument = jjtGetChild(0).evaluateConstant();
+		double argument = jjtGetChild(0).evaluateConstant(substituteConstants);
 		if (argument == 0.0){
 			throw new FunctionDomainException("logbase() of 0.0 is undefined, '"+infixString(LANGUAGE_DEFAULT)+"' == 0.0");
 		}
@@ -2124,14 +2124,11 @@ public double evaluateVector(double values[]) throws ExpressionException {
 }      
 
 
-/**
- * This method was created by a SmartGuide.
- * @exception java.lang.Exception The exception description.
- */
-public Node flatten() throws ExpressionException {
+@Override
+public Node flatten(boolean substituteConstants) throws ExpressionException {
 	
 	try {
-		double value = evaluateConstant();
+		double value = evaluateConstant(substituteConstants);
 		return new ASTFloatNode(value);
 	}catch (Exception e){}		
 	ASTFuncNode funcNode = new ASTFuncNode();
@@ -2141,7 +2138,7 @@ public Node flatten() throws ExpressionException {
 	ArrayList<Node> tempChildren = new ArrayList<>();
 
 	for (int i=0;i<jjtGetNumChildren();i++){
-		tempChildren.add(jjtGetChild(i).flatten());
+		tempChildren.add(jjtGetChild(i).flatten(substituteConstants));
 	}
 
 	switch (funcType){
@@ -2159,7 +2156,7 @@ public Node flatten() throws ExpressionException {
 		powNode.jjtAddChild(tempChildren.get(0));
 		powNode.jjtAddChild(tempChildren.get(1));
 
-		return powNode.flatten();
+		return powNode.flatten(substituteConstants);
 	}
 	case SQRT: {
 		if (tempChildren.size()!=1) throw new ExpressionException("sqrt() expects 1 argument");
@@ -2177,7 +2174,7 @@ public Node flatten() throws ExpressionException {
 					ASTFuncNode newAbsNode = new ASTFuncNode();
 					newAbsNode.setFunctionType(FunctionType.ABS);
 					newAbsNode.jjtAddChild(childPowMantissa);
-					return newAbsNode.flatten();
+					return newAbsNode.flatten(substituteConstants);
 				}
 			}
 		}else if (child instanceof ASTPowerNode){
@@ -2187,7 +2184,7 @@ public Node flatten() throws ExpressionException {
 				ASTFuncNode newAbsNode = new ASTFuncNode();
 				newAbsNode.setFunctionType(FunctionType.ABS);
 				newAbsNode.jjtAddChild(childPowMantissa);
-				return newAbsNode.flatten();
+				return newAbsNode.flatten(substituteConstants);
 			}
 		}
 		break;

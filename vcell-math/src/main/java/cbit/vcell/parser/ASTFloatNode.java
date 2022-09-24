@@ -90,7 +90,8 @@ public boolean equals(Node node) {
 
 	return true;
 }
-public double evaluateConstant() {
+@Override
+public double evaluateConstant(boolean substituteConstants) {
 	return value.doubleValue();
 }      
 public RealInterval evaluateInterval(RealInterval intervals[]) throws ExpressionBindingException{
@@ -100,11 +101,9 @@ public RealInterval evaluateInterval(RealInterval intervals[]) throws Expression
 public double evaluateVector(double values[]) {
 	return value.doubleValue();
 }      
-/**
- * This method was created by a SmartGuide.
- * @exception java.lang.Exception The exception description.
- */
-public Node flatten() throws ExpressionException {
+
+@Override
+public Node flatten(boolean substituteConstants) throws ExpressionException {
 	return copyTree();
 }
 

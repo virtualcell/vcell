@@ -74,8 +74,9 @@ public Node differentiate(String independentVariable) throws ExpressionException
 	
 	return multNode;
 }
-public double evaluateConstant() throws ExpressionException, DivideByZeroException {
-	double childValue = jjtGetChild(0).evaluateConstant();
+@Override
+public double evaluateConstant(boolean substituteConstants) throws ExpressionException, DivideByZeroException {
+	double childValue = jjtGetChild(0).evaluateConstant(substituteConstants);
 	if (childValue==0.0){
 		String childString = infixString(LANGUAGE_DEFAULT);
 		throw new DivideByZeroException("divide by zero '"+childString+"'");
@@ -145,13 +146,10 @@ public double evaluateVector(double values[]) throws ExpressionException, Divide
 		return (1.0 / childValue);
 	}
 }    
-/**
- * This method was created by a SmartGuide.
- * @exception java.lang.Exception The exception description.
- */
-public Node flatten() throws ExpressionException {
+
+@Override public Node flatten(boolean substituteConstants) throws ExpressionException {
 	try {
-		double value = evaluateConstant();
+		double value = evaluateConstant(substituteConstants);
 		if (value!=0.0){
 			return new ASTFloatNode(value);
 		}else{
@@ -171,11 +169,11 @@ public Node flatten() throws ExpressionException {
 	// remove double invert
 	//
 	if (jjtGetChild(0) instanceof ASTInvertTermNode){
-		return jjtGetChild(0).jjtGetChild(0).flatten();
+		return jjtGetChild(0).jjtGetChild(0).flatten(substituteConstants);
 	}
 	
 	ASTInvertTermNode invertNode = new ASTInvertTermNode();
-	invertNode.jjtAddChild(jjtGetChild(0).flatten());	
+	invertNode.jjtAddChild(jjtGetChild(0).flatten(substituteConstants));
 	return invertNode;
 }
 /**

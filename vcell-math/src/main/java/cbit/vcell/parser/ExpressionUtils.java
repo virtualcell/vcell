@@ -379,8 +379,8 @@ public static boolean functionallyEquivalent(Expression exp1, Expression exp2, b
 			// compare solutions
 			//
 			try {
-				double result1 = exp1.evaluateConstant();
-				double result2 = exp2.evaluateConstant();
+				double result1 = exp1.evaluateConstantSafe();
+				double result2 = exp2.evaluateConstantSafe();
 				if (Double.isInfinite(result1) || Double.isNaN(result1)){
 					throw new RuntimeException("exp1 = '"+exp1+"' evaluates to "+result1);
 				}

@@ -92,7 +92,7 @@ public class RunSims extends AsynchClientTask {
 						newExp.bindExpression(simSymbolTable);
 						newExp = simSymbolTable.substituteFunctions(newExp).flatten();
 						try {
-							double diffConstant = newExp.evaluateConstant();
+							double diffConstant = newExp.evaluateConstantWithSubstitution();
 							Dmax = Math.max(Dmax, diffConstant);
 						} catch (ExpressionException ex) {
 							throw new ExpressionException("diffusion coefficient for variable " 

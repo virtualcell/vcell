@@ -128,11 +128,6 @@ public class DiffEquMathMapping extends AbstractMathMapping {
 	public static final int PARAMETER_ROLE_RATERULE_RATE = 8;
 	private Vector<StructureAnalyzer> structureAnalyzerList = new Vector<StructureAnalyzer>();
 	
-	/**
- * This method was created in VisualAge.
- * @param model cbit.vcell.model.Model
- * @param geometry cbit.vcell.geometry.Geometry
- */
 protected DiffEquMathMapping(SimulationContext simContext, MathMappingCallback callback, NetworkGenerationRequirements networkGenerationRequirements) {
 	super(simContext,callback,networkGenerationRequirements);
 }
@@ -171,11 +166,6 @@ private RateRuleRateParameter addRateRuleRateParameter(SymbolTableEntry target, 
 	return newParameter;
 }
 
-/**
- * This method was created in VisualAge.
- * @return cbit.vcell.mapping.MembraneStructureAnalyzer
- * @param membrane cbit.vcell.model.Membrane
- */
 private MembraneStructureAnalyzer getMembraneStructureAnalyzer(SurfaceClass surfaceClass) {
 	Enumeration<StructureAnalyzer> enum1 = getStructureAnalyzers();
 	while (enum1.hasMoreElements()){
@@ -219,11 +209,6 @@ private VolumeStructureAnalyzer getVolumeStructureAnalyzer(SubVolume subVolume) 
 	return null;
 }
 
-/**
- * This method was created in VisualAge.
- * @param obs java.util.Observable
- * @param obj java.lang.Object
- */
 @Override
 protected void refresh(MathMappingCallback callback) throws MappingException, ExpressionException, MatrixException, MathException, ModelException {
 //	System.out.println("MathMapping.refresh Start");
@@ -1922,7 +1907,7 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 		VolVariable volVar = volVarsIter.next();
 		EventAssignmentOrRateRuleInitParameter initParam = eventVolVarHash.get(volVar);
 		//check event initial condition, it shouldn't contain vars, we have to do it here, coz we want to substitute functions...etc.
-		Expression eapExp = MathUtilities.substituteFunctions(initParam.getExpression(), mathDesc);
+		Expression eapExp = MathUtilities.substituteFunctions(initParam.getExpression(), varHash);
 		if(eapExp.getSymbols() != null){
 			for(String symbol:eapExp.getSymbols()){
 				SymbolTableEntry ste = eapExp.getSymbolBinding(symbol);

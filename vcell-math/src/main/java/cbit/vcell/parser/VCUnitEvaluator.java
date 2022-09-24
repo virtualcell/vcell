@@ -131,7 +131,7 @@ public class VCUnitEvaluator {
 						//
 						boolean bConstant = false;
 						try {
-							child.evaluateConstant();
+							child.evaluateConstant(false);
 							bConstant = true;
 						}catch (ExpressionException e){
 						}
@@ -190,7 +190,7 @@ public class VCUnitEvaluator {
 				// for base, impose the 1/Nth root of nodeUnit if exponent is constant
 				//
 				try {
-					double exponentValue = ((SimpleNode)node.jjtGetChild(1)).evaluateConstant();
+					double exponentValue = ((SimpleNode)node.jjtGetChild(1)).evaluateConstant(false);
 					if (!nodeUnit.isTBD()){
 						RationalNumber rn = RationalNumber.getApproximateFraction(exponentValue);
 						assignAndVerify(nodeUnit.raiseTo(rn.inverse()),(SimpleNode)node.jjtGetChild(0),unitsHashMap);  // exponent should always be dimensionless
@@ -224,7 +224,7 @@ public class VCUnitEvaluator {
 				// for base, impose the 1/Nth root of nodeUnit if exponent is constant
 				//
 				try {
-					double exponentValue = ((SimpleNode)node.jjtGetChild(1)).evaluateConstant();
+					double exponentValue = ((SimpleNode)node.jjtGetChild(1)).evaluateConstant(false);
 					RationalNumber rn = RationalNumber.getApproximateFraction(exponentValue);
 					assignAndVerify(nodeUnit.raiseTo(rn.inverse()),(SimpleNode)node.jjtGetChild(0),unitsHashMap);  // exponent should always be dimensionless
 				}catch (ExpressionException e){
@@ -235,7 +235,7 @@ public class VCUnitEvaluator {
 				}
 		} else if (node instanceof ASTIdNode) {
 			if (!nodeUnit.isTBD()){
-				unitsHashMap.put(((ASTIdNode)node).symbolTableEntry,nodeUnit);
+				unitsHashMap.put(((ASTIdNode)node).getSymbolTableEntry(),nodeUnit);
 			}
 		} else {
 			throw new ExpressionException("node type "+node.getClass().toString()+" not supported yet");
@@ -368,7 +368,7 @@ public class VCUnitEvaluator {
 					return unit0;
 				}
 				try {
-					double d = ((SimpleNode)node.jjtGetChild(1)).evaluateConstant();
+					double d = ((SimpleNode)node.jjtGetChild(1)).evaluateConstant(false);
 					RationalNumber rn = RationalNumber.getApproximateFraction(d);
 					return unit0.raiseTo(rn);
 				}catch(ExpressionException e){
@@ -418,7 +418,7 @@ public class VCUnitEvaluator {
 			boolean bConstantExponent = false;
 			double exponentValue = 1;
 			try {
-				exponentValue = child1.evaluateConstant();
+				exponentValue = child1.evaluateConstant(false);
 				bConstantExponent = true;
 			}catch(ExpressionException e){
 				bConstantExponent = false;
@@ -434,7 +434,7 @@ public class VCUnitEvaluator {
 				return unitSystem.getInstance_TBD();
 			}
 		} else if (node instanceof ASTIdNode) {
-			SymbolTableEntry ste = ((ASTIdNode)node).symbolTableEntry;
+			SymbolTableEntry ste = ((ASTIdNode)node).getSymbolTableEntry();
 			unit = unitsHashMap.get(ste);
 			if (unit == null) {
 				unit = ste.getUnitDefinition();
