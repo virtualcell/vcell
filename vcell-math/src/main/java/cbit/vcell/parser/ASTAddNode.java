@@ -70,10 +70,12 @@ public Node differentiate(String independentVariable) throws ExpressionException
 	}
 	return addNode;	 
 }
-public double evaluateConstant() throws ExpressionException {
+
+@Override
+public double evaluateConstant(boolean substituteConstants) throws ExpressionException {
 	double sum = 0;
 	for (int i=0;i<jjtGetNumChildren();i++){
-		sum += jjtGetChild(i).evaluateConstant();
+		sum += jjtGetChild(i).evaluateConstant(substituteConstants);
 	}
 	return sum;	 
 }    
@@ -95,14 +97,12 @@ public double evaluateVector(double values[]) throws ExpressionException {
 	}
 	return sum;	 
 }    
-/**
- * This method was created by a SmartGuide.
- * @exception java.lang.Exception The exception description.
- */
-public Node flatten() throws ExpressionException {
+
+@Override
+public Node flatten(boolean substituteConstants) throws ExpressionException {
 
 	try {
-		double value = evaluateConstant();
+		double value = evaluateConstant(substituteConstants);
 		return new ASTFloatNode(value);
 	}catch (Exception e){}		
 
@@ -110,7 +110,7 @@ public Node flatten() throws ExpressionException {
 	java.util.Vector<Node> tempChildren = new java.util.Vector<Node>();
 
 	for (int i=0;i<jjtGetNumChildren();i++){
-		tempChildren.addElement(jjtGetChild(i).flatten());
+		tempChildren.addElement(jjtGetChild(i).flatten(substituteConstants));
 	}
 
 //System.out.println("flattening.....");
@@ -152,7 +152,7 @@ public Node flatten() throws ExpressionException {
 		for (int i=0;i<tempChildren.size();i++){
 			Node child = tempChildren.elementAt(i);
 			try {
-				double equivalentValue = child.evaluateConstant();
+				double equivalentValue = child.evaluateConstant(substituteConstants);
 				floatCount++;
 				floatValue += equivalentValue;
 				tempChildren.removeElement(child);

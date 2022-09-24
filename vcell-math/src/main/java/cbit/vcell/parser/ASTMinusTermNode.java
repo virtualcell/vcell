@@ -56,8 +56,9 @@ public Node differentiate(String variable) throws ExpressionException {
 	node.jjtAddChild(jjtGetChild(0).differentiate(variable));
 	return node;
 }
-public double evaluateConstant() throws ExpressionException {
-	return (- jjtGetChild(0).evaluateConstant());
+@Override
+public double evaluateConstant(boolean substituteConstants) throws ExpressionException {
+	return (- jjtGetChild(0).evaluateConstant(substituteConstants));
 }    
 public RealInterval evaluateInterval(RealInterval intervals[]) throws ExpressionException {
 	setInterval(IAMath.uminus(jjtGetChild(0).evaluateInterval(intervals)),intervals);
@@ -66,21 +67,19 @@ public RealInterval evaluateInterval(RealInterval intervals[]) throws Expression
 public double evaluateVector(double values[]) throws ExpressionException {
 	return (- jjtGetChild(0).evaluateVector(values));
 }    
-/**
- * This method was created by a SmartGuide.
- * @exception java.lang.Exception The exception description.
- */
-public Node flatten() throws ExpressionException {
+
+@Override
+public Node flatten(boolean substituteConstants) throws ExpressionException {
 	
 	try {
-		double value = evaluateConstant();
+		double value = evaluateConstant(substituteConstants);
 		return new ASTFloatNode(value);
 	}catch (Exception e){}		
 
 	if (jjtGetNumChildren()!=1){ 
 		throw new Error("ASTMinusTermNode should have 1 child"); 
 	}
-	Node flattenedChild = jjtGetChild(0).flatten();
+	Node flattenedChild = jjtGetChild(0).flatten(substituteConstants);
 	//
 	// remove double minus
 	//

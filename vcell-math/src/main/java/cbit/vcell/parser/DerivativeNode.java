@@ -73,11 +73,12 @@ public Node copyTreeBinary() {
 public Node differentiate(String variable) throws ExpressionException {
 	throw new ExpressionException("DerivativeNode.differentiate(), not implemented");
 }
-public double evaluateConstant() throws ExpressionException {
+@Override
+public double evaluateConstant(boolean substituteConstants) throws ExpressionException {
 //	return (- jjtGetChild(0).evaluateConstant());
 	ASTIdNode childNode = (ASTIdNode)jjtGetChild(0);
-	if (childNode.symbolTableEntry != null){
-		if (childNode.symbolTableEntry.isConstant()){
+	if (childNode.getSymbolTableEntry() != null){
+		if (childNode.getSymbolTableEntry().isConstant()){
 			return 0.0;
 		}
 	}		
@@ -89,11 +90,9 @@ public RealInterval evaluateInterval(RealInterval intervals[]) throws Expression
 public double evaluateVector(double values[]) throws ExpressionException {
 	throw new ExpressionException("cannot call 'evaluateVector()' on a derivative");
 }    
-/**
- * This method was created by a SmartGuide.
- * @exception java.lang.Exception The exception description.
- */
-public Node flatten() throws ExpressionException {
+
+@Override
+public Node flatten(boolean substituteConstants) throws ExpressionException {
 	return copyTree();
 }
 

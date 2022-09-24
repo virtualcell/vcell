@@ -95,7 +95,8 @@ public Node differentiate(String independentVariable) throws ExpressionException
 	
 	return fullAddNode;
 }
-public double evaluateConstant() throws ExpressionException {
+@Override
+public double evaluateConstant(boolean substituteConstants) throws ExpressionException {
 	if (jjtGetNumChildren()!=2){
 		throw new ExpressionException("expecting two arguments for Power");
 	}
@@ -106,13 +107,13 @@ public double evaluateConstant() throws ExpressionException {
 	
 	Double exponentValue = null;
 	try {
-		exponentValue = new Double(jjtGetChild(1).evaluateConstant());
+		exponentValue = new Double(jjtGetChild(1).evaluateConstant(substituteConstants));
 	}catch (ExpressionException e){
 		savedException = e;
 	}
 	Double  baseValue = null;
 	try {
-		baseValue = new Double(jjtGetChild(0).evaluateConstant());
+		baseValue = new Double(jjtGetChild(0).evaluateConstant(substituteConstants));
 	}catch (ExpressionException e){
 		savedException = e;
 	}
@@ -170,19 +171,17 @@ public double evaluateVector(double values[]) throws ExpressionException {
 		return result;
 	}
 }    
-/**
- * This method was created by a SmartGuide.
- * @exception java.lang.Exception The exception description.
- */
-public Node flatten() throws ExpressionException {
+
+@Override
+public Node flatten(boolean substituteConstants) throws ExpressionException {
 	try {
-		double value = evaluateConstant();
+		double value = evaluateConstant(substituteConstants);
 		return new ASTFloatNode(value);
 	}catch (Exception e){}		
 
 	ArrayList<Node> tempChildren = new ArrayList<>();
 	for (int i=0;i<jjtGetNumChildren();i++){
-		tempChildren.add(jjtGetChild(i).flatten());
+		tempChildren.add(jjtGetChild(i).flatten(substituteConstants));
 	}
 	
 	if (tempChildren.size()!=2) throw new ExpressionException("'^' expects 2 arguments");
@@ -221,7 +220,7 @@ public Node flatten() throws ExpressionException {
 		ASTPowerNode newExponentNode = new ASTPowerNode();
 		newExponentNode.jjtAddChild(mantissaChild.jjtGetChild(0));
 		newExponentNode.jjtAddChild(newMultNode);
-		return newExponentNode.flatten();
+		return newExponentNode.flatten(substituteConstants);
 	}
 
 	//

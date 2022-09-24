@@ -108,12 +108,13 @@ public boolean equals(Node node) {
 
 	return true;
 }
-public double evaluateConstant() throws ExpressionException {
+@Override
+public double evaluateConstant(boolean substituteConstants) throws ExpressionException {
 	if (jjtGetNumChildren()!=2){
 		throw new ExpressionException("Expected two children");
 	}
-	double first = jjtGetChild(0).evaluateConstant();
-	double second = jjtGetChild(1).evaluateConstant();
+	double first = jjtGetChild(0).evaluateConstant(substituteConstants);
+	double second = jjtGetChild(1).evaluateConstant(substituteConstants);
 
 	switch (operation){
 		case GT:{
@@ -223,14 +224,12 @@ public double evaluateVector(double values[]) throws ExpressionException {
 	}
 	throw new ExpressionException("unsupported operation");
 }    
-/**
- * This method was created by a SmartGuide.
- * @exception java.lang.Exception The exception description.
- */
-public Node flatten() throws ExpressionException {
+
+@Override
+public Node flatten(boolean substituteConstants) throws ExpressionException {
 
 	try {
-		double value = evaluateConstant();
+		double value = evaluateConstant(substituteConstants);
 		return new ASTFloatNode(value);
 	}catch (Exception e){}		
 
@@ -238,7 +237,7 @@ public Node flatten() throws ExpressionException {
 	relNode.setOperation(operation);
 
 	for (int i=0;i<jjtGetNumChildren();i++){
-		relNode.jjtAddChild(jjtGetChild(i).flatten());
+		relNode.jjtAddChild(jjtGetChild(i).flatten(substituteConstants));
 	}
 
 	return relNode;

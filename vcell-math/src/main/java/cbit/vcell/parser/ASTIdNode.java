@@ -153,30 +153,22 @@ public boolean equals(Node node) {
 
 	return true;
 }
-public double evaluateConstant() throws ExpressionException {
+
+@Override
+public double evaluateConstant(boolean substituteConstants) throws ExpressionException {
 
 	if (symbolTableEntry == null){
-		throw new ExpressionException("tryin to evaluate unbound identifier '"+infixString(LANGUAGE_DEFAULT)+"'");
-	}	
+		throw new ExpressionException("trying to evaluate unbound identifier '" + infixString(LANGUAGE_DEFAULT) + "', bindState="+bindState);
+	}
 
-	if (symbolTableEntry.isConstant()){
+	if (substituteConstants && symbolTableEntry.isConstant()){
 		return symbolTableEntry.getConstantValue();
-	}	
+	}
 
 	throw new ExpressionException("Symbol '" + name + "' cannot be evaluated as a constant.");
+}
 
-/*
-	if (symbolTableEntry==null){
-		String id = name;
-		if (modifier!=null){
-			id = id + "." + modifier;
-		}
-		throw new Exception("referencing unbound identifier " + id);
-	}
-	  
-	return symbolTableEntry.getCurrValue();		
-*/
-}        
+
 public RealInterval evaluateInterval(RealInterval intervals[]) throws ExpressionException {
 
 	if (symbolTableEntry==null){
@@ -213,13 +205,11 @@ public double evaluateVector(double values[]) throws ExpressionException {
 		return values[symbolTableEntry.getIndex()];
 	}
 }        
-/**
- * This method was created by a SmartGuide.
- * @exception java.lang.Exception The exception description.
- */
-public Node flatten() throws ExpressionException {
+
+@Override
+public Node flatten(boolean substituteConstants) throws ExpressionException {
 	try {
-		double retval = evaluateConstant();
+		double retval = evaluateConstant(substituteConstants);
 		ASTFloatNode floatNode = new ASTFloatNode(retval);
 		return floatNode;
 	}catch (ExpressionException e){

@@ -212,7 +212,13 @@ public boolean equals(Object obj) {
  * @exception java.lang.Exception The exception description.
  */
 public double evaluateConstant() throws ExpressionException, DivideByZeroException {
-	return rootNode.evaluateConstant();
+	return rootNode.evaluateConstant(true);
+}
+public double evaluateConstantSafe() throws ExpressionException, DivideByZeroException {
+	return rootNode.evaluateConstant(false);
+}
+public double evaluateConstantWithSubstitution() throws ExpressionException, DivideByZeroException {
+	return rootNode.evaluateConstant(true);
 }
 public RealInterval evaluateInterval(RealInterval intervals[]) throws ExpressionException, DivideByZeroException {
 	return rootNode.evaluateInterval(intervals);
@@ -272,7 +278,7 @@ public ExpressionTerm extractTopLevelTerm() {
  */
 public Expression flatten() throws ExpressionException {
 flattenCount++;////////////////////////
-	return new Expression((SimpleNode)rootNode.flatten());
+	return new Expression((SimpleNode)rootNode.flatten(true));
 }
 
 /**
@@ -282,12 +288,14 @@ flattenCount++;////////////////////////
  * @throws ExpressionException
  */
 public Expression flattenSafe() throws ExpressionException {
-	Expression flattened = new Expression(this);
-	SymbolTable tempExpressionSymbolTable = this.createSymbolTableFromBinding();
-	flattened.bindExpression(null);
-	flattened = flattened.flatten();
-	flattened.bindExpression(tempExpressionSymbolTable);
-	return flattened;
+//	Expression flattened = new Expression(this);
+//	SymbolTable tempExpressionSymbolTable = this.createSymbolTableFromBinding();
+//	flattened.bindExpression(null);
+//	flattened = flattened.flatten();
+//	flattened.bindExpression(tempExpressionSymbolTable);
+//	return flattened;
+	flattenCount++;////////////////////////
+	return new Expression((SimpleNode)rootNode.flatten(false));
 }
 
 	public Expression simplifyJSCL() throws ExpressionException {
@@ -302,7 +310,6 @@ public Expression flattenSafe() throws ExpressionException {
 		try {
 			Expression simplified = new Expression(this);
 			SymbolTable tempExpressionSymbolTable = this.createSymbolTableFromBinding();
-			simplified.bindExpression(null);
 			simplified = simplifyUsingJSCL(simplified, maxExecutionTime_ms);
 			simplified.bindExpression(tempExpressionSymbolTable);
 			return simplified;
@@ -462,8 +469,7 @@ private String getNormalizedInfixString() {
 	if (normalizedInfixString==null){
 		try {
 			Expression clonedExp = new Expression(this);
-			clonedExp.bindExpression(null);
-			normalizedInfixString = clonedExp.flatten().infix();
+			normalizedInfixString = clonedExp.flattenSafe().infix();
 		}catch(ExpressionException e){
 			e.printStackTrace(System.out);
 			normalizedInfixString = infix();
@@ -1085,18 +1091,6 @@ substituteCount++;////////////////////////////////
    {
 	   Expression exp = new Expression((SimpleNode)rootNode.convertToRvachevFunction());
 	   return exp;
-   }
-   
-   /**
-    * return constant value as double, if possible
-    * @return double value if evaluates as constant, null otherwise
-    */
-   public Double toDouble( ) {
-	   try {
-		   return evaluateConstant();
-	   } catch (ExpressionException e) {
-		   return null;
-	   }
    }
 
 /**
