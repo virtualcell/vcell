@@ -649,7 +649,7 @@ private static long getEstimatedNumTimePointsForStoch(SimulationSymbolTable simS
 			}
 			pExp = simSymbolTable.substituteFunctions(pExp);
 			pExp = pExp.flatten();
-			double val = pExp.evaluateConstant();
+			double val = pExp.evaluateConstantWithSubstitution();
 			if(maxProbability < val)
 			{
 				maxProbability = val;
