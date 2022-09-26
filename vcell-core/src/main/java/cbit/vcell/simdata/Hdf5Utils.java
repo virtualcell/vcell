@@ -186,7 +186,7 @@ public class Hdf5Utils {
 					paramValues.add(paramScanParamNames[z]);
 				}
 				jobGroupID = (int) Hdf5Utils.createGroup(hdf5FileID, "Set "+ k);
-				help0 = Hdf5Utils.createDataset(jobGroupID, "data", new long[] {selectedColCount, actualLength});
+				help0 = Hdf5Utils.createDataset(jobGroupID, "data", new long[] {selectedColCount, actualLength});	// long[] dimensions
 				
 				double[] fromData2 = new double[actualLength*selectedColCount];
 				
@@ -198,9 +198,19 @@ public class Hdf5Utils {
 				long[] copyFromLength = new long[] { selectedColCount, actualLength };
 				Hdf5Utils.copySlice(datasetValuesId, fromData2, copyToStart, copyToLength, copyFromDims, copyFromStart, copyFromLength, help0.hdf5DataSpaceID);
 
-				
+				Hdf5Utils.insertAttribute(help0.hdf5DatasetValuesID, "_type", "ODE Data Export");
+				Hdf5Utils.insertAttributes(help0.hdf5DatasetValuesID,"dataSetDataTypes", dataTypes);
+				Hdf5Utils.insertAttributes(help0.hdf5DatasetValuesID,"dataSetIds",dataIDs);
+				Hdf5Utils.insertAttributes(help0.hdf5DatasetValuesID,"dataSetNames",dataNames);
+				Hdf5Utils.insertAttribute(help0.hdf5DatasetValuesID,"id","report");
+				if(paramNames.size() != 0) {
+					Hdf5Utils.insertAttributes(help0.hdf5DatasetValuesID,"paramNames",paramNames);
+					Hdf5Utils.insertAttributes(help0.hdf5DatasetValuesID,"paramValues",paramValues);						
+				}
+				help0.close();
+				H5.H5Gclose(jobGroupID);
+				H5.H5Fclose(hdf5FileID);
 			}
-    		
     	} catch(Exception e) {
     		e.printStackTrace();
 		} finally {
