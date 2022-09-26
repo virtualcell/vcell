@@ -36,7 +36,7 @@ public class ExportOmexCommand implements Callable<Integer> {
             try {
                 VcmlOmexConverter.convertOneFile(inputFilePath, outputFilePath,
                         outputModelFormat, bForceLogFiles, bValidateOmex, bOffline);
-            } catch (IOException | DataAccessException e) {
+            } catch (IOException e) {
                 e.printStackTrace(System.err);
             }
             return 0;
