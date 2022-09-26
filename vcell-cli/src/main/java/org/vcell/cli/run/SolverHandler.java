@@ -5,6 +5,7 @@ import cbit.util.xml.VCLoggerException;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionMathMLParser;
 import cbit.vcell.solver.*;
 import cbit.vcell.solver.ode.AbstractJavaSolver;
 import cbit.vcell.solver.ode.ODESolver;
@@ -26,25 +27,32 @@ import org.jlibsedml.Range;
 import org.jlibsedml.RepeatedTask;
 import org.jlibsedml.Report;
 import org.jlibsedml.SedML;
+import org.jlibsedml.SetValue;
 import org.jlibsedml.SubTask;
 import org.jlibsedml.Task;
 import org.jlibsedml.UniformTimeCourse;
 import org.jlibsedml.Variable;
+import org.jlibsedml.XPathTarget;
+import org.jlibsedml.modelsupport.SBMLSupport;
+import org.jmathml.ASTNode;
 import org.vcell.cli.CLILogFileManager;
 import org.vcell.cli.vcml.VCMLHandler;
 import org.vcell.sbml.vcell.SBMLImportException;
 import org.vcell.sbml.vcell.SBMLImporter;
 import org.vcell.util.document.VCDocument;
-
+import org.apache.commons.lang3.EnumUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class SolverHandler {
 	
@@ -176,7 +184,7 @@ public class SolverHandler {
         }
         }
         
-        Map<RepeatedTask, Integer> taskToNumIterationsMap = new LinkedHashMap<> ();
+        Map<RepeatedTask, Set<String>> taskToChangeTargetMap = new LinkedHashMap<> ();
         for (Map.Entry<AbstractTask, List<AbstractTask>> entry : taskToListOfSubtasksMap.entrySet()) {
         	AbstractTask task = entry.getKey();
         	List<AbstractTask> subTasksList = entry.getValue();
@@ -186,11 +194,34 @@ public class SolverHandler {
 			if(scanCount > 1) {
 				assert task instanceof RepeatedTask;
 				assert !subTasksList.isEmpty();
-				Map<String, Range> ranges = ((RepeatedTask)task).getRanges();
+				
+				SBMLSupport sbmlSupport = new SBMLSupport();
+				RepeatedTask rt = (RepeatedTask)task;
 
-
-				//taskToNumIterationsMap.put(((RepeatedTask)task).
-			
+				List<SetValue> changes = rt.getChanges();
+				Set<String> targetIdSet = new LinkedHashSet<>();
+				for(SetValue change : changes) {
+					XPathTarget target = change.getTargetXPath();
+					String starget = target.getTargetAsString();
+					Range range = rt.getRange(change.getRangeReference());
+					ASTNode math = change.getMath();
+					Expression exp = new ExpressionMathMLParser(null).fromMathML(math, "t");
+					if (exp.infix().equals(range.getId())) {
+						String targetID = sbmlSupport.getIdFromXPathIdentifer(starget);
+						Enumeration<String> overridesHashKeys = sim.getMathOverrides().getOverridesHashKeys();
+						boolean found = false;
+						while(overridesHashKeys.hasMoreElements()) {
+							String candidate = overridesHashKeys.nextElement();
+							if(candidate.equals(targetID)) {
+								targetIdSet.add(targetID);
+								found = true;
+								break;
+							}
+						}
+						assert found == true;
+					}
+				}
+				taskToChangeTargetMap.put(rt, targetIdSet);
 			}
 //			MathOverrides mathOverrides = sim.getMathOverrides();
 //			Expression exp = mathOverrides.getActualExpression("Kf_r0", 0);
