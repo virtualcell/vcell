@@ -6,18 +6,13 @@ package org.jlibsedml;
  *
  */
 public abstract class Simulation extends AbstractIdentifiableElement {
-	
+	private Algorithm algorithm;
 
 	@Override
 	public String toString() {
 		return "Simulation [algorithm=" + algorithm + ", name=" + getName()
 				+ ", getId()=" + getId() + "]";
-	}
-
-
-	
-	private Algorithm algorithm;
-
+	}	
 
 	/**	  
 	 * @param id A required <code>String</code> identifier for this element.
@@ -30,12 +25,8 @@ public abstract class Simulation extends AbstractIdentifiableElement {
 		if(SEDMLElementFactory.getInstance().isStrictCreation()){
 		Assert.checkNoNullArgs(algorithm);
 		}
-		
-	
-		this.algorithm=algorithm;
+		this.algorithm = algorithm;
 	}
-	
-
 	
 	/**
 	 * Returns the {@link Algorithm} for this simulation
@@ -54,10 +45,6 @@ public abstract class Simulation extends AbstractIdentifiableElement {
 		this.algorithm = algorithm;
 	}
 
-
-
-
-
 	/**
 	 * Getter for the type of this simulation.
 	 * @return A <code>String</code>
@@ -67,7 +54,4 @@ public abstract class Simulation extends AbstractIdentifiableElement {
 	public  boolean accept(SEDMLVisitor visitor){
         return visitor.visit(this);
     }
-
-
-
 }
