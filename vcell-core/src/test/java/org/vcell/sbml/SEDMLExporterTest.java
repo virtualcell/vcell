@@ -136,12 +136,9 @@ public class SEDMLExporterTest {
 		faults.put("biomodel_22681429.vcml", FAULT.MATHOVERRIDES_INVALID); // binding_site_plasma_membrane
 		faults.put("biomodel_26581203.vcml", FAULT.MATHOVERRIDES_INVALID); // r_neck
 		faults.put("biomodel_31523791.vcml", FAULT.MATHOVERRIDES_A_FUNCTION); // cAMP_Intracellular
-		faults.put("biomodel_34826524.vcml", FAULT.MATHOVERRIDES_INVALID); // ActiveNWASP_PM_init
 		faults.put("biomodel_34855932.vcml", FAULT.MATHOVERRIDES_INVALID); // SurfToVol_IC_compartment_mem, AC_IC_compartment_mem_init, SurfToVol_IC_compartment_mem
-		faults.put("biomodel_38086434.vcml", FAULT.EXPRESSION_BINDING); // function definition 'vcField(LITERAL,LITERAL,NUMERIC,LITERAL)' is not found
-		faults.put("biomodel_47429473.vcml", FAULT.MATHOVERRIDES_INVALID); // ActiveNWASP_PM_init
-		faults.put("biomodel_59361239.vcml", FAULT.MATHOVERRIDES_INVALID); // Src_plasmamembrane_init
-		faults.put("biomodel_81992349.vcml", FAULT.MATHOVERRIDES_INVALID); // isoprenaline_ec, Rap1_GDP_GM_init_molecules_per_um2
+		faults.put("biomodel_59361239.vcml", FAULT.MATHOVERRIDES_INVALID); // fibronectin_Unnamed_compartment
+		faults.put("biomodel_81992349.vcml", FAULT.MATHOVERRIDES_INVALID); // isoprenaline_ec
 		faults.put("biomodel_82799056.vcml", FAULT.EXPRESSIONS_DIFFERENT); // bad scaling '-(1.4135150989578882E-15 * (GFP_1_Cytoplasm - GFP_2_Cytoplasm))' vs '-(0.001413515098957888 * (GFP_1_Cytoplasm - GFP_2_Cytoplasm))'
 		faults.put("biomodel_82799247.vcml", FAULT.EXPRESSIONS_DIFFERENT); // bad scaling '( - (1.4135150989578882E-15 * (GFP_1_Cytoplasm - GFP_2_Cytoplasm)) - (1.4135150989578882E-15 * (GFP_1_Cytoplasm - GFP_3_Cytoplasm)))' vs '( - (0.001413515098957888 * (GFP_1_Cytoplasm - GFP_2_Cytoplasm)) - (0.001413515098957888 * (GFP_1_Cytoplasm - GFP_3_Cytoplasm)))'
 		faults.put("biomodel_82799266.vcml", FAULT.EXPRESSIONS_DIFFERENT); // bad scaling ' - (1.4135150989578882E-15 * (GFP_1_Cytoplasm - GFP_2_Cytoplasm))' vs ' - (0.001413515098957888 * (GFP_1_Cytoplasm - GFP_2_Cytoplasm))'
@@ -153,7 +150,6 @@ public class SEDMLExporterTest {
 		faults.put("biomodel_94891280.vcml", FAULT.MATHOVERRIDES_INVALID); // EGF
 		faults.put("biomodel_98139292.vcml", FAULT.SBML_IMPORT_FAILURE); // Failed to translate SBML model into BioModel: Unable to create VC structureMappings from SBML compartment mappings
 		faults.put("biomodel_98139299.vcml", FAULT.SBML_IMPORT_FAILURE); // Failed to translate SBML model into BioModel: Unable to create VC structureMappings from SBML compartment mappings
-		faults.put("biomodel_98150237.vcml", FAULT.UNITS_EXCEPTION); // "invalid symbol 'nan'
 		return faults;
 	}
 
@@ -167,7 +163,7 @@ public class SEDMLExporterTest {
 //		Predicate<String> outOfMemoryFilter = (t) -> !outOfMemorySet().contains(t);
 //		Predicate<String> allTestsFilter = (t) -> true;
 //		Predicate<String> allFailures = (t) -> knownFaults().containsKey(t) && skipFilter.test(t);
-//		Predicate<String> oneModelFilter = (t) -> t.equals("biomodel_66264206.vcml");
+		Predicate<String> oneModelFilter = (t) -> t.equals("biomodel_98150237.vcml");
 		Predicate<String> skipFilter = (t) -> !outOfMemorySet().contains(t) && !largeFileSet().contains(t);
 		return Arrays.stream(VcmlTestSuiteFiles.getVcmlTestCases()).filter(skipFilter).collect(Collectors.toList());
 	}
