@@ -25,6 +25,9 @@ public class ExportOmexCommand implements Callable<Integer> {
     @Option(names = "--validate")
     boolean bValidateOmex;
 
+    @Option(names = "--offline")
+    boolean bOffline=false;
+
     public Integer call() {
         try {
             PropertyLoader.loadProperties();
@@ -32,7 +35,7 @@ public class ExportOmexCommand implements Callable<Integer> {
 
             try {
                 VcmlOmexConverter.convertOneFile(inputFilePath, outputFilePath,
-                        outputModelFormat, bForceLogFiles, bValidateOmex);
+                        outputModelFormat, bForceLogFiles, bValidateOmex, bOffline);
             } catch (IOException | DataAccessException e) {
                 e.printStackTrace(System.err);
             }

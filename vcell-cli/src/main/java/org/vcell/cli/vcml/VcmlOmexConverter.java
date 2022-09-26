@@ -82,7 +82,8 @@ public class VcmlOmexConverter {
 									  File outputDir,
 									  ModelFormat modelFormat,
 									  boolean bForceLogFiles,
-									  boolean bValidateOmex)
+									  boolean bValidateOmex,
+									  boolean bOffline)
 			throws IOException, DataAccessException, XmlParseException, MappingException {
 
 		if (input == null || !input.isFile() || !input.toString().endsWith(".vcml")) {
@@ -91,7 +92,7 @@ public class VcmlOmexConverter {
 		Predicate<Simulation> simulationExportFilter = simulation -> true;
 		BioModelInfo bioModelInfo = null;
 		boolean isCreated = vcmlToOmexConversion(input.getAbsolutePath(), bioModelInfo, outputDir.getAbsolutePath(), outputDir.getAbsolutePath(),
-				simulationExportFilter, modelFormat, bForceLogFiles, bValidateOmex);
+				simulationExportFilter, modelFormat, bForceLogFiles, bValidateOmex, bOffline);
 		if (isCreated) {
 			logger.info("Combine archive created for `" + input + "`");
 		} else {
@@ -110,7 +111,8 @@ public class VcmlOmexConverter {
 									boolean bMakeLogsOnly,
 									boolean bNonSpatialOnly,
 									boolean bForceLogFiles,
-									boolean bValidateOmex)
+									boolean bValidateOmex,
+									boolean bOffline)
 			throws IOException, SQLException, DataAccessException {
 
 		if (input == null || !input.isDirectory()) {
@@ -146,7 +148,7 @@ public class VcmlOmexConverter {
 					}
 
 					boolean isCreated = vcmlToOmexConversion(file.toString(), bioModelInfo, outputDir.getAbsolutePath(), outputDir.getAbsolutePath(),
-															simulationExportFilter, modelFormat, bForceLogFiles, bValidateOmex);
+															simulationExportFilter, modelFormat, bForceLogFiles, bValidateOmex, bOffline);
 					if (isCreated) {
 						logger.info("Combine archive created for file(s) `" + inputFile + "`");
 					} else {
@@ -257,7 +259,8 @@ public class VcmlOmexConverter {
 												Predicate<Simulation> simulationExportFilter,
 												ModelFormat modelFormat,
 												boolean bForceLogFiles,
-												boolean bValidate
+												boolean bValidate,
+												boolean bOffline
 	) throws XmlParseException, IOException, MappingException {
 
 		int sedmlLevel = 1;
@@ -289,6 +292,21 @@ public class VcmlOmexConverter {
 			}
 		}
 
+		String destinationPath = Paths.get(outputDir, "diagram.png").toString();
+		File destination = new File(destinationPath);
+		if (!bOffline) {
+			Version version = bioModel.getVersion();
+			String versionKey = version.getVersionKey().toString();
+			String sourcePath = "https://vcellapi-beta.cam.uchc.edu:8080/biomodel/" + versionKey + "/diagram";
+			URL source = new URL(sourcePath);
+			int connectionTimeout = 10000;
+			int readTimeout = 20000;
+			try {
+				FileUtils.copyURLToFile(source, destination, connectionTimeout, readTimeout);        // diagram
+			} catch (IOException e) {
+				logger.error("Diagram not present in source=" + sourcePath + ": " + e.getMessage(), e);
+			}
+		}
 
         SEDMLExporter sedmlExporter = new SEDMLExporter(vcmlName, bioModel, sedmlLevel, sedmlVersion, simsToExport, jsonFullyQualifiedName);
 
@@ -323,9 +341,9 @@ public class VcmlOmexConverter {
 		Version version = bioModel.getVersion();
 		String versionKey = version.getVersionKey().toString();
 		String sourcePath = "https://vcellapi-beta.cam.uchc.edu:8080/biomodel/" + versionKey + "/diagram";
-		String destinationPath = Paths.get(outputDir, "diagram.png").toString();
+		destinationPath = Paths.get(outputDir, "diagram.png").toString();
 		URL source = new URL(sourcePath);
-		File destination = new File(destinationPath);
+		destination = new File(destinationPath);
 		int connectionTimeout = 10000;
 		int readTimeout = 20000;
 		try {
@@ -690,4 +708,13 @@ public class VcmlOmexConverter {
 		}
 	}
 
+	public static void importOmexFiles(File inputDirectory, File outputDirectory, CLIRecorder cliLogger) {
+		// TODO: needs implementation
+		throw new RuntimeException("not yet implemented");
+	}
+
+	public static void importOneOmexFile(File inputFile, File outputDirectory) {
+		// TODO: needs implementation
+		throw new RuntimeException("not yet implemented");
+	}
 }

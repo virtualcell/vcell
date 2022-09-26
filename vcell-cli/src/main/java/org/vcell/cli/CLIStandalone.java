@@ -11,7 +11,8 @@ import org.apache.logging.log4j.Logger;
 import cbit.vcell.mongodb.VCMongoMessage;
 import org.vcell.cli.vcml.ExportOmexCommand;
 import org.vcell.util.VCellUtilityHub;
-
+import org.vcell.cli.vcml.ImportOmexBatchCommand;
+import org.vcell.cli.vcml.ImportOmexCommand;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 
@@ -20,6 +21,8 @@ import picocli.CommandLine.Command;
         BiosimulationsCommand.class,
         ExportOmexCommand.class,
         ExportOmexBatchCommand.class,
+        ImportOmexCommand.class,
+        ImportOmexBatchCommand.class,
         ExecuteCommand.class,
         VersionCommand.class,
         ModelCommand.class,
