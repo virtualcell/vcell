@@ -21,6 +21,8 @@ public class ImportOmexBatchCommand implements Callable<Integer> {
     @Option(names = { "-o", "--outputFilePath" }, description = "full path to output directory", required = true)
     private File outputFilePath;
 
+    // TODO: add forceLogFile option to command and pass down
+    
     public Integer call() {
         CLIRecorder cliLogger = null;
         try {
@@ -34,7 +36,7 @@ public class ImportOmexBatchCommand implements Callable<Integer> {
             if (!outputFilePath.exists() || !outputFilePath.isDirectory()){
                 throw new RuntimeException("outputFilePath '"+outputFilePath+"' should be a directory");
             }
-            VcmlOmexConverter.importOmexFiles(inputFilePath, outputFilePath, cliLogger);
+            VcmlOmexConverter.importOmexFiles(inputFilePath, outputFilePath, cliLogger, true);
             return 0;
         } catch (Exception e) {
             e.printStackTrace(System.err);

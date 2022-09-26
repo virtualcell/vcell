@@ -1,8 +1,11 @@
 package org.vcell.cli.vcml;
 
 import cbit.util.xml.VCLogger;
+import cbit.util.xml.VCLoggerException;
 import cbit.util.xml.XmlRdfUtil;
 import cbit.util.xml.XmlUtil;
+import cbit.util.xml.VCLogger.ErrorType;
+import cbit.util.xml.VCLogger.Priority;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.biomodel.ModelUnitConverter;
 import cbit.vcell.field.FieldFunctionArguments;
@@ -49,6 +52,8 @@ import org.sbpax.schemas.util.DefaultNameSpaces;
 import org.sbpax.schemas.util.OntUtil;
 import org.sbpax.util.SesameRioUtil;
 import org.vcell.cli.*;
+import org.vcell.sbml.vcell.SBMLImportException;
+import org.vcell.sbml.vcell.SBMLImporter;
 import org.vcell.sedml.ModelFormat;
 import org.vcell.sedml.PubMet;
 import org.vcell.sedml.SEDMLExporter;
@@ -60,6 +65,7 @@ import java.io.*;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.sql.SQLException;
@@ -76,8 +82,7 @@ public class VcmlOmexConverter {
 
 	public static final String jobConfigFile = "jobConfig.txt";
 	public static final String jobLogFile = "jobLog.txt";
-	
-	
+
 	public static void convertOneFile(File input,
 									  File outputDir,
 									  ModelFormat modelFormat,
@@ -709,13 +714,54 @@ public class VcmlOmexConverter {
 		}
 	}
 
-	public static void importOmexFiles(File inputDirectory, File outputDirectory, CLIRecorder cliLogger) {
-		// TODO: needs implementation
-		throw new RuntimeException("not yet implemented");
+	public static void importOmexFiles(File inputDirectory, File outputDirectory, CLIRecorder cliLogger, boolean bForceLogFiles) throws IOException {
+		// TODO: make use of CLIRecorder
+		if (inputDirectory == null || !inputDirectory.isDirectory()) {
+			throw new RuntimeException("expecting inputFilePath to be an existing directory");
+		}
+
+		FilenameFilter filterOmexFiles = (f, name) -> name.endsWith(".omex");
+		String[] inputFiles = inputDirectory.list(filterOmexFiles);
+		if (inputFiles == null) {
+			throw new RuntimeException("No OMEX files found in the directory `" + inputDirectory + "`");
+		}
+		
+		writeFileEntry(outputDirectory.getAbsolutePath(), "inputDirectory is " + inputDirectory.getAbsolutePath(), jobConfigFile, bForceLogFiles);
+		for (String inputFileName : inputFiles) {
+			File inputFile = Paths.get(inputDirectory.getAbsolutePath()).resolve(inputFileName).toFile();
+			importOneOmexFile(inputFile, outputDirectory, bForceLogFiles);
+		}
 	}
 
-	public static void importOneOmexFile(File inputFile, File outputDirectory) {
-		// TODO: needs implementation
-		throw new RuntimeException("not yet implemented");
+	public static void importOneOmexFile(File inputFile, File outputDirectory, boolean bForceLogFiles) throws IOException {
+		try {
+	        cbit.util.xml.VCLogger logger = new cbit.util.xml.VCLogger() {
+	            @Override
+				public void sendMessage(Priority p, ErrorType et, String message) throws VCLoggerException{
+	                System.err.println("LOGGER: msgLevel="+p+", msgType="+et+", "+message);
+	                if (p == VCLogger.Priority.HighPriority) {
+	                	throw new VCLoggerException("Import failed : " + message);
+	                }
+	            }
+	            public void sendAllMessages() {
+	            }
+	            public boolean hasMessages() {
+	                return false;
+	            }
+	        };
+	        List<BioModel> biomodels = XmlHelper.readOmex(inputFile, logger);
+			int i = 0;
+			for (BioModel bm : biomodels) {
+				String vcmlString = XmlHelper.bioModelToXML(bm);
+				File vcmlFile = Paths.get(outputDirectory.getAbsolutePath()).resolve(inputFile.getName()+"_"+i+".vcml").toFile();
+				XmlUtil.writeXMLStringToFile(vcmlString, vcmlFile.getAbsolutePath(), true);
+				i++;
+			}
+			writeFileEntry(outputDirectory.getAbsolutePath(), inputFile.getName()+",SUCCEEDED,"+i , jobLogFile, bForceLogFiles);			
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			writeFileEntry(outputDirectory.getAbsolutePath(), inputFile.getName()+",FAILED", jobLogFile, bForceLogFiles);			
+		}
 	}
 }

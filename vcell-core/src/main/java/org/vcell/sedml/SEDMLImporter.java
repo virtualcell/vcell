@@ -125,6 +125,7 @@ public class SEDMLImporter {
 	
 	private HashMap<BioModel, SBMLImporter> importMap = new HashMap<BioModel, SBMLImporter>();
 
+	private SEDMLRecorder sedmlRecorder = null;
 	
 	public  SEDMLImporter(VCLogger transLogger, ExternalDocInfo externalDocInfo, SedML sedml, boolean exactMatchOnly) throws FileNotFoundException, XMLException {
 		this.transLogger = transLogger;

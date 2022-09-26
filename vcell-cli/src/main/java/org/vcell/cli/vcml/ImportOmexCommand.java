@@ -28,7 +28,7 @@ public class ImportOmexCommand implements Callable<Integer> {
             if (!outputFilePath.exists() || outputFilePath.isDirectory()){
                 throw new RuntimeException("expecting outputFilePath to be an existing directory: "+inputFilePath.getAbsolutePath());
             }
-            VcmlOmexConverter.importOneOmexFile(inputFilePath, outputFilePath);
+            VcmlOmexConverter.importOneOmexFile(inputFilePath, outputFilePath, false);
 
             return 0;
         } catch (Exception e) {
