@@ -110,12 +110,12 @@ jobs:
         set +e
         cd installers
         export MAC_INSTALLER=`ls *dmg`
-        xcrun altool --notarize-app --primary-bundle-id "edu.uchc.vcell.alpha" --username "${{ secrets.MACID }}" --password "${{ secrets.MACPW }}" --file $MAC_INSTALLER > altool_output
+        xcrun altool --notarize-app --primary-bundle-id "edu.uchc.vcell.alpha" -u "${{ secrets.MACID }}" -p "${{ secrets.MACPW }}" --file $MAC_INSTALLER > altool_output
         cat altool_output | grep UUID | cut -d " " -f3 > UUID
         for minutes in {1..5}
         do
           sleep 60
-          xcrun altool --notarization-info `cat UUID` --username "${{ secrets.MACID }}" --password "${{ secrets.MACPW }}" > status
+          xcrun altool --notarization-info `cat UUID` -u "${{ secrets.MACID }}" -p "${{ secrets.MACPW }}" > status
           grep -q success status
           if [[ $? == 0 ]]; then
             echo "notarized succesfully"
