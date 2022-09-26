@@ -1,7 +1,5 @@
 package cbit.vcell.units.parser;
 
-import cbit.vcell.units.VCUnitDefinition;
-import cbit.vcell.units.VCUnitSystem;
 import org.junit.Assert;
 import org.junit.Test;
 

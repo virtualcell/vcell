@@ -165,7 +165,7 @@ public class SEDMLExporterTest {
 //		Predicate<String> allFailures = (t) -> knownFaults().containsKey(t) && skipFilter.test(t);
 		Predicate<String> oneModelFilter = (t) -> t.equals("biomodel_98150237.vcml");
 		Predicate<String> skipFilter = (t) -> !outOfMemorySet().contains(t) && !largeFileSet().contains(t);
-		return Arrays.stream(VcmlTestSuiteFiles.getVcmlTestCases()).filter(oneModelFilter).collect(Collectors.toList());
+		return Arrays.stream(VcmlTestSuiteFiles.getVcmlTestCases()).filter(skipFilter).collect(Collectors.toList());
 	}
 
 	@Test
