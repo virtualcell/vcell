@@ -49,6 +49,7 @@ import cbit.vcell.render.Vect3d;
 import cbit.vcell.units.VCUnitDefinition;
 import cbit.vcell.units.VCUnitSystem;
 import cbit.vcell.xml.XMLTags;
+import jscl.math.function.Exp;
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -1717,7 +1718,11 @@ public class SBMLImporter {
 		try {
 			for (ReactionStep reactionStep : vcBioModel.getModel().getReactionSteps()) {
 				if (reactionStep.getKinetics().getKineticsDescription().isLumped()) {
-					DistributedKinetics.toDistributedKinetics((LumpedKinetics) reactionStep.getKinetics());
+					try {
+						DistributedKinetics.toDistributedKinetics((LumpedKinetics) reactionStep.getKinetics());
+					}catch (Exception e){
+						logger.warn("failed to transform lumped reaction "+reactionStep.getName()+" to distributed: "+e.getMessage(),e);
+					}
 				}
 			}
 		} catch(Exception e) {
