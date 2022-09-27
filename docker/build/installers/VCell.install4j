@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<install4j version="8.0.5" transformSequenceNumber="8">
+<install4j version="10.0.2" transformSequenceNumber="10">
   <directoryPresets config="../target" />
   <application name="The Virtual Cell ${compiler:Site}" applicationId="${compiler:applicationId}" mediaDir="${compiler:outputDir}" compression="9" lzmaCompression="true" shortName="VCell_${compiler:Site}" publisher="University of Connecticut Health Center" publisherWeb="http://vcell.org" version="${compiler:vcellVersion}.${compiler:vcellBuild}" allPathsRelative="true" backupOnSave="true" autoSave="true" macVolumeId="dcbbe26700a89e7f" javaMinVersion="1.8.0_66" allowBetaVM="true">
     <variables>
@@ -40,6 +40,7 @@
         <entry>NFsim_x64</entry>
       </macAdditionalBinaries>
     </codeSigning>
+    <jreBundles jdkProviderId="Adoptium" release="17/jdk-17.0.4.1+1" />
   </application>
   <files keepModificationTimes="true" globalExcludeSuffixes=".svn,.DS_Store">
     <filesets>
@@ -130,7 +131,6 @@
           <directory name="nativelibs/mac64" />
         </nativeLibraryDirectories>
       </java>
-      <macStaticAssociationActions mode="selected" />
       <vmOptionsFile mode="content" overwriteMode="1">
         <content>-Dvcell.autoflushlog=true
 -Dvcell.thirdPartyLicense=thirdpartylicenses.txt
@@ -167,7 +167,6 @@
           <directory name="nativelibs/win64" />
         </nativeLibraryDirectories>
       </java>
-      <macStaticAssociationActions mode="selected" />
       <vmOptionsFile mode="content" overwriteMode="1">
         <content>-Dvcell.autoflushlog=true
 -Dvcell.thirdPartyLicense=thirdpartylicenses.txt
@@ -198,7 +197,6 @@
           <directory name="nativelibs/win32" />
         </nativeLibraryDirectories>
       </java>
-      <macStaticAssociationActions mode="selected" />
       <vmOptionsFile mode="content" overwriteMode="1">
         <content>-Dvcell.autoflushlog=true
 -Dvcell.thirdPartyLicense=thirdpartylicenses.txt
@@ -230,7 +228,6 @@
           <directory name="nativelibs/linux32" />
         </nativeLibraryDirectories>
       </java>
-      <macStaticAssociationActions mode="selected" />
       <vmOptionsFile mode="content" overwriteMode="1">
         <content>-Dvcell.autoflushlog=true
 -Dvcell.thirdPartyLicense=thirdpartylicenses.txt
@@ -258,7 +255,6 @@
           <directory name="nativelibs/linux64" />
         </nativeLibraryDirectories>
       </java>
-      <macStaticAssociationActions mode="selected" />
       <vmOptionsFile mode="content" overwriteMode="1">
         <content>-Dvcell.autoflushlog=true
 -Dvcell.thirdPartyLicense=thirdpartylicenses.txt
@@ -286,7 +282,6 @@
           <directory name="nativelibs/linux64" />
         </nativeLibraryDirectories>
       </java>
-      <macStaticAssociationActions mode="selected" />
       <vmOptionsFile mode="content" overwriteMode="1">
         <content>-Dvcell.autoflushlog=true
 -Dvcell.thirdPartyLicense=thirdpartylicenses.txt
@@ -537,7 +532,6 @@ return bngperlfile.exists();
                   <property name="description" type="string">.vcml file association</property>
                   <property name="extension" type="string">vcml</property>
                   <property name="launcherId" type="string">345</property>
-                  <property name="mac" type="boolean" value="false" />
                 </serializedBean>
                 <condition>Util.is64BitWindows()</condition>
               </action>
@@ -546,7 +540,6 @@ return bngperlfile.exists();
                   <property name="description" type="string">.vcml file association</property>
                   <property name="extension" type="string">vcml</property>
                   <property name="launcherId" type="string">447</property>
-                  <property name="mac" type="boolean" value="false" />
                 </serializedBean>
                 <condition>Util.isWindows() &amp;&amp; !Util.is64BitWindows()</condition>
               </action>
@@ -1192,11 +1185,19 @@ if (context.isUnattended()) {
           <group id="2350" beanClass="com.install4j.runtime.beans.groups.VerticalFormComponentGroup" useExternalParametrization="true" externalParametrizationName="Customize banner image" externalParametrizationMode="include">
             <serializedBean>
               <property name="backgroundColor">
-                <object class="java.awt.Color">
-                  <int>255</int>
-                  <int>255</int>
-                  <int>255</int>
-                  <int>255</int>
+                <object class="com.install4j.runtime.beans.LightOrDarkColor">
+                  <object class="java.awt.Color">
+                    <int>255</int>
+                    <int>255</int>
+                    <int>255</int>
+                    <int>255</int>
+                  </object>
+                  <object class="java.awt.Color">
+                    <int>49</int>
+                    <int>52</int>
+                    <int>53</int>
+                    <int>255</int>
+                  </object>
                 </object>
               </property>
               <property name="borderSides">
@@ -1205,11 +1206,19 @@ if (context.isUnattended()) {
                 </object>
               </property>
               <property name="imageEdgeBackgroundColor">
-                <object class="java.awt.Color">
-                  <int>25</int>
-                  <int>143</int>
-                  <int>220</int>
-                  <int>255</int>
+                <object class="com.install4j.runtime.beans.LightOrDarkColor">
+                  <object class="java.awt.Color">
+                    <int>25</int>
+                    <int>143</int>
+                    <int>220</int>
+                    <int>255</int>
+                  </object>
+                  <object class="java.awt.Color">
+                    <int>0</int>
+                    <int>74</int>
+                    <int>151</int>
+                    <int>255</int>
+                  </object>
                 </object>
               </property>
               <property name="imageEdgeBorder" type="boolean" value="true" />
@@ -1263,11 +1272,19 @@ if (context.isUnattended()) {
               <group id="2357" beanClass="com.install4j.runtime.beans.groups.VerticalFormComponentGroup" useExternalParametrization="true" externalParametrizationName="Customize title bar" externalParametrizationMode="include">
                 <serializedBean>
                   <property name="backgroundColor">
-                    <object class="java.awt.Color">
-                      <int>255</int>
-                      <int>255</int>
-                      <int>255</int>
-                      <int>255</int>
+                    <object class="com.install4j.runtime.beans.LightOrDarkColor">
+                      <object class="java.awt.Color">
+                        <int>255</int>
+                        <int>255</int>
+                        <int>255</int>
+                        <int>255</int>
+                      </object>
+                      <object class="java.awt.Color">
+                        <int>49</int>
+                        <int>52</int>
+                        <int>53</int>
+                        <int>255</int>
+                      </object>
                     </object>
                   </property>
                   <property name="borderSides">
@@ -1389,7 +1406,7 @@ if (context.isUnattended()) {
       </variables>
       <jreBundle jreBundleSource="preCreated" includedJre="${compiler:macJrePath}" manualJreEntry="true" />
     </macos>
-    <windows name="Windows ${compiler:vcellVersion} ${compiler:Site} 64 Bit" id="349" mediaFileName="${compiler:sys.shortName}_${compiler:sys.platform}_${compiler:sys.version}_64bit" installDir="VCell_${compiler:Site}" downloadURL="${compiler:updateSiteBaseUrl}" contentFilesType="downloadable">
+    <windows name="Windows ${compiler:vcellVersion} ${compiler:Site} 64 Bit" id="349" mediaFileName="${compiler:sys.shortName}_${compiler:sys.platform}_${compiler:sys.version}_64bit" installDir="VCell_${compiler:Site}" downloadURL="${compiler:updateSiteBaseUrl}" contentFilesType="downloadable" architecture="64">
       <excludedLaunchers>
         <launcher id="102" />
         <launcher id="447" />
@@ -1413,7 +1430,7 @@ if (context.isUnattended()) {
       </variables>
       <jreBundle jreBundleSource="preCreated" includedJre="${compiler:win64JrePath}" manualJreEntry="true" />
     </windows>
-    <windows name="Windows ${compiler:vcellVersion} ${compiler:Site} 32 Bit" id="450" mediaFileName="${compiler:sys.shortName}_${compiler:sys.platform}_${compiler:sys.version}_32bit" installDir="VCell_${compiler:Site}" jreBitType="32">
+    <windows name="Windows ${compiler:vcellVersion} ${compiler:Site} 32 Bit" id="450" mediaFileName="${compiler:sys.shortName}_${compiler:sys.platform}_${compiler:sys.version}_32bit" installDir="VCell_${compiler:Site}" architecture="32">
       <excludedLaunchers>
         <launcher id="102" />
         <launcher id="345" />
