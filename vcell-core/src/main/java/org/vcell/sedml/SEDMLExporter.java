@@ -291,7 +291,7 @@ public class SEDMLExporter {
 							continue;
 						} else {
 							System.err.println(sedmlRecorder.getLogsCSV());
-							throw new Exception ("SimContext '"+simContext.getName()+"' could not be exported to SBML :" +simContextException.getMessage());
+							throw new Exception ("SimContext '"+simContext.getName()+"' could not be exported to SBML :" +simContextException.getMessage(), simContextException);
 						}
 					}			
 					simContextCnt++;
