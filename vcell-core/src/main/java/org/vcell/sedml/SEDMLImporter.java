@@ -351,12 +351,12 @@ public class SEDMLImporter {
 			while (docIter.hasNext()) {
 				BioModel doc = docIter.next();
 				for (int i = 0; i < doc.getSimulationContexts().length; i++) {
-					if (doc.getSimulationContext(i).getSimulations().length == 0) {
+					if (doc.getSimulationContext(i).getName().startsWith("original_imported_")) {
 						doc.removeSimulationContext(doc.getSimulationContext(i));
 						i--;
 					}
 				}
-				if (doc.getSimulations().length == 0) docIter.remove();
+				if (doc.getSimulationContexts().length == 0) docIter.remove();
 			}
 			// finally try to consolidate SimContexts into fewer (posibly just one) BioModels
 			// unlikely to happen from SEDMLs not originating from VCell, but very useful for roundtripping if so
