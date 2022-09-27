@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--This biomodel was generated in VCML Version JimDev_Version_7.0_build_00-->
+<vcml xmlns="http://sourceforge.net/projects/vcell/vcml" Version="JimDev_Version_7.0_build_00">
+    <BioModel Name="BioModel11">
+        <Model Name="model">
+            <Compound Name="s3" />
+            <Compound Name="s4" />
+            <Feature Name="c0" />
+            <LocalizedCompound Name="s1" CompoundRef="s3" Structure="c0" OverrideName="true" />
+            <LocalizedCompound Name="s2" CompoundRef="s4" Structure="c0" OverrideName="true" />
+            <SimpleReaction Structure="c0" Name="r1" Reversible="true" FluxOption="MolecularOnly">
+                <Reactant LocalizedCompoundRef="s1" Stoichiometry="1" />
+                <Product LocalizedCompoundRef="s2" Stoichiometry="1" />
+                <Kinetics KineticsType="GeneralLumpedKinetics">
+                    <Parameter Name="LumpedJ" Role="lumped reaction rate" Unit="molecules.s-1">s1</Parameter>
+                </Kinetics>
+            </SimpleReaction>
+            <Diagram Name="c0" Structure="c0">
+                <LocalizedCompoundShape NodeReferenceModeAttrTag="molecule" LocalizedCompoundRef="s2" LocationX="235" LocationY="140" />
+                <SimpleReactionShape NodeReferenceModeAttrTag="molecule" SimpleReactionRef="r1" LocationX="179" LocationY="113" />
+                <LocalizedCompoundShape NodeReferenceModeAttrTag="molecule" LocalizedCompoundRef="s1" LocationX="131" LocationY="60" />
+            </Diagram>
+            <ModelUnitSystem VolumeSubstanceUnit="uM.um3" MembraneSubstanceUnit="molecules" LumpedReactionSubstanceUnit="molecules" VolumeUnit="um3" AreaUnit="um2" LengthUnit="um" TimeUnit="s" />
+        </Model>
+        <SimulationSpec Name="Application0" Stochastic="false" UseConcentration="true" RuleBased="false" MassConservationModelReduction="false" InsufficientIterations="false" InsufficientMaxMolecules="false">
+            <NetworkConstraints RbmMaxIteration="1" RbmMaxMoleculesPerSpecies="10" RbmSpeciesLimit="800" RbmReactionsLimit="2500" />
+            <Annotation></Annotation>
+            <Geometry Name="non-spatial" Dimension="0">
+                <Extent X="10.0" Y="10.0" Z="10.0" />
+                <Origin X="0.0" Y="0.0" Z="0.0" />
+                <SubVolume Name="Compartment" Handle="0" Type="Compartmental" />
+            </Geometry>
+            <GeometryContext>
+                <FeatureMapping Feature="c0" GeometryClass="Compartment" SubVolume="Compartment" Size="50000.0">
+                    <BoundariesTypes Xm="Flux" Xp="Flux" Ym="Flux" Yp="Flux" Zm="Flux" Zp="Flux" />
+                </FeatureMapping>
+            </GeometryContext>
+            <ReactionContext>
+                <LocalizedCompoundSpec LocalizedCompoundRef="s1" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+                    <InitialConcentration>0.0</InitialConcentration>
+                    <Diffusion>0.0</Diffusion>
+                </LocalizedCompoundSpec>
+                <LocalizedCompoundSpec LocalizedCompoundRef="s2" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+                    <InitialConcentration>0.0</InitialConcentration>
+                    <Diffusion>0.0</Diffusion>
+                </LocalizedCompoundSpec>
+                <ReactionSpec ReactionStepRef="r1" ReactionMapping="included" />
+            </ReactionContext>
+            <MathDescription Name="Application0_generated">
+                <Constant Name="_F_">96485.3321</Constant>
+                <Constant Name="_F_nmol_">9.64853321E-5</Constant>
+                <Constant Name="_K_GHK_">1.0E-9</Constant>
+                <Constant Name="_N_pmol_">6.02214179E11</Constant>
+                <Constant Name="_PI_">3.141592653589793</Constant>
+                <Constant Name="_R_">8314.46261815</Constant>
+                <Constant Name="_T_">300.0</Constant>
+                <Constant Name="K_millivolts_per_volt">1000.0</Constant>
+                <Constant Name="KMOLE">0.001660538783162726</Constant>
+                <Constant Name="s1_init_uM">0.0</Constant>
+                <Constant Name="s2_init_uM">0.0</Constant>
+                <Constant Name="Size_c0">50000.0</Constant>
+                <Constant Name="UnitFactor_uM_um3_molecules_neg_1">(1.0 * pow(KMOLE,1.0))</Constant>
+                <VolumeVariable Name="s1" Domain="Compartment" />
+                <VolumeVariable Name="s2" Domain="Compartment" />
+                <Function Name="LumpedJ" Domain="Compartment">s1</Function>
+                <CompartmentSubDomain Name="Compartment">
+                    <BoundaryType Boundary="Xm" Type="Value" />
+                    <BoundaryType Boundary="Xp" Type="Value" />
+                    <BoundaryType Boundary="Ym" Type="Value" />
+                    <BoundaryType Boundary="Yp" Type="Value" />
+                    <BoundaryType Boundary="Zm" Type="Value" />
+                    <BoundaryType Boundary="Zp" Type="Value" />
+                    <OdeEquation Name="s1" SolutionType="Unknown">
+                        <Rate> - (UnitFactor_uM_um3_molecules_neg_1 * LumpedJ / Size_c0)</Rate>
+                        <Initial>s1_init_uM</Initial>
+                    </OdeEquation>
+                    <OdeEquation Name="s2" SolutionType="Unknown">
+                        <Rate>(UnitFactor_uM_um3_molecules_neg_1 * LumpedJ / Size_c0)</Rate>
+                        <Initial>s2_init_uM</Initial>
+                    </OdeEquation>
+                </CompartmentSubDomain>
+            </MathDescription>
+            <Simulation Name="Simulation0">
+                <SolverTaskDescription TaskType="Unsteady" UseSymbolicJacobian="false" Solver="Combined Stiff Solver (IDA/CVODE)">
+                    <TimeBound StartTime="0.0" EndTime="1.0" />
+                    <TimeStep DefaultTime="0.1" MinTime="1.0E-8" MaxTime="1.0" />
+                    <ErrorTolerance Absolut="1.0E-9" Relative="1.0E-9" />
+                    <OutputOptions KeepEvery="1" KeepAtMost="1000" />
+                    <NumberProcessors>1</NumberProcessors>
+                </SolverTaskDescription>
+                <MathOverrides />
+            </Simulation>
+            <MicroscopeMeasurement Name="fluor">
+                <ConvolutionKernel Type="ProjectionZKernel" />
+            </MicroscopeMeasurement>
+        </SimulationSpec>
+        <pathwayModel>
+            <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bp="http://www.biopax.org/release/biopax-level3.owl#" version="3.0" />
+        </pathwayModel>
+        <relationshipModel>
+            <RMNS version="3.0" />
+        </relationshipModel>
+        <vcmetadata>
+            <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" />
+            <nonrdfAnnotationList />
+            <uriBindingList />
+        </vcmetadata>
+    </BioModel>
+</vcml>
+
