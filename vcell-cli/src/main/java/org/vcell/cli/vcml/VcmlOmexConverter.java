@@ -761,7 +761,7 @@ public class VcmlOmexConverter {
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-			writeFileEntry(outputDirectory.getAbsolutePath(), inputFile.getName()+",FAILED", jobLogFile, bForceLogFiles);			
+			writeFileEntry(outputDirectory.getAbsolutePath(), inputFile.getName()+",FAILED,"+e.getCause(), jobLogFile, bForceLogFiles);			
 		}
 	}
 }

@@ -568,7 +568,7 @@ public class XmlHelper {
 				throw new RuntimeException("Failed importing " + omexFile.getName());
 			}
 			if (sedml.getModels().isEmpty()) {
-				throw new RuntimeException("Unable to find any model in " + omexFile.getName());
+				throw new RuntimeException("There are no models in " + omexFile.getName());
 			}
 			sedmls.add(sedml);
 		}
