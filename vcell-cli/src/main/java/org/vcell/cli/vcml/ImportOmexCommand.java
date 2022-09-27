@@ -22,10 +22,10 @@ public class ImportOmexCommand implements Callable<Integer> {
         try {
             PropertyLoader.loadProperties();
 
-            if (!inputFilePath.exists() || inputFilePath.isFile()){
+            if (!inputFilePath.exists() || !inputFilePath.isFile()){
                 throw new RuntimeException("expecting inputFilePath to be an existing file: "+inputFilePath.getAbsolutePath());
             }
-            if (!outputFilePath.exists() || outputFilePath.isDirectory()){
+            if (!outputFilePath.exists() || !outputFilePath.isDirectory()){
                 throw new RuntimeException("expecting outputFilePath to be an existing directory: "+inputFilePath.getAbsolutePath());
             }
             VcmlOmexConverter.importOneOmexFile(inputFilePath, outputFilePath, false);
