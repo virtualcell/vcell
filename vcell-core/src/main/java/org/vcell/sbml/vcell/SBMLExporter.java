@@ -2243,7 +2243,8 @@ private void addGeometry() throws SbmlException {
 			if (vcGeomClasses[i] instanceof AnalyticSubVolume) {
 				AnalyticSubVolume vcAnalyticSubVolume = (AnalyticSubVolume) vcGeomClasses[i];
 				// need to avoid id name clash with structures (compartments)
-				AnalyticVolume analyticVol = sbmlAnalyticGeomDefinition.createAnalyticVolume(TokenMangler.mangleToSName("AnalyticVol_"+vcAnalyticSubVolume.getName()));
+				String id = TokenMangler.mangleToSName("AnalyticVol_" + vcAnalyticSubVolume.getName());
+				AnalyticVolume analyticVol = sbmlAnalyticGeomDefinition.createAnalyticVolume(id);
 //				analyticVol.setSpatialId(vcGeomClasses[i].getName());
 				analyticVol.setDomainType(DOMAIN_TYPE_PREFIX+vcAnalyticSubVolume.getName());
 				analyticVol.setFunctionType(FunctionKind.layered);
@@ -2264,19 +2265,30 @@ private void addGeometry() throws SbmlException {
 	//
 	// add CSGeometry
 	//
-	if (!bAnyAnalyticSubvolumes && !bAnyImageSubvolumes && bAnyCSGSubvolumes){
-		CSGeometry sbmlCSGeomDefinition = new CSGeometry();
-		sbmlGeometry.addGeometryDefinition(sbmlCSGeomDefinition);
+//	if (!bAnyAnalyticSubvolumes && !bAnyImageSubvolumes && bAnyCSGSubvolumes){
+	if (!bAnyImageSubvolumes && bAnyCSGSubvolumes){
+		CSGeometry sbmlCSGeomDefinition = sbmlGeometry.createCSGeometry();
 		sbmlCSGeomDefinition.setSpatialId(TokenMangler.mangleToSName("CSG_"+vcGeometry.getName()));
+		sbmlCSGeomDefinition.setIsActive(true);
 		for (int i = 0; i < vcGeomClasses.length; i++) {
 			if (vcGeomClasses[i] instanceof CSGObject) {
 				CSGObject vcellCSGObject = (CSGObject)vcGeomClasses[i];
-				org.sbml.jsbml.ext.spatial.CSGObject sbmlCSGObject = new org.sbml.jsbml.ext.spatial.CSGObject();
-				sbmlCSGeomDefinition.addCSGObject(sbmlCSGObject);
-				sbmlCSGObject.setSpatialId(vcellCSGObject.getName());
+				String id = TokenMangler.mangleToSName("CSGObject_" + vcellCSGObject.getName());
+				org.sbml.jsbml.ext.spatial.CSGObject sbmlCSGObject = sbmlCSGeomDefinition.createCSGObject(id);
 				sbmlCSGObject.setDomainType(DOMAIN_TYPE_PREFIX+vcellCSGObject.getName());
-				sbmlCSGObject.setOrdinal(numSubVols - (i+1));    // the ordinal should the the least for the default/background subVolume
+				sbmlCSGObject.setOrdinal(vcellCSGObject.getHandle()); // numSubVols - (i+1));	// the ordinal should be the least for the default/background subVolume
 				org.sbml.jsbml.ext.spatial.CSGNode sbmlcsgNode = getSBMLCSGNode(vcellCSGObject.getRoot());
+				sbmlcsgNode.setParent(sbmlCSGObject);
+				sbmlCSGObject.setCSGNode(sbmlcsgNode);
+			}else if (vcGeomClasses[i] instanceof AnalyticSubVolume && ((AnalyticSubVolume)vcGeomClasses[i]).getExpression().isOne()) {
+				AnalyticSubVolume analyticSubVolume = (AnalyticSubVolume)vcGeomClasses[i];
+				String id = TokenMangler.mangleToSName("CSGObject_" + analyticSubVolume.getName());
+				org.sbml.jsbml.ext.spatial.CSGObject sbmlCSGObject = sbmlCSGeomDefinition.createCSGObject(id);
+				sbmlCSGObject.setDomainType(DOMAIN_TYPE_PREFIX+analyticSubVolume.getName());
+				sbmlCSGObject.setOrdinal(analyticSubVolume.getHandle());	// the ordinal should be the least for the default/background subVolume
+				CSGObject backgroundObject = CSGObject.createBackgroundObject(vcOrigin, vcExtent, analyticSubVolume.getName(), analyticSubVolume.getHandle());
+				org.sbml.jsbml.ext.spatial.CSGNode sbmlcsgNode = getSBMLCSGNode(backgroundObject.getRoot());
+				sbmlcsgNode.setParent(sbmlCSGObject);
 				sbmlCSGObject.setCSGNode(sbmlcsgNode);
 			}
 		}
@@ -2475,31 +2487,31 @@ System.err.println("should be:\n  distanceMapImageData.setSamples((float[])signe
 }
 
 private static org.sbml.jsbml.ext.spatial.CSGNode getSBMLCSGNode(cbit.vcell.geometry.CSGNode vcCSGNode) {
-	String csgNodeName = vcCSGNode.getName();
+	String csgNodeName = "CSGObjectNode_"+vcCSGNode.getName();
 	if (vcCSGNode instanceof cbit.vcell.geometry.CSGPrimitive){
 		cbit.vcell.geometry.CSGPrimitive vcCSGprimitive = (cbit.vcell.geometry.CSGPrimitive)vcCSGNode;
 		org.sbml.jsbml.ext.spatial.CSGPrimitive sbmlPrimitive = new org.sbml.jsbml.ext.spatial.CSGPrimitive();
 		sbmlPrimitive.setSpatialId(csgNodeName);
 		switch (vcCSGprimitive.getType()){
-			case SPHERE: {
-				sbmlPrimitive.setPrimitiveType(SBMLSpatialConstants.SOLID_SPHERE);
-				break;
-			}
-			case CONE: {
-				sbmlPrimitive.setPrimitiveType(SBMLSpatialConstants.SOLID_CONE);
-				break;
-			}
-			case CUBE: {
-				sbmlPrimitive.setPrimitiveType(SBMLSpatialConstants.SOLID_CUBE);
-				break;
-			}
-			case CYLINDER: {
-				sbmlPrimitive.setPrimitiveType(SBMLSpatialConstants.SOLID_CYLINDER);
-				break;
-			}
-			default: {
-				throw new RuntimeException("unsupported primitive type "+vcCSGprimitive.getType());
-			}
+		case SPHERE: {
+			sbmlPrimitive.setPrimitiveType(PrimitiveKind.sphere);
+			break;
+		}
+		case CONE: {
+			sbmlPrimitive.setPrimitiveType(PrimitiveKind.cone);
+			break;
+		}
+		case CUBE: {
+			sbmlPrimitive.setPrimitiveType(PrimitiveKind.cube);
+			break;
+		}
+		case CYLINDER: {
+			sbmlPrimitive.setPrimitiveType(PrimitiveKind.cylinder);
+			break;
+		}
+		default: {
+			throw new RuntimeException("unsupported primitive type "+vcCSGprimitive.getType());
+		}
 		}
 		return sbmlPrimitive;
 	}else if (vcCSGNode instanceof cbit.vcell.geometry.CSGPseudoPrimitive){

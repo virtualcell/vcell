@@ -4026,7 +4026,7 @@ public class SBMLImporter {
 //				CSGObject[] vcCSGSubVolumes = new CSGObject[n];
 				for (int i = 0; i < n; i++) {
 					org.sbml.jsbml.ext.spatial.CSGObject sbmlCSGObject = sbmlCSGs.get(i);
-					CSGObject vcellCSGObject = new CSGObject(null, sbmlCSGObject.getSpatialId(), i);
+					CSGObject vcellCSGObject = new CSGObject(null, sbmlCSGObject.getDomainType(), i);
 					if (domainTypeId_to_handle_map.get(sbmlCSGObject.getDomainType()) != null){
 						vcellCSGObject.setHandle(domainTypeId_to_handle_map.get(sbmlCSGObject.getDomainType()));
 					}
