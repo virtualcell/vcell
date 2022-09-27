@@ -510,13 +510,32 @@ public static boolean functionallyEquivalent(Expression exp1, Expression exp2, b
 		final int REQUIRED_NUM_EVALUATIONS = 20;
 		int numEvaluations = 0;
 		Exception savedException = null;
+		//
+		// we want to scale logarithmically to explore magnitudes
+		//
+		//  base^NUM_TRIES = dynamicRange
+		//  NUM_TRIES * log10(base) = log10(dynamicRange)
+		//  base = 10^(log10(dynamicRange)/NUM_TRIES)
+		//
+		double dynamicRange = 1e3; // same as before, only log scaled
+		double base = Math.pow(10,Math.log10(dynamicRange)/MAX_TRIES);
+		double scaleFactor = 0.01;
+		double result1MaxAbs = 0;
+		double result2MaxAbs = 0;
+		double maxDiffAbs = 0;
 		for (int i = 0; i < MAX_TRIES && numEvaluations < REQUIRED_NUM_EVALUATIONS; i++){
+			scaleFactor *= base;
 			for (int j = 0; j < values.length; j++){
-				values[j] = 0.01*(i+1)*rand.nextGaussian();
+				values[j] = scaleFactor*rand.nextGaussian();
 			}
 			try {
 				double result1 = exp1.evaluateVector(values);
 				double result2 = exp2.evaluateVector(values);
+				double result1Abs = Math.abs(result1);
+				double result2Abs = Math.abs(result2);
+				result1MaxAbs = Math.max(result1MaxAbs, result1Abs);
+				result2MaxAbs = Math.max(result2MaxAbs, result2Abs);
+				maxDiffAbs = Math.max(maxDiffAbs, Math.abs(result2-result1));
 				if (Double.isInfinite(result1) || Double.isNaN(result1)){
 					throw new RuntimeException("Expression = '"+exp1+"' evaluates to "+result1);
 				}
@@ -527,7 +546,8 @@ public static boolean functionallyEquivalent(Expression exp1, Expression exp2, b
 				double absdiff = Math.abs(result1-result2);
 				if (scale > absoluteTolerance){
 					if (absdiff > relativeTolerance*scale){
-						lg.debug("EXPRESSIONS DIFFERENT: numerical test "+numEvaluations+", tolerance exceeded by "+(int)Math.log(absdiff/(relativeTolerance*scale))+"digits");
+						int logRelError = (int) Math.log10(absdiff / (relativeTolerance * scale));
+						lg.debug("EXPRESSIONS DIFFERENT: numerical test "+numEvaluations+", tolerance exceeded by "+ logRelError +"digits");
 						return false;
 					}
 				}
@@ -540,6 +560,14 @@ public static boolean functionallyEquivalent(Expression exp1, Expression exp2, b
 			//savedException.printStackTrace(System.out);
 			throw new RuntimeException("too many failed evaluations ("+numEvaluations+" of "+REQUIRED_NUM_EVALUATIONS+") ("+savedException.toString()+") of expressions '"+exp1+"' and '"+exp2+"'");
 		}
+		// before we declare victory, the expressions may have been poorly scaled (e.g. max magnitude was very small)
+		double maxAbsScale = result1MaxAbs + result2MaxAbs;
+		if (maxAbsScale<absoluteTolerance && maxDiffAbs > relativeTolerance*maxAbsScale){
+			int logRelError = (int) Math.log10(maxDiffAbs / (relativeTolerance * maxAbsScale));
+			lg.debug("EXPRESSIONS DIFFERENT: numerical test not well scaled, maxAbsScale="+maxAbsScale+", maxDiffAbs exceeded relative tolerance by "+ logRelError +"digits");
+			return false;
+		}
+
 		Vector<Discontinuity> discont1 = exp1.getDiscontinuities();
 		Vector<Discontinuity> discont2 = exp2.getDiscontinuities();
 //		if(discont1.size() != discont2.size())
