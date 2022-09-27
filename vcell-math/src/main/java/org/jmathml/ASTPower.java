@@ -12,14 +12,14 @@ package org.jmathml;
 public class ASTPower extends ASTFunction {
 
 	public ASTPower() {
-		super(ASTFunctionType.POW);
+		super(ASTFunctionType.POWER);
 		setName(POWER_NAME);
 	}
 
-	static final String POWER_NAME = "pow";
+	static final String POWER_NAME = "power";
 
 	public String getString() {
-		return "pow";
+		return POWER_NAME;
 	}
 
 	@Override

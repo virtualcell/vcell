@@ -40,7 +40,7 @@ public abstract class ASTFunction extends ASTNode {
 	}
 
 	public enum ASTFunctionType implements ASTTypeI {
-		SIN, COS, TAN, ARCSIN, ARCCOS, ARCTAN, SEC, COSEC, COT, SINH, COSH, TANH, LOG, ROOT, LN, EXP, ABS, FLOOR, CEIL, POW, FACTORIAL, MISCELLANEOUS;
+		SIN, COS, TAN, ARCSIN, ARCCOS, ARCTAN, SEC, COSEC, COT, SINH, COSH, TANH, LOG, ROOT, LN, EXP, ABS, FLOOR, CEIL, FACTORIAL, MISCELLANEOUS, POWER;
 
 		public String getString() {
 			return toString().toLowerCase();
@@ -237,7 +237,7 @@ public abstract class ASTFunction extends ASTNode {
 			return new ASTFunction.ASTAbs(type);
 		} else if (type.equals(ASTFunctionType.FACTORIAL)) {
 			return new ASTFunction.ASTFactorial(type);
-		} else if (type.equals(ASTFunctionType.POW)) {
+		} else if (type.equals(ASTFunctionType.POWER)) {
 			return new ASTPower();
 		} else {
 			return new ASTMiscellaneousFunction("misc");
