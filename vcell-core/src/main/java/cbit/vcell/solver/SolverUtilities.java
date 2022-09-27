@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
@@ -211,9 +212,8 @@ public class SolverUtilities {
 		final String ENV_VAR_NAME = "ALGORITHM_SUBSTITUTION_POLICY";
 		boolean result;
 		// Get the BSTS env-var
-		String envVar = Optional.ofNullable(System.getenv(ENV_VAR_NAME)).orElse("ALL");
+		String envVar = Optional.ofNullable(System.getenv(ENV_VAR_NAME)).orElse("ANY"), message = null;
 		switch (envVar){
-			case "NONE":
 			case "SAME_METHOD":
 			case "SAME_MATH":
 			case "SIMILAR_APPROXIMATIONS":
@@ -227,8 +227,11 @@ public class SolverUtilities {
 			case "ANY":
 				result = false;
 				break;
+			case "NONE": // Since we try anyway with the sundials solvers, we need to throw an exception here.
+				if (message == null) 
+					message = String.format("User specifically requested no substitutions using envrionment variable \"%s\".", ENV_VAR_NAME);
 			default:
-				String message = String.format("Unexpected environment varaible (\"%s\") value encountered <%s>.", ENV_VAR_NAME, envVar);
+				if (message == null) message = String.format("Environment varaible (\"%s\") value encountered <%s>.", ENV_VAR_NAME, envVar);
 				logger.error(message);
 				throw new IllegalArgumentException(message);
 		}
