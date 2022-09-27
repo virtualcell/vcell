@@ -12,6 +12,9 @@ import java.util.function.Predicate;
 public class VcmlTestSuiteFiles {
 
     private final static String[] allTestFiles = new String[]{
+        "lumped_reaction_no_size_in_rate.vcml",
+        "lumped_reaction_proper_size_in_rate.vcml",
+        "lumped_reaction_local_size_in_rate.vcml",
         "biomodel_100596964.vcml",
         "biomodel_100961371.vcml",
         "biomodel_101962320.vcml",
@@ -204,7 +207,7 @@ public class VcmlTestSuiteFiles {
     public static String[] getVcmlTestCases() {
         Predicate<String> testFilter = t -> true;
 
-        return (String[]) Arrays.stream(allTestFiles).filter(testFilter).toArray(String[]::new);
+        return Arrays.stream(allTestFiles).filter(testFilter).toArray(String[]::new);
     }
 
     public static InputStream getVcmlTestCase(String testFile) {
@@ -214,7 +217,11 @@ public class VcmlTestSuiteFiles {
         try {
             return getFileFromResourceAsStream("vcml_published/"+testFile);
         }catch (FileNotFoundException e){
-            throw new RuntimeException("failed to find test case file: "+e.getMessage(), e);
+            try {
+                return getFileFromResourceAsStream("vcml_testmodels/"+testFile);
+            }catch (FileNotFoundException e2){
+                throw new RuntimeException("failed to find test case file in vcml_published/ and vcml_testmodels/: "+e2.getMessage(), e2);
+            }
         }
     }
 

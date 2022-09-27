@@ -257,6 +257,7 @@ public class SEDMLExporter {
 					}
 				}
 				SimulationContext[] simContexts = vcBioModel.getSimulationContexts();
+
 				if (simContexts.length == 0) {
 					sedmlRecorder.addTaskLog(vcBioModel.getName(), TaskType.MODEL, TaskResult.FAILED, new Exception("Model has no Applications"));
 				} else {
@@ -294,7 +295,7 @@ public class SEDMLExporter {
 								continue;
 							} else {
 								System.err.println(sedmlRecorder.getLogsCSV());
-								throw new Exception ("SimContext '"+simContext.getName()+"' could not be exported to SBML :" +simContextException.getMessage());
+								throw new Exception ("SimContext '"+simContext.getName()+"' could not be exported to SBML :" +simContextException.getMessage(), simContextException);
 							}
 						}			
 						simContextCnt++;

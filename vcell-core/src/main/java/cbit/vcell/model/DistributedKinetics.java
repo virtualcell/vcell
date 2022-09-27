@@ -198,6 +198,11 @@ public abstract class DistributedKinetics extends Kinetics {
 			
 			DistributedKinetics distributedKinetics = null;
 			StructureSize structureSize = origLumpedKinetics.getReactionStep().getStructure().getStructureSize();
+			KineticsParameter lumpedAuthoritativeParm = origLumpedKinetics.getAuthoritativeParameter();
+			Expression lumpedExpressionWithoutSizeScale = ExpressionUtils.getLinearFactor(lumpedAuthoritativeParm.getExpression(), structureSize.getName());
+			if (lumpedExpressionWithoutSizeScale == null){
+				throw new ExpressionException("linear factor was null, lumped reaction "+origLumpedKinetics.getReactionStep().getName()+" could not be transformed to distributed");
+			}
 			Expression sizeExp = new Expression(structureSize.getName());
 			VCUnitDefinition sizeUnit = structureSize.getUnitDefinition();
 			if (origLumpedKinetics.getKineticsDescription().isElectrical()){
@@ -218,14 +223,8 @@ public abstract class DistributedKinetics extends Kinetics {
 				}
 			}
 			Expression unitFactor = new Expression(distributedKinetics.getAuthoritativeParameter().getUnitDefinition().multiplyBy(sizeUnit).divideBy(origLumpedKinetics.getAuthoritativeParameter().getUnitDefinition()).getDimensionlessScale());
-			Expression distributionFactor = Expression.div(unitFactor, sizeExp);
-			KineticsParameter lumpedAuthoritativeParm = origLumpedKinetics.getAuthoritativeParameter();
 			KineticsParameter distAuthoritativeParam = distributedKinetics.getAuthoritativeParameter();
-			Expression newDistributedAuthoritativeExp = Expression.mult(distributionFactor,lumpedAuthoritativeParm.getExpression()).flatten();
-			Expression substitutedExp = newDistributedAuthoritativeExp.getSubstitutedExpression(sizeExp, new Expression(1.0));
-			if (ExpressionUtils.functionallyEquivalent(newDistributedAuthoritativeExp,substitutedExp,false)){
-				newDistributedAuthoritativeExp = substitutedExp.flatten();
-			}
+			Expression newDistributedAuthoritativeExp = Expression.mult(unitFactor,lumpedExpressionWithoutSizeScale).flattenSafe();
 			parmsToAdd.add(distributedKinetics.new KineticsParameter(distAuthoritativeParam.getName(),newDistributedAuthoritativeExp,distAuthoritativeParam.getRole(),distAuthoritativeParam.getUnitDefinition()));
 
 			for (int i = 0; i < origLumpedKineticsParms.length; i++) {

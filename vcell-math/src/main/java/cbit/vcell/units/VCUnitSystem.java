@@ -31,6 +31,9 @@ public abstract class VCUnitSystem implements Serializable {
 		if (symbol.equals("")) {
 			return getInstance_TBD();
 		}
+		if (symbol.startsWith("0 ") || symbol.startsWith("0.0 ") || symbol.equals("0") || symbol.equals("0.0")) {
+			return getInstance_TBD();
+		}
 		VCUnitDefinition vcUnitDefinition = vcUnitDefinitionsHash.get(symbol);
 		if (vcUnitDefinition != null) {
 			return vcUnitDefinition;

@@ -545,7 +545,7 @@ private MathCompareResults compareEquivalentCanonicalMath(MathDescription newMat
 									//
 									// difference couldn't be reconciled
 									//
-									String msg = "expressions are different Old: '"+oldExps.get(k)+"'\n"+"expressions are different New: '"+newExps.get(k)+"'";
+									String msg = "expressions are different: '"+oldExps.get(k).infix()+"' vs '"+newExps.get(k).infix()+"'";
 									logMathTexts(this, newMathDesc, Decision.MathDifferent_DIFFERENT_EXPRESSION, msg);
 									return new MathCompareResults(Decision.MathDifferent_DIFFERENT_EXPRESSION, msg);
 								}else{
@@ -628,8 +628,7 @@ private MathCompareResults compareEquivalentCanonicalMath(MathDescription newMat
 										//
 										// difference couldn't be reconciled
 										//
-										String msg = "expressions are different Old: '"+oldExps[k]+"'\n"+
-												"expressions are different New: '"+newExps[k]+"'";
+										String msg = "expressions are different: '"+oldExps[k].infix()+"' vs '"+newExps[k].infix()+"'";
 										logMathTexts(this, newMathDesc, Decision.MathDifferent_DIFFERENT_EXPRESSION, msg);
 										return new MathCompareResults(Decision.MathDifferent_DIFFERENT_EXPRESSION, msg);
 									}else{
@@ -3480,12 +3479,10 @@ public static MathCompareResults testEquivalency(MathSymbolTableFactory mathSymb
 			// now compare
 			return canonicalMath2.compareEquivalentCanonicalMath(canonicalMath1);
 		}
-	}catch (MathException e){
-		e.printStackTrace(System.out);
-		throw new RuntimeException(e.getMessage());
-	}catch (ExpressionException e){
-		e.printStackTrace(System.out);
-		throw new RuntimeException(e.getMessage());
+	}catch (MathException | ExpressionException e){
+		String msg = "failure while testing for math equivalency: "+e.getMessage();
+		logger.error(msg, e);
+		throw new RuntimeException(msg, e);
 	}
 }
 
