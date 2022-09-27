@@ -10,6 +10,7 @@
 
 package cbit.vcell.parser;
 
+import java.util.Arrays;
 import java.util.Random;
 import java.util.Vector;
 import java.util.function.BiPredicate;
@@ -28,6 +29,36 @@ import org.vcell.util.Matchable;
 public class ExpressionUtils {
 	private static Logger lg = LogManager.getLogger(ExpressionUtils.class);
 	public static String value_molecules_per_uM_um3_NUMERATOR = "6.02214179E8";
+
+	public static Expression getLinearFactor(Expression exp, String k) throws ExpressionException {
+		// let exp = f(k,x)
+		// if exp is linear in k then there exists a g(x) such that f(k,x) = k*g(x)
+		// we would like a formula to identify g(x) which does not use division.
+		//
+		// (a)      exp(k==>1) = f(1,x) = g(x)
+		// (b)      exp(k==>2) = f(2,x) = 2 * g(x)
+		// (c)      exp(k==>2) - exp(k==>1) = f(2,x) - f(1,x) = 2 * g(x) - g(x) = g(x)
+		//
+		// then
+		//
+		// (d)      k * (f(2,x) - f(1,x)) = k * g(x) = f(k,x)
+		//
+		// so exp is linear in k if:
+		//
+		// (e)      exp == k * (exp(k==>2) - exp(k==>1))
+		//
+		Expression kExp = new Expression(k);
+		Expression exp_substitute_2 = exp.getSubstitutedExpression(kExp, new Expression(2.0));
+		Expression exp_substitute_1 = exp.getSubstitutedExpression(kExp, new Expression(1.0));
+		Expression gExp = Expression.add(exp_substitute_2, Expression.negate(exp_substitute_1));
+		Expression k_times_g = Expression.mult(kExp, gExp);
+		if (functionallyEquivalent(exp, k_times_g, false)){
+			Expression factor = exp_substitute_1.simplifyJSCL();
+			return factor;
+		}else{
+			return null;
+		}
+	}
 
 	public static class ExpressionEquivalencePredicate implements BiPredicate<Matchable,Matchable> {
 		@Override
