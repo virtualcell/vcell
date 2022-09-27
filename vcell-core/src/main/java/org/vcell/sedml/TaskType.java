@@ -6,6 +6,9 @@ public enum TaskType {
 	@SerializedName("Units")
 	UNITS,
 
+	@SerializedName("Model")
+	MODEL,
+
 	@SerializedName("SimContext")
 	SIMCONTEXT,
 

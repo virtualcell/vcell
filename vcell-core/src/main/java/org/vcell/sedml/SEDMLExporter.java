@@ -257,44 +257,48 @@ public class SEDMLExporter {
 					}
 				}
 				SimulationContext[] simContexts = vcBioModel.getSimulationContexts();
-				int simContextCnt = 0;	// for model count, task subcount
-				for (SimulationContext simContext : simContexts) {
-					// Export the application itself to SBML, with default values (overrides will become model changes or repeated tasks)
-					String sbmlString = null;
-					Map<Pair <String, String>, String> l2gMap = null;		// local to global translation map
-					MathSymbolMapping mathSymbolMapping = null;
-					boolean sbmlExportFailed = false;
-					Exception simContextException = null;
-					try {
-						SBMLExporter.validateSimulationContextSupport(simContext);
-						boolean isSpatial = simContext.getGeometry().getDimension() > 0 ? true : false;
-						Pair <String, Map<Pair <String, String>, String>> pair = XmlHelper.exportSBMLwithMap(vcBioModel, 3, 2, 0, isSpatial, simContext, null, bRoundTripSBMLValidation);
-						sbmlString = pair.one;
-						l2gMap = pair.two;
-						writeModelSBML(savePath, sBaseFileName, sbmlString, simContext);
-						MathMapping mathMapping = simContext.createNewMathMapping();
-						mathSymbolMapping = mathMapping.getMathSymbolMapping();
-						sedmlRecorder.addTaskLog(simContext.getName(), TaskType.SIMCONTEXT, TaskResult.SUCCEEDED, null);
-					} catch (Exception e) {
-						String msg = "SBML export failed for simContext '"+simContext.getName()+"': " + e.getMessage();
-						logger.error(msg, e);
-						sbmlExportFailed = true;
-						simContextException = e;
-						sedmlRecorder.addTaskLog(simContext.getName(), TaskType.SIMCONTEXT, TaskResult.FAILED, e);
-					}
-
-					if (!sbmlExportFailed) {
-						// simContext was exported succesfully, now we try to export its simulations
-						exportSimulationsSBML(simContextCnt, simContext, sbmlString, l2gMap, mathSymbolMapping, bFromCLI);
-					} else {
-						if (bFromCLI) {
-							continue;
-						} else {
-							System.err.println(sedmlRecorder.getLogsCSV());
-							throw new Exception ("SimContext '"+simContext.getName()+"' could not be exported to SBML :" +simContextException.getMessage());
+				if (simContexts.length == 0) {
+					sedmlRecorder.addTaskLog(vcBioModel.getName(), TaskType.MODEL, TaskResult.FAILED, new Exception("Model has no Applications"));
+				} else {
+					int simContextCnt = 0;	// for model count, task subcount
+					for (SimulationContext simContext : simContexts) {
+						// Export the application itself to SBML, with default values (overrides will become model changes or repeated tasks)
+						String sbmlString = null;
+						Map<Pair <String, String>, String> l2gMap = null;		// local to global translation map
+						MathSymbolMapping mathSymbolMapping = null;
+						boolean sbmlExportFailed = false;
+						Exception simContextException = null;
+						try {
+							SBMLExporter.validateSimulationContextSupport(simContext);
+							boolean isSpatial = simContext.getGeometry().getDimension() > 0 ? true : false;
+							Pair <String, Map<Pair <String, String>, String>> pair = XmlHelper.exportSBMLwithMap(vcBioModel, 3, 2, 0, isSpatial, simContext, null, bRoundTripSBMLValidation);
+							sbmlString = pair.one;
+							l2gMap = pair.two;
+							writeModelSBML(savePath, sBaseFileName, sbmlString, simContext);
+							MathMapping mathMapping = simContext.createNewMathMapping();
+							mathSymbolMapping = mathMapping.getMathSymbolMapping();
+							sedmlRecorder.addTaskLog(simContext.getName(), TaskType.SIMCONTEXT, TaskResult.SUCCEEDED, null);
+						} catch (Exception e) {
+							String msg = "SBML export failed for simContext '"+simContext.getName()+"': " + e.getMessage();
+							logger.error(msg, e);
+							sbmlExportFailed = true;
+							simContextException = e;
+							sedmlRecorder.addTaskLog(simContext.getName(), TaskType.SIMCONTEXT, TaskResult.FAILED, e);
 						}
-					}			
-					simContextCnt++;
+	
+						if (!sbmlExportFailed) {
+							// simContext was exported succesfully, now we try to export its simulations
+							exportSimulationsSBML(simContextCnt, simContext, sbmlString, l2gMap, mathSymbolMapping, bFromCLI);
+						} else {
+							if (bFromCLI) {
+								continue;
+							} else {
+								System.err.println(sedmlRecorder.getLogsCSV());
+								throw new Exception ("SimContext '"+simContext.getName()+"' could not be exported to SBML :" +simContextException.getMessage());
+							}
+						}			
+						simContextCnt++;
+					}
 				}
 			}
 	       	if(sedmlModel.getModels() != null && sedmlModel.getModels().size() > 0) {
