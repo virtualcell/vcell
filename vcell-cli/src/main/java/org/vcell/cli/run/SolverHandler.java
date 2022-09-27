@@ -5,6 +5,7 @@ import cbit.util.xml.VCLoggerException;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.ExpressionMathMLParser;
 import cbit.vcell.solver.*;
 import cbit.vcell.solver.ode.AbstractJavaSolver;
@@ -39,6 +40,7 @@ import org.vcell.cli.CLILogFileManager;
 import org.vcell.cli.vcml.VCMLHandler;
 import org.vcell.sbml.vcell.SBMLImportException;
 import org.vcell.sbml.vcell.SBMLImporter;
+import org.vcell.util.BeanUtils;
 import org.vcell.util.document.VCDocument;
 import org.apache.commons.lang3.EnumUtils;
 import org.apache.logging.log4j.LogManager;
@@ -62,6 +64,11 @@ public class SolverHandler {
 	public int countSuccessfulSimulationRuns = 0;	// number of simulations that we ran successfully for this sedml file
 	public Map <String, String> sim2Hdf5Map = new LinkedHashMap<> ();
 	
+    Map<Simulation, AbstractTask> simulationToTaskMap = new LinkedHashMap<> ();	// key = vcell simulation, value = sedml task (task reference)
+    Map<AbstractTask, Simulation> taskToSimulationMap = new LinkedHashMap<> ();	// the opposite
+    Map<AbstractTask, List<AbstractTask>> taskToListOfSubtasksMap = new LinkedHashMap<> ();	// key = topmost task, value = recursive list of subtasks
+    Map<AbstractTask, List<Variable>> taskToVariableMap = new LinkedHashMap<> ();		// key = task, value = list of variables calculated by this task
+
     private static void sanityCheck(VCDocument doc) {
         if (doc == null) {
             throw new RuntimeException("Imported VCDocument is null.");
@@ -82,42 +89,9 @@ public class SolverHandler {
         }
     }
 
-
-    public HashMap<String, ODESolverResultSet>
-            simulateAllTasks(ExternalDocInfo externalDocInfo, SedML sedml, CLILogFileManager logManager, 
-                             File outputDirForSedml, String outDir, String outputBaseDir, String sedmlLocation,
-                             boolean keepTempFiles, boolean exactMatchOnly) throws Exception {
-        // create the VCDocument(s) (bioModel(s) + application(s) + simulation(s)), do sanity checks
-        cbit.util.xml.VCLogger sedmlImportLogger = new LocalLogger();
-        String inputFile = externalDocInfo.getFile().getAbsolutePath();
-        String bioModelBaseName = org.vcell.util.FileUtils.getBaseName(inputFile);
-        
-        List<BioModel> bioModelList = null;
-        // Key String is SEDML Task ID
-        HashMap<String, ODESolverResultSet> resultsHash = new LinkedHashMap<String, ODESolverResultSet>();
-        String docName = null;
-        Simulation[] sims = null;
-        //String outDirRoot = outputDirForSedml.toString().substring(0, outputDirForSedml.toString().lastIndexOf(System.getProperty("file.separator")));
-        try {
-            bioModelList = XmlHelper.importSEDML(sedmlImportLogger, externalDocInfo, sedml, exactMatchOnly);
-        } catch (Exception e) {
-            logger.error("Unable to Parse SED-ML into Bio-Model, failed with err: " + e.getMessage(), e);
-            throw e;
-        }
-        if(bioModelList != null) {
-        	countBioModels = bioModelList.size();
-        }
-        
-        // ===================  Refactoring  =====================================================
-        
-        // make some maps
-        Map<Simulation, AbstractTask> simulationToTaskMap = new LinkedHashMap<> ();	// key = vcell simulation, value = sedml task (task reference)
-        Map<AbstractTask, Simulation> taskToSimulationMap = new LinkedHashMap<> ();	// the opposite
-        Map<AbstractTask, List<AbstractTask>> taskToListOfSubtasksMap = new LinkedHashMap<> ();	// key = topmost task, value = recursive list of subtasks
-        Map<AbstractTask, List<Variable>> taskToVariableMap = new LinkedHashMap<> ();		// key = task, 
-        
+    public void initialize(List<BioModel> bioModelList, SedML sedml) throws ExpressionException {
         for(BioModel bioModel : bioModelList) {
-        	sims = bioModel.getSimulations();
+        	Simulation[] sims = bioModel.getSimulations();
         	for(Simulation sim : sims) {
                	if(sim.getImportedTaskID() == null) {
             		continue;
@@ -223,19 +197,37 @@ public class SolverHandler {
 				}
 				taskToChangeTargetMap.put(rt, targetIdSet);
 			}
-//			MathOverrides mathOverrides = sim.getMathOverrides();
-//			Expression exp = mathOverrides.getActualExpression("Kf_r0", 0);
-//			System.out.println(exp.infix());
-
         }
-        
-        
-
         System.out.println("taskToSimulationMap: " + taskToSimulationMap.size());
         System.out.println("taskToListOfSubtasksMap: " + taskToListOfSubtasksMap.size());
         System.out.println("taskToVariableMap: " + taskToVariableMap.size());
+    }
+
+    public HashMap<String, ODESolverResultSet> simulateAllTasks(ExternalDocInfo externalDocInfo, SedML sedml, 
+    		CLILogFileManager logManager, File outputDirForSedml, String outDir, String outputBaseDir, 
+    		String sedmlLocation, boolean keepTempFiles, boolean exactMatchOnly) throws Exception {
+        // create the VCDocument(s) (bioModel(s) + application(s) + simulation(s)), do sanity checks
+        cbit.util.xml.VCLogger sedmlImportLogger = new LocalLogger();
+        String inputFile = externalDocInfo.getFile().getAbsolutePath();
+        String bioModelBaseName = org.vcell.util.FileUtils.getBaseName(inputFile);
         
-        // ---------------------------------------------------------------------------------------
+        List<BioModel> bioModelList = null;
+        // Key String is SEDML Task ID
+        HashMap<String, ODESolverResultSet> resultsHash = new LinkedHashMap<String, ODESolverResultSet>();
+        String docName = null;
+        Simulation[] sims = null;
+        //String outDirRoot = outputDirForSedml.toString().substring(0, outputDirForSedml.toString().lastIndexOf(System.getProperty("file.separator")));
+        try {
+            bioModelList = XmlHelper.importSEDML(sedmlImportLogger, externalDocInfo, sedml, exactMatchOnly);
+        } catch (Exception e) {
+            logger.error("Unable to Parse SED-ML into Bio-Model, failed with err: " + e.getMessage(), e);
+            throw e;
+        }
+        if(bioModelList != null) {
+        	countBioModels = bioModelList.size();
+        }
+        
+        initialize(bioModelList, sedml);
         
         int simulationJobCount = 0;
         int bioModelCount = 0;
@@ -257,7 +249,21 @@ public class SolverHandler {
 				if(sim.getImportedTaskID() == null) {
 					continue;	// this is a simulation not matching the imported task, so we skip it
 				}
+				
+				AbstractTask task = simulationToTaskMap.get(sim);
+				assert task != null;
+				if(!taskToVariableMap.containsKey(task)) {
+					continue;		// the results of this task are not used in any output, we don't need to run it
+				}
+				
 				int scanCount = sim.getScanCount();
+				String[] targets = sim.getMathOverrides().getScannedConstantNames();
+				java.util.Arrays.sort(targets);
+				int[] bounds = new int[targets.length]; // bounds of scanning matrix
+				for (int i=0; i < targets.length; i++) {
+					bounds[i] = sim.getMathOverrides().getConstantArraySpec(targets[i]).getNumValues() - 1;
+				}
+				int[] coordinates = BeanUtils.indexToCoordinate(scanCount, bounds);
 				for(int i=0; i < scanCount; i++) {
 					SimulationJob simJob = new SimulationJob(sim, i, null);
 					simJobsList.add(simJob);
