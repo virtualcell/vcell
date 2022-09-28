@@ -332,25 +332,33 @@ public enum SolverDescription {
 	public final String kisao;
 	public final boolean deprecated;
 
-	private SolverDescription(TimeStep ts, ErrorTol et,TimeSpecCreated tst,
+	private SolverDescription(
+			TimeStep ts, 
+			ErrorTol et,
+			TimeSpecCreated tst,
 			String shortDisplayLabel,
-			String displayLabel, String databaseName,
-			String fullDescription, int timeOrder, SupportedTimeSpec sts,
+			String displayLabel, 
+			String databaseName,
+			String fullDescription, 
+			int timeOrder, 
+			SupportedTimeSpec sts,
 			SolverFeature[] fset,
-			SolverExecutable se, String kisao, boolean deprecated) {
+			SolverExecutable se, 
+			String kisao, 
+			boolean deprecated) {
 
-		variableTimeStep = (ts == TimeStep.VARIABLE);
-		errorTolerance = ( et == ErrorTol.YES);
-		timeSpecType = tst;
+		this.variableTimeStep = (ts == TimeStep.VARIABLE);
+		this.errorTolerance = ( et == ErrorTol.YES);
+		this.timeSpecType = tst;
 		this.shortDisplayLabel = shortDisplayLabel;
 		this.displayLabel = displayLabel;
 		this.databaseName = databaseName;
 		this.fullDescription = subFullDescription(fullDescription,displayLabel);
 		this.fullDescriptionUrl = null;
 		this.timeOrder = timeOrder;
-		supportedTimeSpec = sts;
+		this.supportedTimeSpec = sts;
 		this.supportedFeatures = new HashSet<SolverFeature>(Arrays.asList(fset));
-		solverExecutable = se;
+		this.solverExecutable = se;
 		this.kisao = kisao;
 		this.deprecated = deprecated;
 	}
