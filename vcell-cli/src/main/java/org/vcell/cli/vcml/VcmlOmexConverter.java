@@ -759,9 +759,14 @@ public class VcmlOmexConverter {
 			}
 			writeFileEntry(outputDirectory.getAbsolutePath(), inputFile.getName()+",SUCCEEDED,"+i , jobLogFile, bForceLogFiles);			
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			writeFileEntry(outputDirectory.getAbsolutePath(), inputFile.getName()+",FAILED,"+e.getCause(), jobLogFile, bForceLogFiles);			
+			String loggedString = inputFile.getName()+",FAILED,";
+			if (e.getCause() !=null) {
+				loggedString += e.getCause();
+			} else {
+				loggedString += e;
+			}
+			logger.error(loggedString, e);
+			writeFileEntry(outputDirectory.getAbsolutePath(), loggedString, jobLogFile, bForceLogFiles);			
 		}
 	}
 }
