@@ -12,9 +12,13 @@ package cbit.vcell.model;
 
 import java.beans.PropertyVetoException;
 import java.io.IOException;
+import java.util.Vector;
 
+import cbit.vcell.model.Kinetics.KineticsParameter;
 import cbit.vcell.model.MassActionSolver.MassActionFunction;
 import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionBindingException;
+import cbit.vcell.parser.ExpressionException;
 
 public class TransformMassActions {
 	private TransformedReaction[] transReactionSteps = null;
@@ -65,6 +69,75 @@ public class TransformMassActions {
 			this.transformRemark = transformRemark;
 		}
 	}// end of static class TransformedReaction
+
+	public static void applyTransformAll(Model model) throws Exception
+	{
+		TransformMassActions instance = new TransformMassActions();
+		ReactionStep[] origReactions = model.getReactionSteps();
+		instance.transformReactions(origReactions);
+		//isTransformable and TransformedREactions are stored according to the indexes in model reaction steps.
+		boolean[] isTransformable = instance.getIsTransformable();
+		TransformMassActions.TransformedReaction[] trs = instance.getTransformedReactionSteps();
+		//set transformed Mass Action kinetics to model reactions
+		for(int i=0; i< origReactions.length; i++)
+		{
+			if(isTransformable[i])
+			{
+				transformKinetics(origReactions, trs, i);
+			}
+		}
+	}
+
+	public static void transformKinetics(ReactionStep[] origReactions, TransformMassActions.TransformedReaction[] trs,
+			int i) throws ExpressionException, PropertyVetoException, ExpressionBindingException {
+		// for simple reaction, we replace the original kinetics with MassActionKinetics if it wasn't MassActionKinetics
+		if(origReactions[i] instanceof SimpleReaction) 
+		{
+			if(!(origReactions[i].getKinetics() instanceof MassActionKinetics))
+			{
+				//***Below we will physically change the simple reaction*** 
+				
+				//put all kinetic parameters together into array newKps
+				Vector<Kinetics.KineticsParameter> newKps = new Vector<Kinetics.KineticsParameter>();
+				
+				//get original kinetic parameters which are not current density and reaction rate.
+				//those parameters are basically the symbols in rate expression.
+				Vector<Kinetics.KineticsParameter> origKps = new Vector<Kinetics.KineticsParameter>();
+				Kinetics.KineticsParameter[] Kps = origReactions[i].getKinetics().getKineticsParameters();
+				for (int j = 0; j < Kps.length; j++) {
+					if (!(Kps[j].getRole() == Kinetics.ROLE_CurrentDensity || Kps[j].getRole() == Kinetics.ROLE_ReactionRate))
+					{
+						origKps.add(Kps[j]);
+					}
+				}
+				
+				// create mass action kinetics for the original reaction step
+				MassActionKinetics maKinetics = new MassActionKinetics(origReactions[i]);
+				maKinetics.getKineticsParameterFromRole(Kinetics.ROLE_KForward).setExpression(trs[i].getMassActionFunction().getForwardRate());
+				maKinetics.getKineticsParameterFromRole(Kinetics.ROLE_KReverse).setExpression(trs[i].getMassActionFunction().getReverseRate());
+				
+				// copy rate, currentdensity, Kf and Kr to the new Kinetic
+				// Parameter list first(to make sure that paramters are in
+				// the correct order in the newly created Mass Action
+				// Kinetics)
+				for (int j = 0; j < maKinetics.getKineticsParameters().length; j++) {
+					newKps.add(maKinetics.getKineticsParameters(j));
+				}
+				// copy other kinetic parameters from original kinetics
+				for (int j = 0; j < origKps.size(); j++) {
+					newKps.add(origKps.elementAt(j));
+				}
+				// add parameters to mass action kinetics
+				KineticsParameter[] newParameters = new KineticsParameter[newKps.size()];
+				newParameters = (KineticsParameter[]) newKps.toArray(newParameters);
+				maKinetics.addKineticsParameters(newParameters);
+										
+				//after adding all the parameters, we bind the forward/reverse rate expression with symbol table (the reaction step itself)
+				origReactions[i].getKinetics().getKineticsParameterFromRole(Kinetics.ROLE_KForward).getExpression().bindExpression(origReactions[i]);
+				origReactions[i].getKinetics().getKineticsParameterFromRole(Kinetics.ROLE_KReverse).getExpression().bindExpression(origReactions[i]);
+			}
+		}
+	}
 
 	public TransformMassActions() {
 	}
