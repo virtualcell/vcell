@@ -285,6 +285,8 @@ public class SolverHandler {
             docName = bioModel.getName();
             sims = bioModel.getSimulations();
             
+            Map <Simulation, Status> simStatusMap = new LinkedHashMap<> ();
+            Map <Simulation, Integer> simDurationMap = new LinkedHashMap<> ();
 			List<SimulationJob> simJobsList = new ArrayList<>();
 			for (Simulation sim : sims) {
 				if(sim.getImportedTaskID() == null) {
@@ -297,14 +299,17 @@ public class SolverHandler {
 					continue;		// the results of this task are not used in any output, we don't need to run it
 				}
 				
+				simStatusMap.put(sim, Status.RUNNING);
+				simDurationMap.put(sim, 0);
+
 				int scanCount = sim.getScanCount();
-				String[] targets = sim.getMathOverrides().getScannedConstantNames();
-				java.util.Arrays.sort(targets);
-				int[] bounds = new int[targets.length]; // bounds of scanning matrix
-				for (int i=0; i < targets.length; i++) {
-					bounds[i] = sim.getMathOverrides().getConstantArraySpec(targets[i]).getNumValues() - 1;
-				}
-				int[] coordinates = BeanUtils.indexToCoordinate(scanCount, bounds);
+//				String[] targets = sim.getMathOverrides().getScannedConstantNames();
+//				java.util.Arrays.sort(targets);
+//				int[] bounds = new int[targets.length]; // bounds of scanning matrix
+//				for (int i=0; i < targets.length; i++) {
+//					bounds[i] = sim.getMathOverrides().getConstantArraySpec(targets[i]).getNumValues() - 1;
+//				}
+//				int[] coordinates = BeanUtils.indexToCoordinate(scanCount, bounds);
 				for(int i=0; i < scanCount; i++) {
 					SimulationJob simJob = new SimulationJob(sim, i, null);
 					simJobsList.add(simJob);
@@ -393,12 +398,18 @@ public class SolverHandler {
 
                         long endTimeTask = System.currentTimeMillis();
                 		long elapsedTime = endTimeTask - startTimeTask;
-                		int duration = (int)Math.ceil(elapsedTime /1000.0);
-
+                		int duration = (int)Math.ceil(elapsedTime /1000.0);		// sim job duration
+                		Simulation originalSim = simJob.getSimulation();
+                		int simDuration = simDurationMap.get(originalSim);
+                		simDuration += duration;
+                		simDurationMap.put(originalSim, simDuration);
                 		String msg = "Running simulation " + simTask.getSimulation().getName() + ", " + elapsedTime + " ms";
                 		logger.info(msg);
                 		countSuccessfulSimulationRuns++;	// we only count the number of simulations (tasks) that succeeded
-                		PythonCalls.updateTaskStatusYml(sedmlLocation, sim.getImportedTaskID(), Status.SUCCEEDED, outDir ,duration + "", kisao);
+//                		PythonCalls.updateTaskStatusYml(sedmlLocation, sim.getImportedTaskID(), Status.SUCCEEDED, outDir ,duration + "", kisao);
+                		if(simStatusMap.get(originalSim) != Status.ABORTED && simStatusMap.get(originalSim) != Status.FAILED) {
+                			simStatusMap.put(originalSim, Status.SUCCEEDED);
+                		}
                 		PythonCalls.setOutputMessage(sedmlLocation, sim.getImportedTaskID(), outDir, "task", logTaskMessage);
                         RunUtils.drawBreakLine("-", 100);
                     } else {
@@ -424,10 +435,13 @@ public class SolverHandler {
             			logger.error(str);
             			logTaskError += str;
             		} else {
-            			if(solverStatus == SolverStatus.SOLVER_ABORTED) {
-            				PythonCalls.updateTaskStatusYml(sedmlLocation, sim.getImportedTaskID(), Status.ABORTED, outDir ,duration + "", kisao);
+                		Simulation originalSim = simJob.getSimulation();
+                		if(solverStatus == SolverStatus.SOLVER_ABORTED) {
+//            				PythonCalls.updateTaskStatusYml(sedmlLocation, sim.getImportedTaskID(), Status.ABORTED, outDir ,duration + "", kisao);
+            				simStatusMap.put(originalSim, Status.ABORTED);
             			} else {
-            				PythonCalls.updateTaskStatusYml(sedmlLocation, sim.getImportedTaskID(), Status.FAILED, outDir ,duration + "", kisao);
+//            				PythonCalls.updateTaskStatusYml(sedmlLocation, sim.getImportedTaskID(), Status.FAILED, outDir ,duration + "", kisao);
+            				simStatusMap.put(originalSim, Status.FAILED);
             			}
             		}
 //                    CLIUtils.finalStatusUpdate(CLIUtils.Status.FAILED, outDir);
@@ -469,7 +483,32 @@ public class SolverHandler {
                 }
                 simulationJobCount++;
             }
-			// TODO: here manage task / repeated tasks 
+			// manage task / repeated tasks
+//			Map<Simulation, Status> simStatusMap 
+//			for(Map.Entry<SimulationJob, Status> entry : simJobsStatusMap.entrySet()) {
+//
+//			}
+			for(Map.Entry<Simulation, Status> entry : simStatusMap.entrySet()) {
+				
+				Simulation sim = entry.getKey();
+	        	Status status = entry.getValue();
+	        	if(status == Status.RUNNING) {
+	        		continue;	// if this happens somehow, we just don't write anything
+	        	}
+	        	AbstractTask task = simulationToTaskMap.get(sim);
+	        	assert task != null;
+	        	assert task instanceof Task;
+	        	int duration = simDurationMap.get(sim);
+            	SolverTaskDescription std = sim.getSolverTaskDescription();
+            	SolverDescription sd = std.getSolverDescription();
+            	String kisao = sd.getKisao();
+        		PythonCalls.updateTaskStatusYml(sedmlLocation, task.getId(), status, outDir ,duration + "", kisao);
+
+        		List<AbstractTask> children = taskToListOfSubtasksMap.get(task);
+	        	for(AbstractTask at : children) {
+	        		PythonCalls.updateTaskStatusYml(sedmlLocation, at.getId(), status, outDir ,duration + "", kisao);
+	        	}
+			}
             bioModelCount++;
         }
         logger.info("Ran " + simulationJobCount + " simulation jobs for " + bioModelCount + " biomodels.");
