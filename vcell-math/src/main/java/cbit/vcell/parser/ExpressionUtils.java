@@ -404,6 +404,7 @@ public static boolean functionallyEquivalent(Expression exp1, Expression exp2) {
  * @param exp2 cbit.vcell.parser.Expression non null
  */
 public static boolean functionallyEquivalent(Expression exp1, Expression exp2, boolean bVerifySameSymbols) {
+	if (exp1.isZero() || exp2.isZero()) return (exp1.isZero() && exp2.isZero()); // no tolerance for zero
 	double defaultAbsoluteTolerance = 1e-12;
 	double defaultRelativeTolerance = 1e-10;
 	boolean bFirstAnswer = functionallyEquivalent(exp1,exp2,bVerifySameSymbols,defaultRelativeTolerance,defaultAbsoluteTolerance);
