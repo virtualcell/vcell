@@ -22,7 +22,7 @@ public class ModelUnitConverter {
 	private final static Logger logger = LogManager.getLogger(ModelUnitConverter.class);
 
 	public static ModelUnitSystem createSbmlModelUnitSystem() {
-		final String substanceUnit = "nmol";
+		final String substanceUnit = "umol";
 		String volumeSubstanceSymbol = substanceUnit;
 		String membraneSubstanceSymbol = substanceUnit;
 		String lumpedReactionSubstanceSymbol = substanceUnit;
