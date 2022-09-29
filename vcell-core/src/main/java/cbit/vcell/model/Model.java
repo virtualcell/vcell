@@ -38,17 +38,10 @@ import org.vcell.model.rbm.MolecularTypePattern;
 import org.vcell.model.rbm.SpeciesPattern;
 //import org.vcell.model.rbm.RbmParameter;
 import org.vcell.sybil.models.miriam.MIRIAMQualifier;
-import org.vcell.util.BeanUtils;
-import org.vcell.util.Compare;
-import org.vcell.util.Displayable;
-import org.vcell.util.Issue;
+import org.vcell.util.*;
 import org.vcell.util.Issue.IssueCategory;
 import org.vcell.util.Issue.IssueSource;
-import org.vcell.util.IssueContext;
 import org.vcell.util.IssueContext.ContextType;
-import org.vcell.util.Matchable;
-import org.vcell.util.Pair;
-import org.vcell.util.TokenMangler;
 import org.vcell.util.document.Identifiable;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.PropertyConstants;
@@ -74,7 +67,7 @@ import cbit.vcell.parser.VCUnitEvaluator;
 import cbit.vcell.units.VCUnitDefinition;
 import cbit.vcell.units.VCUnitException;
 @SuppressWarnings("serial")
-public class Model implements Versionable, Matchable, PropertyChangeListener, VetoableChangeListener, Serializable, ScopedSymbolTable, IssueSource {
+public class Model implements Versionable, Matchable, Relatable, PropertyChangeListener, VetoableChangeListener, Serializable, ScopedSymbolTable, IssueSource {
 	
 	public static interface Owner {
 		public Model getModel();
@@ -903,6 +896,28 @@ public class Model implements Versionable, Matchable, PropertyChangeListener, Ve
 				return false;
 			}
 			if (!Compare.isEqualOrNull(getSbmlName(),mp.getSbmlName())) {
+				return false;
+			}
+			return true;
+		}
+
+
+		@Override
+		public boolean relate(Relatable obj, RelationVisitor rv) {
+			if (!(obj instanceof ModelParameter)){
+				return false;
+			}
+			ModelParameter mp = (ModelParameter)obj;
+			if (!super.relate0(mp, rv)){
+				return false;
+			}
+			if (fieldParameterRole != mp.fieldParameterRole){
+				return false;
+			}
+			if (!rv.relateOrNull(getSbmlId(),mp.getSbmlId())) {
+				return false;
+			}
+			if (!rv.relateOrNull(getSbmlName(),mp.getSbmlName())) {
 				return false;
 			}
 			return true;
@@ -2122,62 +2137,113 @@ public void clearVersion() {
 }
 
 
-/**
- * This method was created in VisualAge.
- * @return boolean
- * @param object java.lang.Object
- */
-public boolean compareEqual(Matchable object) {
-	Model model = null;
-	if (object == null){
-		return false;
-	}
-	if (!(object instanceof Model)){
-		return false;
-	}else{
-		model = (Model)object;
-	}
-	
-	if (!Compare.isEqual(getName(), model.getName())) {
-		return false;
-	}
-	if (!Compare.isEqual(getDescription(), model.getDescription())) {
-		return false;
+	@Override
+	public boolean compareEqual(Matchable object) {
+		Model model = null;
+		if (object == null){
+			return false;
+		}
+		if (!(object instanceof Model)){
+			return false;
+		}else{
+			model = (Model)object;
+		}
+
+		if (!Compare.isEqual(getName(), model.getName())) {
+			return false;
+		}
+		if (!Compare.isEqual(getDescription(), model.getDescription())) {
+			return false;
+		}
+
+		if (!Compare.isEqual(fieldSpeciesContexts, model.fieldSpeciesContexts)){
+			return false;
+		}
+		if (!Compare.isEqual(fieldSpecies, model.fieldSpecies)){
+			return false;
+		}
+		if (!Compare.isEqual(fieldStructures, model.fieldStructures)){
+			return false;
+		}
+		if (!Compare.isEqual(fieldReactionSteps, model.fieldReactionSteps)){
+			return false;
+		}
+		if (!Compare.isEqualStrict(fieldDiagrams, model.fieldDiagrams)){
+			return false;
+		}
+		if (!Compare.isEqual(fieldModelParameters, model.fieldModelParameters)){
+			return false;
+		}
+		if (!Compare.isEqual(unitSystem, model.unitSystem)){
+			return false;
+		}
+		if (!Compare.isEqual(structureTopology, model.structureTopology)){
+			return false;
+		}
+		if (!Compare.isEqual(electricalTopology, model.electricalTopology)){
+			return false;
+		}
+		if (!Compare.isEqual(rbmModelContainer, model.rbmModelContainer)){
+			return false;
+		}
+
+		return true;
 	}
 
-	if (!Compare.isEqual(fieldSpeciesContexts, model.fieldSpeciesContexts)){
-		return false;
+
+
+	@Override
+	public boolean relate(Relatable object, RelationVisitor rv) {
+		Model model = null;
+		if (object == null){
+			return false;
+		}
+		if (!(object instanceof Model)){
+			return false;
+		}else{
+			model = (Model)object;
+		}
+
+		if (!rv.relate(getName(), model.getName())) {
+			return false;
+		}
+		if (!rv.relate(getDescription(), model.getDescription())) {
+			return false;
+		}
+
+		if (!rv.relate(fieldSpeciesContexts, model.fieldSpeciesContexts)){
+			return false;
+		}
+		if (!rv.relate(fieldSpecies, model.fieldSpecies)){
+			return false;
+		}
+		if (!rv.relate(fieldStructures, model.fieldStructures)){
+			return false;
+		}
+		if (!rv.relate(fieldReactionSteps, model.fieldReactionSteps)){
+			return false;
+		}
+		if (!rv.relateStrict(fieldDiagrams, model.fieldDiagrams)){
+			return false;
+		}
+		if (!rv.relate(fieldModelParameters, model.fieldModelParameters)){
+			return false;
+		}
+		if (!rv.relate(unitSystem, model.unitSystem)){
+			return false;
+		}
+		if (!rv.relate(structureTopology, model.structureTopology)){
+			return false;
+		}
+		if (!rv.relate(electricalTopology, model.electricalTopology)){
+			return false;
+		}
+		if (!rv.relate(rbmModelContainer, model.rbmModelContainer)){
+			return false;
+		}
+
+		return true;
 	}
-	if (!Compare.isEqual(fieldSpecies, model.fieldSpecies)){
-		return false;
-	}
-	if (!Compare.isEqual(fieldStructures, model.fieldStructures)){
-		return false;
-	}
-	if (!Compare.isEqual(fieldReactionSteps, model.fieldReactionSteps)){
-		return false;
-	}
-	if (!Compare.isEqualStrict(fieldDiagrams, model.fieldDiagrams)){
-		return false;
-	}
-	if (!Compare.isEqual(fieldModelParameters, model.fieldModelParameters)){
-		return false;
-	}
-	if (!Compare.isEqual(unitSystem, model.unitSystem)){
-		return false;
-	}
-	if (!Compare.isEqual(structureTopology, model.structureTopology)){
-		return false;
-	}
-	if (!Compare.isEqual(electricalTopology, model.electricalTopology)){
-		return false;
-	}
-	if (!Compare.isEqual(rbmModelContainer, model.rbmModelContainer)){
-		return false;
-	}
-	
-	return true;
-}
 
 
 public boolean contains(Diagram diagram) {

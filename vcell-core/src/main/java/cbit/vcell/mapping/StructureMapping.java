@@ -16,15 +16,9 @@ import java.util.Map;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.vcell.util.Compare;
-import org.vcell.util.Issue;
+import org.vcell.util.*;
 import org.vcell.util.Issue.IssueCategory;
 import org.vcell.util.Issue.IssueSource;
-import org.vcell.util.IssueContext;
-import org.vcell.util.Matchable;
-import org.vcell.util.Pair;
-import org.vcell.util.PropertyChangeListenerProxyVCell;
-import org.vcell.util.TokenMangler;
 
 import cbit.vcell.Historical;
 import cbit.vcell.geometry.CompartmentSubVolume;
@@ -122,6 +116,7 @@ public abstract class StructureMapping implements Matchable, ScopedSymbolTable, 
 			this(structureMappingParameter.getName(),structureMappingParameter.getExpression() == null ? null : new Expression(structureMappingParameter.getExpression()),structureMappingParameter.getRole(),structureMappingParameter.getUnitDefinition());			
 		}
 
+		@Override
 		public boolean compareEqual(Matchable obj) {
 			if (!(obj instanceof StructureMappingParameter)){
 				return false;
@@ -133,7 +128,23 @@ public abstract class StructureMapping implements Matchable, ScopedSymbolTable, 
 			if (fieldParameterRole != smp.fieldParameterRole){
 				return false;
 			}
-			
+
+			return true;
+		}
+
+		@Override
+		public boolean relate(Relatable obj, RelationVisitor rv) {
+			if (!(obj instanceof StructureMappingParameter)){
+				return false;
+			}
+			StructureMappingParameter smp = (StructureMappingParameter)obj;
+			if (!super.relate0(smp, rv)){
+				return false;
+			}
+			if (fieldParameterRole != smp.fieldParameterRole){
+				return false;
+			}
+
 			return true;
 		}
 

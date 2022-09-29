@@ -10,6 +10,8 @@
 
 package cbit.vcell.model;
 import org.vcell.util.Matchable;
+import org.vcell.util.Relatable;
+import org.vcell.util.RelationVisitor;
 import org.vcell.util.document.KeyValue;
 
 
@@ -27,25 +29,30 @@ Product(KeyValue key, ReactionStep reactionStep) {
 public Product(KeyValue key, ReactionStep parent,SpeciesContext speciesContext, int stoichiometry) 
 {
 	super(key,parent,speciesContext, stoichiometry);
-}   
-
-
-/**
- * This method was created in VisualAge.
- * @return boolean
- * @param obj java.lang.Object
- */
-public boolean compareEqual(Matchable obj) {
-	if (obj instanceof Product){
-		Product p = (Product)obj;
-		return compareEqual0(p);
-	}else{
-		return false;
-	}
 }
 
 
-/**
+	public boolean compareEqual(Matchable obj) {
+		if (obj instanceof Product){
+			Product p = (Product)obj;
+			return compareEqual0(p);
+		}else{
+			return false;
+		}
+	}
+
+	@Override
+	public boolean relate(Relatable obj, RelationVisitor rv) {
+		if (obj instanceof Product){
+			Product p = (Product)obj;
+			return relate0(p, rv);
+		}else{
+			return false;
+		}
+	}
+
+
+	/**
  * This method was created by a SmartGuide.
  * @param tokens java.util.StringTokenizer
  * @exception java.lang.Exception The exception description.

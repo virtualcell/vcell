@@ -25,21 +25,11 @@ import cbit.vcell.math.*;
 import cbit.vcell.solver.*;
 import org.vcell.model.rbm.NetworkConstraints;
 import org.vcell.sbml.vcell.StructureSizeSolver;
-import org.vcell.util.BeanUtils;
-import org.vcell.util.Compare;
-import org.vcell.util.Displayable;
-import org.vcell.util.Extent;
-import org.vcell.util.Issue;
+import org.vcell.util.*;
 import org.vcell.util.Issue.IssueCategory;
 import org.vcell.util.Issue.IssueSource;
 import org.vcell.util.Issue.Severity;
-import org.vcell.util.IssueContext;
 import org.vcell.util.IssueContext.ContextType;
-import org.vcell.util.Matchable;
-import org.vcell.util.Preference;
-import org.vcell.util.PropertyChangeListenerProxyVCell;
-import org.vcell.util.TokenMangler;
-import org.vcell.util.VCAssert;
 import org.vcell.util.document.BioModelChildSummary.MathType;
 import org.vcell.util.document.DocumentValidUtil;
 import org.vcell.util.document.ExternalDataIdentifier;
@@ -426,23 +416,39 @@ public class SimulationContext implements SimulationOwner, Versionable, Matchabl
 		}
 
 
-		public boolean compareEqual(Matchable obj) {
-			if (!(obj instanceof SimulationContextParameter)){
-				return false;
+			@Override public boolean compareEqual(Matchable obj) {
+				if (!(obj instanceof SimulationContextParameter)){
+					return false;
+				}
+				SimulationContextParameter mp = (SimulationContextParameter)obj;
+				if (!super.compareEqual0(mp)){
+					return false;
+				}
+				if (fieldParameterRole != mp.fieldParameterRole){
+					return false;
+				}
+
+				return true;
 			}
-			SimulationContextParameter mp = (SimulationContextParameter)obj;
-			if (!super.compareEqual0(mp)){
-				return false;
-			}
-			if (fieldParameterRole != mp.fieldParameterRole){
-				return false;
-			}
-			
-			return true;
-		}
 
 
-		public boolean isExpressionEditable(){
+			@Override public boolean relate(Relatable obj, RelationVisitor rv) {
+				if (!(obj instanceof SimulationContextParameter)){
+					return false;
+				}
+				SimulationContextParameter mp = (SimulationContextParameter)obj;
+				if (!super.relate0(mp, rv)){
+					return false;
+				}
+				if (fieldParameterRole != mp.fieldParameterRole){
+					return false;
+				}
+
+				return true;
+			}
+
+
+			public boolean isExpressionEditable(){
 			return true;
 		}
 

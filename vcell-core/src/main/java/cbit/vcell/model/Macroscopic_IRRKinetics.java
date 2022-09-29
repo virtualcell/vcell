@@ -17,6 +17,8 @@ import org.vcell.util.Matchable;
 import cbit.vcell.model.Model.ReservedSymbol;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
+import org.vcell.util.Relatable;
+import org.vcell.util.RelationVisitor;
 
 public class Macroscopic_IRRKinetics extends DistributedKinetics {
 
@@ -48,12 +50,7 @@ public class Macroscopic_IRRKinetics extends DistributedKinetics {
 			throw new RuntimeException("unexpected exception: "+e.getMessage());
 		}
 	}
-	
-	/**
-	 * Checks for internal representation of objects, not keys from database
-	 * @return boolean
-	 * @param obj java.lang.Object
-	 */
+
 	public boolean compareEqual(Matchable obj) {
 		if (obj == this){
 			return true;
@@ -61,13 +58,31 @@ public class Macroscopic_IRRKinetics extends DistributedKinetics {
 		if (!(obj instanceof Macroscopic_IRRKinetics)){
 			return false;
 		}
-		
+
 		Macroscopic_IRRKinetics mac_irr = (Macroscopic_IRRKinetics)obj;
 
 		if (!compareEqual0(mac_irr)){
 			return false;
 		}
-		
+
+		return true;
+	}
+
+	@Override
+	public boolean relate(Relatable obj, RelationVisitor rv) {
+		if (obj == this){
+			return true;
+		}
+		if (!(obj instanceof Macroscopic_IRRKinetics)){
+			return false;
+		}
+
+		Macroscopic_IRRKinetics mac_irr = (Macroscopic_IRRKinetics)obj;
+
+		if (!relate0(mac_irr, rv)){
+			return false;
+		}
+
 		return true;
 	}
 

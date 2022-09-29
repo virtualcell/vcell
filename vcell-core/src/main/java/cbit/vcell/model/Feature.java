@@ -12,11 +12,13 @@ package cbit.vcell.model;
 import java.beans.PropertyVetoException;
 
 import org.vcell.util.Matchable;
+import org.vcell.util.Relatable;
+import org.vcell.util.RelationVisitor;
 import org.vcell.util.document.KeyValue;
 
 
-public class Feature extends Structure
-{
+public class Feature extends Structure {
+
 public Feature(KeyValue key, String name) throws java.beans.PropertyVetoException {
 	super(key);
 	setName0(name);
@@ -29,23 +31,35 @@ public Feature(String name) throws java.beans.PropertyVetoException {
 }
 
 
-/**
- * This method was created in VisualAge.
- * @return boolean
- * @param obj java.lang.Object
- */
-public boolean compareEqual(Matchable obj) {
-	Feature f = null;
-	if (!(obj instanceof Feature)){
-		return false;
-	}
-	f = (Feature)obj;
+	@Override
+	public boolean compareEqual(Matchable obj) {
+		Feature f = null;
+		if (!(obj instanceof Feature)){
+			return false;
+		}
+		f = (Feature)obj;
 
-	if (!compareEqual0(f)){
-		return false;
+		if (!compareEqual0(f)){
+			return false;
+		}
+		return true;
 	}
-	return true;
-}
+
+
+
+	@Override
+	public boolean relate(Relatable obj, RelationVisitor rv) {
+		Feature f = null;
+		if (!(obj instanceof Feature)){
+			return false;
+		}
+		f = (Feature)obj;
+
+		if (!relate0(f, rv)){
+			return false;
+		}
+		return true;
+	}
 
 
 /**
