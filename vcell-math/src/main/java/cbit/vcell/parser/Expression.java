@@ -157,9 +157,6 @@ public boolean compareEqual(Matchable obj) {
 	Expression exp = (Expression)obj;
 	boolean b = ExpressionUtils.functionallyEquivalent(this, exp);
 	//	boolean b = getNormalizedInfixString().equals(exp.getNormalizedInfixString());
-	if (!b) {
-		System.out.println(">>>> comparing " + this + " with this " + exp + " >>>> " + b);
-	}
 	return b;
 }
 /**
