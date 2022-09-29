@@ -288,12 +288,6 @@ flattenCount++;////////////////////////
  * @throws ExpressionException
  */
 public Expression flattenSafe() throws ExpressionException {
-//	Expression flattened = new Expression(this);
-//	SymbolTable tempExpressionSymbolTable = this.createSymbolTableFromBinding();
-//	flattened.bindExpression(null);
-//	flattened = flattened.flatten();
-//	flattened.bindExpression(tempExpressionSymbolTable);
-//	return flattened;
 	flattenCount++;////////////////////////
 	return new Expression((SimpleNode)rootNode.flatten(false));
 }
@@ -314,13 +308,13 @@ public Expression flattenSafe() throws ExpressionException {
 			simplified.bindExpression(tempExpressionSymbolTable);
 			return simplified;
 		}catch (ExpressionException e){
-			logger.info("failed to simplify using JSCL, reverting to flatten(): "+e.getMessage());
+			logger.debug("failed to simplify using JSCL, reverting to flatten(): "+e.getMessage());
 			return flattenSafe();
 		}catch (jscl.math.Expression.ExpressionTimeoutException e){
 			if (bFailOnTimeout){
 				throw new jscl.math.Expression.ExpressionTimeoutException("simplifyJSCL() timeout for: "+infix(), e);
 			}else {
-				logger.info("timeout simplify using JSCL, reverting to flatten(): " + e.getMessage());
+				logger.debug("timeout simplify using JSCL, reverting to flatten(): " + e.getMessage());
 				return flattenSafe();
 			}
 		}
@@ -471,7 +465,7 @@ private String getNormalizedInfixString() {
 			Expression clonedExp = new Expression(this);
 			normalizedInfixString = clonedExp.flattenSafe().infix();
 		}catch(ExpressionException e){
-			e.printStackTrace(System.out);
+			logger.warn("failed to flatten '"+infix()+"' for normalizedInfixString: "+e.getMessage(), e);
 			normalizedInfixString = infix();
 		}
 	}
@@ -846,7 +840,6 @@ parseCount++;
 		if (!exp.endsWith(";")){
 			exp = exp + ";";
 		}
-		//System.out.println("expression: " + exp);
 		ExpressionParser parser;
 		parser = new ExpressionParser(new java.io.ByteArrayInputStream(exp.getBytes()));
 		rootNode = parser.Expression();
@@ -860,12 +853,10 @@ parseCount++;
 				rootNode.jjtSetParent(null);
 			}
 		}
-	} catch (ParseException e) {
-		e.printStackTrace();
-		throw new ParserException("Parse Error while parsing expression '" + expString + "'.\n " + e.getMessage());
-	} catch (TokenMgrError e) {
-		e.printStackTrace();
-		throw new ParserException("Parse Error while parsing expression '" + expString + "'.\n " + e.getMessage());
+	} catch (ParseException | TokenMgrError e) {
+		String msg = "Parse Error while parsing expression '" + expString + "': " + e.getMessage();
+		logger.error(msg, e);
+		throw new ParserException("Parse Error while parsing expression '" + expString + "': " + e.getMessage());
 	}
 }
 /**
