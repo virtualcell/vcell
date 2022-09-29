@@ -61,6 +61,7 @@ import org.vcell.sbml.vcell.SymbolContext;
 import org.vcell.util.FileUtils;
 
 import cbit.util.xml.VCLogger;
+import cbit.util.xml.VCLoggerException;
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.mapping.MappingException;
@@ -117,7 +118,7 @@ public class SEDMLImporter {
 	private boolean exactMatchOnly;
 	
 	private VCLogger transLogger;
-	private List<BioModel> docs;
+	private List<BioModel> uniqueBioModelsList;
 	private String bioModelBaseName;
 	private ArchiveComponents ac;
 	private ModelResolver resolver;
@@ -154,50 +155,50 @@ public class SEDMLImporter {
 		sbmlSupport = new SBMLSupport();
 	}
 
-	public  List<BioModel> getBioModels() throws Exception {
-		docs = new ArrayList<BioModel>();
+	public List<BioModel> getBioModels() throws Exception {
+		uniqueBioModelsList = new ArrayList<BioModel>();
+
+		List<org.jlibsedml.Model> modelList;
+		List<org.jlibsedml.Simulation> simulationList;
+		List<AbstractTask> abstractTaskList;
+		List<DataGenerator> dataGeneratorList;
+		List<Output> outputList;
+
+		Map<String, BioModel> bmMap; // Holds all entries for all SEDML Models where some may reference the same BioModel
+		Map<String, Simulation> vcSimulations = new HashMap<>(); // We will parse all tasks and create Simulations in BioModels
 		try {
 	        // iterate through all the elements and show them at the console
-	        List<org.jlibsedml.Model> mmm = sedml.getModels();
-	        if (mmm.isEmpty()) {
-	        	// nothing to import
-	        	return docs;
-	        }
-	        List<org.jlibsedml.Simulation> sss = sedml.getSimulations();
-	        List<AbstractTask> ttt = sedml.getTasks();
-	        List<DataGenerator> ddd = sedml.getDataGenerators();
-	        List<Output> ooo = sedml.getOutputs();
-	        printSEDMLSummary(mmm, sss, ttt, ddd, ooo);
+	        modelList = sedml.getModels();
+	        if (modelList.isEmpty()) return uniqueBioModelsList; // nothing to import
+	        simulationList = sedml.getSimulations();
+	        abstractTaskList = sedml.getTasks();
+	        dataGeneratorList = sedml.getDataGenerators();
+	        outputList = sedml.getOutputs();
 	        
-			// We don't know how many BioModels we'll end up with as some model changes may be translatable as simulations with overrides
-	        // The HashMap below has entries for all SEDML Models where some may reference the same BioModel
-	        // The docs field will have a List of all unique BioModels
-			HashMap<String, BioModel> bmMap = new HashMap<String, BioModel>();
-			createBioModels(mmm, bmMap);
- 	        
-			// We will parse all tasks and create Simulations in BioModels
-			// Creating one VCell Simulation for each SED-ML actual Task (RepeatedTasks get added as parameter scan overrides)
-	    	org.jlibsedml.Simulation sedmlSimulation = null;	// this will become the vCell simulation
-	    	org.jlibsedml.Model sedmlModel = null;		// the "original" model referred to by the task
-	    	String sedmlOriginalModelName = null;				// this will be used in the BioModel name
-	    	String sedmlOriginalModelLanguage = null;			// can be sbml or vcml
+			this.printSEDMLSummary(modelList, simulationList, abstractTaskList, dataGeneratorList, outputList);
+	        
+			// NB: We don't know how many BioModels we'll end up with as some model changes may be translatable as simulations with overrides
+			bmMap = this.createBioModels(modelList);
 			
-			HashMap<String, Simulation> vcSimulations = new HashMap<String, Simulation>();
-			for (AbstractTask selectedTask : ttt) {
+			// Creating one VCell Simulation for each SED-ML actual Task (RepeatedTasks get added as parameter scan overrides)
+			for (AbstractTask selectedTask : abstractTaskList) {
+				org.jlibsedml.Simulation sedmlSimulation = null;	// this will become the vCell simulation
+				org.jlibsedml.Model sedmlModel = null;				// the "original" model referred to by the task
+				String sedmlOriginalModelName = null;				// this will be used in the BioModel name
+				String sedmlOriginalModelLanguage = null;			// can be sbml or vcml
+
 				if(selectedTask instanceof Task) {
 					sedmlModel = sedml.getModelWithId(selectedTask.getModelReference());
 					sedmlSimulation = sedml.getSimulation(selectedTask.getSimulationReference());
 					sedmlOriginalModelLanguage = sedmlModel.getLanguage();
-				} else if(selectedTask instanceof RepeatedTask) {
-					// Repeated tasks refer to regular tasks
-					// We need simulations to be created for all regular tasks before we can process repeated tasks
-					continue;
+				} else if (selectedTask instanceof RepeatedTask) {
+					continue; // Repeated tasks refer to regular tasks, so first we need to create simulations for all regular tasks 
 				} else {
 					throw new RuntimeException("Unexpected task " + selectedTask);
 				}
-				// only UTC sims supported
-				if(!(sedmlSimulation instanceof UniformTimeCourse)) {
-					logger.error("task '" + selectedTask.getName() + "' is being skipped, it references an unsupported simulation type: "+sedmlSimulation);
+				
+				if(!(sedmlSimulation instanceof UniformTimeCourse)) { // only UTC sims supported
+					logger.error("task '" + selectedTask.getName() + "' is being skipped, it references an unsupported simulation type: " + sedmlSimulation);
 					continue;
 				}
 
@@ -329,9 +330,9 @@ public class SEDMLImporter {
 				
 			}
 			// now process repeated tasks, if any
-			addRepeatedTasks(ttt, vcSimulations);
+			this.addRepeatedTasks(abstractTaskList, vcSimulations);
 			// finally try to pretty up simulation names
-			for (BioModel bm : docs) {
+			for (BioModel bm : uniqueBioModelsList) {
 				Simulation[] sims = bm.getSimulations();
 				for (int i = 0; i < sims.length; i++) {
 					String taskId = sims[i].getImportedTaskID();
@@ -347,7 +348,7 @@ public class SEDMLImporter {
 				}
 			}
 			// purge unused biomodels and applications
-			Iterator<BioModel> docIter = docs.iterator();
+			Iterator<BioModel> docIter = uniqueBioModelsList.iterator();
 			while (docIter.hasNext()) {
 				BioModel doc = docIter.next();
 				for (int i = 0; i < doc.getSimulationContexts().length; i++) {
@@ -361,8 +362,8 @@ public class SEDMLImporter {
 			// finally try to consolidate SimContexts into fewer (posibly just one) BioModels
 			// unlikely to happen from SEDMLs not originating from VCell, but very useful for roundtripping if so
 			// TODO: maybe try to detect that and only try if of VCell origin
-			mergeBioModels(docs);
-			return docs;
+			mergeBioModels(uniqueBioModelsList);
+			return uniqueBioModelsList;
 		} catch (Exception e) {
 			throw new RuntimeException("Unable to initialize bioModel for the given selection\n"+e.getMessage(), e);
 		}
@@ -465,8 +466,8 @@ public class SEDMLImporter {
 			return;
 		}
 		// merge succeeded, replace the list
-		docs = new ArrayList<BioModel>();
-		docs.add(mergedBM);
+		uniqueBioModelsList = new ArrayList<BioModel>();
+		uniqueBioModelsList.add(mergedBM);
 		return;
 		// TODO more work here if we want to generalize
 	}
@@ -571,8 +572,7 @@ public class SEDMLImporter {
 		}
 	}
 
-	private void addRepeatedTasks(List<AbstractTask> ttt, HashMap<String, Simulation> vcSimulations)
-			throws ExpressionException {
+	private void addRepeatedTasks(List<AbstractTask> ttt, Map<String, Simulation> vcSimulations) throws ExpressionException {
 		for (AbstractTask selectedTask : ttt) {
 			if (selectedTask instanceof RepeatedTask) {
 				RepeatedTask rt = (RepeatedTask)selectedTask;
@@ -711,8 +711,9 @@ public class SEDMLImporter {
 		}
 	}
 
-	private void createBioModels(List<org.jlibsedml.Model> mmm, HashMap<String, BioModel> bmMap) throws Exception {
+	private Map<String, BioModel> createBioModels(List<org.jlibsedml.Model> mmm) throws RuntimeException {
 		// first go through models without changes which are unique and must be imported as new BioModel/SimContext
+		Map<String, BioModel> bmMap = new HashMap<>();
 		for(Model mm : mmm) {
 			if (mm.getListOfChanges().isEmpty()) {
 				String id = mm.getId();
@@ -752,6 +753,7 @@ public class SEDMLImporter {
 				}
 			}
 		}
+		return bmMap;
 	}
 
 	private boolean canTranslateToOverrides(BioModel refBM, Model mm) {
@@ -771,13 +773,13 @@ public class SEDMLImporter {
 		return true;
 	}
 
-	private BioModel importModel(Model mm) throws Exception {
+	private BioModel importModel(Model mm) {
 		BioModel bioModel = null;
 		String sedmlOriginalModelName = mm.getId();
 		String sedmlOriginalModelLanguage = mm.getLanguage();
 		String modelXML = resolver.getModelString(mm); // source with all the changes applied
 		if (modelXML == null) {
-			throw new Exception("Resolver could not find model: "+mm.getId());
+			throw new RuntimeException("Resolver could not find model: "+mm.getId());
 		}
 		String bioModelName = bioModelBaseName + "_" + sedml.getFileName() + "_" + sedmlOriginalModelName;
 		try {
@@ -790,7 +792,7 @@ public class SEDMLImporter {
 				} catch (Exception e) {
 					logger.error("failed to make BioPax objects", e);
 				}
-				docs.add(bioModel);
+				uniqueBioModelsList.add(bioModel);
 			} else {				// we assume it's sbml, if it's neither import will fail
 				InputStream sbmlSource = IOUtils.toInputStream(modelXML, Charset.defaultCharset());
 				boolean bValidateSBML = false;
@@ -799,12 +801,27 @@ public class SEDMLImporter {
 				bioModel.setName(bioModelName);
 				bioModel.getSimulationContext(0).setName(mm.getName());
 				bioModel.updateAll(false);
-				docs.add(bioModel);
+				uniqueBioModelsList.add(bioModel);
 				importMap.put(bioModel, sbmlImporter);
 			}
+		} catch (PropertyVetoException e){
+			String message = "PropertyVetoException occured: " + e.getMessage();
+			logger.error(message, e);
+			throw new RuntimeException(message, e);
+		} catch (XmlParseException e){
+			String message = "XmlParseException occured: " + e.getMessage();
+			logger.error(message, e);
+			throw new RuntimeException(message, e);
+		} catch (VCLoggerException e){
+			String message = "VCLoggerException occured: " + e.getMessage();
+			logger.error(message, e);
+			throw new RuntimeException(message, e);
+		} catch (MappingException e){
+			String message = "MappingException occured: " + e.getMessage();
+			logger.error(message, e);
+			throw new RuntimeException(message, e);
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			logger.error(e.getMessage());
+			logger.error("Unknown error occured:" + e.getMessage());
 			throw e;
 		}
 		return bioModel;

@@ -5,7 +5,12 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import cbit.util.kisao.KisaoOntology;
 import cbit.util.kisao.KisaoTerm;
@@ -19,6 +24,7 @@ import cbit.vcell.parser.FunctionInvocation;
 import cbit.vcell.resource.ResourceUtil;
 
 public class SolverUtilities {
+	private static final Logger logger = LogManager.getLogger(SolverUtilities.class);
 
 	public static Expression substituteSizeAndNormalFunctions(Expression origExp, VariableDomain variableDomain) throws ExpressionException {
 		Expression exp = new Expression(origExp);
@@ -126,9 +132,10 @@ public class SolverUtilities {
 		 if(!matchingSolverDescriptions.isEmpty()) {
 			 return matchingSolverDescriptions.get(0);		// exact match
 		 }
-		 if(exactMatchOnly) {
-			 return null;
-		 }
+		 
+		 // ----- We don't have a match; see if the user doesn't want us substituting, and if so return execution.
+		 if(SolverUtilities.needsExactMatch(exactMatchOnly)) return null;
+		 
 		 
 		 // ----- make descendant list and check them all until a match is found
 		 List<KisaoTerm> descendantList = KisaoOntology.makeDescendantList(originalKisaoTerm);
@@ -139,23 +146,26 @@ public class SolverUtilities {
 				 return null;		// for KISAO_0000000
 			 }
 		 }
+
 		 for(KisaoTerm descendant : descendantList) {
 			 matchingSolverDescriptions = matchByKisaoId(descendant);
 			 if(!matchingSolverDescriptions.isEmpty()) {
 				 return matchingSolverDescriptions.get(0);
 			 }
 		 }
+
 		 KisaoTerm last = descendantList.get(descendantList.size()-1);
-//		 System.out.println("No direct match with any descendant, trying last resort match for descendant " + last.getId());
+		 logger.info("No direct match with any descendant, trying last resort match for descendant " + last.getId());
 		 return attemptLastResortMatch(last);
 	}
+
 	private static List<SolverDescription> matchByKisaoId(KisaoTerm candidate) {
         List<SolverDescription> solverDescriptions = new ArrayList<>();
 		for (SolverDescription sd : SolverDescription.values()) {
 			if(sd.getKisao().contains(":") || sd.getKisao().contains("_")) {
-//				System.out.println(sd.getKisao());
+				logger.trace(sd.getKisao());
 			} else {
-//				System.err.println(sd.getKisao() + " - bad format, skipping");
+				logger.warn(sd.getKisao() + " - bad format, skipping");
 				continue;
 			}
 			String s1 = candidate.getId();
@@ -167,8 +177,8 @@ public class SolverUtilities {
 		}
 		return solverDescriptions;
 	}
+
 	private static SolverDescription attemptLastResortMatch(KisaoTerm last) {
-		SolverDescription sd = null;
 		switch(last.getId()) {
 		case "KISAO_0000433":
 			return SolverDescription.CVODE;
@@ -193,8 +203,38 @@ public class SolverUtilities {
 		case "KISAO_0000377":
 			return SolverDescription.RungeKuttaFehlberg;
 		default:
-			System.err.println("Failed last resort match for descendant " + last.getId());
+			logger.error("Failed last resort match for descendant " + last.getId());
 			return null;
 		}
+	}
+
+	private static boolean needsExactMatch(boolean cmdRequestedMatch){
+		final String ENV_VAR_NAME = "ALGORITHM_SUBSTITUTION_POLICY";
+		boolean result;
+		// Get the BSTS env-var
+		String envVar = Optional.ofNullable(System.getenv(ENV_VAR_NAME)).orElse("ANY"), message = null;
+		switch (envVar){
+			case "SAME_METHOD":
+			case "SAME_MATH":
+			case "SIMILAR_APPROXIMATIONS":
+			case "DISTINCT_APPROXIMATIONS":
+			case "DISTICT_SCALES":
+			case "SAME_VARIABLES":
+				result = true;
+				break;
+			case "SIMILAR_VARIABLES":
+			case "SAME_FRAMEWORK":
+			case "ANY":
+				result = false;
+				break;
+			case "NONE": // Since we try anyway with the sundials solvers, we need to throw an exception here.
+				if (message == null) 
+					message = String.format("User specifically requested no substitutions using envrionment variable \"%s\".", ENV_VAR_NAME);
+			default:
+				if (message == null) message = String.format("Environment varaible (\"%s\") value encountered <%s>.", ENV_VAR_NAME, envVar);
+				logger.error(message);
+				throw new IllegalArgumentException(message);
+		}
+		return result || cmdRequestedMatch; 
 	}
 }

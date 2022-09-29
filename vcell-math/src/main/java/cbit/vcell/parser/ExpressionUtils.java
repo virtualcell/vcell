@@ -33,6 +33,31 @@ public class ExpressionUtils {
 	public static Expression getLinearFactor(Expression exp, String k) throws ExpressionException {
 		// let exp = f(k,x)
 		// if exp is linear in k then there exists a g(x) such that f(k,x) = k*g(x)
+		// in order to preserve the number original form of exp (e.g. same number of discontinuities)
+		// we will simply divide by k.  (divide by zero will be handled in functionallyEquivalent())
+		//
+		// (a)      exp(k==>1) = f(1,x) = 1*g(x) = g(x)
+		// (b)      f(k,x)/k = k*g(x)/k = g(x)  (where k!=0)
+		// (c)      f(k,x)/k == f(1,x)
+		//
+		// so exp is linear in k if:
+		//
+		// (e)      exp(k==>1) == exp / k
+		//
+		Expression kExp = new Expression(k);
+		Expression exp_substitute_1 = exp.getSubstitutedExpression(kExp, new Expression(1.0));
+		Expression exp_div_k = Expression.div(exp, kExp);
+		if (functionallyEquivalent(exp_substitute_1, exp_div_k, false)){
+			Expression factor = exp_substitute_1.simplifyJSCL();
+			return factor;
+		}else{
+			return null;
+		}
+	}
+
+	public static Expression getLinearFactor_no_division(Expression exp, String k) throws ExpressionException {
+		// let exp = f(k,x)
+		// if exp is linear in k then there exists a g(x) such that f(k,x) = k*g(x)
 		// we would like a formula to identify g(x) which does not use division.
 		//
 		// (a)      exp(k==>1) = f(1,x) = g(x)

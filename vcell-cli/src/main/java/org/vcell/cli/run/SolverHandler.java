@@ -96,7 +96,7 @@ public class SolverHandler {
         
         for (BioModel bioModel : bioModelList) {
             try {
-                sanityCheck(bioModel);
+                SolverHandler.sanityCheck(bioModel);
             } catch (Exception e) {
                 logger.error("Exception encountered: " + e.getMessage(), e);
                 // continue;
