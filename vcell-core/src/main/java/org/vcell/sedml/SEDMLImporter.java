@@ -64,6 +64,7 @@ import cbit.util.xml.VCLogger;
 import cbit.util.xml.VCLoggerException;
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.biomodel.ModelUnitConverter;
 import cbit.vcell.mapping.MappingException;
 import cbit.vcell.mapping.MathMapping;
 import cbit.vcell.mapping.MathMappingCallbackTaskAdapter;
@@ -83,9 +84,11 @@ import cbit.vcell.matrix.MatrixException;
 import cbit.vcell.model.Model.ModelParameter;
 import cbit.vcell.model.Model.ReservedSymbol;
 import cbit.vcell.model.ModelException;
+import cbit.vcell.model.ModelUnitSystem;
 import cbit.vcell.model.ReactionParticipant;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.SpeciesContext;
+import cbit.vcell.model.TransformMassActions;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.solver.ConstantArraySpec;
@@ -359,11 +362,20 @@ public class SEDMLImporter {
 				}
 				if (doc.getSimulationContexts().length == 0) docIter.remove();
 			}
-			// finally try to consolidate SimContexts into fewer (posibly just one) BioModels
+			// try to consolidate SimContexts into fewer (posibly just one) BioModels
 			// unlikely to happen from SEDMLs not originating from VCell, but very useful for roundtripping if so
 			// TODO: maybe try to detect that and only try if of VCell origin
 			mergeBioModels(uniqueBioModelsList);
-			return uniqueBioModelsList;
+			// make imported BioModel(s) VCell-friendly
+			List<BioModel> vcbms = new ArrayList<BioModel>();
+			for (BioModel bm : uniqueBioModelsList) {
+				ModelUnitSystem vcUnits = ModelUnitSystem.createDefaultVCModelUnitSystem();
+				BioModel vcbm = ModelUnitConverter.createBioModelWithNewUnitSystem(bm, vcUnits);
+				// cannot do this for now, as it can be very expensive (hours!!)
+//				TransformMassActions.applyTransformAll(vcbm.getModel());
+				vcbms.add(vcbm);
+			}
+			return vcbms;
 		} catch (Exception e) {
 			throw new RuntimeException("Unable to initialize bioModel for the given selection\n"+e.getMessage(), e);
 		}
