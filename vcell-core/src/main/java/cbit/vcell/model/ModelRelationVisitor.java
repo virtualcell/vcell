@@ -47,7 +47,6 @@ public class ModelRelationVisitor implements RelationVisitor {
 
     @Override
     public boolean relate(Relatable relatable1, Relatable relatable2) {
-        logger.info("relate() not yet implemented for "+relatable1+", defering to visitor again");
         if (relatable1==null || relatable2==null){
             return false;
         }
