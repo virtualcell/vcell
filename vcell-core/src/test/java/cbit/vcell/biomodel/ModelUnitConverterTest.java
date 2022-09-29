@@ -230,11 +230,11 @@ public class ModelUnitConverterTest {
             expectedVCUnits.put("Kf_r1", new OverrideInfo("Kf_r1", "s-1", new Expression(3.0), new Expression(22.0)));
             expectedVCUnits.put("Kr_r0", new OverrideInfo("Kr_r0", "s-1", new Expression(7.0), new Expression(23.0)));
             expectedVCUnits.put("Kr_r1", new OverrideInfo("Kr_r1", "s-1", new Expression(8.0), new Expression(24.0)));
-            expectedVCUnits.put("s0_init_nmol_dm_2", new OverrideInfo("s0_init_nmol_dm_2", "nmol/l", new Expression("0.03 * KMOLE"), new Expression("0.11 * KMOLE")));
-            expectedVCUnits.put("s1_init_nmol_dm_2", new OverrideInfo("s1_init_nmol_dm_2", "nmol/l", new Expression("0.04 * KMOLE"), new Expression("0.12 * KMOLE")));
-            expectedVCUnits.put("s2_init_nmol_dm_2", new OverrideInfo("s2_init_nmol_dm_2", "nmol/l", new Expression("0.05 * KMOLE"), new Expression("0.13 * KMOLE")));
-            expectedVCUnits.put("s3_init_nmol_l_1", new OverrideInfo("s3_init_nmol_l_1", "nmol/l", new Expression(1000.0), new Expression(14000.0)));
-            expectedVCUnits.put("s4_init_nmol_l_1", new OverrideInfo("s4_init_nmol_l_1", "nmol/l", new Expression(2000.0), new Expression(15000.0)));
+            expectedVCUnits.put("s0_init_umol_dm_2", new OverrideInfo("s0_init_umol_dm_2", "umol/l", new Expression("0.03 * KMOLE"), new Expression("0.11 * KMOLE")));
+            expectedVCUnits.put("s1_init_umol_dm_2", new OverrideInfo("s1_init_umol_dm_2", "umol/l", new Expression("0.04 * KMOLE"), new Expression("0.12 * KMOLE")));
+            expectedVCUnits.put("s2_init_umol_dm_2", new OverrideInfo("s2_init_umol_dm_2", "nmol/l", new Expression("0.05 * KMOLE"), new Expression("0.13 * KMOLE")));
+            expectedVCUnits.put("s3_init_umol_l_1", new OverrideInfo("s3_init_umol_l_1", "umol/l", new Expression(1000.0), new Expression(14000.0)));
+            expectedVCUnits.put("s4_init_umol_l_1", new OverrideInfo("s4_init_umol_l_1", "umol/l", new Expression(2000.0), new Expression(15000.0)));
 
             MathOverrides expectedMathOverrides = new MathOverrides(sim);
             for (Map.Entry<String, OverrideInfo> entry : expectedVCUnits.entrySet()) {
