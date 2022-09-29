@@ -379,19 +379,14 @@ public class SolverHandler {
                     if (solver.getSolverStatus().getStatus() == SolverStatus.SOLVER_FINISHED) {
                     	
                     	if(sd.isSpatial()) {
-                    		
-                    	// TODO: proper file name (results folder + importedTaskId + ".h5")
-                    	// check if successfully created
-//                        File aaa = new File("C:\\TEMP\\aaa.hdf5");
-//                        try {
-//                        	CLIUtils.exportPDE2HDF5(sim, outputDirForSedml, aaa);
-//                        	sim2Hdf5Map.put(sim.getImportedTaskID(), null);
-//                        } catch(Exception e) {
-//                        	sim2Hdf5Map.put(sim.getImportedTaskID(), null);
-//                        }
-                    		
+                    	File hdf5Results = new File(outDir + System.getProperty("file.separator") + "reports.h5");
+                        	try {
+                        		RunUtils.exportPDE2HDF5(sim, outputDirForSedml, hdf5Results);
+                        		sim2Hdf5Map.put(sim.getImportedTaskID(), null);
+                        	} catch(Exception e) {
+                        		sim2Hdf5Map.put(sim.getImportedTaskID(), null);
+                        	}
                     	}
-
                     	
                     	logTaskMessage += "done. ";
                         logger.info("Succesful execution: Model '" + docName + "' Task '" + sim.getDescription() + "'.");
@@ -474,6 +469,7 @@ public class SolverHandler {
                 }
                 simulationJobCount++;
             }
+			// TODO: here manage task / repeated tasks 
             bioModelCount++;
         }
         logger.info("Ran " + simulationJobCount + " simulation jobs for " + bioModelCount + " biomodels.");
