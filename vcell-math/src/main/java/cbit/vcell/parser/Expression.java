@@ -155,7 +155,12 @@ public boolean compareEqual(Matchable obj) {
 		return false;
 	}
 	Expression exp = (Expression)obj;
-	return getNormalizedInfixString().equals(exp.getNormalizedInfixString());
+	boolean b = ExpressionUtils.functionallyEquivalent(this, exp);
+	//	boolean b = getNormalizedInfixString().equals(exp.getNormalizedInfixString());
+	if (!b) {
+		System.out.println(">>>> comparing " + this + " with this " + exp + " >>>> " + b);
+	}
+	return b;
 }
 /**
  * This method was created by a SmartGuide.
@@ -464,7 +469,7 @@ public FunctionInvocation[] getFunctionInvocations(FunctionFilter filter) {  // 
  * Creation date: (9/15/2003 9:32:34 AM)
  * @return java.lang.String
  */
-private String getNormalizedInfixString() {
+public String getNormalizedInfixString() {
 
 	if (normalizedInfixString==null){
 		try {
