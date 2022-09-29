@@ -404,7 +404,13 @@ public static boolean functionallyEquivalent(Expression exp1, Expression exp2) {
  * @param exp2 cbit.vcell.parser.Expression non null
  */
 public static boolean functionallyEquivalent(Expression exp1, Expression exp2, boolean bVerifySameSymbols) {
-	if (exp1.isZero() || exp2.isZero()) return (exp1.isZero() && exp2.isZero()); // no tolerance for zero
+	try {
+		// no tolerance for zero
+		if (exp1.flattenSafe().isZero() || exp2.flattenSafe().isZero()) return (exp1.flattenSafe().isZero() && exp2.flattenSafe().isZero());
+	} catch (ExpressionException e1) {
+		lg.debug("FlattenSafe exception in equivalency check: ", e1.getMessage(), e1);
+		return false;
+	} 
 	double defaultAbsoluteTolerance = 1e-12;
 	double defaultRelativeTolerance = 1e-10;
 	boolean bFirstAnswer = functionallyEquivalent(exp1,exp2,bVerifySameSymbols,defaultRelativeTolerance,defaultAbsoluteTolerance);
