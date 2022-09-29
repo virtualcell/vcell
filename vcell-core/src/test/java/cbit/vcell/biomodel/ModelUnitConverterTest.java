@@ -6,6 +6,7 @@ import cbit.vcell.math.MathCompareResults;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathException;
 import cbit.vcell.matrix.MatrixException;
+import cbit.vcell.model.Model;
 import cbit.vcell.model.ModelException;
 import cbit.vcell.model.ModelUnitSystem;
 import cbit.vcell.parser.Expression;
@@ -22,16 +23,41 @@ import cbit.vcell.xml.XmlParseException;
 import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
 import org.junit.Test;
+import org.vcell.util.Pair;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class ModelUnitConverterTest {
+
+    @Test
+    public void test_unit_factors() throws ExpressionException {
+        Model.ReservedSymbol KMOLE = new Model("").getKMOLE();
+        VCUnitSystem unitSystem = new VCUnitSystem() {};
+        VCUnitDefinition dimensionless = unitSystem.getInstance_DIMENSIONLESS();
+
+        ArrayList<Pair<VCUnitDefinition, Expression>> tests = new ArrayList<Pair<VCUnitDefinition, Expression>>();
+        tests.add(new Pair<>(
+                unitSystem.getInstance("umol.dm-2").divideBy(unitSystem.getInstance("molecules.um-2")),
+                new Expression("(1.0E-5 * pow(KMOLE,1.0))")));
+
+        tests.add(new Pair<>(
+                unitSystem.getInstance("dm2.s-1.umol-1").divideBy(unitSystem.getInstance("um2.s-1.molecules-1")),
+                new Expression("(100000.0 * pow(KMOLE, -1.0))")));
+
+        for (Pair<VCUnitDefinition, Expression> test : tests){
+            VCUnitDefinition nearly_dimensionless_unit = test.one;
+            Expression expectedFactor = test.two;
+            Expression factor = ModelUnitConverter.getDimensionlessScaleFactor(nearly_dimensionless_unit, dimensionless, KMOLE);
+            Assert.assertEquals(expectedFactor.flattenSafe().infix(), factor.flattenSafe().infix());
+        }
+    }
 
     @Test
     public void test_VCell_to_SBML_conversion_uM_um3() throws IOException, XmlParseException, ExpressionException, MatrixException, ModelException, MathException, MappingException {
@@ -226,15 +252,15 @@ public class ModelUnitConverterTest {
             MathOverrides mathOverrides = sim.getMathOverrides();
 
             LinkedHashMap<String, OverrideInfo> expectedVCUnits = new LinkedHashMap<>();
-            expectedVCUnits.put("Kf_r0", new OverrideInfo("Kf_r0", "um2.s-1.molecules-1", new Expression("500.0 / KMOLE"), new Expression("2100.0 / KMOLE")));
+            expectedVCUnits.put("Kf_r0", new OverrideInfo("Kf_r0", "dm2.s-1.umol-1", new Expression("5.0 * 100000.0 / KMOLE"), new Expression("21.0 * 100000.0 / KMOLE")));
             expectedVCUnits.put("Kf_r1", new OverrideInfo("Kf_r1", "s-1", new Expression(3.0), new Expression(22.0)));
             expectedVCUnits.put("Kr_r0", new OverrideInfo("Kr_r0", "s-1", new Expression(7.0), new Expression(23.0)));
             expectedVCUnits.put("Kr_r1", new OverrideInfo("Kr_r1", "s-1", new Expression(8.0), new Expression(24.0)));
-            expectedVCUnits.put("s0_init_umol_dm_2", new OverrideInfo("s0_init_umol_dm_2", "umol/l", new Expression("0.03 * KMOLE"), new Expression("0.11 * KMOLE")));
-            expectedVCUnits.put("s1_init_umol_dm_2", new OverrideInfo("s1_init_umol_dm_2", "umol/l", new Expression("0.04 * KMOLE"), new Expression("0.12 * KMOLE")));
-            expectedVCUnits.put("s2_init_umol_dm_2", new OverrideInfo("s2_init_umol_dm_2", "nmol/l", new Expression("0.05 * KMOLE"), new Expression("0.13 * KMOLE")));
-            expectedVCUnits.put("s3_init_umol_l_1", new OverrideInfo("s3_init_umol_l_1", "umol/l", new Expression(1000.0), new Expression(14000.0)));
-            expectedVCUnits.put("s4_init_umol_l_1", new OverrideInfo("s4_init_umol_l_1", "umol/l", new Expression(2000.0), new Expression(15000.0)));
+            expectedVCUnits.put("s0_init_umol_dm_2", new OverrideInfo("s0_init_umol_dm_2", "umol.dm-2", new Expression("3.0 * 1.0E-5 * KMOLE"), new Expression("11.0 * 1.0E-5 * KMOLE")));
+            expectedVCUnits.put("s1_init_umol_dm_2", new OverrideInfo("s1_init_umol_dm_2", "umol.dm-2", new Expression("4.0 * 1.0E-5 * KMOLE"), new Expression("12.0 * 1.0E-5 * KMOLE")));
+            expectedVCUnits.put("s2_init_umol_dm_2", new OverrideInfo("s2_init_umol_dm_2", "nmol.dm-2", new Expression("5.0 * 1.0E-5 * KMOLE"), new Expression("13.0 * 1.0E-5 * KMOLE")));
+            expectedVCUnits.put("s3_init_umol_l_1", new OverrideInfo("s3_init_umol_l_1", "umol/l", new Expression(1.0), new Expression(14.0)));
+            expectedVCUnits.put("s4_init_umol_l_1", new OverrideInfo("s4_init_umol_l_1", "umol/l", new Expression(2.0), new Expression(15.0)));
 
             MathOverrides expectedMathOverrides = new MathOverrides(sim);
             for (Map.Entry<String, OverrideInfo> entry : expectedVCUnits.entrySet()) {
@@ -244,11 +270,11 @@ public class ModelUnitConverterTest {
             if (!equiv) {
                 for (String c : expectedMathOverrides.getOverridenConstantNames()) {
                     Constant constant = expectedMathOverrides.getConstant(c);
-                    System.out.println("expected: " + constant.getName() + "=" + constant.getExpression().infix());
+                    System.out.println("expected: " + constant.getName() + "=" + constant.getExpression().flattenSafe().infix());
                 }
                 for (String c : mathOverrides.getOverridenConstantNames()) {
                     Constant constant = mathOverrides.getConstant(c);
-                    System.out.println("parsed: " + constant.getName() + "=" + constant.getExpression().infix());
+                    System.out.println("parsed: " + constant.getName() + "=" + constant.getExpression().flattenSafe().infix());
                 }
             }
             Assert.assertTrue("expected math overrides to match", equiv);
