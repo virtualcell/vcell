@@ -775,6 +775,9 @@ public void testLinearity() throws ExpressionException {
 	Assert.assertTrue(ExpressionUtils.functionallyEquivalent(
 			new Expression("((1.0E-12 * KMOLE * s1) * (1.0 / 1000.0))"),
 			ExpressionUtils.getLinearFactor(new Expression("((1.0E-12 * KMOLE * s1) * c0 * (1.0 / 1000.0))"),"c0")));
+	Assert.assertTrue(ExpressionUtils.functionallyEquivalent(
+			new Expression("((0.001 * Vmax2_bleaching2 * rfB * Laser) * ((t > 1.0) && (t < 1.5)))"),
+			ExpressionUtils.getLinearFactor(new Expression("((0.001 * Vmax2_bleaching2 * rfB * Laser) * ((t > 1.0) && (t < 1.5)))*Nuc"),"Nuc")));
 }
 
 
