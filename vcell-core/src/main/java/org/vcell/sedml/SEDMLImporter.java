@@ -59,6 +59,7 @@ import org.vcell.sbml.vcell.SBMLImporter;
 import org.vcell.sbml.vcell.SBMLSymbolMapping;
 import org.vcell.sbml.vcell.SymbolContext;
 import org.vcell.util.FileUtils;
+import org.vcell.util.RelationVisitor;
 
 import cbit.util.xml.VCLogger;
 import cbit.util.xml.VCLoggerException;
@@ -84,6 +85,7 @@ import cbit.vcell.matrix.MatrixException;
 import cbit.vcell.model.Model.ModelParameter;
 import cbit.vcell.model.Model.ReservedSymbol;
 import cbit.vcell.model.ModelException;
+import cbit.vcell.model.ModelRelationVisitor;
 import cbit.vcell.model.ModelUnitSystem;
 import cbit.vcell.model.ReactionParticipant;
 import cbit.vcell.model.ReactionStep;
@@ -372,7 +374,10 @@ public class SEDMLImporter {
 				ModelUnitSystem vcUnits = ModelUnitSystem.createDefaultVCModelUnitSystem();
 				BioModel vcbm = ModelUnitConverter.createBioModelWithNewUnitSystem(bm, vcUnits);
 				// cannot do this for now, as it can be very expensive (hours!!)
-//				TransformMassActions.applyTransformAll(vcbm.getModel());
+				// also has serious memory issues (runs out of memory even with bumping up to Xmx12G
+//				if (!externalDocInfo.getFile().getName().startsWith("biomodel_523")) {
+//					TransformMassActions.applyTransformAll(vcbm.getModel());
+//				}
 				vcbms.add(vcbm);
 			}
 			return vcbms;
@@ -444,9 +449,10 @@ public class SEDMLImporter {
 		BioModel bm0 = bioModels.get(0);
 		for (int i = 1; i < bioModels.size(); i++) {
 			System.out.println("----comparing model from----"+bioModels.get(i)+" with model from "+bm0);
-			boolean matchable = bioModels.get(i).getModel().compareEqual(bm0.getModel());
-			System.out.println(matchable);
-			if (!matchable) return;
+			RelationVisitor rvNotStrict = new ModelRelationVisitor(false);
+			boolean equivalent = bioModels.get(i).getModel().relate(bm0.getModel(),rvNotStrict);
+			System.out.println(equivalent);
+			if (!equivalent) return;
 		}
 		// all have matchable model, try to merge by pooling SimContexts
 		Document dom = null;
