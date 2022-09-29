@@ -8,19 +8,12 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package cbit.vcell.model.gui;
+package cbit.vcell.model;
 
 import java.beans.PropertyVetoException;
 import java.io.IOException;
 
-import cbit.vcell.model.FluxReaction;
-import cbit.vcell.model.Kinetics;
-import cbit.vcell.model.KineticsDescription;
-import cbit.vcell.model.MassActionSolver;
 import cbit.vcell.model.MassActionSolver.MassActionFunction;
-import cbit.vcell.model.Parameter;
-import cbit.vcell.model.ReactionStep;
-import cbit.vcell.model.SimpleReaction;
 import cbit.vcell.parser.Expression;
 
 public class TransformMassActions {

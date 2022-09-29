@@ -17,7 +17,8 @@ import javax.swing.JTable;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellRenderer;
 
-import cbit.vcell.model.gui.TransformMassActions.TransformedReaction;
+import cbit.vcell.model.TransformMassActions;
+import cbit.vcell.model.TransformMassActions.TransformedReaction;
 
 /**
  * This table cell renderer is created for TransformMassActionTable

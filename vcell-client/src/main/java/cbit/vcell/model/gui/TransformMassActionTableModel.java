@@ -24,6 +24,7 @@ import cbit.vcell.model.MassActionSolver;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.SimpleReaction;
+import cbit.vcell.model.TransformMassActions;
 
 
 /**
