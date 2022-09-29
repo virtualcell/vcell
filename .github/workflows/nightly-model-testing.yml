@@ -1,0 +1,170 @@
+name: Nightly Tests on Branch `master`
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup Java for Build
+        uses: actions/setup-java@v2
+        with:
+          java-version: '8'
+          distribution: 'adopt'
+          cache: 'maven'
+      - name: Build VCell Jars
+        run: mvn clean install dependency:copy-dependencies
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+      - name: Build and Export
+        uses: docker/build-push-action@v3
+        with:
+          context: .
+          file: ./Dockerfile
+          outputs: type=docker,dest=/tmp/image.tar
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: docker-image
+          path: /tmp/image.tar
+  conversion:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Download Docker Image from `build` Job
+        uses: actions/download-artifact@v3
+        with:
+          name: docker-image
+          path: /tmp/image.tar
+
+      - name: Load Downloaded Docker Image
+        run: docker load --input /tmp/image.tar
+        
+        # Get files from VCDB
+      - name: Download Input Files
+        uses: actions/checkout@v3
+        with: 
+          repository: virtualcell/vcdb
+      
+        # Do the conversion
+      - name: Begin Conversion
+        #$(docker image ls | grep "<none>" | awk '{print $3;}')  to get image id
+        run: docker run -v ${{ env.GITHUB_WORKSPACE }}/vcdb/published/biomodel/vcml:/root $(docker image ls | grep "<none>" | awk '{print $3;}') \
+          export-omex-batch -i /root -o /root/output
+          
+        # Parse the results
+      - name: Parse Results
+        run: cd ${{ env.GITHUB_WORKSPACE }}/vcdb/published/biomodel/vcml/output && \
+          touch /tmp/conversion_results.txt && \ 
+          echo "biomodels processed $(cat jobLog.txt | grep START | wc -l)" >> /tmp/conversion_results.txt && \
+          echo "biomodels succeeded $(cat jobLog.txt | grep MODEL,SUCC | wc -l)" >> /tmp/conversion_results.txt && \
+          echo "simcontexts total $(cat jobLog.txt | grep TEXT | wc -l)" >> /tmp/conversion_results.txt && \
+          echo "simcontexts failed $(cat jobLog.txt | grep TEXT,FAIL | wc -l)" >> /tmp/conversion_results.txt && \
+          echo "simcontexts supported that failed $(cat jobLog.txt | grep TEXT,FAIL | grep -v supp | wc -l)" >> /tmp/conversion_results.txt && \
+          echo "simcontexts math not equivalent $(cat jobLog.txt | grep TEXT,FAIL | grep -v supp | grep equiv | wc -l)" >> /tmp/conversion_results.txt && \
+          echo "simcontexts divide by zero $(cat jobLog.txt | grep TEXT,FAIL | grep -v supp | grep divide | wc -l)" >> /tmp/conversion_results.txt && \
+          echo "simcontexts duplicate IDs $(cat jobLog.txt | grep TEXT,FAIL | grep -v supp | grep duplicate | wc -l)" >> /tmp/conversion_results.txt && \
+          echo "simcontexts null pointer $(cat jobLog.txt | grep TEXT,FAIL | grep -v supp | grep null | wc -l)" >> /tmp/conversion_results.txt && \
+          echo "simcontexts structure mapping $(cat jobLog.txt | grep TEXT,FAIL | grep -v supp | grep struct | wc -l)" >> /tmp/conversion_results.txt && \
+          echo "simcontexts other failure $(cat jobLog.txt | grep TEXT,FAIL | grep -v supp | grep -v struct | grep -v null | grep -v duplicate | grep -v divide | grep -v equiv | wc -l)" >> /tmp/conversion_results.txt  && \
+          echo "simulations total $(cat jobLog.txt | grep TION | wc -l)" >> /tmp/conversion_results.txt && \
+          echo "simulations failed $(cat jobLog.txt | grep TION,FAIL | wc -l)" >> /tmp/conversion_results.txt && \
+          echo "simulations supported that failed $(cat jobLog.txt | grep TION,FAIL | grep -v supp | wc -l)" >> /tmp/conversion_results.txt && \
+          echo "simulations orphan overrides $(cat jobLog.txt | grep TION,FAIL | grep -v supp | grep Over | wc -l)" >> /tmp/conversion_results.txt && \
+          echo "simulations unbound identifier $(cat jobLog.txt | grep TION,FAIL | grep -v supp | grep unbound | wc -l)" >> /tmp/conversion_results.txt && \
+          echo "simulations other failure $(cat jobLog.txt | grep TION,FAIL | grep -v supp | grep -v Over | grep -v unbound | wc -l)" >> /tmp/conversion_results.txt
+        
+        # Create tar of converted files
+      - name: Compress Converted Files
+        run: tar cvf omexes.tar *.omex
+        
+        # Upload Converted Files
+      - name: Upload Converted Files
+        uses: actions/upload-artifact@v3
+        with:
+          name: omexes.tar
+          path: ${{ env.GITHUB_WORKSPACE }}/vcdb/published/biomodel/vcml/output/omexes.tar
+        
+        # Upload Results
+      - name: Upload results of round-trip
+        uses: actions/upload-artifact@v3
+        with:
+          name: conversion_results.txt
+          path: /tmp/conversion_results.txt
+  round-trip:
+    runs-on: ubuntu-latest
+    needs: conversion
+    steps:
+      - name: Download Docker Image from `build` Job
+        uses: actions/download-artifact@v3
+        with:
+          name: docker-image
+          path: /tmp/image.tar
+
+      - name: Load Downloaded Docker Image
+        run: docker load --input /tmp/image.tar
+      
+      # Make Input Directory
+      - name: Make Input Directory
+        run: mkdir /input_files
+      
+      # Get the coverted omexes from before
+      - name: Download Converted COMBINE Archives
+        uses: actions/download-artifact@v3
+        with:
+          name: omexes.tar
+          path: /input_files/omexes.tar
+      
+      - name: Unpack Input Files
+        run: cd /input_files && tar xvf omexes.tar && rm omexes.tar
+      
+      # Do the round trip
+      - name: Begin Round-Trip
+        #$(docker image ls | grep "<none>" | awk '{print $3;}')  to get image id
+        run: docker run -v /input_files:/root $(docker image ls | grep "<none>" | awk '{print $3;}') \
+          export-omex-batch -i /root -o /root/output -VCML
+          
+       # Parse the results
+      - name: Parse Results
+        run: cd /input_files/output && touch round-trip_results.txt && \
+          echo 'Biomodels processed $(cat jobLog.txt | grep START | wc -l)' >> round-trip_results.txt && \
+          echo 'Biomodels succeeded $(cat jobLog.txt | grep SUCC | wc -l)' >> round-trip_results.txt && \
+          echo "Biomodels that didn't converge $(cat jobLog.txt | grep SUCC | grep -v ',1' | wc -l)" >> round-trip_results.txt
+      
+      # Upload results
+      - name: Upload Results of Round-Trip
+        uses: actions/upload-artifact@v3
+        with:
+          name: round-trip_results.txt
+          path: /tmp/round-trip_results.txt
+        
+  execute:
+    runs-on: ubuntu-latest
+    needs: round-trip
+    steps:
+      - name: to be implemented
+        run: echo 'This is not yet implemented' 
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
