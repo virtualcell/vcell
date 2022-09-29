@@ -13,17 +13,14 @@ package cbit.vcell.model;
 import java.io.Serializable;
 import java.util.List;
 
-import org.vcell.util.Compare;
-import org.vcell.util.Issue;
-import org.vcell.util.Matchable;
-import org.vcell.util.PropertyChangeListenerProxyVCell;
+import org.vcell.util.*;
 
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.NameScope;
 
 @SuppressWarnings("serial")
-public abstract class Parameter implements EditableSymbolTableEntry, Serializable, Matchable
+public abstract class Parameter implements EditableSymbolTableEntry, Serializable, Matchable, Relatable
 {
 	public static final String PROPERTYNAME_NAME = "name";
 	public static final String PROPERTYNAME_EXPRESSION = "expression";
@@ -55,11 +52,7 @@ public synchronized void addVetoableChangeListener(String propertyName, java.bea
 	}
 	getVetoPropertyChange().addVetoableChangeListener(propertyName, listener);
 }
-/**
- * This method was created in VisualAge.
- * @return boolean
- * @param parm cbit.vcell.model.Parameter
- */
+
 protected boolean compareEqual0(Parameter parm) {
 	if (!Compare.isEqual(getName(),parm.getName())){
 		return false;
@@ -75,6 +68,25 @@ protected boolean compareEqual0(Parameter parm) {
 	}
 	return true;
 }
+
+protected boolean relate0(Parameter parm, RelationVisitor rv) {
+	if (!rv.relate(getName(),parm.getName())){
+		return false;
+	}
+	if (getExpression()!=null || parm.getExpression()!=null){
+		if (!rv.relate(getExpression(),parm.getExpression())) {
+			return false;
+		}
+	}
+	if (!rv.relate(getUnitDefinition(),parm.getUnitDefinition())){
+		return false;
+	}
+	if (!rv.relate(getNameScope().getName(),parm.getNameScope().getName())){
+		return false;
+	}
+	return true;
+}
+
 /**
  * The firePropertyChange method was generated to support the propertyChange field.
  */

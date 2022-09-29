@@ -17,15 +17,9 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 
-import org.vcell.util.Cacheable;
-import org.vcell.util.Compare;
-import org.vcell.util.Displayable;
-import org.vcell.util.Issue;
+import org.vcell.util.*;
 import org.vcell.util.Issue.IssueCategory;
 import org.vcell.util.Issue.IssueSource;
-import org.vcell.util.IssueContext;
-import org.vcell.util.Matchable;
-import org.vcell.util.TokenMangler;
 import org.vcell.util.document.Identifiable;
 import org.vcell.util.document.KeyValue;
 
@@ -36,7 +30,7 @@ import cbit.vcell.units.VCUnitDefinition;
 
 @SuppressWarnings("serial")
 public abstract class Structure implements Serializable, ScopedSymbolTable, Matchable, Cacheable, VetoableChangeListener,
-		Identifiable, IssueSource, Displayable, VCellSbmlName
+		Identifiable, IssueSource, Displayable, VCellSbmlName, Relatable
 {
 	public final static String TYPE_NAME_FEATURE = "Compartment";
 	public final static String TYPE_NAME_MEMBRANE = "Membrane";
@@ -200,28 +194,41 @@ public synchronized void addPropertyChangeListener(java.beans.PropertyChangeList
 public synchronized void addVetoableChangeListener(java.beans.VetoableChangeListener listener) {
 	getVetoPropertyChange().addVetoableChangeListener(listener);
 }
-/**
- * This method was created in VisualAge.
- * @return boolean
- * @param structure cbit.vcell.model.Structure
- */
-protected boolean compareEqual0(Structure s) {
-	if (s == null){
-		return false;
-	}
 
-	if (!getName().equals(s.getName())) {
-		return false;
-	}
-	if (!Compare.isEqualOrNull(getSbmlName(),s.getSbmlName())) {
-		return false;
-	}
-	if (!Compare.isEqualOrNull(getSbmlId(),s.getSbmlId())) {
-		return false;
-	}
+	protected boolean compareEqual0(Structure s) {
+		if (s == null){
+			return false;
+		}
 
-	return true;
-}
+		if (!getName().equals(s.getName())) {
+			return false;
+		}
+		if (!Compare.isEqualOrNull(getSbmlName(),s.getSbmlName())) {
+			return false;
+		}
+		if (!Compare.isEqualOrNull(getSbmlId(),s.getSbmlId())) {
+			return false;
+		}
+
+		return true;
+	}
+	protected boolean relate0(Structure s, RelationVisitor rv) {
+		if (s == null){
+			return false;
+		}
+
+		if (!rv.relate(getName(), s.getName())) {
+			return false;
+		}
+		if (!rv.relateOrNull(getSbmlName(),s.getSbmlName())) {
+			return false;
+		}
+		if (!rv.relateOrNull(getSbmlId(),s.getSbmlId())) {
+			return false;
+		}
+
+		return true;
+	}
 /**
  * The firePropertyChange method was generated to support the propertyChange field.
  */

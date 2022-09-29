@@ -13,14 +13,13 @@ package cbit.vcell.model;
 import java.beans.PropertyVetoException;
 import java.util.List;
 
-import org.vcell.util.Issue;
+import org.vcell.util.*;
 import org.vcell.util.Issue.IssueCategory;
-import org.vcell.util.IssueContext;
-import org.vcell.util.Matchable;
 
 import cbit.vcell.model.Model.ElectricalTopology;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
+
 /**
  * Insert the type's description here.
  * Creation date: (2/18/2002 5:07:08 PM)
@@ -48,27 +47,41 @@ public GHKKinetics(FluxReaction fluxReaction) throws ExpressionException {
 		throw new RuntimeException("unexpected exception: "+e.getMessage());
 	}
 }
-/**
- * Checks for internal representation of objects, not keys from database
- * @return boolean
- * @param obj java.lang.Object
- */
-public boolean compareEqual(Matchable obj) {
-	if (obj == this){
+
+	@Override
+	public boolean compareEqual(Matchable obj) {
+		if (obj == this){
+			return true;
+		}
+		if (!(obj instanceof GHKKinetics)){
+			return false;
+		}
+
+		GHKKinetics ghk = (GHKKinetics)obj;
+
+		if (!compareEqual0(ghk)){
+			return false;
+		}
+
 		return true;
 	}
-	if (!(obj instanceof GHKKinetics)){
-		return false;
-	}
-	
-	GHKKinetics ghk = (GHKKinetics)obj;
+	@Override
+	public boolean relate(Relatable obj, RelationVisitor rv) {
+		if (obj == this){
+			return true;
+		}
+		if (!(obj instanceof GHKKinetics)){
+			return false;
+		}
 
-	if (!compareEqual0(ghk)){
-		return false;
+		GHKKinetics ghk = (GHKKinetics)obj;
+
+		if (!relate0(ghk, rv)){
+			return false;
+		}
+
+		return true;
 	}
-	
-	return true;
-}
 /**
  * Insert the method's description here.
  * Creation date: (5/12/2004 3:11:16 PM)

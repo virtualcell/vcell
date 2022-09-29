@@ -9,10 +9,13 @@
  */
 
 package cbit.vcell.model;
-import org.vcell.util.Compare;
+import org.vcell.util.*;
 import org.vcell.util.document.KeyValue;
 
-public abstract class ReactionParticipant implements ModelProcessParticipant, org.vcell.util.Cacheable, org.vcell.util.Matchable, java.beans.PropertyChangeListener, java.io.Serializable {
+import java.beans.PropertyChangeListener;
+import java.io.Serializable;
+
+public abstract class ReactionParticipant implements ModelProcessParticipant, Cacheable, Matchable, Relatable, PropertyChangeListener, Serializable {
 	private KeyValue key = null;
 	protected SpeciesContext speciesContext = null;
 	protected ReactionStep parent = null;
@@ -68,32 +71,49 @@ public synchronized void addVetoableChangeListener(java.lang.String propertyName
 }
 
 
-/**
- * This method was created in VisualAge.
- * @return boolean
- * @param rp cbit.vcell.model.ReactionParticipant
- */
-protected boolean compareEqual0(ReactionParticipant rp) {
+	protected boolean compareEqual0(ReactionParticipant rp) {
 
-	if (rp == null){
-		return false;
-	}
+		if (rp == null){
+			return false;
+		}
 
-	if (!Compare.isEqual(getSpecies(),rp.getSpecies())){
-		return false;
-	}
-	if (!Compare.isEqual(getStructure(),rp.getStructure())){
-		return false;
-	}
+		if (!Compare.isEqual(getSpecies(),rp.getSpecies())){
+			return false;
+		}
+		if (!Compare.isEqual(getStructure(),rp.getStructure())){
+			return false;
+		}
 //	if (!Compare.isEqual(getReactionStep().getName(),rp.getReactionStep().getName())){  // name of parent only (to avoid recursion)
 //		return false;
 //	}
-	if (getStoichiometry() != rp.getStoichiometry()){
-		return false;
+		if (getStoichiometry() != rp.getStoichiometry()){
+			return false;
+		}
+
+		return true;
 	}
-	
-	return true;
-}
+
+	protected boolean relate0(ReactionParticipant rp, RelationVisitor rv) {
+
+		if (rp == null){
+			return false;
+		}
+
+		if (!rv.relate(getSpecies(),rp.getSpecies())){
+			return false;
+		}
+		if (!rv.relate(getStructure(),rp.getStructure())){
+			return false;
+		}
+//	if (!Compare.isEqual(getReactionStep().getName(),rp.getReactionStep().getName())){  // name of parent only (to avoid recursion)
+//		return false;
+//	}
+		if (!rv.relate(getStoichiometry(),rp.getStoichiometry())){
+			return false;
+		}
+
+		return true;
+	}
 
 
 /**

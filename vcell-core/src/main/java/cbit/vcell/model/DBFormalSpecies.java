@@ -12,6 +12,8 @@ package cbit.vcell.model;
 
 import java.util.ArrayList;
 
+import org.vcell.util.Relatable;
+import org.vcell.util.RelationVisitor;
 import org.vcell.util.document.VCDocumentInfo;
 
 
@@ -55,7 +57,7 @@ public DBFormalSpecies(org.vcell.util.document.KeyValue argKey, FormalSpeciesInf
  * @param obj java.lang.Object
  */
 public boolean compareEqual(org.vcell.util.Matchable obj) {
-	
+
 	if (obj instanceof DBFormalSpecies){
 		DBFormalSpecies dbFormalSpecies = (DBFormalSpecies)obj;
 		if (!dbFormalSpeciesKey.compareEqual(dbFormalSpecies.getDBFormalSpeciesKey())){
@@ -67,9 +69,24 @@ public boolean compareEqual(org.vcell.util.Matchable obj) {
 	}else{
 		return false;
 	}
-	
+
 	return true;
 }
+	public boolean relate0(Relatable obj, RelationVisitor rv) {
+		if (obj instanceof DBFormalSpecies){
+			DBFormalSpecies dbFormalSpecies = (DBFormalSpecies)obj;
+			if (!rv.relate(dbFormalSpeciesKey, dbFormalSpecies.getDBFormalSpeciesKey())){
+				return false;
+			}
+			if(!formalSpeciesInfo.compareEqual(dbFormalSpecies.getFormalSpeciesInfo())){
+				return false;
+			}
+		}else{
+			return false;
+		}
+
+		return true;
+	}
 /**
  * Insert the method's description here.
  * Creation date: (2/18/2003 5:46:02 PM)

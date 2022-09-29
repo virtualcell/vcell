@@ -14,12 +14,18 @@ import org.vcell.util.Compare;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.NameScope;
 import cbit.vcell.units.VCUnitDefinition;
+import org.vcell.util.Matchable;
+import org.vcell.util.Relatable;
+import org.vcell.util.RelationVisitor;
+
+import java.io.Serializable;
+
 /**
  * Insert the type's description here.
  * Creation date: (2/20/2002 4:16:31 PM)
  * @author: Jim Schaff
  */
-public abstract class ModelQuantity implements EditableSymbolTableEntry, java.io.Serializable, org.vcell.util.Matchable {
+public abstract class ModelQuantity implements EditableSymbolTableEntry, Serializable, Matchable, Relatable {
 	private java.lang.String fieldName = new String();
 	private transient java.beans.VetoableChangeSupport vetoPropertyChange;
 	private transient java.beans.PropertyChangeSupport propertyChange;
@@ -64,31 +70,47 @@ public final synchronized void addVetoableChangeListener(java.lang.String proper
 	getVetoPropertyChange().addVetoableChangeListener(propertyName, listener);
 }
 
-/**
- * Checks for internal representation of objects, not keys from database
- * @return boolean
- * @param obj java.lang.Object
- */
-public final boolean compareEqual(org.vcell.util.Matchable obj){
-	if (obj==null){
-		return false;
-	}
-	if (obj==this){
+
+	public final boolean compareEqual(org.vcell.util.Matchable obj){
+		if (obj==null){
+			return false;
+		}
+		if (obj==this){
+			return true;
+		}
+		if (obj.getClass().equals(getClass())){
+			ModelQuantity modelQuantity = (ModelQuantity)obj;
+			if (!modelQuantity.getName().equals(getName())){
+				return false;
+			}
+			if (!Compare.isEqual(modelQuantity.getUnitDefinition(),getUnitDefinition())){
+				return false;
+			}
+		}
 		return true;
 	}
-	if (obj.getClass().equals(getClass())){
-		ModelQuantity modelQuantity = (ModelQuantity)obj;
-		if (!modelQuantity.getName().equals(getName())){
-			return false;
-		}
-		if (!Compare.isEqual(modelQuantity.getUnitDefinition(),getUnitDefinition())){
-			return false;
-		}
-	}
-	return true;
-}
 
-/**
+	@Override
+	public final boolean relate(Relatable obj, RelationVisitor rv){
+		if (obj==null){
+			return false;
+		}
+		if (obj==this){
+			return true;
+		}
+		if (obj.getClass().equals(getClass())){
+			ModelQuantity modelQuantity = (ModelQuantity)obj;
+			if (!rv.relate(modelQuantity.getName(),getName())){
+				return false;
+			}
+			if (!rv.relate(modelQuantity.getUnitDefinition(),getUnitDefinition())){
+				return false;
+			}
+		}
+		return true;
+	}
+
+	/**
  * The firePropertyChange method was generated to support the propertyChange field.
  */
 public final void firePropertyChange(java.lang.String propertyName, java.lang.Object oldValue, java.lang.Object newValue) {

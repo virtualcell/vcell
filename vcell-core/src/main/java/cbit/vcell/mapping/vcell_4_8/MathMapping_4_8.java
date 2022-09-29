@@ -20,15 +20,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
 
-import org.vcell.util.BeanUtils;
-import org.vcell.util.Issue;
+import org.vcell.util.*;
 import org.vcell.util.Issue.IssueCategory;
 import org.vcell.util.Issue.IssueSource;
-import org.vcell.util.IssueContext;
 import org.vcell.util.IssueContext.ContextType;
-import org.vcell.util.Matchable;
-import org.vcell.util.TokenMangler;
-import org.vcell.util.VCellThreadChecker;
 
 import cbit.vcell.geometry.SubVolume;
 import cbit.vcell.geometry.SurfaceClass;
@@ -224,6 +219,7 @@ public class MathMapping_4_8 implements ScopedSymbolTable, UnitFactorProvider, I
 			this.fieldVCUnitDefinition = argVCUnitDefinition;
 		}
 
+		@Override
 		public boolean compareEqual(Matchable obj) {
 			if (!(obj instanceof MathMappingParameter)){
 				return false;
@@ -231,7 +227,19 @@ public class MathMapping_4_8 implements ScopedSymbolTable, UnitFactorProvider, I
 			MathMappingParameter mmp = (MathMappingParameter)obj;
 			if (!super.compareEqual0(mmp)){
 				return false;
-			}			
+			}
+			return true;
+		}
+
+		@Override
+		public boolean relate(Relatable obj, RelationVisitor rv) {
+			if (!(obj instanceof MathMappingParameter)){
+				return false;
+			}
+			MathMappingParameter mmp = (MathMappingParameter)obj;
+			if (!super.relate0(mmp, rv)){
+				return false;
+			}
 			return true;
 		}
 
