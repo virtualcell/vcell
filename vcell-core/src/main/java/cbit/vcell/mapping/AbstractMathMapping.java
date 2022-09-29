@@ -7,15 +7,10 @@ import cbit.vcell.biomodel.ModelUnitConverter;
 import cbit.vcell.math.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.vcell.util.BeanUtils;
-import org.vcell.util.Compare;
-import org.vcell.util.Issue;
+import org.vcell.util.*;
 import org.vcell.util.Issue.IssueCategory;
 import org.vcell.util.Issue.IssueSource;
-import org.vcell.util.IssueContext;
 import org.vcell.util.IssueContext.ContextType;
-import org.vcell.util.Matchable;
-import org.vcell.util.TokenMangler;
 
 import cbit.vcell.client.constants.GuiConstants;
 import cbit.vcell.geometry.CompartmentSubVolume;
@@ -299,6 +294,7 @@ public class MathMappingParameter extends Parameter implements ExpressionContain
 		this.fieldGeometryClass = geometryClass;
 	}
 
+	@Override
 	public boolean compareEqual(Matchable obj) {
 		if (!(obj instanceof MathMappingParameter)){
 			return false;
@@ -306,10 +302,22 @@ public class MathMappingParameter extends Parameter implements ExpressionContain
 		MathMappingParameter mmp = (MathMappingParameter)obj;
 		if (!super.compareEqual0(mmp)){
 			return false;
-		}			
+		}
 		return true;
 	}
-	
+
+	@Override
+	public boolean relate(Relatable obj, RelationVisitor rv) {
+		if (!(obj instanceof MathMappingParameter)){
+			return false;
+		}
+		MathMappingParameter mmp = (MathMappingParameter)obj;
+		if (!super.relate0(mmp, rv)){
+			return false;
+		}
+		return true;
+	}
+
 	public GeometryClass getGeometryClass(){
 		return this.fieldGeometryClass;
 	}

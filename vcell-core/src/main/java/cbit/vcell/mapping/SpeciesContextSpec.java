@@ -21,15 +21,10 @@ import java.util.Map;
 import cbit.vcell.model.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.vcell.util.BeanUtils;
-import org.vcell.util.Compare;
-import org.vcell.util.Displayable;
-import org.vcell.util.Issue;
+import org.vcell.util.*;
 import org.vcell.util.Issue.IssueCategory;
 import org.vcell.util.Issue.IssueSource;
-import org.vcell.util.IssueContext;
 import org.vcell.util.IssueContext.ContextType;
-import org.vcell.util.Matchable;
 import org.vcell.util.document.Identifiable;
 
 import cbit.vcell.geometry.GeometryClass;
@@ -175,6 +170,8 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
 			}
 			return null;
 		}
+
+		@Override
 		public boolean compareEqual(Matchable obj) {
 			if (!(obj instanceof SpeciesContextSpecParameter)){
 				return false;
@@ -186,7 +183,24 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
 			if (fieldParameterRole != smp.fieldParameterRole){
 				return false;
 			}
-			
+
+			return true;
+		}
+
+
+		@Override
+		public boolean relate(Relatable obj, RelationVisitor rv) {
+			if (!(obj instanceof SpeciesContextSpecParameter)){
+				return false;
+			}
+			SpeciesContextSpecParameter smp = (SpeciesContextSpecParameter)obj;
+			if (!super.relate0(smp, rv)){
+				return false;
+			}
+			if (fieldParameterRole != smp.fieldParameterRole){
+				return false;
+			}
+
 			return true;
 		}
 
@@ -312,20 +326,36 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
 			return SpeciesContextSpec.this.getNameScope();
 		}
 
+		@Override
 		public boolean compareEqual(Matchable obj) {
 			if (!(obj instanceof SpeciesContextSpecProxyParameter)){
 				return false;
 			}
 			SpeciesContextSpecProxyParameter other = (SpeciesContextSpecProxyParameter)obj;
 			if (getTarget() instanceof Matchable && other.getTarget() instanceof Matchable &&
-				Compare.isEqual((Matchable)getTarget(), (Matchable)other.getTarget())){
+					Compare.isEqual((Matchable)getTarget(), (Matchable)other.getTarget())){
 				return true;
 			}else{
 				return false;
 			}
 		}
 
-		
+
+		@Override
+		public boolean relate(Relatable obj, RelationVisitor rv) {
+			if (!(obj instanceof SpeciesContextSpecProxyParameter)){
+				return false;
+			}
+			SpeciesContextSpecProxyParameter other = (SpeciesContextSpecProxyParameter)obj;
+			if (getTarget() instanceof Relatable && other.getTarget() instanceof Relatable &&
+					((Relatable)getTarget()).relate((Relatable)other.getTarget(), rv)){
+				return true;
+			}else{
+				return false;
+			}
+		}
+
+
 		@Override
 		public String getDescription() {
 			if (getTarget() instanceof SpeciesContext) {

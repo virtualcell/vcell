@@ -19,20 +19,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import org.vcell.util.BeanUtils;
-import org.vcell.util.Cacheable;
-import org.vcell.util.Compare;
-import org.vcell.util.DataAccessException;
-import org.vcell.util.Displayable;
-import org.vcell.util.Issue;
+import org.vcell.util.*;
 import org.vcell.util.Issue.IssueCategory;
 import org.vcell.util.Issue.IssueSource;
 import org.vcell.util.Issue.Severity;
-import org.vcell.util.IssueContext;
 import org.vcell.util.IssueContext.ContextType;
-import org.vcell.util.Matchable;
-import org.vcell.util.TokenMangler;
-import org.vcell.util.VCAssert;
 import org.vcell.util.document.Identifiable;
 import org.vcell.util.document.KeyValue;
 
@@ -61,7 +52,7 @@ import cbit.vcell.parser.SymbolTableFunctionEntry;
 @SuppressWarnings("serial")
 public abstract class ReactionStep implements ModelProcess, Model.ElectricalTopologyListener,
 		Cacheable, Serializable, ScopedSymbolTable, Matchable, VetoableChangeListener, PropertyChangeListener, Identifiable, 
-		IssueSource, Displayable, VCellSbmlName
+		IssueSource, Displayable, VCellSbmlName, Relatable
 {
 
 	public static final String PROPERTY_NAME_REACTION_PARTICIPANTS = "reactionParticipants";
@@ -216,11 +207,7 @@ public void addReactionParticipant(ReactionParticipant reactionParticipant) thro
 public synchronized void addVetoableChangeListener(java.beans.VetoableChangeListener listener) {
 	getVetoPropertyChange().addVetoableChangeListener(listener);
 }
-/**
- * This method was created in VisualAge.
- * @return boolean
- * @param obj java.lang.Object
- */
+
 protected boolean compareEqual0(ReactionStep rs) {
 	if (rs == null) {
 		return false;
@@ -234,11 +221,11 @@ protected boolean compareEqual0(ReactionStep rs) {
 	if (!Compare.isEqualOrNull(getSbmlId(), rs.getSbmlId())){
 		return false;
 	}
-	
+
 	if (!getStructure().compareEqual(rs.getStructure())){
 		return false;
 	}
-	
+
 	if (!getKinetics().compareEqual(rs.getKinetics())) {
 		return false;
 	}
@@ -246,18 +233,56 @@ protected boolean compareEqual0(ReactionStep rs) {
 	if (fieldPhysicsOptions != rs.fieldPhysicsOptions){
 		return false;
 	}
-	
+
 	if (bReversible != rs.bReversible){
 		return false;
 	}
-	
+
 	if (!Compare.isEqual(fieldReactionParticipants, rs.fieldReactionParticipants)) {
 		return false;
 	}
 	if(!Compare.isEqualOrNull(getAnnotation(), rs.getAnnotation())){
 		return false;
 	}
-	
+
+	return true;
+}
+
+
+protected boolean relate0(ReactionStep rs, RelationVisitor rv) {
+	if (rs == null) {
+		return false;
+	}
+	if (!rv.relateOrNull(getName(),rs.getName())){
+		return false;
+	}
+	if (!rv.relateOrNull(getSbmlId(), rs.getSbmlId())){
+		return false;
+	}
+
+	if (!rv.relate(getStructure(), rs.getStructure())){
+		return false;
+	}
+
+	if (!rv.relate(getKinetics(), rs.getKinetics())) {
+		return false;
+	}
+
+	if (!rv.relate(fieldPhysicsOptions, rs.fieldPhysicsOptions)){
+		return false;
+	}
+
+	if (!rv.relate(bReversible, rs.bReversible)){
+		return false;
+	}
+
+	if (!rv.relate(fieldReactionParticipants, rs.fieldReactionParticipants)) {
+		return false;
+	}
+	if(!rv.relateOrNull(getAnnotation(), rs.getAnnotation())){
+		return false;
+	}
+
 	return true;
 }
 /**
@@ -744,10 +769,7 @@ public void propertyChange(PropertyChangeEvent evt) {
 		}
 	}
 }
-/**
- * This method was created by a SmartGuide.
- * @param symbolTable cbit.vcell.parser.SymbolTable
- */
+
 public void rebindAllToModel(Model model) throws ExpressionException, ModelException, PropertyVetoException {
 	this.model = model;
 	
@@ -1115,11 +1137,7 @@ public void vetoableChange(PropertyChangeEvent e) throws PropertyVetoException {
  		}
  	}
 }
-/**
- * This method was created by a SmartGuide.
- * @param ps java.io.PrintStream
- * @exception java.lang.Exception The exception description.
- */
+
 @Deprecated
 public String getAnnotation() {
 	return annotation;

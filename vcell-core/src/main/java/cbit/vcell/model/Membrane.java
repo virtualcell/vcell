@@ -14,6 +14,8 @@ import java.beans.PropertyVetoException;
 
 import org.vcell.util.Issue.IssueSource;
 import org.vcell.util.Matchable;
+import org.vcell.util.Relatable;
+import org.vcell.util.RelationVisitor;
 import org.vcell.util.document.KeyValue;
 
 import cbit.vcell.units.VCUnitDefinition;
@@ -74,32 +76,38 @@ public static String getDefaultMembraneVoltageName(String structureName){
 }
 
 
-/**
- * This method was created in VisualAge.
- * @return boolean
- * @param obj java.lang.Object
- */
-public boolean compareEqual(Matchable obj) {
-	if (obj instanceof Membrane){
-		Membrane m = (Membrane)obj;
-		if (!compareEqual0(m)){
+	public boolean compareEqual(Matchable obj) {
+		if (obj instanceof Membrane){
+			Membrane m = (Membrane)obj;
+			if (!compareEqual0(m)){
+				return false;
+			}
+			if (!getMembraneVoltage().compareEqual(m.getMembraneVoltage())){
+				return false;
+			}
+			return true;
+		}else{
 			return false;
 		}
-		if (!getMembraneVoltage().compareEqual(m.getMembraneVoltage())){
-			return false;
-		}
-		return true;
-	}else{
-		return false;
 	}
-}
+
+	@Override
+	public boolean relate(Relatable obj, RelationVisitor rv) {
+		if (obj instanceof Membrane){
+			Membrane m = (Membrane)obj;
+			if (!relate0(m, rv)){
+				return false;
+			}
+			if (!rv.relate(getMembraneVoltage(), m.getMembraneVoltage())){
+				return false;
+			}
+			return true;
+		}else{
+			return false;
+		}
+	}
 
 
-/**
- * Gets the membraneVoltage property (cbit.vcell.model.MembraneVoltage) value.
- * @return The membraneVoltage property value.
- * @see #setMembraneVoltage
- */
 public MembraneVoltage getMembraneVoltage() {
 	return fieldMembraneVoltage;
 }

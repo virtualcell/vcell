@@ -13,6 +13,8 @@ package cbit.vcell.mapping.vcell_4_8;
 import java.util.Map;
 
 import org.vcell.util.Matchable;
+import org.vcell.util.Relatable;
+import org.vcell.util.RelationVisitor;
 import org.vcell.util.TokenMangler;
 
 import cbit.vcell.model.BioNameScope;
@@ -100,6 +102,7 @@ abstract class ElectricalDevice implements ScopedSymbolTable {
 			fieldVCUnitDefinition = argVCUnitDefinition;
 		}
 
+		@Override
 		public boolean compareEqual(Matchable obj) {
 			if (!(obj instanceof ElectricalDeviceParameter)){
 				return false;
@@ -111,7 +114,23 @@ abstract class ElectricalDevice implements ScopedSymbolTable {
 			if (fieldParameterRole != edp.fieldParameterRole){
 				return false;
 			}
-			
+
+			return true;
+		}
+
+		@Override
+		public boolean relate(Relatable obj, RelationVisitor rv) {
+			if (!(obj instanceof ElectricalDeviceParameter)){
+				return false;
+			}
+			ElectricalDeviceParameter edp = (ElectricalDeviceParameter)obj;
+			if (!super.relate0(edp, rv)){
+				return false;
+			}
+			if (fieldParameterRole != edp.fieldParameterRole){
+				return false;
+			}
+
 			return true;
 		}
 
