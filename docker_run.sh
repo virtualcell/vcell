@@ -3,7 +3,7 @@
 raw_command = "$(echo -ne "$1" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')" # Strip whitespace
 command="biosimulations" # default
 
-echo "<raw_command>"
+echo "<$(raw_command)>"
 
 case raw_command in
   convert)
