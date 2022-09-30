@@ -1,6 +1,6 @@
 #!/bin/bash
 
-raw_command = echo -ne "$1" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//' # Strip whitespace
+raw_command=echo -ne "$1" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//' # Strip whitespace
 command="biosimulations" # default
 
 echo -n "<"
