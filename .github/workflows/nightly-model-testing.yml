@@ -35,14 +35,16 @@ jobs:
     runs-on: ubuntu-latest
     needs: build
     steps:
+      - name: Create Docker Image Dir
+        run: mkdir /tmp/docker
       - name: Download Docker Image from `build` Job
         uses: actions/download-artifact@v3
         with:
           name: docker-image
-          path: /tmp
+          path: /tmp/docker
 
       - name: Load Downloaded Docker Image
-        run: docker load --input /tmp/docker-image
+        run: docker load --input /tmp/docker/$(ls /tmp/docker)
         
         # Get files from VCDB
       - name: Checkout Input Files
