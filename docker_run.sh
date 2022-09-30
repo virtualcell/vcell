@@ -6,6 +6,18 @@ case $1 in
     command="convert"
     shift
     ;;
+  export-omex)
+    command="export-omex"
+    shift
+    ;;
+  export-omex-batch)
+    command="export-omex-batch"
+    shift
+    ;;
+  model)
+    command="model"
+    shift
+    ;;
   execute)
     command="execute"
     shift
@@ -26,7 +38,7 @@ case $1 in
     ;;
 esac
 
-#echo "$command" "$@"
+echo "$command" "$@"
 
 java \
   -classpath '/usr/local/app/vcell/lib/*' \
