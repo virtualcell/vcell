@@ -2,34 +2,41 @@
 
 command="biosimulations"
 
-echo $1
+echo "<$1>"
 
 case $1 in
   convert)
+    echo 'convert mode requested'
     command="convert"
     shift
     ;;
   export-omex)
+    echo 'export-omex mode requested'
     command="export-omex"
     shift
     ;;
   export-omex-batch)
+    echo 'export-omex-batch mode requested'
     command="export-omex-batch"
     shift
     ;;
   model)
+    echo 'model mode requested'
     command="model"
     shift
     ;;
   execute)
+    echo 'execute mode requested'
     command="execute"
     shift
     ;;
   version)
+  echo 'version mode requested'
     command="version"
     shift
     ;;
   biosimulations)
+  echo 'biosimulations mode requested'
     command="biosimulations"
     shift
     ;;
