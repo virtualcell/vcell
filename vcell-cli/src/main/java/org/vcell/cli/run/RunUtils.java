@@ -274,6 +274,7 @@ public class RunUtils {
                 				actualTask = (Task)referredTask;
                 				sedmlSim = sedml.getSimulation(actualTask.getSimulationReference());
                             } else {
+                            	actualTask = (Task)task;
                             	sedmlSim = sedml.getSimulation(task.getSimulationReference());
                             }
                             

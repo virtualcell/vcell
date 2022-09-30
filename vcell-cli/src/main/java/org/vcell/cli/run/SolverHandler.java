@@ -70,6 +70,7 @@ public class SolverHandler {
     Map<AbstractTask, List<Variable>> taskToVariableMap = new LinkedHashMap<> ();	// key = AbstractTask, value = list of variables calculated by this task
     Map<RepeatedTask, Set<String>> taskToChangeTargetMap = new LinkedHashMap<> ();	// key = RepeatedTask, value = list of the parameters that are being changed
     Map<Task, Set<RepeatedTask>> taskToChildRepeatedTasks = new LinkedHashMap<> ();	// key = Task, value = list of RepeatedTasks ending with this task
+    Map<String, Task> repeatedTaskToBaseTask = new LinkedHashMap<> ();				// key = RepeatedTaskId, value = Tasks at the bottom of the SubTasks chain
 
     private static void sanityCheck(VCDocument doc) {
         if (doc == null) {
@@ -131,9 +132,10 @@ public class SolverHandler {
 				actualTask = (Task)task;
 			}
         	Set<RepeatedTask> childRepeatedTasks = new LinkedHashSet<> ();
-        	assert taskToChildRepeatedTasks.containsKey(actualTask) == false;
+//        	assert taskToChildRepeatedTasks.containsKey(actualTask) == false;
 			taskToChildRepeatedTasks.put(actualTask, childRepeatedTasks);	// list of all Tasks, the set is only initialized here
         	taskToListOfSubtasksMap.put(task, subtasksList);	// may be empty if task instanceof Task
+        	repeatedTaskToBaseTask.put(task.getId(), actualTask);
         }
         for(Map.Entry<AbstractTask, List<AbstractTask>> entry : taskToListOfSubtasksMap.entrySet()) {	// populate the taskToChildRepeatedTasks map
         	AbstractTask topmostTask = entry.getKey();
@@ -141,9 +143,9 @@ public class SolverHandler {
         	if(topmostTask instanceof Task) {
         		// nothing to do except some sanity checks
         		// the taskToChildRepeatedTasks contains this key and the associated set should be empty
-        		assert dependingTasks.isEmpty() == true;							// the dependingTasks list should be empty
-        		assert taskToChildRepeatedTasks.containsKey(topmostTask) == true;	// the Task should be a key in the map
-        		assert taskToChildRepeatedTasks.get(topmostTask).isEmpty() == true;	// the set of repeated tasks associated to this task should be empty
+//        		assert dependingTasks.isEmpty() == true;							// the dependingTasks list should be empty
+//        		assert taskToChildRepeatedTasks.containsKey(topmostTask) == true;	// the Task should be a key in the map
+//        		assert taskToChildRepeatedTasks.get(topmostTask).isEmpty() == true;	// the set of repeated tasks associated to this task should be empty
         	} else {	// this is a RepeatedTask
         		Task rootTask = null;
         		for(AbstractTask dependingTask : dependingTasks) {
@@ -152,9 +154,9 @@ public class SolverHandler {
         				break;		// we found the only Task
         			}
         		}
-        		assert rootTask != null;
+//        		assert rootTask != null;
         		Set<RepeatedTask> childRepeatedTasks = taskToChildRepeatedTasks.get(rootTask);
-        		assert childRepeatedTasks.isEmpty() == true;
+//        		assert childRepeatedTasks.isEmpty() == true;
         		childRepeatedTasks.add((RepeatedTask)topmostTask);
         		for(AbstractTask dependingTask : dependingTasks) {
         			if(dependingTask instanceof RepeatedTask) {
@@ -176,7 +178,7 @@ public class SolverHandler {
                 List<DataSet> datasets = ((Report) oo).getListOfDataSets();
                 for (DataSet dataset : datasets) {
                     DataGenerator datagen = sedml.getDataGeneratorWithId(dataset.getDataReference());
-                    assert datagen != null;
+//                    assert datagen != null;
                     List<Variable> vars = new ArrayList<>(datagen.getListOfVariables());
                     for(Variable var : vars) {
                     	AbstractTask task = sedml.getTaskWithId(var.getReference());
@@ -207,8 +209,8 @@ public class SolverHandler {
 			int scanCount = sim.getScanCount();
 			
 			if(scanCount > 1) {
-				assert task instanceof RepeatedTask;
-				assert !subTasksList.isEmpty();
+//				assert task instanceof RepeatedTask;
+//				assert !subTasksList.isEmpty();
 				
 				SBMLSupport sbmlSupport = new SBMLSupport();
 				RepeatedTask rt = (RepeatedTask)task;
@@ -233,7 +235,7 @@ public class SolverHandler {
 								break;
 							}
 						}
-						assert found == true;
+//						assert found == true;
 					}
 				}
 				taskToChangeTargetMap.put(rt, targetIdSet);
@@ -242,6 +244,7 @@ public class SolverHandler {
         System.out.println("taskToSimulationMap: " + taskToSimulationMap.size());
         System.out.println("taskToListOfSubtasksMap: " + taskToListOfSubtasksMap.size());
         System.out.println("taskToVariableMap: " + taskToVariableMap.size());
+        System.out.println("repeatedTaskToBaseTask: " + repeatedTaskToBaseTask.size());
     }
 
     public HashMap<String, ODESolverResultSet> simulateAllTasks(ExternalDocInfo externalDocInfo, SedML sedml, 
@@ -294,7 +297,7 @@ public class SolverHandler {
 				}
 				
 				AbstractTask task = simulationToTaskMap.get(sim);
-				assert task != null;
+//				assert task != null;
 				if(!taskToVariableMap.containsKey(task)) {
 					continue;		// the results of this task are not used in any output, we don't need to run it
 				}
@@ -369,7 +372,7 @@ public class SolverHandler {
                         odeSolverResultSet = ((ODESolver) solver).getODESolverResultSet();
                         // must interpolate data for uniform time course which is not supported natively by the Java solvers
                         Task task = (Task) sedml.getTaskWithId(sim.getImportedTaskID());
-                        assert task != null;
+//                        assert task != null;
                         org.jlibsedml.Simulation sedmlSim = sedml.getSimulation(task.getSimulationReference());
                         if (sedmlSim instanceof UniformTimeCourse) {
                             odeSolverResultSet = RunUtils.interpolate(odeSolverResultSet, (UniformTimeCourse) sedmlSim);
@@ -473,10 +476,11 @@ public class SolverHandler {
                     }
                     RunUtils.drawBreakLine("-", 100);
                 }
+            	Task actualTask = repeatedTaskToBaseTask.get(sim.getImportedTaskID());
                 if(odeSolverResultSet != null) {
-                    resultsHash.put(sim.getImportedTaskID() + "_" + simJob.getJobIndex(), odeSolverResultSet);
+                    resultsHash.put(actualTask.getId() + "_" + simJob.getJobIndex(), odeSolverResultSet);
                 } else {
-                	resultsHash.put(sim.getImportedTaskID() + "_" + simJob.getJobIndex(), null);	// if any task fails, we still put it in the hash with a null value
+                	resultsHash.put(actualTask.getId() + "_" + simJob.getJobIndex(), null);	// if any task fails, we still put it in the hash with a null value
                 }
                 if(keepTempFiles == false) {
                 	RunUtils.removeIntermediarySimFiles(outputDirForSedml);
@@ -496,8 +500,7 @@ public class SolverHandler {
 	        		continue;	// if this happens somehow, we just don't write anything
 	        	}
 	        	AbstractTask task = simulationToTaskMap.get(sim);
-	        	assert task != null;
-	        	assert task instanceof Task;
+//	        	assert task != null;
 	        	int duration = simDurationMap.get(sim);
             	SolverTaskDescription std = sim.getSolverTaskDescription();
             	SolverDescription sd = std.getSolverDescription();
@@ -539,7 +542,7 @@ public class SolverHandler {
         } catch (Exception e) {
             logger.error("Exception encountered: " + e.getMessage(), e);
         }
-        assert singleDoc != null;
+//        assert singleDoc != null;
         biomodelName = singleDoc.getName();
         bioModel = (BioModel) singleDoc;
         sims = bioModel.getSimulations();
