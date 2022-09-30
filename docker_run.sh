@@ -4,6 +4,8 @@ command="biosimulations"
 
 echo "<$1>"
 
+raw_command = $(echo "$1" | xargs)
+
 case $1 in
   convert)
     echo 'convert mode requested'
