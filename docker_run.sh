@@ -1,12 +1,11 @@
 #!/bin/bash
 
-command="biosimulations"
-
-echo "<$1>"
-
 raw_command = $(echo "$1" | xargs) # Strip whitespace
+command="biosimulations" # default
 
-case $1 in
+echo "<raw_command>"
+
+case raw_command in
   convert)
     echo 'convert mode requested'
     command="convert"
