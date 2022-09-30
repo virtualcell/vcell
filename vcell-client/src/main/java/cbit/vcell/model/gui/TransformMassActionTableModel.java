@@ -24,6 +24,7 @@ import cbit.vcell.model.MassActionSolver;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.SimpleReaction;
+import cbit.vcell.model.TransformMassActions;
 
 
 /**
@@ -342,55 +343,7 @@ public class TransformMassActionTableModel extends AbstractTableModel implements
 		{
 			if(getIsSelected(i))
 			{
-				// for simple reaction, we replace the original kinetics with MassActionKinetics if it wasn't MassActionKinetics
-				if(origReactions[i] instanceof SimpleReaction) 
-				{
-					if(!(origReactions[i].getKinetics() instanceof MassActionKinetics))
-					{
-						//***Below we will physically change the simple reaction*** 
-						
-						//put all kinetic parameters together into array newKps
-						Vector<Kinetics.KineticsParameter> newKps = new Vector<Kinetics.KineticsParameter>();
-						
-						//get original kinetic parameters which are not current density and reaction rate.
-						//those parameters are basically the symbols in rate expression.
-						Vector<Kinetics.KineticsParameter> origKps = new Vector<Kinetics.KineticsParameter>();
-						Kinetics.KineticsParameter[] Kps = origReactions[i].getKinetics().getKineticsParameters();
-						for (int j = 0; j < Kps.length; j++) {
-							if (!(Kps[j].getRole() == Kinetics.ROLE_CurrentDensity || Kps[j].getRole() == Kinetics.ROLE_ReactionRate))
-							{
-								origKps.add(Kps[j]);
-							}
-						}
-						
-						// create mass action kinetics for the original reaction step
-						MassActionKinetics maKinetics = new MassActionKinetics(origReactions[i]);
-						maKinetics.getKineticsParameterFromRole(Kinetics.ROLE_KForward).setExpression(trs[i].getMassActionFunction().getForwardRate());
-						maKinetics.getKineticsParameterFromRole(Kinetics.ROLE_KReverse).setExpression(trs[i].getMassActionFunction().getReverseRate());
-						
-						// copy rate, currentdensity, Kf and Kr to the new Kinetic
-						// Parameter list first(to make sure that paramters are in
-						// the correct order in the newly created Mass Action
-						// Kinetics)
-						for (int j = 0; j < maKinetics.getKineticsParameters().length; j++) {
-							newKps.add(maKinetics.getKineticsParameters(j));
-						}
-						// copy other kinetic parameters from original kinetics
-						for (int j = 0; j < origKps.size(); j++) {
-							newKps.add(origKps.elementAt(j));
-						}
-						// add parameters to mass action kinetics
-						KineticsParameter[] newParameters = new KineticsParameter[newKps.size()];
-						newParameters = (KineticsParameter[]) newKps.toArray(newParameters);
-						maKinetics.addKineticsParameters(newParameters);
-												
-						//after adding all the parameters, we bind the forward/reverse rate expression with symbol table (the reaction step itself)
-						origReactions[i].getKinetics().getKineticsParameterFromRole(Kinetics.ROLE_KForward).getExpression().bindExpression(origReactions[i]);
-						origReactions[i].getKinetics().getKineticsParameterFromRole(Kinetics.ROLE_KReverse).getExpression().bindExpression(origReactions[i]);
-					}
-				}
-				// for flux, we set the flux reaction back, coz we will parse it to mass action form in stochastic math mapping.
-				// However, we don't physically change it.
+				TransformMassActions.transformKinetics(origReactions, trs, i);
 			}
 		}
 		String msg = "";

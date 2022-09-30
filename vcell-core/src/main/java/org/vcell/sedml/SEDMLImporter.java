@@ -59,11 +59,13 @@ import org.vcell.sbml.vcell.SBMLImporter;
 import org.vcell.sbml.vcell.SBMLSymbolMapping;
 import org.vcell.sbml.vcell.SymbolContext;
 import org.vcell.util.FileUtils;
+import org.vcell.util.RelationVisitor;
 
 import cbit.util.xml.VCLogger;
 import cbit.util.xml.VCLoggerException;
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.biomodel.ModelUnitConverter;
 import cbit.vcell.mapping.MappingException;
 import cbit.vcell.mapping.MathMapping;
 import cbit.vcell.mapping.MathMappingCallbackTaskAdapter;
@@ -83,9 +85,12 @@ import cbit.vcell.matrix.MatrixException;
 import cbit.vcell.model.Model.ModelParameter;
 import cbit.vcell.model.Model.ReservedSymbol;
 import cbit.vcell.model.ModelException;
+import cbit.vcell.model.ModelRelationVisitor;
+import cbit.vcell.model.ModelUnitSystem;
 import cbit.vcell.model.ReactionParticipant;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.SpeciesContext;
+import cbit.vcell.model.TransformMassActions;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.solver.ConstantArraySpec;
@@ -126,6 +131,7 @@ public class SEDMLImporter {
 	
 	private HashMap<BioModel, SBMLImporter> importMap = new HashMap<BioModel, SBMLImporter>();
 
+	private SEDMLRecorder sedmlRecorder = null;
 	
 	public  SEDMLImporter(VCLogger transLogger, ExternalDocInfo externalDocInfo, SedML sedml, boolean exactMatchOnly) throws FileNotFoundException, XMLException {
 		this.transLogger = transLogger;
@@ -351,18 +357,30 @@ public class SEDMLImporter {
 			while (docIter.hasNext()) {
 				BioModel doc = docIter.next();
 				for (int i = 0; i < doc.getSimulationContexts().length; i++) {
-					if (doc.getSimulationContext(i).getSimulations().length == 0) {
+					if (doc.getSimulationContext(i).getName().startsWith("original_imported_")) {
 						doc.removeSimulationContext(doc.getSimulationContext(i));
 						i--;
 					}
 				}
-				if (doc.getSimulations().length == 0) docIter.remove();
+				if (doc.getSimulationContexts().length == 0) docIter.remove();
 			}
-			// finally try to consolidate SimContexts into fewer (posibly just one) BioModels
+			// try to consolidate SimContexts into fewer (posibly just one) BioModels
 			// unlikely to happen from SEDMLs not originating from VCell, but very useful for roundtripping if so
 			// TODO: maybe try to detect that and only try if of VCell origin
 			mergeBioModels(uniqueBioModelsList);
-			return uniqueBioModelsList;
+			// make imported BioModel(s) VCell-friendly
+			List<BioModel> vcbms = new ArrayList<BioModel>();
+			for (BioModel bm : uniqueBioModelsList) {
+				ModelUnitSystem vcUnits = ModelUnitSystem.createDefaultVCModelUnitSystem();
+				BioModel vcbm = ModelUnitConverter.createBioModelWithNewUnitSystem(bm, vcUnits);
+				// cannot do this for now, as it can be very expensive (hours!!)
+				// also has serious memory issues (runs out of memory even with bumping up to Xmx12G
+//				if (!externalDocInfo.getFile().getName().startsWith("biomodel_523")) {
+//					TransformMassActions.applyTransformAll(vcbm.getModel());
+//				}
+				vcbms.add(vcbm);
+			}
+			return vcbms;
 		} catch (Exception e) {
 			throw new RuntimeException("Unable to initialize bioModel for the given selection\n"+e.getMessage(), e);
 		}
@@ -431,9 +449,10 @@ public class SEDMLImporter {
 		BioModel bm0 = bioModels.get(0);
 		for (int i = 1; i < bioModels.size(); i++) {
 			System.out.println("----comparing model from----"+bioModels.get(i)+" with model from "+bm0);
-			boolean matchable = bioModels.get(i).getModel().compareEqual(bm0.getModel());
-			System.out.println(matchable);
-			if (!matchable) return;
+			RelationVisitor rvNotStrict = new ModelRelationVisitor(false);
+			boolean equivalent = bioModels.get(i).getModel().relate(bm0.getModel(),rvNotStrict);
+			System.out.println(equivalent);
+			if (!equivalent) return;
 		}
 		// all have matchable model, try to merge by pooling SimContexts
 		Document dom = null;
@@ -705,7 +724,7 @@ public class SEDMLImporter {
 				}
 				createOverrides(simulation, functions);
 				// we didn't bomb out, so update the simulation
-				simulation.setImportedTaskID(selectedTask.getId());
+				simulation.setImportedTaskID(referredTask.getId());
 			}
 		}
 	}

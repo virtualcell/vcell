@@ -721,7 +721,7 @@ private void addReactions() throws SbmlException, XMLStreamException {
 					} else {
 						// need to get another name for param and need to change all its refereces in the other kinParam euqations.
 					}
-					Pair<String, String> origParam = new Pair<String, String> (rxnName, paramName);
+					Pair<String, String> origParam = new Pair<String, String> (rxnName, vcKineticsParams[j].getName());
 					l2gMap.put(origParam, paramName);	// keeps its name but becomes a global (?)
 					ASTNode paramFormulaNode = getFormulaFromExpression(kinParamExprs[j]);
 					AssignmentRule sbmlParamAssignmentRule = sbmlModel.createAssignmentRule();

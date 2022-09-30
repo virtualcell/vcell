@@ -327,11 +327,6 @@
     		<version>2.1.1</version>
 		</dependency>
 		<dependency>
-			<groupId>org.jmathml</groupId>
-			<artifactId>jmathml</artifactId>
-			<version>2.2.1</version>
-		</dependency>
-		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
 			<version>1.7.13</version>
