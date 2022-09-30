@@ -4,7 +4,7 @@ command="biosimulations"
 
 echo "<$1>"
 
-raw_command = $(echo "$1" | xargs)
+raw_command = $(echo "$1" | xargs) # Strip whitespace
 
 case $1 in
   convert)
