@@ -15,9 +15,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 
-import org.vcell.util.CommentStringTokenizer;
-import org.vcell.util.Compare;
-import org.vcell.util.Matchable;
+import org.vcell.util.*;
 
 import cbit.vcell.matrix.MatrixException;
 import cbit.vcell.matrix.RationalExp;
@@ -183,6 +181,23 @@ public class MassActionSolver {
 								return false;
 							}
 							if (getStoichiometry() != rp.getStoichiometry()){
+								return false;
+							}
+							return true;
+						}
+						@Override
+						public boolean relate(Relatable obj, RelationVisitor rv) {
+							ReactionParticipant rp = (ReactionParticipant)obj;
+							if (rp == null){
+								return false;
+							}
+							if (!rv.relate(getSpecies(),rp.getSpecies())){
+								return false;
+							}
+							if (!rv.relate(getStructure(),rp.getStructure())){
+								return false;
+							}
+							if (!rv.relate(getStoichiometry(), rp.getStoichiometry())){
 								return false;
 							}
 							return true;

@@ -11,21 +11,7 @@
 package cbit.vcell.xml;
 import java.beans.PropertyVetoException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Locale;
-import java.util.Set;
-import java.util.StringTokenizer;
-import java.util.TreeMap;
-import java.util.TreeSet;
-import java.util.Vector;
+import java.util.*;
 import java.util.function.Consumer;
 
 import cbit.vcell.model.*;
@@ -3106,6 +3092,9 @@ MathDescription getMathDescription(Element param, Geometry geometry) throws XmlP
 		tempelement = (Element)iterator.next();
 		getPostProcessingBlock(mathdes, tempelement);
 	}
+
+	mathdes.refreshDependencies();
+
 	return mathdes;
 }
 

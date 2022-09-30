@@ -34,14 +34,6 @@ public Constant(String name, Expression exp) {
 		throw new IllegalArgumentException("exp is null");
 	}
 	this.exp = new Expression(exp);
-	try {
-		this.exp.bindExpression(null);
-	}catch (ExpressionBindingException e){
-		//
-		// this should never happen
-		//
-		e.printStackTrace(System.out);
-	}
 }
 
 

@@ -861,7 +861,9 @@ void updateFromMathDescription() {
 				}
 				renamedMap.put(name, replacement);
 			}else{
-				logger.error("didn't find a replacement for math override symbol " + name);
+				if (!mathDescriptionHash.contains(name)) {
+					logger.error("didn't find a replacement for math override symbol " + name);
+				}
 			}
 		}
 	}
@@ -959,7 +961,7 @@ public void refreshDependencies() {
 		}
 	} catch (ExpressionBindingException e) {
 		logger.error("failed to bind a math override: "+e.getMessage(), e);
-		throw new RuntimeException(e.getMessage());
+		throw new RuntimeException(e.getMessage(), e);
 	}	
 }
 

@@ -46,7 +46,7 @@ public class RationalExpUtils {
 		} else if (node instanceof ASTFuncNode) {
 			if (((ASTFuncNode)node).getFunction()==FunctionType.POW){
 				try {
-					double constantExponent = node.jjtGetChild(1).evaluateConstant();
+					double constantExponent = node.jjtGetChild(1).evaluateConstant(false);
 					if (constantExponent != Math.floor(constantExponent)){
 						throw new ExpressionException("sub-expression "+node.infixString(SimpleNode.LANGUAGE_DEFAULT)+" cannot be translated to a Rational Expression, exponent is not an integer");
 					}
@@ -80,7 +80,7 @@ public class RationalExpUtils {
 			}
 		} else if (node instanceof ASTPowerNode) {
 			try {
-				double constantExponent = node.jjtGetChild(1).evaluateConstant();
+				double constantExponent = node.jjtGetChild(1).evaluateConstant(false);
 				if (constantExponent != Math.floor(constantExponent)){
 					throw new ExpressionException("sub-expression "+node.infixString(SimpleNode.LANGUAGE_DEFAULT)+" cannot be translated to a Rational Expression, exponent is not an integer");
 				}

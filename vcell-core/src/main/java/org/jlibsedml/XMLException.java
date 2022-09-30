@@ -28,7 +28,7 @@ public class XMLException extends Exception{
 	}
 
 	public XMLException(String string) {
-		// TODO Auto-generated constructor stub
+		super(string);
 	}
 
 	

@@ -246,7 +246,6 @@ public class BiomodelsDB_TestSuite {
 			 * vcell.mathSBML.directory = "c:\\developer\\eclipse\\workspace\\mathsbml\\"
 			 * vcell.mathematica.kernel.executable = "C:\\Program Files\\Wolfram Research\\Mathematica\\7.0\\MathKernel.exe"
 			 */
-			ResourceUtil.setNativeLibraryDirectory();
 
 			PrintWriter printWriter = new PrintWriter(new FileWriter(new File(outDir, "summary.log"),true));
 			flusher.add(printWriter);
@@ -680,7 +679,6 @@ public class BiomodelsDB_TestSuite {
 		    flusher.add(sbmlWriter);
 
 		    PropertyLoader.loadProperties();
-		    ResourceUtil.setNativeLibraryDirectory();
 
 		    PrintWriter printWriter = new PrintWriter(new FileWriter(new File(outDir, "summary.log"),true));
 		    flusher.add(printWriter);

@@ -545,7 +545,7 @@ private MathCompareResults compareEquivalentCanonicalMath(MathDescription newMat
 									//
 									// difference couldn't be reconciled
 									//
-									String msg = "expressions are different Old: '"+oldExps.get(k)+"'\n"+"expressions are different New: '"+newExps.get(k)+"'";
+									String msg = "expressions are different: '"+oldExps.get(k).infix()+"' vs '"+newExps.get(k).infix()+"'";
 									logMathTexts(this, newMathDesc, Decision.MathDifferent_DIFFERENT_EXPRESSION, msg);
 									return new MathCompareResults(Decision.MathDifferent_DIFFERENT_EXPRESSION, msg);
 								}else{
@@ -628,8 +628,7 @@ private MathCompareResults compareEquivalentCanonicalMath(MathDescription newMat
 										//
 										// difference couldn't be reconciled
 										//
-										String msg = "expressions are different Old: '"+oldExps[k]+"'\n"+
-												"expressions are different New: '"+newExps[k]+"'";
+										String msg = "expressions are different: '"+oldExps[k].infix()+"' vs '"+newExps[k].infix()+"'";
 										logMathTexts(this, newMathDesc, Decision.MathDifferent_DIFFERENT_EXPRESSION, msg);
 										return new MathCompareResults(Decision.MathDifferent_DIFFERENT_EXPRESSION, msg);
 									}else{
@@ -1218,6 +1217,8 @@ public static MathDescription fromEditor(MathDescription oldMathDesc, String vcm
 	mathDesc.clearAll();
 	mathDesc.setGeometry0(oldMathDesc.getGeometry());
 	mathDesc.read_database(tokens);
+
+	mathDesc.refreshDependencies();
 
 	//
 	// compute warning string (if necessary)
@@ -2086,7 +2087,8 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueList) {
 			try {
 				var.getExpression().evaluateConstant();
 			} catch (Exception ex) {
-				ex.printStackTrace(System.out);
+				String msg = "Constant cannot be evaluated to a number, "+var.getName()+"="+var.getExpression().infix();
+				logger.error(msg, ex);
 				Issue issue = new Issue(var, issueContext, IssueCategory.MathDescription_Constant_NotANumber, VCellErrorMessages.getErrorMessage(VCellErrorMessages.MATH_DESCRIPTION_CONSTANT, var.getExpression().infix()), Issue.SEVERITY_ERROR);
 				issueList.add(issue);
 			}
@@ -3223,6 +3225,14 @@ public void addParticleMolecularType(ParticleMolecularType particleMolecularType
 
 
 public void refreshDependencies() {
+	for (Variable var : Collections.list(getVariables())){
+		try {
+			var.bind(this);
+		} catch (ExpressionBindingException e) {
+			logger.warn("unable to bind expression for math variable "+var.getName()+" when reading from VCML: "+e.getMessage());
+		}
+	}
+
 	for (SubDomain subDomain : this.subDomainList){
 		subDomain.refreshDependencies(this);
 	}
@@ -3469,12 +3479,10 @@ public static MathCompareResults testEquivalency(MathSymbolTableFactory mathSymb
 			// now compare
 			return canonicalMath2.compareEquivalentCanonicalMath(canonicalMath1);
 		}
-	}catch (MathException e){
-		e.printStackTrace(System.out);
-		throw new RuntimeException(e.getMessage());
-	}catch (ExpressionException e){
-		e.printStackTrace(System.out);
-		throw new RuntimeException(e.getMessage());
+	}catch (MathException | ExpressionException e){
+		String msg = "failure while testing for math equivalency: "+e.getMessage();
+		logger.error(msg, e);
+		throw new RuntimeException(msg, e);
 	}
 }
 

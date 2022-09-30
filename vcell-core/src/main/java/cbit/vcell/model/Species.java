@@ -10,32 +10,31 @@
 
 package cbit.vcell.model;
 
-
+import java.beans.PropertyChangeSupport;
 import java.beans.PropertyVetoException;
+import java.beans.VetoableChangeListener;
+import java.beans.VetoableChangeSupport;
 
-import org.vcell.util.Compare;
-import org.vcell.util.Displayable;
-import org.vcell.util.Matchable;
+import org.vcell.util.*;
 import org.vcell.util.document.Identifiable;
 
 import cbit.vcell.Historical;
 
 @SuppressWarnings("serial")
-public class Species implements	java.beans.VetoableChangeListener,org.vcell.util.Cacheable,
-	Identifiable, Displayable {
+public class Species implements VetoableChangeListener, Cacheable, Relatable, Identifiable, Displayable {
 
-	protected transient java.beans.PropertyChangeSupport propertyChange;
-	protected transient java.beans.VetoableChangeSupport vetoPropertyChange;
-	private java.lang.String fieldCommonName = null;
+	protected transient PropertyChangeSupport propertyChange;
+	protected transient VetoableChangeSupport vetoPropertyChange;
+	private String fieldCommonName = null;
 	private String fieldAnnotation = null;
-	private cbit.vcell.model.DBSpecies fieldDBSpecies = null;
+	private DBSpecies fieldDBSpecies = null;
 
 public Species(String commonName,String argAnnotation) throws IllegalArgumentException {
 	this(commonName,argAnnotation,null);
 }      
 
 
-public Species(String commonName,String argAnnotation, cbit.vcell.model.DBSpecies argDBSpecies) throws IllegalArgumentException {
+public Species(String commonName,String argAnnotation, DBSpecies argDBSpecies) throws IllegalArgumentException {
 	this.fieldAnnotation = argAnnotation;
 	this.fieldDBSpecies = argDBSpecies;
 	
@@ -48,44 +47,23 @@ public Species(String commonName,String argAnnotation, cbit.vcell.model.DBSpecie
 	}
 }      
 
-
-/**
- * The addPropertyChangeListener method was generated to support the propertyChange field.
- */
 public synchronized void addPropertyChangeListener(java.beans.PropertyChangeListener listener) {
 	getPropertyChange().addPropertyChangeListener(listener);
 }
 
-
-/**
- * The addPropertyChangeListener method was generated to support the propertyChange field.
- */
 public synchronized void addPropertyChangeListener(java.lang.String propertyName, java.beans.PropertyChangeListener listener) {
 	getPropertyChange().addPropertyChangeListener(propertyName, listener);
 }
 
-
-/**
- * The addVetoableChangeListener method was generated to support the vetoPropertyChange field.
- */
 public synchronized void addVetoableChangeListener(java.beans.VetoableChangeListener listener) {
 	getVetoPropertyChange().addVetoableChangeListener(listener);
 }
 
-
-/**
- * The addVetoableChangeListener method was generated to support the vetoPropertyChange field.
- */
 public synchronized void addVetoableChangeListener(java.lang.String propertyName, java.beans.VetoableChangeListener listener) {
 	getVetoPropertyChange().addVetoableChangeListener(propertyName, listener);
 }
 
 
-/**
- * This method was created in VisualAge.
- * @return boolean
- * @param obj java.lang.Object
- */
 public boolean compareEqual(Matchable obj) {
 	if (obj instanceof Species){
 		Species s = (Species)obj;
@@ -105,179 +83,117 @@ public boolean compareEqual(Matchable obj) {
 	}
 }
 
+	@Override
+	public boolean relate(Relatable obj, RelationVisitor rv) {
+		if (!(obj instanceof Species)) {
+			return false;
+		}
+		Species s = (Species)obj;
 
-/**
- * The firePropertyChange method was generated to support the propertyChange field.
- */
+		if (!rv.relateOrNull(getAnnotation(),s.getAnnotation())){
+			return false;
+		}
+		if (!rv.relate(getCommonName(),s.getCommonName())){
+			return false;
+		}
+		if(!rv.relateOrNull(getDBSpecies(),s.getDBSpecies())){
+			return false;
+		}
+		return true;
+	}
+
+
 public void firePropertyChange(java.beans.PropertyChangeEvent evt) {
 	getPropertyChange().firePropertyChange(evt);
 }
 
-
-/**
- * The firePropertyChange method was generated to support the propertyChange field.
- */
 public void firePropertyChange(java.lang.String propertyName, int oldValue, int newValue) {
 	getPropertyChange().firePropertyChange(propertyName, oldValue, newValue);
 }
 
-
-/**
- * The firePropertyChange method was generated to support the propertyChange field.
- */
 public void firePropertyChange(java.lang.String propertyName, java.lang.Object oldValue, java.lang.Object newValue) {
 	getPropertyChange().firePropertyChange(propertyName, oldValue, newValue);
 }
 
 
-/**
- * The firePropertyChange method was generated to support the propertyChange field.
- */
 public void firePropertyChange(java.lang.String propertyName, boolean oldValue, boolean newValue) {
 	getPropertyChange().firePropertyChange(propertyName, oldValue, newValue);
 }
 
-
-/**
- * The fireVetoableChange method was generated to support the vetoPropertyChange field.
- */
 public void fireVetoableChange(java.beans.PropertyChangeEvent evt) throws java.beans.PropertyVetoException {
 	getVetoPropertyChange().fireVetoableChange(evt);
 }
 
-
-/**
- * The fireVetoableChange method was generated to support the vetoPropertyChange field.
- */
 public void fireVetoableChange(java.lang.String propertyName, int oldValue, int newValue) throws java.beans.PropertyVetoException {
 	getVetoPropertyChange().fireVetoableChange(propertyName, oldValue, newValue);
 }
 
-
-/**
- * The fireVetoableChange method was generated to support the vetoPropertyChange field.
- */
 public void fireVetoableChange(java.lang.String propertyName, java.lang.Object oldValue, java.lang.Object newValue) throws java.beans.PropertyVetoException {
 	getVetoPropertyChange().fireVetoableChange(propertyName, oldValue, newValue);
 }
 
-
-/**
- * The fireVetoableChange method was generated to support the vetoPropertyChange field.
- */
 public void fireVetoableChange(java.lang.String propertyName, boolean oldValue, boolean newValue) throws java.beans.PropertyVetoException {
 	getVetoPropertyChange().fireVetoableChange(propertyName, oldValue, newValue);
 }
 
-
-/**
- * Gets the speciesReference property (cbit.vcell.dictionary.SpeciesReference) value.
- * @return The speciesReference property value.
- * @see #setSpeciesReference
- */
 @Historical
 public String getAnnotation() {
 	return fieldAnnotation;
 }
 
 
-/**
- * Gets the commonName property (java.lang.String) value.
- * @return The commonName property value.
- * @see #setCommonName
- */
 public java.lang.String getCommonName() {
 	return fieldCommonName;
 }
 
 
-/**
- * Gets the speciesReference property (cbit.vcell.dictionary.SpeciesReference) value.
- * @return The speciesReference property value.
- * @see #setSpeciesReference
- */
-public cbit.vcell.model.DBSpecies getDBSpecies() {
+public DBSpecies getDBSpecies() {
 	return fieldDBSpecies;
 }
 
 
-/**
- * Accessor for the propertyChange field.
- */
 protected java.beans.PropertyChangeSupport getPropertyChange() {
 	if (propertyChange == null) {
 		propertyChange = new java.beans.PropertyChangeSupport(this);
-	};
+	}
 	return propertyChange;
 }
 
 
-/**
- * Accessor for the vetoPropertyChange field.
- */
 protected java.beans.VetoableChangeSupport getVetoPropertyChange() {
 	if (vetoPropertyChange == null) {
 		vetoPropertyChange = new java.beans.VetoableChangeSupport(this);
-	};
+	}
 	return vetoPropertyChange;
 }
 
 
-/**
- * The hasListeners method was generated to support the propertyChange field.
- */
 public synchronized boolean hasListeners(java.lang.String propertyName) {
 	return getPropertyChange().hasListeners(propertyName);
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (1/31/2003 2:16:46 PM)
- */
 public void refreshDependencies() {
 	removeVetoableChangeListener(this);
 	addVetoableChangeListener(this);
 }
 
-/**
- * The removePropertyChangeListener method was generated to support the propertyChange field.
- */
 public synchronized void removePropertyChangeListener(java.beans.PropertyChangeListener listener) {
 	getPropertyChange().removePropertyChangeListener(listener);
 }
 
-
-/**
- * The removePropertyChangeListener method was generated to support the propertyChange field.
- */
 public synchronized void removePropertyChangeListener(java.lang.String propertyName, java.beans.PropertyChangeListener listener) {
 	getPropertyChange().removePropertyChangeListener(propertyName, listener);
 }
 
-
-/**
- * The removeVetoableChangeListener method was generated to support the vetoPropertyChange field.
- */
 public synchronized void removeVetoableChangeListener(java.beans.VetoableChangeListener listener) {
 	getVetoPropertyChange().removeVetoableChangeListener(listener);
 }
 
-
-/**
- * The removeVetoableChangeListener method was generated to support the vetoPropertyChange field.
- */
 public synchronized void removeVetoableChangeListener(java.lang.String propertyName, java.beans.VetoableChangeListener listener) {
 	getVetoPropertyChange().removeVetoableChangeListener(propertyName, listener);
 }
 
-
-/**
- * Sets the commonName property (java.lang.String) value.
- * @param commonName The new value for the property.
- * @exception java.beans.PropertyVetoException The exception description.
- * @see #getCommonName
- */
 public void setCommonName(java.lang.String commonName) throws java.beans.PropertyVetoException {
 	String oldValue = fieldCommonName;
 	fireVetoableChange("commonName", oldValue, commonName);
@@ -285,13 +201,6 @@ public void setCommonName(java.lang.String commonName) throws java.beans.Propert
 	firePropertyChange("commonName", oldValue, commonName);
 }
 
-
-/**
- * Sets the commonName property (java.lang.String) value.
- * @param commonName The new value for the property.
- * @exception java.beans.PropertyVetoException The exception description.
- * @see #getCommonName
- */
 public void setDBSpecies(cbit.vcell.model.DBSpecies argDBSpecies) throws java.beans.PropertyVetoException {
 	cbit.vcell.model.DBSpecies oldValue = fieldDBSpecies;
 	fireVetoableChange("dbFormalSpecies", oldValue, argDBSpecies);
@@ -299,25 +208,12 @@ public void setDBSpecies(cbit.vcell.model.DBSpecies argDBSpecies) throws java.be
 	firePropertyChange("dbFormalSpecies", oldValue, argDBSpecies);
 }
 
-
-/**
- * This method was created in VisualAge.
- * @return java.lang.String
- */
 @Override
 public String toString() {
 	return "Species@"+Integer.toHexString(hashCode())+"("+"'commonName='"+getCommonName()+"')";
 }
 
 
-	/**
-	 * This method gets called when a constrained property is changed.
-	 *
-	 * @param     evt a <code>PropertyChangeEvent</code> object describing the
-	 *   	      event source and the property that has changed.
-	 * @exception PropertyVetoException if the recipient wishes the property
-	 *              change to be rolled back.
-	 */
 public void vetoableChange(java.beans.PropertyChangeEvent e) throws java.beans.PropertyVetoException {
 	if (e.getSource()==this){
 		if (e.getPropertyName().equals("commonName")){
@@ -350,4 +246,5 @@ public void vetoableChange(java.beans.PropertyChangeEvent e) throws java.beans.P
 	public String getDisplayType() {
 		return typeName;
 	}
+
 }

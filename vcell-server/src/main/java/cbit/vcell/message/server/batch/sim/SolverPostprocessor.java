@@ -33,14 +33,11 @@ import cbit.vcell.message.server.jmx.VCellServiceMXBean;
 import cbit.vcell.message.server.jmx.VCellServiceMXBeanImpl;
 import cbit.vcell.mongodb.VCMongoMessage;
 import cbit.vcell.mongodb.VCMongoMessage.ServiceName;
-import cbit.vcell.resource.OperatingSystemInfo.OsType;
 import cbit.vcell.resource.PropertyLoader;
-import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.simdata.PortableCommand;
 import cbit.vcell.simdata.PortableCommandWrapper;
 import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.vcell.solver.server.SimulationMessage;
-import cbit.vcell.util.NativeLoader;
 /**
  * Insert the type's description here.
  * Creation date: (10/25/2001 4:14:09 PM)
@@ -61,8 +58,6 @@ public class SolverPostprocessor  {
 		try {
 
 			PropertyLoader.loadProperties(POST_PROCESSOR_PROPERTIES);
-			ResourceUtil.setNativeLibraryDirectory();
-			NativeLoader.setOsType(OsType.LINUX);
 
 			KeyValue simKey = new KeyValue(args[0]);
 			String userName = args[1];

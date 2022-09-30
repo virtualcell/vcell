@@ -149,7 +149,8 @@ public class Libsedml {
         return SEDMLTags.SEDML_L1V1_NS.equalsIgnoreCase(doc.getRootElement()
                 .getNamespaceURI()) || SEDMLTags.SEDML_L1V2_NS.equalsIgnoreCase(doc.getRootElement()
                         .getNamespaceURI()) || SEDMLTags.SEDML_L1V3_NS.equalsIgnoreCase(doc.getRootElement()
-                                .getNamespaceURI());
+                                .getNamespaceURI()) || SEDMLTags.SEDML_L1V4_NS.equalsIgnoreCase(doc.getRootElement()
+                                		.getNamespaceURI());
 
     }
 
@@ -329,7 +330,7 @@ public class Libsedml {
             }
             return new ArchiveComponents(contents, docs);
         } catch (Exception e) {
-            throw new XMLException("Error reading archive", e);
+            throw new XMLException("Error reading archive: " + e.getMessage());
         } finally {
             try {
                 zis.close();

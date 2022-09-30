@@ -61,7 +61,8 @@ public Node copyTreeBinary() {
 public Node differentiate(String independentVariable) throws ExpressionException {
 	throw new ExpressionException("differentiation not supported");	 
 }
-public double evaluateConstant() throws ExpressionException {
+@Override
+public double evaluateConstant(boolean substituteConstants) throws ExpressionException {
 	throw new ExpressionException("AssignNode cannot be evaluated as a constant");
 }    
 public RealInterval evaluateInterval(RealInterval intervals[]) throws ExpressionException {
@@ -83,16 +84,14 @@ public double evaluateVector(double values[]) throws ExpressionException {
 	return eval;	 
 */
 }    
-/**
- * This method was created by a SmartGuide.
- * @exception java.lang.Exception The exception description.
- */
-public Node flatten() throws ExpressionException {
+
+@Override
+public Node flatten(boolean substituteConstants) throws ExpressionException {
 
 	ASTAssignNode assignNode = new ASTAssignNode();
 	
-	assignNode.jjtAddChild(jjtGetChild(0).flatten());
-	assignNode.jjtAddChild(jjtGetChild(1).flatten());
+	assignNode.jjtAddChild(jjtGetChild(0).flatten(substituteConstants));
+	assignNode.jjtAddChild(jjtGetChild(1).flatten(substituteConstants));
 
 	return assignNode;
 }

@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import jscl.math.Debug;
+import jscl.math.Expression;
 import jscl.math.Generic;
 import jscl.math.polynomial.Basis;
 import jscl.math.polynomial.Monomial;
@@ -75,16 +76,26 @@ public class Standard {
     }
 
     void add(List list) {
+        long timeoutValue_ms = Expression.timeoutMS.get();
         Iterator it=list.iterator();
         while(it.hasNext()) {
+            long currentTime = System.currentTimeMillis();
+            if (timeoutValue_ms > 0 && currentTime > timeoutValue_ms) {
+                throw new Expression.ExpressionTimeoutException("timeout JSCL Standard.add()");
+            }
             Polynomial p=(Polynomial)it.next();
             if(p.signum()!=0) add(p);
         }
     }
 
     void compute() {
+        long timeoutValue_ms = Expression.timeoutMS.get();
         Debug.println("compute");
         while(!pairs.isEmpty()) {
+            long currentTime = System.currentTimeMillis();
+            if (timeoutValue_ms > 0 && currentTime > timeoutValue_ms) {
+                throw new Expression.ExpressionTimeoutException("timeout in Standard.compute()");
+            }
             Pair pa=(Pair)pairs.keySet().iterator().next();
             process(pa);
             remove(pa);

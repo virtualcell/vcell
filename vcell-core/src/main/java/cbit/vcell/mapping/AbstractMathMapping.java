@@ -7,15 +7,10 @@ import cbit.vcell.biomodel.ModelUnitConverter;
 import cbit.vcell.math.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.vcell.util.BeanUtils;
-import org.vcell.util.Compare;
-import org.vcell.util.Issue;
+import org.vcell.util.*;
 import org.vcell.util.Issue.IssueCategory;
 import org.vcell.util.Issue.IssueSource;
-import org.vcell.util.IssueContext;
 import org.vcell.util.IssueContext.ContextType;
-import org.vcell.util.Matchable;
-import org.vcell.util.TokenMangler;
 
 import cbit.vcell.client.constants.GuiConstants;
 import cbit.vcell.geometry.CompartmentSubVolume;
@@ -299,6 +294,7 @@ public class MathMappingParameter extends Parameter implements ExpressionContain
 		this.fieldGeometryClass = geometryClass;
 	}
 
+	@Override
 	public boolean compareEqual(Matchable obj) {
 		if (!(obj instanceof MathMappingParameter)){
 			return false;
@@ -306,10 +302,22 @@ public class MathMappingParameter extends Parameter implements ExpressionContain
 		MathMappingParameter mmp = (MathMappingParameter)obj;
 		if (!super.compareEqual0(mmp)){
 			return false;
-		}			
+		}
 		return true;
 	}
-	
+
+	@Override
+	public boolean relate(Relatable obj, RelationVisitor rv) {
+		if (!(obj instanceof MathMappingParameter)){
+			return false;
+		}
+		MathMappingParameter mmp = (MathMappingParameter)obj;
+		if (!super.relate0(mmp, rv)){
+			return false;
+		}
+		return true;
+	}
+
 	public GeometryClass getGeometryClass(){
 		return this.fieldGeometryClass;
 	}
@@ -714,11 +722,6 @@ public SimulationContext getSimulationContext() {
 	return simContext;
 }
 
-/**
- * Gets the mathMappingParameters index property (cbit.vcell.mapping.MathMappingParameter) value.
- * @return The mathMappingParameters property value.
- * @param index The index value into the property array.
- */
 public MathMappingParameter getMathMappingParameter(String argName) {
 	for (int i = 0; i < fieldMathMappingParameters.length; i++){
 		if (fieldMathMappingParameters[i].getName().equals(argName)){
@@ -853,12 +856,6 @@ protected java.beans.VetoableChangeSupport getVetoPropertyChange() {
 	return vetoPropertyChange;
 }
 
-/**
- * Sets the mathMappingParameters property (MathMappingParameter[]) value.
- * @param kineticsParameters The new value for the property.
- * @exception java.beans.PropertyVetoException The exception description.
- * @see #getMathMappingParameters
- */
 protected void setMathMapppingParameters(MathMappingParameter[] mathMappingParameters) throws java.beans.PropertyVetoException {
 	MathMappingParameter[] oldValue = fieldMathMappingParameters;
 	fireVetoableChange("mathMappingParameters", oldValue, mathMappingParameters);
@@ -1018,10 +1015,6 @@ protected Enumeration<SpeciesContextMapping> getSpeciesContextMappings() {
 
 /**
  * Substitutes appropriate variables for speciesContext bindings
- *
- * @return cbit.vcell.parser.Expression
- * @param origExp cbit.vcell.parser.Expression
- * @param structureMapping cbit.vcell.mapping.StructureMapping
  */
 protected Expression getIdentifierSubstitutions(Expression origExp, VCUnitDefinition desiredExpUnitDef,
 		GeometryClass geometryClass) throws ExpressionException, MappingException {
@@ -1092,21 +1085,12 @@ protected Expression getIdentifierSubstitutions(Expression origExp, VCUnitDefini
 				
 				if (ste != null){
 					String newName = getMathSymbol(ste,geometryClass);
-					if (!newName.equals(symbols[i])){
-						newExp.substituteInPlace(new Expression(symbols[i]),new Expression(newName));
-					}
+					newExp.substituteInPlace(new Expression(symbols[i]),new Expression(newName));
 				}
 			}
 			return newExp;
 		}
 
-/**
- * Substitutes appropriate variables for speciesContext bindings
- *
- * @return cbit.vcell.parser.Expression
- * @param origExp cbit.vcell.parser.Expression
- * @param structureMapping cbit.vcell.mapping.StructureMapping
- */
 public String getMathSymbol(SymbolTableEntry ste, GeometryClass geometryClass) throws MappingException {
 
 	String mathSymbol = getMathSymbol0(ste,geometryClass);
@@ -1128,13 +1112,6 @@ public String getMathSymbol(SymbolTableEntry ste, GeometryClass geometryClass) t
 	return mathSymbol;
 }
 
-/**
- * Substitutes appropriate variables for speciesContext bindings
- *
- * @return cbit.vcell.parser.Expression
- * @param origExp cbit.vcell.parser.Expression
- * @param structureMapping cbit.vcell.mapping.StructureMapping
- */
 protected final String getMathSymbol0(SymbolTableEntry ste, GeometryClass geometryClass)
 		throws MappingException {
 			String steName = ste.getName();

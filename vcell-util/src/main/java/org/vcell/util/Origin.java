@@ -33,6 +33,27 @@ public Origin(double newX,double newY,double newZ) {
 	this.y = newY;
 	this.z = newZ;
 }
+
+	public Origin getAsClipped(int dimension){
+		switch (dimension) {
+			case 0: {
+				return new Origin(1, 1, 1);
+			}
+			case 1: {
+				return new Origin(this.x, 1, 1);
+			}
+			case 2: {
+				return new Origin(this.x, this.y, 1);
+			}
+			case 3: {
+				return new Origin(this.x, this.y, this.z);
+			}
+			default:{
+				throw new IllegalArgumentException("dimension must be between 0 and 3");
+			}
+		}
+	}
+
 /**
  * This method was created in VisualAge.
  * @return boolean

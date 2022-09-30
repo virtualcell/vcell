@@ -82,8 +82,19 @@
 			<artifactId>junit</artifactId>
 			<scope>test</scope>
 		</dependency>
-
-
+<!--		&lt;!&ndash; https://mvnrepository.com/artifact/com.github.stefanbirkner/system-rules &ndash;&gt;-->
+<!--		<dependency>-->
+<!--			<groupId>com.github.stefanbirkner</groupId>-->
+<!--			<artifactId>system-rules</artifactId>-->
+<!--			<version>1.19.0</version>-->
+<!--			<scope>test</scope>-->
+<!--		</dependency>-->
+		<!-- https://mvnrepository.com/artifact/com.google.code.gson/gson -->
+		<dependency>
+			<groupId>com.google.code.gson</groupId>
+			<artifactId>gson</artifactId>
+			<version>2.9.1</version>
+		</dependency>
 		<dependency>
 			<groupId>org.vcell</groupId>
 			<artifactId>vcell-math</artifactId>
@@ -227,12 +238,14 @@
 			<groupId>org.scijava</groupId>
 			<artifactId>scijava-common</artifactId>
 		</dependency>
+		
 		<!-- https://mvnrepository.com/artifact/org.scala-saddle/jhdf5_2.10 -->
 		<dependency>
 			<groupId>org.scala-saddle</groupId>
 			<artifactId>jhdf5_2.10</artifactId>
 			<version>2.9</version>
 		</dependency>
+
 		<!-- https://mvnrepository.com/artifact/org.apache.commons/commons-math3 -->
 		<dependency>
 			<groupId>org.apache.commons</groupId>
@@ -312,11 +325,6 @@
     		<groupId>net.sf.jung</groupId>
     		<artifactId>jung-samples</artifactId>
     		<version>2.1.1</version>
-		</dependency>
-		<dependency>
-			<groupId>org.jmathml</groupId>
-			<artifactId>jmathml</artifactId>
-			<version>2.2.1</version>
 		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>

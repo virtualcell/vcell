@@ -33,17 +33,10 @@ import org.vcell.model.rbm.MolecularTypePattern;
 import org.vcell.model.rbm.RbmUtils;
 import org.vcell.model.rbm.SpeciesPattern;
 import org.vcell.model.rbm.SpeciesPattern.Bond;
-import org.vcell.util.Cacheable;
-import org.vcell.util.CommentStringTokenizer;
-import org.vcell.util.Compare;
-import org.vcell.util.Displayable;
-import org.vcell.util.Issue;
+import org.vcell.util.*;
 import org.vcell.util.Issue.IssueCategory;
 import org.vcell.util.Issue.IssueSource;
-import org.vcell.util.IssueContext;
 import org.vcell.util.IssueContext.ContextType;
-import org.vcell.util.Matchable;
-import org.vcell.util.Pair;
 import org.vcell.util.document.KeyValue;
 
 import cbit.vcell.parser.Expression;
@@ -53,7 +46,7 @@ import cbit.vcell.parser.NameScope;
 import cbit.vcell.units.VCUnitDefinition;
 
 @SuppressWarnings("serial")
-public class SpeciesContext implements Cacheable, Matchable, EditableSymbolTableEntry, VetoableChangeListener, BioModelEntityObject,
+public class SpeciesContext implements Cacheable, Matchable, Relatable, EditableSymbolTableEntry, VetoableChangeListener, BioModelEntityObject,
 	IssueSource, Displayable, VCellSbmlName
 {
 	private KeyValue key = null;
@@ -107,36 +100,68 @@ public synchronized void addVetoableChangeListener(VetoableChangeListener listen
 	getVetoPropertyChange().addVetoableChangeListener(listener);
 }
 
-public boolean compareEqual(Matchable aThat) {
-	if (this == aThat) {
+	@Override
+	public boolean compareEqual(Matchable aThat) {
+		if (this == aThat) {
+			return true;
+		}
+		if (!(aThat instanceof SpeciesContext)) {
+			return false;
+		}
+		SpeciesContext sc = (SpeciesContext)aThat;
+		if (!Compare.isEqual(getSpecies(),sc.getSpecies())) {
+			return false;
+		}
+		if (!Compare.isEqual(getStructure(),sc.getStructure())) {
+			return false;
+		}
+		if (!Compare.isEqual(getName(),sc.getName())) {
+			return false;
+		}
+		if (!Compare.isEqualOrNull(getSbmlName(),sc.getSbmlName())) {
+			return false;
+		}
+		if (!Compare.isEqualOrNull(getSbmlId(),sc.getSbmlId())) {
+			return false;
+		}
+		if (!Compare.isEqual(speciesPattern,sc.getSpeciesPattern())) {
+			return false;
+		}
 		return true;
 	}
-	if (!(aThat instanceof SpeciesContext)) {
-		return false;
-	}
-	SpeciesContext sc = (SpeciesContext)aThat;
-	if (!Compare.isEqual(getSpecies(),sc.getSpecies())) {
-		return false;
-	}
-	if (!Compare.isEqual(getStructure(),sc.getStructure())) {
-		return false;
-	}
-	if (!Compare.isEqual(getName(),sc.getName())) {
-		return false;
-	}
-	if (!Compare.isEqualOrNull(getSbmlName(),sc.getSbmlName())) {
-		return false;
-	}
-	if (!Compare.isEqualOrNull(getSbmlId(),sc.getSbmlId())) {
-		return false;
-	}
-	if (!Compare.isEqual(speciesPattern,sc.getSpeciesPattern())) {
-		return false;
-	}
-	return true;
-}
 
-private final static String createContextName(Species species, Structure structure) {
+
+	@Override
+	public boolean relate(Relatable aThat, RelationVisitor rv) {
+		if (this == aThat) {
+			return true;
+		}
+		if (!(aThat instanceof SpeciesContext)) {
+			return false;
+		}
+		SpeciesContext sc = (SpeciesContext)aThat;
+		if (!rv.relate(getSpecies(),sc.getSpecies())) {
+			return false;
+		}
+		if (!rv.relate(getStructure(),sc.getStructure())) {
+			return false;
+		}
+		if (!rv.relate(getName(),sc.getName())) {
+			return false;
+		}
+		if (!rv.relateOrNull(getSbmlName(),sc.getSbmlName())) {
+			return false;
+		}
+		if (!rv.relateOrNull(getSbmlId(),sc.getSbmlId())) {
+			return false;
+		}
+		if (!rv.relate(speciesPattern,sc.getSpeciesPattern())) {
+			return false;
+		}
+		return true;
+	}
+
+	private final static String createContextName(Species species, Structure structure) {
 	return org.vcell.util.TokenMangler.fixTokenStrict(species.getCommonName()+"_"+structure.getName());
 }
 

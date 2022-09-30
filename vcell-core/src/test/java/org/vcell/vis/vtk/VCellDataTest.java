@@ -9,8 +9,6 @@ import org.vcell.vis.io.VCellSimFiles;
 import org.vcell.vis.mapping.vcell.CartesianMeshVtkFileWriter;
 import org.vcell.vis.vcell.CartesianMesh;
 
-import cbit.vcell.resource.ResourceUtil;
-
 public class VCellDataTest {
 
 	/**
@@ -18,8 +16,6 @@ public class VCellDataTest {
 	 */
 	public static void main(String[] args) {
 		try {
-			ResourceUtil.setNativeLibraryDirectory();
-
 			KeyValue simKey = new KeyValue("1661241954");
 			String pathPrefix = "C:\\Users\\schaff\\.vcell\\simdata\\user\\";
 			

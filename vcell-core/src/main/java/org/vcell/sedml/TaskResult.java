@@ -1,5 +1,11 @@
 package org.vcell.sedml;
 
+import com.google.gson.annotations.SerializedName;
+
 public enum TaskResult {
-	SUCCEEDED, FAILED;
+	@SerializedName("Suceeded")
+	SUCCEEDED,
+	
+	@SerializedName("Failed")
+	FAILED;
 }

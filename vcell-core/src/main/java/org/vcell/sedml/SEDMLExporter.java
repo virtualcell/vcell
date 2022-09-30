@@ -1,18 +1,24 @@
 package org.vcell.sedml;
 
+import org.vcell.sbml.SbmlException;
+import org.vcell.sbml.SimSpec;
+import org.vcell.sbml.vcell.SBMLExporter;
+import org.vcell.util.Pair;
+import org.vcell.util.TokenMangler;
+
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.nio.file.Path;
+
 import java.nio.file.Paths;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -32,6 +38,7 @@ import javax.xml.transform.stream.StreamResult;
 
 import org.jdom.Namespace;
 //import org.jdom.Element;
+
 import org.jlibsedml.Algorithm;
 import org.jlibsedml.AlgorithmParameter;
 import org.jlibsedml.ChangeAttribute;
@@ -43,7 +50,6 @@ import org.jlibsedml.FunctionalRange;
 import org.jlibsedml.Libsedml;
 import org.jlibsedml.Model;
 import org.jlibsedml.Notes;
-import org.jlibsedml.Parameter;
 import org.jlibsedml.Plot2D;
 import org.jlibsedml.Plot3D;
 import org.jlibsedml.Range;
@@ -54,7 +60,6 @@ import org.jlibsedml.SEDMLTags;
 import org.jlibsedml.SedML;
 import org.jlibsedml.SetValue;
 import org.jlibsedml.SubTask;
-import org.jlibsedml.Surface;
 import org.jlibsedml.Task;
 import org.jlibsedml.UniformRange;
 import org.jlibsedml.UniformRange.UniformType;
@@ -63,42 +68,24 @@ import org.jlibsedml.Variable;
 import org.jlibsedml.VariableSymbol;
 import org.jlibsedml.VectorRange;
 import org.jlibsedml.XPathTarget;
-import org.jlibsedml.modelsupport.KisaoOntology;
-import org.jlibsedml.modelsupport.KisaoTerm;
 import org.jlibsedml.modelsupport.SBMLSupport;
 import org.jlibsedml.modelsupport.SBMLSupport.CompartmentAttribute;
 import org.jlibsedml.modelsupport.SBMLSupport.ParameterAttribute;
 import org.jlibsedml.modelsupport.SBMLSupport.SpeciesAttribute;
 import org.jlibsedml.modelsupport.SUPPORTED_LANGUAGE;
-import org.jmathml.ASTCi;
+
 import org.jmathml.ASTNode;
-import org.jmathml.MathMLReader;
+
 import org.sbml.libcombine.*;
-import org.vcell.sbml.SbmlException;
-import org.vcell.sbml.SimSpec;
-import org.vcell.sbml.UnsupportedSbmlExportException;
-import org.vcell.sbml.vcell.SBMLExporter;
-import org.vcell.sbml.vcell.StructureSizeSolver;
-import org.vcell.sedml.SEDMLConversion;
-import org.vcell.sedml.SEDMLLogger.TaskLog;
-import org.vcell.sedml.TaskResult;
-import org.vcell.sedml.TaskType;
-import org.vcell.util.FileUtils;
-import org.vcell.util.Pair;
-import org.vcell.util.TokenMangler;
-import org.vcell.util.document.BioModelChildSummary.MathType;
+
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-import com.google.common.base.CaseFormat;
-
 import cbit.util.xml.XmlUtil;
+
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.biomodel.ModelUnitConverter;
-import cbit.vcell.clientdb.DocumentManager;
 import cbit.vcell.geometry.GeometryClass;
-import cbit.vcell.mapping.GeometryContext;
-import cbit.vcell.mapping.MappingException;
 import cbit.vcell.mapping.MathMapping;
 import cbit.vcell.mapping.MathSymbolMapping;
 import cbit.vcell.mapping.SimulationContext;
@@ -107,20 +94,14 @@ import cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecParameter;
 import cbit.vcell.mapping.StructureMapping;
 import cbit.vcell.mapping.SimulationContext.Application;
 import cbit.vcell.mapping.StructureMapping.StructureMappingParameter;
+import cbit.vcell.mapping.MappingException;
 import cbit.vcell.math.Constant;
-import cbit.vcell.math.Function;
-import cbit.vcell.math.MathException;
 import cbit.vcell.math.MathUtilities;
-import cbit.vcell.matrix.MatrixException;
 import cbit.vcell.model.Kinetics.KineticsParameter;
 import cbit.vcell.model.Membrane;
 import cbit.vcell.model.Model.ModelParameter;
 import cbit.vcell.model.Model.ReservedSymbol;
-import cbit.vcell.model.Model.ReservedSymbolRole;
-import cbit.vcell.model.ModelException;
-import cbit.vcell.model.ModelProcess;
 import cbit.vcell.model.ModelQuantity;
-import cbit.vcell.model.ModelUnitSystem;
 import cbit.vcell.model.ProxyParameter;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
@@ -129,27 +110,21 @@ import cbit.vcell.parser.DivideByZeroException;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.parser.ExpressionUtils;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.parser.VariableSymbolTable;
-import cbit.vcell.server.SimulationJobStatusPersistent;
-import cbit.vcell.solver.AnnotatedFunction;
 import cbit.vcell.solver.ConstantArraySpec;
 import cbit.vcell.solver.ErrorTolerance;
 import cbit.vcell.solver.MathOverrides;
 import cbit.vcell.solver.NonspatialStochHybridOptions;
 import cbit.vcell.solver.NonspatialStochSimOptions;
 import cbit.vcell.solver.Simulation;
-import cbit.vcell.solver.SimulationJob;
-import cbit.vcell.solver.SimulationOwner;
-import cbit.vcell.solver.SimulationSymbolTable;
 import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solver.SolverTaskDescription;
 import cbit.vcell.solver.TimeBounds;
 import cbit.vcell.solver.TimeStep;
-import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XmlHelper;
 import cbit.vcell.xml.XmlParseException;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -173,16 +148,23 @@ public class SEDMLExporter {
 	private String sbmlLanguageURN = SUPPORTED_LANGUAGE.SBML_GENERIC.getURN();
 	private String vcmlLanguageURN = SUPPORTED_LANGUAGE.VCELL_GENERIC.getURN();
 	
-	private SEDMLLogger sedmlLogger = null;
+	private SEDMLRecorder sedmlRecorder = null;
 	
+
 	public SEDMLExporter(String argJobId, BioModel argBiomodel, int argLevel, int argVersion, List<Simulation> argSimsToExport) {
+		this(argJobId, argBiomodel, argLevel, argVersion, argSimsToExport, null);
+	}
+
+	public SEDMLExporter(String argJobId, BioModel argBiomodel, int argLevel, int argVersion, List<Simulation> argSimsToExport, String jsonFilePath) {
+
 		super();
 		
 		this.jobId = argJobId;
 		this.vcBioModel = argBiomodel;
 		this.sedmlLevel = argLevel;
 		this.sedmlVersion = argVersion;
-		this.sedmlLogger = new SEDMLLogger(argJobId, SEDMLConversion.EXPORT);
+
+		this.sedmlRecorder = new SEDMLRecorder(argJobId, SEDMLConversion.EXPORT, jsonFilePath);
         // we need to collect simulation names to be able to match sims in BioModel clone
 		if (argSimsToExport != null && argSimsToExport.size() > 0) {
 	        for (Simulation sim : argSimsToExport) {
@@ -195,6 +177,8 @@ public class SEDMLExporter {
 
 	public SEDMLDocument getSEDMLDocument(String sPath, String sBaseFileName, ModelFormat modelFormat, 
 				boolean bFromCLI, boolean bRoundTripSBMLValidation) {
+		
+		double start = System.currentTimeMillis();
 
 		// Create an SEDMLDocument and create the SEDMLModel from the document, so that other details can be added to it in translateBioModel()
 		SEDMLDocument sedmlDocument = new SEDMLDocument(this.sedmlLevel, this.sedmlVersion);
@@ -225,17 +209,20 @@ public class SEDMLExporter {
 		sedmlModel = sedmlDocument.getSedMLModel();
 		sedmlModel.setAdditionalNamespaces(nsList);
 		
-		translateBioModelToSedML(sPath, sBaseFileName, modelFormat, bFromCLI, bRoundTripSBMLValidation);
+		this.translateBioModelToSedML(sPath, sBaseFileName, modelFormat, bFromCLI, bRoundTripSBMLValidation);
 		
+		double stop = System.currentTimeMillis();
+		Exception timer = new Exception(Double.toString((stop-start)/1000)+" seconds");
 		// update overall status
 		if (bFromCLI) {
-			if (sedmlLogger.hasErrors()) {
-				sedmlLogger.addTaskLog(sedmlLogger.new TaskLog(vcBioModel.getName(), TaskType.BIOMODEL, TaskResult.FAILED, null));
+			if (sedmlRecorder.hasErrors()) {
+				sedmlRecorder.addTaskLog(vcBioModel.getName(), TaskType.BIOMODEL, TaskResult.FAILED, timer);
 			} else {
-				sedmlLogger.addTaskLog(sedmlLogger.new TaskLog(vcBioModel.getName(), TaskType.BIOMODEL, TaskResult.SUCCEEDED, null));
+				sedmlRecorder.addTaskLog(vcBioModel.getName(), TaskType.BIOMODEL, TaskResult.SUCCEEDED, timer);
 			}
 		}
 		
+		this.sedmlRecorder.exportToJSON();
 		return sedmlDocument;
 	}
 	private void translateBioModelToSedML(String savePath, String sBaseFileName, ModelFormat modelFormat,
@@ -258,11 +245,11 @@ public class SEDMLExporter {
 				try {
 					// convert to SBML units; this also ensures we will use a clone
 					vcBioModel = ModelUnitConverter.createBioModelWithSBMLUnitSystem(vcBioModel);
-					sedmlLogger.addTaskLog(sedmlLogger.new TaskLog(vcBioModel.getName(), TaskType.UNITS, TaskResult.SUCCEEDED, null));
+					sedmlRecorder.addTaskLog(vcBioModel.getName(), TaskType.UNITS, TaskResult.SUCCEEDED, null);
 				} catch (Exception e1) {
 					String msg = "unit conversion failed for BioModel '"+vcBioModel.getName()+"': " + e1.getMessage();
 					logger.error(msg, e1);
-					sedmlLogger.addTaskLog(sedmlLogger.new TaskLog(vcBioModel.getName(), TaskType.UNITS, TaskResult.FAILED, e1));
+					sedmlRecorder.addTaskLog(vcBioModel.getName(), TaskType.UNITS, TaskResult.FAILED, e1);
 					if (bFromCLI) {
 						return;
 					} else {
@@ -270,57 +257,62 @@ public class SEDMLExporter {
 					}
 				}
 				SimulationContext[] simContexts = vcBioModel.getSimulationContexts();
-				int simContextCnt = 0;	// for model count, task subcount
-				for (SimulationContext simContext : simContexts) {
-					// Export the application itself to SBML, with default values (overrides will become model changes or repeated tasks)
-					String sbmlString = null;
-					Map<Pair <String, String>, String> l2gMap = null;		// local to global translation map
-					MathSymbolMapping mathSymbolMapping = null;
-					boolean sbmlExportFailed = false;
-					Exception simContextException = null;
-					try {
-						SBMLExporter.validateSimulationContextSupport(simContext);
-						boolean isSpatial = simContext.getGeometry().getDimension() > 0 ? true : false;
-						Pair <String, Map<Pair <String, String>, String>> pair = XmlHelper.exportSBMLwithMap(vcBioModel, 3, 2, 0, isSpatial, simContext, null, bRoundTripSBMLValidation);
-						sbmlString = pair.one;
-						l2gMap = pair.two;
-						writeModelSBML(savePath, sBaseFileName, sbmlString, simContext);
-						MathMapping mathMapping = simContext.createNewMathMapping();
-						mathSymbolMapping = mathMapping.getMathSymbolMapping();
-						sedmlLogger.addTaskLog(sedmlLogger.new TaskLog(simContext.getName(), TaskType.SIMCONTEXT, TaskResult.SUCCEEDED, null));
-					} catch (Exception e) {
-						String msg = "SBML export failed for simContext '"+simContext.getName()+"': " + e.getMessage();
-						logger.error(msg, e);
-						sbmlExportFailed = true;
-						simContextException = e;
-						sedmlLogger.addTaskLog(sedmlLogger.new TaskLog(simContext.getName(), TaskType.SIMCONTEXT, TaskResult.FAILED, e));
-					}
 
-					if (!sbmlExportFailed) {
-						// simContext was exported succesfully, now we try to export its simulations
-						exportSimulationsSBML(simContextCnt, simContext, sbmlString, l2gMap, mathSymbolMapping, bFromCLI);
-					} else {
-						if (bFromCLI) {
-							continue;
-						} else {
-							System.err.println(sedmlLogger.getLogsCSV());
-							throw new Exception ("SimContext '"+simContext.getName()+"' could not be exported to SBML :" +simContextException.getMessage());
+				if (simContexts.length == 0) {
+					sedmlRecorder.addTaskLog(vcBioModel.getName(), TaskType.MODEL, TaskResult.FAILED, new Exception("Model has no Applications"));
+				} else {
+					int simContextCnt = 0;	// for model count, task subcount
+					for (SimulationContext simContext : simContexts) {
+						// Export the application itself to SBML, with default values (overrides will become model changes or repeated tasks)
+						String sbmlString = null;
+						Map<Pair <String, String>, String> l2gMap = null;		// local to global translation map
+						MathSymbolMapping mathSymbolMapping = null;
+						boolean sbmlExportFailed = false;
+						Exception simContextException = null;
+						try {
+							SBMLExporter.validateSimulationContextSupport(simContext);
+							boolean isSpatial = simContext.getGeometry().getDimension() > 0 ? true : false;
+							Pair <String, Map<Pair <String, String>, String>> pair = XmlHelper.exportSBMLwithMap(vcBioModel, 3, 2, 0, isSpatial, simContext, null, bRoundTripSBMLValidation);
+							sbmlString = pair.one;
+							l2gMap = pair.two;
+							writeModelSBML(savePath, sBaseFileName, sbmlString, simContext);
+							MathMapping mathMapping = simContext.createNewMathMapping();
+							mathSymbolMapping = mathMapping.getMathSymbolMapping();
+							sedmlRecorder.addTaskLog(simContext.getName(), TaskType.SIMCONTEXT, TaskResult.SUCCEEDED, null);
+						} catch (Exception e) {
+							String msg = "SBML export failed for simContext '"+simContext.getName()+"': " + e.getMessage();
+							logger.error(msg, e);
+							sbmlExportFailed = true;
+							simContextException = e;
+							sedmlRecorder.addTaskLog(simContext.getName(), TaskType.SIMCONTEXT, TaskResult.FAILED, e);
 						}
-					}			
-					simContextCnt++;
+	
+						if (!sbmlExportFailed) {
+							// simContext was exported succesfully, now we try to export its simulations
+							exportSimulationsSBML(simContextCnt, simContext, sbmlString, l2gMap, mathSymbolMapping, bFromCLI);
+						} else {
+							if (bFromCLI) {
+								continue;
+							} else {
+								System.err.println(sedmlRecorder.getLogsCSV());
+								throw new Exception ("SimContext '"+simContext.getName()+"' could not be exported to SBML :" +simContextException.getMessage(), simContextException);
+							}
+						}			
+						simContextCnt++;
+					}
 				}
 			}
 	       	if(sedmlModel.getModels() != null && sedmlModel.getModels().size() > 0) {
 	       		logger.trace("Number of models in the sedml is " + sedmlModel.getModels().size());
 	       	}
-	       	if (sedmlLogger.hasErrors()) {
-				System.err.println(sedmlLogger.getLogsCSV());       		
+	       	if (sedmlRecorder.hasErrors()) {
+				System.err.println(sedmlRecorder.getLogsCSV());       		
 	       	} else {
-	       		System.out.println(sedmlLogger.getLogsCSV());
+	       		System.out.println(sedmlRecorder.getLogsCSV());
 	       	}
 		} catch (Exception e) {
 			// this only happens if not from CLI, we need to pass this down the calling thread
-			throw new RuntimeException("Error adding model to SEDML document : " + e.getMessage(),e);
+			throw new RuntimeException("Error adding model to SEDML document : " + e.getMessage(), e);
 		}
 	}
 
@@ -489,15 +481,15 @@ public class SEDMLExporter {
 				for(String taskRef : dataGeneratorTasksSet) {
 					createSEDMLoutputs(simContext, vcSimulation, dataGeneratorsOfSim, taskRef);
 				}
-				sedmlLogger.addTaskLog(sedmlLogger.new TaskLog(vcSimulation.getName(), TaskType.SIMULATION, TaskResult.SUCCEEDED, null));
+				sedmlRecorder.addTaskLog(vcSimulation.getName(), TaskType.SIMULATION, TaskResult.SUCCEEDED, null);
 			} catch (Exception e) {
-				String msg = "SEDML export failed for simulation '"+vcSimulation.getName()+"': " + e.getMessage();
+				String msg = "SEDML export failed for simulation '"+ vcSimulation.getName() + "': " + e.getMessage();
 				logger.error(msg, e);
-				sedmlLogger.addTaskLog(sedmlLogger.new TaskLog(vcSimulation.getName(), TaskType.SIMULATION, TaskResult.FAILED, e));
+				sedmlRecorder.addTaskLog(vcSimulation.getName(), TaskType.SIMULATION, TaskResult.FAILED, e);
 	        	if (bFromCLI) {
 	        		continue;
 	        	} else {
-					System.err.println(sedmlLogger.getLogsCSV());
+					System.err.println(sedmlRecorder.getLogsCSV());
 	        		throw e;
 	        	}
 			}
@@ -1598,8 +1590,8 @@ public class SEDMLExporter {
 
 	}
 
-	public SEDMLLogger getSedmlLogger() {
-		return sedmlLogger;
+	public SEDMLRecorder getSedmlLogger() {
+		return sedmlRecorder;
 	}
 
 }

@@ -10,14 +10,18 @@
 
 package cbit.image;
 
-import java.io.ByteArrayOutputStream;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.vcell.util.Hex;
+
 import java.io.IOException;
-import java.util.zip.DeflaterOutputStream;
+import java.security.MessageDigest;
 /**
  * This type was created in VisualAge.
  */
 public class VCImageUncompressed extends VCImage {
-	private byte pixels[] = null;
+	private final static Logger lg = LogManager.getLogger(VCImageUncompressed.class);
+	private final byte pixels[];
 /**
  * This method was created in VisualAge.
  * @param vcimage cbit.image.VCImage
@@ -26,15 +30,7 @@ public VCImageUncompressed(VCImage vcimage) throws ImageException{
 	super(vcimage);
 	this.pixels = vcimage.getPixels().clone();
 }
-/**
- * This method was created in VisualAge.
- * @param pix byte[]
- * @param x int
- * @param y int
- * @param z int
- * @param name java.lang.String
- * @param annot java.lang.String
- */
+
 public VCImageUncompressed(org.vcell.util.document.Version aVersion,byte pixels[], org.vcell.util.Extent aExtent, int aNumX, int aNumY, int aNumZ) throws ImageException {
 	super(aVersion, aExtent, aNumX, aNumY, aNumZ);
 	if (aNumX*aNumY*aNumZ != pixels.length){
@@ -42,16 +38,16 @@ public VCImageUncompressed(org.vcell.util.document.Version aVersion,byte pixels[
 	}
 	this.pixels = pixels;
 	initPixelClasses();
+	if (lg.isTraceEnabled()) {
+		try {
+			MessageDigest digest = MessageDigest.getInstance("SHA-256");
+			String hashUncompressed = Hex.toString(digest.digest(pixels));
+			lg.trace("Constructor(byte[]): uncompressed pixels(" + pixels.length + "): hash=" + hashUncompressed.substring(0, 6));
+		} catch (Exception e) {
+		}
+	}
 }
-/**
- * This method was created in VisualAge.
- * @param pix byte[]
- * @param x int
- * @param y int
- * @param z int
- * @param name java.lang.String
- * @param annot java.lang.String
- */
+
 public VCImageUncompressed(org.vcell.util.document.Version aVersion,int sourceValues[], org.vcell.util.Extent aExtent, int aNumX, int aNumY, int aNumZ) throws ImageException {
 	super(aVersion, aExtent, aNumX, aNumY, aNumZ);
 	if (aNumX*aNumY*aNumZ != sourceValues.length){
@@ -97,7 +93,14 @@ public VCImageUncompressed(org.vcell.util.document.Version aVersion,int sourceVa
 	
 	this.pixels = convertedPixels;
 	initPixelClasses();
-
+	if (lg.isInfoEnabled()) {
+		try {
+			MessageDigest digest = MessageDigest.getInstance("SHA-256");
+			String hashUncompressed = Hex.toString(digest.digest(pixels));
+			lg.info("Constructor(int[]): uncompressed pixels(" + pixels.length + "): hash=" + hashUncompressed.substring(0, 6));
+		} catch (Exception e) {
+		}
+	}
 }
 /**
  * getPixels method comment.
@@ -111,12 +114,8 @@ public byte[] getPixels() {
  */
 public byte[] getPixelsCompressed() throws ImageException {
 	try {
-		ByteArrayOutputStream bos = new ByteArrayOutputStream();
-		DeflaterOutputStream dos = new DeflaterOutputStream(bos);
-		//DeflaterOutputStream dos = new DeflaterOutputStream(bos,new Deflater(5,false));
-		dos.write(pixels,0,pixels.length);
-		dos.close();
-		return bos.toByteArray();
+		byte[] compressed = VCImage.deflate(pixels);
+		return compressed;
 	}catch (IOException e){
 		e.printStackTrace(System.out);
 		throw new ImageException(e.getMessage());

@@ -32,9 +32,9 @@ import org.vcell.util.UserCancelException;
 import org.vcell.util.document.VCellSoftwareVersion;
 import org.vcell.util.logging.NoLogging;
 
-import cbit.vcell.util.NativeLoader;
-
 public class ResourceUtil {
+	private static final Logger logger = LogManager.getLogger(ResourceUtil.class);
+
 	public static final String LOCAL_SOLVER_LIB_LINK_SUFFIX = "_link";
 	private static final String LOCALSOLVERS_DIR = "localsolvers";
 	private static final String PYTHONSCRIPTS_DIR = "pythonScripts";
@@ -79,12 +79,10 @@ public class ResourceUtil {
 	 */
 	private static File downloadDirectory = null;
 
-	private static boolean nativeLibrariesSetup = false;
 	/**
 	 * uniquely identify version and variant (OperatingSystemInfo)
 	 */
 	private static String ourManifest = null;
-	private static final Logger LG = LogManager.getLogger(ResourceUtil.class);
 
     /**
      * ensure class loaded so static initialization executes
@@ -96,7 +94,8 @@ public class ResourceUtil {
 	 */
 	public interface ExecutableFinder {
 		File find(String executableName) throws UserCancelException;
-	}
+	}
+
 	public static String getExecutableName(String baseName,boolean useBitSuffix,OperatingSystemInfo osi){
 		if (useBitSuffix) {
 			return baseName + osi.getExeBitSuffix();
@@ -128,20 +127,28 @@ public class ResourceUtil {
 	 * @throws FileNotFoundException if it can't
 	 * @throws BackingStoreException
 	 * @throws InterruptedException
-	 */	public static File getExecutable(String name, boolean useBitSuffix/*, ExecutableFinder efinder*/) throws FileNotFoundException, InterruptedException	{
+	 */
+	public static File getExecutable(String name, boolean useBitSuffix/*, ExecutableFinder efinder*/) throws FileNotFoundException, InterruptedException
+	{
 		String executableName = null;
 //		try{
-		OperatingSystemInfo osi = OperatingSystemInfo.getInstance( );		executableName = getExecutableName(name, useBitSuffix, osi);
+		OperatingSystemInfo osi = OperatingSystemInfo.getInstance( );
+		executableName = getExecutableName(name, useBitSuffix, osi);
 		File executable = VCellConfiguration.getFileProperty(executableName);
 		if (executable!=null){
 			return executable;
 		}
-		//		// check the system path first		//
+		//
+		// check the system path first
+		//
 		Collection<File> exes = FileUtils.findFileByName(executableName, getSystemPath());
 		if (exes != null && !exes.isEmpty()) {
 			return VCellConfiguration.setFileProperty(executableName, exes.iterator().next());
 		}
-		//		// not in path, look in common places		//		if (osi.isWindows()){
+		//
+		// not in path, look in common places
+		//
+		if (osi.isWindows()){
 			//use set to eliminate duplicates
 			Set<String> searchDirs = new HashSet<String>( );
 			String envs[] = {"ProgramFiles", "ProgramFiles(x86)", "ProgramW6432"};
@@ -152,15 +159,27 @@ public class ResourceUtil {
 				}
 			}
 			for (String pf :searchDirs) {
-				File programFiles = new File(pf);				if (programFiles.isDirectory()){					exes = FileUtils.findFileByName(executableName,FileUtils.getAllDirectoriesCollection(programFiles));					if (!exes.isEmpty()) {
+				File programFiles = new File(pf);
+				if (programFiles.isDirectory()){
+					exes = FileUtils.findFileByName(executableName,FileUtils.getAllDirectoriesCollection(programFiles));
+					if (!exes.isEmpty()) {
 						return VCellConfiguration.setFileProperty(executableName, exes.iterator().next());
 					}
 				}
-			}		}
-		throw new FileNotFoundException("cannot find " + name + " executable file " + executableName);	}	/**
+			}
+		}
+		throw new FileNotFoundException("cannot find " + name + " executable file " + executableName);
+	}
+
+	/**
 	 * @return system path directories
 	 * @throws RuntimeException if PATH environmental not set
-	 */	public static Collection<File>  getSystemPath( ) {		final String PATH = System.getenv("PATH");		if (PATH==null || PATH.length() == 0){			throw new RuntimeException("PATH environment variable not set");		}
+	 */
+	public static Collection<File>  getSystemPath( ) {
+		final String PATH = System.getenv("PATH");
+		if (PATH==null || PATH.length() == 0){
+			throw new RuntimeException("PATH environment variable not set");
+		}
 		return FileUtils.toFiles(FileUtils.splitPathString(PATH), true);
 	}
 
@@ -179,13 +198,14 @@ public class ResourceUtil {
 			}
 			break;
 
-		case WINDOWS:			break;
+		case WINDOWS:
+			break;
 		case MAC:
 			break;
 		}
 	}
 
-	/**
+	/**VCell
 	 * load solver executable from resources along with libraries
 	 * @param basename name of executable without path or os specific extension
 	 * @param vl VersionedLibrary, may not be null
@@ -208,37 +228,17 @@ public class ResourceUtil {
 				return jv;
 			}
 		}
+		String errorStr = "";
 		JavaVersion dflt = JavaVersion.values( )[0];
-		System.err.print("Whoa... VCell only runs on JVM versions ");
+		errorStr += "Whoa... VCell only runs on JVM versions: ";
 		for (JavaVersion jv: JavaVersion.values()) {
-			System.err.print(jv.versionIdentifier + " ");
+			errorStr += jv.versionIdentifier + " ";
 		}
-		System.err.print("and can't determine that its running on one of these.  Assuming " + dflt.versionIdentifier + " as a default for safety");
-		return dflt;
-	}
 
-	/**
-	 * set path to native library directory
-	 * @throws Error if load fails
-	 */
-	public static void setNativeLibraryDirectory( ) throws Error {
-		OperatingSystemInfo osi = OperatingSystemInfo.getInstance( );		if (!nativeLibrariesSetup) {
-			String iRoot = getVCellInstall().getAbsolutePath();
-			String nativeDir = iRoot + "/nativelibs/" + osi.getNativeLibDirectory();
-			NativeLoader.setNativeLibraryDirectory(nativeDir);
-		}
-		nativeLibrariesSetup = true;
-	}
-	/**
-	 * set path to native library directory
-	 * @param from directory to load file
-	 * @throws Error if load fails
-	 */
-	public static void setNativeLibraryDirectory(String from ) throws Error {
-		if (!nativeLibrariesSetup) {
-			NativeLoader.setNativeLibraryDirectory(from);
-		}
-		nativeLibrariesSetup = true;
+		errorStr += "and can't determine that its running on one of these. We found version: " + vers + " in the system. "; 
+		errorStr += "Assuming " + dflt.versionIdentifier + " as a default for safety\n";
+		logger.error(errorStr);
+		return dflt;
 	}
 
 	// getter and setter for lastUserLocalDir - temporary : until a more permanent, robust solution is thought out for running vcell locally.
@@ -400,12 +400,12 @@ public class ResourceUtil {
 				}
 				return sb.toString();
 			} catch (IOException e) {
-				LG.warn("Can't extract " + resname, e);
+				logger.warn("Can't extract " + resname, e);
 				e.printStackTrace();
 			}
 		}
 		} catch (IOException e1) {
-			LG.warn("Can't get " + resname, e1);
+			logger.warn("Can't get " + resname, e1);
 		}
 		return "not found";
 	}
@@ -475,7 +475,8 @@ public class ResourceUtil {
 	
 	public static File getVCellInstall()
 	{
-		return PropertyLoader.getRequiredDirectory(PropertyLoader.installationRoot);	}
+		return PropertyLoader.getRequiredDirectory(PropertyLoader.installationRoot);
+	}
 	
 	public static String getVCellJava() {
 		final String defaultJavaCmd = "java";

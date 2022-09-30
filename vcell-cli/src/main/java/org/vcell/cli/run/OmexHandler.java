@@ -1,7 +1,6 @@
 package org.vcell.cli.run;
 
 import cbit.vcell.resource.NativeLib;
-import cbit.vcell.resource.ResourceUtil;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -31,14 +30,8 @@ public class OmexHandler {
     // Assuming omexPath will always be absolute path
     // NB: Need to convert class to use Log4j2
     public OmexHandler(String omexPath, String outDir) throws IOException {
-        try {
-            try {
-                ResourceUtil.setNativeLibraryDirectory();
-                NativeLib.combinej.load();
-            } catch (Exception e){
-            	logger.warn("Unable to link to native 'libCombine' lib. Attemping alternate solution...");
-                NativeLib.combinej.directLoad();
-            }
+        try {      
+            NativeLib.combinej.load();
         } catch (UnsatisfiedLinkError ex) {
             logger.error("Unable to link to native 'libCombine' lib, check native lib: " + ex.getMessage());
             throw ex;

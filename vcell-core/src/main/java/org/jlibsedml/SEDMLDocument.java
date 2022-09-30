@@ -309,16 +309,11 @@ public class SEDMLDocument {
                 NamespaceContextHelper nc = new NamespaceContextHelper(docj);
                 nc.process(change.getTargetXPath());
                 xpath.setNamespaceContext(nc);
-                if (change.getChangeKind().equals(
-                        SEDMLTags.CHANGE_ATTRIBUTE_KIND)) {
-                    ModelTransformationUtils.applyAttributeChange(doc, xpath,
-                            change);
-                } else if (change.getChangeKind().equals(
-                        SEDMLTags.REMOVE_XML_KIND)) {
-                    ModelTransformationUtils.deleteXMLElement(doc, change
-                            .getTargetXPath().getTargetAsString(), xpath);
-                } else if (change.getChangeKind()
-                        .equals(SEDMLTags.ADD_XML_KIND)) {
+                if (change.getChangeKind().equals(SEDMLTags.CHANGE_ATTRIBUTE_KIND)) {
+                    ModelTransformationUtils.applyAttributeChange(doc, xpath, change);
+                } else if (change.getChangeKind().equals(SEDMLTags.REMOVE_XML_KIND)) {
+                    ModelTransformationUtils.deleteXMLElement(doc, change.getTargetXPath().getTargetAsString(), xpath);
+                } else if (change.getChangeKind().equals(SEDMLTags.ADD_XML_KIND)) {
                     AddXML addXML = (AddXML) change;
                     for (Element el : addXML.getNewXML().getXml()) {
                         el.setNamespace(Namespace.NO_NAMESPACE);

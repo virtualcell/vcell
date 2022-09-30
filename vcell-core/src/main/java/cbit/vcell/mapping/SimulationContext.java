@@ -25,21 +25,11 @@ import cbit.vcell.math.*;
 import cbit.vcell.solver.*;
 import org.vcell.model.rbm.NetworkConstraints;
 import org.vcell.sbml.vcell.StructureSizeSolver;
-import org.vcell.util.BeanUtils;
-import org.vcell.util.Compare;
-import org.vcell.util.Displayable;
-import org.vcell.util.Extent;
-import org.vcell.util.Issue;
+import org.vcell.util.*;
 import org.vcell.util.Issue.IssueCategory;
 import org.vcell.util.Issue.IssueSource;
 import org.vcell.util.Issue.Severity;
-import org.vcell.util.IssueContext;
 import org.vcell.util.IssueContext.ContextType;
-import org.vcell.util.Matchable;
-import org.vcell.util.Preference;
-import org.vcell.util.PropertyChangeListenerProxyVCell;
-import org.vcell.util.TokenMangler;
-import org.vcell.util.VCAssert;
 import org.vcell.util.document.BioModelChildSummary.MathType;
 import org.vcell.util.document.DocumentValidUtil;
 import org.vcell.util.document.ExternalDataIdentifier;
@@ -231,20 +221,31 @@ public class SimulationContext implements SimulationOwner, Versionable, Matchabl
 
 	public class SimulationContextOverridesResolver implements MathOverridesResolver {
 		private final List<SymbolReplacementTemplate> builtin_replacements = new ArrayList<>();
-		private final IdentifiableProvider bioIdentifiableProvider = new BioModel(null);
 
 		SimulationContextOverridesResolver() {
 			// test for renamed initial condition constant (changed from _init to _init_uM)
 			builtin_replacements.add(new SymbolReplacementTemplate(DiffEquMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_old,
 					DiffEquMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_uM));
 
+			// test for renamed initial condition constant (changed from _init to _init_umol_l_1)
+			builtin_replacements.add(new SymbolReplacementTemplate(DiffEquMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_old,
+					DiffEquMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_umol_l_1));
+
 			// test for renamed initial condition constant (changed from _init to _init_molecules_um_2)
 			builtin_replacements.add(new SymbolReplacementTemplate(DiffEquMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_old,
 					DiffEquMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_molecules_um_2));
 
+			// test for renamed initial condition constant (changed from _init to _init_umol_dm_2)
+			builtin_replacements.add(new SymbolReplacementTemplate(DiffEquMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_molecules_um_2,
+					DiffEquMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_umol_dm_2));
+
 			// test for renamed initial condition constant (changed from _init_molecules_per_um2 to _init_molecules_um_2)
 			builtin_replacements.add(new SymbolReplacementTemplate(DiffEquMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_old_molecules_per_um2,
 					DiffEquMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_molecules_um_2));
+
+			// test for renamed initial condition constant (changed from _init_molecules_per_um_2 to _init_umol_dm_2)
+			builtin_replacements.add(new SymbolReplacementTemplate(DiffEquMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_molecules_um_2,
+					DiffEquMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_umol_dm_2));
 
 			// test for equivalent unit systems _init_uM or _init <==> _init_umol_l_1
 			builtin_replacements.add(new SymbolReplacementTemplate(DiffEquMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_uM,
@@ -281,7 +282,7 @@ public class SimulationContext implements SimulationOwner, Versionable, Matchabl
 							VCUnitDefinition previousUnit = ste.getUnitDefinition();
 							if (ste instanceof Identifiable) {
 								Identifiable prevIdentifiableObject = (Identifiable) ste;
-								VCID previousVCID = bioIdentifiableProvider.getVCID(prevIdentifiableObject);
+								VCID previousVCID = bioModel.getVCID(prevIdentifiableObject);
 								Identifiable newIdentifiableObject = bioModel.getIdentifiableObject(previousVCID);
 								if (newIdentifiableObject instanceof SymbolTableEntry) {
 									SymbolTableEntry newBioSte = (SymbolTableEntry) newIdentifiableObject;
@@ -415,23 +416,39 @@ public class SimulationContext implements SimulationOwner, Versionable, Matchabl
 		}
 
 
-		public boolean compareEqual(Matchable obj) {
-			if (!(obj instanceof SimulationContextParameter)){
-				return false;
+			@Override public boolean compareEqual(Matchable obj) {
+				if (!(obj instanceof SimulationContextParameter)){
+					return false;
+				}
+				SimulationContextParameter mp = (SimulationContextParameter)obj;
+				if (!super.compareEqual0(mp)){
+					return false;
+				}
+				if (fieldParameterRole != mp.fieldParameterRole){
+					return false;
+				}
+
+				return true;
 			}
-			SimulationContextParameter mp = (SimulationContextParameter)obj;
-			if (!super.compareEqual0(mp)){
-				return false;
-			}
-			if (fieldParameterRole != mp.fieldParameterRole){
-				return false;
-			}
-			
-			return true;
-		}
 
 
-		public boolean isExpressionEditable(){
+			@Override public boolean relate(Relatable obj, RelationVisitor rv) {
+				if (!(obj instanceof SimulationContextParameter)){
+					return false;
+				}
+				SimulationContextParameter mp = (SimulationContextParameter)obj;
+				if (!super.relate0(mp, rv)){
+					return false;
+				}
+				if (fieldParameterRole != mp.fieldParameterRole){
+					return false;
+				}
+
+				return true;
+			}
+
+
+			public boolean isExpressionEditable(){
 			return true;
 		}
 
@@ -502,6 +519,7 @@ public class SimulationContext implements SimulationOwner, Versionable, Matchabl
 	public static final int NUM_ROLES		= 1;
 	public static final String RoleDesc = "user defined";
 
+	private transient SimulationContextOverridesResolver simulationContextOverridesResolver;
 	private Version version = null;
 	private GeometryContext geoContext = null;
 	private ReactionContext reactionContext = null;
@@ -1638,7 +1656,10 @@ public OutputFunctionContext getOutputFunctionContext() {
 
 	@Override
 	public MathOverridesResolver getMathOverridesResolver() {
-		return new SimulationContextOverridesResolver();
+		if (this.simulationContextOverridesResolver == null){
+			this.simulationContextOverridesResolver = new SimulationContextOverridesResolver();
+		}
+		return this.simulationContextOverridesResolver;
 	}
 
 	/**

@@ -49,6 +49,7 @@ import cbit.vcell.render.Vect3d;
 import cbit.vcell.units.VCUnitDefinition;
 import cbit.vcell.units.VCUnitSystem;
 import cbit.vcell.xml.XMLTags;
+import jscl.math.function.Exp;
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -82,9 +83,11 @@ import javax.xml.stream.XMLStreamException;
 import java.beans.PropertyVetoException;
 import java.io.*;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
+import java.util.zip.DataFormatException;
 
 public class SBMLImporter {
 
@@ -1715,7 +1718,11 @@ public class SBMLImporter {
 		try {
 			for (ReactionStep reactionStep : vcBioModel.getModel().getReactionSteps()) {
 				if (reactionStep.getKinetics().getKineticsDescription().isLumped()) {
-					DistributedKinetics.toDistributedKinetics((LumpedKinetics) reactionStep.getKinetics());
+					try {
+						DistributedKinetics.toDistributedKinetics((LumpedKinetics) reactionStep.getKinetics());
+					}catch (Exception e){
+						logger.warn("failed to transform lumped reaction "+reactionStep.getName()+" to distributed: "+e.getMessage(),e);
+					}
 				}
 			}
 		} catch(Exception e) {
@@ -3336,6 +3343,7 @@ public class SBMLImporter {
 		SampledFieldGeometry distanceMapSampledFieldGeometry = null;
 		ParametricGeometry parametricGeometry = null;
 
+		Map<SampledVolume,Integer> sampledVolumePixelValues = new LinkedHashMap<>();
 		for (int i = 0; i < sbmlGeometry.getListOfGeometryDefinitions().size(); i++) {
 			GeometryDefinition gd_temp = sbmlGeometry.getListOfGeometryDefinitions().get(i);
 			if (!gd_temp.isSetIsActive()) {
@@ -3412,14 +3420,38 @@ public class SBMLImporter {
 			int numX = sf.getNumSamples1();
 			int numY = sf.getNumSamples2();
 			int numZ = sf.getNumSamples3();
-			int[] samples = new int[sf.getSamplesLength()];
-			StringTokenizer tokens = new StringTokenizer(sf.getSamples()," ,;");
+			int[] samples = new int[numX*numY*numZ];
+			String sampleString = sf.getSamples();
+			if (sf.getDataType()!=DataKind.UINT8){
+				throw new SBMLImportException("only support import of sampled fields with data type uint8, found "+sf.getDataType());
+			}
+
+			StringTokenizer tokens = new StringTokenizer(sampleString," ,;");
 			int count = 0;
 			while (tokens.hasMoreTokens()){
+				// currently don't really support distance map, and must be able to parse numbers as ints
 				int sample = Integer.parseInt(tokens.nextToken());
 				samples[count++] = sample;
 			}
-			byte[] imageInBytes = new byte[samples.length];
+			if (sf.isSetCompression() && sf.getCompression()==CompressionKind.deflated){
+				byte[] compressedStringInBytes = new byte[sf.getSamplesLength()];
+				for (int i = 0; i < compressedStringInBytes.length; i++) {
+					compressedStringInBytes[i] = (byte) samples[i];
+				}
+				try {
+					String decompressedString = new String(VCImage.inflate(compressedStringInBytes), StandardCharsets.UTF_8);
+					tokens = new StringTokenizer(decompressedString," ,;");
+					count = 0;
+					while (tokens.hasMoreTokens()){
+						// currently don't really support distance map, and must be able to parse numbers as ints
+						int sample = Integer.parseInt(tokens.nextToken());
+						samples[count++] = sample;
+					}
+				} catch (IOException e) {
+					throw new SBMLImportException("failed to decompress sampled field "+sf.getId()+": "+e.getMessage(),e);
+				}
+			}
+			byte[] uncompressedImageInBytes = new byte[numX*numY*numZ]; // could be compressed, could be uncompressed
 			if (selectedGeometryDefinition == distanceMapSampledFieldGeometry) {
 				//
 				// single distance-map ... negative values are 1, zero and
@@ -3431,65 +3463,103 @@ public class SBMLImporter {
 				// could resample to higher resolution segmented images (via
 				// linear interpolation).
 				//
-				for (int i = 0; i < imageInBytes.length; i++) {
+				for (int i = 0; i < uncompressedImageInBytes.length; i++) {
 					// if (interpolation(samples[i])<0){
 					if (samples[i] < 0) {
-						imageInBytes[i] = -1;
+						uncompressedImageInBytes[i] = -1;
 					} else {
-						imageInBytes[i] = 1;
+						uncompressedImageInBytes[i] = 1;
 					}
 				}
 			} else {
-				for (int i = 0; i < imageInBytes.length; i++) {
-					imageInBytes[i] = (byte) samples[i];
+				for (int i = 0; i < uncompressedImageInBytes.length; i++) {
+					uncompressedImageInBytes[i] = (byte) samples[i];
 				}
 			}
+			ListOf<SampledVolume> sampledVolumes = sfg.getListOfSampledVolumes();
 			try {
 				// logger.trace("ident " + sf.getId() + " " + sf.getName());
 				VCImage vcImage = null;
-				CompressionKind ck = sf.getCompression();
-				DataKind dk = sf.getDataType();
-
-				if (ck == CompressionKind.deflated) {
-					vcImage = new VCImageCompressed(null, imageInBytes,
-							vcExtent, numX, numY, numZ);
-				} else {
-					switch (dk) {
-					case UINT8:
-					case UINT16:
-					case UINT32:
-						vcImage = new VCImageUncompressed(null, imageInBytes,
-								vcExtent, numX, numY, numZ);
-					default:
+				boolean bAllSampleValuesSet = true;
+				boolean bAllSampleMinAndMaxSet = true;
+				for (SampledVolume sampledVolume : sampledVolumes){
+					if (!sampledVolume.isSetSampledValue()){
+						bAllSampleValuesSet = false;
+					}
+					if (!sampledVolume.isSetMinValue() || !sampledVolume.isSetMaxValue()){
+						bAllSampleMinAndMaxSet = false;
 					}
 				}
-				if (vcImage == null) {
-					throw new SbmlException("Unsupported type combination "
-							+ ck + ", " + dk + " for sampled field "
-							+ sf.getName());
+				if (bAllSampleValuesSet) {
+					for (SampledVolume sampledVolume : sampledVolumes){
+						sampledVolumePixelValues.put(sampledVolume, (int)sampledVolume.getSampledValue());
+					}
+					vcImage = new VCImageUncompressed(null, uncompressedImageInBytes,
+							vcExtent, numX, numY, numZ);
+				}else if (bAllSampleMinAndMaxSet) {
+					// must make sure that each subvolume is represented by a single pixel value (could be a range of values)
+					// this is probably very inefficient ... no time to optimize now.
+					List<Set<Integer>> pixelValueSets = new ArrayList<>();
+					byte[] pixelValueLookupTable = new byte[256]; // new pixel value for each byte (signed 8 bit number)
+					int numSampledVolumes = sampledVolumes.size();
+					for (int i=0; i < numSampledVolumes; i++){
+						SampledVolume sampledVolume = sampledVolumes.get(i);
+						HashSet<Integer> hashSet = new HashSet<>();
+						pixelValueSets.add(hashSet);
+						double minValue = sampledVolume.getMinValue();
+						double maxValue = sampledVolume.getMaxValue();
+						// gather pixel values for this sampledVolume
+						for (byte pixel : uncompressedImageInBytes) {
+							if (pixel >= minValue && pixel < maxValue) {
+								hashSet.add(Math.abs((int)pixel));
+							}
+						}
+						// determine median value for this sampledVolume (to use as the effective 'sampledValue')
+						List<Integer> sortedPixelValues = hashSet.stream().sorted().collect(Collectors.toList());
+						if (sortedPixelValues.size()==0){
+							continue;
+						}
+						byte medianPixelValue = (byte) (sortedPixelValues.get(sortedPixelValues.size()/2) & 0xFF);
+						for (int value=(int)Math.ceil(minValue); value < maxValue; value++){
+							pixelValueLookupTable[value] = medianPixelValue;
+						}
+						sampledVolumePixelValues.put(sampledVolume,(int)medianPixelValue);
+					}
+					// create new byte array where we assign the median values
+					byte[] medianPixelImageInBytes = new byte[uncompressedImageInBytes.length];
+					for (int pixelIndex=0; pixelIndex<uncompressedImageInBytes.length; pixelIndex++){
+						medianPixelImageInBytes[pixelIndex] = pixelValueLookupTable[0xFF & ((int)uncompressedImageInBytes[pixelIndex])];
+					}
+					vcImage = new VCImageUncompressed(null, medianPixelImageInBytes,
+							vcExtent, numX, numY, numZ);
+				}else{
+					throw new SBMLImportException("SBML import of SampledVolumes with neither sampleValue not both minValue and maxValue are not yet implemented");
 				}
 				vcImage.setName(sf.getId());
-				ListOf<SampledVolume> sampledVolumes = sfg.getListOfSampledVolumes();
-				
+
 				final int numSampledVols = sampledVolumes.size();
 				if (numSampledVols == 0) {
 					throw new RuntimeException("Cannot have 0 sampled volumes in sampledField (image_based) geometry");
 				}
-				//check to see if values are uniquely integer , add set up scaling if necessary
-				double scaleFactor = checkPixelScaling(sampledVolumes, 1);
-				if (scaleFactor != 1) {
-					double checkScaleFactor = checkPixelScaling(sampledVolumes, scaleFactor);
-					VCAssert.assertTrue(checkScaleFactor != scaleFactor, "Scale factor check failed");
-				}
-				VCPixelClass[] vcpixelClasses = new VCPixelClass[numSampledVols];
+//				//check to see if values are uniquely integer , add set up scaling if necessary
+//				double scaleFactor = checkPixelScaling(sampledVolumes, 1);
+//				if (scaleFactor != 1) {
+//					double checkScaleFactor = checkPixelScaling(sampledVolumes, scaleFactor);
+//					VCAssert.assertTrue(checkScaleFactor != scaleFactor, "Scale factor check failed");
+//				}
+				List<VCPixelClass> vcpixelClasses = new ArrayList<>();
 				// get pixel classes for geometry
 				for (int i = 0; i < numSampledVols; i++) {
 					SampledVolume sVol = sampledVolumes.get(i);
 					// from subVolume, get pixelClass?
-					final int scaled = (int) (scaleFactor * sVol.getSampledValue());
-					vcpixelClasses[i] = new VCPixelClass(null, sVol.getDomainType(),scaled);
+					Integer handle = sampledVolumePixelValues.get(sVol);
+					if (handle != null) {
+						vcpixelClasses.add(new VCPixelClass(null, sVol.getDomainType(), handle));
+					}else{
+						logger.warn("skipping subVolume "+sVol+", no matching pixels found in sampledField for geometry");
+					}
 				}
-				vcImage.setPixelClasses(vcpixelClasses);
+				vcImage.setPixelClasses(vcpixelClasses.toArray(new VCPixelClass[0]));
 				// now create image geometry
 				vcGeometry = new Geometry("spatialGeom", vcImage);
 			} catch (Exception e) {
@@ -3535,16 +3605,17 @@ public class SBMLImporter {
 		HashMap<String,List<BoundaryConditionType>> domainTypeID_to_defaultBC_map = new HashMap<>();
 		HashMap<String,Integer> domainTypeId_to_handle_map = new HashMap<>();
 		try {
-			for (DomainType dt : listOfDomainTypes) {
+			for (int domainTypeIndex=0; domainTypeIndex < listOfDomainTypes.size(); domainTypeIndex++){
+				DomainType dt = listOfDomainTypes.get(domainTypeIndex);
+				domainTypeId_to_handle_map.put(dt.getId(),domainTypeIndex);
 				ArrayList<BoundaryConditionType> bcTypes = new ArrayList<>();
 				if (dt.getSpatialDimensions() == vcGeometry.getDimension()) {
 					// subvolume
-					int handle = -1; // -1 is unknown
 					Annotation analyticSubVolumeAnnotation = dt.getAnnotation();
 					if (analyticSubVolumeAnnotation != null && analyticSubVolumeAnnotation.getNonRDFannotation() != null) {
 						XMLNode analyticSubVolumeElement = analyticSubVolumeAnnotation.getNonRDFannotation().getChildElement(XMLTags.SBML_VCELL_SubVolumeAttributesTag, "*");
 						if (analyticSubVolumeElement != null) {
-							handle = Integer.parseInt(analyticSubVolumeElement.getAttrValue(XMLTags.SBML_VCELL_SubVolumeAttributesTag_handleAttr, SBMLUtils.SBML_VCELL_NS));
+							int handle = Integer.parseInt(analyticSubVolumeElement.getAttrValue(XMLTags.SBML_VCELL_SubVolumeAttributesTag_handleAttr, SBMLUtils.SBML_VCELL_NS));
 							BoundaryConditionType bcTypeXm = BoundaryConditionType.fromString(
 									analyticSubVolumeElement.getAttrValue(XMLTags.SBML_VCELL_SubVolumeAttributesTag_defaultBCtypeXminAttr, SBMLUtils.SBML_VCELL_NS));
 							BoundaryConditionType bcTypeXp = BoundaryConditionType.fromString(
@@ -3567,16 +3638,16 @@ public class SBMLImporter {
 								bcTypes.add(bcTypeZm);
 								bcTypes.add(bcTypeZp);
 							}
+							domainTypeID_to_defaultBC_map.put(dt.getId(), bcTypes);
+							domainTypeId_to_handle_map.put(dt.getId(), handle);
 						}
 					}
-					domainTypeID_to_defaultBC_map.put(dt.getId(), bcTypes);
-					domainTypeId_to_handle_map.put(dt.getId(),handle);
 					if (selectedGeometryDefinition == analyticGeometryDefinition) {
 						// will set expression later - when reading in Analytic
 						// Volumes in GeometryDefinition
 						AnalyticSubVolume analyticSubVolume = new AnalyticSubVolume(dt.getId(), new Expression(1.0));
 						vcGeometrySpec.addSubVolume(analyticSubVolume);
-						analyticSubVolume.setHandle(handle);
+						analyticSubVolume.setHandle(domainTypeId_to_handle_map.get(dt.getId()));
 					}
 //					else {
 //						// add SubVolumes later for CSG and Image-based
@@ -3645,8 +3716,8 @@ public class SBMLImporter {
 				for (SampledVolume sVol: sampledVolumes) {
 					// from subVolume, get pixelClass?
 					final String name =  sVol.getDomainType();
-					final int pixelValue = SBMLUtils.ignoreZeroFraction( sVol.getSampledValue() );
-					VCPixelClass pc = new VCPixelClass(null, name,  pixelValue); 
+					final int pixelValue = sampledVolumePixelValues.get(sVol);
+					VCPixelClass pc = new VCPixelClass(null, name, pixelValue);
 					vcpixelClasses[idx] = pc; 
 					// Create the new Image SubVolume - use index of this for
 					// loop as 'handle' for ImageSubVol?
@@ -4093,12 +4164,25 @@ public class SBMLImporter {
 		boolean unique = true;
 		Set<Integer> uniqSet = new HashSet<>();
 		for (SampledVolume sv : sampledVolumes) {
-			final double px  = sv.getSampledValue() * scaleFactor; 
-			maxPix = Math.max(maxPix, px);
-			minPix = Math.min(minPix, px);
-			int ipx  = (int) px;
-			unique &= uniqSet.add(ipx);
-		}	
+			if (sv.isSetSampledValue()) {
+				final double px = sv.getSampledValue() * scaleFactor;
+				maxPix = Math.max(maxPix, px);
+				minPix = Math.min(minPix, px);
+				int ipx = (int) px;
+				unique &= uniqSet.add(ipx);
+			}
+			if (sv.isSetMaxValue()) {
+				final double max_px = sv.getMaxValue() * scaleFactor;
+				maxPix = Math.max(maxPix, max_px);
+				unique &= uniqSet.add((int) max_px);
+			}
+
+			if (sv.isSetMinValue()) {
+				final double min_px = sv.getMinValue() * scaleFactor;
+				minPix = Math.min(minPix, min_px);
+				unique &= uniqSet.add((int) min_px);
+			}
+		}
 		if (unique) {
 			return scaleFactor;
 		}

@@ -1,217 +1,79 @@
 package cbit.vcell.util;
-import java.io.File;
-import java.lang.reflect.Field;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.prefs.BackingStoreException;
-import java.util.prefs.Preferences;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.Path;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.vcell.util.FileUtils;
 
 import cbit.vcell.resource.OperatingSystemInfo;
-import cbit.vcell.resource.OperatingSystemInfo.OsType;
+import cbit.vcell.resource.ResourceUtil;
 
 /**
- * class to load native libraries. Requires external class to set
- * {@link #setNativeLibraryDirectory(String)} and {@link #setOsType(OsType)}
- * prior to creating NativeLoader object.
+ * Class to load native dynamic libraries.
  * 
- * @author gweatherby
- *
  */
 public class NativeLoader {
 
-	/**
-	 * maximum number of times to try loading libraries before giving up
-	 * and throwing exeption
-	 */
-	public static final int NUM_ATTEMPTS = 50;
-	
-	/**
-	 * regex for linux shared libraries
-	 */
-	private final static String LINUX_REGEX = ".*so[.\\d]*$";
-	/**
-	 * regex for Windows shared libraries
-	 */
-	private final static String WINDOWS_REGEX = ".*dll$";
-	/**
-	 * regex for Mac OS X shared libraries
-	 */
-	private final static String MAC_REGEX = ".*[jni|dy]lib";
-	
-	private static String nativeLibraryDirectory  = null;
-	
-	private static final String NATIVE_PATH_PROP = "java.library.path";
-	
-	/**
-	 * pool for executing loads. Javadocs indicate should not consume resources when not runnning
-	 */
-	private static ExecutorService executor = Executors.newCachedThreadPool(new NameTheThreads());
-	
-	/** 
-	 * store names previously called
-	 */
-	private static Map<String,Future<Boolean> > cache = new HashMap<String, Future<Boolean>>( );
-	
-	private static Logger lg = LogManager.getLogger(NativeLoader.class);
-	
-	/**
-	 * library name path (see {@link NativeGroup} )
-	 */
-	static String systemLibRegex = null;
-	
-	/**
-	 * library name prefix (see {@link NativeGroup} )
-	 */
-	static String libPrefix = "lib"; //default for Mac and linux
+	private final static Logger logger = LogManager.getLogger(NativeLoader.class);
 
-	/**
-	 * preferences to use (see {@link NativeGroup} )
-	 */
-	static Preferences pref = Preferences.userNodeForPackage(NativeLoader.class);
-	/**
-	 * file separator for os (see {@link NativeGroup} )
-	 */
+	public final static int NUM_ATTEMPTS = 50; // maximum number of times to try loading libraries before giving up and throwing exeption
+	private final static String libPrefix = "lib"; //default for Mac and linux
+	//private final static String LINUX_REGEX = ".*so[.\\d]*$"; // regex for linux shared libraries
+	//private final static String WINDOWS_REGEX = ".*dll$"; // regex for Windows shared libraries
+	//private final static String MAC_REGEX = ".*[jni|dy]lib"; // regex for Mac OS X shared libraries
 	
-	final static String FILESEP = "/" ;
-	
-	/**
-	 * set native library directory for this OS
-	 * @param nativeLibraryDirectory
-	 */
-	public static void setNativeLibraryDirectory(String nativeLibraryDirectory) {
-		NativeLoader.nativeLibraryDirectory = nativeLibraryDirectory;
-		try {
-			setSystemPath();
-		} catch (Exception e) {
-			throw new RuntimeException("Exception setting support library path, some functionality may be lost",e);
-		}
+	public static void load(String libName){
+		String path = NativeLoader.generatePath(libName);
+		System.setProperty("ncsa.hdf.hdf5lib.H5.hdf5lib", path);
+		System.load(path);
+		Runtime.getRuntime().load(path);
 	}
-	
-	/**
-	 * set os type
-	 * @param osType
-	 */
-	public static void setOsType(OperatingSystemInfo.OsType osType) {
-		switch (osType) {
-		case LINUX:
-			systemLibRegex = LINUX_REGEX;
-			break;
-		case WINDOWS:
-			systemLibRegex = WINDOWS_REGEX; 
-			libPrefix = "";
-			break;
-		case MAC:
-			systemLibRegex = MAC_REGEX; 
-			final String DFLP = "DYLD_FALLBACK_LIBRARY_PATH";
-			String dflp = System.getenv(DFLP);
-			if (dflp == null) {
-				lg.warn(DFLP + " not set");
-			}
-			else if (lg.isInfoEnabled()) {
-				lg.info(DFLP + " set to " + dflp);
-			}
-			break;
-		default:
-			throw new IllegalStateException("unknown os type " + osType);
-		}
-	}
-	
-	/**
-	 * commence loading libraries matching pattern from previously set directory. If load already started, return prior value
-	 * @param namePattern see {@link NativeGroup#NativeGroup(String, String)}
-	 * @return new or existing future
-	 */
-	public static Future<Boolean> load(String namePattern) {
-		if (nativeLibraryDirectory == null) {
-			throw new IllegalStateException("load called before setNativeLibraryDirectory");
-		}
-		if (systemLibRegex == null) {
-			throw new IllegalStateException("load called before setOsType");
-		}
-		if (cache.containsKey(namePattern)) {
-			return cache.get(namePattern);
-		}
-		NativeGroup ng = new NativeGroup(namePattern, nativeLibraryDirectory);
-		Future<Boolean> f = executor.submit(ng);
-		cache.put(namePattern, f);
-		return f;
-	}
-	
-	/**
-	 * verify native directory on system native lib path, in case other code searches for it (e.g. H5)
-	 * @throws NoSuchFieldException
-	 * @throws SecurityException
-	 * @throws IllegalArgumentException
-	 * @throws IllegalAccessException
-	 */
-	private static void setSystemPath() throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException {
-		boolean found = false;
-		File nativeDir = new File(nativeLibraryDirectory);
-		String jlp = System.getProperty(NATIVE_PATH_PROP);
-		Collection<File> files = FileUtils.toFiles(FileUtils.splitPathString(jlp), true);
-		for (File f: files) {
-			if (lg.isTraceEnabled()) {
-				lg.trace("native path directory " + f.getAbsolutePath());
-			}
-			if (nativeDir.equals(f)) {
-				found = true;
-				if (lg.isDebugEnabled()) {
-					lg.debug(nativeLibraryDirectory + " found in directory " + f.getAbsolutePath() + " of " + NATIVE_PATH_PROP + " " + jlp);
-				}
-				break;
-			}
-		}
-		if (!found) {
-			files.add(nativeDir);
-			String newPath = FileUtils.pathJoinFiles(files);
-			System.setProperty(NATIVE_PATH_PROP,newPath);
-			if (lg.isDebugEnabled()) {
-				lg.debug("adding " + nativeLibraryDirectory + " to " + NATIVE_PATH_PROP + " " + jlp);
-			}
-			 
-			//clear paths cached in JVM to trigger reparsing of NATIVE_PATH_PROP
-			Field fieldSysPath = ClassLoader.class.getDeclaredField( "sys_paths" );
-			fieldSysPath.setAccessible( true );
-			fieldSysPath.set( null, null );
-		}
-	}
-	
-	/**
-	 *  factory to name threads sequentially, set as daemon, and set as
-	 *  minimum priority
-	 */
-	private static class NameTheThreads implements ThreadFactory {
-		private static AtomicLong counter = new AtomicLong(0); 
 
-		@Override
-		public Thread newThread(Runnable r) {
-			Thread t= new Thread(r);
-			t.setName("NativeLoader " + counter.getAndAdd(1));
-			t.setDaemon(true);
-			t.setPriority(Thread.MIN_PRIORITY);
-			return t;
+
+	private static String generatePath(String libName){
+		OperatingSystemInfo osi = OperatingSystemInfo.getInstance();
+		String installDir = ResourceUtil.getVCellInstall().getAbsolutePath();
+		String nativeLibDir = "nativelibs";
+		String osDir = osi.getNativeLibDirectory();
+		String libFileName = NativeLoader.getLibraryFileName(Paths.get(installDir, nativeLibDir, osDir), libName);
+
+		Path path = Paths.get(installDir, nativeLibDir, osDir, libFileName);
+		return path.toAbsolutePath().toString();
+	}
+
+	private static String getLibraryFileName(Path partialAbsPath, String libName){
+		OperatingSystemInfo osi = OperatingSystemInfo.getInstance();
+		String fileName = osi.isWindows() ? "" : libPrefix ; // unix library start with lib
+		fileName += libName;
+		return fileName + "." + NativeLoader.getAppropraiteLibrarySuffix(partialAbsPath, fileName);
+	}
+
+	private static String getAppropraiteLibrarySuffix(Path partialAbsPath, String fileName){
+		String suff;
+		OperatingSystemInfo osi = OperatingSystemInfo.getInstance();
+		if (osi.isWindows()){
+			suff = "dll";
+		} else if (osi.isMac()){
+			suff = NativeLoader.getMacLibSuffix(partialAbsPath.toAbsolutePath().toString(), fileName);
+		} else if (osi.isLinux()){
+			suff = "so";
+		} else {
+			throw new RuntimeException("Unknown OS type encountered when trying to load dynamic library");
 		}
+		return suff;
 	}
 	
-	/**
-	 * clean (clear) preferences
-	 * @throws BackingStoreException
-	 */
-	static void clean( ) throws BackingStoreException {
-		Preferences pref = Preferences.userNodeForPackage(NativeLoader.class);
-		for (String c : pref.childrenNames()) {
-			pref.node(c).clear();
+	private static String getMacLibSuffix(String partialAbsPath, String fileName) {
+		// Local list to keep track of:
+		String[] validSuffixes = {"dylib", "jnilib"};
+		for (String suff : validSuffixes) {
+			Path p = Paths.get(partialAbsPath, fileName + "." + suff);
+			if (Files.exists(p)) return suff;
 		}
-		pref.clear( );
+		// If execution gets here, we have a problem
+		String[] parts =  fileName.split("(\\|/)+");
+		String libName = parts[(parts.length) - 1];
+		throw new RuntimeException("Was not able to find MacOS version of dynamic library: " + libName);
 	}
 }

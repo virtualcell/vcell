@@ -54,11 +54,10 @@ public boolean equals(Node node);
  * @return double
  * @exception java.lang.Exception The exception description.
  */
-public double evaluateConstant() throws cbit.vcell.parser.ExpressionException;
+public double evaluateConstant(boolean substituteConstants) throws cbit.vcell.parser.ExpressionException;
 /**
- * This method was created in VisualAge.
- * @return double
- * @param values double[]
+ * @return RealInterval
+ * @param intervals RealInterval[]
  * @exception cbit.vcell.parser.ExpressionException The exception description.
  */
 RealInterval evaluateInterval(RealInterval intervals[]) throws ExpressionException;
@@ -73,7 +72,7 @@ double evaluateVector(double values[]) throws ExpressionException;
  * This method was created by a SmartGuide.
  * @exception java.lang.Exception The exception description.
  */
-Node flatten() throws ExpressionException;
+Node flatten(boolean substituteConstants) throws ExpressionException;
 /**
  * This method was created by a SmartGuide.
  * @return cbit.vcell.parser.SymbolTableEntry

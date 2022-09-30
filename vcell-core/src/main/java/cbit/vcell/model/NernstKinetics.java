@@ -19,18 +19,17 @@ import org.vcell.util.IssueContext;
 import cbit.vcell.model.Model.ElectricalTopology;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
+import org.vcell.util.Relatable;
+import org.vcell.util.RelationVisitor;
+
 /**
  * Insert the type's description here.
  * Creation date: (2/18/2002 5:07:08 PM)
  * @author: Anuradha Lakshminarayana
  */
 public class NernstKinetics extends DistributedKinetics {
-/**
- * NernstKinetics constructor comment.
- * @param reactionStep cbit.vcell.model.ReactionStep
- * @exception java.lang.Exception The exception description.
- */
-public NernstKinetics(FluxReaction fluxReaction) throws ExpressionException {
+
+	public NernstKinetics(FluxReaction fluxReaction) throws ExpressionException {
 	super(KineticsDescription.Nernst.getName(),fluxReaction);
 	try {
 		KineticsParameter currentParm = new KineticsParameter(getDefaultParameterName(ROLE_CurrentDensity),new Expression(0.0),ROLE_CurrentDensity,null);
@@ -46,33 +45,40 @@ public NernstKinetics(FluxReaction fluxReaction) throws ExpressionException {
 		throw new RuntimeException("unexpected exception: "+e.getMessage());
 	}
 }
-/**
- * Checks for internal representation of objects, not keys from database
- * @return boolean
- * @param obj java.lang.Object
- */
-public boolean compareEqual(org.vcell.util.Matchable obj) {
-	if (obj == this){
+
+	public boolean compareEqual(org.vcell.util.Matchable obj) {
+		if (obj == this){
+			return true;
+		}
+		if (!(obj instanceof NernstKinetics)){
+			return false;
+		}
+
+		NernstKinetics nk = (NernstKinetics)obj;
+
+		if (!compareEqual0(nk)){
+			return false;
+		}
+
 		return true;
 	}
-	if (!(obj instanceof NernstKinetics)){
-		return false;
-	}
-	
-	NernstKinetics nk = (NernstKinetics)obj;
 
-	if (!compareEqual0(nk)){
-		return false;
+	@Override
+	public boolean relate(Relatable obj, RelationVisitor rv) {
+		if (obj == this){
+			return true;
+		}
+		if (!(obj instanceof NernstKinetics)){
+			return false;
+		}
+		NernstKinetics nk = (NernstKinetics)obj;
+		if (!relate0(nk, rv)){
+			return false;
+		}
+		return true;
 	}
-	
-	return true;
-}
-/**
- * Insert the method's description here.
- * Creation date: (5/12/2004 3:26:54 PM)
- * @return cbit.util.Issue[]
- */
-@Override
+
+	@Override
 public void gatherIssues(IssueContext issueContext, List<Issue> issueList) {
 	
 	super.gatherIssues(issueContext,issueList);

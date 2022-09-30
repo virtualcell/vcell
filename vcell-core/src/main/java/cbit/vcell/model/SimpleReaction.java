@@ -13,6 +13,8 @@ package cbit.vcell.model;
 import java.beans.PropertyVetoException;
 
 import org.vcell.util.Matchable;
+import org.vcell.util.Relatable;
+import org.vcell.util.RelationVisitor;
 import org.vcell.util.document.KeyValue;
 
 import cbit.vcell.parser.ExpressionException;
@@ -50,6 +52,7 @@ public SimpleReaction(Model model, Structure structure,String name, boolean bRev
  * @return boolean
  * @param obj java.lang.Object
  */
+@Override
 public boolean compareEqual(Matchable obj) {
 	if (obj instanceof SimpleReaction){
 		SimpleReaction sr = (SimpleReaction)obj;
@@ -61,6 +64,20 @@ public boolean compareEqual(Matchable obj) {
 		return false;
 	}
 }
+
+	@Override
+	public boolean relate(Relatable obj, RelationVisitor visitor) {
+		if (obj instanceof SimpleReaction){
+			SimpleReaction sr = (SimpleReaction)obj;
+			if (!super.relate0(sr, visitor)){
+				return false;
+			}
+			return true;
+		}else{
+			return false;
+		}
+	}
+
 public int getNumProducts() {
 
 	int count = 0;

@@ -9,16 +9,14 @@
  */
 
 package cbit.vcell.math;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Hashtable;
-import java.util.List;
-import java.util.Vector;
+import java.util.*;
 
 import cbit.util.graph.Edge;
 import cbit.util.graph.Graph;
 import cbit.util.graph.Node;
+import cbit.vcell.parser.SymbolTable;
+import cbit.vcell.parser.SymbolTableEntry;
+
 /**
  * Insert the type's description here.
  * Creation date: (2/24/2002 9:12:36 AM)
@@ -27,9 +25,19 @@ import cbit.util.graph.Node;
 //
 // temporarily place all variables in a hashtable (before binding) and discarding duplicates (check for equality)
 //
-public class VariableHash {
+public class VariableHash implements SymbolTable {
 	private Vector<Variable> variableList = new Vector<Variable>();
 	private Hashtable<String, Variable> hash = new Hashtable<String, Variable>();
+
+	@Override
+	public SymbolTableEntry getEntry(String identifierString) {
+		return hash.get(identifierString);
+	}
+
+	@Override
+	public void getEntries(Map<String, SymbolTableEntry> entryMap) {
+		entryMap.putAll(hash);
+	}
 
 	private class UnresolvedException extends RuntimeException {
 		private String name = null;

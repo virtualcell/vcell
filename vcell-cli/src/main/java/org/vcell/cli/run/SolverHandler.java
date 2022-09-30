@@ -32,11 +32,13 @@ import org.jlibsedml.SetValue;
 import org.jlibsedml.SubTask;
 import org.jlibsedml.Task;
 import org.jlibsedml.UniformTimeCourse;
+
 import org.jlibsedml.Variable;
 import org.jlibsedml.XPathTarget;
 import org.jlibsedml.modelsupport.SBMLSupport;
 import org.jmathml.ASTNode;
 import org.vcell.cli.CLILogFileManager;
+import org.vcell.cli.CLIRecorder;
 import org.vcell.cli.vcml.VCMLHandler;
 import org.vcell.sbml.vcell.SBMLImportException;
 import org.vcell.sbml.vcell.SBMLImporter;
@@ -247,6 +249,7 @@ public class SolverHandler {
         System.out.println("repeatedTaskToBaseTask: " + repeatedTaskToBaseTask.size());
     }
 
+
     public HashMap<String, ODESolverResultSet> simulateAllTasks(ExternalDocInfo externalDocInfo, SedML sedml, 
     		CLILogFileManager logManager, File outputDirForSedml, String outDir, String outputBaseDir, 
     		String sedmlLocation, boolean keepTempFiles, boolean exactMatchOnly) throws Exception {
@@ -280,7 +283,7 @@ public class SolverHandler {
         
         for (BioModel bioModel : bioModelList) {
             try {
-                sanityCheck(bioModel);
+                SolverHandler.sanityCheck(bioModel);
             } catch (Exception e) {
                 logger.error("Exception encountered: " + e.getMessage(), e);
                 // continue;
@@ -468,11 +471,11 @@ public class SolverHandler {
                     	if(bTimeoutFound == false) {		// don't repeat this for each task
                     		String str = logTaskError.substring(0, logTaskError.indexOf("Process timed out"));
                     		str += "Process timed out";		// truncate the rest of the spam
-                            logManager.writeDetailedErrorList(bioModelBaseName + ",  solver: " + sdl + ": " + type + ": " + str);
+                            cliLogger.writeDetailedErrorList(bioModelBaseName + ",  solver: " + sdl + ": " + type + ": " + str);
                         	bTimeoutFound = true;
                     	}
                     } else {
-                        logManager.writeDetailedErrorList(bioModelBaseName + ",  solver: " + sdl + ": " + type + ": " + logTaskError);
+                        cliLogger.writeDetailedErrorList(bioModelBaseName + ",  solver: " + sdl + ": " + type + ": " + logTaskError);
                     }
                     RunUtils.drawBreakLine("-", 100);
                 }
@@ -516,7 +519,7 @@ public class SolverHandler {
         }
         logger.info("Ran " + simulationJobCount + " simulation jobs for " + bioModelCount + " biomodels.");
         if(hasSomeSpatial) {
-            logManager.writeSpatialList(bioModelBaseName);
+            cliLogger.writeSpatialList(bioModelBaseName);
         }
         return resultsHash;
     }

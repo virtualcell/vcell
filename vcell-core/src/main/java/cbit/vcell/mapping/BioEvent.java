@@ -569,92 +569,48 @@ public class BioEvent implements Matchable, Serializable, VetoableChangeListener
 		Expression tExp = new Expression(timeSymbolTableEntry,getNameScope());
 
 		
-		try {
 		switch (triggerType) {
-		case SingleTriggerTime:
-		{
-			Expression originalExp = getParameterValue(BioEventParameterType.SingleTriggerTime);
-			Expression exp = new Expression(originalExp);
-			exp = exp.flatten();
-			if(exp.isZero()) {
-				System.out.println(exp);
-				String msg = "The Trigger Condition for BioEvent '" + name + "' cannot be 0.";
-				String tip = msg;
-				issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.ERROR));
-			} else if(!exp.isNumeric()) {
-				System.out.println(exp);
-				String[] symbols = exp.getSymbols();
-				if(symbols.length == 0) {
-					break;
-				}
-				for(String symbol : symbols) {
-					SpeciesContext sc = simulationContext.getBioModel().getModel().getSpeciesContext(symbol);
-					SpeciesContextSpec scs = simulationContext.getReactionContext().getSpeciesContextSpec(sc);
-					SpeciesContextSpecParameter initConc = scs.getInitialConcentrationParameter();
-					if(initConc.getExpression().isNumeric()) {
-						exp.substituteInPlace(new Expression(symbol), new Expression(initConc.getConstantValue()));
-					} else {
-						break;	// for now we don't try to deal here with expressions in initConc
-					}
-				}
-				exp = exp.flatten();
-				if(exp.isZero()) {
-					System.out.println(exp);
-					String msg = "The Trigger Condition for BioEvent '" + name + "' cannot be 0.";
+			case SingleTriggerTime: {
+				Double singleTriggerTime = getConstantParameterValue(getParameter(BioEventParameterType.SingleTriggerTime));
+				if (singleTriggerTime!=null && singleTriggerTime <= 0){
+					String msg = "The Trigger time for BioEvent '" + name + "' cannot be <= 0.";
 					String tip = msg;
 					issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.ERROR));
 				}
+				break;
 			}
-			break;
-		}
-		case LinearRangeTimes:
-		case LogRangeTimes:
-		case ListOfTimes:
-		{
-			Expression exp = getParameterValue(BioEventParameterType.RangeMinTime);
-			exp = exp.flatten();
-			if(exp.isZero()) {
-				System.out.println(exp);
-				String msg = "The Min Trigger Condition for BioEvent '" + name + "' cannot be 0.";
-				String tip = msg;
-				issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.ERROR));
-			} else if(!exp.isNumeric()) {
-				System.out.println(exp);
-				System.out.println(exp);
-				String[] symbols = exp.getSymbols();
-				if(symbols.length == 0) {
-					break;
-				}
-				for(String symbol : symbols) {
-					SpeciesContext sc = simulationContext.getBioModel().getModel().getSpeciesContext(symbol);
-					SpeciesContextSpec scs = simulationContext.getReactionContext().getSpeciesContextSpec(sc);
-					SpeciesContextSpecParameter initConc = scs.getInitialConcentrationParameter();
-					if(initConc.getExpression().isNumeric()) {
-						exp.substituteInPlace(new Expression(symbol), new Expression(initConc.getConstantValue()));
-					} else {
-						break;	// for now we don't try to deal here with expressions in initConc
+			case ListOfTimes: {
+				for (LocalParameter parameter : getEventParameters()){
+					if (parameter.getRole()==BioEventParameterType.TimeListItem){
+						Double rangeMinTimeValue = getConstantParameterValue(parameter);
+						if (rangeMinTimeValue!=null && rangeMinTimeValue <= 0){
+							String msg = "no trigger time for BioEvent '" + name + "' may be <= 0.";
+							String tip = msg;
+							issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.ERROR));
+						}
 					}
 				}
-				exp = exp.flatten();
-				if(exp.isZero()) {
-					System.out.println(exp);
-					String msg = "The Trigger Condition for BioEvent '" + name + "' cannot be 0.";
+				break;
+			}
+			case LinearRangeTimes:
+			case LogRangeTimes:
+			{
+				Double rangeMinTimeValue = getConstantParameterValue(getParameter(BioEventParameterType.RangeMinTime));
+				if (rangeMinTimeValue!=null && rangeMinTimeValue <= 0){
+					String msg = "The Min Trigger Condition for BioEvent '" + name + "' cannot be <= 0.";
 					String tip = msg;
 					issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.ERROR));
 				}
+				Double rangeMaxTimeValue = getConstantParameterValue(getParameter(BioEventParameterType.RangeMaxTime));
+				if (rangeMaxTimeValue!=null && rangeMaxTimeValue <= 0){
+					String msg = "The Max Trigger Condition for BioEvent '" + name + "' cannot be <= 0.";
+					String tip = msg;
+					issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.ERROR));
+				}
+				break;
 			}
-			break;
 		}
-		}
-		} catch(DivideByZeroException e) {
-			String msg = "Divide by zero in the Trigger Condition for BioEvent '" + name + "'.";
-			String tip = msg;
-			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.ERROR));
-		}
-		catch (ExpressionException e) {
-			e.printStackTrace();
-		}
-		
+
 		if(sbmlName != null && sbmlName.isEmpty()) {
 			String message = "SbmlName cannot be an empty string.";
 			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, message, Issue.Severity.ERROR));
@@ -663,6 +619,37 @@ public class BioEvent implements Matchable, Serializable, VetoableChangeListener
 			String message = "SbmlId cannot be an empty string.";
 			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, message, Issue.Severity.ERROR));
 		}
+	}
+
+	private Double getConstantParameterValue(LocalParameter localParameter){
+		Expression exp = localParameter.getExpression();
+		if (exp == null){
+			return null;
+		}
+		try {
+			exp = exp.flatten();
+			if (exp.isNumeric()){
+				return exp.evaluateConstant();
+			}
+			String[] symbols = exp.getSymbols();
+			if (symbols.length == 0) {
+				return null;
+			}
+			for (String symbol : symbols) {
+				SpeciesContext sc = simulationContext.getBioModel().getModel().getSpeciesContext(symbol);
+				SpeciesContextSpec scs = simulationContext.getReactionContext().getSpeciesContextSpec(sc);
+				SpeciesContextSpecParameter initConc = scs.getInitialConcentrationParameter();
+				if (initConc.getExpression().isNumeric()) {
+					exp.substituteInPlace(new Expression(symbol), new Expression(initConc.getConstantValue()));
+				} else {
+					return null;    // for now we don't try to deal here with expressions in initConc
+				}
+			}
+			exp = exp.flatten();
+			return exp.evaluateConstant();
+		} catch (ExpressionException e){
+		}
+		return null;
 	}
 	
 	@Override

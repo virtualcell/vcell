@@ -1,20 +1,43 @@
 #!/bin/bash
 
-command="biosimulations"
-case $1 in
+raw_command = $(echo "$1" | xargs) # Strip whitespace
+command="biosimulations" # default
+
+echo "<raw_command>"
+
+case raw_command in
   convert)
+    echo 'convert mode requested'
     command="convert"
     shift
     ;;
+  export-omex)
+    echo 'export-omex mode requested'
+    command="export-omex"
+    shift
+    ;;
+  export-omex-batch)
+    echo 'export-omex-batch mode requested'
+    command="export-omex-batch"
+    shift
+    ;;
+  model)
+    echo 'model mode requested'
+    command="model"
+    shift
+    ;;
   execute)
+    echo 'execute mode requested'
     command="execute"
     shift
     ;;
   version)
+  echo 'version mode requested'
     command="version"
     shift
     ;;
   biosimulations)
+  echo 'biosimulations mode requested'
     command="biosimulations"
     shift
     ;;
@@ -26,7 +49,7 @@ case $1 in
     ;;
 esac
 
-#echo "$command" "$@"
+echo "VCell shall execute <$command" "$@>"
 
 java \
   -classpath '/usr/local/app/vcell/lib/*' \
@@ -39,5 +62,9 @@ java \
   -Dvcell.mongodb.database="localhost" \
   -Dvcell.mongodb.host.internal="localhost" \
   -Dvcell.mongodb.port.internal=27017 \
+  -Dvcell.server.dbUserid=vcell \
+  -Dvcell.server.dbPassword=cbittech \
+  -Dvcell.server.dbDriverName=oracle.jdbc.driver.OracleDriver \
+  -Dvcell.server.dbConnectURL=jdbc:oracle:thin:@VCELL-DB.cam.uchc.edu:1521/vcelldborcl.cam.uchc.edu \
   -Dcli.workingDir=/usr/local/app/vcell/installDir/python/vcell_cli_utils/ \
   org.vcell.cli.CLIStandalone "$command" "$@"

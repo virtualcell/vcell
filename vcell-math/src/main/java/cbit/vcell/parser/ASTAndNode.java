@@ -79,12 +79,12 @@ public Node copyTreeBinary() {
 public Node differentiate(String independentVariable) throws ExpressionException {
 	return new ASTFloatNode(0.0);
 }
-public double evaluateConstant() throws ExpressionException {
+public double evaluateConstant(boolean substituteConstants) throws ExpressionException {
 	double sum = 1;
 	ExpressionException savedExpression = null;
 	for (int i = 0; i < jjtGetNumChildren(); i++) {
 		try {
-			if (jjtGetChild(i).evaluateConstant() == 0) {
+			if (jjtGetChild(i).evaluateConstant(substituteConstants) == 0) {
 				return 0;
 			}
 		}catch(ExpressionException e){
@@ -114,14 +114,12 @@ public double evaluateVector(double values[]) throws ExpressionException {
 	}
 	return 1;	 
 }    
-/**
- * This method was created by a SmartGuide.
- * @exception java.lang.Exception The exception description.
- */
-public Node flatten() throws ExpressionException {
+
+@Override
+public Node flatten(boolean substituteConstants) throws ExpressionException {
 
 	try {
-		double value = evaluateConstant();
+		double value = evaluateConstant(substituteConstants);
 		return new ASTFloatNode(value);
 	}catch (Exception e){}		
 
@@ -129,13 +127,13 @@ public Node flatten() throws ExpressionException {
 	java.util.Vector<Node> tempChildren = new java.util.Vector<Node>();
 
 	for (int i=0;i<jjtGetNumChildren();i++){
-		tempChildren.addElement(jjtGetChild(i).flatten());
+		tempChildren.addElement(jjtGetChild(i).flatten(substituteConstants));
 	}
 	
 	for (int j=0;j<tempChildren.size();j++){
 		Node node = (SimpleNode)tempChildren.elementAt(j);
 		if (node instanceof ASTFloatNode){
-			if (node.evaluateConstant() == 0){
+			if (node.evaluateConstant(substituteConstants) == 0){
 				return new ASTFloatNode(0.0);
 			}
 		}else if (node instanceof ASTAndNode){

@@ -27,14 +27,6 @@ public class Function extends Variable {
 public Function(String name, Expression exp, Domain domain) {
 	super(name,domain);
 	this.exp = new Expression(exp);
-	try {
-		this.exp.bindExpression(null);
-	}catch (ExpressionBindingException e){
-		//
-		// this should never happen
-		//
-		e.printStackTrace(System.out);
-	}
 }
 
 

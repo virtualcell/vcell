@@ -7,6 +7,8 @@ import cbit.vcell.units.VCUnitSystem;
  * All rights reserved.
 �*/
 import net.sourceforge.interval.ia_math.RealInterval;
+import org.junit.Assert;
+import org.junit.Test;
 
 public class ExpressionTest {
 	public static void main(java.lang.String[] args) {
@@ -746,6 +748,36 @@ public static void testFlatten(int numTrials, int depth, long seed) {
 		}
 	}
 	System.out.println("test for .flatten(), "+numCorrect+" correct, "+numWrong+" wrong, "+numNotIdempotent+" not idempotent, "+numFailed+" failed, out of "+numTrials+" trials");
+}
+
+@Test
+public void testLinearity() throws ExpressionException {
+	Expression[][] tests = new Expression[][] {
+			{ new Expression("k*abc"), new Expression("k"), new Expression("abc") },
+			{ new Expression("((1.0E-12 * KMOLE * s1) * c0 * (1.0 / 1000.0))"), new Expression("c0"), new Expression("((1.0E-12 * KMOLE * s1) / 1000.0)") },
+			{ new Expression("((1.0E-12 * KMOLE * s1) * c0 * (1.0 / 1000.0))"), new Expression("c2"), null },
+	};
+
+	for (Expression[] test : tests) {
+		Expression exp = test[0];
+		String multiplierSymbol = test[1].infix();
+		Expression expectedFactor = test[2];
+		Expression computedFactor = ExpressionUtils.getLinearFactor(new Expression(test[0]), multiplierSymbol);
+		if (expectedFactor == null){
+			Assert.assertTrue("expectedFactor is null, computedFactor was not null", computedFactor == null);
+		}else {
+			Assert.assertTrue("expectedFactor was '"+expectedFactor.infix()+"', computedFactor was null", computedFactor != null);
+			boolean equiv = ExpressionUtils.functionallyEquivalent(expectedFactor, computedFactor);
+			Assert.assertTrue(expectedFactor.infix() + " != " + computedFactor.infix(), equiv);
+		}
+	}
+
+	Assert.assertTrue(ExpressionUtils.functionallyEquivalent(
+			new Expression("((1.0E-12 * KMOLE * s1) * (1.0 / 1000.0))"),
+			ExpressionUtils.getLinearFactor(new Expression("((1.0E-12 * KMOLE * s1) * c0 * (1.0 / 1000.0))"),"c0")));
+	Assert.assertTrue(ExpressionUtils.functionallyEquivalent(
+			new Expression("((0.001 * Vmax2_bleaching2 * rfB * Laser) * ((t > 1.0) && (t < 1.5)))"),
+			ExpressionUtils.getLinearFactor(new Expression("((0.001 * Vmax2_bleaching2 * rfB * Laser) * ((t > 1.0) && (t < 1.5)))*Nuc"),"Nuc")));
 }
 
 

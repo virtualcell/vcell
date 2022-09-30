@@ -77,6 +77,7 @@ import org.vcell.util.*;
 
 import javax.xml.stream.XMLStreamException;
 import java.beans.PropertyVetoException;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -720,7 +721,7 @@ private void addReactions() throws SbmlException, XMLStreamException {
 					} else {
 						// need to get another name for param and need to change all its refereces in the other kinParam euqations.
 					}
-					Pair<String, String> origParam = new Pair<String, String> (rxnName, paramName);
+					Pair<String, String> origParam = new Pair<String, String> (rxnName, vcKineticsParams[j].getName());
 					l2gMap.put(origParam, paramName);	// keeps its name but becomes a global (?)
 					ASTNode paramFormulaNode = getFormulaFromExpression(kinParamExprs[j]);
 					AssignmentRule sbmlParamAssignmentRule = sbmlModel.createAssignmentRule();
@@ -2186,21 +2187,28 @@ private void addGeometry() throws SbmlException {
 			segmentedImageSampledField.setNumSamples2(vcImage.getNumY());
 			segmentedImageSampledField.setNumSamples3(vcImage.getNumZ());
 			segmentedImageSampledField.setInterpolationType(InterpolationKind.nearestNeighbor);
-			segmentedImageSampledField.setCompression(CompressionKind.uncompressed);
+			segmentedImageSampledField.setCompression(CompressionKind.deflated);
 			segmentedImageSampledField.setDataType(DataKind.UINT8);
 			segmentedImageSampledFieldGeometry.setSampledField(segmentedImageSampledField.getId());
 
 			try {
 				byte[] vcImagePixelsBytes = vcImage.getPixels();
-				//			imageData.setCompression("");
-				StringBuffer sb = new StringBuffer();
+				StringBuffer uncompressedBuffer = new StringBuffer();
 				for (int i = 0; i < vcImagePixelsBytes.length; i++) {
 					int uint8_sample = ((int)vcImagePixelsBytes[i]) & 0xff;
-					sb.append(uint8_sample+" ");
+					uncompressedBuffer.append(uint8_sample+" ");
 				}
-				segmentedImageSampledField.setSamplesLength(vcImage.getNumXYZ());
-				segmentedImageSampledField.setSamples(sb.toString().trim());
-			} catch (ImageException e) {
+				String uncompressedStringData = uncompressedBuffer.toString().trim();
+
+				byte[] compressedData = VCImage.deflate(uncompressedStringData.getBytes(StandardCharsets.UTF_8));
+				StringBuffer compressedBuffer = new StringBuffer();
+				for (int i = 0; i < compressedData.length; i++) {
+					int uint8_sample = ((int)compressedData[i]) & 0xff;
+					compressedBuffer.append(uint8_sample+" ");
+				}
+				segmentedImageSampledField.setSamplesLength(compressedData.length);
+				segmentedImageSampledField.setSamples(compressedBuffer.toString().trim());
+			} catch (ImageException | IOException e) {
 				e.printStackTrace(System.out);
 				throw new RuntimeException("Unable to export image from VCell to SBML : " + e.getMessage());
 			}
@@ -2486,6 +2494,19 @@ public static void validateSimulationContextSupport(SimulationContext simulation
 		if (ffas != null && ffas.length > 0) {
 			throw new UnsupportedSbmlExportException("Species '"+scs.getDisplayName()+"' has FieldData as initial condition, SBML Export is not supported");
 		}
+	}
+
+	// Check if there is a microscopy protocol defined (e.g. convolution)
+	if (simulationContext.getMicroscopeMeasurement()!=null && simulationContext.getMicroscopeMeasurement().getFluorescentSpecies().size()>0){
+		throw new UnsupportedSbmlExportException("MicroscopyMeasurement '"+simulationContext.getMicroscopeMeasurement().getName()+"' defined involving convolution with kernel (point spread function), SBML Export is not supported");
+	}
+
+	// Check if this is a spatial deterministic application and the model contains lumped kinetics.
+	// VCell math has vcRegionVolume('cyt') functions, SBML round trip will use a constant size instead.
+	// The round trip validation will always fail.
+	Optional<ReactionStep> lumpedReaction = Arrays.stream(simulationContext.getModel().getReactionSteps()).filter(rs -> rs.getKinetics() instanceof LumpedKinetics).findFirst();
+	if (simulationContext.getGeometry().getDimension()>0 && simulationContext.getApplicationType()==Application.NETWORK_DETERMINISTIC && lumpedReaction.isPresent()){
+		throw new UnsupportedSbmlExportException("Lumped reaction '"+lumpedReaction.get().getName()+"' in spatial application, SBML Export is not supported");
 	}
 }
 

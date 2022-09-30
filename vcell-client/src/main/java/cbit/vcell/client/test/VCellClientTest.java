@@ -9,59 +9,31 @@
  */
 
 package cbit.vcell.client.test;
-import java.awt.AWTEvent;
-import java.awt.Component;
-import java.awt.Dialog;
-import java.awt.Frame;
-import java.awt.Toolkit;
-import java.awt.event.AWTEventListener;
-import java.awt.event.MouseEvent;
 import java.io.File;
 import java.lang.management.ManagementFactory;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Locale;
 import java.util.StringTokenizer;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.prefs.Preferences;
 
-import javax.swing.AbstractButton;
-import javax.swing.JComboBox;
-import javax.swing.JList;
-import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
-import javax.swing.JTabbedPane;
-import javax.swing.JTable;
-import javax.swing.JToggleButton;
-import javax.swing.JTree;
-import javax.swing.tree.TreeNode;
-import javax.swing.tree.TreePath;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.jdom.Document;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.document.UserLoginInfo;
 import org.vcell.util.document.VCDocument;
-import org.vcell.util.document.VCDocumentInfo;
 import org.vcell.util.document.VCellSoftwareVersion;
 import org.vcell.util.logging.ConsoleCapture;
 
 import cbit.util.xml.VCLogger;
 import cbit.util.xml.XmlUtil;
-import cbit.vcell.client.DocumentWindowManager;
 import cbit.vcell.client.TranslationLogger;
 import cbit.vcell.client.VCellClient;
-import cbit.vcell.client.data.VCellClientDataServiceImpl;
-import cbit.vcell.client.desktop.DocumentWindow;
 import cbit.vcell.client.desktop.NetworkProxyPreferences;
-import cbit.vcell.client.desktop.biomodel.BioModelsNetModelInfo;
-import cbit.vcell.client.pyvcellproxy.VCellClientDataService;
-import cbit.vcell.client.pyvcellproxy.VCellProxyServer;
 import cbit.vcell.client.server.ClientServerInfo;
-import cbit.vcell.desktop.BioModelNode;
-import cbit.vcell.desktop.VCellBasicCellRenderer;
 import cbit.vcell.message.server.bootstrap.client.RemoteProxyVCellConnectionFactory;
 import cbit.vcell.mongodb.VCMongoMessage;
 import cbit.vcell.mongodb.VCMongoMessage.ServiceName;
@@ -323,7 +295,6 @@ public static void main(java.lang.String[] args) {
 		}
 
 		//call in main thread, since it's quick and not necessarily thread safe
-		ResourceUtil.setNativeLibraryDirectory();
 		vcellClient = VCellClient.startClient(initialDocument, csInfo);
 
 //		VCellClientDataService vcellClientDataService = new VCellClientDataServiceImpl(vcellClient);
