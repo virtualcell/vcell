@@ -4,7 +4,7 @@ echo -n "<"
 echo -n $1
 echo ">"
 
-raw_command="$(echo -n "$1" | sed -E 's/(^(\s*))|((\s*)$)//g' example.txt)" # Strip whitespace
+raw_command="$(echo -n "$1" | sed -E 's/(^(\s*))|((\s*)$)//g')" # Strip whitespace
 command="biosimulations" # default
 
 echo -n "<"
