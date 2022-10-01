@@ -1,6 +1,10 @@
 #!/bin/bash
 
-raw_command=echo -ne "$1" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//' # Strip whitespace
+echo -n "<"
+echo -n $1
+echo ">"
+
+raw_command="$(echo -n "$1" | sed -E 's/(^(\s*))|((\s*)$)//g' example.txt)" # Strip whitespace
 command="biosimulations" # default
 
 echo -n "<"
