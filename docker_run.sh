@@ -4,14 +4,14 @@ echo -n "<"
 echo -n $1
 echo ">"
 
-raw_command="$(echo -n "$1" | sed -E 's/(^(\s*))|((\s*)$)//g')" # Strip whitespace
+rawCommand="$(echo -n "$1" | sed -E 's/(^(\s*))|((\s*)$)//g')" # Strip whitespace
 command="biosimulations" # default
 
 echo -n "<"
-echo -n $(raw_command)
+echo -n $rawCommand
 echo ">"
 
-case raw_command in
+case rawCommand in
   convert)
     echo 'convert mode requested'
     command="convert"
@@ -52,6 +52,7 @@ case raw_command in
     shift
     ;;
   *)               # Default case: No more options, so break out of the loop.
+    echo "Default case selected"
     ;;
 esac
 
