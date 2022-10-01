@@ -1,9 +1,11 @@
 #!/bin/bash
 
-raw_command = $(echo "$1" | xargs) # Strip whitespace
+raw_command=echo -ne "$1" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//' # Strip whitespace
 command="biosimulations" # default
 
-echo "<raw_command>"
+echo -n "<"
+echo -n $(raw_command)
+echo ">"
 
 case raw_command in
   convert)
