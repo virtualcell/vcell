@@ -274,6 +274,7 @@ public class RunUtils {
                 				actualTask = (Task)referredTask;
                 				sedmlSim = sedml.getSimulation(actualTask.getSimulationReference());
                             } else {
+                            	actualTask = (Task)task;
                             	sedmlSim = sedml.getSimulation(task.getSimulationReference());
                             }
                             
@@ -315,7 +316,7 @@ public class RunUtils {
                                     ArrayList<double[]> variablesList = new ArrayList<>();
                                     if(outputStartTime > 0) {
                                     	for(String key : keys) {
-                                            ODESolverResultSet results = resultsHash.get(task.getId());
+                                            ODESolverResultSet results = resultsHash.get(key);
                                             int column = results.findColumn(sbmlVarId);
                                             double[] tmpData = results.extractColumn(column);
                                             double[] data = new double[outputNumberOfPoints+1];
