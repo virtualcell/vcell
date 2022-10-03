@@ -1,5 +1,10 @@
 #!/bin/bash
 
+echo -n "Recieved::<"
+echo -n $@
+echo ">"
+
+
 echo -n "<"
 echo -n $1
 echo ">"
@@ -79,4 +84,4 @@ java \
   -Dvcell.server.dbDriverName=oracle.jdbc.driver.OracleDriver \
   -Dvcell.server.dbConnectURL=jdbc:oracle:thin:@VCELL-DB.cam.uchc.edu:1521/vcelldborcl.cam.uchc.edu \
   -Dcli.workingDir=/usr/local/app/vcell/installDir/python/vcell_cli_utils/ \
-  org.vcell.cli.CLIStandalone "$command" "$arguments"
+  org.vcell.cli.CLIStandalone $command $arguments
