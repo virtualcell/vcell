@@ -246,7 +246,7 @@ public class SolverHandler {
         System.out.println("repeatedTaskToBaseTask: " + repeatedTaskToBaseTask.size());
     }
 
-    public HashMap<String, ODESolverResultSet>
+    public Map<TaskJob, ODESolverResultSet>
             simulateAllTasks(ExternalDocInfo externalDocInfo, SedML sedml, CLIRecorder cliLogger, 
                              File outputDirForSedml, String outDir, String outputBaseDir, String sedmlLocation,
                              boolean keepTempFiles, boolean exactMatchOnly) throws Exception {
@@ -257,7 +257,7 @@ public class SolverHandler {
         
         List<BioModel> bioModelList = null;
         // Key String is SEDML Task ID
-        HashMap<String, ODESolverResultSet> resultsHash = new LinkedHashMap<String, ODESolverResultSet>();
+        Map<TaskJob, ODESolverResultSet> resultsHash = new LinkedHashMap<TaskJob, ODESolverResultSet>();
         String docName = null;
         Simulation[] sims = null;
         //String outDirRoot = outputDirForSedml.toString().substring(0, outputDirForSedml.toString().lastIndexOf(System.getProperty("file.separator")));
@@ -481,9 +481,9 @@ public class SolverHandler {
                 }
                	Task actualTask = repeatedTaskToBaseTask.get(sim.getImportedTaskID());
                 if(odeSolverResultSet != null) {
-                    resultsHash.put(actualTask.getId() + "_" + simJob.getJobIndex(), odeSolverResultSet);
+                    resultsHash.put(new TaskJob(actualTask.getId(), simJob.getJobIndex()), odeSolverResultSet);
                 } else {
-                	resultsHash.put(actualTask.getId() + "_" + simJob.getJobIndex(), null);	// if any task fails, we still put it in the hash with a null value
+                	resultsHash.put(new TaskJob(actualTask.getId(), simJob.getJobIndex()), null);	// if any task fails, we still put it in the hash with a null value
                 }
                 if(keepTempFiles == false) {
                 	RunUtils.removeIntermediarySimFiles(outputDirForSedml);
