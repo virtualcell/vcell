@@ -11,43 +11,43 @@ echo -n "<"
 echo -n $rawCommand
 echo ">"
 
-case rawCommand in
-  convert)
+case "$rawCommand" in
+  "convert")
     echo 'convert mode requested'
     command="convert"
     shift
     ;;
-  export-omex)
+  "export-omex")
     echo 'export-omex mode requested'
     command="export-omex"
     shift
     ;;
-  export-omex-batch)
+  "export-omex-batch")
     echo 'export-omex-batch mode requested'
     command="export-omex-batch"
     shift
     ;;
-  model)
+  "")
     echo 'model mode requested'
     command="model"
     shift
     ;;
-  execute)
+  "execute")
     echo 'execute mode requested'
     command="execute"
     shift
     ;;
-  version)
+  "version")
   echo 'version mode requested'
     command="version"
     shift
     ;;
-  biosimulations)
+  "biosimulations")
   echo 'biosimulations mode requested'
     command="biosimulations"
     shift
     ;;
-  help)
+  "help")
     command="help"
     shift
     ;;
