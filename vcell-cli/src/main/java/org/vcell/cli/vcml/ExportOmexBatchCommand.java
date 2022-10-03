@@ -63,13 +63,12 @@ public class ExportOmexBatchCommand implements Callable<Integer> {
             if (inputFilePath == null || !inputFilePath.exists() || !inputFilePath.isDirectory())
                 throw new RuntimeException("inputFilePath '" + inputFilePath == null ? "" : inputFilePath + "' is not a 'valid directory'");
             
-            if (outputFilePath == null || !outputFilePath.exists() || !inputFilePath.isDirectory())
+            if (outputFilePath == null)
                 throw new RuntimeException("outputFilePath '" + outputFilePath == null ? "" : outputFilePath + "' is not a 'valid directory'");
+            cliLogger = new CLIRecorder(outputFilePath); // CLILogger will throw an execption if our output dir isn't valid.
 
             try (CLIDatabaseService cliDatabaseService = new CLIDatabaseService()) {
                 VcmlOmexConverter.queryVCellDbPublishedModels(cliDatabaseService, outputFilePath, bForceLogFiles);
-
-                cliLogger = new CLIRecorder(outputFilePath); // CLILogger will throw an execption if our output dir isn't valid.
 
                 VcmlOmexConverter.convertFiles(cliDatabaseService, inputFilePath, outputFilePath,
                         outputModelFormat, cliLogger, bHasDataOnly, bMakeLogsOnly, bNonSpatialOnly, bForceLogFiles, bValidateOmex, bOffline);
