@@ -4,7 +4,7 @@ echo -n "<"
 echo -n $1
 echo ">"
 
-rawCommand="$(echo -n "$1" | sed -E 's/(^(\s*))|((\s*)$)//g')" # Strip whitespace
+rawCommand="$(echo -n "$1" | sed -E 's/(^(\s*))|((\s*)$)//g')" # Strip ends of its whitespace
 command="biosimulations" # default
 
 echo -n "<"
@@ -56,7 +56,12 @@ case "$rawCommand" in
     ;;
 esac
 
-echo "VCell shall execute <$command" "$@>"
+# Input validate arugments
+
+arguments="$(echo -n "$@" | sed -E 's/(\s)+/ /g' | sed -E 's/(^(\s*))|((\s*)$)//g')" # convert any whitespace to spaces and strip ends
+
+
+echo "VCell shall execute <$command" "$arguments>"
 
 java \
   -classpath '/usr/local/app/vcell/lib/*' \
@@ -74,4 +79,4 @@ java \
   -Dvcell.server.dbDriverName=oracle.jdbc.driver.OracleDriver \
   -Dvcell.server.dbConnectURL=jdbc:oracle:thin:@VCELL-DB.cam.uchc.edu:1521/vcelldborcl.cam.uchc.edu \
   -Dcli.workingDir=/usr/local/app/vcell/installDir/python/vcell_cli_utils/ \
-  org.vcell.cli.CLIStandalone "$command" "$@"
+  org.vcell.cli.CLIStandalone "$command" "$arguments"
