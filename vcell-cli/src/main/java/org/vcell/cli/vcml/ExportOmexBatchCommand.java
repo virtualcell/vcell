@@ -55,7 +55,7 @@ public class ExportOmexBatchCommand implements Callable<Integer> {
     private boolean help;
 
     public Integer call() {
-        CLIRecorder cliLogger = null;
+        CLIRecorder cliRecorder = null;
         try {
             
             logger.debug("Batch export of omex files requested");
@@ -65,20 +65,31 @@ public class ExportOmexBatchCommand implements Callable<Integer> {
             
             if (outputFilePath == null)
                 throw new RuntimeException("outputFilePath '" + outputFilePath == null ? "" : outputFilePath + "' is not a 'valid directory'");
-            cliLogger = new CLIRecorder(outputFilePath); // CLILogger will throw an execption if our output dir isn't valid.
+            
+            cliRecorder = new CLIRecorder(outputFilePath); // CLILogger will throw an execption if our output dir isn't valid.
 
-            try (CLIDatabaseService cliDatabaseService = new CLIDatabaseService()) {
-                VcmlOmexConverter.queryVCellDbPublishedModels(cliDatabaseService, outputFilePath, bForceLogFiles);
+            if (bOffline) this.runInOfflineMode(cliRecorder);
+            else this.run(cliRecorder);
 
-                VcmlOmexConverter.convertFiles(cliDatabaseService, inputFilePath, outputFilePath,
-                        outputModelFormat, cliLogger, bHasDataOnly, bMakeLogsOnly, bNonSpatialOnly, bForceLogFiles, bValidateOmex, bOffline);
-            } catch (IOException | SQLException | DataAccessException e) {
-                e.printStackTrace(System.err);
-            }
             return 0;
         } catch (Exception e) {
             e.printStackTrace();
             throw new RuntimeException(e.getMessage());
+        }
+    }
+
+    private void runInOfflineMode(CLIRecorder cliRecorder) throws IOException {
+        VcmlOmexConverter.convertFilesNoDatabse(inputFilePath, outputFilePath, outputModelFormat, cliRecorder, bForceLogFiles, bValidateOmex, bOffline);
+    }
+
+    private void run(CLIRecorder cliRecorder) throws IOException {
+        try (CLIDatabaseService cliDatabaseService = new CLIDatabaseService()) {
+            VcmlOmexConverter.queryVCellDbPublishedModels(cliDatabaseService, outputFilePath, bForceLogFiles);
+
+            VcmlOmexConverter.convertFiles(cliDatabaseService, inputFilePath, outputFilePath,
+                    outputModelFormat, cliRecorder, bHasDataOnly, bMakeLogsOnly, bNonSpatialOnly, bForceLogFiles, bValidateOmex, bOffline);
+        } catch (IOException | SQLException | DataAccessException e) {
+            e.printStackTrace(System.err);
         }
     }
 }

@@ -166,6 +166,26 @@ public class VcmlOmexConverter {
 		}
 	}
 
+	public static void convertFilesNoDatabse(File inputDir, File outputDir, ModelFormat modelFormat, CLIRecorder cliLogger, 
+			boolean bForceLogFiles, boolean bValidateOmex, boolean bOffline) throws IOException {
+		// Start
+		if (inputDir == null || !inputDir.isDirectory()) throw new RuntimeException("expecting inputFilePath to be an existing directory");
+		FilenameFilter filterVcmlFiles = (f, name) -> name.endsWith(".vcml");
+		String[] inputFiles = inputDir.list(filterVcmlFiles);		// jusr a list of vcml names, like biomodel-185577495.vcml, ...
+		if (inputFiles == null) throw new RuntimeException("No VCML files found in the directory `" + inputDir + "`");
+		
+		for (String inputFile : inputFiles) {
+			File file = new File(inputDir, inputFile);
+			logger.info(" ============== start: " + inputFile);
+				Predicate<Simulation> simulationExportFilter = simulation -> true;
+				BioModelInfo bioModelInfo = null;
+				boolean isCreated = vcmlToOmexConversion(file.toString(), bioModelInfo, outputDir.getAbsolutePath(), outputDir.getAbsolutePath(),
+														simulationExportFilter, modelFormat, bForceLogFiles, bValidateOmex, bOffline);
+				if (isCreated) logger.info("Combine archive created for file(s) `" + inputFile + "`");
+				else logger.error("Failed converting VCML to OMEX archive for `" + inputFile + "`");
+		}
+	}
+
 	private static boolean keepSimulation(Simulation simulation, boolean bHasDataOnly, boolean bNonSpatialOnly, CLIDatabaseService cliDatabaseService) {
 
 		//
