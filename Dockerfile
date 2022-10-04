@@ -81,6 +81,8 @@ COPY ./biosimulations_log4j2.xml /usr/local/app/vcell/installDir/
 
 # Declare supported environment variables
 ENV ALGORITHM_SUBSTITUTION_POLICY=SIMILAR_VARIABLES
+EXPOSE 1433
+
 
 # Entrypoint
 ENTRYPOINT ["/usr/local/app/vcell/installDir/docker_run.sh"]
