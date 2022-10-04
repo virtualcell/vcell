@@ -836,33 +836,36 @@ void updateFromMathDescription() {
 
 	HashMap<String, MathOverridesResolver.SymbolReplacement> renamedMap = new HashMap<>();
 	for (String name : referencedNames){
-		MathOverridesResolver mathOverridesResolver = getSimulation().getSimulationOwner().getMathOverridesResolver();
-		if (mathOverridesResolver != null) {
-			MathOverridesResolver.SymbolReplacement replacement = mathOverridesResolver.getSymbolReplacement(name);
-			if (replacement != null) {
-				allFactorSymbols.addAll(replacement.getFactorSymbols());
-				Element element = overridesHash.remove(name);
-				if (element != null) {
-					java.util.function.Function<Expression, Expression> scaleExpressionsByUnitFactor = exp -> {
-						Expression substitutedExp = Expression.mult(exp, replacement.factor);
-						try {
-							substitutedExp = substitutedExp.simplifyJSCL();
-						} catch (ExpressionException e) {
-							logger.warn("failed to simplify '"+substitutedExp.infix()+"': "+e.getMessage(),e);
+		SimulationOwner so = getSimulation().getSimulationOwner();
+		if(so != null) {
+			MathOverridesResolver mathOverridesResolver = so.getMathOverridesResolver();
+			if (mathOverridesResolver != null) {
+				MathOverridesResolver.SymbolReplacement replacement = mathOverridesResolver.getSymbolReplacement(name);
+				if (replacement != null) {
+					allFactorSymbols.addAll(replacement.getFactorSymbols());
+					Element element = overridesHash.remove(name);
+					if (element != null) {
+						java.util.function.Function<Expression, Expression> scaleExpressionsByUnitFactor = exp -> {
+							Expression substitutedExp = Expression.mult(exp, replacement.factor);
+							try {
+								substitutedExp = substitutedExp.simplifyJSCL();
+							} catch (ExpressionException e) {
+								logger.warn("failed to simplify '"+substitutedExp.infix()+"': "+e.getMessage(),e);
+							}
+							return substitutedExp;
+						};
+						element.applyFunctionToExpressions(scaleExpressionsByUnitFactor);
+						element.changeName(replacement.newName);
+						overridesHash.put(replacement.newName, element);
+						if (!name.equals(replacement.newName)){
+							removeConstant(name);
 						}
-						return substitutedExp;
-					};
-					element.applyFunctionToExpressions(scaleExpressionsByUnitFactor);
-					element.changeName(replacement.newName);
-					overridesHash.put(replacement.newName, element);
-					if (!name.equals(replacement.newName)){
-						removeConstant(name);
 					}
-				}
-				renamedMap.put(name, replacement);
-			}else{
-				if (!mathDescriptionHash.contains(name)) {
-					logger.error("didn't find a replacement for math override symbol " + name);
+					renamedMap.put(name, replacement);
+				}else{
+					if (!mathDescriptionHash.contains(name)) {
+						logger.error("didn't find a replacement for math override symbol " + name);
+					}
 				}
 			}
 		}
