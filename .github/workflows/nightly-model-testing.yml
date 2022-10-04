@@ -55,7 +55,7 @@ jobs:
         # Do the conversion
       - name: Begin Conversion
         #$(docker image ls | grep "<none>" | awk '{print $3;}')  to get image id
-        run: docker run -v ${{ env.GITHUB_WORKSPACE }}/vcdb/published/biomodel/vcml:/root $(docker image ls | grep "<none>" | awk '{print $3;}') export-omex-batch -i "/root" -o "/root/output" # grabs image and runs
+        run: docker run -v ${{ env.GITHUB_WORKSPACE }}/vcdb/published/biomodel/vcml:/root $(docker image ls | grep "<none>" | awk '{print $3;}') export-omex-batch --offline -i "/root" -o "/root/output" # grabs image and runs
           
         # Parse the results
       - name: Parse Results
@@ -126,9 +126,8 @@ jobs:
       # Do the round trip
       - name: Begin Round-Trip
         #$(docker image ls | grep "<none>" | awk '{print $3;}')  to get image id
-        run: docker run -v /input_files:/root $(docker image ls | grep "<none>" | awk '{print $3;}') \
-          export-omex-batch -i /root -o /root/output -VCML
-          
+        run: docker run -v /input_files:/root $(docker image ls | grep "<none>" | awk '{print $3;}') export-omex-batch -i "/root" -o "/root/output" -m VCML --offline
+        
        # Parse the results
       - name: Parse Results
         run: cd /input_files/output && touch round-trip_results.txt && \
@@ -149,22 +148,4 @@ jobs:
     steps:
       - name: to be implemented
         run: echo 'This is not yet implemented' 
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
           
