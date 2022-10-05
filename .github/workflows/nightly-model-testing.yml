@@ -14,7 +14,7 @@ jobs:
           ref: '${{ github.ref }}'
       - name: Setup Java for Build
         uses: actions/setup-java@v2
-        with: |
+        with: 
           java-version: '8'
           distribution: 'adopt'
           cache: 'maven'
