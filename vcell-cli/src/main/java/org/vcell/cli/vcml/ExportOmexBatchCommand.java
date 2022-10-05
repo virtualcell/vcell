@@ -71,6 +71,7 @@ public class ExportOmexBatchCommand implements Callable<Integer> {
             if (bOffline) this.runInOfflineMode(cliRecorder);
             else this.run(cliRecorder);
 
+            logger.info("Batch export completed");
             return 0;
         } catch (Exception e) {
             e.printStackTrace();
@@ -79,10 +80,12 @@ public class ExportOmexBatchCommand implements Callable<Integer> {
     }
 
     private void runInOfflineMode(CLIRecorder cliRecorder) throws IOException {
+        logger.debug("Offline mode selected.");
         VcmlOmexConverter.convertFilesNoDatabse(inputFilePath, outputFilePath, outputModelFormat, cliRecorder, bForceLogFiles, bValidateOmex, bOffline);
     }
 
     private void run(CLIRecorder cliRecorder) throws IOException {
+        logger.debug("Online mode selected");
         try (CLIDatabaseService cliDatabaseService = new CLIDatabaseService()) {
             VcmlOmexConverter.queryVCellDbPublishedModels(cliDatabaseService, outputFilePath, bForceLogFiles);
 
