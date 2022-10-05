@@ -29,6 +29,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 public class ExecuteImpl {
     
@@ -173,7 +174,7 @@ public class ExecuteImpl {
             logger.info("Initializing SED-ML document...");
             String sedmlName = "", logDocumentMessage = "Initializing SED-ML document... ", logDocumentError = "";
             boolean somethingFailed = false; // shows that the current document suffered a partial or total failure
-            HashMap<String, ODESolverResultSet> resultsHash;
+            Map<TaskJob, ODESolverResultSet> resultsHash;
             HashMap<String, File> reportsHash = null;
             File outDirForCurrentSedml = new File(omexHandler.getOutputPathFromSedml(sedmlLocation));
 
@@ -264,7 +265,7 @@ public class ExecuteImpl {
              */
             SolverHandler solverHandler = new SolverHandler();
             ExternalDocInfo externalDocInfo = new ExternalDocInfo(new File(inputFilePath), true);
-            resultsHash = new LinkedHashMap<String, ODESolverResultSet>();
+            resultsHash = new LinkedHashMap<TaskJob, ODESolverResultSet>();
             try {
                 String str = "Building solvers and starting simulation of all tasks... ";
                 logger.info(str);

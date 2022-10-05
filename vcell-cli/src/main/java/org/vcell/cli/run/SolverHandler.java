@@ -4,6 +4,9 @@ import cbit.util.xml.VCLogger;
 import cbit.util.xml.VCLoggerException;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.messaging.server.SimulationTask;
+import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.parser.ExpressionMathMLParser;
 import cbit.vcell.solver.*;
 import cbit.vcell.solver.ode.AbstractJavaSolver;
 import cbit.vcell.solver.ode.ODESolver;
@@ -16,24 +19,41 @@ import cbit.vcell.solver.stoch.HybridSolver;
 import cbit.vcell.solvers.AbstractCompiledSolver;
 import cbit.vcell.xml.ExternalDocInfo;
 import cbit.vcell.xml.XmlHelper;
+
+import org.jlibsedml.AbstractTask;
+import org.jlibsedml.DataGenerator;
+import org.jlibsedml.DataSet;
+import org.jlibsedml.Output;
+import org.jlibsedml.Range;
+import org.jlibsedml.RepeatedTask;
+import org.jlibsedml.Report;
 import org.jlibsedml.SedML;
+import org.jlibsedml.SetValue;
+import org.jlibsedml.SubTask;
 import org.jlibsedml.Task;
 import org.jlibsedml.UniformTimeCourse;
+import org.jlibsedml.Variable;
+import org.jlibsedml.XPathTarget;
+import org.jlibsedml.modelsupport.SBMLSupport;
+import org.jmathml.ASTNode;
 import org.vcell.cli.CLIRecorder;
 import org.vcell.cli.vcml.VCMLHandler;
 import org.vcell.sbml.vcell.SBMLImportException;
 import org.vcell.sbml.vcell.SBMLImporter;
 import org.vcell.util.document.VCDocument;
-
+import org.apache.commons.lang.NotImplementedException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class SolverHandler {
 	
@@ -43,6 +63,14 @@ public class SolverHandler {
 	public int countSuccessfulSimulationRuns = 0;	// number of simulations that we ran successfully for this sedml file
 	public Map <String, String> sim2Hdf5Map = new LinkedHashMap<> ();
 	
+    Map<Simulation, Task> simulationToTaskMap = new LinkedHashMap<> ();	// key = vcell simulation, value = sedml Task (task reference)
+    Map<Task, Simulation> taskToSimulationMap = new LinkedHashMap<> ();	// the opposite
+    Map<AbstractTask, List<AbstractTask>> taskToListOfSubTasksMap = new LinkedHashMap<> ();	// key = topmost AbstractTask, value = recursive list of subtasks
+    Map<AbstractTask, List<Variable>> taskToVariableMap = new LinkedHashMap<> ();	// key = AbstractTask, value = list of variables calculated by this task
+    Map<RepeatedTask, Set<String>> taskToChangeTargetMap = new LinkedHashMap<> ();	// key = RepeatedTask, value = list of the parameters that are being changed
+    Map<Task, Set<RepeatedTask>> taskToChildRepeatedTasks = new LinkedHashMap<> ();	// key = Task, value = list of RepeatedTasks ending with this task
+    Map<String, Task> topTaskToBaseTask = new LinkedHashMap<> ();				// key = TopmostTaskId, value = Tasks at the bottom of the SubTasks chain OR the topmost task itself if instanceof Task
+
     private static void sanityCheck(VCDocument doc) {
         if (doc == null) {
             throw new RuntimeException("Imported VCDocument is null.");
@@ -63,8 +91,193 @@ public class SolverHandler {
         }
     }
 
+    public void initialize(List<BioModel> bioModelList, SedML sedml) throws ExpressionException {
+    	
+        for(BioModel bioModel : bioModelList) {
+        	Simulation[] sims = bioModel.getSimulations();
+        	for(Simulation sim : sims) {
+               	if(sim.getImportedTaskID() == null) {
+            		continue;
+            	}
+               	String importedTaskId = sim.getImportedTaskID();
+               	AbstractTask at = sedml.getTaskWithId(importedTaskId);
+               	if(at instanceof Task) {
+               		simulationToTaskMap.put(sim, (Task)at);
+               		taskToSimulationMap.put((Task)at,  sim);
+               	} else {
+               		throw new RuntimeException("SolverHandler: Imported Task should be instanceof Task");
+               	}
+        	}
+        }
+        
+        {
+    	// we first make a list of all the sub tasks (may be instanceof Task or RepeatedTask)
+        Set <AbstractTask> subTasks = new LinkedHashSet<> ();
+        for(AbstractTask at : sedml.getTasks()) {
+        	if(at instanceof RepeatedTask) {
+        		RepeatedTask rt = (RepeatedTask)at;
+        		Map<String, SubTask> subTasksOfRepeatedTask = rt.getSubTasks();
+        		for (Map.Entry<String, SubTask> entry : subTasksOfRepeatedTask.entrySet()) {
+        			String subTaskId = entry.getKey();
+        			AbstractTask subTask = sedml.getTaskWithId(subTaskId);
+       				subTasks.add(subTask);
+        		}
+        	}
+        }
+        // then we make a list of all topmost tasks (Task or RepeatedTask that are not a subtask)
+    	// is the topmost task of a chain that ends with an actual task
+        Set <AbstractTask> topmostTasks = new LinkedHashSet<> ();	// topmost tasks (they are not in the list of subtasks above)
+        for(AbstractTask at : sedml.getTasks()) {
+       		if(!subTasks.contains(at)) {
+       			topmostTasks.add(at);
+//       			taskToListOfSubTasksMap.put(at, subTasksList);	// all subtasksLists are empty at this point
+       		}
+        }
+        for (AbstractTask task : topmostTasks) {
+   			List<AbstractTask> subTasksList = new ArrayList<> ();
+			AbstractTask referredTask;
+			RepeatedTask rt;
+			Task actualTask;
+			// find the actual Task and extract the simulation
+			if(task instanceof RepeatedTask) {
+				rt = (RepeatedTask)task;
+				do {
+					SubTask st = rt.getSubTasks().entrySet().iterator().next().getValue(); // single subtask
+					String taskId = st.getTaskId();
+					referredTask = sedml.getTaskWithId(taskId);
+					if (referredTask instanceof RepeatedTask) {
+						rt = (RepeatedTask)referredTask;
+					}
+					subTasksList.add(referredTask);				// last entry added will be a instanceof Task
+				} while (referredTask instanceof RepeatedTask);
+				actualTask = (Task)referredTask;
+			} else {
+				actualTask = (Task)task;
+			}
+        	taskToListOfSubTasksMap.put(task, subTasksList);	// may be empty if task instanceof Task
+        	topTaskToBaseTask.put(task.getId(), actualTask);
 
-    public HashMap<String, ODESolverResultSet>
+        	Set<RepeatedTask> childRepeatedTasks = new LinkedHashSet<> ();
+			taskToChildRepeatedTasks.put(actualTask, childRepeatedTasks);	// list of all Tasks, the set is only initialized here
+
+        }
+
+        for(Map.Entry<AbstractTask, List<AbstractTask>> entry : taskToListOfSubTasksMap.entrySet()) {	// populate the taskToChildRepeatedTasks map
+        	AbstractTask topmostTask = entry.getKey();
+        	List<AbstractTask> dependingTasks = entry.getValue();
+        	if(topmostTask instanceof Task) {
+        		// nothing to do except some sanity checks maybe
+        		// the taskToChildRepeatedTasks contains this key and the associated set should be empty
+//        		assert dependingTasks.isEmpty() == true;							// the dependingTasks list should be empty
+//        		assert taskToChildRepeatedTasks.containsKey(topmostTask) == true;	// the Task should be a key in the map
+//        		assert taskToChildRepeatedTasks.get(topmostTask).isEmpty() == true;	// the set of repeated tasks associated to this task should be empty
+        	} else {	// this is a RepeatedTask
+        		// or use Task actualTask = topTaskToBaseTask.get(topmostTask.getId());
+        		Task actualTask = null;
+        		for(AbstractTask dependingTask : dependingTasks) {
+        			if(dependingTask instanceof Task) {		// should always be one Task at the end of the list
+        				actualTask = (Task)dependingTask;
+        				break;		// we found the only Task
+        			}
+        		}
+//        		assert rootTask != null;
+        		Set<RepeatedTask> childRepeatedTasks = taskToChildRepeatedTasks.get(actualTask);
+//        		assert childRepeatedTasks.isEmpty() == true;
+        		childRepeatedTasks.add((RepeatedTask)topmostTask);
+        		for(AbstractTask dependingTask : dependingTasks) {
+        			if(dependingTask instanceof RepeatedTask) {
+        				childRepeatedTasks.add((RepeatedTask)dependingTask);
+        			}
+        		}
+        	}
+        }
+        }
+        
+        {
+        // 
+        // key = tasks that are used for generating some output
+        //
+        Map<Variable, AbstractTask> variableToTaskMap = new LinkedHashMap<> ();		// temporary use
+        List<Output> ooo = sedml.getOutputs();
+        for(Output oo : ooo) {
+        	if(oo instanceof Report) {
+        		// TODO: check if multiple reports may use different tasks for the same variable
+        		// here we assume that each variable may only be the result of one task
+                List<DataSet> datasets = ((Report) oo).getListOfDataSets();
+                for (DataSet dataset : datasets) {
+                    DataGenerator datagen = sedml.getDataGeneratorWithId(dataset.getDataReference());
+//                    assert datagen != null;
+                    List<Variable> vars = new ArrayList<>(datagen.getListOfVariables());
+                    for(Variable var : vars) {
+                    	AbstractTask task = sedml.getTaskWithId(var.getReference());
+                    	variableToTaskMap.put(var, task);
+                    }
+                }
+        	}
+        }
+        for(Map.Entry<Variable, AbstractTask> entry : variableToTaskMap.entrySet()) {
+        	Variable var = entry.getKey();
+        	AbstractTask task = entry.getValue();
+        	if(!taskToVariableMap.containsKey(task)) {
+        		List<Variable> vars = new ArrayList<> ();
+        		vars.add(var);
+        		taskToVariableMap.put(task, vars);
+        	} else {
+        		List<Variable> vars = taskToVariableMap.get(task);
+        		vars.add(var);
+        		taskToVariableMap.put(task, vars);
+        	}
+        }
+        }
+        
+        for (Map.Entry<AbstractTask, List<AbstractTask>> entry : taskToListOfSubTasksMap.entrySet()) {
+        	AbstractTask task = entry.getKey();
+        	Task actualTask = topTaskToBaseTask.get(task.getId());
+        	Simulation sim = taskToSimulationMap.get(actualTask);
+			int scanCount = sim.getScanCount();
+			
+			if(scanCount > 1) {
+//				assert task instanceof RepeatedTask;
+//				assert !subTasksList.isEmpty();
+				
+				// TODO: the logic is probably bad here, we need to look atall the repeated tasks in chain
+				// and identify all changes. (it's not being used, so not urgent)
+				SBMLSupport sbmlSupport = new SBMLSupport();
+				RepeatedTask rt = (RepeatedTask)task;
+
+				List<SetValue> changes = rt.getChanges();
+				Set<String> targetIdSet = new LinkedHashSet<>();
+				for(SetValue change : changes) {
+					XPathTarget target = change.getTargetXPath();
+					String starget = target.getTargetAsString();
+					Range range = rt.getRange(change.getRangeReference());
+					ASTNode math = change.getMath();
+					Expression exp = new ExpressionMathMLParser(null).fromMathML(math, "t");
+					if (exp.infix().equals(range.getId())) {
+						String targetID = sbmlSupport.getIdFromXPathIdentifer(starget);
+						Enumeration<String> overridesHashKeys = sim.getMathOverrides().getOverridesHashKeys();
+						boolean found = false;
+						while(overridesHashKeys.hasMoreElements()) {
+							String candidate = overridesHashKeys.nextElement();
+							if(candidate.equals(targetID)) {
+								targetIdSet.add(targetID);
+								found = true;
+								break;
+							}
+						}
+//						assert found == true;
+					}
+				}
+				taskToChangeTargetMap.put(rt, targetIdSet);
+			}
+        }
+        System.out.println("taskToSimulationMap: " + taskToSimulationMap.size());
+        System.out.println("taskToListOfSubtasksMap: " + taskToListOfSubTasksMap.size());
+        System.out.println("taskToVariableMap: " + taskToVariableMap.size());
+        System.out.println("repeatedTaskToBaseTask: " + topTaskToBaseTask.size());
+    }
+
+    public Map<TaskJob, ODESolverResultSet>
             simulateAllTasks(ExternalDocInfo externalDocInfo, SedML sedml, CLIRecorder cliLogger, 
                              File outputDirForSedml, String outDir, String outputBaseDir, String sedmlLocation,
                              boolean keepTempFiles, boolean exactMatchOnly) throws Exception {
@@ -75,7 +288,7 @@ public class SolverHandler {
         
         List<BioModel> bioModelList = null;
         // Key String is SEDML Task ID
-        HashMap<String, ODESolverResultSet> resultsHash = new LinkedHashMap<String, ODESolverResultSet>();
+        Map<TaskJob, ODESolverResultSet> resultsHash = new LinkedHashMap<TaskJob, ODESolverResultSet>();
         String docName = null;
         Simulation[] sims = null;
         //String outDirRoot = outputDirForSedml.toString().substring(0, outputDirForSedml.toString().lastIndexOf(System.getProperty("file.separator")));
@@ -88,6 +301,8 @@ public class SolverHandler {
         if(bioModelList != null) {
         	countBioModels = bioModelList.size();
         }
+        
+        initialize(bioModelList, sedml);
 
         int simulationJobCount = 0;
         int bioModelCount = 0;
@@ -104,16 +319,31 @@ public class SolverHandler {
             docName = bioModel.getName();
             sims = bioModel.getSimulations();
             
+            Map <Simulation, Status> simStatusMap = new LinkedHashMap<> ();
+            Map <Simulation, Integer> simDurationMap = new LinkedHashMap<> ();
 			List<SimulationJob> simJobsList = new ArrayList<>();
 			for (Simulation sim : sims) {
 				if(sim.getImportedTaskID() == null) {
 					continue;	// this is a simulation not matching the imported task, so we skip it
 				}
+				
+				AbstractTask task = simulationToTaskMap.get(sim);
+				simStatusMap.put(sim, Status.RUNNING);
+				simDurationMap.put(sim, 0);
+
 				int scanCount = sim.getScanCount();
 				for(int i=0; i < scanCount; i++) {
 					SimulationJob simJob = new SimulationJob(sim, i, null);
 					simJobsList.add(simJob);
 				}
+				
+//				String[] targets = sim.getMathOverrides().getScannedConstantNames();
+//				java.util.Arrays.sort(targets);
+//				int[] bounds = new int[targets.length]; // bounds of scanning matrix
+//				for (int i=0; i < targets.length; i++) {
+//					bounds[i] = sim.getMathOverrides().getConstantArraySpec(targets[i]).getNumValues() - 1;
+//				}
+//				int[] coordinates = BeanUtils.indexToCoordinate(scanCount, bounds);
 			}
             
 			for (SimulationJob simJob : simJobsList) {
@@ -184,19 +414,15 @@ public class SolverHandler {
                     if (solver.getSolverStatus().getStatus() == SolverStatus.SOLVER_FINISHED) {
                     	
                     	if(sd.isSpatial()) {
-                    		
-                    	// TODO: proper file name (results folder + importedTaskId + ".h5")
-                    	// check if successfully created
-//                        File aaa = new File("C:\\TEMP\\aaa.hdf5");
-//                        try {
-//                        	CLIUtils.exportPDE2HDF5(sim, outputDirForSedml, aaa);
-//                        	sim2Hdf5Map.put(sim.getImportedTaskID(), null);
-//                        } catch(Exception e) {
-//                        	sim2Hdf5Map.put(sim.getImportedTaskID(), null);
-//                        }
-                    		
+                    		// TODO: uncomment this for export to HDF5 for spatial
+//                        	File hdf5Results = new File(outDir + System.getProperty("file.separator") + "reports.h5");
+//                        	try {
+//                        		RunUtils.exportPDE2HDF5(sim, outputDirForSedml, hdf5Results);
+//                        		sim2Hdf5Map.put(sim.getImportedTaskID(), null);
+//                        	} catch(Exception e) {
+//                        		sim2Hdf5Map.put(sim.getImportedTaskID(), null);
+//                        	}
                     	}
-
                     	
                     	logTaskMessage += "done. ";
                         logger.info("Succesful execution: Model '" + docName + "' Task '" + sim.getDescription() + "'.");
@@ -205,10 +431,18 @@ public class SolverHandler {
                 		long elapsedTime = endTimeTask - startTimeTask;
                 		int duration = (int)Math.ceil(elapsedTime /1000.0);
 
+                		Simulation originalSim = simJob.getSimulation();
+                		int simDuration = simDurationMap.get(originalSim);
+                		simDuration += duration;
+                		simDurationMap.put(originalSim, simDuration);
+
                 		String msg = "Running simulation " + simTask.getSimulation().getName() + ", " + elapsedTime + " ms";
                 		logger.info(msg);
                 		countSuccessfulSimulationRuns++;	// we only count the number of simulations (tasks) that succeeded
-                		PythonCalls.updateTaskStatusYml(sedmlLocation, sim.getImportedTaskID(), Status.SUCCEEDED, outDir ,duration + "", kisao);
+//                		PythonCalls.updateTaskStatusYml(sedmlLocation, sim.getImportedTaskID(), Status.SUCCEEDED, outDir ,duration + "", kisao);
+                		if(simStatusMap.get(originalSim) != Status.ABORTED && simStatusMap.get(originalSim) != Status.FAILED) {
+                			simStatusMap.put(originalSim, Status.SUCCEEDED);
+                		}
                 		PythonCalls.setOutputMessage(sedmlLocation, sim.getImportedTaskID(), outDir, "task", logTaskMessage);
                         RunUtils.drawBreakLine("-", 100);
                     } else {
@@ -234,10 +468,13 @@ public class SolverHandler {
             			logger.error(str);
             			logTaskError += str;
             		} else {
+                		Simulation originalSim = simJob.getSimulation();
             			if(solverStatus == SolverStatus.SOLVER_ABORTED) {
-            				PythonCalls.updateTaskStatusYml(sedmlLocation, sim.getImportedTaskID(), Status.ABORTED, outDir ,duration + "", kisao);
+//            				PythonCalls.updateTaskStatusYml(sedmlLocation, sim.getImportedTaskID(), Status.ABORTED, outDir ,duration + "", kisao);
+            				simStatusMap.put(originalSim, Status.ABORTED);
             			} else {
-            				PythonCalls.updateTaskStatusYml(sedmlLocation, sim.getImportedTaskID(), Status.FAILED, outDir ,duration + "", kisao);
+//            				PythonCalls.updateTaskStatusYml(sedmlLocation, sim.getImportedTaskID(), Status.FAILED, outDir ,duration + "", kisao);
+            				simStatusMap.put(originalSim, Status.FAILED);
             			}
             		}
 //                    CLIUtils.finalStatusUpdate(CLIUtils.Status.FAILED, outDir);
@@ -269,16 +506,37 @@ public class SolverHandler {
                     }
                     RunUtils.drawBreakLine("-", 100);
                 }
+                Task task = (Task) sedml.getTaskWithId(sim.getImportedTaskID());
                 if(odeSolverResultSet != null) {
-                    resultsHash.put(sim.getImportedTaskID() + "_" + simJob.getJobIndex(), odeSolverResultSet);
+                    resultsHash.put(new TaskJob(task.getId(), simJob.getJobIndex()), odeSolverResultSet);
                 } else {
-                	resultsHash.put(sim.getImportedTaskID() + "_" + simJob.getJobIndex(), null);	// if any task fails, we still put it in the hash with a null value
+                	resultsHash.put(new TaskJob(task.getId(), simJob.getJobIndex()), null);	// if any task fails, we still put it in the hash with a null value
                 }
                 if(keepTempFiles == false) {
                 	RunUtils.removeIntermediarySimFiles(outputDirForSedml);
                 }
                 simulationJobCount++;
             }
+			for(Map.Entry<Simulation, Status> entry : simStatusMap.entrySet()) {
+				
+				Simulation sim = entry.getKey();
+	        	Status status = entry.getValue();
+	        	if(status == Status.RUNNING) {
+	        		continue;	// if this happens somehow, we just don't write anything
+	        	}
+	        	AbstractTask task = simulationToTaskMap.get(sim);
+//	        	assert task != null;
+	        	int duration = simDurationMap.get(sim);
+            	SolverTaskDescription std = sim.getSolverTaskDescription();
+            	SolverDescription sd = std.getSolverDescription();
+            	String kisao = sd.getKisao();
+        		PythonCalls.updateTaskStatusYml(sedmlLocation, task.getId(), status, outDir ,duration + "", kisao);
+
+        		Set<RepeatedTask> children = taskToChildRepeatedTasks.get(task);
+	        	for(RepeatedTask rt : children) {
+	        		PythonCalls.updateTaskStatusYml(sedmlLocation, rt.getId(), status, outDir ,duration + "", kisao);
+	        	}
+			}
             bioModelCount++;
         }
         logger.info("Ran " + simulationJobCount + " simulation jobs for " + bioModelCount + " biomodels.");
@@ -288,84 +546,90 @@ public class SolverHandler {
         return resultsHash;
     }
 
+    /**
+     * this function is unmaintained, do not run it
+     */
     @Deprecated
     public HashMap<String, ODESolverResultSet> simulateAllVcmlTasks(File vcmlPath, File outputDir) throws Exception {
-        // create the VCDocument(s) (bioModel(s) + application(s) + simulation(s)), do sanity checks
-        //List<VCDocument> docs = null;
-        // Key String is SEDML Task ID
-        HashMap<String, ODESolverResultSet> resultsHash = new LinkedHashMap<String, ODESolverResultSet>();
-        String biomodelName = null;
-        BioModel bioModel = null;
-        Simulation[] sims = null;
-        VCDocument singleDoc = null;
-        try {
-            singleDoc = VCMLHandler.convertVcmlToVcDocument(vcmlPath);
-        } catch (Exception e) {
-            logger.error("Unable to Parse SED-ML into Bio-Model, failed with err: " + e.getMessage(), e);
-            throw e;
-        }
-        try {
-            sanityCheck(singleDoc);
-        } catch (Exception e) {
-            logger.error("Exception encountered: " + e.getMessage(), e);
-        }
-        assert singleDoc != null;
-        biomodelName = singleDoc.getName();
-        bioModel = (BioModel) singleDoc;
-        sims = bioModel.getSimulations();
-        for (Simulation sim : sims) {
-            sim = new TempSimulation(sim, false);
-            SolverTaskDescription std = sim.getSolverTaskDescription();
-            SolverDescription sd = std.getSolverDescription();
-            String kisao = sd.getKisao();
-            SimulationJob simJob = new SimulationJob(sim, 0, null);
-            SimulationTask simTask = new SimulationTask(simJob, 0);
-            Solver solver = SolverFactory.createSolver(outputDir, simTask, false);
-            ODESolverResultSet odeSolverResultSet = null;
-            try {
-                if (solver instanceof AbstractCompiledSolver) {
-                    ((AbstractCompiledSolver) solver).runSolver();
-                    if (solver instanceof ODESolver) {
-                        odeSolverResultSet = ((ODESolver) solver).getODESolverResultSet();
-                    } else if (solver instanceof GibsonSolver) {
-                        odeSolverResultSet = ((GibsonSolver) solver).getStochSolverResultSet();
-                    } else if (solver instanceof HybridSolver) {
-                        odeSolverResultSet = ((HybridSolver) solver).getHybridSolverResultSet();
-                    } else {
-                        logger.error("Solver results are not compatible with CSV format");
-                    }
-                    //TODO: Add support for JAVA solvers and implement interpolation
-
-//                        odeSolverResultSet = CLIUtils.interpolate(odeSolverResultSet, (UniformTimeCourse) sedmlSim);
-
-                } else {
-                    // this should actually never happen...
-                    throw new Exception("Unexpected solver: " + kisao + " " + solver);
-                }
-                if (solver.getSolverStatus().getStatus() == SolverStatus.SOLVER_FINISHED) {
-                    logger.info("Succesful execution: Model '" + biomodelName + "' Task '" + sim.getDescription() + "'.");
-                } else {
-                    logger.debug("Solver status: " + solver.getSolverStatus().getStatus());
-                    logger.debug("Solver message: " + solver.getSolverStatus().getSimulationMessage().getDisplayMessage());
-                    throw new RuntimeException();
-                }
-
-            } catch (Exception e) {
-                logger.error("Failed execution: Model '" + biomodelName + "' Task '" + sim.getDescription() + "'.");
-                
-                if (e.getMessage() != null) {
-                    // something else than failure caught by solver instance during execution
-                    logger.error(e.getMessage(), e);
-                }
-            }
-            if(odeSolverResultSet != null) {
-                resultsHash.put(sim.getName(), odeSolverResultSet);
-            }
-
-            RunUtils.removeIntermediarySimFiles(outputDir);
-
-        }
-        return resultsHash;
+    	
+    	throw new NotImplementedException("Not Implemented");
+    	
+//        // create the VCDocument(s) (bioModel(s) + application(s) + simulation(s)), do sanity checks
+//        //List<VCDocument> docs = null;
+//        // Key String is SEDML Task ID
+//        HashMap<String, ODESolverResultSet> resultsHash = new LinkedHashMap<String, ODESolverResultSet>();
+//        String biomodelName = null;
+//        BioModel bioModel = null;
+//        Simulation[] sims = null;
+//        VCDocument singleDoc = null;
+//        try {
+//            singleDoc = VCMLHandler.convertVcmlToVcDocument(vcmlPath);
+//        } catch (Exception e) {
+//            logger.error("Unable to Parse SED-ML into Bio-Model, failed with err: " + e.getMessage(), e);
+//            throw e;
+//        }
+//        try {
+//            sanityCheck(singleDoc);
+//        } catch (Exception e) {
+//            logger.error("Exception encountered: " + e.getMessage(), e);
+//        }
+//        assert singleDoc != null;
+//        biomodelName = singleDoc.getName();
+//        bioModel = (BioModel) singleDoc;
+//        sims = bioModel.getSimulations();
+//        for (Simulation sim : sims) {
+//            sim = new TempSimulation(sim, false);
+//            SolverTaskDescription std = sim.getSolverTaskDescription();
+//            SolverDescription sd = std.getSolverDescription();
+//            String kisao = sd.getKisao();
+//            SimulationJob simJob = new SimulationJob(sim, 0, null);
+//            SimulationTask simTask = new SimulationTask(simJob, 0);
+//            Solver solver = SolverFactory.createSolver(outputDir, simTask, false);
+//            ODESolverResultSet odeSolverResultSet = null;
+//            try {
+//                if (solver instanceof AbstractCompiledSolver) {
+//                    ((AbstractCompiledSolver) solver).runSolver();
+//                    if (solver instanceof ODESolver) {
+//                        odeSolverResultSet = ((ODESolver) solver).getODESolverResultSet();
+//                    } else if (solver instanceof GibsonSolver) {
+//                        odeSolverResultSet = ((GibsonSolver) solver).getStochSolverResultSet();
+//                    } else if (solver instanceof HybridSolver) {
+//                        odeSolverResultSet = ((HybridSolver) solver).getHybridSolverResultSet();
+//                    } else {
+//                        logger.error("Solver results are not compatible with CSV format");
+//                    }
+//                    //TODO: Add support for JAVA solvers and implement interpolation
+//
+////                        odeSolverResultSet = CLIUtils.interpolate(odeSolverResultSet, (UniformTimeCourse) sedmlSim);
+//
+//                } else {
+//                    // this should actually never happen...
+//                    throw new Exception("Unexpected solver: " + kisao + " " + solver);
+//                }
+//                if (solver.getSolverStatus().getStatus() == SolverStatus.SOLVER_FINISHED) {
+//                    logger.info("Succesful execution: Model '" + biomodelName + "' Task '" + sim.getDescription() + "'.");
+//                } else {
+//                    logger.debug("Solver status: " + solver.getSolverStatus().getStatus());
+//                    logger.debug("Solver message: " + solver.getSolverStatus().getSimulationMessage().getDisplayMessage());
+//                    throw new RuntimeException();
+//                }
+//
+//            } catch (Exception e) {
+//                logger.error("Failed execution: Model '" + biomodelName + "' Task '" + sim.getDescription() + "'.");
+//                
+//                if (e.getMessage() != null) {
+//                    // something else than failure caught by solver instance during execution
+//                    logger.error(e.getMessage(), e);
+//                }
+//            }
+//            if(odeSolverResultSet != null) {
+//                resultsHash.put(sim.getName(), odeSolverResultSet);
+//            }
+//
+//            RunUtils.removeIntermediarySimFiles(outputDir);
+//
+//        }
+//        return resultsHash;
     }
 
     ;

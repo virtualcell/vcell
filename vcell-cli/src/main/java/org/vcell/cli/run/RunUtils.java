@@ -222,7 +222,7 @@ public class RunUtils {
         }
     }
 
-    public static HashMap<String, File> generateReportsAsCSV(SedML sedml, HashMap<String, ODESolverResultSet> resultsHash, File outDirForCurrentSedml, String outDir, String sedmlLocation) throws DataAccessException, IOException {
+    public static HashMap<String, File> generateReportsAsCSV(SedML sedml, Map<TaskJob, ODESolverResultSet> resultsHash, File outDirForCurrentSedml, String outDir, String sedmlLocation) throws DataAccessException, IOException {
         // finally, the real work
         HashMap<String, File> reportsHash = new HashMap<>();
         List<Output> ooo = sedml.getOutputs();
@@ -274,6 +274,7 @@ public class RunUtils {
                 				actualTask = (Task)referredTask;
                 				sedmlSim = sedml.getSimulation(actualTask.getSimulationReference());
                             } else {
+                            	actualTask = (Task)task;
                             	sedmlSim = sedml.getSimulation(task.getSimulationReference());
                             }
                             
@@ -299,13 +300,13 @@ public class RunUtils {
 
                             if (task instanceof RepeatedTask) {
                             	// ==================================================================================
-                                assert actualTask != null;
-                                ArrayList<String> keys = new ArrayList<>();
-                                for (Map.Entry<String, ODESolverResultSet> entry : resultsHash.entrySet()) {
-                                	String key = entry.getKey();
+//                                assert actualTask != null;
+                                ArrayList<TaskJob> taskJobs = new ArrayList<>();
+                                for (Map.Entry<TaskJob, ODESolverResultSet> entry : resultsHash.entrySet()) {
+                                    TaskJob taskJob = entry.getKey();
                                 	ODESolverResultSet value = entry.getValue();
-                                	if(value != null && key.startsWith(actualTask.getId())) {
-                                		keys.add(key);
+                                	if(value != null && taskJob.getTaskId().equals(actualTask.getId())) {
+                                		taskJobs.add(taskJob);
                                 	}
                                 }
                                 varIDs.add(var.getId());
@@ -314,8 +315,8 @@ public class RunUtils {
                                     double outputStartTime = ((UniformTimeCourse) sedmlSim).getOutputStartTime();
                                     ArrayList<double[]> variablesList = new ArrayList<>();
                                     if(outputStartTime > 0) {
-                                    	for(String key : keys) {
-                                            ODESolverResultSet results = resultsHash.get(task.getId());
+                                    	for(TaskJob taskJob : taskJobs) {
+                                            ODESolverResultSet results = resultsHash.get(taskJob);
                                             int column = results.findColumn(sbmlVarId);
                                             double[] tmpData = results.extractColumn(column);
                                             double[] data = new double[outputNumberOfPoints+1];
@@ -333,8 +334,8 @@ public class RunUtils {
                                             }
                                     	}
                                     } else {
-                                    	for(String key : keys) {
-                                    		ODESolverResultSet results = resultsHash.get(key);
+                                    	for(TaskJob taskJob : taskJobs) {
+                                    		ODESolverResultSet results = resultsHash.get(taskJob);
                                             int column = results.findColumn(sbmlVarId);
                                             double[] data = results.extractColumn(column);
                                             mxlen = Integer.max(mxlen, data.length);
@@ -353,7 +354,8 @@ public class RunUtils {
                                 }
                             } else {
                                 varIDs.add(var.getId());
-                                assert task != null;
+//                                assert task != null;
+                                TaskJob taskJob = new TaskJob(actualTask.getId(), 0);
                                 if(sedmlSim instanceof UniformTimeCourse) {
                                     // we want to keep the last outputNumberOfPoints only
                                     int outputNumberOfPoints = ((UniformTimeCourse) sedmlSim).getNumberOfPoints();
@@ -363,7 +365,7 @@ public class RunUtils {
 
                                     	// key format in resultsHash is taskId + "_" + simJobId  
                                     	// ex: task_0_0_0 where the last 0 is the simJobId (always 0 when no parameter scan)
-                                        ODESolverResultSet results = resultsHash.get(task.getId() + "_0");	// hence the added "_0"
+                                        ODESolverResultSet results = resultsHash.get(taskJob);	// hence the added "_0"
                                         int column = results.findColumn(sbmlVarId);
                                         double[] tmpData = results.extractColumn(column);
                                         double[] data = new double[outputNumberOfPoints+1];
@@ -376,7 +378,7 @@ public class RunUtils {
                                         values.put(var, variablesList);
 
                                     } else {
-                                        ODESolverResultSet results = resultsHash.get(task.getId() + "_0");
+                                        ODESolverResultSet results = resultsHash.get(taskJob);
                                         int column = results.findColumn(sbmlVarId);
                                         double[] data = results.extractColumn(column);
                                         mxlen = Integer.max(mxlen, data.length);
