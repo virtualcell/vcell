@@ -300,7 +300,7 @@ public class RunUtils {
 
                             if (task instanceof RepeatedTask) {
                             	// ==================================================================================
-                                assert actualTask != null;
+//                                assert actualTask != null;
                                 ArrayList<TaskJob> taskJobs = new ArrayList<>();
                                 for (Map.Entry<TaskJob, ODESolverResultSet> entry : resultsHash.entrySet()) {
                                     TaskJob taskJob = entry.getKey();
@@ -354,7 +354,8 @@ public class RunUtils {
                                 }
                             } else {
                                 varIDs.add(var.getId());
-                                assert task != null;
+//                                assert task != null;
+                                TaskJob taskJob = new TaskJob(actualTask.getId(), 0);
                                 if(sedmlSim instanceof UniformTimeCourse) {
                                     // we want to keep the last outputNumberOfPoints only
                                     int outputNumberOfPoints = ((UniformTimeCourse) sedmlSim).getNumberOfPoints();
@@ -364,7 +365,7 @@ public class RunUtils {
 
                                     	// key format in resultsHash is taskId + "_" + simJobId  
                                     	// ex: task_0_0_0 where the last 0 is the simJobId (always 0 when no parameter scan)
-                                        ODESolverResultSet results = resultsHash.get(task.getId() + "_0");	// hence the added "_0"
+                                        ODESolverResultSet results = resultsHash.get(taskJob);	// hence the added "_0"
                                         int column = results.findColumn(sbmlVarId);
                                         double[] tmpData = results.extractColumn(column);
                                         double[] data = new double[outputNumberOfPoints+1];
@@ -377,7 +378,7 @@ public class RunUtils {
                                         values.put(var, variablesList);
 
                                     } else {
-                                        ODESolverResultSet results = resultsHash.get(task.getId() + "_0");
+                                        ODESolverResultSet results = resultsHash.get(taskJob);
                                         int column = results.findColumn(sbmlVarId);
                                         double[] data = results.extractColumn(column);
                                         mxlen = Integer.max(mxlen, data.length);

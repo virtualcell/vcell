@@ -63,13 +63,13 @@ public class SolverHandler {
 	public int countSuccessfulSimulationRuns = 0;	// number of simulations that we ran successfully for this sedml file
 	public Map <String, String> sim2Hdf5Map = new LinkedHashMap<> ();
 	
-    Map<Simulation, AbstractTask> simulationToTaskMap = new LinkedHashMap<> ();	// key = vcell simulation, value = sedml AbstractTask (task reference)
-    Map<AbstractTask, Simulation> taskToSimulationMap = new LinkedHashMap<> ();	// the opposite
-    Map<AbstractTask, List<AbstractTask>> taskToListOfSubtasksMap = new LinkedHashMap<> ();	// key = topmost AbstractTask, value = recursive list of subtasks
+    Map<Simulation, Task> simulationToTaskMap = new LinkedHashMap<> ();	// key = vcell simulation, value = sedml Task (task reference)
+    Map<Task, Simulation> taskToSimulationMap = new LinkedHashMap<> ();	// the opposite
+    Map<AbstractTask, List<AbstractTask>> taskToListOfSubTasksMap = new LinkedHashMap<> ();	// key = topmost AbstractTask, value = recursive list of subtasks
     Map<AbstractTask, List<Variable>> taskToVariableMap = new LinkedHashMap<> ();	// key = AbstractTask, value = list of variables calculated by this task
     Map<RepeatedTask, Set<String>> taskToChangeTargetMap = new LinkedHashMap<> ();	// key = RepeatedTask, value = list of the parameters that are being changed
     Map<Task, Set<RepeatedTask>> taskToChildRepeatedTasks = new LinkedHashMap<> ();	// key = Task, value = list of RepeatedTasks ending with this task
-    Map<String, Task> repeatedTaskToBaseTask = new LinkedHashMap<> ();				// key = RepeatedTaskId, value = Tasks at the bottom of the SubTasks chain
+    Map<String, Task> topTaskToBaseTask = new LinkedHashMap<> ();				// key = TopmostTaskId, value = Tasks at the bottom of the SubTasks chain OR the topmost task itself if instanceof Task
 
     private static void sanityCheck(VCDocument doc) {
         if (doc == null) {
@@ -92,6 +92,7 @@ public class SolverHandler {
     }
 
     public void initialize(List<BioModel> bioModelList, SedML sedml) throws ExpressionException {
+    	
         for(BioModel bioModel : bioModelList) {
         	Simulation[] sims = bioModel.getSimulations();
         	for(Simulation sim : sims) {
@@ -100,17 +101,40 @@ public class SolverHandler {
             	}
                	String importedTaskId = sim.getImportedTaskID();
                	AbstractTask at = sedml.getTaskWithId(importedTaskId);
-               	simulationToTaskMap.put(sim, at);
-               	taskToSimulationMap.put(at,  sim);
+               	if(at instanceof Task) {
+               		simulationToTaskMap.put(sim, (Task)at);
+               		taskToSimulationMap.put((Task)at,  sim);
+               	} else {
+               		throw new RuntimeException("SolverHandler: Imported Task should be instanceof Task");
+               	}
         	}
         }
         
         {
-        for (Map.Entry<Simulation, AbstractTask> entry : simulationToTaskMap.entrySet()) {
-        	Simulation sim = entry.getKey();
-        	AbstractTask task = entry.getValue();
-        	List<AbstractTask> subtasksList = new ArrayList<> ();	// will remain empty if task is instanceof Task
-        	
+    	// we first make a list of all the sub tasks (may be instanceof Task or RepeatedTask)
+        Set <AbstractTask> subTasks = new LinkedHashSet<> ();
+        for(AbstractTask at : sedml.getTasks()) {
+        	if(at instanceof RepeatedTask) {
+        		RepeatedTask rt = (RepeatedTask)at;
+        		Map<String, SubTask> subTasksOfRepeatedTask = rt.getSubTasks();
+        		for (Map.Entry<String, SubTask> entry : subTasksOfRepeatedTask.entrySet()) {
+        			String subTaskId = entry.getKey();
+        			AbstractTask subTask = sedml.getTaskWithId(subTaskId);
+       				subTasks.add(subTask);
+        		}
+        	}
+        }
+        // then we make a list of all topmost tasks (Task or RepeatedTask that are not a subtask)
+    	// is the topmost task of a chain that ends with an actual task
+        Set <AbstractTask> topmostTasks = new LinkedHashSet<> ();	// topmost tasks (they are not in the list of subtasks above)
+        for(AbstractTask at : sedml.getTasks()) {
+       		if(!subTasks.contains(at)) {
+       			topmostTasks.add(at);
+//       			taskToListOfSubTasksMap.put(at, subTasksList);	// all subtasksLists are empty at this point
+       		}
+        }
+        for (AbstractTask task : topmostTasks) {
+   			List<AbstractTask> subTasksList = new ArrayList<> ();
 			AbstractTask referredTask;
 			RepeatedTask rt;
 			Task actualTask;
@@ -124,37 +148,40 @@ public class SolverHandler {
 					if (referredTask instanceof RepeatedTask) {
 						rt = (RepeatedTask)referredTask;
 					}
-					subtasksList.add(referredTask);				// last entry added will be a instanceof Task
+					subTasksList.add(referredTask);				// last entry added will be a instanceof Task
 				} while (referredTask instanceof RepeatedTask);
 				actualTask = (Task)referredTask;
 			} else {
 				actualTask = (Task)task;
 			}
+        	taskToListOfSubTasksMap.put(task, subTasksList);	// may be empty if task instanceof Task
+        	topTaskToBaseTask.put(task.getId(), actualTask);
+
         	Set<RepeatedTask> childRepeatedTasks = new LinkedHashSet<> ();
-//        	assert taskToChildRepeatedTasks.containsKey(actualTask) == false;
 			taskToChildRepeatedTasks.put(actualTask, childRepeatedTasks);	// list of all Tasks, the set is only initialized here
-        	taskToListOfSubtasksMap.put(task, subtasksList);	// may be empty if task instanceof Task
-        	repeatedTaskToBaseTask.put(task.getId(), actualTask);
+
         }
-        for(Map.Entry<AbstractTask, List<AbstractTask>> entry : taskToListOfSubtasksMap.entrySet()) {	// populate the taskToChildRepeatedTasks map
+
+        for(Map.Entry<AbstractTask, List<AbstractTask>> entry : taskToListOfSubTasksMap.entrySet()) {	// populate the taskToChildRepeatedTasks map
         	AbstractTask topmostTask = entry.getKey();
         	List<AbstractTask> dependingTasks = entry.getValue();
         	if(topmostTask instanceof Task) {
-        		// nothing to do except some sanity checks
+        		// nothing to do except some sanity checks maybe
         		// the taskToChildRepeatedTasks contains this key and the associated set should be empty
 //        		assert dependingTasks.isEmpty() == true;							// the dependingTasks list should be empty
 //        		assert taskToChildRepeatedTasks.containsKey(topmostTask) == true;	// the Task should be a key in the map
 //        		assert taskToChildRepeatedTasks.get(topmostTask).isEmpty() == true;	// the set of repeated tasks associated to this task should be empty
         	} else {	// this is a RepeatedTask
-        		Task rootTask = null;
+        		// or use Task actualTask = topTaskToBaseTask.get(topmostTask.getId());
+        		Task actualTask = null;
         		for(AbstractTask dependingTask : dependingTasks) {
         			if(dependingTask instanceof Task) {		// should always be one Task at the end of the list
-        				rootTask = (Task)dependingTask;
+        				actualTask = (Task)dependingTask;
         				break;		// we found the only Task
         			}
         		}
 //        		assert rootTask != null;
-        		Set<RepeatedTask> childRepeatedTasks = taskToChildRepeatedTasks.get(rootTask);
+        		Set<RepeatedTask> childRepeatedTasks = taskToChildRepeatedTasks.get(actualTask);
 //        		assert childRepeatedTasks.isEmpty() == true;
         		childRepeatedTasks.add((RepeatedTask)topmostTask);
         		for(AbstractTask dependingTask : dependingTasks) {
@@ -174,6 +201,8 @@ public class SolverHandler {
         List<Output> ooo = sedml.getOutputs();
         for(Output oo : ooo) {
         	if(oo instanceof Report) {
+        		// TODO: check if multiple reports may use different tasks for the same variable
+        		// here we assume that each variable may only be the result of one task
                 List<DataSet> datasets = ((Report) oo).getListOfDataSets();
                 for (DataSet dataset : datasets) {
                     DataGenerator datagen = sedml.getDataGeneratorWithId(dataset.getDataReference());
@@ -201,16 +230,18 @@ public class SolverHandler {
         }
         }
         
-        for (Map.Entry<AbstractTask, List<AbstractTask>> entry : taskToListOfSubtasksMap.entrySet()) {
+        for (Map.Entry<AbstractTask, List<AbstractTask>> entry : taskToListOfSubTasksMap.entrySet()) {
         	AbstractTask task = entry.getKey();
-        	List<AbstractTask> subTasksList = entry.getValue();
-        	Simulation sim = taskToSimulationMap.get(task);
+        	Task actualTask = topTaskToBaseTask.get(task.getId());
+        	Simulation sim = taskToSimulationMap.get(actualTask);
 			int scanCount = sim.getScanCount();
 			
 			if(scanCount > 1) {
 //				assert task instanceof RepeatedTask;
 //				assert !subTasksList.isEmpty();
 				
+				// TODO: the logic is probably bad here, we need to look atall the repeated tasks in chain
+				// and identify all changes. (it's not being used, so not urgent)
 				SBMLSupport sbmlSupport = new SBMLSupport();
 				RepeatedTask rt = (RepeatedTask)task;
 
@@ -241,9 +272,9 @@ public class SolverHandler {
 			}
         }
         System.out.println("taskToSimulationMap: " + taskToSimulationMap.size());
-        System.out.println("taskToListOfSubtasksMap: " + taskToListOfSubtasksMap.size());
+        System.out.println("taskToListOfSubtasksMap: " + taskToListOfSubTasksMap.size());
         System.out.println("taskToVariableMap: " + taskToVariableMap.size());
-        System.out.println("repeatedTaskToBaseTask: " + repeatedTaskToBaseTask.size());
+        System.out.println("repeatedTaskToBaseTask: " + topTaskToBaseTask.size());
     }
 
     public Map<TaskJob, ODESolverResultSet>
@@ -297,10 +328,6 @@ public class SolverHandler {
 				}
 				
 				AbstractTask task = simulationToTaskMap.get(sim);
-				if(!taskToVariableMap.containsKey(task)) {
-					continue;		// the results of this task are not used in any output, we don't need to run it
-				}
-
 				simStatusMap.put(sim, Status.RUNNING);
 				simDurationMap.put(sim, 0);
 
@@ -479,11 +506,11 @@ public class SolverHandler {
                     }
                     RunUtils.drawBreakLine("-", 100);
                 }
-               	Task actualTask = repeatedTaskToBaseTask.get(sim.getImportedTaskID());
+                Task task = (Task) sedml.getTaskWithId(sim.getImportedTaskID());
                 if(odeSolverResultSet != null) {
-                    resultsHash.put(new TaskJob(actualTask.getId(), simJob.getJobIndex()), odeSolverResultSet);
+                    resultsHash.put(new TaskJob(task.getId(), simJob.getJobIndex()), odeSolverResultSet);
                 } else {
-                	resultsHash.put(new TaskJob(actualTask.getId(), simJob.getJobIndex()), null);	// if any task fails, we still put it in the hash with a null value
+                	resultsHash.put(new TaskJob(task.getId(), simJob.getJobIndex()), null);	// if any task fails, we still put it in the hash with a null value
                 }
                 if(keepTempFiles == false) {
                 	RunUtils.removeIntermediarySimFiles(outputDirForSedml);
@@ -505,9 +532,9 @@ public class SolverHandler {
             	String kisao = sd.getKisao();
         		PythonCalls.updateTaskStatusYml(sedmlLocation, task.getId(), status, outDir ,duration + "", kisao);
 
-        		List<AbstractTask> children = taskToListOfSubtasksMap.get(task);
-	        	for(AbstractTask at : children) {
-	        		PythonCalls.updateTaskStatusYml(sedmlLocation, at.getId(), status, outDir ,duration + "", kisao);
+        		Set<RepeatedTask> children = taskToChildRepeatedTasks.get(task);
+	        	for(RepeatedTask rt : children) {
+	        		PythonCalls.updateTaskStatusYml(sedmlLocation, rt.getId(), status, outDir ,duration + "", kisao);
 	        	}
 			}
             bioModelCount++;
