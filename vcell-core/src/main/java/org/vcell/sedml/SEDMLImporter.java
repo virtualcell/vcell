@@ -724,7 +724,7 @@ public class SEDMLImporter {
 				}
 				createOverrides(simulation, functions);
 				// we didn't bomb out, so update the simulation
-				simulation.setImportedTaskID(referredTask.getId());
+				simulation.setImportedTaskID(selectedTask.getId());
 			}
 		}
 	}
