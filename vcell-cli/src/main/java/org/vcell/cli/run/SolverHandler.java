@@ -93,6 +93,7 @@ public class SolverHandler {
 
     public void initialize(List<BioModel> bioModelList, SedML sedml) throws ExpressionException {
     	
+    	Set <AbstractTask> topmostTasks = new LinkedHashSet<> ();
         for(BioModel bioModel : bioModelList) {
         	Simulation[] sims = bioModel.getSimulations();
         	for(Simulation sim : sims) {
@@ -103,6 +104,7 @@ public class SolverHandler {
                	AbstractTask at = sedml.getTaskWithId(importedTaskId);
            		simulationToTaskMap.put(sim, at);
            		taskToSimulationMap.put(at,  sim);
+           		topmostTasks.add(at);	// all the tasks referred by an importedTaskId are supposed to be topmost
         	}
         }
         
@@ -122,13 +124,16 @@ public class SolverHandler {
         }
         // then we make a list of all topmost tasks (Task or RepeatedTask that are not a subtask)
     	// is the topmost task of a chain that ends with an actual task
-        Set <AbstractTask> topmostTasks = new LinkedHashSet<> ();	// topmost tasks (they are not in the list of subtasks above)
+        Set <AbstractTask> topmostTasks2 = new LinkedHashSet<> ();	// topmost tasks, different way to calculate (they are not in the list of subtasks above)
         for(AbstractTask at : sedml.getTasks()) {
        		if(!subTasks.contains(at)) {
-       			topmostTasks.add(at);
+       			topmostTasks2.add(at);
        		}
         }
-        for (AbstractTask task : topmostTasks) {
+        if(topmostTasks.size() != topmostTasks2.size()) {
+        	throw new RuntimeException("TopmostTasks lists sizes are different.");
+        }
+        for (AbstractTask task : topmostTasks) {		// we have higher confidence that topmostTask is correct
    			List<AbstractTask> subTasksList = new ArrayList<> ();
 			AbstractTask referredTask;
 			RepeatedTask rt;
@@ -149,7 +154,7 @@ public class SolverHandler {
 			} else {
 				actualTask = (Task)task;
 			}
-        	taskToListOfSubTasksMap.put(task, subTasksList);	// may be empty if task instanceof Task
+        	taskToListOfSubTasksMap.put(task, subTasksList);	// subTasksList may be empty if task instanceof Task
         	topTaskToBaseTask.put(task.getId(), actualTask);
 
         	Set<RepeatedTask> childRepeatedTasks = new LinkedHashSet<> ();
@@ -501,7 +506,7 @@ public class SolverHandler {
                     }
                     RunUtils.drawBreakLine("-", 100);
                 }
-                Task task = (Task) sedml.getTaskWithId(sim.getImportedTaskID());
+                AbstractTask task = sedml.getTaskWithId(sim.getImportedTaskID());
                 if(odeSolverResultSet != null) {
                     resultsHash.put(new TaskJob(task.getId(), simJob.getJobIndex()), odeSolverResultSet);
                 } else {
@@ -527,8 +532,8 @@ public class SolverHandler {
             	String kisao = sd.getKisao();
         		PythonCalls.updateTaskStatusYml(sedmlLocation, task.getId(), status, outDir ,duration + "", kisao);
 
-        		Set<RepeatedTask> children = taskToChildRepeatedTasks.get(task);
-	        	for(RepeatedTask rt : children) {
+        		List<AbstractTask> children = taskToListOfSubTasksMap.get(task);
+	        	for(AbstractTask rt : children) {
 	        		PythonCalls.updateTaskStatusYml(sedmlLocation, rt.getId(), status, outDir ,duration + "", kisao);
 	        	}
 			}
