@@ -232,7 +232,7 @@ public abstract class HtcProxy {
 
 	public abstract String getSubmissionFileExtension();
 	public static class MemLimitResults {
-		private static final long FALLBACK_MEM_LIMIT_MB=4096;//MAX memory allowed if not set in limitFile
+		private static final long FALLBACK_MEM_LIMIT_MB=4096;//MAX memory allowed if not set in limitFile, currently 4g
 		private long memLimit;
 		private String memLimitSource;
 		public MemLimitResults(long memLimit, String memLimitSource) {
@@ -280,6 +280,12 @@ public abstract class HtcProxy {
 				result = (long)estimatedMemSizeMB;
 				source = "used Estimated";
 			}
+			// Temporary memory increase
+			if (result < 10240){
+				result = (long)10240;
+				source = "manual override";
+			}
+
 			return new MemLimitResults(result, source);
 		}
 	}
