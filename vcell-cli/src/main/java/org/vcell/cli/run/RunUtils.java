@@ -305,7 +305,7 @@ public class RunUtils {
                                 for (Map.Entry<TaskJob, ODESolverResultSet> entry : resultsHash.entrySet()) {
                                     TaskJob taskJob = entry.getKey();
                                 	ODESolverResultSet value = entry.getValue();
-                                	if(value != null && taskJob.getTaskId().equals(actualTask.getId())) {
+                                	if(value != null && taskJob.getTaskId().equals(task.getId())) {
                                 		taskJobs.add(taskJob);
                                 	}
                                 }
