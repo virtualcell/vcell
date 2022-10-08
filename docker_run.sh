@@ -3,8 +3,6 @@
 raw_command = $(echo "$1" | xargs) # Strip whitespace
 command="biosimulations" # default
 
-echo "<raw_command>"
-
 case raw_command in
   convert)
     echo 'convert mode requested'
