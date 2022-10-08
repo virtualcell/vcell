@@ -181,6 +181,17 @@ public Simulation(MathDescription mathDescription, SimulationOwner simulationOwn
 	this( );
 	addVetoableChangeListener(this);
 
+	// Give temporary fieldSimulationVersion (needed for linuxSharedLibs())
+	fieldSimulationVersion = SimulationVersion.createTempSimulationVersion();
+	
+	fieldName = fieldSimulationVersion.getName();
+	fieldDescription = fieldSimulationVersion.getAnnot();
+	if (fieldSimulationVersion.getParentSimulationReference()!=null){
+		fieldSimulationIdentifier = null;
+	}else{
+		fieldSimulationIdentifier = createSimulationID(fieldSimulationVersion.getVersionKey());
+	}
+
 	try {
 		setMathDescription(mathDescription);
 	} catch (java.beans.PropertyVetoException e) {
