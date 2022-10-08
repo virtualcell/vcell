@@ -66,14 +66,6 @@ public class ModelUnitConverter {
 		Model newModel = newBioModel.getModel();
 		Model oldModel = oldBioModel.getModel();
 		
-		for(Simulation oldSim : oldBioModel.getSimulations()) {
-			for(Simulation newSim : newBioModel.getSimulations()) {
-				if(newSim.getName().equals(newSim.getName())) {
-					newSim.setImportedTaskID(oldSim.getImportedTaskID());
-				}
-			}
-		}
-
 		VCUnitDefinition dimensionless = newModel.getUnitSystem().getInstance_DIMENSIONLESS();
 		Model.ReservedSymbol KMOLE = newModel.getReservedSymbolByRole(Model.ReservedSymbolRole.KMOLE);
 

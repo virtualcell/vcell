@@ -4694,6 +4694,9 @@ Element getXML(Simulation param) {
 	//Add Attributes
 	String name = mangle(param.getName());
 	simulationElement.setAttribute(XMLTags.NameAttrTag, name);
+	if(param.getImportedTaskID() != null && param.getImportedTaskID().length() > 0) {
+		simulationElement.setAttribute(XMLTags.ImportedTaskIdTag, param.getImportedTaskID());
+	}
 	//simulation.setAttribute(XMLTags.AnnotationAttrTag, this.mangle(param.getDescription()));
 	//Add annotation
 	if (param.getDescription()!=null && param.getDescription().trim().length()>0) {
