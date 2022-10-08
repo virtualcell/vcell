@@ -724,45 +724,47 @@ public class SBMLImporter {
 							paramSpContext = (SpeciesContext) bcondTargetSte;
 							vcSpContextsSpec = vcBioModel.getSimulationContext(0).getReactionContext().getSpeciesContextSpec(paramSpContext);
 							SpeciesContextSpecParameter scsParam = null;
-							for (CoordinateComponent coordComp : sbmlGeometry.getListOfCoordinateComponents()) {
-								String bcMinSpatialId = coordComp.getBoundaryMinimum().getSpatialId();
-								String bcMaxSpatialId = coordComp.getBoundaryMaximum().getSpatialId();
-								String coordinateBoundary = bCondn.getCoordinateBoundary();
-								if (coordinateBoundary.equals(bcMinSpatialId)) {
-									switch (coordComp.getType()){
-									case cartesianX:{
-										scsParam = vcSpContextsSpec.getBoundaryXmParameter();
-										break;
-									}
-									case cartesianY:{
-										scsParam = vcSpContextsSpec.getBoundaryYmParameter();
-										break;
-									}
-									case cartesianZ:{
-										scsParam = vcSpContextsSpec.getBoundaryZmParameter();
-										break;
-									}
-									default:{
-										throw new SBMLImportException("unexpected coordinate component type "+coordComp.getType());
-									}
-									}
-								} else if (coordinateBoundary.equals(bcMaxSpatialId)){
-									switch (coordComp.getType()){
-									case cartesianX:{
-										scsParam = vcSpContextsSpec.getBoundaryXpParameter();
-										break;
-									}
-									case cartesianY:{
-										scsParam = vcSpContextsSpec.getBoundaryYpParameter();
-										break;
-									}
-									case cartesianZ:{
-										scsParam = vcSpContextsSpec.getBoundaryZpParameter();
-										break;
-									}
-									default:{
-										throw new SBMLImportException("unexpected coordinate component type "+coordComp.getType());
-									}
+							if(sbmlGeometry != null) {		// alternately use bSpatial, I don't know which makes more sense
+								for (CoordinateComponent coordComp : sbmlGeometry.getListOfCoordinateComponents()) {
+									String bcMinSpatialId = coordComp.getBoundaryMinimum().getSpatialId();
+									String bcMaxSpatialId = coordComp.getBoundaryMaximum().getSpatialId();
+									String coordinateBoundary = bCondn.getCoordinateBoundary();
+									if (coordinateBoundary.equals(bcMinSpatialId)) {
+										switch (coordComp.getType()){
+										case cartesianX:{
+											scsParam = vcSpContextsSpec.getBoundaryXmParameter();
+											break;
+										}
+										case cartesianY:{
+											scsParam = vcSpContextsSpec.getBoundaryYmParameter();
+											break;
+										}
+										case cartesianZ:{
+											scsParam = vcSpContextsSpec.getBoundaryZmParameter();
+											break;
+										}
+										default:{
+											throw new SBMLImportException("unexpected coordinate component type "+coordComp.getType());
+										}
+										}
+									} else if (coordinateBoundary.equals(bcMaxSpatialId)){
+										switch (coordComp.getType()){
+										case cartesianX:{
+											scsParam = vcSpContextsSpec.getBoundaryXpParameter();
+											break;
+										}
+										case cartesianY:{
+											scsParam = vcSpContextsSpec.getBoundaryYpParameter();
+											break;
+										}
+										case cartesianZ:{
+											scsParam = vcSpContextsSpec.getBoundaryZpParameter();
+											break;
+										}
+										default:{
+											throw new SBMLImportException("unexpected coordinate component type "+coordComp.getType());
+										}
+										}
 									}
 								}
 							}

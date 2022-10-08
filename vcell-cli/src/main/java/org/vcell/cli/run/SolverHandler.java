@@ -131,7 +131,8 @@ public class SolverHandler {
        		}
         }
         if(topmostTasks.size() != topmostTasks2.size()) {
-        	throw new RuntimeException("TopmostTasks lists sizes are different.");
+            logger.error("TopmostTasks lists sizes are different.");
+//        	throw new RuntimeException("TopmostTasks lists sizes are different.");
         }
         for (AbstractTask task : topmostTasks) {		// we have higher confidence that topmostTask is correct
    			List<AbstractTask> subTasksList = new ArrayList<> ();
