@@ -232,7 +232,8 @@ public abstract class HtcProxy {
 
 	public abstract String getSubmissionFileExtension();
 	public static class MemLimitResults {
-		private static final long FALLBACK_MEM_LIMIT_MB=4096;//MAX memory allowed if not set in limitFile, currently 4g
+		private static final long FALLBACK_MEM_LIMIT_MB=4096;		// MAX memory allowed if not set in limitFile, currently 4g
+		private static final long POWER_USER_MEMORY_FLOOR=10240; 	// MIN memory allowed if declared to be a power user, currently 10g
 		private long memLimit;
 		private String memLimitSource;
 		public MemLimitResults(long memLimit, String memLimitSource) {
@@ -246,7 +247,7 @@ public abstract class HtcProxy {
 		public String getMemLimitSource() {
 			return memLimitSource;
 		}
-		private static MemLimitResults getFallbackMemLimitMB(SolverDescription solverDescription,double estimatedMemSizeMB) {
+		private static MemLimitResults getFallbackMemLimitMB(SolverDescription solverDescription,double estimatedMemSizeMB, boolean isPowerUser) {
 			Long result = null;
 			String source = null;
 			try {
@@ -280,18 +281,17 @@ public abstract class HtcProxy {
 				result = (long)estimatedMemSizeMB;
 				source = "used Estimated";
 			}
-			// Temporary memory increase
-			if (result < 10240){
-				result = (long)10240;
-				source = "manual override";
+			if (isPowerUser && result < POWER_USER_MEMORY_FLOOR){
+				result = (long)POWER_USER_MEMORY_FLOOR;
+				source = "poweruser's memory override";
 			}
 
 			return new MemLimitResults(result, source);
 		}
 	}
 	public static final boolean bDebugMemLimit = false;
-	public static MemLimitResults getMemoryLimit(String vcellUserid,KeyValue simID,SolverDescription solverDescription,double estimatedMemSizeMB) {
-		return MemLimitResults.getFallbackMemLimitMB(solverDescription, estimatedMemSizeMB*1.5);
+	public static MemLimitResults getMemoryLimit(String vcellUserid, KeyValue simID, SolverDescription solverDescription ,double estimatedMemSizeMB, boolean isPowerUser) {
+		return MemLimitResults.getFallbackMemLimitMB(solverDescription, estimatedMemSizeMB*1.5, isPowerUser);
 //		boolean bUseEstimate = estimatedMemSizeMB >= MemLimitResults.getFallbackMemLimitMB(solverDescription);
 //		return new MemLimitResults((bUseEstimate?(long)estimatedMemSizeMB:MemLimitResults.getFallbackMemLimitMB(solverDescription)), (bUseEstimate?"used Estimated":"used FALLBACK_MEM_LIMIT"));
 //		//One of 5 limits are returned (ordered from highest to lowest priority):
