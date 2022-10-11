@@ -162,7 +162,7 @@ public class ExecuteImpl {
         } 
 
         logger.info("Preparing output directory...");
-        CLIUtils.cleanRootDir(new File(outputBaseDir));
+        //CLIUtils.cleanRootDir(new File(outputBaseDir));
         if (bEncapsulateOutput) RunUtils.removeAndMakeDirs(new File(outputDir));
         PythonCalls.generateStatusYaml(inputFilePath, outputDir);    // generate Status YAML
 

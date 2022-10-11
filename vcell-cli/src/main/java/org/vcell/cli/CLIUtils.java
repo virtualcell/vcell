@@ -41,16 +41,16 @@ public class CLIUtils {
         }
     }
 
-    public static void cleanRootDir(File outdir){
-        // If this could be done without hard coding it'd be preferable.
-        String[] filesToDelete = {"detailedResultLog.txt", "fullSuccessLog.txt"};
-        for (String fileName : filesToDelete){
-            File instance = new File(outdir, fileName);
-            if (instance.exists()){
-                instance.delete();
-            }
-        }
-    }
+    // public static void cleanRootDir(File outdir){
+    //     // If this could be done without hard coding it'd be preferable.
+    //     String[] filesToDelete = {"detailedResultLog.txt", "fullSuccessLog.txt"};
+    //     for (String fileName : filesToDelete){
+    //         File instance = new File(outdir, fileName);
+    //         if (instance.exists()){
+    //             instance.delete();
+    //         }
+    //     }
+    // }
 
     public static void setLogLevel(LoggerContext ctx, Level logLevel){
         org.apache.logging.log4j.core.config.Configuration config = ctx.getConfiguration();
