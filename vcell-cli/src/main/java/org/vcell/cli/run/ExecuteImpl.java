@@ -121,7 +121,8 @@ public class ExecuteImpl {
     public static void singleExecOmex(File inputFile, File rootOutputDir, CLIRecorder cliLogger,
             boolean bKeepTempFiles, boolean bExactMatchOnly, boolean bEncapsulateOutput) throws Exception {
         int nModels, nSimulations, nTasks, nOutputs, nReportsCount = 0, nPlots2DCount = 0, nPlots3DCount = 0;
-        boolean hasChanges = false;
+        boolean hasOverrides = false;
+        boolean hasScans = false;
         String logOmexMessage = "";
 
         String inputFilePath = inputFile.getAbsolutePath();
@@ -193,8 +194,18 @@ public class ExecuteImpl {
 
                 nModels = sedmlFromOmex.getModels().size();
                 for(Model m : sedmlFromOmex.getModels()) {
-                	if(m.getListOfChanges().size() > 0) {
-                		hasChanges = true;
+                	List<Change> changes = m.getListOfChanges();	// change attribute caused by a math override
+                	if(changes != null && changes.size() > 0) {
+                		hasOverrides = true;
+                	}
+                }
+                for(AbstractTask at : sedmlFromOmex.getTasks()) {
+                	if(at instanceof RepeatedTask) {
+                		RepeatedTask rt = (RepeatedTask)at;
+                		List<SetValue> changes = rt.getChanges();
+                    	if(changes != null && changes.size() > 0) {
+                    		hasScans = true;
+                    	}
                 	}
                 }
                 nTasks = sedmlFromOmex.getTasks().size();
@@ -291,11 +302,13 @@ public class ExecuteImpl {
             message += nSimulations + ",";
             message += nTasks + ",";
             message += nOutputs + ",";
+            
             message += solverHandler.countBioModels + ",";
-            message += hasChanges + ",";
+            message += hasOverrides + ",";
+            message += hasScans + ",";
             message += solverHandler.countSuccessfulSimulationRuns;
             //CLIUtils.writeDetailedResultList(outputBaseDir, bioModelBaseName + "," + sedmlName + ", ," + message, bForceLogFiles);
-            cliLogger.writeDetailedResultList(bioModelBaseName + "," + sedmlName + ", ," + message);
+            cliLogger.writeDetailedResultList(bioModelBaseName + "," + message);
             logger.debug(message);
 
             //
