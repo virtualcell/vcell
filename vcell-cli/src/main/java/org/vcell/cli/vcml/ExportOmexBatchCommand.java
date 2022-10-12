@@ -2,14 +2,16 @@ package org.vcell.cli.vcml;
 
 import cbit.vcell.resource.PropertyLoader;
 
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.core.LoggerContext;
+
 import org.vcell.cli.CLIRecorder;
 import org.vcell.sedml.ModelFormat;
 import org.vcell.util.DataAccessException;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
-
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
 
 import java.io.File;
 import java.io.IOException;
@@ -29,6 +31,9 @@ public class ExportOmexBatchCommand implements Callable<Integer> {
 
     @Option(names = { "-o", "--outputFilePath" })
     private File outputFilePath;
+
+    @Option(names = {"-d", "--debug"}, description = "full application debug mode")
+    private boolean bDebug = false;
 
     @Option(names = "--hasDataOnly")
     boolean bHasDataOnly;
@@ -56,6 +61,14 @@ public class ExportOmexBatchCommand implements Callable<Integer> {
 
     public Integer call() {
         CLIRecorder cliRecorder = null;
+
+        Level logLevel = bDebug ? Level.DEBUG : logger.getLevel(); 
+        
+        LoggerContext config = (LoggerContext)(LogManager.getContext(false));
+        config.getConfiguration().getLoggerConfig(LogManager.getLogger("org.vcell").getName()).setLevel(logLevel);
+        config.getConfiguration().getLoggerConfig(LogManager.getLogger("cbit").getName()).setLevel(logLevel);
+        config.updateLoggers();
+
         try {
             
             logger.debug("Batch export of omex files requested");
