@@ -1,17 +1,20 @@
 #!/usr/bin/env python
 
-import argparse
 import logging
-import sys
-import traceback
 from pprint import pprint
 from subprocess import call, PIPE, Popen
 from typing import List, Dict
+from typing import Optional
 
-import paramiko
+import typer
 from pymongo import MongoClient
+from pymongo.collection import Collection
+from pymongo.cursor import Cursor
+from pymongo.database import Database
 from requests import get, Response
 from tabulate import tabulate
+
+app = typer.Typer()
 
 
 class SimJobQuery:
@@ -104,48 +107,6 @@ def set_debug(debug: bool) -> None:
         console_handler.setLevel(logging.WARN)
 
 
-def health(query: HealthQuery, host_port: str):
-    r: Response = get('https://' + host_port + '/health', params=query.params())
-    logger = logging.getLogger("paramiko")
-    logger.debug(r.url)
-    json = r.json()
-    return json
-
-
-def sim_query(query: SimJobQuery, host_port: str) -> List[Dict]:
-    """
-    :param SimJobQuery query: query parameters for /admin/jobs
-    :param str host_port: vcell api host:port separated by colon
-    :returns list of dict:
-    """
-
-    r = get('https://' + host_port + '/admin/jobs', params=query.params())
-    logger = logging.getLogger("paramiko")
-    logger.debug(r.url)
-    json = r.json()
-    """
-    [{ u'computeHost' = {unicode} u'shangrila14'
-       u'detailedState' = {unicode} u'WORKEREVENT_PROGRESS'
-       u'detailedStateMessage' = {unicode} u'0.270433'
-       u'hasData' = {bool} True
-       u'jobIndex' = {int} 0
-       u'onwer_userkey' = {unicode} u'120840072'
-       u'owner_userid' = {unicode} u'975464864'
-       u'queueDate' = {unicode} u'May 10, 2018 6:40:20 AM'
-       u'queueId' = {unicode} u'QUEUE_ID_NULL'
-       u'queuePriority' = {int} 5
-       u'schedulerStatus' = {unicode} u'RUNNING'
-       u'simexe_latestUpdateDate' = {unicode} u'May 10, 2018 2:07:32 PM'
-       u'simexe_startDate' = {unicode} u'May 10, 2018 6:41:27 AM'
-       u'simulationKey' = {unicode} u'130250352'
-       u'submitDate' = {unicode} u'May 10, 2018 6:40:20 AM'
-       u'taskID' = {int} 0
-       u'vcellServerID' = {unicode} u'REL'}
-    ]
-    """
-    return json
-
-
 def slurmquery(debug: bool, slurmhost: str, partitions: str):
     """
     :param bool debug: whether to show debug information
@@ -218,197 +179,228 @@ def merge_slurm_vcell(showjobs_ouptput, slurmjobs_output):
     return merged_list
 
 
-def main():
-    parser = argparse.ArgumentParser("vcellcli")
-    parser.add_argument("--debug", help="debug commands", action="store_true")
-    subparsers = parser.add_subparsers()
+def sim_query(query: SimJobQuery, host_port: str) -> List[Dict]:
+    """
+    :param SimJobQuery query: query parameters for /admin/jobs
+    :param str host_port: vcell api host:port separated by colon
+    :returns list of dict:
+    """
 
-    parser_showjobs = subparsers.add_parser('showjobs', help='show simulation jobs (see showjobs --help)')
-    parser_showjobs.add_argument("--userid", type=str, default=None)
-    parser_showjobs.add_argument("--simId", type=int, default=None)
-    parser_showjobs.add_argument("--jobId", type=int, default=None)
-    parser_showjobs.add_argument("--taskId", type=int, default=None)
-    parser_showjobs.add_argument("--status", type=str, default='wqdr',
-                                 help='job status (default wqdr) a-all, w-waiting, q-queued, '
-                                      'd-dispatched, r-running, c-completed, s-stopped')
-    parser_showjobs.add_argument("--maxRows", type=int, default=500)
-    parser_showjobs.add_argument("--host", type=str, default='vcellapi.cam.uchc.edu', help='host of server')
-    parser_showjobs.add_argument("--apiport", type=int, default='443', help='port of api server')
-    parser_showjobs.add_argument("--withslurm", type=bool, default=False)
-    parser_showjobs.add_argument("--slurmhost", type=str, default="vcell-service.cam.uchc.edu")
-    parser_showjobs.add_argument("--partition", type=str, default="vcell2,vcell")
-    parser_showjobs.set_defaults(which='showjobs')
+    r = get('https://' + host_port + '/admin/jobs', params=query.params())
+    logger = logging.getLogger("paramiko")
+    logger.debug(r.url)
+    json = r.json()
+    """
+    [{ u'computeHost' = {unicode} u'shangrila14'
+       u'detailedState' = {unicode} u'WORKEREVENT_PROGRESS'
+       u'detailedStateMessage' = {unicode} u'0.270433'
+       u'hasData' = {bool} True
+       u'jobIndex' = {int} 0
+       u'onwer_userkey' = {unicode} u'120840072'
+       u'owner_userid' = {unicode} u'975464864'
+       u'queueDate' = {unicode} u'May 10, 2018 6:40:20 AM'
+       u'queueId' = {unicode} u'QUEUE_ID_NULL'
+       u'queuePriority' = {int} 5
+       u'schedulerStatus' = {unicode} u'RUNNING'
+       u'simexe_latestUpdateDate' = {unicode} u'May 10, 2018 2:07:32 PM'
+       u'simexe_startDate' = {unicode} u'May 10, 2018 6:41:27 AM'
+       u'simulationKey' = {unicode} u'130250352'
+       u'submitDate' = {unicode} u'May 10, 2018 6:40:20 AM'
+       u'taskID' = {int} 0
+       u'vcellServerID' = {unicode} u'REL'}
+    ]
+    """
+    return json
 
-    parser_logjobs = subparsers.add_parser('logjobs', help='show simulation job logs (see logjobs --help)')
-    parser_logjobs.add_argument("--userid", type=str, default=None)
-    parser_logjobs.add_argument("--simId", type=int, default=None)
-    parser_logjobs.add_argument("--jobId", type=int, default=None)
-    parser_logjobs.add_argument("--taskId", type=int, default=None)
-    parser_logjobs.add_argument("--host", type=str, default='vcellapi.cam.uchc.edu', help='host of server')
-    parser_logjobs.add_argument("--mongoport", type=int, default='27017', help='port of mongodb service')
-    parser_logjobs.set_defaults(which='logjobs')
 
-    parser_killjobs = subparsers.add_parser('killjob', help='kill simulation job (see killjob --help)')
-    parser_killjobs.add_argument("--userid", type=str, default=None)
-    parser_killjobs.add_argument("--simId", type=int, default=None)
-    parser_killjobs.add_argument("--jobId", type=int, default=0)
-    parser_killjobs.add_argument("--taskId", type=int, default=0)
-    parser_killjobs.add_argument("--host", type=str, default='vcellapi.cam.uchc.edu', help='host of server')
-    parser_killjobs.add_argument("--msgport", type=int, default='8161', help='port of message server')
-    parser_killjobs.add_argument("--vcellbatch", type=str, default=None)  # or "schaff/vcell-batch:latest"
-    parser_killjobs.set_defaults(which='killjob')
+@app.command(name="showjobs", help="show simulation jobs (using vcell database and slurm)")
+def showjobs_command(userid: Optional[str] = typer.Option(None, "--userid", "-u", help="job owner"),
+                     sim_id: Optional[int] = typer.Option(None, "--simId", "-s", help="simulation id"),
+                     job_id: Optional[int] = typer.Option(None, "--jobId", "-j",
+                                                          help="sim job id (index for scans/trials)"),
+                     task_id: Optional[int] = typer.Option(None, "--taskId", "-t",
+                                                           help="sim task id (for job restarts)"),
+                     status: str = typer.Option("wqdr", help="job status (default wqdr) "
+                                                             "a-all, w-waiting, q-queued, d-dispatched, "
+                                                             "r-running, c-completed, s-stopped"),
+                     max_rows: int = typer.Option(500, "--maxRows", "-m"),
+                     host: str = typer.Option("vcellapi.cam.uchc.edu", "--host", help='host of server'),
+                     api_port: int = typer.Option(443, "--apiport", help='port of api service'),
+                     slurm_host: str = typer.Option("vcell-service.cam.uchc.edu", "--slurmhost"),
+                     partition: str = typer.Option("vcell2,vcell", help="slurm partition"),
+                     debug: bool = typer.Option(False, is_flag=True)
+                     ) -> None:
 
-    parser_slurmjobs = subparsers.add_parser('slurmjobs', help='slurm running jobs (see slurmjobs --help)')
-    parser_slurmjobs.add_argument("--slurmhost", type=str, default="vcell-service.cam.uchc.edu")
-    parser_slurmjobs.add_argument("--partition", type=str, default="vcell2,vcell")
-    parser_slurmjobs.set_defaults(which='slurmjobs')
+    set_debug(debug)
 
-    parser_health = subparsers.add_parser('health', help='site status (see health --help)')
-    parser_health.add_argument("--host", type=str, default='vcellapi.cam.uchc.edu', help='host of server')
-    parser_health.add_argument("--apiport", type=int, default='443', help='port of api server')
-    parser_health.add_argument('--monitor', type=str, default='sle',
-                               help='monitor type (default sle) s-simulation, l-login, e-events')
-    parser_health.set_defaults(which='health')
+    query = SimJobQuery()
+    query.fields['userid'] = userid
+    query.fields['simId'] = sim_id
+    query.fields['jobId'] = job_id
+    query.fields['taskId'] = task_id
+    query.fields['waiting'] = True if ('w' in status or 'a' in status) else False
+    query.fields['queued'] = True if ('q' in status or 'a' in status) else False
+    query.fields['dispatched'] = True if ('d' in status or 'a' in status) else False
+    query.fields['running'] = True if ('r' in status or 'a' in status) else False
+    query.fields['completed'] = True if ('c' in status or 'a' in status) else False
+    query.fields['failed'] = True if ('f' in status or 'a' in status) else False
+    query.fields['stopped'] = True if ('s' in status or 'a' in status) else False
+    query.fields['maxRows'] = max_rows
+    api_host_port = host + ":" + str(api_port)
+    json_response = sim_query(query, api_host_port)
+    slurm_jobs = slurmquery(debug, slurm_host, partition)
+    merged_jobs = merge_slurm_vcell(json_response, slurm_jobs)
+    col_names = ["JOBID", "STATE", "NAME", "EXEC_HOST", "found", "owner_userid", "vcSimID", "schedulerStatus",
+                 "hasData",
+                 "queueDate", "simexe_startDate", "simexe_latestUpdateDate",
+                 "computeHost", "detailedStateMessage"]
+    table = [[row.get(col_name, '') for col_name in col_names] for row in merged_jobs]
+    print(tabulate(table, headers=col_names))
 
-    parser.set_defaults(debug=False, which=None)
-    args = parser.parse_args()
-    try:
-        set_debug(args.debug)
-        if args.which == "logjobs":
-            client = MongoClient("mongodb://" + args.host + ":" + str(args.mongoport))
-            db = client['test']
-            collection = db['logging']
-            query = {}
-            if args.simId is not None:
-                query["simId"] = str(args.simId)
-            if args.jobId is not None:
-                query["jobIndex"] = str(args.jobId)
-            if args.taskId is not None:
-                query["taskId"] = str(args.taskId)
-            pprint(query)
-            result_set = collection.find(query)
-            table = []
-            col_names = ["computeHost", "destination", "simId", "jobIndex", "taskId", "serviceName", "simMessageMsg"]
-            rowcount = 0
-            for record in result_set:
-                table.append([record.get(col_name, '') for col_name in col_names])
-                rowcount += 1
-                if rowcount < 10:
-                    pprint(record)
 
-            print(tabulate(table, headers=col_names))
+@app.command(name="slurmjobs", help="query slurm running jobs")
+def slurmjobs_command(slurm_host: str = typer.Option("vcell-service.cam.uchc.edu", "--slurmhost", help="slurm host"),
+                      slurm_partition: str = typer.Option("vcell2,vcell", "--partition", "-p", help="slurm partition"),
+                      debug: bool = typer.Option(False, is_flag=True)) -> None:
 
-        elif args.which == "showjobs":
-            query = SimJobQuery()
-            query.fields['userid'] = args.userid
-            query.fields['simId'] = args.simId
-            query.fields['jobId'] = args.jobId
-            query.fields['taskId'] = args.taskId
-            query.fields['waiting'] = True if ('w' in args.status or 'a' in args.status) else False
-            query.fields['queued'] = True if ('q' in args.status or 'a' in args.status) else False
-            query.fields['dispatched'] = True if ('d' in args.status or 'a' in args.status) else False
-            query.fields['running'] = True if ('r' in args.status or 'a' in args.status) else False
-            query.fields['completed'] = True if ('c' in args.status or 'a' in args.status) else False
-            query.fields['failed'] = True if ('f' in args.status or 'a' in args.status) else False
-            query.fields['stopped'] = True if ('s' in args.status or 'a' in args.status) else False
-            query.fields['maxRows'] = args.maxRows
-            api_host_port = args.host + ":" + str(args.apiport)
-            json_response = sim_query(query, api_host_port)
-            slurmjobs = slurmquery(args.debug, args.slurmhost, args.partition)
-            merged_jobs = merge_slurm_vcell(json_response, slurmjobs)
-            col_names = ["JOBID", "STATE", "NAME", "EXEC_HOST", "found", "owner_userid", "vcSimID", "schedulerStatus",
-                         "hasData",
-                         "queueDate", "simexe_startDate", "simexe_latestUpdateDate",
-                         "computeHost", "detailedStateMessage"]
-            table = [[row.get(col_name, '') for col_name in col_names] for row in merged_jobs]
-            print(tabulate(table, headers=col_names))
-            # for job in json_response:
-            #     print(job)
+    set_debug(debug)
+    # 'NAME': 'V_REL_130234420_7_0',
+    # 'START_TIME': '2018-05-10T09:41:36',
+    # 'REASON': 'None',
+    # 'JOBID': '418774',
+    # 'STATE': 'RUNNING',
+    # 'SUBMIT_TIME': '2018-05-09T23:34:36',
+    # 'EXEC_HOST':
+    slurm_jobs: List[Dict] = slurmquery(debug, slurm_host, slurm_partition)
+    col_names = ["JOBID", "STATE", "NAME", "EXEC_HOST", "START_TIME", "SUBMIT_TIME", "REASON"]
+    table = [[row.get(col_name, '') for col_name in col_names] for row in slurm_jobs]
+    print(tabulate(table, headers=col_names))
 
-        elif args.which == "slurmjobs":
-            # 'NAME': 'V_REL_130234420_7_0',
-            # 'START_TIME': '2018-05-10T09:41:36',
-            # 'REASON': 'None',
-            # 'JOBID': '418774',
-            # 'STATE': 'RUNNING',
-            # 'SUBMIT_TIME': '2018-05-09T23:34:36',
-            # 'EXEC_HOST':
-            slurmjobs = slurmquery(args.debug, args.slurmhost, args.partition)
-            col_names = ["JOBID", "STATE", "NAME", "EXEC_HOST", "START_TIME", "SUBMIT_TIME", "REASON"]
-            table = [[row.get(col_name, '') for col_name in col_names] for row in slurmjobs]
-            print(tabulate(table, headers=col_names))
 
-        elif args.which == "killjob":
-            vcell_batch = args.vcellbatch
-            if vcell_batch is None:
-                p1 = Popen(['sudo', 'docker', 'image', 'ls'], stdout=PIPE)
-                p2 = Popen(['grep', 'vcell-batch'], stdin=p1.stdout, stdout=PIPE)
-                p3 = Popen(['head', '-1'], stdin=p2.stdout, stdout=PIPE)
-                stdout, stderr = p3.communicate()
-                parts = stdout.decode('utf-8').strip().split()
-                if len(parts) < 2:
-                    raise Exception("didn't find local vcell-batch docker image, specify using --vcellbatch")
-                vcell_batch = parts[0] + ':' + parts[1]
-                print('found vcell-batch image: ' + vcell_batch)
-            options = " --msg-userid admin"
-            options += " --msg-password admin"
-            options += " --msg-host " + args.host
-            options += " --msg-port " + str(args.msgport)
-            options += " --msg-job-userid " + args.userid
-            options += " --msg-job-simkey " + str(args.simId)
-            options += " --msg-job-jobindex " + str(args.jobId)
-            options += " --msg-job-taskid " + str(args.taskId)
-            options += " --msg-job-errmsg " + "killed"
-            if args.debug:
-                print("sudo docker run --rm " + vcell_batch + " " + options + " SendErrorMsg")
-            return_code = call("sudo docker run --rm " + vcell_batch + " " + options + " SendErrorMsg", shell=True)
-            if return_code == 0:
-                print("kill message sent")
-            else:
-                print("unable to send kill message")
+@app.command(name="logjobs", help="show simulation job logs (from MongoDB)")
+def logjobs_command(sim_id: Optional[int] = typer.Option(None, "--simId", "-s", help="simulation id"),
+                    job_id: Optional[int] = typer.Option(None, "--jobId", "-j",
+                                                         help="sim job id (index for scans/trials)"),
+                    task_id: Optional[int] = typer.Option(None, "--taskId", "-t",
+                                                          help="sim task id (for job restarts)"),
+                    host: str = typer.Option("vcellapi.cam.uchc.edu", "--host", help='host of server'),
+                    mongo_port: int = typer.Option(27017, "--mongoport", help='port of mongodb service'),
+                    max_rows: int = typer.Option(1000, "--maxRows", "-m", help="max records returned from Mongo"),
+                    debug: bool = typer.Option(False, is_flag=True)):
 
-        elif args.which == "health":
-            apihostport = args.host + ":" + str(args.apiport)
-            query = HealthQuery()
-            if 'e' in args.monitor:
-                # {"timestamp_MS":1525270930943,"transactionId":5,
-                # "eventType":"LOGIN_SUCCESS","message":"login success (5)"}
-                query.fields['check'] = 'all'
-                json_response = health(query, apihostport)
-                col_names = ["timestamp_MS", "transactionId", "eventType", "message"]
-                table = [[row.get(col_name, '') for col_name in col_names] for row in json_response]
-                print(tabulate(table, headers=col_names))
-            if 's' in args.monitor:
-                # {"nagiosStatusName":"OK","nagiosStatusCode":0,"elapsedTime_MS":7400}
-                query.fields['check'] = 'sim'
-                json_response = health(query, apihostport)
-                message = str(json_response.get('message', "''"))
-                print('Simulation(status=' + str(json_response.get('nagiosStatusName')) +
-                      ', elapsedTime=' + str(int(json_response.get('elapsedTime_MS')) / 1000.0) + ' seconds' +
-                      ', message=' + message + ')')
-            if 'l' in args.monitor:
-                # {"nagiosStatusName":"OK","nagiosStatusCode":0,"elapsedTime_MS":7400}
-                query.fields['check'] = 'login'
-                json_response = health(query, apihostport)
-                message = str(json_response.get('message', "''"))
-                print('Login(status=' + str(json_response.get('nagiosStatusName')) +
-                      ', elapsedTime=' + str(int(json_response.get('elapsedTime_MS')) / 1000.0) + ' seconds' +
-                      ', message=' + message + ')')
-        else:
-            parser.print_help()
-            raise Exception("unknown command ")
+    set_debug(debug)
+    client = MongoClient("mongodb://" + host + ":" + str(mongo_port))
+    db: Database = client['test']
+    collection: Collection = db['logging']
+    query = {}
+    if sim_id is not None:
+        query["simId"] = str(sim_id)
+    if job_id is not None:
+        query["jobIndex"] = str(job_id)
+    if task_id is not None:
+        query["taskId"] = str(task_id)
+    pprint(query)
+    result_set: Cursor = collection.find(query).limit(max_rows)
+    table = []
+    col_names = ["computeHost", "destination", "simId", "jobIndex", "taskId", "serviceName", "simMessageMsg"]
+    rowcount = 0
+    for record in result_set:
+        table.append([record.get(col_name, '') for col_name in col_names])
+        rowcount += 1
+        if rowcount < 10 and debug:
+            pprint(record)
 
-    except paramiko.SSHException:
-        print("SSHException: ", sys.exc_info()[0])
-        sys.exit(-1)
-    except Exception:
-        e_info = sys.exc_info()
-        traceback.print_exception(e_info[0], e_info[1], e_info[2], file=sys.stdout)
-        sys.stderr.write("exception: " + str(e_info[0]) + ": " + str(e_info[1]) + "\n")
-        sys.stderr.flush()
-        sys.exit(-1)
+    print(tabulate(table, headers=col_names))
+
+
+@app.command(name="killjobs", help="kill simulation job (from a vcell-batch container)")
+def killjobs_command(userid: Optional[str] = typer.Option(None, "--userid", "-u", help="job owner"),
+                     sim_id: Optional[int] = typer.Option(None, "--simId", "-s", help="simulation id"),
+                     job_id: Optional[int] = typer.Option(None, "--jobId", "-j",
+                                                          help="sim job id (index for scans/trials)"),
+                     task_id: Optional[int] = typer.Option(None, "--taskId", "-t",
+                                                           help="sim task id (for job restarts)"),
+                     host: str = typer.Option("vcellapi.cam.uchc.edu", "--host", help='host of server'),
+                     msg_port: int = typer.Option(8161, "--msgport", help='port of message server'),
+                     vcell_batch: Optional[str] = typer.Option(None, "--vcellbatch"),  # or "schaff/vcell-batch:latest"
+                     debug: bool = typer.Option(False, is_flag=True)
+                     ) -> None:
+
+    set_debug(debug)
+
+    if vcell_batch is None:
+        p1 = Popen(['sudo', 'docker', 'image', 'ls'], stdout=PIPE)
+        p2 = Popen(['grep', 'vcell-batch'], stdin=p1.stdout, stdout=PIPE)
+        p3 = Popen(['head', '-1'], stdin=p2.stdout, stdout=PIPE)
+        stdout, stderr = p3.communicate()
+        parts = stdout.decode('utf-8').strip().split()
+        if len(parts) < 2:
+            raise Exception("didn't find local vcell-batch docker image, specify using --vcellbatch")
+        vcell_batch = parts[0] + ':' + parts[1]
+        print('found vcell-batch image: ' + vcell_batch)
+    options = " --msg-userid admin"
+    options += " --msg-password admin"
+    options += " --msg-host " + host
+    options += " --msg-port " + str(msg_port)
+    options += " --msg-job-userid " + userid
+    options += " --msg-job-simkey " + str(sim_id)
+    options += " --msg-job-jobindex " + str(job_id)
+    options += " --msg-job-taskid " + str(task_id)
+    options += " --msg-job-errmsg " + "killed"
+    if debug:
+        print("sudo docker run --rm " + vcell_batch + " " + options + " SendErrorMsg")
+    return_code = call("sudo docker run --rm " + vcell_batch + " " + options + " SendErrorMsg", shell=True)
+    if return_code == 0:
+        print("kill message sent")
     else:
-        sys.exit(0)
+        print("unable to send kill message")
+
+
+def health_query(query: HealthQuery, host_port: str):
+    r: Response = get('https://' + host_port + '/health', params=query.params())
+    logger = logging.getLogger("paramiko")
+    logger.debug(r.url)
+    json = r.json()
+    return json
+
+
+@app.command(name="health", help="site status - as formerly queried by Nagios")
+def health_command(host: str = typer.Option("vcellapi.cam.uchc.edu", "--host", help="host of server"),
+                   api_port: int = typer.Option(443, "--apiport", help="port of api server"),
+                   monitor: str = typer.Option("sle", "--monitor",
+                                               help="monitor type (default 'sle') s-simulation, l-login, e-events")
+                   ) -> None:
+
+    apihostport = host + ":" + str(api_port)
+    query = HealthQuery()
+    if 'e' in monitor:
+        # {"timestamp_MS":1525270930943,"transactionId":5,
+        # "eventType":"LOGIN_SUCCESS","message":"login success (5)"}
+        query.fields['check'] = 'all'
+        json_response = health_query(query, apihostport)
+        col_names = ["timestamp_MS", "transactionId", "eventType", "message"]
+        table = [[row.get(col_name, '') for col_name in col_names] for row in json_response]
+        print(tabulate(table, headers=col_names))
+    if 's' in monitor:
+        # {"nagiosStatusName":"OK","nagiosStatusCode":0,"elapsedTime_MS":7400}
+        query.fields['check'] = 'sim'
+        json_response = health_query(query, apihostport)
+        message = str(json_response.get('message', "''"))
+        print('Simulation(status=' + str(json_response.get('nagiosStatusName')) +
+              ', elapsedTime=' + str(int(json_response.get('elapsedTime_MS')) / 1000.0) + ' seconds' +
+              ', message=' + message + ')')
+    if 'l' in monitor:
+        # {"nagiosStatusName":"OK","nagiosStatusCode":0,"elapsedTime_MS":7400}
+        query.fields['check'] = 'login'
+        json_response = health_query(query, apihostport)
+        message = str(json_response.get('message', "''"))
+        print('Login(status=' + str(json_response.get('nagiosStatusName')) +
+              ', elapsedTime=' + str(int(json_response.get('elapsedTime_MS')) / 1000.0) + ' seconds' +
+              ', message=' + message + ')')
+
+
+def main():
+    app()
 
 
 if __name__ == "__main__":
