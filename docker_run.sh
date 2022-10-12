@@ -39,7 +39,7 @@ case "$rawCommand" in
     ;;
   "import-omex-batch")
     echo 'import-omex-batch mode requested'
-    command="export-omex-batch"
+    command="import-omex-batch"
     shift
     ;;
   "model")
