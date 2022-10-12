@@ -577,6 +577,7 @@ public class SBMLImporter {
 	 * 'sp*concFactor' in original param expression.
 	 */
 
+	private static final String ReservedParamPrefix = "param_";
 	private static void addParameters(org.sbml.jsbml.Model sbmlModel, org.sbml.jsbml.ext.spatial.Geometry sbmlGeometry,
 										BioModel vcBioModel, boolean bSpatial, Map<String, VCUnitDefinition> sbmlUnitIdentifierMap,
 										SBMLSymbolMapping sbmlSymbolMapping) throws Exception {
@@ -808,7 +809,7 @@ public class SBMLImporter {
 				String vcParamName = sbmlParamId;
 				// special treatment for x,y,z
 				if(isRestrictedXYZT(sbmlParamId, vcBioModel, bSpatial) || reservedSymbolHash.contains(sbmlParamId)) {
-					vcParamName = "param_" + sbmlParamId;
+					vcParamName = ReservedParamPrefix + sbmlParamId;
 				}
 				//
 				// treat KMOLE special
@@ -839,7 +840,22 @@ public class SBMLImporter {
 					sbmlSymbolMapping.putSbmlValue(sbmlGlobalParam, sbmlValue);
 					sbmlSymbolMapping.putInitial(sbmlGlobalParam, vcGlobalParam);
 				}
-				vcModelParamsList.add(vcGlobalParam);
+				if(vcGlobalParam.getName().startsWith(ReservedParamPrefix)) {
+					boolean matched = false;
+					for(ModelParameter mp : vcModelParamsList) {
+						if(mp.compareEqual(vcGlobalParam)) {
+							matched = true;
+							break;
+						}
+					}
+					if(!matched) {
+						vcModelParamsList.add(vcGlobalParam);
+					} else {
+						System.out.println("Found duplicate reserved parameter: " + vcGlobalParam.getName());
+					}
+				} else {
+					vcModelParamsList.add(vcGlobalParam);	// we add all others because we want to identify real duplicates
+				}
 			}else{
 				if (sbmlGlobalParam.isSetValue()) {
 					double sbmlValue = sbmlGlobalParam.getValue();
