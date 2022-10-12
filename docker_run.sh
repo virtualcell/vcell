@@ -1,53 +1,82 @@
 #!/bin/bash
 
-raw_command = $(echo "$1" | xargs) # Strip whitespace
+echo -n "Recieved::<"
+echo -n $@
+echo ">"
+
+
+echo -n "<"
+echo -n $1
+echo ">"
+
+rawCommand="$(echo -n "$1" | sed -E 's/(^(\s*))|((\s*)$)//g')" # Strip ends of its whitespace
 command="biosimulations" # default
 
-case raw_command in
-  convert)
+echo -n "<"
+echo -n $rawCommand
+echo ">"
+
+case "$rawCommand" in
+  "convert")
     echo 'convert mode requested'
     command="convert"
     shift
     ;;
-  export-omex)
+  "export-omex")
     echo 'export-omex mode requested'
     command="export-omex"
     shift
     ;;
-  export-omex-batch)
+  "export-omex-batch")
     echo 'export-omex-batch mode requested'
     command="export-omex-batch"
     shift
     ;;
-  model)
+  "import-omex")
+    echo 'import-omex mode requested'
+    command="import-omex"
+    shift
+    ;;
+  "import-omex-batch")
+    echo 'import-omex-batch mode requested'
+    command="import-omex-batch"
+    shift
+    ;;
+  "model")
     echo 'model mode requested'
     command="model"
     shift
     ;;
-  execute)
+  "execute")
     echo 'execute mode requested'
     command="execute"
     shift
     ;;
-  version)
+  "version")
   echo 'version mode requested'
     command="version"
     shift
     ;;
-  biosimulations)
+  "biosimulations")
   echo 'biosimulations mode requested'
     command="biosimulations"
     shift
     ;;
-  help)
+  "help")
     command="help"
     shift
     ;;
   *)               # Default case: No more options, so break out of the loop.
+    echo "Default case selected"
     ;;
 esac
 
-echo "VCell shall execute <$command" "$@>"
+# Input validate arugments
+
+arguments="$(echo -n "$@" | sed -E 's/(\s)+/ /g' | sed -E 's/(^(\s*))|((\s*)$)//g')" # convert any whitespace to spaces and strip ends
+
+
+echo "VCell shall execute <$command" "$arguments>"
 
 java \
   -classpath '/usr/local/app/vcell/lib/*' \
@@ -65,4 +94,4 @@ java \
   -Dvcell.server.dbDriverName=oracle.jdbc.driver.OracleDriver \
   -Dvcell.server.dbConnectURL=jdbc:oracle:thin:@VCELL-DB.cam.uchc.edu:1521/vcelldborcl.cam.uchc.edu \
   -Dcli.workingDir=/usr/local/app/vcell/installDir/python/vcell_cli_utils/ \
-  org.vcell.cli.CLIStandalone "$command" "$@"
+  org.vcell.cli.CLIStandalone $command $arguments
