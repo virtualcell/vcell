@@ -243,6 +243,14 @@ public class SEDMLExporter {
 			}
 			if (modelFormat == ModelFormat.SBML) {
 				try {
+//					// TODO: uncomment the for loop below to only export non-spatial
+//					for(Simulation sim : vcBioModel.getSimulations()) {
+//						if(sim.isSpatial()) {
+//							sedmlRecorder.addTaskLog(vcBioModel.getName(), TaskType.MODEL, TaskResult.FAILED, new RuntimeException("spatial"));
+//							return;
+//						}
+//					}
+					
 					// convert to SBML units; this also ensures we will use a clone
 					vcBioModel = ModelUnitConverter.createBioModelWithSBMLUnitSystem(vcBioModel);
 					sedmlRecorder.addTaskLog(vcBioModel.getName(), TaskType.UNITS, TaskResult.SUCCEEDED, null);
