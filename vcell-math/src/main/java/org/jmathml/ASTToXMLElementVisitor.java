@@ -96,7 +96,7 @@ public class ASTToXMLElementVisitor extends ASTVisitor {
 			cn.setText(Double.toString(node.getMantissa()));
 			Element sep = new Element("sep");
 			cn.addContent(sep);
-			cn.addContent(Double.toString(node.getExponent()));
+			cn.addContent(Integer.toString(node.getExponent()));
 		} else if (node.isE()) {
 			cn = new Element("exponentiale");
 		} else if (node.isPI()) {

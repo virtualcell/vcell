@@ -298,9 +298,9 @@ public class MathMLReader {
 				&& mathml.getAttribute("type").getValue().equals("e-notation")) {
 			if (mathml.getContent().size() == 3) {
 				double mantissa = Double.parseDouble(((Text) mathml
-						.getContent().get(0)).getText());
-				double exp = Double.parseDouble(((Text) mathml.getContent()
-						.get(2)).getText());
+						.getContent().get(0)).getText().trim());
+				int exp = Integer.parseInt(((Text) mathml.getContent()
+						.get(2)).getText().trim());
 
 				ASTNumber frac = ASTNumber.createNumber(mantissa, exp);
 				curr.addChildNode(frac);
