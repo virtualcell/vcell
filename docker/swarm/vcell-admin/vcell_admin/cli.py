@@ -1,13 +1,15 @@
 #!/usr/bin/env python
 
-import typer
+import argparse
 import logging
 import sys
 import traceback
-from typing import List, Dict
+from pprint import pprint
 from subprocess import call, PIPE, Popen
+from typing import List, Dict
 
 import paramiko
+from pymongo import MongoClient
 from requests import get, Response
 from tabulate import tabulate
 
@@ -152,16 +154,15 @@ def slurmquery(debug: bool, slurmhost: str, partitions: str):
     :returns list of dict:
     """
 
-    import subprocess
     # if args.debug:
     #     print "sudo docker run --rm "+args.vcellbatch+" "+options+" SendErrorMsg"
     if debug:
         print(f"ssh {slurmhost} squeue -p {partitions}"
               f" -O jobid:25,name:25,state:13,submittime,starttime,batchhost,reason")
-    proc = subprocess.Popen(['ssh', slurmhost,
-                             'squeue', '-p', partitions,
-                             '-O', 'jobid:25,name:25,state:13,submittime,starttime,batchhost,reason'],
-                            stdout=subprocess.PIPE)
+    proc = Popen(['ssh', slurmhost,
+                  'squeue', '-p', partitions,
+                  '-O', 'jobid:25,name:25,state:13,submittime,starttime,batchhost,reason'],
+                 stdout=PIPE)
 
     stdout, stderr = proc.communicate()
     return parse_slurm(stdout.decode('utf-8'))
@@ -274,9 +275,7 @@ def main():
     try:
         set_debug(args.debug)
         if args.which == "logjobs":
-            import pymongo
-            import pprint
-            client = pymongo.MongoClient("mongodb://" + args.host + ":" + str(args.mongoport))
+            client = MongoClient("mongodb://" + args.host + ":" + str(args.mongoport))
             db = client['test']
             collection = db['logging']
             query = {}
@@ -286,7 +285,7 @@ def main():
                 query["jobIndex"] = str(args.jobId)
             if args.taskId is not None:
                 query["taskId"] = str(args.taskId)
-            pprint.pprint(query)
+            pprint(query)
             result_set = collection.find(query)
             table = []
             col_names = ["computeHost", "destination", "simId", "jobIndex", "taskId", "serviceName", "simMessageMsg"]
@@ -295,7 +294,7 @@ def main():
                 table.append([record.get(col_name, '') for col_name in col_names])
                 rowcount += 1
                 if rowcount < 10:
-                    pprint.pprint(record)
+                    pprint(record)
 
             print(tabulate(table, headers=col_names))
 
@@ -413,5 +412,4 @@ def main():
 
 
 if __name__ == "__main__":
-    # test_connection()
     main()
