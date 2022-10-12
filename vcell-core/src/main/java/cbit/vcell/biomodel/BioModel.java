@@ -1215,7 +1215,11 @@ public VCID getVCID(Identifiable identifiable) {
 		className = VCID.CLASS_SPECIES_CONTEXT_SPEC;
 	} else if (identifiable instanceof SpeciesContextSpec.SpeciesContextSpecParameter) {
 		SpeciesContextSpec.SpeciesContextSpecParameter scsParam = (SpeciesContextSpec.SpeciesContextSpecParameter) identifiable;
-		localName = scsParam.getSimulationContext().getName()+"."+scsParam.getSpeciesContext().getName()+"."+scsParam.getName();
+		SimulationContext simContext = scsParam.getSimulationContext();
+		if(simContext == null) {
+			throw new RuntimeException("Entity no longer exist");
+		}
+		localName = simContext.getName()+"."+scsParam.getSpeciesContext().getName()+"."+scsParam.getName();
 		className = VCID.CLASS_SPECIES_CONTEXT_SPEC_PARAMETER;
 	} else if (identifiable instanceof StructureMapping.StructureMappingParameter) {
 		StructureMapping.StructureMappingParameter smParam = (StructureMapping.StructureMappingParameter) identifiable;

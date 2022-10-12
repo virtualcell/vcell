@@ -7,6 +7,7 @@ import cbit.vcell.matrix.RationalExp;
 import cbit.vcell.matrix.RationalNumber;
 import cbit.vcell.model.*;
 import cbit.vcell.parser.*;
+import cbit.vcell.solver.Simulation;
 import cbit.vcell.units.VCUnitDefinition;
 import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XmlHelper;
@@ -64,7 +65,7 @@ public class ModelUnitConverter {
 		BioModel newBioModel = XmlHelper.XMLToBioModel(newXMLSource, true, newUnitSystem);
 		Model newModel = newBioModel.getModel();
 		Model oldModel = oldBioModel.getModel();
-
+		
 		VCUnitDefinition dimensionless = newModel.getUnitSystem().getInstance_DIMENSIONLESS();
 		Model.ReservedSymbol KMOLE = newModel.getReservedSymbolByRole(Model.ReservedSymbolRole.KMOLE);
 

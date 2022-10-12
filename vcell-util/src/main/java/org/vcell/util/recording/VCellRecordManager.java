@@ -19,12 +19,14 @@ public class VCellRecordManager implements RecordManager {
 
     @Override
     public FileRecord requestNewFileLog(String filePath){
+        if (this.logMap.containsKey(filePath)) 
+            return (FileRecord)this.logMap.get(filePath);
+        // The log hasn't been registered yet; lets do that.
+
         // Make parent if it doesn't exist
         File parent = (new File(filePath)).getParentFile();
         if (!parent.exists())parent.mkdirs();
         
-        if (this.logMap.containsKey(filePath)) 
-            return (FileRecord)this.logMap.get(filePath);
         return (FileRecord)this.addLog(filePath, new FileRecord(filePath));
     }
 

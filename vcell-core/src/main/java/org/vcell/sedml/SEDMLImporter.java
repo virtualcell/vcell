@@ -724,7 +724,7 @@ public class SEDMLImporter {
 				}
 				createOverrides(simulation, functions);
 				// we didn't bomb out, so update the simulation
-				simulation.setImportedTaskID(referredTask.getId());
+				simulation.setImportedTaskID(selectedTask.getId());
 			}
 		}
 	}
@@ -817,7 +817,7 @@ public class SEDMLImporter {
 				SBMLImporter sbmlImporter = new SBMLImporter(sbmlSource,transLogger,bValidateSBML);
 				bioModel = (BioModel)sbmlImporter.getBioModel();
 				bioModel.setName(bioModelName);
-				bioModel.getSimulationContext(0).setName(mm.getName());
+				bioModel.getSimulationContext(0).setName(mm.getName() != null? mm.getName() : mm.getId());
 				bioModel.updateAll(false);
 				uniqueBioModelsList.add(bioModel);
 				importMap.put(bioModel, sbmlImporter);

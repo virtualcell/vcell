@@ -577,6 +577,7 @@ public class SBMLImporter {
 	 * 'sp*concFactor' in original param expression.
 	 */
 
+	private static final String ReservedParamPrefix = "param_";
 	private static void addParameters(org.sbml.jsbml.Model sbmlModel, org.sbml.jsbml.ext.spatial.Geometry sbmlGeometry,
 										BioModel vcBioModel, boolean bSpatial, Map<String, VCUnitDefinition> sbmlUnitIdentifierMap,
 										SBMLSymbolMapping sbmlSymbolMapping) throws Exception {
@@ -724,45 +725,47 @@ public class SBMLImporter {
 							paramSpContext = (SpeciesContext) bcondTargetSte;
 							vcSpContextsSpec = vcBioModel.getSimulationContext(0).getReactionContext().getSpeciesContextSpec(paramSpContext);
 							SpeciesContextSpecParameter scsParam = null;
-							for (CoordinateComponent coordComp : sbmlGeometry.getListOfCoordinateComponents()) {
-								String bcMinSpatialId = coordComp.getBoundaryMinimum().getSpatialId();
-								String bcMaxSpatialId = coordComp.getBoundaryMaximum().getSpatialId();
-								String coordinateBoundary = bCondn.getCoordinateBoundary();
-								if (coordinateBoundary.equals(bcMinSpatialId)) {
-									switch (coordComp.getType()){
-									case cartesianX:{
-										scsParam = vcSpContextsSpec.getBoundaryXmParameter();
-										break;
-									}
-									case cartesianY:{
-										scsParam = vcSpContextsSpec.getBoundaryYmParameter();
-										break;
-									}
-									case cartesianZ:{
-										scsParam = vcSpContextsSpec.getBoundaryZmParameter();
-										break;
-									}
-									default:{
-										throw new SBMLImportException("unexpected coordinate component type "+coordComp.getType());
-									}
-									}
-								} else if (coordinateBoundary.equals(bcMaxSpatialId)){
-									switch (coordComp.getType()){
-									case cartesianX:{
-										scsParam = vcSpContextsSpec.getBoundaryXpParameter();
-										break;
-									}
-									case cartesianY:{
-										scsParam = vcSpContextsSpec.getBoundaryYpParameter();
-										break;
-									}
-									case cartesianZ:{
-										scsParam = vcSpContextsSpec.getBoundaryZpParameter();
-										break;
-									}
-									default:{
-										throw new SBMLImportException("unexpected coordinate component type "+coordComp.getType());
-									}
+							if(sbmlGeometry != null) {		// alternately use bSpatial, I don't know which makes more sense
+								for (CoordinateComponent coordComp : sbmlGeometry.getListOfCoordinateComponents()) {
+									String bcMinSpatialId = coordComp.getBoundaryMinimum().getSpatialId();
+									String bcMaxSpatialId = coordComp.getBoundaryMaximum().getSpatialId();
+									String coordinateBoundary = bCondn.getCoordinateBoundary();
+									if (coordinateBoundary.equals(bcMinSpatialId)) {
+										switch (coordComp.getType()){
+										case cartesianX:{
+											scsParam = vcSpContextsSpec.getBoundaryXmParameter();
+											break;
+										}
+										case cartesianY:{
+											scsParam = vcSpContextsSpec.getBoundaryYmParameter();
+											break;
+										}
+										case cartesianZ:{
+											scsParam = vcSpContextsSpec.getBoundaryZmParameter();
+											break;
+										}
+										default:{
+											throw new SBMLImportException("unexpected coordinate component type "+coordComp.getType());
+										}
+										}
+									} else if (coordinateBoundary.equals(bcMaxSpatialId)){
+										switch (coordComp.getType()){
+										case cartesianX:{
+											scsParam = vcSpContextsSpec.getBoundaryXpParameter();
+											break;
+										}
+										case cartesianY:{
+											scsParam = vcSpContextsSpec.getBoundaryYpParameter();
+											break;
+										}
+										case cartesianZ:{
+											scsParam = vcSpContextsSpec.getBoundaryZpParameter();
+											break;
+										}
+										default:{
+											throw new SBMLImportException("unexpected coordinate component type "+coordComp.getType());
+										}
+										}
 									}
 								}
 							}
@@ -806,7 +809,7 @@ public class SBMLImporter {
 				String vcParamName = sbmlParamId;
 				// special treatment for x,y,z
 				if(isRestrictedXYZT(sbmlParamId, vcBioModel, bSpatial) || reservedSymbolHash.contains(sbmlParamId)) {
-					vcParamName = "param_" + sbmlParamId;
+					vcParamName = ReservedParamPrefix + sbmlParamId;
 				}
 				//
 				// treat KMOLE special
@@ -837,7 +840,22 @@ public class SBMLImporter {
 					sbmlSymbolMapping.putSbmlValue(sbmlGlobalParam, sbmlValue);
 					sbmlSymbolMapping.putInitial(sbmlGlobalParam, vcGlobalParam);
 				}
-				vcModelParamsList.add(vcGlobalParam);
+				if(vcGlobalParam.getName().startsWith(ReservedParamPrefix)) {
+					boolean matched = false;
+					for(ModelParameter mp : vcModelParamsList) {
+						if(mp.compareEqual(vcGlobalParam)) {
+							matched = true;
+							break;
+						}
+					}
+					if(!matched) {
+						vcModelParamsList.add(vcGlobalParam);
+					} else {
+						System.out.println("Found duplicate reserved parameter: " + vcGlobalParam.getName());
+					}
+				} else {
+					vcModelParamsList.add(vcGlobalParam);	// we add all others because we want to identify real duplicates
+				}
 			}else{
 				if (sbmlGlobalParam.isSetValue()) {
 					double sbmlValue = sbmlGlobalParam.getValue();

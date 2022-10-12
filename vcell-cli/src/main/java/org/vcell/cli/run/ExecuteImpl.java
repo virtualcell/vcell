@@ -29,6 +29,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 public class ExecuteImpl {
     
@@ -120,6 +121,7 @@ public class ExecuteImpl {
     public static void singleExecOmex(File inputFile, File rootOutputDir, CLIRecorder cliLogger,
             boolean bKeepTempFiles, boolean bExactMatchOnly, boolean bEncapsulateOutput) throws Exception {
         int nModels, nSimulations, nTasks, nOutputs, nReportsCount = 0, nPlots2DCount = 0, nPlots3DCount = 0;
+        boolean hasChanges = false;
         String logOmexMessage = "";
 
         String inputFilePath = inputFile.getAbsolutePath();
@@ -161,7 +163,7 @@ public class ExecuteImpl {
         } 
 
         logger.info("Preparing output directory...");
-        CLIUtils.cleanRootDir(new File(outputBaseDir));
+        //CLIUtils.cleanRootDir(new File(outputBaseDir));
         if (bEncapsulateOutput) RunUtils.removeAndMakeDirs(new File(outputDir));
         PythonCalls.generateStatusYaml(inputFilePath, outputDir);    // generate Status YAML
 
@@ -173,7 +175,7 @@ public class ExecuteImpl {
             logger.info("Initializing SED-ML document...");
             String sedmlName = "", logDocumentMessage = "Initializing SED-ML document... ", logDocumentError = "";
             boolean somethingFailed = false; // shows that the current document suffered a partial or total failure
-            HashMap<String, ODESolverResultSet> resultsHash;
+            Map<TaskJob, ODESolverResultSet> resultsHash;
             HashMap<String, File> reportsHash = null;
             File outDirForCurrentSedml = new File(omexHandler.getOutputPathFromSedml(sedmlLocation));
 
@@ -190,6 +192,11 @@ public class ExecuteImpl {
                 logger.info("Processing SED-ML: " + sedmlName);
 
                 nModels = sedmlFromOmex.getModels().size();
+                for(Model m : sedmlFromOmex.getModels()) {
+                	if(m.getListOfChanges().size() > 0) {
+                		hasChanges = true;
+                	}
+                }
                 nTasks = sedmlFromOmex.getTasks().size();
                 outputs = sedmlFromOmex.getOutputs();
                 nOutputs = outputs.size();
@@ -264,7 +271,7 @@ public class ExecuteImpl {
              */
             SolverHandler solverHandler = new SolverHandler();
             ExternalDocInfo externalDocInfo = new ExternalDocInfo(new File(inputFilePath), true);
-            resultsHash = new LinkedHashMap<String, ODESolverResultSet>();
+            resultsHash = new LinkedHashMap<TaskJob, ODESolverResultSet>();
             try {
                 String str = "Building solvers and starting simulation of all tasks... ";
                 logger.info(str);
@@ -285,6 +292,7 @@ public class ExecuteImpl {
             message += nTasks + ",";
             message += nOutputs + ",";
             message += solverHandler.countBioModels + ",";
+            message += hasChanges + ",";
             message += solverHandler.countSuccessfulSimulationRuns;
             //CLIUtils.writeDetailedResultList(outputBaseDir, bioModelBaseName + "," + sedmlName + ", ," + message, bForceLogFiles);
             cliLogger.writeDetailedResultList(bioModelBaseName + "," + sedmlName + ", ," + message);

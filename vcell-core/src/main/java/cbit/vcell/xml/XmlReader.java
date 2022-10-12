@@ -5825,8 +5825,12 @@ Simulation getSimulation(Element param, MathDescription mathDesc, SimulationOwne
 	
 	try {
 		simulation.setName(name);
+		String importedTaskId = param.getAttributeValue(XMLTags.ImportedTaskIdTag);
+		if(importedTaskId != null) {
+			simulation.setImportedTaskID(importedTaskId);
+		}
+		
 		//String annotation = param.getAttributeValue(XMLTags.AnnotationAttrTag);
-
 		//if (annotation!=null) {
 			//simulation.setDescription(unMangle(annotation));
 		//}

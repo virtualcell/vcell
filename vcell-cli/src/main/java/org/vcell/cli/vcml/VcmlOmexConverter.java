@@ -128,7 +128,7 @@ public class VcmlOmexConverter {
 
 		FilenameFilter filterVcmlFiles = (f, name) -> name.endsWith(".vcml");
 		String[] inputFiles = input.list(filterVcmlFiles);		// jusr a list of vcml names, like biomodel-185577495.vcml, ...
-		if (inputFiles == null) {
+		if (inputFiles == null || inputFiles.length == 0) {
 			throw new RuntimeException("No VCML files found in the directory `" + input + "`");
 		}
 		

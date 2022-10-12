@@ -105,6 +105,7 @@ public class CLIRecorder extends Recorder implements CLIRecordable {
             "Tasks," +              // number of tasks
             "Outputs," +            // number of outputs
             "BioModels," +          // number of biomodels
+            "HasChanges," +			// true if any sedml model has changes
             "NumSimsSuccessful";    // number of succesful sims that we managed to run
         // (NB: we assume that the # of failures = # of tasks - # of successful simulations)
         // (NB: if multiple sedml files in the omex, we display on multiple rows, one for each sedml)
