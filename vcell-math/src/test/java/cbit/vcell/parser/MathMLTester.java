@@ -91,7 +91,8 @@ public class MathMLTester {
 				"acosh", "acot", "acoth",
 				"acsc", "acsch", "asec",
 				"asech", "asinh", "atanh",
-				"ceil", "floor", "min", "max");
+				"min", "max"
+		);
 		String infix = expression.infix();
 		boolean skipUnsupported = tokensToAvoid.stream().anyMatch(infix::contains);
 		if (skipUnsupported) {

@@ -44,7 +44,7 @@ public abstract class ASTFunction extends ASTNode {
 		// the following functions are defined in MathML version 2, but not implemented
 		//
 		// SECH, CSCH, COTH, ARCCOSH, ARCCOT, ARCCOTH, ARCCSC, ARCCSCH, ARCSEC, ARCSECH, ARCSINH, ARCTANH,
-		SIN, COS, TAN, ARCSIN, ARCCOS, ARCTAN, SEC, CSC, COT, SINH, COSH, TANH, LOG, ROOT, LN, EXP, ABS, FLOOR, CEIL, FACTORIAL, MISCELLANEOUS, POWER;
+		SIN, COS, TAN, ARCSIN, ARCCOS, ARCTAN, SEC, CSC, COT, SINH, COSH, TANH, LOG, ROOT, LN, EXP, ABS, FLOOR, CEILING, FACTORIAL, MISCELLANEOUS, POWER;
 
 		public String getString() {
 			return toString().toLowerCase();
@@ -114,11 +114,11 @@ public abstract class ASTFunction extends ASTNode {
 		}
 	}
 
-	public static class ASTCeil extends ASTFunction {
+	public static class ASTCeiling extends ASTFunction {
 
-		ASTCeil(ASTFunctionType type) {
+		ASTCeiling(ASTFunctionType type) {
 			super(type);
-			setName("ceil");
+			setName("ceiling");
 		}
 
 		@Override
@@ -233,8 +233,8 @@ public abstract class ASTFunction extends ASTNode {
 			return new ASTFunction.ASTExp(type);
 		} else if (type.equals(ASTFunctionType.FLOOR)) {
 			return new ASTFunction.ASTFloor(type);
-		} else if (type.equals(ASTFunctionType.CEIL)) {
-			return new ASTFunction.ASTCeil(type);
+		} else if (type.equals(ASTFunctionType.CEILING)) {
+			return new ASTCeiling(type);
 		} else if (type.equals(ASTFunctionType.ABS)) {
 			return new ASTFunction.ASTAbs(type);
 		} else if (type.equals(ASTFunctionType.FACTORIAL)) {
