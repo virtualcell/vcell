@@ -459,7 +459,7 @@ public class SlurmProxy extends HtcProxy {
 		String vcellUserid = simTask.getUser().getName();
 		KeyValue simID = simTask.getSimulationInfo().getSimulationVersion().getVersionKey();
 		SolverDescription solverDescription = simTask.getSimulation().getSolverTaskDescription().getSolverDescription();
-		MemLimitResults memoryMBAllowed = HtcProxy.getMemoryLimit(vcellUserid,simID,solverDescription,memSizeMB);
+		MemLimitResults memoryMBAllowed = HtcProxy.getMemoryLimit(vcellUserid, simID, solverDescription, memSizeMB, simTask.isPowerUser());
 
 		LineStringBuilder slurmCommands = new LineStringBuilder();
 		slurmScriptInit(jobName, simTask.isPowerUser(), memoryMBAllowed, slurmCommands);

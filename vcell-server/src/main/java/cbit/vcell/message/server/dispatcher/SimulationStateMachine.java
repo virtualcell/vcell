@@ -487,7 +487,7 @@ public class SimulationStateMachine {
 		KeyValue simID = simulationTask.getSimulationInfo().getSimulationVersion().getVersionKey();
 		SolverDescription solverDescription = simulationTask.getSimulation().getSolverTaskDescription().getSolverDescription();
 
-		MemLimitResults allowableMemMB = HtcProxy.getMemoryLimit(vcellUserid,simID,solverDescription, requiredMemMB);
+		MemLimitResults allowableMemMB = HtcProxy.getMemoryLimit(vcellUserid,simID,solverDescription, requiredMemMB, isPowerUser);
 		
 		final SimulationJobStatus newSimJobStatus;
 		if (requiredMemMB > allowableMemMB.getMemLimit()) {						
