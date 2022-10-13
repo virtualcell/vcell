@@ -193,10 +193,10 @@ public abstract class ASTNumber extends ASTNode {
 	 * @param mantissa
 	 *            A double
 	 * @param exponent
-	 *            A double
+	 *            An int
 	 * @return An ASTNumber where isEnotationNumber()== true
 	 */
-	public static ENotationNumber createNumber(double mantissa, double exponent) {
+	public static ENotationNumber createNumber(double mantissa, int exponent) {
 		return new ENotationNumber(mantissa, exponent);
 	}
 
@@ -301,7 +301,7 @@ public abstract class ASTNumber extends ASTNode {
 	 * @throws UnsupportedOperationException
 	 *             if isEnotation()!=true
 	 */
-	public double getExponent() {
+	public int getExponent() {
 		throw new UnsupportedOperationException();
 	}
 

@@ -77,7 +77,7 @@ public class ASTToXMLElementVisitor extends ASTVisitor {
 	}
 
 	public boolean visit(ASTNumber node) {
-		if (parentIsLogToOtherBase(node) || parentIsRootToOtherDegree(node)) {
+		if (parentIsLogToOtherBase(node) || parentIsRootAndThisIsDegreeChild(node)) {
 			return true;
 		}
 		Element cn;
@@ -96,7 +96,7 @@ public class ASTToXMLElementVisitor extends ASTVisitor {
 			cn.setText(Double.toString(node.getMantissa()));
 			Element sep = new Element("sep");
 			cn.addContent(sep);
-			cn.addContent(Double.toString(node.getExponent()));
+			cn.addContent(Integer.toString(node.getExponent()));
 		} else if (node.isE()) {
 			cn = new Element("exponentiale");
 		} else if (node.isPI()) {
@@ -118,10 +118,10 @@ public class ASTToXMLElementVisitor extends ASTVisitor {
 		return true;
 	}
 
-	private boolean parentIsRootToOtherDegree(ASTNumber node) {
+	private boolean parentIsRootAndThisIsDegreeChild(ASTNumber node) {
 		return node.getParentNode() != null
 				&& node.getParentNode().getType().equals(ASTFunctionType.ROOT)
-				&& !node.getParentNode().isSqrt() && node.getIndex() == 0;
+				&& node.getIndex() == 0;
 	}
 
 	private boolean parentIsLogToOtherBase(ASTNumber node) {

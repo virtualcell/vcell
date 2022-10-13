@@ -40,7 +40,11 @@ public abstract class ASTFunction extends ASTNode {
 	}
 
 	public enum ASTFunctionType implements ASTTypeI {
-		SIN, COS, TAN, ARCSIN, ARCCOS, ARCTAN, SEC, COSEC, COT, SINH, COSH, TANH, LOG, ROOT, LN, EXP, ABS, FLOOR, CEIL, FACTORIAL, MISCELLANEOUS, POWER;
+		//
+		// the following functions are defined in MathML version 2, but not implemented
+		//
+		// SECH, CSCH, COTH, ARCCOSH, ARCCOT, ARCCOTH, ARCCSC, ARCCSCH, ARCSEC, ARCSECH, ARCSINH, ARCTANH,
+		SIN, COS, TAN, ARCSIN, ARCCOS, ARCTAN, SEC, CSC, COT, SINH, COSH, TANH, LOG, ROOT, LN, EXP, ABS, FLOOR, CEILING, FACTORIAL, MISCELLANEOUS, POWER;
 
 		public String getString() {
 			return toString().toLowerCase();
@@ -110,11 +114,11 @@ public abstract class ASTFunction extends ASTNode {
 		}
 	}
 
-	public static class ASTCeil extends ASTFunction {
+	public static class ASTCeiling extends ASTFunction {
 
-		ASTCeil(ASTFunctionType type) {
+		ASTCeiling(ASTFunctionType type) {
 			super(type);
-			setName("ceil");
+			setName("ceiling");
 		}
 
 		@Override
@@ -199,12 +203,10 @@ public abstract class ASTFunction extends ASTNode {
 			return new ASTSin(type);
 		} else if (type.equals(ASTFunctionType.ARCSIN)) {
 			return new ASTArcSin(type);
-		} else if (type.equals(ASTFunctionType.ARCSIN)) {
-			return new ASTArcSin(type);
 		} else if (type.equals(ASTFunctionType.SINH)) {
 			return new ASTSinh(type);
 		} else if (type.equals(ASTFunctionType.ARCCOS)) {
-			return new ASTArcSin(type);
+			return new ASTArcCos(type);
 		} else if (type.equals(ASTFunctionType.COS)) {
 			return new ASTCos(type);
 		} else if (type.equals(ASTFunctionType.TAN)) {
@@ -215,8 +217,8 @@ public abstract class ASTFunction extends ASTNode {
 			return new ASTFunction.ASTTanh(type);
 		} else if (type.equals(ASTFunctionType.SEC)) {
 			return new ASTFunction.ASTSec(type);
-		} else if (type.equals(ASTFunctionType.COSEC)) {
-			return new ASTFunction.ASTCosec(type);
+		} else if (type.equals(ASTFunctionType.CSC)) {
+			return new ASTFunction.ASTCsc(type);
 		} else if (type.equals(ASTFunctionType.COT)) {
 			return new ASTFunction.ASTCot(type);
 		} else if (type.equals(ASTFunctionType.LOG)) {
@@ -231,8 +233,8 @@ public abstract class ASTFunction extends ASTNode {
 			return new ASTFunction.ASTExp(type);
 		} else if (type.equals(ASTFunctionType.FLOOR)) {
 			return new ASTFunction.ASTFloor(type);
-		} else if (type.equals(ASTFunctionType.CEIL)) {
-			return new ASTFunction.ASTCeil(type);
+		} else if (type.equals(ASTFunctionType.CEILING)) {
+			return new ASTCeiling(type);
 		} else if (type.equals(ASTFunctionType.ABS)) {
 			return new ASTFunction.ASTAbs(type);
 		} else if (type.equals(ASTFunctionType.FACTORIAL)) {
@@ -702,10 +704,10 @@ public abstract class ASTFunction extends ASTNode {
 
 	}
 
-	public static class ASTCosec extends ASTFunction {
-		ASTCosec(ASTFunctionType type) {
+	public static class ASTCsc extends ASTFunction {
+		ASTCsc(ASTFunctionType type) {
 			super(type);
-			setName("cosec");
+			setName("csc");
 			// TODO Auto-generated constructor stub
 		}
 
