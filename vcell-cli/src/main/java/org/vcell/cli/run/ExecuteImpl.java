@@ -9,7 +9,6 @@ import org.jlibsedml.*;
 
 import org.apache.commons.io.FilenameUtils;
 import org.vcell.cli.CLIRecorder;
-import org.vcell.cli.CLIUtils;
 import org.vcell.cli.vcml.VCMLHandler;
 import org.vcell.util.FileUtils;
 import org.vcell.util.GenericExtensionFilter;
@@ -177,7 +176,6 @@ public class ExecuteImpl {
             String sedmlName = "", logDocumentMessage = "Initializing SED-ML document... ", logDocumentError = "";
             boolean somethingFailed = false; // shows that the current document suffered a partial or total failure
             Map<TaskJob, ODESolverResultSet> resultsHash;
-            HashMap<String, File> reportsHash = null;
             File outDirForCurrentSedml = new File(omexHandler.getOutputPathFromSedml(sedmlLocation));
 
             try {
@@ -324,30 +322,32 @@ public class ExecuteImpl {
                     logDocumentMessage += "Failed to execute one or more tasks. ";
                     logger.info("Failed to execute one or more tasks in " + sedmlName);
                 }
-                logDocumentMessage += "Generating outputs... ";
-                logger.info("Generating outputs... ");
-                reportsHash = RunUtils.generateReportsAsCSV(sedml, resultsHash, outDirForCurrentSedml, outputDir, sedmlLocation);
-
-                if (reportsHash == null || reportsHash.size() == 0) {
-                    anySedmlDocumentHasFailed = true;
-                    somethingFailed = true;
-                    String msg = "Failed to generate any reports. ";
-                    throw new RuntimeException(msg);
-                }
-                if (reportsHash.containsValue(null)) {
-                    anySedmlDocumentHasFailed = true;
-                    somethingFailed = true;
-                    String msg = "Failed to generate one or more reports. ";
-                    logDocumentMessage += msg;
-                } else {
-                    logDocumentMessage += "Done. ";
-                }
+//                logDocumentMessage += "Generating outputs... ";
+//                logger.info("Generating outputs... ");
 
                 logDocumentMessage += "Generating HDF5 file... ";
                 logger.info("Generating HDF5 file... ");
-                String idNamePlotsMap = RunUtils.generateIdNamePlotsMap(sedml, outDirForCurrentSedml);
+                RunUtils.generateReportsAsHDF5(sedml, resultsHash, outDirForCurrentSedml, outputDir, sedmlLocation);
 
-                PythonCalls.execPlotOutputSedDoc(inputFilePath, idNamePlotsMap, outputDir);                            // create the HDF5 file
+//                if (reportsHash == null || reportsHash.size() == 0) {
+//                    anySedmlDocumentHasFailed = true;
+//                    somethingFailed = true;
+//                    String msg = "Failed to generate any reports. ";
+//                    throw new RuntimeException(msg);
+//                }
+//                if (reportsHash.containsValue(null)) {
+//                    anySedmlDocumentHasFailed = true;
+//                    somethingFailed = true;
+//                    String msg = "Failed to generate one or more reports. ";
+//                    logDocumentMessage += msg;
+//                } else {
+//                    logDocumentMessage += "Done. ";
+//                }
+                logDocumentMessage += "Done. ";
+
+                //String idNamePlotsMap = RunUtils.generateIdNamePlotsMap(sedml, outDirForCurrentSedml);
+
+                //PythonCalls.execPlotOutputSedDoc(inputFilePath, idNamePlotsMap, outputDir);                            // create the HDF5 file
 
                 if (!containsExtension(outputDir, "h5")) {
                     anySedmlDocumentHasFailed = true;

@@ -14,7 +14,7 @@ import java.util.Map;
 public class Hdf5Writer {
 
     public static void writeNonspatialHdf5(Hdf5FileWrapper hdf5FileWrapper, File outDirForCurrentSedml) throws HDF5Exception {
-        File hdf5TempFile = new File(outDirForCurrentSedml, "report.hdf");
+        File hdf5TempFile = new File(outDirForCurrentSedml, "report.h5");
         System.out.println("writing to file "+hdf5TempFile.getAbsolutePath());
         int hdf5FileID = H5.H5Fcreate(hdf5TempFile.getAbsolutePath(), HDF5Constants.H5F_ACC_TRUNC,HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT);
         int jobGroupID = Hdf5Utils.createGroup(hdf5FileID, hdf5FileWrapper.combineArchiveLocation);
@@ -43,12 +43,8 @@ public class Hdf5Writer {
                     dataDimensions = new long[] { numVariablesPerJob, numTimePoints, numJobs };
                     totalDataSize = numTimePoints * numVariablesPerJob * numJobs;
                 }
-//                String datasetPath = "/"+datasetWrapper.datasetMetadata.sedmlName;
-                String datasetPath = "/"+hdf5FileWrapper.combineArchiveLocation+"/"+datasetWrapper.datasetMetadata.sedmlName;
-                //String datasetPath = datasetWrapper.datasetMetadata.sedmlName;
 
                 double[] bigDataBuffer = new double[totalDataSize];
-                //int counter = 0;
                 int jobIndex=0;
                 for (Hdf5JobData jobData : datasetWrapper.jobData){
                     for (int varIndex=0; varIndex<vars.size(); varIndex++){
@@ -57,19 +53,14 @@ public class Hdf5Writer {
                         for (int dataIndex = 0; dataIndex< dataArray.length; dataIndex++){
                             double value = dataArray[dataIndex];
                             bigDataBuffer[varIndex*numTimePoints*numJobs + dataIndex*numJobs + jobIndex] = value;
-//                            int index = varIndex*numTimePoints*numJobs + dataIndex*numJobs + jobIndex;
-//                            bigDataBuffer[counter++] = index;
                         }
                     }
-//                    break;
                     jobIndex++;
                 }
+                String datasetPath = "/"+hdf5FileWrapper.combineArchiveLocation+"/"+datasetWrapper.datasetMetadata.sedmlId;
                 int hdf5DataspaceID = H5.H5Screate_simple(dataDimensions.length, dataDimensions, null);
                 int hdf5DatasetID = H5.H5Dcreate(jobGroupID, datasetPath, HDF5Constants.H5T_NATIVE_DOUBLE, hdf5DataspaceID, HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT);
                 H5.H5Dwrite_double(hdf5DatasetID, HDF5Constants.H5T_NATIVE_DOUBLE, HDF5Constants.H5S_ALL, HDF5Constants.H5S_ALL, HDF5Constants.H5P_DEFAULT, (double[])bigDataBuffer);
-
-//                Hdf5Utils.insertDoubles(jobGroupID, datasetPath, dataDimensions, bigDataBuffer);
-//                H5.H5Dwrite_double(help0.hdf5DatasetValuesID, HDF5Constants.H5T_NATIVE_DOUBLE, help0.hdf5DataSpaceID, hdf5FileID, HDF5Constants.H5P_DEFAULT, bigDataBuffer);
 
                 Hdf5Utils.insertAttribute(hdf5DatasetID, "_type", datasetWrapper.datasetMetadata._type);
                 Hdf5Utils.insertAttributes(hdf5DatasetID, "sedmlDataSetDataTypes", datasetWrapper.datasetMetadata.sedmlDataSetDataTypes);
@@ -79,7 +70,7 @@ public class Hdf5Writer {
                     Hdf5Utils.insertAttributes(hdf5DatasetID, "sedmlDataSetNames", datasetWrapper.datasetMetadata.sedmlDataSetNames);
                 }
                 Hdf5Utils.insertAttributes(hdf5DatasetID, "sedmlDataSetLabels", datasetWrapper.datasetMetadata.sedmlDataSetLabels);
-                Hdf5Utils.insertAttributes(hdf5DatasetID, "sedmlDataSetShapes", datasetWrapper.datasetMetadata.sedmlDataSetShapes);
+//                Hdf5Utils.insertAttributes(hdf5DatasetID, "sedmlDataSetShapes", datasetWrapper.datasetMetadata.sedmlDataSetShapes);
                 Hdf5Utils.insertAttribute(hdf5DatasetID, "sedmlId", datasetWrapper.datasetMetadata.sedmlId);
                 Hdf5Utils.insertAttribute(hdf5DatasetID, "sedmlName", datasetWrapper.datasetMetadata.sedmlName);
                 Hdf5Utils.insertAttribute(hdf5DatasetID, "uri", datasetWrapper.datasetMetadata.uri);

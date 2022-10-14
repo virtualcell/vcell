@@ -6,6 +6,6 @@ import java.util.List;
 public class Hdf5DatasetWrapper {
     // could be a plot or a report
 
-    public Hdf5DatasetMetadata datasetMetadata;
+    public Hdf5DatasetMetadata datasetMetadata = new Hdf5DatasetMetadata();
     public List<Hdf5JobData> jobData = new ArrayList<>();
 }
