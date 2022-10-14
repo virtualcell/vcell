@@ -3,17 +3,22 @@ package org.vcell.cli.run;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.export.server.*;
 import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.math.VariableType;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.SimpleSymbolTable;
 import cbit.vcell.parser.SymbolTable;
+import cbit.vcell.simdata.DataIdentifier;
 import cbit.vcell.simdata.DataServerImpl;
 import cbit.vcell.simdata.DataSetControllerImpl;
 import cbit.vcell.simdata.OutputContext;
+import cbit.vcell.simdata.PDEDataContext;
+import cbit.vcell.simdata.ServerPDEDataContext;
 import cbit.vcell.simdata.SpatialSelection;
 import cbit.vcell.solver.AnnotatedFunction;
 import cbit.vcell.solver.OutputFunctionContext;
+import cbit.vcell.solver.SimulationJob;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.vcell.solver.ode.ODESolverResultSet;
@@ -149,9 +154,10 @@ public class RunUtils {
         return yi;
     }
 
-    public static void exportPDE2HDF5(cbit.vcell.solver.Simulation sim, File userDir, File hdf5OutputFile) throws DataAccessException, IOException {
+    public static void exportPDE2HDF5(SimulationJob simJob, File userDir, File hdf5OutputFile) throws DataAccessException, IOException, Exception {
 
-        SimulationContext sc = (SimulationContext)sim.getSimulationOwner();
+        cbit.vcell.solver.Simulation sim = simJob.getSimulation();
+    	SimulationContext sc = (SimulationContext)sim.getSimulationOwner();
         BioModel bm = sc.getBioModel();
 
 
@@ -164,26 +170,25 @@ public class RunUtils {
         }
         VCSimulationDataIdentifier vcId = new VCSimulationDataIdentifier(vcSimID, 0);
 
-        SpeciesContext[] species = bm.getModel().getSpeciesContexts();
-        String[] variableNames = new String[species.length];
-        for(int i = 0; i<species.length; i++) {
-            variableNames[i] = species[i].getName();
-        }
-        VariableSpecs variableSpecs = new VariableSpecs(variableNames, ExportConstants.VARIABLE_MULTI);
-
         DataSetControllerImpl dsControllerImpl = new DataSetControllerImpl(null, userDir.getParentFile(), null);
+        ExportServiceImpl exportServiceImpl = new ExportServiceImpl();
+        DataServerImpl dataServerImpl = new DataServerImpl(dsControllerImpl, exportServiceImpl);
+        OutputContext outputContext = new OutputContext(sc.getOutputFunctionContext().getOutputFunctionsList().toArray(new AnnotatedFunction[0]));
+        PDEDataContext pdedc = new ServerPDEDataContext(outputContext, user, dataServerImpl, vcId);
+        DataIdentifier[] dataIDArr = pdedc.getDataIdentifiers();
+        ArrayList<String> variableNames = new ArrayList<String>();
+        for(int i = 0; i<dataIDArr.length; i++) {
+        	if (dataIDArr[i].getVariableType().getType() == VariableType.VOLUME.getType()) variableNames.add(dataIDArr[i].getName());
+        }
+        VariableSpecs variableSpecs = new VariableSpecs(variableNames.toArray(new String[0]), ExportConstants.VARIABLE_MULTI);
+
         double[] dataSetTimes = dsControllerImpl.getDataSetTimes(vcId);
         TimeSpecs timeSpecs = new TimeSpecs(0,dataSetTimes.length-1, dataSetTimes, ExportConstants.TIME_RANGE);
-        //timeSpecs = new TimeSpecs(0, 0, dataSetTimes, ExportConstants.TIME_RANGE);
-
-
 
         int geoMode = ExportConstants.GEOMETRY_FULL;
-        SpatialSelection[] selections = new SpatialSelection[0];
-        selections = null;
         int axis = 2;
         int sliceNumber = 0;
-        GeometrySpecs geometrySpecs = new GeometrySpecs(selections, axis, sliceNumber, geoMode);
+        GeometrySpecs geometrySpecs = new GeometrySpecs(null, axis, sliceNumber, geoMode);
 
         ExportConstants.DataType dataType = ExportConstants.DataType.PDE_VARIABLE_DATA;
         boolean switchRowsColumns = false;
@@ -195,20 +200,20 @@ public class RunUtils {
         boolean isHDF5 = true;
         FormatSpecificSpecs formatSpecificSpecs = new ASCIISpecs(ExportFormat.CSV, dataType, switchRowsColumns, simNameSimDataIDs, exportMultipleParamScans, ASCIISpecs.csvRoiLayout.var_time_val, isHDF5);
 
-        OutputFunctionContext ofc = sc.getOutputFunctionContext();
-        ArrayList<AnnotatedFunction> outputFunctionsList = ofc.getOutputFunctionsList();
-        AnnotatedFunction[] af = outputFunctionsList.toArray(new AnnotatedFunction[0]);
-        OutputContext outputContext = new OutputContext(af);
-        ExportServiceImpl exportServiceImpl = new ExportServiceImpl();
         ASCIIExporter ae = new ASCIIExporter(exportServiceImpl);
         String contextName = bm.getName() + ":" + sc.getName();
         ExportSpecs exportSpecs = new ExportSpecs(vcId, ExportFormat.HDF5, variableSpecs, timeSpecs, geometrySpecs, formatSpecificSpecs, sim.getName(), contextName);
-        DataServerImpl dataServerImpl = new DataServerImpl(dsControllerImpl, exportServiceImpl);
         FileDataContainerManager fileDataContainerManager = new FileDataContainerManager();
 
         JobRequest jobRequest = JobRequest.createExportJobRequest(vcId.getOwner());
 
-        Collection<ExportOutput > eo = ae.makeASCIIData(outputContext, jobRequest, vcId.getOwner(), dataServerImpl, exportSpecs, fileDataContainerManager);
+        Collection<ExportOutput > eo;
+		try {
+			eo = ae.makeASCIIData(outputContext, jobRequest, vcId.getOwner(), dataServerImpl, exportSpecs,
+					fileDataContainerManager);
+		} catch (Exception e) {
+			throw e;
+		}
         Iterator<ExportOutput> iterator = eo.iterator();
         ExportOutput aaa = iterator.next();
 

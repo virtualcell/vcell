@@ -176,8 +176,6 @@ public class ExecuteImpl {
             logger.info("Initializing SED-ML document...");
             String sedmlName = "", logDocumentMessage = "Initializing SED-ML document... ", logDocumentError = "";
             boolean somethingFailed = false; // shows that the current document suffered a partial or total failure
-            Map<TaskJob, ODESolverResultSet> resultsHash;
-            HashMap<String, File> reportsHash = null;
             File outDirForCurrentSedml = new File(omexHandler.getOutputPathFromSedml(sedmlLocation));
 
             try {
@@ -282,14 +280,12 @@ public class ExecuteImpl {
              */
             SolverHandler solverHandler = new SolverHandler();
             ExternalDocInfo externalDocInfo = new ExternalDocInfo(new File(inputFilePath), true);
-            resultsHash = new LinkedHashMap<TaskJob, ODESolverResultSet>();
             try {
                 String str = "Building solvers and starting simulation of all tasks... ";
                 logger.info(str);
                 logDocumentMessage += str;
-                resultsHash = solverHandler.simulateAllTasks(externalDocInfo, sedml, cliLogger, outDirForCurrentSedml, outputDir,
+                solverHandler.simulateAllTasks(externalDocInfo, sedml, cliLogger, outDirForCurrentSedml, outputDir,
                         outputBaseDir, sedmlLocation, bKeepTempFiles, bExactMatchOnly);
-                //Map<String, String> sim2Hdf5Map = solverHandler.sim2Hdf5Map;    // may not need it
             } catch (Exception e) {
                 somethingFailed = true;
                 anySedmlDocumentHasFailed = true;
@@ -318,7 +314,7 @@ public class ExecuteImpl {
             // that will include spatial simulations for which we don't produce reports or plots!
             //
             try {
-                if (resultsHash.containsValue(null)) {        // some tasks failed, but not all
+                if (solverHandler.nonSpatialResults.containsValue(null) || solverHandler.spatialResults.containsValue(null)) {        // some tasks failed, but not all
                     anySedmlDocumentHasFailed = true;
                     somethingFailed = true;
                     logDocumentMessage += "Failed to execute one or more tasks. ";
@@ -326,35 +322,38 @@ public class ExecuteImpl {
                 }
                 logDocumentMessage += "Generating outputs... ";
                 logger.info("Generating outputs... ");
-                reportsHash = RunUtils.generateReportsAsCSV(sedml, resultsHash, outDirForCurrentSedml, outputDir, sedmlLocation);
 
-                if (reportsHash == null || reportsHash.size() == 0) {
-                    anySedmlDocumentHasFailed = true;
-                    somethingFailed = true;
-                    String msg = "Failed to generate any reports. ";
-                    throw new RuntimeException(msg);
+                if (!solverHandler.nonSpatialResults.isEmpty()) {
+	                HashMap<String, File> csvReports = null;
+	                csvReports = RunUtils.generateReportsAsCSV(sedml, solverHandler.nonSpatialResults, outDirForCurrentSedml, outputDir, sedmlLocation);
+	                logDocumentMessage += "Generating HDF5 file... ";
+	                logger.info("Generating HDF5 file... ");
+	                String idNamePlotsMap = RunUtils.generateIdNamePlotsMap(sedml, outDirForCurrentSedml);
+	                PythonCalls.execPlotOutputSedDoc(inputFilePath, idNamePlotsMap, outputDir);                            // create the HDF5 file
+	
+	                if (csvReports == null || csvReports.isEmpty() || csvReports.containsValue(null)) {
+	                    anySedmlDocumentHasFailed = true;
+	                    somethingFailed = true;
+	                    String msg = "Failed to generate one or more reports. ";
+	                    logDocumentMessage += msg;
+	                } else {
+	                    logDocumentMessage += "Done. ";
+	                }
+	
+	
+	                if (!containsExtension(outputDir, "h5")) {
+	                    anySedmlDocumentHasFailed = true;
+	                    somethingFailed = true;
+	                    throw new RuntimeException("Failed to generate the HDF5 output file. ");
+	                } else {
+	                    logDocumentMessage += "Done. ";
+	                }
                 }
-                if (reportsHash.containsValue(null)) {
-                    anySedmlDocumentHasFailed = true;
-                    somethingFailed = true;
-                    String msg = "Failed to generate one or more reports. ";
-                    logDocumentMessage += msg;
-                } else {
-                    logDocumentMessage += "Done. ";
-                }
-
-                logDocumentMessage += "Generating HDF5 file... ";
-                logger.info("Generating HDF5 file... ");
-                String idNamePlotsMap = RunUtils.generateIdNamePlotsMap(sedml, outDirForCurrentSedml);
-
-                PythonCalls.execPlotOutputSedDoc(inputFilePath, idNamePlotsMap, outputDir);                            // create the HDF5 file
-
-                if (!containsExtension(outputDir, "h5")) {
-                    anySedmlDocumentHasFailed = true;
-                    somethingFailed = true;
-                    throw new RuntimeException("Failed to generate the HDF5 output file. ");
-                } else {
-                    logDocumentMessage += "Done. ";
+                
+                if (!solverHandler.spatialResults.isEmpty()) {
+                	// TODO
+                	// check for failures
+                	// generate reports from hdf5 outputs and add to non-spatial reports, if any
                 }
 
                 logger.info("Generating Plots... ");

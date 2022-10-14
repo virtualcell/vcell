@@ -61,15 +61,17 @@ public class SolverHandler {
 
 	public int countBioModels = 0;		// number of biomodels in this sedml file
 	public int countSuccessfulSimulationRuns = 0;	// number of simulations that we ran successfully for this sedml file
-	public Map <String, String> sim2Hdf5Map = new LinkedHashMap<> ();
 	
-    Map<Simulation, AbstractTask> simulationToTaskMap = new LinkedHashMap<> ();	// key = vcell simulation, value = sedml topmost task (the imported task id)
-    Map<AbstractTask, Simulation> taskToSimulationMap = new LinkedHashMap<> ();	// the opposite
-    Map<AbstractTask, List<AbstractTask>> taskToListOfSubTasksMap = new LinkedHashMap<> ();	// key = topmost AbstractTask, value = recursive list of subtasks
-    Map<AbstractTask, List<Variable>> taskToVariableMap = new LinkedHashMap<> ();	// key = AbstractTask, value = list of variables calculated by this task
-    Map<RepeatedTask, Set<String>> taskToChangeTargetMap = new LinkedHashMap<> ();	// key = RepeatedTask, value = list of the parameters that are being changed
-    Map<Task, Set<RepeatedTask>> taskToChildRepeatedTasks = new LinkedHashMap<> ();	// key = Task, value = list of RepeatedTasks ending with this task
-    Map<String, Task> topTaskToBaseTask = new LinkedHashMap<> ();				// key = TopmostTaskId, value = Tasks at the bottom of the SubTasks chain OR the topmost task itself if instanceof Task
+    Map<TaskJob, ODESolverResultSet> nonSpatialResults = new LinkedHashMap<TaskJob, ODESolverResultSet>();
+    Map<TaskJob, File> spatialResults = new LinkedHashMap<TaskJob, File>();
+
+    Map<Simulation, AbstractTask> simulationToTaskMap = new LinkedHashMap<Simulation, AbstractTask> ();	// key = vcell simulation, value = sedml topmost task (the imported task id)
+    Map<AbstractTask, Simulation> taskToSimulationMap = new LinkedHashMap<AbstractTask, Simulation> ();	// the opposite
+    Map<AbstractTask, List<AbstractTask>> taskToListOfSubTasksMap = new LinkedHashMap<AbstractTask, List<AbstractTask>> ();	// key = topmost AbstractTask, value = recursive list of subtasks
+    Map<AbstractTask, List<Variable>> taskToVariableMap = new LinkedHashMap<AbstractTask, List<Variable>> ();	// key = AbstractTask, value = list of variables calculated by this task
+    Map<RepeatedTask, Set<String>> taskToChangeTargetMap = new LinkedHashMap<RepeatedTask, Set<String>> ();	// key = RepeatedTask, value = list of the parameters that are being changed
+    Map<Task, Set<RepeatedTask>> taskToChildRepeatedTasks = new LinkedHashMap<Task, Set<RepeatedTask>> ();	// key = Task, value = list of RepeatedTasks ending with this task
+    Map<String, Task> topTaskToBaseTask = new LinkedHashMap<String, Task> ();				// key = TopmostTaskId, value = Tasks at the bottom of the SubTasks chain OR the topmost task itself if instanceof Task
 
     private static void sanityCheck(VCDocument doc) {
         if (doc == null) {
@@ -278,8 +280,7 @@ public class SolverHandler {
         System.out.println("topTaskToBaseTask: " + topTaskToBaseTask.size());
     }
 
-    public Map<TaskJob, ODESolverResultSet>
-            simulateAllTasks(ExternalDocInfo externalDocInfo, SedML sedml, CLIRecorder cliLogger, 
+    public void simulateAllTasks(ExternalDocInfo externalDocInfo, SedML sedml, CLIRecorder cliLogger, 
                              File outputDirForSedml, String outDir, String outputBaseDir, String sedmlLocation,
                              boolean keepTempFiles, boolean exactMatchOnly) throws Exception {
         // create the VCDocument(s) (bioModel(s) + application(s) + simulation(s)), do sanity checks
@@ -288,8 +289,6 @@ public class SolverHandler {
         String bioModelBaseName = org.vcell.util.FileUtils.getBaseName(inputFile);
         
         List<BioModel> bioModelList = null;
-        // Key String is SEDML Task ID
-        Map<TaskJob, ODESolverResultSet> resultsHash = new LinkedHashMap<TaskJob, ODESolverResultSet>();
         String docName = null;
         Simulation[] sims = null;
         //String outDirRoot = outputDirForSedml.toString().substring(0, outputDirForSedml.toString().lastIndexOf(System.getProperty("file.separator")));
@@ -337,14 +336,6 @@ public class SolverHandler {
 					SimulationJob simJob = new SimulationJob(sim, i, null);
 					simJobsList.add(simJob);
 				}
-				
-//				String[] targets = sim.getMathOverrides().getScannedConstantNames();
-//				java.util.Arrays.sort(targets);
-//				int[] bounds = new int[targets.length]; // bounds of scanning matrix
-//				for (int i=0; i < targets.length; i++) {
-//					bounds[i] = sim.getMathOverrides().getConstantArraySpec(targets[i]).getNumValues() - 1;
-//				}
-//				int[] coordinates = BeanUtils.indexToCoordinate(scanCount, bounds);
 			}
             
 			for (SimulationJob simJob : simJobsList) {
@@ -353,6 +344,8 @@ public class SolverHandler {
 				String logTaskError = "";
 				long startTimeTask = System.currentTimeMillis();
 
+				AbstractTask task = simulationToTaskMap.get(simJob.getSimulation());
+				
                 SimulationTask simTask;
                 String kisao = "null";
             	ODESolverResultSet odeSolverResultSet = null;
@@ -399,8 +392,6 @@ public class SolverHandler {
                         ((AbstractJavaSolver) solver).runSolver();
                         odeSolverResultSet = ((ODESolver) solver).getODESolverResultSet();
                         // must interpolate data for uniform time course which is not supported natively by the Java solvers
-                        Task task = (Task) sedml.getTaskWithId(sim.getImportedTaskID());
-                        assert task != null;
                         org.jlibsedml.Simulation sedmlSim = sedml.getSimulation(task.getSimulationReference());
                         if (sedmlSim instanceof UniformTimeCourse) {
                             odeSolverResultSet = RunUtils.interpolate(odeSolverResultSet, (UniformTimeCourse) sedmlSim);
@@ -413,17 +404,6 @@ public class SolverHandler {
                     }
                    
                     if (solver.getSolverStatus().getStatus() == SolverStatus.SOLVER_FINISHED) {
-                    	
-                    	if(sd.isSpatial()) {
-                    		// TODO: uncomment this for export to HDF5 for spatial
-//                        	File hdf5Results = new File(outDir + System.getProperty("file.separator") + "reports.h5");
-//                        	try {
-//                        		RunUtils.exportPDE2HDF5(sim, outputDirForSedml, hdf5Results);
-//                        		sim2Hdf5Map.put(sim.getImportedTaskID(), null);
-//                        	} catch(Exception e) {
-//                        		sim2Hdf5Map.put(sim.getImportedTaskID(), null);
-//                        	}
-                    	}
                     	
                     	logTaskMessage += "done. ";
                         logger.info("Succesful execution: Model '" + docName + "' Task '" + sim.getDescription() + "'.");
@@ -507,12 +487,20 @@ public class SolverHandler {
                     }
                     RunUtils.drawBreakLine("-", 100);
                 }
-                AbstractTask task = sedml.getTaskWithId(sim.getImportedTaskID());
-                if(odeSolverResultSet != null) {
-                    resultsHash.put(new TaskJob(task.getId(), simJob.getJobIndex()), odeSolverResultSet);
-                } else {
-                	resultsHash.put(new TaskJob(task.getId(), simJob.getJobIndex()), null);	// if any task fails, we still put it in the hash with a null value
+
+            	if(sd.isSpatial()) {
+                	File hdf5Results = new File(outDir + System.getProperty("file.separator") + "reports.h5");
+                	try {
+                		RunUtils.exportPDE2HDF5(simJob, outputDirForSedml, hdf5Results);
+                		spatialResults.put(new TaskJob(task.getId(), simJob.getJobIndex()), hdf5Results);
+                		keepTempFiles = true;
+                	} catch(Exception e) {
+                		spatialResults.put(new TaskJob(task.getId(), simJob.getJobIndex()), null);
+                	}
+            	} else {
+                    nonSpatialResults.put(new TaskJob(task.getId(), simJob.getJobIndex()), odeSolverResultSet);
                 }
+
                 if(keepTempFiles == false) {
                 	RunUtils.removeIntermediarySimFiles(outputDirForSedml);
                 }
@@ -544,7 +532,6 @@ public class SolverHandler {
         if(hasSomeSpatial) {
             cliLogger.writeSpatialList(bioModelBaseName);
         }
-        return resultsHash;
     }
 
     /**
