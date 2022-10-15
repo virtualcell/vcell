@@ -10,6 +10,7 @@ import org.jlibsedml.*;
 import org.apache.commons.io.FilenameUtils;
 import org.vcell.cli.CLIRecorder;
 import org.vcell.cli.vcml.VCMLHandler;
+import org.vcell.util.DataAccessException;
 import org.vcell.util.FileUtils;
 import org.vcell.util.GenericExtensionFilter;
 
@@ -322,34 +323,36 @@ public class ExecuteImpl {
                     logDocumentMessage += "Failed to execute one or more tasks. ";
                     logger.info("Failed to execute one or more tasks in " + sedmlName);
                 }
-//                logDocumentMessage += "Generating outputs... ";
-//                logger.info("Generating outputs... ");
 
+                HashMap<String, File> reportsHash = RunUtils.generateReportsAsCSV(sedml, resultsHash, outDirForCurrentSedml, outputDir, sedmlLocation);
+                if (reportsHash == null || reportsHash.size() == 0) {
+                    anySedmlDocumentHasFailed = true;
+                    somethingFailed = true;
+                    String msg = "Failed to generate any reports. ";
+                    throw new RuntimeException(msg);
+                }
+                if (reportsHash.containsValue(null)) {
+                    anySedmlDocumentHasFailed = true;
+                    somethingFailed = true;
+                    String msg = "Failed to generate one or more reports. ";
+                    logDocumentMessage += msg;
+                } else {
+                    logDocumentMessage += "Done. ";
+                }
+                String idNamePlotsMap = RunUtils.generateIdNamePlotsMap(sedml, outDirForCurrentSedml);
+                PythonCalls.execPlotOutputSedDoc(inputFilePath, idNamePlotsMap, outputDir);                            // create the HDF5 file
+
+                logger.info("Generating Plots... ");
+                PythonCalls.genPlotsPseudoSedml(sedmlLocation, outDirForCurrentSedml.toString());    // generate the plots
+
+                // remove CSV files associated with reports, these values are in report.h5 file anyway
+                for (File file : reportsHash.values()){
+                    file.delete();
+                }
                 logDocumentMessage += "Generating HDF5 file... ";
                 logger.info("Generating HDF5 file... ");
-                RunUtils.generateReportsAsHDF5(sedml, resultsHash, outDirForCurrentSedml, outputDir, sedmlLocation);
-
-//                if (reportsHash == null || reportsHash.size() == 0) {
-//                    anySedmlDocumentHasFailed = true;
-//                    somethingFailed = true;
-//                    String msg = "Failed to generate any reports. ";
-//                    throw new RuntimeException(msg);
-//                }
-//                if (reportsHash.containsValue(null)) {
-//                    anySedmlDocumentHasFailed = true;
-//                    somethingFailed = true;
-//                    String msg = "Failed to generate one or more reports. ";
-//                    logDocumentMessage += msg;
-//                } else {
-//                    logDocumentMessage += "Done. ";
-//                }
-                logDocumentMessage += "Done. ";
-
-                //String idNamePlotsMap = RunUtils.generateIdNamePlotsMap(sedml, outDirForCurrentSedml);
-
-                //PythonCalls.execPlotOutputSedDoc(inputFilePath, idNamePlotsMap, outputDir);                            // create the HDF5 file
-
-                if (!containsExtension(outputDir, "h5")) {
+                RunUtils.generateReportsAsHDF5(sedml, resultsHash, outDirForCurrentSedml, sedmlLocation);
+                if (!containsExtension(outDirForCurrentSedml.getAbsolutePath(), "h5")) {
                     anySedmlDocumentHasFailed = true;
                     somethingFailed = true;
                     throw new RuntimeException("Failed to generate the HDF5 output file. ");
@@ -357,8 +360,7 @@ public class ExecuteImpl {
                     logDocumentMessage += "Done. ";
                 }
 
-                logger.info("Generating Plots... ");
-                PythonCalls.genPlotsPseudoSedml(sedmlLocation, outDirForCurrentSedml.toString());    // generate the plots
+
                 anySedmlDocumentHasSucceeded = true;
             } catch (Exception e) {
             	logger.error(e.getMessage(), e);
