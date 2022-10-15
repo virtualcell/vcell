@@ -1,5 +1,6 @@
 package org.vcell.cli.run.hdf5;
 
+import cbit.vcell.resource.NativeLib;
 import cbit.vcell.simdata.Hdf5Utils;
 import ncsa.hdf.hdf5lib.H5;
 import ncsa.hdf.hdf5lib.HDF5Constants;
@@ -14,6 +15,7 @@ import java.util.Map;
 public class Hdf5Writer {
 
     public static void writeNonspatialHdf5(Hdf5FileWrapper hdf5FileWrapper, File outDirForCurrentSedml) throws HDF5Exception {
+        NativeLib.HDF5.load();
         File hdf5TempFile = new File(outDirForCurrentSedml, "report.h5");
         System.out.println("writing to file "+hdf5TempFile.getAbsolutePath());
         int hdf5FileID = H5.H5Fcreate(hdf5TempFile.getAbsolutePath(), HDF5Constants.H5F_ACC_TRUNC,HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT);
