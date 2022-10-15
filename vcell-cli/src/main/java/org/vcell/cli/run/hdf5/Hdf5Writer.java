@@ -16,9 +16,14 @@ public class Hdf5Writer {
     public static void writeNonspatialHdf5(Hdf5FileWrapper hdf5FileWrapper, File outDirForCurrentSedml) throws HDF5Exception {
         File hdf5TempFile = new File(outDirForCurrentSedml, "report.h5");
         System.out.println("writing to file "+hdf5TempFile.getAbsolutePath());
-        int hdf5FileID = H5.H5Fcreate(hdf5TempFile.getAbsolutePath(), HDF5Constants.H5F_ACC_TRUNC,HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT);
-        int jobGroupID = Hdf5Utils.createGroup(hdf5FileID, hdf5FileWrapper.combineArchiveLocation);
+        int hdf5FileID = -1;
+        int jobGroupID = -1;
         try {
+        	hdf5FileID = H5.H5Fcreate(hdf5TempFile.getAbsolutePath(), HDF5Constants.H5F_ACC_TRUNC,HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT);
+        	if(hdf5FileID == -1) {
+        		throw new RuntimeException("Unknown error during creation of HDF5 file.");
+        	}
+        	jobGroupID = Hdf5Utils.createGroup(hdf5FileID, hdf5FileWrapper.combineArchiveLocation);
             for (Hdf5DatasetWrapper datasetWrapper : hdf5FileWrapper.datasetWrappers) {
                 // here this is either a plot or a report
 
@@ -82,7 +87,12 @@ public class Hdf5Writer {
                 H5.H5Dclose(hdf5DatasetID);
                 H5.H5Sclose(hdf5DataspaceID);
             }
-            H5.H5Gclose(jobGroupID);
+            if(jobGroupID != -1) {
+            	H5.H5Gclose(jobGroupID);
+            }
+        } catch(Throwable e) {
+        	e.printStackTrace(System.out);
+        	throw new RuntimeException("HDF5 conversion failed: " + e.getMessage());
         } finally {
             if (hdf5FileID != -1) {
                 try {
