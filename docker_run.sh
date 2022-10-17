@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo -n "Recieved::<"
+echo -n "docker: Command recieved::<"
 echo -n $@
 echo ">"
 
