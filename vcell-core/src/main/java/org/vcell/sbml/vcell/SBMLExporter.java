@@ -52,6 +52,7 @@ import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.ExpressionMathMLPrinter;
 import cbit.vcell.parser.ExpressionMathMLPrinter.MathType;
 import cbit.vcell.parser.SymbolTableEntry;
+import cbit.vcell.solver.AnnotatedFunction;
 import cbit.vcell.solver.MathOverrides;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationJob;
@@ -416,8 +417,9 @@ private void addCompartments() throws XMLStreamException, SbmlException {
 /**
  * At present, the Virtual cell doesn't support global parameters
  * @throws SbmlException 
+ * @throws XMLStreamException 
  */
-private void addParameters() throws ExpressionException, SbmlException {
+private void addParameters() throws ExpressionException, SbmlException, XMLStreamException {
 	
 	// check if any event action modifies any parameter
 	Set<ModelParameter> modelParameterSet = new HashSet<> ();
@@ -473,6 +475,25 @@ private void addParameters() throws ExpressionException, SbmlException {
 			sbmlParam.setUnits(getOrCreateSBMLUnit(vcParamUnit));
 		}
 	}
+	}
+
+	// add output functions, if any
+	
+	List<AnnotatedFunction> outputFunctions = vcSelectedSimContext.getOutputFunctionContext().getOutputFunctionsList();
+	
+	for (AnnotatedFunction of : outputFunctions) {
+		org.sbml.jsbml.Parameter sbmlParam = sbmlModel.createParameter();
+		sbmlParam.setId(of.getName());
+		sbmlParam.setName(of.getName());
+		sbmlParam.setConstant(false);
+		Expression paramExpr = new Expression(of.getExpression());
+		ASTNode paramFormulaNode = getFormulaFromExpression(paramExpr);
+		AssignmentRule sbmlParamAssignmentRule = sbmlModel.createAssignmentRule();
+		sbmlParamAssignmentRule.setVariable(of.getName());
+		sbmlParamAssignmentRule.setMath(paramFormulaNode);	
+		Element outputFunctionElement = new Element(XMLTags.SBML_VCELL_OutputFunctionTag, sbml_vcml_ns);
+		outputFunctionElement.setAttribute(XMLTags.SBML_VCELL_OutputFunctionTag_varTypeAttr, of.getFunctionType().getTypeName(), sbml_vcml_ns);
+		sbmlParam.getAnnotation().appendNonRDFAnnotation(XmlUtil.xmlToString(outputFunctionElement));
 	}
 	
 	ReservedSymbol[] vcReservedSymbols = vcModel.getReservedSymbols();  

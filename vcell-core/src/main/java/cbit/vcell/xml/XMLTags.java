@@ -376,6 +376,9 @@ public class XMLTags {
     public final static String TaskDescriptionTag = "TaskDescription";
     public final static String OutputTag = "OutputTag";
     public final static String UnsteadyTag = "Unsteady";
+    // to roundtrip output functions
+    public final static String SBML_VCELL_OutputFunctionTag = "OutputFunction";
+    public final static String SBML_VCELL_OutputFunctionTag_varTypeAttr = "VariableType";
     // I erased the tag of Unsteadytag 
     public final static String SteadyTag = "Steady";
     //I erased the tag of Steadytag
