@@ -180,6 +180,11 @@ public class RunUtils {
         for(int i = 0; i<dataIDArr.length; i++) {
         	if (dataIDArr[i].getVariableType().getType() == VariableType.VOLUME.getType()) variableNames.add(dataIDArr[i].getName());
         }
+        if (outputContext.getOutputFunctions() != null) {
+        	for (int i = 0; i < outputContext.getOutputFunctions().length; i++) {
+				variableNames.add(outputContext.getOutputFunctions()[i].getName());
+			}
+        }
         VariableSpecs variableSpecs = new VariableSpecs(variableNames.toArray(new String[0]), ExportConstants.VARIABLE_MULTI);
 
         double[] dataSetTimes = dsControllerImpl.getDataSetTimes(vcId);

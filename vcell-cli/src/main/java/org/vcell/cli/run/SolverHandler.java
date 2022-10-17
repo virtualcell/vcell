@@ -489,7 +489,7 @@ public class SolverHandler {
                 }
 
             	if(sd.isSpatial()) {
-                	File hdf5Results = new File(outDir + System.getProperty("file.separator") + "reports.h5");
+                	File hdf5Results = new File(outDir + System.getProperty("file.separator") + task.getId() + "_results.h5");
                 	try {
                 		RunUtils.exportPDE2HDF5(simJob, outputDirForSedml, hdf5Results);
                 		spatialResults.put(new TaskJob(task.getId(), simJob.getJobIndex()), hdf5Results);
