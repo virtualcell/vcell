@@ -4,7 +4,6 @@ echo -n "docker: Command recieved::<"
 echo -n $@
 echo ">"
 
-
 rawCommand="$(echo -n "$1" | sed -E 's/(^(\s*))|((\s*)$)//g')" # Strip ends of its whitespace
 command="biosimulations" # default
 
