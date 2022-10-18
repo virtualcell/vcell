@@ -2208,8 +2208,12 @@ private void addGeometry() throws SbmlException {
 			VCImage vcImage = vcImageGeometry.getGeometrySpec().getImage();
 			segmentedImageSampledField.setSpatialId("SegmentedImageSampledField");
 			segmentedImageSampledField.setNumSamples1(vcImage.getNumX());
-			segmentedImageSampledField.setNumSamples2(vcImage.getNumY());
-			segmentedImageSampledField.setNumSamples3(vcImage.getNumZ());
+			if (vcGeometry.getDimension()>=2) {
+				segmentedImageSampledField.setNumSamples2(vcImage.getNumY());
+			}
+			if (vcGeometry.getDimension()==3) {
+				segmentedImageSampledField.setNumSamples3(vcImage.getNumZ());
+			}
 			segmentedImageSampledField.setInterpolationType(InterpolationKind.nearestNeighbor);
 			segmentedImageSampledField.setCompression(CompressionKind.deflated);
 			segmentedImageSampledField.setDataType(DataKind.UINT8);
