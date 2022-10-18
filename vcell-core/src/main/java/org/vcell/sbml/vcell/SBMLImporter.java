@@ -618,7 +618,7 @@ public class SBMLImporter {
 					VariableType varType = VariableType.getVariableTypeFromVariableTypeName(varTypeStr);
 					cbit.vcell.math.Variable.Domain varDomain = null;
 					String varDomainStr = paramElement.getAttrValue(XMLTags.SBML_VCELL_OutputFunctionTag_domainAttr, SBMLUtils.SBML_VCELL_NS);
-					if (varDomainStr != null){
+					if (varDomainStr != null && varDomainStr.trim().length()>0){
 						varDomain = new cbit.vcell.math.Variable.Domain(varDomainStr);
 					}
 					sbmlSymbolMapping.putRuntime(sbmlGlobalParam, new AnnotatedFunction(sbmlParamId, new Expression("DummyExpression"), varDomain, "", varType, FunctionCategory.OUTPUTFUNCTION));
@@ -2738,7 +2738,7 @@ public class SBMLImporter {
 		
 		//Add Output Functions
 		addOutputFunctions(sbmlModel, vcBioModel, sbmlSymbolMapping, vcLogger);
-		
+
 		// post processing
 		createAssignmentRules(sbmlModel, vcBioModel, sbmlSymbolMapping, localIssueList, issueContext, vcLogger);
 		createRateRules(sbmlModel, vcBioModel, sbmlSymbolMapping);
@@ -2747,6 +2747,8 @@ public class SBMLImporter {
 
 	private static void addOutputFunctions(org.sbml.jsbml.Model sbmlModel, BioModel vcBioModel, SBMLSymbolMapping sbmlSymbolMapping,
 			VCLogger vcLogger) throws VCLoggerException {
+
+		boolean bGeneratedMath = false;
 		ListOf<Parameter> listofGlobalParams = sbmlModel.getListOfParameters();
 		for (int i = 0; i < sbmlModel.getNumParameters(); i++) {
 			Parameter sbmlGlobalParam = listofGlobalParams.get(i);
@@ -2759,8 +2761,11 @@ public class SBMLImporter {
 					SBase sbase = sbmlSymbolMapping.getMappedSBase(sbmlParamId);
 					SymbolTableEntry ste = sbmlSymbolMapping.getSte(sbase, SymbolContext.RUNTIME);
 					try {
+						if (!bGeneratedMath){
+							vcBioModel.getSimulationContext(0).updateAll(false);
+						}
 						vcBioModel.getSimulationContext(0).getOutputFunctionContext().addOutputFunction((AnnotatedFunction) ste);
-					} catch (PropertyVetoException e) {
+					} catch (MappingException | PropertyVetoException e) {
 						vcLogger.sendMessage(VCLogger.Priority.MediumPriority, VCLogger.ErrorType.OverallWarning, "Could not add Output Function "+ste.getName()+" to BioModel");
 						vcLogger.sendMessage(VCLogger.Priority.MediumPriority, VCLogger.ErrorType.OverallWarning, e.getMessage());
 						logger.warn("Could not add Output Function "+ste.getName()+" to BioModel");
