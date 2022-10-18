@@ -352,7 +352,7 @@ public class ExecuteImpl {
                   }
                   logDocumentMessage += "Generating HDF5 file... ";
                   logger.info("Generating HDF5 file... ");
-                  RunUtils.generateReportsAsHDF5(sedml, csvReports, outDirForCurrentSedml, sedmlLocation);	
+                  RunUtils.generateReportsAsHDF5(sedml, solverHandler.nonSpatialResults, outDirForCurrentSedml, sedmlLocation);	
 	
 	                if (!containsExtension(outputDir, "h5")) {
 	                    anySedmlDocumentHasFailed = true;
