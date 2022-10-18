@@ -4,11 +4,6 @@ echo -n "Recieved::<"
 echo -n $@
 echo ">"
 
-
-echo -n "<"
-echo -n $1
-echo ">"
-
 rawCommand="$(echo -n "$1" | sed -E 's/(^(\s*))|((\s*)$)//g')" # Strip ends of its whitespace
 command="biosimulations" # default
 

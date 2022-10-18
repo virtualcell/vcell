@@ -9,8 +9,8 @@ import org.jlibsedml.*;
 
 import org.apache.commons.io.FilenameUtils;
 import org.vcell.cli.CLIRecorder;
-import org.vcell.cli.CLIUtils;
 import org.vcell.cli.vcml.VCMLHandler;
+import org.vcell.util.DataAccessException;
 import org.vcell.util.FileUtils;
 import org.vcell.util.GenericExtensionFilter;
 
@@ -176,6 +176,7 @@ public class ExecuteImpl {
             logger.info("Initializing SED-ML document...");
             String sedmlName = "", logDocumentMessage = "Initializing SED-ML document... ", logDocumentError = "";
             boolean somethingFailed = false; // shows that the current document suffered a partial or total failure
+
             File outDirForCurrentSedml = new File(omexHandler.getOutputPathFromSedml(sedmlLocation));
 
             try {
@@ -320,14 +321,16 @@ public class ExecuteImpl {
                     logDocumentMessage += "Failed to execute one or more tasks. ";
                     logger.info("Failed to execute one or more tasks in " + sedmlName);
                 }
+
                 logDocumentMessage += "Generating outputs... ";
                 logger.info("Generating outputs... ");
 
                 if (!solverHandler.nonSpatialResults.isEmpty()) {
 	                HashMap<String, File> csvReports = null;
+	                logDocumentMessage += "Generating CSV file... ";
+	                logger.info("Generating CSV file... ");
+                  
 	                csvReports = RunUtils.generateReportsAsCSV(sedml, solverHandler.nonSpatialResults, outDirForCurrentSedml, outputDir, sedmlLocation);
-	                logDocumentMessage += "Generating HDF5 file... ";
-	                logger.info("Generating HDF5 file... ");
 	                String idNamePlotsMap = RunUtils.generateIdNamePlotsMap(sedml, outDirForCurrentSedml);
 	                PythonCalls.execPlotOutputSedDoc(inputFilePath, idNamePlotsMap, outputDir);                            // create the HDF5 file
 	
@@ -339,7 +342,17 @@ public class ExecuteImpl {
 	                } else {
 	                    logDocumentMessage += "Done. ";
 	                }
-	
+                  
+                  logger.info("Generating Plots... ");
+                  PythonCalls.genPlotsPseudoSedml(sedmlLocation, outDirForCurrentSedml.toString());    // generate the plots
+
+                  // remove CSV files associated with reports, these values are in report.h5 file anyway
+                  for (File file : csvReports.values()){
+                      file.delete();
+                  }
+                  logDocumentMessage += "Generating HDF5 file... ";
+                  logger.info("Generating HDF5 file... ");
+                  RunUtils.generateReportsAsHDF5(sedml, csvReports, outDirForCurrentSedml, sedmlLocation);	
 	
 	                if (!containsExtension(outputDir, "h5")) {
 	                    anySedmlDocumentHasFailed = true;
@@ -356,8 +369,7 @@ public class ExecuteImpl {
                 	// generate reports from hdf5 outputs and add to non-spatial reports, if any
                 }
 
-                logger.info("Generating Plots... ");
-                PythonCalls.genPlotsPseudoSedml(sedmlLocation, outDirForCurrentSedml.toString());    // generate the plots
+
                 anySedmlDocumentHasSucceeded = true;
             } catch (Exception e) {
             	logger.error(e.getMessage(), e);
