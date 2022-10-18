@@ -3489,8 +3489,8 @@ public class SBMLImporter {
 				}
 			}
 			int numX = sf.getNumSamples1();
-			int numY = sf.getNumSamples2();
-			int numZ = sf.getNumSamples3();
+			int numY = (sf.isSetNumSamples2()) ? (sf.getNumSamples2()) : 1;
+			int numZ = (sf.isSetNumSamples3()) ? (sf.getNumSamples3()) : 1;
 			int[] samples = new int[numX*numY*numZ];
 			String sampleString = sf.getSamples();
 			if (sf.getDataType()!=DataKind.UINT8){
