@@ -37,6 +37,7 @@ import cbit.vcell.mapping.BioEvent.TriggerType;
 import cbit.vcell.mapping.SimulationContext.Application;
 import cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecParameter;
 import cbit.vcell.math.BoundaryConditionType;
+import cbit.vcell.math.VariableType;
 import cbit.vcell.model.*;
 import cbit.vcell.model.Kinetics.KineticsParameter;
 import cbit.vcell.model.Kinetics.KineticsProxyParameter;
@@ -46,6 +47,8 @@ import cbit.vcell.model.Model.ModelParameter;
 import cbit.vcell.model.Model.ReservedSymbol;
 import cbit.vcell.parser.*;
 import cbit.vcell.render.Vect3d;
+import cbit.vcell.solver.AnnotatedFunction;
+import cbit.vcell.solver.AnnotatedFunction.FunctionCategory;
 import cbit.vcell.units.VCUnitDefinition;
 import cbit.vcell.units.VCUnitSystem;
 import cbit.vcell.xml.XMLTags;
@@ -605,6 +608,23 @@ public class SBMLImporter {
 			Parameter sbmlGlobalParam = listofGlobalParams.get(i);
 			String sbmlParamId = sbmlGlobalParam.getId();
 			String sbmlParamName = sbmlGlobalParam.getName();
+			// check whether it is a vcell-exported output function
+			Annotation paramAnnotation = sbmlGlobalParam.getAnnotation();
+			if (paramAnnotation != null && paramAnnotation.getNonRDFannotation() != null) {
+				XMLNode paramElement = paramAnnotation.getNonRDFannotation().getChildElement(XMLTags.SBML_VCELL_OutputFunctionTag, "*");
+				if (paramElement != null) {
+					// just add to map, will add as output function after the parsing of initial assignments
+					String varTypeStr = paramElement.getAttrValue(XMLTags.SBML_VCELL_OutputFunctionTag_varTypeAttr, SBMLUtils.SBML_VCELL_NS);
+					VariableType varType = VariableType.getVariableTypeFromVariableTypeName(varTypeStr);
+					cbit.vcell.math.Variable.Domain varDomain = null;
+					String varDomainStr = paramElement.getAttrValue(XMLTags.SBML_VCELL_OutputFunctionTag_domainAttr, SBMLUtils.SBML_VCELL_NS);
+					if (varDomainStr != null && varDomainStr.trim().length()>0){
+						varDomain = new cbit.vcell.math.Variable.Domain(varDomainStr);
+					}
+					sbmlSymbolMapping.putRuntime(sbmlGlobalParam, new AnnotatedFunction(sbmlParamId, new Expression("DummyExpression"), varDomain, "", varType, FunctionCategory.OUTPUTFUNCTION));
+					continue;
+				}
+			}
 			SpatialParameterPlugin spplugin = null;
 			if (bSpatial) {
 				// check if parameter id is x/y/z : if so, check if its
@@ -2715,6 +2735,9 @@ public class SBMLImporter {
 		} catch (Exception e) {
 			throw new SBMLImportException(e.getMessage(), e);
 		}
+		
+		//Add Output Functions
+		addOutputFunctions(sbmlModel, vcBioModel, sbmlSymbolMapping, vcLogger);
 
 		// post processing
 		createAssignmentRules(sbmlModel, vcBioModel, sbmlSymbolMapping, localIssueList, issueContext, vcLogger);
@@ -2722,6 +2745,36 @@ public class SBMLImporter {
 		postProcessing(vcBioModel);
 	}
 
+	private static void addOutputFunctions(org.sbml.jsbml.Model sbmlModel, BioModel vcBioModel, SBMLSymbolMapping sbmlSymbolMapping,
+			VCLogger vcLogger) throws VCLoggerException {
+
+		boolean bGeneratedMath = false;
+		ListOf<Parameter> listofGlobalParams = sbmlModel.getListOfParameters();
+		for (int i = 0; i < sbmlModel.getNumParameters(); i++) {
+			Parameter sbmlGlobalParam = listofGlobalParams.get(i);
+			// check whether it is a vcell-exported output function
+			Annotation paramAnnotation = sbmlGlobalParam.getAnnotation();
+			if (paramAnnotation != null && paramAnnotation.getNonRDFannotation() != null) {
+				XMLNode paramElement = paramAnnotation.getNonRDFannotation().getChildElement(XMLTags.SBML_VCELL_OutputFunctionTag, "*");
+				if (paramElement != null) {
+					String sbmlParamId = sbmlGlobalParam.getId();
+					SBase sbase = sbmlSymbolMapping.getMappedSBase(sbmlParamId);
+					SymbolTableEntry ste = sbmlSymbolMapping.getSte(sbase, SymbolContext.RUNTIME);
+					try {
+						if (!bGeneratedMath){
+							vcBioModel.getSimulationContext(0).updateAll(false);
+						}
+						vcBioModel.getSimulationContext(0).getOutputFunctionContext().addOutputFunction((AnnotatedFunction) ste);
+					} catch (MappingException | PropertyVetoException e) {
+						vcLogger.sendMessage(VCLogger.Priority.MediumPriority, VCLogger.ErrorType.OverallWarning, "Could not add Output Function "+ste.getName()+" to BioModel");
+						vcLogger.sendMessage(VCLogger.Priority.MediumPriority, VCLogger.ErrorType.OverallWarning, e.getMessage());
+						logger.warn("Could not add Output Function "+ste.getName()+" to BioModel");
+						logger.warn(e.getMessage());
+					}
+				}
+			}
+		}	
+	}
 	private static void applySavedExpressions(org.sbml.jsbml.Model sbmlModel, SBMLSymbolMapping sbmlSymbolMapping, VCLogger vcLogger) throws Exception {
 		for (SBase sbmlValueTargetSbase : sbmlSymbolMapping.getSbmlValueTargets()){
 			Double sbmlValue = sbmlSymbolMapping.getSbmlValue(sbmlValueTargetSbase);

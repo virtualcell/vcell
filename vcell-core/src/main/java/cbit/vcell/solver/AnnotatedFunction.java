@@ -9,6 +9,9 @@
  */
 
 package cbit.vcell.solver;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyVetoException;
+
 import org.vcell.util.Matchable;
 
 import cbit.vcell.mapping.SimulationContext.Kind;
@@ -16,13 +19,15 @@ import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SimulationContextEntity;
 import cbit.vcell.math.Function;
 import cbit.vcell.math.VariableType;
+import cbit.vcell.model.EditableSymbolTableEntry;
 import cbit.vcell.parser.Expression;
+import cbit.vcell.units.VCUnitDefinition;
 /**
  * Insert the type's description here.
  * Creation date: (1/29/2004 11:48:16 AM)
  * @author: Anuradha Lakshminarayana
  */
-public class AnnotatedFunction extends Function implements Matchable, SimulationContextEntity {
+public class AnnotatedFunction extends Function implements Matchable, SimulationContextEntity, EditableSymbolTableEntry {
 	private java.lang.String fieldErrorString = null;
 	private VariableType fieldFunctionType = null;
 	private final FunctionCategory functionCategory;
@@ -119,6 +124,60 @@ public final FunctionCategory getFunctionCatogery() {
 @Override
 public Kind getSimulationContextKind() {
 	return SimulationContext.Kind.SIMULATIONS_KIND;
+}
+
+@Override
+public boolean isExpressionEditable() {
+	return true;
+}
+
+@Override
+public boolean isUnitEditable() {
+	return false;
+}
+
+@Override
+public boolean isNameEditable() {
+	return true;
+}
+
+@Override
+public void setName(String name) throws PropertyVetoException {
+	setName(name);
+}
+
+@Override
+public void setUnitDefinition(VCUnitDefinition unit) throws PropertyVetoException {
+    throw new RuntimeException("unit not editable");
+
+}
+
+@Override
+public String getDescription() {
+	return "Annotated Function";
+}
+
+@Override
+public void setDescription(String description) throws PropertyVetoException {
+    throw new RuntimeException("description not editable");
+	
+}
+
+@Override
+public boolean isDescriptionEditable() {
+	return false;
+}
+
+@Override
+public void addPropertyChangeListener(PropertyChangeListener listener) {
+    throw new RuntimeException("not supported");
+	
+}
+
+@Override
+public void removePropertyChangeListener(PropertyChangeListener listener) {
+    throw new RuntimeException("not supported");
+	
 }
 
 }

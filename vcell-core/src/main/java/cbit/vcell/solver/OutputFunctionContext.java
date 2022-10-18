@@ -622,7 +622,7 @@ public class OutputFunctionContext implements ScopedSymbolTable, Matchable, Seri
 						break;
 					}							
 				}
-				if(!bFound) {
+				if(af.getDomain() != null && !bFound) {
 					issueList.add(new Issue(new OutputFunctionIssueSource(this, af), issueContext, IssueCategory.InternalError, "OutputFunction '"+af.getName()+"' domain='"+(af.getDomain() == null?"NULL":af.getDomain().getName())+"' not found in geometry", Issue.Severity.WARNING));
 				}
 			}
