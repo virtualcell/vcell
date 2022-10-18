@@ -614,8 +614,14 @@ public class SBMLImporter {
 				XMLNode paramElement = paramAnnotation.getNonRDFannotation().getChildElement(XMLTags.SBML_VCELL_OutputFunctionTag, "*");
 				if (paramElement != null) {
 					// just add to map, will add as output function after the parsing of initial assignments
-					String varType = paramElement.getAttrValue(XMLTags.SBML_VCELL_OutputFunctionTag_varTypeAttr, SBMLUtils.SBML_VCELL_NS);
-					sbmlSymbolMapping.putRuntime(sbmlGlobalParam, new AnnotatedFunction(sbmlParamId, new Expression("DummyExpression"), null, sbmlParamName, "", VariableType.getVariableTypeFromVariableTypeName(varType), FunctionCategory.OUTPUTFUNCTION));
+					String varTypeStr = paramElement.getAttrValue(XMLTags.SBML_VCELL_OutputFunctionTag_varTypeAttr, SBMLUtils.SBML_VCELL_NS);
+					VariableType varType = VariableType.getVariableTypeFromVariableTypeName(varTypeStr);
+					cbit.vcell.math.Variable.Domain varDomain = null;
+					String varDomainStr = paramElement.getAttrValue(XMLTags.SBML_VCELL_OutputFunctionTag_domainAttr, SBMLUtils.SBML_VCELL_NS);
+					if (varDomainStr != null){
+						varDomain = new cbit.vcell.math.Variable.Domain(varDomainStr);
+					}
+					sbmlSymbolMapping.putRuntime(sbmlGlobalParam, new AnnotatedFunction(sbmlParamId, new Expression("DummyExpression"), varDomain, "", varType, FunctionCategory.OUTPUTFUNCTION));
 					continue;
 				}
 			}

@@ -493,6 +493,9 @@ private void addParameters() throws ExpressionException, SbmlException, XMLStrea
 		sbmlParamAssignmentRule.setMath(paramFormulaNode);	
 		Element outputFunctionElement = new Element(XMLTags.SBML_VCELL_OutputFunctionTag, sbml_vcml_ns);
 		outputFunctionElement.setAttribute(XMLTags.SBML_VCELL_OutputFunctionTag_varTypeAttr, of.getFunctionType().getTypeName(), sbml_vcml_ns);
+		if (of.getDomain()!=null) {
+			outputFunctionElement.setAttribute(XMLTags.SBML_VCELL_OutputFunctionTag_domainAttr, of.getDomain().getName(), sbml_vcml_ns);
+		}
 		sbmlParam.getAnnotation().appendNonRDFAnnotation(XmlUtil.xmlToString(outputFunctionElement));
 	}
 	
