@@ -83,13 +83,13 @@ jobs:
         
         # Create tar of converted files
       - name: Compress Converted Files
-        run: tar cvf omexes.tar *.omex
+        run: tar cvf vcmls.tar *.vcml
         
         # Upload Converted Files
       - name: Upload Converted Files
         uses: actions/upload-artifact@v3
         with:
-          name: omexes.tar
+          name: vcmls.tar
           path: $GITHUB_WORKSPACE/published/biomodel/vcml/output
         
         # Upload Results
@@ -119,16 +119,16 @@ jobs:
       - name: Download Converted COMBINE Archives
         uses: actions/download-artifact@v3
         with:
-          name: omexes.tar
+          name: vcmls.tar
           path: /input_files
       
       - name: Unpack Input Files
-        run: cd /input_files && tar xvf omexes.tar && rm omexes.tar
+        run: cd /input_files && tar xvf vcmls.tar && rm vcmls.tar
       
       # Do the round trip
       - name: Begin Round-Trip
         #$(docker image ls | grep "<none>" | awk '{print $3;}')  to get image id
-        run: docker run -v /input_files:/root $(docker image ls | grep "<none>" | awk '{print $3;}') export-omex-batch -i "/root" -o "/root/output" -m VCML --offline
+        run: docker run -v /input_files:/root $(docker image ls | grep "<none>" | awk '{print $3;}') export-omex-batch -i "/root" -o "/root/output" -m SBML --offline
         
        # Parse the results
       - name: Parse Results
