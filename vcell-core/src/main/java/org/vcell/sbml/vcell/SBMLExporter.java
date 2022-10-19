@@ -435,6 +435,18 @@ private void addParameters() throws ExpressionException, SbmlException, XMLStrea
 			}
 		}
 	}
+//	// we need to know in advance the event assignment variables
+//	Set<SymbolTableEntry> evenVariableSet = new LinkedHashSet<> ();
+//	if (vcBioevents != null) {
+//		for (BioEvent vcEvent : vcBioevents) {
+//			// check eventAssignments variables
+//			ArrayList<EventAssignment> vcEventAssgns = vcEvent.getEventAssignments();
+//			for (int j = 0; j < vcEventAssgns.size(); j++) {
+//				SymbolTableEntry ste = vcEventAssgns.get(j).getTarget();
+//				evenVariableSet.add(ste);
+//			}
+//		}
+//	}
 	
 	// add VCell global parameters to the SBML listofParameters
 	Model vcModel = getSelectedSimContext().getModel();
@@ -461,13 +473,24 @@ private void addParameters() throws ExpressionException, SbmlException, XMLStrea
 				bParamIsNumeric = false;
 			}
 		} else {
-			// non-numeric VCell global parameter will be defined by a (assignment) rule, hence mark Constant = false.
-			bParamIsNumeric = false;
-			// add assignment rule for param
-			ASTNode paramFormulaNode = getFormulaFromExpression(paramExpr);
-			AssignmentRule sbmlParamAssignmentRule = sbmlModel.createAssignmentRule();
-			sbmlParamAssignmentRule.setVariable(vcParam.getName());
-			sbmlParamAssignmentRule.setMath(paramFormulaNode);
+//			SymbolTableEntry ste = (SymbolTableEntry)vcParam;
+//			if(!evenVariableSet.contains(ste)) {
+				// non-numeric VCell global parameter will be defined by a (assignment) rule, hence mark Constant = false.
+				bParamIsNumeric = false;
+				// add assignment rule for param
+				ASTNode paramFormulaNode = getFormulaFromExpression(paramExpr);
+				AssignmentRule sbmlParamAssignmentRule = sbmlModel.createAssignmentRule();
+				sbmlParamAssignmentRule.setVariable(vcParam.getName());
+				sbmlParamAssignmentRule.setMath(paramFormulaNode);
+//			} else {
+//				// the parameter is an event assignment target, so it cannot also be 
+//				// an assignment rule variable; we make it an initial assignment instead
+//				bParamIsNumeric = false;
+//				ASTNode paramFormulaNode = getFormulaFromExpression(paramExpr);
+//				InitialAssignment initAssignment = sbmlModel.createInitialAssignment();
+//				initAssignment.setSymbol(vcParam.getName());
+//				initAssignment.setMath(paramFormulaNode);
+//			}
 		}
 		sbmlParam.setConstant(bParamIsNumeric);
 		VCUnitDefinition vcParamUnit = vcParam.getUnitDefinition();
