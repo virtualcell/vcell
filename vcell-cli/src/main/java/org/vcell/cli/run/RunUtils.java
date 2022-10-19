@@ -178,11 +178,6 @@ public class RunUtils {
         for(int i = 0; i<dataIDArr.length; i++) {
         	if (dataIDArr[i].getVariableType().getType() == VariableType.VOLUME.getType()) variableNames.add(dataIDArr[i].getName());
         }
-        if (outputContext.getOutputFunctions() != null) {
-        	for (int i = 0; i < outputContext.getOutputFunctions().length; i++) {
-				variableNames.add(outputContext.getOutputFunctions()[i].getName());
-			}
-        }
         VariableSpecs variableSpecs = new VariableSpecs(variableNames.toArray(new String[0]), ExportConstants.VARIABLE_MULTI);
 
         double[] dataSetTimes = dsControllerImpl.getDataSetTimes(vcId);
@@ -308,7 +303,6 @@ public class RunUtils {
 
                             if (task instanceof RepeatedTask) {
                                 // ==================================================================================
-//                                assert actualTask != null;
                                 ArrayList<TaskJob> taskJobs = new ArrayList<>();
                                 for (Map.Entry<TaskJob, ODESolverResultSet> entry : resultsHash.entrySet()) {
                                     TaskJob taskJob = entry.getKey();
@@ -317,6 +311,7 @@ public class RunUtils {
                                         taskJobs.add(taskJob);
                                     }
                                 }
+                                if (taskJobs.isEmpty()) continue; 
                                 varIDs.add(var.getId());
                                 if(sedmlSim instanceof UniformTimeCourse) {
                                     int outputNumberOfPoints = ((UniformTimeCourse) sedmlSim).getNumberOfPoints();
@@ -361,9 +356,17 @@ public class RunUtils {
                                     logger.error("only uniform time course simulations are supported");
                                 }
                             } else {
+                                TaskJob taskJob = null;
+                                for (Map.Entry<TaskJob, ODESolverResultSet> entry : resultsHash.entrySet()) {
+                                	TaskJob key = entry.getKey();
+                                    ODESolverResultSet value = entry.getValue();
+                                    if(value != null && key.getTaskId().equals(task.getId())) {
+                                        taskJob = key;
+                                        break;
+                                    }
+                                }
+                                if (taskJob == null) continue;
                                 varIDs.add(var.getId());
-//                                assert task != null;
-                                TaskJob taskJob = new TaskJob(actualTask.getId(), 0);
                                 if(sedmlSim instanceof UniformTimeCourse) {
                                     // we want to keep the last outputNumberOfPoints only
                                     int outputNumberOfPoints = ((UniformTimeCourse) sedmlSim).getNumberOfPoints();
@@ -400,8 +403,7 @@ public class RunUtils {
 
                             }
                         }
-                        PythonCalls.updateDatasetStatusYml(sedmlLocation, oo.getId(), dataset.getId(), Status.SUCCEEDED, outDir);
-
+                        if (varIDs.isEmpty()) continue;
                         //get math
                         String mathMLStr = datagen.getMathAsString();
                         Expression expr = new Expression(mathMLStr);
@@ -465,15 +467,20 @@ public class RunUtils {
                             sb.append("\n");
 
                         }	//end of k loop
+                        PythonCalls.updateDatasetStatusYml(sedmlLocation, oo.getId(), dataset.getId(), Status.SUCCEEDED, outDir);
 
                     }			// end of dataset
-                    File f = new File(outDirForCurrentSedml, oo.getId() + ".csv");
-                    PrintWriter out = new PrintWriter(f);
-                    out.print(sb.toString());
-                    out.flush();
-                    out.close();
-                    logger.info("created csv file for report "+oo.getId()+": "+f.getAbsolutePath());
-                    reportsHash.put(oo.getId(), f);
+                    if (sb.length() > 0) {
+						File f = new File(outDirForCurrentSedml, oo.getId() + ".csv");
+						PrintWriter out = new PrintWriter(f);
+						out.print(sb.toString());
+						out.flush();
+						out.close();
+						logger.info("created csv file for report " + oo.getId() + ": " + f.getAbsolutePath());
+						reportsHash.put(oo.getId(), f);
+					} else {
+						logger.info("no csv file for report " + oo.getId());
+					}
                 } catch (Exception e) {
                     logger.error("Encountered exception: " + e.getMessage(), e);
                     reportsHash.put(oo.getId(), null);
@@ -618,9 +625,16 @@ public class RunUtils {
                             logger.error("only uniform time course simulations are supported");
                         }
                     } else {
+                        TaskJob taskJob = null;
+                        for (Map.Entry<TaskJob, ODESolverResultSet> entry : resultsHash.entrySet()) {
+                            taskJob = entry.getKey();
+                            ODESolverResultSet value = entry.getValue();
+                            if(value != null && taskJob.getTaskId().equals(task.getId())) {
+                                break;
+                            }
+                        }
+                        if (taskJob == null) continue;
                         varIDs.add(var.getId());
-//                                assert task != null;
-                        TaskJob taskJob = new TaskJob(actualTask.getId(), 0);
                         if (sedmlSim instanceof UniformTimeCourse) {
                             // we want to keep the last outputNumberOfPoints only
                             int outputNumberOfPoints = ((UniformTimeCourse) sedmlSim).getNumberOfPoints();
