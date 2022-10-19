@@ -110,16 +110,17 @@ public class BiosimulationsCommand implements Callable<Integer> {
             try {
                 CLIPythonManager.getInstance().instantiatePythonProcess();
                 ExecuteImpl.singleExecOmex(ARCHIVE, OUT_DIR, cliLogger, bKeepTempFiles, bExactMatchOnly, false);
-                return 0; // Does this prevent finally?
+                return 0;
             } finally {
                 try {
                     CLIPythonManager.getInstance().closePythonProcess(); // WARNING: Python will need reinstantiation after this is called
                 } catch (Exception e) {
                     logger.error(e.getMessage(), e);
                 }
+                logger.debug("Finished all execution.");
             }
         } catch (Exception e) {
-            LogManager.getLogger(this.getClass()).error(e.getMessage(), e);
+            logger.error(e.getMessage(), e);
             return 1;
         }
     }

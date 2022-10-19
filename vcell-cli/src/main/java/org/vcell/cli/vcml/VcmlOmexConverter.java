@@ -94,6 +94,7 @@ public class VcmlOmexConverter {
 		if (input == null || !input.isFile() || !input.toString().endsWith(".vcml")) {
 			throw new RuntimeException("expecting inputFilePath '"+input+"' to be an existing .vcml file");
 		}
+		logger.debug("Beginning conversion of `" + input + "`");
 		Predicate<Simulation> simulationExportFilter = simulation -> true;
 		BioModelInfo bioModelInfo = null;
 		boolean isCreated = vcmlToOmexConversion(input.getAbsolutePath(), bioModelInfo, outputDir.getAbsolutePath(), outputDir.getAbsolutePath(),
@@ -132,6 +133,8 @@ public class VcmlOmexConverter {
 			throw new RuntimeException("No VCML files found in the directory `" + input + "`");
 		}
 		
+		logger.debug("Beginning conversion of `" + input + "`");
+
 		writeFileEntry(outputDir.getAbsolutePath(), "bForceVCML is " + modelFormat.equals(ModelFormat.VCML), jobConfigFile, bForceLogFiles);
 		writeFileEntry(outputDir.getAbsolutePath(), "bForceSBML is " + modelFormat.equals(ModelFormat.SBML), jobConfigFile, bForceLogFiles);
 		writeFileEntry(outputDir.getAbsolutePath(), "hasDataOnly is " + bHasDataOnly, jobConfigFile, bForceLogFiles);
@@ -174,7 +177,9 @@ public class VcmlOmexConverter {
 		String[] inputFiles = inputDir.list(filterVcmlFiles);		// jusr a list of vcml names, like biomodel-185577495.vcml, ...
 		if (inputFiles == null) throw new RuntimeException("No VCML files found in the directory `" + inputDir + "`");
 		
+		logger.debug("Beginning conversion of files in `" + inputDir + "`");
 		for (String inputFile : inputFiles) {
+			logger.debug("Beginning conversion of `" + inputFile + "`");
 			File file = new File(inputDir, inputFile);
 			logger.info(" ============== start: " + inputFile);
 				Predicate<Simulation> simulationExportFilter = simulation -> true;
@@ -184,6 +189,7 @@ public class VcmlOmexConverter {
 				if (isCreated) logger.info("Combine archive created for file(s) `" + inputFile + "`");
 				else logger.error("Failed converting VCML to OMEX archive for `" + inputFile + "`");
 		}
+		logger.debug("Completed conversion of files in `" + inputDir + "`");
 	}
 
 	private static boolean keepSimulation(Simulation simulation, boolean bHasDataOnly, boolean bNonSpatialOnly, CLIDatabaseService cliDatabaseService) {
@@ -754,6 +760,7 @@ public class VcmlOmexConverter {
 	}
 
 	public static void importOneOmexFile(File inputFile, File outputDirectory, boolean bForceLogFiles) throws IOException {
+		logger.debug("Beginning import of `" + inputFile.getName() +"`");
 		try {
 	        cbit.util.xml.VCLogger logger = new cbit.util.xml.VCLogger() {
 	            @Override
@@ -787,6 +794,8 @@ public class VcmlOmexConverter {
 			}
 			logger.error(loggedString, e);
 			writeFileEntry(outputDirectory.getAbsolutePath(), loggedString, jobLogFile, bForceLogFiles);			
+		} finally {
+			logger.debug("Import of `" + inputFile.getName() +"` completed");
 		}
 	}
 }

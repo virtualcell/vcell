@@ -83,12 +83,13 @@ public class ExportOmexBatchCommand implements Callable<Integer> {
 
             if (bOffline) this.runInOfflineMode(cliRecorder);
             else this.run(cliRecorder);
-
-            logger.info("Batch export completed");
+            
             return 0;
         } catch (Exception e) {
             e.printStackTrace();
             throw new RuntimeException(e.getMessage());
+        } finally {
+            logger.debug("Batch export completed");
         }
     }
 

@@ -50,11 +50,14 @@ public class ImportOmexBatchCommand implements Callable<Integer> {
             if (!outputFilePath.exists() || !outputFilePath.isDirectory()){
                 throw new RuntimeException("outputFilePath '"+outputFilePath+"' should be a directory");
             }
+            logger.debug("Beginning batch import");
             VcmlOmexConverter.importOmexFiles(inputFilePath, outputFilePath, cliLogger, true);
             return 0;
         } catch (Exception e) {
             e.printStackTrace(System.err);
             throw new RuntimeException(e.getMessage());
+        } finally {
+            logger.debug("Batch import completed");
         }
     }
 }
