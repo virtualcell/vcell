@@ -100,9 +100,9 @@ def exec_plot_output_sed_doc(omex_file_path, idNamePlotsMap, base_out_path):
     idNamePlotDict = {}
     with open(idNamePlotsMap) as file:
         for line in file:
-            line = line.rstrip('\n')	# #print(line)
+            line = line.rstrip('\n')    # #print(line)
             id, name = line.split('|')
-            idNamePlotDict[id] = name	# equivalent to java  idNamePlotHashMap.put(id, name);
+            idNamePlotDict[id] = name    # equivalent to java  idNamePlotHashMap.put(id, name);
     print(idNamePlotDict)
     
     # determine files to execute
@@ -172,7 +172,7 @@ def exec_plot_output_sed_doc(omex_file_path, idNamePlotsMap, base_out_path):
                 print(report_id)
                 report = Report(id=report_id, name=idNamePlotDict[report_id], data_sets=datasets)
 
-                data_set_df.columns = data_set_df.iloc[0]		# use ids
+                data_set_df.columns = data_set_df.iloc[0]        # use ids
                 data_set_df.drop(0, inplace=True)
                 data_set_df.drop(1, inplace=True)
                 data_set_df.drop(2, inplace=True)
