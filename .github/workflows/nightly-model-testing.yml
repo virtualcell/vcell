@@ -62,7 +62,7 @@ jobs:
         # Parse the results
       - name: Parse Results
         run: |
-          cd ${{ env.GITHUB_WORKSPACE }}/vcdb/published/biomodel/vcml/output && ls && \
+          cd $GITHUB_WORKSPACE/published/biomodel/vcml/output && ls && \
           echo "biomodels processed $(cat jobLog.txt | grep START | wc -l)" >> /tmp/conversion_results.txt && \
           echo "biomodels succeeded $(cat jobLog.txt | grep MODEL,SUCC | wc -l)" >> /tmp/conversion_results.txt && \
           echo "simcontexts total $(cat jobLog.txt | grep TEXT | wc -l)" >> /tmp/conversion_results.txt && \
@@ -90,7 +90,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: omexes.tar
-          path: ${{ env.GITHUB_WORKSPACE }}/vcdb/published/biomodel/vcml/output
+          path: $GITHUB_WORKSPACE/published/biomodel/vcml/output
         
         # Upload Results
       - name: Upload results of round-trip
