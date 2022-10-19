@@ -435,7 +435,19 @@ private void addParameters() throws ExpressionException, SbmlException, XMLStrea
 			}
 		}
 	}
-	
+	// we need to know in advance the event assignment variables
+	Set<SymbolTableEntry> evenVariableSet = new LinkedHashSet<> ();
+	if (vcBioevents != null) {
+		for (BioEvent vcEvent : vcBioevents) {
+			// check eventAssignments variables
+			ArrayList<EventAssignment> vcEventAssgns = vcEvent.getEventAssignments();
+			for (int j = 0; j < vcEventAssgns.size(); j++) {
+				SymbolTableEntry ste = vcEventAssgns.get(j).getTarget();
+				evenVariableSet.add(ste);
+			}
+		}
+	}
+
 	// add VCell global parameters to the SBML listofParameters
 	Model vcModel = getSelectedSimContext().getModel();
 	ModelParameter[] vcGlobalParams = vcModel.getModelParameters();
