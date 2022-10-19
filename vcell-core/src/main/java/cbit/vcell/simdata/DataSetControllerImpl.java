@@ -1701,7 +1701,7 @@ private SimDataBlock evaluateFunction(
 	}	       
 	       
 	if (computedDataLength <= 0) {
-		if (lg.isWarnEnabled()) lg.warn("dependencies for function '"+function+"' not found, assuming datalength of volume");
+		if (lg.isDebugEnabled()) lg.debug("dependencies for function '"+function+"' not found, assuming datalength of volume");
 		computedDataLength = mesh.getDataLength(VariableType.VOLUME);
 		computedVariableType = VariableType.VOLUME;
 //		try {
