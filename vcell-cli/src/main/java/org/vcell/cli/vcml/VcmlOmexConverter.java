@@ -748,7 +748,7 @@ public class VcmlOmexConverter {
 
 		FilenameFilter filterOmexFiles = (f, name) -> name.endsWith(".omex");
 		String[] inputFiles = inputDirectory.list(filterOmexFiles);
-		if (inputFiles == null) {
+		if (inputFiles == null || inputFiles.length == 0) {
 			throw new RuntimeException("No OMEX files found in the directory `" + inputDirectory + "`");
 		}
 		
