@@ -1,5 +1,6 @@
 package org.vcell.sedml;
 
+import org.vcell.sbml.SBMLUtils;
 import org.vcell.sbml.SbmlException;
 import org.vcell.sbml.SimSpec;
 import org.vcell.sbml.vcell.SBMLExporter;
@@ -12,7 +13,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-
+import java.io.StringReader;
 import java.nio.file.Paths;
 
 import java.util.ArrayList;
@@ -24,12 +25,14 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Vector;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.stream.XMLStreamException;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
@@ -75,7 +78,11 @@ import org.jlibsedml.modelsupport.SBMLSupport.SpeciesAttribute;
 import org.jlibsedml.modelsupport.SUPPORTED_LANGUAGE;
 
 import org.jmathml.ASTNode;
-
+import org.sbml.jsbml.Annotation;
+import org.sbml.jsbml.Parameter;
+import org.sbml.jsbml.SBMLDocument;
+import org.sbml.jsbml.SBMLReader;
+import org.sbml.jsbml.xml.XMLNode;
 import org.sbml.libcombine.*;
 
 import org.w3c.dom.Document;
@@ -122,6 +129,7 @@ import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solver.SolverTaskDescription;
 import cbit.vcell.solver.TimeBounds;
 import cbit.vcell.solver.TimeStep;
+import cbit.vcell.xml.XMLTags;
 import cbit.vcell.xml.XmlHelper;
 import cbit.vcell.xml.XmlParseException;
 
@@ -586,7 +594,7 @@ public class SEDMLExporter {
 	}
 
 	private List<DataGenerator> createSEDMLdatagens(String sbmlString, Set<String> dataGeneratorTasksSet)
-			throws IOException, SbmlException {
+			throws IOException, SbmlException, XMLStreamException {
 		List<DataGenerator> dataGeneratorsOfSim = new ArrayList<> ();					
 		for(String taskRef : dataGeneratorTasksSet) {
 			// add one DataGenerator for 'time'
@@ -601,13 +609,11 @@ public class SEDMLExporter {
 
 			// add dataGenerators for species
 			// get species list from SBML model.
-			//		        		Map<String, String> name2IdMap = new LinkedHashMap<> ();
 			String dataGenIdPrefix = "dataGen_" + taskRef;
 
 			String[] varNamesList = SimSpec.fromSBML(sbmlString).getVarsList();
 			for (String varName : varNamesList) {
 				String varId = varName + "_" + taskRef;
-				//								name2IdMap.put(varName, varId);
 				org.jlibsedml.Variable sedmlVar = new org.jlibsedml.Variable(varId, varName, taskRef, sbmlSupport.getXPathForSpecies(varName));
 				ASTNode varMath = Libsedml.parseFormulaString(varId);
 				String dataGenId = dataGenIdPrefix + "_" + TokenMangler.mangleToSName(varName);			//"dataGen_" + varCount; - old code
@@ -615,6 +621,29 @@ public class SEDMLExporter {
 				dataGen.addVariable(sedmlVar);
 				sedmlModel.addDataGenerator(dataGen);
 				dataGeneratorsOfSim.add(dataGen);
+			}
+			// add dataGenerators for output functions
+			// get output function list from SBML model
+			SBMLDocument sbmlDoc = new SBMLReader().readSBMLFromString(sbmlString);
+			List<Parameter> listofGlobalParams = sbmlDoc.getModel().getListOfParameters();
+			for (int i = 0; i < listofGlobalParams.size(); i++) {
+				Parameter sbmlGlobalParam = listofGlobalParams.get(i);
+				// check whether it is a vcell-exported output function
+				Annotation paramAnnotation = sbmlGlobalParam.getAnnotation();
+				if (paramAnnotation != null && paramAnnotation.getNonRDFannotation() != null) {
+					XMLNode paramElement = paramAnnotation.getNonRDFannotation().getChildElement(XMLTags.SBML_VCELL_OutputFunctionTag, "*");
+					if (paramElement != null) {
+						String varName = sbmlGlobalParam.getId();
+						String varId = varName + "_" + taskRef;
+						org.jlibsedml.Variable sedmlVar = new org.jlibsedml.Variable(varId, varName, taskRef, sbmlSupport.getXPathForGlobalParameter(varName));
+						ASTNode varMath = Libsedml.parseFormulaString(varId);
+						String dataGenId = dataGenIdPrefix + "_" + TokenMangler.mangleToSName(varName);			//"dataGen_" + varCount; - old code
+						DataGenerator dataGen = new DataGenerator(dataGenId, dataGenId, varMath);
+						dataGen.addVariable(sedmlVar);
+						sedmlModel.addDataGenerator(dataGen);
+						dataGeneratorsOfSim.add(dataGen);
+					}
+				}
 			}
 		}
 		return dataGeneratorsOfSim;
