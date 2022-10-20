@@ -9,8 +9,10 @@ import org.jlibsedml.*;
 
 import org.apache.commons.io.FilenameUtils;
 import org.vcell.cli.CLIRecorder;
+import org.vcell.cli.run.hdf5.Hdf5DatasetWrapper;
+import org.vcell.cli.run.hdf5.Hdf5FileWrapper;
+import org.vcell.cli.run.hdf5.Hdf5Writer;
 import org.vcell.cli.vcml.VCMLHandler;
-import org.vcell.util.DataAccessException;
 import org.vcell.util.FileUtils;
 import org.vcell.util.GenericExtensionFilter;
 
@@ -27,9 +29,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 public class ExecuteImpl {
     
@@ -347,14 +347,24 @@ public class ExecuteImpl {
                   PythonCalls.genPlotsPseudoSedml(sedmlLocation, outDirForCurrentSedml.toString());    // generate the plots
 
                   // remove CSV files associated with reports, these values are in report.h5 file anyway
-                  for (File file : csvReports.values()){
-                      file.delete();
-                  }
+//                  for (File file : csvReports.values()){
+//                      file.delete();
+//                  }
                   logDocumentMessage += "Generating HDF5 file... ";
                   logger.info("Generating HDF5 file... ");
-                  RunUtils.generateReportsAsHDF5(sedml, solverHandler.nonSpatialResults, outDirForCurrentSedml, sedmlLocation);	
-	
-	                if (!containsExtension(outputDir, "h5")) {
+
+                    Hdf5FileWrapper hdf5FileWrapper = new Hdf5FileWrapper();
+                    hdf5FileWrapper.combineArchiveLocation = outDirForCurrentSedml.getName();
+                    hdf5FileWrapper.uri = outDirForCurrentSedml.getName();
+
+                    List<Hdf5DatasetWrapper> nonspatialDatasets = RunUtils.prepareNonspatialHdf5(sedml, solverHandler.nonSpatialResults, sedmlLocation);
+                    List<Hdf5DatasetWrapper> spatialDatasets = RunUtils.prepareSpatialHdf5(sedml, solverHandler.spatialResults, sedmlLocation);
+                    hdf5FileWrapper.datasetWrappers.addAll(nonspatialDatasets);
+                    hdf5FileWrapper.datasetWrappers.addAll(spatialDatasets);
+
+                    Hdf5Writer.writeHdf5(hdf5FileWrapper, outDirForCurrentSedml);
+
+                    if (!containsExtension(outputDir, "h5")) {
 	                    anySedmlDocumentHasFailed = true;
 	                    somethingFailed = true;
 	                    throw new RuntimeException("Failed to generate the HDF5 output file. ");

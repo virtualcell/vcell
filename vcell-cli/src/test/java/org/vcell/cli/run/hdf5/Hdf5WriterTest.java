@@ -6,6 +6,7 @@ import ncsa.hdf.hdf5lib.exceptions.HDF5Exception;
 import org.jlibsedml.Variable;
 import cbit.vcell.resource.NativeLib;
 import org.junit.Test;
+import static org.vcell.cli.run.hdf5.Hdf5DataSourceNonspatial.Hdf5JobData;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -49,32 +50,36 @@ public class Hdf5WriterTest {
 
         Hdf5DatasetWrapper plotDatasetWrapper = new Hdf5DatasetWrapper();
         plotDatasetWrapper.datasetMetadata = plotMetadata;
+        Hdf5DataSourceNonspatial plotDataSourceNonspatial = new Hdf5DataSourceNonspatial();
+        plotDatasetWrapper.dataSource = plotDataSourceNonspatial;
         Hdf5JobData plotJob = new Hdf5JobData();
         plotJob.varData.put(t, row_t);
         plotJob.varData.put(s0, row_S0_0);
         plotJob.varData.put(s1, row_S1);
-        plotDatasetWrapper.jobData.add(plotJob);
+        plotDataSourceNonspatial.jobData.add(plotJob);
 
 
         Hdf5DatasetWrapper reportDatasetWrapper = new Hdf5DatasetWrapper();
         reportDatasetWrapper.datasetMetadata = reportMetadata;
+        Hdf5DataSourceNonspatial reportDataSourceNonspatial = new Hdf5DataSourceNonspatial();
+        plotDatasetWrapper.dataSource = reportDataSourceNonspatial;
         Hdf5JobData reportJob_0 = new Hdf5JobData();
         reportJob_0.varData.put(t, row_t);
         reportJob_0.varData.put(s0, row_S0_0);
         reportJob_0.varData.put(s1, row_S1);
-        reportDatasetWrapper.jobData.add(reportJob_0);
+        reportDataSourceNonspatial.jobData.add(reportJob_0);
 
         Hdf5JobData reportJob_1 = new Hdf5JobData();
         reportJob_1.varData.put(t, row_t);
         reportJob_1.varData.put(s0, row_S0_1);
         reportJob_1.varData.put(s1, row_S1);
-        reportDatasetWrapper.jobData.add(reportJob_1);
+        reportDataSourceNonspatial.jobData.add(reportJob_1);
 
         Hdf5JobData reportJob_2 = new Hdf5JobData();
         reportJob_2.varData.put(t, row_t);
         reportJob_2.varData.put(s0, row_S0_2);
         reportJob_2.varData.put(s1, row_S1);
-        reportDatasetWrapper.jobData.add(reportJob_2);
+        reportDataSourceNonspatial.jobData.add(reportJob_2);
 
         Hdf5FileWrapper hdf5FileWrapper = new Hdf5FileWrapper();
         hdf5FileWrapper.datasetWrappers.add(plotDatasetWrapper);
@@ -91,7 +96,7 @@ public class Hdf5WriterTest {
         NativeLib.HDF5.load();
         Hdf5FileWrapper exampleHdf5FileWrapper = createExampleData();
         File dir = Files.createTempDir();
-        Hdf5Writer.writeNonspatialHdf5(exampleHdf5FileWrapper, dir);
+        Hdf5Writer.writeHdf5(exampleHdf5FileWrapper, dir);
     }
 
 }

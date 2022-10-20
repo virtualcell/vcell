@@ -124,13 +124,13 @@ public Token next( ) {
 		throw new NoSuchElementException();
 	}
 	Token token = tokenLinkedList.removeFirst();	
-	if (lg.isDebugEnabled()) {
-		//show all if logging "debug". Show only tokens with comments if logging "trace"
+	if (lg.isTraceEnabled()) {
+		//show all if logging "debug". Show only tokens with comments if logging "info"
 		Token.CommentState cs = token.getCommentInfo();
 		String msg = token.toString() + " comments " + cs; 
 		switch (cs) {
 		case NONE:
-			lg.debug(msg);
+			lg.trace(msg);
 			break;
 		case BEFORE:
 			msg += ": " + token.getBeforeComment();

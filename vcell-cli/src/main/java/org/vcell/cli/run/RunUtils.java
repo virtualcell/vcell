@@ -4,14 +4,12 @@ import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.export.server.*;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.math.VariableType;
-import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.SimpleSymbolTable;
 import cbit.vcell.parser.SymbolTable;
 import cbit.vcell.simdata.*;
 import cbit.vcell.solver.AnnotatedFunction;
-import cbit.vcell.solver.OutputFunctionContext;
 import cbit.vcell.solver.SimulationJob;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.VCSimulationIdentifier;
@@ -37,7 +35,6 @@ import org.apache.logging.log4j.Logger;
 import java.io.*;
 import java.nio.file.Paths;
 import java.util.*;
-import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -320,6 +317,9 @@ public class RunUtils {
                                     if(outputStartTime > 0) {
                                         for(TaskJob taskJob : taskJobs) {
                                             ODESolverResultSet results = resultsHash.get(taskJob);
+                                            if (results==null){
+                                                continue;
+                                            }
                                             int column = results.findColumn(sbmlVarId);
                                             double[] tmpData = results.extractColumn(column);
                                             double[] data = new double[outputNumberOfPoints+1];
@@ -339,6 +339,9 @@ public class RunUtils {
                                     } else {
                                         for(TaskJob taskJob : taskJobs) {
                                             ODESolverResultSet results = resultsHash.get(taskJob);
+                                            if (results==null){
+                                                continue;
+                                            }
                                             int column = results.findColumn(sbmlVarId);
                                             double[] data = results.extractColumn(column);
                                             mxlen = Integer.max(mxlen, data.length);
@@ -377,6 +380,9 @@ public class RunUtils {
                                         // key format in resultsHash is taskId + "_" + simJobId
                                         // ex: task_0_0_0 where the last 0 is the simJobId (always 0 when no parameter scan)
                                         ODESolverResultSet results = resultsHash.get(taskJob);	// hence the added "_0"
+                                        if (results==null){
+                                            continue;
+                                        }
                                         int column = results.findColumn(sbmlVarId);
                                         double[] tmpData = results.extractColumn(column);
                                         double[] data = new double[outputNumberOfPoints+1];
@@ -390,6 +396,9 @@ public class RunUtils {
 
                                     } else {
                                         ODESolverResultSet results = resultsHash.get(taskJob);
+                                        if (results==null){
+                                            continue;
+                                        }
                                         int column = results.findColumn(sbmlVarId);
                                         double[] data = results.extractColumn(column);
                                         mxlen = Integer.max(mxlen, data.length);
@@ -411,7 +420,8 @@ public class RunUtils {
                         expr.bindExpression(st);
 
                         Variable firstVar = vars.get(0);
-                        int overridesCount = values.get(firstVar).size();
+                        ArrayList<double[]> v = values.get(firstVar);
+                        int overridesCount = v!=null ? v.size() : 0;
                         for(int k=0; k < overridesCount; k++) {
 
                             if(k>0 && dataset.getId().contains("time_")) {
@@ -490,13 +500,10 @@ public class RunUtils {
         return reportsHash;
     }
 
-    public static void generateReportsAsHDF5(SedML sedml, Map<TaskJob, ODESolverResultSet> resultsHash, File outDirForCurrentSedml, String sedmlLocation) throws DataAccessException, IOException, HDF5Exception, ExpressionException {
-        Hdf5FileWrapper hdf5FileWrapper = new Hdf5FileWrapper();
-        hdf5FileWrapper.combineArchiveLocation = outDirForCurrentSedml.getName();
-        hdf5FileWrapper.uri = outDirForCurrentSedml.getName();
+    public static List<Hdf5DatasetWrapper> prepareNonspatialHdf5(SedML sedml, Map<TaskJob, ODESolverResultSet> nonspatialResultsHash, String sedmlLocation) throws DataAccessException, IOException, HDF5Exception, ExpressionException {
 
+        List<Hdf5DatasetWrapper> datasetWrappers = new ArrayList<>();
         // finally, the real work
-        HashMap<String, File> reportsHash = new HashMap<>();
         List<Output> outputs = sedml.getOutputs();
         for (Output out : outputs) {
             if (!(out instanceof Report)) {
@@ -569,12 +576,15 @@ public class RunUtils {
                         String target = var.getTarget();
                         sbmlVarId = variable2IDResolver.getIdFromXPathIdentifer(target);
                     }
-
+                    boolean bFoundTaskInNonspatial = nonspatialResultsHash.keySet().stream().anyMatch(taskJob -> taskJob.getTaskId().equals(task.getId()));
+                    if (!bFoundTaskInNonspatial){
+                        break;
+                    }
                     if (task instanceof RepeatedTask) {
                         // ==================================================================================
 //                                assert actualTask != null;
                         ArrayList<TaskJob> taskJobs = new ArrayList<>();
-                        for (Map.Entry<TaskJob, ODESolverResultSet> entry : resultsHash.entrySet()) {
+                        for (Map.Entry<TaskJob, ODESolverResultSet> entry : nonspatialResultsHash.entrySet()) {
                             TaskJob taskJob = entry.getKey();
                             ODESolverResultSet value = entry.getValue();
                             if (value != null && taskJob.getTaskId().equals(task.getId())) {
@@ -588,7 +598,7 @@ public class RunUtils {
                             ArrayList<double[]> variablesList = new ArrayList<>();
                             if (outputStartTime > 0) {
                                 for (TaskJob taskJob : taskJobs) {
-                                    ODESolverResultSet results = resultsHash.get(taskJob);
+                                    ODESolverResultSet results = nonspatialResultsHash.get(taskJob);
                                     int column = results.findColumn(sbmlVarId);
                                     double[] tmpData = results.extractColumn(column);
                                     double[] data = new double[outputNumberOfPoints + 1];
@@ -607,7 +617,7 @@ public class RunUtils {
                                 }
                             } else {
                                 for (TaskJob taskJob : taskJobs) {
-                                    ODESolverResultSet results = resultsHash.get(taskJob);
+                                    ODESolverResultSet results = nonspatialResultsHash.get(taskJob);
                                     int column = results.findColumn(sbmlVarId);
                                     double[] data = results.extractColumn(column);
                                     mxlen = Integer.max(mxlen, data.length);
@@ -626,7 +636,7 @@ public class RunUtils {
                         }
                     } else {
                         TaskJob taskJob = null;
-                        for (Map.Entry<TaskJob, ODESolverResultSet> entry : resultsHash.entrySet()) {
+                        for (Map.Entry<TaskJob, ODESolverResultSet> entry : nonspatialResultsHash.entrySet()) {
                             taskJob = entry.getKey();
                             ODESolverResultSet value = entry.getValue();
                             if(value != null && taskJob.getTaskId().equals(task.getId())) {
@@ -644,7 +654,7 @@ public class RunUtils {
 
                                 // key format in resultsHash is taskId + "_" + simJobId
                                 // ex: task_0_0_0 where the last 0 is the simJobId (always 0 when no parameter scan)
-                                ODESolverResultSet results = resultsHash.get(taskJob);    // hence the added "_0"
+                                ODESolverResultSet results = nonspatialResultsHash.get(taskJob);    // hence the added "_0"
                                 int column = results.findColumn(sbmlVarId);
                                 double[] tmpData = results.extractColumn(column);
                                 double[] data = new double[outputNumberOfPoints + 1];
@@ -655,7 +665,7 @@ public class RunUtils {
                                 variablesList.add(data);        // we only have one double[]
                                 values.put(var, variablesList);
                             } else {
-                                ODESolverResultSet results = resultsHash.get(taskJob);
+                                ODESolverResultSet results = nonspatialResultsHash.get(taskJob);
                                 int column = results.findColumn(sbmlVarId);
                                 double[] data = results.extractColumn(column);
                                 mxlen = Integer.max(mxlen, data.length);
@@ -678,12 +688,16 @@ public class RunUtils {
             hdf5DatasetWrapper.datasetMetadata.uri = sedmlLocation;
 
             Map<Variable, List<double[]>> firstValues = dataSetValues.entrySet().iterator().next().getValue();
+            if (firstValues.size()==0){
+                continue;
+            }
             List<double[]> valuesForFirstVar = firstValues.entrySet().iterator().next().getValue();
             int numJobs = valuesForFirstVar.size();
 
+            Hdf5DataSourceNonspatial dataSourceNonspatial = new Hdf5DataSourceNonspatial();
+            hdf5DatasetWrapper.dataSource = dataSourceNonspatial;
             for (int i=0; i<numJobs; i++) {
-                Hdf5JobData jobData = new Hdf5JobData();
-                hdf5DatasetWrapper.jobData.add(jobData);
+                dataSourceNonspatial.jobData.add(new Hdf5DataSourceNonspatial.Hdf5JobData());
             }
 
             for (Map.Entry<DataSet, Map<Variable, List<double[]>>> dataSetEntry : dataSetValues.entrySet()){
@@ -695,7 +709,7 @@ public class RunUtils {
                     List<double[]> dataArrays = varEntry.getValue();
                     for (int jobIndex=0; jobIndex<numJobs; jobIndex++){
                         double[] data = dataArrays.get(jobIndex);
-                        hdf5DatasetWrapper.jobData.get(jobIndex).varData.put(var,data);
+                        dataSourceNonspatial.jobData.get(jobIndex).varData.put(var,data);
                     }
                 }
                 hdf5DatasetWrapper.datasetMetadata.sedmlDataSetDataTypes.add("float64");
@@ -704,10 +718,158 @@ public class RunUtils {
                 hdf5DatasetWrapper.datasetMetadata.sedmlDataSetNames.add(dataSet.getName());
             }
             hdf5DatasetWrapper.datasetMetadata.sedmlDataSetShapes = null;
-            hdf5FileWrapper.datasetWrappers.add(hdf5DatasetWrapper);
+            datasetWrappers.add(hdf5DatasetWrapper);
         } // outputs/reports
+        return datasetWrappers;
+    }
 
-        Hdf5Writer.writeNonspatialHdf5(hdf5FileWrapper, outDirForCurrentSedml);
+
+    public static List<Hdf5DatasetWrapper> prepareSpatialHdf5(SedML sedml, Map<TaskJob, File> spatialResultsHash, String sedmlLocation) throws DataAccessException, IOException, HDF5Exception, ExpressionException {
+
+        List<Hdf5DatasetWrapper> datasetWrappers = new ArrayList<>();
+        // finally, the real work
+        List<Output> outputs = sedml.getOutputs();
+        for (Output out : outputs) {
+            if (!(out instanceof Report)) {
+                logger.info("Ignoring unsupported output `" + out.getId() + "` during HDF5 generation.");
+                continue;
+            }
+            Report report = (Report)out;
+            boolean bNotSpatial = false;
+            Hdf5DataSourceSpatial hdf5DataSourceSpatial = new Hdf5DataSourceSpatial();
+
+            logger.info("Generating report `" + out.getId() + "`.");
+            // we go through each entry (dataset) in the list of datasets
+            // for each dataset, we use the data reference to obtain the data generator
+            // ve get the list of variables associated with the data reference
+            //   each variable has an id (which is the data reference above, the task and the sbml symbol urn
+            //   for each variable we recover the task, from the task we get the sbml model
+            //   we search the sbml model to find the vcell variable name associated with the urn
+            List<DataSet> datasets = report.getListOfDataSets();
+            for (DataSet dataset : datasets) {
+
+                DataGenerator datagen = sedml.getDataGeneratorWithId(dataset.getDataReference());
+                assert datagen != null;
+                ArrayList<Variable> vars = new ArrayList<>(datagen.getListOfVariables());
+                for (Variable var : vars) {
+                    AbstractTask task = sedml.getTaskWithId(var.getReference());
+
+                    Simulation sedmlSim = null;
+                    Task actualTask = null;
+                    if (task instanceof RepeatedTask) {
+                        RepeatedTask rt = (RepeatedTask) task;
+                        // We assume that we can never have a sequential repeated task at this point, we check for that in SEDMLImporter
+//                				if (!rt.getResetModel() || rt.getSubTasks().size() != 1) {
+//                					logger.error("sequential RepeatedTask not yet supported, task "+SEDMLUtil.getName(selectedTask)+" is being skipped");
+//                					continue;
+//                				}
+                        AbstractTask referredTask;
+                        // find the actual Task and extract the simulation
+                        do {
+                            SubTask st = rt.getSubTasks().entrySet().iterator().next().getValue(); // single subtask
+                            String taskId = st.getTaskId();
+                            referredTask = sedml.getTaskWithId(taskId);
+                            if (referredTask instanceof RepeatedTask) rt = (RepeatedTask) referredTask;
+                        } while (referredTask instanceof RepeatedTask);
+                        actualTask = (Task) referredTask;
+                        sedmlSim = sedml.getSimulation(actualTask.getSimulationReference());
+                    } else {
+                        actualTask = (Task) task;
+                        sedmlSim = sedml.getSimulation(task.getSimulationReference());
+                    }
+
+                    IXPathToVariableIDResolver variable2IDResolver = new SBMLSupport();
+                    // must get variable ID from SBML model
+                    String sbmlVarId = "";
+                    if (var.getSymbol() != null) {
+                        // it is a predefined symbol
+                        sbmlVarId = var.getSymbol().name();
+                        // translate SBML official symbols
+                        // TIME is t, etc.
+                        if ("TIME".equals(sbmlVarId)) {
+                            // this is VCell reserved symbold for time
+                            sbmlVarId = "t";
+                            continue;
+                        }
+                        // TODO
+                        // check spec for other symbols
+                    } else {
+                        // it is an XPATH target in model
+                        String target = var.getTarget();
+                        sbmlVarId = variable2IDResolver.getIdFromXPathIdentifer(target);
+                    }
+                    boolean bFoundTaskInSpatial = spatialResultsHash.keySet().stream().anyMatch(taskJob -> taskJob.getTaskId().equals(task.getId()));
+                    if (!bFoundTaskInSpatial){
+                        bNotSpatial = true;
+                        break;
+                    }
+
+                    if (task instanceof RepeatedTask) {
+                        ArrayList<TaskJob> taskJobs = new ArrayList<>();
+                        for (Map.Entry<TaskJob, File> entry : spatialResultsHash.entrySet()) {
+                            TaskJob taskJob = entry.getKey();
+                            File value = entry.getValue();
+                            if (value != null && taskJob.getTaskId().equals(task.getId())) {
+                                taskJobs.add(taskJob);
+                            }
+                        }
+                        if (sedmlSim instanceof UniformTimeCourse) {
+                            int outputNumberOfPoints = ((UniformTimeCourse) sedmlSim).getNumberOfPoints();
+                            double outputStartTime = ((UniformTimeCourse) sedmlSim).getOutputStartTime();
+                            int jobIndex=0;
+                            for (TaskJob taskJob : taskJobs) {
+                                File spatialH5File = spatialResultsHash.get(taskJob);
+                                if (spatialH5File!=null) {
+                                    Hdf5DataSourceSpatialVarDataItem job = new Hdf5DataSourceSpatialVarDataItem(
+                                            report, dataset, var, jobIndex, spatialH5File, outputStartTime, outputNumberOfPoints);
+                                    hdf5DataSourceSpatial.varDataItems.add(job);
+                                }
+                                jobIndex++;
+                            }
+                        } else {
+                            logger.error("only uniform time course simulations are supported");
+                        }
+                    } else {
+                        TaskJob taskJob = new TaskJob(actualTask.getId(), 0);
+                        if (sedmlSim instanceof UniformTimeCourse) {
+                            // we want to keep the last outputNumberOfPoints only
+                            int outputNumberOfPoints = ((UniformTimeCourse) sedmlSim).getNumberOfPoints();
+                            double outputStartTime = ((UniformTimeCourse) sedmlSim).getOutputStartTime();
+                            File spatialH5File = spatialResultsHash.get(taskJob);
+                            if (spatialH5File!=null) {
+                                Hdf5DataSourceSpatialVarDataItem job = new Hdf5DataSourceSpatialVarDataItem(
+                                        report, dataset, var, 0, spatialH5File, outputStartTime, outputNumberOfPoints);
+                                hdf5DataSourceSpatial.varDataItems.add(job);
+                            }
+                        } else {
+                            logger.error("only uniform time course simulations are supported");
+                        }
+                    }
+                }
+            } // end of dataset
+            if (bNotSpatial || hdf5DataSourceSpatial.varDataItems.size()==0){
+                continue;
+            }
+
+            Hdf5DatasetWrapper hdf5DatasetWrapper = new Hdf5DatasetWrapper();
+            hdf5DatasetWrapper.dataSource = hdf5DataSourceSpatial;
+            hdf5DatasetWrapper.datasetMetadata._type = report.getKind();
+            hdf5DatasetWrapper.datasetMetadata.sedmlId = report.getId();
+            hdf5DatasetWrapper.datasetMetadata.sedmlName = report.getName();
+            hdf5DatasetWrapper.datasetMetadata.uri = sedmlLocation;
+
+            hdf5DatasetWrapper.dataSource = hdf5DataSourceSpatial;
+            for (Hdf5DataSourceSpatialVarDataItem job : hdf5DataSourceSpatial.varDataItems){
+                DataSet dataSet = job.sedmlDataset;
+                hdf5DatasetWrapper.datasetMetadata.sedmlDataSetDataTypes.add("float64");
+                hdf5DatasetWrapper.datasetMetadata.sedmlDataSetIds.add(dataSet.getId());
+                hdf5DatasetWrapper.datasetMetadata.sedmlDataSetLabels.add(dataSet.getLabel());
+                hdf5DatasetWrapper.datasetMetadata.sedmlDataSetNames.add(dataSet.getName());
+            }
+            hdf5DatasetWrapper.datasetMetadata.sedmlDataSetShapes = null;
+            datasetWrappers.add(hdf5DatasetWrapper);
+        } // outputs/reports
+        return datasetWrappers;
     }
 
 
