@@ -33,6 +33,11 @@ jobs:
         with:
           name: docker-image
           path: /tmp/image.tar
+          
+      # Tmate just in case
+      - name: Setup tmate session 3
+        uses: mxschmitt/action-tmate@v3
+        if: ${{ failure() }}
   conversion:
     runs-on: ubuntu-latest
     needs: build
@@ -86,9 +91,7 @@ jobs:
         
         # Create tar of converted files
       - name: Compress Converted Files
-        run: cd $GITHUB_WORKSPACE/published/biomodel/omex/sbml/output && tar cvf vcmls.tar --wildcards "*.vcml"     
-        
-      
+        run: cd $GITHUB_WORKSPACE/published/biomodel/omex/sbml/output && sudo tar cf vcmls.tar --wildcards *.vcml    
         
         # Upload Converted Files
       - name: Upload Converted Files
@@ -103,6 +106,11 @@ jobs:
         with:
           name: conversion_results.txt
           path: /tmp
+        
+      # Tmate just in case
+      - name: Setup tmate session 3
+        uses: mxschmitt/action-tmate@v3
+        if: ${{ failure() }}
   round-trip:
     runs-on: ubuntu-latest
     needs: conversion
@@ -148,6 +156,11 @@ jobs:
         with:
           name: round-trip_results.txt
           path: /tmp
+          
+      # Tmate just in case
+      - name: Setup tmate session 3
+        uses: mxschmitt/action-tmate@v3
+        if: ${{ failure() }}
         
   execute:
     runs-on: ubuntu-latest
