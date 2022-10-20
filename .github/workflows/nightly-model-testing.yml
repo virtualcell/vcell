@@ -83,14 +83,14 @@ jobs:
         
         # Create tar of converted files
       - name: Compress Converted Files
-        run: pwd && ls && tar cvf vcmls.tar --wildcards "*.vcml"
+        run: cd $GITHUB_WORKSPACE/published/biomodel/omex/sbml/output && tar cvf vcmls.tar --wildcards "*.vcml"
         
         # Upload Converted Files
       - name: Upload Converted Files
         uses: actions/upload-artifact@v3
         with:
           name: vcmls.tar
-          path: $GITHUB_WORKSPACE/published/biomodel/vcml/output
+          path: cd $GITHUB_WORKSPACE/published/biomodel/omex/sbml/output
         
         # Upload Results
       - name: Upload results of round-trip
