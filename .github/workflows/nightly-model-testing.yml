@@ -81,12 +81,14 @@ jobs:
           echo "simulations unbound identifier $(cat jobLog.txt | grep TION,FAIL | grep -v supp | grep unbound | wc -l)" >> /tmp/conversion_results.txt && \
           echo "simulations other failure $(cat jobLog.txt | grep TION,FAIL | grep -v supp | grep -v Over | grep -v unbound | wc -l)" >> /tmp/conversion_results.txt
         
+      - name: Setup tmate session
+        uses: mxschmitt/action-tmate@v3
+        
         # Create tar of converted files
       - name: Compress Converted Files
         run: cd $GITHUB_WORKSPACE/published/biomodel/omex/sbml/output && tar cvf vcmls.tar --wildcards "*.vcml"     
         
-      - name: Setup tmate session
-        uses: mxschmitt/action-tmate@v3
+      
         
         # Upload Converted Files
       - name: Upload Converted Files
