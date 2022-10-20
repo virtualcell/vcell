@@ -89,8 +89,7 @@ jobs:
         uses: a7ul/tar-action@v1.1.0
         with:
           command: c
-          cwd: $GITHUB_WORKSPACE/published/biomodel/omex/sbml/output
-          id: compress
+          cwd: published/biomodel/omex/sbml/output
           files: |
             ./
           outPath: $GITHUB_WORKSPACE/published/biomodel/omex/sbml/output/vcmls.tar
