@@ -3,6 +3,7 @@ package org.vcell.cli.run;
 import cbit.util.xml.VCLogger;
 import cbit.util.xml.VCLoggerException;
 import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.math.FunctionColumnDescription;
 import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
@@ -402,6 +403,21 @@ public class SolverHandler {
                     	String str = "Unexpected solver: " + kisao + " " + solver + ". ";
                         throw new RuntimeException(str);
                     }
+                	
+                	if (odeSolverResultSet != null) {
+                		// add output functions, if any, to result set
+                		List <AnnotatedFunction> funcs = so.getOutputFunctionContext().getOutputFunctionsList();
+                		if (funcs != null) {
+							for (AnnotatedFunction function : funcs) {
+								FunctionColumnDescription fcd = null;
+								String funcName = function.getName();
+								Expression funcExp = function.getExpression();
+								fcd = new FunctionColumnDescription(funcExp, funcName, null, function.getDisplayName(), true);
+								odeSolverResultSet.checkFunctionValidity(fcd);
+								odeSolverResultSet.addFunctionColumn(fcd);
+							} 
+						}
+                	}
                    
                     if (solver.getSolverStatus().getStatus() == SolverStatus.SOLVER_FINISHED) {
                     	
