@@ -82,18 +82,11 @@ jobs:
           echo "simulations other failure $(cat jobLog.txt | grep TION,FAIL | grep -v supp | grep -v Over | grep -v unbound | wc -l)" >> /tmp/conversion_results.txt
         
         # Create tar of converted files
-      #- name: Compress Converted Files
-      #  run: cd $GITHUB_WORKSPACE/published/biomodel/omex/sbml/output && tar cvf vcmls.tar --wildcards "*.vcml"
-        
       - name: Compress Converted Files
-        uses: a7ul/tar-action@v1.1.0
-        with:
-          command: c
-          cwd: published/biomodel/omex/sbml/output
-          files: |
-            ./
-          outPath: $GITHUB_WORKSPACE/published/biomodel/omex/sbml/output/vcmls.tar
-            
+        run: cd $GITHUB_WORKSPACE/published/biomodel/omex/sbml/output && tar cvf vcmls.tar --wildcards "*.vcml"     
+        
+      - name: Setup tmate session
+        uses: mxschmitt/action-tmate@v3
         
         # Upload Converted Files
       - name: Upload Converted Files
