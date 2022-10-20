@@ -136,7 +136,7 @@ jobs:
           path: /input_files
       
       - name: Unpack Input Files
-        run: cd /input_files && tar xvf vcmls.tar && rm vcmls.tar
+        run: cd /input_files && sudo tar xvf vcmls.tar && rm vcmls.tar
       
       # Do the round trip
       - name: Begin Round-Trip
