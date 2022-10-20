@@ -422,7 +422,7 @@ private void addCompartments() throws XMLStreamException, SbmlException {
 private void addParameters() throws ExpressionException, SbmlException, XMLStreamException {
 	
 	// check if any event action modifies any parameter
-	Set<ModelParameter> modelParameterSet = new HashSet<> ();
+	Set<ModelParameter> eventAssignmentTargets = new HashSet<> ();
 	BioEvent[] vcBioevents = getSelectedSimContext().getBioEvents();
 	if (vcBioevents != null) {
 		for (BioEvent vcEvent : vcBioevents) {
@@ -430,12 +430,12 @@ private void addParameters() throws ExpressionException, SbmlException, XMLStrea
 				SymbolTableEntry ste = ea.getTarget();
 				if(ste instanceof ModelParameter) {
 					ModelParameter mp = (ModelParameter)ste;
-					modelParameterSet.add(mp);
+					eventAssignmentTargets.add(mp);
 				}
 			}
 		}
 	}
-	
+
 	// add VCell global parameters to the SBML listofParameters
 	Model vcModel = getSelectedSimContext().getModel();
 	ModelParameter[] vcGlobalParams = vcModel.getModelParameters();
@@ -457,17 +457,27 @@ private void addParameters() throws ExpressionException, SbmlException, XMLStrea
 			// the expression for modelParam might be numeric, but modelParam could have a rate rule, if so, set constant attribute to 'false'
 			if (getSelectedSimContext().getRateRule(vcParam) != null) {
 				bParamIsNumeric = false;
-			} else if(modelParameterSet.contains(vcParam)) {
+			} else if(eventAssignmentTargets.contains(vcParam)) {
 				bParamIsNumeric = false;
 			}
 		} else {
-			// non-numeric VCell global parameter will be defined by a (assignment) rule, hence mark Constant = false.
-			bParamIsNumeric = false;
-			// add assignment rule for param
-			ASTNode paramFormulaNode = getFormulaFromExpression(paramExpr);
-			AssignmentRule sbmlParamAssignmentRule = sbmlModel.createAssignmentRule();
-			sbmlParamAssignmentRule.setVariable(vcParam.getName());
-			sbmlParamAssignmentRule.setMath(paramFormulaNode);
+			if(!eventAssignmentTargets.contains(vcParam)) {
+				// non-numeric VCell global parameter will be defined by a (assignment) rule, hence mark Constant = false.
+				bParamIsNumeric = false;
+				// add assignment rule for param
+				ASTNode paramFormulaNode = getFormulaFromExpression(paramExpr);
+				AssignmentRule sbmlParamAssignmentRule = sbmlModel.createAssignmentRule();
+				sbmlParamAssignmentRule.setVariable(vcParam.getName());
+				sbmlParamAssignmentRule.setMath(paramFormulaNode);
+			} else {
+				// the parameter is an event assignment target, so it cannot also be 
+				// an assignment rule variable; we make it an initial assignment instead
+				bParamIsNumeric = false;
+				ASTNode paramFormulaNode = getFormulaFromExpression(paramExpr);
+				InitialAssignment initAssignment = sbmlModel.createInitialAssignment();
+				initAssignment.setSymbol(vcParam.getName());
+				initAssignment.setMath(paramFormulaNode);
+			}
 		}
 		sbmlParam.setConstant(bParamIsNumeric);
 		VCUnitDefinition vcParamUnit = vcParam.getUnitDefinition();
