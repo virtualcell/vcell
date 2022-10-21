@@ -95,14 +95,14 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: vcmls.tar
-          path: $GITHUB_WORKSPACE/published/biomodel/omex/sbml/output
+          path: ~/work/vcell/vcell/published/biomodel/omex/sbml/output # Action only has basic ~ based expansion, env variables dont appear to work
         
         # Upload Results
       - name: Upload results of round-trip
         uses: actions/upload-artifact@v3
         with:
           name: conversion_results.txt
-          path: $HOME
+          path: ~/
         
       # Tmate just in case
       - name: Setup tmate session 3
