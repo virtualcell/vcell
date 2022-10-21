@@ -64,9 +64,9 @@ public class Hdf5WriterTest {
         Hdf5DatasetWrapper reportDatasetWrapper = new Hdf5DatasetWrapper();
         reportDatasetWrapper.datasetMetadata = reportMetadata;
         Hdf5DataSourceNonspatial reportDataSourceNonspatial = new Hdf5DataSourceNonspatial();
-        plotDataSourceNonspatial.scanBounds = new int[] { 3 };
-        plotDataSourceNonspatial.scanParameterNames = new String[] { "k1" };
-        plotDatasetWrapper.dataSource = reportDataSourceNonspatial;
+        reportDataSourceNonspatial.scanBounds = new int[] { 3 };
+        reportDataSourceNonspatial.scanParameterNames = new String[] { "k1" };
+        reportDatasetWrapper.dataSource = reportDataSourceNonspatial;
         Hdf5JobData reportJob_0 = new Hdf5JobData();
         reportJob_0.varData.put(t, row_t);
         reportJob_0.varData.put(s0, row_S0_0);
