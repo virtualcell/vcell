@@ -28,13 +28,13 @@ public class Hdf5DataSourceSpatialVarDataItem {
     public int[] spaceTimeDimensions;
     public Map<String, String> varToDatasetPathMap;
 
-    public Object getSpatialData() {
+    public double[] getSpatialData() {
         try (io.jhdf.HdfFile jhdfFile = new io.jhdf.HdfFile(Paths.get(hdf5File.toURI()))) {
             Dataset dataset = jhdfFile.getDatasetByPath(varToDatasetPathMap.get(sedmlVariable.getName()));
             if (dataset==null){
                 throw new RuntimeException("could not find data for variable "+sedmlVariable.getName());
             }
-            return dataset.getData();
+            return (double[])dataset.getDataFlat();
         }
     }
 

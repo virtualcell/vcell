@@ -8,17 +8,14 @@ import ncsa.hdf.hdf5lib.exceptions.HDF5Exception;
 import org.jlibsedml.Variable;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class Hdf5Writer {
 
     public static void writeHdf5(Hdf5FileWrapper hdf5FileWrapper, File outDirForCurrentSedml) throws HDF5Exception {
         NativeLib.HDF5.load();
-        File hdf5TempFile = new File(outDirForCurrentSedml, "report.h5");
+        File hdf5TempFile = new File(outDirForCurrentSedml, "reports.h5");
         System.out.println("writing to file "+hdf5TempFile.getAbsolutePath());
         int hdf5FileID = H5.H5Fcreate(hdf5TempFile.getAbsolutePath(), HDF5Constants.H5F_ACC_TRUNC,HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT);
         int jobGroupID = Hdf5Utils.createGroup(hdf5FileID, hdf5FileWrapper.combineArchiveLocation);
@@ -36,34 +33,36 @@ public class Hdf5Writer {
                 int hdf5DatasetID = -1;
                 if (datasetWrapper.dataSource instanceof Hdf5DataSourceNonspatial) {
                     Hdf5DataSourceNonspatial dataSourceNonspatial = (Hdf5DataSourceNonspatial) datasetWrapper.dataSource;
-                    int numJobs = dataSourceNonspatial.jobData.size();
                     Map<Variable, double[]> varDataMap = dataSourceNonspatial.jobData.get(0).varData;
                     List<Variable> vars = new ArrayList(varDataMap.keySet());
-                    int numVariablesPerJob = varDataMap.keySet().size();
-                    int numTimePoints = varDataMap.get(vars.get(0)).length;
+                    long numVariablesPerJob = varDataMap.keySet().size();
+                    long numTimePoints = varDataMap.get(vars.get(0)).length;
 
-                    final long[] dataDimensions;
-                    final int totalDataSize;
-                    if (numJobs == 1) {
-                        dataDimensions = new long[]{numVariablesPerJob, numTimePoints};
-                        totalDataSize = numTimePoints * numVariablesPerJob;
-                    } else {
-                        dataDimensions = new long[]{numVariablesPerJob, numTimePoints, numJobs};
-                        totalDataSize = numTimePoints * numVariablesPerJob * numJobs;
+                    List<Long> dataDimensionList = new ArrayList<>();
+                    int numJobs = 1;
+                    for (int scanBound : dataSourceNonspatial.scanBounds){
+                        dataDimensionList.add((long)scanBound+1);
+                        numJobs *= (scanBound+1l);
+                    }
+                    dataDimensionList.add(numVariablesPerJob);
+                    dataDimensionList.add(numTimePoints);
+                    long[] dataDimensions = dataDimensionList.stream().mapToLong(l -> l).toArray();
+                    int totalDataSize = 1;
+                    for (long dim : dataDimensions){
+                        totalDataSize *= dim;
                     }
 
                     double[] bigDataBuffer = new double[totalDataSize];
-                    int jobIndex = 0;
+                    int bufferOffset = 0;
                     for (Hdf5DataSourceNonspatial.Hdf5JobData jobData : dataSourceNonspatial.jobData) {
                         for (int varIndex = 0; varIndex < vars.size(); varIndex++) {
                             Variable var = vars.get(varIndex);
                             double[] dataArray = jobData.varData.get(var);
                             for (int dataIndex = 0; dataIndex < dataArray.length; dataIndex++) {
-                                double value = dataArray[dataIndex];
-                                bigDataBuffer[varIndex * numTimePoints * numJobs + dataIndex * numJobs + jobIndex] = value;
+                                System.arraycopy(dataArray,0, bigDataBuffer, bufferOffset, dataArray.length);
                             }
+                            bufferOffset += numTimePoints;
                         }
-                        jobIndex++;
                     }
                     String datasetPath = "/"+hdf5FileWrapper.combineArchiveLocation+"/"+datasetWrapper.datasetMetadata.sedmlId;
                     hdf5DataspaceID = H5.H5Screate_simple(dataDimensions.length, dataDimensions, null);
@@ -75,41 +74,62 @@ public class Hdf5Writer {
                     Hdf5DataSourceSpatialVarDataItem firstVarDataItem = dataSourceSpatial.varDataItems.get(0);
                     int[] spaceTimeDimensions = firstVarDataItem.spaceTimeDimensions;
                     int[] spatialDimensions = Arrays.copyOf(spaceTimeDimensions, spaceTimeDimensions.length-1);
-                    long numJobs = dataSourceSpatial.varDataItems.stream().map(varDataItem -> varDataItem.jobIndex).collect(Collectors.toSet()).size();
-                    long numVars = dataSourceSpatial.varDataItems.stream().map(varDataItem -> varDataItem.sedmlVariable.getName()).collect(Collectors.toSet()).size();
+                    int numSpatialPoints = Arrays.stream(spatialDimensions).sum();
+                    //long numJobs = dataSourceSpatial.varDataItems.stream().map(varDataItem -> varDataItem.jobIndex).collect(Collectors.toSet()).size();
+                    List<Variable> sedmlVars = new ArrayList<>(dataSourceSpatial.varDataItems.stream().map(varDataItem -> varDataItem.sedmlVariable).collect(Collectors.toSet()));
+                    long numVars = sedmlVars.size();
                     long numTimes = firstVarDataItem.times.length;
                     if (numTimes != spaceTimeDimensions[spaceTimeDimensions.length-1]){
                         throw new RuntimeException("unexpected dimension "+spaceTimeDimensions+" for data, expected last dimension to be that of time: "+numTimes);
                     }
                     List<Long> dataDimensionList = new ArrayList<>();
+                    int numJobs = 1;
+                    for (int scanBound : dataSourceSpatial.scanBounds){
+                        dataDimensionList.add((long)scanBound+1);
+                        numJobs *= (scanBound+1);
+                    }
                     dataDimensionList.add(numVars);
                     for (long dim : spatialDimensions){
                         dataDimensionList.add(dim);
                     }
                     dataDimensionList.add(numTimes);
-                    if (numJobs>1){
-                        dataDimensionList.add(numJobs);
-                    }
                     long[] dataDimensions = dataDimensionList.stream().mapToLong(l -> l).toArray();
                     int totalDataSize = 1;
                     for (long dim : dataDimensions){
                         totalDataSize *= dim;
                     }
                     double[] bigDataBuffer = new double[totalDataSize];
-                    for (int i=0;i<totalDataSize;i++){
-                        bigDataBuffer[i] = i;
+//                    for (int i=0;i<totalDataSize;i++){
+//                        bigDataBuffer[i] = i;
+//                    }
+                    int bufferOffset = 0;
+                    for (int jobIndex=0; jobIndex<numJobs; jobIndex++){
+                        for (int varIndex = 0; varIndex < numVars; varIndex++) {
+                            Variable var = sedmlVars.get(varIndex);
+                            // find data for var and jobIndex
+                            for (Hdf5DataSourceSpatialVarDataItem varDataItem : dataSourceSpatial.varDataItems) {
+                                if (varDataItem.sedmlVariable.equals(var) && varDataItem.jobIndex == jobIndex){
+                                    double[] dataArray = varDataItem.getSpatialData();
+                                    System.arraycopy(dataArray,0,bigDataBuffer,bufferOffset,dataArray.length);
+                                    bufferOffset += dataArray.length;
+                                    break;
+                                }
+                            }
+                        }
                     }
-                    // need to populate the bigDataBuffer ....
 
                     String datasetPath = "/"+hdf5FileWrapper.combineArchiveLocation+"/"+datasetWrapper.datasetMetadata.sedmlId;
                     hdf5DataspaceID = H5.H5Screate_simple(dataDimensions.length, dataDimensions, null);
                     hdf5DatasetID = H5.H5Dcreate(jobGroupID, datasetPath, HDF5Constants.H5T_NATIVE_DOUBLE, hdf5DataspaceID, HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT);
                     H5.H5Dwrite_double(hdf5DatasetID, HDF5Constants.H5T_NATIVE_DOUBLE, HDF5Constants.H5S_ALL, HDF5Constants.H5S_ALL, HDF5Constants.H5P_DEFAULT, (double[])bigDataBuffer);
+
+                    Hdf5Utils.insertAttributes(hdf5DatasetID, "times", firstVarDataItem.times);
                 }else{
                     continue;
                 }
 
                 Hdf5Utils.insertAttribute(hdf5DatasetID, "_type", datasetWrapper.datasetMetadata._type);
+                Hdf5Utils.insertAttributes(hdf5DatasetID, "scanParameterNames", Arrays.asList(datasetWrapper.dataSource.scanParameterNames));
                 Hdf5Utils.insertAttributes(hdf5DatasetID, "sedmlDataSetDataTypes", datasetWrapper.datasetMetadata.sedmlDataSetDataTypes);
                 Hdf5Utils.insertAttributes(hdf5DatasetID, "sedmlDataSetIds", datasetWrapper.datasetMetadata.sedmlDataSetIds);
                 if (datasetWrapper.datasetMetadata.sedmlDataSetNames.get(0) != null &&

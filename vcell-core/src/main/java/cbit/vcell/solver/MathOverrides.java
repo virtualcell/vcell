@@ -330,18 +330,23 @@ public Expression getActualExpression(String key, int index) {
 		return element.actualValue;
 	} else{
 		// scanned parameter
+		int bounds[] = getScanBounds();
 		String[] names = getScannedConstantNames();
-		java.util.Arrays.sort(names); // must do things in a consistent way
-		int[] bounds = new int[names.length]; // bounds of scanning matrix
-		for (int i = 0; i < names.length; i++){
-			bounds[i] = getConstantArraySpec(names[i]).getNumValues() - 1;
-		}
 		int[] coordinates = BeanUtils.indexToCoordinate(index, bounds);
 		int localIndex = coordinates[java.util.Arrays.binarySearch(names, key)];
 		return getConstantArraySpec(key).getConstants()[localIndex].getExpression();
 	}
 }
 
+public int[] getScanBounds() {
+	String[] names = getScannedConstantNames();
+	java.util.Arrays.sort(names); // must do things in a consistent way
+	int[] bounds = new int[names.length]; // bounds of scanning matrix
+	for (int i = 0; i < names.length; i++){
+		bounds[i] = getConstantArraySpec(names[i]).getNumValues() - 1;
+	}
+	return bounds;
+}
 
 public String[] getAllConstantNames() {
 	Enumeration<Constant> en = getSimulation().getMathDescription().getConstants();
@@ -460,11 +465,12 @@ public int getScanCount() {
 
 public String[] getScannedConstantNames() {
 	String[] overrides = getOverridenConstantNames();
-	java.util.Vector<String> v = new java.util.Vector<String>();
+	List<String> v = new ArrayList<>();
 	for (int i = 0; i < overrides.length; i++){
 		if (isScan(overrides[i])) v.add(overrides[i]);
 	}
-	return (String[])BeanUtils.getArray(v, String.class);
+	v.sort(null);
+	return v.toArray(new String[0]);
 }
 
 

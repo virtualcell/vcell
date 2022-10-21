@@ -9,10 +9,7 @@ import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.SimpleSymbolTable;
 import cbit.vcell.parser.SymbolTable;
 import cbit.vcell.simdata.*;
-import cbit.vcell.solver.AnnotatedFunction;
-import cbit.vcell.solver.SimulationJob;
-import cbit.vcell.solver.VCSimulationDataIdentifier;
-import cbit.vcell.solver.VCSimulationIdentifier;
+import cbit.vcell.solver.*;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.util.ColumnDescription;
 import com.google.common.io.Files;
@@ -21,11 +18,13 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jlibsedml.*;
 import org.jlibsedml.DataSet;
+import org.jlibsedml.Simulation;
 import org.jlibsedml.execution.IXPathToVariableIDResolver;
 import org.jlibsedml.modelsupport.SBMLSupport;
 import org.vcell.cli.CLIUtils;
 import org.vcell.cli.run.hdf5.*;
 import org.vcell.stochtest.TimeSeriesMultitrialData;
+import org.vcell.util.BeanUtils;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.User;
 
@@ -154,16 +153,14 @@ public class RunUtils {
         cbit.vcell.solver.Simulation sim = simJob.getSimulation();
     	SimulationContext sc = (SimulationContext)sim.getSimulationOwner();
         BioModel bm = sc.getBioModel();
+        int jobIndex = simJob.getJobIndex();
 
 
 //        VCSimulationIdentifier vcSimID = new VCSimulationIdentifier(sim.getKey(), sim.getSimulationInfo().getVersion().getOwner());
         User user = new User(userDir.getName(), null);
         VCSimulationIdentifier vcSimID = new VCSimulationIdentifier(sim.getKey(), user);
 
-        if(sim.getScanCount() > 1) {
-            throw new IllegalArgumentException("Parameter scans to be implemented");
-        }
-        VCSimulationDataIdentifier vcId = new VCSimulationDataIdentifier(vcSimID, 0);
+        VCSimulationDataIdentifier vcId = new VCSimulationDataIdentifier(vcSimID, jobIndex);
 
         DataSetControllerImpl dsControllerImpl = new DataSetControllerImpl(null, userDir.getParentFile(), null);
         ExportServiceImpl exportServiceImpl = new ExportServiceImpl();
@@ -500,7 +497,31 @@ public class RunUtils {
         return reportsHash;
     }
 
-    public static List<Hdf5DatasetWrapper> prepareNonspatialHdf5(SedML sedml, Map<TaskJob, ODESolverResultSet> nonspatialResultsHash, String sedmlLocation) throws DataAccessException, IOException, HDF5Exception, ExpressionException {
+    private static class NonspatialValueHolder {
+        List<double[]> values = new ArrayList<>();
+        final cbit.vcell.solver.Simulation vcSimulation;
+
+        public NonspatialValueHolder(cbit.vcell.solver.Simulation simulation) {
+            this.vcSimulation = simulation;
+        }
+
+        public int getNumJobs() {
+            return values.size();
+        }
+
+        public int[] getJobCoordinate(int index){
+            String[] names = vcSimulation.getMathOverrides().getScannedConstantNames();
+            java.util.Arrays.sort(names); // must do things in a consistent way
+            int[] bounds = new int[names.length]; // bounds of scanning matrix
+            for (int i = 0; i < names.length; i++){
+                bounds[i] = vcSimulation.getMathOverrides().getConstantArraySpec(names[i]).getNumValues() - 1;
+            }
+            int[] coordinates = BeanUtils.indexToCoordinate(index, bounds);
+            return coordinates;
+        }
+    }
+
+    public static List<Hdf5DatasetWrapper> prepareNonspatialHdf5(SedML sedml, Map<TaskJob, ODESolverResultSet> nonspatialResultsHash, Map<AbstractTask, cbit.vcell.solver.Simulation> taskToSimulationMap, String sedmlLocation) throws DataAccessException, IOException, HDF5Exception, ExpressionException {
 
         List<Hdf5DatasetWrapper> datasetWrappers = new ArrayList<>();
         // finally, the real work
@@ -519,7 +540,7 @@ public class RunUtils {
             //   each variable has an id (which is the data reference above, the task and the sbml symbol urn
             //   for each variable we recover the task, from the task we get the sbml model
             //   we search the sbml model to find the vcell variable name associated with the urn
-            Map<DataSet, Map<Variable, List<double[]>>> dataSetValues = new LinkedHashMap<>();
+            Map<DataSet, Map<Variable, NonspatialValueHolder>> dataSetValues = new LinkedHashMap<>();
             List<DataSet> datasets = report.getListOfDataSets();
             for (DataSet dataset : datasets) {
                 DataGenerator datagen = sedml.getDataGeneratorWithId(dataset.getDataReference());
@@ -529,7 +550,7 @@ public class RunUtils {
                 int mxlen = 0;
 //                        boolean supportedDataset = true;
                 // get target values
-                Map<Variable, List<double[]>> values = new HashMap<>();
+                Map<Variable, NonspatialValueHolder> values = new HashMap<>();
                 for (Variable var : vars) {
                     AbstractTask task = sedml.getTaskWithId(var.getReference());
 
@@ -595,7 +616,7 @@ public class RunUtils {
                         if (sedmlSim instanceof UniformTimeCourse) {
                             int outputNumberOfPoints = ((UniformTimeCourse) sedmlSim).getNumberOfPoints();
                             double outputStartTime = ((UniformTimeCourse) sedmlSim).getOutputStartTime();
-                            ArrayList<double[]> variablesList = new ArrayList<>();
+                            NonspatialValueHolder variablesList = new NonspatialValueHolder(taskToSimulationMap.get(task));
                             if (outputStartTime > 0) {
                                 for (TaskJob taskJob : taskJobs) {
                                     ODESolverResultSet results = nonspatialResultsHash.get(taskJob);
@@ -607,11 +628,11 @@ public class RunUtils {
                                     }
                                     mxlen = Integer.max(mxlen, data.length);
                                     if (!values.containsKey(var)) {        // this is the first double[]
-                                        variablesList.add(data);
+                                        variablesList.values.add(data);
                                         values.put(var, variablesList);
                                     } else {
-                                        List<double[]> variablesListTemp = values.get(var);
-                                        variablesListTemp.add(data);
+                                        NonspatialValueHolder variablesListTemp = values.get(var);
+                                        variablesListTemp.values.add(data);
                                         values.put(var, variablesListTemp);
                                     }
                                 }
@@ -622,11 +643,11 @@ public class RunUtils {
                                     double[] data = results.extractColumn(column);
                                     mxlen = Integer.max(mxlen, data.length);
                                     if (!values.containsKey(var)) {        // this is the first double[]
-                                        variablesList.add(data);
+                                        variablesList.values.add(data);
                                         values.put(var, variablesList);
                                     } else {
-                                        List<double[]> variablesListTemp = values.get(var);
-                                        variablesListTemp.add(data);
+                                        NonspatialValueHolder variablesListTemp = values.get(var);
+                                        variablesListTemp.values.add(data);
                                         values.put(var, variablesListTemp);
                                     }
                                 }
@@ -649,7 +670,7 @@ public class RunUtils {
                             // we want to keep the last outputNumberOfPoints only
                             int outputNumberOfPoints = ((UniformTimeCourse) sedmlSim).getNumberOfPoints();
                             double outputStartTime = ((UniformTimeCourse) sedmlSim).getOutputStartTime();
-                            ArrayList<double[]> variablesList = new ArrayList<>();
+                            NonspatialValueHolder variablesList = new NonspatialValueHolder(taskToSimulationMap.get(task));
                             if (outputStartTime > 0) {
 
                                 // key format in resultsHash is taskId + "_" + simJobId
@@ -662,14 +683,14 @@ public class RunUtils {
                                     data[j] = tmpData[i];
                                 }
                                 mxlen = Integer.max(mxlen, data.length);
-                                variablesList.add(data);        // we only have one double[]
+                                variablesList.values.add(data);        // we only have one double[]
                                 values.put(var, variablesList);
                             } else {
                                 ODESolverResultSet results = nonspatialResultsHash.get(taskJob);
                                 int column = results.findColumn(sbmlVarId);
                                 double[] data = results.extractColumn(column);
                                 mxlen = Integer.max(mxlen, data.length);
-                                variablesList.add(data);
+                                variablesList.values.add(data);
                                 values.put(var, variablesList);
                             }
                         } else {
@@ -687,12 +708,12 @@ public class RunUtils {
             hdf5DatasetWrapper.datasetMetadata.sedmlName = report.getName();
             hdf5DatasetWrapper.datasetMetadata.uri = sedmlLocation;
 
-            Map<Variable, List<double[]>> firstValues = dataSetValues.entrySet().iterator().next().getValue();
+            Map<Variable, NonspatialValueHolder> firstValues = dataSetValues.entrySet().iterator().next().getValue();
             if (firstValues.size()==0){
                 continue;
             }
-            List<double[]> valuesForFirstVar = firstValues.entrySet().iterator().next().getValue();
-            int numJobs = valuesForFirstVar.size();
+            NonspatialValueHolder valuesForFirstVar = firstValues.entrySet().iterator().next().getValue();
+            int numJobs = valuesForFirstVar.getNumJobs();
 
             Hdf5DataSourceNonspatial dataSourceNonspatial = new Hdf5DataSourceNonspatial();
             hdf5DatasetWrapper.dataSource = dataSourceNonspatial;
@@ -700,16 +721,19 @@ public class RunUtils {
                 dataSourceNonspatial.jobData.add(new Hdf5DataSourceNonspatial.Hdf5JobData());
             }
 
-            for (Map.Entry<DataSet, Map<Variable, List<double[]>>> dataSetEntry : dataSetValues.entrySet()){
+            for (Map.Entry<DataSet, Map<Variable, NonspatialValueHolder>> dataSetEntry : dataSetValues.entrySet()){
                 DataSet dataSet = dataSetEntry.getKey();
-                Map<Variable, List<double[]>> values = dataSetEntry.getValue();
+                Map<Variable, NonspatialValueHolder> values = dataSetEntry.getValue();
 
-                for (Map.Entry<Variable, List<double[]>> varEntry : values.entrySet()){
+                for (Map.Entry<Variable, NonspatialValueHolder> varEntry : values.entrySet()){
                     Variable var = varEntry.getKey();
-                    List<double[]> dataArrays = varEntry.getValue();
+                    NonspatialValueHolder dataArrays = varEntry.getValue();
+                    dataSourceNonspatial.scanBounds = dataArrays.vcSimulation.getMathOverrides().getScanBounds();
+                    dataSourceNonspatial.scanParameterNames = dataArrays.vcSimulation.getMathOverrides().getScannedConstantNames();
                     for (int jobIndex=0; jobIndex<numJobs; jobIndex++){
-                        double[] data = dataArrays.get(jobIndex);
-                        dataSourceNonspatial.jobData.get(jobIndex).varData.put(var,data);
+                        double[] data = dataArrays.values.get(jobIndex);
+                        Hdf5DataSourceNonspatial.Hdf5JobData hdf5JobData = dataSourceNonspatial.jobData.get(jobIndex);
+                        hdf5JobData.varData.put(var,data);
                     }
                 }
                 hdf5DatasetWrapper.datasetMetadata.sedmlDataSetDataTypes.add("float64");
@@ -724,7 +748,7 @@ public class RunUtils {
     }
 
 
-    public static List<Hdf5DatasetWrapper> prepareSpatialHdf5(SedML sedml, Map<TaskJob, File> spatialResultsHash, String sedmlLocation) throws DataAccessException, IOException, HDF5Exception, ExpressionException {
+    public static List<Hdf5DatasetWrapper> prepareSpatialHdf5(SedML sedml, Map<TaskJob, File> spatialResultsHash, Map<AbstractTask, cbit.vcell.solver.Simulation> taskToSimulationMap, String sedmlLocation) throws DataAccessException, IOException, HDF5Exception, ExpressionException {
 
         List<Hdf5DatasetWrapper> datasetWrappers = new ArrayList<>();
         // finally, the real work
@@ -823,6 +847,8 @@ public class RunUtils {
                                     Hdf5DataSourceSpatialVarDataItem job = new Hdf5DataSourceSpatialVarDataItem(
                                             report, dataset, var, jobIndex, spatialH5File, outputStartTime, outputNumberOfPoints);
                                     hdf5DataSourceSpatial.varDataItems.add(job);
+                                    hdf5DataSourceSpatial.scanBounds = taskToSimulationMap.get(task).getMathOverrides().getScanBounds();
+                                    hdf5DataSourceSpatial.scanParameterNames = taskToSimulationMap.get(task).getMathOverrides().getScannedConstantNames();
                                 }
                                 jobIndex++;
                             }
@@ -840,6 +866,8 @@ public class RunUtils {
                                 Hdf5DataSourceSpatialVarDataItem job = new Hdf5DataSourceSpatialVarDataItem(
                                         report, dataset, var, 0, spatialH5File, outputStartTime, outputNumberOfPoints);
                                 hdf5DataSourceSpatial.varDataItems.add(job);
+                                hdf5DataSourceSpatial.scanBounds = new int[0];
+                                hdf5DataSourceSpatial.scanParameterNames = new String[0];
                             }
                         } else {
                             logger.error("only uniform time course simulations are supported");

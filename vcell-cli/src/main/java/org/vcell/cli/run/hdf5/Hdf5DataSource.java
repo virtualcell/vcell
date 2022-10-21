@@ -1,4 +1,8 @@
 package org.vcell.cli.run.hdf5;
 
-public interface Hdf5DataSource {
+public abstract class Hdf5DataSource {
+
+    public int[] scanBounds;
+    public String[] scanParameterNames;
+
 }

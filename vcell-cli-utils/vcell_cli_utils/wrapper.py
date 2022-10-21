@@ -11,9 +11,6 @@ else:
 def genSedml2d3d(omexFilePath : str, baseOutPath : str) -> None:
     cli.gen_sedml_2d_3d(omexFilePath, baseOutPath)
 
-def execPlotOutputSedDoc(omexFilePath : str, idNamePlotsMap : str, baseOutPath : str) -> None:
-    cli.exec_plot_output_sed_doc(omexFilePath, idNamePlotsMap, baseOutPath)
-
 def genPlotsPseudoSedml(sedmlPath : str, resultOutDir : str) -> None:
     cli.gen_plots_for_sed2d_only(sedmlPath, resultOutDir)
 
