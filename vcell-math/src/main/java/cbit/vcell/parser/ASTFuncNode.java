@@ -20,8 +20,12 @@ import net.sourceforge.interval.ia_math.IAFunctionDomainException;
 import net.sourceforge.interval.ia_math.IAMath;
 import net.sourceforge.interval.ia_math.IANarrow;
 import net.sourceforge.interval.ia_math.RealInterval;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class ASTFuncNode extends SimpleNode {
+
+	private final static Logger logger = LogManager.getLogger(ASTFuncNode.class);
 	private static final long serialVersionUID = 6409714707358596459L;
 	private String funcName = null;
  	private FunctionType funcType = FunctionType.USERDEFINED;
@@ -2118,7 +2122,7 @@ public double evaluateVector(double values[]) throws ExpressionException {
 	}
 	}
 	if (Double.isNaN(result) || Double.isInfinite(result)){
-		System.out.println("ASTFuncNode.evaluateVector("+funcType.getName()+") evaluated to "+result);
+		logger.debug("ASTFuncNode.evaluateVector("+funcType.getName()+") evaluated to "+result);
 	}
 	return result;
 }      

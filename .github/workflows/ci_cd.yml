@@ -29,9 +29,14 @@ jobs:
         with:
           python-version: ${{ env.python-version }}
 
-      - name: Validate Poetry configuration and lockfile freshness
+      - name: build vcell-cli-utils package
         run: |
           cd vcell-cli-utils
+          poetry install
+
+      - name: build vcell-admin package
+        run: |
+          cd docker/swarm/vcell-admin
           poetry install
 
       - name: setup java 8 with maven cache
