@@ -41,7 +41,7 @@ public class ExecuteCommand implements Callable<Integer> {
     private boolean bKeepFlushingLogs;
 
     @Option(names = "--small-mesh", defaultValue = "false", description = "force spatial simulations to have a very small mesh to make execution faster")
-    private boolean bSmallMeshOverride;
+    private boolean bSmallMeshOverride = false;
 
     @Option(names = {"--encapsulateOutput"}, defaultValue = "true", description =
         "VCell will encapsulate output results in a sub directory when executing with a single input archive; has no effect when providing an input directory")

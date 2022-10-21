@@ -336,9 +336,9 @@ public class SolverHandler {
 					int maxSize = 11;
 					ISize currSize = sim.getMeshSpecification().getSamplingSize();
 					ISize newSize = new ISize(
-							Math.max(maxSize, currSize.getX()),
-							Math.max(maxSize, currSize.getY()),
-							Math.max(maxSize, currSize.getZ()));
+							Math.min(maxSize, currSize.getX()),
+							Math.min(maxSize, currSize.getY()),
+							Math.min(maxSize, currSize.getZ()));
 					sim.getMeshSpecification().setSamplingSize(newSize);
 				}
 
@@ -348,7 +348,7 @@ public class SolverHandler {
 					simJobsList.add(simJob);
 				}
 			}
-            
+
 			for (SimulationJob simJob : simJobsList) {
 				logger.debug("Initializing simulation job... ");
 				String logTaskMessage = "Initializing simulation job " + simJob.getJobIndex() + " ... ";
