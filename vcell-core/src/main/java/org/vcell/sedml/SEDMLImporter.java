@@ -1,53 +1,37 @@
 
 package org.vcell.sedml;
 
-import java.beans.PropertyVetoException;
-import java.io.*;
-import java.nio.charset.Charset;
-import java.util.*;
-
-import javax.xml.xpath.XPath;
-import javax.xml.xpath.XPathFactory;
-
+import cbit.util.xml.VCLogger;
+import cbit.util.xml.VCLoggerException;
+import cbit.util.xml.XmlUtil;
+import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.biomodel.ModelUnitConverter;
+import cbit.vcell.mapping.*;
+import cbit.vcell.mapping.SimulationContext.Application;
+import cbit.vcell.mapping.SimulationContext.MathMappingCallback;
+import cbit.vcell.mapping.SimulationContext.NetworkGenerationRequirements;
+import cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecParameter;
+import cbit.vcell.math.Constant;
+import cbit.vcell.math.Variable;
+import cbit.vcell.model.Model.ReservedSymbol;
+import cbit.vcell.model.*;
+import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.ExpressionMathMLParser;
-import cbit.vcell.parser.ExpressionUtils;
 import cbit.vcell.parser.SymbolTableEntry;
-
+import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.*;
+import cbit.vcell.solver.SolverDescription.AlgorithmParameterDescription;
+import cbit.vcell.xml.*;
 import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jdom.Document;
 import org.jdom.Element;
-import org.jdom.JDOMException;
-import org.jdom.Namespace;
-import org.jdom.input.DOMBuilder;
-import org.jdom.output.DOMOutputter;
-import org.jlibsedml.AbstractIdentifiableElement;
-import org.jlibsedml.AbstractTask;
-import org.jlibsedml.Algorithm;
-import org.jlibsedml.AlgorithmParameter;
-import org.jlibsedml.ArchiveComponents;
-import org.jlibsedml.Change;
-import org.jlibsedml.ChangeAttribute;
-import org.jlibsedml.ComputeChange;
-import org.jlibsedml.DataGenerator;
-import org.jlibsedml.FunctionalRange;
-import org.jlibsedml.Libsedml;
 import org.jlibsedml.Model;
-import org.jlibsedml.Output;
 import org.jlibsedml.Parameter;
-import org.jlibsedml.Range;
-import org.jlibsedml.RepeatedTask;
-import org.jlibsedml.SedML;
-import org.jlibsedml.SetValue;
-import org.jlibsedml.SubTask;
-import org.jlibsedml.Task;
-import org.jlibsedml.UniformRange;
+import org.jlibsedml.*;
 import org.jlibsedml.UniformRange.UniformType;
-import org.jlibsedml.UniformTimeCourse;
-import org.jlibsedml.VectorRange;
-import org.jlibsedml.XMLException;
-import org.jlibsedml.XPathEvaluationException;
 import org.jlibsedml.execution.ArchiveModelResolver;
 import org.jlibsedml.execution.FileModelResolver;
 import org.jlibsedml.execution.ModelResolver;
@@ -59,60 +43,16 @@ import org.vcell.sbml.vcell.SBMLImporter;
 import org.vcell.sbml.vcell.SBMLSymbolMapping;
 import org.vcell.sbml.vcell.SymbolContext;
 import org.vcell.util.FileUtils;
+import org.vcell.util.ISize;
 import org.vcell.util.RelationVisitor;
 
-import cbit.util.xml.VCLogger;
-import cbit.util.xml.VCLoggerException;
-import cbit.util.xml.XmlUtil;
-import cbit.vcell.biomodel.BioModel;
-import cbit.vcell.biomodel.ModelUnitConverter;
-import cbit.vcell.mapping.MappingException;
-import cbit.vcell.mapping.MathMapping;
-import cbit.vcell.mapping.MathMappingCallbackTaskAdapter;
-import cbit.vcell.mapping.MathSymbolMapping;
-import cbit.vcell.mapping.ReactionSpec;
-import cbit.vcell.mapping.SimulationContext;
-import cbit.vcell.mapping.SimulationContext.Application;
-import cbit.vcell.mapping.SimulationContext.MathMappingCallback;
-import cbit.vcell.mapping.SimulationContext.NetworkGenerationRequirements;
-import cbit.vcell.mapping.SpeciesContextSpec;
-import cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecParameter;
-import cbit.vcell.math.Constant;
-import cbit.vcell.math.MathDescription;
-import cbit.vcell.math.MathException;
-import cbit.vcell.math.Variable;
-import cbit.vcell.matrix.MatrixException;
-import cbit.vcell.model.Model.ModelParameter;
-import cbit.vcell.model.Model.ReservedSymbol;
-import cbit.vcell.model.ModelException;
-import cbit.vcell.model.ModelRelationVisitor;
-import cbit.vcell.model.ModelUnitSystem;
-import cbit.vcell.model.ReactionParticipant;
-import cbit.vcell.model.ReactionStep;
-import cbit.vcell.model.SpeciesContext;
-import cbit.vcell.model.TransformMassActions;
-import cbit.vcell.parser.Expression;
-import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.solver.ConstantArraySpec;
-import cbit.vcell.solver.DefaultOutputTimeSpec;
-import cbit.vcell.solver.ErrorTolerance;
-import cbit.vcell.solver.MathOverrides;
-import cbit.vcell.solver.NonspatialStochHybridOptions;
-import cbit.vcell.solver.NonspatialStochSimOptions;
-import cbit.vcell.solver.OutputTimeSpec;
-import cbit.vcell.solver.Simulation;
-import cbit.vcell.solver.SolverDescription;
-import cbit.vcell.solver.SolverDescription.AlgorithmParameterDescription;
-import cbit.vcell.solver.SolverTaskDescription;
-import cbit.vcell.solver.SolverUtilities;
-import cbit.vcell.solver.TimeBounds;
-import cbit.vcell.solver.TimeStep;
-import cbit.vcell.solver.UniformOutputTimeSpec;
-import cbit.vcell.xml.ExternalDocInfo;
-import cbit.vcell.xml.XMLSource;
-import cbit.vcell.xml.XmlHelper;
-import cbit.vcell.xml.XmlParseException;
-import cbit.vcell.xml.Xmlproducer;
+import java.beans.PropertyVetoException;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
+import java.nio.charset.Charset;
+import java.util.*;
 
 public class SEDMLImporter {
 
@@ -924,6 +864,12 @@ public class SEDMLImporter {
 			} else if(apKisaoID.contentEquals(TimeStep.TimeStepDescription.Minimum.getKisao())) {
 				double value = Double.parseDouble(apValue);
 				timeStep.setMinimumTimeStep(value);
+			} else if(apKisaoID.contentEquals(AlgorithmParameterDescription.PDEMeshSize.getKisao())) {
+				//
+				// temporary measure to encode meshSize (abuses KISAO_0000326)
+				//
+				ISize value = ISize.fromTemporaryKISAOvalue(apValue);
+				simTaskDesc.getSimulation().getMeshSpecification().setSamplingSize(value);
 			} else if(apKisaoID.contentEquals(AlgorithmParameterDescription.Seed.getKisao())) {		// custom seed
 				if(simTaskDesc.getSimulation().getMathDescription().isNonSpatialStoch()) {
 					NonspatialStochSimOptions nssso = simTaskDesc.getStochOpt();
