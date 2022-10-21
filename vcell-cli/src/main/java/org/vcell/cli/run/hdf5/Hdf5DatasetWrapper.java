@@ -7,5 +7,5 @@ public class Hdf5DatasetWrapper {
     // could be a plot or a report
 
     public Hdf5DatasetMetadata datasetMetadata = new Hdf5DatasetMetadata();
-    public List<Hdf5JobData> jobData = new ArrayList<>();
+    public Hdf5DataSource dataSource = null;
 }

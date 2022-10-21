@@ -343,6 +343,16 @@ public Expression getActualExpression(String key, int index) {
 }
 
 
+public int[] getScanBounds() {
+	String[] names = getScannedConstantNames();
+	java.util.Arrays.sort(names); // must do things in a consistent way
+	int[] bounds = new int[names.length]; // bounds of scanning matrix
+	for (int i = 0; i < names.length; i++){
+		bounds[i] = getConstantArraySpec(names[i]).getNumValues() - 1;
+	}
+	return bounds;
+}
+
 public String[] getAllConstantNames() {
 	Enumeration<Constant> en = getSimulation().getMathDescription().getConstants();
 	java.util.Vector<String> v = new java.util.Vector<String>();

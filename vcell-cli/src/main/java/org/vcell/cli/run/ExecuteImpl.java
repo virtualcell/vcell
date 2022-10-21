@@ -9,8 +9,10 @@ import org.jlibsedml.*;
 
 import org.apache.commons.io.FilenameUtils;
 import org.vcell.cli.CLIRecorder;
+import org.vcell.cli.run.hdf5.Hdf5DatasetWrapper;
+import org.vcell.cli.run.hdf5.Hdf5FileWrapper;
+import org.vcell.cli.run.hdf5.Hdf5Writer;
 import org.vcell.cli.vcml.VCMLHandler;
-import org.vcell.util.DataAccessException;
 import org.vcell.util.FileUtils;
 import org.vcell.util.GenericExtensionFilter;
 
@@ -27,9 +29,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class ExecuteImpl {
     
@@ -331,9 +333,11 @@ public class ExecuteImpl {
 	                logger.info("Generating CSV file... ");
                   
 	                csvReports = RunUtils.generateReportsAsCSV(sedml, solverHandler.nonSpatialResults, outDirForCurrentSedml, outputDir, sedmlLocation);
-	                String idNamePlotsMap = RunUtils.generateIdNamePlotsMap(sedml, outDirForCurrentSedml);
-	                PythonCalls.execPlotOutputSedDoc(inputFilePath, idNamePlotsMap, outputDir);                            // create the HDF5 file
-	
+	                File[] plotFilesToRename = outDirForCurrentSedml.listFiles(f -> f.getName().startsWith("__plot__"));
+                    for (File plotFileToRename : plotFilesToRename){
+                        String newFilename = plotFileToRename.getName().replace("__plot__","");
+                        plotFileToRename.renameTo(new File(plotFileToRename.getParent(),newFilename));
+                    }
 	                if (csvReports == null || csvReports.isEmpty() || csvReports.containsValue(null)) {
 	                    anySedmlDocumentHasFailed = true;
 	                    somethingFailed = true;
@@ -347,14 +351,28 @@ public class ExecuteImpl {
                   PythonCalls.genPlotsPseudoSedml(sedmlLocation, outDirForCurrentSedml.toString());    // generate the plots
 
                   // remove CSV files associated with reports, these values are in report.h5 file anyway
-                  for (File file : csvReports.values()){
-                      file.delete();
-                  }
+//                  for (File file : csvReports.values()){
+//                      file.delete();
+//                  }
                   logDocumentMessage += "Generating HDF5 file... ";
                   logger.info("Generating HDF5 file... ");
-                  RunUtils.generateReportsAsHDF5(sedml, solverHandler.nonSpatialResults, outDirForCurrentSedml, sedmlLocation);	
-	
-	                if (!containsExtension(outputDir, "h5")) {
+
+                    Hdf5FileWrapper hdf5FileWrapper = new Hdf5FileWrapper();
+                    hdf5FileWrapper.combineArchiveLocation = outDirForCurrentSedml.getName();
+                    hdf5FileWrapper.uri = outDirForCurrentSedml.getName();
+
+                    List<Hdf5DatasetWrapper> nonspatialDatasets = RunUtils.prepareNonspatialHdf5(sedml, solverHandler.nonSpatialResults, solverHandler.taskToSimulationMap, sedmlLocation);
+                    List<Hdf5DatasetWrapper> spatialDatasets = RunUtils.prepareSpatialHdf5(sedml, solverHandler.spatialResults, solverHandler.taskToSimulationMap, sedmlLocation);
+                    hdf5FileWrapper.datasetWrappers.addAll(nonspatialDatasets);
+                    hdf5FileWrapper.datasetWrappers.addAll(spatialDatasets);
+
+                    Hdf5Writer.writeHdf5(hdf5FileWrapper, outDirForCurrentSedml);
+
+                    for (File tempH5File : solverHandler.spatialResults.values()){
+                        if (tempH5File!=null) Files.delete(tempH5File.toPath());
+                    }
+
+                    if (!containsExtension(outDirForCurrentSedml.getAbsolutePath(), "h5")) {
 	                    anySedmlDocumentHasFailed = true;
 	                    somethingFailed = true;
 	                    throw new RuntimeException("Failed to generate the HDF5 output file. ");
@@ -399,11 +417,13 @@ public class ExecuteImpl {
                 org.apache.commons.io.FileUtils.deleteDirectory(new File(String.valueOf(sedmlPath2d3d)));    // removing temp path generated from python
                 continue;
             }
+            Files.move(new File(outDirForCurrentSedml,"reports.h5").toPath(),Paths.get(outputDir,"reports.h5"));
             org.apache.commons.io.FileUtils.deleteDirectory(new File(String.valueOf(sedmlPath2d3d)));    // removing temp path generated from python
 
             // archiving res files
             logger.info("Archiving result files");
             RunUtils.zipResFiles(new File(outputDir));
+            org.apache.commons.io.FileUtils.deleteDirectory(new File(String.valueOf(outDirForCurrentSedml)));    // removing sedml dir which stages results.
             PythonCalls.setOutputMessage(sedmlLocation, sedmlName, outputDir, "sedml", logDocumentMessage);
             PythonCalls.updateSedmlDocStatusYml(sedmlLocation, Status.SUCCEEDED, outputDir);
             logger.info("SED-ML : " + sedmlName + " successfully completed");
