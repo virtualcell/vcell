@@ -1,16 +1,17 @@
 package org.vcell.cli.run;
 
+import cbit.vcell.mongodb.VCMongoMessage;
 import cbit.vcell.resource.NativeLib;
 import cbit.vcell.resource.PropertyLoader;
-import com.google.common.io.Files;
-import org.apache.commons.io.FileUtils;
 import org.junit.Test;
 import org.vcell.cli.CLIPythonManager;
 import org.vcell.cli.CLIRecorder;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.InputStream;
+import java.nio.file.Files;
+
+import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
 public class ExecuteImplTest {
 
@@ -21,21 +22,27 @@ public class ExecuteImplTest {
         NativeLib.combinej.load();
 
         System.setProperty(PropertyLoader.cliWorkingDir, new File("../vcell-cli-utils").getAbsolutePath());
-        CLIPythonManager.getInstance().instantiatePythonProcess();
+        VCMongoMessage.enabled = false;
+        try {
+            CLIPythonManager.getInstance().instantiatePythonProcess();
 
-        InputStream omexInputStream = ExecuteImplTest.class.getResourceAsStream("/BioModel1.omex");
-        File outputDir = Files.createTempDir();
-        File targetFile = File.createTempFile("BioModel1", ".omex", outputDir);
-        FileUtils.copyInputStreamToFile(omexInputStream, targetFile);
+            InputStream omexInputStream = ExecuteImplTest.class.getResourceAsStream("/BioModel1.omex");
+            File tempOutputDir = Files.createTempDirectory("ExecuteImplTest_temp").toFile();
+            File tempOmexFile = File.createTempFile("BioModel1", ".omex", tempOutputDir);
+            java.nio.file.Files.copy(omexInputStream, tempOmexFile.toPath(), REPLACE_EXISTING);
 
-        File omexFile = new File("/Users/schaff/Documents/workspace/vcell/vcell-cli/src/test/resources/BioModel1.omex");
-        CLIRecorder cliRecorder = new CLIRecorder(outputDir,true,true);
-        boolean bKeepTempFiles = true;
-        boolean bExactMatchOnly = false;
-        boolean bEncapsulateOutput = true;
-        ExecuteImpl.singleExecOmex(omexFile, outputDir, cliRecorder, bKeepTempFiles, bExactMatchOnly, bEncapsulateOutput);
+            CLIRecorder cliRecorder = new CLIRecorder(tempOutputDir, true, true);
+            boolean bKeepTempFiles = true;
+            boolean bExactMatchOnly = false;
+            boolean bEncapsulateOutput = true;
+            ExecuteImpl.singleExecOmex(tempOmexFile, tempOutputDir, cliRecorder, bKeepTempFiles, bExactMatchOnly, bEncapsulateOutput);
 
-        CLIPythonManager.getInstance().closePythonProcess();
+            org.apache.commons.io.FileUtils.deleteDirectory(tempOutputDir);
+            tempOmexFile.delete();
+
+        } finally {
+            CLIPythonManager.getInstance().closePythonProcess();
+        }
     }
 
 }
