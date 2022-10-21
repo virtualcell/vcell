@@ -9,6 +9,10 @@ on:
   release:
     types: [published, edited]
 
+env:
+  python-version: "3.9"
+  poetry-version: "1.2.1"
+
 jobs:
   CI:
     name: CI
