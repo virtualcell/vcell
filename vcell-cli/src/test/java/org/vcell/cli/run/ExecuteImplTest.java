@@ -6,6 +6,7 @@ import cbit.vcell.resource.PropertyLoader;
 import org.junit.Test;
 import org.vcell.cli.CLIPythonManager;
 import org.vcell.cli.CLIRecorder;
+import picocli.CommandLine;
 
 import java.io.File;
 import java.io.InputStream;
@@ -35,7 +36,10 @@ public class ExecuteImplTest {
             boolean bKeepTempFiles = true;
             boolean bExactMatchOnly = false;
             boolean bEncapsulateOutput = true;
-            ExecuteImpl.singleExecOmex(tempOmexFile, tempOutputDir, cliRecorder, bKeepTempFiles, bExactMatchOnly, bEncapsulateOutput);
+            boolean bSmallMeshOverride = false;
+            ExecuteImpl.singleExecOmex(
+                    tempOmexFile, tempOutputDir, cliRecorder,
+                    bKeepTempFiles, bExactMatchOnly, bEncapsulateOutput, bSmallMeshOverride);
 
             org.apache.commons.io.FileUtils.deleteDirectory(tempOutputDir);
             tempOmexFile.delete();

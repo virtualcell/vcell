@@ -38,9 +38,9 @@ import org.jlibsedml.XPathTarget;
 import org.jlibsedml.modelsupport.SBMLSupport;
 import org.jmathml.ASTNode;
 import org.vcell.cli.CLIRecorder;
-import org.vcell.cli.vcml.VCMLHandler;
 import org.vcell.sbml.vcell.SBMLImportException;
 import org.vcell.sbml.vcell.SBMLImporter;
+import org.vcell.util.ISize;
 import org.vcell.util.document.VCDocument;
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.logging.log4j.LogManager;
@@ -281,9 +281,9 @@ public class SolverHandler {
         System.out.println("topTaskToBaseTask: " + topTaskToBaseTask.size());
     }
 
-    public void simulateAllTasks(ExternalDocInfo externalDocInfo, SedML sedml, CLIRecorder cliLogger, 
-                             File outputDirForSedml, String outDir, String outputBaseDir, String sedmlLocation,
-                             boolean keepTempFiles, boolean exactMatchOnly) throws Exception {
+    public void simulateAllTasks(ExternalDocInfo externalDocInfo, SedML sedml, CLIRecorder cliLogger,
+                                 File outputDirForSedml, String outDir, String outputBaseDir, String sedmlLocation,
+                                 boolean keepTempFiles, boolean exactMatchOnly, boolean bSmallMeshOverride) throws Exception {
         // create the VCDocument(s) (bioModel(s) + application(s) + simulation(s)), do sanity checks
         cbit.util.xml.VCLogger sedmlImportLogger = new LocalLogger();
         String inputFile = externalDocInfo.getFile().getAbsolutePath();
@@ -332,6 +332,16 @@ public class SolverHandler {
 				simStatusMap.put(sim, Status.RUNNING);
 				simDurationMap.put(sim, 0);
 
+				if (bSmallMeshOverride && sim.getMeshSpecification()!=null){
+					int maxSize = 11;
+					ISize currSize = sim.getMeshSpecification().getSamplingSize();
+					ISize newSize = new ISize(
+							Math.max(maxSize, currSize.getX()),
+							Math.max(maxSize, currSize.getY()),
+							Math.max(maxSize, currSize.getZ()));
+					sim.getMeshSpecification().setSamplingSize(newSize);
+				}
+
 				int scanCount = sim.getScanCount();
 				for(int i=0; i < scanCount; i++) {
 					SimulationJob simJob = new SimulationJob(sim, i, null);
@@ -346,7 +356,7 @@ public class SolverHandler {
 				long startTimeTask = System.currentTimeMillis();
 
 				AbstractTask task = simulationToTaskMap.get(simJob.getSimulation());
-				
+
                 SimulationTask simTask;
                 String kisao = "null";
             	ODESolverResultSet odeSolverResultSet = null;

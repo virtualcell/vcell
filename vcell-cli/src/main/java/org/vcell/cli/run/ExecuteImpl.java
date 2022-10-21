@@ -30,15 +30,13 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class ExecuteImpl {
     
     private final static Logger logger = LogManager.getLogger(ExecuteImpl.class);
 
     public static void batchMode(File dirOfArchivesToProcess, File outputDir, CLIRecorder cliLogger,
-            boolean bKeepTempFiles, boolean bExactMatchOnly) throws IOException {
+                                 boolean bKeepTempFiles, boolean bExactMatchOnly, boolean bSmallMeshOverride) throws IOException {
         FilenameFilter filter = (f, name) -> name.endsWith(".omex") || name.endsWith(".vcml");
         File[] inputFiles = dirOfArchivesToProcess.listFiles(filter);
         if (inputFiles == null) throw new IOException("Error trying to retrieve files from input directory.");
@@ -50,7 +48,9 @@ public class ExecuteImpl {
                 if (inputFileName.endsWith("omex")) {
                     String bioModelBaseName = inputFileName.substring(0, inputFileName.indexOf(".")); // ".omex"??
                     Files.createDirectories(Paths.get(outputDir.getAbsolutePath() + File.separator + bioModelBaseName)); // make output subdir
-                    singleExecOmex(inputFile, outputDir, cliLogger, bKeepTempFiles, bExactMatchOnly, true);
+                    final boolean bEncapsulateOutput = true;
+                    singleExecOmex(inputFile, outputDir, cliLogger,
+                            bKeepTempFiles, bExactMatchOnly, bEncapsulateOutput, bSmallMeshOverride);
                 }
 
                 if (inputFileName.endsWith("vcml")) {
@@ -117,11 +117,11 @@ public class ExecuteImpl {
 
     public static void singleExecOmex(File inputFile, File rootOutputDir, CLIRecorder logger, 
             boolean bKeepTempFiles, boolean bExactMatchOnly) throws Exception {
-        ExecuteImpl.singleExecOmex(inputFile, rootOutputDir, logger, bKeepTempFiles, bExactMatchOnly, true);
+        ExecuteImpl.singleExecOmex(inputFile, rootOutputDir, logger, bKeepTempFiles, bExactMatchOnly, true, false);
     }
 
     public static void singleExecOmex(File inputFile, File rootOutputDir, CLIRecorder cliLogger,
-            boolean bKeepTempFiles, boolean bExactMatchOnly, boolean bEncapsulateOutput) throws Exception {
+            boolean bKeepTempFiles, boolean bExactMatchOnly, boolean bEncapsulateOutput, boolean bSmallMeshOverride) throws Exception {
         int nModels, nSimulations, nTasks, nOutputs, nReportsCount = 0, nPlots2DCount = 0, nPlots3DCount = 0;
         boolean hasOverrides = false;
         boolean hasScans = false;
@@ -288,7 +288,7 @@ public class ExecuteImpl {
                 logger.info(str);
                 logDocumentMessage += str;
                 solverHandler.simulateAllTasks(externalDocInfo, sedml, cliLogger, outDirForCurrentSedml, outputDir,
-                        outputBaseDir, sedmlLocation, bKeepTempFiles, bExactMatchOnly);
+                        outputBaseDir, sedmlLocation, bKeepTempFiles, bExactMatchOnly, bSmallMeshOverride);
             } catch (Exception e) {
                 somethingFailed = true;
                 anySedmlDocumentHasFailed = true;
