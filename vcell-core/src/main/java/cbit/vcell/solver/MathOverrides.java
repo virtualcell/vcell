@@ -338,7 +338,8 @@ public Expression getActualExpression(String key, int index) {
 	}
 }
 
-public int[] getScanBounds() {
+
+	public int[] getScanBounds() {
 	String[] names = getScannedConstantNames();
 	java.util.Arrays.sort(names); // must do things in a consistent way
 	int[] bounds = new int[names.length]; // bounds of scanning matrix
@@ -465,12 +466,11 @@ public int getScanCount() {
 
 public String[] getScannedConstantNames() {
 	String[] overrides = getOverridenConstantNames();
-	List<String> v = new ArrayList<>();
+	java.util.Vector<String> v = new java.util.Vector<String>();
 	for (int i = 0; i < overrides.length; i++){
 		if (isScan(overrides[i])) v.add(overrides[i]);
 	}
-	v.sort(null);
-	return v.toArray(new String[0]);
+	return (String[])BeanUtils.getArray(v, String.class);
 }
 
 

@@ -1,6 +1,7 @@
 package org.vcell.cli.run;
 
 import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.client.data.SimResultsViewer;
 import cbit.vcell.export.server.*;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.math.VariableType;
@@ -186,7 +187,8 @@ public class RunUtils {
         boolean switchRowsColumns = false;
 
         // String simulationName,VCSimulationIdentifier vcSimulationIdentifier,ExportParamScanInfo exportParamScanInfo
-        ExportSpecs.SimNameSimDataID snsdi= new ExportSpecs.SimNameSimDataID(sim.getName(), vcSimID, null);
+        ExportSpecs.ExportParamScanInfo exportParamScanInfo = SimResultsViewer.getParamScanInfo(sim,jobIndex);
+        ExportSpecs.SimNameSimDataID snsdi= new ExportSpecs.SimNameSimDataID(sim.getName(), vcSimID, exportParamScanInfo);
         ExportSpecs.SimNameSimDataID[] simNameSimDataIDs = { snsdi };
         int[] exportMultipleParamScans = null;
         boolean isHDF5 = true;
