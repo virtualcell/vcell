@@ -42,14 +42,14 @@ public class Hdf5Writer {
                     int numJobs = 1;
                     for (int scanBound : dataSourceNonspatial.scanBounds){
                         dataDimensionList.add((long)scanBound+1);
-                        numJobs *= (scanBound+1l);
+                        numJobs *= (scanBound+1);
                     }
                     dataDimensionList.add(numVariablesPerJob);
                     dataDimensionList.add(numTimePoints);
                     long[] dataDimensions = dataDimensionList.stream().mapToLong(l -> l).toArray();
                     int totalDataSize = 1;
                     for (long dim : dataDimensions){
-                        totalDataSize *= dim;
+                        totalDataSize *= (int)dim;
                     }
 
                     double[] bigDataBuffer = new double[totalDataSize];
@@ -61,7 +61,7 @@ public class Hdf5Writer {
                             for (int dataIndex = 0; dataIndex < dataArray.length; dataIndex++) {
                                 System.arraycopy(dataArray,0, bigDataBuffer, bufferOffset, dataArray.length);
                             }
-                            bufferOffset += numTimePoints;
+                            bufferOffset += (int)numTimePoints;
                         }
                     }
                     String datasetPath = "/"+hdf5FileWrapper.combineArchiveLocation+"/"+datasetWrapper.datasetMetadata.sedmlId;
@@ -96,7 +96,7 @@ public class Hdf5Writer {
                     long[] dataDimensions = dataDimensionList.stream().mapToLong(l -> l).toArray();
                     int totalDataSize = 1;
                     for (long dim : dataDimensions){
-                        totalDataSize *= dim;
+                        totalDataSize *= (int)dim;
                     }
                     double[] bigDataBuffer = new double[totalDataSize];
 //                    for (int i=0;i<totalDataSize;i++){
