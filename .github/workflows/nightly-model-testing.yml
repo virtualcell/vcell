@@ -122,7 +122,7 @@ jobs:
           path: ~/wrk
 
       - name: Load Downloaded Docker Image
-        run: docker load --input ~/wrk/docker-image
+        run: docker load --input ~/wrk/image.tar
       
       # Make Input Directory
       - name: Make Input Directory
@@ -136,7 +136,7 @@ jobs:
           path: ~/input_files
       
       - name: Unpack Input Files
-        run: cd ~/input_files && sudo tar xvf vcmls.tar && rm vcmls.tar
+        run: cd ~/input_files && sudo tar xvf $(ls *.tar) && rm $(ls *.tar)
       
       # Do the round trip
       - name: Begin Round-Trip
