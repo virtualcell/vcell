@@ -68,23 +68,23 @@ jobs:
       - name: Parse Results
         run: |
           cd $GITHUB_WORKSPACE/published/biomodel/omex/sbml/output && ls && \
-          echo "biomodels processed $(cat jobLog.txt | grep START | wc -l)" >> $GITHUB_WORSKPACE/conversion_results.txt && \
-          echo "biomodels succeeded $(cat jobLog.txt | grep MODEL,SUCC | wc -l)" >> $GITHUB_WORSKPACE/conversion_results.txt && \
-          echo "simcontexts total $(cat jobLog.txt | grep TEXT | wc -l)" >> $GITHUB_WORSKPACE/conversion_results.txt && \
-          echo "simcontexts failed $(cat jobLog.txt | grep TEXT,FAIL | wc -l)" >> $GITHUB_WORSKPACE/conversion_results.txt && \
-          echo "simcontexts supported that failed $(cat jobLog.txt | grep TEXT,FAIL | grep -v supp | wc -l)" >> $GITHUB_WORSKPACE/conversion_results.txt && \
-          echo "simcontexts math not equivalent $(cat jobLog.txt | grep TEXT,FAIL | grep -v supp | grep equiv | wc -l)" >> $GITHUB_WORSKPACE/conversion_results.txt && \
-          echo "simcontexts divide by zero $(cat jobLog.txt | grep TEXT,FAIL | grep -v supp | grep divide | wc -l)" >> $GITHUB_WORSKPACE/conversion_results.txt && \
-          echo "simcontexts duplicate IDs $(cat jobLog.txt | grep TEXT,FAIL | grep -v supp | grep duplicate | wc -l)" >> $GITHUB_WORSKPACE/conversion_results.txt && \
-          echo "simcontexts null pointer $(cat jobLog.txt | grep TEXT,FAIL | grep -v supp | grep null | wc -l)" >> $GITHUB_WORSKPACE/conversion_results.txt && \
-          echo "simcontexts structure mapping $(cat jobLog.txt | grep TEXT,FAIL | grep -v supp | grep struct | wc -l)" >> $GITHUB_WORSKPACE/conversion_results.txt && \
-          echo "simcontexts other failure $(cat jobLog.txt | grep TEXT,FAIL | grep -v supp | grep -v struct | grep -v null | grep -v duplicate | grep -v divide | grep -v equiv | wc -l)" >> $GITHUB_WORSKPACE/conversion_results.txt  && \
-          echo "simulations total $(cat jobLog.txt | grep TION | wc -l)" >> $GITHUB_WORSKPACE/conversion_results.txt && \
-          echo "simulations failed $(cat jobLog.txt | grep TION,FAIL | wc -l)" >> $GITHUB_WORSKPACE/conversion_results.txt && \
-          echo "simulations supported that failed $(cat jobLog.txt | grep TION,FAIL | grep -v supp | wc -l)" >> $GITHUB_WORSKPACE/conversion_results.txt && \
-          echo "simulations orphan overrides $(cat jobLog.txt | grep TION,FAIL | grep -v supp | grep Over | wc -l)" >> $GITHUB_WORSKPACE/conversion_results.txt && \
-          echo "simulations unbound identifier $(cat jobLog.txt | grep TION,FAIL | grep -v supp | grep unbound | wc -l)" >> $GITHUB_WORSKPACE/conversion_results.txt && \
-          echo "simulations other failure $(cat jobLog.txt | grep TION,FAIL | grep -v supp | grep -v Over | grep -v unbound | wc -l)" >> $GITHUB_WORSKPACE/conversion_results.txt
+          echo "biomodels processed $(cat jobLog.txt | grep START | wc -l)" >> conversion_results.txt && \
+          echo "biomodels succeeded $(cat jobLog.txt | grep MODEL,SUCC | wc -l)" >> conversion_results.txt && \
+          echo "simcontexts total $(cat jobLog.txt | grep TEXT | wc -l)" >> conversion_results.txt && \
+          echo "simcontexts failed $(cat jobLog.txt | grep TEXT,FAIL | wc -l)" >> conversion_results.txt && \
+          echo "simcontexts supported that failed $(cat jobLog.txt | grep TEXT,FAIL | grep -v supp | wc -l)" >> conversion_results.txt && \
+          echo "simcontexts math not equivalent $(cat jobLog.txt | grep TEXT,FAIL | grep -v supp | grep equiv | wc -l)" >> conversion_results.txt && \
+          echo "simcontexts divide by zero $(cat jobLog.txt | grep TEXT,FAIL | grep -v supp | grep divide | wc -l)" >> conversion_results.txt && \
+          echo "simcontexts duplicate IDs $(cat jobLog.txt | grep TEXT,FAIL | grep -v supp | grep duplicate | wc -l)" >> conversion_results.txt && \
+          echo "simcontexts null pointer $(cat jobLog.txt | grep TEXT,FAIL | grep -v supp | grep null | wc -l)" >> conversion_results.txt && \
+          echo "simcontexts structure mapping $(cat jobLog.txt | grep TEXT,FAIL | grep -v supp | grep struct | wc -l)" >> conversion_results.txt && \
+          echo "simcontexts other failure $(cat jobLog.txt | grep TEXT,FAIL | grep -v supp | grep -v struct | grep -v null | grep -v duplicate | grep -v divide | grep -v equiv | wc -l)" >> conversion_results.txt  && \
+          echo "simulations total $(cat jobLog.txt | grep TION | wc -l)" >> conversion_results.txt && \
+          echo "simulations failed $(cat jobLog.txt | grep TION,FAIL | wc -l)" >> conversion_results.txt && \
+          echo "simulations supported that failed $(cat jobLog.txt | grep TION,FAIL | grep -v supp | wc -l)" >> conversion_results.txt && \
+          echo "simulations orphan overrides $(cat jobLog.txt | grep TION,FAIL | grep -v supp | grep Over | wc -l)" >> conversion_results.txt && \
+          echo "simulations unbound identifier $(cat jobLog.txt | grep TION,FAIL | grep -v supp | grep unbound | wc -l)" >> conversion_results.txt && \
+          echo "simulations other failure $(cat jobLog.txt | grep TION,FAIL | grep -v supp | grep -v Over | grep -v unbound | wc -l)" >> conversion_results.txt
         
         # Create tar of converted files
       - name: Compress Converted Files
@@ -102,7 +102,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: conversion_results.txt
-          path: $GITHUB_WORSKPACE
+          path: $GITHUB_WORKSPACE/published/biomodel/omex/sbml/output
         
       # Tmate just in case
       - name: Setup tmate session 3
@@ -112,14 +112,17 @@ jobs:
     runs-on: ubuntu-latest
     needs: conversion
     steps:
+      - name: Create working directory
+        run: mkdir /wrk
+        
       - name: Download Docker Image from `build` Job
         uses: actions/download-artifact@v3
         with:
           name: docker-image
-          path: /tmp
+          path: /wrk
 
       - name: Load Downloaded Docker Image
-        run: docker load --input /tmp/docker-image
+        run: docker load --input /wrk/docker-image
       
       # Make Input Directory
       - name: Make Input Directory
@@ -152,7 +155,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: round-trip_results.txt
-          path: /tmp
+          path: /input_files/output
           
       # Tmate just in case
       - name: Setup tmate session 3
