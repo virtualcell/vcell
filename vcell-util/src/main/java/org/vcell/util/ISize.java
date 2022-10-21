@@ -31,6 +31,17 @@ public ISize(int newX,int newY,int newZ) {
 	}
 }
 
+public String toTemporaryKISAOvalue(){
+	return x+","+y+","+z;
+}
+
+public static ISize fromTemporaryKISAOvalue(String kisaoString){
+	String[] components = kisaoString.split(",");
+	return new ISize(
+			Integer.parseInt(components[0]),
+			Integer.parseInt(components[1]),
+			Integer.parseInt(components[2]));
+}
 
 /**
  * Origin constructor comment.

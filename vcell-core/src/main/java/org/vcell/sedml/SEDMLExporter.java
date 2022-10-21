@@ -1,33 +1,53 @@
 package org.vcell.sedml;
 
-import org.vcell.sbml.SBMLUtils;
+import cbit.util.xml.XmlUtil;
+import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.biomodel.ModelUnitConverter;
+import cbit.vcell.geometry.GeometryClass;
+import cbit.vcell.mapping.*;
+import cbit.vcell.mapping.SimulationContext.Application;
+import cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecParameter;
+import cbit.vcell.mapping.StructureMapping.StructureMappingParameter;
+import cbit.vcell.math.Constant;
+import cbit.vcell.math.MathUtilities;
+import cbit.vcell.model.Kinetics.KineticsParameter;
+import cbit.vcell.model.*;
+import cbit.vcell.model.Model.ModelParameter;
+import cbit.vcell.model.Model.ReservedSymbol;
+import cbit.vcell.model.Structure.StructureSize;
+import cbit.vcell.parser.*;
+import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.*;
+import cbit.vcell.xml.XMLTags;
+import cbit.vcell.xml.XmlHelper;
+import cbit.vcell.xml.XmlParseException;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.jdom.Namespace;
+import org.jlibsedml.Model;
+import org.jlibsedml.*;
+import org.jlibsedml.UniformRange.UniformType;
+import org.jlibsedml.modelsupport.SBMLSupport;
+import org.jlibsedml.modelsupport.SBMLSupport.CompartmentAttribute;
+import org.jlibsedml.modelsupport.SBMLSupport.ParameterAttribute;
+import org.jlibsedml.modelsupport.SBMLSupport.SpeciesAttribute;
+import org.jlibsedml.modelsupport.SUPPORTED_LANGUAGE;
+import org.jmathml.ASTNode;
+import org.sbml.jsbml.Annotation;
+import org.sbml.jsbml.Parameter;
+import org.sbml.jsbml.SBMLDocument;
+import org.sbml.jsbml.SBMLReader;
+import org.sbml.jsbml.xml.XMLNode;
+import org.sbml.libcombine.CombineArchive;
+import org.sbml.libcombine.KnownFormats;
 import org.vcell.sbml.SbmlException;
 import org.vcell.sbml.SimSpec;
 import org.vcell.sbml.vcell.SBMLExporter;
+import org.vcell.util.ISize;
 import org.vcell.util.Pair;
 import org.vcell.util.TokenMangler;
-
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.StringReader;
-import java.nio.file.Paths;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.Vector;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -38,103 +58,11 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
-
-import org.jdom.Namespace;
-//import org.jdom.Element;
-
-import org.jlibsedml.Algorithm;
-import org.jlibsedml.AlgorithmParameter;
-import org.jlibsedml.ChangeAttribute;
-import org.jlibsedml.ComputeChange;
-import org.jlibsedml.Curve;
-import org.jlibsedml.DataGenerator;
-import org.jlibsedml.DataSet;
-import org.jlibsedml.FunctionalRange;
-import org.jlibsedml.Libsedml;
-import org.jlibsedml.Model;
-import org.jlibsedml.Notes;
-import org.jlibsedml.Plot2D;
-import org.jlibsedml.Plot3D;
-import org.jlibsedml.Range;
-import org.jlibsedml.RepeatedTask;
-import org.jlibsedml.Report;
-import org.jlibsedml.SEDMLDocument;
-import org.jlibsedml.SEDMLTags;
-import org.jlibsedml.SedML;
-import org.jlibsedml.SetValue;
-import org.jlibsedml.SubTask;
-import org.jlibsedml.Task;
-import org.jlibsedml.UniformRange;
-import org.jlibsedml.UniformRange.UniformType;
-import org.jlibsedml.UniformTimeCourse;
-import org.jlibsedml.Variable;
-import org.jlibsedml.VariableSymbol;
-import org.jlibsedml.VectorRange;
-import org.jlibsedml.XPathTarget;
-import org.jlibsedml.modelsupport.SBMLSupport;
-import org.jlibsedml.modelsupport.SBMLSupport.CompartmentAttribute;
-import org.jlibsedml.modelsupport.SBMLSupport.ParameterAttribute;
-import org.jlibsedml.modelsupport.SBMLSupport.SpeciesAttribute;
-import org.jlibsedml.modelsupport.SUPPORTED_LANGUAGE;
-
-import org.jmathml.ASTNode;
-import org.sbml.jsbml.Annotation;
-import org.sbml.jsbml.Parameter;
-import org.sbml.jsbml.SBMLDocument;
-import org.sbml.jsbml.SBMLReader;
-import org.sbml.jsbml.xml.XMLNode;
-import org.sbml.libcombine.*;
-
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-
-import cbit.util.xml.XmlUtil;
-
-import cbit.vcell.biomodel.BioModel;
-import cbit.vcell.biomodel.ModelUnitConverter;
-import cbit.vcell.geometry.GeometryClass;
-import cbit.vcell.mapping.MathMapping;
-import cbit.vcell.mapping.MathSymbolMapping;
-import cbit.vcell.mapping.SimulationContext;
-import cbit.vcell.mapping.SpeciesContextSpec;
-import cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecParameter;
-import cbit.vcell.mapping.StructureMapping;
-import cbit.vcell.mapping.SimulationContext.Application;
-import cbit.vcell.mapping.StructureMapping.StructureMappingParameter;
-import cbit.vcell.mapping.MappingException;
-import cbit.vcell.math.Constant;
-import cbit.vcell.math.MathUtilities;
-import cbit.vcell.model.Kinetics.KineticsParameter;
-import cbit.vcell.model.Membrane;
-import cbit.vcell.model.Model.ModelParameter;
-import cbit.vcell.model.Model.ReservedSymbol;
-import cbit.vcell.model.ModelQuantity;
-import cbit.vcell.model.ProxyParameter;
-import cbit.vcell.model.SpeciesContext;
-import cbit.vcell.model.Structure;
-import cbit.vcell.model.Structure.StructureSize;
-import cbit.vcell.parser.DivideByZeroException;
-import cbit.vcell.parser.Expression;
-import cbit.vcell.parser.ExpressionBindingException;
-import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.parser.SymbolTableEntry;
-import cbit.vcell.parser.VariableSymbolTable;
-import cbit.vcell.solver.ConstantArraySpec;
-import cbit.vcell.solver.ErrorTolerance;
-import cbit.vcell.solver.MathOverrides;
-import cbit.vcell.solver.NonspatialStochHybridOptions;
-import cbit.vcell.solver.NonspatialStochSimOptions;
-import cbit.vcell.solver.Simulation;
-import cbit.vcell.solver.SolverDescription;
-import cbit.vcell.solver.SolverTaskDescription;
-import cbit.vcell.solver.TimeBounds;
-import cbit.vcell.solver.TimeStep;
-import cbit.vcell.xml.XMLTags;
-import cbit.vcell.xml.XmlHelper;
-import cbit.vcell.xml.XmlParseException;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import java.io.*;
+import java.nio.file.Paths;
+import java.util.*;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 
 
@@ -710,6 +638,12 @@ public class SEDMLExporter {
 					enableMinTimeStep = false;
 				}
 			}
+		}
+		if (vcSolverDesc == SolverDescription.SundialsPDE) {
+			String kisaoStr = SolverDescription.AlgorithmParameterDescription.PDEMeshSize.getKisao();
+			ISize meshSize = simTaskDesc.getSimulation().getMeshSpecification().getSamplingSize();
+			AlgorithmParameter sedmlAlgorithmParameter = new AlgorithmParameter(kisaoStr, meshSize.toTemporaryKISAOvalue());
+			sedmlAlgorithm.addAlgorithmParameter(sedmlAlgorithmParameter);
 		}
 		TimeStep ts = simTaskDesc.getTimeStep();
 		if(enableDefaultTimeStep) {
