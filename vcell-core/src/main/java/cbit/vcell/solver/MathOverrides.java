@@ -330,8 +330,12 @@ public Expression getActualExpression(String key, int index) {
 		return element.actualValue;
 	} else{
 		// scanned parameter
-		int bounds[] = getScanBounds();
 		String[] names = getScannedConstantNames();
+		java.util.Arrays.sort(names); // must do things in a consistent way
+		int[] bounds = new int[names.length]; // bounds of scanning matrix
+		for (int i = 0; i < names.length; i++){
+			bounds[i] = getConstantArraySpec(names[i]).getNumValues() - 1;
+		}
 		int[] coordinates = BeanUtils.indexToCoordinate(index, bounds);
 		int localIndex = coordinates[java.util.Arrays.binarySearch(names, key)];
 		return getConstantArraySpec(key).getConstants()[localIndex].getExpression();
@@ -339,7 +343,7 @@ public Expression getActualExpression(String key, int index) {
 }
 
 
-	public int[] getScanBounds() {
+public int[] getScanBounds() {
 	String[] names = getScannedConstantNames();
 	java.util.Arrays.sort(names); // must do things in a consistent way
 	int[] bounds = new int[names.length]; // bounds of scanning matrix
