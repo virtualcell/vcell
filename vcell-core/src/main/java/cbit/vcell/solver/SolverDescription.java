@@ -712,6 +712,10 @@ public enum SolverDescription {
 		Lambda("KISAO:0000603", "Minimum Reaction Rate for continuous approximation"),
 		MSRTolerance("KISAO:0000604", "Multiple Slow Reactions Tolerance"),
 		SDETolerance("KISAO:0000605", "Stochastic Differential Equation Tolerance"),
+
+		// for encoding of PDEMeshSize, see ISize.toTemporaryKISAOvalue() and ISize.fromTemporaryKISAOvalue()
+		// TODO: replace KISAO term with proper term, currently using KISAO_0000326 in a nonstandard way
+		PDEMeshSize("KISAO:0000326", "Cartesian Mesh Size temporarily stored as 'nx,ny,nz'"),
 		;
 		
 		private final String kisao;

@@ -52,6 +52,7 @@ import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.ExpressionMathMLPrinter;
 import cbit.vcell.parser.ExpressionMathMLPrinter.MathType;
 import cbit.vcell.parser.SymbolTableEntry;
+import cbit.vcell.solver.AnnotatedFunction;
 import cbit.vcell.solver.MathOverrides;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationJob;
@@ -416,11 +417,12 @@ private void addCompartments() throws XMLStreamException, SbmlException {
 /**
  * At present, the Virtual cell doesn't support global parameters
  * @throws SbmlException 
+ * @throws XMLStreamException 
  */
-private void addParameters() throws ExpressionException, SbmlException {
+private void addParameters() throws ExpressionException, SbmlException, XMLStreamException {
 	
 	// check if any event action modifies any parameter
-	Set<ModelParameter> modelParameterSet = new HashSet<> ();
+	Set<ModelParameter> eventAssignmentTargets = new HashSet<> ();
 	BioEvent[] vcBioevents = getSelectedSimContext().getBioEvents();
 	if (vcBioevents != null) {
 		for (BioEvent vcEvent : vcBioevents) {
@@ -428,12 +430,12 @@ private void addParameters() throws ExpressionException, SbmlException {
 				SymbolTableEntry ste = ea.getTarget();
 				if(ste instanceof ModelParameter) {
 					ModelParameter mp = (ModelParameter)ste;
-					modelParameterSet.add(mp);
+					eventAssignmentTargets.add(mp);
 				}
 			}
 		}
 	}
-	
+
 	// add VCell global parameters to the SBML listofParameters
 	Model vcModel = getSelectedSimContext().getModel();
 	ModelParameter[] vcGlobalParams = vcModel.getModelParameters();
@@ -455,17 +457,27 @@ private void addParameters() throws ExpressionException, SbmlException {
 			// the expression for modelParam might be numeric, but modelParam could have a rate rule, if so, set constant attribute to 'false'
 			if (getSelectedSimContext().getRateRule(vcParam) != null) {
 				bParamIsNumeric = false;
-			} else if(modelParameterSet.contains(vcParam)) {
+			} else if(eventAssignmentTargets.contains(vcParam)) {
 				bParamIsNumeric = false;
 			}
 		} else {
-			// non-numeric VCell global parameter will be defined by a (assignment) rule, hence mark Constant = false.
-			bParamIsNumeric = false;
-			// add assignment rule for param
-			ASTNode paramFormulaNode = getFormulaFromExpression(paramExpr);
-			AssignmentRule sbmlParamAssignmentRule = sbmlModel.createAssignmentRule();
-			sbmlParamAssignmentRule.setVariable(vcParam.getName());
-			sbmlParamAssignmentRule.setMath(paramFormulaNode);
+			if(!eventAssignmentTargets.contains(vcParam)) {
+				// non-numeric VCell global parameter will be defined by a (assignment) rule, hence mark Constant = false.
+				bParamIsNumeric = false;
+				// add assignment rule for param
+				ASTNode paramFormulaNode = getFormulaFromExpression(paramExpr);
+				AssignmentRule sbmlParamAssignmentRule = sbmlModel.createAssignmentRule();
+				sbmlParamAssignmentRule.setVariable(vcParam.getName());
+				sbmlParamAssignmentRule.setMath(paramFormulaNode);
+			} else {
+				// the parameter is an event assignment target, so it cannot also be 
+				// an assignment rule variable; we make it an initial assignment instead
+				bParamIsNumeric = false;
+				ASTNode paramFormulaNode = getFormulaFromExpression(paramExpr);
+				InitialAssignment initAssignment = sbmlModel.createInitialAssignment();
+				initAssignment.setSymbol(vcParam.getName());
+				initAssignment.setMath(paramFormulaNode);
+			}
 		}
 		sbmlParam.setConstant(bParamIsNumeric);
 		VCUnitDefinition vcParamUnit = vcParam.getUnitDefinition();
@@ -473,6 +485,28 @@ private void addParameters() throws ExpressionException, SbmlException {
 			sbmlParam.setUnits(getOrCreateSBMLUnit(vcParamUnit));
 		}
 	}
+	}
+
+	// add output functions, if any
+	
+	List<AnnotatedFunction> outputFunctions = vcSelectedSimContext.getOutputFunctionContext().getOutputFunctionsList();
+	
+	for (AnnotatedFunction of : outputFunctions) {
+		org.sbml.jsbml.Parameter sbmlParam = sbmlModel.createParameter();
+		sbmlParam.setId(of.getName());
+		sbmlParam.setName(of.getName());
+		sbmlParam.setConstant(false);
+		Expression paramExpr = new Expression(of.getExpression());
+		ASTNode paramFormulaNode = getFormulaFromExpression(paramExpr);
+		AssignmentRule sbmlParamAssignmentRule = sbmlModel.createAssignmentRule();
+		sbmlParamAssignmentRule.setVariable(of.getName());
+		sbmlParamAssignmentRule.setMath(paramFormulaNode);	
+		Element outputFunctionElement = new Element(XMLTags.SBML_VCELL_OutputFunctionTag, sbml_vcml_ns);
+		outputFunctionElement.setAttribute(XMLTags.SBML_VCELL_OutputFunctionTag_varTypeAttr, of.getFunctionType().getTypeName(), sbml_vcml_ns);
+		if (of.getDomain()!=null) {
+			outputFunctionElement.setAttribute(XMLTags.SBML_VCELL_OutputFunctionTag_domainAttr, of.getDomain().getName(), sbml_vcml_ns);
+		}
+		sbmlParam.getAnnotation().appendNonRDFAnnotation(XmlUtil.xmlToString(outputFunctionElement));
 	}
 	
 	ReservedSymbol[] vcReservedSymbols = vcModel.getReservedSymbols();  
@@ -2184,8 +2218,12 @@ private void addGeometry() throws SbmlException {
 			VCImage vcImage = vcImageGeometry.getGeometrySpec().getImage();
 			segmentedImageSampledField.setSpatialId("SegmentedImageSampledField");
 			segmentedImageSampledField.setNumSamples1(vcImage.getNumX());
-			segmentedImageSampledField.setNumSamples2(vcImage.getNumY());
-			segmentedImageSampledField.setNumSamples3(vcImage.getNumZ());
+			if (vcGeometry.getDimension()>=2) {
+				segmentedImageSampledField.setNumSamples2(vcImage.getNumY());
+			}
+			if (vcGeometry.getDimension()==3) {
+				segmentedImageSampledField.setNumSamples3(vcImage.getNumZ());
+			}
 			segmentedImageSampledField.setInterpolationType(InterpolationKind.nearestNeighbor);
 			segmentedImageSampledField.setCompression(CompressionKind.deflated);
 			segmentedImageSampledField.setDataType(DataKind.UINT8);

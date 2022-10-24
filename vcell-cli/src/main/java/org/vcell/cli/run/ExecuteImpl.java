@@ -9,6 +9,9 @@ import org.jlibsedml.*;
 
 import org.apache.commons.io.FilenameUtils;
 import org.vcell.cli.CLIRecorder;
+import org.vcell.cli.run.hdf5.Hdf5DatasetWrapper;
+import org.vcell.cli.run.hdf5.Hdf5FileWrapper;
+import org.vcell.cli.run.hdf5.Hdf5Writer;
 import org.vcell.cli.vcml.VCMLHandler;
 import org.vcell.util.FileUtils;
 import org.vcell.util.GenericExtensionFilter;
@@ -26,16 +29,14 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 public class ExecuteImpl {
     
     private final static Logger logger = LogManager.getLogger(ExecuteImpl.class);
 
     public static void batchMode(File dirOfArchivesToProcess, File outputDir, CLIRecorder cliLogger,
-            boolean bKeepTempFiles, boolean bExactMatchOnly) throws IOException {
+                                 boolean bKeepTempFiles, boolean bExactMatchOnly, boolean bSmallMeshOverride) throws IOException {
         FilenameFilter filter = (f, name) -> name.endsWith(".omex") || name.endsWith(".vcml");
         File[] inputFiles = dirOfArchivesToProcess.listFiles(filter);
         if (inputFiles == null) throw new IOException("Error trying to retrieve files from input directory.");
@@ -47,7 +48,9 @@ public class ExecuteImpl {
                 if (inputFileName.endsWith("omex")) {
                     String bioModelBaseName = inputFileName.substring(0, inputFileName.indexOf(".")); // ".omex"??
                     Files.createDirectories(Paths.get(outputDir.getAbsolutePath() + File.separator + bioModelBaseName)); // make output subdir
-                    singleExecOmex(inputFile, outputDir, cliLogger, bKeepTempFiles, bExactMatchOnly, true);
+                    final boolean bEncapsulateOutput = true;
+                    singleExecOmex(inputFile, outputDir, cliLogger,
+                            bKeepTempFiles, bExactMatchOnly, bEncapsulateOutput, bSmallMeshOverride);
                 }
 
                 if (inputFileName.endsWith("vcml")) {
@@ -115,13 +118,14 @@ public class ExecuteImpl {
 
     public static void singleExecOmex(File inputFile, File rootOutputDir, CLIRecorder logger, 
             boolean bKeepTempFiles, boolean bExactMatchOnly) throws Exception {
-        ExecuteImpl.singleExecOmex(inputFile, rootOutputDir, logger, bKeepTempFiles, bExactMatchOnly, true);
+        ExecuteImpl.singleExecOmex(inputFile, rootOutputDir, logger, bKeepTempFiles, bExactMatchOnly, true, false);
     }
 
     public static void singleExecOmex(File inputFile, File rootOutputDir, CLIRecorder cliLogger,
-            boolean bKeepTempFiles, boolean bExactMatchOnly, boolean bEncapsulateOutput) throws Exception {
+            boolean bKeepTempFiles, boolean bExactMatchOnly, boolean bEncapsulateOutput, boolean bSmallMeshOverride) throws Exception {
         int nModels, nSimulations, nTasks, nOutputs, nReportsCount = 0, nPlots2DCount = 0, nPlots3DCount = 0;
-        boolean hasChanges = false;
+        boolean hasOverrides = false;
+        boolean hasScans = false;
         String logOmexMessage = "";
 
         String inputFilePath = inputFile.getAbsolutePath();
@@ -175,8 +179,7 @@ public class ExecuteImpl {
             logger.info("Initializing SED-ML document...");
             String sedmlName = "", logDocumentMessage = "Initializing SED-ML document... ", logDocumentError = "";
             boolean somethingFailed = false; // shows that the current document suffered a partial or total failure
-            Map<TaskJob, ODESolverResultSet> resultsHash;
-            HashMap<String, File> reportsHash = null;
+
             File outDirForCurrentSedml = new File(omexHandler.getOutputPathFromSedml(sedmlLocation));
 
             try {
@@ -193,8 +196,18 @@ public class ExecuteImpl {
 
                 nModels = sedmlFromOmex.getModels().size();
                 for(Model m : sedmlFromOmex.getModels()) {
-                	if(m.getListOfChanges().size() > 0) {
-                		hasChanges = true;
+                	List<Change> changes = m.getListOfChanges();	// change attribute caused by a math override
+                	if(changes != null && changes.size() > 0) {
+                		hasOverrides = true;
+                	}
+                }
+                for(AbstractTask at : sedmlFromOmex.getTasks()) {
+                	if(at instanceof RepeatedTask) {
+                		RepeatedTask rt = (RepeatedTask)at;
+                		List<SetValue> changes = rt.getChanges();
+                    	if(changes != null && changes.size() > 0) {
+                    		hasScans = true;
+                    	}
                 	}
                 }
                 nTasks = sedmlFromOmex.getTasks().size();
@@ -271,14 +284,12 @@ public class ExecuteImpl {
              */
             SolverHandler solverHandler = new SolverHandler();
             ExternalDocInfo externalDocInfo = new ExternalDocInfo(new File(inputFilePath), true);
-            resultsHash = new LinkedHashMap<TaskJob, ODESolverResultSet>();
             try {
                 String str = "Building solvers and starting simulation of all tasks... ";
                 logger.info(str);
                 logDocumentMessage += str;
-                resultsHash = solverHandler.simulateAllTasks(externalDocInfo, sedml, cliLogger, outDirForCurrentSedml, outputDir,
-                        outputBaseDir, sedmlLocation, bKeepTempFiles, bExactMatchOnly);
-                //Map<String, String> sim2Hdf5Map = solverHandler.sim2Hdf5Map;    // may not need it
+                solverHandler.simulateAllTasks(externalDocInfo, sedml, cliLogger, outDirForCurrentSedml, outputDir,
+                        outputBaseDir, sedmlLocation, bKeepTempFiles, bExactMatchOnly, bSmallMeshOverride);
             } catch (Exception e) {
                 somethingFailed = true;
                 anySedmlDocumentHasFailed = true;
@@ -291,11 +302,13 @@ public class ExecuteImpl {
             message += nSimulations + ",";
             message += nTasks + ",";
             message += nOutputs + ",";
+            
             message += solverHandler.countBioModels + ",";
-            message += hasChanges + ",";
+            message += hasOverrides + ",";
+            message += hasScans + ",";
             message += solverHandler.countSuccessfulSimulationRuns;
             //CLIUtils.writeDetailedResultList(outputBaseDir, bioModelBaseName + "," + sedmlName + ", ," + message, bForceLogFiles);
-            cliLogger.writeDetailedResultList(bioModelBaseName + "," + sedmlName + ", ," + message);
+            cliLogger.writeDetailedResultList(bioModelBaseName + "," + message);
             logger.debug(message);
 
             //
@@ -305,47 +318,77 @@ public class ExecuteImpl {
             // that will include spatial simulations for which we don't produce reports or plots!
             //
             try {
-                if (resultsHash.containsValue(null)) {        // some tasks failed, but not all
+                if (solverHandler.nonSpatialResults.containsValue(null) || solverHandler.spatialResults.containsValue(null)) {        // some tasks failed, but not all
                     anySedmlDocumentHasFailed = true;
                     somethingFailed = true;
                     logDocumentMessage += "Failed to execute one or more tasks. ";
                     logger.info("Failed to execute one or more tasks in " + sedmlName);
                 }
+
                 logDocumentMessage += "Generating outputs... ";
                 logger.info("Generating outputs... ");
-                reportsHash = RunUtils.generateReportsAsCSV(sedml, resultsHash, outDirForCurrentSedml, outputDir, sedmlLocation);
 
-                if (reportsHash == null || reportsHash.size() == 0) {
-                    anySedmlDocumentHasFailed = true;
-                    somethingFailed = true;
-                    String msg = "Failed to generate any reports. ";
-                    throw new RuntimeException(msg);
+                if (!solverHandler.nonSpatialResults.isEmpty()) {
+	                HashMap<String, File> csvReports = null;
+	                logDocumentMessage += "Generating CSV file... ";
+	                logger.info("Generating CSV file... ");
+                  
+	                csvReports = RunUtils.generateReportsAsCSV(sedml, solverHandler.nonSpatialResults, outDirForCurrentSedml, outputDir, sedmlLocation);
+	                File[] plotFilesToRename = outDirForCurrentSedml.listFiles(f -> f.getName().startsWith("__plot__"));
+                    for (File plotFileToRename : plotFilesToRename){
+                        String newFilename = plotFileToRename.getName().replace("__plot__","");
+                        plotFileToRename.renameTo(new File(plotFileToRename.getParent(),newFilename));
+                    }
+	                if (csvReports == null || csvReports.isEmpty() || csvReports.containsValue(null)) {
+	                    anySedmlDocumentHasFailed = true;
+	                    somethingFailed = true;
+	                    String msg = "Failed to generate one or more reports. ";
+	                    logDocumentMessage += msg;
+	                } else {
+	                    logDocumentMessage += "Done. ";
+	                }
+                  
+                  logger.info("Generating Plots... ");
+                  PythonCalls.genPlotsPseudoSedml(sedmlLocation, outDirForCurrentSedml.toString());    // generate the plots
+
+                  // remove CSV files associated with reports, these values are in report.h5 file anyway
+//                  for (File file : csvReports.values()){
+//                      file.delete();
+//                  }
+                  logDocumentMessage += "Generating HDF5 file... ";
+                  logger.info("Generating HDF5 file... ");
+
+                    Hdf5FileWrapper hdf5FileWrapper = new Hdf5FileWrapper();
+                    hdf5FileWrapper.combineArchiveLocation = outDirForCurrentSedml.getName();
+                    hdf5FileWrapper.uri = outDirForCurrentSedml.getName();
+
+                    List<Hdf5DatasetWrapper> nonspatialDatasets = RunUtils.prepareNonspatialHdf5(sedml, solverHandler.nonSpatialResults, solverHandler.taskToSimulationMap, sedmlLocation);
+                    List<Hdf5DatasetWrapper> spatialDatasets = RunUtils.prepareSpatialHdf5(sedml, solverHandler.spatialResults, solverHandler.taskToSimulationMap, sedmlLocation);
+                    hdf5FileWrapper.datasetWrappers.addAll(nonspatialDatasets);
+                    hdf5FileWrapper.datasetWrappers.addAll(spatialDatasets);
+
+                    Hdf5Writer.writeHdf5(hdf5FileWrapper, outDirForCurrentSedml);
+
+                    for (File tempH5File : solverHandler.spatialResults.values()){
+                        if (tempH5File!=null) Files.delete(tempH5File.toPath());
+                    }
+
+                    if (!containsExtension(outDirForCurrentSedml.getAbsolutePath(), "h5")) {
+	                    anySedmlDocumentHasFailed = true;
+	                    somethingFailed = true;
+	                    throw new RuntimeException("Failed to generate the HDF5 output file. ");
+	                } else {
+	                    logDocumentMessage += "Done. ";
+	                }
                 }
-                if (reportsHash.containsValue(null)) {
-                    anySedmlDocumentHasFailed = true;
-                    somethingFailed = true;
-                    String msg = "Failed to generate one or more reports. ";
-                    logDocumentMessage += msg;
-                } else {
-                    logDocumentMessage += "Done. ";
+                
+                if (!solverHandler.spatialResults.isEmpty()) {
+                	// TODO
+                	// check for failures
+                	// generate reports from hdf5 outputs and add to non-spatial reports, if any
                 }
 
-                logDocumentMessage += "Generating HDF5 file... ";
-                logger.info("Generating HDF5 file... ");
-                String idNamePlotsMap = RunUtils.generateIdNamePlotsMap(sedml, outDirForCurrentSedml);
 
-                PythonCalls.execPlotOutputSedDoc(inputFilePath, idNamePlotsMap, outputDir);                            // create the HDF5 file
-
-                if (!containsExtension(outputDir, "h5")) {
-                    anySedmlDocumentHasFailed = true;
-                    somethingFailed = true;
-                    throw new RuntimeException("Failed to generate the HDF5 output file. ");
-                } else {
-                    logDocumentMessage += "Done. ";
-                }
-
-                logger.info("Generating Plots... ");
-                PythonCalls.genPlotsPseudoSedml(sedmlLocation, outDirForCurrentSedml.toString());    // generate the plots
                 anySedmlDocumentHasSucceeded = true;
             } catch (Exception e) {
             	logger.error(e.getMessage(), e);
@@ -375,11 +418,13 @@ public class ExecuteImpl {
                 org.apache.commons.io.FileUtils.deleteDirectory(new File(String.valueOf(sedmlPath2d3d)));    // removing temp path generated from python
                 continue;
             }
+            Files.move(new File(outDirForCurrentSedml,"reports.h5").toPath(),Paths.get(outputDir,"reports.h5"));
             org.apache.commons.io.FileUtils.deleteDirectory(new File(String.valueOf(sedmlPath2d3d)));    // removing temp path generated from python
 
             // archiving res files
             logger.info("Archiving result files");
             RunUtils.zipResFiles(new File(outputDir));
+            org.apache.commons.io.FileUtils.deleteDirectory(new File(String.valueOf(outDirForCurrentSedml)));    // removing sedml dir which stages results.
             PythonCalls.setOutputMessage(sedmlLocation, sedmlName, outputDir, "sedml", logDocumentMessage);
             PythonCalls.updateSedmlDocStatusYml(sedmlLocation, Status.SUCCEEDED, outputDir);
             logger.info("SED-ML : " + sedmlName + " successfully completed");

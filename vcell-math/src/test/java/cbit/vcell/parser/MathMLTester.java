@@ -11,6 +11,8 @@
 package cbit.vcell.parser;
 
 import jscl.text.ParseException;
+import org.jmathml.ASTNode;
+import org.jmathml.MathMLReader;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -55,7 +57,7 @@ public class MathMLTester {
 			}
 			try {
 				exp.evaluateConstantSafe();
-			}catch (FunctionDomainException fde) {
+			}catch (FunctionDomainException | DivideByZeroException e2) {
 				continue;
 			}catch (ExpressionException e){
 			}
@@ -78,6 +80,36 @@ public class MathMLTester {
 		Expression expMathML = new ExpressionMathMLParser(null).fromMathML(expMathMLStr, "t");
 		boolean equiv = ExpressionUtils.functionallyEquivalent(expression, expMathML, true);
 		String msg = "not equivalent: origExp='"+expression.infix()+"', expMathML='"+expMathML.infix()+"'";
+		Assert.assertTrue(msg, equiv);
+	}
+
+	@Test
+	public void test_vcell_mathml_jMathML_mathml_vcell() throws IOException, ExpressionException {
+		List<String> tokensToAvoid = Arrays.asList(
+				"atan",
+				"sech", "csch", "coth",
+				"acosh", "acot", "acoth",
+				"acsc", "acsch", "asec",
+				"asech", "asinh", "atanh",
+				"min", "max"
+		);
+		String infix = expression.infix();
+		boolean skipUnsupported = tokensToAvoid.stream().anyMatch(infix::contains);
+		if (skipUnsupported) {
+			return;
+		}
+		ExpressionMathMLParser expressionMathMLParser = new ExpressionMathMLParser(null);
+		MathMLReader mathMLReader = new MathMLReader();
+
+		Expression origExp = expression;
+		String vcell_MathMLStr = ExpressionMathMLPrinter.getMathML(origExp, true,
+				ExpressionMathMLPrinter.MathType.REAL, ExpressionMathMLPrinter.Dialect.SBML_SUBSET);
+		Expression expMathML_roundTrip = new ExpressionMathMLParser(null).fromMathML(vcell_MathMLStr, "t");
+		ASTNode astNode = mathMLReader.parseMathMLFromString(vcell_MathMLStr);
+		Expression expMathML = expressionMathMLParser.fromMathML(astNode,"t");
+
+		boolean equiv = ExpressionUtils.functionallyEquivalent(origExp, expMathML, true);
+		String msg = "not equivalent: origExp='"+origExp.infix()+"', expMathML='"+expMathML.infix()+"'";
 		Assert.assertTrue(msg, equiv);
 	}
 

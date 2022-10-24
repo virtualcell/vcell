@@ -98,14 +98,14 @@ public class CLIRecorder extends Recorder implements CLIRecordable {
     private void createHeader() throws IOException { 
         String header =         // Header Components:
             "BaseName," +           // base name of the omex file
-            "SedML," +              // (current) sed-ml file name and its...
-            "Error," +              // error(s) (if any)
-            "Models," +             // number of models
-            "Sims," +               // number of simulations
-            "Tasks," +              // number of tasks
-            "Outputs," +            // number of outputs
+            "Models," +             // number of sedml models
+            "Sims," +               // number of sedml simulations
+            "Tasks," +              // number of sedmltasks
+            "Outputs," +            // number of sedmloutputs
+            
             "BioModels," +          // number of biomodels
-            "HasChanges," +			// true if any sedml model has changes
+            "HasOverrides," +		// true if any vcell simulation has math overrides
+            "HasScans," +			// true if any vcell simulation has param scans
             "NumSimsSuccessful";    // number of succesful sims that we managed to run
         // (NB: we assume that the # of failures = # of tasks - # of successful simulations)
         // (NB: if multiple sedml files in the omex, we display on multiple rows, one for each sedml)

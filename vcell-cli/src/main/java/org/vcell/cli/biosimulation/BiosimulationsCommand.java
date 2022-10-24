@@ -105,12 +105,15 @@ public class BiosimulationsCommand implements Callable<Integer> {
 
             final boolean bKeepTempFiles = false;
             final boolean bExactMatchOnly = false;
+            final boolean bEncapsulateOutput = false;
+            final boolean bSmallMeshOverride = false;
 
             logger.info("Beginning execution");
             try {
                 CLIPythonManager.getInstance().instantiatePythonProcess();
-                ExecuteImpl.singleExecOmex(ARCHIVE, OUT_DIR, cliLogger, bKeepTempFiles, bExactMatchOnly, false);
-                return 0;
+                ExecuteImpl.singleExecOmex(ARCHIVE, OUT_DIR, cliLogger,
+                        bKeepTempFiles, bExactMatchOnly, bEncapsulateOutput, bSmallMeshOverride);
+                return 0; // Does this prevent finally?
             } finally {
                 try {
                     CLIPythonManager.getInstance().closePythonProcess(); // WARNING: Python will need reinstantiation after this is called

@@ -22,13 +22,6 @@ public class PythonCalls {
         cliPythonManager.parsePythonReturn(results, "", "Failed generating SED-ML for plot2d and 3D ");
     }
 
-    public static void execPlotOutputSedDoc(String omexFilePath, String idNamePlotsMap, String outputDir)  throws PythonStreamException {
-        logger.trace("Dialing Python function execPlotOutputSedDoc");
-        CLIPythonManager cliPythonManager = CLIPythonManager.getInstance();
-        String results = cliPythonManager.callPython("execPlotOutputSedDoc", omexFilePath, idNamePlotsMap, outputDir);
-        cliPythonManager.parsePythonReturn(results, "HDF conversion successful\n","HDF conversion failed\n");
-    }
-
     public static void updateTaskStatusYml(String sedmlName, String taskName, Status taskStatus, String outDir, String duration, String algorithm) throws PythonStreamException {
         algorithm = algorithm.toUpperCase(Locale.ROOT);
         algorithm = algorithm.replace("KISAO:", "KISAO_");

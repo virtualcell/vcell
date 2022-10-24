@@ -7,13 +7,14 @@ package org.jmathml;
  *
  */
 public class ENotationNumber extends ASTNumber {
-	private double mantissa, exp;
+	private double mantissa;
+	private int exp;
 
 	public double getValue() {
 		return mantissa * Math.pow(10.0, exp);
 	}
 
-	public double getExponent() {
+	public int getExponent() {
 		return exp;
 	}
 
@@ -21,7 +22,7 @@ public class ENotationNumber extends ASTNumber {
 		return mantissa;
 	}
 
-	ENotationNumber(double mantissa, double exponent) {
+	ENotationNumber(double mantissa, int exponent) {
 		super(ASTNumberType.NUMBER);
 		this.mantissa = mantissa;
 		this.exp = exponent;

@@ -62,7 +62,7 @@ jobs:
         # Do the conversion
       - name: Begin Conversion
         #$(docker image ls | grep "<none>" | awk '{print $3;}')  to get image id
-        run: ls $GITHUB_WORKSPACE && docker run -v $GITHUB_WORKSPACE/published/biomodel/omex/sbml:/root $(docker image ls | grep "<none>" | awk '{print $3;}') import-omex-batch -d -i "/root" -o "/root/output" # grabs image and runs
+        run: docker run -v $GITHUB_WORKSPACE/published/biomodel/omex/sbml:/root $(docker image ls | grep "<none>" | awk '{print $3;}') import-omex-batch -d -i "/root" -o "/root/output" # grabs image and runs
           
         # Parse the results
       - name: Parse Results
