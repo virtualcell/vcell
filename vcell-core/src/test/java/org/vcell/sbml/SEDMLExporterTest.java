@@ -145,8 +145,6 @@ public class SEDMLExporterTest {
 		faults.put("biomodel_91986407.vcml", FAULT.EXPRESSIONS_DIFFERENT); // not lumped: '0.0' vs ' - (-8000.0 + (7989.784637994342 * (((25.0 * ((100000.0 * x) ^ 2.0)) + (4.0 * ((100000.0 * y) ^ 2.0)) + (25.0 * ((100000.0 * z) ^ 2.0))) <= 1.0)))'
 		faults.put("biomodel_94538871.vcml", FAULT.EXPRESSIONS_DIFFERENT); // not lumped: '(166.71320638161768 * ((3.8914002976064215E-7 * Mt_c) - (4.6388961764957475E-6 * Mt_b)))' vs '(0.5 * ((333.42641276323536 * ((3.8914002976064215E-7 * Mt_c) - (4.6388961764957475E-6 * Mt_b))) + (14.828840737985518 * ((1.5491943619711282E-4 * Mt_c) - (4.7101704829063105E-4 * Mt_b)))))'
 		faults.put("biomodel_94891280.vcml", FAULT.MATHOVERRIDES_INVALID); // EGF
-		faults.put("biomodel_98139292.vcml", FAULT.SBML_IMPORT_FAILURE); // Failed to translate SBML model into BioModel: Unable to create VC structureMappings from SBML compartment mappings
-		faults.put("biomodel_98139299.vcml", FAULT.SBML_IMPORT_FAILURE); // Failed to translate SBML model into BioModel: Unable to create VC structureMappings from SBML compartment mappings
 		return faults;
 	}
 

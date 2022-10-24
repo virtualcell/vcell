@@ -892,7 +892,7 @@ private void addReactions() throws SbmlException, XMLStreamException {
 }
 
 private UnitDefinition getOrCreateSBMLUnit(VCUnitDefinition vcUnit) throws SbmlException {
-	String mangledSymbol = TokenMangler.mangleToSName(vcUnit.getSymbol());
+	String mangledSymbol = "Unit_"+TokenMangler.mangleToSName(vcUnit.getSymbol());
 	UnitDefinition unitDefn = sbmlModel.getUnitDefinition(mangledSymbol);
 	if (unitDefn == null){
 		unitDefn = SBMLUnitTranslator.getSBMLUnitDefinition(vcUnit, sbmlLevel, sbmlVersion, vcBioModel.getModel().getUnitSystem());
