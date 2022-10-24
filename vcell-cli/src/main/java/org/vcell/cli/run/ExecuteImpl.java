@@ -41,6 +41,17 @@ public class ExecuteImpl {
         File[] inputFiles = dirOfArchivesToProcess.listFiles(filter);
         if (inputFiles == null) throw new IOException("Error trying to retrieve files from input directory.");
 
+        // Build statuses
+        for (File inputFile : inputFiles){
+            String bioModelBaseName = FileUtils.getBaseName(inputFile.getName());
+            String outputBaseDir = outputDir.getAbsolutePath(); // bioModelBaseName = input file without the path
+            String targetOutputDir = Paths.get(outputBaseDir, bioModelBaseName).toString();
+
+            RunUtils.removeAndMakeDirs(new File(targetOutputDir));
+            PythonCalls.generateStatusYaml(inputFile.getAbsolutePath(), targetOutputDir);    // generate Status YAML
+        }
+        
+        // Begin Processing
         for (File inputFile : inputFiles) {
             String inputFileName = inputFile.getName();
             logger.info("Processing " + inputFileName + "(" + inputFile + ")");
@@ -167,13 +178,18 @@ public class ExecuteImpl {
 
         logger.info("Preparing output directory...");
         //CLIUtils.cleanRootDir(new File(outputBaseDir));
-        if (bEncapsulateOutput) RunUtils.removeAndMakeDirs(new File(outputDir));
-        PythonCalls.generateStatusYaml(inputFilePath, outputDir);    // generate Status YAML
+        //if (bEncapsulateOutput) RunUtils.removeAndMakeDirs(new File(outputDir));
+        //PythonCalls.generateStatusYaml(inputFilePath, outputDir);    // generate Status YAML
+        PythonCalls.updateOmexStatusYml(Status.RUNNING, outputDir, "0");
 
         /*
          * from here on, we need to collect errors, since some subtasks may succeed while other do not
          * we now have the log file created, so that we also have a place to put them
          */
+        for (String sedmlLocation: sedmlLocations){
+            PythonCalls.updateSedmlDocStatusYml(sedmlLocation, Status.QUEUED, outputDir);
+        }
+        
         for (String sedmlLocation : sedmlLocations) {
             logger.info("Initializing SED-ML document...");
             String sedmlName = "", logDocumentMessage = "Initializing SED-ML document... ", logDocumentError = "";
@@ -192,6 +208,7 @@ public class ExecuteImpl {
                 sedmlName = sedmlNameSplit[sedmlNameSplit.length - 1];
                 logOmexMessage += "Processing " + sedmlName + ". ";
                 logger.info("Processing SED-ML: " + sedmlName);
+                PythonCalls.updateSedmlDocStatusYml(sedmlLocation, Status.RUNNING, outputDir);
 
                 nModels = sedmlFromOmex.getModels().size();
                 for(Model m : sedmlFromOmex.getModels()) {
