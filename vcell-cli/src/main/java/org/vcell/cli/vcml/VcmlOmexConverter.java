@@ -378,19 +378,21 @@ public class VcmlOmexConverter {
         XmlUtil.writeXMLStringToFile(sedmlString, String.valueOf(Paths.get(outputDir, vcmlName + ".sedml")), true);
 
 		Version version = bioModel.getVersion();
-		String versionKey = version.getVersionKey().toString();
-		String sourcePath = "https://vcellapi-beta.cam.uchc.edu:8080/biomodel/" + versionKey + "/diagram";
-		destinationPath = Paths.get(outputDir, "diagram.png").toString();
-		URL source = new URL(sourcePath);
-		destination = new File(destinationPath);
-		int connectionTimeout = 10000;
-		int readTimeout = 20000;
-		try {
-			FileUtils.copyURLToFile(source, destination, connectionTimeout, readTimeout);		// diagram
-		} catch(IOException e) {
-			logger.error("Diagram not present in source="+sourcePath+": "+e.getMessage(), e);
+		if (version != null){
+			String versionKey = version.getVersionKey().toString();
+			String sourcePath = "https://vcellapi-beta.cam.uchc.edu:8080/biomodel/" + versionKey + "/diagram";
+			destinationPath = Paths.get(outputDir, "diagram.png").toString();
+			URL source = new URL(sourcePath);
+			destination = new File(destinationPath);
+			int connectionTimeout = 10000;
+			int readTimeout = 20000;
+			try {
+				FileUtils.copyURLToFile(source, destination, connectionTimeout, readTimeout);		// diagram
+			} catch(IOException e) {
+				logger.error("Diagram not present in source="+sourcePath+": "+e.getMessage(), e);
+			}
 		}
-
+		
 		String rdfString = getMetadata(vcmlName, bioModel, destination, bioModelInfo);
 		XmlUtil.writeXMLStringToFile(rdfString, String.valueOf(Paths.get(outputDir, "metadata.rdf")), true);
         try {
