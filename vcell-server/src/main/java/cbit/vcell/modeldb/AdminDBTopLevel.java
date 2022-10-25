@@ -851,6 +851,19 @@ void sendLostPassword(String userid, boolean bEnableRetry) throws DataAccessExce
 	}
 	
 }
+void contactUs(String userid, String message) throws DataAccessException, java.sql.SQLException, ObjectNotFoundException {
+	Object lock = new Object();
+	Connection con = conFactory.getConnection(lock);
+	try {
+		userDB.contactUs(con,userid,message);
+	} catch (Throwable e) {
+		lg.error("failure in contactUs()",e);
+		handle_DataAccessException_SQLException(e);
+	} finally {
+		conFactory.release(con,lock);
+	}
+	
+}
 
 
 /**

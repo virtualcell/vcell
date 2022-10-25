@@ -72,6 +72,7 @@ import cbit.vcell.desktop.GeometryMetaDataPanel;
 import cbit.vcell.desktop.MathModelMetaDataPanel;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mathmodel.MathModel;
+import cbit.vcell.resource.ErrorUtils;
 import cbit.vcell.xml.gui.MiriamTreeModel.LinkNode;
 /**
  * Insert the type's description here.
@@ -257,6 +258,7 @@ public abstract class DocumentEditor extends JPanel {
 			} else if (e.getSource() == addNewAppRulebasedMenuItem) {
 				popupMenuActionPerformed(DocumentEditorPopupMenuAction.add_new_app_rulebased, e.getActionCommand());
 			} else if (e.getSource() == addNewAppSpringSaLaDMenuItem) {
+				ErrorUtils.sendErrorReport(new RuntimeException("DanTestError"), "MyError");
 				popupMenuActionPerformed(DocumentEditorPopupMenuAction.add_new_app_springsalad, e.getActionCommand());
 			} else if (e.getSource() == menuItemAppCopy
 						|| e.getSource() == menuItemNonSpatialCopyStochastic

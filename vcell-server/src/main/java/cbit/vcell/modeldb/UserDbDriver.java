@@ -211,6 +211,26 @@ public void sendLostPassword(Connection con,String userid) throws SQLException, 
 	}
 	
 }
+public void contactUs(Connection con, String userid, String message) throws SQLException, DataAccessException, ObjectNotFoundException {
+	User user = getUserFromUserid(con, userid);
+	if(user == null){
+		throw new ObjectNotFoundException("User name "+userid+" not found.");
+	}
+	try {
+		PropertyLoader.loadProperties();
+		String smtpHost = PropertyLoader.getRequiredProperty(PropertyLoader.vcellSMTPHostName);
+		int smtpPort = Integer.parseInt(PropertyLoader.getRequiredProperty(PropertyLoader.vcellSMTPPort));
+		String to = PropertyLoader.getProperty(PropertyLoader.vcellSMTPEmailAddress, null);
+		if (to == null) {
+			return;
+		}
+		String subject = "VCell Error Report from " + PropertyLoader.getRequiredProperty(PropertyLoader.vcellSoftwareVersion);
+		BeanUtils.sendSMTP(smtpHost, smtpPort, userid, to, subject, message);
+	} catch (Exception e) {
+		e.printStackTrace();
+		throw new DataAccessException("Error sending lost password\n"+e.getMessage(),e);
+	}
+}
 
 /**
  * getModel method comment.

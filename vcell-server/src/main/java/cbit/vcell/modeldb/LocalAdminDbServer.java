@@ -273,5 +273,13 @@ public void sendLostPassword(String userid) throws DataAccessException {
 		throw new DataAccessException("failure sending password for user '"+userid+"'\n"+e.getMessage());
 	}
 }
+public void contactUs(String userid, String message) throws DataAccessException {
+	try {
+		adminDbTop.contactUs(userid,message);
+	}catch (Throwable e){
+		lg.error(e.getMessage(),e);
+		throw new DataAccessException("failure reporting an error to vCell support\n"+e.getMessage());
+	}
+}
 
 }

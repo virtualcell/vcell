@@ -55,9 +55,10 @@ public class ErrorUtils {
 		}
 		String subject = "VCell Error Report from " + PropertyLoader.getRequiredProperty(PropertyLoader.vcellSoftwareVersion);
 		String content = BeanUtils.getStackTrace(exception)+"\n";
-		String platform = "Running under Java major version: ONE point "+ ResourceUtil.getJavaVersion().toString()+".  Specifically: Java "+(System.getProperty("java.version"))+
-			", published by "+(System.getProperty("java.vendor"))+", on the "+ (System.getProperty("os.arch"))+" architecture running version "+(System.getProperty("os.version"))+
-			" of the "+(System.getProperty("os.name"))+" operating system";
+		String platform="my platform";
+//		String platform = "Running under Java major version: ONE point "+ ResourceUtil.getJavaVersion().toString()+".  Specifically: Java "+(System.getProperty("java.version"))+
+//			", published by "+(System.getProperty("java.vendor"))+", on the "+ (System.getProperty("os.arch"))+" architecture running version "+(System.getProperty("os.version"))+
+//			" of the "+(System.getProperty("os.name"))+" operating system";
 		content = content + platform;
 		if (supplement != null) {
 			content += BeanUtils.PLAINTEXT_EMAIL_NEWLINE + supplement;
