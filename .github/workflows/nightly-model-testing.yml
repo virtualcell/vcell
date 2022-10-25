@@ -147,8 +147,8 @@ jobs:
         run: docker load --input ~/wrk/$(ls ~/wrk)
       
       # Make Input Directory
-      - name: Make Input Directory
-        run: mkdir ~/input_files
+      - name: Make Input and Output Directory
+        run: mkdir -p ~/input_files/ouput
       
       # Get the coverted omexes from before
       - name: Download Converted COMBINE Archives
