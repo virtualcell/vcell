@@ -330,6 +330,8 @@ public class SolverHandler {
 				
 				AbstractTask task = simulationToTaskMap.get(sim);
 				simStatusMap.put(sim, Status.RUNNING);
+				PythonCalls.updateTaskStatusYml(sedmlLocation, task.getId(), Status.RUNNING, outDir,
+					"0", sim.getSolverTaskDescription().getSolverDescription().getKisao());
 				simDurationMap.put(sim, 0);
 
 				if (bSmallMeshOverride && sim.getMeshSpecification()!=null){
@@ -446,7 +448,6 @@ public class SolverHandler {
                 		String msg = "Running simulation " + simTask.getSimulation().getName() + ", " + elapsedTime + " ms";
                 		logger.info(msg);
                 		countSuccessfulSimulationRuns++;	// we only count the number of simulations (tasks) that succeeded
-//                		PythonCalls.updateTaskStatusYml(sedmlLocation, sim.getImportedTaskID(), Status.SUCCEEDED, outDir ,duration + "", kisao);
                 		if(simStatusMap.get(originalSim) != Status.ABORTED && simStatusMap.get(originalSim) != Status.FAILED) {
                 			simStatusMap.put(originalSim, Status.SUCCEEDED);
                 		}
@@ -477,10 +478,8 @@ public class SolverHandler {
             		} else {
                 		Simulation originalSim = simJob.getSimulation();
             			if(solverStatus == SolverStatus.SOLVER_ABORTED) {
-//            				PythonCalls.updateTaskStatusYml(sedmlLocation, sim.getImportedTaskID(), Status.ABORTED, outDir ,duration + "", kisao);
             				simStatusMap.put(originalSim, Status.ABORTED);
             			} else {
-//            				PythonCalls.updateTaskStatusYml(sedmlLocation, sim.getImportedTaskID(), Status.FAILED, outDir ,duration + "", kisao);
             				simStatusMap.put(originalSim, Status.FAILED);
             			}
             		}

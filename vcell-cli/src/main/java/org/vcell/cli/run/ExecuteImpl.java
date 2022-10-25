@@ -47,11 +47,11 @@ public class ExecuteImpl {
             String outputBaseDir = outputDir.getAbsolutePath(); // bioModelBaseName = input file without the path
             String targetOutputDir = Paths.get(outputBaseDir, bioModelBaseName).toString();
 
+            logger.info("Preparing output directory...");
             RunUtils.removeAndMakeDirs(new File(targetOutputDir));
             PythonCalls.generateStatusYaml(inputFile.getAbsolutePath(), targetOutputDir);    // generate Status YAML
         }
-        
-        // Begin Processing
+
         for (File inputFile : inputFiles) {
             String inputFileName = inputFile.getName();
             logger.info("Processing " + inputFileName + "(" + inputFile + ")");
@@ -71,6 +71,24 @@ public class ExecuteImpl {
                 logger.error("Error caught executing batch mode", e);
             }
         }
+    }
+
+    public static void singleMode(File inputFile, File outputDir, CLIRecorder cliLogger) throws Exception {
+        final boolean bKeepTempFiles = false;
+        final boolean bExactMatchOnly = false;
+        final boolean bEncapsulateOutput = false;
+        final boolean bSmallMeshOverride = false;
+
+        // Build statuses
+        String bioModelBaseName = FileUtils.getBaseName(inputFile.getName());
+        String outputBaseDir = outputDir.getAbsolutePath(); // bioModelBaseName = input file without the path
+        String targetOutputDir = bEncapsulateOutput ? Paths.get(outputBaseDir, bioModelBaseName).toString() : outputBaseDir;
+
+        logger.info("Preparing output directory...");
+        RunUtils.removeAndMakeDirs(new File(targetOutputDir));
+        PythonCalls.generateStatusYaml(inputFile.getAbsolutePath(), targetOutputDir);    // generate Status YAML
+
+        ExecuteImpl.singleExecOmex(inputFile, outputDir, cliLogger, bKeepTempFiles, bExactMatchOnly, bEncapsulateOutput, bSmallMeshOverride);
     }
 
     @Deprecated
@@ -175,11 +193,7 @@ public class ExecuteImpl {
             logger.error(error);
             throw new RuntimeException(error, e);
         } 
-
-        logger.info("Preparing output directory...");
-        //CLIUtils.cleanRootDir(new File(outputBaseDir));
-        //if (bEncapsulateOutput) RunUtils.removeAndMakeDirs(new File(outputDir));
-        //PythonCalls.generateStatusYaml(inputFilePath, outputDir);    // generate Status YAML
+        
         PythonCalls.updateOmexStatusYml(Status.RUNNING, outputDir, "0");
 
         /*
