@@ -225,7 +225,7 @@ public class ExecuteImpl {
                         + nReportsCount + "  report(s),  "
                         + nPlots2DCount + " plot2D(s), and "
                         + nPlots3DCount + " plot3D(s)\n";
-                logger.debug(summarySedmlContentString);
+                logger.info(summarySedmlContentString);
 
                 logDocumentMessage += "done. ";
                 String str = "Successful translation of SED-ML file";
