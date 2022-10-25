@@ -168,16 +168,16 @@ jobs:
        # Parse the results
       - name: Parse Results
         run: cd ~/input_files/output && touch round-trip_results.txt && \
-          echo 'Biomodels processed $(cat jobLog.txt | grep START | wc -l)' >> round-trip_results.txt && \
-          echo 'Biomodels succeeded $(cat jobLog.txt | grep SUCC | wc -l)' >> round-trip_results.txt && \
-          echo "Biomodels that didn't converge $(cat jobLog.txt | grep SUCC | grep -v ',1' | wc -l)" >> round-trip_results.txt
+          echo 'Biomodels processed $(sudo cat jobLog.txt | grep START | wc -l)' >> ../round-trip_results.txt && \
+          echo 'Biomodels succeeded $(sudo cat jobLog.txt | grep SUCC | wc -l)' >> ../round-trip_results.txt && \
+          echo "Biomodels that didn't converge $(sudo cat jobLog.txt | grep SUCC | grep -v ',1' | wc -l)" >> ../round-trip_results.txt
       
       # Upload results
       - name: Upload Results of Round-Trip
         uses: actions/upload-artifact@v3
         with:
           name: round-trip_results.txt
-          path: ~/input_files/output
+          path: ~/input_files
           
       # Tmate just in case
       - name: Setup tmate session 3
