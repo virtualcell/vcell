@@ -7,7 +7,6 @@ on:
   
 env:
   python-version: "3.9"
-  poetry-version: "1.2.1"
   
 jobs:
   build:
@@ -37,13 +36,14 @@ jobs:
         cd ..
         sudo tar -xvf deploy/deploy_dir.tar
         sudo chmod 777 -R deploy
-    - name: Install poetry
-      run: pipx install poetry==${{ env.poetry-version }}
-
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
         python-version: ${{ env.python-version }}
+        cache: "pip"
+      
+    - name: Install Dependencies
+      run: pip install -r requirements.txt
 
     - name: build vcell-cli-utils package
       run: |
