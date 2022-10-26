@@ -107,12 +107,12 @@ public class CLIPythonManager {
     public void closePythonProcess() throws IOException {
         // Exit the living Python Process
         logger.debug("Closing Python Instance");
-        this.sendNewCommand("exit()"); // Sends kill command ("exit()") to python.exe instance;
-        if (pythonProcess.isAlive()) pythonProcess.destroyForcibly(); // Making sure it's quite dead
+        if (pythonOSW != null && pythonISB != null) this.sendNewCommand("exit()"); // Sends kill command ("exit()") to python.exe instance;
+        if (pythonProcess != null && pythonProcess.isAlive()) pythonProcess.destroyForcibly(); // Making sure it's quite dead
 
         // Making sure we clean up
-        pythonOSW.close();
-        pythonISB.close();
+        if (pythonOSW != null) pythonOSW.close();
+        if (pythonISB != null) pythonISB.close();
 
         // Unbind references to allow reinstantiation
         pythonISB = null;
