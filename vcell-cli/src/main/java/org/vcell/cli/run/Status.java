@@ -5,7 +5,8 @@ public enum Status {
     SKIPPED("Simulation skipped"),
     SUCCEEDED("Simulation succeeded"),
     FAILED("Simulation failed"),
-    ABORTED("Simulation aborted");
+    ABORTED("Simulation aborted"),
+    QUEUED("Simulation is waiting to be run.");
 
     private final String description;
 

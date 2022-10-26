@@ -103,16 +103,10 @@ public class BiosimulationsCommand implements Callable<Integer> {
             long EXECUTABLE_MAX_WALLCLOCK_MILLIS = 600000;
             Executable.setTimeoutMS(EXECUTABLE_MAX_WALLCLOCK_MILLIS);
 
-            final boolean bKeepTempFiles = false;
-            final boolean bExactMatchOnly = false;
-            final boolean bEncapsulateOutput = false;
-            final boolean bSmallMeshOverride = false;
-
             logger.info("Beginning execution");
             try {
                 CLIPythonManager.getInstance().instantiatePythonProcess();
-                ExecuteImpl.singleExecOmex(ARCHIVE, OUT_DIR, cliLogger,
-                        bKeepTempFiles, bExactMatchOnly, bEncapsulateOutput, bSmallMeshOverride);
+                ExecuteImpl.singleMode(ARCHIVE, OUT_DIR, cliLogger);
                 return 0; // Does this prevent finally?
             } finally {
                 try {

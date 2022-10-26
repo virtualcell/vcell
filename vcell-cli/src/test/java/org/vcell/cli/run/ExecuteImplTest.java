@@ -37,7 +37,7 @@ public class ExecuteImplTest {
             boolean bExactMatchOnly = false;
             boolean bEncapsulateOutput = true;
             boolean bSmallMeshOverride = false;
-            ExecuteImpl.singleExecOmex(
+            ExecuteImpl.singleMode(
                     tempOmexFile, tempOutputDir, cliRecorder,
                     bKeepTempFiles, bExactMatchOnly, bEncapsulateOutput, bSmallMeshOverride);
 

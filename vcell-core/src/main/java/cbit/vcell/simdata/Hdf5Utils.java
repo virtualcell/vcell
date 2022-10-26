@@ -68,12 +68,14 @@ public class Hdf5Utils {
 		insertAttributes(hdf5GroupID, dataspaceName, new ArrayList<String>(Arrays.asList(new String[] {data})));
 	}
 	public static void insertAttributes(int hdf5GroupID,String dataspaceName,List<String> data) throws NullPointerException, HDF5Exception {
-		String[] attr = ((List<String>)data).toArray(new String[0]);
+		String[] attr = data.toArray(new String[0]);
 		long[] dims = new long[] {attr.length};
 		StringBuffer sb = new StringBuffer();
 		int MAXSTRSIZE=  -1;
 		for(int i=0;i<attr.length;i++) {
-			MAXSTRSIZE = Math.max(MAXSTRSIZE, attr[i].length());
+			int len = attr[i] == null ? -1 : attr[i].length(); // passing a 0 causes null exception
+			if (attr[i] == null) attr[i] = "";
+			MAXSTRSIZE = Math.max(MAXSTRSIZE, len);
 		}
 		for(int i=0;i<attr.length;i++) {
 			sb.append(attr[i]);
