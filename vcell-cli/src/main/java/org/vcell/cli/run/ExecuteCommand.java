@@ -112,7 +112,7 @@ public class ExecuteCommand implements Callable<Integer> {
                 if (archiveToProcess.getName().endsWith("vcml")) {
                     ExecuteImpl.singleExecVcml(archiveToProcess, outputFilePath, cliLogger);
                 } else { // archiveToProcess.getName().endsWith("omex")
-                    ExecuteImpl.singleExecOmex(archiveToProcess, outputFilePath, cliLogger, bKeepTempFiles, bExactMatchOnly, bEncapsulateOutput, bSmallMeshOverride);
+                    ExecuteImpl.singleMode(archiveToProcess, outputFilePath, cliLogger, bKeepTempFiles, bExactMatchOnly, bEncapsulateOutput, bSmallMeshOverride);
                 }
             }
 

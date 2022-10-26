@@ -73,22 +73,27 @@ public class ExecuteImpl {
         }
     }
 
-    public static void singleMode(File inputFile, File outputDir, CLIRecorder cliLogger) throws Exception {
-        final boolean bKeepTempFiles = false;
-        final boolean bExactMatchOnly = false;
-        final boolean bEncapsulateOutput = false;
-        final boolean bSmallMeshOverride = false;
-
+    public static void singleMode(File inputFile, File rootOutputDir, CLIRecorder cliLogger,
+            boolean bKeepTempFiles, boolean bExactMatchOnly, boolean bEncapsulateOutput, boolean bSmallMeshOverride) throws Exception {
         // Build statuses
         String bioModelBaseName = FileUtils.getBaseName(inputFile.getName());
-        String outputBaseDir = outputDir.getAbsolutePath(); // bioModelBaseName = input file without the path
+        String outputBaseDir = rootOutputDir.getAbsolutePath(); // bioModelBaseName = input file without the path
         String targetOutputDir = bEncapsulateOutput ? Paths.get(outputBaseDir, bioModelBaseName).toString() : outputBaseDir;
 
         logger.info("Preparing output directory...");
         RunUtils.removeAndMakeDirs(new File(targetOutputDir));
         PythonCalls.generateStatusYaml(inputFile.getAbsolutePath(), targetOutputDir);    // generate Status YAML
 
-        ExecuteImpl.singleExecOmex(inputFile, outputDir, cliLogger, bKeepTempFiles, bExactMatchOnly, bEncapsulateOutput, bSmallMeshOverride);
+        ExecuteImpl.singleExecOmex(inputFile, rootOutputDir, cliLogger, bKeepTempFiles, bExactMatchOnly, bEncapsulateOutput, bSmallMeshOverride);
+    }
+
+    public static void singleMode(File inputFile, File outputDir, CLIRecorder cliLogger) throws Exception {
+        final boolean bKeepTempFiles = false;
+        final boolean bExactMatchOnly = false;
+        final boolean bEncapsulateOutput = false;
+        final boolean bSmallMeshOverride = false;
+
+        ExecuteImpl.singleMode(inputFile, outputDir, cliLogger, bKeepTempFiles, bExactMatchOnly, bEncapsulateOutput, bSmallMeshOverride);
     }
 
     @Deprecated
