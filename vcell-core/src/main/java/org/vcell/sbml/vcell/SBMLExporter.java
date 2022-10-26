@@ -1012,7 +1012,7 @@ private void addSpecies() throws XMLStreamException, SbmlException {
 		sbmlSpecies.setSubstanceUnits(unitDefn);
 
 		// need to do the following if exporting to SBML spatial
-		if (bSpatial) {
+		if (bSpatial && !bBoundaryCondition) {
 			
 			// Required for setting BoundaryConditions : structureMapping for vcSpeciesContext[i] & sbmlGeometry.coordinateComponents
 			StructureMapping sm = getSelectedSimContext().getGeometryContext().getStructureMapping(vcSpeciesContexts[i].getStructure());
