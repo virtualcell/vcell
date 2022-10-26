@@ -37,9 +37,9 @@ public class StructureSizeSolverTest {
         BioModel legacyBioModelCloned = XmlHelper.cloneBioModel(legacyBioModel);
         legacyBioModelCloned.updateAll(false);
         MathDescription newMathDescription = legacyBioModelCloned.getSimulationContext(0).getMathDescription();
-        final File dataDir = new File("/Users/schaff/Documents/workspace/vcell/vcell-core/src/test/resources/org/vcell/sbml/vcml_published");
-        final File newVCML = new File(dataDir,"biomodel_89712092_simple_regenerated.vcml");
-        Files.write(newVCML.toPath(), XmlHelper.bioModelToXML(legacyBioModelCloned).getBytes(StandardCharsets.UTF_8));
+//        final File dataDir = new File("/Users/schaff/Documents/workspace/vcell/vcell-core/src/test/resources/org/vcell/sbml/vcml_published");
+//        final File newVCML = new File(dataDir,"biomodel_89712092_simple_regenerated.vcml");
+//        Files.write(newVCML.toPath(), XmlHelper.bioModelToXML(legacyBioModelCloned).getBytes(StandardCharsets.UTF_8));
 
         MathCompareResults results = MathDescription.testEquivalency(
                 SimulationSymbolTable.createMathSymbolTableFactory(), legacyMathDescription, newMathDescription);
