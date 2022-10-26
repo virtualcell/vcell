@@ -76,8 +76,8 @@ public class ExecuteImpl {
     public static void singleMode(File inputFile, File rootOutputDir, CLIRecorder cliLogger,
             boolean bKeepTempFiles, boolean bExactMatchOnly, boolean bEncapsulateOutput, boolean bSmallMeshOverride) throws Exception {
         // Build statuses
-        String bioModelBaseName = FileUtils.getBaseName(inputFile.getName());
-        String outputBaseDir = rootOutputDir.getAbsolutePath(); // bioModelBaseName = input file without the path
+        String bioModelBaseName = FileUtils.getBaseName(inputFile.getName()); // bioModelBaseName = input file without the path
+        String outputBaseDir = rootOutputDir.getAbsolutePath(); 
         String targetOutputDir = bEncapsulateOutput ? Paths.get(outputBaseDir, bioModelBaseName).toString() : outputBaseDir;
 
         logger.info("Preparing output directory...");
@@ -148,13 +148,7 @@ public class ExecuteImpl {
         }
     }
 
-
-    public static void singleExecOmex(File inputFile, File rootOutputDir, CLIRecorder logger, 
-            boolean bKeepTempFiles, boolean bExactMatchOnly) throws Exception {
-        ExecuteImpl.singleExecOmex(inputFile, rootOutputDir, logger, bKeepTempFiles, bExactMatchOnly, true, false);
-    }
-
-    public static void singleExecOmex(File inputFile, File rootOutputDir, CLIRecorder cliLogger,
+    private static void singleExecOmex(File inputFile, File rootOutputDir, CLIRecorder cliLogger,
             boolean bKeepTempFiles, boolean bExactMatchOnly, boolean bEncapsulateOutput, boolean bSmallMeshOverride) throws Exception {
         int nModels, nSimulations, nTasks, nOutputs, nReportsCount = 0, nPlots2DCount = 0, nPlots3DCount = 0;
         boolean hasOverrides = false;
