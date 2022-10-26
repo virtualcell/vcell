@@ -136,7 +136,7 @@ public class CLIPythonManager {
         logger.debug("Loading poetry");
         ProcessBuilder pb = new ProcessBuilder("poetry", "run", "python", "-i", "-W ignore");
         pb.redirectErrorStream(true);
-        File cliWorkingDir = PropertyLoader.getRequiredDirectory(PropertyLoader.cliWorkingDir);
+        File cliWorkingDir = PropertyLoader.getRequiredDirectory(PropertyLoader.cliWorkingDir).getCanonicalFile();
         pb.directory(cliWorkingDir);
         this.pythonProcess = pb.start();
         this.pythonOSW = new OutputStreamWriter(pythonProcess.getOutputStream());
