@@ -1,0 +1,8 @@
+biosimulators_utils>=0.1.127
+fire>=0.4.0
+PyYAML>=6.0
+pandas>=1.4.3
+matplotlib>=3.5.2
+seaborn>=0.11.2
+python-libsbml-experimental>=5.19.5
+Deprecated>=1.2.13
