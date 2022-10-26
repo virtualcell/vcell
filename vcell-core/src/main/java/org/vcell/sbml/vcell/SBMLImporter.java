@@ -3329,9 +3329,8 @@ public class SBMLImporter {
 					IssueCategory.SBMLImport_UnsupportedAttributeOrElement,
 					"Geometry not defined in spatial model.",
 					Issue.Severity.WARNING));
-			return null;
-			// throw new
-			// RuntimeException("SBML model does not have any geometryDefinition. Cannot proceed with import.");
+//			return null;
+			throw new RuntimeException("SBML model does not have any geometryDefinition. Cannot proceed with import.");
 		}
 		return geometry;
 
