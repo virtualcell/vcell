@@ -412,7 +412,7 @@ public static boolean functionallyEquivalent(Expression exp1, Expression exp2, b
 		return false;
 	} 
 	double defaultAbsoluteTolerance = 1e-12;
-	double defaultRelativeTolerance = 1e-10;
+	double defaultRelativeTolerance = 1e-9;
 	boolean bFirstAnswer = functionallyEquivalent(exp1,exp2,bVerifySameSymbols,defaultRelativeTolerance,defaultAbsoluteTolerance);
 	try {
 		boolean bSecondAnswer = functionallyEquivalent(exp1.flattenSafe(),exp2.flattenSafe(),false,defaultRelativeTolerance,defaultAbsoluteTolerance);

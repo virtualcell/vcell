@@ -144,8 +144,17 @@ public static Expression assign(Expression lvalueExp, Expression rvalueExp) thro
    {
 bindCount++;/////////////////
 	  rootNode.bind(symbolTable);
-   }                     
-/**
+   }
+
+   public Expression bindExpressionAndReturn(SymbolTable symbolTable) throws ExpressionBindingException
+   {
+	   bindExpression(symbolTable);
+	   return this;
+   }
+
+
+
+	/**
  * This method was created in VisualAge.
  * @return boolean
  * @param obj java.lang.Object

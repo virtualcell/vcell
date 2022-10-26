@@ -981,7 +981,8 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 			StructureMappingParameter sizeParm = sm.getSizeParameter();
 			if (sizeParm!=null && sizeParm.getExpression()!=null){
 				varHash.addVariable(newFunctionOrConstant(getMathSymbol(sizeParm,sm.getGeometryClass()),getIdentifierSubstitutions(sizeParm.getExpression(), sizeParm.getUnitDefinition(), sm.getGeometryClass()), sm.getGeometryClass()));
-			} else {
+			}
+//			else {
 				if (sm instanceof MembraneMapping) {
 					MembraneMapping mm = (MembraneMapping)sm;
 					StructureMappingParameter volFrac = mm.getVolumeFractionParameter();
@@ -997,7 +998,7 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 								getIdentifierSubstitutions(surfToVol.getExpression(), surfToVol.getUnitDefinition(), sm.getGeometryClass()), sm.getGeometryClass()));
 					}
 				}				
-			}
+//			}
 		}else{
 			Parameter parm = sm.getParameterFromRole(StructureMapping.ROLE_AreaPerUnitArea);
 			if (parm!=null && parm.getExpression()!=null && sm.getGeometryClass() instanceof SurfaceClass){
