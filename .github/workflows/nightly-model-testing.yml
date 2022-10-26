@@ -148,7 +148,7 @@ jobs:
       
       # Make Input Directory
       - name: Make Input and Output Directory
-        run: mkdir -p ~/input_files/ouput
+        run: mkdir -p ~/input_files/output
       
       # Get the coverted omexes from before
       - name: Download Converted COMBINE Archives
