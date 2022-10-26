@@ -2,8 +2,10 @@ package org.vcell.sbml;
 
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.mapping.*;
+import cbit.vcell.math.Constant;
 import cbit.vcell.math.MathCompareResults;
 import cbit.vcell.math.MathDescription;
+import cbit.vcell.math.Variable;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Structure;
 import cbit.vcell.parser.Expression;
@@ -37,6 +39,8 @@ public class StructureSizeSolverTest {
         BioModel legacyBioModelCloned = XmlHelper.cloneBioModel(legacyBioModel);
         legacyBioModelCloned.updateAll(false);
         MathDescription newMathDescription = legacyBioModelCloned.getSimulationContext(0).getMathDescription();
+        Constant KMOLE = (Constant)newMathDescription.getVariable("KMOLE");
+        KMOLE.getExpression().substituteInPlace(new Expression(1.0/602.214179),new Expression(1/602.0));
 //        final File dataDir = new File("/Users/schaff/Documents/workspace/vcell/vcell-core/src/test/resources/org/vcell/sbml/vcml_published");
 //        final File newVCML = new File(dataDir,"biomodel_89712092_simple_regenerated.vcml");
 //        Files.write(newVCML.toPath(), XmlHelper.bioModelToXML(legacyBioModelCloned).getBytes(StandardCharsets.UTF_8));
