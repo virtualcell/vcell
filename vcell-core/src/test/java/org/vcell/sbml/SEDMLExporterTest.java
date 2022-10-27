@@ -138,13 +138,12 @@ public class SEDMLExporterTest {
 		faults.put("biomodel_26581203.vcml", FAULT.MATHOVERRIDES_INVALID); // r_neck
 		faults.put("biomodel_27192717.vcml", FAULT.MATHOVERRIDES_INVALID); // PIP2Sink_PM (also, out of memory and large)
 		faults.put("biomodel_31523791.vcml", FAULT.MATHOVERRIDES_A_FUNCTION); // cAMP_Intracellular
-	//faults.put("biomodel_34855932.vcml", FAULT.MATHOVERRIDES_SurfToVol); // SurfToVol_IC_compartment_mem
 		faults.put("biomodel_59361239.vcml", FAULT.MATHOVERRIDES_INVALID); // fibronectin_Unnamed_compartment
 		faults.put("biomodel_81992349.vcml", FAULT.MATHOVERRIDES_INVALID); // isoprenaline_ec
 		faults.put("biomodel_83932776.vcml", FAULT.EXPRESSIONS_DIFFERENT); // not lumped:
 		faults.put("biomodel_83932806.vcml", FAULT.EXPRESSIONS_DIFFERENT); // not lumped:
-	//faults.put("biomodel_89712092.vcml", FAULT.MATHOVERRIDES_SurfToVol); // SurfToVol_PM, PIP2_PM
-	faults.put("biomodel_89712092_simple.vcml", FAULT.MATHOVERRIDES_SurfToVol); // SurfToVol_PM
+		faults.put("biomodel_89712092.vcml", FAULT.MATHOVERRIDES_INVALID); // PIP2_PM, stim_PM
+		faults.put("biomodel_89712092_simple.vcml", FAULT.MATHOVERRIDES_INVALID); // stim_PM
 		faults.put("biomodel_91986407.vcml", FAULT.EXPRESSIONS_DIFFERENT); // not lumped: '0.0' vs ' - (-8000.0 + (7989.784637994342 * (((25.0 * ((100000.0 * x) ^ 2.0)) + (4.0 * ((100000.0 * y) ^ 2.0)) + (25.0 * ((100000.0 * z) ^ 2.0))) <= 1.0)))'
 		faults.put("biomodel_94538871.vcml", FAULT.EXPRESSIONS_DIFFERENT); // not lumped: '(166.71320638161768 * ((3.8914002976064215E-7 * Mt_c) - (4.6388961764957475E-6 * Mt_b)))' vs '(0.5 * ((333.42641276323536 * ((3.8914002976064215E-7 * Mt_c) - (4.6388961764957475E-6 * Mt_b))) + (14.828840737985518 * ((1.5491943619711282E-4 * Mt_c) - (4.7101704829063105E-4 * Mt_b)))))'
 		faults.put("biomodel_94891280.vcml", FAULT.MATHOVERRIDES_INVALID); // EGF
@@ -163,7 +162,6 @@ public class SEDMLExporterTest {
 //		Predicate<String> allFailures = (t) -> knownFaults().containsKey(t) && skipFilter.test(t);
 		Predicate<String> oneModelFilter = (t) -> t.equals("lumped_reaction_no_size_in_rate.vcml");
 		Predicate<String> skipFilter = (t) -> !outOfMemorySet().contains(t) && !largeFileSet().contains(t);
-		skipFilter = surfToVolume_Overrides_Filter;
 		return Arrays.stream(VcmlTestSuiteFiles.getVcmlTestCases()).filter(skipFilter).collect(Collectors.toList());
 	}
 
