@@ -233,7 +233,7 @@ public abstract class HtcProxy {
 	public abstract String getSubmissionFileExtension();
 	public static class MemLimitResults {
 		private static final long FALLBACK_MEM_LIMIT_MB=4096;		// MAX memory allowed if not set in limitFile, currently 4g
-		private static final long POWER_USER_MEMORY_FLOOR=10240; 	// MIN memory allowed if declared to be a power user, currently 10g
+		private static final long POWER_USER_MEMORY_FLOOR=51200; 	// MIN memory allowed if declared to be a power user, currently 50g
 		private long memLimit;
 		private String memLimitSource;
 		public MemLimitResults(long memLimit, String memLimitSource) {
