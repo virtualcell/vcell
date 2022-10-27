@@ -509,6 +509,23 @@ private void addParameters() throws ExpressionException, SbmlException, XMLStrea
 		sbmlParam.getAnnotation().appendNonRDFAnnotation(XmlUtil.xmlToString(outputFunctionElement));
 	}
 	
+	// add membrane voltages if defined and constants
+	// these may be used in expressions in various places
+	// (if calculate V is set SBML export is not supported and appropriate error thrown elsewhere)
+	
+	StructureMapping structureMappings[] = vcSelectedSimContext.getGeometryContext().getStructureMappings();
+	for (int i = 0; i < structureMappings.length; i++){
+		if (structureMappings[i] instanceof MembraneMapping){
+			StructureMappingParameter voltage = ((MembraneMapping)structureMappings[i]).getInitialVoltageParameter();
+			if (voltage.getExpression().isNumeric()) {
+				org.sbml.jsbml.Parameter sbmlParam = sbmlModel.createParameter();
+				sbmlParam.setId(TokenMangler.mangleToSName(((Membrane)voltage.getStructure()).getMembraneVoltage().getName()));
+				sbmlParam.setConstant(true);
+				sbmlParam.setValue(voltage.getConstantValue());
+			}
+		}
+	}
+	
 	ReservedSymbol[] vcReservedSymbols = vcModel.getReservedSymbols();  
 	if (vcReservedSymbols != null) {
 	for (ReservedSymbol vcParam : vcReservedSymbols) {
