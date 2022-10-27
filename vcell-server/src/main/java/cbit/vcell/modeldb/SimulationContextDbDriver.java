@@ -771,13 +771,13 @@ private SimulationContext getSimulationContextSQL(QueryHashtable dbc, Connection
 	assignSpeciesContextSpecsSQL(con,simContextKey, simContext);
 	assignReactionSpecsSQL(con,simContextKey, simContext);
 	
-	for (GeometryClass gc : simContext.getGeometry().getGeometryClasses()) {
-		try {
-			StructureSizeSolver.updateUnitStructureSizes(simContext, gc);
-		}catch (Exception e){
-			lg.error("failed to updateUnitStructureSizes",e);
-		}
-	}
+//	for (GeometryClass gc : simContext.getGeometry().getGeometryClasses()) {
+//		try {
+//			StructureSizeSolver.updateUnitStructureSizes(simContext, gc);
+//		}catch (Exception e){
+//			lg.error("failed to updateUnitStructureSizes",e);
+//		}
+//	}
 	simContext.getGeometryContext().enforceHierarchicalBoundaryConditions(simContext.getModel().getStructureTopology());
 
 	simContext.getModel().refreshDependencies();
