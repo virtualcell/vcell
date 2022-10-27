@@ -173,10 +173,11 @@ jobs:
         
        # Parse the results
       - name: Parse Results
-        run: cd ~/input_files/output && \
-          echo 'Biomodels processed $(cat jobLog.txt | grep START | wc -l)' >> ../round-trip_results.txt && \
-          echo 'Biomodels succeeded $(cat jobLog.txt | grep SUCC | wc -l)' >> ../round-trip_results.txt && \
-          echo "Biomodels that didn't converge $(cat jobLog.txt | grep SUCC | grep -v ',1' | wc -l)" >> ../round-trip_results.txt
+        run: |
+          cd ~/input_files/output 
+          /bin/echo 'Biomodels processed $(cat jobLog.txt | grep START | wc -l)' >> ../round-trip_results.txt
+          /bin/echo 'Biomodels succeeded $(cat jobLog.txt | grep SUCC | wc -l)' >> ../round-trip_results.txt
+          /bin/echo "Biomodels that didn't converge $(cat jobLog.txt | grep SUCC | grep -v ',1' | wc -l)" >> ../round-trip_results.txt
       
       # Upload results
       - name: Upload Results of Round-Trip
