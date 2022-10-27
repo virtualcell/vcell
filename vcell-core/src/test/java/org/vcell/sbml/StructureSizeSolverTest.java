@@ -8,10 +8,7 @@ import cbit.vcell.math.MathCompareResults;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Structure;
-import cbit.vcell.parser.Expression;
-import cbit.vcell.parser.ExpressionBindingException;
-import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.parser.SimpleSymbolTable;
+import cbit.vcell.parser.*;
 import cbit.vcell.solver.SimulationSymbolTable;
 import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XmlHelper;
@@ -21,8 +18,6 @@ import org.junit.Test;
 import org.vcell.sbml.vcell.StructureSizeSolver;
 
 import java.io.*;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.util.stream.Collectors;
 
 public class StructureSizeSolverTest {
@@ -52,17 +47,42 @@ public class StructureSizeSolverTest {
     }
 
     @Test
-    public void test_mathGenerationEquivalence_spatial() throws XmlParseException, MappingException, IOException, ExpressionBindingException {
+    public void test_mathGenerationEquivalence_symbolic_numeric_spatial() throws XmlParseException, MappingException, IOException, ExpressionBindingException {
+        //
+        // the spatial math generation from 2005 is too different to compare with 2012
+        // instead we will set the unit sizes both numerically and symbolically and compare the two generated maths.
+        //
         InputStream legacyBioModelInputStream = VcmlTestSuiteFiles.getVcmlTestCase("biomodel_12522025_spatial.vcml");
         String legacyModelVcml = new BufferedReader(new InputStreamReader(legacyBioModelInputStream))
                 .lines().collect(Collectors.joining("\n"));
 
         BioModel legacyBioModel = XmlHelper.XMLToBioModel(new XMLSource(legacyModelVcml));
         legacyBioModel.refreshDependencies();
-        MathDescription legacyMathDescription = legacyBioModel.getSimulationContext(0).getMathDescription();
 
-        BioModel legacyBioModelCloned = XmlHelper.cloneBioModel(legacyBioModel);
-        Model model = legacyBioModelCloned.getModel();
+        BioModel legacyBioModelCloned_numeric = getClonedSpatialBioModel(legacyBioModel, UnitSizeInitialize.SOLVE_NUMERICALLY);
+        legacyBioModelCloned_numeric.updateAll(false);
+        MathDescription mathDescription_numeric = legacyBioModelCloned_numeric.getSimulationContext(0).getMathDescription();
+
+        BioModel legacyBioModelCloned_symbolic = getClonedSpatialBioModel(legacyBioModel, UnitSizeInitialize.CLEAR);
+        legacyBioModelCloned_symbolic.updateAll(false);
+        MathDescription mathDescription_symbolic = legacyBioModelCloned_symbolic.getSimulationContext(0).getMathDescription();
+
+//        final File dataDir = new File("/Users/schaff/Documents/workspace/vcell/vcell-core/src/test/resources/org/vcell/sbml/vcml_published");
+//        final File newVCML = new File(dataDir,"biomodel_12522025_spatial_regenerated.vcml");
+//        Files.write(newVCML.toPath(), XmlHelper.bioModelToXML(legacyBioModelCloned_symbolic).getBytes(StandardCharsets.UTF_8));
+
+        MathCompareResults results = MathDescription.testEquivalency(
+                SimulationSymbolTable.createMathSymbolTableFactory(), mathDescription_numeric, mathDescription_symbolic);
+        Assert.assertTrue("results should be equivalent: "+results.toDatabaseStatus(),results.isEquivalent());
+    }
+
+    enum UnitSizeInitialize {
+        CLEAR, SOLVE_NUMERICALLY
+    }
+
+    private BioModel getClonedSpatialBioModel(BioModel legacySpatialBioModel, UnitSizeInitialize unitSizeInitialize) throws XmlParseException, ExpressionBindingException {
+        BioModel biomodel = XmlHelper.cloneBioModel(legacySpatialBioModel);
+        Model model = biomodel.getModel();
 
         Structure Cytosol = model.getStructure("cytosol");
         Structure ERM = model.getStructure("ERM");
@@ -70,29 +90,24 @@ public class StructureSizeSolverTest {
         Structure ER = model.getStructure("ER");
         Structure Extracellular = model.getStructure("extracellular"); // sic
 
-        SimulationContext simulationContext = legacyBioModelCloned.getSimulationContext(0);
+        SimulationContext simulationContext = biomodel.getSimulationContext(0);
         GeometryContext geometryContext = simulationContext.getGeometryContext();
 
-        //
-        // clear Unit size expressions (were already written into XML at some point).
-        //
-        geometryContext.getStructureMapping(ERM).getParameterFromRole(StructureMapping.ROLE_AreaPerUnitVolume).setExpression(null);
-        geometryContext.getStructureMapping(PM).getParameterFromRole(StructureMapping.ROLE_AreaPerUnitArea).setExpression(null);
-        geometryContext.getStructureMapping(ER).getParameterFromRole(StructureMapping.ROLE_VolumePerUnitVolume).setExpression(null);
-        geometryContext.getStructureMapping(Cytosol).getParameterFromRole(StructureMapping.ROLE_VolumePerUnitVolume).setExpression(null);
-        geometryContext.getStructureMapping(Extracellular).getParameterFromRole(StructureMapping.ROLE_VolumePerUnitVolume).setExpression(null);
-
-        legacyBioModelCloned.updateAll(false);
-        MathDescription newMathDescription = legacyBioModelCloned.getSimulationContext(0).getMathDescription();
-        Constant KMOLE = (Constant)newMathDescription.getVariable("KMOLE");
-        KMOLE.getExpression().substituteInPlace(new Expression(1.0/602.214179),new Expression(1/602.0));
-//        final File dataDir = new File("/Users/schaff/Documents/workspace/vcell/vcell-core/src/test/resources/org/vcell/sbml/vcml_published");
-//        final File newVCML = new File(dataDir,"biomodel_12522025_spatial_regenerated.vcml");
-//        Files.write(newVCML.toPath(), XmlHelper.bioModelToXML(legacyBioModelCloned).getBytes(StandardCharsets.UTF_8));
-
-//        MathCompareResults results = MathDescription.testEquivalency(
-//                SimulationSymbolTable.createMathSymbolTableFactory(), legacyMathDescription, newMathDescription);
-//        Assert.assertTrue("results should be equivalent: "+results.toDatabaseStatus(),results.isEquivalent());
+        if (unitSizeInitialize==UnitSizeInitialize.CLEAR) {
+            //
+            // clear Unit size expressions (were already written into XML at some point).
+            //
+            geometryContext.getStructureMapping(ERM).getParameterFromRole(StructureMapping.ROLE_AreaPerUnitVolume).setExpression(null);
+            geometryContext.getStructureMapping(PM).getParameterFromRole(StructureMapping.ROLE_AreaPerUnitArea).setExpression(null);
+            geometryContext.getStructureMapping(ER).getParameterFromRole(StructureMapping.ROLE_VolumePerUnitVolume).setExpression(null);
+            geometryContext.getStructureMapping(Cytosol).getParameterFromRole(StructureMapping.ROLE_VolumePerUnitVolume).setExpression(null);
+            geometryContext.getStructureMapping(Extracellular).getParameterFromRole(StructureMapping.ROLE_VolumePerUnitVolume).setExpression(null);
+        }else{
+            for (GeometryClass geometryClass : biomodel.getSimulationContext(0).getGeometry().getGeometryClasses()){
+                StructureSizeSolver.updateUnitStructureSizes(biomodel.getSimulationContext(0), geometryClass);
+            }
+        }
+        return biomodel;
     }
 
     @Test
@@ -365,7 +380,7 @@ public class StructureSizeSolverTest {
             //
             // check that transformed Application has absolute sizes set as expected
             //
-            BioModel legacyBioModelCloned = XmlHelper.XMLToBioModel(new XMLSource(legacyModelVcml));
+            BioModel legacyBioModelCloned = getClonedSpatialBioModel(XmlHelper.XMLToBioModel(new XMLSource(legacyModelVcml)), UnitSizeInitialize.CLEAR);
             Model model = legacyBioModelCloned.getModel();
 
             double specified_cytosol_size = 1.0;
@@ -379,17 +394,6 @@ public class StructureSizeSolverTest {
             Structure Extracellular = model.getStructure("extracellular"); // sic
 
             SimulationContext simulationContext = legacyBioModelCloned.getSimulationContext(0);
-            StructureMapping structureMapping_Cytosol = simulationContext.getGeometryContext().getStructureMapping(Cytosol);
-            GeometryContext geometryContext = simulationContext.getGeometryContext();
-
-            //
-            // clear Unit size expressions (were already written into XML at some point).
-            //
-            geometryContext.getStructureMapping(ERM).getParameterFromRole(StructureMapping.ROLE_AreaPerUnitVolume).setExpression(null);
-            geometryContext.getStructureMapping(PM).getParameterFromRole(StructureMapping.ROLE_AreaPerUnitArea).setExpression(null);
-            geometryContext.getStructureMapping(ER).getParameterFromRole(StructureMapping.ROLE_VolumePerUnitVolume).setExpression(null);
-            geometryContext.getStructureMapping(Cytosol).getParameterFromRole(StructureMapping.ROLE_VolumePerUnitVolume).setExpression(null);
-            geometryContext.getStructureMapping(Extracellular).getParameterFromRole(StructureMapping.ROLE_VolumePerUnitVolume).setExpression(null);
 
             for (GeometryClass geometryClass : legacyBioModelCloned.getSimulationContext(0).getGeometry().getGeometryClasses()) {
                 StructureSizeSolver.updateUnitStructureSizes(simulationContext, geometryClass);
@@ -480,37 +484,22 @@ public class StructureSizeSolverTest {
         String legacyModelVcml = new BufferedReader(new InputStreamReader(legacyBioModelInputStream))
                 .lines().collect(Collectors.joining("\n"));
 
-        {
-            //
-            // check that transformed Application has absolute sizes set as expected
-            //
-            BioModel legacyBioModelCloned = XmlHelper.XMLToBioModel(new XMLSource(legacyModelVcml));
-            Model model = legacyBioModelCloned.getModel();
+        //
+        // check that transformed Application has absolute sizes set as expected
+        //
+        BioModel legacyBioModelCloned = getClonedSpatialBioModel(XmlHelper.XMLToBioModel(new XMLSource(legacyModelVcml)), UnitSizeInitialize.CLEAR);
+        Model model = legacyBioModelCloned.getModel();
 
-            double specified_cytosol_size = 1.0;
+        // transform the model using Legacy Transformer
+        Structure Cytosol = model.getStructure("cytosol");
+        Structure ERM = model.getStructure("ERM");
+        Structure PM = model.getStructure("PM");
+        Structure ER = model.getStructure("ER");
+        Structure Extracellular = model.getStructure("extracellular"); // sic
 
-            // transform the model using Legacy Transformer
-            SimulationContext.MathMappingCallback mmc = new MathMappingCallbackTaskAdapter(null);
-            Structure Cytosol = model.getStructure("cytosol");
-            Structure ERM = model.getStructure("ERM");
-            Structure PM = model.getStructure("PM");
-            Structure ER = model.getStructure("ER");
-            Structure Extracellular = model.getStructure("extracellular"); // sic
+        SimulationContext simulationContext = legacyBioModelCloned.getSimulationContext(0);
 
-            SimulationContext simulationContext = legacyBioModelCloned.getSimulationContext(0);
-            StructureMapping structureMapping_Cytosol = simulationContext.getGeometryContext().getStructureMapping(Cytosol);
-            GeometryContext geometryContext = simulationContext.getGeometryContext();
-
-            //
-            // clear Unit size expressions (were already written into XML at some point).
-            //
-            geometryContext.getStructureMapping(ERM).getParameterFromRole(StructureMapping.ROLE_AreaPerUnitVolume).setExpression(null);
-            geometryContext.getStructureMapping(PM).getParameterFromRole(StructureMapping.ROLE_AreaPerUnitArea).setExpression(null);
-            geometryContext.getStructureMapping(ER).getParameterFromRole(StructureMapping.ROLE_VolumePerUnitVolume).setExpression(null);
-            geometryContext.getStructureMapping(Cytosol).getParameterFromRole(StructureMapping.ROLE_VolumePerUnitVolume).setExpression(null);
-            geometryContext.getStructureMapping(Extracellular).getParameterFromRole(StructureMapping.ROLE_VolumePerUnitVolume).setExpression(null);
-
-            for (GeometryClass geometryClass : legacyBioModelCloned.getSimulationContext(0).getGeometry().getGeometryClasses()) {
+        for (GeometryClass geometryClass : legacyBioModelCloned.getSimulationContext(0).getGeometry().getGeometryClasses()) {
                 StructureSizeSolver.updateUnitStructureSizes_symbolic(simulationContext, geometryClass);
             }
             GeometryContext geometryContextTransformed = simulationContext.getGeometryContext();
@@ -571,8 +560,14 @@ public class StructureSizeSolverTest {
             Assert.assertTrue("VolFract_ER value doesn't match solution", equiv(val_VolFract_ER, val_Unit_Size_ER / (val_Unit_Size_Cytosol + val_Unit_Size_ER)));
             Assert.assertTrue("SurfToVol_ERM value doesn't match solution", equiv(val_SurfToVol_ERM, val_Unit_Size_ERM / ( val_Unit_Size_ER )));
 
-            double expected_Unit_Size_Cytosol = 0.85;
-            double expected_Unit_Size_Extracellular = 1.0;
+        Assert.assertTrue(ExpressionUtils.functionallyEquivalent(Unit_Size_Cytosol_transformed.getExpression(), new Expression("1.0 - ERM_mapping.VolFraction")));
+        Assert.assertTrue(ExpressionUtils.functionallyEquivalent(Unit_Size_Extracellular_transformed.getExpression(), new Expression(1.0)));
+        Assert.assertTrue(ExpressionUtils.functionallyEquivalent(Unit_Size_ERM_transformed.getExpression(), new Expression("ERM_mapping.VolFraction * ERM_mapping.SurfToVolRatio")));
+        Assert.assertTrue(ExpressionUtils.functionallyEquivalent(Unit_Size_ER_transformed.getExpression(), new Expression("ERM_mapping.VolFraction")));
+        Assert.assertTrue(ExpressionUtils.functionallyEquivalent(Unit_Size_PM_transformed.getExpression(), new Expression(1.0)));
+
+        double expected_Unit_Size_Cytosol = 0.85;
+        double expected_Unit_Size_Extracellular = 1.0;
             double expected_Unit_Size_ERM = 3.0;
             double expected_Unit_Size_ER = 0.15;
             double expected_Unit_Size_PM = 1.0;
@@ -581,8 +576,7 @@ public class StructureSizeSolverTest {
             Assert.assertTrue("unexpected Unit_Size_PM, "+expected_Unit_Size_PM+" !~ "+val_Unit_Size_PM, equiv(expected_Unit_Size_PM, val_Unit_Size_PM));
             Assert.assertTrue("unexpected Unit_Size_ER, "+expected_Unit_Size_ER+" !~ "+val_Unit_Size_ER, equiv(expected_Unit_Size_ER, val_Unit_Size_ER));
             Assert.assertTrue("unexpected Unit_Size_Cytosol, "+expected_Unit_Size_Cytosol+" !~ "+val_Unit_Size_Cytosol, equiv(expected_Unit_Size_Cytosol, val_Unit_Size_Cytosol));
-            Assert.assertTrue("unexpected Unit_Size_Extracellular, "+expected_Unit_Size_Extracellular+" !~ "+val_Unit_Size_Extracellular, equiv(expected_Unit_Size_Extracellular, val_Unit_Size_Extracellular));
-        }
+        Assert.assertTrue("unexpected Unit_Size_Extracellular, "+expected_Unit_Size_Extracellular+" !~ "+val_Unit_Size_Extracellular, equiv(expected_Unit_Size_Extracellular, val_Unit_Size_Extracellular));
     }
 
     @Test
