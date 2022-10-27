@@ -982,23 +982,6 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 			if (sizeParm!=null && sizeParm.getExpression()!=null){
 				varHash.addVariable(newFunctionOrConstant(getMathSymbol(sizeParm,sm.getGeometryClass()),getIdentifierSubstitutions(sizeParm.getExpression(), sizeParm.getUnitDefinition(), sm.getGeometryClass()), sm.getGeometryClass()));
 			}
-//			else {
-				if (sm instanceof MembraneMapping) {
-					MembraneMapping mm = (MembraneMapping)sm;
-					StructureMappingParameter volFrac = mm.getVolumeFractionParameter();
-					if (volFrac!=null && volFrac.getExpression()!=null){
-						varHash.addVariable(newFunctionOrConstant(
-								getMathSymbol(volFrac,sm.getGeometryClass()),
-								getIdentifierSubstitutions(volFrac.getExpression(), volFrac.getUnitDefinition(), sm.getGeometryClass()), sm.getGeometryClass()));
-					}
-					StructureMappingParameter surfToVol = mm.getSurfaceToVolumeParameter();
-					if (surfToVol!=null && surfToVol.getExpression()!=null){
-						varHash.addVariable(newFunctionOrConstant(
-								getMathSymbol(surfToVol,sm.getGeometryClass()),
-								getIdentifierSubstitutions(surfToVol.getExpression(), surfToVol.getUnitDefinition(), sm.getGeometryClass()), sm.getGeometryClass()));
-					}
-				}				
-//			}
 		}else{
 			Parameter parm = sm.getParameterFromRole(StructureMapping.ROLE_AreaPerUnitArea);
 			if (parm!=null && parm.getExpression()!=null && sm.getGeometryClass() instanceof SurfaceClass){
@@ -1015,6 +998,21 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 			parm = sm.getParameterFromRole(StructureMapping.ROLE_VolumePerUnitVolume);
 			if (parm!=null && parm.getExpression()!=null && sm.getGeometryClass() instanceof SubVolume){
 				varHash.addVariable(newFunctionOrConstant(getMathSymbol(parm,sm.getGeometryClass()),getIdentifierSubstitutions(parm.getExpression(), parm.getUnitDefinition(), sm.getGeometryClass()), sm.getGeometryClass()));
+			}
+		}
+		if (sm instanceof MembraneMapping) {
+			MembraneMapping mm = (MembraneMapping)sm;
+			StructureMappingParameter volFrac = mm.getVolumeFractionParameter();
+			if (volFrac!=null && volFrac.getExpression()!=null){
+				varHash.addVariable(newFunctionOrConstant(
+						getMathSymbol(volFrac,sm.getGeometryClass()),
+						getIdentifierSubstitutions(volFrac.getExpression(), volFrac.getUnitDefinition(), sm.getGeometryClass()), sm.getGeometryClass()));
+			}
+			StructureMappingParameter surfToVol = mm.getSurfaceToVolumeParameter();
+			if (surfToVol!=null && surfToVol.getExpression()!=null){
+				varHash.addVariable(newFunctionOrConstant(
+						getMathSymbol(surfToVol,sm.getGeometryClass()),
+						getIdentifierSubstitutions(surfToVol.getExpression(), surfToVol.getUnitDefinition(), sm.getGeometryClass()), sm.getGeometryClass()));
 			}
 		}
 		StructureMappingParameter sizeParm = sm.getSizeParameter();
