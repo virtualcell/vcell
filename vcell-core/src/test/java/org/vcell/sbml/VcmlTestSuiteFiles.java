@@ -38,6 +38,7 @@ public class VcmlTestSuiteFiles {
         "biomodel_123465505.vcml",
         "biomodel_124562627.vcml",
         "biomodel_12522025.vcml",
+        "biomodel_12522025_spatial.vcml",
 
         "biomodel_145545992.vcml",
         "biomodel_14647285.vcml",
@@ -164,7 +165,7 @@ public class VcmlTestSuiteFiles {
         "biomodel_84275910.vcml",
         "biomodel_84985561.vcml",
         "biomodel_89712092.vcml",
-        "biomodel_89712092_simple.vcml",
+        "biomodel_89712092_nonspatial.vcml",
 
         "biomodel_91133993.vcml",
         "biomodel_91134220.vcml",
