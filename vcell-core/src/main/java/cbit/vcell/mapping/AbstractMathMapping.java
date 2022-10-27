@@ -1301,6 +1301,10 @@ protected final String getMathSymbol0(SymbolTableEntry ste, GeometryClass geomet
 						}
 					}
 					return PARAMETER_SIZE_FUNCTION_PREFIX+nameWithScope;
+				} else if (role==StructureMapping.ROLE_VolumeFraction){
+					return "VolFract_"+nameWithScope;
+				} else if (role==StructureMapping.ROLE_SurfaceToVolumeRatio){
+					return "SurfToVol_"+nameWithScope;
 				} else if (role==StructureMapping.ROLE_AreaPerUnitArea){
 					return "AreaPerUnitArea_"+nameWithScope;
 				} else if (role==StructureMapping.ROLE_AreaPerUnitVolume){

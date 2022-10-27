@@ -11,7 +11,6 @@ on:
 
 env:
   python-version: "3.9"
-  poetry-version: "1.2.1"
 
 jobs:
   CI:
@@ -21,13 +20,14 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Install poetry
-        run: pipx install poetry==${{ env.poetry-version }}
-
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: ${{ env.python-version }}
+          cache: "pip"
+      
+      - name: Install Dependencies
+        run: pip install -r requirements.txt
 
       - name: build vcell-cli-utils package
         run: |
@@ -70,6 +70,25 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.python-version }}
+          cache: "pip"
+      
+      - name: Install Dependencies
+        run: pip install -r requirements.txt
+
+      - name: build vcell-cli-utils package
+        run: |
+          cd vcell-cli-utils
+          poetry install
+
+      - name: build vcell-admin package
+        run: |
+          cd docker/swarm/vcell-admin
+          poetry install
 
       - name: setup java 8 with maven cache
         uses: actions/setup-java@v3

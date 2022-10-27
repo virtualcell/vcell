@@ -420,10 +420,12 @@ public boolean isAllSizeSpecifiedPositive()
 	StructureMapping structureMappings[] = getStructureMappings();
 	for (int i=0;i<structureMappings.length;i++)
 	{
-		if(structureMappings[i].getSizeParameter().getExpression() == null) 
+		if (structureMappings[i].getSizeParameter().getExpression() == null) {
 			return false;
-		else
-		{
+		} else {
+			if (!structureMappings[i].getSizeParameter().getExpression().isNumeric()) {
+				return true; // expression, hope for the best
+			}
 			try{
 				double size = structureMappings[i].getSizeParameter().getExpression().evaluateConstant();
 				if (size <=0)

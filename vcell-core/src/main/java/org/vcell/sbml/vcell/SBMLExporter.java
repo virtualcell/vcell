@@ -892,7 +892,7 @@ private void addReactions() throws SbmlException, XMLStreamException {
 }
 
 private UnitDefinition getOrCreateSBMLUnit(VCUnitDefinition vcUnit) throws SbmlException {
-	String mangledSymbol = TokenMangler.mangleToSName(vcUnit.getSymbol());
+	String mangledSymbol = "Unit_"+TokenMangler.mangleToSName(vcUnit.getSymbol());
 	UnitDefinition unitDefn = sbmlModel.getUnitDefinition(mangledSymbol);
 	if (unitDefn == null){
 		unitDefn = SBMLUnitTranslator.getSBMLUnitDefinition(vcUnit, sbmlLevel, sbmlVersion, vcBioModel.getModel().getUnitSystem());
@@ -1012,7 +1012,7 @@ private void addSpecies() throws XMLStreamException, SbmlException {
 		sbmlSpecies.setSubstanceUnits(unitDefn);
 
 		// need to do the following if exporting to SBML spatial
-		if (bSpatial) {
+		if (bSpatial && !bBoundaryCondition) {
 			
 			// Required for setting BoundaryConditions : structureMapping for vcSpeciesContext[i] & sbmlGeometry.coordinateComponents
 			StructureMapping sm = getSelectedSimContext().getGeometryContext().getStructureMapping(vcSpeciesContexts[i].getStructure());

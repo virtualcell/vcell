@@ -164,6 +164,7 @@ public class VcmlTestSuiteFiles {
         "biomodel_84275910.vcml",
         "biomodel_84985561.vcml",
         "biomodel_89712092.vcml",
+        "biomodel_89712092_simple.vcml",
 
         "biomodel_91133993.vcml",
         "biomodel_91134220.vcml",

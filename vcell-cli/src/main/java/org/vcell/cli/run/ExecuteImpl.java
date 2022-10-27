@@ -41,6 +41,17 @@ public class ExecuteImpl {
         File[] inputFiles = dirOfArchivesToProcess.listFiles(filter);
         if (inputFiles == null) throw new IOException("Error trying to retrieve files from input directory.");
 
+        // Build statuses
+        for (File inputFile : inputFiles){
+            String bioModelBaseName = FileUtils.getBaseName(inputFile.getName());
+            String outputBaseDir = outputDir.getAbsolutePath(); // bioModelBaseName = input file without the path
+            String targetOutputDir = Paths.get(outputBaseDir, bioModelBaseName).toString();
+
+            logger.info("Preparing output directory...");
+            RunUtils.removeAndMakeDirs(new File(targetOutputDir));
+            PythonCalls.generateStatusYaml(inputFile.getAbsolutePath(), targetOutputDir);    // generate Status YAML
+        }
+
         for (File inputFile : inputFiles) {
             String inputFileName = inputFile.getName();
             logger.info("Processing " + inputFileName + "(" + inputFile + ")");
@@ -60,6 +71,29 @@ public class ExecuteImpl {
                 logger.error("Error caught executing batch mode", e);
             }
         }
+    }
+
+    public static void singleMode(File inputFile, File rootOutputDir, CLIRecorder cliLogger,
+            boolean bKeepTempFiles, boolean bExactMatchOnly, boolean bEncapsulateOutput, boolean bSmallMeshOverride) throws Exception {
+        // Build statuses
+        String bioModelBaseName = FileUtils.getBaseName(inputFile.getName()); // bioModelBaseName = input file without the path
+        String outputBaseDir = rootOutputDir.getAbsolutePath(); 
+        String targetOutputDir = bEncapsulateOutput ? Paths.get(outputBaseDir, bioModelBaseName).toString() : outputBaseDir;
+
+        logger.info("Preparing output directory...");
+        RunUtils.removeAndMakeDirs(new File(targetOutputDir));
+        PythonCalls.generateStatusYaml(inputFile.getAbsolutePath(), targetOutputDir);    // generate Status YAML
+
+        ExecuteImpl.singleExecOmex(inputFile, rootOutputDir, cliLogger, bKeepTempFiles, bExactMatchOnly, bEncapsulateOutput, bSmallMeshOverride);
+    }
+
+    public static void singleMode(File inputFile, File outputDir, CLIRecorder cliLogger) throws Exception {
+        final boolean bKeepTempFiles = false;
+        final boolean bExactMatchOnly = false;
+        final boolean bEncapsulateOutput = false;
+        final boolean bSmallMeshOverride = false;
+
+        ExecuteImpl.singleMode(inputFile, outputDir, cliLogger, bKeepTempFiles, bExactMatchOnly, bEncapsulateOutput, bSmallMeshOverride);
     }
 
     @Deprecated
@@ -115,13 +149,7 @@ public class ExecuteImpl {
         }
     }
 
-
-    public static void singleExecOmex(File inputFile, File rootOutputDir, CLIRecorder logger, 
-            boolean bKeepTempFiles, boolean bExactMatchOnly) throws Exception {
-        ExecuteImpl.singleExecOmex(inputFile, rootOutputDir, logger, bKeepTempFiles, bExactMatchOnly, true, false);
-    }
-
-    public static void singleExecOmex(File inputFile, File rootOutputDir, CLIRecorder cliLogger,
+    private static void singleExecOmex(File inputFile, File rootOutputDir, CLIRecorder cliLogger,
             boolean bKeepTempFiles, boolean bExactMatchOnly, boolean bEncapsulateOutput, boolean bSmallMeshOverride) throws Exception {
         int nModels, nSimulations, nTasks, nOutputs, nReportsCount = 0, nPlots2DCount = 0, nPlots3DCount = 0;
         boolean hasOverrides = false;
@@ -165,16 +193,17 @@ public class ExecuteImpl {
             logger.error(error);
             throw new RuntimeException(error, e);
         } 
-
-        logger.info("Preparing output directory...");
-        //CLIUtils.cleanRootDir(new File(outputBaseDir));
-        if (bEncapsulateOutput) RunUtils.removeAndMakeDirs(new File(outputDir));
-        PythonCalls.generateStatusYaml(inputFilePath, outputDir);    // generate Status YAML
+        
+        PythonCalls.updateOmexStatusYml(Status.RUNNING, outputDir, "0");
 
         /*
          * from here on, we need to collect errors, since some subtasks may succeed while other do not
          * we now have the log file created, so that we also have a place to put them
          */
+        for (String sedmlLocation: sedmlLocations){
+            PythonCalls.updateSedmlDocStatusYml(sedmlLocation, Status.QUEUED, outputDir);
+        }
+        
         for (String sedmlLocation : sedmlLocations) {
             logger.info("Initializing SED-ML document...");
             String sedmlName = "", logDocumentMessage = "Initializing SED-ML document... ", logDocumentError = "";
@@ -193,6 +222,7 @@ public class ExecuteImpl {
                 sedmlName = sedmlNameSplit[sedmlNameSplit.length - 1];
                 logOmexMessage += "Processing " + sedmlName + ". ";
                 logger.info("Processing SED-ML: " + sedmlName);
+                PythonCalls.updateSedmlDocStatusYml(sedmlLocation, Status.RUNNING, outputDir);
 
                 nModels = sedmlFromOmex.getModels().size();
                 for(Model m : sedmlFromOmex.getModels()) {
@@ -226,7 +256,7 @@ public class ExecuteImpl {
                         + nReportsCount + "  report(s),  "
                         + nPlots2DCount + " plot2D(s), and "
                         + nPlots3DCount + " plot3D(s)\n";
-                logger.debug(summarySedmlContentString);
+                logger.info(summarySedmlContentString);
 
                 logDocumentMessage += "done. ";
                 String str = "Successful translation of SED-ML file";

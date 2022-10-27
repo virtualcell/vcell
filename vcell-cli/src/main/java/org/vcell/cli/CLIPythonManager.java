@@ -107,12 +107,12 @@ public class CLIPythonManager {
     public void closePythonProcess() throws IOException {
         // Exit the living Python Process
         logger.debug("Closing Python Instance");
-        this.sendNewCommand("exit()"); // Sends kill command ("exit()") to python.exe instance;
-        if (pythonProcess.isAlive()) pythonProcess.destroyForcibly(); // Making sure it's quite dead
+        if (pythonOSW != null && pythonISB != null) this.sendNewCommand("exit()"); // Sends kill command ("exit()") to python.exe instance;
+        if (pythonProcess != null && pythonProcess.isAlive()) pythonProcess.destroyForcibly(); // Making sure it's quite dead
 
         // Making sure we clean up
-        pythonOSW.close();
-        pythonISB.close();
+        if (pythonOSW != null) pythonOSW.close();
+        if (pythonISB != null) pythonISB.close();
 
         // Unbind references to allow reinstantiation
         pythonISB = null;
@@ -126,18 +126,18 @@ public class CLIPythonManager {
      */
     public void instantiatePythonProcess() throws IOException {
         if (this.pythonProcess != null) return; // prevent override
-        logger.info("Initializing Python...\n");
+        logger.info("Initializing Python...");
         // Confirm we have python properly installed or kill this exe where it stands.
         this.checkPythonInstallation();
         // install virtual environment
         // e.g. source /Users/schaff/Library/Caches/pypoetry/virtualenvs/vcell-cli-utils-g4hrdDfL-py3.9/bin/activate
 
         // Start Python
-        logger.debug("Loading poetry");
         ProcessBuilder pb = new ProcessBuilder("poetry", "run", "python", "-i", "-W ignore");
         pb.redirectErrorStream(true);
-        File cliWorkingDir = PropertyLoader.getRequiredDirectory(PropertyLoader.cliWorkingDir);
+        File cliWorkingDir = PropertyLoader.getRequiredDirectory(PropertyLoader.cliWorkingDir).getCanonicalFile();
         pb.directory(cliWorkingDir);
+        logger.debug("Loading poetry in directory: " + cliWorkingDir);
         this.pythonProcess = pb.start();
         this.pythonOSW = new OutputStreamWriter(pythonProcess.getOutputStream());
         this.pythonISB = new BufferedReader(new InputStreamReader(pythonProcess.getInputStream()));
@@ -149,7 +149,7 @@ public class CLIPythonManager {
             logger.info("Python initalization success!\n");
         } catch (IOException | TimeoutException | InterruptedException e){
             logger.warn("Python instantiation Exception Thrown:\n" + e);
-            throw new PythonStreamException("Could not initialize Python. Problem is probably python-side.");
+            throw new PythonStreamException("Could not initialize Python. Problem is probably python-side.", e);
         }
     }
 

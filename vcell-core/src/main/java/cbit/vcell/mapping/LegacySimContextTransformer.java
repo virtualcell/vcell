@@ -24,7 +24,7 @@ public class LegacySimContextTransformer implements SimContextTransformer {
 		}
 		try {
 			StructureMapping structureMapping = transformedSimContext.getGeometryContext().getStructureMappings()[0];
-			StructureSizeSolver.updateAbsoluteStructureSizes(transformedSimContext, structureMapping.getStructure(), 1.0, structureMapping.getSizeParameter().getUnitDefinition());
+			StructureSizeSolver.updateAbsoluteStructureSizes_symbolic(transformedSimContext, structureMapping.getStructure(), 1.0, structureMapping.getSizeParameter().getUnitDefinition());
 		} catch (Exception e) {
 			throw new ProgrammingException("exception updating sizes",e);
 		}
