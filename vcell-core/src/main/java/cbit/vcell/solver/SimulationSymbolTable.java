@@ -12,6 +12,7 @@ package cbit.vcell.solver;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
@@ -689,8 +690,19 @@ public void getEntries(Map<String, SymbolTableEntry> entryMap) {
 				funcType = VariableType.CONTOUR;
 			}
 		}
-		
+
 		if (funcType == null) {
+			if(variableTypes != null && variableTypes.length > 0) {
+				Set<VariableType> variableTypeSet = new LinkedHashSet<> ();
+				for(VariableType vt : variableTypes) {
+					variableTypeSet.add(vt);
+				}
+				if(variableTypeSet.size() != 1) {
+					return VariableType.VOLUME;
+				} else {
+					return variableTypeSet.iterator().next();
+				}
+			}
 			return VariableType.VOLUME; // no knowledge from expression, default variable type
 		}
 		
