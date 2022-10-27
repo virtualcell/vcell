@@ -149,7 +149,7 @@ public class CLIPythonManager {
             logger.info("Python initalization success!\n");
         } catch (IOException | TimeoutException | InterruptedException e){
             logger.warn("Python instantiation Exception Thrown:\n" + e);
-            throw new PythonStreamException("Could not initialize Python. Problem is probably python-side.");
+            throw new PythonStreamException("Could not initialize Python. Problem is probably python-side.", e);
         }
     }
 

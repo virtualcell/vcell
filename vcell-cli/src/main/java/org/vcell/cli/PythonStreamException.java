@@ -1,8 +1,15 @@
 package org.vcell.cli;
 
-import java.io.ObjectStreamException;
+import java.io.IOException;
 
-public class PythonStreamException extends ObjectStreamException {
+//import java.io.ObjectStreamException;
+
+public class PythonStreamException extends IOException {
+
+    public PythonStreamException(String message, Throwable cause){
+        super(message, cause);
+    }
+
     public PythonStreamException(String message){
         super(message);
     }

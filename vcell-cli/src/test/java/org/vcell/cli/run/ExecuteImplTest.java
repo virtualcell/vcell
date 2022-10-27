@@ -41,7 +41,7 @@ public class ExecuteImplTest {
                     tempOmexFile, tempOutputDir, cliRecorder,
                     bKeepTempFiles, bExactMatchOnly, bEncapsulateOutput, bSmallMeshOverride);
 
-            org.apache.commons.io.FileUtils.deleteDirectory(tempOutputDir);
+            org.apache.commons.io.FileUtils.forceDeleteOnExit(tempOutputDir);
             tempOmexFile.delete();
 
         } finally {
