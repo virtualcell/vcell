@@ -126,18 +126,18 @@ public class CLIPythonManager {
      */
     public void instantiatePythonProcess() throws IOException {
         if (this.pythonProcess != null) return; // prevent override
-        logger.info("Initializing Python...\n");
+        logger.info("Initializing Python...");
         // Confirm we have python properly installed or kill this exe where it stands.
         this.checkPythonInstallation();
         // install virtual environment
         // e.g. source /Users/schaff/Library/Caches/pypoetry/virtualenvs/vcell-cli-utils-g4hrdDfL-py3.9/bin/activate
 
         // Start Python
-        logger.debug("Loading poetry");
         ProcessBuilder pb = new ProcessBuilder("poetry", "run", "python", "-i", "-W ignore");
         pb.redirectErrorStream(true);
         File cliWorkingDir = PropertyLoader.getRequiredDirectory(PropertyLoader.cliWorkingDir).getCanonicalFile();
         pb.directory(cliWorkingDir);
+        logger.debug("Loading poetry in directory: " + cliWorkingDir);
         this.pythonProcess = pb.start();
         this.pythonOSW = new OutputStreamWriter(pythonProcess.getOutputStream());
         this.pythonISB = new BufferedReader(new InputStreamReader(pythonProcess.getInputStream()));
