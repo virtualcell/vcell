@@ -9,7 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class RepeatedTask extends AbstractTask {
-    Logger   log = LoggerFactory.getLogger(RepeatedTask.class);
+    private static final Logger logger = LoggerFactory.getLogger(RepeatedTask.class);
     private boolean resetModel = false;
     private String range = new String();
     
@@ -36,8 +36,8 @@ public class RepeatedTask extends AbstractTask {
         if(!ranges.containsKey(range.getId())) {
             ranges.put(range.getId(), range);
         } else {
-            log.warn("range already in ranges list");
-            log.warn("   ...range " + range.getId() + " not added to list");
+            logger.warn("range already in ranges list");
+            logger.warn("   ...range " + range.getId() + " not added to list");
         }
     }
     
@@ -52,21 +52,21 @@ public class RepeatedTask extends AbstractTask {
     }
     public void addSubtask(SubTask subTask) {
         if(subTask == null || subTask.getTaskId() == null || subTask.getTaskId().equals("")) {
-            log.warn("subtask cant't be null, key can't be null, key can't be empty string");
-            log.warn("   ...subtask " + subTask.getTaskId() + " not added to list");
+            logger.warn("subtask cant't be null, key can't be null, key can't be empty string");
+            logger.warn("   ...subtask " + subTask.getTaskId() + " not added to list");
             return;     // subtask cant't be null, key can't be null, key can't be ""
         }
         if(this.getId().equals(subTask.getTaskId())) {
-            log.warn("'this' repeated task cannot be a subtask for itself");
-            log.warn("   ...subtask " + subTask.getTaskId() + " not added to list");
+            logger.warn("'this' repeated task cannot be a subtask for itself");
+            logger.warn("   ...subtask " + subTask.getTaskId() + " not added to list");
             return;     // "this" repeated task cannot be a subtask for itself
         }
         if(!subTasks.containsKey(subTask.getTaskId())) {        // no duplicates
             subTasks.put(subTask.getTaskId(), subTask);
             subTask.removeOwnerFromDependentTasksList(this);    // this repeated task cannot depend on itself
         } else {
-            log.warn("subtask already in subtasks list");
-            log.warn("...subtask {} not added to list",subTask.getTaskId());
+            logger.warn("subtask already in subtasks list");
+            logger.warn("...subtask {} not added to list",subTask.getTaskId());
             return;
         }
     }
@@ -93,23 +93,22 @@ public class RepeatedTask extends AbstractTask {
     }
     
      @Override
-        public String getElementName() {
-            return SEDMLTags.REPEATED_TASK_TAG;
-        }
+    public String getElementName() {
+        return SEDMLTags.REPEATED_TASK_TAG;
+    }
 
-     @Override
-     public boolean accept(SEDMLVisitor visitor) {
-         return visitor.visit(this);
-     }
+    @Override
+    public boolean accept(SEDMLVisitor visitor) {
+        return visitor.visit(this);
+    }
+
     @Override
     public String getModelReference() {
        throw new UnsupportedOperationException("Not supported by RepeatedTask");
     }
+    
     @Override
     public String getSimulationReference() {
         throw new UnsupportedOperationException("Not supported by Repeated task");
-    }
-    
-   
-    
+    }    
 }

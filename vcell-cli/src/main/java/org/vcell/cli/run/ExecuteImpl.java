@@ -113,7 +113,7 @@ public class ExecuteImpl {
             RunUtils.removeAndMakeDirs(outDirForCurrentVcml);
         } catch (Exception e) {
             logger.error("Error in creating required directories: " + e.getMessage(), e);
-            somethingFailed = true;
+            somethingFailed = somethingDidFail();
         }
 
         // Run solvers and make reports; all failures/exceptions are being caught
@@ -128,17 +128,17 @@ public class ExecuteImpl {
             }
         } catch (IOException e) {
             logger.error("IOException while processing VCML " + vcmlFile.getName(), e);
-            somethingFailed = true;
+            somethingFailed = somethingDidFail();
         } catch (ExpressionException e) {
             logger.error("InterruptedException while creating results CSV from VCML " + vcmlFile.getName(), e);
-            somethingFailed = true;
+            somethingFailed = somethingDidFail();
         } catch (InterruptedException e) {
             logger.error("InterruptedException while transposing CSV from VCML " + vcmlFile.getName(), e);
-            somethingFailed = true;
+            somethingFailed = somethingDidFail();
         } catch (Exception e) {
             String errorMessage = String.format("Unexpected exception while transposing CSV from VCML <%s>\n%s", vcmlFile.getName(), e.toString());
             logger.error(errorMessage, e);
-            somethingFailed = true;
+            somethingFailed = somethingDidFail();
         }
 
         if (somethingFailed) {
@@ -295,7 +295,7 @@ public class ExecuteImpl {
                 cliLogger.writeDetailedResultList(bioModelBaseName + "," + sedmlName + "," + logDocumentError);
 
                 logger.error(prefix, e);
-                somethingFailed = true;
+                somethingFailed = somethingDidFail();
                 anySedmlDocumentHasFailed = true;
                 PythonCalls.updateSedmlDocStatusYml(sedmlLocation, Status.FAILED, outputDir);
                 continue; // Next document
@@ -320,7 +320,7 @@ public class ExecuteImpl {
                 solverHandler.simulateAllTasks(externalDocInfo, sedml, cliLogger, outDirForCurrentSedml, outputDir,
                         outputBaseDir, sedmlLocation, bKeepTempFiles, bExactMatchOnly, bSmallMeshOverride);
             } catch (Exception e) {
-                somethingFailed = true;
+                somethingFailed = somethingDidFail();
                 anySedmlDocumentHasFailed = true;
                 logDocumentError = e.getMessage();        // probably the hash is empty
                 logger.error(e.getMessage(), e);
@@ -349,7 +349,7 @@ public class ExecuteImpl {
             try {
                 if (solverHandler.nonSpatialResults.containsValue(null) || solverHandler.spatialResults.containsValue(null)) {        // some tasks failed, but not all
                     anySedmlDocumentHasFailed = true;
-                    somethingFailed = true;
+                    somethingFailed = somethingDidFail();
                     logDocumentMessage += "Failed to execute one or more tasks. ";
                     logger.info("Failed to execute one or more tasks in " + sedmlName);
                 }
@@ -370,22 +370,22 @@ public class ExecuteImpl {
                     }
 	                if (csvReports == null || csvReports.isEmpty() || csvReports.containsValue(null)) {
 	                    anySedmlDocumentHasFailed = true;
-	                    somethingFailed = true;
+	                    somethingFailed = somethingDidFail();
 	                    String msg = "Failed to generate one or more reports. ";
 	                    logDocumentMessage += msg;
 	                } else {
 	                    logDocumentMessage += "Done. ";
 	                }
                   
-                  logger.info("Generating Plots... ");
-                  PythonCalls.genPlotsPseudoSedml(sedmlLocation, outDirForCurrentSedml.toString());    // generate the plots
+                    logger.info("Generating Plots... ");
+                    PythonCalls.genPlotsPseudoSedml(sedmlLocation, outDirForCurrentSedml.toString());    // generate the plots
 
-                  // remove CSV files associated with reports, these values are in report.h5 file anyway
-//                  for (File file : csvReports.values()){
-//                      file.delete();
-//                  }
-                  logDocumentMessage += "Generating HDF5 file... ";
-                  logger.info("Generating HDF5 file... ");
+                    // remove CSV files associated with reports, these values are in report.h5 file anyway
+    //              for (File file : csvReports.values()){
+    //                  file.delete();
+    //              }
+                    logDocumentMessage += "Generating HDF5 file... ";
+                    logger.info("Generating HDF5 file... ");
 
                     Hdf5FileWrapper hdf5FileWrapper = new Hdf5FileWrapper();
                     hdf5FileWrapper.combineArchiveLocation = outDirForCurrentSedml.getName();
@@ -403,12 +403,12 @@ public class ExecuteImpl {
                     }
 
                     if (!containsExtension(outDirForCurrentSedml.getAbsolutePath(), "h5")) {
-	                    anySedmlDocumentHasFailed = true;
-	                    somethingFailed = true;
-	                    throw new RuntimeException("Failed to generate the HDF5 output file. ");
-	                } else {
-	                    logDocumentMessage += "Done. ";
-	                }
+                        anySedmlDocumentHasFailed = true;
+                        somethingFailed = somethingDidFail();
+                        throw new RuntimeException("Failed to generate the HDF5 output file. ");
+                    } else {
+                        logDocumentMessage += "Done. ";
+                    }
                 }
                 
                 if (!solverHandler.spatialResults.isEmpty()) {
@@ -421,7 +421,7 @@ public class ExecuteImpl {
                 anySedmlDocumentHasSucceeded = true;
             } catch (Exception e) {
             	logger.error(e.getMessage(), e);
-                somethingFailed = true;
+                somethingFailed = somethingDidFail();
                 anySedmlDocumentHasFailed = true;
                 logDocumentError += e.getMessage();
                 String type = e.getClass().getSimpleName();
@@ -542,5 +542,12 @@ public class ExecuteImpl {
             return true;
         }
         return false;
+    }
+
+    private static boolean somethingDidFail(){
+        StackTraceElement elem = new Exception().getStackTrace()[1];
+        
+        logger.debug(String.format("Something failed in %s @ line %d", elem.getClassName(), elem.getLineNumber()));
+        return true;
     }
 }

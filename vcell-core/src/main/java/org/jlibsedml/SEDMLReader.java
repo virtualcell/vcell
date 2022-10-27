@@ -287,7 +287,7 @@ class SEDMLReader {
     throws DataConversionException {
         RepeatedTask t = null;
         String resetModel = taskElement.getAttributeValue(SEDMLTags.REPEATED_TASK_RESET_MODEL);
-        boolean bResetModel = resetModel.equals("true") ? true : false;
+        boolean bResetModel = resetModel == null || resetModel.equals("true") ? true : false;
         t = new RepeatedTask(
                 taskElement.getAttributeValue(SEDMLTags.TASK_ATTR_ID),
                 taskElement.getAttributeValue(SEDMLTags.TASK_ATTR_NAME),
