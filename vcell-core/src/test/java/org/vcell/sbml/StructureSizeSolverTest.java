@@ -1,6 +1,7 @@
 package org.vcell.sbml;
 
 import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.geometry.GeometryClass;
 import cbit.vcell.mapping.*;
 import cbit.vcell.math.Constant;
 import cbit.vcell.math.MathCompareResults;
@@ -27,8 +28,8 @@ import java.util.stream.Collectors;
 public class StructureSizeSolverTest {
 
     @Test
-    public void test_mathGenerationEquivalence() throws XmlParseException, MappingException, IOException {
-        InputStream legacyBioModelInputStream = VcmlTestSuiteFiles.getVcmlTestCase("biomodel_89712092_simple.vcml");
+    public void test_mathGenerationEquivalence_nonspatial() throws XmlParseException, MappingException, IOException {
+        InputStream legacyBioModelInputStream = VcmlTestSuiteFiles.getVcmlTestCase("biomodel_89712092_nonspatial.vcml");
         String legacyModelVcml = new BufferedReader(new InputStreamReader(legacyBioModelInputStream))
                 .lines().collect(Collectors.joining("\n"));
 
@@ -51,8 +52,8 @@ public class StructureSizeSolverTest {
     }
 
     @Test
-    public void test_legacyTransformer() throws XmlParseException, ExpressionException {
-        InputStream legacyBioModelInputStream = VcmlTestSuiteFiles.getVcmlTestCase("biomodel_89712092_simple.vcml");
+    public void test_legacyTransformer_nonspatial() throws XmlParseException, ExpressionException {
+        InputStream legacyBioModelInputStream = VcmlTestSuiteFiles.getVcmlTestCase("biomodel_89712092_nonspatial.vcml");
         String legacyModelVcml = new BufferedReader(new InputStreamReader(legacyBioModelInputStream))
                 .lines().collect(Collectors.joining("\n"));
 
@@ -208,8 +209,8 @@ public class StructureSizeSolverTest {
     }
 
     @Test
-    public void test_updateAbsoluteStructureSizes() throws Exception {
-        InputStream legacyBioModelInputStream = VcmlTestSuiteFiles.getVcmlTestCase("biomodel_89712092_simple.vcml");
+    public void test_updateAbsoluteStructureSizes_nonspatial() throws Exception {
+        InputStream legacyBioModelInputStream = VcmlTestSuiteFiles.getVcmlTestCase("biomodel_89712092_nonspatial.vcml");
         String legacyModelVcml = new BufferedReader(new InputStreamReader(legacyBioModelInputStream))
                 .lines().collect(Collectors.joining("\n"));
 
@@ -311,8 +312,128 @@ public class StructureSizeSolverTest {
     }
 
     @Test
-    public void test_updateAbsoluteStructureSizes_symbolic() throws Exception {
-        InputStream legacyBioModelInputStream = VcmlTestSuiteFiles.getVcmlTestCase("biomodel_89712092_simple.vcml");
+    public void test_updateUnitStructureSizes_spatial() throws Exception {
+        InputStream legacyBioModelInputStream = VcmlTestSuiteFiles.getVcmlTestCase("biomodel_12522025_spatial.vcml");
+        String legacyModelVcml = new BufferedReader(new InputStreamReader(legacyBioModelInputStream))
+                .lines().collect(Collectors.joining("\n"));
+
+        {
+            //
+            // check that transformed Application has absolute sizes set as expected
+            //
+            BioModel legacyBioModelCloned = XmlHelper.XMLToBioModel(new XMLSource(legacyModelVcml));
+            Model model = legacyBioModelCloned.getModel();
+
+            double specified_cytosol_size = 1.0;
+
+            // transform the model using Legacy Transformer
+            SimulationContext.MathMappingCallback mmc = new MathMappingCallbackTaskAdapter(null);
+            Structure Cytosol = model.getStructure("cytosol");
+            Structure ERM = model.getStructure("ERM");
+            Structure PM = model.getStructure("PM");
+            Structure ER = model.getStructure("ER");
+            Structure Extracellular = model.getStructure("extracellular"); // sic
+
+            SimulationContext simulationContext = legacyBioModelCloned.getSimulationContext(0);
+            StructureMapping structureMapping_Cytosol = simulationContext.getGeometryContext().getStructureMapping(Cytosol);
+            GeometryContext geometryContext = simulationContext.getGeometryContext();
+
+            //
+            // clear Unit size expressions (were already written into XML at some point).
+            //
+            geometryContext.getStructureMapping(ERM).getParameterFromRole(StructureMapping.ROLE_AreaPerUnitVolume).setExpression(null);
+            geometryContext.getStructureMapping(PM).getParameterFromRole(StructureMapping.ROLE_AreaPerUnitArea).setExpression(null);
+            geometryContext.getStructureMapping(ER).getParameterFromRole(StructureMapping.ROLE_VolumePerUnitVolume).setExpression(null);
+            geometryContext.getStructureMapping(Cytosol).getParameterFromRole(StructureMapping.ROLE_VolumePerUnitVolume).setExpression(null);
+            geometryContext.getStructureMapping(Extracellular).getParameterFromRole(StructureMapping.ROLE_VolumePerUnitVolume).setExpression(null);
+
+            for (GeometryClass geometryClass : legacyBioModelCloned.getSimulationContext(0).getGeometry().getGeometryClasses()) {
+                StructureSizeSolver.updateUnitStructureSizes(simulationContext, geometryClass);
+            }
+            GeometryContext geometryContextTransformed = simulationContext.getGeometryContext();
+
+            StructureMapping.StructureMappingParameter SurfToVol_ERM = geometryContextTransformed.getStructureMapping(ERM).getParameterFromRole(StructureMapping.ROLE_SurfaceToVolumeRatio);
+            StructureMapping.StructureMappingParameter VolFract_ER = geometryContextTransformed.getStructureMapping(ERM).getParameterFromRole(StructureMapping.ROLE_VolumeFraction);
+            StructureMapping.StructureMappingParameter Unit_Size_ERM_transformed = geometryContextTransformed.getStructureMapping(ERM).getParameterFromRole(StructureMapping.ROLE_AreaPerUnitVolume);
+            StructureMapping.StructureMappingParameter SurfToVol_PM = geometryContextTransformed.getStructureMapping(PM).getParameterFromRole(StructureMapping.ROLE_SurfaceToVolumeRatio);
+            StructureMapping.StructureMappingParameter VolFract_Cytosol = geometryContextTransformed.getStructureMapping(PM).getParameterFromRole(StructureMapping.ROLE_VolumeFraction);
+            StructureMapping.StructureMappingParameter Unit_Size_PM_transformed = geometryContextTransformed.getStructureMapping(PM).getParameterFromRole(StructureMapping.ROLE_AreaPerUnitArea);
+            StructureMapping.StructureMappingParameter Unit_Size_ER_transformed = geometryContextTransformed.getStructureMapping(ER).getParameterFromRole(StructureMapping.ROLE_VolumePerUnitVolume);
+            StructureMapping.StructureMappingParameter Unit_Size_Cytosol_transformed = geometryContextTransformed.getStructureMapping(Cytosol).getParameterFromRole(StructureMapping.ROLE_VolumePerUnitVolume);
+            StructureMapping.StructureMappingParameter Unit_Size_Extracellular_transformed = geometryContextTransformed.getStructureMapping(Extracellular).getParameterFromRole(StructureMapping.ROLE_VolumePerUnitVolume);
+
+            double original_SurfToVol_ERM = 20.0;
+            double original_VolFract_ER = 0.15;
+            double original_SurfToVol_PM = 1.0;
+            double original_VolFract_Cytosol = 0.2;
+
+            Assert.assertEquals("unexpected SurfToVol_ERM", Double.toString(original_SurfToVol_ERM), SurfToVol_ERM.getExpression().infix());
+            Assert.assertEquals("unexpected VolFract_ER", Double.toString(original_VolFract_ER), VolFract_ER.getExpression().infix());
+            Assert.assertEquals("unexpected SurfToVol_PM", Double.toString(original_SurfToVol_PM), SurfToVol_PM.getExpression().infix());
+            Assert.assertEquals("unexpected VolFract_Cytosol", Double.toString(original_VolFract_Cytosol), VolFract_Cytosol.getExpression().infix());
+
+            //
+            // verify expected relationships between relative and absolute sizes for this model
+            //
+            double val_VolFract_ER = VolFract_ER.getExpression().evaluateConstant();
+            double val_VolFract_Cytosol = VolFract_Cytosol.getExpression().evaluateConstant();
+            double val_SurfToVol_ERM = SurfToVol_ERM.getExpression().evaluateConstant();
+            double val_SurfToVol_PM = SurfToVol_PM.getExpression().evaluateConstant();
+
+            String[] symbols = new String[] {
+                    "Cytosol_mapping.Size",
+                    "ERM_mapping.VolFraction",
+                    "PM_mapping.VolFraction",
+                    "ERM_mapping.SurfToVolRatio",
+                    "PM_mapping.SurfToVolRatio"
+            };
+            SimpleSymbolTable symbolTable = new SimpleSymbolTable(symbols);
+            double[] values = new double[] {
+                    specified_cytosol_size,
+                    original_VolFract_ER,
+                    original_VolFract_Cytosol,
+                    original_SurfToVol_ERM,
+                    original_SurfToVol_PM
+            };
+
+            //
+            // clone expressions, bind to local symbol table, and evaluate using values from array above.
+            //
+            double val_Unit_Size_Cytosol = new Expression(Unit_Size_Cytosol_transformed.getExpression()).bindExpressionAndReturn(symbolTable).evaluateVector(values);
+            double val_Unit_Size_Extracellular = new Expression(Unit_Size_Extracellular_transformed.getExpression()).bindExpressionAndReturn(symbolTable).evaluateVector(values);
+            double val_Unit_Size_ERM = new Expression(Unit_Size_ERM_transformed.getExpression()).bindExpressionAndReturn(symbolTable).evaluateVector(values);
+            double val_Unit_Size_ER = new Expression(Unit_Size_ER_transformed.getExpression()).bindExpressionAndReturn(symbolTable).evaluateVector(values);
+            double val_Unit_Size_PM = new Expression(Unit_Size_PM_transformed.getExpression()).bindExpressionAndReturn(symbolTable).evaluateVector(values);
+
+            //
+            // verify relative sizes in terms of solved unit sizes for VolFract_ER and SurfToVol_ERM
+            //
+            // Note that VolFract_Cytosol and SurfToVol_PM are ignored and are not part of the generated math (and could never have been overridden)
+            //    This is because the Cytosol and PM are top level structures mapped to spatially resolved domains.
+            //       Cytosol is the top level structure which was mapped to the cell volume domain.
+            //       PM is the top level structure which was mapped to the cell / extracellular surface domain.
+            //
+            Assert.assertTrue("VolFract_ER value doesn't match solution", equiv(val_VolFract_ER, val_Unit_Size_ER / (val_Unit_Size_Cytosol + val_Unit_Size_ER)));
+            Assert.assertTrue("SurfToVol_ERM value doesn't match solution", equiv(val_SurfToVol_ERM, val_Unit_Size_ERM / val_Unit_Size_ER));
+
+            double expected_Unit_Size_Cytosol = 0.85;
+            double expected_Unit_Size_Extracellular = 1.0;
+            double expected_Unit_Size_ERM = 3.0;
+            double expected_Unit_Size_ER = 0.15;
+            double expected_Unit_Size_PM = 1.0;
+
+            Assert.assertTrue("unexpected Unit_Size_ERM, "+expected_Unit_Size_ERM+" !~ "+val_Unit_Size_ERM, equiv(expected_Unit_Size_ERM, val_Unit_Size_ERM));
+            Assert.assertTrue("unexpected Unit_Size_PM, "+expected_Unit_Size_PM+" !~ "+val_Unit_Size_PM, equiv(expected_Unit_Size_PM, val_Unit_Size_PM));
+            Assert.assertTrue("unexpected Unit_Size_ER, "+expected_Unit_Size_ER+" !~ "+val_Unit_Size_ER, equiv(expected_Unit_Size_ER, val_Unit_Size_ER));
+            Assert.assertTrue("unexpected Unit_Size_Cytosol, "+expected_Unit_Size_Cytosol+" !~ "+val_Unit_Size_Cytosol, equiv(expected_Unit_Size_Cytosol, val_Unit_Size_Cytosol));
+            Assert.assertTrue("unexpected Unit_Size_Extracellular, "+expected_Unit_Size_Extracellular+" !~ "+val_Unit_Size_Extracellular, equiv(expected_Unit_Size_Extracellular, val_Unit_Size_Extracellular));
+        }
+    }
+
+
+    @Test
+    public void test_updateAbsoluteStructureSizes_symbolic_nonspatial() throws Exception {
+        InputStream legacyBioModelInputStream = VcmlTestSuiteFiles.getVcmlTestCase("biomodel_89712092_nonspatial.vcml");
         String legacyModelVcml = new BufferedReader(new InputStreamReader(legacyBioModelInputStream))
                 .lines().collect(Collectors.joining("\n"));
 
