@@ -311,14 +311,23 @@ public class SEDMLImporter {
 			// make imported BioModel(s) VCell-friendly
 			List<BioModel> vcbms = new ArrayList<BioModel>();
 			for (BioModel bm : uniqueBioModelsList) {
-				ModelUnitSystem vcUnits = ModelUnitSystem.createDefaultVCModelUnitSystem();
-				BioModel vcbm = ModelUnitConverter.createBioModelWithNewUnitSystem(bm, vcUnits);
+				BioModel vcbm = null;
+				// we should not fail if any of these steps don't succeed
+				try {
+					ModelUnitSystem vcUnits = ModelUnitSystem.createDefaultVCModelUnitSystem();
+					vcbm = ModelUnitConverter.createBioModelWithNewUnitSystem(bm, vcUnits);
+				} catch (Exception e1) {
+					logger.info("Failed to convert unit system to VCell units: " + e1);
+				}
+				try {
 				// cannot do this for now, as it can be very expensive (hours!!)
 				// also has serious memory issues (runs out of memory even with bumping up to Xmx12G
-//				if (!externalDocInfo.getFile().getName().startsWith("biomodel_523")) {
-//					TransformMassActions.applyTransformAll(vcbm.getModel());
-//				}
-				vcbms.add(vcbm);
+
+				//TransformMassActions.applyTransformAll(vcbm.getModel());
+				} catch (Exception e2) {
+					logger.info("Failed to transform compatible reactions to mass action: " + e2);
+				}
+				vcbms.add((vcbm == null)? bm : vcbm);
 			}
 			return vcbms;
 		} catch (Exception e) {
