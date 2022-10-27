@@ -5,7 +5,6 @@ import cbit.vcell.mapping.*;
 import cbit.vcell.math.Constant;
 import cbit.vcell.math.MathCompareResults;
 import cbit.vcell.math.MathDescription;
-import cbit.vcell.math.Variable;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Structure;
 import cbit.vcell.parser.Expression;
@@ -19,9 +18,10 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.vcell.sbml.vcell.StructureSizeSolver;
 
-import java.io.*;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.stream.Collectors;
 
 public class StructureSizeSolverTest {

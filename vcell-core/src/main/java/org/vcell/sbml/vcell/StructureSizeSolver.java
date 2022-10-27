@@ -301,10 +301,6 @@ public class StructureSizeSolver {
 				priorKnownValue = sizeParam.getExpression().evaluateConstant();
 			}else if (sm.getStructure() == struct){
 				priorKnownValue = structSize;
-//					SimulationContext.SimulationContextParameter scParam = simContext.createSimulationContextParameter();
-//					scParam.setName(sizeParam.getName());
-//					scParam.setExpression(new Expression(structSize));
-//					scParam.setUnitDefinition(sizeParam.getUnitDefinition());
 			}else{
 				unknownVars.add(varName);
 			}
@@ -395,34 +391,12 @@ public class StructureSizeSolver {
 			rowColData[row][unknownVars.size()] = RationalExpUtils.getRationalExp(constantTerm).minus();
 		}
 		RationalExpMatrix rationalExpMatrix = new RationalExpMatrix(rowColData);
-		rationalExpMatrix.show();
+//		rationalExpMatrix.show();
 		RationalExp[] solutions = rationalExpMatrix.solveLinearExpressions();
-//			double[] solutionValues = new double[solutions.length];
-//			for (int i=0; i<unknownVars.size(); i++){
-//				Expression vcSolution = new Expression(solutions[i].infixString());
-//				String[] symbols = vcSolution.getSymbols();
-//				if (symbols!=null){
-//					for (String symbol : symbols){
-//						SolverParameter p = solverParameters.get(symbol);
-//						if (p.knownValue==null){
-//							throw new RuntimeException("solution for var "+unknownVars.get(i)+" is a function of unknown var "+p.name);
-//						}
-//						vcSolution.substituteInPlace(new Expression(symbol), new Expression(p.knownValue.doubleValue()));
-//					}
-//				}
-//				double value = vcSolution.flatten().evaluateConstant();
-//				//System.out.println(unknownVars.get(i)+" = "+value+" = "+solutions[i].infixString());
-//				solutionValues[i] = value;
-//			}
-//			for (int i=0; i<unknownVars.size(); i++){
-//				SolverParameter p = solverParameters.get(unknownVars.get(i));
-//				p.parameter.setExpression(new Expression(solutionValues[i]));
-//			}
 		for (int i=0; i<unknownVars.size(); i++){
 			SolverParameter p = solverParameters.get(unknownVars.get(i));
 
 			Expression exp = new Expression(solutions[i].infixString());
-			//exp = exp.simplifyJSCL();
 			p.parameter.setExpression(exp);
 		}
 		//
