@@ -91,31 +91,14 @@ jobs:
       - name: Begin Conversion
         #$(docker image ls | grep "<none>" | awk '{print $3;}')  to get image id
         run: docker run -v $GITHUB_WORKSPACE/published/biomodel/omex/sbml:/root $(docker image ls | grep "<none>" | awk '{print $3;}') import-omex-batch -d -i "/root" -o "/root/output" # grabs image and runs
-          
-        # Parse the results
+      
+      # Parse the results
       - name: Parse Results
         run: |
-          cd $GITHUB_WORKSPACE/published/biomodel/omex/sbml/output && ls && \
-          echo "biomodels processed $(cat jobLog.txt | grep START | wc -l)" >> ~/conversion_results.txt && \
-          echo "biomodels succeeded $(cat jobLog.txt | grep MODEL,SUCC | wc -l)" >> ~/conversion_results.txt && \
-          echo "simcontexts total $(cat jobLog.txt | grep TEXT | wc -l)" >> ~/conversion_results.txt && \
-          echo "simcontexts failed $(cat jobLog.txt | grep TEXT,FAIL | wc -l)" >> ~/conversion_results.txt && \
-          echo "simcontexts supported that failed $(cat jobLog.txt | grep TEXT,FAIL | grep -v supp | wc -l)" >> ~/conversion_results.txt && \
-          echo "simcontexts math not equivalent $(cat jobLog.txt | grep TEXT,FAIL | grep -v supp | grep equiv | wc -l)" >> ~/conversion_results.txt && \
-          echo "simcontexts divide by zero $(cat jobLog.txt | grep TEXT,FAIL | grep -v supp | grep divide | wc -l)" >> ~/conversion_results.txt && \
-          echo "simcontexts duplicate IDs $(cat jobLog.txt | grep TEXT,FAIL | grep -v supp | grep duplicate | wc -l)" >> ~/conversion_results.txt && \
-          echo "simcontexts null pointer $(cat jobLog.txt | grep TEXT,FAIL | grep -v supp | grep null | wc -l)" >> ~/conversion_results.txt && \
-          echo "simcontexts structure mapping $(cat jobLog.txt | grep TEXT,FAIL | grep -v supp | grep struct | wc -l)" >> ~/conversion_results.txt && \
-          echo "simcontexts other failure $(cat jobLog.txt | grep TEXT,FAIL | grep -v supp | grep -v struct | grep -v null | grep -v duplicate | grep -v divide | grep -v equiv | wc -l)" >> ~/conversion_results.txt  && \
-          echo "simulations total $(cat jobLog.txt | grep TION | wc -l)" >> ~/conversion_results.txt && \
-          echo "simulations failed $(cat jobLog.txt | grep TION,FAIL | wc -l)" >> ~/conversion_results.txt && \
-          echo "simulations supported that failed $(cat jobLog.txt | grep TION,FAIL | grep -v supp | wc -l)" >> ~/conversion_results.txt && \
-          echo "simulations orphan overrides $(cat jobLog.txt | grep TION,FAIL | grep -v supp | grep Over | wc -l)" >> ~/conversion_results.txt && \
-          echo "simulations unbound identifier $(cat jobLog.txt | grep TION,FAIL | grep -v supp | grep unbound | wc -l)" >> ~/conversion_results.txt && \
-          echo "simulations other failure $(cat jobLog.txt | grep TION,FAIL | grep -v supp | grep -v Over | grep -v unbound | wc -l)" >> ~/conversion_results.txt
-        
-      - name: Setup tmate session 3
-        uses: mxschmitt/action-tmate@v3
+          cd $GITHUB_WORKSPACE/published/biomodel/omex/sbml/output 
+          /bin/echo 'Biomodels processed $(cat jobLog.txt | grep ".omex,SUCC\|.omex,FAIL" | wc -l)' >> ~/conversion_results.txt
+          /bin/echo 'Biomodels succeeded $(cat jobLog.txt | grep SUCC | wc -l)' >> ~/conversion_results.txt
+          /bin/echo "Biomodels that didn't converge $(cat jobLog.txt | grep SUCC | grep -v ',1' | wc -l)" >> ~/conversion_results.txt  
         
         # Create tar of converted files
       - name: Compress Converted Files
@@ -174,13 +157,27 @@ jobs:
         #$(docker image ls | grep "<none>" | awk '{print $3;}')  to get image id
         run: docker run -v ~/input_files:/root $(docker image ls | grep "<none>" | awk '{print $3;}') export-omex-batch -i "/root" -o "/root/output" -m SBML --offline
         
-       # Parse the results
+        # Parse the results
       - name: Parse Results
         run: |
           cd ~/input_files/output 
-          /bin/echo 'Biomodels processed $(cat jobLog.txt | grep START | wc -l)' >> ../round-trip_results.txt
-          /bin/echo 'Biomodels succeeded $(cat jobLog.txt | grep SUCC | wc -l)' >> ../round-trip_results.txt
-          /bin/echo "Biomodels that didn't converge $(cat jobLog.txt | grep SUCC | grep -v ',1' | wc -l)" >> ../round-trip_results.txt
+          /bin/echo "biomodels processed $(cat jobLog.txt | grep START | wc -l)" >> ../round-trip_results.txt
+          /bin/echo "biomodels succeeded $(cat jobLog.txt | grep MODEL,SUCC | wc -l)" >> ../round-trip_results.txt
+          /bin/echo "simcontexts total $(cat jobLog.txt | grep TEXT | wc -l)" >> ../round-trip_results.txt
+          /bin/echo "simcontexts failed $(cat jobLog.txt | grep TEXT,FAIL | wc -l)" >> ~/conversion_results.txt 
+          /bin/echo "simcontexts supported that failed $(cat jobLog.txt | grep TEXT,FAIL | grep -v supp | wc -l)" >> ../round-trip_results.txt
+          /bin/echo "simcontexts math not equivalent $(cat jobLog.txt | grep TEXT,FAIL | grep -v supp | grep equiv | wc -l)" >> ../round-trip_results.txt
+          /bin/echo "simcontexts divide by zero $(cat jobLog.txt | grep TEXT,FAIL | grep -v supp | grep divide | wc -l)" >> ../round-trip_results.txt
+          /bin/echo "simcontexts duplicate IDs $(cat jobLog.txt | grep TEXT,FAIL | grep -v supp | grep duplicate | wc -l)" >> ../round-trip_results.txt
+          /bin/echo "simcontexts null pointer $(cat jobLog.txt | grep TEXT,FAIL | grep -v supp | grep null | wc -l)" >> ../round-trip_results.txt
+          /bin/echo "simcontexts structure mapping $(cat jobLog.txt | grep TEXT,FAIL | grep -v supp | grep struct | wc -l)" >> ../round-trip_results.txt
+          /bin/echo "simcontexts other failure $(cat jobLog.txt | grep TEXT,FAIL | grep -v supp | grep -v struct | grep -v null | grep -v duplicate | grep -v divide | grep -v equiv | wc -l)" >> ../round-trip_results.txt
+          /bin/echo "simulations total $(cat jobLog.txt | grep TION | wc -l)" >> ../round-trip_results.txt
+          /bin/echo "simulations failed $(cat jobLog.txt | grep TION,FAIL | wc -l)" >> ../round-trip_results.txt
+          /bin/echo "simulations supported that failed $(cat jobLog.txt | grep TION,FAIL | grep -v supp | wc -l)" >> ../round-trip_results.txt
+          /bin/echo "simulations orphan overrides $(cat jobLog.txt | grep TION,FAIL | grep -v supp | grep Over | wc -l)" >> ../round-trip_results.txt
+          /bin/echo "simulations unbound identifier $(cat jobLog.txt | grep TION,FAIL | grep -v supp | grep unbound | wc -l)" >> ../round-trip_results.txt
+          /bin/echo "simulations other failure $(cat jobLog.txt | grep TION,FAIL | grep -v supp | grep -v Over | grep -v unbound | wc -l)" >> ../round-trip_results.txt
       
       # Upload results
       - name: Upload Results of Round-Trip
