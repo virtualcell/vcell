@@ -96,8 +96,8 @@ jobs:
       - name: Parse Results
         run: |
           cd $GITHUB_WORKSPACE/published/biomodel/omex/sbml/output 
-          /bin/echo 'Biomodels processed $(cat jobLog.txt | grep ".omex,SUCC\|.omex,FAIL" | wc -l)' >> ~/conversion_results.txt
-          /bin/echo 'Biomodels succeeded $(cat jobLog.txt | grep SUCC | wc -l)' >> ~/conversion_results.txt
+          /bin/echo "Biomodels processed $(cat jobLog.txt | grep '.omex,SUCC\|.omex,FAIL' | wc -l)" >> ~/conversion_results.txt
+          /bin/echo "Biomodels succeeded $(cat jobLog.txt | grep SUCC | wc -l)" >> ~/conversion_results.txt
           /bin/echo "Biomodels that didn't converge $(cat jobLog.txt | grep SUCC | grep -v ',1' | wc -l)" >> ~/conversion_results.txt  
         
         # Create tar of converted files
