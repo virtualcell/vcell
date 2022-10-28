@@ -114,9 +114,10 @@ public class BiosimulationsCommand implements Callable<Integer> {
                 } catch (Exception e) {
                     logger.error(e.getMessage(), e);
                 }
+                logger.debug("Finished all execution.");
             }
         } catch (Exception e) {
-            LogManager.getLogger(this.getClass()).error(e.getMessage(), e);
+            logger.error(e.getMessage(), e);
             return 1;
         }
     }

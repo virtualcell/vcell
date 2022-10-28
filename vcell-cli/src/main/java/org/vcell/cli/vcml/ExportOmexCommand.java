@@ -51,6 +51,7 @@ public class ExportOmexCommand implements Callable<Integer> {
             boolean bForceLogFiles = true; // TODO find out what this means and simplify
 
             try {
+                logger.debug("Beginning export");
                 VcmlOmexConverter.convertOneFile(inputFilePath, outputFilePath,
                         outputModelFormat, bForceLogFiles, bValidateOmex, bOffline);
             } catch (IOException e) {
@@ -60,6 +61,8 @@ public class ExportOmexCommand implements Callable<Integer> {
         } catch (Exception e) {
             e.printStackTrace();
             throw new RuntimeException(e.getMessage());
+        } finally {
+            logger.debug("Completed all exports");
         }
     }
 }

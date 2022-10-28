@@ -12,7 +12,6 @@ import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.LoggerContext;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.concurrent.Callable;
 
 @Command(name = "import-omex", description = "import a COMBINE archive (.omex) to one or more VCML documents")
@@ -45,12 +44,15 @@ public class ImportOmexCommand implements Callable<Integer> {
             if (!outputFilePath.exists() || !outputFilePath.isDirectory()){
                 throw new RuntimeException("expecting outputFilePath to be an existing directory: "+inputFilePath.getAbsolutePath());
             }
+            logger.debug("Beginning import");
             VcmlOmexConverter.importOneOmexFile(inputFilePath, outputFilePath, false);
 
             return 0;
         } catch (Exception e) {
             e.printStackTrace();
             throw new RuntimeException(e.getMessage());
+        } finally {
+            logger.debug("Import completed");
         }
     }
 }

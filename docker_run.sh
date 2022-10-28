@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo -n "Recieved::<"
+echo -n "docker: Command recieved::<"
 echo -n $@
 echo ">"
 
@@ -84,8 +84,6 @@ java \
   -Dvcell.mongodb.database="localhost" \
   -Dvcell.mongodb.host.internal="localhost" \
   -Dvcell.mongodb.port.internal=27017 \
-  -Dvcell.server.dbUserid=vcell \
-  -Dvcell.server.dbPassword=cbittech \
   -Dvcell.server.dbDriverName=oracle.jdbc.driver.OracleDriver \
   -Dvcell.server.dbConnectURL=jdbc:oracle:thin:@VCELL-DB.cam.uchc.edu:1521/vcelldborcl.cam.uchc.edu \
   -Dcli.workingDir=/usr/local/app/vcell/installDir/python/vcell_cli_utils/ \

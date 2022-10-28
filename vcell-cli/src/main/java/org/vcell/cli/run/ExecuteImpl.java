@@ -98,7 +98,7 @@ public class ExecuteImpl {
 
     @Deprecated
     public static void singleExecVcml(File vcmlFile, File outputDir, CLIRecorder cliLogger) {
-
+        logger.warn("Using deprecated function to execute vcml");
         VCMLHandler.outputDir = outputDir.getAbsolutePath();
         logger.debug("Executing VCML file " + vcmlFile);
 
@@ -141,6 +141,7 @@ public class ExecuteImpl {
             somethingFailed = somethingDidFail();
         }
 
+        logger.debug("Finished executing VCML file: " + vcmlFile);
         if (somethingFailed) {
             RuntimeException e = new RuntimeException("One or more errors encountered while executing VCML " + vcmlFile.getName());
             logger.error(e.getMessage(), e);
@@ -483,9 +484,10 @@ public class ExecuteImpl {
             //CLIUtils.writeFullSuccessList(outputBaseDir, bioModelBaseName, bForceLogFiles);
             cliLogger.writeFullSuccessList(bioModelBaseName);
             logOmexMessage += " Done";
+            
         }
         PythonCalls.setOutputMessage("null", "null", outputDir, "omex", logOmexMessage);
-
+        logger.debug("Finished Execution of Archive: " + bioModelBaseName);
     }
 
     // This method is a bit weird; it uses a temp file as a reference to compare against while getting the file straight from the archive.

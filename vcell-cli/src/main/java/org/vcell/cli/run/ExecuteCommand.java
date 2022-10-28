@@ -122,6 +122,8 @@ public class ExecuteCommand implements Callable<Integer> {
         } catch (Exception e) { ///TODO: Break apart into specific exceptions to maximize logging.
             org.apache.logging.log4j.LogManager.getLogger(this.getClass()).error(e.getMessage(), e);
             return 1;
+        } finally {
+            logger.debug("Completed all execution");
         }
     }
 }
