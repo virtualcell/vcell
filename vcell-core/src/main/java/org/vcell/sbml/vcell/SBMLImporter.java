@@ -855,6 +855,7 @@ public class SBMLImporter {
 							StructureMappingParameter voltage = ((MembraneMapping)structureMappings[j]).getInitialVoltageParameter();
 							if (TokenMangler.mangleToSName(((Membrane)voltage.getStructure()).getMembraneVoltage().getName()).equals(sbmlParamId)) {
 								voltage.setExpression(new Expression(sbmlGlobalParam.getValue()));
+								sbmlSymbolMapping.putInitial(sbmlGlobalParam, ((Membrane)voltage.getStructure()).getMembraneVoltage());
 							}
 						}
 					}
