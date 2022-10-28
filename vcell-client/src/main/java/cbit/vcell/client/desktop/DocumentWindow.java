@@ -74,6 +74,7 @@ import org.vcell.util.document.VCDocument;
 import org.vcell.util.document.VCDocument.VCDocumentType;
 import org.vcell.util.document.VCellSoftwareVersion;
 import org.vcell.util.document.VersionFlag;
+import org.vcell.util.gui.AsynchProgressPopup;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.SimpleUserMessage;
 import org.vcell.util.gui.VCFileChooser;
@@ -100,6 +101,8 @@ import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.client.task.LaunchVirtualFRAP;
 import cbit.vcell.desktop.LoginDelegate;
 import cbit.vcell.desktop.LoginManager;
+import cbit.vcell.mapping.MathMappingCallbackTaskAdapter;
+import cbit.vcell.mapping.SimulationContext.MathMappingCallback;
 import cbit.vcell.model.gui.TransformMassActionPanel;
 import cbit.vcell.resource.OperatingSystemInfo;
 import cbit.vcell.resource.PropertyLoader;
@@ -3014,7 +3017,7 @@ public void showTransMADialog()
 		biomodel = (BioModel)getWindowManager().getVCDocument();
 	}
 	TransformMassActionPanel transMAPanel = new TransformMassActionPanel();
-
+	
 	Hashtable<String, Object> hashTable = new Hashtable<> ();
 	hashTable.put("biomodel", biomodel);
 	hashTable.put("window", this);
@@ -3027,7 +3030,12 @@ public void showTransMADialog()
 			if(biomodel == null) {
 				throw new RuntimeException("Biomodel cannot be null");
 			}
+			AsynchProgressPopup progressWaitPopup = new AsynchProgressPopup(transMAPanel,
+					"Wait...", "Long computation", new Thread(), true, false,
+					true,null);
+			progressWaitPopup.startKeepOnTop();
 			transMAPanel.setModel(biomodel.getModel());
+			progressWaitPopup.stop();
 		}
 	};
 	AsynchClientTask task2 = new AsynchClientTask("starting exporting", AsynchClientTask.TASKTYPE_SWING_NONBLOCKING) {
