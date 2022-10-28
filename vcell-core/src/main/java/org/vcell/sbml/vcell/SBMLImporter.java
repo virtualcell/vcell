@@ -2756,14 +2756,14 @@ public class SBMLImporter {
 		} catch (Exception e) {
 			throw new SBMLImportException(e.getMessage(), e);
 		}
-		
-		//Add Output Functions
-		addOutputFunctions(sbmlModel, vcBioModel, sbmlSymbolMapping, vcLogger);
 
 		// post processing
 		createAssignmentRules(sbmlModel, vcBioModel, sbmlSymbolMapping, localIssueList, issueContext, vcLogger);
 		createRateRules(sbmlModel, vcBioModel, sbmlSymbolMapping);
 		postProcessing(vcBioModel);
+		
+		//Add Output Functions
+		addOutputFunctions(sbmlModel, vcBioModel, sbmlSymbolMapping, vcLogger);
 	}
 
 	private static void addOutputFunctions(org.sbml.jsbml.Model sbmlModel, BioModel vcBioModel, SBMLSymbolMapping sbmlSymbolMapping,
@@ -2783,7 +2783,9 @@ public class SBMLImporter {
 					SymbolTableEntry ste = sbmlSymbolMapping.getSte(sbase, SymbolContext.RUNTIME);
 					try {
 						if (!bGeneratedMath){
+							vcBioModel.refreshDependencies();
 							vcBioModel.getSimulationContext(0).updateAll(false);
+							bGeneratedMath = true;
 						}
 						vcBioModel.getSimulationContext(0).getOutputFunctionContext().addOutputFunction((AnnotatedFunction) ste);
 					} catch (MappingException | PropertyVetoException e) {
