@@ -3135,7 +3135,7 @@ public SimContextTransformer createNewTransformer(){
 		if((rateRules != null && rateRules.length > 0) || (assignmentRules != null && assignmentRules.length > 0)) {
 			return new RateRuleTransformer();
 		}
-		
+
 		if (getGeometry().getDimension() == 0) {
 			if (!getGeometryContext().isAllSizeSpecifiedPositive()) {
 				// old models may not have absolute sizes for structures, we clone the original simulation context
@@ -3143,6 +3143,14 @@ public SimContextTransformer createNewTransformer(){
 				return new LegacySimContextTransformer();
 			}
 		}
+		if (getGeometry().getDimension() > 0) {
+			if (!getGeometryContext().isAllUnitSizeParameterSetForSpatial()) {
+				// old models may not have unit sizes for structures, we clone the original simulation context
+				// to one with corrected numbers and work on it while leaving the original unmodified
+				return new LegacySimContextTransformer();
+			}
+		}
+
 	}
 	return null; 
 }

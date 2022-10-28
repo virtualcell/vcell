@@ -320,7 +320,7 @@ public class StructureSizeSolver {
 				StructureMappingParameter surfToVolParameter = membraneMapping.getSurfaceToVolumeParameter();
 
 				//
-				// EC eclosing cyt, which contains er and golgi
+				// EC enclosing cyt, which contains er and golgi
 				// "(cyt_size+ er_size + golgi_size) * cyt_svRatio - PM_size"  ... implicit equation, exp == 0 is implied
 				//
 				Expression sumOfInsideVolumeExp = new Expression(0.0);
@@ -335,7 +335,7 @@ public class StructureSizeSolver {
 				expressions.add(tempExpr);
 
 				//
-				// EC eclosing cyt, which contains er and golgi
+				// EC enclosing cyt, which contains er and golgi
 				// (EC_size + cyt_size + er_size + golgi_size) * cyt_vfRatio - (cyt_size + er_size + golgi_size)  ... implicit equation, exp == 0 is implied
 				//
 				Expression sumOfParentVolumeExp = new Expression(0.0);
@@ -408,12 +408,12 @@ public class StructureSizeSolver {
 		logger.trace("done");
 	}
 
-	
+
 public static void updateUnitStructureSizes(SimulationContext simContext, GeometryClass geometryClass) {
 	if (simContext.getGeometryContext().getGeometry().getDimension() == 0) {
 		return;
 	}
-	
+
 	StructureMapping[] myStructMappings = simContext.getGeometryContext().getStructureMappings(geometryClass);
 	if (myStructMappings != null && myStructMappings.length == 1) {
 		// if the unitSizeParameter is dimensionless, then features are mapped to SubVolumes or Membranes are mapped to surfaces (should sum to 1)
@@ -469,7 +469,7 @@ public static void updateUnitStructureSizes(SimulationContext simContext, Geomet
 				double svRatioValue = surfToVolParameter.getExpression().evaluateConstant();
 				ccImpl.addSimpleBound(new SimpleBounds(svRatioName,new RealInterval(svRatioValue,svRatioValue),AbstractConstraint.MODELING_ASSUMPTION,"from model"));
 
-				// membrane mapped to volume 
+				// membrane mapped to volume
 				if (geometryClass instanceof SubVolume) {
 					//
 					// EC eclosing cyt, which contains er and golgi
@@ -487,7 +487,7 @@ public static void updateUnitStructureSizes(SimulationContext simContext, Geomet
 					Expression tempExpr = Expression.mult(sumOfInsideVolumeExp, new Expression(svRatioName));
 					tempExpr = Expression.add(tempExpr, new Expression("-"+membraneSizeName));
 					ccImpl.addGeneralConstraint(new GeneralConstraint(new Expression(tempExpr.infix()+"==0"),AbstractConstraint.MODELING_ASSUMPTION,"svRatio definition"));
-	
+
 					//
 					// EC eclosing cyt, which contains er and golgi
 					// (EC_size + cyt_size + er_size + golgi_size) * cyt_vfRatio - (cyt_size + er_size + golgi_size) == 0
@@ -517,7 +517,7 @@ public static void updateUnitStructureSizes(SimulationContext simContext, Geomet
 			ccImpl.addGeneralConstraint(new GeneralConstraint(new Expression(totalVolExpr.infix()+"==1.0"),AbstractConstraint.MODELING_ASSUMPTION,"total volume"));
 		}
 		//ccImpl.show();
-		
+
 		ConstraintSolver constraintSolver = new ConstraintSolver(ccImpl);
 		constraintSolver.resetIntervals();
 
@@ -527,7 +527,7 @@ public static void updateUnitStructureSizes(SimulationContext simContext, Geomet
 		while (constraintSolver.narrow() && bChanged && numTimesNarrowed<125){
 			numTimesNarrowed++;
 			bChanged = false;
-			
+
 			RealInterval[] thisSolution = constraintSolver.getIntervals();
 			if (lastSolution!=null){
 				for (int i = 0; i < thisSolution.length; i++){
@@ -541,7 +541,7 @@ public static void updateUnitStructureSizes(SimulationContext simContext, Geomet
 			lastSolution = thisSolution;
 		}
 		System.out.println("num of times narrowed = "+numTimesNarrowed);
-		
+
 		if (numTimesNarrowed>0){
 			String[] symbols = constraintSolver.getSymbols();
 			net.sourceforge.interval.ia_math.RealInterval[] solution = constraintSolver.getIntervals();
@@ -549,7 +549,7 @@ public static void updateUnitStructureSizes(SimulationContext simContext, Geomet
 			double totalVolume = 0;
 			for (int i = 0; i < symbols.length; i++){
 				System.out.println("solution["+i+"] \""+symbols[i]+"\" = "+solution[i]);
-				
+
 				for (int j = 0; j < structMappings.length; j++){
 					if (symbols[i].equals(TokenMangler.mangleToSName(structMappings[j].getStructure().getName()+"_size"))){
 						if (!Double.isInfinite(solution[i].lo()) && !Double.isInfinite(solution[i].hi())) {
@@ -618,6 +618,153 @@ public static void updateUnitStructureSizes(SimulationContext simContext, Geomet
 		throw new RuntimeException(e.getMessage());
 	}
 }
+
+	public static void updateUnitStructureSizes_symbolic(SimulationContext simContext, GeometryClass geometryClass) throws ExpressionException, MatrixException {
+		if (simContext.getGeometryContext().getGeometry().getDimension() == 0) {
+			return;
+		}
+
+		StructureMapping[] myStructMappings = simContext.getGeometryContext().getStructureMappings(geometryClass);
+		if (myStructMappings != null && myStructMappings.length == 1) {
+			// if the unitSizeParameter is dimensionless, then features are mapped to SubVolumes or Membranes are mapped to surfaces (should sum to 1)
+			boolean bDimensionless = myStructMappings[0].getUnitSizeParameter().getUnitDefinition().isEquivalent(simContext.getModel().getUnitSystem().getInstance_DIMENSIONLESS());
+			if (bDimensionless){
+				try {
+					myStructMappings[0].getUnitSizeParameter().setExpression(new Expression(1.0));
+					return;
+				}catch (ExpressionException e){
+					e.printStackTrace(System.out);
+					throw new RuntimeException(e.getMessage());
+				}
+			}
+		}
+		if (myStructMappings!=null && myStructMappings.length==0){
+			// nothing to solve, there are no mappings for this geometryClass
+			return;
+		}
+		SolverParameterCollection solverParameters = new SolverParameterCollection();
+		ArrayList<String> unknownVars = new ArrayList<String>();
+
+		for (StructureMapping sm : myStructMappings){
+			logger.debug("trace "+ sm.getStructure().getDisplayName() + " size " + sm.getStructure().getStructureSize().getExpression());
+			if (sm.getStructure().getStructureSize().getExpression() == null){
+				logger.error("Structure "+ sm.getStructure().getDisplayName() + " size is null");
+			}
+			if (sm.getStructure() instanceof Membrane){
+				MembraneMapping mm = (MembraneMapping)sm;
+				StructureMappingParameter svRatioParam = mm.getSurfaceToVolumeParameter();
+				StructureMappingParameter volFractParam = mm.getVolumeFractionParameter();
+				String svRatioSymbolName = new Expression(svRatioParam, simContext.getNameScope()).infix();
+				String volFractSymbolName = new Expression(volFractParam, simContext.getNameScope()).infix();
+				solverParameters.add(new SolverParameter(svRatioParam, svRatioSymbolName, svRatioParam.getExpression().evaluateConstant()));
+				solverParameters.add(new SolverParameter(volFractParam, volFractSymbolName, volFractParam.getExpression().evaluateConstant()));
+			}
+			StructureMappingParameter unitSizeParam = sm.getUnitSizeParameter();
+			String varName = new Expression(unitSizeParam, simContext.getNameScope()).infix();
+			unknownVars.add(varName);
+			Double priorKnownValue = null; // these are the unknowns
+			solverParameters.add(new SolverParameter(unitSizeParam, varName, priorKnownValue));
+		}
+
+		StructureTopology structTopology = simContext.getModel().getStructureTopology();
+		ArrayList<Expression> expressions = new ArrayList<>();
+		Expression sumOfAllMappedUnitVolumes = new Expression(-1.0);
+		for (int i = 0; i < myStructMappings.length; i++){
+			if (myStructMappings[i] instanceof FeatureMapping){
+				FeatureMapping featureMapping = (FeatureMapping) myStructMappings[i];
+				StructureMappingParameter unitSizeParameter = featureMapping.getUnitSizeParameter();
+				sumOfAllMappedUnitVolumes = Expression.add(sumOfAllMappedUnitVolumes, new Expression(solverParameters.getName(unitSizeParameter)));
+			}
+			if (myStructMappings[i] instanceof MembraneMapping){
+				MembraneMapping membraneMapping = (MembraneMapping)myStructMappings[i];
+
+				Feature insideFeature = structTopology.getInsideFeature(membraneMapping.getMembrane());
+				Feature outsideFeature = structTopology.getOutsideFeature(membraneMapping.getMembrane());
+
+				StructureMappingParameter unitSizeParameter = membraneMapping.getUnitSizeParameter();
+				StructureMappingParameter volFractParameter = membraneMapping.getVolumeFractionParameter();
+				StructureMappingParameter surfToVolParameter = membraneMapping.getSurfaceToVolumeParameter();
+
+				//
+				// EC enclosing cyt, which contains er and golgi
+				// "(cyt_unit_size+ er_unit_size + golgi_unit_size) * cyt_svRatio - PM_size"  ... implicit equation, exp == 0 is implied
+				//
+				Expression sumOfInsideVolumeExp = new Expression(0.0);
+				for (int j = 0; j < myStructMappings.length; j++){
+					if (myStructMappings[j] instanceof FeatureMapping && structTopology.enclosedBy(myStructMappings[j].getStructure(), insideFeature)) {
+						FeatureMapping childFeatureMappingOfInside = ((FeatureMapping)myStructMappings[j]);
+						sumOfInsideVolumeExp = Expression.add(sumOfInsideVolumeExp,new Expression(solverParameters.getName(childFeatureMappingOfInside.getUnitSizeParameter())));
+					}
+				}
+				Expression tempExpr = Expression.mult(sumOfInsideVolumeExp, new Expression(solverParameters.getName(surfToVolParameter)));
+				tempExpr = Expression.add(tempExpr, new Expression("-"+solverParameters.getName(unitSizeParameter)));
+				expressions.add(tempExpr);
+
+				//
+				// EC enclosing cyt, which contains er and golgi
+				// (EC_unit_size + cyt_unit_size + er_unit_size + golgi_unit_size) * cyt_vfRatio - (cyt_unit_size + er_unit_size + golgi_unit_size)  ... implicit equation, exp == 0 is implied
+				//
+				Expression sumOfParentVolumeExp = new Expression(0.0);
+				for (int j = 0; j < myStructMappings.length; j++){
+					if (myStructMappings[j] instanceof FeatureMapping && structTopology.enclosedBy(myStructMappings[j].getStructure(), outsideFeature)){
+						FeatureMapping childFeatureMappingOfParent = ((FeatureMapping)myStructMappings[j]);
+						sumOfParentVolumeExp = Expression.add(sumOfParentVolumeExp,new Expression(solverParameters.getName(childFeatureMappingOfParent.getUnitSizeParameter())));
+					}
+				}
+				Expression exp = Expression.mult(sumOfParentVolumeExp,new Expression(solverParameters.getName(volFractParameter)));
+				exp = Expression.add(exp, Expression.negate(sumOfInsideVolumeExp)).flattenSafe();
+				expressions.add(exp);
+			}
+		}
+		expressions.add(sumOfAllMappedUnitVolumes);
+
+		if (expressions.size()!=unknownVars.size()){
+			throw new RuntimeException("number of unknowns is "+unknownVars.size()+", number of equations is "+expressions.size());
+		}
+
+		RationalExp[][] rowColData = new RationalExp[unknownVars.size()][unknownVars.size()+1];
+		for (int row=0; row<unknownVars.size(); row++){
+			//
+			// verify that there is no "constant" term (without an unknown)
+			//
+			//System.out.println("equation("+row+"): "+expressions.get(row).infix());
+			Expression constantTerm = new Expression(expressions.get(row));
+			for (String var : unknownVars){
+				constantTerm.substituteInPlace(new Expression(var), new Expression(0.0));
+			}
+			constantTerm = constantTerm.flatten();
+
+			//
+			// we can use the derivative to find the coefficients (just verify that the coefficient doesn't contain an unknown).
+			//
+			for (int col=0; col<unknownVars.size(); col++){
+				Expression equation = new Expression(expressions.get(row));
+				String colVariable = unknownVars.get(col);
+				Expression deriv = equation.differentiate(colVariable).flatten();
+				String[] symbols = deriv.getSymbols();
+				if (symbols!=null){
+					for (String symbol : symbols){
+						if (unknownVars.contains(symbol)){
+							throw new RuntimeException("equation is not linear in the unknowns");
+						}
+					}
+				}
+				rowColData[row][col] = RationalExpUtils.getRationalExp(deriv);
+			}
+			rowColData[row][unknownVars.size()] = RationalExpUtils.getRationalExp(constantTerm).minus();
+		}
+
+		RationalExpMatrix rationalExpMatrix = new RationalExpMatrix(rowColData);
+//		rationalExpMatrix.show();
+		RationalExp[] solutions = rationalExpMatrix.solveLinearExpressions();
+		for (int i=0; i<unknownVars.size(); i++){
+			SolverParameter p = solverParameters.get(unknownVars.get(i));
+
+			Expression exp = new Expression(solutions[i].infixString());
+			p.parameter.setExpression(exp);
+		}
+		logger.trace("done");
+	}
 
 
 public static void updateRelativeStructureSizes(SimulationContext simContext) throws Exception {
