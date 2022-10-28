@@ -116,7 +116,6 @@ jobs:
         
       - name: Setup tmate session 3
         uses: mxschmitt/action-tmate@v3
-        if: ${{ failure() }}
         
         # Create tar of converted files
       - name: Compress Converted Files
